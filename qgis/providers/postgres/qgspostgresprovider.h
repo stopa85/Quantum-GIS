@@ -244,8 +244,12 @@ public:
      */
     bool supportsNativeTransform(){return true;}
     bool usesSrid(){return true;}
-    bool usesWKT(){return true;}
+    bool usesWKT(){return false;}
 
+    /*! Set the SRID of the target (map canvas) SRS.
+     * @parm srid SRID of the map canvas SRS
+     */
+    void setTargetSrid(int srid);
 
 private:
 
@@ -328,6 +332,10 @@ private:
    */
   long numberFeatures;
 
+  /**
+   * Spatial reference id of the target (map canvas) SRS
+   */
+  int mTargetSrid;
   /**
    * Flag indicating whether data from binary cursors must undergo an
    * endian conversion prior to use
