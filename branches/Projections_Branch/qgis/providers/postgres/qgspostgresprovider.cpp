@@ -495,8 +495,8 @@ void QgsPostgresProvider::select(QgsRect * rect, bool useIntersect)
 #endif
   QString declare = QString("declare qgisf binary cursor for select "
       + primaryKey  
-      + ",asbinary(transform(%1,4326),'%2') as qgs_feature_geometry from %3").arg(geometryColumn).arg(endianString()).arg(tableName);
-//      + ",asbinary(%1,'%2') as qgs_feature_geometry from %3").arg(geometryColumn).arg(endianString()).arg(tableName);
+//      + ",asbinary(transform(%1,4326),'%2') as qgs_feature_geometry from %3").arg(geometryColumn).arg(endianString()).arg(tableName);
+      + ",asbinary(%1,'%2') as qgs_feature_geometry from %3").arg(geometryColumn).arg(endianString()).arg(tableName);
 #ifdef QGISDEBUG
   std::cout << "Binary cursor: " << declare << std::endl; 
 #endif
@@ -673,8 +673,8 @@ void QgsPostgresProvider::reset()
   //--std::cout << "Resetting the cursor to the first record " << std::endl;
   QString declare = QString("declare qgisf binary cursor for select " +
       primaryKey + 
-      ",asbinary(transform(%1, 4326),'%2') as qgs_feature_geometry from %3").arg(geometryColumn)
-      //",asbinary(%1,'%2') as qgs_feature_geometry from %3").arg(geometryColumn)
+//      ",asbinary(transform(%1, 4326),'%2') as qgs_feature_geometry from %3").arg(geometryColumn)
+      ",asbinary(%1,'%2') as qgs_feature_geometry from %3").arg(geometryColumn)
       .arg(endianString()).arg(tableName);
   if(sqlWhereClause.length() > 0)
   {
