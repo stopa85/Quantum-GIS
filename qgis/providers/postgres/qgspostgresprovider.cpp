@@ -55,26 +55,35 @@ QgsPostgresProvider::QgsPostgresProvider(QString uri):dataSourceUri(uri)
             srid = PQgetvalue(result, 0, PQfnumber(result, "srid"));
             std::cout << "SRID is " << srid << std::endl;
             
-            // need to store the PostgreSQL version since it appear that starting with
+            // need to store the PostgreSQL endian format used in binary cursors
+            // since it appears that starting with
             // version 7.4, binary cursors return data in XDR whereas previous versions
             // return data in the endian of the server
-            PGresult *versionRes = PQexec(pd, "select version()");
-            QString version = PQgetvalue(versionRes,0,0);
-            std::cout << "PostgreSQL version string is: " << version << std::endl;
-            // parse out the version number
-            QStringList vParts = QStringList::split(" ", version);
-            // assume version # is always second word in version string
-            QString versionNumber = vParts[1];  
-            std::cout << "Results from binary cursors are return in ";
-            if(versionNumber > "7.3.9"){
-              versionXDR = true;
-              std::cout << "Big-endian" << std::endl;
+            QString firstOid = "select oid from " + tableName + " limit 1";
+            PGresult * oidResult = PQexec(pd, firstOid);
+            // get the int value from a "normal" select
+            QString oidValue = PQgetvalue(oidResult,0,0);
+            // get the same value using a binary cursor
+            PQexec(pd,"begin work");
+            QString oidDeclare = QString("declare oidcursor binary cursor for select oid from %1 where oid = %2").arg(tableName).arg(oidValue);
+            // set up the cursor
+            PQexec(pd, (const char *)oidDeclare);
+             QString fetch = "fetch forward 1 from oidcursor";
+            PGresult *fResult = PQexec(pd, (const char *)fetch);
+            // get the oid value from the binary cursor
+            int oid = *(int *)PQgetvalue(fResult,0,0);
+           
+            std::cout << "Got oid of " << oid << " from the binary cursor" << std::endl;
+            std::cout << "First oid is " << oidValue << std::endl;
+             // compare the two oid values to determine if we need to do an endian swap
+            if(oid == oidValue.toInt()){
+              swapEndian = false;
             }else{
-              versionXDR = false;
-              std::cout << "Little-endian" << std::endl;
+              swapEndian = true;
             }
-            
-            //std::cout << "Format is " << PQfformat(result, PQfnumber(result,"srid")) << std::endl;
+            // end the cursor transaction
+            PQexec(pd, "end work");
+      
             // set the type
             // set the simple type for use with symbology operations
             QString fType = PQgetvalue(result, 0, PQfnumber(result, "type"));
@@ -252,9 +261,10 @@ QgsFeature *QgsPostgresProvider::getNextFeature(bool fetchAttributes)
       int oid = *(int *)PQgetvalue(queryResult,0,PQfnumber(queryResult,"oid"));
       // oid is in big endian
       int *noid;
-      if((endian() == NDR) && versionXDR){
-        std::cout << "converting oid to little endian" << std::endl;
-        // convert oid to little endian
+     // if((endian() == NDR) && versionXDR){
+       if(swapEndian){
+        std::cout << "swapping endian for oid" << std::endl;
+        // convert oid to opposite endian
         char *temp  = new char[sizeof(oid)];
         char *ptr = (char *)&oid + sizeof(oid) -1;
         int cnt = 0;
