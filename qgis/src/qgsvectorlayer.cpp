@@ -27,6 +27,7 @@
 #include <cstring>
 #include <sstream>
 #include <memory>
+#include <cassert>
 
 // for htonl
 #ifdef WIN32
@@ -75,6 +76,7 @@
 #include "qgslabelattributes.h"
 #include "qgslabel.h"
 #include "qgscoordinatetransform.h"
+#include "qgsspatialreferences.h"
 //#include "wkbheader.h"
 
 #ifdef TESTPROVIDERLIB
@@ -82,7 +84,6 @@
 #endif
 
 
-static const char* defaultWktKey = "Lat/Long - WGS 84";
 static const char * const ident_ = "$Id$";
 
 // typedef for the QgsDataProvider class factory
@@ -1690,12 +1691,24 @@ QgsVectorLayer:: setDataProvider( QString const & provider )
           // for this layer
           //
           QString mySourceWKT = getProjectionWKT();
-          //get the project projection, defaulting to this layer's projection
+          //get the project projections WKT, defaulting to this layer's projection
           //if none exists....
-          //XXX all this does is get the key for the SRS. To get the WKT, we either
-          //XXX have to read from the resources/spatial_ref_sys.txt file or look it
-          //XXX up in a map
-          QString myDestWKT = QgsProject::instance()->readEntry("SpatialRefSys","/WKT",defaultWktKey);
+          //First get the SRS for the default projection WGS 84
+ //         QString defaultWkt = QgsSpatialReferences::instance()->getSrsBySrid("4326")->srText();
+          QString myDestWKT = QgsProject::instance()->readEntry("SpatialRefSys","/WKT","");
+
+            // try again with a morph from esri
+            // set up the spatial ref
+            OGRSpatialReference myInputSpatialRefSys;
+            char *pWkt = (char*)mySourceWKT.ascii();
+            myInputSpatialRefSys.importFromWkt(&pWkt);
+            myInputSpatialRefSys.morphFromESRI();
+
+            // set up the destination cs
+            OGRSpatialReference myOutputSpatialRefSys;
+            pWkt = (char *) myDestWKT.ascii();
+            myOutputSpatialRefSys.importFromWkt(&pWkt);
+
           //
           // Sort out what to do with this layer's coordinate system (CS). We have
           // four possible scenarios:
@@ -1735,7 +1748,7 @@ QgsVectorLayer:: setDataProvider( QString const & provider )
           //mainly used to convert the inverese projection of the map extents 
           //of the canvas when zzooming in etc. so that they match the coordinate 
           //system of this layer
-          mCoordinateTransform = new QgsCoordinateTransform(mySourceWKT,myDestWKT);
+          mCoordinateTransform = new QgsCoordinateTransform(mySourceWKT, myDestWKT);
         }
       }
       else
@@ -2222,13 +2235,13 @@ void QgsVectorLayer::drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * t
           if (projectionsEnabledFlag)
           {
             //reproject the point to the map coordinate system
-                      try {
-          myProjectedPoint=mCoordinateTransform->transform(pt);
-                }
-      catch (QgsCsException &e)
-      {
-        qDebug( "Transform error caught in %s line %d:\n%s", __FILE__, __LINE__, e.what());
-      }
+            try {
+              myProjectedPoint=mCoordinateTransform->transform(pt);
+            }
+            catch (QgsCsException &e)
+            {
+              qDebug( "Transform error caught in %s line %d:\n%s", __FILE__, __LINE__, e.what());
+            }
             //transform from projected coordinate system to pixel position on map canvas
             theMapToPixelTransform->transform(&myProjectedPoint);
           }
@@ -2240,8 +2253,8 @@ void QgsVectorLayer::drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * t
         }
         if ( idx == 0 )
         { // remember last outer ring point
-	    x0 = static_cast<int>(myProjectedPoint.x());
-	    y0 = static_cast<int>(myProjectedPoint.y());
+          x0 = static_cast<int>(myProjectedPoint.x());
+          y0 = static_cast<int>(myProjectedPoint.y());
         }
         else
         { // return to x0,y0 (inner rings - islands)

@@ -176,6 +176,8 @@ class QgsCoordinateTransform: public QObject
      * Proj4 data structure of the destination projection (map canvas coordinate system)
      */
     projPJ mDestinationProjection;
+    OGRSpatialReference mSourceOgrSpatialRef;
+    OGRSpatialReference mDestOgrSpatialRef;
 };
 
 

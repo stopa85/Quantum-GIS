@@ -168,11 +168,11 @@ void QgsProjectProperties::title( QString const & title )
 
 QString QgsProjectProperties::projectionWKT()
 {
-  // the /WKT entry stores the srid as the key into the projections map rather than
-  // the  WKT text of the CS
-  QString srid =  QgsProject::instance()->readEntry("SpatialRefSys","/WKT",defaultWktKey);
-  QgsSpatialRefSys *srs = QgsSpatialReferences::instance()->getSrsBySrid(srid);
-  return srs->srText();
+  // set the default wkt to WGS 84
+  QString defaultWkt = QgsSpatialReferences::instance()->getSrsBySrid("4326")->srText();
+  // the /WKT entry stores the wkt as the key into the projections map 
+  QString srsWkt =  QgsProject::instance()->readEntry("SpatialRefSys","/WKT",defaultWkt);
+  return srsWkt;
 }  
 
 
@@ -205,12 +205,12 @@ void QgsProjectProperties::apply()
   if(lstCoordinateSystems->currentItem()->text(1).length() > 0)
   {
     //notify all layers the output projection has changed
-    //emit setDestWKT(mProjectionsMap[cboProjection->currentText()]);
-    emit setDestWKT(lstCoordinateSystems->currentItem()->text(1));
-    //update the project props
-    // write the projection's key to the project settings rather than the actual wkt
+
+          QString selectedWkt = QgsSpatialReferences::instance()->getSrsBySrid(lstCoordinateSystems->currentItem()->text(1))->srText();
+    emit setDestWKT(selectedWkt);   //update the project props
+    // write the projection's wkt to the project settings rather
     QgsProject::instance()->writeEntry("SpatialRefSys","/WKT",
-        lstCoordinateSystems->currentItem()->text(1));
+        lstCoordinateSystems->currentItem()->text(0));
   }
 
   // set the mouse display precision method and the
@@ -308,9 +308,9 @@ QTextStream userCsTextStream( &csQFile );
   QString currentSrid = QgsProject::instance()->readEntry("SpatialRefSys","/WKT",defaultWktKey);
   QListViewItem * mySelectedItem = 0;
   // get the reference to the map
-  ProjectionWKTMap mProjectionsMap = srs->getMap();
+  projectionWKTMap_t mProjectionsMap = srs->getMap();
   // get an iterator for the map
-  ProjectionWKTMap::iterator myIterator;
+  projectionWKTMap_t::iterator myIterator;
   //find out how many entries in the map
   int myEntriesCount = mProjectionsMap.size();
   std::cout << "Srs map has " << myEntriesCount << " entries " << std::endl;

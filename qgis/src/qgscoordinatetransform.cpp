@@ -17,14 +17,16 @@
  /* $Id$ */
 #include <qtextstream.h>
 #include "qgscoordinatetransform.h"
+#include "qgsspatialreferences.h"
 
 QgsCoordinateTransform::QgsCoordinateTransform( QString theSourceWKT, QString theDestWKT ) : QObject()
 {
   mSourceWKT = theSourceWKT;
   mDestWKT = theDestWKT;
-  //XXX Who spells initialize initialise?
+  // initialize the coordinate system data structures
   initialise();
 }
+
 
 QgsCoordinateTransform::~QgsCoordinateTransform()
 {
@@ -51,21 +53,11 @@ void QgsCoordinateTransform::initialise()
 {
   mInitialisedFlag=false; //guilty until proven innocent...
   //default to geo / wgs84 for now .... later we will make this user configurable
-  QString myGeoWKT =    "GEOGCS[\"WGS 84\", "
-    "  DATUM[\"WGS_1984\", "
-    "    SPHEROID[\"WGS 84\",6378137,298.257223563, "
-    "      AUTHORITY[\"EPSG\",7030]], "
-    "    TOWGS84[0,0,0,0,0,0,0], "
-    "    AUTHORITY[\"EPSG\",6326]], "
-    "  PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",8901]], "
-    "  UNIT[\"DMSH\",0.0174532925199433,AUTHORITY[\"EPSG\",9108]], "
-    "  AXIS[\"Lat\",NORTH], "
-    "  AXIS[\"Long\",EAST], "
-    "  AUTHORITY[\"EPSG\",4326]]";
+  QString defaultWkt = QgsSpatialReferences::instance()->getSrsBySrid("4326")->srText();
   //default input projection to geo wgs84  
   if (mSourceWKT.isEmpty())
   {
-    mSourceWKT = myGeoWKT;
+    mSourceWKT = defaultWkt;
   }
   //but default output projection to be the same as input proj
   //whatever that may be...
@@ -120,7 +112,7 @@ void QgsCoordinateTransform::initialise()
     std::cout << "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" << std::endl;
     return;
   }  
-// create the proj4 structs needed for transforming 
+  // create the proj4 structs needed for transforming 
   // get the proj parms for source cs
   char *proj4src;
   myInputSpatialRefSys.exportToProj4(&proj4src);
@@ -128,38 +120,24 @@ void QgsCoordinateTransform::initialise()
   // seems to get corrupted prior to its use in the transform
   mProj4SrcParms = proj4src;
   // check to see if we have datum information -- if not it might be an ESRI format WKT
-  if(mProj4SrcParms.contains("datum") == 0)
-  {
+  // XXX this datum check is not appropriate for all CS
     // try getting it as an esri format wkt
     myInputSpatialRefSys.morphFromESRI();
     myInputSpatialRefSys.exportToProj4(&proj4src);
     mProj4SrcParms = proj4src;
-  }
-  if(mProj4SrcParms.contains("datum") == 0)
-  {
-    throw QgsCsException("Source coordinate system does not contain datum. WKT is : " + mSourceWKT );
-  }
   // get the proj parms for dest cs
   char *proj4dest;
   myOutputSpatialRefSys.exportToProj4(&proj4dest);
   // store the dest proj parms in a QString because the pointer populated by exportToProj4
   // seems to get corrupted prior to its use in the transform
   mProj4DestParms = proj4dest;
-  // check to see if we have datum information -- if not it might be an ESRI format WKT
-  if(mProj4DestParms.contains("datum") == 0)
-  {
     // try getting it as an esri format wkt
     myOutputSpatialRefSys.morphFromESRI();
     myOutputSpatialRefSys.exportToProj4(&proj4dest);
     mProj4DestParms = proj4dest;
-  }
-  if(mProj4DestParms.contains("datum") == 0)
-  {
-    throw QgsCsException("Destination coordinate system does not contain datum. WKT is : " + mDestWKT );
-  }
   // init the projections (destination and source)
-   mDestinationProjection = pj_init_plus((const char *)mProj4DestParms);
-   mSourceProjection = pj_init_plus((const char *)mProj4SrcParms);
+  mDestinationProjection = pj_init_plus((const char *)mProj4DestParms);
+  mSourceProjection = pj_init_plus((const char *)mProj4SrcParms);
 
   if ( !mSourceProjection  || ! mDestinationProjection)
   {
@@ -255,7 +233,7 @@ QgsRect QgsCoordinateTransform::transform(const QgsRect theRect,TransformDirecti
     // rethrow the exception
     throw cse;
   }
-  
+
 #ifdef QGISDEBUG 
   std::cout << "Rect projection..." 
     << "Xmin : " 
@@ -281,35 +259,37 @@ QgsRect QgsCoordinateTransform::transform(const QgsRect theRect,TransformDirecti
 void QgsCoordinateTransform::transformCoords( const int& numPoints, double& x, double& y, double& z,TransformDirection direction) const
 {
   // use proj4 to do the transform   
- QString dir;  
+  QString dir;  
   // if the source/destination projection is lat/long, convert the points to radians
   // prior to transforming
   if((pj_is_latlong(mDestinationProjection) && (direction == INVERSE))
-        || (pj_is_latlong(mSourceProjection) && (direction == FORWARD)))
+      || (pj_is_latlong(mSourceProjection) && (direction == FORWARD)))
   {
     x *= DEG_TO_RAD;
     y *= DEG_TO_RAD;
     z *= DEG_TO_RAD;
-    
+
   }
   int projResult;
-if(direction == INVERSE)
-{
-  projResult = pj_transform(mDestinationProjection, mSourceProjection , numPoints, 0, &x, &y, &z);
-  dir = "inverse";
-}
-else
-{
-  projResult = pj_transform(mSourceProjection, mDestinationProjection, numPoints, 0, &x, &y, &z);
-  dir = "forward";
-}
+  if(direction == INVERSE)
+  {
+    std::cout << "!!!! INVERSE TRANSFORM !!!!" << std::endl; 
+    projResult = pj_transform(mDestinationProjection, mSourceProjection , numPoints, 0, &x, &y, &z);
+    dir = "inverse";
+  }
+  else
+  {
+    std::cout << "!!!! FORWARD TRANSFORM !!!!" << std::endl; 
+    projResult = pj_transform(mSourceProjection, mDestinationProjection, numPoints, 0, &x, &y, &z);
+    dir = "forward";
+  }
 
   if (projResult != 0) 
   {
     //something bad happened....
     QString msg;
     QTextOStream pjErr(&msg);
-    
+
     pjErr << tr("Failed") << " " << dir << " " << tr("transform of") << x << ", " <<  y
       << pj_strerrno(projResult) << "\n";
     throw  QgsCsException(msg);
@@ -317,13 +297,10 @@ else
   // if the result is lat/long, convert the results from radians back
   // to degrees
   if((pj_is_latlong(mDestinationProjection) && (direction == FORWARD))
-        || (pj_is_latlong(mSourceProjection) && (direction == INVERSE)))
+      || (pj_is_latlong(mSourceProjection) && (direction == INVERSE)))
   {
     x *= RAD_TO_DEG;
     y *= RAD_TO_DEG;
     z *= RAD_TO_DEG;
   }
 }
-
-
-

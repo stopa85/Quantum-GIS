@@ -23,7 +23,7 @@
 #include "qgsspatialrefsys.h"
 class QString;
 //! Typedef for map containing spatial reference system objects
-typedef QMap<QString,QgsSpatialRefSys*>  ProjectionWKTMap ; //wkt = well known text (see gdal/ogr)
+typedef QMap<QString,QgsSpatialRefSys*>  projectionWKTMap_t ; //wkt = well known text (see gdal/ogr)
 /*!
  * \class QgsSpatialReferences
  * \brief Singleton class to manage spatial reference systems
@@ -52,7 +52,7 @@ public:
   * Get the map containing the collection of spatial reference systems
   * @return The map of spatial reference systems
   */
- ProjectionWKTMap getMap();
+ projectionWKTMap_t getMap();
 
 protected:
  //! Protected constructor
@@ -61,7 +61,7 @@ private:
  //! Instance member pointer
  static QgsSpatialReferences* _instance;
  //! Map containing the spatial reference systems read from the spatial_ref_sys file
-ProjectionWKTMap mSpatialReferences; 
+projectionWKTMap_t mSpatialReferences; 
 };
 #endif // QGSSPATIALREFERENCESYSTEMS_H
 
