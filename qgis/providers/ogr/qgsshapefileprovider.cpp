@@ -9,7 +9,9 @@
 #include <ogr_geometry.h>
 #include <cpl_error.h>
 #include "qgsshapefileprovider.h"
-QgsShapeFileProvider::QgsShapeFileProvider(QString uri):dataSourceUri(uri), minmaxcachedirty(true), minmaxcache(0)
+#include <cfloat>
+
+QgsShapeFileProvider::QgsShapeFileProvider(QString uri):dataSourceUri(uri), minmaxcachedirty(true)
 {
 	OGRRegisterAll();
 		
@@ -62,11 +64,23 @@ QgsShapeFileProvider::QgsShapeFileProvider(QString uri):dataSourceUri(uri), minm
 		std::cout << er << std::endl;
 		valid = false;
 	}
+	
+	//resize the cache matrix
+	minmaxcache=new double*[fieldCount()];
+	for(int i=0;i<fieldCount();i++)
+	{
+	    minmaxcache[i]=new double[2];
+	}
 
 }
 
 QgsShapeFileProvider::~QgsShapeFileProvider()
 {
+    for(int i=0;i<fieldCount();i++)
+    {
+	delete minmaxcache[i];
+    }
+    delete[] minmaxcache;
 }
 
 /**
@@ -286,33 +300,56 @@ void QgsShapeFileProvider::reset(){
 
 QString QgsShapeFileProvider::minValue(int position)
 {
+    if(position>=fieldCount())
+    {
+	qWarning("Warning: access requested to invalid position in QgsShapeFileProvider::minValue(..)");
+    }
     if(minmaxcachedirty)
     {
 	fillMinMaxCash();
     }
-    return QString::number(minmaxcache[position][0],'f',2);//todo return the index of the matrix
+    return QString::number(minmaxcache[position][0],'f',2);
 }
 
  
 QString QgsShapeFileProvider::maxValue(int position)
 {
+    if(position>=fieldCount())
+    {
+	qWarning("Warning: access requested to invalid position in QgsShapeFileProvider::maxValue(..)");
+    }
     if(minmaxcachedirty)
     {
 	fillMinMaxCash();
     }
-    return QString::number(minmaxcache[position][1],'f',2);//todo return the index of the matrix
+    return QString::number(minmaxcache[position][1],'f',2);
 }
 
 void QgsShapeFileProvider::fillMinMaxCash()
 {
-    if(minmaxcache)
+    for(int i=0;i<fieldCount();i++)
     {
-	//todo delete minmaxcache
+	minmaxcache[i][0]=DBL_MAX;
+	minmaxcache[i][1]=DBL_MIN;
     }
-	
-    //todo, resize minmaxcache
 
-    //todo, go through all the features
+    QgsFeature* f=getFirstFeature(true);
+    do
+    {
+	for(int i=0;i<fieldCount();i++)
+	{
+	    double value=(f->attributeMap())[i].fieldValue().toDouble();
+	    if(value<minmaxcache[i][0])
+	    {
+		minmaxcache[i][0]=value;	
+	    }  
+	    if(value>minmaxcache[i][1])
+	    {
+		minmaxcache[i][1]=value;	
+	    }
+	}
+    }while(f=getNextFeature(true));
+
     minmaxcachedirty=false;
 }
 
