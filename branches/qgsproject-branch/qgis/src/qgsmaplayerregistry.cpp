@@ -130,15 +130,23 @@ void QgsMapLayerRegistry::removeMapLayer(QString theLayerId)
 
 void QgsMapLayerRegistry::removeAllMapLayers()
 {
-  std::map<QString, QgsMapLayer *>::iterator myMapIterator;
-  for ( myMapIterator = mMapLayers.begin(); myMapIterator != mMapLayers.end(); ++myMapIterator ) 
+  std::map<QString, QgsMapLayer *>::iterator myMapIterator = mMapLayers.begin();
+  while ( myMapIterator != mMapLayers.end() )
   {
-    removeMapLayer( myMapIterator->first );
+      delete myMapIterator->second; // delete the map layer
+
+      mMapLayers.erase( myMapIterator );
+
+      myMapIterator = mMapLayers.begin(); // since iterator invalidated due to
+                                        // erase(), reset to new first element
   }
-  //emit layerWillBeRemoved(theLayerId); 
-  //delete mMapLayers[theLayerId]; 
-  //mMapLayers.erase(theLayerId);
-}
+
+  emit removedAll();            // now let all canvas Observers know to clear
+                                // themselves, and then consequently any of
+                                // their map legends
+
+} // QgsMapLayerRegistry::removeAllMapLayers()
+
 
 std::map<QString,QgsMapLayer*> QgsMapLayerRegistry::mapLayers()
 {

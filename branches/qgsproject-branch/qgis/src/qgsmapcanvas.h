@@ -162,7 +162,18 @@ public slots:
     //! remove the layer defined by key
     void remove (QString key);
 
-    //! remove all layers from the map
+    /** remove all layers from the map
+
+        @note this does <i>not</i> iteratively call remove() since we're
+        deleting all map layers reference at once; if we did this iteratively,
+        then we'd be unnecessarily have the corresponding legend object
+        deleting legend items.  We want the legend object to get <i>one</i>
+        signal, clear(), to remove all <i>its</i> items.
+
+        @note dirty set to true
+
+        @note emits removedAll() signal
+     */
     void removeAll();
 
     /**Sets dirty=true and calls render()*/
@@ -224,6 +235,12 @@ signals:
         @param the key of the deleted layer
     */
     void removedLayer( QString layer_key );
+
+    /**
+       emitted when removeAll() invoked to let observers know that the canvas is
+       now empty
+     */
+    void removedAll();
 
 private:
 

@@ -55,7 +55,11 @@ public:
  //! Remove a layer from qgis - any canvases using that layer will need to remove it
  void removeMapLayer(QString theLayerId);
 
- //! Remove all registered layers 
+ /** Remove all registered layers 
+
+    @note raises clear()
+
+ */
  void removeAllMapLayers();
 
  //! Get a vector layer from the registry - the the requested key does not exist or
@@ -75,6 +79,18 @@ signals:
        connected to main map canvas and overview map canvas addLayer()
     */
  void layerWasAdded(QgsMapLayer * theMapLayer);
+
+ /** emitted when ALL layers are removed at once
+
+    This could have been implemented by iteratively signalling
+    layerWillBeRemoved() for each layer as it is removed.  However, this
+    generally causes a cascade of effects that are unnecessary if we're
+    ultimately removing all layers.  E.g., removing the legend item
+    corresponding to the layer.  Why bother doing that when you're just going
+    to clear everything anyway?
+
+  */
+ void removedAll();
 
 protected:
 
