@@ -1287,36 +1287,67 @@ bool QgisApp::addProject(QString projectFile)
 
 void QgisApp::fileSave()
 {
-//   QgsProjectIo *pio = new QgsProjectIo( QgsProjectIo::SAVE,mMapCanvas);
-//   // pio->setFileName(mFullPathName);
-//   pio->setFileName( QgsProject::instance()->filename() ); // temporary until QgsProject write works
-//   if (pio->write(mMapCanvas->extent()))
-//     {
-//       setCaption(tr("Quantum GIS --") + " " + pio->baseName());
-//       statusBar()->message(tr("Saved map to:") + " " + pio->fullPathName());
-//       // mFullPathName = pio->fullPathName();
-//     }
-//   delete pio;
-//   // mProjectIsDirtyFlag = false;
-//   QgsProject::instance()->dirty(false); // XXX this might be redundant
+    // if we don't have a filename, then obviously we need to get one; note
+    // that the project file name is reset to null in fileNew()
 
-    QgsProject::instance()->write();
+    if ( "" == QgsProject::instance()->filename() )
+    {
+        // XXX maybe as a convenience have it remember the last directory we
+        // XXX saved project files to to use that instead of "./"
+        QString fullPath =
+            QFileDialog::getSaveFileName("./", tr("QGis files (*.qgs)"), 0, 0,
+                                         tr("Choose a QGIS project file"));
+
+        if ( fullPath.isNull() )
+        {
+            return;             // they didn't select anything, so just abort
+        }
+
+        QgsProject::instance()->filename( fullPath );
+    }
+
+    if ( QgsProject::instance()->write() )
+    {
+        statusBar()->message(tr("Saved map to:") + " " + QgsProject::instance()->filename() );
+    }
+    else
+    {
+        QMessageBox::critical(this, 
+                              tr("Unable to save project"), 
+                              tr("Unable to save project to ") + QgsProject::instance()->filename() );
+    }
 } // QgisApp::fileSave
+
 
 
 void QgisApp::fileSaveAs()
 {
-  QgsProjectIo *pio = new QgsProjectIo( QgsProjectIo::SAVEAS,mMapCanvas);
-  if (pio->write(mMapCanvas->extent()))
+    // XXX maybe as a convenience have it remember the last directory we
+    // XXX saved project files to to use that instead of "./"
+    QString fullPath =
+        QFileDialog::getSaveFileName("./", QObject::tr("QGis files (*.qgs)"), 0, 0,
+                                     QObject::tr("Choose a QGIS project file"));
+
+    if ( fullPath.isNull() )
     {
-      setCaption(tr("Quantum GIS --") + " " + pio->baseName());
-      statusBar()->message(tr("Saved map to:") + " " + pio->fullPathName());
-      //mFullPathName = pio->fullPathName();
+        return;             // they didn't select anything, so just abort
     }
-  delete pio;
-  // mProjectIsDirtyFlag = false;
-  QgsProject::instance()->dirty(false); // XXX this might be redundant
-}
+
+    QgsProject::instance()->filename( fullPath );
+
+    if ( QgsProject::instance()->write() )
+    {
+        statusBar()->message(tr("Saved map to:") + " " + QgsProject::instance()->filename() );
+    }
+    else
+    {
+        QMessageBox::critical(this, 
+                              tr("Unable to save project"), 
+                              tr("Unable to save project to ") + QgsProject::instance()->filename() );
+    }
+} // QgisApp::fileSaveAs
+
+
 
 void QgisApp::filePrint()
 {
@@ -1423,7 +1454,10 @@ void QgisApp::saveMapAsImage()
     statusBar()->message(tr("Saved map image to") + " " + myOutputFileNameQString);
   }
 
-}
+} // saveMapAsImage
+
+
+
 //overloaded version of the above function
 void QgisApp::saveMapAsImage(QString theImageFileNameQString, QPixmap * theQPixmap)
 {
@@ -1439,7 +1473,9 @@ void QgisApp::saveMapAsImage(QString theImageFileNameQString, QPixmap * theQPixm
     //save the mapview to the selected file
     mMapCanvas->saveAsImage(theImageFileNameQString,theQPixmap);
   }
-}
+} // saveMapAsImage
+
+
 //reimplements method from base (gui) class
 void QgisApp::addAllToOverview()
 {
