@@ -245,7 +245,7 @@ int main(int argc, char *argv[])
 //       }
       try
       {
-          if ( ! QgsProject::instance()->read( QFileInfo(myProjectFileName) ) )
+          if ( ! qgis->addProject(myProjectFileName) )
           {
 #ifdef QGISDEBUG
            std::cerr << "unable to load project " << myProjectFileName << "\n";
