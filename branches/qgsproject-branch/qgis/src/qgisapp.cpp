@@ -1092,14 +1092,17 @@ void QgisApp::addDatabaseLayer()
 {
   // check to see if we have a postgres provider available
   QString pOgr = mProviderRegistry->library("postgres");
-  if (pOgr.length() > 0)
-  {
-    // only supports postgis layers at present
-    // show the postgis dialog
 
+  if ( ! pOgr.isNull() )
+  {
+      // only supports postgis layers at present
+
+      // show the postgis dialog
 
     QgsDbSourceSelect *dbs = new QgsDbSourceSelect(this);
+
     mMapCanvas->freeze();
+
     if (dbs->exec())
     {
       QApplication::setOverrideCursor(Qt::WaitCursor);
@@ -1125,15 +1128,16 @@ void QgisApp::addDatabaseLayer()
         {
           // register this layer with the central layers registry
           QgsMapLayerRegistry::instance()->addMapLayer(layer);
+
           // init the context menu so it can connect to slots in main app
           // XXX now taken care of in legend layer->initContextMenu(this);
 
           // give it a random color
-          QgsSingleSymRenderer *renderer = new QgsSingleSymRenderer();  //add single symbol renderer as default
+          QgsSingleSymRenderer *renderer = new QgsSingleSymRenderer();  // add single symbol renderer as default
           layer->setRenderer(renderer);
           renderer->initializeSymbology(layer);
           // add it to the mapcanvas collection
-          mMapCanvas->addLayer(layer);
+          // mMapCanvas->addLayer(layer);
      //connect up a request from the raster layer to show in overview map
 //      QObject::connect(layer, 
 //              SIGNAL(showInOverview(QString,bool)), 
