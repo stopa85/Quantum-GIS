@@ -141,10 +141,15 @@ private:
   std::vector<QgsField> attributeFields;
   //! Map to store field position by name
   std::map<QString, int> fieldPositions;
+	//! URI of the data source
   QString mDataSourceUri;
+	//! File name of the delimited text file
   QString mFileName;
+	//! Delimiter used to split the fields of the delimited text file
   QString mDelimiter;
+	//! Name of the field containing x values
   QString mXField;
+	//! Name of the field containing y values
   QString mYField;
   //! Layer extent
   QgsRect *mExtent;
@@ -152,26 +157,32 @@ private:
   QgsRect *mSelectionRectangle;
   //! Text file
   QFile *mFile;
+	//! Flag to indicate if the file/data source is valid
   bool mValid;
+	//! Geometry type -- in this case it will always be WKBPoint
   int mGeomType;
+	//! Number of features in the file
   long mNumberFeatures;
+	//! Enumeration of endian types
   enum ENDIAN
   {
     NDR = 1,
     XDR = 0
   };
-  /**Flag indicating, if the minmaxcache should be renewed (true) or not (false)*/
+  //! Flag indicating, if the minmaxcache should be renewed (true) or not (false)
   bool mMinMaxCacheDirty;
-  /**Matrix storing the minimum and maximum values*/
+  //! Matrix storing the minimum and maximum values
   double** mMinMaxCache;
-  /**Fills the cash and sets minmaxcachedirty to false*/
+  //! Fills the cash and sets minmaxcachedirty to false
   void mFillMinMaxCash();
+	//! Structure for storing a point in WKB
 struct wkbPoint{
   char byteOrder;
   unsigned wkbType;
   double x;
   double y;
 };
+//! WKB of the point
 wkbPoint wkbPt;
   
 };
