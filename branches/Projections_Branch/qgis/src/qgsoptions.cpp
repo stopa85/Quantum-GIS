@@ -22,10 +22,11 @@
 #include <qspinbox.h>
 #include <qfiledialog.h>
 #include <qradiobutton.h>
+#include <qapplication.h>
 #include "qgsoptions.h"
 #include "qgisapp.h"
 #include "qgssvgcache.h"
-
+#include "qgslayerprojectionselector.h"
 /**
  * \class QgsOptions - Set user options and preferences
  * Constructor
@@ -62,6 +63,7 @@ QgsOptions::QgsOptions(QWidget *parent, const char *name) : QgsOptionsBase(paren
   {
     radUseDefaultProjection->setChecked(true);
   }
+  mGlobalWKT = settings.readEntry("/qgis/projections/defaultProjectionWKT");
 }
 //! Destructor
 QgsOptions::~QgsOptions(){}
@@ -106,6 +108,7 @@ void QgsOptions::saveOptions()
     //
     settings.writeEntry("/qgis/projections/defaultBehaviour", "useDefault");
   }
+  settings.writeEntry("/qgis/projections/defaultProjectionWKT",mGlobalWKT);
 
   //all done
   accept();
@@ -152,6 +155,26 @@ void QgsOptions::findBrowser()
 
 void QgsOptions::pbnSelectProjection_clicked()
 {
+  QSettings settings;
+  QgsLayerProjectionSelector * mySelector = new QgsLayerProjectionSelector();
+  mySelector->setSelectedWKT(mGlobalWKT);
+  if(mySelector->exec())
+  {
+#ifdef QGISDEBUG
+    std::cout << "------ Global Default Projection Selection Set ----------" << std::endl;
+#endif
+    mGlobalWKT = mySelector->getCurrentWKT();  
+#ifdef QGISDEBUG
+    std::cout << "------ Global Default Projection now set to ----------\n" << mGlobalWKT << std::endl;
+#endif
+  }
+  else
+  {
+#ifdef QGISDEBUG
+    std::cout << "------ Global Default Projection Selection change cancelled ----------" << std::endl;
+#endif
+    QApplication::restoreOverrideCursor();
+  }
 
 }
 // Return state of the visibility flag for newly added layers. If
