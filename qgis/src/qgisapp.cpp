@@ -892,7 +892,11 @@ bool QgisApp::addLayer(QFileInfo const & vectorFile)
       QgsMapLayerRegistry::instance()->addMapLayer(layer);
       // init the context menu so it can connect to slots
       // in main app
-      layer->initContextMenu(this);
+      // XXX move to legend::addLayer() layer->initContextMenu(this);
+
+      // XXX What about the rest of these?  Where should they be moved, if at
+      // XXX all?  Some of this functionality is taken care of in the
+      // XXX QgsProject::read() (If layers added via that.)
 
       //add single symbol renderer as default
       QgsSingleSymRenderer *renderer = new QgsSingleSymRenderer();
@@ -1006,7 +1010,7 @@ bool QgisApp::addLayer(QStringList const &theLayerQStringList)
              // init the context menu so it can connect to slots
              // in main app
 
-             layer->initContextMenu(this);
+             // XXX now taken care of in legend layer->initContextMenu(this);
 
              //add single symbol renderer as default
              QgsSingleSymRenderer *renderer = new QgsSingleSymRenderer();
@@ -1122,7 +1126,7 @@ void QgisApp::addDatabaseLayer()
           // register this layer with the central layers registry
           QgsMapLayerRegistry::instance()->addMapLayer(layer);
           // init the context menu so it can connect to slots in main app
-          layer->initContextMenu(this);
+          // XXX now taken care of in legend layer->initContextMenu(this);
 
           // give it a random color
           QgsSingleSymRenderer *renderer = new QgsSingleSymRenderer();  //add single symbol renderer as default
@@ -2649,7 +2653,7 @@ void QgisApp::addVectorLayer(QString vectorLayerPath, QString baseName, QString 
       // Register this layer with the layers registry
       QgsMapLayerRegistry::instance()->addMapLayer(layer);
       // init the context menu so it can connect to slots in main app
-      layer->initContextMenu(this);
+      // now taken care of in legend layer->initContextMenu(this);
 
       // give it a random color
       QgsSingleSymRenderer *renderer = new QgsSingleSymRenderer();  //add single symbol renderer as default
@@ -2693,7 +2697,7 @@ void QgisApp::addMapLayer(QgsMapLayer *theMapLayer)
     // Register this layer with the layers registry
     QgsMapLayerRegistry::instance()->addMapLayer(theMapLayer);
     // init the context menu so it can connect to slots in main app
-    theMapLayer->initContextMenu(this);
+    // XXX now taken care of in legend theMapLayer->initContextMenu(this);
     // add it to the mapcanvas collection
     // not necessary since adding to registry adds to canvas mMapCanvas->addLayer(theMapLayer);
     //connect up a request from the raster layer to show in overview map
@@ -3260,7 +3264,7 @@ bool QgisApp::addRasterLayer(QgsRasterLayer * theRasterLayer, bool theForceRedra
             SLOT(showStatusMessage(QString)));
      
     // init the context menu so it can connect to slots in main app
-    theRasterLayer->initContextMenu(this);
+    // XXX now taken care of in legend theRasterLayer->initContextMenu(this);
        
     // add it to the mapcanvas collection
     // no longer necessary since adding to registry automatically adds to canvas
