@@ -248,6 +248,7 @@ void QgsSingleSymRenderer::initializeSymbology(QgsVectorLayer* layer)
   // set the font for the legend text
   //TODO Make the font size a user option
    QFont f( "times", 12, QFont::Normal );
+  p.setPen( Qt::black );
   p.setFont( f );
   p.drawText(35,20,name);
 	QgsRenderItem ri(sy,"", "");
