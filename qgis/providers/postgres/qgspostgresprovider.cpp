@@ -202,12 +202,12 @@ QgsPostgresProvider::QgsPostgresProvider(QString uri):dataSourceUri(uri)
   PQclear(oidResult);
 
   sql = "select oid from pg_class where relname = '" + tableName + "'";
-  PGresult *tresult= PQexec(pd, (const char *)sql);
+  PGresult *tresult= PQexec(pd, (const char *)(sql.utf8()));
   QString tableoid = PQgetvalue(tresult, 0, 0);
   PQclear(tresult);
 
   sql = "select attnum from pg_attribute where attrelid = " + tableoid + " and attname = '" + fieldName + "'";
-  tresult = PQexec(pd, (const char *)sql);
+  tresult = PQexec(pd, (const char *)(sql.utf8()));
   QString attnum = PQgetvalue(tresult, 0, 0);
   PQclear(tresult);
 
@@ -530,7 +530,7 @@ void QgsPostgresProvider::select(QgsRect * rect, bool useIntersect)
     PQexec(connection, "end work");
   }
   PQexec(connection,"begin work");
-  PQexec(connection, (const char *)declare);
+  PQexec(connection, (const char *)(declare.utf8()));
 }
 
 /**
@@ -623,7 +623,7 @@ void QgsPostgresProvider::getFeatureAttributes(int key, QgsFeature *f){
 #ifdef QGISDEBUG
 //  std::cerr << "getFeatureAttributes using: " << sql << std::endl; 
 #endif
-  PGresult *attr = PQexec(connection, (const char *)sql);
+  PGresult *attr = PQexec(connection, (const char *)(sql.utf8()));
   
   for (int i = 0; i < fieldCount(); i++) {
     QString fld = PQfname(attr, i);
@@ -652,7 +652,7 @@ void QgsPostgresProvider::getFeatureAttributes(int key,
       .arg(tableName)
       .arg(primaryKey)
       .arg(key);//todo: only query one attribute
-    PGresult *attr = PQexec(connection, (const char *)sql);
+    PGresult *attr = PQexec(connection, (const char *)(sql.utf8()));
     QString fld = PQfname(attr, 0);
     // Dont add the WKT representation of the geometry column to the identify
     // results
@@ -692,7 +692,7 @@ void QgsPostgresProvider::reset()
   PQexec(connection,"end work");
 
   PQexec(connection,"begin work");
-  PQexec(connection, (const char *)declare);
+  PQexec(connection, (const char *)(declare.utf8()));
   //--std::cout << "Error: " << PQerrorMessage(connection) << std::endl;
   ready = true;
 }
@@ -738,7 +738,7 @@ QString QgsPostgresProvider::getPrimaryKey(){
   std::cerr << "Getting primary key" << std::endl;
   std::cerr << sql << std::endl;
 #endif
-  PGresult *pk = PQexec(connection,(const char *)sql);
+  PGresult *pk = PQexec(connection,(const char *)(sql.utf8()));
 #ifdef QGISDEBUG
   std::cerr << "Got " << PQntuples(pk) << " rows " << std::endl;
 #endif
@@ -760,7 +760,7 @@ QString QgsPostgresProvider::getPrimaryKey(){
 #endif
     // Need to check that there is an oid column for the table.
     sql = "select oid from " + tableName + " limit 1";
-    PGresult* oidPresent = PQexec(connection, (const char*)sql);
+    PGresult* oidPresent = PQexec(connection, (const char*)(sql.utf8()));
     if (PQntuples(oidPresent) == 0)
     {
       valid = false;
@@ -840,7 +840,7 @@ QString QgsPostgresProvider::minValue(int position){
   {
       sql = QString("select min(%1) from %2").arg(fld.name()).arg(tableName)+" where "+sqlWhereClause;
   }
-  PGresult *rmin = PQexec(connection,(const char *)sql);
+  PGresult *rmin = PQexec(connection,(const char *)(sql.utf8()));
   QString minValue = PQgetvalue(rmin,0,0);
   PQclear(rmin);
   return minValue;
@@ -860,7 +860,7 @@ QString QgsPostgresProvider::maxValue(int position){
   {
       sql = QString("select max(%1) from %2").arg(fld.name()).arg(tableName)+" where "+sqlWhereClause;
   } 
-  PGresult *rmax = PQexec(connection,(const char *)sql);
+  PGresult *rmax = PQexec(connection,(const char *)(sql.utf8()));
   QString maxValue = PQgetvalue(rmax,0,0);
   PQclear(rmax);
   return maxValue;
@@ -950,7 +950,7 @@ bool QgsPostgresProvider::addFeature(QgsFeature* f)
 #endif
 
   //send INSERT statement and do error handling
-  PGresult* result=PQexec(connection, (const char *)insert);
+  PGresult* result=PQexec(connection, (const char *)(insert.utf8()));
   if(result==0)
   {
       QMessageBox::information(0,"INSERT error","An error occured during feature insertion",QMessageBox::Ok);
@@ -981,7 +981,7 @@ bool QgsPostgresProvider::deleteFeature(int id)
 #endif
 
     //send DELETE statement and do error handling
-    PGresult* result=PQexec(connection, (const char *)sql);
+    PGresult* result=PQexec(connection, (const char *)(sql.utf8()));
     if(result==0)
     {
   QMessageBox::information(0,"DELETE error","An error occured during deletion from disk",QMessageBox::Ok);
@@ -1071,7 +1071,7 @@ bool QgsPostgresProvider::addAttributes(std::map<QString,QString> const & name)
   qWarning(sql);
 #endif
   //send sql statement and do error handling
-  PGresult* result=PQexec(connection, (const char *)sql);
+  PGresult* result=PQexec(connection, (const char *)(sql.utf8()));
   if(result==0)
   {
       returnvalue=false;
@@ -1098,7 +1098,7 @@ bool QgsPostgresProvider::deleteAttributes(std::set<QString> const & name)
   qWarning(sql);
 #endif
   //send sql statement and do error handling
-  PGresult* result=PQexec(connection, (const char *)sql);
+  PGresult* result=PQexec(connection, (const char *)(sql.utf8()));
   if(result==0)
   {
       returnvalue=false;
@@ -1158,7 +1158,7 @@ bool QgsPostgresProvider::changeAttributeValues(std::map<int,std::map<QString,QS
 #endif
 
             //send sql statement and do error handling
-      PGresult* result=PQexec(connection, (const char *)sql);
+      PGresult* result=PQexec(connection, (const char *)(sql.utf8()));
       if(result==0)
       {
     returnvalue=false;
@@ -1205,7 +1205,7 @@ long QgsPostgresProvider::getFeatureCount()
   {
     sql += " where " + sqlWhereClause;
   }
-  PGresult *result = PQexec(connection, (const char *) sql);
+  PGresult *result = PQexec(connection, (const char *) (sql.utf8()));
   numberFeatures = QString(PQgetvalue(result, 0, 0)).toLong();
   PQclear(result);
 
@@ -1235,7 +1235,7 @@ void QgsPostgresProvider::calculateExtents()
 #ifdef QGISDEBUG 
   qDebug("+++++++++QgsPostgresProvider::calculateExtents -  Getting extents using schema.table: " + sql);
 #endif
-  PGresult *result = PQexec(connection, (const char *) sql);
+  PGresult *result = PQexec(connection, (const char *)(sql.utf8()));
   std::string box3d = PQgetvalue(result, 0, 0);
 
   if (box3d != "")
@@ -1285,7 +1285,7 @@ bool QgsPostgresProvider::deduceEndian()
   // return data in the endian of the server
 
   QString firstOid = "select oid from " + tableName + " limit 1";
-  PGresult * oidResult = PQexec(connection, firstOid);
+  PGresult * oidResult = PQexec(connection, firstOid.utf8());
   // get the int value from a "normal" select
   QString oidValue = PQgetvalue(oidResult,0,0);
 
@@ -1338,7 +1338,7 @@ bool QgsPostgresProvider::getGeometryDetails()
 
   valid = false;
 
-  PGresult *result = PQexec(connection, (const char *) sql);
+  PGresult *result = PQexec(connection, (const char *) (sql.utf8()));
 
   if (PQntuples(result) > 0)
   {
@@ -1372,7 +1372,7 @@ bool QgsPostgresProvider::getGeometryDetails()
       "geometrytype(" + geometryColumn + ") from " + 
       tableName + " limit 1";
 
-    result = PQexec(connection, (const char*) sql);
+    result = PQexec(connection, (const char*) (sql.utf8()));
 
     if (PQntuples(result) > 0)
     {
