@@ -450,7 +450,7 @@ libqgis_la_SOURCES =				\
 		qgscomposerview.moc.cpp		\
 		qgscomposerlabelbase.moc.uic.cpp		\
 		qgscomposerlabelbase.uic.cpp		\
-		qgscomposerlabel.moc.cpp \		
+		qgscomposerlabel.moc.cpp \
 		qgsvectorlayer.moc.cpp \
 		qgsspatialrefsys.cpp \
 		qgsspatialreferences.cpp 
