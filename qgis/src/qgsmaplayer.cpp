@@ -179,13 +179,73 @@ bool QgsMapLayer::readXML( QDomNode & layer_node )
 } // void QgsMapLayer::readXML
 
 
-
 bool QgsMapLayer::readXML_( QDomNode & layer_node )
 {
-    // NOP by default; children will over-ride with behavior specific to them\
+    // NOP by default; children will over-ride with behavior specific to them
 
     return true;
 } // void QgsMapLayer::readXML_
+
+
+
+bool QgsMapLayer::writeXML( QDomNode & layer_node, QDomDocument & document )
+{
+    // general layer metadata
+    QDomElement maplayer = document.createElement( "maplayer" );
+
+    // visible flag
+    if ( visible() )
+    {
+        maplayer.setAttribute( "visible", 1 );
+    }
+    else
+    {
+        maplayer.setAttribute( "visible", 0 );
+    }
+
+
+    // show in overview flag
+    if ( showInOverviewStatus() )
+    {
+        maplayer.setAttribute( "showInOverviewFlag", 1 );
+    }
+    else
+    {
+        maplayer.setAttribute( "showInOverviewFlag", 0 );
+    }
+
+    // data source
+    QDomElement dataSource = document.createElement( "datasource" );
+    QDomText dataSourceText = document.createTextNode( source() );
+    dataSource.appendChild( dataSourceText );
+
+    maplayer.appendChild( dataSource );
+
+
+    // layer name
+    QDomElement layerName = document.createElement( "layername" );
+    QDomText layerNameText = document.createTextNode( name() );
+    layerName.appendChild( layerNameText );
+
+    maplayer.appendChild( layerName );
+
+    // zorder
+
+    layer_node.appendChild( maplayer );
+
+    return writeXML_( layer_node, document );
+
+} // bool QgsMapLayer::writeXML
+
+
+
+bool QgsMapLayer::writeXML_( QDomNode & layer_node, QDomDocument & document )
+{
+    // NOP by default; children will over-ride with behavior specific to them
+
+    return true;
+} // void QgsMapLayer::writeXML_
+
 
 
 

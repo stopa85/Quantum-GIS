@@ -37,6 +37,7 @@ class QgsFeature;
 class QPopupMenu;
 class QgsLegendItem;
 class QDomNode;
+class QDomDocument;
 
 /** \class QgsMapLayer
  * \brief Base class for all map layer types.
@@ -220,8 +221,31 @@ public:
      that they can read their own specific state from the given DOM node.
 
      Invoked by QgsProject::read().
+
+     @returns true if successful
+
    */
   bool readXML( QDomNode & layer_node );
+
+
+  /** stores state in DOM node
+
+     @param layer_node is DOM node corresponding to ``projectlayers'' tag
+
+     @note
+
+     The DOM node corresponds to a DOM document project file XML element to be
+     written by QgsProject.
+
+     This, in turn, calls writeXML_(), which is over-rideable by sub-classes so
+     that they can write their own specific state to the given DOM node.
+
+     Invoked by QgsProject::write().
+
+     @returns true if successful
+
+  */
+  bool writeXML( QDomNode & layer_node, QDomDocument & document );
 
 public  slots:
 
@@ -272,6 +296,12 @@ protected:
       project files.
   */
   virtual bool readXML_( QDomNode & layer_node );
+
+
+  /** called by writeXML(), used by children to write state specific to them to 
+      project files.
+  */
+  virtual bool writeXML_( QDomNode & layer_node, QDomDocument & document );
 
 
   //! Extent of the layer

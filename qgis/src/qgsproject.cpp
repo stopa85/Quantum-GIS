@@ -647,10 +647,10 @@ QgsProject::write( )
     QDomElement yMax = doc->createElement( "ymax" );
 
     QgsRect mapCanvasFullExtent =  _getFullExtent( "theMapCanvas" );
-    QDomText xMinText = doc->createTextNode( QString::number(mapCanvasFullExtent.xMin()) );
-    QDomText yMinText = doc->createTextNode( QString::number(mapCanvasFullExtent.yMin()) );
-    QDomText xMaxText = doc->createTextNode( QString::number(mapCanvasFullExtent.xMax()) );
-    QDomText yMaxText = doc->createTextNode( QString::number(mapCanvasFullExtent.yMax()) );
+    QDomText xMinText = doc->createTextNode( QString::number(mapCanvasFullExtent.xMin(),'f') );
+    QDomText yMinText = doc->createTextNode( QString::number(mapCanvasFullExtent.yMin(),'f') );
+    QDomText xMaxText = doc->createTextNode( QString::number(mapCanvasFullExtent.xMax(),'f') );
+    QDomText yMaxText = doc->createTextNode( QString::number(mapCanvasFullExtent.yMax(),'f') );
 
     xMin.appendChild( xMinText );
     yMin.appendChild( yMinText );
@@ -672,7 +672,13 @@ QgsProject::write( )
 
     qgis.appendChild( projectLayersNode );
 
-    
+    for (  std::map<QString,QgsMapLayer*>::iterator i = 
+               QgsMapLayerRegistry::instance()->mapLayers().begin();
+           i != QgsMapLayerRegistry::instance()->mapLayers().end();
+           ++i )
+    {
+        i->second->writeXML( projectLayersNode, *doc );
+    }
 
     // XXX write to test file for now; will replace with real file name later
 
