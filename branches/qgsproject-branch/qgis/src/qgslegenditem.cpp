@@ -16,11 +16,14 @@
  *                                                                         *
  ***************************************************************************/
  /* $Id$ */
+
 #include <qlabel.h>
 #include <qcheckbox.h>
+
 #include "qgssymbol.h"
 #include "qgsmaplayer.h"
 #include "qgslegenditem.h"
+#include "qgsproject.h"
 
 
 QgsLegendItem::QgsLegendItem(QgsMapLayer * lyr, QListView * parent)
@@ -48,6 +51,9 @@ void QgsLegendItem::setLayerName(const QString & _newVal)
   // commented out because this will cause the name to be rendered next to the
   // legend item pixmap, which <em>already</em> contains the layer name
   //setText( 0, _newVal );
+
+  // notify the project we've made a change
+  QgsProject::instance()->dirty(true);
 } // QgsLegendItem::setLayerName()
 
 
@@ -61,6 +67,9 @@ void QgsLegendItem::setLayerName(const QString & _newVal)
 void QgsLegendItem::stateChange(bool vis)
 {
   m_layer->setVisible(vis);
+
+  // notify the project we've made a change
+  QgsProject::instance()->dirty(true);
 }
 
 QgsMapLayer *QgsLegendItem::layer()

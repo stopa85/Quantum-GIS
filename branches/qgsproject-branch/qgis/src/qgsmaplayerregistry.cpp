@@ -17,7 +17,11 @@
 /* $Id$ */
 
 #include <iostream>
+
 #include "qgsmaplayerregistry.h"
+#include "qgsproject.h"
+
+
 //
 // Static calls to enforce singleton behaviour
 //
@@ -95,6 +99,10 @@ QgsMapLayerRegistry::addMapLayer( QgsMapLayer * theMapLayer )
   {
     mMapLayers[theMapLayer->getLayerID()] = theMapLayer;
     emit layerWasAdded(theMapLayer);
+
+    // notify the project we've made a change
+    QgsProject::instance()->dirty(true);
+
     return mMapLayers[theMapLayer->getLayerID()];
   }
   else
@@ -126,6 +134,8 @@ void QgsMapLayerRegistry::removeMapLayer(QString theLayerId)
 #ifdef QGISDEBUG
   std::cout << "qgsmaplayerregistry::removemaplayer - operation complete." << std::endl;
 #endif
+  // notify the project we've made a change
+  QgsProject::instance()->dirty(true);
 }
 
 void QgsMapLayerRegistry::removeAllMapLayers()
@@ -144,6 +154,9 @@ void QgsMapLayerRegistry::removeAllMapLayers()
   emit removedAll();            // now let all canvas Observers know to clear
                                 // themselves, and then consequently any of
                                 // their map legends
+
+  // notify the project we've made a change
+  QgsProject::instance()->dirty(true);
 
 } // QgsMapLayerRegistry::removeAllMapLayers()
 
