@@ -2826,12 +2826,15 @@ void QgisApp::showStatusMessage(QString theMessage)
 void QgisApp::projectProperties()
 {
   QgsProjectProperties *pp = new QgsProjectProperties(this);
+  
   pp->setMapUnits(mMapCanvas->mapUnits());
+  pp->title( QgsProject::instance()->title() );
+  
   if(pp->exec())
   {
     // set the map units for the project (ie the map canvas)
     mMapCanvas->setMapUnits(pp->mapUnits());
-
+    QgsProject::instance()->title( pp->title() );
   }
 }
 
