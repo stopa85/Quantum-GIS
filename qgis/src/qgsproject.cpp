@@ -362,7 +362,7 @@ QgsProject::read( )
 
     // enable the hourglass -- no, this should be done be the caller
 
-    qWarning("opened document" + imp_->file.name());
+    qWarning("opened document " + imp_->file.name());
 
 
     // first get the map layers

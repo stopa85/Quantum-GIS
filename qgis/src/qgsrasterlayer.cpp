@@ -798,8 +798,9 @@ void QgsRasterLayer::draw(QPainter * theQPainter, QgsRect * theViewExtent, QgsCo
   // get dimensions of clipped raster image in device coordinate space (this is the size of the viewport)
   myRasterViewPort->topLeftPoint = theQgsCoordinateTransform->transform(myRasterExtent.xMin(), myRasterExtent.yMax());
   myRasterViewPort->bottomRightPoint = theQgsCoordinateTransform->transform(myRasterExtent.xMax(), myRasterExtent.yMin());
-  myRasterViewPort->drawableAreaXDimInt = myRasterViewPort->bottomRightPoint.xToInt() - myRasterViewPort->topLeftPoint.xToInt();
-  myRasterViewPort->drawableAreaYDimInt = myRasterViewPort->bottomRightPoint.yToInt() - myRasterViewPort->topLeftPoint.yToInt();
+
+  myRasterViewPort->drawableAreaXDimInt = static_cast<int>(myRasterViewPort->bottomRightPoint.x()) - static_cast<int>(myRasterViewPort->topLeftPoint.x());
+  myRasterViewPort->drawableAreaYDimInt = static_cast<int>(myRasterViewPort->bottomRightPoint.y()) - static_cast<int>(myRasterViewPort->topLeftPoint.y());
   
   draw(theQPainter,myRasterViewPort);
   delete myRasterViewPort;
@@ -1004,7 +1005,9 @@ void QgsRasterLayer::drawSingleBandGray(QPainter * theQPainter, RasterViewPort *
   //render any inline filters
   filterLayer(&myQImage);
   //part of the experimental transaparency support
-  theQPainter->drawImage(theRasterViewPort->topLeftPoint.xToInt(), theRasterViewPort->topLeftPoint.yToInt(), myQImage);
+  theQPainter->drawImage(static_cast<int>(theRasterViewPort->topLeftPoint.x()), 
+                         static_cast<int>(theRasterViewPort->topLeftPoint.y()), 
+                         myQImage);
 }
 
 
@@ -1210,7 +1213,9 @@ void QgsRasterLayer::drawSingleBandPseudoColor(QPainter * theQPainter, RasterVie
   //render any inline filters
   filterLayer(&myQImage);
   //draw with the experimental transaparency support
-  theQPainter->drawImage(theRasterViewPort->topLeftPoint.xToInt(), theRasterViewPort->topLeftPoint.yToInt(), myQImage);
+  theQPainter->drawImage(static_cast<int>(theRasterViewPort->topLeftPoint.x()), 
+                         static_cast<int>(theRasterViewPort->topLeftPoint.y()), 
+                         myQImage);
 }
 
 /**
@@ -1294,7 +1299,9 @@ void QgsRasterLayer::drawPalettedSingleBandGray(QPainter * theQPainter,
   //render any inline filters
   filterLayer(&myQImage);
   //part of the experimental transaparency support
-  theQPainter->drawImage(theRasterViewPort->topLeftPoint.xToInt(), theRasterViewPort->topLeftPoint.yToInt(), myQImage);
+  theQPainter->drawImage(static_cast<int>(theRasterViewPort->topLeftPoint.x()), 
+                         static_cast<int>(theRasterViewPort->topLeftPoint.y()), 
+                         myQImage);
 }
 
 
@@ -1527,7 +1534,9 @@ void QgsRasterLayer::drawPalettedSingleBandPseudoColor(QPainter * theQPainter,
   //render any inline filters
   filterLayer(&myQImage);
   //part of the experimental transaparency support
-  theQPainter->drawImage(theRasterViewPort->topLeftPoint.xToInt(), theRasterViewPort->topLeftPoint.yToInt(), myQImage);
+  theQPainter->drawImage(static_cast<int>(theRasterViewPort->topLeftPoint.x()), 
+                         static_cast<int>(theRasterViewPort->topLeftPoint.y()), 
+                         myQImage);
 }
 
 /**
@@ -1624,7 +1633,9 @@ void QgsRasterLayer::drawPalettedMultiBandColor(QPainter * theQPainter, RasterVi
   //render any inline filters
   filterLayer(&myQImage);
   //part of the experimental transaparency support
-  theQPainter->drawImage(theRasterViewPort->topLeftPoint.xToInt(), theRasterViewPort->topLeftPoint.yToInt(), myQImage);
+  theQPainter->drawImage(static_cast<int>(theRasterViewPort->topLeftPoint.x()), 
+                         static_cast<int>(theRasterViewPort->topLeftPoint.y()), 
+                         myQImage);
 
 }
 void QgsRasterLayer::drawMultiBandSingleBandGray(QPainter * theQPainter, RasterViewPort * theRasterViewPort, int theBandNoInt)
@@ -1718,7 +1729,9 @@ void QgsRasterLayer::drawMultiBandColor(QPainter * theQPainter, RasterViewPort *
   //render any inline filters
   filterLayer(&myQImage);
   //part of the experimental transaparency support
-  theQPainter->drawImage(theRasterViewPort->topLeftPoint.xToInt(), theRasterViewPort->topLeftPoint.yToInt(), myQImage);
+  theQPainter->drawImage(static_cast<int>(theRasterViewPort->topLeftPoint.x()), 
+                         static_cast<int>(theRasterViewPort->topLeftPoint.y()), 
+                         myQImage);
 
   //free the scanline memory
   CPLFree(myGdalRedData);
