@@ -1,11 +1,9 @@
 /***************************************************************************
-                          qgsfeature.h  -  description
-                             -------------------
-    begin                : Mon Sep 01 2003
-    copyright            : (C) 2003 by Gary E.Sherman
+    qgsfeature.h - Spatial Feature Class
+     --------------------------------------
+    Date                 : 09-Sep-2003
+    Copyright            : (C) 2003 by Gary E.Sherman
     email                : sherman at mrcc.com
- ***************************************************************************/
-
 /***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -15,6 +13,7 @@
  *                                                                         *
  ***************************************************************************/
 /* $Id$ */
+
 #ifndef QGSFEATURE_H
 #define QGSFEATURE_H
 #include <qstring.h>
