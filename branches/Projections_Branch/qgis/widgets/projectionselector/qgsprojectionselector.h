@@ -21,9 +21,7 @@ class QgsProjectionSelector: public QgsProjectionSelectorBase
 {
 Q_OBJECT
 public:
-  //XXX made flags optional
     QgsProjectionSelector( QWidget* parent , const char* name ,WFlags fl =0  );
-    QgsProjectionSelector( QWidget * parent);
     ~QgsProjectionSelector();
     
   
