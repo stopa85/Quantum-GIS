@@ -11,7 +11,7 @@
 #define QGSPROJECTIONSELECTOR_H
 
 #include "qgsprojectionselectorbase.h"
-
+#include <qstring.h>
 
 
 /**
@@ -24,10 +24,17 @@ public:
     QgsProjectionSelector( QWidget* parent , const char* name ,WFlags fl =0  );
     ~QgsProjectionSelector();
     
-  
+public slots:
+    void setSelectedWKT(QString theWKT);
+    void setSelectedSRID(QString theSRID);
+    QString getCurrentWKT();
+    QString getCurrentSRID();
+    
 private:
     
 signals:
+    void wktSelected(QString theWKT);
+    void sridSelected(QString theSRID);
 };
 
 #endif

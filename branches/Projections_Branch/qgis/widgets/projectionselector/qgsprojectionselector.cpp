@@ -26,3 +26,23 @@ QgsProjectionSelector::~QgsProjectionSelector()
 {
 }
 
+void QgsProjectionSelector::setSelectedWKT(QString theWKT)
+{
+
+}
+
+void QgsProjectionSelector::setSelectedSRID(QString theSRID)
+{
+
+}
+
+QString QgsProjectionSelector::getCurrentWKT()
+{
+ return QString("");
+}
+
+QString QgsProjectionSelector::getCurrentSRID()
+{
+ return QString("");
+}
+
