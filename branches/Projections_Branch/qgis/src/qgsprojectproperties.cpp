@@ -328,15 +328,13 @@ QTextStream userCsTextStream( &csQFile );
 
   QgsSpatialRefSys *srs = *myIterator;
   assert(srs != 0);
-  // get the shortname
-  QString shortName = getWKTShortName(srs->srText());
   //XXX Add to the tree view
-  if(shortName.find("Lat/Long") > -1)
+  if(srs->isGeographic())
   {
     // this is a geographic coordinate system
     // Add it to the tree
-    newItem = new QListViewItem(geoList, getWKTShortName(srs->srText()));
-    std::cout << "Added " << getWKTShortName(srs->srText()) << std::endl; 
+    newItem = new QListViewItem(geoList, srs->name());
+//    std::cout << "Added " << getWKTShortName(srs->srText()) << std::endl; 
     // display the spatial reference id in the second column of the list view
     newItem->setText(1,srs->srid());
     if (myIterator.key()==currentSrid)
@@ -351,19 +349,19 @@ QTextStream userCsTextStream( &csQFile );
     QListViewItem *node; // node that we will add this cs to...
 
     // projected coordinate systems are stored by projection type
-    QStringList projectionInfo = QStringList::split(" - ", shortName);
+    QStringList projectionInfo = QStringList::split(" - ", srs->name());
     if(projectionInfo.size() == 2)
     {
       // Get the projection name and strip white space from it so we
       // don't add empty nodes to the tree
       QString projName = projectionInfo[1].stripWhiteSpace();
-      std::cout << "Examining " << shortName << std::endl; 
+//      std::cout << "Examining " << shortName << std::endl; 
       if(projName.length() == 0)
       {
         // If the projection name is blank, set the node to 
         // 0 so it won't be inserted
         node = projList;
-        std::cout << "projection name is blank: " << shortName << std::endl; 
+ //       std::cout << "projection name is blank: " << shortName << std::endl; 
         assert(1 == 0);
       }
       else
@@ -376,11 +374,11 @@ QTextStream userCsTextStream( &csQFile );
         node = lstCoordinateSystems->findItem(projName, 0);
         if(node == 0)
         {
-          std::cout << projName << " node not found -- creating it" << std::endl;
+//          std::cout << projName << " node not found -- creating it" << std::endl;
 
           // the node doesn't exist -- create it
           node = new QListViewItem(projList, projName);
-          std::cout << "Added top-level projection node: " << projName << std::endl; 
+//          std::cout << "Added top-level projection node: " << projName << std::endl; 
         }
       }
     }
@@ -390,13 +388,13 @@ QTextStream userCsTextStream( &csQFile );
       // projection node
       //XXX This should never happen
       node = projList;
-      std::cout << shortName << std::endl; 
+//      std::cout << shortName << std::endl; 
       assert(1 == 0);
     }
 
     // now add the coordinate system to the appropriate node
 
-    newItem = new QListViewItem(node, getWKTShortName(srs->srText()));
+    newItem = new QListViewItem(node, srs->name());
     // display the spatial reference id in the second column of the list view
 
     newItem->setText(1,srs->srid());

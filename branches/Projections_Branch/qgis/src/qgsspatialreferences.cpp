@@ -69,13 +69,39 @@ QgsSpatialReferences::QgsSpatialReferences()
 #endif
 
       QStringList wktParts = QStringList::split(QRegExp("\t"), myCurrentLineQString, true); 
-      // store the parts in a SPATIAL_REF_SYS structure
-      mSpatialReferences[wktParts[0]] = new QgsSpatialRefSys(
+      // get the short name for the projection
+      QString wkt = wktParts[3];
+      QString name;
+      bool isGeo;
+      if(wkt.find(QRegExp("^GEOGCS")) == 0)
+      {
+        isGeo = true;
+        name = "Lat/Long - ";
+        // get the name
+        name += wkt.mid(8, wkt.find("\",") - 8);
+
+        std::cout << name << std::endl; 
+      }
+      else
+      {
+        isGeo = false;
+        // get the name and projection type
+        name = wkt.mid(8, wkt.find("\",") - 8) + " - ";
+        int start = wkt.find("PROJECTION[") + 12;
+        name += wkt.mid(start, wkt.find("\"]", start) - start);
+        std::cout << name << std::endl; 
+
+      }
+      // store the parts in a QgsSpatialRefSys object
+      QgsSpatialRefSys *srs = new QgsSpatialRefSys(
           wktParts[0],
           wktParts[1],
           wktParts[2],
           wktParts[3],
-          wktParts[4]);
+          wktParts[4],
+          name);
+      srs->setGeographic(isGeo);
+      mSpatialReferences[wktParts[0]]  = srs;
     }
   }
 }

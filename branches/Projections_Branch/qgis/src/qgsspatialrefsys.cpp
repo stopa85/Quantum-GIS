@@ -1,9 +1,7 @@
 #include "qgsspatialrefsys.h"
 QgsSpatialRefSys::QgsSpatialRefSys(){}
 QgsSpatialRefSys::QgsSpatialRefSys(QString srid, QString authName, QString authSrid, 
-    QString srtext, QString proj4Text):mSrid(srid), mAuthName(authName),
-                                       mAuthSrid(authSrid), mSrtext(srtext),
-                                       mProj4text(proj4Text)
+    QString srtext, QString proj4Text, QString name):mSrid(srid), mAuthName(authName), mAuthSrid(authSrid), mSrtext(srtext), mProj4text(proj4Text), mName(name)
 {
 }
 QString QgsSpatialRefSys::srid() const
@@ -27,6 +25,10 @@ QString QgsSpatialRefSys::proj4Text() const
 {
   return mProj4text;
 }
+QString QgsSpatialRefSys::name() const
+{
+  return mName;
+}
 
 void QgsSpatialRefSys::setSrid(QString& srid)
 {
@@ -47,4 +49,16 @@ void QgsSpatialRefSys::setSrText(QString &srtext)
 void QgsSpatialRefSys::setProjText(QString &projtext)
 {
   mProj4text = projtext;
+}
+void QgsSpatialRefSys::setName(QString &shortname)
+{
+  mName = shortname;
+}
+bool QgsSpatialRefSys::isGeographic()
+{
+  return mGeographic;
+}
+void QgsSpatialRefSys::setGeographic(bool isGeogCS)
+{
+  mGeographic = isGeogCS;
 }
