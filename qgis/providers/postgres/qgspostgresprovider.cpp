@@ -159,6 +159,10 @@ QgsPostgresProvider::QgsPostgresProvider(QString uri):dataSourceUri(uri)
     // set the schema
 
     PQexec(pd,(const char *)QString("set search_path = '%1','public'").arg(mSchema));
+    
+    // we want UNICODE (UTF8) because that's what QString uses anyway
+    PQsetClientEncoding(pd, "UNICODE");
+    
     // store the connection for future use
     connection = pd;
 
@@ -620,14 +624,14 @@ void QgsPostgresProvider::getFeatureAttributes(int key, QgsFeature *f){
 //  std::cerr << "getFeatureAttributes using: " << sql << std::endl; 
 #endif
   PGresult *attr = PQexec(connection, (const char *)sql);
-
+  
   for (int i = 0; i < fieldCount(); i++) {
     QString fld = PQfname(attr, i);
     // Dont add the WKT representation of the geometry column to the identify
     // results
     if(fld != geometryColumn){
       // Add the attribute to the feature
-      QString val = PQgetvalue(attr,0, i);
+      QString val = QString::fromUtf8(PQgetvalue(attr,0, i));
       f->addAttribute(fld, val);
     }
   }
@@ -655,7 +659,7 @@ void QgsPostgresProvider::getFeatureAttributes(int key,
     if(fld != geometryColumn)
     {
       // Add the attribute to the feature
-      QString val = PQgetvalue(attr,0, i);
+      QString val = QString::fromUtf8(PQgetvalue(attr,0, i));
       //qWarning(val);
       f->addAttribute(fld, val);
     }
