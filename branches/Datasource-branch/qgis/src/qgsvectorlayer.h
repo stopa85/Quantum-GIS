@@ -26,6 +26,7 @@ class OGRDataSource;
 class QgsDataProvider;
 class QgsRenderer;
 class QgsLegendItem;
+class QgsVectorLayerProperties;
 
 #include "qgsmaplayer.h"
 #include "qvaluevector.h"
@@ -79,7 +80,7 @@ class QgsVectorLayer:public QgsMapLayer
 	/**Returns point, line or polygon*/
 	QGis::VectorType vectorType();
 	/**Returns a pointer to the properties dialog*/
-	QDialog* propertiesDialog();
+	QgsVectorLayerProperties* propertiesDialog();
 
   protected:
 	/**Pointer to the table display object if there is one, else a pointer to 0*/
@@ -91,7 +92,7 @@ class QgsVectorLayer:public QgsMapLayer
 	/**Renderer object which holds the information about how to display the features*/
 	QgsRenderer* m_renderer;
 	/**Dialog to set the properties*/
-	QDialog* m_propertiesDialog; //later: QgsVectorLayerProperties*
+	QgsVectorLayerProperties* m_propertiesDialog;
 	/**Widget to set the symbology properties*/
 	QDialog* m_rendererDialog;
   private:						// Private attributes

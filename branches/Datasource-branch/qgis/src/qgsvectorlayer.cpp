@@ -42,6 +42,7 @@
 #include <qlibrary.h>
 #include "qgsrenderer.h"
 #include "qgslegenditem.h"
+#include "qgsvectorlayerproperties.h"
 #ifdef TESTPROVIDERLIB
 #include <dlfcn.h>
 #endif
@@ -117,8 +118,9 @@ QgsVectorLayer::QgsVectorLayer(QString vectorLayerPath, QString baseName)
 
 QgsVectorLayer::~QgsVectorLayer()
 {
-	if (selected) {
-		delete selected;
+	if (selected) 
+	{
+	    delete selected;
 	}
 	if (tabledisplay) {
 		tabledisplay->close();
@@ -608,7 +610,16 @@ QgsDataProvider* QgsVectorLayer::getDataProvider()
 
 void QgsVectorLayer::showLayerProperties()
 {
-    //soon...
+    if(m_propertiesDialog)
+    {
+	m_propertiesDialog->raise();
+	m_propertiesDialog->show();
+    }
+    else
+    {
+	m_propertiesDialog = new QgsVectorLayerProperties(this);
+	m_propertiesDialog->show();
+    }
 }
 
 QgsRenderer* QgsVectorLayer::renderer()
@@ -658,7 +669,7 @@ QGis::VectorType QgsVectorLayer::vectorType()
     }
 }
 
-QDialog* QgsVectorLayer::propertiesDialog()
+QgsVectorLayerProperties* QgsVectorLayer::propertiesDialog()
 {
     return m_propertiesDialog;
 }

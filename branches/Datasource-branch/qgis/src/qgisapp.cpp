@@ -660,32 +660,19 @@ void QgisApp::layerProperties(QListViewItem * lvi)
 {
 	QgsMapLayer *lyr;
 	if (lvi)
-		lyr = ((QgsLegendItem *) lvi)->layer();
-	else {
-		// get the selected item
-		QListViewItem *li = legendView->currentItem();
-
-		lyr = ((QgsLegendItem *) li)->layer();
+	{
+	    lyr = ((QgsLegendItem *) lvi)->layer();
 	}
-	QString currentName = lyr->name();
-	QgsLayerProperties *lp = new QgsLayerProperties(lyr);
-	if (lp->exec()) {
-		// update the symbol
-		lyr->setSymbol(lp->getSymbol());
-		mapCanvas->freeze();
-		lyr->setlayerName(lp->displayName());
-		if (currentName != lp->displayName())
-			mapLegend->update();
-		delete lp;
-		qApp->processEvents();
-
-		// apply changes
-		mapCanvas->freeze(false);
-		mapCanvas->setDirty(true);
-		mapCanvas->render2();
+	else 
+	{
+	    // get the selected item
+	    QListViewItem *li = legendView->currentItem();
+	    lyr = ((QgsLegendItem *) li)->layer();
 	}
-
+			
+	lyr->showLayerProperties();
 }
+
 void QgisApp::removeLayer()
 {
 	mapCanvas->freeze();
