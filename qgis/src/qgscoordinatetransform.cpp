@@ -15,6 +15,7 @@
  *                                                                         *
  ***************************************************************************/
  /* $Id$ */
+#include <qtextstream.h>
 #include "qgscoordinatetransform.h"
 
 QgsCoordinateTransform::QgsCoordinateTransform( QString theSourceWKT, QString theDestWKT ) : QObject()
@@ -126,12 +127,36 @@ void QgsCoordinateTransform::initialise()
   // store the src proj parms in a QString because the pointer populated by exportToProj4
   // seems to get corrupted prior to its use in the transform
   mProj4SrcParms = proj4src;
+  // check to see if we have datum information -- if not it might be an ESRI format WKT
+  if(mProj4SrcParms.contains("datum") == 0)
+  {
+    // try getting it as an esri format wkt
+    myInputSpatialRefSys.morphFromESRI();
+    myInputSpatialRefSys.exportToProj4(&proj4src);
+    mProj4SrcParms = proj4src;
+  }
+  if(mProj4SrcParms.contains("datum") == 0)
+  {
+    throw QgsCsException("Source coordinate system does not contain datum. WKT is : " + mSourceWKT );
+  }
   // get the proj parms for dest cs
   char *proj4dest;
   myOutputSpatialRefSys.exportToProj4(&proj4dest);
   // store the dest proj parms in a QString because the pointer populated by exportToProj4
   // seems to get corrupted prior to its use in the transform
   mProj4DestParms = proj4dest;
+  // check to see if we have datum information -- if not it might be an ESRI format WKT
+  if(mProj4DestParms.contains("datum") == 0)
+  {
+    // try getting it as an esri format wkt
+    myOutputSpatialRefSys.morphFromESRI();
+    myOutputSpatialRefSys.exportToProj4(&proj4dest);
+    mProj4DestParms = proj4dest;
+  }
+  if(mProj4DestParms.contains("datum") == 0)
+  {
+    throw QgsCsException("Destination coordinate system does not contain datum. WKT is : " + mDestWKT );
+  }
   // init the projections (destination and source)
    mDestinationProjection = pj_init_plus((const char *)mProj4DestParms);
    mSourceProjection = pj_init_plus((const char *)mProj4SrcParms);
@@ -357,11 +382,12 @@ else
   if (projResult != 0) 
   {
     //something bad happened....
-    QString pjErr;
-    pjErr += "Failed " + dir + " transform of x, y: ";
-    pjErr += pj_strerrno(projResult);
-    pjErr += "\n";
-    throw  QgsCsException(pjErr);
+    QString msg;
+    QTextOStream pjErr(&msg);
+    
+    pjErr << tr("Failed") << " " << dir << " " << tr("transform of") << x << ", " <<  y
+      << pj_strerrno(projResult) << "\n";
+    throw  QgsCsException(msg);
   }
   // if the result is lat/long, convert the results from radians back
   // to degrees
