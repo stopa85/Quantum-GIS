@@ -28,6 +28,7 @@
 #include "qgslegenditem.h"
 #include "qgsvectorlayerproperties.h"
 #include "qgsdataprovider.h"
+#include "qgsfield.h"
 
 
 QgsGraSyDialog::QgsGraSyDialog(QgsVectorLayer* layer): QgsGraSyDialogBase(), ext(0), m_vectorlayer(layer)
@@ -45,38 +46,19 @@ QgsGraSyDialog::QgsGraSyDialog(QgsVectorLayer* layer): QgsGraSyDialogBase(), ext
     QgsDataProvider* provider;
     if(provider=m_vectorlayer->getDataProvider())
     {
-	provider->reset();
-	QgsFeature* feature; 
-	if(feature=provider->getFirstFeature(true))
-	{
-	    std::vector<QgsFeatureAttribute> vec = feature->attributeMap();
-	    int fieldnumber=0; 
+	std::vector<QgsField>& fields=provider->fields();
+	int fieldnumber=0;
+	QString str;
 
-	    //iterate through all entries of vec
-	    for(std::vector<QgsFeatureAttribute>::iterator it=vec.begin();it!=vec.end();++it)
-	      {
-		  QString teststring=(*it).fieldValue();
-		  bool containsletter=false;
-		  for(uint j=0;j<teststring.length();j++)
-		  {
-		      if(teststring.ref(j).isLetter())
-		      {
-			  containsletter=true;
-		      }
-		  }
-		  if(!containsletter)//add it to the map and to comboBox1 if it seems to be a numeric field
-		  {
-		      QString str=(*it).fieldName();
-		      classificationComboBox->insertItem(str);
-		      //add teststring and i to the map
-		      m_fieldmap.insert(std::make_pair(str,fieldnumber));
-		  }
-		  fieldnumber++;
-	      } 
-	}
-	else
+	for(std::vector<QgsField>::iterator it=fields.begin();it!=fields.end();++it)
 	{
-	    qWarning("Warning, getNextFeature returned null in QgsGraSyDialog::QgsGraSyDialog(...)");
+	    if((*it).getType()=="Real"||(*it).getType()=="Integer")
+	    {
+		str=(*it).getName();
+		classificationComboBox->insertItem(str);
+		m_fieldmap.insert(std::make_pair(str,fieldnumber));	
+	    }
+	    fieldnumber++;
 	}
     }
     else

@@ -85,7 +85,7 @@ public:
 	* @param rect Bounding rectangle of search radius
 	* @return std::vector containing QgsFeature objects that intersect rect
 	*/
-	virtual std::vector<QgsFeature> QgsDataProvider::identify(QgsRect *rect)=0;
+	virtual std::vector<QgsFeature>& QgsDataProvider::identify(QgsRect *rect)=0;
 
    /**
    * Return the endian of this layer.
@@ -97,7 +97,7 @@ public:
   * Return a list of field names for this layer
   * @return vector of field names
   */
-  virtual std::vector<QgsField> fields()=0;
+  virtual std::vector<QgsField>& fields()=0;
   
 /** 
 * Reset the layer to clear any spatial filtering or other contstraints that

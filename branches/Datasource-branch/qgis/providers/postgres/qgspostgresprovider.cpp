@@ -368,7 +368,7 @@ QString QgsPostgresProvider::getDataSourceUri()
 	* @param rect Bounding rectangle of search radius
 	* @return std::vector containing QgsFeature objects that intersect rect
 	*/
-std::vector < QgsFeature > QgsPostgresProvider::identify(QgsRect * rect)
+std::vector<QgsFeature>& QgsPostgresProvider::identify(QgsRect * rect)
 {
     features.clear();
     // select the features
@@ -453,7 +453,7 @@ int QgsPostgresProvider::fieldCount()
    }
 } 
 
-std::vector < QgsField > QgsPostgresProvider::fields()
+std::vector<QgsField>& QgsPostgresProvider::fields()
 {
     return attributeFields;
 }

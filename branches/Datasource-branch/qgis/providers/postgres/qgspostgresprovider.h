@@ -100,7 +100,7 @@ class QgsPostgresProvider:public QgsDataProvider
 	* @param rect Bounding rectangle of search radius
 	* @return std::vector containing QgsFeature objects that intersect rect
 	*/
-    virtual std::vector < QgsFeature > identify(QgsRect * rect);
+    virtual std::vector<QgsFeature>& identify(QgsRect * rect);
 
   /** 
   * Return endian-ness for this layer
@@ -127,7 +127,7 @@ class QgsPostgresProvider:public QgsDataProvider
  * Get the field information for the layer
  * @return vector of QgsField objects
  */
-      std::vector < QgsField > fields();
+      std::vector<QgsField>& fields();
 
  /** Reset the layer - for a PostgreSQL layer, this means clearing the PQresult
  * pointer and setting it to 0
