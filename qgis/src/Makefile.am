@@ -48,6 +48,7 @@ qgis_SOURCES =  qgisapp.cpp \
 				qgssymbol.cpp\
 				qgsfeature.cpp \
 				qgsfeatureattribute.cpp \
+        qgsfield.cpp \
 				$(qgis_UI)\
 				$(qgis_MOC)
 qgis_MOC = 	qgisappbase.moc.cpp \
