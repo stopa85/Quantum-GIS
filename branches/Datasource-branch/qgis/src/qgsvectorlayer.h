@@ -81,6 +81,8 @@ class QgsVectorLayer:public QgsMapLayer
 	QGis::VectorType vectorType();
 	/**Returns a pointer to the properties dialog*/
 	QgsVectorLayerProperties* propertiesDialog();
+	/**Adds a QgsSingleSymbolRenderer with random color and a corresponding pixmap to the legend*/
+	void initializeSymbology();
 
   protected:
 	/**Pointer to the table display object if there is one, else a pointer to 0*/
