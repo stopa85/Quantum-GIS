@@ -33,16 +33,14 @@ class QgsLayerProjectionSelector :public QgsLayerProjectionSelectorBase{
   public:
     /**
      * Constructor
-     * @param parent Parent widget (usually a QgisApp)
-     * @param name name for the widget
      */
-    QgsLayerProjectionSelector(QWidget *parent=0, const char *name=0);
+    QgsLayerProjectionSelector();
     //! Destructor
     ~QgsLayerProjectionSelector();
 
  public slots:
       void pbnOK_clicked();
-      QString getSelectedWKT();
+      QString getCurrentWKT();
       void setSelectedWKT(QString theWKTName);
 };
 
