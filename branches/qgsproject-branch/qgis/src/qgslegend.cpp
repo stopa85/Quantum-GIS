@@ -48,7 +48,10 @@ const int AUTOSCROLL_MARGIN = 16;
 QgsLegend::QgsLegend(QWidget * parent, const char *name, QgisApp * qgis_app )
     : QListView(parent, name), mousePressed(false), movingItem(0), mQgisApp(qgis_app)
 {
+    connect( this, SIGNAL(selectionChanged(QListViewItem *)), 
+             this, SLOT(updateLegendItem(QListViewItem *)) );
 }
+
 
 QgsLegend::~QgsLegend()
 {
@@ -472,3 +475,30 @@ void QgsLegend::connectNotify( const char * signal )
     std::cerr << "QgsLegend connected to " << signal << "\n";
 #endif
 } //  QgsLegend::connectNotify( const char * signal )
+
+
+
+
+void QgsLegend::updateLegendItem( QListViewItem * li )
+{
+    QgsLegendItem * qli = dynamic_cast<QgsLegendItem*>(li);
+
+    if ( ! qli )
+    {
+        qDebug( "QgsLegend::updateLegendItem(): couldn't get QgsLegendItem" );
+        return;
+    }
+
+    if ( qli->layer()->showInOverviewStatus() && ! mQgisApp->actionInOverview->isOn() )
+    {
+        mQgisApp->actionInOverview->setOn(true);
+    }
+    else
+    {
+        if ( mQgisApp->actionInOverview->isOn() )
+        {
+            mQgisApp->actionInOverview->setOn(false);
+        }
+    }
+
+} // QgsLegend::updateLegendItem

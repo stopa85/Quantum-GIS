@@ -23,10 +23,10 @@
 #include <qlistview.h>
 
 
+class QPainter;
+
 class QgsMapCanvas;
 class QgsMapLayer;
-class QListView;
-class QPainter;
 class QgisApp;
 
 /**
@@ -80,11 +80,15 @@ public slots:
    */
   void removeAll();
 
+  /** used to update the overview toggle for the newly selected legend item */
+  void updateLegendItem( QListViewItem * );
+
 protected:
   // override these to handle layer order manipulation
   void contentsMouseMoveEvent(QMouseEvent * e);
   void contentsMousePressEvent(QMouseEvent * e);
   void contentsMouseReleaseEvent(QMouseEvent * e);
+
 
 private:
 
