@@ -707,6 +707,10 @@ public:
      * NOTE: May be deprecated in the future! Use alternate implementation above rather.
      * */
     void setDrawingStyle(QString theDrawingStyleQString);
+
+
+
+
     /** \brief This enumerator describes the type of raster layer.  */
     enum RASTER_LAYER_TYPE
     {
@@ -763,6 +767,19 @@ public slots:
                           const char *theMessageCharArray,
                           void *theData);    
 */
+
+ protected:
+
+    /** reads vector layer specific state from project file DOM node.
+
+        @note
+
+        Called by QgsMapLayer::readXML().
+
+    */
+    /* virtual */ void readXML_( QDomNode & layer_node );
+
+
 private:
 
     //
@@ -820,6 +837,17 @@ private:
     /** \brief Drawing routine for multiband image  */
     void drawMultiBandColor(QPainter * theQPainter, RasterViewPort * theRasterViewPort);
 
+
+    /**
+       Load the given raster file
+
+       @returns true if successfully read file
+
+       @note
+       
+       Called from ctor if a raster image given there
+     */
+    bool readFile( QString const & fileName );
 
     //
     // Private member vars
