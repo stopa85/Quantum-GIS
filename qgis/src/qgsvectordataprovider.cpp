@@ -18,7 +18,7 @@
 #include "qgsfeature.h"
 
 
-QgsVectorDataProvider::QgsVectorDataProvider(): mEncoding(QgsVectorDataProvider::Utf8)
+QgsVectorDataProvider::QgsVectorDataProvider(): mEncoding(QTextCodec::codecForLocale())
 {
 
 }
@@ -50,6 +50,33 @@ bool QgsVectorDataProvider::changeAttributeValues(std::map<int,std::map<QString,
 }
 
 QString QgsVectorDataProvider::getDefaultValue(const QString& attr, 
-					       QgsFeature* f) {
+                 QgsFeature* f) {
   return "";
+}
+
+void QgsVectorDataProvider::setEncoding(const QString& e)
+{
+    QTextCodec* ncodec=QTextCodec::codecForName(e);
+    if(ncodec)
+    {
+  mEncoding=ncodec;
+    }
+    else
+    {
+#ifdef QGISDEBUG
+  qWarning("error finding QTextCodec in QgsVectorDataProvider::setEncoding");
+#endif
+    }
+}
+
+QString QgsVectorDataProvider::encoding() const
+{
+    if(mEncoding)
+    {
+  return mEncoding->name();
+    }
+    else
+    {
+  return "";
+    }
 }

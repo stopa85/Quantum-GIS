@@ -164,7 +164,7 @@ public:
   {
       return 0;
   }
-
+  
  private:
   
   /** Internal function used by the other getNextFeature() functions. */

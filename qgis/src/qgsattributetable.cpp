@@ -316,6 +316,7 @@ void QgsAttributeTable::popupItemSelected(int id)
 {
   mActions.doAction(id, mActionValues, mClickedOnValue);
 }
+
 bool QgsAttributeTable::addAttribute(const QString& name, const QString& type)
 {
     //first test if an attribute with the same name is already in the table
@@ -489,6 +490,8 @@ void QgsAttributeTable::bringSelectedToTop()
     blockSignals(true);
     int swaptorow=0;
     std::list<QTableSelection> selections;
+    bool removeselection;
+
     for(int i=0;i<numSelections();++i)
     {
 	selections.push_back(selection(i));
@@ -498,16 +501,42 @@ void QgsAttributeTable::bringSelectedToTop()
 
     for(std::list<QTableSelection>::iterator iter=selections.begin();iter!=selections.end();++iter)
     {
+	removeselection=true;
 	for(int j=iter->topRow();j<=iter->bottomRow();++j)
-	{
+	{	    
+	    while(isRowSelected(swaptorow))//selections are not necessary stored in ascending order
+	    {
+		++swaptorow;
+	    }
+
+	    if(j>swaptorow)//selections are not necessary stored in ascending order
+	    {
 #ifdef QGISDEBUG
-	    qWarning("swapping rows "+QString::number(j)+" and "+QString::number(swaptorow));
-#endif	    
-	    swapRows(j,swaptorow);
-	    selectRow(swaptorow);
+		qWarning("swapping rows "+QString::number(j)+" and "+QString::number(swaptorow));
+#endif
+		swapRows(j,swaptorow);
+		selectRow(swaptorow);
+	    }
+	    else
+	    {
+		removeselection=false;//keep selection
+	    }
 	    ++swaptorow;
 	}
-	removeSelection(*iter);
+	if(removeselection)
+	{
+	    removeSelection(*iter);
+	}
     }
+
+    //clear and rebuild rowIdMap.
+    rowIdMap.clear();
+    int id;
+    for (int i = 0; i < numRows(); i++)
+    {
+      id = text(i, 0).toInt();
+      rowIdMap.insert(id, i);
+    }
+
     blockSignals(false);
 }

@@ -212,6 +212,17 @@ void QgsProjectProperties::apply()
     QgsProject::instance()->writeEntry("SpatialRefSys","/WKT",myWkt);
     // write the currently selected projections name to project settings
     QgsProject::instance()->writeEntry("SpatialRefSys","/selectedWKT",projectionSelector->getSelectedWKT());
+    // set the mouse display precision method and the
+    // number of decimal places for the manual option
+    // Note. Qt 3.2.3 and greater have a function selectedId() that
+    // can be used instead of the two part technique here
+    if (btnGrpPrecision->id(btnGrpPrecision->selected()) == 0)
+      QgsProject::instance()->writeEntry("PositionPrecision","/Automatic", true);
+    else
+      QgsProject::instance()->writeEntry("PositionPrecision","/Automatic", false);
+    QgsProject::instance()->writeEntry("PositionPrecision","/DecimalPlaces", spinBoxDP->value());
+    // Announce that we may have a new display precision setting
+    emit displayPrecisionChanged();
 
         
   }

@@ -945,7 +945,7 @@ static void buildSupportedVectorFileFilter_(QString & fileFilters)
    with the current filter name.
 
 */
-static void openFilesRememberingFilter_(QString const &filterName, QString const &filters, QStringList & selectedFiles, QgsVectorDataProvider::Encoding& enc)
+static void openFilesRememberingFilter_(QString const &filterName, QString const &filters, QStringList & selectedFiles, QString& enc)
 {
 
     bool haveLastUsedFilter = false;  // by default, there is no last
@@ -1028,7 +1028,7 @@ void QgisApp::addLayer()
         std::cerr << "Vector file filters: " << fileFilters << std::endl;
 #endif
 
-	QgsVectorDataProvider::Encoding enc=QgsVectorDataProvider::Utf8;
+	QString enc;
         openFilesRememberingFilter_("lastVectorFileFilter", fileFilters, selectedFiles, enc);
         if (selectedFiles.isEmpty())
         {
@@ -1174,7 +1174,7 @@ bool QgisApp::addLayer(QFileInfo const & vectorFile)
   XXX yah know, this could be changed to just iteratively call the above
 
  */
-bool QgisApp::addLayer(QStringList const &theLayerQStringList, const QgsVectorDataProvider::Encoding enc)
+bool QgisApp::addLayer(QStringList const &theLayerQStringList, const QString& enc)
 {
     // check to see if we have an ogr provider available
     QString pOgr = mProviderRegistry->library("ogr");
@@ -2281,6 +2281,17 @@ void QgisApp::identify()
     mMapCanvas->setCursor(*mMapCursor);
 }
 
+void QgisApp::measure()
+{
+    mMapTool = QGis::Measure;
+    mMapCanvas->setMapTool(mMapTool);
+
+    QPixmap pm = QPixmap((const char **)  capture_point_cursor);
+    delete mMapCursor;
+    mMapCursor = new QCursor(pm, 8, 8);
+    mMapCanvas->setCursor(*mMapCursor);
+}
+
 void QgisApp::attributeTable()
 {
     QListViewItem *li = mMapLegend->currentItem();
@@ -2664,7 +2675,7 @@ void QgisApp::currentLayerChanged(QListViewItem * lvi)
         QgsMapLayer *layer = ((QgsLegendItem *) lvi)->layer();
         if (layer->type() == QgsMapLayer::RASTER)
         {
-            actionIdentify->setEnabled(FALSE);
+            //actionIdentify->setEnabled(FALSE);
             actionSelect->setEnabled(FALSE);
             actionOpenTable->setEnabled(FALSE);
             // if one of these map tools is selected, set cursor to default
@@ -3828,6 +3839,7 @@ void QgisApp::setTheme(QString themeName)
     actionIdentify->setIconSet(QIconSet(QPixmap(iconPath + "/identify.png")));
     actionSelect->setIconSet(QIconSet(QPixmap(iconPath + "/select.png")));
     actionOpenTable->setIconSet(QIconSet(QPixmap(iconPath + "/attribute_table.png")));
+    actionMeasure->setIconSet(QIconSet(QPixmap(iconPath + "/measure.png")));
 }
 void QgisApp::setupToolbarPopups(QString themeName)
 {
@@ -4045,7 +4057,7 @@ void QgisApp::addRasterLayer()
     QgsRasterLayer::buildSupportedRasterFileFilter(fileFilters);
 
     QStringList selectedFiles;
-    QgsVectorDataProvider::Encoding e;//only for parameter correctness
+    QString e;//only for parameter correctness
 
     openFilesRememberingFilter_("lastRasterFileFilter", fileFilters, selectedFiles,e);
 

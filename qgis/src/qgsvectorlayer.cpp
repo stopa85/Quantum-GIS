@@ -298,35 +298,33 @@ void QgsVectorLayer::drawLabels(QPainter * p, QgsRect * viewExtent, QgsMapToPixe
 // This method will probably be removed again in the near future!
 void QgsVectorLayer::drawLabels(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * theMapToPixelTransform, QPaintDevice* dst, double scale)
 {
-  if ( /*1 == 1 */ m_renderer)
+#ifdef QGISDEBUG
+  qWarning("Starting draw of labels");
+#endif
+
+  if ( /*1 == 1 */ m_renderer && mLabelOn)
   {
-    // select the records in the extent. The provider sets a spatial filter
-    // and sets up the selection set for retrieval
+    std::list<int> attributes=m_renderer->classificationAttributes();
+    // Add fields required for labels
+    mLabel->addRequiredFields ( &attributes );
+
 #ifdef QGISDEBUG
     qWarning("Selecting features based on view extent");
 #endif
+
+    int featureCount = 0;
+    // select the records in the extent. The provider sets a spatial filter
+    // and sets up the selection set for retrieval
     dataProvider->reset();
     dataProvider->select(viewExtent);
-    int featureCount = 0;
-    //  QgsFeature *ftest = dataProvider->getFirstFeature();
-#ifdef QGISDEBUG
-    qWarning("Starting draw of labels");
-#endif
-    QgsFeature *fet;
-    std::list<int> attributes=m_renderer->classificationAttributes();
-    if ( mLabelOn )
-    { // Add fields required for labels
-      mLabel->addRequiredFields ( &attributes );
-    }
-    else
-    {
-      return;
-    }
+
     //main render loop
+    QgsFeature *fet;
+
     while((fet = dataProvider->getNextFeature(attributes)))
     {
       // Render label
-      if ( mLabelOn && (fet != 0))
+      if ( fet != 0 )
       {
         if(mDeleted.find(fet->featureId())==mDeleted.end())//don't render labels of deleted features
         {
@@ -626,7 +624,7 @@ void QgsVectorLayer::table()
   else
   {
     // display the attribute table
-    QApplication::setOverrideCursor(Qt::WaitCursor);
+    QApplication::setOverrideCursor(Qt::waitCursor);
     tabledisplay = new QgsAttributeTableDisplay(this);
     connect(tabledisplay, SIGNAL(deleted()), this, SLOT(invalidateTableDisplay()));
     fillTable(tabledisplay->table());
@@ -807,6 +805,67 @@ void QgsVectorLayer::select(QgsRect * rect, bool lock)
   }
   triggerRepaint();
   QApplication::restoreOverrideCursor();
+}
+
+void QgsVectorLayer::invertSelection()
+{
+    QApplication::setOverrideCursor(Qt::waitCursor);
+    if (tabledisplay)
+    {
+  QObject::disconnect(tabledisplay->table(), SIGNAL(selectionChanged()), tabledisplay->table(), SLOT(handleChangedSelections()));
+  QObject::disconnect(tabledisplay->table(), SIGNAL(selected(int)), this, SLOT(select(int))); //disconnecting because of performance reason
+    }
+
+    //copy the ids of selected features to tmp
+    std::list<int> tmp;
+    for(std::set<int>::iterator iter=mSelected.begin();iter!=mSelected.end();++iter)
+    {
+  tmp.push_back(*iter);
+    }
+
+    removeSelection();
+    if (tabledisplay)
+    {
+  tabledisplay->table()->clearSelection();
+    }
+
+    QgsFeature *fet;
+    dataProvider->reset();
+
+    while (fet = dataProvider->getNextFeature(true))
+    {
+  if(mDeleted.find(fet->featureId())==mDeleted.end())//don't select deleted features
+  {
+      select(fet->featureId());
+  }
+    }
+    
+    for(std::list<QgsFeature*>::iterator iter=mAddedFeatures.begin();iter!=mAddedFeatures.end();++iter)
+    {
+  select((*iter)->featureId());
+    }
+
+    for(std::list<int>::iterator iter=tmp.begin();iter!=tmp.end();++iter)
+    {
+  mSelected.erase(*iter);
+    }
+  
+    if(tabledisplay)
+    {
+  for(std::set<int>::iterator iter=mSelected.begin();iter!=mSelected.end();++iter)
+  {
+      tabledisplay->table()->selectRowWithId(*iter);
+  }
+    }
+
+    if (tabledisplay)
+    {
+  QObject::connect(tabledisplay->table(), SIGNAL(selectionChanged()), tabledisplay->table(), SLOT(handleChangedSelections()));
+  QObject::connect(tabledisplay->table(), SIGNAL(selected(int)), this, SLOT(select(int)));  //disconnecting because of performance reason
+    }
+    
+    triggerRepaint();
+    QApplication::restoreOverrideCursor();
 }
 
 void QgsVectorLayer::removeSelection()
@@ -1355,9 +1414,8 @@ bool QgsVectorLayer::addFeature(QgsFeature* f)
     }
     else
     {
-      std::list<QgsFeature*>::iterator it=mAddedFeatures.end();
-      --it;
-      tempid=(*it)->featureId()+1;
+      std::list<QgsFeature*>::const_reverse_iterator rit=mAddedFeatures.rbegin();
+      tempid=(*rit)->featureId()+1;
     }
 #ifdef QGISDEBUG
     qWarning("assigned feature id "+QString::number(tempid));
@@ -1433,7 +1491,6 @@ bool QgsVectorLayer::deleteSelectedFeatures()
       delete tabledisplay;
       tabledisplay=0;
   }
-
     }
 
   return true;
@@ -1582,6 +1639,13 @@ bool QgsVectorLayer::readXML_( QDomNode & layer_node )
   }
 
   setDataProvider( providerKey );
+
+  //read provider encoding
+  QDomNode encodingNode = layer_node.namedItem("encoding");
+  if(!encodingNode.isNull()&&dataProvider)
+  {
+      dataProvider->setEncoding(encodingNode.toElement().text());
+  }
 
   // get and set the display field if it exists.
   QDomNode displayFieldNode = layer_node.namedItem("displayfield");
@@ -1841,8 +1905,13 @@ QgsVectorLayer:: setDataProvider( QString const & provider )
   QDomElement provider  = document.createElement( "provider" );
   QDomText providerText = document.createTextNode( providerType() );
   provider.appendChild( providerText );
-
   layer_node.appendChild( provider );
+
+  //provider encoding
+  QDomElement encoding = document.createElement("encoding");
+  QDomText encodingText = document.createTextNode(dataProvider->encoding());
+  encoding.appendChild( encodingText );
+  layer_node.appendChild( encoding );
 
   // add the display field
 
