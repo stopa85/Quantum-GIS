@@ -56,7 +56,7 @@ std::cout << "Opening " << dataSource << std::endl;
 		if (feat) {
 			OGRGeometry *geom = feat->GetGeometryRef();
 			if (geom) {
-				feature = geom->getGeometryType();
+				geometryType = geom->getGeometryType();
 				ogrLayer->ResetReading();
 			} else {
 				valid = false;

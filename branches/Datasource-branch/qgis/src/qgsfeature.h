@@ -51,8 +51,9 @@ public:
 	std::map<int, QString> fields();
 	
 	unsigned char * getGeometry();
-	
+	char * wellKnownText();
 	void setGeometry(unsigned char *);
+    void setWellKnownText(char *);
 private:
 	//! feature id
 	QString fId;
@@ -61,6 +62,7 @@ private:
 	//! std::map containing the field index and name
 	std::map<int, QString> fieldNames;
 	unsigned char *geometry;
+    char * wkt;
 };
 
 #endif

@@ -34,7 +34,10 @@ QgsNewConnection::QgsNewConnection(QString connName):QgsNewConnectionBase()
 		txtHost->setText(settings.readEntry(key + "/host"));
 		txtDatabase->setText(settings.readEntry(key + "/database"));
 		txtUsername->setText(settings.readEntry(key + "/username"));
-		txtPassword->setText(settings.readEntry(key + "/password"));
+        if(settings.readEntry(key + "/save") == "true"){
+            txtPassword->setText(settings.readEntry(key + "/password"));
+            chkStorePassword->setChecked(true);
+        }
 		txtName->setText(connName);
 	}
 }
@@ -63,9 +66,24 @@ void QgsNewConnection::testConnection()
 
 }
 
-
-
 void QgsNewConnection::saveConnection()
+ {
+ 	QSettings settings;
+ 	QString baseKey = "/Qgis/connections/";
+ 	baseKey += txtName->text();
+ 	settings.writeEntry(baseKey + "/host", txtHost->text());
+ 	settings.writeEntry(baseKey + "/database", txtDatabase->text());
+ 	settings.writeEntry(baseKey + "/username", txtUsername->text());
+ 	settings.writeEntry(baseKey + "/password", txtPassword->text());
+    if(chkStorePassword->isChecked()){
+        settings.writeEntry(baseKey + "/save", "true");
+    }else{
+        settings.writeEntry(baseKey + "/save", "false");
+    }
+    accept();
+ }
+
+/* void QgsNewConnection::saveConnection()
 {
 	QSettings settings;
 	QString baseKey = "/Qgis/connections/";
@@ -81,4 +99,4 @@ void QgsNewConnection::saveConnection()
     }
 
   accept();
-}
+} */
