@@ -126,7 +126,7 @@ const QString & QgsMapLayer::labelField()
 }
 
 
-void QgsMapLayer::readXML( QDomNode & layer_node )
+bool QgsMapLayer::readXML( QDomNode & layer_node )
 {
     QDomElement element = layer_node.toElement();
 
@@ -174,15 +174,17 @@ void QgsMapLayer::readXML( QDomNode & layer_node )
     // XXX and do what with it?
 
     // now let the children grab what they need from the DOM node.
-    readXML_( layer_node );
+    return readXML_( layer_node );
 
 } // void QgsMapLayer::readXML
 
 
 
-void QgsMapLayer::readXML_( QDomNode & layer_node )
+bool QgsMapLayer::readXML_( QDomNode & layer_node )
 {
-    // NOP by default; children will over-ride with behavior specific to them
+    // NOP by default; children will over-ride with behavior specific to them\
+
+    return true;
 } // void QgsMapLayer::readXML_
 
 
@@ -333,3 +335,12 @@ std::vector<QgsField> const & QgsMapLayer::fields() const
 
     return bogus;
 } // QgsMapLayer::fields()
+
+
+
+void QgsMapLayer::connectNotify( const char * signal )
+{
+#ifdef QGISDEBUG
+    std::cerr << "QgsMapLayer connected to " << signal << "\n";
+#endif
+} //  QgsMapLayer::connectNotify

@@ -205,6 +205,8 @@ void QgsLegend::addLayer(QgsMapLayer * layer)
       return;
     }
 
+  const char * layerName = layer->name().ascii(); // debugger probe
+
   QgsLegendItem *legend_item = new QgsLegendItem(layer, this);
 
   // done in QgsLegendItem ctor legend_item->setPixmap( 0, *layer->legendPixmap() );
@@ -451,3 +453,11 @@ int QgsLegend::getItemPos(QListViewItem * item)
     }
   return index;
 }
+
+
+void QgsLegend::connectNotify( const char * signal )
+{
+#ifdef QGISDEBUG
+    std::cerr << "QgsLegend connected to " << signal << "\n";
+#endif
+} //  QgsLegend::connectNotify( const char * signal )

@@ -777,7 +777,7 @@ public slots:
         Called by QgsMapLayer::readXML().
 
     */
-    /* virtual */ void readXML_( QDomNode & layer_node );
+    /* virtual */ bool readXML_( QDomNode & layer_node );
 
 
 private:

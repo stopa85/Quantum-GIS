@@ -1489,3 +1489,14 @@ int QgsMapCanvas::mapUnits()
 {
   return mCanvasProperties->mapUnits();
 }
+
+
+
+
+void QgsMapCanvas::connectNotify( const char * signal )
+{
+#ifdef QGISDEBUG
+    std::cerr << "QgsMapCanvas connected to " << signal << "\n";
+#endif
+} //  QgsMapCanvas::connectNotify( const char * signal )
+

@@ -220,7 +220,7 @@ public:
 
      Invoked by QgsProject::read().
    */
-  void readXML( QDomNode & layer_node );
+  bool readXML( QDomNode & layer_node );
 
 public  slots:
 
@@ -255,7 +255,7 @@ protected:
   /** called by readXML(), used by children to read state specific to them from 
       project files.
   */
-  virtual void readXML_( QDomNode & layer_node );
+  virtual bool readXML_( QDomNode & layer_node );
 
 
   //! Extent of the layer
@@ -306,6 +306,11 @@ private:                       // Private attributes
 
   /**  true if visible ? */
   bool m_visible;
+
+  /** debugging member
+      invoked when a connect() is made to this object 
+  */
+  void connectNotify( const char * signal );
 
 
 public:                        // Public attributes

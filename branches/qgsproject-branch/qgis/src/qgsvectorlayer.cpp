@@ -1234,7 +1234,7 @@ bool QgsVectorLayer::labelOn ( void )
 
 
 
-void QgsVectorLayer::readXML_( QDomNode & layer_node )
+bool QgsVectorLayer::readXML_( QDomNode & layer_node )
 {
     //process provider key
     QDomNode pkeyNode = layer_node.namedItem("provider");
@@ -1273,33 +1273,35 @@ void QgsVectorLayer::readXML_( QDomNode & layer_node )
     QDomNode singlemarkernode = layer_node.namedItem("singlemarker");
     QDomNode graduatedmarkernode = layer_node.namedItem("graduatedmarker");
 
-    QgsRenderer * renderer;
+    std::auto_ptr<QgsRenderer> renderer;
 
     if (!singlenode.isNull())
     {
-        renderer = new QgsSingleSymRenderer;
+        renderer.reset( new QgsSingleSymRenderer );
         renderer->readXML(singlenode, *this);
     }
     else if (!graduatednode.isNull())
     {
-        renderer = new QgsGraduatedSymRenderer;
+        renderer.reset( new QgsGraduatedSymRenderer );
         renderer->readXML(graduatednode, *this);
     }
     else if (!continuousnode.isNull())
     {
-        renderer = new QgsContinuousColRenderer;
+        renderer.reset( new QgsContinuousColRenderer );
         renderer->readXML(continuousnode, *this);
     }
     else if(!singlemarkernode.isNull())
     {
-        renderer = new QgsSiMaRenderer;
+        renderer.reset( new QgsSiMaRenderer );
         renderer->readXML(singlemarkernode, *this);
     }
     else if(!graduatedmarkernode.isNull())
     {
-        renderer = new QgsGraduatedMaRenderer;
+        renderer.reset( new QgsGraduatedMaRenderer );
         renderer->readXML(graduatedmarkernode, *this);
     }
+
+    return valid;               // should be true if read successfully
 
 } // void QgsVectorLayer::readXML_
 

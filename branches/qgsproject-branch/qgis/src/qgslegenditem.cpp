@@ -28,7 +28,8 @@ QgsLegendItem::QgsLegendItem(QgsMapLayer * lyr, QListView * parent)
       m_layer(lyr),
       layerName( lyr->name() )
 {
-  activate();
+    // activate(); commented out because it was toggling layer visibility on,
+    // even if it was off (due to activate() triggering update)
   setOn(lyr->visible());
   setPixmap( 0, *lyr->legendPixmap() );
 }
@@ -74,7 +75,14 @@ QString QgsLegendItem::layerID() const
 } // layerID
 
 
-//void QgsLegendItem::setOn( bool b )
-//{
-//    m_layer->setVisible( b );
-//} // setOn
+void QgsLegendItem::setOn( bool b )
+{
+#ifdef QGISDEBUG
+    std::cerr << __FILE__ << ":" << __LINE__ 
+              << " setOn(" << b 
+              << ")\n";
+#endif
+    // commented out because this would cause infinite loop since signals/slots handle this m_layer->setVisible( b );
+
+    QCheckListItem::setOn( b );
+} // setOn

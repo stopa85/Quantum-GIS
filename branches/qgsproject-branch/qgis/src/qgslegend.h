@@ -98,6 +98,11 @@ private:
   /// return position of item in the list
   int getItemPos(QListViewItem * item);
 
+  /** debugging member
+      invoked when a connect() is made to this object 
+  */
+  void connectNotify( const char * signal );
+
 signals:
 
   // broadcast that the stacking order has changed
