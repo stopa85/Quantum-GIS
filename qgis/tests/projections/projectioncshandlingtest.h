@@ -46,6 +46,9 @@ class ProjectionCsHandlingTest : public CppUnit::TestCase {
       suiteOfTests->addTest( new CppUnit::TestCaller<ProjectionCsHandlingTest>( 
             "testWktFromFile",
             &ProjectionCsHandlingTest::testWktFromFile ) );
+      suiteOfTests->addTest( new CppUnit::TestCaller<ProjectionCsHandlingTest>( 
+            "testOgrTransform",
+            &ProjectionCsHandlingTest::testOgrTransform ) );
       return suiteOfTests;
     }  
     // 
@@ -234,11 +237,37 @@ wktAkAlbers = "PROJCS[\"Alaska_Albers_Equal_Area_Conic\",GEOGCS[\"GCS_North_Amer
       // morph it then spew it
       myInputSpatialRefSys.morphFromESRI();
       myInputSpatialRefSys.exportToProj4(&proj4src);
-      std::cout << "\tPROJ4: " << proj4src << std::endl;  
+      std::cout << "\tMorphed PROJ4: " << proj4src << std::endl;  
       CPPUNIT_ASSERT(QString(proj4src).find("datum") > -1);
       
     }
+void testOgrTransform()
+{
+    std::cout << "\n\nTesting OGR transform of kodiak.prj to WGS 84 Geographic" << std::endl; 
+      // set up the spatial ref
+      OGRSpatialReference myInputSpatialRefSys;
+      char *pWkt = (char*)wktAkAlbers.ascii();
+      CPPUNIT_ASSERT(myInputSpatialRefSys.importFromWkt(&pWkt)== OGRERR_NONE);
+      std::cout << "\tGetting proj4 paramters with morph to ESRI form" << std::endl; 
+      CPPUNIT_ASSERT(myInputSpatialRefSys.morphFromESRI() == OGRERR_NONE);
+      OGRSpatialReference oTargetSRS;
+      char *pWgs84 = (char *)wkt.ascii();
+      oTargetSRS.importFromWkt(&pWgs84);
+       OGRCoordinateTransformation *poCT;
+        poCT = OGRCreateCoordinateTransformation( &myInputSpatialRefSys,
+                                                  &oTargetSRS );
+        double x = 0.0;
+        double y = 0.0;
+        poCT->Transform(1, &x, &y);
+        std::cout << "Transformed 0,0 albers point = " << x << ", " << y << std::endl; 
+        CPPUNIT_ASSERT((x == -154.0) || (y == 50.0));
+      // get the proj4 for the morphed projection
+      char *proj4src;
+      CPPUNIT_ASSERT(myInputSpatialRefSys.exportToProj4(&proj4src) == OGRERR_NONE);
+      std::cout << "\tPROJ4: " << proj4src << std::endl;  
+      CPPUNIT_ASSERT(QString(proj4src).find("datum") > -1);
 
+}
     
   private:
     // WKT for default projection hardcoded in QgsCoordinateTransform class
