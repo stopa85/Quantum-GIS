@@ -920,7 +920,7 @@ void QgsRasterLayerProperties::pbnHistRefresh_clicked()
   // bin in all selected layers, and the min. It then draws a scaled line between min 
   // and max - scaled to image height. 1 line drawn per selected band
   //
-  const int BINS = 256; 
+  const int BINS = 127; 
   int myGraphImageWidth =256; // pixHistogram->width();
   int myGraphImageHeight = 256; // pixHistogram->height();
   int myBandCountInt = rasterLayer->getBandCount();
@@ -989,9 +989,21 @@ void QgsRasterLayerProperties::pbnHistRefresh_clicked()
   }
 
   
-  lblHistYMax->setText(QString::number(myMaxVal));
-  lblHistYMin->setText(QString::number(myMinVal));
 
+  QFont myQFont("arial", 8, QFont::Normal);
+  QFontMetrics myFontMetrics( myQFont );
+  myPainter.setFont(myQFont);
+  myPainter.setPen(Qt::black);
+  QString myYMaxLabel= QString::number(static_cast < unsigned int >(myMaxVal));
+  //calculate the gutters
+  int myYGutterWidth = myFontMetrics.width(myYMaxLabel )+2; //add 2 so we can have 1 pix whitespace either side of label
+  int myXGutterHeight = myFontMetrics.height()+2;
+  int myXGutterWidth = myFontMetrics.width(QString::number(BINS))+1;//1 pix whtispace from right edge of image
+  //now draw the axis labels onto the graph
+  myPainter.drawText(1, 12, myYMaxLabel);
+  myPainter.drawText(1, myGraphImageHeight-myXGutterHeight, QString::number(static_cast < unsigned int >(myMinVal)));
+  myPainter.drawText(myYGutterWidth,myGraphImageHeight-1 , "0");
+  myPainter.drawText( myGraphImageWidth-myXGutterWidth,myGraphImageHeight-1, QString::number(BINS));
   //
   //now draw actual graphs
   //
@@ -1007,9 +1019,6 @@ void QgsRasterLayerProperties::pbnHistRefresh_clicked()
 
     RasterBandStats myRasterBandStats = rasterLayer->getRasterBandStats(1);
     int myBarWidth = (((double)myGraphImageWidth)/((double)BINS));
-#ifdef QGISDEBUG
-    std::cout << "Making paletted image histogram....starting main loop" << std::endl;
-#endif
     for (int myBin = 0; myBin <BINS; myBin++)
     {
       double myBinValue = myRasterBandStats.histogramVector->at(myBin);
@@ -1017,7 +1026,7 @@ void QgsRasterLayerProperties::pbnHistRefresh_clicked()
       //hence the casts
       int myX = (((double)myGraphImageWidth)/((double)BINS))*myBin;
       //height varies according to freq. and scaled to greatet value in all layers
-      int myY = (int)((myBinValue/myMaxVal)*myGraphImageHeight);
+      int myY = (int)(((double)myBinValue/(double)myMaxVal)*myGraphImageHeight);
       myY = myGraphImageHeight - myY;
       //determin which color to draw the bar
       int c1, c2, c3;
@@ -1025,13 +1034,17 @@ void QgsRasterLayerProperties::pbnHistRefresh_clicked()
       if ( !found ) continue;
       //draw the bar
       QBrush myBrush(QColor(c1,c2,c3));
-      myPainter.fillRect(QRect(myX,myY,myBarWidth,myY) , myBrush );
+      myPainter.setPen(QColor(c1,c2,c3));
+#ifdef QGISDEBUG
+      std::cout << "myPainter.fillRect(QRect(" << myX << "," << myY << "," << myBarWidth << "," <<myY << ") , myBrush );" << std::endl;
+#endif
+      myPainter.drawRect(myX,myY,myBarWidth,myY);
       //store this point in our line too
       myPointArray.setPoint(myBin, myX, myY);
     }
     //draw a line on the graph along the bar peaks
     myPainter.setPen( Qt::black );
-    myPainter.drawPolyline(myPointArray);
+    //myPainter.drawPolyline(myPointArray);
   }
   else
   {
