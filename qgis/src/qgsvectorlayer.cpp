@@ -1723,6 +1723,7 @@ QgsVectorLayer:: setDataProvider( QString const & provider )
              {
                // set project CS to layer CS
                myDestWKT = mySourceWKT;
+               QgsProject::instance()->writeEntry("SpatialRefSys","/WKT", myDestWKT);
              }
            }
 
