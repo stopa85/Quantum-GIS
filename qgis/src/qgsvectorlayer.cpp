@@ -1696,7 +1696,7 @@ QgsVectorLayer:: setDataProvider( QString const & provider )
           // Sort out what to do with this layer's coordinate system (CS). We have
           // four possible scenarios:
           // 1. Layer has no projection info and canvas is projected
-          //      = set layer to canvas CS
+          //      = set layer to canvas CS XXX does the user need a warning here?
           // 2. Layer has no projection info and canvas is unprojected
           //      = leave both layer and canvas unprojected XXX is this appropriate?
           // 3. Layer has projection info and canvas is unprojected
