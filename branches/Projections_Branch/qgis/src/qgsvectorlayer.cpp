@@ -78,6 +78,7 @@
 #include "qgscoordinatetransform.h"
 #include "qgsspatialreferences.h"
 #include "qgsattributedialog.h"
+#include "qgslayerprojectionselector.h"
 //#include "wkbheader.h"
 
 #ifdef TESTPROVIDERLIB
@@ -2516,6 +2517,10 @@ void QgsVectorLayer::setCoordinateSystem()
           if(mySourceWKT.isEmpty())
           {
             mCoordinateTransform = new QgsCoordinateTransform("", "");
+            QgsLayerProjectionSelector * mySelector = new QgsLayerProjectionSelector();
+            QString srsWkt =  QgsProject::instance()->readEntry("SpatialRefSys","/selectedWKT","Lat/Long - WGS 84");
+            mySelector->setSelectedWKT(srsWkt);
+            mySelector->show();
           }
           else
           {
@@ -2550,25 +2555,43 @@ void QgsVectorLayer::setCoordinateSystem()
           //      = set canvas to layer's CS
           // 4. Layer has projection info and canvas is projected
           //      = setup transform for layer to canvas CS
+#ifdef QGISDEBUG
+          std::cout << ">>>>>>>>>>>> ----------------------------------------------------" << std::endl;
+#endif
            if(mySourceWKT.length() == 0)
            {
+#ifdef QGISDEBUG
+          std::cout << ">>>>>>>>>>>> layer has no CS..." ;
+#endif
              // layer has no CS
              if(myDestWKT.length() > 0)
              {
+#ifdef QGISDEBUG
+          std::cout << "set layer CS to project CS" << std::endl;
+#endif
                // set layer CS to project CS
                mySourceWKT = myDestWKT;
              }
              else
              {
                // leave layer with no CS
+#ifdef QGISDEBUG
+          std::cout << "project CS also undefined....leaving both empty" << std::endl;
+#endif
              }
            }
            else
            {
              // layer has a CS
+#ifdef QGISDEBUG
+          std::cout << ">>>>>>>>>>>> layer HAS a CS...." << std::endl;
+#endif
              if(myDestWKT.length() == 0)
              {
                // set project CS to layer CS
+#ifdef QGISDEBUG
+          std::cout << ">>>>>>>>>>>> project CS was undefined so its now set to layer CS" << std::endl;
+#endif
                myDestWKT = mySourceWKT;
                QgsProject::instance()->writeEntry("SpatialRefSys","/WKT", myDestWKT);
              }
@@ -2579,5 +2602,11 @@ void QgsVectorLayer::setCoordinateSystem()
           //of the canvas when zzooming in etc. so that they match the coordinate 
           //system of this layer
           mCoordinateTransform = new QgsCoordinateTransform(mySourceWKT, myDestWKT);
+#ifdef QGISDEBUG
+          std::cout << ">>>>>>>>>>>> Transform for layer created:" << std::endl;
+          std::cout << ">>>>>>>>>>>> LayerCS:\n" << mySourceWKT << std::endl;
+          std::cout << ">>>>>>>>>>>> ProjectCS:\n" << myDestWKT << std::endl;
+          std::cout << ">>>>>>>>>>>> ----------------------------------------------------" << std::endl;
+#endif
           }
 }

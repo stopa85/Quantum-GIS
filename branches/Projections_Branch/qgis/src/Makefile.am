@@ -132,6 +132,7 @@ headers =	qgisapp.h					\
 		qgsvectorfilewriter.h				\
 		qgsvectorlayer.h				\
 		splashscreen.h				\
+		qgslayerprojectionselector.h \
 		$(WIDGETPATH)/projectionselector/qgsprojectionselector.h
 
 ## qt designer files for all the GUI stuff
@@ -171,6 +172,7 @@ qgis_UIC =	qgisappbase.ui				\
 		qgssisydialogbase.ui			\
 		qgsuvaldialogbase.ui			\
 		qgsuvalmadialogbase.ui		\
+		qgslayerprojectionselectorbase.ui \
 		$(WIDGETPATH)/projectionselector/qgsprojectionselectorbase.ui
 
 ## all the ui files generate a corresponding header file
@@ -189,6 +191,7 @@ qgis_UIH =	qgisappbase.ui.h			\
 		qgsoptionsbase.ui.h			\
 		qgsrasterlayerpropertiesbase.ui.h	\
 		qgslabeldialogbase.ui.h			\
+		qgslayerprojectionselectorbase.ui.h \
 		qgsprojectpropertiesbase.ui.h		
 
 ## these generated files need MOC files, too
@@ -244,6 +247,7 @@ qgis_MOC =	qgisapp.moc.cpp				\
 		qgsuvaldialog.moc.cpp			\
 		qgsuvalmadialog.moc.cpp			\
 		qgsvectorlayer.moc.cpp			\
+		qgslayerprojectionselector.moc.cpp \
 		$(WIDGETPATH)/projectionselector/qgsprojectionselector.moc.cpp		\
 		splashscreen.moc.cpp 
 
@@ -340,6 +344,7 @@ qgis_SOURCES =	main.cpp			\
 		qgsvectordataprovider.cpp	\
 		qgsvectorfilewriter.cpp		\
 		qgsvectorlayer.cpp		\
+		qgslayerprojectionselector.cpp \
 		$(WIDGETPATH)/projectionselector/qgsprojectionselector.cpp		\
 		splashscreen.cpp 
 
