@@ -1,3 +1,5 @@
+# if PostgreSQL support requested, add PostgreSQL files
+if POSTGRESDB
 lib_LTLIBRARIES     = libpostgresprovider.la
                       
 libpostgresprovider_la_SOURCES = qgspostgresprovider.cpp \
@@ -10,4 +12,4 @@ libpostgresprovider_la_SOURCES = qgspostgresprovider.cpp \
 AM_CXXFLAGS := $(CXXFLAGS) $(EXTRA_CXXFLAGS) -I../include $(QT_CXXFLAGS) $(PGDB) -I$(PG_INC) 
 
 libpostgresprovider_la_LIBADD = $(QT_LDADD) $(PG_LIB) 
-
+endif
