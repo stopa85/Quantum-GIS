@@ -29,14 +29,12 @@
 #include "qtabwidget.h"
 #include <iostream>
 #include <qcombobox.h>
-#include "qgssisydialog.h"
-//#include "qgsgrasydialog.h"
+//#include "qgssisydialog.h"
 #include "qgssinglesymrenderer.h"
 #include "qgsgraduatedsymrenderer.h"
 #include <cfloat>
 #include "qgslegenditem.h"
-//#include "qgscontinuouscolrenderer.h"
-//#include "qgscontcoldialog.h"
+#include "qgscontinuouscolrenderer.h"
 
 QgsVectorLayerProperties::QgsVectorLayerProperties(QgsVectorLayer* lyr):layer(lyr)
 {
@@ -49,7 +47,7 @@ QgsVectorLayerProperties::QgsVectorLayerProperties(QgsVectorLayer* lyr):layer(ly
 	connect( settingsbutton, SIGNAL( clicked() ), this, SLOT( showSymbolSettings() ) );
 	legendtypecombobox->insertItem(tr("single symbol"));
 	legendtypecombobox->insertItem(tr("graduated symbol"));
-	//legendtypecombobox->insertItem(tr("continuous color"));
+	legendtypecombobox->insertItem(tr("continuous color"));
 	QObject::connect(legendtypecombobox,SIGNAL(activated(const QString&)),this,SLOT(alterLayerDialog(const QString&)));
 }
 
@@ -78,20 +76,12 @@ void QgsVectorLayerProperties::alterLayerDialog(const QString& string)
 	layer->setRenderer(renderer);
 	renderer->initializeSymbology(layer);
     }
-    /*else if(string==tr("continuous color"))
+    else if(string==tr("continuous color"))
     {
-	renderer=new QgsContinuousColRenderer();
-	//add a default setting
-	QgsSymbol s(QColor(0,0,0));
-	s.setBrush(QBrush(QColor(0,0,255)));
-	s.setPen(QPen(QColor(0,0,0),1));
-	QgsRenderItem* defaultminimum=new QgsRenderItem(s,QString::number(DBL_MIN,'f')," ");
-	QgsRenderItem* defaultmaximum=new QgsRenderItem(s,QString::number(DBL_MAX,'f')," ");
-	((QgsContinuousColRenderer*)renderer)->setMinimumItem(defaultminimum);
-	((QgsContinuousColRenderer*)renderer)->setMaximumItem(defaultmaximum);
+	QgsContinuousColRenderer* renderer=new QgsContinuousColRenderer();
 	layer->setRenderer(renderer);
-	dialog=new QgsContColDialog(layer);
-	}*/
+	renderer->initializeSymbology(layer);
+    }
     layer->triggerRepaint();
     
 }

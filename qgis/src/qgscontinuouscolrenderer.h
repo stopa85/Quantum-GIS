@@ -21,11 +21,11 @@
 #include "qgsrenderer.h"
 #include "qgsrenderitem.h"
 #include <qpainter.h>
-#include <ogrsf_frmts.h>
-#include <ogr_geometry.h>
 #include "qgscoordinatetransform.h"
 #include "qgspoint.h"
+#include "qgsfeature.h"
 #include <iostream>
+
 
 /**Renderer class which interpolates rgb values linear between the minimum and maximum value of the classification field*/
 class QgsContinuousColRenderer: public QgsRenderer
@@ -33,8 +33,11 @@ class QgsContinuousColRenderer: public QgsRenderer
  public:
     QgsContinuousColRenderer();
     ~QgsContinuousColRenderer();
-    /**Renders the feature using the minimum and maximum item (if they are not null)*/
-    void renderFeature(QPainter* p, OGRFeature* f, QgsCoordinateTransform* t, int endian);
+    /**Sets the initial symbology configuration for a layer. An instance of the corresponding renderer dialog is created and associated with the layer. Finally, a pixmap for the legend is drawn
+     @param layer the vector layer associated with the renderer*/
+    void initializeSymbology(QgsVectorLayer* layer);
+    /**Renders the feature using the minimum and maximum value of the classification field*/
+    void renderFeature(QPainter* p, QgsFeature* f, QgsCoordinateTransform* t);
     /**Sets the id of the classification field*/
     void setClassificationField(int id);
     /**Sets the item for the minimum value. The item has to be created using the new operator and is automatically deleted when inserting a new item or when the instance is destroyed*/
@@ -60,7 +63,7 @@ inline void QgsContinuousColRenderer::setClassificationField(int id)
     m_classificationField=id;
 }
 
-inline void QgsContinuousColRenderer::renderFeature(QPainter* p, OGRFeature* f, QgsCoordinateTransform* t, int endian)
+/*inline void QgsContinuousColRenderer::renderFeature(QPainter* p, OGRFeature* f, QgsCoordinateTransform* t, int endian)
 {
     if(m_minimumItem&&m_maximumItem)
     {
@@ -255,6 +258,6 @@ inline void QgsContinuousColRenderer::renderFeature(QPainter* p, OGRFeature* f, 
     {
 	std::cout << "warning, null pointer in QgsContinuousColRenderer::renderFeature" << std::endl << std::flush;
     }
-}
+}*/
 
 #endif
