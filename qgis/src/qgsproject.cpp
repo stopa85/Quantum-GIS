@@ -510,7 +510,11 @@ QgsProject::read( )
 
     if ( ! imp_->file.open(IO_ReadOnly) )
     {
+        imp_->file.close();     // even though we got an error, let's make
+                                // sure it's closed anyway
+
         throw QgsIOException( "Unable to open " + imp_->file.name() );
+
 	return false;		// XXX raise exception? Ok now superfluous 
                                 // XXX because of exception.
     }
@@ -615,6 +619,20 @@ QgsProject::write( QFileInfo const & file )
 bool 
 QgsProject::write( )
 {
+    // if we have problems creating or otherwise writing to the project file,
+    // let's find out up front before we go through all the hand-waving
+    // necessary to create all the DOM objects
+    if ( ! imp_->file.open( IO_WriteOnly | IO_Translate | IO_Truncate ) )
+    {
+        imp_->file.close();     // even though we got an error, let's make
+                                // sure it's closed anyway
+
+        throw QgsIOException( "Unable to open " + imp_->file.name() );
+
+	return false;		// XXX raise exception? Ok now superfluous 
+                                // XXX because of exception.
+    }
+
     QDomImplementation DOMImplementation;
 
     QDomDocumentType documentType = DOMImplementation.createDocumentType("qgis","http://mrcc.com/qgis.dtd","SYSTEM");
@@ -682,15 +700,19 @@ QgsProject::write( )
         { i->second->writeXML( projectLayersNode, *doc ); }
     }
 
-    // XXX write to test file for now; will replace with real file name later
-
-    doc->normalize();
+    doc->normalize();           // XXX I'm not entirely sure what this does
 
     QString xml = doc->toString( 8 ); // write to string with indentation of eight characters
 
-    const char * xmlString = xml.ascii(); // debugger probe point
+    // const char * xmlString = xml.ascii(); // debugger probe point
+    // qDebug( "project file output:\n\n" + xml );
 
-    qDebug( "project file output:\n\n" + xml );
+    QTextStream projectFileStream( &imp_->file );
+
+    projectFileStream << xml << endl;
+
+    imp_->file.close();
+
 
     dirty( false );             // reset to pristine state
 
