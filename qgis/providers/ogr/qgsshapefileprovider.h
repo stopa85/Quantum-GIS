@@ -105,21 +105,37 @@ public:
  * spatial filter and calling ResetReading
  */
  void reset();
+
+ /**Returns the minimum value of an attribut
+    @param position the number of the attribute*/
+ QString minValue(int position);
+
+ /**Returns the maximum value of an attribut
+    @param position the number of the attribute*/
+ QString maxValue(int position);
 private:
 	unsigned char *getGeometryPointer(OGRFeature *fet);
 	std::vector<QgsFeature> features;
 	std::vector<bool> * selected;
-  std::vector<QgsField> attributeFields;
+	std::vector<QgsField> attributeFields;
 	QString dataSourceUri;
 	OGRDataSource *ogrDataSource;
 	OGREnvelope *extent_;
 	OGRLayer *ogrLayer;
 	bool valid;
-    int geomType;
-    long numberFeatures;
+	int geomType;
+	long numberFeatures;
 	enum ENDIAN
 	{
 		NDR = 1,
 		XDR = 0
 	};
+	/**Flag indicating, if the minmaxcache should be renewed (true) or not (false)*/
+	bool minmaxcachedirty;
+	/**Matrix storing the minimum and maximum values*/
+	double** minmaxcache;
+	/**Fills the cash and sets minmaxcachedirty to false*/
+	void fillMinMaxCash();
+	
+	
 };

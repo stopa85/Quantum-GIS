@@ -107,6 +107,14 @@ public:
 * function body.
 */
   virtual void reset()=0;
+
+  /**Returns the minimum value of an attribut
+     @param position the number of the attribute*/
+  //virtual QString minValue(int position)=0;
+
+  /**Returns the maximum value of an attribut
+     @param position the number of the attribute*/
+  //virtual QString maxValue(int position)=0;
 };
 
 
