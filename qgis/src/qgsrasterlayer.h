@@ -177,6 +177,7 @@ The [type] part of the variable should be the type class of the variable written
 // Forward declarations
 //
 class QgsRect;
+class QgsRasterLayerProperties;
 class GDALDataset;
 class GDALRasterBand;
 class QImage;
@@ -344,18 +345,20 @@ public:
      * -
      * */
     QgsRasterLayer(QString path = 0, QString baseName = 0);
+
     /** \brief The destuctor.  */
     ~QgsRasterLayer();
-    /** \brief This method is called when the properties for this layer needs to be modified. 
-     * invokes an instance of the QgsRasterLayerProperties dialog box.*/
-     void showLayerProperties();
+
+
     /** \brief Draws a thumbnail of the rasterlayer into the supplied pixmap pointer */
      void drawThumbnail(QPixmap * theQPixmap);
+
     /** \brief Get an 8x8 pixmap of the colour palette. If the layer has no palette a white pixmap will be returned. */
      QPixmap getPaletteAsPixmap();
      
     /** \brief This is called when the view on the rasterlayer needs to be refreshed (redrawn).  */
     void draw(QPainter * theQPainter, QgsRect * theViewExtent, QgsCoordinateTransform * theQgsCoordinateTransform, QPaintDevice* dst);
+
     /** \brief This is an overloaded version of the above function that is called by both draw above and drawThumbnail */
     void draw (QPainter * theQPainter, RasterViewPort * myRasterViewPort);
     
@@ -364,15 +367,19 @@ public:
     //
     /** \brief Accessor that returns the width of the (unclipped) raster  */
     const int getRasterXDim() {return rasterXDimInt;};
+
     /** \brief Accessor that returns the height of the (unclipped) raster  */
     const int getRasterYDim() {return rasterYDimInt;};
+
     //
     // Accessor and mutator for no data double
     //
     /** \brief  Accessor that returns the NO_DATA entry for this raster. */
-    const double getNoDataValue() {return noDataValueDouble;};
+    const double getNoDataValue() {return noDataValueDouble;}
+
     /** \brief  Mutator that allows the  NO_DATA entry for this raster to be overridden. */
     void setNoDataValue(double theNoDataDouble) { noDataValueDouble=theNoDataDouble; return;};
+
     //
     // Accessor and mutator for invertHistogramFlag
     //
@@ -777,6 +784,11 @@ public slots:
                           void *theData);    
 */
 
+    /** \brief This method is called when the properties for this layer needs to be modified. 
+     * invokes an instance of the QgsRasterLayerProperties dialog box.*/
+    /* virtual */ void showLayerProperties();
+
+
  protected:
 
     /** reads vector layer specific state from project file DOM node.
@@ -933,6 +945,12 @@ private:
     QString redTranslatedQString;
     QString greenTranslatedQString;
     QString blueTranslatedQString;
+
+    /* raster properties dialog 
+
+       @todo XXX should consider generalizing this
+    */
+    QgsRasterLayerProperties * mLayerProperties;
     
 };
 
