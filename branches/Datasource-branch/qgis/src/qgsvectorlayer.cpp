@@ -48,7 +48,7 @@
 typedef QgsDataProvider *create_it(const char *uri);
 
 QgsVectorLayer::QgsVectorLayer(QString vectorLayerPath, QString baseName)
-:QgsMapLayer(VECTOR, baseName, vectorLayerPath)
+    :QgsMapLayer(VECTOR, baseName, vectorLayerPath), tabledisplay(0)
 {
 // load the plugin
 //TODO figure out how to register and identify data source plugin for a specific
@@ -110,7 +110,6 @@ QgsVectorLayer::QgsVectorLayer(QString vectorLayerPath, QString baseName)
 	} else { 
 		selected = 0;
 	}
-	tabledisplay = 0;
 	//draw the selected features in yellow
 	selectionColor.setRgb(255, 255, 0);
 }
@@ -122,6 +121,7 @@ QgsVectorLayer::~QgsVectorLayer()
 	}
 	if (tabledisplay) {
 		tabledisplay->close();
+		delete tabledisplay;
 	}
 }
 
@@ -498,9 +498,6 @@ void QgsVectorLayer::table()
         delete fet;
 			}
 			
-			
-
-		}
 		// reset the pointer to start of fetabledisplayures so
 		// subsequent reads will not fail
 		dataProvider->reset();
@@ -527,6 +524,7 @@ void QgsVectorLayer::table()
 		QObject::connect(tabledisplay->table(), SIGNAL(selectionRemoved()), this, SLOT(removeSelection()));
 		QObject::connect(tabledisplay->table(), SIGNAL(repaintRequested()), this, SLOT(triggerRepaint()));
 		QApplication::restoreOverrideCursor();
+	}
 	
 }
 
