@@ -49,8 +49,7 @@ QStringList QgsProjectionSelectorPlugin::keys() const
 QWidget* QgsProjectionSelectorPlugin::create( const QString &key, QWidget* parent, const char* name )
 {
     if ( key == "QgsProjectionSelector" )
-        //return new QgsProjectionSelector( parent, name );
-	return new QgsProjectionSelector( parent );
+        return new QgsProjectionSelector( parent, name );
     return 0;
 }
 
