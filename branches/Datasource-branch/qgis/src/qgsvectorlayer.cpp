@@ -75,7 +75,6 @@ const char *cOgrLib = (const char *)ogrlib;
 
 #endif
 // load the data provider
-//TODO remove hard coding for library name
 	QLibrary *myLib = new QLibrary((const char *)ogrlib);
 	std::cout << "Library name is " << myLib->library() << std::endl;
 	bool loaded = myLib->load();
