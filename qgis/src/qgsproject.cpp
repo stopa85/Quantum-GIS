@@ -486,6 +486,59 @@ QgsRect _getFullExtent( QString const & canonicalMapCanvasName )
 
 
 
+
+
+
+/**
+   Get the  extent for the given canvas.
+
+   This is used to get the  extent of the main map canvas so that we can
+   set the overview canvas to that instead of stupidly setting the overview
+   canvas to the *same* extent that's in the main map canvas.
+
+   @param canonicalMapCanvasName will be "theMapCanvas" or "theOverviewCanvas"; these
+   are set when those are created in qgisapp ctor
+
+ */
+static
+QgsRect _getExtent( QString const & canonicalMapCanvasName )
+{
+    // XXX since this is a cut-n-paste from above, maybe generalize to a
+    // XXX separate function?
+                                // first find the canonical map canvas
+
+    QgsMapCanvas * theMapCanvas;
+
+    QWidgetList  * list = QApplication::topLevelWidgets();
+    QWidgetListIt it( *list );  // iterate over the widgets
+    QWidget * w;
+
+    while ( (w=it.current()) != 0 ) 
+    {   // for each top level widget...
+        ++it;
+        theMapCanvas = dynamic_cast<QgsMapCanvas*>(w->child( canonicalMapCanvasName, 0, true ));
+
+        if ( theMapCanvas )
+        { break; }
+    }
+    delete list;                // delete the list, not the widgets
+
+
+    if( ! theMapCanvas )
+    {
+        qDebug( "Unable to find canvas widget " + canonicalMapCanvasName );
+
+        return QgsRect();       // XXX some sort of error value?  Exception?
+    }
+    
+
+    return theMapCanvas->extent();
+
+} // _getExtent( QString const & canonicalMapCanvasName )
+
+
+
+
 /**
    Please note that most of the contents were copied from qgsproject
 */
@@ -664,11 +717,11 @@ QgsProject::write( )
     QDomElement xMax = doc->createElement( "xmax" );
     QDomElement yMax = doc->createElement( "ymax" );
 
-    QgsRect mapCanvasFullExtent =  _getFullExtent( "theMapCanvas" );
-    QDomText xMinText = doc->createTextNode( QString::number(mapCanvasFullExtent.xMin(),'f') );
-    QDomText yMinText = doc->createTextNode( QString::number(mapCanvasFullExtent.yMin(),'f') );
-    QDomText xMaxText = doc->createTextNode( QString::number(mapCanvasFullExtent.xMax(),'f') );
-    QDomText yMaxText = doc->createTextNode( QString::number(mapCanvasFullExtent.yMax(),'f') );
+    QgsRect mapCanvasExtent =  _getExtent( "theMapCanvas" );
+    QDomText xMinText = doc->createTextNode( QString::number(mapCanvasExtent.xMin(),'f') );
+    QDomText yMinText = doc->createTextNode( QString::number(mapCanvasExtent.yMin(),'f') );
+    QDomText xMaxText = doc->createTextNode( QString::number(mapCanvasExtent.xMax(),'f') );
+    QDomText yMaxText = doc->createTextNode( QString::number(mapCanvasExtent.yMax(),'f') );
 
     xMin.appendChild( xMinText );
     yMin.appendChild( yMinText );
