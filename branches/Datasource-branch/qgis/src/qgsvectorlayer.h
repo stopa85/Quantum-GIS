@@ -73,16 +73,14 @@ class QgsVectorLayer:public QgsMapLayer
 	QgsRenderer* renderer();
 	/**Returns a pointer to the renderer dialog*/
 	QDialog* rendererDialog();
-	/**Sets the renderer*/
+	/**Sets the renderer. If a renderer is already present, it is deleted*/
 	void setRenderer(QgsRenderer* r);
-	/**Sets the renderer dialog*/
+	/**Sets the renderer dialog. If a renderer dialog is already present, it is deleted*/
 	void setRendererDialog(QDialog* dialog);
 	/**Returns point, line or polygon*/
 	QGis::VectorType vectorType();
 	/**Returns a pointer to the properties dialog*/
 	QgsVectorLayerProperties* propertiesDialog();
-	/**Adds a QgsSingleSymbolRenderer with random color and a corresponding pixmap to the legend*/
-	void initializeSymbology();
 
   protected:
 	/**Pointer to the table display object if there is one, else a pointer to 0*/

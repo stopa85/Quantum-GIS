@@ -18,6 +18,10 @@
 #include "qgssinglesymrenderer.h"
 #include "qgsfeature.h"
 #include "qgis.h"
+#include "qgsvectorlayer.h"
+#include "qstring.h"
+#include "qgssisydialog.h"
+#include "qgslegenditem.h"
 
 QgsSingleSymRenderer::QgsSingleSymRenderer()
 {
@@ -350,3 +354,65 @@ void QgsSingleSymRenderer::renderFeature(QPainter* p, QgsFeature* f, QgsCoordina
     
 }
 
+void QgsSingleSymRenderer::initializeSymbology(QgsVectorLayer* layer)
+{
+    if(layer)
+    {
+	QgsSymbol sy;
+	sy.brush().setStyle(Qt::SolidPattern);
+	sy.pen().setStyle(Qt::SolidLine);
+
+	//random fill colors for points and polygons and pen colors for lines
+	int red = 1 + (int) (255.0 * rand() / (RAND_MAX + 1.0));
+	int green = 1 + (int) (255.0 * rand() / (RAND_MAX + 1.0));
+	int blue = 1 + (int) (255.0 * rand() / (RAND_MAX + 1.0));
+    
+	QPixmap* pixmap=layer->legendPixmap();
+	QString name=layer->name();
+	int namewidth=10+name.length()*12;//12 pixel per letter seems appropriate
+	int width=(namewidth>60) ? namewidth : 60;
+	pixmap->resize(width,75);
+	pixmap->fill();
+	QPainter p(pixmap);
+	p.drawText(10,35,name);
+
+	if(layer->vectorType()==QGis::Line)
+	{
+	    sy.pen().setColor(QColor(red,green,blue));
+	    //paint the pixmap for the legend
+	    p.setPen(sy.pen());
+	    p.drawLine(10,55,40,55);
+	}
+	else
+	{
+	    sy.brush().setColor(QColor(red,green,blue));
+	    sy.pen().setColor(QColor(0,0,0));
+	    //paint the pixmap for the legend
+	    p.setPen(sy.pen());
+	    p.setBrush(sy.brush());
+	    if(layer->vectorType()==QGis::Point)
+	    {
+		p.drawRect(20,55,5,5);
+	    }
+	    else//polygon
+	    {
+		p.drawRect(10,45,30,20);
+	    }
+			
+	}
+	QgsRenderItem ri(sy,"", "");
+	addItem(ri);
+
+	QgsSiSyDialog* dialog=new QgsSiSyDialog(layer);
+	layer->setRendererDialog(dialog);
+	QgsLegendItem* item;
+	if(item=layer->legendItem())
+	{
+	    item->setPixmap(0,(*pixmap));
+	}
+    }
+    else
+    {
+	qWarning("Warning, null pointer in QgsSingleSymRenderer::initializeSymbology()");
+    }
+}

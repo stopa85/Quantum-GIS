@@ -65,18 +65,12 @@ QgsSymbol* QgsVectorLayerProperties::getSymbol()
 
 void QgsVectorLayerProperties::alterLayerDialog(const QString& string)
 {
-    QgsRenderer* oldrenderer=layer->renderer();
-    QDialog* olddialog=layer->rendererDialog();
-    
-    QDialog* dialog;
-    QgsRenderer* renderer;
-    
     //create a new Dialog
     if(string==tr("single symbol"))
     {
-	renderer=new QgsSingleSymRenderer();
+	QgsSingleSymRenderer* renderer=new QgsSingleSymRenderer();
 	layer->setRenderer(renderer);
-	dialog=new QgsSiSyDialog(layer);
+	renderer->initializeSymbology(layer);
     }
     /*else if(string==tr("graduated symbol"))
     {
@@ -104,30 +98,8 @@ void QgsVectorLayerProperties::alterLayerDialog(const QString& string)
 	layer->setRenderer(renderer);
 	dialog=new QgsContColDialog(layer);
 	}*/
+    layer->triggerRepaint();
     
-    QString name=layer->name();
-    double namewidth=45+name.length()*12;
-    int width=(namewidth>60) ? namewidth : 60;
-    //show a legend with just the display name
-    QPixmap* pix=layer->legendPixmap();
-    pix->resize(width,75);
-    pix->fill();
-    QPainter p(pix);
-    p.drawText(45,35,name);
-    layer->legendItem()->setPixmap(0,(*pix));
-    
-      
-    layer->setRendererDialog(dialog);
-
-    if(oldrenderer)
-    {
-	delete oldrenderer;
-    }
-    if(olddialog)
-    {
-	delete olddialog;
-    }
-    layer->triggerRepaint(); 
 }
 
 void QgsVectorLayerProperties::showSymbolSettings()
