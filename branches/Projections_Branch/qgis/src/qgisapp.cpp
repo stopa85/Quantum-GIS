@@ -2607,7 +2607,11 @@ void QgisApp::zoomToLayerExtent()
     // get the selected item
     QListViewItem *li = mMapLegend->currentItem();
     QgsMapLayer *layer = ((QgsLegendItem *) li)->layer();
-    mMapCanvas->setExtent(layer->extent());
+    // the layer extent has to be transformed to the map canvas
+    // coordinate system 
+    QgsCoordinateTransform *ct = layer->coordinateTransform();
+    QgsRect transformedExtent = ct->transform(layer->extent());
+    mMapCanvas->setExtent(transformedExtent);
     mMapCanvas->clear();
     mMapCanvas->render();
 
