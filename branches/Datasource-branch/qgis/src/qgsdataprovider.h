@@ -29,7 +29,7 @@ class QgsDataProvider {
 
 public: 
 	/** 
-	* Get the first feature resutling from a select operation
+	* Get the first feature resulting from a select operation
 	* @return QgsFeature
 	*/
 	virtual QgsFeature * QgsDataProvider::getFirstFeature()=0;
@@ -39,15 +39,19 @@ public:
 	*/
 	virtual QgsFeature * QgsDataProvider::getNextFeature()=0;
 	/**
+	* Get geometry for first feature
+	*/
+	//virtual 
+	/**
 	* Select features based on a bounding rectangle. Features can be retrieved 
 	* with calls to getFirstFeature and getNextFeature.
-	* @param extent QgsRect containing the extent to use in selecting features
+	* @param mbr QgsRect containing the extent to use in selecting features
 	*/
-	virtual void QgsDataProvider::select()=0;
+	virtual void QgsDataProvider::select(QgsRect mbr)=0;
 	/** 
 		* Set the data source specification. This may be a path or database
 	* connection string
-	* @uri data source specification
+	* @param data source specification
 	*/
 	virtual void QgsDataProvider::setDataSourceUri(QString uri) = 0;
 	
@@ -57,16 +61,26 @@ public:
 	* @return data source specification
 	*/
 	virtual QString QgsDataProvider::getDataSourceUri() = 0;
-	
+
+  /**
+  * Get the extent of the layer
+  * @return QgsRect containing the extent of the layer
+  */
+  virtual QgsRect * QgsDataProvider::extent() = 0;
+   	
 	/**
 	* Identify features within the search radius specified by rect
 	* @param rect Bounding rectangle of search radius
 	* @return std::vector containing QgsFeature objects that intersect rect
 	*/
 	virtual std::vector<QgsFeature> QgsDataProvider::identify(QgsRect *rect)=0;
-	
-	int endian();
- 
+
+   /**
+   * Return the endian of this layer.
+   * @return 0 for NDR (little endian), 1 for XDR (big endian
+   */
+	virtual int QgsDataProvider::endian()=0;
+
 };
 
 #endif

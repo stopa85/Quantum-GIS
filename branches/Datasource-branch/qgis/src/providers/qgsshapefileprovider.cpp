@@ -17,10 +17,10 @@ QgsShapeFileProvider::QgsShapeFileProvider(QString uri):dataSourceUri(uri)
 		std::cout << "Data source is valid" << std::endl;
 		valid = true;
 		ogrLayer = ogrDataSource->GetLayer(0);
-		// get the extent (envelope) of the layer
-		extent = new OGREnvelope();
-		ogrLayer->GetExtent(extent);
-		// get the feature type
+		// get the extent_ (envelope) of the layer
+		extent_ = new OGREnvelope();
+		ogrLayer->GetExtent(extent_);
+		// check the validity of the layer
 		OGRFeature *feat = ogrLayer->GetNextFeature();
 		if (feat) {
 			OGRGeometry *geom = feat->GetGeometryRef();
@@ -58,38 +58,82 @@ QgsShapeFileProvider::~QgsShapeFileProvider()
 {
 }
 
-/** 
+/**
 	* Get the first feature resutling from a select operation
 	* @return QgsFeature
 	*/
 QgsFeature *QgsShapeFileProvider::getFirstFeature()
 {
-	ogrLayer->ResetReading();
-	OGRFeature *feat = ogrLayer->GetNextFeature();
-	QgsFeature *f = new QgsFeature();
-	f->setGeometry(getGeometryPointer(feat));
+	QgsFeature *f = 0;
+	if(valid){
+		std::cout << "getting first feature\n";
+		ogrLayer->ResetReading();
+		OGRFeature *feat = ogrLayer->GetNextFeature();
+		if(feat){
+			std::cout << "First feature is not null\n";
+		}else{
+			std::cout << "First feature is null\n";
+		}
+		f = new QgsFeature();
+		f->setGeometry(getGeometryPointer(feat));
+	}
 	return f;
 }
 
-	/** 
+	/**
 	* Get the next feature resutling from a select operation
 	* @return QgsFeature
 	*/
 QgsFeature *QgsShapeFileProvider::getNextFeature()
 {
-	return (new QgsFeature());
+    
+	QgsFeature *f = 0;
+	if(valid){
+		std::cout << "getting next feature\n";
+		OGRFeature *feat = ogrLayer->GetNextFeature();
+		if(feat){
+			std::cout << "Feature is not null\n";
+            f = new QgsFeature();
+            f->setGeometry(getGeometryPointer(feat));
+		}else{
+			std::cout << "Feature is null\n";
+		}
+		
+	}
+	return f;
 }
 
 	/**
-	* Select features based on a bounding rectangle. Features can be retrieved 
+	* Select features based on a bounding rectangle. Features can be retrieved
 	* with calls to getFirstFeature and getNextFeature.
-	* @param extent QgsRect containing the extent to use in selecting features
+	* @param mbr QgsRect containing the extent to use in selecting features
 	*/
-void QgsShapeFileProvider::select()
+void QgsShapeFileProvider::select(QgsRect rect)
 {
+    // spatial query to fetch features
+    OGRGeometry *filter = 0;
+	filter = new OGRPolygon();
+	QString wktExtent = QString("POLYGON ((%1))").arg(rect.stringRep());
+	const char *wktText = (const char *)wktExtent;
+
+	OGRErr result = ((OGRPolygon *) filter)->importFromWkt((char **)&wktText);
+	if (result == OGRERR_NONE) {
+		ogrLayer->SetSpatialFilter(filter);
+		int featureCount = 0;
+		while (OGRFeature * fet = ogrLayer->GetNextFeature()) {
+			/* if (fet) {
+				select(fet->GetFID());
+				if (tabledisplay) {
+					tabledisplay->table()->selectRowWithId(fet->GetFID());
+					(*selected)[fet->GetFID()] = true;
+				}
+			} */
+		}
+		ogrLayer->ResetReading();
+	}
 }
 
-	/** 
+	/**
 		* Set the data source specification. This may be a path or database
 	* connection string
 	* @uri data source specification
@@ -99,14 +143,14 @@ void QgsShapeFileProvider::setDataSourceUri(QString uri)
 	dataSourceUri = uri;
 }
 
-		/** 
+		/**
 	* Get the data source specification. This may be a path or database
 	* connection string
 	* @return data source specification
 	*/
 QString QgsShapeFileProvider::getDataSourceUri()
 {
-	return QString("uri");
+	return dataSourceUri;
 }
 
 	/**
@@ -143,6 +187,12 @@ int QgsShapeFileProvider::endian()
 		retVal = XDR;
 	delete[]chkEndian;
 	return retVal;
+}
+
+// TODO - make this function return the real extent_
+QgsRect *QgsShapeFileProvider::extent()
+{
+  return new QgsRect(extent_->MinX, extent_->MinY, extent_->MaxX, extent_->MaxY);
 }
 extern "C" QgsShapeFileProvider * classFactory(const char *uri)
 {
