@@ -65,6 +65,12 @@ void QgsContColDialog::apply()
     double minimum=DBL_MAX;
     double maximum=DBL_MIN;//find out the number of the classification field
     QString fieldstring=classificationComboBox->currentText();
+
+    if(fieldstring.isEmpty())//don't do anything, it there is no classification field
+    {
+	return;
+    }
+
     std::map<QString,int>::iterator iter=m_fieldmap.find(fieldstring);
     int classfield=iter->second;
 

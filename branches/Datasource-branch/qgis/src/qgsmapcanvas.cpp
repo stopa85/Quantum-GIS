@@ -116,7 +116,8 @@ void QgsMapCanvas::addLayer(QgsMapLayer * lyr)
 	lyr->setZ(layers.size() - 1);
 	updateZpos();
 	zOrder.push_back(lyr->getLayerID());
-	connect(lyr, SIGNAL(visibilityChanged()), this, SLOT(layerStateChange()));
+	QObject::connect(lyr, SIGNAL(visibilityChanged()), this, SLOT(layerStateChange()));
+	QObject::connect(lyr,SIGNAL(repaintRequested()),this,SLOT(refresh()));
 	dirty = true;
 	//lyr->zpos = 0;
 }

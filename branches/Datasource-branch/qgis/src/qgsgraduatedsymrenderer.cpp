@@ -46,30 +46,23 @@ void QgsGraduatedSymRenderer::removeItems()
 
 void QgsGraduatedSymRenderer::renderFeature(QPainter* p, QgsFeature* f, QgsCoordinateTransform* t)
 {
-    qWarning("enter QgsGraduatedSymRenderer::renderFeature");
     //first find out the value for the classification attribute
     std::vector<QgsFeatureAttribute> vec=f->attributeMap();
-    std::cout << "classification field: " << m_classificationField << std::endl << std::flush;
     double value=vec[m_classificationField].fieldValue().toDouble();
-    std::cout << "value: " << value << std::endl << std::flush;
 
     std::list<QgsRangeRenderItem*>::iterator it;
     //first find the first render item which contains the feature
     for(it=m_items.begin();it!=m_items.end();++it)
     {
-	std::cout << "lower value: " << (*it)->value().toDouble()  << std::endl << std::flush;
-	std::cout << "upper value: " << (*it)->upper_value().toDouble() << std::endl << std::flush;
-
 	if(value>=(*it)->value().toDouble()&&value<=(*it)->upper_value().toDouble())
 	{
-	    std::cout << "Wert gefunden" << std::endl << std::flush;
 	    break;
 	}
     }
 
     if(it==m_items.end())//value is contained in no item
     {
-	std::cout << "Wert ist in keiner Klasse enthalten" << std::endl << std::flush;
+	std::cout << "Warning, value is contained in no class" << std::endl << std::flush;
 	return;
     }
     else

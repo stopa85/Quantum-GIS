@@ -155,6 +155,10 @@ class QgsMapLayer:public QObject
   public:						// Public attributes
   /**  */
 	  QString m_labelField;
+
+  signals:
+	  /**This signal should be connected with the slot QgsMapCanvas::refresh()*/
+	  void repaintRequested();
 };
 
 #endif
