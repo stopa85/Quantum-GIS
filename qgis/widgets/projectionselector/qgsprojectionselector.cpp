@@ -58,7 +58,6 @@ void QgsProjectionSelector::setSelectedWKT(QString theWKT)
   QListViewItemIterator myIterator (lstCoordinateSystems);
   while (myIterator.current()) 
   {
-    //cerr << myIterator.current()->text (0) << endl;
     if (myIterator.current()->text(0)==theWKT)
     {
       lstCoordinateSystems->setCurrentItem(myIterator.current());
@@ -71,17 +70,47 @@ void QgsProjectionSelector::setSelectedWKT(QString theWKT)
 
 void QgsProjectionSelector::setSelectedSRID(QString theSRID)
 {
+  QListViewItemIterator myIterator (lstCoordinateSystems);
+  while (myIterator.current()) 
+  {
+    if (myIterator.current()->text(1)==theSRID)
+    {
+      lstCoordinateSystems->setCurrentItem(myIterator.current());
+      lstCoordinateSystems->ensureItemVisible(myIterator.current());
+      return;
+    }
+    ++myIterator;
+  }
 
 }
 
 QString QgsProjectionSelector::getCurrentWKT()
 {
-  return QString("");
+  // Only return the projection if there is a node in the tree
+  // selected that has an srid. This prevents error if the user
+  // selects a top-level node rather than an actual coordinate
+  // system
+  if(lstCoordinateSystems->currentItem()->text(1).length() > 0)
+  {
+    return QgsSpatialReferences::instance()->getSrsBySrid(lstCoordinateSystems->currentItem()->text(1))->srText();
+  }
+  else
+  {
+    return NULL;
+  }
+
 }
 
 QString QgsProjectionSelector::getCurrentSRID()
 {
-  return QString("");
+  if(lstCoordinateSystems->currentItem()->text(1).length() > 0)
+  {
+    return lstCoordinateSystems->currentItem()->text(1);
+  }
+  else
+  {
+    return NULL;
+  }
 }
 
 void QgsProjectionSelector::getProjList()
