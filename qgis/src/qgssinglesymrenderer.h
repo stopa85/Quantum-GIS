@@ -40,6 +40,8 @@ class QgsSingleSymRenderer: public QgsRenderer
     /**Sets the initial symbology configuration for a layer. An instance of the corresponding renderer dialog is created and associated with the layer. Finally, a pixmap for the legend is drawn
      @param layer the vector layer associated with the renderer*/
     virtual void initializeSymbology(QgsVectorLayer* layer);
+    /** Returns the renderer type. In this case, QgsRenderer::Simple */
+    int rendererType();
  protected:
     QgsRenderItem m_item;
 };
@@ -48,5 +50,7 @@ inline QgsRenderItem* QgsSingleSymRenderer::item()
 {
     return &m_item;
 }
-
+inline int QgsSingleSymRenderer::rendererType(){
+  return QgsRenderer::Simple;
+}
 #endif

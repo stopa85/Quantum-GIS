@@ -261,3 +261,5 @@ void QgsSingleSymRenderer::initializeSymbology(QgsVectorLayer* layer)
 	qWarning("Warning, null pointer in QgsSingleSymRenderer::initializeSymbology()");
     }
 }
+
+
