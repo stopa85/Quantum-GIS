@@ -68,6 +68,18 @@ class QgsVectorLayer:public QgsMapLayer
 	void triggerRepaint();
 	/**Shows the properties dialog*/
 	virtual void showLayerProperties();
+	/**Returns a pointer to the renderer*/
+	QgsRenderer* renderer();
+	/**Returns a pointer to the renderer dialog*/
+	QDialog* rendererDialog();
+	/**Sets the renderer*/
+	void setRenderer(QgsRenderer* r);
+	/**Sets the renderer dialog*/
+	void setRendererDialog(QDialog* dialog);
+	/**Returns point, line or polygon*/
+	QGis::VectorType vectorType();
+	/**Returns a pointer to the properties dialog*/
+	QDialog* propertiesDialog();
 
   protected:
 	/**Pointer to the table display object if there is one, else a pointer to 0*/

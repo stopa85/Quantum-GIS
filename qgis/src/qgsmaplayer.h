@@ -116,6 +116,8 @@ class QgsMapLayer:public QObject
 	virtual void showLayerProperties()=0;
 	/**Returns a pointer to the legend pixmap*/
 	QPixmap* legendPixmap();
+	/**Returns a pointer to the legend item*/
+	QgsLegendItem* legendItem();
 	
 	  signals:void visibilityChanged(void);
   protected:

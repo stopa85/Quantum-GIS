@@ -612,3 +612,55 @@ void QgsVectorLayer::showLayerProperties()
 {
     //soon...
 }
+
+QgsRenderer* QgsVectorLayer::renderer()
+{
+    return m_renderer;
+}
+	
+QDialog* QgsVectorLayer::rendererDialog()
+{
+    return m_rendererDialog;
+}
+	
+void QgsVectorLayer::setRenderer(QgsRenderer* r)
+{
+    m_renderer=r;
+}
+	
+void QgsVectorLayer::setRendererDialog(QDialog* dialog)
+{
+    m_rendererDialog=dialog; 
+}
+
+QGis::VectorType QgsVectorLayer::vectorType()
+{
+    if(dataProvider)
+    {
+	int type=dataProvider->geometryType();
+	switch(type)
+	{
+	    case QGis::WKBPoint:
+		return QGis::Point;
+	    case QGis::WKBLineString:
+		return QGis::Line;
+	    case QGis::WKBPolygon:
+		return QGis::Polygon;
+	    case QGis::WKBMultiPoint:
+		return QGis::Point;
+	    case QGis::WKBMultiLineString:
+		return QGis::Line;
+	    case QGis::WKBMultiPolygon:
+		return QGis::Polygon;
+	}
+    }
+    else
+    {
+	qWarning("warning, pointer to dataProvider is null in QgsVectorLayer::vectorType()");
+    }
+}
+
+QDialog* QgsVectorLayer::propertiesDialog()
+{
+    return m_propertiesDialog;
+}
