@@ -80,8 +80,14 @@ CONFIG += debug \
           thread 
 TARGET = qgis 
 
+#.............................
 # GDAL/OGR configuration
+#.............................
 message(Configuring GDAL)
+GDALCONFIG = $$system(which gdal-config)
+isEmpty(GDALCONFIG) {
+	error("gdal-config not found in PATH. Check GDAL installation.")
+}
 # check to see if ogr enabled
 OGR = $$system(gdal-config --ogr-enabled)
 message("OGR enabled - $$OGR")
@@ -122,4 +128,4 @@ message ("PGSQL environment variable is not defined. PostgreSQL excluded from bu
 message ("To build with PostgreSQL support set PGSQL to point to your Postgres installation")
 }
 }
-message ("Type make to build qgis")
+message ("Configuration complete, type make to build qgis")
