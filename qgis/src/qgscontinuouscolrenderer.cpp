@@ -67,21 +67,26 @@ void QgsContinuousColRenderer::initializeSymbology(QgsVectorLayer* layer)
 	int green = 1 + (int) (255.0 * rand() / (RAND_MAX + 1.0));
 	int blue = 1 + (int) (255.0 * rand() / (RAND_MAX + 1.0));
 
+	//font tor the legend text
+	//TODO Make the font a user option
+	
+	QFont f( "times", 12, QFont::Normal );
+	QFontMetrics fm(f);
+
 	QPixmap* pixmap=layer->legendPixmap();
 	QString name=layer->name();
-	int namewidth=10+name.length()*12;//12 pixel per letter seems appropriate
-	int width=(namewidth>60) ? namewidth : 60;
-	pixmap->resize(width,75);
+	int width=40+fm.width(layer->name());
+	int height=(fm.height()+10>35) ? fm.height()+10 : 35;
+	pixmap->resize(width,height);
 	pixmap->fill();
 	QPainter p(pixmap);
-	p.drawText(10,35,name);
 
 	if(layer->vectorType()==QGis::Line)
 	{
 	    sy.pen().setColor(QColor(red,green,blue));
 	    //paint the pixmap for the legend
 	    p.setPen(sy.pen());
-	    p.drawLine(10,55,40,55);
+	    p.drawLine(10,pixmap->height()-25,25,pixmap->height()-10);
 	}
 	else
 	{
@@ -92,15 +97,18 @@ void QgsContinuousColRenderer::initializeSymbology(QgsVectorLayer* layer)
 	    p.setBrush(sy.brush());
 	    if(layer->vectorType()==QGis::Point)
 	    {
-		p.drawRect(20,55,5,5);
+		p.drawRect(20,pixmap->height()-17,5,5);	
 	    }
 	    else//polygon
 	    {
-		p.drawRect(10,45,30,20);
+		p.drawRect(10,pixmap->height()-25,20,15);	
 	    }
+			
 	}
 
-     
+	p.setPen( Qt::black );
+	p.setFont( f );
+	p.drawText(35,pixmap->height()-10,name);
 
 	QgsRenderItem* QgsRenderItem1=new QgsRenderItem(sy,QString::number(DBL_MIN,'f',6),"");
 	QgsRenderItem* QgsRenderItem2=new QgsRenderItem(sy,QString::number(DBL_MAX,'f',6),"");
