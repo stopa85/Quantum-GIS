@@ -63,7 +63,9 @@ std::map<int, QString> QgsFeature::fields(){
 unsigned char *QgsFeature::getGeometry(){
 	return geometry;
 }
-
+/**
+* Return well known text representation of this feature
+*/
 char *QgsFeature::wellKnownText(){
     return wkt;
 }

@@ -28,7 +28,7 @@ class QgsFeatureAttribute {
 
 public:
 	//! Constructor
-	QgsFeatureAttribute();
+	QgsFeatureAttribute(QString field=0, QString value=0);
 	//! Destructor
 	~QgsFeatureAttribute();
 	/**
