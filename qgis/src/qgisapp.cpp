@@ -269,35 +269,8 @@ void QgisApp::addLayer()
 	QObject::connect(lyr,SIGNAL(repaintRequested()),mapCanvas,SLOT(refresh()));
 
 		if (lyr->isValid()) {
-		    //create instances of QgsSingleSymRenderer and QgsSiSyDialog and add them to the vectorlayer
-		    QgsSingleSymRenderer* renderer=new QgsSingleSymRenderer();
-		    lyr->setRenderer(renderer);
-
-		    QgsSymbol sy;
-		    sy.brush().setStyle(Qt::SolidPattern);
-		    sy.pen().setStyle(Qt::SolidLine);
-
-		    //random fill colors for points and polygons and pen colors for lines
-		    int red = 1 + (int) (255.0 * rand() / (RAND_MAX + 1.0));
-		    int green = 1 + (int) (255.0 * rand() / (RAND_MAX + 1.0));
-		    int blue = 1 + (int) (255.0 * rand() / (RAND_MAX + 1.0));
-		 
-		    if(lyr->vectorType()==QGis::Line)
-		    {
-			sy.pen().setColor(QColor(red,green,blue));
-		    }
-		    else
-		    {
-			sy.brush().setColor(QColor(red,green,blue));
-			sy.pen().setColor(QColor(0,0,0));
-		    }
-		    QgsRenderItem ri(sy,"", "");
-		    renderer->addItem(ri);
-
-
-		    QgsSiSyDialog* dialog=new QgsSiSyDialog(lyr);
-		    lyr->setRendererDialog(dialog);
-
+		    //single symbol with random color
+		    lyr->initializeSymbology();
 		    // add it to the mapcanvas collection
 		    mapCanvas->addLayer(lyr);
 		} else {

@@ -136,12 +136,11 @@ class QgsMapLayer:public QObject
 	QgsLegendItem* m_legendItem;
 	/**Pixmap used in the legend item*/
 	QPixmap m_legendPixmap;
+	/** Name of the layer - used for display  */
+	QString layerName;
   private:						// Private attributes
 	/** Unique ID of this layer - used to refer to this layer  in QGIS code */
 	  QString ID;
-
-	/** Name of the layer - used for display  */
-	QString layerName;
 	/** Type of the layer (eg. vector, raster, database  */
 	int layerType;
 
