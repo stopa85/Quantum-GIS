@@ -18,6 +18,7 @@
 
 #include "../qgsdataprovider.h"
 class QgsFeature;
+class QgsField;
 class OGRDataSource;
 class OGRLayer;
 /**
@@ -32,12 +33,12 @@ public:
 	* Get the first feature resutling from a select operation
 	* @return QgsFeature
 	*/
-	QgsFeature * getFirstFeature();
+	QgsFeature * getFirstFeature(bool fetchAttributes=false);
 	/** 
 	* Get the next feature resutling from a select operation
 	* @return QgsFeature
 	*/
-	QgsFeature * getNextFeature();
+	QgsFeature * getNextFeature(bool fetchAttributes=false);
 	
 	/** Get the feature type. This corresponds to 
 			WKBPoint,
@@ -53,7 +54,10 @@ public:
     * Get the number of features in the layer
     */
     long featureCount();
-    
+    /** 
+    * Get the number of fields in the layer
+    */
+    int fieldCount();
 	/**
 	* Select features based on a bounding rectangle. Features can be retrieved 
 	* with calls to getFirstFeature and getNextFeature.
@@ -88,18 +92,31 @@ public:
   /** Return the extent for this data layer
   */
   virtual QgsRect * extent();
-  
+  /**
+  * Get the attributes associated with a feature
+  */
+ void getFeatureAttributes(OGRFeature *ogrFet, QgsFeature *f); 
+ /**
+ * Get the field information for the layer
+ */
+ std::vector<QgsField> fields();
+ 
+ /* Reset the layer - for an OGRLayer, this means clearing the
+ * spatial filter and calling ResetReading
+ */
+ void reset();
 private:
 	unsigned char *getGeometryPointer(OGRFeature *fet);
 	std::vector<QgsFeature> features;
 	std::vector<bool> * selected;
+  std::vector<QgsField> attributeFields;
 	QString dataSourceUri;
 	OGRDataSource *ogrDataSource;
 	OGREnvelope *extent_;
 	OGRLayer *ogrLayer;
 	bool valid;
     int geomType;
-    long featureCount_;
+    long numberFeatures;
 	enum ENDIAN
 	{
 		NDR = 1,
