@@ -2251,13 +2251,20 @@ const RasterBandStats QgsRasterLayer::getRasterBandStats(int theBandNoInt)
 #endif
 
   CPLFree(myData);
+  
   myRasterBandStats.statsGatheredFlag = true;
 
+#ifdef QGISDEBUG
+  std::cout << "adding stats to stats collection at position " << theBandNoInt - 1<< std::endl;
+#endif
   //add this band to the class stats map
   rasterStatsVector[theBandNoInt - 1] = myRasterBandStats;
   emit setProgress(rasterYDimInt, rasterYDimInt); //reset progress
   QApplication::restoreOverrideCursor(); //restore the cursor
 
+#ifdef QGISDEBUG
+  std::cout << "Stats collection completed returning " << std::endl;
+#endif
   return myRasterBandStats;
 
 } // QgsRasterLayer::getRasterBandStats
