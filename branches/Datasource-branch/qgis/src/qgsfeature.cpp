@@ -14,20 +14,34 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
-/* $Id */
+/* $Id$ */
 #include <qstring.h>
 #include "qgsfeature.h"
-
+/** \class QgsFeature
+* \brief Encapsulates a spatial feature with attributes
+*/
+//! Constructor
 QgsFeature::QgsFeature(){}
-
+//! Destructor
 QgsFeature::~QgsFeature(){}
-
-QString QgsFeature::fieldId(){
+/**
+* Get the feature id for this feature
+* @return Feature id
+*/
+QString QgsFeature::featureId(){
 	return fId;
 }
+/**
+* Get the attributes for this feature.
+* @return A std::map containing the field name/value mapping
+*/
 std::map<QString, QgsFeatureAttribute> QgsFeature::attributeMap(){
 	return attributes;
 }
+/**
+* Get the fields for this feature
+* @return A std::map containing field position (index) and field name
+*/
 std::map<int, QString> QgsFeature::fields(){
 	return fieldNames;
 }
