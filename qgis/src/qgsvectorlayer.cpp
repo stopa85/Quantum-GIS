@@ -77,6 +77,7 @@
 #include "qgslabel.h"
 #include "qgscoordinatetransform.h"
 #include "qgsspatialreferences.h"
+#include "qgsattributedialog.h"
 //#include "wkbheader.h"
 
 #ifdef TESTPROVIDERLIB
@@ -110,14 +111,6 @@ QgsVectorLayer::QgsVectorLayer(QString vectorLayerPath,
   {
     setDataProvider( providerKey );
   }
-  // XXX Is it just me or is selection colour not actually used anywhere? TS
-  //there is the mSelectionColor that is widely used by renderers
-  //draw the selected features the colour set in project file
-  //(defaults to yellow)
-  int myRedInt = QgsProject::instance()->readNumEntry("Gui","/SelectionColorRedPart",255);
-  int myGreenInt = QgsProject::instance()->readNumEntry("Gui","/SelectionColorGreenPart",0);
-  int myBlueInt = QgsProject::instance()->readNumEntry("Gui","/SelectionColorBluePart",0);
-  selectionColor.setRgb(myRedInt,myGreenInt,myBlueInt);
 
   // Default for the popup menu
   popMenu = 0;
@@ -399,6 +392,7 @@ void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * th
     QPointArray *pa;
     int wkbType;
 
+    bool projectionsEnabledFlag = projectionsEnabled();
     std::list<int> attributes=m_renderer->classificationAttributes();
 
     mDrawingCancelled=false; //pressing esc will change this to true
@@ -432,7 +426,7 @@ void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * th
           bool sel=mSelected.find(fet->featureId()) != mSelected.end();
           m_renderer->renderFeature(p, fet, &marker, &markerScaleFactor, sel);
 
-          drawFeature(p,fet,theMapToPixelTransform,&marker, markerScaleFactor);
+          drawFeature(p,fet,theMapToPixelTransform,&marker, markerScaleFactor, projectionsEnabledFlag);
           ++featureCount;
           delete fet;
         }
@@ -443,7 +437,7 @@ void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * th
     {
       bool sel=mSelected.find((*it)->featureId()) != mSelected.end();
       m_renderer->renderFeature(p, fet, &marker, &markerScaleFactor, sel);
-      drawFeature(p,*it,theMapToPixelTransform,&marker,markerScaleFactor);
+      drawFeature(p,*it,theMapToPixelTransform,&marker,markerScaleFactor, projectionsEnabledFlag);
     }
 
 #ifdef QGISDEBUG
@@ -486,54 +480,121 @@ void QgsVectorLayer::identify(QgsRect * r)
   int featureCount = 0;
   QgsFeature *fet;
   unsigned char *feature;
-  // display features falling within the search radius
-  if(ir)
-  {
-    delete ir;
-  }
-  ir = 0;
-  while ((fet = dataProvider->getNextFeature(true)))
-  {
-    featureCount++;
-    if (featureCount == 1)
-    {
-      ir = new QgsIdentifyResults(mActions);
-    }
 
-    QListViewItem *featureNode = ir->addNode("foo");
-    featureNode->setText(0, fieldIndex);
-    std::vector < QgsFeatureAttribute > attr = fet->attributeMap();
-    for (int i = 0; i < attr.size(); i++)
-    {
-#ifdef QGISDEBUG
-      std::cout << attr[i].fieldName() << " == " << fieldIndex << std::endl;
-#endif
-      if (attr[i].fieldName().lower() == fieldIndex)
+  if ( !isEditable() ) {
+      // display features falling within the search radius
+      if(ir)
       {
-        featureNode->setText(1, attr[i].fieldValue());
+	delete ir;
       }
-      ir->addAttribute(featureNode, attr[i].fieldName(), attr[i].fieldValue());
-    }
-    delete fet;
-  }
+
+      ir = 0;
+      while ((fet = dataProvider->getNextFeature(true)))
+      {
+	featureCount++;
+	if (featureCount == 1)
+	{
+	  ir = new QgsIdentifyResults(mActions);
+	}
+
+	QListViewItem *featureNode = ir->addNode("foo");
+	featureNode->setText(0, fieldIndex);
+	std::vector < QgsFeatureAttribute > attr = fet->attributeMap();
+	for (int i = 0; i < attr.size(); i++)
+	{
+#ifdef QGISDEBUG
+	  std::cout << attr[i].fieldName() << " == " << fieldIndex << std::endl;
+#endif
+	  if (attr[i].fieldName().lower() == fieldIndex)
+	  {
+	    featureNode->setText(1, attr[i].fieldValue());
+	  }
+	  ir->addAttribute(featureNode, attr[i].fieldName(), attr[i].fieldValue());
+	}
+	delete fet;
+      }
 
 #ifdef QGISDEBUG
-  std::cout << "Feature count on identify: " << featureCount << std::endl;
+      std::cout << "Feature count on identify: " << featureCount << std::endl;
 #endif
-  if (ir)
-  {
-    ir->setTitle(name());
-    if (featureCount == 1)
-      ir->showAllAttributes();
-    // restore the identify window position and show it
-    ir->restorePosition();
+
+      //also test the not commited features //todo: eliminate copy past code
+      /*for(std::list<QgsFeature*>::iterator it=mAddedFeatures.begin();it!=mAddedFeatures.end();++it)
+      {
+	  if((*it)->intersects(r))
+	  {
+	      featureCount++;
+	      if (featureCount == 1)
+	      {
+		  ir = new QgsIdentifyResults(mActions);
+	      }
+
+	      QListViewItem *featureNode = ir->addNode("foo");
+	      featureNode->setText(0, fieldIndex);
+	      std::vector < QgsFeatureAttribute > attr = (*it)->attributeMap();
+	      for (int i = 0; i < attr.size(); i++)
+	      {
+#ifdef QGISDEBUG
+		  std::cout << attr[i].fieldName() << " == " << fieldIndex << std::endl;
+#endif
+		  if (attr[i].fieldName().lower() == fieldIndex)
+		  {
+		      featureNode->setText(1, attr[i].fieldValue());
+		  }
+		  ir->addAttribute(featureNode, attr[i].fieldName(), attr[i].fieldValue());
+	      } 
+	  }
+	  }*/
+
+      if (ir)
+      {
+	  ir->setTitle(name());
+	  if (featureCount == 1)
+	      ir->showAllAttributes();
+	  // restore the identify window position and show it
+	  ir->restorePosition();
+      }
+      
+      if (featureCount == 0)
+      {
+	  QMessageBox::information(0, tr("No features found"), tr("No features were found in the active layer at the point you clicked"));
+      }
+  } 
+  else { // Edit attributes 
+      // TODO: what to do if more features were selected? - nearest?
+      if ( (fet = dataProvider->getNextFeature(true)) ) {
+	  // Was already changed?
+	  std::map<int,std::map<QString,QString> >::iterator it = mChangedAttributes.find(fet->featureId());
+
+	  std::vector < QgsFeatureAttribute > old;
+	  if ( it != mChangedAttributes.end() ) {
+	      std::map<QString,QString> oldattr = (*it).second;
+	      for( std::map<QString,QString>::iterator ait = oldattr.begin(); ait!=oldattr.end(); ++ait ) {
+		  old.push_back ( QgsFeatureAttribute ( (*ait).first, (*ait).second ) );
+	      }
+	  } else {
+	      old = fet->attributeMap();
+	  }
+	  QgsAttributeDialog ad( &old );
+
+	  if ( ad.exec()==QDialog::Accepted ) {
+	      std::map<QString,QString> attr;
+	      for(int i=0;i<old.size();++i) {
+		  attr.insert ( std::make_pair( old[i].fieldName(), ad.value(i) ) );
+	      }
+	      // Remove old if exists
+	      it = mChangedAttributes.find(fet->featureId());
+
+	      if ( it != mChangedAttributes.end() ) { // found
+		  mChangedAttributes.erase ( it );
+	      }
+		  
+	      mChangedAttributes.insert ( std::make_pair( fet->featureId(), attr ) );
+              mModified=true;
+	  }
+      }
   }
   QApplication::restoreOverrideCursor();
-  if (featureCount == 0)
-  {
-    QMessageBox::information(0, tr("No features found"), tr("No features were found in the active layer at the point you clicked"));
-  }
-
 }
 
 void QgsVectorLayer::table()
@@ -550,44 +611,19 @@ void QgsVectorLayer::table()
     // display the attribute table
     QApplication::setOverrideCursor(Qt::waitCursor);
     dataProvider->reset();
-    int numFields = dataProvider->fieldCount();
-    tabledisplay = new QgsAttributeTableDisplay();
+
+    QgsFeature *fet;
+    fet = dataProvider->getNextFeature(true);
+    std::vector < QgsFeatureAttribute > attributes = fet->attributeMap();
+    int numFields = attributes.size();
+    tabledisplay = new QgsAttributeTableDisplay(this);
     connect(tabledisplay, SIGNAL(deleted()), this, SLOT(invalidateTableDisplay()));
     tabledisplay->table()->setNumRows(dataProvider->featureCount()+mAddedFeatures.size()-mDeleted.size());
     tabledisplay->table()->setNumCols(numFields + 1); //+1 for the id-column
-
-    int row = 0;
-    // set up the column headers
-    QHeader *colHeader = tabledisplay->table()->horizontalHeader();
-    colHeader->setLabel(0, "id"); //label for the id-column
-    std::vector < QgsField > fields = dataProvider->fields();
-    //for (int h = 0; h < numFields; h++) {
-    for (int h = 1; h <= numFields; h++)
-    {
-      colHeader->setLabel(h, fields[h - 1].name());
-    }
-    QgsFeature *fet;
-    while ((fet = dataProvider->getNextFeature(true)))
-    {
-      if(mDeleted.find(fet->featureId())!=mDeleted.end())
-      {
-        //feature has been deleted
-        continue;
-      }
-      //id-field
-      tabledisplay->table()->setText(row, 0, QString::number(fet->featureId()));
-      tabledisplay->table()->insertFeatureId(fet->featureId(), row);  //insert the id into the search tree of qgsattributetable
-      std::vector < QgsFeatureAttribute > attr = fet->attributeMap();
-      for (int i = 0; i < attr.size(); i++)
-      {
-        // get the field values
-        tabledisplay->table()->setText(row, i + 1, attr[i].fieldValue());
-      }
-      row++;
-      delete fet;
-    }
-
+    tabledisplay->table()->fillTable(this);//QgsAttributeTable fills itself now
+    
     //also consider the not commited features
+    int row = 0;
     for(std::list<QgsFeature*>::iterator it=mAddedFeatures.begin();it!=mAddedFeatures.end();++it)
     {
       //id-field
@@ -1968,6 +2004,13 @@ bool QgsVectorLayer::commitChanges()
     }
     mAddedFeatures.clear();
 
+    if( mChangedAttributes.size() > 0 ) {
+        if ( !dataProvider->changeAttributeValues ( mChangedAttributes ) ) {
+          QMessageBox::warning(0,"Warning","Could change attributes");
+	}
+	mChangedAttributes.clear();
+    }
+
     if(mDeleted.size()>0)
     {
       std::list<int> deletelist;
@@ -2032,11 +2075,23 @@ bool QgsVectorLayer::snapPoint(QgsPoint& point, double tolerance)
       mindist=minvertexdist;
     }
   }
+  //also go through the not commited features
+  for(std::list<QgsFeature*>::iterator iter=mAddedFeatures.begin();iter!=mAddedFeatures.end();++iter)
+  {
+      vertexFeature=(*iter)->closestVertex(point);
+      minvertexdist=vertexFeature.sqrDist(point.x(),point.y());
+      if(minvertexdist<mindist)
+      {
+	  mindistx=vertexFeature.x();
+	  mindisty=vertexFeature.y();
+	  mindist=minvertexdist;
+      }
+  }
   point.setX(mindistx);
   point.setY(mindisty);
 }
 
-void QgsVectorLayer::drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * theMapToPixelTransform, QPicture* marker, double markerScaleFactor)
+void QgsVectorLayer::drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * theMapToPixelTransform, QPicture* marker, double markerScaleFactor, bool projectionsEnabledFlag)
 {
   unsigned char *feature;
   bool attributesneeded = m_renderer->needsAttributes();
@@ -2049,7 +2104,6 @@ void QgsVectorLayer::drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * t
   QPen pen;
   feature = fet->getGeometry();
 
-  bool projectionsEnabledFlag = projectionsEnabled();
   memcpy(&wkbType, (feature+1), sizeof(wkbType));
 
   switch (wkbType)
@@ -2081,8 +2135,8 @@ void QgsVectorLayer::drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * t
       //std::cout << "drawing marker for feature " << featureCount << "\n";
       p->drawRect(static_cast<int>(myProjectedPoint.x()), static_cast<int>(myProjectedPoint.y()), 5, 5);
       p->scale(markerScaleFactor,markerScaleFactor);
-      p->drawPicture((int)(static_cast<int>(pt.x()) / markerScaleFactor - marker->boundingRect().width() / 2),
-                     (int)(static_cast<int>(pt.y()) / markerScaleFactor - marker->boundingRect().height() / 2),
+      p->drawPicture((int)(static_cast<int>(myProjectedPoint.x()) / markerScaleFactor - marker->boundingRect().width() / 2),
+                     (int)(static_cast<int>(myProjectedPoint.y()) / markerScaleFactor - marker->boundingRect().height() / 2),
                      *marker);
       p->resetXForm();
 
@@ -2356,4 +2410,67 @@ void QgsVectorLayer::saveAsShapefile()
   // call the dataproviders saveAsShapefile method
   dataProvider->saveAsShapefile();
   //  QMessageBox::information(0,"Save As Shapefile", "Someday...");
+}
+
+bool QgsVectorLayer::commitAttributeChanges(const std::set<QString>& deleted,
+					    const std::map<QString,QString>& added,
+					    std::map<int,std::map<QString,QString> >& changed)
+{
+    bool returnvalue=true;
+
+    if(dataProvider)
+    {
+	//delete attributes in all not commited features
+	for(std::list<QgsFeature*>::iterator iter=mAddedFeatures.begin();iter!=mAddedFeatures.end();++iter)
+	{
+	    for(std::set<QString>::const_iterator it=deleted.begin();it!=deleted.end();++it)
+	    {
+		(*iter)->deleteAttribute(*it);
+	    }
+	}
+	//and then in the provider
+	if(!dataProvider->deleteAttributes(deleted))
+	{
+	    returnvalue=false;
+	}
+
+	//add attributes in all not commited features
+	for(std::list<QgsFeature*>::iterator iter=mAddedFeatures.begin();iter!=mAddedFeatures.end();++iter)
+	{
+	    for(std::map<QString,QString>::const_iterator it=added.begin();it!=added.end();++it)
+	    {
+		(*iter)->addAttribute(it->first);
+	    }
+	}
+	//and then in the provider
+	if(!dataProvider->addAttributes(added))
+	{
+	    returnvalue=false;
+	}
+
+	//change values of the not commited features
+	for(std::list<QgsFeature*>::iterator iter=mAddedFeatures.begin();iter!=mAddedFeatures.end();++iter)
+	{
+	    std::map<int,std::map<QString,QString> >::iterator it=changed.find((*iter)->featureId());
+	    if(it!=changed.end())
+	    {
+		for(std::map<QString,QString>::const_iterator iterat=it->second.begin();iterat!=it->second.end();++iterat)
+		{
+		    (*iter)->changeAttributeValue(iterat->first,iterat->second);
+		}
+		changed.erase(it);
+	    }
+	}
+
+	//and then those of the commited ones
+	if(!dataProvider->changeAttributeValues(changed))
+	{
+	    returnvalue=false;
+	}
+    }
+    else
+    {
+	returnvalue=false;
+    }
+    return returnvalue;
 }

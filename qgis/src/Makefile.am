@@ -40,12 +40,21 @@ headers =	qgisapp.h					\
 		qgsacetatelines.h				\
 		qgsacetateobject.h				\
 		qgsacetaterectangle.h				\
+		qgsaddattrdialog.h				\
 		qgsattributeaction.h				\
 		qgsattributeactiondialog.h			\
 		qgsattributedialog.h				\
 		qgsattributetabledisplay.h			\
 		qgsattributetable.h				\
 		qgscolortable.h					\
+		qgscomposer.h					\
+		qgscomposition.h				\
+		qgscomposeritem.h				\
+		qgscomposermap.h				\
+		qgscomposervectorlegend.h			\
+		qgscomposerlabel.h				\
+		qgscomposerview.h				\
+		qgscomposition.h				\
 		qgscontcoldialog.h				\
 		qgscontinuouscolrenderer.h			\
 		qgscoordinatetransform.h			\
@@ -54,6 +63,7 @@ headers =	qgisapp.h					\
 		qgsdataprovider.h				\
 		qgsdatasource.h					\
 		qgsdatasourceuri.h				\
+		qgsdelattrdialog.h				\
 		qgsdlgvectorlayerproperties.h			\
 	  	qgsexception.h					\
 	  	qgscsexception.h				\
@@ -102,6 +112,7 @@ headers =	qgisapp.h					\
 		qgsrect.h					\
 		qgsrenderer.h					\
 		qgsrenderitem.h					\
+		qgsrunprocess.h					\
 		qgsscalecalculator.h				\
 		qgssimadialog.h					\
 		qgssimarenderer.h				\
@@ -125,10 +136,17 @@ headers =	qgisapp.h					\
 
 qgis_UIC =	qgisappbase.ui				\
 		qgsabout.ui				\
+		qgsaddattrdialogbase.ui			\
 		qgsattributedialogbase.ui		\
 		qgsattributeactiondialogbase.ui		\
 		qgsattributetablebase.ui		\
+		qgscomposerbase.ui			\
+		qgscompositionbase.ui			\
+		qgscomposermapbase.ui			\
+		qgscomposervectorlegendbase.ui		\
+		qgscomposerlabelbase.ui		     	\
 		qgscontcoldialogbase.ui			\
+		qgsdelattrdialogbase.ui			\
 		qgsdlgvectorlayerpropertiesbase.ui	\
 		qgsgeomtypedialogbase.ui		\
 		qgsgramadialogbase.ui			\
@@ -178,12 +196,20 @@ qgis_UIMOC = $(qgis_UIC:.ui=.moc.uic.cpp)
 
 qgis_MOC =	qgisapp.moc.cpp				\
 		qgisinterface.moc.cpp			\
-		qgsattributeaction.moc.cpp		\
+		qgsaddattrdialog.moc.cpp		\
 		qgsattributeactiondialog.moc.cpp	\
 		qgsattributedialog.moc.cpp		\
 		qgsattributetable.moc.cpp		\
+		qgscomposer.moc.cpp			\
+		qgscomposition.moc.cpp			\
+		qgscomposermap.moc.cpp			\
+		qgscomposervectorlegend.moc.cpp		\
+		qgscomposerlabel.moc.cpp		\
+		qgscomposerview.moc.cpp			\
+		qgsattributetabledisplay.moc.cpp		\
 		qgscoordinatetransform.moc.cpp		\
 		qgscontcoldialog.moc.cpp		\
+		qgsdelattrdialog.moc.cpp			\
 		qgsdlgvectorlayerproperties.moc.cpp	\
 		qgsgeomtypedialog.moc.cpp		\
 		qgsgramadialog.moc.cpp			\
@@ -208,6 +234,7 @@ qgis_MOC =	qgisapp.moc.cpp				\
 		qgsprojectproperties.moc.cpp		\
 		qgsrasterlayer.moc.cpp			\
 		qgsrasterlayerproperties.moc.cpp	\
+		qgsrunprocess.moc.cpp			\
 		qgssimadialog.moc.cpp			\
 		qgssisydialog.moc.cpp			\
 		qgsuvaldialog.moc.cpp			\
@@ -223,18 +250,27 @@ qgis_SOURCES =	main.cpp			\
 		qgsacetatelines.cpp		\
 		qgsacetateobject.cpp		\
 		qgsacetaterectangle.cpp		\
+		qgsaddattrdialog.cpp		\
 		qgsattributeaction.cpp		\
 		qgsattributeactiondialog.cpp	\
 		qgsattributedialog.cpp		\
 		qgsattributetable.cpp		\
 		qgsattributetabledisplay.cpp	\
 		qgscolortable.cpp		\
+		qgscomposer.cpp			\
+		qgscomposition.cpp		\
+		qgscomposeritem.cpp		\
+		qgscomposermap.cpp		\
+		qgscomposervectorlegend.cpp	\
+		qgscomposerlabel.cpp		\
+		qgscomposerview.cpp		\
 		qgscontcoldialog.cpp		\
 		qgscontinuouscolrenderer.cpp	\
 		qgscoordinatetransform.cpp	\
 		qgsmaptopixel.cpp		\
 		qgscustomsymbol.cpp		\
 		qgsdatasource.cpp		\
+		qgsdelattrdialog.cpp		\
 		qgsdlgvectorlayerproperties.cpp	\
 		qgsfeatureattribute.cpp		\
 		qgsfeature.cpp			\
@@ -280,6 +316,7 @@ qgis_SOURCES =	main.cpp			\
 		qgsrasterlayerproperties.cpp	\
 		qgsrect.cpp			\
 		qgsrenderitem.cpp		\
+		qgsrunprocess.cpp		\
 		qgsscalecalculator.cpp		\
 		qgssimadialog.cpp		\
 		qgssimarenderer.cpp		\
@@ -346,7 +383,15 @@ libqgis_la_SOURCES =				\
 		qgisappbase.moc.uic.cpp		\
 		qgsacetateobject.cpp		\
 		qgsacetaterectangle.cpp		\
+		qgsattributeaction.cpp		\
 		qgscolortable.cpp		\
+		qgscomposer.cpp			\
+		qgscomposition.cpp		\
+		qgscomposeritem.cpp		\
+		qgscomposermap.cpp		\
+		qgscomposervectorlegend.cpp	\
+		qgscomposerlabel.cpp		\
+		qgscomposerview.cpp		\
 		qgscontinuouscolrenderer.cpp	\
 		qgscoordinatetransform.cpp	\
 		qgscoordinatetransform.moc.cpp  \
@@ -373,6 +418,7 @@ libqgis_la_SOURCES =				\
 		qgsrenderitem.cpp		\
 		qgsscalecalculator.cpp		\
 		qgsrenderer.cpp 		\
+		qgsrunprocess.cpp		\
 		qgssimarenderer.cpp		\
 		qgssinglesymrenderer.cpp	\
 		qgssymbol.cpp			\
