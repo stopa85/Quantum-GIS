@@ -108,13 +108,13 @@ public:
 */
   virtual void reset()=0;
 
-  /**Returns the minimum value of an attribut
+  /**Returns the minimum value of an attributs
      @param position the number of the attribute*/
-  //virtual QString minValue(int position)=0;
+  virtual QString minValue(int position)=0;
 
-  /**Returns the maximum value of an attribut
+  /**Returns the maximum value of an attributs
      @param position the number of the attribute*/
-  //virtual QString maxValue(int position)=0;
+  virtual QString maxValue(int position)=0;
 };
 
 
