@@ -333,7 +333,7 @@ QgsRect QgsCoordinateTransform::inverseTransform(QgsRect theRect)
   sr.exportToProj4(&proj4src);
   // store the src proj parms in a QString because the pointer populated by exportToProj4
   // seems to get corrupted prior to its use in the transform
-  QString qProj4Src(proj4src);
+  const QString qProj4Src(proj4src);
   // get the proj parms for dest cs
   char *pWkt = (char *)mDestWKT.ascii();
   sr.importFromWkt(&pWkt);
@@ -341,7 +341,7 @@ QgsRect QgsCoordinateTransform::inverseTransform(QgsRect theRect)
   sr.exportToProj4(&proj4dest);
   // store the dest proj parms in a QString because the pointer populated by exportToProj4
   // seems to get corrupted prior to its use in the transform
-  QString qProj4Dest(proj4dest);
+  const QString qProj4Dest(proj4dest);
 #ifdef QGISDEBUG   
 
   std::cout << "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"<< std::endl;
@@ -353,65 +353,26 @@ QgsRect QgsCoordinateTransform::inverseTransform(QgsRect theRect)
   std::cout << "INPUT RECT: " << std::endl << x1 << "," << y1 << ":" << x2 << "," << y2 << std::endl;
   std::cout << "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" << std::endl;
 #endif  
-  // use proj4 to do the transform from destination to 
-  // source CS 
-  //XXX might be better to not create these each time through 
-  // init the projections (destination and source)
-  projPJ pDest = pj_init_plus((const char *)qProj4Src);
-  projPJ pSrc = pj_init_plus((const char *)qProj4Dest);
-
-  // if the destination projection is lat/long, convert the points to radians
-  // prior to transforming
-  if(pj_is_latlong(pDest))
-  {
-    x1 *= DEG_TO_RAD;
-    y1 *= DEG_TO_RAD;
-    x2 *= DEG_TO_RAD;
-    y2 *= DEG_TO_RAD;
-  }
-
-  double z = 0;
-  int myResult1 = pj_transform(pDest, pSrc , 1, 0, &x1, &y1, &z);
-  int myResult2 = pj_transform(pDest, pSrc , 1, 0, &x2, &y2, &z);
-  // if the src is lat/long, convert the results from radians back
-  // to degrees
-  if(pj_is_latlong(pSrc))
-  {
-    x1 *= RAD_TO_DEG;
-    y1 *= RAD_TO_DEG;
-    x2 *= RAD_TO_DEG;
-    y2 *= RAD_TO_DEG;
-  }
-  // free the proj objects
-  pj_free(pDest);
-  pj_free(pSrc);
+  try{
+    double z = 0.0;
+    /*
+    qProjPt pt;
+    pt.x = x1;
+    pt.y = y1;
+    pt.z = 0;
+    */
+    cs2cs(qProj4Src, qProj4Dest, x1, y1, z);
+    cs2cs(qProj4Src, qProj4Dest, x2, y2, z);
 
   //  XXX old style that fails
   // int myResult1 = mDestToSourceXForm->Transform( 1, &x1, &y1 );
   //int myResult2 = mDestToSourceXForm->Transform( 1, &x2, &y2 );
   //CPLPopErrorHandler();
-
-  if ((myResult1 != 0)  || (myResult2 != 0) )
-  {
-    //something bad happened....
-    QString pjErr;
-    if(myResult1 != 0)
-    {
-      pjErr += "Failed transform of x1, y1: ";
-      pjErr += pj_strerrno(myResult1);
-      pjErr += "\n";
-    }
-    if(myResult2 != 0)
-    {
-      pjErr += "Failed transform of x2, y2: ";
-      pjErr += pj_strerrno(myResult2);
-      pjErr += "\n";
-    }
-
-    throw QgsCsException(QString("Coordinate inverse transform failed in QgsCoordinateTransform::inverseTransform(QgsRect theRect):")  + pjErr);
-  }
-  else
-  {
+    }catch(QgsCsException(&cse))
+        {
+        // rethrow the exception
+        throw cse;
+        }
 #ifdef QGISDEBUG 
     std::cout << "Xmin : " 
       << theRect.xMin() 
@@ -428,7 +389,7 @@ QgsRect QgsCoordinateTransform::inverseTransform(QgsRect theRect)
       << std::endl;
 #endif        
     return QgsRect(x1, y1, x2 , y2);
-  } 
+   
 }
 
 QgsRect QgsCoordinateTransform::inverseTransform(QgsRect * theRect)
@@ -488,7 +449,50 @@ QgsPoint QgsCoordinateTransform::inverseTransform(double theX, double theY)
     return QgsPoint(x, y);
   } 
 }
+void QgsCoordinateTransform::cs2cs(const QString & dest, const QString& src, double& x, double& y, double& z)
+{
+  // use proj4 to do the transform from destination to 
+  // source CS 
+  //XXX might be better to not create these each time through 
+  // init the projections (destination and source)
+  projPJ pDest = pj_init_plus((const char *)dest);
+  projPJ pSrc = pj_init_plus((const char *)src);
 
+  // if the destination projection is lat/long, convert the points to radians
+  // prior to transforming
+  if(pj_is_latlong(pDest))
+  {
+    x *= DEG_TO_RAD;
+    y *= DEG_TO_RAD;
+    z *= DEG_TO_RAD;
+  }
+
+  int projResult = pj_transform(pDest, pSrc , 1, 0, &x, &y, &z);
+
+  if (projResult != 0) 
+  {
+    //something bad happened....
+    QString pjErr;
+    pjErr += "Failed transform of x, y: ";
+    pjErr += pj_strerrno(projResult);
+    pjErr += "\n";
+    // free the proj objects
+    pj_free(pDest);
+    pj_free(pSrc);
+    throw  QgsCsException(pjErr);
+  }
+  // if the src is lat/long, convert the results from radians back
+  // to degrees
+  if(pj_is_latlong(pSrc))
+  {
+    x *= RAD_TO_DEG;
+    y *= RAD_TO_DEG;
+    z *= RAD_TO_DEG;
+  }
+  // free the proj objects
+  pj_free(pDest);
+  pj_free(pSrc);
+}
 
 
 
