@@ -42,7 +42,7 @@ class QgsVectorLayer:public QgsMapLayer
   Q_OBJECT public:
 
 	//! Constructor
-	  QgsVectorLayer(QString baseName = 0, QString path = 0);
+	  QgsVectorLayer(QString baseName = 0, QString path = 0, QString providerLib=0);
 	//! Destructor
 	 ~QgsVectorLayer();
 	//! Identify feature found within the search rectangle
