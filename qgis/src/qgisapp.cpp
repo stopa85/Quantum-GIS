@@ -84,6 +84,7 @@
 #include "qgslegenditem.h"
 #include "qgslegend.h"
 #include "qgsprojectio.h"
+#include "qgsproject.h"
 #include "qgsmapserverexport.h"
 
 
