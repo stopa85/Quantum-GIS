@@ -15,6 +15,7 @@
  *                                                                         *
  ***************************************************************************/
 /* $Id$ */
+#include <fstream>
 #include <iostream>
 #include <qtextstream.h>
 #include <qstringlist.h>
@@ -26,17 +27,19 @@
 #include "qgspostgresprovider.h"
 QgsPostgresProvider::QgsPostgresProvider(QString uri):dataSourceUri(uri)
 {
-
+/* OPEN LOG FILE */
+  
     // make connection to the data source
     // for postgres, the connection information is passed as a space delimited
     // string:
     //  host=192.168.1.5 dbname=test user=gsherman password=xxx table=tablename
-    std::cout << "Data source uri is " << uri << std::endl;
+    //--std::cout << "Data source uri is " << uri << std::endl;
     // strip the table name off
     tableName = uri.mid(uri.find("table=") + 6);
+   
     QString connInfo = uri.left(uri.find("table="));
-    std::cout << "Table name is " << tableName << std::endl;
-    std::cout << "Connection info is " << connInfo << std::endl;
+    //--std::cout << "Table name is " << tableName << std::endl;
+    //--std::cout << "Connection info is " << connInfo << std::endl;
     // calculate the schema if specified
     QString schema = "";
     if (tableName.find(".") > -1) {
@@ -49,12 +52,15 @@ QgsPostgresProvider::QgsPostgresProvider(QString uri):dataSourceUri(uri)
     qWarning("Geometry column is: " + geometryColumn);
     qWarning("Schema is: " + schema);
     qWarning("Table name is: " + tableName);
-
+    QString logFile = "./pg_provider_" + tableName + ".log";
+    pLog.open((const char *)logFile);
+    pLog << "Opened log file for " << tableName << std::endl;
     PGconn *pd = PQconnectdb((const char *) connInfo);
     // check the connection status
     if (PQstatus(pd) == CONNECTION_OK) {
-        std::cout << "Connection to the database was successful\n";
-
+        //--std::cout << "Connection to the database was successful\n";
+          // store the connection for future use
+        connection = pd;
         // check the geometry column
         QString sql = "select f_geometry_column,type,srid from geometry_columns where f_table_name='"
           + tableName + "' and f_geometry_column = '" + geometryColumn + "' and f_table_schema = '" + schema + "'";
@@ -64,11 +70,11 @@ QgsPostgresProvider::QgsPostgresProvider(QString uri):dataSourceUri(uri)
             // this is a valid layer
             valid = true;
           
-            std::cout << "geometry column query returned " << PQntuples(result) << std::endl;
+            //--std::cout << "geometry column query returned " << PQntuples(result) << std::endl;
             // store the srid 
-            std::cout << "column number of srid is " << PQfnumber(result, "srid") << std::endl;
+            //--std::cout << "column number of srid is " << PQfnumber(result, "srid") << std::endl;
             srid = PQgetvalue(result, 0, PQfnumber(result, "srid"));
-            std::cout << "SRID is " << srid << std::endl;
+            //--std::cout << "SRID is " << srid << std::endl;
             
             // need to store the PostgreSQL endian format used in binary cursors
             // since it appears that starting with
@@ -88,8 +94,8 @@ QgsPostgresProvider::QgsPostgresProvider(QString uri):dataSourceUri(uri)
             // get the oid value from the binary cursor
             int oid = *(int *)PQgetvalue(fResult,0,0);
            
-            std::cout << "Got oid of " << oid << " from the binary cursor" << std::endl;
-            std::cout << "First oid is " << oidValue << std::endl;
+            //--std::cout << "Got oid of " << oid << " from the binary cursor" << std::endl;
+            //--std::cout << "First oid is " << oidValue << std::endl;
              // compare the two oid values to determine if we need to do an endian swap
             if(oid == oidValue.toInt()){
               swapEndian = false;
@@ -108,8 +114,8 @@ QgsPostgresProvider::QgsPostgresProvider(QString uri):dataSourceUri(uri)
                 geomType = QGis::WKBLineString;
             else if (fType == "POLYGON" || fType == "MULTIPOLYGON")
                 geomType = QGis::WKBPolygon;
-            std::cout << "Feature type is " << geomType << std::endl;
-            std::cout << "Feature type name is " << QGis::qgisFeatureTypes[geomType] << std::endl;
+            //--std::cout << "Feature type is " << geomType << std::endl;
+            //--std::cout << "Feature type name is " << QGis::qgisFeatureTypes[geomType] << std::endl;
             // free the result
             PQclear(result);
             // get the extents
@@ -135,7 +141,7 @@ QgsPostgresProvider::QgsPostgresProvider(QString uri):dataSourceUri(uri)
             sql = "select count(*) from " + tableName;
             result = PQexec(pd, (const char *) sql);
             numberFeatures = QString(PQgetvalue(result, 0, 0)).toLong();
-            std::cout << "Feature count is " << numberFeatures << std::endl;
+            //--std::cout << "Feature count is " << numberFeatures << std::endl;
             PQclear(result);
              // selectSQL stores the select sql statement. This has to include each attribute
              // plus the geometry column in binary form
@@ -144,7 +150,7 @@ QgsPostgresProvider::QgsPostgresProvider(QString uri):dataSourceUri(uri)
             // field name, type, length, and precision (if numeric)
             sql = "select * from " + tableName + " limit 1";
             result = PQexec(pd, (const char *) sql);
-            std::cout << "Field: Name, Type, Size, Modifier:" << std::endl;
+            //--std::cout << "Field: Name, Type, Size, Modifier:" << std::endl;
             for (int i = 0; i < PQnfields(result); i++) {
 
                 QString fieldName = PQfname(result, i);
@@ -152,20 +158,20 @@ QgsPostgresProvider::QgsPostgresProvider(QString uri):dataSourceUri(uri)
                 QString typOid = QString().setNum(fldtyp);
                 int fieldModifier = PQfmod(result, i);
                 QString sql = "select typelem from pg_type where typelem = " + typOid + " and typlen = -1";
-                //  std::cout << sql << std::endl;
+                //  //--std::cout << sql << std::endl;
                 PGresult *oidResult = PQexec(pd, (const char *) sql);
                 // get the oid of the "real" type
                 QString poid = PQgetvalue(oidResult, 0, PQfnumber(oidResult, "typelem"));
                 PQclear(oidResult);
                 sql = "select typname, typlen from pg_type where oid = " + poid;
-                // std::cout << sql << std::endl;
+                // //--std::cout << sql << std::endl;
                 oidResult = PQexec(pd, (const char *) sql);
 
                 QString fieldType = PQgetvalue(oidResult, 0, 0);
                 QString fieldSize = PQgetvalue(oidResult, 0, 1);
                 PQclear(oidResult);
-                std::cout << "Field: " << fieldName << ", " << fieldType << " (" << fldtyp << "),  " << fieldSize << ", " <<
-                  fieldModifier << std::endl;
+                //--std::cout << "Field: " << fieldName << ", " << fieldType << " (" << fldtyp << "),  " << fieldSize << ", " <<
+                //  fieldModifier << std::endl;
                 attributeFields.push_back(QgsField(fieldName, fieldType, fieldSize.toInt(), fieldModifier));
                 // add to the select sql statement
                 if(i > 0){
@@ -177,14 +183,17 @@ QgsPostgresProvider::QgsPostgresProvider(QString uri):dataSourceUri(uri)
                   selectSQL += fieldName;
                 }
             }
+            // set the primary key
+            getPrimaryKey();
             selectSQL += " from " + tableName;
-            std::cout << "selectSQL: " << (const char *)selectSQL << std::endl;
+            //--std::cout << "selectSQL: " << (const char *)selectSQL << std::endl;
             PQclear(result);
             // get the total number of features in the layer
             sql = "select count(*) from " + tableName;
             result = PQexec(pd, (const char *) sql);
             numberFeatures = QString(PQgetvalue(result, 0, 0)).toLong();
-            std::cout << "Number of features in " << (const char *) tableName << ": " << numberFeatures << std::endl;
+            pLog << "Number of features: " << numberFeatures << std::endl;
+            //--std::cout << "Number of features in " << (const char *) tableName << ": " << numberFeatures << std::endl;
         } else {
             // the table is not a geometry table
             valid = false;
@@ -192,12 +201,11 @@ QgsPostgresProvider::QgsPostgresProvider(QString uri):dataSourceUri(uri)
 //      reset tableName to include schema
         schemaTableName += schema + "." + tableName;
     
-        // store the connection for future use
-        connection = pd;
+      
         ready = false; // not ready to read yet cuz the cursor hasn't been created
     } else {
         valid = false;
-        std::cout << "Connection to database failed\n";
+        //--std::cout << "Connection to database failed\n";
     }
     //create a boolean vector and set every entry to false
 
@@ -214,6 +222,7 @@ QgsPostgresProvider::QgsPostgresProvider(QString uri):dataSourceUri(uri)
 
 QgsPostgresProvider::~QgsPostgresProvider()
 {
+  pLog.flush();
 }
 
 //TODO - we may not need this function - consider removing it from
@@ -227,7 +236,7 @@ QgsFeature *QgsPostgresProvider::getFirstFeature(bool fetchAttributes)
 {
     QgsFeature *f = 0;
     if (valid) {
-        std::cout << "getting first feature\n";
+        //--std::cout << "getting first feature\n";
 
         f = new QgsFeature();
         /*  f->setGeometry(getGeometryPointer(feat));
@@ -255,30 +264,32 @@ QgsFeature *QgsPostgresProvider::getNextFeature(bool fetchAttributes)
         // set up the 
         QString declare = QString("declare qgisf binary cursor for select oid," 
           "asbinary(%1,'%2') as qgs_feature_geometry from %3").arg(geometryColumn).arg(endianString()).arg(tableName);
-        std::cout << "Selecting features using: " << declare << std::endl;
+        //--std::cout << "Selecting features using: " << declare << std::endl;
         // set up the cursor
         PQexec(connection,"begin work");
         PQexec(connection, (const char *)declare);
-         std::cout << "Error: " << PQerrorMessage(connection) << std::endl;
+         //--std::cout << "Error: " << PQerrorMessage(connection) << std::endl;
            ready = true;
       } */
         QString fetch = "fetch forward 1 from qgisf";
         queryResult = PQexec(connection, (const char *)fetch);
-        //std::cout << "Error: " << PQerrorMessage(connection) << std::endl;
-        std::cout << "Fetched " << PQntuples(queryResult) << "rows" << std::endl;
+        ////--std::cout << "Error: " << PQerrorMessage(connection) << std::endl;
+        //--std::cout << "Fetched " << PQntuples(queryResult) << "rows" << std::endl;
         if(PQntuples(queryResult) == 0){
           PQexec(connection, "end work");
           ready = false;
           return 0;
         } 
-     //  std::cout <<"Raw value of the geometry field: " << PQgetvalue(queryResult,0,PQfnumber(queryResult,"qgs_feature_geometry")) << std::endl;
-       std::cout << "Length of oid is " << PQgetlength(queryResult,0, PQfnumber(queryResult,"oid")) << std::endl;
-      int oid = *(int *)PQgetvalue(queryResult,0,PQfnumber(queryResult,"oid"));
+     //  //--std::cout <<"Raw value of the geometry field: " << PQgetvalue(queryResult,0,PQfnumber(queryResult,"qgs_feature_geometry")) << std::endl;
+       //--std::cout << "Length of oid is " << PQgetlength(queryResult,0, PQfnumber(queryResult,"oid")) << std::endl;
+      // get the value of the primary key based on type
+      
+      int oid = *(int *)PQgetvalue(queryResult,0,PQfnumber(queryResult,primaryKey));
       // oid is in big endian
       int *noid;
      // if((endian() == NDR) && versionXDR){
        if(swapEndian){
-        std::cout << "swapping endian for oid" << std::endl;
+        //--std::cout << "swapping endian for oid" << std::endl;
         // convert oid to opposite endian
         char *temp  = new char[sizeof(oid)];
         char *ptr = (char *)&oid + sizeof(oid) -1;
@@ -294,26 +305,26 @@ QgsFeature *QgsPostgresProvider::getNextFeature(bool fetchAttributes)
       }
       // noid contains the oid to be used in fetching attributes if 
       // fetchAttributes = true
-      std::cout << "OID: " << *noid << std::endl;
+      //--std::cout << "OID: " << *noid << std::endl;
       int returnedLength = PQgetlength(queryResult,0, PQfnumber(queryResult,"qgs_feature_geometry"));
-      std::cout << "Returned length is " << returnedLength << std::endl;
+      //--std::cout << "Returned length is " << returnedLength << std::endl;
       if(returnedLength > 0){
       unsigned char *feature = new unsigned char[returnedLength + 1];
       memset(feature, '\0', returnedLength + 1);
       memcpy(feature, PQgetvalue(queryResult,0,PQfnumber(queryResult,"qgs_feature_geometry")), returnedLength);
       int wkbType = *((int *) (feature + 1));
-      std::cout << "WKBtype is: " << wkbType << std::endl;
+      //--std::cout << "WKBtype is: " << wkbType << std::endl;
       f = new QgsFeature(*noid);
       f->setGeometry(feature);
         if (fetchAttributes) {
           getFeatureAttributes(*noid, f);
         }
       }else{
-        std::cout <<"Couldn't get the feature geometry in binary form" << std::endl;
+        //--std::cout <<"Couldn't get the feature geometry in binary form" << std::endl;
     }
     }
     else {
-        std::cout << "Read attempt on an invalid postgresql data source\n";
+        //--std::cout << "Read attempt on an invalid postgresql data source\n";
     }
     return f;
 }
@@ -326,15 +337,16 @@ QgsFeature *QgsPostgresProvider::getNextFeature(bool fetchAttributes)
 void QgsPostgresProvider::select(QgsRect * rect)
 {
     // spatial query to select features
-    std::cout << "Selection rectangle is " << *rect << std::endl;
-    QString declare = QString("declare qgisf binary cursor for select oid," 
-    "asbinary(%1,'%2') as qgs_feature_geometry from %3").arg(geometryColumn).arg(endianString()).arg(tableName);
+    //--std::cout << "Selection rectangle is " << *rect << std::endl;
+    QString declare = QString("declare qgisf binary cursor for select "
+      + primaryKey  
+      + ",asbinary(%1,'%2') as qgs_feature_geometry from %3").arg(geometryColumn).arg(endianString()).arg(tableName);
     declare += " where " + geometryColumn;
     declare += " && GeometryFromText('BOX3D(" + rect->stringRep();
     declare += ")'::box3d,";
     declare += srid;
     declare += ")";          
-    std::cout << "Selecting features using: " << declare << std::endl;
+    //--std::cout << "Selecting features using: " << declare << std::endl;
     // set up the cursor
     if(ready){
       PQexec(connection, "end work");
@@ -437,8 +449,8 @@ int QgsPostgresProvider::fieldCount()
 /**
 * Fetch attributes for a selected feature
 */
- void QgsPostgresProvider::getFeatureAttributes(int oid, QgsFeature *f){
-  QString sql = QString("select * from %1 where oid = %2").arg(tableName).arg(oid);
+ void QgsPostgresProvider::getFeatureAttributes(int key, QgsFeature *f){
+  QString sql = QString("select * from %1 where %2 = %3").arg(tableName).arg(primaryKey).arg(key);
   PGresult *attr = PQexec(connection, (const char *)sql);
   
    for (int i = 0; i < fieldCount(); i++) {
@@ -461,27 +473,30 @@ std::vector<QgsField>& QgsPostgresProvider::fields()
 void QgsPostgresProvider::reset()
 {
   // reset the cursor to the first record
-  std::cout << "Resetting the cursor to the first record " << std::endl;
-   QString declare = QString("declare qgisf binary cursor for select oid," 
-          "asbinary(%1,'%2') as qgs_feature_geometry from %3").arg(geometryColumn).arg(endianString()).arg(tableName);
-        std::cout << "Selecting features using: " << declare << std::endl;
+  //--std::cout << "Resetting the cursor to the first record " << std::endl;
+   QString declare = QString("declare qgisf binary cursor for select " +
+    primaryKey + 
+    ",asbinary(%1,'%2') as qgs_feature_geometry from %3").arg(geometryColumn).arg(endianString()).arg(tableName);
+        //--std::cout << "Selecting features using: " << declare << std::endl;
+        pLog << "Setting up binary cursor: " << declare << std::endl;
         // set up the cursor
+        PQexec(connection,"end work");
         PQexec(connection,"begin work");
         PQexec(connection, (const char *)declare);
-         std::cout << "Error: " << PQerrorMessage(connection) << std::endl;
+         //--std::cout << "Error: " << PQerrorMessage(connection) << std::endl;
            ready = true;
 }
 /* QString QgsPostgresProvider::getFieldTypeName(PGconn * pd, int oid)
 {
     QString typOid = QString().setNum(oid);
     QString sql = "select typelem from pg_type where typelem = " + typOid + " and typlen = -1";
-    //std::cout << sql << std::endl;
+    ////--std::cout << sql << std::endl;
     PGresult *result = PQexec(pd, (const char *) sql);
     // get the oid of the "real" type
     QString poid = PQgetvalue(result, 0, PQfnumber(result, "typelem"));
     PQclear(result);
     sql = "select typname, typlen from pg_type where oid = " + poid;
-    // std::cout << sql << std::endl;
+    // //--std::cout << sql << std::endl;
     result = PQexec(pd, (const char *) sql);
 
     QString typeName = PQgetvalue(result, 0, 0);
@@ -502,6 +517,40 @@ QString QgsPostgresProvider::endianString()
 		return QString("XDR");
 }
 QString QgsPostgresProvider::getPrimaryKey(){
+  QString sql = "select oid from pg_class where relname = '" + tableName + "'";
+  pLog << "Getting primary key" << std::endl;
+  pLog << sql << std::endl;
+  PGresult *pk = PQexec(connection,(const char *)sql);
+  pLog << "Got " << PQntuples(pk) << " rows " << std::endl;
+  // get the oid for the table
+  QString oid = PQgetvalue(pk,0,0);
+  // check to see if there is a primary key
+  sql = "select indkey from pg_index where indrelid = " +
+    oid + " and indisprimary = 't'";
+  pLog << sql << std::endl;
+  PQclear(pk);
+  pk = PQexec(connection,(const char *)sql);
+  // if we got no tuples we ain't go no pk :)
+  if(PQntuples(pk) == 0){
+    // no key - should we warn the user that performance will suffer
+    pLog << "Table has no primary key -- using oid to fetch records" << std::endl;
+    primaryKey = "oid";
+  }else{
+    // store the key column
+    QString keyString = PQgetvalue(pk,0,0);
+    QStringList columns = QStringList::split(" ", keyString);
+    if(columns.count() > 1){
+      //TODO concatenated key -- can we use this?
+      pLog << "Table has a concatenated primary key" << std::endl;
+    }
+    primaryKeyIndex = columns[0].toInt()-1;
+    QgsField fld = attributeFields[primaryKeyIndex];
+     primaryKey = fld.getName();
+     pLog << "Primary key is " << primaryKey << std::endl;//);// +<< " at column " << primaryKeyIndex << std::endl;
+     pLog.flush();
+  }
+  PQclear(pk);
+  return primaryKey;
   /*
 Process to determine the fields used in a primary key:
   test=# select oid from pg_class where relname = 'earthquakes';
@@ -519,6 +568,31 @@ Process to determine the fields used in a primary key:
 Primary key is composed of fields 1 and 5
 */
 }
+
+// Returns the minimum value of an attribute
+QString QgsPostgresProvider::minValue(int position){
+    // get the field name 
+    QgsField fld = attributeFields[position];
+    QString sql = QString("select min(%1) from %2").arg(fld.getName()).arg(tableName);
+    PGresult *rmin = PQexec(connection,(const char *)sql);
+    QString minValue = PQgetvalue(rmin,0,0);
+    PQclear(rmin);
+    return minValue;
+  }
+
+// Returns the maximum value of an attribute
+    
+QString QgsPostgresProvider::maxValue(int position){
+     // get the field name 
+    QgsField fld = attributeFields[position];
+    QString sql = QString("select max(%1) from %2").arg(fld.getName()).arg(tableName);
+    PGresult *rmax = PQexec(connection,(const char *)sql);
+    QString maxValue = PQgetvalue(rmax,0,0);
+    PQclear(rmax);
+    return maxValue;
+  }
+  
+
 /**
 * Class factory to return a pointer to a newly created 
 * QgsPostgresProvider object
