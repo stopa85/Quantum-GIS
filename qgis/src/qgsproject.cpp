@@ -636,6 +636,29 @@ QgsProject::write( )
     titleNode.appendChild( titleText );
 
     // extent
+    QDomElement extentNode = doc->createElement( "extent" );
+    qgis.appendChild( extentNode );
+
+    QDomElement xMin = doc->createElement( "xmin" );
+    QDomElement yMin = doc->createElement( "ymin" );
+    QDomElement xMax = doc->createElement( "xmax" );
+    QDomElement yMax = doc->createElement( "ymax" );
+
+    QgsRect mapCanvasFullExtent =  _getFullExtent( "theMapCanvas" );
+    QDomText xMinText = doc->createTextNode( QString::number(mapCanvasFullExtent.xMin()) );
+    QDomText yMinText = doc->createTextNode( QString::number(mapCanvasFullExtent.yMin()) );
+    QDomText xMaxText = doc->createTextNode( QString::number(mapCanvasFullExtent.xMax()) );
+    QDomText yMaxText = doc->createTextNode( QString::number(mapCanvasFullExtent.yMax()) );
+
+    xMin.appendChild( xMinText );
+    yMin.appendChild( yMinText );
+    xMax.appendChild( xMaxText );
+    yMax.appendChild( yMaxText );
+
+    extentNode.appendChild( xMin );
+    extentNode.appendChild( yMin );
+    extentNode.appendChild( xMax );
+    extentNode.appendChild( yMax );
 
     // layers
 
