@@ -275,12 +275,24 @@ void QgisApp::addLayer()
 		    QgsSiSyDialog* dialog=new QgsSiSyDialog(lyr);
 		    lyr->setRendererDialog(dialog);
 
-		    //blue solid fill and black 1pt outline is the default
 		    QgsSymbol sy;
-		    sy.brush().setColor(QColor(0,0,255));
 		    sy.brush().setStyle(Qt::SolidPattern);
 		    sy.pen().setStyle(Qt::SolidLine);
-		    sy.pen().setColor(QColor(0,0,0));
+
+		    //random fill colors for points and polygons and pen colors for lines
+		    int red = 1 + (int) (255.0 * rand() / (RAND_MAX + 1.0));
+		    int green = 1 + (int) (255.0 * rand() / (RAND_MAX + 1.0));
+		    int blue = 1 + (int) (255.0 * rand() / (RAND_MAX + 1.0));
+		 
+		    if(lyr->vectorType()==QGis::Line)
+		    {
+			sy.pen().setColor(QColor(red,green,blue));
+		    }
+		    else
+		    {
+			sy.brush().setColor(QColor(red,green,blue));
+			sy.pen().setColor(QColor(0,0,0));
+		    }
 		    QgsRenderItem ri(sy,"", "");
 		    renderer->addItem(ri);
 
