@@ -33,6 +33,12 @@ namespace QGis
 		WKBMultiLineString,
 		WKBMultiPolygon
 	};
+	enum VectorType
+	    {
+		Point,
+		Line,
+		Polygon
+	    };
 
 }
 #endif

@@ -30,11 +30,13 @@ qgis_SOURCES =  qgisapp.cpp \
 				qgslayerproperties.cpp \
 				qgslegend.cpp \
 				qgslegenditem.cpp \
+				qgslinestyledialog.cpp \
 				qgslinesymbol.cpp \
 				qgsmapcanvas.cpp \
 				qgsmaplayer.cpp \
 				qgsvectorlayer.cpp \
 				qgsmarkersymbol.cpp \
+				qgspatterndialog.cpp \
 				qgspluginitem.cpp \
 				qgspluginmanager.cpp \
 				qgspoint.cpp \
@@ -46,7 +48,9 @@ qgis_SOURCES =  qgisapp.cpp \
 				qgsrenderitem.cpp \
 				qgsshapefilelayer.cpp \
 				qgssinglesymrenderer.cpp \
+				qgssisydialog.cpp \
 				qgssymbol.cpp\
+				qgssymbologyutils.cpp\
 				qgsfeature.cpp \
 				qgsfeatureattribute.cpp \
         qgsfield.cpp \
@@ -63,13 +67,19 @@ qgis_MOC = 	qgisappbase.moc.cpp \
 			qgslegend.moc.cpp\
 			qgslegenditembase.moc.cpp\
 			qgslegenditem.moc.cpp\
+			qgslinestyledialogbase.moc.cpp\
+			qgslinestyledialog.moc.cpp\
 			qgsmapcanvas.moc.cpp\
 			qgsmaplayer.moc.cpp\
 			qgsmaplayerinterface.moc.cpp\
 			qgsmessageviewer.moc.cpp\
+			qgspatterndialogbase.moc.cpp\
+			qgspatterndialog.moc.cpp\
 			qgspluginmanagerbase.moc.cpp\
 			qgsrasterlayer.moc.cpp\
 			qgsshapefilelayer.moc.cpp \
+			qgssisydialog.moc.cpp \
+			qgssisydialogbase.moc.cpp \
             qgsvectorlayer.moc.cpp
 qgis_UI = qgisappbase.h\
 			qgisappbase.cpp\
@@ -79,14 +89,20 @@ qgis_UI = qgisappbase.h\
 			qgsabout.cpp\
 			qgslayerpropertiesbase.h\
 			qgslayerpropertiesbase.cpp\
+			qgslinestyledialogbase.h\
+			qgslinestyledialogbase.cpp\
 			qgsidentifyresultsbase.h\
 			qgsidentifyresultsbase.cpp\
 			qgsattributetablebase.h\
 			qgsattributetablebase.cpp\
+			qgspatterndialogbase.h\
+			qgspatterndialogbase.cpp\
 			qgspluginmanagerbase.h\
 			qgspluginmanagerbase.cpp\
 			qgsmessageviewer.h\
-			qgsmessageviewer.cpp
+			qgsmessageviewer.cpp\
+			qgssisydialogbase.h\
+			qgssisydialogbase.cpp
 
 # UI dependencies			
 qgisappbase.h: qgisappbase.ui
@@ -101,10 +117,16 @@ qgsidentifyresultsbase.h: qgsidentifyresultsbase.ui
 qgsidentifyresultsbase.cpp: qgsidentifyresultsbase.h qgsidentifyresultsbase.ui
 gsattributetablebase.h: qgsattributetablebase.ui
 gsattributetablebase.cpp: gsattributetablebase.h qgsattributetablebase.ui
+qgspatterndialogbase.h: qgspatterndialogbase.ui
+qgspatterndialogbase.cpp: qgspatterndialogbase.h qgspatterndialogbase.ui
+qgslinestyledialogbase.h: qgslinestyledialogbase.ui
+qgslinestyledialogbase.cpp: qgslinestyledialogbase.h qgslinestyledialogbase.ui
 qgspluginmanagerbase.h: qgspluginmanagerbase.ui
 qgspluginmanagerbase.cpp: qgspluginmanagerbase.h qgspluginmanagerbase.ui
 qgsmessageviewer.h: qgsmessageviewer.ui
 qgsmessageviewer.cpp: qgsmessageviewer.h qgsmessageviewer.ui
+qgssisydialogbase.h: qgssisydialogbase.ui
+qgssisydialogbase.cpp: qgssisydialogbase.h qgssisydialogbase.ui
 
 #PostgreSQL UI dependencies
 qgsdbsourceselectbase.h: qgsdbsourceselectbase.ui

@@ -150,3 +150,8 @@ QPixmap* QgsMapLayer::legendPixmap()
 {
     return &m_legendPixmap;
 }
+
+QgsLegendItem* QgsMapLayer::legendItem()
+{
+    return m_legendItem;
+}
