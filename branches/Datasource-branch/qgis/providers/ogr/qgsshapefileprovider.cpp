@@ -9,7 +9,7 @@
 #include <ogr_geometry.h>
 #include <cpl_error.h>
 #include "qgsshapefileprovider.h"
-QgsShapeFileProvider::QgsShapeFileProvider(QString uri):dataSourceUri(uri)
+QgsShapeFileProvider::QgsShapeFileProvider(QString uri):dataSourceUri(uri), minmaxcachedirty(true), minmaxcache(0)
 {
 	OGRRegisterAll();
 		
@@ -62,17 +62,6 @@ QgsShapeFileProvider::QgsShapeFileProvider(QString uri):dataSourceUri(uri)
 		std::cout << er << std::endl;
 		valid = false;
 	}
-
-	//create a boolean vector and set every entry to false
-
-/* 	if (valid) {
-		selected = new std::vector < bool > (ogrLayer->GetFeatureCount(), false);
-	} else {
-		selected = 0;
-	} */
-//  tabledisplay=0;
-	//draw the selected features in yellow
-//  selectionColor.setRgb(255,255,0);
 
 }
 
@@ -294,6 +283,39 @@ void QgsShapeFileProvider::reset(){
   ogrLayer->SetSpatialFilter(0);
   ogrLayer->ResetReading();
 }
+
+QString QgsShapeFileProvider::minValue(int position)
+{
+    if(minmaxcachedirty)
+    {
+	fillMinMaxCash();
+    }
+    return QString::number(minmaxcache[position][0],'f',2);//todo return the index of the matrix
+}
+
+ 
+QString QgsShapeFileProvider::maxValue(int position)
+{
+    if(minmaxcachedirty)
+    {
+	fillMinMaxCash();
+    }
+    return QString::number(minmaxcache[position][1],'f',2);//todo return the index of the matrix
+}
+
+void QgsShapeFileProvider::fillMinMaxCash()
+{
+    if(minmaxcache)
+    {
+	//todo delete minmaxcache
+    }
+	
+    //todo, resize minmaxcache
+
+    //todo, go through all the features
+    minmaxcachedirty=false;
+}
+
 /**
 * Class factory to return a pointer to a newly created 
 * QgsShapeFileProvider object
