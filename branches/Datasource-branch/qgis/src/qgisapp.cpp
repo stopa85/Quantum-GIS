@@ -205,13 +205,15 @@ QgisApp::QgisApp(QWidget * parent, const char *name, WFlags fl):QgisAppBase(pare
 		actionAddLayer->removeFrom(PopupMenu_2);
 		actionAddLayer->removeFrom(DataToolbar);
 	#endif
-  
+ 
   // Get pointer to the provider registry singleton
   providerRegistry = QgsProviderRegistry::instance();
   
 	// connect the "cleanup" slot
 	connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(saveWindowState()));
 	restoreWindowState();
+   // set the focus to the map canvase
+  mapCanvas->setFocus();
 }
 
 QgisApp::~QgisApp()
@@ -338,7 +340,7 @@ void QgisApp::addDatabaseLayer()
 
 			// create the layer
 			//qWarning("creating lyr");
-			QgsVectorLayer *lyr = new QgsVectorLayer(connInfo + " table=" + *it, QString::null, "postgres");
+			QgsVectorLayer *lyr = new QgsVectorLayer(connInfo + " table=" + *it, *it, "postgres");
 			// give it a random color
 			QgsSingleSymRenderer* renderer=new QgsSingleSymRenderer();//add single symbol renderer as default
 			lyr->setRenderer(renderer);
