@@ -44,7 +44,8 @@
 #include <qcheckbox.h>
 #include <qregexp.h>
 #include <qlistview.h>
-
+#include <qprogressdialog.h> 
+#include <qapplication.h>
 
 //stdc++ includes
 #include <iostream>
@@ -310,10 +311,18 @@ QTextStream userCsTextStream( &csQFile );
   ProjectionWKTMap mProjectionsMap = srs->getMap();
   // get an iterator for the map
   ProjectionWKTMap::iterator myIterator;
+  //find out how many entries in the map
+  int myEntriesCount = mProjectionsMap.size();
+  std::cout << "Srs map has " << myEntriesCount << " entries " << std::endl;
+  int myProgress = 0;
+  QProgressDialog myProgressBar( "Building Projections List...", "Cancel", myEntriesCount,
+                            this, "progress", TRUE );
   // now add each key to our list view
   QListViewItem *newItem;
   for ( myIterator = mProjectionsMap.begin(); myIterator != mProjectionsMap.end(); ++myIterator ) 
 {
+  myProgressBar.setProgress(myProgress++);
+  qApp->processEvents();
   //std::cout << "Widget map has: " <<myIterator.key().ascii() << std::endl;
   //cboProjection->insertItem(myIterator.key());
 
