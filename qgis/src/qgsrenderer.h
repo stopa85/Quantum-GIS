@@ -27,7 +27,7 @@ class QPainter;
 class QgsRenderer
 {
  public:
-    virtual void renderFeature(QPainter* p, QgsFeature* f, QgsCoordinateTransform* t, int endian)=0;
+    virtual void renderFeature(QPainter* p, QgsFeature* f, QgsCoordinateTransform* t)=0;
 };
 
 #endif // QGSRENDERER_H
