@@ -14,15 +14,18 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
+ /* $Id$ */
 #include <iostream>
 #include <qsqldatabase.h>
 #include <qsettings.h>
 #include <qlineedit.h>
 #include <qcheckbox.h>
 #include <qmessagebox.h>
-#include "libpq++.h"
 #include "qgsnewconnection.h"
-
+extern "C"
+{
+#include <libpq-fe.h>
+}
 QgsNewConnection::QgsNewConnection(QString connName):QgsNewConnectionBase()
 {
 	if (!connName.isEmpty()) {
@@ -53,9 +56,9 @@ void QgsNewConnection::testConnection()
 	QString connInfo =
 	  "host=" + txtHost->text() + " dbname=" + txtDatabase->text() +
 	  " user=" + txtUsername->text() + " password=" + txtPassword->text();
-	PgDatabase *pd = new PgDatabase((const char *) connInfo);
+	PGconn *pd = PQconnectdb((const char *) connInfo);
 //  std::cout << pd->ErrorMessage();
-	if (pd->Status() == CONNECTION_OK) {
+	if (PQstatus(pd) == CONNECTION_OK) {
 		// Database successfully opened; we can now issue SQL commands.
 		QMessageBox::information(this, "Test connection", "Connection to " + txtDatabase->text() + " was successfull");
 	} else {
