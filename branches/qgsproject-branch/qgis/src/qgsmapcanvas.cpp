@@ -281,6 +281,35 @@ void QgsMapCanvas::addLayer(QgsMapLayer * lyr)
   if ( ! lyr )
   { return; }
 
+  // CRUDE HACK.  If this map canvas is the overview canvas and the given
+  // layer doesn't want to be in the overview, then just skip adding it.
+
+  // XXX Tim and I (Mark) have discussed possibly making QgsMapCanvas sub-class
+  // XXX QgsMapOverviewCanvas (or just QgsMapOverview?) that behaves a bit
+  // XXX differently from parent in that it properly handles overview flags
+
+#ifdef QGISDEBUG
+  const char * n = name(); // debugger sensor
+#endif
+
+  if ( 0 == strcmp("theOverviewCanvas",name()) ) // canonical name set in qgisapp ctor
+  {
+      if ( ! lyr->showInOverviewStatus() )
+      {
+#ifdef QGISDEBUG
+          qDebug( "lyr->name() not in overview, so skipping in addLayer()" );
+#endif
+          return;               // doesn't want to be in overview, so don't add
+      }
+      else
+      {
+#ifdef QGISDEBUG
+          qDebug( "lyr->name() in overview, invoking addLayer()" );
+#endif
+      }
+  }
+
+
   mCanvasProperties->layers[lyr->getLayerID()] = lyr;
 
   // update extent if warranted
@@ -1276,6 +1305,16 @@ void QgsMapCanvas::remove(QString key)
   //We no longer delete the layer her - deletiong of layers is now managed
   //by the MapLayerRegistry. All we do now is remove any local reference to this layer.
   //delete mCanvasProperties->layers[key];   // first delete the map layer itself
+
+  // convenience variable
+  QgsMapLayer * layer = mCanvasProperties->layers[key];
+
+  Q_ASSERT( layer );
+
+  // disconnect layer signals
+  QObject::disconnect(layer, SIGNAL(visibilityChanged()), this, SLOT(layerStateChange()));
+  QObject::disconnect(layer, SIGNAL(repaintRequested()), this, SLOT(refresh()));
+
 
   mCanvasProperties->layers[key] = 0;
   mCanvasProperties->layers.erase( key );  // then erase its entry from layer table
