@@ -75,7 +75,7 @@
 #include "qgisapp.h"
 #include "qgspluginitem.h"
 #include "qgssinglesymrenderer.h"
-#include "qgssisydialog.h"
+//#include "qgssisydialog.h"
 #include "../plugins/qgisplugin.h"
 #include "xpm/qgis.xpm"
 #include <ogrsf_frmts.h>
@@ -269,9 +269,9 @@ void QgisApp::addLayer()
 	QObject::connect(lyr,SIGNAL(repaintRequested()),mapCanvas,SLOT(refresh()));
 
 		if (lyr->isValid()) {
-		    //single symbol with random color
-		    lyr->initializeSymbology();
-		    // add it to the mapcanvas collection
+		    QgsSingleSymRenderer* renderer=new QgsSingleSymRenderer();//add single symbol renderer as default
+		    lyr->setRenderer(renderer);
+		    renderer->initializeSymbology(lyr);
 		    mapCanvas->addLayer(lyr);
 		} else {
 			QString msg = *it;
