@@ -204,7 +204,7 @@ QgsFeature *QgsPostgresProvider::getNextFeature(bool fetchAttributes)
     if (valid){
       // If the query result is not valid, then select all features
       // before proceeding
-      if(!ready) {
+   /*    if(!ready) {
         // set up the 
         QString declare = QString("declare qgisf binary cursor for select oid," 
           "asbinary(%1,'%2') as qgs_feature_geometry from %3").arg(geometryColumn).arg(endianString()).arg(tableName);
@@ -214,12 +214,13 @@ QgsFeature *QgsPostgresProvider::getNextFeature(bool fetchAttributes)
         PQexec(connection, (const char *)declare);
          std::cout << "Error: " << PQerrorMessage(connection) << std::endl;
            ready = true;
-      }
+      } */
         QString fetch = "fetch forward 1 from qgisf";
         queryResult = PQexec(connection, (const char *)fetch);
         //std::cout << "Error: " << PQerrorMessage(connection) << std::endl;
         std::cout << "Fetched " << PQntuples(queryResult) << "rows" << std::endl;
         if(PQntuples(queryResult) == 0){
+          PQexec(connection, "end work");
           return 0;
         } 
      //  std::cout <<"Raw value of the geometry field: " << PQgetvalue(queryResult,0,PQfnumber(queryResult,"qgs_feature_geometry")) << std::endl;
@@ -254,7 +255,7 @@ QgsFeature *QgsPostgresProvider::getNextFeature(bool fetchAttributes)
       f = new QgsFeature(*noid);
       f->setGeometry(feature);
         if (fetchAttributes) {
-        //    getFeatureAttributes(fet, f);
+          getFeatureAttributes(*noid, f);
         }
       }else{
         std::cout <<"Couldn't get the feature geometry in binary form" << std::endl;
@@ -408,19 +409,21 @@ int QgsPostgresProvider::fieldCount()
 /**
 * Fetch attributes for a selected feature
 */
-/* void QgsPostgresProvider::getFeatureAttributes(OGRFeature *ogrFet, QgsFeature *f){
-  for (int i = 0; i < ogrFet->GetFieldCount(); i++) {
-
-					// add the feature attributes to the tree
-					OGRFieldDefn *fldDef = ogrFet->GetFieldDefnRef(i);
-					QString fld = fldDef->GetNameRef();
-			//		OGRFieldType fldType = fldDef->GetType();
-					QString val;
-
-					val = ogrFet->GetFieldAsString(i);
-          f->addAttribute(fld, val);
-}
-} */
+ void QgsPostgresProvider::getFeatureAttributes(int oid, QgsFeature *f){
+  QString sql = QString("select * from %1 where oid = %2").arg(tableName).arg(oid);
+  PGresult *attr = PQexec(connection, (const char *)sql);
+  
+   for (int i = 0; i < fieldCount(); i++) {
+     QString fld = PQfname(attr, i);
+     // Dont add the WKT representation of the geometry column to the identify
+     // results
+     if(fld != geometryColumn){
+       // Add the attribute to the feature
+       QString val = PQgetvalue(attr,0, i);
+       f->addAttribute(fld, val);
+     }
+   }
+} 
 
 std::vector < QgsField > QgsPostgresProvider::fields()
 {
@@ -462,6 +465,24 @@ QString QgsPostgresProvider::endianString()
 		return QString("NDR");
 	else
 		return QString("XDR");
+}
+QString QgsPostgresProvider::getPrimaryKey(){
+  /*
+Process to determine the fields used in a primary key:
+  test=# select oid from pg_class where relname = 'earthquakes';
+    oid
+  -------
+   24865
+  (1 row)
+ 
+  test=# select indkey from pg_index where indrelid = 24865 and indisprimary = 't';
+   indkey
+  --------
+   1 5
+  (1 row)
+
+Primary key is composed of fields 1 and 5
+*/
 }
 /**
 * Class factory to return a pointer to a newly created 
