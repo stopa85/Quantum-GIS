@@ -19,7 +19,9 @@
 #include <qstring.h>
 #include "qgsfeatureattribute.h"
 
-QgsFeatureAttribute::QgsFeatureAttribute(){}
+QgsFeatureAttribute::QgsFeatureAttribute(QString fld, QString val)
+  : field(fld), value(val){
+  }
 QgsFeatureAttribute::~QgsFeatureAttribute(){}
 QString QgsFeatureAttribute::fieldName(){
 	return field;
