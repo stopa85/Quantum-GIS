@@ -268,7 +268,7 @@ public  slots:
   this makes explicit the state change
 
   */
-  void inOverview( bool );
+  virtual void inOverview( bool );
 
 
 signals:

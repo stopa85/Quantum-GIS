@@ -91,6 +91,8 @@ class QgsVectorLayer:public QgsMapLayer
 
   public slots:
 
+  void inOverview( bool );
+
    /**Sets the 'tabledisplay' to 0 again*/
   void invalidateTableDisplay();
   void select(int number);
