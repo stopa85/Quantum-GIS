@@ -32,7 +32,7 @@
 #include "qgssisydialog.h"
 //#include "qgsgrasydialog.h"
 #include "qgssinglesymrenderer.h"
-//#include "qgsgraduatedsymrenderer.h"
+#include "qgsgraduatedsymrenderer.h"
 #include <cfloat>
 #include "qgslegenditem.h"
 //#include "qgscontinuouscolrenderer.h"
@@ -48,7 +48,7 @@ QgsVectorLayerProperties::QgsVectorLayerProperties(QgsVectorLayer* lyr):layer(ly
 	setCaption("Layer Properties - " + lyr->name());
 	connect( settingsbutton, SIGNAL( clicked() ), this, SLOT( showSymbolSettings() ) );
 	legendtypecombobox->insertItem(tr("single symbol"));
-	//legendtypecombobox->insertItem(tr("graduated symbol"));
+	legendtypecombobox->insertItem(tr("graduated symbol"));
 	//legendtypecombobox->insertItem(tr("continuous color"));
 	QObject::connect(legendtypecombobox,SIGNAL(activated(const QString&)),this,SLOT(alterLayerDialog(const QString&)));
 }
@@ -72,19 +72,13 @@ void QgsVectorLayerProperties::alterLayerDialog(const QString& string)
 	layer->setRenderer(renderer);
 	renderer->initializeSymbology(layer);
     }
-    /*else if(string==tr("graduated symbol"))
+    else if(string==tr("graduated symbol"))
     {
-	renderer=new QgsGraduatedSymRenderer();
-	//add a default item
-	QgsSymbol s(QColor(0,0,0));
-	s.setBrush(QBrush(QColor(0,0,255)));
-	s.setPen(QPen(QColor(0,0,0),1));
-	QgsRangeRenderItem* defaultitem=new QgsRangeRenderItem(s,0,QString::number(DBL_MAX,'f')," ");
-	((QgsGraduatedSymRenderer*)renderer)->addItem(defaultitem);
+	QgsGraduatedSymRenderer* renderer=new QgsGraduatedSymRenderer();
 	layer->setRenderer(renderer);
-	dialog=new QgsGraSyDialog(layer);
+	renderer->initializeSymbology(layer);
     }
-    else if(string==tr("continuous color"))
+    /*else if(string==tr("continuous color"))
     {
 	renderer=new QgsContinuousColRenderer();
 	//add a default setting

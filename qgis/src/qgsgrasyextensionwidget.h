@@ -23,14 +23,14 @@
 #include <vector>
 
 class QGridLayout;
-class QgsShapeFileLayer;
+class QgsVectorLayer;
 
 /**This widget can be used as extension to QgsGraSyDialog. QgsGraSyDialog creates a new instance every time the number of classes or the mode changes*/
 class QgsGraSyExtensionWidget: public QWidget
 {
     Q_OBJECT
  public:
-    QgsGraSyExtensionWidget(QWidget* parent, int classfield, QgsGraSyDialog::mode mode, int nofclasses, QgsShapeFileLayer* slayer);
+    QgsGraSyExtensionWidget(QWidget* parent, int classfield, QgsGraSyDialog::mode mode, int nofclasses, QgsVectorLayer* vlayer);
     ~QgsGraSyExtensionWidget();
     /**Returns the number of the field to classify*/
     int classfield();
@@ -42,7 +42,7 @@ class QgsGraSyExtensionWidget: public QWidget
     QGridLayout* m_gridlayout;
     QgsGraSyDialog::mode m_mode;
     int m_numberofclasses;
-    QgsShapeFileLayer* m_shapefilelayer;
+    QgsVectorLayer* m_vectorlayer;
     /**Pointers to the widgets are stored so that they are accessible for other classes*/
     std::vector<QWidget*> m_widgetvector;
  protected slots:

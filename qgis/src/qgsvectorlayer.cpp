@@ -237,7 +237,7 @@ void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsCoordinateTrans
 		qWarning("Starting draw of features");
 		QgsFeature *fet;
 		unsigned char *feature;
-		while ((fet = dataProvider->getNextFeature(false))) {
+		while ((fet = dataProvider->getNextFeature(true))) {//true is necessary for graduated symbol
 
 			if (fet == 0) {
 				std::cout << "get next feature returned null\n";

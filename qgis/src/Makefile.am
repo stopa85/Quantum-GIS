@@ -26,6 +26,9 @@ qgis_SOURCES =  qgisapp.cpp \
 				qgscoordinatetransform.cpp \
 				qgscustomsymbol.cpp \
 				qgsdatasource.cpp \
+				qgsgraduatedsymrenderer.cpp \
+				qgsgrasydialog.cpp \
+				qgsgrasyextensionwidget.cpp \
 				qgsidentifyresults.cpp \
 				qgslayerproperties.cpp \
 				qgslegend.cpp \
@@ -65,6 +68,9 @@ qgis_MOC = 	qgisappbase.moc.cpp \
 		qgsabout.moc.cpp\
 		qgsattributetablebase.moc.cpp\
 		qgsattributetable.moc.cpp\
+		qgsgrasydialogbase.moc.cpp\
+		qgsgrasydialog.moc.cpp\
+		qgsgrasyextensionwidget.moc.cpp\
 		qgsidentifyresultsbase.moc.cpp\
 		qgslayerpropertiesbase.moc.cpp\
 		qgslegend.moc.cpp\
@@ -93,6 +99,8 @@ qgis_UI = qgisappbase.h\
 			qgslegenditembase.cpp\
 			qgsabout.h\
 			qgsabout.cpp\
+			qgsgrasydialogbase.h\
+			qgsgrasydialogbase.cpp\
 			qgslayerpropertiesbase.h\
 			qgslayerpropertiesbase.cpp\
 			qgslinestyledialogbase.h\
@@ -121,6 +129,8 @@ qgslayerpropertiesbase.h: qgslayerpropertiesbase.ui
 qgslayerpropertiesbase.cpp: qgslayerpropertiesbase.h qgslayerpropertiesbase.ui
 qgsabout.h: qgsabout.ui
 qgsabout.cpp: qgsabout.h qgsabout.ui
+qgsgrasydialogbase.h: qgsgrasydialogbase.ui
+qgsgrasydialogbase.cpp: qgsgrasydialogbase.h qgsgrasydialogbase.ui
 qgsidentifyresultsbase.h: qgsidentifyresultsbase.ui
 qgsidentifyresultsbase.cpp: qgsidentifyresultsbase.h qgsidentifyresultsbase.ui
 gsattributetablebase.h: qgsattributetablebase.ui

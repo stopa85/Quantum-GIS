@@ -122,7 +122,16 @@ void QgsSiSyDialog::apply()
     sy.pen().setWidth(outlinewidthspinbox->value());
     sy.pen().setColor(outlinecolorbutton->paletteBackgroundColor());
     QgsRenderItem ri(sy,"blabla", "blabla");
-    ((QgsSingleSymRenderer*)(m_vectorlayer->renderer()))->addItem(ri);
+    QgsSingleSymRenderer* renderer=dynamic_cast<QgsSingleSymRenderer*>(m_vectorlayer->renderer());
+    if(renderer)
+    {
+	renderer->addItem(ri);
+    }
+    else
+    {
+	qWarning("typecast failed in QgsSiSyDialog::apply()");
+	return;
+    }
 
     //add a pixmap to the legend item
     QPixmap* pix=m_vectorlayer->legendPixmap();

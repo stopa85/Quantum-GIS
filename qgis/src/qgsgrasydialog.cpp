@@ -24,12 +24,13 @@
 #include "qgsrangerenderitem.h"
 #include "qlineedit.h"
 #include "qgsgraduatedsymrenderer.h"
-#include "qgsshapefilelayer.h"
+#include "qgsvectorlayer.h"
 #include "qgslegenditem.h"
-#include "qgslayerproperties.h"
+#include "qgsvectorlayerproperties.h"
+#include "qgsdataprovider.h"
 
 
-QgsGraSyDialog::QgsGraSyDialog(QgsShapeFileLayer* layer): QgsGraSyDialogBase(), ext(0), m_vectorlayer(layer)
+QgsGraSyDialog::QgsGraSyDialog(QgsVectorLayer* layer): QgsGraSyDialogBase(), ext(0), m_vectorlayer(layer)
 {
     QObject::connect(numberofclassesspinbox,SIGNAL(valueChanged(int)),this,SLOT(adjustNumberOfClasses()));
     QObject::connect(classificationComboBox,SIGNAL(activated(int)),this,SLOT(adjustNumberOfClasses()));
@@ -41,33 +42,49 @@ QgsGraSyDialog::QgsGraSyDialog(QgsShapeFileLayer* layer): QgsGraSyDialogBase(), 
     displaynamefield->setText(m_vectorlayer->name());
 
     //find out the numerical fields of m_vectorlayer
-    OGRLayer* l=m_vectorlayer->getOGRLayer();
-    l->SetSpatialFilter(0);
-    OGRFeature* f=l->GetNextFeature();
-    int numberoffields=f->GetFieldCount();
-    
-    for(int i=0;i<numberoffields;i++)
+    QgsDataProvider* provider;
+    if(provider=m_vectorlayer->getDataProvider())
     {
-	QString teststring=f->GetFieldAsString(i);
-	//test, if it is numeric or not (making a subclass of QString would be the proper solution)
-	bool containsletter=false;
-	for(uint j=0;j<teststring.length();j++)
+	provider->reset();
+	QgsFeature* feature; 
+	if(feature=provider->getFirstFeature(true))
 	{
-	    if(teststring.ref(j).isLetter())
-	    {
-	    containsletter=true;
-	    }
-	}
+	    std::vector<QgsFeatureAttribute> vec = feature->attributeMap();
+	    int fieldnumber=0; 
 
-	if(!containsletter)//add it to the map and to comboBox1 if it seems to be a numeric field
+	    //iterate through all entries of vec
+	    for(std::vector<QgsFeatureAttribute>::iterator it=vec.begin();it!=vec.end();++it)
+	      {
+		  QString teststring=(*it).fieldValue();
+		  bool containsletter=false;
+		  for(uint j=0;j<teststring.length();j++)
+		  {
+		      if(teststring.ref(j).isLetter())
+		      {
+			  containsletter=true;
+		      }
+		      if(!containsletter)//add it to the map and to comboBox1 if it seems to be a numeric field
+		      {
+			  QString str=(*it).fieldName();
+			  classificationComboBox->insertItem(str);
+			  //add teststring and i to the map
+			  m_fieldmap.insert(std::make_pair(str,fieldnumber));
+		      }
+		  }
+		  fieldnumber++;
+	      } 
+	}
+	else
 	{
-	    QString str=f->GetFieldDefnRef(i)->GetNameRef();
-	    classificationComboBox->insertItem(str);
-	    //add teststring and i to the map
-	    m_fieldmap.insert(std::make_pair(str,i));
+	    qWarning("Warning, getNextFeature returned null in QgsGraSyDialog::QgsGraSyDialog(...)");
 	}
     }
-    
+    else
+    {
+	qWarning("Warning, data provider is null in QgsGraSyDialog::QgsGraSyDialog(...)");
+	return;
+    }
+   
     modeComboBox->insertItem("equal interval");
     modeComboBox->insertItem("empty");
 
@@ -143,7 +160,7 @@ void QgsGraSyDialog::apply() const
 	{
 	    QgsSymbol sy(QColor(255,0,0));
 
-	    if(m_vectorlayer->vectorType()==QgsShapeFileLayer::Polygon)
+	    if(m_vectorlayer->vectorType()==QGis::Polygon)
 	    {
 		sy.pen().setColor(((QPushButton*)(ext->getWidget(3,0)))->paletteBackgroundColor());
 		sy.pen().setStyle(QgsSymbologyUtils::qString2PenStyle((((QPushButton*)(ext->getWidget(4,0)))->text())));
@@ -156,16 +173,16 @@ void QgsGraSyDialog::apply() const
 		sy.pen().setWidth(((QSpinBox*)(ext->getWidget(5,i)))->value());
 	    }
 
-	    if(m_vectorlayer->vectorType()!=QgsShapeFileLayer::Line)
+	    if(m_vectorlayer->vectorType()!=QGis::Line)
 	    {
 		sy.brush().setColor(((QPushButton*)(ext->getWidget(6,i)))->paletteBackgroundColor());
 	    }
 
-	    if(m_vectorlayer->vectorType()==QgsShapeFileLayer::Polygon)
+	    if(m_vectorlayer->vectorType()==QGis::Polygon)
 	    {
 		sy.brush().setStyle(QgsSymbologyUtils::qString2BrushStyle((((QPushButton*)(ext->getWidget(7,i)))->text())));
 	    }
-	    else if (m_vectorlayer->vectorType()==QgsShapeFileLayer::Point)
+	    else if (m_vectorlayer->vectorType()==QGis::Point)
 	    {
 		sy.brush().setStyle(Qt::SolidPattern);
 	    } 
@@ -204,15 +221,15 @@ void QgsGraSyDialog::apply() const
 		QString legendstring=lower_bound+" - "+upper_bound;
 		p.setPen(sy.pen());
 		p.setBrush(sy.brush());
-		if(m_vectorlayer->vectorType()==QgsShapeFileLayer::Polygon)
+		if(m_vectorlayer->vectorType()==QGis::Polygon)
 		{
 		    p.drawRect(10,70+5+30*i,30,20);//implement different painting for lines and points here
 		}
-		else if(m_vectorlayer->vectorType()==QgsShapeFileLayer::Line)
+		else if(m_vectorlayer->vectorType()==QGis::Line)
 		{
 		    p.drawLine(10,70+5+30*i+10,40,70+5+30*i+10);
 		}
-		else if(m_vectorlayer->vectorType()==QgsShapeFileLayer::Point)
+		else if(m_vectorlayer->vectorType()==QGis::Point)
 		{
 		    p.drawRect(25,70+5+30*i+10,5,5);
 		}

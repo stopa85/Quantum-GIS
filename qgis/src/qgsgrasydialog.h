@@ -22,7 +22,7 @@
 #include <map>
 
 class QgsGraSyExtensionWidget;
-class QgsShapeFileLayer;
+class QgsVectorLayer;
 
 class QgsGraSyDialog: public QgsGraSyDialogBase
 {
@@ -30,17 +30,16 @@ class QgsGraSyDialog: public QgsGraSyDialogBase
  public:
     /**Enumeration describing the automatic settings of values*/
     enum mode{EMPTY, EQUAL_INTERVAL, QUANTILES};
-    QgsGraSyDialog(QgsShapeFileLayer* layer);
+    QgsGraSyDialog(QgsVectorLayer* layer);
     ~QgsGraSyDialog();
  protected slots:
-     /**Creates a new extension widget
-      \param newnumber the number of classes*/
+     /**Creates a new extension widget*/
      void adjustNumberOfClasses();
      void apply() const;
  protected:
      /**Pointer to the curret extension widget*/
      QgsGraSyExtensionWidget* ext;
-     QgsShapeFileLayer* m_vectorlayer;
+     QgsVectorLayer* m_vectorlayer;
      /**Stores the names and numbers of the fields with numeric values*/
      std::map<QString,int> m_fieldmap;
  private:
