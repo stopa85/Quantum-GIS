@@ -36,6 +36,7 @@ public:
     
 public slots:
     void setSelectedWKT(QString theWKT);
+    QString getSelectedWKT();
     void setSelectedSRID(QString theSRID);
     QString getCurrentWKT();
     QString getCurrentSRID();
