@@ -171,15 +171,15 @@ void QgsVectorLayer::setDisplayField(){
      
 			QString fldName = fields[j].getName();
 					std::cout << "Checking field " << fldName << std::endl;
-					if (fldName.contains("name", false)) {
+					if (fldName.find("name", false) > -1) {
 						idxName = fldName;
 						break;
 					}
-          if(fldName.contains("descript", false)){
+          if(fldName.find("descrip", false) > -1){
             idxName = fldName;
             break;
           }
-					if (fldName.contains("id", false)) {
+					if (fldName.find("id", false)> -1) {
 						idxId = fldName;
 						break;
 					}
