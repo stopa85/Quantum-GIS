@@ -10,7 +10,7 @@
 #ifndef QGSPROJECTIONSELECTOR_H
 #define QGSPROJECTIONSELECTOR_H
 
-#include <qgsprojectionselectorbase.h>
+#include "qgsprojectionselectorbase.h"
 
 
 
@@ -21,7 +21,8 @@ class QgsProjectionSelector: public QgsProjectionSelectorBase
 {
 Q_OBJECT
 public:
-    QgsProjectionSelector( QWidget* parent , const char* name , bool modal , WFlags fl  );
+  //XXX made flags optional
+    QgsProjectionSelector( QWidget* parent , const char* name ,WFlags fl =0  );
     ~QgsProjectionSelector();
     
   

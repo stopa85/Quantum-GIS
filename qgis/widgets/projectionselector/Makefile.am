@@ -36,7 +36,6 @@ plugin_UI = qgsprojectionselectorbase.h \
 plugin_UIC = qgsprojectionselectorbase.ui
 
 projectionselector_la_SOURCES =  qgsprojectionselector.cpp	\
-			      	 qgsprojectionselectorbase.cpp	\
 			         $(plugin_UI)			\
 			         $(plugin_MOC)
 
