@@ -148,7 +148,7 @@ void QgsMapLayerRegistry::removeAllMapLayers()
 } // QgsMapLayerRegistry::removeAllMapLayers()
 
 
-std::map<QString,QgsMapLayer*> QgsMapLayerRegistry::mapLayers()
+std::map<QString,QgsMapLayer*> & QgsMapLayerRegistry::mapLayers()
 {
   return mMapLayers;
 }
