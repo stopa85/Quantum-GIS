@@ -261,7 +261,6 @@ QgsRect QgsCoordinateTransform::transform(const QgsRect theRect,TransformDirecti
   return QgsRect(x1, y1, x2 , y2);
 } 
 
-/*
 void QgsCoordinateTransform::transformCoords( const int& numPoints, double& x, double& y, double& z,TransformDirection direction) const
 {
   // use OGR to do the transform
@@ -277,10 +276,10 @@ void QgsCoordinateTransform::transformCoords( const int& numPoints, double& x, d
 
   }
 }
-*/
 /* XXX THIS IS BASED ON DIRECT USE OF PROJ4 
  * XXX preserved for future use if we need it 
  */
+/*
 void QgsCoordinateTransform::transformCoords( const int& numPoints, double& x, double& y, double& z,TransformDirection direction) const
 {
   // use proj4 to do the transform   
@@ -329,3 +328,4 @@ void QgsCoordinateTransform::transformCoords( const int& numPoints, double& x, d
     z *= RAD_TO_DEG;
   }
 }
+*/
