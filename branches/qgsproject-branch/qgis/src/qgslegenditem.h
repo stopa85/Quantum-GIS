@@ -23,6 +23,8 @@
 
 #include <qlistview.h>
 
+class QAction;
+
 class QgsMapLayer;
 class QgsSymbol;
 
@@ -34,6 +36,7 @@ class QgsSymbol;
  *@author Gary E.Sherman
  */
 
+
 class QgsLegendItem : public QCheckListItem
 {
 public:
@@ -41,8 +44,9 @@ public:
     /*! Constructor
      * @param lyr Map layer this legend item represents
      * @param parent The parent listview
+     * @param actionInOverview QgisApp's actionInOverview
      */
-    QgsLegendItem(QgsMapLayer * lyr = 0, QListView * parent = 0);
+    QgsLegendItem(QgsMapLayer * lyr = 0, QListView * parent = 0, QAction * actionInOverview = 0);
 
     //! Destructor
     virtual ~QgsLegendItem();
@@ -76,6 +80,14 @@ private:                       // Private attributes
     QgsMapLayer * m_layer;
 
     QgsSymbol *symbol;
+
+    /** refers to QgisApp::actionInOverview
+
+      Used to properly reflect overview state for each activate()-ion.
+    */
+    QAction * mActionInOverview;
+
+    /* virtual */void activate();
 
 public:                        // Public attributes
 

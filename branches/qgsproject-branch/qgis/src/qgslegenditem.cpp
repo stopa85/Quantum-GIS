@@ -26,10 +26,11 @@
 #include "qgsproject.h"
 
 
-QgsLegendItem::QgsLegendItem(QgsMapLayer * lyr, QListView * parent)
+QgsLegendItem::QgsLegendItem(QgsMapLayer * lyr, QListView * parent, QAction * actionInOverview)
     : QCheckListItem(parent, "", QCheckListItem::CheckBox), 
       m_layer(lyr),
-      layerName( lyr->name() )
+      layerName( lyr->name() ),
+      mActionInOverview( actionInOverview )
 {
     // activate(); commented out because it was toggling layer visibility on,
     // even if it was off (due to activate() triggering update)
@@ -95,3 +96,21 @@ void QgsLegendItem::setOn( bool b )
 
     QCheckListItem::setOn( b );
 } // setOn
+
+
+
+/* virtual */ void QgsLegendItem::activate()
+{
+    qDebug( "QgsLegendItem::activate" );
+
+    if (m_layer->showInOverviewStatus() )
+    {
+        mActionInOverview->setOn(true);
+    }
+    else
+    {
+        mActionInOverview->setOn(false);
+    }
+
+    QCheckListItem::activate();
+} // QgsLegendItem::activate()

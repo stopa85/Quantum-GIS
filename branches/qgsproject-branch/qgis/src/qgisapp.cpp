@@ -1972,17 +1972,18 @@ void QgisApp::menubar_highlighted( int i )
 
             // now check the current overview item iff the current layer is,
             // indeed, in the overview
-            QListViewItem *lvi = mMapLegend->currentItem();
-            QgsMapLayer *layer = ((QgsLegendItem *) lvi)->layer();
+// POSSIBLY NOT NEEDED ANYMORE (because now this is done in QgsLegendItem::activate()
+//             QListViewItem *lvi = mMapLegend->currentItem();
+//             QgsMapLayer *layer = ((QgsLegendItem *) lvi)->layer();
 
-            if ( layer->showInOverviewStatus() )
-            {
-                actionInOverview->setOn(true);
-            }
-            else
-            {
-                actionInOverview->setOn(false);
-            }
+//             if ( layer->showInOverviewStatus() )
+//             {
+//                 actionInOverview->setOn(true);
+//             }
+//             else
+//             {
+//                 actionInOverview->setOn(false);
+//             }
         }
     }
 } // QgisApp::menubar_highlighted( int i )
