@@ -131,7 +131,18 @@ class QgsVectorLayer:public QgsMapLayer
       Called by QgsMapLayer::readXML().
 
   */
-  virtual bool readXML_( QDomNode & layer_node );
+  /* virtual */ bool readXML_( QDomNode & layer_node );
+
+
+  /** write vector layer specific state to project file DOM node.
+
+      @note
+
+      Called by QgsMapLayer::writeXML().
+
+  */
+  /* virtual */ bool writeXML_( QDomNode & layer_node, QDomDocument & doc );
+
 
   /** 
   * Get the first feature resulting from a select operation
