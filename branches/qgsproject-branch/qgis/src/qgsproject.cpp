@@ -432,12 +432,14 @@ QgsProject::read( QFileInfo const & file )
 
 
 
+/**
+   @note it's presumed that the caller has already reset the map canvas, map registry, and legend
+*/
 bool
 QgsProject::read( )
 {
-    // purge current state first
     std::auto_ptr<QDomDocument> doc = 
-	std::auto_ptr<QDomDocument>(new QDomDocument("qgisdocument"));
+	std::auto_ptr<QDomDocument>(new QDomDocument("qgis"));
 
     if ( ! imp_->file.open(IO_ReadOnly) )
     {
@@ -546,7 +548,40 @@ QgsProject::write( QFileInfo const & file )
 bool 
 QgsProject::write( )
 {
+    QDomImplementation DOMImplementation;
+
+    QDomDocumentType documentType = DOMImplementation.createDocumentType("qgis","http://mrcc.com/qgis.dtd","SYSTEM");
+    std::auto_ptr<QDomDocument> doc = 
+	std::auto_ptr<QDomDocument>( new QDomDocument( documentType ) );
+
     // XXX add guts from QgsProjectIO write
+
+    QDomElement qgis = doc->createElement( "qgis" );
+    qgis.setAttribute( "projectname", title() );
+
+    doc->appendChild( qgis );
+
+    // title
+    QDomElement titleNode = doc->createElement( "title" );
+    qgis.appendChild( titleNode );
+
+    QDomText titleText = doc->createTextNode( title() ); // XXX why have title TWICE?
+    titleNode.appendChild( titleText );
+
+    // extent
+
+    // layers
+
+
+    // XXX write to test file for now; will replace with real file name later
+
+    doc->normalize();
+
+    QString xml = doc->toString( 8 ); // write to string with indentation of eight characters
+
+    const char * xmlString = xml.ascii(); // debugger probe point
+
+    qDebug( "project file output:\n\n" + xml );
 
     dirty( false );             // reset to pristine state
 
