@@ -39,23 +39,14 @@ QgsSiSyDialog::QgsSiSyDialog(): QgsSiSyDialogBase(), m_vectorlayer(0)
 
 QgsSiSyDialog::QgsSiSyDialog(QgsVectorLayer* layer): QgsSiSyDialogBase(), m_vectorlayer(layer)
 {
-    //the default settings for single symbol. This is done here because 'single symbol' is the default legend type for a vector layer and can thus be created without calling QgsLayerProperties::alterLayerDialog//already done in qgisapp.cpp
-    /*QgsSymbol sy;
-    sy.brush().setColor(QColor(0,0,255));
-    sy.brush().setStyle(Qt::SolidPattern);
-    sy.pen().setStyle(Qt::SolidLine);
-    sy.pen().setColor(QColor(0,0,0));
-    QgsRenderItem ri(sy,"", "");
-    ((QgsSingleSymRenderer*)(layer->renderer()))->addItem(ri);*/
-
     if(layer)
     {
 	//Set the initial display name
 	displaynamefield->setText(m_vectorlayer->name());
-	outlinecolorbutton->setPaletteBackgroundColor(QColor(0,0,0));
+	outlinecolorbutton->setPaletteBackgroundColor(((QgsSingleSymRenderer*)(layer->renderer()))->item()->getSymbol()->pen().color());
 	stylebutton->setText(tr("SolidLine"));
-	outlinewidthspinbox->setValue(1);
-	fillcolorbutton->setPaletteBackgroundColor(QColor(0,0,255));
+	outlinewidthspinbox->setValue(((QgsSingleSymRenderer*)(layer->renderer()))->item()->getSymbol()->pen().width());
+	fillcolorbutton->setPaletteBackgroundColor(((QgsSingleSymRenderer*)(layer->renderer()))->item()->getSymbol()->brush().color());
 	patternbutton->setText(tr("SolidPattern"));
 
 	if(m_vectorlayer&&m_vectorlayer->vectorType()==QGis::Line)

@@ -23,7 +23,7 @@
 
 
 QgsLegendItem::QgsLegendItem(QgsMapLayer * lyr, QListView * parent)
-:QCheckListItem(parent, lyr->name(), QCheckListItem::CheckBox), m_layer(lyr)
+    :QCheckListItem(parent,""/*lyr->name()*/, QCheckListItem::CheckBox), m_layer(lyr)
 {
 	setOn(lyr->visible());
 
