@@ -186,17 +186,17 @@ class QgsVectorDataProvider : public QgsDataProvider
   /*! Indicates if the provider does its own coordinate transforms
    * @return true if the provider transforms its coordinates, otherwise false
    */
-  virtual bool supportsNativeTransform()=0;
+  virtual bool supportsNativeTransform(){return false;};
   /*! Used to determine if the provider supports transformation using the
    * SRID of the target SRS.
    * @return true if SRID is used, otherwise false
    */
-  virtual bool usesSrid()=0;
+  virtual bool usesSrid(){return false;};
   /*! Used to determine if the provider supports transformation using the
    * WKT of the target SRS.
    * @return true if WKT is used, otherwise false
    */
-  virtual bool usesWKT()=0;
+  virtual bool usesWKT(){return false;};
 protected:
     /**Encoding*/
     QgsVectorDataProvider::Encoding mEncoding;
