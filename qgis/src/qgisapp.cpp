@@ -1284,19 +1284,22 @@ bool QgisApp::addProject(QString projectFile)
 
 void QgisApp::fileSave()
 {
-  QgsProjectIo *pio = new QgsProjectIo( QgsProjectIo::SAVE,mMapCanvas);
-  // pio->setFileName(mFullPathName);
-  pio->setFileName( QgsProject::instance()->filename() ); // temporary until QgsProject write works
-  if (pio->write(mMapCanvas->extent()))
-    {
-      setCaption(tr("Quantum GIS --") + " " + pio->baseName());
-      statusBar()->message(tr("Saved map to:") + " " + pio->fullPathName());
-      // mFullPathName = pio->fullPathName();
-    }
-  delete pio;
-  // mProjectIsDirtyFlag = false;
-  QgsProject::instance()->dirty(false); // XXX this might be redundant
-}
+//   QgsProjectIo *pio = new QgsProjectIo( QgsProjectIo::SAVE,mMapCanvas);
+//   // pio->setFileName(mFullPathName);
+//   pio->setFileName( QgsProject::instance()->filename() ); // temporary until QgsProject write works
+//   if (pio->write(mMapCanvas->extent()))
+//     {
+//       setCaption(tr("Quantum GIS --") + " " + pio->baseName());
+//       statusBar()->message(tr("Saved map to:") + " " + pio->fullPathName());
+//       // mFullPathName = pio->fullPathName();
+//     }
+//   delete pio;
+//   // mProjectIsDirtyFlag = false;
+//   QgsProject::instance()->dirty(false); // XXX this might be redundant
+
+    QgsProject::instance()->write();
+} // QgisApp::fileSave
+
 
 void QgisApp::fileSaveAs()
 {
