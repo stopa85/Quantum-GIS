@@ -90,3 +90,9 @@ void QgsOptionsBase::findBrowser()
       cmbBrowser->setCurrentText(browser);
     }
 }
+
+
+void QgsOptionsBase::pbnSelectProjection_clicked()
+{
+
+}
