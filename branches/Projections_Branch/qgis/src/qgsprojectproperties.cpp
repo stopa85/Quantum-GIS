@@ -16,7 +16,7 @@
  *                                                                         *
  ***************************************************************************/
 /* $Id$ */
-
+#include <cassert>
 #include "qgsprojectproperties.h"
 
 //qgis includes
@@ -58,7 +58,6 @@
     "  AXIS[\"Lat\",NORTH], "
     "  AXIS[\"Long\",EAST], "
     "  AUTHORITY[\"EPSG\",4326]]";
-    
 QgsProjectProperties::QgsProjectProperties(QWidget *parent, const char *name)
     : QgsProjectPropertiesBase(parent, name)
 {
@@ -176,7 +175,9 @@ void QgsProjectProperties::title( QString const & title )
 
 QString QgsProjectProperties::projectionWKT()
 {
-  return QgsProject::instance()->readEntry("SpatialRefSys","/WKT",GEOWKT);
+  // the /WKT entry stores the key into the mProjectionsMap rather than
+  // the  WKT text of the CS
+  return mProjectionsMap[QgsProject::instance()->readEntry("SpatialRefSys","/WKT",GEOWKT)].srtext;
 }  
 
 
@@ -206,8 +207,8 @@ void QgsProjectProperties::apply()
     //emit setDestWKT(mProjectionsMap[cboProjection->currentText()]);
     emit setDestWKT(mProjectionsMap[lstCoordinateSystems->currentItem()->text(0)]);
     //update the project props
-    //QgsProject::instance()->writeEntry("SpatialRefSys","/WKT",mProjectionsMap[cboProjection->currentText()]);
-    QgsProject::instance()->writeEntry("SpatialRefSys","/WKT",mProjectionsMap[lstCoordinateSystems->currentItem()->text(0)]);
+    // write the projection's key to the project settings rather than the actual wkt
+    QgsProject::instance()->writeEntry("SpatialRefSys","/WKT",lstCoordinateSystems->currentItem()->text(0));
     
     // set the mouse display precision method and the
     // number of decimal places for the manual option
@@ -248,26 +249,18 @@ void QgsProjectProperties::accept()
 }
 void QgsProjectProperties::getProjList()
 {
-  //first some hard coded options in case we cant open the wkt_defs file
-  mProjectionsMap["Lat/Long WGS84"] = "GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],TOWGS84[0,0,0,0,0,0,0],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9108\"]],AXIS[\"Lat\",NORTH],AXIS[\"Long\",EAST],AUTHORITY[\"EPSG\",\"4326\"]]";
-  mProjectionsMap["Lat/Long 1924 Brazil"] =  "GEOGCS[\"1924 ellipsoid\", DATUM[\"Not_specified\", SPHEROID[\"International 1924\",6378388,297,AUTHORITY[\"EPSG\",\"7022\"]], AUTHORITY[\"EPSG","6022\"]], PRIMEM[\"Greenwich\",0,AUTHORITY[\"EPSG\",\"8901\"]], UNIT[\"degree\",0.0174532925199433, AUTHORITY[\"EPSG","9108\"]], AUTHORITY[\"EPSG","4022\"]]";
-  //...etc
-
-  
   
   std::cout << "Getting proj list " << std::endl;
 #if defined(Q_OS_MACX) || defined(WIN32)
   QString PKGDATAPATH = qApp->applicationDirPath() + "/share/qgis";
 #endif
   QString theFileNameQString = PKGDATAPATH;
-  theFileNameQString += "/resources/wkt_defs.txt";
+  theFileNameQString += "/resources/spatial_ref_sys.txt";
 
   
   QFile myQFile( theFileNameQString );
   if ( myQFile.open( IO_ReadOnly ) ) 
   {
-    //clear the existing entries in the taxon combo first
-    //cboCoordinateSystem->clear();     
     //now we parse the loc file, checking each line for its taxon
     QTextStream myQTextStream( &myQFile );
     QString myCurrentLineQString;
@@ -276,7 +269,17 @@ void QgsProjectProperties::getProjList()
     geoList = new QListViewItem(lstCoordinateSystems,"Geographic Coordinate System");
     projList = new QListViewItem(lstCoordinateSystems,"Projected Coordinate System");
 
-    // Read the QGIS-supplied CS file 
+    // Read the QGIS-supplied CS file which is actually taken from PostGIS spatial_ref_sys
+    // table. The schema for this table:
+    //         Table "public.spatial_ref_sys"
+    //    Column   |          Type           | Modifiers
+    //  -----------+-------------------------+-----------
+    // 0 srid      | integer                 | not null
+    // 1 auth_name | character varying(256)  |
+    // 2 auth_srid | integer                 |
+    // 3 srtext    | character varying(2048) |
+    // 4 proj4text | character varying(2048) |
+
     while ( !myQTextStream.atEnd() ) 
     {
       myCurrentLineQString = myQTextStream.readLine(); // line of text excluding '\n'
@@ -284,10 +287,20 @@ void QgsProjectProperties::getProjList()
       //generates a lot of output to stdout!
       //std::cout << " Match found:" << myCurrentLineQString.ascii() << std::endl;
 #endif
+      
+      QStringList wktParts = QStringList::split(QRegExp("\t"), myCurrentLineQString, true); 
+      // store the parts in a SPATIAL_REF_SYS structure
+      SPATIAL_REF_SYS srs;
+      srs.srid = wktParts[0];
+      srs.auth_name = wktParts[1];
+      srs.auth_srid = wktParts[2];
+      srs.srtext = wktParts[3];
+      srs.proj4text = wktParts[4];
+
       //get the user friendly name for the WKT
-      QString myShortName = getWKTShortName(myCurrentLineQString);
+      QString myShortName = getWKTShortName(srs.srtext);
       if (!myShortName) continue;
-      mProjectionsMap[myShortName]=myCurrentLineQString;
+      mProjectionsMap[myShortName]=srs;
     }
     myQFile.close();
 
@@ -319,7 +332,8 @@ void QgsProjectProperties::getProjList()
         myCurrentLineQString = userCsTextStream.readLine(); // line of text excluding '\n'
         //get the user friendly name for the WKT
         QString myShortName = getWKTShortName(myCurrentLineQString);
-        mProjectionsMap[myShortName]=myCurrentLineQString;
+        //XXX Fix this so it can read user defined projections
+        //mProjectionsMap[myShortName]=myCurrentLineQString;
       }
       csQFile.close();
     }
@@ -328,6 +342,7 @@ void QgsProjectProperties::getProjList()
 
     //determine the current project projection so we can select the correct entry in the combo
     QString myProjectionName = QgsProject::instance()->readEntry("SpatialRefSys","/WKT",GEOWKT);
+    assert(myProjectionName.length() > 0);
     QString mySelectedKey = getWKTShortName(myProjectionName);
     QListViewItem * mySelectedItem = 0;
     //make sure we dont allow duplicate entries into the combo
@@ -346,6 +361,9 @@ void QgsProjectProperties::getProjList()
         // this is a geographic coordinate system
         // Add it to the tree
         newItem = new QListViewItem(geoList, myIterator.key());
+        // display the spatial reference id in the second column of the list view
+        SPATIAL_REF_SYS srs = *myIterator;
+        newItem->setText(1,srs.srid);
         if (myIterator.key()==mySelectedKey)
         {
           // this is the selected item -- store it for future use
@@ -396,6 +414,9 @@ void QgsProjectProperties::getProjList()
         // now add the coordinate system to the appropriate node
 
         newItem = new QListViewItem(node, myIterator.key());
+        // display the spatial reference id in the second column of the list view
+        SPATIAL_REF_SYS srs = *myIterator;
+        newItem->setText(1,srs.srid);
         if (myIterator.key()==mySelectedKey)
           mySelectedItem = newItem;
       }
@@ -450,16 +471,13 @@ void QgsProjectProperties::coordinateSystemSelected( QListViewItem * theItem)
 {
     //set the text box to show the full proection spec
     std::cout << "Item selected : " << theItem->text(0) << std::endl;
-    std::cout << "Item selected full wkt : " << mProjectionsMap[theItem->text(0)] << std::endl;
-    QString myKey = mProjectionsMap[lstCoordinateSystems->currentItem()->text(0)];
-    if (!myKey.isEmpty())
-    { 
-      QString myFullWKT = mProjectionsMap[theItem->text(0)];
-      if (!myFullWKT.isEmpty())
-      {
-           teProjection->setText(myFullWKT);
-      }
-    }
+    std::cout << "Item selected full wkt : " << mProjectionsMap[theItem->text(0)].srtext << std::endl;
+    QString wkt = mProjectionsMap[theItem->text(0)].srtext;
+    assert(wkt.length() > 0);
+    // reformat the wkt to improve the display in the textedit
+    // box
+    wkt = wkt.replace(",", ", ");
+    teProjection->setText(wkt);
 }
 QString QgsProjectProperties::getWKTShortName(QString theWKT)
 {
