@@ -223,10 +223,6 @@ private:
 
 private slots:
 
-   /** for when a menu bar item is activated
-       Used to dynamically update pop-up menu items
-   */
-    void menubar_activated( int i );
 
    /** for when a menu bar item is activated
        Used to dynamically update pop-up menu items

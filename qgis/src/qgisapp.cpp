@@ -1982,38 +1982,11 @@ void QgisApp::menubar_highlighted( int i )
                 actionOpenTable->setEnabled(true);
                 actionLayerProperties->setEnabled(true);
             }
-
-            // now check the current overview item iff the current layer is,
-            // indeed, in the overview
-// POSSIBLY NOT NEEDED ANYMORE (because now this is done in QgsLegendItem::activate()
-//             QListViewItem *lvi = mMapLegend->currentItem();
-//             QgsMapLayer *layer = ((QgsLegendItem *) lvi)->layer();
-
-//             if ( layer->showInOverviewStatus() )
-//             {
-//                 actionInOverview->setOn(true);
-//             }
-//             else
-//             {
-//                 actionInOverview->setOn(false);
-//             }
         }
     }
 } // QgisApp::menubar_highlighted( int i )
 
 
-
-void QgisApp::menubar_activated( int i )
-{
-#ifdef QGISDEBUG
-    std::cout << "QGisApp::menubar_activated(" << i << ")" << std::endl;
-#endif
-  QListViewItem *lvi = mMapLegend->currentItem();
-  QgsMapLayer *layer = ((QgsLegendItem *) lvi)->layer();
-
-  // update the menu overview toggle to reflect actual state of layer
-
-} //  QgisApp::menubar_activated( int )
 
 
 
