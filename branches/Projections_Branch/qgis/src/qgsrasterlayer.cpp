@@ -3621,7 +3621,7 @@ void QgsRasterLayer::populateHistogram(int theBandNoInt, int theBinCountInt)
   {
     myRasterBandStats.histogramVector->clear();
     int myHistogramArray[theBinCountInt];
-    myGdalBand->GetHistogram( -0.5, theBinCountInt-.5, theBinCountInt, myHistogramArray , FALSE, FALSE, GDALDummyProgress, NULL );
+    myGdalBand->GetHistogram( -0.5, theBinCountInt-.5, theBinCountInt, myHistogramArray , FALSE, TRUE, GDALDummyProgress, NULL );
     for (int myBin = 0; myBin <theBinCountInt; myBin++)
     {
       myRasterBandStats.histogramVector->push_back( myHistogramArray[myBin]);
