@@ -28,6 +28,7 @@ class QgsRenderer;
 class QgsLegendItem;
 class QgsVectorLayerProperties;
 
+#include <map>
 #include "qgsmaplayer.h"
 #include "qvaluevector.h"
 #include "qgsattributetabledisplay.h"
@@ -101,8 +102,8 @@ class QgsVectorLayer:public QgsMapLayer
 	void draw(QPainter * p, QgsRect * viewExtent, QgsCoordinateTransform * cXf);
 	//! Pointer to data provider derived from the abastract base class QgsDataProvider
 	QgsDataProvider *dataProvider;
-    OGRDataSource *ogrDataSource;
-    OGRLayer *ogrLayer;
+  //  OGRDataSource *ogrDataSource;
+   // OGRLayer *ogrLayer;
   /**  */
   // index of the primary label field
   QString fieldIndex;
@@ -125,8 +126,7 @@ class QgsVectorLayer:public QgsMapLayer
   /** No descriptions */
 	void registerFormats();
 	int endian();
-
-	  signals:void repaintRequested();
+	signals:void repaintRequested();
 
 };
 
