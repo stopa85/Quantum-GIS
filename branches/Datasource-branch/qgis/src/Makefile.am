@@ -16,7 +16,7 @@ bin_PROGRAMS = qgis
 
 %.cpp: %.ui
 	$(UIC) -o $@ -impl $*.h $<
-	
+
 qgis_SOURCES =  qgisapp.cpp \
 				main.cpp \
 				qgisiface.cpp \
@@ -136,7 +136,7 @@ qgsnewconnectionbase.cpp: qgsnewconnectionbase.h qgsnewconnectionbase.ui
 
 #PostgreSQL files
 postgres_SOURCES = 	qgsdbsourceselect.cpp \
- 					qgsnewconnection.cpp\
+					qgsnewconnection.cpp\
 					qgsdatabaselayer.cpp
 postgres_UI = 	qgsdbsourceselectbase.h \
 				qgsdbsourceselectbase.cpp\
@@ -147,11 +147,10 @@ postgres_MOC = 	qgsdbsourceselectbase.moc.cpp \
 				qgsdbsourceselect.moc.cpp \
 				qgsnewconnection.moc.cpp\
 				qgsnewconnectionbase.moc.cpp
-				
+
 # if PostgreSQL support requested, add PostgreSQL files				
 if POSTGRESDB
 qgis_SOURCES += $(postgres_SOURCES)
-					
 qgis_UI += $(postgres_UI) 
 qgis_MOC += $(postgres_MOC)
 # add required defines for compiling PostgreSQL
@@ -160,5 +159,5 @@ endif
 
 BUILT_SOURCES = $(qgis_MOC) $(qgis_UI)
 qgis_LDADD := $(LDADD) $(QT_LDADD) $(GDAL_LIB) $(PG_LIB)
-AM_CXXFLAGS := $(PGDB) $(CXXFLAGS) $(EXTRA_CXXFLAGS) -I../include $(QT_CXXFLAGS) -I$(PG_INC) -g 
+AM_CXXFLAGS := $(PGDB) $(GDAL_CFLAGS) $(CXXFLAGS) $(EXTRA_CXXFLAGS) -I../include $(QT_CXXFLAGS) -I$(PG_INC) -g 
 CLEANFILES = $(BUILT_SOURCES)
