@@ -13,7 +13,7 @@ SUBDIRS = svg images themes resources
 PREFIX=-DPREFIX=\"$(prefix)\"
 PLUGINPATH=-DPLUGINPATH=\"$(pkglibdir)\"
 PKGDATAPATH=-DPKGDATAPATH=\"$(pkgdatadir)\"
-
+WIDGETPATH=../widgets
 %.moc.cpp: %.h
 	$(MOC) -o $@ $<
 
@@ -130,7 +130,8 @@ headers =	qgisapp.h					\
 		qgsvectordataprovider.h				\
 		qgsvectorfilewriter.h				\
 		qgsvectorlayer.h				\
-		splashscreen.h				
+		splashscreen.h				\
+		$(WIDGETPATH)/projectionselector/qgsprojectionselector.h
 
 ## qt designer files for all the GUI stuff
 
@@ -168,7 +169,8 @@ qgis_UIC =	qgisappbase.ui				\
 		qgssimadialogbase.ui			\
 		qgssisydialogbase.ui			\
 		qgsuvaldialogbase.ui			\
-		qgsuvalmadialogbase.ui
+		qgsuvalmadialogbase.ui		\
+		$(WIDGETPATH)/projectionselector/qgsprojectionselectorbase.ui
 
 ## all the ui files generate a corresponding header file
 qgis_UIHEADERS = $(qgis_UIC:.ui=.uic.h)
@@ -186,7 +188,7 @@ qgis_UIH =	qgisappbase.ui.h			\
 		qgsoptionsbase.ui.h			\
 		qgsrasterlayerpropertiesbase.ui.h	\
 		qgslabeldialogbase.ui.h			\
-		qgsprojectpropertiesbase.ui.h
+		qgsprojectpropertiesbase.ui.h		
 
 ## these generated files need MOC files, too
 qgis_UIMOC = $(qgis_UIC:.ui=.moc.uic.cpp)
@@ -240,6 +242,7 @@ qgis_MOC =	qgisapp.moc.cpp				\
 		qgsuvaldialog.moc.cpp			\
 		qgsuvalmadialog.moc.cpp			\
 		qgsvectorlayer.moc.cpp			\
+		$(WIDGETPATH)/projectionselector/qgsprojectionselector.moc.cpp		\
 		splashscreen.moc.cpp 
 
 
@@ -334,6 +337,7 @@ qgis_SOURCES =	main.cpp			\
 		qgsvectordataprovider.cpp	\
 		qgsvectorfilewriter.cpp		\
 		qgsvectorlayer.cpp		\
+		$(WIDGETPATH)/projectionselector/qgsprojectionselector.cpp		\
 		splashscreen.cpp 
 
 postgresHEADERS = qgsdbsourceselect.h		\

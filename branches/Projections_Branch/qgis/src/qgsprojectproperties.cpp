@@ -254,3 +254,7 @@ QString QgsProjectProperties::projectionWKT()
   QString srsWkt =  QgsProject::instance()->readEntry("SpatialRefSys","/WKT",defaultWkt);
   return srsWkt;
 }  
+bool QgsProjectProperties::isProjected()
+{
+  return cbxProjectionEnabled->isChecked();
+}

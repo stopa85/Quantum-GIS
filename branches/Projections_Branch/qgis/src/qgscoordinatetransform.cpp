@@ -274,13 +274,13 @@ void QgsCoordinateTransform::transformCoords( const int& numPoints, double& x, d
   int projResult;
   if(direction == INVERSE)
   {
-    std::cout << "!!!! INVERSE TRANSFORM !!!!" << std::endl; 
+//    std::cout << "!!!! INVERSE TRANSFORM !!!!" << std::endl; 
     projResult = pj_transform(mDestinationProjection, mSourceProjection , numPoints, 0, &x, &y, &z);
     dir = "inverse";
   }
   else
   {
-    std::cout << "!!!! FORWARD TRANSFORM !!!!" << std::endl; 
+ //   std::cout << "!!!! FORWARD TRANSFORM !!!!" << std::endl; 
     projResult = pj_transform(mSourceProjection, mDestinationProjection, numPoints, 0, &x, &y, &z);
     dir = "forward";
   }

@@ -794,6 +794,7 @@ void QgsMapCanvas::render(QPaintDevice * theQPaintDevice)
                 QgsRect myProjectedRect;
                 try
                 {
+                  std::cout << "Getting extent of canvas in layers CS. Canvas is " << mCanvasProperties->currentExtent.stringRep() << std::endl; 
                   myProjectedRect =
                     ml->coordinateTransform()->transform(
                       mCanvasProperties->currentExtent,  QgsCoordinateTransform::INVERSE);

@@ -2574,13 +2574,14 @@ void QgisApp::inOverview( bool in_overview )
 void QgisApp::removeLayer()
 {
 #ifdef QGISDEBUG
-    std::cout << "QGisApp Removing layer" << std::endl;
+  std::cout << "QGisApp Removing layer" << std::endl;
 #endif
-    //make sure canvase is not rendering first by faking an escape keypress
-    emit keyPressEvent(new QKeyEvent(QEvent::KeyPress ,Qt::Key_Escape,Qt::Key_Escape,0 ));
-    mMapCanvas->freeze();
-    QListViewItem *lvi = mMapLegend->currentItem();
-    QgsMapLayer *layer = ((QgsLegendItem *) lvi)->layer();
+  //make sure canvase is not rendering first by faking an escape keypress
+  emit keyPressEvent(new QKeyEvent(QEvent::KeyPress ,Qt::Key_Escape,Qt::Key_Escape,0 ));
+  mMapCanvas->freeze();
+  QListViewItem *lvi = mMapLegend->currentItem();
+  QgsMapLayer *layer = ((QgsLegendItem *) lvi)->layer();
+  if(layer){
     //call the registry to unregister the layer. It will in turn
     //fire a qt signal to notify any objects using that layer that they should
     //remove it immediately
@@ -2598,6 +2599,7 @@ void QgisApp::removeLayer()
     // draw the map
     mMapCanvas->clear();
     mMapCanvas->render();
+  }
 }
 
 
@@ -3737,6 +3739,7 @@ void QgisApp::showStatusMessage(QString theMessage)
 
 void QgisApp::projectProperties()
 {
+  /* Display the property sheet for the Project */
   // set wait cursor since construction of the project properties
   // dialog results in the construction of the spatial reference
   // system QMap
@@ -3745,19 +3748,30 @@ void QgisApp::projectProperties()
   qApp->processEvents();
   // Be told if the mouse display precision may have changed by the user
   // changing things in the project properties dialog box
-  connect(pp, SIGNAL(displayPrecisionChanged()), this, SLOT(updateMouseCoordinatePrecision()));
+  connect(pp, SIGNAL(displayPrecisionChanged()), this, 
+      SLOT(updateMouseCoordinatePrecision()));
   QApplication::restoreOverrideCursor();
   // Display the modal dialog box.
   pp->exec();
 
   // set the map units for the project if they have changed
   if (mMapCanvas->mapUnits() != pp->mapUnits())
+  {
     mMapCanvas->setMapUnits(pp->mapUnits());
+  }
 
+  // If the canvas is projected, we need to recalculate the extents in the
+  // new coordinate system
+  if(pp->isProjected())
+  {
+    mMapCanvas->recalculateExtents();
+  }
   // Set the window title. No way to do a comparison like for the map
   // units above, so redo it everytime.
   setTitleBarText_( *this );
 
+  // delete the property sheet object
+  delete pp;
 } // QgisApp::projectProperties
 
 
