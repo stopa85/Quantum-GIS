@@ -30,6 +30,7 @@
 #include "qgis.h"
 
 //qt includes
+#include <qapplication.h>
 #include <qcombobox.h>
 #include <qfile.h>
 #include <qtextedit.h>
@@ -73,9 +74,8 @@ static const char* defaultWktKey = "4326";
   {
     cbxProjectionEnabled->setChecked(true);
   }
-// Populate the projection list view
+  // Populate the projection list view
   getProjList();
-
   // If the user changes the projection for the project, we need to 
   // fire a signal to each layer telling it to change its coordinateTransform
   // member's output projection. These connects I'm setting up should be
@@ -206,7 +206,7 @@ void QgsProjectProperties::apply()
   {
     //notify all layers the output projection has changed
 
-          QString selectedWkt = QgsSpatialReferences::instance()->getSrsBySrid(lstCoordinateSystems->currentItem()->text(1))->srText();
+    QString selectedWkt = QgsSpatialReferences::instance()->getSrsBySrid(lstCoordinateSystems->currentItem()->text(1))->srText();
     emit setDestWKT(selectedWkt);   //update the project props
     // write the projection's wkt to the project settings rather
     QgsProject::instance()->writeEntry("SpatialRefSys","/WKT",
@@ -215,7 +215,9 @@ void QgsProjectProperties::apply()
 
   // set the mouse display precision method and the
   // number of decimal places for the manual option
-  if (btnGrpPrecision->selectedId() == 0)
+  // Note. Qt 3.2.3 and greater have a function selectedId() that
+  // can be used instead of the two part technique here
+  if (btnGrpPrecision->id(btnGrpPrecision->selected()) == 0)
     QgsProject::instance()->writeEntry("PositionPrecision","/Automatic", true);
   else
     QgsProject::instance()->writeEntry("PositionPrecision","/Automatic", false);
@@ -316,11 +318,11 @@ QTextStream userCsTextStream( &csQFile );
   std::cout << "Srs map has " << myEntriesCount << " entries " << std::endl;
   int myProgress = 1;
   QProgressDialog myProgressBar( "Building Projections List...", "Cancel", myEntriesCount,
-                            this, "progress", TRUE );
-  myProgressBar.setProgress(myProgress);
-  // now add each key to our list view
-  QListViewItem *newItem;
-  for ( myIterator = mProjectionsMap.begin(); myIterator != mProjectionsMap.end(); ++myIterator ) 
+      this, "progress", TRUE );
+myProgressBar.setProgress(myProgress);
+// now add each key to our list view
+QListViewItem *newItem;
+for ( myIterator = mProjectionsMap.begin(); myIterator != mProjectionsMap.end(); ++myIterator ) 
 {
   myProgressBar.setProgress(myProgress++);
   qApp->processEvents();
@@ -335,7 +337,7 @@ QTextStream userCsTextStream( &csQFile );
     // this is a geographic coordinate system
     // Add it to the tree
     newItem = new QListViewItem(geoList, srs->name());
-//    std::cout << "Added " << getWKTShortName(srs->srText()) << std::endl; 
+    //    std::cout << "Added " << getWKTShortName(srs->srText()) << std::endl; 
     // display the spatial reference id in the second column of the list view
     newItem->setText(1,srs->srid());
     if (myIterator.key()==currentSrid)
@@ -356,13 +358,13 @@ QTextStream userCsTextStream( &csQFile );
       // Get the projection name and strip white space from it so we
       // don't add empty nodes to the tree
       QString projName = projectionInfo[1].stripWhiteSpace();
-//      std::cout << "Examining " << shortName << std::endl; 
+      //      std::cout << "Examining " << shortName << std::endl; 
       if(projName.length() == 0)
       {
         // If the projection name is blank, set the node to 
         // 0 so it won't be inserted
         node = projList;
- //       std::cout << "projection name is blank: " << shortName << std::endl; 
+        //       std::cout << "projection name is blank: " << shortName << std::endl; 
         assert(1 == 0);
       }
       else
@@ -375,11 +377,11 @@ QTextStream userCsTextStream( &csQFile );
         node = lstCoordinateSystems->findItem(projName, 0);
         if(node == 0)
         {
-//          std::cout << projName << " node not found -- creating it" << std::endl;
+          //          std::cout << projName << " node not found -- creating it" << std::endl;
 
           // the node doesn't exist -- create it
           node = new QListViewItem(projList, projName);
-//          std::cout << "Added top-level projection node: " << projName << std::endl; 
+          //          std::cout << "Added top-level projection node: " << projName << std::endl; 
         }
       }
     }
@@ -389,7 +391,7 @@ QTextStream userCsTextStream( &csQFile );
       // projection node
       //XXX This should never happen
       node = projList;
-//      std::cout << shortName << std::endl; 
+      //      std::cout << shortName << std::endl; 
       assert(1 == 0);
     }
 

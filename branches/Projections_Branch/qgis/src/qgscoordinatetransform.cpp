@@ -15,7 +15,6 @@
  *                                                                         *
  ***************************************************************************/
  /* $Id$ */
-#include <qtextstream.h>
 #include "qgscoordinatetransform.h"
 #include "qgsspatialreferences.h"
 
@@ -24,6 +23,8 @@ QgsCoordinateTransform::QgsCoordinateTransform( QString theSourceWKT, QString th
   mSourceWKT = theSourceWKT;
   mDestWKT = theDestWKT;
   // initialize the coordinate system data structures
+  //XXX Who spells initialize initialise?
+  //XXX A: Its the queen's english....
   initialise();
 }
 

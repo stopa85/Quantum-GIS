@@ -272,15 +272,23 @@ public slots:
      @return true if the position of point has been changed and false else*/
   bool snapPoint(QgsPoint& point, double tolerance);
 
+  /**Commits edited attributes. Depending on the feature id,
+     the changes are written to not commited features or redirected to
+     the data provider*/
+  bool commitAttributeChanges(const std::set<QString>& deleted,
+			      const std::map<QString,QString>& added,
+			      std::map<int,std::map<QString,QString> >& changed);
+
 protected:
   /**Pointer to the table display object if there is one, else a pointer to 0*/
   QgsAttributeTableDisplay * tabledisplay;
   /**Vector holding the information which features are activated*/
   std::set<int> mSelected;
   std::set<int> mDeleted;
+  /**Features which are not commited*/
   std::list<QgsFeature*> mAddedFeatures;
-  /**Color to and fill the selected features*/
-  QColor selectionColor;
+  /**Changed attributes which are not commited  */
+  std::map<int,std::map<QString,QString> > mChangedAttributes;
   /**Renderer object which holds the information about how to display the features*/
   QgsRenderer *m_renderer;
   /**Label */
@@ -302,7 +310,7 @@ protected slots:
   void startEditing();
   void stopEditing();
 
-  void drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * cXf, QPicture* marker, double markerScaleFactor);
+  void drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * cXf, QPicture* marker, double markerScaleFactor, bool projectionsEnabledFlag);
 
 private:                       // Private attributes
   /** A simple helper method to find out if on the fly projections are enabled or not */
