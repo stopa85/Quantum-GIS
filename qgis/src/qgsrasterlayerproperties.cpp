@@ -101,6 +101,8 @@ const char * const ident =
     cboGray->insertItem("Green");
     cboGray->insertItem("Blue");
     cboGray->insertItem("Not Set");
+    
+    lstHistogramLabels->insertItem(tr("Palette"));
   }
   else                   // all other layer types use band name entries only
   {
@@ -114,7 +116,9 @@ const char * const ident =
     QStringList myBandNameQStringList;
 
     int myBandCountInt = rasterLayer->getBandCount();
-
+#ifdef QGISDEBIG
+    std::cout << "Looping though " << myBandCountInt << " image layers to get their names " << std::endl;
+#endif
     for (int myIteratorInt = 1;
             myIteratorInt <= myBandCountInt;
             ++myIteratorInt)
@@ -219,7 +223,7 @@ const char * const ident =
   }
   
   //draw the histogram
-  pbnHistRefresh_clicked();
+  //pbnHistRefresh_clicked();
   
  // update based on lyr's current state
   sync();  
@@ -902,6 +906,9 @@ void QgsRasterLayerProperties::sync()
 
 void QgsRasterLayerProperties::pbnHistRefresh_clicked()
 {
+#ifdef QGISDEBUG
+    std::cout << "QgsRasterLayerProperties::pbnHistRefresh_clicked" << std::endl;
+#endif
 
   // Explanation:
   // During the raster layer metadata gathering process, the gdal histogram 
@@ -925,6 +932,9 @@ void QgsRasterLayerProperties::pbnHistRefresh_clicked()
   myPixmap.fill(Qt::white);
   QPainter myPainter(&myPixmap, this);
 
+#ifdef QGISDEBUG
+    std::cout << "Computing histogram minima and maxima" << std::endl;
+#endif
 
   //
   // First scan through to get max and min cell counts from among selected layers' histograms
@@ -991,8 +1001,15 @@ void QgsRasterLayerProperties::pbnHistRefresh_clicked()
   {
     QPointArray myPointArray(BINS);
     QgsColorTable *myColorTable=rasterLayer->colorTable(1);
+#ifdef QGISDEBUG
+    std::cout << "Making paletted image histogram....computing band stats" << std::endl;
+#endif
+
     RasterBandStats myRasterBandStats = rasterLayer->getRasterBandStats(1);
     int myBarWidth = (((double)myGraphImageWidth)/((double)BINS));
+#ifdef QGISDEBUG
+    std::cout << "Making paletted image histogram....starting main loop" << std::endl;
+#endif
     for (int myBin = 0; myBin <BINS; myBin++)
     {
       double myBinValue = myRasterBandStats.histogramVector->at(myBin);
