@@ -125,7 +125,7 @@ void QgsAttributeTable::handleChangedSelections()
 
 void QgsAttributeTable::insertFeatureId(int id)
 {
-    rowIdMap.insert(id,id+1);
+    rowIdMap.insert(id,id);
 }
 
 void QgsAttributeTable::selectRowWithId(int id)

@@ -35,7 +35,7 @@ void QgsSingleSymRenderer::addItem(QgsRenderItem ri)
     
 }
 
-void QgsSingleSymRenderer::renderFeature(QPainter* p, QgsFeature* f, QgsCoordinateTransform* t, int endian)
+void QgsSingleSymRenderer::renderFeature(QPainter* p, QgsFeature* f, QgsCoordinateTransform* t)
 {
     p->setPen(m_item.getSymbol()->pen());
     p->setBrush(m_item.getSymbol()->brush());

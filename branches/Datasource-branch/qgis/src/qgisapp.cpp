@@ -74,6 +74,8 @@
 #include "qgis.h"
 #include "qgisapp.h"
 #include "qgspluginitem.h"
+#include "qgssinglesymrenderer.h"
+#include "qgssisydialog.h"
 #include "../plugins/qgisplugin.h"
 #include "xpm/qgis.xpm"
 #include <ogrsf_frmts.h>
@@ -267,12 +269,26 @@ void QgisApp::addLayer()
 
 	//dp	QgsShapeFileLayer *lyr = new QgsShapeFileLayer(*it, base);
     	QgsVectorLayer *lyr = new QgsVectorLayer(*it, base);
-		QObject::connect(lyr,SIGNAL(repaintRequested()),mapCanvas,SLOT(refresh()));
-		// give it a random color
+	QObject::connect(lyr,SIGNAL(repaintRequested()),mapCanvas,SLOT(refresh()));
 
 		if (lyr->isValid()) {
-			// add it to the mapcanvas collection
-			mapCanvas->addLayer(lyr);
+		    //create instances of QgsSingleSymRenderer and QgsSiSyDialog and add them to the vectorlayer
+		    QgsSingleSymRenderer* renderer=new QgsSingleSymRenderer();
+		    lyr->setRenderer(renderer);
+		    QgsSiSyDialog* dialog=new QgsSiSyDialog(lyr);
+		    lyr->setRendererDialog(dialog);
+
+		    //blue solid fill and black 1pt outline is the default
+		    QgsSymbol sy;
+		    sy.brush().setColor(QColor(0,0,255));
+		    sy.brush().setStyle(Qt::SolidPattern);
+		    sy.pen().setStyle(Qt::SolidLine);
+		    sy.pen().setColor(QColor(0,0,0));
+		    QgsRenderItem ri(sy,"", "");
+		    renderer->addItem(ri);
+
+		    // add it to the mapcanvas collection
+		    mapCanvas->addLayer(lyr);
 		} else {
 			QString msg = *it;
 			msg += " is not a valid or recognized data source";

@@ -36,7 +36,7 @@ class QgsSingleSymRenderer: public QgsRenderer
     /**Returns a pointer to m_item*/
     QgsRenderItem* item();
     /**Renders an OGRFeature*/
-    void renderFeature(QPainter* p, QgsFeature* f, QgsCoordinateTransform* t, int endian);
+    void renderFeature(QPainter* p, QgsFeature* f, QgsCoordinateTransform* t);
  protected:
     QgsRenderItem m_item;
 };

@@ -241,13 +241,13 @@ void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsCoordinateTrans
 				    pen.setColor(selectionColor);
 				    p->setPen(pen);
 				    brush->setColor(selectionColor);
-				} 
+				    /*} 
 				else 
 				{ 
 				    pen.setColor(sym->color());
 				    p->setPen(pen);
 				    brush->setColor(sym->fillColor());
-				} 
+				    }*/ 
 
 				/* OGRGeometry *geom = fet->GetGeometryRef();
 				   if (!geom) {
@@ -404,12 +404,17 @@ void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsCoordinateTrans
               std::cout << "UNKNOWN WKBTYPE ENCOUNTERED\n";
               break;
 				}
-
+				delete[]feature;
+				}
+				else
+				{
+				    //pass the feature to the renderer
+				    m_renderer->renderFeature(p, fet, cXf);
+				}
 				//std::cout << "deleting feature[]\n";
 				//      std::cout << geom->getGeometryName() << std::endl;
 				featureCount++;
         //std::cout << "Feature count: " << featureCount << std::endl;
-				delete[]feature;
 			}
 		}
 		qApp->processEvents();
