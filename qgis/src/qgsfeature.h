@@ -18,6 +18,7 @@
 #define QGSFEATURE_H
 #include <qstring.h>
 #include <map>
+#include <vector>
 #include "qgsfeatureattribute.h"
 
 class QString;
@@ -43,7 +44,11 @@ public:
 	* Get the attributes for this feature.
 	* @return A std::map containing the field name/value mapping
 	*/
-	std::map<QString, QgsFeatureAttribute> attributeMap();
+	std::vector<QgsFeatureAttribute> attributeMap();
+  /** 
+  * Add an attribute to the map
+  */
+  void addAttribute(QString field, QString value);
 	/**
 	* Get the fields for this feature
 	* @return A std::map containing field position (index) and field name
@@ -51,16 +56,17 @@ public:
 	std::map<int, QString> fields();
 	
 	unsigned char * getGeometry();
-	char * wellKnownText();
+	char * wellKnownText(); 
 	void setGeometry(unsigned char *);
     void setWellKnownText(char *);
 private:
 	//! feature id
 	QString fId;
 	//! std::map containing field name/value pairs
-	std::map<QString, QgsFeatureAttribute> attributes;
+	std::vector<QgsFeatureAttribute> attributes;
 	//! std::map containing the field index and name
 	std::map<int, QString> fieldNames;
+	//! pointer to gemetry in WKB format
 	unsigned char *geometry;
     char * wkt;
 };
