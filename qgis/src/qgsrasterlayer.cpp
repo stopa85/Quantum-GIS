@@ -3182,8 +3182,100 @@ bool QgsRasterLayer::readXML_( QDomNode & layer_node )
     mapLayerNode.setAttribute( "type", "raster" );
 
     // <rasterproperties>
-    QDomElement rasterProperties = document.createElement( "rasterproperties" );
-    mapLayerNode.appendChild( rasterProperties );
+    QDomElement rasterPropertiesElement = document.createElement( "rasterproperties" );
+    mapLayerNode.appendChild( rasterPropertiesElement );
+
+    // <showDebugOverlayFlag>
+    QDomElement showDebugOverlayFlagElement = document.createElement( "showDebugOverlayFlag" );
+
+    if ( getShowDebugOverlayFlag() )
+    {
+        showDebugOverlayFlagElement.setAttribute( "boolean", "true" );
+    }
+    else
+    {
+        showDebugOverlayFlagElement.setAttribute( "boolean", "false" );
+    }
+    
+    rasterPropertiesElement.appendChild( showDebugOverlayFlagElement );
+
+    // <drawingStyle>
+    QDomElement drawStyleElement = document.createElement( "drawingStyle" );
+    QDomText    drawStyleText    = document.createTextNode( getDrawingStyleAsQString() );
+
+    drawStyleElement.appendChild( drawStyleText );
+
+    rasterPropertiesElement.appendChild( drawStyleElement );
+
+
+    // <invertHistogramFlag>
+    QDomElement invertHistogramFlagElement = document.createElement( "invertHistogramFlag" );
+
+    if ( getInvertHistogramFlag() )
+    {
+        invertHistogramFlagElement.setAttribute( "boolean", "true" );
+    }
+    else
+    {
+        invertHistogramFlagElement.setAttribute( "boolean", "false" );
+    }
+
+    rasterPropertiesElement.appendChild( invertHistogramFlagElement );
+
+
+    // <stdDevsToPlotDouble>
+    QDomElement stdDevsToPlotDoubleElement = document.createElement( "stdDevsToPlotDouble" );
+    QDomText    stdDevsToPlotDoubleText    = document.createTextNode( QString::number(getStdDevsToPlot()) );
+
+    stdDevsToPlotDoubleElement.appendChild( stdDevsToPlotDoubleText );
+
+    rasterPropertiesElement.appendChild( stdDevsToPlotDoubleElement );
+
+
+    // <transparencyLevelInt>
+    QDomElement transparencyLevelIntElement = document.createElement( "transparencyLevelInt" );
+    QDomText    transparencyLevelIntText    = document.createTextNode( QString::number(getTransparency()) );
+
+    transparencyLevelIntElement.appendChild( transparencyLevelIntText );
+
+    rasterPropertiesElement.appendChild( transparencyLevelIntElement );
+
+
+    // <redBandNameQString>
+    QDomElement redBandNameQStringElement = document.createElement( "redBandNameQString" );
+    QDomText    redBandNameQStringText    = document.createTextNode( getRedBandName() );
+
+    redBandNameQStringElement.appendChild( redBandNameQStringText );
+
+    rasterPropertiesElement.appendChild( redBandNameQStringElement );
+
+
+    // <greenBandNameQString>
+    QDomElement greenBandNameQStringElement = document.createElement( "greenBandNameQString" );
+    QDomText    greenBandNameQStringText    = document.createTextNode( getGreenBandName() );
+
+    greenBandNameQStringElement.appendChild( greenBandNameQStringText );
+
+    rasterPropertiesElement.appendChild( greenBandNameQStringElement );
+
+
+    // <blueBandNameQString>
+    QDomElement blueBandNameQStringElement = document.createElement( "blueBandNameQString" );
+    QDomText    blueBandNameQStringText    = document.createTextNode( getBlueBandName() );
+
+    blueBandNameQStringElement.appendChild( blueBandNameQStringText );
+
+    rasterPropertiesElement.appendChild( blueBandNameQStringElement );
+
+
+    // <grayBandNameQString>
+    QDomElement grayBandNameQStringElement = document.createElement( "grayBandNameQString" );
+    QDomText    grayBandNameQStringText    = document.createTextNode( getGrayBandName() );
+
+    grayBandNameQStringElement.appendChild( grayBandNameQStringText );
+
+    rasterPropertiesElement.appendChild( grayBandNameQStringElement );
+
 
     return true;
 } // bool QgsRasterLayer::writeXML_
