@@ -67,6 +67,9 @@ public:
   //! Display the attribute table
   void table();
 
+  //! Resize and fill the attribute table
+  void fillTable(QgsAttributeTable* t);
+
   //! Set the primary display field to be used in the identify results dialog
   void setDisplayField(QString fldName=0);
 
@@ -282,6 +285,17 @@ public slots:
 			      const std::map<QString,QString>& added,
 			      std::map<int,std::map<QString,QString> >& changed);
 
+  /** \brief Draws the layer using coordinate transformation
+   *  \param widthScale line width scale
+   *  \param symbolScale symbol scale
+   */
+  void draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * cXf,  QPaintDevice * dst, double widthScale, double symbolScale);
+
+  /** \brief Draws the layer labels using coordinate transformation
+   *  \param scale size scale, applied to all values in pixels
+   */
+  void drawLabels(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * cXf,  QPaintDevice * dst, double scale);
+
 protected:
   /**Pointer to the table display object if there is one, else a pointer to 0*/
   QgsAttributeTableDisplay * tabledisplay;
@@ -313,7 +327,7 @@ protected slots:
   void startEditing();
   void stopEditing();
 
-  void drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * cXf, QPicture* marker, double markerScaleFactor, bool projectionsEnabledFlag);
+  void drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * cXf, QPicture* marker, double markerScaleFactor, double widthScale, bool projectionsEnabledFlag );
 
 private:                       // Private attributes
   /** A simple helper method to find out if on the fly projections are enabled or not */

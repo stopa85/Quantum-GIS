@@ -16,6 +16,9 @@
 #ifndef QGSCOMPOSITION_H
 #define QGSCOMPOSITION_H
 #include <list>
+#include <vector>
+
+#include <qprinter.h>
 
 #ifdef WIN32
 #include "qgscompositionbase.h"
@@ -36,7 +39,20 @@ class QDomDocument;
 class QgsComposerView;
 class QgsComposer;
 class QgsComposerItem;
+class QgsComposerMap;
 class QgsMapCanvas;
+
+class QgsCompositionPaper
+{
+public:
+    QString mName;
+    int mWidth;
+    int mHeight;
+    int mCustom;
+
+    QgsCompositionPaper( QString name, int w, int h, bool c = false);
+    ~QgsCompositionPaper();
+};
 
 /** \class QgsComposition
  * \brief This class can store, write as XML and read from XML the description
@@ -51,6 +67,12 @@ public:
 
     /** \brief The destuctor.  */
     ~QgsComposition();
+
+    /** \brief Orientation  */
+    enum Orientation {
+	Portrait = 0,
+	Landscape
+    };
 
     /** \brief Current tool  */
     enum Tool {
@@ -87,6 +109,13 @@ public:
 
     /** \brief Create default composition */
     void createDefault ( void );
+
+    /** \brief Remove all items */
+    void clear ( void );
+
+    /** \brief Recalculate page size according to mUserPaperWidth/Height and mPaperOrientation,
+     *         resize canvas and zoomFull */
+    void recalculate(void);
 
     /** \brief pointer to map canvas */
     QgsMapCanvas *mapCanvas(void);
@@ -142,6 +171,15 @@ public:
     /** \brief Selection box pen and brush */
     QPen selectionPen ( void );
     QBrush selectionBrush ( void );
+    
+    /** \brief vector of pointers to maps available in composition */
+    std::vector<QgsComposerMap*> maps(void);
+
+    /** \brief Find a map by id 
+     *  \param id canvas item id
+     *  \return pointer to existing map or 0
+     */
+    QgsComposerMap * map (int id);
 
     /** \brief stores statei in project */
     bool writeSettings ( void );
@@ -162,15 +200,43 @@ public slots:
     /**  \brief Called by GUI if resolution was changed */
     void resolutionChanged ( void );
 
+    /**  \brief Called map objects if changed, so that the composition can emit signal */
+    void emitMapChanged ( int id );
+
+signals:
+    /**  \brief Emitted when map was changed */    
+    void mapChanged ( int id );
+
 private:
     /** \brief composition id */
     int mId;
 
-    /** \brief paper width in mm */
+    /** \brief paper width in mm in GUI */
+    double mUserPaperWidth;
+
+    /** \brief paper height in mm in GUI */
+    double mUserPaperHeight;
+
+    /** \brief paper width in mm (orientaion applied)  */
     double mPaperWidth;
 
-    /** \brief paper height in mm */
+    /** \brief paper height in mm (orientaion applied) */
     double mPaperHeight;
+
+    /** \brief Papers */
+    std::vector<QgsCompositionPaper> mPapers;
+
+    /** \brief Current paper */
+    int mPaper;
+	
+    /** \brief Default paper index */
+    int mDefaultPaper;
+
+    /** \brief Custom paper index */
+    int mCustomPaper;
+
+    /** \brief Orientation */
+    int mPaperOrientation;
 
     /** \brief pointer to map canvas */
     QgsMapCanvas *mMapCanvas;

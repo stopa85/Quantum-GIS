@@ -16,7 +16,7 @@
  *                                                                         *
  ***************************************************************************/
 /* $Id$ */
-#include <cassert>
+
 #include "qgsprojectproperties.h"
 #include "qgsspatialreferences.h"
 #include "qgscsexception.h"
@@ -181,9 +181,11 @@ void QgsProjectProperties::title( QString const & title )
 //when user clicks apply button
 void QgsProjectProperties::apply()
 {
-  // Set the map units
-  QgsProject::instance()->mapUnits(
-      static_cast<QgsScaleCalculator::units>(btnGrpMapUnits->selectedId()));
+    // Set the map units
+    // Note. Qt 3.2.3 and greater have a function selectedId() that
+    // can be used instead of the two part technique here
+    QgsProject::instance()->mapUnits(
+       static_cast<QgsScaleCalculator::units>(btnGrpMapUnits->id(btnGrpMapUnits->selected())));
 
   // Set the project title
   QgsProject::instance()->title( title() );

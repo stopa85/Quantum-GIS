@@ -6,6 +6,7 @@
 ** init() function in place of a constructor, and a destroy() function in
 ** place of a destructor.
 *****************************************************************************/
+#include "../widgets/projectionselector/qgsprojectionselector.h"
 #include <qcolordialog.h>
 void QgsProjectPropertiesBase::mapUnitChange( int )
 {

@@ -31,22 +31,34 @@
 QgsAttributeTableDisplay::QgsAttributeTableDisplay(QgsVectorLayer* layer):QgsAttributeTableBase(), mLayer(layer)
 {
     //insert editing popup
-    mMenuBar = new QMenuBar(this, "mMenuBar");
+    QMenuBar* mMenuBar = new QMenuBar(this, "mMenuBar");
     mMenuBar->setSizePolicy( QSizePolicy( (QSizePolicy::SizeType)5, (QSizePolicy::SizeType)0, 0, 0, mMenuBar->sizePolicy().hasHeightForWidth() ) );
     mMenuBar->setMinimumSize( QSize( 0, 40 ) );
 
     QgsAttributeTableBaseLayout->addMultiCellWidget( mMenuBar, 0, 0, 0, 4 );
 
-    QPopupMenu* edit = new QPopupMenu(this);
-    edit->insertItem(tr("&Add Attribute..."), this, SLOT(addAttribute()), CTRL+Key_A);
-    edit->insertItem(tr("&Delete Attributes..."), this, SLOT(deleteAttributes()), CTRL+Key_D);
+    edit = new QPopupMenu(this);
+    QPopupMenu* selection = new QPopupMenu(this);
+
+    edit->insertItem(tr("&Add Attribute..."), this, SLOT(addAttribute()), CTRL+Key_A,0);
+    edit->insertItem(tr("&Delete Attributes..."), this, SLOT(deleteAttributes()), CTRL+Key_D,1);
+    selection->insertItem(tr("&Bring selected to top"), this, SLOT(selectedToTop()), CTRL+Key_T);
     mMenuBar->insertItem(tr("&Edit"), edit);
-    mMenuBar->setEnabled(false);
+    mMenuBar->insertItem(tr("&Selected"),selection);
+    edit->setItemEnabled(0,false);
+    edit->setItemEnabled(1,false);
 
     btnStopEditing->setEnabled(false);
-    if(!layer->getDataProvider()->supportsAttributeEditing())
+    int cap=layer->getDataProvider()->capabilities();
+    if((cap&QgsVectorDataProvider::ChangeAttributeValues)
+       ||(cap&QgsVectorDataProvider::AddAttributes)
+       ||(cap&QgsVectorDataProvider::DeleteAttributes))
     {
-	btnStartEditing->setEnabled(false);
+  btnStartEditing->setEnabled(true);
+    }
+    else
+    {
+  btnStartEditing->setEnabled(false);
     }
     
     QObject::connect(btnStartEditing, SIGNAL(clicked()), this, SLOT(startEditing()));
@@ -69,14 +81,14 @@ void QgsAttributeTableDisplay::setTitle(QString title)
 void QgsAttributeTableDisplay::deleteAttributes()
 {
     QgsDelAttrDialog dialog(table()->horizontalHeader());
-	if(dialog.exec()==QDialog::Accepted)
-	{
-	    const std::list<QString>* attlist=dialog.selectedAttributes();
-	    for(std::list<QString>::const_iterator iter=attlist->begin();iter!=attlist->end();++iter)
-	    {
-		table()->deleteAttribute(*iter);
-	    }
-	}
+  if(dialog.exec()==QDialog::Accepted)
+  {
+      const std::list<QString>* attlist=dialog.selectedAttributes();
+      for(std::list<QString>::const_iterator iter=attlist->begin();iter!=attlist->end();++iter)
+      {
+    table()->deleteAttribute(*iter);
+      }
+  }
 }
 
 void QgsAttributeTableDisplay::addAttribute()
@@ -84,41 +96,72 @@ void QgsAttributeTableDisplay::addAttribute()
     QgsAddAttrDialog dialog(mLayer->getDataProvider());
     if(dialog.exec()==QDialog::Accepted)
     {
-	if(!table()->addAttribute(dialog.name(),dialog.type()))
-	{
-	    QMessageBox::information(0,"Name conflict","The attribute could not be inserted. The name already exists in the table",QMessageBox::Ok);
-	}
+  if(!table()->addAttribute(dialog.name(),dialog.type()))
+  {
+      QMessageBox::information(0,"Name conflict","The attribute could not be inserted. The name already exists in the table",QMessageBox::Ok);
+  }
     }
 }
 
 void QgsAttributeTableDisplay::startEditing()
 {
-    btnStartEditing->setEnabled(false);
-    btnStopEditing->setEnabled(true);
-    btnClose->setEnabled(false);
-    mMenuBar->setEnabled(true);
-    table()->setReadOnly(false);
-    table()->setColumnReadOnly(0,true);//id column is not editable
+    QgsVectorDataProvider* provider=mLayer->getDataProvider();
+    bool editing=false;
+
+    if(provider)
+    {
+  if(provider->capabilities()&QgsVectorDataProvider::AddAttributes)
+  {
+      edit->setItemEnabled(0,true);
+      editing=true;
+  }
+  if(provider->capabilities()&QgsVectorDataProvider::DeleteAttributes)
+  {
+     edit->setItemEnabled(1,true); 
+     editing=true;
+  }
+  if(provider->capabilities()&QgsVectorDataProvider::ChangeAttributeValues)
+  {
+      table()->setReadOnly(false);
+      table()->setColumnReadOnly(0,true);//id column is not editable
+      editing=true;
+  }
+  if(editing)
+  {
+     btnStartEditing->setEnabled(false);
+     btnStopEditing->setEnabled(true);
+     btnClose->setEnabled(false); 
+  }
+    }
 }
 
 void QgsAttributeTableDisplay::stopEditing()
 {
     if(table()->edited())
     {
-	//commit or roll back?
-	int commit=QMessageBox::information(0,"Stop editing","Do you want to save the changes?",QMessageBox::Yes,QMessageBox::No);
-	if(commit==QMessageBox::Yes)
-	{
-	    table()->commitChanges(mLayer);
-	}
-	else
-	{
-	    table()->rollBack(mLayer);
-	}
+  //commit or roll back?
+  int commit=QMessageBox::information(0,"Stop editing","Do you want to save the changes?",QMessageBox::Yes,QMessageBox::No);
+  if(commit==QMessageBox::Yes)
+  {
+      if(!table()->commitChanges(mLayer))
+      {
+    QMessageBox::information(0,"Error","Could not commit changes",QMessageBox::Ok);
+      }
+  }
+  else
+  {
+      table()->rollBack(mLayer);
+  }
     }
     btnStartEditing->setEnabled(true);
     btnStopEditing->setEnabled(false);
     btnClose->setEnabled(true); 
-    mMenuBar->setEnabled(false);
+    edit->setItemEnabled(0,false);
+    edit->setItemEnabled(1,false);
     table()->setReadOnly(true);
+}
+
+void QgsAttributeTableDisplay::selectedToTop()
+{
+    table()->bringSelectedToTop();
 }
