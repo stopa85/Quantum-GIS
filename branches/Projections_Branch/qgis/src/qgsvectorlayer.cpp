@@ -2582,6 +2582,7 @@ void QgsVectorLayer::setCoordinateSystem()
   //
   QString mySourceWKT = getProjectionWKT();
 
+  QSettings mySettings; 
   // if the provider supports native transforms, just create a passthrough
   // object 
   if(dataProvider->supportsNativeTransform())
@@ -2603,30 +2604,39 @@ void QgsVectorLayer::setCoordinateSystem()
     // XXX Maybe a user option to choose if warning should be issued
     if(mySourceWKT.isEmpty())
     {
-
-      //@note qgsvectorlayer is not a descendent of QWidget so we cant pass
-      //it in the ctor of the layer projection selector
-      QgsLayerProjectionSelector * mySelector = new QgsLayerProjectionSelector();
-      QString srsWkt =  QgsProject::instance()->readEntry("SpatialRefSys","/selectedWKT","Lat/Long - WGS 84");
-      mySelector->setSelectedWKT(srsWkt);
-      if(mySelector->exec())
+      //decide whether to use project default projection or to prompt for one
+      if (mySettings.readEntry("/qgis/projections/defaultBehaviour")=="prompt")
       {
+        //@note qgsvectorlayer is not a descendent of QWidget so we cant pass
+        //it in the ctor of the layer projection selector
+        QgsLayerProjectionSelector * mySelector = new QgsLayerProjectionSelector();
+        QString srsWkt =  QgsProject::instance()->readEntry("SpatialRefSys","/selectedWKT","Lat/Long - WGS 84");
+        mySelector->setSelectedWKT(srsWkt);
+        if(mySelector->exec())
+        {
 #ifdef QGISDEBUG
-        std::cout << "------ Layer Projection Selection passed ----------" << std::endl;
+          std::cout << "------ Layer Projection Selection passed ----------" << std::endl;
 #endif
-        mySourceWKT = mySelector->getCurrentWKT();  
+          mySourceWKT = mySelector->getCurrentWKT();  
 #ifdef QGISDEBUG
-        std::cout << "------ mySourceWKT ----------\n" << mySourceWKT << std::endl;
+          std::cout << "------ mySourceWKT ----------\n" << mySourceWKT << std::endl;
 #endif
+        }
+        else
+        {
+#ifdef QGISDEBUG
+          std::cout << "------ Layer Projection Selection FAILED ----------" << std::endl;
+#endif
+          QApplication::restoreOverrideCursor();
+          mCoordinateTransform = new QgsCoordinateTransform("", "");
+          return;
+        }
       }
-      else
+      else ///qgis/projections/defaultBehaviour==useDefault
       {
-#ifdef QGISDEBUG
-        std::cout << "------ Layer Projection Selection FAILED ----------" << std::endl;
-#endif
-        QApplication::restoreOverrideCursor();
-        mCoordinateTransform = new QgsCoordinateTransform("", "");
-        return;
+        //shamelessly hard coded for now
+        //XXX TODO get this from options dlg
+        mySourceWKT = "Zophod Beeblebrox";
       }
     }
 
