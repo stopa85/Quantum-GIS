@@ -857,6 +857,9 @@ QObject:connect(tabledisplay, SIGNAL(deleted()), this, SLOT(invalidateTableDispl
     void QgsVectorLayer::initContextMenu_(QgisApp * app)
     {
       myPopupLabel->setText( tr("<center><b>Vector Layer</b></center>") );
+
+      popMenu->insertItem(tr("&Open attribute table"), app, SLOT(attributeTable()));
+
     } // QgsVectorLayer::initContextMenu_(QgisApp * app)
 
 
