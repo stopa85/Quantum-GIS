@@ -199,5 +199,6 @@ class QgsPostgresProvider:public QgsDataProvider
     * Flag indicating whether binary cursors return data in big-endian order
     */
     bool versionXDR;
+    bool swapEndian;
     bool ready;
 };
