@@ -133,6 +133,15 @@ class QgsPostgresProvider:public QgsDataProvider
  * pointer and setting it to 0
  */
     void reset();
+    
+/**Returns the minimum value of an attributs
+     @param position the number of the attribute*/
+  QString minValue(int position);
+
+/**Returns the maximum value of an attributs
+     @param position the number of the attribute*/
+  QString maxValue(int position);
+  
   private:
       std::vector < QgsFeature > features;
       std::vector < bool > *selected;
@@ -156,6 +165,15 @@ class QgsPostgresProvider:public QgsDataProvider
     * Name of the table with schema included
     */
     QString schemaTableName;
+    /**
+    * Primary key column for fetching features. If there is no primary key
+    * the oid is used to fetch features. 
+    */
+    QString primaryKey;
+    /** 
+    * Index (column number) of the primary key
+    */
+    int primaryKeyIndex;
     /**
     * Name of the geometry column in the table
     */
@@ -203,4 +221,5 @@ class QgsPostgresProvider:public QgsDataProvider
     */
     bool swapEndian;
     bool ready;
+    std::ofstream pLog;
 };
