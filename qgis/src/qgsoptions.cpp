@@ -21,6 +21,7 @@
 #include <qcheckbox.h>
 #include <qspinbox.h>
 #include <qfiledialog.h>
+#include <qradiobutton.h>
 #include "qgsoptions.h"
 #include "qgisapp.h"
 #include "qgssvgcache.h"
@@ -52,6 +53,15 @@ QgsOptions::QgsOptions(QWidget *parent, const char *name) : QgsOptionsBase(paren
   spbSVGOversampling->setValue(QgsSVGCache::instance().getOversampling());
   // set the display update threshold
   spinBoxUpdateThreshold->setValue(settings.readNumEntry("/qgis/map/updateThreshold"));
+  //set the default projection behaviour radio buttongs
+  if (settings.readEntry("/qgis/projections/defaultBehaviour")=="prompt")
+  {
+    radPromptForProjection->setChecked(true);
+  }
+  else
+  {
+    radUseDefaultProjection->setChecked(true);
+  }
 }
 //! Destructor
 QgsOptions::~QgsOptions(){}
@@ -84,6 +94,20 @@ void QgsOptions::saveOptions()
   settings.writeEntry("/qgis/map/updateThreshold", spinBoxUpdateThreshold->value());
   QgsSVGCache::instance().setOversampling(spbSVGOversampling->value());
   settings.writeEntry("/qgis/svgoversampling", spbSVGOversampling->value());
+  //check behaviour so default projection when new layer is added with no
+  //projection defined...
+  if (radPromptForProjection->isChecked())
+  {
+    //
+    settings.writeEntry("/qgis/projections/defaultBehaviour", "prompt");
+  }
+  else //assumes radUseDefaultProjection is checked
+  {
+    //
+    settings.writeEntry("/qgis/projections/defaultBehaviour", "useDefault");
+  }
+
+  //all done
   accept();
 }
 
