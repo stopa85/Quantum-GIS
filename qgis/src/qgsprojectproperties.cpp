@@ -74,8 +74,9 @@ static const char* defaultWktKey = "4326";
   {
     cbxProjectionEnabled->setChecked(true);
   }
-  // Populate the projection list view
-  getProjList();
+  //
+  // TODO: Change this to connect to the signal from the projectionselector dialog now!!!! ts
+  // 
   // If the user changes the projection for the project, we need to 
   // fire a signal to each layer telling it to change its coordinateTransform
   // member's output projection. These connects I'm setting up should be
@@ -166,14 +167,6 @@ void QgsProjectProperties::title( QString const & title )
   QgsProject::instance()->title( title );
 } // QgsProjectProperties::title( QString const & title )
 
-QString QgsProjectProperties::projectionWKT()
-{
-  // set the default wkt to WGS 84
-  QString defaultWkt = QgsSpatialReferences::instance()->getSrsBySrid("4326")->srText();
-  // the /WKT entry stores the wkt as the key into the projections map 
-  QString srsWkt =  QgsProject::instance()->readEntry("SpatialRefSys","/WKT",defaultWkt);
-  return srsWkt;
-}  
 
 
 //when user clicks apply button
@@ -252,6 +245,15 @@ void QgsProjectProperties::accept()
   apply();
   close();
 }
+
+QString QgsProjectProperties::projectionWKT()
+{
+  // set the default wkt to WGS 84
+  QString defaultWkt = QgsSpatialReferences::instance()->getSrsBySrid("4326")->srText();
+  // the /WKT entry stores the wkt as the key into the projections map 
+  QString srsWkt =  QgsProject::instance()->readEntry("SpatialRefSys","/WKT",defaultWkt);
+  return srsWkt;
+}  
 void QgsProjectProperties::getProjList()
 {
   // setup the nodes for the list view
