@@ -52,6 +52,7 @@ class QgsShapeFileLayer:public QgsMapLayer
 		Line,
 		Polygon
 	};
+	void showLayerProperties();
 
  public slots:
      /**Sets the 'tabledisplay' to 0 again*/

@@ -25,7 +25,10 @@
 #include "qgis.h"
 #include "qgscoordinatetransform.h"
 #include "qgssymbol.h"
-//Class QgsSymbol;
+#include <qpixmap.h>
+
+class QgsLegendItem;
+
 
 /** \class QgsMapLayer
  * \brief Base class for all map layer types.
@@ -65,12 +68,12 @@ class QgsMapLayer:public QObject
 	virtual void draw(QPainter *, QgsRect *, QgsCoordinateTransform * cXf);
 	/*! Identify the feature(s) in this layer that are contained in the search rectangle
 	 */
-	virtual void identify(QgsRect *);
+	virtual void identify(QgsRect *)=0;
 	/*!Select features on the map canvas by dragging a rectangle*/
-	virtual void select(QgsRect *, bool lock);
+	virtual void select(QgsRect *, bool lock)=0;
 	/*! Display the attribute table for the layer
 	 */
-	virtual void table();
+	virtual void table()=0;
 	/*! Return the extent of the layer as a QRect
 	 */
 	const QgsRect extent();
@@ -109,6 +112,10 @@ class QgsMapLayer:public QObject
 		RASTER,
 		DATABASE
 	};
+	/**Shows the properties dialog for the map layer*/
+	virtual void showLayerProperties()=0;
+	/**Returns a pointer to the legend pixmap*/
+	QPixmap* legendPixmap();
 	
 	  signals:void visibilityChanged(void);
   protected:
@@ -121,6 +128,10 @@ class QgsMapLayer:public QObject
 	QString dataSource;
 	//! Geometry type as defined in enum WKBTYPE (qgis.h)
 	int geometryType;
+	/**Pointer to the legend item for this layer*/
+	QgsLegendItem* m_legendItem;
+	/**Pixmap used in the legend item*/
+	QPixmap m_legendPixmap;
   private:						// Private attributes
 	/** Unique ID of this layer - used to refer to this layer  in QGIS code */
 	  QString ID;

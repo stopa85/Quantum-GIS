@@ -66,6 +66,8 @@ class QgsVectorLayer:public QgsMapLayer
 	void select(int number);
 	void removeSelection();
 	void triggerRepaint();
+	/**Shows the properties dialog*/
+	virtual void showLayerProperties();
 
   protected:
 	/**Pointer to the table display object if there is one, else a pointer to 0*/
@@ -77,14 +79,9 @@ class QgsVectorLayer:public QgsMapLayer
 	/**Renderer object which holds the information about how to display the features*/
 	QgsRenderer* m_renderer;
 	/**Dialog to set the properties*/
-	QDialog* m_propertiesDialog;
+	QDialog* m_propertiesDialog; //later: QgsVectorLayerProperties*
 	/**Widget to set the symbology properties*/
 	QDialog* m_rendererDialog;
-	/**Pointer to the legend item for this layer*/
-	QgsLegendItem* m_legendItem;
-	/**Pixmap used in the legend item*/
-	QPixmap m_legendPixmap;
-
   private:						// Private attributes
 //! Draws the layer using coordinate transformation
 	void draw_old(QPainter * p, QgsRect * viewExtent, QgsCoordinateTransform * cXf);
