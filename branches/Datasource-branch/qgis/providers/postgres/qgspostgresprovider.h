@@ -134,7 +134,6 @@ class QgsPostgresProvider:public QgsDataProvider
  */
     void reset();
   private:
-//  unsigned char *getGeometryPointer(OGRFeature *fet);
       std::vector < QgsFeature > features;
       std::vector < bool > *selected;
       std::vector < QgsField > attributeFields;
@@ -145,6 +144,9 @@ class QgsPostgresProvider:public QgsDataProvider
   * will require execution of the select query to recreate the result set.
   */
     PGresult *queryResult;
+    /**
+    * Flag indicating if the layer data source is a valid PostgreSQL layer
+    */
     bool valid;
     /** 
     * Name of the table with no schema
@@ -196,9 +198,9 @@ class QgsPostgresProvider:public QgsDataProvider
         XDR = 0
     };
     /**
-    * Flag indicating whether binary cursors return data in big-endian order
+    * Flag indicating whether data from binary cursors must undergo an
+    * endian conversion prior to use
     */
-    bool versionXDR;
     bool swapEndian;
     bool ready;
 };
