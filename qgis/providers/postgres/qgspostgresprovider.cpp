@@ -432,9 +432,8 @@ std::vector < QgsField > QgsPostgresProvider::fields()
 
 void QgsPostgresProvider::reset()
 {
+  // reset the cursor to the first record
   
-    /*  ogrLayer->SetSpatialFilter(0);
-       ogrLayer->ResetReading(); */
 }
 /* QString QgsPostgresProvider::getFieldTypeName(PGconn * pd, int oid)
 {
@@ -491,4 +490,22 @@ Primary key is composed of fields 1 and 5
 extern "C" QgsPostgresProvider * classFactory(const char *uri)
 {
     return new QgsPostgresProvider(uri);
+}
+/** Required key function (used to map the plugin to a data store type)
+*/
+extern "C" QString providerKey(){
+	return QString("postgres");
+}
+/**
+* Required description function 
+*/
+extern "C" QString description(){
+	return QString("PostgreSQL/PostGIS data provider");
+} 
+/**
+* Required isProvider function. Used to determine if this shared library
+* is a data provider plugin
+*/
+extern "C" bool isProvider(){
+  return true;
 }

@@ -302,5 +302,22 @@ extern "C" QgsShapeFileProvider * classFactory(const char *uri)
 {
 	return new QgsShapeFileProvider(uri);
 }
-
+/** Required key function (used to map the plugin to a data store type)
+*/
+extern "C" QString providerKey(){
+	return QString("ogr");
+}
+/**
+* Required description function 
+*/
+extern "C" QString description(){
+	return QString("OGR data provider (shapefile and other formats)");
+} 
+/**
+* Required isProvider function. Used to determine if this shared library
+* is a data provider plugin
+*/
+extern "C" bool isProvider(){
+  return true;
+}
 
