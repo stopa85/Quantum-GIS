@@ -77,7 +77,6 @@ public slots:
    */
   void accept();
   
-  
 signals:
   /*! This signal is used to notify all coordinateTransform objects to update
    * their dest wkt because the project output projection system is changed 
