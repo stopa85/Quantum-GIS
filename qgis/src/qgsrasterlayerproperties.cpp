@@ -913,14 +913,14 @@ void QgsRasterLayerProperties::pbnHistRefresh_clicked()
   // and max - scaled to image height. 1 line drawn per selected band
   //
   const int BINS = 256; 
-  int myHistogramWidth =256; // pixHistogram->width();
-  int myHistogramHeight = 256; // pixHistogram->height();
+  int myGraphImageWidth =256; // pixHistogram->width();
+  int myGraphImageHeight = 256; // pixHistogram->height();
   int myBandCountInt = rasterLayer->getBandCount();
  
 
   long myCellCount = rasterLayer->getRasterXDim() * rasterLayer->getRasterYDim();
   
-  QPixmap myPixmap(myHistogramWidth,myHistogramHeight);
+  QPixmap myPixmap(myGraphImageWidth,myGraphImageHeight);
   myPixmap.fill(Qt::white);
   QPainter myPainter(&myPixmap, this);
 
@@ -928,8 +928,8 @@ void QgsRasterLayerProperties::pbnHistRefresh_clicked()
   //
   // First scan through to get max and min cell counts from among selected layers' histograms
   //
-  long myMaxVal=0;
-  long myMinVal=0;
+  double myMaxVal=0;
+  double myMinVal=0;
   for (int myIteratorInt = 1;
             myIteratorInt <= myBandCountInt;
             ++myIteratorInt)
@@ -938,32 +938,38 @@ void QgsRasterLayerProperties::pbnHistRefresh_clicked()
     QListBoxItem *myItem = lstHistogramLabels->item( myIteratorInt-1 );
     if ( myItem->isSelected() )
     {
+      rasterLayer->populateHistogram(myIteratorInt,BINS); 
       for (int myBin = 0; myBin <BINS; myBin++)
       {
-        int myBinValue = myRasterBandStats.histogram[myBin];
+        int myBinValue = myRasterBandStats.histogramVector[myBin];
+#ifdef QGISDEBUG
+        std::cout << myBinValue << std::endl;
+#endif
         if ( myIteratorInt==1)
         {
           myMinVal = myBinValue;
           myMaxVal = myBinValue;
           continue;
         }
-        
+
         if (myBinValue  > myMaxVal)
         {
           myMaxVal = myBinValue;
+#ifdef QGISDEBUG
+          std::cout << "(max)" << std::endl;
+#endif
         }
         if ( myBinValue < myMinVal)
         {
           myMinVal = myBinValue;
+#ifdef QGISDEBUG
+          std::cout << "(min)" << std::endl;
+#endif
         }
       }
     }
   }
 
-
-
-  
-  
   
   lblHistYMax->setText(QString::number(myMaxVal));
   lblHistYMin->setText(QString::number(myMinVal));
@@ -983,19 +989,22 @@ void QgsRasterLayerProperties::pbnHistRefresh_clicked()
       QPointArray myPointArray(BINS);
       for (int myBin = 0; myBin <BINS; myBin++)
       {
-        int myBinValue = myRasterBandStats.histogram[myBin];
-        int myX = (((double)myHistogramWidth)/((double)BINS))*myBin;
-        //height varies according to freq. and scaled to greatet value in all layers
+        double myBinValue = myRasterBandStats.histogramVector[myBin];
         //NOTE: Int division is 0 if the numerator is smaller than the denominator.
         //hence the casts
-        int myY = (((double)myBinValue)/((double)myMaxVal))*myHistogramHeight;
+        int myX = (((double)myGraphImageWidth)/((double)BINS))*myBin;
+        //height varies according to freq. and scaled to greatet value in all layers
+        int myY = (int)((myBinValue/myMaxVal)*myGraphImageHeight);
         //adjust for image origin being top left
-        myY = myHistogramHeight - myY;
 #ifdef QGISDEBUG
-        std::cout << "int myY = (myBinValue/myCellCount)*myHistogramHeight" << std::endl;
-        std::cout << "int myY = (" << myBinValue << "/" << myCellCount << ")*" << myHistogramHeight << std::endl;
+        std::cout << "-------------" << std::endl;
+        std::cout << "int myY = (myBinValue/myCellCount)*myGraphImageHeight" << std::endl;
+        std::cout << "int myY = (" << myBinValue << "/" << myCellCount << ")*" << myGraphImageHeight << std::endl;
         std::cout << "Band " << myIteratorInt << ", bin " << myBin << ", Hist Value : " << myBinValue << ", Scaled Value : " << myY << std::endl;
+        std::cout << "myY = myGraphImageHeight - myY" << std::endl;
+        std::cout << "myY = " << myGraphImageHeight << "-" << myY << std::endl;
 #endif
+        myY = myGraphImageHeight - myY;
         myPointArray.setPoint(myBin, myX, myY);
       }
       if (myBandCountInt==1) //draw single band images with black
@@ -1038,6 +1047,40 @@ void QgsRasterLayerProperties::pbnHistRefresh_clicked()
     }
   }
 
+  //
+  // Now draw interval markers on the x axis
+  //
+  int myXDivisions = myGraphImageWidth/10;
+  myPainter.setPen( Qt::gray );
+  for (int i=0;i<myXDivisions;++i)
+  {
+    QPointArray myPointArray(4);
+    myPointArray.setPoint(0,i*myXDivisions , myGraphImageHeight);
+    myPointArray.setPoint(1,i*myXDivisions , myGraphImageHeight-5);
+    myPointArray.setPoint(2,i*myXDivisions , myGraphImageHeight);
+    myPointArray.setPoint(3,(i+1)*myXDivisions , myGraphImageHeight);
+    myPainter.drawPolyline(myPointArray);
+  }
+  //
+  // Now draw interval markers on the y axis
+  //
+  int myYDivisions = myGraphImageHeight/10;
+  myPainter.setPen( Qt::gray );
+  for (int i=myYDivisions;i==0;--i)
+  {
+
+    QPointArray myPointArray(4);
+    myPointArray.setPoint(0,0,myGraphImageHeight-(i*myYDivisions ));
+    myPointArray.setPoint(1,5,myGraphImageHeight-(i*myYDivisions ));
+    myPointArray.setPoint(2,0,myGraphImageHeight-(i*myYDivisions ));
+    myPointArray.setPoint(3,0,myGraphImageHeight-((i-1)*myYDivisions ));
+    myPainter.drawPolyline(myPointArray);
+  }
+
+
+  //
+  // Finish up
+  //
   myPainter.end();
   pixHistogram->setPixmap(myPixmap);
 }

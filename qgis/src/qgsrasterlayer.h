@@ -168,6 +168,7 @@ The [type] part of the variable should be the type class of the variable written
  
 #include <qvaluevector.h>
 #include <qvaluelist.h> 
+#include <qvaluevector.h> 
 #include <qslider.h>
 #include "qgspoint.h"
 #include "qgsmaplayer.h"
@@ -220,8 +221,9 @@ struct RasterBandStats
     /** \brief The number of cells in the band. Equivalent to height x width. 
      * TODO: check if NO_DATA are excluded!*/
     int elementCountInt;    
-    /** \brief A histogram storing the distribution of values within the raster. */
-    int histogram[256];
+    /** \brief Store the histogram for a given layer */
+    typedef QValueVector<int> HistogramVector;
+    HistogramVector histogramVector;
     /** Color table */
     QgsColorTable colorTable;
 };
@@ -803,6 +805,8 @@ public slots:
      * invokes an instance of the QgsRasterLayerProperties dialog box.*/
     /* virtual */ void showLayerProperties();
 
+  //! Populate the histogram vector for a given layer
+  void populateHistogram(int theBandNoInt, int theBinCountInt=256);
 
  protected:
 
@@ -993,6 +997,7 @@ private:
 
     //! Pointer to the identify results dialog
     QgsIdentifyResults *mIdentifyResults;
+
 };
 
 #endif
