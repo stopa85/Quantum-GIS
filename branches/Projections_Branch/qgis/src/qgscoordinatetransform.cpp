@@ -25,7 +25,7 @@ QgsCoordinateTransform::QgsCoordinateTransform( QString theSourceWKT, QString th
   // initialize the coordinate system data structures
   //XXX Who spells initialize initialise?
   //XXX A: Its the queen's english....
-  //XXX  : Long live the queen!
+  //XXX  : Long live the queen! Lets get on with the initialisation...
   initialise();
 }
 
@@ -57,9 +57,13 @@ void QgsCoordinateTransform::initialise()
   // the WKT for the coordinate system
   QString defaultWkt = QgsSpatialReferences::instance()->getSrsBySrid("4326")->srText();
   //default input projection to geo wgs84  
+  // XXX multiple return paths in this block!!
   if (mSourceWKT.isEmpty())
   {
-    mSourceWKT = defaultWkt;
+    //mSourceWKT = defaultWkt;
+    // pass through with no projection
+    mShortCircuit = true;
+    return;
   }
   //but default output projection to be the same as input proj
   //whatever that may be...
@@ -257,8 +261,8 @@ void QgsCoordinateTransform::transformCoords( const int& numPoints, double& x, d
 
   }
 }
-/* THIS IS BASED ON DIRECT USE OF PROJ4 
- * preserved for future use if we need it 
+/* XXX THIS IS BASED ON DIRECT USE OF PROJ4 
+ * XXX preserved for future use if we need it 
 void QgsCoordinateTransform::transformCoords( const int& numPoints, double& x, double& y, double& z,TransformDirection direction) const
 {
   // use proj4 to do the transform   

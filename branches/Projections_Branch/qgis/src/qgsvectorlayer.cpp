@@ -111,6 +111,10 @@ QgsVectorLayer::QgsVectorLayer(QString vectorLayerPath,
   {
     setDataProvider( providerKey );
   }
+  if(valid)
+  {
+    setCoordinateSystem();
+  }
 
   // Default for the popup menu
   popMenu = 0;
@@ -1721,70 +1725,6 @@ QgsVectorLayer:: setDataProvider( QString const & provider )
           // label
           mLabel = new QgsLabel ( dataProvider->fields() );
           mLabelOn = false;
-
-          //
-          // Get the layers project info and set up the QgsCoordinateTransform 
-          // for this layer
-          //
-          QString mySourceWKT = getProjectionWKT();
-          //get the project projections WKT, defaulting to this layer's projection
-          //if none exists....
-          //First get the SRS for the default projection WGS 84
- //         QString defaultWkt = QgsSpatialReferences::instance()->getSrsBySrid("4326")->srText();
-          QString myDestWKT = QgsProject::instance()->readEntry("SpatialRefSys","/WKT","");
-
-            // try again with a morph from esri
-            // set up the spatial ref
-            OGRSpatialReference myInputSpatialRefSys;
-            char *pWkt = (char*)mySourceWKT.ascii();
-            myInputSpatialRefSys.importFromWkt(&pWkt);
-            myInputSpatialRefSys.morphFromESRI();
-
-            // set up the destination cs
-            OGRSpatialReference myOutputSpatialRefSys;
-            pWkt = (char *) myDestWKT.ascii();
-            myOutputSpatialRefSys.importFromWkt(&pWkt);
-
-          //
-          // Sort out what to do with this layer's coordinate system (CS). We have
-          // four possible scenarios:
-          // 1. Layer has no projection info and canvas is projected
-          //      = set layer to canvas CS XXX does the user need a warning here?
-          // 2. Layer has no projection info and canvas is unprojected
-          //      = leave both layer and canvas unprojected XXX is this appropriate?
-          // 3. Layer has projection info and canvas is unprojected
-          //      = set canvas to layer's CS
-          // 4. Layer has projection info and canvas is projected
-          //      = setup transform for layer to canvas CS
-           if(mySourceWKT.length() == 0)
-           {
-             // layer has no CS
-             if(myDestWKT.length() > 0)
-             {
-               // set layer CS to project CS
-               mySourceWKT = myDestWKT;
-             }
-             else
-             {
-               // leave layer with no CS
-             }
-           }
-           else
-           {
-             // layer has a CS
-             if(myDestWKT.length() == 0)
-             {
-               // set project CS to layer CS
-               myDestWKT = mySourceWKT;
-               QgsProject::instance()->writeEntry("SpatialRefSys","/WKT", myDestWKT);
-             }
-           }
-
-          //set up the coordinate transform - in the case of raster this is 
-          //mainly used to convert the inverese projection of the map extents 
-          //of the canvas when zzooming in etc. so that they match the coordinate 
-          //system of this layer
-          mCoordinateTransform = new QgsCoordinateTransform(mySourceWKT, myDestWKT);
         }
       }
       else
@@ -2473,4 +2413,84 @@ bool QgsVectorLayer::commitAttributeChanges(const std::set<QString>& deleted,
 	returnvalue=false;
     }
     return returnvalue;
+}
+void QgsVectorLayer::setCoordinateSystem()
+{
+
+          //
+          // Get the layers project info and set up the QgsCoordinateTransform 
+          // for this layer
+          //
+          QString mySourceWKT = getProjectionWKT();
+          // if the wkt does not exist, then we can not set the projection
+          // Pass this through unprojected 
+          // XXX Do we need to warn the user that this layer is unprojected?
+          // XXX Maybe a user option to choose if warning should be issued
+          if(mySourceWKT.isEmpty())
+          {
+            mCoordinateTransform = new QgsCoordinateTransform("", "");
+          }
+          else
+          {
+
+          assert(!mySourceWKT.isEmpty());
+          //get the project projections WKT, defaulting to this layer's projection
+          //if none exists....
+          //First get the SRS for the default projection WGS 84
+ //         QString defaultWkt = QgsSpatialReferences::instance()->getSrsBySrid("4326")->srText();
+          QString myDestWKT = QgsProject::instance()->readEntry("SpatialRefSys","/WKT","");
+
+            // try again with a morph from esri
+            // set up the spatial ref
+            OGRSpatialReference myInputSpatialRefSys;
+            char *pWkt = (char*)mySourceWKT.ascii();
+            myInputSpatialRefSys.importFromWkt(&pWkt);
+            myInputSpatialRefSys.morphFromESRI();
+
+            // set up the destination cs
+            OGRSpatialReference myOutputSpatialRefSys;
+            pWkt = (char *) myDestWKT.ascii();
+            myOutputSpatialRefSys.importFromWkt(&pWkt);
+
+          //
+          // Sort out what to do with this layer's coordinate system (CS). We have
+          // four possible scenarios:
+          // 1. Layer has no projection info and canvas is projected
+          //      = set layer to canvas CS XXX does the user need a warning here?
+          // 2. Layer has no projection info and canvas is unprojected
+          //      = leave both layer and canvas unprojected XXX is this appropriate?
+          // 3. Layer has projection info and canvas is unprojected
+          //      = set canvas to layer's CS
+          // 4. Layer has projection info and canvas is projected
+          //      = setup transform for layer to canvas CS
+           if(mySourceWKT.length() == 0)
+           {
+             // layer has no CS
+             if(myDestWKT.length() > 0)
+             {
+               // set layer CS to project CS
+               mySourceWKT = myDestWKT;
+             }
+             else
+             {
+               // leave layer with no CS
+             }
+           }
+           else
+           {
+             // layer has a CS
+             if(myDestWKT.length() == 0)
+             {
+               // set project CS to layer CS
+               myDestWKT = mySourceWKT;
+               QgsProject::instance()->writeEntry("SpatialRefSys","/WKT", myDestWKT);
+             }
+           }
+
+          //set up the coordinate transform - in the case of raster this is 
+          //mainly used to convert the inverese projection of the map extents 
+          //of the canvas when zzooming in etc. so that they match the coordinate 
+          //system of this layer
+          mCoordinateTransform = new QgsCoordinateTransform(mySourceWKT, myDestWKT);
+          }
 }
