@@ -27,7 +27,7 @@ class QgsMapCanvas;
 class QgsMapLayer;
 class QListView;
 class QPainter;
-
+class QgisApp;
 
 /**
    \class QgsLegend
@@ -44,8 +44,9 @@ class QgsLegend : public QListView
   /*! Constructor.
    * @param parent Parent widget
    * @param name Name of the widget
+   * @param qgis_app link to qgisapp
    */
-  QgsLegend(QWidget * parent = 0, const char *name = 0);
+  QgsLegend(QWidget * parent = 0, const char *name = 0, QgisApp * qgis_app = 0);
 
   //! Destructor
    ~QgsLegend();
@@ -86,6 +87,12 @@ protected:
   void contentsMouseReleaseEvent(QMouseEvent * e);
 
 private:
+
+  /** handle to main QgisApp
+      Necessary for binding properly binding context menu to new layers
+   */
+  QgisApp * mQgisApp;
+
   /// the map canvas this legend refers to
   QgsMapCanvas * map;
 

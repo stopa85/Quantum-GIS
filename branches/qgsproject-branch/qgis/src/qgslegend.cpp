@@ -33,6 +33,7 @@
 #include "qgsmaplayer.h"
 #include "qgslegenditem.h"
 #include "qgslegend.h"
+#include "qgisapp.h"
 
 
 static const char *const ident_ = "$Id$";
@@ -44,7 +45,8 @@ const int AUTOSCROLL_MARGIN = 16;
 
    set movingItem pointer to 0 to prevent SuSE 9.0 crash
 */
-QgsLegend::QgsLegend(QWidget * parent, const char *name):QListView(parent, name), mousePressed(false), movingItem(0)
+QgsLegend::QgsLegend(QWidget * parent, const char *name, QgisApp * qgis_app )
+    : QListView(parent, name), mousePressed(false), movingItem(0), mQgisApp(qgis_app)
 {
 }
 
@@ -204,6 +206,8 @@ void QgsLegend::addLayer(QgsMapLayer * layer)
     {
       return;
     }
+
+  layer->initContextMenu(mQgisApp);
 
   const char * layerName = layer->name().ascii(); // debugger probe
 
