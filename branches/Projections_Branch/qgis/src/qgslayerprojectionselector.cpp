@@ -26,7 +26,7 @@
 QgsLayerProjectionSelector::QgsLayerProjectionSelector() 
 {
 
- // qApp::restoreOverrideCursor();
+ qApp->restoreOverrideCursor();
 }
 //! Destructor
 QgsLayerProjectionSelector::~QgsLayerProjectionSelector()
