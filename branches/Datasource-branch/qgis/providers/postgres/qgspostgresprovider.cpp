@@ -2,6 +2,7 @@
 /* $Id$ */
 #include <iostream>
 #include <qtextstream.h>
+#include <qstringlist.h>
 #include "../../src/qgis.h"
 #include "../../src/qgsfeature.h"
 #include "../../src/qgsfield.h"
@@ -47,11 +48,32 @@ QgsPostgresProvider::QgsPostgresProvider(QString uri):dataSourceUri(uri)
         if (PQresultStatus(result) == PGRES_TUPLES_OK) {
             // this is a valid layer
             valid = true;
+          
             std::cout << "geometry column query returned " << PQntuples(result) << std::endl;
             // store the srid 
             std::cout << "column number of srid is " << PQfnumber(result, "srid") << std::endl;
             srid = PQgetvalue(result, 0, PQfnumber(result, "srid"));
             std::cout << "SRID is " << srid << std::endl;
+            
+            // need to store the PostgreSQL version since it appear that starting with
+            // version 7.4, binary cursors return data in XDR whereas previous versions
+            // return data in the endian of the server
+            PGresult *versionRes = PQexec(pd, "select version()");
+            QString version = PQgetvalue(versionRes,0,0);
+            std::cout << "PostgreSQL version string is: " << version << std::endl;
+            // parse out the version number
+            QStringList vParts = QStringList::split(" ", version);
+            // assume version # is always second word in version string
+            QString versionNumber = vParts[1];  
+            std::cout << "Results from binary cursors are return in ";
+            if(versionNumber > "7.3.9"){
+              versionXDR = true;
+              std::cout << "Big-endian" << std::endl;
+            }else{
+              versionXDR = false;
+              std::cout << "Little-endian" << std::endl;
+            }
+            
             //std::cout << "Format is " << PQfformat(result, PQfnumber(result,"srid")) << std::endl;
             // set the type
             // set the simple type for use with symbology operations
@@ -67,10 +89,11 @@ QgsPostgresProvider::QgsPostgresProvider(QString uri):dataSourceUri(uri)
             // free the result
             PQclear(result);
             // get the extents
-            qWarning("Getting extents using schema.table: " + sql);
+           
             sql = "select xmax(extent(" + geometryColumn + ")) as xmax,"
               "xmin(extent(" + geometryColumn + ")) as xmin,"
               "ymax(extent(" + geometryColumn + ")) as ymax," "ymin(extent(" + geometryColumn + ")) as ymin" " from " + tableName;
+               qWarning("Getting extents using schema.table: " + sql);
             result = PQexec(pd, (const char *) sql);
             layerExtent.setXmax(QString(PQgetvalue(result, 0, PQfnumber(result, "xmax"))).toDouble());
             layerExtent.setXmin(QString(PQgetvalue(result, 0, PQfnumber(result, "xmin"))).toDouble());
@@ -221,6 +244,7 @@ QgsFeature *QgsPostgresProvider::getNextFeature(bool fetchAttributes)
         std::cout << "Fetched " << PQntuples(queryResult) << "rows" << std::endl;
         if(PQntuples(queryResult) == 0){
           PQexec(connection, "end work");
+          ready = false;
           return 0;
         } 
      //  std::cout <<"Raw value of the geometry field: " << PQgetvalue(queryResult,0,PQfnumber(queryResult,"qgs_feature_geometry")) << std::endl;
@@ -228,7 +252,7 @@ QgsFeature *QgsPostgresProvider::getNextFeature(bool fetchAttributes)
       int oid = *(int *)PQgetvalue(queryResult,0,PQfnumber(queryResult,"oid"));
       // oid is in big endian
       int *noid;
-      if(endian() == NDR){
+      if((endian() == NDR) && versionXDR){
         std::cout << "converting oid to little endian" << std::endl;
         // convert oid to little endian
         char *temp  = new char[sizeof(oid)];
@@ -240,6 +264,8 @@ QgsFeature *QgsPostgresProvider::getNextFeature(bool fetchAttributes)
         }
         noid = (int *)temp;
         
+      }else{
+        noid = &oid;
       }
       // noid contains the oid to be used in fetching attributes if 
       // fetchAttributes = true
@@ -433,7 +459,15 @@ std::vector < QgsField > QgsPostgresProvider::fields()
 void QgsPostgresProvider::reset()
 {
   // reset the cursor to the first record
-  
+  std::cout << "Resetting the cursor to the first record " << std::endl;
+   QString declare = QString("declare qgisf binary cursor for select oid," 
+          "asbinary(%1,'%2') as qgs_feature_geometry from %3").arg(geometryColumn).arg(endianString()).arg(tableName);
+        std::cout << "Selecting features using: " << declare << std::endl;
+        // set up the cursor
+        PQexec(connection,"begin work");
+        PQexec(connection, (const char *)declare);
+         std::cout << "Error: " << PQerrorMessage(connection) << std::endl;
+           ready = true;
 }
 /* QString QgsPostgresProvider::getFieldTypeName(PGconn * pd, int oid)
 {

@@ -195,5 +195,9 @@ class QgsPostgresProvider:public QgsDataProvider
         NDR = 1,
         XDR = 0
     };
+    /**
+    * Flag indicating whether binary cursors return data in big-endian order
+    */
+    bool versionXDR;
     bool ready;
 };
