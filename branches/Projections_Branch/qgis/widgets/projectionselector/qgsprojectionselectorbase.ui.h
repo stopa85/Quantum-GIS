@@ -12,3 +12,16 @@ void QgsProjectionSelectorBase::selectionChanged()
 {
 
 }
+
+
+void QgsProjectPropertiesBase::projectionChanged( const QString & )
+{
+
+}
+
+
+
+void QgsProjectPropertiesBase::coordinateSystemSelected( QListViewItem * )
+{
+
+}
