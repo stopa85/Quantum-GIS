@@ -88,15 +88,12 @@ signals:
    * their dest wkt because the project output projection system is changed 
    * @param SPATIAL_REF_SYS structure containing the parameters for the destination CS
    */
-  void setDestWKT(SPATIAL_REF_SYS);   
+  void setDestWKT(QString);   
   //! Signal used to inform listeners that the mouse display precision may have changed
   void displayPrecisionChanged();
 private:
   //! map containing SPATIAL_REF_SYS items keyed by the WKT name
   // XXX why are we using QMap instead of std::map ?
-  typedef QMap<QString,SPATIAL_REF_SYS> ProjectionWKTMap; //wkt = well known text (see gdal/ogr)
-  //stores a list of available projection definitions 
-  ProjectionWKTMap mProjectionsMap;
   //XXX List view items for the tree view of projections
   //! GEOGCS node
   QListViewItem *geoList;
@@ -104,7 +101,5 @@ private:
   QListViewItem *projList;
   //! Users custom coordinate system file
   QString customCsFile;
-  //! Default coordinate system 
-  SPATIAL_REF_SYS GEOWKT;
 
 };
