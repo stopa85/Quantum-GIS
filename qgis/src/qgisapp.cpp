@@ -265,7 +265,7 @@ void QgisApp::addLayer()
 		// create the layer
 
 	//dp	QgsShapeFileLayer *lyr = new QgsShapeFileLayer(*it, base);
-    	QgsVectorLayer *lyr = new QgsVectorLayer(*it, base);
+    	QgsVectorLayer *lyr = new QgsVectorLayer(*it, base, "ogr");
 	QObject::connect(lyr,SIGNAL(repaintRequested()),mapCanvas,SLOT(refresh()));
 
 		if (lyr->isValid()) {
@@ -323,9 +323,11 @@ void QgisApp::addDatabaseLayer()
 
 			// create the layer
 			//qWarning("creating lyr");
-			QgsVectorLayer *lyr = new QgsVectorLayer(connInfo);
+			QgsVectorLayer *lyr = new QgsVectorLayer(connInfo + " table=" + *it, QString::null, "postgres");
 			// give it a random color
-
+        QgsSingleSymRenderer* renderer=new QgsSingleSymRenderer();//add single symbol renderer as default
+		    lyr->setRenderer(renderer);
+		    renderer->initializeSymbology(lyr);
 			// add it to the mapcanvas collection
 			mapCanvas->addLayer(lyr);
 			//qWarning("incrementing iterator");

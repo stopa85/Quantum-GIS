@@ -53,7 +53,7 @@
 // typedef for the QgsDataProvider class factory
 typedef QgsDataProvider *create_it(const char *uri);
 
-QgsVectorLayer::QgsVectorLayer(QString vectorLayerPath, QString baseName)
+QgsVectorLayer::QgsVectorLayer(QString vectorLayerPath, QString baseName, QString provider)
     :QgsMapLayer(VECTOR, baseName, vectorLayerPath), tabledisplay(0), selected(0), m_renderer(0), m_propertiesDialog(0), m_rendererDialog(0) 
 {
 // load the plugin
@@ -63,7 +63,8 @@ QString appDir = qApp->applicationDirPath();
 int bin = appDir.findRev("/bin", -1, false);
 QString baseDir = appDir.left(bin);
 QString libDir = baseDir + "/lib";
-QString ogrlib = libDir + "/libogrprovider.so";
+QString ogrlib = libDir + "/lib" + provider + "provider.so";
+//QString ogrlib = libDir + "/libpostgresprovider.so";
 const char *cOgrLib = (const char *)ogrlib;
 #ifdef TESTPROVIDERLIB
 // test code to help debug provider loading problems
@@ -243,7 +244,7 @@ void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsCoordinateTrans
 		while ((fet = dataProvider->getNextFeature(false))) {
 
 			if (fet == 0) {
-			//	std::cout << "get next feature returned null\n";
+				std::cout << "get next feature returned null\n";
 			} else {
 			//	std::cout << "get next feature returned valid feature\n";
 
