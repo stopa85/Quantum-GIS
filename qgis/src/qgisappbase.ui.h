@@ -257,3 +257,11 @@ void QgisAppBase::about()
 {
 
 }
+
+
+void QgisAppBase::removeLayer()
+{
+#ifdef QGISDEBUG
+    qDebug("QgisAppBase::removeLayer()");
+#endif
+}
