@@ -294,3 +294,4 @@ void QgsGraduatedSymRenderer::initializeSymbology(QgsVectorLayer* layer)
 	qWarning("Warning, layer is null in QgsGraduatedSymRenderer::initializeSymbology(..)");
     }
 }
+
