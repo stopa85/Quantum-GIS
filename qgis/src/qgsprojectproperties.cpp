@@ -25,6 +25,7 @@
 #include "qgsmaplayer.h"
 #include "qgsmaplayerregistry.h"
 #include "qgsrenderer.h"
+#include "qgis.h"
 
 //qt includes
 #include <qcombobox.h>
@@ -46,8 +47,12 @@
 //stdc++ includes
 #include <iostream>
 #include <cstdlib>
-
-    const QString GEOWKT =    "GEOGCS[\"WGS 84\", "
+static const char* defaultWktKey = "Lat/Long - WGS 84";
+QgsProjectProperties::QgsProjectProperties(QWidget *parent, const char *name)
+    : QgsProjectPropertiesBase(parent, name)
+{
+  // set the default coordinate system
+    GEOWKT.srtext =  "GEOGCS[\"WGS 84\", "
     "  DATUM[\"WGS_1984\", "
     "    SPHEROID[\"WGS 84\",6378137,298.257223563, "
     "      AUTHORITY[\"EPSG\",7030]], "
@@ -58,9 +63,6 @@
     "  AXIS[\"Lat\",NORTH], "
     "  AXIS[\"Long\",EAST], "
     "  AUTHORITY[\"EPSG\",4326]]";
-QgsProjectProperties::QgsProjectProperties(QWidget *parent, const char *name)
-    : QgsProjectPropertiesBase(parent, name)
-{
   //    out with the old
     //    QgsProject::instance()->mapUnits( QgsScaleCalculator::METERS );
     //    in with the new...
@@ -81,6 +83,7 @@ QgsProjectProperties::QgsProjectProperties(QWidget *parent, const char *name)
     }
     
     getProjList();
+    
     
     //if the user changes the projection for the project, we need to 
     //fire a signal to each layer telling it to change its coordinateTransform
@@ -177,7 +180,8 @@ QString QgsProjectProperties::projectionWKT()
 {
   // the /WKT entry stores the key into the mProjectionsMap rather than
   // the  WKT text of the CS
-  return mProjectionsMap[QgsProject::instance()->readEntry("SpatialRefSys","/WKT",GEOWKT)].srtext;
+  SPATIAL_REF_SYS srs =  mProjectionsMap[QgsProject::instance()->readEntry("SpatialRefSys","/WKT",defaultWktKey)];
+  return srs.srtext;
 }  
 
 
@@ -279,7 +283,7 @@ void QgsProjectProperties::getProjList()
     // 2 auth_srid | integer                 |
     // 3 srtext    | character varying(2048) |
     // 4 proj4text | character varying(2048) |
-
+int wktCount = 0;
     while ( !myQTextStream.atEnd() ) 
     {
       myCurrentLineQString = myQTextStream.readLine(); // line of text excluding '\n'
@@ -301,7 +305,10 @@ void QgsProjectProperties::getProjList()
       QString myShortName = getWKTShortName(srs.srtext);
       if (!myShortName) continue;
       mProjectionsMap[myShortName]=srs;
+//      std::cout << "Added key " << myShortName << " to projections map" << std::endl; 
+      wktCount++;
     }
+    std::cout << "Added " << wktCount << " projections to the map" << std::endl; 
     myQFile.close();
 
     // Read the users custom coordinate system (CS) file
@@ -332,7 +339,7 @@ void QgsProjectProperties::getProjList()
         myCurrentLineQString = userCsTextStream.readLine(); // line of text excluding '\n'
         //get the user friendly name for the WKT
         QString myShortName = getWKTShortName(myCurrentLineQString);
-        //XXX Fix this so it can read user defined projections
+        //XXX Fix this so it can read user defined projections - 
         //mProjectionsMap[myShortName]=myCurrentLineQString;
       }
       csQFile.close();
@@ -341,7 +348,8 @@ void QgsProjectProperties::getProjList()
     // end of processing users custom CS file
 
     //determine the current project projection so we can select the correct entry in the combo
-    QString myProjectionName = QgsProject::instance()->readEntry("SpatialRefSys","/WKT",GEOWKT);
+    SPATIAL_REF_SYS srs = mProjectionsMap[QgsProject::instance()->readEntry("SpatialRefSys","/WKT",defaultWktKey)];
+    QString myProjectionName = srs.srtext;
     assert(myProjectionName.length() > 0);
     QString mySelectedKey = getWKTShortName(myProjectionName);
     QListViewItem * mySelectedItem = 0;
