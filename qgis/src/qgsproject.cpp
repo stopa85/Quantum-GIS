@@ -383,7 +383,7 @@ _getMapLayers( QDomDocument const & doc )
  */
 static
 void
-_setCanvasExtent( QString const & canonicalName, QgsRect const & newExtent )
+_setCanvasExtent( QString const & canonicalMapCanvasName, QgsRect const & newExtent )
 {
                                 // first find the canonical map canvas
 
@@ -396,7 +396,7 @@ _setCanvasExtent( QString const & canonicalName, QgsRect const & newExtent )
     while ( (w=it.current()) != 0 ) 
     {   // for each top level widget...
         ++it;
-        theMapCanvas = dynamic_cast<QgsMapCanvas*>(w->child( canonicalName, 0, true ));
+        theMapCanvas = dynamic_cast<QgsMapCanvas*>(w->child( canonicalMapCanvasName, 0, true ));
 
         if ( theMapCanvas )
         { break; }
@@ -406,7 +406,7 @@ _setCanvasExtent( QString const & canonicalName, QgsRect const & newExtent )
 
     if( ! theMapCanvas )
     {
-        qDebug( "Unable to find canvas widget " + canonicalName );
+        qDebug( "Unable to find canvas widget " + canonicalMapCanvasName );
 
         return;                 // XXX some sort of error value?  Exception?
     }
@@ -420,6 +420,54 @@ _setCanvasExtent( QString const & canonicalName, QgsRect const & newExtent )
 
 } // _setCanvasExtent()
 
+
+
+/**
+   Get the full extent for the given canvas.
+
+   This is used to get the full extent of the main map canvas so that we can
+   set the overview canvas to that instead of stupidly setting the overview
+   canvas to the *same* extent that's in the main map canvas.
+
+   @param canonicalMapCanvasName will be "theMapCanvas" or "theOverviewCanvas"; these
+   are set when those are created in qgisapp ctor
+
+ */
+static
+QgsRect _getFullExtent( QString const & canonicalMapCanvasName )
+{
+    // XXX since this is a cut-n-paste from above, maybe generalize to a
+    // XXX separate function?
+                                // first find the canonical map canvas
+
+    QgsMapCanvas * theMapCanvas;
+
+    QWidgetList  * list = QApplication::topLevelWidgets();
+    QWidgetListIt it( *list );  // iterate over the widgets
+    QWidget * w;
+
+    while ( (w=it.current()) != 0 ) 
+    {   // for each top level widget...
+        ++it;
+        theMapCanvas = dynamic_cast<QgsMapCanvas*>(w->child( canonicalMapCanvasName, 0, true ));
+
+        if ( theMapCanvas )
+        { break; }
+    }
+    delete list;                // delete the list, not the widgets
+
+
+    if( ! theMapCanvas )
+    {
+        qDebug( "Unable to find canvas widget " + canonicalMapCanvasName );
+
+        return QgsRect();       // XXX some sort of error value?  Exception?
+    }
+    
+
+    return theMapCanvas->fullExtent();
+
+} // _getFullExtent( QString const & canonicalMapCanvasName )
 
 
 
@@ -512,11 +560,13 @@ QgsProject::read( )
         return false;
     }
 
-    // now ensure that both the main canvas and the corresponding overview
-    // have the same extent
+    // now restore the extent for the main canvas
 
     _setCanvasExtent( "theMapCanvas", savedExtent );
-    _setCanvasExtent( "theOverviewCanvas", savedExtent );
+
+    // ensure that overview map canvas is set to *entire* extent
+    QgsRect mapCanvasFullExtent =  _getFullExtent( "theMapCanvas" );
+    _setCanvasExtent( "theOverviewCanvas", mapCanvasFullExtent );
 
 
     // now get project title
