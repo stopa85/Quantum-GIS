@@ -24,7 +24,7 @@ plugindir = ${pkglibdir}
 
 
 # name of the designer plugin
-plugin_LTLIBRARIES = projectionselector.la
+plugin_LTLIBRARIES = qgsprojectionselector.la
 
 plugin_MOC = qgsprojectionselector.moc.cpp		\
 	     qgsprojectionselectorbase.moc.cpp		
@@ -35,7 +35,7 @@ plugin_UI = qgsprojectionselectorbase.h \
 
 plugin_UIC = qgsprojectionselectorbase.ui
 
-projectionselector_la_SOURCES =  qgsprojectionselector.cpp	\
+qgsprojectionselector_la_SOURCES =  qgsprojectionselector.cpp	\
 			         $(plugin_UI)			\
 			         $(plugin_MOC)
 
@@ -43,8 +43,8 @@ BUILT_SOURCES = $(plugin_MOC) $(plugin_UI)
 
 
 
-projectionselector_la_LIBADD =  ../../src/libqgis.la
-projectionselector_la_LDFLAGS = -avoid-version -module
-projectionselector_la_CXXFLAGS = $(CXXFLAGS) $(EXTRA_CXXFLAGS) $(QT_CXXFLAGS) $(DEBUG_QGIS) -I../../src/
+qgsprojectionselector_la_LIBADD =  ../../src/libqgis.la
+qgsprojectionselector_la_LDFLAGS = -avoid-version -module
+qgsprojectionselector_la_CXXFLAGS = $(CXXFLAGS) $(EXTRA_CXXFLAGS) $(QT_CXXFLAGS) $(DEBUG_QGIS) -I../../src/
 
 EXTRA_DIST = $(plugin_UIC) 
