@@ -1,0 +1,212 @@
+QGIS Change Log
+ChangeLog,v 1.31 2004/03/06 11:58:19 timlinux Exp
+------------------------------------------------------------------------------
+Version 0.2 'Pumpkin' .... development version
+
+2004-03-06 [ts] 0.1.0devel6
+** Save state of plugins in ~/.qt/qtrc file (in progress). State is saved,
+   just need to implement code to load plugins marked as active during
+   application startup.
+
+2004-03-06 [ts] 0.1.0devel6
+** Added QgsRasterLayer::filterLayer which gets called near the end of each of
+   the 8 renderers. This is the place to inline filters. Note that eventually filters 
+   will be hived out to a filter plugin mechanism.
+
+2004-03-06 [didge] 0.1.0devel6
+** Changed configure stuff to write DEFINES in config.h.
+   Postgresql stuff needs testing as I commented the compileflags in src/Makefile.am
+** Infos will be posted on the devel mailinglist
+
+2004-03-04 [ts] 0.1.0devel5
+** Added option to options dialog to disable splashscreen.
+
+2004-02-28 [ts] 0.1.0devel5
+** --snapshot command line parameter working now and correctly scaling
+   snapshot to size of pixmap.
+** started moving splashscreen to a global so other classes diring  the startup 
+   process can get access to set the splash status. (in progress)
+
+2004-02-28 [gs] 0.1.0devel5
+** Refactored QgsField to use new coding conventions
+** Documented QgsField (added docs to qgsfield.h)
+** Updated doxygen mainpage section in qgis.h
+** Added Whats this? help to main application window
+** Added providers/delimitedtext and associated source files to CVS
+
+2004-02-27 [gs] 0.1.0devel4
+** Corrected debug statements in main.cpp and added a bit of verbiage to the
+   help text.
+** Removed hard coding of provider types in the QgisApp::addVectorLayer method.
+  Caller must now provide compatible arguments that the designated provider can
+  use to open the data store and fetch data. Changed QgsPgGeoprocessing class
+  to properly call addVectorLayer.
+
+2004-02-27 [ts]
+** Changed cl parser to getopt
+   Moved project loading out of loop that loads layers - you now need to specify
+   --project filename to load a filename. This ensures that you only try to load 
+   one project file.
+   Added --snapshot filename parameter that will load layers and project files
+   specified, take a screenie of the map view and save it to disk as filename - 
+   this is under construction still.
+   Added saveMapAsImage(QString) to qgisapp so above cl option can be used.
+ 
+2004-02-26 [ts]
+** Added a tab to raster layer properties dialog to show metadata about the
+   raster layer (using gdal metadata)
+
+2004-02-26 [gs] 0.1.0devel3
+** Added Version to configure.in. QGIS now displays its version number based on
+   the settings in configure.in
+
+2004-02-24 [gs]
+** Search radius for identifying features on vector layers added to Preferences
+
+2004-02-23 [ts]
+** Save current view to disk as a PNG image
+
+------------------------------------------------------------------------------
+Version 0.1 'Moroz' February 25, 2004
+**User interface improvements - menu and dialog cleanups and a new icon theme
+  based on Everaldo's Crystal icon set.
+**QGIS can load layers and / or a project on start up by specifying these
+  on the command line.
+**Symbol renderers for simple, graduated, and continous symbols
+**Raster support for most GDAL formats
+**Raster implementation supports a variety of rendering settings including
+  semi transparent overlays, pallette inversion, flexible band to colour mapping
+  in multiband images and creation of pseudocolor.
+**Change to a data provider architecture for vector layers. Addtional data
+  types can be supported by writing a provider plugin
+**Buffer plugin for PostGIS layers
+**PostgreSQL port number can be specified when making connections
+**Shapefile to PostGIS Import Tool (SPIT) plugin for importing shapefiles into
+  PostgreSQL/PostGIS
+**User guide (HTML and PDF)
+**Install guide (HTML and PDF)
+**Plugin manager to manage loading/unloading of plugins
+**Plugin template to automate the more mundane parts of creating a new plugin.
+**Numerous bug fixes
+**Removed dependency on libpq++ when compiling with PostgreSQL/PostGIS support
+**PostgreSQL/PostGIS layers now rely on GEOS for selecting features
+
+Version 0.0.13 December 8, 2003
+**New build system (uses GNU Autoconf)
+**Improvement to sorting in attribute table
+**Persistent selections (shapefiles only)
+**Display order can be changed by dragging a layer to a new position in the legend
+**Export QGIS view as a Mapserver map file
+**Fix for crash on SuSE 9.0 when moving mouse in legend area
+
+Version 0.0.12-alpha June 10, 2003
+**Multiple features displayed with the Identify tool
+**Identify function returns and displays attributes for multiple
+   features found within the search radius
+**Fixes to endian handling on big endian machines
+**Support for PostgreSQL 7.3 schemas for database layers
+**Features in shapefiles can be selected by dragging a selection
+  box or selecting the records in the attribute table
+**Zoom to extent of selected features (Shapefiles only)
+**Bug fix: Bug that prevented reopening of the attribute table once
+  it was initally displayed and closed
+**Bug fix: Bug that prevented lines from being drawn with widths
+  other than 1 pixel
+**Build system has changed for building with PostgreSQL support.
+
+Version 0.0.11-alpha June 10, 2003
+**Preliminary Plugin Manager implementation
+**Version check under tools menu
+**Version checking uses port 80 to prevent problems 
+   with firewalls
+**Fix for PostGIS bug when srid != -1
+**Fix for PostGIS LINESTRING rendering
+**Database Connections can now be deleted
+**Fixes to Database Connection dialog
+**Fix for crash when opening a shapefile attribute table 
+   twice in succession
+**Fix for crash when opening invalid shapefiles
+
+Version 0.0.10-alpha May 13, 2003
+*Fixes to project save/open support
+*Enhancements to plugin tests
+*Fixes to build system (gdal link problem)
+
+Version 0.0.9-alpha January 25, 2003
+*Preliminary project save/open support
+*Streamlined build system
+
+Version 0.0.8-alpha December 11, 2002
+*During repaint, the data store is only accessed if map state or extent
+ has changed
+*Changes to layer properites aren't effective until the Layer Properties
+ dialog is closed
+*Canceling the Layer Propeties dialog cancels changes
+
+Version 0.0.7-alpha November 30, 2002
+*Changes to the build system to allow building with/without PostgeSQL 
+ support
+
+Version 0.0.6a-alpha November 27, 2002
+*Fix to build problems introduced at 0.0.6. No new features are included
+ in this release.
+
+Version 0.0.6-alpha November 24, 2002
+*Improved handling/management of PostGIS connections
+*Password prompt if the password is not stored with a connection
+*Windows size and position and toolbar docking state is saved/restored
+*Identify function for layers
+*Attribute table for a layer can be displayed and sorted by clicking on column headers
+*Duplicate layers (layers with same name) are now handled properly
+
+Version 0.0.5-alpha October 5, 2002
+ * Removing a layer from the map no longer crashes the application
+ * Fixed multiple render bug when adding a layer
+ * Data source is shown in Layer Properties dialog
+ * Display name of a layer can be changed using the Layer Properties dialog
+ * Line widths can be set for a layer using the Layer Properties dialog
+ * Zoom out now works 
+ * Zoom Previous added to toolbar
+ * Toolbar has been rearranged and new icons added
+ * Help|About QGis now contains Version, Whats New, and License information
+ 
+Version 0.0.4-alpha August 15, 2002
+ * Added Layer Properties dialog
+ * User can set color for layers
+ * Added right-click menu to the layer list in legend
+ * Layers can be removed using the right-click menu (buggy)
+ * Moved the KDevelop project file qgis.kdevprj to the src sub-directory
+ * Fixed multiple repaint bug that occurred when more than one layer was
+   added at a time
+ * Fixed bug that caused a full refresh at the beginning of a pan operation
+
+Version 0.0.3-alpha August 10, 2002
+  * Support for shapefiles and other vector formats
+  * Improved handling of extents when adding layers
+  * Primitive legend that allows control of layer visibility
+  * About Quantum GIS implemented
+  * Other internal changes
+  
+July 26, 2002
+	Drawing code now properly displays layers and calculates extents when
+	zooming. Zoom is still fixed zoom in rather than interactive.
+	
+July 20, 2002
+	Repaint automatic for layers.
+	
+July 18, 2002
+	Point, line and polygon PostGis layers can be drawn. Still issues with
+	map exent and positioning of layers on the canvas. Drawing is manual and
+	not tied to the paint event. No zooming or panning yet.
+	
+July 10, 2002
+	Layers can be selected and added to the map canvas collection however
+	the rendering code is currently disabled and being reorganized. So if
+	you add a layer, nothing will be drawn...
+	
+July 6, 2002
+	This code is preliminary and really has no true functionality other than
+	the ability to define a PostGIS connection and display the spatially enabled
+	tables that could be loaded. 
+
+	This is the initial import of the code base into CVS on Sourceforge.net.
