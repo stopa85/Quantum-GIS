@@ -37,7 +37,8 @@
 extern "C"{
 #include <proj_api.h>
 }
-
+//! Structure for passing around x,y,z points
+//typedef struct {double x, double y, double z} qProjPt;
 class QString;
 
 /*! \class QgsCoordinateTransform
@@ -113,7 +114,8 @@ class QgsCoordinateTransform: public QObject
     //! Accessor  for dest WKT
     QString destWKT() const {return mDestWKT;};    
     //! Accessor for whether this transoform is properly initialised
-    bool isInitialised() {return mInitialisedFlag;};
+    void cs2cs(const QString &dest, const QString &src, double &x, double &y, double &z);
+   bool isInitialised() {return mInitialisedFlag;};
  public slots:
     /** mutator for dest WKT - slot will usually be fired if proj props change and 
         user selects a different coordinate system */
