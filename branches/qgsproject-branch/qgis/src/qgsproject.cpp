@@ -636,6 +636,8 @@ QgsProject::write( )
     titleNode.appendChild( titleText );
 
     // extent
+
+    // XXX there should eventually be a QgsMapCanvas::writeXML() that does this
     QDomElement extentNode = doc->createElement( "extent" );
     qgis.appendChild( extentNode );
 
@@ -662,6 +664,15 @@ QgsProject::write( )
 
     // layers
 
+    // XXX QgsMapLayerRegistry should have a writeXML(), which then calls
+    // XXX QgsMapLayer::writeXML()
+    QDomElement projectLayersNode = doc->createElement( "projectlayers" );
+    projectLayersNode.setAttribute( "layercount", 
+                                    QgsMapLayerRegistry::instance()->mapLayers().size() );
+
+    qgis.appendChild( projectLayersNode );
+
+    
 
     // XXX write to test file for now; will replace with real file name later
 
