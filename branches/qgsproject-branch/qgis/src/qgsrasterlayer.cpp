@@ -409,13 +409,6 @@ QgsRasterLayer::QgsRasterLayer(QString path, QString baseName)
   //  Transparency slider for popup meni
   //  QSlider ( int minValue, int maxValue, int pageStep, int value, Orientation orientation, QWidget * parent, const char * name = 0 )
 
-  // XXX why GUI element here?
-//   mTransparencySlider = new QSlider(0,255,5,0,QSlider::Horizontal,popMenu);
-//   mTransparencySlider->setTickmarks(QSlider::Both);
-//   mTransparencySlider->setTickInterval(25);
-//   mTransparencySlider->setTracking(false); //stop slider emmitting a signal until mouse released
-
-//   connect(mTransparencySlider, SIGNAL(valueChanged(int)), this, SLOT(popupTransparencySliderMoved(int)));
 
 //   // emit a signal asking for a repaint
 //   emit repaintRequested();
@@ -2555,6 +2548,15 @@ void QgsRasterLayer::initContextMenu_(QgisApp * theApp)
   myTransparencyLabel->setText( tr("<center><b>Transparency</b></center>") );
 
   popMenu->insertItem(myTransparencyLabel);
+
+  // XXX why GUI element here?
+  mTransparencySlider = new QSlider(0,255,5,0,QSlider::Horizontal,popMenu);
+  mTransparencySlider->setTickmarks(QSlider::Both);
+  mTransparencySlider->setTickInterval(25);
+  mTransparencySlider->setTracking(false); //stop slider emmitting a signal until mouse released
+
+  connect(mTransparencySlider, SIGNAL(valueChanged(int)), this, SLOT(popupTransparencySliderMoved(int)));
+
   popMenu->insertItem(mTransparencySlider);
 
 } // QgsRasterLayer::initContextMenu
@@ -2589,6 +2591,7 @@ void QgsRasterLayer::setTransparency(int theInt)
 #endif
   // XXX bad to have GUI elements in this class mTransparencySlider->setValue(255-theInt);
   //delegate rest to transparency slider
+  mTransparencySlider->setValue(255-theInt);
 
 }
 unsigned int QgsRasterLayer::getTransparency()
