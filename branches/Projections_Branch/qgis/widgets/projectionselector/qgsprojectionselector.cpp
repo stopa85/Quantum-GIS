@@ -55,7 +55,18 @@ QgsProjectionSelector::~QgsProjectionSelector()
 
 void QgsProjectionSelector::setSelectedWKT(QString theWKT)
 {
-
+  QListViewItemIterator myIterator (lstCoordinateSystems);
+  while (myIterator.current()) 
+  {
+    //cerr << myIterator.current()->text (0) << endl;
+    if (myIterator.current()->text(0)==theWKT)
+    {
+      lstCoordinateSystems->setCurrentItem(myIterator.current());
+      lstCoordinateSystems->ensureItemVisible(myIterator.current());
+      return;
+    }
+    ++myIterator;
+  }
 }
 
 void QgsProjectionSelector::setSelectedSRID(QString theSRID)
@@ -95,14 +106,15 @@ void QgsProjectionSelector::getProjList()
   // TODO ! Implemente this properly!!!! ts
   //
   QString currentSrid = ""; 
-  QListViewItem * mySelectedItem = 0;
   // get the reference to the map
   projectionWKTMap_t mProjectionsMap = srs->getMap();
   // get an iterator for the map
   projectionWKTMap_t::iterator myIterator;
   //find out how many entries in the map
   int myEntriesCount = mProjectionsMap.size();
+#ifdef QGISDEBUG
   std::cout << "Srs map has " << myEntriesCount << " entries " << std::endl;
+#endif
   int myProgress = 1;
   QProgressDialog myProgressBar( "Building Projections List...", "Cancel", myEntriesCount,
           this, "progress", TRUE );
@@ -127,11 +139,6 @@ void QgsProjectionSelector::getProjList()
       //    std::cout << "Added " << getWKTShortName(srs->srText()) << std::endl; 
       // display the spatial reference id in the second column of the list view
       newItem->setText(1,srs->srid());
-      if (myIterator.key()==currentSrid)
-      {
-        // this is the selected item -- store it for future use
-        mySelectedItem = newItem;
-      }
     }
     else
     {
@@ -188,50 +195,12 @@ void QgsProjectionSelector::getProjList()
       // display the spatial reference id in the second column of the list view
 
       newItem->setText(1,srs->srid());
-      if (myIterator.key()==currentSrid)
-        mySelectedItem = newItem;
     }
   } //else = proj coord sys        
 
-
-  /**
-  //make sure all the loaded layer WKT's and the active project projection exist in the 
-  //combo box too....
-  std::map<QString, QgsMapLayer *> myMapLayers = QgsMapLayerRegistry::instance()->mapLayers();
-  std::map<QString, QgsMapLayer *>::iterator myMapIterator;
-  for ( myMapIterator = myMapLayers.begin(); myMapIterator != myMapLayers.end(); ++myMapIterator )
-  {
-  QgsMapLayer * myMapLayer = myMapIterator->second;
-  QString myWKT = myMapLayer->getProjectionWKT();
-  QString myWKTShortName = getWKTShortName(myWKT);
-  //TODO add check here that CS is not already in the projections map
-  //and if not append to wkt_defs file
-  cboProjection->insertItem(myIterator.key());
-  mProjectionsMap[myWKTShortName]=myWKT;
-  }    
-
-  //set the combo entry to the current entry for the project
-  cboProjection->setCurrentText(mySelectedKey);
-  */
-  lstCoordinateSystems->setCurrentItem(mySelectedItem);
-  lstCoordinateSystems->ensureItemVisible(mySelectedItem);
-  /*
-     for ( myIterator = mProjectionsMap.begin(); myIterator != mProjectionsMap.end(); ++myIterator ) 
-     {
-  //std::cout << "Widget map has: " <<myIterator.key().ascii() << std::endl;
-  //cboProjection->insertItem(myIterator.key());
-  if(myIterator.key().find("Lat/Long") > -1)
-  {
-  new QListViewItem(geoList, myIterator.key());
-  }
-  else
-  {
-  new QListViewItem(projList, myIterator.key());
-  }
-  }
-
-*/
+#ifdef QGISDEBUG
   std::cout << "Done adding projections from spatial_ref_sys singleton" << std::endl; 
+#endif  
 }   
 
 
@@ -242,69 +211,18 @@ void QgsProjectionSelector::coordinateSystemSelected( QListViewItem * theItem)
   {
 
     //set the text box to show the full proection spec
+#ifdef QGISDEBUG
     std::cout << "Item selected : " << theItem->text(0) << std::endl;
     std::cout << "Item selected full wkt : " << srs->srText() << std::endl;
+#endif
     QString wkt = srs->srText();
     assert(wkt.length() > 0);
     // reformat the wkt to improve the display in the textedit
     // box
     wkt = wkt.replace(",", ", ");
     teProjection->setText(wkt);
+    emit wktSelected(wkt);
+
   }
 }
 
-QString QgsProjectionSelector::getWKTShortName(QString theWKT)
-{
-  if (!theWKT) return NULL;
-  if (theWKT.isEmpty()) return NULL;
-  /* for example 
-     PROJCS["Kertau / Singapore Grid",GEOGCS["Kertau",DATUM["Kertau",SPHEROID["Everest 1830 Modified",6377304.063,300.8017]],PRIMEM["Greenwich",0],UNIT["degree",0.0174532925199433]],PROJECTION["Cassini_Soldner"],PARAMETER["latitude_of_origin",1.28764666666667],PARAMETER["central_meridian",103.853002222222],PARAMETER["false_easting",30000],PARAMETER["false_northing",30000],UNIT["metre",1]]
-
-     We want to pull out 
-     Kertau / Singapore Grid
-     and
-     Cassini_Soldner
-     */
-  OGRSpatialReference mySpatialRefSys;
-  //this is really ugly but we need to get a QString to a char**
-  char * mySourceCharArrayPointer = (char*) theWKT.ascii();
-
-  /* Here are the possible OGR error codes :
-     typedef int OGRErr;
-
-#define OGRERR_NONE                0
-#define OGRERR_NOT_ENOUGH_DATA     1    --> not enough data to deserialize 
-#define OGRERR_NOT_ENOUGH_MEMORY   2
-#define OGRERR_UNSUPPORTED_GEOMETRY_TYPE 3
-#define OGRERR_UNSUPPORTED_OPERATION 4
-#define OGRERR_CORRUPT_DATA        5
-#define OGRERR_FAILURE             6
-#define OGRERR_UNSUPPORTED_SRS     7 */
-
-  OGRErr myInputResult = mySpatialRefSys.importFromWkt( & mySourceCharArrayPointer );
-  if (myInputResult != OGRERR_NONE)
-  {
-    return NULL;
-  }
-  //std::cout << theWKT << std::endl;
-  //check if the coordinate system is projected or not
-
-  // if the spatial ref sys starts with GEOGCS, the coordinate
-  // system is not projected
-  QString myProjection,myDatum,myCoordinateSystem,myName;
-  if(theWKT.find(QRegExp("^GEOGCS")) == 0)
-  {
-    myProjection = "Lat/Long";
-    myCoordinateSystem = mySpatialRefSys.GetAttrValue("GEOGCS",0);
-    myName = myProjection + " - " + myCoordinateSystem.replace('_', ' ');
-  }  
-  else
-  {    
-
-    myProjection = mySpatialRefSys.GetAttrValue("PROJCS",0);
-    myCoordinateSystem = mySpatialRefSys.GetAttrValue("PROJECTION",0);
-    myName = myProjection + " - " + myCoordinateSystem.replace('_', ' ');
-  } 
-  //std::cout << "Projection short name " << myName << std::endl;
-  return myName; 
-}
