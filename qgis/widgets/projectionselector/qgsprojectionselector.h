@@ -55,7 +55,6 @@ private:
   //it will cause wktSelected and sridSelected events to be spawned
   void coordinateSystemSelected(QListViewItem*);
   
-  QString getWKTShortName(QString theWKT);
 signals:
     void wktSelected(QString theWKT);
     void sridSelected(QString theSRID);
