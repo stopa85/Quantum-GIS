@@ -266,6 +266,12 @@ bool QgsMapCanvas::isDrawing()
 void QgsMapCanvas::addLayer(QgsMapLayerInterface * lyr)
 {
   // add a maplayer interface to a layer type defined in a plugin
+
+#ifdef QGISDEBUG
+    std::cerr << __FILE__ << ":" << __LINE__
+              << "  QgsMapCanvas::addLayer() invoked\n";
+#endif
+
 } // addlayer
 
 
@@ -413,7 +419,7 @@ void QgsMapCanvas::render(QPaintDevice * theQPaintDevice)
   std::cout << ".............................." << std::endl;
   std::cout << "...........Rendering.........." << std::endl;
   std::cout << ".............................." << std::endl;
-  std::cout << "Map canvas is " << msg << std::endl;
+  std::cout << name() << " canvas is " << msg << std::endl;
 #endif
   int myHeight=0;
   int myWidth=0;

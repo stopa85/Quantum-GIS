@@ -40,14 +40,14 @@ QgsMapLayer::QgsMapLayer(int type,
     : internalName(lyrname), 
       layerType(type), 
       dataSource(source),
-      m_legendItem(0)
+      m_legendItem(0),
+      m_visible(true),
+      mShowInOverview(false),
+      mShowInOverviewItemId(0),
+      valid(true) // assume the layer is valid (data source exists and can be
+                  // used) until we learn otherwise
+
 {
-  // assume the layer is valid (data source exists and can be used)
-  // until we learn otherwise
-  valid = true;
-  m_visible = true;
-  mShowInOverview = false;
-  mShowInOverviewItemId =0;
   // Set the display name = internal name
   layerName = internalName;
 
