@@ -37,35 +37,49 @@
 extern "C"{
 #include <proj_api.h>
 }
-//! Structure for passing around x,y,z points
-//typedef struct {double x, double y, double z} qProjPt;
 class QString;
 
 /*! \class QgsCoordinateTransform
 * \brief Class for doing transforms between two map coordinate systems.
 *
 * This class can convert map coordinates to a different spatial reference system.
+* It is normally associated with a map layer and is used to transform between the
+* layer's coordinate system and the coordinate system of the map canvas, although
+* it can be used in a more general sense to transform coordinates.
+*
+* All references to source and destination coordinate systems refer to 
+* layer and map canvas respectively. All operations are from the perspective 
+* of the layer. For example, a forward transformation transforms coordinates from the
+* layers coordinate system to the map canvas.
 */
 class QgsCoordinateTransform: public QObject
 {
   Q_OBJECT
  public:
+    /*!
+     * Constructs a QgsCoordinateTransform using the Well Known Text representation
+     * of the layer and map canvas coordinate systems
+     * @param theSourceWKT WKT of the layer's coordinate system
+     * @param theSourceWKT WKT of the map canvas coordinate system
+     */
     QgsCoordinateTransform(QString theSourceWKT, QString theDestWKT  );
      //! destructor
     ~QgsCoordinateTransform();
+    //! Enum used to indicate the direction (forward or inverse) of the transform
     enum TransformDirection{
       FORWARD,
       INVERSE
     };
     
     /*! Transform the point from Source Coordinate System to Destination Coordinate System
+     * (layer --> map canvas)
     * @param p Point to transform
     * @return QgsPoint in Destination Coordinate System
     */    
     QgsPoint transform(QgsPoint p);
     
     /*! Transform the point specified by x,y from Source Coordinate System to Destination Coordinate System
-    * @param x x cordinate o point to transform
+    * @param x x cordinate of point to transform
     * @param y y coordinate of point to transform
     * @return QgsPoint in Destination Coordinate System
     */
@@ -76,12 +90,6 @@ class QgsCoordinateTransform: public QObject
     * @return QgsRect in Destination Coordinate System
     */        
     QgsRect transform(QgsRect theRect);
-    
-    /*! Transform a QgsRect pointer to the dest Coordinate system 
-    * @param QgsRect * rect to transform
-    * @return QgsRect in Destination Coordinate System
-    */        
-    QgsRect transform(QgsRect * theRect);    
     
     /*! Inverse Transform the point from Dest Coordinate System to Source Coordinate System
     * @param p Point to transform (in destination coord system)
@@ -102,27 +110,38 @@ class QgsCoordinateTransform: public QObject
     */        
     QgsRect inverseTransform(QgsRect theRect); 
        
-
-    /*! Inverse Transform a QgsRect pointer to the source Coordinate system 
-    * @param QgsRect * rect to transform (in dest coord sys)
-    * @return QgsRect in Source Coordinate System
-    */        
-    QgsRect inverseTransform(QgsRect * theRect); 
        
-        
+    // XXX What is this for? It doesn't seem to be implemented [gs]        
     QString showParameters();
     
-    //! Accessor and mutator for source WKT
+    /*! 
+     * Set the source (layer) WKT
+     * @param theWKT WKT representation of the layer's coordinate system
+     */
     void setSourceWKT(QString theWKT);
+    /*!
+     * Get the WKT representation of the layer's coordinate system
+     * @return WKT of the layer's coordinate system
+     */
     QString sourceWKT() const {return mSourceWKT;};
-    //! Accessor  for dest WKT
+    /*! 
+     * Get the WKT representation of the map canvas coordinate system
+     * @return WKT of the map canvas coordinate system
+     */
     QString destWKT() const {return mDestWKT;};    
-    //! Accessor for whether this transoform is properly initialised
     void transformCoords(TransformDirection direction, const int &numPoint, double &x, double &y, double &z);
+  /*! 
+   * Flag to indicate whether the coordinate systems have been initialised
+   * @return true if initialised, otherwise false
+   */
    bool isInitialised() {return mInitialisedFlag;};
  public slots:
-    /** mutator for dest WKT - slot will usually be fired if proj props change and 
-        user selects a different coordinate system */
+    /*! 
+     * Mutator for dest WKT - This slot will usually be called if the
+     * project properties change and a different coordinate system is 
+     * selected.
+     * @param WKT of the destination coordinate system
+     */
     void setDestWKT(QString theWKT);    
     
  private:
@@ -130,15 +149,36 @@ class QgsCoordinateTransform: public QObject
     void initialise();
     //! flag to show whether the transform is properly initialised or not
     bool mInitialisedFlag;
-    /** Transform definitionsin WKT format */
-    QString mSourceWKT,mDestWKT;
-    /** Dunno if we need this - XXXXX Delete if unused */
+    /*! 
+     * WKT of the source (layer) coordinate system 
+     */
+    QString mSourceWKT;
+    /*! 
+     * WKT of the destination (map canvas) coordinate system 
+     */
+    QString mDestWKT;
+    /** Dunno if we need this - XXX Delete if unused */
     bool mInputIsDegrees;
-    //set to true if src cs  == dest cs
+    /*! 
+     * Flag to indicate that the source and destination coordinate systems are
+     * equal and not transformation needs to be done
+     */
     bool mShortCircuit;
+    /*!
+     * Proj4 parameters for the source (layer) coordinate system
+     */
     QString mProj4SrcParms;
+    /*!
+     * Proj4 parameters for the destination (map canvas) coordinate system
+     */
     QString mProj4DestParms;
+    /*!
+     * Proj4 data structure of the source projection (layer coordinate system)
+     */
     projPJ mSourceProjection;
+    /*!
+     * Proj4 data structure of the destination projection (map canvas coordinate system)
+     */
     projPJ mDestinationProjection;
 };
 
