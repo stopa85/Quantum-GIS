@@ -80,7 +80,7 @@ QgsSpatialReferences::QgsSpatialReferences()
         // get the name
         name += wkt.mid(8, wkt.find("\",") - 8);
 
-        std::cout << name << std::endl; 
+//        std::cout << name << std::endl; 
       }
       else
       {
@@ -89,7 +89,7 @@ QgsSpatialReferences::QgsSpatialReferences()
         name = wkt.mid(8, wkt.find("\",") - 8) + " - ";
         int start = wkt.find("PROJECTION[") + 12;
         name += wkt.mid(start, wkt.find("\"]", start) - start);
-        std::cout << name << std::endl; 
+//        std::cout << name << std::endl; 
 
       }
       // store the parts in a QgsSpatialRefSys object
