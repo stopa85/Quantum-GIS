@@ -379,9 +379,6 @@ QgisApp::QgisApp(QWidget * parent, const char *name, WFlags fl):QgisAppBase(pare
   connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(saveWindowState()));
   restoreWindowState();
 
-  // set the dirty flag to false -- no changes yet
-  // mProjectIsDirtyFlag = false;  QgsProject::instance()->dirty() false on initialization
-
   //
   // Add a panel to the status bar for the scale, coords and progress
   //
@@ -922,8 +919,6 @@ bool QgisApp::addLayer(QFileInfo const & vectorFile)
 //              this, 
 //              SLOT(setLayerOverviewStatus(QString,bool)));           
          
-     QgsProject::instance()->dirty(true);
-
    } else
    {
       QString msg = vectorFile.baseName() + " ";
@@ -1038,8 +1033,6 @@ bool QgisApp::addLayer(QStringList const &theLayerQStringList)
 //                      SIGNAL(showInOverview(QString,bool)), 
 //                      this, 
 //                      SLOT(setLayerOverviewStatus(QString,bool)));           
-
-             QgsProject::instance()->dirty(true);
            } else
            {
               QString msg = *it + " ";
@@ -1142,8 +1135,8 @@ void QgisApp::addDatabaseLayer()
 //              SIGNAL(showInOverview(QString,bool)), 
 //              this, 
 //              SLOT(setLayerOverviewStatus(QString,bool)));           
-     // mProjectIsDirtyFlag = true;
-     QgsProject::instance()->dirty(true);
+     
+     
         } else
         {
           std::cerr << *it << " is an invalid layer - not loaded" << std::endl;
@@ -1491,6 +1484,9 @@ void QgisApp::addAllToOverview()
   mOverviewCanvas->clear();
   mOverviewCanvas->freeze(false);
   mOverviewCanvas->render();
+
+  // notify the project we've made a change
+  QgsProject::instance()->dirty(true);
 }
 
 //reimplements method from base (gui) class
@@ -1511,11 +1507,21 @@ void QgisApp::removeAllFromOverview()
   mOverviewCanvas->clear();
   mOverviewCanvas->freeze(false);
   mOverviewCanvas->render();
-}
+
+  // notify the project we've made a change
+  QgsProject::instance()->dirty(true);
+} // QgisApp::removeAllFromOverview()
+
 
 //reimplements method from base (gui) class
 void QgisApp::hideAllLayers()
 {
+    // what's the point if we don't have any layers?
+    if ( QgsMapLayerRegistry::instance()->mapLayers().empty() )
+    {
+        return;
+    }
+
 #ifdef QGISDEBUG
   std::cout << "hiding all layers!" << std::endl;
 #endif
@@ -1534,10 +1540,21 @@ void QgisApp::hideAllLayers()
   mOverviewCanvas->freeze(false);
   mMapCanvas->render();
   mOverviewCanvas->render();
+
+  // notify the project we've made a change
+  QgsProject::instance()->dirty(true);
 }
-//reimplements method from base (gui) class
+
+
+// reimplements method from base (gui) class
 void QgisApp::showAllLayers()
 {
+    // what's the point if we don't have any layers?
+    if ( QgsMapLayerRegistry::instance()->mapLayers().empty() )
+    {
+        return;
+    }
+
 #ifdef QGISDEBUG
   std::cout << "Showing all layers!" << std::endl;
 #endif
@@ -1557,6 +1574,8 @@ void QgisApp::showAllLayers()
   mMapCanvas->render();
   mOverviewCanvas->render();
 
+  // notify the project we've made a change
+  QgsProject::instance()->dirty(true);
 }
 
 void QgisApp::exportMapServer()
@@ -1600,9 +1619,10 @@ void QgisApp::zoomIn()
      mMapCanvas->clear();
      mMapCanvas->render(); */
   
-  
-
+  // notify the project we've made a change
+  QgsProject::instance()->dirty(true);
 }
+
 
 void QgisApp::zoomOut()
 {
@@ -1618,13 +1638,16 @@ void QgisApp::zoomOut()
      m.scale( 0.5, 0.5 );
      mMapCanvas->setWorldMatrix( m );
    */
-     
+  // notify the project we've made a change
+  QgsProject::instance()->dirty(true);
 }
 
 void QgisApp::zoomToSelected()
 {
   mMapCanvas->zoomToSelected();
-    
+     
+  // notify the project we've made a change
+  QgsProject::instance()->dirty(true);    
 }
 
 void QgisApp::pan()
@@ -1636,18 +1659,24 @@ void QgisApp::pan()
   delete mMapCursor;
   mMapCursor = new QCursor(panBmp, panBmpMask, 5, 5);
   mMapCanvas->setCursor(*mMapCursor);
-    
+   // notify the project we've made a change
+  QgsProject::instance()->dirty(true);
+
 }
 
 void QgisApp::zoomFull()
 {
   mMapCanvas->zoomFullExtent();
+  // notify the project we've made a change
+  QgsProject::instance()->dirty(true);
     
 }
 
 void QgisApp::zoomPrevious()
 {
   mMapCanvas->zoomPreviousExtent();
+  // notify the project we've made a change
+  QgsProject::instance()->dirty(true);
     
 }
 
@@ -1705,6 +1734,8 @@ void QgisApp::deleteSelected()
       QMessageBox::information(this, tr("No Layer Selected"),
                                    tr("To delete features, you must select a vector layer in the legend")); 
    }
+  // notify the project we've made a change
+  QgsProject::instance()->dirty(true);
 }
 
 void QgisApp::capturePoint()
@@ -1774,6 +1805,12 @@ void QgisApp::drawPoint(double x, double y)
 
 void QgisApp::drawLayers()
 {
+    // what's the point if we don't have any layers?
+    if ( QgsMapLayerRegistry::instance()->mapLayers().empty() )
+    {
+        return;
+    }
+
   std::cout << "In  QgisApp::drawLayers()" << std::endl;
   mMapCanvas->setDirty(true);
   mMapCanvas->render();
@@ -1889,7 +1926,6 @@ void QgisApp::layerProperties(QListViewItem * lvi)
   //  layer->showLayerProperties();
 }
 
-//>>>>>>> 1.97.2.17
 
 void QgisApp::removeLayer()
 {
@@ -1913,12 +1949,15 @@ void QgisApp::removeLayer()
   mMapCanvas->clear();
   mMapCanvas->render();
 }
+
+
 void QgisApp::removeAllLayers()
 {
   QgsMapLayerRegistry::instance()->removeAllMapLayers();
   mOverviewCanvas->clear();
   mMapCanvas->clear();
 } //remove all layers 
+
 
 void QgisApp::zoomToLayerExtent()
 {
@@ -1930,7 +1969,8 @@ void QgisApp::zoomToLayerExtent()
   mMapCanvas->clear();
   mMapCanvas->render();
   
-
+  // notify the project we've made a change
+  QgsProject::instance()->dirty(true);
 }
 
 void QgisApp::rightClickLegendMenu(QListViewItem * lvi, const QPoint & pt, int)
@@ -1985,8 +2025,11 @@ void QgisApp::currentLayerChanged(QListViewItem * lvi)
                 break;
             }
         }
+      // notify the project we've made a change
+      QgsProject::instance()->dirty(true);
     }
-}
+} // QgisApp::currentLayerChanged
+
 
 QgisIface *QgisApp::getInterface()
 {
@@ -2661,7 +2704,6 @@ void QgisApp::addMapLayer(QgsMapLayer *theMapLayer)
 //                      this, 
 //                      SLOT(setLayerOverviewStatus(QString,bool)));           
 
-    QgsProject::instance()->dirty(true);
     statusBar()->message(mMapCanvas->extent().stringRep(2));
 
   }else
@@ -2834,7 +2876,9 @@ void QgisApp::showExtents(QgsRect theExtents)
   std::cerr << "Adding extent to acetate layer" << std::endl; 
 #endif
   mOverviewCanvas->refresh();
-}
+
+} // QgisApp::showExtents
+
 
 void QgisApp::drawExtentRectangle(QPainter *painter)
 {
@@ -3030,8 +3074,12 @@ void QgisApp::setLayerOverviewStatus(QString theLayerId, bool theVisibilityFlag)
     std::cout << " Removed layer " << theLayerId << " from overview map" << std::endl;
 #endif
   }
+
   //check zorder is in sync
   setOverviewZOrder(mMapLegend);
+
+  // notify the project we've made a change
+  QgsProject::instance()->dirty(true);
 } // QgisApp::setLayerOverviewStatus
 
 
@@ -3079,6 +3127,8 @@ void QgisApp::setOverviewZOrder(QgsLegend * lv)
   mOverviewCanvas->setExtent(mMapCanvas->fullExtent());
   //mOverviewCanvas->refresh();
 
+  // notify the project we've made a change
+  QgsProject::instance()->dirty(true);
 }
 
 //set the zorder of both overview and mapcanvas
@@ -3086,6 +3136,9 @@ void QgisApp::setZOrder (std::list<QString> theZOrder)
 {
   mMapCanvas->setZOrder(theZOrder);
   //mOverviewCanvas->setZOrder(theZOrder);
+
+  // notify the project we've made a change
+  // QgsProject::instance()->dirty(true);
 }
 
 //copy the click coord to clipboard and let the user know its there
@@ -3220,7 +3273,6 @@ bool QgisApp::addRasterLayer(QgsRasterLayer * theRasterLayer, bool theForceRedra
 //             this, 
 //             SLOT(setLayerOverviewStatus(QString,bool)));           
 
-    QgsProject::instance()->dirty(true); // XXX might be redundant
   } 
   else
   {

@@ -49,15 +49,27 @@ public:
 
  /** Add a layer to the map of loaded layers 
     @returns NULL if unable to add layer, otherwise pointer to newly added layer
+    @note
+
+    As a side-effect QgsProject is made dirty.
  */
  QgsMapLayer *  addMapLayer(QgsMapLayer * theMapLayer);
 
- //! Remove a layer from qgis - any canvases using that layer will need to remove it
+ /** Remove a layer from qgis
+
+    @note
+
+    As a side-effect QgsProject is made dirty.
+
+    Any canvases using that layer will need to remove it
+ */
  void removeMapLayer(QString theLayerId);
 
  /** Remove all registered layers 
 
     @note raises removedAll()
+
+    As a side-effect QgsProject is made dirty.
 
  */
  void removeAllMapLayers();
