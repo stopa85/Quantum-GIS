@@ -1,11 +1,12 @@
 #include "../qgsdataprovider.h"
 class QgsFeature;
-
+class OGRDataSource;
+class OGRLayer;
 class QgsShapeFileProvider : public QgsDataProvider {
 public:
-	QgsShapeFileProvider();
+	QgsShapeFileProvider(QString uri=0);
 	virtual ~QgsShapeFileProvider();
-/** 
+/**
 	* Get the first feature resutling from a select operation
 	* @return QgsFeature
 	*/
@@ -41,6 +42,21 @@ public:
 	* @return std::vector containing QgsFeature objects that intersect rect
 	*/
 	virtual std::vector<QgsFeature> identify(QgsRect *rect);
+	
+	int endian();
 private:
+	unsigned char *getGeometryPointer(OGRFeature *fet);
 	std::vector<QgsFeature> features;
+	std::vector<bool> * selected;
+	QString dataSourceUri;
+	OGRDataSource *ogrDataSource;
+	OGREnvelope *extent;
+	OGRLayer *ogrLayer;
+	bool valid;
+	int geometryType;
+	enum ENDIAN
+	{
+		NDR = 1,
+		XDR = 0
+	};
 };

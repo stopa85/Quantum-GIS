@@ -4,7 +4,7 @@
     Date                 : 09-Sep-2003
     Copyright            : (C) 2003 by Gary E.Sherman
     email                : sherman at mrcc.com
-/***************************************************************************
+ ***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -22,7 +22,9 @@
 //! Constructor
 QgsFeature::QgsFeature(){}
 //! Destructor
-QgsFeature::~QgsFeature(){}
+QgsFeature::~QgsFeature(){
+	delete[] geometry;
+}
 /**
 * Get the feature id for this feature
 * @return Feature id
@@ -43,4 +45,17 @@ std::map<QString, QgsFeatureAttribute> QgsFeature::attributeMap(){
 */
 std::map<int, QString> QgsFeature::fields(){
 	return fieldNames;
+}
+
+/**
+* Get the pointer to the feature geometry
+*/
+unsigned char *QgsFeature::getGeometry(){
+	return geometry;
+}
+
+/** Set the pointer to the feature geometry
+*/
+void QgsFeature::setGeometry(unsigned char *geom){
+	geometry = geom;
 }

@@ -81,8 +81,8 @@ typedef QString name_t();
 typedef QString description_t();
 
 // version
-static const char *qgisVersion = "0.0.12 pre 3 - August 31, 2003";
-static const int qgisVersionInt = 11;
+static const char *qgisVersion = "0.0.13 Data Provider Branch - September 2003";
+static const int qgisVersionInt = 13;
 // cursors
 static unsigned char zoom_in_bits[] = {
 	0xf8, 0x00, 0x06, 0x03, 0x22, 0x02, 0x21, 0x04, 0x21, 0x04, 0xfd, 0x05,
@@ -954,7 +954,11 @@ void QgisApp::socketConnectionClosed(){
 		// show version message from server
 			versionInfo = "There is a new version of QGIS available\n";
 		}else{
+			if(qgisVersionInt > currentVersion){
+				versionInfo = "You are running a development version of QGIS\n";
+			}else{
 			versionInfo = "You are running the current version of QGIS\n";
+			}
 		}
 		if(parts.count() > 1){
 			versionInfo += parts[1] + "\n\nWould you like more information?";;

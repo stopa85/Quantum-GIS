@@ -16,7 +16,7 @@
  *                                                                         *
  ***************************************************************************/
  /*  $Id$  */
- 
+
 #include <iostream>
 #include <strstream>
 #include <qapplication.h>
@@ -40,7 +40,7 @@ QgsShapeFileLayer::QgsShapeFileLayer(QString vectorLayerPath, QString baseName)
 {
 
 // test ogr access to a shapefile
-    
+std::cout << "Opening " << dataSource << std::endl;
 	ogrDataSource = OGRSFDriverRegistrar::Open((const char *) dataSource);
 	if (ogrDataSource != NULL) {
 		//std::cout << "Adding " << dataSource << std::endl;
@@ -53,16 +53,16 @@ QgsShapeFileLayer::QgsShapeFileLayer(QString vectorLayerPath, QString baseName)
 		layerExtent.setYmin(ext->MinY);
 		// get the feature type
 		OGRFeature *feat = ogrLayer->GetNextFeature();
-		if(feat){
+		if (feat) {
 			OGRGeometry *geom = feat->GetGeometryRef();
-			if(geom){
+			if (geom) {
 				feature = geom->getGeometryType();
 				ogrLayer->ResetReading();
-			}else{
+			} else {
 				valid = false;
 			}
 			delete feat;
-		}else{
+		} else {
 			valid = false;
 		}
 	} else {
@@ -71,30 +71,25 @@ QgsShapeFileLayer::QgsShapeFileLayer(QString vectorLayerPath, QString baseName)
 
 	//create a boolean vector and set every entry to false
 
-	if(valid)
-	{
-	    selected=new QValueVector<bool>(ogrLayer->GetFeatureCount(),false);
+	if (valid) {
+		selected = new QValueVector < bool > (ogrLayer->GetFeatureCount(), false);
+	} else {
+		selected = 0;
 	}
-	else
-	{
-	    selected=0;
-	}
-	tabledisplay=0;
+	tabledisplay = 0;
 	//draw the selected features in yellow
-	selectionColor.setRgb(255,255,0);
+	selectionColor.setRgb(255, 255, 0);
 }
 
 QgsShapeFileLayer::~QgsShapeFileLayer()
 {
 //delete ogrDataSource;
-    if(selected)
-    {
-	delete selected;
-    }
-    if(tabledisplay)
-    {
-	tabledisplay->close();
-    }
+	if (selected) {
+		delete selected;
+	}
+	if (tabledisplay) {
+		tabledisplay->close();
+	}
 }
 
 /** No descriptions */
@@ -134,42 +129,39 @@ void QgsShapeFileLayer::draw(QPainter * p, QgsRect * viewExtent, QgsCoordinateTr
 	OGRErr result = ((OGRPolygon *) filter)->importFromWkt(&wktText);
 	if (result == OGRERR_NONE) {
 
-	        
+
 		ogrLayer->SetSpatialFilter(filter);
 		int featureCount = 0;
 		while (OGRFeature * fet = ogrLayer->GetNextFeature()) {
-		if(!fet){
-			std::cout << "get next feature returned null\n";
+			if (!fet) {
+				std::cout << "get next feature returned null\n";
 			}
-		//std::cout << "reading feautures\n";
+			//std::cout << "reading feautures\n";
 			//fet->DumpReadable(stdout);
 
-		
-		//if feature is selected, change the color of the painter
-		if((*selected)[fet->GetFID()]==true)
-		{
-			// must change color of pen since it holds not only color
-			// but line width
-			pen.setColor(selectionColor);
-		    p->setPen(pen);
-		    brush->setColor(selectionColor);
-		}
-		else
-		{
-			pen.setColor(sym->color());
-		    p->setPen(pen);  
-		    brush->setColor(sym->fillColor());
-		}
+
+			//if feature is selected, change the color of the painter
+			if ((*selected)[fet->GetFID()] == true) {
+				// must change color of pen since it holds not only color
+				// but line width
+				pen.setColor(selectionColor);
+				p->setPen(pen);
+				brush->setColor(selectionColor);
+			} else {
+				pen.setColor(sym->color());
+				p->setPen(pen);
+				brush->setColor(sym->fillColor());
+			}
 
 			OGRGeometry *geom = fet->GetGeometryRef();
-			if(!geom){
+			if (!geom) {
 				std::cout << "geom pointer is null" << std::endl;
-				}
+			}
 			// get the wkb representation
 			unsigned char *feature = new unsigned char[geom->WkbSize()];
-			if(!feature){
+			if (!feature) {
 				std::cout << featureCount << "'the feature is null\n";
-				}
+			}
 			geom->exportToWkb((OGRwkbByteOrder) endian(), feature);
 
 
@@ -188,17 +180,17 @@ void QgsShapeFileLayer::draw(QPainter * p, QgsRect * viewExtent, QgsCoordinateTr
 			char lsb;
 			QgsPoint pt;
 			QPointArray *pa;
-OGRFieldDefn *fldDef;
-QString fld;
-QString val;
-			switch (wkbType) { 
+			OGRFieldDefn *fldDef;
+			QString fld;
+			QString val;
+			switch (wkbType) {
 			  case WKBPoint:
-			         p->setBrush(*brush);
-			//	fldDef = fet->GetFieldDefnRef(1);
-			//	 fld = fldDef->GetNameRef();
-				val = fet->GetFieldAsString(1);
-				//std::cout << val << "\n";
-				
+				  p->setBrush(*brush);
+				  //  fldDef = fet->GetFieldDefnRef(1);
+				  //   fld = fldDef->GetNameRef();
+				  val = fet->GetFieldAsString(1);
+				  //std::cout << val << "\n";
+
 				  x = (double *) (feature + 5);
 				  y = (double *) (feature + 5 + sizeof(double));
 				  //std::cout << "transforming point\n";
@@ -334,11 +326,15 @@ int QgsShapeFileLayer::endian()
 	char *chkEndian = new char[4];
 	memset(chkEndian, '\0', 4);
 	chkEndian[0] = 0xE8;
+
 	int *ce = (int *) chkEndian;
+	int retVal;
 	if (232 == *ce)
-		return NDR;
+		retVal = NDR;
 	else
-		return XDR;
+		retVal = XDR;
+	delete[]chkEndian;
+	return retVal;
 }
 
 void QgsShapeFileLayer::identify(QgsRect * r)
@@ -357,218 +353,204 @@ void QgsShapeFileLayer::identify(QgsRect * r)
 		// display features falling within the search radius 
 		QgsIdentifyResults *ir = 0;
 		while (OGRFeature * fet = ogrLayer->GetNextFeature()) {
-		//}
+			//}
 
-		if (fet) {
-			featureCount++;
-			// found at least one feature - show it in the identify box
-			if(ir == 0){
-				// create the identify results dialog if it doesn't already
-				// exist
-				ir = new QgsIdentifyResults();
-			}
-			
-			int numFields = fet->GetFieldCount();
-			// Determine the field index for the feature column of the identify
-			// dialog. We look for fields containing "name" first and second for
-			// fields containing "id". If neither are found, the first field
-			// is used as the node.
-			int idxName = -1;
-			int idxId = -1;
-			for(int j = 0; j < numFields; j++){
-				OGRFieldDefn *def = fet->GetFieldDefnRef(j);
-				QString fldName = def->GetNameRef();
-				std::cout << "Checking field " << fldName << std::endl;
-				if(fldName.contains("name", false)){
-					idxName = j;
-					break;
+			if (fet) {
+				featureCount++;
+				// found at least one feature - show it in the identify box
+				if (ir == 0) {
+					// create the identify results dialog if it doesn't already
+					// exist
+					ir = new QgsIdentifyResults();
 				}
-				if(fldName.contains("id", false )){
-					idxId = j;
-					break;
+
+				int numFields = fet->GetFieldCount();
+				// Determine the field index for the feature column of the identify
+				// dialog. We look for fields containing "name" first and second for
+				// fields containing "id". If neither are found, the first field
+				// is used as the node.
+				int idxName = -1;
+				int idxId = -1;
+				for (int j = 0; j < numFields; j++) {
+					OGRFieldDefn *def = fet->GetFieldDefnRef(j);
+					QString fldName = def->GetNameRef();
+					std::cout << "Checking field " << fldName << std::endl;
+					if (fldName.contains("name", false)) {
+						idxName = j;
+						break;
+					}
+					if (fldName.contains("id", false)) {
+						idxId = j;
+						break;
+					}
+				}
+				int fieldIndex = 0;
+				if (idxName > -1) {
+					fieldIndex = idxName;
+				} else {
+					if (idxId > -1) {
+						fieldIndex = idxId;
+					}
+				}
+				std::cout << "Field index for feature label is " << fieldIndex << std::endl;
+				QListViewItem *featureNode = ir->addNode("foo");
+				for (int i = 0; i < numFields; i++) {
+
+					// add the feature attributes to the tree
+					OGRFieldDefn *fldDef = fet->GetFieldDefnRef(i);
+					QString fld = fldDef->GetNameRef();
+					OGRFieldType fldType = fldDef->GetType();
+					QString val;
+
+					//if(fldType ==  16604 )    // geometry
+					val = "(geometry column)";
+					// else
+					val = fet->GetFieldAsString(i);
+					// Create a node for this feature
+					std::cout << "i / fieldIndex " << i << " / " << fieldIndex << std::endl;
+					if (i == fieldIndex) {
+						featureNode->setText(0, val);
+						std::cout << "Adding feature node: " << val << std::endl;
+					}
+					std::cout << "Adding attribute " << fld << " = " << val << std::endl;
+					ir->addAttribute(featureNode, fld, val);
 				}
 			}
-			int fieldIndex = 0;
-			if(idxName > -1){
-				fieldIndex = idxName;
-			}else{
-				if(idxId > -1){
-					fieldIndex = idxId;
-				}
-			}
-			std::cout << "Field index for feature label is " << fieldIndex << std::endl;
-			QListViewItem *featureNode = ir->addNode("foo");
-			for (int i = 0; i < numFields; i++) {
-				
-				// add the feature attributes to the tree
-				OGRFieldDefn *fldDef = fet->GetFieldDefnRef(i);
-				QString fld = fldDef->GetNameRef();
-				OGRFieldType fldType = fldDef->GetType();
-				QString val;
-				
-				//if(fldType ==  16604 )    // geometry
-				val = "(geometry column)";
-				// else
-				val = fet->GetFieldAsString(i);
-				// Create a node for this feature
-				std::cout << "i / fieldIndex " << i << " / " << fieldIndex << std::endl;
-				if(i == fieldIndex){
-					featureNode->setText(0,val);
-					std::cout << "Adding feature node: " << val << std::endl;
-				}
-				std::cout << "Adding attribute " << fld << " = " << val << std::endl;
-				ir->addAttribute(featureNode, fld, val);
-			}
-		}
-		
+
 		}
 		std::cout << "Feature count on identify: " << featureCount << std::endl;
-		if(ir){
+		if (ir) {
 			ir->setTitle(name());
 			ir->show();
 		}
-		if(featureCount == 0){
-			QMessageBox::information(0, "No features found", 
-			"No features were found in the active layer at the point you clicked");
+		if (featureCount == 0) {
+			QMessageBox::information(0, "No features found", "No features were found in the active layer at the point you clicked");
 		}
-		ogrLayer->ResetReading();	
+		ogrLayer->ResetReading();
 	}
 
 }
 void QgsShapeFileLayer::table()
 {
-    if(tabledisplay)
-    {
-	tabledisplay->raise();
-    }
-    else
-    {
-	// display the attribute table
-	QApplication::setOverrideCursor(Qt::waitCursor);
-	ogrLayer->SetSpatialFilter(0);
-	OGRFeature *fet = ogrLayer->GetNextFeature();
-	int numFields = fet->GetFieldCount();
-	tabledisplay = new QgsAttributeTableDisplay();
-        QObject:connect(tabledisplay,SIGNAL(deleted()),this,SLOT(invalidateTableDisplay()));
-	tabledisplay->table()->setNumRows(ogrLayer->GetFeatureCount(true));
-	tabledisplay->table()->setNumCols(numFields+1);//+1 for the id-column
+	if (tabledisplay) {
+		tabledisplay->raise();
+	} else {
+		// display the attribute table
+		QApplication::setOverrideCursor(Qt::waitCursor);
+		ogrLayer->SetSpatialFilter(0);
+		OGRFeature *fet = ogrLayer->GetNextFeature();
+		int numFields = fet->GetFieldCount();
+		tabledisplay = new QgsAttributeTableDisplay();
+	  QObject:connect(tabledisplay, SIGNAL(deleted()), this, SLOT(invalidateTableDisplay()));
+		tabledisplay->table()->setNumRows(ogrLayer->GetFeatureCount(true));
+		tabledisplay->table()->setNumCols(numFields + 1);	//+1 for the id-column
 
-	int row = 0;
-	// set up the column headers
-	QHeader *colHeader = tabledisplay->table()->horizontalHeader();
-	colHeader->setLabel(0,"id");//label for the id-column
-	for (int h = 1; h < numFields+1; h++) {
-	    OGRFieldDefn *fldDef = fet->GetFieldDefnRef(h-1);
-		QString fld = fldDef->GetNameRef();
-		colHeader->setLabel(h, fld);
-	}
-	while (fet) {
-	    
-	    //id-field
-	    tabledisplay->table()->setText(row,0,QString::number(fet->GetFID()));
-	    tabledisplay->table()->insertFeatureId(fet->GetFID());//insert the id into the search tree of qgsattributetable
-	    for (int i = 1; i < numFields+1; i++) {
-			// get the field values
-			QString val;
-			//if(fldType ==  16604 )    // geometry
-			val = "(geometry column)";
-			// else
-			val = fet->GetFieldAsString(i-1);
-			
-			tabledisplay->table()->setText(row, i, val);
+		int row = 0;
+		// set up the column headers
+		QHeader *colHeader = tabledisplay->table()->horizontalHeader();
+		colHeader->setLabel(0, "id");	//label for the id-column
+		for (int h = 1; h < numFields + 1; h++) {
+			OGRFieldDefn *fldDef = fet->GetFieldDefnRef(h - 1);
+			QString fld = fldDef->GetNameRef();
+			colHeader->setLabel(h, fld);
+		}
+		while (fet) {
+
+			//id-field
+			tabledisplay->table()->setText(row, 0, QString::number(fet->GetFID()));
+			tabledisplay->table()->insertFeatureId(fet->GetFID());	//insert the id into the search tree of qgsattributetable
+			for (int i = 1; i < numFields + 1; i++) {
+				// get the field values
+				QString val;
+				//if(fldType ==  16604 )    // geometry
+				val = "(geometry column)";
+				// else
+				val = fet->GetFieldAsString(i - 1);
+
+				tabledisplay->table()->setText(row, i, val);
+
+			}
+			row++;
+			delete fet;
+			fet = ogrLayer->GetNextFeature();
 
 		}
-		row++;
-		delete fet;
-		fet = ogrLayer->GetNextFeature();
+		// reset the pointer to start of fetabledisplayures so
+		// subsequent reads will not fail
+		ogrLayer->ResetReading();
+		tabledisplay->table()->setSorting(true);
 
+
+		tabledisplay->setTitle("Tabledisplaytribute table - " + name());
+		tabledisplay->show();
+		tabledisplay->table()->clearSelection();	//deselect the first row
+
+		//select the rows of the already selected features
+		QObject::disconnect(tabledisplay->table(), SIGNAL(selectionChanged()), tabledisplay->table(), SLOT(handleChangedSelections()));
+		for (int i = 0; i < ogrLayer->GetFeatureCount(); i++) {
+			if ((*selected)[i] == true) {
+				tabledisplay->table()->selectRow(i);
+			}
+		}
+		QObject::connect(tabledisplay->table(), SIGNAL(selectionChanged()), tabledisplay->table(), SLOT(handleChangedSelections()));
+
+		//etablish the necessary connections between the table and the shapefilelayer
+		QObject::connect(tabledisplay->table(), SIGNAL(selected(int)), this, SLOT(select(int)));
+		QObject::connect(tabledisplay->table(), SIGNAL(selectionRemoved()), this, SLOT(removeSelection()));
+		QObject::connect(tabledisplay->table(), SIGNAL(repaintRequested()), this, SLOT(triggerRepaint()));
+		QApplication::restoreOverrideCursor();
 	}
-	// reset the pointer to start of fetabledisplayures so
-	// subsequent reads will not fail
-	ogrLayer->ResetReading();
-	tabledisplay->table()->setSorting(true);
-
-
-	tabledisplay->setTitle("Tabledisplaytribute table - " + name());
-	tabledisplay->show();
-	tabledisplay->table()->clearSelection();//deselect the first row
-
-	//select the rows of the already selected features
-	QObject::disconnect(tabledisplay->table(),SIGNAL(selectionChanged()),tabledisplay->table(),SLOT(handleChangedSelections()));
-	for(int i=0;i<ogrLayer->GetFeatureCount();i++)
-	{
-	    if((*selected)[i]==true)
-	    {
-		tabledisplay->table()->selectRow(i);
-	    }
-	}
-	QObject::connect(tabledisplay->table(),SIGNAL(selectionChanged()),tabledisplay->table(),SLOT(handleChangedSelections()));
-
-	//etablish the necessary connections between the table and the shapefilelayer
-	QObject::connect(tabledisplay->table(),SIGNAL(selected(int)),this,SLOT(select(int)));
-	QObject::connect(tabledisplay->table(),SIGNAL(selectionRemoved()),this,SLOT(removeSelection()));
-	QObject::connect(tabledisplay->table(),SIGNAL(repaintRequested()),this,SLOT(triggerRepaint()));	
-	QApplication::restoreOverrideCursor();
-    }
 }
 
 void QgsShapeFileLayer::select(int number)
 {
-    (*selected)[number]=true;
+	(*selected)[number] = true;
 }
 
-void QgsShapeFileLayer::select(QgsRect* rect, bool lock)
+void QgsShapeFileLayer::select(QgsRect * rect, bool lock)
 {
-  
-    if(tabledisplay)
-    {
-	QObject::disconnect(tabledisplay->table(),SIGNAL(selectionChanged()),tabledisplay->table(),SLOT(handleChangedSelections()));
-	QObject::disconnect(tabledisplay->table(),SIGNAL(selected(int)),this,SLOT(select(int)));//disconnecting because of performance reason
-    }
-    
-    if(lock==false)
-    {
-	removeSelection();//only if ctrl-button is not pressed
-	if(tabledisplay)
-	{
-	    tabledisplay->table()->clearSelection();
+
+	if (tabledisplay) {
+		QObject::disconnect(tabledisplay->table(), SIGNAL(selectionChanged()), tabledisplay->table(), SLOT(handleChangedSelections()));
+		QObject::disconnect(tabledisplay->table(), SIGNAL(selected(int)), this, SLOT(select(int)));	//disconnecting because of performance reason
 	}
-    }
-    
-    OGRGeometry *filter = 0;
-    filter = new OGRPolygon();
-    std::ostrstream wktExtent;
-    wktExtent << "POLYGON ((" << rect->stringRep() << "))" << std::ends;
-    char *wktText = wktExtent.str();
-    
-    OGRErr result = ((OGRPolygon *) filter)->importFromWkt(&wktText);
-    if (result == OGRERR_NONE)
-    {
-	ogrLayer->SetSpatialFilter(filter);
-	int featureCount = 0;
-	while (OGRFeature * fet = ogrLayer->GetNextFeature())
-	{
-	    if(fet)
-	    {
-		select(fet->GetFID());
-		if(tabledisplay)
-		{
-		    tabledisplay->table()->selectRowWithId(fet->GetFID());
-		    (*selected)[fet->GetFID()]=true;
+
+	if (lock == false) {
+		removeSelection();		//only if ctrl-button is not pressed
+		if (tabledisplay) {
+			tabledisplay->table()->clearSelection();
 		}
-	    }
 	}
-	ogrLayer->ResetReading();
-    }
-    
-    if(tabledisplay)
-    {
-	QObject::connect(tabledisplay->table(),SIGNAL(selectionChanged()),tabledisplay->table(),SLOT(handleChangedSelections()));
-	QObject::connect(tabledisplay->table(),SIGNAL(selected(int)),this,SLOT(select(int)));//disconnecting because of performance reason
-    }
-    triggerRepaint();
+
+	OGRGeometry *filter = 0;
+	filter = new OGRPolygon();
+	std::ostrstream wktExtent;
+	wktExtent << "POLYGON ((" << rect->stringRep() << "))" << std::ends;
+	char *wktText = wktExtent.str();
+
+	OGRErr result = ((OGRPolygon *) filter)->importFromWkt(&wktText);
+	if (result == OGRERR_NONE) {
+		ogrLayer->SetSpatialFilter(filter);
+		int featureCount = 0;
+		while (OGRFeature * fet = ogrLayer->GetNextFeature()) {
+			if (fet) {
+				select(fet->GetFID());
+				if (tabledisplay) {
+					tabledisplay->table()->selectRowWithId(fet->GetFID());
+					(*selected)[fet->GetFID()] = true;
+				}
+			}
+		}
+		ogrLayer->ResetReading();
+	}
+
+	if (tabledisplay) {
+		QObject::connect(tabledisplay->table(), SIGNAL(selectionChanged()), tabledisplay->table(), SLOT(handleChangedSelections()));
+		QObject::connect(tabledisplay->table(), SIGNAL(selected(int)), this, SLOT(select(int)));	//disconnecting because of performance reason
+	}
+	triggerRepaint();
 }
-    
+
 
 
 /*
@@ -617,18 +599,17 @@ OGRGeometry *filter = 0;
 
 void QgsShapeFileLayer::removeSelection()
 {
-    for(int i=0;i<(int)selected->size();i++)
-    {
-	(*selected)[i]=false;
-    }
+	for (int i = 0; i < (int) selected->size(); i++) {
+		(*selected)[i] = false;
+	}
 }
 
 void QgsShapeFileLayer::triggerRepaint()
 {
-    emit repaintRequested();
+	emit repaintRequested();
 }
 
 void QgsShapeFileLayer::invalidateTableDisplay()
 {
-    tabledisplay=0;
+	tabledisplay = 0;
 }

@@ -4,7 +4,7 @@
     Date                 : 09-Sep-2003
     Copyright            : (C) 2003 by Gary E.Sherman
     email                : sherman at mrcc.com
-/***************************************************************************
+ ***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -49,6 +49,10 @@ public:
 	* @return A std::map containing field position (index) and field name
 	*/
 	std::map<int, QString> fields();
+	
+	unsigned char * getGeometry();
+	
+	void setGeometry(unsigned char *);
 private:
 	//! feature id
 	QString fId;
@@ -56,6 +60,7 @@ private:
 	std::map<QString, QgsFeatureAttribute> attributes;
 	//! std::map containing the field index and name
 	std::map<int, QString> fieldNames;
+	unsigned char *geometry;
 };
 
 #endif
