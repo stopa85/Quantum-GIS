@@ -87,8 +87,6 @@ private:                       // Private attributes
     */
     QAction * mActionInOverview;
 
-    /* virtual */void activate();
-
 public:                        // Public attributes
 
     /**  This is the name as rendered in the legend item pixmap */

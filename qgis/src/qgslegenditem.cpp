@@ -97,20 +97,3 @@ void QgsLegendItem::setOn( bool b )
     QCheckListItem::setOn( b );
 } // setOn
 
-
-
-/* virtual */ void QgsLegendItem::activate()
-{
-    qDebug( "QgsLegendItem::activate" );
-
-    if (m_layer->showInOverviewStatus() )
-    {
-        mActionInOverview->setOn(true);
-    }
-    else
-    {
-        mActionInOverview->setOn(false);
-    }
-
-    QCheckListItem::activate();
-} // QgsLegendItem::activate()
