@@ -40,7 +40,7 @@
 
 #include <dlfcn.h>
 
-typedef QgsDataProvider * create_it(const char *uri);
+typedef QgsDataProvider *create_it(const char *uri);
 QgsVectorLayer::QgsVectorLayer(QString vectorLayerPath, QString baseName)
 :QgsMapLayer(VECTOR, baseName, vectorLayerPath)
 {
@@ -48,70 +48,70 @@ QgsVectorLayer::QgsVectorLayer(QString vectorLayerPath, QString baseName)
 //TODO figure out how to register and identify data source plugin for a specific
 //TODO layer type
 	void *handle = dlopen("./providers/libproviders.so", RTLD_LAZY);
-	             if (!handle) {
-                      std::cout << "Error in dlopen: " <<  dlerror() << std::endl;
-                     
-                  }else{
-				  	std::cout << "dlopen suceeded" << std::endl;
-					dlclose(handle);
-					}
-				  	
+	if (!handle) {
+		std::cout << "Error in dlopen: " << dlerror() << std::endl;
 
-QLibrary *myLib = new QLibrary("./providers/libproviders.so");
-		std::cout << "Library name is " << myLib->library() << std::endl;
-		bool loaded = myLib->load();
-		if (loaded) {
-			std::cout << "Loaded test shapefile provider library" << std::endl;
-			std::cout << "Attempting to resolve the classFactory function" << std::endl;
-			create_it *cf = (create_it *) myLib->resolve("classFactory");
-	
-			if (cf) {
-				std::cout << "Getting pointer to a QgsShapefileProvider object from the library\n";
-				dataProvider = cf(vectorLayerPath);
-				if(dataProvider){
-					std::cout << "Instantiated the shapefile provider plugin\n";
-				/* 	QgsFeature *f = dataProvider->getFirstFeature();
-					
-					if(f){
-                         unsigned char *geometry = f->getGeometry();
-                        if(geometry){
-                        std::cout << "Geometry:" <<  *geometry << std::endl;
-                        }else{
-                            std::cout << "f->getGeometry() returned null\n";
-                        } 
-					}else{
-						std::cout << "QgsFeature f is null\n";
-					} */
-                    // iterate through the features
-                 /*    while(f){
-                        delete f;
-                        f = dataProvider->getNextFeature();
-                    } */
-                    // show the extent
-                    QgsRect *mbr = dataProvider->extent();
-                    QString s = mbr->stringRep();
-                    std::cout << "Extent of layer: " << s << std::endl;
-					// store the extent
-					layerExtent.setXmax(mbr->xMax());
-					layerExtent.setXmin(mbr->xMin());
-					layerExtent.setYmax(mbr->yMax());
-					layerExtent.setYmin(mbr->yMin());
-					// get and store the feature type
-					geometryType = dataProvider->geometryType();
-				}else{
-					std::cout << "Unable to instantiate the shapefile test plugin\n";
-				}
+	} else {
+		std::cout << "dlopen suceeded" << std::endl;
+		dlclose(handle);
+	}
+
+
+	QLibrary *myLib = new QLibrary("./providers/libproviders.so");
+	std::cout << "Library name is " << myLib->library() << std::endl;
+	bool loaded = myLib->load();
+	if (loaded) {
+		std::cout << "Loaded test shapefile provider library" << std::endl;
+		std::cout << "Attempting to resolve the classFactory function" << std::endl;
+		create_it *cf = (create_it *) myLib->resolve("classFactory");
+
+		if (cf) {
+			std::cout << "Getting pointer to a QgsShapefileProvider object from the library\n";
+			dataProvider = cf(vectorLayerPath);
+			if (dataProvider) {
+				std::cout << "Instantiated the shapefile provider plugin\n";
+				/*  QgsFeature *f = dataProvider->getFirstFeature();
+
+				   if(f){
+				   unsigned char *geometry = f->getGeometry();
+				   if(geometry){
+				   std::cout << "Geometry:" <<  *geometry << std::endl;
+				   }else{
+				   std::cout << "f->getGeometry() returned null\n";
+				   } 
+				   }else{
+				   std::cout << "QgsFeature f is null\n";
+				   } */
+				// iterate through the features
+				/*    while(f){
+				   delete f;
+				   f = dataProvider->getNextFeature();
+				   } */
+				// show the extent
+				QgsRect *mbr = dataProvider->extent();
+				QString s = mbr->stringRep();
+				std::cout << "Extent of layer: " << s << std::endl;
+				// store the extent
+				layerExtent.setXmax(mbr->xMax());
+				layerExtent.setXmin(mbr->xMin());
+				layerExtent.setYmax(mbr->yMax());
+				layerExtent.setYmin(mbr->yMin());
+				// get and store the feature type
+				geometryType = dataProvider->geometryType();
+			} else {
+				std::cout << "Unable to instantiate the shapefile test plugin\n";
 			}
-		}else{
-			std::cout << "Failed to load " << "../providers/libproviders.so" << "\n";
 		}
+	} else {
+		std::cout << "Failed to load " << "../providers/libproviders.so" << "\n";
+	}
 	//create a boolean vector and set every entry to false
 
-	if (valid) {
+	/* if (valid) {
 		selected = new QValueVector < bool > (dataProvider->featureCount(), false);
-	} else {
+	} else { */
 		selected = 0;
-	}
+	//}
 	tabledisplay = 0;
 	//draw the selected features in yellow
 	selectionColor.setRgb(255, 255, 0);
@@ -132,31 +132,12 @@ QgsVectorLayer::~QgsVectorLayer()
 void QgsVectorLayer::registerFormats()
 {
 }
+
 /*
 * Draw the layer
 */
 void QgsVectorLayer::draw_old(QPainter * p, QgsRect * viewExtent, QgsCoordinateTransform * cXf)
 {
-  	// set pen and fill
-	QgsSymbol *sym = symbol();
-	QPen pen;
-	pen.setColor(sym->color());
-	pen.setWidth(sym->lineWidth());
-	p->setPen(pen);
-
-
-	QBrush *brush = new QBrush(sym->fillColor());
-}
-void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsCoordinateTransform * cXf)
-{
-    if(1 == 1){
-	// painter is active (begin has been called
-	/* Steps to draw the layer
-	   1. get the features in the view extent by SQL query
-	   2. read WKB for a feature
-	   3. transform
-	   4. draw
-	 */
 	// set pen and fill
 	QgsSymbol *sym = symbol();
 	QPen pen;
@@ -166,108 +147,106 @@ void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsCoordinateTrans
 
 
 	QBrush *brush = new QBrush(sym->fillColor());
+}
 
-	// select the records in the extent. The provider sets a spatial filter
-    // and sets up the selection set for retrieval
-     qWarning("Selecting features based on view extent");
-  //  dataProvider->select(viewExtent);
+void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsCoordinateTransform * cXf)
+{
+	if (1 == 1) {
+		// painter is active (begin has been called
+		/* Steps to draw the layer
+		   1. get the features in the view extent by SQL query
+		   2. read WKB for a feature
+		   3. transform
+		   4. draw
+		 */
+		// set pen and fill
+		QgsSymbol *sym = symbol();
+		QPen pen;
+		pen.setColor(sym->color());
+		pen.setWidth(sym->lineWidth());
+		p->setPen(pen);
+
+
+		QBrush *brush = new QBrush(sym->fillColor());
+
+		// select the records in the extent. The provider sets a spatial filter
+		// and sets up the selection set for retrieval
+		qWarning("Selecting features based on view extent");
+		 dataProvider->select(viewExtent);
 		int featureCount = 0;
-     //  QgsFeature *ftest = dataProvider->getFirstFeature();
-        qWarning("Starting draw of features");
-        QgsFeature *fet;
-        unsigned char *feature;
+		//  QgsFeature *ftest = dataProvider->getFirstFeature();
+		qWarning("Starting draw of features");
+		QgsFeature *fet;
+		unsigned char *feature;
 		while ((fet = dataProvider->getNextFeature())) {
-      
+
 			if (fet == 0) {
-				std::cout << "get next feature returned null\n";
-			}else{
-                std::cout << "get next feature returned valid feature\n";
-            
-			//if feature is selected, change the color of the painter
-            //TODO fix this selection code to work with the provider
-			/* if ((*selected)[fet->GetFID()] == true) {
-				// must change color of pen since it holds not only color
-				// but line width
-				pen.setColor(selectionColor);
-				p->setPen(pen);
-				brush->setColor(selectionColor);
-			} else { */
+			//	std::cout << "get next feature returned null\n";
+			} else {
+			//	std::cout << "get next feature returned valid feature\n";
+
+				//if feature is selected, change the color of the painter
+				//TODO fix this selection code to work with the provider
+				/* if ((*selected)[fet->GetFID()] == true) {
+				   // must change color of pen since it holds not only color
+				   // but line width
+				   pen.setColor(selectionColor);
+				   p->setPen(pen);
+				   brush->setColor(selectionColor);
+				   } else { */
 				pen.setColor(sym->color());
 				p->setPen(pen);
 				brush->setColor(sym->fillColor());
-			/* } */
+				/* } */
 
-			/* OGRGeometry *geom = fet->GetGeometryRef();
-			if (!geom) {
-				std::cout << "geom pointer is null" << std::endl;
-			} */
-			// get the wkb representation
-			feature = fet->getGeometry();
-		//	if (feature != 0) {
+				/* OGRGeometry *geom = fet->GetGeometryRef();
+				   if (!geom) {
+				   std::cout << "geom pointer is null" << std::endl;
+				   } */
+				// get the wkb representation
+				feature = fet->getGeometry();
+				//  if (feature != 0) {
 				//    std::cout << featureCount << "'the feature is null\n";
 
-			int wkbType = (int) feature[1];
-			std::cout << "Feature type: " << wkbType << std::endl;
-			// read each feature based on its type
-			double *x;
-			double *y;
-			int *nPoints;
-			int *numRings;
-			int *numPolygons;
-			int numPoints;
-			int numLineStrings;
-			int idx, jdx, kdx;
-			unsigned char *ptr;
-			char lsb;
-			QgsPoint pt;
-			QPointArray *pa;
-			OGRFieldDefn *fldDef;
-			QString fld;
-			QString val;
-			switch (wkbType) {
-			  case WKBPoint:
-				  p->setBrush(*brush);
-				  //  fldDef = fet->GetFieldDefnRef(1);
-				  //   fld = fldDef->GetNameRef();
-				//NEEDTHIS?  val = fet->GetFieldAsString(1);
-				  //std::cout << val << "\n";
+				int wkbType = (int) feature[1];
+			//	std::cout << "Feature type: " << wkbType << std::endl;
+				// read each feature based on its type
+				double *x;
+				double *y;
+				int *nPoints;
+				int *numRings;
+				int *numPolygons;
+				int numPoints;
+				int numLineStrings;
+				int idx, jdx, kdx;
+				unsigned char *ptr;
+				char lsb;
+				QgsPoint pt;
+				QPointArray *pa;
+				OGRFieldDefn *fldDef;
+				QString fld;
+				QString val;
+				switch (wkbType) {
+				  case WKBPoint:
+					  p->setBrush(*brush);
+					  //  fldDef = fet->GetFieldDefnRef(1);
+					  //   fld = fldDef->GetNameRef();
+					  //NEEDTHIS?  val = fet->GetFieldAsString(1);
+					  //std::cout << val << "\n";
 
-				  x = (double *) (feature + 5);
-				  y = (double *) (feature + 5 + sizeof(double));
-				  //std::cout << "transforming point\n";
-				  pt = cXf->transform(*x, *y);
-				  //std::cout << "drawing marker for feature " << featureCount << "\n";
-				  p->drawRect(pt.xToInt(), pt.yToInt(), 5, 5);
-				  //std::cout << "marker draw complete\n";
-				  break;
-			  case WKBLineString:
-				  // get number of points in the line
-				  ptr = feature + 5;
-				  nPoints = (int *) ptr;
-				  ptr = feature + 1 + 2 * sizeof(int);
-				  for (idx = 0; idx < *nPoints; idx++) {
-					  x = (double *) ptr;
-					  ptr += sizeof(double);
-					  y = (double *) ptr;
-					  ptr += sizeof(double);
-					  // transform the point
+					  x = (double *) (feature + 5);
+					  y = (double *) (feature + 5 + sizeof(double));
+				//	  std::cout << "transforming point\n";
 					  pt = cXf->transform(*x, *y);
-					  if (idx == 0)
-						  p->moveTo(pt.xToInt(), pt.yToInt());
-					  else
-						  p->lineTo(pt.xToInt(), pt.yToInt());
-				  }
-				  break;
-			  case WKBMultiLineString:
-
-				  numLineStrings = (int) (feature[5]);
-				  ptr = feature + 9;
-				  for (jdx = 0; jdx < numLineStrings; jdx++) {
-					  // each of these is a wbklinestring so must handle as such
-					  lsb = *ptr;
-					  ptr += 5;	// skip type since we know its 2
+					  //std::cout << "drawing marker for feature " << featureCount << "\n";
+					  p->drawRect(pt.xToInt(), pt.yToInt(), 5, 5);
+					  //std::cout << "marker draw complete\n";
+					  break;
+				  case WKBLineString:
+					  // get number of points in the line
+					  ptr = feature + 5;
 					  nPoints = (int *) ptr;
-					  ptr += sizeof(int);
+					  ptr = feature + 1 + 2 * sizeof(int);
 					  for (idx = 0; idx < *nPoints; idx++) {
 						  x = (double *) ptr;
 						  ptr += sizeof(double);
@@ -279,97 +258,125 @@ void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsCoordinateTrans
 							  p->moveTo(pt.xToInt(), pt.yToInt());
 						  else
 							  p->lineTo(pt.xToInt(), pt.yToInt());
-
 					  }
-				  }
-				  break;
-			  case WKBPolygon:
-              
-				  p->setBrush(*brush);
-				  // get number of rings in the polygon
-				  numRings = (int *) (feature + 1 + sizeof(int));
-                  std::cout << "Number of rings: " << *numRings << std::endl;
-				  ptr = feature + 1 + 2 * sizeof(int);
-				  for (idx = 0; idx < *numRings; idx++) {
-					  // get number of points in the ring
-					  nPoints = (int *) ptr;
-                      std::cout << "Number of points: " << *nPoints << std::endl;
-					  ptr += 4;
-					  pa = new QPointArray(*nPoints);
-					  for (jdx = 0; jdx < *nPoints; jdx++) {
-						  // add points to a point array for drawing the polygon
-                       //   std::cout << "Adding points to array\n";
-						  x = (double *) ptr;
-						  ptr += sizeof(double);
-						  y = (double *) ptr;
-						  ptr += sizeof(double);
-						  pt = cXf->transform(*x, *y);
-						  pa->setPoint(jdx, pt.xToInt(), pt.yToInt());
-					  }
-					  // draw the ring
-                      std::cout << "Drawing the polygon\n";
-					  p->drawPolygon(*pa);
+					  break;
+				  case WKBMultiLineString:
 
-				  }
-              
-				  break;
-			  case WKBMultiPolygon:
-				  p->setBrush(*brush);
-				  // get the number of polygons
-				  ptr = feature + 5;
-				  numPolygons = (int *) ptr;
-				  for (kdx = 0; kdx < *numPolygons; kdx++) {
-					  //skip the endian and feature type info and
-					  // get number of rings in the polygon
-					  ptr = feature + 14;
-					  numRings = (int *) ptr;
-					  ptr += 4;
-					  for (idx = 0; idx < *numRings; idx++) {
-						  // get number of points in the ring
+					  numLineStrings = (int) (feature[5]);
+					  ptr = feature + 9;
+					  for (jdx = 0; jdx < numLineStrings; jdx++) {
+						  // each of these is a wbklinestring so must handle as such
+						  lsb = *ptr;
+						  ptr += 5;	// skip type since we know its 2
 						  nPoints = (int *) ptr;
-						  ptr += 4;
-						  pa = new QPointArray(*nPoints);
-						  for (jdx = 0; jdx < *nPoints; jdx++) {
-							  // add points to a point array for drawing the polygon
+						  ptr += sizeof(int);
+						  for (idx = 0; idx < *nPoints; idx++) {
 							  x = (double *) ptr;
 							  ptr += sizeof(double);
 							  y = (double *) ptr;
 							  ptr += sizeof(double);
-							  // std::cout << "Transforming " << *x << "," << *y << " to ";
-
+							  // transform the point
 							  pt = cXf->transform(*x, *y);
-							  //std::cout << pt.xToInt() << "," << pt.yToInt() << std::endl;
-							  pa->setPoint(jdx, pt.xToInt(), pt.yToInt());
+							  if (idx == 0)
+								  p->moveTo(pt.xToInt(), pt.yToInt());
+							  else
+								  p->lineTo(pt.xToInt(), pt.yToInt());
 
 						  }
-						  // draw the ring
-						  p->drawPolygon(*pa);
-						  delete pa;
 					  }
-				  }
-				  break;
-			}
+					  break;
+				  case WKBPolygon:
 
-			std::cout << "deleting feature[]\n";
-			//      std::cout << geom->getGeometryName() << std::endl;
-			featureCount++;
-			delete[]feature;
-			std::cout << "deleting fet\n";
-			delete fet;
-			std::cout << "ready to fetch next feature\n";
-		// if fet not null }
-	
+					  p->setBrush(*brush);
+					  // get number of rings in the polygon
+					  numRings = (int *) (feature + 1 + sizeof(int));
+					  //std::cout << "Number of rings: " << *numRings << std::endl;
+					  ptr = feature + 1 + 2 * sizeof(int);
+					  for (idx = 0; idx < *numRings; idx++) {
+						  // get number of points in the ring
+						  nPoints = (int *) ptr;
+						  //std::cout << "Number of points: " << *nPoints << std::endl;
+						  ptr += 4;
+						  pa = new QPointArray(*nPoints);
+						  for (jdx = 0; jdx < *nPoints; jdx++) {
+							  // add points to a point array for drawing the polygon
+							  //   std::cout << "Adding points to array\n";
+							  x = (double *) ptr;
+							  ptr += sizeof(double);
+							  y = (double *) ptr;
+							  ptr += sizeof(double);
+							  pt = cXf->transform(*x, *y);
+							  pa->setPoint(jdx, pt.xToInt(), pt.yToInt());
+						  }
+						  // draw the ring
+						  //std::cout << "Drawing the polygon\n";
+						  p->drawPolygon(*pa);
+
+					  }
+
+					  break;
+				  case WKBMultiPolygon:
+					  p->setBrush(*brush);
+					  // get the number of polygons
+					  ptr = feature + 5;
+					  numPolygons = (int *) ptr;
+					  for (kdx = 0; kdx < *numPolygons; kdx++) {
+						  //skip the endian and feature type info and
+						  // get number of rings in the polygon
+						  ptr = feature + 14;
+						  numRings = (int *) ptr;
+						  ptr += 4;
+						  for (idx = 0; idx < *numRings; idx++) {
+							  // get number of points in the ring
+							  nPoints = (int *) ptr;
+							  ptr += 4;
+							  pa = new QPointArray(*nPoints);
+							  for (jdx = 0; jdx < *nPoints; jdx++) {
+								  // add points to a point array for drawing the polygon
+								  x = (double *) ptr;
+								  ptr += sizeof(double);
+								  y = (double *) ptr;
+								  ptr += sizeof(double);
+								  // std::cout << "Transforming " << *x << "," << *y << " to ";
+
+								  pt = cXf->transform(*x, *y);
+								  //std::cout << pt.xToInt() << "," << pt.yToInt() << std::endl;
+								  pa->setPoint(jdx, pt.xToInt(), pt.yToInt());
+
+							  }
+							  // draw the ring
+							  p->drawPolygon(*pa);
+							  delete pa;
+						  }
+					  }
+					  break;
+            default:
+              std::cout << "UNKNOWN WKBTYPE ENCOUNTERED\n";
+              break;
+				}
+
+				//std::cout << "deleting feature[]\n";
+				//      std::cout << geom->getGeometryName() << std::endl;
+				featureCount++;
+        //std::cout << "Feature count: " << featureCount << std::endl;
+				delete[]feature;
+				/* std::cout << "deleting fet\n";
+				if(fet) {
+           delete fet;
+        } */
+				//std::cout << "ready to fetch next feature\n";
+				// if fet not null }
+
 //      std::cout << featureCount << " features in ogr layer within the extent" << std::endl;
-	//	OGRGeometry *filt = ogrLayer->GetSpatialFilter();
-		//filt->dumpReadable(stdout);
-		//ogrLayer->ResetReading();
-        std::cout << "Idling in the getNextFeature loop\n";
+				//  OGRGeometry *filt = ogrLayer->GetSpatialFilter();
+				//filt->dumpReadable(stdout);
+				//ogrLayer->ResetReading();
+			}
+		}
+		//std::cout << "finished reading features\n";
+		//std::cout << "Doing processEvents()\n";
+		qApp->processEvents();
 	}
-    }
-  	std::cout << "finished reading features\n";
-std::cout << "Doing processEvents()\n";
-qApp->processEvents();
-}
 }
 
 int QgsVectorLayer::endian()
@@ -390,17 +397,12 @@ int QgsVectorLayer::endian()
 
 void QgsVectorLayer::identify(QgsRect * r)
 {
-	OGRGeometry *filter = 0;
-	filter = new OGRPolygon();
-	QString wktExtentString = QString("POLYGON ((%1))").arg(r->stringRep());
-//	QTextStream wktExtent(&wktExtentString, IO_WriteOnly);
-	//wktExtent << "POLYGON ((" << r->stringRep() << "))" << std::ends;
-	const char *wktText = (const char *) wktExtentString;
-	OGRErr result = ((OGRPolygon *) filter)->importFromWkt((char **)&wktText);
-	if (result == OGRERR_NONE) {
-
-		ogrLayer->SetSpatialFilter(filter);
+  dataProvider->select(r);
 		int featureCount = 0;
+    QgsFeature *fet;
+		unsigned char *feature;
+		while ((fet = dataProvider->getNextFeature())) {
+    }
 		// display features falling within the search radius
 		QgsIdentifyResults *ir = 0;
 		while (OGRFeature * fet = ogrLayer->GetNextFeature()) {
@@ -478,7 +480,6 @@ void QgsVectorLayer::identify(QgsRect * r)
 			QMessageBox::information(0, "No features found", "No features were found in the active layer at the point you clicked");
 		}
 		ogrLayer->ResetReading();
-	}
 
 }
 void QgsVectorLayer::table()
@@ -559,7 +560,7 @@ void QgsVectorLayer::select(int number)
 }
 
 void QgsVectorLayer::select(QgsRect * rect, bool lock)
- {
+{
 /*
 	if (tabledisplay) {
 		QObject::disconnect(tabledisplay->table(), SIGNAL(selectionChanged()), tabledisplay->table(), SLOT(handleChangedSelections()));
@@ -599,7 +600,7 @@ void QgsVectorLayer::select(QgsRect * rect, bool lock)
 		QObject::connect(tabledisplay->table(), SIGNAL(selected(int)), this, SLOT(select(int)));	//disconnecting because of performance reason
 	}
 	triggerRepaint();*/
-} 
+}
 
 
 
