@@ -20,9 +20,11 @@
 #include <qcombobox.h>
 #include <qcheckbox.h>
 #include <qspinbox.h>
+#include <qfiledialog.h>
 #include "qgsoptions.h"
 #include "qgisapp.h"
 #include "qgssvgcache.h"
+
 /**
  * \class QgsOptions - Set user options and preferences
  * Constructor
@@ -30,27 +32,26 @@
 QgsOptions::QgsOptions(QWidget *parent, const char *name) : QgsOptionsBase(parent, name)
 {
   qparent = parent;
-    // read the current browser and set it
-    QSettings settings;
-    QString browser = settings.readEntry("/qgis/browser");
-    cmbBrowser->setCurrentText(browser);
-    // set the show splash option
-    int identifyValue = settings.readNumEntry("/qgis/map/identifyRadius");
-    spinBoxIdentifyValue->setValue(identifyValue);
-    bool hideSplashFlag = false;
-    if (settings.readEntry("/qgis/hideSplash")=="true")
-    {
-      hideSplashFlag =true;
-    }
-    cbxHideSplash->setChecked(hideSplashFlag);
-    
-    // set the current theme
-    cmbTheme->setCurrentText(settings.readEntry("/qgis/theme"));
-    // set the SVG oversampling factor
-    spbSVGOversampling->setValue(QgsSVGCache::instance().getOversampling());
-    // set the display update threshold
-    spinBoxUpdateThreshold->setValue(settings.readNumEntry("/qgis/map/updateThreshold"));
-        
+  // read the current browser and set it
+  QSettings settings;
+  QString browser = settings.readEntry("/qgis/browser");
+  cmbBrowser->setCurrentText(browser);
+  // set the show splash option
+  int identifyValue = settings.readNumEntry("/qgis/map/identifyRadius");
+  spinBoxIdentifyValue->setValue(identifyValue);
+  bool hideSplashFlag = false;
+  if (settings.readEntry("/qgis/hideSplash")=="true")
+  {
+    hideSplashFlag =true;
+  }
+  cbxHideSplash->setChecked(hideSplashFlag);
+
+  // set the current theme
+  cmbTheme->setCurrentText(settings.readEntry("/qgis/theme"));
+  // set the SVG oversampling factor
+  spbSVGOversampling->setValue(QgsSVGCache::instance().getOversampling());
+  // set the display update threshold
+  spinBoxUpdateThreshold->setValue(settings.readNumEntry("/qgis/map/updateThreshold"));
 }
 //! Destructor
 QgsOptions::~QgsOptions(){}
@@ -65,6 +66,69 @@ QString QgsOptions::theme()
 {
   // returns the current theme (as selected in the cmbTheme combo box)
   return cmbTheme->currentText();
+}
+
+void QgsOptions::saveOptions()
+{
+  QSettings settings;
+  settings.writeEntry("/qgis/browser", cmbBrowser->currentText());
+  settings.writeEntry("/qgis/map/identifyRadius", spinBoxIdentifyValue->value());
+  settings.writeEntry("/qgis/hideSplash",cbxHideSplash->isChecked());
+  settings.writeEntry("/qgis/new_layers_visible",!chkAddedVisibility->isChecked());
+  if(cmbTheme->currentText().length() == 0)
+  {
+    settings.writeEntry("/qgis/theme", "default");
+  }else{
+    settings.writeEntry("/qgis/theme",cmbTheme->currentText());
+  }
+  settings.writeEntry("/qgis/map/updateThreshold", spinBoxUpdateThreshold->value());
+  QgsSVGCache::instance().setOversampling(spbSVGOversampling->value());
+  settings.writeEntry("/qgis/svgoversampling", spbSVGOversampling->value());
+  accept();
+}
+
+
+void QgsOptions::cbxHideSplash_toggled( bool )
+{
+
+}
+void QgsOptions::addTheme(QString item)
+{
+  cmbTheme->insertItem(item);
+}
+
+
+
+void QgsOptions::setCurrentTheme()
+{
+  QSettings settings;
+  cmbTheme->setCurrentText(settings.readEntry("/qgis/theme","default"));
+}
+
+void QgsOptions::findBrowser()
+{
+  QString filter;
+#ifdef WIN32
+  filter = "Applications (*.exe)";
+#else
+  filter = "All Files (*)";
+#endif
+  QString browser = QFileDialog::getOpenFileName(
+          "./",
+          filter, 
+          this,
+          "open file dialog",
+          "Choose a browser" );
+  if(browser.length() > 0)
+  {
+    cmbBrowser->setCurrentText(browser);
+  }
+}
+
+
+void QgsOptions::pbnSelectProjection_clicked()
+{
+
 }
 // Return state of the visibility flag for newly added layers. If
 
