@@ -277,7 +277,6 @@ void QgisApp::addLayer()
 
 	//dp	QgsShapeFileLayer *lyr = new QgsShapeFileLayer(*it, base);
     	QgsVectorLayer *lyr = new QgsVectorLayer(*it, base, "ogr");
-	QObject::connect(lyr,SIGNAL(repaintRequested()),mapCanvas,SLOT(refresh()));
 
 		if (lyr->isValid()) {
 		    QgsSingleSymRenderer* renderer=new QgsSingleSymRenderer();//add single symbol renderer as default
@@ -340,7 +339,6 @@ void QgisApp::addDatabaseLayer()
 			// create the layer
 			//qWarning("creating lyr");
 			QgsVectorLayer *lyr = new QgsVectorLayer(connInfo + " table=" + *it, QString::null, "postgres");
-			QObject::connect(lyr,SIGNAL(repaintRequested()),mapCanvas,SLOT(refresh()));
 			// give it a random color
 			QgsSingleSymRenderer* renderer=new QgsSingleSymRenderer();//add single symbol renderer as default
 			lyr->setRenderer(renderer);

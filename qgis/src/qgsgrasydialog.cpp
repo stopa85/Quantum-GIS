@@ -95,6 +95,13 @@ void QgsGraSyDialog::adjustNumberOfClasses()
 
     //find out the number of the classification field
     QString fieldstring=classificationComboBox->currentText();
+
+    if(fieldstring.isEmpty())//don't do anything, it there is no classification field
+    {
+	show();
+	return;
+    }
+
     std::map<QString,int>::iterator iter=m_fieldmap.find(fieldstring);
     int field=iter->second;
 
@@ -118,7 +125,12 @@ void QgsGraSyDialog::apply() const
 {
     if(ext)
     {
-	//create the pixmap for the render item
+	if(classificationComboBox->currentText().isEmpty())//don't do anything, it there is no classification field
+	{
+	    return;
+	}
+	
+//create the pixmap for the render item
 	QPixmap* pix=m_vectorlayer->legendPixmap();
 	QString name=displaynamefield->text();
 	//query the name and the maximum upper value to estimate the necessary width of the pixmap (12 pixel width per letter seems to be appropriate)
@@ -136,7 +148,14 @@ void QgsGraSyDialog::apply() const
 	m_vectorlayer->setlayerName(name);
 	p.drawText(45,70,classificationComboBox->currentText());
 
-	((QgsGraduatedSymRenderer*)(m_vectorlayer->renderer()))->removeItems();
+	QgsGraduatedSymRenderer* renderer=dynamic_cast<QgsGraduatedSymRenderer*>(m_vectorlayer->renderer());
+	if(!renderer)
+	{
+	    qWarning("Warning, typecast failed in QgsGraSyDialog::apply()");
+	    return;
+	}
+	
+	renderer->removeItems();
 
 	for(int i=0;i<numberofclassesspinbox->value();i++)
 	{
@@ -196,8 +215,8 @@ void QgsGraSyDialog::apply() const
 	    if(lbcontainsletter==false&&ubcontainsletter==false&&lower_bound.length()>0&&upper_bound.length()>0)//only add the item if the value bounds do not contain letters and are not null strings
 	    {
 		QgsRangeRenderItem* item = new QgsRangeRenderItem(sy, lower_bound, upper_bound, ((QLineEdit*)(ext->getWidget(2,i)))->text());
-		((QgsGraduatedSymRenderer*)(m_vectorlayer->renderer()))->addItem(item);
-	    
+	
+		renderer->addItem(item);
 		//add the symbol to the picture
 	    
 		QString legendstring=lower_bound+" - "+upper_bound;
@@ -220,17 +239,9 @@ void QgsGraSyDialog::apply() const
 		p.drawText(pixwidth+10,70+25+30*i,label);
 	    }
 	}
+	
+	renderer->setClassificationField(ext->classfield());
 
-	QgsGraduatedSymRenderer* renderer=dynamic_cast<QgsGraduatedSymRenderer*>(m_vectorlayer->renderer());
-	if(renderer)
-	{
-	    renderer->setClassificationField(ext->classfield());
-	}
-	else
-	{
-	    qWarning("Warning, typecast failed in QgsGraSyDialog::apply()");
-	    return;
-	}
 	m_vectorlayer->triggerRepaint();
 	m_vectorlayer->legendItem()->setPixmap(0,(*pix));
     }
