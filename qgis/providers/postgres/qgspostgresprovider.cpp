@@ -1,4 +1,19 @@
-/* QGIS data provider for PostgreSQL/PostGIS layers */
+/***************************************************************************
+  qgspostgresprovider.cpp  -  QGIS data provider for PostgreSQL/PostGIS layers
+                             -------------------
+    begin                : 2004/01/07
+    copyright            : (C) 2004 by Gary E.Sherman
+    email                : sherman at mrcc.com
+ ***************************************************************************/
+
+/***************************************************************************
+ *                                                                         *
+ *   This program is free software; you can redistribute it and/or modify  *
+ *   it under the terms of the GNU General Public License as published by  *
+ *   the Free Software Foundation; either version 2 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *                                                                         *
+ ***************************************************************************/
 /* $Id$ */
 #include <iostream>
 #include <qtextstream.h>
@@ -295,31 +310,6 @@ QgsFeature *QgsPostgresProvider::getNextFeature(bool fetchAttributes)
         }
       }else{
         std::cout <<"Couldn't get the feature geometry in binary form" << std::endl;
-      }
-         //std::cout << "getting next feature\n";
-        // Get the geometry first
-        
-     /*    OGRFeature *fet = ogrLayer->GetNextFeature();
-        if (fet) {
-            OGRGeometry *geom = fet->GetGeometryRef();
-
-            // get the wkb representation
-            unsigned char *feature = new unsigned char[geom->WkbSize()];
-            geom->exportToWkb((OGRwkbByteOrder) endian(), feature);
-            f = new QgsFeature();
-            f->setGeometry(feature);
-            if (fetchAttributes) {
-                getFeatureAttributes(fet, f);
-            }
-
-            delete fet;
-        } else {
-            std::cout << "Feature is null\n";
-            // probably should reset reading here
-            ogrLayer->ResetReading();
-        }
-
- */
     } else {
         std::cout << "Read attempt on an invalid postgresql data source\n";
     }
