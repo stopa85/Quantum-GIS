@@ -51,36 +51,40 @@ qgis_SOURCES =  qgisapp.cpp \
 				qgssisydialog.cpp \
 				qgssymbol.cpp\
 				qgssymbologyutils.cpp\
+				qgsvectorlayerproperties.cpp\
 				qgsfeature.cpp \
 				qgsfeatureattribute.cpp \
         qgsfield.cpp \
 				$(qgis_UI)\
 				$(qgis_MOC)
 qgis_MOC = 	qgisappbase.moc.cpp \
-			qgisapp.moc.cpp\
-			qgisinterface.moc.cpp\
-			qgsabout.moc.cpp\
-			qgsattributetablebase.moc.cpp\
-			qgsattributetable.moc.cpp\
-			qgsidentifyresultsbase.moc.cpp\
-			qgslayerpropertiesbase.moc.cpp\
-			qgslegend.moc.cpp\
-			qgslegenditembase.moc.cpp\
-			qgslegenditem.moc.cpp\
-			qgslinestyledialogbase.moc.cpp\
-			qgslinestyledialog.moc.cpp\
-			qgsmapcanvas.moc.cpp\
-			qgsmaplayer.moc.cpp\
-			qgsmaplayerinterface.moc.cpp\
-			qgsmessageviewer.moc.cpp\
-			qgspatterndialogbase.moc.cpp\
-			qgspatterndialog.moc.cpp\
-			qgspluginmanagerbase.moc.cpp\
-			qgsrasterlayer.moc.cpp\
-			qgsshapefilelayer.moc.cpp \
-			qgssisydialog.moc.cpp \
-			qgssisydialogbase.moc.cpp \
-            qgsvectorlayer.moc.cpp
+		qgisapp.moc.cpp\
+		qgisinterface.moc.cpp\
+		qgsabout.moc.cpp\
+		qgsattributetablebase.moc.cpp\
+		qgsattributetable.moc.cpp\
+		qgsidentifyresultsbase.moc.cpp\
+		qgslayerpropertiesbase.moc.cpp\
+		qgslegend.moc.cpp\
+		qgslegenditembase.moc.cpp\
+		qgslegenditem.moc.cpp\
+		qgslinestyledialogbase.moc.cpp\
+		qgslinestyledialog.moc.cpp\
+		qgsmapcanvas.moc.cpp\
+		qgsmaplayer.moc.cpp\
+		qgsmaplayerinterface.moc.cpp\
+		qgsmessageviewer.moc.cpp\
+		qgspatterndialogbase.moc.cpp\
+		qgspatterndialog.moc.cpp\
+		qgspluginmanagerbase.moc.cpp\
+		qgsrasterlayer.moc.cpp\
+		qgsshapefilelayer.moc.cpp \
+		qgssisydialog.moc.cpp \
+		qgssisydialogbase.moc.cpp \
+            	qgsvectorlayer.moc.cpp \
+		qgsvectorlayerproperties.moc.cpp\
+		qgsvectorlayerpropertiesbase.moc.cpp
+
 qgis_UI = qgisappbase.h\
 			qgisappbase.cpp\
 			qgslegenditembase.h\
@@ -102,7 +106,9 @@ qgis_UI = qgisappbase.h\
 			qgsmessageviewer.h\
 			qgsmessageviewer.cpp\
 			qgssisydialogbase.h\
-			qgssisydialogbase.cpp
+			qgssisydialogbase.cpp\
+			qgsvectorlayerpropertiesbase.h\
+			qgsvectorlayerpropertiesbase.cpp
 
 # UI dependencies			
 qgisappbase.h: qgisappbase.ui
@@ -127,6 +133,8 @@ qgsmessageviewer.h: qgsmessageviewer.ui
 qgsmessageviewer.cpp: qgsmessageviewer.h qgsmessageviewer.ui
 qgssisydialogbase.h: qgssisydialogbase.ui
 qgssisydialogbase.cpp: qgssisydialogbase.h qgssisydialogbase.ui
+qgsvectorlayerpropertiesbase.h: qgsvectorlayerpropertiesbase.ui
+qgsvectorlayerpropertiesbase.cpp: qgsvectorlayerpropertiesbase.h qgsvectorlayerpropertiesbase.ui
 
 #PostgreSQL UI dependencies
 qgsdbsourceselectbase.h: qgsdbsourceselectbase.ui

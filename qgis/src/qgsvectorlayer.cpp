@@ -240,14 +240,7 @@ void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsCoordinateTrans
 				    // but line width
 				    pen.setColor(selectionColor);
 				    p->setPen(pen);
-				    brush->setColor(selectionColor);
-				    /*} 
-				else 
-				{ 
-				    pen.setColor(sym->color());
-				    p->setPen(pen);
-				    brush->setColor(sym->fillColor());
-				    }*/ 
+				    brush->setColor(selectionColor); 
 
 				/* OGRGeometry *geom = fet->GetGeometryRef();
 				   if (!geom) {
