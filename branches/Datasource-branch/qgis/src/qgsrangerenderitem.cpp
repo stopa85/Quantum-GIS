@@ -1,9 +1,9 @@
 /***************************************************************************
-                         qgsrenderer.cpp  -  description
+                         qgsrangerenderitem.cpp  -  description
                              -------------------
-    begin                : Sat Jan 4 2003
-    copyright            : (C) 2003 by Gary E.Sherman
-    email                : sherman at mrcc.com
+    begin                : Oct 2003
+    copyright            : (C) 2003 by Marco Hugentobler
+    email                : mhugent@geo.unizh.ch
  ***************************************************************************/
 
 /***************************************************************************
@@ -15,27 +15,24 @@
  *                                                                         *
  ***************************************************************************/
 
-#include <qstring.h>
-#include "qgsrenderitem.h"
+#include "qgsrangerenderitem.h"
 
-QgsRenderItem::QgsRenderItem(){
-};
-
-QgsRenderItem::QgsRenderItem(QgsSymbol symbol, QString _value, QString _label) :
-sym(symbol), m_value(_value), m_label(_label){
-
-}
-
-void QgsRenderItem::setLabel(QString label)
+QgsRangeRenderItem::QgsRangeRenderItem(): QgsRenderItem()
 {
-    m_label=label;
+    
 }
 
-void QgsRenderItem::setSymbol(QgsSymbol s){
-	sym = s;
-}
-
-const QString& QgsRenderItem::label() const
+QgsRangeRenderItem::QgsRangeRenderItem(QgsSymbol symbol, QString _value, QString u_value, QString _label): QgsRenderItem(symbol,_value,_label), m_upper_value(u_value)
 {
-    return m_label;
+
+}
+
+void QgsRangeRenderItem::setUpperValue(QString value)
+{
+    m_upper_value=value;
+}
+
+const QString& QgsRangeRenderItem::upper_value() const 
+{
+    return m_upper_value;
 }
