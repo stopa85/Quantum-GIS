@@ -354,6 +354,7 @@ public slots:
     void setLayerOverviewStatus(QString theLayerId, bool theVisibilityFlag);
     void drawExtentRectangle(QPainter *);
     void updateMouseCoordinatePrecision();
+    void debugHook();
 
 signals:
     /** emitted when a key is pressed and we want non widget sublasses to be able
