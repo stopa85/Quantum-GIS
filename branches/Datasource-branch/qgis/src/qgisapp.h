@@ -31,6 +31,7 @@ class QListView;
 class QListViewItem;
 class QgsMapLayer;
 class QSocket;
+class QgsProviderRegistry;
 #include "qgisappbase.h"
 #include "qgisiface.h"
 class QgsMapCanvas;
@@ -150,6 +151,7 @@ class QgisApp:public QgisAppBase
 	QSocket *socket;
 	QString versionMessage;
 	friend class QgisIface;
+  QgsProviderRegistry *providerRegistry;
 };
 
 #endif

@@ -46,6 +46,7 @@
 #include "qgssinglesymrenderer.h"
 #include "qgsrenderitem.h"
 #include "qgssisydialog.h"
+#include "qgsproviderregistry.h"
 #ifdef TESTPROVIDERLIB
 #include <dlfcn.h>
 #endif
@@ -53,17 +54,12 @@
 // typedef for the QgsDataProvider class factory
 typedef QgsDataProvider *create_it(const char *uri);
 
-QgsVectorLayer::QgsVectorLayer(QString vectorLayerPath, QString baseName, QString provider)
+QgsVectorLayer::QgsVectorLayer(QString vectorLayerPath, QString baseName, QString providerKey)
     :QgsMapLayer(VECTOR, baseName, vectorLayerPath), tabledisplay(0), selected(0), m_renderer(0), m_propertiesDialog(0), m_rendererDialog(0) 
 {
 // load the plugin
-//TODO figure out how to register and identify data source plugin for a specific
-//TODO layer type
-QString appDir = qApp->applicationDirPath();
-int bin = appDir.findRev("/bin", -1, false);
-QString baseDir = appDir.left(bin);
-QString libDir = baseDir + "/lib";
-QString ogrlib = libDir + "/lib" + provider + "provider.so";
+QgsProviderRegistry *pReg = QgsProviderRegistry::instance();
+QString ogrlib = pReg->library(providerKey);
 //QString ogrlib = libDir + "/libpostgresprovider.so";
 const char *cOgrLib = (const char *)ogrlib;
 #ifdef TESTPROVIDERLIB
