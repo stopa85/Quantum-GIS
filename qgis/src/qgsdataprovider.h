@@ -38,16 +38,23 @@ public:
 	* @return QgsFeature
 	*/
 	virtual QgsFeature * QgsDataProvider::getNextFeature()=0;
-	/**
-	* Get geometry for first feature
+
+	/** Get feature type.
+	* Gets the feature type as defined in WKBTYPE (qgis.h).
+	* @return int representing the feature type
 	*/
-	//virtual 
+	virtual int geometryType(); 
+    /**
+    * Number of features in the layer
+    * @return long containing number of features
+    */
+    virtual long featureCount();
 	/**
 	* Select features based on a bounding rectangle. Features can be retrieved 
 	* with calls to getFirstFeature and getNextFeature.
 	* @param mbr QgsRect containing the extent to use in selecting features
 	*/
-	virtual void QgsDataProvider::select(QgsRect mbr)=0;
+	virtual void QgsDataProvider::select(QgsRect *mbr)=0;
 	/** 
 		* Set the data source specification. This may be a path or database
 	* connection string
