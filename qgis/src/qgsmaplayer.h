@@ -91,13 +91,6 @@ public:
   /*! Accesor for mShowInOverviewFlag */
   bool showInOverviewStatus() {return mShowInOverview;}
 
-  /** set whether this layer is in the overview or not 
-
-  @note this will hopefully eventually supercede toggleOverviewStatus() since
-  this makes explicit the state change
-
-  */
-  void inOverview( bool );
   
   virtual void draw(QPainter *, QgsRect *, int);
   virtual void draw(QPainter *, QgsRect *, QgsCoordinateTransform * ,QPaintDevice *);
@@ -244,6 +237,15 @@ public  slots:
 
   /**Ensures that the overview item in the popup menu is checked/ unchecked correctly*/
   void updateOverviewPopupItem();
+
+  /** set whether this layer is in the overview or not 
+
+  @note this will hopefully eventually supercede toggleOverviewStatus() since
+  this makes explicit the state change
+
+  */
+  void inOverview( bool );
+
 
 signals:
 

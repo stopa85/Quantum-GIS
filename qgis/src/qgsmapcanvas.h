@@ -216,7 +216,7 @@ public slots:
       @param maplayer is layer to be possibly added or removed from overview canvas
       @param b is true if visible in over view
      */
-    void showInOverView( QgsMapLayer * maplayer, bool visible );
+    void showInOverview( QgsMapLayer * maplayer, bool visible );
 
 signals:
     /** Let the owner know how far we are with render operations */

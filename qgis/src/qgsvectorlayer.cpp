@@ -855,7 +855,7 @@ QObject:connect(tabledisplay, SIGNAL(deleted()), this, SLOT(invalidateTableDispl
       popMenu->insertSeparator();
       popMenu->insertItem(tr("&Properties"), this, SLOT(showLayerProperties()));
       //show in overview slot is implemented in maplayer superclass!
-      mShowInOverviewItemId = popMenu->insertItem(tr("Show In &Overview"), this, SLOT(toggleShowInOverview()));
+      mShowInOverviewItemId = popMenu->insertItem(tr("Show In &Overview"), this, SLOT(inOverview(true)));
 
       popMenu->insertSeparator();
       popMenu->insertItem(tr("&Remove"), app, SLOT(removeLayer()));

@@ -276,24 +276,32 @@ void QgsMapCanvas::addLayer(QgsMapLayerInterface * lyr)
 
 
 
-void QgsMapCanvas::showInOverView( QgsMapLayer * maplayer, bool visible )
+void QgsMapCanvas::showInOverview( QgsMapLayer * maplayer, bool visible )
 {
     // first, this is irrelevent if we're NOT the overview map canvas
-    if ( "theOverviewCanvas" != name() )
+    if ( 0 != strcmp("theOverviewCanvas", name()) )
     {
         return;
     }
 
+    std::map < QString, QgsMapLayer * >::iterator found = 
+	mCanvasProperties->layers.find(maplayer->getLayerID());
+
     // if it's visible, and we already know about it, then do nothing;
     // otherwise, we need to add it if "visible" says so
-    if ( mCanvasProperties->layers.find(maplayer->getLayerID()) != 
-         mCanvasProperties->layers.end() && 
+    if ( found == mCanvasProperties->layers.end() && 
          visible )
     {
         addLayer( maplayer );
+    } // if we have it and it's supposed to be removed, remove it
+    else if ( found != mCanvasProperties->layers.end() && 
+	      ! visible )
+    {
+        remove( maplayer->getLayerID() );
     }
 
-} // QgsMapCanvas::showInOverView
+} // QgsMapCanvas::showInOverview
+
 
 
 
@@ -328,6 +336,17 @@ void QgsMapCanvas::addLayer(QgsMapLayer * lyr)
 
   if ( isThisOverviewCanvas )
   {
+      // regardless of what happens, we need to be in communication with this
+      // layer to possibly add it to overview canvas; however, we only want to
+      // make this connection once, so we first check to see if we already
+      // know about the layer
+      if ( mCanvasProperties->layers.end() == 
+	   mCanvasProperties->layers.find(lyr->getLayerID() )  )
+      {
+	  QObject::connect(lyr, SIGNAL(showInOverview(QgsMapLayer *, bool)), 
+			   this, SLOT(showInOverview( QgsMapLayer *, bool )));
+      }
+
       if ( ! lyr->showInOverviewStatus() )
       {
 #ifdef QGISDEBUG
@@ -362,12 +381,6 @@ void QgsMapCanvas::addLayer(QgsMapLayer * lyr)
 
   QObject::connect(lyr, SIGNAL(visibilityChanged()), this, SLOT(layerStateChange()));
   QObject::connect(lyr, SIGNAL(repaintRequested()), this, SLOT(refresh()));
-
-  if ( isThisOverviewCanvas )
-  {
-      QObject::connect(lyr, SIGNAL(showInOverView(QgsMapLayer *, bool)), 
-                       this, SLOT(showInOverView( QgsMapLayer *, bool )));
-  }
 
   mCanvasProperties->dirty = true;
 
@@ -1355,7 +1368,7 @@ void QgsMapCanvas::remove(QString key)
   Q_ASSERT( layer );
 
   // disconnect layer signals
-  QObject::disconnect(layer, 0, this, 0);
+  QObject::disconnect(layer, SIGNAL(visibilityChanged()), this, SLOT(layerStateChange()));
   QObject::disconnect(layer, SIGNAL(repaintRequested()), this, SLOT(refresh()));
 
 // we DO NOT disconnect this as this is currently the only means for overview
