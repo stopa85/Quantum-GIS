@@ -58,4 +58,5 @@ unsigned char *QgsFeature::getGeometry(){
 */
 void QgsFeature::setGeometry(unsigned char *geom){
 	geometry = geom;
+	
 }

@@ -1,8 +1,8 @@
 /***************************************************************************
                           qgsvectorlayer.h  -  description
                              -------------------
-    begin                : Wed Jun 26 2002
-    copyright            : (C) 2002 by Gary E.Sherman
+    begin                : Oct 29, 2003
+    copyright            : (C) 2003 by Gary E.Sherman
     email                : sherman at mrcc.com
  ***************************************************************************/
 
@@ -23,10 +23,12 @@ class QgsRect;
 class QgsCoordinateTransform;
 class OGRLayer;
 class OGRDataSource;
+class QgsDataProvider;
 
 #include "qgsmaplayer.h"
 #include "qvaluevector.h"
 #include "qgsattributetabledisplay.h"
+//#include "qgsdataprovider.h"
 
 /*! \class QgsVectorLayer
  * \brief Vector layer backed by a data source provider
@@ -52,7 +54,7 @@ class QgsVectorLayer:public QgsMapLayer
 		Line,
 		Polygon
 	};
-	  setDataProvider(QgsDataProvider * dp);
+	void setDataProvider(QgsDataProvider * dp);
 	public slots:
 	 /**Sets the 'tabledisplay' to 0 again*/
 	void invalidateTableDisplay();
@@ -73,7 +75,8 @@ class QgsVectorLayer:public QgsMapLayer
 	void draw(QPainter * p, QgsRect * viewExtent, QgsCoordinateTransform * cXf);
 	//! Pointer to data provider derived from the abastract base class QgsDataProvider
 	QgsDataProvider *dataSource;
-
+    OGRDataSource *ogrDataSource;
+    OGRLayer *ogrLayer;
   /**  */
 	bool registered;
 	enum ENDIAN

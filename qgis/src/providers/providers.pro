@@ -10,7 +10,11 @@ CONFIG += debug \
 INCLUDEPATH += .
 # Input
 HEADERS += qgsshapefileprovider.h
-SOURCES += qgsshapefileprovider.cpp ../qgsfeature.cpp ../qgsfeatureattribute.cpp
+SOURCES += qgsshapefileprovider.cpp \
+        ../qgsfeature.cpp \
+        ../qgsfeatureattribute.cpp \
+        ../qgsrect.cpp \
+        ../qgspoint.cpp
 #.............................
 # GDAL/OGR configuration
 #.............................

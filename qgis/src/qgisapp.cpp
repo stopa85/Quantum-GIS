@@ -66,6 +66,7 @@
 #endif
 #include "qgsmessageviewer.h"
 #include "qgsshapefilelayer.h"
+#include "qgsvectorlayer.h"
 #include "qgslayerproperties.h"
 #include "qgsabout.h"
 #include "qgspluginmanager.h"
@@ -264,7 +265,8 @@ void QgisApp::addLayer()
 
 		// create the layer
 
-		QgsShapeFileLayer *lyr = new QgsShapeFileLayer(*it, base);
+	//dp	QgsShapeFileLayer *lyr = new QgsShapeFileLayer(*it, base);
+    	QgsVectorLayer *lyr = new QgsVectorLayer(*it, base);
 		QObject::connect(lyr,SIGNAL(repaintRequested()),mapCanvas,SLOT(refresh()));
 		// give it a random color
 
