@@ -17,7 +17,7 @@
 #ifndef QGSRENDERER_H
 #define QGSRENDERER_H
 
-class OGRFeature;
+class QgsFeature;
 class QgsCoordinateTransform;
 class QPainter;
 
@@ -27,7 +27,7 @@ class QPainter;
 class QgsRenderer
 {
  public:
-    virtual void renderFeature(QPainter* p, OGRFeature* f, QgsCoordinateTransform* t, int endian)=0;
+    virtual void renderFeature(QPainter* p, QgsFeature* f, QgsCoordinateTransform* t, int endian)=0;
 };
 
 #endif // QGSRENDERER_H

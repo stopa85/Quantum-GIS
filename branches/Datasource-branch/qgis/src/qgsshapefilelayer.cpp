@@ -551,7 +551,10 @@ void QgsShapeFileLayer::select(QgsRect * rect, bool lock)
 	triggerRepaint();
 }
 
+void QgsShapeFileLayer::showLayerProperties()
+{
 
+}
 
 /*
 OGRGeometry *filter = 0;

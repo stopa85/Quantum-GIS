@@ -629,8 +629,8 @@ void QgisApp::showMouseCoordinate(QgsPoint & p)
 
 void QgisApp::testButton()
 {
-	QgsShapeFileLayer *sfl = new QgsShapeFileLayer("foo");
-	mapCanvas->addLayer(sfl);
+    QgsShapeFileLayer *sfl = new QgsShapeFileLayer("foo");
+    mapCanvas->addLayer(sfl);
 //      delete sfl;
 
 }

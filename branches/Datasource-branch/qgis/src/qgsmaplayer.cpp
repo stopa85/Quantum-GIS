@@ -21,7 +21,7 @@
 #include "qgssymbol.h"
 #include "qgsmaplayer.h"
 
-QgsMapLayer::QgsMapLayer(int type, QString lyrname, QString source):layerName(lyrname), layerType(type), dataSource(source)
+QgsMapLayer::QgsMapLayer(int type, QString lyrname, QString source):layerName(lyrname), layerType(type), dataSource(source), m_legendItem(0)
 {
 	// assume the layer is valid (data source exists and can be used)
 	// until we learn otherwise
@@ -146,15 +146,7 @@ void QgsMapLayer::setFeatureType(const int &_newVal)
 	geometryType = _newVal;
 }
 
-void QgsMapLayer::identify(QgsRect * r)
+QPixmap* QgsMapLayer::legendPixmap()
 {
-}
-
-void QgsMapLayer::table()
-{
-}
-
-void QgsMapLayer::select(QgsRect *, bool lock)
-{
-
+    return &m_legendPixmap;
 }

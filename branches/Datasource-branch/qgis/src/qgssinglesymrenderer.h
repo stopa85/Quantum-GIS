@@ -21,10 +21,9 @@
 #include "qgsrenderer.h"
 #include "qgsrenderitem.h"
 #include "qgspoint.h"
-#include <ogrsf_frmts.h>
-#include <ogr_geometry.h>
 #include "qpainter.h"
 #include "qgscoordinatetransform.h"
+class QgsFeature;
 
 /**Render class to display all the features with a single QgsSymbol*/
 class QgsSingleSymRenderer: public QgsRenderer
@@ -37,7 +36,7 @@ class QgsSingleSymRenderer: public QgsRenderer
     /**Returns a pointer to m_item*/
     QgsRenderItem* item();
     /**Renders an OGRFeature*/
-    void renderFeature(QPainter* p, OGRFeature* f, QgsCoordinateTransform* t, int endian);
+    void renderFeature(QPainter* p, QgsFeature* f, QgsCoordinateTransform* t, int endian);
  protected:
     QgsRenderItem m_item;
 };
