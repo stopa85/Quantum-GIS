@@ -239,7 +239,16 @@ void QgsGraSyDialog::apply() const
 	    }
 	}
 
-	((QgsGraduatedSymRenderer*)(m_vectorlayer->renderer()))->setClassificationField(ext->classfield());
+	QgsGraduatedSymRenderer* renderer=dynamic_cast<QgsGraduatedSymRenderer*>(m_vectorlayer->renderer());
+	if(renderer)
+	{
+	    renderer->setClassificationField(ext->classfield());
+	}
+	else
+	{
+	    qWarning("Warning, typecast failed in QgsGraSyDialog::apply()");
+	    return;
+	}
 	m_vectorlayer->triggerRepaint();
 	m_vectorlayer->legendItem()->setPixmap(0,(*pix));
     }

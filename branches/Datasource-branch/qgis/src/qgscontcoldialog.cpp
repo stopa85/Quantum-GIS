@@ -137,9 +137,18 @@ void QgsContColDialog::apply()
     QgsRenderItem* maximumitem=new QgsRenderItem(maxsymbol,QString::number(maximum,'f')," ");
 
     //set the render items to the render of m_vectorlayer
-    ((QgsContinuousColRenderer*)(m_vectorlayer->renderer()))->setMinimumItem(minimumitem);
-    ((QgsContinuousColRenderer*)(m_vectorlayer->renderer()))->setMaximumItem(maximumitem);
-    ((QgsContinuousColRenderer*)(m_vectorlayer->renderer()))->setClassificationField(classfield);
+    QgsContinuousColRenderer* renderer=dynamic_cast<QgsContinuousColRenderer*>(m_vectorlayer->renderer());
+    if(renderer)
+    {
+	renderer->setMinimumItem(minimumitem);
+	renderer->setMaximumItem(maximumitem);
+	renderer->setClassificationField(classfield);
+    }
+    else
+    {
+	qWarning("Warning, typecast failed in QgsContColDialog::apply()");
+	return;
+    }
 	
     //add a pixmap to the QgsLegendItem
     QPixmap* pix=m_vectorlayer->legendPixmap();
