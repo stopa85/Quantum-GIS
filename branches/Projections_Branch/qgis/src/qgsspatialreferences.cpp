@@ -20,6 +20,7 @@
 #include <iostream>
 #include <qstring.h>
 #include <qdir.h>
+#include <qmap.h>
 #include "qgsspatialreferences.h"
 
 QgsSpatialReferences *QgsSpatialReferences::_instance = 0;
@@ -112,7 +113,20 @@ QgsSpatialReferences::QgsSpatialReferences()
 
  QgsSpatialRefSys * QgsSpatialReferences::getSrsByWkt(QString &wkt)
 {
-  return 0;
+// find the srs by looking up the wkt in the map
+ ProjectionWKTMap::Iterator it;
+ 
+ QgsSpatialRefSys *srs;
+  for ( it = mSpatialReferences.begin(); it != mSpatialReferences.end(); ++it ) 
+  {
+    srs = *it;
+    if(srs->srText() == wkt)
+    {
+      return srs;
+    }
+  }
+  // if we don't find a match, return 0;
+return 0;
 }
 
 ProjectionWKTMap QgsSpatialReferences::getMap()
