@@ -118,7 +118,11 @@ class QgsPostgresProvider:public QgsDataProvider
   /**
   * Get the attributes associated with a feature
   */
-    //void getFeatureAttributes(OGRFeature *ogrFet, QgsFeature *f); 
+    void getFeatureAttributes(int oid, QgsFeature *f); 
+  /**
+  * Get the name of the primary key for the layer
+*/  
+    QString getPrimaryKey();
  /**
  * Get the field information for the layer
  * @return vector of QgsField objects
