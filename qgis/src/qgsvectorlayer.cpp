@@ -41,6 +41,7 @@
 #include <qlistview.h>
 #include <qlibrary.h>
 #include "qgsrenderer.h"
+#include "qgslegenditem.h"
 #ifdef TESTPROVIDERLIB
 #include <dlfcn.h>
 #endif

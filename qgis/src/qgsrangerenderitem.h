@@ -1,9 +1,9 @@
 /***************************************************************************
-                         qgsrenderer.cpp  -  description
+                         qgsrangerenderitem.h  -  description
                              -------------------
-    begin                : Sat Jan 4 2003
-    copyright            : (C) 2003 by Gary E.Sherman
-    email                : sherman at mrcc.com
+    begin                : Oct 2003
+    copyright            : (C) 2003 by Marco Hugentobler
+    email                : mhugent@geo.unizh.ch
  ***************************************************************************/
 
 /***************************************************************************
@@ -15,27 +15,22 @@
  *                                                                         *
  ***************************************************************************/
 
-#include <qstring.h>
+#ifndef QGSRANGERENDERITEM_H
+#define QGSRANGERENDERITEM_H
+
 #include "qgsrenderitem.h"
 
-QgsRenderItem::QgsRenderItem(){
+/**A Renderer for ranges of values (e.g. used for graduated colors)*/
+class QgsRangeRenderItem: public QgsRenderItem
+{
+ public:
+    QgsRangeRenderItem();
+    QgsRangeRenderItem(QgsSymbol symbol, QString _value, QString u_value, QString _label);
+    void setUpperValue(QString value);
+    const QString& upper_value() const;
+ protected:
+    /**Upper value for a range (the lower value is QgsRenderItem::value)*/
+    QString m_upper_value;
 };
 
-QgsRenderItem::QgsRenderItem(QgsSymbol symbol, QString _value, QString _label) :
-sym(symbol), m_value(_value), m_label(_label){
-
-}
-
-void QgsRenderItem::setLabel(QString label)
-{
-    m_label=label;
-}
-
-void QgsRenderItem::setSymbol(QgsSymbol s){
-	sym = s;
-}
-
-const QString& QgsRenderItem::label() const
-{
-    return m_label;
-}
+#endif

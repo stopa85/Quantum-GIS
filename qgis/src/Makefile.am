@@ -40,6 +40,7 @@ qgis_SOURCES =  qgisapp.cpp \
 				qgspoint.cpp \
 				qgspolygonsymbol.cpp \
 				qgsprojectio.cpp \
+				qgsrangerenderitem.cpp \
 				qgsrasterlayer.cpp \
 				qgsrect.cpp \
 				qgsrenderitem.cpp \
