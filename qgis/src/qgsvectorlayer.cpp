@@ -105,11 +105,11 @@ QgsVectorLayer::QgsVectorLayer(QString vectorLayerPath, QString baseName)
 	//TODO - fix selection code that formerly used
   //       a boolean vector and set every entry to false
 
-	/* if (valid) {
-		selected = new QValueVector < bool > (dataProvider->featureCount(), false);
-	} else { */
+	if (valid) {
+		selected = new QValueVector<bool>(dataProvider->featureCount(), false);
+	} else { 
 		selected = 0;
-	//}
+	}
 	tabledisplay = 0;
 	//draw the selected features in yellow
 	selectionColor.setRgb(255, 255, 0);
@@ -221,17 +221,20 @@ void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsCoordinateTrans
 
 				//if feature is selected, change the color of the painter
 				//TODO fix this selection code to work with the provider
-				/* if ((*selected)[fet->GetFID()] == true) {
-				   // must change color of pen since it holds not only color
-				   // but line width
-				   pen.setColor(selectionColor);
-				   p->setPen(pen);
-				   brush->setColor(selectionColor);
-				   } else { */
-				pen.setColor(sym->color());
-				p->setPen(pen);
-				brush->setColor(sym->fillColor());
-				/* } */
+				if ((*selected)[(fet->featureId())] == true) 
+				{
+				    // must change color of pen since it holds not only color
+				    // but line width
+				    pen.setColor(selectionColor);
+				    p->setPen(pen);
+				    brush->setColor(selectionColor);
+				} 
+				else 
+				{ 
+				    pen.setColor(sym->color());
+				    p->setPen(pen);
+				    brush->setColor(sym->fillColor());
+				} 
 
 				/* OGRGeometry *geom = fet->GetGeometryRef();
 				   if (!geom) {
@@ -465,28 +468,31 @@ void QgsVectorLayer::table()
 		dataProvider->reset();
 		int numFields = dataProvider->fieldCount();
 		tabledisplay = new QgsAttributeTableDisplay();
-	  QObject:connect(tabledisplay, SIGNAL(deleted()), this, SLOT(invalidateTableDisplay()));
+	        QObject:connect(tabledisplay, SIGNAL(deleted()), this, SLOT(invalidateTableDisplay()));
 		tabledisplay->table()->setNumRows(dataProvider->featureCount());
-		tabledisplay->table()->setNumCols(numFields);	//+1 for the id-column
+		//tabledisplay->table()->setNumCols(numFields);	//+1 for the id-column
+		tabledisplay->table()->setNumCols(numFields+1); //+1 for the id-column
 
 		int row = 0;
 		// set up the column headers
 		QHeader *colHeader = tabledisplay->table()->horizontalHeader();
-	//	colHeader->setLabel(0, "id");	//label for the id-column
+		colHeader->setLabel(0, "id");	//label for the id-column
     std::vector<QgsField> fields = dataProvider->fields();
-		for (int h = 0; h < numFields; h++) {
-			colHeader->setLabel(h, fields[h].getName());
-		}
+    //for (int h = 0; h < numFields; h++) {
+    for(int h=1;h<=numFields;h++)
+    {
+	colHeader->setLabel(h, fields[h-1].getName());
+    }
     QgsFeature *fet;
 		while ((fet = dataProvider->getNextFeature(true))) {
 
 			//id-field
-		//	tabledisplay->table()->setText(row, 0, QString::number(fet->GetFID()));
-		//	tabledisplay->table()->insertFeatureId(fet->GetFID());	//insert the id into the search tree of qgsattributetable
+		tabledisplay->table()->setText(row, 0, QString::number(fet->featureId()));
+		tabledisplay->table()->insertFeatureId(fet->featureId());//insert the id into the search tree of qgsattributetable
      std::vector<QgsFeatureAttribute> attr = fet->attributeMap();
         for(int i=0; i < attr.size(); i++){
 				// get the field values
-				tabledisplay->table()->setText(row, i, attr[i].fieldValue());
+				tabledisplay->table()->setText(row, i+1, attr[i].fieldValue());
         }
         row++;
         delete fet;

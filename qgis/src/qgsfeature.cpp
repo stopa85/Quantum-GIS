@@ -20,10 +20,16 @@
 * \brief Encapsulates a spatial feature with attributes
 */
 //! Constructor
-QgsFeature::QgsFeature(){
-  geometry = 0;
-  wkt = 0;
+QgsFeature::QgsFeature(): fId(0), geometry(0), wkt(0)
+{
+    
 }
+
+QgsFeature::QgsFeature(int id): fId(id),geometry(0), wkt(0)
+{
+  
+}
+
 //! Destructor
 QgsFeature::~QgsFeature(){
 	delete[] geometry;
@@ -33,7 +39,7 @@ QgsFeature::~QgsFeature(){
 * Get the feature id for this feature
 * @return Feature id
 */
-QString QgsFeature::featureId(){
+int QgsFeature::featureId(){
 	return fId;
 }
 /**

@@ -25,8 +25,7 @@ QgsShapeFileProvider::QgsShapeFileProvider(QString uri):dataSourceUri(uri)
 		extent_ = new OGREnvelope();
 		ogrLayer->GetExtent(extent_);
     std::cout << "Finished get extent\n";
-    // getting the total number of features in the layer
-    numberFeatures = ogrLayer->GetFeatureCount();
+    
 		// check the validity of the layer
     std::cout << "checking validity\n";
 		OGRFeature *feat = ogrLayer->GetNextFeature();
@@ -63,21 +62,17 @@ QgsShapeFileProvider::QgsShapeFileProvider(QString uri):dataSourceUri(uri)
 		valid = false;
 	}
 
-	//create a boolean vector and set every entry to false
-
-/* 	if (valid) {
-		selected = new std::vector < bool > (ogrLayer->GetFeatureCount(), false);
-	} else {
-		selected = 0;
-	} */
-//  tabledisplay=0;
-	//draw the selected features in yellow
-//  selectionColor.setRgb(255,255,0);
+	// getting the total number of features in the layer
+	numberFeatures = ogrLayer->GetFeatureCount();
 
 }
 
 QgsShapeFileProvider::~QgsShapeFileProvider()
 {
+    if(selected)
+    {
+	delete selected;
+    }
 }
 
 /**
@@ -96,7 +91,7 @@ QgsFeature *QgsShapeFileProvider::getFirstFeature(bool fetchAttributes)
 		}else{
 			std::cout << "First feature is null\n";
 		}
-		f = new QgsFeature();
+		f = new QgsFeature(0);
 		f->setGeometry(getGeometryPointer(feat));
      if(fetchAttributes){
        getFeatureAttributes(feat, f);
@@ -112,7 +107,6 @@ QgsFeature *QgsShapeFileProvider::getFirstFeature(bool fetchAttributes)
 	*/
 QgsFeature *QgsShapeFileProvider::getNextFeature(bool fetchAttributes)
 {
-    
 	QgsFeature *f = 0;
 	if(valid){
 		//std::cout << "getting next feature\n";
@@ -123,7 +117,8 @@ QgsFeature *QgsShapeFileProvider::getNextFeature(bool fetchAttributes)
 			// get the wkb representation
 			unsigned char *feature = new unsigned char[geom->WkbSize()];
 			geom->exportToWkb((OGRwkbByteOrder) endian(), feature);
-            f = new QgsFeature();
+            f = new QgsFeature(fet->GetFID());
+	    qWarning(QString::number(fet->GetFID()));
             f->setGeometry(feature);
             if(fetchAttributes){
               getFeatureAttributes(fet, f);

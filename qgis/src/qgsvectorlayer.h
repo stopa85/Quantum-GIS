@@ -66,9 +66,9 @@ class QgsVectorLayer:public QgsMapLayer
 
   protected:
 	/**Pointer to the table display object if there is one, else a pointer to 0*/
-	  QgsAttributeTableDisplay * tabledisplay;
+	  QgsAttributeTableDisplay* tabledisplay;
 	/**Vector holding the information which features are activated*/
-	  QValueVector < bool > *selected;
+	  QValueVector<bool>* selected;
 	/**Color to draw and fill the selected features*/
 	QColor selectionColor;
 

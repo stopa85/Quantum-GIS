@@ -33,13 +33,14 @@ class QgsFeature {
 public:
 	//! Constructor
 	QgsFeature();
+	QgsFeature(int id);
 	//! Destructor
 	~QgsFeature();
 	/**
 	* Get the feature id for this feature
 	* @return Feature id
 	*/
-	QString featureId();
+	int featureId();
 	/**
 	* Get the attributes for this feature.
 	* @return A std::map containing the field name/value mapping
@@ -61,7 +62,7 @@ public:
     void setWellKnownText(char *);
 private:
 	//! feature id
-	QString fId;
+	int fId;
 	//! std::map containing field name/value pairs
 	std::vector<QgsFeatureAttribute> attributes;
 	//! std::map containing the field index and name
