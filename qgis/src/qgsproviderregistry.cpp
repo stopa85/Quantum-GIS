@@ -51,9 +51,10 @@ QString libDir = baseDir + "/lib";
 QDir pluginDir(libDir, "*.so*", QDir::Name | QDir::IgnoreCase, QDir::Files | QDir::NoSymLinks);
 	
 	if(pluginDir.count() == 0){
-		QMessageBox::critical(0, "No Data Provider Plugins", "No QGIS data provider plugins found in:  \n"
-      + libDir
-      + ".\n\nNo vector layers can be loaded. Check your QGIS installation");
+    QString msg = QObject::tr("No Data Provider Plugins", "No QGIS data provider plugins found in:");
+    msg += "\n" + libDir + "\n\n";
+    msg += QObject::tr("No vector layers can be loaded. Check your QGIS installation");
+		QMessageBox::critical(0, QObject::tr("No Data Providers"), msg);
 	}else{
 		
 		for(unsigned i = 0; i < pluginDir.count(); i++){
@@ -96,7 +97,7 @@ QString QgsProviderRegistry::pluginList(bool asHTML){
   std::map<QString,QgsProviderMetadata *>::iterator it = provider.begin();
   QString list;
   if(provider.size() == 0){
-    list = "No data provider plugins are available. No vector layers can be loaded";
+    list = QObject::tr("No data provider plugins are available. No vector layers can be loaded");
   }else{
     if(asHTML){
       list += "<ol>";

@@ -476,7 +476,7 @@ void QgsVectorLayer::identify(QgsRect * r)
 		}
     QApplication::restoreOverrideCursor();
 		if (featureCount == 0) {
-			QMessageBox::information(0, "No features found", "No features were found in the active layer at the point you clicked");
+			QMessageBox::information(0, tr("No features found"), tr("No features were found in the active layer at the point you clicked"));
 		}
 
 }
@@ -526,7 +526,7 @@ void QgsVectorLayer::table()
 		tabledisplay->table()->setSorting(true);
 
 
-		tabledisplay->setTitle("Tabledisplaytribute table - " + name());
+		tabledisplay->setTitle(tr("Tabledisplaytribute table - ") + name());
 		tabledisplay->show();
 		tabledisplay->table()->clearSelection();	//deselect the first row
 

@@ -32,7 +32,7 @@ QgsPluginManager::~QgsPluginManager()
 }
 
 void QgsPluginManager::browseFiles(){
- QString s = QFileDialog::getExistingDirectory(0, this, "get existing directory", "Choose a directory",  TRUE );
+ QString s = QFileDialog::getExistingDirectory(0, this, "get existing directory", tr("Choose a directory"),  TRUE );
  txtPluginDir->setText(s);
  getPluginDescriptions();
 }
@@ -42,7 +42,7 @@ void QgsPluginManager::getPluginDescriptions(){
 QDir pluginDir(txtPluginDir->text(), "*.so*", QDir::Name | QDir::IgnoreCase, QDir::Files | QDir::NoSymLinks);
 	
 	if(pluginDir.count() == 0){
-		QMessageBox::information(this, "No Plugins", "No QGIS plugins found in " + txtPluginDir->text());
+		QMessageBox::information(this, tr("No Plugins"), tr("No QGIS plugins found in ") + txtPluginDir->text());
 	}else{
 		
 		for(unsigned i = 0; i < pluginDir.count(); i++){

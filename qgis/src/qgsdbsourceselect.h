@@ -27,6 +27,7 @@
  */
 class QgsDbSourceSelect : public QgsDbSourceSelectBase 
 {
+  Q_OBJECT
  public:
     //! Constructor
     QgsDbSourceSelect(QWidget *parent = 0, const char *name = 0);
