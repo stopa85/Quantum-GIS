@@ -284,6 +284,7 @@ AC_CONFIG_FILES([
   plugins/copyright_label/Makefile
   plugins/scale_bar/Makefile
   widgets/Makefile
+  widgets/projectionselector/Makefile
   designer_plugins/Makefile
 ])
 
