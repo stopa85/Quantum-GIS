@@ -12,7 +12,17 @@
 /* $Id$ */
 
 namespace QGis
-{
+{ 
+	// Version constants
+	//
+	// Version string 
+	static const char *qgisVersion = "0.0.14 - Development";
+	// Version number used for comparing versions using the "Check QGIS Version" function
+	static const int qgisVersionInt = 14;
+	
+	// Enumerations
+	//
+	// Maptool enumeration
 	enum MapTools
 	{
 		ZoomIn,
@@ -40,5 +50,15 @@ namespace QGis
 		Polygon
 	    };
 
+  //! description strings for feature types
+ static const char *qgisFeatureTypes[] = {
+    "Null",
+    "WKBPoint",
+		"WKBLineString",
+		"WKBPolygon",
+		"WKBMultiPoint",
+		"WKBMultiLineString",
+    "WKBMultiPolygon" 
+  };
 }
 #endif
