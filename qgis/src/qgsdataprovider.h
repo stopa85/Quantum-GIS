@@ -43,12 +43,12 @@ public:
 	* Gets the feature type as defined in WKBTYPE (qgis.h).
 	* @return int representing the feature type
 	*/
-	virtual int geometryType(); 
+	virtual int geometryType()=0; 
     /**
     * Number of features in the layer
     * @return long containing number of features
     */
-    virtual long featureCount();
+    virtual long featureCount()=0;
 	/**
 	* Select features based on a bounding rectangle. Features can be retrieved 
 	* with calls to getFirstFeature and getNextFeature.
