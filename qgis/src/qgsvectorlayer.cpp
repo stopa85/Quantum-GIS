@@ -56,9 +56,15 @@ QgsVectorLayer::QgsVectorLayer(QString vectorLayerPath, QString baseName)
 // load the plugin
 //TODO figure out how to register and identify data source plugin for a specific
 //TODO layer type
+QString appDir = qApp->applicationDirPath();
+int bin = appDir.findRev("/bin", -1, false);
+QString baseDir = appDir.left(bin);
+QString libDir = baseDir + "/lib";
+QString ogrlib = libDir + "/libogrprovider.so";
+const char *cOgrLib = (const char *)ogrlib;
 #ifdef TESTPROVIDERLIB
 // test code to help debug provider loading problems
-	void *handle = dlopen("./providers/libproviders.so", RTLD_LAZY);
+	void *handle = dlopen(cOgrLib, RTLD_LAZY);
 	if (!handle) {
 		std::cout << "Error in dlopen: " << dlerror() << std::endl;
 
@@ -70,7 +76,7 @@ QgsVectorLayer::QgsVectorLayer(QString vectorLayerPath, QString baseName)
 #endif
 // load the data provider
 //TODO remove hard coding for library name
-	QLibrary *myLib = new QLibrary("./providers/libproviders.so");
+	QLibrary *myLib = new QLibrary((const char *)ogrlib);
 	std::cout << "Library name is " << myLib->library() << std::endl;
 	bool loaded = myLib->load();
 	if (loaded) {
@@ -165,6 +171,10 @@ void QgsVectorLayer::setDisplayField(){
 						idxName = fldName;
 						break;
 					}
+          if(fldName.contains("descript", false)){
+            idxName = fldName;
+            break;
+          }
 					if (fldName.contains("id", false)) {
 						idxId = fldName;
 						break;
@@ -399,7 +409,7 @@ void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsCoordinateTrans
               std::cout << "UNKNOWN WKBTYPE ENCOUNTERED\n";
               break;
 				}
-				delete[]feature;
+				delete[] feature;
 				}
 				else
 				{
@@ -410,6 +420,7 @@ void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsCoordinateTrans
 				//      std::cout << geom->getGeometryName() << std::endl;
 				featureCount++;
         //std::cout << "Feature count: " << featureCount << std::endl;
+				//delete[]feature;
 			}
 		}
 		qApp->processEvents();
