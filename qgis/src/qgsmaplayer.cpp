@@ -23,6 +23,7 @@
 #include <qdatetime.h>
 #include <qpopupmenu.h>
 #include <qlistview.h>
+#include <qlabel.h>
 #include <qpainter.h>
 #include <qdom.h> 
 
@@ -60,7 +61,11 @@ QString PKGDATAPATH = qApp->applicationDirPath() + "/qgis/share";
 #endif
   mInOverviewPixmap.load(QString(PKGDATAPATH) + QString("/images/icons/inoverview.png"));
 
+  //mActionInOverview = new QAction( "in Overview", "Ctrl+O", this );
+
 }
+
+
 
 QgsMapLayer::~QgsMapLayer()
 {
@@ -440,3 +445,35 @@ void QgsMapLayer::connectNotify( const char * signal )
     std::cerr << "QgsMapLayer connected to " << signal << "\n";
 #endif
 } //  QgsMapLayer::connectNotify
+
+
+    void QgsMapLayer::initContextMenu(QgisApp * app)
+    {
+      popMenu = new QPopupMenu();
+      myPopupLabel = new QLabel( popMenu );
+
+      myPopupLabel->setFrameStyle( QFrame::Panel | QFrame::Raised );
+
+      // now set by children
+      // myPopupLabel->setText( tr("<center><b>Vector Layer</b></center>") );
+
+      popMenu->insertItem(myPopupLabel,0);
+
+      popMenu->insertItem(tr("&Zoom to extent of selected layer"), app, SLOT(zoomToLayerExtent()));
+      popMenu->insertItem(tr("&Open attribute table"), app, SLOT(attributeTable()));
+      popMenu->insertSeparator();
+      popMenu->insertItem(tr("&Properties"), this, SLOT(showLayerProperties()));
+      //show in overview slot is implemented in maplayer superclass!
+//       mShowInOverviewItemId = popMenu->insertItem(tr("Show In &Overview"), 
+//                                                   this, 
+//                                                   SLOT(inOverview(bool)));
+
+      app->actionInOverview->addTo( popMenu );
+
+      popMenu->insertSeparator();
+      popMenu->insertItem(tr("&Remove"), app, SLOT(removeLayer()));
+
+      // now give the sub-classes a chance to tailor the context menu
+      initContextMenu_( app );
+
+    } // QgsMapLayer::initContextMenu(QgisApp * app)

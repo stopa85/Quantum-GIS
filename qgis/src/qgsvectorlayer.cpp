@@ -853,28 +853,15 @@ QObject:connect(tabledisplay, SIGNAL(deleted()), this, SLOT(invalidateTableDispl
       return m_propertiesDialog;
     }
 
-    void QgsVectorLayer::initContextMenu(QgisApp * app)
+
+    void QgsVectorLayer::initContextMenu_(QgisApp * app)
     {
-      popMenu = new QPopupMenu();
-      QLabel *myPopupLabel = new QLabel( popMenu );
-      myPopupLabel->setFrameStyle( QFrame::Panel | QFrame::Raised );
       myPopupLabel->setText( tr("<center><b>Vector Layer</b></center>") );
-      popMenu->insertItem(myPopupLabel,0);
-      popMenu->insertItem(tr("&Zoom to extent of selected layer"), app, SLOT(zoomToLayerExtent()));
-      popMenu->insertItem(tr("&Open attribute table"), app, SLOT(attributeTable()));
-      popMenu->insertSeparator();
-      popMenu->insertItem(tr("&Properties"), this, SLOT(showLayerProperties()));
-      //show in overview slot is implemented in maplayer superclass!
-      mShowInOverviewItemId = popMenu->insertItem(tr("Show In &Overview"), 
-                                                  this, 
-                                                  SLOT(inOverview(bool)));
+    } // QgsVectorLayer::initContextMenu_(QgisApp * app)
 
-      popMenu->insertSeparator();
-      popMenu->insertItem(tr("&Remove"), app, SLOT(removeLayer()));
 
-    }
 
-    //
+    // XXX why is this here?  This should be generalized up to QgsMapLayer
     QPopupMenu *QgsVectorLayer::contextMenu()
     {
       return popMenu;
