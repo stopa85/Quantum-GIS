@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Form interface generated from reading ui file 'qgssisydialogbase.ui'
 **
-** Created: Mon Jan 5 12:15:14 2004
+** Created: Tue Jan 6 18:52:12 2004
 **      by: The User Interface Compiler ($Id$)
 **
 ** WARNING! All changes made in this file will be lost!
