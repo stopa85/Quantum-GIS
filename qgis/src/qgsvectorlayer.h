@@ -57,6 +57,7 @@ class QgsVectorLayer:public QgsMapLayer
 		Polygon
 	};
 	void setDataProvider(QgsDataProvider * dp);
+	QgsDataProvider* getDataProvider();
 	public slots:
 	 /**Sets the 'tabledisplay' to 0 again*/
 	void invalidateTableDisplay();
