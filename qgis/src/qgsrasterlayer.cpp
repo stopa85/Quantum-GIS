@@ -1562,51 +1562,60 @@ const bool QgsRasterLayer::hasStats(int theBandNoInt)
   }
 }
 /** Private method to calculate statistics for a band. Populates rasterStatsMemArray.
-    Note that this is a cpu intensive /slow task!*/
+  Note that this is a cpu intensive /slow task!*/
 const RasterBandStats QgsRasterLayer::getRasterBandStats(int theBandNoInt)
 {
-emit setStatus(QString("Calculating stats for ")+layerName);
-//reset the main app progress bar
-emit setProgress(0,0);
+  emit setStatus(QString("Calculating stats for ")+layerName);
+  //reset the main app progress bar
+  emit setProgress(0,0);
 #ifdef QGISDEBUG
-    std::cout << "QgsRasterLayer::calculate stats for band " << theBandNoInt << std::endl;
+  std::cout << "QgsRasterLayer::calculate stats for band " << theBandNoInt << std::endl;
 #endif
-    //check if we have received a valid band number
-    if ((gdalDataset->GetRasterCount() < theBandNoInt) && rasterLayerType != PALETTE)
-    {
-        //invalid band id, return nothing
-        RasterBandStats myNullReturnStats;
-        return myNullReturnStats;
-    }
-    if (rasterLayerType == PALETTE && (theBandNoInt > 3))
-    {
-        //invalid band id, return nothing
-        RasterBandStats myNullReturnStats;
-        return myNullReturnStats;
-    }
-    //check if we have previously gathered stats for this band...
+  //check if we have received a valid band number
+  if ((gdalDataset->GetRasterCount() < theBandNoInt) && rasterLayerType != PALETTE)
+  {
+    //invalid band id, return nothing
+    RasterBandStats myNullReturnStats;
+    return myNullReturnStats;
+  }
+  if (rasterLayerType == PALETTE && (theBandNoInt > 3))
+  {
+    //invalid band id, return nothing
+    RasterBandStats myNullReturnStats;
+    return myNullReturnStats;
+  }
+  //check if we have previously gathered stats for this band...
 
-    RasterBandStats myRasterBandStats = rasterStatsVector[theBandNoInt - 1];
-    myRasterBandStats.bandNoInt = theBandNoInt;
-    //dont bother with this if we already have stats
-    if (myRasterBandStats.statsGatheredFlag)
-    {
-        return myRasterBandStats;
-    }
-    GDALRasterBand *myGdalBand = gdalDataset->GetRasterBand(theBandNoInt);
-    QString myColorInterpretation = GDALGetColorInterpretationName(myGdalBand->GetColorInterpretation());
+  RasterBandStats myRasterBandStats = rasterStatsVector[theBandNoInt - 1];
+  myRasterBandStats.bandNoInt = theBandNoInt;
+  //dont bother with this if we already have stats
+  if (myRasterBandStats.statsGatheredFlag)
+  {
+    return myRasterBandStats;
+  }
 
-    //declare a colorTable to hold a palette - will only be used if the layer color interp is palette
-    GDALColorTable *colorTable;
-    if (rasterLayerType == PALETTE)
+
+  //
+  //  So the part from here on is only done if:
+  //                         a valid band number was recieved
+  //                         the stats have not already been gathered for this band
+  //
+  //
+
+  GDALRasterBand *myGdalBand = gdalDataset->GetRasterBand(theBandNoInt);
+  QString myColorInterpretation = GDALGetColorInterpretationName(myGdalBand->GetColorInterpretation());
+
+  //declare a colorTable to hold a palette - will only be used if the layer color interp is palette
+  GDALColorTable *colorTable;
+  if (rasterLayerType == PALETTE)
+  {
+    //get the palette colour table
+    colorTable = myGdalBand->GetColorTable();
+    //override the band name - palette images are really only one band
+    //so we are faking three band behaviour
+    switch (theBandNoInt)
     {
-        //get the palette colour table
-        colorTable = myGdalBand->GetColorTable();
-        //override the band name - palette images are really only one band
-        //so we are faking three band behaviour
-        switch (theBandNoInt)
-        {
-            // a "Red" layer
+      // a "Red" layer
         case 1:
             myRasterBandStats.bandName = redTranslatedQString;
             break;
@@ -1621,152 +1630,306 @@ emit setProgress(0,0);
             RasterBandStats myNullReturnStats;
             return myNullReturnStats;
             break;
-        }
     }
-    else if (rasterLayerType==GRAY_OR_UNDEFINED)
-    {
-        myRasterBandStats.bandName = myColorInterpretation;
-    }
-    else //rasterLayerType is MULTIBAND
-    {
-        //do nothing
-    }
-    myRasterBandStats.elementCountInt = rasterXDimInt * rasterYDimInt;
+  }
+  else if (rasterLayerType==GRAY_OR_UNDEFINED)
+  {
+    myRasterBandStats.bandName = myColorInterpretation;
+  }
+  else //rasterLayerType is MULTIBAND
+  {
+    //do nothing
+  }
 
-    //allocate a buffer to hold one row of ints
-    int myAllocationSizeInt = sizeof(uint) * rasterXDimInt;
-    uint *myScanlineAllocInt = (uint *) CPLMalloc(myAllocationSizeInt);
-    bool myFirstIterationFlag = true;
-    //unfortunately we need to make two passes through the data to calculate stddev
-    for (int myCurrentRowInt = 0; myCurrentRowInt < rasterYDimInt; myCurrentRowInt++)
+  //The element count is updated in the loop whenever a non-nodata cell is encountered
+  myRasterBandStats.elementCountInt = 0;
+
+  //initialise the histogram for this layer
+  for(int myIteratorInt=0; myIteratorInt <256; myIteratorInt++)
+  {
+    myRasterBandStats.histogram[myIteratorInt]=0;
+  }
+
+  //
+  // Loop through the layer blockwise (rather than using scanlines)
+  // for maximum efficiency. Adapted from Franks gdal tutorial.
+  //
+  int myXBlocksInt;
+  int myYBlocksInt;
+  int myXBlockSizeInt;
+  int myYBlockSizeInt;
+  int myXBlockIteratorInt;
+  int myYBlockIteratorInt;
+  int myCurrentBlockInt=0; //counter for progress bar
+  bool myFirstIterationFlag = true;
+
+  myGdalBand->GetBlockSize( &myXBlockSizeInt, &myYBlockSizeInt );
+  myXBlocksInt = (myGdalBand->GetXSize() + myXBlockSizeInt - 1) / myXBlockSizeInt;
+  myYBlocksInt = (myGdalBand->GetYSize() + myYBlockSizeInt - 1) / myYBlockSizeInt;
+
+  //@TODO:
+  //at the moment we assume each layer contains 32 bit cells
+  //this code needs to be modified to allow for other datatypes
+
+  //CPLAssert( myGdalBand->GetRasterDataType() == GDT_UInt32 );
+
+#ifdef QGISDEBUG
+  std::cout << "GetRasterDataType : " << myGdalBand->GetRasterDataType() << std::endl;
+#endif
+
+  uint * myBlockData = (uint *) CPLMalloc(sizeof(uint) *myXBlockSizeInt * sizeof(uint) *myYBlockSizeInt);
+
+  //
+  // Now we start iterating through the raster blocks
+  //
+
+  for( myYBlockIteratorInt = 0; myYBlockIteratorInt < myYBlocksInt; myYBlockIteratorInt++ )
+  {
+    //we loop through the dataset twice for stats so ydim is doubled (this is loop1)!
+    emit setProgress((myYBlockIteratorInt+rasterYDimInt)+myXBlockIteratorInt,(myXBlocksInt*myYBlocksInt)*2);
+    for( myXBlockIteratorInt = 0; myXBlockIteratorInt < myXBlocksInt; myXBlockIteratorInt++ )
     {
-       //we loop through the dataset twice for stats so ydim is doubled!
-       emit setProgress(myCurrentRowInt,rasterYDimInt*2);
-        CPLErr myResult =
-            myGdalBand->RasterIO(GF_Read, 0, myCurrentRowInt, rasterXDimInt, 1, myScanlineAllocInt, rasterXDimInt, 1, GDT_UInt32, 0, 0);
-        for (int myCurrentColInt = 0; myCurrentColInt < rasterXDimInt; myCurrentColInt++)
+      //these vars store adjusted size of block :
+      //    -  in the case of a non edge block it will probably equal the defined raster block size
+      //    -  in the case of an edge block it wil be the ramainder from the edge of the last block
+      int myBlockAdjustedXDimInt ;
+      int myBlockAdjustedYDimInt ;
+      myGdalBand->ReadBlock( myXBlockIteratorInt, myYBlockIteratorInt, myBlockData );
+      //Compute the portion of the block that is valid
+      // for partial edge blocks.
+      if( myXBlockIteratorInt * myXBlockSizeInt > myGdalBand->GetXSize() )
+      {
+        myBlockAdjustedXDimInt = myGdalBand->GetXSize() - myXBlockIteratorInt * myXBlockSizeInt;
+      }
+      else
+      {
+        myBlockAdjustedXDimInt = myXBlockSizeInt;
+      }
+
+      if( myYBlockIteratorInt * myYBlockSizeInt > myGdalBand->GetYSize() )
+      {
+        myBlockAdjustedYDimInt = myGdalBand->GetYSize() - myYBlockIteratorInt * myYBlockSizeInt;
+      }
+      else
+      {
+        myBlockAdjustedYDimInt = myYBlockSizeInt;
+      }
+#ifdef QGISDEBUG
+      //Enabling the following lines will cause quite verbose output!
+      /*
+         std::cout << "myXBlocksInt : "<< myXBlocksInt << std::endl;
+         std::cout << "myYBlocksInt : "<< myYBlocksInt << std::endl;
+         std::cout << "myXBlockSizeInt : "<< myXBlockSizeInt << std::endl;
+         std::cout << "myYBlockSizeInt : "<< myYBlockSizeInt << std::endl;
+         std::cout << "myXBlockIteratorInt : "<< myXBlockIteratorInt << std::endl;
+         std::cout << "myYBlockIteratorInt : "<< myYBlockIteratorInt << std::endl;
+         std::cout << "myBlockAdjustedXDimInt : "<< myBlockAdjustedXDimInt << std::endl;
+         std::cout << "myBlockAdjustedYDimInt : "<< myBlockAdjustedYDimInt << std::endl;
+         std::cout << "myCurrentBlockInt : "<< myCurrentBlockInt << std::endl;
+         std::cout << "myFirstIterationFlag : "<< myFirstIterationFlag << std::endl;
+       */
+#endif      
+      //
+      // Loop through this block
+      //
+      for( int myYBlockCellIterator = 0; myYBlockCellIterator < myBlockAdjustedYDimInt; myYBlockCellIterator++ )
+      {
+        for( int myXBlockCellIterator = 0; myXBlockCellIterator < myBlockAdjustedXDimInt; myXBlockCellIterator++ )
         {
-	
-            double myDouble = 0;
-            //get the nth element from the current row
-            if (myColorInterpretation != "Palette") //dont translate this its a gdal string
+          double myDouble = 0;
+          //get the nth element from the current row
+          if (myColorInterpretation != "Palette") //dont translate this using tr() - its a gdal string!
+          {
+            myDouble = static_cast<double> (myBlockData[myXBlockCellIterator + myYBlockCellIterator * myXBlockSizeInt]);
+          } 
+          else
+          {
+            //this is a palette layer so red / green / blue 'layers are 'virtual'
+            //in that we need to obtain the palette entry and then get the r,g or g
+            //component from that palette entry
+            const GDALColorEntry *myColorEntry = 
+                GDALGetColorEntry(colorTable, myBlockData[myXBlockCellIterator + myYBlockCellIterator * myXBlockSizeInt]);
+            //check colorEntry is valid
+            if (myColorEntry != NULL)
             {
-                myDouble = myScanlineAllocInt[myCurrentColInt];
-            } else
-            {
-                //this is a palette layer so red / green / blue 'layers are 'virtual'
-                //in that we need to obtain the palette entry and then get the r,g or g
-                //component from that palette entry
-                const GDALColorEntry *myColorEntry = GDALGetColorEntry(colorTable, myScanlineAllocInt[myCurrentColInt]);
-                //check colorEntry is valid
-                if (myColorEntry != NULL)
-                {
-                    //check for alternate color mappings
-                    if (theBandNoInt == 1)  //"Red"
-                    {
-                        myDouble = static_cast < double >(myColorEntry->c1);
-                    }
-                    if (theBandNoInt == 2)  //"Green"
-                    {
-                        myDouble = static_cast < double >(myColorEntry->c2);
-                    }
-                    if (theBandNoInt == 3)  //"Blue"
-                    {
-                        myDouble = static_cast < double >(myColorEntry->c3);
-                    }
-                }
-
-
+              //check for alternate color mappings
+              if (theBandNoInt == 1)  //"Red"
+              {
+                myDouble = static_cast < double >(myColorEntry->c1);
+              }
+              if (theBandNoInt == 2)  //"Green"
+              {
+                myDouble = static_cast < double >(myColorEntry->c2);
+              }
+              if (theBandNoInt == 3)  //"Blue"
+              {
+                myDouble = static_cast < double >(myColorEntry->c3);
+              }
             }
-            //only use this element if we have a non null element
-            if (myDouble != noDataValueDouble)
+          }
+#ifdef QGISDEBUG
+          if (myDouble > 0)
+          {
+            // Warning : uncommenting the lines below will result in very verbose output!     
+            // std::cout << "myXBlockIteratorInt : " << myXBlockIteratorInt << ", ";
+            // std::cout << "myYBlockIteratorInt : " << myYBlockIteratorInt << ", ";
+            // std::cout << "myXBlockCellIterator : " << myXBlockCellIterator << ", ";
+            // std::cout << "myYBlockCellIterator : " << myYBlockCellIterator << ", ";
+            std::cout << "myDouble : "<< QString::number(myDouble,'f',6) << std::endl;
+          }
+#endif      
+          //only use this element if we have a non null element
+          if (myDouble != noDataValueDouble)
+          {
+            if (myFirstIterationFlag)
             {
-                if (myFirstIterationFlag)
-                {
-                    //this is the first iteration so initialise vars
-                    myFirstIterationFlag = false;
-                    myRasterBandStats.minValDouble = myDouble;
-                    myRasterBandStats.maxValDouble = myDouble;
-                }               //end of true part for first iteration check
-                else
-                {
-                    //this is done for all subsequent iterations
-                    if (myDouble < myRasterBandStats.minValDouble)
-                    {
-                        myRasterBandStats.minValDouble = myDouble;
-                    }
-                    if (myDouble > myRasterBandStats.maxValDouble)
-                    {
-                        myRasterBandStats.maxValDouble = myDouble;
-                    }
-                    //only increment the running total if it is not a nodata value
-                    if (myDouble != noDataValueDouble)
-                    {
-                        myRasterBandStats.sumDouble += myDouble;
-                        ++myRasterBandStats.elementCountInt;
-                    }
-                }               //end of false part for first iteration check
-            }                   //end of nodata chec
-        }                       //end of column wise loop
-    }                           //end of row wise loop
-    //
-    //end of first pass through data now calculate the range
-    myRasterBandStats.rangeDouble = myRasterBandStats.maxValDouble - myRasterBandStats.minValDouble;
-    //calculate the mean
-    myRasterBandStats.meanDouble = myRasterBandStats.sumDouble / myRasterBandStats.elementCountInt;
-    //for the second pass we will get the sum of the squares / mean
-    for (int myCurrentRowInt = 0; myCurrentRowInt < rasterYDimInt; myCurrentRowInt++)
+              //this is the first iteration so initialise vars
+              myFirstIterationFlag = false;
+              myRasterBandStats.minValDouble = myDouble;
+              myRasterBandStats.maxValDouble = myDouble;
+            } // end of true part for first iteration check
+            else
+            {
+              //this is done for all subsequent iterations
+              if (myDouble < myRasterBandStats.minValDouble)
+              {
+                myRasterBandStats.minValDouble = myDouble;
+              }
+              if (myDouble > myRasterBandStats.maxValDouble)
+              {
+                myRasterBandStats.maxValDouble = myDouble;
+              }
+              //only increment the running total if it is not a nodata value
+              if (myDouble != noDataValueDouble)
+              {
+                myRasterBandStats.sumDouble += myDouble;
+                ++myRasterBandStats.elementCountInt;
+              }
+              //update the histogram for this layer
+              //@TODO : this needs to be done properly !!!
+              //myRasterBandStats.histogram[(int)myDouble]++;
+            } // end of false part for first iteration check
+          } // end of nodata check
+        } // end of myXBlockCellIterator loop
+      } // end of myYBlockCellIterator loop
+      myCurrentBlockInt++;
+    } // end of myXBlockIteratorInt loop
+  } // end of myYBlockIteratorInt loop
+
+#ifdef QGISDEBUG
+  std::cout << "---------------------------------------------" << std::endl;
+  std::cout << "----Stats Gathering Pass 1 Completed---------" << std::endl;
+  std::cout << "---------------------------------------------" << std::endl;
+#endif
+
+  //
+  //end of first pass through data now calculate the range
+  //
+  myRasterBandStats.rangeDouble = myRasterBandStats.maxValDouble - myRasterBandStats.minValDouble;
+  //calculate the mean
+  myRasterBandStats.meanDouble = myRasterBandStats.sumDouble / myRasterBandStats.elementCountInt;
+  //for the second pass we will get the sum of the squares / mean
+  for( myYBlockIteratorInt = 0; myYBlockIteratorInt < myYBlocksInt; myYBlockIteratorInt++ )
+  {
+    //we loop through the dataset twice for stats so ydim is doubled (this is loop2)!
+    emit setProgress(
+            ((myYBlockIteratorInt+rasterYDimInt)+myXBlockIteratorInt)+(myYBlockIteratorInt+rasterYDimInt),
+            (myXBlocksInt*myYBlocksInt)*2
+            );
+    for( myXBlockIteratorInt = 0; myXBlockIteratorInt < myXBlocksInt; myXBlockIteratorInt++ )
     {
-        //we loop through the dataset twice for stats so ydim is doubled (this is loop2)!
-        emit setProgress(myCurrentRowInt+rasterYDimInt,rasterYDimInt*2);
-        CPLErr myResult =
-            myGdalBand->RasterIO(GF_Read, 0, myCurrentRowInt, rasterXDimInt, 1, myScanlineAllocInt, rasterXDimInt, 1, GDT_UInt32, 0, 0);
-        for (int myCurrentColInt = 0; myCurrentColInt < rasterXDimInt; myCurrentColInt++)
+      //these vars store adjusted size of block :
+      //    -  in the case of a non edge block it will probably equal the defined raster block size
+      //    -  in the case of an edge block it wil be the ramainder from the edge of the last block
+      int myBlockAdjustedXDimInt;
+      int myBlockAdjustedYDimInt;
+
+      myGdalBand->ReadBlock( myXBlockIteratorInt, myYBlockIteratorInt, myBlockData );
+      //Compute the portion of the block that is valid
+      // for partial edge blocks.
+      if( myXBlockIteratorInt * myXBlockSizeInt > myGdalBand->GetXSize() )
+      {
+        myBlockAdjustedXDimInt = myGdalBand->GetXSize() - myXBlockIteratorInt * myXBlockSizeInt;
+      }
+      else
+      {
+        myBlockAdjustedXDimInt = myXBlockSizeInt;
+      }
+
+      if( myYBlockIteratorInt * myYBlockSizeInt > myGdalBand->GetYSize() )
+      {
+        myBlockAdjustedYDimInt = myGdalBand->GetYSize() - myYBlockIteratorInt * myYBlockSizeInt;
+      }
+      else
+      {
+        myBlockAdjustedYDimInt = myYBlockSizeInt;
+      }
+      //
+      // Loop through this block
+      //
+      for( int myYBlockCellIterator = 0; myYBlockCellIterator < myBlockAdjustedYDimInt; myYBlockCellIterator++ )
+      {
+        for( int myXBlockCellIterator = 0; myXBlockCellIterator < myBlockAdjustedXDimInt; myXBlockCellIterator++ )
         {
-            double myDouble = 0;
-            //get the nth element from the current row
-            if (myColorInterpretation != "Palette") //dont translate this its a gdal string
+          double myDouble = 0;
+          //get the nth element from the current row
+          if (myColorInterpretation != "Palette") //dont translate this its a gdal string
+          {
+            myDouble = myBlockData[myXBlockCellIterator + myYBlockCellIterator * myXBlockSizeInt];
+          } 
+          else
+          {
+            //this is a palette layer so red / green / blue 'layers are 'virtual'
+            //in that we need to obtain the palette entry and then get the r,g or g
+            //component from that palette entry
+            const GDALColorEntry *myColorEntry = GDALGetColorEntry(colorTable, myBlockData[myXBlockCellIterator + myYBlockCellIterator * myXBlockSizeInt]);
+            //check colorEntry is valid
+            if (myColorEntry != NULL)
             {
-                myDouble = myScanlineAllocInt[myCurrentColInt];
-            } else
-            {
-                //this is a palette layer so red / green / blue 'layers are 'virtual'
-                //in that we need to obtain the palette entry and then get the r,g or g
-                //component from that palette entry
-                const GDALColorEntry *myColorEntry = GDALGetColorEntry(colorTable, myScanlineAllocInt[myCurrentColInt]);
-                //check colorEntry is valid
-                if (myColorEntry != NULL)
-                {
-                    //check for alternate color mappings
-                    if (theBandNoInt == 1)  //red
-                    {
-                        myDouble = myColorEntry->c1;
-                    }
-                    if (theBandNoInt == 1)  //green
-                    {
-                        myDouble = myColorEntry->c2;
-                    }
-                    if (theBandNoInt == 3)  //blue
-                    {
-                        myDouble = myColorEntry->c3;
-                    }
-                }
-
-
+              //check for alternate color mappings
+              if (theBandNoInt == 1)  //red
+              {
+                myDouble = myColorEntry->c1;
+              }
+              if (theBandNoInt == 1)  //green
+              {
+                myDouble = myColorEntry->c2;
+              }
+              if (theBandNoInt == 3)  //blue
+              {
+                myDouble = myColorEntry->c3;
+              }
             }
-            myRasterBandStats.sumSqrDevDouble += static_cast < double >(pow(myDouble - myRasterBandStats.meanDouble, 2));
-        }                       //end of column wise loop
-    }                           //end of row wise loop
-    //divide result by sample size - 1 and get square root to get stdev
-    myRasterBandStats.stdDevDouble = static_cast < double >(sqrt(myRasterBandStats.sumSqrDevDouble /
-                                     (myRasterBandStats.elementCountInt - 1)));
-    CPLFree(myScanlineAllocInt);
-    myRasterBandStats.statsGatheredFlag = true;
-    //add this band to the class stats map
-    rasterStatsVector[theBandNoInt - 1] = myRasterBandStats;
-    emit setProgress(rasterYDimInt, rasterYDimInt); //reset progress
-    return myRasterBandStats;
-}                               //end of getRasterBandStats
+          }
+          myRasterBandStats.sumSqrDevDouble += static_cast < double >(pow(myDouble - myRasterBandStats.meanDouble, 2));
+        } // end of myXBlockCellIterator loop
+      } // end of myYBlockCellIterator loop
+      myCurrentBlockInt++;
+    } // end of myXBlockIteratorInt loop
+  } // end of myYBlockIteratorInt loop
+
+#ifdef QGISDEBUG
+  std::cout << "---------------------------------------------" << std::endl;
+  std::cout << "----Stats Gathering Pass 2 Completed---------" << std::endl;
+  std::cout << "---------------------------------------------" << std::endl;
+  std::cout << "Sum of Squares: " << myRasterBandStats.sumSqrDevDouble << std::endl;
+  std::cout << "Element Count: " << myRasterBandStats.elementCountInt << std::endl;
+#endif
+
+  //divide result by sample size - 1 and get square root to get stdev
+  myRasterBandStats.stdDevDouble = static_cast < double >(sqrt(myRasterBandStats.sumSqrDevDouble /
+              (myRasterBandStats.elementCountInt - 1)));
+#ifdef QGISDEBUG
+  std::cout << "Freeing gdal mem alloc" << std::endl;
+#endif
+  // Free the memory reserved for the raster blocks. 
+  CPLFree(myBlockData);
+  myRasterBandStats.statsGatheredFlag = true;
+  //add this band to the class stats map
+  rasterStatsVector[theBandNoInt - 1] = myRasterBandStats;
+  emit setProgress(rasterYDimInt, rasterYDimInt); //reset progress
+  return myRasterBandStats;
+}// end of getRasterBandStats
 
 
 //mutator for red band name (allows alternate mappings e.g. map blue as red colour)
