@@ -358,6 +358,11 @@ _setCanvasExtent( QString const & canonicalName, QgsRect const & newExtent )
 
     theMapCanvas->setExtent( newExtent );
 
+    // XXX sometimes the canvases are frozen here, sometimes not; this is a
+    // XXX worrisome inconsitency; regardless, unfreeze the canvases to ensure
+    // XXX a redraw
+    theMapCanvas->freeze( false );
+
 } // _setCanvasExtent()
 
 
