@@ -4,13 +4,13 @@
 #include "qgscontcoldialogbase.h"
 #include <map>
 
-class QgsShapeFileLayer;
+class QgsVectorLayer;
 
 class QgsContColDialog: public QgsContColDialogBase
 {
     Q_OBJECT
  public: 
-    QgsContColDialog(QgsShapeFileLayer* layer);
+    QgsContColDialog(QgsVectorLayer* layer);
     ~QgsContColDialog();
 
  protected slots:
@@ -18,7 +18,7 @@ class QgsContColDialog: public QgsContColDialogBase
     void selectMinimumColor();
     void selectMaximumColor();
  protected:
-    QgsShapeFileLayer* m_vectorlayer;
+    QgsVectorLayer* m_vectorlayer;
     /**Stores the names and numbers of the fields with numeric values*/
      std::map<QString,int> m_fieldmap;
  private:

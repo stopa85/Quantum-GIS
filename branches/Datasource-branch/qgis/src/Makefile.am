@@ -23,6 +23,8 @@ qgis_SOURCES =  qgisapp.cpp \
 				qgisinterface.cpp \
 				qgsattributetable.cpp \
 				qgsattributetabledisplay.cpp \
+				qgscontcoldialog.cpp\
+				qgscontinuouscolrenderer.cpp \
 				qgscoordinatetransform.cpp \
 				qgscustomsymbol.cpp \
 				qgsdatasource.cpp \
@@ -68,6 +70,8 @@ qgis_MOC = 	qgisappbase.moc.cpp \
 		qgsabout.moc.cpp\
 		qgsattributetablebase.moc.cpp\
 		qgsattributetable.moc.cpp\
+		qgscontcoldialogbase.moc.cpp\
+		qgscontcoldialog.moc.cpp\
 		qgsgrasydialogbase.moc.cpp\
 		qgsgrasydialog.moc.cpp\
 		qgsgrasyextensionwidget.moc.cpp\
@@ -99,6 +103,8 @@ qgis_UI = qgisappbase.h\
 			qgslegenditembase.cpp\
 			qgsabout.h\
 			qgsabout.cpp\
+			qgscontcoldialogbase.h\
+			qgscontcoldialogbase.cpp\
 			qgsgrasydialogbase.h\
 			qgsgrasydialogbase.cpp\
 			qgslayerpropertiesbase.h\
@@ -123,6 +129,8 @@ qgis_UI = qgisappbase.h\
 # UI dependencies			
 qgisappbase.h: qgisappbase.ui
 qgisappbase.cpp: qgisappbase.ui qgisappbase.h
+qgscontcoldialogbase.h: qgscontcoldialogbase.ui
+qgscontcoldialogbase.cpp: qgscontcoldialogbase.h qgscontcoldialogbase.ui
 qgslegenditembase.h: qgslegenditembase.ui
 qgslegenditembase.cpp: qgslegenditembase.h qgslegenditembase.ui
 qgslayerpropertiesbase.h: qgslayerpropertiesbase.ui
