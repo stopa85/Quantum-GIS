@@ -1,4 +1,4 @@
-#include "qgsprojectionselectorwidget.h"
+#include "qgsprojectionselectorplugin.h"
 #include "../widgets/projectionselector/qgsprojectionselector.h"
 
 static const char *projectionselector_pixmap[] = {

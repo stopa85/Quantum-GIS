@@ -2,6 +2,7 @@
 
 class QgsProjectionSelectorPlugin : public QWidgetPlugin
 {
+  Q_OBJECT
 public:
     QgsProjectionSelectorPlugin();
 
