@@ -63,13 +63,13 @@ QgsGraSyDialog::QgsGraSyDialog(QgsVectorLayer* layer): QgsGraSyDialogBase(), ext
 		      {
 			  containsletter=true;
 		      }
-		      if(!containsletter)//add it to the map and to comboBox1 if it seems to be a numeric field
-		      {
-			  QString str=(*it).fieldName();
-			  classificationComboBox->insertItem(str);
-			  //add teststring and i to the map
-			  m_fieldmap.insert(std::make_pair(str,fieldnumber));
-		      }
+		  }
+		  if(!containsletter)//add it to the map and to comboBox1 if it seems to be a numeric field
+		  {
+		      QString str=(*it).fieldName();
+		      classificationComboBox->insertItem(str);
+		      //add teststring and i to the map
+		      m_fieldmap.insert(std::make_pair(str,fieldnumber));
 		  }
 		  fieldnumber++;
 	      } 

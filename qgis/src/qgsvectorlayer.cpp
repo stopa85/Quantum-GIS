@@ -231,7 +231,8 @@ void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsCoordinateTrans
 		// select the records in the extent. The provider sets a spatial filter
 		// and sets up the selection set for retrieval
 		qWarning("Selecting features based on view extent");
-		 dataProvider->select(viewExtent);
+		dataProvider->reset();
+		dataProvider->select(viewExtent);
 		int featureCount = 0;
 		//  QgsFeature *ftest = dataProvider->getFirstFeature();
 		qWarning("Starting draw of features");
