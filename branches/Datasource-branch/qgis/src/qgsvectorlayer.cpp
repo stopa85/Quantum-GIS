@@ -593,3 +593,8 @@ void QgsVectorLayer::invalidateTableDisplay()
 {
 	tabledisplay = 0;
 }
+
+QgsDataProvider* QgsVectorLayer::getDataProvider()
+{
+    return dataProvider;
+}
