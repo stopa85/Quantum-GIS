@@ -524,7 +524,7 @@ QgsRasterLayer::readFile( QString const & fileName )
         //myRasterBandStats.bandName=QString::number(i) + " : " + myColorQString;
         myRasterBandStats.bandNoInt = i;
         myRasterBandStats.statsGatheredFlag = false;
-
+        myRasterBandStats.histogramVector = new RasterBandStats::HistogramVector();
         // Read color table
         readColorTable ( myGdalBand, &(myRasterBandStats.colorTable) );
 
@@ -3610,15 +3610,21 @@ void QgsRasterLayer::populateHistogram(int theBandNoInt, int theBinCountInt)
   //vector is not equal to the number of bins 
   //i.e if the histogram has never previously been generated or the user has
   //selected a new number of bins.
-  if (myRasterBandStats.histogramVector.size()!=theBinCountInt)
+  if (myRasterBandStats.histogramVector->size()!=theBinCountInt)
   {
-    myRasterBandStats.histogramVector.clear();
+    myRasterBandStats.histogramVector->clear();
     int myHistogramArray[theBinCountInt];
     myGdalBand->GetHistogram( -0.5, theBinCountInt-.5, theBinCountInt, myHistogramArray , FALSE, FALSE, GDALDummyProgress, NULL );
     for (int myBin = 0; myBin <theBinCountInt; myBin++)
     {
-      myRasterBandStats.histogramVector.push_back( myHistogramArray[myBin]);
+      myRasterBandStats.histogramVector->push_back( myHistogramArray[myBin]);
+#ifdef QGISDEBUG
+      std::cout << "Added " <<  myHistogramArray[myBin] << " to histogram vector" << std::endl;
+#endif
     }
 
   }
+#ifdef QGISDEBUG
+      std::cout << ">>>>>>>>>>> Histogram vector now contains " <<  myRasterBandStats.histogramVector->size() << " elements" << std::endl;
+#endif
 }
