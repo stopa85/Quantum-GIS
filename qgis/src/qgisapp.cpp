@@ -3151,10 +3151,11 @@ bool QgisApp::addRasterLayer(QgsRasterLayer * theRasterLayer, bool theForceRedra
     // register this layer with the central layers registry
     QgsMapLayerRegistry::instance()->addMapLayer(theRasterLayer);
     // XXX doesn't the mMapCanvas->addLayer() do this?
-    QObject::connect(theRasterLayer, 
-            SIGNAL(repaintRequested()), 
-            mMapCanvas, 
-            SLOT(refresh()));
+    // XXX now it does
+//     QObject::connect(theRasterLayer, 
+//             SIGNAL(repaintRequested()), 
+//             mMapCanvas, 
+//             SLOT(refresh()));
 
     // connect up any request the raster may make to update the app progress
     QObject::connect(theRasterLayer, 
@@ -3171,13 +3172,15 @@ bool QgisApp::addRasterLayer(QgsRasterLayer * theRasterLayer, bool theForceRedra
     theRasterLayer->initContextMenu(this);
        
     // add it to the mapcanvas collection
-    mMapCanvas->addLayer(theRasterLayer);
+    // no longer necessary since adding to registry automatically adds to canvas
+    // mMapCanvas->addLayer(theRasterLayer);
 
-    //connect up a request from the raster layer to show in overview map
-    QObject::connect(theRasterLayer, 
-            SIGNAL(showInOverview(QString,bool)), 
-            this, 
-            SLOT(setLayerOverviewStatus(QString,bool)));           
+    // connect up a request from the raster layer to show in overview map
+    // no longer necessary since adding to registry adds to overview, too
+//     QObject::connect(theRasterLayer, 
+//             SIGNAL(showInOverview(QString,bool)), 
+//             this, 
+//             SLOT(setLayerOverviewStatus(QString,bool)));           
 
     // mProjectIsDirtyFlag = true;
     QgsProject::instance()->dirty(true); // XXX might be redundant
