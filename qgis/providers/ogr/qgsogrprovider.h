@@ -157,14 +157,6 @@ class QgsOgrProvider:public QgsVectorDataProvider
     /**Returns a bitmask containing the supported capabilities*/
     int capabilities() const;
 
-    /** The OGR provider does not do its own transforms so we return
-     * false for the following three functions to indicate that transforms
-     * should be handled by the QgsCoordinateTransform object. See the
-     * documentation on QgsVectorDataProvider for details on these functions.
-     */
-    bool supportsNativeTransform(){return false;}
-    bool usesSrid(){return false;}
-    bool usesWKT(){return false;}
 
   private:
     unsigned char *getGeometryPointer(OGRFeature * fet);

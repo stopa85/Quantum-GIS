@@ -421,16 +421,6 @@ public:
   /** get data source uri (not implemented) */
   QgsDataSourceURI * getURI(){ return 0;};
   
-  /** The GRASS provider does not do its own transforms so we return
-     * false for the following three functions to indicate that transforms
-     * should be handled by the QgsCoordinateTransform object. See the
-     * documentation on QgsVectorDataProvider for details on these functions.
-     * XXX I have no clue how GRASS will integrate with the projection engine
-     *     in QGIS [gsherman]
-     */
-    bool supportsNativeTransform(){return false;}
-    bool usesSrid(){return false;}
-    bool usesWKT(){return false;}
 
 
 private:
