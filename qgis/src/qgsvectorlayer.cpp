@@ -553,7 +553,6 @@ void QgsVectorLayer::table()
 void QgsVectorLayer::select(int number)
 {
     selected[number]=true;
-    qWarning("selected feature number"+QString::number(number));
 }
 
 void QgsVectorLayer::select(QgsRect * rect, bool lock)
