@@ -1,0 +1,5 @@
+if HAVE_POSTGRESQL
+POSTGRESQL = postgres
+endif
+
+SUBDIRS = ogr $(POSTGRESQL)
