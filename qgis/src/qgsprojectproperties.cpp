@@ -83,8 +83,6 @@
   projectionSelector->setSelectedWKT(srsWkt);
   
   
-  //
-  // TODO: Change this to connect to the signal from the projectionselector dialog now!!!! ts
   // 
   // If the user changes the projection for the project, we need to 
   // fire a signal to each layer telling it to change its coordinateTransform
