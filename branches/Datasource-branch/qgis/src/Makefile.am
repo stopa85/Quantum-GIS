@@ -45,6 +45,7 @@ qgis_SOURCES =  qgisapp.cpp \
 				qgsrect.cpp \
 				qgsrenderitem.cpp \
 				qgsshapefilelayer.cpp \
+				qgssinglesymrenderer.cpp \
 				qgssymbol.cpp\
 				qgsfeature.cpp \
 				qgsfeatureattribute.cpp \
