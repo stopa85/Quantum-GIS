@@ -40,7 +40,6 @@ public:
 	~QgsVectorLayerProperties();
 	//! Name to display in legend
 	QgsSymbol* getSymbol();
-	QString displayName();
 private:
 	QgsVectorLayer* layer;
 protected slots:

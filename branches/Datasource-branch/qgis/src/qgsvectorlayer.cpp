@@ -684,3 +684,5 @@ QgsVectorLayerProperties* QgsVectorLayer::propertiesDialog()
 {
     return m_propertiesDialog;
 }
+
+
