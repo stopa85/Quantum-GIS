@@ -25,14 +25,7 @@
 #endif
 
 #include <qgsscalecalculator.h>
-//! Structure for storing a spatial_ref_sys item
-typedef struct{
-  QString srid; // spatial reference id (ala PostGIS)
-  QString auth_name; // name of the author for this SRS
-  QString auth_srid; // srid used by the author
-  QString srtext; // WKT of the coordinate system
-  QString proj4text; // Proj4 parameter string 
-} SPATIAL_REF_SYS; 
+#include "qgis.h"
   
 /*!  Dialog to set project level properties
 
@@ -111,5 +104,7 @@ private:
   QListViewItem *projList;
   //! Users custom coordinate system file
   QString customCsFile;
+  //! Default coordinate system 
+  SPATIAL_REF_SYS GEOWKT;
 
 };

@@ -82,6 +82,7 @@
 #endif
 
 
+static const char* defaultWktKey = "Lat/Long - WGS 84";
 static const char * const ident_ = "$Id$";
 
 // typedef for the QgsDataProvider class factory
@@ -1691,7 +1692,10 @@ QgsVectorLayer:: setDataProvider( QString const & provider )
           QString mySourceWKT = getProjectionWKT();
           //get the project projection, defaulting to this layer's projection
           //if none exists....
-          QString myDestWKT = QgsProject::instance()->readEntry("SpatialRefSys","/WKT",mySourceWKT);
+          //XXX all this does is get the key for the SRS. To get the WKT, we either
+          //XXX have to read from the resources/spatial_ref_sys.txt file or look it
+          //XXX up in a map
+          QString myDestWktKey = QgsProject::instance()->readEntry("SpatialRefSys","/WKT",defaultWktKey);
           //
           // Sort out what to do with this layer's coordinate system (CS). We have
           // four possible scenarios:
