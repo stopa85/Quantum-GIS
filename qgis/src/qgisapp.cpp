@@ -74,6 +74,7 @@
 #include "qgis.h"
 #include "qgisapp.h"
 #include "qgspluginitem.h"
+#include "qgsproviderregistry.h"
 #include "qgssinglesymrenderer.h"
 //#include "qgssisydialog.h"
 #include "../plugins/qgisplugin.h"
@@ -204,6 +205,10 @@ QgisApp::QgisApp(QWidget * parent, const char *name, WFlags fl):QgisAppBase(pare
 		actionAddLayer->removeFrom(PopupMenu_2);
 		actionAddLayer->removeFrom(DataToolbar);
 	#endif
+  
+  // Get pointer to the provider registry singleton
+  providerRegistry = QgsProviderRegistry::instance();
+  
 	// connect the "cleanup" slot
 	connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(saveWindowState()));
 	restoreWindowState();
@@ -243,13 +248,19 @@ void QgisApp::about()
 
 
 	abt->setWhatsNew(watsNew);
+  
+  // add the available plugins to the list
+  QString providerInfo = "<b>Available Data Provider Plugins</b><br>";
+  abt->setPluginInfo(providerInfo + providerRegistry->pluginList(true));
 	abt->exec();
 
 }
 
 void QgisApp::addLayer()
 {
-
+  // check to see if we have an ogr provider available
+  QString pOgr = providerRegistry->library("ogr");
+  if(pOgr.length() > 0){
 	mapCanvas->freeze();
 	QStringList files = QFileDialog::getOpenFileNames("Shapefiles (*.shp);;All files (*.*)", 0, this, "open files dialog",
 													  "Select one or more layers to add");
@@ -293,12 +304,17 @@ void QgisApp::addLayer()
 	QApplication::restoreOverrideCursor();
 	statusBar()->message(mapCanvas->extent().stringRep());
 
-
+  }else{
+    QMessageBox::critical(this, "No OGR Provider","No OGR data provider was found in the QGIS lib directory");    
+  }
 
 }
 #ifdef POSTGRESQL
 void QgisApp::addDatabaseLayer()
 {
+  // check to see if we have a postgres provider available
+  QString pOgr = providerRegistry->library("postgres");
+  if(pOgr.length() > 0){
 	// only supports postgis layers at present
 	// show the postgis dialog
 
@@ -348,7 +364,10 @@ void QgisApp::addDatabaseLayer()
 	mapCanvas->freeze(false);
 	mapCanvas->render2();
 	QApplication::restoreOverrideCursor();
+  }else{
+    QMessageBox::critical(this, "No PostgreSQL Provider","No PostgreSQL data provider was found in the QGIS lib directory");    
 
+  }
 }
 #endif
 void QgisApp::fileExit()

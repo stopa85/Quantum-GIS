@@ -55,6 +55,8 @@ qgis_SOURCES =  qgisapp.cpp \
 				qgsfeature.cpp \
 				qgsfeatureattribute.cpp \
         qgsfield.cpp \
+        qgsproviderregistry.cpp \
+        qgsprovidermetadata.cpp \
 				$(qgis_UI)\
 				$(qgis_MOC)
 qgis_MOC = 	qgisappbase.moc.cpp \
@@ -145,13 +147,11 @@ qgsnewconnectionbase.cpp: qgsnewconnectionbase.h qgsnewconnectionbase.ui
 #PostgreSQL files
 postgres_SOURCES = 	qgsdbsourceselect.cpp \
 					qgsnewconnection.cpp\
-					qgsdatabaselayer.cpp
 postgres_UI = 	qgsdbsourceselectbase.h \
 				qgsdbsourceselectbase.cpp\
 				qgsnewconnectionbase.h\
 				qgsnewconnectionbase.cpp
 postgres_MOC = 	qgsdbsourceselectbase.moc.cpp \
-	 			qgsdatabaselayer.moc.cpp \
 				qgsdbsourceselect.moc.cpp \
 				qgsnewconnection.moc.cpp\
 				qgsnewconnectionbase.moc.cpp
