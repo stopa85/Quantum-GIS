@@ -223,7 +223,8 @@ void QgisApp::about()
 		versionString +=  " (no PostgreSQL support)";
 	#endif
 	abt->setVersion(versionString);
-	QString urls = "Web Page: http://qgis.sourceforge.net\nSourceforge Project Page: http://sourceforge.net/projects/qgis";
+	QString urls = "Web Page: http://qgis.sourceforge.net\nSourceforge Project "
+		"Page: http://sourceforge.net/projects/qgis";
 	abt->setURLs(urls);
 	QString watsNew = "Version ";
 	watsNew += qgisVersion;

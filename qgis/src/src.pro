@@ -30,7 +30,9 @@ SOURCES += main.cpp \
            qgsprojectio.cpp \
            qgisiface.cpp \
 	   qgspluginmanager.cpp \
-	   qgspluginitem.cpp
+	   qgspluginitem.cpp \
+	   qgsfeature.cpp \
+	   qgsfeatureattribute.cpp
 HEADERS += qgisapp.h \
            qgisinterface.h \
            qgisappbase.ui.h \
@@ -60,7 +62,9 @@ HEADERS += qgisapp.h \
            qgisiface.h \
 	   qgspluginmanager.h \
 	   qgspluginitem.h \
-	   qgsmaplayerinterface.h
+	   qgsmaplayerinterface.h \
+	   qgsfeature.h \
+	   qgsfeatureattribute.h
 FORMS += qgisappbase.ui \
          qgslegenditembase.ui \
          qgsabout.ui \

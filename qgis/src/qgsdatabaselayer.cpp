@@ -547,7 +547,8 @@ void QgsDatabaseLayer::identify(QgsRect * r)
 		ir->show();
 
 	} else {
-		QMessageBox::information(0, "No features found", "No features were found in the active layer at the point you clicked");
+		QMessageBox::information(0, "No features found", 
+		"No features were found in the active layer at the point you clicked");
 	}
 
 } //}}}

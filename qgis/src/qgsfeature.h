@@ -18,8 +18,13 @@
 #ifndef QGSFEATURE_H
 #define QGSFEATURE_H
 #include <qstring.h>
+#include <map>
+#include "qgsfeatureattribute.h"
 
-/** Feature attribute class
+class QString;
+
+/** \class QgsFeature - Feature attribute class.
+ * Encapsulates a single feature including id and field/value.
   *@author Gary E.Sherman
   */
 
@@ -29,14 +34,14 @@ public:
 	QgsFeature();
 	~QgsFeature();
 	QString fieldId();
-	QString fieldName();
-	QString fieldValue();
+	std::map<QString, QgsFeatureAttribute> attributeMap();
+	std::map<int, QString> fields();
  protected:
  //! Path or uri of the datasource
  private:
  	QString fId;
-	QString field;
-	QString value;
+	std::map<QString, QgsFeatureAttribute> attributes;
+	std::map<int, QString> fieldNames;
 };
 
 #endif

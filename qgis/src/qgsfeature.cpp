@@ -1,8 +1,8 @@
 /***************************************************************************
-                          qgsdatasource.cpp  -  description
+                          qgsfeature.cpp  -  description
                              -------------------
-    begin                : Sat Jun 22 2002
-    copyright            : (C) 2002 by Gary E.Sherman
+    begin                : Mon Sep 01 2003
+    copyright            : (C) 2003 by Gary E.Sherman
     email                : sherman at mrcc.com
  ***************************************************************************/
 
@@ -14,12 +14,20 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
- /* $Id$ */
-#include "qgsdatasource.h"
-QgsDataSource::QgsDataSource()
-{
-}
+/* $Id */
+#include <qstring.h>
+#include "qgsfeature.h"
 
-QgsDataSource::~QgsDataSource()
-{
+QgsFeature::QgsFeature(){}
+
+QgsFeature::~QgsFeature(){}
+
+QString QgsFeature::fieldId(){
+	return fId;
+}
+std::map<QString, QgsFeatureAttribute> QgsFeature::attributeMap(){
+	return attributes;
+}
+std::map<int, QString> QgsFeature::fields(){
+	return fieldNames;
 }

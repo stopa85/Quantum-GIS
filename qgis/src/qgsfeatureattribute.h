@@ -1,8 +1,8 @@
 /***************************************************************************
-                          qgsdatasource.cpp  -  description
+                          qgsfeatureattribute.h  -  description
                              -------------------
-    begin                : Sat Jun 22 2002
-    copyright            : (C) 2002 by Gary E.Sherman
+    begin                : Mon Sep 01 2003
+    copyright            : (C) 2003 by Gary E.Sherman
     email                : sherman at mrcc.com
  ***************************************************************************/
 
@@ -14,12 +14,31 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
- /* $Id$ */
-#include "qgsdatasource.h"
-QgsDataSource::QgsDataSource()
-{
-}
+/* $Id */
+#ifndef QGSFEATUREATTRIBUTE_H
+#define QGSFEATUREATTRIBUTE_H
+#include <qstring.h>
+class QString;
+/** \class QgsFeatureAttribute - Feature attribute class.
+ * \brief Encapsulates a single feature attribute.
+  *@author Gary E.Sherman
+  */
 
-QgsDataSource::~QgsDataSource()
-{
-}
+class QgsFeatureAttribute {
+
+public: 
+	QgsFeatureAttribute();
+	~QgsFeatureAttribute();
+	/** Get the id for this feature */
+	QString fieldId();
+	QString fieldName();
+	QString fieldValue();
+ protected:
+ //! Path or uri of the datasource
+ private:
+ 	QString fId;
+	QString field;
+	QString value;
+};
+
+#endif
