@@ -780,6 +780,17 @@ public slots:
     /* virtual */ bool readXML_( QDomNode & layer_node );
 
 
+
+  /** write vector layer specific state to project file DOM node.
+
+      @note
+
+      Called by QgsMapLayer::writeXML().
+
+  */
+  /* virtual */ bool writeXML_( QDomNode & layer_node, QDomDocument & doc );
+
+
 private:
 
     //

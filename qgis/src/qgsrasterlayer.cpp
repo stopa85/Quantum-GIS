@@ -3159,5 +3159,33 @@ bool QgsRasterLayer::readXML_( QDomNode & layer_node )
 
     return true;
 
-} // QgsVectorLayer::readXML_( QDomNode & layer_node )
+} // QgsRasterLayer::readXML_( QDomNode & layer_node )
+
+
+
+/* virtual */ bool QgsRasterLayer::writeXML_( QDomNode & layer_node, 
+                                              QDomDocument & document )
+{
+    // first get the layer element so that we can append the type attribute
+
+    QDomElement mapLayerNode = layer_node.toElement();
+
+    if ( mapLayerNode.isNull() || ("maplayer" != mapLayerNode.nodeName()) )
+    {
+        const char * nn = mapLayerNode.nodeName().ascii(); // debugger probe
+
+        qDebug( "QgsRasterLayer::writeXML() can't find <maplayer>" );
+
+        return false;
+    }
+
+    mapLayerNode.setAttribute( "type", "raster" );
+
+    // <rasterproperties>
+    QDomElement rasterProperties = document.createElement( "rasterproperties" );
+    mapLayerNode.appendChild( rasterProperties );
+
+    return true;
+} // bool QgsRasterLayer::writeXML_
+
 
