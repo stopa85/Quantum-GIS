@@ -30,10 +30,10 @@ qgis_SOURCES =  qgisapp.cpp \
 				qgslayerproperties.cpp \
 				qgslegend.cpp \
 				qgslegenditem.cpp \
-				qgslegendview.cpp \
 				qgslinesymbol.cpp \
 				qgsmapcanvas.cpp \
 				qgsmaplayer.cpp \
+				qgsvectorlayer.cpp \
 				qgsmarkersymbol.cpp \
 				qgspluginitem.cpp \
 				qgspluginmanager.cpp \
@@ -46,8 +46,8 @@ qgis_SOURCES =  qgisapp.cpp \
 				qgsrenderitem.cpp \
 				qgsshapefilelayer.cpp \
 				qgssymbol.cpp\
-				qgsmapserverexport.cpp \
-				qtiffio.cpp \
+				qgsfeature.cpp \
+				qgsfeatureattribute.cpp \
 				$(qgis_UI)\
 				$(qgis_MOC)
 qgis_MOC = 	qgisappbase.moc.cpp \
@@ -61,7 +61,6 @@ qgis_MOC = 	qgisappbase.moc.cpp \
 			qgslegend.moc.cpp\
 			qgslegenditembase.moc.cpp\
 			qgslegenditem.moc.cpp\
-			qgslegendview.moc.cpp\
 			qgsmapcanvas.moc.cpp\
 			qgsmaplayer.moc.cpp\
 			qgsmaplayerinterface.moc.cpp\
@@ -69,9 +68,7 @@ qgis_MOC = 	qgisappbase.moc.cpp \
 			qgspluginmanagerbase.moc.cpp\
 			qgsrasterlayer.moc.cpp\
 			qgsshapefilelayer.moc.cpp \
-			qgsmapserverexportbase.moc.cpp \
-			qgsmapserverexport.moc.cpp \
-			qgshelpviewer.moc.cpp
+            qgsvectorlayer.moc.cpp
 qgis_UI = qgisappbase.h\
 			qgisappbase.cpp\
 			qgslegenditembase.h\
@@ -87,10 +84,7 @@ qgis_UI = qgisappbase.h\
 			qgspluginmanagerbase.h\
 			qgspluginmanagerbase.cpp\
 			qgsmessageviewer.h\
-			qgsmessageviewer.cpp \
- 			qgsmapserverexportbase.cpp \
-			qgshelpviewer.h \
-			qgshelpviewer.cpp
+			qgsmessageviewer.cpp
 
 # UI dependencies			
 qgisappbase.h: qgisappbase.ui
@@ -109,8 +103,6 @@ qgspluginmanagerbase.h: qgspluginmanagerbase.ui
 qgspluginmanagerbase.cpp: qgspluginmanagerbase.h qgspluginmanagerbase.ui
 qgsmessageviewer.h: qgsmessageviewer.ui
 qgsmessageviewer.cpp: qgsmessageviewer.h qgsmessageviewer.ui
-qgshelpviewer.h: qgshelpviewer.ui
-qgshelpviewer.cpp: qgshelpviewer.h qgshelpviewer.ui 
 
 #PostgreSQL UI dependencies
 qgsdbsourceselectbase.h: qgsdbsourceselectbase.ui
@@ -144,5 +136,5 @@ endif
 
 BUILT_SOURCES = $(qgis_MOC) $(qgis_UI)
 qgis_LDADD := $(LDADD) $(QT_LDADD) $(GDAL_LIB) $(PG_LIB)
-AM_CXXFLAGS := $(PGDB) $(CXXFLAGS) $(EXTRA_CXXFLAGS) -I../include $(QT_CXXFLAGS) -I$(PG_INC)
+AM_CXXFLAGS := $(PGDB) $(CXXFLAGS) $(EXTRA_CXXFLAGS) -I../include $(QT_CXXFLAGS) -I$(PG_INC) -g 
 CLEANFILES = $(BUILT_SOURCES)
