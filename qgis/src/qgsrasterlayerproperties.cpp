@@ -39,6 +39,7 @@ email                : tim@linfiniti.com
 #include <qtextbrowser.h>
 #include <qspinbox.h>
 #include <qpointarray.h>
+#include <qrect.h>
 
 const char * const ident = 
 "$Id";
@@ -984,73 +985,108 @@ void QgsRasterLayerProperties::pbnHistRefresh_clicked()
   //
   //now draw actual graphs
   //
-  for (int myIteratorInt = 1;
+
+  if (rasterLayer->getRasterLayerType()
+          == QgsRasterLayer::PALETTE) //paletted layers have hard coded color entries
+  {
+    QPointArray myPointArray(BINS);
+    QgsColorTable *myColorTable=rasterLayer->colorTable(1);
+    RasterBandStats myRasterBandStats = rasterLayer->getRasterBandStats(1);
+    int myBarWidth = (((double)myGraphImageWidth)/((double)BINS));
+    for (int myBin = 0; myBin <BINS; myBin++)
+    {
+      double myBinValue = myRasterBandStats.histogramVector->at(myBin);
+      //NOTE: Int division is 0 if the numerator is smaller than the denominator.
+      //hence the casts
+      int myX = (((double)myGraphImageWidth)/((double)BINS))*myBin;
+      //height varies according to freq. and scaled to greatet value in all layers
+      int myY = (int)((myBinValue/myMaxVal)*myGraphImageHeight);
+      myY = myGraphImageHeight - myY;
+      //determin which color to draw the bar
+      int c1, c2, c3;
+      bool found = myColorTable->color ( myBinValue, &c1, &c2, &c3 );
+      if ( !found ) continue;
+      //draw the bar
+      QBrush myBrush(QColor(c1,c2,c3));
+      myPainter.fillRect(QRect(myX,myY,myBarWidth,myY) , myBrush );
+      //store this point in our line too
+      myPointArray.setPoint(myBin, myX, myY);
+    }
+    //draw a line on the graph along the bar peaks
+    myPainter.setPen( Qt::black );
+    myPainter.drawPolyline(myPointArray);
+  }
+  else
+  {
+
+    for (int myIteratorInt = 1;
             myIteratorInt <= myBandCountInt;
             ++myIteratorInt)
-  {
-    RasterBandStats myRasterBandStats = rasterLayer->getRasterBandStats(myIteratorInt);
-    QListBoxItem *myItem = lstHistogramLabels->item( myIteratorInt-1 );
-    if ( myItem->isSelected() )
     {
+      RasterBandStats myRasterBandStats = rasterLayer->getRasterBandStats(myIteratorInt);
+      QListBoxItem *myItem = lstHistogramLabels->item( myIteratorInt-1 );
+      if ( myItem->isSelected() )
+      {
 
-      QPointArray myPointArray(BINS);
-      for (int myBin = 0; myBin <BINS; myBin++)
-      {
-        double myBinValue = myRasterBandStats.histogramVector->at(myBin);
-        //NOTE: Int division is 0 if the numerator is smaller than the denominator.
-        //hence the casts
-        int myX = (((double)myGraphImageWidth)/((double)BINS))*myBin;
-        //height varies according to freq. and scaled to greatet value in all layers
-        int myY = (int)((myBinValue/myMaxVal)*myGraphImageHeight);
-        //adjust for image origin being top left
+        QPointArray myPointArray(BINS);
+        for (int myBin = 0; myBin <BINS; myBin++)
+        {
+          double myBinValue = myRasterBandStats.histogramVector->at(myBin);
+          //NOTE: Int division is 0 if the numerator is smaller than the denominator.
+          //hence the casts
+          int myX = (((double)myGraphImageWidth)/((double)BINS))*myBin;
+          //height varies according to freq. and scaled to greatet value in all layers
+          int myY = (int)((myBinValue/myMaxVal)*myGraphImageHeight);
+          //adjust for image origin being top left
 #ifdef QGISDEBUG
-        std::cout << "-------------" << std::endl;
-        std::cout << "int myY = (myBinValue/myCellCount)*myGraphImageHeight" << std::endl;
-        std::cout << "int myY = (" << myBinValue << "/" << myCellCount << ")*" << myGraphImageHeight << std::endl;
-        std::cout << "Band " << myIteratorInt << ", bin " << myBin << ", Hist Value : " << myBinValue << ", Scaled Value : " << myY << std::endl;
-        std::cout << "myY = myGraphImageHeight - myY" << std::endl;
-        std::cout << "myY = " << myGraphImageHeight << "-" << myY << std::endl;
+          std::cout << "-------------" << std::endl;
+          std::cout << "int myY = (myBinValue/myCellCount)*myGraphImageHeight" << std::endl;
+          std::cout << "int myY = (" << myBinValue << "/" << myCellCount << ")*" << myGraphImageHeight << std::endl;
+          std::cout << "Band " << myIteratorInt << ", bin " << myBin << ", Hist Value : " << myBinValue << ", Scaled Value : " << myY << std::endl;
+          std::cout << "myY = myGraphImageHeight - myY" << std::endl;
+          std::cout << "myY = " << myGraphImageHeight << "-" << myY << std::endl;
 #endif
-        myY = myGraphImageHeight - myY;
-        myPointArray.setPoint(myBin, myX, myY);
+          myY = myGraphImageHeight - myY;
+          myPointArray.setPoint(myBin, myX, myY);
+        }
+        if (myBandCountInt==1) //draw single band images with black
+        {
+          myPainter.setPen( Qt::black );
+        }
+        else if (myIteratorInt==1)
+        {
+          myPainter.setPen( Qt::red );
+        }
+        else if (myIteratorInt==2)
+        {
+          myPainter.setPen( Qt::green );
+        }
+        else if (myIteratorInt==3)
+        {
+          myPainter.setPen( Qt::blue );
+        }
+        else if (myIteratorInt==4)
+        {
+          myPainter.setPen( Qt::magenta );
+        }
+        else if (myIteratorInt==5)
+        {
+          myPainter.setPen( Qt::darkRed );
+        }
+        else if (myIteratorInt==6)
+        {
+          myPainter.setPen( Qt::darkGreen );
+        }
+        else if (myIteratorInt==7)
+        {
+          myPainter.setPen( Qt::darkBlue );
+        }
+        else
+        {
+          myPainter.setPen( Qt::gray );
+        }
+        myPainter.drawPolyline(myPointArray);
       }
-      if (myBandCountInt==1) //draw single band images with black
-      {
-        myPainter.setPen( Qt::black );
-      }
-      else if (myIteratorInt==1)
-      {
-        myPainter.setPen( Qt::red );
-      }
-      else if (myIteratorInt==2)
-      {
-        myPainter.setPen( Qt::green );
-      }
-      else if (myIteratorInt==3)
-      {
-        myPainter.setPen( Qt::blue );
-      }
-      else if (myIteratorInt==4)
-      {
-        myPainter.setPen( Qt::magenta );
-      }
-      else if (myIteratorInt==5)
-      {
-        myPainter.setPen( Qt::darkRed );
-      }
-      else if (myIteratorInt==6)
-      {
-        myPainter.setPen( Qt::darkGreen );
-      }
-      else if (myIteratorInt==7)
-      {
-        myPainter.setPen( Qt::darkBlue );
-      }
-      else
-      {
-        myPainter.setPen( Qt::gray );
-      }
-      myPainter.drawPolyline(myPointArray);
     }
   }
 
@@ -1073,7 +1109,7 @@ void QgsRasterLayerProperties::pbnHistRefresh_clicked()
   //
   int myYDivisions = myGraphImageHeight/10;
   myPainter.setPen( Qt::gray );
-  for (int i=myYDivisions;i==0;--i)
+  for (int i=myYDivisions;i>0;--i)
   {
 
     QPointArray myPointArray(4);
