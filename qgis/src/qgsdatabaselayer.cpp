@@ -68,11 +68,11 @@ tableName(table)
 			// set the simple type for use with symbology operations
 			QString fType = pd->GetValue(0, "type");
 			if (fType == "POINT" || fType == "MULTIPOINT")
-				feature = QGis::WKBPoint;
+				geometryType = QGis::WKBPoint;
 			else if (fType == "LINESTRING" || fType == "MULTILINESTRING")
-				feature = QGis::WKBLineString;
+				geometryType = QGis::WKBLineString;
 			else if (fType == "POLYGON" || fType == "MULTIPOLYGON")
-				feature = QGis::WKBPolygon;
+				geometryType = QGis::WKBPolygon;
 
 			// set the extent of the layer
 			QString sql = "select xmax(extent(" + geometryColumn + ")) as xmax,"

@@ -119,7 +119,8 @@ class QgsMapLayer:public QObject
 	//! Indicates if the layer is valid and can be drawn
 	bool valid;
 	QString dataSource;
-	int feature;
+	//! Geometry type as defined in enum WKBTYPE (qgis.h)
+	int geometryType;
   private:						// Private attributes
 	/** Unique ID of this layer - used to refer to this layer  in QGIS code */
 	  QString ID;

@@ -200,14 +200,14 @@ void QgsMapCanvas::render2()
 				QgsMapLayer *ml = layers[*li];
 				if (ml) {
 					//    QgsDatabaseLayer *dbl = (QgsDatabaseLayer *)&ml;
-//          std::cout << "Rendering " << ml->name() << std::endl;
+          std::cout << "Rendering " << ml->name() << std::endl;
 					if (ml->visible())
 						ml->draw(paint, &currentExtent, coordXForm);
 					li++;
 					//  mi.draw(p, &fullExtent);
 				}
 			}
-
+      std::cout << "Done rendering map layers\n";
 			paint->end();
 			drawing = false;
 		}

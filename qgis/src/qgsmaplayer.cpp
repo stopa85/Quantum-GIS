@@ -137,13 +137,13 @@ void QgsMapLayer::setVisible(bool vis)
 }	 /** Read property of int featureType. */
 const int &QgsMapLayer::featureType()
 {
-	return feature;
+	return geometryType;
 }
 
 /** Write property of int featureType. */
 void QgsMapLayer::setFeatureType(const int &_newVal)
 {
-	feature = _newVal;
+	geometryType = _newVal;
 }
 
 void QgsMapLayer::identify(QgsRect * r)
