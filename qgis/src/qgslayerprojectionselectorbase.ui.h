@@ -9,7 +9,7 @@
 ** These will automatically be called by the form's constructor and
 ** destructor.
 *****************************************************************************/
-
+#include "../widgets/projectionselector/qgsprojectionselector.h"
 
 void QgsLayerProjectionSelectorBase::pbnOK_clicked()
 {
