@@ -61,8 +61,16 @@ QgsGraSyExtensionWidget::QgsGraSyExtensionWidget(QWidget* parent, int classfield
     QgsDataProvider* provider = m_vectorlayer->getDataProvider();
     if(provider)
     {
-	minimum=provider->minValue(m_classfield).toDouble();
-	maximum=provider->maxValue(m_classfield).toDouble();
+	if(m_mode==QgsGraSyDialog::EQUAL_INTERVAL)
+	{
+	    minimum=provider->minValue(m_classfield).toDouble();
+	    maximum=provider->maxValue(m_classfield).toDouble();
+	}
+	else//don't waste performance if m_mode is QgsGraSyDialog::EMPTY
+	{
+	    minimum=0;
+	    maximum=0;
+	}
     }
     else
     {

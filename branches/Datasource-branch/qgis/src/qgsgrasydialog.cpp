@@ -35,6 +35,7 @@ QgsGraSyDialog::QgsGraSyDialog(QgsVectorLayer* layer): QgsGraSyDialogBase(), ext
 {
     QObject::connect(numberofclassesspinbox,SIGNAL(valueChanged(int)),this,SLOT(adjustNumberOfClasses()));
     QObject::connect(classificationComboBox,SIGNAL(activated(int)),this,SLOT(adjustNumberOfClasses()));
+    QObject::connect(modeComboBox,SIGNAL(activated(int)),this,SLOT(adjustNumberOfClasses()));
     QObject::connect(closebutton,SIGNAL(clicked()),this,SLOT(hide()));
     QObject::connect(applybutton,SIGNAL(clicked()),this,SLOT(apply()));
     setOrientation(Qt::Vertical);
@@ -67,9 +68,9 @@ QgsGraSyDialog::QgsGraSyDialog(QgsVectorLayer* layer): QgsGraSyDialogBase(), ext
 	qWarning("Warning, data provider is null in QgsGraSyDialog::QgsGraSyDialog(...)");
 	return;
     }
-   
-    modeComboBox->insertItem("equal interval");
+    
     modeComboBox->insertItem("empty");
+    modeComboBox->insertItem("equal interval");
 
     setSizeGripEnabled(true);
 }
