@@ -1,8 +1,8 @@
 /***************************************************************************
-                          gsdatasource.h  -  description
+                          qgsfeature.h  -  description
                              -------------------
-    begin                : Sun Jun 30 2002
-    copyright            : (C) 2002 by Gary E.Sherman
+    begin                : Mon Sep 01 2003
+    copyright            : (C) 2003 by Gary E.Sherman
     email                : sherman at mrcc.com
  ***************************************************************************/
 
@@ -15,23 +15,28 @@
  *                                                                         *
  ***************************************************************************/
 /* $Id */
-#ifndef QGSDATASOURCE_H
-#define QGSDATASOURCE_H
+#ifndef QGSFEATURE_H
+#define QGSFEATURE_H
 #include <qstring.h>
 
-/**Base class for spatial and tabular data
+/** Feature attribute class
   *@author Gary E.Sherman
   */
 
-class QgsDataSource {
+class QgsFeature {
 
 public: 
-	QgsDataSource();
-	~QgsDataSource();
-	identify(QgsRect *rect);
+	QgsFeature();
+	~QgsFeature();
+	QString fieldId();
+	QString fieldName();
+	QString fieldValue();
  protected:
  //! Path or uri of the datasource
- 	QString dataSource;
+ private:
+ 	QString fId;
+	QString field;
+	QString value;
 };
 
 #endif
