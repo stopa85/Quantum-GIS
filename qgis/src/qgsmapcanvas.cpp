@@ -795,8 +795,8 @@ void QgsMapCanvas::render(QPaintDevice * theQPaintDevice)
                 try
                 {
                   myProjectedRect =
-                    ml->coordinateTransform()->inverseTransform(
-                      mCanvasProperties->currentExtent);
+                    ml->coordinateTransform()->transform(
+                      mCanvasProperties->currentExtent,  QgsCoordinateTransform::FORWARD);
 
                 }
                 catch (QgsCsException &e)

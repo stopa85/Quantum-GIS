@@ -314,9 +314,10 @@ QTextStream userCsTextStream( &csQFile );
   //find out how many entries in the map
   int myEntriesCount = mProjectionsMap.size();
   std::cout << "Srs map has " << myEntriesCount << " entries " << std::endl;
-  int myProgress = 0;
+  int myProgress = 1;
   QProgressDialog myProgressBar( "Building Projections List...", "Cancel", myEntriesCount,
                             this, "progress", TRUE );
+  myProgressBar.setProgress(myProgress);
   // now add each key to our list view
   QListViewItem *newItem;
   for ( myIterator = mProjectionsMap.begin(); myIterator != mProjectionsMap.end(); ++myIterator ) 

@@ -71,49 +71,6 @@ class QgsCoordinateTransform: public QObject
       INVERSE
     };
     
-    /*! Transform the point from Source Coordinate System to Destination Coordinate System
-     * (layer --> map canvas)
-    * @param p Point to transform
-    * @return QgsPoint in Destination Coordinate System
-    */    
-    QgsPoint transform(QgsPoint p);
-    
-    /*! Transform the point specified by x,y from Source Coordinate System to Destination Coordinate System
-    * @param x x cordinate of point to transform
-    * @param y y coordinate of point to transform
-    * @return QgsPoint in Destination Coordinate System
-    */
-    QgsPoint transform(double x, double y);
-
-    /*! Transform a QgsRect to the dest Coordinate system 
-    * @param QgsRect rect to transform
-    * @return QgsRect in Destination Coordinate System
-    */        
-    QgsRect transform(QgsRect theRect);
-    
-    /*! Inverse Transform the point from Dest Coordinate System to Source Coordinate System
-    * @param p Point to transform (in destination coord system)
-    * @return QgsPoint in Source Coordinate System
-    */    
-    QgsPoint inverseTransform(QgsPoint p);
-    
-    /*! Inverse Transform the point specified by x,y from Dest Coordinate System to Source Coordinate System
-    * @param x x cordinate of point to transform (in dest coord sys)
-    * @param y y coordinate of point to transform (in dest coord sys)
-    * @return QgsPoint in Source Coordinate System
-    */
-    QgsPoint inverseTransform(double x, double y);
-
-    /*! Inverse Transform a QgsRect to the source Coordinate system 
-    * @param QgsRect rect to transform (in dest coord sys)
-    * @return QgsRect in Source Coordinate System
-    */        
-    QgsRect inverseTransform(QgsRect theRect); 
-       
-       
-    // XXX What is this for? It doesn't seem to be implemented [gs]        
-    QString showParameters();
-    
     /*! 
      * Set the source (layer) WKT
      * @param theWKT WKT representation of the layer's coordinate system
@@ -129,12 +86,51 @@ class QgsCoordinateTransform: public QObject
      * @return WKT of the map canvas coordinate system
      */
     QString destWKT() const {return mDestWKT;};    
-    void transformCoords(TransformDirection direction, const int &numPoint, double &x, double &y, double &z);
   /*! 
    * Flag to indicate whether the coordinate systems have been initialised
    * @return true if initialised, otherwise false
    */
    bool isInitialised() {return mInitialisedFlag;};
+   
+       
+    /*! Transform the point from Source Coordinate System to Destination Coordinate System
+    * If the direction is FORWARD then coordinates are transformed from layer CS --> map canvas CS,
+    * otherwise points are transformed from map canvas CS to layerCS.
+    * @param p Point to transform
+    * @param direction TransformDirection (defaults to FORWARD)
+    * @return QgsPoint in Destination Coordinate System
+     */    
+   QgsPoint transform(const QgsPoint p,TransformDirection direction=FORWARD) const;
+    
+    /*! Transform the point specified by x,y from Source Coordinate System to Destination Coordinate System
+    * If the direction is FORWARD then coordinates are transformed from layer CS --> map canvas CS,
+    * otherwise points are transformed from map canvas CS to layerCS.
+    * @param x x cordinate of point to transform
+    * @param y y coordinate of point to transform
+    * @param direction TransformDirection (defaults to FORWARD)
+    * @return QgsPoint in Destination Coordinate System
+     */
+   QgsPoint transform(double x, double y,TransformDirection direction=FORWARD) const ;
+
+    /*! Transform a QgsRect to the dest Coordinate system 
+    * If the direction is FORWARD then coordinates are transformed from layer CS --> map canvas CS,
+    * otherwise points are transformed from map canvas CS to layerCS.
+    * @param QgsRect rect to transform
+    * @param direction TransformDirection (defaults to FORWARD)
+    * @return QgsRect in Destination Coordinate System
+     */        
+   QgsRect transform(const QgsRect theRect,TransformDirection direction=FORWARD) const;
+    
+    /*! Transform an array of coordinates to a different Coordinate System
+    * If the direction is FORWARD then coordinates are transformed from layer CS --> map canvas CS,
+    * otherwise points are transformed from map canvas CS to layerCS.
+    * @param x x cordinate of point to transform
+    * @param y y coordinate of point to transform     
+    * @param direction TransformDirection (defaults to FORWARD)
+    * @return QgsRect in Destination Coordinate System
+     */        
+   void transformCoords( const int &numPoint, double &x, double &y, double &z,TransformDirection direction=FORWARD) const;
+
  public slots:
     /*! 
      * Mutator for dest WKT - This slot will usually be called if the
