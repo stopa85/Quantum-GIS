@@ -31,7 +31,6 @@
 #include <qcursor.h>
 #include <qdir.h>
 #include <qerrormessage.h>
-#include <qfiledialog.h>
 #include <qfile.h>
 #include <qfileinfo.h>
 #include <qinputdialog.h>
@@ -75,7 +74,7 @@
 
 #include <cmath>
 
-
+#include "qgsencodingfiledialog.h"
 #include "qgsrect.h"
 #include "qgsmapcanvas.h"
 #include "qgsacetaterectangle.h"
@@ -946,7 +945,7 @@ static void buildSupportedVectorFileFilter_(QString & fileFilters)
    with the current filter name.
 
 */
-static void openFilesRememberingFilter_(QString const &filterName, QString const &filters, QStringList & selectedFiles)
+static void openFilesRememberingFilter_(QString const &filterName, QString const &filters, QStringList & selectedFiles, QgsVectorDataProvider::Encoding& enc)
 {
 
     bool haveLastUsedFilter = false;  // by default, there is no last
@@ -966,7 +965,7 @@ static void openFilesRememberingFilter_(QString const &filterName, QString const
     std::cerr << "Opening vector file dialog with filters: " << filters << std::endl;
 #endif
 
-    QFileDialog * openFileDialog = new QFileDialog(lastUsedDir, filters, 0, QFileDialog::tr("open files dialog"));
+    QgsEncodingFileDialog* openFileDialog = new QgsEncodingFileDialog(lastUsedDir, filters, 0, QFileDialog::tr("open files dialog"));
 
     // allow for selection of more than one file
     openFileDialog->setMode(QFileDialog::ExistingFiles);
@@ -980,6 +979,7 @@ static void openFilesRememberingFilter_(QString const &filterName, QString const
     if (openFileDialog->exec() == QDialog::Accepted)
     {
         selectedFiles = openFileDialog->selectedFiles();
+	enc = openFileDialog->encoding();
     }
 
     settings.writeEntry("/qgis/UI/" + filterName, openFileDialog->selectedFilter());
@@ -1028,7 +1028,8 @@ void QgisApp::addLayer()
         std::cerr << "Vector file filters: " << fileFilters << std::endl;
 #endif
 
-        openFilesRememberingFilter_("lastVectorFileFilter", fileFilters, selectedFiles);
+	QgsVectorDataProvider::Encoding enc=QgsVectorDataProvider::Utf8;
+        openFilesRememberingFilter_("lastVectorFileFilter", fileFilters, selectedFiles, enc);
         if (selectedFiles.isEmpty())
         {
             // no files were selected, so just bail
@@ -1037,7 +1038,7 @@ void QgisApp::addLayer()
             return;
         }
 
-        addLayer(selectedFiles);
+        addLayer(selectedFiles, enc);
     }
 }                               // QgisApp::addLayer()
 
@@ -1173,7 +1174,7 @@ bool QgisApp::addLayer(QFileInfo const & vectorFile)
   XXX yah know, this could be changed to just iteratively call the above
 
  */
-bool QgisApp::addLayer(QStringList const &theLayerQStringList)
+bool QgisApp::addLayer(QStringList const &theLayerQStringList, const QgsVectorDataProvider::Encoding enc)
 {
     // check to see if we have an ogr provider available
     QString pOgr = mProviderRegistry->library("ogr");
@@ -1220,6 +1221,7 @@ bool QgisApp::addLayer(QStringList const &theLayerQStringList)
 
             if (layer->isValid())
             {
+		layer->getDataProvider()->setEncoding(enc);
                 //Register the layer with the layer registry
                 QgsMapLayerRegistry::instance()->addMapLayer(layer);
                 // init the context menu so it can connect to slots
@@ -2580,8 +2582,9 @@ void QgisApp::removeLayer()
   emit keyPressEvent(new QKeyEvent(QEvent::KeyPress ,Qt::Key_Escape,Qt::Key_Escape,0 ));
   mMapCanvas->freeze();
   QListViewItem *lvi = mMapLegend->currentItem();
-  QgsMapLayer *layer = ((QgsLegendItem *) lvi)->layer();
-  if(layer){
+  if(lvi)
+  {
+    QgsMapLayer *layer = ((QgsLegendItem *) lvi)->layer();
     //call the registry to unregister the layer. It will in turn
     //fire a qt signal to notify any objects using that layer that they should
     //remove it immediately
@@ -2652,13 +2655,15 @@ void QgisApp::currentLayerChanged(QListViewItem * lvi)
     {
         // disable/enable toolbar buttons as appropriate based on selected
         // layer type
+
+	toolPopupCapture->setItemEnabled(0,FALSE);
+	toolPopupCapture->setItemEnabled(1,FALSE);
+	toolPopupCapture->setItemEnabled(2,FALSE);
+	toolPopupCapture->setItemEnabled(3,FALSE);
+
         QgsMapLayer *layer = ((QgsLegendItem *) lvi)->layer();
         if (layer->type() == QgsMapLayer::RASTER)
         {
-            toolPopupCapture->setItemEnabled(0,FALSE);
-            toolPopupCapture->setItemEnabled(1,FALSE);
-            toolPopupCapture->setItemEnabled(2,FALSE);
-            toolPopupCapture->setItemEnabled(3,FALSE);
             actionIdentify->setEnabled(FALSE);
             actionSelect->setEnabled(FALSE);
             actionOpenTable->setEnabled(FALSE);
@@ -2676,57 +2681,31 @@ void QgisApp::currentLayerChanged(QListViewItem * lvi)
             QgsVectorLayer* vlayer=dynamic_cast<QgsVectorLayer*>(((QgsLegendItem *) lvi)->layer());
             if(vlayer)
             {
-                if(vlayer->vectorType()==QGis::Point)
-                {
-                    toolPopupCapture->setItemEnabled(0,TRUE);
-                    toolPopupCapture->setItemEnabled(1,FALSE);
-                    toolPopupCapture->setItemEnabled(2,FALSE);
-		    if(mMapCanvas->mapTool() == QGis::CaptureLine || mMapCanvas->mapTool() == QGis::CapturePolygon)
+		QgsVectorDataProvider* provider=vlayer->getDataProvider();
+		if(provider)
+		{
+		    int cap=vlayer->getDataProvider()->capabilities();
+		    if(cap&QgsVectorDataProvider::DeleteFeatures)
 		    {
-			mMapCanvas->setMapTool(QGis::CapturePoint);
+			toolPopupCapture->setItemEnabled(3,TRUE);
 		    }
-                }
-                else if(vlayer->vectorType()==QGis::Line)
-                {
-#ifdef QGISDEBUG
-		    qWarning("QgisApp::currentLayerChanged: Line type recognized");
-		    qWarning("current map tool is: "+QString::number(mMapCanvas->mapTool()));
-#endif
-                    toolPopupCapture->setItemEnabled(0,FALSE);
-                    toolPopupCapture->setItemEnabled(1,TRUE);
-                    toolPopupCapture->setItemEnabled(2,FALSE);
-		    if(mMapCanvas->mapTool() == QGis::CapturePoint || mMapCanvas->mapTool() == QGis::CapturePolygon)
+		    if(cap&QgsVectorDataProvider::AddFeatures)
 		    {
-#ifdef QGISDEBUG
-			qWarning("Changing map tool");
-#endif
-			mMapCanvas->setMapTool(QGis::CaptureLine);
+			if(vlayer->vectorType()==QGis::Point)
+			{
+			    toolPopupCapture->setItemEnabled(0,TRUE);
+			}
+			else if(vlayer->vectorType()==QGis::Line)
+			{
+			    toolPopupCapture->setItemEnabled(1,TRUE);
+			}
+			else if(vlayer->vectorType()==QGis::Polygon)
+			{
+			    toolPopupCapture->setItemEnabled(2,TRUE);
+			}
 		    }
-                }
-                else if(vlayer->vectorType()==QGis::Polygon)
-                {
-                    toolPopupCapture->setItemEnabled(0,FALSE);
-                    toolPopupCapture->setItemEnabled(1,FALSE);
-                    toolPopupCapture->setItemEnabled(2,TRUE);
-		    if(mMapCanvas->mapTool() == QGis::CapturePoint || mMapCanvas->mapTool() == QGis::CaptureLine)
-		    {
-			mMapCanvas->setMapTool(QGis::CapturePolygon);
-		    }
-                }
-
-                QgsVectorDataProvider* dprov=vlayer->getDataProvider();
-                if(dprov)
-                {
-                    if(dprov->supportsFeatureDeletion())
-                    {
-                        toolPopupCapture->setItemEnabled(3,TRUE);
-                    }
-                    else
-                    {
-                        toolPopupCapture->setItemEnabled(3,FALSE);
-                    }
-                }
-            }
+		}
+	    }
 
             actionIdentify->setEnabled(TRUE);
             actionSelect->setEnabled(TRUE);
@@ -4063,8 +4042,9 @@ void QgisApp::addRasterLayer()
     QgsRasterLayer::buildSupportedRasterFileFilter(fileFilters);
 
     QStringList selectedFiles;
+    QgsVectorDataProvider::Encoding e;//only for parameter correctness
 
-    openFilesRememberingFilter_("lastRasterFileFilter", fileFilters, selectedFiles);
+    openFilesRememberingFilter_("lastRasterFileFilter", fileFilters, selectedFiles,e);
 
     if (selectedFiles.isEmpty())
     {

@@ -58,6 +58,7 @@ headers =	qgisapp.h					\
 		qgscontcoldialog.h				\
 		qgscontinuouscolrenderer.h			\
 		qgscoordinatetransform.h			\
+		qgsencodingfiledialog.h				\
 		qgsmaptopixel.h					\
 		qgscustomsymbol.h				\
 		qgsdataprovider.h				\
@@ -213,6 +214,7 @@ qgis_MOC =	qgisapp.moc.cpp				\
 		qgscontcoldialog.moc.cpp		\
 		qgsdelattrdialog.moc.cpp			\
 		qgsdlgvectorlayerproperties.moc.cpp	\
+		qgsencodingfiledialog.moc.cpp		\
 		qgsgeomtypedialog.moc.cpp		\
 		qgsgramadialog.moc.cpp			\
 		qgsgramaextensionwidget.moc.cpp		\
@@ -270,6 +272,7 @@ qgis_SOURCES =	main.cpp			\
 		qgscontcoldialog.cpp		\
 		qgscontinuouscolrenderer.cpp	\
 		qgscoordinatetransform.cpp	\
+		qgsencodingfiledialog.cpp	\
 		qgsmaptopixel.cpp		\
 		qgscustomsymbol.cpp		\
 		qgsdatasource.cpp		\

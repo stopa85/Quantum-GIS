@@ -85,10 +85,16 @@ class QgsComposerVectorLegend : public QgsComposerVectorLegendBase, public QCanv
     Q_OBJECT
 
 public:
-    /** \brief Preview style  
+    /** \brief Constructor  
+     *  \param id object id
      *  \param fontSize font size in typographic points!
      */
     QgsComposerVectorLegend( QgsComposition *composition, int id, int x, int y, int fontSize = 0 );
+
+    /** \brief Constructor. Settings are read from project. 
+     *  \param id object id
+     */
+    QgsComposerVectorLegend( QgsComposition *composition, int id );
     ~QgsComposerVectorLegend();
 
     /** \brief Preview style  */
@@ -98,9 +104,13 @@ public:
 	Rectangle    // Display only rectangle
     };
 
+    /** \brief Initialise GUI etc., share by constructors. */
+    void init(void);
+
     // Reimplement QgsComposerItem:
     void setSelected( bool s );
     bool selected( void );
+    QWidget *options ( void );
     bool writeSettings ( void );
     bool readSettings ( void );
     bool writeXML( QDomNode & node, QDomDocument & document, bool temp = false );
@@ -127,9 +137,18 @@ public:
 public slots:
     // Open font dialog
     void changeFont ( void );
+
+    // Title changed
+    void titleChanged ( void );
     
     // Called by GUI if preview style was changed
     void previewModeChanged ( int i );
+
+    // Called by GUI when map selection changed
+    void mapSelectionChanged ( int i );
+
+    // Called when map was changed
+    void mapChanged ( int id );
 
 private:
     // Pointer to composition
@@ -138,8 +157,11 @@ private:
     // Pointer to map canvas
     QgsMapCanvas *mMapCanvas;
     
-    // Pointer to composer map 
-    QgsComposerMap *mMap;
+    // Composer map id or 0
+    int mMap;
+
+    // Vector of map id for maps in combobox
+    std::vector<int> mMaps;
 
     // Title 
     QString mTitle;

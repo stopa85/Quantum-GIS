@@ -24,13 +24,27 @@
  */
 class QgsVectorDataProvider : public QgsDataProvider
 {
- protected:
-    /**List of type names for non-numerical types*/
-    std::list<QString> mNonNumericalTypes;
-    /**List of type names for numerical types*/
-    std::list<QString> mNumericalTypes;
 
  public:
+
+    enum Capability
+  {
+      NoCapabilities = 0,
+      AddFeatures = 1,
+      DeleteFeatures = 1 << 1,
+      ChangeAttributeValues = 1 << 2,
+      AddAttributes = 1 << 3,
+      DeleteAttributes = 1 << 4,
+      SaveAsShapefile = 1 << 5
+  };
+
+    enum Encoding
+  {
+      Ascii,
+      Latin1,
+      Local8Bit,
+      Utf8
+  };
 
     QgsVectorDataProvider();
 
@@ -155,29 +169,27 @@ class QgsVectorDataProvider : public QgsDataProvider
      */
     virtual std::vector<QgsFeature>& identify(QgsRect *rect) = 0;
 
-  /**Returns true if a provider supports feature editing*/
-  virtual bool supportsFeatureAddition() const;
-
-  /**Returns true if a provider supports deleting features*/
-  virtual bool supportsFeatureDeletion() const;
-
-  /*Returns true if a provider supports adding/ removing attributes and
-   attribute changes to already existing features*/
-  virtual bool supportsAttributeEditing() const;
-
-  /** Returns true is the provider supports saving to shapefile*/
-   virtual bool supportsSaveAsShapefile() const;
-
   /** saves current data as Shape file, if it can */
   virtual bool saveAsShapefile()
   {
         // NOP by default
   }
 
+  /**Returns a bitmask containing the supported capabilities*/
+  virtual int capabilities() const {return QgsVectorDataProvider::NoCapabilities;}
+
   const std::list<QString>& nonNumericalTypes(){return mNonNumericalTypes;}
   const std::list<QString>& numericalTypes(){return mNumericalTypes;}
 
+  void setEncoding(QgsVectorDataProvider::Encoding e){mEncoding=e;}
 
+protected:
+    /**Encoding*/
+    QgsVectorDataProvider::Encoding mEncoding;
+    /**List of type names for non-numerical types*/
+    std::list<QString> mNonNumericalTypes;
+    /**List of type names for numerical types*/
+    std::list<QString> mNumericalTypes;
 };
 
 #endif

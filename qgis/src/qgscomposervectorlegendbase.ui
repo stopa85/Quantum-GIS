@@ -8,8 +8,8 @@
         <rect>
             <x>0</x>
             <y>0</y>
-            <width>215</width>
-            <height>150</height>
+            <width>212</width>
+            <height>275</height>
         </rect>
     </property>
     <property name="sizePolicy">
@@ -23,32 +23,26 @@
     <property name="caption">
         <string>Vector Legend Options</string>
     </property>
-    <grid>
+    <vbox>
         <property name="name">
             <cstring>unnamed</cstring>
         </property>
-        <widget class="QLabel" row="0" column="0">
+        <widget class="QLabel">
             <property name="name">
-                <cstring>textLabel1</cstring>
-            </property>
-            <property name="sizePolicy">
-                <sizepolicy>
-                    <hsizetype>7</hsizetype>
-                    <vsizetype>5</vsizetype>
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                </sizepolicy>
+                <cstring>textLabel1_2</cstring>
             </property>
             <property name="text">
-                <string>Map</string>
+                <string>Title</string>
             </property>
         </widget>
-        <widget class="QComboBox" row="0" column="1" rowspan="1" colspan="2">
+        <widget class="QLineEdit">
             <property name="name">
-                <cstring>mMapComboBox</cstring>
+                <cstring>mTitleLineEdit</cstring>
             </property>
-            <property name="enabled">
-                <bool>false</bool>
+        </widget>
+        <widget class="QLabel">
+            <property name="name">
+                <cstring>textLabel1</cstring>
             </property>
             <property name="sizePolicy">
                 <sizepolicy>
@@ -58,15 +52,50 @@
                     <verstretch>0</verstretch>
                 </sizepolicy>
             </property>
+            <property name="text">
+                <string>Map</string>
+            </property>
         </widget>
-        <widget class="QLabel" row="2" column="0" rowspan="1" colspan="2">
+        <widget class="QComboBox">
+            <property name="name">
+                <cstring>mMapComboBox</cstring>
+            </property>
+            <property name="enabled">
+                <bool>true</bool>
+            </property>
+            <property name="sizePolicy">
+                <sizepolicy>
+                    <hsizetype>5</hsizetype>
+                    <vsizetype>0</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                </sizepolicy>
+            </property>
+        </widget>
+        <widget class="QPushButton">
+            <property name="name">
+                <cstring>mFontButton</cstring>
+            </property>
+            <property name="sizePolicy">
+                <sizepolicy>
+                    <hsizetype>5</hsizetype>
+                    <vsizetype>0</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                </sizepolicy>
+            </property>
+            <property name="text">
+                <string>Font</string>
+            </property>
+        </widget>
+        <widget class="QLabel">
             <property name="name">
                 <cstring>textLabel1_5</cstring>
             </property>
             <property name="sizePolicy">
                 <sizepolicy>
                     <hsizetype>7</hsizetype>
-                    <vsizetype>5</vsizetype>
+                    <vsizetype>0</vsizetype>
                     <horstretch>0</horstretch>
                     <verstretch>0</verstretch>
                 </sizepolicy>
@@ -75,7 +104,7 @@
                 <string>Preview</string>
             </property>
         </widget>
-        <widget class="QComboBox" row="2" column="2">
+        <widget class="QComboBox">
             <property name="name">
                 <cstring>mPreviewModeComboBox</cstring>
             </property>
@@ -88,23 +117,24 @@
                 </sizepolicy>
             </property>
         </widget>
-        <widget class="QPushButton" row="1" column="0" rowspan="1" colspan="3">
+        <spacer>
             <property name="name">
-                <cstring>mFontButton</cstring>
+                <cstring>spacer3</cstring>
             </property>
-            <property name="sizePolicy">
-                <sizepolicy>
-                    <hsizetype>7</hsizetype>
-                    <vsizetype>0</vsizetype>
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                </sizepolicy>
+            <property name="orientation">
+                <enum>Vertical</enum>
             </property>
-            <property name="text">
-                <string>Font</string>
+            <property name="sizeType">
+                <enum>Expanding</enum>
             </property>
-        </widget>
-    </grid>
+            <property name="sizeHint">
+                <size>
+                    <width>16</width>
+                    <height>31</height>
+                </size>
+            </property>
+        </spacer>
+    </vbox>
 </widget>
 <connections>
     <connection>
@@ -119,10 +149,24 @@
         <receiver>QgsComposerVectorLegendBase</receiver>
         <slot>changeFont()</slot>
     </connection>
+    <connection>
+        <sender>mMapComboBox</sender>
+        <signal>activated(int)</signal>
+        <receiver>QgsComposerVectorLegendBase</receiver>
+        <slot>mapSelectionChanged(int)</slot>
+    </connection>
+    <connection>
+        <sender>mTitleLineEdit</sender>
+        <signal>returnPressed()</signal>
+        <receiver>QgsComposerVectorLegendBase</receiver>
+        <slot>titleChanged()</slot>
+    </connection>
 </connections>
 <slots>
     <slot>changeFont()</slot>
     <slot>previewModeChanged(int)</slot>
+    <slot>mapSelectionChanged(int)</slot>
+    <slot>titleChanged()</slot>
 </slots>
 <layoutdefaults spacing="6" margin="11"/>
 </UI>

@@ -135,6 +135,9 @@ QgsOgrProvider::QgsOgrProvider(QString uri): QgsVectorDataProvider(), dataSource
   //    std::cerr << "Creating the wktReader\n";
   wktReader = new geos::WKTReader(geometryFactory);
 
+  mNumericalTypes.push_back("OFTInteger");
+  mNumericalTypes.push_back("OFTReal");
+  mNonNumericalTypes.push_back("OFTString");
 }
 
 QgsOgrProvider::~QgsOgrProvider()
@@ -585,9 +588,22 @@ void QgsOgrProvider::getFeatureAttribute(OGRFeature * ogrFet, QgsFeature * f, in
 
   QString fld = fldDef->GetNameRef();
   QString val;
-  //val = ogrFet->GetFieldAsString(attindex);
-  val = QString::fromUtf8(ogrFet->GetFieldAsString(attindex));
-  //val = QString::fromLatin1(ogrFet->GetFieldAsString(attindex));
+
+  switch(mEncoding)
+      {
+    case QgsVectorDataProvider::Ascii:
+        val=QString::fromAscii(ogrFet->GetFieldAsString(attindex));
+        break;
+    case QgsVectorDataProvider::Latin1:
+        val = QString::fromLatin1(ogrFet->GetFieldAsString(attindex));
+        break;
+    case QgsVectorDataProvider::Local8Bit:
+        val = QString::fromLocal8Bit(ogrFet->GetFieldAsString(attindex));
+        break;
+    case QgsVectorDataProvider::Utf8:
+        val = QString::fromUtf8(ogrFet->GetFieldAsString(attindex));
+        break;
+      }
   f->addAttribute(fld, val);
 }
 
@@ -871,6 +887,56 @@ bool QgsOgrProvider::addFeatures(std::list<QgsFeature*> const flist)
   return returnvalue;
 }
 
+bool QgsOgrProvider::addAttributes(std::map<QString,QString> const & name)
+{
+    bool returnvalue=true;
+
+    for(std::map<QString,QString>::const_iterator iter=name.begin();iter!=name.end();++iter)
+    {
+  if(iter->second=="OFTInteger")
+  {
+      OGRFieldDefn fielddefn(iter->first,OFTInteger);
+      if(ogrLayer->CreateField(&fielddefn)!=OGRERR_NONE)
+      {
+#ifdef QGISDEBUG
+    qWarning("QgsOgrProvider.cpp: writing of the field failed");  
+#endif
+    returnvalue=false;
+      }
+  }
+  else if(iter->second=="OFTReal")
+  {
+      OGRFieldDefn fielddefn(iter->first,OFTReal);
+      if(ogrLayer->CreateField(&fielddefn)!=OGRERR_NONE)
+      {
+#ifdef QGISDEBUG
+    qWarning("QgsOgrProvider.cpp: writing of the field failed");
+#endif
+    returnvalue=false;
+      }
+  }
+  else if(iter->second=="OFTString")
+  {
+      OGRFieldDefn fielddefn(iter->first,OFTString);
+      if(ogrLayer->CreateField(&fielddefn)!=OGRERR_NONE)
+      {
+#ifdef QGISDEBUG
+    qWarning("QgsOgrProvider.cpp: writing of the field failed");
+#endif
+    returnvalue=false;
+      }
+  }
+  else
+  {
+#ifdef QGISDEBUG
+      qWarning("QgsOgrProvider.cpp: type not found");
+#endif
+      returnvalue=false;
+  }
+    }
+    return returnvalue;
+}
+
 bool QgsOgrProvider::changeAttributeValues(std::map<int,std::map<QString,QString> > const & attr_map)
 {
 #ifdef QGISDEBUG
@@ -886,51 +952,57 @@ bool QgsOgrProvider::changeAttributeValues(std::map<int,std::map<QString,QString
 
     if ( !of ) {
         QMessageBox::warning (0, "Warning", "Cannot read feature, cannot change attributes" );
-	return false;
+  return false;
     }
 
     std::map<QString,QString> attr = (*it).second;
 
     for( std::map<QString,QString>::iterator it2 = attr.begin(); it2!=attr.end(); ++it2 )
     {
-	QString name = (*it2).first;
-	QString value = (*it2).second;
-		
-	int fc = of->GetFieldCount();
-	for ( int f = 0; f < fc; f++ ) {
-	    OGRFieldDefn *fd = of->GetFieldDefnRef ( f );
-	    
-	    if ( name.compare( fd->GetNameRef() ) == 0 ) {
-		OGRFieldType type = fd->GetType();
+  QString name = (*it2).first;
+  QString value = (*it2).second;
+    
+  int fc = of->GetFieldCount();
+  for ( int f = 0; f < fc; f++ ) {
+      OGRFieldDefn *fd = of->GetFieldDefnRef ( f );
+      
+      if ( name.compare( fd->GetNameRef() ) == 0 ) {
+    OGRFieldType type = fd->GetType();
 
 #ifdef QGISDEBUG
-		std::cerr << "set field " << f << " : " << name << " to " << value << std::endl;
+    std::cerr << "set field " << f << " : " << name << " to " << value << std::endl;
 #endif
-		switch ( type ) {
-		    case OFTInteger:
-		        of->SetField ( f, value.toInt() );
-			break;
-		    case OFTReal:
-		        of->SetField ( f, value.toDouble() );
-			break;
-		    case OFTString:
-		        of->SetField ( f, value.ascii() );
-			break;
-		    default:
+    switch ( type ) {
+        case OFTInteger:
+            of->SetField ( f, value.toInt() );
+      break;
+        case OFTReal:
+            of->SetField ( f, value.toDouble() );
+      break;
+        case OFTString:
+            of->SetField ( f, value.ascii() );
+      break;
+        default:
                         QMessageBox::warning (0, "Warning", "Unknown field type, cannot change attribute" );
-			break;
-		}
+      break;
+    }
 
-		continue;
-	    }	
-	}
-	ogrLayer->SetFeature ( of );
+    continue;
+      } 
+  }
+  ogrLayer->SetFeature ( of );
     }
   }
 
   ogrLayer->SyncToDisk();
 
   return true;
+}
+
+int QgsOgrProvider::capabilities() const
+{
+    return (QgsVectorDataProvider::AddFeatures
+      | QgsVectorDataProvider::ChangeAttributeValues);
 }
 
 /**

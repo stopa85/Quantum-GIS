@@ -38,6 +38,15 @@
 #include "qgscomposervectorlegend.h"
 #include "qgscomposerlabel.h"
 
+QgsCompositionPaper::QgsCompositionPaper ( QString name, int w, int h, bool c)
+{
+        mName = name; mWidth = w; mHeight = h; mCustom = c;
+}
+
+QgsCompositionPaper::~QgsCompositionPaper ( )
+{
+}
+
 QgsComposition::QgsComposition( QgsComposer *c, int id ) 
 {
     #ifdef QGISDEBUG
@@ -58,23 +67,46 @@ QgsComposition::QgsComposition( QgsComposer *c, int id )
     //          cannot be smoothly moved even if mPreviewMode == Rectangle and no zoom in
     //       scale 2 results in minimum line width 0.5 mmm which is too much
     //       scale 3 is compromise
-    mScale = 3;
+    mScale = 5;
 
-    // Potemkin's Village
-    mPaperSizeComboBox->insertItem( "Custom" );
+    // Add paper sizes and set default. 
+    mPapers.push_back ( QgsCompositionPaper( tr("Custom"), 0, 0, 1 ) );
+    mPapers.push_back ( QgsCompositionPaper( tr("A5 (148x210 mm)"), 148, 210 ) );
+    mPapers.push_back ( QgsCompositionPaper( tr("A4 (210x297 mm)"), 210, 297 ) );
+    mPapers.push_back ( QgsCompositionPaper( tr("A3 (297x420 mm)"), 297, 420 ) );
+    mPapers.push_back ( QgsCompositionPaper( tr("A2 (420x594 mm)"), 420, 594 ) );
+    mPapers.push_back ( QgsCompositionPaper( tr("A1 (594x841 mm)"), 594, 841 ) );
+    mPapers.push_back ( QgsCompositionPaper( tr("A0 (841x1189 mm)"), 841, 1189 ) );
+    mPapers.push_back ( QgsCompositionPaper( tr("B5 (176 x 250 mm)"), 176, 250 ) );
+    mPapers.push_back ( QgsCompositionPaper( tr("B4 (250 x 353 mm)"), 250, 353 ) );
+    mPapers.push_back ( QgsCompositionPaper( tr("B3 (353 x 500 mm)"), 353, 500 ) );
+    mPapers.push_back ( QgsCompositionPaper( tr("B2 (500 x 707 mm)"), 500, 707 ) );
+    mPapers.push_back ( QgsCompositionPaper( tr("B1 (707 x 1000 mm)"), 707, 1000 ) );
+    mPapers.push_back ( QgsCompositionPaper( tr("B0 (1000 x 1414 mm)"), 1000, 1414 ) );
+    mPapers.push_back ( QgsCompositionPaper( tr("Letter (8.5x11 inches)"),  216, 279 ) );
+    mPapers.push_back ( QgsCompositionPaper( tr("Legal (8.5x14 inches)"), 216, 356 ) );
+
+    mDefaultPaper = mCustomPaper = 0;
+    for( int i = 0; i < mPapers.size(); i++ ) {
+        mPaperSizeComboBox->insertItem( mPapers[i].mName );
+        // Map - A4 land for now, if future read from template
+        if ( mPapers[i].mWidth == 210 && mPapers[i].mHeight == 297 ){
+	    mDefaultPaper = i;
+	}
+	if ( mPapers[i].mCustom ) mCustomPaper = i;
+    }
+
+    // Orientation
+    mPaperOrientationComboBox->insertItem( tr("Portrait"), Portrait );
+    mPaperOrientationComboBox->insertItem( tr("Landscape"), Landscape );
+
     mPaperUnitsComboBox->insertItem( "mm" );
-    mPaperOrientationComboBox->insertItem( "Landscape" );
 
-    // Map - A4 land for now, if future read from template
-    mPaperWidth = 297;
-    mPaperHeight = 210;
-    
-    mResolution = 72;
-
-    setOptions();
-
+    // Create canvas 
+    mPaperWidth = 1;
+    mPaperHeight = 1;
     createCanvas();
-
+    
     // Tool
     mRectangleItem = 0;
     mNewCanvasItem = 0;
@@ -84,32 +116,31 @@ QgsComposition::QgsComposition( QgsComposer *c, int id )
 
 void QgsComposition::createDefault(void) 
 {
-    // Map - A4 land for now, if future read from template
-    mPaperWidth = 297;
-    mPaperHeight = 210;
-    // TODO: The resolution should be at least 300, but point layer is rescaled
-    //       in Postscript if != 72
-    //mResolution = 300;
-    mResolution = 72;
+    mPaperSizeComboBox->setCurrentItem(mDefaultPaper);
+    mPaperOrientationComboBox->setCurrentItem(Landscape);
+
+    mUserPaperWidth = mPapers[mDefaultPaper].mWidth;
+    mUserPaperHeight = mPapers[mDefaultPaper].mHeight;
+
+    recalculate();
+
+    mResolution = 300;
 
     setOptions();
-
-    resizeCanvas();
 
     // Add the map to coposition
     QgsComposerMap *m = new QgsComposerMap ( this, mNextItemId++, 
 	                          mScale*15, mScale*15, mScale*180, mScale*180 );
-    m->setUserExtent( mMapCanvas->extent());
     mItems.push_back(m);
 
     // Add vector legend
     QgsComposerVectorLegend *vl = new QgsComposerVectorLegend ( this, mNextItemId++, 
-	                       mScale*210, mScale*100, mScale*5 );
+	                       mScale*210, mScale*100, 10 );
     mItems.push_back(vl);
 
     // Title
     QgsComposerLabel *tit = new QgsComposerLabel ( this, mNextItemId++, 
-	                                           mScale*238, mScale*40, "Map", mScale*7 );
+	                                           mScale*238, mScale*40, "Map", 24 );
     mItems.push_back(tit);
 
     // Tool
@@ -119,7 +150,6 @@ void QgsComposition::createDefault(void)
     mToolStep = 0;
     
     writeSettings();
-
 }
 
 void QgsComposition::createCanvas(void) 
@@ -144,13 +174,37 @@ void QgsComposition::createCanvas(void)
 void QgsComposition::resizeCanvas(void) 
 {
     mCanvas->resize ( (int) mPaperWidth * mScale, (int) mPaperHeight * mScale );
-    
+    std::cout << "mCanvas width = " << mCanvas->width() << " height = " << mCanvas->height() << std::endl;
     mPaperItem->setSize ( (int) mPaperWidth * mScale, (int) mPaperHeight * mScale );
 }
 
 QgsComposition::~QgsComposition()
 {
-    // TODO: Delete all objects!!!!
+    std::cerr << "QgsComposition::~QgsComposition" << std::endl;
+    mView->setCanvas ( 0 );
+    
+    if ( mPaperItem ) delete mPaperItem;
+
+    /* TODO: For some strange reason, it crashes if QgsComposerItem (QgsComposerLabel,QgsComposerMap)
+     *       is deleted. It crashes before the destructor is called. QgsComposerVectorLegend works.
+     *       -> deleting canvas items 
+     */
+    for (std::list < QgsComposerItem * >::iterator it = mItems.begin(); 
+				     it != mItems.end(); ++it) 
+    {
+	    //delete *it; // crashes on QgsComposerLabel and QgsComposerMap
+	    QCanvasItem *ci = dynamic_cast<QCanvasItem*>(*it);
+	    delete ci;
+    }
+
+    /*
+    QCanvasItemList l = mCanvas->allItems();
+    for ( QCanvasItemList::Iterator it=l.begin(); it!=l.end(); ++it) {
+	delete *it;
+    }
+    */
+    
+    if ( mCanvas ) delete mCanvas;
 }
 
 QgsMapCanvas *QgsComposition::mapCanvas(void) { return mMapCanvas; }
@@ -182,7 +236,7 @@ void QgsComposition::contentsMousePressEvent(QMouseEvent* e)
 
 		QCanvasItem * newItem = 0;
 
-		for (QCanvasItemList::Iterator it=l.begin(); it!=l.end(); ++it) {
+		for ( QCanvasItemList::Iterator it=l.fromLast(); it!=l.end(); --it) {
 		    if (! (*it)->isActive() ) continue;
 		    newItem = *it;
 		}
@@ -197,8 +251,7 @@ void QgsComposition::contentsMousePressEvent(QMouseEvent* e)
 			QgsComposerItem *coi = dynamic_cast <QgsComposerItem *> (newItem);
 			coi->setSelected ( true );
 			
-			QWidget *w = dynamic_cast <QWidget *> (coi);
-			mComposer->showItemOptions ( w );
+			mComposer->showItemOptions ( coi->options() );
 			mSelectedItem = newItem;
 		    } 
 		    mLastX = x;
@@ -235,14 +288,13 @@ void QgsComposition::contentsMousePressEvent(QMouseEvent* e)
 	    mNewCanvasItem->setY( p.y() );
 	    QgsComposerVectorLegend *vl = dynamic_cast <QgsComposerVectorLegend*> (mNewCanvasItem);
             mItems.push_back(vl);
-	    vl->writeSettings();
 	    mNewCanvasItem = 0;
 	    mComposer->selectItem(); // usually just one legend
 	    
 	    // Select and show options
 	    vl->setSelected ( true );
-	    QWidget *w = dynamic_cast <QWidget *> (vl);
-	    mComposer->showItemOptions ( w );
+	    mComposer->showItemOptions ( vl->options() );
+	    mSelectedItem = dynamic_cast <QCanvasItem*> (vl);
 
 	    mCanvas->update();
 	    }
@@ -254,14 +306,13 @@ void QgsComposition::contentsMousePressEvent(QMouseEvent* e)
 	    mNewCanvasItem->setY( p.y() );
 	    QgsComposerLabel *lab = dynamic_cast <QgsComposerLabel*> (mNewCanvasItem);
             mItems.push_back(lab);
-	    lab->writeSettings();
 	    mNewCanvasItem = 0;
 	    mComposer->selectItem(); // usually just one ???
 	    
 	    // Select and show options
 	    lab->setSelected ( true );
-	    QWidget *w = dynamic_cast <QWidget *> (lab);
-	    mComposer->showItemOptions ( w );
+	    mComposer->showItemOptions ( lab->options() );
+	    mSelectedItem = dynamic_cast <QCanvasItem*> (lab);
 
 	    mCanvas->update();
 	    }
@@ -281,7 +332,6 @@ void QgsComposition::contentsMouseMoveEvent(QMouseEvent* e)
 	    if ( mSelectedItem ) {
 		double x,y;
 		mView->inverseWorldMatrix().map( e->pos().x(), e->pos().y(), &x, &y );
-		std::cout << "move: " << x << ", " << y << std::endl;
 		
 		mSelectedItem->setX( mSelectedItem->x() + x - mLastX );
 		mSelectedItem->setY( mSelectedItem->y() + y - mLastY );
@@ -344,7 +394,6 @@ void QgsComposition::contentsMouseReleaseEvent(QMouseEvent* e)
 		mRectangleItem = 0;
 		
 		if ( w > 0 && h > 0 ) {
-		    
 		    QgsComposerMap *m = new QgsComposerMap ( this, mNextItemId++, x, y, w, h );
 		    
 		    m->setUserExtent( mMapCanvas->extent());
@@ -356,14 +405,14 @@ void QgsComposition::contentsMouseReleaseEvent(QMouseEvent* e)
 			coi->setSelected ( false );
 		    }
 
-		    mSelectedItem = dynamic_cast <QCanvasItem *> (m);
+		    mComposer->selectItem(); // usually just one map
 		 
-		    QWidget *w = dynamic_cast <QWidget *> (m);
-		    mComposer->showItemOptions ( w );
-
+		    m->setSelected ( true );
+		    mComposer->showItemOptions ( m->options() );
+		    mSelectedItem = dynamic_cast <QCanvasItem *> (m);
+		} else {
+    		    mToolStep = 0;
 		}
-		mComposer->selectItem(); // usually just one map
-		    
 		mCanvas->setChanged ( QRect( x, y, w, h) ); // Should not be necessary
 		mCanvas->update();
 	    }
@@ -378,7 +427,6 @@ void QgsComposition::keyPressEvent ( QKeyEvent * e )
     if ( e->key() == Qt::Key_Delete && mSelectedItem ) { // delete
 	
 	QgsComposerItem *coi = dynamic_cast <QgsComposerItem *> (mSelectedItem);
-	//coi->setItemSelected ( false );
 	coi->setSelected ( false );
 	for (std::list < QgsComposerItem * >::iterator it = mItems.begin(); 
 		                         it != mItems.end(); ++it) 
@@ -398,22 +446,44 @@ void QgsComposition::keyPressEvent ( QKeyEvent * e )
 void QgsComposition::paperSizeChanged ( void )
 {
     std::cout << "QgsComposition::paperSizeChanged" << std::endl;
-    mPaperWidth = mPaperWidthLineEdit->text().toDouble();
-    mPaperHeight = mPaperHeightLineEdit->text().toDouble();
-    
-    std::cout << "mPaperWidth = " << mPaperWidth << " mPaperHeight = " << mPaperHeight << std::endl;
-    
-    mCanvas->resize( (int) (mPaperWidth * mScale), (int) (mPaperHeight * mScale) );
-    
-    std::cout << "mCanvas width = " << mCanvas->width() << " height = " << mCanvas->height() << std::endl;
-    
-    mPaperItem->setSize((int) (mPaperWidth * mScale), (int) (mPaperHeight * mScale) );
+	    
+    mPaper = mPaperSizeComboBox->currentItem();
+    mPaperOrientation = mPaperOrientationComboBox->currentItem();
+    std::cout << "custom = " << mPapers[mPaper].mCustom << std::endl;
+    std::cout << "orientation = " << mPaperOrientation << std::endl;
+    if ( mPapers[mPaper].mCustom ) {
+	mUserPaperWidth = mPaperWidthLineEdit->text().toDouble();
+	mUserPaperHeight = mPaperHeightLineEdit->text().toDouble();
+	mPaperWidthLineEdit->setEnabled( TRUE );
+	mPaperHeightLineEdit->setEnabled( TRUE );
+    } else {
+	mUserPaperWidth = mPapers[mPaperSizeComboBox->currentItem()].mWidth;
+	mUserPaperHeight = mPapers[mPaperSizeComboBox->currentItem()].mHeight;
+	mPaperWidthLineEdit->setEnabled( FALSE );
+	mPaperHeightLineEdit->setEnabled( FALSE );
+	setOptions();
+    }
 
-    mComposer->zoomFull();
-    mView->repaint(); // Does not repaint the view !
-    mView->update();  // Does not repaint the view !
-    mView->QWidget::repaint();
+    recalculate();
+	
+    mView->repaintContents();
     writeSettings();
+}
+
+void QgsComposition::recalculate ( void ) 
+{
+    if ( (mPaperOrientation == Portrait &&  mUserPaperWidth < mUserPaperHeight) ||
+	 (mPaperOrientation == Landscape &&  mUserPaperWidth > mUserPaperHeight) ) 
+    {
+	mPaperWidth = mUserPaperWidth;
+	mPaperHeight = mUserPaperHeight;
+    } else {
+	mPaperWidth = mUserPaperHeight;
+	mPaperHeight = mUserPaperWidth;
+    }
+    std::cout << "mPaperWidth = " << mPaperWidth << " mPaperHeight = " << mPaperHeight << std::endl;
+    resizeCanvas();
+    mComposer->zoomFull();
 }
 
 void QgsComposition::resolutionChanged ( void )
@@ -424,8 +494,10 @@ void QgsComposition::resolutionChanged ( void )
 
 void QgsComposition::setOptions ( void )
 {
-    mPaperWidthLineEdit->setText ( QString("%1").arg(mPaperWidth,0,'g') );
-    mPaperHeightLineEdit->setText ( QString("%1").arg(mPaperHeight,0,'g') );
+    mPaperSizeComboBox->setCurrentItem(mPaper);
+    mPaperOrientationComboBox->setCurrentItem(mPaperOrientation);
+    mPaperWidthLineEdit->setText ( QString("%1").arg(mUserPaperWidth,0,'g') );
+    mPaperHeightLineEdit->setText ( QString("%1").arg(mUserPaperHeight,0,'g') );
     mResolutionLineEdit->setText ( QString("%1").arg(mResolution) );
 }
 
@@ -442,7 +514,6 @@ void QgsComposition::setPlotStyle (  PlotStyle p )
 double QgsComposition::viewScale ( void ) 
 {
     double scale = mView->worldMatrix().m11();
-    std::cout << "viewScale = " << scale << std::endl;
     return scale; 
 }
 
@@ -458,7 +529,10 @@ double QgsComposition::paperHeight ( void ) { return mPaperHeight; }
 
 int QgsComposition::resolution ( void ) { return mResolution; }
 
-int QgsComposition::scale( void ) { return mScale; }
+int QgsComposition::scale( void ) { 
+    std::cout << "QgsComposition::scale = " << mScale << std::endl;
+    return mScale; 
+}
 
 double QgsComposition::toMM ( int v ) { return v/mScale ; }
 
@@ -499,8 +573,7 @@ void QgsComposition::setTool ( Tool tool )
 		                                (-1000)*mScale, (-1000)*mScale, (int) (mScale*mPaperHeight/50) );
         mNewCanvasItem = dynamic_cast <QCanvasItem *> (vl);
 
-	QWidget *w = dynamic_cast <QWidget *> (vl);
-	mComposer->showItemOptions ( w );
+	mComposer->showItemOptions ( vl->options() );
 
 	mView->viewport()->setMouseTracking ( true ); // to recieve mouse move
     } else if ( tool == AddLabel ) {
@@ -510,15 +583,37 @@ void QgsComposition::setTool ( Tool tool )
 	QgsComposerLabel *lab = new QgsComposerLabel ( this, mNextItemId++, 
 	                                (-1000)*mScale, (-1000)*mScale, "Label", (int) (mScale*mPaperHeight/40) );
         mNewCanvasItem = dynamic_cast <QCanvasItem *> (lab);
-
-	QWidget *w = dynamic_cast <QWidget *> (lab);
-	mComposer->showItemOptions ( w );
+	mComposer->showItemOptions ( lab->options() );
 
 	mView->viewport()->setMouseTracking ( true ); // to recieve mouse move
     }
     
     mTool = tool;
     mToolStep = 0;
+}
+
+std::vector<QgsComposerMap*> QgsComposition::maps(void) 
+{
+    std::vector<QgsComposerMap*> v;
+    for (std::list < QgsComposerItem * >::iterator it = mItems.begin(); it != mItems.end(); ++it) {
+	QgsComposerItem *ci = (*it);
+	if (  typeid (*ci) == typeid(QgsComposerMap) ) {
+	    v.push_back ( dynamic_cast<QgsComposerMap*>(ci) );
+	}
+    }
+    
+    return v;
+}
+
+QgsComposerMap* QgsComposition::map ( int id ) 
+{ 
+    for (std::list < QgsComposerItem * >::iterator it = mItems.begin(); it != mItems.end(); ++it) {
+	QgsComposerItem *ci = (*it);
+	if (  ci->id() == id ) {
+	    return ( dynamic_cast<QgsComposerMap*>(ci) );
+	}
+    }
+    return 0;
 }
 
 int QgsComposition::selectionBoxSize ( void )
@@ -537,16 +632,26 @@ QBrush QgsComposition::selectionBrush ( void )
     return QBrush ( QBrush(QColor(0,0,255), Qt::SolidPattern) );
 }
 
+void QgsComposition::emitMapChanged ( int id )
+{
+    emit mapChanged ( id );
+}
+
 bool QgsComposition::writeSettings ( void )
 {
-    QString path;
-    path.sprintf("/composition_%d/width", mId );
-    QgsProject::instance()->writeEntry( "Compositions", path, mPaperWidth );
-    path.sprintf("/composition_%d/height", mId );
-    QgsProject::instance()->writeEntry( "Compositions", path, mPaperHeight );
+    QString path, val;
+    path.sprintf("/composition_%d/", mId );
+    QgsProject::instance()->writeEntry( "Compositions", path+"width", mUserPaperWidth );
+    QgsProject::instance()->writeEntry( "Compositions", path+"height", mUserPaperHeight );
+    QgsProject::instance()->writeEntry( "Compositions", path+"resolution", mResolution );
     
-    path.sprintf("/composition_%d/resolution", mId );
-    QgsProject::instance()->writeEntry( "Compositions", path, mResolution );
+    if ( mPaperOrientation == Landscape ) {
+	val = "landscape";
+    } else {
+	val = "portrait";
+    }
+    QgsProject::instance()->writeEntry( "Compositions", path+"orientation", val );
+
     
     return true;
 }
@@ -557,31 +662,55 @@ bool QgsComposition::readSettings ( void )
 
     bool ok;
     
-    QString path;
-    path.sprintf("/composition_%d/width", mId );
-    mPaperWidth = QgsProject::instance()->readDoubleEntry( "Compositions", path, 297, &ok);
-    path.sprintf("/composition_%d/height", mId );
-    mPaperHeight = QgsProject::instance()->readDoubleEntry( "Compositions", path, 210, &ok);
+    mPaper = mCustomPaper;
     
-    path.sprintf("/composition_%d/resolution", mId );
-    mResolution = QgsProject::instance()->readNumEntry( "Compositions", path, 300, &ok);
+    QString path, val;
+    path.sprintf("/composition_%d/", mId );
+    mUserPaperWidth = QgsProject::instance()->readDoubleEntry( "Compositions", path+"width", 297, &ok);
+    mUserPaperHeight = QgsProject::instance()->readDoubleEntry( "Compositions", path+"height", 210, &ok);
+    mResolution = QgsProject::instance()->readNumEntry( "Compositions", path+"resolution", 300, &ok);
     
-    resizeCanvas();
+    val = QgsProject::instance()->readEntry( "Compositions", path+"orientation", "landscape", &ok);
+    if ( val.compare("landscape") == 0 ) {
+	mPaperOrientation = Landscape;
+    } else {
+	mPaperOrientation = Portrait;
+    }
+    
+    recalculate();
+    setOptions();
 
-    // TODO: read all objects
-    // BUG in readListEntry
-    /*
+    // Create objects
     path.sprintf("/composition_%d", mId );
-    QStringList el = QgsProject::instance()->readListEntry ( "Compositions", path, &ok );
+    QStringList el = QgsProject::instance()->subkeyList ( "Compositions", path );
 
     for ( QStringList::iterator it = el.begin(); it != el.end(); ++it ) {
-	std::cout << "entry: " << (*it).ascii() << std::endl;
+	std::cout << "key: " << (*it).ascii() << std::endl;
+	
+	QStringList l = QStringList::split( '_', (*it) );
+	if ( l.size() == 2 ) {
+	    QString name = l.first();
+	    QString ids = l.last();
+	    int id = ids.toInt();
+	    
+	    if ( name.compare("map") == 0 ) {
+	        QgsComposerMap *map = new QgsComposerMap ( this, id );
+                mItems.push_back(map);
+	    } else if ( name.compare("vectorlegend") == 0 ) {
+	        QgsComposerVectorLegend *vl = new QgsComposerVectorLegend ( this, id );
+                mItems.push_back(vl);
+	    } else if ( name.compare("label") == 0 ) {
+	        QgsComposerLabel *lab = new QgsComposerLabel ( this, id );
+                mItems.push_back(lab);
+	    }
 
+	    if ( id >= mNextItemId ) mNextItemId = id + 1;
+	}
     }
-    */
-    
-    setOptions();
+
+
     mCanvas->update();
 
     return true;
 }
+

@@ -316,7 +316,6 @@ void QgsAttributeTable::popupItemSelected(int id)
 {
   mActions.doAction(id, mActionValues, mClickedOnValue);
 }
-
 bool QgsAttributeTable::addAttribute(const QString& name, const QString& type)
 {
     //first test if an attribute with the same name is already in the table
@@ -383,7 +382,7 @@ bool QgsAttributeTable::rollBack(QgsVectorLayer* layer)
 {
     if(layer)
     {
-	fillTable(layer);
+	layer->fillTable(this);
     }
     mEdited=false;
     clearEditingStructures();
@@ -483,4 +482,32 @@ void QgsAttributeTable::removeAttrColumn(const QString& name)
 	    break;
 	}
     }
+}
+
+void QgsAttributeTable::bringSelectedToTop()
+{
+    blockSignals(true);
+    int swaptorow=0;
+    std::list<QTableSelection> selections;
+    for(int i=0;i<numSelections();++i)
+    {
+	selections.push_back(selection(i));
+    }
+
+    QTableSelection sel;
+
+    for(std::list<QTableSelection>::iterator iter=selections.begin();iter!=selections.end();++iter)
+    {
+	for(int j=iter->topRow();j<=iter->bottomRow();++j)
+	{
+#ifdef QGISDEBUG
+	    qWarning("swapping rows "+QString::number(j)+" and "+QString::number(swaptorow));
+#endif	    
+	    swapRows(j,swaptorow);
+	    selectRow(swaptorow);
+	    ++swaptorow;
+	}
+	removeSelection(*iter);
+    }
+    blockSignals(false);
 }
