@@ -647,6 +647,17 @@ static QString createFileFilter_(QString const &longName, QString const &glob)
  */
 static void buildSupportedVectorFileFilter_(QString & fileFilters)
 {
+    static QString myFileFilters = "";
+
+    // if we've already built the supported vector string, just return what
+    // we've already built
+    if ( ! myFileFilters.isEmpty() )
+    {
+        fileFilters = myFileFilters;
+
+        return;
+    }
+
   // first get the GDAL driver manager
 
   OGRSFDriverRegistrar *driverRegistrar = OGRSFDriverRegistrar::GetRegistrar();
@@ -691,14 +702,14 @@ static void buildSupportedVectorFileFilter_(QString & fileFilters)
 
       if (driverName.startsWith("ESRI"))
         {
-          fileFilters += createFileFilter_("ESRI Shapefiles", "*.shp");
+          myFileFilters += createFileFilter_("ESRI Shapefiles", "*.shp");
       } else if (driverName.startsWith("UK"))
         {
           // XXX needs file filter extension
       } else if (driverName.startsWith("SDTS"))
         {
 // XXX not yet supported; post 0.1 release task
-//          fileFilters += createFileFilter_( "Spatial Data Transfer Standard", 
+//          myFileFilters += createFileFilter_( "Spatial Data Transfer Standard", 
 //                                            "*catd.ddf" );
       } else if (driverName.startsWith("TIGER"))
         {
@@ -727,7 +738,7 @@ static void buildSupportedVectorFileFilter_(QString & fileFilters)
       } else if (driverName.startsWith("GML"))
         {
 // XXX not yet supported; post 0.1 release task
-//          fileFilters += createFileFilter_( "Geography Markup Language", 
+//          myFileFilters += createFileFilter_( "Geography Markup Language", 
 //                                            "*.gml" );
       } else
         {
@@ -738,7 +749,9 @@ static void buildSupportedVectorFileFilter_(QString & fileFilters)
     }                           // each loaded GDAL driver
 
   // can't forget the default case
-  fileFilters += "All files (*.*)";
+  myFileFilters += "All files (*.*)";
+
+  fileFilters = myFileFilters;
 
 }                               // buildSupportedVectorFileFilter_()
 
