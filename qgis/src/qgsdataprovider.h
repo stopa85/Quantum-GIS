@@ -20,6 +20,7 @@
 #include <vector>
 class QgsRect;
 class QgsFeature;
+class QgsField;
 /** \class QgsDataProvider
 * \brief Abstract base class for spatial data provider implementations
   *@author Gary E.Sherman
@@ -32,12 +33,12 @@ public:
 	* Get the first feature resulting from a select operation
 	* @return QgsFeature
 	*/
-	virtual QgsFeature * QgsDataProvider::getFirstFeature()=0;
+	virtual QgsFeature * QgsDataProvider::getFirstFeature(bool fetchAttributes=false)=0;
 	/** 
 	* Get the next feature resutling from a select operation
 	* @return QgsFeature
 	*/
-	virtual QgsFeature * QgsDataProvider::getNextFeature()=0;
+	virtual QgsFeature * QgsDataProvider::getNextFeature(bool fetchAttributes=false)=0;
 
 	/** Get feature type.
 	* Gets the feature type as defined in WKBTYPE (qgis.h).
@@ -49,6 +50,10 @@ public:
     * @return long containing number of features
     */
     virtual long featureCount()=0;
+    /**
+    * Number of attribute fields for a feature in the layer
+    */
+  virtual int fieldCount()=0;
 	/**
 	* Select features based on a bounding rectangle. Features can be retrieved 
 	* with calls to getFirstFeature and getNextFeature.
@@ -88,6 +93,21 @@ public:
    */
 	virtual int QgsDataProvider::endian()=0;
 
+  /**
+  * Return a list of field names for this layer
+  * @return vector of field names
+  */
+  virtual std::vector<QgsField> fields()=0;
+  
+/** 
+* Reset the layer to clear any spatial filtering or other contstraints that
+* would prevent the entire record set from being traversed by call to 
+* getNextFeature(). Some data stores may not require any special action to
+* reset the layer. In this case, the provider should simply implement an empty
+* function body.
+*/
+  virtual void reset()=0;
 };
+
 
 #endif
