@@ -29,7 +29,7 @@ projectionselector_la_SOURCES =  qgsprojectionselectorplugin.cpp	\
 BUILT_SOURCES = $(plugin_MOC) 
 
 #projectionselector_la_LIBADD =  ../src/libqgis.la $(QT_LDADD)  
-projectionselector_la_LIBADD =  $(QT_LDADD) ../widgets/projectionselector/qgsprojectionselector.la
+projectionselector_la_LIBADD =  $(QT_LDADD) ../widgets/projectionselector/libqgsprojectionselector.la
 projectionselector_la_LDFLAGS = -avoid-version -module
 projectionselector_la_CXXFLAGS = $(CXXFLAGS) $(EXTRA_CXXFLAGS) $(QT_CXXFLAGS) $(DEBUG_QGIS) -I../../src/
 
