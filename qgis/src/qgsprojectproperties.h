@@ -59,8 +59,6 @@ public:
   
   /*! Accessor for projection */
   QString projectionWKT();
-  /*! Get a short human readable name from a WKT */
-  QString getWKTShortName(QString theWKT);
 public slots:
   /*! 
    * Slot called when a new button (unit) is selected
@@ -76,12 +74,7 @@ public slots:
    * Slot called when ok button pressed (inherits from gui base)
    */
   void accept();
-  //! Populate the wkts map with projection names...
-  void getProjList();
   
-  //! Slot called when user selects a different item in the projections tree 
-  void coordinateSystemSelected( QListViewItem * );
-
   
 signals:
   /*! This signal is used to notify all coordinateTransform objects to update
@@ -92,14 +85,5 @@ signals:
   //! Signal used to inform listeners that the mouse display precision may have changed
   void displayPrecisionChanged();
 private:
-  //! map containing SPATIAL_REF_SYS items keyed by the WKT name
-  // XXX why are we using QMap instead of std::map ?
-  //XXX List view items for the tree view of projections
-  //! GEOGCS node
-  QListViewItem *geoList;
-  //! PROJCS node
-  QListViewItem *projList;
-  //! Users custom coordinate system file
-  QString customCsFile;
 
 };
