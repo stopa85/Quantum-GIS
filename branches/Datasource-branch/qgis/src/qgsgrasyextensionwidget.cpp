@@ -27,9 +27,12 @@
 #include <iostream>
 #include <cfloat>
 #include <qlayout.h>
-#include "qgsshapefilelayer.h"
+#include "qgsvectorlayer.h"
+#include "qgsvectorlayerproperties.h"
+#include "qgsdataprovider.h"
+#include "qgsfeature.h"
 
-QgsGraSyExtensionWidget::QgsGraSyExtensionWidget(QWidget* parent, int classfield, QgsGraSyDialog::mode mode, int nofclasses, QgsShapeFileLayer* slayer): QWidget(parent), m_classfield(classfield), m_gridlayout(new QGridLayout(this,1,8)), m_mode(mode), m_numberofclasses(nofclasses), m_shapefilelayer(slayer)
+QgsGraSyExtensionWidget::QgsGraSyExtensionWidget(QWidget* parent, int classfield, QgsGraSyDialog::mode mode, int nofclasses, QgsVectorLayer* vlayer): QWidget(parent), m_classfield(classfield), m_gridlayout(new QGridLayout(this,1,8)), m_mode(mode), m_numberofclasses(nofclasses), m_vectorlayer(vlayer)
 {
     m_gridlayout->setSpacing(10);
     
@@ -56,18 +59,16 @@ QgsGraSyExtensionWidget::QgsGraSyExtensionWidget(QWidget* parent, int classfield
     double minimum=DBL_MAX;
     double maximum=DBL_MIN;
 
-    OGRLayer* l=m_shapefilelayer->getOGRLayer();
-
-    if(mode==QgsGraSyDialog::EQUAL_INTERVAL)//find the minimum and maximum value of the classification variable
+    //find the minimum and maximum value of the classification variable
+    
+    QgsDataProvider* provider = m_vectorlayer->getDataProvider();
+    if(provider)
     {
-	//faster solution: use method NextFeature(), so GetFeatureCount() is not needed
-	//int fcount=l->GetFeatureCount();
-    }
-
-    while (OGRFeature* fet = l->GetNextFeature())
+	provider->reset();
+	QgsFeature* fet=provider->getFirstFeature(true);
+	do
 	{
-	    double value=fet->GetFieldAsDouble(m_classfield);
-	
+	    double value=(fet->attributeMap())[m_classfield].fieldValue().toDouble();
 	    if(value<minimum)
 	    {
 		minimum=value;
@@ -77,10 +78,16 @@ QgsGraSyExtensionWidget::QgsGraSyExtensionWidget(QWidget* parent, int classfield
 		maximum=value;
 	    }
 	}
-	l->ResetReading();
+	while(fet=provider->getNextFeature(true));
+    }
+    else
+    {
+	qWarning("Warning, provider is null in QgsGraSyExtensionWidget::QgsGraSyExtensionWidget(...)");
+	return;
+    }
 
     m_widgetvector.resize(m_numberofclasses*8);
-    QgsShapeFileLayer::SHAPETYPE m_type=m_shapefilelayer->vectorType();
+    QGis::VectorType m_type=m_vectorlayer->vectorType();
 
     //create the required number of rows
     for(int i=1;i<=m_numberofclasses;i++)
@@ -131,7 +138,7 @@ QgsGraSyExtensionWidget::QgsGraSyExtensionWidget(QWidget* parent, int classfield
 	}
 
         //disable the outline fieldes if the shapetye is polygon and i>1
-	if(m_type==QgsShapeFileLayer::Polygon&&i>1)
+	if(m_type==QGis::Polygon&&i>1)
 	{
 	    outlinecolorbutton->unsetPalette();
 	    outlinecolorbutton->setEnabled(false);
@@ -143,7 +150,7 @@ QgsGraSyExtensionWidget::QgsGraSyExtensionWidget(QWidget* parent, int classfield
 	}
 
 	//disable the fill fields if the shapetype is line
-	if(m_type==QgsShapeFileLayer::Line)
+	if(m_type==QGis::Line)
 	{
 	  fillcolorbutton->unsetPalette();
 	  fillcolorbutton->setEnabled(false);
@@ -152,7 +159,7 @@ QgsGraSyExtensionWidget::QgsGraSyExtensionWidget(QWidget* parent, int classfield
 	}
 
 	//disable the pattern field if the shapefye is a point or a line
-	if(m_type==QgsShapeFileLayer::Point||m_type==QgsShapeFileLayer::Line)
+	if(m_type==QGis::Point||m_type==QGis::Line)
 	{
 	  fillpatternbutton->setEnabled(false);
 	}
@@ -184,8 +191,8 @@ QWidget* QgsGraSyExtensionWidget::getWidget(int column, int row)
 void QgsGraSyExtensionWidget::selectColor()
 {
     ((QPushButton*)sender())->setPaletteBackgroundColor(QColorDialog::getColor());
-    m_shapefilelayer->propertiesDialog()->raise();
-    m_shapefilelayer->rendererDialog()->raise();
+    m_vectorlayer->propertiesDialog()->raise();
+    m_vectorlayer->rendererDialog()->raise();
     raise();
 }
 
@@ -196,8 +203,8 @@ void QgsGraSyExtensionWidget::selectFillPattern()
     {
 	((QPushButton*)sender())->setText(QgsSymbologyUtils::brushStyle2QString(patterndialog.pattern()));
     }
-    m_shapefilelayer->propertiesDialog()->raise();
-    m_shapefilelayer->rendererDialog()->raise();
+    m_vectorlayer->propertiesDialog()->raise();
+    m_vectorlayer->rendererDialog()->raise();
     raise();
 }
 
@@ -208,7 +215,7 @@ void QgsGraSyExtensionWidget::selectOutlineStyle()
     {
 	((QPushButton*)sender())->setText(QgsSymbologyUtils::penStyle2QString(linestyledialog.style()));
     }
-    m_shapefilelayer->propertiesDialog()->raise();
-    m_shapefilelayer->rendererDialog()->raise();
+    m_vectorlayer->propertiesDialog()->raise();
+    m_vectorlayer->rendererDialog()->raise();
     raise();
 }

@@ -25,8 +25,8 @@
 #include "qgspoint.h"
 #include "qpainter.h"
 #include "qgscoordinatetransform.h"
-#include <ogrsf_frmts.h>
-#include <ogr_geometry.h>
+#include "qgsfeature.h"
+#include "qgsvectorlayer.h"
 
 /**This class contains the information for graduate symbol rendering*/
 class QgsGraduatedSymRenderer: public QgsRenderer
@@ -37,21 +37,21 @@ class QgsGraduatedSymRenderer: public QgsRenderer
     /**Adds a new item
     \param ri a pointer to the QgsRangeRenderItem to be inserted. It has to be created using the new operator and is automatically destroyed when 'removeItems' is called or when the instance is destroyed*/
     void addItem(QgsRangeRenderItem* ri);
-    /**Returns the number of the classification field*/
+    /**Returns the name of the classification field*/
     int classificationField() const;
     /**Removes all items*/
     void removeItems();
     /**Renders an OGRFeature
-     \param p a painter (usually the one from the current map canvas
+     \param p a painter (usually the one from the current map canvas)
      \param f a pointer to a feature to render
      \param t the transform object containing the information how to transform the map coordinates to screen coordinates*/
-    void renderFeature(QPainter* p, OGRFeature* f, QgsCoordinateTransform* t, int endian);
+    void renderFeature(QPainter* p, QgsFeature* f, QgsCoordinateTransform* t);
     /**Sets the number of the classicifation field
     \param field the number of the field to classify*/
     void setClassificationField(int field);
-
+    void initializeSymbology(QgsVectorLayer* layer);
  protected:
-    /**Number of the classification field (it must be a numerical field)*/
+    /**Name of the classification field (it must be a numerical field)*/
     int m_classificationField;
     /**List holding the render items for the individual classes*/
     std::list<QgsRangeRenderItem*> m_items;
@@ -78,7 +78,7 @@ inline void QgsGraduatedSymRenderer::setClassificationField(int field)
     m_classificationField=field;
 }
 
-inline void QgsGraduatedSymRenderer::renderFeature(QPainter* p, OGRFeature* f, QgsCoordinateTransform* t, int endian)
+/*inline void QgsGraduatedSymRenderer::renderFeature(QPainter* p, OGRFeature* f, QgsCoordinateTransform* t, int endian)
 {
     //first find out the value for the classification attribute
     double value=f->GetFieldAsDouble(m_classificationField);
@@ -263,7 +263,7 @@ inline void QgsGraduatedSymRenderer::renderFeature(QPainter* p, OGRFeature* f, Q
     //std::cout << "deleting feature[]\n";
     //      std::cout << geom->getGeometryName() << std::endl;
     delete[] feature;
-}
+}*/
 
 
 #endif
