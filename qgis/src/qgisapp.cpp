@@ -1225,21 +1225,19 @@ void QgisApp::fileOpen()
 
   if (answer != QMessageBox::Cancel)
   {
+    QString fullPath =
+        QFileDialog::getOpenFileName("./", QObject::tr("QGis files (*.qgs)"), 0, 0,
+                                     QObject::tr("Choose a QGIS project file to open"));
+
+    if ( fullPath.isEmpty() )   // if they didn't select anything, just return
+    {
+        return;
+    }
+
     // clear out any stuff from previous project
     removeAllLayers();
 
-    // if we don't have a filename, then we need to prompt for one
-    // XXX maybe we should *always* prompt for one?  And what
-    // XXX about project titles?  If we create one, we should be
-    // XXX able to set it.  Maybe need to add something to toolbar/menus
-    if ( QgsProject::instance()->filename().isEmpty() )
-    {
-        QString fullPath =
-            QFileDialog::getOpenFileName("./", QObject::tr("QGis files (*.qgs)"), 0, 0,
-                                         QObject::tr("Choose a QGIS project file to open"));
-
-        QgsProject::instance()->filename( fullPath );
-    }
+    QgsProject::instance()->filename( fullPath );
 
     QgsProject::instance()->read(); // XXX filename set in saveDirty()?
 
@@ -1249,8 +1247,8 @@ void QgisApp::fileOpen()
     // not needed?  setZOrder(myZOrder);
     // not needed?  setOverviewZOrder(mMapLegend);
 
-    mMapCanvas->refresh();      // XXX refresh() necessary?
-    mOverviewCanvas->refresh();
+    // mMapCanvas->refresh();      // XXX refresh() necessary?
+    // mOverviewCanvas->refresh(); XXX I think QgsProject::read() generates appropriate refreshes
 
   }
 
