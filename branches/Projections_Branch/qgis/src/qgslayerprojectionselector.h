@@ -42,7 +42,7 @@ class QgsLayerProjectionSelector :public QgsLayerProjectionSelectorBase{
 
  public slots:
       void pbnOK_clicked();
-      QString getSelectedWKT(){};
+      QString getSelectedWKT();
       void setSelectedWKT(QString theWKTName);
 };
 

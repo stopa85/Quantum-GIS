@@ -38,3 +38,8 @@ void QgsLayerProjectionSelector::setSelectedWKT(QString theWKTName)
 {
   projectionSelector->setSelectedWKT(theWKTName);
 }
+
+QString QgsLayerProjectionSelector::getSelectedWKT()
+{
+  projectionSelector->getSelectedWKT();
+}

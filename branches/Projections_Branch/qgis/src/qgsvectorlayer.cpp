@@ -2516,11 +2516,20 @@ void QgsVectorLayer::setCoordinateSystem()
           // XXX Maybe a user option to choose if warning should be issued
           if(mySourceWKT.isEmpty())
           {
-            mCoordinateTransform = new QgsCoordinateTransform("", "");
             QgsLayerProjectionSelector * mySelector = new QgsLayerProjectionSelector();
             QString srsWkt =  QgsProject::instance()->readEntry("SpatialRefSys","/selectedWKT","Lat/Long - WGS 84");
             mySelector->setSelectedWKT(srsWkt);
-            mySelector->show();
+            if(mySelector->exec())
+            {
+              mySourceWKT = mySelector->getSelectedWKT();  
+              delete mySelector; 
+            }
+            else
+            {
+              mCoordinateTransform = new QgsCoordinateTransform("", "");
+              delete mySelector; 
+              return;
+            }
           }
           else
           {
@@ -2529,7 +2538,7 @@ void QgsVectorLayer::setCoordinateSystem()
           //get the project projections WKT, defaulting to this layer's projection
           //if none exists....
           //First get the SRS for the default projection WGS 84
- //         QString defaultWkt = QgsSpatialReferences::instance()->getSrsBySrid("4326")->srText();
+          //QString defaultWkt = QgsSpatialReferences::instance()->getSrsBySrid("4326")->srText();
           QString myDestWKT = QgsProject::instance()->readEntry("SpatialRefSys","/WKT","");
 
             // try again with a morph from esri
