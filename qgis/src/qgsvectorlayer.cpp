@@ -418,8 +418,14 @@ void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsCoordinateTrans
 
           case WKBPolygon:
 
+          {
             // get number of rings in the polygon
             numRings = (int *) (feature + 1 + sizeof(int));
+
+            if ( ! *numRings )  // sanity check for zero rings in polygon
+            {
+                break;
+            }
 
             int *ringStart; // index of first point for each ring
             int *ringNumPoints; // number of points in each ring
@@ -471,11 +477,12 @@ void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsCoordinateTrans
             }
 
             delete pa;
-            delete ringStart;
-            delete ringNumPoints;
+            delete [] ringStart;
+            delete [] ringNumPoints;
 
             break;
 
+          }
           case WKBMultiPolygon:
 
             // get the number of polygons
@@ -562,7 +569,9 @@ void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsCoordinateTrans
       retVal = NDR;
     else
       retVal = XDR;
-    delete[]chkEndian;
+
+    delete [] chkEndian;
+
     return retVal;
   }
 
@@ -1531,11 +1540,11 @@ QgsVectorLayer:: setDataProvider( QString const & provider )
             rawXML += temp_str + '\n';
         }
 
-        const char * s = rawXML.c_str(); // debugger probe
+        // const char * s = rawXML.c_str(); // debugger probe
 
         if ( ! rendererDOM.setContent( rawXML, &errorMsg, &errorLine, &errorColumn ) )
         {
-            qDebug( s );
+            //qDebug( s );
             qDebug( "import error at %d %d " + errorMsg, errorLine, errorColumn );
 
             return false;
