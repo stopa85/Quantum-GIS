@@ -191,6 +191,21 @@ class QgsVectorDataProvider : public QgsDataProvider
    * @return true if WKT is used, otherwise false
    */
   virtual bool usesWKT(){return false;};
+  /*! Set the SRID of the target SRS.
+   * This is only implemented if the provider supports native
+   * transformation of its coordinates
+   * @param srid Spatial reference id of the target (map canvas)
+   */
+  virtual void setSrid(int srid){};
+  /*! Set the WKT of the target SRS.
+   * This is only implemented if the provider supports native
+   * transformation of its coordinates
+   *
+   * @param wkt Well known text of the target (map canvas) SRS
+   */
+  virtual void setWKT(QString wkt){};
+
+
 protected:
     /**Encoding*/
     QTextCodec* mEncoding;
