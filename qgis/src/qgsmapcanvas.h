@@ -279,6 +279,13 @@ private:
     //! detrmines whether the user can interact with the canvas using a mouse
     //(useful for locking the overview canvas)
     bool mUserInteractionAllowed;
+
+  /** debugging member
+      invoked when a connect() is made to this object 
+  */
+  void connectNotify( const char * signal );
+
+
 }; // class QgsMapCanvas
 
 #endif

@@ -131,7 +131,7 @@ class QgsVectorLayer:public QgsMapLayer
       Called by QgsMapLayer::readXML().
 
   */
-  virtual void readXML_( QDomNode & layer_node );
+  virtual bool readXML_( QDomNode & layer_node );
 
   /** 
   * Get the first feature resulting from a select operation

@@ -144,3 +144,12 @@ std::map<QString,QgsMapLayer*> QgsMapLayerRegistry::mapLayers()
 {
   return mMapLayers;
 }
+
+
+
+void QgsMapLayerRegistry::connectNotify( const char * signal )
+{
+#ifdef QGISDEBUG
+    std::cerr << "QgsMapLayerRegistry connected to " << signal << "\n";
+#endif
+} //  QgsMapLayerRegistry::connectNotify

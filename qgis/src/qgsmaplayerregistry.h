@@ -64,8 +64,16 @@ public:
 
 signals:
 
+    /** emitted when a layer is removed from the registry
+
+       connected to main map canvas and overview map canvas remove()
+    */
  void layerWillBeRemoved(QString theLayerId);
 
+    /** emitted when a layer is added to the registry
+
+       connected to main map canvas and overview map canvas addLayer()
+    */
  void layerWasAdded(QgsMapLayer * theMapLayer);
 
 protected:
@@ -78,6 +86,12 @@ private:
  static QgsMapLayerRegistry* mInstance;
 
  std::map<QString,QgsMapLayer*> mMapLayers;
+
+  /** debugging member
+      invoked when a connect() is made to this object 
+  */
+  void connectNotify( const char * signal );
+
 
 }; // class QgsMapLayerRegistry
 

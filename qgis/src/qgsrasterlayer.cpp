@@ -3104,7 +3104,7 @@ RasterPyramidList  QgsRasterLayer::buildRasterPyramidList()
                 </rasterproperties>
         </maplayer>
 */
-void QgsRasterLayer::readXML_( QDomNode & layer_node )
+bool QgsRasterLayer::readXML_( QDomNode & layer_node )
 {
     QDomNode mnl = layer_node.namedItem("rasterproperties");
 
@@ -3152,8 +3152,12 @@ void QgsRasterLayer::readXML_( QDomNode & layer_node )
     {
         std::cerr << __FILE__ << ":" << __LINE__
                   << " unable to read from raster file " 
-                  << sourceName() << "\n";
+                  << source() << "\n";
+
+        return false;
     }
+
+    return true;
 
 } // QgsVectorLayer::readXML_( QDomNode & layer_node )
 
