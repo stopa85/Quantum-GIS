@@ -320,6 +320,49 @@ _getMapLayers( QDomDocument const & doc )
 
 
 
+/**
+   Sets the given canvas' extents
+
+   @param canonicalName will be "theMapCanvas" or "theOverviewCanvas"; these
+   are set when those are created in qgisapp ctor
+ */
+static
+void
+_setCanvasExtent( QString const & canonicalName, QgsRect const & newExtent )
+{
+                                // first find the canonical map canvas
+
+    QgsMapCanvas * theMapCanvas;
+
+    QWidgetList  * list = QApplication::topLevelWidgets();
+    QWidgetListIt it( *list );  // iterate over the widgets
+    QWidget * w;
+
+    while ( (w=it.current()) != 0 ) 
+    {   // for each top level widget...
+        ++it;
+        theMapCanvas = dynamic_cast<QgsMapCanvas*>(w->child( canonicalName, 0, true ));
+
+        if ( theMapCanvas )
+        { break; }
+    }
+    delete list;                // delete the list, not the widgets
+
+
+    if( ! theMapCanvas )
+    {
+        qDebug( "Unable to find canvas widget " + canonicalName );
+
+        return;                 // XXX some sort of error value?  Exception?
+    }
+
+    theMapCanvas->setExtent( newExtent );
+
+} // _setCanvasExtent()
+
+
+
+
 bool
 QgsProject::read( )
 {
@@ -380,32 +423,6 @@ QgsProject::read( )
 
     // restore the canvas' area of interest
 
-                                // first find the canonical map canvas
-
-    QgsMapCanvas * theMapCanvas;
-
-    QWidgetList  * list = QApplication::topLevelWidgets();
-    QWidgetListIt it( *list );  // iterate over the widgets
-    QWidget * w;
-
-    while ( (w=it.current()) != 0 ) 
-    {   // for each top level widget...
-        ++it;
-        theMapCanvas = dynamic_cast<QgsMapCanvas*>(w->child( "theMapCanvas", 0, true ));
-
-        if ( theMapCanvas )
-        { break; }
-    }
-    delete list;                // delete the list, not the widgets
-
-
-    if( ! theMapCanvas )
-    {
-        qDebug( "Unable to find main canvas widget" );
-
-        return false;
-    }
-
     // restor the area of interest, or extent
     QgsRect savedExtent;
 
@@ -418,8 +435,11 @@ QgsProject::read( )
         return false;
     }
 
-    theMapCanvas->setExtent( savedExtent );
+    // now ensure that both the main canvas and the corresponding overview
+    // have the same extent
 
+    _setCanvasExtent( "theMapCanvas", savedExtent );
+    _setCanvasExtent( "theOverviewCanvas", savedExtent );
 
 
     // XXX insert code for setting the properties
