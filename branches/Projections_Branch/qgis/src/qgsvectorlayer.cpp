@@ -1517,7 +1517,8 @@ void QgsVectorLayer::startEditing()
   {
       if(!(dataProvider->capabilities()&QgsVectorDataProvider::AddFeatures))
       {
-    QMessageBox::information(0,"Start editing failed","Provider cannot be opened for editing",QMessageBox::Ok);
+    QMessageBox::information(0,"Start editing failed",
+	    "Provider cannot be opened for editing",QMessageBox::Ok);
       }
       else
       {
@@ -1537,7 +1538,8 @@ void QgsVectorLayer::stopEditing()
     if(mModified)
     {
       //commit or roll back?
-      int commit=QMessageBox::information(0,"Stop editing","Do you want to save the changes?",QMessageBox::Yes,QMessageBox::No);
+      int commit=QMessageBox::information(0,"Stop editing",
+	      "Do you want to save the changes?",QMessageBox::Yes,QMessageBox::No);
       if(commit==QMessageBox::Yes)
       {
         if(!commitChanges())
@@ -1559,7 +1561,8 @@ void QgsVectorLayer::stopEditing()
       {
         if(!rollBack())
         {
-          QMessageBox::information(0,"Error","Problems during roll back",QMessageBox::Ok);
+          QMessageBox::information(0,"Error",
+            "Problems during roll back",QMessageBox::Ok);
         }
         //hide and delete the table because it is not up to date any more
         if (tabledisplay)
@@ -2504,113 +2507,129 @@ bool QgsVectorLayer::commitAttributeChanges(const std::set<QString>& deleted,
               const std::map<QString,QString>& added,
               std::map<int,std::map<QString,QString> >& changed)
 {
-    bool returnvalue=true;
-
-    if(dataProvider)
-    {
-  if(dataProvider->capabilities()&QgsVectorDataProvider::DeleteAttributes)
+  bool returnvalue=true;
+  
+  if(dataProvider)
   {
+    if(dataProvider->capabilities()&QgsVectorDataProvider::DeleteAttributes)
+    {
       //delete attributes in all not commited features
       for(std::list<QgsFeature*>::iterator iter=mAddedFeatures.begin();iter!=mAddedFeatures.end();++iter)
       {
-    for(std::set<QString>::const_iterator it=deleted.begin();it!=deleted.end();++it)
-    {
-        (*iter)->deleteAttribute(*it);
-    }
+        for(std::set<QString>::const_iterator it=deleted.begin();it!=deleted.end();++it)
+        {
+          (*iter)->deleteAttribute(*it);
+        }
       }
       //and then in the provider
       if(!dataProvider->deleteAttributes(deleted))
       {
-    returnvalue=false;
+        returnvalue=false;
       }
-  }
-
-  if(dataProvider->capabilities()&QgsVectorDataProvider::AddAttributes)
-  {
+    }
+    
+    if(dataProvider->capabilities()&QgsVectorDataProvider::AddAttributes)
+    {
       //add attributes in all not commited features
       for(std::list<QgsFeature*>::iterator iter=mAddedFeatures.begin();iter!=mAddedFeatures.end();++iter)
       {
-    for(std::map<QString,QString>::const_iterator it=added.begin();it!=added.end();++it)
-    {
-        (*iter)->addAttribute(it->first);
-    }
+        for(std::map<QString,QString>::const_iterator it=added.begin();it!=added.end();++it)
+        {
+          (*iter)->addAttribute(it->first);
+        }
       }
       //and then in the provider
       if(!dataProvider->addAttributes(added))
       {
-    returnvalue=false;
+        returnvalue=false;
       }
-  }
-
-  if(dataProvider->capabilities()&QgsVectorDataProvider::ChangeAttributeValues)
-  {
+    }
+    
+    if(dataProvider->capabilities()&QgsVectorDataProvider::ChangeAttributeValues)
+    {
       //change values of the not commited features
       for(std::list<QgsFeature*>::iterator iter=mAddedFeatures.begin();iter!=mAddedFeatures.end();++iter)
       {
-    std::map<int,std::map<QString,QString> >::iterator it=changed.find((*iter)->featureId());
-    if(it!=changed.end())
-    {
-        for(std::map<QString,QString>::const_iterator iterat=it->second.begin();iterat!=it->second.end();++iterat)
+        std::map<int,std::map<QString,QString> >::iterator it=changed.find((*iter)->featureId());
+        if(it!=changed.end())
         {
-      (*iter)->changeAttributeValue(iterat->first,iterat->second);
+          for(std::map<QString,QString>::const_iterator iterat=it->second.begin();iterat!=it->second.end();++iterat)
+          {
+            (*iter)->changeAttributeValue(iterat->first,iterat->second);
+          }
+          changed.erase(it);
         }
-        changed.erase(it);
-    }
       }
-
+      
       //and then those of the commited ones
       if(!dataProvider->changeAttributeValues(changed))
       {
-    returnvalue=false;
+        returnvalue=false;
       }
+    }
   }
-    }
-    else
-    {
-  returnvalue=false;
-    }
-    return returnvalue;
+  else
+  {
+    returnvalue=false;
+  }
+  return returnvalue;
 }
 void QgsVectorLayer::setCoordinateSystem()
 {
 
-  //
-  // Get the layers project info and set up the QgsCoordinateTransform 
-  // for this layer
-  //
-  QString mySourceWKT = getProjectionWKT();
-  // if the wkt does not exist, then we can not set the projection
-  // Pass this through unprojected 
-  // XXX Do we need to warn the user that this layer is unprojected?
-  // XXX Maybe a user option to choose if warning should be issued
-  if(mySourceWKT.isEmpty())
-  {
+  // if the provider supports native transforms, just create a passthrough
+  // object 
+ if(dataProvider->supportsNativeTransform())
+ {
+#ifdef QGISDEBUG
+std::cout << "Provider supports native transform -- no projection of coordinates will occur" 
+<< std::endl;
+#endif
+   QApplication::restoreOverrideCursor();
+   mCoordinateTransform = new QgsCoordinateTransform("", "");
+   dataProvider->setWKT(QgsProject::instance()->readEntry("SpatialRefSys","/selectedWKT","Lat/Long - WGS 84"));
+   return;
+ }
+ else
+ {
+   //
+   // Get the layers project info and set up the QgsCoordinateTransform 
+   // for this layer
+   //
+   QString mySourceWKT = getProjectionWKT();
+   // if the wkt does not exist, then we can not set the projection
+   // Pass this through unprojected 
+   // XXX Do we need to warn the user that this layer is unprojected?
+   // XXX Maybe a user option to choose if warning should be issued
+   if(mySourceWKT.isEmpty())
+   {
 
-    //@note qgsvectorlayer is not a descendent of QWidget so we cant pass
-    //it in the ctor of the layer projection selector
-    QgsLayerProjectionSelector * mySelector = new QgsLayerProjectionSelector();
-    QString srsWkt =  QgsProject::instance()->readEntry("SpatialRefSys","/selectedWKT","Lat/Long - WGS 84");
-    mySelector->setSelectedWKT(srsWkt);
-    if(mySelector->exec())
-    {
+     //@note qgsvectorlayer is not a descendent of QWidget so we cant pass
+     //it in the ctor of the layer projection selector
+     QgsLayerProjectionSelector * mySelector = new QgsLayerProjectionSelector();
+     QString srsWkt =  QgsProject::instance()->readEntry("SpatialRefSys","/selectedWKT","Lat/Long - WGS 84");
+     mySelector->setSelectedWKT(srsWkt);
+     if(mySelector->exec())
+     {
 #ifdef QGISDEBUG
-      std::cout << "------ Layer Projection Selection passed ----------" << std::endl;
+       std::cout << "------ Layer Projection Selection passed ----------" << std::endl;
 #endif
-      mySourceWKT = mySelector->getCurrentWKT();  
+       mySourceWKT = mySelector->getCurrentWKT();  
 #ifdef QGISDEBUG
-      std::cout << "------ mySourceWKT ----------\n" << mySourceWKT << std::endl;
+       std::cout << "------ mySourceWKT ----------\n" << mySourceWKT << std::endl;
 #endif
-    }
-    else
-    {
+     }
+     else
+     {
 #ifdef QGISDEBUG
-      std::cout << "------ Layer Projection Selection FAILED ----------" << std::endl;
+       std::cout << "------ Layer Projection Selection FAILED ----------" << std::endl;
 #endif
-      QApplication::restoreOverrideCursor();
-      mCoordinateTransform = new QgsCoordinateTransform("", "");
-      return;
-    }
-  }
+       QApplication::restoreOverrideCursor();
+       mCoordinateTransform = new QgsCoordinateTransform("", "");
+       return;
+     }
+   }
+ 
 
   assert(!mySourceWKT.isEmpty());
   //get the project projections WKT, defaulting to this layer's projection
@@ -2695,4 +2714,5 @@ void QgsVectorLayer::setCoordinateSystem()
   std::cout << ">>>>>>>>>>>> ProjectCS:\n" << myDestWKT << std::endl;
   std::cout << ">>>>>>>>>>>> ----------------------------------------------------" << std::endl;
 #endif
+ }
 }

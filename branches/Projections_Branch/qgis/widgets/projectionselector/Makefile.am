@@ -11,6 +11,7 @@
 # $Id$
 
 plugindir = ${pkglibdir}
+PKGDATAPATH=-DPKGDATAPATH=\"$(pkgdatadir)\"
 
 
 %.moc.cpp: %.h
@@ -43,7 +44,7 @@ BUILT_SOURCES = $(plugin_MOC) $(plugin_UI)
 
 
 
-libqgsprojectionselector_la_LIBADD =  ../../src/libqgis.la $(LDADD) $(QT_LDADD) $(GDAL_LDADD)
+libqgsprojectionselector_la_LIBADD =  ../../src/libqgis.la $(LDADD) $(QT_LDADD) $(GDAL_LDADD) -lsqlite3
 libqgsprojectionselector_la_LDFLAGS = -avoid-version 
 libqgsprojectionselector_la_CXXFLAGS = $(PKGDATAPATH) $(CXXFLAGS) $(GDAL_CFLAGS) $(EXTRA_CXXFLAGS) $(QT_CXXFLAGS) $(DEBUG_QGIS) -I../../src/
 

@@ -41,15 +41,17 @@ public slots:
     QString getCurrentWKT();
     QString getCurrentSRID();
 private:
-  //! map containing SPATIAL_REF_SYS items keyed by the WKT name
-  // XXX why are we using QMap instead of std::map ?
-  //XXX List view items for the tree view of projections
+
+  // List view nodes for the tree view of projections
   //! GEOGCS node
   QListViewItem *geoList;
   //! PROJCS node
   QListViewItem *projList;
   //! Users custom coordinate system file
+  // XXX This has to change to a sqlite3 database installed in user home dir
   QString customCsFile;
+  //! File name of the sqlite3 database
+  QString srsDatabaseFileName;
 
   //private handler for when user selects a cs
   //it will cause wktSelected and sridSelected events to be spawned

@@ -7,14 +7,15 @@
  *   the Free Software Foundation; either version 2 of the License, or     *
  *   (at your option) any later version.                                   *
  ***************************************************************************/
+/* $Id$ */
 #include "qgsprojectionselector.h"
 
 //standard includes
 #include <iostream>
 #include <cassert>
+#include <sqlite3.h>
 
 //qgis includes
-#include "qgsspatialreferences.h"
 #include "qgscsexception.h"
 #include "qgsconfig.h"
 
@@ -34,6 +35,7 @@
 #include <cstdlib>
 
 //gdal and ogr includes
+// XXX DO WE NEED THESE?
 #include <ogr_api.h>
 #include <ogr_spatialref.h>
 #include <cpl_error.h>
@@ -42,9 +44,15 @@
 static const char* defaultWktKey = "4326";
 
 QgsProjectionSelector::QgsProjectionSelector( QWidget* parent , const char* name , WFlags fl  )
-    : QgsProjectionSelectorBase( parent, "Projection Selector", fl )
+  : QgsProjectionSelectorBase( parent, "Projection Selector", fl )
 {
-
+// Get the package data path and set the full path name to the sqlite3 spatial reference
+// database.
+#if defined(Q_OS_MACX) || defined(WIN32)
+  QString PKGDATAPATH = qApp->applicationDirPath() + "/share/qgis";
+#endif
+  srsDatabaseFileName = PKGDATAPATH;
+  srsDatabaseFileName += "/resources/srs.db";
   // Populate the projection list view
   getProjList();
 }
@@ -88,7 +96,7 @@ void QgsProjectionSelector::setSelectedSRID(QString theSRID)
 
 }
 
-//note this ine just returns the WKT NAME!
+//note this line just returns the projection name!
 QString QgsProjectionSelector::getSelectedWKT()
 {
   // return the selected wkt name from the list view
@@ -102,26 +110,67 @@ QString QgsProjectionSelector::getSelectedWKT()
     return QString::null;
   }
 }
-//this one retunr the whole wkt
+// Returns the whole wkt for the selected projection node
 QString QgsProjectionSelector::getCurrentWKT()
 {
   // Only return the projection if there is a node in the tree
   // selected that has an srid. This prevents error if the user
   // selects a top-level node rather than an actual coordinate
   // system
+  //
+  // Get the selected node
   QListViewItem *lvi = lstCoordinateSystems->currentItem();
-  QgsSpatialRefSys *srs = QgsSpatialReferences::instance()->getSrsBySrid(lvi->text(1));
-  if(srs)
+  if(lvi)
   {
-    //set the text box to show the full proection spec
-#ifdef QGISDEBUG
-    std::cout << "Current selected : " << lvi->text(0) << std::endl;
-    std::cout << "Current full wkt : " << srs->srText() << std::endl;
-#endif
-    return srs->srText();
+    // Make sure the selected node is a srs and not a top-level projection node
+    std::cout << lvi->text(1) << std::endl; 
+    if(lvi->text(1).length() > 0)
+    {
+    // set up the database
+    // XXX We could probabaly hold the database open for the life of this object, 
+    // assuming that it will never be used anywhere else. Given the low overhead,
+    // opening it each time seems to be a reasonable approach at this time.
+    sqlite3 *db;
+    char *zErrMsg = 0;
+    int rc;
+    rc = sqlite3_open(srsDatabaseFileName, &db);
+    if(rc) 
+    {
+      std::cout <<  "Can't open database: " <<  sqlite3_errmsg(db) << std::endl; 
+      // XXX This will likely never happen since on open, sqlite creates the 
+      //     database if it does not exist.
+      assert(rc == 0);
+    }
+    // prepare the sql statement
+    const char *pzTail;
+    sqlite3_stmt *ppStmt;
+    char *pzErrmsg;
+    QString sql = "select wkt from srs_name where srid = ";
+    sql += lvi->text(1);
+
+    rc = sqlite3_prepare(db, (const char *)sql, sql.length(), &ppStmt, &pzTail);
+    // XXX Need to free memory from the error msg if one is set
+    QString wkt;
+    if(rc == SQLITE_OK)
+    {
+      // get the first row of the result set
+      if(sqlite3_step(ppStmt) == SQLITE_ROW)
+      {
+        // get the wkt 
+        wkt = (char*)sqlite3_column_text(ppStmt, 0);
+      }
+    }
+    // close the statement
+    sqlite3_finalize(ppStmt);
+    // close the database
+    sqlite3_close(db);
+    // return the srs wkt
+    return wkt;
+    }
   }
   else
   {
+    // No node is selected, return null
     return NULL;
   }
 
@@ -141,141 +190,149 @@ QString QgsProjectionSelector::getCurrentSRID()
 
 void QgsProjectionSelector::getProjList()
 {
-  // setup the nodes for the list view
+  // Create the top-level nodes for the list view of projections
   //
   // Geographic coordinate system node
   geoList = new QListViewItem(lstCoordinateSystems,"Geographic Coordinate System");
   // Projected coordinate system node
   projList = new QListViewItem(lstCoordinateSystems,"Projected Coordinate System");
 
-  // Get the instance of the spaital references object that
-  // contains a collection (map) of all QgsSpatialRefSys objects
-  // for every coordinate system in the resources/spatial_ref_sys.txt
-  // file
-  QgsSpatialReferences *srs = QgsSpatialReferences::instance();
 
-  // Determine the current project projection so we can select the 
-  // correct entry in the combo
-
-  //
-  // TODO ! Implemente this properly!!!! ts
-  //
-  QString currentSrid = ""; 
-  // get the reference to the map
-  projectionWKTMap_t mProjectionsMap = srs->getMap();
-  // get an iterator for the map
-  projectionWKTMap_t::iterator myIterator;
-  //find out how many entries in the map
-  int myEntriesCount = mProjectionsMap.size();
-#ifdef QGISDEBUG
-  std::cout << "Srs map has " << myEntriesCount << " entries " << std::endl;
-#endif
-  int myProgress = 1;
-  QProgressDialog myProgressBar( "Building Projections List...", "Cancel", myEntriesCount,
-          this, "progress", TRUE );
-  myProgressBar.setProgress(myProgress);
-  // now add each key to our list view
-  QListViewItem *newItem;
-  for ( myIterator = mProjectionsMap.begin(); myIterator != mProjectionsMap.end(); ++myIterator ) 
+  // open the database containing the spatial reference data
+  sqlite3 *db;
+  char *zErrMsg = 0;
+  int rc;
+  rc = sqlite3_open(srsDatabaseFileName, &db);
+  if(rc) 
   {
-    myProgressBar.setProgress(myProgress++);
-    qApp->processEvents();
-    //std::cout << "Widget map has: " <<myIterator.key().ascii() << std::endl;
-    //cboProjection->insertItem(myIterator.key());
+    std::cout <<  "Can't open database: " <<  sqlite3_errmsg(db) << std::endl; 
+    // XXX This will likely never happen since on open, sqlite creates the 
+    //     database if it does not exist.
+    assert(rc == 0);
+  }
+  // prepare the sql statement
+  const char *pzTail;
+  sqlite3_stmt *ppStmt;
+  char *pzErrmsg;
+  // get total count of records in the projection table
+  QString sql = "select count(*) from srs_name";
 
-    QgsSpatialRefSys *srs = *myIterator;
-    assert(srs != 0);
-    //XXX Add to the tree view
-    if(srs->isGeographic())
-    {
-      // this is a geographic coordinate system
-      // Add it to the tree
-      newItem = new QListViewItem(geoList, srs->name());
-      //    std::cout << "Added " << getWKTShortName(srs->srText()) << std::endl; 
-      // display the spatial reference id in the second column of the list view
-      newItem->setText(1,srs->srid());
-    }
-    else
-    {
-      // coordinate system is projected...
-      QListViewItem *node; // node that we will add this cs to...
+  rc = sqlite3_prepare(db, sql, sql.length(), &ppStmt, &pzTail);
+  assert(rc == SQLITE_OK);
+  sqlite3_step(ppStmt);
+  // Set the max for the progress dialog to the number of entries in the srs_name table
+  int myEntriesCount = sqlite3_column_int(ppStmt, 0);
+  sqlite3_finalize(ppStmt);
 
-      // projected coordinate systems are stored by projection type
-      QStringList projectionInfo = QStringList::split(" - ", srs->name());
-      if(projectionInfo.size() == 2)
+  // Set up the query to retreive the projection information needed to populate the list
+  sql = "select * from srs_name order by name";
+  rc = sqlite3_prepare(db, (const char *)sql, sql.length(), &ppStmt, &pzTail);
+  // XXX Need to free memory from the error msg if one is set
+  if(rc == SQLITE_OK)
+  {
+    QListViewItem *newItem;
+    // set up the progress dialog
+    int myProgress = 1;
+    QProgressDialog myProgressBar( "Building Projections List...", 0, myEntriesCount,
+        this, "progress", TRUE );
+    // set initial value to 1
+    myProgressBar.setProgress(myProgress);
+    while(sqlite3_step(ppStmt) == SQLITE_ROW)
+    {
+      // only update the progress dialog every 10 records
+      if((myProgress++ % 10) == 0)
       {
-        // Get the projection name and strip white space from it so we
-        // don't add empty nodes to the tree
-        QString projName = projectionInfo[1].stripWhiteSpace();
-        //      std::cout << "Examining " << shortName << std::endl; 
-        if(projName.length() == 0)
-        {
-          // If the projection name is blank, set the node to 
-          // 0 so it won't be inserted
-          node = projList;
-          //       std::cout << "projection name is blank: " << shortName << std::endl; 
-          assert(1 == 0);
-        }
-        else
-        {
+        myProgressBar.setProgress(myProgress++);
+      }
+      // check to see if the srs is geographic
+      int isGeo = sqlite3_column_int(ppStmt, 3);
+      if(isGeo)
+      {      
+        // this is a geographic coordinate system
+        // Add it to the tree
+        newItem = new QListViewItem(geoList, (char *)sqlite3_column_text(ppStmt,1));
 
-          // Replace the underscores with blanks
-          projName = projName.replace('_', ' ');
-          // Get the node for this type and add the projection to it
-          // If the node doesn't exist, create it
-          node = lstCoordinateSystems->findItem(projName, 0);
-          if(node == 0)
-          {
-            //          std::cout << projName << " node not found -- creating it" << std::endl;
-
-            // the node doesn't exist -- create it
-            node = new QListViewItem(projList, projName);
-            //          std::cout << "Added top-level projection node: " << projName << std::endl; 
-          }
-        }
+        // display the spatial reference id in the second column of the list view
+        newItem->setText(1,(char *)sqlite3_column_text(ppStmt, 0));
       }
       else
       {
-        // No projection type is specified so add it to the top-level
-        // projection node
-        //XXX This should never happen
-        node = projList;
-        //      std::cout << shortName << std::endl; 
-        assert(1 == 0);
+        // This is a projected srs
+
+        QListViewItem *node;
+        // Fine the node for this type and add the projection to it
+        // If the node doesn't exist, create it
+        node = lstCoordinateSystems->findItem(QString((char*)sqlite3_column_text(ppStmt, 2)),0);
+        if(node == 0)
+        {
+          // the node doesn't exist -- create it
+          node = new QListViewItem(projList, (char*)sqlite3_column_text(ppStmt, 2));
+        }
+
+        // add the item, setting the projection name in the first column of the list view
+        newItem = new QListViewItem(node, (char *)sqlite3_column_text(ppStmt,1));
+        // set the srid in the second column on the list view
+        newItem->setText(1,(char *)sqlite3_column_text(ppStmt, 0));
       }
-
-      // now add the coordinate system to the appropriate node
-
-      newItem = new QListViewItem(node, srs->name());
-      // display the spatial reference id in the second column of the list view
-
-      newItem->setText(1,srs->srid());
     }
-    
-  } //else = proj coord sys        
-#ifdef QGISDEBUG
-  std::cout << "Done adding projections from spatial_ref_sys singleton" << std::endl; 
-#endif  
+    // update the progress bar to 100% -- just for eye candy purposes (some people hate to
+    // see a progress dialog end at 99%)
+    myProgressBar.setProgress(myEntriesCount);
+  }
+  // close the sqlite3 statement
+  sqlite3_finalize(ppStmt);
+  // close the database
+  sqlite3_close(db);
 }   
 
-
+// New coordinate system selected from the list
 void QgsProjectionSelector::coordinateSystemSelected( QListViewItem * theItem)
 {
-  QgsSpatialRefSys *srs = QgsSpatialReferences::instance()->getSrsBySrid(theItem->text(1));
-  if(srs)
+  if(theItem->text(1).length() > 0)
   {
+    sqlite3 *db;
+    char *zErrMsg = 0;
+    int rc;
+    rc = sqlite3_open(srsDatabaseFileName, &db);
+    if(rc) 
+    {
+      std::cout <<  "Can't open database: " <<  sqlite3_errmsg(db) << std::endl; 
+      // XXX This will likely never happen since on open, sqlite creates the 
+      //     database if it does not exist.
+      assert(rc == 0);
+    }
+    // prepare the sql statement
+    const char *pzTail;
+    sqlite3_stmt *ppStmt;
+    char *pzErrmsg;
+    QString sql = "select srtext from spatial_ref_sys where srid = ";
+    sql += theItem->text(1);
 
-    //set the text box to show the full proection spec
+    rc = sqlite3_prepare(db, (const char *)sql, sql.length(), &ppStmt, &pzTail);
+    // XXX Need to free memory from the error msg if one is set
+    QString wkt;
+    if(rc == SQLITE_OK)
+    {
+      if(sqlite3_step(ppStmt) == SQLITE_ROW)
+      {
+        wkt = (char*)sqlite3_column_text(ppStmt, 0);
+      }
+    }
+    // close the statement
+    sqlite3_finalize(ppStmt);
+    // close the database
+    sqlite3_close(db);
 #ifdef QGISDEBUG
     std::cout << "Item selected : " << theItem->text(0) << std::endl;
-    std::cout << "Item selected full wkt : " << srs->srText() << std::endl;
+    std::cout << "Item selected full wkt : " << wkt << std::endl;
 #endif
-    QString wkt = srs->srText();
     assert(wkt.length() > 0);
     // reformat the wkt to improve the display in the textedit
     // box
     wkt = wkt.replace(",", ", ");
     teProjection->setText(wkt);
+    // let anybody who's listening know about the change
+    // XXX Is this appropriate here if the dialog is cancelled??
     emit wktSelected(wkt);
 
   }

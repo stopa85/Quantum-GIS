@@ -1,4 +1,4 @@
-<!DOCTYPE UI><UI version="3.1" stdsetdef="1">
+<!DOCTYPE UI><UI version="3.3" stdsetdef="1">
 <class>QgsProjectPropertiesBase</class>
 <widget class="QDialog">
     <property name="name">
@@ -9,7 +9,7 @@
             <x>0</x>
             <y>0</y>
             <width>711</width>
-            <height>524</height>
+            <height>527</height>
         </rect>
     </property>
     <property name="caption">
@@ -129,27 +129,6 @@
                     <property name="name">
                         <cstring>unnamed</cstring>
                     </property>
-                    <widget class="QGroupBox" row="0" column="0">
-                        <property name="name">
-                            <cstring>titleBox</cstring>
-                        </property>
-                        <property name="title">
-                            <string>Project Title</string>
-                        </property>
-                        <grid>
-                            <property name="name">
-                                <cstring>unnamed</cstring>
-                            </property>
-                            <widget class="QLineEdit" row="0" column="0">
-                                <property name="name">
-                                    <cstring>titleEdit</cstring>
-                                </property>
-                                <property name="text">
-                                    <string>Default project title</string>
-                                </property>
-                            </widget>
-                        </grid>
-                    </widget>
                     <widget class="QButtonGroup" row="1" column="0">
                         <property name="name">
                             <cstring>btnGrpMapUnits</cstring>
@@ -470,6 +449,44 @@
                                 </property>
                             </spacer>
                         </grid>
+                    </widget>
+                    <widget class="QGroupBox" row="0" column="0">
+                        <property name="name">
+                            <cstring>titleBox</cstring>
+                        </property>
+                        <property name="title">
+                            <string>Project Title</string>
+                        </property>
+                        <vbox>
+                            <property name="name">
+                                <cstring>unnamed</cstring>
+                            </property>
+                            <spacer>
+                                <property name="name">
+                                    <cstring>spacer6_2</cstring>
+                                </property>
+                                <property name="orientation">
+                                    <enum>Vertical</enum>
+                                </property>
+                                <property name="sizeType">
+                                    <enum>Fixed</enum>
+                                </property>
+                                <property name="sizeHint">
+                                    <size>
+                                        <width>20</width>
+                                        <height>9</height>
+                                    </size>
+                                </property>
+                            </spacer>
+                            <widget class="QLineEdit">
+                                <property name="name">
+                                    <cstring>titleEdit</cstring>
+                                </property>
+                                <property name="text">
+                                    <string>Default project title</string>
+                                </property>
+                            </widget>
+                        </vbox>
                     </widget>
                 </grid>
             </widget>

@@ -47,7 +47,7 @@ void QgsCoordinateTransform::setDestWKT(QString theWKT)
   mDestWKT = theWKT;
   initialise();
 }
-
+// XXX This whole function is full of multiple return statements!!!
 void QgsCoordinateTransform::initialise()
 {
   mInitialisedFlag=false; //guilty until proven innocent...
@@ -57,28 +57,34 @@ void QgsCoordinateTransform::initialise()
   // the WKT for the coordinate system
   QString defaultWkt = QgsSpatialReferences::instance()->getSrsBySrid("4326")->srText();
   //default input projection to geo wgs84  
-  // XXX multiple return paths in this block!!
+  // XXX Warning - multiple return paths in this block!!
   if (mSourceWKT.isEmpty())
   {
     //mSourceWKT = defaultWkt;
-    // pass through with no projection
+    // Pass through with no projection since we have no idea what the layer
+    // coordinates are and projecting them may not be appropriate
     mShortCircuit = true;
     return;
   }
-  //but default output projection to be the same as input proj
-  //whatever that may be...
+  
   if (mDestWKT.isEmpty())
   {
+   //No destination projection is set so we set the default output projection to
+   //be the same as input proj. This only happens on the first layer loaded
+   //whatever that may be...
     mDestWKT = mSourceWKT;
   }  
 
   if (mSourceWKT == mDestWKT)
   {
+    // If the source and destination projection are the same, set the short
+    // circuit flag (no transform takes place)
     mShortCircuit=true;
     return;
   }
   else
   {
+    // Transform must take place
     mShortCircuit=false;
   }
 
@@ -87,16 +93,16 @@ void QgsCoordinateTransform::initialise()
   char *myDestCharArrayPointer = (char *)mDestWKT.ascii();
 
   /* Here are the possible OGR error codes :
-     typedef int OGRErr;
-
-#define OGRERR_NONE                0
-#define OGRERR_NOT_ENOUGH_DATA     1    --> not enough data to deserialize 
-#define OGRERR_NOT_ENOUGH_MEMORY   2
-#define OGRERR_UNSUPPORTED_GEOMETRY_TYPE 3
-#define OGRERR_UNSUPPORTED_OPERATION 4
-#define OGRERR_CORRUPT_DATA        5
-#define OGRERR_FAILURE             6
-#define OGRERR_UNSUPPORTED_SRS     7 */
+  typedef int OGRErr;
+  
+  #define OGRERR_NONE                0
+  #define OGRERR_NOT_ENOUGH_DATA     1    --> not enough data to deserialize 
+  #define OGRERR_NOT_ENOUGH_MEMORY   2
+  #define OGRERR_UNSUPPORTED_GEOMETRY_TYPE 3
+  #define OGRERR_UNSUPPORTED_OPERATION 4
+  #define OGRERR_CORRUPT_DATA        5
+  #define OGRERR_FAILURE             6
+  #define OGRERR_UNSUPPORTED_SRS     7 */
 
   OGRErr myInputResult = mSourceOgrSpatialRef.importFromWkt( & mySourceCharArrayPointer );
   if (myInputResult != OGRERR_NONE)
@@ -107,8 +113,8 @@ void QgsCoordinateTransform::initialise()
     std::cout << "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" << std::endl;
     return;
   }
-    // always morph from esri as it doesn't hurt anything
-    mSourceOgrSpatialRef.morphFromESRI();
+  // always morph from esri as it doesn't hurt anything
+  mSourceOgrSpatialRef.morphFromESRI();
 
   OGRErr myOutputResult = mDestOgrSpatialRef.importFromWkt( & myDestCharArrayPointer );
   if (myOutputResult != OGRERR_NONE)
@@ -134,7 +140,7 @@ void QgsCoordinateTransform::initialise()
   {
     mShortCircuit = true;
   }
-    
+  // Validate the spaital reference systems  
   if ( (mSourceOgrSpatialRef.Validate() != OGRERR_NONE)  || (mDestOgrSpatialRef.Validate() != OGRERR_NONE))
   {
     std::cout << "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"<< std::endl;
@@ -255,7 +261,7 @@ QgsRect QgsCoordinateTransform::transform(const QgsRect theRect,TransformDirecti
   return QgsRect(x1, y1, x2 , y2);
 } 
 
-
+/*
 void QgsCoordinateTransform::transformCoords( const int& numPoints, double& x, double& y, double& z,TransformDirection direction) const
 {
   // use OGR to do the transform
@@ -271,8 +277,10 @@ void QgsCoordinateTransform::transformCoords( const int& numPoints, double& x, d
 
   }
 }
+*/
 /* XXX THIS IS BASED ON DIRECT USE OF PROJ4 
  * XXX preserved for future use if we need it 
+ */
 void QgsCoordinateTransform::transformCoords( const int& numPoints, double& x, double& y, double& z,TransformDirection direction) const
 {
   // use proj4 to do the transform   
@@ -321,4 +329,3 @@ void QgsCoordinateTransform::transformCoords( const int& numPoints, double& x, d
     z *= RAD_TO_DEG;
   }
 }
-*/

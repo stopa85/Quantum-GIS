@@ -164,6 +164,22 @@ class QgsCoordinateTransform: public QObject
     OGRSpatialReference mDestOgrSpatialRef;
     OGRCoordinateTransformation *forwardTransform;
     OGRCoordinateTransformation *inverseTransform;
+    /*!
+     * Proj4 parameters for the source (layer) coordinate system
+     */
+    QString mProj4SrcParms;
+    /*!
+     * Proj4 parameters for the destination (map canvas) coordinate system
+     */
+    QString mProj4DestParms;
+    /*!
+     * Proj4 data structure of the source projection (layer coordinate system)
+     */
+    projPJ mSourceProjection;
+    /*!
+     * Proj4 data structure of the destination projection (map canvas coordinate system)
+     */
+    projPJ mDestinationProjection;
 };
 
 

@@ -1463,7 +1463,7 @@ void QgsMapCanvas::mouseReleaseEvent(QMouseEvent * e)
       QgsPoint lastpoint = mCanvasProperties->coordXForm->transform(it->x(),it->y());
       QgsPoint endpoint = mCanvasProperties->coordXForm->transform(digitisedpoint.x(),digitisedpoint.y());
       paint.drawLine(static_cast<int>(lastpoint.x()),static_cast<int>(lastpoint.y()),
-         endpoint.x(),endpoint.y());
+         static_cast<int>(endpoint.x()),static_cast<int>(endpoint.y()));
       //draw it to an acetate layer
       QgsLine digitline(*it,digitisedpoint);
       QgsAcetateLines* acetate=new QgsAcetateLines();
@@ -1569,7 +1569,7 @@ void QgsMapCanvas::mouseReleaseEvent(QMouseEvent * e)
         QgsPoint point = mCanvasProperties->coordXForm->toMapCoordinates(e->x(), e->y());
 
   if ( !mMeasure ) {
-      mMeasure = new QgsMeasure(this, topLevelWidget() );
+    mMeasure = new QgsMeasure(this, topLevelWidget() );
   }
   mMeasure->addPoint(point);
   mMeasure->show();
