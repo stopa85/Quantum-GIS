@@ -1499,12 +1499,12 @@ QgsVectorLayer:: setDataProvider( QString const & provider )
 
     // renderer specific settings
 
-    std::stringstream rendererXML;
-	
-    QgsRenderer* myRenderer;
+    QgsRenderer * myRenderer;
 
     if( myRenderer = renderer() )
     {
+        std::stringstream rendererXML;
+	
         myRenderer->writeXML(rendererXML);
 
         // because the renderer writeXML() deals with streams and not DOM
@@ -1545,7 +1545,7 @@ QgsVectorLayer:: setDataProvider( QString const & provider )
         if ( ! rendererDOM.setContent( rawXML, &errorMsg, &errorLine, &errorColumn ) )
         {
             //qDebug( s );
-            qDebug( "import error at %d %d " + errorMsg, errorLine, errorColumn );
+            qDebug( "XML import error at %d %d " + errorMsg, errorLine, errorColumn );
 
             return false;
         }
@@ -1565,7 +1565,7 @@ QgsVectorLayer:: setDataProvider( QString const & provider )
 
             // XXX return false?
         }
-                                
+
     }
     else
     {
@@ -1573,6 +1573,64 @@ QgsVectorLayer:: setDataProvider( QString const & provider )
                   << " no renderer\n";
 
         // XXX return false?
+    }
+
+    // Now we get to do all that all over again for QgsLabel
+
+    // XXX Since this is largely a cut-n-paste from the previous, this
+    // XXX therefore becomes a candidate to be generalized into a separate
+    // XXX function.  I think.
+
+    QgsLabel * myLabel;
+
+    if ( myLabel = this->label() )
+    {
+        std::stringstream rendererXML;
+
+        myLabel->writeXML(rendererXML);
+
+        QDomDocument rendererDOM;
+
+        std::string rawXML, temp_str;
+        QString errorMsg;
+        int     errorLine; 
+        int     errorColumn; 
+
+        // start with bogus XML header
+        rawXML  = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+            "<!DOCTYPE qgis SYSTEM \"http://mrcc.com/qgis.dtd\">\n";
+
+        while ( getline( rendererXML, temp_str ) )
+        {
+            rawXML += temp_str + '\n';
+        }
+
+        // const char * s = rawXML.c_str(); // debugger probe
+
+        if ( ! rendererDOM.setContent( rawXML, &errorMsg, &errorLine, &errorColumn ) )
+        {
+            //qDebug( s );
+            qDebug( "XML import error at %d %d " + errorMsg, errorLine, errorColumn );
+
+            return false;
+        }
+
+        // lastChild() because the first two nodes are the <xml> and
+        // <!DOCTYPE> nodes; the renderer node follows that, and is (hopefully)
+        // the last node.
+        QDomNode rendererDOMNode = document.importNode( rendererDOM.lastChild(), true );
+
+        if ( ! rendererDOMNode.isNull() )
+        {
+            layer_node.appendChild( rendererDOMNode );
+        }
+        else
+        {
+            qDebug( "not able to import renderer DOM node" );
+
+            // XXX return false?
+        }
+
     }
 
     return true;

@@ -672,26 +672,14 @@ QgsProject::write( )
 
     qgis.appendChild( projectLayersNode );
 
-    std::map<QString,QgsMapLayer*>::iterator i = 
-        QgsMapLayerRegistry::instance()->mapLayers().begin();
 
-    for ( ;
-          i != QgsMapLayerRegistry::instance()->mapLayers().end();
-          i++ )
-    {
-        if ( i->first )
-        {
-            qDebug( "map layer " + i->second->name() );
-        }
-    }
-
-    for ( i =  QgsMapLayerRegistry::instance()->mapLayers().begin();
+    for ( std::map<QString,QgsMapLayer*>::iterator i =
+              QgsMapLayerRegistry::instance()->mapLayers().begin();
           i != QgsMapLayerRegistry::instance()->mapLayers().end();
           i++ )
     {
         if ( i->first )
         { i->second->writeXML( projectLayersNode, *doc ); }
-        // break;    // XXX temporary to test problem where i++ eventually breaks
     }
 
     // XXX write to test file for now; will replace with real file name later
