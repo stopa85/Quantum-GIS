@@ -55,30 +55,14 @@ QgsGraSyExtensionWidget::QgsGraSyExtensionWidget(QWidget* parent, int classfield
     QLabel* fillpatternlabel=new QLabel(tr("fill_pattern"),this);
     m_gridlayout->addWidget(fillpatternlabel,0,7);
 
-    //minimum and maximum values for equal interval
-    double minimum=DBL_MAX;
-    double maximum=DBL_MIN;
+    //fint the minimum and maximum of the classification variable
+    double minimum,maximum;
 
-    //find the minimum and maximum value of the classification variable
-    
     QgsDataProvider* provider = m_vectorlayer->getDataProvider();
     if(provider)
     {
-	provider->reset();
-	QgsFeature* fet=provider->getFirstFeature(true);
-	do
-	{
-	    double value=(fet->attributeMap())[m_classfield].fieldValue().toDouble();
-	    if(value<minimum)
-	    {
-		minimum=value;
-	    }
-	    if(value>maximum)
-	    {
-		maximum=value;
-	    }
-	}
-	while(fet=provider->getNextFeature(true));
+	minimum=provider->minValue(m_classfield).toDouble();
+	maximum=provider->maxValue(m_classfield).toDouble();
     }
     else
     {

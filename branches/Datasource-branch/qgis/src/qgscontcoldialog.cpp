@@ -61,43 +61,28 @@ QgsContColDialog::~QgsContColDialog()
 
 void QgsContColDialog::apply()
 {
-    //minimum and maximum values for equal interval
-    double minimum=DBL_MAX;
-    double maximum=DBL_MIN;//find out the number of the classification field
     QString fieldstring=classificationComboBox->currentText();
-
     if(fieldstring.isEmpty())//don't do anything, it there is no classification field
     {
 	return;
     }
-
     std::map<QString,int>::iterator iter=m_fieldmap.find(fieldstring);
     int classfield=iter->second;
 
+    //find the minimum and maximum for the classification variable
+    double minimum,maximum;
     QgsDataProvider* provider = m_vectorlayer->getDataProvider();
     if(provider)
     {
-	provider->reset();
-	QgsFeature* fet=provider->getFirstFeature(true);
-	do
-	{
-	    double value=(fet->attributeMap())[classfield].fieldValue().toDouble();
-	    if(value<minimum)
-	    {
-		minimum=value;
-	    }
-	    if(value>maximum)
-	    {
-		maximum=value;
-	    }
-	}
-	while(fet=provider->getNextFeature(true));
+	minimum=provider->minValue(classfield).toDouble();
+	maximum=provider->maxValue(classfield).toDouble();
     }
     else
     {
 	qWarning("Warning, provider is null in QgsGraSyExtensionWidget::QgsGraSyExtensionWidget(...)");
 	return;
     }
+
 
     //create the render items for minimum and maximum value
     QgsSymbol minsymbol;

@@ -229,7 +229,7 @@ void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsCoordinateTrans
 		qWarning("Starting draw of features");
 		QgsFeature *fet;
 		unsigned char *feature;
-    bool isGraduated = (m_renderer->rendererType() == QgsRenderer::Graduated);
+    bool isGraduated = (m_renderer->rendererType() == QgsRenderer::Graduated || m_renderer->rendererType() == QgsRenderer::Continuous);
 		while ((fet = dataProvider->getNextFeature(isGraduated))) {//true is necessary for graduated symbol
 
 			if (fet == 0) {
