@@ -46,7 +46,7 @@ int QgsFeature::featureId(){
 * Get the attributes for this feature.
 * @return A std::map containing the field name/value mapping
 */
-std::vector<QgsFeatureAttribute> QgsFeature::attributeMap(){
+const std::vector<QgsFeatureAttribute>& QgsFeature::attributeMap(){
 	return attributes;
 }
 /**
@@ -59,7 +59,7 @@ void QgsFeature::addAttribute(QString field, QString value){
 * Get the fields for this feature
 * @return A std::map containing field position (index) and field name
 */
-std::map<int, QString> QgsFeature::fields(){
+const std::map<int, QString>& QgsFeature::fields(){
 	return fieldNames;
 }
 
