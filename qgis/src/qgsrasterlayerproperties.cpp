@@ -920,17 +920,12 @@ void QgsRasterLayerProperties::pbnHistRefresh_clicked()
   // bin in all selected layers, and the min. It then draws a scaled line between min 
   // and max - scaled to image height. 1 line drawn per selected band
   //
-  const int BINS = 127; 
-  int myGraphImageWidth =256; // pixHistogram->width();
-  int myGraphImageHeight = 256; // pixHistogram->height();
+  const int BINS = 64; 
   int myBandCountInt = rasterLayer->getBandCount();
  
 
   long myCellCount = rasterLayer->getRasterXDim() * rasterLayer->getRasterYDim();
   
-  QPixmap myPixmap(myGraphImageWidth,myGraphImageHeight);
-  myPixmap.fill(Qt::white);
-  QPainter myPainter(&myPixmap, this);
 
 #ifdef QGISDEBUG
     std::cout << "Computing histogram minima and maxima" << std::endl;
@@ -990,20 +985,30 @@ void QgsRasterLayerProperties::pbnHistRefresh_clicked()
 
   
 
+  //create the image onto which graph and axes will be drawn
+  int myImageWidth = pixHistogram->width();
+  int myImageHeight =  pixHistogram->height();
+  QPixmap myPixmap(myImageWidth,myImageHeight);
+  myPixmap.fill(Qt::white);
+  QPainter myPainter(&myPixmap, this);
+  //determine labels sizes and draw them
   QFont myQFont("arial", 8, QFont::Normal);
   QFontMetrics myFontMetrics( myQFont );
   myPainter.setFont(myQFont);
   myPainter.setPen(Qt::black);
   QString myYMaxLabel= QString::number(static_cast < unsigned int >(myMaxVal));
+  QString myXMaxLabel= QString::number(BINS);
   //calculate the gutters
   int myYGutterWidth = myFontMetrics.width(myYMaxLabel )+2; //add 2 so we can have 1 pix whitespace either side of label
   int myXGutterHeight = myFontMetrics.height()+2;
-  int myXGutterWidth = myFontMetrics.width(QString::number(BINS))+1;//1 pix whtispace from right edge of image
-  //now draw the axis labels onto the graph
-  myPainter.drawText(1, 12, myYMaxLabel);
-  myPainter.drawText(1, myGraphImageHeight-myXGutterHeight, QString::number(static_cast < unsigned int >(myMinVal)));
-  myPainter.drawText(myYGutterWidth,myGraphImageHeight-1 , "0");
-  myPainter.drawText( myGraphImageWidth-myXGutterWidth,myGraphImageHeight-1, QString::number(BINS));
+  int myXGutterWidth = myFontMetrics.width(myXMaxLabel)+1;//1 pix whtispace from right edge of image
+  
+  //
+  // Now calculate the graph drawable area after the axis labels have been taken
+  // into account
+  //
+  int myGraphImageWidth =myImageWidth-myYGutterWidth; 
+  int myGraphImageHeight = myImageHeight-myXGutterHeight; 
   //
   //now draw actual graphs
   //
@@ -1027,7 +1032,6 @@ void QgsRasterLayerProperties::pbnHistRefresh_clicked()
       int myX = (((double)myGraphImageWidth)/((double)BINS))*myBin;
       //height varies according to freq. and scaled to greatet value in all layers
       int myY = (int)(((double)myBinValue/(double)myMaxVal)*myGraphImageHeight);
-      myY = myGraphImageHeight - myY;
       //determin which color to draw the bar
       int c1, c2, c3;
       bool found = myColorTable->color ( myBinValue, &c1, &c2, &c3 );
@@ -1036,11 +1040,11 @@ void QgsRasterLayerProperties::pbnHistRefresh_clicked()
       QBrush myBrush(QColor(c1,c2,c3));
       myPainter.setPen(QColor(c1,c2,c3));
 #ifdef QGISDEBUG
-      std::cout << "myPainter.fillRect(QRect(" << myX << "," << myY << "," << myBarWidth << "," <<myY << ") , myBrush );" << std::endl;
+    //  std::cout << "myPainter.fillRect(QRect(" << myX << "," << myY << "," << myBarWidth << "," <<myY << ") , myBrush );" << std::endl;
 #endif
-      myPainter.drawRect(myX,myY,myBarWidth,myY);
+      myPainter.drawRect(myX+myYGutterWidth,myImageHeight-(myY+myXGutterHeight),myBarWidth,myY);
       //store this point in our line too
-      myPointArray.setPoint(myBin, myX, myY);
+      myPointArray.setPoint(myBin, myX+myYGutterWidth, myY-myXGutterHeight);
     }
     //draw a line on the graph along the bar peaks
     myPainter.setPen( Qt::black );
@@ -1077,7 +1081,7 @@ void QgsRasterLayerProperties::pbnHistRefresh_clicked()
           std::cout << "myY = " << myGraphImageHeight << "-" << myY << std::endl;
 #endif
           myY = myGraphImageHeight - myY;
-          myPointArray.setPoint(myBin, myX, myY);
+          myPointArray.setPoint(myBin, myX+myYGutterWidth, myY);
         }
         if (myBandCountInt==1) //draw single band images with black
         {
@@ -1128,10 +1132,10 @@ void QgsRasterLayerProperties::pbnHistRefresh_clicked()
   for (int i=0;i<myXDivisions;++i)
   {
     QPointArray myPointArray(4);
-    myPointArray.setPoint(0,i*myXDivisions , myGraphImageHeight);
-    myPointArray.setPoint(1,i*myXDivisions , myGraphImageHeight-5);
-    myPointArray.setPoint(2,i*myXDivisions , myGraphImageHeight);
-    myPointArray.setPoint(3,(i+1)*myXDivisions , myGraphImageHeight);
+    myPointArray.setPoint(0,(i*myXDivisions)+myYGutterWidth , myImageHeight-myXGutterHeight);
+    myPointArray.setPoint(1,(i*myXDivisions)+myYGutterWidth , myImageHeight-(myXGutterHeight-5));
+    myPointArray.setPoint(2,(i*myXDivisions)+myYGutterWidth , myImageHeight-myXGutterHeight);
+    myPointArray.setPoint(3,((i+1)*myXDivisions)+myYGutterWidth , myImageHeight-myXGutterHeight);
     myPainter.drawPolyline(myPointArray);
   }
   //
@@ -1143,13 +1147,19 @@ void QgsRasterLayerProperties::pbnHistRefresh_clicked()
   {
 
     QPointArray myPointArray(4);
-    myPointArray.setPoint(0,0,myGraphImageHeight-(i*myYDivisions ));
-    myPointArray.setPoint(1,5,myGraphImageHeight-(i*myYDivisions ));
-    myPointArray.setPoint(2,0,myGraphImageHeight-(i*myYDivisions ));
-    myPointArray.setPoint(3,0,myGraphImageHeight-((i-1)*myYDivisions ));
+    int myYOrigin = myImageHeight-myXGutterHeight;
+    myPointArray.setPoint(0,myYGutterWidth,myYOrigin-(i*myYDivisions ));
+    myPointArray.setPoint(1,myYGutterWidth-5,myYOrigin-(i*myYDivisions ));
+    myPointArray.setPoint(2,myYGutterWidth,myYOrigin-(i*myYDivisions ));
+    myPointArray.setPoint(3,myYGutterWidth,myYOrigin-((i-1)*myYDivisions ));
     myPainter.drawPolyline(myPointArray);
   }
 
+  //now draw the axis labels onto the graph
+  myPainter.drawText(1, 12, myYMaxLabel);
+  myPainter.drawText(1, myImageHeight-myXGutterHeight, QString::number(static_cast < unsigned int >(myMinVal)));
+  myPainter.drawText(myYGutterWidth,myImageHeight-1 , "0");
+  myPainter.drawText( myImageWidth-myXGutterWidth,myImageHeight-1, myXMaxLabel );
 
   //
   // Finish up
