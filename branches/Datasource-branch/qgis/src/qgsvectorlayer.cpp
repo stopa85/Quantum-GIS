@@ -511,13 +511,15 @@ void QgsVectorLayer::table()
 		tabledisplay->show();
 		tabledisplay->table()->clearSelection();	//deselect the first row
 
-		//TODO select the rows of the already selected features
+		
 		QObject::disconnect(tabledisplay->table(), SIGNAL(selectionChanged()), tabledisplay->table(), SLOT(handleChangedSelections()));
-	/* 	for (int i = 0; i < ogrLayer->GetFeatureCount(); i++) {
-			if ((*selected)[i] == true) {
-				tabledisplay->table()->selectRow(i);
-			}
-		} */
+		for (int i = 0; i < dataProvider->featureCount(); i++) 
+		{
+		    if ((*selected)[i] == true) 
+		    {
+			tabledisplay->table()->selectRow(i);
+		    }
+		} 
 		QObject::connect(tabledisplay->table(), SIGNAL(selectionChanged()), tabledisplay->table(), SLOT(handleChangedSelections()));
 
 		//etablish the necessary connections between the table and the shapefilelayer
@@ -535,48 +537,44 @@ void QgsVectorLayer::select(int number)
 
 void QgsVectorLayer::select(QgsRect * rect, bool lock)
 {
-  //TODO Fix select function
-/*
-	if (tabledisplay) {
-		QObject::disconnect(tabledisplay->table(), SIGNAL(selectionChanged()), tabledisplay->table(), SLOT(handleChangedSelections()));
-		QObject::disconnect(tabledisplay->table(), SIGNAL(selected(int)), this, SLOT(select(int)));	//disconnecting because of performance reason
-	}
+    QApplication::setOverrideCursor(Qt::waitCursor);
+    if (tabledisplay) 
+    {
+	QObject::disconnect(tabledisplay->table(), SIGNAL(selectionChanged()), tabledisplay->table(), SLOT(handleChangedSelections()));
+	QObject::disconnect(tabledisplay->table(), SIGNAL(selected(int)), this, SLOT(select(int)));	//disconnecting because of performance reason
+    }
 
-	if (lock == false) {
-		removeSelection();		//only if ctrl-button is not pressed
-		if (tabledisplay) {
-			tabledisplay->table()->clearSelection();
-		}
+    if (lock == false) 
+    {
+	removeSelection();		//only if ctrl-button is not pressed
+	if (tabledisplay) 
+	{
+	    tabledisplay->table()->clearSelection();
 	}
+    }
 
-	OGRGeometry *filter = 0;
-	filter = new OGRPolygon();
-	QString wktExtent = QString("POLYGON ((%1))").arg(rect->stringRep());
-	const char *wktText = (const char *)wktExtent;
+    dataProvider->select(rect);
+	
+    QgsFeature* fet;
 
-	OGRErr result = ((OGRPolygon *) filter)->importFromWkt((char **)&wktText);
-	if (result == OGRERR_NONE) {
-		ogrLayer->SetSpatialFilter(filter);
-		int featureCount = 0;
-		while (OGRFeature * fet = ogrLayer->GetNextFeature()) {
-			if (fet) {
-				select(fet->GetFID());
-				if (tabledisplay) {
-					tabledisplay->table()->selectRowWithId(fet->GetFID());
-					(*selected)[fet->GetFID()] = true;
-				}
-			}
-		}
-		ogrLayer->ResetReading();
+    while (fet = dataProvider->getNextFeature(true))
+    {
+	select(fet->featureId());
+	if (tabledisplay) 
+	{
+	    tabledisplay->table()->selectRowWithId(fet->featureId());
 	}
+    }
 
-	if (tabledisplay) {
-		QObject::connect(tabledisplay->table(), SIGNAL(selectionChanged()), tabledisplay->table(), SLOT(handleChangedSelections()));
-		QObject::connect(tabledisplay->table(), SIGNAL(selected(int)), this, SLOT(select(int)));	//disconnecting because of performance reason
-	}
-	triggerRepaint();*/
+    if (tabledisplay) 
+    {
+	QObject::connect(tabledisplay->table(), SIGNAL(selectionChanged()), tabledisplay->table(), SLOT(handleChangedSelections()));
+	QObject::connect(tabledisplay->table(), SIGNAL(selected(int)), this, SLOT(select(int)));	//disconnecting because of performance reason
+    }
+    triggerRepaint();
+    QApplication::restoreOverrideCursor();
 }
-//TODO fix this
+
 void QgsVectorLayer::removeSelection()
 {
 	for (int i = 0; i < (int) selected->size(); i++) {
