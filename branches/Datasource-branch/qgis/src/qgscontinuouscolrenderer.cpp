@@ -127,23 +127,21 @@ void QgsContinuousColRenderer::renderFeature(QPainter* p, QgsFeature* f, QgsCoor
 {
     if((m_minimumItem&&m_maximumItem))
     {
-    qWarning("enter QgsContinuousColRenderer::renderFeature");
+    
     //first find out the value for the classification attribute
     std::vector<QgsFeatureAttribute> vec=f->attributeMap();
-    std::cout << "classification field: " << m_classificationField << std::endl << std::flush;
+    //std::cout << "classification field: " << m_classificationField << std::endl << std::flush;
     double value=vec[m_classificationField].fieldValue().toDouble();
-    std::cout << "value: " << value << std::endl << std::flush;
+    //std::cout << "value: " << value << std::endl << std::flush;
 
     double fvalue=vec[m_classificationField].fieldValue().toDouble();
     double minvalue=m_minimumItem->value().toDouble();
     double maxvalue=m_maximumItem->value().toDouble();
 
-    qWarning("1");
-
     QColor mincolor, maxcolor;
-
-    char* wnt=f->wellKnownText();
-    int wkbType = (int)wnt[1];//does this work?
+    
+    unsigned char *feature= f->getGeometry();
+    int wkbType = (int)feature[1];
 
     if(wkbType==QGis::WKBLineString||wkbType==QGis::WKBMultiLineString)
     {
@@ -157,8 +155,6 @@ void QgsContinuousColRenderer::renderFeature(QPainter* p, QgsFeature* f, QgsCoor
 	maxcolor=m_maximumItem->getSymbol()->fillColor();
     }
 
-    qWarning("2");
-
     int red=int(maxcolor.red()*(fvalue-minvalue)/(maxvalue-minvalue)+mincolor.red()*(maxvalue-fvalue)/(maxvalue-minvalue));
     int green=int(maxcolor.green()*(fvalue-minvalue)/(maxvalue-minvalue)+mincolor.green()*(maxvalue-fvalue)/(maxvalue-minvalue));
     int blue=int(maxcolor.blue()*(fvalue-minvalue)/(maxvalue-minvalue)+mincolor.blue()*(maxvalue-fvalue)/(maxvalue-minvalue));
@@ -171,10 +167,6 @@ void QgsContinuousColRenderer::renderFeature(QPainter* p, QgsFeature* f, QgsCoor
     {
 	p->setBrush(QColor(red,green,blue));
     }
-
-    qWarning("3");
-
-    unsigned char *feature= f->getGeometry();
 
     //  if (feature != 0) {
     //    std::cout << featureCount << "'the feature is null\n";
