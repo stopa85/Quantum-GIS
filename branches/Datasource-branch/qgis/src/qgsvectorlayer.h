@@ -74,7 +74,7 @@ class QgsVectorLayer:public QgsMapLayer
 //! Draws the layer using coordinate transformation
 	void draw(QPainter * p, QgsRect * viewExtent, QgsCoordinateTransform * cXf);
 	//! Pointer to data provider derived from the abastract base class QgsDataProvider
-	QgsDataProvider *dataSource;
+	QgsDataProvider *dataProvider;
     OGRDataSource *ogrDataSource;
     OGRLayer *ogrLayer;
   /**  */
