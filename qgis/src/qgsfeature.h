@@ -14,7 +14,7 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
-/* $Id */
+/* $Id$ */
 #ifndef QGSFEATURE_H
 #define QGSFEATURE_H
 #include <qstring.h>
@@ -30,17 +30,32 @@ class QString;
 
 class QgsFeature {
 
-public: 
+public:
+	//! Constructor
 	QgsFeature();
+	//! Destructor
 	~QgsFeature();
-	QString fieldId();
+	/**
+	* Get the feature id for this feature
+	* @return Feature id
+	*/
+	QString featureId();
+	/**
+	* Get the attributes for this feature.
+	* @return A std::map containing the field name/value mapping
+	*/
 	std::map<QString, QgsFeatureAttribute> attributeMap();
+	/**
+	* Get the fields for this feature
+	* @return A std::map containing field position (index) and field name
+	*/
 	std::map<int, QString> fields();
- protected:
- //! Path or uri of the datasource
- private:
- 	QString fId;
+private:
+	//! feature id
+	QString fId;
+	//! std::map containing field name/value pairs
 	std::map<QString, QgsFeatureAttribute> attributes;
+	//! std::map containing the field index and name
 	std::map<int, QString> fieldNames;
 };
 

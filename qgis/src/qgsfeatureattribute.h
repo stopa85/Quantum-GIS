@@ -14,7 +14,7 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
-/* $Id */
+/* $Id$ */
 #ifndef QGSFEATUREATTRIBUTE_H
 #define QGSFEATUREATTRIBUTE_H
 #include <qstring.h>
@@ -26,18 +26,25 @@ class QString;
 
 class QgsFeatureAttribute {
 
-public: 
+public:
+	//! Constructor
 	QgsFeatureAttribute();
+	//! Destructor
 	~QgsFeatureAttribute();
-	/** Get the id for this feature */
-	QString fieldId();
+	/**
+	* Get the field name for this feature attribute
+	* @return Field name
+	*/
 	QString fieldName();
+	/**
+	* Get the field value for this feature attribute
+	* @return Field value
+	*/
 	QString fieldValue();
- protected:
- //! Path or uri of the datasource
- private:
- 	QString fId;
+private:
+	//! attribute field name
 	QString field;
+	//! attribute field value
 	QString value;
 };
 
