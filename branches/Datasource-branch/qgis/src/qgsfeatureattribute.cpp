@@ -21,10 +21,6 @@
 
 QgsFeatureAttribute::QgsFeatureAttribute(){}
 QgsFeatureAttribute::~QgsFeatureAttribute(){}
-/** Get the id for this feature */
-QString QgsFeatureAttribute::fieldId(){
-	return fId;
-}
 QString QgsFeatureAttribute::fieldName(){
 	return field;
 }

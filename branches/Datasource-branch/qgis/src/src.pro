@@ -7,7 +7,6 @@ LIBS += -L$/usr/local/lib -lgdal.1.1
 SOURCES += main.cpp \
            qgisapp.cpp \
            qgisinterface.cpp \
-           qgsdatasource.cpp \
            qgsmapcanvas.cpp \
            qgsmaplayer.cpp \
            qgsrasterlayer.cpp \

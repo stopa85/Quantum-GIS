@@ -15,7 +15,10 @@
  *                                                                         *
  ***************************************************************************/
  /* $Id$ */
+#include "qgsrect.h"
+#include "qgsfeature.h"
 #include "qgsdatasource.h"
+
 QgsDataSource::QgsDataSource()
 {
 }
