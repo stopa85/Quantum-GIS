@@ -2636,7 +2636,7 @@ void QgsVectorLayer::setCoordinateSystem()
       {
         //shamelessly hard coded for now
         //XXX TODO get this from options dlg
-        mySourceWKT = "Zophod Beeblebrox";
+        mySourceWKT = mySettings.readEntry("/qgis/projections/defaultProjectionWKT");
       }
     }
 
