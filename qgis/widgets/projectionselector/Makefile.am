@@ -43,8 +43,8 @@ BUILT_SOURCES = $(plugin_MOC) $(plugin_UI)
 
 
 
-libqgsprojectionselector_la_LIBADD =  ../../src/libqgis.la
+libqgsprojectionselector_la_LIBADD =  ../../src/libqgis.la $(LDADD) $(QT_LDADD) $(GDAL_LDADD)
 libqgsprojectionselector_la_LDFLAGS = -avoid-version 
-libqgsprojectionselector_la_CXXFLAGS = $(CXXFLAGS) $(EXTRA_CXXFLAGS) $(QT_CXXFLAGS) $(DEBUG_QGIS) -I../../src/
+libqgsprojectionselector_la_CXXFLAGS = $(PKGDATAPATH) $(CXXFLAGS) $(GDAL_CFLAGS) $(EXTRA_CXXFLAGS) $(QT_CXXFLAGS) $(DEBUG_QGIS) -I../../src/
 
 EXTRA_DIST = $(plugin_UIC) 

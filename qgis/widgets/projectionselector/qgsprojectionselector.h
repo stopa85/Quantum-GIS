@@ -10,8 +10,15 @@
 #ifndef QGSPROJECTIONSELECTOR_H
 #define QGSPROJECTIONSELECTOR_H
 
+#ifdef WIN32
+#include "qgsprojectionselectorbase.uic.h"
+#else
 #include "qgsprojectionselectorbase.h"
+#endif
+
+#include <qgis.h>
 #include <qstring.h>
+#include <qlistview.h>
 
 
 /**
@@ -23,6 +30,9 @@ Q_OBJECT
 public:
     QgsProjectionSelector( QWidget* parent , const char* name ,WFlags fl =0  );
     ~QgsProjectionSelector();
+  //! Populate the wkts map with projection names...
+  void getProjList();
+  
     
 public slots:
     void setSelectedWKT(QString theWKT);
@@ -31,7 +41,21 @@ public slots:
     QString getCurrentSRID();
     
 private:
-    
+  //! map containing SPATIAL_REF_SYS items keyed by the WKT name
+  // XXX why are we using QMap instead of std::map ?
+  //XXX List view items for the tree view of projections
+  //! GEOGCS node
+  QListViewItem *geoList;
+  //! PROJCS node
+  QListViewItem *projList;
+  //! Users custom coordinate system file
+  QString customCsFile;
+
+  //private handler for when user selects a cs
+  //it will cause wktSelected and sridSelected events to be spawned
+  void coordinateSystemSelected(QListViewItem*);
+  
+  QString getWKTShortName(QString theWKT);
 signals:
     void wktSelected(QString theWKT);
     void sridSelected(QString theSRID);
