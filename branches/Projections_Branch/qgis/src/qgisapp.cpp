@@ -3730,6 +3730,9 @@ void QgisApp::projectProperties()
   connect(pp, SIGNAL(displayPrecisionChanged()), this, 
       SLOT(updateMouseCoordinatePrecision()));
   QApplication::restoreOverrideCursor();
+  //pass any refresg signals off to canvases
+  connect (pp,SIGNAL(refresh()), mMapCanvas, SLOT(refresh()));
+  connect (pp,SIGNAL(refresh()), mOverviewCanvas, SLOT(refresh()));
   // Display the modal dialog box.
   pp->exec();
 

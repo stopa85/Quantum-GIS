@@ -85,6 +85,8 @@ signals:
   void setDestWKT(QString);   
   //! Signal used to inform listeners that the mouse display precision may have changed
   void displayPrecisionChanged();
+  //! let listening canvases know to refresh
+  void refresh();
 private:
 
 };

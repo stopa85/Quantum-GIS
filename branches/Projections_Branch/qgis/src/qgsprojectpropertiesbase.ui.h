@@ -1,3 +1,4 @@
+
 /****************************************************************************
 ** ui.h extension file, included from the uic-generated form implementation.
 **
