@@ -63,24 +63,45 @@ public:
     static QgsProject * instance();
 
     /**
-       sets the project title
+       Every project has an associated title string
+
+       @todo However current dialogs don't allow setting of it yet
      */
+    //@{
     void title( QString const & title );
 
     /** returns title */
-    QString title() const;
+    QString const & title() const;
+    //@}
+
 
     /**
-       sets the project file name
+       the dirty flag is true if the project has been modified since the last
+       write()
      */
+    //@{
+    bool QgsProject::dirty() const;
+
+    void QgsProject::dirty( bool b );
+    //@}
+
+
+    /**
+       Every project has an associated file that contains its XML
+     */
+    //@{
     void filename( QString const & name );
 
     /** returns file name */
     QString filename() const;
+    //@}
+
 
     /** read project file
 
        @note Any current plug-in state is erased
+
+       @note dirty set to false after successful invocation
 
        @note file name argument implicitly sets file
 
@@ -114,11 +135,13 @@ public:
 
        @note file name argument implicitly sets file
 
+       @note dirty set to false after successful invocation
      */
     //@{
     bool write( QFileInfo const & file );
     bool write( );
     //@}
+
 
     /// syntactic sugar for property lists
     typedef QMap< QString, QValueList<QVariant> > Properties;

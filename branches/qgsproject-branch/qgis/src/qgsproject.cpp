@@ -57,6 +57,14 @@ struct QgsProject::Imp
 
     /// project title
     QString title;
+
+    /// true if project has been modified since it has been read or saved
+    bool dirty;
+
+    Imp()
+        : title(""), dirty(false)
+    {}
+
 }; // struct QgsProject::Imp
 
 
@@ -88,9 +96,44 @@ QgsProject::instance()
 } // QgsProject * instance()
 
 
+
+
+void QgsProject::title( QString const & title )
+{
+    imp_->title = title;
+
+    dirty(true);
+} // void QgsProject::title
+
+
+QString const & QgsProject::title() const
+{
+    return imp_->title;
+} // QgsProject::title() const
+
+
+
+
+bool QgsProject::dirty() const
+{
+    return imp_->dirty;
+} // bool QgsProject::dirty() const
+
+
+void QgsProject::dirty( bool b ) 
+{
+    imp_->dirty = b;
+} // bool QgsProject::dirty()
+
+
+
+
+
 void QgsProject::filename( QString const & name )
 {
     imp_->file.setName( name );
+
+    dirty(true);
 } // void QgsProject::filename( QString const & name )
 
 
@@ -99,18 +142,6 @@ QString QgsProject::filename() const
     return imp_->file.name();
 } // QString QgsProject::filename() const
 
-
-
-/**
-   Please note that most of the contents were copied from qgsproject
-*/
-bool
-QgsProject::read( QFileInfo const & file )
-{
-    imp_->file.setName( file.filePath() );
-
-    return read();
-} // QgsProject::read( QFile & file )
 
 
 
@@ -392,6 +423,19 @@ _setCanvasExtent( QString const & canonicalName, QgsRect const & newExtent )
 
 
 
+/**
+   Please note that most of the contents were copied from qgsproject
+*/
+bool
+QgsProject::read( QFileInfo const & file )
+{
+    imp_->file.setName( file.filePath() );
+
+    return read();
+} // QgsProject::read( QFile & file )
+
+
+
 bool
 QgsProject::read( )
 {
@@ -432,7 +476,6 @@ QgsProject::read( )
 
     imp_->file.close();
 
-    // enable the hourglass -- no, this should be done be the caller
 
 #ifdef QGISDEBUG
     qWarning("opened document " + imp_->file.name());
@@ -484,6 +527,10 @@ QgsProject::read( )
 
     // XXX insert code for setting the properties
 
+
+    // can't be dirty since we're allegedly in pristine state
+    dirty( false );
+
     return true;
 
 } // QgsProject::read
@@ -502,6 +549,8 @@ bool
 QgsProject::write( )
 {
     // XXX add guts from QgsProjectIO write
+
+    dirty( false );             // reset to pristine state
 
     return true;
 } // QgsProject::write

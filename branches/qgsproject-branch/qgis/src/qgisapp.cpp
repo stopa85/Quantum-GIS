@@ -379,7 +379,7 @@ QgisApp::QgisApp(QWidget * parent, const char *name, WFlags fl):QgisAppBase(pare
   restoreWindowState();
 
   // set the dirty flag to false -- no changes yet
-  mProjectIsDirtyFlag = false;
+  // mProjectIsDirtyFlag = false;  QgsProject::instance()->dirty() false on initialization
 
   //
   // Add a panel to the status bar for the scale, coords and progress
@@ -917,7 +917,7 @@ bool QgisApp::addLayer(QFileInfo const & vectorFile)
              this, 
              SLOT(setLayerOverviewStatus(QString,bool)));           
          
-      mProjectIsDirtyFlag = true;
+     QgsProject::instance()->dirty(true);
 
    } else
    {
@@ -1031,7 +1031,8 @@ bool QgisApp::addLayer(QStringList const &theLayerQStringList)
                      this, 
                      SLOT(setLayerOverviewStatus(QString,bool)));           
 
-             mProjectIsDirtyFlag = true;
+             // mProjectIsDirtyFlag = true;
+             QgsProject::instance()->dirty(true);
            } else
            {
               QString msg = *it + " ";
@@ -1134,7 +1135,8 @@ void QgisApp::addDatabaseLayer()
              SIGNAL(showInOverview(QString,bool)), 
              this, 
              SLOT(setLayerOverviewStatus(QString,bool)));           
-          mProjectIsDirtyFlag = true;
+     // mProjectIsDirtyFlag = true;
+     QgsProject::instance()->dirty(true);
         } else
         {
           std::cerr << *it << " is an invalid layer - not loaded" << std::endl;
@@ -1178,12 +1180,15 @@ void QgisApp::fileNew()
       mOverviewCanvas->clear();
       setCaption(tr("Quantum GIS -- Untitled"));
       // mMapLegend->update(); NOW UPDATED VIA SIGNAL/SLOT
-      mFullPathName = "";
-      mProjectIsDirtyFlag = false;
+      // mFullPathName = "";
+      QgsProject::instance()->filename("");
+      // mProjectIsDirtyFlag = false;
+      QgsProject::instance()->dirty(false);
       mMapCanvas->freeze(false);
       mOverviewCanvas->freeze(false);
     }
-} // fileNew
+} // fileNew()
+
 
 //as file new but accepts flags to indicate whether we should prompt to save
 void QgisApp::fileNew(bool thePromptToSaveFlag)
@@ -1201,150 +1206,94 @@ void QgisApp::fileNew(bool thePromptToSaveFlag)
       mOverviewCanvas->clear();
       setCaption(tr("Quantum GIS -- Untitled"));
       // mMapLegend->update(); NOW UPDATED VIA SIGNAL/SLOT
-      mFullPathName = "";
-      mProjectIsDirtyFlag = false;
-
+      //mFullPathName = "";
+      QgsProject::instance()->filename("");
+      // mProjectIsDirtyFlag = false;
+      QgsProject::instance()->dirty(false);
   }
-}
+} // QgisApp::fileNew(bool thePromptToSaveFlag)
 
 
 void QgisApp::fileOpen()
 {
+  // possibly save any pending work before opening a new project
   int answer = saveDirty();
 
   if (answer != QMessageBox::Cancel)
   {
-    std::auto_ptr<QgsProjectIo> pio( new QgsProjectIo( QgsProjectIo::OPEN, mMapCanvas) );
+    // clear out any stuff from previous project
+    removeAllLayers();
 
-    // loading a project will add all layers to the registry and return the
-    // zorder for those layers.
-
-    // clear the map canvas
-    removeAllLayers(); // moved here from following if since this would stomp
-                       // on all layers read from pio
-
-    std::list<QString> myZOrder = pio->read();
-
-    if( ! myZOrder.empty() )
+    // if we don't have a filename, then we need to prompt for one
+    // XXX maybe we should *always* prompt for one?  And what
+    // XXX about project titles?  If we create one, we should be
+    // XXX able to set it.  Maybe need to add something to toolbar/menus
+    if ( QgsProject::instance()->filename().isEmpty() )
     {
-        mOverviewCanvas->freeze(true);
-        mMapCanvas->freeze(true);
+        QString fullPath =
+            QFileDialog::getOpenFileName("./", QObject::tr("QGis files (*.qgs)"), 0, 0,
+                                         QObject::tr("Choose a QGIS project file to open"));
 
-        QgsRect myExtent = mMapCanvas->extent();
-
-#ifdef QGISDEBUG
-        std::cout << "fileOpen -> listing zOrder returned from projectio" << std::endl;
-#endif
-
-        for ( std::list < QString >::iterator li = myZOrder.begin(); 
-              li != myZOrder.end(); 
-              ++li )
-        {
-            QgsMapLayer * myMapLayer = QgsMapLayerRegistry::instance()->mapLayer(*li);
-      
-            Q_ASSERT( myMapLayer );
-      
-#ifdef QGISDEBUG
-            QString lyr = *li;
-            std::cout << "Found  " << lyr.ascii() << " in zOrder" << std::endl;
-            std::cout << "MapLayer type is " << myMapLayer->type() << std::endl;
-#endif
-            //find out what type of file it is and add it to the project
-            if (myMapLayer->type() == QgsMapLayer::VECTOR)
-            {
-                addMapLayer(myMapLayer);
-            }
-            else
-            {
-                addRasterLayer((QgsRasterLayer*)myMapLayer);
-            }
-        }
-
-        setCaption(tr("Quantum GIS --") + " " + pio->baseName());
-        mFullPathName = pio->fullPathName();
-        setZOrder(myZOrder);
-        setOverviewZOrder(mMapLegend);
-        // delete pio; auto_ptr automatically deletes
-        mMapCanvas->setExtent(myExtent);
-
-        mMapCanvas->refresh();
-        mOverviewCanvas->freeze(false);
-        mMapCanvas->freeze(false);
-        mProjectIsDirtyFlag = false;
+        QgsProject::instance()->filename( fullPath );
     }
-    else
-    {
-        // just delete the project io object since the user cancelled
-        // delete pio; auto_ptr automatically deletes
-    }
+
+    QgsProject::instance()->read(); // XXX filename set in saveDirty()?
+
+    setCaption(tr("Quantum GIS --") + " " + QgsProject::instance()->title());
+    // mFullPathName = pio->fullPathName();
+
+    // not needed?  setZOrder(myZOrder);
+    // not needed?  setOverviewZOrder(mMapLegend);
+
+    mMapCanvas->refresh();      // XXX refresh() necessary?
+    mOverviewCanvas->refresh();
+
   }
+
 } // QgisApp::fileOpen
 
 
 
+/** 
+  adds a saved project to qgis, usually called on startup by specifying a
+  project file on the command line
+*/
 bool QgisApp::addProject(QString projectFile)
 {
-  // adds a saved project to qgis, usually called on startup by
-  // specifying a project file on the command line
-  bool returnValue = false;
   mOverviewCanvas->freeze(true);
   mMapCanvas->freeze(true);
+
   // clear the map canvas
   removeAllLayers();
-  QgsProjectIo *pio = new QgsProjectIo(QgsProjectIo::OPEN, mMapCanvas);
-#ifdef QGISDEBUG
-  std::cout << "Loading Project - about to call ProjectIO->read()" << std::endl;
-#endif
-  mMapCanvas->freeze(true);
-  std::list<QString> myZOrder = pio->read(projectFile);
-  std::list < QString >::iterator li = myZOrder.begin();
-#ifdef QGISDEBUG
-  std::cout << "fileOpen -> listing zOrder returned from projectio" << std::endl;
-#endif
-  while (li != myZOrder.end())
-  {
-#ifdef QGISDEBUG
-    std::cout << "Found  " << *li << " in zOrder" << std::endl;
-#endif
-    QgsMapLayer * myMapLayer = QgsMapLayerRegistry::instance()->mapLayer(*li);
-    //find out what type of file it is and add it to the project
-    if (myMapLayer->type() == QgsMapLayer::VECTOR)
-    {
-      addMapLayer(myMapLayer);
-    }
-    else
-    {
-      addRasterLayer((QgsRasterLayer*)myMapLayer);
-    }
-    li++;
-  }
-  setCaption(tr("Quantum GIS --") + " " + pio->baseName());
-  mFullPathName = pio->fullPathName();
-  // mMapLegend->update(); UPDATED VIA SIGNAL/SLOTS
-  mMapCanvas->freeze(false);
-  mProjectIsDirtyFlag = false;
-  returnValue = true;
-  setZOrder(myZOrder);
-  setOverviewZOrder(mMapLegend);
-  delete pio;
-  mOverviewCanvas->freeze(false);
-  mMapCanvas->freeze(false);
 
-  return returnValue;
-}
+  if ( QgsProject::instance()->read( projectFile ) )
+  {
+      setCaption(tr("Quantum GIS --") + " " + QgsProject::instance()->title() );
+  }
+  else
+  {
+      return false;
+  }
+
+  return true;
+} // QgisApp::addProject(QString projectFile)
+
+
 
 void QgisApp::fileSave()
 {
   QgsProjectIo *pio = new QgsProjectIo( QgsProjectIo::SAVE,mMapCanvas);
-  pio->setFileName(mFullPathName);
+  // pio->setFileName(mFullPathName);
+  pio->setFileName( QgsProject::instance()->filename() ); // temporary until QgsProject write works
   if (pio->write(mMapCanvas->extent()))
     {
       setCaption(tr("Quantum GIS --") + " " + pio->baseName());
       statusBar()->message(tr("Saved map to:") + " " + pio->fullPathName());
-      mFullPathName = pio->fullPathName();
+      // mFullPathName = pio->fullPathName();
     }
   delete pio;
-  mProjectIsDirtyFlag = false;
+  // mProjectIsDirtyFlag = false;
+  QgsProject::instance()->dirty(false); // XXX this might be redundant
 }
 
 void QgisApp::fileSaveAs()
@@ -1354,10 +1303,11 @@ void QgisApp::fileSaveAs()
     {
       setCaption(tr("Quantum GIS --") + " " + pio->baseName());
       statusBar()->message(tr("Saved map to:") + " " + pio->fullPathName());
-      mFullPathName = pio->fullPathName();
+      //mFullPathName = pio->fullPathName();
     }
   delete pio;
-  mProjectIsDirtyFlag = false;
+  // mProjectIsDirtyFlag = false;
+  QgsProject::instance()->dirty(false); // XXX this might be redundant
 }
 
 void QgisApp::filePrint()
@@ -2627,7 +2577,8 @@ void QgisApp::addVectorLayer(QString vectorLayerPath, QString baseName, QString 
               this, 
               SLOT(setLayerOverviewStatus(QString,bool)));           
 
-      mProjectIsDirtyFlag = true;
+      // mProjectIsDirtyFlag = true;
+      QgsProject::instance()->dirty(false); // XXX this might be redundant
       statusBar()->message(mMapCanvas->extent().stringRep(2));
 
     }else
@@ -2661,7 +2612,8 @@ void QgisApp::addMapLayer(QgsMapLayer *theMapLayer)
             this, 
             SLOT(setLayerOverviewStatus(QString,bool)));           
 
-    mProjectIsDirtyFlag = true;
+    // mProjectIsDirtyFlag = true;
+    QgsProject::instance()->dirty(true);
     statusBar()->message(mMapCanvas->extent().stringRep(2));
 
   }else
@@ -2687,48 +2639,61 @@ void QgisApp::setExtent(QgsRect theRect)
 int QgisApp::saveDirty()
 {
   int answer = 0;
-  mMapCanvas->freeze(true);
+  mMapCanvas->freeze(true);     // XXX shouldn't we freeze overview canvas, too?
+
 #ifdef QGISDEBUG
   std::cout << "Layer count is " << mMapCanvas->layerCount() << std::endl;
   std::cout << "Project is ";
-  if (mProjectIsDirtyFlag)
-    {
+  if ( QgsProject::instance()->dirty() )
+  {
       std::cout << "dirty" << std::endl;
   } else
-    {
+  {
       std::cout << "not dirty" << std::endl;
-    }
+  }
+
   std::cout << "Map canvas is ";
   if (mMapCanvas->isDirty())
-    {
+  {
       std::cout << "dirty" << std::endl;
   } else
-    {
+  {
       std::cout << "not dirty" << std::endl;
-    }
+  }
 #endif
-  if ((mProjectIsDirtyFlag || (mMapCanvas->isDirty()) && mMapCanvas->layerCount() > 0))
-    {
-      // flag project is dirty since dirty state of canvas is reset if "dirty"
+
+  if ((QgsProject::instance()->dirty() || (mMapCanvas->isDirty()) && mMapCanvas->layerCount() > 0))
+  {
+      // flag project as dirty since dirty state of canvas is reset if "dirty"
       // is based on a zoom or pan
-      mProjectIsDirtyFlag = true;
+      QgsProject::instance()->dirty( true );
+      // old code: mProjectIsDirtyFlag = true;
+      
       // prompt user to save
       answer = QMessageBox::information(this, "Save?", 
-          "Do you want to save the current project?",
-          QMessageBox::Yes | QMessageBox::Default,
-          QMessageBox::No, QMessageBox::Cancel | QMessageBox::Escape);
-      if (answer == QMessageBox::Yes)
-        {
+                                        "Do you want to save the current project?",
+                                        QMessageBox::Yes | QMessageBox::Default,
+                                        QMessageBox::No, 
+                                        QMessageBox::Cancel | QMessageBox::Escape);
+      if (QMessageBox::Yes == answer )
+      {
           fileSave();
-        }
-    }
+      }
+  }
+
   mMapCanvas->freeze(false);
+
   return answer;
-}
+
+} // QgisApp::saveDirty()
+
+
 void QgisApp::whatsThis()
 {
   QWhatsThis::enterWhatsThisMode();
-}
+} // QgisApp::whatsThis()
+
+
 std::map<QString, int> QgisApp::menuMapByName()
 {
   // Must populate the maps with each call since menus might have been
@@ -3194,7 +3159,8 @@ bool QgisApp::addRasterLayer(QgsRasterLayer * theRasterLayer, bool theForceRedra
             this, 
             SLOT(setLayerOverviewStatus(QString,bool)));           
 
-    mProjectIsDirtyFlag = true;
+    // mProjectIsDirtyFlag = true;
+    QgsProject::instance()->dirty(true); // XXX might be redundant
   } 
   else
   {
