@@ -372,7 +372,7 @@ BUILT_SOURCES = $(qgis_MOC) $(qgis_UIMOC) $(qgis_UIHEADERS) $(qgis_UISOURCES) \
 					$(postgresMOC) $(postgresUIMOC) $(postgresUIHEADERS) $(postgresUISOURCES)
 
 
-qgis_LDADD = $(LDADD) $(QT_LDADD) $(GDAL_LDADD) $(PG_LIB) $(GEOS_LDADD)
+qgis_LDADD = $(LDADD) $(QT_LDADD) $(GDAL_LDADD) $(PG_LIB) $(GEOS_LDADD) -lproj
 qgis_LDFLAGS = -rdynamic
 qgis_CXXFLAGS = $(PREFIX) $(PLUGINPATH) $(PKGDATAPATH) $(GDAL_CFLAGS) $(CXXFLAGS) $(EXTRA_CXXFLAGS) $(QT_CXXFLAGS) -I$(PG_INC) $(DEBUG_QGIS) $(GEOS_CFLAGS)
 
@@ -443,8 +443,11 @@ libqgis_la_SOURCES =				\
 		qgscomposerview.moc.cpp		\
 		qgscomposerlabelbase.moc.uic.cpp		\
 		qgscomposerlabelbase.uic.cpp		\
-		qgscomposerlabel.moc.cpp		\
-		qgsvectorlayer.moc.cpp 
+		qgscomposerlabel.moc.cpp \		
+		qgsvectorlayer.moc.cpp \
+		qgsspatialrefsys.cpp \
+		qgsspatialreferences.cpp 
+		
 
 if HAVE_POSTGRESQL
 libqgis_la_SOURCES += $(postgresLIBSOURCES)
