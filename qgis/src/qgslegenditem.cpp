@@ -15,6 +15,7 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
+ /* $Id$ */
 #include <qlabel.h>
 #include <qcheckbox.h>
 #include "qgssymbol.h"
