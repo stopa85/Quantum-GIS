@@ -402,6 +402,7 @@ QgisApp::QgisApp(QWidget * parent, const char *name, WFlags fl):QgisAppBase(pare
   if (! myHideSplashFlag)
   {
     gSplashScreen->setStatus(tr("Loading plugins..."));
+    qApp->processEvents();
   }
 
   // store the application dir
