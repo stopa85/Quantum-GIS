@@ -249,6 +249,7 @@ void QgsProjectProperties::apply()
   QgsProject::instance()->writeEntry("Gui","/SelectionColorBluePart",myColour.blue()); 
   QgsRenderer::mSelectionColor=myColour;
 
+  emit refresh();
 }
 
 //when user clicks ok

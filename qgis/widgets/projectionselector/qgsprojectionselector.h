@@ -40,7 +40,6 @@ public slots:
     void setSelectedSRID(QString theSRID);
     QString getCurrentWKT();
     QString getCurrentSRID();
-    
 private:
   //! map containing SPATIAL_REF_SYS items keyed by the WKT name
   // XXX why are we using QMap instead of std::map ?
@@ -59,6 +58,8 @@ private:
 signals:
     void wktSelected(QString theWKT);
     void sridSelected(QString theSRID);
+    //! Refresh any listening canvases
+    void refresh();
 };
 
 #endif
