@@ -333,10 +333,6 @@ private:
   long numberFeatures;
 
   /**
-   * Spatial reference id of the target (map canvas) SRS
-   */
-  int mTargetSrid;
-  /**
    * Flag indicating whether data from binary cursors must undergo an
    * endian conversion prior to use
    @note 
