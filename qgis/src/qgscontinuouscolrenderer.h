@@ -44,8 +44,8 @@ class QgsContinuousColRenderer: public QgsRenderer
     void setMinimumItem(QgsRenderItem* it);
     /**Sets the item for the maximum value. The item has to be created using the new operator and is automatically deleted when inserting a new item or when the instance is destroyed*/
     void setMaximumItem(QgsRenderItem* it);
-    /** Return the renderer type. In this case QgsRenderer::Continuous. */
-    int rendererType();
+    /** Returns true*/
+    bool needsAttributes();
  protected:
     /**Number of the classification field (it must be a numerical field)*/
     int m_classificationField;
@@ -65,9 +65,9 @@ inline void QgsContinuousColRenderer::setClassificationField(int id)
     m_classificationField=id;
 }
 
-inline int QgsContinuousColRenderer::rendererType()
+inline bool QgsContinuousColRenderer::needsAttributes()
 {
-  return QgsRenderer::Continuous;
+  return true;
 }
 /*inline void QgsContinuousColRenderer::renderFeature(QPainter* p, OGRFeature* f, QgsCoordinateTransform* t, int endian)
 {
