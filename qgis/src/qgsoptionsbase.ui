@@ -413,101 +413,6 @@ identifying features without zooming in very close.
             </widget>
             <widget class="QWidget">
                 <property name="name">
-                    <cstring>tabHelpBrowser</cstring>
-                </property>
-                <attribute name="title">
-                    <string>Help &amp;Browser</string>
-                </attribute>
-                <grid>
-                    <property name="name">
-                        <cstring>unnamed</cstring>
-                    </property>
-                    <widget class="Line" row="1" column="0" rowspan="1" colspan="3">
-                        <property name="name">
-                            <cstring>line3</cstring>
-                        </property>
-                        <property name="frameShape">
-                            <enum>HLine</enum>
-                        </property>
-                        <property name="frameShadow">
-                            <enum>Sunken</enum>
-                        </property>
-                        <property name="orientation">
-                            <enum>Horizontal</enum>
-                        </property>
-                    </widget>
-                    <widget class="QLabel" row="2" column="0" rowspan="1" colspan="3">
-                        <property name="name">
-                            <cstring>textLabel1_2</cstring>
-                        </property>
-                        <property name="text">
-                            <string>&lt;b&gt;Note:&lt;/b&gt; The browser must be in your PATH or you can specify &lt;br&gt;the full path above</string>
-                        </property>
-                    </widget>
-                    <widget class="QLabel" row="0" column="0">
-                        <property name="name">
-                            <cstring>textLabel1</cstring>
-                        </property>
-                        <property name="text">
-                            <string>Open help documents with</string>
-                        </property>
-                    </widget>
-                    <widget class="QComboBox" row="0" column="1">
-                        <item>
-                            <property name="text">
-                                <string>epiphany</string>
-                            </property>
-                        </item>
-                        <item>
-                            <property name="text">
-                                <string>firebird</string>
-                            </property>
-                        </item>
-                        <item>
-                            <property name="text">
-                                <string>galeon</string>
-                            </property>
-                        </item>
-                        <item>
-                            <property name="text">
-                                <string>konqueror</string>
-                            </property>
-                        </item>
-                        <item>
-                            <property name="text">
-                                <string>mozilla</string>
-                            </property>
-                        </item>
-                        <item>
-                            <property name="text">
-                                <string>opera</string>
-                            </property>
-                        </item>
-                        <property name="name">
-                            <cstring>cmbBrowser</cstring>
-                        </property>
-                        <property name="editable">
-                            <bool>true</bool>
-                        </property>
-                    </widget>
-                    <widget class="QPushButton" row="0" column="2">
-                        <property name="name">
-                            <cstring>btnFindBrowser</cstring>
-                        </property>
-                        <property name="maximumSize">
-                            <size>
-                                <width>21</width>
-                                <height>21</height>
-                            </size>
-                        </property>
-                        <property name="text">
-                            <string>...</string>
-                        </property>
-                    </widget>
-                </grid>
-            </widget>
-            <widget class="QWidget">
-                <property name="name">
                     <cstring>TabPage</cstring>
                 </property>
                 <attribute name="title">
@@ -647,12 +552,107 @@ identifying features without zooming in very close.
                             <cstring>textLabel3_2</cstring>
                         </property>
                         <property name="text">
-                            <string>Default projection not specified</string>
+                            <string>Lat/Long - WGS4</string>
                         </property>
                     </widget>
                     <widget class="QPushButton" row="1" column="2">
                         <property name="name">
                             <cstring>pushButton10</cstring>
+                        </property>
+                        <property name="text">
+                            <string>...</string>
+                        </property>
+                    </widget>
+                </grid>
+            </widget>
+            <widget class="QWidget">
+                <property name="name">
+                    <cstring>tabHelpBrowser</cstring>
+                </property>
+                <attribute name="title">
+                    <string>Help &amp;Browser</string>
+                </attribute>
+                <grid>
+                    <property name="name">
+                        <cstring>unnamed</cstring>
+                    </property>
+                    <widget class="Line" row="1" column="0" rowspan="1" colspan="3">
+                        <property name="name">
+                            <cstring>line3</cstring>
+                        </property>
+                        <property name="frameShape">
+                            <enum>HLine</enum>
+                        </property>
+                        <property name="frameShadow">
+                            <enum>Sunken</enum>
+                        </property>
+                        <property name="orientation">
+                            <enum>Horizontal</enum>
+                        </property>
+                    </widget>
+                    <widget class="QLabel" row="2" column="0" rowspan="1" colspan="3">
+                        <property name="name">
+                            <cstring>textLabel1_2</cstring>
+                        </property>
+                        <property name="text">
+                            <string>&lt;b&gt;Note:&lt;/b&gt; The browser must be in your PATH or you can specify &lt;br&gt;the full path above</string>
+                        </property>
+                    </widget>
+                    <widget class="QLabel" row="0" column="0">
+                        <property name="name">
+                            <cstring>textLabel1</cstring>
+                        </property>
+                        <property name="text">
+                            <string>Open help documents with</string>
+                        </property>
+                    </widget>
+                    <widget class="QComboBox" row="0" column="1">
+                        <item>
+                            <property name="text">
+                                <string>epiphany</string>
+                            </property>
+                        </item>
+                        <item>
+                            <property name="text">
+                                <string>firebird</string>
+                            </property>
+                        </item>
+                        <item>
+                            <property name="text">
+                                <string>galeon</string>
+                            </property>
+                        </item>
+                        <item>
+                            <property name="text">
+                                <string>konqueror</string>
+                            </property>
+                        </item>
+                        <item>
+                            <property name="text">
+                                <string>mozilla</string>
+                            </property>
+                        </item>
+                        <item>
+                            <property name="text">
+                                <string>opera</string>
+                            </property>
+                        </item>
+                        <property name="name">
+                            <cstring>cmbBrowser</cstring>
+                        </property>
+                        <property name="editable">
+                            <bool>true</bool>
+                        </property>
+                    </widget>
+                    <widget class="QPushButton" row="0" column="2">
+                        <property name="name">
+                            <cstring>btnFindBrowser</cstring>
+                        </property>
+                        <property name="maximumSize">
+                            <size>
+                                <width>21</width>
+                                <height>21</height>
+                            </size>
                         </property>
                         <property name="text">
                             <string>...</string>
