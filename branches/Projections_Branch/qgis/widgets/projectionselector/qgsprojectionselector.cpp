@@ -11,18 +11,18 @@
 
 //qt includes
 #include <qlistview.h>
-#include <qtextbox.h>
+#include <qtextedit.h>
 
 //standard includes
 #include <iostream>
 
 
-QgsProjectionSelector::QgsProjectionSelector( QWidget* parent , const char* name , bool modal , WFlags fl  )
-  : QgsProjectionSelectorBase( parent, name, modal, fl )
+QgsProjectionSelector::QgsProjectionSelector( QWidget* parent , const char* name , WFlags fl  )
+  : QgsProjectionSelectorBase( parent, name, fl )
 {
 }
 
-QgsProjectionSelector::~QgsProjectionSelectorGui()
+QgsProjectionSelector::~QgsProjectionSelector()
 {
 }
 

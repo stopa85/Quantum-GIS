@@ -8,7 +8,7 @@
 *****************************************************************************/
 
 
-void QgsProjectionSelector::selectionChanged()
+void QgsProjectionSelectorBase::selectionChanged()
 {
 
 }
