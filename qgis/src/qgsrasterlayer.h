@@ -223,7 +223,7 @@ struct RasterBandStats
     int elementCountInt;    
     /** \brief Store the histogram for a given layer */
     typedef QValueVector<int> HistogramVector;
-    HistogramVector histogramVector;
+    HistogramVector * histogramVector;
     /** Color table */
     QgsColorTable colorTable;
 };

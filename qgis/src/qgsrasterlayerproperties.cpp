@@ -938,10 +938,17 @@ void QgsRasterLayerProperties::pbnHistRefresh_clicked()
     QListBoxItem *myItem = lstHistogramLabels->item( myIteratorInt-1 );
     if ( myItem->isSelected() )
     {
+#ifdef QGISDEBUG
+        std::cout << "Ensuring hist is populated for this layer" << std::endl;
+#endif
       rasterLayer->populateHistogram(myIteratorInt,BINS); 
+
+#ifdef QGISDEBUG
+        std::cout << "...done..." << myRasterBandStats.histogramVector->size() << " bins filled" << std::endl;
+#endif
       for (int myBin = 0; myBin <BINS; myBin++)
       {
-        int myBinValue = myRasterBandStats.histogramVector[myBin];
+        int myBinValue = myRasterBandStats.histogramVector->at(myBin);
 #ifdef QGISDEBUG
         std::cout << myBinValue << std::endl;
 #endif
@@ -989,7 +996,7 @@ void QgsRasterLayerProperties::pbnHistRefresh_clicked()
       QPointArray myPointArray(BINS);
       for (int myBin = 0; myBin <BINS; myBin++)
       {
-        double myBinValue = myRasterBandStats.histogramVector[myBin];
+        double myBinValue = myRasterBandStats.histogramVector->at(myBin);
         //NOTE: Int division is 0 if the numerator is smaller than the denominator.
         //hence the casts
         int myX = (((double)myGraphImageWidth)/((double)BINS))*myBin;
