@@ -276,7 +276,7 @@
                         </property>
                         <property name="text">
                             <string>&lt;h3&gt;QGIS Contributors&lt;/h3&gt;
-&lt;b&gt;&lt;font color="#550000"&gt;&lt;font size="+1"&gt;Code&lt;/font&gt;&lt;/font&gt;&lt;/b&gt;&lt;br&gt;
+&lt;b&gt;&lt;font color="#800000"&gt;&lt;font size="+1"&gt;Code&lt;/font&gt;&lt;/font&gt;&lt;/b&gt;&lt;br&gt;
 Gary E. Sherman&lt;br&gt;
 Steve Halasz&lt;br&gt;
 Marco Hugentobler&lt;br&gt;
@@ -284,7 +284,7 @@ Carl Anderson&lt;br&gt;
 Masaru Hoshi&lt;br&gt;
 Radim Blazek&lt;br&gt;
 &lt;p&gt;
-&lt;b&gt;&lt;font color="#550000"&gt;&lt;font size="+1"&gt;Planning/Design&lt;/font&gt;&lt;/font&gt;&lt;/b&gt;&lt;br&gt;
+&lt;b&gt;&lt;font color="#800000"&gt;&lt;font size="+1"&gt;Planning/Design&lt;/font&gt;&lt;/font&gt;&lt;/b&gt;&lt;br&gt;
 Denis Antipov&lt;br&gt;
 Mark Coletti
 &lt;p&gt;

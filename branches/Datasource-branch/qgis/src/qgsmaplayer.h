@@ -20,7 +20,7 @@
 
 #include <qwidget.h>
 #include <qobject.h>
-#include "qgsdatasource.h"
+/* #include "qgsdatasource.h" */
 #include "qgsrect.h"
 #include "qgis.h"
 #include "qgscoordinatetransform.h"
