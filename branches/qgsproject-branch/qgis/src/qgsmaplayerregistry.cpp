@@ -80,7 +80,10 @@ QgsMapLayer * QgsMapLayerRegistry::mapLayer(QString theLayerId)
   }
 }
 
-bool QgsMapLayerRegistry::addMapLayer( QgsMapLayer * theMapLayer)
+
+
+QgsMapLayer *
+QgsMapLayerRegistry::addMapLayer( QgsMapLayer * theMapLayer )
 {
 #ifdef QGISDEBUG
   std::cout << "qgsmaplayerregistry::addMaplayer - " << theMapLayer->name() << std::endl;
@@ -92,7 +95,7 @@ bool QgsMapLayerRegistry::addMapLayer( QgsMapLayer * theMapLayer)
   {
     mMapLayers[theMapLayer->getLayerID()] = theMapLayer;
     emit layerWasAdded(theMapLayer);
-    return true;
+    return mMapLayers[theMapLayer->getLayerID()];
   }
   else
   {
@@ -100,9 +103,11 @@ bool QgsMapLayerRegistry::addMapLayer( QgsMapLayer * theMapLayer)
 #ifdef QGISDEBUG
     std::cout << "addMaplayer - " << theMapLayer->name() << " already registered" << std::endl;
 #endif
-    return false;
+    return 0x0;
   }
-}
+} //  QgsMapLayerRegistry::addMapLayer
+
+
 
 void QgsMapLayerRegistry::removeMapLayer(QString theLayerId)
 {

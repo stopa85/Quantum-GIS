@@ -23,8 +23,10 @@
 #include <qobject.h>
 #include "qgsmaplayer.h"
 #include "qgsvectorlayer.h"
+
 class QString;
 class QStringList;
+
 /**
 * \class QgsMapLayerRegistry
 * \brief This class tracks map layers that are currently loaded an provides
@@ -32,32 +34,52 @@ class QStringList;
 */
 class QgsMapLayerRegistry : public QObject
 {
-Q_OBJECT;
+   Q_OBJECT;
+
 public:
+
  //! Returns the instance pointer, creating the object on the first call
  static QgsMapLayerRegistry * instance();
+
  //! Retrieve a pointer to a loaded plugin by id
  QgsMapLayer * mapLayer(QString theLayerId);
+
  //! Retrieve the mapLayers collection (mainly intended for use by projectio)
  std::map<QString,QgsMapLayer*> mapLayers();
- //! Add a layer to the map of loaded layers
- bool addMapLayer(QgsMapLayer * theMapLayer);
+
+ /** Add a layer to the map of loaded layers 
+    @returns NULL if unable to add layer, otherwise pointer to newly added layer
+ */
+ QgsMapLayer *  addMapLayer(QgsMapLayer * theMapLayer);
+
  //! Remove a layer from qgis - any canvases using that layer will need to remove it
  void removeMapLayer(QString theLayerId);
+
  //! Remove all registered layers 
  void removeAllMapLayers();
+
  //! Get a vector layer from the registry - the the requested key does not exist or
  //does not correspond to a vector layer, null returned!
  QgsVectorLayer * getVectorLayer(QString theLayerId);
+
 signals:
+
  void layerWillBeRemoved(QString theLayerId);
+
  void layerWasAdded(QgsMapLayer * theMapLayer);
+
 protected:
-//! protected constructor
+
+ //! protected constructor
  QgsMapLayerRegistry( QObject * parent = 0, const char * name = 0 );
+
 private:
+
  static QgsMapLayerRegistry* mInstance;
+
  std::map<QString,QgsMapLayer*> mMapLayers;
-};
+
+}; // class QgsMapLayerRegistry
+
 #endif //QgsMapLayerRegistry_H
 

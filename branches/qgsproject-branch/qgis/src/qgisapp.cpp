@@ -303,12 +303,18 @@ QgisApp::QgisApp(QWidget * parent, const char *name, WFlags fl):QgisAppBase(pare
   mMapLegend->addColumn(tr("Layers"));
   mMapLegend->setSorting(-1);
 
-  mOverviewCanvas = new QgsMapCanvas(legendOverviewSplit);
+                                // "theOverviewCanvas" used to find canonical
+                                // instance later
+  mOverviewCanvas = new QgsMapCanvas(legendOverviewSplit, "theOverviewCanvas"); 
   // lock the canvas to prevent user interaction
   mOverviewCanvas->userInteractionAllowed(false);
+
   // mL = new QScrollView(canvasLegendSplit);
-  //add a canvas
-  mMapCanvas = new QgsMapCanvas(canvasLegendSplit);
+
+  // add a canvas
+                                // "theMapCanvas" used to find this canonical
+                                // instance later
+  mMapCanvas = new QgsMapCanvas(canvasLegendSplit, "theMapCanvas" );
   // we need to cache the layer registry instance so plugins can get to it
   // now explicitly refer to Singleton -- mLayerRegistry = QgsMapLayerRegistry::instance();
   // resize it to fit in the frame
@@ -317,9 +323,11 @@ QgisApp::QgisApp(QWidget * parent, const char *name, WFlags fl):QgisAppBase(pare
   mMapCanvas->setBackgroundColor(Qt::white); //QColor (220, 235, 255));
   mMapCanvas->setMinimumWidth(400);
   canvasLegendLayout->addWidget(canvasLegendSplit, 0, 0);
+
   mMapLegend->setBackgroundColor(QColor(192, 192, 192));
   mMapLegend->setMapCanvas(mMapCanvas);
   mMapLegend->setResizeMode(QListView::AllColumns);
+
   QString caption = tr("Quantum GIS - ");
   caption += QString("%1 ('%2')").arg(QGis::qgisVersion).arg(QGis::qgisReleaseName);
 
@@ -451,6 +459,9 @@ QgisApp::QgisApp(QWidget * parent, const char *name, WFlags fl):QgisAppBase(pare
   connect(mapLayerRegistry, SIGNAL(layerWillBeRemoved(QString)), mMapCanvas, SLOT(remove(QString)));
   connect(mapLayerRegistry, SIGNAL(layerWillBeRemoved(QString)), mMapLegend, SLOT(removeLayer(QString)));
   connect(mapLayerRegistry, SIGNAL(layerWillBeRemoved(QString)), mOverviewCanvas, SLOT(remove(QString)));
+
+  connect(mapLayerRegistry, SIGNAL(layerWasAdded(QgsMapLayer*)), mMapCanvas, SLOT(addLayer(QgsMapLayer *)));
+  connect(mapLayerRegistry, SIGNAL(layerWasAdded(QgsMapLayer*)), mOverviewCanvas, SLOT(addLayer(QgsMapLayer *)));
 
   
   // get the users theme preference from the settings

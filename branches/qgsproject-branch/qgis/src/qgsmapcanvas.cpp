@@ -1012,7 +1012,10 @@ void QgsMapCanvas::mouseReleaseEvent(QMouseEvent * e)
           --it;
           --it;
           QgsPoint lastpoint = mCanvasProperties->coordXForm->transform(it->x(),it->y());
-          paint.drawLine(lastpoint.x(),lastpoint.y(),e->x(),e->y());
+          paint.drawLine(static_cast<int>(lastpoint.x()),
+                         static_cast<int>(lastpoint.y()),
+                         e->x(),
+                         e->y());
         }
         if(e->button()==Qt::RightButton)
         {
