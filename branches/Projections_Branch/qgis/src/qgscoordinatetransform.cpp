@@ -183,20 +183,15 @@ void QgsCoordinateTransform::initialise()
   }
 }
 
-//--------------------------------------------------------
-// Inlined method implementations for best performance
-// 
-//--------------------------------------------------------
+//
+//
+// TRANSFORMERS BELOW THIS POINT .........
+//
+//
+//
 
 
-// ------------------------------------------------------------------
-//
-//
-// --------------- FORWARD PROJECTIONS ------------------------------
-//
-//
-// ------------------------------------------------------------------
-QgsPoint QgsCoordinateTransform::transform(QgsPoint thePoint)
+QgsPoint QgsCoordinateTransform::transform(const QgsPoint thePoint,TransformDirection direction) const
 {
   if (mShortCircuit || !mInitialisedFlag) return thePoint;
   // transform x
@@ -206,7 +201,7 @@ QgsPoint QgsCoordinateTransform::transform(QgsPoint thePoint)
   try
   {
 
-    transformCoords(FORWARD, 1, x, y, z );
+    transformCoords(1, x, y, z, direction );
   }
   catch(QgsCsException &cse)
   {
@@ -221,7 +216,12 @@ QgsPoint QgsCoordinateTransform::transform(QgsPoint thePoint)
 } 
 
 
-QgsRect QgsCoordinateTransform::transform(QgsRect theRect)
+QgsPoint QgsCoordinateTransform::transform(const double theX, const double theY=0,TransformDirection direction) const
+{
+  transform(QgsPoint(theX, theY), direction);
+}
+
+QgsRect QgsCoordinateTransform::transform(const QgsRect theRect,TransformDirection direction) const
 {
   if (mShortCircuit || !mInitialisedFlag) return theRect;
   // transform x
@@ -229,13 +229,25 @@ QgsRect QgsCoordinateTransform::transform(QgsRect theRect)
   double y1 = theRect.yMin();
   double x2 = theRect.xMax(); 
   double y2 = theRect.yMax();  
+
+#ifdef QGISDEBUG   
+
+  std::cout << "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"<< std::endl;
+  std::cout << "Rect  projection..." << std::endl;
+  std::cout << "INPUT: " << std::endl << mSourceWKT << std::endl;
+  std::cout << "PROJ4: " << std::endl << mProj4SrcParms << std::endl;  
+  std::cout << "OUTPUT: " << std::endl << mDestWKT  << std::endl;
+  std::cout << "PROJ4: " << std::endl << mProj4DestParms << std::endl;  
+  std::cout << "INPUT RECT: " << std::endl << x1 << "," << y1 << ":" << x2 << "," << y2 << std::endl;
+  std::cout << "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" << std::endl;
+#endif    
   // Number of points to reproject------+
   //                                    | 
   //                                    V 
   try{
     double z = 0.0;
-    transformCoords(FORWARD, 1, x1, y1, z);
-    transformCoords(FORWARD, 1, x2, y2, z);
+    transformCoords(1, x1, y1, z, direction);
+    transformCoords(1, x2, y2, z, direction);
 
   }
   catch(QgsCsException &cse)
@@ -243,6 +255,7 @@ QgsRect QgsCoordinateTransform::transform(QgsRect theRect)
     // rethrow the exception
     throw cse;
   }
+  
 #ifdef QGISDEBUG 
   std::cout << "Rect projection..." 
     << "Xmin : " 
@@ -262,98 +275,10 @@ QgsRect QgsCoordinateTransform::transform(QgsRect theRect)
   return QgsRect(x1, y1, x2 , y2);
 } 
 
-QgsPoint QgsCoordinateTransform::transform(double theX, double theY)
-{
-  transform(QgsPoint(theX, theY));
-}
-
-// ------------------------------------------------------------------
-//
-//
-// --------------- INVERSE PROJECTIONS ------------------------------
-//
-//
-// ------------------------------------------------------------------
 
 
-QgsPoint QgsCoordinateTransform::inverseTransform(QgsPoint thePoint)
-{
-  if (mShortCircuit || !mInitialisedFlag) return thePoint;
-  // transform x
-  double x = thePoint.x(); 
-  double y = thePoint.y();
-  double z = 0.0;
-  const int pointCount = 1;
-  try
-  {
-    transformCoords(INVERSE, pointCount, x, y, z);
-  }
-  catch(QgsCsException &cse)
-  {
-    //something bad happened....
-    // rethrow the exception
-    throw cse;
-  }
-#ifdef QGISDEBUG 
-  //std::cout << "Point inverse projection...X : " << thePoint.x() << "-->" << x << ", Y: " << thePoint.y() << " -->" << y << std::endl;
-#endif        
-  return QgsPoint(x, y);
-} 
 
-QgsRect QgsCoordinateTransform::inverseTransform(QgsRect theRect)
-{
-  if (mShortCircuit || !mInitialisedFlag) return theRect;
-  // transform x
-  double x1 = theRect.xMin(); 
-  double y1 = theRect.yMin();
-  double x2 = theRect.xMax(); 
-  double y2 = theRect.yMax();  
-#ifdef QGISDEBUG   
-
-  std::cout << "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"<< std::endl;
-  std::cout << "Rect inverse projection..." << std::endl;
-  std::cout << "INPUT: " << std::endl << mSourceWKT << std::endl;
-  std::cout << "PROJ4: " << std::endl << mProj4SrcParms << std::endl;  
-  std::cout << "OUTPUT: " << std::endl << mDestWKT  << std::endl;
-  std::cout << "PROJ4: " << std::endl << mProj4DestParms << std::endl;  
-  std::cout << "INPUT RECT: " << std::endl << x1 << "," << y1 << ":" << x2 << "," << y2 << std::endl;
-  std::cout << "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" << std::endl;
-#endif  
-  try{
-    double z = 0.0;
-    transformCoords(INVERSE, 1, x1, y1, z);
-    transformCoords(INVERSE, 1, x2, y2, z);
-
-    }catch(QgsCsException &cse)
-        {
-        // rethrow the exception
-        throw cse;
-        }
-#ifdef QGISDEBUG 
-    std::cout << "Xmin : " 
-      << theRect.xMin() 
-      << "-->" << x1 
-      << ", Ymin: " 
-      << theRect.yMin() 
-      << " -->" << y1
-      << "Xmax : " 
-      << theRect.xMax() 
-      << "-->" << x2 
-      << ", Ymax: " 
-      << theRect.yMax() 
-      << " -->" << y2       
-      << std::endl;
-#endif        
-    return QgsRect(x1, y1, x2 , y2);
-   
-}
-
-QgsPoint QgsCoordinateTransform::inverseTransform(double theX, double theY)
-{
-  inverseTransform(QgsPoint(theX, theY));
-}
-
-void QgsCoordinateTransform::transformCoords(TransformDirection direction, const int& numPoints, double& x, double& y, double& z)
+void QgsCoordinateTransform::transformCoords( const int& numPoints, double& x, double& y, double& z,TransformDirection direction) const
 {
   // use proj4 to do the transform   
  QString dir;  
