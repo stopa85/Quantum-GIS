@@ -58,6 +58,7 @@ class QgsAttributeTable:public QTable
       void keyReleaseEvent(QKeyEvent* ev);
       /**Method used by sortColumn (implementation of a quicksort)*/
       void qsort(int lower, int upper, int col, bool ascending, bool alphanumeric);
+      void contentsMouseReleaseEvent(QMouseEvent* e);
         signals:
       /**Is emitted when a row was selected*/
       void selected(int);
