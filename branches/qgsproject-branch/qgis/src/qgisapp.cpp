@@ -915,7 +915,7 @@ bool QgisApp::addLayer(QFileInfo const & vectorFile)
       layer->setRenderer(renderer);
       renderer->initializeSymbology(layer);
       // not necessary since registry will add to canvas mMapCanvas->addLayer(layer);
-      // not necessary since connect up a request from the raster layer to show in overview map
+      // XXX some day will not necessary since connect up a request from the raster layer to show in overview map
 //      QObject::connect(layer, 
 //              SIGNAL(showInOverview(QString,bool)), 
 //              this, 
@@ -1032,13 +1032,12 @@ bool QgisApp::addLayer(QStringList const &theLayerQStringList)
 	     // map canvas and overview canvas already know about this layer
 	     // when it is added to map registry
 //              mMapCanvas->addLayer(layer);
-//              //connect up a request from the raster layer to show in overview map
+//              // XXX some day use other means to  connect up a request from the raster layer to show in overview map
 //              QObject::connect(layer, 
 //                      SIGNAL(showInOverview(QString,bool)), 
 //                      this, 
 //                      SLOT(setLayerOverviewStatus(QString,bool)));           
 
-             // mProjectIsDirtyFlag = true;
              QgsProject::instance()->dirty(true);
            } else
            {
@@ -1138,10 +1137,10 @@ void QgisApp::addDatabaseLayer()
           // add it to the mapcanvas collection
           mMapCanvas->addLayer(layer);
      //connect up a request from the raster layer to show in overview map
-     QObject::connect(layer, 
-             SIGNAL(showInOverview(QString,bool)), 
-             this, 
-             SLOT(setLayerOverviewStatus(QString,bool)));           
+//      QObject::connect(layer, 
+//              SIGNAL(showInOverview(QString,bool)), 
+//              this, 
+//              SLOT(setLayerOverviewStatus(QString,bool)));           
      // mProjectIsDirtyFlag = true;
      QgsProject::instance()->dirty(true);
         } else
@@ -1449,10 +1448,7 @@ void QgisApp::addAllToOverview()
   for ( myMapIterator = myMapLayers.begin(); myMapIterator != myMapLayers.end(); ++myMapIterator ) 
   {
     QgsMapLayer * myMapLayer = myMapIterator->second;
-    if (!myMapLayer->showInOverviewStatus())
-    {
-      myMapLayer->toggleShowInOverview();
-    }
+    myMapLayer->inOverview(true); // won't do anything if already in overview
   }
   // draw the map
   mOverviewCanvas->clear();
@@ -1471,7 +1467,7 @@ void QgisApp::removeAllFromOverview()
     QgsMapLayer * myMapLayer = myMapIterator->second;
     if (myMapLayer->showInOverviewStatus())
     {
-      myMapLayer->toggleShowInOverview();
+        myMapLayer->inOverview(false); // should generate updates, unless already not in overview
     }
   }
   // draw the map
@@ -2583,16 +2579,15 @@ void QgisApp::addVectorLayer(QString vectorLayerPath, QString baseName, QString 
       // mMapCanvas->addLayer(layer); No longer necessary since adding to registry will add to canvas
 
       //connect up a request from the raster layer to show in overview map
-      // No longer necessary since adding to registry will add to overview layer
+      // XXX some day will no longer necessary since adding to registry will add to overview layer
 //       QObject::connect(layer, 
 //               SIGNAL(showInOverview(QString,bool)), 
 //               this, 
 //               SLOT(setLayerOverviewStatus(QString,bool)));           
 
-      // mProjectIsDirtyFlag = true;
       QgsProject::instance()->dirty(false); // XXX this might be redundant
-      statusBar()->message(mMapCanvas->extent().stringRep(2));
 
+      statusBar()->message(mMapCanvas->extent().stringRep(2));
     }
     else
     {
@@ -2623,13 +2618,12 @@ void QgisApp::addMapLayer(QgsMapLayer *theMapLayer)
     // not necessary since adding to registry adds to canvas mMapCanvas->addLayer(theMapLayer);
     //connect up a request from the raster layer to show in overview map
 
-// not necessary since adding to registry will add to overview
+    // XXX some day not necessary since adding to registry will add to overview
 //     QObject::connect(theMapLayer, 
-//             SIGNAL(showInOverview(QString,bool)), 
-//             this, 
-//             SLOT(setLayerOverviewStatus(QString,bool)));           
+//                      SIGNAL(showInOverview(QString,bool)), 
+//                      this, 
+//                      SLOT(setLayerOverviewStatus(QString,bool)));           
 
-    // mProjectIsDirtyFlag = true;
     QgsProject::instance()->dirty(true);
     statusBar()->message(mMapCanvas->extent().stringRep(2));
 
@@ -2981,21 +2975,28 @@ void QgisApp::setupToolbarPopups(QString themeName)
 
  
 }
+
+
 void QgisApp::setLayerOverviewStatus(QString theLayerId, bool theVisibilityFlag)
 {
   if (theVisibilityFlag)
   {
     mOverviewCanvas->addLayer(QgsMapLayerRegistry::instance()->mapLayer(theLayerId));
+#ifdef QGISDEBUG
     std::cout << " Added layer " << theLayerId << " to overview map" << std::endl;
+#endif
   }
   else
   {
     mOverviewCanvas->remove(theLayerId);
+#ifdef QGISDEBUG
     std::cout << " Removed layer " << theLayerId << " from overview map" << std::endl;
+#endif
   }
   //check zorder is in sync
   setOverviewZOrder(mMapLegend);
-}
+} // QgisApp::setLayerOverviewStatus
+
 
 void QgisApp::setOverviewZOrder(QgsLegend * lv)
 {
@@ -3176,13 +3177,12 @@ bool QgisApp::addRasterLayer(QgsRasterLayer * theRasterLayer, bool theForceRedra
     // mMapCanvas->addLayer(theRasterLayer);
 
     // connect up a request from the raster layer to show in overview map
-    // no longer necessary since adding to registry adds to overview, too
+    // XXX some day will be no longer necessary since adding to registry adds to overview, too
 //     QObject::connect(theRasterLayer, 
 //             SIGNAL(showInOverview(QString,bool)), 
 //             this, 
 //             SLOT(setLayerOverviewStatus(QString,bool)));           
 
-    // mProjectIsDirtyFlag = true;
     QgsProject::instance()->dirty(true); // XXX might be redundant
   } 
   else

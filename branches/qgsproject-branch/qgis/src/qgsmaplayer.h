@@ -89,7 +89,15 @@ public:
   virtual QgsRect calculateExtent();
 
   /*! Accesor for mShowInOverviewFlag */
-  bool showInOverviewStatus() {return mShowInOverview;};
+  bool showInOverviewStatus() {return mShowInOverview;}
+
+  /** set whether this layer is in the overview or not 
+
+  @note this will hopefully eventually supercede toggleOverviewStatus() since
+  this makes explicit the state change
+
+  */
+  void inOverview( bool );
   
   virtual void draw(QPainter *, QgsRect *, int);
   virtual void draw(QPainter *, QgsRect *, QgsCoordinateTransform * ,QPaintDevice *);
@@ -226,11 +234,14 @@ public  slots:
 
   //! set visibility
   void setVisible(bool vis);
+
   /*! Slot connected to popup menus of derived classes. Used to indicate whether this layer
    * should be shown or hidden in the map overview. */
-  virtual void toggleShowInOverview();
+  //virtual void toggleShowInOverview();
+
   /**Copies the legend pixmap of this layer to the legenditem and adds an overview glasses if necessary*/
   void updateItemPixmap();
+
   /**Ensures that the overview item in the popup menu is checked/ unchecked correctly*/
   void updateOverviewPopupItem();
 
@@ -248,7 +259,10 @@ signals:
   virtual void repaintRequested();
 
   /** This is used to notify the application whether this layer should be shown in overview or not. */
-  void showInOverview(QString theLayerId, bool);
+  //@{
+  //void showInOverview(QString theLayerId, bool);
+  void showInOverview(QgsMapLayer * maplayer, bool);
+  //@}
 
 protected:
 

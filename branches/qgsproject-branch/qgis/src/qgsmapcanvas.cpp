@@ -276,10 +276,31 @@ void QgsMapCanvas::addLayer(QgsMapLayerInterface * lyr)
 
 
 
+void QgsMapCanvas::showInOverView( QgsMapLayer * maplayer, bool visible )
+{
+    // first, this is irrelevent if we're NOT the overview map canvas
+    if ( "theOverviewCanvas" != name() )
+    {
+        return;
+    }
+
+    // if it's visible, and we already know about it, then do nothing;
+    // otherwise, we need to add it if "visible" says so
+    if ( mCanvasProperties->layers.find(maplayer->getLayerID()) != 
+         mCanvasProperties->layers.end() && 
+         visible )
+    {
+        addLayer( maplayer );
+    }
+
+} // QgsMapCanvas::showInOverView
+
+
+
 void QgsMapCanvas::addLayer(QgsMapLayer * lyr)
 {
 #ifdef QGISDEBUG
-  std::cout << "Layer name is " << lyr->name() << std::endl;
+    std::cout << name() << " is adding " << lyr->name() << std::endl;
 #endif
 
   Q_CHECK_PTR( lyr );
@@ -298,23 +319,29 @@ void QgsMapCanvas::addLayer(QgsMapLayer * lyr)
   const char * n = name(); // debugger sensor
 #endif
 
-  if ( 0 == strcmp("theOverviewCanvas",name()) ) // canonical name set in qgisapp ctor
+  bool isThisOverviewCanvas = false;
+
+  if ( 0 == strcmp(name(),"theOverviewCanvas") ) // canonical name set in qgisapp ctor
+  {
+      isThisOverviewCanvas = true;
+  }  
+
+  if ( isThisOverviewCanvas )
   {
       if ( ! lyr->showInOverviewStatus() )
       {
 #ifdef QGISDEBUG
-          qDebug( "lyr->name() not in overview, so skipping in addLayer()" );
+          qDebug( lyr->name() + " not in overview, so skipping in addLayer()" );
 #endif
           return;               // doesn't want to be in overview, so don't add
       }
       else
       {
 #ifdef QGISDEBUG
-          qDebug( "lyr->name() in overview, invoking addLayer()" );
+          qDebug( lyr->name() + " in overview, invoking addLayer()" );
 #endif
       }
   }
-
 
   mCanvasProperties->layers[lyr->getLayerID()] = lyr;
 
@@ -336,11 +363,19 @@ void QgsMapCanvas::addLayer(QgsMapLayer * lyr)
   QObject::connect(lyr, SIGNAL(visibilityChanged()), this, SLOT(layerStateChange()));
   QObject::connect(lyr, SIGNAL(repaintRequested()), this, SLOT(refresh()));
 
+  if ( isThisOverviewCanvas )
+  {
+      QObject::connect(lyr, SIGNAL(showInOverView(QgsMapLayer *, bool)), 
+                       this, SLOT(showInOverView( QgsMapLayer *, bool )));
+  }
+
   mCanvasProperties->dirty = true;
 
   emit addedLayer( lyr );
 
 } // addLayer
+
+
 
 void QgsMapCanvas::addAcetateObject(QString key, QgsAcetateObject *obj)
 {
@@ -1308,9 +1343,11 @@ void QgsMapCanvas::remove(QString key)
   // XXX in 'layers'?  Theoretically it should be ok to skip this check since
   // XXX this should always be called with correct keys.
 
-  //We no longer delete the layer her - deletiong of layers is now managed
-  //by the MapLayerRegistry. All we do now is remove any local reference to this layer.
-  //delete mCanvasProperties->layers[key];   // first delete the map layer itself
+  // We no longer delete the layer here - deleting of layers is now managed
+  // by the MapLayerRegistry. All we do now is remove any local reference to this layer.
+  // delete mCanvasProperties->layers[key];   
+
+  // first delete the map layer itself
 
   // convenience variable
   QgsMapLayer * layer = mCanvasProperties->layers[key];
@@ -1318,9 +1355,14 @@ void QgsMapCanvas::remove(QString key)
   Q_ASSERT( layer );
 
   // disconnect layer signals
-  QObject::disconnect(layer, SIGNAL(visibilityChanged()), this, SLOT(layerStateChange()));
+  QObject::disconnect(layer, 0, this, 0);
   QObject::disconnect(layer, SIGNAL(repaintRequested()), this, SLOT(refresh()));
 
+// we DO NOT disconnect this as this is currently the only means for overview
+// canvases to add layers; natch this is irrelevent if this is NOT the overview canvas
+
+  // QObject::disconnect(lyr, SIGNAL(showInOverView(QgsMapLayer *, bool)), 
+  //                     this, SLOT(showInOverView(QgsMapLayer *, bool )));
 
   mCanvasProperties->layers[key] = 0;
   mCanvasProperties->layers.erase( key );  // then erase its entry from layer table

@@ -205,6 +205,19 @@ public slots:
     //! accessor to flag indicating whether the user can interact with the canvase
     bool isUserInteractionAllowed();
 
+    /** possibly add or remove the given layer from the overview map canvas
+
+      @note 
+
+      Yes, of the two canvas instances, this slot is relevant only to the
+      overview map canvas, and thus is a hint that they should be two separate
+      classes.
+
+      @param maplayer is layer to be possibly added or removed from overview canvas
+      @param b is true if visible in over view
+     */
+    void showInOverView( QgsMapLayer * maplayer, bool visible );
+
 signals:
     /** Let the owner know how far we are with render operations */
     void setProgress(int,int);

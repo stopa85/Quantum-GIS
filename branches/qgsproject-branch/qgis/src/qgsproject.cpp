@@ -19,6 +19,7 @@
 
 #include <memory>
 
+#include "qgisapp.h"
 #include "qgsrect.h"
 #include "qgsvectorlayer.h"
 #include "qgsrasterlayer.h"
@@ -224,6 +225,54 @@ _getTitle( QDomDocument const & doc, QString & title )
 
 
 /**
+   locate the qgis app object
+*/
+static
+QgisApp *
+_findQgisApp()
+{
+    QgisApp * qgisApp;
+
+    QWidgetList  * list = QApplication::allWidgets();
+    QWidgetListIt it( *list );  // iterate over the widgets
+    QWidget * w;
+
+    while ( (w=it.current()) != 0 ) 
+    {   // for each top level widget...
+
+        if ( "QgisApp" == w->name() )
+        { 
+            qgisApp = dynamic_cast<QgisApp*>(w);
+            break;
+        }
+                                // "QgisApp" canonical name assigned in main.cpp
+        qgisApp = dynamic_cast<QgisApp*>(w->child( "QgisApp", 0, true ));
+
+        if ( qgisApp )
+        { break; }
+
+        ++it;
+    }
+    delete list;                // delete the list, not the widgets
+
+
+//     if ( ! qgisApp )            // another tactic for finding qgisapp
+//     {
+//         if ( "QgisApp" == QApplication::mainWidget().name() )
+//         { qgisApp = QApplication::mainWidget(); }
+//     }
+
+    if( ! qgisApp )
+    {
+        qDebug( "Unable to find QgisApp" );
+
+        return 0x0;             // XXX some sort of error value?  Exception?
+    }
+} // _findQgisApp
+
+
+
+/**
    Read map layers from project file
 
 @note XML of form:
@@ -309,7 +358,25 @@ _getMapLayers( QDomDocument const & doc )
         // have the layer restore state that is stored in DOM node
         mapLayer->readXML( node );
 
-        QgsMapLayerRegistry::instance()->addMapLayer( mapLayer );
+        mapLayer = QgsMapLayerRegistry::instance()->addMapLayer( mapLayer );
+
+        // XXX kludge for ensuring that overview canvas updates happen correctly;
+        // XXX eventually this should be replaced by mechanism whereby overview
+        // XXX canvas implicitly knows about all new layers
+//         if ( mapLayer )         // if successfully added to registry
+//         {
+//             // find canonical Qgis application object
+//             QgisApp * qgisApp = _findQgisApp();
+
+//             // make connection
+//             if ( qgisApp )
+//             { 
+//                 QObject::connect(mapLayer, 
+//                                  SIGNAL(showInOverview(QString,bool)), 
+//                                  qgisApp, 
+//                                  SLOT(setLayerOverviewStatus(QString,bool)));
+//             }
+//         }
 
         // XXX set z order here?  Or in readXML()?  Leaning to latter.
         // XXX Or, how about Z order being implicit in order of layer
