@@ -143,7 +143,7 @@ void QgsLegend::update()
               std::cerr << __FILE__ << ":" << __LINE__
                 << " didn't find " << currentMapLayer->name() << "'s legend item ... adding new item\n";
 
-              QgsLegendItem *lvi = new QgsLegendItem(currentMapLayer, this);
+              QgsLegendItem *lvi = new QgsLegendItem(currentMapLayer, this, mQgisApp->actionInOverview);
               currentMapLayer->setLegendItem(lvi);
 	      currentMapLayer->updateItemPixmap();
           } else
@@ -159,7 +159,7 @@ void QgsLegend::update()
       while (zi != map->zOrders().end())
         {
           QgsMapLayer *lyr = map->layerByName(*zi);
-          QgsLegendItem *lvi = new QgsLegendItem(lyr, this);  // lyr->name(), QCheckListItem::CheckBox );
+          QgsLegendItem *lvi = new QgsLegendItem(lyr, this, mQgisApp->actionInOverview);  // lyr->name(), QCheckListItem::CheckBox );
           lyr->setLegendItem(lvi);
           lvi->setPixmap(0, *lyr->legendPixmap());
           zi++;
@@ -211,7 +211,7 @@ void QgsLegend::addLayer(QgsMapLayer * layer)
 
   const char * layerName = layer->name().ascii(); // debugger probe
 
-  QgsLegendItem *legend_item = new QgsLegendItem(layer, this);
+  QgsLegendItem *legend_item = new QgsLegendItem(layer, this, mQgisApp->actionInOverview);
 
   // done in QgsLegendItem ctor legend_item->setPixmap( 0, *layer->legendPixmap() );
 
