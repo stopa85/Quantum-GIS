@@ -14,13 +14,11 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
-/* $Id */
+
 #ifndef QGSDATASOURCE_H
 #define QGSDATASOURCE_H
-#include <vector>
 #include <qstring.h>
-#include "qgsrect.h"
-class QgsFeature;
+
 /**Base class for spatial and tabular data
   *@author Gary E.Sherman
   */
@@ -28,18 +26,11 @@ class QgsFeature;
 class QgsDataSource {
 
 public: 
-	/* QgsDataSource(); 
-	~QgsDataSource(); */
-	virtual std::vector<QgsFeature> identify(QgsRect *rect)=0;
-	virtual void filter(QgsRect *rect)=0;
-	virtual QgsFeature *getNextFeature()=0;
-	virtual QgsFeature *getFirstFeature()=0;
-	virtual QString getDataSourceUri()=0;
-/*  protected:
+	QgsDataSource();
+	~QgsDataSource();
+ protected:
  //! Path or uri of the datasource
- 	QString dataSource; */
+ 	QString dataSource;
 };
-//! Typedef for the function that returns a generic pointer to a 
-// datasource plugin object
-typedef QgsDataSource* create_datasource();
+
 #endif

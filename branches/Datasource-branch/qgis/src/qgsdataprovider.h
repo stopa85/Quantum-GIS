@@ -4,7 +4,7 @@
     Date                 : 09-Sep-2003
     Copyright            : (C) 2003 by Gary E.Sherman
     email                : sherman at mrcc.com
-/***************************************************************************
+ ***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -65,6 +65,7 @@ public:
 	*/
 	virtual std::vector<QgsFeature> QgsDataProvider::identify(QgsRect *rect)=0;
 	
+	int endian();
  
 };
 

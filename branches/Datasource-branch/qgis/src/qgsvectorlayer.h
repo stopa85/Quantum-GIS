@@ -43,7 +43,7 @@ class QgsVectorLayer:public QgsMapLayer
 	//! Identify feature found within the search rectangle
 	void identify(QgsRect *);
 	//! Select features found within the search rectangle
-	void select(QgsRect* rect, bool lock);
+	void select(QgsRect * rect, bool lock);
 	//! Display the attribute table
 	void table();
 	enum SHAPETYPE
@@ -52,19 +52,19 @@ class QgsVectorLayer:public QgsMapLayer
 		Line,
 		Polygon
 	};
-	setDataProvider(QgsDataProvider *dp);
- public slots:
-     /**Sets the 'tabledisplay' to 0 again*/
-     void invalidateTableDisplay();
-     void select(int number);
-     void removeSelection();
-     void triggerRepaint();
+	  setDataProvider(QgsDataProvider * dp);
+	public slots:
+	 /**Sets the 'tabledisplay' to 0 again*/
+	void invalidateTableDisplay();
+	void select(int number);
+	void removeSelection();
+	void triggerRepaint();
 
- protected:
-        /**Pointer to the table display object if there is one, else a pointer to 0*/
-        QgsAttributeTableDisplay* tabledisplay;
+  protected:
+	/**Pointer to the table display object if there is one, else a pointer to 0*/
+	  QgsAttributeTableDisplay * tabledisplay;
 	/**Vector holding the information which features are activated*/
-	QValueVector<bool>* selected;
+	  QValueVector < bool > *selected;
 	/**Color to draw and fill the selected features*/
 	QColor selectionColor;
 
@@ -95,8 +95,7 @@ class QgsVectorLayer:public QgsMapLayer
 	void registerFormats();
 	int endian();
 
- signals:
-	void repaintRequested();
+	  signals:void repaintRequested();
 
 };
 
