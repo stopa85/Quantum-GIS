@@ -125,6 +125,16 @@ void QgsCoordinateTransform::initialise()
   OGRErr sourceValid = mSourceOgrSpatialRef.Validate();
   OGRErr destValid = mDestOgrSpatialRef.Validate();
 #endif     
+  // One last test to see if they SRS are the same, despite slightly different
+  // WKT specs
+  // XXX This doesn't seem to work very well -- which means we are going to be
+  // XXX attempting to transform coordinates that are in the same SRS. 
+  // XXX What to do? What to do?....
+  if( mSourceOgrSpatialRef.IsSame(&mDestOgrSpatialRef))
+  {
+    mShortCircuit = true;
+  }
+    
   if ( (mSourceOgrSpatialRef.Validate() != OGRERR_NONE)  || (mDestOgrSpatialRef.Validate() != OGRERR_NONE))
   {
     std::cout << "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"<< std::endl;

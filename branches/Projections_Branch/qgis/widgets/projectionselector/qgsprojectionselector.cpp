@@ -52,7 +52,19 @@ QgsProjectionSelector::QgsProjectionSelector( QWidget* parent , const char* name
 QgsProjectionSelector::~QgsProjectionSelector()
 {
 }
-
+QString QgsProjectionSelector::getSelectedWKT()
+{
+  // return the selected wkt name from the list view
+  QListViewItem *lvi = lstCoordinateSystems->currentItem();
+  if(lvi)
+  {
+    return lvi->text(0);
+  }
+  else
+  {
+    return QString::null;
+  }
+}
 void QgsProjectionSelector::setSelectedWKT(QString theWKT)
 {
   //get the srid given the wkt so we can pick the correct list item

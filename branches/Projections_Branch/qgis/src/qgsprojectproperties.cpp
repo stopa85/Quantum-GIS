@@ -53,7 +53,7 @@
 #include <iostream>
 #include <cstdlib>
 // set the default coordinate system
-static const char* defaultWktKey = "4326";
+//XXX this is not needed? : static const char* defaultWktKey = "Lat/Long - WGS 84";
   QgsProjectProperties::QgsProjectProperties(QWidget *parent, const char *name)
 : QgsProjectPropertiesBase(parent, name)
 {
@@ -76,9 +76,9 @@ static const char* defaultWktKey = "4326";
     cbxProjectionEnabled->setChecked(true);
   }
   // set the default wkt to WGS 84
-  QString defaultWkt = QgsSpatialReferences::instance()->getSrsBySrid(defaultWktKey)->srText();
-  // the /WKT entry stores the wkt as the key into the projections map 
-  QString srsWkt =  QgsProject::instance()->readEntry("SpatialRefSys","/WKT",defaultWkt);
+//  QString defaultWkt = QgsSpatialReferences::instance()->getSrsBySrid(defaultWktKey)->srText();
+  // the /selectedWKT entry stores the wkt entry selected in the list of projections
+  QString srsWkt =  QgsProject::instance()->readEntry("SpatialRefSys","/selectedWKT","Lat/Long - WGS 84");
 
   projectionSelector->setSelectedWKT(srsWkt);
   
@@ -210,6 +210,9 @@ void QgsProjectProperties::apply()
     emit setDestWKT(myWkt); 
     // write the projection's wkt to the project settings rather
     QgsProject::instance()->writeEntry("SpatialRefSys","/WKT",myWkt);
+    // write the currently selected projections name to project settings
+    QgsProject::instance()->writeEntry("SpatialRefSys","/selectedWKT",projectionSelector->getSelectedWKT());
+
         
   }
 
