@@ -382,6 +382,10 @@ QgsRect QgsCoordinateTransform::inverseTransform(QgsRect theRect)
     x2 *= RAD_TO_DEG;
     y2 *= RAD_TO_DEG;
   }
+  // free the proj objects
+  pj_free(pDest);
+  pj_free(pSrc);
+
   //  XXX old style that fails
   // int myResult1 = mDestToSourceXForm->Transform( 1, &x1, &y1 );
   //int myResult2 = mDestToSourceXForm->Transform( 1, &x2, &y2 );
