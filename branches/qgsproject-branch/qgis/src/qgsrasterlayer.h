@@ -733,8 +733,13 @@ public:
     /** \brief Similar to above but returns a pointer. Implemented for qgsmaplayer interface. 
      * Always overlays legend name!*/
     QPixmap * legendPixmap(); 
-    /** \brief Initialiser for the right click popup menu.  */
-    void initContextMenu(QgisApp *);
+
+    /** tailor the right-click context menu with raster layer only stuff 
+
+      @note called by QgsMapLayer::initContextMenu();
+     */
+    void initContextMenu_(QgisApp *);
+
     /** \brief Accessor for the superclass's popmenu var - implements the pure virtual funtion. */
     QPopupMenu *contextMenu();
     /** \brief Emit a signal asking for a repaint. (inherited from maplayer) */
@@ -752,6 +757,10 @@ public:
     
     
 public slots:    
+
+    /** sets whether this is in overview or not */
+    void inOverview( bool );
+
     /** \brief Slot called when the popup menu transparency slider has been moved.*/
     void popupTransparencySliderMoved(int);
      

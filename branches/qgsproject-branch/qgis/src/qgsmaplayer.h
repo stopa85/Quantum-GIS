@@ -199,8 +199,22 @@ public:
   /**Returns a pointer to the legend pixmap*/
   virtual QPixmap *legendPixmap();
 
-  /** All inherited layers must be able to display a conext menu if requested */
-  virtual void initContextMenu(QgisApp * app) = 0;
+  /** 
+      All inherited layers must be able to display a conext menu if requested 
+
+      @note Calls initContextMenu_()
+  */
+  void initContextMenu(QgisApp * app);
+
+  /** 
+      Allows children to tailor context menu
+
+      @note Calls initContextMenu_()
+  */
+  virtual void initContextMenu_(QgisApp * app)
+  {
+      // NOP; children can optionally over-ride
+  }
 
   /**Returns a pointer to the legend item*/
   QgsLegendItem *legendItem();
@@ -333,11 +347,25 @@ protected:
 
   //! context menu
   QPopupMenu *popMenu;
+
+  //! label for popMenu
+  QLabel * myPopupLabel;
+
   //! checkable item id in popmenu that sets overview status
   int mShowInOverviewItemId;
 
   /** Whether this layer is to be shown in the overview map or not */
   bool mShowInOverview;
+
+//   /** action item for pop-up menu
+
+//       @note obviously should be in synch with mShowInOverview
+
+//       Is set in context menu.
+
+//       @todo this is a GUI element and should not be here
+//   */
+//   QAction* mActionInOverview;
 
 private:                       // Private attributes
 

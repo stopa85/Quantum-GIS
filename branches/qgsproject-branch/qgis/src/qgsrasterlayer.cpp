@@ -2543,32 +2543,23 @@ QPopupMenu *QgsRasterLayer::contextMenu()
   return popMenu;
 }
 
-void QgsRasterLayer::initContextMenu(QgisApp * theApp)
+void QgsRasterLayer::initContextMenu_(QgisApp * theApp)
 {
-  popMenu = new QPopupMenu();
   popMenu->setCheckable ( true );
-  //create a heading label for the menu:
-  //If a widget is not focus-enabled (see QWidget::isFocusEnabled()), the menu treats it as a separator; 
-  //this means that the item is not selectable and will never get focus. In this way you can, for example, 
-  //simply insert a QLabel if you need a popup menu with a title. 
-  QLabel *myPopupLabel = new QLabel( popMenu );
-  myPopupLabel->setFrameStyle( QFrame::Panel | QFrame::Raised );
+
   myPopupLabel->setText( tr("<center><b>Raster Layer</b></center>") );
-  popMenu->insertItem(myPopupLabel);
-  //
-  popMenu->insertItem(tr("&Zoom to extent of selected layer"), theApp, SLOT(zoomToLayerExtent()));
-  popMenu->insertItem(tr("&Properties"), theApp, SLOT(layerProperties()));
-  //show in overview slot is implemented in maplayer superclass!
-  mShowInOverviewItemId = popMenu->insertItem(tr("Show In &Overview"), this, SLOT(toggleShowInOverview()));
-  popMenu->insertItem(tr("&Remove"), theApp, SLOT(removeLayer()));
-  popMenu->insertSeparator();
+
   QLabel * myTransparencyLabel = new QLabel( popMenu );
+
   myTransparencyLabel->setFrameStyle( QFrame::Panel | QFrame::Raised );
   myTransparencyLabel->setText( tr("<center><b>Transparency</b></center>") );
+
   popMenu->insertItem(myTransparencyLabel);
   popMenu->insertItem(mTransparencySlider);
 
-}
+} // QgsRasterLayer::initContextMenu
+
+
 
 void QgsRasterLayer::popupTransparencySliderMoved(int theInt)
 {
@@ -3281,3 +3272,9 @@ bool QgsRasterLayer::readXML_( QDomNode & layer_node )
 } // bool QgsRasterLayer::writeXML_
 
 
+
+/** we wouldn't have to do this if slots were inherited */
+void QgsRasterLayer::inOverview( bool b )
+{
+    QgsMapLayer::inOverview( b );
+} // QgsRasterLayer::inOverview( bool )

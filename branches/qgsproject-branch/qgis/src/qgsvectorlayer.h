@@ -217,6 +217,14 @@ protected:
 
 
 private:                       // Private attributes
+
+
+    /** tailor the right-click context menu with vector layer only stuff 
+
+      @note called by QgsMapLayer::initContextMenu();
+     */
+    void initContextMenu_(QgisApp *);
+
 //! Draws the layer using coordinate transformation
   void draw(QPainter * p, QgsRect * viewExtent, QgsCoordinateTransform * cXf,  QPaintDevice * dst);
   //! Pointer to data provider derived from the abastract base class QgsDataProvider
