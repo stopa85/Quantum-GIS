@@ -55,7 +55,7 @@
 typedef QgsDataProvider *create_it(const char *uri);
 
 QgsVectorLayer::QgsVectorLayer(QString vectorLayerPath, QString baseName, QString providerKey)
-    :QgsMapLayer(VECTOR, baseName, vectorLayerPath), tabledisplay(0), selected(0), m_renderer(0), m_propertiesDialog(0), m_rendererDialog(0) 
+    :QgsMapLayer(VECTOR, baseName, vectorLayerPath), tabledisplay(0), m_renderer(0), m_propertiesDialog(0), m_rendererDialog(0) 
 {
 // load the plugin
 QgsProviderRegistry *pReg = QgsProviderRegistry::instance();
@@ -114,20 +114,12 @@ const char *cOgrLib = (const char *)ogrlib;
 	//TODO - fix selection code that formerly used
   //       a boolean vector and set every entry to false
 
-	if(valid) 
-	{
-	    selected = new QValueVector<bool>(dataProvider->featureCount(), false);
-	} 
 	//draw the selected features in yellow
 	selectionColor.setRgb(255, 255, 0);
 }
 
 QgsVectorLayer::~QgsVectorLayer()
 {
-	if (selected) 
-	{
-	    delete selected;
-	}
 	if (tabledisplay) {
 		tabledisplay->close();
 		delete tabledisplay;
@@ -247,7 +239,8 @@ void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsCoordinateTrans
 
 				//if feature is selected, change the color of the painter
 				//TODO fix this selection code to work with the provider
-				if ((*selected)[(fet->featureId())] == true) 
+				//if ((*selected)[(fet->featureId())] == true)
+			    if(selected.find(fet->featureId())!=selected.end())
 				{
 				    // must change color of pen since it holds not only color
 				    // but line width
@@ -517,7 +510,7 @@ void QgsVectorLayer::table()
 
 			//id-field
 		tabledisplay->table()->setText(row, 0, QString::number(fet->featureId()));
-		tabledisplay->table()->insertFeatureId(fet->featureId());//insert the id into the search tree of qgsattributetable
+		tabledisplay->table()->insertFeatureId(fet->featureId(),row);//insert the id into the search tree of qgsattributetable
      std::vector<QgsFeatureAttribute> attr = fet->attributeMap();
         for(int i=0; i < attr.size(); i++){
 				// get the field values
@@ -539,13 +532,13 @@ void QgsVectorLayer::table()
 
 		
 		QObject::disconnect(tabledisplay->table(), SIGNAL(selectionChanged()), tabledisplay->table(), SLOT(handleChangedSelections()));
-		for (int i = 0; i < dataProvider->featureCount(); i++) 
+	
+		for(std::map<int,bool>::iterator it=selected.begin();it!=selected.end();++it)
 		{
-		    if ((*selected)[i] == true) 
-		    {
-			tabledisplay->table()->selectRow(i);
-		    }
-		} 
+			tabledisplay->table()->selectRowWithId(it->first);
+			qWarning("selecting row with id " +QString::number(it->first));
+		}
+
 		QObject::connect(tabledisplay->table(), SIGNAL(selectionChanged()), tabledisplay->table(), SLOT(handleChangedSelections()));
 
 		//etablish the necessary connections between the table and the shapefilelayer
@@ -559,7 +552,8 @@ void QgsVectorLayer::table()
 
 void QgsVectorLayer::select(int number)
 {
-	(*selected)[number] = true;
+    selected[number]=true;
+    qWarning("selected feature number"+QString::number(number));
 }
 
 void QgsVectorLayer::select(QgsRect * rect, bool lock)
@@ -604,9 +598,7 @@ void QgsVectorLayer::select(QgsRect * rect, bool lock)
 
 void QgsVectorLayer::removeSelection()
 {
-	for (int i = 0; i < (int) selected->size(); i++) {
-		(*selected)[i] = false;
-	}
+    selected.clear();
 }
 
 void QgsVectorLayer::triggerRepaint()
