@@ -14,7 +14,8 @@ SOURCES += qgsshapefileprovider.cpp \
         ../qgsfeature.cpp \
         ../qgsfeatureattribute.cpp \
         ../qgsrect.cpp \
-        ../qgspoint.cpp
+        ../qgspoint.cpp \
+	../qgsfield.cpp
 #.............................
 # GDAL/OGR configuration
 #.............................
