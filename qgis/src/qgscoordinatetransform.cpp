@@ -25,15 +25,13 @@ QgsCoordinateTransform::QgsCoordinateTransform( QString theSourceWKT, QString th
   // initialize the coordinate system data structures
   //XXX Who spells initialize initialise?
   //XXX A: Its the queen's english....
+  //XXX  : Long live the queen!
   initialise();
 }
 
 
 QgsCoordinateTransform::~QgsCoordinateTransform()
 {
-  // free the proj objects
-  pj_free(mSourceProjection);
-  pj_free(mDestinationProjection);
 }
 
 void QgsCoordinateTransform::setSourceWKT(QString theWKT)
@@ -53,7 +51,10 @@ void QgsCoordinateTransform::setDestWKT(QString theWKT)
 void QgsCoordinateTransform::initialise()
 {
   mInitialisedFlag=false; //guilty until proven innocent...
-  //default to geo / wgs84 for now .... later we will make this user configurable
+  // Default to geo / wgs84 for now .... 
+  // Later we will make this user configurable
+  // SRID 4326 is geographic wgs84 - use the SRS singleton to fetch
+  // the WKT for the coordinate system
   QString defaultWkt = QgsSpatialReferences::instance()->getSrsBySrid("4326")->srText();
   //default input projection to geo wgs84  
   if (mSourceWKT.isEmpty())
@@ -77,7 +78,6 @@ void QgsCoordinateTransform::initialise()
     mShortCircuit=false;
   }
 
-  OGRSpatialReference myInputSpatialRefSys, myOutputSpatialRefSys;
   //this is really ugly but we need to get a QString to a char**
   char *mySourceCharArrayPointer = (char *)mSourceWKT.ascii();
   char *myDestCharArrayPointer = (char *)mDestWKT.ascii();
@@ -94,7 +94,7 @@ void QgsCoordinateTransform::initialise()
 #define OGRERR_FAILURE             6
 #define OGRERR_UNSUPPORTED_SRS     7 */
 
-  OGRErr myInputResult = myInputSpatialRefSys.importFromWkt( & mySourceCharArrayPointer );
+  OGRErr myInputResult = mSourceOgrSpatialRef.importFromWkt( & mySourceCharArrayPointer );
   if (myInputResult != OGRERR_NONE)
   {
     std::cout << "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"<< std::endl;
@@ -103,8 +103,10 @@ void QgsCoordinateTransform::initialise()
     std::cout << "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" << std::endl;
     return;
   }
+    // always morph from esri as it doesn't hurt anything
+    mSourceOgrSpatialRef.morphFromESRI();
 
-  OGRErr myOutputResult = myOutputSpatialRefSys.importFromWkt( & myDestCharArrayPointer );
+  OGRErr myOutputResult = mDestOgrSpatialRef.importFromWkt( & myDestCharArrayPointer );
   if (myOutputResult != OGRERR_NONE)
   {
     std::cout << "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"<< std::endl;
@@ -113,34 +115,13 @@ void QgsCoordinateTransform::initialise()
     std::cout << "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" << std::endl;
     return;
   }  
-  // create the proj4 structs needed for transforming 
-  // get the proj parms for source cs
-  char *proj4src;
-  myInputSpatialRefSys.exportToProj4(&proj4src);
-  // store the src proj parms in a QString because the pointer populated by exportToProj4
-  // seems to get corrupted prior to its use in the transform
-  mProj4SrcParms = proj4src;
-  // check to see if we have datum information -- if not it might be an ESRI format WKT
-  // XXX this datum check is not appropriate for all CS
-    // try getting it as an esri format wkt
-    myInputSpatialRefSys.morphFromESRI();
-    myInputSpatialRefSys.exportToProj4(&proj4src);
-    mProj4SrcParms = proj4src;
-  // get the proj parms for dest cs
-  char *proj4dest;
-  myOutputSpatialRefSys.exportToProj4(&proj4dest);
-  // store the dest proj parms in a QString because the pointer populated by exportToProj4
-  // seems to get corrupted prior to its use in the transform
-  mProj4DestParms = proj4dest;
-    // try getting it as an esri format wkt
-    myOutputSpatialRefSys.morphFromESRI();
-    myOutputSpatialRefSys.exportToProj4(&proj4dest);
-    mProj4DestParms = proj4dest;
-  // init the projections (destination and source)
-  mDestinationProjection = pj_init_plus((const char *)mProj4DestParms);
-  mSourceProjection = pj_init_plus((const char *)mProj4SrcParms);
-
-  if ( !mSourceProjection  || ! mDestinationProjection)
+    // always morph from esri as it doesn't hurt anything
+    mDestOgrSpatialRef.morphFromESRI();
+#ifdef QGISDEBUG 
+  OGRErr sourceValid = mSourceOgrSpatialRef.Validate();
+  OGRErr destValid = mDestOgrSpatialRef.Validate();
+#endif     
+  if ( (mSourceOgrSpatialRef.Validate() != OGRERR_NONE)  || (mDestOgrSpatialRef.Validate() != OGRERR_NONE))
   {
     std::cout << "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"<< std::endl;
     std::cout << "The OGR Coordinate transformation for this layer could *** NOT *** be set " << std::endl;
@@ -152,12 +133,18 @@ void QgsCoordinateTransform::initialise()
   else
   {
     mInitialisedFlag = true;
+    // Create the coordinate transform objects so we don't have to 
+    // create them each pass through when projecting points
+    forwardTransform = OGRCreateCoordinateTransformation( &mSourceOgrSpatialRef, &mDestOgrSpatialRef);
+    inverseTransform = OGRCreateCoordinateTransformation( &mDestOgrSpatialRef, &mSourceOgrSpatialRef );
+    
+
     std::cout << "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"<< std::endl;
     std::cout << "The OGR Coordinate transformation for this layer was set to" << std::endl;
     std::cout << "INPUT: " << std::endl << mSourceWKT << std::endl;
-    std::cout << "PROJ4: " << std::endl << mProj4SrcParms << std::endl;  
+//    std::cout << "PROJ4: " << std::endl << mProj4SrcParms << std::endl;  
     std::cout << "OUTPUT: " << std::endl << mDestWKT  << std::endl;
-    std::cout << "PROJ4: " << std::endl << mProj4DestParms << std::endl;  
+ //   std::cout << "PROJ4: " << std::endl << mProj4DestParms << std::endl;  
     std::cout << "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" << std::endl;
   }
 }
@@ -214,9 +201,9 @@ QgsRect QgsCoordinateTransform::transform(const QgsRect theRect,TransformDirecti
   std::cout << "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"<< std::endl;
   std::cout << "Rect  projection..." << std::endl;
   std::cout << "INPUT: " << std::endl << mSourceWKT << std::endl;
-  std::cout << "PROJ4: " << std::endl << mProj4SrcParms << std::endl;  
+  //std::cout << "PROJ4: " << std::endl << mProj4SrcParms << std::endl;  
   std::cout << "OUTPUT: " << std::endl << mDestWKT  << std::endl;
-  std::cout << "PROJ4: " << std::endl << mProj4DestParms << std::endl;  
+  //std::cout << "PROJ4: " << std::endl << mProj4DestParms << std::endl;  
   std::cout << "INPUT RECT: " << std::endl << x1 << "," << y1 << ":" << x2 << "," << y2 << std::endl;
   std::cout << "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" << std::endl;
 #endif    
@@ -255,8 +242,23 @@ QgsRect QgsCoordinateTransform::transform(const QgsRect theRect,TransformDirecti
 } 
 
 
+void QgsCoordinateTransform::transformCoords( const int& numPoints, double& x, double& y, double& z,TransformDirection direction) const
+{
+  // use OGR to do the transform
+  if(direction == INVERSE)
+  {
+    // transform from destination (map canvas/project) to layer CS
+    inverseTransform->Transform(numPoints, &x, &y);
+  }
+  else
+  {
+    // transform from source layer CS to destination (map canvas/project) 
+    forwardTransform->Transform(numPoints, &x, &y);
 
-
+  }
+}
+/* THIS IS BASED ON DIRECT USE OF PROJ4 
+ * preserved for future use if we need it 
 void QgsCoordinateTransform::transformCoords( const int& numPoints, double& x, double& y, double& z,TransformDirection direction) const
 {
   // use proj4 to do the transform   
@@ -305,3 +307,4 @@ void QgsCoordinateTransform::transformCoords( const int& numPoints, double& x, d
     z *= RAD_TO_DEG;
   }
 }
+*/
