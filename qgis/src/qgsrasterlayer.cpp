@@ -611,6 +611,9 @@ void QgsRasterLayer::showLayerProperties()
   if ( ! mLayerProperties )
   {
     mLayerProperties = new QgsRasterLayerProperties(this);
+#ifdef QGISDEBUG
+  std::cout << "Creating new raster properties dialog instance" << std::endl;
+#endif
   }
 
   mLayerProperties->sync();
@@ -2818,10 +2821,11 @@ QString QgsRasterLayer::getMetadata()
   }
   myMetadataQString += "</td></tr>";
 
+  //layer coordinate system
   if (gdalDataset->GetProjectionRef() != NULL)
   {
     myMetadataQString += "<tr><td bgcolor=\"gray\">";
-    myMetadataQString += tr("Projection: ");
+    myMetadataQString += tr("Layer Spatial Reference System: ");
     myMetadataQString += "</td></tr>";
     myMetadataQString += "<tr><td bgcolor=\"white\">";
     //note we inject some white space so the projection wraps better in the <td>
@@ -2830,6 +2834,17 @@ QString QgsRasterLayer::getMetadata()
     myMetadataQString += myProjectionQString ;
     myMetadataQString += "</td></tr>";
   }
+  // output coordinate system
+  QString myDestWKT = QgsProject::instance()->readEntry("SpatialRefSys","/WKT","");
+  myMetadataQString += "<tr><td bgcolor=\"gray\">";
+  myMetadataQString += tr("Project Spatial Reference System: ");
+  myMetadataQString += "</td></tr>";
+  myMetadataQString += "<tr><td bgcolor=\"white\">";
+  //note we inject some white space so the projection wraps better in the <td>
+  myDestWKT = myDestWKT.replace(QRegExp("\"")," \"");
+  myMetadataQString += myDestWKT ;
+  myMetadataQString += "</td></tr>";
+  
   if (gdalDataset->GetGeoTransform(adfGeoTransform) == CE_None)
   {
     myMetadataQString += "<tr><td bgcolor=\"gray\">";
