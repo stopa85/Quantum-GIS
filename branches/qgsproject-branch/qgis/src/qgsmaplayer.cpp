@@ -159,10 +159,14 @@ void QgsMapLayer::readXML( QDomNode & layer_node )
     QDomElement mne = mnl.toElement();
     dataSource = mne.text();
 
+    const char * dataSourceStr = dataSource.ascii(); // debugger probe
+
     // set name
     mnl = layer_node.namedItem("layername");
     mne = mnl.toElement();
     setLayerName( mne.text() );
+
+    const char * layerNameStr = mne.text().ascii(); // debugger probe
 
     // process zorder
     mnl = layer_node.namedItem("zorder");
@@ -203,7 +207,7 @@ void QgsMapLayer::setVisible(bool vis)
 {
   if (m_visible != vis)
   {
-    ((QCheckListItem *) m_legendItem)->setOn(vis);
+      // XXX should this happen automatically via signals/slots? ((QCheckListItem *) m_legendItem)->setOn(vis);
     m_visible = vis;
     emit visibilityChanged();
   }
@@ -233,7 +237,7 @@ void QgsMapLayer::toggleShowInOverview()
 
 void QgsMapLayer::updateItemPixmap()
 {
-  if (m_legendItem)
+  if (m_legendItem)             // XXX should we know about our legend?
   {
       if(mShowInOverview)
       {

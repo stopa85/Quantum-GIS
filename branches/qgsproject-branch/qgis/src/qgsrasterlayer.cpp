@@ -59,6 +59,9 @@ email                : tim at linfiniti.com
    wish to see edbug messages printed to stdout.
 
 */
+#include "qgsrasterlayer.h"
+
+#include <math.h>
 
 #include <qapplication.h>
 #include <qcursor.h>
@@ -74,13 +77,13 @@ email                : tim at linfiniti.com
 #include <qregexp.h>
 #include <qslider.h>
 #include <qlabel.h>
+#include <qdom.h>
 
-#include "qgsrasterlayer.h"
 #include "qgsrect.h"
 #include "qgisapp.h"
 #include "qgsrasterlayerproperties.h"
 #include "gdal_priv.h"
-#include <math.h>
+
 
 //////////////////////////////////////////////////////////
 //
@@ -109,6 +112,9 @@ static const char *const mSupportedRasterFormats[] = {
   "DTED",
   ""   // used to indicate end of list
 };
+
+
+
 /**
   Builds the list of file filter strings to later be used by
   QgisApp::addRasterLayer()
@@ -276,6 +282,8 @@ void QgsRasterLayer::buildSupportedRasterFileFilter(QString & theFileFiltersStri
 #endif
 }                               // buildSupportedRasterFileFilter_()
 
+
+
 /**
   returns true if the given raster driver name is one currently
   supported, otherwise it returns false
@@ -307,6 +315,7 @@ bool QgsRasterLayer::isSupportedRasterDriver(QString const &theDriverName)
 
   return false;
 }   // isSupportedRasterDriver
+
 
 
 /** This helper checks to see whether the filename appears to be a valid raster file name */
@@ -350,6 +359,8 @@ bool QgsRasterLayer::isValidRasterFileName(QString theFileNameQString)
 */
 }
 
+
+
 /** Overloaded of the above function provided for convenience that takes a qstring pointer */
 bool QgsRasterLayer::isValidRasterFileName(QString * theFileNameQString)
 {
@@ -364,159 +375,197 @@ bool QgsRasterLayer::isValidRasterFileName(QString * theFileNameQString)
 // Non Static methods now....
 //
 /////////////////////////////////////////////////////////
-QgsRasterLayer::QgsRasterLayer(QString path, QString baseName):QgsMapLayer(RASTER, baseName, path)
+QgsRasterLayer::QgsRasterLayer(QString path, QString baseName)
+    : QgsMapLayer(RASTER, baseName, path),
+      // XXX where is this? popMenu(0), //popMenu is the contextmenu obtained by right clicking on the legend
+      invertHistogramFlag(false),
+      stdDevsToPlotDouble(0),
+      transparencyLevelInt(255), // 0 is completely transparent
+      showDebugOverlayFlag(false)
 {
-  //we need to do the tr() stuff outside of the loop becauses tr() is a
-  //time consuming operation nd we dont want to do it in the loop!
-  redTranslatedQString=tr("Red");
-  greenTranslatedQString=tr("Green");
-  blueTranslatedQString=tr("Blue");
+  // we need to do the tr() stuff outside of the loop becauses tr() is a time
+  // consuming operation nd we dont want to do it in the loop!
 
+  redTranslatedQString   = tr("Red");
+  greenTranslatedQString = tr("Green");
+  blueTranslatedQString  = tr("Blue");
 
-  //popMenu is the contextmenu obtained by right clicking on the legend
-  //it is a member of the qgsmaplayer base class
-  popMenu = 0;
 
   // set the layer name (uppercase first character)
-  QString layerTitle = baseName;
-  layerTitle = layerTitle.left(1).upper() + layerTitle.mid(1);
-  setLayerName(layerTitle);
 
-  GDALAllRegister();
-  gdalDataset = (GDALDataset *) GDALOpen(path, GA_ReadOnly);
-  if (gdalDataset == NULL)
+  if ( ! baseName.isEmpty() )   // XXX shouldn't this happen in parent?
   {
-    valid = FALSE;
-    return;
-  }
-  //check f this file has pyramids
-  GDALRasterBandH myGDALBand = GDALGetRasterBand( gdalDataset, 1 ); //just use the first band
-  if( GDALGetOverviewCount(myGDALBand) > 0 )
-  {
-    hasPyramidsFlag=true;
-  }
-  else
-  {
-    hasPyramidsFlag=false;
-  }
-  //populate the list of what pyramids exist
-  buildRasterPyramidList(); 
-  //load  up the pyramid icons
-#ifdef WIN32
-  QString PKGDATAPATH = qApp->applicationDirPath() + "/qgis/share";
-#endif
-  mPyramidPixmap.load(QString(PKGDATAPATH) + QString("/images/icons/pyramid.png"));
-  mNoPyramidPixmap.load(QString(PKGDATAPATH) + QString("/images/icons/no_pyramid.png"));
-  //just testing remove this later
-  getMetadata();
-
-  double myXMaxDouble = adfGeoTransform[0] + gdalDataset->GetRasterXSize() * adfGeoTransform[1] +
-      gdalDataset->GetRasterYSize() * adfGeoTransform[2];
-  double myYMinDouble = adfGeoTransform[3] + gdalDataset->GetRasterXSize() * adfGeoTransform[4] +
-      gdalDataset->GetRasterYSize() * adfGeoTransform[5];
-
-  layerExtent.setXmax(myXMaxDouble);
-  layerExtent.setXmin(adfGeoTransform[0]);
-  layerExtent.setYmax(adfGeoTransform[3]);
-  layerExtent.setYmin(myYMinDouble);
-  //
-  // Set up the x and y dimensions of this raster layer
-  //
-  rasterXDimInt = gdalDataset->GetRasterXSize();
-  rasterYDimInt = gdalDataset->GetRasterYSize();
-  //
-  // Determin the no data value
-  //
-  noDataValueDouble = gdalDataset->GetRasterBand(1)->GetNoDataValue();
-
-  //initialise the raster band stats vector
-  for (int i = 1; i <= gdalDataset->GetRasterCount(); i++)
-  {
-    GDALRasterBand *myGdalBand = gdalDataset->GetRasterBand(i);
-    QString myColorQString = GDALGetColorInterpretationName(myGdalBand->GetColorInterpretation());
-    RasterBandStats myRasterBandStats;
-    myRasterBandStats.bandName = myColorQString + " (" + QString::number(i) + ")";
-    //myRasterBandStats.bandName=QString::number(i) + " : " + myColorQString;
-    myRasterBandStats.bandNoInt = i;
-    myRasterBandStats.statsGatheredFlag = false;
-    rasterStatsVector.push_back(myRasterBandStats);
-  }
-  //decide what type of layer this is...
-  //note that multiband images can have one or more 'undefindd' bands,
-  //so we must do this check first!
-  if ((gdalDataset->GetRasterCount() > 1))
-  {
-    rasterLayerType = MULTIBAND;
-  }
-  else if (hasBand("Palette")) //dont tr() this its a gdal word!
-  {
-    rasterLayerType = PALETTE;
-  } else
-  {
-    rasterLayerType = GRAY_OR_UNDEFINED;
+      QString layerTitle = baseName;
+      layerTitle = layerTitle.left(1).upper() + layerTitle.mid(1);
+      setLayerName(layerTitle);
   }
 
-  if (rasterLayerType == PALETTE)
+  // load the file if one specified
+  if ( ! path.isEmpty() )
   {
-    redBandNameQString = redTranslatedQString; // sensible default
-    greenBandNameQString = greenTranslatedQString; // sensible default
-    blueBandNameQString = blueTranslatedQString; // sensible default
-    grayBandNameQString = tr("Not Set");  //sensible default
-    drawingStyle = PALETTED_MULTI_BAND_COLOR; //sensible default
-  }
-  else if (rasterLayerType == MULTIBAND)
-  {
-    //we know we have at least 2 layers...
-    redBandNameQString = getRasterBandName(1);  // sensible default
-    greenBandNameQString = getRasterBandName(2);  // sensible default
-    //for the third layer we cant be sure so..
-    if (gdalDataset->GetRasterCount() > 2)
-    {
-      blueBandNameQString = getRasterBandName(3); // sensible default
-    }
-    else
-    {
-      blueBandNameQString = tr("Not Set");  // sensible default
-    }
-    grayBandNameQString = tr("Not Set");  //sensible default
-    drawingStyle = MULTI_BAND_COLOR;  //sensible default
-  }
-  else                        //GRAY_OR_UNDEFINED
-  {
-    getRasterBandStats(1);
-    redBandNameQString = tr("Not Set"); //sensible default
-    greenBandNameQString = tr("Not Set"); //sensible default
-    blueBandNameQString = tr("Not Set");  //sensible default
-    drawingStyle = SINGLE_BAND_GRAY;  //sensible default
-    if (hasBand("Gray"))
-    {
-      grayBandNameQString = "Gray"; // sensible default //dont tr() this its a gdal word!
-    }
-    else if (hasBand("Undefined")) //dont tr() this its a gdal word!
-    {
-      grayBandNameQString = "Undefined";  // sensible default
-    }
+      readFile( path );         // XXX add check for false?
   }
 
-  invertHistogramFlag = false;  // sensible default
-  stdDevsToPlotDouble = 0;      // sensible default
-  transparencyLevelInt = 255;   //sensible default 0 is transparent
-  showDebugOverlayFlag = false; //sensible default
   //  Transparency slider for popup meni
   //  QSlider ( int minValue, int maxValue, int pageStep, int value, Orientation orientation, QWidget * parent, const char * name = 0 )
-  mTransparencySlider = new QSlider(0,255,5,0,QSlider::Horizontal,popMenu);
-  mTransparencySlider->setTickmarks(QSlider::Both);
-  mTransparencySlider->setTickInterval(25);
-  mTransparencySlider->setTracking(false); //stop slider emmitting a signal until mouse released
-  connect(mTransparencySlider, SIGNAL(valueChanged(int)), this, SLOT(popupTransparencySliderMoved(int)));
-  // emit a signal asking for a repaint
-  emit repaintRequested();
-}
+
+  // XXX why GUI element here?
+//   mTransparencySlider = new QSlider(0,255,5,0,QSlider::Horizontal,popMenu);
+//   mTransparencySlider->setTickmarks(QSlider::Both);
+//   mTransparencySlider->setTickInterval(25);
+//   mTransparencySlider->setTracking(false); //stop slider emmitting a signal until mouse released
+
+//   connect(mTransparencySlider, SIGNAL(valueChanged(int)), this, SLOT(popupTransparencySliderMoved(int)));
+
+//   // emit a signal asking for a repaint
+//   emit repaintRequested();
+
+} // QgsRasterLayer ctor
+
 
 QgsRasterLayer::~QgsRasterLayer()
 {
   GDALClose(gdalDataset);
 }
+
+
+
+bool
+QgsRasterLayer::readFile( QString const & fileName )
+{
+    GDALAllRegister();
+
+    gdalDataset = (GDALDataset *) GDALOpen(fileName, GA_ReadOnly);
+
+    if (gdalDataset == NULL)
+    {
+        valid = FALSE;
+        return false;
+    }
+    //check f this file has pyramids
+    GDALRasterBandH myGDALBand = GDALGetRasterBand( gdalDataset, 1 ); //just use the first band
+    if( GDALGetOverviewCount(myGDALBand) > 0 )
+    {
+        hasPyramidsFlag=true;
+    }
+    else
+    {
+        hasPyramidsFlag=false;
+    }
+
+    //populate the list of what pyramids exist
+    buildRasterPyramidList(); 
+
+    //load  up the pyramid icons
+#ifdef WIN32
+    QString PKGDATAPATH = qApp->applicationDirPath() + "/qgis/share";
+#endif
+
+    mPyramidPixmap.load(QString(PKGDATAPATH) + QString("/images/icons/pyramid.png"));
+    mNoPyramidPixmap.load(QString(PKGDATAPATH) + QString("/images/icons/no_pyramid.png"));
+
+    //just testing remove this later
+    getMetadata();
+
+    double myXMaxDouble = adfGeoTransform[0] + 
+        gdalDataset->GetRasterXSize() * adfGeoTransform[1] +
+        gdalDataset->GetRasterYSize() * adfGeoTransform[2];
+    double myYMinDouble = adfGeoTransform[3] + 
+        gdalDataset->GetRasterXSize() * adfGeoTransform[4] +
+        gdalDataset->GetRasterYSize() * adfGeoTransform[5];
+
+    layerExtent.setXmax(myXMaxDouble);
+    layerExtent.setXmin(adfGeoTransform[0]);
+    layerExtent.setYmax(adfGeoTransform[3]);
+    layerExtent.setYmin(myYMinDouble);
+
+    //
+    // Set up the x and y dimensions of this raster layer
+    //
+    rasterXDimInt = gdalDataset->GetRasterXSize();
+    rasterYDimInt = gdalDataset->GetRasterYSize();
+
+    //
+    // Determin the no data value
+    //
+    noDataValueDouble = gdalDataset->GetRasterBand(1)->GetNoDataValue();
+
+    //initialise the raster band stats vector
+    for (int i = 1; i <= gdalDataset->GetRasterCount(); i++)
+    {
+        GDALRasterBand *myGdalBand = gdalDataset->GetRasterBand(i);
+        QString myColorQString = GDALGetColorInterpretationName(myGdalBand->GetColorInterpretation());
+        RasterBandStats myRasterBandStats;
+        myRasterBandStats.bandName = myColorQString + " (" + QString::number(i) + ")";
+        //myRasterBandStats.bandName=QString::number(i) + " : " + myColorQString;
+        myRasterBandStats.bandNoInt = i;
+        myRasterBandStats.statsGatheredFlag = false;
+        rasterStatsVector.push_back(myRasterBandStats);
+    }
+
+    //decide what type of layer this is...
+    //note that multiband images can have one or more 'undefindd' bands,
+    //so we must do this check first!
+    if ((gdalDataset->GetRasterCount() > 1))
+    {
+        rasterLayerType = MULTIBAND;
+    }
+    else if (hasBand("Palette")) //dont tr() this its a gdal word!
+    {
+        rasterLayerType = PALETTE;
+    } 
+    else
+    {
+        rasterLayerType = GRAY_OR_UNDEFINED;
+    }
+
+    if (rasterLayerType == PALETTE)
+    {
+        redBandNameQString = redTranslatedQString; // sensible default
+        greenBandNameQString = greenTranslatedQString; // sensible default
+        blueBandNameQString = blueTranslatedQString; // sensible default
+        grayBandNameQString = tr("Not Set");  //sensible default
+        drawingStyle = PALETTED_MULTI_BAND_COLOR; //sensible default
+    }
+    else if (rasterLayerType == MULTIBAND)
+    {
+        //we know we have at least 2 layers...
+        redBandNameQString = getRasterBandName(1);  // sensible default
+        greenBandNameQString = getRasterBandName(2);  // sensible default
+        //for the third layer we cant be sure so..
+        if (gdalDataset->GetRasterCount() > 2)
+        {
+            blueBandNameQString = getRasterBandName(3); // sensible default
+        }
+        else
+        {
+            blueBandNameQString = tr("Not Set");  // sensible default
+        }
+        grayBandNameQString = tr("Not Set");  //sensible default
+        drawingStyle = MULTI_BAND_COLOR;  //sensible default
+    }
+    else                        //GRAY_OR_UNDEFINED
+    {
+        getRasterBandStats(1);
+        redBandNameQString = tr("Not Set"); //sensible default
+        greenBandNameQString = tr("Not Set"); //sensible default
+        blueBandNameQString = tr("Not Set");  //sensible default
+        drawingStyle = SINGLE_BAND_GRAY;  //sensible default
+        if (hasBand("Gray"))
+        {
+            grayBandNameQString = "Gray"; // sensible default //dont tr() this its a gdal word!
+        }
+        else if (hasBand("Undefined")) //dont tr() this its a gdal word!
+        {
+            grayBandNameQString = "Undefined";  // sensible default
+        }
+    }
+
+    return true;
+
+} // QgsRasterLayer::readFile
+
+
 
 void QgsRasterLayer::showLayerProperties()
 {
@@ -609,8 +658,12 @@ void QgsRasterLayer::setDrawingStyle(QString theDrawingStyleQString)
 }
 
 
-/** This method looks to see if a given band name exists. Note
-  that in muliband layers more than one "Undefined" band can exist! */
+/** This method looks to see if a given band name exists. 
+
+  @note
+
+   muliband layers may have more than one "Undefined" band!
+*/
 bool QgsRasterLayer::hasBand(QString theBandName)
 {
 #ifdef QGISDEBUG
@@ -666,6 +719,8 @@ void QgsRasterLayer::drawThumbnail(QPixmap * theQPixmap)
   myQPainter->end();
   delete myQPainter;
 }
+
+
 
 QPixmap QgsRasterLayer::getPaletteAsPixmap()
 {
@@ -733,7 +788,12 @@ QPixmap QgsRasterLayer::getPaletteAsPixmap()
   }
 }
 
-void QgsRasterLayer::draw(QPainter * theQPainter, QgsRect * theViewExtent, QgsCoordinateTransform * theQgsCoordinateTransform, QPaintDevice* dst)
+
+
+void QgsRasterLayer::draw(QPainter * theQPainter, 
+                          QgsRect * theViewExtent, 
+                          QgsCoordinateTransform * theQgsCoordinateTransform, 
+                          QPaintDevice* dst)
 {
   //Dont waste time drawing if transparency is at 0 (completely transparent)
   if (transparencyLevelInt == 0)
@@ -2506,7 +2566,7 @@ void QgsRasterLayer::initContextMenu(QgisApp * theApp)
   myTransparencyLabel->setFrameStyle( QFrame::Panel | QFrame::Raised );
   myTransparencyLabel->setText( tr("<center><b>Transparency</b></center>") );
   popMenu->insertItem(myTransparencyLabel);
-  popMenu->insertItem(mTransparencySlider);
+  // XXX bad to have GUI elements here  popMenu->insertItem(mTransparencySlider);
 
 }
 
@@ -2536,7 +2596,7 @@ void QgsRasterLayer::setTransparency(int theInt)
 #ifdef QGISDEBUG
   std::cout << "Set transparency called with : " << theInt << std::endl;
 #endif
-  mTransparencySlider->setValue(255-theInt);
+  // XXX bad to have GUI elements in this class mTransparencySlider->setValue(255-theInt);
   //delegate rest to transparency slider
 
 }
@@ -3022,3 +3082,78 @@ RasterPyramidList  QgsRasterLayer::buildRasterPyramidList()
    return TRUE;
    }
    */
+
+/**
+
+  Raster layer project file XML of form:
+
+        <maplayer type="raster" visible="1" showInOverviewFlag="1">
+                <layername>Wynoochee_dem</layername>
+                <datasource>/home/mcoletti/mnt/MCOLETTIF8F9/c/Toolkit_Course/Answers/Training_Data/wynoochee_dem.img</datasource>
+                <zorder>0</zorder>
+                <rasterproperties>
+                        <showDebugOverlayFlag boolean="false"/>
+                        <drawingStyle>SINGLE_BAND_GRAY</drawingStyle>
+                        <invertHistogramFlag boolean="false"/>
+                        <stdDevsToPlotDouble>0</stdDevsToPlotDouble>
+                        <transparencyLevelInt>255</transparencyLevelInt>
+                        <redBandNameQString>Not Set</redBandNameQString>
+                        <greenBandNameQString>Not Set</greenBandNameQString>
+                        <blueBandNameQString>Not Set</blueBandNameQString>
+                        <grayBandNameQString>Undefined</grayBandNameQString>
+                </rasterproperties>
+        </maplayer>
+*/
+void QgsRasterLayer::readXML_( QDomNode & layer_node )
+{
+    QDomNode mnl = layer_node.namedItem("rasterproperties");
+
+    QDomNode snode = mnl.namedItem("showDebugOverlayFlag");
+    QDomElement myElement = snode.toElement();
+    QVariant myQVariant = (QVariant) myElement.attribute("boolean");
+    setShowDebugOverlayFlag(myQVariant.toBool());
+
+    snode = mnl.namedItem("drawingStyle");
+    myElement = snode.toElement();
+    setDrawingStyle(myElement.text());
+
+    snode = mnl.namedItem("invertHistogramFlag");
+    myElement = snode.toElement();
+    myQVariant = (QVariant) myElement.attribute("boolean");
+    setInvertHistogramFlag(myQVariant.toBool());
+
+    snode = mnl.namedItem("stdDevsToPlotDouble");
+    myElement = snode.toElement();
+    setStdDevsToPlot(myElement.text().toDouble());
+
+    snode = mnl.namedItem("transparencyLevelInt");
+    myElement = snode.toElement();
+    setTransparency(myElement.text().toInt());
+
+    snode = mnl.namedItem("redBandNameQString");
+    myElement = snode.toElement();
+    setRedBandName(myElement.text());
+    snode = mnl.namedItem("greenBandNameQString");
+    myElement = snode.toElement();
+    setGreenBandName(myElement.text());
+
+    snode = mnl.namedItem("blueBandNameQString");
+    myElement = snode.toElement();
+    setBlueBandName(myElement.text());
+
+    snode = mnl.namedItem("grayBandNameQString");
+    myElement = snode.toElement();
+    setGrayBandName(myElement.text());
+
+    const char * sourceNameStr = source().ascii(); // debugger probe
+
+    if ( ! readFile( source() ) )   // Data source name set in
+                                    // QgsMapLayer::readXML()
+    {
+        std::cerr << __FILE__ << ":" << __LINE__
+                  << " unable to read from raster file " 
+                  << sourceName() << "\n";
+    }
+
+} // QgsVectorLayer::readXML_( QDomNode & layer_node )
+

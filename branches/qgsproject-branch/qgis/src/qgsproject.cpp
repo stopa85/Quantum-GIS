@@ -283,89 +283,37 @@ _getMapLayers( QDomDocument const & doc )
 
         QString type = element.attribute("type");
 
-	// QString myNewLayerId="";
+
+        QgsMapLayer * mapLayer;
 
 	if (type == "vector")
 	{
+	    mapLayer = new QgsVectorLayer;
+        }
+        else if (type == "raster")
+        {
+	    mapLayer = new QgsRasterLayer;
+        }
 
-	    QgsVectorLayer * vectorLayer = new QgsVectorLayer;
+        Q_CHECK_PTR( mapLayer );
 
-	    Q_CHECK_PTR( vectorLayer );
-
-	    if ( ! vectorLayer )
-	    {
+        if ( ! mapLayer )
+        {
 #ifdef QGISDEBUG
-		std::cerr << __FILE__ << " : " << __LINE__
-			  << " unable to create vector layer\n";
+            std::cerr << __FILE__ << " : " << __LINE__
+                      << " unable to create layer\n";
 #endif                  
-		return false;
-	    }
-            
-            // have the vector layer restore state that is stored in DOM node
-            vectorLayer->readXML( node );
+            return false;
+        }
+        
+        // have the layer restore state that is stored in DOM node
+        mapLayer->readXML( node );
 
-	    QgsMapLayerRegistry::instance()->addMapLayer( vectorLayer );
+        QgsMapLayerRegistry::instance()->addMapLayer( mapLayer );
 
-            // XXX set z order here?  Or in readXML()?  Leaning to latter.
-            // XXX Or, how about Z order being implicit in order of layer
-            // XXX information stored in project file?
-	} 
-	else if (type == "raster")
-	{
-#ifdef TEMPORARILYDISABLED
-	    QgsRasterLayer *myRasterLayer = new QgsRasterLayer(dataSource, layerName);
-	    // myNewLayerId=myRasterLayer->getLayerID();
-
-	    myRasterLayer->setVisible(visible == "1");
-	    if (showInOverview == "1")
-	    {
-		myRasterLayer->toggleShowInOverview();
-	    }
-
-	    mnl = node.namedItem("rasterproperties");
-
-	    QDomNode snode = mnl.namedItem("showDebugOverlayFlag");
-	    QDomElement myElement = snode.toElement();
-	    QVariant myQVariant = (QVariant) myElement.attribute("boolean");
-	    myRasterLayer->setShowDebugOverlayFlag(myQVariant.toBool());
-
-	    snode = mnl.namedItem("drawingStyle");
-	    myElement = snode.toElement();
-	    myRasterLayer->setDrawingStyle(myElement.text());
-
-	    snode = mnl.namedItem("invertHistogramFlag");
-	    myElement = snode.toElement();
-	    myQVariant = (QVariant) myElement.attribute("boolean");
-	    myRasterLayer->setInvertHistogramFlag(myQVariant.toBool());
-
-	    snode = mnl.namedItem("stdDevsToPlotDouble");
-	    myElement = snode.toElement();
-	    myRasterLayer->setStdDevsToPlot(myElement.text().toDouble());
-
-	    snode = mnl.namedItem("transparencyLevelInt");
-	    myElement = snode.toElement();
-	    myRasterLayer->setTransparency(myElement.text().toInt());
-
-	    snode = mnl.namedItem("redBandNameQString");
-	    myElement = snode.toElement();
-	    myRasterLayer->setRedBandName(myElement.text());
-	    snode = mnl.namedItem("greenBandNameQString");
-	    myElement = snode.toElement();
-	    myRasterLayer->setGreenBandName(myElement.text());
-
-	    snode = mnl.namedItem("blueBandNameQString");
-	    myElement = snode.toElement();
-	    myRasterLayer->setBlueBandName(myElement.text());
-
-	    snode = mnl.namedItem("grayBandNameQString");
-	    myElement = snode.toElement();
-	    myRasterLayer->setGrayBandName(myElement.text());
-
-	    QgsMapLayerRegistry::instance()->addMapLayer(myRasterLayer);
-	    // XXX myZOrder.push_back(myRasterLayer->getLayerID());
-#endif
-	}
-
+        // XXX set z order here?  Or in readXML()?  Leaning to latter.
+        // XXX Or, how about Z order being implicit in order of layer
+        // XXX information stored in project file?
     }
 
     return true;
