@@ -35,6 +35,7 @@ qgis_SOURCES =  qgisapp.cpp \
 				qgslayerproperties.cpp \
 				qgslegend.cpp \
 				qgslegenditem.cpp \
+        qgslegendview.cpp \
 				qgslinestyledialog.cpp \
 				qgslinesymbol.cpp \
 				qgsmapcanvas.cpp \
@@ -78,6 +79,7 @@ qgis_MOC = 	qgisappbase.moc.cpp \
 		qgsidentifyresultsbase.moc.cpp\
 		qgslayerpropertiesbase.moc.cpp\
 		qgslegend.moc.cpp\
+    qgslegendview.moc.cpp \
 		qgslegenditembase.moc.cpp\
 		qgslegenditem.moc.cpp\
 		qgslinestyledialogbase.moc.cpp\
@@ -89,11 +91,12 @@ qgis_MOC = 	qgisappbase.moc.cpp \
 		qgspatterndialogbase.moc.cpp\
 		qgspatterndialog.moc.cpp\
 		qgspluginmanagerbase.moc.cpp\
+    qgspluginmanager.moc.cpp \
 		qgsrasterlayer.moc.cpp\
 		qgsshapefilelayer.moc.cpp \
 		qgssisydialog.moc.cpp \
 		qgssisydialogbase.moc.cpp \
-            	qgsvectorlayer.moc.cpp \
+    qgsvectorlayer.moc.cpp \
 		qgsvectorlayerproperties.moc.cpp\
 		qgsvectorlayerpropertiesbase.moc.cpp
 

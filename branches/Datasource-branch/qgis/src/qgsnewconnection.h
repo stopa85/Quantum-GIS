@@ -24,6 +24,7 @@
  */
 class QgsNewConnection : public QgsNewConnectionBase 
 {
+  Q_OBJECT
  public:
     //! Constructor
     QgsNewConnection(QString connName= QString::null);

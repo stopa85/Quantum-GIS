@@ -60,9 +60,9 @@ void QgsNewConnection::testConnection()
 //  std::cout << pd->ErrorMessage();
 	if (PQstatus(pd) == CONNECTION_OK) {
 		// Database successfully opened; we can now issue SQL commands.
-		QMessageBox::information(this, "Test connection", "Connection to " + txtDatabase->text() + " was successfull");
+		QMessageBox::information(this, tr("Test connection"), tr("Connection to %1 was successfull").arg(txtDatabase->text()));
 	} else {
-		QMessageBox::information(this, "Test connection", "Connection failed - Check settings and try again ");
+		QMessageBox::information(this, tr("Test connection"), tr("Connection failed - Check settings and try again "));
 	}
 	delete pd;
 

@@ -77,8 +77,8 @@ void QgsDbSourceSelect::editConnection()
 void QgsDbSourceSelect::deleteConnection(){
 	QSettings settings;
 	QString key = "/Qgis/connections/" + cmbConnections->currentText();
-	QString msg = "Are you sure you want to remove the " + cmbConnections->currentText() + " connection and all associated settings?";
-	int result = QMessageBox::information(this, "Confirm Delete", msg, "Yes", "No");
+	QString msg = tr("Are you sure you want to remove the ") + cmbConnections->currentText() + tr(" connection and all associated settings?");
+	int result = QMessageBox::information(this, tr("Confirm Delete"), msg, tr("Yes"), tr("No"));
 	if(result == 0){
 		settings.removeEntry(key + "/host");
 		settings.removeEntry(key + "/database");
@@ -101,7 +101,7 @@ void QgsDbSourceSelect::addTables()
 
 // BEGIN CHANGES ECOS
     if( m_selectedTables.empty() == true )
-        QMessageBox::information(this, "Select Table","You must select a table in order to add a Layer.");
+        QMessageBox::information(this, tr("Select Table"),tr("You must select a table in order to add a Layer."));
     else
 	    accept();
 // END CHANGES ECOS
@@ -126,8 +126,8 @@ void QgsDbSourceSelect::dbConnect()
 	if (password == QString::null) {
 		// get password from user
 	    makeConnection = false;
-		QString password = QInputDialog::getText("Password for " + database + "@" + host,
-													 "Please enter your password:",
+		QString password = QInputDialog::getText(tr("Password for ") + database + "@" + host,
+													 tr("Please enter your password:"),
 													 QLineEdit::Password, QString::null, &makeConnection, this);
 		
 		//  allow null password entry in case its valid for the database
@@ -196,10 +196,8 @@ void QgsDbSourceSelect::dbConnect()
 			qDebug(PQerrorMessage(pd));
 		}
 	} else {
-		QMessageBox::warning(this, "Connection failed",
-							 "Connection to " + settings.readEntry(key + "/database") +
-							 " on " + settings.readEntry(key + "/host") +
-							 " failed. Either the database is down or your settings are incorrect.\n\nCheck your username and password and try again.");
+		QMessageBox::warning(this, tr("Connection failed"),
+							 tr("Connection to %1 on %2 failed. Either the database is down or your settings are incorrect.%3Check your username and password and try again.").arg(settings.readEntry(key + "/database")).arg(settings.readEntry(key + "/host")).arg("\n\n"));
 	}
   }
 }

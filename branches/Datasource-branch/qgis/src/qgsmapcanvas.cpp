@@ -460,7 +460,7 @@ void QgsMapCanvas::mouseReleaseEvent(QMouseEvent * e)
 			}
 			else
 			{
-			    QMessageBox::warning(this, "No active layer", "To select features, you must choose an layer active by clicking on its name in the legend");
+			    QMessageBox::warning(this, tr("No active layer"), tr("To select features, you must choose an layer active by clicking on its name in the legend"));
 			}
 		}
 	} else {
@@ -482,8 +482,8 @@ void QgsMapCanvas::mouseReleaseEvent(QMouseEvent * e)
 				  lyr->identify(search);
 				  delete search;
 			  } else {
-				  QMessageBox::warning(this, "No active layer",
-									   "To identify features, you must choose an layer active by clicking on its name in the legend");
+				  QMessageBox::warning(this, tr("No active layer"),
+									   tr("To identify features, you must choose an layer active by clicking on its name in the legend"));
 			  }
 			  break;
 

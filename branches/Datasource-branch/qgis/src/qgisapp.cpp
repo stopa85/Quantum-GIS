@@ -58,6 +58,7 @@
 #include "qgsmaplayer.h"
 #include "qgslegenditem.h"
 #include "qgslegend.h"
+#include "qgslegendview.h"
 #include "qgsprojectio.h"
 #ifdef POSTGRESQL
 #include <libpq++.h>
@@ -160,8 +161,8 @@ QgisApp::QgisApp(QWidget * parent, const char *name, WFlags fl):QgisAppBase(pare
 
 	QGridLayout *FrameLayout = new QGridLayout(frameMain, 1, 2, 4, 6, "mainFrameLayout");
 	QSplitter *split = new QSplitter(frameMain);
-	legendView = new QListView(split);
-	legendView->addColumn("Layers");
+	legendView = new QgsLegendView(split);
+	legendView->addColumn(tr("Layers"));
 	legendView->setSorting(-1);
 
 
@@ -178,7 +179,7 @@ QgisApp::QgisApp(QWidget * parent, const char *name, WFlags fl):QgisAppBase(pare
 	mapLegend->setBackgroundColor(QColor(192, 192, 192));
 	mapLegend->setMapCanvas(mapCanvas);
 	legendView->setResizeMode(QListView::AllColumns);
-	QString caption = "Quantum GIS - ";
+	QString caption = tr("Quantum GIS - ");
 	caption += QGis::qgisVersion;
 	setCaption(caption);
 	connect(mapCanvas, SIGNAL(xyCoordinates(QgsPoint &)), this, SLOT(showMouseCoordinate(QgsPoint &)));
@@ -188,12 +189,12 @@ QgisApp::QgisApp(QWidget * parent, const char *name, WFlags fl):QgisAppBase(pare
 
 	// create the layer popup menu
 	popMenu = new QPopupMenu();
-	popMenu->insertItem("&Zoom to extent of selected layer", this, SLOT(zoomToLayerExtent()));
-	popMenu->insertItem("&Open attribute table", this, SLOT(attributeTable()));
+	popMenu->insertItem(tr("&Zoom to extent of selected layer"), this, SLOT(zoomToLayerExtent()));
+	popMenu->insertItem(tr("&Open attribute table"), this, SLOT(attributeTable()));
 	popMenu->insertSeparator();
-	popMenu->insertItem("&Properties", this, SLOT(layerProperties()));
+	popMenu->insertItem(tr("&Properties"), this, SLOT(layerProperties()));
 	popMenu->insertSeparator();
-	popMenu->insertItem("&Remove", this, SLOT(removeLayer()));
+	popMenu->insertItem(tr("&Remove"), this, SLOT(removeLayer()));
 	mapCursor = 0;
 	// create the interfce
 	qgisInterface = new QgisIface(this);
@@ -222,18 +223,18 @@ QgisApp::~QgisApp()
 void QgisApp::about()
 {
 	QgsAbout *abt = new QgsAbout();
-	QString versionString = "Version ";
+	QString versionString = tr("Version ");
 	versionString += QGis::qgisVersion;
 	#ifdef POSTGRESQL
-		versionString += " with PostgreSQL support";
+		versionString += tr(" with PostgreSQL support");
 	#else
-		versionString +=  " (no PostgreSQL support)";
+		versionString +=  tr(" (no PostgreSQL support)");
 	#endif
 	abt->setVersion(versionString);
-	QString urls = "Web Page: http://qgis.sourceforge.net\nSourceforge Project "
-		"Page: http://sourceforge.net/projects/qgis";
+	QString urls = tr("Web Page: http://qgis.sourceforge.net") +
+  "\n" + tr("Sourceforge Project Page: http://sourceforge.net/projects/qgis");
 	abt->setURLs(urls);
-	QString watsNew = "Version ";
+	QString watsNew = tr("Version") + " ";
 	watsNew += QGis::qgisVersion;
 	watsNew += "\n**Multiple features displayed with the Identify tool\n" 
 	"**Preliminary Plugin Manager implementation\n"
@@ -252,7 +253,7 @@ void QgisApp::about()
 	abt->setWhatsNew(watsNew);
   
   // add the available plugins to the list
-  QString providerInfo = "<b>Available Data Provider Plugins</b><br>";
+  QString providerInfo = "<b>" + tr("Available Data Provider Plugins") + "</b><br>";
   abt->setPluginInfo(providerInfo + providerRegistry->pluginList(true));
 	abt->exec();
 
@@ -264,8 +265,8 @@ void QgisApp::addLayer()
   QString pOgr = providerRegistry->library("ogr");
   if(pOgr.length() > 0){
 	mapCanvas->freeze();
-	QStringList files = QFileDialog::getOpenFileNames("Shapefiles (*.shp);;All files (*.*)", 0, this, "open files dialog",
-													  "Select one or more layers to add");
+	QStringList files = QFileDialog::getOpenFileNames(tr("Shapefiles (*.shp);;All files (*.*)"), 0, this, "open files dialog",
+													  tr("Select one or more layers to add"));
 	QApplication::setOverrideCursor(Qt::WaitCursor);
 	QStringList::Iterator it = files.begin();
 	while (it != files.end()) {
@@ -286,9 +287,9 @@ void QgisApp::addLayer()
 		    renderer->initializeSymbology(lyr);
 		    mapCanvas->addLayer(lyr);
 		} else {
-			QString msg = *it;
-			msg += " is not a valid or recognized data source";
-			QMessageBox::critical(this, "Invalid Data Source", msg);
+			QString msg = *it + " ";
+			msg += tr("is not a valid or recognized data source");
+			QMessageBox::critical(this, tr("Invalid Data Source"), msg);
 		}
 
 		++it;
@@ -306,7 +307,7 @@ void QgisApp::addLayer()
 	statusBar()->message(mapCanvas->extent().stringRep());
 
   }else{
-    QMessageBox::critical(this, "No OGR Provider","No OGR data provider was found in the QGIS lib directory");    
+    QMessageBox::critical(this, tr("No OGR Provider"),tr("No OGR data provider was found in the QGIS lib directory"));    
   }
 
 }
@@ -366,7 +367,7 @@ void QgisApp::addDatabaseLayer()
 	mapCanvas->render2();
 	QApplication::restoreOverrideCursor();
   }else{
-    QMessageBox::critical(this, "No PostgreSQL Provider","No PostgreSQL data provider was found in the QGIS lib directory");    
+    QMessageBox::critical(this, tr("No PostgreSQL Provider"),tr("No PostgreSQL data provider was found in the QGIS lib directory"));    
 
   }
 }
@@ -378,7 +379,7 @@ void QgisApp::fileExit()
 }
 void QgisApp::fileNew(){
 	mapCanvas->removeAll();
-	setCaption("Quantum GIS -- Untitled");
+	setCaption(tr("Quantum GIS -- Untitled"));
 	mapCanvas->clear();
 	mapLegend->update();
 	fullPath = "";
@@ -388,7 +389,7 @@ void QgisApp::fileOpen(){
 	QgsProjectIo *pio = new QgsProjectIo(mapCanvas, QgsProjectIo::OPEN);
 	
 	if(pio->read()){
-		setCaption("Quantum GIS -- " + pio->baseName());
+		setCaption(tr("Quantum GIS --") +" " + pio->baseName());
 		fullPath = pio->fullPathName();
 		}
 	delete pio;
@@ -400,8 +401,8 @@ void QgisApp::fileSave(){
 	QgsProjectIo *pio = new QgsProjectIo(mapCanvas, QgsProjectIo::SAVE);
 	pio->setFileName(fullPath);
 	if(pio->write()){
-		setCaption("Quantum GIS -- " + pio->baseName());
-		statusBar()->message("Saved map to: " + pio->fullPathName());
+		setCaption(tr("Quantum GIS --") + " " + pio->baseName());
+		statusBar()->message(tr("Saved map to:") +" "  + pio->fullPathName());
 	}
 	delete pio;
 }
@@ -409,8 +410,8 @@ void QgisApp::fileSave(){
 void QgisApp::fileSaveAs(){
 	QgsProjectIo *pio = new QgsProjectIo(mapCanvas, QgsProjectIo::SAVEAS);
 	if(pio->write()){
-		setCaption("Quantum GIS -- " + pio->baseName());
-		statusBar()->message("Saved map to: " + pio->fullPathName());
+		setCaption(tr("Quantum GIS --") + " " + pio->baseName());
+		statusBar()->message(tr("Saved map to:") + " " + pio->fullPathName());
 	}
 	delete pio;	
 }
@@ -499,7 +500,7 @@ void QgisApp::attributeTable()
 			lyr->table();
 	
 		} else {
-			QMessageBox::information(this, "No Layer Selected", "To open an attribute table, you must select a layer in the legend");
+			QMessageBox::information(this, tr("No Layer Selected"), tr("To open an attribute table, you must select a layer in the legend"));
 		}
 	}
 }
@@ -766,7 +767,7 @@ void QgisApp::testMapLayerPlugins(){
 	// map layer plugins live in their own directory (somewhere to be determined)
 	QDir mlpDir("../plugins/maplayer", "*.so.1.0.0", QDir::Name | QDir::IgnoreCase, QDir::Files );
 	if(mlpDir.count() == 0){
-		QMessageBox::information(this,"No MapLayer Plugins", "No MapLayer plugins in ../plugins/maplayer");
+		QMessageBox::information(this,tr("No MapLayer Plugins"), tr("No MapLayer plugins in ../plugins/maplayer"));
 	}else{
 		for(unsigned i = 0; i < mlpDir.count(); i++){
 		std::cout << "Getting information for plugin: " << mlpDir[i] << std::endl;
@@ -818,7 +819,7 @@ void QgisApp::testPluginFunctions()
 	//pluginDir.setFilter(QDir::Files || QDir::NoSymLinks);
 	//pluginDir.setNameFilter("*.so*");
 	if(pluginDir.count() == 0){
-		QMessageBox::information(this, "No Plugins", "No plugins found in ../plugins. To test plugins, start qgis from the src directory");
+		QMessageBox::information(this, tr("No Plugins"), tr("No plugins found in ../plugins. To test plugins, start qgis from the src directory"));
 	}else{
 		
 		for(unsigned i = 0; i < pluginDir.count(); i++){
@@ -843,7 +844,7 @@ void QgisApp::testPluginFunctions()
 			std::cout << "Getting the name of the plugin" << std::endl;
 			name_t *pName = (name_t *) myLib->resolve("name");
 			if(pName){
-				QMessageBox::information(this,"Name", "Plugin " + pluginDir[i] + " is named " + pName());
+        QMessageBox::information(this,tr("Name"), tr("Plugin %1 is named %2").arg(pluginDir[i]).arg(pName()));
 			}
 			std::cout << "Attempting to resolve the classFactory function" << std::endl;
 			create_t *cf = (create_t *) myLib->resolve("classFactory");
@@ -855,8 +856,8 @@ void QgisApp::testPluginFunctions()
 				std::cout << "Plugin name: " << pl->name() << std::endl;
 				std::cout << "Plugin version: " << pl->version() << std::endl;
 				std::cout << "Plugin description: " << pl->description() << std::endl;
-				QMessageBox::information(this, "Plugin Information", "QGis loaded the following plugin:\nName: "
-										 + pl->name() + "\nVersion: " + pl->version() + "\nDescription: " + pl->description());
+				QMessageBox::information(this, tr("Plugin Information"), tr("QGis loaded the following plugin:") + 
+          tr("Name: %1").arg(pl->name())  + "\n" +tr("Version: %1").arg(pl->version()) + "\n" + tr("Description: %1").arg(pl->description()));
 				// unload the plugin (delete it)
 				std::cout << "Attempting to resolve the unload function" << std::endl;
 				/*
@@ -870,8 +871,8 @@ void QgisApp::testPluginFunctions()
 				*/
 			}
 		} else {
-			QMessageBox::warning(this, "Unable to Load Plugin",
-								 "QGis was unable to load the plugin from: ../plugins/" + pluginDir[i]);
+			QMessageBox::warning(this, tr("Unable to Load Plugin"),
+								 tr("QGIS was unable to load the plugin from: %1").arg(pluginDir[i]));
 			std::cout << "Unable to load library" << std::endl;
 		}
 		}
@@ -963,29 +964,29 @@ void QgisApp::socketConnectionClosed(){
 		int currentVersion = parts[0].toInt();
 		if(currentVersion > QGis::qgisVersionInt){
 		// show version message from server
-			versionInfo = "There is a new version of QGIS available\n";
+			versionInfo = tr("There is a new version of QGIS available") + "\n";
 		}else{
 			if(QGis::qgisVersionInt > currentVersion){
-				versionInfo = "You are running a development version of QGIS\n";
+				versionInfo = tr("You are running a development version of QGIS") + "\n";
 			}else{
-			versionInfo = "You are running the current version of QGIS\n";
+			versionInfo = tr("You are running the current version of QGIS") + "\n";
 			}
 		}
 		if(parts.count() > 1){
-			versionInfo += parts[1] + "\n\nWould you like more information?";;
-			int result = QMessageBox::information(this,"QGIS Version Information", versionInfo, "Yes", "No");
+			versionInfo += parts[1] + "\n\n" + tr("Would you like more information?");;
+			int result = QMessageBox::information(this,tr("QGIS Version Information"), versionInfo, tr("Yes"), tr("No"));
 			if(result ==0){
 				// show more info
 				QgsMessageViewer *mv = new QgsMessageViewer(this);
-				mv->setCaption("QGIS - Changes in CVS");
+				mv->setCaption(tr("QGIS - Changes in CVS"));
 				mv->setMessage(parts[2]);
 				mv->exec();
 			}	
 		}else{
-			QMessageBox::information(this, "QGIS Version Information", versionInfo);
+			QMessageBox::information(this, tr("QGIS Version Information"), versionInfo);
 		}
 	}else{
-		QMessageBox::warning(this, "QGIS Version Information", "Unable to get current version information from server");
+		QMessageBox::warning(this, tr("QGIS Version Information"), tr("Unable to get current version information from server"));
 	}
 }
 void QgisApp::socketError(int e){
@@ -994,17 +995,17 @@ void QgisApp::socketError(int e){
 QString detail;
 switch(e){
 	case QSocket::ErrConnectionRefused:
-		detail = "Connection refused - server may be down";
+		detail = tr("Connection refused - server may be down");
 		break;
 	case QSocket::ErrHostNotFound:
-		detail = "QGIS server was not found";
+		detail = tr("QGIS server was not found");
 		break;
 	case QSocket::ErrSocketRead:
-		detail = "Error reading from server";
+		detail = tr("Error reading from server");
 		break;
 		}
 	// show version message from server
-	QMessageBox::critical(this, "QGIS Version Information", "Unable to connect to the QGIS Version server\n" + detail);
+	QMessageBox::critical(this, tr("QGIS Version Information"), tr("Unable to connect to the QGIS Version server") + "\n" + detail);
 }
 
  void QgisApp::socketReadyRead()
