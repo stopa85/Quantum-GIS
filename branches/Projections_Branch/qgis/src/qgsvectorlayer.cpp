@@ -108,7 +108,7 @@ QgsVectorLayer::QgsVectorLayer(QString vectorLayerPath,
   {
     setDataProvider( providerKey );
   }
-  // XXXX Is it just me or is selection colour not actually used anywhere? TS
+  // XXX Is it just me or is selection colour not actually used anywhere? TS
   //there is the mSelectionColor that is widely used by renderers
   //draw the selected features the colour set in project file
   //(defaults to yellow)
@@ -1685,15 +1685,51 @@ QgsVectorLayer:: setDataProvider( QString const & provider )
           mLabelOn = false;
 
           //
-          // Get the layers project info and set up the QgsCoordinateTransform for this layer
+          // Get the layers project info and set up the QgsCoordinateTransform 
+          // for this layer
           //
           QString mySourceWKT = getProjectionWKT();
           //get the project projection, defaulting to this layer's projection
           //if none exists....
           QString myDestWKT = QgsProject::instance()->readEntry("SpatialRefSys","/WKT",mySourceWKT);
-          //set up the coordinat transform - in the case of raster this is mainly used to convert
-          //the inverese projection of the map extents of the canvas when zzooming in etc. so
-          //that they match the coordinate system of this layer
+          //
+          // Sort out what to do with this layer's coordinate system (CS). We have
+          // four possible scenarios:
+          // 1. Layer has no projection info and canvas is projected
+          //      = set layer to canvas CS
+          // 2. Layer has no projection info and canvas is unprojected
+          //      = leave both layer and canvas unprojected XXX is this appropriate?
+          // 3. Layer has projection info and canvas is unprojected
+          //      = set canvas to layer's CS
+          // 4. Layer has projection info and canvas is projected
+          //      = setup transform for layer to canvas CS
+           if(mySourceWKT.length() == 0)
+           {
+             // layer has no CS
+             if(myDestWKT.length() > 0)
+             {
+               // set layer CS to project CS
+               mySourceWKT = myDestWKT;
+             }
+             else
+             {
+               // leave layer with no CS
+             }
+           }
+           else
+           {
+             // layer has a CS
+             if(myDestWKT.length() == 0)
+             {
+               // set project CS to layer CS
+               myDestWKT = mySourceWKT;
+             }
+           }
+
+          //set up the coordinate transform - in the case of raster this is 
+          //mainly used to convert the inverese projection of the map extents 
+          //of the canvas when zzooming in etc. so that they match the coordinate 
+          //system of this layer
           mCoordinateTransform = new QgsCoordinateTransform(mySourceWKT,myDestWKT);
         }
       }

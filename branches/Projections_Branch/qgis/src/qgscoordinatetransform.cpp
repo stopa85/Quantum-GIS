@@ -27,8 +27,9 @@ QgsCoordinateTransform::QgsCoordinateTransform( QString theSourceWKT, QString th
 
 QgsCoordinateTransform::~QgsCoordinateTransform()
 {
-  delete mSourceToDestXForm;
-  delete mDestToSourceXForm;
+  // free the proj objects
+  pj_free(mSourceProjection);
+  pj_free(mDestinationProjection);
 }
 
 void QgsCoordinateTransform::setSourceWKT(QString theWKT)
@@ -118,10 +119,24 @@ void QgsCoordinateTransform::initialise()
     std::cout << "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" << std::endl;
     return;
   }  
+// create the proj4 structs needed for transforming 
+  // get the proj parms for source cs
+  char *proj4src;
+  myInputSpatialRefSys.exportToProj4(&proj4src);
+  // store the src proj parms in a QString because the pointer populated by exportToProj4
+  // seems to get corrupted prior to its use in the transform
+  mProj4SrcParms = proj4src;
+  // get the proj parms for dest cs
+  char *proj4dest;
+  myOutputSpatialRefSys.exportToProj4(&proj4dest);
+  // store the dest proj parms in a QString because the pointer populated by exportToProj4
+  // seems to get corrupted prior to its use in the transform
+  mProj4DestParms = proj4dest;
+  // init the projections (destination and source)
+   mDestinationProjection = pj_init_plus((const char *)mProj4DestParms);
+   mSourceProjection = pj_init_plus((const char *)mProj4SrcParms);
 
-  mSourceToDestXForm = OGRCreateCoordinateTransformation( &myInputSpatialRefSys, &myOutputSpatialRefSys );
-  mDestToSourceXForm = OGRCreateCoordinateTransformation( &myOutputSpatialRefSys, &myInputSpatialRefSys );
-  if ( ! mSourceToDestXForm || ! mDestToSourceXForm)
+  if ( !mSourceProjection  || ! mDestinationProjection)
   {
     std::cout << "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"<< std::endl;
     std::cout << "The OGR Coordinate transformation for this layer could *** NOT *** be set " << std::endl;
@@ -136,22 +151,11 @@ void QgsCoordinateTransform::initialise()
     std::cout << "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"<< std::endl;
     std::cout << "The OGR Coordinate transformation for this layer was set to" << std::endl;
     std::cout << "INPUT: " << std::endl << mSourceWKT << std::endl;
-    char *proj4src;
-    myInputSpatialRefSys.exportToProj4(&proj4src);
-    std::cout << "PROJ4: " << std::endl << proj4src << std::endl;  
+    std::cout << "PROJ4: " << std::endl << mProj4SrcParms << std::endl;  
     std::cout << "OUTPUT: " << std::endl << mDestWKT  << std::endl;
-    char *proj4dest;
-    myOutputSpatialRefSys.exportToProj4(&proj4dest);
-    std::cout << "PROJ4: " << std::endl << proj4dest << std::endl;  
+    std::cout << "PROJ4: " << std::endl << mProj4DestParms << std::endl;  
     std::cout << "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" << std::endl;
   }
-  //just a test to see if inverse 
-  //inverseTransform(10.0,10.0);
-  // Deactivate GDAL error messages.
-  //CPLSetErrorHandler( errorHandler );
-
-  // Guess if the source o dest CS is in degrees.
-  //Searchf for this phrase in each wkt:  "unit[\"degree\"" 
 }
 
 //--------------------------------------------------------
@@ -173,22 +177,24 @@ QgsPoint QgsCoordinateTransform::transform(QgsPoint thePoint)
   // transform x
   double x = thePoint.x(); 
   double y = thePoint.y();
-  // Number of points to reproject------+
-  //                                    | 
-  //                                    V 
-  if ( ! mSourceToDestXForm->Transform( 1, &x, &y ) )
+  double z = 0.0;
+  try
+  {
+
+    transformCoords(FORWARD, 1, x, y, z );
+  }
+  catch(QgsCsException &cse)
   {
     //something bad happened....
-    throw QgsCsException(QString("Coordinate transform failed"));
+    // rethrow the exception
+    throw cse;
   }
-  else
-  {
 #ifdef QGISDEBUG 
-    //std::cout << "Point projection...X : " << thePoint.x() << "-->" << x << ", Y: " << thePoint.y() << " -->" << y << std::endl;
+  //std::cout << "Point projection...X : " << thePoint.x() << "-->" << x << ", Y: " << thePoint.y() << " -->" << y << std::endl;
 #endif        
-    return QgsPoint(x, y);
-  } 
-}
+  return QgsPoint(x, y);
+} 
+
 
 QgsRect QgsCoordinateTransform::transform(QgsRect theRect)
 {
@@ -201,90 +207,39 @@ QgsRect QgsCoordinateTransform::transform(QgsRect theRect)
   // Number of points to reproject------+
   //                                    | 
   //                                    V 
-  if ( ! mSourceToDestXForm->Transform( 1, &x1, &y1 ) || ! mSourceToDestXForm->Transform( 1, &x2, &y2 ) )
-  {
-    //something bad happened....
-    throw QgsCsException(QString("Coordinate transform failed"));
-  }
-  else
-  {
-#ifdef QGISDEBUG 
-    std::cout << "Rect projection..." 
-      << "Xmin : " 
-      << theRect.xMin() 
-      << "-->" << x1 
-      << ", Ymin: " 
-      << theRect.yMin() 
-      << " -->" << y1
-      << "Xmax : " 
-      << theRect.xMax() 
-      << "-->" << x2 
-      << ", Ymax: " 
-      << theRect.yMax() 
-      << " -->" << y2         
-      << std::endl;
-#endif        
-    return QgsRect(x1, y1, x2 , y2);
-  } 
-}
+  try{
+    double z = 0.0;
+    transformCoords(FORWARD, 1, x1, y1, z);
+    transformCoords(FORWARD, 1, x2, y2, z);
 
-QgsRect QgsCoordinateTransform::transform(QgsRect * theRect)
-{
-  if (mShortCircuit || !mInitialisedFlag) return QgsRect(theRect->xMin(),theRect->yMin(),theRect->xMax(),theRect->yMax());
-  // transform x
-  double x1 = theRect->xMin(); 
-  double y1 = theRect->yMin();
-  double x2 = theRect->xMax(); 
-  double y2 = theRect->yMax();  
-  // Number of points to reproject------+
-  //                                    | 
-  //                                    V 
-  if ( ! mSourceToDestXForm->Transform( 1, &x1, &y1 ) || ! mSourceToDestXForm->Transform( 1, &x2, &y2 ) )
-  {
-    //something bad happened....
-    throw QgsCsException(QString("Coordinate transform failed"));
   }
-  else
+  catch(QgsCsException &cse)
   {
+    // rethrow the exception
+    throw cse;
+  }
 #ifdef QGISDEBUG 
-    std::cout << "Rect projection..." 
-      << "Xmin : " 
-      << theRect->xMin() 
-      << "-->" << x1 
-      << ", Ymin: " 
-      << theRect->yMin() 
-      << " -->" << y1
-      << "Xmax : " 
-      << theRect->xMax() 
-      << "-->" << x2 
-      << ", Ymax: " 
-      << theRect->yMax() 
-      << " -->" << y2       
-      << std::endl;
+  std::cout << "Rect projection..." 
+    << "Xmin : " 
+    << theRect.xMin() 
+    << "-->" << x1 
+    << ", Ymin: " 
+    << theRect.yMin() 
+    << " -->" << y1
+    << "Xmax : " 
+    << theRect.xMax() 
+    << "-->" << x2 
+    << ", Ymax: " 
+    << theRect.yMax() 
+    << " -->" << y2         
+    << std::endl;
 #endif        
-    return QgsRect(x1, y1, x2 , y2);
-  } 
-}
-
+  return QgsRect(x1, y1, x2 , y2);
+} 
 
 QgsPoint QgsCoordinateTransform::transform(double theX, double theY)
 {
-  if (mShortCircuit || !mInitialisedFlag) return QgsPoint(theX,theY);
-  // transform x
-  double x = theX; 
-  double y = theY;
-  if ( ! mSourceToDestXForm->Transform( 1, &x, &y ) )
-  {
-    //something bad happened....
-    throw QgsCsException(QString("Coordinate transform failed"));
-  }
-  else
-  {
-#ifdef QGISDEBUG 
-    //std::cout << "Point projection...X : " << theX << "-->" << x << ", Y: " << theY << " -->" << y << std::endl;
-#endif    
-    return QgsPoint(x, y);
-  } 
+  transform(QgsPoint(theX, theY));
 }
 
 // ------------------------------------------------------------------
@@ -302,22 +257,23 @@ QgsPoint QgsCoordinateTransform::inverseTransform(QgsPoint thePoint)
   // transform x
   double x = thePoint.x(); 
   double y = thePoint.y();
-  // Number of points to reproject------+
-  //                                    | 
-  //                                    V 
-  if ( ! mDestToSourceXForm->Transform( 1, &x, &y ) )
+  double z = 0.0;
+  const int pointCount = 1;
+  try
+  {
+    transformCoords(INVERSE, pointCount, x, y, z);
+  }
+  catch(QgsCsException &cse)
   {
     //something bad happened....
-    throw QgsCsException(QString("Coordinate inverse transform failed"));
+    // rethrow the exception
+    throw cse;
   }
-  else
-  {
 #ifdef QGISDEBUG 
-    //std::cout << "Point inverse projection...X : " << thePoint.x() << "-->" << x << ", Y: " << thePoint.y() << " -->" << y << std::endl;
+  //std::cout << "Point inverse projection...X : " << thePoint.x() << "-->" << x << ", Y: " << thePoint.y() << " -->" << y << std::endl;
 #endif        
-    return QgsPoint(x, y);
-  } 
-}
+  return QgsPoint(x, y);
+} 
 
 QgsRect QgsCoordinateTransform::inverseTransform(QgsRect theRect)
 {
@@ -327,48 +283,23 @@ QgsRect QgsCoordinateTransform::inverseTransform(QgsRect theRect)
   double y1 = theRect.yMin();
   double x2 = theRect.xMax(); 
   double y2 = theRect.yMax();  
-  // get the proj parms for source cs
-  OGRSpatialReference sr(mSourceWKT);
-  char *proj4src;
-  sr.exportToProj4(&proj4src);
-  // store the src proj parms in a QString because the pointer populated by exportToProj4
-  // seems to get corrupted prior to its use in the transform
-  const QString qProj4Src(proj4src);
-  // get the proj parms for dest cs
-  char *pWkt = (char *)mDestWKT.ascii();
-  sr.importFromWkt(&pWkt);
-  char *proj4dest;
-  sr.exportToProj4(&proj4dest);
-  // store the dest proj parms in a QString because the pointer populated by exportToProj4
-  // seems to get corrupted prior to its use in the transform
-  const QString qProj4Dest(proj4dest);
 #ifdef QGISDEBUG   
 
   std::cout << "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"<< std::endl;
   std::cout << "Rect inverse projection..." << std::endl;
   std::cout << "INPUT: " << std::endl << mSourceWKT << std::endl;
-  std::cout << "PROJ4: " << std::endl << qProj4Src << std::endl;  
+  std::cout << "PROJ4: " << std::endl << mProj4SrcParms << std::endl;  
   std::cout << "OUTPUT: " << std::endl << mDestWKT  << std::endl;
-  std::cout << "PROJ4: " << std::endl << qProj4Dest << std::endl;  
+  std::cout << "PROJ4: " << std::endl << mProj4DestParms << std::endl;  
   std::cout << "INPUT RECT: " << std::endl << x1 << "," << y1 << ":" << x2 << "," << y2 << std::endl;
   std::cout << "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" << std::endl;
 #endif  
   try{
     double z = 0.0;
-    /*
-    qProjPt pt;
-    pt.x = x1;
-    pt.y = y1;
-    pt.z = 0;
-    */
-    cs2cs(qProj4Src, qProj4Dest, x1, y1, z);
-    cs2cs(qProj4Src, qProj4Dest, x2, y2, z);
+    transformCoords(INVERSE, 1, x1, y1, z);
+    transformCoords(INVERSE, 1, x2, y2, z);
 
-  //  XXX old style that fails
-  // int myResult1 = mDestToSourceXForm->Transform( 1, &x1, &y1 );
-  //int myResult2 = mDestToSourceXForm->Transform( 1, &x2, &y2 );
-  //CPLPopErrorHandler();
-    }catch(QgsCsException(&cse))
+    }catch(QgsCsException &cse)
         {
         // rethrow the exception
         throw cse;
@@ -392,106 +323,55 @@ QgsRect QgsCoordinateTransform::inverseTransform(QgsRect theRect)
    
 }
 
-QgsRect QgsCoordinateTransform::inverseTransform(QgsRect * theRect)
-{
-  if (mShortCircuit || !mInitialisedFlag) return QgsRect(theRect->xMin(),theRect->yMin(),theRect->xMax(),theRect->yMax());
-  // transform x
-  double x1 = theRect->xMin(); 
-  double y1 = theRect->yMin();
-  double x2 = theRect->xMax(); 
-  double y2 = theRect->yMax();  
-  // Number of points to reproject------+
-  //                                    | 
-  //                                    V 
-  if ( ! mDestToSourceXForm->Transform( 1, &x1, &y1 ) || ! mDestToSourceXForm->Transform( 1, &x2, &y2 ) )
-  {
-    //something bad happened....
-    throw QgsCsException(QString("Inverse Coordinate transform failed"));
-  }
-  else
-  {
-#ifdef QGISDEBUG 
-    std::cout << "Rect pointer inverse projection..." 
-      << "Xmin : " 
-      << theRect->xMin() 
-      << "-->" << x1 
-      << ", Ymin: " 
-      << theRect->yMin() 
-      << " -->" << y1
-      << "Xmax : " 
-      << theRect->xMax() 
-      << "-->" << x2 
-      << ", Ymax: " 
-      << theRect->yMax() 
-      << " -->" << y2         
-      << std::endl;
-#endif        
-    return QgsRect(x1, y1, x2 , y2);
-  } 
-}
-
 QgsPoint QgsCoordinateTransform::inverseTransform(double theX, double theY)
 {
-  if (mShortCircuit || !mInitialisedFlag) return QgsPoint(theX,theY);
-  // transform x
-  double x = theX; 
-  double y = theY;
-  if ( ! mDestToSourceXForm->Transform( 1, &x, &y ) )
-  {
-    //something bad happened....
-    throw QgsCsException(QString("Coordinate inverseTransform failed"));
-  }
-  else
-  {
-#ifdef QGISDEBUG 
-    //std::cout << "Point inverse projection...X : " << theX << "-->" << x << ", Y: " << theY << " -->" << y << std::endl;
-#endif    
-    return QgsPoint(x, y);
-  } 
+  inverseTransform(QgsPoint(theX, theY));
 }
-void QgsCoordinateTransform::cs2cs(const QString & dest, const QString& src, double& x, double& y, double& z)
-{
-  // use proj4 to do the transform from destination to 
-  // source CS 
-  //XXX might be better to not create these each time through 
-  // init the projections (destination and source)
-  projPJ pDest = pj_init_plus((const char *)dest);
-  projPJ pSrc = pj_init_plus((const char *)src);
 
-  // if the destination projection is lat/long, convert the points to radians
+void QgsCoordinateTransform::transformCoords(TransformDirection direction, const int& numPoints, double& x, double& y, double& z)
+{
+  // use proj4 to do the transform   
+ QString dir;  
+  // if the source/destination projection is lat/long, convert the points to radians
   // prior to transforming
-  if(pj_is_latlong(pDest))
+  if((pj_is_latlong(mDestinationProjection) && (direction == INVERSE))
+        || (pj_is_latlong(mSourceProjection) && (direction == FORWARD)))
   {
     x *= DEG_TO_RAD;
     y *= DEG_TO_RAD;
     z *= DEG_TO_RAD;
+    
   }
-
-  int projResult = pj_transform(pDest, pSrc , 1, 0, &x, &y, &z);
+  int projResult;
+if(direction == INVERSE)
+{
+  projResult = pj_transform(mDestinationProjection, mSourceProjection , numPoints, 0, &x, &y, &z);
+  dir = "inverse";
+}
+else
+{
+  projResult = pj_transform(mSourceProjection, mDestinationProjection, numPoints, 0, &x, &y, &z);
+  dir = "forward";
+}
 
   if (projResult != 0) 
   {
     //something bad happened....
     QString pjErr;
-    pjErr += "Failed transform of x, y: ";
+    pjErr += "Failed " + dir + " transform of x, y: ";
     pjErr += pj_strerrno(projResult);
     pjErr += "\n";
-    // free the proj objects
-    pj_free(pDest);
-    pj_free(pSrc);
     throw  QgsCsException(pjErr);
   }
-  // if the src is lat/long, convert the results from radians back
+  // if the result is lat/long, convert the results from radians back
   // to degrees
-  if(pj_is_latlong(pSrc))
+  if((pj_is_latlong(mDestinationProjection) && (direction == FORWARD))
+        || (pj_is_latlong(mSourceProjection) && (direction == INVERSE)))
   {
     x *= RAD_TO_DEG;
     y *= RAD_TO_DEG;
     z *= RAD_TO_DEG;
   }
-  // free the proj objects
-  pj_free(pDest);
-  pj_free(pSrc);
 }
 
 

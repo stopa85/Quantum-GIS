@@ -53,6 +53,10 @@ class QgsCoordinateTransform: public QObject
     QgsCoordinateTransform(QString theSourceWKT, QString theDestWKT  );
      //! destructor
     ~QgsCoordinateTransform();
+    enum TransformDirection{
+      FORWARD,
+      INVERSE
+    };
     
     /*! Transform the point from Source Coordinate System to Destination Coordinate System
     * @param p Point to transform
@@ -114,7 +118,7 @@ class QgsCoordinateTransform: public QObject
     //! Accessor  for dest WKT
     QString destWKT() const {return mDestWKT;};    
     //! Accessor for whether this transoform is properly initialised
-    void cs2cs(const QString &dest, const QString &src, double &x, double &y, double &z);
+    void transformCoords(TransformDirection direction, const int &numPoint, double &x, double &y, double &z);
    bool isInitialised() {return mInitialisedFlag;};
  public slots:
     /** mutator for dest WKT - slot will usually be fired if proj props change and 
@@ -126,16 +130,16 @@ class QgsCoordinateTransform: public QObject
     void initialise();
     //! flag to show whether the transform is properly initialised or not
     bool mInitialisedFlag;
-    /** Used for forward transform */
-    OGRCoordinateTransformation * mSourceToDestXForm;
-    /** Used for reverse transform */
-    OGRCoordinateTransformation * mDestToSourceXForm;
     /** Transform definitionsin WKT format */
     QString mSourceWKT,mDestWKT;
     /** Dunno if we need this - XXXXX Delete if unused */
     bool mInputIsDegrees;
     //set to true if src cs  == dest cs
     bool mShortCircuit;
+    QString mProj4SrcParms;
+    QString mProj4DestParms;
+    projPJ mSourceProjection;
+    projPJ mDestinationProjection;
 };
 
 
