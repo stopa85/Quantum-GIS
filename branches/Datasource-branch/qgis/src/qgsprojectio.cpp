@@ -19,6 +19,7 @@
  #include <qmessagebox.h>
  #include <qcolor.h>
  #include "qgsmaplayer.h"
+ #include "qgsvectorlayer.h"
  #ifdef POSTGRESQL
  #include "qgsdatabaselayer.h"
  #endif
@@ -156,7 +157,7 @@ bool QgsProjectIo::read(){
 		
 		if(type == "database"){
 			#ifdef POSTGRESQL
-				QgsDatabaseLayer *dbl = new QgsDatabaseLayer(dataSource, layerName);
+				QgsVectorLayer *dbl = new QgsVectorLayer(dataSource);
 				
 				map->addLayer(dbl);
 				dbl->setSymbol(sym);
