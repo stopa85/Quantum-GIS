@@ -22,6 +22,7 @@ email                : sherman at mrcc.com
 /*  $Id$ */
 
 #include <iostream>
+#include <iosfwd>
 #include <cfloat>
 #include <cstring>
 #include <sstream>
@@ -1439,3 +1440,91 @@ QgsVectorLayer:: setDataProvider( QString const & provider )
     }
 
 } // QgsVectorLayer:: setDataProvider
+
+
+
+
+/* virtual */ bool QgsVectorLayer::writeXML_( QDomNode & layer_node, 
+                                              QDomDocument & document )
+{
+    // first get the layer element so that we can append the type attribute
+
+    QDomElement mapLayerNode = layer_node.toElement();
+
+    if ( mapLayerNode.isNull() || ("maplayer" != mapLayerNode.nodeName()) )
+    {
+        const char * nn = mapLayerNode.nodeName().ascii(); // debugger probe
+
+        qDebug( "QgsVectorLayer::writeXML() can't find <maplayer>" );
+
+        return false;
+    }
+
+    mapLayerNode.setAttribute( "type", "vector" );
+
+    // add provider node
+
+    QDomElement provider  = document.createElement( "provider" );
+    QDomText providerText = document.createTextNode( providerType() ); 
+    provider.appendChild( providerText );
+
+    layer_node.appendChild( provider );
+
+    // add label node
+
+    QDomElement label  = document.createElement( "label" );
+    QDomText labelText = document.createTextNode( "" ); 
+
+    if ( labelOn() )
+    {
+        labelText.setData( "1" );
+    }
+    else
+    {
+        labelText.setData( "0" );
+    }
+    label.appendChild( labelText );
+
+    layer_node.appendChild( label );
+
+
+    // renderer specific settings
+
+    std::stringstream rendererXML;
+	
+    QgsRenderer* myRenderer;
+
+    if( myRenderer = renderer() )
+    {
+        myRenderer->writeXML(rendererXML);
+
+        // because the renderer writeXML() deals with streams and not DOM
+        // objects directly, we'll make a separate DOM document and populate
+        // it with the objects from the stream, and then import the DOM
+        // document
+        QDomDocument rendererDOM;
+
+        std::string rawXML;
+        QString errorMsg;
+        int     errorLine; 
+        int     errorColumn; 
+
+        rendererXML >> rawXML;
+
+        if ( ! rendererDOM.setContent( rawXML, &errorMsg, &errorLine, &errorColumn ) )
+        {
+            qDebug( "import error at %d %d " + errorMsg, errorLine, errorColumn );
+        }
+
+//         std::cerr << __FILE__ << ":" << __LINE__
+//                   << " " << rendererXML << "\n";
+    }
+    else
+    {
+        std::cerr << __FILE__ << ":" << __LINE__
+                  << " no renderer\n";
+    }
+
+    return true;
+} // bool QgsVectorLayer::writeXML_
+
