@@ -75,6 +75,14 @@ static const char* defaultWktKey = "4326";
   {
     cbxProjectionEnabled->setChecked(true);
   }
+  // set the default wkt to WGS 84
+  QString defaultWkt = QgsSpatialReferences::instance()->getSrsBySrid(defaultWktKey)->srText();
+  // the /WKT entry stores the wkt as the key into the projections map 
+  QString srsWkt =  QgsProject::instance()->readEntry("SpatialRefSys","/WKT",defaultWkt);
+
+  projectionSelector->setSelectedWKT(srsWkt);
+  
+  
   //
   // TODO: Change this to connect to the signal from the projectionselector dialog now!!!! ts
   // 
@@ -245,14 +253,6 @@ void QgsProjectProperties::accept()
   close();
 }
 
-QString QgsProjectProperties::projectionWKT()
-{
-  // set the default wkt to WGS 84
-  QString defaultWkt = QgsSpatialReferences::instance()->getSrsBySrid("4326")->srText();
-  // the /WKT entry stores the wkt as the key into the projections map 
-  QString srsWkt =  QgsProject::instance()->readEntry("SpatialRefSys","/WKT",defaultWkt);
-  return srsWkt;
-}  
 bool QgsProjectProperties::isProjected()
 {
   return cbxProjectionEnabled->isChecked();
