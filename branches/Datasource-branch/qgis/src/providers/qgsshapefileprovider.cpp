@@ -1,3 +1,5 @@
+/* QGIS data provider for ESRI Shapefile format */
+/* $Id$ */
 #include <iostream>
 #include "../qgsdataprovider.h"
 #include "../qgsfeature.h"
@@ -25,8 +27,8 @@ QgsShapeFileProvider::QgsShapeFileProvider(QString uri):dataSourceUri(uri)
 		if (feat) {
 			OGRGeometry *geom = feat->GetGeometryRef();
 			if (geom) {
-				geometryType = geom->getGeometryType();
-				ogrLayer->ResetReading();
+				geomType = geom->getGeometryType();
+				
 			} else {
 				valid = false;
 			}
@@ -34,6 +36,7 @@ QgsShapeFileProvider::QgsShapeFileProvider(QString uri):dataSourceUri(uri)
 		} else {
 			valid = false;
 		}
+        ogrLayer->ResetReading();
 	} else {
 		std::cout << "Data source is invalid" << std::endl;
 		const char *er = CPLGetLastErrorMsg();
@@ -43,11 +46,11 @@ QgsShapeFileProvider::QgsShapeFileProvider(QString uri):dataSourceUri(uri)
 
 	//create a boolean vector and set every entry to false
 
-	if (valid) {
+/* 	if (valid) {
 		selected = new std::vector < bool > (ogrLayer->GetFeatureCount(), false);
 	} else {
 		selected = 0;
-	}
+	} */
 //  tabledisplay=0;
 	//draw the selected features in yellow
 //  selectionColor.setRgb(255,255,0);
@@ -82,6 +85,7 @@ QgsFeature *QgsShapeFileProvider::getFirstFeature()
 
 	/**
 	* Get the next feature resutling from a select operation
+    * Return 0 if there are no features in the selection set
 	* @return QgsFeature
 	*/
 QgsFeature *QgsShapeFileProvider::getNextFeature()
@@ -89,17 +93,28 @@ QgsFeature *QgsShapeFileProvider::getNextFeature()
     
 	QgsFeature *f = 0;
 	if(valid){
-		std::cout << "getting next feature\n";
-		OGRFeature *feat = ogrLayer->GetNextFeature();
-		if(feat){
-			std::cout << "Feature is not null\n";
+		//std::cout << "getting next feature\n";
+		OGRFeature *fet = ogrLayer->GetNextFeature();
+		if(fet){
+            OGRGeometry *geom = fet->GetGeometryRef();
+			
+			// get the wkb representation
+			unsigned char *feature = new unsigned char[geom->WkbSize()];
+			geom->exportToWkb((OGRwkbByteOrder) endian(), feature);
             f = new QgsFeature();
-            f->setGeometry(getGeometryPointer(feat));
+            f->setGeometry(feature);
+            char *wkt = new char[2 * geom->WkbSize()];
+            geom->exportToWkt(&wkt);
+            f->setWellKnownText(wkt);
 		}else{
 			std::cout << "Feature is null\n";
+            // probably should reset reading here
+            ogrLayer->ResetReading();
 		}
 		
-	}
+	}else{
+        std::cout << "Read attempt on an invalid shapefile data source\n";
+    }
 	return f;
 }
 
@@ -108,29 +123,36 @@ QgsFeature *QgsShapeFileProvider::getNextFeature()
 	* with calls to getFirstFeature and getNextFeature.
 	* @param mbr QgsRect containing the extent to use in selecting features
 	*/
-void QgsShapeFileProvider::select(QgsRect rect)
+void QgsShapeFileProvider::select(QgsRect *rect)
 {
-    // spatial query to fetch features
+    // spatial query to select features
+    std::cout << "Selection rectangle is " << *rect << std::endl;
     OGRGeometry *filter = 0;
 	filter = new OGRPolygon();
-	QString wktExtent = QString("POLYGON ((%1))").arg(rect.stringRep());
+	QString wktExtent = QString("POLYGON ((%1))").arg(rect->stringRep());
 	const char *wktText = (const char *)wktExtent;
 
 	OGRErr result = ((OGRPolygon *) filter)->importFromWkt((char **)&wktText);
+    //TODO - detect an error in setting the filter and figure out what to
+    //TODO   about it. If setting the filter fails, all records will be returned
 	if (result == OGRERR_NONE) {
+        std::cout << "Setting spatial filter using " << wktExtent    << std::endl;
 		ogrLayer->SetSpatialFilter(filter);
-		int featureCount = 0;
+        std::cout << "Feature count: " << ogrLayer->GetFeatureCount() << std::endl;
+	/* 	int featureCount = 0;
 		while (OGRFeature * fet = ogrLayer->GetNextFeature()) {
-			/* if (fet) {
+			if (fet) {
 				select(fet->GetFID());
 				if (tabledisplay) {
 					tabledisplay->table()->selectRowWithId(fet->GetFID());
 					(*selected)[fet->GetFID()] = true;
 				}
-			} */
+			} 
 		}
-		ogrLayer->ResetReading();
-	}
+		ogrLayer->ResetReading();*/
+	}else{
+        std::cout << "Setting spatial filter failed!" << std::endl;
+    }
 }
 
 	/**
@@ -168,6 +190,7 @@ unsigned char * QgsShapeFileProvider::getGeometryPointer(OGRFeature *fet){
 	unsigned char *gPtr=0;
 		// get the wkb representation
 		gPtr = new unsigned char[geom->WkbSize()];
+      
 		geom->exportToWkb((OGRwkbByteOrder) endian(), gPtr);
 	return gPtr;
 
@@ -193,6 +216,19 @@ int QgsShapeFileProvider::endian()
 QgsRect *QgsShapeFileProvider::extent()
 {
   return new QgsRect(extent_->MinX, extent_->MinY, extent_->MaxX, extent_->MaxY);
+}
+
+/** 
+* Return the feature type
+*/
+int QgsShapeFileProvider::geometryType(){
+    return geomType;
+}
+/** 
+* Return the feature type
+*/
+long QgsShapeFileProvider::featureCount(){
+    return featureCount_;
 }
 extern "C" QgsShapeFileProvider * classFactory(const char *uri)
 {

@@ -38,12 +38,28 @@ public:
 	* @return QgsFeature
 	*/
 	QgsFeature * getNextFeature();
+	
+	/** Get the feature type. This corresponds to 
+			WKBPoint,
+			WKBLineString,
+			WKBPolygon,
+			WKBMultiPoint,
+			WKBMultiLineString or
+			WKBMultiPolygon
+ 	* as defined in qgis.h
+	*/
+	int geometryType();
+    /** 
+    * Get the number of features in the layer
+    */
+    long featureCount();
+    
 	/**
 	* Select features based on a bounding rectangle. Features can be retrieved 
 	* with calls to getFirstFeature and getNextFeature.
 	* @param mbr QgsRect containing the extent to use in selecting features
 	*/
-	void select(QgsRect mbr);
+	void select(QgsRect *mbr);
 	/** 
 		* Set the data source specification. This may be a path or database
 	* connection string
@@ -82,7 +98,8 @@ private:
 	OGREnvelope *extent_;
 	OGRLayer *ogrLayer;
 	bool valid;
-	int geometryType;
+    int geomType;
+    long featureCount_;
 	enum ENDIAN
 	{
 		NDR = 1,
