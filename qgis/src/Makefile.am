@@ -427,14 +427,31 @@ libqgis_la_SOURCES =				\
 		qgsvectorfilewriter.cpp		\
 		qgsvectordataprovider.cpp	\
 		qgsvectorlayer.cpp		\
+		qgscomposer.moc.cpp		\
+		qgscomposerbase.uic.cpp		\
+		qgscomposerbase.moc.uic.cpp		\
+		qgscomposermap.moc.cpp		\
+		qgscomposermapbase.moc.uic.cpp		\
+		qgscomposermapbase.uic.cpp		\
+		qgsrunprocess.moc.cpp		\
+		qgscomposervectorlegend.moc.cpp		\
+		qgscomposervectorlegendbase.moc.uic.cpp		\
+		qgscomposervectorlegendbase.uic.cpp		\
+		qgscomposition.moc.cpp		\
+		qgscompositionbase.moc.uic.cpp		\
+		qgscompositionbase.uic.cpp		\
+		qgscomposerview.moc.cpp		\
+		qgscomposerlabelbase.moc.uic.cpp		\
+		qgscomposerlabelbase.uic.cpp		\
+		qgscomposerlabel.moc.cpp		\
 		qgsvectorlayer.moc.cpp 
 
 if HAVE_POSTGRESQL
 libqgis_la_SOURCES += $(postgresLIBSOURCES)
 endif
 
-libqgis_la_LIBFLAGS = $(QT_LDADD) $(GEOS_LDADD)
-libqgis_la_LDFLAGS = -version-info $(INTERFACE_VERSION)
+libqgis_la_LIBFLAGS = $(QT_LDADD) $(GEOS_LDADD) $(GDAL_LDADD)
+libqgis_la_LDFLAGS = -version-info $(INTERFACE_VERSION) $(QT_LDADD) $(GDAL_LDADD)
 libqgis_la_CXXFLAGS = $(PREFIX) $(PLUGINPATH) $(PKGDATAPATH) $(GDAL_CFLAGS) $(CXXFLAGS) $(EXTRA_CXXFLAGS) $(QT_CXXFLAGS) -I$(PG_INC) $(DEBUG_QGIS) $(GEOS_CFLAGS)
 
 
