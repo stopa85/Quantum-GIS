@@ -2605,7 +2605,8 @@ void QgsVectorLayer::setCoordinateSystem()
     if(mySourceWKT.isEmpty())
     {
       //decide whether to use project default projection or to prompt for one
-      if (mySettings.readEntry("/qgis/projections/defaultBehaviour")=="prompt")
+      QString myDefaultProjectionOption = mySettings.readEntry("/qgis/projections/defaultBehaviour");
+      if (myDefaultProjectionOption=="prompt")
       {
         //@note qgsvectorlayer is not a descendent of QWidget so we cant pass
         //it in the ctor of the layer projection selector
@@ -2631,6 +2632,10 @@ void QgsVectorLayer::setCoordinateSystem()
           mCoordinateTransform = new QgsCoordinateTransform("", "");
           return;
         }
+      }
+      else if (myDefaultProjectionOption=="useProject")
+      {
+        mySourceWKT = QgsProject::instance()->readEntry("SpatialRefSys","/selectedWKT","Lat/Long - WGS 84");
       }
       else ///qgis/projections/defaultBehaviour==useDefault
       {

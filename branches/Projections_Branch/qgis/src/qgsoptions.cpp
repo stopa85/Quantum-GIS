@@ -23,6 +23,7 @@
 #include <qfiledialog.h>
 #include <qradiobutton.h>
 #include <qapplication.h>
+#include <qtextbrowser.h>
 #include "qgsoptions.h"
 #include "qgisapp.h"
 #include "qgssvgcache.h"
@@ -59,11 +60,16 @@ QgsOptions::QgsOptions(QWidget *parent, const char *name) : QgsOptionsBase(paren
   {
     radPromptForProjection->setChecked(true);
   }
-  else
+  else if (settings.readEntry("/qgis/projections/defaultBehaviour")=="useProject")
   {
-    radUseDefaultProjection->setChecked(true);
+    radUseProjectProjection->setChecked(true);
+  }
+  else //useGlobal
+  {
+    radUseGlobalProjection->setChecked(true);
   }
   mGlobalWKT = settings.readEntry("/qgis/projections/defaultProjectionWKT");
+  txtGlobalWKT->setText(mGlobalWKT);
 }
 //! Destructor
 QgsOptions::~QgsOptions(){}
@@ -103,10 +109,15 @@ void QgsOptions::saveOptions()
     //
     settings.writeEntry("/qgis/projections/defaultBehaviour", "prompt");
   }
-  else //assumes radUseDefaultProjection is checked
+  else if(radUseProjectProjection->isChecked())
   {
     //
-    settings.writeEntry("/qgis/projections/defaultBehaviour", "useDefault");
+    settings.writeEntry("/qgis/projections/defaultBehaviour", "useProject");
+  }
+  else //assumes radUseGlobalProjection is checked
+  {
+    //
+    settings.writeEntry("/qgis/projections/defaultBehaviour", "useGlobal");
   }
   settings.writeEntry("/qgis/projections/defaultProjectionWKT",mGlobalWKT);
 
@@ -164,6 +175,7 @@ void QgsOptions::pbnSelectProjection_clicked()
     std::cout << "------ Global Default Projection Selection Set ----------" << std::endl;
 #endif
     mGlobalWKT = mySelector->getCurrentWKT();  
+    txtGlobalWKT->setText(mGlobalWKT);
 #ifdef QGISDEBUG
     std::cout << "------ Global Default Projection now set to ----------\n" << mGlobalWKT << std::endl;
 #endif
