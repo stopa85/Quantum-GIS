@@ -221,6 +221,7 @@ wktAkAlbers = "PROJCS[\"Alaska_Albers_Equal_Area_Conic\",GEOGCS[\"GCS_North_Amer
     wktIn.getline(buf, 16384);
     wktIn.close();
       std::cout << "\n\nGetting proj4 parameters from wkt.txt" << std::endl; 
+      std::cout << buf << std::endl; 
       // set up the spatial ref
       OGRSpatialReference myInputSpatialRefSys;
       CPPUNIT_ASSERT(myInputSpatialRefSys.importFromWkt(&buf)== OGRERR_NONE);
@@ -229,6 +230,10 @@ wktAkAlbers = "PROJCS[\"Alaska_Albers_Equal_Area_Conic\",GEOGCS[\"GCS_North_Amer
       // get the proj4 for the unmorphed projection
       char *proj4src;
       CPPUNIT_ASSERT(myInputSpatialRefSys.exportToProj4(&proj4src) == OGRERR_NONE);
+      std::cout << "\tPROJ4: " << proj4src << std::endl;  
+      // morph it then spew it
+      myInputSpatialRefSys.morphFromESRI();
+      myInputSpatialRefSys.exportToProj4(&proj4src);
       std::cout << "\tPROJ4: " << proj4src << std::endl;  
       CPPUNIT_ASSERT(QString(proj4src).find("datum") > -1);
       
