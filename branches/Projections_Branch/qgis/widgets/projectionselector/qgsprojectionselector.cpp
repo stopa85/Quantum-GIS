@@ -55,6 +55,11 @@ QgsProjectionSelector::~QgsProjectionSelector()
 
 void QgsProjectionSelector::setSelectedWKT(QString theWKT)
 {
+  //get the srid given the wkt so we can pick the correct list item
+#ifdef QGISDEBUG
+  std::cout << "QgsProjectionSelector::setSelectedWKT called with \n" << theWKT << std::endl;
+#endif
+  //now delegate off to the rest of the work
   QListViewItemIterator myIterator (lstCoordinateSystems);
   while (myIterator.current()) 
   {
