@@ -88,11 +88,10 @@ QgsVectorLayer::QgsVectorLayer(QString vectorLayerPath,
       tabledisplay(0), 
       m_renderer(0), 
       m_propertiesDialog(0), 
-      m_rendererDialog(0)
+      m_rendererDialog(0),
+      ir(0)			// initialize the identify results pointer
 {
-  // initialize the identify results pointer
-  ir = 0;
-
+  
 #ifdef QGISDEBUG
   std::cerr << "VECTORLAYERPATH: " << vectorLayerPath.ascii() << std::endl;
   std::cerr << "BASENAME: " << baseName.ascii() << std::endl;

@@ -875,8 +875,8 @@ bool QgisApp::addLayer(QFileInfo const & vectorFile)
    // create the layer
 
    QgsVectorLayer *layer = new QgsVectorLayer(vectorFile.filePath(), 
-                                            vectorFile.baseName(), 
-                                            "ogr");
+					      vectorFile.baseName(), 
+					      "ogr");
    Q_CHECK_PTR( layer );
 
    if ( ! layer )
@@ -914,12 +914,12 @@ bool QgisApp::addLayer(QFileInfo const & vectorFile)
 
       layer->setRenderer(renderer);
       renderer->initializeSymbology(layer);
-      mMapCanvas->addLayer(layer);
-     //connect up a request from the raster layer to show in overview map
-     QObject::connect(layer, 
-             SIGNAL(showInOverview(QString,bool)), 
-             this, 
-             SLOT(setLayerOverviewStatus(QString,bool)));           
+      // not necessary since registry will add to canvas mMapCanvas->addLayer(layer);
+      // not necessary since connect up a request from the raster layer to show in overview map
+//      QObject::connect(layer, 
+//              SIGNAL(showInOverview(QString,bool)), 
+//              this, 
+//              SLOT(setLayerOverviewStatus(QString,bool)));           
          
      QgsProject::instance()->dirty(true);
 
@@ -1028,12 +1028,15 @@ bool QgisApp::addLayer(QStringList const &theLayerQStringList)
 
              layer->setRenderer(renderer);
              renderer->initializeSymbology(layer);
-             mMapCanvas->addLayer(layer);
-             //connect up a request from the raster layer to show in overview map
-             QObject::connect(layer, 
-                     SIGNAL(showInOverview(QString,bool)), 
-                     this, 
-                     SLOT(setLayerOverviewStatus(QString,bool)));           
+
+	     // map canvas and overview canvas already know about this layer
+	     // when it is added to map registry
+//              mMapCanvas->addLayer(layer);
+//              //connect up a request from the raster layer to show in overview map
+//              QObject::connect(layer, 
+//                      SIGNAL(showInOverview(QString,bool)), 
+//                      this, 
+//                      SLOT(setLayerOverviewStatus(QString,bool)));           
 
              // mProjectIsDirtyFlag = true;
              QgsProject::instance()->dirty(true);
@@ -2547,7 +2550,8 @@ void QgisApp::addVectorLayer(QString vectorLayerPath, QString baseName, QString 
   QString providerName;
 
   QString pProvider = mProviderRegistry->library(providerKey);
-  if (pProvider.length() > 0)
+
+  if ( ! pProvider.isNull() )
   {
     mMapCanvas->freeze();
     QApplication::setOverrideCursor(Qt::WaitCursor);
@@ -2563,7 +2567,8 @@ void QgisApp::addVectorLayer(QString vectorLayerPath, QString baseName, QString 
       " and providerKey of " << providerKey << std::endl;
 #endif
     layer = new QgsVectorLayer(vectorLayerPath, baseName, providerKey);
-    if(layer->isValid())
+
+    if( layer && layer->isValid() )
     {
       // Register this layer with the layers registry
       QgsMapLayerRegistry::instance()->addMapLayer(layer);
@@ -2575,18 +2580,21 @@ void QgisApp::addVectorLayer(QString vectorLayerPath, QString baseName, QString 
       layer->setRenderer(renderer);
       renderer->initializeSymbology(layer);
       // add it to the mapcanvas collection
-      mMapCanvas->addLayer(layer);
+      // mMapCanvas->addLayer(layer); No longer necessary since adding to registry will add to canvas
+
       //connect up a request from the raster layer to show in overview map
-      QObject::connect(layer, 
-              SIGNAL(showInOverview(QString,bool)), 
-              this, 
-              SLOT(setLayerOverviewStatus(QString,bool)));           
+      // No longer necessary since adding to registry will add to overview layer
+//       QObject::connect(layer, 
+//               SIGNAL(showInOverview(QString,bool)), 
+//               this, 
+//               SLOT(setLayerOverviewStatus(QString,bool)));           
 
       // mProjectIsDirtyFlag = true;
       QgsProject::instance()->dirty(false); // XXX this might be redundant
       statusBar()->message(mMapCanvas->extent().stringRep(2));
 
-    }else
+    }
+    else
     {
       QMessageBox::critical(this,"Layer is not valid",
           "The layer is not a valid layer and can not be added to the map");
@@ -2597,7 +2605,9 @@ void QgisApp::addVectorLayer(QString vectorLayerPath, QString baseName, QString 
     QApplication::restoreOverrideCursor();
   }
     
-}
+} // QgisApp::addVectorLayer
+
+
 
 void QgisApp::addMapLayer(QgsMapLayer *theMapLayer)
 {
@@ -2610,12 +2620,14 @@ void QgisApp::addMapLayer(QgsMapLayer *theMapLayer)
     // init the context menu so it can connect to slots in main app
     theMapLayer->initContextMenu(this);
     // add it to the mapcanvas collection
-    mMapCanvas->addLayer(theMapLayer);
+    // not necessary since adding to registry adds to canvas mMapCanvas->addLayer(theMapLayer);
     //connect up a request from the raster layer to show in overview map
-    QObject::connect(theMapLayer, 
-            SIGNAL(showInOverview(QString,bool)), 
-            this, 
-            SLOT(setLayerOverviewStatus(QString,bool)));           
+
+// not necessary since adding to registry will add to overview
+//     QObject::connect(theMapLayer, 
+//             SIGNAL(showInOverview(QString,bool)), 
+//             this, 
+//             SLOT(setLayerOverviewStatus(QString,bool)));           
 
     // mProjectIsDirtyFlag = true;
     QgsProject::instance()->dirty(true);
