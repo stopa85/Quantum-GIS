@@ -37,13 +37,13 @@ class QgsAttributeTableDisplay:public QgsAttributeTableBase
 {
     Q_OBJECT
   public:
-	QgsAttributeTableDisplay(QgsVectorLayer* layer);
-	~QgsAttributeTableDisplay();
-	QgsAttributeTable *table();
-	void setTitle(QString title);
+  QgsAttributeTableDisplay(QgsVectorLayer* layer);
+  ~QgsAttributeTableDisplay();
+  QgsAttributeTable *table();
+  void setTitle(QString title);
  protected:
-	QgsVectorLayer* mLayer;
-	QPopupMenu* edit;
+  QgsVectorLayer* mLayer;
+  QPopupMenu* edit;
 
  protected slots:
      void deleteAttributes();
@@ -51,6 +51,7 @@ class QgsAttributeTableDisplay:public QgsAttributeTableBase
      void startEditing();
      void stopEditing();
      void selectedToTop();
+     void invertSelection();
 };
 
 #endif

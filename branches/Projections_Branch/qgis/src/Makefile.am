@@ -34,6 +34,7 @@ bin_PROGRAMS = qgis
 lib_LTLIBRARIES = libqgis.la
 
 headers =	qgisapp.h					\
+		qgsaddattrdialog.h \
 		qgis.h						\
 		qgisiface.h					\
 		qgisinterface.h					\
@@ -95,6 +96,7 @@ headers =	qgisapp.h					\
 		qgsmapserverexport.h				\
 		qgsmarkerdialog.h				\
 		qgsmarkersymbol.h				\
+		qgsmeasure.h					\
 		qgsoptions.h					\
 		qgspatterndialog.h				\
 		qgspluginitem.h					\
@@ -104,6 +106,7 @@ headers =	qgisapp.h					\
 		qgspoint.h					\
 		qgspolygonsymbol.h				\
 		qgsproject.h					\
+		qgsprojectproperty.h				\
 		qgsprojectproperties.h				\
 		qgsprovidermetadata.h				\
 		qgsproviderregistry.h				\
@@ -163,6 +166,7 @@ qgis_UIC =	qgisappbase.ui				\
 		qgsmapserverexportbase.ui		\
 		qgsmarkerdialogbase.ui			\
 		qgsmessageviewer.ui			\
+		qgsmeasurebase.ui			\
 		qgsoptionsbase.ui			\
 		qgspatterndialogbase.ui			\
 		qgspluginmanagerbase.ui			\
@@ -235,6 +239,7 @@ qgis_MOC =	qgisapp.moc.cpp				\
 		qgsmaplayerregistry.moc.cpp		\
 		qgsmapserverexport.moc.cpp		\
 		qgsmarkerdialog.moc.cpp			\
+		qgsmeasure.moc.cpp			\
 		qgsoptions.moc.cpp			\
 		qgspatterndialog.moc.cpp		\
 		qgspluginmanager.moc.cpp		\
@@ -309,6 +314,7 @@ qgis_SOURCES =	main.cpp			\
 		qgsmapserverexport.cpp		\
 		qgsmarkerdialog.cpp		\
 		qgsmarkersymbol.cpp		\
+		qgsmeasure.cpp			\
 		qgsoptions.cpp			\
 		qgspatterndialog.cpp		\
 		qgspluginitem.cpp		\
@@ -319,6 +325,7 @@ qgis_SOURCES =	main.cpp			\
 		qgspolygonsymbol.cpp		\
 		qgsproject.cpp			\
 		qgsprojectproperties.cpp	\
+		qgsprojectproperty.cpp		\
 		qgsprovidermetadata.cpp		\
 		qgsproviderregistry.cpp		\
 		qgsrangerenderitem.cpp		\
@@ -413,6 +420,7 @@ libqgis_la_SOURCES =				\
 		qgsfield.cpp			\
 		qgsgraduatedmarenderer.cpp	\
 		qgsgraduatedsymrenderer.cpp	\
+		qgslabel.cpp			\
 		qgsmapcanvas.cpp		\
 		qgsmapcanvas.moc.cpp		\
 		qgsmaplayer.cpp			\
@@ -423,6 +431,7 @@ libqgis_la_SOURCES =				\
 		qgspoint.cpp			\
 		qgspoint.moc.cpp		\
 		qgsproviderregistry.cpp		\
+		qgsprojectproperty.cpp		\
 		qgsrangerenderitem.cpp		\
 		qgsrasterlayer.cpp		\
 		qgsrasterlayer.moc.cpp		\

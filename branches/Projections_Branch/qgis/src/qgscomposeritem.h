@@ -31,7 +31,7 @@ class QgsComposerItem
 
 public:
     QgsComposerItem();
-    ~QgsComposerItem(); 
+    virtual ~QgsComposerItem(); 
 public:
     /** \brief Set plot style */
     void setPlotStyle ( QgsComposition::PlotStyle p );
@@ -61,6 +61,9 @@ public:
 
     /** read state from project */
     virtual bool readSettings ( void );
+
+    /** delete settings from project file  */
+    virtual bool removeSettings( void ); 
 
     /** stores state in DOM node
      * @param node is DOM node corresponding to '???' tag

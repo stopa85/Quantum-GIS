@@ -19,6 +19,7 @@
 #include <set>
 #include <map>
 #include <qgsdataprovider.h>
+#include <qtextcodec.h>
 
 /** Base class for vector data providers
  */
@@ -36,14 +37,6 @@ class QgsVectorDataProvider : public QgsDataProvider
       AddAttributes = 1 << 3,
       DeleteAttributes = 1 << 4,
       SaveAsShapefile = 1 << 5
-  };
-
-    enum Encoding
-  {
-      Ascii,
-      Latin1,
-      Local8Bit,
-      Utf8
   };
 
     QgsVectorDataProvider();
@@ -181,7 +174,8 @@ class QgsVectorDataProvider : public QgsDataProvider
   const std::list<QString>& nonNumericalTypes(){return mNonNumericalTypes;}
   const std::list<QString>& numericalTypes(){return mNumericalTypes;}
 
-  void setEncoding(QgsVectorDataProvider::Encoding e){mEncoding=e;}
+  void setEncoding(const QString& e);
+  QString encoding() const;
 
   /*! Indicates if the provider does its own coordinate transforms
    * @return true if the provider transforms its coordinates, otherwise false
@@ -199,7 +193,7 @@ class QgsVectorDataProvider : public QgsDataProvider
   virtual bool usesWKT(){return false;};
 protected:
     /**Encoding*/
-    QgsVectorDataProvider::Encoding mEncoding;
+    QTextCodec* mEncoding;
     /**List of type names for non-numerical types*/
     std::list<QString> mNonNumericalTypes;
     /**List of type names for numerical types*/
