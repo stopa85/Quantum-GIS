@@ -108,7 +108,6 @@ public:
 private:
 	unsigned char *getGeometryPointer(OGRFeature *fet);
 	std::vector<QgsFeature> features;
-	std::vector<bool> * selected;
   std::vector<QgsField> attributeFields;
 	QString dataSourceUri;
 	OGRDataSource *ogrDataSource;

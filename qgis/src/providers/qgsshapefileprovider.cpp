@@ -69,10 +69,7 @@ QgsShapeFileProvider::QgsShapeFileProvider(QString uri):dataSourceUri(uri)
 
 QgsShapeFileProvider::~QgsShapeFileProvider()
 {
-    if(selected)
-    {
-	delete selected;
-    }
+    
 }
 
 /**
