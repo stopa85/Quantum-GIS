@@ -1273,31 +1273,40 @@ bool QgsVectorLayer::readXML_( QDomNode & layer_node )
     QDomNode singlemarkernode = layer_node.namedItem("singlemarker");
     QDomNode graduatedmarkernode = layer_node.namedItem("graduatedmarker");
 
-    std::auto_ptr<QgsRenderer> renderer;
+    //std::auto_ptr<QgsRenderer> renderer; actually the renderer SHOULD NOT be
+    //deleted when this function finishes, otherwise the application will
+    //crash
+    // XXX this seems to be a dangerous implementation; should re-visit design
+    QgsRenderer * renderer;
 
     if (!singlenode.isNull())
     {
-        renderer.reset( new QgsSingleSymRenderer );
+        // renderer.reset( new QgsSingleSymRenderer );
+        renderer = new QgsSingleSymRenderer;
         renderer->readXML(singlenode, *this);
     }
     else if (!graduatednode.isNull())
     {
-        renderer.reset( new QgsGraduatedSymRenderer );
+        //renderer.reset( new QgsGraduatedSymRenderer );
+        renderer =  new QgsGraduatedSymRenderer;
         renderer->readXML(graduatednode, *this);
     }
     else if (!continuousnode.isNull())
     {
-        renderer.reset( new QgsContinuousColRenderer );
+        //renderer.reset( new QgsContinuousColRenderer );
+        renderer =  new QgsContinuousColRenderer;
         renderer->readXML(continuousnode, *this);
     }
     else if(!singlemarkernode.isNull())
     {
-        renderer.reset( new QgsSiMaRenderer );
+        //renderer.reset( new QgsSiMaRenderer );
+        renderer =  new QgsSiMaRenderer;
         renderer->readXML(singlemarkernode, *this);
     }
     else if(!graduatedmarkernode.isNull())
     {
-        renderer.reset( new QgsGraduatedMaRenderer );
+        //renderer.reset( new QgsGraduatedMaRenderer );
+        renderer =  new QgsGraduatedMaRenderer;
         renderer->readXML(graduatedmarkernode, *this);
     }
 
