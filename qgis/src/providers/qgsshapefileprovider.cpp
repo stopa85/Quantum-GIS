@@ -3,6 +3,7 @@
 #include <iostream>
 #include "../qgsdataprovider.h"
 #include "../qgsfeature.h"
+#include "../qgsfield.h"
 #include "../qgsrect.h"
 #include <ogrsf_frmts.h>
 #include <ogr_geometry.h>
@@ -24,6 +25,8 @@ QgsShapeFileProvider::QgsShapeFileProvider(QString uri):dataSourceUri(uri)
 		extent_ = new OGREnvelope();
 		ogrLayer->GetExtent(extent_);
     std::cout << "Finished get extent\n";
+    // getting the total number of features in the layer
+    numberFeatures = ogrLayer->GetFeatureCount();
 		// check the validity of the layer
     std::cout << "checking validity\n";
 		OGRFeature *feat = ogrLayer->GetNextFeature();
@@ -35,6 +38,17 @@ QgsShapeFileProvider::QgsShapeFileProvider(QString uri):dataSourceUri(uri)
 			} else {
 				valid = false;
 			}
+      // Populate the field vector for this layer. The field vector contains
+      // field name, type, length, and precision (if numeric)
+      for (int i = 0; i < feat->GetFieldCount(); i++) {
+          OGRFieldDefn *fldDef = feat->GetFieldDefnRef(i);
+          attributeFields.push_back(QgsField(
+            fldDef->GetNameRef(), 
+            fldDef->GetFieldTypeName(fldDef->GetType()),
+            fldDef->GetWidth(),
+            fldDef->GetPrecision()));
+      }
+
 			delete feat;
 		} else {
 			valid = false;
@@ -70,7 +84,7 @@ QgsShapeFileProvider::~QgsShapeFileProvider()
 	* Get the first feature resutling from a select operation
 	* @return QgsFeature
 	*/
-QgsFeature *QgsShapeFileProvider::getFirstFeature()
+QgsFeature *QgsShapeFileProvider::getFirstFeature(bool fetchAttributes)
 {
 	QgsFeature *f = 0;
 	if(valid){
@@ -84,6 +98,9 @@ QgsFeature *QgsShapeFileProvider::getFirstFeature()
 		}
 		f = new QgsFeature();
 		f->setGeometry(getGeometryPointer(feat));
+     if(fetchAttributes){
+       getFeatureAttributes(feat, f);
+      }
 	}
 	return f;
 }
@@ -93,7 +110,7 @@ QgsFeature *QgsShapeFileProvider::getFirstFeature()
     * Return 0 if there are no features in the selection set
 	* @return QgsFeature
 	*/
-QgsFeature *QgsShapeFileProvider::getNextFeature()
+QgsFeature *QgsShapeFileProvider::getNextFeature(bool fetchAttributes)
 {
     
 	QgsFeature *f = 0;
@@ -108,6 +125,9 @@ QgsFeature *QgsShapeFileProvider::getNextFeature()
 			geom->exportToWkb((OGRwkbByteOrder) endian(), feature);
             f = new QgsFeature();
             f->setGeometry(feature);
+            if(fetchAttributes){
+              getFeatureAttributes(fet, f);
+            }
           /*   char *wkt = new char[2 * geom->WkbSize()];
             geom->exportToWkt(&wkt);
             f->setWellKnownText(wkt);
@@ -240,9 +260,47 @@ int QgsShapeFileProvider::geometryType(){
 * Return the feature type
 */
 long QgsShapeFileProvider::featureCount(){
-    return featureCount_;
+    return numberFeatures;
 }
+
+/**
+* Return the number of fields
+*/
+int QgsShapeFileProvider::fieldCount(){
+  return attributeFields.size();
+}
+/**
+* Fetch attributes for a selected feature
+*/
+void QgsShapeFileProvider::getFeatureAttributes(OGRFeature *ogrFet, QgsFeature *f){
+  for (int i = 0; i < ogrFet->GetFieldCount(); i++) {
+
+					// add the feature attributes to the tree
+					OGRFieldDefn *fldDef = ogrFet->GetFieldDefnRef(i);
+					QString fld = fldDef->GetNameRef();
+			//		OGRFieldType fldType = fldDef->GetType();
+					QString val;
+
+					val = ogrFet->GetFieldAsString(i);
+          f->addAttribute(fld, val);
+}
+}
+
+std::vector<QgsField> QgsShapeFileProvider::fields(){
+  return attributeFields;
+}
+
+void QgsShapeFileProvider::reset(){
+  ogrLayer->SetSpatialFilter(0);
+  ogrLayer->ResetReading();
+}
+/**
+* Class factory to return a pointer to a newly created 
+* QgsShapeFileProvider object
+*/
 extern "C" QgsShapeFileProvider * classFactory(const char *uri)
 {
 	return new QgsShapeFileProvider(uri);
 }
+
+
