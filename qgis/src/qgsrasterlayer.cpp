@@ -418,6 +418,7 @@ QgsRasterLayer::QgsRasterLayer(QString path, QString baseName)
   if ( ! baseName.isEmpty() )   // XXX shouldn't this happen in parent?
   {
       QString layerTitle = baseName;
+      std::cout << "layertitle length" << layerTitle.length() << std::endl; 
       layerTitle = layerTitle.left(1).upper() + layerTitle.mid(1);
       setLayerName(layerTitle);
   }
