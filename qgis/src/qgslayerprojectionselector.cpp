@@ -18,16 +18,19 @@
 /* $Id$ */
 #include "qgslayerprojectionselector.h"
 #include "qgsprojectionselector.h"
+#include <qapplication.h>
 /**
  * \class QgsLayerProjectionSelector - Set user layerprojectionselector and preferences
  * Constructor
  */
-QgsLayerProjectionSelector::QgsLayerProjectionSelector(QWidget *parent, const char *name) : QgsLayerProjectionSelectorBase(parent, name)
+QgsLayerProjectionSelector::QgsLayerProjectionSelector() 
 {
-        
+
+ // qApp::restoreOverrideCursor();
 }
 //! Destructor
-QgsLayerProjectionSelector::~QgsLayerProjectionSelector(){}
+QgsLayerProjectionSelector::~QgsLayerProjectionSelector()
+{}
 
 void QgsLayerProjectionSelector::pbnOK_clicked()
 {
@@ -39,7 +42,8 @@ void QgsLayerProjectionSelector::setSelectedWKT(QString theWKTName)
   projectionSelector->setSelectedWKT(theWKTName);
 }
 
-QString QgsLayerProjectionSelector::getSelectedWKT()
+QString QgsLayerProjectionSelector::getCurrentWKT()
 {
-  projectionSelector->getSelectedWKT();
+  //@NOTE dont use getSelectedWKT as that just returns the name part!
+  return projectionSelector->getCurrentWKT();
 }

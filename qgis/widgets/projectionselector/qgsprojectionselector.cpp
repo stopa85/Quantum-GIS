@@ -52,19 +52,6 @@ QgsProjectionSelector::QgsProjectionSelector( QWidget* parent , const char* name
 QgsProjectionSelector::~QgsProjectionSelector()
 {
 }
-QString QgsProjectionSelector::getSelectedWKT()
-{
-  // return the selected wkt name from the list view
-  QListViewItem *lvi = lstCoordinateSystems->currentItem();
-  if(lvi)
-  {
-    return lvi->text(0);
-  }
-  else
-  {
-    return QString::null;
-  }
-}
 void QgsProjectionSelector::setSelectedWKT(QString theWKT)
 {
   //get the srid given the wkt so we can pick the correct list item
@@ -101,15 +88,37 @@ void QgsProjectionSelector::setSelectedSRID(QString theSRID)
 
 }
 
+//note this ine just returns the WKT NAME!
+QString QgsProjectionSelector::getSelectedWKT()
+{
+  // return the selected wkt name from the list view
+  QListViewItem *lvi = lstCoordinateSystems->currentItem();
+  if(lvi)
+  {
+    return lvi->text(0);
+  }
+  else
+  {
+    return QString::null;
+  }
+}
+//this one retunr the whole wkt
 QString QgsProjectionSelector::getCurrentWKT()
 {
   // Only return the projection if there is a node in the tree
   // selected that has an srid. This prevents error if the user
   // selects a top-level node rather than an actual coordinate
   // system
-  if(lstCoordinateSystems->currentItem()->text(1).length() > 0)
+  QListViewItem *lvi = lstCoordinateSystems->currentItem();
+  QgsSpatialRefSys *srs = QgsSpatialReferences::instance()->getSrsBySrid(lvi->text(1));
+  if(srs)
   {
-    return QgsSpatialReferences::instance()->getSrsBySrid(lstCoordinateSystems->currentItem()->text(1))->srText();
+    //set the text box to show the full proection spec
+#ifdef QGISDEBUG
+    std::cout << "Current selected : " << lvi->text(0) << std::endl;
+    std::cout << "Current full wkt : " << srs->srText() << std::endl;
+#endif
+    return srs->srText();
   }
   else
   {
@@ -242,8 +251,8 @@ void QgsProjectionSelector::getProjList()
 
       newItem->setText(1,srs->srid());
     }
+    
   } //else = proj coord sys        
-
 #ifdef QGISDEBUG
   std::cout << "Done adding projections from spatial_ref_sys singleton" << std::endl; 
 #endif  
