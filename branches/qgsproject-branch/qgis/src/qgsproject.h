@@ -63,12 +63,20 @@ public:
     static QgsProject * instance();
 
     /**
+       sets the project title
+     */
+    void title( QString const & title );
+
+    /** returns title */
+    QString title() const;
+
+    /**
        sets the project file name
      */
-    void name( QString const & name );
+    void filename( QString const & name );
 
     /** returns file name */
-    QString name() const;
+    QString filename() const;
 
     /** read project file
 

@@ -54,6 +54,9 @@ struct QgsProject::Imp
 
     /// set of plug-in (and possibly qgis) related properties
     QgsProject::Properties properties_;
+
+    /// project title
+    QString title;
 }; // struct QgsProject::Imp
 
 
@@ -85,16 +88,16 @@ QgsProject::instance()
 } // QgsProject * instance()
 
 
-void QgsProject::name( QString const & name )
+void QgsProject::filename( QString const & name )
 {
     imp_->file.setName( name );
-} // void QgsProject::name( QString const & name )
+} // void QgsProject::filename( QString const & name )
 
 
-QString QgsProject::name() const
+QString QgsProject::filename() const
 {
     return imp_->file.name();
-} // QString QgsProject::name() const
+} // QString QgsProject::filename() const
 
 
 
@@ -164,6 +167,27 @@ _getExtents( QDomDocument const & doc, QgsRect & aoi )
     return true;
 
 } // _getExtents
+
+
+
+/**
+   Get the project title
+
+   XML in file has this form:
+     <qgis projectname="default project">
+ */
+static
+void
+_getTitle( QDomDocument const & doc, QString & title )
+{
+    QDomNodeList nl = doc.elementsByTagName("qgis");
+
+    QDomNode    node    = nl.item(0); // there should only be one, so zeroth element ok
+    QDomElement element = node.toElement();
+
+    title = element.attribute("projectname");
+
+} // _getTitle
 
 
 
@@ -359,7 +383,7 @@ _setCanvasExtent( QString const & canonicalName, QgsRect const & newExtent )
     theMapCanvas->setExtent( newExtent );
 
     // XXX sometimes the canvases are frozen here, sometimes not; this is a
-    // XXX worrisome inconsitency; regardless, unfreeze the canvases to ensure
+    // XXX worrisome inconsistency; regardless, unfreeze the canvases to ensure
     // XXX a redraw
     theMapCanvas->freeze( false );
 
@@ -410,14 +434,17 @@ QgsProject::read( )
 
     // enable the hourglass -- no, this should be done be the caller
 
+#ifdef QGISDEBUG
     qWarning("opened document " + imp_->file.name());
+#endif
 
 
     // first get the map layers
     if ( ! _getMapLayers( *doc ) )
     {
+#ifdef QGISDEBUG
         qDebug( "Unable to get map layers from project file." );
-
+#endif
         throw QgsException( "Cannot get map layers from " + imp_->file.name() );
 
         return false;
@@ -433,7 +460,9 @@ QgsProject::read( )
 
     if ( ! _getExtents( *doc, savedExtent ) )
     {
+#ifdef QGISDEBUG
         qDebug( "Unable to get extents from project file." );
+#endif
 
         throw QgsException( "Cannot get extents from " + imp_->file.name() );
 
@@ -446,6 +475,12 @@ QgsProject::read( )
     _setCanvasExtent( "theMapCanvas", savedExtent );
     _setCanvasExtent( "theOverviewCanvas", savedExtent );
 
+
+    // now get project title
+    _getTitle( *doc, imp_->title );
+#ifdef QGISDEBUG
+        qDebug( "Project title: " + imp_->title );
+#endif
 
     // XXX insert code for setting the properties
 
