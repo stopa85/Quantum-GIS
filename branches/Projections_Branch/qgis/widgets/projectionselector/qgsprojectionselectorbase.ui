@@ -100,16 +100,15 @@
 <connections>
     <connection>
         <sender>lstCoordinateSystems</sender>
-        <signal>selectionChanged()</signal>
+        <signal>currentChanged(QListViewItem*)</signal>
         <receiver>QgsProjectionSelectorBase</receiver>
-        <slot>selectionChanged()</slot>
+        <slot>coordinateSystemSelected(QListViewItem*)</slot>
     </connection>
 </connections>
 <includes>
     <include location="local" impldecl="in implementation">qgsprojectionselectorbase.ui.h</include>
 </includes>
 <slots>
-    <slot>selectionChanged()</slot>
     <slot>projectionChanged( const QString &amp; )</slot>
     <slot>coordinateSystemSelected( QListViewItem * )</slot>
 </slots>

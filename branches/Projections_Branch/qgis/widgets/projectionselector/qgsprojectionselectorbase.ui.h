@@ -8,20 +8,17 @@
 *****************************************************************************/
 
 
-void QgsProjectionSelectorBase::selectionChanged()
+
+
+void QgsProjectionSelectorBase::projectionChanged( const QString & )
 {
 
 }
 
 
-void QgsProjectPropertiesBase::projectionChanged( const QString & )
-{
-
-}
 
 
-
-void QgsProjectPropertiesBase::coordinateSystemSelected( QListViewItem * )
+void QgsProjectionSelectorBase::coordinateSystemSelected( QListViewItem * )
 {
 
 }
