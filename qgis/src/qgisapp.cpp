@@ -340,10 +340,11 @@ void QgisApp::addDatabaseLayer()
 			// create the layer
 			//qWarning("creating lyr");
 			QgsVectorLayer *lyr = new QgsVectorLayer(connInfo + " table=" + *it, QString::null, "postgres");
+			QObject::connect(lyr,SIGNAL(repaintRequested()),mapCanvas,SLOT(refresh()));
 			// give it a random color
-        QgsSingleSymRenderer* renderer=new QgsSingleSymRenderer();//add single symbol renderer as default
-		    lyr->setRenderer(renderer);
-		    renderer->initializeSymbology(lyr);
+			QgsSingleSymRenderer* renderer=new QgsSingleSymRenderer();//add single symbol renderer as default
+			lyr->setRenderer(renderer);
+			renderer->initializeSymbology(lyr);
 			// add it to the mapcanvas collection
 			mapCanvas->addLayer(lyr);
 			//qWarning("incrementing iterator");

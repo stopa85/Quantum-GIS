@@ -31,7 +31,7 @@ class QgsVectorLayerProperties;
 #include "qgsmaplayer.h"
 #include "qvaluevector.h"
 #include "qgsattributetabledisplay.h"
-//#include "qgsdataprovider.h"
+#include <map>
 
 /*! \class QgsVectorLayer
  * \brief Vector layer backed by a data source provider
@@ -86,7 +86,7 @@ class QgsVectorLayer:public QgsMapLayer
 	/**Pointer to the table display object if there is one, else a pointer to 0*/
 	QgsAttributeTableDisplay* tabledisplay;
 	/**Vector holding the information which features are activated*/
-	QValueVector<bool>* selected;
+	std::map<int,bool> selected;
 	/**Color to draw and fill the selected features*/
 	QColor selectionColor;
 	/**Renderer object which holds the information about how to display the features*/

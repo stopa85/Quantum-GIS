@@ -35,7 +35,7 @@ class QgsAttributeTable:public QTable
       ~QgsAttributeTable();
 
       /**Inserts the feature with the specified id into rowIdMap. This function has to be called (e.g. from QgsShapeFileLayer) when a row is inserted into the table*/
-      void insertFeatureId(int id);
+      void insertFeatureId(int id, int row);
       /**Selects the row which belongs to the feature with the specified id*/
       void selectRowWithId(int id);
       /**Sorts a column. This method replaces the one from QTable to allow numeric sorting*/

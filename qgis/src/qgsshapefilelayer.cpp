@@ -458,7 +458,7 @@ void QgsShapeFileLayer::table()
 
 			//id-field
 			tabledisplay->table()->setText(row, 0, QString::number(fet->GetFID()));
-			tabledisplay->table()->insertFeatureId(fet->GetFID());	//insert the id into the search tree of qgsattributetable
+			tabledisplay->table()->insertFeatureId(fet->GetFID(),fet->GetFID());	//insert the id into the search tree of qgsattributetable
 			for (int i = 1; i < numFields + 1; i++) {
 				// get the field values
 				QString val;
