@@ -96,7 +96,7 @@ QgsFeature *QgsShapeFileProvider::getFirstFeature(bool fetchAttributes)
 		}else{
 			std::cout << "First feature is null\n";
 		}
-		f = new QgsFeature();
+		f = new QgsFeature(feat->GetFID());
 		f->setGeometry(getGeometryPointer(feat));
      if(fetchAttributes){
        getFeatureAttributes(feat, f);
@@ -123,7 +123,7 @@ QgsFeature *QgsShapeFileProvider::getNextFeature(bool fetchAttributes)
 			// get the wkb representation
 			unsigned char *feature = new unsigned char[geom->WkbSize()];
 			geom->exportToWkb((OGRwkbByteOrder) endian(), feature);
-            f = new QgsFeature();
+            f = new QgsFeature(fet->GetFID());
             f->setGeometry(feature);
             if(fetchAttributes){
               getFeatureAttributes(fet, f);
