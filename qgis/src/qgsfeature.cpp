@@ -40,8 +40,14 @@ QString QgsFeature::featureId(){
 * Get the attributes for this feature.
 * @return A std::map containing the field name/value mapping
 */
-std::map<QString, QgsFeatureAttribute> QgsFeature::attributeMap(){
+std::vector<QgsFeatureAttribute> QgsFeature::attributeMap(){
 	return attributes;
+}
+/**
+* Add an attribute to the map
+*/
+void QgsFeature::addAttribute(QString field, QString value){
+  attributes.push_back(QgsFeatureAttribute(field, value));
 }
 /**
 * Get the fields for this feature
