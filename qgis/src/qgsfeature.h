@@ -45,7 +45,7 @@ public:
 	* Get the attributes for this feature.
 	* @return A std::map containing the field name/value mapping
 	*/
-	std::vector<QgsFeatureAttribute> attributeMap();
+	const std::vector<QgsFeatureAttribute>& attributeMap();
   /** 
   * Add an attribute to the map
   */
@@ -54,7 +54,7 @@ public:
 	* Get the fields for this feature
 	* @return A std::map containing field position (index) and field name
 	*/
-	std::map<int, QString> fields();
+	const std::map<int, QString>& fields();
 	
 	unsigned char * getGeometry();
 	char * wellKnownText(); 

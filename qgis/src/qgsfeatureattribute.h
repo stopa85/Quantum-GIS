@@ -35,12 +35,12 @@ public:
 	* Get the field name for this feature attribute
 	* @return Field name
 	*/
-	QString fieldName();
+	QString fieldName() const;
 	/**
 	* Get the field value for this feature attribute
 	* @return Field value
 	*/
-	QString fieldValue();
+	QString fieldValue() const;
 private:
 	//! attribute field name
 	QString field;

@@ -23,9 +23,9 @@ QgsFeatureAttribute::QgsFeatureAttribute(QString fld, QString val)
   : field(fld), value(val){
   }
 QgsFeatureAttribute::~QgsFeatureAttribute(){}
-QString QgsFeatureAttribute::fieldName(){
+QString QgsFeatureAttribute::fieldName() const{
 	return field;
 }
-QString QgsFeatureAttribute::fieldValue(){
+QString QgsFeatureAttribute::fieldValue() const{
 	return value;
 }
