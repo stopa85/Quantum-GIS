@@ -215,27 +215,48 @@ void QgsMapLayer::setVisible(bool vis)
   }
 }  /** Read property of int featureType. */
 
-void QgsMapLayer::toggleShowInOverview()
+
+
+void QgsMapLayer::inOverview( bool b )
 {
-  if (mShowInOverview==false)
-  {
-#ifdef QGISDEBUG
-    std::cout << "Map layer " << ID << " requested to be added to the overview " << std::endl;
-#endif
-    mShowInOverview=true;
-  }
-  else
-  {
-#ifdef QGISDEBUG
-    std::cout << "Map layer " << ID << " requested to be removed from the overview " << std::endl;
-#endif
-    mShowInOverview=false;
-  }
-  //update the show in overview popup menu item
-  updateOverviewPopupItem();
-  updateItemPixmap();
-  emit showInOverview(ID,mShowInOverview);
-}
+    // will we have to propogate changes?
+    bool updateNecessary = mShowInOverview != b;
+
+    mShowInOverview = b;
+
+    if ( updateNecessary ) // update the show in overview popup menu item
+    {
+        updateOverviewPopupItem();
+        updateItemPixmap();
+
+        emit showInOverview(this,mShowInOverview);
+    }
+} // QgsMapLayer::inOverview
+
+
+
+// void QgsMapLayer::toggleShowInOverview()
+// {
+//   if (mShowInOverview==false)
+//   {
+// #ifdef QGISDEBUG
+//     std::cout << "Map layer " << ID << " requested to be added to the overview " << std::endl;
+// #endif
+//     mShowInOverview=true;
+//   }
+//   else
+//   {
+// #ifdef QGISDEBUG
+//     std::cout << "Map layer " << ID << " requested to be removed from the overview " << std::endl;
+// #endif
+//     mShowInOverview=false;
+//   }
+//   //update the show in overview popup menu item
+//   updateOverviewPopupItem();
+//   updateItemPixmap();
+//   emit showInOverview(ID,mShowInOverview);
+// }
+
 
 void QgsMapLayer::updateItemPixmap()
 {

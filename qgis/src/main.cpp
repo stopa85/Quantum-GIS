@@ -226,7 +226,9 @@ int main(int argc, char *argv[])
   /* uncomment the following line, if you want a Windows 95 look */
   //a.setStyle("Windows");
 
-  QgisApp *qgis = new QgisApp();
+  QgisApp *qgis = new QgisApp; // "QgisApp" used to find canonical instance
+  qgis->setName( "QgisApp" );
+
   a.setMainWidget(qgis);
 
 

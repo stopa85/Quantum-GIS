@@ -57,7 +57,7 @@ public:
 
  /** Remove all registered layers 
 
-    @note raises clear()
+    @note raises removedAll()
 
  */
  void removeAllMapLayers();
