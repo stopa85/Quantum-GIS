@@ -40,6 +40,7 @@
 #include "qgsfield.h"
 #include <qlistview.h>
 #include <qlibrary.h>
+#include "qgsrenderer.h"
 #ifdef TESTPROVIDERLIB
 #include <dlfcn.h>
 #endif
@@ -48,7 +49,7 @@
 typedef QgsDataProvider *create_it(const char *uri);
 
 QgsVectorLayer::QgsVectorLayer(QString vectorLayerPath, QString baseName)
-    :QgsMapLayer(VECTOR, baseName, vectorLayerPath), tabledisplay(0)
+    :QgsMapLayer(VECTOR, baseName, vectorLayerPath), tabledisplay(0), selected(0), m_renderer(0), m_propertiesDialog(0), m_rendererDialog(0), m_legendItem(0) 
 {
 // load the plugin
 //TODO figure out how to register and identify data source plugin for a specific
@@ -105,11 +106,10 @@ QgsVectorLayer::QgsVectorLayer(QString vectorLayerPath, QString baseName)
 	//TODO - fix selection code that formerly used
   //       a boolean vector and set every entry to false
 
-	if (valid) {
-		selected = new QValueVector<bool>(dataProvider->featureCount(), false);
-	} else { 
-		selected = 0;
-	}
+	if(valid) 
+	{
+	    selected = new QValueVector<bool>(dataProvider->featureCount(), false);
+	} 
 	//draw the selected features in yellow
 	selectionColor.setRgb(255, 255, 0);
 }
@@ -122,6 +122,22 @@ QgsVectorLayer::~QgsVectorLayer()
 	if (tabledisplay) {
 		tabledisplay->close();
 		delete tabledisplay;
+	}
+	if(m_renderer)
+	{
+	    delete m_renderer;
+	}
+	if(m_propertiesDialog)
+	{
+	    delete m_propertiesDialog;
+	}
+	if(m_rendererDialog)
+	{
+	    delete m_rendererDialog;
+	}
+	if(m_legendItem)
+	{
+	    delete m_legendItem;
 	}
 }
 
@@ -212,7 +228,7 @@ void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsCoordinateTrans
 		qWarning("Starting draw of features");
 		QgsFeature *fet;
 		unsigned char *feature;
-		while ((fet = dataProvider->getNextFeature())) {
+		while ((fet = dataProvider->getNextFeature(false))) {
 
 			if (fet == 0) {
 			//	std::cout << "get next feature returned null\n";

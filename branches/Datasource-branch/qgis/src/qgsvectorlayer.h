@@ -24,6 +24,8 @@ class QgsCoordinateTransform;
 class OGRLayer;
 class OGRDataSource;
 class QgsDataProvider;
+class QgsRenderer;
+class QgsLegendItem;
 
 #include "qgsmaplayer.h"
 #include "qvaluevector.h"
@@ -67,11 +69,21 @@ class QgsVectorLayer:public QgsMapLayer
 
   protected:
 	/**Pointer to the table display object if there is one, else a pointer to 0*/
-	  QgsAttributeTableDisplay* tabledisplay;
+	QgsAttributeTableDisplay* tabledisplay;
 	/**Vector holding the information which features are activated*/
-	  QValueVector<bool>* selected;
+	QValueVector<bool>* selected;
 	/**Color to draw and fill the selected features*/
 	QColor selectionColor;
+	/**Renderer object which holds the information about how to display the features*/
+	QgsRenderer* m_renderer;
+	/**Dialog to set the properties*/
+	QDialog* m_propertiesDialog;
+	/**Widget to set the symbology properties*/
+	QDialog* m_rendererDialog;
+	/**Pointer to the legend item for this layer*/
+	QgsLegendItem* m_legendItem;
+	/**Pixmap used in the legend item*/
+	QPixmap m_legendPixmap;
 
   private:						// Private attributes
 //! Draws the layer using coordinate transformation

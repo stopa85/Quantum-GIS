@@ -42,7 +42,6 @@ qgis_SOURCES =  qgisapp.cpp \
 				qgsprojectio.cpp \
 				qgsrasterlayer.cpp \
 				qgsrect.cpp \
-				qgsrenderer.cpp \
 				qgsrenderitem.cpp \
 				qgsshapefilelayer.cpp \
 				qgssymbol.cpp\
