@@ -20,10 +20,14 @@
 * \brief Encapsulates a spatial feature with attributes
 */
 //! Constructor
-QgsFeature::QgsFeature(){}
+QgsFeature::QgsFeature(){
+  geometry = 0;
+  wkt = 0;
+}
 //! Destructor
 QgsFeature::~QgsFeature(){
 	delete[] geometry;
+  delete[] wkt;
 }
 /**
 * Get the feature id for this feature
@@ -54,9 +58,15 @@ unsigned char *QgsFeature::getGeometry(){
 	return geometry;
 }
 
+char *QgsFeature::wellKnownText(){
+    return wkt;
+}
 /** Set the pointer to the feature geometry
 */
 void QgsFeature::setGeometry(unsigned char *geom){
 	geometry = geom;
 	
+}
+void QgsFeature::setWellKnownText(char *wkText){
+    wkt = wkText;
 }
