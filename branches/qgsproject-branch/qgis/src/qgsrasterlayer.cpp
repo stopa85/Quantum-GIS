@@ -381,7 +381,8 @@ QgsRasterLayer::QgsRasterLayer(QString path, QString baseName)
       invertHistogramFlag(false),
       stdDevsToPlotDouble(0),
       transparencyLevelInt(255), // 0 is completely transparent
-      showDebugOverlayFlag(false)
+      showDebugOverlayFlag(false),
+      mLayerProperties(0x0) 
 {
   // we need to do the tr() stuff outside of the loop becauses tr() is a time
   // consuming operation nd we dont want to do it in the loop!
@@ -562,9 +563,18 @@ QgsRasterLayer::readFile( QString const & fileName )
 
 void QgsRasterLayer::showLayerProperties()
 {
-  QgsRasterLayerProperties *myRasterLayerProperties = new QgsRasterLayerProperties(this);
+    if ( ! mLayerProperties )
+    {
+        mLayerProperties = new QgsRasterLayerProperties(this);
+    }
 
-}
+    mLayerProperties->sync();
+    mLayerProperties->raise();
+    mLayerProperties->show();
+
+} // QgsRasterLayer::showLayerProperties()
+
+
 
 // emit a signal asking for a repaint
 void QgsRasterLayer::triggerRepaint()

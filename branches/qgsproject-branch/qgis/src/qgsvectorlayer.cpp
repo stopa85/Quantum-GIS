@@ -770,20 +770,19 @@ QObject:connect(tabledisplay, SIGNAL(deleted()), this, SLOT(invalidateTableDispl
       return dataProvider;
     }
 
+
     void QgsVectorLayer::showLayerProperties()
     {
-      if (m_propertiesDialog)
-      {
-	m_propertiesDialog->reset();
-        m_propertiesDialog->raise();
-        m_propertiesDialog->show();
-      } else
+      if (! m_propertiesDialog)
       {
         m_propertiesDialog = new QgsDlgVectorLayerProperties(this);
-	m_propertiesDialog->reset();
-        m_propertiesDialog->show();
       }
-    }
+
+      m_propertiesDialog->reset();
+      m_propertiesDialog->raise();
+      m_propertiesDialog->show();
+    } // QgsVectorLayer::showLayerProperties()
+
 
     QgsRenderer *QgsVectorLayer::renderer()
     {
