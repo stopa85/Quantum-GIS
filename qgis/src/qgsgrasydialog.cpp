@@ -52,7 +52,7 @@ QgsGraSyDialog::QgsGraSyDialog(QgsVectorLayer* layer): QgsGraSyDialogBase(), ext
 
 	for(std::vector<QgsField>::iterator it=fields.begin();it!=fields.end();++it)
 	{
-	    if((*it).getType()=="Real"||(*it).getType()=="Integer")
+	    if((*it).getType()!="String"&&(*it).getType()!="varchar")
 	    {
 		str=(*it).getName();
 		classificationComboBox->insertItem(str);
