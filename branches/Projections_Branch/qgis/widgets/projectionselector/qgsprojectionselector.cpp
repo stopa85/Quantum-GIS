@@ -17,8 +17,9 @@
 #include <iostream>
 
 
-QgsProjectionSelector::QgsProjectionSelector( QWidget* parent , const char* name , WFlags fl  )
-  : QgsProjectionSelectorBase( parent, name, fl )
+//QgsProjectionSelector::QgsProjectionSelector( QWidget* parent , const char* name , WFlags fl  )
+QgsProjectionSelector::QgsProjectionSelector( QWidget* parent  )
+  : QgsProjectionSelectorBase( parent, "Projection Selector" )
 {
 }
 
