@@ -25,8 +25,16 @@
 #endif
 
 #include <qgsscalecalculator.h>
-
-/**  Dialog to set project level properties
+//! Structure for storing a spatial_ref_sys item
+typedef struct{
+  QString srid; // spatial reference id (ala PostGIS)
+  QString auth_name; // name of the author for this SRS
+  QString auth_srid; // srid used by the author
+  QString srtext; // WKT of the coordinate system
+  QString proj4text; // Proj4 parameter string 
+} SPATIAL_REF_SYS; 
+  
+/*!  Dialog to set project level properties
 
   @note actual state is stored in QgsProject singleton instance
 
@@ -41,37 +49,37 @@ public:
   //! Destructor
   ~QgsProjectProperties();
 
-  /** Gets the currently select map units
+  /*! Gets the currently select map units
    */
   QgsScaleCalculator::units mapUnits() const;
 
-  /**
+  /*!
    * Set the map units
    */
   void setMapUnits(QgsScaleCalculator::units);
 
-  /**
+  /*!
      Every project has a title
   */
   QString title() const;
   void title( QString const & title );
   
-  /** Accessor for projection */
+  /*! Accessor for projection */
   QString projectionWKT();
-  /** Get a short human readable name from a WKT */
+  /*! Get a short human readable name from a WKT */
   QString getWKTShortName(QString theWKT);
 public slots:
-  /** 
+  /*! 
    * Slot called when a new button (unit) is selected
    * @param int specifying which button was selected. The button ids match the enum
    * values in QgsScaleCalculator::units
    */
   void mapUnitChange(int);
-  /**
+  /*!
    * Slot called when apply button is pressed 
    */
   void apply();
-  /**
+  /*!
    * Slot called when ok button pressed (inherits from gui base)
    */
   void accept();
@@ -83,17 +91,23 @@ public slots:
 
   
 signals:
-  /** Used to notify all coordinateTransform objects to update their dest wkt because the project
-      output projection system is changed */
-  void setDestWKT(QString);   
-  // Used to tell others that the mouse display precision may have changed
+  /*! This signal is used to notify all coordinateTransform objects to update
+   * their dest wkt because the project output projection system is changed 
+   * @param SPATIAL_REF_SYS structure containing the parameters for the destination CS
+   */
+  void setDestWKT(SPATIAL_REF_SYS);   
+  //! Signal used to inform listeners that the mouse display precision may have changed
   void displayPrecisionChanged();
 private:
-  typedef QMap<QString,QString> ProjectionWKTMap; //wkt = well known text (see gdal/ogr)
+  //! map containing SPATIAL_REF_SYS items keyed by the WKT name
+  // XXX why are we using QMap instead of std::map ?
+  typedef QMap<QString,SPATIAL_REF_SYS> ProjectionWKTMap; //wkt = well known text (see gdal/ogr)
   //stores a list of available projection definitions 
   ProjectionWKTMap mProjectionsMap;
   //XXX List view items for the tree view of projections
+  //! GEOGCS node
   QListViewItem *geoList;
+  //! PROJCS node
   QListViewItem *projList;
   //! Users custom coordinate system file
   QString customCsFile;
