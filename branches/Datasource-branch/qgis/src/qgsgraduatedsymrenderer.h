@@ -50,8 +50,8 @@ class QgsGraduatedSymRenderer: public QgsRenderer
     \param field the number of the field to classify*/
     void setClassificationField(int field);
     void initializeSymbology(QgsVectorLayer* layer);
-    /** Return the renderer type. In this case, QgsRenderer::Graduated. */
-    int rendererType();
+    /** Returns true*/
+    bool needsAttributes();
  protected:
     /**Name of the classification field (it must be a numerical field)*/
     int m_classificationField;
@@ -80,9 +80,9 @@ inline void QgsGraduatedSymRenderer::setClassificationField(int field)
     m_classificationField=field;
 }
 
-inline int QgsGraduatedSymRenderer::rendererType()
+inline bool QgsGraduatedSymRenderer::needsAttributes()
 {
-    return QgsRenderer::Graduated;
+    return true;
 }
 /*inline void QgsGraduatedSymRenderer::renderFeature(QPainter* p, OGRFeature* f, QgsCoordinateTransform* t, int endian)
 {

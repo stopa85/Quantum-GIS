@@ -33,14 +33,8 @@ class QgsRenderer
     virtual void initializeSymbology(QgsVectorLayer* layer)=0;
     /**Renders a feature. A vector layer passes features to a renderer object for display*/
     virtual void renderFeature(QPainter* p, QgsFeature* f, QgsCoordinateTransform* t)=0;
-    /** Returns the type of the renderer */
-    virtual int rendererType()=0;
-    /** Types of renderers */
-    enum RendererType{
-      Simple,
-      Continuous,
-      Graduated
-    };
+    /** Returns true, if attribute values are used by the renderer and false otherwise*/
+    virtual bool needsAttributes()=0;
 };
 
 #endif // QGSRENDERER_H
