@@ -83,7 +83,7 @@ public:
 	* @param rect Bounding rectangle of search radius
 	* @return std::vector containing QgsFeature objects that intersect rect
 	*/
-	virtual std::vector<QgsFeature> identify(QgsRect *rect);
+	virtual std::vector<QgsFeature>& identify(QgsRect *rect);
 
   /** Return endian-ness for this layer
   */	
@@ -99,7 +99,7 @@ public:
  /**
  * Get the field information for the layer
  */
- std::vector<QgsField> fields();
+ std::vector<QgsField>& fields();
  
  /* Reset the layer - for an OGRLayer, this means clearing the
  * spatial filter and calling ResetReading

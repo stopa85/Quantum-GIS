@@ -208,7 +208,7 @@ QString QgsShapeFileProvider::getDataSourceUri()
 	* @param rect Bounding rectangle of search radius
 	* @return std::vector containing QgsFeature objects that intersect rect
 	*/
-std::vector < QgsFeature > QgsShapeFileProvider::identify(QgsRect * rect)
+std::vector<QgsFeature>& QgsShapeFileProvider::identify(QgsRect * rect)
 {
   features.clear();
   // select the features
@@ -286,7 +286,7 @@ void QgsShapeFileProvider::getFeatureAttributes(OGRFeature *ogrFet, QgsFeature *
 }
 }
 
-std::vector<QgsField> QgsShapeFileProvider::fields(){
+std::vector<QgsField>& QgsShapeFileProvider::fields(){
   return attributeFields;
 }
 
