@@ -15,19 +15,32 @@
  *                                                                         *
  ***************************************************************************/
  /* $Id$ */
+
 #include <cfloat>
 #include <iostream>
+
 #include <qapplication.h>
 #include <qdatetime.h>
 #include <qpopupmenu.h>
 #include <qlistview.h>
+#include <qpainter.h>
+#include <qdom.h> 
+
+
 #include "qgsrect.h"
 #include "qgssymbol.h"
 #include "qgsmaplayer.h"
-#include <qpainter.h>
 
-QgsMapLayer::QgsMapLayer(int type, QString lyrname, QString source):internalName(lyrname), layerType(type), dataSource(source),
-m_legendItem(0)
+
+
+
+QgsMapLayer::QgsMapLayer(int type, 
+                         QString lyrname, 
+                         QString source)
+    : internalName(lyrname), 
+      layerType(type), 
+      dataSource(source),
+      m_legendItem(0)
 {
   // assume the layer is valid (data source exists and can be used)
   // until we learn otherwise
@@ -111,6 +124,64 @@ const QString & QgsMapLayer::labelField()
 {
   return m_labelField;
 }
+
+
+void QgsMapLayer::readXML( QDomNode & layer_node )
+{
+    QDomElement element = layer_node.toElement();
+
+    // XXX not needed? QString type = element.attribute("type");
+
+    QString visible = element.attribute("visible");
+
+    if ( "1" == visible )
+    {
+        setVisible( true );
+    }
+    else
+    {
+        setVisible( false );
+    }
+
+    QString showInOverview = element.attribute("showInOverviewFlag");
+
+    if ( "1" == showInOverview )
+    {
+        mShowInOverview = true;
+    }
+    else
+    {
+        mShowInOverview = false;
+    }
+
+    // set data source
+    QDomNode mnl = layer_node.namedItem("datasource");
+    QDomElement mne = mnl.toElement();
+    dataSource = mne.text();
+
+    // set name
+    mnl = layer_node.namedItem("layername");
+    mne = mnl.toElement();
+    setLayerName( mne.text() );
+
+    // process zorder
+    mnl = layer_node.namedItem("zorder");
+    mne = mnl.toElement();
+    // XXX and do what with it?
+
+    // now let the children grab what they need from the DOM node.
+    readXML_( layer_node );
+
+} // void QgsMapLayer::readXML
+
+
+
+void QgsMapLayer::readXML_( QDomNode & layer_node )
+{
+    // NOP by default; children will over-ride with behavior specific to them
+} // void QgsMapLayer::readXML_
+
+
 
 /** Write property of QString labelField. */
 void QgsMapLayer::setLabelField(const QString & _newVal)

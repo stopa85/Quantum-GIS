@@ -26,6 +26,7 @@ email                : sherman at mrcc.com
 #include <cstring>
 #include <sstream>
 #include <memory>
+
 #include <qapplication.h>
 #include <qcursor.h>
 #include <qpainter.h>
@@ -34,6 +35,10 @@ email                : sherman at mrcc.com
 #include <qmessagebox.h>
 #include <qpopupmenu.h>
 #include <qlabel.h>
+#include <qlistview.h>
+#include <qlibrary.h>
+#include <qpicture.h>
+#include <qsettings.h>
 
 #include "qgisapp.h"
 #include "qgsrect.h"
@@ -45,14 +50,14 @@ email                : sherman at mrcc.com
 #include "qgsdataprovider.h"
 #include "qgsfeature.h"
 #include "qgsfield.h"
-#include <qlistview.h>
-#include <qlibrary.h>
-#include <qpicture.h>
-#include <qsettings.h>
-#include "qgsrenderer.h"
 #include "qgslegenditem.h"
 #include "qgsdlgvectorlayerproperties.h"
+#include "qgsrenderer.h"
 #include "qgssinglesymrenderer.h"
+#include "qgsgraduatedsymrenderer.h"
+#include "qgscontinuouscolrenderer.h"
+#include "qgsgraduatedmarenderer.h"
+#include "qgssimarenderer.h"
 #include "qgsrenderitem.h"
 #include "qgssisydialog.h"
 #include "qgsproviderregistry.h"
@@ -66,10 +71,24 @@ email                : sherman at mrcc.com
 #include <dlfcn.h>
 #endif
 
-// typedef for the QgsDataProvider class factory
-typedef QgsDataProvider *create_it(const char *uri);
 
-QgsVectorLayer::QgsVectorLayer(QString vectorLayerPath, QString baseName, QString providerKey):QgsMapLayer(VECTOR, baseName, vectorLayerPath), providerKey(providerKey), tabledisplay(0), m_renderer(0), m_propertiesDialog(0), m_rendererDialog(0)
+static const char * const ident_ = "$Id$";
+
+
+// typedef for the QgsDataProvider class factory
+typedef QgsDataProvider * create_it(const char * uri);
+
+
+
+QgsVectorLayer::QgsVectorLayer(QString vectorLayerPath, 
+                               QString baseName, 
+                               QString providerKey)
+    : QgsMapLayer(VECTOR, baseName, vectorLayerPath), 
+      providerKey(providerKey), 
+      tabledisplay(0), 
+      m_renderer(0), 
+      m_propertiesDialog(0), 
+      m_rendererDialog(0)
 {
   // initialize the identify results pointer
   ir = 0;
@@ -78,108 +97,11 @@ QgsVectorLayer::QgsVectorLayer(QString vectorLayerPath, QString baseName, QStrin
   std::cerr << "VECTORLAYERPATH: " << vectorLayerPath.ascii() << std::endl;
   std::cerr << "BASENAME: " << baseName.ascii() << std::endl;
 #endif
-  // load the plugin
-  QgsProviderRegistry *pReg = QgsProviderRegistry::instance();
-  QString ogrlib = pReg->library(providerKey);
-  //QString ogrlib = libDir + "/libpostgresprovider.so";
-  const char *cOgrLib = (const char *) ogrlib;
-#ifdef TESTPROVIDERLIB
-  // test code to help debug provider loading problems
-//  void *handle = dlopen(cOgrLib, RTLD_LAZY);
-  void *handle = dlopen(cOgrLib, RTLD_LAZY | RTLD_GLOBAL);
-  if (!handle)
-  {
-    std::cout << "Error in dlopen: " << dlerror() << std::endl;
 
-  } else
+  // if we're given a provider type, try to create and bind one to this layer
+  if ( ! providerKey.isEmpty() )
   {
-    std::cout << "dlopen suceeded" << std::endl;
-    dlclose(handle);
-  }
-
-#endif
-  // load the data provider
-  myLib = new QLibrary((const char *) ogrlib);
-#ifdef QGISDEBUG
-  std::cout << "Library name is " << myLib->library() << std::endl;
-#endif
-  bool loaded = myLib->load();
-  if (loaded)
-  {
-#ifdef QGISDEBUG
-    std::cout << "Loaded data provider library" << std::endl;
-    std::cout << "Attempting to resolve the classFactory function" << std::endl;
-#endif
-    create_it *cf = (create_it *) myLib->resolve("classFactory");
-    valid = false;            // assume the layer is invalid until we determine otherwise
-    if (cf)
-    {
-#ifdef QGISDEBUG
-      std::cout << "Getting pointer to a dataProvider object from the library\n";
-#endif
-      dataProvider = cf(vectorLayerPath);
-      if (dataProvider)
-      {
-#ifdef QGISDEBUG
-        std::cout << "Instantiated the data provider plugin\n";
-#endif
-
-        if (dataProvider->isValid())
-        {
-          valid = true;
-          // get the extent
-          QgsRect *mbr = dataProvider->extent();
-          // show the extent
-          QString s = mbr->stringRep();
-#ifdef QGISDEBUG
-          std::cout << "Extent of layer: " << s << std::endl;
-#endif
-          // store the extent
-          layerExtent.setXmax(mbr->xMax());
-          layerExtent.setXmin(mbr->xMin());
-          layerExtent.setYmax(mbr->yMax());
-          layerExtent.setYmin(mbr->yMin());
-          // get and store the feature type
-          geometryType = dataProvider->geometryType();
-          // look at the fields in the layer and set the primary
-          // display field using some real fuzzy logic
-          setDisplayField();
-          QString layerTitle = baseName;
-
-          if (providerKey == "postgres")
-          {
-#ifdef QGISDEBUG
-            std::cout << "Beautifying layer name " << layerTitle << std::endl;
-#endif
-            // adjust the display name for postgres layers
-            layerTitle = layerTitle.mid(layerTitle.find(".") + 1);
-            layerTitle = layerTitle.left(layerTitle.find("("));
-#ifdef QGISDEBUG
-            std::cout << "Beautified name is " << layerTitle << std::endl;
-#endif
-          }
-          // upper case the first letter of the layer name
-          layerTitle = layerTitle.left(1).upper() + layerTitle.mid(1);
-          setLayerName(layerTitle);
-  
-	  // label
-          mLabel = new QgsLabel ( dataProvider->fields() ); 
-	  mLabelOn = false;
-        }
-      } else
-      {
-#ifdef QGISDEBUG
-        std::cout << "Unable to instantiate the data provider plugin\n";
-#endif
-        valid = false;
-      }
-    }
-  } else
-  {
-    valid = false;
-#ifdef QGISDEBUG
-    std::cout << "Failed to load " << "../providers/libproviders.so" << "\n";
-#endif
+      setDataProvider( providerKey );
   }
   
   //TODO - fix selection code that formerly used
@@ -198,7 +120,9 @@ QgsVectorLayer::QgsVectorLayer(QString vectorLayerPath, QString baseName, QStrin
   // have no effect on existing layers
   QSettings settings;
   updateThreshold = settings.readNumEntry("qgis/map/updateThreshold", 1000);
-}
+} // QgsVectorLayer ctor
+
+
 
 QgsVectorLayer::~QgsVectorLayer()
 {
@@ -431,9 +355,11 @@ void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsCoordinateTrans
             pt.setY(*y);
             cXf->transform(&pt);
             //std::cout << "drawing marker for feature " << featureCount << "\n";
-            p->drawRect(pt.xToInt(), pt.yToInt(), 5, 5);
+            p->drawRect(static_cast<int>(pt.x()), static_cast<int>(pt.y()), 5, 5);
             p->scale(markerScaleFactor,markerScaleFactor);
-            p->drawPicture((int)(pt.xToInt()/markerScaleFactor-marker.boundingRect().width()/2), (int)(pt.yToInt()/markerScaleFactor-marker.boundingRect().height()/2), marker);
+            p->drawPicture((int)(static_cast<int>(pt.x()) / markerScaleFactor - marker.boundingRect().width() / 2), 
+                           (int)(static_cast<int>(pt.y()) / markerScaleFactor - marker.boundingRect().height() / 2),
+                           marker);
             p->resetXForm(); 
 
             break;
@@ -455,9 +381,9 @@ void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsCoordinateTrans
               pt.setY(*y);
               cXf->transform(&pt);
               if (idx == 0)
-                p->moveTo(pt.xToInt(), pt.yToInt());
+                p->moveTo(static_cast<int>(pt.x()), static_cast<int>(pt.y()));
               else
-                p->lineTo(pt.xToInt(), pt.yToInt());
+                p->lineTo(static_cast<int>(pt.x()), static_cast<int>(pt.y()));
             }
             break;
 
@@ -483,9 +409,9 @@ void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsCoordinateTrans
                 pt.setY(*y);
                 cXf->transform(&pt);
                 if (idx == 0)
-                  p->moveTo(pt.xToInt(), pt.yToInt());
+                  p->moveTo(static_cast<int>(pt.x()), static_cast<int>(pt.y()));
                 else
-                  p->lineTo(pt.xToInt(), pt.yToInt());
+                  p->lineTo(static_cast<int>(pt.x()), static_cast<int>(pt.y()));
               }
             }
             break;
@@ -523,11 +449,11 @@ void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsCoordinateTrans
                 pt.setX(*x);
                 pt.setY(*y);
                 cXf->transform(&pt);
-                pa->setPoint(pdx++, pt.xToInt(), pt.yToInt());
+                pa->setPoint(pdx++, static_cast<int>(pt.x()), static_cast<int>(pt.y()));
               }
               if ( idx == 0 ) { // remember last outer ring point
-                x0 = pt.xToInt();
-                y0 = pt.yToInt();
+                x0 = static_cast<int>(pt.x());
+                y0 = static_cast<int>(pt.y());
               } else { // return to x0,y0 (inner rings - islands)
                 pa->setPoint(pdx++, x0, y0);
               }
@@ -582,7 +508,7 @@ void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsCoordinateTrans
                   pt.setY(*y);
                   cXf->transform(&pt);
                   //std::cout << pt.xToInt() << "," << pt.yToInt() << std::endl;
-                  pa->setPoint(jdx, pt.xToInt(), pt.yToInt());
+                  pa->setPoint(jdx, static_cast<int>(pt.x()), static_cast<int>(pt.y()));
 
                 }
                 // draw the ring
@@ -1306,3 +1232,200 @@ bool QgsVectorLayer::labelOn ( void )
     return mLabelOn;
 }
 
+
+
+void QgsVectorLayer::readXML_( QDomNode & layer_node )
+{
+    //process provider key
+    QDomNode pkeyNode = layer_node.namedItem("provider");
+
+    if (pkeyNode.isNull())
+    {
+        providerKey = "";
+    }
+    else
+    {
+        QDomElement pkeyElt = pkeyNode.toElement();
+        providerKey = pkeyElt.text();
+    }
+	
+    // determine type of vector layer
+    if ( ! providerKey.isNull() )
+    {
+        // if the provider string isn't empty, then we successfully
+        // got the stored provider
+    } else if ((dataSource.find("host=") > -1) && 
+               (dataSource.find("dbname=") > -1))
+    {
+        providerKey = "postgres";
+    } else
+    {
+        providerKey = "ogr";
+    }
+
+    setDataProvider( providerKey );
+
+    // create and bind a renderer to this layer
+
+    QDomNode singlenode = layer_node.namedItem("singlesymbol");
+    QDomNode graduatednode = layer_node.namedItem("graduatedsymbol");
+    QDomNode continuousnode = layer_node.namedItem("continuoussymbol");
+    QDomNode singlemarkernode = layer_node.namedItem("singlemarker");
+    QDomNode graduatedmarkernode = layer_node.namedItem("graduatedmarker");
+
+    QgsRenderer * renderer;
+
+    if (!singlenode.isNull())
+    {
+        renderer = new QgsSingleSymRenderer;
+        renderer->readXML(singlenode, *this);
+    }
+    else if (!graduatednode.isNull())
+    {
+        renderer = new QgsGraduatedSymRenderer;
+        renderer->readXML(graduatednode, *this);
+    }
+    else if (!continuousnode.isNull())
+    {
+        renderer = new QgsContinuousColRenderer;
+        renderer->readXML(continuousnode, *this);
+    }
+    else if(!singlemarkernode.isNull())
+    {
+        renderer = new QgsSiMaRenderer;
+        renderer->readXML(singlemarkernode, *this);
+    }
+    else if(!graduatedmarkernode.isNull())
+    {
+        renderer = new QgsGraduatedMaRenderer;
+        renderer->readXML(graduatedmarkernode, *this);
+    }
+
+} // void QgsVectorLayer::readXML_
+
+
+
+void
+QgsVectorLayer:: setDataProvider( QString const & provider )
+{
+    // XXX should I check for and possibly delete any pre-existing providers?
+    // XXX How often will that scenario occur?
+
+    providerKey = provider;     // XXX is this necessary?  Usually already set
+                                // XXX when execution gets here.
+
+    // load the plugin
+    QgsProviderRegistry * pReg = QgsProviderRegistry::instance();
+    QString ogrlib = pReg->library(provider);
+
+    //QString ogrlib = libDir + "/libpostgresprovider.so";
+
+    const char *cOgrLib = (const char *) ogrlib;
+
+#ifdef TESTPROVIDERLIB
+    // test code to help debug provider loading problems
+//  void *handle = dlopen(cOgrLib, RTLD_LAZY);
+    void *handle = dlopen(cOgrLib, RTLD_LAZY | RTLD_GLOBAL);
+    if (!handle)
+    {
+        std::cout << "Error in dlopen: " << dlerror() << std::endl;
+
+    } else
+    {
+        std::cout << "dlopen suceeded" << std::endl;
+        dlclose(handle);
+    }
+
+#endif
+
+    // load the data provider
+    myLib = new QLibrary((const char *) ogrlib);
+#ifdef QGISDEBUG
+    std::cout << "Library name is " << myLib->library() << std::endl;
+#endif
+    bool loaded = myLib->load();
+
+    if (loaded)
+    {
+#ifdef QGISDEBUG
+        std::cout << "Loaded data provider library" << std::endl;
+        std::cout << "Attempting to resolve the classFactory function" << std::endl;
+#endif
+        create_it * classFactory = (create_it *) myLib->resolve("classFactory");
+
+        valid = false;            // assume the layer is invalid until we
+                                  // determine otherwise
+        if (classFactory)
+        {
+#ifdef QGISDEBUG
+            std::cout << "Getting pointer to a dataProvider object from the library\n";
+#endif
+            dataProvider = classFactory(dataSource);
+
+            if (dataProvider)
+            {
+#ifdef QGISDEBUG
+                std::cout << "Instantiated the data provider plugin\n";
+#endif
+                if (dataProvider->isValid())
+                {
+                    valid = true;
+
+                    // get the extent
+                    QgsRect *mbr = dataProvider->extent();
+
+                    // show the extent
+                    QString s = mbr->stringRep();
+#ifdef QGISDEBUG
+                    std::cout << "Extent of layer: " << s << std::endl;
+#endif
+                    // store the extent
+                    layerExtent.setXmax(mbr->xMax());
+                    layerExtent.setXmin(mbr->xMin());
+                    layerExtent.setYmax(mbr->yMax());
+                    layerExtent.setYmin(mbr->yMin());
+
+                    // get and store the feature type
+                    geometryType = dataProvider->geometryType();
+
+                    // look at the fields in the layer and set the primary
+                    // display field using some real fuzzy logic
+                    setDisplayField();
+
+                    if (providerKey == "postgres")
+                    {
+#ifdef QGISDEBUG
+                        std::cout << "Beautifying layer name " << layerName << std::endl;
+#endif
+                        // adjust the display name for postgres layers
+                        layerName = layerName.mid(layerName.find(".") + 1);
+                        layerName = layerName.left(layerName.find("("));
+#ifdef QGISDEBUG
+                        std::cout << "Beautified name is " << layerName << std::endl;
+#endif
+                    }
+
+                    // upper case the first letter of the layer name
+                    layerName = layerName.left(1).upper() + layerName.mid(1);
+  
+                    // label
+                    mLabel = new QgsLabel ( dataProvider->fields() ); 
+                    mLabelOn = false;
+                }
+            } else
+            {
+#ifdef QGISDEBUG
+                std::cout << "Unable to instantiate the data provider plugin\n";
+#endif
+                valid = false;
+            }
+        }
+    } else
+    {
+        valid = false;
+#ifdef QGISDEBUG
+        std::cout << "Failed to load " << "../providers/libproviders.so" << "\n";
+#endif
+    }
+
+} // QgsVectorLayer:: setDataProvider

@@ -36,7 +36,7 @@
 class QgsFeature;
 class QPopupMenu;
 class QgsLegendItem;
-
+class QDomNode;
 
 /** \class QgsMapLayer
  * \brief Base class for all map layer types.
@@ -206,6 +206,22 @@ public:
   /**Sets the pointer to the legend item*/
   void setLegendItem(QgsLegendItem * li);
 
+  /** sets state from DOM document
+
+     @param layer_node is DOM node corresponding to ``maplayer'' tag
+
+     @note
+
+     The DOM node corresponds to a DOM document project file XML element read
+     by QgsProject.
+
+     This, in turn, calls readXML_(), which is over-rideable by sub-classes so
+     that they can read their own specific state from the given DOM node.
+
+     Invoked by QgsProject::read().
+   */
+  void readXML( QDomNode & layer_node );
+
 public  slots:
 
   //! set visibility
@@ -235,6 +251,12 @@ signals:
   void showInOverview(QString theLayerId, bool);
 
 protected:
+
+  /** called by readXML(), used by children to read state specific to them from 
+      project files.
+  */
+  virtual void readXML_( QDomNode & layer_node );
+
 
   //! Extent of the layer
   QgsRect layerExtent;

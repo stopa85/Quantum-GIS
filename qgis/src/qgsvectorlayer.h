@@ -51,28 +51,46 @@ class QgsVectorLayer:public QgsMapLayer
 
   //! Constructor
     QgsVectorLayer(QString baseName = 0, QString path = 0, QString providerLib = 0);
+
   //! Destructor
    virtual ~QgsVectorLayer();
+
   //! Identify feature found within the search rectangle
   void identify(QgsRect *);
+
   //! Select features found within the search rectangle
   void select(QgsRect * rect, bool lock);
+
   //! Display the attribute table
   void table();
+
   //! Set the primary display field to be used in the identify results dialog 
   void setDisplayField(QString fldName=0);
+
   //! Initialize the context menu
   void initContextMenu(QgisApp * app);
+
   enum SHAPETYPE
   {
     Point,
     Line,
     Polygon
   };
-  void setDataProvider(QgsDataProvider * dp);
+
+  /** bind layer to a specific data provider
+
+     @param provider should be "postgres", "ogr", or ??
+
+     @todo XXX should this return bool?  Throw exceptions?
+  */
+  void setDataProvider( QString const & provider );
+
   QgsDataProvider *getDataProvider();
+
   QgsLabel *label();
+
   public slots:
+
    /**Sets the 'tabledisplay' to 0 again*/
   void invalidateTableDisplay();
   void select(int number);
@@ -106,6 +124,14 @@ class QgsVectorLayer:public QgsMapLayer
     return valid;
   }
 
+  /** reads vector layer specific state from project file DOM node.
+
+      @note
+
+      Called by QgsMapLayer::readXML().
+
+  */
+  virtual void readXML_( QDomNode & layer_node );
 
   /** 
   * Get the first feature resulting from a select operation
