@@ -48,6 +48,8 @@ class QgsVectorLayer:public QgsMapLayer
 	void select(QgsRect * rect, bool lock);
 	//! Display the attribute table
 	void table();
+  //! Set the primary display field to be used in the identify results dialog 
+  void setDisplayField();
 	enum SHAPETYPE
 	{
 		Point,
@@ -79,6 +81,8 @@ class QgsVectorLayer:public QgsMapLayer
     OGRDataSource *ogrDataSource;
     OGRLayer *ogrLayer;
   /**  */
+  // index of the primary label field
+  QString fieldIndex;
 	bool registered;
 	enum ENDIAN
 	{

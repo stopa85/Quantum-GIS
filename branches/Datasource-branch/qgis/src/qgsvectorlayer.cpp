@@ -1,5 +1,9 @@
 /***************************************************************************
-                          qgsvectorlayer.cpp  -  description
+                          qgsvectorlayer.cpp 
+ This class implements a generic means to display vector layers. The features
+ and attributes are read from the data store using a "data provider" plugin.
+ QgsVectorLayer can be used with any data store for which an appropriate 
+ plugin is available. 
                              -------------------
     begin                : Oct 29, 2003
     copyright            : (C) 2003 by Gary E.Sherman
@@ -33,20 +37,24 @@
 #include "qgsattributetable.h"
 #include "qgsdataprovider.h"
 #include "qgsfeature.h"
+#include "qgsfield.h"
 #include <qlistview.h>
 #include <qlibrary.h>
-#include <ogrsf_frmts.h>
-#include <ogr_geometry.h>
-
+#ifdef TESTPROVIDERLIB
 #include <dlfcn.h>
+#endif
 
+// typedef for the QgsDataProvider class factory
 typedef QgsDataProvider *create_it(const char *uri);
+
 QgsVectorLayer::QgsVectorLayer(QString vectorLayerPath, QString baseName)
 :QgsMapLayer(VECTOR, baseName, vectorLayerPath)
 {
 // load the plugin
 //TODO figure out how to register and identify data source plugin for a specific
 //TODO layer type
+#ifdef TESTPROVIDERLIB
+// test code to help debug provider loading problems
 	void *handle = dlopen("./providers/libproviders.so", RTLD_LAZY);
 	if (!handle) {
 		std::cout << "Error in dlopen: " << dlerror() << std::endl;
@@ -56,39 +64,25 @@ QgsVectorLayer::QgsVectorLayer(QString vectorLayerPath, QString baseName)
 		dlclose(handle);
 	}
 
-
+#endif
+// load the data provider
+//TODO remove hard coding for library name
 	QLibrary *myLib = new QLibrary("./providers/libproviders.so");
 	std::cout << "Library name is " << myLib->library() << std::endl;
 	bool loaded = myLib->load();
 	if (loaded) {
-		std::cout << "Loaded test shapefile provider library" << std::endl;
+		std::cout << "Loaded data provider library" << std::endl;
 		std::cout << "Attempting to resolve the classFactory function" << std::endl;
 		create_it *cf = (create_it *) myLib->resolve("classFactory");
-
+    
 		if (cf) {
-			std::cout << "Getting pointer to a QgsShapefileProvider object from the library\n";
+			std::cout << "Getting pointer to a dataProvider object from the library\n";
 			dataProvider = cf(vectorLayerPath);
 			if (dataProvider) {
-				std::cout << "Instantiated the shapefile provider plugin\n";
-				/*  QgsFeature *f = dataProvider->getFirstFeature();
-
-				   if(f){
-				   unsigned char *geometry = f->getGeometry();
-				   if(geometry){
-				   std::cout << "Geometry:" <<  *geometry << std::endl;
-				   }else{
-				   std::cout << "f->getGeometry() returned null\n";
-				   } 
-				   }else{
-				   std::cout << "QgsFeature f is null\n";
-				   } */
-				// iterate through the features
-				/*    while(f){
-				   delete f;
-				   f = dataProvider->getNextFeature();
-				   } */
-				// show the extent
+				std::cout << "Instantiated the data provider plugin\n";
+				// get the extent
 				QgsRect *mbr = dataProvider->extent();
+        // show the extent
 				QString s = mbr->stringRep();
 				std::cout << "Extent of layer: " << s << std::endl;
 				// store the extent
@@ -98,14 +92,18 @@ QgsVectorLayer::QgsVectorLayer(QString vectorLayerPath, QString baseName)
 				layerExtent.setYmin(mbr->yMin());
 				// get and store the feature type
 				geometryType = dataProvider->geometryType();
+        // look at the fields in the layer and set the primary
+        // display field using some real fuzzy logic
+        setDisplayField();
 			} else {
-				std::cout << "Unable to instantiate the shapefile test plugin\n";
+				std::cout << "Unable to instantiate the data provider plugin\n";
 			}
 		}
 	} else {
 		std::cout << "Failed to load " << "../providers/libproviders.so" << "\n";
 	}
-	//create a boolean vector and set every entry to false
+	//TODO - fix selection code that formerly used
+  //       a boolean vector and set every entry to false
 
 	/* if (valid) {
 		selected = new QValueVector < bool > (dataProvider->featureCount(), false);
@@ -119,7 +117,6 @@ QgsVectorLayer::QgsVectorLayer(QString vectorLayerPath, QString baseName)
 
 QgsVectorLayer::~QgsVectorLayer()
 {
-//delete ogrDataSource;
 	if (selected) {
 		delete selected;
 	}
@@ -132,7 +129,44 @@ QgsVectorLayer::~QgsVectorLayer()
 void QgsVectorLayer::registerFormats()
 {
 }
-
+/** 
+* sets the preferred display field based on some fuzzy logic
+*/
+void QgsVectorLayer::setDisplayField(){
+// Determine the field index for the feature column of the identify
+// dialog. We look for fields containing "name" first and second for
+// fields containing "id". If neither are found, the first field
+// is used as the node.
+	QString idxName;
+	QString idxId;
+			
+   std::vector<QgsField> fields = dataProvider->fields();
+   int j = 0;
+   for(int j=0; j< fields.size(); j++){
+     
+			QString fldName = fields[j].getName();
+					std::cout << "Checking field " << fldName << std::endl;
+					if (fldName.contains("name", false)) {
+						idxName = fldName;
+						break;
+					}
+					if (fldName.contains("id", false)) {
+						idxId = fldName;
+						break;
+					}
+				}
+        
+				
+				if (idxName.length() > 0) {
+					fieldIndex = idxName;
+				} else {
+					if (idxId.length() > 0) {
+						fieldIndex = idxId;
+					}else{
+            fieldIndex = fields[0].getName();
+          }
+				}
+}
 /*
 * Draw the layer
 */
@@ -223,7 +257,7 @@ void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsCoordinateTrans
 				char lsb;
 				QgsPoint pt;
 				QPointArray *pa;
-				OGRFieldDefn *fldDef;
+				//OGRFieldDefn *fldDef;
 				QString fld;
 				QString val;
 				switch (wkbType) {
@@ -360,21 +394,8 @@ void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsCoordinateTrans
 				featureCount++;
         //std::cout << "Feature count: " << featureCount << std::endl;
 				delete[]feature;
-				/* std::cout << "deleting fet\n";
-				if(fet) {
-           delete fet;
-        } */
-				//std::cout << "ready to fetch next feature\n";
-				// if fet not null }
-
-//      std::cout << featureCount << " features in ogr layer within the extent" << std::endl;
-				//  OGRGeometry *filt = ogrLayer->GetSpatialFilter();
-				//filt->dumpReadable(stdout);
-				//ogrLayer->ResetReading();
 			}
 		}
-		//std::cout << "finished reading features\n";
-		//std::cout << "Doing processEvents()\n";
 		qApp->processEvents();
 	}
 }
@@ -397,89 +418,41 @@ int QgsVectorLayer::endian()
 
 void QgsVectorLayer::identify(QgsRect * r)
 {
+  	QApplication::setOverrideCursor(Qt::waitCursor);
   dataProvider->select(r);
 		int featureCount = 0;
     QgsFeature *fet;
 		unsigned char *feature;
-		while ((fet = dataProvider->getNextFeature())) {
-    }
-		// display features falling within the search radius
+    // display features falling within the search radius
 		QgsIdentifyResults *ir = 0;
-		while (OGRFeature * fet = ogrLayer->GetNextFeature()) {
-			//}
-
-			if (fet) {
-				featureCount++;
-				// found at least one feature - show it in the identify box
-				if (ir == 0) {
-					// create the identify results dialog if it doesn't already
-					// exist
-					ir = new QgsIdentifyResults();
-				}
-
-				int numFields = fet->GetFieldCount();
-				// Determine the field index for the feature column of the identify
-				// dialog. We look for fields containing "name" first and second for
-				// fields containing "id". If neither are found, the first field
-				// is used as the node.
-				int idxName = -1;
-				int idxId = -1;
-				for (int j = 0; j < numFields; j++) {
-					OGRFieldDefn *def = fet->GetFieldDefnRef(j);
-					QString fldName = def->GetNameRef();
-					std::cout << "Checking field " << fldName << std::endl;
-					if (fldName.contains("name", false)) {
-						idxName = j;
-						break;
-					}
-					if (fldName.contains("id", false)) {
-						idxId = j;
-						break;
-					}
-				}
-				int fieldIndex = 0;
-				if (idxName > -1) {
-					fieldIndex = idxName;
-				} else {
-					if (idxId > -1) {
-						fieldIndex = idxId;
-					}
-				}
-				std::cout << "Field index for feature label is " << fieldIndex << std::endl;
+		while ((fet = dataProvider->getNextFeature(true))) {
+      featureCount++;
+      if(featureCount == 1){
+        ir = new QgsIdentifyResults();
+      }
+      	
 				QListViewItem *featureNode = ir->addNode("foo");
-				for (int i = 0; i < numFields; i++) {
-
-					// add the feature attributes to the tree
-					OGRFieldDefn *fldDef = fet->GetFieldDefnRef(i);
-					QString fld = fldDef->GetNameRef();
-					OGRFieldType fldType = fldDef->GetType();
-					QString val;
-
-					//if(fldType ==  16604 )    // geometry
-					val = "(geometry column)";
-					// else
-					val = fet->GetFieldAsString(i);
-					// Create a node for this feature
-					std::cout << "i / fieldIndex " << i << " / " << fieldIndex << std::endl;
-					if (i == fieldIndex) {
-						featureNode->setText(0, val);
-						std::cout << "Adding feature node: " << val << std::endl;
-					}
-					std::cout << "Adding attribute " << fld << " = " << val << std::endl;
-					ir->addAttribute(featureNode, fld, val);
+        featureNode->setText(0, fieldIndex);
+        std::vector<QgsFeatureAttribute> attr = fet->attributeMap();
+        for(int i=0; i < attr.size(); i++){
+          std::cout << attr[i].fieldName()<< " == " << fieldIndex << std::endl;
+          if(attr[i].fieldName().lower() == fieldIndex){
+            featureNode->setText(1, attr[i].fieldValue());
+          }
+					ir->addAttribute(featureNode, attr[i].fieldName(), attr[i].fieldValue());
 				}
+       
 			}
 
-		}
 		std::cout << "Feature count on identify: " << featureCount << std::endl;
 		if (ir) {
 			ir->setTitle(name());
 			ir->show();
 		}
+    QApplication::restoreOverrideCursor();
 		if (featureCount == 0) {
 			QMessageBox::information(0, "No features found", "No features were found in the active layer at the point you clicked");
 		}
-		ogrLayer->ResetReading();
 
 }
 void QgsVectorLayer::table()
@@ -489,47 +462,42 @@ void QgsVectorLayer::table()
 	} else {
 		// display the attribute table
 		QApplication::setOverrideCursor(Qt::waitCursor);
-		ogrLayer->SetSpatialFilter(0);
-		OGRFeature *fet = ogrLayer->GetNextFeature();
-		int numFields = fet->GetFieldCount();
+		dataProvider->reset();
+		int numFields = dataProvider->fieldCount();
 		tabledisplay = new QgsAttributeTableDisplay();
 	  QObject:connect(tabledisplay, SIGNAL(deleted()), this, SLOT(invalidateTableDisplay()));
-		tabledisplay->table()->setNumRows(ogrLayer->GetFeatureCount(true));
-		tabledisplay->table()->setNumCols(numFields + 1);	//+1 for the id-column
+		tabledisplay->table()->setNumRows(dataProvider->featureCount());
+		tabledisplay->table()->setNumCols(numFields);	//+1 for the id-column
 
 		int row = 0;
 		// set up the column headers
 		QHeader *colHeader = tabledisplay->table()->horizontalHeader();
-		colHeader->setLabel(0, "id");	//label for the id-column
-		for (int h = 1; h < numFields + 1; h++) {
-			OGRFieldDefn *fldDef = fet->GetFieldDefnRef(h - 1);
-			QString fld = fldDef->GetNameRef();
-			colHeader->setLabel(h, fld);
+	//	colHeader->setLabel(0, "id");	//label for the id-column
+    std::vector<QgsField> fields = dataProvider->fields();
+		for (int h = 0; h < numFields; h++) {
+			colHeader->setLabel(h, fields[h].getName());
 		}
-		while (fet) {
+    QgsFeature *fet;
+		while ((fet = dataProvider->getNextFeature(true))) {
 
 			//id-field
-			tabledisplay->table()->setText(row, 0, QString::number(fet->GetFID()));
-			tabledisplay->table()->insertFeatureId(fet->GetFID());	//insert the id into the search tree of qgsattributetable
-			for (int i = 1; i < numFields + 1; i++) {
+		//	tabledisplay->table()->setText(row, 0, QString::number(fet->GetFID()));
+		//	tabledisplay->table()->insertFeatureId(fet->GetFID());	//insert the id into the search tree of qgsattributetable
+     std::vector<QgsFeatureAttribute> attr = fet->attributeMap();
+        for(int i=0; i < attr.size(); i++){
 				// get the field values
-				QString val;
-				//if(fldType ==  16604 )    // geometry
-				val = "(geometry column)";
-				// else
-				val = fet->GetFieldAsString(i - 1);
-
-				tabledisplay->table()->setText(row, i, val);
-
+				tabledisplay->table()->setText(row, i, attr[i].fieldValue());
+        }
+        row++;
+        delete fet;
 			}
-			row++;
-			delete fet;
-			fet = ogrLayer->GetNextFeature();
+			
+			
 
 		}
 		// reset the pointer to start of fetabledisplayures so
 		// subsequent reads will not fail
-		ogrLayer->ResetReading();
+		dataProvider->reset();
 		tabledisplay->table()->setSorting(true);
 
 
@@ -537,13 +505,13 @@ void QgsVectorLayer::table()
 		tabledisplay->show();
 		tabledisplay->table()->clearSelection();	//deselect the first row
 
-		//select the rows of the already selected features
+		//TODO select the rows of the already selected features
 		QObject::disconnect(tabledisplay->table(), SIGNAL(selectionChanged()), tabledisplay->table(), SLOT(handleChangedSelections()));
-		for (int i = 0; i < ogrLayer->GetFeatureCount(); i++) {
+	/* 	for (int i = 0; i < ogrLayer->GetFeatureCount(); i++) {
 			if ((*selected)[i] == true) {
 				tabledisplay->table()->selectRow(i);
 			}
-		}
+		} */
 		QObject::connect(tabledisplay->table(), SIGNAL(selectionChanged()), tabledisplay->table(), SLOT(handleChangedSelections()));
 
 		//etablish the necessary connections between the table and the shapefilelayer
@@ -551,7 +519,7 @@ void QgsVectorLayer::table()
 		QObject::connect(tabledisplay->table(), SIGNAL(selectionRemoved()), this, SLOT(removeSelection()));
 		QObject::connect(tabledisplay->table(), SIGNAL(repaintRequested()), this, SLOT(triggerRepaint()));
 		QApplication::restoreOverrideCursor();
-	}
+	
 }
 
 void QgsVectorLayer::select(int number)
@@ -561,6 +529,7 @@ void QgsVectorLayer::select(int number)
 
 void QgsVectorLayer::select(QgsRect * rect, bool lock)
 {
+  //TODO Fix select function
 /*
 	if (tabledisplay) {
 		QObject::disconnect(tabledisplay->table(), SIGNAL(selectionChanged()), tabledisplay->table(), SLOT(handleChangedSelections()));
@@ -601,53 +570,7 @@ void QgsVectorLayer::select(QgsRect * rect, bool lock)
 	}
 	triggerRepaint();*/
 }
-
-
-
-/*
-OGRGeometry *filter = 0;
-	filter = new OGRPolygon();
-	std::stringstream wktExtent;
-	wktExtent << "POLYGON ((" << r->stringRep() << "))" << std::ends;
-	char *wktText = wktExtent.str();
-
-	OGRErr result = ((OGRPolygon *) filter)->importFromWkt(&wktText);
-	if (result == OGRERR_NONE) {
-
-		ogrLayer->SetSpatialFilter(filter);
-		int featureCount = 0;
-		// just id the first feature for now
-		//while (OGRFeature * fet = ogrLayer->GetNextFeature()) {
-		//}
-
-		OGRFeature *fet = ogrLayer->GetNextFeature();
-		if (fet) {
-			// found feature - show it in the identify box
-			QgsIdentifyResults *ir = new QgsIdentifyResults();
-			// just show one result - modify this later
-			int numFields = fet->GetFieldCount();
-			for (int i = 0; i < numFields; i++) {
-				// get the field definition
-				OGRFieldDefn *fldDef = fet->GetFieldDefnRef(i);
-				QString fld = fldDef->GetNameRef();
-				OGRFieldType fldType = fldDef->GetType();
-				QString val;
-				//if(fldType ==  16604 )    // geometry
-				val = "(geometry column)";
-				// else
-				val = fet->GetFieldAsString(i);
-				ir->addAttribute(fld, val);
-			}
-			ir->setTitle(name());
-			ir->show();
-			ogrLayer->ResetReading();//remove this, if it is not a success
-
-		} else {
-			QMessageBox::information(0, "No features found", "No features were found in the active layer at the point you clicked");
-		}
-	}
-*/
-
+//TODO fix this
 void QgsVectorLayer::removeSelection()
 {
 	for (int i = 0; i < (int) selected->size(); i++) {
