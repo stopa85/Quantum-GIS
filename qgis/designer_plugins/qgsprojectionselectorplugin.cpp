@@ -49,14 +49,15 @@ QStringList QgsProjectionSelectorPlugin::keys() const
 QWidget* QgsProjectionSelectorPlugin::create( const QString &key, QWidget* parent, const char* name )
 {
     if ( key == "QgsProjectionSelector" )
-	return new QgsProjectionSelector( parent, name );
+        //return new QgsProjectionSelector( parent, name );
+	return new QgsProjectionSelector( parent );
     return 0;
 }
 
 QString QgsProjectionSelectorPlugin::group( const QString& feature ) const
 {
     if ( feature == "QgsProjectionSelector" )
-	return "Input";
+	return "QGIS";
     return QString::null;
 }
 
