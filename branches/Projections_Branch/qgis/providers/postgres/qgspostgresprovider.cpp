@@ -1385,6 +1385,15 @@ bool QgsPostgresProvider::getGeometryDetails()
 #endif
   return valid;
 }
+
+/** Set the SRID for the target (map canvas) Spatial Reference System (SRS).
+ * This is used to perform the transform from layer SRS to canvas SRS.
+ *
+ */
+void QgsPostgresProvider::setTargetSrid(int srid)
+{
+  mTargetSrid = srid;
+}
     
 /**
  * Class factory to return a pointer to a newly created 
