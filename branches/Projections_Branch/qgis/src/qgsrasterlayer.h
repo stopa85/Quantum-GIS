@@ -808,6 +808,11 @@ public slots:
   //! Populate the histogram vector for a given layer
   void populateHistogram(int theBandNoInt, int theBinCountInt=256);
 
+    /** \brief Color table 
+     *  \param band number
+     *  \return pointer to color table
+     */
+    QgsColorTable *colorTable ( int theBandNoInt );
  protected:
 
     /** reads vector layer specific state from project file DOM node.
@@ -907,11 +912,6 @@ private:
      */
     inline double readValue ( void *data, GDALDataType type, int index );
 
-    /** \brief Color table 
-     *  \param band number
-     *  \return pointer to color table
-     */
-    QgsColorTable *colorTable ( int theBandNoInt );
 
     /**
        Load the given raster file
