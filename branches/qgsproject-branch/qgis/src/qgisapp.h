@@ -58,16 +58,20 @@ static SplashScreen * gSplashScreen ;
  */
 class QgisApp : public QgisAppBase
 {
-Q_OBJECT public:
+    Q_OBJECT;
+
+public:
+
     //! Constructor
     QgisApp(QWidget * parent = 0, const char *name = 0, WFlags fl = WType_TopLevel);
 
     ~QgisApp();
-public:
+
     QgisIface *getInterface();
 
-    /** \brief Set the Z order of both mapcanvas and overview canvas. Typically this will
-     * be called by projectio when loading a stored project.
+    /** \brief Set the Z order of both mapcanvas and overview
+     * canvas. Typically this will be called by projectio when loading a
+     * stored project.
      */
     void setZOrder (std::list<QString>);
     
@@ -154,6 +158,7 @@ public:
     void setTheme(QString themeName="default");
     //! Setup the toolbar popup menus for a given theme
     void setupToolbarPopups(QString themeName);
+
 private:
 
     //! Add a vector layer to the map
@@ -215,7 +220,22 @@ private:
     void select();
     //! check to see if file is dirty and if so, prompt the user th save it
     int saveDirty();
+
 private slots:
+
+   /** for when a menu bar item is activated
+       Used to dynamically update pop-up menu items
+   */
+    void menubar_activated( int i );
+
+   /** for when a menu bar item is activated
+       Used to dynamically update pop-up menu items
+   */
+    /* virtual */ void menubar_highlighted( int i );
+
+ 
+    /** toggles whether the current selected layer is in overview or not */
+    void inOverview(bool);
     //! Slot to show the map coordinate position of the mouse cursor
     void showMouseCoordinate(QgsPoint &);
     //copy the click coord to clipboard and let the user know its there

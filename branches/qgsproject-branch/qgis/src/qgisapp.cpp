@@ -300,7 +300,7 @@ QgisApp::QgisApp(QWidget * parent, const char *name, WFlags fl):QgisAppBase(pare
   QSplitter *canvasLegendSplit = new QSplitter(frameMain);
   QGridLayout *legendOverviewLayout = new QGridLayout(canvasLegendSplit, 1, 2, 4, 6, "canvasLegendLayout");
   QSplitter *legendOverviewSplit = new QSplitter(Qt::Vertical,canvasLegendSplit);
-  mMapLegend = new QgsLegend(legendOverviewSplit); //frameMain);
+  mMapLegend = new QgsLegend(legendOverviewSplit, "theMapLegend", this);
   mMapLegend->addColumn(tr("Layers"));
   mMapLegend->setSorting(-1);
 
@@ -1929,6 +1929,88 @@ void QgisApp::layerProperties(QListViewItem * lvi)
 
   //  layer->showLayerProperties();
 }
+
+void QgisApp::menubar_highlighted( int i )
+{
+    // used to save us from re-enabling layer menu items every single time the
+    // user tweaks the layers drop down menu
+    static bool enabled;
+
+    if ( 6 == i )               // XXX I hate magic numbers; where is '6' defined
+                                // XXX for Layers menu?
+    {
+        // first, if there are NO layers, disable everything that assumes we
+        // have at least one layer loaded
+        if ( QgsMapLayerRegistry::instance()->mapLayers().empty() )
+        {
+            actionRemoveLayer->setEnabled(false);
+            actionRemoveAllFromOverview->setEnabled(false);
+            actionInOverview->setEnabled(false);
+            actionShowAllLayers->setEnabled(false);
+            actionHideAllLayers->setEnabled(false);
+            actionOpenTable->setEnabled(false);
+            actionLayerProperties->setEnabled(false);
+
+            enabled = false;
+        }
+        else
+        {
+            if ( ! enabled )
+            {
+                actionRemoveLayer->setEnabled(true);
+                actionRemoveAllFromOverview->setEnabled(true);
+                actionInOverview->setEnabled(true);
+                actionShowAllLayers->setEnabled(true);
+                actionHideAllLayers->setEnabled(true);
+                actionOpenTable->setEnabled(true);
+                actionLayerProperties->setEnabled(true);
+            }
+
+            // now check the current overview item iff the current layer is,
+            // indeed, in the overview
+            QListViewItem *lvi = mMapLegend->currentItem();
+            QgsMapLayer *layer = ((QgsLegendItem *) lvi)->layer();
+
+            if ( layer->showInOverviewStatus() )
+            {
+                actionInOverview->setOn(true);
+            }
+            else
+            {
+                actionInOverview->setOn(false);
+            }
+        }
+    }
+} // QgisApp::menubar_highlighted( int i )
+
+
+
+void QgisApp::menubar_activated( int i )
+{
+#ifdef QGISDEBUG
+    std::cout << "QGisApp::menubar_activated(" << i << ")" << std::endl;
+#endif
+  QListViewItem *lvi = mMapLegend->currentItem();
+  QgsMapLayer *layer = ((QgsLegendItem *) lvi)->layer();
+
+  // update the menu overview toggle to reflect actual state of layer
+
+} //  QgisApp::menubar_activated( int )
+
+
+
+void QgisApp::inOverview( bool in_overview )
+{
+#ifdef QGISDEBUG
+    std::cout << "QGisApp::inOverview(" << in_overview << ")" << std::endl;
+#endif
+  QListViewItem *lvi = mMapLegend->currentItem();
+  QgsMapLayer *layer = ((QgsLegendItem *) lvi)->layer();
+
+  layer->inOverview( in_overview );
+  mOverviewCanvas->render();
+} // QgisApp::inOverview(bool)
+
 
 
 void QgisApp::removeLayer()

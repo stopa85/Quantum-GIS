@@ -865,7 +865,9 @@ QObject:connect(tabledisplay, SIGNAL(deleted()), this, SLOT(invalidateTableDispl
       popMenu->insertSeparator();
       popMenu->insertItem(tr("&Properties"), this, SLOT(showLayerProperties()));
       //show in overview slot is implemented in maplayer superclass!
-      mShowInOverviewItemId = popMenu->insertItem(tr("Show In &Overview"), this, SLOT(inOverview(true)));
+      mShowInOverviewItemId = popMenu->insertItem(tr("Show In &Overview"), 
+                                                  this, 
+                                                  SLOT(inOverview(bool)));
 
       popMenu->insertSeparator();
       popMenu->insertItem(tr("&Remove"), app, SLOT(removeLayer()));
@@ -1636,3 +1638,9 @@ QgsVectorLayer:: setDataProvider( QString const & provider )
     return true;
 } // bool QgsVectorLayer::writeXML_
 
+
+/** we wouldn't have to do this if slots were inherited */
+void QgsVectorLayer::inOverview( bool b )
+{
+    QgsMapLayer::inOverview( b );
+}

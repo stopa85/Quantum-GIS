@@ -2566,7 +2566,7 @@ void QgsRasterLayer::initContextMenu(QgisApp * theApp)
   myTransparencyLabel->setFrameStyle( QFrame::Panel | QFrame::Raised );
   myTransparencyLabel->setText( tr("<center><b>Transparency</b></center>") );
   popMenu->insertItem(myTransparencyLabel);
-  // XXX bad to have GUI elements here  popMenu->insertItem(mTransparencySlider);
+  popMenu->insertItem(mTransparencySlider);
 
 }
 
