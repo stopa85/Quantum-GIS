@@ -33,8 +33,8 @@ QgsContColDialog::QgsContColDialog(QgsVectorLayer* layer): QgsContColDialogBase(
 
 	for(std::vector<QgsField>::iterator it=fields.begin();it!=fields.end();++it)
 	{
-	    //qWarning("Type of field is " + (*it).getType());
-	    if((*it).getType()!="String"&&(*it).getType()!="varchar")
+	    QString type=(*it).getType();
+	    if(type!="String"&&type!="varchar"&&type!="geometry")
 	    {
 		str=(*it).getName();
 		classificationComboBox->insertItem(str);
@@ -42,7 +42,6 @@ QgsContColDialog::QgsContColDialog(QgsVectorLayer* layer): QgsContColDialogBase(
 	    }
 	    fieldnumber++;
 	}
-	//qWarning("number of fields is " + QString::number(fieldnumber,'f',2));
     }
     else
     {
