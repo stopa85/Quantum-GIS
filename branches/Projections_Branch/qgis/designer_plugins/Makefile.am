@@ -10,7 +10,7 @@
 #
 # $Id$
 
-plugindir = ${pkglibdir}
+plugindir = ${pkglibdir}/designer
 
 
 %.moc.cpp: %.h
