@@ -333,7 +333,14 @@ void QgsLegend::removeLayer(QString layer_key)
       // XXX signal/slot system network
     }
 
-}                               // removeLayer
+} // QgsLegend::removeLayer
+
+
+
+void QgsLegend::removeAll()
+{
+    clear();
+} // QgsLegend::removeAll()
 
 
 

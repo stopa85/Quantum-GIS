@@ -1358,7 +1358,8 @@ void QgsMapCanvas::remove(QString key)
 
   // signal that we've erased this layer
   emit removedLayer( key );
-}
+
+} // QgsMapCanvas::remove()
 
 
 
@@ -1376,22 +1377,34 @@ void QgsMapCanvas::removeAll()
 
   QString current_key;
 
+  // first disconnnect all layer signals from this canvas
   while ( mi != mCanvasProperties->layers.end() )
   {
     // save the current key
     current_key = mi->first;
 
-    // delete it, ensuring removedLayer emitted and zOrder updated (not
-    // that the zOrder ultimately matters since they're all going to go,
-    // too)
-    remove( current_key );
+    QgsMapLayer * layer = mCanvasProperties->layers[current_key];
 
-    // since mi is now invalidated because the std::map was modified in
-    // remove(), reset it to the first element, if any
-    mi = mCanvasProperties->layers.begin();
+    // disconnect layer signals
+    QObject::disconnect(layer, SIGNAL(visibilityChanged()), this, SLOT(layerStateChange()));
+    QObject::disconnect(layer, SIGNAL(repaintRequested()), this, SLOT(refresh()));
+
+    ++mi;
   }
 
-} // removeAll
+  // then empty all the other state containers
+
+  mCanvasProperties->layers.clear();
+
+  mCanvasProperties->acetateObjects.clear(); // XXX are these managed elsewhere?
+
+  mCanvasProperties->zOrder.clear();
+
+  mCanvasProperties->dirty = true;
+
+  emit removedAll();              // let observers know we're now empty
+
+} // QgsMapCanvas::removeAll
 
 
 

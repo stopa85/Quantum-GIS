@@ -73,6 +73,12 @@ public slots:
   */
   void removeLayer( QString layer_key );
 
+  /** remove all layer references
+     
+      @note usually connected to QgsMapCanvas "theMapCanvas"
+   */
+  void removeAll();
+
 protected:
   // override these to handle layer order manipulation
   void contentsMouseMoveEvent(QMouseEvent * e);
