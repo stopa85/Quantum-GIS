@@ -2576,143 +2576,143 @@ bool QgsVectorLayer::commitAttributeChanges(const std::set<QString>& deleted,
 }
 void QgsVectorLayer::setCoordinateSystem()
 {
+  //
+  // Get the layers project info and set up the QgsCoordinateTransform 
+  // for this layer
+  //
+  QString mySourceWKT = getProjectionWKT();
 
   // if the provider supports native transforms, just create a passthrough
   // object 
- if(dataProvider->supportsNativeTransform())
- {
-#ifdef QGISDEBUG
-std::cout << "Provider supports native transform -- no projection of coordinates will occur" 
-<< std::endl;
-#endif
-   QApplication::restoreOverrideCursor();
-   mCoordinateTransform = new QgsCoordinateTransform("", "");
-   dataProvider->setWKT(QgsProject::instance()->readEntry("SpatialRefSys","/selectedWKT","Lat/Long - WGS 84"));
-   return;
- }
- else
- {
-   //
-   // Get the layers project info and set up the QgsCoordinateTransform 
-   // for this layer
-   //
-   QString mySourceWKT = getProjectionWKT();
-   // if the wkt does not exist, then we can not set the projection
-   // Pass this through unprojected 
-   // XXX Do we need to warn the user that this layer is unprojected?
-   // XXX Maybe a user option to choose if warning should be issued
-   if(mySourceWKT.isEmpty())
-   {
-
-     //@note qgsvectorlayer is not a descendent of QWidget so we cant pass
-     //it in the ctor of the layer projection selector
-     QgsLayerProjectionSelector * mySelector = new QgsLayerProjectionSelector();
-     QString srsWkt =  QgsProject::instance()->readEntry("SpatialRefSys","/selectedWKT","Lat/Long - WGS 84");
-     mySelector->setSelectedWKT(srsWkt);
-     if(mySelector->exec())
-     {
-#ifdef QGISDEBUG
-       std::cout << "------ Layer Projection Selection passed ----------" << std::endl;
-#endif
-       mySourceWKT = mySelector->getCurrentWKT();  
-#ifdef QGISDEBUG
-       std::cout << "------ mySourceWKT ----------\n" << mySourceWKT << std::endl;
-#endif
-     }
-     else
-     {
-#ifdef QGISDEBUG
-       std::cout << "------ Layer Projection Selection FAILED ----------" << std::endl;
-#endif
-       QApplication::restoreOverrideCursor();
-       mCoordinateTransform = new QgsCoordinateTransform("", "");
-       return;
-     }
-   }
- 
-
-  assert(!mySourceWKT.isEmpty());
-  //get the project projections WKT, defaulting to this layer's projection
-  //if none exists....
-  //First get the SRS for the default projection WGS 84
-  //QString defaultWkt = QgsSpatialReferences::instance()->getSrsBySrid("4326")->srText();
-  QString myDestWKT = QgsProject::instance()->readEntry("SpatialRefSys","/WKT","");
-
-  // try again with a morph from esri
-  // set up the spatial ref
-  OGRSpatialReference myInputSpatialRefSys;
-  char *pWkt = (char*)mySourceWKT.ascii();
-  myInputSpatialRefSys.importFromWkt(&pWkt);
-  myInputSpatialRefSys.morphFromESRI();
-
-  // set up the destination cs
-  OGRSpatialReference myOutputSpatialRefSys;
-  pWkt = (char *) myDestWKT.ascii();
-  myOutputSpatialRefSys.importFromWkt(&pWkt);
-
-  //
-  // Sort out what to do with this layer's coordinate system (CS). We have
-  // four possible scenarios:
-  // 1. Layer has no projection info and canvas is projected
-  //      = set layer to canvas CS XXX does the user need a warning here?
-  // 2. Layer has no projection info and canvas is unprojected
-  //      = leave both layer and canvas unprojected XXX is this appropriate?
-  // 3. Layer has projection info and canvas is unprojected
-  //      = set canvas to layer's CS
-  // 4. Layer has projection info and canvas is projected
-  //      = setup transform for layer to canvas CS
-#ifdef QGISDEBUG
-  std::cout << ">>>>>>>>>>>> ----------------------------------------------------" << std::endl;
-#endif
-  if(mySourceWKT.length() == 0)
+  if(dataProvider->supportsNativeTransform())
   {
 #ifdef QGISDEBUG
-    std::cout << ">>>>>>>>>>>> layer has no CS..." ;
+    std::cout << "Provider supports native transform -- no projection of coordinates will occur" 
+        << std::endl;
 #endif
-    // layer has no CS
-    if(myDestWKT.length() > 0)
-    {
-#ifdef QGISDEBUG
-      std::cout << "set layer CS to project CS" << std::endl;
-#endif
-      // set layer CS to project CS
-      mySourceWKT = myDestWKT;
-    }
-    else
-    {
-      // leave layer with no CS
-#ifdef QGISDEBUG
-      std::cout << "project CS also undefined....leaving both empty" << std::endl;
-#endif
-    }
+    QApplication::restoreOverrideCursor();
+    mCoordinateTransform = new QgsCoordinateTransform("", "");
+    dataProvider->setWKT(QgsProject::instance()->readEntry("SpatialRefSys","/selectedWKT","Lat/Long - WGS 84"));
+    return;
   }
   else
   {
-    // layer has a CS
-#ifdef QGISDEBUG
-    std::cout << ">>>>>>>>>>>> layer HAS a CS...." << std::endl;
-#endif
-    if(myDestWKT.length() == 0)
+    // if the wkt does not exist, then we can not set the projection
+    // Pass this through unprojected 
+    // XXX Do we need to warn the user that this layer is unprojected?
+    // XXX Maybe a user option to choose if warning should be issued
+    if(mySourceWKT.isEmpty())
     {
-      // set project CS to layer CS
-#ifdef QGISDEBUG
-      std::cout << ">>>>>>>>>>>> project CS was undefined so its now set to layer CS" << std::endl;
-#endif
-      myDestWKT = mySourceWKT;
-      QgsProject::instance()->writeEntry("SpatialRefSys","/WKT", myDestWKT);
-    }
-  }
 
-  //set up the coordinate transform - in the case of raster this is 
-  //mainly used to convert the inverese projection of the map extents 
-  //of the canvas when zzooming in etc. so that they match the coordinate 
-  //system of this layer
-  mCoordinateTransform = new QgsCoordinateTransform(mySourceWKT, myDestWKT);
+      //@note qgsvectorlayer is not a descendent of QWidget so we cant pass
+      //it in the ctor of the layer projection selector
+      QgsLayerProjectionSelector * mySelector = new QgsLayerProjectionSelector();
+      QString srsWkt =  QgsProject::instance()->readEntry("SpatialRefSys","/selectedWKT","Lat/Long - WGS 84");
+      mySelector->setSelectedWKT(srsWkt);
+      if(mySelector->exec())
+      {
 #ifdef QGISDEBUG
-  std::cout << ">>>>>>>>>>>> Transform for layer created:" << std::endl;
-  std::cout << ">>>>>>>>>>>> LayerCS:\n" << mySourceWKT << std::endl;
-  std::cout << ">>>>>>>>>>>> ProjectCS:\n" << myDestWKT << std::endl;
-  std::cout << ">>>>>>>>>>>> ----------------------------------------------------" << std::endl;
+        std::cout << "------ Layer Projection Selection passed ----------" << std::endl;
 #endif
- }
+        mySourceWKT = mySelector->getCurrentWKT();  
+#ifdef QGISDEBUG
+        std::cout << "------ mySourceWKT ----------\n" << mySourceWKT << std::endl;
+#endif
+      }
+      else
+      {
+#ifdef QGISDEBUG
+        std::cout << "------ Layer Projection Selection FAILED ----------" << std::endl;
+#endif
+        QApplication::restoreOverrideCursor();
+        mCoordinateTransform = new QgsCoordinateTransform("", "");
+        return;
+      }
+    }
+
+
+    assert(!mySourceWKT.isEmpty());
+    //get the project projections WKT, defaulting to this layer's projection
+    //if none exists....
+    //First get the SRS for the default projection WGS 84
+    //QString defaultWkt = QgsSpatialReferences::instance()->getSrsBySrid("4326")->srText();
+    QString myDestWKT = QgsProject::instance()->readEntry("SpatialRefSys","/WKT","");
+
+    // try again with a morph from esri
+    // set up the spatial ref
+    OGRSpatialReference myInputSpatialRefSys;
+    char *pWkt = (char*)mySourceWKT.ascii();
+    myInputSpatialRefSys.importFromWkt(&pWkt);
+    myInputSpatialRefSys.morphFromESRI();
+
+    // set up the destination cs
+    OGRSpatialReference myOutputSpatialRefSys;
+    pWkt = (char *) myDestWKT.ascii();
+    myOutputSpatialRefSys.importFromWkt(&pWkt);
+
+    //
+    // Sort out what to do with this layer's coordinate system (CS). We have
+    // four possible scenarios:
+    // 1. Layer has no projection info and canvas is projected
+    //      = set layer to canvas CS XXX does the user need a warning here?
+    // 2. Layer has no projection info and canvas is unprojected
+    //      = leave both layer and canvas unprojected XXX is this appropriate?
+    // 3. Layer has projection info and canvas is unprojected
+    //      = set canvas to layer's CS
+    // 4. Layer has projection info and canvas is projected
+    //      = setup transform for layer to canvas CS
+#ifdef QGISDEBUG
+    std::cout << ">>>>>>>>>>>> ----------------------------------------------------" << std::endl;
+#endif
+    if(mySourceWKT.length() == 0)
+    {
+#ifdef QGISDEBUG
+      std::cout << ">>>>>>>>>>>> layer has no CS..." ;
+#endif
+      // layer has no CS
+      if(myDestWKT.length() > 0)
+      {
+#ifdef QGISDEBUG
+        std::cout << "set layer CS to project CS" << std::endl;
+#endif
+        // set layer CS to project CS
+        mySourceWKT = myDestWKT;
+      }
+      else
+      {
+        // leave layer with no CS
+#ifdef QGISDEBUG
+        std::cout << "project CS also undefined....leaving both empty" << std::endl;
+#endif
+      }
+    }
+    else
+    {
+      // layer has a CS
+#ifdef QGISDEBUG
+      std::cout << ">>>>>>>>>>>> layer HAS a CS...." << std::endl;
+#endif
+      if(myDestWKT.length() == 0)
+      {
+        // set project CS to layer CS
+#ifdef QGISDEBUG
+        std::cout << ">>>>>>>>>>>> project CS was undefined so its now set to layer CS" << std::endl;
+#endif
+        myDestWKT = mySourceWKT;
+        QgsProject::instance()->writeEntry("SpatialRefSys","/WKT", myDestWKT);
+      }
+    }
+
+    //set up the coordinate transform - in the case of raster this is 
+    //mainly used to convert the inverese projection of the map extents 
+    //of the canvas when zzooming in etc. so that they match the coordinate 
+    //system of this layer
+    mCoordinateTransform = new QgsCoordinateTransform(mySourceWKT, myDestWKT);
+#ifdef QGISDEBUG
+    std::cout << ">>>>>>>>>>>> Transform for layer created:" << std::endl;
+    std::cout << ">>>>>>>>>>>> LayerCS:\n" << mySourceWKT << std::endl;
+    std::cout << ">>>>>>>>>>>> ProjectCS:\n" << myDestWKT << std::endl;
+    std::cout << ">>>>>>>>>>>> ----------------------------------------------------" << std::endl;
+#endif
+  }
 }

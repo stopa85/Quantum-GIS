@@ -145,9 +145,12 @@ QString QgsProjectionSelector::getCurrentWKT()
     const char *pzTail;
     sqlite3_stmt *ppStmt;
     char *pzErrmsg;
-    QString sql = "select wkt from srs_name where srid = ";
+    QString sql = "select srtext from spatial_ref_sys where srid = ";
     sql += lvi->text(1);
 
+#ifdef QGISDEBUG
+    std::cout << "Finding selected wkt using : " <<  sql << std::endl;
+#endif
     rc = sqlite3_prepare(db, (const char *)sql, sql.length(), &ppStmt, &pzTail);
     // XXX Need to free memory from the error msg if one is set
     QString wkt;
