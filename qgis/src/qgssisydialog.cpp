@@ -137,11 +137,10 @@ void QgsSiSyDialog::apply()
     QPixmap* pix=m_vectorlayer->legendPixmap();
     int namewidth=10+displaynamefield->text().length()*12;
     int width=(namewidth>60) ? namewidth : 60;
-    pix->resize(width,75);
+    pix->resize(width,35);
     pix->fill();
 
     QPainter p(pix);
-    p.drawText(10,35,displaynamefield->text());
     m_vectorlayer->setlayerName(displaynamefield->text());
     p.setPen(sy.pen());
     p.setBrush(sy.brush());
@@ -149,15 +148,19 @@ void QgsSiSyDialog::apply()
     switch(m_vectorlayer->vectorType())
     {
 	case QGis::Polygon:
-	    p.drawRect(10,45,30,20);
+	    p.drawRect(10,10,20,15);
 	    break;
 	case QGis::Line:
-	    p.drawLine(10,55,40,55);
+	    p.drawLine(10,10,40,55);
 	    break;
 	case QGis::Point:
-	    p.drawRect(20,55,5,5);
+	    p.drawRect(20,10,5,5);
     }
-    
+     // set the font for the legend text
+  //TODO Make the font size a user option
+   QFont f( "times", 12, QFont::Normal );
+  p.setFont( f );
+  p.drawText(35,20,displaynamefield->text());
     m_vectorlayer->legendItem()->setPixmap(0,(*pix));
 
     //repaint the map canvas
