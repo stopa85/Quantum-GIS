@@ -114,7 +114,7 @@ QgsSpatialReferences::QgsSpatialReferences()
  QgsSpatialRefSys * QgsSpatialReferences::getSrsByWkt(QString &wkt)
 {
 // find the srs by looking up the wkt in the map
- ProjectionWKTMap::Iterator it;
+ projectionWKTMap_t::Iterator it;
  
  QgsSpatialRefSys *srs;
   for ( it = mSpatialReferences.begin(); it != mSpatialReferences.end(); ++it ) 
@@ -129,7 +129,7 @@ QgsSpatialReferences::QgsSpatialReferences()
 return 0;
 }
 
-ProjectionWKTMap QgsSpatialReferences::getMap()
+projectionWKTMap_t QgsSpatialReferences::getMap()
 {
   return mSpatialReferences;
 }

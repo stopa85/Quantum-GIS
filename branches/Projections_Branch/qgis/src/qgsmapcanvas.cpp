@@ -796,7 +796,7 @@ void QgsMapCanvas::render(QPaintDevice * theQPaintDevice)
                 {
                   myProjectedRect =
                     ml->coordinateTransform()->transform(
-                      mCanvasProperties->currentExtent,  QgsCoordinateTransform::FORWARD);
+                      mCanvasProperties->currentExtent,  QgsCoordinateTransform::INVERSE);
 
                 }
                 catch (QgsCsException &e)
@@ -2048,7 +2048,7 @@ void QgsMapCanvas::recalculateExtents()
     std::cout << "Input extent: " << lyr->extent().stringRep() << std::endl;
     try
     {
-      std::cout << "Transformed extent" << lyr->coordinateTransform()->transform(lyr->extent()) << std::endl;
+      std::cout << "Transformed extent" << lyr->coordinateTransform()->transform(lyr->extent(), QgsCoordinateTransform::FORWARD) << std::endl;
     }
     catch (QgsCsException &e)
     {
