@@ -511,7 +511,7 @@
                     </widget>
                     <widget class="QgsProjectionSelector" row="1" column="0">
                         <property name="name">
-                            <cstring>Projection Selector</cstring>
+                            <cstring>projectionSelector</cstring>
                         </property>
                     </widget>
                 </grid>

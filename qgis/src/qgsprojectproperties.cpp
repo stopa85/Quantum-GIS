@@ -20,6 +20,7 @@
 #include "qgsprojectproperties.h"
 #include "qgsspatialreferences.h"
 #include "qgscsexception.h"
+#include "qgsprojectionselector.h"
 
 //qgis includes
 #include "qgsconfig.h"
@@ -195,16 +196,14 @@ void QgsProjectProperties::apply()
   // selected that has an srid. This prevents error if the user
   // selects a top-level node rather than an actual coordinate
   // system
-  //if(lstCoordinateSystems->currentItem()->text(1).length() > 0)
-  //{
-    //notify all layers the output projection has changed
-
-   // QString selectedWkt = QgsSpatialReferences::instance()->getSrsBySrid(lstCoordinateSystems->currentItem()->text(1))->srText();
-   // emit setDestWKT(selectedWkt);   //update the project props
+  QString myWkt = projectionSelector->getCurrentWKT();
+  if (myWkt)
+  {
+    emit setDestWKT(myWkt); 
     // write the projection's wkt to the project settings rather
-    //QgsProject::instance()->writeEntry("SpatialRefSys","/WKT",
-    //    lstCoordinateSystems->currentItem()->text(0));
- // }
+    QgsProject::instance()->writeEntry("SpatialRefSys","/WKT",myWkt);
+        
+  }
 
   // set the mouse display precision method and the
   // number of decimal places for the manual option
