@@ -29,6 +29,7 @@
 #include "qgslayerproperties.h"
 #include "qgsrenderitem.h"
 #include "qgssinglesymrenderer.h"
+#include "qgsvectorlayerproperties.h"
 #include <qlineedit.h>
 
 QgsSiSyDialog::QgsSiSyDialog(): QgsSiSyDialogBase(), m_vectorlayer(0)
@@ -154,7 +155,7 @@ void QgsSiSyDialog::apply()
 	case QGis::Point:
 	    p.drawRect(20,55,5,5);
     }
-    m_vectorlayer->legendItem()->setPixmap(0,(*pix));
+    //m_vectorlayer->legendItem()->setPixmap(0,(*pix));//soon...
 
     //repaint the map canvas
     m_vectorlayer->triggerRepaint();
