@@ -45,7 +45,6 @@ QgsVectorLayerProperties::QgsVectorLayerProperties(QgsVectorLayer* lyr):layer(ly
 	QString source = lyr->source();
 	source = source.left(source.find("password"));
 	lblSource->setText(source);
-	txtDisplayName->setText(lyr->name());
 	setCaption("Layer Properties - " + lyr->name());
 	connect( settingsbutton, SIGNAL( clicked() ), this, SLOT( showSymbolSettings() ) );
 	legendtypecombobox->insertItem(tr("single symbol"));
@@ -62,11 +61,6 @@ QgsVectorLayerProperties::~QgsVectorLayerProperties()
 QgsSymbol* QgsVectorLayerProperties::getSymbol()
 {
 
-}
-
-QString QgsVectorLayerProperties::displayName()
-{
-	return txtDisplayName->text();
 }
 
 void QgsVectorLayerProperties::alterLayerDialog(const QString& string)

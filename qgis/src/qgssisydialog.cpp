@@ -135,11 +135,13 @@ void QgsSiSyDialog::apply()
 
     //add a pixmap to the legend item
     QPixmap* pix=m_vectorlayer->legendPixmap();
-    pix->resize(60,75);
+    int namewidth=10+displaynamefield->text().length()*12;
+    int width=(namewidth>60) ? namewidth : 60;
+    pix->resize(width,75);
     pix->fill();
 
     QPainter p(pix);
-    p.drawText(45,35,displaynamefield->text());
+    p.drawText(10,35,displaynamefield->text());
     m_vectorlayer->setlayerName(displaynamefield->text());
     p.setPen(sy.pen());
     p.setBrush(sy.brush());
@@ -150,12 +152,13 @@ void QgsSiSyDialog::apply()
 	    p.drawRect(10,45,30,20);
 	    break;
 	case QGis::Line:
-	    p.drawLine(10,55,40,20);
+	    p.drawLine(10,55,40,55);
 	    break;
 	case QGis::Point:
 	    p.drawRect(20,55,5,5);
     }
-    //m_vectorlayer->legendItem()->setPixmap(0,(*pix));//soon...
+    
+    m_vectorlayer->legendItem()->setPixmap(0,(*pix));
 
     //repaint the map canvas
     m_vectorlayer->triggerRepaint();

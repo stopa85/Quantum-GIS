@@ -118,7 +118,9 @@ class QgsMapLayer:public QObject
 	QPixmap* legendPixmap();
 	/**Returns a pointer to the legend item*/
 	QgsLegendItem* legendItem();
-	
+	/**Sets the pointer to the legend item*/
+	void setLegendItem(QgsLegendItem* li);
+
 	  signals:void visibilityChanged(void);
   protected:
 	//! Extent of the layer

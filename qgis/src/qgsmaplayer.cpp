@@ -155,3 +155,8 @@ QgsLegendItem* QgsMapLayer::legendItem()
 {
     return m_legendItem;
 }
+
+void QgsMapLayer::setLegendItem(QgsLegendItem* li)
+{
+    m_legendItem=li;
+}

@@ -72,7 +72,8 @@ void QgsLegend::update()
 	while (zi != map->zOrder.end()) {
 		QgsMapLayer *lyr = map->layerByName(*zi);
 		QgsLegendItem *lvi = new QgsLegendItem(lyr, listView);	// lyr->name(), QCheckListItem::CheckBox );
-
+		lyr->setLegendItem(lvi);
+		lvi->setPixmap(0,*lyr->legendPixmap());
 		zi++;
 	}
 
