@@ -1912,7 +1912,7 @@ const bool QgsRasterLayer::hasStats(int theBandNoInt)
   <li>myRasterBandStats.meanDouble
   <li>myRasterBandStats.sumSqrDevDouble
   <li>myRasterBandStats.stdDevDouble
-  <li>myRasterBandStats.histogram
+  <li>myRasterBandStats.colorTable
   </ul>
 
   @seealso RasterBandStats
@@ -1957,8 +1957,6 @@ const RasterBandStats QgsRasterLayer::getRasterBandStats(int theBandNoInt)
 
   GDALRasterBand *myGdalBand = gdalDataset->GetRasterBand(theBandNoInt);
 
-  //calculate the histogram for this band
-  myGdalBand->GetHistogram( -0.5, 255.5, 256, myRasterBandStats.histogram, FALSE, FALSE, GDALDummyProgress, NULL );
   
   QString myColorInterpretation = GDALGetColorInterpretationName(myGdalBand->GetColorInterpretation());
 
@@ -3602,3 +3600,25 @@ void QgsRasterLayer::identify(QgsRect * r)
 } // void QgsRasterLayer::identify(QgsRect * r)
 
 
+void QgsRasterLayer::populateHistogram(int theBandNoInt, int theBinCountInt)
+{
+
+  GDALRasterBand *myGdalBand = gdalDataset->GetRasterBand(theBandNoInt);
+  RasterBandStats myRasterBandStats = getRasterBandStats(theBandNoInt);
+  //calculate the histogram for this band
+  //we assume that it only needs to be calculated if the lenght of the histogram 
+  //vector is not equal to the number of bins 
+  //i.e if the histogram has never previously been generated or the user has
+  //selected a new number of bins.
+  if (myRasterBandStats.histogramVector.size()!=theBinCountInt)
+  {
+    myRasterBandStats.histogramVector.clear();
+    int myHistogramArray[theBinCountInt];
+    myGdalBand->GetHistogram( -0.5, theBinCountInt-.5, theBinCountInt, myHistogramArray , FALSE, FALSE, GDALDummyProgress, NULL );
+    for (int myBin = 0; myBin <theBinCountInt; myBin++)
+    {
+      myRasterBandStats.histogramVector.push_back( myHistogramArray[myBin]);
+    }
+
+  }
+}
