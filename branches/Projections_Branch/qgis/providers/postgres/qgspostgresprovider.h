@@ -237,6 +237,15 @@ public:
   
   /**Returns a bitmask containing the supported capabilities*/
   int capabilities() const;
+   /** The Postgres provider does its own transforms so we return
+     * true for the following three functions to indicate that transforms
+     * should not be handled by the QgsCoordinateTransform object. See the
+     * documentation on QgsVectorDataProvider for details on these functions.
+     */
+    bool supportsNativeTransform(){return true;}
+    bool usesSrid(){return true;}
+    bool usesWKT(){return true;}
+
 
 private:
 

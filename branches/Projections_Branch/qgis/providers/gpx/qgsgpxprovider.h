@@ -165,6 +165,15 @@ public:
       return 0;
   }
   
+    /** The GPX provider does not do its own transforms so we return
+     * false for the following three functions to indicate that transforms
+     * should be handled by the QgsCoordinateTransform object. See the
+     * documentation on QgsVectorDataProvider for details on these functions.
+     */
+    bool supportsNativeTransform(){return false;}
+    bool usesSrid(){return false;}
+    bool usesWKT(){return false;}
+
  private:
   
   /** Internal function used by the other getNextFeature() functions. */
