@@ -130,11 +130,25 @@ QgsGraSyExtensionWidget::QgsGraSyExtensionWidget(QWidget* parent, int classfield
 	//apply a nice color range from blue to red as default
 	if(i==1)
 	{
-	    fillcolorbutton->setPaletteBackgroundColor(QColor(0,0,255));
+	    if(m_type==QGis::Line)
+	    {
+		outlinecolorbutton->setPaletteBackgroundColor(QColor(0,0,255));	
+	    }
+	    else//point or polygon
+	    {
+		fillcolorbutton->setPaletteBackgroundColor(QColor(0,0,255));
+	    }
 	}
 	else
 	{
-	    fillcolorbutton->setPaletteBackgroundColor(QColor(255/m_numberofclasses*i,0,255-(255/m_numberofclasses*i)));
+	    if(m_type==QGis::Line)
+	    {
+		outlinecolorbutton->setPaletteBackgroundColor(QColor(255/m_numberofclasses*i,0,255-(255/m_numberofclasses*i)));	
+	    }
+	    else//point or polygon
+	    {
+		fillcolorbutton->setPaletteBackgroundColor(QColor(255/m_numberofclasses*i,0,255-(255/m_numberofclasses*i)));
+	    }
 	}
 
         //disable the outline fieldes if the shapetye is polygon and i>1

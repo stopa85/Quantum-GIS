@@ -310,7 +310,9 @@ QgsFeature *QgsPostgresProvider::getNextFeature(bool fetchAttributes)
         }
       }else{
         std::cout <<"Couldn't get the feature geometry in binary form" << std::endl;
-    } else {
+    }
+    }
+    else {
         std::cout << "Read attempt on an invalid postgresql data source\n";
     }
     return f;
