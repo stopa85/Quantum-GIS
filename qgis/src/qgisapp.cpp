@@ -272,8 +272,6 @@ void QgisApp::addLayer()
 		    //create instances of QgsSingleSymRenderer and QgsSiSyDialog and add them to the vectorlayer
 		    QgsSingleSymRenderer* renderer=new QgsSingleSymRenderer();
 		    lyr->setRenderer(renderer);
-		    QgsSiSyDialog* dialog=new QgsSiSyDialog(lyr);
-		    lyr->setRendererDialog(dialog);
 
 		    QgsSymbol sy;
 		    sy.brush().setStyle(Qt::SolidPattern);
@@ -295,6 +293,10 @@ void QgisApp::addLayer()
 		    }
 		    QgsRenderItem ri(sy,"", "");
 		    renderer->addItem(ri);
+
+
+		    QgsSiSyDialog* dialog=new QgsSiSyDialog(lyr);
+		    lyr->setRendererDialog(dialog);
 
 		    // add it to the mapcanvas collection
 		    mapCanvas->addLayer(lyr);
