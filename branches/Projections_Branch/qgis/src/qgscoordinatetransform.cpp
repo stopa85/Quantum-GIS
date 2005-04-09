@@ -15,13 +15,13 @@
  *                                                                         *
  ***************************************************************************/
  /* $Id$ */
+#include <cassert>
 #include "qgscoordinatetransform.h"
 #include "qgsspatialreferences.h"
 
-QgsCoordinateTransform::QgsCoordinateTransform( QString theSourceWKT, QString theDestWKT ) : QObject()
+QgsCoordinateTransform::QgsCoordinateTransform( QString theSourceWKT, QString theDestWKT ) : QObject(),
+  mSourceWKT(theSourceWKT), mDestWKT(theDestWKT)
 {
-  mSourceWKT = theSourceWKT;
-  mDestWKT = theDestWKT;
   // initialize the coordinate system data structures
   //XXX Who spells initialize initialise?
   //XXX A: Its the queen's english....
@@ -144,7 +144,8 @@ void QgsCoordinateTransform::initialise()
   if ( (mSourceOgrSpatialRef.Validate() != OGRERR_NONE)  || (mDestOgrSpatialRef.Validate() != OGRERR_NONE))
   {
     std::cout << "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"<< std::endl;
-    std::cout << "The OGR Coordinate transformation for this layer could *** NOT *** be set " << std::endl;
+    std::cout << "The OGR Coordinate transformation for this layer could *** NOT *** be set "
+      << std::endl;
     std::cout << "INPUT: " << std::endl << mSourceWKT << std::endl;
     std::cout << "OUTPUT: " << std::endl << mDestWKT  << std::endl;
     std::cout << "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" << std::endl;
@@ -214,7 +215,7 @@ QgsRect QgsCoordinateTransform::transform(const QgsRect theRect,TransformDirecti
   double x1 = theRect.xMin(); 
   double y1 = theRect.yMin();
   double x2 = theRect.xMax(); 
-  double y2 = theRect.yMax();  
+  double y2 = theRect.yMax();
 
 #ifdef QGISDEBUG   
 
@@ -257,7 +258,7 @@ QgsRect QgsCoordinateTransform::transform(const QgsRect theRect,TransformDirecti
     << theRect.yMax() 
     << " -->" << y2         
     << std::endl;
-#endif        
+#endif
   return QgsRect(x1, y1, x2 , y2);
 } 
 
@@ -282,6 +283,8 @@ void QgsCoordinateTransform::transformCoords( const int& numPoints, double& x, d
 /*
 void QgsCoordinateTransform::transformCoords( const int& numPoints, double& x, double& y, double& z,TransformDirection direction) const
 {
+  assert(mProj4DestParms.length() > 0);
+  assert(mProj4SrcParms.length() > 0);
   // use proj4 to do the transform   
   QString dir;  
   // if the source/destination projection is lat/long, convert the points to radians

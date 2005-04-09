@@ -180,6 +180,19 @@ bool QgsVectorLayer::projectionsEnabled()
     return false;
   }
 }
+int QgsVectorLayer::getProjectionSrid()
+{
+  //delegate to the provider
+  if (valid)
+  {
+    return dataProvider->getSrid();
+  }
+  else
+  {
+    return 0;
+  }
+}
+
 QString QgsVectorLayer::getProjectionWKT()
 {
   //delegate to the provider
@@ -2580,7 +2593,12 @@ void QgsVectorLayer::setCoordinateSystem()
   // Get the layers project info and set up the QgsCoordinateTransform 
   // for this layer
   //
-  QString mySourceWKT = getProjectionWKT();
+  int srid = getProjectionSrid();
+  QString mySourceWKT;
+  if(srid == 0)
+  {
+    mySourceWKT = getProjectionWKT();
+  }
 
   QSettings mySettings; 
   // if the provider supports native transforms, just create a passthrough
@@ -2593,7 +2611,7 @@ void QgsVectorLayer::setCoordinateSystem()
 #endif
     QApplication::restoreOverrideCursor();
     mCoordinateTransform = new QgsCoordinateTransform("", "");
-    dataProvider->setWKT(QgsProject::instance()->readEntry("SpatialRefSys","/selectedWKT","Lat/Long - WGS 84"));
+    dataProvider->setWKT(QgsProject::instance()->readEntry("SpatialRefSys","/selectedWKT","WGS84"));
     return;
   }
   else
@@ -2602,16 +2620,18 @@ void QgsVectorLayer::setCoordinateSystem()
     // Pass this through unprojected 
     // XXX Do we need to warn the user that this layer is unprojected?
     // XXX Maybe a user option to choose if warning should be issued
-    if(mySourceWKT.isEmpty())
+    if((srid == 0) && (mySourceWKT.isEmpty()))
     {
       //decide whether to use project default projection or to prompt for one
-      QString myDefaultProjectionOption = mySettings.readEntry("/qgis/projections/defaultBehaviour");
+      QString myDefaultProjectionOption = 
+        mySettings.readEntry("/qgis/projections/defaultBehaviour");
       if (myDefaultProjectionOption=="prompt")
       {
         //@note qgsvectorlayer is not a descendent of QWidget so we cant pass
         //it in the ctor of the layer projection selector
         QgsLayerProjectionSelector * mySelector = new QgsLayerProjectionSelector();
-        QString srsWkt =  QgsProject::instance()->readEntry("SpatialRefSys","/selectedWKT","Lat/Long - WGS 84");
+        QString srsWkt =  
+          QgsProject::instance()->readEntry("SpatialRefSys","/selectedWKT","WGS84");
         mySelector->setSelectedWKT(srsWkt);
         if(mySelector->exec())
         {
@@ -2635,7 +2655,7 @@ void QgsVectorLayer::setCoordinateSystem()
       }
       else if (myDefaultProjectionOption=="useProject")
       {
-        mySourceWKT = QgsProject::instance()->readEntry("SpatialRefSys","/selectedWKT","Lat/Long - WGS 84");
+        mySourceWKT = QgsProject::instance()->readEntry("SpatialRefSys","/selectedWKT","WGS84");
       }
       else ///qgis/projections/defaultBehaviour==useDefault
       {
