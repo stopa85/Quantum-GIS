@@ -197,6 +197,11 @@ class QgsVectorDataProvider : public QgsDataProvider
    * @param srid Spatial reference id of the target (map canvas)
    */
   virtual void setSrid(int srid){};
+  /*! Get the SRID of the target SRS
+   * If the provider isn't capable of reporting the SRID of
+   * the projection, ti will return 0
+   */
+  virtual int getSrid(){return 0;};
   /*! Set the WKT of the target SRS.
    * This is only implemented if the provider supports native
    * transformation of its coordinates
