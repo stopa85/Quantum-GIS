@@ -61,7 +61,7 @@ QgsPostgresProvider::QgsPostgresProvider(QString uri):dataSourceUri(uri)
   int sqlStart = uri.find(" sql");
   int tableStart = uri.find("table=");
 #ifdef QGISDEBUG
-  qDebug( "****************************************");
+  qDebug(  "****************************************");
   qDebug(  "****   Postgresql Layer Creation   *****" );
   qDebug(  "****************************************");
   qDebug(  "URI: " + uri );

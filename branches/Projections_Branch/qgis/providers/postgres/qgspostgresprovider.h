@@ -242,7 +242,9 @@ public:
      * should not be handled by the QgsCoordinateTransform object. See the
      * documentation on QgsVectorDataProvider for details on these functions.
      */
-    bool supportsNativeTransform(){return true;}
+  // XXX For now we have disabled native transforms in the PG provider since
+  //     it appears there are problems with some of the projection definitions
+    bool supportsNativeTransform(){return false;}
     bool usesSrid(){return true;}
     bool usesWKT(){return false;}
 
