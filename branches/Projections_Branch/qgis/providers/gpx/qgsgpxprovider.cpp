@@ -61,6 +61,9 @@ QgsGPXProvider::QgsGPXProvider(QString uri) : mDataSourceUri(uri),
   // assume that it won't work
   mValid = false;
   
+  // we always use UTF-8
+  mEncoding = QTextCodec::codecForName("utf8");
+  
   // get the filename and the type parameter from the URI
   int fileNameEnd = uri.find('?');
   if (fileNameEnd == -1 || uri.mid(fileNameEnd + 1, 5) != "type=") {
@@ -838,8 +841,8 @@ bool QgsGPXProvider::boundsCheck(double x, double y)
  * Class factory to return a pointer to a newly created 
  * QgsGPXProvider object
  */
-QGISEXTERN QgsGPXProvider * classFactory(const char *uri) {
-  return new QgsGPXProvider(uri);
+QGISEXTERN QgsGPXProvider * classFactory(const QString *uri) {
+  return new QgsGPXProvider(*uri);
 }
 
 

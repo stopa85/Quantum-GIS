@@ -93,7 +93,7 @@ void Route::writeXML(QTextStream& stream) {
   GPSExtended::writeXML(stream);
   for (int i = 0; i < points.size(); ++i) {
     stream<<"<rtept lat=\""<<points[i].lat
-    <<"\" lon=\""<<points[i].lon<<"\">\n";
+	  <<"\" lon=\""<<points[i].lon<<"\">\n";
     points[i].writeXML(stream);
     stream<<"</rtept>\n";
   }
