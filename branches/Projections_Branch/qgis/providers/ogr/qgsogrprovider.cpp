@@ -317,6 +317,76 @@ bool QgsOgrProvider::getNextFeature(QgsFeature &f, bool fetchAttributes)
  */
 QgsFeature *QgsOgrProvider::getNextFeature(bool fetchAttributes)
 {
+   if(!valid)
+   {
+       std::cerr << "Read attempt on an invalid shapefile data source\n";
+       return 0;
+   }
+   
+   OGRFeature* fet;
+   OGRGeometry* geom;
+   QgsFeature *f = 0;
+   while((fet = ogrLayer->GetNextFeature()) != NULL)
+   {
+       if (fet->GetGeometryRef())
+       {
+	   geom = fet->GetGeometryRef();
+	   // get the wkb representation
+	   unsigned char *feature = new unsigned char[geom->WkbSize()];
+	   geom->exportToWkb((OGRwkbByteOrder) endian(), feature);
+	   OGRFeatureDefn * featureDefinition = fet->GetDefnRef();
+	   QString featureTypeName =   featureDefinition ? QString(featureDefinition->GetName()) : QString("");
+
+	   f = new QgsFeature(fet->GetFID(), featureTypeName);
+	   f->setGeometry(feature, geom->WkbSize());
+	   if(fetchAttributes)
+	   {
+	       getFeatureAttributes(fet, f);
+	   }
+	   delete fet;
+
+	   if(mUseIntersect)
+	   {
+	       geos::Geometry* geosGeom=f->geosGeometry();
+	       char *sWkt = new char[2 * mSelectionRectangle->WkbSize()];
+	       mSelectionRectangle->exportToWkt(&sWkt);  
+	       geos::Geometry *geosRect = wktReader->read(sWkt);
+	       if(geosGeom->intersects(geosRect))
+	       {
+#ifdef QGISDEBUG
+		   qWarning("intersection found");
+#endif
+		   delete[] sWkt;
+		   delete geosGeom;
+		   break;
+	       }
+	       else
+	       {
+#ifdef QGISDEBUG
+		   qWarning("no intersection found");
+#endif
+		   delete[] sWkt;
+		   delete geosGeom;
+		   delete f;
+		   f=0;
+	       }
+	   }
+	   else
+	   {
+	       break;
+	   }
+       }
+   }
+   return f;
+}
+
+/**
+ * Get the next feature resutling from a select operation
+ * Return 0 if there are no features in the selection set
+ * @return QgsFeature
+ */
+/*QgsFeature *QgsOgrProvider::getNextFeature(bool fetchAttributes)
+{
 
   QgsFeature *f = 0;
   if(valid){
@@ -390,7 +460,8 @@ QgsFeature *QgsOgrProvider::getNextFeature(bool fetchAttributes)
 #endif
   }
   return f;
-}
+}*/
+
 
 QgsFeature *QgsOgrProvider::getNextFeature(std::list<int> const& attlist)
 {
@@ -484,15 +555,16 @@ void QgsOgrProvider::select(QgsRect *rect, bool useIntersect)
     mSelectionRectangle = new OGRPolygon();
     mSelectionRectangle->importFromWkt((char **)&wktText);
   }
+
   // reset the extent for the ogr filter
-  //
-  wktExtent = QString("POLYGON ((%1))").arg(rect->stringRep());
+  wktExtent = QString("POLYGON ((%1))").arg(rect->asPolygon());
   wktText = (const char *)wktExtent;
 
   OGRErr result = ((OGRPolygon *) filter)->importFromWkt((char **)&wktText);
   //TODO - detect an error in setting the filter and figure out what to
   //TODO   about it. If setting the filter fails, all records will be returned
-  if (result == OGRERR_NONE) {
+  if (result == OGRERR_NONE) 
+  {
     std::cerr << "Setting spatial filter using " << wktExtent    << std::endl;
     ogrLayer->SetSpatialFilter(filter);
     std::cerr << "Feature count: " << ogrLayer->GetFeatureCount() << std::endl;
@@ -502,7 +574,10 @@ void QgsOgrProvider::select(QgsRect *rect, bool useIntersect)
     assert(result==OGRERR_NONE);
 #endif
   }
-}
+} // QgsOgrProvider::select
+
+
+
 /**
  * Set the data source specification. This may be a path or database
  * connection string
@@ -999,9 +1074,9 @@ int QgsOgrProvider::capabilities() const
  * Class factory to return a pointer to a newly created 
  * QgsOgrProvider object
  */
-QGISEXTERN QgsOgrProvider * classFactory(const char *uri)
+QGISEXTERN QgsOgrProvider * classFactory(const QString *uri)
 {
-  return new QgsOgrProvider(QString::fromUtf8(uri));
+  return new QgsOgrProvider(*uri);
 }
 /** Required key function (used to map the plugin to a data store type)
 */
