@@ -2,6 +2,8 @@
 
 if HAVE_EXPAT
 
+if HAVE_EXPAT
+
 INCLUDES = -I../../src
 
 plugindir = ${pkglibdir}
