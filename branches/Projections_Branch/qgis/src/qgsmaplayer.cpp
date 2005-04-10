@@ -58,6 +58,7 @@ QgsMapLayer::QgsMapLayer(int type,
     // Generate the unique ID of this layer
     QDateTime dt = QDateTime::currentDateTime();
     ID = lyrname + dt.toString("yyyyMMddhhmmsszzz");
+    ID.replace(" ", "_");
 
 #if defined(WIN32) || defined(Q_OS_MACX)
 
@@ -215,11 +216,6 @@ bool QgsMapLayer::readXML( QDomNode & layer_node )
     setLayerName( mne.text() );
 
     const char * layerNameStr = mne.text(); // debugger probe
-
-    // process zorder
-    mnl = layer_node.namedItem("zorder");
-    mne = mnl.toElement();
-    // XXX and do what with it?
 
     // now let the children grab what they need from the DOM node.
     return readXML_( layer_node );
@@ -553,5 +549,4 @@ QgsCoordinateTransform * QgsMapLayer::coordinateTransform()
 #endif
   
  return mCoordinateTransform;
-};
-
+}

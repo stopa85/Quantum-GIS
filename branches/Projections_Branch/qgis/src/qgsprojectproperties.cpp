@@ -78,7 +78,7 @@
   // set the default wkt to WGS 84
 //  QString defaultWkt = QgsSpatialReferences::instance()->getSrsBySrid(defaultWktKey)->srText();
   // the /selectedWKT entry stores the wkt entry selected in the list of projections
-  QString srsWkt =  QgsProject::instance()->readEntry("SpatialRefSys","/selectedWKT","Lat/Long - WGS 84");
+  QString srsWkt =  QgsProject::instance()->readEntry("SpatialRefSys","/selectedWKT","WGS84");
 
   projectionSelector->setSelectedWKT(srsWkt);
   
@@ -100,6 +100,12 @@
         SLOT(setDestWKT(QString)));   
   }
 
+    
+    setMapUnits(myUnit);
+    title(QgsProject::instance()->title());
+    
+    
+    
   // get the manner in which the number of decimal places in the mouse
   // position display is set (manual or automatic)
   bool automaticPrecision = QgsProject::instance()->readBoolEntry("PositionPrecision","/Automatic");

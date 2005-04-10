@@ -63,6 +63,12 @@ public:
     QgsComposerMap( QgsComposition *composition, int id );
     ~QgsComposerMap();
 
+    /** \brief Calculate scale/extent.  */
+    enum Calculate {
+	Scale = 0,   // calculate scale from extent 
+	Extent      // calculate map extent from scale
+    };
+
     /** \brief Preview style  */
     enum PreviewMode {
 	Cache = 0,   // Use raster cache 
@@ -113,18 +119,36 @@ public:
     /** \brief Font size scale */
     double fontScale ( void );
 
+    /** \brief Scale */
+    double scale ( void );
+
 public slots:
     // Called by GUI if with or height was changed 
     void sizeChanged ( void );
     
     // Set User extent to current map extent
     void setCurrentExtent ( void );
+
+    // Called by GUI if calculate has changed 
+    void calculateChanged ( void );
+    
+    // Called by GUI if map scale has changed 
+    void mapScaleChanged ( void );
     
     // Called by GUI if with  scale was changed 
     void scaleChanged ( void );
     
+    // Frame settings changed 
+    void frameChanged ( void );
+    
     // Called by GUI if preview style was changed
     void previewModeChanged ( int i );
+    
+    // Called if map canvas has changed
+    void mapCanvasChanged ( );
+    
+    // Set cache outdated
+    void setCacheUpdated ( bool u = false );
 
 private:
     // Pointer to composition
@@ -151,6 +175,9 @@ private:
     //double mWidth;
     //double mHeight;
 
+    // Number of paper units in map per paper unit on paper, this is the xxx part of 1:xxx 
+    double mUserScale;
+
     // Scale from map (in map units) to paper (in canvas points), i.e. size_on_paper/size_in_map
     double mScale;
 
@@ -158,10 +185,13 @@ private:
     // NOTE:  QCanvasView is slow with bigger images but the spped does not decrease with image size.
     //        It is very slow, with zoom in in QCanvasView, it seems, that QCanvas is stored as a big image
     //        with resolution necessary for current zoom and so always a big image mus be redrawn. 
-    QPixmap *mCachePixmap; 
+    QPixmap mCachePixmap; 
+
+    // Is cache up to date
+    bool mCacheUpdated;
     
     // Resize schema
-    QgsComposition::Calculate mCalculate;
+    int mCalculate;
 
     // Line width scale
     double mWidthScale;
@@ -177,6 +207,18 @@ private:
 
     /** \brief Number of layers when cache was created  */
     int mNumCachedLayers;
+
+    /** \brief Draw frame  */
+    bool mFrame;
+
+    /** \brief set to true if in state of drawing, other requests are to draw are returned */
+    bool mDrawing;
+
+    /** \brief calculate mScale from mUserScale */
+    double scaleFromUserScale ( double us );
+
+    /** \brief calculate mUserScale from mScale */
+    double userScaleFromScale ( double s );
 };
 
 #endif

@@ -235,6 +235,8 @@ private:
     //! check to see if file is dirty and if so, prompt the user th save it
     int saveDirty();
 
+
+    
 private slots:
 
     //! reimplements widget keyPress event so we can check if cancel was pressed
@@ -359,6 +361,7 @@ public slots:
     void drawExtentRectangle(QPainter *);
     void updateMouseCoordinatePrecision();
     void debugHook();
+    void stopZoom();
 
 signals:
     /** emitted when a key is pressed and we want non widget sublasses to be able
@@ -396,7 +399,7 @@ private:
 
     /// QgisApp aren't copyable
     QgisApp & operator=( QgisApp const & );
-
+    
     //! A central registry that keeps track of all loaded layers.
     // prefer QgsMapLayerRegistry::instance() to emphasize Singleton
     ///QgsMapLayerRegistry * mMapLayerRegistry;
@@ -436,6 +439,8 @@ private:
     QRect *mMapWindow;
     //! Current map tool
     int mMapTool;
+    //! The previously selected non zoom map tool.
+    int mPreviousNonZoomMapTool;
     //QCursor *mCursorZoomIn; //doesnt seem to be used anymore (TS)
     QString mStartupPath;
     //! full path name of the current map file (if it has been saved or loaded)
@@ -470,6 +475,7 @@ private:
     bool mMousePrecisionAutomatic;
     //! The number of decimal places to use if not automatic
     unsigned int mMousePrecisionDecimalPlaces;
+    
 };
 
 #endif

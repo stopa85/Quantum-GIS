@@ -17,6 +17,7 @@ email                : sherman at mrcc.com
 #ifndef QGSFEATURE_H
 #define QGSFEATURE_H
 
+#include <geos.h>
 #include <qstring.h>
 #include <map>
 #include <vector>
@@ -118,14 +119,21 @@ class QgsFeature {
     /** Set WKB geometry*/
     void setGeometry(unsigned char * geometry, size_t length);
 
-    /**Shows a popup dialog to change attribute values*/
-    void attributeDialog();
+    /**Shows a popup dialog to change attribute values
+     @return true if dialog is accepted, false if rejected*/
+    bool attributeDialog();
 
     /**Test for intersection with a rectangle (uses GEOS)*/
-    bool intersects(QgsRect* r);
+    bool intersects(QgsRect* r) const;
 
     /**Returns the Vertex closest to a given point*/
-    QgsPoint closestVertex(const QgsPoint& point);
+    QgsPoint closestVertex(const QgsPoint& point) const;
+
+    /**Returns the bounding box of this feature*/
+    QgsRect boundingBox() const;
+
+    /**Creates a geos geometry from this features geometry. Note, that the returned object needs to be deleted*/
+    geos::Geometry* geosGeometry() const;
 
   private:
 

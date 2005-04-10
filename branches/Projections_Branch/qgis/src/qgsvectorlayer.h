@@ -140,7 +140,7 @@ public slots:
   QgsDlgVectorLayerProperties *propertiesDialog();
   /** Return the context menu for the layer */
   QPopupMenu *contextMenu();
-  /**Returns the bounding box of the selected features. If there is no selection, the lower bounds are DBL_MAX and the upper bounds -DBL_MAX*/
+  /**Returns the bounding box of the selected features. If there is no selection, QgsRect(0,0,0,0) is returned*/
   virtual QgsRect bBoxOfSelected();
   //! Return the provider type for this layer
   QString providerType();
@@ -296,13 +296,15 @@ public slots:
    *  \param widthScale line width scale
    *  \param symbolScale symbol scale
    */
-  void draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * cXf,  QPaintDevice * dst, double widthScale, double symbolScale);
+  void draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * cXf,  QPaintDevice * dst, double widthScale, double symbolScale, int oversampling = 1);
 
   /** \brief Draws the layer labels using coordinate transformation
    *  \param scale size scale, applied to all values in pixels
    */
   void drawLabels(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * cXf,  QPaintDevice * dst, double scale);
 
+  
+ 
 protected:
   /**Pointer to the table display object if there is one, else a pointer to 0*/
   QgsAttributeTableDisplay * tabledisplay;
@@ -334,7 +336,7 @@ protected slots:
   void startEditing();
   void stopEditing();
 
-  void drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * cXf, QPicture* marker, double markerScaleFactor, double widthScale, bool projectionsEnabledFlag );
+  void drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * cXf, QPicture* marker, double markerScaleFactor, bool projectionsEnabledFlag );
 
 private:                       // Private attributes
   /** A simple helper method to find out if on the fly projections are enabled or not */

@@ -399,6 +399,7 @@ QgisApp::QgisApp(QWidget * parent, const char *name, WFlags fl)
     connect(mMapCanvas, SIGNAL(addedLayer(QgsMapLayer *)), mMapLegend, SLOT(addLayer(QgsMapLayer *)));
     connect(mMapCanvas, SIGNAL(removedLayer(QString)), mMapLegend, SLOT(removeLayer(QString)));
     connect(mMapCanvas, SIGNAL(removedAll()), mMapLegend, SLOT(removeAll()));
+    connect(mMapCanvas, SIGNAL(stopZoom()), this, SLOT(stopZoom()));
 
     connect(mMapLegend, SIGNAL(doubleClicked(QListViewItem *)), this, SLOT(layerProperties(QListViewItem *)));
     connect(mMapLegend, SIGNAL(rightButtonPressed(QListViewItem *, const QPoint &, int)),
@@ -685,76 +686,76 @@ void QgisApp::about()
 
 void QgisApp::restoreSessionPlugins(QString thePluginDirString)
 {
-
-    QSettings mySettings;
-#ifdef QGISDEBUG
-
-    std::cerr << " -------------------- Restoring plugins from last session " << thePluginDirString << std::endl;
-#endif
-    // check all libs in the current plugin directory and get name and descriptions
-#ifdef WIN32
-
-    QDir myPluginDir(thePluginDirString, "*.dll", QDir::Name | QDir::IgnoreCase, QDir::Files | QDir::NoSymLinks);
-#else
-
-    QDir myPluginDir(thePluginDirString, "*.so*", QDir::Name | QDir::IgnoreCase, QDir::Files | QDir::NoSymLinks);
-#endif
-
-    if (myPluginDir.count() == 0)
+  
+  QSettings mySettings;
+  #ifdef QGISDEBUG
+  
+  std::cerr << " -------------------- Restoring plugins from last session " << thePluginDirString << std::endl;
+  #endif
+  // check all libs in the current plugin directory and get name and descriptions
+  #ifdef WIN32
+  
+QDir myPluginDir(thePluginDirString, "*.dll", QDir::Name | QDir::IgnoreCase, QDir::Files | QDir::NoSymLinks);
+  #else
+  
+QDir myPluginDir(thePluginDirString, "*.so*", QDir::Name | QDir::IgnoreCase, QDir::Files | QDir::NoSymLinks);
+  #endif
+  
+  if (myPluginDir.count() == 0)
+  {
+    //erk! do nothing
+    return;
+  }
+  else
+  {
+    for (unsigned i = 0; i < myPluginDir.count(); i++)
     {
-        //erk! do nothing
-        return;
-    }
-    else
-    {
-        for (unsigned i = 0; i < myPluginDir.count(); i++)
+      QString myFullPath = thePluginDirString + "/" + myPluginDir[i];
+      #ifdef QGISDEBUG
+      
+      std::cerr << "Examining " << myFullPath << std::endl;
+      #endif
+      
+      QLibrary *myLib = new QLibrary(myFullPath);
+      bool loaded = myLib->load();
+      if (loaded)
+      {
+        //purposely leaving this one to stdout!
+        std::cout << "Loaded " << myLib->library() << std::endl;
+        name_t * myName =(name_t *) myLib->resolve("name");
+        description_t *  myDescription = (description_t *)  myLib->resolve("description");
+        version_t *  myVersion =  (version_t *) myLib->resolve("version");
+        if (myName && myDescription  && myVersion )
         {
-            QString myFullPath = thePluginDirString + "/" + myPluginDir[i];
-#ifdef QGISDEBUG
-
-            std::cerr << "Examining " << myFullPath << std::endl;
-#endif
-
-            QLibrary *myLib = new QLibrary(myFullPath);
-            bool loaded = myLib->load();
-            if (loaded)
-            {
-                //purposely leaving this one to stdout!
-                std::cout << "Loaded " << myLib->library() << std::endl;
-                name_t * myName =(name_t *) myLib->resolve("name");
-                description_t *  myDescription = (description_t *)  myLib->resolve("description");
-                version_t *  myVersion =  (version_t *) myLib->resolve("version");
-                if (myName && myDescription  && myVersion )
-                {
-                    //check if the plugin was active on last session
-                    QString myEntryName = myName();
-                    // Windows stores a "true" value as a 1 in the registry so we
-                    // have to use readBoolEntry in this function
-
-                    if (mySettings.readBoolEntry("/qgis/Plugins/" + myEntryName))
-                    {
-#ifdef QGISDEBUG
-                        std::cerr << " -------------------- loading " << myEntryName << std::endl;
-#endif
-
-                        loadPlugin(myName(), myDescription(), myFullPath);
-                    }
-                }
-                else
-                {
-#ifdef QGISDEBUG
-                    std::cerr << "Failed to get name, description, or type for " << myLib->library() << std::endl;
-#endif
-
-                }
-            }
-            else
-            {
-                std::cerr << "Failed to load " << myLib->library() << std::endl;
-            }
+          //check if the plugin was active on last session
+          QString myEntryName = myName();
+          // Windows stores a "true" value as a 1 in the registry so we
+          // have to use readBoolEntry in this function
+          
+          if (mySettings.readBoolEntry("/qgis/Plugins/" + myEntryName))
+          {
+            #ifdef QGISDEBUG
+            std::cerr << " -------------------- loading " << myEntryName << std::endl;
+            #endif
+            
+            loadPlugin(myName(), myDescription(), myFullPath);
+          }
         }
+        else
+        {
+          #ifdef QGISDEBUG
+          std::cerr << "Failed to get name, description, or type for " << myLib->library() << std::endl;
+          #endif
+          
+        }
+      }
+      else
+      {
+        std::cerr << "Failed to load " << myLib->library() << std::endl;
+      }
     }
-
+  }
+  
 }
 
 
@@ -901,17 +902,19 @@ static void buildSupportedVectorFileFilter_(QString & fileFilters)
         else if (driverName.startsWith("GML"))
         {
             // XXX not yet supported; post 0.1 release task
-            //          myFileFilters += createFileFilter_( "Geography Markup Language",
-            //                                            "*.gml" );
+            myFileFilters += createFileFilter_( "Geography Markup Language",
+                                                "*.gml" );
         }
         else
         {
             // NOP, we don't know anything about the current driver
             // with regards to a proper file filter string
+            qDebug( "%s:%d unknown driver %s", __FILE__, __LINE__, driverName.ascii() );
         }
 
-        std::cout << myFileFilters << std::endl;
     }                           // each loaded GDAL driver
+
+    std::cout << myFileFilters << std::endl;
 
     // can't forget the default case
 
@@ -934,7 +937,8 @@ static void buildSupportedVectorFileFilter_(QString & fileFilters)
 
    @param selectedFiles string list of selected files; will be empty
                         if none selected
-
+   @param enc        encoding?
+   @param title      the title for the dialog
    @note
 
    Stores persistent settings under /qgis/UI/.  The sub-keys will be
@@ -945,7 +949,8 @@ static void buildSupportedVectorFileFilter_(QString & fileFilters)
    with the current filter name.
 
 */
-static void openFilesRememberingFilter_(QString const &filterName, QString const &filters, QStringList & selectedFiles, QString& enc)
+static void openFilesRememberingFilter_(QString const &filterName, 
+  QString const &filters, QStringList & selectedFiles, QString& enc, QString &title)
 {
 
     bool haveLastUsedFilter = false;  // by default, there is no last
@@ -969,7 +974,7 @@ static void openFilesRememberingFilter_(QString const &filterName, QString const
 
     // allow for selection of more than one file
     openFileDialog->setMode(QFileDialog::ExistingFiles);
-    openFileDialog->setCaption(QFileDialog::tr("Open an OGR Supported Data Source"));
+    openFileDialog->setCaption(title);
 
     if (haveLastUsedFilter)       // set the filter to the last one used
     {
@@ -979,7 +984,7 @@ static void openFilesRememberingFilter_(QString const &filterName, QString const
     if (openFileDialog->exec() == QDialog::Accepted)
     {
         selectedFiles = openFileDialog->selectedFiles();
-	enc = openFileDialog->encoding();
+  enc = openFileDialog->encoding();
     }
 
     settings.writeEntry("/qgis/UI/" + filterName, openFileDialog->selectedFilter());
@@ -1028,8 +1033,10 @@ void QgisApp::addLayer()
         std::cerr << "Vector file filters: " << fileFilters << std::endl;
 #endif
 
-	QString enc;
-        openFilesRememberingFilter_("lastVectorFileFilter", fileFilters, selectedFiles, enc);
+  QString enc;
+  QString title = tr("Open an OGR Supported Vector Layer");
+        openFilesRememberingFilter_("lastVectorFileFilter", fileFilters, selectedFiles, enc,
+          title);
         if (selectedFiles.isEmpty())
         {
             // no files were selected, so just bail
@@ -1221,7 +1228,7 @@ bool QgisApp::addLayer(QStringList const &theLayerQStringList, const QString& en
 
             if (layer->isValid())
             {
-		layer->getDataProvider()->setEncoding(enc);
+    layer->getDataProvider()->setEncoding(enc);
                 //Register the layer with the layer registry
                 QgsMapLayerRegistry::instance()->addMapLayer(layer);
                 // init the context menu so it can connect to slots
@@ -2192,6 +2199,12 @@ void QgisApp::zoomIn()
        mMapCanvas->setWorldMatrix( m );
      */
 
+    if ( mMapCanvas->mapTool() != QGis::ZoomIn && mMapCanvas->mapTool() != QGis::ZoomOut
+   && mMapCanvas->mapTool() != QGis::Pan )
+    {
+  mPreviousNonZoomMapTool = mMapCanvas->mapTool();
+    }
+
     mMapTool = QGis::ZoomIn;
     mMapCanvas->setMapTool(mMapTool);
     // set the cursor
@@ -2216,6 +2229,12 @@ void QgisApp::zoomIn()
 
 void QgisApp::zoomOut()
 {
+    if ( mMapCanvas->mapTool() != QGis::ZoomIn && mMapCanvas->mapTool() != QGis::ZoomOut
+   && mMapCanvas->mapTool() != QGis::Pan )
+    {
+  mPreviousNonZoomMapTool = mMapCanvas->mapTool();
+    }
+
     mMapTool = QGis::ZoomOut;
     mMapCanvas->setMapTool(mMapTool);
 
@@ -2242,6 +2261,12 @@ void QgisApp::zoomToSelected()
 
 void QgisApp::pan()
 {
+    if ( mMapCanvas->mapTool() != QGis::ZoomIn && mMapCanvas->mapTool() != QGis::ZoomOut
+   && mMapCanvas->mapTool() != QGis::Pan )
+    {
+  mPreviousNonZoomMapTool = mMapCanvas->mapTool();
+    }
+
     mMapTool = QGis::Pan;
     mMapCanvas->setMapTool(mMapTool);
     QBitmap panBmp(16, 16, pan_bits, true);
@@ -2279,6 +2304,7 @@ void QgisApp::identify()
     delete mMapCursor;
     mMapCursor = new QCursor(myIdentifyQPixmap, 1, 1);
     mMapCanvas->setCursor(*mMapCursor);
+    actionIdentify->setOn(true);
 }
 
 void QgisApp::measure()
@@ -2286,11 +2312,44 @@ void QgisApp::measure()
     mMapTool = QGis::Measure;
     mMapCanvas->setMapTool(mMapTool);
 
-    QPixmap pm = QPixmap((const char **)  capture_point_cursor);
-    delete mMapCursor;
-    mMapCursor = new QCursor(pm, 8, 8);
-    mMapCanvas->setCursor(*mMapCursor);
+    //QPixmap pm = QPixmap((const char **)  capture_point_cursor);
+    //delete mMapCursor;
+    //mMapCursor = new QCursor(pm, 8, 8);
+    mMapCanvas->setCursor( Qt::CrossCursor );
+    actionMeasure->setOn(true);
 }
+
+void QgisApp::stopZoom() 
+{
+    actionZoomIn->setOn(false);
+    actionZoomIn->setOn(false);
+    actionPan->setOn(false);
+
+    switch ( mPreviousNonZoomMapTool ) {
+  case QGis::Identify:
+      identify();
+      break;
+  case QGis::Select:
+      select();
+      break;
+  case QGis::CapturePoint:
+      capturePoint();
+      break;
+  case QGis::CaptureLine:
+      captureLine();
+      break;
+  case QGis::CapturePolygon:
+      capturePolygon();
+      break;
+  case QGis::EmitPoint:
+      mMapCanvas->setMapTool( QGis::EmitPoint );
+      break;
+  case QGis::Measure:
+      measure();
+      break;
+    }
+}
+
 
 void QgisApp::attributeTable()
 {
@@ -2353,6 +2412,8 @@ void QgisApp::capturePoint()
         delete mMapCursor;
         mMapCursor = new QCursor(mySelectQPixmap, 8, 8);
         mMapCanvas->setCursor(*mMapCursor);
+    
+  actionCapturePoint->setOn(true);
     }
 }
 
@@ -2365,6 +2426,8 @@ void QgisApp::captureLine()
         delete mMapCursor;
         mMapCursor = new QCursor(mySelectQPixmap, 8, 8);
         mMapCanvas->setCursor(*mMapCursor);
+
+  actionCaptureLine->setOn(true);
     }
 }
 
@@ -2377,6 +2440,8 @@ void QgisApp::capturePolygon()
         delete mMapCursor;
         mMapCursor = new QCursor(mySelectQPixmap, 8, 8);
         mMapCanvas->setCursor(*mMapCursor);
+  
+  actionCapturePolygon->setOn(true);
     }
 }
 
@@ -2390,6 +2455,7 @@ void QgisApp::select()
     delete mMapCursor;
     mMapCursor = new QCursor(mySelectQPixmap, 1, 1);
     mMapCanvas->setCursor(*mMapCursor);
+    actionSelect->setOn(true);
 }
 
 void QgisApp::drawPoint(double x, double y)
@@ -2571,15 +2637,22 @@ void QgisApp::menubar_highlighted( int i )
 
 void QgisApp::inOverview( bool in_overview )
 {
-#ifdef QGISDEBUG
-    std::cout << "QGisApp::inOverview(" << in_overview << ")" << std::endl;
-#endif
-
-    QListViewItem *lvi = mMapLegend->currentItem();
+  #ifdef QGISDEBUG
+  std::cout << "QGisApp::inOverview(" << in_overview << ")" << std::endl;
+  #endif
+  
+  QListViewItem *lvi = mMapLegend->currentItem();
+  
+  // check to make sure there is a current layer
+  // TODO: We really need to set disable/enable all menu options based on a logical scheme. 
+  //       This is just a hack...
+  if(lvi)
+  {
     QgsMapLayer *layer = ((QgsLegendItem *) lvi)->layer();
-
+    
     layer->inOverview( in_overview );
     mOverviewCanvas->render();
+  }
 } // QgisApp::inOverview(bool)
 
 
@@ -2648,7 +2721,7 @@ void QgisApp::zoomToLayerExtent()
 
 void QgisApp::rightClickLegendMenu(QListViewItem * lvi, const QPoint & pt, int)
 {
-    if (lvi)
+    if (!mMapCanvas->isDrawing()&&lvi)
     {
         // get the context menu from the layer and display it
         QgsMapLayer *layer = ((QgsLegendItem *) lvi)->layer();
@@ -2667,10 +2740,10 @@ void QgisApp::currentLayerChanged(QListViewItem * lvi)
         // disable/enable toolbar buttons as appropriate based on selected
         // layer type
 
-	toolPopupCapture->setItemEnabled(0,FALSE);
-	toolPopupCapture->setItemEnabled(1,FALSE);
-	toolPopupCapture->setItemEnabled(2,FALSE);
-	toolPopupCapture->setItemEnabled(3,FALSE);
+  toolPopupCapture->setItemEnabled(0,FALSE);
+  toolPopupCapture->setItemEnabled(1,FALSE);
+  toolPopupCapture->setItemEnabled(2,FALSE);
+  toolPopupCapture->setItemEnabled(3,FALSE);
 
         QgsMapLayer *layer = ((QgsLegendItem *) lvi)->layer();
         if (layer->type() == QgsMapLayer::RASTER)
@@ -2692,31 +2765,31 @@ void QgisApp::currentLayerChanged(QListViewItem * lvi)
             QgsVectorLayer* vlayer=dynamic_cast<QgsVectorLayer*>(((QgsLegendItem *) lvi)->layer());
             if(vlayer)
             {
-		QgsVectorDataProvider* provider=vlayer->getDataProvider();
-		if(provider)
-		{
-		    int cap=vlayer->getDataProvider()->capabilities();
-		    if(cap&QgsVectorDataProvider::DeleteFeatures)
-		    {
-			toolPopupCapture->setItemEnabled(3,TRUE);
-		    }
-		    if(cap&QgsVectorDataProvider::AddFeatures)
-		    {
-			if(vlayer->vectorType()==QGis::Point)
-			{
-			    toolPopupCapture->setItemEnabled(0,TRUE);
-			}
-			else if(vlayer->vectorType()==QGis::Line)
-			{
-			    toolPopupCapture->setItemEnabled(1,TRUE);
-			}
-			else if(vlayer->vectorType()==QGis::Polygon)
-			{
-			    toolPopupCapture->setItemEnabled(2,TRUE);
-			}
-		    }
-		}
-	    }
+    QgsVectorDataProvider* provider=vlayer->getDataProvider();
+    if(provider)
+    {
+        int cap=vlayer->getDataProvider()->capabilities();
+        if(cap&QgsVectorDataProvider::DeleteFeatures)
+        {
+      toolPopupCapture->setItemEnabled(3,TRUE);
+        }
+        if(cap&QgsVectorDataProvider::AddFeatures)
+        {
+      if(vlayer->vectorType()==QGis::Point)
+      {
+          toolPopupCapture->setItemEnabled(0,TRUE);
+      }
+      else if(vlayer->vectorType()==QGis::Line)
+      {
+          toolPopupCapture->setItemEnabled(1,TRUE);
+      }
+      else if(vlayer->vectorType()==QGis::Polygon)
+      {
+          toolPopupCapture->setItemEnabled(2,TRUE);
+      }
+        }
+    }
+      }
 
             actionIdentify->setEnabled(TRUE);
             actionSelect->setEnabled(TRUE);
@@ -2736,9 +2809,9 @@ void QgisApp::currentLayerChanged(QListViewItem * lvi)
             }
         }
 
-	//let the mapcanvas know that the current layer changed
-	//so any remaining digitizing acetates can be removed
-	mMapCanvas->removeEditingAcetates();
+  //let the mapcanvas know that the current layer changed
+  //so any remaining digitizing acetates can be removed
+  mMapCanvas->removeEditingAcetates();
 
         // notify the project we've made a change
         QgsProject::instance()->dirty(true);
@@ -4058,8 +4131,9 @@ void QgisApp::addRasterLayer()
 
     QStringList selectedFiles;
     QString e;//only for parameter correctness
-
-    openFilesRememberingFilter_("lastRasterFileFilter", fileFilters, selectedFiles,e);
+    QString title = tr("Open a GDAL Supported Raster Data Source");
+    openFilesRememberingFilter_("lastRasterFileFilter", fileFilters, selectedFiles,e,
+      title);
 
     if (selectedFiles.isEmpty())
     {

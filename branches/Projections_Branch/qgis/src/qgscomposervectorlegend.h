@@ -44,7 +44,7 @@
 #include <qwidget.h>
 #include <qcanvas.h>
 #include <qobject.h>
-
+#include <map>
 #include "qgsrect.h"
 
 #include "qgscomposer.h"
@@ -76,12 +76,15 @@ class QgsRect;
 class QgsMapToPixel;
 class QgsComposition;
 class QgsComposerMap;
+class QgsComposerItem;
 
 /** \class QgsComposerVectorLegend 
  *  \brief Object representing map window. 
  */
 // NOTE: QgsComposerVectorLegendBase must be first, otherwise does not compile
-class QgsComposerVectorLegend : public QgsComposerVectorLegendBase, public QCanvasRectangle, public QgsComposerItem
+class QgsComposerVectorLegend : public QgsComposerVectorLegendBase, 
+                                public QCanvasRectangle, 
+                                public QgsComposerItem
 {
     Q_OBJECT
 
@@ -173,6 +176,9 @@ public slots:
     // Combine selected layers
     void groupLayers( void );
 
+    // Frame settings changed
+    void frameChanged ( void );
+
 private:
     // Pointer to composition
     QgsComposition *mComposition;
@@ -206,7 +212,10 @@ private:
     // NOTE:  QCanvasView is slow with bigger images but the spped does not decrease with image size.
     //        It is very slow, with zoom in in QCanvasView, it seems, that QCanvas is stored as a big image
     //        with resolution necessary for current zoom and so always a big image mus be redrawn. 
-    QPixmap *mCachePixmap; 
+    QPixmap mCachePixmap; 
+
+    // Is cache up to date
+    bool mCacheUpdated;
     
     /** \brief Preview style  */
     PreviewMode mPreviewMode;
@@ -225,6 +234,9 @@ private:
 
     /** \brief Layers list popup menu */
     QPopupMenu *mLayersPopupMenu;
+
+    /** \brief Draw frame  */
+    bool mFrame;
 };
 
 #endif

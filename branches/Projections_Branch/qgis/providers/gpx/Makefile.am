@@ -1,6 +1,5 @@
 ## $Id$
 
-if HAVE_EXPAT
 
 if HAVE_EXPAT
 

@@ -23,11 +23,13 @@
 #include <qwidget.h>
 #include <qrect.h>
 #include <qcombobox.h>
+#include <qcheckbox.h>
 #include <qdom.h>
 #include <qcanvas.h>
 #include <qpainter.h>
 #include <qstring.h>
 #include <qpixmap.h>
+#include <qpicture.h>
 #include <qimage.h>
 #include <qlineedit.h>
 #include <qpointarray.h>
@@ -64,6 +66,7 @@
 #include "qgsuniquevalrenderer.h"
 #include "qgsuvalmarenderer.h"
 #include "qgssvgcache.h"
+#include "qgsmarkercatalogue.h"
 
 QgsComposerVectorLegend::QgsComposerVectorLegend ( QgsComposition *composition, int id, 
                                               int x, int y, int fontSize )
@@ -88,7 +91,6 @@ QgsComposerVectorLegend::QgsComposerVectorLegend ( QgsComposition *composition, 
 
     // Calc size and cache
     recalculate();
-    cache();
 
     // Add to canvas
     setCanvas(mComposition->canvas());
@@ -115,7 +117,6 @@ QgsComposerVectorLegend::QgsComposerVectorLegend ( QgsComposition *composition, 
 
     // Calc size and cache
     recalculate();
-    cache();
 
     // Add to canvas
     setCanvas(mComposition->canvas());
@@ -131,9 +132,10 @@ void QgsComposerVectorLegend::init ( void )
     mTitle = "Legend";
     mMap = 0;
     mNextLayerGroup = 1;
+    mFrame = true;
 
     // Cache
-    mCachePixmap = new QPixmap();
+    mCacheUpdated = false;
 
     // Rectangle
     QCanvasRectangle::setZ(50);
@@ -190,9 +192,9 @@ QRect QgsComposerVectorLegend::render ( QPainter *p )
 
     std::cout << "mComposition->scale() = " << mComposition->scale() << std::endl;
     // Font size in canvas units
-    int titleSize = (int) ( 25.4 * mComposition->scale() * mTitleFont.pointSize() / 72);
-    int sectionSize = (int) ( 25.4 * mComposition->scale() * mSectionFont.pointSize() / 72);
-    int size = (int) ( 25.4 * mComposition->scale() * mFont.pointSize() / 72);
+    float titleSize = 25.4 * mComposition->scale() * mTitleFont.pointSizeFloat() / 72;
+    float sectionSize = 25.4 * mComposition->scale() * mSectionFont.pointSizeFloat() / 72;
+    float size = 25.4 * mComposition->scale() * mFont.pointSizeFloat() / 72;
 
     std::cout << "font sizes = " << titleSize << " " << sectionSize << " " << size << std::endl;
 
@@ -201,27 +203,26 @@ QRect QgsComposerVectorLegend::render ( QPainter *p )
     QFont sectionFont ( mSectionFont );
     QFont font ( mFont );
 
-    titleFont.setPointSize ( titleSize );
-    sectionFont.setPointSize ( sectionSize );
-    font.setPointSize ( size );
+    titleFont.setPointSizeFloat ( titleSize );
+    sectionFont.setPointSizeFloat ( sectionSize );
+    font.setPointSizeFloat ( size );
 
     QFontMetrics titleMetrics ( titleFont );
     QFontMetrics sectionMetrics ( sectionFont );
     QFontMetrics metrics ( font );
     
     // Fonts for rendering
-
-    // It seems that font pointSize is used in points in Postscript, that means it depends 
-    // on resolution!
-    if ( plotStyle() == QgsComposition::Print ) {
-  titleSize = (int) ( 72.0 * titleSize / mComposition->resolution() );
-  sectionSize = (int) ( 72.0 * sectionSize / mComposition->resolution() );
-  size = (int) ( 72.0 * size / mComposition->resolution() );
+    
+    // I have no idea why 2.54 - it is an empirical value
+    if ( plotStyle() == QgsComposition::Postscript) {
+  titleSize = 2.54 * 72.0 * mTitleFont.pointSizeFloat() / mComposition->resolution();
+  sectionSize = 2.54 * 72.0 * mSectionFont.pointSizeFloat() / mComposition->resolution();
+  size = 2.54 * 72.0 * mFont.pointSizeFloat() / mComposition->resolution();
     }
     
-    titleFont.setPointSize ( titleSize );
-    sectionFont.setPointSize ( sectionSize );
-    font.setPointSize ( size );
+    titleFont.setPointSizeFloat ( titleSize );
+    sectionFont.setPointSizeFloat ( sectionSize );
+    font.setPointSizeFloat ( size );
 
     // Not sure about Style Strategy, QFont::PreferMatch?
     titleFont.setStyleStrategy ( (QFont::StyleStrategy) (QFont::PreferOutline | QFont::PreferAntialias) );
@@ -245,7 +246,6 @@ QRect QgsComposerVectorLegend::render ( QPainter *p )
   
   int nlayers = mMapCanvas->layerCount();
   for ( int i = nlayers - 1; i >= 0; i-- ) {
-            std::cout << "layer = " << i << std::endl;
       QgsMapLayer *layer = mMapCanvas->getZpos(i);
       if ( !layer->visible() ) continue;
       if ( layer->type() != QgsMapLayer::VECTOR ) continue;
@@ -254,14 +254,11 @@ QRect QgsComposerVectorLegend::render ( QPainter *p )
       if( ! layerOn(layerId) ) continue;
         
       int group = layerGroup ( layerId );
-            std::cout << "group = " << group << std::endl;
       if ( group > 0 ) { 
     //std::map<int,int>::iterator it= doneGroups.find();
           if ( doneGroups.find(group) != doneGroups.end() ) {
-                    std::cout << "already done" << std::endl;
         continue; 
     } else {
-                    std::cout << "do the group" << std::endl;
         doneGroups.insert(std::make_pair(group,1));
     }
       }
@@ -274,7 +271,6 @@ QRect QgsComposerVectorLegend::render ( QPainter *p )
       QString sectionTitle;
 
       for ( int j = nlayers - 1; j >= 0; j-- ) {
-                std::cout << "layer = " << j << std::endl;
     QgsMapLayer *layer2 = mMapCanvas->getZpos(j);
     if ( !layer2->visible() ) continue;
     if ( layer2->type() != QgsMapLayer::VECTOR ) continue;
@@ -286,11 +282,18 @@ QRect QgsComposerVectorLegend::render ( QPainter *p )
     
     QgsVectorLayer *vector = dynamic_cast <QgsVectorLayer*> (layer2);
     QgsRenderer *renderer = vector->renderer();
-    if ( typeid (*renderer) == typeid(QgsContinuousColRenderer) ) continue;
+
+    // QgsContinuousColRenderer is not supported yet
+    // QgsSiMaRenderer, QgsGraduatedMaRenderer, QgsUValMaRenderer no more
+    if ( typeid (*renderer) == typeid(QgsContinuousColRenderer) ||
+         typeid (*renderer) == typeid(QgsSiMaRenderer) ||
+         typeid (*renderer) == typeid(QgsGraduatedMaRenderer) ||
+         typeid (*renderer) == typeid(QgsUValMaRenderer) )
+    { 
+        continue;
+    }
 
     if ( (group > 0 && group2 == group) || ( group == 0 && j == i )  ) {
-                    std::cout << "add to group" << std::endl;
-
         groupLayers.push_back(j);
 
         std::list<QgsRenderItem*> items = renderer->items();
@@ -304,29 +307,30 @@ QRect QgsComposerVectorLegend::render ( QPainter *p )
             itemHeights.resize(sectionItemsCount);
             itemLabels.resize(sectionItemsCount); 
         }
-    
+
+        double widthScale = map->widthScale() * mComposition->scale();
+        if ( plotStyle() == QgsComposition::Preview && mPreviewMode == Render ) {
+      widthScale *= mComposition->viewScale();
+        }
+        
+        double scale = map->symbolScale() * mComposition->scale();
+
         int icnt = 0;
         for ( std::list<QgsRenderItem*>::iterator it = items.begin(); it != items.end(); ++it ) {
-      double scale = map->symbolScale() * mComposition->scale();
         
       QgsRenderItem *ri = (*it);
+            QgsSymbol *sym = ri->getSymbol();
       
       // height
-      if ( typeid (*renderer) == typeid(QgsSiMaRenderer) ||
-           typeid (*renderer) == typeid(QgsGraduatedMaRenderer) ||
-           typeid (*renderer) == typeid(QgsUValMaRenderer) ) 
-      {
-          QgsMarkerSymbol* ms = dynamic_cast<QgsMarkerSymbol*>(ri->getSymbol());
-          scale *= ms->scaleFactor();
+      if ( itemHeights[icnt] < mSymbolHeight ) { // init first
+          itemHeights[icnt] = mSymbolHeight;
+      }
+      QPicture pic = sym->getPointSymbolAsPicture(0,widthScale);
+      QRect br = pic.boundingRect();
 
-          QPixmap pm = QgsSVGCache::instance().getPixmap( ms->picture(), scale);
-          if ( pm.height() > mSymbolHeight && pm.height() > itemHeights[icnt] ) {
-        itemHeights[icnt] = pm.height();
-          }
-      } else {
-          if ( itemHeights[icnt] < mSymbolHeight ) {  // init if first
-        itemHeights[icnt] = mSymbolHeight;
-          }
+      int h = (int) ( scale * br.height() );
+      if ( h > itemHeights[icnt] ) {
+          itemHeights[icnt] = h;
       }
 
       if ( itemLabels[icnt].length() == 0 ) {
@@ -341,8 +345,8 @@ QRect QgsComposerVectorLegend::render ( QPainter *p )
         }
     }
       }
-            std::cout << "group size = " << groupLayers.size() << std::endl;
-            std::cout << "sectionItemsCount = " << sectionItemsCount << std::endl;
+            //std::cout << "group size = " << groupLayers.size() << std::endl;
+            //std::cout << "sectionItemsCount = " << sectionItemsCount << std::endl;
 
       // Section title 
       if ( sectionItemsCount > 1 ) {
@@ -396,24 +400,18 @@ QRect QgsComposerVectorLegend::render ( QPainter *p )
         if ( vector->vectorType() == QGis::Point ) {
       double scale = map->symbolScale() * mComposition->scale();
 
-      if ( typeid (*renderer) == typeid(QgsSiMaRenderer) ||
-           typeid (*renderer) == typeid(QgsGraduatedMaRenderer) ||
-           typeid (*renderer) == typeid(QgsUValMaRenderer) ) 
-      {
-          QgsMarkerSymbol* ms = dynamic_cast<QgsMarkerSymbol*>(ri->getSymbol());
-          scale *= ms->scaleFactor();
+      // Get the picture of appropriate size directly from catalogue
+      QPicture pic = sym->getPointSymbolAsPicture(0,widthScale);
+          
+      QRect br = pic.boundingRect();
+    
+      painter->save();
+      painter->scale(scale,scale);
+      painter->drawPicture ( static_cast<int>( (1.*mMargin+mSymbolWidth/2)/scale-br.x()-1.*br.width()/2),
+                 static_cast<int>( (1.*localHeight+symbolHeight/2)/scale-br.y()-1.*br.height()/2),
+                 pic );
+      painter->restore();
 
-          QPixmap pm = QgsSVGCache::instance().getPixmap( ms->picture(), scale);
-
-          painter->drawPixmap ( static_cast<int>( (mMargin+mSymbolWidth/2)-pm.width()/2),
-              static_cast<int>( (localHeight+symbolHeight/2)-pm.height()/2),
-              pm );
-
-      } else {
-          painter->drawRect( (int)(mMargin+mSymbolWidth/2-(scale*3)), 
-                 (int)(localHeight+symbolHeight/2-(scale*3)), 
-                 (int)(scale*6), (int)(scale*6) );
-      }
         } else if ( vector->vectorType() == QGis::Line ) {
       painter->drawLine ( mMargin, localHeight+mSymbolHeight/2, 
               mMargin+mSymbolWidth, localHeight+mSymbolHeight/2 );
@@ -431,10 +429,12 @@ QRect QgsComposerVectorLegend::render ( QPainter *p )
       lab = itemLabels[icnt];
         }
         
+        // drawText (x, y w, h, ...) was cutting last letter (the box was tto small)
         QRect br = metrics.boundingRect ( lab );
         x = (int) ( 2*mMargin + mSymbolWidth );
-        y = (int) ( localHeight + symbolHeight/2 - br.height()/2 );
-        painter->drawText( x, y, br.width(), br.height(), Qt::AlignLeft|Qt::AlignVCenter, lab );  
+        y = (int) ( localHeight + symbolHeight/2 + ( metrics.height()/2 - metrics.descent()) );
+
+        painter->drawText( x, y, lab ); 
 
         int w = 3*mMargin + mSymbolWidth + metrics.width(lab);
         if ( w > width ) width = w;
@@ -470,16 +470,16 @@ void QgsComposerVectorLegend::cache ( void )
 {
     std::cout << "QgsComposerVectorLegend::cache()" << std::endl;
 
-    delete mCachePixmap;
-    mCachePixmap = new QPixmap ( QCanvasRectangle::width(), QCanvasRectangle::height(), -1, QPixmap::BestOptim ); 
+    mCachePixmap.resize ( QCanvasRectangle::width(), QCanvasRectangle::height() ); 
 
-    QPainter p(mCachePixmap);
+    QPainter p(&mCachePixmap);
     
-    mCachePixmap->fill(QColor(255,255,255));
+    mCachePixmap.fill(QColor(255,255,255));
     render ( &p );
     p.end();
 
     mNumCachedLayers = mMapCanvas->layerCount();
+    mCacheUpdated = true;    
 }
 
 void QgsComposerVectorLegend::draw ( QPainter & painter )
@@ -488,31 +488,35 @@ void QgsComposerVectorLegend::draw ( QPainter & painter )
         << " mPreviewMode = " << mPreviewMode << std::endl;
 
     // Draw background rectangle
-    painter.setPen( QPen(QColor(0,0,0), 1) );
-    painter.setBrush( QBrush( QColor(255,255,255), Qt::SolidPattern) );
 
-    painter.save();
-  
-    painter.translate ( QCanvasRectangle::x(), QCanvasRectangle::y() );
-    painter.drawRect ( 0, 0, QCanvasRectangle::width()+1, QCanvasRectangle::height()+1 ); // is it right?
-    painter.restore();
+    if ( mFrame ) {
+  painter.setPen( QPen(QColor(0,0,0), 1) );
+  painter.setBrush( QBrush( QColor(255,255,255), Qt::SolidPattern) );
+
+  painter.save();
+      
+  painter.translate ( QCanvasRectangle::x(), QCanvasRectangle::y() );
+  painter.drawRect ( 0, 0, QCanvasRectangle::width()+1, QCanvasRectangle::height()+1 ); // is it right?
+  painter.restore();
+    }
     
     if ( plotStyle() == QgsComposition::Preview &&  mPreviewMode == Cache ) { // Draw from cache
         std::cout << "use cache" << std::endl;
   
-  if ( mMapCanvas->layerCount() != mNumCachedLayers ) {
+  if ( !mCacheUpdated || mMapCanvas->layerCount() != mNumCachedLayers ) {
       cache();
   }
   
   painter.save();
   painter.translate ( QCanvasRectangle::x(), QCanvasRectangle::y() );
         std::cout << "translate: " << QCanvasRectangle::x() << ", " << QCanvasRectangle::y() << std::endl;
-  painter.drawPixmap(0,0, *mCachePixmap);
+  painter.drawPixmap(0,0, mCachePixmap);
 
   painter.restore();
 
     } else if ( (plotStyle() == QgsComposition::Preview && mPreviewMode == Render) || 
-           plotStyle() == QgsComposition::Print ) 
+           plotStyle() == QgsComposition::Print ||
+     plotStyle() == QgsComposition::Postscript ) 
     {
         std::cout << "render" << std::endl;
   
@@ -591,6 +595,16 @@ void QgsComposerVectorLegend::mapChanged ( int id )
     QCanvasRectangle::canvas()->update();
 }
 
+void QgsComposerVectorLegend::frameChanged ( )
+{
+    mFrame = mFrameCheckBox->isChecked();
+
+    QCanvasRectangle::update();
+    QCanvasRectangle::canvas()->update();
+
+    writeSettings();
+}
+
 void QgsComposerVectorLegend::recalculate ( void ) 
 {
     std::cout << "QgsComposerVectorLegend::recalculate" << std::endl;
@@ -599,15 +613,15 @@ void QgsComposerVectorLegend::recalculate ( void )
     
     // Title and section font 
     mTitleFont = mFont;
-    mTitleFont.setPointSize ( (int) (1.4 * mFont.pointSize()) );
+    mTitleFont.setPointSizeFloat ( 1.4 * mFont.pointSizeFloat());
     mSectionFont = mFont;
-    mSectionFont.setPointSize ( (int) (1.2 * mFont.pointSize()) );
+    mSectionFont.setPointSizeFloat ( 1.2 * mFont.pointSizeFloat() );
     
-    std::cout << "font size = " << mFont.pointSize() << std::endl;
-    std::cout << "title font size = " << mTitleFont.pointSize() << std::endl;
+    std::cout << "font size = " << mFont.pointSizeFloat() << std::endl;
+    std::cout << "title font size = " << mTitleFont.pointSizeFloat() << std::endl;
 
     // Font size in canvas units
-    int size = (int) ( 25.4 * mComposition->scale() * mFont.pointSize() / 72);
+    float size = 25.4 * mComposition->scale() * mFont.pointSizeFloat() / 72;
 
     mMargin = (int) ( 0.9 * size );
     mSymbolHeight = (int) ( 1.3 * size );
@@ -623,8 +637,7 @@ void QgsComposerVectorLegend::recalculate ( void )
 
     QCanvasRectangle::setSize ( r.width(), r.height() );
     
-    //setOptions();
-    cache();
+    mCacheUpdated = false;
 }
 
 void QgsComposerVectorLegend::setOptions ( void )
@@ -654,6 +667,8 @@ void QgsComposerVectorLegend::setOptions ( void )
   mMap = 0;
   mMapComboBox->setCurrentItem ( 0 );
     }
+
+    mFrameCheckBox->setChecked ( mFrame );
     
     // Layers
     mLayersListView->clear();
@@ -685,6 +700,8 @@ void QgsComposerVectorLegend::setOptions ( void )
       }
   }
     }
+
+    mPreviewModeComboBox->setCurrentItem( mPreviewMode );
 }
 
 void QgsComposerVectorLegend::setSelected (  bool s ) 
@@ -831,6 +848,8 @@ bool QgsComposerVectorLegend::writeSettings ( void )
     QgsProject::instance()->writeEntry( "Compositions", path+"font/underline", mFont.underline() );
     QgsProject::instance()->writeEntry( "Compositions", path+"font/strikeout", mFont.strikeOut() );
 
+    QgsProject::instance()->writeEntry( "Compositions", path+"frame", mFrame );
+
     // Layers: remove all, write new
     path.sprintf("/composition_%d/vectorlegend_%d/layers/", mComposition->id(), mId ); 
     QgsProject::instance()->removeEntry ( "Compositions", path );
@@ -876,6 +895,11 @@ bool QgsComposerVectorLegend::readSettings ( void )
     mFont.setUnderline(  QgsProject::instance()->readBoolEntry("Compositions", path+"font/underline", false, &ok) );
     mFont.setStrikeOut(  QgsProject::instance()->readBoolEntry("Compositions", path+"font/strikeout", false, &ok) );
 
+    mFrame = QgsProject::instance()->readBoolEntry("Compositions", path+"frame", true, &ok);
+
+    // Preview mode
+    mPreviewMode = (PreviewMode) QgsProject::instance()->readNumEntry("Compositions", path+"previewmode", Render, &ok);
+    
     // Layers
     path.sprintf("/composition_%d/vectorlegend_%d/layers/", mComposition->id(), mId );
     QStringList el = QgsProject::instance()->subkeyList ( "Compositions", path );
@@ -894,8 +918,6 @@ bool QgsComposerVectorLegend::readSettings ( void )
   if ( group >= mNextLayerGroup ) mNextLayerGroup = group+1;
     }
     
-    // Preview mode
-    mPreviewMode = (PreviewMode) QgsProject::instance()->readNumEntry("Compositions", path+"previewmode", Render, &ok);
     
     recalculate();
     

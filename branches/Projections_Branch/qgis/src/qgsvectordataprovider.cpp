@@ -26,57 +26,57 @@ QgsVectorDataProvider::QgsVectorDataProvider(): mEncoding(QTextCodec::codecForLo
 
 bool QgsVectorDataProvider::addFeatures(std::list<QgsFeature*> flist)
 {
-    return false;
+  return false;
 }
 
 bool QgsVectorDataProvider::deleteFeatures(std::list<int> const & id)
 {
-    return false;
+  return false;
 }
 
 bool QgsVectorDataProvider::addAttributes(std::map<QString,QString> const & name)
 {
-    return false;
+  return false;
 }
 
 bool QgsVectorDataProvider::deleteAttributes(std::set<QString> const & name)
 {
-    return false;
+  return false;
 }
 
 bool QgsVectorDataProvider::changeAttributeValues(std::map<int,std::map<QString,QString> > const & attr_map)
 {
-    return false;
+  return false;
 }
 
 QString QgsVectorDataProvider::getDefaultValue(const QString& attr, 
-                 QgsFeature* f) {
+    QgsFeature* f) {
   return "";
 }
 
 void QgsVectorDataProvider::setEncoding(const QString& e)
 {
-    QTextCodec* ncodec=QTextCodec::codecForName(e);
-    if(ncodec)
-    {
-  mEncoding=ncodec;
-    }
-    else
-    {
+  QTextCodec* ncodec=QTextCodec::codecForName(e);
+  if(ncodec)
+  {
+    mEncoding=ncodec;
+  }
+  else
+  {
 #ifdef QGISDEBUG
-  qWarning("error finding QTextCodec in QgsVectorDataProvider::setEncoding");
+    qWarning("error finding QTextCodec in QgsVectorDataProvider::setEncoding");
 #endif
-    }
+  }
 }
 
 QString QgsVectorDataProvider::encoding() const
 {
-    if(mEncoding)
-    {
-  return mEncoding->name();
-    }
-    else
-    {
-  return "";
-    }
+  if(mEncoding)
+  {
+    return mEncoding->name();
+  }
+  else
+  {
+    return "";
+  }
 }
