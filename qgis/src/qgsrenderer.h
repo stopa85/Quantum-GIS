@@ -32,6 +32,7 @@ class QColor;
 #include <qstring.h>
 #include <qdom.h>
 
+#include "qgis.h"
 #include "qgsproject.h"
 #include <qcolor.h>
 
@@ -52,13 +53,13 @@ class QgsRenderer
      @param f a pointer to the feature to be rendered
      @param pic pointer to a marker from SVG (is only used by marker renderers)
      @param scalefactor pointer to the scale factor for the marker image*/
-    virtual void renderFeature(QPainter* p, QgsFeature* f,QPicture* pic, double* scalefactor, bool selected)=0;
+    virtual void renderFeature(QPainter* p, QgsFeature* f,QPicture* pic, double* scalefactor, bool selected, int oversampling = 1, double widthScale = 1.)=0;
     /**Reads the renderer configuration from an XML file
      @param rnode the DOM node to read 
      @param vl the vector layer which will be associated with the renderer*/
     virtual void readXML(const QDomNode& rnode, QgsVectorLayer& vl)=0;
     /**Writes the contents of the renderer to a configuration file*/
-    virtual void writeXML(std::ostream& xml)=0;
+    // virtual void writeXML(std::ostream& xml)=0;
     /**Writes the contents of the renderer to a configuration file
      @ return true in case of success*/
     virtual bool writeXML( QDomNode & layer_node, QDomDocument & document )=0;
@@ -75,6 +76,8 @@ class QgsRenderer
     /**Color to draw selected features - static so we can change it in proj props and automatically 
        all renderers are updated*/
     static QColor mSelectionColor;
+    /**Layer type*/
+    QGis::VectorType mVectorType;
     
 };
 

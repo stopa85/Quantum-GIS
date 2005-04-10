@@ -79,7 +79,8 @@ public:
 	Select = 0,      // Select/Move item
 	AddMap,          // add new map 
 	AddVectorLegend, // add vector legend
-	AddLabel         // add label
+	AddLabel,        // add label
+	AddScalebar      // add scalebar
     };
 
     /** \brief Scaling mode, defines which parameters are fixed and which are changing  */
@@ -92,7 +93,8 @@ public:
     /** \brief Plot type */
     enum PlotStyle {
 	Preview = 0, // Use cache etc
-	Print        // Render well
+	Print,       // Render well
+	Postscript   // Fonts need different scaling!
     };
 
     /** \brief Composition ID */
@@ -103,6 +105,9 @@ public:
 
     /** \brief Get paper height */
     double paperHeight ( void );
+    
+    /** \brief Get paper orientation */
+    int paperOrientation ( void );
 
     /** \brief Get resolutin */
     int resolution ( void );
@@ -152,6 +157,11 @@ public:
     
     /**  \brief Set tool */
     void setTool ( Tool tool );
+
+    /** Refresh. Refresh objects which are not updated automaticaly, e.g. map object does not know
+     * if a layer was switched on/off. Later should be substituted by appropriate signals 
+     * se by map canvas */
+    void refresh();
 
     /**  \brief Canvas scale */
     int scale (void);

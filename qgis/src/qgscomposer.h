@@ -68,6 +68,9 @@ public:
     //! Zoom out 
     void zoomOut();
 
+    //! Refresh view 
+    void refresh();
+
     //! Return pointer to map canvas
     QgsMapCanvas *mapCanvas( void );
     
@@ -111,6 +114,12 @@ public slots:
     //! Print the composition
     void print(void);
     
+    //! Print as image
+    void image(void);
+    
+    //! Print as SVG
+    void svg(void);
+    
     //! Select item
     void selectItem(void);
     
@@ -122,6 +131,9 @@ public slots:
     
     //! Add new label
     void addLabel(void);
+    
+    //! Add new scalebar
+    void addScalebar(void);
 
     //! read project
     void projectRead();

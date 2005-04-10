@@ -55,7 +55,8 @@ QgsComposerLabel::QgsComposerLabel ( QgsComposition *composition, int id,
     mComposition = composition;
     mId  = id;
 
-    mText = text;
+    //mText = text;
+    mText = "Quantum GIS";
 
     // Font and pen 
     mFont.setPointSize ( fontSize );
@@ -115,22 +116,20 @@ void QgsComposerLabel::draw ( QPainter & painter )
 {
     std::cout << "QgsComposerLabel::render" << std::endl;
 
-    int size = (int) ( 25.4 * mComposition->scale() * mFont.pointSize() / 72);
-    QFont font ( mFont );
-    font.setPointSize ( size );
+    float size =  25.4 * mComposition->scale() * mFont.pointSizeFloat() / 72;
 
-    QFontMetrics metrics ( font );
+    QFont font ( mFont );
+    font.setPointSizeFloat ( size );
 
     // Fonts for rendering
-
-    // It seems that font pointSize is used in points in Postscript, that means it depends 
-    // on resolution!
-    if ( plotStyle() == QgsComposition::Print ) {
-	size = (int) ( 72.0 * size / mComposition->resolution() );
-    }
     
-    font.setPointSize ( size );
+    // I have no idea why 2.54 - it is an empirical value 
+    if ( plotStyle() == QgsComposition::Postscript ) {
+	size = 2.54 * 72.0 * mFont.pointSizeFloat() / mComposition->resolution();
+    }
 
+    font.setPointSizeFloat ( size );
+    
     // Not sure about Style Strategy, QFont::PreferMatch ?
     font.setStyleStrategy ( (QFont::StyleStrategy) (QFont::PreferOutline | QFont::PreferAntialias ) );
 
@@ -139,13 +138,17 @@ void QgsComposerLabel::draw ( QPainter & painter )
     
     int x = (int) QCanvasPolygonalItem::x();
     int y = (int) QCanvasPolygonalItem::y();
-    int w = metrics.width ( mText );
-    int h = metrics.height();
 
-    //painter.drawText( (int)(x-w/2), (int)(y+h/2), mText );	
-   
     QRect r = boundingRect();
+    
+    /*
+    QBrush brush ( QColor(255,255,255) );
+    painter.setBrush ( brush );
+    painter.drawRect ( r );
+    */
+    
     painter.drawText ( r, Qt::AlignCenter|Qt::SingleLine , mText );
+    //painter.drawText ( r.x(), (int)(r.y()+r.height()), mText );
 
     // Show selected / Highlight
     if ( mSelected && plotStyle() == QgsComposition::Preview ) {
@@ -165,9 +168,13 @@ void QgsComposerLabel::changeFont ( void )
 {
     bool result;
 
+    QRect r = boundingRect();
+
     mFont = QFontDialog::getFont(&result, mFont, this );
 
     if ( result ) {
+	QCanvasPolygonalItem::invalidate();
+    	QCanvasPolygonalItem::canvas()->setChanged(r);
 	QCanvasPolygonalItem::update();
 	QCanvasPolygonalItem::canvas()->update();
     }
@@ -178,17 +185,23 @@ QRect QgsComposerLabel::boundingRect ( void ) const
 {
     // Recalculate sizes according to current font size
     
-    int size = (int) ( 25.4 * mComposition->scale() * mFont.pointSize() / 72);
+    float size = 25.4 * mComposition->scale() * mFont.pointSize() / 72;
+    
     QFont font ( mFont );
-    font.setPointSize ( size );
-
+    font.setPointSizeFloat ( size );
+    
     QFontMetrics metrics ( font );
-
+    
     int x = (int) QCanvasPolygonalItem::x();
     int y = (int) QCanvasPolygonalItem::y();
     int w = metrics.width ( mText );
-    int h = metrics.height();
-    QRect r ( (int)(x - w/2), (int) (y - h/2), w, h );
+    int h = metrics.height() ;
+
+    
+    // make the buffer bigger because the output in Postscript can be different
+    int buf = (int) (size / 20 * mComposition->scale()); 
+    
+    QRect r ( (int)(x - w/2 - buf), (int) (y - h/2), w+2*buf, h );
 
     return r;
 }
@@ -215,7 +228,10 @@ void QgsComposerLabel::setOptions ( void )
 
 void QgsComposerLabel::textChanged ( void )
 { 
+    QRect r = boundingRect();
     mText = mTextLineEdit->text();
+    QCanvasPolygonalItem::invalidate();
+    QCanvasPolygonalItem::canvas()->setChanged(r);
     QCanvasPolygonalItem::update();
     QCanvasPolygonalItem::canvas()->update();
     writeSettings();

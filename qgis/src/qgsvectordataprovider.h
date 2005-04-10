@@ -18,26 +18,30 @@
 
 #include <set>
 #include <map>
+#include <qobject.h>
 #include <qgsdataprovider.h>
 #include <qtextcodec.h>
 
 /** Base class for vector data providers
  */
+ 
 class QgsVectorDataProvider : public QgsDataProvider
 {
-
+ 
+ Q_OBJECT
+     
  public:
 
     enum Capability
-  {
-      NoCapabilities = 0,
-      AddFeatures = 1,
-      DeleteFeatures = 1 << 1,
-      ChangeAttributeValues = 1 << 2,
-      AddAttributes = 1 << 3,
-      DeleteAttributes = 1 << 4,
-      SaveAsShapefile = 1 << 5
-  };
+	{
+	    NoCapabilities = 0,
+	    AddFeatures = 1,
+	    DeleteFeatures = 1 << 1,
+	    ChangeAttributeValues = 1 << 2,
+	    AddAttributes = 1 << 3,
+	    DeleteAttributes = 1 << 4,
+	    SaveAsShapefile = 1 << 5
+	};
 
     QgsVectorDataProvider();
 

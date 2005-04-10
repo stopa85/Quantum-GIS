@@ -170,6 +170,7 @@ The [type] part of the variable should be the type class of the variable written
 #include <qvaluelist.h> 
 #include <qvaluevector.h> 
 #include <qslider.h>
+#include <qdatetime.h>
 #include "qgspoint.h"
 #include "qgsmaplayer.h"
 #include "qgscolortable.h"
@@ -224,6 +225,10 @@ struct RasterBandStats
     /** \brief Store the histogram for a given layer */
     typedef QValueVector<int> HistogramVector;
     HistogramVector * histogramVector;
+    /** \brief whteher histogram values are estimated or completely calculated */
+    bool histogramEstimatedFlag;
+    /** whehter histogram compuation should include out of range values */
+    bool histogramOutOfRangeFlag;
     /** Color table */
     QgsColorTable colorTable;
 };
@@ -754,7 +759,11 @@ public:
     /** \brief Similar to above but returns a pointer. Implemented for qgsmaplayer interface. 
      * Always overlays legend name!*/
     QPixmap * legendPixmap(); 
-
+    
+    /** \brief Use this method when you want an annotated legend suitable for print output etc. 
+     * @param int theLabelCountInt Number of vertical labels to display (defaults to 3)
+     * */
+    QPixmap getDetailedLegendQPixmap(int theLabelCount);
     /** tailor the right-click context menu with raster layer only stuff 
 
       @note called by QgsMapLayer::initContextMenu();
@@ -779,6 +788,8 @@ public:
     /**Currently returns always false*/
     bool isEditable() const;
     
+    /** Return time stamp for given file name */
+    static QDateTime lastModified ( QString name );
     
 public slots:    
 
@@ -928,6 +939,12 @@ private:
        Called from ctor if a raster image given there
      */
     bool readFile( QString const & fileName );
+    
+    /** \brief Close data set and release related data */
+    void closeDataset ();
+
+    /** \brief Update the layer if it is outdated */
+    bool update ();
 
     //
     // Private member vars
@@ -999,10 +1016,12 @@ private:
        @todo XXX should consider generalizing this
     */
     QgsRasterLayerProperties * mLayerProperties;
-
+    
     //! Pointer to the identify results dialog
     QgsIdentifyResults *mIdentifyResults;
 
+    //! Timestamp, the last modified time of the data source when the layer was created
+    QDateTime mLastModified;
 };
 
 #endif

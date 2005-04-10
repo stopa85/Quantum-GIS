@@ -34,6 +34,31 @@ QgsSVGCache::QgsSVGCache() {
   totalPixels = 0;
 }
 
+QPicture QgsSVGCache::getPicture(QString filename) 
+{
+    PictureMap::const_iterator iter;
+    PictureMap::key_type key(filename);
+
+    iter = pictureMap.find(key);
+
+    if (iter != pictureMap.end()) {
+#if QGISDEBUG > 2
+        std::cerr<<"SVGCACHE: " << filename << " is already loaded"<<std::endl;
+#endif
+	return iter->second;
+    }
+
+#if QGISDEBUG > 2
+        std::cerr<<"SVGCACHE: loading " << filename << std::endl;
+#endif
+
+    QPicture pic;
+    pic.load(filename,"svg");
+    
+    pictureMap[key] = pic;
+
+    return pic;
+}  
 
 QPixmap QgsSVGCache::getPixmap(QString filename, double scaleFactor) {
   
@@ -46,13 +71,17 @@ QPixmap QgsSVGCache::getPixmap(QString filename, double scaleFactor) {
   
   // if we already have the pixmap, return it
   if (iter != pixmapMap.end()) {
+#if QGISDEBUG > 2
     std::cerr<<"SVGCACHE: "<<filename<<"["<<scaleFactor
 	     <<"] is already loaded"<<std::endl;
+#endif
     return iter->second;
   }
   
   // if not, try to load it
+#if QGISDEBUG > 2
   std::cerr<<"SVGCACHE: loading "<<filename<<"["<<scaleFactor<<"]"<<std::endl;
+#endif
   QPicture pic;
   pic.load(filename,"svg");
   int width=pic.boundingRect().width();
@@ -100,14 +129,18 @@ QPixmap QgsSVGCache::getPixmap(QString filename, double scaleFactor) {
   // cache it if possible, and remove other pixmaps from the cache
   // if it grows too large
   if (width * height < pixelLimit) {
+#if QGISDEBUG > 2
     std::cerr<<"SVGCACHE: Caching "<<filename<<"["<<scaleFactor<<"]"
 	     <<std::endl;
+#endif
     pixmapMap[key] = pixmap;
     fifo.push(key);
     totalPixels += width * height;
     while (totalPixels > pixelLimit) {
+#if QGISDEBUG > 2
       std::cerr<<"SVGCACHE: Deleting "<<fifo.front().first<<"["
 	       <<fifo.front().second<<"] from cache"<<std::endl;
+#endif
       QPixmap& oldPM(pixmapMap[fifo.front()]);
       fifo.pop();
       totalPixels -= oldPM.width() * oldPM.height();

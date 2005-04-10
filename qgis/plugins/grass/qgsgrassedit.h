@@ -19,6 +19,7 @@
 #include <vector>
 
 class QString;
+class QCloseEvent;
 
 #include <qpointarray.h>
 #include <qcursor.h>
@@ -168,6 +169,9 @@ public slots:
     // The type of column was changed
     void columnTypeChanged ( int row, int col );
 
+    // ! Close event
+    void closeEvent(QCloseEvent *e);
+
 private:
     //! Editing is already running
     static bool mRunning;
@@ -191,8 +195,8 @@ private:
     void displayIcon (double x, double y, const QPen & pen, int type, int size, QPainter *painter = 0); 
 
     //! Last dynamicaly drawn points
-    //struct line_pnts *mLastDynamicPoints;
-    QPointArray mLastDynamicPoints;
+    struct line_pnts *mLastDynamicPoints;
+    //QPointArray mLastDynamicPoints;
 
     //! Last dynamicaly drawn icon type
     int mLastDynamicIcon;
