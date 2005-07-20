@@ -1,0 +1,156 @@
+<!DOCTYPE UI><UI version="3.3" stdsetdef="1">
+<class>QgsMeasureBase</class>
+<widget class="QWidget">
+    <property name="name">
+        <cstring>QgsMeasureBase</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>251</width>
+            <height>272</height>
+        </rect>
+    </property>
+    <property name="baseSize">
+        <size>
+            <width>150</width>
+            <height>200</height>
+        </size>
+    </property>
+    <property name="caption">
+        <string>Measure</string>
+    </property>
+    <property name="icon">
+        <pixmap>image0</pixmap>
+    </property>
+    <vbox>
+        <property name="name">
+            <cstring>unnamed</cstring>
+        </property>
+        <property name="margin">
+            <number>4</number>
+        </property>
+        <widget class="QTable">
+            <property name="name">
+                <cstring>mTable</cstring>
+            </property>
+            <property name="resizePolicy">
+                <enum>Manual</enum>
+            </property>
+            <property name="numRows">
+                <number>0</number>
+            </property>
+            <property name="numCols">
+                <number>2</number>
+            </property>
+            <property name="showGrid">
+                <bool>true</bool>
+            </property>
+            <property name="readOnly">
+                <bool>true</bool>
+            </property>
+        </widget>
+        <widget class="QFrame">
+            <property name="name">
+                <cstring>frame4</cstring>
+            </property>
+            <property name="minimumSize">
+                <size>
+                    <width>150</width>
+                    <height>0</height>
+                </size>
+            </property>
+            <property name="frameShape">
+                <enum>StyledPanel</enum>
+            </property>
+            <property name="frameShadow">
+                <enum>Plain</enum>
+            </property>
+            <property name="lineWidth">
+                <number>0</number>
+            </property>
+            <hbox>
+                <property name="name">
+                    <cstring>unnamed</cstring>
+                </property>
+                <property name="margin">
+                    <number>4</number>
+                </property>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>btnHelp</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Help</string>
+                    </property>
+                </widget>
+                <spacer>
+                    <property name="name">
+                        <cstring>spacer4</cstring>
+                    </property>
+                    <property name="orientation">
+                        <enum>Horizontal</enum>
+                    </property>
+                    <property name="sizeType">
+                        <enum>Expanding</enum>
+                    </property>
+                    <property name="sizeHint">
+                        <size>
+                            <width>60</width>
+                            <height>26</height>
+                        </size>
+                    </property>
+                </spacer>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>mRestartButton</cstring>
+                    </property>
+                    <property name="text">
+                        <string>New</string>
+                    </property>
+                </widget>
+                <widget class="QPushButton">
+                    <property name="name">
+                        <cstring>mCloseButton</cstring>
+                    </property>
+                    <property name="text">
+                        <string>Close</string>
+                    </property>
+                </widget>
+            </hbox>
+        </widget>
+    </vbox>
+</widget>
+<images>
+    <image name="image0">
+        <data format="PNG" length="119">89504e470d0a1a0a0000000d4948445200000016000000160806000000c4b46c3b0000003e49444154388d633c76ec18032d00134d4c1d3578d4e0518387adc1bb76edfa8f4d01b9e2585d4c0d4b1861c5262e4de40037373746c6d1f278d4600c00006497215be56a073a0000000049454e44ae426082</data>
+    </image>
+</images>
+<connections>
+    <connection>
+        <sender>mCloseButton</sender>
+        <signal>clicked()</signal>
+        <receiver>QgsMeasureBase</receiver>
+        <slot>close()</slot>
+    </connection>
+    <connection>
+        <sender>mRestartButton</sender>
+        <signal>clicked()</signal>
+        <receiver>QgsMeasureBase</receiver>
+        <slot>restart()</slot>
+    </connection>
+    <connection>
+        <sender>btnHelp</sender>
+        <signal>clicked()</signal>
+        <receiver>QgsMeasureBase</receiver>
+        <slot>showHelp()</slot>
+    </connection>
+</connections>
+<slots>
+    <slot>close()</slot>
+    <slot>restart()</slot>
+    <slot>showHelp()</slot>
+</slots>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>
