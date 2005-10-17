@@ -53,14 +53,14 @@ public:
    * Get the first feature resulting from a select operation
    * @return QgsFeature
    */
-  QgsFeature * getFirstFeature(bool fetchAttributes=false);
+  QgsFeature * getFirstFeature(bool fetchAttributes=false,int dataSourceLayerNum = 0);
   /** 
   * Get the next feature resutling from a select operation
   * @return QgsFeature
   */
-  QgsFeature * getNextFeature(bool fetchAttributes=false);
-  bool getNextFeature(QgsFeature &feature, bool fetchAttributes=false);
-  QgsFeature * getNextFeature(std::list<int> const & attlist, int featureQueueSize = 1);
+  QgsFeature * getNextFeature(bool fetchAttributes=false, int dataSourceLayerNum = 0);
+  bool getNextFeature(QgsFeature &feature, bool fetchAttributes=false, int dataSourceLayerNum = 0);
+  QgsFeature * getNextFeature(std::list<int> const & attlist, int featureQueueSize = 1, int dataSourceLayerNum = 0);
   
   /** Get the feature type. This corresponds to 
       WKBPoint,
@@ -72,21 +72,21 @@ public:
   * as defined in qgis.h
   * This provider will always return WKBPoint
   */
-  int geometryType() const;
+  int geometryType(int dataSourceLayerNum = 0) const;
   /** 
    * Get the number of features in the layer
    */
-  long featureCount() const;
+  long featureCount(int dataSourceLayerNum = 0) const;
   /** 
    * Get the number of fields in the layer
    */
-  int fieldCount() const;
+  int fieldCount(int dataSourceLayerNum = 0) const;
   /**
    * Select features based on a bounding rectangle. Features can be retrieved 
    * with calls to getFirstFeature and getNextFeature.
    * @param mbr QgsRect containing the extent to use in selecting features
    */
-  void select(QgsRect *mbr, bool useIntersect=false);
+  void select(QgsRect *mbr, bool useIntersect=false, int dataSourceLayerNum = 0);
   /** 
    * Set the data source specification. This may be a path or database
    * connection string
@@ -106,7 +106,7 @@ public:
    * @param rect Bounding rectangle of search radius
    * @return std::vector containing QgsFeature objects that intersect rect
    */
-  virtual std::vector<QgsFeature>& identify(QgsRect *rect);
+  virtual std::vector<QgsFeature>& identify(QgsRect *rect, int dataSourceLayerNum = 0);
   
   /** Return the extent for this data layer
    */
@@ -115,20 +115,20 @@ public:
   /**
    * Get the field information for the layer
    */
-  std::vector<QgsField> const & fields() const;
+  std::vector<QgsField> const & fields(int dataSourceLayerNum = 0) const;
   
   /* Reset the layer (ie move the file pointer to the head
      of the file.
   */
-  void reset();
+  void reset(int dataSourceLayerNum = 0);
     
   /**Returns the minimum value of an attribute
      @param position the number of the attribute*/
-  QString minValue(int position);
+  QString minValue(int position,int dataSourceLayerNum = 0);
   
   /**Returns the maximum value of an attribute
      @param position the number of the attribute*/
-  QString maxValue(int position);
+  QString maxValue(int position, int dataSourceLayerNum = 0);
   
   /**Returns true if this is a valid delimited file
    */
@@ -136,21 +136,21 @@ public:
 
   /**Adds a list of features
      @return true in case of success and false in case of failure*/
-  bool addFeatures(std::list<QgsFeature*> flist);
+  bool addFeatures(std::list<QgsFeature*> flist, int dataSourceLayerNum = 0);
   
-  bool deleteFeatures(std::list<int> const & id);
+  bool deleteFeatures(std::list<int> const & id, int dataSourceLayerNum = 0);
   
   bool changeAttributeValues(std::map<int,std::map<QString,QString> > const & 
-			     attr_map);
+			     attr_map, int dataSourceLayerNum = 0);
   
   void changeAttributeValues(GPSObject& obj, 
-			     const std::map<QString, QString>& attrs);
+			     const std::map<QString, QString>& attrs, int dataSourceLayerNum = 0);
   
   /** Adds one feature (used by addFeatures()) */
-  bool QgsGPXProvider::addFeature(QgsFeature* f);
+  bool QgsGPXProvider::addFeature(QgsFeature* f, int dataSourceLayerNum = 0);
   
   /**Returns the default value for attribute @c attr for feature @c f. */
-  QString getDefaultValue(const QString& attr, QgsFeature* f);
+  QString getDefaultValue(const QString& attr, QgsFeature* f, int dataSourceLayerNum = 0);
   
   /**
    * Check to see if the point is withn the selection
@@ -209,15 +209,33 @@ public:
     */
     QString description() const;
 
+
+
+
+    /** creates and returns a list of map layers
+
+    This corresponds to layers found within the data source.
+
+    @note
+
+    Not sure if this is a const member or not.
+
+    */
+    /* virtual */ std::list<QgsMapLayer*> createLayers()
+    {
+        // TODO
+        return std::list<QgsMapLayer*>();
+    }
+
   
 private:
   
   /** Internal function used by the other getNextFeature() functions. */
-  bool getNextFeature(QgsFeature* feature, std::list<int> const & attlist);
+  bool getNextFeature(QgsFeature* feature, std::list<int> const & attlist, int dataSourceLayerNum = 0);
 
   bool mEditable;
   GPSData* data;
-  void fillMinMaxCash();
+  void fillMinMaxCash(int dataSourceLayerNum = 0);
   //! Fields
   std::vector<QgsField> attributeFields;
   std::list<int> mAllAttributes;

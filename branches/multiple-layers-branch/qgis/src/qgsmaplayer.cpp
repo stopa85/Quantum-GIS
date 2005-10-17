@@ -45,19 +45,20 @@
 
 QgsMapLayer::QgsMapLayer(int type,
                          QString lyrname,
-                         QString source) :
-        valid(true), // assume the layer is valid (data source exists and 
+                         QString source) 
+    :   valid(true), // assume the layer is valid (data source exists and 
                      // can be used) until we learn otherwise
         dataSource(source),
         internalName(lyrname),
         mShowInOverviewItemId(0),
         mShowInOverview(false),
-        mCoordinateTransform(0),
+        mCoordinateTransform(NULL),
         mLegendSymbologyGroupParent(0),
         mLegendLayerFile(0),
         ID(""),
         layerType(type),
-        m_visible(true)
+        m_visible(true),
+        mDataSourceLayerNum(0)
 
 {
 #ifdef QGISDEBUG
@@ -98,9 +99,7 @@ QgsMapLayer::QgsMapLayer(int type,
 
 
 QgsMapLayer::~QgsMapLayer()
-{
-    //delete mCoordinateTransform; //crash when removing layers. Why?
-}
+{}
 const int QgsMapLayer::type()
 {
     return layerType;

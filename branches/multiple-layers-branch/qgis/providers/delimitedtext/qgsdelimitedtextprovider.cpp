@@ -283,7 +283,7 @@ QString QgsDelimitedTextProvider::storageType()
  * Get the first feature resutling from a select operation
  * @return QgsFeature
  */
-QgsFeature * QgsDelimitedTextProvider::getFirstFeature(bool fetchAttributes)
+QgsFeature * QgsDelimitedTextProvider::getFirstFeature(bool fetchAttributes, int dataSourceLayerNum )
 {
     QgsFeature *f = new QgsFeature;
 
@@ -481,14 +481,15 @@ QgsDelimitedTextProvider::getNextFeature_( QgsFeature & feature,
  * @return false if unable to get the next feature
  */
 bool QgsDelimitedTextProvider::getNextFeature(QgsFeature & feature,
-                                              bool fetchAttributes)
+                                              bool fetchAttributes, 
+                                              int dataSourceLayerNum )
 {
     return getNextFeature_( feature, fetchAttributes );
 } // QgsDelimitedTextProvider::getNextFeature
 
 
 
-QgsFeature * QgsDelimitedTextProvider::getNextFeature(bool fetchAttributes)
+QgsFeature * QgsDelimitedTextProvider::getNextFeature(bool fetchAttributes, int dataSourceLayerNum )
 {
     QgsFeature * f = new QgsFeature;
 
@@ -504,7 +505,9 @@ QgsFeature * QgsDelimitedTextProvider::getNextFeature(bool fetchAttributes)
 
 
 
-QgsFeature * QgsDelimitedTextProvider::getNextFeature(std::list<int> const & desiredAttributes, int featureQueueSize)
+QgsFeature * QgsDelimitedTextProvider::getNextFeature(std::list<int> const & desiredAttributes, 
+                                                      int featureQueueSize,
+                                                      int dataSourceLayerNum )
 {
     QgsFeature * f = new QgsFeature;
 
@@ -527,7 +530,7 @@ QgsFeature * QgsDelimitedTextProvider::getNextFeature(std::list<int> const & des
  * with calls to getFirstFeature and getNextFeature.
  * @param mbr QgsRect containing the extent to use in selecting features
  */
-void QgsDelimitedTextProvider::select(QgsRect * rect, bool useIntersect)
+void QgsDelimitedTextProvider::select(QgsRect * rect, bool useIntersect, int dataSourceLayerNum )
 {
 
   // Setting a spatial filter doesn't make much sense since we have to
@@ -548,7 +551,7 @@ void QgsDelimitedTextProvider::select(QgsRect * rect, bool useIntersect)
  * @param rect Bounding rectangle of search radius
  * @return std::vector containing QgsFeature objects that intersect rect
  */
-std::vector < QgsFeature > &QgsDelimitedTextProvider::identify(QgsRect * rect)
+std::vector < QgsFeature > &QgsDelimitedTextProvider::identify(QgsRect * rect, int dataSourceLayerNum )
 {
   // reset the data source since we need to be able to read through
   // all features
@@ -587,7 +590,7 @@ QgsRect *QgsDelimitedTextProvider::extent()
 /** 
  * Return the feature type
  */
-int QgsDelimitedTextProvider::geometryType() const
+int QgsDelimitedTextProvider::geometryType(int dataSourceLayerNum ) const
 {
   return 1;                     // WKBPoint
 }
@@ -595,7 +598,7 @@ int QgsDelimitedTextProvider::geometryType() const
 /** 
  * Return the feature type
  */
-long QgsDelimitedTextProvider::featureCount() const
+long QgsDelimitedTextProvider::featureCount(int dataSourceLayerNum ) const
 {
   return mNumberFeatures;
 }
@@ -603,7 +606,7 @@ long QgsDelimitedTextProvider::featureCount() const
 /**
  * Return the number of fields
  */
-int QgsDelimitedTextProvider::fieldCount() const
+int QgsDelimitedTextProvider::fieldCount(int dataSourceLayerNum ) const
 {
   return attributeFields.size();
 }
@@ -611,7 +614,7 @@ int QgsDelimitedTextProvider::fieldCount() const
 /**
  * Fetch attributes for a selected feature
  */
-void QgsDelimitedTextProvider::getFeatureAttributes(int key, QgsFeature * f)
+void QgsDelimitedTextProvider::getFeatureAttributes(int key, QgsFeature * f, int dataSourceLayerNum )
 {
   //for (int i = 0; i < ogrFet->GetFieldCount(); i++) {
 
@@ -626,12 +629,12 @@ void QgsDelimitedTextProvider::getFeatureAttributes(int key, QgsFeature * f)
   //}
 }
 
-std::vector<QgsField> const & QgsDelimitedTextProvider::fields() const
+std::vector<QgsField> const & QgsDelimitedTextProvider::fields(int dataSourceLayerNum ) const
 {
   return attributeFields;
 }
 
-void QgsDelimitedTextProvider::reset()
+void QgsDelimitedTextProvider::reset(int dataSourceLayerNum )
 {
   // Reset the file pointer to BOF
   mFile->reset();
@@ -643,7 +646,7 @@ void QgsDelimitedTextProvider::reset()
   stream.readLine();
 }
 
-QString QgsDelimitedTextProvider::minValue(int position)
+QString QgsDelimitedTextProvider::minValue(int position,int dataSourceLayerNum )
 {
   if (position >= fieldCount())
   {
@@ -659,7 +662,7 @@ QString QgsDelimitedTextProvider::minValue(int position)
 }
 
 
-QString QgsDelimitedTextProvider::maxValue(int position)
+QString QgsDelimitedTextProvider::maxValue(int position, int dataSourceLayerNum )
 {
   if (position >= fieldCount())
   {
@@ -674,7 +677,7 @@ QString QgsDelimitedTextProvider::maxValue(int position)
   return QString::number(mMinMaxCache[position][1], 'f', 2);
 }
 
-void QgsDelimitedTextProvider::fillMinMaxCash()
+void QgsDelimitedTextProvider::fillMinMaxCash(int dataSourceLayerNum )
 {
   for (int i = 0; i < fieldCount(); i++)
   {
@@ -943,7 +946,7 @@ size_t QgsDelimitedTextProvider::layerCount() const
 
 
 
-int *QgsDelimitedTextProvider::getFieldLengths()
+int *QgsDelimitedTextProvider::getFieldLengths(int dataSourceLayerNum )
 {
   // this function parses the entire data file and calculates the
   // max for each

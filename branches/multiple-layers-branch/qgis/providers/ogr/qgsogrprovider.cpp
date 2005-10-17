@@ -14,6 +14,8 @@ email                : sherman at mrcc.com
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
+
+
 /* $Id$ */
 
 #include "qgsogrprovider.h"
@@ -25,7 +27,6 @@ email                : sherman at mrcc.com
 #include <cfloat>
 #include <cassert>
 
-//#include <gdal_version.h>
 #include <ogrsf_frmts.h>
 #include <ogr_geometry.h>
 #include <ogr_spatialref.h>
@@ -50,6 +51,7 @@ email                : sherman at mrcc.com
 #include "../../src/qgsdataprovider.h"
 #include "../../src/qgsfeature.h"
 #include "../../src/qgsfield.h"
+#include "../../src/qgsrect.h"
 #include "../../src/qgis.h"
 
 
@@ -65,7 +67,8 @@ static const QString TEXT_PROVIDER_DESCRIPTION = "OGR data provider";
 
 
 QgsOgrProvider::QgsOgrProvider(QString const & uri)
-    : QgsVectorDataProvider(uri), ogrDataSource(0), extent_(0), ogrLayer(0), ogrDriver(0), minmaxcachedirty(true)
+    : QgsVectorDataProvider(uri),
+      minmaxcachedirty(true)
 {
   OGRRegisterAll();
 
@@ -153,10 +156,6 @@ QgsOgrProvider::~QgsOgrProvider()
   }
   delete[] minmaxcache;
 
-  OGRDataSource::DestroyDataSource(ogrDataSource);
-  ogrDataSource = 0;
-  delete extent_;
-  extent_ = 0;
   delete geometryFactory;
   delete wktReader;
 }
@@ -244,7 +243,7 @@ QString QgsOgrProvider::storageType()
  * Get the first feature resutling from a select operation
  * @return QgsFeature
  */
-QgsFeature * QgsOgrProvider::getFirstFeature(bool fetchAttributes)
+QgsFeature * QgsOgrProvider::getFirstFeature(bool fetchAttributes, int dataSourceLayerNum)
 {
   QgsFeature *f = 0;
 
@@ -309,7 +308,7 @@ QgsFeature * QgsOgrProvider::getFirstFeature(bool fetchAttributes)
 
 
 
-bool QgsOgrProvider::getNextFeature(QgsFeature &f, bool fetchAttributes)
+bool QgsOgrProvider::getNextFeature(QgsFeature &f, bool fetchAttributes, int dataSourceLayerNum)
 {
   bool returnValue;
   if(valid){
@@ -367,7 +366,7 @@ bool QgsOgrProvider::getNextFeature(QgsFeature &f, bool fetchAttributes)
  * Return 0 if there are no features in the selection set
  * @return QgsFeature
  */
-QgsFeature *QgsOgrProvider::getNextFeature(bool fetchAttributes)
+QgsFeature *QgsOgrProvider::getNextFeature(bool fetchAttributes, int dataSourceLayerNum)
 {
    if(!valid)
    {
@@ -403,18 +402,39 @@ QgsFeature *QgsOgrProvider::getNextFeature(bool fetchAttributes)
           delete fet;
           continue;
         }    */
-	   }
+    }
     
 	   if(mUseIntersect)
 	   {
-	       geos::Geometry *geosGeom = 0;
-	       geosGeom=f->geosGeometry();
-	       assert(geosGeom != 0);
+       geos::Geometry *geosGeom = 0;
+       // XXX This if/else block fixes the endian issue on 
+       //     XDR (big endian) platforms for release 0.7. This
+       //     code should be revisited to see if there is a more
+       //     efficient way to create the geos geometry and to push
+       //     the job down to QgsFeature instead of the mix we have
+       //     here. The side-effect of this fix is extremely slow
+       //     performance on when identifying or selecting multipart
+       //     features on XDR platforms.
+        if (endian() == QgsDataProvider::XDR)
+        {
+          // big endian -- use wkt method
+          geom  =  fet->GetGeometryRef();
+          char *wkt = new char[2 * f->getGeometrySize()];
+          assert(wkt != 0);
+          geom->exportToWkt(&wkt);
+          geosGeom = wktReader->read(wkt);
+        }
+        else
+        {
+          // little endian -- use QgsFeature method
+          geosGeom=f->geosGeometry();
+        }
+         assert(geosGeom != 0);
          
 	       char *sWkt = new char[2 * mSelectionRectangle->WkbSize()];
 	       mSelectionRectangle->exportToWkt(&sWkt);  
 	       geos::Geometry *geosRect = wktReader->read(sWkt);
-	       assert(geosRect != 0);
+         assert(geosGeom != 0);
 	       if(geosGeom->intersects(geosRect))
 	       {
 #ifdef QGISDEBUG
@@ -528,7 +548,7 @@ QgsFeature *QgsOgrProvider::getNextFeature(bool fetchAttributes)
 }*/
 
 
-QgsFeature *QgsOgrProvider::getNextFeature(std::list<int> const& attlist, int featureQueueSize)
+QgsFeature *QgsOgrProvider::getNextFeature(std::list<int> const& attlist, int featureQueueSize, int dataSourceLayerNum)
 {
   QgsFeature *f = 0; 
   if(valid)
@@ -602,7 +622,7 @@ QgsFeature *QgsOgrProvider::getNextFeature(std::list<int> const& attlist, int fe
  * stored. If true, a secondary filter (using GEOS) is applied to each
  * feature in the getNextFeature function.
  */
-void QgsOgrProvider::select(QgsRect *rect, bool useIntersect)
+void QgsOgrProvider::select(QgsRect *rect, bool useIntersect, int dataSourceLayerNum)
 {
   mUseIntersect = useIntersect;
   // spatial query to select features
@@ -616,7 +636,7 @@ void QgsOgrProvider::select(QgsRect *rect, bool useIntersect)
   {
     // store the selection rectangle for use in filtering features during
     // an identify and display attributes
-    delete mSelectionRectangle;
+    //    delete mSelectionRectangle;
     mSelectionRectangle = new OGRPolygon();
     mSelectionRectangle->importFromWkt((char **)&wktText);
   }
@@ -651,7 +671,7 @@ void QgsOgrProvider::select(QgsRect *rect, bool useIntersect)
  * @param rect Bounding rectangle of search radius
  * @return std::vector containing QgsFeature objects that intersect rect
  */
-std::vector<QgsFeature>& QgsOgrProvider::identify(QgsRect * rect)
+std::vector<QgsFeature>& QgsOgrProvider::identify(QgsRect * rect, int dataSourceLayerNum)
 {
   // select the features
   select(rect);
@@ -674,10 +694,12 @@ unsigned char * QgsOgrProvider::getGeometryPointer(OGRFeature *fet){
 }
 
 
+// TODO - make this function return the real extent_
 QgsRect *QgsOgrProvider::extent()
 {
-  mExtentRect.set(extent_->MinX, extent_->MinY, extent_->MaxX, extent_->MaxY);
-  return &mExtentRect;
+  // TODO: Find out where this new QgsRect is being lost (as reported by valgrind)
+
+  return new QgsRect(extent_->MinX, extent_->MinY, extent_->MaxX, extent_->MaxY);
 }
 
 
@@ -690,7 +712,7 @@ size_t QgsOgrProvider::layerCount() const
 /** 
  * Return the feature type
  */
-int QgsOgrProvider::geometryType() const
+int QgsOgrProvider::geometryType(int dataSourceLayerNum) const
 {
   return geomType;
 }
@@ -698,7 +720,7 @@ int QgsOgrProvider::geometryType() const
 /** 
  * Return the feature type
  */
-long QgsOgrProvider::featureCount() const
+long QgsOgrProvider::featureCount(int dataSourceLayerNum) const
 {
   return numberFeatures;
 }
@@ -706,12 +728,12 @@ long QgsOgrProvider::featureCount() const
 /**
  * Return the number of fields
  */
-int QgsOgrProvider::fieldCount() const
+int QgsOgrProvider::fieldCount(int dataSourceLayerNum) const
 {
   return attributeFields.size();
 }
 
-void QgsOgrProvider::getFeatureAttribute(OGRFeature * ogrFet, QgsFeature * f, int attindex)
+void QgsOgrProvider::getFeatureAttribute(OGRFeature * ogrFet, QgsFeature * f, int attindex, int dataSourceLayerNum)
 {
   OGRFieldDefn *fldDef = ogrFet->GetFieldDefnRef(attindex);
 
@@ -732,7 +754,7 @@ void QgsOgrProvider::getFeatureAttribute(OGRFeature * ogrFet, QgsFeature * f, in
 /**
  * Fetch attributes for a selected feature
  */
-void QgsOgrProvider::getFeatureAttributes(OGRFeature *ogrFet, QgsFeature *f){
+void QgsOgrProvider::getFeatureAttributes(OGRFeature *ogrFet, QgsFeature *f, int dataSourceLayerNum){
   for (int i = 0; i < ogrFet->GetFieldCount(); i++) {
     getFeatureAttribute(ogrFet,f,i);
     // add the feature attributes to the tree
@@ -746,12 +768,12 @@ void QgsOgrProvider::getFeatureAttributes(OGRFeature *ogrFet, QgsFeature *f){
   }
 }
 
-std::vector<QgsField> const & QgsOgrProvider::fields() const
+std::vector<QgsField> const & QgsOgrProvider::fields(int dataSourceLayerNum) const
 {
   return attributeFields;
 }
 
-void QgsOgrProvider::reset()
+void QgsOgrProvider::reset(int dataSourceLayerNum)
 {
   // TODO: check whether it supports normal SQL or only that "restricted_sql"
   if (mAttributeFilter.isEmpty())
@@ -769,7 +791,7 @@ void QgsOgrProvider::reset()
   mUseIntersect = false;
 }
 
-QString QgsOgrProvider::minValue(int position)
+QString QgsOgrProvider::minValue(int position, int dataSourceLayerNum)
 {
   if(position>=fieldCount())
   {
@@ -783,7 +805,7 @@ QString QgsOgrProvider::minValue(int position)
 }
 
 
-QString QgsOgrProvider::maxValue(int position)
+QString QgsOgrProvider::maxValue(int position, int dataSourceLayerNum)
 {
   if(position>=fieldCount())
   {
@@ -834,7 +856,7 @@ bool QgsOgrProvider::isValid()
   return valid;
 }
 
-bool QgsOgrProvider::addFeature(QgsFeature* f)
+bool QgsOgrProvider::addFeature(QgsFeature* f, int dataSourceLayerNum)
 { 
 #ifdef QGISDEBUG
   qWarning("in add Feature");
@@ -850,7 +872,7 @@ bool QgsOgrProvider::addFeature(QgsFeature* f)
       {
         OGRPoint* p=new OGRPoint();
         p->importFromWkb(f->getGeometry(),1+sizeof(int)+2*sizeof(double));
-        OGRErr err = feature->SetGeometry(p);
+        feature->SetGeometry(p);
         break;
       }
     case QGis::WKBLineString:
@@ -1002,7 +1024,7 @@ bool QgsOgrProvider::addFeature(QgsFeature* f)
   return returnValue;
 }
 
-bool QgsOgrProvider::addFeatures(std::list<QgsFeature*> const flist)
+bool QgsOgrProvider::addFeatures(std::list<QgsFeature*> const flist, int dataSourceLayerNum)
 {
   bool returnvalue=true;
   for(std::list<QgsFeature*>::const_iterator it=flist.begin();it!=flist.end();++it)
@@ -1015,7 +1037,7 @@ bool QgsOgrProvider::addFeatures(std::list<QgsFeature*> const flist)
   return returnvalue;
 }
 
-bool QgsOgrProvider::addAttributes(std::map<QString,QString> const & name)
+bool QgsOgrProvider::addAttributes(std::map<QString,QString> const & name, int dataSourceLayerNum)
 {
     bool returnvalue=true;
 
@@ -1065,7 +1087,8 @@ bool QgsOgrProvider::addAttributes(std::map<QString,QString> const & name)
     return returnvalue;
 }
 
-bool QgsOgrProvider::changeAttributeValues(std::map<int,std::map<QString,QString> > const & attr_map)
+bool QgsOgrProvider::changeAttributeValues(std::map<int,std::map<QString,QString> > const & attr_map, 
+                                           int dataSourceLayerNum)
 {
 #ifdef QGISDEBUG
   std::cerr << "QgsOgrProvider::changeAttributeValues()" << std::endl;
@@ -1289,114 +1312,331 @@ QGISEXTERN QString description()
     return TEXT_PROVIDER_DESCRIPTION;
 } 
 
+
+
+
+/**
+
+  Convenience function for readily creating file filters.
+
+  Given a long name for a file filter and a regular expression, return
+  a file filter string suitable for use in a QFileDialog::OpenFiles()
+  call.  The regular express, glob, will have both all lower and upper
+  case versions added.
+
+  @note
+
+  Copied from qgisapp.cpp.  
+
+  @todo XXX This should probably be generalized and moved to a standard
+            utility type thingy.
+
+*/
+static QString createFileFilter_(QString const &longName, QString const &glob)
+{
+    return "[OGR] " + 
+           longName + " (" + glob.lower() + " " + glob.upper() + ");;";
+} // createFileFilter_
+
+
+
+
+QGISEXTERN QString fileVectorFilters()
+{
+    static QString myFileFilters;
+
+    // if we've already built the supported vector string, just return what
+    // we've already built
+    if ( ! ( myFileFilters.isEmpty() || myFileFilters.isNull() ) )
+    {
+        return myFileFilters;
+    }
+
+    // first get the GDAL driver manager
+
+    OGRSFDriverRegistrar *driverRegistrar = OGRSFDriverRegistrar::GetRegistrar();
+
+    if (!driverRegistrar)
+    {
+        QMessageBox::warning(0,"OGR Driver Manager","unable to get OGRDriverManager");
+        return "";              // XXX good place to throw exception if we
+    }                           // XXX decide to do exceptions
+
+    // then iterate through all of the supported drivers, adding the
+    // corresponding file filter
+
+    OGRSFDriver *driver;          // current driver
+
+    QString driverName;           // current driver name
+
+    // Grind through all the drivers and their respective metadata.
+    // We'll add a file filter for those drivers that have a file
+    // extension defined for them; the others, welll, even though
+    // theoreticaly we can open those files because there exists a
+    // driver for them, the user will have to use the "All Files" to
+    // open datasets with no explicitly defined file name extension.
+#ifdef QGISDEBUG
+
+    std::cerr << "Driver count: " << driverRegistrar->GetDriverCount() << std::endl;
+#endif
+
+    for (int i = 0; i < driverRegistrar->GetDriverCount(); ++i)
+    {
+        driver = driverRegistrar->GetDriver(i);
+
+        Q_CHECK_PTR(driver);
+
+        if (!driver)
+        {
+            qWarning("unable to get driver %d", i);
+            continue;
+        }
+
+        driverName = driver->GetName();
+
+
+        if (driverName.startsWith("ESRI"))
+        {
+            myFileFilters += createFileFilter_("ESRI Shapefiles", "*.shp");
+        }
+        else if (driverName.startsWith("UK"))
+        {
+            // XXX needs file filter extension
+        }
+        else if (driverName.startsWith("SDTS"))
+        {
+            myFileFilters += createFileFilter_( "Spatial Data Transfer Standard",
+                                                "*catd.ddf" );
+        }
+        else if (driverName.startsWith("TIGER"))
+        {
+            // XXX needs file filter extension
+        }
+        else if (driverName.startsWith("S57"))
+        {
+            // XXX needs file filter extension
+        }
+        else if (driverName.startsWith("MapInfo"))
+        {
+            myFileFilters += createFileFilter_("MapInfo", "*.mif *.tab");
+            // XXX needs file filter extension
+        }
+        else if (driverName.startsWith("DGN"))
+        {
+            // XXX needs file filter extension
+        }
+        else if (driverName.startsWith("VRT"))
+        {
+            // XXX needs file filter extension
+        }
+        else if (driverName.startsWith("AVCBin"))
+        {
+            // XXX needs file filter extension
+        }
+        else if (driverName.startsWith("REC"))
+        {
+            // XXX needs file filter extension
+        }
+        else if (driverName.startsWith("Memory"))
+        {
+            // XXX needs file filter extension
+        }
+        else if (driverName.startsWith("Jis"))
+        {
+            // XXX needs file filter extension
+        }
+        else if (driverName.startsWith("GML"))
+        {
+            // XXX not yet supported; post 0.1 release task
+            myFileFilters += createFileFilter_( "Geography Markup Language",
+                                                "*.gml" );
+        }
+        else
+        {
+            // NOP, we don't know anything about the current driver
+            // with regards to a proper file filter string
+            qDebug( "%s:%d unknown driver %s", __FILE__, __LINE__, (const char *)driverName.local8Bit() );
+        }
+
+    }                           // each loaded GDAL driver
+
+    std::cout << myFileFilters.local8Bit() << std::endl;
+
+    // can't forget the default case
+
+    myFileFilters += "All files (*.*)";
+
+    return myFileFilters;
+
+} // fileVectorFilters() const
+
+
+
+QString QgsOgrProvider::fileVectorFilters() const
+{
+    return fileVectorFilters();
+} // QgsOgrProvider::fileVectorFilters() const
+
+
+
 /**
  * Required isProvider function. Used to determine if this shared library
  * is a data provider plugin
  */
-
 QGISEXTERN bool isProvider()
 {
   return true;
 }
 
-/**Creates an empty data source
-@param uri location to store the file(s)
-@param format data format (e.g. "ESRI Shapefile"
-@param vectortype point/line/polygon or multitypes
-@param attributes a list of name/type pairs for the initial attributes
-@return true in case of success*/
-QGISEXTERN bool createEmptyDataSource(const QString& uri,const QString& format, QGis::WKBTYPE vectortype, \
-const std::list<std::pair<QString, QString> >& attributes)
+QGISEXTERN bool createEmptyDataSource(const QString& uri,const QString& format, QGis::WKBTYPE vectortype)
 {
-    OGRSFDriver* driver;
+  //hard coded for the moment
+  OGRwkbGeometryType geomtype=(OGRwkbGeometryType)((int)vectortype);
+  QString mOutputFormat = "ESRI Shapefile";
+  QString mOutputFileName = uri;
+#ifdef WIN32 
+  QString outname=mOutputFileName.mid(mOutputFileName.findRev("\\")+1,mOutputFileName.length());
+#else
+  QString outname=mOutputFileName.mid(mOutputFileName.findRev("/")+1,mOutputFileName.length());
+#endif
+  OGRSFDriverRegistrar* driverregist = OGRSFDriverRegistrar::GetRegistrar();
+
+  if(driverregist==0)
+  {
+    return false;
+  }
+  OGRSFDriver* driver = driverregist->GetDriverByName(mOutputFormat);
+  if(driver==0)
+  {
+    return false;
+  }
+  OGRDataSource* datasource = driver->CreateDataSource(mOutputFileName,NULL);
+  if(datasource==0)
+  {
+    return false;
+  }
+
+  OGRSpatialReference reference;
+  OGRLayer* layer = datasource->CreateLayer(outname.latin1(),&reference,geomtype,NULL);
+  if(layer==0)
+  {
+    return false;
+  }
+
+  //create a dummy field
+  OGRFieldDefn fielddef("dummy",OFTReal);
+  fielddef.SetWidth(1);
+  fielddef.SetPrecision(1);
+  if(layer->CreateField(&fielddef,FALSE)!=OGRERR_NONE)
+  {
+    return false;
+  }
+
+  int count=layer->GetLayerDefn()->GetFieldCount();
+#ifdef QGISDEBUG
+  qWarning("Field count is: "+QString::number(count));
+#endif
+  //just for a test: create a dummy featureO
+  /*OGRFeatureDefn* fdef=layer->GetLayerDefn();
+    OGRFeature* feature=new OGRFeature(fdef);
+    OGRPoint* p=new OGRPoint();
+    p->setX(700000);
+    p->setY(300000);
+    feature->setGeometryAndOwnership(p);
+    if(layer->CreateFeature(feature)!=OGRERR_NONE)
+    {
+    qWarning("errrrrrrrrrror!");
+    }*/
+
+  if(layer->SyncToDisk()!=OGRERR_NONE)
+  {
+    return false;
+  }
+
+  return true;
+
+  /*OGRLayerH mLayerHandle;
     OGRRegisterAll();
-    driver = OGRSFDriverRegistrar::GetRegistrar()->GetDriverByName(format);
-    if(driver == NULL)
+    OGRSFDriverH myDriverHandle = OGRGetDriverByName( mOutputFormat );
+
+    if( myDriverHandle == NULL )
     {
-	return false;
+    std::cout << "Unable to find format driver named " << mOutputFormat << std::endl;
+    return false;
     }
 
-    OGRDataSource* dataSource;
-    dataSource = driver->CreateDataSource(uri, NULL);
-    if(dataSource == NULL)
+    OGRDataSourceH mDataSourceHandle = OGR_Dr_CreateDataSource( myDriverHandle, mOutputFileName, NULL );
+    if( mDataSourceHandle == NULL )
     {
-	return false;
+    std::cout << "Datasource handle is null! " << std::endl;
+    return false;
     }
 
-    //consider spatial reference system
-    OGRSpatialReference* reference = NULL;
-    QgsSpatialRefSys mySpatialRefSys;
-    mySpatialRefSys.validate();
-    char* WKT;
-    QString myWKT = NULL;
-    if(mySpatialRefSys.toOgrSrs().exportToWkt(&WKT)==OGRERR_NONE)
-    {
-	myWKT=WKT;
-    }
-    else
-    {
+  //define the spatial ref system
+  OGRSpatialReferenceH mySpatialReferenceSystemHandle = NULL;
+
+  QString myWKT = NULL; //WKT = Well Known Text
+  //sample below shows how to extract srs from a raster
+  //    const char *myWKT = GDALGetProjectionRef( hBand );
+
+  if( myWKT != NULL && strlen(myWKT) != 0 )
+  {
+  mySpatialReferenceSystemHandle = OSRNewSpatialReference( myWKT );
+  }
+  //change 'contour' to something more useful!
 #ifdef QGISDEBUG
-	qWarning("createEmptyDataSource: export of srs to wkt failed");
-#endif
-    }
-    if( !myWKT.isNull()  &&  myWKT.length() != 0 )
-    {
-	reference = new OGRSpatialReference(myWKT.local8Bit());
-    }
+qWarning("mOutputFileName: "+mOutputFileName);
+#endif //QGISDEBUG
 
-    OGRLayer* layer;	
-    layer = dataSource->CreateLayer(NULL, reference, (OGRwkbGeometryType)vectortype, NULL);
-    if(layer == NULL)
-    {
-	return false;
-    }
 
-    //create the attribute fields
-    for(std::list<std::pair<QString, QString> >::const_iterator it= attributes.begin(); it != attributes.end(); ++it)
-    {
-	if(it->second == "Real")
-	{
-	    OGRFieldDefn field(it->first, OFTReal);
-	    if(layer->CreateField(&field) != OGRERR_NONE)
-	    {
 #ifdef QGISDEBUG
-		qWarning("creation of OFTReal field failed");
-#endif
-	    }
-	}
-	else if(it->second == "Integer")
-	{
-	    OGRFieldDefn field(it->first, OFTInteger);
-	    if(layer->CreateField(&field) != OGRERR_NONE)
-	    {
-#ifdef QGISDEBUG
-		qWarning("creation of OFTInteger field failed");
-#endif
-	    }
-	}
-	else if(it->second == "String")
-	{
-	    OGRFieldDefn field(it->first, OFTString);
-	    if(layer->CreateField(&field) != OGRERR_NONE)
-	    {
-#ifdef QGISDEBUG
-		qWarning("creation of OFTString field failed");
-#endif
-	    }
-	}
-    }
+qWarning("outname: "+outname);
+#endif //QGISDEBUG
 
-    OGRDataSource::DestroyDataSource(dataSource);
+mLayerHandle = OGR_DS_CreateLayer( mDataSourceHandle, outname, 
+mySpatialReferenceSystemHandle, geomtype, NULL );
 
-    //qWarning("GDAL Version number is: "+QString::number(GDAL_VERSION_NUM));
-//#if GDAL_VERSION_NUM >= 1310
-    //if(reference)
-    //{
-    //reference->Release();
-    //}
-//#endif //GDAL_VERSION_NUM
-    //return true;
+if( mLayerHandle == NULL )
+{
+std::cout << "Error layer handle is null!" << std::endl;
+return false;
+}
+else
+{
+std::cout << "File handle created!" << std::endl;
 }
 
+OGRFieldDefnH myFieldDefinitionHandle;
+myFieldDefinitionHandle = OGR_Fld_Create( "dummy",OFTReal);
+OGR_Fld_SetWidth( myFieldDefinitionHandle,1);
+OGR_Fld_SetPrecision( myFieldDefinitionHandle,1);
+OGR_L_CreateField( mLayerHandle, myFieldDefinitionHandle, FALSE );
+OGR_Fld_Destroy( myFieldDefinitionHandle );
 
+return true;*/
+  }
+
+
+
+list<QgsMapLayer*> 
+QgsOgrProvider::createLayers()
+{
+    list<QgsMapLayer*> layers;
+
+    // for each OGR layer create a QgsVectorLayer
+    if ( ! ogrDataSource )
+    {
+        QgsDebug( "no OGR data source" );
+        return layers;
+    }
+
+    int layerCount = ogrDataSource->GetLayerCount();
+
+    
+
+    // TODO finish rest
+
+    return layers;
+
+} // QgsOgrProvider::createLayers()
 

@@ -62,7 +62,7 @@ public:
      * @param type Type of layer as defined in LAYERS enum
      * @param lyrname Display Name of the layer
      */
-    QgsMapLayer(int type = 0, QString lyrname = QString::null, QString source = QString::null);
+    QgsMapLayer(int type = 0, QString lyrname = QString::null, QString source = QString::null );
 
     //! Destructor
     virtual ~ QgsMapLayer();
@@ -90,6 +90,20 @@ public:
      * @return internal datasource name of the layer
      */
     QString const & sourceName() const;
+
+    /** return the data source layer number
+
+        Each map layer corresponds to a specific layer within the original
+        data source.  
+
+        In most cases the data source will have just one layer, the zeroth
+        layer.
+     */
+    size_t dataSourceLayerNum() const 
+    { return mDataSourceLayerNum; }
+
+    void dataSourceLayerNum( size_t layerNum )
+    { mDataSourceLayerNum = layerNum; }
 
     /*! Virtual function to calculate the extent of the current layer.
      * This function must be overridden in all child classes and implemented
@@ -478,10 +492,20 @@ private:                       // Private attributes
     /** A flag that tells us whether to use the above vars to restrict layer visibility */
     bool mScaleBasedVisibility;
 
+    /** data source layer number
+
+    Each data source can have multiple layers.  Therefore each QgsLayer needs
+    to know which layer within its corresponding data source contains its
+    data.
+
+    */
+    size_t mDataSourceLayerNum;
+
 public:                        // Public attributes
 
     /** map label ? */
     QString m_labelField;
+
 
 };
 
