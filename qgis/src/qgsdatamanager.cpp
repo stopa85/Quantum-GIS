@@ -16,9 +16,14 @@
  ***************************************************************************/
 
 #include "qgsdatamanager.h"
-#include "qgsmaplayer.h"
+
+
 #include "qgsvectordataprovider.h"
 #include "qgsproviderregistry.h"
+
+#include <list>
+
+using namespace std;
 
 
 
@@ -59,21 +64,73 @@ QgsDataManager::instance()
 
 
 
-bool QgsDataManager::openVector( QString const & name )
+/** open the given data provider
+
+  This generally means creating layers for each corresponding layer found in
+  the data source.  Each newly created layer is then added to the map layer
+  registry.
+
+  This consolidates functionality in both overloaded
+  QgsDataManager::openVector()s.
+
+*/
+static
+bool
+openVectorDataProvider_( QgsDataProvider * vectorDataProvider )
+{
+
+  if ( ! vectorDataProvider )
+  {
+      QgsDebug( "Null vector data provider" );
+
+      return false;
+  }
+
+  // now get all the layers corresponding to the data provider
+
+  list<QgsMapLayer*> mapLayers = vectorDataProvider->createLayers();
+
+  if ( mapLayers.empty() )
+  {
+      QgsDebug( "Unable to get create map layers" );
+
+      return false;
+  }
+
+  // and then add them to the map layer registry; each time a layer is added,
+  // a signal is emitted which will cause the GUI to be updated with the new
+  // layer
+
+  // TODO
+
+  return false;
+
+} // openVectorDataProvider_
+
+
+
+bool QgsDataManager::openVector( QString const & dataSource )
 {
   // find the default provider that can handle the given name
-  
-  // note that we may already have the provider
-  
-  // create a QgsDataSourceLayer for the provider
-  return false;
+  QgsDataProvider * vectorDataProvider = // XXX ogr temporarily hard-coded
+      QgsProviderRegistry::instance()->openVector( dataSource, "ogr" ); 
+
+  return openVectorDataProvider_( vectorDataProvider );
+
 } // QgsDataManager::openVector
 
 
 
-bool QgsDataManager::openVector( QString const & name, QgsDataProvider & provider )
+bool QgsDataManager::openVector( QString const & dataSource, 
+                                 QString const & providerKey )
 {
-  return false;
+  // find the default provider that can handle the given name
+
+  QgsDataProvider * vectorDataProvider = 
+      QgsProviderRegistry::instance()->openVector( dataSource, providerKey );
+
+  return openVectorDataProvider_( vectorDataProvider );
+
 } // QgsDataManager::openVector
 
 
@@ -85,7 +142,7 @@ bool QgsDataManager::openRaster( QString const & name )
 
 
 
-bool QgsDataManager::openRaster( QString const & name, QgsDataProvider & provider )
+bool QgsDataManager::openRaster( QString const & name, QString const & provider )
 {
   return false;
 } // QgsDataManager::openRaster

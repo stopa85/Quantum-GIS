@@ -60,7 +60,7 @@ class QgsVectorLayer : public QgsMapLayer
 public:
 
   //! Constructor
-  QgsVectorLayer(QString baseName = 0, QString path = 0, QString providerLib = 0);
+  QgsVectorLayer(QString baseName = 0, QString path = 0, QString providerLib = 0, size_t dataSourceLayerNum = 0);
 
   //! Destructor
   virtual ~QgsVectorLayer();
@@ -91,7 +91,7 @@ public:
   void setDisplayField(QString fldName=0);
 
   //! Returns the primary display field name used in the identify results dialog
-const QString displayField() const { return fieldIndex; }
+  const QString displayField() const { return fieldIndex; }
 
   //! Initialize the context menu
   void initContextMenu(QgisApp * app);

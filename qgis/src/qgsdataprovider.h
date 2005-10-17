@@ -36,6 +36,9 @@ class QgsFeature;
 class QgsField;
 class QgsDataSourceURI;
 class QgsSpatialRefSys;
+class QgsMapLayer;
+
+
 /** \class QgsDataProvider
  * \brief Abstract base class for spatial data provider implementations
  * @author Gary E.Sherman
@@ -303,6 +306,18 @@ class QgsDataProvider : public QObject
         return "";
     }
 
+
+    /** creates and returns a list of map layers
+
+    This corresponds to layers found within the data source.
+
+    @note
+
+    Not sure if this is a const member or not.
+
+    */
+    virtual std::list<QgsMapLayer*> createLayers() = 0;
+
 signals:
 
       /** 
@@ -320,7 +335,7 @@ private:
      */
     QString mDataSourceURI;
 
-};
+}; // class QgsDataProvider
 
 
 #endif

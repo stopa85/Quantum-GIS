@@ -16,7 +16,6 @@ email                : sherman at mrcc.com
  ***************************************************************************/
 /* $Id$ */
 
-#include "../../src/qgsrect.h"
 #include "../../src/qgsvectordataprovider.h"
 #include <geos.h>
 
@@ -52,24 +51,24 @@ class QgsOgrProvider:public QgsVectorDataProvider
      * Get the first feature resulting from a select operation
      * @return QgsFeature
      */
-    QgsFeature *getFirstFeature(bool fetchAttributes = false);
+    QgsFeature *getFirstFeature(bool fetchAttributes = false, int dataSourceLayerNum = 0);
     /** 
      * Get the next feature resutling from a select operation
      * @return QgsFeature
      */
-    QgsFeature *getNextFeature(bool fetchAttributes = false);
+    QgsFeature *getNextFeature(bool fetchAttributes = false, int dataSourceLayerNum = 0);
     /**Get the next feature resulting from a select operation.
     *@param attlist a list containing the indexes of the attribute fields to copy
     *@param getnotcommited flag indicating if not commited features should be returned
     */
-    QgsFeature *getNextFeature(std::list<int> const& attlist, int featureQueueSize = 1);
+    QgsFeature *getNextFeature(std::list<int> const& attlist, int featureQueueSize = 1, int dataSourceLayerNum = 0);
     /** 
      * Get the next feature resutling from a select operation
      * @return True if the feature was read. This does not indicate
      * that the feature is valid. Use QgsFeature::isValid() to check
      * the validity of a feature before using it.
      */
-    bool getNextFeature(QgsFeature &feature, bool fetchAttributes = false);
+    bool getNextFeature(QgsFeature &feature, bool fetchAttributes = false, int dataSourceLayerNum = 0);
 
     /** Get the feature type. This corresponds to 
       WKBPoint,
@@ -80,7 +79,7 @@ class QgsOgrProvider:public QgsVectorDataProvider
       WKBMultiPolygon
      * as defined in qgis.h
      */
-    int geometryType() const;
+    int geometryType(int dataSourceLayerNum = 0) const;
 
     /** return the number of layers for the current data source
 
@@ -93,65 +92,66 @@ class QgsOgrProvider:public QgsVectorDataProvider
     /** 
      * Get the number of features in the layer
      */
-    long featureCount() const;
+    long featureCount(int dataSourceLayerNum = 0) const;
     /** 
      * Get the number of fields in the layer
      */
-    int fieldCount() const;
+    int fieldCount(int dataSourceLayerNum = 0) const;
     /**
      * Select features based on a bounding rectangle. Features can be retrieved 
      * with calls to getFirstFeature and getNextFeature.
      * @param mbr QgsRect containing the extent to use in selecting features
      * @param useIntersect Use geos functions to determine the selected set
      */
-    void select(QgsRect * mbr, bool useIntersect = false);
+    void select(QgsRect * mbr, bool useIntersect = false, int dataSourceLayerNum = 0);
 
     /**
      * Identify features within the search radius specified by rect
      * @param rect Bounding rectangle of search radius
      * @return std::vector containing QgsFeature objects that intersect rect
      */
-    virtual std::vector < QgsFeature > &identify(QgsRect * rect);
+    virtual std::vector < QgsFeature > &identify(QgsRect * rect, int dataSourceLayerNum = 0);
 
     /** Return the extent for this data layer
     */
     virtual QgsRect *extent();
+
     /**Get an attribute associated with a feature*/
-    void getFeatureAttribute(OGRFeature * ogrFet, QgsFeature * f, int attindex);
+    void getFeatureAttribute(OGRFeature * ogrFet, QgsFeature * f, int attindex, int dataSourceLayerNum = 0);
     /**
      * Get the attributes associated with a feature
      */
-    void getFeatureAttributes(OGRFeature * ogrFet, QgsFeature * f);
+    void getFeatureAttributes(OGRFeature * ogrFet, QgsFeature * f, int dataSourceLayerNum = 0);
     /**
      * Get the field information for the layer
      */
-    std::vector < QgsField > const & fields() const;
+    std::vector < QgsField > const & fields(int dataSourceLayerNum = 0) const;
 
     /* Reset the layer - for an OGRLayer, this means clearing the
      * spatial filter and calling ResetReading
      */
-    /* virtual */ void reset();
+    /* virtual */ void reset(int dataSourceLayerNum = 0);
 
     /**Returns the minimum value of an attribut
       @param position the number of the attribute*/
-    QString minValue(int position);
+    QString minValue(int position, int dataSourceLayerNum = 0);
 
     /**Returns the maximum value of an attribut
       @param position the number of the attribute*/
-    QString maxValue(int position);
+    QString maxValue(int position, int dataSourceLayerNum = 0);
 
     /**Returns true if this is a valid shapefile
     */
     bool isValid();
 
     /**Writes a list of features to the file*/
-    bool addFeatures(std::list<QgsFeature*> const flist);
+    bool addFeatures(std::list<QgsFeature*> const flist, int dataSourceLayerNum = 0);
 
     /**Adds new attributess. Unfortunately not supported for layers with features in it*/
-    bool addAttributes(std::map<QString,QString> const & name);
+    bool addAttributes(std::map<QString,QString> const & name, int dataSourceLayerNum = 0);
 
     /**Changes attribute values of existing features */
-    bool changeAttributeValues(std::map<int,std::map<QString,QString> > const & attr_map);
+    bool changeAttributeValues(std::map<int,std::map<QString,QString> > const & attr_map, int dataSourceLayerNum = 0);
 
     QgsDataSourceURI * getURI()
     { 
@@ -171,10 +171,6 @@ class QgsOgrProvider:public QgsVectorDataProvider
     int capabilities() const;
 
     void setEncoding(const QString& e);
-    
-  protected:
-    /** loads fields from input file to member attributeFields */
-    void loadFields();
 
 
       /** return a provider name
@@ -207,6 +203,37 @@ class QgsOgrProvider:public QgsVectorDataProvider
      */
     QString description() const;
 
+    /** return vector file filter string
+
+      Returns a string suitable for a QFileDialog of vector file formats
+      supported by the data provider.  Naturally this will be an empty string
+      for those data providers that do not deal with plain files, such as
+      databases and servers.
+
+      @note
+
+      It'd be nice to eventually be raster/vector neutral.
+    */
+    /* virtual */ QString fileVectorFilters() const;
+
+
+
+    /** creates and returns a list of map layers
+
+    This corresponds to layers found within the data source.
+
+    @note
+
+    Not sure if this is a const member or not.
+
+    */
+    /* virtual */ list<QgsMapLayer*> createLayers();
+
+
+  protected:
+    /** loads fields from input file to member attributeFields */
+    void loadFields();
+
 
   private:
     unsigned char *getGeometryPointer(OGRFeature * fet);
@@ -214,9 +241,6 @@ class QgsOgrProvider:public QgsVectorDataProvider
 
     OGRDataSource *ogrDataSource;
     OGREnvelope *extent_;
-    /**This member variable receives the same value as extent_
-     in the method QgsOgrProvider::extent(). The purpose is to prevent a memory leak*/
-    QgsRect mExtentRect;
     OGRLayer *ogrLayer;
 
     // OGR Driver that was actually used to open the layer
@@ -244,7 +268,7 @@ class QgsOgrProvider:public QgsVectorDataProvider
     //! Selection rectangle 
     OGRPolygon * mSelectionRectangle;
     /**Adds one feature*/
-    bool addFeature(QgsFeature* f);
+    bool addFeature(QgsFeature* f, int dataSourceLayerNum = 0);
     //! The geometry factory
     geos::GeometryFactory *geometryFactory;
     //! The well known text reader

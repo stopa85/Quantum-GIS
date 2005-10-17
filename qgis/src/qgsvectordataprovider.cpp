@@ -30,42 +30,44 @@ QgsVectorDataProvider::QgsVectorDataProvider( QString const & uri )
 }
 
 
-bool QgsVectorDataProvider::addFeatures(std::list<QgsFeature*> flist)
+bool QgsVectorDataProvider::addFeatures(std::list<QgsFeature*> flist, int dataSourceLayerNum)
 {
   return false;
 }
 
-bool QgsVectorDataProvider::deleteFeatures(std::list<int> const & id)
+bool QgsVectorDataProvider::deleteFeatures(std::list<int> const & id, int dataSourceLayerNum)
 {
   return false;
 }
 
-bool QgsVectorDataProvider::addAttributes(std::map<QString,QString> const & name)
+bool QgsVectorDataProvider::addAttributes(std::map<QString,QString> const & name, int dataSourceLayerNum)
 {
   return false;
 }
 
-bool QgsVectorDataProvider::deleteAttributes(std::set<QString> const & name)
+bool QgsVectorDataProvider::deleteAttributes(std::set<QString> const & name, int dataSourceLayerNum)
 {
   return false;
 }
 
-bool QgsVectorDataProvider::changeAttributeValues(std::map<int,std::map<QString,QString> > const & attr_map)
+bool QgsVectorDataProvider::changeAttributeValues(std::map<int,std::map<QString,QString> > const & attr_map, int dataSourceLayerNum)
 {
   return false;
 }
 
 QString QgsVectorDataProvider::getDefaultValue(const QString& attr, 
-    QgsFeature* f) {
+                                               QgsFeature* f, 
+                                               int dataSourceLayerNum) 
+{
   return "";
 }
 
-bool QgsVectorDataProvider::changeGeometryValues(std::map<int, QgsGeometry> & geometry_map)
+bool QgsVectorDataProvider::changeGeometryValues(std::map<int, QgsGeometry> & geometry_map, int dataSourceLayerNum)
 {
   return false;
 }
 
-bool QgsVectorDataProvider::createSpatialIndex()
+bool QgsVectorDataProvider::createSpatialIndex(int dataSourceLayerNum)
 {
     return false;
 }
@@ -191,7 +193,7 @@ QString QgsVectorDataProvider::capabilitiesString() const
 
 }
 
-bool QgsVectorDataProvider::setAttributeFilter(const QgsSearchString& attributeFilter)
+bool QgsVectorDataProvider::setAttributeFilter(const QgsSearchString& attributeFilter, int dataSourceLayerNum)
 {
   mAttributeFilter = attributeFilter;
   // TODO: maybe check if all referenced columns are there, return false if not

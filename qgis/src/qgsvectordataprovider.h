@@ -76,12 +76,12 @@ class QgsVectorDataProvider : public QgsDataProvider
        * overlap.
        *
        */
-      virtual void select(QgsRect *mbr, bool useIntersect=false)=0;
+      virtual void select(QgsRect *mbr, bool useIntersect=false, int dataSourceLayerNum = 0)=0;
       /**
        * Update the feature count based on current spatial filter. If not
        * overridden in the data provider this function returns -1
        */
-      virtual long updateFeatureCount()
+      virtual long updateFeatureCount(int dataSourceLayerNum = 0)
       {
         return -1;
       }
@@ -90,7 +90,7 @@ class QgsVectorDataProvider : public QgsDataProvider
        * Gets the feature at the given feature ID.
        * @return  QgsFeature
        */
-      virtual QgsFeature * getFeatureAtId(int featureId)
+      virtual QgsFeature * getFeatureAtId(int featureId, int dataSourceLayerNum = 0)
       {
         return 0;
       };
@@ -99,13 +99,13 @@ class QgsVectorDataProvider : public QgsDataProvider
        * Get the first feature resulting from a select operation
        * @return QgsFeature
        */
-      virtual QgsFeature * getFirstFeature(bool fetchAttributes = false) = 0;
+      virtual QgsFeature * getFirstFeature(bool fetchAttributes = false, int dataSourceLayerNum = 0) = 0;
 
       /** 
        * Get the next feature resutling from a select operation
        * @return QgsFeature
        */
-      virtual QgsFeature * getNextFeature(bool fetchAttributes = false) = 0;
+      virtual QgsFeature * getNextFeature(bool fetchAttributes = false, int dataSourceLayerNum = 0) = 0;
 
       /**Get the next feature resulting from a select operation.
        *@param attlist a list containing the indexes of the attribute fields to copy
@@ -113,7 +113,7 @@ class QgsVectorDataProvider : public QgsDataProvider
        */
 //    virtual QgsFeature* getNextFeature(std::list<int> const & attlist) = 0;
     
-      virtual QgsFeature* getNextFeature(std::list<int> const & attlist, int featureQueueSize = 1) { return 0; }
+      virtual QgsFeature* getNextFeature(std::list<int> const & attlist, int featureQueueSize = 1,int dataSourceLayerNum = 0) { return 0; }
 
       /**
        * Get the next feature using new method
@@ -121,37 +121,37 @@ class QgsVectorDataProvider : public QgsDataProvider
        *        to use this method of fetching features
        */
 
-      virtual bool getNextFeature(QgsFeature &feature, bool fetchAttributes = false) = 0;
+      virtual bool getNextFeature(QgsFeature &feature, bool fetchAttributes = false,int dataSourceLayerNum = 0) = 0;
 
       /** Get feature type.
        * Gets the feature type as defined in WKBTYPE (qgis.h).
        * @return int representing the feature type
        */
-      virtual int geometryType() const = 0;
+      virtual int geometryType(int dataSourceLayerNum = 0) const = 0;
 
 
       /**
        * Number of features in the layer
        * @return long containing number of features
        */
-      virtual long featureCount() const = 0;
+      virtual long featureCount(int dataSourceLayerNum = 0) const = 0;
 
       /**
      * Get the attributes associated with a feature
      * TODO: Get rid of "row" and set up provider-internal caching instead
      */
-    virtual void getFeatureAttributes(int oid, int& row, QgsFeature *f) {};
+    virtual void getFeatureAttributes(int oid, int& row, QgsFeature *f, int dataSourceLayerNum = 0) {};
     
     /**
        * Number of attribute fields for a feature in the layer
        */
-      virtual int fieldCount() const = 0;
+      virtual int fieldCount(int dataSourceLayerNum = 0) const = 0;
 
       /**
        * Return a list of field names for this layer
        * @return vector of field names
        */
-      virtual std::vector<QgsField> const & fields() const = 0;
+      virtual std::vector<QgsField> const & fields(int dataSourceLayerNum = 0) const = 0;
 
       /** 
        * Reset the layer to clear any spatial filtering or other contstraints that
@@ -160,43 +160,44 @@ class QgsVectorDataProvider : public QgsDataProvider
        * reset the layer. In this case, the provider should simply implement an empty
        * function body.
        */
-      virtual void reset() = 0;
+      virtual void reset(int dataSourceLayerNum = 0) = 0;
 
       /**Returns the minimum value of an attributs
         @param position the number of the attribute*/
-      virtual QString minValue(int position) = 0;
+      virtual QString minValue(int position, int dataSourceLayerNum = 0) = 0;
 
       /**Returns the maximum value of an attributs
         @param position the number of the attribute*/
-      virtual QString maxValue(int position) = 0;
+      virtual QString maxValue(int position, int dataSourceLayerNum = 0) = 0;
 
       /**Adds a list of features
         @return true in case of success and false in case of failure*/
-      virtual bool addFeatures(std::list<QgsFeature*> const flist);
+      virtual bool addFeatures(std::list<QgsFeature*> const flist, int dataSourceLayerNum = 0);
 
       /**Deletes a feature
         @param id list containing feature ids to delete
         @return true in case of success and false in case of failure*/
-      virtual bool deleteFeatures(std::list<int> const & id);
+      virtual bool deleteFeatures(std::list<int> const & id, int dataSourceLayerNum = 0);
 
       /**Adds new attributes
         @param name map with attribute name as key and type as value
+        @param dataSourceLayerNum layer number within data source with zero is first layer
         @return true in case of success and false in case of failure*/
-      virtual bool addAttributes(std::map<QString,QString> const & name);
+      virtual bool addAttributes(std::map<QString,QString> const & name, int dataSourceLayerNum = 0);
 
       /**Deletes existing attributes
         @param names of the attributes to delete
         @return true in case of success and false in case of failure*/
-      virtual bool deleteAttributes(std::set<QString> const & name);
+      virtual bool deleteAttributes(std::set<QString> const & name, int dataSourceLayerNum = 0);
 
       /**Changes attribute values of existing features
         @param attr_map a map containing the new attributes. The integer is the feature id,
         the first QString is the attribute name and the second one is the new attribute value
         @return true in case of success and false in case of failure*/
-      virtual bool changeAttributeValues(std::map<int,std::map<QString,QString> > const & attr_map);
+      virtual bool changeAttributeValues(std::map<int,std::map<QString,QString> > const & attr_map, int dataSourceLayerNum = 0);
 
       /**Returns the default value for attribute @c attr for feature @c f. */
-      virtual QString getDefaultValue(const QString & attr, QgsFeature* f);
+      virtual QString getDefaultValue(const QString & attr, QgsFeature* f, int dataSourceLayerNum = 0);
 
       /**
        Changes geometries of existing features
@@ -204,14 +205,14 @@ class QgsVectorDataProvider : public QgsDataProvider
                              the second map parameter being the new geometries themselves
        @return               true in case of success and false in case of failure
      */
-    virtual bool changeGeometryValues(std::map<int, QgsGeometry> & geometry_map);
+    virtual bool changeGeometryValues(std::map<int, QgsGeometry> & geometry_map, int dataSourceLayerNum = 0);
 
     /**
        * Identify features within the search radius specified by rect
        * @param rect Bounding rectangle of search radius
        * @return std::vector containing QgsFeature objects that intersect rect
        */
-      virtual std::vector<QgsFeature>& identify(QgsRect *rect) = 0;
+      virtual std::vector<QgsFeature>& identify(QgsRect *rect, int dataSourceLayerNum = 0) = 0;
 
       /** saves current data as Shape file, if it can */
       virtual bool saveAsShapefile()
@@ -221,13 +222,13 @@ class QgsVectorDataProvider : public QgsDataProvider
       }
 
       /**Creates a spatial index on the datasource (if supported by the provider type). Returns true in case of success*/
-      virtual bool createSpatialIndex();
+      virtual bool createSpatialIndex(int dataSourceLayerNum = 0);
 
       /** Sets filter based on attribute values. Returns false when input string contains errors */
-      virtual bool setAttributeFilter(const QgsSearchString& attributeFilter);
+      virtual bool setAttributeFilter(const QgsSearchString& attributeFilter, int dataSourceLayerNum = 0);
 
       /** Returns current attribute filter */
-      virtual QgsSearchString getAttributeFilter() { return mAttributeFilter; }
+      virtual QgsSearchString getAttributeFilter(int dataSourceLayerNum = 0) { return mAttributeFilter; }
       
       /** Returns a bitmask containing the supported capabilities
           Note, some capabilities may change depending on whether

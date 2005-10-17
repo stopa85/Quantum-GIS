@@ -59,11 +59,11 @@ const QString GPX_KEY = "gpx";
 const QString GPX_DESCRIPTION = "GPS eXchange format provider";
 
 
-QgsGPXProvider::QgsGPXProvider(QString const & uri) : 
-        QgsVectorDataProvider(uri),
-        mEditable(false),
-        mMinMaxCacheDirty(true)
-{
+QgsGPXProvider::QgsGPXProvider(QString const & uri) 
+    : QgsVectorDataProvider(uri),
+      mMinMaxCacheDirty(true),
+      mEditable(false) {
+  
   // assume that it won't work
   mValid = false;
   
@@ -156,7 +156,7 @@ QString QgsGPXProvider::getProjectionWKT() {
  * Get the first feature resulting from a select operation
  * @return QgsFeature
  */
-QgsFeature *QgsGPXProvider::getFirstFeature(bool fetchAttributes) {
+QgsFeature *QgsGPXProvider::getFirstFeature(bool fetchAttributes, int dataSourceLayerNum) {
   reset();
   return getNextFeature(fetchAttributes);
 }
@@ -167,7 +167,7 @@ QgsFeature *QgsGPXProvider::getFirstFeature(bool fetchAttributes) {
  * Return 0 if there are no features in the selection set
  * @return QgsFeature
  */
-bool QgsGPXProvider::getNextFeature(QgsFeature &feature, bool fetchAttributes){
+bool QgsGPXProvider::getNextFeature(QgsFeature &feature, bool fetchAttributes, int dataSourceLayerNum){
   return false;
 }
 
@@ -177,7 +177,7 @@ bool QgsGPXProvider::getNextFeature(QgsFeature &feature, bool fetchAttributes){
  * Return 0 if there are no features in the selection set
  * @return QgsFeature
  */
-QgsFeature *QgsGPXProvider::getNextFeature(bool fetchAttributes) {
+QgsFeature *QgsGPXProvider::getNextFeature(bool fetchAttributes, int dataSourceLayerNum) {
   QgsFeature* feature = new QgsFeature(-1);
   bool success;
   if (fetchAttributes)
@@ -193,7 +193,10 @@ QgsFeature *QgsGPXProvider::getNextFeature(bool fetchAttributes) {
 }
 
 
-QgsFeature * QgsGPXProvider::getNextFeature(std::list<int> const & attlist, int featureQueueSize) {
+QgsFeature * QgsGPXProvider::getNextFeature(std::list<int> const & attlist, 
+                                            int featureQueueSize, 
+                                            int dataSourceLayerNum) 
+{
   QgsFeature* feature = new QgsFeature(-1);
   bool success = getNextFeature(feature, attlist);
   if (success)
@@ -204,7 +207,7 @@ QgsFeature * QgsGPXProvider::getNextFeature(std::list<int> const & attlist, int 
 
 
 bool QgsGPXProvider::getNextFeature(QgsFeature* feature, 
-				    std::list<int> const & attlist) {
+				    std::list<int> const & attlist, int dataSourceLayerNum) {
   bool result = false;
   
   std::list<int>::const_iterator iter;
@@ -394,7 +397,7 @@ bool QgsGPXProvider::getNextFeature(QgsFeature* feature,
  * with calls to getFirstFeature and getNextFeature.
  * @param mbr QgsRect containing the extent to use in selecting features
  */
-void QgsGPXProvider::select(QgsRect *rect, bool useIntersect) {
+void QgsGPXProvider::select(QgsRect *rect, bool useIntersect, int dataSourceLayerNum) {
   
   // Setting a spatial filter doesn't make much sense since we have to
   // compare each point against the rectangle.
@@ -411,7 +414,7 @@ void QgsGPXProvider::select(QgsRect *rect, bool useIntersect) {
  * @param rect Bounding rectangle of search radius
  * @return std::vector containing QgsFeature objects that intersect rect
  */
-std::vector<QgsFeature>& QgsGPXProvider::identify(QgsRect * rect) {
+std::vector<QgsFeature>& QgsGPXProvider::identify(QgsRect * rect, int dataSourceLayerNum ) {
   // reset the data source since we need to be able to read through
   // all features
   reset();
@@ -448,7 +451,7 @@ QgsRect *QgsGPXProvider::extent() {
 /** 
  * Return the feature type
  */
-int QgsGPXProvider::geometryType() const
+int QgsGPXProvider::geometryType(int dataSourceLayerNum) const
 {
   return mGeomType;
 }
@@ -457,7 +460,7 @@ int QgsGPXProvider::geometryType() const
 /** 
  * Return the feature type
  */
-long QgsGPXProvider::featureCount() const
+long QgsGPXProvider::featureCount(int dataSourceLayerNum) const
 {
   if (mFeatureType == WaypointType)
     return data->getNumberOfWaypoints();
@@ -472,19 +475,19 @@ long QgsGPXProvider::featureCount() const
 /**
  * Return the number of fields
  */
-int QgsGPXProvider::fieldCount() const
+int QgsGPXProvider::fieldCount(int dataSourceLayerNum) const
 {
   return attributeFields.size();
 }
 
 
-std::vector<QgsField> const & QgsGPXProvider::fields() const
+std::vector<QgsField> const & QgsGPXProvider::fields(int dataSourceLayerNum) const
 {
   return attributeFields;
 }
 
 
-void QgsGPXProvider::reset() {
+void QgsGPXProvider::reset(int dataSourceLayerNum) {
   if (mFeatureType == WaypointType)
     mWptIter = data->waypointsBegin();
   else if (mFeatureType == RouteType)
@@ -494,7 +497,7 @@ void QgsGPXProvider::reset() {
 }
 
 
-QString QgsGPXProvider::minValue(int position) {
+QString QgsGPXProvider::minValue(int position, int dataSourceLayerNum) {
   if (position >= fieldCount()) {
     std::cerr<<"Warning: access requested to invalid position "
 	     <<"in QgsGPXProvider::minValue(..)"<<std::endl;
@@ -506,7 +509,7 @@ QString QgsGPXProvider::minValue(int position) {
 }
 
 
-QString QgsGPXProvider::maxValue(int position) {
+QString QgsGPXProvider::maxValue(int position, int dataSourceLayerNum) {
   if (position >= fieldCount()) {
     std::cerr<<"Warning: access requested to invalid position "
 	     <<"in QgsGPXProvider::maxValue(..)"<<std::endl;
@@ -518,7 +521,7 @@ QString QgsGPXProvider::maxValue(int position) {
 }
 
 
-void QgsGPXProvider::fillMinMaxCash() {
+void QgsGPXProvider::fillMinMaxCash(int dataSourceLayerNum) {
   for(int i=0;i<fieldCount();i++) {
     mMinMaxCache[i][0]=DBL_MAX;
     mMinMaxCache[i][1]=-DBL_MAX;
@@ -550,7 +553,7 @@ bool QgsGPXProvider::isValid(){
 }
 
 
-bool QgsGPXProvider::addFeatures(std::list<QgsFeature*> flist) {
+bool QgsGPXProvider::addFeatures(std::list<QgsFeature*> flist, int dataSourceLayerNum) {
   
   // add all the features
   for (std::list<QgsFeature*>::const_iterator iter = flist.begin(); 
@@ -569,7 +572,7 @@ bool QgsGPXProvider::addFeatures(std::list<QgsFeature*> flist) {
 }
 
 
-bool QgsGPXProvider::addFeature(QgsFeature* f) {
+bool QgsGPXProvider::addFeature(QgsFeature* f, int dataSourceLayerNum) {
   unsigned char* geo = f->getGeometry();
   bool success = false;
   GPSObject* obj = NULL;
@@ -718,7 +721,7 @@ bool QgsGPXProvider::addFeature(QgsFeature* f) {
 }
 
 
-bool QgsGPXProvider::deleteFeatures(std::list<int> const & id) {
+bool QgsGPXProvider::deleteFeatures(std::list<int> const & id, int dataSourceLayerNum) {
   if (mFeatureType == WaypointType)
     data->removeWaypoints(id);
   else if (mFeatureType == RouteType)
@@ -736,7 +739,7 @@ bool QgsGPXProvider::deleteFeatures(std::list<int> const & id) {
 }
 
 
-bool QgsGPXProvider::changeAttributeValues(std::map<int,std::map<QString,QString> > const& attr_map) {
+bool QgsGPXProvider::changeAttributeValues(std::map<int,std::map<QString,QString> > const& attr_map, int dataSourceLayerNum) {
   std::map<int, std::map<QString, QString> >::const_iterator aIter =
     attr_map.begin();
   if (mFeatureType == WaypointType) {
@@ -778,7 +781,7 @@ bool QgsGPXProvider::changeAttributeValues(std::map<int,std::map<QString,QString
 
 
 void QgsGPXProvider::changeAttributeValues(GPSObject& obj, 
-					   const std::map<QString, QString>& attrs) {
+					   const std::map<QString, QString>& attrs, int dataSourceLayerNum) {
   std::map<QString, QString>::const_iterator aIter;
   
   // common attributes
@@ -828,7 +831,7 @@ size_t QgsGPXProvider::layerCount() const
 
 
 
-QString QgsGPXProvider::getDefaultValue(const QString& attr, QgsFeature* f) {
+QString QgsGPXProvider::getDefaultValue(const QString& attr, QgsFeature* f, int dataSourceLayerNum) {
   if (attr == "source")
     return "Digitized in QGIS";
   return "";

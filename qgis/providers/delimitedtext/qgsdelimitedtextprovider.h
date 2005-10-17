@@ -66,7 +66,7 @@ public:
 
     @return found QgsFeature, or null if not found
   */
-  QgsFeature *getFirstFeature(bool fetchAttributes = false);
+  QgsFeature *getFirstFeature(bool fetchAttributes = false, int dataSourceLayerNum = 0);
 
   /** Get the next feature, if any
 
@@ -80,7 +80,7 @@ public:
 
   * @return found QgsFeature, or null if not found
   */
-  QgsFeature *getNextFeature(bool fetchAttributes = false);
+  QgsFeature *getNextFeature(bool fetchAttributes = false, int dataSourceLayerNum = 0);
 
   /** get the next feature, if any
 
@@ -105,7 +105,7 @@ public:
   * Get the first feature resulting from a select operation
   * @return QgsFeature
   */
-  bool getNextFeature(QgsFeature & feature, bool fetchAttributes = false);
+  bool getNextFeature(QgsFeature & feature, bool fetchAttributes = false, int dataSourceLayerNum = 0);
 
   /** get the next feature, if any
 
@@ -124,7 +124,7 @@ public:
     The search will be limited to the search region if one is active.
 
   */
-  QgsFeature *getNextFeature(std::list<int> const & desiredAttributes, int featureQueueSize = 1);
+  QgsFeature *getNextFeature(std::list<int> const & desiredAttributes, int featureQueueSize = 1, int dataSourceLayerNum = 0);
 
 
   /** Get the feature type. This corresponds to 
@@ -137,7 +137,7 @@ public:
   * as defined in qgis.h
   * This provider will always return WKBPoint
   */
-  int geometryType() const;
+  int geometryType(int dataSourceLayerNum = 0) const;
 
 
   /** return the number of layers for the current data source
@@ -153,24 +153,26 @@ public:
     /** 
     * Get the number of features in the layer
     */
-  long featureCount() const;
+  long featureCount(int dataSourceLayerNum = 0) const;
+  
     /** 
     * Get the number of fields in the layer
     */
-  int fieldCount() const;
+  int fieldCount(int dataSourceLayerNum = 0) const;
+  
   /**
   * Select features based on a bounding rectangle. Features can be retrieved 
   * with calls to getFirstFeature and getNextFeature.
   * @param mbr QgsRect containing the extent to use in selecting features
   */
-  void select(QgsRect * mbr, bool useIntersect = false);
+  void select(QgsRect * mbr, bool useIntersect = false, int dataSourceLayerNum = 0);
 
   /**
   * Identify features within the search radius specified by rect
   * @param rect Bounding rectangle of search radius
   * @return std::vector containing QgsFeature objects that intersect rect
   */
-  virtual std::vector < QgsFeature > &identify(QgsRect * rect);
+  virtual std::vector < QgsFeature > &identify(QgsRect * rect, int dataSourceLayerNum = 0);
 
   /** Return the extent for this data layer
   */
@@ -178,24 +180,24 @@ public:
   /**
   * Get the attributes associated with a feature
   */
-  void getFeatureAttributes(int key, QgsFeature * f);
+  void getFeatureAttributes(int key, QgsFeature * f, int dataSourceLayerNum = 0);
  /**
  * Get the field information for the layer
  */
-    std::vector<QgsField> const & fields() const;
+    std::vector<QgsField> const & fields(int dataSourceLayerNum = 0) const;
 
   /* Reset the layer (ie move the file pointer to the head
      of the file.
    */
-  void reset();
+  void reset(int dataSourceLayerNum = 0);
 
  /**Returns the minimum value of an attribute
     @param position the number of the attribute*/
-  QString minValue(int position);
+  QString minValue(int position,int dataSourceLayerNum = 0);
 
  /**Returns the maximum value of an attribute
     @param position the number of the attribute*/
-  QString maxValue(int position);
+  QString maxValue(int position,int dataSourceLayerNum = 0);
 
  /**Returns true if this is a valid delimited file
  */
@@ -261,6 +263,24 @@ public:
 
 
 
+
+    /** creates and returns a list of map layers
+
+    This corresponds to layers found within the data source.
+
+    @note
+
+    Not sure if this is a const member or not.
+
+    */
+    /* virtual */ std::list<QgsMapLayer*> createLayers()
+    {
+        // TODO
+        return std::list<QgsMapLayer*>();
+    }
+
+
+
 private:
 
   /** get the next feature, if any
@@ -280,9 +300,9 @@ private:
                         bool getAttributes, 
                         std::list<int> const * desiredAttributes = 0 );
 
-  void fillMinMaxCash();
+  void fillMinMaxCash(int dataSourceLayerNum = 0);
 
-  int *getFieldLengths();
+  int *getFieldLengths(int dataSourceLayerNum = 0);
 
   //! Fields
   std::vector < QgsField > attributeFields;

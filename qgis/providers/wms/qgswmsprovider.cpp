@@ -56,11 +56,7 @@ QgsWmsProvider::QgsWmsProvider(QString const & uri)
     httpuri(uri),
     httpproxyhost(0),
     httpproxyport(80),
-    httpcapabilitiesresponse(0),
-    cachedImage(0),
-    cachedViewExtent(0),
-    cachedPixelWidth(0),
-    cachedPixelHeight(0)
+    httpcapabilitiesresponse(0)
 {
 #ifdef QGISDEBUG
   std::cout << "QgsWmsProvider: constructing with uri '" << uri.local8Bit() << "'." << std::endl;
@@ -109,12 +105,7 @@ QgsWmsProvider::~QgsWmsProvider()
 #ifdef QGISDEBUG
   std::cout << "QgsWmsProvider: deconstructing." << std::endl;
 #endif
-
-  // Dispose of any cached image as created by draw()
-  if (cachedImage)
-  {
-    delete cachedImage;
-  }
+  
 
 }
 
@@ -204,6 +195,10 @@ void QgsWmsProvider::setSubLayerVisibility(QString name, bool vis)
 
 QImage* QgsWmsProvider::draw(QgsRect viewExtent, int pixelWidth, int pixelHeight)
 {
+
+  QImage* i;
+  
+
 #ifdef QGISDEBUG
   std::cout << "QgsWmsProvider::draw: Entering." << std::endl;
 #endif
@@ -218,16 +213,6 @@ QImage* QgsWmsProvider::draw(QgsRect viewExtent, int pixelWidth, int pixelHeight
   std::cout << "QgsWmsProvider::draw: viewExtent.yMax() = " << viewExtent.yMax() << std::endl;
 #endif
 
-  // Can we reuse the previously cached image?
-  if (
-      (cachedImage) &&
-      (cachedViewExtent == viewExtent) &&
-      (cachedPixelWidth == pixelWidth) &&
-      (cachedPixelHeight == pixelHeight)
-     )
-  {
-    return cachedImage;
-  }
 
   // Bounding box in WMS format
   QString bbox;
@@ -359,25 +344,22 @@ QImage* QgsWmsProvider::draw(QgsRect viewExtent, int pixelWidth, int pixelHeight
   }
 #endif
 
-  // Load into the final QImage.
-
   //bool success = i.loadFromData(imagesource);
-  if (cachedImage)
-  {
-    delete cachedImage;
-  }
-  cachedImage = new QImage(imagesource);
-
-  // Remember settings for useful caching next time.
-  cachedViewExtent = viewExtent;
-  cachedPixelWidth = pixelWidth;
-  cachedPixelHeight = pixelHeight;
+  i = new QImage(imagesource);
 
 #ifdef QGISDEBUG
   // Get what we can support
 
-// Commented out for now, causes segfaults.
-//  supportedFormats();
+// TODO: Qt4 has inputFormatList in QPicture - need to refactor.
+#if QT_VERSION < 0x040000
+  QStringList list = i->inputFormatList();
+  QStringList::Iterator it = list.begin();
+  while( it != list.end() )
+  {
+    std::cout << "QgsWmsProvider::addLayers: can support input of '" << (*it).local8Bit() << "'." << std::endl;
+    ++it;
+  }
+#endif
 
 #endif
 
@@ -390,7 +372,7 @@ QImage* QgsWmsProvider::draw(QgsRect viewExtent, int pixelWidth, int pixelHeight
 
   // TODO: bit depth conversion to the client's expectation
 //  return *(i.convertDepth(32));
-  return cachedImage;
+  return i;
 
 }
 
@@ -432,7 +414,7 @@ void QgsWmsProvider::retrieveServerCapabilities()
     std::cout << "QgsWmsProvider::getServerCapabilities: Converting to DOM." << std::endl;
 #endif
   
-    parseCapabilities(httpcapabilitiesresponse, capabilities);
+    parseCapabilities(httpcapabilitiesresponse);
 
   }
   
@@ -459,7 +441,7 @@ void QgsWmsProvider::downloadCapabilitiesURI(QString uri)
   std::cout << "QgsWmsProvider::downloadCapabilitiesURI: Converting to DOM." << std::endl;
 #endif
   
-  parseCapabilities(httpcapabilitiesresponse, capabilities);
+  parseCapabilities(httpcapabilitiesresponse);
 
 
   
@@ -507,7 +489,7 @@ Example URL (works!)
 }
 
 
-void QgsWmsProvider::parseCapabilities(QByteArray xml, QgsWmsCapabilitiesProperty& capabilitiesProperty)
+void QgsWmsProvider::parseCapabilities(QByteArray xml)
 {
 #ifdef QGISDEBUG
   std::cout << "QgsWmsProvider::parseCapabilities: entering." << std::endl;
@@ -524,30 +506,18 @@ void QgsWmsProvider::parseCapabilities(QByteArray xml, QgsWmsCapabilitiesPropert
   capabilitiesDOM.setContent(xml);
 
   QDomElement docElem = capabilitiesDOM.documentElement();
-
-  // TODO: Assert the docElem.tagName() is "WMS_Capabilities"
-
-  capabilitiesProperty.version = docElem.attribute("version");
-
-  // Start walking through XML.
+  
   QDomNode n = docElem.firstChild();
-
   while( !n.isNull() ) {
       QDomElement e = n.toElement(); // try to convert the node to an element.
       if( !e.isNull() ) {
           //std::cout << e.tagName() << std::endl; // the node really is an element.
-
-          if      (e.tagName() == "Service")
+          
+          if (e.tagName() == "Capability")
           {
-            std::cout << "  Service." << std::endl;
-            parseService(e, capabilitiesProperty.service);
-          }
-          else if (e.tagName() == "Capability")
-          {
-            std::cout << "  Capability." << std::endl;
-            parseCapability(e, capabilitiesProperty.capability);
-          }
-
+            parseCapability(e);
+          }  
+      
       }
       n = n.nextSibling();
   }
@@ -555,72 +525,12 @@ void QgsWmsProvider::parseCapabilities(QByteArray xml, QgsWmsCapabilitiesPropert
 #ifdef QGISDEBUG
   std::cout << "QgsWmsProvider::parseCapabilities: exiting." << std::endl;
 #endif
-}
 
-
-void QgsWmsProvider::parseService(QDomElement e, QgsWmsServiceProperty& serviceProperty)
-{
-#ifdef QGISDEBUG
-  std::cout << "QgsWmsProvider::parseService: entering." << std::endl;
-#endif
-  QDomNode n1 = e.firstChild();
-  while( !n1.isNull() ) {
-      QDomElement e1 = n1.toElement(); // try to convert the node to an element.
-      if( !e1.isNull() ) {
-          //std::cout << "  " << e1.tagName() << std::endl; // the node really is an element.
-
-          if      (e1.tagName() == "Title")
-          {
-            serviceProperty.title = e1.text();
-          }
-          else if (e1.tagName() == "Abstract")
-          {
-            serviceProperty.abstract = e1.text();
-          }
-          else if (e1.tagName() == "KeywordList")
-          {
-            // TODO
-          }
-          else if (e1.tagName() == "OnlineResource")
-          {
-            // TODO
-          }
-          else if (e1.tagName() == "ContactInformation")
-          {
-            // TODO
-          }
-          else if (e1.tagName() == "Fees")
-          {
-            serviceProperty.fees = e1.text();
-          }
-          else if (e1.tagName() == "AccessConstraints")
-          {
-            serviceProperty.accessConstraints = e1.text();
-          }
-          else if (e1.tagName() == "LayerLimit")
-          {
-            serviceProperty.layerLimit = e1.text().toUInt();
-          }
-          else if (e1.tagName() == "MaxWidth")
-          {
-            serviceProperty.maxWidth = e1.text().toUInt();
-          }
-          else if (e1.tagName() == "MaxHeight")
-          {
-            serviceProperty.maxHeight = e1.text().toUInt();
-          }
-      }
-      n1 = n1.nextSibling();
-  }
-
-#ifdef QGISDEBUG
-  std::cout << "QgsWmsProvider::parseService: exiting." << std::endl;
-#endif
 
 }
 
 
-void QgsWmsProvider::parseCapability(QDomElement e, QgsWmsCapabilityProperty& capabilityProperty)
+void QgsWmsProvider::parseCapability(QDomElement e)
 {
 #ifdef QGISDEBUG
   std::cout << "QgsWmsProvider::parseCapability: entering." << std::endl;
@@ -631,14 +541,13 @@ void QgsWmsProvider::parseCapability(QDomElement e, QgsWmsCapabilityProperty& ca
       if( !e1.isNull() ) {
           //std::cout << "  " << e1.tagName() << std::endl; // the node really is an element.
       
-          if (e1.tagName() == "Request")
+          if (e1.tagName() == "Layer")
           {
-            parseRequest(e1, capabilityProperty.request);
-          }
-          else if (e1.tagName() == "Layer")
-          {
-            parseLayer(e1, capabilityProperty.layer);
-          }
+            // TODO: Initialise this variable
+            QgsWmsLayerProperty layerproperty = {0};
+            
+            parseLayer(e1, layerproperty);
+          }  
       
       }
       n1 = n1.nextSibling();
@@ -651,198 +560,17 @@ void QgsWmsProvider::parseCapability(QDomElement e, QgsWmsCapabilityProperty& ca
 }
 
 
-void QgsWmsProvider::parseOnlineResource(QDomElement e, QgsWmsOnlineResourceAttribute& onlineResourceAttribute)
-{
-#ifdef QGISDEBUG
-  std::cout << "QgsWmsProvider::parseOnlineResource: entering." << std::endl;
-#endif
-
-  onlineResourceAttribute.xlinkHref = e.attribute("xlink:href");
-
-#ifdef QGISDEBUG
-  std::cout << "QgsWmsProvider::parseOnlineResource: exiting." << std::endl;
-#endif
-}
-
-
-void QgsWmsProvider::parseGet(QDomElement e, QgsWmsGetProperty& getProperty)
-{
-#ifdef QGISDEBUG
-  std::cout << "QgsWmsProvider::parseGet: entering." << std::endl;
-#endif
-
-  QDomNode n1 = e.firstChild();
-  while( !n1.isNull() ) {
-      QDomElement e1 = n1.toElement(); // try to convert the node to an element.
-      if( !e1.isNull() ) {
-          if      (e1.tagName() == "OnlineResource")
-          {
-            std::cout << "      OnlineResource." << std::endl;
-            parseOnlineResource(e1, getProperty.onlineResource);
-          }
-      }
-      n1 = n1.nextSibling();
-  }
-
-#ifdef QGISDEBUG
-  std::cout << "QgsWmsProvider::parseGet: exiting." << std::endl;
-#endif
-}
-
-
-void QgsWmsProvider::parsePost(QDomElement e, QgsWmsPostProperty& postProperty)
-{
-#ifdef QGISDEBUG
-  std::cout << "QgsWmsProvider::parsePost: entering." << std::endl;
-#endif
-
-  QDomNode n1 = e.firstChild();
-  while( !n1.isNull() ) {
-      QDomElement e1 = n1.toElement(); // try to convert the node to an element.
-      if( !e1.isNull() ) {
-          if      (e1.tagName() == "OnlineResource")
-          {
-            std::cout << "      OnlineResource." << std::endl;
-            parseOnlineResource(e1, postProperty.onlineResource);
-          }
-      }
-      n1 = n1.nextSibling();
-  }
-
-#ifdef QGISDEBUG
-  std::cout << "QgsWmsProvider::parsePost: exiting." << std::endl;
-#endif
-}
-
-
-void QgsWmsProvider::parseHttp(QDomElement e, QgsWmsHttpProperty& httpProperty)
-{
-#ifdef QGISDEBUG
-  std::cout << "QgsWmsProvider::parseHttp: entering." << std::endl;
-#endif
-
-  QDomNode n1 = e.firstChild();
-  while( !n1.isNull() ) {
-      QDomElement e1 = n1.toElement(); // try to convert the node to an element.
-      if( !e1.isNull() ) {
-          if      (e1.tagName() == "Get")
-          {
-            std::cout << "      Get." << std::endl;
-            parseGet(e1, httpProperty.get);
-          }
-          else if (e1.tagName() == "Post")
-          {
-            std::cout << "      Post." << std::endl;
-            parsePost(e1, httpProperty.post);
-          }
-      }
-      n1 = n1.nextSibling();
-  }
-
-#ifdef QGISDEBUG
-  std::cout << "QgsWmsProvider::parseHttp: exiting." << std::endl;
-#endif
-}
-
-
-void QgsWmsProvider::parseDcpType(QDomElement e, QgsWmsDcpTypeProperty& dcpType)
-{
-#ifdef QGISDEBUG
-  std::cout << "QgsWmsProvider::parseDcpType: entering." << std::endl;
-#endif
-
-  QDomNode n1 = e.firstChild();
-  while( !n1.isNull() ) {
-      QDomElement e1 = n1.toElement(); // try to convert the node to an element.
-      if( !e1.isNull() ) {
-          if      (e1.tagName() == "HTTP")
-          {
-            std::cout << "      HTTP." << std::endl; 
-            parseHttp(e1, dcpType.http);
-          }
-      }
-      n1 = n1.nextSibling();
-  }
-
-#ifdef QGISDEBUG
-  std::cout << "QgsWmsProvider::parseDcpType: exiting." << std::endl;
-#endif
-}
-
-
-void QgsWmsProvider::parseOperationType(QDomElement e, QgsWmsOperationType& operationType)
-{
-#ifdef QGISDEBUG
-  std::cout << "QgsWmsProvider::parseOperationType: entering." << std::endl;
-#endif
-
-  QDomNode n1 = e.firstChild();
-  while( !n1.isNull() ) {
-      QDomElement e1 = n1.toElement(); // try to convert the node to an element.
-      if( !e1.isNull() ) {
-          if      (e1.tagName() == "Format")
-          {
-            std::cout << "      Format." << std::endl; 
-            operationType.format.push_back(e1.text());
-          }
-          else if (e1.tagName() == "DCPType")
-          {
-            std::cout << "      DCPType." << std::endl;
-            QgsWmsDcpTypeProperty dcp;
-            parseDcpType(e1, dcp);
-            operationType.dcpType.push_back(dcp);
-          }
-      }
-      n1 = n1.nextSibling();
-  }
-
-#ifdef QGISDEBUG
-  std::cout << "QgsWmsProvider::parseOperationType: exiting." << std::endl;
-#endif
-}
-
-
-void QgsWmsProvider::parseRequest(QDomElement e, QgsWmsRequestProperty& requestProperty)
-{
-#ifdef QGISDEBUG
-  std::cout << "QgsWmsProvider::parseRequest: entering." << std::endl;
-#endif
-
-  QDomNode n1 = e.firstChild();
-  while( !n1.isNull() ) {
-      QDomElement e1 = n1.toElement(); // try to convert the node to an element.
-      if( !e1.isNull() ) {
-          if      (e1.tagName() == "GetMap")
-          {
-            std::cout << "      GetMap." << std::endl; 
-            parseOperationType(e1, requestProperty.getMap);
-          }
-          else if (e1.tagName() == "GetFeatureInfo")
-          {
-            std::cout << "      GetFeatureInfo." << std::endl;
-            parseOperationType(e1, requestProperty.getFeatureInfo);
-          }
-      }
-      n1 = n1.nextSibling();
-  }
-
-#ifdef QGISDEBUG
-  std::cout << "QgsWmsProvider::parseRequest: exiting." << std::endl;
-#endif
-}
-
-
-void QgsWmsProvider::parseLayer(QDomElement e, QgsWmsLayerProperty& layerProperty)
+void QgsWmsProvider::parseLayer(QDomElement e, QgsWmsLayerProperty& layerproperty)
 {
 #ifdef QGISDEBUG
 //  std::cout << "QgsWmsProvider::parseLayer: entering." << std::endl;
 #endif
 
   // enforce WMS non-inheritance rules
-  layerProperty.name =        QString::null;
-  layerProperty.title =       QString::null;
-  layerProperty.abstract =    QString::null;
-  layerProperty.keywordList.clear();
+  layerproperty.name =        QString::null;
+  layerproperty.title =       QString::null;
+  layerproperty.abstract =    QString::null;
+  layerproperty.keywordlist = QString::null;
 
   // assume true until we find a child layer
   bool atleaf = TRUE;
@@ -857,23 +585,23 @@ void QgsWmsProvider::parseLayer(QDomElement e, QgsWmsLayerProperty& layerPropert
           {
 //            std::cout << "      Nested layer." << std::endl; 
 
-            parseLayer(e1, layerProperty);
+            parseLayer(e1, layerproperty);
             atleaf = FALSE;
           }
           else if (e1.tagName() == "Name")
           {
 //            std::cout << "      Name is: '" << e1.text() << "'." << std::endl;
-            layerProperty.name = e1.text();
+            layerproperty.name = e1.text();
           }
           else if (e1.tagName() == "Title")
           {
 //            std::cout << "      Title is: '" << e1.text() << "'." << std::endl;
-            layerProperty.title = e1.text();
+            layerproperty.title = e1.text();
           }  
           else if (e1.tagName() == "SRS")
           {
 //            std::cout << "      SRS is: '" << e1.text() << "'." << std::endl;
-            layerProperty.crs.push_back(e1.text());
+            layerproperty.srs = e1.text();
           }  
           else if (e1.tagName() == "LatLonBoundingBox")
           {
@@ -883,7 +611,7 @@ void QgsWmsProvider::parseLayer(QDomElement e, QgsWmsLayerProperty& layerPropert
 //            std::cout << "      LLBB is: '" << e1.attribute("maxx") << "'." << std::endl;
 //            std::cout << "      LLBB is: '" << e1.attribute("maxy") << "'." << std::endl;
             
-            layerProperty.ex_GeographicBoundingBox = QgsRect( 
+            layerproperty.latlonbbox = QgsRect( 
                                                 e1.attribute("minx").toDouble(),
                                                 e1.attribute("miny").toDouble(),
                                                 e1.attribute("maxx").toDouble(),
@@ -903,17 +631,17 @@ void QgsWmsProvider::parseLayer(QDomElement e, QgsWmsLayerProperty& layerPropert
 #ifdef QGISDEBUG
 //    std::cout << "QgsWmsProvider::parseLayer: A layer definition is complete." << std::endl;
 
-    std::cout << "QgsWmsProvider::parseLayer:   name is: '" << layerProperty.name.local8Bit() << "'." << std::endl;
-    std::cout << " QgsWmsProvider::parseLayer:  title is: '" << layerProperty.title.local8Bit() << "'." << std::endl;
-//    std::cout << "QgsWmsProvider::parseLayer:   srs is: '" << layerProperty.srs << "'." << std::endl;
-//    std::cout << "QgsWmsProvider::parseLayer:   bbox is: '" << layerProperty.latlonbbox.stringRep() << "'." << std::endl;
+    std::cout << "QgsWmsProvider::parseLayer:   name is: '" << layerproperty.name.local8Bit() << "'." << std::endl;
+    std::cout << " QgsWmsProvider::parseLayer:  title is: '" << layerproperty.title.local8Bit() << "'." << std::endl;
+//    std::cout << "QgsWmsProvider::parseLayer:   srs is: '" << layerproperty.srs << "'." << std::endl;
+//    std::cout << "QgsWmsProvider::parseLayer:   bbox is: '" << layerproperty.latlonbbox.stringRep() << "'." << std::endl;
     
     // Store the extent so that it can be combined with others later
     // in calculateExtent()
-    extentForLayer[ layerProperty.name ] = layerProperty.ex_GeographicBoundingBox;
+    extentForLayer[ layerproperty.name ] = layerproperty.latlonbbox;
     
     // Insert into the local class' registry
-    layersSupported.push_back(layerProperty);
+    layersSupported.push_back(layerproperty);
        
 
 #endif
@@ -967,26 +695,9 @@ QString QgsWmsProvider::wmsVersion()
   // TODO
 } 
 
-std::vector<QString> QgsWmsProvider::supportedFormats()
+std::list<QString> QgsWmsProvider::formatsSupported()
 {
-  std::vector<QString> returnList;
-
-#if QT_VERSION < 0x040000
-  QStringList list = QImage::inputFormatList();
-#else
-  QStringList list = QPicture::inputFormatList();
-#endif
-
-  QStringList::Iterator it = list.begin();
-  while( it != list.end() )
-  {
-    std::cout << "QgsWmsProvider::supportedFormats: can support input of '" << (*it).local8Bit() << "'." << std::endl;
-
-    returnList.push_back(*it);
-
-    ++it;
-  }
-
+  // TODO
 } 
 
   
@@ -1058,123 +769,6 @@ void QgsWmsProvider::calculateExtent()
 
 }
 
-QString QgsWmsProvider::getMetadata()
-{
-  QString myMetadataQString = "";
-
-  // Server Properties section
-  myMetadataQString += "<tr><td bgcolor=\"gray\">";
-  myMetadataQString += tr("Server Properties:");
-  myMetadataQString += "</td></tr>";
-
-  // Use a nested table
-  myMetadataQString += "<table width=\"100%\">";
-
-  // Table header
-  myMetadataQString += "<tr><th bgcolor=\"black\">";
-  myMetadataQString += "<font color=\"white\">" + tr("Property") + "</font>";
-  myMetadataQString += "</th>";
-  myMetadataQString += "<th bgcolor=\"black\">";
-  myMetadataQString += "<font color=\"white\">" + tr("Value") + "</font>";
-  myMetadataQString += "</th><tr>";
-
-  // WMS Version
-  myMetadataQString += "<tr><td bgcolor=\"gray\">";
-  myMetadataQString += tr("WMS Version");
-  myMetadataQString += "</td>";
-  myMetadataQString += "<td bgcolor=\"gray\">";
-  myMetadataQString += capabilities.version;
-  myMetadataQString += "</td></tr>";
-
-  // Service Title
-  myMetadataQString += "<tr><td bgcolor=\"gray\">";
-  myMetadataQString += tr("Title");
-  myMetadataQString += "</td>";
-  myMetadataQString += "<td bgcolor=\"gray\">";
-  myMetadataQString += capabilities.service.title;
-  myMetadataQString += "</td></tr>";
-
-  // Service Abstract
-  myMetadataQString += "<tr><td bgcolor=\"gray\">";
-  myMetadataQString += tr("Abstract");
-  myMetadataQString += "</td>";
-  myMetadataQString += "<td bgcolor=\"gray\">";
-  myMetadataQString += capabilities.service.abstract;
-  myMetadataQString += "</td></tr>";
-
-  // Service Abstract
-  myMetadataQString += "<tr><td bgcolor=\"gray\">";
-  myMetadataQString += tr("Keywords");
-  myMetadataQString += "</td>";
-  myMetadataQString += "<td bgcolor=\"gray\">";
-  myMetadataQString += "-";
-  myMetadataQString += "</td></tr>";
-
-  // Service Online Resource
-  myMetadataQString += "<tr><td bgcolor=\"gray\">";
-  myMetadataQString += tr("Online Resource");
-  myMetadataQString += "</td>";
-  myMetadataQString += "<td bgcolor=\"gray\">";
-  myMetadataQString += "-";
-  myMetadataQString += "</td></tr>";
-
-  // Service Contact Information
-  myMetadataQString += "<tr><td bgcolor=\"gray\">";
-  myMetadataQString += tr("Contact Information");
-  myMetadataQString += "</td>";
-  myMetadataQString += "<td bgcolor=\"gray\">";
-  myMetadataQString += "-";
-  myMetadataQString += "</td></tr>";
-
-  // Service Fees
-  myMetadataQString += "<tr><td bgcolor=\"gray\">";
-  myMetadataQString += tr("Fees");
-  myMetadataQString += "</td>";
-  myMetadataQString += "<td bgcolor=\"gray\">";
-  myMetadataQString += capabilities.service.fees;
-  myMetadataQString += "</td></tr>";
-
-  // Service Access Constraints
-  myMetadataQString += "<tr><td bgcolor=\"gray\">";
-  myMetadataQString += tr("Access Constraints");
-  myMetadataQString += "</td>";
-  myMetadataQString += "<td bgcolor=\"gray\">";
-  myMetadataQString += capabilities.service.accessConstraints;
-  myMetadataQString += "</td></tr>";
-
-  // Close the nested table
-  myMetadataQString += "</table>";
-
-  // Layer Properties section
-  myMetadataQString += "<tr><td bgcolor=\"gray\">";
-  myMetadataQString += tr("Layer Properties:");
-  myMetadataQString += "</td></tr>";
-
-  // Use a nested table
-  myMetadataQString += "<table width=\"100%\">";
-
-  // Table header
-  myMetadataQString += "<tr><th bgcolor=\"black\">";
-  myMetadataQString += "<font color=\"white\">" + tr("Property") + "</font>";
-  myMetadataQString += "</th>";
-  myMetadataQString += "<th bgcolor=\"black\">";
-  myMetadataQString += "<font color=\"white\">" + tr("Value") + "</font>";
-  myMetadataQString += "</th><tr>";
-
-  // test
-  myMetadataQString += "<tr><td bgcolor=\"gray\">";
-  myMetadataQString += tr("test");
-  myMetadataQString += "</td>";
-  myMetadataQString += "<td bgcolor=\"gray\">";
-  myMetadataQString += capabilities.version;
-  myMetadataQString += "</td></tr>";
-
-  // Close the nested table
-  myMetadataQString += "</table>";
-
-  return myMetadataQString;
-}
-
 
 QString  QgsWmsProvider::name() const
 {
@@ -1196,9 +790,9 @@ QString  QgsWmsProvider::description() const
  * Class factory to return a pointer to a newly created 
  * QgsWmsProvider object
  */
-QGISEXTERN QgsWmsProvider * classFactory(const QString *uri)
+QGISEXTERN QgsWmsProvider * classFactory(const char *uri)
 {
-  return new QgsWmsProvider(*uri);
+  return new QgsWmsProvider(uri);
 }
 /** Required key function (used to map the plugin to a data store type)
 */
