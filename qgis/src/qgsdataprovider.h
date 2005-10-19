@@ -165,7 +165,7 @@ class QgsDataProvider : public QObject
        * Returns true if this is a valid layer. It is up to individual providers
        * to determine what constitutes a valid layer
        */
-      virtual bool isValid()=0;
+      virtual bool isValid() const = 0;
 
       /* Reset the layer - for an OGRLayer, this means clearing the
        * spatial filter and calling ResetReading

@@ -684,7 +684,7 @@ void QgsWmsProvider::reset()
   // TODO
 } 
 
-bool QgsWmsProvider::isValid()
+bool QgsWmsProvider::isValid() const
 {
   return valid;
 } 

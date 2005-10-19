@@ -161,7 +161,7 @@ public:
 
   /**Returns true if layer is valid
   */
-  bool isValid();
+  bool isValid() const;
 
   //! get WMS Server version string
   QString wmsVersion();

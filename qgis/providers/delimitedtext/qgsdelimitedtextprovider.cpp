@@ -551,7 +551,7 @@ void QgsDelimitedTextProvider::select(QgsRect * rect, bool useIntersect, int dat
  * @param rect Bounding rectangle of search radius
  * @return std::vector containing QgsFeature objects that intersect rect
  */
-std::vector < QgsFeature > &QgsDelimitedTextProvider::identify(QgsRect * rect, int dataSourceLayerNum )
+void QgsDelimitedTextProvider::identify(QgsRect * rect, int dataSourceLayerNum )
 {
   // reset the data source since we need to be able to read through
   // all features
@@ -712,7 +712,7 @@ void QgsDelimitedTextProvider::fillMinMaxCash(int dataSourceLayerNum )
 //TODO - add sanity check for shape file layers, to include cheking to
 //       see if the .shp, .dbf, .shx files are all present and the layer
 //       actually has features
-bool QgsDelimitedTextProvider::isValid()
+bool QgsDelimitedTextProvider::isValid() const
 {
   return mValid;
 }

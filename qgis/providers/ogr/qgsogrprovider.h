@@ -17,6 +17,9 @@ email                : sherman at mrcc.com
 /* $Id$ */
 
 #include "../../src/qgsvectordataprovider.h"
+
+#include <memory>
+
 #include <geos.h>
 
 #include <ogr_spatialref.h>
@@ -37,31 +40,39 @@ class OGRPolygon;
 class QgsOgrProvider:public QgsVectorDataProvider
 {
   public:
+
     QgsOgrProvider(QString const & uri = "");
+
+    /// XXX why is this virtual if there will be no sub-classes?
     virtual ~ QgsOgrProvider();
 
     /**
       *   Returns the permanent storage type for this layer as a friendly name.
       */
-    QString storageType();
+    QString storageType() const;
 
-    /** Used to ask the layer for its projection as a WKT string. Implements virtual method of same name in      QgsDataProvider. */
-    QString getProjectionWKT()  ;    
+    /** Used to ask the layer for its projection as a WKT string. Implements
+     * virtual method of same name in QgsDataProvider. */
+    QString getProjectionWKT();
+
     /**
      * Get the first feature resulting from a select operation
      * @return QgsFeature
      */
     QgsFeature *getFirstFeature(bool fetchAttributes = false, int dataSourceLayerNum = 0);
+
     /** 
      * Get the next feature resutling from a select operation
      * @return QgsFeature
      */
     QgsFeature *getNextFeature(bool fetchAttributes = false, int dataSourceLayerNum = 0);
+
     /**Get the next feature resulting from a select operation.
     *@param attlist a list containing the indexes of the attribute fields to copy
     *@param getnotcommited flag indicating if not commited features should be returned
     */
     QgsFeature *getNextFeature(std::list<int> const& attlist, int featureQueueSize = 1, int dataSourceLayerNum = 0);
+
     /** 
      * Get the next feature resutling from a select operation
      * @return True if the feature was read. This does not indicate
@@ -107,10 +118,14 @@ class QgsOgrProvider:public QgsVectorDataProvider
 
     /**
      * Identify features within the search radius specified by rect
+
+     XXX Check the source, this does NOT return a vector of features.
+
      * @param rect Bounding rectangle of search radius
      * @return std::vector containing QgsFeature objects that intersect rect
      */
-    virtual std::vector < QgsFeature > &identify(QgsRect * rect, int dataSourceLayerNum = 0);
+    //virtual std::vector < QgsFeature > &identify(QgsRect * rect, int dataSourceLayerNum = 0);
+    void identify(QgsRect * rect, int dataSourceLayerNum = 0);
 
     /** Return the extent for this data layer
     */
@@ -142,7 +157,7 @@ class QgsOgrProvider:public QgsVectorDataProvider
 
     /**Returns true if this is a valid shapefile
     */
-    bool isValid();
+    bool isValid() const;
 
     /**Writes a list of features to the file*/
     bool addFeatures(std::list<QgsFeature*> const flist, int dataSourceLayerNum = 0);
@@ -236,42 +251,25 @@ class QgsOgrProvider:public QgsVectorDataProvider
 
 
   private:
-    unsigned char *getGeometryPointer(OGRFeature * fet);
-    std::vector < QgsField > attributeFields;
 
-    OGRDataSource *ogrDataSource;
-    OGREnvelope *extent_;
-    OGRLayer *ogrLayer;
-
-    // OGR Driver that was actually used to open the layer
-    OGRSFDriver *ogrDriver;
-
-    // Friendly name of the OGR Driver that was actually used to open the layer
-    QString ogrDriverName;
-
-    bool valid;
-    //! Flag to indicate that spatial intersect should be used in selecting features
-    bool mUseIntersect;
-    int geomType;
-    long numberFeatures;
-    enum ENDIAN
-    {
-      NDR = 1,
-      XDR = 0
-    };
-    /**Flag indicating, if the minmaxcache should be renewed (true) or not (false)*/
-    bool minmaxcachedirty;
-    /**Matrix storing the minimum and maximum values*/
-    double **minmaxcache;
-    /**Fills the cash and sets minmaxcachedirty to false*/
-    void fillMinMaxCash();
-    //! Selection rectangle 
-    OGRPolygon * mSelectionRectangle;
     /**Adds one feature*/
     bool addFeature(QgsFeature* f, int dataSourceLayerNum = 0);
-    //! The geometry factory
-    geos::GeometryFactory *geometryFactory;
-    //! The well known text reader
-    geos::WKTReader *wktReader;
+
+    /**Fills the cash and sets minmaxcachedirty to false*/
+    void fillMinMaxCache();
+
+    // XXX isn't this already ultimately defined in QgsDataProvider?
+    // XXX (commented out to see if it is so)
+//     enum ENDIAN
+//     {
+//       NDR = 1,
+//       XDR = 0
+//     };
+
+    /** internal implementation object containing hidden provider state.
+    */
+    struct Imp;
+
+    std::auto_ptr<Imp> imp_;
 
 };
