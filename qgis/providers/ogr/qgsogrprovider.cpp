@@ -23,6 +23,9 @@ email                : sherman at mrcc.com
 #ifndef WIN32
 #include <netinet/in.h>
 #endif
+
+using namespace std;
+
 #include <iostream>
 #include <cfloat>
 #include <cassert>
@@ -83,7 +86,7 @@ getGeometryPointer_(OGRFeature *fet, OGRwkbByteOrder endianness)
   geom->exportToWkb(endianness, gPtr);
 
   return gPtr;
-
+  
 } // getGeometryPointer_
 
 
@@ -94,6 +97,32 @@ getGeometryPointer_(OGRFeature *fet, OGRwkbByteOrder endianness)
 */
 struct Layer
 {
+  Layer()
+    : mSelectionRectangle(0) // set the selection rectangle pointer to 0
+  {
+  }
+
+  OGRwkbGeometryType geomType;
+
+  vector<QgsField> attributeFields;
+
+  /// corresponding OGR layer containing our geospatial data
+  OGRLayer * ogrLayer;
+
+
+  long numberFeatures;
+
+  /**Flag indicating, if the minmaxcache should be renewed (true) or not (false)*/
+  bool minmaxcachedirty;
+
+  /**Matrix storing the minimum and maximum values*/
+  double **minmaxcache;
+
+
+  //! Selection rectangle 
+  OGRPolygon * mSelectionRectangle;
+
+
 }; // struct Layer
 
 
@@ -102,30 +131,39 @@ struct Layer
  */
 struct QgsOgrProvider::Imp
 {
-    Imp()
-        : minmaxcachedirty( true )
+  Imp()
+    : minmaxcachedirty( true )
+  {
+  }
+
+  ~Imp()
+  {
+    for(int i = 0; i < attributeFields.size(); i++)
     {
+      delete [] minmaxcache[i];
     }
 
-    ~Imp()
-    {
-        for(int i = 0; i < attributeFields.size(); i++)
-        {
-            delete [] minmaxcache[i];
-        }
+    delete [] minmaxcache;
 
-        delete [] minmaxcache;
+    delete geometryFactory;
+    delete wktReader;
 
-        delete geometryFactory;
-        delete wktReader;
+  }
 
-    }
+    /** these are essentially wrappers for OGR layers
 
-    std::vector < QgsField > attributeFields;
+      For each layer associated with a given OGR vector data source there
+      should be a corresponding Layer object, which is stored here.  Most
+      layer related functions take on an dataSourceLayerNum parameter which
+      ultimately serves as an index into this data member.
+
+     */
+    vector<Layer> layers;
 
     OGRDataSource *ogrDataSource;
+
+    /// XXX is this data source or data source layer specific?
     OGREnvelope *extent_;
-    OGRLayer *ogrLayer;
 
     // OGR Driver that was actually used to open the layer
     OGRSFDriver *ogrDriver;
@@ -133,30 +171,20 @@ struct QgsOgrProvider::Imp
     // Friendly name of the OGR Driver that was actually used to open the layer
     QString ogrDriverName;
 
+    // XXX should this be for the entire data source or for each specific layers?
     bool valid;
 
     //! Flag to indicate that spatial intersect should be used in selecting features
+    // XXX should this be for the entire data source or for each specific layers?
     bool mUseIntersect;
-
-    int geomType;
-
-    long numberFeatures;
-
-    /**Flag indicating, if the minmaxcache should be renewed (true) or not (false)*/
-    bool minmaxcachedirty;
-
-    /**Matrix storing the minimum and maximum values*/
-    double **minmaxcache;
-
-
-    //! Selection rectangle 
-    OGRPolygon * mSelectionRectangle;
 
 
     //! The geometry factory
+    // XXX should this be for the entire data source or for each specific layers?
     geos::GeometryFactory *geometryFactory;
 
     //! The well known text reader
+    // XXX should this be for the entire data source or for each specific layers?
     geos::WKTReader *wktReader;
 
 }; // struct QgsOgrProvider::Imp
@@ -168,9 +196,6 @@ QgsOgrProvider::QgsOgrProvider(QString const & uri)
       imp_( new Imp )
 {
   OGRRegisterAll();
-
-  // set the selection rectangle pointer to 0
-  imp_->mSelectionRectangle = 0;
 
   // make connection to the data source
 #ifdef QGISDEBUG
@@ -191,10 +216,10 @@ QgsOgrProvider::QgsOgrProvider(QString const & uri)
     // TODO: capabilities() should now reflect this; need to test.
   }
 
-  if ( imp_->ogrDataSource != NULL) 
+  if ( imp_->ogrDataSource ) 
   {
 #ifdef QGISDEBUG
-    std::cerr << "Data source is valid" << std::endl;
+          QgsDebug( "Data source is valid" );
     std::cerr << "OGR Driver was " << ogrDriver->GetName() << std::endl;
 #endif
 
