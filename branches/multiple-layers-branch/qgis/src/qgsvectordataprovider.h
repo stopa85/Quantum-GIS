@@ -212,7 +212,8 @@ class QgsVectorDataProvider : public QgsDataProvider
        * @param rect Bounding rectangle of search radius
        * @return std::vector containing QgsFeature objects that intersect rect
        */
-      virtual std::vector<QgsFeature>& identify(QgsRect *rect, int dataSourceLayerNum = 0) = 0;
+    //virtual std::vector<QgsFeature>& identify(QgsRect *rect, int dataSourceLayerNum = 0) = 0;
+    virtual void identify(QgsRect *rect, int dataSourceLayerNum = 0) = 0;
 
       /** saves current data as Shape file, if it can */
       virtual bool saveAsShapefile()

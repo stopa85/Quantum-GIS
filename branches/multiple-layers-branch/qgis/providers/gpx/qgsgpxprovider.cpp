@@ -414,7 +414,7 @@ void QgsGPXProvider::select(QgsRect *rect, bool useIntersect, int dataSourceLaye
  * @param rect Bounding rectangle of search radius
  * @return std::vector containing QgsFeature objects that intersect rect
  */
-std::vector<QgsFeature>& QgsGPXProvider::identify(QgsRect * rect, int dataSourceLayerNum ) {
+void QgsGPXProvider::identify(QgsRect * rect, int dataSourceLayerNum ) {
   // reset the data source since we need to be able to read through
   // all features
   reset();
@@ -424,8 +424,8 @@ std::vector<QgsFeature>& QgsGPXProvider::identify(QgsRect * rect, int dataSource
   select(rect);
   // temporary fix to get this to compile under windows
   // XXX What the heck is going on here?
-  static std::vector<QgsFeature> features;
-  return features;
+//   static std::vector<QgsFeature> features;
+//   return features;
 }
 
 
@@ -548,7 +548,8 @@ void QgsGPXProvider::fillMinMaxCash(int dataSourceLayerNum) {
 
 
 
-bool QgsGPXProvider::isValid(){
+bool QgsGPXProvider::isValid() const
+{
   return mValid;
 }
 

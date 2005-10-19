@@ -172,7 +172,8 @@ public:
   * @param rect Bounding rectangle of search radius
   * @return std::vector containing QgsFeature objects that intersect rect
   */
-  virtual std::vector < QgsFeature > &identify(QgsRect * rect, int dataSourceLayerNum = 0);
+  // virtual std::vector < QgsFeature > &identify(QgsRect * rect, int dataSourceLayerNum = 0);
+  void identify(QgsRect * rect, int dataSourceLayerNum = 0);
 
   /** Return the extent for this data layer
   */
@@ -201,7 +202,7 @@ public:
 
  /**Returns true if this is a valid delimited file
  */
-  bool isValid();
+  bool isValid() const;
 
  /**
   * Check to see if the point is withn the selection
