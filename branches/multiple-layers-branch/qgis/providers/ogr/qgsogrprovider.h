@@ -129,7 +129,7 @@ class QgsOgrProvider:public QgsVectorDataProvider
 
     /** Return the extent for this data layer
     */
-    virtual QgsRect *extent();
+    virtual QgsRect *extent( int dataSourceLayerNum = 0 );
 
     /**Get an attribute associated with a feature*/
     void getFeatureAttribute(OGRFeature * ogrFet, QgsFeature * f, int attindex, int dataSourceLayerNum = 0);
@@ -175,7 +175,7 @@ class QgsOgrProvider:public QgsVectorDataProvider
 
     /**Tries to create a .qix index file for faster access if only a subset of the features is required
      @return true in case of success*/
-    bool createSpatialIndex();
+    bool createSpatialIndex(int dataSourceLayerNum = 0);
 
     /** Returns a bitmask containing the supported capabilities
         Note, some capabilities may change depending on whether
@@ -256,7 +256,7 @@ class QgsOgrProvider:public QgsVectorDataProvider
     bool addFeature(QgsFeature* f, int dataSourceLayerNum = 0);
 
     /**Fills the cash and sets minmaxcachedirty to false*/
-    void fillMinMaxCache();
+    void fillMinMaxCache(int dataSourceLayerNum = 0);
 
     // XXX isn't this already ultimately defined in QgsDataProvider?
     // XXX (commented out to see if it is so)

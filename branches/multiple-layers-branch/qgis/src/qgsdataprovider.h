@@ -119,9 +119,10 @@ class QgsDataProvider : public QObject
       virtual QgsDataSourceURI * getURI() = 0;
       /**
        * Get the extent of the layer
+       * @param dataSourceLayerNum is the data source layer 
        * @return QgsRect containing the extent of the layer
        */
-      virtual QgsRect * extent() = 0;
+      virtual QgsRect * extent(int dataSourceLayerNum = 0) = 0;
 
       /**
        * Identify features within the search radius specified by rect
