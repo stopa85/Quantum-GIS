@@ -674,7 +674,7 @@ void QgsWmsProvider::setURI(QgsDataSourceURI * uri)
 
 
 
-QgsRect *QgsWmsProvider::extent()
+QgsRect *QgsWmsProvider::extent(int dataSourceLayerNum)
 {
   return &layerExtent;
 }

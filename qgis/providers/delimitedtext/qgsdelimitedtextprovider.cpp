@@ -581,7 +581,7 @@ return gPtr;
 
 
 // Return the extent of the layer
-QgsRect *QgsDelimitedTextProvider::extent()
+QgsRect *QgsDelimitedTextProvider::extent(int dataSourceLayerNum)
 {
   return new QgsRect(mExtent->xMin(), mExtent->yMin(), mExtent->xMax(),
                      mExtent->yMax());

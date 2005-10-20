@@ -778,7 +778,7 @@ void QgsPostgresProvider::setExtent( QgsRect* newExtent )
 }
 
 // TODO - make this function return the real extent_
-QgsRect *QgsPostgresProvider::extent()
+QgsRect *QgsPostgresProvider::extent(int dataSourceLayerNum)
 {
   return &layerExtent;      //extent_->MinX, extent_->MinY, extent_->MaxX, extent_->MaxY);
 }

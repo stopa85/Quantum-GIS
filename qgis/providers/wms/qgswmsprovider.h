@@ -152,7 +152,7 @@ public:
 
   /** Return the extent for this data layer
   */
-  virtual QgsRect *extent();
+  virtual QgsRect *extent(int dataSourceLayerNum = 0);
 
   /** Reset the layer - for a PostgreSQL layer, this means clearing the PQresult
    * pointer and setting it to 0
