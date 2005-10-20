@@ -186,7 +186,7 @@ class QgsPostgresProvider:public QgsVectorDataProvider
 
     /** Return the extent for this data layer
     */
-    virtual QgsRect *extent();
+    virtual QgsRect *extent(int dataSourceLayerNum = 0);
 
     /**
      * Get the attributes associated with a feature

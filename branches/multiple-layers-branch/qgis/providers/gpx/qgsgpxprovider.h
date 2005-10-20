@@ -110,7 +110,7 @@ public:
   
   /** Return the extent for this data layer
    */
-  virtual QgsRect * extent();
+  virtual QgsRect * extent(int dataSourceLayerNum = 0);
   
   /**
    * Get the field information for the layer

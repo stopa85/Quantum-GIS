@@ -443,7 +443,8 @@ return gPtr;
 
 
 // Return the extent of the layer
-QgsRect *QgsGPXProvider::extent() {
+QgsRect *QgsGPXProvider::extent(int dataSourceLayerNum)
+{
   return data->getExtent();
 }
 
