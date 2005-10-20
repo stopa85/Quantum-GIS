@@ -30,44 +30,44 @@ QgsVectorDataProvider::QgsVectorDataProvider( QString const & uri )
 }
 
 
-bool QgsVectorDataProvider::addFeatures(std::list<QgsFeature*> flist, int dataSourceLayerNum)
+bool QgsVectorDataProvider::addFeatures(std::list<QgsFeature*> flist, size_t dataSourceLayerNum)
 {
   return false;
 }
 
-bool QgsVectorDataProvider::deleteFeatures(std::list<int> const & id, int dataSourceLayerNum)
+bool QgsVectorDataProvider::deleteFeatures(std::list<int> const & id, size_t dataSourceLayerNum)
 {
   return false;
 }
 
-bool QgsVectorDataProvider::addAttributes(std::map<QString,QString> const & name, int dataSourceLayerNum)
+bool QgsVectorDataProvider::addAttributes(std::map<QString,QString> const & name, size_t dataSourceLayerNum)
 {
   return false;
 }
 
-bool QgsVectorDataProvider::deleteAttributes(std::set<QString> const & name, int dataSourceLayerNum)
+bool QgsVectorDataProvider::deleteAttributes(std::set<QString> const & name, size_t dataSourceLayerNum)
 {
   return false;
 }
 
-bool QgsVectorDataProvider::changeAttributeValues(std::map<int,std::map<QString,QString> > const & attr_map, int dataSourceLayerNum)
+bool QgsVectorDataProvider::changeAttributeValues(std::map<int,std::map<QString,QString> > const & attr_map, size_t dataSourceLayerNum)
 {
   return false;
 }
 
 QString QgsVectorDataProvider::getDefaultValue(const QString& attr, 
                                                QgsFeature* f, 
-                                               int dataSourceLayerNum) 
+                                               size_t dataSourceLayerNum) 
 {
   return "";
 }
 
-bool QgsVectorDataProvider::changeGeometryValues(std::map<int, QgsGeometry> & geometry_map, int dataSourceLayerNum)
+bool QgsVectorDataProvider::changeGeometryValues(std::map<int, QgsGeometry> & geometry_map, size_t dataSourceLayerNum)
 {
   return false;
 }
 
-bool QgsVectorDataProvider::createSpatialIndex(int dataSourceLayerNum)
+bool QgsVectorDataProvider::createSpatialIndex(size_t dataSourceLayerNum)
 {
     return false;
 }
@@ -193,7 +193,7 @@ QString QgsVectorDataProvider::capabilitiesString() const
 
 }
 
-bool QgsVectorDataProvider::setAttributeFilter(const QgsSearchString& attributeFilter, int dataSourceLayerNum)
+bool QgsVectorDataProvider::setAttributeFilter(const QgsSearchString& attributeFilter, size_t dataSourceLayerNum)
 {
   mAttributeFilter = attributeFilter;
   // TODO: maybe check if all referenced columns are there, return false if not

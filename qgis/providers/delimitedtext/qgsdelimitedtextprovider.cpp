@@ -283,7 +283,7 @@ QString QgsDelimitedTextProvider::storageType()
  * Get the first feature resutling from a select operation
  * @return QgsFeature
  */
-QgsFeature * QgsDelimitedTextProvider::getFirstFeature(bool fetchAttributes, int dataSourceLayerNum )
+QgsFeature * QgsDelimitedTextProvider::getFirstFeature(bool fetchAttributes, size_t dataSourceLayerNum )
 {
     QgsFeature *f = new QgsFeature;
 
@@ -482,14 +482,14 @@ QgsDelimitedTextProvider::getNextFeature_( QgsFeature & feature,
  */
 bool QgsDelimitedTextProvider::getNextFeature(QgsFeature & feature,
                                               bool fetchAttributes, 
-                                              int dataSourceLayerNum )
+                                              size_t dataSourceLayerNum )
 {
     return getNextFeature_( feature, fetchAttributes );
 } // QgsDelimitedTextProvider::getNextFeature
 
 
 
-QgsFeature * QgsDelimitedTextProvider::getNextFeature(bool fetchAttributes, int dataSourceLayerNum )
+QgsFeature * QgsDelimitedTextProvider::getNextFeature(bool fetchAttributes, size_t dataSourceLayerNum )
 {
     QgsFeature * f = new QgsFeature;
 
@@ -507,7 +507,7 @@ QgsFeature * QgsDelimitedTextProvider::getNextFeature(bool fetchAttributes, int 
 
 QgsFeature * QgsDelimitedTextProvider::getNextFeature(std::list<int> const & desiredAttributes, 
                                                       int featureQueueSize,
-                                                      int dataSourceLayerNum )
+                                                      size_t dataSourceLayerNum )
 {
     QgsFeature * f = new QgsFeature;
 
@@ -530,7 +530,7 @@ QgsFeature * QgsDelimitedTextProvider::getNextFeature(std::list<int> const & des
  * with calls to getFirstFeature and getNextFeature.
  * @param mbr QgsRect containing the extent to use in selecting features
  */
-void QgsDelimitedTextProvider::select(QgsRect * rect, bool useIntersect, int dataSourceLayerNum )
+void QgsDelimitedTextProvider::select(QgsRect * rect, bool useIntersect, size_t dataSourceLayerNum )
 {
 
   // Setting a spatial filter doesn't make much sense since we have to
@@ -551,7 +551,7 @@ void QgsDelimitedTextProvider::select(QgsRect * rect, bool useIntersect, int dat
  * @param rect Bounding rectangle of search radius
  * @return std::vector containing QgsFeature objects that intersect rect
  */
-void QgsDelimitedTextProvider::identify(QgsRect * rect, int dataSourceLayerNum )
+void QgsDelimitedTextProvider::identify(QgsRect * rect, size_t dataSourceLayerNum )
 {
   // reset the data source since we need to be able to read through
   // all features
@@ -581,7 +581,7 @@ return gPtr;
 
 
 // Return the extent of the layer
-QgsRect *QgsDelimitedTextProvider::extent(int dataSourceLayerNum)
+QgsRect *QgsDelimitedTextProvider::extent(size_t dataSourceLayerNum)
 {
   return new QgsRect(mExtent->xMin(), mExtent->yMin(), mExtent->xMax(),
                      mExtent->yMax());
@@ -590,7 +590,7 @@ QgsRect *QgsDelimitedTextProvider::extent(int dataSourceLayerNum)
 /** 
  * Return the feature type
  */
-int QgsDelimitedTextProvider::geometryType(int dataSourceLayerNum ) const
+int QgsDelimitedTextProvider::geometryType(size_t dataSourceLayerNum ) const
 {
   return 1;                     // WKBPoint
 }
@@ -598,7 +598,7 @@ int QgsDelimitedTextProvider::geometryType(int dataSourceLayerNum ) const
 /** 
  * Return the feature type
  */
-long QgsDelimitedTextProvider::featureCount(int dataSourceLayerNum ) const
+long QgsDelimitedTextProvider::featureCount(size_t dataSourceLayerNum ) const
 {
   return mNumberFeatures;
 }
@@ -606,7 +606,7 @@ long QgsDelimitedTextProvider::featureCount(int dataSourceLayerNum ) const
 /**
  * Return the number of fields
  */
-int QgsDelimitedTextProvider::fieldCount(int dataSourceLayerNum ) const
+int QgsDelimitedTextProvider::fieldCount(size_t dataSourceLayerNum ) const
 {
   return attributeFields.size();
 }
@@ -614,7 +614,7 @@ int QgsDelimitedTextProvider::fieldCount(int dataSourceLayerNum ) const
 /**
  * Fetch attributes for a selected feature
  */
-void QgsDelimitedTextProvider::getFeatureAttributes(int key, QgsFeature * f, int dataSourceLayerNum )
+void QgsDelimitedTextProvider::getFeatureAttributes(int key, QgsFeature * f, size_t dataSourceLayerNum )
 {
   //for (int i = 0; i < ogrFet->GetFieldCount(); i++) {
 
@@ -629,12 +629,12 @@ void QgsDelimitedTextProvider::getFeatureAttributes(int key, QgsFeature * f, int
   //}
 }
 
-std::vector<QgsField> const & QgsDelimitedTextProvider::fields(int dataSourceLayerNum ) const
+std::vector<QgsField> const & QgsDelimitedTextProvider::fields(size_t dataSourceLayerNum ) const
 {
   return attributeFields;
 }
 
-void QgsDelimitedTextProvider::reset(int dataSourceLayerNum )
+void QgsDelimitedTextProvider::reset(size_t dataSourceLayerNum )
 {
   // Reset the file pointer to BOF
   mFile->reset();
@@ -646,7 +646,7 @@ void QgsDelimitedTextProvider::reset(int dataSourceLayerNum )
   stream.readLine();
 }
 
-QString QgsDelimitedTextProvider::minValue(int position,int dataSourceLayerNum )
+QString QgsDelimitedTextProvider::minValue(int position,size_t dataSourceLayerNum )
 {
   if (position >= fieldCount())
   {
@@ -662,7 +662,7 @@ QString QgsDelimitedTextProvider::minValue(int position,int dataSourceLayerNum )
 }
 
 
-QString QgsDelimitedTextProvider::maxValue(int position, int dataSourceLayerNum )
+QString QgsDelimitedTextProvider::maxValue(int position, size_t dataSourceLayerNum )
 {
   if (position >= fieldCount())
   {
@@ -677,7 +677,7 @@ QString QgsDelimitedTextProvider::maxValue(int position, int dataSourceLayerNum 
   return QString::number(mMinMaxCache[position][1], 'f', 2);
 }
 
-void QgsDelimitedTextProvider::fillMinMaxCash(int dataSourceLayerNum )
+void QgsDelimitedTextProvider::fillMinMaxCash(size_t dataSourceLayerNum )
 {
   for (int i = 0; i < fieldCount(); i++)
   {
@@ -946,7 +946,7 @@ size_t QgsDelimitedTextProvider::layerCount() const
 
 
 
-int *QgsDelimitedTextProvider::getFieldLengths(int dataSourceLayerNum )
+int *QgsDelimitedTextProvider::getFieldLengths(size_t dataSourceLayerNum )
 {
   // this function parses the entire data file and calculates the
   // max for each

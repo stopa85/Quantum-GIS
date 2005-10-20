@@ -566,7 +566,7 @@ std::vector<QgsFeature>& QgsGrassProvider::identify(QgsRect * rect)
     }
 }
 
-QgsRect *QgsGrassProvider::extent(int dataSourceLayerNum)
+QgsRect *QgsGrassProvider::extent(size_t dataSourceLayerNum)
 {
     BOUND_BOX box;
     Vect_get_map_box ( mMap, &box );
