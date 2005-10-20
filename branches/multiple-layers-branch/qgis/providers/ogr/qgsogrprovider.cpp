@@ -138,7 +138,45 @@ struct Layer
       minmaxcache[i] = new double[2];
     }
   }
-    
+
+
+  // need copy ctor since we have pointer members
+  Layer( Layer const & layer )
+    : geomType(layer.geomType),
+      attributeFields(layer.attributeFields),
+      ogrLayer(layer.ogrLayer),
+      numberFeatures(layer.numberFeatures),
+      minmaxcachedirty(true),
+      minmaxcache(0),
+      mSelectionRectangle(0),
+      extent( new OGREnvelope ),
+      mEncoding( layer.mEncoding )
+  {
+    // get the extent (envelope) of the layer
+    QgsDebug( "Starting get extent in copy ctor" );
+
+    ogrLayer->GetExtent( extent );
+
+    QgsDebug( "Finished get extent in copy ctor" );
+
+    // check the validity of the layer
+    QgsDebug( "checking validity in copy ctor" );
+
+    loadFields();
+
+    QgsDebug( "Done checking validity in copy ctor" );
+
+
+    // resize the cache matrix
+    minmaxcache = new double*[fieldCount()];
+
+    for(int i = 0; i < fieldCount(); i++)
+    {
+      minmaxcache[i] = new double[2];
+    }
+  } // Layer copy ctor
+
+
 
   ~Layer()
   {
@@ -148,7 +186,9 @@ struct Layer
     }
     
     delete [] minmaxcache;
-  }
+
+    delete extent;
+  } // Layer dtor
 
 
 
@@ -321,7 +361,11 @@ QgsOgrProvider::QgsOgrProvider(QString const & uri)
     imp_->ogrDriverName = imp_->ogrDriver->GetName();
 
     // add default layer, which should be first (and possibly only) layer
-    imp_->layers.push_back( Layer( imp_->ogrDataSource->GetLayer(0), 
+    OGRLayer * firstLayer = imp_->ogrDataSource->GetLayer(0);
+
+    assert( firstLayer );
+
+    imp_->layers.push_back( Layer( firstLayer, 
                                    mEncoding ) );
 
   } 
@@ -423,7 +467,7 @@ QString QgsOgrProvider::storageType() const
  * Get the first feature resulting from a select operation
  * @return QgsFeature
  */
-QgsFeature * QgsOgrProvider::getFirstFeature(bool fetchAttributes, int dataSourceLayerNum)
+QgsFeature * QgsOgrProvider::getFirstFeature(bool fetchAttributes, size_t dataSourceLayerNum)
 {
   QgsFeature * f = 0;
 
@@ -486,7 +530,7 @@ QgsFeature * QgsOgrProvider::getFirstFeature(bool fetchAttributes, int dataSourc
 
 
 
-bool QgsOgrProvider::getNextFeature(QgsFeature &f, bool fetchAttributes, int dataSourceLayerNum)
+bool QgsOgrProvider::getNextFeature(QgsFeature &f, bool fetchAttributes, size_t dataSourceLayerNum)
 {
   bool returnValue;
 
@@ -562,7 +606,7 @@ bool QgsOgrProvider::getNextFeature(QgsFeature &f, bool fetchAttributes, int dat
  * Return 0 if there are no features in the selection set
  * @return QgsFeature
  */
-QgsFeature * QgsOgrProvider::getNextFeature(bool fetchAttributes, int dataSourceLayerNum)
+QgsFeature * QgsOgrProvider::getNextFeature(bool fetchAttributes, size_t dataSourceLayerNum)
 {
    if( ! imp_->valid )
    {
@@ -769,7 +813,7 @@ QgsFeature * QgsOgrProvider::getNextFeature(bool fetchAttributes, int dataSource
 
 QgsFeature * QgsOgrProvider::getNextFeature(std::list<int> const& attlist, 
                                             int featureQueueSize, 
-                                            int dataSourceLayerNum)
+                                            size_t dataSourceLayerNum)
 {
   QgsFeature * f = 0; 
 
@@ -858,7 +902,7 @@ QgsFeature * QgsOgrProvider::getNextFeature(std::list<int> const& attlist,
  * stored. If true, a secondary filter (using GEOS) is applied to each
  * feature in the getNextFeature function.
  */
-void QgsOgrProvider::select(QgsRect *rect, bool useIntersect, int dataSourceLayerNum)
+void QgsOgrProvider::select(QgsRect *rect, bool useIntersect, size_t dataSourceLayerNum)
 {
   imp_->mUseIntersect = useIntersect;
 
@@ -913,7 +957,7 @@ void QgsOgrProvider::select(QgsRect *rect, bool useIntersect, int dataSourceLaye
  * @param rect Bounding rectangle of search radius
  * @return std::vector containing QgsFeature objects that intersect rect
  */
-void QgsOgrProvider::identify(QgsRect * rect, int dataSourceLayerNum)
+void QgsOgrProvider::identify(QgsRect * rect, size_t dataSourceLayerNum)
 {
   // select the features
   select(rect, dataSourceLayerNum);
@@ -930,7 +974,7 @@ void QgsOgrProvider::identify(QgsRect * rect, int dataSourceLayerNum)
 
 
 // TODO - make this function return the real extent
-QgsRect *QgsOgrProvider::extent(int dataSourceLayerNum)
+QgsRect *QgsOgrProvider::extent(size_t dataSourceLayerNum)
 {
   // TODO: Find out where this new QgsRect is being lost (as reported by valgrind)
 
@@ -951,7 +995,7 @@ size_t QgsOgrProvider::layerCount() const
 /** 
  * Return the feature type
  */
-int QgsOgrProvider::geometryType(int dataSourceLayerNum) const
+int QgsOgrProvider::geometryType(size_t dataSourceLayerNum) const
 {
   return imp_->layers[dataSourceLayerNum].geomType;
 } // QgsOgrProvider::geometryType()
@@ -961,7 +1005,7 @@ int QgsOgrProvider::geometryType(int dataSourceLayerNum) const
 /** 
  * Return the feature type
  */
-long QgsOgrProvider::featureCount(int dataSourceLayerNum) const
+long QgsOgrProvider::featureCount(size_t dataSourceLayerNum) const
 {
   return imp_->layers[dataSourceLayerNum].numberFeatures;
 } // QgsOgrProvider::featureCount()
@@ -971,7 +1015,7 @@ long QgsOgrProvider::featureCount(int dataSourceLayerNum) const
 /**
  * Return the number of fields
  */
-int QgsOgrProvider::fieldCount(int dataSourceLayerNum) const
+int QgsOgrProvider::fieldCount(size_t dataSourceLayerNum) const
 {
   return imp_->layers[dataSourceLayerNum].attributeFields.size();
 } // QgsOgrProvider::fieldCount()
@@ -981,7 +1025,7 @@ int QgsOgrProvider::fieldCount(int dataSourceLayerNum) const
 void QgsOgrProvider::getFeatureAttribute(OGRFeature * ogrFet, 
                                          QgsFeature * f, 
                                          int attindex, 
-                                         int dataSourceLayerNum)
+                                         size_t dataSourceLayerNum)
 {
   OGRFieldDefn * fldDef = ogrFet->GetFieldDefnRef(attindex);
 
@@ -1009,7 +1053,7 @@ void QgsOgrProvider::getFeatureAttribute(OGRFeature * ogrFet,
  */
 void QgsOgrProvider::getFeatureAttributes(OGRFeature *ogrFet, 
                                           QgsFeature *f, 
-                                          int dataSourceLayerNum)
+                                          size_t dataSourceLayerNum)
 {
   for (int i = 0; i < ogrFet->GetFieldCount(); i++) 
   {
@@ -1028,14 +1072,14 @@ void QgsOgrProvider::getFeatureAttributes(OGRFeature *ogrFet,
 
 
 
-std::vector<QgsField> const & QgsOgrProvider::fields(int dataSourceLayerNum) const
+std::vector<QgsField> const & QgsOgrProvider::fields(size_t dataSourceLayerNum) const
 {
   return imp_->layers[dataSourceLayerNum].attributeFields;
 } // QgsOgrProvider::fields()
 
 
 
-void QgsOgrProvider::reset(int dataSourceLayerNum)
+void QgsOgrProvider::reset(size_t dataSourceLayerNum)
 {
   // TODO: check whether it supports normal SQL or only that "restricted_sql"
   if (mAttributeFilter.isEmpty())
@@ -1062,7 +1106,7 @@ void QgsOgrProvider::reset(int dataSourceLayerNum)
 
 
 
-QString QgsOgrProvider::minValue(int position, int dataSourceLayerNum)
+QString QgsOgrProvider::minValue(int position, size_t dataSourceLayerNum)
 {
   if ( position >= fieldCount(dataSourceLayerNum) )
   {
@@ -1079,7 +1123,7 @@ QString QgsOgrProvider::minValue(int position, int dataSourceLayerNum)
 
 
 
-QString QgsOgrProvider::maxValue(int position, int dataSourceLayerNum)
+QString QgsOgrProvider::maxValue(int position, size_t dataSourceLayerNum)
 {
   if( position >= fieldCount(dataSourceLayerNum) )
   {
@@ -1096,7 +1140,7 @@ QString QgsOgrProvider::maxValue(int position, int dataSourceLayerNum)
 
 
 
-void QgsOgrProvider::fillMinMaxCache(int dataSourceLayerNum)
+void QgsOgrProvider::fillMinMaxCache(size_t dataSourceLayerNum)
 {
   for(int i = 0; i < fieldCount(dataSourceLayerNum); i++)
   {
@@ -1145,7 +1189,7 @@ bool QgsOgrProvider::isValid() const
 
 
 
-bool QgsOgrProvider::addFeature(QgsFeature* f, int dataSourceLayerNum)
+bool QgsOgrProvider::addFeature(QgsFeature* f, size_t dataSourceLayerNum)
 { 
   QgsDebug( "in add Feature" );
 
@@ -1323,7 +1367,7 @@ bool QgsOgrProvider::addFeature(QgsFeature* f, int dataSourceLayerNum)
 
 
 
-bool QgsOgrProvider::addFeatures(std::list<QgsFeature*> const flist, int dataSourceLayerNum)
+bool QgsOgrProvider::addFeatures(std::list<QgsFeature*> const flist, size_t dataSourceLayerNum)
 {
   bool returnvalue = true;
 
@@ -1341,7 +1385,7 @@ bool QgsOgrProvider::addFeatures(std::list<QgsFeature*> const flist, int dataSou
 
 
 
-bool QgsOgrProvider::addAttributes(std::map<QString,QString> const & name, int dataSourceLayerNum)
+bool QgsOgrProvider::addAttributes(std::map<QString,QString> const & name, size_t dataSourceLayerNum)
 {
     bool returnvalue = true;
 
@@ -1395,7 +1439,7 @@ bool QgsOgrProvider::addAttributes(std::map<QString,QString> const & name, int d
 
 
 bool QgsOgrProvider::changeAttributeValues(std::map<int,std::map<QString,QString> > const & attr_map, 
-                                           int dataSourceLayerNum)
+                                           size_t dataSourceLayerNum)
 {
 #ifdef QGISDEBUG
   std::cerr << "QgsOgrProvider::changeAttributeValues()" << std::endl;
@@ -1475,7 +1519,7 @@ bool QgsOgrProvider::changeAttributeValues(std::map<int,std::map<QString,QString
 
 
 
-bool QgsOgrProvider::createSpatialIndex(int dataSourceLayerNum)
+bool QgsOgrProvider::createSpatialIndex(size_t dataSourceLayerNum)
 {
   //experimental, try to create a spatial index
 
