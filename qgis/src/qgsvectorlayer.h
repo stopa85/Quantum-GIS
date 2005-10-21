@@ -528,17 +528,20 @@ private:                       // Private attributes
   };
 private:                       // Private methods
   endian_t endian();
-  // pointer for loading the provider library
-  QLibrary *myLib;
+
   //! Pointer to the identify results dialog
   QgsIdentifyResults *ir;
-  //! Update threshold for drawing features as they are read. A value of zero indicates
-  // that no features will be drawn until all have been read
+
+  /** Update threshold for drawing features as they are read. A value of zero
+      indicates that no features will be drawn until all have been read */
   int updateThreshold;
+
   //! Minimum scale factor at which the layer is displayed
   int mMinimumScale;
+
   //! Maximum scale factor at which the layer is displayed
   int mMaximumScale;
+
   //! Flag to indicate if scale dependent rendering is in effect
   bool mScaleDependentRender;
 
