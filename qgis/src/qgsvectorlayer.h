@@ -59,8 +59,16 @@ class QgsVectorLayer : public QgsMapLayer
 
 public:
 
-  //! Constructor
-  QgsVectorLayer(QString baseName = 0, QString path = 0, QString providerLib = 0, size_t dataSourceLayerNum = 0);
+  /**
+
+  @param dataProvider link to corresponding provider
+  @param dataSourceLayerNum is the layer within the provider we belong to
+  @param layerName our display name
+
+  */
+  QgsVectorLayer( QgsDataProvider * dataProvider,
+                  size_t dataSourceLayerNum = 0,
+                  QString const & layerName = 0 );
 
   //! Destructor
   virtual ~QgsVectorLayer();
@@ -103,18 +111,19 @@ public:
     Polygon
   };
 
-  /** bind layer to a specific data provider
+  /** setup associated with data provider
 
      @param provider should be "postgres", "ogr", or ??
 
      @todo XXX should this return bool?  Throw exceptions?
   */
-  bool setDataProvider( QString const & provider );
+  bool setDataProvider( );
   
   //! Setup the coordinate system tranformation for the layer
   void setCoordinateSystem();
 
-  QgsVectorDataProvider* getDataProvider();
+  QgsVectorDataProvider * getDataProvider();
+  QgsVectorDataProvider * getDataProvider() const;
 
   /**Sets the textencoding of the data provider*/
   void setProviderEncoding(const QString& encoding);
@@ -337,7 +346,7 @@ public:
   bool scaleDependentRender();
 
   /**Returns true if the provider is in editing mode*/
-  virtual bool isEditable() const {return (mEditable&&dataProvider);}
+  virtual bool isEditable() const {return (mEditable && dataProvider());}
 
   /**Returns true if the provider has been modified since the last commit*/
   virtual bool isModified() const {return mModified;}
@@ -497,7 +506,7 @@ private:                       // Private attributes
   //! Draws the layer using coordinate transformation
   void draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * cXf,  QPaintDevice * dst);
   //! Pointer to data provider derived from the abastract base class QgsDataProvider
-  QgsVectorDataProvider *dataProvider;
+  // XXX deprecated QgsVectorDataProvider *dataProvider;
   //! index of the primary label field
   QString fieldIndex;
   //! Data provider key

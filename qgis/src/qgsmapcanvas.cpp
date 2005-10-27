@@ -674,6 +674,7 @@ void QgsMapCanvas::render(QPaintDevice * theQPaintDevice)
 #ifdef QGISDEBUG
 #endif
 
+              // XXX type() should use polymorphism instead 
               if (ml->visible() && (ml->type() != QgsMapLayer::RASTER))
               {
                 //only make labels if the layer is visible

@@ -215,7 +215,8 @@ void QgsMapserverExport::writeMapFile()
           break;
                  
       }
-      if(lyr->type() == QgsMapLayer::RASTER)
+      // XXX use polymorphism instead
+      if( QgsMapLayer::RASTER == lyr->type() )
       {
         mapFile << "RASTER";
       }
@@ -342,6 +343,10 @@ void QgsMapserverExport::writeMapFile()
   {
   }
 }
+
+
+
+
 void QgsMapserverExport::showHelp()
 {
   //QMessageBox::information(this, "Help","Help");

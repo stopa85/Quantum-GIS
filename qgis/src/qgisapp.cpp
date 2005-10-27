@@ -84,6 +84,7 @@ using namespace std;
 #include <qglobal.h>
 
 
+#include "qgsdatamanager.h"
 #include "qgsencodingfiledialog.h"
 #include "qgsrect.h"
 #include "qgsmapcanvas.h"
@@ -105,6 +106,7 @@ using namespace std;
 #ifdef HAVE_POSTGRESQL
 #include "qgsdbsourceselect.h"
 #endif
+
 #ifdef WIN32
 #include "qgsmessageviewer.h"
 #include "qgsabout.h"
@@ -112,6 +114,7 @@ using namespace std;
 #include "qgsabout.uic.h"
 #include "qgsmessageviewer.uic.h"
 #endif
+
 #include "qgshelpviewer.h"
 #include "qgsmaplayerregistry.h"
 #include "qgsrasterlayerproperties.h"
@@ -141,6 +144,10 @@ using namespace std;
 #ifdef Q_OS_MACX
 #include <ApplicationServices/ApplicationServices.h>
 #endif
+
+
+
+
 
 /* typedefs for plugins */
 typedef QgsMapLayerInterface *create_it();
@@ -1036,7 +1043,10 @@ static void buildSupportedVectorFileFilter_(QString & fileFilters)
 
 */
 static void openFilesRememberingFilter_(QString const &filterName, 
-  QString const &filters, QStringList & selectedFiles, QString& enc, QString &title)
+                                        QString const &filters, 
+                                        QStringList & selectedFiles, 
+                                        QString& enc, 
+                                        QString &title)
 {
 
     bool haveLastUsedFilter = false; // by default, there is no last
@@ -1059,7 +1069,12 @@ static void openFilesRememberingFilter_(QString const &filterName,
     std::cerr << "Opening vector file dialog with filters: " << filters.local8Bit() << std::endl;
 #endif
 
-    QgsEncodingFileDialog* openFileDialog = new QgsEncodingFileDialog(lastUsedDir, filters, 0, QFileDialog::tr("open files dialog"), lastUsedEncoding);
+    QgsEncodingFileDialog* openFileDialog = 
+        new QgsEncodingFileDialog(lastUsedDir, 
+                                  filters, 
+                                  0, 
+                                  QFileDialog::tr("open files dialog"), 
+                                  lastUsedEncoding);
 
     // allow for selection of more than one file
     openFileDialog->setMode(QFileDialog::ExistingFiles);
@@ -1096,44 +1111,46 @@ static void openFilesRememberingFilter_(QString const &filterName,
 */
 void QgisApp::addLayer()
 {
+    QgsDebug("About to add layer");
 
 
-    //qDebug( "vector file filters: " + fileFilters );
+//     // XXX pOgr is subsequently never used; so why do we do this?
+//     QString pOgr = mProviderRegistry->library("ogr");
 
-    // XXX pOgr is subsequently never used; so why do we do this?
-    QString pOgr = mProviderRegistry->library("ogr");
+//     if (pOgr.isEmpty())
+//     {
+// #ifdef QGSDEBUG
+//         qDebug("unable to get OGR registry");
+// #endif
 
-    if (pOgr.isEmpty())
-    {
-#ifdef QGSDEBUG
-        qDebug("unable to get OGR registry");
+//         return;
+//     }
+//     else
+//     {
+    mMapCanvas->freeze();
+
+    QStringList selectedFiles;
+#ifdef QGISDEBUG
+    std::cerr << "Vector file filters: " << mVectorFileFilter.local8Bit() << "\n";
 #endif
 
+    QString enc;
+    QString title = tr("Open an OGR Supported Vector Layer");
+    openFilesRememberingFilter_("lastVectorFileFilter", 
+                                mVectorFileFilter, 
+                                selectedFiles, 
+                                enc,
+                                title);
+    if (selectedFiles.isEmpty())
+    {
+        // no files were selected, so just bail
+        mMapCanvas->freeze(false);
+            
         return;
     }
-    else
-    {
-        mMapCanvas->freeze();
 
-        QStringList selectedFiles;
-#ifdef QGISDEBUG
-        std::cerr << "Vector file filters: " << mVectorFileFilter.local8Bit() << "\n";
-#endif
-
-        QString enc;
-        QString title = tr("Open an OGR Supported Vector Layer");
-        openFilesRememberingFilter_("lastVectorFileFilter", mVectorFileFilter, selectedFiles, enc,
-                                    title);
-        if (selectedFiles.isEmpty())
-        {
-            // no files were selected, so just bail
-            mMapCanvas->freeze(false);
-            
-            return;
-        }
-
-        addLayer(selectedFiles, enc);
-    }
+    addLayer(selectedFiles, enc);
+//    }
 } // QgisApp::addLayer()
 
 
@@ -1141,6 +1158,8 @@ void QgisApp::addLayer()
 
 bool QgisApp::addLayer(QFileInfo const & vectorFile)
 {
+    QgsDebug( QString( "Adding " + vectorFile.filePath() ).ascii() );
+
     // check to see if we have an ogr provider available
     QString pOgr = mProviderRegistry->library("ogr");
 
@@ -1160,8 +1179,8 @@ bool QgisApp::addLayer(QFileInfo const & vectorFile)
     // create the layer
 
     QgsVectorLayer *layer = new QgsVectorLayer(vectorFile.filePath(),
-                            vectorFile.baseName(TRUE),
-                            "ogr");
+                                               vectorFile.baseName(TRUE),
+                                               "ogr");
     Q_CHECK_PTR( layer );
 
     QObject::connect(layer, SIGNAL(editingStopped(bool)), mMapCanvas, SLOT(removeDigitizingLines(bool)));
@@ -1273,136 +1292,151 @@ bool QgisApp::addLayer(QFileInfo const & vectorFile)
   XXX yah know, this could be changed to just iteratively call the above
 
  */
-bool QgisApp::addLayer(QStringList const &theLayerQStringList, const QString& enc)
+bool QgisApp::addLayer(QStringList const &theLayerQStringList, 
+                       const QString& enc)
 {
-    // check to see if we have an ogr provider available
-    QString pOgr = mProviderRegistry->library("ogr");
+    QgsDebug( QString("adding " + 
+                      QString::number(theLayerQStringList.count()) + 
+                      " files" ).ascii() );
 
-    if ( pOgr.isEmpty() )
+//     // check to see if we have an ogr provider available
+//     QString pOgr = mProviderRegistry->library("ogr");
+
+//     if ( pOgr.isEmpty() )
+//     {
+//         QMessageBox::critical(this,
+//                               tr("No OGR Provider"),
+//                               tr("No OGR data provider was found in the QGIS lib directory"));
+//         return false;
+//     }
+//     else
+//     {
+    mMapCanvas->freeze();
+
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+
+
+    for ( QStringList::ConstIterator it = theLayerQStringList.begin();
+          it != theLayerQStringList.end();
+          ++it )
     {
-        QMessageBox::critical(this,
-                              tr("No OGR Provider"),
-                              tr("No OGR data provider was found in the QGIS lib directory"));
-        return false;
-    }
-    else
-    {
-        mMapCanvas->freeze();
 
-        QApplication::setOverrideCursor(Qt::WaitCursor);
-
-
-        for ( QStringList::ConstIterator it = theLayerQStringList.begin();
-                it != theLayerQStringList.end();
-                ++it )
+        if ( ! QgsDataManager::instance().openVector( *it ) )
         {
-            QFileInfo fi(*it);
-            QString base = fi.baseName(TRUE);
-
-
-            // create the layer
-
-            QgsVectorLayer *layer = new QgsVectorLayer(*it, base, "ogr");
-	    QObject::connect(layer, SIGNAL(editingStopped(bool)), mMapCanvas, SLOT(removeDigitizingLines(bool)));
-
-            Q_CHECK_PTR( layer );
-            // set the visibility based on user preference for newly added
-            // layers
-            layer->setVisible(mAddedLayersHidden);
-
-            if ( ! layer )
-            {
-                mMapCanvas->freeze(false);
-                QApplication::restoreOverrideCursor();
-
-                // XXX insert meaningful whine to the user here
-                return false;
-            }
-
-            if (layer->isValid())
-            {
-		layer->setProviderEncoding(enc);
-                // init the context menu so it can connect to slots
-                // in main app
-
-                // XXX now taken care of in legend layer->initContextMenu(this);
-
-                //add single symbol renderer as default
-                QgsSingleSymRenderer *renderer = new QgsSingleSymRenderer(layer->vectorType());
-
-                Q_CHECK_PTR( renderer );
-
-                if ( ! renderer )
-                {
-                    mMapCanvas->freeze(false);
-                    QApplication::restoreOverrideCursor();
-
-                    // XXX insert meaningful whine to the user here
-                    return false;
-                }
-
-                layer->setRenderer(renderer);
-
-		// Register this layer with the layers registry
-		QgsMapLayerRegistry::instance()->addMapLayer(layer);
-		layer->refreshLegend();
-
-                // map canvas and overview canvas already know about this layer
-                // when it is added to map registry
-                //              mMapCanvas->addLayer(layer);
-                //              // XXX some day use other means to  connect up a request from the raster layer to show in overview map
-                //              QObject::connect(layer,
-                //                      SIGNAL(showInOverview(QString,bool)),
-                //                      this,
-                //                      SLOT(setLayerOverviewStatus(QString,bool)));
-
-                // connect up any keypresses to be passed tot he layer (e.g. so esc can stop rendering)
-#ifdef QGISDEBUG
-  std::cout << " Connecting up maplayers keyPressed event to the QgisApp keyPress signal" << std::endl;
-#endif
-                QObject::connect(this,
-                                 SIGNAL(keyPressed(QKeyEvent *)),
-                                 layer,
-                                 SLOT(keyPressed(QKeyEvent* )));
-            //add hooks for letting layer know canvas needs to recalc the layer extents
-            QObject::connect(layer,
-                             SIGNAL(recalculateExtents()),
-                             mMapCanvas,
-                             SLOT(recalculateExtents()));
-
-            QObject::connect(layer,
-                             SIGNAL(recalculateExtents()),
-                             mOverviewCanvas,
-                             SLOT(recalculateExtents()));
-            }
-            else
-            {
-                QString msg = *it + " ";
-                msg += tr("is not a valid or recognized data source");
-                QMessageBox::critical(this, tr("Invalid Data Source"), msg);
-
-                // since the layer is bad, stomp on it
-                delete layer;
-
-                // XXX should we return false here, or just grind through
-                // XXX the remaining arguments?
-            }
-
+            QgsDebug( QString("Unable to open " + *it).ascii() );
+        }
+        else
+        {
+            QgsDebug( QString("Opened " + *it).ascii() );
         }
 
-        //qApp->processEvents();
-        // update legend
-        /*! \todo Need legend scrollview and legenditem classes */
-        // draw the map
+//         QFileInfo fi(*it);
+//         QString base = fi.baseName(TRUE);
 
-        // mMapLegend->update(); NOW UPDATED VIA SIGNAL/SLOTS
-        qApp->processEvents();    // XXX why does this need to be called manually?
-        mMapCanvas->freeze(false);
-        mMapCanvas->render();
-        QApplication::restoreOverrideCursor();
-        statusBar()->message(mMapCanvas->extent().stringRep(2));
+
+//         // create the layer
+
+//         QgsVectorLayer *layer = new QgsVectorLayer(*it, base, "ogr");
+//         QObject::connect(layer, SIGNAL(editingStopped(bool)), mMapCanvas, SLOT(removeDigitizingLines(bool)));
+
+//         Q_CHECK_PTR( layer );
+//         // set the visibility based on user preference for newly added
+//         // layers
+//         layer->setVisible(mAddedLayersHidden);
+
+//         if ( ! layer )
+//         {
+//             mMapCanvas->freeze(false);
+//             QApplication::restoreOverrideCursor();
+
+//             // XXX insert meaningful whine to the user here
+//             return false;
+//         }
+
+//         if (layer->isValid())
+//         {
+//             layer->setProviderEncoding(enc);
+//             // init the context menu so it can connect to slots
+//             // in main app
+
+//             // XXX now taken care of in legend layer->initContextMenu(this);
+
+//             //add single symbol renderer as default
+//             QgsSingleSymRenderer *renderer = new QgsSingleSymRenderer(layer->vectorType());
+
+//             Q_CHECK_PTR( renderer );
+
+//             if ( ! renderer )
+//             {
+//                 mMapCanvas->freeze(false);
+//                 QApplication::restoreOverrideCursor();
+
+//                 // XXX insert meaningful whine to the user here
+//                 return false;
+//             }
+
+//             layer->setRenderer(renderer);
+
+//             // Register this layer with the layers registry
+//             QgsMapLayerRegistry::instance()->addMapLayer(layer);
+//             layer->refreshLegend();
+
+//             // map canvas and overview canvas already know about this layer
+//             // when it is added to map registry
+//             //              mMapCanvas->addLayer(layer);
+//             //              // XXX some day use other means to  connect up a request from the raster layer to show in overview map
+//             //              QObject::connect(layer,
+//             //                      SIGNAL(showInOverview(QString,bool)),
+//             //                      this,
+//             //                      SLOT(setLayerOverviewStatus(QString,bool)));
+
+//             // connect up any keypresses to be passed tot he layer (e.g. so esc can stop rendering)
+// #ifdef QGISDEBUG
+//             std::cout << " Connecting up maplayers keyPressed event to the QgisApp keyPress signal" << std::endl;
+// #endif
+//             QObject::connect(this,
+//                              SIGNAL(keyPressed(QKeyEvent *)),
+//                              layer,
+//                              SLOT(keyPressed(QKeyEvent* )));
+//             //add hooks for letting layer know canvas needs to recalc the layer extents
+//             QObject::connect(layer,
+//                              SIGNAL(recalculateExtents()),
+//                              mMapCanvas,
+//                              SLOT(recalculateExtents()));
+
+//             QObject::connect(layer,
+//                              SIGNAL(recalculateExtents()),
+//                              mOverviewCanvas,
+//                              SLOT(recalculateExtents()));
+//         }
+//         else
+//         {
+//             QString msg = *it + " ";
+//             msg += tr("is not a valid or recognized data source");
+//             QMessageBox::critical(this, tr("Invalid Data Source"), msg);
+
+//             // since the layer is bad, stomp on it
+//             delete layer;
+
+//             // XXX should we return false here, or just grind through
+//             // XXX the remaining arguments?
+//         }
 
     }
+
+    //qApp->processEvents();
+    // update legend
+    /*! \todo Need legend scrollview and legenditem classes */
+    // draw the map
+
+    // mMapLegend->update(); NOW UPDATED VIA SIGNAL/SLOTS
+    qApp->processEvents();    // XXX why does this need to be called manually?
+    mMapCanvas->freeze(false);
+    mMapCanvas->render();
+    QApplication::restoreOverrideCursor();
+    statusBar()->message(mMapCanvas->extent().stringRep(2));
+
+    //}
 
     return true;
 
@@ -1410,13 +1444,21 @@ bool QgisApp::addLayer(QStringList const &theLayerQStringList, const QString& en
 
 
 
-/** This helper checks to see whether the filename appears to be a valid vector file name */
+/** This helper checks to see whether the filename appears to be a valid
+  vector file name 
+
+  XXX should be responsibility of data provider to do any such checking
+
+*/
 bool QgisApp::isValidVectorFileName(QString theFileNameQString)
 {
     return (theFileNameQString.lower().endsWith(".shp"));
 }
 
-/** Overloaded of the above function provided for convenience that takes a qstring pointer */
+
+/** Overloaded of the above function provided for convenience that takes a
+    qstring pointer
+ */
 bool QgisApp::isValidVectorFileName(QString * theFileNameQString)
 {
     //dereference and delegate
@@ -1956,6 +1998,7 @@ void QgisApp::fileNew(bool thePromptToSaveFlag)
 
 void QgisApp::newVectorLayer()
 {
+    QgsDebug( "selected" );
 
     QGis::WKBTYPE geometrytype;
     QString fileformat;
@@ -3529,7 +3572,8 @@ void QgisApp::currentLayerChanged(QListViewItem * lvi)
 	if(llf)
 	{
 	    QgsMapLayer *layer = llf->layer();
-	    if (layer->type() == QgsMapLayer::RASTER)
+            // XXX type() should be replaced by polymorphism
+ 	    if (layer->type() == QgsMapLayer::RASTER)
 	    {
 		//actionIdentify->setEnabled(FALSE);
 		actionSelect->setEnabled(FALSE);
@@ -4255,6 +4299,8 @@ way.
 */
 void QgisApp::addVectorLayer(QString vectorLayerPath, QString baseName, QString providerKey)
 {
+    QgsDebug( "We're here!" );
+
     // check to see if the appropriate provider is available
     QString providerName;
 

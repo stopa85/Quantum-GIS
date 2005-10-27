@@ -43,12 +43,12 @@
 
 
 
-QgsMapLayer::QgsMapLayer(int type,
-                         QString lyrname,
-                         QString source) 
+QgsMapLayer::QgsMapLayer(QgsDataProvider * dataProvider,
+                         size_t dataSourceLayerNum,
+                         type_t type,
+                         QString lyrname ) 
     :   valid(true), // assume the layer is valid (data source exists and 
                      // can be used) until we learn otherwise
-        dataSource(source),
         internalName(lyrname),
         mShowInOverviewItemId(0),
         mShowInOverview(false),
@@ -56,9 +56,13 @@ QgsMapLayer::QgsMapLayer(int type,
         mLegendSymbologyGroupParent(0),
         mLegendLayerFile(0),
         ID(""),
-        layerType(type),
         m_visible(true),
-        mDataSourceLayerNum(0)
+        mDataSourceLayerNum(dataSourceLayerNum),
+        mDataProvider(dataProvider),
+        mType(type),
+        mMinScale(0), // set some generous defaults for scale based visibility
+        mMaxScale(100000000),
+        mScaleBasedVisibility(false)
 
 {
 #ifdef QGISDEBUG
@@ -69,7 +73,8 @@ QgsMapLayer::QgsMapLayer(int type,
     layerName = internalName;
 
 #ifdef QGISDEBUG
-  std::cout << "QgsMapLayer::QgsMapLayer - layerName is '" << layerName.local8Bit() << "'."<< std::endl;
+  std::cout << "QgsMapLayer::QgsMapLayer - layerName is '" 
+            << layerName.local8Bit() << "'.\n";
 #endif
 
     // Generate the unique ID of this layer
@@ -78,32 +83,29 @@ QgsMapLayer::QgsMapLayer(int type,
     ID.replace(" ", "_");
 
 #if defined(WIN32) || defined(Q_OS_MACX)
-
     QString PKGDATAPATH = qApp->applicationDirPath() + "/share/qgis";
 #endif
 
-    mInOverviewPixmap.load(QString(PKGDATAPATH) + QString("/images/icons/inoverview.png"));
-    mEditablePixmap.load(QString(PKGDATAPATH) + QString("/images/icons/editable.png"));
+    mInOverviewPixmap.load(QString(PKGDATAPATH) + 
+                           QString("/images/icons/inoverview.png"));
+    mEditablePixmap.load(QString(PKGDATAPATH) + 
+                         QString("/images/icons/editable.png"));
 
     //mActionInOverview = new QAction( "in Overview", "Ctrl+O", this );
 
-    //set some generous  defaults for scale based visibility
-    mMinScale = 0;
-    mMaxScale = 100000000;
-    mScaleBasedVisibility = false;
-    
-
-
-}
+} // QgsMapLayer ctor
 
 
 
 QgsMapLayer::~QgsMapLayer()
 {}
-const int QgsMapLayer::type()
+
+
+QgsMapLayer::type_t QgsMapLayer::type() const
 {
-    return layerType;
-}
+    return mType;
+} // QgsMapLayer::type()
+
 
 /** Get this layer's unique ID */
 QString const & QgsMapLayer::getLayerID() const
@@ -131,7 +133,7 @@ QString const & QgsMapLayer::name() const
 
 QString const & QgsMapLayer::source() const
 {
-    return dataSource;
+    return mDataProvider->getDataSourceUri();
 }
 
 QString const & QgsMapLayer::sourceName() const
@@ -141,7 +143,8 @@ QString const & QgsMapLayer::sourceName() const
 
 const QgsRect QgsMapLayer::extent()
 {
-    return layerExtent;
+    return layerExtent;         // XXX maybe can return from data provider
+                                // XXX instead?
 }
 
 QgsRect QgsMapLayer::calculateExtent()

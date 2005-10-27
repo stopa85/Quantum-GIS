@@ -2011,9 +2011,14 @@ QgsOgrProvider::createLayers()
 
     size_t numLayers = layerCount();
 
-    
+    QgsDebug( QString(name() + 
+                      " got " + 
+                      QString::number( numLayers ) + 
+                      " layers").ascii() );
 
     // TODO finish rest
+
+    layers.push_back( new QgsVectorLayer( 
 
     return layers;
 
