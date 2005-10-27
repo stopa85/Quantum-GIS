@@ -31,7 +31,7 @@ static const char* const ident_ = "$Id$";
 
 
 
-QgsDataManager * QgsDataManager::instance_ = 0x0;
+static QgsDataManager * instance_ = 0x0;
 
 
 QgsDataManager::QgsDataManager()
@@ -86,6 +86,8 @@ openVectorDataProvider_( QgsDataProvider * vectorDataProvider )
       return false;
   }
 
+  QgsDebug( "about to create layers from vector data provider" );
+
   // now get all the layers corresponding to the data provider
 
   list<QgsMapLayer*> mapLayers = vectorDataProvider->createLayers();
@@ -96,6 +98,7 @@ openVectorDataProvider_( QgsDataProvider * vectorDataProvider )
 
       return false;
   }
+
 
   // and then add them to the map layer registry; each time a layer is added,
   // a signal is emitted which will cause the GUI to be updated with the new

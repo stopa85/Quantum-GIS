@@ -24,14 +24,14 @@
   *@author Gary E.Sherman
   */
 
-class QgsDataSource {
-
+class QgsDataSource 
+{
 public: 
-	QgsDataSource();
-	~QgsDataSource();
- protected:
- //! Path or uri of the datasource
- 	QString dataSource;
-};
+  QgsDataSource();
+  ~QgsDataSource();
+protected:
+  //! Path or uri of the datasource
+  QString dataSource;
+}; // class QgsDataSource
 
 #endif

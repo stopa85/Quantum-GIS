@@ -108,18 +108,16 @@ typedef QgsDataProvider * create_it(const QString* uri);
 
 
 
-QgsVectorLayer::QgsVectorLayer(QString vectorLayerPath,
-                               QString baseName,
-                               QString providerKey,
-                               size_t  myDataSourceLayerNum )
-    : QgsMapLayer(VECTOR, baseName, vectorLayerPath),
+QgsVectorLayer::QgsVectorLayer(QgsDataProvider * dataProvider,
+                               size_t  myDataSourceLayerNum,
+                               QString const & layerName )
+    : QgsMapLayer(dataProvider, myDataSourceLayerNum, VECTOR, layerName),
       tabledisplay(0),
       providerKey(providerKey),
       valid(false),
       m_renderer(0),
       mLabel(0),
       m_propertiesDialog(0),
-      myLib(0),
       ir(0),                    // initialize the identify results pointer
       updateThreshold(0),       // XXX better default value?
       mMinimumScale(0),
@@ -128,14 +126,10 @@ QgsVectorLayer::QgsVectorLayer(QString vectorLayerPath,
       mEditable(false),
       mModified(false)
 {
-    // XXX need to make this a ctor argument; but too many confusing default
-    // XXX options?
-    dataSourceLayerNum( myDataSourceLayerNum );
-
   // if we're given a provider type, try to create and bind one to this layer
   if ( ! providerKey.isEmpty() )
   {
-    setDataProvider( providerKey );
+    setDataProvider(  );
   }
   if(valid)
   {
@@ -183,11 +177,9 @@ QgsVectorLayer::~QgsVectorLayer()
     delete m_propertiesDialog;
   }
   // delete the provider object
-  delete dataProvider;
+  // no longer necessary since provider is managed elsewhere delete dataProvider;
   // delete the popu pmenu
   delete popMenu;
-  // delete the provider lib pointer
-  delete myLib;
 
   if ( ir )
   {
@@ -207,9 +199,9 @@ QgsVectorLayer::~QgsVectorLayer()
 
 QString QgsVectorLayer::storageType() const
 {
-  if (dataProvider)
+  if (dataProvider())
   {
-    return dataProvider->storageType();
+    return getDataProvider()->storageType();
   }
   return 0;
 }
@@ -217,9 +209,9 @@ QString QgsVectorLayer::storageType() const
 
 QString QgsVectorLayer::capabilitiesString() const
 {
-  if (dataProvider)
+  if (dataProvider())
   {
-    return dataProvider->capabilitiesString();
+    return getDataProvider()->capabilitiesString();
   }
   return 0;
 }
@@ -232,7 +224,7 @@ int QgsVectorLayer::getProjectionSrid()
 #ifdef QGISDEBUG    
     std::cout << "Getting srid from provider..." << std::endl;
 #endif
-    return dataProvider->getSrid();
+    return getDataProvider()->getSrid();
   }
   else
   {
@@ -245,7 +237,7 @@ QString QgsVectorLayer::getProjectionWKT()
   //delegate to the provider
   if (valid)
   {
-    return dataProvider->getProjectionWKT();
+    return dataProvider()->getProjectionWKT();
   }
   else
   {
@@ -271,7 +263,7 @@ void QgsVectorLayer::setDisplayField(QString fldName)
   QString idxName="";
   QString idxId="";
 
-  std::vector < QgsField > fields = dataProvider->fields();
+  std::vector < QgsField > fields = getDataProvider()->fields();
   if(!fldName.isEmpty())
   {
     // find the index for this field
@@ -376,15 +368,15 @@ void QgsVectorLayer::drawLabels(QPainter * p, QgsRect * viewExtent, QgsMapToPixe
     int featureCount = 0;
     // select the records in the extent. The provider sets a spatial filter
     // and sets up the selection set for retrieval
-    dataProvider->reset();
-    dataProvider->select(viewExtent);
+    dataProvider()->reset();
+    getDataProvider()->select(viewExtent);
 
     try
     {
       //main render loop
       QgsFeature *fet;
 
-      while((fet = dataProvider->getNextFeature(attributes)))
+      while((fet = getDataProvider()->getNextFeature(attributes)))
         {
           // Render label
           if ( fet != 0 )
@@ -755,7 +747,7 @@ void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * th
 #ifdef QGISDEBUG
     qWarning("Selecting features based on view extent");
 #endif
-    dataProvider->reset();
+    dataProvider()->reset();
     
     // Destroy all cached geometries and clear the references to them
 #ifdef QGISDEBUG
@@ -781,9 +773,9 @@ void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * th
 #endif
     mCachedGeometries.clear();
     
-    dataProvider->select(viewExtent);
+    getDataProvider()->select(viewExtent);
     int featureCount = 0;
-    //  QgsFeature *ftest = dataProvider->getFirstFeature();
+    //  QgsFeature *ftest = dataProvider()->getFirstFeature();
 #ifdef QGISDEBUG
     qWarning("Starting draw of features");
 #endif
@@ -816,8 +808,8 @@ void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * th
 
     try
     {
-      while (fet = dataProvider->getNextFeature(attributes, updateThreshold))
-//      while((fet = dataProvider->getNextFeature(attributes)))
+      while (fet = getDataProvider()->getNextFeature(attributes, updateThreshold))
+//      while((fet = getDataProvider()->getNextFeature(attributes)))
       {
       
 #ifdef QGISDEBUG
@@ -950,7 +942,7 @@ void QgsVectorLayer::identify(QgsRect * r)
 
   QgsRect pr = inverseProjectRect(*r);
 
-  dataProvider->select(&pr, true, dataSourceLayerNum() );
+  getDataProvider()->select(&pr, true, dataSourceLayerNum() );
 
   int featureCount = 0;
   QgsFeature *fet;
@@ -989,7 +981,7 @@ void QgsVectorLayer::identify(QgsRect * r)
     ir->setActions ( mActions );
       }
 
-      while ((fet = dataProvider->getNextFeature(true, dataSourceLayerNum())))
+      while ((fet = getDataProvider()->getNextFeature(true, dataSourceLayerNum())))
       {
   featureCount++;
 
@@ -1082,7 +1074,7 @@ void QgsVectorLayer::identify(QgsRect * r)
   } 
   else { // Edit attributes 
       // TODO: what to do if more features were selected? - nearest?
-      if ( (fet = dataProvider->getNextFeature(true, dataSourceLayerNum())) ) {
+      if ( (fet = getDataProvider()->getNextFeature(true, dataSourceLayerNum())) ) {
     // Was already changed?
     std::map<int,std::map<QString,QString> >::iterator it = mChangedAttributes.find(fet->featureId());
 
@@ -1192,11 +1184,11 @@ void QgsVectorLayer::select(QgsRect * rect, bool lock)
   }
 
   QgsRect r = inverseProjectRect(*rect);
-  dataProvider->select(&r, true, dataSourceLayerNum());
+  getDataProvider()->select(&r, true, dataSourceLayerNum());
 
   QgsFeature *fet;
 
-  while (fet = dataProvider->getNextFeature(true, dataSourceLayerNum()))
+  while (fet = getDataProvider()->getNextFeature(true, dataSourceLayerNum()))
   {
     if(mDeleted.find(fet->featureId())==mDeleted.end())//don't select deleted features
     {
@@ -1256,9 +1248,9 @@ void QgsVectorLayer::invertSelection()
     }
 
     QgsFeature *fet;
-    dataProvider->reset(dataSourceLayerNum());
+    getDataProvider()->reset(dataSourceLayerNum());
 
-    while (fet = dataProvider->getNextFeature(true, dataSourceLayerNum()))
+    while (fet = getDataProvider()->getNextFeature(true, dataSourceLayerNum()))
     {
   if(mDeleted.find(fet->featureId())==mDeleted.end())//don't select deleted features
   {
@@ -1322,16 +1314,23 @@ void QgsVectorLayer::invalidateTableDisplay()
   tabledisplay = 0;
 }
 
+
 QgsVectorDataProvider* QgsVectorLayer::getDataProvider()
 {
-  return dataProvider;
+  return dynamic_cast<QgsVectorDataProvider*>(getDataProvider());
 }
+
+QgsVectorDataProvider* QgsVectorLayer::getDataProvider() const
+{
+  return dynamic_cast<QgsVectorDataProvider*>(getDataProvider());
+}
+
 
 void QgsVectorLayer::setProviderEncoding(const QString& encoding)
 {
-    if(dataProvider)
+    if(getDataProvider())
     {
-	dataProvider->setEncoding(encoding);
+	getDataProvider()->setEncoding(encoding);
     }
 }
 
@@ -1387,9 +1386,9 @@ void QgsVectorLayer::setRenderer(QgsRenderer * r)
 
 QGis::VectorType QgsVectorLayer::vectorType() const
 {
-  if (dataProvider)
+  if (getDataProvider())
   {
-    int type = dataProvider->geometryType(dataSourceLayerNum());
+    int type = getDataProvider()->geometryType(dataSourceLayerNum());
     switch (type)
     {
     case QGis::WKBPoint:
@@ -1429,7 +1428,7 @@ void QgsVectorLayer::initContextMenu_(QgisApp * app)
 
   popMenu->insertSeparator(); // XXX should this move to QgsMapLayer::initContextMenu()?
 
-  int cap=dataProvider->capabilities();
+  int cap=getDataProvider()->capabilities();
 
   if((cap&QgsVectorDataProvider::AddFeatures)
      ||(cap&QgsVectorDataProvider::DeleteFeatures))
@@ -1471,9 +1470,9 @@ QgsRect QgsVectorLayer::bBoxOfSelected()
   double ymax=-DBL_MAX;
   QgsRect r;
   QgsFeature* fet;
-  dataProvider->reset(dataSourceLayerNum());
+  getDataProvider()->reset(dataSourceLayerNum());
 
-  while ((fet = dataProvider->getNextFeature(false, dataSourceLayerNum())))
+  while ((fet = getDataProvider()->getNextFeature(false, dataSourceLayerNum())))
   {
     if (mSelected.find(fet->featureId()) != mSelected.end())
     {
@@ -1540,79 +1539,79 @@ void QgsVectorLayer::setLayerProperties(QgsDlgVectorLayerProperties * properties
 
 QgsFeature * QgsVectorLayer::getFirstFeature(bool fetchAttributes) const
 {
-  if ( ! dataProvider )
+  if ( ! dataProvider() )
   {
     std::cerr << __FILE__ << ":" << __LINE__
     << " QgsVectorLayer::getFirstFeature() invoked with null dataProvider\n";
     return 0x0;
   }
 
-  return dataProvider->getFirstFeature( fetchAttributes, dataSourceLayerNum() );
+  return getDataProvider()->getFirstFeature( fetchAttributes, dataSourceLayerNum() );
 } // QgsVectorLayer::getFirstFeature
 
 
 QgsFeature * QgsVectorLayer::getNextFeature(bool fetchAttributes) const
 {
-  if ( ! dataProvider )
+  if ( ! getDataProvider() )
   {
     std::cerr << __FILE__ << ":" << __LINE__
     << " QgsVectorLayer::getNextFeature() invoked with null dataProvider\n";
     return 0x0;
   }
 
-  return dataProvider->getNextFeature( fetchAttributes, dataSourceLayerNum() );
+  return getDataProvider()->getNextFeature( fetchAttributes, dataSourceLayerNum() );
 } // QgsVectorLayer::getNextFeature
 
 
 
 bool QgsVectorLayer::getNextFeature(QgsFeature &feature, bool fetchAttributes) const
 {
-  if ( ! dataProvider )
+  if ( ! getDataProvider() )
   {
     std::cerr << __FILE__ << ":" << __LINE__
     << " QgsVectorLayer::getNextFeature() invoked with null dataProvider\n";
     return false;
   }
 
-  return dataProvider->getNextFeature( feature, fetchAttributes, dataSourceLayerNum() );
+  return getDataProvider()->getNextFeature( feature, fetchAttributes, dataSourceLayerNum() );
 } // QgsVectorLayer::getNextFeature
 
 
 
 long QgsVectorLayer::featureCount() const
 {
-  if ( ! dataProvider )
+  if ( ! getDataProvider() )
   {
     std::cerr << __FILE__ << ":" << __LINE__
     << " QgsVectorLayer::featureCount() invoked with null dataProvider\n";
     return 0;
   }
 
-  return dataProvider->featureCount(dataSourceLayerNum());
+  return getDataProvider()->featureCount(dataSourceLayerNum());
 } // QgsVectorLayer::featureCount
 
 long QgsVectorLayer::updateFeatureCount() const
 {
-  if ( ! dataProvider )
+  if ( ! getDataProvider() )
   {
     std::cerr << __FILE__ << ":" << __LINE__
     << " QgsVectorLayer::updateFeatureCount() invoked with null dataProvider\n";
     return 0;
   }
-  return dataProvider->updateFeatureCount(dataSourceLayerNum());
+  return getDataProvider()->updateFeatureCount(dataSourceLayerNum());
 }
 
 void QgsVectorLayer::updateExtents()
 {
-  if(dataProvider)
+  if(getDataProvider())
     {
       if(mDeleted.size()==0)
 	{
 	  // get the extent of the layer from the provider
-	  layerExtent.setXmin(dataProvider->extent()->xMin());
-	  layerExtent.setYmin(dataProvider->extent()->yMin());
-	  layerExtent.setXmax(dataProvider->extent()->xMax());
-	  layerExtent.setYmax(dataProvider->extent()->yMax());
+	  layerExtent.setXmin(getDataProvider()->extent()->xMin());
+	  layerExtent.setYmin(getDataProvider()->extent()->yMin());
+	  layerExtent.setXmax(getDataProvider()->extent()->xMax());
+	  layerExtent.setYmax(getDataProvider()->extent()->yMax());
 	}
       else
 	{
@@ -1623,8 +1622,8 @@ void QgsVectorLayer::updateExtents()
 	  double ymax=-DBL_MAX;
 	  QgsRect bb;
 
-	  dataProvider->reset(dataSourceLayerNum());
-	  while(fet=dataProvider->getNextFeature(false, dataSourceLayerNum()))
+	  getDataProvider()->reset(dataSourceLayerNum());
+	  while(fet=getDataProvider()->getNextFeature(false, dataSourceLayerNum()))
 	    {
 	      if(mDeleted.find(fet->featureId())==mDeleted.end())
 		{
@@ -1688,24 +1687,24 @@ void QgsVectorLayer::updateExtents()
 
 QString QgsVectorLayer::subsetString()
 {
-  if ( ! dataProvider )
+  if ( ! getDataProvider() )
   {
     std::cerr << __FILE__ << ":" << __LINE__
     << " QgsVectorLayer::subsetString() invoked with null dataProvider\n";
     return 0;
   }
-  return dataProvider->subsetString();
+  return getDataProvider()->subsetString();
 }
 void QgsVectorLayer::setSubsetString(QString subset)
 {
-  if ( ! dataProvider )
+  if ( ! getDataProvider() )
   {
     std::cerr << __FILE__ << ":" << __LINE__
     << " QgsVectorLayer::setSubsetString() invoked with null dataProvider\n";
   }
   else
   {
-    dataProvider->setSubsetString(subset);
+    getDataProvider()->setSubsetString(subset);
     updateExtents();
   }
   //trigger a recalculate extents request to any attached canvases
@@ -1718,20 +1717,20 @@ void QgsVectorLayer::setSubsetString(QString subset)
 }
 int QgsVectorLayer::fieldCount() const
 {
-  if ( ! dataProvider )
+  if ( ! getDataProvider() )
   {
     std::cerr << __FILE__ << ":" << __LINE__
     << " QgsVectorLayer::fieldCount() invoked with null dataProvider\n";
     return 0;
   }
 
-  return dataProvider->fieldCount(dataSourceLayerNum());
+  return getDataProvider()->fieldCount(dataSourceLayerNum());
 } // QgsVectorLayer::fieldCount
 
 
 std::vector<QgsField> const& QgsVectorLayer::fields() const
 {
-  if ( ! dataProvider )
+  if ( ! getDataProvider() )
   {
     std::cerr << __FILE__ << ":" << __LINE__
     << " QgsVectorLayer::fields() invoked with null dataProvider\n";
@@ -1740,7 +1739,7 @@ std::vector<QgsField> const& QgsVectorLayer::fields() const
     return bogus;
   }
 
-  return dataProvider->fields(dataSourceLayerNum());
+  return getDataProvider()->fields(dataSourceLayerNum());
 } // QgsVectorLayer::fields()
 
 
@@ -1748,9 +1747,9 @@ bool QgsVectorLayer::addFeature(QgsFeature* f, bool alsoUpdateExtent)
 {
   static int addedIdLowWaterMark = 0;
 
-  if(dataProvider)
+  if(getDataProvider())
   {
-    if(!(dataProvider->capabilities() & QgsVectorDataProvider::AddFeatures))
+    if(!(getDataProvider()->capabilities() & QgsVectorDataProvider::AddFeatures))
     {
       QMessageBox::information(0, tr("Layer cannot be added to"), 
                                   tr("The data provider for this layer does not support the addition of features."));
@@ -1844,7 +1843,7 @@ bool QgsVectorLayer::insertVertexBefore(double x, double y, int atFeatureId,
   std::cout << "QgsVectorLayer::insertVertexBefore: entered with featureId " << atFeatureId << "." << std::endl;
 #endif
 
-  if (dataProvider)
+  if (getDataProvider())
   {
 
     if ( mChangedGeometries.find(atFeatureId) == mChangedGeometries.end() )
@@ -1882,7 +1881,7 @@ bool QgsVectorLayer::moveVertexAt(double x, double y, int atFeatureId,
   std::cout << "QgsVectorLayer::moveVertexAt: entered with featureId " << atFeatureId << "." << std::endl;
 #endif
 
-  if (dataProvider)
+  if (getDataProvider())
   {
 
     if ( mChangedGeometries.find(atFeatureId) == mChangedGeometries.end() )
@@ -1920,7 +1919,7 @@ bool QgsVectorLayer::deleteVertexAt(int atFeatureId,
   std::cout << "QgsVectorLayer::deleteVertexAt: entered with featureId " << atFeatureId << "." << std::endl;
 #endif
 
-  if (dataProvider)
+  if (getDataProvider())
   {
 
     if ( mChangedGeometries.find(atFeatureId) == mChangedGeometries.end() )
@@ -1953,12 +1952,12 @@ bool QgsVectorLayer::deleteVertexAt(int atFeatureId,
 QString QgsVectorLayer::getDefaultValue(const QString& attr,
                                         QgsFeature* f)
 {
-  return dataProvider->getDefaultValue(attr, f, dataSourceLayerNum());
+  return getDataProvider()->getDefaultValue(attr, f, dataSourceLayerNum());
 }
 
 bool QgsVectorLayer::deleteSelectedFeatures()
 {
-    if(!(dataProvider->capabilities() & QgsVectorDataProvider::DeleteFeatures))
+    if(!(getDataProvider()->capabilities() & QgsVectorDataProvider::DeleteFeatures))
     {
       QMessageBox::information(0, tr("Provider does not support deletion"), 
                                   tr("Data provider does not support deleting features"));
@@ -2046,9 +2045,9 @@ void QgsVectorLayer::toggleEditing()
 
 void QgsVectorLayer::startEditing()
 {
-  if(dataProvider)
+  if(getDataProvider())
   {
-    if(!(dataProvider->capabilities()&QgsVectorDataProvider::AddFeatures))
+    if(!(getDataProvider()->capabilities()&QgsVectorDataProvider::AddFeatures))
     {
       QMessageBox::information(0,"Start editing failed","Provider cannot be opened for editing",QMessageBox::Ok);
     }
@@ -2066,7 +2065,7 @@ void QgsVectorLayer::startEditing()
 
 void QgsVectorLayer::stopEditing()
 {
-  if(dataProvider)
+  if(getDataProvider())
   {
     if(mModified)
     {
@@ -2081,7 +2080,7 @@ void QgsVectorLayer::stopEditing()
         }
         else
         {
-      dataProvider->updateExtents();
+      getDataProvider()->updateExtents();
           //hide and delete the table because it is not up to date any more
           if (tabledisplay)
           {
@@ -2147,8 +2146,11 @@ int QgsVectorLayer::maximumScale()
 bool QgsVectorLayer::readXML_( QDomNode & layer_node )
 {
 #ifdef QGISDEBUG
-  std::cerr << "Datasource in QgsVectorLayer::readXML_: " << dataSource.local8Bit() << std::endl;
+  std::cerr << "Datasource in QgsVectorLayer::readXML_: " 
+            << sourceName().local8Bit() 
+            << std::endl;
 #endif
+
   // process the attribute actions
   mActions.readXML(layer_node);
 
@@ -2171,8 +2173,8 @@ bool QgsVectorLayer::readXML_( QDomNode & layer_node )
     // if the provider string isn't empty, then we successfully
     // got the stored provider
   }
-  else if ((dataSource.find("host=") > -1) &&
-           (dataSource.find("dbname=") > -1))
+  else if ((sourceName().find("host=") > -1) && // XXX will need to adjust
+           (sourceName().find("dbname=") > -1)) // XXX to new design
   {
     providerKey = "postgres";
   }
@@ -2185,16 +2187,17 @@ bool QgsVectorLayer::readXML_( QDomNode & layer_node )
   const char * dataproviderStr = providerKey.ascii(); // debugger probe
 #endif
 
-  if ( ! setDataProvider( providerKey ) )
+  // TODO: reconcile with new design
+  if ( ! setDataProvider(  ) )
   {
       return false;
   }
 
   //read provider encoding
   QDomNode encodingNode = layer_node.namedItem("encoding");
-  if( ! encodingNode.isNull() && dataProvider )
+  if( ! encodingNode.isNull() && getDataProvider() )
   {
-      dataProvider->setEncoding(encodingNode.toElement().text());
+      getDataProvider()->setEncoding(encodingNode.toElement().text());
   }
 
   // get and set the display field if it exists.
@@ -2285,97 +2288,75 @@ bool QgsVectorLayer::readXML_( QDomNode & layer_node )
 
 
 
-bool QgsVectorLayer::setDataProvider( QString const & provider )
+bool QgsVectorLayer::setDataProvider( )
 {
-  // XXX should I check for and possibly delete any pre-existing providers?
-  // XXX How often will that scenario occur?
-
-  providerKey = provider;     // XXX is this necessary?  Usually already set
-                              // XXX when execution gets here.
-
-  //XXX - This was a dynamic cast but that kills the Windows
-  //      version big-time with an abnormal termination error
-  dataProvider = 
-    (QgsVectorDataProvider*)(QgsProviderRegistry::instance()->getProvider(provider,dataSource));
-
-  if (dataProvider)
+  if (getDataProvider()->isValid())
   {
-      QgsDebug( "Instantiated the data provider plugin" );
+    valid = true;
     
-      if (dataProvider->isValid())
-      {
-          valid = true;
+    // TODO: Check if the provider has the capability to send fullExtentCalculated
+    connect(getDataProvider(), SIGNAL( fullExtentCalculated() ), 
+            this,           SLOT( updateExtents() ) 
+      );
+
+    // Connect the repaintRequested chain from the data provider to this map
+    // layer in the hope that the map canvas will notice
+    connect(getDataProvider(), SIGNAL( repaintRequested() ), 
+            this,           SLOT( triggerRepaint() ) 
+      );
     
-          // TODO: Check if the provider has the capability to send fullExtentCalculated
-          connect(dataProvider, SIGNAL( fullExtentCalculated() ), 
-                  this,           SLOT( updateExtents() ) 
-              );
+    // get the extent
+    QgsRect *mbr = getDataProvider()->extent(); // XXX specify layer num?
 
-          // Connect the repaintRequested chain from the data provider to this map layer
-          // in the hope that the map canvas will notice       
-          connect(dataProvider, SIGNAL( repaintRequested() ), 
-                  this,           SLOT( triggerRepaint() ) 
-              );
-    
-          // get the extent
-          QgsRect *mbr = dataProvider->extent();
-
-          // show the extent
-          QString s = mbr->stringRep();
+    // show the extent
+    QString s = mbr->stringRep();
 #ifdef QGISDEBUG
-          std::cout << "Extent of layer: " << s.local8Bit() << std::endl;
+    std::cout << "Extent of layer: " << s.local8Bit() << std::endl;
 #endif
-          // store the extent
-          layerExtent.setXmax(mbr->xMax());
-          layerExtent.setXmin(mbr->xMin());
-          layerExtent.setYmax(mbr->yMax());
-          layerExtent.setYmin(mbr->yMin());
+    // store the extent
+    layerExtent.setXmax(mbr->xMax());
+    layerExtent.setXmin(mbr->xMin());
+    layerExtent.setYmax(mbr->yMax());
+    layerExtent.setYmin(mbr->yMin());
 
-          // get and store the feature type
-          geometryType = dataProvider->geometryType(dataSourceLayerNum());
+    // get and store the feature type
+    geometryType = getDataProvider()->geometryType(dataSourceLayerNum());
 
-          // look at the fields in the layer and set the primary
-          // display field using some real fuzzy logic
-          setDisplayField();
+    // look at the fields in the layer and set the primary
+    // display field using some real fuzzy logic
+    setDisplayField();
 
-          if (providerKey == "postgres")
-          {
+    if (providerKey == "postgres")
+    {
 #ifdef QGISDEBUG
-              std::cout << "Beautifying layer name " << layerName.local8Bit() << std::endl;
+      std::cout << "Beautifying layer name " << layerName.local8Bit() << std::endl;
 #endif
-              // adjust the display name for postgres layers
-              layerName = layerName.mid(layerName.find(".") + 1);
-              layerName = layerName.left(layerName.find("(") - 1);   // Take one away, to avoid a trailing space
+      // adjust the display name for postgres layers
+      layerName = layerName.mid(layerName.find(".") + 1);
+      layerName = layerName.left(layerName.find("(") - 1);   // Take one away, to avoid a trailing space
 #ifdef QGISDEBUG
-              std::cout << "Beautified name is " << layerName.local8Bit() << std::endl;
+      std::cout << "Beautified name is " << layerName.local8Bit() << std::endl;
 #endif
 
-          }
+    }
 
-          // upper case the first letter of the layer name
-          layerName = layerName.left(1).upper() + layerName.mid(1);
+    // upper case the first letter of the layer name
+    layerName = layerName.left(1).upper() + layerName.mid(1);
 
-          // label
-          mLabel = new QgsLabel ( dataProvider->fields(dataSourceLayerNum()) );
-          mLabelOn = false;
-      }
-      else
-      {
-#ifdef QGISDEBUG
-          qDebug( "%s:%d invalid provider plugin %s", 
-                  __FILE__, __LINE__, dataSource.ascii() );
-          return false;
-#endif
-      }
+    // label
+    mLabel = new QgsLabel ( getDataProvider()->fields(dataSourceLayerNum()) );
+    mLabelOn = false;
   }
   else
   {
-      QgsDebug( " unable to get data provider" );
-
-      return false;
+#ifdef QGISDEBUG
+    qDebug( "%s:%d invalid provider plugin %s", 
+            __FILE__, __LINE__, sourceName().ascii() );
+    return false;
+#endif
   }
 
-  return true;
+  return false;                 // data provider is invalide
 
 } // QgsVectorLayer:: setDataProvider
 
@@ -2409,7 +2390,7 @@ bool QgsVectorLayer::setDataProvider( QString const & provider )
 
   //provider encoding
   QDomElement encoding = document.createElement("encoding");
-  QDomText encodingText = document.createTextNode(dataProvider->encoding());
+  QDomText encodingText = document.createTextNode(getDataProvider()->encoding());
   encoding.appendChild( encodingText );
   layer_node.appendChild( encoding );
 
@@ -2531,15 +2512,15 @@ int QgsVectorLayer::findFreeId()
 {
   int freeid=-INT_MAX;
   int fid;
-  if(dataProvider)
+  if(getDataProvider())
   {
-    dataProvider->reset(dataSourceLayerNum());
+    getDataProvider()->reset(dataSourceLayerNum());
     QgsFeature *fet;
     
     //TODO: Is there an easier way of doing this other than iteration?
     //TODO: Also, what about race conditions between this code and a competing mapping client?
     //TODO: Maybe push this to the data provider?
-    while ((fet = dataProvider->getNextFeature(true, dataSourceLayerNum())))
+    while ((fet = getDataProvider()->getNextFeature(true, dataSourceLayerNum())))
     {
       fid=fet->featureId();
       if(fid>freeid)
@@ -2556,7 +2537,7 @@ int QgsVectorLayer::findFreeId()
   else
   {
 #ifdef QGISDEBUG
-    qWarning("Error, dataProvider is 0 in QgsVectorLayer::findFreeId");
+    qWarning("Error, getDataProvider() is 0 in QgsVectorLayer::findFreeId");
 #endif
     return -1;
   }
@@ -2564,7 +2545,7 @@ int QgsVectorLayer::findFreeId()
 
 bool QgsVectorLayer::commitChanges()
 {
-  if(dataProvider)
+  if(getDataProvider())
   {
 #ifdef QGISDEBUG
     qWarning("in QgsVectorLayer::commitChanges");
@@ -2590,9 +2571,9 @@ bool QgsVectorLayer::commitChanges()
       addedlist.push_back(*it);
     }
     
-    if(!dataProvider->addFeatures(addedlist, dataSourceLayerNum()))
+    if(!getDataProvider()->addFeatures(addedlist, dataSourceLayerNum()))
     // TODO: Make the Provider accept a pointer to vector instead of a list - more memory efficient
-//    if ( !(dataProvider->addFeatures(mAddedFeatures)) )
+//    if ( !(getDataProvider()->addFeatures(mAddedFeatures)) )
     {
       returnvalue=false;
     }
@@ -2612,7 +2593,7 @@ bool QgsVectorLayer::commitChanges()
     // Commit changed attributes
     if( mChangedAttributes.size() > 0 ) 
     {
-        if ( !dataProvider->changeAttributeValues ( mChangedAttributes, dataSourceLayerNum() ) ) 
+        if ( !getDataProvider()->changeAttributeValues ( mChangedAttributes, dataSourceLayerNum() ) ) 
         {
           QMessageBox::warning(0,"Warning","Could not change attributes");
         }
@@ -2626,7 +2607,7 @@ bool QgsVectorLayer::commitChanges()
     // Commit changed geometries
     if( mChangedGeometries.size() > 0 ) 
     {
-        if ( !dataProvider->changeGeometryValues ( mChangedGeometries, dataSourceLayerNum() ) ) 
+        if ( !getDataProvider()->changeGeometryValues ( mChangedGeometries, dataSourceLayerNum() ) ) 
         {
           QMessageBox::warning(0,"Error","Could not commit changes to geometries");
         }
@@ -2648,7 +2629,7 @@ bool QgsVectorLayer::commitChanges()
             deletelist.push_back(*it);
             mSelected.erase(*it);//just in case the feature is still selected
           }
-        if(!dataProvider->deleteFeatures(deletelist, dataSourceLayerNum()))
+        if(!getDataProvider()->deleteFeatures(deletelist, dataSourceLayerNum()))
         {
           returnvalue=false;
         }
@@ -2689,7 +2670,7 @@ std::vector<QgsFeature>* QgsVectorLayer::selectedFeatures()
                 << "." << std::endl;
 #endif
 
-  if (!dataProvider)
+  if (!getDataProvider())
   {
     return 0;
   }
@@ -2712,7 +2693,7 @@ std::vector<QgsFeature>* QgsVectorLayer::selectedFeatures()
       QgsFeature* f = new QgsFeature();
       int row = 0;  //TODO: Get rid of this
       
-      dataProvider->getFeatureAttributes(*it, row, f, dataSourceLayerNum());
+      getDataProvider()->getFeatureAttributes(*it, row, f, dataSourceLayerNum());
       
       // TODO: Should deep-copy here
       f->setGeometry(*mCachedGeometries[*it]);
@@ -2773,9 +2754,9 @@ std::vector<QgsFeature>* QgsVectorLayer::selectedFeatures()
 
 bool QgsVectorLayer::addFeatures(std::vector<QgsFeature*>* features, bool makeSelected)
 {
-  if (dataProvider)
+  if (getDataProvider())
   {  
-    if(!(dataProvider->capabilities() & QgsVectorDataProvider::AddFeatures))
+    if(!(getDataProvider()->capabilities() & QgsVectorDataProvider::AddFeatures))
     {
       QMessageBox::information(0, tr("Layer cannot be added to"), 
                                   tr("The data provider for this layer does not support the addition of features."));
@@ -2832,7 +2813,7 @@ void QgsVectorLayer::refreshLegend()
 	    std::list<int> classfieldlist = m_renderer->classificationAttributes();
 	    for(std::list<int>::reverse_iterator it = classfieldlist.rbegin(); it!=classfieldlist.rend(); ++it)
 	    {
-		const QgsField theField = (dataProvider->fields(dataSourceLayerNum()))[*it];
+		const QgsField theField = (getDataProvider()->fields(dataSourceLayerNum()))[*it];
 		QString classfieldname = theField.name();
 		QgsLegendVectorSymbologyItem* item = new QgsLegendVectorSymbologyItem(mLegendSymbologyGroupParent, classfieldname);
 	    }
@@ -2886,10 +2867,10 @@ bool QgsVectorLayer::isSymbologyCompatible(const QgsMapLayer& other) const
 	return false;
     }
     //attributes must be the same
-    if(dataProvider && vl->dataProvider)
+    if(getDataProvider() && vl->getDataProvider())
     {
-	const std::vector<QgsField> fields1 = dataProvider->fields(dataSourceLayerNum());
-	const std::vector<QgsField> fields2 = vl->dataProvider->fields(dataSourceLayerNum());
+	const std::vector<QgsField> fields1 = getDataProvider()->fields(dataSourceLayerNum());
+	const std::vector<QgsField> fields2 = vl->getDataProvider()->fields(dataSourceLayerNum());
 	
 	if(fields1.size() != fields2.size())
 	{
@@ -2916,7 +2897,7 @@ bool QgsVectorLayer::isSymbologyCompatible(const QgsMapLayer& other) const
 
 bool QgsVectorLayer::snapPoint(QgsPoint& point, double tolerance)
 {
-  if(tolerance<=0||!dataProvider)
+  if(tolerance<=0||!getDataProvider())
   {
     return false;
   }
@@ -2929,9 +2910,9 @@ bool QgsVectorLayer::snapPoint(QgsPoint& point, double tolerance)
 
   QgsRect selectrect(point.x()-tolerance,point.y()-tolerance,point.x()+tolerance,point.y()+tolerance);
   selectrect = inverseProjectRect(selectrect);
-  dataProvider->reset(dataSourceLayerNum());
-  dataProvider->select(&selectrect, dataSourceLayerNum());
-  while ((fet = dataProvider->getNextFeature(false, dataSourceLayerNum())))
+  getDataProvider()->reset(dataSourceLayerNum());
+  getDataProvider()->select(&selectrect, dataSourceLayerNum());
+  while ((fet = getDataProvider()->getNextFeature(false, dataSourceLayerNum())))
   {
     vertexFeature=fet->geometry()->closestVertex(point);
     minvertexdist=vertexFeature.sqrDist(point.x(),point.y());
@@ -2977,13 +2958,14 @@ bool QgsVectorLayer::snapVertexWithContext(QgsPoint& point,
 #endif
 
 #ifdef QGISDEBUG
-      std::cout << "QgsVectorLayer::snapVertexWithContext: Tolerance: " << tolerance << ", dataProvider = '" << dataProvider
+      std::cout << "QgsVectorLayer::snapVertexWithContext: Tolerance: " 
+                << tolerance << ", getDataProvider() = '" << getDataProvider()
                 << "'." << std::endl;
 #endif
 
   // Sanity checking
   if ( tolerance<=0 ||
-      !dataProvider)
+      !getDataProvider())
   {
     // set some default values before we bail
     atVertex = QgsGeometryVertexIndex();
@@ -3001,13 +2983,13 @@ bool QgsVectorLayer::snapVertexWithContext(QgsPoint& point,
   QgsRect selectrect(point.x()-tolerance, point.y()-tolerance,
                      point.x()+tolerance, point.y()+tolerance);
 
-  dataProvider->reset(dataSourceLayerNum());
-  dataProvider->select(&selectrect, dataSourceLayerNum());
+  getDataProvider()->reset(dataSourceLayerNum());
+  getDataProvider()->select(&selectrect, dataSourceLayerNum());
 
   origPoint = point;
 
   // Go through the committed features
-  while ((feature = dataProvider->getNextFeature(false, dataSourceLayerNum())))
+  while ((feature = getDataProvider()->getNextFeature(false, dataSourceLayerNum())))
   {
     if (mChangedGeometries.find(feature->featureId()) != mChangedGeometries.end())
     {
@@ -3093,13 +3075,13 @@ bool QgsVectorLayer::snapSegmentWithContext(QgsPoint& point,
 #endif
   
 #ifdef QGISDEBUG
-      std::cout << "QgsVectorLayer::snapSegmentWithContext: Tolerance: " << tolerance << ", dataProvider = '" << dataProvider
+      std::cout << "QgsVectorLayer::snapSegmentWithContext: Tolerance: " << tolerance << ", getDataProvider() = '" << getDataProvider()
                 << "'." << std::endl;
 #endif
   
   // Sanity checking
   if ( tolerance<=0 ||
-      !dataProvider)
+      !getDataProvider())
   {
     // set some default values before we bail
     beforeVertex = QgsGeometryVertexIndex();
@@ -3117,8 +3099,8 @@ bool QgsVectorLayer::snapSegmentWithContext(QgsPoint& point,
   QgsRect selectrect(point.x()-tolerance, point.y()-tolerance,
                      point.x()+tolerance, point.y()+tolerance);
                      
-  dataProvider->reset(dataSourceLayerNum());
-  dataProvider->select(&selectrect, dataSourceLayerNum());
+  getDataProvider()->reset(dataSourceLayerNum());
+  getDataProvider()->select(&selectrect, dataSourceLayerNum());
 
 #ifdef QGISDEBUG
       std::cout << "QgsVectorLayer::snapSegmentWithContext:  Checking committed features."
@@ -3126,7 +3108,7 @@ bool QgsVectorLayer::snapSegmentWithContext(QgsPoint& point,
 #endif
   
   // Go through the committed features
-  while ((feature = dataProvider->getNextFeature(false, dataSourceLayerNum())))
+  while ((feature = getDataProvider()->getNextFeature(false, dataSourceLayerNum())))
   {
 
     if (mChangedGeometries.find(feature->featureId()) != mChangedGeometries.end())
@@ -3324,7 +3306,7 @@ void QgsVectorLayer::drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * t
 void QgsVectorLayer::saveAsShapefile()
 {
   // call the dataproviders saveAsShapefile method
-  dataProvider->saveAsShapefile();
+  getDataProvider()->saveAsShapefile();
   //  QMessageBox::information(0,"Save As Shapefile", "Someday...");
 }
 void QgsVectorLayer::setCoordinateSystem()
@@ -3418,11 +3400,11 @@ bool QgsVectorLayer::commitAttributeChanges(const std::set<QString>& deleted,
               const std::map<QString,QString>& added,
               std::map<int,std::map<QString,QString> >& changed)
 {
-    bool returnvalue=true;
+  bool returnvalue=true;
 
-    if(dataProvider)
+    if(getDataProvider())
     {
-  if(dataProvider->capabilities()&QgsVectorDataProvider::DeleteAttributes)
+  if(getDataProvider()->capabilities()&QgsVectorDataProvider::DeleteAttributes)
   {
       //delete attributes in all not commited features
       for(std::vector<QgsFeature*>::iterator iter=mAddedFeatures.begin();iter!=mAddedFeatures.end();++iter)
@@ -3433,13 +3415,13 @@ bool QgsVectorLayer::commitAttributeChanges(const std::set<QString>& deleted,
     }
       }
       //and then in the provider
-      if(!dataProvider->deleteAttributes(deleted, dataSourceLayerNum()))
+      if(!getDataProvider()->deleteAttributes(deleted, dataSourceLayerNum()))
       {
     returnvalue=false;
       }
   }
 
-  if(dataProvider->capabilities()&QgsVectorDataProvider::AddAttributes)
+  if(getDataProvider()->capabilities()&QgsVectorDataProvider::AddAttributes)
   {
       //add attributes in all not commited features
       for(std::vector<QgsFeature*>::iterator iter=mAddedFeatures.begin();iter!=mAddedFeatures.end();++iter)
@@ -3450,13 +3432,13 @@ bool QgsVectorLayer::commitAttributeChanges(const std::set<QString>& deleted,
     }
       }
       //and then in the provider
-      if(!dataProvider->addAttributes(added, dataSourceLayerNum()))
+      if(!getDataProvider()->addAttributes(added, dataSourceLayerNum()))
       {
     returnvalue=false;
       }
   }
 
-  if(dataProvider->capabilities()&QgsVectorDataProvider::ChangeAttributeValues)
+  if(getDataProvider()->capabilities()&QgsVectorDataProvider::ChangeAttributeValues)
   {
       //change values of the not commited features
       for(std::vector<QgsFeature*>::iterator iter=mAddedFeatures.begin();iter!=mAddedFeatures.end();++iter)
@@ -3473,7 +3455,7 @@ bool QgsVectorLayer::commitAttributeChanges(const std::set<QString>& deleted,
       }
 
       //and then those of the commited ones
-      if(!dataProvider->changeAttributeValues(changed, dataSourceLayerNum()))
+      if(!getDataProvider()->changeAttributeValues(changed, dataSourceLayerNum()))
       {
     returnvalue=false;
       }

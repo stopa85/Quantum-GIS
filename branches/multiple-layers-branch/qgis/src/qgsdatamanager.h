@@ -40,7 +40,7 @@ class QgsDataManager
 public:
 
   /// return reference to canonical instance
-  QgsDataManager & instance();
+  static QgsDataManager & instance();
   
   ~QgsDataManager();
   
@@ -124,8 +124,6 @@ private:
   // private since only instance() can create
   QgsDataManager();
 
-  /// canonical instance
-  static QgsDataManager * instance_;
 }; // class QgsDataManager
 
 #endif

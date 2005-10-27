@@ -26,6 +26,8 @@
 // Static calls to enforce singleton behaviour
 //
 QgsMapLayerRegistry *QgsMapLayerRegistry::mInstance = 0;
+
+
 QgsMapLayerRegistry *QgsMapLayerRegistry::instance()
 {
   if (mInstance == 0)
@@ -38,54 +40,55 @@ QgsMapLayerRegistry *QgsMapLayerRegistry::instance()
 //
 // Main class begins now...
 //
-
-QgsMapLayerRegistry::QgsMapLayerRegistry(QObject *parent, const char *name) : QObject(parent,name) 
+QgsMapLayerRegistry::QgsMapLayerRegistry(QObject *parent, const char *name) 
+  : QObject(parent,name) 
 {
-#ifdef QGISDEBUG
-  std::cout << "---------------> qgs map layer registry created " << std::endl;
-#endif
-  // constructor does nothing
+  QgsDebug( "---------------> qgs map layer registry created " );
+
 }
+
+
 // get the layer count (number of registered layers)
 const int QgsMapLayerRegistry::count()
 {
   return mMapLayers.size();
 }
- //! Get a vector layer from the registry - the the requested key does not exist or
- //does not correspond to a vector layer, null returned!
- QgsVectorLayer * QgsMapLayerRegistry::getVectorLayer(QString theLayerId)
+
+
+
+/** Get a vector layer from the registry - the the requested key does not
+ exist or does not correspond to a vector layer, null returned!
+
+*/
+QgsVectorLayer * QgsMapLayerRegistry::getVectorLayer(QString theLayerId)
 {
-  QgsVectorLayer * myVectorLayer = (QgsVectorLayer*) mMapLayers[theLayerId];
-  if (myVectorLayer)
+  map<QString,QgsMapLayer*>::iterator i = 
+    mMapLayers.find( theLayerId );
+
+  if ( i != mMapLayers.end() )
   {
-    if (myVectorLayer->type() == QgsMapLayer::VECTOR)
-    {
-      return myVectorLayer;
-    }
-    else
-    {
-      return 0;
-    }
+    QgsVectorLayer * myVectorLayer = 
+      dynamic_cast<QgsVectorLayer*>( i->second );
+
+    return myVectorLayer;
   }
-  else
-  {
-    return 0;
-  }
-}
+
+  return 0;
+} // QgsMapLayerRegistrygetVectorLayer
 
   
 
 QgsMapLayer * QgsMapLayerRegistry::mapLayer(QString theLayerId)  
 {
-  QgsMapLayer * myMapLayer = mMapLayers[theLayerId];
-  if (myMapLayer)
+  std::map<QString,QgsMapLayer*>::iterator i = 
+    mMapLayers.find( theLayerId );
+
+  if ( i != mMapLayers.end() )
   {
-    return myMapLayer;
+    return i->second;
   }
-  else
-  {
-    return 0;
-  }
+
+  return 0;
 }
 
 
@@ -96,9 +99,13 @@ QgsMapLayerRegistry::addMapLayer( QgsMapLayer * theMapLayer )
 #ifdef QGISDEBUG
   std::cout << "QgsMapLayerRegistry::addMaplayer - '" << theMapLayer->name().local8Bit() << "'."<< std::endl;
 #endif
+
   //check the layer is not already registered!
   std::map<QString,QgsMapLayer*>::iterator myIterator = mMapLayers.find(theMapLayer->getLayerID());
-  //if myIterator returns mMapLayers.end() then it does not exist in registry and its safe to add it
+
+  // if myIterator returns mMapLayers.end() then it does not exist in registry
+  // and its safe to add it
+
   if (myIterator == mMapLayers.end())
   {
     mMapLayers[theMapLayer->getLayerID()] = theMapLayer;

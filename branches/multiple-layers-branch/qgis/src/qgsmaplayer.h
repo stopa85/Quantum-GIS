@@ -39,18 +39,22 @@
 class QgisApp;
 class QgsMapToPixel;
 class QgsFeature;
-class QPopupMenu;
 class QgsLegendLayerFile;
 class QgsLegendSymbologyGroup;
+class QgsDataProvider;
+
 class QDomNode;
 class QDomDocument;
 class QEvent;
 class QLabel;
+class QPopupMenu;
 
-/** \class QgsMapLayer
- * \brief Base class for all map layer types.
- * This class is the base class for all map layer types (shapefile,
- * raster, database).
+
+/** Base class for all map layer types.
+
+  This class is the base class for all map layer types (vector, raster,
+  database).
+
  */
 class QgsMapLayer : public QObject
 {
@@ -58,22 +62,43 @@ class QgsMapLayer : public QObject
 
 public:
 
+    /** identifies the layer type
+
+       XXX might be better to rely on polymorhpism than directly pinging layer
+       type
+    */
+    typedef enum { UNKNOWN, VECTOR, RASTER, DATABASE } type_t;
+
     /*! Constructor
-     * @param type Type of layer as defined in LAYERS enum
-     * @param lyrname Display Name of the layer
+      @param dataProvider link to corresponding provider object
+      @param dataSourceLayerNum data provider layer id 
+      @param type Type of layer as defined in LAYERS enum
+      @param lyrname Display Name of the layer
+      @param source is the file, database, or URI source name for the layer
      */
-    QgsMapLayer(int type = 0, QString lyrname = QString::null, QString source = QString::null );
+    QgsMapLayer(QgsDataProvider * dataProvider,
+                size_t dataSourceLayerNum = 0,
+                type_t = UNKNOWN, 
+                QString lyrname = QString::null );
 
     //! Destructor
     virtual ~ QgsMapLayer();
 
-    /*! Get the type of the layer
-     * @return Integer matching a value in the LAYERS enum
-     */
-    const int type();
+    type_t type() const;
 
     /*! Get this layer's unique ID */
     QString const & getLayerID() const;
+
+
+    /// returns data provider associated with this map layer
+    QgsDataProvider * dataProvider() 
+    { return mDataProvider; }
+
+
+    /// returns data provider associated with this map layer
+    QgsDataProvider * dataProvider() const
+    { return mDataProvider; }
+
 
     /*! Set the display name of the layer
        # @param name New name for the layer
@@ -199,13 +224,6 @@ public:
       // NOOP
     }
 
-    //! Layers enum defining the types of layers that can be added to a map
-    enum LAYERS
-    {
-        VECTOR,
-        RASTER,
-        DATABASE
-    };
 
     /**Shows the properties dialog for the map layer*/
     virtual void showLayerProperties() = 0;
@@ -298,6 +316,7 @@ public:
 
     virtual std::vector < QgsField > const &fields() const;
 
+
 public  slots:
 
     //! keyPress event so we can check if cancel was pressed
@@ -378,6 +397,7 @@ signals:
     /** This is used to send a request that any mapcanvas using this layer update its extents */
     void recalculateExtents();
 
+
 protected:
 
   
@@ -399,7 +419,9 @@ protected:
     bool valid;
 
     //! data source description string, varies by layer type
-    QString dataSource;
+    //QString dataSource; now get directly from data provider
+
+    QgsDataProvider * mDataProvider;
 
     //! Geometry type as defined in enum WKBTYPE (qgis.h)
     int geometryType;
@@ -466,14 +488,14 @@ private:                       // Private attributes
     /** Unique ID of this layer - used to refer to this layer  in QGIS code */
     QString ID;
 
-    /** Type of the layer (eg. vector, raster, database  */
-    int layerType;
-
-    //! Tag for embedding additional information
-    QString tag;
-
     
-    /**  true if visible ? */
+    /**  true if visible ? 
+
+         XXX if the layer is just a passive storage of data, then how should
+         XXX it know if it's visible or not?  Moreover, it could be rendered in
+         XXX multiple locations if the MVC model is used.
+
+    */
     bool m_visible;
 
     /** debugging member
@@ -487,9 +509,12 @@ private:                       // Private attributes
 
     /** Minimum scale at which this layer should be displayed */
     float mMinScale;
+
     /** Maximum scale at which this layer should be displayed */
     float mMaxScale;
-    /** A flag that tells us whether to use the above vars to restrict layer visibility */
+
+    /** A flag that tells us whether to use the above vars to restrict layer
+      visibility */
     bool mScaleBasedVisibility;
 
     /** data source layer number
@@ -500,6 +525,9 @@ private:                       // Private attributes
 
     */
     size_t mDataSourceLayerNum;
+
+    /// whether layer is raster, vector, or database
+    type_t mType;
 
 public:                        // Public attributes
 
