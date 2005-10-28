@@ -176,8 +176,7 @@ QgsVectorLayer::~QgsVectorLayer()
   {
     delete m_propertiesDialog;
   }
-  // delete the provider object
-  // no longer necessary since provider is managed elsewhere delete dataProvider;
+
   // delete the popu pmenu
   delete popMenu;
 
