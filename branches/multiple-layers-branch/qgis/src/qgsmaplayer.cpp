@@ -219,7 +219,8 @@ bool QgsMapLayer::readXML( QDomNode & layer_node )
     // set data source
     QDomNode mnl = layer_node.namedItem("datasource");
     QDomElement mne = mnl.toElement();
-    dataSource = mne.text();
+    // TODO this should be taken care of elsewhere ? dataSource = mne.text();
+    //      May actually already be taken care of since ctor gets this info.
 
     const char * dataSourceStr = dataSource; // debugger probe
 

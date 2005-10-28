@@ -161,7 +161,6 @@ public:
      */
     virtual void table()
     {}
-    ;
 
     /*! Return the extent of the layer as a QRect
      */
