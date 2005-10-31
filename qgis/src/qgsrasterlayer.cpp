@@ -4121,7 +4121,7 @@ void QgsRasterLayer::buildPyramids(RasterPyramidList theRasterPyramidList, QStri
 {
   emit setProgress(0,0);
   //first test if the file is writeable
-  QFile myQFile(dataSource);
+  QFile myQFile(source());
   if (!myQFile.open(IO_WriteOnly| IO_Append))
   {
 
@@ -4141,7 +4141,7 @@ void QgsRasterLayer::buildPyramids(RasterPyramidList theRasterPyramidList, QStri
   GDALAllRegister();
   //close the gdal dataset and reopen it in read / write mode
   delete gdalDataset;
-  gdalDataset = (GDALDataset *) GDALOpen(dataSource, GA_Update);
+  gdalDataset = (GDALDataset *) GDALOpen(source(), GA_Update);
   //
   // Iterate through the Raster Layer Pyramid Vector, building any pyramid
   // marked as exists in eaxh RasterPyramid struct.
@@ -4218,7 +4218,7 @@ void QgsRasterLayer::buildPyramids(RasterPyramidList theRasterPyramidList, QStri
   std::cout << "Pyramid overviews built" << std::endl;
   //close the gdal dataset and reopen it in read only mode
   delete gdalDataset;
-  gdalDataset = (GDALDataset *) GDALOpen(dataSource, GA_ReadOnly);
+  gdalDataset = (GDALDataset *) GDALOpen(source(), GA_ReadOnly);
   emit setProgress(0,0);
   QApplication::restoreOverrideCursor();
 }
@@ -4958,7 +4958,7 @@ void QgsRasterLayer::setDataProvider( QString const & provider, QStringList laye
 //                                              char*)(dataSource.utf8())));
 
       // Copied from qgsproviderregistry in preference to the above.
-      dataProvider = (QgsRasterDataProvider*)(*classFactory)(&dataSource);
+      dataProvider = (QgsRasterDataProvider*)(*classFactory)(&source());
 
       if (dataProvider)
       {

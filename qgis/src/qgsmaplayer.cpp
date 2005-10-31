@@ -43,10 +43,9 @@
 
 
 
-QgsMapLayer::QgsMapLayer(QgsDataProvider * dataProvider,
-                         size_t dataSourceLayerNum,
-                         type_t type,
-                         QString lyrname ) 
+QgsMapLayer::QgsMapLayer(type_t type,
+                         QString lyrname,
+                         QString source) 
     :   valid(true), // assume the layer is valid (data source exists and 
                      // can be used) until we learn otherwise
         internalName(lyrname),
@@ -57,9 +56,8 @@ QgsMapLayer::QgsMapLayer(QgsDataProvider * dataProvider,
         mLegendLayerFile(0),
         ID(""),
         m_visible(true),
-        mDataSourceLayerNum(dataSourceLayerNum),
-        mDataProvider(dataProvider),
         mType(type),
+        mSource(source),
         mMinScale(0), // set some generous defaults for scale based visibility
         mMaxScale(100000000),
         mScaleBasedVisibility(false)
@@ -133,7 +131,7 @@ QString const & QgsMapLayer::name() const
 
 QString const & QgsMapLayer::source() const
 {
-    return mDataProvider->getDataSourceUri();
+    return mSource;
 }
 
 QString const & QgsMapLayer::sourceName() const
@@ -219,7 +217,8 @@ bool QgsMapLayer::readXML( QDomNode & layer_node )
     // set data source
     QDomNode mnl = layer_node.namedItem("datasource");
     QDomElement mne = mnl.toElement();
-    // TODO this should be taken care of elsewhere ? dataSource = mne.text();
+    // TODO this should be taken care of elsewhere ? 
+    QString dataSource = mne.text();
     //      May actually already be taken care of since ctor gets this info.
 
     const char * dataSourceStr = dataSource; // debugger probe

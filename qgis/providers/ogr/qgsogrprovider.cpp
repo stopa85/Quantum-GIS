@@ -2018,7 +2018,7 @@ QgsOgrProvider::createLayers()
 
     // TODO finish rest
 
-    layers.push_back( new QgsVectorLayer( 
+    //layers.push_back( new QgsVectorLayer( 
 
     return layers;
 

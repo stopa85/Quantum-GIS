@@ -78,6 +78,30 @@ public:
    */
   QString storageType() const;
 
+  /** return the data source layer number
+
+  Each map layer corresponds to a specific layer within the original
+  data source.  
+
+  In most cases the data source will have just one layer, the zeroth
+  layer.
+  */
+  size_t dataSourceLayerNum() const 
+  { return mDataSourceLayerNum; }
+
+  void dataSourceLayerNum( size_t layerNum )
+  { mDataSourceLayerNum = layerNum; }
+
+
+  /// returns data provider associated with this map layer
+  QgsDataProvider * & dataProvider()
+  { return mDataProvider; }
+
+
+  /// returns data provider associated with this map layer
+  QgsDataProvider * dataProvider() const
+  { return mDataProvider; }
+
   /**
    *   Capabilities for this layer in a friendly format.
    */
@@ -536,6 +560,21 @@ private:                       // Private attributes
     WKBMultiPolygon
   };
 private:                       // Private methods
+
+  //! data source description string, varies by layer type
+  //QString dataSource; now get directly from data provider
+
+  QgsDataProvider * mDataProvider;
+
+  /** data source layer number
+
+  Each data source can have multiple layers.  Therefore each QgsLayer needs
+  to know which layer within its corresponding data source contains its
+  data.
+
+  */
+  size_t mDataSourceLayerNum;
+
   endian_t endian();
 
   //! Pointer to the identify results dialog
