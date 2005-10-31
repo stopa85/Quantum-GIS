@@ -111,7 +111,7 @@ typedef QgsDataProvider * create_it(const QString* uri);
 QgsVectorLayer::QgsVectorLayer(QgsDataProvider * dataProvider,
                                size_t  myDataSourceLayerNum,
                                QString const & layerName )
-    : QgsMapLayer(dataProvider, myDataSourceLayerNum, VECTOR, layerName),
+    : QgsMapLayer(VECTOR, layerName),
       tabledisplay(0),
       providerKey(providerKey),
       valid(false),
@@ -122,6 +122,8 @@ QgsVectorLayer::QgsVectorLayer(QgsDataProvider * dataProvider,
       updateThreshold(0),       // XXX better default value?
       mMinimumScale(0),
       mMaximumScale(0),
+      mDataSourceLayerNum(myDataSourceLayerNum),
+      mDataProvider(dataProvider),
       mScaleDependentRender(false),
       mEditable(false),
       mModified(false)

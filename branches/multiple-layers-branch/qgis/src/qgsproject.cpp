@@ -846,7 +846,8 @@ static pair< bool, list<QDomNode> > _getMapLayers(QDomDocument const &doc)
 
         if (type == "vector")
         {
-            mapLayer = new QgsVectorLayer;
+            //mapLayer = new QgsVectorLayer;
+            QgsDebug("XXX need project manager to use QgsDataManager");
         } else if (type == "raster")
         {
             mapLayer = new QgsRasterLayer;
@@ -1157,7 +1158,8 @@ bool QgsProject::read( QDomNode & layerNode )
 
     if (type == "vector")
     {
-        mapLayer = new QgsVectorLayer;
+        // mapLayer = new QgsVectorLayer;
+        QgsDebug("XXX project manager needs to use QgsDataManager");
     } 
     else if (type == "raster")
     {

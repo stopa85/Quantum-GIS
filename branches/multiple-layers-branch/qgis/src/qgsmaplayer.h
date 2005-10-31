@@ -76,10 +76,9 @@ public:
       @param lyrname Display Name of the layer
       @param source is the file, database, or URI source name for the layer
      */
-    QgsMapLayer(QgsDataProvider * dataProvider,
-                size_t dataSourceLayerNum = 0,
-                type_t = UNKNOWN, 
-                QString lyrname = QString::null );
+    QgsMapLayer(type_t = UNKNOWN, 
+                QString lyrname = QString::null,
+                QString source = QString::null);
 
     //! Destructor
     virtual ~ QgsMapLayer();
@@ -88,16 +87,6 @@ public:
 
     /*! Get this layer's unique ID */
     QString const & getLayerID() const;
-
-
-    /// returns data provider associated with this map layer
-    QgsDataProvider * dataProvider() 
-    { return mDataProvider; }
-
-
-    /// returns data provider associated with this map layer
-    QgsDataProvider * dataProvider() const
-    { return mDataProvider; }
 
 
     /*! Set the display name of the layer
@@ -115,20 +104,6 @@ public:
      * @return internal datasource name of the layer
      */
     QString const & sourceName() const;
-
-    /** return the data source layer number
-
-        Each map layer corresponds to a specific layer within the original
-        data source.  
-
-        In most cases the data source will have just one layer, the zeroth
-        layer.
-     */
-    size_t dataSourceLayerNum() const 
-    { return mDataSourceLayerNum; }
-
-    void dataSourceLayerNum( size_t layerNum )
-    { mDataSourceLayerNum = layerNum; }
 
     /*! Virtual function to calculate the extent of the current layer.
      * This function must be overridden in all child classes and implemented
@@ -417,10 +392,6 @@ protected:
     //! Indicates if the layer is valid and can be drawn
     bool valid;
 
-    //! data source description string, varies by layer type
-    //QString dataSource; now get directly from data provider
-
-    QgsDataProvider * mDataProvider;
 
     //! Geometry type as defined in enum WKBTYPE (qgis.h)
     int geometryType;
@@ -516,17 +487,13 @@ private:                       // Private attributes
       visibility */
     bool mScaleBasedVisibility;
 
-    /** data source layer number
-
-    Each data source can have multiple layers.  Therefore each QgsLayer needs
-    to know which layer within its corresponding data source contains its
-    data.
-
-    */
-    size_t mDataSourceLayerNum;
 
     /// whether layer is raster, vector, or database
     type_t mType;
+
+
+    /// data source string
+    QString mSource;
 
 public:                        // Public attributes
 
