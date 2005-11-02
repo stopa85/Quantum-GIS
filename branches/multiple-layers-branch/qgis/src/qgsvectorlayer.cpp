@@ -113,26 +113,35 @@ QgsVectorLayer::QgsVectorLayer(QgsDataProvider * dataProvider,
                                QString const & layerName )
     : QgsMapLayer(VECTOR, layerName),
       tabledisplay(0),
-      providerKey(providerKey),
-      valid(false),
       m_renderer(0),
       mLabel(0),
+      mLabelOn(false),
       m_propertiesDialog(0),
+      // DEPRECATED since we now explicitly have provider providerKey(providerKey),
+      fieldIndex(0),
+      valid(false),
+      registered(false),
+      mDataProvider(dataProvider),
+      mDataSourceLayerNum(myDataSourceLayerNum),
       ir(0),                    // initialize the identify results pointer
       updateThreshold(0),       // XXX better default value?
       mMinimumScale(0),
       mMaximumScale(0),
-      mDataSourceLayerNum(myDataSourceLayerNum),
-      mDataProvider(dataProvider),
       mScaleDependentRender(false),
       mEditable(false),
-      mModified(false)
+      mModified(false),
+      mToggleEditingPopupItem(false)
 {
   // if we're given a provider type, try to create and bind one to this layer
-  if ( ! providerKey.isEmpty() )
-  {
+
+    // setDataProvider now just does some initialization (that hasn't already
+    // been taken care of by the data provider itself)
+
+//   if ( ! providerKey.isEmpty() )
+//   {
     setDataProvider(  );
-  }
+//  }
+
   if(valid)
   {
     setCoordinateSystem();
@@ -248,7 +257,7 @@ QString QgsVectorLayer::getProjectionWKT()
 
 QString QgsVectorLayer::providerType()
 {
-  return providerKey;
+  return QGis::qgisFeatureTypes[getDataProvider()->geometryType(dataSourceLayerNum())];
 }
 
 /**
@@ -1318,12 +1327,12 @@ void QgsVectorLayer::invalidateTableDisplay()
 
 QgsVectorDataProvider* QgsVectorLayer::getDataProvider()
 {
-  return dynamic_cast<QgsVectorDataProvider*>(getDataProvider());
+  return dynamic_cast<QgsVectorDataProvider*>(dataProvider());
 }
 
 QgsVectorDataProvider* QgsVectorLayer::getDataProvider() const
 {
-  return dynamic_cast<QgsVectorDataProvider*>(getDataProvider());
+  return dynamic_cast<QgsVectorDataProvider*>(dataProvider());
 }
 
 
@@ -2158,9 +2167,17 @@ bool QgsVectorLayer::readXML_( QDomNode & layer_node )
   //process provider key
   QDomNode pkeyNode = layer_node.namedItem("provider");
 
+  // Used to be part of the vector layer state.  Now a local variable.  Will
+  // eventually be used to notify the data manager what provider to fetch when
+  // restoring this layer from the project.  (Also may have to revamp the
+  // project format altogether?)
+  QString providerKey;
+
   if (pkeyNode.isNull())
   {
-    providerKey = "";
+    // XXX DEPRECATED? 
+    providerKey = "";  //Ummm, maybe deprecated?
+    // XXX Probabably used to tell data manager what provider to fetch.
   }
   else
   {
@@ -2327,19 +2344,20 @@ bool QgsVectorLayer::setDataProvider( )
     // display field using some real fuzzy logic
     setDisplayField();
 
-    if (providerKey == "postgres")
-    {
-#ifdef QGISDEBUG
-      std::cout << "Beautifying layer name " << layerName.local8Bit() << std::endl;
-#endif
-      // adjust the display name for postgres layers
-      layerName = layerName.mid(layerName.find(".") + 1);
-      layerName = layerName.left(layerName.find("(") - 1);   // Take one away, to avoid a trailing space
-#ifdef QGISDEBUG
-      std::cout << "Beautified name is " << layerName.local8Bit() << std::endl;
-#endif
+// XXX temporarily commented out; need to support postgres.
+//     if (providerKey == "postgres")
+//     {
+// #ifdef QGISDEBUG
+//       std::cout << "Beautifying layer name " << layerName.local8Bit() << std::endl;
+// #endif
+//       // adjust the display name for postgres layers
+//       layerName = layerName.mid(layerName.find(".") + 1);
+//       layerName = layerName.left(layerName.find("(") - 1);   // Take one away, to avoid a trailing space
+// #ifdef QGISDEBUG
+//       std::cout << "Beautified name is " << layerName.local8Bit() << std::endl;
+// #endif
 
-    }
+//     }
 
     // upper case the first letter of the layer name
     layerName = layerName.left(1).upper() + layerName.mid(1);
@@ -2357,7 +2375,7 @@ bool QgsVectorLayer::setDataProvider( )
 #endif
   }
 
-  return false;                 // data provider is invalide
+  return true;
 
 } // QgsVectorLayer:: setDataProvider
 
