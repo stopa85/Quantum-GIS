@@ -68,7 +68,7 @@ public:
   */
   QgsVectorLayer( QgsDataProvider * dataProvider,
                   size_t dataSourceLayerNum = 0,
-                  QString const & layerName = 0 );
+                  QString const & layerName = QString::null );
 
   //! Destructor
   virtual ~QgsVectorLayer();
@@ -492,7 +492,9 @@ protected slots:
 
   void drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * cXf, QPicture* marker, double markerScaleFactor, bool projectionsEnabledFlag );
 
-private:                       // Private attributes
+
+
+private:
 
   //! Draws the layer labels using coordinate transformation
   void drawLabels(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * cXf,  QPaintDevice * dst);
@@ -529,14 +531,20 @@ private:                       // Private attributes
 
   //! Draws the layer using coordinate transformation
   void draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * cXf,  QPaintDevice * dst);
+
+
   //! Pointer to data provider derived from the abastract base class QgsDataProvider
   // XXX deprecated QgsVectorDataProvider *dataProvider;
+
   //! index of the primary label field
   QString fieldIndex;
+
   //! Data provider key
-  QString providerKey;
+  // DEPRECATED SINCE WE ALREADY HAVE PROVIDER QString providerKey;
+
   //! Flag to indicate if this is a valid layer
   bool valid;
+
   bool registered;
 
   /** constants for endian-ness
@@ -559,7 +567,7 @@ private:                       // Private attributes
     WKBMultiLineString,
     WKBMultiPolygon
   };
-private:                       // Private methods
+
 
   //! data source description string, varies by layer type
   //QString dataSource; now get directly from data provider

@@ -53,6 +53,7 @@ using namespace std;
 
 #include "../../src/qgssearchtreenode.h"
 #include "../../src/qgsdataprovider.h"
+#include "../../src/qgsvectorlayer.h"
 #include "../../src/qgsfeature.h"
 #include "../../src/qgsfield.h"
 #include "../../src/qgsrect.h"
@@ -2018,7 +2019,10 @@ QgsOgrProvider::createLayers()
 
     // TODO finish rest
 
-    //layers.push_back( new QgsVectorLayer( 
+    // just first layer for now
+    layers.push_back( new QgsVectorLayer( this, 
+                                          0, 
+                                          imp_->ogrDataSource->GetName() ) );
 
     return layers;
 

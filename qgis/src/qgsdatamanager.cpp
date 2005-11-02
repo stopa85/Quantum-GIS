@@ -20,6 +20,7 @@
 
 #include "qgsvectordataprovider.h"
 #include "qgsproviderregistry.h"
+#include "qgsmaplayerregistry.h"
 
 #include <list>
 
@@ -98,15 +99,24 @@ openVectorDataProvider_( QgsDataProvider * vectorDataProvider )
 
       return false;
   }
+  else
+  {
+      QgsDebug( QString("Got " + QString::number(mapLayers.size()) + " layers").ascii() );
+  }
 
 
   // and then add them to the map layer registry; each time a layer is added,
   // a signal is emitted which will cause the GUI to be updated with the new
   // layer
 
-  // TODO
+  for ( list<QgsMapLayer*>::iterator i = mapLayers.begin();
+        i != mapLayers.end();
+        ++i )
+  {
+      QgsMapLayerRegistry::instance()->addMapLayer( *i );
+  }
 
-  return false;
+  return true;
 
 } // openVectorDataProvider_
 
