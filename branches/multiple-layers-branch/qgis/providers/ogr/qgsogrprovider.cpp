@@ -2023,9 +2023,45 @@ QgsOgrProvider::createLayers()
 
     QFileInfo sourceFile( imp_->ogrDataSource->GetName() );
 
-    layers.push_back( new QgsVectorLayer( this, 
-                                          0, 
-                                          sourceFile.baseName() ) );
+    // The layer name is built from the file name.  If OGR had proper metadata
+    // support, we would instead ask the layer for its name.  Alas OGR doesn't
+    // and probably will never have it.  So, we have to make do with the file
+    // name.
+    QString layerName = sourceFile.baseName();
+
+    for ( size_t i = 0; i < numLayers; ++i )
+    {
+      if ( ! (wkbNone == 
+              imp_->ogrDataSource->GetLayer(i)->GetLayerDefn()->GetGeomType() ||
+              wkbUnknown == 
+              imp_->ogrDataSource->GetLayer(i)->GetLayerDefn()->GetGeomType() ) )
+      { 
+        QgsDebug( OGRGeometryTypeToName(imp_->ogrDataSource->GetLayer(i)->GetLayerDefn()->GetGeomType() ) );
+
+        QgsDebug( imp_->ogrDataSource->GetLayer(i)->GetLayerDefn()->GetName() );
+
+        // If we have more than one layer we can't get away with just hacking
+        // the file name as a layer display name; so we have to append the
+        // layer number after the name to differentiate between all the layers
+        // that come from the same data source.  (XXX May wanna consider using
+        // GetLayerDefn()->GetName() -- but that, especially in the case of
+        // SDTS datasets, can generate obsfucated strings.)
+        if ( numLayers > 1 )
+        {
+          layers.push_back( new QgsVectorLayer( this, 
+                                                i,
+                                                layerName + 
+                                                " " + 
+                                                QString::number(i) ) );
+        }
+        else
+        {
+          layers.push_back( new QgsVectorLayer( this, 
+                                                i,
+                                                layerName ) );
+        }
+      }
+    }
 
     return layers;
 
