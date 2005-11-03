@@ -70,14 +70,12 @@ public:
     typedef enum { UNKNOWN, VECTOR, RASTER, DATABASE } type_t;
 
     /*! Constructor
-      @param dataProvider link to corresponding provider object
-      @param dataSourceLayerNum data provider layer id 
       @param type Type of layer as defined in LAYERS enum
-      @param lyrname Display Name of the layer
+      @param displayName Layer name as shown on legend
       @param source is the file, database, or URI source name for the layer
      */
     QgsMapLayer(type_t = UNKNOWN, 
-                QString lyrname = QString::null,
+                QString displayName = QString::null,
                 QString source = QString::null);
 
     //! Destructor
@@ -405,7 +403,7 @@ protected:
     QString layerName;
 
     /** Internal name of the layer. Derived from the datasource */
-    QString internalName;
+    QString mDisplayName;
 
     //! context menu
     QPopupMenu *popMenu;
