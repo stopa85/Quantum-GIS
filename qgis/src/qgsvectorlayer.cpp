@@ -111,7 +111,7 @@ typedef QgsDataProvider * create_it(const QString* uri);
 QgsVectorLayer::QgsVectorLayer(QgsDataProvider * dataProvider,
                                size_t  myDataSourceLayerNum,
                                QString const & layerName )
-    : QgsMapLayer(VECTOR, layerName),
+    : QgsMapLayer(VECTOR, layerName, dataProvider->getDataSourceUri()),
       tabledisplay(0),
       m_renderer(0),
       mLabel(0),
@@ -139,7 +139,7 @@ QgsVectorLayer::QgsVectorLayer(QgsDataProvider * dataProvider,
 
 //   if ( ! providerKey.isEmpty() )
 //   {
-    setDataProvider(  );
+  setDataProvider(  );
 //  }
 
   if(valid)

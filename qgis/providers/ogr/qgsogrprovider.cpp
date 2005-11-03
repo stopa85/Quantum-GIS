@@ -2020,9 +2020,12 @@ QgsOgrProvider::createLayers()
     // TODO finish rest
 
     // just first layer for now
+
+    QFileInfo sourceFile( imp_->ogrDataSource->GetName() );
+
     layers.push_back( new QgsVectorLayer( this, 
                                           0, 
-                                          imp_->ogrDataSource->GetName() ) );
+                                          sourceFile.baseName() ) );
 
     return layers;
 

@@ -44,11 +44,11 @@
 
 
 QgsMapLayer::QgsMapLayer(type_t type,
-                         QString lyrname,
+                         QString displayName,
                          QString source) 
     :   valid(true), // assume the layer is valid (data source exists and 
                      // can be used) until we learn otherwise
-        internalName(lyrname),
+        mDisplayName(displayName),
         mShowInOverviewItemId(0),
         mShowInOverview(false),
         mCoordinateTransform(NULL),
@@ -64,11 +64,13 @@ QgsMapLayer::QgsMapLayer(type_t type,
 
 {
 #ifdef QGISDEBUG
-  std::cout << "QgsMapLayer::QgsMapLayer - lyrname is '" << lyrname.local8Bit() << "'."<< std::endl;
+  std::cout << "QgsMapLayer::QgsMapLayer - mDisplayName is '" 
+            << mDisplayName.local8Bit() 
+            << "'."<< std::endl;
 #endif
 
     // Set the display name = internal name
-    layerName = internalName;
+    layerName = mDisplayName;
 
 #ifdef QGISDEBUG
   std::cout << "QgsMapLayer::QgsMapLayer - layerName is '" 
@@ -77,7 +79,7 @@ QgsMapLayer::QgsMapLayer(type_t type,
 
     // Generate the unique ID of this layer
     QDateTime dt = QDateTime::currentDateTime();
-    ID = lyrname + dt.toString("yyyyMMddhhmmsszzz");
+    ID = layerName + dt.toString("yyyyMMddhhmmsszzz");
     ID.replace(" ", "_");
 
 #if defined(WIN32) || defined(Q_OS_MACX)
@@ -136,7 +138,7 @@ QString const & QgsMapLayer::source() const
 
 QString const & QgsMapLayer::sourceName() const
 {
-    return internalName;
+    return mDisplayName;
 }
 
 const QgsRect QgsMapLayer::extent()
@@ -225,7 +227,7 @@ bool QgsMapLayer::readXML( QDomNode & layer_node )
 
     // the internal name is just the data source basename
     QFileInfo dataSourceFileInfo( dataSource );
-    internalName = dataSourceFileInfo.baseName();
+    mDisplayName = dataSourceFileInfo.baseName();
 
     // set ID
     mnl = layer_node.namedItem("id");
