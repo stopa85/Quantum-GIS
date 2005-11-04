@@ -21,6 +21,8 @@
 #include "qgsvectordataprovider.h"
 #include "qgsproviderregistry.h"
 #include "qgsmaplayerregistry.h"
+#include "qgsmapcanvas.h"
+#include "qgsmaplayer.h"
 
 #include <list>
 
@@ -77,7 +79,8 @@ QgsDataManager::instance()
 */
 static
 bool
-openVectorDataProvider_( QgsDataProvider * vectorDataProvider )
+openVectorDataProvider_( QgsDataProvider * vectorDataProvider,
+                         QgsMapCanvas & canvas )
 {
 
   if ( ! vectorDataProvider )
@@ -114,6 +117,13 @@ openVectorDataProvider_( QgsDataProvider * vectorDataProvider )
         ++i )
   {
       QgsMapLayerRegistry::instance()->addMapLayer( *i );
+
+      QObject::connect(*i, SIGNAL(editingStopped(bool)), 
+                       &canvas, SLOT(removeDigitizingLines(bool)));
+
+      (*i)->setVisible(true);
+//    layer->setVisible(mAddedLayersHidden); // XXX need to pass in this flag
+      (*i)->refreshLegend();
   }
 
   return true;
@@ -122,40 +132,45 @@ openVectorDataProvider_( QgsDataProvider * vectorDataProvider )
 
 
 
-bool QgsDataManager::openVector( QString const & dataSource )
+bool QgsDataManager::openVector( QString const & dataSource,
+                                 QgsMapCanvas & canvas  )
 {
   // find the default provider that can handle the given name
   QgsDataProvider * vectorDataProvider = // XXX ogr temporarily hard-coded
       QgsProviderRegistry::instance()->openVector( dataSource, "ogr" ); 
 
-  return openVectorDataProvider_( vectorDataProvider );
+  return openVectorDataProvider_( vectorDataProvider, canvas );
 
 } // QgsDataManager::openVector
 
 
 
 bool QgsDataManager::openVector( QString const & dataSource, 
-                                 QString const & providerKey )
+                                 QString const & providerKey,
+                                 QgsMapCanvas & canvas  )
 {
   // find the default provider that can handle the given name
 
   QgsDataProvider * vectorDataProvider = 
       QgsProviderRegistry::instance()->openVector( dataSource, providerKey );
 
-  return openVectorDataProvider_( vectorDataProvider );
+  return openVectorDataProvider_( vectorDataProvider, canvas );
 
 } // QgsDataManager::openVector
 
 
 
-bool QgsDataManager::openRaster( QString const & name )
+bool QgsDataManager::openRaster( QString const & name,
+                                 QgsMapCanvas & canvas  )
 {
   return false;
 } // QgsDataManager::openRaster
 
 
 
-bool QgsDataManager::openRaster( QString const & name, QString const & provider )
+bool QgsDataManager::openRaster( QString const & name, 
+                                 QString const & provider,
+                                 QgsMapCanvas & canvas  )
 {
   return false;
 } // QgsDataManager::openRaster

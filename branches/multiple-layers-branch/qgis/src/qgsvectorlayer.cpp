@@ -157,6 +157,15 @@ QgsVectorLayer::QgsVectorLayer(QgsDataProvider * dataProvider,
   // have no effect on existing layers
   QSettings settings;
   updateThreshold = settings.readNumEntry("qgis/map/updateThreshold", 1000);
+
+  // This used to be done in QgisApp, but was moved here since objects should
+  // maximally manage themselves; done here and not in initializer list since
+  // we depend on the data provider and other things to have proper done some
+  // housekeeping first before we get round to magicking up a proper renderer.
+  // For one thing we need to know what kind of symbol renderer we need, which
+  // the provider knows about.
+  m_renderer = new QgsSingleSymRenderer( vectorType() );
+
 } // QgsVectorLayer ctor
 
 
