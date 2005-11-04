@@ -1323,7 +1323,7 @@ bool QgisApp::addLayer(QStringList const &theLayerQStringList,
           ++it )
     {
 
-        if ( ! QgsDataManager::instance().openVector( *it ) )
+        if ( ! QgsDataManager::instance().openVector( *it, *mMapCanvas ) )
         {
             QgsDebug( QString("Unable to open " + *it).ascii() );
         }
@@ -1339,6 +1339,7 @@ bool QgisApp::addLayer(QStringList const &theLayerQStringList,
 //         // create the layer
 
 //         QgsVectorLayer *layer = new QgsVectorLayer(*it, base, "ogr");
+// CONNECTION NOW DONE IN QgsDataManager::openVectorDataProvider_()
 //         QObject::connect(layer, SIGNAL(editingStopped(bool)), mMapCanvas, SLOT(removeDigitizingLines(bool)));
 
 //         Q_CHECK_PTR( layer );

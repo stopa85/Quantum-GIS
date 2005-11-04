@@ -18,6 +18,7 @@
 
 
 class QString;
+class QgsMapCanvas;
 
 
 /** Singleton data manager class
@@ -47,6 +48,7 @@ public:
   /** open the given vector data source
   
     @param name could be a file, URI
+    @param canvas that we hook signals up to for newly created layers
     @return false if unable to open vector source
     
         
@@ -57,7 +59,7 @@ public:
     enough to figure out whether the given name mapped to a vector,
     raster, or database source.
   */
-  bool openVector( QString const & dataSource );
+  bool openVector( QString const & dataSource, QgsMapCanvas & canvas );
 
   /** open the given vector data source
   
@@ -70,6 +72,7 @@ public:
   
     @param name could be a file, URI
     @param provider is the key for the dataprovider used to open name
+    @param canvas that we hook signals up to for newly created layers
     @return false if unable to open vector source
     
     Temporarily always returns false until finished implementing.
@@ -78,11 +81,14 @@ public:
     enough to figure out whether the given name mapped to a vector,
     raster, or database source.
   */
-  bool openVector( QString const & dataSource, QString const & providerKey );
+  bool openVector( QString const & dataSource, 
+                   QString const & providerKey, 
+                   QgsMapCanvas & canvas );
   
   /** open the given raster data source
   
     @param name could be a file, URI
+    @param canvas that we hook signals up to for newly created layers
     @return false if unable to open raster source
     
     Temporarily always returns false until finished implementing.
@@ -93,21 +99,22 @@ public:
     enough to figure out whether the given name mapped to a vector,
     raster, or database source.
   */
-  bool openRaster( QString const & dataSource );
+  bool openRaster( QString const & dataSource, QgsMapCanvas & canvas );
 
   /** open the given raster data source
   
-    Similar to openRaster(QString const &), except that the user specifies a data provider 
-    with which to open the data source instead of using the default data provider
-    that QgsDataManager would figure out to use.  This should be useful when (and if)
-    there will exist more than one data provider that can handle a given data
-    source.  (E.g., use GDAL to open an SDTS file, or a different data provider that uses
-    sdts++.)
+    Similar to openRaster(QString const &), except that the user specifies a
+    data provider with which to open the data source instead of using the
+    default data provider that QgsDataManager would figure out to use.  This
+    should be useful when (and if) there will exist more than one data
+    provider that can handle a given data source.  (E.g., use GDAL to open an
+    SDTS file, or a different data provider that uses sdts++.)
   
     Temporarily always returns false until finished implementing.
     
     @param name could be a file, URI
     @param provider is the key to the dataprovider used to open name
+    @param canvas that we hook signals up to for newly created layers
     @return false if unable to open vector source
     
     @note
@@ -116,7 +123,9 @@ public:
     enough to figure out whether the given name mapped to a vector,
     raster, or database source.
   */
-  bool openRaster( QString const & dataSource, QString const & providerKey );
+  bool openRaster( QString const & dataSource, 
+                   QString const & providerKey, 
+                   QgsMapCanvas & canvas );
 
 
 private:
