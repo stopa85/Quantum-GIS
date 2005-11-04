@@ -29,6 +29,7 @@ using namespace std;
 #include <iostream>
 #include <cfloat>
 #include <cassert>
+#include <map>
 
 #include <ogrsf_frmts.h>
 #include <ogr_geometry.h>
@@ -98,12 +99,21 @@ getGeometryPointer_(OGRFeature *fet, OGRwkbByteOrder endianness)
 */
 struct Layer
 {
+  Layer( )
+    : mSelectionRectangle(0), // set the selection rectangle pointer to 0
+      minmaxcachedirty(true),
+      mEncoding( 0x0 )
+  {
+  }
+
+
   Layer( QTextCodec * encoding )
     : mSelectionRectangle(0), // set the selection rectangle pointer to 0
       minmaxcachedirty(true),
       mEncoding( encoding )
   {
   }
+
     
   Layer( OGRLayer * OGRlayer, QTextCodec * encoding )
     : mSelectionRectangle(0), // set the selection rectangle pointer to 0
@@ -241,7 +251,9 @@ struct Layer
 
   long numberFeatures;
 
-  /**Flag indicating, if the minmaxcache should be renewed (true) or not (false)*/
+  /** Flag indicating, if the minmaxcache should be renewed (true) or not
+     (false) 
+  */
   bool minmaxcachedirty;
 
   /**Matrix storing the minimum and maximum values*/
@@ -288,8 +300,12 @@ struct QgsOgrProvider::Imp
   layer related functions take on an dataSourceLayerNum parameter which
   ultimately serves as an index into this data member.
 
+  Use a map instead of a vector since it's possible for a given OGR data
+  source to have many non-geospatial layers.  We only load geospatial layers,
+  therefore there'll be "gaps" in the layer numbers.
+
   */
-  vector<Layer> layers;
+  map<size_t,Layer> layers;
 
   OGRDataSource *ogrDataSource;
 
@@ -361,14 +377,29 @@ QgsOgrProvider::QgsOgrProvider(QString const & uri)
 
     imp_->ogrDriverName = imp_->ogrDriver->GetName();
 
-    // add default layer, which should be first (and possibly only) layer
-    OGRLayer * firstLayer = imp_->ogrDataSource->GetLayer(0);
+    size_t numLayers = layerCount();
 
-    assert( firstLayer );
+    for ( size_t i = 0; i < numLayers; ++i )
+    {
+      if ( ! (wkbNone == 
+              imp_->ogrDataSource->GetLayer(i)->GetLayerDefn()->GetGeomType() ||
+              wkbUnknown == 
+              imp_->ogrDataSource->GetLayer(i)->GetLayerDefn()->GetGeomType() ) )
+      { 
+        QgsDebug( OGRGeometryTypeToName(imp_->ogrDataSource->GetLayer(i)->GetLayerDefn()->GetGeomType() ) );
 
-    imp_->layers.push_back( Layer( firstLayer, 
-                                   mEncoding ) );
+        QgsDebug( imp_->ogrDataSource->GetLayer(i)->GetLayerDefn()->GetName() );
 
+        // add all the layers (may want to come up with a lazy evaluation
+        // mechanism to only load layers as they are referenced)
+
+        OGRLayer * currentLayer = imp_->ogrDataSource->GetLayer(i);
+
+        assert( currentLayer );
+
+        imp_->layers.insert( make_pair(i, Layer( currentLayer, mEncoding ) ) );
+      }
+    }
   } 
   else
   {
