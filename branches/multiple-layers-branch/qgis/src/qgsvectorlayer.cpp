@@ -282,7 +282,7 @@ void QgsVectorLayer::setDisplayField(QString fldName)
   QString idxName="";
   QString idxId="";
 
-  std::vector < QgsField > fields = getDataProvider()->fields();
+  std::vector < QgsField > fields = getDataProvider()->fields(dataSourceLayerNum());
   if(!fldName.isEmpty())
   {
     // find the index for this field
