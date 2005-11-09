@@ -293,6 +293,28 @@ struct QgsOgrProvider::Imp
     delete wktReader;
   }
 
+
+  /** returns true if the given layer is valid 
+
+  Some multilayer data sources have non-geospatial layers.  These are not
+  loaded , which can save a lot of memory especially given that some of these
+  non-geospatial layers contain a lot of feature and attribute data.  (E.g.,
+  the GDAL SDTS bug that treats all SDTS files as layers even though most of
+  the files contain metadata and not geospatial data.)
+
+  */
+  bool validLayer( size_t dataSourceLayerNum )
+  {
+    if (layers.find( dataSourceLayerNum ) == layers.end() )
+    {
+      QgsDebug( QString("invalid layer " + 
+                        QString::number(dataSourceLayerNum) ).ascii() );
+
+      return false;
+    }
+    return true;
+  }
+
   /** these are essentially wrappers for OGR layers
 
   For each layer associated with a given OGR vector data source there
@@ -349,7 +371,7 @@ QgsOgrProvider::QgsOgrProvider(QString const & uri)
 
   // try to open for update
   imp_->ogrDataSource = OGRSFDriverRegistrar::Open((const char *) uri.local8Bit(), 
-                                                   TRUE, 
+                                                   FALSE, //TRUE, 
                                                    &imp_->ogrDriver);
 
   // if can't open for update, try opening read-only
@@ -1006,9 +1028,14 @@ void QgsOgrProvider::identify(QgsRect * rect, size_t dataSourceLayerNum)
 
 
 // TODO - make this function return the real extent
-QgsRect *QgsOgrProvider::extent(size_t dataSourceLayerNum)
+QgsRect * QgsOgrProvider::extent(size_t dataSourceLayerNum)
 {
-  // TODO: Find out where this new QgsRect is being lost (as reported by valgrind)
+  // TODO: Find out where this new QgsRect is being lost (as reported by
+  // valgrind)
+  if ( ! imp_->validLayer( dataSourceLayerNum ) )
+  {
+    return 0x0;
+  }
 
   return new QgsRect(imp_->layers[dataSourceLayerNum].extent->MinX, 
                      imp_->layers[dataSourceLayerNum].extent->MinY, 
