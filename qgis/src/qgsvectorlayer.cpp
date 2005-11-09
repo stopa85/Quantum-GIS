@@ -1422,6 +1422,8 @@ QGis::VectorType QgsVectorLayer::vectorType() const
       return QGis::Line;
     case QGis::WKBMultiPolygon:
       return QGis::Polygon;
+    default :
+      QgsDebug( QString( "Got invalid type " + QString::number(type) ).ascii() );
     }
   }
   else
@@ -1627,10 +1629,10 @@ void QgsVectorLayer::updateExtents()
       if(mDeleted.size()==0)
 	{
 	  // get the extent of the layer from the provider
-	  layerExtent.setXmin(getDataProvider()->extent()->xMin());
-	  layerExtent.setYmin(getDataProvider()->extent()->yMin());
-	  layerExtent.setXmax(getDataProvider()->extent()->xMax());
-	  layerExtent.setYmax(getDataProvider()->extent()->yMax());
+	  layerExtent.setXmin(getDataProvider()->extent(dataSourceLayerNum())->xMin());
+	  layerExtent.setYmin(getDataProvider()->extent(dataSourceLayerNum())->yMin());
+	  layerExtent.setXmax(getDataProvider()->extent(dataSourceLayerNum())->xMax());
+	  layerExtent.setYmax(getDataProvider()->extent(dataSourceLayerNum())->yMax());
 	}
       else
 	{
@@ -2333,7 +2335,8 @@ bool QgsVectorLayer::setDataProvider( )
       );
     
     // get the extent
-    QgsRect *mbr = getDataProvider()->extent(); // XXX specify layer num?
+    QgsRect *mbr = 
+      getDataProvider()->extent(dataSourceLayerNum()); // XXX specify layer num?
 
     // show the extent
     QString s = mbr->stringRep();
