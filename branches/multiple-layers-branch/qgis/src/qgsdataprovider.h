@@ -91,7 +91,7 @@ class QgsDataProvider : public QObject
        *       XXXXX and mutators!
        *
        */
-      virtual QString getProjectionWKT()  = 0 ;
+      virtual QString getProjectionWKT(size_t dataSourceLayerNum = 0)  = 0 ;
 
       /** 
        * Set the data source specification. This may be a path or database

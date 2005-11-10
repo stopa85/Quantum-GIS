@@ -458,13 +458,14 @@ void QgsOgrProvider::setEncoding(const QString& e)
 
 
 
-QString QgsOgrProvider::getProjectionWKT()
+QString QgsOgrProvider::getProjectionWKT(size_t dataSourceLayerNum)
 { 
 #ifdef QGISDEBUG 
     std::cerr << "QgsOgrProvider::getProjectionWKT()" << std::endl; 
 #endif 
 
-  OGRSpatialReference * mySpatialRefSys = imp_->layers[0].ogrLayer->GetSpatialRef();
+  OGRSpatialReference * mySpatialRefSys = 
+      imp_->layers[dataSourceLayerNum].ogrLayer->GetSpatialRef();
 
   if (! mySpatialRefSys )
   {
@@ -1612,12 +1613,12 @@ bool QgsOgrProvider::createSpatialIndex(size_t dataSourceLayerNum)
 
 
 
-int QgsOgrProvider::capabilities() const
+int QgsOgrProvider::capabilities(size_t dataSourceLayerNum) const
 {
   int ability = NoCapabilities;
 
   // collect abilities reported by OGR
-  if (imp_->layers[0].ogrLayer) // XXX first layer only?
+  if (imp_->layers[dataSourceLayerNum].ogrLayer) // XXX first layer only?
   {
     // Whilst the OGR documentation (e.g. at
     // http://www.gdal.org/ogr/classOGRLayer.html#a17) states "The capability
@@ -1626,19 +1627,19 @@ int QgsOgrProvider::capabilities() const
     // here.  This is because older versions of OGR don't always have all
     // the #defines we want to test for here.
 
-    if (imp_->layers[0].ogrLayer->TestCapability("RandomRead"))
+    if (imp_->layers[dataSourceLayerNum].ogrLayer->TestCapability("RandomRead"))
     // TRUE if the GetFeature() method works for this layer.
     {
       // TODO: Perhaps influence if QGIS caches into memory (vs read from disk every time) based on this setting.
     }
 
-    if (imp_->layers[0].ogrLayer->TestCapability("SequentialWrite"))
+    if (imp_->layers[dataSourceLayerNum].ogrLayer->TestCapability("SequentialWrite"))
     // TRUE if the CreateFeature() method works for this layer.
     {
       ability |= QgsVectorDataProvider::AddFeatures;
     }
 
-    if (imp_->layers[0].ogrLayer->TestCapability("RandomWrite"))
+    if (imp_->layers[dataSourceLayerNum].ogrLayer->TestCapability("RandomWrite"))
     // TRUE if the SetFeature() method is operational on this layer.
     {
       ability |= QgsVectorDataProvider::ChangeAttributeValues;
@@ -1652,7 +1653,7 @@ int QgsOgrProvider::capabilities() const
       // ability |= QgsVectorDataProvider::ChangeGeometries;
     }
 
-    if (imp_->layers[0].ogrLayer->TestCapability("FastSpatialFilter"))
+    if (imp_->layers[dataSourceLayerNum].ogrLayer->TestCapability("FastSpatialFilter"))
     // TRUE if this layer implements spatial filtering efficiently.
     // Layers that effectively read all features, and test them with the 
     // OGRFeature intersection methods should return FALSE.
@@ -1662,7 +1663,7 @@ int QgsOgrProvider::capabilities() const
       // TODO: Perhaps use as a clue by QGIS whether it should build and maintain it's own spatial index for features in this layer.
     }
 
-    if (imp_->layers[0].ogrLayer->TestCapability("FastFeatureCount"))
+    if (imp_->layers[dataSourceLayerNum].ogrLayer->TestCapability("FastFeatureCount"))
     // TRUE if this layer can return a feature count
     // (via OGRLayer::GetFeatureCount()) efficiently ... ie. without counting
     // the features. In some cases this will return TRUE until a spatial
@@ -1671,7 +1672,7 @@ int QgsOgrProvider::capabilities() const
       // TODO: Perhaps use as a clue by QGIS whether it should spawn a thread to count features.
     }
 
-    if (imp_->layers[0].ogrLayer->TestCapability("FastGetExtent"))
+    if (imp_->layers[dataSourceLayerNum].ogrLayer->TestCapability("FastGetExtent"))
     // TRUE if this layer can return its data extent 
     // (via OGRLayer::GetExtent()) efficiently ... ie. without scanning
     // all the features. In some cases this will return TRUE until a
@@ -1680,7 +1681,7 @@ int QgsOgrProvider::capabilities() const
       // TODO: Perhaps use as a clue by QGIS whether it should spawn a thread to calculate extent.
     }
 
-    if (imp_->layers[0].ogrLayer->TestCapability("FastSetNextByIndex"))
+    if (imp_->layers[dataSourceLayerNum].ogrLayer->TestCapability("FastSetNextByIndex"))
     // TRUE if this layer can perform the SetNextByIndex() call efficiently.
     {
       // No use required for this QGIS release.
