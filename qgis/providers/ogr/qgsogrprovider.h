@@ -53,7 +53,7 @@ class QgsOgrProvider:public QgsVectorDataProvider
 
     /** Used to ask the layer for its projection as a WKT string. Implements
      * virtual method of same name in QgsDataProvider. */
-    QString getProjectionWKT();
+    QString getProjectionWKT(size_t dataSourceLayerNum = 0);
 
     /**
      * Get the first feature resulting from a select operation
@@ -114,7 +114,7 @@ class QgsOgrProvider:public QgsVectorDataProvider
      * @param mbr QgsRect containing the extent to use in selecting features
      * @param useIntersect Use geos functions to determine the selected set
      */
-    void select(QgsRect * mbr, bool useIntersect = false, size_t dataSourceLayerNum = 0);
+    void select(QgsRect * mbr, bool useIntersect, size_t dataSourceLayerNum = 0);
 
     /**
      * Identify features within the search radius specified by rect
@@ -183,7 +183,7 @@ class QgsOgrProvider:public QgsVectorDataProvider
         be prudent to check this value per intended operation.
         See the OGRLayer::TestCapability API for details.
       */
-    int capabilities() const;
+    int capabilities(size_t dataSourceLayerNum = 0) const;
 
     void setEncoding(const QString& e);
 

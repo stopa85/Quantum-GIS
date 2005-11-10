@@ -76,7 +76,7 @@ class QgsVectorDataProvider : public QgsDataProvider
        * overlap.
        *
        */
-      virtual void select(QgsRect *mbr, bool useIntersect=false, size_t dataSourceLayerNum = 0)=0;
+      virtual void select(QgsRect *mbr, bool useIntersect, size_t dataSourceLayerNum = 0)=0;
       /**
        * Update the feature count based on current spatial filter. If not
        * overridden in the data provider this function returns -1
@@ -222,21 +222,25 @@ class QgsVectorDataProvider : public QgsDataProvider
         return false;
       }
 
-      /**Creates a spatial index on the datasource (if supported by the provider type). Returns true in case of success*/
+      /**Creates a spatial index on the datasource (if supported by the
+       * provider type). Returns true in case of success*/
       virtual bool createSpatialIndex(size_t dataSourceLayerNum = 0);
 
-      /** Sets filter based on attribute values. Returns false when input string contains errors */
+      /** Sets filter based on attribute values. Returns false when input
+       * string contains errors */
       virtual bool setAttributeFilter(const QgsSearchString& attributeFilter, size_t dataSourceLayerNum = 0);
 
       /** Returns current attribute filter */
-      virtual QgsSearchString getAttributeFilter(size_t dataSourceLayerNum = 0) { return mAttributeFilter; }
+      virtual QgsSearchString getAttributeFilter(size_t dataSourceLayerNum = 0)
+      { return mAttributeFilter; }
       
       /** Returns a bitmask containing the supported capabilities
           Note, some capabilities may change depending on whether
           a spatial filter is active on this provider, so it may
           be prudent to check this value per intended operation.
        */
-      virtual int capabilities() const {return QgsVectorDataProvider::NoCapabilities;}
+      virtual int capabilities(size_t dataSourceLayerNum = 0) const
+      { return QgsVectorDataProvider::NoCapabilities; }
 
       /**
        *  Returns the above in friendly format.
