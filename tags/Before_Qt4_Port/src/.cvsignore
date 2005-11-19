@@ -1,0 +1,15 @@
+Makefile
+Makefile.in
+*.moc.cpp
+*.moc.uic.cpp
+*.uic.h
+*.uic.cpp
+qgis
+lib*.lo
+libqgis.la
+.deps
+.libs
+*lexer.cc
+*parser.cc
+*parser.h
+
