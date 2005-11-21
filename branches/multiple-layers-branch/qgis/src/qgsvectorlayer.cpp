@@ -3229,7 +3229,7 @@ void QgsVectorLayer::drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * t
 
   unsigned char* feature = fet->getGeometry();
 
-  unsigned int wkbType;
+  unsigned char wkbType;
   memcpy(&wkbType, (feature+1), sizeof(wkbType));
 
   switch (wkbType)
