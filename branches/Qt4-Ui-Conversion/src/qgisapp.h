@@ -472,6 +472,7 @@ signals:
   void createLegend();
   void createOverview();
   void createCanvas();
+  void createDB();
   //toolbars ----------------------------------------
   QToolBar *mFileToolBar;
   QToolBar *mLayerToolBar;
