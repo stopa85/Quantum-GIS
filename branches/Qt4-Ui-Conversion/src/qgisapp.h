@@ -469,6 +469,9 @@ signals:
   void createToolBars();
   void createStatusBar();
   void setupConnections();
+  void createLegend();
+  void createOverview();
+  void createCanvas();
   //toolbars ----------------------------------------
   QToolBar *mFileToolBar;
   QToolBar *mLayerToolBar;
