@@ -30,7 +30,10 @@
 //Added by qt3to4:
 #include <QPixmap>
 
-QgsMarkerDialog::QgsMarkerDialog(QString startdir): QgsMarkerDialogBase(0,0,true,Qt::WStyle_StaysOnTop), mCurrentDir(startdir)
+QgsMarkerDialog::QgsMarkerDialog(QString startdir): 
+  //paramters removed by Tim during qt4 ui port - FIXME!!!
+  //QgsMarkerDialogBase(0,0,true,Qt::WStyle_StaysOnTop), mCurrentDir(startdir)
+  QgsMarkerDialogBase(), mCurrentDir(startdir)
 {
     QObject::connect(mOkButton,SIGNAL(clicked()),this,SLOT(accept()));
     QObject::connect(mCancelButton,SIGNAL(clicked()),this,SLOT(reject()));

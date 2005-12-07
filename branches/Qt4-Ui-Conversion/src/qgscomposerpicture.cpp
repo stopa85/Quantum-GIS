@@ -50,7 +50,8 @@
 
 QgsComposerPicture::QgsComposerPicture ( QgsComposition *composition, 
 					int id, QString file ) 
-    : Q3CanvasPolygonalItem(0),
+    : QWidget(),
+      Q3CanvasPolygonalItem(0),
       mPicturePath ( file ),
       mPictureValid(false),
       mCX(-10), mCY(-10),
@@ -79,6 +80,7 @@ QgsComposerPicture::QgsComposerPicture ( QgsComposition *composition,
 }
 
 QgsComposerPicture::QgsComposerPicture ( QgsComposition *composition, int id ) :
+    QWidget(),
     Q3CanvasPolygonalItem(0),
     mFrame(false),
     mAreaPoints(4),

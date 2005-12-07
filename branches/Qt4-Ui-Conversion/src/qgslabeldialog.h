@@ -21,17 +21,14 @@
 #include <qcolor.h>
 #include <qfont.h>
 
-#ifdef WIN32
-#include "qgslabeldialogbase.h"
-#else
-#include "qgslabeldialogbase.uic.h"
-#endif
+#include "ui_qgslabeldialogbase.h"
+#include <QDialog>
 
 class QWidget;
 class QPoint;
 class QgsLabel;
 /** QgsLabelDialog is the dialog for label. */
-class QgsLabelDialog: public QgsLabelDialogBase
+class QgsLabelDialog: public QDialog, private Ui::QgsLabelDialogBase
 {
     Q_OBJECT;
 

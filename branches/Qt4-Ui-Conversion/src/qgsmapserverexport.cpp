@@ -37,7 +37,9 @@ email                : sherman at mrcc.com
 #include "qgsdatasourceuri.h"
 
 // constructor
-QgsMapserverExport::QgsMapserverExport(QgsMapCanvas * _map, QWidget * parent, const char *name, bool modal, Qt::WFlags fl):QgsMapserverExportBase(parent, name, modal, fl), map(_map)
+QgsMapserverExport::QgsMapserverExport(QgsMapCanvas * _map, QWidget * parent, const char *name, bool modal, Qt::WFlags fl)
+  //params removed by Tim during qt4 ui port - FIXME !!!
+  :QgsMapserverExportBase(), map(_map)
 {
 }
 

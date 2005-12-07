@@ -29,14 +29,10 @@ class QgsDistanceArea;
 #include <vector>
 #include "qgspoint.h"
 
-#ifdef WIN32
-#include "qgsmeasurebase.h"
-#else
-#include "qgsmeasurebase.uic.h"
-#endif
+#include "ui_qgsmeasurebase.h"
+#include <QDialog>
 
-
-class QgsMeasure:public QgsMeasureBase
+class QgsMeasure:public QDialog, private Ui::QgsMeasureBase
 {
   Q_OBJECT;
   public:

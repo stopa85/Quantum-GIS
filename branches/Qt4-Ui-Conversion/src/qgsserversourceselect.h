@@ -18,11 +18,8 @@
 
 #ifndef QGSSERVERSOURCESELECT_H
 #define QGSSERVERSOURCESELECT_H
-#ifdef WIN32
-#include "qgsserversourceselectbase.h"
-#else
-#include "qgsserversourceselectbase.uic.h"
-#endif
+#include "ui_qgsserversourceselectbase.h"
+#include <QDialog>
 
 #include <vector>
 #include <map>
@@ -42,7 +39,7 @@ class QgsWmsProvider;
  * The user can then connect and add 
  * layers from the WMS server to the map canvas.
  */
-class QgsServerSourceSelect : public QgsServerSourceSelectBase 
+class QgsServerSourceSelect : public QDialog, private Ui::QgsServerSourceSelectBase 
 {
   Q_OBJECT
   

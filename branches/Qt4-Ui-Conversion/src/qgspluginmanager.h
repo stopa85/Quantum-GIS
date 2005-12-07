@@ -19,18 +19,15 @@
 #ifndef QGSPLUGINMANAGER_H
 #define QGSPLUGINMANAGER_H
 #include <vector>
-#ifdef WIN32
-#include "qgspluginmanagerbase.h"
-#else
-#include "qgspluginmanagerbase.uic.h"
-#endif
+#include "ui_qgspluginmanagerbase.h"
+#include <QDialog>
 
 class QgsPluginItem;
 /*!
  * \brief Plugin manager for loading/unloading plugins
 @author Gary Sherman
 */
-class QgsPluginManager : public QgsPluginManagerBase
+class QgsPluginManager : public QDialog, private Ui::QgsPluginManagerBase
 {
   Q_OBJECT
   public:

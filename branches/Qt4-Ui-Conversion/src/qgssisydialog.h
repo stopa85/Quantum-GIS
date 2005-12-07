@@ -22,11 +22,8 @@
 #include <iostream>
 #include <vector>
 
-#ifdef WIN32
-#include "qgssisydialogbase.h"
-#else
-#include "qgssisydialogbase.uic.h"
-#endif
+#include "ui_qgssisydialogbase.h"
+#include <QDialog>
 
 class QString;
 class QgsSingleSymRenderer;
@@ -34,7 +31,7 @@ class QgsSymbol;
 class QgsVectorLayer;
 
 /**QgsSiSyDialog is a dialog to set symbology for the legend type 'single symbol'*/
-class QgsSiSyDialog: public QgsSiSyDialogBase
+class QgsSiSyDialog: public QDialog, private Ui::QgsSiSyDialogBase
 {
     Q_OBJECT
 public:

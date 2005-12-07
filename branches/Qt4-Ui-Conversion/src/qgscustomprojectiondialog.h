@@ -14,17 +14,14 @@
 
 #include <qdir.h>
 //  #include <qnetworkprotocol.h>     not sure why needed - breaks portage to Qt4
-#ifdef WIN32
-#include <qgscustomprojectiondialogbase.h>
-#else
-#include <qgscustomprojectiondialogbase.uic.h>
-#endif
+#include <ui_qgscustomprojectiondialogbase.h>
+#include <QDialog>
 /**
 The custom projection widget is used to define the projection family, ellipsoid and paremters needed by proj4 to assemble a customised projection definition. The resulting projection will be store in an sqlite backend.
 
 @author Tim Sutton
 */
-class QgsCustomProjectionDialog : public QgsCustomProjectionDialogBase
+class QgsCustomProjectionDialog : public QDialog, private Ui::QgsCustomProjectionDialogBase
 {
 Q_OBJECT
 public:

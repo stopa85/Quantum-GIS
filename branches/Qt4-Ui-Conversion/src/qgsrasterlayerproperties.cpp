@@ -51,7 +51,7 @@ const char * const ident =
 
 
 QgsRasterLayerProperties::QgsRasterLayerProperties(QgsMapLayer *lyr, QWidget *parent, const char *name, bool modal)
-: QgsRasterLayerPropertiesBase(parent, name, modal), 
+: QgsRasterLayerPropertiesBase(), 
   rasterLayer( dynamic_cast<QgsRasterLayer*>(lyr) )
 {
 

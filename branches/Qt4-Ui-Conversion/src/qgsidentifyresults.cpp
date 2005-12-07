@@ -34,7 +34,8 @@
 
 QgsIdentifyResults::QgsIdentifyResults(const QgsAttributeAction& aa, QWidget *parent, 
     const char * name, Qt::WFlags f) :
-  QgsIdentifyResultsBase ( parent, name, f),
+  //params removed  by Tim durint qt4 ui port - FIXMEE
+  QgsIdentifyResultsBase ( ),
   mActions(aa), mClickedOnValue(0), mActionPopup(0)
 {
   lstResults->setResizeMode(Q3ListView::AllColumns);
@@ -143,7 +144,7 @@ void QgsIdentifyResults::restorePosition()
   //std::cerr << "Setting geometry: " << wx << ", " << wy << ", " << ww << ", " << wh << std::endl;
   resize(ww,wh);
   move(wx,wy);
-  QgsIdentifyResultsBase::show();
+  show();
   //std::cerr << "Current geometry: " << x() << ", " << y() << ", " << width() << ", " << height() << std::endl; 
 }
 // Save the current window location (store in ~/.qt/qgisrc)

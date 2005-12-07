@@ -57,7 +57,7 @@
 // set the default coordinate system
 //XXX this is not needed? : static const char* defaultWktKey = "Lat/Long - WGS 84";
   QgsProjectProperties::QgsProjectProperties(QWidget *parent, const char *name, bool modal)
-: QgsProjectPropertiesBase(parent, name, modal)
+: QgsProjectPropertiesBase()
 {
   QGis::units myUnit = QgsProject::instance()->mapUnits();
   setMapUnits(myUnit);

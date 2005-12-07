@@ -36,7 +36,7 @@
  * Constructor
  */
 QgsOptions::QgsOptions(QWidget *parent, const char *name, bool modal) :
-  QgsOptionsBase(parent, name, modal)
+  QgsOptionsBase()
 {
   qparent = parent;
   // read the current browser and set it

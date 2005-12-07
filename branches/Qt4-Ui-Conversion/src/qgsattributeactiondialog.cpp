@@ -38,7 +38,7 @@ back to QgsVectorLayer.
 QgsAttributeActionDialog::QgsAttributeActionDialog(QgsAttributeAction* actions,
 						   const std::vector<QgsField>& fields,
 						   QWidget* parent):
-  QgsAttributeActionDialogBase(parent), mActions(actions)
+  QgsAttributeActionDialogBase(), mActions(actions)
 {
   init();
   // Populate the combo box with the field names. Will the field names

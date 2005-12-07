@@ -21,14 +21,14 @@
 #include "qgspgquerybuilder.h"
 // default constructor
   QgsPgQueryBuilder::QgsPgQueryBuilder(QWidget *parent, const char *name, bool modal)
-: QgsPgQueryBuilderBase(parent, name, modal)
+: QgsPgQueryBuilderBase()
 {
 }
 // constructor used when the query builder must make its own
 // connection to the database
 QgsPgQueryBuilder::QgsPgQueryBuilder(QgsDataSourceURI *uri, 
     QWidget *parent, const char *name, bool modal)
-: QgsPgQueryBuilderBase(parent, name, modal), mUri(uri)
+: QgsPgQueryBuilderBase(), mUri(uri)
 {
   // The query builder must make its own connection to the database when
   // using this constructor
@@ -68,7 +68,7 @@ QgsPgQueryBuilder::QgsPgQueryBuilder(QgsDataSourceURI *uri,
 // parsed out and populated in the mURI structure prior to performing any operations against the database.
 QgsPgQueryBuilder::QgsPgQueryBuilder(QString tableName, PGconn *con, 
     QWidget *parent, const char *name, bool modal)
-: QgsPgQueryBuilderBase(parent, name, modal), mPgConnection(con)
+: QgsPgQueryBuilderBase(), mPgConnection(con)
 {
   mOwnConnection = false; // we don't own this connection since it was passed to us
   mUri = new QgsDataSourceURI();
@@ -301,13 +301,13 @@ void QgsPgQueryBuilder::accept()
       }
       else
       {
-        QgsPgQueryBuilderBase::accept();
+        this->accept();
       }
     }
   }
   else
   {
-    QgsPgQueryBuilderBase::accept();
+    this->accept();
   }
 }
 

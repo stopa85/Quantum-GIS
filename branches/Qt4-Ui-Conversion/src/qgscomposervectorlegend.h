@@ -54,11 +54,7 @@
 #include "qgscomposition.h"
 #include "qgscomposeritem.h"
 
-#ifdef WIN32
-#include "qgscomposervectorlegendbase.h"
-#else
-#include "qgscomposervectorlegendbase.uic.h"
-#endif
+#include "ui_qgscomposervectorlegendbase.h"
 
 class Q3CanvasItem;
 class Q3CanvasRectangle;
@@ -85,7 +81,8 @@ class QgsComposerItem;
  *  \brief Object representing map window. 
  */
 // NOTE: QgsComposerVectorLegendBase must be first, otherwise does not compile
-class QgsComposerVectorLegend : public QgsComposerVectorLegendBase, 
+class QgsComposerVectorLegend : public QWidget,
+                                private Ui::QgsComposerVectorLegendBase, 
                                 public Q3CanvasRectangle, 
                                 public QgsComposerItem
 {

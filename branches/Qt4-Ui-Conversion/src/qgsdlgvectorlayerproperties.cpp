@@ -72,7 +72,8 @@ QgsDlgVectorLayerProperties::QgsDlgVectorLayerProperties(QgsVectorLayer * lyr,
                                                          QWidget * parent, 
                                                          const char *name, 
                                                          bool modal)
-    : QgsDlgVectorLayerPropertiesBase(parent, name, modal), 
+    //tim removed params during Qt4 gui port -- FIXME!!
+    : QgsDlgVectorLayerPropertiesBase(), 
       layer(lyr), 
       mRendererDialog(0)
 {

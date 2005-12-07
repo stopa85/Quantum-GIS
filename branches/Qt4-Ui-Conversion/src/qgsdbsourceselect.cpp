@@ -27,6 +27,7 @@ email                : sherman at mrcc.com
 #include <qmessagebox.h>
 #include <qinputdialog.h>
 #include <q3groupbox.h>
+#include <QTextOStream>
 #include "xpm/point_layer.xpm"
 #include "xpm/line_layer.xpm"
 #include "xpm/polygon_layer.xpm"
@@ -36,7 +37,7 @@ email                : sherman at mrcc.com
 #include "qgisapp.h"
 #include "qgscontexthelp.h"
 QgsDbSourceSelect::QgsDbSourceSelect(QgisApp *app, const char *name, bool modal)
-: QgsDbSourceSelectBase(app, name, modal), qgisApp(app)
+: QgsDbSourceSelectBase(), qgisApp(app)
 {
   btnAdd->setEnabled(false);
   populateConnectionList();

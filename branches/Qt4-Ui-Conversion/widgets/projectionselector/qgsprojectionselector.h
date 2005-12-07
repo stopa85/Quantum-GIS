@@ -10,12 +10,8 @@
 #ifndef QGSPROJECTIONSELECTOR_H
 #define QGSPROJECTIONSELECTOR_H
 
-#ifdef WIN32
-#include "qgsprojectionselectorbase.h"
-#else
-#include "qgsprojectionselectorbase.uic.h"
-#endif
-
+#include "ui_qgsprojectionselectorbase.h"
+#include <QDialog>
 #include <qgis.h>
 #include <qstring.h>
 #include <q3listview.h>
@@ -24,7 +20,7 @@
 /**
   @author Tim Sutton
   */
-class QgsProjectionSelector: public QgsProjectionSelectorBase
+class QgsProjectionSelector: public QDialog, private Ui::QgsProjectionSelectorBase
 {
   Q_OBJECT
     public:

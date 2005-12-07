@@ -51,10 +51,12 @@ extern "C"{
 QgsCustomProjectionDialog::QgsCustomProjectionDialog( QWidget* parent , const char* name , Qt::WFlags fl  )
 #ifdef Q_OS_MACX
   // Mac modeless dialog dosn't have correct window type if parent is specified
-  : QgsCustomProjectionDialogBase( NULL, name, false, fl)
+  // parameters removed by Tim for now during qt4 port - FIXME!!
+  : QgsCustomProjectionDialogBase( )
 #else
   // Specifying parent suppresses separate taskbar entry for dialog
-  : QgsCustomProjectionDialogBase( parent, name, false, fl)
+  // parameters removed by Tim for now during qt4 port - FIXME!!
+  : QgsCustomProjectionDialogBase( )
 #endif
 {
   mQGisSettingsDir = QDir::homeDirPath () + "/.qgis/";

@@ -18,12 +18,8 @@
 /* $Id$ */
 #ifndef QGSIDENTIFYRESULTS_H
 #define QGSIDENTIFYRESULTS_H
-#ifdef WIN32
-#include "qgsidentifyresultsbase.h"
-#else
-#include "qgsidentifyresultsbase.uic.h"
-#endif
-
+#include "ui_qgsidentifyresultsbase.h"
+#include <QDialog>
 #include "qgsattributeaction.h"
 //Added by qt3to4:
 #include <Q3PopupMenu>
@@ -37,7 +33,7 @@ class Q3PopupMenu;
  *@author Gary E.Sherman
  */
 
-class QgsIdentifyResults:public QgsIdentifyResultsBase
+class QgsIdentifyResults:public QDialog, private Ui::QgsIdentifyResultsBase
 {
   Q_OBJECT;
   public:

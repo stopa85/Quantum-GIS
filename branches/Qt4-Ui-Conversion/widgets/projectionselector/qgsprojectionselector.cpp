@@ -43,7 +43,7 @@
 
 
 QgsProjectionSelector::QgsProjectionSelector( QWidget* parent , const char* name , Qt::WFlags fl  )
-    : QgsProjectionSelectorBase( parent, "Projection Selector", fl )
+    : QgsProjectionSelectorBase( )
 {
   // Get the package data path and set the full path name to the sqlite3 spatial reference
   // database.

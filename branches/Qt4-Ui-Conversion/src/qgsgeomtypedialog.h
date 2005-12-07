@@ -18,15 +18,12 @@
 #ifndef QGSGEOMTYPEDIALOG_H
 #define QGSGEOMTYPEDIALOG_H
 
-#ifdef WIN32
-#include "qgsgeomtypedialogbase.h"
-#else
-#include "qgsgeomtypedialogbase.uic.h"
-#endif //WIN32
+#include "ui_qgsgeomtypedialogbase.h"
+#include <QDialog>
 
 #include "qgis.h"
 
-class QgsGeomTypeDialog: public QgsGeomTypeDialogBase
+class QgsGeomTypeDialog: public QDialog, private Ui::QgsGeomTypeDialogBase
 {
   Q_OBJECT
   public:
