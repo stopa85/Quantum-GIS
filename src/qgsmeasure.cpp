@@ -39,7 +39,7 @@
 
 
 QgsMeasure::QgsMeasure(bool measureArea, QgsMapCanvas *mc, QWidget *parent, const char * name, Qt::WFlags f)
-           :QgsMeasureBase( parent, name, f)
+           :QgsMeasureBase( )
 {
     mMeasureArea = measureArea;
     mMapCanvas = mc;
@@ -172,7 +172,7 @@ void QgsMeasure::mousePress(QgsPoint &point)
   if (mPoints.size() == 0)
   {
     addPoint(point);
-    show();
+    this->show();
   }
   
   mouseMove(point);
@@ -324,7 +324,7 @@ void QgsMeasure::restorePosition()
   resize(ww,wh);
   move(wx,wy);
 //  setUpdatesEnabled(true);
-  QgsMeasureBase::show();
+  this->show();
 }
 
 void QgsMeasure::saveWindowLocation()

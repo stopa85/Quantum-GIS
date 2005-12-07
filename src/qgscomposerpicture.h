@@ -31,11 +31,7 @@
 //Added by qt3to4:
 #include <QPixmap>
 
-#ifdef WIN32
-#include "qgscomposerpicturebase.h"
-#else
-#include "qgscomposerpicturebase.uic.h"
-#endif
+#include "ui_qgscomposerpicturebase.h"
 
 class Q3CanvasItem;
 class Q3CanvasRectangle;
@@ -60,7 +56,7 @@ class QgsComposerItem;
  */
 // NOTE: QgsComposerPictureBase must be first, otherwise does not compile
 //                                public QCanvasRectangle, 
-class QgsComposerPicture : public QgsComposerPictureBase, 
+class QgsComposerPicture : public QWidget, private Ui::QgsComposerPictureBase, 
 				public Q3CanvasPolygonalItem,
                                 public QgsComposerItem
 {

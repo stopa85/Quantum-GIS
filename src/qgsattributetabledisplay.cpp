@@ -231,7 +231,7 @@ void QgsAttributeTableDisplay::advancedSearch()
   QgsAdvancedAttrSearch* searchDlg = new QgsAdvancedAttrSearch(this);
   if (searchDlg->exec())
   {
-    doSearch(searchDlg->mSearchString->text());
+    doSearch(searchDlg->searchString());
   }
   delete searchDlg;
 }

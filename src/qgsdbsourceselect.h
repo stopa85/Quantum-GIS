@@ -17,11 +17,8 @@
 /* $Id$ */
 #ifndef QGSDBSOURCESELECT_H
 #define QGSDBSOURCESELECT_H
-#ifdef WIN32
-#include "qgsdbsourceselectbase.h"
-#else
-#include "qgsdbsourceselectbase.uic.h"
-#endif
+#include "ui_qgsdbsourceselectbase.h"
+#include <QDialog>
 extern "C"
 {
 #include <libpq-fe.h>
@@ -39,7 +36,7 @@ class QgisApp;
  * for PostGIS enabled PostgresQL databases. The user can then connect and add 
  * tables from the database to the map canvas.
  */
-class QgsDbSourceSelect : public QgsDbSourceSelectBase 
+class QgsDbSourceSelect : public QDialog, private Ui::QgsDbSourceSelectBase 
 {
   Q_OBJECT
  public:

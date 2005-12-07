@@ -38,10 +38,12 @@
 QgsBookmarks::QgsBookmarks(QWidget *parent, const char *name)
 #ifdef Q_OS_MACX
   // Mac modeless dialog dosn't have correct window type if parent is specified
-  : QgsBookmarksBase(NULL, name),
+  //Tim removed params during Qt4 ui port - FIXME
+  : QgsBookmarksBase(),
 #else
   // Specifying parent suppresses separate taskbar entry for dialog
-  : QgsBookmarksBase(parent, name),
+  //Tim removed params during Qt4 ui port - FIXME
+  : QgsBookmarksBase(),
 #endif
   mParent(parent)
 {

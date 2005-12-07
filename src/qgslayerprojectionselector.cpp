@@ -24,7 +24,9 @@
  * Constructor
  */
 QgsLayerProjectionSelector::QgsLayerProjectionSelector(QWidget *parent, 
-    const char * name, bool modal) : QgsLayerProjectionSelectorBase(parent, name, modal)
+    const char * name, bool modal) 
+  //parameters removed during qt4 ui port - FIXME!!!
+  : QgsLayerProjectionSelectorBase()
 {
 
  qApp->restoreOverrideCursor();

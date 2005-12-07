@@ -19,11 +19,8 @@
 /* $Id$ */
 #ifndef QGSRASTERLAYERPROPERTIES_H
 #define QGSRASTERLAYERPROPERTIES_H
-#ifdef WIN32
-#include "qgsrasterlayerpropertiesbase.h"
-#else
-#include "qgsrasterlayerpropertiesbase.uic.h"
-#endif
+#include <QDialog>
+#include "ui_qgsrasterlayerpropertiesbase.h"
 #include "qgsmaplayer.h"
 #include "qgsrasterlayer.h"
 
@@ -32,7 +29,7 @@
   *@author Tim Sutton
   */
 
-class QgsRasterLayerProperties : public QgsRasterLayerPropertiesBase  
+class QgsRasterLayerProperties : public QDialog, private Ui::QgsRasterLayerPropertiesBase  
 {
   Q_OBJECT
     public:

@@ -53,7 +53,8 @@ const int PIXMAP_WIDTH = 200;
 const int PIXMAP_HEIGHT = 20;
 
 QgsLabelDialog::QgsLabelDialog ( QgsLabel *label,  QWidget *parent ) 
-    : QgsLabelDialogBase (parent),
+  //parameter removed durint qt4 ui port - FIXME!!
+    : QgsLabelDialogBase (),
       mLabel(label),
       mFontColor(Qt::black),
       mBufferColor(Qt::black),

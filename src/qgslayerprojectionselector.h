@@ -19,16 +19,14 @@
 #ifndef QGSLAYERPROJECTIONSELECTOR_H
 #define QGSLAYERPROJECTIONSELECTOR_H
 class QString;
-#ifdef WIN32
-#include "qgslayerprojectionselectorbase.h"
-#else
-#include "qgslayerprojectionselectorbase.uic.h"
-#endif
+#include "ui_qgslayerprojectionselectorbase.h"
+#include <QDialog>
 /**
  * \class QgsLayerProjectionSelector
  * \brief Set Projection system for a layer
  */
-class QgsLayerProjectionSelector :public QgsLayerProjectionSelectorBase{
+class QgsLayerProjectionSelector :public QDialog, private Ui::QgsLayerProjectionSelectorBase
+{
   Q_OBJECT;
   public:
     /**

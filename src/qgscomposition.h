@@ -21,11 +21,8 @@
 #include <qprinter.h>
 #include <qpoint.h>
 
-#ifdef WIN32
-#include "qgscompositionbase.h"
-#else
-#include "qgscompositionbase.uic.h"
-#endif
+#include "ui_qgscompositionbase.h"
+#include <QDialog>
 
 #include "qgsrect.h"
 //Added by qt3to4:
@@ -62,7 +59,7 @@ public:
  * \brief This class can store, write as XML and read from XML the description
  *        map composition for printing.
  */
-class QgsComposition: public QgsCompositionBase
+class QgsComposition: public QDialog, private Ui::QgsCompositionBase
 {
     Q_OBJECT
 public:

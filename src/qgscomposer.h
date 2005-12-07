@@ -17,11 +17,8 @@
 /* $Id$ */
 #ifndef QGSCOMPOSER_H
 #define QGSCOMPOSER_H
-#ifdef WIN32
-#include "qgscomposerbase.h"
-#else
-#include "qgscomposerbase.uic.h"
-#endif
+#include "ui_qgscomposerbase.h"
+#include <QDialog>
 
 #include "qgscomposerview.h"
 #include "qgscomposition.h"
@@ -52,7 +49,7 @@ class QgsComposerItem;
  * If open() is called and mFirstTime == true, a new default composition is created.
  *
  */
-class QgsComposer: public QgsComposerBase
+class QgsComposer: public QDialog, private Ui::QgsComposerBase
 {
     Q_OBJECT
 

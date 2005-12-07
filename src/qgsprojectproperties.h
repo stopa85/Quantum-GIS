@@ -18,11 +18,8 @@
 
 /* $Id$ */
 
-#ifdef WIN32
-#include <qgsprojectpropertiesbase.h>
-#else
-#include <qgsprojectpropertiesbase.uic.h>
-#endif
+#include <ui_qgsprojectpropertiesbase.h>
+#include <QDialog>
 
 #include <qgsscalecalculator.h>
 #include "qgis.h"
@@ -32,7 +29,7 @@
   @note actual state is stored in QgsProject singleton instance
 
  */
-class QgsProjectProperties : public QgsProjectPropertiesBase
+class QgsProjectProperties : public QDialog, private Ui::QgsProjectPropertiesBase
 {
   Q_OBJECT
 public:

@@ -30,11 +30,7 @@
 #include <Q3PointArray>
 #include <Q3PopupMenu>
 
-#ifdef WIN32
-#include "qgscomposerscalebarbase.h"
-#else
-#include "qgscomposerscalebarbase.uic.h"
-#endif
+#include "ui_qgscomposerscalebarbase.h"
 
 class Q3CanvasItem;
 class Q3CanvasRectangle;
@@ -62,7 +58,7 @@ class QgsComposerMap;
  *         x,y is center of upper side of the bar, the center position depends on scalebar style
  */
 // NOTE: QgsComposerScalebarBase must be first, otherwise does not compile
-class QgsComposerScalebar : public QgsComposerScalebarBase, public Q3CanvasPolygonalItem, public QgsComposerItem
+class QgsComposerScalebar : public QWidget, private Ui::QgsComposerScalebarBase, public Q3CanvasPolygonalItem, public QgsComposerItem
 {
     Q_OBJECT
 

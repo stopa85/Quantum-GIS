@@ -19,9 +19,10 @@
 
 #include "qgsadvancedattrsearch.h"
 #include <qmessagebox.h>
-
+#include <QString>
+#include <QTextEdit>
 QgsAdvancedAttrSearch::QgsAdvancedAttrSearch(QWidget *parent, const char *name)
-    :QgsAdvancedAttrSearchBase(parent, name)
+    :QgsAdvancedAttrSearchBase()
 {
 }
 
@@ -42,5 +43,10 @@ Short overview of syntax:\n\
 - parentheses ()\n\
 - example: name = 'John' OR (age >= 10 AND surname ~ 'ow')"));
   
+}
+
+QString QgsAdvancedAttrSearch::searchString()
+{
+  return mSearchString->text();
 }
 

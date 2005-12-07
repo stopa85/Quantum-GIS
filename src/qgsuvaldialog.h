@@ -17,18 +17,15 @@
 /* $Id$ */
 #ifndef QGSUVALDIALOG_H
 #define QGSUVALDIALOG_H
-#ifdef WIN32
-#include "qgsuvaldialogbase.h"
-#else
-#include "qgsuvaldialogbase.uic.h"
-#endif
+#include "ui_qgsuvaldialogbase.h"
 #include "qgssisydialog.h"
+#include <QDialog>
 #include <map>
 
 class QgsVectorLayer;
 class QgsRenderItem;
 
-class QgsUValDialog: public QgsUValDialogBase
+class QgsUValDialog: public QDialog , private Ui::QgsUValDialogBase
 {
     Q_OBJECT
  public:

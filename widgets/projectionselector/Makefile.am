@@ -20,14 +20,17 @@ endif
 
 %.h: %.ui 
 	$(UIC) -o $@ $<
-if HAVE_QT4
-	../../tools/qgis-qt3to4.pl -uic $@
-endif
+	
+## %.h: %.ui 
+##	$(UIC) -o $@ $<
+## if HAVE_QT4
+## 	../../tools/qgis-qt3to4.pl -uic $@
+## endif
 
-if !NO_UIC_IMPLEMENTATIONS
-%.cpp: %.ui
-	$(UIC) -o $@ -impl $*.h $<
-endif
+## if !NO_UIC_IMPLEMENTATIONS
+## %.cpp: %.ui
+## 	$(UIC) -o $@ -impl $*.h $<
+## endif
 
 # %.h: %.ui
 # 	$(UIC) -o $@ $<
@@ -39,20 +42,20 @@ endif
 # name of the qgis library widget
 plugin_LTLIBRARIES = libqgsprojectionselector.la
 
-plugin_MOC = qgsprojectionselector.moc.cpp		\
-	     qgsprojectionselectorbase.moc.cpp
+plugin_MOC = qgsprojectionselector.moc.cpp		
 
-plugin_UI = qgsprojectionselectorbase.h \
-	    qgsprojectionselectorbase.cpp
+plugin_UI = ui_qgsprojectionselectorbase.h 
 
-plugin_UIC = qgsprojectionselectorbase.ui \
-	qgsprojectionselectorbase.h 
+plugin_UIC = qgsprojectionselectorbase.ui 
+##\
+##	qgsprojectionselectorbase.h 
 
 libqgsprojectionselector_la_SOURCES =  qgsprojectionselector.cpp	\
-			         $(plugin_UI)			\
-			         $(plugin_MOC)
+			         $(plugin_UI) \
+			         $(plugin_UIC) \
+			         $(plugin_MOC) 
 
-BUILT_SOURCES = $(plugin_MOC) $(plugin_UI)
+BUILT_SOURCES = $(plugin_MOC) $(plugin_UI) $(plugin_UIC)
 
 CLEANFILES = $(BUILT_SOURCES)
 

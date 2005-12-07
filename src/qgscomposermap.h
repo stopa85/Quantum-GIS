@@ -29,11 +29,7 @@
 //Added by qt3to4:
 #include <QPixmap>
 
-#ifdef WIN32
-#include "qgscomposermapbase.h"
-#else
-#include "qgscomposermapbase.uic.h"
-#endif
+#include "ui_qgscomposermapbase.h"
 
 class Q3CanvasItem;
 class Q3CanvasRectangle;
@@ -54,7 +50,7 @@ class QgsComposition;
  *  \brief Object representing map window. 
  */
 // NOTE: QgsComposerMapBase must be first, otherwise does not compile
-class QgsComposerMap : public QgsComposerMapBase, public Q3CanvasRectangle, public QgsComposerItem
+class QgsComposerMap : public QWidget, private Ui::QgsComposerMapBase, public Q3CanvasRectangle, public QgsComposerItem
 {
     Q_OBJECT
 

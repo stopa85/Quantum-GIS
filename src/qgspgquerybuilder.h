@@ -21,11 +21,8 @@ extern "C"
 #include <libpq-fe.h>
 }
 
-#ifdef WIN32
-#include "qgspgquerybuilderbase.h"
-#else
-#include "qgspgquerybuilderbase.uic.h"
-#endif
+#include "ui_qgspgquerybuilderbase.h"
+#include <QDialog>
 #include "qgsfield.h"
 #include "qgsdatasourceuri.h"
 /*!
@@ -39,7 +36,7 @@ extern "C"
  * will be returned.
  *
  */
-class QgsPgQueryBuilder : public QgsPgQueryBuilderBase { 
+class QgsPgQueryBuilder : public QDialog, private Ui::QgsPgQueryBuilderBase { 
    Q_OBJECT 
   public:
   //! Default constructor - not very useful

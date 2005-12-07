@@ -19,12 +19,8 @@
 
 #ifndef QGSATTRIBUTETABLEDISPLAY_H
 #define QGSATTRIBUTETABLEDISPLAY_H
-#ifdef WIN32
-#include "qgsattributetablebase.h"
-#else
-#include "qgsattributetablebase.uic.h"
-#endif
-
+#include "ui_qgsattributetablebase.h"
+#include <QDialog>
 #include <vector>
 //Added by qt3to4:
 #include <Q3PopupMenu>
@@ -37,7 +33,7 @@ class Q3PopupMenu;
   *@author Gary E.Sherman
   */
 
-class QgsAttributeTableDisplay:public QgsAttributeTableBase
+class QgsAttributeTableDisplay:public QDialog, private Ui::QgsAttributeTableBase
 {
   Q_OBJECT
   public:

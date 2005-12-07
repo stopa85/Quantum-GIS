@@ -48,7 +48,7 @@
 #include "qgisapp.h"
 
 QgsServerSourceSelect::QgsServerSourceSelect(QgisApp * app, QWidget * parent, const char *name)
-  : QgsServerSourceSelectBase(parent, name),
+  : QgsServerSourceSelectBase(),
     qgisApp(app)
 {
   btnAdd->setEnabled(false);

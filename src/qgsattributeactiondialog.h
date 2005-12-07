@@ -27,16 +27,13 @@ back to QgsVectorLayer.
 #include <qgsfield.h>
 #include <vector>
 
-#ifdef WIN32
-#include "qgsattributeactiondialogbase.h"
-#else
-#include "qgsattributeactiondialogbase.uic.h"
-#endif
+#include "ui_qgsattributeactiondialogbase.h"
+#include <QDialog>
 
 class QWidget;
 class QgsAttributeAction;
 
-class QgsAttributeActionDialog : public QgsAttributeActionDialogBase
+class QgsAttributeActionDialog : public QDialog, private Ui::QgsAttributeActionDialogBase
 {
   Q_OBJECT;
   

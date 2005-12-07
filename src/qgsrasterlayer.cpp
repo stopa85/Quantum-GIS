@@ -1102,30 +1102,30 @@ void QgsRasterLayer::draw(QPainter * theQPainter,
   std::cout << "QgsRasterLayer::draw(4 arguments): checking timestamp." << std::endl;
 #endif
 
-/* TODO: Re-enable this for providers    
+  /* TODO: Re-enable this for providers    
   // Check timestamp
   if ( !providerKey )
   {
 
 #ifdef QGISDEBUG
-  std::cout << "QgsRasterLayer::draw(4 arguments): checking timestamp with no providerKey." << std::endl;
+std::cout << "QgsRasterLayer::draw(4 arguments): checking timestamp with no providerKey." << std::endl;
 #endif
-    
-    if ( !update() )
-    {
-      return;
-    }
-  }    
+
+if ( !update() )
+{
+return;
+}
+}    
 */
-  
+
   // clip raster extent to view extent
   QgsRect myRasterExtent = theViewExtent->intersect(&layerExtent);
-  if (myRasterExtent.isEmpty())
-  {
-    // nothing to do
-    return;
-  }
-  
+if (myRasterExtent.isEmpty())
+{
+  // nothing to do
+  return;
+}
+
 #ifdef QGISDEBUG
   std::cout << "QgsRasterLayer::draw(4 arguments): theViewExtent is " << std::endl << "  '" << (*theViewExtent) << "'." << std::endl;
   std::cout << "QgsRasterLayer::draw(4 arguments): myRasterExtent is " << std::endl << "  '" << myRasterExtent << "'." << std::endl;
@@ -1133,35 +1133,16 @@ void QgsRasterLayer::draw(QPainter * theQPainter,
 
 
 
-  
-  //
-  // The first thing we do is set up the QgsRasterViewPort. This struct stores all the settings
-  // relating to the size (in pixels and coordinate system units) of the raster part that is
-  // in view in the map window. It also stores the origin.
-  //
-  //this is not a class level member because every time the user pans or zooms
-  //the contents of the rasterViewPort will change
-  QgsRasterViewPort *myRasterViewPort = new QgsRasterViewPort();
 
-  
-  // calculate raster pixel offsets from origin to clipped rect
-  // we're only interested in positive offsets where the origin of the raster
-  // is northwest of the origin of the view
-  myRasterViewPort->rectXOffsetFloat = (theViewExtent->xMin() - layerExtent.xMin()) / fabs(adfGeoTransform[1]);
-  myRasterViewPort->rectYOffsetFloat = (layerExtent.yMax() - theViewExtent->yMax()) / fabs(adfGeoTransform[5]);
-  
-  if (myRasterViewPort->rectXOffsetFloat < 0 )
-  {
-    myRasterViewPort->rectXOffsetFloat = 0;
-  }
+//
+// The first thing we do is set up the QgsRasterViewPort. This struct stores all the settings
+// relating to the size (in pixels and coordinate system units) of the raster part that is
+// in view in the map window. It also stores the origin.
+//
+//this is not a class level member because every time the user pans or zooms
+//the contents of the rasterViewPort will change
+QgsRasterViewPort *myRasterViewPort = new QgsRasterViewPort();
 
-  if (myRasterViewPort->rectYOffsetFloat < 0 )
-  {
-    myRasterViewPort->rectYOffsetFloat = 0;
-  }
-  
-  myRasterViewPort->rectXOffsetInt = static_cast < int >(myRasterViewPort->rectXOffsetFloat);
-  myRasterViewPort->rectYOffsetInt = static_cast < int >(myRasterViewPort->rectYOffsetFloat);
 
 #ifdef QGISDEBUG
   std::cout << "QgsRasterLayer::draw(4 arguments): adfGeoTransform[0] = " << adfGeoTransform[0] << "." << std::endl;
@@ -1227,9 +1208,10 @@ void QgsRasterLayer::draw(QPainter * theQPainter,
   }
 */
 
-  // get dimensions of clipped raster image in device coordinate space (this is the size of the viewport)
-  myRasterViewPort->topLeftPoint = theQgsMapToPixel->transform(myRasterExtent.xMin(), myRasterExtent.yMax());
-  myRasterViewPort->bottomRightPoint = theQgsMapToPixel->transform(myRasterExtent.xMax(), myRasterExtent.yMin());
+if (myRasterViewPort->rectYOffsetFloat < 0 )
+{
+  myRasterViewPort->rectYOffsetFloat = 0;
+}
 
   // Try a different method - round up to the nearest whole source pixel.
   myRasterViewPort->drawableAreaXDimInt =
@@ -1255,10 +1237,52 @@ void QgsRasterLayer::draw(QPainter * theQPainter,
     static_cast<int>(myRasterViewPort->bottomRightPoint.x() + 0.5) -
     static_cast<int>(myRasterViewPort->topLeftPoint    .x() + 0.5);
 
-  myRasterViewPort->drawableAreaYDimInt =
-    static_cast<int>(myRasterViewPort->bottomRightPoint.y() + 0.5) -
-    static_cast<int>(myRasterViewPort->topLeftPoint    .y() + 0.5);
+
 */
+
+// get dimensions of clipped raster image in raster pixel space/ RasterIO will do the scaling for us.
+// So for example, if the user is zoomed in a long way, there may only be e.g. 5x5 pixels retrieved from
+// the raw raster data, but rasterio will seamlessly scale the up to whatever the screen coordinats are
+// e.g. a 600x800 display window (see next section below)
+myRasterViewPort->clippedXMinDouble = (myRasterExtent.xMin() - adfGeoTransform[0]) / adfGeoTransform[1];
+myRasterViewPort->clippedXMaxDouble = (myRasterExtent.xMax() - adfGeoTransform[0]) / adfGeoTransform[1];
+myRasterViewPort->clippedYMinDouble = (myRasterExtent.yMin() - adfGeoTransform[3]) / adfGeoTransform[5];
+myRasterViewPort->clippedYMaxDouble = (myRasterExtent.yMax() - adfGeoTransform[3]) / adfGeoTransform[5];
+myRasterViewPort->clippedWidthInt =
+abs(static_cast < int >(myRasterViewPort->clippedXMaxDouble - myRasterViewPort->clippedXMinDouble));
+myRasterViewPort->clippedHeightInt =
+abs(static_cast < int >(myRasterViewPort->clippedYMaxDouble - myRasterViewPort->clippedYMinDouble));
+
+// Add one to the raster dimensions to guard against the integer truncation
+// effects of static_cast<int>
+// TODO: Can we get rid of this now that we are rounding at the point of the static_cast?
+myRasterViewPort->clippedWidthInt++;
+myRasterViewPort->clippedHeightInt++;
+
+// make sure we don't exceed size of raster, otherwise GDAL RasterIO doesn't like it
+if (myRasterViewPort->clippedWidthInt > rasterXDimInt)
+{
+  myRasterViewPort->clippedWidthInt = rasterXDimInt;
+}
+if (myRasterViewPort->clippedHeightInt > rasterYDimInt)
+{
+  myRasterViewPort->clippedHeightInt = rasterYDimInt;
+}
+
+// get dimensions of clipped raster image in device coordinate space (this is the size of the viewport)
+myRasterViewPort->topLeftPoint = theQgsMapToPixel->transform(myRasterExtent.xMin(), myRasterExtent.yMax());
+myRasterViewPort->bottomRightPoint = theQgsMapToPixel->transform(myRasterExtent.xMax(), myRasterExtent.yMin());
+
+// Since GDAL's RasterIO can't handle floating point, we have to round to
+// the nearest pixel.  Add 0.5 to get rounding instead of truncation
+// out of static_cast<int>.
+myRasterViewPort->drawableAreaXDimInt =
+static_cast<int>(myRasterViewPort->bottomRightPoint.x() + 0.5) -
+static_cast<int>(myRasterViewPort->topLeftPoint    .x() + 0.5);
+
+myRasterViewPort->drawableAreaYDimInt =
+static_cast<int>(myRasterViewPort->bottomRightPoint.y() + 0.5) -
+static_cast<int>(myRasterViewPort->topLeftPoint    .y() + 0.5);
 
 #ifdef QGISDEBUG
     std::cout << "QgsRasterLayer::draw: mapUnitsPerPixel      = " << theQgsMapToPixel->mapUnitsPerPixel() << std::endl; 
@@ -1266,130 +1290,130 @@ void QgsRasterLayer::draw(QPainter * theQPainter,
     std::cout << "QgsRasterLayer::draw: rasterXDimInt         = " << rasterXDimInt << std::endl; 
     std::cout << "QgsRasterLayer::draw: rasterYDimInt         = " << rasterYDimInt << std::endl; 
 
-    std::cout << "QgsRasterLayer::draw: rectXOffsetFloat      = " << myRasterViewPort->rectXOffsetFloat << std::endl; 
-    std::cout << "QgsRasterLayer::draw: rectXOffsetInt        = " << myRasterViewPort->rectXOffsetInt << std::endl; 
-    std::cout << "QgsRasterLayer::draw: rectYOffsetFloat      = " << myRasterViewPort->rectYOffsetFloat << std::endl; 
-    std::cout << "QgsRasterLayer::draw: rectYOffsetInt        = " << myRasterViewPort->rectYOffsetInt << std::endl; 
+std::cout << "QgsRasterLayer::draw: rectXOffsetFloat      = " << myRasterViewPort->rectXOffsetFloat << std::endl; 
+std::cout << "QgsRasterLayer::draw: rectXOffsetInt        = " << myRasterViewPort->rectXOffsetInt << std::endl; 
+std::cout << "QgsRasterLayer::draw: rectYOffsetFloat      = " << myRasterViewPort->rectYOffsetFloat << std::endl; 
+std::cout << "QgsRasterLayer::draw: rectYOffsetInt        = " << myRasterViewPort->rectYOffsetInt << std::endl; 
 
-    std::cout << "QgsRasterLayer::draw: myRasterExtent.xMin() = " << myRasterExtent.xMin() << std::endl; 
-    std::cout << "QgsRasterLayer::draw: myRasterExtent.xMax() = " << myRasterExtent.xMax() << std::endl; 
-    std::cout << "QgsRasterLayer::draw: myRasterExtent.yMin() = " << myRasterExtent.yMin() << std::endl; 
-    std::cout << "QgsRasterLayer::draw: myRasterExtent.yMax() = " << myRasterExtent.yMax() << std::endl; 
-    
-    std::cout << "QgsRasterLayer::draw: topLeftPoint.x()      = " << myRasterViewPort->topLeftPoint.x() << std::endl; 
-    std::cout << "QgsRasterLayer::draw: bottomRightPoint.x()  = " << myRasterViewPort->bottomRightPoint.x() << std::endl; 
-    std::cout << "QgsRasterLayer::draw: topLeftPoint.y()      = " << myRasterViewPort->topLeftPoint.y() << std::endl; 
-    std::cout << "QgsRasterLayer::draw: bottomRightPoint.y()  = " << myRasterViewPort->bottomRightPoint.y() << std::endl; 
-       
-    std::cout << "QgsRasterLayer::draw: clippedXMinDouble     = " << myRasterViewPort->clippedXMinDouble << std::endl; 
-    std::cout << "QgsRasterLayer::draw: clippedXMaxDouble     = " << myRasterViewPort->clippedXMaxDouble << std::endl; 
-    std::cout << "QgsRasterLayer::draw: clippedYMinDouble     = " << myRasterViewPort->clippedYMinDouble << std::endl; 
-    std::cout << "QgsRasterLayer::draw: clippedYMaxDouble     = " << myRasterViewPort->clippedYMaxDouble << std::endl; 
-    
-    std::cout << "QgsRasterLayer::draw: clippedWidthInt       = " << myRasterViewPort->clippedWidthInt << std::endl; 
-    std::cout << "QgsRasterLayer::draw: clippedHeightInt      = " << myRasterViewPort->clippedHeightInt << std::endl; 
-    std::cout << "QgsRasterLayer::draw: drawableAreaXDimInt   = " << myRasterViewPort->drawableAreaXDimInt << std::endl; 
-    std::cout << "QgsRasterLayer::draw: drawableAreaYDimInt   = " << myRasterViewPort->drawableAreaYDimInt << std::endl; 
+std::cout << "QgsRasterLayer::draw: myRasterExtent.xMin() = " << myRasterExtent.xMin() << std::endl; 
+std::cout << "QgsRasterLayer::draw: myRasterExtent.xMax() = " << myRasterExtent.xMax() << std::endl; 
+std::cout << "QgsRasterLayer::draw: myRasterExtent.yMin() = " << myRasterExtent.yMin() << std::endl; 
+std::cout << "QgsRasterLayer::draw: myRasterExtent.yMax() = " << myRasterExtent.yMax() << std::endl; 
 
-  std::cout << "ReadXml: gray band name : " << grayBandNameQString.toLocal8Bit().data() << std::endl;
-  std::cout << "ReadXml: red band name %s " <<redBandNameQString.toLocal8Bit().data()<< std::endl;
-  std::cout << "ReadXml: green band name %s " << greenBandNameQString.toLocal8Bit().data()<< std::endl;
-  std::cout << "ReadXml: blue band name %s " << blueBandNameQString.toLocal8Bit().data()<< std::endl;
+std::cout << "QgsRasterLayer::draw: topLeftPoint.x()      = " << myRasterViewPort->topLeftPoint.x() << std::endl; 
+std::cout << "QgsRasterLayer::draw: bottomRightPoint.x()  = " << myRasterViewPort->bottomRightPoint.x() << std::endl; 
+std::cout << "QgsRasterLayer::draw: topLeftPoint.y()      = " << myRasterViewPort->topLeftPoint.y() << std::endl; 
+std::cout << "QgsRasterLayer::draw: bottomRightPoint.y()  = " << myRasterViewPort->bottomRightPoint.y() << std::endl; 
+
+std::cout << "QgsRasterLayer::draw: clippedXMinDouble     = " << myRasterViewPort->clippedXMinDouble << std::endl; 
+std::cout << "QgsRasterLayer::draw: clippedXMaxDouble     = " << myRasterViewPort->clippedXMaxDouble << std::endl; 
+std::cout << "QgsRasterLayer::draw: clippedYMinDouble     = " << myRasterViewPort->clippedYMinDouble << std::endl; 
+std::cout << "QgsRasterLayer::draw: clippedYMaxDouble     = " << myRasterViewPort->clippedYMaxDouble << std::endl; 
+
+std::cout << "QgsRasterLayer::draw: clippedWidthInt       = " << myRasterViewPort->clippedWidthInt << std::endl; 
+std::cout << "QgsRasterLayer::draw: clippedHeightInt      = " << myRasterViewPort->clippedHeightInt << std::endl; 
+std::cout << "QgsRasterLayer::draw: drawableAreaXDimInt   = " << myRasterViewPort->drawableAreaXDimInt << std::endl; 
+std::cout << "QgsRasterLayer::draw: drawableAreaYDimInt   = " << myRasterViewPort->drawableAreaYDimInt << std::endl; 
+
+std::cout << "ReadXml: gray band name : " << grayBandNameQString.toLocal8Bit().data() << std::endl;
+std::cout << "ReadXml: red band name %s " <<redBandNameQString.toLocal8Bit().data()<< std::endl;
+std::cout << "ReadXml: green band name %s " << greenBandNameQString.toLocal8Bit().data()<< std::endl;
+std::cout << "ReadXml: blue band name %s " << blueBandNameQString.toLocal8Bit().data()<< std::endl;
 
 #endif
-  
-  // /\/\/\ - added to handle zoomed-in rasters
 
-  
-    // Provider mode: See if a provider key is specified, and if so use the provider instead
-  
+// /\/\/\ - added to handle zoomed-in rasters
+
+
+// Provider mode: See if a provider key is specified, and if so use the provider instead
+
 #ifdef QGISDEBUG
-    std::cout << "QgsRasterLayer::draw: Checking for provider key." << std::endl; 
+std::cout << "QgsRasterLayer::draw: Checking for provider key." << std::endl; 
 #endif
-  
-  if (!providerKey.isEmpty())
-  {
+
+if (!providerKey.isEmpty())
+{
 #ifdef QGISDEBUG
-    std::cout << "QgsRasterLayer::draw: Wanting a '" << providerKey.toLocal8Bit().data() << "' provider to draw this." << std::endl; 
+  std::cout << "QgsRasterLayer::draw: Wanting a '" << providerKey.toLocal8Bit().data() << "' provider to draw this." << std::endl; 
 #endif
 
   emit setStatus(QString("Retrieving using ")+providerKey);
-    
-    QImage* image = 
-      dataProvider->draw(
-                         myRasterExtent, 
-                         myRasterViewPort->drawableAreaXDimInt,
-                         myRasterViewPort->drawableAreaYDimInt
-                        );
+
+  QImage* image = 
+    dataProvider->draw(
+        myRasterExtent, 
+        myRasterViewPort->drawableAreaXDimInt,
+        myRasterViewPort->drawableAreaYDimInt
+        );
 
 #ifdef QGISDEBUG
-    std::cout << "QgsRasterLayer::draw: Done dataProvider->draw." << std::endl; 
+  std::cout << "QgsRasterLayer::draw: Done dataProvider->draw." << std::endl; 
 #endif
 
 
 #ifdef QGISDEBUG
-    std::cout << "QgsRasterLayer::draw: image stats: "
-              << "depth = " << image->depth() << ", "
-              << "bytes = " << image->numBytes() << ", "
-              << "width = " << image->width() << ", "
-              << "height = " << image->height()
-              << "." << std::endl; 
- 
+  std::cout << "QgsRasterLayer::draw: image stats: "
+    << "depth = " << image->depth() << ", "
+    << "bytes = " << image->numBytes() << ", "
+    << "width = " << image->width() << ", "
+    << "height = " << image->height()
+    << "." << std::endl; 
+
 
 #endif
 
 
 #ifdef QGISDEBUG
-    std::cout << "QgsRasterLayer::draw: Want to theQPainter->drawImage with "
-              << "origin x = " << myRasterViewPort->topLeftPoint.x() 
-              << " (" << static_cast<int>(myRasterViewPort->topLeftPoint.x()) << "), "
-              << "origin y = " << myRasterViewPort->topLeftPoint.y()
-              << " (" << static_cast<int>(myRasterViewPort->topLeftPoint.y()) << ")"
-              << "." << std::endl; 
+  std::cout << "QgsRasterLayer::draw: Want to theQPainter->drawImage with "
+    << "origin x = " << myRasterViewPort->topLeftPoint.x() 
+    << " (" << static_cast<int>(myRasterViewPort->topLeftPoint.x()) << "), "
+    << "origin y = " << myRasterViewPort->topLeftPoint.y()
+    << " (" << static_cast<int>(myRasterViewPort->topLeftPoint.y()) << ")"
+    << "." << std::endl; 
 #endif
 
 
-    // Since GDAL's RasterIO can't handle floating point, we have to round to
-    // the nearest pixel.  Add 0.5 to get rounding instead of truncation
-    // out of static_cast<int>.
+  // Since GDAL's RasterIO can't handle floating point, we have to round to
+  // the nearest pixel.  Add 0.5 to get rounding instead of truncation
+  // out of static_cast<int>.
 
-    theQPainter->drawImage(static_cast<int>(
-                                            myRasterViewPort->topLeftPoint.x()
-                                          + 0.5    // try simulating rounding instead of truncation, to avoid off-by-one errors
-                                                   // TODO: Check for rigorous correctness
-                                           ),
-                           static_cast<int>(
-                                            myRasterViewPort->topLeftPoint.y()
-                                          + 0.5    // try simulating rounding instead of truncation, to avoid off-by-one errors
-                                                   // TODO: Check for rigorous correctness
-                                           ),
-                           *image);
+  theQPainter->drawImage(static_cast<int>(
+        myRasterViewPort->topLeftPoint.x()
+        + 0.5    // try simulating rounding instead of truncation, to avoid off-by-one errors
+        // TODO: Check for rigorous correctness
+        ),
+      static_cast<int>(
+        myRasterViewPort->topLeftPoint.y()
+        + 0.5    // try simulating rounding instead of truncation, to avoid off-by-one errors
+        // TODO: Check for rigorous correctness
+        ),
+      *image);
 
-  }
-  else
-  {
-    // Otherwise use the old-fashioned GDAL direct-drawing style
-    // TODO: Move into its own GDAL provider.
+}
+else
+{
+  // Otherwise use the old-fashioned GDAL direct-drawing style
+  // TODO: Move into its own GDAL provider.
 
-    // \/\/\/ - commented-out to handle zoomed-in rasters
-//    draw(theQPainter,myRasterViewPort);
-    // /\/\/\ - commented-out to handle zoomed-in rasters
-    // \/\/\/ - added to handle zoomed-in rasters
-    draw(theQPainter, myRasterViewPort, theQgsMapToPixel);
-    // /\/\/\ - added to handle zoomed-in rasters
-    
-  }
-  
-  delete myRasterViewPort;
+  // \/\/\/ - commented-out to handle zoomed-in rasters
+  //    draw(theQPainter,myRasterViewPort);
+  // /\/\/\ - commented-out to handle zoomed-in rasters
+  // \/\/\/ - added to handle zoomed-in rasters
+  draw(theQPainter, myRasterViewPort, theQgsMapToPixel);
+  // /\/\/\ - added to handle zoomed-in rasters
+
+}
+
+delete myRasterViewPort;
 
 #ifdef QGISDEBUG
-    std::cout << "QgsRasterLayer::draw: exiting." << std::endl; 
+std::cout << "QgsRasterLayer::draw: exiting." << std::endl; 
 #endif
 
 }
 
 void QgsRasterLayer::draw (QPainter * theQPainter, 
-                           QgsRasterViewPort * myRasterViewPort,
+                           QgsRasterViewPort * theRasterViewPort,
                            QgsMapToPixel * theQgsMapToPixel)
 {
 #ifdef QGISDEBUG
@@ -1414,7 +1438,7 @@ void QgsRasterLayer::draw (QPainter * theQPainter,
     }
     else
     {
-      drawSingleBandGray(theQPainter, myRasterViewPort,
+      drawSingleBandGray(theQPainter, theRasterViewPort,
                          theQgsMapToPixel, getRasterBandNumber(grayBandNameQString));
       break;
     }
@@ -1427,7 +1451,7 @@ void QgsRasterLayer::draw (QPainter * theQPainter,
     }
     else
     {
-      drawSingleBandPseudoColor(theQPainter, myRasterViewPort, 
+      drawSingleBandPseudoColor(theQPainter, theRasterViewPort, 
                                 theQgsMapToPixel, getRasterBandNumber(grayBandNameQString));
       break;
     }
@@ -1445,7 +1469,7 @@ void QgsRasterLayer::draw (QPainter * theQPainter,
 #endif
 
       int myBandNoInt = 1;
-      drawPalettedSingleBandGray(theQPainter, myRasterViewPort, 
+      drawPalettedSingleBandGray(theQPainter, theRasterViewPort, 
                                  theQgsMapToPixel, myBandNoInt, grayBandNameQString);
 
       break;
@@ -1461,13 +1485,13 @@ void QgsRasterLayer::draw (QPainter * theQPainter,
     {
 
       int myBandNoInt = 1;
-      drawPalettedSingleBandPseudoColor(theQPainter, myRasterViewPort,
+      drawPalettedSingleBandPseudoColor(theQPainter, theRasterViewPort,
                                         theQgsMapToPixel, myBandNoInt, grayBandNameQString);
       break;
     }
     //a "Palette" image where the bands contains 24bit color info and 8 bits is pulled out per color
   case PALETTED_MULTI_BAND_COLOR:
-    drawPalettedMultiBandColor(theQPainter, myRasterViewPort,
+    drawPalettedMultiBandColor(theQPainter, theRasterViewPort,
                                theQgsMapToPixel, 1);
     break;
     // a layer containing 2 or more bands, but using only one band to produce a grayscale image
@@ -1489,7 +1513,7 @@ void QgsRasterLayer::draw (QPainter * theQPainter,
     {
 
       //get the band number for the mapped gray band
-      drawMultiBandSingleBandGray(theQPainter, myRasterViewPort,
+      drawMultiBandSingleBandGray(theQPainter, theRasterViewPort,
                                   theQgsMapToPixel, getRasterBandNumber(grayBandNameQString));
       break;
     }
@@ -1503,14 +1527,14 @@ void QgsRasterLayer::draw (QPainter * theQPainter,
     else
     {
 
-      drawMultiBandSingleBandPseudoColor(theQPainter, myRasterViewPort,
+      drawMultiBandSingleBandPseudoColor(theQPainter, theRasterViewPort,
                                          theQgsMapToPixel, getRasterBandNumber(grayBandNameQString));
       break;
     }
     //a layer containing 2 or more bands, mapped to the three RGBcolors.
     //In the case of a multiband with only two bands, one band will have to be mapped to more than one color
   case MULTI_BAND_COLOR:
-    drawMultiBandColor(theQPainter, myRasterViewPort,
+    drawMultiBandColor(theQPainter, theRasterViewPort,
                        theQgsMapToPixel);
     break;
 
@@ -1522,7 +1546,7 @@ void QgsRasterLayer::draw (QPainter * theQPainter,
   //see if debug info is wanted
   if (showDebugOverlayFlag)
   {
-    showDebugOverlay(theQPainter, myRasterViewPort);
+    showDebugOverlay(theQPainter, theRasterViewPort);
   };
 
 }                               //end of draw method

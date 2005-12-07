@@ -39,7 +39,7 @@
 #include <dlfcn.h>
 #endif
 #endif
-QgsPluginManager::QgsPluginManager(QWidget * parent, const char *name):QgsPluginManagerBase(parent, name)
+QgsPluginManager::QgsPluginManager(QWidget * parent, const char *name):QgsPluginManagerBase()
 {
   // set the default lib dir to the qgis install directory/lib (this info is
   // available from the provider registry so we use it here)

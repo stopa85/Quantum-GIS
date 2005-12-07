@@ -30,11 +30,7 @@
 #include <QPixmap>
 #include <Q3PointArray>
 
-#ifdef WIN32
-#include "qgscomposerlabelbase.h"
-#else
-#include "qgscomposerlabelbase.uic.h"
-#endif
+#include "ui_qgscomposerlabelbase.h"
 
 class Q3CanvasItem;
 class Q3CanvasRectangle;
@@ -59,7 +55,7 @@ class QgsComposition;
  */
 // NOTE: QgsComposerLabelBase must be first, otherwise does not compile
 //class QgsComposerLabel : public QgsComposerLabelBase, public QCanvasRectangle, public QgsComposerItem
-class QgsComposerLabel : public QgsComposerLabelBase, public Q3CanvasPolygonalItem, public QgsComposerItem
+class QgsComposerLabel : public QWidget, private Ui::QgsComposerLabelBase, public Q3CanvasPolygonalItem, public QgsComposerItem
 {
     Q_OBJECT
 

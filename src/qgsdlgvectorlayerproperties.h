@@ -18,11 +18,8 @@
  /* $Id$ */
 #ifndef QGSDLGVECTORLAYERPROPERTIES
 #define QGSDLGVECTORLAYERPROPERTIES
-#ifdef WIN32
-#include "qgsdlgvectorlayerpropertiesbase.h"
-#else
-#include "qgsdlgvectorlayerpropertiesbase.uic.h"
-#endif
+#include "ui_qgsdlgvectorlayerpropertiesbase.h"
+#include <QDialog>
 #include "qgsrenderer.h"
 #include "qpixmap.h"
 #include "qlineedit.h"
@@ -31,7 +28,7 @@ class QgsVectorLayer;
 class QgsLabelDialog;
 class QgsAttributeActionDialog;
 
-class QgsDlgVectorLayerProperties : public QgsDlgVectorLayerPropertiesBase{
+class QgsDlgVectorLayerProperties : public QDialog, private Ui::QgsDlgVectorLayerPropertiesBase{
   Q_OBJECT
   public:
   QgsDlgVectorLayerProperties(QgsVectorLayer *lyr =0,QWidget *parent=0, const char *name=0, bool modal=true);
