@@ -225,7 +225,7 @@ QgisApp::QgisApp(QWidget * parent, Qt::WFlags fl)
   createCanvas();
   createOverview();
   createLegend();
-    
+  createDB();    
 
   // register all GDAL and OGR plug-ins
   // Should this be here? isnt it the job of the provider? Tim
@@ -242,29 +242,12 @@ QgisApp::QgisApp(QWidget * parent, Qt::WFlags fl)
   //  zoomincur = QBitmap(cursorzoomin);
   QBitmap zoomincurmask;
   //  zoomincurmask = QBitmap(cursorzoomin_mask);
-
-                                                  
-
-
-
-
-
-
   QString caption = tr("Quantum GIS - ");
   caption += QString("%1 ('%2')").arg(QGis::qgisVersion).arg(QGis::qgisReleaseName);
   setCaption(caption);
-
-
-
-
-
-  // create the layer popup menu
   mMapCursor = 0;
-
   // create the interfce
   mQgisInterface = new QgisIface(this);
-  ///mQgisInterface->setParent(this);
-
   // set the legend control for the map canvas
   mMapCanvas->setLegend(mMapLegend);
 
@@ -273,38 +256,19 @@ QgisApp::QgisApp(QWidget * parent, Qt::WFlags fl)
   //
   // Create the plugin registry and load plugins
   //
-
-
-
   // Get pointer to the provider registry singleton
 #if defined(WIN32) || defined(Q_OS_MACX)
-
   QString plib = mAppDir + "/lib/qgis";
 #else
-
   QString plib = PLUGINPATH;
 #endif
-
-  mProviderRegistry = QgsProviderRegistry::instance(plib);
-
-#ifdef QGISDEBUG
-
-  std::cout << "Plugins are installed in " << plib.toLocal8Bit().data() << std::endl;
-#endif
-
-  // load any plugins that were running in the last session
-#ifdef QGISDEBUG
-
-  std::cerr << "About to restore plugins session" << std::endl;
-#endif
-
-  restoreSessionPlugins(plib);
-
   // set the provider plugin path
+  mProviderRegistry = QgsProviderRegistry::instance(plib);
 #ifdef QGISDEBUG
-
-  std::cout << "Setting plugin lib dir to " << plib.toLocal8Bit().data() << std::endl;
+  std::cout << "Plugins and providers are installed in " << plib.toLocal8Bit().data() << std::endl;
 #endif
+  // load any plugins that were running in the last session
+  restoreSessionPlugins(plib);
 
   /* Delete this I think - Tim - FIXME 
   //
@@ -319,11 +283,6 @@ QgisApp::QgisApp(QWidget * parent, Qt::WFlags fl)
   //QgsMapLayerRegistry * mapLayerRegistry = QgsMapLayerRegistry::instance();
   */
 
-
-
-  // set the focus to the map canvase
-  mMapCanvas->setFocus();
-
   // Map composer
   //Disabled by Tim to get Qt UI ports to compile - FIXME
   //mComposer = new QgsComposer(this);
@@ -334,37 +293,6 @@ QgisApp::QgisApp(QWidget * parent, Qt::WFlags fl)
   // now build raster file filter
   QgsRasterLayer::buildSupportedRasterFileFilter( mRasterFileFilter );
 
-  ///////////////////////////////////////////////////////
-  // Check qgis.db and make private copy if necessary
-  QString qgisSettingsDirPath(QDir::homeDirPath () + "/.qgis/");
-  QgsFile qgisPrivateDbFile(qgisSettingsDirPath + "qgis.db");
-
-  // first we look for ~/.qgis/qgis.db
-  if (!qgisPrivateDbFile.exists())
-  {
-    // if it doesnt exist we copy it in from the global resources dir
-#if defined(Q_OS_MACX) || defined(WIN32)
-    QString PKGDATAPATH(qApp->applicationDirPath() + "/share/qgis");
-#endif
-    QString qgisMasterDbFileName = PKGDATAPATH;
-    qgisMasterDbFileName += "/resources/qgis.db";
-
-    // Must be sure there is destination directory ~/.qgis
-    // @todo XXX REPLACE with recursive dir creator, but first define QgsDir class and
-    // move i.e. makeDir from QgsBookmarks to QgsDir
-    QDir destDir;
-    destDir.mkdir(qgisSettingsDirPath, TRUE);
-
-    //now copy the master file into the users .qgis dir
-    bool isDbFileCopied = QgsFile::copy(qgisMasterDbFileName, qgisPrivateDbFile.name());
-
-#ifdef QGISDEBUG
-    if (!isDbFileCopied)
-    {
-      std::cout << "[ERROR] Can not make qgis.db private copy" << std::endl;
-    }
-#endif
-  }
   // Do this last in the ctor to ensure that all members are instantiated properly
   setupConnections();
 } // QgisApp ctor
@@ -1023,6 +951,8 @@ void QgisApp::createCanvas()
   QVBoxLayout *myCanvasLayout = new QVBoxLayout;
   myCanvasLayout->addWidget(mMapCanvas);
   tabWidget->widget(0)->setLayout(myCanvasLayout);
+  // set the focus to the map canvas
+  mMapCanvas->setFocus();
 }
 
 void QgisApp::createOverview()
@@ -1056,6 +986,40 @@ void QgisApp::createLegend()
   toolBox->widget(0)->setLayout(myLegendLayout);
   return;
 }
+void QgisApp::createDB()
+{
+  // Check qgis.db and make private copy if necessary
+  QString qgisSettingsDirPath(QDir::homeDirPath () + "/.qgis/");
+  QgsFile qgisPrivateDbFile(qgisSettingsDirPath + "qgis.db");
+
+  // first we look for ~/.qgis/qgis.db
+  if (!qgisPrivateDbFile.exists())
+  {
+    // if it doesnt exist we copy it in from the global resources dir
+#if defined(Q_OS_MACX) || defined(WIN32)
+    QString PKGDATAPATH(qApp->applicationDirPath() + "/share/qgis");
+#endif
+    QString qgisMasterDbFileName = PKGDATAPATH;
+    qgisMasterDbFileName += "/resources/qgis.db";
+
+    // Must be sure there is destination directory ~/.qgis
+    // @todo XXX REPLACE with recursive dir creator, but first define QgsDir class and
+    // move i.e. makeDir from QgsBookmarks to QgsDir
+    QDir destDir;
+    destDir.mkdir(qgisSettingsDirPath, TRUE);
+
+    //now copy the master file into the users .qgis dir
+    bool isDbFileCopied = QgsFile::copy(qgisMasterDbFileName, qgisPrivateDbFile.name());
+
+#ifdef QGISDEBUG
+    if (!isDbFileCopied)
+    {
+      std::cout << "[ERROR] Can not make qgis.db private copy" << std::endl;
+    }
+#endif
+  }
+}
+
 // Update file menu with the current list of recently accessed projects
 void QgisApp::updateRecentProjectPaths()
 {
