@@ -222,7 +222,10 @@ QgisApp::QgisApp(QWidget * parent, Qt::WFlags fl)
   setTheme(mThemeName);
   setupToolbarPopups(mThemeName);
   updateRecentProjectPaths();
-
+  createCanvas();
+  createOverview();
+  createLegend();
+    
 
   // register all GDAL and OGR plug-ins
   // Should this be here? isnt it the job of the provider? Tim
@@ -243,47 +246,8 @@ QgisApp::QgisApp(QWidget * parent, Qt::WFlags fl)
                                                   
 
 
-  // add a canvas
-  // "theMapCanvas" used to find this canonical
-  // instance later
-  mMapCanvas = new QgsMapCanvas(NULL, "theMapCanvas" );
-  QWhatsThis::add(mMapCanvas, tr("Map canvas. This is where raster and vector layers are displayed when added to the map"));
-  // we need to cache the layer registry instance so plugins can get to it
-  // now explicitly refer to Singleton -- mLayerRegistry = QgsMapLayerRegistry::instance();
-  // resize it to fit in the frame
-  //    QRect r = frmCanvas->rect();
-  //    canvas->resize(r.width(), r.height());
-  mMapCanvas->setBackgroundColor(Qt::white); //QColor (220, 235, 255));
-  mMapCanvas->setMinimumWidth(400);
-  QVBoxLayout *myCanvasLayout = new QVBoxLayout;
-  myCanvasLayout->addWidget(mMapCanvas);
-  tabWidget->widget(0)->setLayout(myCanvasLayout);
 
-  // overview canvas
-  mOverviewCanvas = new QgsMapOverviewCanvas(NULL, mMapCanvas);
-  QWhatsThis::add(mOverviewCanvas, tr("Map overview canvas. This canvas can be used to display a locator map that shows the current extent of the map canvas. The current extent is shown as a red rectangle. Any layer on the map can be added to the overview canvas."));
-  QBitmap overviewPanBmp(16, 16, pan_bits, true);
-  QBitmap overviewPanBmpMask(16, 16, pan_mask_bits, true);
-  mOverviewMapCursor = new QCursor(overviewPanBmp, overviewPanBmpMask, 5, 5);
-  mOverviewCanvas->setCursor(*mOverviewMapCursor);
-  QVBoxLayout *myOverviewLayout = new QVBoxLayout;
-  myOverviewLayout->addWidget(mOverviewCanvas);
-  overviewFrame->setLayout(myOverviewLayout);
 
-  //legend
-  qDebug("Adding legend to toolbox");
-  mMapLegend = new QgsLegend(this,NULL, "theMapLegend");
-  qDebug("Setting up legend");
-  mMapLegend->setBackgroundColor(QColor(192, 192, 192));
-  mMapLegend->setMapCanvas(mMapCanvas);
-  mMapLegend->setColumnCount(1);
-  QStringList myList("Layers");
-  mMapLegend->setHeaderLabels(myList);
-  mMapLegend->setMapCanvas(mMapCanvas);
-  QWhatsThis::add(mMapLegend, tr("Map legend that displays all the layers currently on the map canvas. Click on the check box to turn a layer on or off. Double click on a layer in the legend to customize its appearance and set other properties."));
-  QVBoxLayout *myLegendLayout = new QVBoxLayout;
-  myLegendLayout->addWidget(mMapLegend);
-  toolBox->widget(0)->setLayout(myLegendLayout);
 
 
   QString caption = tr("Quantum GIS - ");
@@ -1049,8 +1013,49 @@ void QgisApp::setupConnections()
   connect(mRenderSuppressionCBox, SIGNAL(toggled(bool )), mMapCanvas, SLOT(setRenderFlag(bool)));
   connect(mRenderSuppressionCBox, SIGNAL(toggled(bool )), mOverviewCanvas, SLOT(setRenderFlag(bool)));
 }
+void QgisApp::createCanvas()
+{
+  // "theMapCanvas" used to find this canonical instance later
+  mMapCanvas = new QgsMapCanvas(NULL, "theMapCanvas" );
+  QWhatsThis::add(mMapCanvas, tr("Map canvas. This is where raster and vector layers are displayed when added to the map"));
+  mMapCanvas->setBackgroundColor(Qt::white); //QColor (220, 235, 255));
+  mMapCanvas->setMinimumWidth(400);
+  QVBoxLayout *myCanvasLayout = new QVBoxLayout;
+  myCanvasLayout->addWidget(mMapCanvas);
+  tabWidget->widget(0)->setLayout(myCanvasLayout);
+}
+
+void QgisApp::createOverview()
+{
+  // overview canvas
+  mOverviewCanvas = new QgsMapOverviewCanvas(NULL, mMapCanvas);
+  QWhatsThis::add(mOverviewCanvas, tr("Map overview canvas. This canvas can be used to display a locator map that shows the current extent of the map canvas. The current extent is shown as a red rectangle. Any layer on the map can be added to the overview canvas."));
+  QBitmap overviewPanBmp(16, 16, pan_bits, true);
+  QBitmap overviewPanBmpMask(16, 16, pan_mask_bits, true);
+  mOverviewMapCursor = new QCursor(overviewPanBmp, overviewPanBmpMask, 5, 5);
+  mOverviewCanvas->setCursor(*mOverviewMapCursor);
+  QVBoxLayout *myOverviewLayout = new QVBoxLayout;
+  myOverviewLayout->addWidget(mOverviewCanvas);
+  overviewFrame->setLayout(myOverviewLayout);
+}
 
 
+void QgisApp::createLegend()
+{
+  //legend
+  mMapLegend = new QgsLegend(this,NULL, "theMapLegend");
+  mMapLegend->setBackgroundColor(QColor(192, 192, 192));
+  mMapLegend->setMapCanvas(mMapCanvas);
+  mMapLegend->setColumnCount(1);
+  QStringList myList("Layers");
+  mMapLegend->setHeaderLabels(myList);
+  mMapLegend->setMapCanvas(mMapCanvas);
+  QWhatsThis::add(mMapLegend, tr("Map legend that displays all the layers currently on the map canvas. Click on the check box to turn a layer on or off. Double click on a layer in the legend to customize its appearance and set other properties."));
+  QVBoxLayout *myLegendLayout = new QVBoxLayout;
+  myLegendLayout->addWidget(mMapLegend);
+  toolBox->widget(0)->setLayout(myLegendLayout);
+  return;
+}
 // Update file menu with the current list of recently accessed projects
 void QgisApp::updateRecentProjectPaths()
 {
@@ -1062,7 +1067,7 @@ void QgisApp::updateRecentProjectPaths()
                 ++it )
         {
             myId++;
-            mRecentProjectsMenu->insertItem((*it), this, SLOT(openProject(int)), myId);
+            mRecentProjectsMenu->insertItem((*it), this, SLOT(openProject(int)),0, myId,myId);
             // This parameter corresponds to this path's index
             // in mRecentProjectPaths
             mFileMenu->setItemParameter(myId, myId - 1);
