@@ -387,7 +387,7 @@ void QgisApp::createActions()
   mActionFileExit= new QAction(QIcon(iconPath+"/mActionFileExit.png"), tr("Exit"), this);
   mActionFileExit->setShortcut(tr("Ctrl+Q"));
   mActionFileExit->setStatusTip(tr("Exit QGIS"));
-  //connect(mActionFileExit, SIGNAL(triggered()), this, SLOT(quit()));
+  connect(mActionFileExit, SIGNAL(triggered()), qApp, SLOT(quit()));
   //
   mActionAddNonDbLayer= new QAction(QIcon(iconPath+"/mActionAddNonDbLayer.png"), tr("Add a Vector Layer"), this);
   mActionAddNonDbLayer->setShortcut(tr("V"));
@@ -397,12 +397,19 @@ void QgisApp::createActions()
   mActionAddRasterLayer= new QAction(QIcon(iconPath+"/mActionAddRasterLayer.png"), tr("Add a Raster Layer"), this);
   mActionAddRasterLayer->setShortcut(tr("R"));
   mActionAddRasterLayer->setStatusTip(tr("Add a Raster Layer"));
-  connect(mActionAddRasterLayer, SIGNAL(triggered()), this, SLOT(addRasterLayer()));
+  assert(connect(mActionAddRasterLayer, SIGNAL(triggered()), this, SLOT(addRasterLayer())));
   //
   mActionAddLayer= new QAction(QIcon(iconPath+"/mActionAddLayer.png"), tr("Add a PostGIS Layer"), this);
   mActionAddLayer->setShortcut(tr("D"));
   mActionAddLayer->setStatusTip(tr("Add a PostGIS Layer"));
-  connect(mActionAddLayer, SIGNAL(triggered()), this, SLOT(addDatabaseLayer()));
+//#ifdef HAVE_POSTGRESQL
+//  std::cout << "HAVE_POSTGRESQL is defined" << std::endl; 
+//  assert(0);
+//#else
+//  std::cout << "HAVE_POSTGRESQL not defined" << std::endl; 
+//  assert(0);
+//#endif
+  assert(connect(mActionAddLayer, SIGNAL(triggered()), this, SLOT(addDatabaseLayer())));
   //
   mActionRemoveLayer= new QAction(QIcon(iconPath+"/mActionRemoveLayer.png"), tr("Remove Layer"), this);
   mActionRemoveLayer->setShortcut(tr("Ctrl+D"));
