@@ -25,6 +25,7 @@
 #include <QAction>
 #include <QApplication>
 #include <QBitmap>
+#include <QByteArray>
 #include <QCheckBox>
 #include <QClipboard>
 #include <QColor>
@@ -386,7 +387,7 @@ void QgisApp::createActions()
   mActionFileExit= new QAction(QIcon(iconPath+"/mActionFileExit.png"), tr("Exit"), this);
   mActionFileExit->setShortcut(tr("Ctrl+Q"));
   mActionFileExit->setStatusTip(tr("Exit QGIS"));
-  connect(mActionFileExit, SIGNAL(triggered()), this, SLOT(quit()));
+  //connect(mActionFileExit, SIGNAL(triggered()), this, SLOT(quit()));
   //
   mActionAddNonDbLayer= new QAction(QIcon(iconPath+"/mActionAddNonDbLayer.png"), tr("Add a Vector Layer"), this);
   mActionAddNonDbLayer->setShortcut(tr("V"));
@@ -433,147 +434,147 @@ void QgisApp::createActions()
   mActionRemoveAllFromOverview->setStatusTip(tr("Open a Project"));
   //connect(mActionRemoveAllFromOverview, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
   //
-  mActionProjectProperties= new QAction(QIcon(iconPath+"/mActionProjectProperties.png"), tr("ProjectPr"), this);
-  mActionProjectProperties->setShortcut(tr("Ctrl+O"));
-  mActionProjectProperties->setStatusTip(tr("Open a Project"));
-  //connect(mActionProjectProperties, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
-  //
-  mActionPluginManager= new QAction(QIcon(iconPath+"/mActionPluginManager.png"), tr("PluginMan"), this);
+  mActionPluginManager= new QAction(QIcon(iconPath+"/mActionPluginManager.png"), tr("Plugin Manager"), this);
   mActionPluginManager->setShortcut(tr("Ctrl+O"));
   mActionPluginManager->setStatusTip(tr("Open a Project"));
   //connect(mActionPluginManager, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
   //
-  mActionCheckQgisVersion= new QAction(QIcon(iconPath+"/mActionCheckQgisVersion.png"), tr("CheckQgis"), this);
+  mActionCheckQgisVersion= new QAction(QIcon(iconPath+"/mActionCheckQgisVersion.png"), tr("Check Qgis Version"), this);
   mActionCheckQgisVersion->setShortcut(tr("Ctrl+O"));
   mActionCheckQgisVersion->setStatusTip(tr("Open a Project"));
   //connect(mActionCheckQgisVersion, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
   //
-  mActionOptions= new QAction(QIcon(iconPath+"/mActionOptions.png"), tr("Options= "), this);
+  mActionProjectProperties= new QAction(QIcon(iconPath+"/mActionProjectProperties.png"), tr("Project Properties"), this);
+  mActionProjectProperties->setShortcut(tr("Ctrl+O"));
+  mActionProjectProperties->setStatusTip(tr("Open a Project"));
+  //connect(mActionProjectProperties, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
+  //
+  mActionOptions= new QAction(QIcon(iconPath+"/mActionOptions.png"), tr("Options"), this);
   mActionOptions->setShortcut(tr("Ctrl+O"));
   mActionOptions->setStatusTip(tr("Open a Project"));
   //connect(mActionOptions, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
   //
-  mActionHelpContents= new QAction(QIcon(iconPath+"/mActionHelpContents.png"), tr("HelpConte"), this);
-  mActionHelpContents->setShortcut(tr("Ctrl+O"));
-  mActionHelpContents->setStatusTip(tr("Open a Project"));
-  //connect(mActionHelpContents, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
-  //
-  mActionQgisHomePage= new QAction(QIcon(iconPath+"/mActionQgisHomePage.png"), tr("QgisHomeP"), this);
-  mActionQgisHomePage->setShortcut(tr("Ctrl+O"));
-  mActionQgisHomePage->setStatusTip(tr("Open a Project"));
-  //connect(mActionQgisHomePage, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
-  //
-  mActionQgisSourceForgePage= new QAction(QIcon(iconPath+"/mActionQgisSourceForgePage.png"), tr("QgisSourc"), this);
-  mActionQgisSourceForgePage->setShortcut(tr("Ctrl+O"));
-  mActionQgisSourceForgePage->setStatusTip(tr("Open a Project"));
-  //connect(mActionQgisSourceForgePage, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
-  //
-  mActionHelpAbout= new QAction(QIcon(iconPath+"/mActionHelpAbout.png"), tr("HelpAbout"), this);
-  mActionHelpAbout->setShortcut(tr("Ctrl+O"));
-  mActionHelpAbout->setStatusTip(tr("Open a Project"));
-  //connect(mActionHelpAbout, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
-  //
-  mActionDraw= new QAction(QIcon(iconPath+"/mActionDraw.png"), tr("Draw= new"), this);
-  mActionDraw->setShortcut(tr("Ctrl+O"));
-  mActionDraw->setStatusTip(tr("Open a Project"));
-  //connect(mActionDraw, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
-  //
-  mActionCapturePoint= new QAction(QIcon(iconPath+"/mActionCapturePoint.png"), tr("CapturePo"), this);
-  mActionCapturePoint->setShortcut(tr("Ctrl+O"));
-  mActionCapturePoint->setStatusTip(tr("Open a Project"));
-  //connect(mActionCapturePoint, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
-  //
-  mActionCaptureLine= new QAction(QIcon(iconPath+"/mActionCaptureLine.png"), tr("CaptureLi"), this);
-  mActionCaptureLine->setShortcut(tr("Ctrl+O"));
-  mActionCaptureLine->setStatusTip(tr("Open a Project"));
-  //connect(mActionCaptureLine, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
-  //
-  mActionCapturePolygon= new QAction(QIcon(iconPath+"/mActionCapturePolygon.png"), tr("CapturePo"), this);
-  mActionCapturePolygon->setShortcut(tr("Ctrl+O"));
-  mActionCapturePolygon->setStatusTip(tr("Open a Project"));
-  //connect(mActionCapturePolygon, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
-  //
-  mActionZoomIn= new QAction(QIcon(iconPath+"/mActionZoomIn.png"), tr("ZoomIn= n"), this);
-  mActionZoomIn->setShortcut(tr("Ctrl+O"));
-  mActionZoomIn->setStatusTip(tr("Open a Project"));
-  //connect(mActionZoomIn, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
-  //
-  mActionZoomOut= new QAction(QIcon(iconPath+"/mActionZoomOut.png"), tr("ZoomOut= "), this);
-  mActionZoomOut->setShortcut(tr("Ctrl+O"));
-  mActionZoomOut->setStatusTip(tr("Open a Project"));
-  //connect(mActionZoomOut, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
-  //
-  mActionZoomFullExtent= new QAction(QIcon(iconPath+"/mActionZoomFullExtent.png"), tr("ZoomFullE"), this);
-  mActionZoomFullExtent->setShortcut(tr("Ctrl+O"));
-  mActionZoomFullExtent->setStatusTip(tr("Open a Project"));
-  //connect(mActionZoomFullExtent, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
-  //
-  mActionZoomToSelected= new QAction(QIcon(iconPath+"/mActionZoomToSelected.png"), tr("ZoomToSel"), this);
-  mActionZoomToSelected->setShortcut(tr("Ctrl+O"));
-  mActionZoomToSelected->setStatusTip(tr("Open a Project"));
-  //connect(mActionZoomToSelected, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
-  //
-  mActionPan= new QAction(QIcon(iconPath+"/mActionPan.png"), tr("Pan= new "), this);
-  mActionPan->setShortcut(tr("Ctrl+O"));
-  mActionPan->setStatusTip(tr("Open a Project"));
-  //connect(mActionPan, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
-  //
-  mActionZoomLast= new QAction(QIcon(iconPath+"/mActionZoomLast.png"), tr("ZoomLast="), this);
-  mActionZoomLast->setShortcut(tr("Ctrl+O"));
-  mActionZoomLast->setStatusTip(tr("Open a Project"));
-  //connect(mActionZoomLast, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
-  //
-  mActionZoomToLayer= new QAction(QIcon(iconPath+"/mActionZoomToLayer.png"), tr("ZoomToLay"), this);
-  mActionZoomToLayer->setShortcut(tr("Ctrl+O"));
-  mActionZoomToLayer->setStatusTip(tr("Open a Project"));
-  //connect(mActionZoomToLayer, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
-  //
-  mActionIdentify= new QAction(QIcon(iconPath+"/mActionIdentify.png"), tr("Identify="), this);
-  mActionIdentify->setShortcut(tr("Ctrl+O"));
-  mActionIdentify->setStatusTip(tr("Open a Project"));
-  //connect(mActionIdentify, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
-  //
-  mActionSelect= new QAction(QIcon(iconPath+"/mActionSelect.png"), tr("Select= n"), this);
-  mActionSelect->setShortcut(tr("Ctrl+O"));
-  mActionSelect->setStatusTip(tr("Open a Project"));
-  //connect(mActionSelect, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
-  //
-  mActionOpenTable= new QAction(QIcon(iconPath+"/mActionOpenTable.png"), tr("OpenTable"), this);
-  mActionOpenTable->setShortcut(tr("Ctrl+O"));
-  mActionOpenTable->setStatusTip(tr("Open a Project"));
-  //connect(mActionOpenTable, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
-  //
-  mActionMeasure= new QAction(QIcon(iconPath+"/mActionMeasure.png"), tr("Measure= "), this);
-  mActionMeasure->setShortcut(tr("Ctrl+O"));
-  mActionMeasure->setStatusTip(tr("Open a Project"));
-  //connect(mActionMeasure, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
-  //
-  mActionMeasureArea= new QAction(QIcon(iconPath+"/mActionMeasureArea.png"), tr("MeasureAr"), this);
-  mActionMeasureArea->setShortcut(tr("Ctrl+O"));
-  mActionMeasureArea->setStatusTip(tr("Open a Project"));
-  //connect(mActionMeasureArea, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
-  //
-  mActionShowBookmarks= new QAction(QIcon(iconPath+"/mActionShowBookmarks.png"), tr("ShowBookm"), this);
-  mActionShowBookmarks->setShortcut(tr("Ctrl+O"));
-  mActionShowBookmarks->setStatusTip(tr("Open a Project"));
-  //connect(mActionShowBookmarks, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
-  //
-  mActionNewBookmark= new QAction(QIcon(iconPath+"/mActionNewBookmark.png"), tr("NewBookma"), this);
-  mActionNewBookmark->setShortcut(tr("Ctrl+O"));
-  mActionNewBookmark->setStatusTip(tr("Open a Project"));
-  //connect(mActionNewBookmark, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
-  //
-  mActionCustomProjection= new QAction(QIcon(iconPath+"/mActionCustomProjection.png"), tr("CustomPro"), this);
+  mActionCustomProjection= new QAction(QIcon(iconPath+"/mActionCustomProjection.png"), tr("Custom Projection"), this);
   mActionCustomProjection->setShortcut(tr("Ctrl+O"));
   mActionCustomProjection->setStatusTip(tr("Open a Project"));
   //connect(mActionCustomProjection, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
   //
-  mActionAddWmsLayer= new QAction(QIcon(iconPath+"/mActionAddWmsLayer.png"), tr("AddWmsLay"), this);
+  mActionHelpContents= new QAction(QIcon(iconPath+"/mActionHelpContents.png"), tr("Help Contents"), this);
+  mActionHelpContents->setShortcut(tr("Ctrl+O"));
+  mActionHelpContents->setStatusTip(tr("Open a Project"));
+  //connect(mActionHelpContents, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
+  //
+  mActionQgisHomePage= new QAction(QIcon(iconPath+"/mActionQgisHomePage.png"), tr("Qgis Home Page"), this);
+  mActionQgisHomePage->setShortcut(tr("Ctrl+O"));
+  mActionQgisHomePage->setStatusTip(tr("Open a Project"));
+  //connect(mActionQgisHomePage, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
+  //
+  mActionQgisSourceForgePage= new QAction(QIcon(iconPath+"/mActionQgisSourceForgePage.png"), tr("Qgis Sourceforge"), this);
+  mActionQgisSourceForgePage->setShortcut(tr("Ctrl+O"));
+  mActionQgisSourceForgePage->setStatusTip(tr("Open a Project"));
+  //connect(mActionQgisSourceForgePage, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
+  //
+  mActionHelpAbout= new QAction(QIcon(iconPath+"/mActionHelpAbout.png"), tr("About"), this);
+  mActionHelpAbout->setShortcut(tr("Ctrl+O"));
+  mActionHelpAbout->setStatusTip(tr("Open a Project"));
+  //connect(mActionHelpAbout, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
+  //
+  mActionDraw= new QAction(QIcon(iconPath+"/mActionDraw.png"), tr("Refresh"), this);
+  mActionDraw->setShortcut(tr("Ctrl+O"));
+  mActionDraw->setStatusTip(tr("Open a Project"));
+  //connect(mActionDraw, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
+  //
+  mActionCapturePoint= new QAction(QIcon(iconPath+"/mActionCapturePoint.png"), tr("Capture Point"), this);
+  mActionCapturePoint->setShortcut(tr("Ctrl+O"));
+  mActionCapturePoint->setStatusTip(tr("Open a Project"));
+  //connect(mActionCapturePoint, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
+  //
+  mActionCaptureLine= new QAction(QIcon(iconPath+"/mActionCaptureLine.png"), tr("Capture Line"), this);
+  mActionCaptureLine->setShortcut(tr("Ctrl+O"));
+  mActionCaptureLine->setStatusTip(tr("Open a Project"));
+  //connect(mActionCaptureLine, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
+  //
+  mActionCapturePolygon= new QAction(QIcon(iconPath+"/mActionCapturePolygon.png"), tr("Capture Polygon"), this);
+  mActionCapturePolygon->setShortcut(tr("Ctrl+O"));
+  mActionCapturePolygon->setStatusTip(tr("Open a Project"));
+  //connect(mActionCapturePolygon, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
+  //
+  mActionZoomIn= new QAction(QIcon(iconPath+"/mActionZoomIn.png"), tr("Zoom In"), this);
+  mActionZoomIn->setShortcut(tr("Ctrl+O"));
+  mActionZoomIn->setStatusTip(tr("Open a Project"));
+  //connect(mActionZoomIn, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
+  //
+  mActionZoomOut= new QAction(QIcon(iconPath+"/mActionZoomOut.png"), tr("Zoom Out"), this);
+  mActionZoomOut->setShortcut(tr("Ctrl+O"));
+  mActionZoomOut->setStatusTip(tr("Open a Project"));
+  //connect(mActionZoomOut, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
+  //
+  mActionZoomFullExtent= new QAction(QIcon(iconPath+"/mActionZoomFullExtent.png"), tr("Zoom Full"), this);
+  mActionZoomFullExtent->setShortcut(tr("Ctrl+O"));
+  mActionZoomFullExtent->setStatusTip(tr("Open a Project"));
+  //connect(mActionZoomFullExtent, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
+  //
+  mActionZoomToSelected= new QAction(QIcon(iconPath+"/mActionZoomToSelected.png"), tr("Zoom To Selection"), this);
+  mActionZoomToSelected->setShortcut(tr("Ctrl+O"));
+  mActionZoomToSelected->setStatusTip(tr("Open a Project"));
+  //connect(mActionZoomToSelected, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
+  //
+  mActionPan= new QAction(QIcon(iconPath+"/mActionPan.png"), tr("Pan Map"), this);
+  mActionPan->setShortcut(tr("Ctrl+O"));
+  mActionPan->setStatusTip(tr("Open a Project"));
+  //connect(mActionPan, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
+  //
+  mActionZoomLast= new QAction(QIcon(iconPath+"/mActionZoomLast.png"), tr("Zoom Last"), this);
+  mActionZoomLast->setShortcut(tr("Ctrl+O"));
+  mActionZoomLast->setStatusTip(tr("Open a Project"));
+  //connect(mActionZoomLast, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
+  //
+  mActionZoomToLayer= new QAction(QIcon(iconPath+"/mActionZoomToLayer.png"), tr("Zoom To Layer"), this);
+  mActionZoomToLayer->setShortcut(tr("Ctrl+O"));
+  mActionZoomToLayer->setStatusTip(tr("Open a Project"));
+  //connect(mActionZoomToLayer, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
+  //
+  mActionIdentify= new QAction(QIcon(iconPath+"/mActionIdentify.png"), tr("Identify Features"), this);
+  mActionIdentify->setShortcut(tr("Ctrl+O"));
+  mActionIdentify->setStatusTip(tr("Open a Project"));
+  //connect(mActionIdentify, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
+  //
+  mActionSelect= new QAction(QIcon(iconPath+"/mActionSelect.png"), tr("Select Features"), this);
+  mActionSelect->setShortcut(tr("Ctrl+O"));
+  mActionSelect->setStatusTip(tr("Open a Project"));
+  //connect(mActionSelect, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
+  //
+  mActionOpenTable= new QAction(QIcon(iconPath+"/mActionOpenTable.png"), tr("Open Table"), this);
+  mActionOpenTable->setShortcut(tr("Ctrl+O"));
+  mActionOpenTable->setStatusTip(tr("Open a Project"));
+  //connect(mActionOpenTable, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
+  //
+  mActionMeasure= new QAction(QIcon(iconPath+"/mActionMeasure.png"), tr("Measure Line "), this);
+  mActionMeasure->setShortcut(tr("Ctrl+O"));
+  mActionMeasure->setStatusTip(tr("Open a Project"));
+  //connect(mActionMeasure, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
+  //
+  mActionMeasureArea= new QAction(QIcon(iconPath+"/mActionMeasureArea.png"), tr("Measure Area"), this);
+  mActionMeasureArea->setShortcut(tr("Ctrl+O"));
+  mActionMeasureArea->setStatusTip(tr("Open a Project"));
+  //connect(mActionMeasureArea, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
+  //
+  mActionShowBookmarks= new QAction(QIcon(iconPath+"/mActionShowBookmarks.png"), tr("Show Bookmark"), this);
+  mActionShowBookmarks->setShortcut(tr("Ctrl+O"));
+  mActionShowBookmarks->setStatusTip(tr("Open a Project"));
+  //connect(mActionShowBookmarks, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
+  //
+  mActionNewBookmark= new QAction(QIcon(iconPath+"/mActionNewBookmark.png"), tr("New Bookmark"), this);
+  mActionNewBookmark->setShortcut(tr("Ctrl+O"));
+  mActionNewBookmark->setStatusTip(tr("Open a Project"));
+  //connect(mActionNewBookmark, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
+  //
+  mActionAddWmsLayer= new QAction(QIcon(iconPath+"/mActionAddWmsLayer.png"), tr("Add Wms Layer"), this);
   mActionAddWmsLayer->setShortcut(tr("Ctrl+O"));
   mActionAddWmsLayer->setStatusTip(tr("Open a Project"));
   //connect(mActionAddWmsLayer, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
   //
-  mActionInOverview= new QAction(QIcon(iconPath+"/mActionInOverview.png"), tr("InOvervie"), this);
+  mActionInOverview= new QAction(QIcon(iconPath+"/mActionInOverview.png"), tr("In Overview"), this);
   mActionInOverview->setShortcut(tr("Ctrl+O"));
   mActionInOverview->setStatusTip(tr("Open a Project"));
   //connect(mActionInOverview, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
@@ -603,6 +604,14 @@ void QgisApp::createMenus()
   //
   // View Menu
   mViewMenu = menuBar()->addMenu(tr("&View"));
+  mViewMenu->addAction(mActionZoomFullExtent);
+  mViewMenu->addAction(mActionZoomToSelected);
+  mViewMenu->addAction(mActionZoomLast);
+  mViewMenu->addAction(mActionZoomToLayer);
+  mViewMenu->addAction(mActionDraw);
+  mViewMenu->addAction(mActionShowBookmarks);
+  mViewMenu->addAction(mActionNewBookmark);
+    
   //
   // Layers Menu
   mLayerMenu = menuBar()->addMenu(tr("&Layer"));
@@ -620,8 +629,15 @@ void QgisApp::createMenus()
   mLayerMenu->addAction(mActionShowAllLayers);
   mLayerMenu->addAction(mActionRemoveAllFromOverview);
 
-
+  //
+  // Settings Menu
   mSettingsMenu = menuBar()->addMenu(tr("&Settings"));
+  mSettingsMenu->addAction(mActionProjectProperties);
+  mSettingsMenu->addAction(mActionCustomProjection);
+  mSettingsMenu->addAction(mActionOptions);
+  
+  //
+  // Plugins Menu
   mPluginsMenu = menuBar()->addMenu(tr("&Plugins"));
 
   // Add the plugin manager action to it
@@ -634,13 +650,19 @@ void QgisApp::createMenus()
 
   menuBar()->addSeparator();
   mHelpMenu = menuBar()->addMenu(tr("&Help"));
+  mHelpMenu->addAction(mActionCheckQgisVersion);
 }
 
 void QgisApp::createToolBars()
 {
+  // Note: we need to set each object name to ensure that
+  // qmainwindow::saveState and qmainwindow::restoreState
+  // work properly
+  
   //
   // File Toolbar
   mFileToolBar = addToolBar(tr("File"));
+  mFileToolBar->setObjectName("FileToolBar");
   mFileToolBar->addAction(mActionFileNew);
   mFileToolBar->addAction(mActionFileNew);
   mFileToolBar->addAction(mActionFileSave);
@@ -650,6 +672,7 @@ void QgisApp::createToolBars()
   //
   // Layer Toolbar
   mLayerToolBar = addToolBar(tr("Manage Layers"));
+  mLayerToolBar->setObjectName("LayerToolBar");
   mLayerToolBar->addAction(mActionAddNonDbLayer);
   mLayerToolBar->addAction(mActionAddRasterLayer);
 #ifdef HAVE_POSTGRESQL
@@ -666,10 +689,12 @@ void QgisApp::createToolBars()
   //
   // Help Toolbar
   mHelpToolBar = addToolBar(tr("Help"));
+  mHelpToolBar->setObjectName("Help");
   mHelpToolBar->addAction(mActionHelpContents);
   //
   // Digitizing Toolbar
   mDigitizeToolBar = addToolBar(tr("Digitizing"));
+  mDigitizeToolBar->setObjectName("Digitizing");
   mDigitizeToolBar->addAction(mActionDraw);
   mDigitizeToolBar->addAction(mActionCapturePoint);
   mDigitizeToolBar->addAction(mActionCaptureLine);
@@ -677,6 +702,7 @@ void QgisApp::createToolBars()
   //
   // Map Navigation Toolbar
   mMapNavToolBar = addToolBar(tr("Map Navigation"));
+  mMapNavToolBar->setObjectName("Map Navigation");
   mMapNavToolBar->addAction(mActionZoomIn);
   mMapNavToolBar->addAction(mActionZoomOut);
   mMapNavToolBar->addAction(mActionZoomFullExtent);
@@ -687,6 +713,7 @@ void QgisApp::createToolBars()
   //
   // Attributes Toolbar
   mAttributesToolBar = addToolBar(tr("Attributes"));
+  mAttributesToolBar->setObjectName("Attributes");
   mAttributesToolBar->addAction(mActionIdentify);
   mAttributesToolBar->addAction(mActionSelect);
   mAttributesToolBar->addAction(mActionOpenTable);
@@ -697,6 +724,7 @@ void QgisApp::createToolBars()
   //
   // Plugins Toolbar
   mPluginToolBar = addToolBar(tr("Plugins"));
+  mPluginToolBar->setObjectName("Plugins");
 }
 
 void QgisApp::createStatusBar()
@@ -1087,6 +1115,45 @@ void QgisApp::saveRecentProjectPath(QString projectPath, QSettings & settings)
   updateRecentProjectPaths();
 
 } // QgisApp::saveRecentProjectPath
+
+void QgisApp::saveWindowState()
+{
+  // store window and toolbar positions
+  QSettings settings;
+  // FIXME - this writes nothing to settings! Tim
+  QByteArray myState = this->saveState();
+  qDebug("Saveing state: " + myState);
+  
+  settings.writeEntry("/Geometry/state", QString(myState));
+  // store window geometry
+  QPoint p = this->pos();
+  QSize s = this->size();
+  settings.writeEntry("/Geometry/maximized", this->isMaximized());
+  settings.writeEntry("/Geometry/x", p.x());
+  settings.writeEntry("/Geometry/y", p.y());
+  settings.writeEntry("/Geometry/w", s.width());
+  settings.writeEntry("/Geometry/h", s.height());
+
+}
+
+void QgisApp::restoreWindowState()
+{
+  QSettings settings;
+  // FIXME - this must be checked! Tim
+  QString myState = settings.readEntry("/Geometry/state");
+  this->restoreState(QByteArray(myState.toLocal8Bit()));
+
+  // restore window geometry
+  QDesktopWidget *d = QApplication::desktop();
+  int dw = d->width();          // returns desktop width
+  int dh = d->height();         // returns desktop height
+  int w = settings.readNumEntry("/Geometry/w", 600);
+  int h = settings.readNumEntry("/Geometry/h", 400);
+  int x = settings.readNumEntry("/Geometry/x", (dw - 600) / 2);
+  int y = settings.readNumEntry("/Geometry/y", (dh - 400) / 2);
+  resize(w, h);
+  move(x, y);
+}
 ///////////// END OF GUI SETUP ROUTINES ///////////////
 
 void QgisApp::about()
@@ -4288,47 +4355,6 @@ void QgisApp::testPluginFunctions()
   }
 }
 
-void QgisApp::saveWindowState()
-{
-  // store window and toolbar positions
-  QSettings settings;
-
-  // Disabled by Tim as doesnt work right in QT4 - to be repaired!
-  //QString dockStatus;
-  //QTextStream ts(&dockStatus, QIODevice::WriteOnly);
-  //ts << *this;
-  //settings.writeEntry("/Geometry/ToolBars", dockStatus);
-  // store window geometry
-  QPoint p = this->pos();
-  QSize s = this->size();
-  settings.writeEntry("/Geometry/maximized", this->isMaximized());
-  settings.writeEntry("/Geometry/x", p.x());
-  settings.writeEntry("/Geometry/y", p.y());
-  settings.writeEntry("/Geometry/w", s.width());
-  settings.writeEntry("/Geometry/h", s.height());
-
-}
-
-void QgisApp::restoreWindowState()
-{
-  QSettings settings;
-
-  // Disabled by Tim for now as it causes issues with Qt4 port...FIXME!
-  //QString dockStatus = settings.readEntry("/Geometry/ToolBars");
-  //QTextStream ts(&dockStatus, QIODevice::ReadOnly);
-  //ts >> *this;
-
-  // restore window geometry
-  QDesktopWidget *d = QApplication::desktop();
-  int dw = d->width();          // returns desktop width
-  int dh = d->height();         // returns desktop height
-  int w = settings.readNumEntry("/Geometry/w", 600);
-  int h = settings.readNumEntry("/Geometry/h", 400);
-  int x = settings.readNumEntry("/Geometry/x", (dw - 600) / 2);
-  int y = settings.readNumEntry("/Geometry/y", (dh - 400) / 2);
-  resize(w, h);
-  move(x, y);
-}
 
 void QgisApp::checkQgisVersion()
 {
