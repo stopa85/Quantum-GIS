@@ -237,6 +237,7 @@ static void setTitleBarText_( QWidget & qgisApp )
   createOverview();
   createLegend();
   createDB();    
+  restoreWindowState();
 
   // register all GDAL and OGR plug-ins
   // Should this be here? isnt it the job of the provider? Tim
@@ -262,7 +263,6 @@ static void setTitleBarText_( QWidget & qgisApp )
   // set the legend control for the map canvas
   mMapCanvas->setLegend(mMapLegend);
 
-  restoreWindowState();
 
   //
   // Create the plugin registry and load plugins
@@ -1120,11 +1120,9 @@ void QgisApp::saveWindowState()
 {
   // store window and toolbar positions
   QSettings settings;
-  // FIXME - this writes nothing to settings! Tim
-  QByteArray myState = this->saveState();
-  qDebug("Saveing state: " + myState);
-  
-  settings.writeEntry("/Geometry/state", QString(myState));
+  // store the toolbar/dock widget settings using Qt4 settings API
+  settings.setValue("/Geometry/state", this->saveState());
+
   // store window geometry
   QPoint p = this->pos();
   QSize s = this->size();
@@ -1138,10 +1136,10 @@ void QgisApp::saveWindowState()
 
 void QgisApp::restoreWindowState()
 {
+  // restore the toolbar and dock widgets postions using Qt4 settings API
   QSettings settings;
-  // FIXME - this must be checked! Tim
-  QString myState = settings.readEntry("/Geometry/state");
-  this->restoreState(QByteArray(myState.toLocal8Bit()));
+  QVariant vstate = settings.value("/Geometry/state");
+  this->restoreState(vstate.toByteArray());
 
   // restore window geometry
   QDesktopWidget *d = QApplication::desktop();
