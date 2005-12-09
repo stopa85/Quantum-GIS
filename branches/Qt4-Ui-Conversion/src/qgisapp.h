@@ -68,7 +68,7 @@ class QToolButton;
 /*! \class QgisApp
  * \brief Main window for the Qgis application
  */
-class QgisApp : public QMainWindow, private Ui::QgisAppBase
+class QgisApp : public QMainWindow, public Ui::QgisAppBase
 {
   Q_OBJECT;
 
@@ -201,10 +201,6 @@ class QgisApp : public QMainWindow, private Ui::QgisAppBase
 
   private:
 
-  //! Add a vector layer to the map
-  void addLayer();
-  //! Add a raster layer to the map (will prompt user for filename using dlg
-  void addRasterLayer();
   //! Add a raster layer to the map (passed in as a ptr). It won't force a refresh unless you explicitly
   //use the force redraw flag.
   //
@@ -214,16 +210,10 @@ class QgisApp : public QMainWindow, private Ui::QgisAppBase
   bool isValidVectorFileName (QString theFileNameQString);
   /** Overloaded version of the above function provided for convenience that takes a qstring pointer */
   bool isValidVectorFileName (QString * theFileNameQString);
-#ifdef HAVE_POSTGRESQL
-  //! Add a databaselayer to the map
-  void addDatabaseLayer();
-#endif
 
   //! Add a WMS layer to the map
   void addWmsLayer();
 
-  //! Exit Qgis
-  void fileExit();
 
   //! add this file to the recently opened/saved projects list
   //  pass settings by reference since creating more than one
@@ -291,6 +281,12 @@ class QgisApp : public QMainWindow, private Ui::QgisAppBase
 
 
   private slots:
+  //! Add a raster layer to the map (will prompt user for filename using dlg
+  void addRasterLayer();
+//#ifdef HAVE_POSTGRESQL
+  //! Add a databaselayer to the map
+  void addDatabaseLayer();
+//#endif
 
     //! reimplements widget keyPress event so we can check if cancel was pressed
     void keyPressEvent ( QKeyEvent * e );
@@ -421,6 +417,10 @@ class QgisApp : public QMainWindow, private Ui::QgisAppBase
   void stopZoom();
   /** Used to (re)set the zordering of the overview map*/
   void setOverviewZOrder(QgsLegend * );
+  //! Add a vector layer to the map
+  void addLayer();
+  //! Exit Qgis
+  void fileExit();
 
 signals:
   /** emitted when a key is pressed and we want non widget sublasses to be able
