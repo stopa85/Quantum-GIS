@@ -93,9 +93,7 @@ class QgisApp : public QMainWindow, public Ui::QgisAppBase
    * filenames instead of prompting user with a dialog.
    @param enc encoding type for the layer 
    @returns true if successfully added layer
-
    @note
-
    This should be deprecated because it's possible to have a
    heterogeneous set of files; i.e., a mix of raster and vector.
    It's much better to try to just open one file at a time.
@@ -155,6 +153,7 @@ class QgisApp : public QMainWindow, public Ui::QgisAppBase
   bool addProject(QString projectFile);
   //!Overloaded version of the private function with same name that takes the imagename as a parameter
   void saveMapAsImage(QString, QPixmap *);
+  /** Get the mapcanvas object from the app */
   QgsMapCanvas * getMapCanvas() { return mMapCanvas; };
   /** return the layer registry
     @note
@@ -168,94 +167,16 @@ class QgisApp : public QMainWindow, public Ui::QgisAppBase
   //! Returns a pointer to the internal clipboard
   QgsClipboard * clipboard();
 
-private:
-  /** Add a raster layer to the map (passed in as a ptr). 
-   * It won't force a refresh unless you explicitly
-   * use the force redraw flag.
-   */
-  bool addRasterLayer(QgsRasterLayer * theRasterLayer, bool theForceRedrawFlag=false);
-  //@todo We should move these next two into vector layer class
-  /** This helper checks to see whether the filename appears to be a valid vector file name */
-  bool isValidVectorFileName (QString theFileNameQString);
-  /** Overloaded version of the above function provided for convenience that takes a qstring pointer */
-  bool isValidVectorFileName (QString * theFileNameQString);
-  //! Add a WMS layer to the map
-  void addWmsLayer();
-  /** add this file to the recently opened/saved projects list
-   *  pass settings by reference since creating more than one
-   * instance simultaneously results in data loss.
-   */
-  void saveRecentProjectPath(QString projectPath, QSettings & settings);
-  //! Update file menu with the current list of recently accessed projects
-  void updateRecentProjectPaths();
-  //! Set map tool to Zoom out
-  void zoomOut();
-  //! Set map tool to Zoom in
-  void zoomIn();
-  //! Zoom to full extent
-  void zoomFull();
-  //! Zoom to the previous extent
-  void zoomPrevious();
-  //! Zoom to selected features
-  void zoomToSelected();
-  //! Set map tool to pan
-  void pan();
-  //! Identify feature(s) on the currently selected layer
-  void identify();
-  //! Measure distance
-  void measure();
-  //! Measure area
-  void measureArea();
-  //! show the attribute table for the currently selected layer
-  void attributeTable();
-  /**Deletes the selected attributes for the currently selected vector layer*/
-  void deleteSelected();
-  //! Read Well Known Binary stream from PostGIS
-  //void readWKB(const char *, QStringList tables);
-  //! Draw a point on the map canvas
-  void drawPoint(double x, double y);
-  //! draw layers
-  void drawLayers();
-  //! test function
-  void testButton();
-  //! About QGis
-  void about();
-  //! activates the capture point tool
-  void capturePoint();
-  //! activates the capture line tool
-  void captureLine();
-  //! activates the capture polygon tool
-  void capturePolygon();
-  //! activates the selection tool
-  void select();
-  //! activates the add vertex tool
-  void addVertex();
-  //! activates the move vertex tool
-  void moveVertex();
-  //! activates the delete vertex tool
-  void deleteVertex();
-  //! cuts selected features on the active layer to the clipboard
-  void editCut();
-  //! copies selected features on the active layer to the clipboard
-  void editCopy();
-  //! copies features on the clipboard to the active layer
-  void editPaste();
-  //! shows the paste-transformations dialog
-  void pasteTransformations();
-  //! check to see if file is dirty and if so, prompt the user th save it
-  int saveDirty();
-
-private slots:
-  //! Add a raster layer to the map (will prompt user for filename using dlg
+//private slots:
+public slots:
+  //! Add a raster layer to the map (will prompt user for filename using dlg )
   void addRasterLayer();
   //#ifdef HAVE_POSTGRESQL
   //! Add a databaselayer to the map
   void addDatabaseLayer();
   //#endif
-
   //! reimplements widget keyPress event so we can check if cancel was pressed
   void keyPressEvent ( QKeyEvent * e );
-
   /** for when a menu bar item is activated
     Used to dynamically update pop-up menu items
     */
@@ -281,14 +202,14 @@ private slots:
   //! test maplayer plugins
   void testMapLayerPlugins();
   //! plugin manager
-  void actionPluginManager_activated();
+  void showPluginManager();
   //! plugin loader
   void loadPlugin(QString name, QString description, QString mFullPath);
   //! Add a plugin menu to the main Plugins menu
   int addPluginMenu(QString menuText, QMenu *menu);
-
+  //! Get the menu that holds teh list of loaded plugins 
   QMenu* getPluginMenu(QString menuName);
-
+  //! Remove an item from the qgis main app menus 
   void removePluginMenuItem(QString name, int menuId);
   //! Add an icon to the plugin toolbar
   int addPluginToolBarIcon (QAction * qAction);
@@ -410,6 +331,82 @@ signals:
   void bookmarkAdded();
 
 private:
+  /** Add a raster layer to the map (passed in as a ptr). 
+   * It won't force a refresh unless you explicitly
+   * use the force redraw flag.
+   */
+  bool addRasterLayer(QgsRasterLayer * theRasterLayer, bool theForceRedrawFlag=false);
+  //@todo We should move these next two into vector layer class
+  /** This helper checks to see whether the filename appears to be a valid vector file name */
+  bool isValidVectorFileName (QString theFileNameQString);
+  /** Overloaded version of the above function provided for convenience that takes a qstring pointer */
+  bool isValidVectorFileName (QString * theFileNameQString);
+  //! Add a WMS layer to the map
+  void addWmsLayer();
+  /** add this file to the recently opened/saved projects list
+   *  pass settings by reference since creating more than one
+   * instance simultaneously results in data loss.
+   */
+  void saveRecentProjectPath(QString projectPath, QSettings & settings);
+  //! Update file menu with the current list of recently accessed projects
+  void updateRecentProjectPaths();
+  //! Set map tool to Zoom out
+  void zoomOut();
+  //! Set map tool to Zoom in
+  void zoomIn();
+  //! Zoom to full extent
+  void zoomFull();
+  //! Zoom to the previous extent
+  void zoomPrevious();
+  //! Zoom to selected features
+  void zoomToSelected();
+  //! Set map tool to pan
+  void pan();
+  //! Identify feature(s) on the currently selected layer
+  void identify();
+  //! Measure distance
+  void measure();
+  //! Measure area
+  void measureArea();
+  //! show the attribute table for the currently selected layer
+  void attributeTable();
+  /**Deletes the selected attributes for the currently selected vector layer*/
+  void deleteSelected();
+  //! Read Well Known Binary stream from PostGIS
+  //void readWKB(const char *, QStringList tables);
+  //! Draw a point on the map canvas
+  void drawPoint(double x, double y);
+  //! draw layers
+  void drawLayers();
+  //! test function
+  void testButton();
+  //! About QGis
+  void about();
+  //! activates the capture point tool
+  void capturePoint();
+  //! activates the capture line tool
+  void captureLine();
+  //! activates the capture polygon tool
+  void capturePolygon();
+  //! activates the selection tool
+  void select();
+  //! activates the add vertex tool
+  void addVertex();
+  //! activates the move vertex tool
+  void moveVertex();
+  //! activates the delete vertex tool
+  void deleteVertex();
+  //! cuts selected features on the active layer to the clipboard
+  void editCut();
+  //! copies selected features on the active layer to the clipboard
+  void editCopy();
+  //! copies features on the clipboard to the active layer
+  void editPaste();
+  //! shows the paste-transformations dialog
+  void pasteTransformations();
+  //! check to see if file is dirty and if so, prompt the user th save it
+  int saveDirty();
+
 
   /// QgisApp aren't copyable
   QgisApp( QgisApp const & );
@@ -456,7 +453,7 @@ private:
   QAction *mActionRemoveAllFromOverview;
   QAction *mActionLayerProperties;
   QAction *mActionProjectProperties;
-  QAction *mActionPluginManager;
+  QAction *mActionShowPluginManager;
   QAction *mActionCheckQgisVersion;
   QAction *mActionOptions;
   QAction *mActionHelpContents;

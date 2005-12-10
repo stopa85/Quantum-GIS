@@ -46,6 +46,12 @@
        </property>
       </layout>
       <widget class="QSplitter" name="legendOverviewSplit" >
+       <property name="minimumSize" >
+        <size>
+         <width>100</width>
+         <height>0</height>
+        </size>
+       </property>
        <property name="orientation" >
         <enum>Qt::Vertical</enum>
        </property>
@@ -83,7 +89,7 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>325</width>
+           <width>570</width>
            <height>446</height>
           </rect>
          </property>

@@ -426,25 +426,27 @@ void QgisApp::createActions()
   mActionAddAllToOverview->setStatusTip(tr("Show all layers in the overview map"));
   connect(mActionAddAllToOverview, SIGNAL(triggered()), this, SLOT(addAllToOverview()));
   //
-  mActionHideAllLayers= new QAction(QIcon(iconPath+"/mActionHideAllLayers.png"), tr("Remove All from Overview"), this);
-  mActionHideAllLayers->setShortcut(tr("-"));
-  mActionHideAllLayers->setStatusTip(tr("Remove all layers in the overview map"));
-  connect(mActionHideAllLayers, SIGNAL(triggered()), this, SLOT(removeAllFromOverView()));
+  mActionRemoveAllFromOverview= new QAction(QIcon(iconPath+"/mActionRemoveAllFromOverview.png"), tr("Remove All From Overview"), this);
+  mActionRemoveAllFromOverview->setShortcut(tr("-"));
+  mActionRemoveAllFromOverview->setStatusTip(tr("Remove all layers from overview map"));
+  connect(mActionRemoveAllFromOverview, SIGNAL(triggered()), this, SLOT(removeAllFromOverView()));
   //
   mActionShowAllLayers= new QAction(QIcon(iconPath+"/mActionShowAllLayers.png"), tr("Show All Layers"), this);
   mActionShowAllLayers->setShortcut(tr("S"));
-  mActionShowAllLayers->setStatusTip(tr("Open a Project"));
-  //connect(mActionShowAllLayers, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
+  mActionShowAllLayers->setStatusTip(tr("Show all layers"));
+  connect(mActionShowAllLayers, SIGNAL(triggered()), this, SLOT(showAllLayers()));
   //
-  mActionRemoveAllFromOverview= new QAction(QIcon(iconPath+"/mActionRemoveAllFromOverview.png"), tr("RemoveAll"), this);
-  mActionRemoveAllFromOverview->setShortcut(tr("Ctrl+O"));
-  mActionRemoveAllFromOverview->setStatusTip(tr("Open a Project"));
-  //connect(mActionRemoveAllFromOverview, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
+  mActionHideAllLayers= new QAction(QIcon(iconPath+"/mActionHideAllLayers.png"), tr("Hide All Layers"), this);
+  mActionHideAllLayers->setShortcut(tr("H"));
+  mActionHideAllLayers->setStatusTip(tr("Hide all layers"));
+  connect(mActionHideAllLayers, SIGNAL(triggered()), this, SLOT(hideAllLayers()));
   //
-  mActionPluginManager= new QAction(QIcon(iconPath+"/mActionPluginManager.png"), tr("Plugin Manager"), this);
-  mActionPluginManager->setShortcut(tr("Ctrl+O"));
-  mActionPluginManager->setStatusTip(tr("Open a Project"));
-  //connect(mActionPluginManager, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
+  mActionShowPluginManager= new QAction(QIcon(iconPath+"/mActionShowPluginManager.png"), tr("Plugin Manager"), this);
+  mActionShowPluginManager->setShortcut(tr("Ctrl+P"));
+  mActionShowPluginManager->setStatusTip(tr("Open the plugin manager"));
+  connect(mActionShowPluginManager, SIGNAL(triggered()), this, SLOT(showPluginManager()));
+  //
+  // ----------- checked up to here ------------
   //
   mActionCheckQgisVersion= new QAction(QIcon(iconPath+"/mActionCheckQgisVersion.png"), tr("Check Qgis Version"), this);
   mActionCheckQgisVersion->setShortcut(tr("Ctrl+O"));
@@ -836,7 +838,7 @@ void QgisApp::setTheme(QString theThemeName)
   mActionShowAllLayers->setIconSet(QIcon(QPixmap(iconPath + "/mActionShowAllLayers.png")));
   mActionRemoveAllFromOverview->setIconSet(QIcon(QPixmap(iconPath + "/mActionRemoveAllFromOverview.png")));
   mActionProjectProperties->setIconSet(QIcon(QPixmap(iconPath + "/mActionProjectProperties.png")));
-  mActionPluginManager->setIconSet(QIcon(QPixmap(iconPath + "/mActionPluginManager.png")));
+  mActionShowPluginManager->setIconSet(QIcon(QPixmap(iconPath + "/mActionPluginManager.png")));
   mActionCheckQgisVersion->setIconSet(QIcon(QPixmap(iconPath + "/mActionCheckQgisVersion.png")));
   mActionOptions->setIconSet(QIcon(QPixmap(iconPath + "/mActionOptions.png")));
   mActionHelpContents->setIconSet(QIcon(QPixmap(iconPath + "/mActionHelpContents.png")));
@@ -4021,7 +4023,7 @@ QgisIface *QgisApp::getInterface()
   return mQgisInterface;
 }
 
-void QgisApp::actionPluginManager_activated()
+void QgisApp::showPluginManager()
 {
   QgsPluginManager *pm = new QgsPluginManager(this);
   if (pm->exec())
