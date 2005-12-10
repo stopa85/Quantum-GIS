@@ -263,7 +263,7 @@ public slots:
   //! Check qgis version against the qgis version server
   void checkQgisVersion();
   //!Invoke the custom projection dialog
-  void actionCustomProjection_activated(); 
+  void customProjection(); 
   //! options dialog slot
   void options();
   //! Whats-this help slot
