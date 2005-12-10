@@ -446,27 +446,27 @@ void QgisApp::createActions()
   mActionShowPluginManager->setStatusTip(tr("Open the plugin manager"));
   connect(mActionShowPluginManager, SIGNAL(triggered()), this, SLOT(showPluginManager()));
   //
-  // ----------- checked up to here ------------
-  //
   mActionCheckQgisVersion= new QAction(QIcon(iconPath+"/mActionCheckQgisVersion.png"), tr("Check Qgis Version"), this);
-  mActionCheckQgisVersion->setShortcut(tr("Ctrl+O"));
-  mActionCheckQgisVersion->setStatusTip(tr("Open a Project"));
-  //connect(mActionCheckQgisVersion, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
+  //mActionCheckQgisVersion->setShortcut(tr(""));
+  mActionCheckQgisVersion->setStatusTip(tr("Check if your QGIS version is up to date (requires internet access)"));
+  connect(mActionCheckQgisVersion, SIGNAL(triggered()), this, SLOT(checkQgisVersion()));
   //
   mActionProjectProperties= new QAction(QIcon(iconPath+"/mActionProjectProperties.png"), tr("Project Properties"), this);
-  mActionProjectProperties->setShortcut(tr("Ctrl+O"));
-  mActionProjectProperties->setStatusTip(tr("Open a Project"));
-  //connect(mActionProjectProperties, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
+  mActionProjectProperties->setShortcut(tr("Alt+P"));
+  mActionProjectProperties->setStatusTip(tr("Set project properties"));
+  connect(mActionProjectProperties, SIGNAL(triggered()), this, SLOT(projectProperties()));
   //
-  mActionOptions= new QAction(QIcon(iconPath+"/mActionOptions.png"), tr("Options"), this);
-  mActionOptions->setShortcut(tr("Ctrl+O"));
-  mActionOptions->setStatusTip(tr("Open a Project"));
-  //connect(mActionOptions, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
+  mActionOptions= new QAction(QIcon(iconPath+"/mActionOptions.png"), tr("QGIS Options"), this);
+  mActionOptions->setShortcut(tr("Alt+O"));
+  mActionOptions->setStatusTip(tr("Change various QGIS options"));
+  connect(mActionOptions, SIGNAL(triggered()), this, SLOT(options()));
+  //
+  // ----------- checked up to here ------------
   //
   mActionCustomProjection= new QAction(QIcon(iconPath+"/mActionCustomProjection.png"), tr("Custom Projection"), this);
-  mActionCustomProjection->setShortcut(tr("Ctrl+O"));
-  mActionCustomProjection->setStatusTip(tr("Open a Project"));
-  //connect(mActionCustomProjection, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
+  mActionCustomProjection->setShortcut(tr("Alt+I"));
+  mActionCustomProjection->setStatusTip(tr("Manage custom projections"));
+  connect(mActionCustomProjection, SIGNAL(triggered()), this, SLOT(customProjection()));
   //
   mActionHelpContents= new QAction(QIcon(iconPath+"/mActionHelpContents.png"), tr("Help Contents"), this);
   mActionHelpContents->setShortcut(tr("Ctrl+O"));
@@ -690,11 +690,11 @@ void QgisApp::createToolBars()
   mLayerToolBar->addAction(mActionAddWmsLayer);
   mLayerToolBar->addAction(mActionRemoveLayer);
   mLayerToolBar->addAction(mActionNewVectorLayer);
-  mLayerToolBar->addAction(mActionAddAllToOverview);
   mLayerToolBar->addAction(mActionInOverview);
+  mLayerToolBar->addAction(mActionAddAllToOverview);
+  mLayerToolBar->addAction(mActionRemoveAllFromOverview);
   mLayerToolBar->addAction(mActionHideAllLayers);
   mLayerToolBar->addAction(mActionShowAllLayers);
-  mLayerToolBar->addAction(mActionRemoveAllFromOverview);
   //
   // Help Toolbar
   mHelpToolBar = addToolBar(tr("Help"));
@@ -5614,7 +5614,7 @@ void QgisApp::keyPressEvent ( QKeyEvent * e )
 std::cout << mMapCanvas->extent() << std::endl; 
 }
 */
-void QgisApp::actionCustomProjection_activated()
+void QgisApp::customProjection()
 {
   // Create an instance of the Custom Projection Designer modeless dialog.
   // Autodelete the dialog when closing since a pointer is not retained.
