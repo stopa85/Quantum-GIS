@@ -284,9 +284,9 @@ public slots:
   void projectPropertiesProjections();
   /*  void urlData(); */
   //! Show the spatial bookmarks dialog
-  void actionShowBookmarks_activated();
+  void showBookmarks();
   //! Create a new spatial bookmark
-  void actionNewBookmark_activated();
+  void newBookmark();
 
 public slots:
   void showProgress(int theProgress, int theTotalSteps);
