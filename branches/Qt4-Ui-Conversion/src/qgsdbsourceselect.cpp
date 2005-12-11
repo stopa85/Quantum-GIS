@@ -165,6 +165,11 @@ void QgsDbSourceSelect::deleteConnection()
     setConnectionListPosition();
   }
 }
+// Slot for adding a new connection
+void QgsDbSourceSelect::on_btnNew_clicked()
+{
+  addNewConnection();
+}
 // Slot for performing action when the Add button is clicked
 void QgsDbSourceSelect::on_btnAdd_clicked()
 {
