@@ -406,10 +406,10 @@ postgresUIH     =
 postgresLIBHEADERS = qgspgutil.h
 postgresLIBSOURCES = qgspgutil.cpp
 
-if HAVE_POSTGRESQL
 postgresUIHEADERS     = ui_qgsdbsourceselectbase.h	\
 		  ui_qgsnewconnectionbase.h		\
 		  ui_qgspgquerybuilderbase.h	
+if HAVE_POSTGRESQL
 ## postgresUIHEADERS = $(postgresUIC:.ui=.uic.h)
 ## if !NO_UIC_IMPLEMENTATIONS
 ## postgresUISOURCES = $(postgresUIC:.ui=.uic.cpp)
