@@ -349,6 +349,8 @@ void QgisApp::createActions()
 {
   QString iconPath = mAppDir +"/share/qgis/themes/" + mThemeName;
   //
+  // File Menu Related Items
+  //
   mActionFileNew= new QAction(QIcon(iconPath+"/mActionFileNew.png"), tr("&New Project..."), this);
   mActionFileNew->setShortcut(tr("Ctrl+N"));
   mActionFileNew->setStatusTip(tr("New Project"));
@@ -388,6 +390,8 @@ void QgisApp::createActions()
   mActionFileExit->setShortcut(tr("Ctrl+Q"));
   mActionFileExit->setStatusTip(tr("Exit QGIS"));
   connect(mActionFileExit, SIGNAL(triggered()), qApp, SLOT(quit()));
+  //
+  // Layer Menu Related Items
   //
   mActionAddNonDbLayer= new QAction(QIcon(iconPath+"/mActionAddNonDbLayer.png"), tr("Add a Vector Layer"), this);
   mActionAddNonDbLayer->setShortcut(tr("V"));
@@ -441,57 +445,57 @@ void QgisApp::createActions()
   mActionHideAllLayers->setStatusTip(tr("Hide all layers"));
   connect(mActionHideAllLayers, SIGNAL(triggered()), this, SLOT(hideAllLayers()));
   //
-  mActionShowPluginManager= new QAction(QIcon(iconPath+"/mActionShowPluginManager.png"), tr("Plugin Manager"), this);
-  mActionShowPluginManager->setShortcut(tr("Ctrl+P"));
-  mActionShowPluginManager->setStatusTip(tr("Open the plugin manager"));
-  connect(mActionShowPluginManager, SIGNAL(triggered()), this, SLOT(showPluginManager()));
+  // Settings Menu Related Items
   //
-  mActionCheckQgisVersion= new QAction(QIcon(iconPath+"/mActionCheckQgisVersion.png"), tr("Check Qgis Version"), this);
-  //mActionCheckQgisVersion->setShortcut(tr(""));
-  mActionCheckQgisVersion->setStatusTip(tr("Check if your QGIS version is up to date (requires internet access)"));
-  connect(mActionCheckQgisVersion, SIGNAL(triggered()), this, SLOT(checkQgisVersion()));
-  //
+  // FIXME - causes segfault when invoked
   mActionProjectProperties= new QAction(QIcon(iconPath+"/mActionProjectProperties.png"), tr("Project Properties"), this);
   mActionProjectProperties->setShortcut(tr("Alt+P"));
   mActionProjectProperties->setStatusTip(tr("Set project properties"));
   connect(mActionProjectProperties, SIGNAL(triggered()), this, SLOT(projectProperties()));
-  //
+  // FIXME - causes segfault when invoked
   mActionOptions= new QAction(QIcon(iconPath+"/mActionOptions.png"), tr("QGIS Options"), this);
   mActionOptions->setShortcut(tr("Alt+O"));
   mActionOptions->setStatusTip(tr("Change various QGIS options"));
   connect(mActionOptions, SIGNAL(triggered()), this, SLOT(options()));
-  //
-  // ----------- checked up to here ------------
-  //
+  // FIXME - causes segfault when invoked
   mActionCustomProjection= new QAction(QIcon(iconPath+"/mActionCustomProjection.png"), tr("Custom Projection"), this);
   mActionCustomProjection->setShortcut(tr("Alt+I"));
   mActionCustomProjection->setStatusTip(tr("Manage custom projections"));
   connect(mActionCustomProjection, SIGNAL(triggered()), this, SLOT(customProjection()));
   //
+  // Help Menu Related items
+  //
   mActionHelpContents= new QAction(QIcon(iconPath+"/mActionHelpContents.png"), tr("Help Contents"), this);
-  mActionHelpContents->setShortcut(tr("Ctrl+O"));
-  mActionHelpContents->setStatusTip(tr("Open a Project"));
-  //connect(mActionHelpContents, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
+  mActionHelpContents->setShortcut(tr("F1"));
+  mActionHelpContents->setStatusTip(tr("Help Documentation"));
+  connect(mActionHelpContents, SIGNAL(triggered()), this, SLOT(helpContents()));
   //
   mActionQgisHomePage= new QAction(QIcon(iconPath+"/mActionQgisHomePage.png"), tr("Qgis Home Page"), this);
-  mActionQgisHomePage->setShortcut(tr("Ctrl+O"));
-  mActionQgisHomePage->setStatusTip(tr("Open a Project"));
-  //connect(mActionQgisHomePage, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
+  mActionQgisHomePage->setShortcut(tr("Ctrl+H"));
+  mActionQgisHomePage->setStatusTip(tr("QGIS Home Page"));
+  connect(mActionQgisHomePage, SIGNAL(triggered()), this, SLOT(helpQgisHomePage()));
   //
   mActionQgisSourceForgePage= new QAction(QIcon(iconPath+"/mActionQgisSourceForgePage.png"), tr("Qgis Sourceforge"), this);
-  mActionQgisSourceForgePage->setShortcut(tr("Ctrl+O"));
-  mActionQgisSourceForgePage->setStatusTip(tr("Open a Project"));
-  //connect(mActionQgisSourceForgePage, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
+  mActionQgisSourceForgePage->setShortcut(tr("Alt+H"));
+  mActionQgisSourceForgePage->setStatusTip(tr("Visit QGIS SourceForge page"));
+  connect(mActionQgisSourceForgePage, SIGNAL(triggered()), this, SLOT(helpQgisSourceForge()));
   //
   mActionHelpAbout= new QAction(QIcon(iconPath+"/mActionHelpAbout.png"), tr("About"), this);
-  mActionHelpAbout->setShortcut(tr("Ctrl+O"));
-  mActionHelpAbout->setStatusTip(tr("Open a Project"));
-  //connect(mActionHelpAbout, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
+  mActionHelpAbout->setStatusTip(tr("About QGIS"));
+  connect(mActionHelpAbout, SIGNAL(triggered()), this, SLOT(about()));
+  //
+  mActionCheckQgisVersion= new QAction(QIcon(iconPath+"/mActionCheckQgisVersion.png"), tr("Check Qgis Version"), this);
+  mActionCheckQgisVersion->setStatusTip(tr("Check if your QGIS version is up to date (requires internet access)"));
+  connect(mActionCheckQgisVersion, SIGNAL(triggered()), this, SLOT(checkQgisVersion()));
+  // 
+  // View Menu Items
   //
   mActionDraw= new QAction(QIcon(iconPath+"/mActionDraw.png"), tr("Refresh"), this);
-  mActionDraw->setShortcut(tr("Ctrl+O"));
-  mActionDraw->setStatusTip(tr("Open a Project"));
-  //connect(mActionDraw, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
+  mActionDraw->setShortcut(tr("Ctrl+R"));
+  mActionDraw->setStatusTip(tr("Refresh Map"));
+  connect(mActionDraw, SIGNAL(triggered()), this, SLOT(drawLayers()));
+  //
+  // ----------- checked up to here ------------
   //
   mActionCapturePoint= new QAction(QIcon(iconPath+"/mActionCapturePoint.png"), tr("Capture Point"), this);
   mActionCapturePoint->setShortcut(tr("Ctrl+O"));
@@ -588,6 +592,13 @@ void QgisApp::createActions()
   mActionInOverview->setStatusTip(tr("Open a Project"));
   //connect(mActionInOverview, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
   //
+  // Plugin Menu Related Items
+  // FIXME - segfalts when run...
+  mActionShowPluginManager= new QAction(QIcon(iconPath+"/mActionShowPluginManager.png"), tr("Plugin Manager"), this);
+  mActionShowPluginManager->setShortcut(tr("Ctrl+P"));
+  mActionShowPluginManager->setStatusTip(tr("Open the plugin manager"));
+  connect(mActionShowPluginManager, SIGNAL(triggered()), this, SLOT(showPluginManager()));
+  //
   // Add the whats this toolbar button
   // QWhatsThis::whatsThisButton(mHelpToolBar);
   // 
@@ -615,8 +626,8 @@ void QgisApp::createMenus()
   mViewMenu = menuBar()->addMenu(tr("&View"));
   mViewMenu->addAction(mActionZoomFullExtent);
   mViewMenu->addAction(mActionZoomToSelected);
-  mViewMenu->addAction(mActionZoomLast);
   mViewMenu->addAction(mActionZoomToLayer);
+  mViewMenu->addAction(mActionZoomLast);
   mViewMenu->addAction(mActionDraw);
   mViewMenu->addAction(mActionShowBookmarks);
   mViewMenu->addAction(mActionNewBookmark);
@@ -632,11 +643,11 @@ void QgisApp::createMenus()
   mLayerMenu->addAction(mActionAddWmsLayer);
   mLayerMenu->addAction(mActionRemoveLayer);
   mLayerMenu->addAction(mActionNewVectorLayer);
-  mLayerMenu->addAction(mActionAddAllToOverview);
   mLayerMenu->addAction(mActionInOverview);
+  mLayerMenu->addAction(mActionAddAllToOverview);
+  mLayerMenu->addAction(mActionRemoveAllFromOverview);
   mLayerMenu->addAction(mActionHideAllLayers);
   mLayerMenu->addAction(mActionShowAllLayers);
-  mLayerMenu->addAction(mActionRemoveAllFromOverview);
 
   //
   // Settings Menu
@@ -648,6 +659,7 @@ void QgisApp::createMenus()
   //
   // Plugins Menu
   mPluginsMenu = menuBar()->addMenu(tr("&Plugins"));
+  mPluginsMenu->addAction(mActionShowPluginManager);
 
   // Add the plugin manager action to it
   //actionPluginManager->addTo(mPluginMenu);
@@ -659,7 +671,11 @@ void QgisApp::createMenus()
 
   menuBar()->addSeparator();
   mHelpMenu = menuBar()->addMenu(tr("&Help"));
+  mHelpMenu->addAction(mActionHelpContents);
+  mHelpMenu->addAction(mActionQgisHomePage);
+  mHelpMenu->addAction(mActionQgisSourceForgePage);
   mHelpMenu->addAction(mActionCheckQgisVersion);
+  mHelpMenu->addAction(mActionHelpAbout);
 }
 
 void QgisApp::createToolBars()
@@ -704,7 +720,6 @@ void QgisApp::createToolBars()
   // Digitizing Toolbar
   mDigitizeToolBar = addToolBar(tr("Digitizing"));
   mDigitizeToolBar->setObjectName("Digitizing");
-  mDigitizeToolBar->addAction(mActionDraw);
   mDigitizeToolBar->addAction(mActionCapturePoint);
   mDigitizeToolBar->addAction(mActionCaptureLine);
   mDigitizeToolBar->addAction(mActionCapturePolygon);
@@ -712,13 +727,14 @@ void QgisApp::createToolBars()
   // Map Navigation Toolbar
   mMapNavToolBar = addToolBar(tr("Map Navigation"));
   mMapNavToolBar->setObjectName("Map Navigation");
+  mMapNavToolBar->addAction(mActionPan);
   mMapNavToolBar->addAction(mActionZoomIn);
   mMapNavToolBar->addAction(mActionZoomOut);
   mMapNavToolBar->addAction(mActionZoomFullExtent);
   mMapNavToolBar->addAction(mActionZoomToSelected);
-  mMapNavToolBar->addAction(mActionPan);
-  mMapNavToolBar->addAction(mActionZoomLast);
   mMapNavToolBar->addAction(mActionZoomToLayer);
+  mMapNavToolBar->addAction(mActionZoomLast);
+  mMapNavToolBar->addAction(mActionDraw);
   //
   // Attributes Toolbar
   mAttributesToolBar = addToolBar(tr("Attributes"));
@@ -838,7 +854,7 @@ void QgisApp::setTheme(QString theThemeName)
   mActionShowAllLayers->setIconSet(QIcon(QPixmap(iconPath + "/mActionShowAllLayers.png")));
   mActionRemoveAllFromOverview->setIconSet(QIcon(QPixmap(iconPath + "/mActionRemoveAllFromOverview.png")));
   mActionProjectProperties->setIconSet(QIcon(QPixmap(iconPath + "/mActionProjectProperties.png")));
-  mActionShowPluginManager->setIconSet(QIcon(QPixmap(iconPath + "/mActionPluginManager.png")));
+  mActionShowPluginManager->setIconSet(QIcon(QPixmap(iconPath + "/mActionShowPluginManager.png")));
   mActionCheckQgisVersion->setIconSet(QIcon(QPixmap(iconPath + "/mActionCheckQgisVersion.png")));
   mActionOptions->setIconSet(QIcon(QPixmap(iconPath + "/mActionOptions.png")));
   mActionHelpContents->setIconSet(QIcon(QPixmap(iconPath + "/mActionHelpContents.png")));
@@ -1165,7 +1181,8 @@ void QgisApp::restoreWindowState()
 
 void QgisApp::about()
 {
-  /* Disabled by Tim for now (need to resolve subclassing behavour of qgsabout
+  /* FIXME 
+   * Disabled by Tim for now (need to resolve subclassing behavour of qgsabout
      QApplication::setOverrideCursor(Qt::WaitCursor);
      QgsAbout *abt = new QgsAbout();
      QString versionString = tr("Version ");
