@@ -537,44 +537,43 @@ void QgisApp::createActions()
   // ------- checked till here
   //
   mActionSelect= new QAction(QIcon(iconPath+"/mActionSelect.png"), tr("Select Features"), this);
-  mActionSelect->setShortcut(tr("Ctrl+O"));
-  mActionSelect->setStatusTip(tr("Open a Project"));
-  //connect(mActionSelect, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
+  mActionSelect->setStatusTip(tr("Select Features"));
+  connect(mActionSelect, SIGNAL(triggered()), this, SLOT(select()));
   //
   mActionOpenTable= new QAction(QIcon(iconPath+"/mActionOpenTable.png"), tr("Open Table"), this);
-  mActionOpenTable->setShortcut(tr("Ctrl+O"));
-  mActionOpenTable->setStatusTip(tr("Open a Project"));
-  //connect(mActionOpenTable, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
+  //mActionOpenTable->setShortcut(tr("Ctrl+O"));
+  mActionOpenTable->setStatusTip(tr("Open Table"));
+  connect(mActionOpenTable, SIGNAL(triggered()), this, SLOT(attributeTable()));
   //
   mActionMeasure= new QAction(QIcon(iconPath+"/mActionMeasure.png"), tr("Measure Line "), this);
-  mActionMeasure->setShortcut(tr("Ctrl+O"));
-  mActionMeasure->setStatusTip(tr("Open a Project"));
-  //connect(mActionMeasure, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
+  mActionMeasure->setShortcut(tr("Ctrl+M"));
+  mActionMeasure->setStatusTip(tr("Measure a Line"));
+  connect(mActionMeasure, SIGNAL(triggered()), this, SLOT(measure()));
   //
   mActionMeasureArea= new QAction(QIcon(iconPath+"/mActionMeasureArea.png"), tr("Measure Area"), this);
-  mActionMeasureArea->setShortcut(tr("Ctrl+O"));
-  mActionMeasureArea->setStatusTip(tr("Open a Project"));
-  //connect(mActionMeasureArea, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
+  mActionMeasureArea->setShortcut(tr("Alt+M"));
+  mActionMeasureArea->setStatusTip(tr("Measure an Area"));
+  connect(mActionMeasureArea, SIGNAL(triggered()), this, SLOT(measureArea()));
   //
   mActionShowBookmarks= new QAction(QIcon(iconPath+"/mActionShowBookmarks.png"), tr("Show Bookmark"), this);
-  mActionShowBookmarks->setShortcut(tr("Ctrl+O"));
-  mActionShowBookmarks->setStatusTip(tr("Open a Project"));
-  //connect(mActionShowBookmarks, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
+  mActionShowBookmarks->setShortcut(tr("Ctrl+B"));
+  mActionShowBookmarks->setStatusTip(tr("Show Bookmarks"));
+  connect(mActionShowBookmarks, SIGNAL(triggered()), this, SLOT(showBookmarks()));
   //
   mActionNewBookmark= new QAction(QIcon(iconPath+"/mActionNewBookmark.png"), tr("New Bookmark"), this);
-  mActionNewBookmark->setShortcut(tr("Ctrl+O"));
-  mActionNewBookmark->setStatusTip(tr("Open a Project"));
-  //connect(mActionNewBookmark, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
+  mActionNewBookmark->setShortcut(tr("Alt+B"));
+  mActionNewBookmark->setStatusTip(tr("New Bookmark"));
+  connect(mActionNewBookmark, SIGNAL(triggered()), this, SLOT(newBookmark()));
   //
   mActionAddWmsLayer= new QAction(QIcon(iconPath+"/mActionAddWmsLayer.png"), tr("Add Wms Layer"), this);
-  mActionAddWmsLayer->setShortcut(tr("Ctrl+O"));
-  mActionAddWmsLayer->setStatusTip(tr("Open a Project"));
-  //connect(mActionAddWmsLayer, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
+  mActionAddWmsLayer->setShortcut(tr("Ctrl+M"));
+  mActionAddWmsLayer->setStatusTip(tr("Add Web Mapping Server Layer"));
+  connect(mActionAddWmsLayer, SIGNAL(triggered()), this, SLOT(addWmsLayer()));
   //
   mActionInOverview= new QAction(QIcon(iconPath+"/mActionInOverview.png"), tr("In Overview"), this);
-  mActionInOverview->setShortcut(tr("Ctrl+O"));
-  mActionInOverview->setStatusTip(tr("Open a Project"));
-  //connect(mActionInOverview, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
+  mActionInOverview->setShortcut(tr("Alt+O"));
+  mActionInOverview->setStatusTip(tr("Add current layer to overview map"));
+  connect(mActionInOverview, SIGNAL(triggered()), this, SLOT(inOverview()));
   //
   // Plugin Menu Related Items
   // FIXME - segfalts when run...
@@ -5640,7 +5639,7 @@ void QgisApp::customProjection()
       "Projection Designer", Qt::WDestructiveClose);
   myDialog->show();
 }
-void QgisApp::actionShowBookmarks_activated()
+void QgisApp::showBookmarks()
 {
   // Create or show the single instance of the Bookmarks modeless dialog.
   // Closing a QWidget only hides it so it can be shown again later.
@@ -5654,7 +5653,7 @@ void QgisApp::actionShowBookmarks_activated()
   bookmarks->setActiveWindow();
 }
 
-void QgisApp::actionNewBookmark_activated()
+void QgisApp::newBookmark()
 {
   // Get the name for the bookmark. Everything else we fetch from
   // the mapcanvas
