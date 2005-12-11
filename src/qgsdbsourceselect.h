@@ -71,6 +71,7 @@ class QgsDbSourceSelect : public QDialog, private Ui::QgsDbSourceSelectBase
     */
       void on_btnConnect_clicked();
       void on_btnAdd_clicked();
+      void on_btnNew_clicked();
       void setSql(Q3ListViewItem *);
       void showHelp();
  private:

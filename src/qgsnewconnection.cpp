@@ -29,6 +29,7 @@ extern "C"
 QgsNewConnection::QgsNewConnection(QWidget *parent, const QString& connName, bool modal)
 : QgsNewConnectionBase()
 {
+  setupUi(this);
   if (!connName.isEmpty())
     {
       // populate the dialog with the information stored for the connection
