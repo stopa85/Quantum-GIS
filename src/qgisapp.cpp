@@ -495,62 +495,46 @@ void QgisApp::createActions()
   mActionDraw->setStatusTip(tr("Refresh Map"));
   connect(mActionDraw, SIGNAL(triggered()), this, SLOT(drawLayers()));
   //
-  // ----------- checked up to here ------------
-  //
-  mActionCapturePoint= new QAction(QIcon(iconPath+"/mActionCapturePoint.png"), tr("Capture Point"), this);
-  mActionCapturePoint->setShortcut(tr("Ctrl+O"));
-  mActionCapturePoint->setStatusTip(tr("Open a Project"));
-  //connect(mActionCapturePoint, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
-  //
-  mActionCaptureLine= new QAction(QIcon(iconPath+"/mActionCaptureLine.png"), tr("Capture Line"), this);
-  mActionCaptureLine->setShortcut(tr("Ctrl+O"));
-  mActionCaptureLine->setStatusTip(tr("Open a Project"));
-  //connect(mActionCaptureLine, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
-  //
-  mActionCapturePolygon= new QAction(QIcon(iconPath+"/mActionCapturePolygon.png"), tr("Capture Polygon"), this);
-  mActionCapturePolygon->setShortcut(tr("Ctrl+O"));
-  mActionCapturePolygon->setStatusTip(tr("Open a Project"));
-  //connect(mActionCapturePolygon, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
-  //
   mActionZoomIn= new QAction(QIcon(iconPath+"/mActionZoomIn.png"), tr("Zoom In"), this);
-  mActionZoomIn->setShortcut(tr("Ctrl+O"));
-  mActionZoomIn->setStatusTip(tr("Open a Project"));
-  //connect(mActionZoomIn, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
+  mActionZoomIn->setShortcut(tr("z"));
+  mActionZoomIn->setStatusTip(tr("Zoom In"));
+  connect(mActionZoomIn, SIGNAL(triggered()), this, SLOT(zoomIn()));
   //
   mActionZoomOut= new QAction(QIcon(iconPath+"/mActionZoomOut.png"), tr("Zoom Out"), this);
-  mActionZoomOut->setShortcut(tr("Ctrl+O"));
-  mActionZoomOut->setStatusTip(tr("Open a Project"));
-  //connect(mActionZoomOut, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
+  mActionZoomOut->setShortcut(tr("Z"));
+  mActionZoomOut->setStatusTip(tr("Zoom Out"));
+  connect(mActionZoomOut, SIGNAL(triggered()), this, SLOT(zoomOut()));
   //
   mActionZoomFullExtent= new QAction(QIcon(iconPath+"/mActionZoomFullExtent.png"), tr("Zoom Full"), this);
-  mActionZoomFullExtent->setShortcut(tr("Ctrl+O"));
-  mActionZoomFullExtent->setStatusTip(tr("Open a Project"));
-  //connect(mActionZoomFullExtent, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
+  mActionZoomFullExtent->setShortcut(tr("f"));
+  mActionZoomFullExtent->setStatusTip(tr("Zoom to Full Extents"));
+  connect(mActionZoomFullExtent, SIGNAL(triggered()), this, SLOT(zoomFull()));
   //
   mActionZoomToSelected= new QAction(QIcon(iconPath+"/mActionZoomToSelected.png"), tr("Zoom To Selection"), this);
-  mActionZoomToSelected->setShortcut(tr("Ctrl+O"));
-  mActionZoomToSelected->setStatusTip(tr("Open a Project"));
-  //connect(mActionZoomToSelected, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
+  mActionZoomToSelected->setShortcut(tr("F"));
+  mActionZoomToSelected->setStatusTip(tr("Zoom to selection"));
+  connect(mActionZoomToSelected, SIGNAL(triggered()), this, SLOT(zoomToSelected()));
   //
   mActionPan= new QAction(QIcon(iconPath+"/mActionPan.png"), tr("Pan Map"), this);
-  mActionPan->setShortcut(tr("Ctrl+O"));
-  mActionPan->setStatusTip(tr("Open a Project"));
-  //connect(mActionPan, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
+  mActionPan->setStatusTip(tr("Pan the map"));
+  connect(mActionPan, SIGNAL(triggered()), this, SLOT(pan()));
   //
   mActionZoomLast= new QAction(QIcon(iconPath+"/mActionZoomLast.png"), tr("Zoom Last"), this);
-  mActionZoomLast->setShortcut(tr("Ctrl+O"));
-  mActionZoomLast->setStatusTip(tr("Open a Project"));
-  //connect(mActionZoomLast, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
+  //mActionZoomLast->setShortcut(tr("Ctrl+O"));
+  mActionZoomLast->setStatusTip(tr("Zoom to Last Extent"));
+  connect(mActionZoomLast, SIGNAL(triggered()), this, SLOT(zoomPrevious()));
   //
   mActionZoomToLayer= new QAction(QIcon(iconPath+"/mActionZoomToLayer.png"), tr("Zoom To Layer"), this);
-  mActionZoomToLayer->setShortcut(tr("Ctrl+O"));
-  mActionZoomToLayer->setStatusTip(tr("Open a Project"));
-  //connect(mActionZoomToLayer, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
+  //mActionZoomToLayer->setShortcut(tr("Ctrl+O"));
+  mActionZoomToLayer->setStatusTip(tr("Zoom to Layer"));
+  connect(mActionZoomToLayer, SIGNAL(triggered()), this, SLOT(zoomToLayerExtent()));
   //
   mActionIdentify= new QAction(QIcon(iconPath+"/mActionIdentify.png"), tr("Identify Features"), this);
-  mActionIdentify->setShortcut(tr("Ctrl+O"));
-  mActionIdentify->setStatusTip(tr("Open a Project"));
-  //connect(mActionIdentify, SIGNAL(triggered()), this, SLOT(mActionFileSaveAs()));
+  mActionIdentify->setShortcut(tr("I"));
+  mActionIdentify->setStatusTip(tr("Click on features to identify them"));
+  connect(mActionIdentify, SIGNAL(triggered()), this, SLOT(identify()));
+  //
+  // ------- checked till here
   //
   mActionSelect= new QAction(QIcon(iconPath+"/mActionSelect.png"), tr("Select Features"), this);
   mActionSelect->setShortcut(tr("Ctrl+O"));
@@ -602,6 +586,23 @@ void QgisApp::createActions()
   // Add the whats this toolbar button
   // QWhatsThis::whatsThisButton(mHelpToolBar);
   // 
+  //
+  // Digitising Toolbar Items
+  //
+  mActionCapturePoint= new QAction(QIcon(iconPath+"/mActionCapturePoint.png"), tr("Capture Point"), this);
+  mActionCapturePoint->setShortcut(tr("."));
+  mActionCapturePoint->setStatusTip(tr("Capture Points"));
+  connect(mActionCapturePoint, SIGNAL(triggered()), this, SLOT(capturePoint()));
+  //
+  mActionCaptureLine= new QAction(QIcon(iconPath+"/mActionCaptureLine.png"), tr("Capture Line"), this);
+  mActionCaptureLine->setShortcut(tr("/"));
+  mActionCaptureLine->setStatusTip(tr("Capture Lines"));
+  connect(mActionCaptureLine, SIGNAL(triggered()), this, SLOT(captureLine()));
+  //
+  mActionCapturePolygon= new QAction(QIcon(iconPath+"/mActionCapturePolygon.png"), tr("Capture Polygon"), this);
+  mActionCapturePolygon->setShortcut(tr("Ctrl+/"));
+  mActionCapturePolygon->setStatusTip(tr("Capture Polygons"));
+  connect(mActionCapturePolygon, SIGNAL(triggered()), this, SLOT(capturePolygon()));
 }
 
 void QgisApp::createMenus()
