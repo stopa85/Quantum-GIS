@@ -19,8 +19,8 @@ email                : sherman at mrcc.com
 #include <cassert>
 #include <qsettings.h>
 #include <qpixmap.h>
-#include <q3listbox.h>
-#include <q3listview.h>
+#include <Q3ListBox>
+#include <Q3ListView>
 #include <qstringlist.h>
 #include <QComboBox>
 #include <qpushbutton.h>
@@ -36,9 +36,10 @@ email                : sherman at mrcc.com
 #include "qgspgquerybuilder.h"
 #include "qgisapp.h"
 #include "qgscontexthelp.h"
-QgsDbSourceSelect::QgsDbSourceSelect(QgisApp *app, const char *name, bool modal)
-: QgsDbSourceSelectBase(), qgisApp(app)
+QgsDbSourceSelect::QgsDbSourceSelect(QgisApp *app, QWidget *parent, const char *name, bool modal)
+: QDialog(parent, name, modal), qgisApp(app)
 {
+  setupUi(this);
   btnAdd->setEnabled(false);
   populateConnectionList();
   // connect the double-click signal to the addSingleLayer slot in the parent
@@ -164,6 +165,11 @@ void QgsDbSourceSelect::deleteConnection()
     setConnectionListPosition();
   }
 }
+// Slot for performing action when the Add button is clicked
+void QgsDbSourceSelect::on_btnAdd_clicked()
+{
+  addTables();
+}
 
 void QgsDbSourceSelect::addTables()
 {
@@ -188,7 +194,7 @@ void QgsDbSourceSelect::addTables()
   // END CHANGES ECOS
 }
 
-void QgsDbSourceSelect::dbConnect()
+void QgsDbSourceSelect::on_btnConnect_clicked()
 {
   // populate the table list
   QSettings settings;

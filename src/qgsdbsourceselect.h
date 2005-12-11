@@ -42,7 +42,7 @@ class QgsDbSourceSelect : public QDialog, private Ui::QgsDbSourceSelectBase
  public:
 
     //! Constructor
-    QgsDbSourceSelect(QgisApp *app = 0, const char *name = 0, bool modal = true);
+    QgsDbSourceSelect(QgisApp *app = 0, QWidget *parent=0, const char *name = 0, bool modal = true);
     //! Destructor
     ~QgsDbSourceSelect();
     //! Opens the create connection dialog to build a new connection
@@ -54,11 +54,7 @@ class QgsDbSourceSelect : public QDialog, private Ui::QgsDbSourceSelectBase
 	//! Populate the connection list combo box
 	void populateConnectionList();
     //! Determines the tables the user selected and closes the dialog
-    void addTables();
-    /*! Connects to the database using the stored connection parameters. 
-    * Once connected, available layers are displayed.
-    */
-    void dbConnect();
+      void addTables();
     //! String list containing the selected tables
     QStringList selectedTables();
     //! Connection info (database, host, user, password)
@@ -70,6 +66,11 @@ class QgsDbSourceSelect : public QDialog, private Ui::QgsDbSourceSelectBase
     // Store the selected database
     void dbChanged();
     public slots:
+    /*! Connects to the database using the stored connection parameters. 
+    * Once connected, available layers are displayed.
+    */
+      void on_btnConnect_clicked();
+      void on_btnAdd_clicked();
       void setSql(Q3ListViewItem *);
       void showHelp();
  private:
