@@ -3327,7 +3327,7 @@ void QgisApp::zoomIn()
       m.scale( 2.0, 2.0 );
       mMapCanvas->setWorldMatrix( m );
       */
-
+  qDebug ("Setting map tool to zoomIn");
   if ( mMapCanvas->mapTool() != QGis::ZoomIn && mMapCanvas->mapTool() != QGis::ZoomOut
       && mMapCanvas->mapTool() != QGis::Pan )
   {

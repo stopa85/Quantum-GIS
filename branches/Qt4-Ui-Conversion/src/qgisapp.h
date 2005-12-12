@@ -304,6 +304,28 @@ public slots:
   void addLayer();
   //! Exit Qgis
   void fileExit();
+  //! Add a WMS layer to the map
+  void addWmsLayer();
+  //! Set map tool to Zoom out
+  void zoomOut();
+  //! Set map tool to Zoom in
+  void zoomIn();
+  //! Zoom to full extent
+  void zoomFull();
+  //! Zoom to the previous extent
+  void zoomPrevious();
+  //! Zoom to selected features
+  void zoomToSelected();
+  //! Set map tool to pan
+  void pan();
+  //! Identify feature(s) on the currently selected layer
+  void identify();
+  //! Measure distance
+  void measure();
+  //! Measure area
+  void measureArea();
+  //! show the attribute table for the currently selected layer
+  void attributeTable();
 
 signals:
   /** emitted when a key is pressed and we want non widget sublasses to be able
@@ -341,8 +363,6 @@ private:
   bool isValidVectorFileName (QString theFileNameQString);
   /** Overloaded version of the above function provided for convenience that takes a qstring pointer */
   bool isValidVectorFileName (QString * theFileNameQString);
-  //! Add a WMS layer to the map
-  void addWmsLayer();
   /** add this file to the recently opened/saved projects list
    *  pass settings by reference since creating more than one
    * instance simultaneously results in data loss.
@@ -350,26 +370,6 @@ private:
   void saveRecentProjectPath(QString projectPath, QSettings & settings);
   //! Update file menu with the current list of recently accessed projects
   void updateRecentProjectPaths();
-  //! Set map tool to Zoom out
-  void zoomOut();
-  //! Set map tool to Zoom in
-  void zoomIn();
-  //! Zoom to full extent
-  void zoomFull();
-  //! Zoom to the previous extent
-  void zoomPrevious();
-  //! Zoom to selected features
-  void zoomToSelected();
-  //! Set map tool to pan
-  void pan();
-  //! Identify feature(s) on the currently selected layer
-  void identify();
-  //! Measure distance
-  void measure();
-  //! Measure area
-  void measureArea();
-  //! show the attribute table for the currently selected layer
-  void attributeTable();
   /**Deletes the selected attributes for the currently selected vector layer*/
   void deleteSelected();
   //! Read Well Known Binary stream from PostGIS
