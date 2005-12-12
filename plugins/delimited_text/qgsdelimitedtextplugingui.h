@@ -13,13 +13,15 @@
 #ifndef PLUGINGUI_H
 #define PLUGINGUI_H
 
-#include "qgsdelimitedtextpluginguibase.h"
+#include "ui_qgsdelimitedtextpluginguibase.h"
+
+#include <QDialog>
 class QgisIface;
 
 /**
  * \class QgsDelimitedTextPluginGui
  */
-class QgsDelimitedTextPluginGui : public QgsDelimitedTextPluginGuiBase
+class QgsDelimitedTextPluginGui : public QDialog, private Ui::QgsDelimitedTextPluginGuiBase
 {
   Q_OBJECT
   public:
