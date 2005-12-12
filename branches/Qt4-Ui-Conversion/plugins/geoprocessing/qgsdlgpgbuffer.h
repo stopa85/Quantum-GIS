@@ -20,10 +20,11 @@
  /*  $Id$ */
 #ifndef QGSDLGPGBUFFER_H
 #define QGSDLGPGBUFFER_H
-#include "qgsdlgpgbufferbase.h"
+#include "ui_qgsdlgpgbufferbase.h"
+#include <QDialog>
 class QgisIface;
 class QDoubleValidator;
-class QgsDlgPgBuffer:public QgsDlgPgBufferBase
+class QgsDlgPgBuffer:public QDialog, private Ui::QgsDlgPgBufferBase
 {
   Q_OBJECT public:
   //! Constructor

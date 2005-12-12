@@ -28,7 +28,9 @@
 #include "../../src/qgisiface.h"
 
 QgsDlgPgBuffer::QgsDlgPgBuffer( QgisIface * _qI, QWidget * parent, const char *name)
-:QgsDlgPgBufferBase(parent, name),qI(_qI)
+:QgsDlgPgBufferBase(),qI(_qI)
+// FIXME - disabled  paramst during qt4 ui port
+//:QgsDlgPgBufferBase(parent, name),qI(_qI)
 {
   // set the validator
   distanceValidator = new QDoubleValidator(0, 9e9, 6, this);
