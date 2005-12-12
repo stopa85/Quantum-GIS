@@ -28,7 +28,9 @@ QgsCopyrightLabelPluginGui::QgsCopyrightLabelPluginGui() : QgsCopyrightLabelPlug
 }
 
 QgsCopyrightLabelPluginGui::QgsCopyrightLabelPluginGui( QWidget* parent , const char* name , bool modal , Qt::WFlags fl  )
-: QgsCopyrightLabelPluginGuiBase( parent, name, modal, fl )
+: QgsCopyrightLabelPluginGuiBase( )
+//  !FIXME Commented out by Tim during qt4 ui port
+//: QgsCopyrightLabelPluginGuiBase( parent, name, modal, fl )
 {
   //programmatically hide orientation selection for now
   cboOrientation->hide();
