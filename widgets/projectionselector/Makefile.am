@@ -44,11 +44,10 @@ plugin_LTLIBRARIES = libqgsprojectionselector.la
 
 plugin_MOC = qgsprojectionselector.moc.cpp		
 
+plugin_UIC = qgsprojectionselectorbase.ui 
+
 plugin_UI = ui_qgsprojectionselectorbase.h 
 
-plugin_UIC = qgsprojectionselectorbase.ui 
-##\
-##	qgsprojectionselectorbase.h 
 
 libqgsprojectionselector_la_SOURCES =  qgsprojectionselector.cpp	\
 			         $(plugin_UI) \
