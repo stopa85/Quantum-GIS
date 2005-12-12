@@ -18,7 +18,7 @@ endif
 %.moc.cpp: %.h
 	$(MOC) -o $@ $<
 
-%.h: %.ui 
+ui_%.h: %.ui
 	$(UIC) -o $@ $<
 
 # name of the qgis library widget
