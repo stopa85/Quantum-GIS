@@ -33,7 +33,11 @@ QgsDelimitedTextPluginGui::QgsDelimitedTextPluginGui() : QgsDelimitedTextPluginG
 
 }
 
-QgsDelimitedTextPluginGui::QgsDelimitedTextPluginGui( QgisIface * _qI, QWidget* parent , const char* name , bool modal , Qt::WFlags fl  ) : QgsDelimitedTextPluginGuiBase( parent, name, modal, fl ), qI(_qI)
+QgsDelimitedTextPluginGui::QgsDelimitedTextPluginGui( QgisIface * _qI, QWidget* parent , const char* name , bool modal , Qt::WFlags fl  ) 
+: QgsDelimitedTextPluginGuiBase(  ), qI(_qI)
+// Commented out by tim for Qt4 ui port FIXME
+// 
+//: QgsDelimitedTextPluginGuiBase( parent, name, modal, fl ), qI(_qI)
 {
   // at startup, fetch the last used delimiter and directory from
   // settings
