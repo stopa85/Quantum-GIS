@@ -31,25 +31,24 @@
 #include "qgis.h"
 
 //qt includes
-#include <qapplication.h>
+#include <QApplication>
 #include <QComboBox>
-#include <qfile.h>
-#include <q3textedit.h>
-#include <q3buttongroup.h>
-#include <qlineedit.h>
-#include <qmessagebox.h>
-#include <qstring.h>
-#include <qspinbox.h>
-#include <qcolor.h>
-#include <qpushbutton.h>
-#include <qradiobutton.h>
-#include <qtoolbutton.h>
-#include <qcheckbox.h>
-#include <qregexp.h>
-#include <q3listview.h>
-#include <q3progressdialog.h> 
-#include <qapplication.h>
-#include <qtabwidget.h>
+#include <QFile>
+#include <QTextEdit>
+#include <QGroupBox>
+#include <QLineEdit>
+#include <QMessageBox>
+#include <QString>
+#include <QSpinBox>
+#include <QColor>
+#include <QPushButton>
+#include <QRadioButton>
+#include <QToolButton>
+#include <QCheckBox>
+#include <QRegExp>
+#include <QListView>
+#include <QProgressDialog> 
+#include <QTabWidget>
 
 //stdc++ includes
 #include <iostream>
@@ -100,9 +99,9 @@
   // position display is set (manual or automatic)
   bool automaticPrecision = QgsProject::instance()->readBoolEntry("PositionPrecision","/Automatic");
   if (automaticPrecision)
-    btnGrpPrecision->setButton(0);
+    radAutomatic->setChecked(true);
   else
-    btnGrpPrecision->setButton(1);
+    radManual->setChecked(true);
 
   int dp = QgsProject::instance()->readNumEntry("PositionPrecision", "/DecimalPlaces");
   spinBoxDP->setValue(dp);
@@ -154,9 +153,21 @@ void QgsProjectProperties::setMapUnits(QGis::units unit)
 {
   // select the button
   if (unit == QGis::UNKNOWN)
+  {
     unit = QGis::METERS;
-
-  btnGrpMapUnits->setButton(static_cast<int>(unit));
+  }
+  if (unit==QGis::METERS)
+  {
+    radMeters->setChecked(true);
+  }
+  else if(unit==QGis::FEET)
+  {
+    radFeet->setChecked(true);
+  }
+  else
+  {
+    radDecimalDegrees->setChecked(true);
+  }
   QgsProject::instance()->mapUnits(unit);
 }
 
@@ -181,9 +192,20 @@ void QgsProjectProperties::apply()
   // Set the map units
   // Note. Qt 3.2.3 and greater have a function selectedId() that
   // can be used instead of the two part technique here
-  int mapUnitId = btnGrpMapUnits->id(btnGrpMapUnits->selected());
+  QGis::units mapUnit;
+  if (radMeters->isChecked())
+  {
+    mapUnit=QGis::METERS;
+  }
+  else if(radFeet->isChecked())
+  {
+    mapUnit=QGis::FEET;
+  }
+  else
+  {
+    mapUnit=QGis::DEGREES;
+  }
 
-  QGis::units mapUnit = static_cast<QGis::units>(mapUnitId);
   QgsProject::instance()->mapUnits(mapUnit);
 
   // Set the project title
@@ -233,7 +255,7 @@ void QgsProjectProperties::apply()
   // number of decimal places for the manual option
   // Note. Qt 3.2.3 and greater have a function selectedId() that
   // can be used instead of the two part technique here
-  if (btnGrpPrecision->id(btnGrpPrecision->selected()) == 0)
+  if (radAutomatic->isChecked())
     QgsProject::instance()->writeEntry("PositionPrecision","/Automatic", true);
   else
     QgsProject::instance()->writeEntry("PositionPrecision","/Automatic", false);
