@@ -2472,12 +2472,7 @@ void QgsMapCanvas::mouseMoveEvent(QMouseEvent * e)
         mCanvasProperties->zoomBox.setTopLeft(mCanvasProperties->rubberStartPoint);
       }
       mCanvasProperties->zoomBox.setBottomRight(e->pos());
-#ifdef Q_OS_MACX
       mRubberBand->setGeometry(mCanvasProperties->zoomBox);
-#else
-      mRubberBand->setGeometry(QRect(mapToGlobal(mCanvasProperties->zoomBox.topLeft()),
-        mapToGlobal(mCanvasProperties->zoomBox.bottomRight())).normalize());
-#endif
       mRubberBand->show();
 #endif
 
