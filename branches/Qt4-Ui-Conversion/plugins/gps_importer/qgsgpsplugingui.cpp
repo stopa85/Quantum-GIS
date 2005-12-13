@@ -42,7 +42,9 @@ QgsGPSPluginGui::QgsGPSPluginGui(const BabelMap& importers,
 				 std::vector<QgsVectorLayer*> gpxMapLayers, 
 				 QWidget* parent, const char* name, 
 				 bool modal, Qt::WFlags fl)
-  : QgsGPSPluginGuiBase(parent, name, modal, fl), mGPXLayers(gpxMapLayers),
+  //: QgsGPSPluginGuiBase(parent, name, modal, fl), mGPXLayers(gpxMapLayers),
+  //params disabled by Tim during qt4 ui port - FIXME
+  : QgsGPSPluginGuiBase(), mGPXLayers(gpxMapLayers),
     mImporters(importers), mDevices(devices) 
 {
   populatePortComboBoxes();
