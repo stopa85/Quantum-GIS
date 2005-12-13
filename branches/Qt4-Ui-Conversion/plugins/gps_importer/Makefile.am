@@ -37,9 +37,6 @@ gpsimporterplugin_la_SOURCES = \
 
 plugin_MOC = \
 	qgsgpsplugin.moc.cpp \
-	qgsgpsplugingui.moc.cpp \
-	qgsgpspluginguibase.moc.cpp \
-	qgsgpsdevicedialogbase.moc.cpp \
 	qgsgpsdevicedialog.moc.cpp
 
 plugin_UI = \

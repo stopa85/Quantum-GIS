@@ -1,312 +1,561 @@
-<!DOCTYPE UI><UI version="3.1" stdsetdef="1">
-<class>QgsGPSDeviceDialogBase</class>
-<widget class="QDialog">
-    <property name="name">
-        <cstring>QgsGPSDeviceDialogBase</cstring>
-    </property>
-    <property name="geometry">
-        <rect>
-            <x>0</x>
-            <y>0</y>
-            <width>515</width>
-            <height>435</height>
-        </rect>
-    </property>
-    <property name="sizePolicy">
-        <sizepolicy>
-            <hsizetype>1</hsizetype>
-            <vsizetype>1</vsizetype>
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-        </sizepolicy>
-    </property>
-    <property name="caption">
-        <string>GPS Device Editor</string>
-    </property>
-    <property name="modal" stdset="0">
-        <bool>true</bool>
-    </property>
-    <grid>
-        <property name="name">
-            <cstring>unnamed</cstring>
-        </property>
-        <widget class="Line" row="0" column="1" rowspan="6" colspan="1">
-            <property name="name">
-                <cstring>line2</cstring>
-            </property>
-            <property name="frameShape">
-                <enum>VLine</enum>
-            </property>
-            <property name="frameShadow">
-                <enum>Sunken</enum>
-            </property>
-            <property name="orientation">
-                <enum>Vertical</enum>
-            </property>
+<ui version="4.0" >
+ <author></author>
+ <comment></comment>
+ <exportmacro></exportmacro>
+ <class>QgsGPSPluginGuiBase</class>
+ <widget class="QDialog" name="QgsGPSPluginGuiBase" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>640</width>
+    <height>370</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>GPS Tools</string>
+  </property>
+  <property name="windowIcon" >
+   <iconset/>
+  </property>
+  <layout class="QGridLayout" >
+   <property name="margin" >
+    <number>10</number>
+   </property>
+   <property name="spacing" >
+    <number>6</number>
+   </property>
+   <item row="0" column="1" >
+    <widget class="Line" name="line1" >
+     <property name="frameShape" >
+      <enum>QFrame::VLine</enum>
+     </property>
+     <property name="frameShadow" >
+      <enum>QFrame::Sunken</enum>
+     </property>
+     <property name="orientation" >
+      <enum>Qt::Vertical</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0" >
+    <widget class="QLabel" name="pixmapLabel1" >
+     <property name="pixmap" >
+      <pixmap/>
+     </property>
+     <property name="scaledContents" >
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="2" >
+    <widget class="QTabWidget" name="tabWidget" >
+     <widget class="QWidget" name="tab" >
+      <attribute name="title" >
+       <string>Load GPX file</string>
+      </attribute>
+      <layout class="QGridLayout" >
+       <property name="margin" >
+        <number>0</number>
+       </property>
+       <property name="spacing" >
+        <number>6</number>
+       </property>
+       <item row="0" column="0" colspan="2" >
+        <widget class="Q3TextEdit" name="teGPXInstructions" >
+         <property name="text" >
+          <string>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;/head>&lt;body style=&quot;font-size:12pt;font-family:Arial&quot;>
+&lt;p style=&quot;margin-top:16px&quot;>&lt;span style=&quot;font-size:17pt;font-weight:600&quot;>Description&lt;/span>&lt;/p>
+&lt;p>GPX is the &lt;a href=&quot;http://www.topografix.com/gpx.asp&quot;>GPS eXchange file format&lt;/a>, which is used to store information about waypoints, routes, and tracks.&lt;/p>
+&lt;p>Select a GPX file and then select the feature types that you want to load.&lt;/p>
+&lt;/body>&lt;/html>
+</string>
+         </property>
+         <property name="wordWrap" >
+          <enum>Q3TextEdit::WidgetWidth</enum>
+         </property>
+         <property name="readOnly" >
+          <bool>true</bool>
+         </property>
         </widget>
-        <widget class="QPushButton" row="5" column="0">
-            <property name="name">
-                <cstring>pbUpdateDevice</cstring>
-            </property>
-            <property name="text">
-                <string>Update device</string>
-            </property>
+       </item>
+       <item row="1" column="0" >
+        <widget class="QLabel" name="lblGPXFile" >
+         <property name="text" >
+          <string>File:</string>
+         </property>
         </widget>
-        <widget class="QPushButton" row="4" column="0">
-            <property name="name">
-                <cstring>pbDeleteDevice</cstring>
-            </property>
-            <property name="text">
-                <string>Delete device</string>
-            </property>
+       </item>
+       <item row="2" column="0" >
+        <widget class="QLineEdit" name="leGPXFile" />
+       </item>
+       <item row="3" column="0" >
+        <widget class="QLabel" name="lblGPXFeatureTypes" >
+         <property name="text" >
+          <string>Feature types:</string>
+         </property>
         </widget>
-        <widget class="QPushButton" row="3" column="0">
-            <property name="name">
-                <cstring>pbNewDevice</cstring>
-            </property>
-            <property name="text">
-                <string>New device</string>
-            </property>
+       </item>
+       <item row="4" column="0" >
+        <widget class="QCheckBox" name="cbGPXWaypoints" >
+         <property name="enabled" >
+          <bool>false</bool>
+         </property>
+         <property name="text" >
+          <string>Waypoints</string>
+         </property>
+         <property name="checked" >
+          <bool>false</bool>
+         </property>
         </widget>
-        <widget class="QListBox" row="0" column="0" rowspan="3" colspan="1">
-            <property name="name">
-                <cstring>lbDeviceList</cstring>
-            </property>
-            <property name="sizePolicy">
-                <sizepolicy>
-                    <hsizetype>5</hsizetype>
-                    <vsizetype>7</vsizetype>
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                </sizepolicy>
-            </property>
+       </item>
+       <item row="5" column="0" >
+        <widget class="QCheckBox" name="cbGPXRoutes" >
+         <property name="enabled" >
+          <bool>false</bool>
+         </property>
+         <property name="text" >
+          <string>Routes</string>
+         </property>
+         <property name="checked" >
+          <bool>false</bool>
+         </property>
         </widget>
-        <widget class="QPushButton" row="6" column="4">
-            <property name="name">
-                <cstring>pbClose</cstring>
-            </property>
-            <property name="text">
-                <string>Close</string>
-            </property>
-            <property name="default">
-                <bool>true</bool>
-            </property>
+       </item>
+       <item row="6" column="0" >
+        <widget class="QCheckBox" name="cbGPXTracks" >
+         <property name="enabled" >
+          <bool>false</bool>
+         </property>
+         <property name="text" >
+          <string>Tracks</string>
+         </property>
+         <property name="checked" >
+          <bool>false</bool>
+         </property>
         </widget>
-        <spacer row="6" column="0" rowspan="1" colspan="4">
-            <property name="name">
-                <cstring>spacer2</cstring>
-            </property>
-            <property name="orientation">
-                <enum>Horizontal</enum>
-            </property>
-            <property name="sizeType">
-                <enum>Expanding</enum>
-            </property>
-            <property name="sizeHint">
-                <size>
-                    <width>370</width>
-                    <height>20</height>
-                </size>
-            </property>
+       </item>
+       <item row="2" column="1" >
+        <widget class="QPushButton" name="pbnGPXSelectFile" >
+         <property name="text" >
+          <string>...</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tab" >
+      <attribute name="title" >
+       <string>Import other file</string>
+      </attribute>
+      <layout class="QGridLayout" >
+       <property name="margin" >
+        <number>0</number>
+       </property>
+       <property name="spacing" >
+        <number>6</number>
+       </property>
+       <item row="0" column="0" colspan="4" >
+        <widget class="Q3TextEdit" name="teGPXInstructions_2" >
+         <property name="text" >
+          <string>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;/head>&lt;body style=&quot;font-size:12pt;font-family:Arial&quot;>
+&lt;p style=&quot;margin-top:16px&quot;>&lt;span style=&quot;font-size:17pt;font-weight:600&quot;>Description&lt;/span>&lt;/p>
+&lt;p>QGIS can only load GPX files by itself, but many other formats 
+can be converted to GPX using GPSBabel (&lt;a href=&quot;http://gpsbabel.sf.net&quot;>
+http://gpsbabel.sf.net&lt;/a>). This requires that you have GPSBabel installed where 
+QGIS can find it.&lt;/p>
+&lt;p>Select a GPS file format and the file that you want to import, the feature type 
+that you want to use, a GPX filename that you want to save the converted file as, 
+and a name for the new layer. All file formats can not store waypoints, routes, and 
+tracks, so some feature types may be disabled for some file formats.&lt;/p>
+&lt;/body>&lt;/html>
+</string>
+         </property>
+         <property name="wordWrap" >
+          <enum>Q3TextEdit::WidgetWidth</enum>
+         </property>
+         <property name="readOnly" >
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0" >
+        <widget class="QLabel" name="textLabel1_5" >
+         <property name="text" >
+          <string>File to import:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1" colspan="2" >
+        <widget class="QLineEdit" name="leIMPInput" >
+         <property name="enabled" >
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0" >
+        <widget class="QLabel" name="textLabel2_3" >
+         <property name="text" >
+          <string>Feature type:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1" >
+        <widget class="QComboBox" name="cmbIMPFeature" />
+       </item>
+       <item row="2" column="2" >
+        <spacer>
+         <property name="orientation" >
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeType" >
+          <enum>QSizePolicy::Expanding</enum>
+         </property>
+         <property name="sizeHint" >
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
         </spacer>
-        <widget class="QLabel" row="2" column="2" rowspan="4" colspan="3">
-            <property name="name">
-                <cstring>textLabel1</cstring>
-            </property>
-            <property name="text">
-                <string>&lt;p&gt;In the download and upload commands there can be special words that will be replaced by QGIS when the commands are used. These words are:&lt;/p&gt;
-&lt;i&gt;%babel&lt;/i&gt; - the path to GPSBabel&lt;br&gt;
-&lt;i&gt;%in&lt;/i&gt; - the GPX filename when uploading or the port when downloading&lt;br&gt;
-&lt;i&gt;%out&lt;/i&gt; - the port when uploading or the GPX filename when downloading</string>
-            </property>
-            <property name="textFormat">
-                <enum>RichText</enum>
-            </property>
-            <property name="alignment">
-                <set>WordBreak|AlignVCenter</set>
-            </property>
+       </item>
+       <item row="3" column="0" >
+        <widget class="QLabel" name="textLabel3_3" >
+         <property name="text" >
+          <string>GPX output file:</string>
+         </property>
         </widget>
-        <widget class="QGroupBox" row="1" column="2" rowspan="1" colspan="3">
-            <property name="name">
-                <cstring>groupBox1</cstring>
-            </property>
-            <property name="title">
-                <string>Commands</string>
-            </property>
-            <grid>
-                <property name="name">
-                    <cstring>unnamed</cstring>
-                </property>
-                <widget class="QLabel" row="0" column="0">
-                    <property name="name">
-                        <cstring>textLabel1_2</cstring>
-                    </property>
-                    <property name="text">
-                        <string>Waypoint download:</string>
-                    </property>
-                </widget>
-                <widget class="QLabel" row="1" column="0">
-                    <property name="name">
-                        <cstring>textLabel1_2_2</cstring>
-                    </property>
-                    <property name="text">
-                        <string>Waypoint upload:</string>
-                    </property>
-                </widget>
-                <widget class="QLabel" row="2" column="0">
-                    <property name="name">
-                        <cstring>textLabel1_2_3</cstring>
-                    </property>
-                    <property name="text">
-                        <string>Route download:</string>
-                    </property>
-                </widget>
-                <widget class="QLabel" row="3" column="0">
-                    <property name="name">
-                        <cstring>textLabel1_2_4</cstring>
-                    </property>
-                    <property name="text">
-                        <string>Route upload:</string>
-                    </property>
-                </widget>
-                <widget class="QLabel" row="4" column="0">
-                    <property name="name">
-                        <cstring>textLabel1_2_5</cstring>
-                    </property>
-                    <property name="text">
-                        <string>Track download:</string>
-                    </property>
-                </widget>
-                <widget class="QLineEdit" row="5" column="1">
-                    <property name="name">
-                        <cstring>leTrkUp</cstring>
-                    </property>
-                    <property name="toolTip" stdset="0">
-                        <string>The command that is used to upload tracks to the device</string>
-                    </property>
-                </widget>
-                <widget class="QLabel" row="5" column="0">
-                    <property name="name">
-                        <cstring>textLabel1_2_5_2</cstring>
-                    </property>
-                    <property name="text">
-                        <string>Track upload:</string>
-                    </property>
-                </widget>
-                <widget class="QLineEdit" row="4" column="1">
-                    <property name="name">
-                        <cstring>leTrkDown</cstring>
-                    </property>
-                    <property name="toolTip" stdset="0">
-                        <string>The command that is used to download tracks from the device</string>
-                    </property>
-                </widget>
-                <widget class="QLineEdit" row="3" column="1">
-                    <property name="name">
-                        <cstring>leRteUp</cstring>
-                    </property>
-                    <property name="toolTip" stdset="0">
-                        <string>The command that is used to upload routes to the device</string>
-                    </property>
-                </widget>
-                <widget class="QLineEdit" row="2" column="1">
-                    <property name="name">
-                        <cstring>leRteDown</cstring>
-                    </property>
-                    <property name="toolTip" stdset="0">
-                        <string>The command that is used to download routes from the device</string>
-                    </property>
-                </widget>
-                <widget class="QLineEdit" row="1" column="1">
-                    <property name="name">
-                        <cstring>leWptUp</cstring>
-                    </property>
-                    <property name="toolTip" stdset="0">
-                        <string>The command that is used to upload waypoints to the device</string>
-                    </property>
-                </widget>
-                <widget class="QLineEdit" row="0" column="1">
-                    <property name="name">
-                        <cstring>leWptDown</cstring>
-                    </property>
-                    <property name="toolTip" stdset="0">
-                        <string>The command that is used to download waypoints from the device</string>
-                    </property>
-                </widget>
-            </grid>
+       </item>
+       <item row="3" column="1" colspan="2" >
+        <widget class="QLineEdit" name="leIMPOutput" />
+       </item>
+       <item row="1" column="3" >
+        <widget class="QPushButton" name="pbIMPInput" >
+         <property name="text" >
+          <string>...</string>
+         </property>
         </widget>
-        <widget class="QLabel" row="0" column="2">
-            <property name="name">
-                <cstring>textLabel3</cstring>
-            </property>
-            <property name="sizePolicy">
-                <sizepolicy>
-                    <hsizetype>1</hsizetype>
-                    <vsizetype>5</vsizetype>
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                </sizepolicy>
-            </property>
-            <property name="text">
-                <string>Device name:</string>
-            </property>
+       </item>
+       <item row="3" column="3" >
+        <widget class="QPushButton" name="pbIMPOutput" >
+         <property name="text" >
+          <string>...</string>
+         </property>
         </widget>
-        <widget class="QLineEdit" row="0" column="3" rowspan="1" colspan="2">
-            <property name="name">
-                <cstring>leDeviceName</cstring>
-            </property>
-            <property name="sizePolicy">
-                <sizepolicy>
-                    <hsizetype>7</hsizetype>
-                    <vsizetype>0</vsizetype>
-                    <horstretch>2</horstretch>
-                    <verstretch>0</verstretch>
-                </sizepolicy>
-            </property>
-            <property name="toolTip" stdset="0">
-                <string>This is the name of the device as it will appear in the lists</string>
-            </property>
+       </item>
+       <item row="4" column="0" >
+        <widget class="QLabel" name="textLabel1_6" >
+         <property name="text" >
+          <string>Layer name:</string>
+         </property>
         </widget>
-    </grid>
-</widget>
-<connections>
-    <connection>
-        <sender>pbNewDevice</sender>
-        <signal>clicked()</signal>
-        <receiver>QgsGPSDeviceDialogBase</receiver>
-        <slot>slotNewDevice()</slot>
-    </connection>
-    <connection>
-        <sender>pbDeleteDevice</sender>
-        <signal>clicked()</signal>
-        <receiver>QgsGPSDeviceDialogBase</receiver>
-        <slot>slotDeleteDevice()</slot>
-    </connection>
-    <connection>
-        <sender>pbUpdateDevice</sender>
-        <signal>clicked()</signal>
-        <receiver>QgsGPSDeviceDialogBase</receiver>
-        <slot>slotUpdateDevice()</slot>
-    </connection>
-    <connection>
-        <sender>pbClose</sender>
-        <signal>clicked()</signal>
-        <receiver>QgsGPSDeviceDialogBase</receiver>
-        <slot>close()</slot>
-    </connection>
-    <connection>
-        <sender>lbDeviceList</sender>
-        <signal>selectionChanged()</signal>
-        <receiver>QgsGPSDeviceDialogBase</receiver>
-        <slot>slotSelectionChanged()</slot>
-    </connection>
-</connections>
-<slots>
-    <slot>slotProtocolChanged(const QString&amp;)</slot>
-    <slot>slotNewDevice()</slot>
-    <slot>slotDeleteDevice()</slot>
-    <slot>slotUpdateDevice()</slot>
-    <slot>slotSelectionChanged()</slot>
-</slots>
-<layoutdefaults spacing="6" margin="11"/>
-</UI>
+       </item>
+       <item row="4" column="1" colspan="2" >
+        <widget class="QLineEdit" name="leIMPLayer" />
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tab" >
+      <attribute name="title" >
+       <string>Download from GPS</string>
+      </attribute>
+      <layout class="QGridLayout" >
+       <property name="margin" >
+        <number>0</number>
+       </property>
+       <property name="spacing" >
+        <number>6</number>
+       </property>
+       <item row="0" column="0" colspan="5" >
+        <widget class="Q3TextEdit" name="teDLInstructions" >
+         <property name="text" >
+          <string>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;/head>&lt;body style=&quot;font-size:12pt;font-family:Arial&quot;>
+&lt;p style=&quot;margin-top:16px&quot;>&lt;span style=&quot;font-size:17pt;font-weight:600&quot;>Description&lt;/span>&lt;/p>
+&lt;p>This tool will help you download data from a GPS device. Choose your 
+GPS device, the port it is connected to, the feature type you want to download, a name for your new layer, 
+and the GPX file where you want to store the data. If your device isn't listed, or if 
+you want to change some settings, you can also edit the devices.&lt;/p>
+&lt;p>This tool uses the program GPSBabel 
+(&lt;a href=&quot;http://gpsbabel.sf.net&quot;>http://gpsbabel.sf.net&lt;/a>) to transfer the data. If you 
+don't have GPSBabel installed where QGIS can find it, this tool will not work.&lt;/p>
+&lt;/body>&lt;/html>
+</string>
+         </property>
+         <property name="wordWrap" >
+          <enum>Q3TextEdit::WidgetWidth</enum>
+         </property>
+         <property name="readOnly" >
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="4" >
+        <widget class="QPushButton" name="pbDLOutput" >
+         <property name="text" >
+          <string>...</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1" >
+        <widget class="QPushButton" name="pbDLEditDevices" >
+         <property name="text" >
+          <string>Edit devices</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1" >
+        <widget class="QComboBox" name="cmbDLDevice" />
+       </item>
+       <item row="1" column="0" >
+        <widget class="QLabel" name="textLabel1" >
+         <property name="text" >
+          <string>GPS device:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="2" >
+        <spacer>
+         <property name="orientation" >
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeType" >
+          <enum>QSizePolicy::Expanding</enum>
+         </property>
+         <property name="sizeHint" >
+          <size>
+           <width>80</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="1" column="2" >
+        <spacer>
+         <property name="orientation" >
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeType" >
+          <enum>QSizePolicy::Expanding</enum>
+         </property>
+         <property name="sizeHint" >
+          <size>
+           <width>80</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="3" column="1" colspan="3" >
+        <widget class="QLineEdit" name="leDLOutput" />
+       </item>
+       <item row="3" column="0" >
+        <widget class="QLabel" name="textLabel2" >
+         <property name="text" >
+          <string>Output file:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="0" >
+        <widget class="QLabel" name="textLabel1_2" >
+         <property name="text" >
+          <string>Layer name:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1" colspan="3" >
+        <widget class="QLineEdit" name="leDLBasename" />
+       </item>
+       <item row="2" column="3" >
+        <widget class="QLabel" name="textLabel1_3" >
+         <property name="text" >
+          <string>Feature type:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="3" >
+        <widget class="QLabel" name="textLabel2_5" >
+         <property name="text" >
+          <string>Port:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="4" >
+        <widget class="QComboBox" name="cmbDLFeatureType" >
+         <item>
+          <property name="text" >
+           <string>Waypoints</string>
+          </property>
+         </item>
+         <item>
+          <property name="text" >
+           <string>Routes</string>
+          </property>
+         </item>
+         <item>
+          <property name="text" >
+           <string>Tracks</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="1" column="4" >
+        <widget class="QComboBox" name="cmbDLPort" />
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tab" >
+      <attribute name="title" >
+       <string>Upload to GPS</string>
+      </attribute>
+      <layout class="QGridLayout" >
+       <property name="margin" >
+        <number>0</number>
+       </property>
+       <property name="spacing" >
+        <number>6</number>
+       </property>
+       <item row="0" column="0" colspan="5" >
+        <widget class="Q3TextEdit" name="teDLInstructions_2" >
+         <property name="text" >
+          <string>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;/head>&lt;body style=&quot;font-size:12pt;font-family:Arial&quot;>
+&lt;p style=&quot;margin-top:16px&quot;>&lt;span style=&quot;font-size:17pt;font-weight:600&quot;>Description&lt;/span>&lt;/p>
+&lt;p>This tool will help you upload data from a GPX layer to a GPS device. 
+Choose the layer you want to upload, the device you want to upload it to, and the port 
+your device is connected to. 
+If your device isn't listed, or if you want to change some settings, you can also 
+edit the devices.&lt;/p>
+&lt;p>This tool uses the program GPSBabel (&lt;a href=&quot;http://gpsbabel.sf.net&quot;>http://gpsbabel.sf.net&lt;/a>) 
+to transfer the data. If you don't have GPSBabel installed where QGIS can find it, this tool will not work.&lt;/p>
+&lt;/body>&lt;/html>
+</string>
+         </property>
+         <property name="wordWrap" >
+          <enum>Q3TextEdit::WidgetWidth</enum>
+         </property>
+         <property name="readOnly" >
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0" >
+        <widget class="QLabel" name="textLabel2_2" >
+         <property name="text" >
+          <string>Data layer:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="3" >
+        <widget class="QLabel" name="textLabel2_4" >
+         <property name="text" >
+          <string>GPS device:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="4" >
+        <widget class="QPushButton" name="pbULEditDevices" >
+         <property name="text" >
+          <string>Edit devices</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1" >
+        <widget class="QComboBox" name="cmbULLayer" />
+       </item>
+       <item row="1" column="2" >
+        <spacer>
+         <property name="orientation" >
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeType" >
+          <enum>QSizePolicy::Expanding</enum>
+         </property>
+         <property name="sizeHint" >
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="1" column="4" >
+        <widget class="QComboBox" name="cmbULDevice" />
+       </item>
+       <item row="2" column="0" >
+        <widget class="QLabel" name="textLabel3" >
+         <property name="text" >
+          <string>Port:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1" >
+        <widget class="QComboBox" name="cmbULPort" />
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+   <item row="1" column="0" colspan="3" >
+    <layout class="QHBoxLayout" >
+     <property name="margin" >
+      <number>0</number>
+     </property>
+     <property name="spacing" >
+      <number>6</number>
+     </property>
+     <item>
+      <spacer>
+       <property name="orientation" >
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeType" >
+        <enum>QSizePolicy::Expanding</enum>
+       </property>
+       <property name="sizeHint" >
+        <size>
+         <width>550</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pbnOK" >
+       <property name="enabled" >
+        <bool>false</bool>
+       </property>
+       <property name="text" >
+        <string>&amp;OK</string>
+       </property>
+       <property name="shortcut" >
+        <string>Alt+O</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pbnCancel" >
+       <property name="text" >
+        <string>&amp;Cancel</string>
+       </property>
+       <property name="shortcut" >
+        <string>Alt+C</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <layoutdefault spacing="6" margin="11" />
+ <pixmapfunction></pixmapfunction>
+ <customwidgets>
+  <customwidget>
+   <class>Q3TextEdit</class>
+   <extends></extends>
+   <header>q3textedit.h</header>
+   <container>0</container>
+   <pixmap></pixmap>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>
