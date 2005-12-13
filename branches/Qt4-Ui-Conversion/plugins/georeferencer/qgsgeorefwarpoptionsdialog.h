@@ -17,7 +17,7 @@
 #include "ui_qgsgeorefwarpoptionsdialogbase.h"
 #include <QDialog>
 
-class QgsGeorefWarpOptionsDialog : public QDialog, private QgsGeorefWarpOptionsDialogBase 
+class QgsGeorefWarpOptionsDialog : public QDialog, private Ui::QgsGeorefWarpOptionsDialogBase 
 {
 Q_OBJECT
 public:

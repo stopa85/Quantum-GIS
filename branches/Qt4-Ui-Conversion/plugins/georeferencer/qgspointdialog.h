@@ -23,7 +23,7 @@
 #include <ui_qgspointdialogbase.h>
 #include <QDialog>
 
-class QgsPointDialog : public QDialog, private QgsPointDialogBase
+class QgsPointDialog : public QDialog, private Ui::QgsPointDialogBase
 {
 Q_OBJECT
 public:
