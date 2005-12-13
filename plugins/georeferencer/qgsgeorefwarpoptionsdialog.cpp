@@ -7,7 +7,11 @@
 
 
 QgsGeorefWarpOptionsDialog::QgsGeorefWarpOptionsDialog(QWidget* parent)
-  : QgsGeorefWarpOptionsDialogBase(parent, NULL, TRUE, 0) {
+  : QgsGeorefWarpOptionsDialogBase() 
+  // commented out during qt4 port - FIXME
+  //: QgsGeorefWarpOptionsDialogBase(parent, NULL, TRUE, 0) 
+
+{
 
 }
 

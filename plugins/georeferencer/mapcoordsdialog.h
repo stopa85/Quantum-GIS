@@ -14,9 +14,9 @@
 
 #include <qgspoint.h>
 
-#include <mapcoordsdialogbase.uic.h>
-
-class MapCoordsDialog : public MapCoordsDialogBase
+#include <ui_mapcoordsdialogbase.h>
+#include <QDialog>
+class MapCoordsDialog : public QDialog, private MapCoordsDialogBase
 {
 Q_OBJECT
 public:
