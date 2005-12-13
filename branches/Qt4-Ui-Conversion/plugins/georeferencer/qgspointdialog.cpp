@@ -32,7 +32,9 @@ QgsPointDialog::QgsPointDialog() {
 
 QgsPointDialog::QgsPointDialog(QgsRasterLayer* layer, QWidget* parent, 
 			       const char* name, bool modal, Qt::WFlags fl) 
-  : QgsPointDialogBase(parent, name, modal, fl), 
+  : QgsPointDialogBase(), 
+  // commented out during qt4 port - FIXME tim
+  //: QgsPointDialogBase(parent, name, modal, fl), 
     mCursor(NULL),
     mLayer(layer)
 {
