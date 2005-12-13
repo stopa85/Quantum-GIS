@@ -2,7 +2,7 @@
 
 #include <qtoolbutton.h>
 #include <qpushbutton.h>
-#include <q3combobox.h>
+#include <qcombobox.h>
 #include <q3filedialog.h>
 #include <q3frame.h>
 #include <qlayout.h>
@@ -11,7 +11,8 @@
 //Added by qt3to4:
 #include <QPixmap>
 #include <QTextStream>
-#include <Q3HBoxLayout>
+#include <QHBoxLayout>
+//#include <Q3HBoxLayout>
 
 #include "datapointacetate.h"
 #include "qgspointdialog.h"
@@ -40,7 +41,7 @@ QgsPointDialog::QgsPointDialog(QgsRasterLayer* layer, QWidget* parent,
 {
   
   // set up the canvas
-  Q3HBoxLayout* layout = new Q3HBoxLayout(canvasFrame);
+  QHBoxLayout* layout = new QHBoxLayout(canvasFrame);
   layout->setAutoAdd(true);
   mCanvas = new QgsMapCanvas(canvasFrame, "georefCanvas");
   mCanvas->setBackgroundColor(Qt::white);
@@ -78,9 +79,9 @@ QgsPointDialog::~QgsPointDialog() {
 
 
 void QgsPointDialog::handleCanvasClick(QgsPoint& pixelCoords) {
-  if (tbnAddPoint->state() == QCheckBox::On)
+  if (tbnAddPoint->isChecked())
     showCoordDialog(pixelCoords);
-  else if (tbnDeletePoint->state() == QCheckBox::On)
+  else if (tbnDeletePoint->isChecked())
     deleteDataPoint(pixelCoords);
 }
 

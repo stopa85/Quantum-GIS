@@ -17,7 +17,7 @@
 /**
 @author Tim Sutton
 */
-class QgsGeorefPluginGui : public QDialog, private QgsGeorefPluginGuiBase
+class QgsGeorefPluginGui : public QDialog, private Ui::QgsGeorefPluginGuiBase
 {
 Q_OBJECT
 public:

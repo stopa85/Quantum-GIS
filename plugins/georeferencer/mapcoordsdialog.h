@@ -16,7 +16,7 @@
 
 #include <ui_mapcoordsdialogbase.h>
 #include <QDialog>
-class MapCoordsDialog : public QDialog, private MapCoordsDialogBase
+class MapCoordsDialog : public QDialog, private Ui::MapCoordsDialogBase
 {
 Q_OBJECT
 public:
