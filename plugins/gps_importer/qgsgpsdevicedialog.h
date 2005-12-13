@@ -12,13 +12,14 @@
 #ifndef QGSGPSDEVICEDIALOG_H
 #define QGSGPSDEVICEDIALOG_H
 
-#include "qgsgpsdevicedialogbase.h"
+#include "ui_qgsgpsdevicedialogbase.h"
+#include <QDialog>
 #include "qgsgpsdevice.h"
 
 #include <qstring.h>
 
 
-class QgsGPSDeviceDialog : public QgsGPSDeviceDialogBase {
+class QgsGPSDeviceDialog : public Ui::QgsGPSDeviceDialogBase {
   Q_OBJECT
 public:
   QgsGPSDeviceDialog(std::map<QString, QgsGPSDevice*>& devices);
