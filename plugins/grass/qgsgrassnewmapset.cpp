@@ -44,6 +44,7 @@
 #include <QTextStream>
 #include <QGridLayout>
 #include <QCloseEvent>
+#include <Q3Wizard>
 
 #include "../../src/qgis.h"
 #include "../../src/qgsmapcanvas.h"
@@ -61,7 +62,9 @@ bool QgsGrassNewMapset::mRunning = false;
 QgsGrassNewMapset::QgsGrassNewMapset ( QgisApp *qgisApp, QgisIface *iface, 
 	QgsGrassPlugin *plugin,
     QWidget * parent, const char * name, Qt::WFlags f )
-:QgsGrassNewMapsetBase ( parent, name) //XXX removed Wflags f from this call to the base class constructor
+//:QgsGrassNewMapsetBase ( parent, name) //XXX removed Wflags f from this call to the base class constructor
+//Tim moved all parms during qt4 port - FIXME
+:QgsGrassNewMapsetBase ( ) //XXX removed Wflags f from this call to the base class constructor
 {
 #ifdef QGISDEBUG
   std::cerr << "QgsGrassNewMapset()" << std::endl;
@@ -1457,10 +1460,10 @@ void QgsGrassNewMapset::pageSelected( const QString & title )
 		
 		// Warning: QgsProjectionSelector::sridSelected() is not implemented!
 		//          -> use lstCoordinateSystems directly
-		//connect( mProjectionSelector, SIGNAL(sridSelected(QString)), 
-		//	 this, SLOT(sridSelected(QString)));
-		connect( mProjectionSelector->lstCoordinateSystems, SIGNAL(selectionChanged ()), 
-			 this, SLOT(projectionSelected()));
+		connect( mProjectionSelector, SIGNAL(sridSelected(QString)), 
+			 this, SLOT(sridSelected(QString)));
+		//connect( mProjectionSelector->lstCoordinateSystems, SIGNAL(selectionChanged ()), 
+		//	 this, SLOT(projectionSelected()));
 
 
 		// Se current QGIS projection

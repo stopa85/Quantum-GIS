@@ -63,7 +63,10 @@ extern "C" {
 bool QgsGrassRegion::mRunning = false;
 
 QgsGrassRegion::QgsGrassRegion ( QgsGrassPlugin *plugin,  QgisApp *qgisApp, QgisIface *interface,
-        QWidget * parent, const char * name, Qt::WFlags f ) :QgsGrassRegionBase ( parent, name, f )
+        QWidget * parent, const char * name, Qt::WFlags f ) 
+        //:QgsGrassRegionBase ( parent, name, f )
+        //Tim removed params durint qt4 ui port - FIXME
+        :QgsGrassRegionBase ( )
 {
     #ifdef QGISDEBUG
     std::cerr << "QgsGrassRegion()" << std::endl;

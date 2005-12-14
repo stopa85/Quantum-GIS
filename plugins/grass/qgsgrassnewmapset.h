@@ -35,7 +35,7 @@ class QCloseEvent;
 class QgsGrassProvider;
 #include "qgsgrassplugin.h"
 #include "ui_qgsgrassnewmapsetbase.h"
-#include <QDialog>
+#include <Q3Wizard>
 #include "qgsgrassselect.h"
 #include "qgsgrassattributes.h"
 
@@ -49,7 +49,7 @@ extern "C" {
  *  \brief GRASS vector edit.
  *
  */
-class QgsGrassNewMapset : public QDialog, private Ui::QgsGrassNewMapsetBase
+class QgsGrassNewMapset : public Q3Wizard, private Ui::QgsGrassNewMapsetBase
 {
     Q_OBJECT;
 
