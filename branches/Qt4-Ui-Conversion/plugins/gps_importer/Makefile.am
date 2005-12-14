@@ -37,6 +37,9 @@ gpsimporterplugin_la_SOURCES = \
 
 plugin_MOC = \
 	qgsgpsplugin.moc.cpp \
+	qgsbabelformat.moc.cpp \
+	qgsgpsdevice.moc.cpp \
+	qgsgpsplugingui.moc.cpp \
 	qgsgpsdevicedialog.moc.cpp
 
 plugin_UI = \
@@ -47,9 +50,6 @@ plugin_UIC = \
 	qgsgpspluginguibase.ui \
 	qgsgpsdevicedialogbase.ui
 
-# UI dependencies      
-qgsgpspluginguibase.cpp: qgsgpspluginguibase.h qgsgpspluginguibase.ui
-qgsgpsdevicedialogbase.cpp: qgsgpsdevicedialogbase.h qgsgpsdevicedialogbase.ui
 
 BUILT_SOURCES = $(plugin_MOC) $(plugin_UI)
 
@@ -65,9 +65,9 @@ CLEANFILES = $(BUILT_SOURCES)
 ##
 
 EXTRA_DIST = $(plugin_UIC) icon.xpm \
-	qgsgpspluginguibase.h \
-	qgsgpsdevicedialogbase.h \
-	qgsgpsplugingui.h \
+	ui_qgsgpspluginguibase.h \
+	ui_qgsgpsdevicedialogbase.h \
+	ui_qgsgpsplugingui.h \
 	qgsgpsplugin.h \
 	qgsgpsdevicedialog.h
 
