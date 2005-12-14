@@ -71,18 +71,15 @@ gridmaker_SOURCES = main.cpp \
 	dbfopen.c \
 	shapefile.h \
 	plugingui.cpp \
-	pluginguibase.cpp \
 	$(standalone_MOC) 
 
 gridmaker_LDADD = $(QT_LDADD) 
 gridmaker_CFLAGS = $(CFLAGS) $(EXTRA_CFLAGS) $(DEBUG_QGIS)
 gridmaker_CXXFLAGS = $(CXXFLAGS) $(EXTRA_CXXFLAGS) $(QT_CXXFLAGS) $(PKGDATAPATH) $(DEBUG_QGIS) -I../../src 
 
-standalone_MOC = plugingui.moc.cpp \
-	     pluginguibase.moc.cpp 
+standalone_MOC = plugingui.moc.cpp 
 
-standalone_UI = pluginguibase.h \
-	    pluginguibasepp 
+standalone_UI = ui_pluginguibase.h 
 
 CLEANFILES = $(BUILT_SOURCES)
 
@@ -91,8 +88,7 @@ CLEANFILES = $(BUILT_SOURCES)
 ##
 
 EXTRA_DIST = $(plugin_UIC) icon.xpm \
-pluginguibase.h \
-pluginguibase.h \
+ui_pluginguibase.h \
 plugingui.h \
 plugin.h \
 utils.h
