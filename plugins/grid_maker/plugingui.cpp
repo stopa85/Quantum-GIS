@@ -26,7 +26,9 @@ QgsGridMakerPluginGui::QgsGridMakerPluginGui() : QgsGridMakerPluginGuiBase()
 {
 }
 QgsGridMakerPluginGui::QgsGridMakerPluginGui( QWidget* parent , const char* name , bool modal , Qt::WFlags fl  )
-    : QgsGridMakerPluginGuiBase( parent, name, modal, fl )
+    //: QgsGridMakerPluginGuiBase( parent, name, modal, fl )
+    //tim disabled params during qt4 ui port - FIXME
+    : QgsGridMakerPluginGuiBase( )
 {
 }
 QgsGridMakerPluginGui::~QgsGridMakerPluginGui()
