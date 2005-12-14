@@ -83,7 +83,9 @@ bool QgsGrassAttributesKeyPress::eventFilter( QObject *o, QEvent *e )
 }
 
 QgsGrassAttributes::QgsGrassAttributes ( QgsGrassEdit *edit, QgsGrassProvider *provider, int line, 
-        QWidget * parent, const char * name, Qt::WFlags f ) :QgsGrassAttributesBase ( parent, name, f)
+        QWidget * parent, const char * name, Qt::WFlags f ) 
+
+    :QgsGrassAttributesBase ( parent, name, f)
 {
     #ifdef QGISDEBUG
     std::cerr << "QgsGrassAttributes()" << std::endl;
