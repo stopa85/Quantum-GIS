@@ -85,7 +85,9 @@ bool QgsGrassAttributesKeyPress::eventFilter( QObject *o, QEvent *e )
 QgsGrassAttributes::QgsGrassAttributes ( QgsGrassEdit *edit, QgsGrassProvider *provider, int line, 
         QWidget * parent, const char * name, Qt::WFlags f ) 
 
-    :QgsGrassAttributesBase ( parent, name, f)
+    //:QgsGrassAttributesBase ( parent, name, f)
+    //Tim disabled params during qt4 ui port - FIXME
+    :QgsGrassAttributesBase ( )
 {
     #ifdef QGISDEBUG
     std::cerr << "QgsGrassAttributes()" << std::endl;

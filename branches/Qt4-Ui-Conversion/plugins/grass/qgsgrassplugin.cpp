@@ -27,7 +27,7 @@
 #include "../../src/qgsfeatureattribute.h"
 #include "../../src/qgsproviderregistry.h"
 
-#include <q3toolbar.h>
+#include <qtoolbar.h>
 #include <qmenubar.h>
 #include <qmessagebox.h>
 #include <q3popupmenu.h>
@@ -261,7 +261,7 @@ void QgsGrassPlugin::initGui()
   mNewVectorAction->addTo(pluginMenu);
 
   // Add the toolbar
-  toolBarPointer = new Q3ToolBar((Q3MainWindow *) qgisMainWindowPointer, "GRASS");
+  toolBarPointer = new QToolBar((Q3MainWindow *) qgisMainWindowPointer, "GRASS");
   toolBarPointer->setLabel(tr("GRASS"));
 
   // Add to the toolbar
