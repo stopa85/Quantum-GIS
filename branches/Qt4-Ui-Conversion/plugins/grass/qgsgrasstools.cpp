@@ -73,7 +73,9 @@ extern "C" {
 
 QgsGrassTools::QgsGrassTools ( QgisApp *qgisApp, QgisIface *iface, 
 	                     QWidget * parent, const char * name, Qt::WFlags f )
-             :QgsGrassToolsBase ( parent, name, f )
+             //:QgsGrassToolsBase ( parent, name, f )
+             //commented out params during Qt4 Ui port - FIXME
+             :QgsGrassToolsBase ( )
 {
     #ifdef QGISDEBUG
     std::cerr << "QgsGrassTools()" << std::endl;
@@ -106,7 +108,7 @@ QgsGrassTools::QgsGrassTools ( QgisApp *qgisApp, QgisIface *iface,
 
     QString conf = mAppDir + "/share/qgis/grass/config/default.qgc";
     loadConfig ( conf );
-    statusBar()->hide();
+    //statusBar()->hide();
     restorePosition();
 }
 
@@ -293,7 +295,7 @@ void QgsGrassTools::restorePosition()
     int wy = settings.readNumEntry("/GRASS/windows/tools/y", 100);
     resize(ww,wh);
     move(wx,wy);
-    QgsGrassToolsBase::show();
+    show();
 }
 
 void QgsGrassTools::saveWindowLocation()

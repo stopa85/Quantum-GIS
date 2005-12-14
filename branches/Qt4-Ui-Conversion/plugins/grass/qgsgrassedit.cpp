@@ -65,8 +65,10 @@ bool QgsGrassEdit::mRunning = false;
 
 QgsGrassEdit::QgsGrassEdit ( QgisApp *qgisApp, QgisIface *iface, 
     QWidget * parent, const char * name, Qt::WFlags f )
-:QgsGrassEditBase ( parent, name, f )
+//:QgsGrassEditBase (parent,f) //commented out by Tim during ui port FIXME
+:QgsGrassEditBase ()
 {
+  setupUi(this);
 #ifdef QGISDEBUG
   std::cerr << "QgsGrassEdit()" << std::endl;
 #endif
@@ -119,7 +121,9 @@ QgsGrassEdit::QgsGrassEdit ( QgisApp *qgisApp, QgisIface *iface,
 QgsGrassEdit::QgsGrassEdit ( QgisApp *qgisApp, QgisIface *iface, 
     QgsGrassProvider *provider,
     QWidget * parent, const char * name, Qt::WFlags f )
-:QgsGrassEditBase ( parent, name, f )
+  //:QgsGrassEditBase ( parent, name, f )
+  //commented out params duting qt4 ui port FIXME - Tim
+:QgsGrassEditBase ()
 {
 #ifdef QGISDEBUG
   std::cerr << "QgsGrassEdit()" << std::endl;
