@@ -36,7 +36,8 @@ class QCloseEvent;
 #include "../../src/qgsmaptopixel.h"
 
 class QgsGrassProvider;
-#include "qgsgrasseditbase.h"
+#include "ui_qgsgrasseditbase.h"
+#include <QDialog>
 #include "qgsgrassselect.h"
 #include "qgsgrassattributes.h"
 
@@ -49,7 +50,7 @@ typedef struct {
  *  \brief GRASS vector edit.
  *
  */
-class QgsGrassEdit: public QgsGrassEditBase
+class QgsGrassEdit: public QDialog, private Ui::QgsGrassEditBase
 {
     Q_OBJECT;
 
