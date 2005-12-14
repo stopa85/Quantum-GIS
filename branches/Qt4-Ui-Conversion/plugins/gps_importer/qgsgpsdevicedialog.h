@@ -19,7 +19,8 @@
 #include <qstring.h>
 
 
-class QgsGPSDeviceDialog : public Ui::QgsGPSDeviceDialogBase {
+class QgsGPSDeviceDialog : public QDialog, private Ui::QgsGPSDeviceDialogBase 
+{
   Q_OBJECT
 public:
   QgsGPSDeviceDialog(std::map<QString, QgsGPSDevice*>& devices);
