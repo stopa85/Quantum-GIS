@@ -170,9 +170,9 @@ void QgsScaleBarPlugin::run()
   int myUnits=qGisInterface->getMapCanvas()->mapUnits();
   switch (myUnits)
   {
-      case 0: myPluginGui->spnSize->setSuffix(tr(" metres/km")); break;
-      case 1: myPluginGui->spnSize->setSuffix(tr(" feet")); break;
-      case 2: myPluginGui->spnSize->setSuffix(tr(" degrees")); break;
+      case 0: myPluginGui->getSpinSize()->setSuffix(tr(" metres/km")); break;
+      case 1: myPluginGui->getSpinSize()->setSuffix(tr(" feet")); break;
+      case 2: myPluginGui->getSpinSize()->setSuffix(tr(" degrees")); break;
       default: std::cout << "Error: not picked up map units - actual value = " << myUnits << std::endl;
   };
 }

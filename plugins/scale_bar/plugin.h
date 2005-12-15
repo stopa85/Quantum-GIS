@@ -46,7 +46,6 @@ class QgsScaleBarPlugin:public QObject, public QgisPlugin
       QgsScaleBarPlugin(QgisApp * , QgisIface * );
 
 
-
   //! Destructor
   virtual ~ QgsScaleBarPlugin();
   public slots:
