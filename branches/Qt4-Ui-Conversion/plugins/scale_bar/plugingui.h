@@ -35,6 +35,8 @@ public:
     void setColour(QColor);
 
     
+   //accessor for getting a pointer to the size spin widget
+   QSpinBox * getSpinSize();
     
 private:
     

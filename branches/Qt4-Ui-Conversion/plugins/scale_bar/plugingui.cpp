@@ -30,6 +30,11 @@ QgsScaleBarPluginGui::~QgsScaleBarPluginGui()
 {
 }
 
+QSpinBox * QgsScaleBarPluginGui::getSpinSize()
+{
+    return spnSize;
+}
+
 void QgsScaleBarPluginGui::pbnOK_clicked()
 {
   hide();
