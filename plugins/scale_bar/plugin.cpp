@@ -29,7 +29,7 @@ email                : sbr00pwb@users.sourceforge.net
 #include "qgsproject.h"
 #include "qgsmapcanvas.h"
 
-#include <q3toolbar.h>
+#include <qtoolbar.h>
 #include <qmenubar.h>
 #include <qmessagebox.h>
 #include <q3popupmenu.h>
