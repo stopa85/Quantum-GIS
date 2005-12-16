@@ -181,6 +181,18 @@ void QgsDbSourceSelect::on_lstTables_doubleClicked(Q3ListViewItem *item)
 {
   setSql(item);
 }
+
+// Slot for editing a connection
+void QgsDbSourceSelect::on_btnEdit_clicked()
+{
+  editConnection();
+}
+
+// Slot for showing help
+void QgsDbSourceSelect::on_btnHelp_clicked()
+{
+  showHelp();
+}
 void QgsDbSourceSelect::addTables()
 {
   //store the table info

@@ -72,9 +72,10 @@ class QgsDbSourceSelect : public QDialog, private Ui::QgsDbSourceSelectBase
       void on_btnConnect_clicked();
       void on_btnAdd_clicked();
       void on_btnNew_clicked();
+      void on_btnEdit_clicked();
       void on_lstTables_doubleClicked(Q3ListViewItem *);
       void setSql(Q3ListViewItem *);
-      void showHelp();
+      void on_btnHelp_clicked();
  private:
 
     typedef std::pair<QString, QString> geomPair;
@@ -85,6 +86,8 @@ class QgsDbSourceSelect : public QDialog, private Ui::QgsDbSourceSelectBase
     // Set the position of the database connection list to the last
     // used one. 
     void setConnectionListPosition();
+    // Show the context help for the dialog
+    void showHelp();
 
     QString m_connInfo;
     QStringList m_selectedTables;
