@@ -176,6 +176,11 @@ void QgsDbSourceSelect::on_btnAdd_clicked()
   addTables();
 }
 
+// Slot for opening the query builder when a layer is double clicked
+void QgsDbSourceSelect::on_lstTables_doubleClicked(Q3ListViewItem *item)
+{
+  setSql(item);
+}
 void QgsDbSourceSelect::addTables()
 {
   //store the table info
