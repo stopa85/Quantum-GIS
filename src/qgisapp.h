@@ -489,7 +489,6 @@ private:
   QMenu *mViewMenu;
   QMenu *mLayerMenu;
   QMenu *mSettingsMenu;
-  QMenu *mPluginsMenu;
   QMenu *mHelpMenu;
 
   //!The name of the active theme
