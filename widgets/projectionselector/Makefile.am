@@ -36,7 +36,7 @@ libqgsprojectionselector_la_SOURCES =  qgsprojectionselector.cpp \
 			         $(selector_UIC) \
 			         $(selector_MOC) 
 
-BUILT_SOURCES = $(selector_MOC) $(selector_UI) $(selector_UIC)
+BUILT_SOURCES = $(selector_MOC) $(selector_UI) 
 
 CLEANFILES = $(BUILT_SOURCES)
 
