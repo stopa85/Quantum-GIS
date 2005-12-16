@@ -1,5 +1,6 @@
 /***************************************************************************
-                     qgsdbsourceselect.cpp  -  description
+                             qgsdbsourceselect.cpp  
+       Dialog to select PostgreSQL layer(s) and add it to the map canvas
                               -------------------
 begin                : Sat Jun 22 2002
 copyright            : (C) 2002 by Gary E.Sherman
@@ -103,6 +104,41 @@ QgsDbSourceSelect::QgsDbSourceSelect(QgisApp *app, QWidget *parent, const char *
       mEncodingComboBox->setCurrentText(lastUsedEncoding);
     }
 }
+/** Autoconnected SLOTS **/
+// Slot for adding a new connection
+void QgsDbSourceSelect::on_btnNew_clicked()
+{
+  addNewConnection();
+}
+// Slot for deleting an existing connection
+void QgsDbSourceSelect::on_btnDelete_clicked()
+{
+  deleteConnection();
+}
+// Slot for performing action when the Add button is clicked
+void QgsDbSourceSelect::on_btnAdd_clicked()
+{
+  addTables();
+}
+
+// Slot for opening the query builder when a layer is double clicked
+void QgsDbSourceSelect::on_lstTables_doubleClicked(Q3ListViewItem *item)
+{
+  setSql(item);
+}
+
+// Slot for editing a connection
+void QgsDbSourceSelect::on_btnEdit_clicked()
+{
+  editConnection();
+}
+
+// Slot for showing help
+void QgsDbSourceSelect::on_btnHelp_clicked()
+{
+  showHelp();
+}
+/** End Autoconnected SLOTS **/
 
 QgsDbSourceSelect::~QgsDbSourceSelect()
 {
@@ -145,7 +181,7 @@ void QgsDbSourceSelect::editConnection()
 void QgsDbSourceSelect::deleteConnection()
 {
   QSettings settings;
-  QString key = "/Qgis/connections/" + cmbConnections->currentText();
+  QString key = "/Postgresql/connections/" + cmbConnections->currentText();
   QString msg =
     tr("Are you sure you want to remove the ") + cmbConnections->currentText() + tr(" connection and all associated settings?");
   int result = QMessageBox::information(this, tr("Confirm Delete"), msg, tr("Yes"), tr("No"));
@@ -164,34 +200,6 @@ void QgsDbSourceSelect::deleteConnection()
     cmbConnections->removeItem(cmbConnections->currentItem());  // populateConnectionList();
     setConnectionListPosition();
   }
-}
-// Slot for adding a new connection
-void QgsDbSourceSelect::on_btnNew_clicked()
-{
-  addNewConnection();
-}
-// Slot for performing action when the Add button is clicked
-void QgsDbSourceSelect::on_btnAdd_clicked()
-{
-  addTables();
-}
-
-// Slot for opening the query builder when a layer is double clicked
-void QgsDbSourceSelect::on_lstTables_doubleClicked(Q3ListViewItem *item)
-{
-  setSql(item);
-}
-
-// Slot for editing a connection
-void QgsDbSourceSelect::on_btnEdit_clicked()
-{
-  editConnection();
-}
-
-// Slot for showing help
-void QgsDbSourceSelect::on_btnHelp_clicked()
-{
-  showHelp();
 }
 void QgsDbSourceSelect::addTables()
 {

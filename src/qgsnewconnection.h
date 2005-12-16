@@ -35,8 +35,13 @@ class QgsNewConnection : public QDialog, private Ui::QgsNewConnectionBase
     void testConnection();
     //! Saves the connection to ~/.qt/qgisrc
     void saveConnection();
-  public slots:
+    //! Display the context help
     void helpInfo();
+  public slots:
+    void on_btnOk_clicked();
+    void on_btnCancel_clicked();
+    void on_btnHelp_clicked();
+    void on_btnConnect_clicked();
   private:
     static const int context_id = 821572257;
 };

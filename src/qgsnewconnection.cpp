@@ -65,6 +65,25 @@ QgsNewConnection::QgsNewConnection(QWidget *parent, const QString& connName, boo
   QWidget::setTabOrder((QWidget*)btnCancel, (QWidget*)btnHelp);
   QWidget::setTabOrder((QWidget*)btnHelp, txtName);
 }
+/** Autoconnected SLOTS **/
+void QgsNewConnection::on_btnOk_clicked()
+{
+  saveConnection();
+}
+void QgsNewConnection::on_btnHelp_clicked()
+{
+ helpInfo();
+}
+void QgsNewConnection::on_btnConnect_clicked()
+{
+  testConnection();
+}
+void QgsNewConnection::on_btnCancel_clicked(){
+  // cancel the dialog
+  reject();
+}
+
+/** end  Autoconnected SLOTS **/
 
 QgsNewConnection::~QgsNewConnection()
 {
