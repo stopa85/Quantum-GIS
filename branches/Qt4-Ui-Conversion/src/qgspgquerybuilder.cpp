@@ -232,25 +232,34 @@ void QgsPgQueryBuilder::on_btnTest_clicked()
   // test the sql statement to see if it works
   // by counting the number of records that would be
   // returned
-  QString numRows;
-  QString sql = "select count(*) from \"" + mUri->schema + "\".\"" + mUri->table
-      + "\" where " + txtSQL->text();
-  PGresult *result = PQexec(mPgConnection, (const char *)(sql.utf8()));
-  if (PQresultStatus(result) == PGRES_TUPLES_OK) 
+
+  // if there is no sql, issue a warning
+  if(txtSQL->text().isEmpty())
   {
-    numRows = QString::fromUtf8(PQgetvalue(result, 0, 0));
-    QMessageBox::information(this, tr("Query Result"), 
-        tr("The where clause returned ") 
-        + numRows + tr(" rows."));
+    QMessageBox::information(this, "No Query", "You must create a query before you can test it");
   }
   else
-  {
-    QMessageBox::warning(this, tr("Query Failed"), 
-        tr("An error occurred when executing the query:") 
-        + "\n" + QString(PQresultErrorMessage(result)));
+  { 
+    QString numRows;
+    QString sql = "select count(*) from \"" + mUri->schema + "\".\"" + mUri->table
+      + "\" where " + txtSQL->text();
+    PGresult *result = PQexec(mPgConnection, (const char *)(sql.utf8()));
+    if (PQresultStatus(result) == PGRES_TUPLES_OK) 
+    {
+      numRows = QString::fromUtf8(PQgetvalue(result, 0, 0));
+      QMessageBox::information(this, tr("Query Result"), 
+          tr("The where clause returned ") 
+          + numRows + tr(" rows."));
+    }
+    else
+    {
+      QMessageBox::warning(this, tr("Query Failed"), 
+          tr("An error occurred when executing the query:") 
+          + "\n" + QString(PQresultErrorMessage(result)));
+    }
+    // free the result set
+    PQclear(result);
   }
-  // free the result set
-  PQclear(result);
 }
 // This method tests the number of records that would be returned by the
 // query
