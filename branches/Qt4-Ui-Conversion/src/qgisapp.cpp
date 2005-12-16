@@ -658,8 +658,8 @@ void QgisApp::createMenus()
   
   //
   // Plugins Menu
-  mPluginsMenu = menuBar()->addMenu(tr("&Plugins"));
-  mPluginsMenu->addAction(mActionShowPluginManager);
+  mPluginMenu = menuBar()->addMenu(tr("&Plugins"));
+  mPluginMenu->addAction(mActionShowPluginManager);
 
   // Add the plugin manager action to it
   //actionPluginManager->addTo(mPluginMenu);
