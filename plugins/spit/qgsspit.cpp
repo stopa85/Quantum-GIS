@@ -55,8 +55,9 @@ int Q3TableItem::alignment() const
   return ( num ? Qt::AlignLeft : Qt::AlignLeft ) | Qt::AlignVCenter;
 }
 
-QgsSpit::QgsSpit( QWidget *parent, const char *name ) : QgsSpitBase( parent, name )
+QgsSpit::QgsSpit( QWidget *parent, const char *name ) : QDialog( parent, name )
 {
+  setupUi(this);
   QPixmap icon;
   icon = QPixmap( spitIcon );
   setIcon( icon );

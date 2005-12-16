@@ -22,12 +22,13 @@
 #include <qsettings.h>
 #include "qgsspitbase.h"
 #include "qgsshapefile.h"
+#include "ui_qgsspitbase.h"
 extern "C"
 {
 #include <libpq-fe.h>
 }
 
-class QgsSpit : public QgsSpitBase
+class QgsSpit : public QDialog, private Ui::QgsSpitBase
 {
   Q_OBJECT;
 public:

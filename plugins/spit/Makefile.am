@@ -27,22 +27,20 @@ spit_MOC = qgsspit.moc.cpp \
 	qgsshapefile.moc.cpp \
 	qgsmessageviewer.moc.cpp \
 	qgsspitbase.moc.cpp \
-	qgseditreservedwordsdialog.moc.cpp \
-	qgsscangeometries.moc.cpp
+	qgseditreservedwordsdialog.moc.cpp 
+
 
 spitplugin_la_MOC = $(spit_MOC) qgsspitplugin.moc.cpp
 
 spit_UI = ui_qgsconnectiondialogbase.h \
 	ui_qgsspitbase.h \
 	ui_qgsmessageviewerbase.h \
-	ui_qgseditreservedwordsbase.h \
-	ui_qgsscangeometries.h 
+	ui_qgseditreservedwordsbase.h 
 
 spit_UIC = qgsconnectiondialogbase.ui \
 	qgsmessageviewerbase.ui \
 	qgsspitbase.ui \
-	qgseditreservedwordsbase.ui \
-	qgsscangeometries.ui
+	qgseditreservedwordsbase.ui 
 
 common_sources =  qgsspit.cpp \
 	qgsspit.h \
@@ -55,7 +53,6 @@ common_sources =  qgsspit.cpp \
 	qgsmessageviewer.h \
 	qgseditreservedwordsdialog.h \
 	qgseditreservedwordsdialog.cpp \
-	qgsscangeometries.ui.h \
 	$(spit_UI)
 
 spitplugin_la_SOURCES =  $(common_sources) \
