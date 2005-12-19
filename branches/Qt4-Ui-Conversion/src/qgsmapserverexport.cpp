@@ -18,7 +18,6 @@ email                : sherman at mrcc.com
 
 #include <iostream>
 #include <fstream>
-#include <q3filedialog.h>
 #include <qfileinfo.h>
 #include <qlineedit.h>
 #include <qcheckbox.h>

@@ -29,7 +29,7 @@ back to QgsVectorLayer.
 #include <qstring.h>
 #include <qcheckbox.h>
 #include <QComboBox>
-#include <q3filedialog.h>
+#include <QFileDialog>
 
 #include "qgsattributeactiondialog.h"
 #include "qgsattributeaction.h"
@@ -131,9 +131,8 @@ void QgsAttributeActionDialog::browse()
   // Popup a file browser and place the results into the actionName
   // widget 
 
-  QString action = Q3FileDialog::getOpenFileName(
-	QString::null, QString::null, this, 
-	"Select action dialog", "Select an action");
+  QString action = QFileDialog::getOpenFileName(
+    this, "Select an action");
 
   if (!action.isNull())
     actionAction->insert(action);    

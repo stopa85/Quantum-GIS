@@ -17,7 +17,6 @@
 #include <qdir.h>
 #include <qevent.h>
 #include <qfile.h>
-#include <q3filedialog.h> 
 #include <qsettings.h>
 #include <qpixmap.h>
 #include <q3listbox.h>

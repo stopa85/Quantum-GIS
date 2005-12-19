@@ -19,7 +19,7 @@
 #include "qgsmarkerdialog.h"
 #include "qgssvgcache.h"
 #include <qdir.h>
-#include <q3filedialog.h>
+#include <QFileDialog>
 #include <q3iconview.h>
 #include <qlineedit.h>
 #include <q3picture.h>
@@ -68,7 +68,8 @@ QString QgsMarkerDialog::selectedMarker()
 
 void QgsMarkerDialog::changeDirectory()
 {
-    QString newdir=Q3FileDialog::getExistingDirectory(mCurrentDir,this,"get existing directory","Choose a directory",TRUE);
+    QString newdir = QFileDialog::getExistingDirectory(
+        this, "Choose a directory", mCurrentDir);
     if (!newdir.isEmpty())
     {
 	mCurrentDir=newdir;
