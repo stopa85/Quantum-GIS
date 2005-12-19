@@ -17,7 +17,7 @@
 /* $Id$ */
 #include <iostream>
 #include <qapplication.h>
-#include <q3filedialog.h>
+#include <QFileDialog>
 #include <qlineedit.h>
 #include <q3listview.h>
 #include <qmessagebox.h>
@@ -62,7 +62,7 @@ QgsPluginManager::~QgsPluginManager()
 
 void QgsPluginManager::on_btnBrowse_clicked()
 {
-  QString s = Q3FileDialog::getExistingDirectory(0, this, "get existing directory", tr("Choose a directory"), TRUE);
+  QString s = QFileDialog::getExistingDirectory(this, tr("Choose a directory"));
   txtPluginDir->setText(s);
   getPluginDescriptions();
 }

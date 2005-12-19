@@ -1548,16 +1548,15 @@ static void openFilesRememberingFilter_(QString const &filterName,
   std::cerr << "Opening file dialog with filters: " << filters.toLocal8Bit().data() << std::endl;
 #endif
 
-  QgsEncodingFileDialog* openFileDialog = 
-    new QgsEncodingFileDialog(lastUsedDir, filters, 0, Q3FileDialog::tr("open files dialog"), lastUsedEncoding);
+  QgsEncodingFileDialog* openFileDialog = new QgsEncodingFileDialog(0,
+      title, lastUsedDir, filters, lastUsedEncoding);
 
   // allow for selection of more than one file
-  openFileDialog->setMode(Q3FileDialog::ExistingFiles);
-  openFileDialog->setCaption(title);
+  openFileDialog->setMode(QFileDialog::ExistingFiles);
 
   if (haveLastUsedFilter)       // set the filter to the last one used
   {
-    openFileDialog->setSelectedFilter(lastUsedFilter);
+    openFileDialog->selectFilter(lastUsedFilter);
   }
 
   if (openFileDialog->exec() == QDialog::Accepted)
@@ -2425,15 +2424,15 @@ void QgisApp::newVectorLayer()
   std::cerr << "Saving vector file dialog without filters: " << std::endl;
 #endif
 
-  QgsEncodingFileDialog* openFileDialog = new QgsEncodingFileDialog(lastUsedDir, "", 0, Q3FileDialog::tr("save new vector files dialog"), lastUsedEncoding);
+  QgsEncodingFileDialog* openFileDialog = new QgsEncodingFileDialog(this,
+      tr("Save As"), lastUsedDir, "", lastUsedEncoding);
 
   // allow for selection of more than one file
-  openFileDialog->setMode(Q3FileDialog::AnyFile);
-  openFileDialog->setCaption(tr("Save As"));
+  openFileDialog->setMode(QFileDialog::AnyFile);
 
   if (haveLastUsedFilter)       // set the filter to the last one used
   {
-    openFileDialog->setSelectedFilter(lastUsedFilter);
+    openFileDialog->selectFilter(lastUsedFilter);
   }
 
   if (openFileDialog->exec() != QDialog::Accepted)
@@ -2447,7 +2446,7 @@ void QgisApp::newVectorLayer()
 
   settings.writeEntry("/UI//lastVectorFileFilter", openFileDialog->selectedFilter());
 
-  settings.writeEntry("/UI//lastVectorFileFilterDir", openFileDialog->dirPath());
+  settings.writeEntry("/UI//lastVectorFileFilterDir", openFileDialog->directory().absolutePath());
   settings.writeEntry("/UI/encoding", openFileDialog->encoding());
 
   delete openFileDialog;
@@ -2583,10 +2582,10 @@ void QgisApp::fileOpen()
     QSettings settings;
     QString lastUsedDir = settings.readEntry("/UI/lastProjectDir", ".");
 
-    Q3FileDialog * openFileDialog = new Q3FileDialog(lastUsedDir, QObject::tr("QGis files (*.qgs)"), 0,
-        "open project file");
-    openFileDialog->setCaption(tr("Choose a QGIS project file to open"));
-    openFileDialog->setMode(Q3FileDialog::ExistingFile);
+    QFileDialog * openFileDialog = new QFileDialog(this,
+        tr("Choose a QGIS project file to open"),
+        lastUsedDir, QObject::tr("QGis files (*.qgs)"));
+    openFileDialog->setMode(QFileDialog::ExistingFile);
 
 
     QString fullPath;
@@ -2767,13 +2766,11 @@ void QgisApp::fileSave()
     QSettings settings;
     QString lastUsedDir = settings.readEntry("/UI/lastProjectDir", ".");
 
-    std::auto_ptr<Q3FileDialog> saveFileDialog( new Q3FileDialog(lastUsedDir, 
-          QObject::tr("QGis files (*.qgs)"), 
-          0,
-          "save project file") );
+    std::auto_ptr<QFileDialog> saveFileDialog( new QFileDialog(this,
+        tr("Choose a QGIS project file"),
+        lastUsedDir, QObject::tr("QGis files (*.qgs)")) );
 
-    saveFileDialog->setCaption(tr("Choose a QGIS project file"));
-    saveFileDialog->setMode(Q3FileDialog::AnyFile);
+    saveFileDialog->setMode(QFileDialog::AnyFile);
 
     if (saveFileDialog->exec() == QDialog::Accepted)
     {
@@ -2865,13 +2862,11 @@ void QgisApp::fileSaveAs()
   QSettings settings;
   QString lastUsedDir = settings.readEntry("/UI/lastProjectDir", ".");
 
-  auto_ptr<Q3FileDialog> saveFileDialog( new Q3FileDialog(lastUsedDir, 
-        QObject::tr("QGis files (*.qgs)"), 
-        0,
-        "save project file as"));
+  auto_ptr<QFileDialog> saveFileDialog( new QFileDialog(this,
+      tr("Choose a QGIS project file"),
+      lastUsedDir, QObject::tr("QGis files (*.qgs)")) );
 
-  saveFileDialog->setCaption(tr("Choose a QGIS project file"));
-  saveFileDialog->setMode(Q3FileDialog::AnyFile);
+  saveFileDialog->setMode(QFileDialog::AnyFile);
 
   // if we don't have a filename, then obviously we need to get one; note
   // that the project file name is reset to null in fileNew()
@@ -3107,23 +3102,16 @@ void QgisApp::saveMapAsImage()
 #endif
 
   //create a file dialog using the the filter list generated above
-  std::auto_ptr < Q3FileDialog > myQFileDialog(
-      new Q3FileDialog(
-        myLastUsedDir,
-        myFilters,
-        0,
-        "save map file dialog"
-        )
-      );
-
+  std::auto_ptr < QFileDialog > myQFileDialog( new QFileDialog(this,
+      tr("Choose a filename to save the map image as"),
+      myLastUsedDir, myFilters) );
 
   // allow for selection of more than one file
-  myQFileDialog->setCaption(tr("Choose a filename to save the map image as"));
-  myQFileDialog->setMode(Q3FileDialog::AnyFile);
+  myQFileDialog->setMode(QFileDialog::AnyFile);
 
   if (!myLastUsedFilter.isEmpty())       // set the filter to the last one used
   {
-    myQFileDialog->setSelectedFilter(myLastUsedFilter);
+    myQFileDialog->selectFilter(myLastUsedFilter);
   }
 
 
@@ -3142,7 +3130,7 @@ void QgisApp::saveMapAsImage()
 #endif
 
   myQSettings.writeEntry("/UI/lastSaveAsImageFilter" , myFilterString);
-  myQSettings.writeEntry("/UI/lastSaveAsImageDir", myQFileDialog->dirPath());
+  myQSettings.writeEntry("/UI/lastSaveAsImageDir", myQFileDialog->directory().absolutePath());
 
   if ( myOutputFileNameQString !="")
   {

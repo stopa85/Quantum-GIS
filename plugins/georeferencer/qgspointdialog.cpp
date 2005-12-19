@@ -3,7 +3,7 @@
 #include <qtoolbutton.h>
 #include <qpushbutton.h>
 #include <qcombobox.h>
-#include <q3filedialog.h>
+#include <QFileDialog>
 #include <q3frame.h>
 #include <qlayout.h>
 #include <qlineedit.h>
@@ -129,22 +129,18 @@ void QgsPointDialog::pbnGenerateAndLoad_clicked() {
 
 void QgsPointDialog::pbnSelectWorldFile_clicked() {
   QString filename = 
-    Q3FileDialog::getSaveFileName(".",
-				 NULL,
-				 this,
-				 "Save world file"
-				 "Choose a name for the world file");
+    QFileDialog::getSaveFileName(this,
+				 "Choose a name for the world file",
+                 ".");
   leSelectWorldFile->setText(filename);
 }
 
 
 void QgsPointDialog::pbnSelectModifiedRaster_clicked() {
   QString filename = 
-    Q3FileDialog::getSaveFileName(".",
-				 NULL,
-				 this,
-				 "Save modified raster file"
-				 "Choose a name for the world file");
+    QFileDialog::getSaveFileName(this,
+				 "Choose a name for the world file",
+                 ".");
   if (filename.right(4) != ".tif")
     filename += ".tif";
   leSelectModifiedRaster->setText(filename);

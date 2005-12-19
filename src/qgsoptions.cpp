@@ -20,7 +20,7 @@
 #include <QComboBox>
 #include <qcheckbox.h>
 #include <qspinbox.h>
-#include <q3filedialog.h>
+#include <QFileDialog>
 #include <qradiobutton.h>
 #include <qapplication.h>
 #include <q3textbrowser.h>
@@ -168,12 +168,11 @@ void QgsOptions::findBrowser()
 #else
   filter = "All Files (*)";
 #endif
-  QString browser = Q3FileDialog::getOpenFileName(
-          "./",
-          filter, 
+  QString browser = QFileDialog::getOpenFileName(
           this,
-          "open file dialog",
-          "Choose a browser" );
+          "Choose a browser",
+          "./",
+          filter );
   if(browser.length() > 0)
   {
     cmbBrowser->setCurrentText(browser);

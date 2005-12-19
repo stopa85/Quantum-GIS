@@ -38,7 +38,7 @@
 #include <qpixmap.h>
 #include <qimage.h>
 #include <q3picture.h>
-#include <q3filedialog.h>
+#include <QFileDialog>
 #include <qglobal.h>
 
 #include "qgisapp.h"
@@ -553,22 +553,21 @@ void QgsComposer::image(void)
 #endif
 
   //create a file dialog using the the filter list generated above
-  std::auto_ptr < Q3FileDialog > myQFileDialog(
-      new Q3FileDialog(
+  std::auto_ptr < QFileDialog > myQFileDialog(
+      new QFileDialog(
+        this,
+        tr("Choose a filename to save the map image as"),
         "",
-        myFilters,
-        0,
-        "Save mapcomposer file dialog"
+        myFilters
         )
       );
-  myQFileDialog->setCaption(tr("Choose a filename to save the map image as"));
-  myQFileDialog->setSelection ( myLastUsedFile );
+  myQFileDialog->selectFile( myLastUsedFile );
 
   // allow for selection of more than one file
-  myQFileDialog->setMode(Q3FileDialog::AnyFile);
+  myQFileDialog->setMode(QFileDialog::AnyFile);
 
   // set the filter to the last one used
-  myQFileDialog->setSelectedFilter(myLastUsedFilter);
+  myQFileDialog->selectFilter(myLastUsedFilter);
 
   //prompt the user for a filename
   QString myOutputFileNameQString; // = myQFileDialog->getSaveFileName(); //delete this
@@ -616,13 +615,13 @@ void QgsComposer::svg(void)
   QSettings myQSettings;
   QString myLastUsedFile = myQSettings.readEntry("/UI/lastSaveAsSvgFile","qgis.svg");
 
-  Q3FileDialog *myQFileDialog = new Q3FileDialog( "", "SVG Format (*.svg *SVG)", 0,
-                                                "Save svg file dialog");
+  QFileDialog *myQFileDialog = new QFileDialog( this, "Save svg file dialog",
+                                                "", "SVG Format (*.svg *SVG)" );
   
   myQFileDialog->setCaption(tr("Choose a filename to save the map as"));
 
-  myQFileDialog->setSelection ( myLastUsedFile );
-  myQFileDialog->setMode(Q3FileDialog::AnyFile);
+  myQFileDialog->selectFile( myLastUsedFile );
+  myQFileDialog->setMode(QFileDialog::AnyFile);
 
   int result = myQFileDialog->exec();
   raise ();

@@ -36,7 +36,7 @@
 #include <qpen.h>
 #include <qrect.h>
 #include <qlabel.h>
-#include <q3filedialog.h>
+#include <QFileDialog>
 #include <qmessagebox.h>
 
 #include "qgsproject.h"
@@ -501,12 +501,11 @@ QString QgsComposerPicture::pictureDialog ( void )
     }
     filters += " )";
 
-    QString file = Q3FileDialog::getOpenFileName(
-                    ".",
-                    filters,
+    QString file = QFileDialog::getOpenFileName(
                     0,
-                    "open picture dialog",
-                    "Choose a file" );
+                    "Choose a file",
+                    ".",
+                    filters );
 
     return file; 
 }

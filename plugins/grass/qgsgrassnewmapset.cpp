@@ -17,7 +17,7 @@
 #include <qdir.h>
 #include <qevent.h>
 #include <qfile.h>
-#include <q3filedialog.h> 
+#include <QFileDialog> 
 #include <qfileinfo.h>
 #include <qsettings.h>
 #include <q3listbox.h>
@@ -163,8 +163,8 @@ QgsGrassNewMapset::~QgsGrassNewMapset()
 void QgsGrassNewMapset::browseDatabase()
 {
     // TODO: unfortunately QFileDialog does not support 'new' directory
-    Q3FileDialog *fd = new Q3FileDialog ( mDatabaseLineEdit->text() );
-    fd->setMode ( Q3FileDialog::DirectoryOnly ); 
+    QFileDialog *fd = new QFileDialog ( this, NULL, mDatabaseLineEdit->text() );
+    fd->setMode ( QFileDialog::DirectoryOnly ); 
     
     if ( fd->exec() == QDialog::Accepted )
     {

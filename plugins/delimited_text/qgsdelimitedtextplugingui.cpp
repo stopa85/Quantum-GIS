@@ -13,7 +13,7 @@
  ***************************************************************************/
 /* $Id$ */
 #include <iostream>
-#include <q3filedialog.h>
+#include <QFileDialog>
 #include <qlineedit.h>
 #include <q3textedit.h>
 #include <qfile.h>
@@ -151,12 +151,11 @@ void QgsDelimitedTextPluginGui::getOpenFileName()
   // Set inital dir to last used
   QSettings settings("QuantumGIS", "qgis");
 
-  QString s = Q3FileDialog::getOpenFileName(
+  QString s = QFileDialog::getOpenFileName(
+      this,
+      tr("Choose a delimited text file to open"),
       settings.readEntry("/Plugin-DelimitedText/text_path","./"),
-      "Text files (*.txt)",
-      0,
-      "open file dialog",
-      tr("Choose a delimited text file to open") );
+      "Text files (*.txt)");
 
   // set path
   txtFilePath->setText(s);

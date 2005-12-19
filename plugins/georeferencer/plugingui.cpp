@@ -16,7 +16,7 @@
 #include "qgsproject.h"
 
 //qt includes
-#include <q3filedialog.h>
+#include <QFileDialog>
 #include <qlineedit.h>
 #include <qmessagebox.h>
 #include <qpushbutton.h>
@@ -63,11 +63,10 @@ void QgsGeorefPluginGui::pbnSelectRaster_clicked() {
   if (dir.isEmpty())
     dir = ".";
   QString filename = 
-    Q3FileDialog::getOpenFileName(dir,
-				 "Raster files (*.*)",
-				 this,
-				 "Choose raster file"
-				 "Choose a raster file");
+    QFileDialog::getOpenFileName(this,
+				 "Choose a raster file",
+                 dir,
+				 "Raster files (*.*)");
   leSelectRaster->setText(filename);
 }
 

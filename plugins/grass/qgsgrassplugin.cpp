@@ -35,7 +35,7 @@
 #include <qaction.h>
 #include <qapplication.h>
 #include <qcursor.h>
-#include <q3filedialog.h>
+#include <QFileDialog>
 #include <qfileinfo.h>
 #include <qsettings.h>
 #include <qregexp.h>
@@ -166,10 +166,8 @@ void QgsGrassPlugin::initGui()
     //    "cannot be used.\nPlease select your GISBASE.\nGISBASE is full path to the\n"
     //    "directory where GRASS is installed." );
     // XXX Need to subclass this and add explantory message above to left side
-    gisBase = Q3FileDialog::getExistingDirectory(
-        gisBase, qgisMainWindowPointer,
-        "get GISBASE" ,
-        "Choose GISBASE ...", TRUE );
+    gisBase = QFileDialog::getExistingDirectory(
+        qgisMainWindowPointer, "Choose GISBASE ...", gisBase);
     if (gisBase == QString::null)
     {
       // User pressed cancel. No GRASS for you!
