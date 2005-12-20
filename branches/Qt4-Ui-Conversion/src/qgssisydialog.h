@@ -19,16 +19,12 @@
 #ifndef QGSSISYDIALOG_H
 #define QGSSISYDIALOG_H
 
-#include <iostream>
+#include "ui_qgssisydialogbase.h"
 #include <vector>
 
-#include "ui_qgssisydialogbase.h"
-#include <QDialog>
-
-class QString;
-class QgsSingleSymRenderer;
 class QgsSymbol;
 class QgsVectorLayer;
+
 
 /**QgsSiSyDialog is a dialog to set symbology for the legend type 'single symbol'*/
 class QgsSiSyDialog: public QDialog, private Ui::QgsSiSyDialogBase

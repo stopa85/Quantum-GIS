@@ -16,13 +16,15 @@
  *                                                                         *
  ***************************************************************************/
  /* $Id$ */
+
 #ifndef QGSCONTCOLDIALOG_H
 #define QGSCONTCOLDIALOG_H
+
 #include "ui_qgscontcoldialogbase.h"
 #include <map>
 
 class QgsVectorLayer;
-class QDialog;
+
 
 class QgsContColDialog: public QDialog, private Ui::QgsContColDialogBase
 {

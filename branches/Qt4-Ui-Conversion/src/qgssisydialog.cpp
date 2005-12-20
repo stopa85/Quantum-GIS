@@ -15,40 +15,45 @@
  *                                                                         *
  ***************************************************************************/
 /* $Id$ */
-#include <iostream>
-#include <qgssisydialog.h>
-#include <qpushbutton.h>
-#include <qspinbox.h>
-#include <qcolordialog.h>
-#include <qpixmap.h>
-#include <qlineedit.h>
-#include <qtoolbutton.h>
-#include <qlabel.h>
-#include <q3buttongroup.h>
-#include <qbrush.h>
-#include <qpen.h>
-#include <QComboBox>
 
+#include "qgssisydialog.h"
+// #include <iostream>
+// #include <qgssisydialog.h>
+// #include <qpushbutton.h>
+// #include <qspinbox.h>
+#include <QColorDialog>
+// #include <qpixmap.h>
+// #include <qlineedit.h>
+// #include <qtoolbutton.h>
+// #include <qlabel.h>
+// #include <q3buttongroup.h>
+// #include <qbrush.h>
+// #include <qpen.h>
+// #include <QComboBox>
+#include <QPainter>
+// 
 #include "qgsvectorlayer.h"
-#include "qgslegenditem.h"
-#include "qgsrenderitem.h"
+// #include "qgslegenditem.h"
+// #include "qgsrenderitem.h"
 #include "qgssinglesymrenderer.h"
-#include "qgspatterndialog.h"
+// #include "qgspatterndialog.h"
 #include "qgssymbologyutils.h"
-#include "qgslinestyledialog.h"
+// #include "qgslinestyledialog.h"
 #include "qgsmarkercatalogue.h"
 #include "qgssymbol.h"
 #include "qgssvgcache.h"
 
-QgsSiSyDialog::QgsSiSyDialog():QgsSiSyDialogBase(), mVectorLayer(0)
+QgsSiSyDialog::QgsSiSyDialog(): QDialog(), mVectorLayer(0)
 {
+    setupUi(this);
 #ifdef QGISDEBUG
     qWarning("constructor QgsSiSyDialog called WITHOUT a layer");
 #endif
 }
 
-QgsSiSyDialog::QgsSiSyDialog(QgsVectorLayer * layer): QgsSiSyDialogBase(), mVectorLayer(layer)
+QgsSiSyDialog::QgsSiSyDialog(QgsVectorLayer * layer): QDialog(), mVectorLayer(layer)
 {
+    setupUi(this);
 #ifdef QGISDEBUG
     qWarning("constructor QgsSiSyDialog called WITH a layer");
 #endif

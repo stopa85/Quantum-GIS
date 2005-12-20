@@ -20,7 +20,7 @@
 #define QGSLUDIALOG_H
 
 #include "ui_qgsludialogbase.h"
-#include <QDialog>
+
 
 class QgsLUDialog: public QDialog, private Ui::QgsLUDialogBase
 {

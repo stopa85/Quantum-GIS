@@ -21,25 +21,18 @@ back to QgsVectorLayer.
  ***************************************************************************/
 /* $Id$ */
 
-#include <iostream>
-#include <vector>
-
-#include <q3table.h>
-#include <qlineedit.h>
-#include <qstring.h>
-#include <qcheckbox.h>
-#include <QComboBox>
-#include <QFileDialog>
-
 #include "qgsattributeactiondialog.h"
 #include "qgsattributeaction.h"
-#include "qgsfield.h"
+
+#include <QFileDialog>
+
 
 QgsAttributeActionDialog::QgsAttributeActionDialog(QgsAttributeAction* actions,
 						   const std::vector<QgsField>& fields,
 						   QWidget* parent):
-  QgsAttributeActionDialogBase(), mActions(actions)
+  QWidget(parent), mActions(actions)
 {
+  setupUi(this);
   init();
   // Populate the combo box with the field names. Will the field names
   // change? If so, they need to be passed into the init() call, or
