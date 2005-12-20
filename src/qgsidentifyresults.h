@@ -18,31 +18,29 @@
 /* $Id$ */
 #ifndef QGSIDENTIFYRESULTS_H
 #define QGSIDENTIFYRESULTS_H
-#include "ui_qgsidentifyresultsbase.h"
-#include <QDialog>
-#include "qgsattributeaction.h"
-//Added by qt3to4:
-#include <Q3PopupMenu>
-#include <QCloseEvent>
-#include <vector>
-#include <map>
 
+#include "ui_qgsidentifyresultsbase.h"
+#include "qgsattributeaction.h"
+#include <QWidget>
+#include <vector>
+
+class QCloseEvent;
+class Q3ListViewItem;
 class Q3PopupMenu;
 
 /**
  *@author Gary E.Sherman
  */
 
-class QgsIdentifyResults:public QDialog, private Ui::QgsIdentifyResultsBase
+class QgsIdentifyResults: public QWidget, private Ui::QgsIdentifyResultsBase
 {
   Q_OBJECT;
   public:
 
   //! Constructor - takes it own copy of the QgsAttributeAction so
   // that it is independent of whoever created it.
-  QgsIdentifyResults(const QgsAttributeAction&, QWidget *parent = 0, const char * name = 0, 
-               Qt::WFlags f = Qt::WStyle_Customize | Qt::WStyle_DialogBorder | Qt::WStyle_Title 
-         | Qt::WType_Dialog | Qt::WStyle_Tool);
+  QgsIdentifyResults(const QgsAttributeAction& actions, QWidget *parent = 0,
+      Qt::WFlags f = Qt::Tool | Qt::MSWindowsFixedSizeDialogHint |Qt::WindowTitleHint);
 
   ~QgsIdentifyResults();
   /** Add an attribute to the feature display node */
@@ -61,9 +59,7 @@ class QgsIdentifyResults:public QDialog, private Ui::QgsIdentifyResultsBase
   void setColumnText ( int column, const QString & label );
   void saveWindowLocation();
   void restorePosition();  
-  void close();
   void closeEvent(QCloseEvent *e);
-  void popupContextMenu(Q3ListViewItem*, const QPoint&, int);
   void showAllAttributes();
 
   /** Remove results */
@@ -80,6 +76,8 @@ class QgsIdentifyResults:public QDialog, private Ui::QgsIdentifyResultsBase
 
   public slots:
 
+    void close();
+    void popupContextMenu(Q3ListViewItem*, const QPoint&, int);
     void popupItemSelected(int id);
 
     /* Item in tree was clicked */
