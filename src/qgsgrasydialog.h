@@ -18,15 +18,13 @@
 
 #ifndef QGSGRASYDIALOG_H
 #define QGSGRASYDIALOG_H
+
 #include "ui_qgsgrasydialogbase.h"
-#include "qgsrangerenderitem.h"
 #include "qgssisydialog.h"
-#include <QDialog>
 #include <map>
 
-class QgsGraSyExtensionWidget;
 class QgsVectorLayer;
-class Q3ScrollView;
+
 
 class QgsGraSyDialog: public QDialog, private Ui::QgsGraSyDialogBase
 {

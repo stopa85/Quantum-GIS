@@ -16,17 +16,17 @@
  *                                                                         *
  ***************************************************************************/
  /* $Id$ */
+
 #ifndef QGSDLGVECTORLAYERPROPERTIES
 #define QGSDLGVECTORLAYERPROPERTIES
-#include "ui_qgsdlgvectorlayerpropertiesbase.h"
-#include <QDialog>
-#include "qgsrenderer.h"
-#include "qpixmap.h"
-#include "qlineedit.h"
 
-class QgsVectorLayer;
-class QgsLabelDialog;
+#include "ui_qgsdlgvectorlayerpropertiesbase.h"
+#include "qgsrenderer.h"
+
 class QgsAttributeActionDialog;
+class QgsLabelDialog;
+class QgsVectorLayer;
+
 
 class QgsDlgVectorLayerProperties : public QDialog, private Ui::QgsDlgVectorLayerPropertiesBase{
   Q_OBJECT
@@ -63,13 +63,13 @@ class QgsDlgVectorLayerProperties : public QDialog, private Ui::QgsDlgVectorLaye
   //
 
 
-  void pbnCancel_clicked();
-  void pbnOK_clicked();
-  void pbnApply_clicked();
-  void btnHelp_clicked();
-  void pbnQueryBuilder_clicked();
-  void pbnIndex_clicked();
-  void pbnChangeSpatialRefSys_clicked();
+  void on_pbnCancel_clicked();
+  void on_pbnOK_clicked();
+  void on_pbnApply_clicked();
+  void on_btnHelp_clicked();
+  void on_pbnQueryBuilder_clicked();
+  void on_pbnIndex_clicked();
+  void on_pbnChangeSpatialRefSys_clicked();
 
   protected:
   QgsVectorLayer *layer;
