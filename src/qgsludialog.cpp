@@ -17,7 +17,6 @@
 /* $Id$ */
 
 #include "qgsludialog.h"
-//#include <qlineedit.h>
 
 
 QgsLUDialog::QgsLUDialog(QWidget *parent, const char *name, bool modal)

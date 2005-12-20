@@ -15,22 +15,15 @@
  *                                                                         *
  ***************************************************************************/
 /* $Id$ */
+
 #include "qgsuvaldialog.h"
-#include "qgsvectordataprovider.h"
-#include "qgsvectorlayer.h"
-// #include "qgsdlgvectorlayerproperties.h"
 #include "qgsfeature.h"
 #include "qgsfeatureattribute.h"
-#include "qgsuniquevalrenderer.h"
-// #include "qgssisydialog.h"
 #include "qgssymbol.h"
-// #include "qgsrenderitem.h"
-// #include "qgsuniquevalrenderer.h"
-// #include <q3widgetstack.h>
-// #include <q3listbox.h>
-// #include <QComboBox>
-// #include <qpainter.h>
-// #include <list>
+#include "qgsuniquevalrenderer.h"
+#include "qgsvectordataprovider.h"
+#include "qgsvectorlayer.h"
+
 
 QgsUValDialog::QgsUValDialog(QgsVectorLayer* vl): QDialog(), mVectorLayer(vl), sydialog(vl)
 {
