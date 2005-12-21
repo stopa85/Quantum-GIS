@@ -18,46 +18,32 @@
 /* $Id$ */
 
 #include "qgsprojectproperties.h"
-#include "qgscsexception.h"
-#include "qgsprojectionselector.h"
-#include "qgscontexthelp.h"
 
 //qgis includes
-#include "qgsconfig.h"
-#include "qgsproject.h"
+#include "qgscontexthelp.h"
 #include "qgsmaplayer.h"
 #include "qgsmaplayerregistry.h"
+#include "qgsproject.h"
 #include "qgsrenderer.h"
-#include "qgis.h"
 
 //qt includes
-#include <QApplication>
-#include <QComboBox>
-#include <QFile>
-#include <QTextEdit>
-#include <QGroupBox>
-#include <QLineEdit>
-#include <QMessageBox>
-#include <QString>
-#include <QSpinBox>
-#include <QColor>
-#include <QPushButton>
-#include <QRadioButton>
-#include <QToolButton>
-#include <QCheckBox>
-#include <QRegExp>
-#include <QListView>
-#include <QProgressDialog> 
-#include <QTabWidget>
+#include <QColorDialog>
 
 //stdc++ includes
 #include <iostream>
-#include <cstdlib>
+
+
 // set the default coordinate system
 //XXX this is not needed? : static const char* defaultWktKey = "Lat/Long - WGS 84";
   QgsProjectProperties::QgsProjectProperties(QWidget *parent, const char *name, bool modal)
-: QgsProjectPropertiesBase()
+: QDialog(parent, name, modal)
 {
+  setupUi(this);
+  connect(btnGrpMapUnits, SIGNAL(clicked(int)), this, SLOT(mapUnitChange(int)));
+  connect(buttonApply, SIGNAL(clicked()), this, SLOT(apply()));
+  connect(buttonCancel, SIGNAL(clicked()), this, SLOT(reject()));
+  connect(buttonOk, SIGNAL(clicked()), this, SLOT(accept()));
+
   QGis::units myUnit = QgsProject::instance()->mapUnits();
   setMapUnits(myUnit);
   title(QgsProject::instance()->title());
@@ -301,7 +287,26 @@ void QgsProjectProperties::showProjectionsTab()
 {
   tabWidget2->setCurrentPage(1);
 }
-void QgsProjectProperties::pbnHelp_clicked()
+
+void QgsProjectProperties::on_pbnDigitisedLineColour_clicked()
+{
+  QColor color = QColorDialog::getColor(pbnDigitisedLineColour->paletteBackgroundColor(),this);
+  if (color.isValid())
+  {
+    pbnDigitisedLineColour->setPaletteBackgroundColor(color);
+  }
+}
+
+void QgsProjectProperties::on_pbnSelectionColour_clicked()
+{
+  QColor color = QColorDialog::getColor(pbnSelectionColour->paletteBackgroundColor(),this);
+  if (color.isValid())
+  {
+    pbnSelectionColour->setPaletteBackgroundColor(color);
+  }
+}
+
+void QgsProjectProperties::on_pbnHelp_clicked()
 {
   std::cout << "running help" << std::endl; 
   QgsContextHelp::run(context_id);

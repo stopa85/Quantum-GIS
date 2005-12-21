@@ -12,10 +12,9 @@
 #ifndef QGSCUSTOMPROJECTIONDIALOG_H
 #define QGSCUSTOMPROJECTIONDIALOG_H
 
-#include <qdir.h>
-//  #include <qnetworkprotocol.h>     not sure why needed - breaks portage to Qt4
-#include <ui_qgscustomprojectiondialogbase.h>
-#include <QDialog>
+#include "ui_qgscustomprojectiondialogbase.h"
+class QDir;
+
 /**
 The custom projection widget is used to define the projection family, ellipsoid and paremters needed by proj4 to assemble a customised projection definition. The resulting projection will be store in an sqlite backend.
 
@@ -30,20 +29,20 @@ public:
     //a recursive function to make a directory and its ancestors
     bool makeDir(QDir &theQDir);
 public slots:    
-    void pbnCalculate_clicked();
-    void pbnHelp_clicked();
-    void pbnClose_clicked();
-    void pbnDelete_clicked();
+    void on_pbnCalculate_clicked();
+    void on_pbnHelp_clicked();
+    void on_pbnClose_clicked();
+    void on_pbnDelete_clicked();
     //
     // Database navigation controles
     //
     long getRecordCount();
-    void pbnFirst_clicked();
-    void pbnPrevious_clicked();
-    void pbnNext_clicked();
-    void pbnLast_clicked();
-    void pbnNew_clicked();
-    void pbnSave_clicked();
+    void on_pbnFirst_clicked();
+    void on_pbnPrevious_clicked();
+    void on_pbnNext_clicked();
+    void on_pbnLast_clicked();
+    void on_pbnNew_clicked();
+    void on_pbnSave_clicked();
 
     //
     // Contol population

@@ -16,28 +16,30 @@
  *                                                                         *
  ***************************************************************************/
 /* $Id$ */
-#include <qsettings.h>
-#include <QComboBox>
-#include <qcheckbox.h>
-#include <qspinbox.h>
-#include <QFileDialog>
-#include <qradiobutton.h>
-#include <qapplication.h>
-#include <q3textbrowser.h>
-#include <sqlite3.h>
-#include <cassert>
 #include "qgsoptions.h"
-#include "qgisapp.h"
-#include "qgssvgcache.h"
 #include "qgis.h"
+#include "qgisapp.h"
 #include "qgslayerprojectionselector.h"
+#include "qgssvgcache.h"
+#include <QFileDialog>
+#include <QSettings>
+#include <cassert>
+#include <iostream>
+#include <sqlite3.h>
 /**
  * \class QgsOptions - Set user options and preferences
  * Constructor
  */
 QgsOptions::QgsOptions(QWidget *parent, const char *name, bool modal) :
-  QgsOptionsBase()
+  QDialog(parent, name, modal)
 {
+  setupUi(this);
+  connect(cmbTheme, SIGNAL(activated(const QString&)), this, SLOT(themeChanged(const QString&)));
+  connect(cmbTheme, SIGNAL(highlighted(const QString&)), this, SLOT(themeChanged(const QString&)));
+  connect(cmbTheme, SIGNAL(textChanged(const QString&)), this, SLOT(themeChanged(const QString&)));
+  connect(buttonOk, SIGNAL(clicked()), this, SLOT(saveOptions()));
+  connect(buttonCancel, SIGNAL(clicked()), this, SLOT(reject()));
+
   qparent = parent;
   // read the current browser and set it
   QSettings settings;
@@ -143,10 +145,11 @@ void QgsOptions::saveOptions()
 }
 
 
-void QgsOptions::cbxHideSplash_toggled( bool )
+void QgsOptions::on_cbxHideSplash_toggled( bool )
 {
 
 }
+
 void QgsOptions::addTheme(QString item)
 {
   cmbTheme->insertItem(item);
@@ -160,7 +163,7 @@ void QgsOptions::setCurrentTheme()
   cmbTheme->setCurrentText(settings.readEntry("/Themes","default"));
 }
 
-void QgsOptions::findBrowser()
+void QgsOptions::on_btnFindBrowser_clicked()
 {
   QString filter;
 #ifdef WIN32
@@ -180,7 +183,7 @@ void QgsOptions::findBrowser()
 }
 
 
-void QgsOptions::pbnSelectProjection_clicked()
+void QgsOptions::on_pbnSelectProjection_clicked()
 {
   QSettings settings;
   QgsLayerProjectionSelector * mySelector = new QgsLayerProjectionSelector(this);
