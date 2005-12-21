@@ -18,9 +18,7 @@
 /* $Id$ */
 #ifndef QGSLAYERPROJECTIONSELECTOR_H
 #define QGSLAYERPROJECTIONSELECTOR_H
-class QString;
 #include "ui_qgslayerprojectionselectorbase.h"
-#include <QDialog>
 /**
  * \class QgsLayerProjectionSelector
  * \brief Set Projection system for a layer
@@ -37,7 +35,6 @@ class QgsLayerProjectionSelector :public QDialog, private Ui::QgsLayerProjection
     ~QgsLayerProjectionSelector();
 
  public slots:
-      void pbnOK_clicked();
       QString getCurrentProj4String();
       long getCurrentSRSID();
       void setSelectedSRSName(QString theName);

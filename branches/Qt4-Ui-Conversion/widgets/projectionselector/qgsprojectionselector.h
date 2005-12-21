@@ -11,16 +11,12 @@
 #define QGSPROJECTIONSELECTOR_H
 
 #include "ui_qgsprojectionselectorbase.h"
-#include <QDialog>
-#include <qgis.h>
-#include <qstring.h>
-#include <q3listview.h>
 
 
 /**
   @author Tim Sutton
   */
-class QgsProjectionSelector: public QDialog, private Ui::QgsProjectionSelectorBase
+class QgsProjectionSelector: public QWidget, private Ui::QgsProjectionSelectorBase
 {
   Q_OBJECT
     public:
@@ -42,14 +38,14 @@ class QgsProjectionSelector: public QDialog, private Ui::QgsProjectionSelectorBa
        */
       const QString stringSQLSafe(const QString theSQL);
 
-      public slots:
-          void setSelectedSRSName(QString theSRSName);
+    public slots:
+      void setSelectedSRSName(QString theSRSName);
       QString getSelectedName();
       void setSelectedSRSID(long theSRSID);
       QString getCurrentProj4String();
       long getCurrentSRID(); //posgis style projection identifier
       long getCurrentSRSID();//qgis projection identfier
-      void pbnFind_clicked();
+      void on_pbnFind_clicked();
 
     private:
 
@@ -65,15 +61,18 @@ class QgsProjectionSelector: public QDialog, private Ui::QgsProjectionSelectorBa
       //! File name of the sqlite3 database
       QString mSrsDatabaseFileName;
 
-      /**private handler for when user selects a cs
-       *it will cause wktSelected and sridSelected events to be spawned
-       */
-      void coordinateSystemSelected(Q3ListViewItem*);
       /** 
        * Utility method used in conjunction with name based searching tool 
        */
       long getLargestSRSIDMatch(QString theSql);
-signals:
+
+    private slots:
+      /**private handler for when user selects a cs
+       *it will cause wktSelected and sridSelected events to be spawned
+       */
+      void coordinateSystemSelected(Q3ListViewItem*);
+
+    signals:
       void sridSelected(QString theSRID);
       //! Refresh any listening canvases
       void refresh();
