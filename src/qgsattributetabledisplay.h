@@ -19,15 +19,12 @@
 
 #ifndef QGSATTRIBUTETABLEDISPLAY_H
 #define QGSATTRIBUTETABLEDISPLAY_H
+
 #include "ui_qgsattributetablebase.h"
-#include <QDialog>
 #include <vector>
-//Added by qt3to4:
-#include <Q3PopupMenu>
 
 class QgsAttributeTable;
 class QgsVectorLayer;
-class Q3PopupMenu;
 
 /**
   *@author Gary E.Sherman
@@ -45,12 +42,14 @@ class QgsAttributeTableDisplay:public QDialog, private Ui::QgsAttributeTableBase
     QgsVectorLayer* mLayer;
     
     void doSearch(const QString& searchString);
-    
+
+    virtual void closeEvent(QCloseEvent* ev);
+
     /** array of feature IDs that match last searched condition */
     std::vector<int> mSearchIds;
 
-    protected slots:
-      void deleteAttributes();
+  protected slots:
+    void deleteAttributes();
     void addAttribute();
     void startEditing();
     void stopEditing();
@@ -61,6 +60,9 @@ class QgsAttributeTableDisplay:public QDialog, private Ui::QgsAttributeTableBase
     void search();
     void advancedSearch();
     void searchShowResultsChanged(int item);
+
+  signals:
+    void deleted();
 };
 
 #endif
