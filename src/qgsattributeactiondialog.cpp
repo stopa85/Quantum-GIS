@@ -33,6 +33,16 @@ QgsAttributeActionDialog::QgsAttributeActionDialog(QgsAttributeAction* actions,
   QWidget(parent), mActions(actions)
 {
   setupUi(this);
+  connect(attributeActionTable, SIGNAL(clicked(int,int,int,const QPoint&)),
+    this, SLOT(rowSelected(int,int,int,const QPoint&)));
+  connect(moveUpButton, SIGNAL(clicked()), this, SLOT(moveUp()));
+  connect(moveDownButton, SIGNAL(clicked()), this, SLOT(moveDown()));
+  connect(removeButton, SIGNAL(clicked()), this, SLOT(remove()));
+  connect(browseButton, SIGNAL(clicked()), this, SLOT(browse()));
+  connect(insertButton, SIGNAL(clicked()), this, SLOT(insert()));
+  connect(updateButton, SIGNAL(clicked()), this, SLOT(update()));
+  connect(insertFieldButton, SIGNAL(clicked()), this, SLOT(insertField()));
+
   init();
   // Populate the combo box with the field names. Will the field names
   // change? If so, they need to be passed into the init() call, or
