@@ -14,7 +14,7 @@
  *                                                                         *
  ***************************************************************************/
 /* $Id$ */
-
+#include <iostream>
 #include "qgslabeldialog.h"
 #include "qgsfield.h"
 #include "qgslabel.h"
