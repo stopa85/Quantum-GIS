@@ -24,8 +24,7 @@ ui_%.h: %.ui
 
 
 qgis_help_MOC = qgshelpserver.moc.cpp \
-								qgshelpviewer.moc.cpp \
-								qgshelpviewerbase.moc.cpp
+				qgshelpviewer.moc.cpp 
 
 qgis_help_UI = ui_qgshelpviewerbase.h 
 
