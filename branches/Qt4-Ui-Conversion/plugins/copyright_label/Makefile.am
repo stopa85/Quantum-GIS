@@ -21,7 +21,7 @@ ui_%.h: %.ui
 	$(UIC) -o $@ $<
 
 %.qrc.cpp: %.qrc
-	rcc -o $@ $<
+	$(RCC) -o $@ $<
 
 copyrightlabelplugin_la_SOURCES =  plugin.cpp \
 						plugin.h \
