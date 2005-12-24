@@ -20,19 +20,28 @@ plugin_LTLIBRARIES = copyrightlabelplugin.la
 ui_%.h: %.ui 
 	$(UIC) -o $@ $<
 
+%.qrc.cpp: %.qrc
+	rcc -o $@ $<
+
 copyrightlabelplugin_la_SOURCES =  plugin.cpp \
-			      plugin.h \
-			      plugingui.cpp \
-			      plugingui.h \
-			      $(plugin_UI)\
-			      $(plugin_MOC)
+						plugin.h \
+						plugingui.cpp \
+						plugingui.h \
+						$(plugin_UI)\
+						$(plugin_MOC) \
+						$(plugin_QRC) \
+						$(plugin_RES)
 
 plugin_MOC = plugin.moc.cpp \
-	     plugingui.moc.cpp 
+			 plugingui.moc.cpp 
 
 plugin_UI = ui_pluginguibase.h 
 
 plugin_UIC = pluginguibase.ui
+
+plugin_RES = copyright_plugin.qrc.cpp
+
+plugin_QRC = copyright_plugin.qrc
 
 # UI dependencies      
 pluginguibase.cpp: pluginguibase.h pluginguibase.ui
