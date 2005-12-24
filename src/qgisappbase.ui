@@ -48,7 +48,7 @@
       <widget class="QSplitter" name="legendOverviewSplit" >
        <property name="minimumSize" >
         <size>
-         <width>100</width>
+         <width>200</width>
          <height>0</height>
         </size>
        </property>
