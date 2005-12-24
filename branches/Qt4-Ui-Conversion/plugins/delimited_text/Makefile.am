@@ -19,6 +19,8 @@ plugindir = ${pkglibdir}
 ui_%.h: %.ui 
 	$(UIC) -o $@ $<
 
+%.qrc.cpp: %.qrc
+	$(RCC) -o $@ $<
 
 # DelimitedTextLayer below to be replaced with the name of the plugin
 plugin_LTLIBRARIES = delimitedtextplugin.la
@@ -30,17 +32,21 @@ plugin_UI = ui_qgsdelimitedtextpluginguibase.h
 
 plugin_UIC = qgsdelimitedtextpluginguibase.ui
 
+plugin_QRC = delimited_text.qrc
+ 
+plugin_RES = delimited_text.qrc.cpp
+
 delimitedtextplugin_la_SOURCES =  qgsdelimitedtextplugin.cpp	\
 			      	       qgsdelimitedtextplugin.h		\
 				       qgsdelimitedtextplugingui.cpp	\
 				       qgsdelimitedtextplugingui.h	\
 				       $(plugin_UI)			\
-				       $(plugin_MOC)
+				       $(plugin_MOC) \
+							 $(plugin_QRC) \
+							 $(plugin_RES)
 
-qgsdelimitedtextpluginguibase.cpp: qgsdelimitedtextpluginguibase.h qgsdelimitedtextpluginguibase.ui
 
-
-BUILT_SOURCES = $(plugin_MOC) $(plugin_UI)
+BUILT_SOURCES = $(plugin_MOC) $(plugin_UI) $(plugin_RES)
 
 
 
