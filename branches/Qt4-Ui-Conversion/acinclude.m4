@@ -241,6 +241,11 @@ if test $QT_MAJOR = "4" ; then
   if test x$UIC = x ; then
     AC_MSG_ERROR([*** uic must be in path])
   fi
+  # check for rcc
+  AC_PATH_PROG(RCC, rcc, , [$PATH:$QTDIR/bin])
+  if test x$RCC = x ; then
+    AC_MSG_ERROR([*** rcc must be in path])
+  fi
 fi
 
 # qembed is the Qt data embedding utility.
