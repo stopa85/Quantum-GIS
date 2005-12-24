@@ -27,12 +27,12 @@ public:
     QgsCopyrightLabelPluginGui();
     QgsCopyrightLabelPluginGui( QWidget* parent = 0, const char* name = 0, bool modal = FALSE, Qt::WFlags fl = 0 );
     ~QgsCopyrightLabelPluginGui();
-    void pbnOK_clicked();
-    void pbnCancel_clicked();    
     void setText(QString);
     void setPlacement(QString);
 
 public slots:
+    void on_pbnOK_clicked();
+    void on_pbnCancel_clicked();    
     void setEnabled(bool); 
      
 private:

@@ -53,7 +53,7 @@
       </size>
      </property>
      <property name="pixmap" >
-      <pixmap/>
+      <pixmap resource="copyright_plugin.qrc" >:/copyright.png</pixmap>
      </property>
      <property name="scaledContents" >
       <bool>true</bool>
@@ -263,6 +263,8 @@
    <pixmap></pixmap>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="copyright_plugin.qrc" />
+ </resources>
  <connections/>
 </ui>
