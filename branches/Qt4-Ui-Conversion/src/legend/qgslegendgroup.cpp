@@ -30,6 +30,7 @@ QgsLegendGroup::QgsLegendGroup(QTreeWidgetItem * theItem ,QString theName)
 #else
   QString pkgDataPath(PKGDATAPATH);
 #endif
+  setFlags(Qt::ItemIsEditable | Qt::ItemIsEnabled | Qt::ItemIsSelectable);
   QIcon myIcon(pkgDataPath+QString("/images/icons/folder.png"));
   setIcon(0, myIcon);
 }
@@ -42,7 +43,22 @@ QgsLegendGroup::QgsLegendGroup(QTreeWidget* theListView, QString theString)
 #else
   QString pkgDataPath(PKGDATAPATH);
 #endif
+  setFlags(Qt::ItemIsEditable | Qt::ItemIsEnabled | Qt::ItemIsSelectable);
   QIcon myIcon(pkgDataPath+QString("/images/icons/folder.png"));
+  setIcon(0, myIcon);
+}
+
+QgsLegendGroup::QgsLegendGroup(QString name): QgsLegendItem()
+{
+  mType=LEGEND_GROUP;
+#if defined(Q_OS_MACX) || defined(WIN32)
+  QString pkgDataPath(QCoreApplication::applicationDirPath()+QString("/share/qgis"));
+#else
+  QString pkgDataPath(PKGDATAPATH);
+#endif
+  setFlags(Qt::ItemIsEditable | Qt::ItemIsEnabled | Qt::ItemIsSelectable);
+  QIcon myIcon(pkgDataPath+QString("/images/icons/folder.png"));
+  setText(0, name);
   setIcon(0, myIcon);
 }
 

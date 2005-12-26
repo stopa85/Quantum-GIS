@@ -28,7 +28,6 @@ class QgisApp;
 class QgsLegendItem;
 class QgsMapLayer;
 class QgsMapCanvas;
-class QCheckBox;
 class QDomDocument;
 class QDomNode;
 class QMouseEvent;
@@ -100,14 +99,8 @@ class QgsLegend : public QTreeWidget
   Else, 0 is returned.*/
   QgsMapLayer* currentLayer();
 
-  /**Writes the content of the legend using the key system of QgsProject*/
-  void saveToProject();
-
   /**Writes the content of the legend to a project file*/
   bool writeXML(QDomNode & layer_node, QDomDocument & document);
-
-  /**Restores the legend from a project file using the key system of QgsProject*/
-  void restoreFromProject();
 
   /**Restores the legend from a project file*/
   bool readXML(QDomNode& legendnode);
@@ -204,7 +197,8 @@ protected:
    * @return void
    */  
   void mouseReleaseEvent(QMouseEvent * e);
-  
+  void mouseDoubleClickEvent(QMouseEvent* e);
+
     /**Stores the necessary information about the position of an item in the hierarchy. Afterwards, 
 this item may be moved back to the original position with resetToInitialPosition()*/
   void storeInitialPosition(QTreeWidgetItem* li);
@@ -214,8 +208,6 @@ this item may be moved back to the original position with resetToInitialPosition
 
   private slots:
 
-  /**Calls 'handleDoubleClickEvent' on the item*/
-  void handleDoubleClickEvent(QTreeWidgetItem* item);
   /**Calls 'handleRightClickEvent' on the item*/
   void handleRightClickEvent(QTreeWidgetItem* item, const QPoint& position);
   /**Removes the current legend group*/
@@ -230,6 +222,10 @@ this item may be moved back to the original position with resetToInitialPosition
   void expandAll();
   /**Sets all listview items to closed*/
   void collapseAll();
+  /**Just for a test*/
+  void handleItemChange(QTreeWidgetItem* item, int row);
+  /**Calls openPersistentEditor for the current item*/
+  void openEditor();
 
 private:
 
@@ -292,8 +288,9 @@ private:
   /**Pointer to the main canvas. Used for requiring repaints in case of legend changes*/
   QgsMapCanvas* mMapCanvas;
 
-  /**Moves a checkbox to a position next to its listview*/
-  void placeCheckBox(QTreeWidgetItem* litem, QCheckBox* cbox);
+  /**Map that keeps track of which checkboxes are in which check state. This is necessary because QTreeView does not emit 
+     a signal for check state changes*/
+  std::map<QTreeWidgetItem*, Qt::CheckState> mStateOfCheckBoxes;
 
 signals:
   void zOrderChanged(QgsLegend * lv);
