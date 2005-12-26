@@ -28,7 +28,7 @@
    <item row="1" column="0" >
     <widget class="QGroupBox" name="groupBox" >
      <property name="title" >
-      <string>GroupBox</string>
+      <string>Parameters</string>
      </property>
      <layout class="QGridLayout" >
       <property name="margin" >
@@ -311,5 +311,38 @@
  <layoutdefault spacing="6" margin="11" />
  <pixmapfunction>qPixmapFromMimeSource</pixmapfunction>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>buttonOk</sender>
+   <signal>clicked()</signal>
+   <receiver>QgsDlgPgBufferBase</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>371</x>
+     <y>307</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>140</x>
+     <y>298</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonCancel</sender>
+   <signal>clicked()</signal>
+   <receiver>QgsDlgPgBufferBase</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>480</x>
+     <y>307</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>237</x>
+     <y>305</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>
