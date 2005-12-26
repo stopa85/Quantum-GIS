@@ -237,7 +237,6 @@ static void setTitleBarText_( QWidget & qgisApp )
   createOverview();
   createLegend();
   createDB();    
-  restoreWindowState();
 
   // register all GDAL and OGR plug-ins
   // Should this be here? isnt it the job of the provider? Tim
@@ -306,6 +305,11 @@ static void setTitleBarText_( QWidget & qgisApp )
 
   // Do this last in the ctor to ensure that all members are instantiated properly
   setupConnections();
+  //
+  // Please make sure this is the last thing the ctor does so that we can ensure teh 
+  // widgets are all initialised before trying to restore their state.
+  //
+  restoreWindowState();
 } // QgisApp ctor
 
 
