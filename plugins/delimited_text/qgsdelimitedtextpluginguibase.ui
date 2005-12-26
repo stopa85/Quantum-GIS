@@ -35,7 +35,7 @@
    <item rowspan="8" row="0" column="0" colspan="2" >
     <widget class="QLabel" name="pixmapLabel1" >
      <property name="pixmap" >
-      <pixmap/>
+      <pixmap resource="delimited_text.qrc" >:/new/prefix1/delimited_text.png</pixmap>
      </property>
      <property name="scaledContents" >
       <bool>true</bool>
@@ -442,6 +442,25 @@
   <tabstop>pbnCancel_2</tabstop>
   <tabstop>teInstructions</tabstop>
  </tabstops>
- <resources/>
- <connections/>
+ <resources>
+  <include location="delimited_text.qrc" />
+ </resources>
+ <connections>
+  <connection>
+   <sender>pbnCancel</sender>
+   <signal>clicked()</signal>
+   <receiver>QgsDelimitedTextPluginGuiBase</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>503</x>
+     <y>389</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>525</x>
+     <y>408</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>
