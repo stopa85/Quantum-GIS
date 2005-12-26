@@ -432,7 +432,7 @@ BUILT_SOURCES = $(qgis_MOC) $(qgis_UIHEADERS) $(qgis_YACC) \
 					$(postgresMOC) $(postgresUIMOC) $(postgresUIHEADERS) $(postgresUISOURCES)
 
 
-qgis_LDADD = $(LDADD) $(QT_LDADD) $(GDAL_LDADD) $(PG_LIB) $(GEOS_LDADD) $(PYTHON_LIB) -lproj -lsqlite3 libqgis.la 
+qgis_LDADD = raster/libqgsraster.la legend/libqgis_legend.la $(LDADD) $(QT_LDADD) $(GDAL_LDADD) $(PG_LIB) $(GEOS_LDADD) $(PYTHON_LIB) -lproj -lsqlite3 libqgis.la 
 if HAVE_QTMAC
 qgis_LDFLAGS = -framework ApplicationServices
 else
@@ -486,7 +486,6 @@ libqgisHEADERS =							\
 		qgsproviderextentcalcevent.h		\
 		qgsproviderregistry.h				\
 		qgsrangerenderitem.h				\
-		qgsrasterlayer.h					\
 		qgsrect.h							\
 		qgsrenderer.h						\
 		qgsrenderitem.h						\
@@ -555,7 +554,6 @@ libqgis_la_MOC =							\
 		qgsmaplayerregistry.moc.cpp			\
 		qgsmapoverviewcanvas.moc.cpp		\
 		qgspointstylewidget.moc.cpp			\
-		qgsrasterlayer.moc.cpp				\
 		qgsrunprocess.moc.cpp				\
 		qgsvectorlayer.moc.cpp \
 		omggdal.moc.cpp 
@@ -606,7 +604,6 @@ libqgis_la_SOURCES =						\
 		qgsproviderextentcalcevent.cpp		\
 		qgsproviderregistry.cpp				\
 		qgsrangerenderitem.cpp				\
-		qgsrasterlayer.cpp					\
 		qgsrect.cpp							\
 		qgsrenderer.cpp						\
 		qgsrenderitem.cpp					\

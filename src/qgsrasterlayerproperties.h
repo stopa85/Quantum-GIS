@@ -22,7 +22,7 @@
 #include <QDialog>
 #include "ui_qgsrasterlayerpropertiesbase.h"
 #include "qgsmaplayer.h"
-#include "qgsrasterlayer.h"
+#include "raster/qgsrasterlayer.h"
 
 
 /**Property sheet for a raster map layer
