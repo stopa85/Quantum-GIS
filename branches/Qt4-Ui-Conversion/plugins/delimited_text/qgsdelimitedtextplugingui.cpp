@@ -28,17 +28,16 @@
 #include <QTextStream>
 #include "../../src/qgisiface.h"
 
-QgsDelimitedTextPluginGui::QgsDelimitedTextPluginGui() : QgsDelimitedTextPluginGuiBase()
+QgsDelimitedTextPluginGui::QgsDelimitedTextPluginGui() : QDialog()
 {
+  setupUi(this);
 
 }
 
 QgsDelimitedTextPluginGui::QgsDelimitedTextPluginGui( QgisIface * _qI, QWidget* parent , const char* name , bool modal , Qt::WFlags fl  ) 
-: QgsDelimitedTextPluginGuiBase(  ), qI(_qI)
-// Commented out by tim for Qt4 ui port FIXME
-// 
-//: QgsDelimitedTextPluginGuiBase( parent, name, modal, fl ), qI(_qI)
+: QDialog(parent, name, modal, fl  ), qI(_qI)
 {
+  setupUi(this);
   // at startup, fetch the last used delimiter and directory from
   // settings
   QSettings settings("QuantumGIS", "qgis");
@@ -49,8 +48,20 @@ QgsDelimitedTextPluginGui::QgsDelimitedTextPluginGui( QgisIface * _qI, QWidget* 
 QgsDelimitedTextPluginGui::~QgsDelimitedTextPluginGui()
 {
 }
-
-void QgsDelimitedTextPluginGui::pbnOK_clicked()
+/** Autoconnected slots **/
+void QgsDelimitedTextPluginGui::on_pbnHelp_clicked()
+{
+  help();
+}
+void QgsDelimitedTextPluginGui::on_btnBrowseForFile_clicked()
+{
+  getOpenFileName();
+}
+void QgsDelimitedTextPluginGui::on_pbnParse_clicked()
+{
+  updateFieldLists();
+}
+void QgsDelimitedTextPluginGui::on_pbnOK_clicked()
 {
   if(txtLayerName->text().length() > 0)
   {
