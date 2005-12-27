@@ -16,42 +16,20 @@
 #ifndef QGSCOMPOSERSCALEBAR_H
 #define QGSCOMPOSERSCALEBAR_H
 
-#include <qwidget.h>
-#include <q3canvas.h>
-#include <qobject.h>
-
-#include "qgsrect.h"
-
-#include "qgscomposer.h"
-#include "qgscomposition.h"
-#include "qgscomposeritem.h"
-//Added by qt3to4:
-#include <QPixmap>
-#include <Q3PointArray>
-#include <Q3PopupMenu>
-
 #include "ui_qgscomposerscalebarbase.h"
-
-class Q3CanvasItem;
-class Q3CanvasRectangle;
-class QPainter;
-class QWidget;
-class QDomNode;
-class QDomDocument;
-class QPixmap;
-class QImage;
-class QFont;
-class QPen;
-class QRect;
-class Q3PopupMenu;
-
+#include "qgscomposeritem.h"
+#include <Q3CanvasPolygonalItem>
+#include <Q3PointArray>
+#include <QRect>
 
 class QgsMapCanvas;
-class QgsRect;
-class QgsMapToPixel;
 class QgsComposition;
-class QgsComposerMap;
-
+class QBrush;
+class QDomNode;
+class QDomDocument;
+class QFont;
+class QPainter;
+class QPen;
 
 /** \class QgsComposerScalebar
  *  \brief Object representing map window. 
@@ -108,24 +86,27 @@ public:
     /** \brief Set values in GUI to current values */
     void setOptions ( void );
 
+    // Move to position
+    void moveBy ( double x, double y );
+
 public slots:
     // Open font dialog
-    void changeFont ( void );
+    void on_mFontButton_clicked ( void );
 
     // Title changed
-    void unitLabelChanged ( void );
+    void on_mUnitLabelLineEdit_returnPressed ( void );
 
     // Size changed
-    void sizeChanged ( void );
+    void on_mLineWidthSpinBox_returnPressed ( void );
+    void on_mMapUnitsPerUnitLineEdit_returnPressed ( void );
+    void on_mNumSegmentsLineEdit_returnPressed ( void );
+    void on_mSegmentLengthLineEdit_returnPressed ( void );
     
     // Called by GUI when map selection changed
-    void mapSelectionChanged ( int i );
+    void on_mMapComboBox_activated ( int i );
 
     // Called when map was changed
     void mapChanged ( int id );
-
-    // Move to position
-    void moveBy ( double x, double y );
 
 private:
     // Pointer to composition
@@ -169,6 +150,9 @@ private:
 
     // Margin
     int mMargin;
+
+    // Size changed
+    void sizeChanged ( void );
 };
 
 #endif
