@@ -261,6 +261,7 @@ void QgsGrassPlugin::initGui()
   // Add the toolbar
   toolBarPointer = new QToolBar((Q3MainWindow *) qgisMainWindowPointer, "GRASS");
   toolBarPointer->setLabel(tr("GRASS"));
+  toolBarPointer->setIconSize(QSize(24,24));
 
   // Add to the toolbar
   mAddVectorAction->addTo(toolBarPointer);
