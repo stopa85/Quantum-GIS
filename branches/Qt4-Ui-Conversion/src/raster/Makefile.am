@@ -14,7 +14,8 @@ libqgsraster_la_MOC =	\
 libqgsraster_la_SOURCES = qgsrasterbandstats.h \
 	qgsrasterpyramid.h \
 	qgsrasterlayer.cpp \
-	qgsrasterlayer.h
+	qgsrasterlayer.h \
+	$(libqgsraster_la_MOC)
 BUILT_SOURCES = $(libqgsraster_la_MOC) $(libqgsraster_la_SOURCES)
 libqgsraster_la_LDFLAGS = -no-undefined
 libqgsraster_la_CPPFLAGS = -I$(OMSRCDIR)
