@@ -37,8 +37,8 @@ class QgsGeomTypeDialog: public QDialog, private Ui::QgsGeomTypeDialogBase
   QString selectedFileFormat() const;
   
   protected slots:
-  void addAttribute();
-  void removeAttribute();
+  void on_mAddAttributeButton_clicked();
+  void on_mRemoveAttributeButton_clicked();
   
 };
 
