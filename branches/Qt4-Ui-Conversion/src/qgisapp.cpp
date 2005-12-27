@@ -690,6 +690,7 @@ void QgisApp::createToolBars()
   //
   // File Toolbar
   mFileToolBar = addToolBar(tr("File"));
+  mFileToolBar->setIconSize(QSize(24,24));
   mFileToolBar->setObjectName("FileToolBar");
   mFileToolBar->addAction(mActionFileNew);
   mFileToolBar->addAction(mActionFileNew);
@@ -700,6 +701,7 @@ void QgisApp::createToolBars()
   //
   // Layer Toolbar
   mLayerToolBar = addToolBar(tr("Manage Layers"));
+  mLayerToolBar->setIconSize(QSize(24,24));
   mLayerToolBar->setObjectName("LayerToolBar");
   mLayerToolBar->addAction(mActionAddNonDbLayer);
   mLayerToolBar->addAction(mActionAddRasterLayer);
@@ -717,11 +719,13 @@ void QgisApp::createToolBars()
   //
   // Help Toolbar
   mHelpToolBar = addToolBar(tr("Help"));
+  mHelpToolBar->setIconSize(QSize(24,24));
   mHelpToolBar->setObjectName("Help");
   mHelpToolBar->addAction(mActionHelpContents);
   //
   // Digitizing Toolbar
   mDigitizeToolBar = addToolBar(tr("Digitizing"));
+  mDigitizeToolBar->setIconSize(QSize(24,24));
   mDigitizeToolBar->setObjectName("Digitizing");
   mDigitizeToolBar->addAction(mActionCapturePoint);
   mDigitizeToolBar->addAction(mActionCaptureLine);
@@ -729,6 +733,7 @@ void QgisApp::createToolBars()
   //
   // Map Navigation Toolbar
   mMapNavToolBar = addToolBar(tr("Map Navigation"));
+  mMapNavToolBar->setIconSize(QSize(24,24));
   mMapNavToolBar->setObjectName("Map Navigation");
   mMapNavToolBar->addAction(mActionPan);
   mMapNavToolBar->addAction(mActionZoomIn);
@@ -741,6 +746,7 @@ void QgisApp::createToolBars()
   //
   // Attributes Toolbar
   mAttributesToolBar = addToolBar(tr("Attributes"));
+  mAttributesToolBar->setIconSize(QSize(24,24));
   mAttributesToolBar->setObjectName("Attributes");
   mAttributesToolBar->addAction(mActionIdentify);
   mAttributesToolBar->addAction(mActionSelect);
@@ -752,6 +758,7 @@ void QgisApp::createToolBars()
   //
   // Plugins Toolbar
   mPluginToolBar = addToolBar(tr("Plugins"));
+  mPluginToolBar->setIconSize(QSize(24,24));
   mPluginToolBar->setObjectName("Plugins");
 }
 
