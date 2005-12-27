@@ -18,7 +18,7 @@
 // includes
 #include "../../src/qgisapp.h"
 #include "../../src/qgsmaplayer.h"
-#include "../../src/qgsrasterlayer.h"
+#include <qgsrasterlayer.h>
 #include "../../src/qgisiface.h"
 #include "../../src/qgsmapcanvas.h"
 #include "../../src/qgsmaplayer.h"
