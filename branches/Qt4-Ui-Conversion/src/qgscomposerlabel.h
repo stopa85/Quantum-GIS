@@ -17,38 +17,18 @@
 #ifndef QGSCOMPOSERLABEL_H
 #define QGSCOMPOSERLABEL_H
 
-#include <qwidget.h>
-#include <q3canvas.h>
-#include <qobject.h>
-
-#include "qgsrect.h"
-
-#include "qgscomposer.h"
-#include "qgscomposition.h"
-#include "qgscomposeritem.h"
-//Added by qt3to4:
-#include <QPixmap>
-#include <Q3PointArray>
-
 #include "ui_qgscomposerlabelbase.h"
+#include "qgscomposeritem.h"
+#include <Q3CanvasPolygonalItem>
+#include <QFont>
+#include <QPen>
+#include <Q3PointArray>
+#include <QRect>
+#include <QString>
 
-class Q3CanvasItem;
-class Q3CanvasRectangle;
-class QPainter;
-class QWidget;
+class QgsComposition;
 class QDomNode;
 class QDomDocument;
-class QPixmap;
-class QImage;
-class QFont;
-class QPen;
-class QRect;
-
-
-class QgsMapCanvas;
-class QgsRect;
-class QgsMapToPixel;
-class QgsComposition;
 
 /** \class QgsComposerLabel 
  *  \brief Object representing label. 
@@ -96,12 +76,12 @@ public:
 
 public slots:
     // Open font dialog
-    void changeFont ( void );
+    void on_mFontButton_clicked();
 
-    void textChanged ( void );
+    void on_mTextLineEdit_returnPressed();
 
     // Box settings changed
-    void boxChanged ( void );
+    void on_mBoxCheckBox_clicked();
     
 private:
     // Pointer to composition

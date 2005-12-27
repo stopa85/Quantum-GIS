@@ -293,8 +293,7 @@ static void setTitleBarText_( QWidget & qgisApp )
   */
 
   // Map composer
-  //Disabled by Tim to get Qt UI ports to compile - FIXME
-  //mComposer = new QgsComposer(this);
+  mComposer = new QgsComposer(this);
 
   // now build vector file filter
   buildSupportedVectorFileFilter_( mVectorFileFilter );
