@@ -38,7 +38,6 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QGridLayout>
-#include <QHeaderView>
 #include <QImage>
 #include <QInputDialog>
 #include <QKeyEvent>
@@ -1041,13 +1040,6 @@ void QgisApp::createLegend()
 {
   //legend
   mMapLegend = new QgsLegend(this,NULL, "theMapLegend");
-  mMapLegend->setBackgroundColor(QColor(192, 192, 192));
-  mMapLegend->setMapCanvas(mMapCanvas);
-  mMapLegend->setColumnCount(1);
-  QStringList myList("Layers");
-  mMapLegend->setHeaderLabels(myList);
-  //added by Tim to hide the header - its unneccessary
-  mMapLegend->header()->setHidden(1);
   mMapLegend->setMapCanvas(mMapCanvas);
   QWhatsThis::add(mMapLegend, tr("Map legend that displays all the layers currently on the map canvas. Click on the check box to turn a layer on or off. Double click on a layer in the legend to customize its appearance and set other properties."));
   QVBoxLayout *myLegendLayout = new QVBoxLayout;
