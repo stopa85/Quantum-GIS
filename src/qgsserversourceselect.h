@@ -23,11 +23,8 @@
 
 #include <vector>
 #include <map>
-#include <utility>
 
-class Q3ListBoxItem;
 class QgisApp;
-
 class QgsWmsProvider;
 
 /*!
@@ -49,25 +46,8 @@ public:
     QgsServerSourceSelect(QgisApp *app=0, QWidget *parent = 0, const char *name = 0);
     //! Destructor
     ~QgsServerSourceSelect();
-    //! Opens the create connection dialog to build a new connection
-    void addNewConnection();
-    //! Opens a dialog to edit an existing connection
-    void editConnection();
-    //! Deletes the selected connection
-    void deleteConnection();
     //! Populate the connection list combo box
     void populateConnectionList();
-
-    /*! Connects to the database using the stored connection parameters. 
-    * Once connected, available layers are displayed.
-    */
-    void serverConnect();
-
-    //! Determines the layers the user selected and closes the dialog
-    void addLayers();
-
-    //! Signaled when a layer selection is changed.  Ensures that only one style is selected per layer.
-    void layerSelectionChanged();
 
     //! Connection name
     QString connName();
@@ -81,6 +61,26 @@ public:
 
     //! String containing the MIME type of the preferred image encoding
     QString selectedImageEncoding();
+
+public slots:
+
+    //! Opens the create connection dialog to build a new connection
+    void on_btnNew_clicked();
+    //! Opens a dialog to edit an existing connection
+    void on_btnEdit_clicked();
+    //! Deletes the selected connection
+    void on_btnDelete_clicked();
+
+    /*! Connects to the database using the stored connection parameters. 
+    * Once connected, available layers are displayed.
+    */
+    void on_btnConnect_clicked();
+
+    //! Determines the layers the user selected and closes the dialog
+    void on_btnAdd_clicked();
+
+    //! Signaled when a layer selection is changed.  Ensures that only one style is selected per layer.
+    void on_lstLayers_selectionChanged();
 
 private:
 
