@@ -108,6 +108,7 @@
 #include "qgsproject.h"
 #include "qgsprojectproperties.h"
 #include "qgsproviderregistry.h"
+#include "qgsrasterlayer.h"
 #include "qgsrasterlayerproperties.h"
 #include "qgsrect.h"
 #include "qgsserversourceselect.h"

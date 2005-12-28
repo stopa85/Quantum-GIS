@@ -383,7 +383,7 @@
              </sizepolicy>
             </property>
             <property name="text" >
-             <string>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;/head>&lt;body style=&quot;font-size:10pt;font-family:Arial&quot;>
+             <string>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;/head>&lt;body style=&quot;font-size:13pt;font-family:Lucida Grande&quot;>
 &lt;p style=&quot;margin-top:14px&quot; dir=&quot;ltr&quot;>&lt;span style=&quot;font-weight:600&quot;>Notes&lt;/span>&lt;/p>
 &lt;/body>&lt;/html>
 </string>
@@ -1061,8 +1061,8 @@
           </sizepolicy>
          </property>
          <property name="text" >
-          <string>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;/head>&lt;body style=&quot;font-size:10pt;font-family:Arial&quot;>
-&lt;p style=&quot;margin-top:18px&quot; dir=&quot;ltr&quot;>&lt;span style=&quot;font-size:18pt;font-weight:600&quot;>Description&lt;/span>&lt;/p>
+          <string>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;/head>&lt;body style=&quot;font-size:13pt;font-family:Lucida Grande&quot;>
+&lt;p style=&quot;margin-top:18px&quot; dir=&quot;ltr&quot;>&lt;span style=&quot;font-size:23pt;font-weight:600&quot;>Description&lt;/span>&lt;/p>
 &lt;p dir=&quot;ltr&quot;>Large resolution raster layers can slow navigation in QGIS. By creating lower resolution copies of the data (pyramids) performance can be considerably improved as QGIS selects the most suitable resolution to use depending on the level of zoom. You must have write access in the directory where the original data is stored to build pyramids. &lt;/p>
 &lt;p dir=&quot;ltr&quot;>&lt;span style=&quot;color:#ff0000&quot;>Please note that building pyramids may alter the original data file and once created they cannot be removed.&lt;/span>&lt;/p>
 &lt;p dir=&quot;ltr&quot;>&lt;span style=&quot;color:#ff0000&quot;>Please note that building pyramids could corrupt your image - always make a backup of your data first!&lt;/span>&lt;/p>
@@ -1275,27 +1275,6 @@
  <pixmapfunction></pixmapfunction>
  <customwidgets>
   <customwidget>
-   <class>Q3GroupBox</class>
-   <extends></extends>
-   <header>Qt3Support/Q3GroupBox</header>
-   <container>1</container>
-   <pixmap></pixmap>
-  </customwidget>
-  <customwidget>
-   <class>Q3TextEdit</class>
-   <extends></extends>
-   <header>q3textedit.h</header>
-   <container>0</container>
-   <pixmap></pixmap>
-  </customwidget>
-  <customwidget>
-   <class>Q3ButtonGroup</class>
-   <extends></extends>
-   <header>Qt3Support/Q3ButtonGroup</header>
-   <container>1</container>
-   <pixmap></pixmap>
-  </customwidget>
-  <customwidget>
    <class>Q3ListBox</class>
    <extends></extends>
    <header>q3listbox.h</header>
@@ -1309,7 +1288,221 @@
    <container>1</container>
    <pixmap></pixmap>
   </customwidget>
+  <customwidget>
+   <class>Q3TextEdit</class>
+   <extends></extends>
+   <header>q3textedit.h</header>
+   <container>0</container>
+   <pixmap></pixmap>
+  </customwidget>
+  <customwidget>
+   <class>Q3GroupBox</class>
+   <extends></extends>
+   <header>Qt3Support/Q3GroupBox</header>
+   <container>1</container>
+   <pixmap></pixmap>
+  </customwidget>
+  <customwidget>
+   <class>Q3ButtonGroup</class>
+   <extends></extends>
+   <header>Qt3Support/Q3ButtonGroup</header>
+   <container>1</container>
+   <pixmap></pixmap>
+  </customwidget>
  </customwidgets>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>rbtnSingleBand</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>grpBoxRGB</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>188</x>
+     <y>87</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>399</x>
+     <y>417</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>rbtnSingleBand</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>grpBoxRed</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>188</x>
+     <y>87</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>62</x>
+     <y>45</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>rbtnSingleBand</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>grpBoxGreen</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>188</x>
+     <y>87</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>62</x>
+     <y>45</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>rbtnSingleBand</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>grpBoxBlue</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>188</x>
+     <y>87</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>62</x>
+     <y>45</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>rbtnSingleBand</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>grpBoxGray</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>188</x>
+     <y>87</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>62</x>
+     <y>45</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>rbtnSingleBand</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>grpBoxGrayscale</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>188</x>
+     <y>87</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>623</x>
+     <y>417</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>rbtnThreeBand</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>grpBoxRGB</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>84</x>
+     <y>87</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>399</x>
+     <y>417</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>rbtnThreeBand</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>grpBoxRed</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>84</x>
+     <y>87</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>62</x>
+     <y>45</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>rbtnThreeBand</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>grpBoxGreen</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>84</x>
+     <y>87</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>62</x>
+     <y>45</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>rbtnThreeBand</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>grpBoxBlue</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>84</x>
+     <y>87</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>62</x>
+     <y>45</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>rbtnThreeBand</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>grpBoxGray</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>84</x>
+     <y>87</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>62</x>
+     <y>45</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>rbtnThreeBand</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>grpBoxGrayscale</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>84</x>
+     <y>87</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>623</x>
+     <y>417</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

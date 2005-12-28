@@ -18,42 +18,27 @@ email                : tim@linfiniti.com
 
 #include "qgsrasterlayerproperties.h"
 #include "qgslayerprojectionselector.h"
-#include "qgsrasterbandstats.h"
-#include "qgsrasterpyramid.h"
 #include "qgsproject.h"
-#include <qlabel.h>
-#include <qapplication.h>
-#include <qpixmap.h>
-#include <qimage.h>
-#include <qslider.h>
-#include <QComboBox>
-#include <qcheckbox.h>
-#include <q3groupbox.h>
-#include <qstring.h>
-#include <qradiobutton.h>
-#include <qlineedit.h>
-#include <q3table.h>
-#include <q3textedit.h>
-#include <qpainter.h>
-#include <qfont.h>
-#include <qtabwidget.h>
-#include <qwidget.h>
-#include <q3listview.h>
-#include <q3listbox.h>
-#include <q3textbrowser.h>
-#include <qspinbox.h>
-#include <q3pointarray.h>
-#include <qrect.h>
-#include <qglobal.h>
-#include <Q3ValueList>
+#include "qgsrasterbandstats.h"
+#include "qgsrasterlayer.h"
+
+#include <QPainter>
+#include <Q3PointArray>
+#include <iostream>
+
 const char * const ident = 
   "$Id$";
 
 
 QgsRasterLayerProperties::QgsRasterLayerProperties(QgsMapLayer *lyr, QWidget *parent, const char *name, bool modal)
-: QgsRasterLayerPropertiesBase(), 
+: QDialog(parent, name, modal), 
   rasterLayer( dynamic_cast<QgsRasterLayer*>(lyr) )
 {
+  setupUi(this);
+  connect(buttonApply, SIGNAL(clicked()), this, SLOT(apply()));
+  connect(buttonOk, SIGNAL(clicked()), this, SLOT(accept()));
+  connect(buttonCancel, SIGNAL(clicked()), this, SLOT(reject()));
+  connect(sliderTransparency, SIGNAL(valueChanged(int)), this, SLOT(sliderTransparency_valueChanged(int)));
 
   // set up the scale based layer visibility stuff....
   chkUseScaleDependentRendering->setChecked(lyr->scaleBasedVisibility());
@@ -246,7 +231,7 @@ QgsRasterLayerProperties::QgsRasterLayerProperties(QgsMapLayer *lyr, QWidget *pa
     leSpatialRefSys->setText(rasterLayer->coordinateTransform()->sourceSRS().proj4String());
   }
   //draw the histogram
-  //pbnHistRefresh_clicked();
+  //on_pbnHistRefresh_clicked();
 
   // update based on lyr's current state
   sync();  
@@ -447,7 +432,7 @@ void QgsRasterLayerProperties::sliderTransparency_valueChanged(int theValue)
   lblTransparencyPercent->setText(QString::number(myInt) + "%");
 }//sliderTransparency_valueChanged
 
-void QgsRasterLayerProperties::sliderMaxRed_valueChanged(int)
+void QgsRasterLayerProperties::on_sliderMaxRed_valueChanged(int)
 {
   //the 255- is used because a vertical qslider has its max value at the bottom and
   //we want it to appear to the user that the max value is at the top, so we invert its value
@@ -459,7 +444,7 @@ void QgsRasterLayerProperties::sliderMaxRed_valueChanged(int)
 }
 
 
-void QgsRasterLayerProperties::sliderMinRed_valueChanged(int)
+void QgsRasterLayerProperties::on_sliderMinRed_valueChanged(int)
 {
   //the 255- is used because a vertical qslider has its max value at the bottom and
   //we want it to appear to the user that the max value is at the top, so we invert its value
@@ -471,7 +456,7 @@ void QgsRasterLayerProperties::sliderMinRed_valueChanged(int)
 }
 
 
-void QgsRasterLayerProperties::sliderMaxBlue_valueChanged(int)
+void QgsRasterLayerProperties::on_sliderMaxBlue_valueChanged(int)
 {
   //the 255- is used because a vertical qslider has its max value at the bottom and
   //we want it to appear to the user that the max value is at the top, so we invert its value
@@ -483,7 +468,7 @@ void QgsRasterLayerProperties::sliderMaxBlue_valueChanged(int)
 }
 
 
-void QgsRasterLayerProperties::sliderMinBlue_valueChanged(int)
+void QgsRasterLayerProperties::on_sliderMinBlue_valueChanged(int)
 {
   //the 255- is used because a vertical qslider has its max value at the bottom and
   //we want it to appear to the user that the max value is at the top, so we invert its value
@@ -496,7 +481,7 @@ void QgsRasterLayerProperties::sliderMinBlue_valueChanged(int)
 }
 
 
-void QgsRasterLayerProperties::sliderMaxGreen_valueChanged(int)
+void QgsRasterLayerProperties::on_sliderMaxGreen_valueChanged(int)
 {
   //the 255- is used because a vertical qslider has its max value at the bottom and
   //we want it to appear to the user that the max value is at the top, so we invert its value
@@ -509,7 +494,7 @@ void QgsRasterLayerProperties::sliderMaxGreen_valueChanged(int)
 }
 
 
-void QgsRasterLayerProperties::sliderMinGreen_valueChanged(int)
+void QgsRasterLayerProperties::on_sliderMinGreen_valueChanged(int)
 {
   //the 255- is used because a vertical qslider has its max value at the bottom and
   //we want it to appear to the user that the max value is at the top, so we invert its value
@@ -522,7 +507,7 @@ void QgsRasterLayerProperties::sliderMinGreen_valueChanged(int)
 }
 
 
-void QgsRasterLayerProperties::sliderMaxGray_valueChanged(int)
+void QgsRasterLayerProperties::on_sliderMaxGray_valueChanged(int)
 {
   //the 255- is used because a vertical qslider has its max value at the bottom and
   //we want it to appear to the user that the max value is at the top, so we invert its value
@@ -535,7 +520,7 @@ void QgsRasterLayerProperties::sliderMaxGray_valueChanged(int)
 }
 
 
-void QgsRasterLayerProperties::sliderMinGray_valueChanged(int)
+void QgsRasterLayerProperties::on_sliderMinGray_valueChanged(int)
 {
   //the 255- is used because a vertical qslider has its max value at the bottom and
   //we want it to appear to the user that the max value is at the top, so we invert its value
@@ -680,14 +665,14 @@ void QgsRasterLayerProperties::makeScalePreview(QString theColor)
 }
 
 
-void QgsRasterLayerProperties::rbtnSingleBand_toggled(bool)
+void QgsRasterLayerProperties::on_rbtnSingleBand_toggled(bool)
 {}
 
 
-void QgsRasterLayerProperties::rbtnThreeBand_toggled(bool)
+void QgsRasterLayerProperties::on_rbtnThreeBand_toggled(bool)
 {}
 
-void QgsRasterLayerProperties::buttonBuildPyramids_clicked()
+void QgsRasterLayerProperties::on_buttonBuildPyramids_clicked()
 {
 
   //
@@ -930,10 +915,10 @@ void QgsRasterLayerProperties::sync()
 
 } // QgsRasterLayerProperties::sync()
 
-void QgsRasterLayerProperties::pbnHistRefresh_clicked()
+void QgsRasterLayerProperties::on_pbnHistRefresh_clicked()
 {
 #ifdef QGISDEBUG
-  std::cout << "QgsRasterLayerProperties::pbnHistRefresh_clicked" << std::endl;
+  std::cout << "QgsRasterLayerProperties::on_pbnHistRefresh_clicked" << std::endl;
 #endif
   int myBandCountInt = rasterLayer->getBandCount();
   //
@@ -1338,7 +1323,7 @@ void QgsRasterLayerProperties::pbnHistRefresh_clicked()
   pixHistogram->setPixmap(myPixmap);
 }
 
-void QgsRasterLayerProperties::pbnChangeSpatialRefSys_clicked()
+void QgsRasterLayerProperties::on_pbnChangeSpatialRefSys_clicked()
 {
     
 
