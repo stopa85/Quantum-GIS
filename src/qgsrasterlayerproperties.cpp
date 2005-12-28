@@ -400,17 +400,6 @@ void QgsRasterLayerProperties::apply()
   {
     rasterLayer->setShowDebugOverlayFlag(false);
   }
-  //
-  // update histogram clipping ranges from the advanced symbology tab
-  //
-  rasterLayer->setMinRedDouble(static_cast < double >(sliderMinRed->value()));
-  rasterLayer->setMaxRedDouble(static_cast < double >(255 - sliderMaxRed->value()));
-  rasterLayer->setMinGreenDouble(static_cast < double >(sliderMinGreen->value()));
-  rasterLayer->setMaxGreenDouble(static_cast < double >(255 - sliderMaxGreen->value()));
-  rasterLayer->setMinBlueDouble(static_cast < double >(sliderMinBlue->value()));
-  rasterLayer->setMaxBlueDouble(static_cast < double >(255 - sliderMaxBlue->value()));
-  rasterLayer->setMinGrayDouble(static_cast < double >(sliderMinGray->value()));
-  rasterLayer->setMaxGrayDouble(static_cast < double >(255 - sliderMaxGray->value()));
   //get the thumbnail for the layer
   QPixmap myQPixmap = QPixmap(pixmapThumbnail->width(),pixmapThumbnail->height());
   rasterLayer->drawThumbnail(&myQPixmap);
@@ -432,237 +421,9 @@ void QgsRasterLayerProperties::sliderTransparency_valueChanged(int theValue)
   lblTransparencyPercent->setText(QString::number(myInt) + "%");
 }//sliderTransparency_valueChanged
 
-void QgsRasterLayerProperties::on_sliderMaxRed_valueChanged(int)
-{
-  //the 255- is used because a vertical qslider has its max value at the bottom and
-  //we want it to appear to the user that the max value is at the top, so we invert its value
-  if ((255 - sliderMaxRed->value()) < sliderMinRed->value())
-  {
-    sliderMinRed->setValue(255 - sliderMaxRed->value());
-  }
-  makeScalePreview("red");
-}
-
-
-void QgsRasterLayerProperties::on_sliderMinRed_valueChanged(int)
-{
-  //the 255- is used because a vertical qslider has its max value at the bottom and
-  //we want it to appear to the user that the max value is at the top, so we invert its value
-  if ((255 - sliderMaxRed->value()) < sliderMinRed->value())
-  {
-    sliderMaxRed->setValue(255 - sliderMinRed->value());
-  }
-  makeScalePreview("red");
-}
-
-
-void QgsRasterLayerProperties::on_sliderMaxBlue_valueChanged(int)
-{
-  //the 255- is used because a vertical qslider has its max value at the bottom and
-  //we want it to appear to the user that the max value is at the top, so we invert its value
-  if ((255 - sliderMaxBlue->value()) < sliderMinBlue->value())
-  {
-    sliderMinBlue->setValue(255 - sliderMaxBlue->value());
-  }
-  makeScalePreview("blue");
-}
-
-
-void QgsRasterLayerProperties::on_sliderMinBlue_valueChanged(int)
-{
-  //the 255- is used because a vertical qslider has its max value at the bottom and
-  //we want it to appear to the user that the max value is at the top, so we invert its value
-  if ((255 - sliderMaxBlue->value()) < sliderMinBlue->value())
-  {
-    sliderMaxBlue->setValue(255 - sliderMinBlue->value());
-  }
-
-  makeScalePreview("blue");
-}
-
-
-void QgsRasterLayerProperties::on_sliderMaxGreen_valueChanged(int)
-{
-  //the 255- is used because a vertical qslider has its max value at the bottom and
-  //we want it to appear to the user that the max value is at the top, so we invert its value
-  if ((255 - sliderMaxGreen->value()) < sliderMinGreen->value())
-  {
-    sliderMinGreen->setValue(255 - sliderMaxGreen->value());
-  }
-
-  makeScalePreview("green");
-}
-
-
-void QgsRasterLayerProperties::on_sliderMinGreen_valueChanged(int)
-{
-  //the 255- is used because a vertical qslider has its max value at the bottom and
-  //we want it to appear to the user that the max value is at the top, so we invert its value
-
-  if ((255 - sliderMaxGreen->value()) < sliderMinGreen->value())
-  {
-    sliderMaxGreen->setValue(255 - sliderMinGreen->value());
-  }
-  makeScalePreview("green");
-}
-
-
-void QgsRasterLayerProperties::on_sliderMaxGray_valueChanged(int)
-{
-  //the 255- is used because a vertical qslider has its max value at the bottom and
-  //we want it to appear to the user that the max value is at the top, so we invert its value
-
-  if ((255 - sliderMaxGray->value()) < sliderMinGray->value())
-  {
-    sliderMinGray->setValue(255 - sliderMaxGray->value());
-  }
-  makeScalePreview("gray");
-}
-
-
-void QgsRasterLayerProperties::on_sliderMinGray_valueChanged(int)
-{
-  //the 255- is used because a vertical qslider has its max value at the bottom and
-  //we want it to appear to the user that the max value is at the top, so we invert its value
-  if ((255 - sliderMaxGray->value()) < sliderMinGray->value())
-  {
-    sliderMaxGray->setValue(255 - sliderMinGray->value());
-  }
-  makeScalePreview("gray");
-}
 
 
 
-void QgsRasterLayerProperties::makeScalePreview(QString theColor)
-{
-  double myMinDouble = 0;
-  double myMaxDouble = 255;
-  double myRedDouble = 0;
-  double myBlueDouble = 0;
-  double myGreenDouble = 0;
-  //the 255- is used because a vertical qslider has its max value at the bottom and
-  //we want it to appear to the user that the max value is at the top, so we invert its value
-  if (theColor == "red")
-  {
-    myMinDouble = sliderMinRed->value();
-    myMaxDouble = 255 - sliderMaxRed->value();
-    myRedDouble = myMaxDouble;
-  }
-  else if (theColor == "green")
-  {
-    myMinDouble = sliderMinGreen->value();
-    myMaxDouble = 255 - sliderMaxGreen->value();
-  }
-  else if (theColor == "blue")
-  {
-    myMinDouble = sliderMinBlue->value();
-    myMaxDouble = 255 - sliderMaxBlue->value();
-  }
-  else if (theColor == "gray")
-  {
-    myMinDouble = sliderMinGray->value();
-    myMaxDouble = 255 - sliderMaxGray->value();
-  }
-  QImage myQImage = QImage(100, 100, 32); //32bpp
-  double myRangeDouble = myMaxDouble - myMinDouble;
-  double myDecrementDouble = myRangeDouble / 100;
-  //std::cout << "Decrementing " << theColor << " by : " << myDecrementDouble << std::endl;
-  if (myDecrementDouble == 0)
-    return;
-  for (int myRowInt = 99; myRowInt >= 0; myRowInt = myRowInt - 1)
-  {
-    //reset the max value that the scale starts at
-    if (theColor == "red")
-    {
-      myRedDouble = myMaxDouble;
-    }
-    else if (theColor == "green")
-    {
-      myGreenDouble = myMaxDouble;
-    }
-    else if (theColor == "blue")
-    {
-      myBlueDouble = myMaxDouble;
-    }
-    else if (theColor == "gray")
-    {
-      myRedDouble = myMaxDouble;
-      myGreenDouble = myMaxDouble;
-      myBlueDouble = myMaxDouble;
-    }
-    for (int myColInt = 99; myColInt >= 0; myColInt--)
-    {
-      if (theColor == "red")
-      {
-        myRedDouble -= myDecrementDouble;
-      }
-      else if (theColor == "green")
-      {
-        myGreenDouble -= myDecrementDouble;
-      }
-      else if (theColor == "blue")
-      {
-        myBlueDouble -= myDecrementDouble;
-      }
-      else if (theColor == "gray")
-      {
-        myRedDouble -= myDecrementDouble;
-        myGreenDouble -= myDecrementDouble;
-        myBlueDouble -= myDecrementDouble;
-      }
-      //std::cout << "R " << myRedDouble << " G " << myGreenDouble << " B " << myBlueDouble << std::endl;
-      myQImage.setPixel(myColInt, myRowInt,
-              qRgb((unsigned int) myRedDouble, (unsigned int) myGreenDouble, (unsigned int) myBlueDouble));
-    }
-  }
-  // Create a pixmap the same size as the image - to be placed in the pixmalLabel
-  QPixmap *myQPixmap = new QPixmap(100, 100);
-
-  //
-  // Draw a text alabel onto the pixmap showing the min max value
-  //
-  QPainter myQPainter(myQPixmap);
-  myQPainter.rotate(-45);
-#if QT_VERSION < 0x040000
-  myQPainter.drawImage(-70, 0, myQImage.scale(140, 140));  // TODO: maybe should add ScaleMin ?
-#else
-  myQPainter.drawImage(-70, 0, myQImage.scaled(140, 140)); // TODO: maybe should add Qt::KeepAspectRatio ?
-#endif
-  myQPainter.rotate(45);
-  QFont myQFont("arial", 18, QFont::Bold);
-  myQPainter.setFont(myQFont);
-  myQPainter.setPen(Qt::white);
-  myQPainter.drawText(15, 50, QString::number(static_cast < unsigned int >(myMinDouble)) + " - " + QString::number(static_cast
-              <
-              unsigned int
-              >(myMaxDouble)));
-
-  //now draw the image into the relevant pixmap label
-  if (theColor == "red")
-  {
-    pixmapScaleRed->setScaledContents(true);
-    pixmapScaleRed->setPixmap(*myQPixmap);
-    pixmapScaleRed->repaint(false);
-  }
-  else if (theColor == "green")
-  {
-    pixmapScaleGreen->setScaledContents(true);
-    pixmapScaleGreen->setPixmap(*myQPixmap);
-    pixmapScaleGreen->repaint(false);
-  }
-  else if (theColor == "blue")
-  {
-    pixmapScaleBlue->setScaledContents(true);
-    pixmapScaleBlue->setPixmap(*myQPixmap);
-    pixmapScaleBlue->repaint(false);
-  }
-  else if (theColor == "gray")
-  {
-    pixmapScaleGray->setScaledContents(true);
-    pixmapScaleGray->setPixmap(*myQPixmap);
-    pixmapScaleGray->repaint(false);
-  }
-}
 
 
 void QgsRasterLayerProperties::on_rbtnSingleBand_toggled(bool)
@@ -886,31 +647,12 @@ void QgsRasterLayerProperties::sync()
   double myStdDevsDouble = rasterLayer->getStdDevsToPlot();
   cboStdDev->setCurrentText(QString::number(myStdDevsDouble));
 
-  //
-  // Set up the sliders on the advanced symbology tab
-  //
-  sliderMinRed->setValue(static_cast < int >(rasterLayer->getMinRedDouble()));
-  sliderMaxRed->setValue(static_cast < int >(255 - rasterLayer->getMaxRedDouble()));
-  sliderMinGreen->setValue(static_cast < int >(rasterLayer->getMinGreenDouble()));
-  sliderMaxGreen->setValue(static_cast < int >(255 - rasterLayer->getMaxGreenDouble()));
-  sliderMinBlue->setValue(static_cast < int >(rasterLayer->getMinBlueDouble()));
-  sliderMaxBlue->setValue(static_cast < int >(255 - rasterLayer->getMaxBlueDouble()));
-  sliderMinGray->setValue(static_cast < int >(rasterLayer->getMinGrayDouble()));
-  sliderMaxGray->setValue(static_cast < int >(255 - rasterLayer->getMaxGrayDouble()));
 
   //now set the combos to the correct values
   cboRed->setCurrentText(rasterLayer->getRedBandName());
   cboGreen->setCurrentText(rasterLayer->getGreenBandName());
   cboBlue->setCurrentText(rasterLayer->getBlueBandName());
   cboGray->setCurrentText(rasterLayer->getGrayBandName());
-
-  //
-  // Set up the colour scaling previews
-  //
-  makeScalePreview("red");
-  makeScalePreview("green");
-  makeScalePreview("blue");
-  makeScalePreview("gray");
 
 
 } // QgsRasterLayerProperties::sync()
