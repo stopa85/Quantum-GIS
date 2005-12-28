@@ -13,34 +13,24 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
-#include <cmath>
-
-#include <q3table.h>
-#include <qsettings.h>
-#include <qevent.h>
-#include <qsize.h>
-#include <qpoint.h>
-#include <qpen.h>
-#include <qpainter.h>
-#include <qpixmap.h>
-#include <qglobal.h>
-#include <qlabel.h>
-
-#include "qgspoint.h"
-#include "qgsmaptopixel.h"
-#include "qgsmapcanvas.h"
 #include "qgsmeasure.h"
+
 #include "qgscontexthelp.h"
-
 #include "qgsdistancearea.h"
-//Added by qt3to4:
-#include <QCloseEvent>
+#include "qgsmapcanvas.h"
 
+#include <QSettings>
+#include <iostream>
 
 
 QgsMeasure::QgsMeasure(bool measureArea, QgsMapCanvas *mc, QWidget *parent, const char * name, Qt::WFlags f)
-           :QgsMeasureBase( )
+  : QWidget(parent, name, f)
 {
+    setupUi(this);
+    connect(btnHelp, SIGNAL(clicked()), this, SLOT(showHelp()));
+    connect(mRestartButton, SIGNAL(clicked()), this, SLOT(restart()));
+    connect(mCloseButton, SIGNAL(clicked()), this, SLOT(close()));
+
     mMeasureArea = measureArea;
     mMapCanvas = mc;
     mDynamic = false;
