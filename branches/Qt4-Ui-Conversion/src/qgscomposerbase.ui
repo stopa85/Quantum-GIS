@@ -25,19 +25,19 @@
    <property name="geometry" >
     <rect>
      <x>0</x>
-     <y>36</y>
+     <y>38</y>
      <width>725</width>
-     <height>490</height>
+     <height>488</height>
     </rect>
    </property>
-   <layout class="QHBoxLayout" >
+   <layout class="QGridLayout" >
     <property name="margin" >
-     <number>10</number>
+     <number>8</number>
     </property>
     <property name="spacing" >
      <number>6</number>
     </property>
-    <item>
+    <item row="0" column="0" >
      <widget class="QSplitter" name="mSplitter" >
       <property name="sizePolicy" >
        <sizepolicy>
@@ -114,41 +114,11 @@
         </attribute>
         <layout class="QGridLayout" >
          <property name="margin" >
-          <number>0</number>
+          <number>8</number>
          </property>
          <property name="spacing" >
           <number>6</number>
          </property>
-         <item row="0" column="1" >
-          <widget class="QComboBox" name="mCompositionNameComboBox" >
-           <property name="enabled" >
-            <bool>false</bool>
-           </property>
-           <property name="sizePolicy" >
-            <sizepolicy>
-             <hsizetype>7</hsizetype>
-             <vsizetype>0</vsizetype>
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="0" >
-          <widget class="QLabel" name="textLabel1" >
-           <property name="sizePolicy" >
-            <sizepolicy>
-             <hsizetype>7</hsizetype>
-             <vsizetype>5</vsizetype>
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="text" >
-            <string>Composition</string>
-           </property>
-          </widget>
-         </item>
          <item row="1" column="0" colspan="2" >
           <widget class="Q3Frame" name="mCompositionOptionsFrame" >
            <property name="sizePolicy" >
@@ -170,6 +140,36 @@
            </property>
           </widget>
          </item>
+         <item row="0" column="0" >
+          <widget class="QLabel" name="textLabel1" >
+           <property name="sizePolicy" >
+            <sizepolicy>
+             <hsizetype>7</hsizetype>
+             <vsizetype>5</vsizetype>
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text" >
+            <string>Composition</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1" >
+          <widget class="QComboBox" name="mCompositionNameComboBox" >
+           <property name="enabled" >
+            <bool>false</bool>
+           </property>
+           <property name="sizePolicy" >
+            <sizepolicy>
+             <hsizetype>7</hsizetype>
+             <vsizetype>0</vsizetype>
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+          </widget>
+         </item>
         </layout>
        </widget>
        <widget class="QWidget" name="tab" >
@@ -178,7 +178,7 @@
         </attribute>
         <layout class="QGridLayout" >
          <property name="margin" >
-          <number>0</number>
+          <number>8</number>
          </property>
          <property name="spacing" >
           <number>6</number>
@@ -212,6 +212,14 @@
    </layout>
   </widget>
   <widget class="Q3ToolBar" name="Toolbar_2" >
+   <property name="geometry" >
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>223</width>
+     <height>38</height>
+    </rect>
+   </property>
    <property name="label" >
     <string>Toolbar_2</string>
    </property>
@@ -223,6 +231,14 @@
    <addaction name="actionAddPicture" />
   </widget>
   <widget class="Q3ToolBar" name="Toolbar" >
+   <property name="geometry" >
+    <rect>
+     <x>223</x>
+     <y>0</y>
+     <width>155</width>
+     <height>38</height>
+    </rect>
+   </property>
    <property name="label" >
     <string>Toolbar</string>
    </property>
@@ -232,6 +248,14 @@
    <addaction name="actionRefresh" />
   </widget>
   <widget class="Q3ToolBar" name="toolBar" >
+   <property name="geometry" >
+    <rect>
+     <x>378</x>
+     <y>0</y>
+     <width>121</width>
+     <height>38</height>
+    </rect>
+   </property>
    <property name="label" >
     <string>Tools</string>
    </property>
@@ -244,7 +268,7 @@
     <bool>false</bool>
    </property>
    <property name="icon" >
-    <iconset>image0</iconset>
+    <iconset>themes/default/mActionFileOpen.png</iconset>
    </property>
    <property name="text" >
     <string>&amp;Open Template ...</string>
@@ -261,7 +285,7 @@
     <bool>false</bool>
    </property>
    <property name="icon" >
-    <iconset>image1</iconset>
+    <iconset>themes/default/mActionFileSave.png</iconset>
    </property>
    <property name="text" >
     <string>Save Template &amp;As...</string>
@@ -275,7 +299,7 @@
   </action>
   <action name="actionPrint" >
    <property name="icon" >
-    <iconset>image2</iconset>
+    <iconset>themes/default/mActionFilePrint.png</iconset>
    </property>
    <property name="text" >
     <string>&amp;Print...</string>
@@ -289,10 +313,10 @@
   </action>
   <action name="actionZoomFullExtent" >
    <property name="icon" >
-    <iconset>image3</iconset>
+    <iconset>themes/default/mActionZoomFullExtent.png</iconset>
    </property>
    <property name="text" >
-    <string>Action</string>
+    <string>Zoom All</string>
    </property>
    <property name="iconText" >
     <string>Zoom to full extent</string>
@@ -300,10 +324,10 @@
   </action>
   <action name="actionZoomIn" >
    <property name="icon" >
-    <iconset>image4</iconset>
+    <iconset>themes/default/mActionZoomIn.png</iconset>
    </property>
    <property name="text" >
-    <string>Action</string>
+    <string>Zoom In</string>
    </property>
    <property name="iconText" >
     <string>Zoom in</string>
@@ -311,10 +335,10 @@
   </action>
   <action name="actionZoomOut" >
    <property name="icon" >
-    <iconset>image5</iconset>
+    <iconset>themes/default/mActionZoomOut.png</iconset>
    </property>
    <property name="text" >
-    <string>Action</string>
+    <string>Zoom Out</string>
    </property>
    <property name="iconText" >
     <string>Zoom out</string>
@@ -325,7 +349,7 @@
     <bool>true</bool>
    </property>
    <property name="icon" >
-    <iconset>image6</iconset>
+    <iconset>themes/default/mActionAddNonDbLayer.png</iconset>
    </property>
    <property name="text" >
     <string>Add new map</string>
@@ -339,7 +363,7 @@
     <bool>true</bool>
    </property>
    <property name="icon" >
-    <iconset>image7</iconset>
+    <iconset>themes/default/mActionLabel.png</iconset>
    </property>
    <property name="text" >
     <string>Add new label</string>
@@ -353,7 +377,7 @@
     <bool>true</bool>
    </property>
    <property name="icon" >
-    <iconset>image8</iconset>
+    <iconset>themes/default/mActionAddLegend.png</iconset>
    </property>
    <property name="text" >
     <string>Add new vect legend</string>
@@ -367,7 +391,7 @@
     <bool>true</bool>
    </property>
    <property name="icon" >
-    <iconset>image9</iconset>
+    <iconset>themes/default/mActionSelect.png</iconset>
    </property>
    <property name="text" >
     <string>Select/Move item</string>
@@ -378,7 +402,7 @@
   </action>
   <action name="actionImage" >
    <property name="icon" >
-    <iconset>image10</iconset>
+    <iconset>themes/default/mActionExportMapServer.png</iconset>
    </property>
    <property name="text" >
     <string>Export as image</string>
@@ -389,7 +413,7 @@
   </action>
   <action name="actionSvg" >
    <property name="icon" >
-    <iconset>image11</iconset>
+    <iconset>themes/default/mActionSaveAsSVG.png</iconset>
    </property>
    <property name="text" >
     <string>Export as SVG</string>
@@ -403,7 +427,7 @@
     <bool>true</bool>
    </property>
    <property name="icon" >
-    <iconset>image12</iconset>
+    <iconset>themes/default/mActionMeasure.png</iconset>
    </property>
    <property name="text" >
     <string>Add new scalebar</string>
@@ -414,7 +438,7 @@
   </action>
   <action name="actionRefresh" >
    <property name="icon" >
-    <iconset>image13</iconset>
+    <iconset>themes/default/mActionDraw.png</iconset>
    </property>
    <property name="text" >
     <string>Refresh view</string>
@@ -428,7 +452,7 @@
     <bool>true</bool>
    </property>
    <property name="icon" >
-    <iconset>image14</iconset>
+    <iconset>themes/default/mActionAddRasterLayer.png</iconset>
    </property>
    <property name="iconText" >
     <string>Add new picture</string>
@@ -439,9 +463,9 @@
  <pixmapfunction></pixmapfunction>
  <customwidgets>
   <customwidget>
-   <class>Q3MainWindow</class>
+   <class>Q3Frame</class>
    <extends></extends>
-   <header>q3mainwindow.h</header>
+   <header>Qt3Support/Q3Frame</header>
    <container>1</container>
    <pixmap></pixmap>
   </customwidget>
@@ -453,9 +477,9 @@
    <pixmap></pixmap>
   </customwidget>
   <customwidget>
-   <class>Q3Frame</class>
+   <class>Q3MainWindow</class>
    <extends></extends>
-   <header>Qt3Support/Q3Frame</header>
+   <header>q3mainwindow.h</header>
    <container>1</container>
    <pixmap></pixmap>
   </customwidget>
