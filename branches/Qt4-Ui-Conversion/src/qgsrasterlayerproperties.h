@@ -51,22 +51,6 @@ class QgsRasterLayerProperties : public QDialog, private Ui::QgsRasterLayerPrope
         /** \brief slot executed when the transparency level changes. */ 
         void sliderTransparency_valueChanged( int );
         /** \brief slot executed when the max red level changes. */
-        void on_sliderMaxRed_valueChanged( int );
-        /** \brief slot executed when the min red level changes. */
-        void on_sliderMinRed_valueChanged( int );
-        /** \brief slot executed when the max blue level changes. */
-        void on_sliderMaxBlue_valueChanged( int );
-        /** \brief slot executed when the max blue level changes. */
-        void on_sliderMinBlue_valueChanged( int );
-        /** \brief slot executed when the max green level changes. */
-        void on_sliderMaxGreen_valueChanged( int );
-        /** \brief slot executed when the min green level changes. */
-        void on_sliderMinGreen_valueChanged( int );
-        /** \brief slot executed when the max gray level changes. */
-        void on_sliderMaxGray_valueChanged( int );
-        /** \brief slot executed when the min gray level changes. */
-        void on_sliderMinGray_valueChanged( int );
-        /** \brief slot executed when the single band radio button is pressed. */
         void on_rbtnSingleBand_toggled( bool );
         /** \brief slot executed when the three band radio button is pressed. */
         void on_rbtnThreeBand_toggled( bool );
@@ -78,8 +62,6 @@ class QgsRasterLayerProperties : public QDialog, private Ui::QgsRasterLayerPrope
         void on_pbnChangeSpatialRefSys_clicked();
         
     private:
-        /** \brief This function makes a pixmap to display in the color box */
-        void makeScalePreview(QString theColor);
         /** \brief Pointer to the raster layer that this property dilog changes the behaviour of. */
         QgsRasterLayer * rasterLayer;
 };
