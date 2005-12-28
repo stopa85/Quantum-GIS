@@ -33,6 +33,7 @@ class QgsNewHttpConnection : public QDialog, private Ui::QgsNewHttpConnectionBas
     ~QgsNewHttpConnection();
     //! Tests the connection using the parameters supplied
     void testConnection();
+ public slots:
     //! Saves the connection to ~/.qt/qgisrc
     void saveConnection();
 };

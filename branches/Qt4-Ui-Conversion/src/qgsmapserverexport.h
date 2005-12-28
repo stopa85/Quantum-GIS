@@ -51,9 +51,11 @@ public:
 	SAVEAS,
 	OPEN
 	};
-  public slots:
-	void showHelp();
-  private:
+public slots:
+  void on_chkExpLayersOnly_clicked();
+  void on_btnChooseFile_clicked();
+  void on_buttonHelp_clicked();
+private:
   void writeMapFile(void);
   QString fileName;
   QString fullPath;
