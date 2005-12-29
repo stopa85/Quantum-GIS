@@ -169,6 +169,8 @@ class QgisApp : public QMainWindow, public Ui::QgisAppBase
 
 //private slots:
 public slots:
+  //! About QGis
+  void about();
   //! Add a raster layer to the map (will prompt user for filename using dlg )
   void addRasterLayer();
   //#ifdef HAVE_POSTGRESQL
@@ -380,8 +382,6 @@ private:
   void drawLayers();
   //! test function
   void testButton();
-  //! About QGis
-  void about();
   //! activates the capture point tool
   void capturePoint();
   //! activates the capture line tool
