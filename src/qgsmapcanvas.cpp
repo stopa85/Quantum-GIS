@@ -723,7 +723,9 @@ void QgsMapCanvas::render(QPaintDevice * theQPaintDevice)
                 //
                 ml->draw(paint, &r1, mCanvasProperties->coordXForm, this);
                 if (split)
+                {
                   ml->draw(paint, &r2,mCanvasProperties->coordXForm, this);
+                }
               }
 #ifdef QGISDEBUG
               else

@@ -37,14 +37,6 @@
       <property name="orientation" >
        <enum>Qt::Horizontal</enum>
       </property>
-      <layout class="QHBoxLayout" >
-       <property name="margin" >
-        <number>-1</number>
-       </property>
-       <property name="spacing" >
-        <number>0</number>
-       </property>
-      </layout>
       <widget class="QSplitter" name="legendOverviewSplit" >
        <property name="minimumSize" >
         <size>
@@ -55,14 +47,6 @@
        <property name="orientation" >
         <enum>Qt::Vertical</enum>
        </property>
-       <layout class="QVBoxLayout" >
-        <property name="margin" >
-         <number>8</number>
-        </property>
-        <property name="spacing" >
-         <number>6</number>
-        </property>
-       </layout>
        <widget class="QToolBox" name="toolBox" >
         <property name="font" >
          <font>
@@ -89,8 +73,8 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>465</width>
-           <height>446</height>
+           <width>624</width>
+           <height>581</height>
           </rect>
          </property>
          <attribute name="label" >
