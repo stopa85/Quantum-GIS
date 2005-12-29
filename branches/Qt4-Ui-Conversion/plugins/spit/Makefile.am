@@ -26,8 +26,6 @@ spit_MOC = qgsspit.moc.cpp \
 	qgsconnectiondialog.moc.cpp \
 	qgsshapefile.moc.cpp \
 	qgsmessageviewer.moc.cpp \
-	qgsspitbase.moc.cpp \
-	qgsconnectiondialogbase.moc.cpp \
 	qgseditreservedwordsdialog.moc.cpp 
 
 
