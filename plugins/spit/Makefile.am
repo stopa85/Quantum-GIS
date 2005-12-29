@@ -70,7 +70,7 @@ nodist_spitplugin_la_SOURCES = $(spitplugin_la_MOC)
 ##qgsmessageviewerbase.cpp: qgsmessageviewerbase.h qgsmessageviewerbase.ui
 ##qgsmessageviewerbase.h: qgsmessageviewerbase.ui
 
-BUILT_SOURCES = $(spit_MOC) $(spit_UI) $() $(splitplugin_la_MOC)
+BUILT_SOURCES = $(spit_MOC) $(spit_UI) $(spitplugin_la_MOC)
 
 
 spitplugin_la_LIBADD = $(QT_LDADD)  $(PG_LIB) $(GDAL_LDADD) ../../src/libqgis.la
