@@ -8,8 +8,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>556</width>
-    <height>567</height>
+    <width>466</width>
+    <height>487</height>
    </rect>
   </property>
   <property name="windowTitle" >
@@ -41,77 +41,6 @@
        <property name="spacing" >
         <number>6</number>
        </property>
-       <item row="1" column="1" >
-        <widget class="QGroupBox" name="grpBoxGrayscale" >
-         <property name="title" >
-          <string>Grayscale Image</string>
-         </property>
-         <layout class="QGridLayout" >
-          <property name="margin" >
-           <number>9</number>
-          </property>
-          <property name="spacing" >
-           <number>6</number>
-          </property>
-          <item row="3" column="1" >
-           <spacer>
-            <property name="orientation" >
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" >
-             <size>
-              <width>20</width>
-              <height>21</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="3" column="0" >
-           <spacer>
-            <property name="orientation" >
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" >
-             <size>
-              <width>20</width>
-              <height>21</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="2" column="1" >
-           <widget class="QComboBox" name="cboColorMap" />
-          </item>
-          <item row="2" column="0" >
-           <widget class="QLabel" name="textLabel2_6_2_2" >
-            <property name="text" >
-             <string>Color Map</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0" >
-           <widget class="QLabel" name="textLabel2_6_2" >
-            <property name="text" >
-             <string>Std Deviations</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1" >
-           <widget class="QComboBox" name="cboStdDev" />
-          </item>
-          <item row="0" column="1" >
-           <widget class="QComboBox" name="cboGray" />
-          </item>
-          <item row="0" column="0" >
-           <widget class="QLabel" name="textLabel2_6" >
-            <property name="text" >
-             <string>Gray</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
        <item row="0" column="0" colspan="2" >
         <widget class="QGroupBox" name="bgrpShowAs" >
          <property name="title" >
@@ -124,68 +53,109 @@
           <property name="spacing" >
            <number>6</number>
           </property>
-          <item row="3" column="0" colspan="2" >
-           <layout class="QVBoxLayout" >
-            <property name="margin" >
-             <number>0</number>
-            </property>
-            <property name="spacing" >
-             <number>6</number>
-            </property>
-            <item>
-             <widget class="QSlider" name="sliderTransparency" >
-              <property name="maximum" >
-               <number>255</number>
-              </property>
-              <property name="orientation" >
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="tickInterval" >
-               <number>25</number>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <layout class="QHBoxLayout" >
-              <property name="margin" >
-               <number>0</number>
-              </property>
-              <property name="spacing" >
-               <number>6</number>
-              </property>
-              <item>
-               <widget class="QLabel" name="textLabel3" >
-                <property name="text" >
-                 <string>None</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QLabel" name="lblTransparencyPercent" >
-                <property name="text" >
-                 <string>0%</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QLabel" name="textLabel4" >
-                <property name="text" >
-                 <string>&lt;p align="right">Full&lt;/p></string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-           </layout>
-          </item>
-          <item row="2" column="0" colspan="2" >
+          <item row="2" column="0" colspan="5" >
            <widget class="QLabel" name="textLabel2_4_2" >
             <property name="text" >
              <string>Transparency:</string>
             </property>
            </widget>
           </item>
-          <item rowspan="4" row="0" column="2" >
+          <item row="4" column="4" >
+           <widget class="QLabel" name="textLabel4" >
+            <property name="text" >
+             <string>&lt;p align="right">Full&lt;/p></string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="3" >
+           <spacer>
+            <property name="orientation" >
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" >
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="4" column="2" >
+           <widget class="QLabel" name="lblTransparencyPercent" >
+            <property name="text" >
+             <string>0%</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1" >
+           <spacer>
+            <property name="orientation" >
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" >
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="4" column="0" >
+           <widget class="QLabel" name="textLabel3" >
+            <property name="text" >
+             <string>None</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0" colspan="5" >
+           <widget class="QSlider" name="sliderTransparency" >
+            <property name="sizePolicy" >
+             <sizepolicy>
+              <hsizetype>3</hsizetype>
+              <vsizetype>3</vsizetype>
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize" >
+             <size>
+              <width>0</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="maximum" >
+             <number>255</number>
+            </property>
+            <property name="orientation" >
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="tickInterval" >
+             <number>25</number>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2" colspan="3" >
+           <widget class="QRadioButton" name="rbtnSingleBand" >
+            <property name="text" >
+             <string>Grayscale Image</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0" colspan="2" >
+           <widget class="QRadioButton" name="rbtnThreeBand" >
+            <property name="text" >
+             <string>Color Image</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0" colspan="5" >
+           <widget class="QCheckBox" name="cboxInvertColorMap" >
+            <property name="text" >
+             <string>Invert Color Map</string>
+            </property>
+           </widget>
+          </item>
+          <item rowspan="5" row="0" column="5" >
            <widget class="Q3TextEdit" name="txtSymologyNotes" >
             <property name="enabled" >
              <bool>true</bool>
@@ -206,27 +176,6 @@
             </property>
             <property name="wordWrap" >
              <enum>Q3TextEdit::WidgetWidth</enum>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0" colspan="2" >
-           <widget class="QCheckBox" name="cboxInvertColorMap" >
-            <property name="text" >
-             <string>Invert Color Map</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0" >
-           <widget class="QRadioButton" name="rbtnThreeBand" >
-            <property name="text" >
-             <string>Color Image</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1" >
-           <widget class="QRadioButton" name="rbtnSingleBand" >
-            <property name="text" >
-             <string>Grayscale Image</string>
             </property>
            </widget>
           </item>
@@ -312,6 +261,77 @@
            <widget class="QLabel" name="textLabel2_4" >
             <property name="text" >
              <string>Color</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="1" column="1" >
+        <widget class="QGroupBox" name="grpBoxGrayscale" >
+         <property name="title" >
+          <string>Grayscale Image</string>
+         </property>
+         <layout class="QGridLayout" >
+          <property name="margin" >
+           <number>9</number>
+          </property>
+          <property name="spacing" >
+           <number>6</number>
+          </property>
+          <item row="3" column="1" >
+           <spacer>
+            <property name="orientation" >
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" >
+             <size>
+              <width>20</width>
+              <height>21</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="3" column="0" >
+           <spacer>
+            <property name="orientation" >
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" >
+             <size>
+              <width>20</width>
+              <height>21</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="2" column="1" >
+           <widget class="QComboBox" name="cboColorMap" />
+          </item>
+          <item row="2" column="0" >
+           <widget class="QLabel" name="textLabel2_6_2_2" >
+            <property name="text" >
+             <string>Color Map</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0" >
+           <widget class="QLabel" name="textLabel2_6_2" >
+            <property name="text" >
+             <string>Std Deviations</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1" >
+           <widget class="QComboBox" name="cboStdDev" />
+          </item>
+          <item row="0" column="1" >
+           <widget class="QComboBox" name="cboGray" />
+          </item>
+          <item row="0" column="0" >
+           <widget class="QLabel" name="textLabel2_6" >
+            <property name="text" >
+             <string>Gray</string>
             </property>
            </widget>
           </item>
@@ -564,7 +584,7 @@
             <property name="minimumSize" >
              <size>
               <width>0</width>
-              <height>12</height>
+              <height>20</height>
              </size>
             </property>
             <property name="toolTip" >
@@ -644,7 +664,7 @@
             <property name="minimumSize" >
              <size>
               <width>0</width>
-              <height>12</height>
+              <height>20</height>
              </size>
             </property>
             <property name="readOnly" >
@@ -808,7 +828,114 @@
        <property name="spacing" >
         <number>6</number>
        </property>
-       <item row="0" column="0" >
+       <item rowspan="2" row="2" column="0" >
+        <widget class="Q3ListBox" name="lstHistogramLabels" >
+         <property name="maximumSize" >
+          <size>
+           <width>256</width>
+           <height>32767</height>
+          </size>
+         </property>
+         <property name="selectionMode" >
+          <enum>Q3ListBox::Multi</enum>
+         </property>
+        </widget>
+       </item>
+       <item rowspan="2" row="1" column="1" >
+        <widget class="QGroupBox" name="groupBox" >
+         <property name="title" >
+          <string>Options</string>
+         </property>
+         <layout class="QGridLayout" >
+          <property name="margin" >
+           <number>9</number>
+          </property>
+          <property name="spacing" >
+           <number>6</number>
+          </property>
+          <item row="0" column="0" >
+           <widget class="QLabel" name="textLabel1_2" >
+            <property name="text" >
+             <string>Column Count:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0" colspan="2" >
+           <widget class="QCheckBox" name="chkHistIgnoreOutOfRange" >
+            <property name="text" >
+             <string>Out Of Range OK?</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0" colspan="2" >
+           <widget class="QCheckBox" name="chkHistAllowApproximation" >
+            <property name="text" >
+             <string>Allow Approximation</string>
+            </property>
+            <property name="checked" >
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1" >
+           <widget class="QSpinBox" name="spinHistBinCount" >
+            <property name="maximum" >
+             <number>1024</number>
+            </property>
+            <property name="minimum" >
+             <number>8</number>
+            </property>
+            <property name="singleStep" >
+             <number>8</number>
+            </property>
+            <property name="value" >
+             <number>64</number>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="1" column="0" >
+        <widget class="QGroupBox" name="grpHistCharType" >
+         <property name="title" >
+          <string>Chart Type</string>
+         </property>
+         <layout class="QGridLayout" >
+          <property name="margin" >
+           <number>9</number>
+          </property>
+          <property name="spacing" >
+           <number>6</number>
+          </property>
+          <item row="0" column="1" >
+           <widget class="QRadioButton" name="radHistTypeLine" >
+            <property name="text" >
+             <string>Line Graph</string>
+            </property>
+            <property name="checked" >
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0" >
+           <widget class="QRadioButton" name="radHistTypeBar" >
+            <property name="text" >
+             <string>Bar Chart</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="3" column="1" >
+        <widget class="QPushButton" name="pbnHistRefresh" >
+         <property name="text" >
+          <string>Refresh</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0" colspan="2" >
         <widget class="QLabel" name="pixHistogram" >
          <property name="sizePolicy" >
           <sizepolicy>
@@ -834,129 +961,6 @@
           <number>0</number>
          </property>
         </widget>
-       </item>
-       <item row="0" column="1" >
-        <layout class="QVBoxLayout" >
-         <property name="margin" >
-          <number>0</number>
-         </property>
-         <property name="spacing" >
-          <number>6</number>
-         </property>
-         <item>
-          <widget class="Q3ListBox" name="lstHistogramLabels" >
-           <property name="maximumSize" >
-            <size>
-             <width>256</width>
-             <height>32767</height>
-            </size>
-           </property>
-           <property name="selectionMode" >
-            <enum>Q3ListBox::Multi</enum>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="Q3GroupBox" name="groupBox12" >
-           <property name="maximumSize" >
-            <size>
-             <width>32767</width>
-             <height>32767</height>
-            </size>
-           </property>
-           <property name="title" >
-            <string>Options</string>
-           </property>
-           <layout class="QGridLayout" >
-            <property name="margin" >
-             <number>0</number>
-            </property>
-            <property name="spacing" >
-             <number>0</number>
-            </property>
-            <item row="1" column="0" colspan="2" >
-             <widget class="QCheckBox" name="chkHistIgnoreOutOfRange" >
-              <property name="text" >
-               <string>Out Of Range OK?</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="0" colspan="2" >
-             <widget class="QCheckBox" name="chkHistAllowApproximation" >
-              <property name="text" >
-               <string>Allow Approximation</string>
-              </property>
-              <property name="checked" >
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="0" >
-             <widget class="QLabel" name="textLabel1_2" >
-              <property name="text" >
-               <string>X Range:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1" >
-             <widget class="QSpinBox" name="spinHistBinCount" >
-              <property name="maximum" >
-               <number>1024</number>
-              </property>
-              <property name="minimum" >
-               <number>8</number>
-              </property>
-              <property name="singleStep" >
-               <number>8</number>
-              </property>
-              <property name="value" >
-               <number>64</number>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </widget>
-         </item>
-         <item>
-          <widget class="Q3ButtonGroup" name="grpHistCharType" >
-           <property name="title" >
-            <string>Chart Type</string>
-           </property>
-           <layout class="QGridLayout" >
-            <property name="margin" >
-             <number>0</number>
-            </property>
-            <property name="spacing" >
-             <number>0</number>
-            </property>
-            <item row="1" column="0" >
-             <widget class="QRadioButton" name="radHistTypeLine" >
-              <property name="text" >
-               <string>Line Graph</string>
-              </property>
-              <property name="checked" >
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="0" >
-             <widget class="QRadioButton" name="radHistTypeBar" >
-              <property name="text" >
-               <string>Bar Chart</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="pbnHistRefresh" >
-           <property name="text" >
-            <string>Refresh</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
        </item>
       </layout>
      </widget>
@@ -1062,13 +1066,6 @@
    <pixmap></pixmap>
   </customwidget>
   <customwidget>
-   <class>Q3TextBrowser</class>
-   <extends>QWidget</extends>
-   <header>q3textbrowser.h</header>
-   <container>1</container>
-   <pixmap></pixmap>
-  </customwidget>
-  <customwidget>
    <class>Q3TextEdit</class>
    <extends></extends>
    <header>q3textedit.h</header>
@@ -1076,17 +1073,17 @@
    <pixmap></pixmap>
   </customwidget>
   <customwidget>
-   <class>Q3ButtonGroup</class>
-   <extends></extends>
-   <header>Qt3Support/Q3ButtonGroup</header>
-   <container>1</container>
-   <pixmap></pixmap>
-  </customwidget>
-  <customwidget>
    <class>Q3ListBox</class>
    <extends></extends>
    <header>q3listbox.h</header>
    <container>0</container>
+   <pixmap></pixmap>
+  </customwidget>
+  <customwidget>
+   <class>Q3TextBrowser</class>
+   <extends>QWidget</extends>
+   <header>q3textbrowser.h</header>
+   <container>1</container>
    <pixmap></pixmap>
   </customwidget>
  </customwidgets>
