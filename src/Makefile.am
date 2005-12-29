@@ -65,7 +65,6 @@ qgisHEADERS =	\
 		qgsattributetable.h				\
 		qgsbookmarks.h			\
 		qgsbookmarkitem.h			\
-		qgscoordinatetransform.h			\
 		qgsclipboard.h					\
 		qgscontexthelp.h				\
 		qgscontcoldialog.h				\
@@ -97,7 +96,6 @@ qgisHEADERS =	\
 		qgsmarkerdialog.h				\
 		qgsmeasure.h					\
 		qgsnewhttpconnection.h				\
-		qgsnumericsortlistviewitem.h			\
 		qgsoptions.h					\
 		qgspastetransformations.h			\
 		qgspatterndialog.h				\
@@ -296,7 +294,6 @@ qgis_MOC =	\
 		qgsbookmarks.moc.cpp		\
 		qgscontcoldialog.moc.cpp		\
 		qgscontexthelp.moc.cpp			\
-		qgscoordinatetransform.moc.cpp			\
 		qgsdelattrdialog.moc.cpp		\
 		qgsdlgvectorlayerproperties.moc.cpp	\
 		qgsencodingfiledialog.moc.cpp		\
@@ -339,7 +336,6 @@ qgis_SOURCES =	main.cpp			\
 		qgsclipboard.cpp		\
 		qgscontcoldialog.cpp		\
 		qgscontexthelp.cpp		\
-		qgscoordinatetransform.cpp			\
 		qgscustomsymbol.cpp		\
 		qgsdatasource.cpp		\
 		qgsdelattrdialog.cpp		\
@@ -362,7 +358,6 @@ qgis_SOURCES =	main.cpp			\
 		qgsmarkerdialog.cpp		\
 		qgsmeasure.cpp			\
 		qgsnewhttpconnection.cpp	\
-		qgsnumericsortlistviewitem.cpp	\
 		qgsoptions.cpp			\
 		qgspastetransformations.cpp	\
 		qgspatterndialog.cpp		\
