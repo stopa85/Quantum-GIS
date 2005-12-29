@@ -9,7 +9,7 @@
 
 #include <gdal_priv.h>
 #include <iostream>
-void QgsRasterGrayscaleRenderer::draw(QPainter * theQPainter, QgsRasterViewPort * theRasterViewPort,                                                                             QgsMapToPixel * theQgsMapToPixel)
+void QgsRasterGrayscaleRenderer::draw(const QPainter * theQPainter, const QgsRasterViewPort * theRasterViewPort,                                                                             const QgsMapToPixel * theQgsMapToPixel)
 {
 #ifdef QGISDEBUG
   std::cerr << "QgsRasterLayer::drawSingleBandGray called for layer " << theBandNoInt << std::endl;

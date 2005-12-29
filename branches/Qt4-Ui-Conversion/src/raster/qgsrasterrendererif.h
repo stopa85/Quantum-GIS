@@ -29,7 +29,7 @@ class QgsRasterLayer;
 
 class QgsRasterRendererIF 
 {
-  ~QgsRasterRendererIF();
+  virtual ~QgsRasterRendererIF();
   
 public:
     /** \brief Drawing routine. 
@@ -37,7 +37,7 @@ public:
     virtual void draw(QPainter * theQPainter, 
               const QgsRasterViewPort * theRasterViewPort,
               const QgsMapToPixel * theQgsMapToPixel
-              ) const=0;
+              ) =0;
 protected:
     /** get the raster layer member (only available to derived classes */
     //QgsRasterLayer * getRaster() { return mpQgsRasterLayer; };
