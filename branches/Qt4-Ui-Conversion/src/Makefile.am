@@ -57,6 +57,7 @@ qgisHEADERS =	\
 		qgis.h						\
 		qgisiface.h					\
 		qgisinterface.h					\
+		qgsabout.h				\
 		qgsaddattrdialog.h				\
 		qgsadvancedattrsearch.h				\
 		qgsattributeactiondialog.h			\
@@ -285,6 +286,7 @@ qgis_UIHEADERS = ui_qgisappbase.h \
 
 qgis_MOC =	\
 		qgisinterface.moc.cpp			\
+		qgsabout.moc.cpp		\
 		qgsaddattrdialog.moc.cpp		\
 		qgsadvancedattrsearch.moc.cpp		\
 		qgsattributeactiondialog.moc.cpp	\
@@ -325,6 +327,7 @@ qgis_MOC =	\
 qgis_SOURCES =	main.cpp			\
 		qgisiface.cpp			\
 		qgisinterface.cpp		\
+		qgsabout.cpp		\
 		qgsaddattrdialog.cpp		\
 		qgsadvancedattrsearch.cpp	\
 		qgsattributeactiondialog.cpp	\

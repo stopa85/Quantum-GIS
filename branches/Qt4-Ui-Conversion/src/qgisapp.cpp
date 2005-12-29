@@ -80,6 +80,7 @@
 //
 #include "qgisapp.h"
 #include "qgis.h"
+#include "qgsabout.h"
 #include "qgsacetaterectangle.h"
 #include "qgsbookmarkitem.h"
 #include "qgsbookmarks.h"
@@ -135,9 +136,8 @@
 #include <memory>
 #include <vector>
 
-//THes next two need to be sublassed!
+//The next one needs to be sublassed!
 //#include "qgsmessageviewer.ui"
-//#include "qgsabout.ui"
 //#include "qgssisydialog.h"
 // XXX deprecated?? #include "qgslegenditem.h"
 
@@ -1184,8 +1184,6 @@ void QgisApp::restoreWindowState()
 
 void QgisApp::about()
 {
-  /* FIXME 
-   * Disabled by Tim for now (need to resolve subclassing behavour of qgsabout
      QApplication::setOverrideCursor(Qt::WaitCursor);
      QgsAbout *abt = new QgsAbout();
      QString versionString = tr("Version ");
@@ -1251,9 +1249,9 @@ abt->setWhatsNew(watsNew);
   QString providerInfo = "<b>" + tr("Available Data Provider Plugins") + "</b><br>";
   abt->setPluginInfo(providerInfo + mProviderRegistry->pluginList(true));
   QApplication::restoreOverrideCursor();
+  abt->show();
   abt->exec();
 
-*/
 }
 
 /** Load up any plugins used in the last session
