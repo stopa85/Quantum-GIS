@@ -1628,7 +1628,6 @@ void QgsRasterLayer::drawSingleBandGray(QPainter * theQPainter, QgsRasterViewPor
             << "." << std::endl;
 #endif
 
-  //part of the experimental transparency support
   theQPainter->drawImage(static_cast<int>(theRasterViewPort->topLeftPoint.x() + 0.5),
                          static_cast<int>(theRasterViewPort->topLeftPoint.y() + 0.5),
                          myQImage,
