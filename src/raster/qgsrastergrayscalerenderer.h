@@ -40,8 +40,8 @@ public:
    void draw(QPainter * theQPainter, 
               const QgsRasterViewPort * theRasterViewPort,
               const QgsMapToPixel * theQgsMapToPixel,
-              ) const;
+              ) ;
 
-}
+};
 
 #endif //QGSRASTERGRAYSCALERENDERER_H
