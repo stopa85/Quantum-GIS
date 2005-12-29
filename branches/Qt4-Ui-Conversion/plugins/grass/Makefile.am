@@ -87,8 +87,7 @@ grassplugin_la_SOURCES = qgsgrassplugin.cpp \
 			 qgsgrassregion.h \
 			 ../../providers/grass/qgsgrass.h \
 			 ../../providers/grass/qgsgrassprovider.h \
-			 $(plugin_UI) \
-			 ../../src/qgssymbol.cpp
+			 $(plugin_UI)
 
 nodist_grassplugin_la_SOURCES = $(plugin_MOC)
 
@@ -115,7 +114,7 @@ qgsgrassregionbase.h: qgsgrassregionbase.ui
 BUILT_SOURCES = $(plugin_MOC) $(plugin_UI)
 
 
-grassplugin_la_LIBADD = $(QT_LDADD) ../../providers/grass/libqgisgrass.la $(GRASS_LIB) $(PG_LIB) $(GDAL_LDADD) ../../src/raster/libqgsraster.la
+grassplugin_la_LIBADD = $(QT_LDADD) ../../providers/grass/libqgisgrass.la $(GRASS_LIB) $(PG_LIB) $(GDAL_LDADD) ../../src/libqgis.la ../../src/raster/libqgsraster.la
 grassplugin_la_LDFLAGS = -avoid-version -module
 grassplugin_la_CXXFLAGS = $(PREFIX) $(CXXFLAGS) -I$(GRASS_INC) $(DEFS) $(EXTRA_CXXFLAGS) $(QT_CXXFLAGS) $(DEBUG_QGIS) -I$(PG_INC)  $(GDAL_CFLAGS) $(GEOS_CFLAGS) -I../../src/legend/ -I../../src/raster
 
