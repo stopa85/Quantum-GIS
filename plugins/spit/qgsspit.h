@@ -20,7 +20,6 @@
 #include <algorithm>
 #include <qstringlist.h>
 #include <qsettings.h>
-#include "qgsspitbase.h"
 #include "qgsshapefile.h"
 #include "ui_qgsspitbase.h"
 extern "C"
