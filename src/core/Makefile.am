@@ -101,6 +101,7 @@ libqgis_core_la_MOC =							\
 		qgsrasterdataprovider.moc.cpp		
 
 libqgis_core_la_SOURCES =\
+		qgis.cpp								\
 		qgsacetatelines.cpp					\
 		qgsacetateobject.cpp				\
 		qgsacetaterectangle.cpp				\
