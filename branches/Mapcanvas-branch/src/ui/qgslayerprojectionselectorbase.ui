@@ -1,0 +1,98 @@
+<ui version="4.0" >
+ <author></author>
+ <comment></comment>
+ <exportmacro></exportmacro>
+ <class>QgsLayerProjectionSelectorBase</class>
+ <widget class="QDialog" name="QgsLayerProjectionSelectorBase" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>605</width>
+    <height>563</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>Layer Projection Selector</string>
+  </property>
+  <property name="windowIcon" >
+   <iconset/>
+  </property>
+  <layout class="QGridLayout" >
+   <property name="margin" >
+    <number>10</number>
+   </property>
+   <property name="spacing" >
+    <number>6</number>
+   </property>
+   <item row="2" column="1" >
+    <widget class="QPushButton" name="pbnOK" >
+     <property name="text" >
+      <string>OK</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0" >
+    <spacer>
+     <property name="orientation" >
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeType" >
+      <enum>QSizePolicy::Expanding</enum>
+     </property>
+     <property name="sizeHint" >
+      <size>
+       <width>221</width>
+       <height>21</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="1" column="0" colspan="2" >
+    <widget class="QgsProjectionSelector" name="projectionSelector" />
+   </item>
+   <item row="0" column="0" colspan="2" >
+    <widget class="Q3TextEdit" name="textEdit1" >
+     <property name="sizePolicy" >
+      <sizepolicy>
+       <hsizetype>5</hsizetype>
+       <vsizetype>5</vsizetype>
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text" >
+      <string>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;/head>&lt;body style=&quot;font-size:10pt;font-family:Arial&quot;>
+&lt;p style=&quot;margin-top:16px&quot; dir=&quot;ltr&quot;>&lt;span style=&quot;font-size:15pt;font-weight:600&quot;>Define this layer's projection:&lt;/span>&lt;/p>
+&lt;p dir=&quot;ltr&quot;>This layer appears to have no projection specification. By default, this layer will now have its projection set to that of the project, but you may override this by selecting a different projection below.&lt;/p>
+&lt;/body>&lt;/html>
+</string>
+     </property>
+     <property name="wordWrap" >
+      <enum>Q3TextEdit::WidgetWidth</enum>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <layoutdefault spacing="6" margin="11" />
+ <pixmapfunction></pixmapfunction>
+ <customwidgets>
+  <customwidget>
+   <class>Q3TextEdit</class>
+   <extends></extends>
+   <header>q3textedit.h</header>
+   <container>0</container>
+   <pixmap></pixmap>
+  </customwidget>
+  <customwidget>
+   <class>QgsProjectionSelector</class>
+   <extends>QWidget</extends>
+   <header>qgsprojectionselector.h</header>
+   <container>1</container>
+   <pixmap></pixmap>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

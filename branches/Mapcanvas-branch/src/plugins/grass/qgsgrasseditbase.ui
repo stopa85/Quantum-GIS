@@ -1,0 +1,605 @@
+<ui version="4.0" >
+ <author></author>
+ <comment></comment>
+ <exportmacro></exportmacro>
+ <class>QgsGrassEditBase</class>
+ <widget class="Q3MainWindow" name="QgsGrassEditBase" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>462</width>
+    <height>272</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>GRASS Edit</string>
+  </property>
+  <widget class="QWidget" name="widget" >
+   <property name="geometry" >
+    <rect>
+     <x>0</x>
+     <y>72</y>
+     <width>462</width>
+     <height>200</height>
+    </rect>
+   </property>
+   <layout class="QVBoxLayout" >
+    <property name="margin" >
+     <number>5</number>
+    </property>
+    <property name="spacing" >
+     <number>5</number>
+    </property>
+    <item>
+     <widget class="QTabWidget" name="tabWidget" >
+      <property name="sizePolicy" >
+       <sizepolicy>
+        <hsizetype>7</hsizetype>
+        <vsizetype>7</vsizetype>
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <widget class="QWidget" name="tab" >
+       <attribute name="title" >
+        <string>Category</string>
+       </attribute>
+       <layout class="QGridLayout" >
+        <property name="margin" >
+         <number>0</number>
+        </property>
+        <property name="spacing" >
+         <number>6</number>
+        </property>
+        <item row="0" column="0" >
+         <widget class="QLabel" name="textLabel3" >
+          <property name="text" >
+           <string>Mode</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0" >
+         <widget class="QLabel" name="catLabel" >
+          <property name="text" >
+           <string>Category</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="2" >
+         <widget class="QLabel" name="textLabel2" >
+          <property name="text" >
+           <string>Field (layer)</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1" colspan="3" >
+         <widget class="QComboBox" name="mCatModeBox" >
+          <property name="currentIndex" >
+           <number>-1</number>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1" >
+         <widget class="QLineEdit" name="mCatEntry" />
+        </item>
+        <item row="1" column="3" >
+         <widget class="QComboBox" name="mFieldBox" >
+          <property name="editable" >
+           <bool>true</bool>
+          </property>
+          <property name="duplicatesEnabled" >
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab" >
+       <attribute name="title" >
+        <string>Settings</string>
+       </attribute>
+       <layout class="QGridLayout" >
+        <property name="margin" >
+         <number>0</number>
+        </property>
+        <property name="spacing" >
+         <number>6</number>
+        </property>
+        <item row="0" column="0" >
+         <widget class="QLabel" name="textLabel4" >
+          <property name="text" >
+           <string>Snapping in screen pixels</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1" >
+         <widget class="QSpinBox" name="mSnapPixels" >
+          <property name="value" >
+           <number>10</number>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab" >
+       <attribute name="title" >
+        <string>Symbology</string>
+       </attribute>
+       <layout class="QHBoxLayout" >
+        <property name="margin" >
+         <number>0</number>
+        </property>
+        <property name="spacing" >
+         <number>6</number>
+        </property>
+        <item>
+         <widget class="Q3ListView" name="symbologyList" >
+          <property name="sizePolicy" >
+           <sizepolicy>
+            <hsizetype>7</hsizetype>
+            <vsizetype>7</vsizetype>
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize" >
+           <size>
+            <width>20</width>
+            <height>20</height>
+           </size>
+          </property>
+          <property name="resizeMode" >
+           <enum>Q3ListView::AllColumns</enum>
+          </property>
+          <property name="treeStepSize" >
+           <number>20</number>
+          </property>
+          <column>
+           <property name="text" >
+            <string>Column 1</string>
+           </property>
+          </column>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab" >
+       <attribute name="title" >
+        <string>Table</string>
+       </attribute>
+       <layout class="QVBoxLayout" >
+        <property name="margin" >
+         <number>0</number>
+        </property>
+        <property name="spacing" >
+         <number>6</number>
+        </property>
+        <item>
+         <widget class="Q3Frame" name="frame9" >
+          <property name="sizePolicy" >
+           <sizepolicy>
+            <hsizetype>7</hsizetype>
+            <vsizetype>5</vsizetype>
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize" >
+           <size>
+            <width>0</width>
+            <height>30</height>
+           </size>
+          </property>
+          <property name="maximumSize" >
+           <size>
+            <width>32767</width>
+            <height>30</height>
+           </size>
+          </property>
+          <property name="frameShape" >
+           <enum>QFrame::NoFrame</enum>
+          </property>
+          <property name="frameShadow" >
+           <enum>QFrame::Plain</enum>
+          </property>
+          <property name="lineWidth" >
+           <number>0</number>
+          </property>
+          <widget class="QLabel" name="textLabel1" >
+           <property name="geometry" >
+            <rect>
+             <x>10</x>
+             <y>2</y>
+             <width>93</width>
+             <height>26</height>
+            </rect>
+           </property>
+           <property name="text" >
+            <string>Field (layer)</string>
+           </property>
+          </widget>
+          <widget class="QComboBox" name="mTableField" >
+           <property name="geometry" >
+            <rect>
+             <x>119</x>
+             <y>1</y>
+             <width>65</width>
+             <height>29</height>
+            </rect>
+           </property>
+           <property name="editable" >
+            <bool>true</bool>
+           </property>
+           <property name="duplicatesEnabled" >
+            <bool>false</bool>
+           </property>
+          </widget>
+         </widget>
+        </item>
+        <item>
+         <widget class="Q3Table" name="mAttributeTable" >
+          <property name="lineWidth" >
+           <number>2</number>
+          </property>
+          <property name="resizePolicy" >
+           <enum>Q3ScrollView::Manual</enum>
+          </property>
+          <property name="numRows" >
+           <number>0</number>
+          </property>
+          <property name="numCols" >
+           <number>3</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="Q3Frame" name="frame3" >
+          <property name="sizePolicy" >
+           <sizepolicy>
+            <hsizetype>7</hsizetype>
+            <vsizetype>7</vsizetype>
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize" >
+           <size>
+            <width>0</width>
+            <height>35</height>
+           </size>
+          </property>
+          <property name="maximumSize" >
+           <size>
+            <width>32767</width>
+            <height>35</height>
+           </size>
+          </property>
+          <property name="frameShape" >
+           <enum>QFrame::NoFrame</enum>
+          </property>
+          <property name="frameShadow" >
+           <enum>QFrame::Plain</enum>
+          </property>
+          <property name="lineWidth" >
+           <number>0</number>
+          </property>
+          <layout class="QHBoxLayout" >
+           <property name="margin" >
+            <number>3</number>
+           </property>
+           <property name="spacing" >
+            <number>3</number>
+           </property>
+           <item>
+            <widget class="QPushButton" name="mAddColumnButton" >
+             <property name="sizePolicy" >
+              <sizepolicy>
+               <hsizetype>7</hsizetype>
+               <vsizetype>7</vsizetype>
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text" >
+              <string>Add Column</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="mAlterTableButton" >
+             <property name="sizePolicy" >
+              <sizepolicy>
+               <hsizetype>7</hsizetype>
+               <vsizetype>7</vsizetype>
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text" >
+              <string>Create / Alter Table</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="Q3ToolBar" name="newToolBar" >
+   <property name="label" >
+    <string>Tools</string>
+   </property>
+   <addaction name="newPointAction" />
+   <addaction name="newLineAction" />
+   <addaction name="newBoundaryAction" />
+   <addaction name="newCentroidAction" />
+  </widget>
+  <widget class="Q3ToolBar" name="editVertexToolBar" >
+   <property name="label" >
+    <string>Toolbar</string>
+   </property>
+   <addaction name="moveVertexAction" />
+   <addaction name="addVertexAction" />
+   <addaction name="deleteVertexAction" />
+  </widget>
+  <widget class="Q3ToolBar" name="editLineToolBar" >
+   <property name="label" >
+    <string>Toolbar</string>
+   </property>
+   <addaction name="moveLineAction" />
+   <addaction name="splitLineAction" />
+   <addaction name="deleteLineAction" />
+   <addaction name="separator" />
+   <addaction name="editAttributesAction" />
+  </widget>
+  <widget class="Q3ToolBar" name="mainToolBar" >
+   <property name="label" >
+    <string>Toolbar</string>
+   </property>
+   <addaction name="closeEditAction" />
+  </widget>
+  <action name="closeEditAction" >
+   <property name="icon" >
+    <iconset>image0</iconset>
+   </property>
+   <property name="text" >
+    <string>Close</string>
+   </property>
+   <property name="iconText" >
+    <string>Close</string>
+   </property>
+  </action>
+  <actiongroup name="actionToolsGroup" >
+   <action name="newLineAction" >
+    <property name="checkable" >
+     <bool>true</bool>
+    </property>
+    <property name="icon" >
+     <iconset>image1</iconset>
+    </property>
+    <property name="text" >
+     <string>New line</string>
+    </property>
+    <property name="iconText" >
+     <string>New line</string>
+    </property>
+    <property name="shortcut" >
+     <string>F2</string>
+    </property>
+   </action>
+   <action name="newPointAction" >
+    <property name="checkable" >
+     <bool>true</bool>
+    </property>
+    <property name="icon" >
+     <iconset>image2</iconset>
+    </property>
+    <property name="text" >
+     <string>New point</string>
+    </property>
+    <property name="iconText" >
+     <string>New point</string>
+    </property>
+    <property name="shortcut" >
+     <string>F1</string>
+    </property>
+   </action>
+   <action name="newBoundaryAction" >
+    <property name="checkable" >
+     <bool>true</bool>
+    </property>
+    <property name="icon" >
+     <iconset>image3</iconset>
+    </property>
+    <property name="text" >
+     <string>New boundary</string>
+    </property>
+    <property name="iconText" >
+     <string>New boundary</string>
+    </property>
+    <property name="shortcut" >
+     <string>F3</string>
+    </property>
+   </action>
+   <action name="newCentroidAction" >
+    <property name="checkable" >
+     <bool>true</bool>
+    </property>
+    <property name="icon" >
+     <iconset>image4</iconset>
+    </property>
+    <property name="text" >
+     <string>New centroid</string>
+    </property>
+    <property name="iconText" >
+     <string>New centroid</string>
+    </property>
+    <property name="shortcut" >
+     <string>F4</string>
+    </property>
+   </action>
+   <action name="moveVertexAction" >
+    <property name="checkable" >
+     <bool>true</bool>
+    </property>
+    <property name="icon" >
+     <iconset>image5</iconset>
+    </property>
+    <property name="text" >
+     <string>Move vertex</string>
+    </property>
+    <property name="iconText" >
+     <string>Move vertex</string>
+    </property>
+    <property name="shortcut" >
+     <string>F5</string>
+    </property>
+   </action>
+   <action name="addVertexAction" >
+    <property name="checkable" >
+     <bool>true</bool>
+    </property>
+    <property name="icon" >
+     <iconset>image6</iconset>
+    </property>
+    <property name="text" >
+     <string>Add vertex</string>
+    </property>
+    <property name="iconText" >
+     <string>Add vertex</string>
+    </property>
+    <property name="shortcut" >
+     <string>F6</string>
+    </property>
+   </action>
+   <action name="deleteVertexAction" >
+    <property name="checkable" >
+     <bool>true</bool>
+    </property>
+    <property name="icon" >
+     <iconset>image7</iconset>
+    </property>
+    <property name="text" >
+     <string>Delete vertex</string>
+    </property>
+    <property name="iconText" >
+     <string>Delete vertex</string>
+    </property>
+    <property name="shortcut" >
+     <string>F7</string>
+    </property>
+   </action>
+   <action name="splitLineAction" >
+    <property name="checkable" >
+     <bool>true</bool>
+    </property>
+    <property name="icon" >
+     <iconset>image8</iconset>
+    </property>
+    <property name="text" >
+     <string>Split line</string>
+    </property>
+    <property name="iconText" >
+     <string>Split line</string>
+    </property>
+    <property name="shortcut" >
+     <string>F10</string>
+    </property>
+   </action>
+   <action name="moveLineAction" >
+    <property name="checkable" >
+     <bool>true</bool>
+    </property>
+    <property name="icon" >
+     <iconset>image9</iconset>
+    </property>
+    <property name="text" >
+     <string>Move line</string>
+    </property>
+    <property name="iconText" >
+     <string>Move line</string>
+    </property>
+    <property name="shortcut" >
+     <string>F9</string>
+    </property>
+   </action>
+   <action name="deleteLineAction" >
+    <property name="checkable" >
+     <bool>true</bool>
+    </property>
+    <property name="icon" >
+     <iconset>image10</iconset>
+    </property>
+    <property name="text" >
+     <string>Delete line</string>
+    </property>
+    <property name="iconText" >
+     <string>Delete line</string>
+    </property>
+    <property name="shortcut" >
+     <string>F11</string>
+    </property>
+   </action>
+   <action name="editAttributesAction" >
+    <property name="checkable" >
+     <bool>true</bool>
+    </property>
+    <property name="icon" >
+     <iconset>image11</iconset>
+    </property>
+    <property name="text" >
+     <string>Edit attributes</string>
+    </property>
+    <property name="iconText" >
+     <string>Edit attributes</string>
+    </property>
+   </action>
+  </actiongroup>
+ </widget>
+ <layoutdefault spacing="6" margin="11" />
+ <pixmapfunction></pixmapfunction>
+ <customwidgets>
+  <customwidget>
+   <class>Q3Frame</class>
+   <extends></extends>
+   <header>Qt3Support/Q3Frame</header>
+   <container>1</container>
+   <pixmap></pixmap>
+  </customwidget>
+  <customwidget>
+   <class>Q3Table</class>
+   <extends></extends>
+   <header>q3table.h</header>
+   <container>0</container>
+   <pixmap></pixmap>
+  </customwidget>
+  <customwidget>
+   <class>Q3MainWindow</class>
+   <extends></extends>
+   <header>q3mainwindow.h</header>
+   <container>1</container>
+   <pixmap></pixmap>
+  </customwidget>
+  <customwidget>
+   <class>Q3ListView</class>
+   <extends></extends>
+   <header>q3listview.h</header>
+   <container>0</container>
+   <pixmap></pixmap>
+  </customwidget>
+  <customwidget>
+   <class>Q3ToolBar</class>
+   <extends></extends>
+   <header>q3listview.h</header>
+   <container>0</container>
+   <pixmap></pixmap>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>
