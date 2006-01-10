@@ -100,6 +100,8 @@ class QgsMapImage
     QGis::units mapUnits() const { return mMapUnits; }
     void setMapUnits(QGis::units u);
     
+    //! sets whether map image will be for overview
+    void setOverview(bool isOverview = true) { mOverview = isOverview; }
   
   protected:
     
@@ -137,6 +139,9 @@ class QgsMapImage
     
     //! stores pixmap with rendered map
     QPixmap* mPixmap;
+    
+    //! indicates whether it's map image for overview
+    bool mOverview;
 };
 
 #endif

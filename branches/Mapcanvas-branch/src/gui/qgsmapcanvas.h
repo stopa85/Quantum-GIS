@@ -64,6 +64,7 @@ class QgsAcetateObject;
 class QgsMeasure;
 
 class QgsMapImage;
+class QgsMapOverviewCanvas;
 
 /*! \class QgsMapCanvas
  * \brief Map canvas class for displaying all GIS data types.
@@ -85,6 +86,8 @@ class QgsMapCanvas : public QWidget
     void setCurrentLayer(QgsMapLayer* layer);
     
     void updateOverview();
+    
+    void setOverview(QgsMapOverviewCanvas* overview);
     
     QgsMapImage* mapImage();
     
@@ -273,9 +276,6 @@ protected:
     /// Handle pattern for implementation object
     std::auto_ptr<CanvasProperties> mCanvasProperties;
 
-    //! lets us know whether this canvas is being used as an overview canvas or note
-    bool mIsOverviewCanvas;
-    
 private:
     /// this class is non-copyable
     /**
@@ -292,6 +292,8 @@ private:
     QgsMapCanvas();
 
     QgsMapImage* mMapImage;
+    
+    QgsMapOverviewCanvas* mMapOverview;
 
     /**
        List to store the points of digitised lines and polygons

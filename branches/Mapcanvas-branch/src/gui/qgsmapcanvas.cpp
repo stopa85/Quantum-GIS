@@ -19,7 +19,6 @@ email                : sherman at mrcc.com
 /*
 
 TODO:
-- move overview widget under control of main map canvas
 - bring back disabled stuff
   - render progress
   - acetate layer... or do we still need it?
@@ -66,6 +65,7 @@ TODO:
 #include "qgspolygonsymbol.h"
 #include "qgsproject.h"
 #include "qgsmaplayerregistry.h"
+#include "qgsmapoverviewcanvas.h"
 #include "qgsmeasure.h"
 
 #include "qgsmapcanvas.h"
@@ -87,11 +87,10 @@ QgsMapCanvas::QgsMapCanvas()
   mUserInteractionAllowed(true) // by default we allow a user to interact with the canvas
 {
   mCurrentLayer = NULL;
+  mMapOverview = NULL;
   
   // by default, the canvas is rendered
   mRenderFlag = true;
-
-  mIsOverviewCanvas = false;
 
   setMouseTracking(true);
   setFocusPolicy(Qt::StrongFocus);
@@ -160,7 +159,7 @@ bool QgsMapCanvas::isDrawing()
 // device size
 QgsMapToPixel * QgsMapCanvas::getCoordinateTransform()
 {
-  return mCanvasProperties->coordXForm;
+  return mMapImage->coordXForm();
 }
 
 void QgsMapCanvas::setLayerSet(std::deque<QString>& layerSet)
@@ -179,17 +178,30 @@ void QgsMapCanvas::setLayerSet(std::deque<QString>& layerSet)
   {
     QObject::connect(getZpos(i), SIGNAL(repaintRequested()), this, SLOT(refresh()));
   }
-  
-  updateOverview();
+
+  if (mMapOverview)
+  {
+    mMapOverview->setLayerSet(layerSet);
+    updateOverview();
+  }
   
   refresh();
 
 } // addLayer
 
+void QgsMapCanvas::setOverview(QgsMapOverviewCanvas* overview)
+{
+  mMapOverview = overview;
+}
+
 
 void QgsMapCanvas::updateOverview()
 {
-  // TODO: redraw overview
+  // redraw overview
+  if (mMapOverview)
+  {
+    mMapOverview->refresh();
+  }
 }
 
 
@@ -382,6 +394,8 @@ void QgsMapCanvas::setExtent(QgsRect const & r)
   mMapImage->setExtent(r);
   emit extentsChanged(mMapImage->extent());
   updateScale();
+  if (mMapOverview)
+    mMapOverview->reflectChangedExtent();
 } // setExtent
   
 
@@ -1670,7 +1684,6 @@ void QgsMapCanvas::mouseReleaseEvent(QMouseEvent * e)
 
 void QgsMapCanvas::resizeEvent(QResizeEvent * e)
 {
-  std::cout << "-> resizing!" << std::endl;
   mMapImage->setPixmapSize(e->size().width(), e->size().height());
   updateScale();
   clear();
@@ -1955,6 +1968,9 @@ void QgsMapCanvas::setbgColor(const QColor & _newVal)
 {
   mMapImage->setBgColor(_newVal);
   setEraseColor(_newVal);
+  
+  if (mMapOverview)
+    mMapOverview->setbgColor(_newVal);
 } // setbgColor
 
 
