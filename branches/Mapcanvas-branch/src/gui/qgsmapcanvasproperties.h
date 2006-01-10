@@ -9,7 +9,6 @@
 #include "qgsgeometry.h"
 #include "qgsmaptopixel.h"
 #include "qgsvectorlayer.h"
-#include "qgsscalecalculator.h"
 #include "qgsproject.h"
 //Added by qt3to4:
 #include <QPixmap>
@@ -30,110 +29,46 @@ class QgsMapCanvas::CanvasProperties
 
     CanvasProperties( int width, int height )
   : mapWindow( 0x0 ),
-    mapLegend( 0 ),
     coordXForm( 0x0 ),
-    pmCanvas( 0x0 ),
-    bgColor( Qt::white ),
     panSelectorDown( false ),
     dragging( false ),
     capturing( false ),
     drawing( false ),
     panning( false ),
     frozen( false ),
-    dirty( true ),
-    scaleCalculator( 0x0 )
+    dirty( true )
     {
       mapWindow = new QRect;
       coordXForm = new QgsMapToPixel;
-      pmCanvas = new QPixmap(width, height);
-      scaleCalculator = new QgsScaleCalculator;
-    // set the initial extent - can't use a constructor since QgsRect
-    // normalizes the rectangle upon construction
-      fullExtent.setXmin(9999999999.0);
-      fullExtent.setYmin(999999999.0);
-      fullExtent.setXmax(-999999999.0);
-      fullExtent.setYmax(-999999999.0);
     }
 
     CanvasProperties()
   : mapWindow( 0x0 ),
-    mapLegend( 0 ),
     coordXForm( 0x0 ),
-    pmCanvas( 0x0 ),
-    bgColor( Qt::white ),
     panSelectorDown( false ),
     dragging( false ),
     capturing( false ),
     drawing( false ),
     panning( false ),
     frozen( false ),
-    dirty( true ),
-    scaleCalculator( 0x0 )
+    dirty( true )
     {
       mapWindow = new QRect;
-      coordXForm = new QgsMapToPixel;
-      pmCanvas = new QPixmap;
-      scaleCalculator = new QgsScaleCalculator;
     }
 
 
     ~CanvasProperties()
     {
-      delete coordXForm;
-      delete pmCanvas;
       delete mapWindow;
-      delete scaleCalculator;
     } // ~CanvasProperties
 
-
-    void initMetrics(Q3PaintDeviceMetrics *pdm)
-    {
-    // set the logical dpi
-      mDpi = pdm->logicalDpiX();
-      scaleCalculator->setDpi(mDpi);
-
-    // set default map units
-      mMapUnits = QGis::METERS;
-      scaleCalculator->setMapUnits(mMapUnits);
-    }
-
-    void setMapUnits(QGis::units u)
-    {
-      mMapUnits = u;
-      scaleCalculator->setMapUnits(mMapUnits);
-      QgsProject::instance()->mapUnits(u);
-    }
-
-    QGis::units mapUnits()
-    {
-      return mMapUnits;
-    }
-
-  //! map containing the layers by name
-    std::map< QString, QgsMapLayer *> layers;
 
   //! map containing the acetate objects by key (name)
     std::map< QString, QgsAcetateObject *> acetateObjects;
 
-  //! list containing the names of layers in zorder
-    std::list< QString > zOrder;
-
-  //! Full extent of the map canvas
-    QgsRect fullExtent;
-
-  //! Current extent
-    QgsRect currentExtent;
-
-  //! Previous view extent
-    QgsRect previousExtent;
-
   //! Map window rectangle
   //std::auto_ptr<QRect> mapWindow;
     QRect * mapWindow;
-
-  //! Pointer to the map legend
-  //std::auto_ptr<QgsLegend> mapLegend;
-    QgsLegend * mapLegend;
 
   /** Pointer to the coordinate transform object used to transform
     coordinates from real world to device coordinates
@@ -154,9 +89,6 @@ class QgsMapCanvas::CanvasProperties
 
   //!Flag to indicate status of mouse button
               bool mouseButtonDown;
-
-  //! Map units per pixel
-              double m_mupp;
 
   //! Rubber band box for dynamic zoom
               QRect zoomBox;
@@ -190,15 +122,6 @@ class QgsMapCanvas::CanvasProperties
 
   //! The snapped-to geometry
               QgsGeometry snappedAtGeometry;
-
-  //! Pixmap used for restoring the canvas.
-              /** @note using QGuardedPtr causes sefault for some reason -- XXX trying again */
-  //QGuardedPtr<QPixmap> pmCanvas;
-  //std::auto_ptr<QPixmap> pmCanvas;
-              QPixmap * pmCanvas;
-
-  //! Background color for the map canvas
-              QColor bgColor;
 
   //! Flag to indicate the pan selector key is held down by user
               bool panSelectorDown;
@@ -239,18 +162,6 @@ class QgsMapCanvas::CanvasProperties
   //! Value use to calculate the search radius when identifying features
   // TODO - Do we need this?
              double radiusValue;
-
-  //std::auto_ptr<QgsScaleCalculator> scaleCalculator;
-             QgsScaleCalculator * scaleCalculator;
-
-  //! DPI of physical display
-             int mDpi;
-
-  //! Map units for the data on the canvas
-             QGis::units mMapUnits;
-
-  //! Map scale of the canvas at its current zool level
-             double mScale;
 
   private:
 

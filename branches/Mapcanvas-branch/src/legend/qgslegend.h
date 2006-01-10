@@ -33,6 +33,7 @@ class QDomNode;
 class QMouseEvent;
 class QTreeWidgetItem;
 class Q3PopupMenu;
+class Q3ListViewItem;
 
 /**
    \class QgsLegend
@@ -129,8 +130,7 @@ class QgsLegend : public QTreeWidget
   /**Removes an item from the legend. This is e.g. necessary before shifting it to another place*/
   void removeItem(QTreeWidgetItem* item);
 
-  /**Returns the ids of the layers contained in this legend. The order is bottom->top*/
-  std::deque<QString> layerIDs();
+  void updateMapCanvasLayerSet();
 
 public slots:
 
@@ -227,6 +227,8 @@ this item may be moved back to the original position with resetToInitialPosition
   void collapseAll();
   /**Just for a test*/
   void handleItemChange(QTreeWidgetItem* item, int row);
+  /** delegates current layer to map canvas */
+  void handleCurrentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* previous);
   /**Calls openPersistentEditor for the current item*/
   void openEditor();
   /**Removes the current item and inserts it as a toplevel item at the end of the legend*/

@@ -533,7 +533,7 @@ private:
   //! Map layer registry
   // use instance() now QgsMapLayerRegistry *mLayerRegistry;
   //! Overview canvas where the map overview is shown
-  QgsMapOverviewCanvas * mOverviewCanvas;
+  //QgsMapOverviewCanvas * mOverviewCanvas;
   //! Table of contents (legend) for the map
   QgsLegend *mMapLegend;
   //! Cursor for the map

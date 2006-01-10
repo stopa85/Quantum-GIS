@@ -40,6 +40,7 @@
 #include <QMenu>
 #include <QFont>
 #include <QHeaderView>
+#include <Q3ListViewItem>
 
 static const char *const ident_ = "$Id$";
 
@@ -58,6 +59,9 @@ QgsLegend::QgsLegend(QgisApp* app, QWidget * parent, const char *name)
   
   connect( this, SIGNAL(itemChanged(QTreeWidgetItem*, int)),
 	   this, SLOT(handleItemChange(QTreeWidgetItem*, int)));
+  
+  connect( this, SIGNAL(currentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* previous)),
+           this, SLOT(handleCurrentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* previous)));
 
   setSortingEnabled(false);
   setDragEnabled(false);
@@ -76,6 +80,12 @@ QgsLegend::QgsLegend(QgisApp* app, QWidget * parent, const char *name)
 
 QgsLegend::~QgsLegend()
 {}
+
+
+void QgsLegend::handleCurrentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* previous)
+{
+  mMapCanvas->setCurrentLayer(currentLayer());
+}   
 
 void QgsLegend::addGroup()
 {
@@ -99,6 +109,7 @@ void QgsLegend::removeAll()
 {
   mStateOfCheckBoxes.clear();
   clear();
+  updateMapCanvasLayerSet();
 }
 
 void QgsLegend::removeLayer(QString layer_key)
@@ -126,8 +137,8 @@ void QgsLegend::removeLayer(QString layer_key)
 	}
 	theItem = nextItem(theItem);
     }
-    //update the overview canvas
-    mApp->setOverviewZOrder(this);
+
+    updateMapCanvasLayerSet();
 }
 
 void QgsLegend::mousePressEvent(QMouseEvent * e)
@@ -323,7 +334,9 @@ void QgsLegend::mouseReleaseEvent(QMouseEvent * e)
 		origLayer->setLegendSymbologyGroupParent((QgsLegendSymbologyGroup*)(dynamic_cast<QgsLegendItem*>(dest->parent())->nextSibling()));
 	      }
 	  }
-	emit zOrderChanged(this);
+	
+   // z-order has changed - update layer set
+   updateMapCanvasLayerSet();
       }
   }
   mMousePressedFlag = false;
@@ -468,6 +481,12 @@ void QgsLegend::addLayer( QgsMapLayer * layer )
     setExpanded(indexFromItem(lpgroup), true);
     setExpanded(indexFromItem(lsgroup), true);
     setExpanded(indexFromItem(llfgroup), true);
+    
+    updateMapCanvasLayerSet();
+    
+    // first layer?
+    if (mMapCanvas->layerCount() == 1)
+      mMapCanvas->zoomFullExtent();
 }
 
 QgsMapLayer* QgsLegend::currentLayer()
@@ -554,8 +573,6 @@ void QgsLegend::legendLayerRemove()
      mMapCanvas->update();
    }
    removeItem(ll);
-   //update the overview canvas
-   mApp->setOverviewZOrder(this);
 }
 
 void QgsLegend::legendLayerAddToOverview()
@@ -576,11 +593,7 @@ void QgsLegend::legendLayerAddToOverview()
        }
    }
 
-   if(maplayers.size()>0)
-   {
-       //update the overview canvas
-       mApp->setOverviewZOrder(this);
-   } 
+   mMapCanvas->updateOverview();
 }
 
 void QgsLegend::legendLayerRemoveFromOverview()
@@ -601,11 +614,7 @@ void QgsLegend::legendLayerRemoveFromOverview()
        }
    }
 
-   if(maplayers.size()>0)
-   {
-       //update the overview canvas
-       mApp->setOverviewZOrder(this);
-   } 
+   mMapCanvas->updateOverview();
 }
 
 void QgsLegend::legendLayerShowProperties()
@@ -1331,7 +1340,7 @@ void QgsLegend::removeItem(QTreeWidgetItem* item)
     }
 }
 
-std::deque<QString> QgsLegend::layerIDs()
+void QgsLegend::updateMapCanvasLayerSet()
 {
   std::deque<QString> layers;
   QTreeWidgetItem* theItem = firstItem();
@@ -1355,7 +1364,7 @@ std::deque<QString> QgsLegend::layerIDs()
     }
 #endif
 
-  return layers;
+  mMapCanvas->setLayerSet(layers);
 }
 
 void QgsLegend::handleItemChange(QTreeWidgetItem* item, int row)

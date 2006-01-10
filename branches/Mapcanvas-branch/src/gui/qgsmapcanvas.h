@@ -41,6 +41,8 @@
 #endif
 
 #include <qgis.h>
+#include <deque>
+#include <Q3CanvasView>
 //Added by qt3to4:
 class QWheelEvent;
 class QPixmap;
@@ -61,6 +63,7 @@ class QgsLegendView;
 class QgsAcetateObject;
 class QgsMeasure;
 
+class QgsMapImage;
 
 /*! \class QgsMapCanvas
  * \brief Map canvas class for displaying all GIS data types.
@@ -77,17 +80,16 @@ class QgsMapCanvas : public QWidget
     //! Destructor
     ~QgsMapCanvas();
 
+    void setLayerSet(std::deque<QString>& layerSet);
+    
+    void setCurrentLayer(QgsMapLayer* layer);
+    
+    void updateOverview();
+    
+    QgsMapImage* mapImage();
+    
     //! Accessor for the canvas pixmap
     QPixmap * canvasPixmap();
-
-    //! Mutator for the canvas pixmap
-    void setCanvasPixmap(QPixmap * theQPixmap);
-
-    //! Set the legend control to be used with this canvas
-    void setLegend(QgsLegend *legend);
-
-    //! Get a pointer to the legend control used with this canvas
-    QgsLegend * getLegend();
 
     //! Get the last reported scale of the canvas
     double getScale();
@@ -99,9 +101,9 @@ class QgsMapCanvas : public QWidget
     double mupp() const;
 
     //! Returns the current zoom exent of the map canvas
-    QgsRect const & extent() const;
+    QgsRect extent() const;
     //! Returns the combined exent for all layers on the map canvas
-    QgsRect const & fullExtent() const;
+    QgsRect fullExtent() const;
 
     //! Set the extent of the map canvas
     void setExtent(QgsRect const & r);
@@ -124,12 +126,15 @@ class QgsMapCanvas : public QWidget
     /** Write property of QColor bgColor. */
     virtual void setbgColor(const QColor & _newVal);
 
+    /** Emits signal scalChanged to update scale in main window */
+    void updateScale();
+
     /** Updates the full extent to include the mbr of the rectangle r */
     void updateFullExtent(QgsRect const & r);
 
     //! return the map layer at postion index in the layer stack
     QgsMapLayer *getZpos(int index);
-
+    
     //! return the layer by name
     QgsMapLayer *layerByName(QString n);
 
@@ -152,12 +157,6 @@ class QgsMapCanvas : public QWidget
     //! Return the state of the canvas (dirty or not)
     bool isDirty() const;
 
-    //! Calculate the scale and return as a string
-    void currentScale(int thePrecision);
-
-    void setZOrder( std::list<QString> );
-    std::list < QString > const & zOrders() const;
-    std::list < QString >       & zOrders();
     //! Set map units (needed by project properties dialog)
     void setMapUnits(QGis::units mapUnits);
     //! Get the current canvas map units
@@ -187,34 +186,6 @@ class QgsMapCanvas : public QWidget
   
 public slots:
 
-    /*! Adds a layer to the map canvas.
-     * @param lyr Pointer to a layer derived from QgsMapLayer
-     */
-    virtual void addLayer(QgsMapLayer * lyr);
-
-    /*! \brief Add a layer from a map layer interface defined in a plugin.
-      @note
-         This is not currently implemented
-     */
-    void addLayer(QgsMapLayerInterface * lyr);
-
-    //! remove the layer defined by key
-    void remove (QString key);
-
-    /** remove all layers from the map
-
-        @note this does <i>not</i> iteratively call remove() since we're
-        deleting all map layers reference at once; if we did this iteratively,
-        then we'd be unnecessarily have the corresponding legend object
-        deleting legend items.  We want the legend object to get <i>one</i>
-        signal, clear(), to remove all <i>its</i> items.
-
-        @note dirty set to true
-
-        @note emits removedAll() signal
-     */
-    void removeAll();
-
     /**Sets dirty=true and calls render()*/
     void refresh();
     /**
@@ -233,11 +204,7 @@ public slots:
   decides, if a repaint is necessary or not*/
      void removeDigitizingLines(bool norepaint=false);
 
-    //! The painter device parameter is optional - if ommitted it will default
-    // to the pmCanvas (ie the gui map display). The idea is that you can pass
-    // an alternative device such as one that will be used for printing or
-    // saving a map view as an image file.
-    virtual void render(QPaintDevice * theQPaintDevice=0);
+    virtual void render();
 
     //! Save the convtents of the map canvas to disk as an image
     void saveAsImage(QString theFileName,QPixmap * QPixmap=0, QString="PNG" );
@@ -245,23 +212,10 @@ public slots:
     //! This slot is connected to the visibility change of one or more layers
     void layerStateChange();
 
-    //! sets z order based on order of layers in the legend
-    void setZOrderFromLegend(QgsLegend *lv);
-
     //! Whether to suppress rendering or not
     void setRenderFlag(bool theFlag);
     //! State of render suppression flag
     bool renderFlag() {return mRenderFlag;};
-
-    /**
-    Recalculate the full extent for the map canvas. This slot is connected to
-    each map layer and is "called" when the layers extent changes, either
-    through editing or subsetting via SQL query or other method. The full
-    extent is calculated by getting the layer collection from the map layer
-    registry and iterating through it, passing the extent of each layer to
-    the updateFullExtent method.
-     */
-    void recalculateExtents();
 
     /** A simple helper method to find out if on the fly projections are enabled or not */
     bool projectionsEnabled();
@@ -337,6 +291,8 @@ private:
      */
     QgsMapCanvas();
 
+    QgsMapImage* mMapImage;
+
     /**
        List to store the points of digitised lines and polygons
 
@@ -386,13 +342,6 @@ private:
     //! Gets the value used to calculated the identify search radius
     double calculateSearchRadiusValue();
 
-
-    //! Increments the z order index
-    void incrementZpos();
-
-    //! Updates the z order for layers on the map
-    void updateZpos();
-
     //! Zooms to a given center and scale 
     void zoomByScale(int x, int y, double scaleFactor);
 
@@ -424,6 +373,8 @@ private:
 
     //! Measure tool
     QgsMeasure *mMeasure;
+    
+    QgsMapLayer* mCurrentLayer;
 
     //! Scale factor multiple for default zoom in/out
     // TODO Make this customisable by the user

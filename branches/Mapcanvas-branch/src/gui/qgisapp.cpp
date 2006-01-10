@@ -97,10 +97,11 @@
 #include "qgslegendlayerfile.h"
 #include "qgslegendlayer.h"
 #include "qgsmapcanvas.h"
+#include "qgsmapimage.h"
 #include "qgsmaplayer.h"
 #include "qgsmaplayerinterface.h"
 #include "qgsmaplayerregistry.h"
-#include "qgsmapoverviewcanvas.h"
+//#include "qgsmapoverviewcanvas.h"
 #include "qgsmapserverexport.h"
 #include "qgsmessageviewer.h"
 #include "qgsoptions.h"
@@ -118,7 +119,7 @@
 #include "qgssinglesymrenderer.h"
 #include "qgsvectorfilewriter.h"
 #include "qgsvectorlayer.h"
-#include "../../plugins/qgisplugin.h"
+#include "qgisplugin.h"
 #include "../../images/themes/default/qgis.xpm"
 
 //
@@ -268,8 +269,6 @@ static void setTitleBarText_( QWidget & qgisApp )
   mMapCursor = 0;
   // create the interfce
   mQgisInterface = new QgisIface(this);
-  // set the legend control for the map canvas
-  mMapCanvas->setLegend(mMapLegend);
 
 
   //
@@ -1021,18 +1020,15 @@ void QgisApp::setupConnections()
   // connect the "cleanup" slot
   connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(saveWindowState()));
   //connect the legend, mapcanvas and overview canvas to the registry
-  connect(QgsMapLayerRegistry::instance(), 
-      SIGNAL(layerWillBeRemoved(QString)), mMapCanvas, SLOT(remove(QString)));
-  connect(QgsMapLayerRegistry::instance(), 
-      SIGNAL(layerWillBeRemoved(QString)), mOverviewCanvas, SLOT(remove(QString)));
-  connect(QgsMapLayerRegistry::instance(), 
-      SIGNAL(removedAll()), mOverviewCanvas, SLOT(removeAll()));
-  connect(QgsMapLayerRegistry::instance(), 
-      SIGNAL(removedAll()), mMapCanvas, SLOT(removeAll()));
-  connect(QgsMapLayerRegistry::instance(), 
-      SIGNAL(layerWasAdded(QgsMapLayer*)), mMapCanvas, SLOT(addLayer(QgsMapLayer *)));
-  connect(QgsMapLayerRegistry::instance(), 
-      SIGNAL(layerWasAdded(QgsMapLayer*)), mOverviewCanvas, SLOT(addLayer(QgsMapLayer *)));
+  
+  // connect map layer registry signals to legend
+  connect(QgsMapLayerRegistry::instance(), SIGNAL(layerWillBeRemoved(QString)),
+          mMapLegend, SLOT(removeLayer(QString)));
+  connect(QgsMapLayerRegistry::instance(), SIGNAL(removedAll()),
+          mMapLegend, SLOT(removeAll()));
+  connect(QgsMapLayerRegistry::instance(), SIGNAL(layerWasAdded(QgsMapLayer*)),
+          mMapLegend, SLOT(addLayer(QgsMapLayer *)));
+  
   //signal when mouse moved over window (coords display in status bar)
   connect(mMapCanvas, SIGNAL(xyCoordinates(QgsPoint &)), this, SLOT(showMouseCoordinate(QgsPoint &)));
   //signal when mouse in capturePoint mode and mouse clicked on canvas
@@ -1041,16 +1037,12 @@ void QgisApp::setupConnections()
   connect(mMapCanvas, SIGNAL(extentsChanged(QgsRect )),this,SLOT(showExtents(QgsRect )));
   connect(mMapCanvas, SIGNAL(scaleChanged(QString)), this, SLOT(showScale(QString)));
   connect(mMapCanvas, SIGNAL(scaleChanged(QString)), this, SLOT(updateMouseCoordinatePrecision()));
-  connect(mMapCanvas, SIGNAL(addedLayer(QgsMapLayer *)), mMapLegend, SLOT(addLayer(QgsMapLayer *)));
-  connect(mMapCanvas, SIGNAL(removedLayer(QString)), mMapLegend, SLOT(removeLayer(QString)));
-  connect(mMapCanvas, SIGNAL(removedAll()), mMapLegend, SLOT(removeAll()));
+  
   connect(mMapCanvas, SIGNAL(stopZoom()), this, SLOT(stopZoom()));
-  connect(mMapLegend, SIGNAL(zOrderChanged(QgsLegend *)), mMapCanvas, SLOT(setZOrderFromLegend(QgsLegend *)));
-  connect(mMapLegend, SIGNAL(zOrderChanged(QgsLegend *)), this, SLOT(setOverviewZOrder(QgsLegend *)));
   connect(mMapLegend, SIGNAL(currentChanged(Q3ListViewItem *)), this, SLOT(currentLayerChanged(Q3ListViewItem *)));
 
   connect(mRenderSuppressionCBox, SIGNAL(toggled(bool )), mMapCanvas, SLOT(setRenderFlag(bool)));
-  connect(mRenderSuppressionCBox, SIGNAL(toggled(bool )), mOverviewCanvas, SLOT(setRenderFlag(bool)));
+//  connect(mRenderSuppressionCBox, SIGNAL(toggled(bool )), mOverviewCanvas, SLOT(setRenderFlag(bool)));
 }
 void QgisApp::createCanvas()
 {
@@ -1069,7 +1061,7 @@ void QgisApp::createCanvas()
 void QgisApp::createOverview()
 {
   // overview canvas
-  mOverviewCanvas = new QgsMapOverviewCanvas(NULL, mMapCanvas);
+/*  mOverviewCanvas = new QgsMapOverviewCanvas(NULL, mMapCanvas);
   QWhatsThis::add(mOverviewCanvas, tr("Map overview canvas. This canvas can be used to display a locator map that shows the current extent of the map canvas. The current extent is shown as a red rectangle. Any layer on the map can be added to the overview canvas."));
   QBitmap overviewPanBmp(16, 16, pan_bits, true);
   QBitmap overviewPanBmpMask(16, 16, pan_mask_bits, true);
@@ -1078,6 +1070,7 @@ void QgisApp::createOverview()
   QVBoxLayout *myOverviewLayout = new QVBoxLayout;
   myOverviewLayout->addWidget(mOverviewCanvas);
   overviewFrame->setLayout(myOverviewLayout);
+  */
 }
 
 
@@ -1730,10 +1723,10 @@ bool QgisApp::addLayer(QFileInfo const & vectorFile)
         mMapCanvas,
         SLOT(recalculateExtents()));
 
-    QObject::connect(layer,
+/*    QObject::connect(layer,
         SIGNAL(recalculateExtents()),
         mOverviewCanvas,
-        SLOT(recalculateExtents()));
+    SLOT(recalculateExtents()));*/
   }
   else
   {
@@ -1864,10 +1857,10 @@ bool QgisApp::addLayer(QStringList const &theLayerQStringList, const QString& en
           mMapCanvas,
           SLOT(recalculateExtents()));
 
-      QObject::connect(layer,
+/*      QObject::connect(layer,
           SIGNAL(recalculateExtents()),
           mOverviewCanvas,
-          SLOT(recalculateExtents()));
+      SLOT(recalculateExtents()));*/
     }
     else
     {
@@ -1992,10 +1985,10 @@ void QgisApp::addDatabaseLayer()
             mMapCanvas,
             SLOT(recalculateExtents()));
 
-        QObject::connect(layer,
+/*        QObject::connect(layer,
             SIGNAL(recalculateExtents()),
             mOverviewCanvas,
-            SLOT(recalculateExtents()));
+        SLOT(recalculateExtents()));*/
       }
       else
       {
@@ -2367,10 +2360,10 @@ void QgisApp::fileNew()
   if (answer != QMessageBox::Cancel)
   {
     mMapCanvas->freeze(true);
-    mOverviewCanvas->freeze(true);
+//    mOverviewCanvas->freeze(true);
     QgsMapLayerRegistry::instance()->removeAllMapLayers();
     mMapCanvas->clear();
-    mOverviewCanvas->clear();
+//    mOverviewCanvas->clear();
 
 
     QgsProject::instance()->title( QString::null );
@@ -2391,7 +2384,7 @@ void QgisApp::fileNew()
     emit newProject();
 
     mMapCanvas->freeze(false);
-    mOverviewCanvas->freeze(false);
+//    mOverviewCanvas->freeze(false);
   }
   //set the projections enabled icon in the status bar
   int myProjectionEnabledFlag =
@@ -2410,10 +2403,7 @@ void QgisApp::fileNew(bool thePromptToSaveFlag)
   }
   else
   {
-    mMapCanvas->removeAll();
-    mMapCanvas->clear();
-    mOverviewCanvas->removeAll();
-    mOverviewCanvas->clear();
+//    mMapCanvas->clear();
 
     QgsProject::instance()->title( QString::null );
     QgsProject::instance()->filename( QString::null );
@@ -2710,10 +2700,10 @@ void QgisApp::fileOpen()
         mMapCanvas,
         SLOT(recalculateExtents()));
 
-    QObject::connect(myMapLayer,
+/*    QObject::connect(myMapLayer,
         SIGNAL(recalculateExtents()),
         mOverviewCanvas,
-        SLOT(recalculateExtents()));
+    SLOT(recalculateExtents()));*/
   }
 
   //set the projections enabled icon in the status bar
@@ -2730,7 +2720,7 @@ void QgisApp::fileOpen()
   */
 bool QgisApp::addProject(QString projectFile)
 {
-  mOverviewCanvas->freeze(true);
+//  mOverviewCanvas->freeze(true);
   mMapCanvas->freeze(true);
 
   // clear the map canvas
@@ -3208,7 +3198,7 @@ void QgisApp::saveMapAsImage(QString theImageFileNameQString, QPixmap * theQPixm
 //reimplements method from base (gui) class
 void QgisApp::addAllToOverview()
 {
-  mOverviewCanvas->freeze(true);
+//  mOverviewCanvas->freeze(true);
   std::map<QString, QgsMapLayer *> myMapLayers = QgsMapLayerRegistry::instance()->mapLayers();
   std::map<QString, QgsMapLayer *>::iterator myMapIterator;
   for ( myMapIterator = myMapLayers.begin(); myMapIterator != myMapLayers.end(); ++myMapIterator )
@@ -3217,14 +3207,14 @@ void QgisApp::addAllToOverview()
     myMapLayer->inOverview(true); // won't do anything if already in overview
   }
   // draw the map
-  mOverviewCanvas->clear();
-  mOverviewCanvas->freeze(false);
+//  mOverviewCanvas->clear();
+//  mOverviewCanvas->freeze(false);
   // For Qt4, deprecate direct calling of render().  Let render() be called by the 
   // paint event loop of the overview canvas widget.
   // XXX - this doesn't work -- or nobody implemented it so render() is still enabled
   // [gsherman]
-  mOverviewCanvas->render();
-  mOverviewCanvas->update();
+//  mOverviewCanvas->render();
+//  mOverviewCanvas->update();
 
   // notify the project we've made a change
   QgsProject::instance()->dirty(true);
@@ -3233,7 +3223,7 @@ void QgisApp::addAllToOverview()
 //reimplements method from base (gui) class
 void QgisApp::removeAllFromOverview()
 {
-  mOverviewCanvas->freeze(true);
+//  mOverviewCanvas->freeze(true);
   std::map<QString, QgsMapLayer *> myMapLayers = QgsMapLayerRegistry::instance()->mapLayers();
   std::map<QString, QgsMapLayer *>::iterator myMapIterator;
   for ( myMapIterator = myMapLayers.begin(); myMapIterator != myMapLayers.end(); ++myMapIterator )
@@ -3245,14 +3235,14 @@ void QgisApp::removeAllFromOverview()
     }
   }
   // draw the map
-  mOverviewCanvas->clear();
-  mOverviewCanvas->freeze(false);
+//  mOverviewCanvas->clear();
+//  mOverviewCanvas->freeze(false);
   // For Qt4, deprecate direct calling of render().  Let render() be called by the 
   // paint event loop of the overview canvas widget.
   // XXX - this doesn't work -- or nobody implemented it so render() is still enabled
   // [gsherman]
-  mOverviewCanvas->render();
-  mOverviewCanvas->update();
+//  mOverviewCanvas->render();
+//  mOverviewCanvas->update();
 
   // notify the project we've made a change
   QgsProject::instance()->dirty(true);
@@ -3273,7 +3263,7 @@ void QgisApp::hideAllLayers()
 #endif
 
   mMapCanvas->freeze(true);
-  mOverviewCanvas->freeze(true);
+//  mOverviewCanvas->freeze(true);
   std::map<QString, QgsMapLayer *> myMapLayers = QgsMapLayerRegistry::instance()->mapLayers();
   std::map<QString, QgsMapLayer *>::iterator myMapIterator;
   for ( myMapIterator = myMapLayers.begin(); myMapIterator != myMapLayers.end(); ++myMapIterator )
@@ -3284,7 +3274,7 @@ void QgisApp::hideAllLayers()
   // draw the map
   mMapCanvas->clear();
   mMapCanvas->freeze(false);
-  mOverviewCanvas->freeze(false);
+//  mOverviewCanvas->freeze(false);
   // For Qt4, deprecate direct calling of render().  Let render() be called by the 
   // paint event loop of the map canvas widget.
   // XXX - this doesn't work -- or nobody implemented it so render() is still enabled
@@ -3295,8 +3285,8 @@ void QgisApp::hideAllLayers()
   // paint event loop of the overview canvas widget.
   // XXX - this doesn't work -- or nobody implemented it so render() is still enabled
   // [gsherman]
-  mOverviewCanvas->render();
-  mOverviewCanvas->update();
+//  mOverviewCanvas->render();
+//  mOverviewCanvas->update();
 
   // notify the project we've made a change
   QgsProject::instance()->dirty(true);
@@ -3317,7 +3307,7 @@ void QgisApp::showAllLayers()
 #endif
 
   mMapCanvas->freeze(true);
-  mOverviewCanvas->freeze(true);
+//  mOverviewCanvas->freeze(true);
   std::map<QString, QgsMapLayer *> myMapLayers = QgsMapLayerRegistry::instance()->mapLayers();
   std::map<QString, QgsMapLayer *>::iterator myMapIterator;
   for ( myMapIterator = myMapLayers.begin(); myMapIterator != myMapLayers.end(); ++myMapIterator )
@@ -3328,7 +3318,7 @@ void QgisApp::showAllLayers()
   // draw the map
   mMapCanvas->clear();
   mMapCanvas->freeze(false);
-  mOverviewCanvas->freeze(false);
+//  mOverviewCanvas->freeze(false);
   // For Qt4, deprecate direct calling of render().  Let render() be called by the 
   // paint event loop of the map canvas widget.
   // XXX - this doesn't work -- or nobody implemented it so render() is still enabled
@@ -3339,8 +3329,8 @@ void QgisApp::showAllLayers()
   // paint event loop of the overview canvas widget.
   // XXX - this doesn't work -- or nobody implemented it so render() is still enabled
   // [gsherman]
-  mOverviewCanvas->render();
-  mOverviewCanvas->update();
+//  mOverviewCanvas->render();
+//  mOverviewCanvas->update();
 
   // notify the project we've made a change
   QgsProject::instance()->dirty(true);
@@ -3870,7 +3860,7 @@ void QgisApp::inOverview( bool in_overview )
     //but adding a layer to overview canvas does only work at the moment when calling render()...
     // XXX - this doesn't work -- or nobody implemented it so render() is still enabled
     // [gsherman]
-    mOverviewCanvas->render();
+//    mOverviewCanvas->render();
     //mOverviewCanvas->update();
   }
 } // QgisApp::inOverview(bool)
@@ -3897,16 +3887,16 @@ void QgisApp::removeLayer()
       //fire a qt signal to notify any objects using that layer that they should
       //remove it immediately
       QgsMapLayerRegistry::instance()->removeMapLayer(layer->getLayerID());
-      mOverviewCanvas->freeze(false);
+//      mOverviewCanvas->freeze(false);
       // draw the map
-      mOverviewCanvas->zoomFullExtent();
-      mOverviewCanvas->clear();
+//      mOverviewCanvas->zoomFullExtent();
+//      mOverviewCanvas->clear();
       // For Qt4, deprecate direct calling of render().  Let render() be called by the 
       // paint event loop of the overview canvas widget.
       // XXX - this doesn't work -- or nobody implemented it so render() is still enabled
       // [gsherman]
-      mOverviewCanvas->render();
-      mOverviewCanvas->update();
+//      mOverviewCanvas->render();
+//      mOverviewCanvas->update();
       mMapCanvas->freeze(false);
 
       //remove remaining digitising acetates
@@ -3932,7 +3922,7 @@ void QgisApp::removeLayer()
 void QgisApp::removeAllLayers()
 {
   QgsMapLayerRegistry::instance()->removeAllMapLayers();
-  mOverviewCanvas->clear();
+//  mOverviewCanvas->clear();
   mMapCanvas->clear();
 } //remove all layers
 
@@ -4750,11 +4740,11 @@ void QgisApp::addVectorLayer(QString vectorLayerPath, QString baseName, QString 
         mMapCanvas,
         SLOT(recalculateExtents()));
 
-    QObject::connect(layer,
+/*    QObject::connect(layer,
         SIGNAL(recalculateExtents()),
         mOverviewCanvas,
         SLOT(recalculateExtents()));
-
+*/
 
     QgsProject::instance()->dirty(false); // XXX this might be redundant
 
@@ -5021,7 +5011,7 @@ void QgisApp::showExtents(QgsRect theExtents)
 {
   // update the statusbar with the current extents.
   statusBar()->message(QString(tr("Extents: ")) + theExtents.stringRep(true));
-
+  /*
   if (mOverviewCanvas->extent() != mMapCanvas->fullExtent())
   {
 #ifdef QGISDEBUG
@@ -5039,10 +5029,10 @@ void QgisApp::showExtents(QgsRect theExtents)
     // [gsherman]
     mOverviewCanvas->render();
     mOverviewCanvas->update();
-  }
+}*/
 
   // update panning widget in overview
-  mOverviewCanvas->reflectChangedExtent();
+  //mOverviewCanvas->reflectChangedExtent();
 
 } // QgisApp::showExtents
 
@@ -5148,7 +5138,7 @@ void QgisApp::projectProperties()
   //pass any refresg signals off to canvases
   connect (pp,SIGNAL(refresh()), mMapCanvas, SLOT(refresh()));
   connect (pp,SIGNAL(mapUnitsChanged()), mMapCanvas, SLOT(mapUnitsChanged()));  
-  connect (pp,SIGNAL(refresh()), mOverviewCanvas, SLOT(refresh()));
+//  connect (pp,SIGNAL(refresh()), mOverviewCanvas, SLOT(refresh()));
 
   bool wasProjected = pp->isProjected();
 
@@ -5159,7 +5149,8 @@ void QgisApp::projectProperties()
   // new coordinate system
   if(pp->isProjected() != wasProjected)
   {
-    mMapCanvas->recalculateExtents();
+    mMapCanvas->mapImage()->layers().updateFullExtent();
+    //mMapCanvas->recalculateExtents();
   }
   // Set the window title.
   setTitleBarText_( *this );
@@ -5185,7 +5176,7 @@ void QgisApp::setLayerOverviewStatus(QString theLayerId, bool theVisibilityFlag)
 {
   if (theVisibilityFlag)
   {
-    mOverviewCanvas->addLayer(QgsMapLayerRegistry::instance()->mapLayer(theLayerId));
+//    mOverviewCanvas->addLayer(QgsMapLayerRegistry::instance()->mapLayer(theLayerId));
 #ifdef QGISDEBUG
 
     std::cout << " Added layer " << theLayerId.toLocal8Bit().data() << " to overview map" << std::endl;
@@ -5194,8 +5185,7 @@ void QgisApp::setLayerOverviewStatus(QString theLayerId, bool theVisibilityFlag)
   }
   else
   {
-    mOverviewCanvas->remove
-      (theLayerId);
+//    mOverviewCanvas->remove(theLayerId);
 #ifdef QGISDEBUG
 
     std::cout << " Removed layer " << theLayerId.toLocal8Bit().data() << " from overview map" << std::endl;
@@ -5218,7 +5208,7 @@ void QgisApp::setOverviewZOrder(QgsLegend * lv)
 #endif
   //we must clear the overview canvas first to ensure layers are added again
   //in the correect order!
-  mOverviewCanvas->clear();
+/*  mOverviewCanvas->clear();
   mOverviewCanvas->freeze(false);
   std::deque<QString> myOverviewLayerVector = lv->layerIDs();
   for(std::deque<QString>::iterator it= myOverviewLayerVector.begin(); it != myOverviewLayerVector.end(); ++it)
@@ -5241,7 +5231,7 @@ void QgisApp::setOverviewZOrder(QgsLegend * lv)
   // set the extents of the overview to match the mapcanvas
   mOverviewCanvas->setExtent(mMapCanvas->fullExtent());
   mOverviewCanvas->refresh();
-
+*/
   // notify the project we've made a change
   QgsProject::instance()->dirty(true);
 }
@@ -5249,7 +5239,8 @@ void QgisApp::setOverviewZOrder(QgsLegend * lv)
 //set the zorder of both overview and mapcanvas
 void QgisApp::setZOrder (std::list<QString> theZOrder)
 {
-  mMapCanvas->setZOrder(theZOrder);
+  // TODO: deprecated, delete
+  //mMapCanvas->setZOrder(theZOrder);
   //mOverviewCanvas->setZOrder(theZOrder);
 
   // notify the project we've made a change
@@ -5388,10 +5379,10 @@ bool QgisApp::addRasterLayer(QgsRasterLayer * theRasterLayer, bool theForceRedra
         mMapCanvas,
         SLOT(recalculateExtents()));
 
-    QObject::connect(theRasterLayer,
+/*    QObject::connect(theRasterLayer,
         SIGNAL(recalculateExtents()),
         mOverviewCanvas,
-        SLOT(recalculateExtents()));
+    SLOT(recalculateExtents()));*/
     // init the context menu so it can connect to slots in main app
     // XXX now taken care of in legend theRasterLayer->initContextMenu(this);
 
@@ -5437,7 +5428,7 @@ bool QgisApp::addRasterLayer(QFileInfo const & rasterFile, bool guiWarning)
   QApplication::setOverrideCursor(Qt::WaitCursor);
 
   mMapCanvas->freeze(true);
-  mOverviewCanvas->freeze(true);
+//  mOverviewCanvas->freeze(true);
 
   // XXX ya know QgsRasterLayer can snip out the basename on its own;
   // XXX why do we have to pass it in for it?
@@ -5461,7 +5452,7 @@ bool QgisApp::addRasterLayer(QFileInfo const & rasterFile, bool guiWarning)
   {
     statusBar()->message(mMapCanvas->extent().stringRep(2));
     mMapCanvas->freeze(false);
-    mOverviewCanvas->freeze(false);
+//    mOverviewCanvas->freeze(false);
     QApplication::restoreOverrideCursor();
     return true;
   }
@@ -5551,11 +5542,11 @@ void QgisApp::addRasterLayer(QString const & rasterLayerPath,
         mMapCanvas,
         SLOT(recalculateExtents()));
 
-    QObject::connect(layer,
+/*    QObject::connect(layer,
         SIGNAL(recalculateExtents()),
         mOverviewCanvas,
         SLOT(recalculateExtents()));
-
+*/
 
     QgsProject::instance()->dirty(false); // XXX this might be redundant
 
@@ -5591,12 +5582,12 @@ bool QgisApp::addRasterLayer(QStringList const &theFileNameQStringList, bool gui
     // allow mMapCanvas to handle events
     // first
     mMapCanvas->freeze(false);
-    mOverviewCanvas->freeze(false);
+//    mOverviewCanvas->freeze(false);
     return false;
   }
 
   mMapCanvas->freeze(true);
-  mOverviewCanvas->freeze(true);
+//  mOverviewCanvas->freeze(true);
 
   QApplication::setOverrideCursor(Qt::WaitCursor);
   // this is messy since some files in the list may be rasters and others may
@@ -5652,7 +5643,7 @@ bool QgisApp::addRasterLayer(QStringList const &theFileNameQStringList, bool gui
 
   statusBar()->message(mMapCanvas->extent().stringRep(2));
   mMapCanvas->freeze(false);
-  mOverviewCanvas->freeze(false);
+//  mOverviewCanvas->freeze(false);
   QApplication::restoreOverrideCursor();
 
   return returnValue;
