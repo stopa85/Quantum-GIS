@@ -97,11 +97,11 @@
 #include "qgslegendlayerfile.h"
 #include "qgslegendlayer.h"
 #include "qgsmapcanvas.h"
+#include "qgsmapoverviewcanvas.h"
 #include "qgsmapimage.h"
 #include "qgsmaplayer.h"
 #include "qgsmaplayerinterface.h"
 #include "qgsmaplayerregistry.h"
-//#include "qgsmapoverviewcanvas.h"
 #include "qgsmapserverexport.h"
 #include "qgsmessageviewer.h"
 #include "qgsoptions.h"
@@ -1061,16 +1061,17 @@ void QgisApp::createCanvas()
 void QgisApp::createOverview()
 {
   // overview canvas
-/*  mOverviewCanvas = new QgsMapOverviewCanvas(NULL, mMapCanvas);
-  QWhatsThis::add(mOverviewCanvas, tr("Map overview canvas. This canvas can be used to display a locator map that shows the current extent of the map canvas. The current extent is shown as a red rectangle. Any layer on the map can be added to the overview canvas."));
+  QgsMapOverviewCanvas* overviewCanvas = new QgsMapOverviewCanvas(NULL, mMapCanvas);
+  QWhatsThis::add(overviewCanvas, tr("Map overview canvas. This canvas can be used to display a locator map that shows the current extent of the map canvas. The current extent is shown as a red rectangle. Any layer on the map can be added to the overview canvas."));
   QBitmap overviewPanBmp(16, 16, pan_bits, true);
   QBitmap overviewPanBmpMask(16, 16, pan_mask_bits, true);
   mOverviewMapCursor = new QCursor(overviewPanBmp, overviewPanBmpMask, 5, 5);
-  mOverviewCanvas->setCursor(*mOverviewMapCursor);
+  overviewCanvas->setCursor(*mOverviewMapCursor);
   QVBoxLayout *myOverviewLayout = new QVBoxLayout;
-  myOverviewLayout->addWidget(mOverviewCanvas);
+  myOverviewLayout->addWidget(overviewCanvas);
   overviewFrame->setLayout(myOverviewLayout);
-  */
+  
+  mMapCanvas->setOverview(overviewCanvas);
 }
 
 

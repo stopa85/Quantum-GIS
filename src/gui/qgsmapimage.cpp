@@ -32,6 +32,7 @@ QgsMapImage::QgsMapImage(int width, int height)
   mScaleCalculator = new QgsScaleCalculator;
     
   mDrawing = false;
+  mOverview = false;
   
   mPixmap = new QPixmap(width, height);
   
@@ -254,7 +255,7 @@ void QgsMapImage::render()
     }
 #endif
 
-    if (ml->visible())
+    if ((!mOverview && ml->visible()) || (mOverview && ml->showInOverviewStatus()))
     {
       if ((ml->scaleBasedVisibility() && ml->minScale() < mScale && ml->maxScale() > mScale)
           || (!ml->scaleBasedVisibility()))
@@ -287,16 +288,16 @@ void QgsMapImage::render()
   std::cout << "QgsMapImage::render: Done rendering map layers...emitting renderComplete(paint)\n";
 #endif
 
-  // render all labels for vector layers in the stack, starting at the base
-  li = layers.begin();
-  while (li != layers.end())
+  if (!mOverview)
   {
-    // TODO: emit setProgress((myRenderCounter++),zOrder.size());
-    QgsMapLayer *ml = QgsMapLayerRegistry::instance()->mapLayer(*li);
-
-    if (ml)
+    // render all labels for vector layers in the stack, starting at the base
+    li = layers.begin();
+    while (li != layers.end())
     {
-      if (ml->visible() && (ml->type() != QgsMapLayer::RASTER))
+      // TODO: emit setProgress((myRenderCounter++),zOrder.size());
+      QgsMapLayer *ml = QgsMapLayerRegistry::instance()->mapLayer(*li);
+  
+      if (ml && ml->visible() && (ml->type() != QgsMapLayer::RASTER))
       {
         // only make labels if the layer is visible
         // after scale dep viewing settings are checked
@@ -313,7 +314,7 @@ void QgsMapImage::render()
       }
       li++;
     }
-  }
+  } // if (!mOverview)
 
   //make verys sure progress bar arrives at 100%!
   // TODO: emit setProgress(1,1);
