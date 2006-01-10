@@ -50,7 +50,7 @@ class QgsMapOverviewCanvas : public QgsMapCanvas
     void addLayer(QgsMapLayer * lyr);
 
     //! renders overview (using QgsMapCanvas) and updates panning widget
-    void render(QPaintDevice * theQPaintDevice=0);
+    void render();
   
   protected:
   

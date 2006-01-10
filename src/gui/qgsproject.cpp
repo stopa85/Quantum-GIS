@@ -775,6 +775,25 @@ static QgsMapCanvas * _findMapCanvas(QString const &canonicalMapCanvasName)
 
 
 
+static QgsLegend * _findLegend()
+{
+  QString canonicalLegendName = "theMapLegend";
+  QgsLegend* theLegend = NULL;
+
+  QWidgetList wlist = QApplication::topLevelWidgets();
+  foreach (QWidget *widget, QApplication::topLevelWidgets()) 
+  {
+    theLegend = dynamic_cast <QgsLegend *>(widget->child(canonicalLegendName.toLocal8Bit().data(), 0, true)); 
+    if(theLegend)
+      break;
+  }
+  
+  return theLegend;
+
+} // _findLegend
+
+
+
 /**
    Read map layers from project file
 
@@ -1157,20 +1176,16 @@ bool QgsProject::read()
     }
 
     //restore legend
-    QgsMapCanvas *theMapCanvas = _findMapCanvas("theMapCanvas");
-    if(theMapCanvas)
+      
+    QgsLegend* theLegend = _findLegend();
+    if(theLegend)
     {
-	QgsLegend* theLegend = theMapCanvas->getLegend();
-	//theLegend->restoreFromProject();
-	if(theLegend)
-	{
-	    QDomNodeList ll = doc->elementsByTagName("legend");
-	    if(ll.count()==1)
-	    {
-		QDomNode legendnode = ll.item(0);
-		theLegend->readXML(legendnode);
-	    }
-	}
+      QDomNodeList ll = doc->elementsByTagName("legend");
+      if(ll.count()==1)
+      {
+        QDomNode legendnode = ll.item(0);
+        theLegend->readXML(legendnode);
+      }
     }
 
     // can't be dirty since we're allegedly in pristine state
@@ -1335,16 +1350,13 @@ bool QgsProject::write()
     theMapCanvas->writeXML(qgisNode, *doc);
   }
 
-    //save legend settings
-    if(theMapCanvas)
-    {
-	QgsLegend* theLegend = theMapCanvas->getLegend();
-	if(theLegend)
-	{
-	  theLegend->writeXML(qgisNode, *doc);
-	  //theLegend->saveToProject();
-	}
-    }
+  //save legend settings
+  QgsLegend* theLegend = _findLegend();
+  if(theLegend)
+  {
+    theLegend->writeXML(qgisNode, *doc);
+    //theLegend->saveToProject();
+  }
 
   // now add the optional extra properties
 

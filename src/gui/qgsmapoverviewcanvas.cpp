@@ -74,6 +74,7 @@ QgsMapOverviewCanvas::QgsMapOverviewCanvas(QWidget * parent, QgsMapCanvas* mapCa
 
 void QgsMapOverviewCanvas::addLayer(QgsMapLayer * lyr)
 {
+  /*  
   Q_CHECK_PTR( lyr );
 
   if ( ! lyr )
@@ -105,11 +106,13 @@ void QgsMapOverviewCanvas::addLayer(QgsMapLayer * lyr)
 #endif
     QgsMapCanvas::addLayer(lyr);
   }
+  */
 }
 
 
 void QgsMapOverviewCanvas::showInOverview( QgsMapLayer * maplayer, bool visible )
 {
+  /*
   std::map < QString, QgsMapLayer * >::iterator found =
       mCanvasProperties->layers.find(maplayer->getLayerID());
 
@@ -126,7 +129,7 @@ void QgsMapOverviewCanvas::showInOverview( QgsMapLayer * maplayer, bool visible 
     remove
         ( maplayer->getLayerID() );
   }
-
+  */
 }
 
 
@@ -270,8 +273,8 @@ void QgsMapOverviewCanvas::updatePanningWidget(const QPoint& pos)
 }
 
 
-void QgsMapOverviewCanvas::render(QPaintDevice * theQPaintDevice)
+void QgsMapOverviewCanvas::render()
 {
-  QgsMapCanvas::render(theQPaintDevice);
+  QgsMapCanvas::render();
   reflectChangedExtent();
 }
