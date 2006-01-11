@@ -39,7 +39,6 @@ class QgsMapCanvas::CanvasProperties
     dirty( true )
     {
       mapWindow = new QRect;
-      coordXForm = new QgsMapToPixel;
     }
 
     CanvasProperties()
