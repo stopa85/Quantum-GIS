@@ -1354,6 +1354,7 @@ void QgisApp::restoreSessionPlugins(QString thePluginDirString)
       {
         std::cerr << "Failed to load " << myLib->library().toLocal8Bit().data() << std::endl;
       }
+      delete myLib;
     }
   }
 
@@ -4215,6 +4216,7 @@ void QgisApp::loadPlugin(QString name, QString description, QString theFullPathN
     std::cerr << "Failed to load " << theFullPathName.toLocal8Bit().data() << "\n";
     //#endif
   }
+  delete myLib;
 }
 }
 void QgisApp::testMapLayerPlugins()
