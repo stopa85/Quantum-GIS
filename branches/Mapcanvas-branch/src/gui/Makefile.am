@@ -112,6 +112,10 @@ libqgis_guiHEADERS =							\
 		qgsmaplayerregistry.h				\
 		qgsmapoverviewcanvas.h				\
 		qgsmapserverexport.h				\
+		qgsmaptool.h						\
+		qgsmaptoolcapture.h				\
+		qgsmaptoolvertexedit.h			\
+		qgsmaptoolzoom.h					\
 		qgsmarkerdialog.h				\
 		qgsmeasure.h					\
 		qgsmessageviewer.h					\
@@ -225,6 +229,9 @@ libqgis_gui_la_SOURCES =						\
 		qgsmaplayerregistry.cpp				\
 		qgsmapoverviewcanvas.cpp			\
 		qgsmapserverexport.cpp		\
+		qgsmaptoolcapture.cpp			\
+		qgsmaptoolvertexedit.cpp		\
+		qgsmaptoolzoom.cpp			\
 		qgsmarkerdialog.cpp		\
 		qgsmeasure.cpp			\
 		qgsmessageviewer.cpp				\

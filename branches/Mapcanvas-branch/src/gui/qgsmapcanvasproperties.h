@@ -19,8 +19,7 @@ class QgsMapCanvas::CanvasProperties
 
     CanvasProperties()
   : panSelectorDown( false ),
-    dragging( false ),
-    capturing( false )
+    dragging( false )
     {
     }
 
@@ -68,9 +67,6 @@ class QgsMapCanvas::CanvasProperties
 
   //! Flag to indicate a map canvas drag operation is taking place
               bool dragging;
-
-  //! Flag to indicate a map canvas capture operation is taking place
-              bool capturing;
   
   //! Vector containing the inital color for a layer
               std::vector < QColor > initialColor;
