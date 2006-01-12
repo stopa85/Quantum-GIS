@@ -26,6 +26,8 @@ TODO:
 */
 
 #include <QtGlobal>
+#include <Q3Canvas>
+#include <Q3CanvasRectangle>
 #include <Q3ListView>
 #include <QCursor>
 #include <QKeyEvent>
@@ -61,6 +63,7 @@ TODO:
 #include "qgsmapimage.h"
 #include "qgsmaplayer.h"
 #include "qgsmaplayerinterface.h"
+#include "qgsmaptopixel.h"
 #include "qgsmarkersymbol.h"
 #include "qgspolygonsymbol.h"
 #include "qgsproject.h"
@@ -72,6 +75,28 @@ TODO:
 #include "qgsmapcanvasproperties.h"
 
 
+#define RTTI_MapImage 11111
+
+class QgsMapCanvasMapImage : public Q3CanvasRectangle
+{
+  public:
+    QgsMapCanvasMapImage(Q3Canvas *canvas)
+      : Q3CanvasRectangle(canvas) { }
+    
+    void setPixmap(QPixmap* pixmap) { mPixmap = pixmap; }
+    
+    int rtti () const { return RTTI_MapImage; }
+    
+  protected:
+    void drawShape(QPainter & p)
+    {
+      p.drawPixmap(int(x()), int(y()), *mPixmap);
+    }
+
+  private:
+    QPixmap* mPixmap;
+};
+
 // But the static members must be initialised outside the class! (or GCC 4 dies)
 const double QgsMapCanvas::scaleDefaultMultiple = 2.0;
 
@@ -81,34 +106,51 @@ QgsMapCanvas::QgsMapCanvas()
 {}
 
   QgsMapCanvas::QgsMapCanvas(QWidget * parent, const char *name)
-: QWidget(parent, name),
-  mCanvasProperties( new CanvasProperties(width(), height()) ),
-  mLineEditing(false), mPolygonEditing(false),
-  mUserInteractionAllowed(true) // by default we allow a user to interact with the canvas
+: Q3CanvasView(parent, name),
+  mCanvasProperties(new CanvasProperties),
+  mLineEditing(false), mPolygonEditing(false)
 {
+  mCanvas = new Q3Canvas();
+  setCanvas(mCanvas);
+  setHScrollBarMode(Q3ScrollView::AlwaysOff);
+  setVScrollBarMode(Q3ScrollView::AlwaysOff);
+  
   mCurrentLayer = NULL;
   mMapOverview = NULL;
+  
+  mDrawing = false;
+  mFrozen = false;
+  mDirty = true;
   
   // by default, the canvas is rendered
   mRenderFlag = true;
 
   setMouseTracking(true);
   setFocusPolicy(Qt::StrongFocus);
+  
+  setMapTool(QGis::NoTool);
 
   mMeasure = 0;
 
   mMapImage = new QgsMapImage(10,10);
   setbgColor(Qt::white);
-  mCanvasProperties->coordXForm = mMapImage->coordXForm();
   
+  // create map canvas item which will show the map
+  QgsMapCanvasMapImage* map = new QgsMapCanvasMapImage(mCanvas);
+  map->setPixmap(mMapImage->pixmap());
+  map->show();
+      
 } // QgsMapCanvas ctor
 
 
 QgsMapCanvas::~QgsMapCanvas()
 {
+  delete mCanvas;
+
   delete mMapImage;
   // mCanvasProperties auto-deleted via std::auto_ptr
   // CanvasProperties struct has its own dtor for freeing resources
+  
 } // dtor
 
 
@@ -135,23 +177,21 @@ double QgsMapCanvas::getScale()
   return mMapImage->scale();
 } // getScale
 
-void QgsMapCanvas::setDirty(bool _dirty)
+void QgsMapCanvas::setDirty(bool dirty)
 {
-  mCanvasProperties->dirty = _dirty;
-} // setDirty
-
-
+  mDirty = dirty;
+}
 
 bool QgsMapCanvas::isDirty() const
 {
-  return mCanvasProperties->dirty;
-} // isDirty
+  return mDirty;
+}
 
 
 
 bool QgsMapCanvas::isDrawing()
 {
-  return mCanvasProperties->drawing;
+  return mDrawing;
 } // isDrawing
 
 
@@ -269,18 +309,18 @@ void QgsMapCanvas::render()
 {
   
 #ifdef QGISDEBUG
-  QString msg = mCanvasProperties->frozen ? "frozen" : "thawed";
+  QString msg = mFrozen ? "frozen" : "thawed";
   std::cout << ".............................." << std::endl;
   std::cout << "...........Rendering.........." << std::endl;
   std::cout << ".............................." << std::endl;
   std::cout << name() << " canvas is " << msg.toLocal8Bit().data() << std::endl;
 #endif
 
-  if ((!mCanvasProperties->frozen && mCanvasProperties->dirty))
+  if ((!mFrozen && mDirty))
   {
-    if (!mCanvasProperties->drawing)
+    if (!mDrawing)
     {
-      mCanvasProperties->drawing = true;
+      mDrawing = true;
 
       ///////////////////////////////////
       // RENDER
@@ -302,10 +342,10 @@ void QgsMapCanvas::render()
       emit renderComplete(paint);
 
       paint->end();
-      mCanvasProperties->drawing = false;
+      mDrawing = false;
       delete paint;
     }
-    mCanvasProperties->dirty = false;
+    mDirty = false;
 
   }
 
@@ -331,53 +371,30 @@ void QgsMapCanvas::saveAsImage(QString theFileName, QPixmap * theQPixmap, QStrin
 } // saveAsImage
 
 
-
-void QgsMapCanvas::paintEvent(QPaintEvent * ev)
+void QgsMapCanvas::drawContents(QPainter * p, int cx, int cy, int cw, int ch)
 {
 #ifdef QGISDEBUG
-  //  std::cout << "QgsMapCanvas::paintEvent: entering." << std::endl;
+  std::cout << "QgsMapCanvas::drawContents" << std::endl;
 #endif
+  
+  if (mDirty)
+    render();
 
-  // If a map is in the process of being panned, panAction() will end up calling this through repaint().
-  // Test for this and paint quickly using a pixmap copy rather than going back to the source dataset.
-  if (mCanvasProperties->panning)
+  Q3CanvasView::drawContents(p,cx,cy,cw,ch);
+}
+
+QgsMapCanvasMapImage* QgsMapCanvas::canvasMapImage()
+{
+  Q3CanvasItemList list = mCanvas->allItems();
+  Q3CanvasItemList::iterator it = list.begin();
+  while (it != list.end())
   {
-#ifdef QGISDEBUG
-    //   std::cout << "QgsMapCanvas::paintEvent: about to drawPixmap with " << mCanvasProperties->pan_dx << 
-    //                                                              " and " << mCanvasProperties->pan_dy << "." << std::endl;
-#endif
-
-    QPainter paint(this);
-    paint.drawPixmap(mCanvasProperties->pan_delta, *mMapImage->pixmap());
-
-#ifdef QGISDEBUG
-    //  std::cout << "QgsMapCanvas::paintEvent: finished drawPixmap." << std::endl;
-#endif
+    if ((*it)->rtti() == RTTI_MapImage)
+      return (QgsMapCanvasMapImage*) (*it);
+    it++;
   }
-  else if (!mCanvasProperties->drawing)
-  {
-
-    if (mCanvasProperties->dirty)
-    {
-      // rebuild, from source datasets, the pixmap we want to copy onto the canvas.
-      render();
-      // mCanvasProperties->dirty should generally be reset by this point.
-    }
-
-    if (!mCanvasProperties->dirty)
-    {
-      QPainter paint(this);
-      paint.drawPixmap(ev->rect().topLeft(), *mMapImage->pixmap(), ev->rect());
-      //    // just bit blit the image to the canvas
-      //    bitBlt(this, ev->rect().topLeft(), mCanvasProperties->pmCanvas, ev->rect());
-    }
-  }
-#ifdef QGISDEBUG
-  //  std::cout << "QgsMapCanvas::paintEvent: exiting." << std::endl;
-#endif
-} // paintEvent
-
-
+  return NULL; // we should never get here!
+}
 
 QgsRect QgsMapCanvas::extent() const
 {
@@ -417,7 +434,7 @@ void QgsMapCanvas::updateScale()
 void QgsMapCanvas::clear()
 {
   // Indicate to the next paint event that we need to rebuild the canvas contents
-  mCanvasProperties->dirty = TRUE;
+  setDirty(TRUE);
 
 } // clear
 
@@ -520,8 +537,7 @@ void QgsMapCanvas::keyPressEvent(QKeyEvent * e)
   qDebug("keyPress event at line %d in %s",  __LINE__, __FILE__);
 #endif
 
-  if (!mUserInteractionAllowed || mCanvasProperties->mouseButtonDown
-      || mCanvasProperties->panSelectorDown)
+  if (mCanvasProperties->mouseButtonDown || mCanvasProperties->panSelectorDown)
     return;
 
   QPainter paint;
@@ -612,8 +628,6 @@ void QgsMapCanvas::keyReleaseEvent(QKeyEvent * e)
   qDebug("keyRelease event at line %d in %s",  __LINE__, __FILE__);
 #endif
 
-  if (!mUserInteractionAllowed)
-    return;
   switch( e->key() )
   {
     case Qt::Key_Space:
@@ -639,13 +653,12 @@ void QgsMapCanvas::keyReleaseEvent(QKeyEvent * e)
 
 void QgsMapCanvas::mousePressEvent(QMouseEvent * e)
 {
-  if (!mUserInteractionAllowed || mCanvasProperties->panSelectorDown)
+  if (mCanvasProperties->panSelectorDown)
     return;
 
   // right button was pressed in zoom tool, return to previous non zoom tool
   if ( e->button() == Qt::RightButton &&
-      ( mCanvasProperties->mapTool == QGis::ZoomIn || mCanvasProperties->mapTool == QGis::ZoomOut
-        || mCanvasProperties->mapTool == QGis::Pan ) )
+      ( mMapTool == QGis::ZoomIn || mMapTool == QGis::ZoomOut || mMapTool == QGis::Pan ) )
   {
     //emit stopZoom();
     return;
@@ -659,7 +672,7 @@ void QgsMapCanvas::mousePressEvent(QMouseEvent * e)
   QPen pen(Qt::gray);
 #endif
 
-  switch (mCanvasProperties->mapTool)
+  switch (mMapTool)
   {
     case QGis::Select:
     case QGis::ZoomIn:
@@ -685,7 +698,7 @@ void QgsMapCanvas::mousePressEvent(QMouseEvent * e)
 
 
 
-        QgsPoint point = mCanvasProperties->coordXForm->toMapCoordinates(e->x(), e->y());
+        QgsPoint point = getCoordinateTransform()->toMapCoordinates(e->x(), e->y());
 
         QgsVectorLayer *vlayer = dynamic_cast < QgsVectorLayer * >(mCurrentLayer);
 
@@ -738,13 +751,13 @@ void QgsMapCanvas::mousePressEvent(QMouseEvent * e)
 #endif
 
           // Convert to canvas screen coordinates for rubber band
-          mCanvasProperties->coordXForm->transformInPlace(x1, y1);
+          getCoordinateTransform()->transformInPlace(x1, y1);
           mCanvasProperties->rubberStartPoint.setX( static_cast<int>( round(x1) ) );
           mCanvasProperties->rubberStartPoint.setY( static_cast<int>( round(y1) ) );
 
           mCanvasProperties->rubberMidPoint = e->pos();
 
-          mCanvasProperties->coordXForm->transformInPlace(x2, y2);
+          getCoordinateTransform()->transformInPlace(x2, y2);
           mCanvasProperties->rubberStopPoint.setX( static_cast<int>( round(x2) ) );
           mCanvasProperties->rubberStopPoint.setY( static_cast<int>( round(y2) ) );
 
@@ -791,7 +804,7 @@ void QgsMapCanvas::mousePressEvent(QMouseEvent * e)
         double x1, y1;
         double x2, y2;
 
-        QgsPoint point = mCanvasProperties->coordXForm->toMapCoordinates(e->x(), e->y());
+        QgsPoint point = getCoordinateTransform()->toMapCoordinates(e->x(), e->y());
 
         QgsVectorLayer *vlayer = dynamic_cast < QgsVectorLayer * >(mCurrentLayer);
 
@@ -847,7 +860,7 @@ void QgsMapCanvas::mousePressEvent(QMouseEvent * e)
           // Convert to canvas screen coordinates for rubber band
           if (mCanvasProperties->rubberStartPointIsValid)
           {
-            mCanvasProperties->coordXForm->transformInPlace(x1, y1);
+            getCoordinateTransform()->transformInPlace(x1, y1);
             mCanvasProperties->rubberStartPoint.setX( static_cast<int>( round(x1) ) );
             mCanvasProperties->rubberStartPoint.setY( static_cast<int>( round(y1) ) );
           }
@@ -856,7 +869,7 @@ void QgsMapCanvas::mousePressEvent(QMouseEvent * e)
 
           if (mCanvasProperties->rubberStopPointIsValid)
           {
-            mCanvasProperties->coordXForm->transformInPlace(x2, y2);
+            getCoordinateTransform()->transformInPlace(x2, y2);
             mCanvasProperties->rubberStopPoint.setX( static_cast<int>( round(x2) ) );
             mCanvasProperties->rubberStopPoint.setY( static_cast<int>( round(y2) ) );
           }
@@ -905,7 +918,7 @@ void QgsMapCanvas::mousePressEvent(QMouseEvent * e)
         QgsGeometry atGeometry;
         double x1, y1;
 
-        QgsPoint point = mCanvasProperties->coordXForm->toMapCoordinates(e->x(), e->y());
+        QgsPoint point = getCoordinateTransform()->toMapCoordinates(e->x(), e->y());
 
         QgsVectorLayer *vlayer = dynamic_cast < QgsVectorLayer * >(mCurrentLayer);
 
@@ -952,7 +965,7 @@ void QgsMapCanvas::mousePressEvent(QMouseEvent * e)
 #endif
 
           // Convert to canvas screen coordinates
-          mCanvasProperties->coordXForm->transformInPlace(x1, y1);
+          getCoordinateTransform()->transformInPlace(x1, y1);
           mCanvasProperties->rubberMidPoint.setX( static_cast<int>( round(x1) ) );
           mCanvasProperties->rubberMidPoint.setY( static_cast<int>( round(y1) ) );
 
@@ -992,8 +1005,7 @@ void QgsMapCanvas::mousePressEvent(QMouseEvent * e)
 
     case QGis::EmitPoint: 
       {
-        QgsPoint  idPoint = mCanvasProperties->coordXForm->
-          toMapCoordinates(e->x(), e->y());
+        QgsPoint  idPoint = getCoordinateTransform()->toMapCoordinates(e->x(), e->y());
         emit xyClickCoordinates(idPoint);
         emit xyClickCoordinates(idPoint,e->button());
         break;
@@ -1004,8 +1016,7 @@ void QgsMapCanvas::mousePressEvent(QMouseEvent * e)
       {
         if (mMeasure && e->button() == Qt::LeftButton)
         {
-          QgsPoint  idPoint = mCanvasProperties->coordXForm->
-            toMapCoordinates(e->x(), e->y());
+          QgsPoint  idPoint = getCoordinateTransform()->toMapCoordinates(e->x(), e->y());
           mMeasure->mousePress(idPoint);
         }
         break;
@@ -1019,13 +1030,12 @@ void QgsMapCanvas::mouseReleaseEvent(QMouseEvent * e)
 
   mCanvasProperties->mouseButtonDown = false;
 
-  if (!mUserInteractionAllowed || mCanvasProperties->panSelectorDown)
+  if (mCanvasProperties->panSelectorDown)
     return;
 
   // right button was pressed in zoom tool, return to previous non zoom tool
   if ( e->button() == Qt::RightButton &&
-      ( mCanvasProperties->mapTool == QGis::ZoomIn || mCanvasProperties->mapTool == QGis::ZoomOut
-        || mCanvasProperties->mapTool == QGis::Pan ) )
+      ( mMapTool == QGis::ZoomIn || mMapTool == QGis::ZoomOut || mMapTool == QGis::Pan ) )
   {
     emit stopZoom();
     return;
@@ -1041,7 +1051,7 @@ void QgsMapCanvas::mouseReleaseEvent(QMouseEvent * e)
   {
     mCanvasProperties->dragging = false;
 
-    switch (mCanvasProperties->mapTool)
+    switch (mMapTool)
     {
       case QGis::ZoomIn:
         {
@@ -1061,8 +1071,8 @@ void QgsMapCanvas::mouseReleaseEvent(QMouseEvent * e)
           mCanvasProperties->zoomBox.setBottom(e->pos().y());
           // set the extent to the zoomBox
   
-          ll = mCanvasProperties->coordXForm->toMapCoordinates(mCanvasProperties->zoomBox.left(), mCanvasProperties->zoomBox.bottom());
-          ur = mCanvasProperties->coordXForm->toMapCoordinates(mCanvasProperties->zoomBox.right(), mCanvasProperties->zoomBox.top());
+          ll = getCoordinateTransform()->toMapCoordinates(mCanvasProperties->zoomBox.left(), mCanvasProperties->zoomBox.bottom());
+          ur = getCoordinateTransform()->toMapCoordinates(mCanvasProperties->zoomBox.right(), mCanvasProperties->zoomBox.top());
           
           
           QgsRect r;
@@ -1092,8 +1102,8 @@ void QgsMapCanvas::mouseReleaseEvent(QMouseEvent * e)
           mCanvasProperties->zoomBox.setRight(e->pos().x());
           mCanvasProperties->zoomBox.setBottom(e->pos().y());
           // scale the extent so the current view fits inside the zoomBox
-          ll = mCanvasProperties->coordXForm->toMapCoordinates(mCanvasProperties->zoomBox.left(), mCanvasProperties->zoomBox.bottom());
-          ur = mCanvasProperties->coordXForm->toMapCoordinates(mCanvasProperties->zoomBox.right(), mCanvasProperties->zoomBox.top());
+          ll = getCoordinateTransform()->toMapCoordinates(mCanvasProperties->zoomBox.left(), mCanvasProperties->zoomBox.bottom());
+          ur = getCoordinateTransform()->toMapCoordinates(mCanvasProperties->zoomBox.right(), mCanvasProperties->zoomBox.top());
           
           QgsRect r;
           r.setXmin(ll.x());
@@ -1157,8 +1167,8 @@ void QgsMapCanvas::mouseReleaseEvent(QMouseEvent * e)
             mCanvasProperties->zoomBox.setRight(e->pos().x());
             mCanvasProperties->zoomBox.setBottom(e->pos().y());
 
-            ll = mCanvasProperties->coordXForm->toMapCoordinates(mCanvasProperties->zoomBox.left(), mCanvasProperties->zoomBox.bottom());
-            ur = mCanvasProperties->coordXForm->toMapCoordinates(mCanvasProperties->zoomBox.right(), mCanvasProperties->zoomBox.top());
+            ll = getCoordinateTransform()->toMapCoordinates(mCanvasProperties->zoomBox.left(), mCanvasProperties->zoomBox.bottom());
+            ur = getCoordinateTransform()->toMapCoordinates(mCanvasProperties->zoomBox.right(), mCanvasProperties->zoomBox.top());
 
             QgsRect *search = new QgsRect(ll.x(), ll.y(), ur.x(), ur.y());
 
@@ -1184,7 +1194,7 @@ void QgsMapCanvas::mouseReleaseEvent(QMouseEvent * e)
   else // not dragging
   {
     // map tools that rely on a click not a drag
-    switch (mCanvasProperties->mapTool)
+    switch (mMapTool)
     {
 
       case QGis::ZoomIn:
@@ -1212,7 +1222,7 @@ void QgsMapCanvas::mouseReleaseEvent(QMouseEvent * e)
             double searchRadius = extent().width() * calculateSearchRadiusValue();
             QgsRect * search = new QgsRect();
             // convert screen coordinates to map coordinates
-            QgsPoint idPoint = mCanvasProperties->coordXForm->toMapCoordinates(e->x(), e->y());
+            QgsPoint idPoint = getCoordinateTransform()->toMapCoordinates(e->x(), e->y());
             search->setXmin(idPoint.x() - searchRadius);
             search->setXmax(idPoint.x() + searchRadius);
             search->setYmin(idPoint.y() - searchRadius);
@@ -1238,7 +1248,7 @@ void QgsMapCanvas::mouseReleaseEvent(QMouseEvent * e)
           if (vlayer)
           {
 
-            QgsPoint  idPoint = mCanvasProperties->coordXForm->toMapCoordinates(e->x(), e->y());
+            QgsPoint  idPoint = getCoordinateTransform()->toMapCoordinates(e->x(), e->y());
             emit xyClickCoordinates(idPoint);
 
             //only do the rest for provider with feature addition support
@@ -1330,7 +1340,7 @@ void QgsMapCanvas::mouseReleaseEvent(QMouseEvent * e)
 
           //prevent clearing of the line between the first and the second polygon vertex
           //during the next mouse move event
-          if(mCaptureList.size() == 1 && mCanvasProperties->mapTool == QGis::CapturePolygon)
+          if(mCaptureList.size() == 1 && mMapTool == QGis::CapturePolygon)
           {
             QPainter paint(mMapImage->pixmap());
             drawLineToDigitisingCursor(&paint);
@@ -1338,8 +1348,8 @@ void QgsMapCanvas::mouseReleaseEvent(QMouseEvent * e)
 
           mDigitMovePoint.setX(e->x());
           mDigitMovePoint.setY(e->y());
-          mDigitMovePoint=mCanvasProperties->coordXForm->toMapCoordinates(e->x(), e->y());
-          QgsPoint digitisedpoint=mCanvasProperties->coordXForm->toMapCoordinates(e->x(), e->y());
+          mDigitMovePoint=getCoordinateTransform()->toMapCoordinates(e->x(), e->y());
+          QgsPoint digitisedpoint=getCoordinateTransform()->toMapCoordinates(e->x(), e->y());
           vlayer->snapPoint(digitisedpoint,QgsProject::instance()->readDoubleEntry("Digitizing","/Tolerance",0));
           mCaptureList.push_back(digitisedpoint);
           if(mCaptureList.size()>1)
@@ -1355,8 +1365,8 @@ void QgsMapCanvas::mouseReleaseEvent(QMouseEvent * e)
 
             try
             {
-              QgsPoint lastpoint = mCanvasProperties->coordXForm->transform(it->x(),it->y());
-              QgsPoint endpoint = mCanvasProperties->coordXForm->transform(digitisedpoint.x(),digitisedpoint.y());
+              QgsPoint lastpoint = getCoordinateTransform()->transform(it->x(),it->y());
+              QgsPoint endpoint = getCoordinateTransform()->transform(digitisedpoint.x(),digitisedpoint.y());
               paint.drawLine(static_cast<int>(lastpoint.x()),static_cast<int>(lastpoint.y()),
                   static_cast<int>(endpoint.x()),static_cast<int>(endpoint.y()));
             }
@@ -1378,7 +1388,7 @@ void QgsMapCanvas::mouseReleaseEvent(QMouseEvent * e)
             QgsFeature* f=new QgsFeature(0,"WKBLineString");
             unsigned char* wkb;
             int size;
-            if(mCanvasProperties->mapTool==QGis::CaptureLine)
+            if(mMapTool==QGis::CaptureLine)
             {
               size=1+2*sizeof(int)+2*mCaptureList.size()*sizeof(double);
               wkb= new unsigned char[size];
@@ -1465,7 +1475,7 @@ void QgsMapCanvas::mouseReleaseEvent(QMouseEvent * e)
 
         /*      case QGis::Measure:
                 {
-                QgsPoint point = mCanvasProperties->coordXForm->toMapCoordinates(e->x(), e->y());
+                    QgsPoint point = getCoordinateTransform()->toMapCoordinates(e->x(), e->y());
 
                 if ( !mMeasure ) {
                 mMeasure = new QgsMeasure(this, topLevelWidget() );
@@ -1475,16 +1485,16 @@ void QgsMapCanvas::mouseReleaseEvent(QMouseEvent * e)
                 break;
                 }*/
 
-    } // switch mapTool
+    } // switch mMapTool
 
   } // if dragging / else
 
   // map tools that don't care if clicked or dragged
-  switch (mCanvasProperties->mapTool)
+  switch (mMapTool)
   {
     case QGis::AddVertex:
       {
-        QgsPoint point = mCanvasProperties->coordXForm->toMapCoordinates(e->x(), e->y());
+        QgsPoint point = getCoordinateTransform()->toMapCoordinates(e->x(), e->y());
 
         QgsVectorLayer *vlayer = dynamic_cast < QgsVectorLayer * >(mCurrentLayer);
 
@@ -1550,7 +1560,7 @@ void QgsMapCanvas::mouseReleaseEvent(QMouseEvent * e)
 #ifdef QGISDEBUG
         std::cout << "QgsMapCanvas::mouseReleaseEvent: QGis::MoveVertex." << std::endl;
 #endif
-        QgsPoint point = mCanvasProperties->coordXForm->toMapCoordinates(e->x(), e->y());
+        QgsPoint point = getCoordinateTransform()->toMapCoordinates(e->x(), e->y());
 
         QgsVectorLayer *vlayer = dynamic_cast < QgsVectorLayer * >(mCurrentLayer);
 
@@ -1662,7 +1672,7 @@ void QgsMapCanvas::mouseReleaseEvent(QMouseEvent * e)
     case QGis::MeasureArea:
       {
 
-        QgsPoint point = mCanvasProperties->coordXForm->toMapCoordinates(e->x(), e->y());
+        QgsPoint point = getCoordinateTransform()->toMapCoordinates(e->x(), e->y());
 
         if(e->button()==Qt::RightButton && (e->state() & Qt::LeftButton) == 0) // restart
         {
@@ -1684,7 +1694,12 @@ void QgsMapCanvas::mouseReleaseEvent(QMouseEvent * e)
 
 void QgsMapCanvas::resizeEvent(QResizeEvent * e)
 {
-  mMapImage->setPixmapSize(e->size().width(), e->size().height());
+  int width = e->size().width(), height = e->size().height();
+  mCanvas->resize(width, height);
+  
+  canvasMapImage()->setSize(width, height);
+  
+  mMapImage->setPixmapSize(width, height);
   updateScale();
   clear();
 } // resizeEvent
@@ -1711,9 +1726,6 @@ void QgsMapCanvas::wheelEvent(QWheelEvent *e)
 
 void QgsMapCanvas::mouseMoveEvent(QMouseEvent * e)
 {
-  if (!mUserInteractionAllowed)
-    return;
-
   mCanvasProperties->mouseLastXY = e->pos();
 
   if (mCanvasProperties->panSelectorDown)
@@ -1730,7 +1742,7 @@ void QgsMapCanvas::mouseMoveEvent(QMouseEvent * e)
     QPen pen(Qt::gray);
 #endif
 
-    switch (mCanvasProperties->mapTool)
+    switch (mMapTool)
     {
       case QGis::Select:
       case QGis::ZoomIn:
@@ -1776,7 +1788,7 @@ void QgsMapCanvas::mouseMoveEvent(QMouseEvent * e)
       case QGis::MeasureArea:
         if (mMeasure && (e->state() & Qt::LeftButton))
         {
-          QgsPoint point = mCanvasProperties->coordXForm->toMapCoordinates(e->pos().x(), e->pos().y());
+          QgsPoint point = getCoordinateTransform()->toMapCoordinates(e->pos().x(), e->pos().y());
           mMeasure->mouseMove(point);
         }
         break;
@@ -1812,7 +1824,7 @@ void QgsMapCanvas::mouseMoveEvent(QMouseEvent * e)
 
   // Some tools require us to do some stuff whether we are dragging or not
 
-  switch (mCanvasProperties->mapTool)
+  switch (mMapTool)
   {
     case QGis::CapturePoint:
     case QGis::CaptureLine:
@@ -1850,7 +1862,7 @@ void QgsMapCanvas::mouseMoveEvent(QMouseEvent * e)
   }          
 
   //draw a line to the cursor position in line/polygon editing mode
-  if ( mCanvasProperties->mapTool == QGis::CaptureLine || mCanvasProperties->mapTool == QGis::CapturePolygon )
+  if ( mMapTool == QGis::CaptureLine || mMapTool == QGis::CapturePolygon )
   {
     if(mCaptureList.size()>0)
     {
@@ -1859,17 +1871,17 @@ void QgsMapCanvas::mouseMoveEvent(QMouseEvent * e)
 
       drawLineToDigitisingCursor(&paint);
       drawLineToDigitisingCursor(&paint2);
-      if(mCanvasProperties->mapTool == QGis::CapturePolygon && mCaptureList.size()>1)
+      if(mMapTool == QGis::CapturePolygon && mCaptureList.size()>1)
       {
         drawLineToDigitisingCursor(&paint, false);
         drawLineToDigitisingCursor(&paint2, false);
       }
       QgsPoint digitmovepoint(e->pos().x(), e->pos().y());
-      mDigitMovePoint=mCanvasProperties->coordXForm->toMapCoordinates(e->pos().x(), e->pos().y());
+      mDigitMovePoint=getCoordinateTransform()->toMapCoordinates(e->pos().x(), e->pos().y());
 
       drawLineToDigitisingCursor(&paint);
       drawLineToDigitisingCursor(&paint2);
-      if(mCanvasProperties->mapTool == QGis::CapturePolygon && mCaptureList.size()>1)
+      if(mMapTool == QGis::CapturePolygon && mCaptureList.size()>1)
       {
         drawLineToDigitisingCursor(&paint, false);
         drawLineToDigitisingCursor(&paint2, false);
@@ -1879,7 +1891,7 @@ void QgsMapCanvas::mouseMoveEvent(QMouseEvent * e)
 
   // show x y on status bar
   QPoint xy = e->pos();
-  QgsPoint coord = mCanvasProperties->coordXForm->toMapCoordinates(xy);
+  QgsPoint coord = getCoordinateTransform()->toMapCoordinates(xy);
   emit xyCoordinates(coord);
 } // mouseMoveEvent
 
@@ -1903,8 +1915,8 @@ void QgsMapCanvas::drawLineToDigitisingCursor(QPainter* paint, bool last)
   {
     it=mCaptureList.begin();
   }
-  QgsPoint lastpoint = mCanvasProperties->coordXForm->transform(it->x(),it->y());
-  QgsPoint digitpoint = mCanvasProperties->coordXForm->transform(mDigitMovePoint.x(), mDigitMovePoint.y());
+  QgsPoint lastpoint = getCoordinateTransform()->transform(it->x(),it->y());
+  QgsPoint digitpoint = getCoordinateTransform()->transform(mDigitMovePoint.x(), mDigitMovePoint.y());
   paint->drawLine(static_cast<int>(lastpoint.x()),static_cast<int>(lastpoint.y()),\
       static_cast<int>(digitpoint.x()), static_cast<int>(digitpoint.y()));
 #endif
@@ -1917,7 +1929,7 @@ void QgsMapCanvas::drawLineToDigitisingCursor(QPainter* paint, bool last)
 void QgsMapCanvas::zoomByScale(int x, int y, double scaleFactor)
 {
   // transform the mouse pos to map coordinates
-  QgsPoint center  = mCanvasProperties->coordXForm->toMapPoint(x, y);
+  QgsPoint center  = getCoordinateTransform()->toMapPoint(x, y);
   QgsRect r = mMapImage->extent();
   r.scale(scaleFactor, &center);
   setExtent(r);
@@ -1928,7 +1940,7 @@ void QgsMapCanvas::zoomByScale(int x, int y, double scaleFactor)
 /** Sets the map tool currently being used on the canvas */
 void QgsMapCanvas::setMapTool(int tool)
 {
-  mCanvasProperties->mapTool = tool;
+  mMapTool = tool;
   if ( tool == QGis::EmitPoint ) {
     setCursor ( Qt::CrossCursor );
   }
@@ -1985,7 +1997,7 @@ void QgsMapCanvas::layerStateChange()
 {
   // called when a layer has changed visibility setting
   
-  if (!mCanvasProperties->frozen)
+  if (!mFrozen)
     refresh();
 
 } // layerStateChange
@@ -1994,12 +2006,12 @@ void QgsMapCanvas::layerStateChange()
 
 void QgsMapCanvas::freeze(bool frz)
 {
-  mCanvasProperties->frozen = frz;
+  mFrozen = frz;
 } // freeze
 
 bool QgsMapCanvas::isFrozen()
 {
-  return mCanvasProperties->frozen ;
+  return mFrozen;
 } // freeze
 
 
@@ -2120,16 +2132,17 @@ bool QgsMapCanvas::writeXML(QDomNode & layerNode, QDomDocument & doc)
 
 int QgsMapCanvas::mapTool()
 {
-  return mCanvasProperties->mapTool;
+  return mMapTool;
 }
 
 void QgsMapCanvas::panActionEnd(QPoint releasePoint)
 {
-  mCanvasProperties->panning = FALSE;
-
+  // move map image to standard position
+  canvasMapImage()->move(0,0);
+  
   // use start and end box points to calculate the extent
-  QgsPoint start = mCanvasProperties->coordXForm->toMapCoordinates(mCanvasProperties->rubberStartPoint);
-  QgsPoint end = mCanvasProperties->coordXForm->toMapCoordinates(releasePoint);
+  QgsPoint start = getCoordinateTransform()->toMapCoordinates(mCanvasProperties->rubberStartPoint);
+  QgsPoint end = getCoordinateTransform()->toMapCoordinates(releasePoint);
 
   double dx = fabs(end.x() - start.x());
   double dy = fabs(end.y() - start.y());
@@ -2167,72 +2180,18 @@ void QgsMapCanvas::panActionEnd(QPoint releasePoint)
 
 void QgsMapCanvas::panAction(QMouseEvent * e)
 {
-
 #ifdef QGISDEBUG
-  //  std::cout << "QgsMapCanvas::panAction: entering." << std::endl;
+  std::cout << "QgsMapCanvas::panAction: entering." << std::endl;
 #endif
 
-  mCanvasProperties->panning = TRUE;
-
-  // bitBlt the pixmap on the screen, offset by the
-  // change in mouse coordinates
-  //  double dx = e->pos().x() - mCanvasProperties->rubberStartPoint.x();
-  //  double dy = e->pos().y() - mCanvasProperties->rubberStartPoint.y();
-  //  mCanvasProperties->pan_dx = e->pos().x() - mCanvasProperties->rubberStartPoint.x();
-  //  mCanvasProperties->pan_dy = e->pos().y() - mCanvasProperties->rubberStartPoint.y();
-  mCanvasProperties->pan_delta = e->pos() - mCanvasProperties->rubberStartPoint;
-
-  /*
-     Do we still need this in Qt4?
-  //erase only the necessary parts to avoid flickering
-  if (dx > 0)
-  {
-  erase(0, 0, (int)dx, height());
-  }
-  else
-  {
-  erase(width() + (int)dx, 0, -(int)dx, height());
-  }
-  if (dy > 0)
-  {
-  erase(0, 0, width(), (int)dy);
-  }
-  else
-  {
-  erase(0, height() + (int)dy, width(), -(int)dy);
-  }
-  */
-
-#ifdef QGISDEBUG
-  //  std::cout << "QgsMapCanvas::panAction: about to update with " << mCanvasProperties->pan_dx << 
-  //                                                        " and " << mCanvasProperties->pan_dy << "." << std::endl;
-#endif
-
-  // void bitBlt ( QPaintDevice * dst, int dx, int dy, const QPaintDevice * src, int sx, int sy, int sw, int sh, Qt::RasterOp rop, bool ignoreMask ) 
-
-  //  bitBlt(this, (int)dx, (int)dy, mCanvasProperties->pmCanvas);
-
-  /*
-     Qt4 prefers:
-     void QPainter::drawPixmap ( const QRect & targetRect, const QPixmap & pixmap, const QRect & sourceRect )
-     This is an overloaded member function, provided for convenience. It behaves essentially like the above function.
-     Draws the rectangular portion sourceRect of the pixmap pixmap in the rectangle targetRect.
-     */
-
-  //  QPainter paint(this);
-  //  paint.drawPixmap( (int)dx, (int)dy, *(mCanvasProperties->pmCanvas));
-  //  paint.end();
-
-  // Since in Qt4 you normally cannot paint outside of a paint event,
-  // let the widget fire one off by calling repaint() 
-  // and let the subsequent paintEvent() call do all the heavy lifting there.
-  repaint();
-
-#ifdef QGISDEBUG
-  //  std::cout << "QgsMapCanvas::panAction: exiting." << std::endl;
-#endif
-
+  // move map image...
+  QPoint pnt = e->pos() - mCanvasProperties->rubberStartPoint;
+  canvasMapImage()->move(pnt.x(), pnt.y());
+  
+  // update canvas
+  update();
 }
+
 
 QgsPoint QgsMapCanvas::maybeInversePoint(QgsPoint point, const char whenmsg[])
 {

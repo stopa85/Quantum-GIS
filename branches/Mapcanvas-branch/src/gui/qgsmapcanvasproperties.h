@@ -2,17 +2,7 @@
 #ifndef QGSMAPCANVASPROPERTIES_H
 #define QGSMAPCANVASPROPERTIES_H
 
-#ifndef QPAINTDEVICEMETRICS_H
-#include <q3paintdevicemetrics.h>
-#endif
-
 #include "qgsgeometry.h"
-#include "qgsmaptopixel.h"
-#include "qgsvectorlayer.h"
-#include "qgsproject.h"
-//Added by qt3to4:
-#include <QPixmap>
-
 
 /**
  
@@ -20,71 +10,22 @@
  
   @note
  
-  Changed to class from struct out of desperation to find workaround for g++ bug.
- 
+  @DEPRECATED: to be deleted, stuff from here should be moved elsewhere
+
  */
 class QgsMapCanvas::CanvasProperties
 {
   public:
 
-    CanvasProperties( int width, int height )
-  : mapWindow( 0x0 ),
-    coordXForm( 0x0 ),
-    panSelectorDown( false ),
-    dragging( false ),
-    capturing( false ),
-    drawing( false ),
-    panning( false ),
-    frozen( false ),
-    dirty( true )
-    {
-      mapWindow = new QRect;
-    }
-
     CanvasProperties()
-  : mapWindow( 0x0 ),
-    coordXForm( 0x0 ),
-    panSelectorDown( false ),
+  : panSelectorDown( false ),
     dragging( false ),
-    capturing( false ),
-    drawing( false ),
-    panning( false ),
-    frozen( false ),
-    dirty( true )
+    capturing( false )
     {
-      mapWindow = new QRect;
     }
-
-
-    ~CanvasProperties()
-    {
-      delete mapWindow;
-    } // ~CanvasProperties
-
 
   //! map containing the acetate objects by key (name)
     std::map< QString, QgsAcetateObject *> acetateObjects;
-
-  //! Map window rectangle
-  //std::auto_ptr<QRect> mapWindow;
-    QRect * mapWindow;
-
-  /** Pointer to the coordinate transform object used to transform
-    coordinates from real world to device coordinates
-   */
-  //std::auto_ptr<QgsMapToPixel> coordXForm;
-    QgsMapToPixel * coordXForm;
-
-  /** The output spatial reference system that was used most
-    recently. Obtained from a layer on this canvas
-   */
-    QgsSpatialRefSys previousOutputSRS;
-
-  /**
-     * \brief Currently selected map tool.
-               * @see QGis::MapTools enum for valid values
-   */
-                  int mapTool;
 
   //!Flag to indicate status of mouse button
               bool mouseButtonDown;
@@ -133,30 +74,6 @@ class QgsMapCanvas::CanvasProperties
   
   //! Vector containing the inital color for a layer
               std::vector < QColor > initialColor;
-
-  //! Flag indicating a map refresh is in progress
-              bool drawing;
-
-  //! Flag indicating the map is being dragged in order to pan it
-              bool panning;
-
-  //! Amount of pixels we dragged since the pan attempt started
-              QPoint pan_delta;
-
-  //! Flag indicating if the map canvas is frozen.
-              bool frozen;
-
-  /*! \brief Flag to track the state of the Map canvas.
-              *
-              * The canvas is
-              * flagged as dirty by any operation that changes the state of
-              * the layers or the view extent. If the canvas is not dirty, paint
-              * events are handled by bit-blitting the stored canvas bitmap to
-              * the canvas. This improves performance by not reading the data source
-              * when no real change has occurred
-   */
-                 bool dirty;
-
 
   //! Value use to calculate the search radius when identifying features
   // TODO - Do we need this?

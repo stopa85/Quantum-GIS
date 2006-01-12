@@ -54,6 +54,7 @@ class QColor;
 class QPaintDevice;
 class QMouseEvent;
 class QRubberBand;
+class Q3Canvas;
 
 class QgsMapToPixel;
 class QgsMapLayer;
@@ -65,12 +66,13 @@ class QgsMeasure;
 
 class QgsMapImage;
 class QgsMapOverviewCanvas;
+class QgsMapCanvasMapImage;
 
 /*! \class QgsMapCanvas
  * \brief Map canvas class for displaying all GIS data types.
  */
 
-class QgsMapCanvas : public QWidget
+class QgsMapCanvas : public Q3CanvasView
 {
     Q_OBJECT;
 
@@ -185,6 +187,9 @@ class QgsMapCanvas : public QWidget
 
     //! true if canvas currently drawing
     bool isDrawing();
+    
+    
+    QgsMapCanvasMapImage* canvasMapImage();
 
   
 public slots:
@@ -290,11 +295,37 @@ private:
        private to force use of ctor with arguments
      */
     QgsMapCanvas();
+    
+    /**
+     * \brief Currently selected map tool.
+     * @see QGis::MapTools enum for valid values
+     */
+    int mMapTool;
 
+    //! all map rendering is done in this class
     QgsMapImage* mMapImage;
     
+    //! map overview widget - it's controlled by QgsMapCanvas
     QgsMapOverviewCanvas* mMapOverview;
+    
+    //! Flag indicating a map refresh is in progress
+    bool mDrawing;
 
+    //! Flag indicating if the map canvas is frozen.
+    bool mFrozen;
+
+    /*! \brief Flag to track the state of the Map canvas.
+     *
+     * The canvas is
+     * flagged as dirty by any operation that changes the state of
+     * the layers or the view extent. If the canvas is not dirty, paint
+     * events are handled by bit-blitting the stored canvas bitmap to
+     * the canvas. This improves performance by not reading the data source
+     * when no real change has occurred
+     */
+    bool mDirty;
+    
+    
     /**
        List to store the points of digitised lines and polygons
 
@@ -339,7 +370,10 @@ private:
     void resizeEvent(QResizeEvent * e);
 
     //! Overridden paint event
-    void paintEvent(QPaintEvent * pe);
+//    void paintEvent(QPaintEvent * pe);
+    
+    //! Overridden draw contents from canvas view
+    void drawContents(QPainter * p, int cx, int cy, int cw, int ch);
 
     //! Gets the value used to calculated the identify search radius
     double calculateSearchRadiusValue();
@@ -357,10 +391,6 @@ private:
     // are enabled. Failsafe, returns the sent point if anything fails.
     // @whenmsg is a part fo the error message.
     QgsPoint maybeInversePoint(QgsPoint point, const char whenmsg[]);
-
-    //! detrmines whether the user can interact with the canvas using a mouse
-    //(useful for locking the overview canvas)
-    bool mUserInteractionAllowed;
 
     //! determines whether user has requested to suppress rendering
     bool mRenderFlag;
@@ -381,6 +411,8 @@ private:
     //! Scale factor multiple for default zoom in/out
     // TODO Make this customisable by the user
     static const double scaleDefaultMultiple;
+    
+    Q3Canvas* mCanvas;
 
 }; // class QgsMapCanvas
 
