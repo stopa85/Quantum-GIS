@@ -21,29 +21,15 @@
 
 #include <list>
 #include <memory>
-
-// double sentinals to get round gcc 3.3.3 pre-processor bug
-
-#ifndef QDOM_H
-#include <qdom.h>
-#endif
-
-#ifndef QWIDGET_H
-#include <qwidget.h>
-#endif
-
-#ifndef QGSRECT_H
-#include <qgsrect.h>
-#endif
-
-#ifndef QGSPOINT_H
-#include <qgspoint.h>
-#endif
-
-#include <qgis.h>
 #include <deque>
+
+#include "qgsrect.h"
+#include "qgspoint.h"
+#include "qgis.h"
+
+#include <QDomDocument>
 #include <Q3CanvasView>
-//Added by qt3to4:
+
 class QWheelEvent;
 class QPixmap;
 class QPaintEvent;
@@ -67,6 +53,7 @@ class QgsMeasure;
 class QgsMapImage;
 class QgsMapOverviewCanvas;
 class QgsMapCanvasMapImage;
+class QgsMapTool;
 
 /*! \class QgsMapCanvas
  * \brief Map canvas class for displaying all GIS data types.
@@ -190,8 +177,12 @@ class QgsMapCanvas : public Q3CanvasView
     
     
     QgsMapCanvasMapImage* canvasMapImage();
+    
+    QgsMapLayer* currentLayer();
 
-  
+    //! Zooms in/out with a given center (uses zoomByScale)
+    void zoomWithCenter(int x, int y, bool zoomIn);
+
 public slots:
 
     /**Sets dirty=true and calls render()*/
@@ -230,6 +221,7 @@ public slots:
 
     /** The map units may have changed, so cope with that */
     void mapUnitsChanged();
+    
     
 signals:
     /** Let the owner know how far we are with render operations */
@@ -273,7 +265,7 @@ signals:
     /** emitted when right mouse button is pressed with zoom tool
      *  QgisApp should catch it and reset tool to the last non zoom tool */
     void stopZoom();
-
+    
 protected:
     /// implementation struct
     class CanvasProperties;
@@ -336,14 +328,6 @@ private:
     /**Stores the last position of the mouse cursor when digitising*/
     QgsPoint mDigitMovePoint;
 
-    /**Stores, if mCaptureList is used for line editing
-     this is needed for the editing rubber band*/
-    bool mLineEditing;
-
-    /**Stores, if mCaptureList is used for polygon editing
-     this is needed for the editing rubber band*/
-    bool mPolygonEditing;
-
     /**Draws a line from the last point of mCaptureList (if last is true, else from the first point)
        to mDigitMovePoint using Qt::XorROP. The settings for QPen are read from the QgsProject singleton*/
     void drawLineToDigitisingCursor(QPainter* paint, bool last = true);
@@ -377,7 +361,7 @@ private:
 
     //! Gets the value used to calculated the identify search radius
     double calculateSearchRadiusValue();
-
+    
     //! Zooms to a given center and scale 
     void zoomByScale(int x, int y, double scaleFactor);
 
@@ -408,11 +392,13 @@ private:
     
     QgsMapLayer* mCurrentLayer;
 
+    Q3Canvas* mCanvas;
+    
+    QgsMapTool* mMapToolPtr;
+
     //! Scale factor multiple for default zoom in/out
     // TODO Make this customisable by the user
     static const double scaleDefaultMultiple;
-    
-    Q3Canvas* mCanvas;
 
 }; // class QgsMapCanvas
 
