@@ -1,6 +1,6 @@
 /***************************************************************************
-    qgsmaptoolzoom.h  -  map tool for zooming
-    ----------------------
+    qgsmaptoolselect.h  -  map tool for selecting features
+    ---------------------
     begin                : January 2006
     copyright            : (C) 2006 by Martin Dobias
     email                : wonder.sk at gmail dot com
@@ -14,21 +14,21 @@
  ***************************************************************************/
 /* $Id$ */
 
-#ifndef QGSMAPTOOLZOOM_H
-#define QGSMAPTOOLZOOM_H
+#ifndef QGSMAPTOOLSELECT_H
+#define QGSMAPTOOLSELECT_H
 
 #include "qgsmaptool.h"
 #include <QRect>
 
 class QRubberBand;
+class QgsMapCanvas;
 
-class QgsMapToolZoom : public QgsMapTool
+
+class QgsMapToolSelect : public QgsMapTool
 {
   public:
-    QgsMapToolZoom(QgsMapCanvas* canvas, bool zoomOut);
-    
-    ~QgsMapToolZoom();
-      
+    QgsMapToolSelect(QgsMapCanvas* canvas);
+
     //! Overridden mouse move event
     virtual void canvasMoveEvent(QMouseEvent * e);
   
@@ -36,19 +36,17 @@ class QgsMapToolZoom : public QgsMapTool
     virtual void canvasPressEvent(QMouseEvent * e);
   
     //! Overridden mouse release event
-    virtual void canvasReleaseEvent(QMouseEvent * e);
-
+    virtual void canvasReleaseEvent(QMouseEvent * e);    
+      
   protected:
-    //! stores actual zoom rect
-    QRect mZoomRect;
     
-    //! indicates whether we're zooming in or out
-    bool mZoomOut;
+    //! stores actual select rect
+    QRect mSelectRect;
     
     //! Flag to indicate a map canvas drag operation is taking place
     bool mDragging;
     
-    //! TODO: to be changed to a canvas item
+    //! rubber band for select rect
     QRubberBand* mRubberBand;
 };
 

@@ -94,9 +94,7 @@ void QgsComposerMap::init ()
     Q3CanvasRectangle::setZ(20);
     setActive(true);
 
-    connect ( mMapCanvas, SIGNAL(addedLayer(QgsMapLayer *)), this, SLOT(mapCanvasChanged()) );
-    connect ( mMapCanvas, SIGNAL(removedLayer(QString)), this, SLOT(mapCanvasChanged()) );
-    connect ( mMapCanvas, SIGNAL(removedAll()), this, SLOT(mapCanvasChanged()) );
+    connect ( mMapCanvas, SIGNAL(layersChanged()), this, SLOT(mapCanvasChanged()) );
 }
 
 QgsComposerMap::~QgsComposerMap()

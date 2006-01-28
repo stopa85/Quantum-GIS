@@ -27,8 +27,8 @@
 #include <iostream>
 
 
-QgsMeasure::QgsMeasure(bool measureArea, QgsMapCanvas *mc, QWidget *parent, const char * name, Qt::WFlags f)
-  : QWidget(parent, name, f)
+QgsMeasure::QgsMeasure(bool measureArea, QgsMapCanvas *mc, const char * name, Qt::WFlags f)
+  : QWidget(mc->topLevelWidget(), name, f), QgsMapTool(mc)
 {
     setupUi(this);
     connect(mRestartButton, SIGNAL(clicked()), this, SLOT(restart()));
@@ -279,4 +279,41 @@ void QgsMeasure::updateUi()
     lblTotal->setText(formatDistance(0));
   }
   
+}
+
+//////////////////////////
+
+void QgsMeasure::canvasPressEvent(QMouseEvent * e)
+{
+  if (e->button() == Qt::LeftButton)
+  {
+    QgsPoint  idPoint = mCanvas->getCoordinateTransform()->toMapCoordinates(e->x(), e->y());
+    mousePress(idPoint);
+  }
+}
+
+
+void QgsMeasure::canvasMoveEvent(QMouseEvent * e)
+{
+  if (e->state() & Qt::LeftButton)
+  {
+    QgsPoint point = mCanvas->getCoordinateTransform()->toMapCoordinates(e->pos().x(), e->pos().y());
+    mouseMove(point);
+  }
+}
+
+
+void QgsMeasure::canvasReleaseEvent(QMouseEvent * e)
+{
+  QgsPoint point = mCanvas->getCoordinateTransform()->toMapCoordinates(e->x(), e->y());
+
+  if(e->button() == Qt::RightButton && (e->state() & Qt::LeftButton) == 0) // restart
+  {
+     restart();
+  } 
+  else if (e->button() == Qt::LeftButton)
+  {
+    addPoint(point);
+    show();
+  }
 }

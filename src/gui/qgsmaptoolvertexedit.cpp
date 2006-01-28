@@ -8,7 +8,7 @@ QgsMapToolVertexEdit::QgsMapToolVertexEdit(QgsMapCanvas* canvas, QGis::MapTools 
 }
 
 
-void QgsMapToolVertexEdit::mouseMoveEvent(QMouseEvent * e)
+void QgsMapToolVertexEdit::canvasMoveEvent(QMouseEvent * e)
 {
   // TODO: if left button pressed
   /*
@@ -42,7 +42,7 @@ void QgsMapToolVertexEdit::mouseMoveEvent(QMouseEvent * e)
   */
 }
 
-void QgsMapToolVertexEdit::mousePressEvent(QMouseEvent * e)
+void QgsMapToolVertexEdit::canvasPressEvent(QMouseEvent * e)
 {
   /*
   case QGis::AddVertex:
@@ -367,7 +367,7 @@ void QgsMapToolVertexEdit::mousePressEvent(QMouseEvent * e)
   */
 }
 
-void QgsMapToolVertexEdit::mouseReleaseEvent(QMouseEvent * e)
+void QgsMapToolVertexEdit::canvasReleaseEvent(QMouseEvent * e)
 {
   /*
     // map tools that don't care if clicked or dragged

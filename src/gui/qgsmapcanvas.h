@@ -47,7 +47,6 @@ class QgsMapLayer;
 class QgsMapLayerInterface;
 class QgsLegend;
 class QgsLegendView;
-class QgsAcetateObject;
 class QgsMeasure;
 class QgsRubberBand;
 
@@ -158,8 +157,6 @@ class QgsMapCanvas : public Q3CanvasView
 
     //! Get the current coordinate transform
     QgsMapToPixel * getCoordinateTransform();
-    //! Declare the legend class as a friend of the map canvas
-    //friend class QgsLegend;
 
     /** stores state in DOM node
         layerNode is DOM node corresponding to ``qgis'' tag
@@ -179,27 +176,19 @@ class QgsMapCanvas : public Q3CanvasView
     
     QgsMapCanvasMapImage* canvasMapImage();
     
+    //! returns current layer (set by legend widget)
     QgsMapLayer* currentLayer();
 
     //! Zooms in/out with a given center (uses zoomByScale)
     void zoomWithCenter(int x, int y, bool zoomIn);
 
-    //used to determine if anti-aliasing is enabled or not
+    //! used to determine if anti-aliasing is enabled or not
     void enableAntiAliasing(bool theFlag);
     
 public slots:
 
     /**Sets dirty=true and calls render()*/
     void refresh();
-    /**
-     * Add an acetate object to the collection
-     * @param key Key used to identify the object
-     * @param obj Acetate object to add to the collection
-     */
-     void addAcetateObject(QString key, QgsAcetateObject *obj);
-
-     /**Removes an acetate object from the collection and deletes the object*/
-     void removeAcetateObject(const QString& key);
 
     virtual void render();
 
@@ -245,20 +234,9 @@ signals:
 
     */
     void renderComplete(QPainter *);
-
-    /** emitted whenever a layer is added to the map canvas */
-    void addedLayer(QgsMapLayer * lyr);
-
-    /** emitted whenever a layer is deleted from the map canvas
-        @param the key of the deleted layer
-    */
-    void removedLayer( QString layer_key );
-
-    /**
-       emitted when removeAll() invoked to let observers know that the canvas is
-       now empty
-     */
-    void removedAll();
+    
+    //! Emitted when a new set of layers has been received
+    void layersChanged();
 
     /** emitted when right mouse button is pressed with zoom tool
      *  QgisApp should catch it and reset tool to the last non zoom tool */
@@ -315,21 +293,6 @@ private:
      */
     bool mDirty;
     
-    
-    /**
-       List to store the points of digitised lines and polygons
-
-       @todo XXX shouldn't this be in mCanvasProperties?
-    */
-    std::list<QgsPoint> mCaptureList;
-    
-    /**Stores the last position of the mouse cursor when digitising*/
-    QgsPoint mDigitMovePoint;
-
-    /**Draws a line from the last point of mCaptureList (if last is true, else from the first point)
-       to mDigitMovePoint using Qt::XorROP. The settings for QPen are read from the QgsProject singleton*/
-    void drawLineToDigitisingCursor(QPainter* paint, bool last = true);
-
     //! Overridden key press event
     void keyPressEvent(QKeyEvent * e);
 
@@ -351,15 +314,9 @@ private:
     //! Overridden resize event
     void resizeEvent(QResizeEvent * e);
 
-    //! Overridden paint event
-//    void paintEvent(QPaintEvent * pe);
-    
     //! Overridden draw contents from canvas view
     void drawContents(QPainter * p, int cx, int cy, int cw, int ch);
 
-    //! Gets the value used to calculated the identify search radius
-    double calculateSearchRadiusValue();
-    
     //! Zooms to a given center and scale 
     void zoomByScale(int x, int y, double scaleFactor);
 
@@ -369,11 +326,6 @@ private:
     //! Called when mouse is moving and pan is activated
     void panAction(QMouseEvent * event);
 
-    //! Helper function to inverse project a point if projections
-    // are enabled. Failsafe, returns the sent point if anything fails.
-    // @whenmsg is a part fo the error message.
-    QgsPoint maybeInversePoint(QgsPoint point, const char whenmsg[]);
-
     //! determines whether user has requested to suppress rendering
     bool mRenderFlag;
     
@@ -382,16 +334,12 @@ private:
   */
   void connectNotify( const char * signal );
 
-    //! Rubberband used when selecting
-    QRubberBand *mRubberBand;
-
-    //! Measure tool
-    QgsMeasure *mMeasure;
-    
+    //! current layer in legend
     QgsMapLayer* mCurrentLayer;
 
     Q3Canvas* mCanvas;
     
+    //! pointer to current map tool
     QgsMapTool* mMapToolPtr;
 
     //! Scale factor multiple for default zoom in/out

@@ -81,7 +81,6 @@
 #include "qgisapp.h"
 #include "qgis.h"
 #include "qgsabout.h"
-#include "qgsacetaterectangle.h"
 #include "qgsapplication.h"
 #include "qgsbookmarkitem.h"
 #include "qgsbookmarks.h"
@@ -1085,7 +1084,6 @@ void QgisApp::createCanvas()
   mMapCanvas->setCanvasColor(QColor(myRed,myGreen,myBlue));  // this is the fill co;our when rendering
   mMapCanvas->setBackgroundColor(QColor(myRed,myGreen,myBlue)); // this is for the widget itself
   
-  mMapCanvas->enableAntiAliasing(mySettings.value("/qgis/enable_anti_aliasing",false).toBool());
   mMapCanvas->setMinimumWidth(400);
   QVBoxLayout *myCanvasLayout = new QVBoxLayout;
   myCanvasLayout->addWidget(mMapCanvas);
@@ -1108,6 +1106,10 @@ void QgisApp::createOverview()
   overviewFrame->setLayout(myOverviewLayout);
   
   mMapCanvas->setOverview(overviewCanvas);
+  
+  // moved here to set anti aliasing to both map canvas and overview
+  QSettings mySettings;
+  mMapCanvas->enableAntiAliasing(mySettings.value("/qgis/enable_anti_aliasing",false).toBool());
 }
 
 

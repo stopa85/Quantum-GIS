@@ -105,6 +105,7 @@ libqgis_guiHEADERS =							\
 		qgsmapserverexport.h				\
 		qgsmaptool.h						\
 		qgsmaptoolcapture.h				\
+		qgsmaptoolselect.h				\
 		qgsmaptoolvertexedit.h			\
 		qgsmaptoolzoom.h					\
 		qgsmarkerdialog.h				\
@@ -221,6 +222,7 @@ libqgis_gui_la_SOURCES =						\
 		qgsmapoverviewcanvas.cpp			\
 		qgsmapserverexport.cpp		\
 		qgsmaptoolcapture.cpp			\
+		qgsmaptoolselect.cpp			\
 		qgsmaptoolvertexedit.cpp		\
 		qgsmaptoolzoom.cpp			\
 		qgsmarkerdialog.cpp		\
