@@ -201,12 +201,6 @@ public slots:
      /**Removes an acetate object from the collection and deletes the object*/
      void removeAcetateObject(const QString& key);
 
-     /**Removes all entries of mCapturePoints and sets mLineEditing and mPolygonEditing
-	to false (removes the digitising lines from the screen)
-     @param norepaint true: there is no repaint at all. False: QgsMapCanvas
-  decides, if a repaint is necessary or not*/
-     void removeDigitizingLines(bool norepaint=false);
-
     virtual void render();
 
     //! Save the convtents of the map canvas to disk as an image
