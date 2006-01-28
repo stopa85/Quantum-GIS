@@ -51,6 +51,9 @@ class QgsMapOverviewCanvas : public QWidget
         
     //! updates layer set for overview
     void setLayerSet(std::deque<QString>& layerSet);
+    
+    //! returns map image class
+    QgsMapImage* mapImage();
         
   protected:
   

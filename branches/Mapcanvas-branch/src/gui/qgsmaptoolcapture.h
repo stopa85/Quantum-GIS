@@ -18,9 +18,13 @@
 #define QGSMAPTOOLCAPTURE_H
 
 #include "qgsmaptool.h"
+#include "qgspoint.h"
 #include "qgis.h"
 
+class QgsRubberBand;
+
 #include <QPoint>
+#include <list>
 
 class QgsMapToolCapture : public QgsMapTool
 {
@@ -28,38 +32,41 @@ class QgsMapToolCapture : public QgsMapTool
     QgsMapToolCapture(QgsMapCanvas* canvas, enum QGis::MapTools tool);
 
     //! Overridden mouse move event
-    virtual void mouseMoveEvent(QMouseEvent * e);
+    virtual void canvasMoveEvent(QMouseEvent * e);
   
     //! Overridden mouse press event
-    virtual void mousePressEvent(QMouseEvent * e);
+    virtual void canvasPressEvent(QMouseEvent * e);
   
     //! Overridden mouse release event
-    virtual void mouseReleaseEvent(QMouseEvent * e);
+    virtual void canvasReleaseEvent(QMouseEvent * e);    
     
-    /*  
-    enum CaptureTool
-    {
-    CapturePoint,
-    CaptureLine,
-    CapturePolygon
-}
-    */
+    //! Resize rubber band
+    virtual void renderComplete();
     
   protected:
     
-    /** true if mCaptureList is used for line editing this is needed for the editing rubber band */
-    bool mLineEditing;
+    /** Helper function to inverse project a point if projections
+        are enabled. Failsafe, returns the sent point if anything fails.
+        @whenmsg is a part fo the error message. */
+    QgsPoint maybeInversePoint(QgsPoint point, const char whenmsg[]);
 
-    /** true if mCaptureList is used for polygon editing this is needed for the editing rubber band */
-    bool mPolygonEditing;
-    
-    enum QGis::MapTools mTool;
+    /** which capturing tool is being used */
+    enum CaptureTool
+    {
+      CapturePoint,
+      CaptureLine,
+      CapturePolygon
+    } mTool;
 
-    //! Flag to indicate a map canvas capture operation is taking place
+    /** Flag to indicate a map canvas capture operation is taking place */
     bool mCapturing;
+    
+    /** rubber band for polylines and polygons */
+    QgsRubberBand* mRubberBand;
 
-    QPoint mRubberStartPoint;
-    QPoint mRubberStopPoint;
+    /** List to store the points of digitised lines and polygons */
+    std::list<QgsPoint> mCaptureList;
+
 };
 
 #endif

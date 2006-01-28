@@ -247,3 +247,8 @@ void QgsMapOverviewCanvas::setLayerSet(std::deque<QString>& layerSet)
   QgsMapLayerSet& layers = mMapImage->layers();
   layers.setLayerSet(layerSet);
 }
+
+QgsMapImage* QgsMapOverviewCanvas::mapImage()
+{
+  return mMapImage;
+}

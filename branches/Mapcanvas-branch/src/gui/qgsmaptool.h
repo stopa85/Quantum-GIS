@@ -24,21 +24,25 @@ class QMouseEvent;
 class QgsMapTool
 {
   public:
-    //! constructor takes map canvas as a parameter
-    QgsMapTool(QgsMapCanvas* canvas) : mCanvas(canvas) {}
-    
     virtual ~QgsMapTool() {}
     
     //! Mouse move event for overriding
-    virtual void mouseMoveEvent(QMouseEvent * e) = 0;
+    virtual void canvasMoveEvent(QMouseEvent * e) = 0;
 
     //! Mouse press event for overriding
-    virtual void mousePressEvent(QMouseEvent * e) = 0;
+    virtual void canvasPressEvent(QMouseEvent * e) = 0;
 
     //! Mouse release event for overriding
-    virtual void mouseReleaseEvent(QMouseEvent * e) = 0;
+    virtual void canvasReleaseEvent(QMouseEvent * e) = 0;
+    
+    //! Called when rendering has finished
+    virtual void renderComplete() {}
     
   protected:
+
+    //! constructor takes map canvas as a parameter
+    QgsMapTool(QgsMapCanvas* canvas) : mCanvas(canvas) {}
+        
     QgsMapCanvas* mCanvas;
 };
 

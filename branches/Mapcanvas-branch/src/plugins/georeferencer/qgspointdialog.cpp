@@ -14,7 +14,7 @@
 #include <QHBoxLayout>
 //#include <Q3HBoxLayout>
 
-#include "datapointacetate.h"
+//#include "datapointacetate.h"
 #include "qgspointdialog.h"
 #include "mapcoordsdialog.h"
 #include "qgsleastsquares.h"
@@ -89,8 +89,9 @@ void QgsPointDialog::addPoint(const QgsPoint& pixelCoords,
   mMapCoords.push_back(mapCoords);
   static int acetateCounter = 0;
   mAcetateIDs.push_back(QString("%1").arg(++acetateCounter));
-  mCanvas->addAcetateObject(mAcetateIDs[mAcetateIDs.size() - 1],
-			    new DataPointAcetate(pixelCoords, mapCoords));
+  // TODO: create a map tool for showing points
+  //mCanvas->addAcetateObject(mAcetateIDs[mAcetateIDs.size() - 1],
+	//		    new DataPointAcetate(pixelCoords, mapCoords));
   mCanvas->refresh();
 }
 
@@ -319,7 +320,6 @@ void QgsPointDialog::deleteDataPoint(QgsPoint& pixelCoords) {
     if (std::sqrt(std::pow(pixIter->x() - pixelCoords.x(), 2) +
 		  std::pow(pixIter->y() - pixelCoords.y(), 2)) < 
 	5 * mCanvas->mupp()) {
-      mCanvas->removeAcetateObject(*idIter);
       mAcetateIDs.erase(idIter);
       mPixelCoords.erase(pixIter);
       mMapCoords.erase(mapIter);

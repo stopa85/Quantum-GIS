@@ -41,7 +41,7 @@ QgsMapToolZoom::~QgsMapToolZoom()
 {
 }
 
-void QgsMapToolZoom::mouseMoveEvent(QMouseEvent * e)
+void QgsMapToolZoom::canvasMoveEvent(QMouseEvent * e)
 {
   if (e->state() != Qt::LeftButton)
     return;
@@ -58,18 +58,19 @@ void QgsMapToolZoom::mouseMoveEvent(QMouseEvent * e)
 }
 
 
-void QgsMapToolZoom::mousePressEvent(QMouseEvent * e)
+void QgsMapToolZoom::canvasPressEvent(QMouseEvent * e)
 {
   mZoomRect.setRect(0, 0, 0, 0);
 }
 
 
-void QgsMapToolZoom::mouseReleaseEvent(QMouseEvent * e)
+void QgsMapToolZoom::canvasReleaseEvent(QMouseEvent * e)
 {
   if (mDragging)
   {
     mDragging = false;
     delete mRubberBand;
+    mRubberBand = 0;
     
     // store the rectangle
     mZoomRect.setRight(e->pos().x());
