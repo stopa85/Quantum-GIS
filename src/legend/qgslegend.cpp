@@ -61,8 +61,8 @@ QgsLegend::QgsLegend(QgisApp* app, QWidget * parent, const char *name)
   connect( this, SIGNAL(itemChanged(QTreeWidgetItem*, int)),
 	   this, SLOT(handleItemChange(QTreeWidgetItem*, int)));
   
-  connect( this, SIGNAL(currentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* previous)),
-           this, SLOT(handleCurrentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* previous)));
+  connect( this, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)),
+           this, SLOT(handleCurrentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)));
 
   setSortingEnabled(false);
   setDragEnabled(false);
@@ -565,12 +565,7 @@ void QgsLegend::legendLayerRemove()
 
    if(maplayers.size()>0)
    {
-     mMapCanvas->removeDigitizingLines();
-     mMapCanvas->clear();
-// For Qt4, deprecate direct calling of render().  Let render() be called by the 
-// paint event loop of the map canvas widget.
-//     mMapCanvas->render();
-     mMapCanvas->update();
+     mMapCanvas->refresh();
    }
    removeItem(ll);
 }

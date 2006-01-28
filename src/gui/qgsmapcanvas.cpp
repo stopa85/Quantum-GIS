@@ -186,7 +186,7 @@ QgsMapLayer* QgsMapCanvas::getZpos(int index)
 void QgsMapCanvas::setCurrentLayer(QgsMapLayer* layer)
 {
   mCurrentLayer = layer;
-  std::cout << "QgsMapCanvas::setCurrentLayer: " << layer << std::endl;
+  std::cout << "QgsMapCanvas::setCurrentLayer" << std::endl;
 }
 
 double QgsMapCanvas::getScale()
@@ -287,24 +287,6 @@ void QgsMapCanvas::removeAcetateObject(const QString& key)
   }
 }
 
-void QgsMapCanvas::removeDigitizingLines(bool norepaint)
-{
-  // TODO: to be moved to appopriate place
-  /*
-  bool rpaint = false;
-  if(!norepaint)
-  {
-    rpaint = (mCaptureList.size()>0) ? true : false;
-  }
-  mCaptureList.clear();
-  mLineEditing=false;
-  mPolygonEditing=false;
-  if(rpaint)
-  {
-    refresh();
-  }
-  */
-}
 
 QgsMapLayer* QgsMapCanvas::currentLayer()
 {

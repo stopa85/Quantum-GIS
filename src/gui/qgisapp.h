@@ -80,11 +80,6 @@ class QgisApp : public QMainWindow, public Ui::QgisAppBase
    * Get the plugin interface from the application
    */
   QgisIface *getInterface();
-  /** \brief Set the Z order of both mapcanvas and overview
-   * canvas. Typically this will be called by projectio when loading a
-   * stored project.
-   */
-  void setZOrder (std::list<QString>);
   /*
    * Add a vector layer to the canvas
    */
@@ -186,7 +181,7 @@ public slots:
     */
   /* virtual */ void menubar_highlighted( int i );
   /** toggles whether the current selected layer is in overview or not */
-  void inOverview(bool);
+  void inOverview();
   //! Slot to show the map coordinate position of the mouse cursor
   void showMouseCoordinate(QgsPoint &);
   //copy the click coord to clipboard and let the user know its there
@@ -312,14 +307,10 @@ public slots:
   void showProgress(int theProgress, int theTotalSteps);
   void showExtents(QgsRect theExtents);
   void showStatusMessage(QString theMessage);
-  void setLayerOverviewStatus(QString theLayerId, bool theVisibilityFlag);
-  void drawExtentRectangle(QPainter *);
   void updateMouseCoordinatePrecision();
   void projectionsEnabled(bool theFlag);
   //    void debugHook();
   void stopZoom();
-  /** Used to (re)set the zordering of the overview map*/
-  void setOverviewZOrder(QgsLegend * );
   //! Add a vector layer to the map
   void addLayer();
   //! Exit Qgis
