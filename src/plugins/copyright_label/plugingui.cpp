@@ -10,11 +10,7 @@
  *   (at your option) any later version.                                   *
  ***************************************************************************/
 #include "plugingui.h"
-#include <q3textedit.h>
-#include <q3simplerichtext.h>
-#include <QComboBox>
-#include <qcheckbox.h>
-#include <qlabel.h>
+#include "qgscontexthelp.h"
 
 //qt includes
 
@@ -28,8 +24,8 @@ QgsCopyrightLabelPluginGui::QgsCopyrightLabelPluginGui() : QDialog()
   textLabel15->hide();
 }
 
-QgsCopyrightLabelPluginGui::QgsCopyrightLabelPluginGui( QWidget* parent , const char* name , bool modal , Qt::WFlags fl  )
-: QDialog(parent, name, modal, fl )
+QgsCopyrightLabelPluginGui::QgsCopyrightLabelPluginGui(QWidget* parent, Qt::WFlags fl)
+: QDialog(parent, fl)
 {
   setupUi(this);
   //programmatically hide orientation selection for now
@@ -58,6 +54,10 @@ void QgsCopyrightLabelPluginGui::on_pbnCancel_clicked()
  close(1);
 }
 
+void QgsCopyrightLabelPluginGui::on_pbnHelp_clicked()
+{
+  QgsContextHelp::run(context_id);
+}
 void QgsCopyrightLabelPluginGui::setEnabled(bool theBool)
 {
   cboxEnabled->setChecked(theBool);
@@ -65,7 +65,7 @@ void QgsCopyrightLabelPluginGui::setEnabled(bool theBool)
 
 void QgsCopyrightLabelPluginGui::setText(QString theTextQString)
 {
-  txtCopyrightText->setText(theTextQString);
+  txtCopyrightText->setPlainText(theTextQString);
 }
 
 void QgsCopyrightLabelPluginGui::setPlacement(QString thePlacementQString)

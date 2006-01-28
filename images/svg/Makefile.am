@@ -10,4 +10,4 @@
 #
 # $Id$
 
-SUBDIRS = icon symbol geometric biology north_arrows gpsicons
+SUBDIRS = icon symbol geometric biology north_arrows gpsicons sport

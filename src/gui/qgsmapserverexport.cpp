@@ -32,12 +32,20 @@ email                : sherman at mrcc.com
 #include <fstream>
 
 // constructor
-QgsMapserverExport::QgsMapserverExport(QgsMapCanvas * _map, QWidget * parent, const char *name, bool modal, Qt::WFlags fl)
-  :QDialog(parent, name, modal, fl), map(_map)
+QgsMapserverExport::QgsMapserverExport(QgsMapCanvas * _map, QWidget * parent, Qt::WFlags fl)
+  : QDialog(parent, fl), map(_map)
 {
   setupUi(this);
   connect(buttonOk, SIGNAL(clicked()), this, SLOT(accept()));
   connect(buttonCancel, SIGNAL(clicked()), this, SLOT(reject()));
+  // These values shouldn't be translated, the units should be in english in the map file
+  // Qt designer adds translate() by default
+  cmbMapUnits->addItem(QString::fromUtf8("dd"));
+  cmbMapUnits->addItem(QString::fromUtf8("feet"));
+  cmbMapUnits->addItem(QString::fromUtf8("meters"));
+  cmbMapUnits->addItem(QString::fromUtf8("miles"));
+  cmbMapUnits->addItem(QString::fromUtf8("inches"));
+  cmbMapUnits->addItem(QString::fromUtf8("kilometers"));
 }
 
 // Default destructor

@@ -21,6 +21,7 @@
 #define QGSVECTORLAYERPROPERTIES
 
 #include "ui_qgsvectorlayerpropertiesbase.h"
+#include "qgisgui.h"
 #include "qgsrenderer.h"
 
 class QgsAttributeActionDialog;
@@ -31,7 +32,7 @@ class QgsVectorLayer;
 class QgsVectorLayerProperties : public QDialog, private Ui::QgsVectorLayerPropertiesBase{
   Q_OBJECT
   public:
-  QgsVectorLayerProperties(QgsVectorLayer *lyr =0,QWidget *parent=0, const char *name=0, bool modal=true);
+  QgsVectorLayerProperties(QgsVectorLayer *lyr = 0,QWidget *parent = 0, Qt::WFlags fl = QgisGui::ModalDialogFlags);
   ~QgsVectorLayerProperties();
   /**Sets the legend type to "single symbol", "graduated symbol" or "continuous color"*/
   void setLegendType(QString type);
@@ -56,7 +57,8 @@ class QgsVectorLayerProperties : public QDialog, private Ui::QgsVectorLayerPrope
   void reset();
   /** Get metadata about the layer in nice formatted html */
   QString getMetadata();
-  
+  /** Set transparency based on slider position */
+  void sliderTransparency_valueChanged(int theValue);
   
   //
   //methods reimplemented from qt designer base class

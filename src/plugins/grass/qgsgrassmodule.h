@@ -85,11 +85,20 @@ public:
     // ! Options widget 
     QgsGrassModuleOptions *options() { return mOptions; }
 
+    // ! List of directories in PATH variable + current directory on Windows 
+    static QStringList mExecPath;
+    static bool mExecPathInited;
+    
+    // ! Check if file is in mExecPath
+    bool inExecPath ( QString file );
+
 public slots:
     //! Run the module with current options
+    void on_mRunButton_clicked() { run(); }
     void run ();
 
     //! Close the module tab
+    void on_mCloseButton_clicked() { close(); }
     void close ();
 
     //! Running process finished

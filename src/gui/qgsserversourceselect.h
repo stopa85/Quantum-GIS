@@ -19,14 +19,14 @@
 #ifndef QGSSERVERSOURCESELECT_H
 #define QGSSERVERSOURCESELECT_H
 #include "ui_qgsserversourceselectbase.h"
-#include <QDialog>
+#include "qgisgui.h"
 
 #include <vector>
 #include <map>
 
 class QgisApp;
 class QgsWmsProvider;
-
+class QButtonGroup;
 /*!
  * \brief   Dialog to create connections and add layers from WMS, etc.
  *
@@ -43,7 +43,7 @@ class QgsServerSourceSelect : public QDialog, private Ui::QgsServerSourceSelectB
 public:
 
     //! Constructor
-    QgsServerSourceSelect(QgisApp *app=0, QWidget *parent = 0, const char *name = 0);
+    QgsServerSourceSelect(QgisApp *app, QWidget *parent = 0, Qt::WFlags fl = QgisGui::ModalDialogFlags);
     //! Destructor
     ~QgsServerSourceSelect();
     //! Populate the connection list combo box
@@ -79,6 +79,9 @@ public slots:
     //! Determines the layers the user selected and closes the dialog
     void on_btnAdd_clicked();
 
+    //! Opens help application
+    void on_btnHelp_clicked();
+
     //! Signaled when a layer selection is changed.  Ensures that only one style is selected per layer.
     void on_lstLayers_selectionChanged();
 
@@ -102,6 +105,11 @@ private:
 
     //! Pointer to the qgis application mainwindow
     QgisApp *qgisApp;
+
+    //! The widget that controls the image format radio buttons
+    QButtonGroup* m_imageFormatBtns;
+
+    static const int context_id = 710979116;
 };
 
 

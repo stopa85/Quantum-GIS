@@ -13,7 +13,6 @@
 #define QGSCOPYRIGHTLABELPLUGINGUI_H
 
 #include <ui_pluginguibase.h>
-#include <QDialog>
 #include <qfont.h>
 #include <qcolor.h>
 
@@ -25,7 +24,7 @@ class QgsCopyrightLabelPluginGui : public QDialog, private Ui::QgsCopyrightLabel
 Q_OBJECT;
 public:
     QgsCopyrightLabelPluginGui();
-    QgsCopyrightLabelPluginGui( QWidget* parent = 0, const char* name = 0, bool modal = FALSE, Qt::WFlags fl = 0 );
+    QgsCopyrightLabelPluginGui( QWidget* parent = 0, Qt::WFlags fl = 0 );
     ~QgsCopyrightLabelPluginGui();
     void setText(QString);
     void setPlacement(QString);
@@ -33,9 +32,11 @@ public:
 public slots:
     void on_pbnOK_clicked();
     void on_pbnCancel_clicked();    
+    void on_pbnHelp_clicked();
     void setEnabled(bool); 
      
 private:
+    static const int context_id = 732921842;
     
 signals:
    //void drawRasterLayer(QString);

@@ -273,6 +273,9 @@ public:
     // also sets the contents of the r2 parameter
     bool projectExtent(QgsRect& extent, QgsRect& r2);
 
+    /**Returns the path to an icon which characterises the type of layer*/
+    virtual QString layerTypeIconPath() = 0;
+
     void setLegendSymbologyGroupParent(QgsLegendSymbologyGroup* item) {mLegendSymbologyGroupParent = item;}
     const QgsLegendSymbologyGroup* legendSymbologyGroupParent() {return mLegendSymbologyGroupParent;}
 
@@ -287,7 +290,11 @@ public:
 
     virtual std::vector < QgsField > const &fields() const;
 
+    /** \brief accessor for transparency level.  */
+    virtual unsigned int getTransparency()=0;
 public  slots:
+    /** \brief Mutator for transparency level. Should be between 0 and 255 */
+    virtual void setTransparency(int)=0; //
    //! event handler for when a coordinate transofrm fails due to bad vertex error
    virtual void invalidTransformInput();
 
@@ -372,6 +379,8 @@ signals:
 
 protected:
 
+    /** \brief Transparency level for this layer should be 0-255 (255 being opaque)  */
+    unsigned int transparencyLevelInt;
   
     /** called by readXML(), used by children to read state specific to them from
         project files.

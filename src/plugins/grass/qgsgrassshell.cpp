@@ -35,6 +35,8 @@ extern "C" {
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+
+#ifndef WIN32
 #ifdef Q_OS_MACX
 #include <util.h>
 #else
@@ -44,17 +46,22 @@ extern "C" {
 #include <sys/stat.h>
 #include <sys/ioctl.h>
 #include <fcntl.h>
+#endif //!WIN32
 }
-
-#define QGISDEBUG 1
 
 QgsGrassShell::QgsGrassShell ( QgsGrassTools *tools, 
     QWidget * parent, const char * name  ):
-    //QgsGrassShellBase(parent,name), mTools(tools)
-    //Tim disabled params during qt4 ui port FIXME
-    QgsGrassShellBase(), mTools(tools)
+    QDialog(parent), QgsGrassShellBase(), mTools(tools)
 {
     mValid = false;
+
+#ifdef WIN32
+    QMessageBox::warning( 0, "Warning", 
+              "GRASS Shell is not supported on Windows." );
+    return;
+#else 
+
+    setupUi(this);
 
     QGridLayout *layout = new QGridLayout( mTextFrame, 1, 1 );
     mText = new QgsGrassShellText( this, mTextFrame);
@@ -227,6 +234,7 @@ QgsGrassShell::QgsGrassShell ( QgsGrassTools *tools,
 
     resizeTerminal();
     mValid = true;
+#endif // !WIN32
 }
 
 QgsGrassShell::~QgsGrassShell()
@@ -838,18 +846,20 @@ void QgsGrassShell::resizeTerminal()
     int col = (int) (width / fm.width("x")); 
     int row = (int) (height / fm.height()); 
 
+#ifndef WIN32
     struct winsize winSize;
     memset(&winSize, 0, sizeof(winSize));
     winSize.ws_row = row;
     winSize.ws_col = col;
 
     ioctl( mFdMaster, TIOCSWINSZ, (char *)&winSize );
+#endif
 }
 
 void QgsGrassShell::readStderr()
 {
 }
-    
+
 QgsGrassShellText::QgsGrassShellText ( QgsGrassShell *gs, 
       QWidget * parent, const char *name )
     : Q3TextEdit (parent,name),
@@ -892,4 +902,3 @@ void QgsGrassShellText::resizeEvent(QResizeEvent *e)
     mShell->resizeTerminal();
     Q3TextEdit::resizeEvent(e);
 }
-

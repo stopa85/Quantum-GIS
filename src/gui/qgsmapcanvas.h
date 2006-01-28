@@ -49,6 +49,7 @@ class QgsLegend;
 class QgsLegendView;
 class QgsAcetateObject;
 class QgsMeasure;
+class QgsRubberBand;
 
 class QgsMapImage;
 class QgsMapOverviewCanvas;
@@ -116,7 +117,7 @@ class QgsMapCanvas : public Q3CanvasView
     int mapTool();
 
     /** Write property of QColor bgColor. */
-    virtual void setbgColor(const QColor & _newVal);
+    virtual void setCanvasColor(const QColor & _newVal);
 
     /** Emits signal scalChanged to update scale in main window */
     void updateScale();
@@ -183,6 +184,9 @@ class QgsMapCanvas : public Q3CanvasView
     //! Zooms in/out with a given center (uses zoomByScale)
     void zoomWithCenter(int x, int y, bool zoomIn);
 
+    //used to determine if anti-aliasing is enabled or not
+    void enableAntiAliasing(bool theFlag);
+    
 public slots:
 
     /**Sets dirty=true and calls render()*/

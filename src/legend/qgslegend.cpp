@@ -19,6 +19,7 @@
 /* $Id$ */
 
 #include "qgisapp.h"
+#include "qgsapplication.h"
 #include "qgslegend.h"
 #include "qgslegendgroup.h"
 #include "qgslegendlayer.h"
@@ -69,11 +70,14 @@ QgsLegend::QgsLegend(QgisApp* app, QWidget * parent, const char *name)
   QFont f("Arial", 10, QFont::Normal);
   setFont(f);
   setBackgroundColor(QColor(192, 192, 192));
+  //setIconSize(QSize(30, 30));
   setColumnCount(1);
   QStringList myList("Layers");
   setHeaderLabels(myList);
   //added by Tim to hide the header - header is unneccessary
   header()->setHidden(1);
+  setRootIsDecorated(true);
+
 }
 
 
@@ -381,12 +385,7 @@ void QgsLegend::handleRightClickEvent(QTreeWidgetItem* item, const QPoint& posit
 {
   QMenu theMenu;
 
-#if defined(Q_OS_MACX) || defined(WIN32)
-  QString iconsPath(QCoreApplication::applicationDirPath()+QString("/share/qgis/images/icons/"));
-#else
-  QString iconsPath(PKGDATAPATH);
-  iconsPath+="/images/icons/";
-#endif
+  QString iconsPath = QgsApplication::themePath();
 
   if(mMapCanvas->isDrawing())
     {
@@ -404,9 +403,9 @@ void QgsLegend::handleRightClickEvent(QTreeWidgetItem* item, const QPoint& posit
       else if(li->type() == QgsLegendItem::LEGEND_LAYER)
 	{
 	  theMenu.addAction(tr("&Properties"), this, SLOT(legendLayerShowProperties()));
-	  theMenu.addAction(QIcon(QPixmap(iconsPath+QString("inoverview.png"))), tr("&Add to overview"), this, SLOT(legendLayerAddToOverview()));
-	  theMenu.addAction(QIcon(QPixmap(iconsPath+QString("remove_from_overview.png"))), tr("&Remove from overview"), this, SLOT(legendLayerRemoveFromOverview()));
-	  theMenu.addAction(QIcon(QPixmap(iconsPath+QString("remove.png"))), tr("&Remove"), this, SLOT(legendLayerRemove()));
+	  theMenu.addAction(QIcon(QPixmap(iconsPath+QString("/mActionAddAllToOverview.png"))), tr("&Add to overview"), this, SLOT(legendLayerAddToOverview()));
+	  theMenu.addAction(QIcon(QPixmap(iconsPath+QString("/mActionRemoveAllFromOverview.png"))), tr("&Remove from overview"), this, SLOT(legendLayerRemoveFromOverview()));
+	  theMenu.addAction(QIcon(QPixmap(iconsPath+QString("/mActionRemove.png"))), tr("&Remove"), this, SLOT(legendLayerRemove()));
 	  if(li->parent())
 	    {
 	      theMenu.addAction(tr("&Make to toplevel item"), this, SLOT(makeToTopLevelItem()));
@@ -414,7 +413,7 @@ void QgsLegend::handleRightClickEvent(QTreeWidgetItem* item, const QPoint& posit
 	}
       else if(li->type() == QgsLegendItem::LEGEND_GROUP)
 	{
-	  theMenu.addAction(QPixmap(iconsPath+QString("remove.png")), tr("&Remove"), this, SLOT(legendGroupRemove()));
+	  theMenu.addAction(QPixmap(iconsPath+QString("/mActionRemove.png")), tr("&Remove"), this, SLOT(legendGroupRemove()));
 	}
 
       if(li->type() == QgsLegendItem::LEGEND_LAYER || li->type() == QgsLegendItem::LEGEND_GROUP)
@@ -425,9 +424,9 @@ void QgsLegend::handleRightClickEvent(QTreeWidgetItem* item, const QPoint& posit
       
     }
 
-  theMenu.addAction(QIcon(QPixmap(iconsPath+QString("folder_new.png"))), tr("&Add group"), this, SLOT(addGroup()));
-  theMenu.addAction(QIcon(QPixmap(iconsPath+QString("expand_tree.png"))), tr("&Expand all"), this, SLOT(expandAll()));
-  theMenu.addAction(QIcon(QPixmap(iconsPath+QString("collapse_tree.png"))), tr("&Collapse all"), this, SLOT(collapseAll()));
+  theMenu.addAction(QIcon(QPixmap(iconsPath+QString("/folder_new.png"))), tr("&Add group"), this, SLOT(addGroup()));
+  theMenu.addAction(QIcon(QPixmap(iconsPath+QString("/mActionExpandTree.png"))), tr("&Expand all"), this, SLOT(expandAll()));
+  theMenu.addAction(QIcon(QPixmap(iconsPath+QString("/mActionCollapseTree.png"))), tr("&Collapse all"), this, SLOT(collapseAll()));
   
   theMenu.exec(position);
 }
@@ -454,6 +453,7 @@ void QgsLegend::addLayer( QgsMapLayer * layer )
     mStateOfCheckBoxes.insert(std::make_pair(llayer, Qt::Checked)); //insert the check state into the map to query for changes later
     QgsLegendLayerFileGroup * llfgroup = new QgsLegendLayerFileGroup(llayer,QString("Files"));
     QgsLegendLayerFile * llfile = new QgsLegendLayerFile(llfgroup, QgsLegendLayerFile::nameFromLayer(layer), layer);
+    llayer->setLayerTypeIcon();
     
     //set the correct check state
     blockSignals(true);
@@ -879,7 +879,12 @@ bool QgsLegend::readXML(QDomNode& legendnode)
 		      theLegendLayerFile->setCheckState(0, Qt::Unchecked);
 		    }
 		  blockSignals(false);
-
+		  
+		  //set the layer type icon if this legendlayerfile is the last in the file group
+		  if(child.nextSibling().isNull())
+		  {
+		    static_cast<QgsLegendLayer*>(theLegendLayerFile->parent()->parent())->setLayerTypeIcon();
+		  }
 		}
 	    }
 	  else if(childelem.tagName()=="filegroup")

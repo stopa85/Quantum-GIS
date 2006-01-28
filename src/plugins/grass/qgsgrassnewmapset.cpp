@@ -47,6 +47,7 @@
 #include <Q3Wizard>
 
 #include "qgis.h"
+#include "qgsapplication.h"
 #include "qgsmapcanvas.h"
 #include "qgsproject.h"
 #include "qgsrect.h"
@@ -60,15 +61,16 @@
 bool QgsGrassNewMapset::mRunning = false;
 
 QgsGrassNewMapset::QgsGrassNewMapset ( QgisApp *qgisApp, QgisIface *iface, 
-	QgsGrassPlugin *plugin,
-    QWidget * parent, const char * name, Qt::WFlags f )
-//:QgsGrassNewMapsetBase ( parent, name) //XXX removed Wflags f from this call to the base class constructor
-//Tim moved all parms during qt4 port - FIXME
-:QgsGrassNewMapsetBase ( ) //XXX removed Wflags f from this call to the base class constructor
+	QgsGrassPlugin *plugin, QWidget * parent, 
+        const char * name, Qt::WFlags f ):
+        Q3Wizard(parent, name, false, f),
+        QgsGrassNewMapsetBase ( ) 
 {
 #ifdef QGISDEBUG
   std::cerr << "QgsGrassNewMapset()" << std::endl;
 #endif
+
+    setupUi(this);
 
     mRunning = true;
     mQgisApp = qgisApp;
@@ -76,7 +78,16 @@ QgsGrassNewMapset::QgsGrassNewMapset ( QgisApp *qgisApp, QgisIface *iface,
     mProjectionSelector = 0;
     mPreviousPage = -1;
     mRegionModified = false;
-    mPixmap = QPixmap( *(mRegionMap->pixmap()) );
+    
+    QString mapPath = QgsApplication::pkgDataPath() + "/grass/world.png";
+#ifdef QGISDEBUG
+    std::cerr << "mapPath = " << mapPath.ascii() << std::endl;
+#endif
+    
+    //mPixmap = QPixmap( *(mRegionMap->pixmap()) );
+    mPixmap.load ( mapPath );
+    std::cerr << "mPixmap.isNull() = " << mPixmap.isNull() << std::endl;
+     
     mRegionsInited = false;
     mPlugin = plugin;
     
@@ -459,9 +470,9 @@ void QgsGrassNewMapset::setGrassProjection()
 #endif
 	    // Note: GPJ_osr_to_grass() defaults in PROJECTION_XY if projection
 	    //       cannot be set
-	    // TODO: necessity of (void **)hSRS is maybe bug in GRASS library?
+
 	    int ret = GPJ_osr_to_grass ( &mCellHead, &mProjInfo, &mProjUnits, 
-				    (void **)hSRS, 0);
+				    &hSRS, 0);
 	    
 	    // Note: I seems that GPJ_osr_to_grass()returns always 1, 
 	    // 	 -> test if mProjInfo was set
@@ -808,9 +819,21 @@ void QgsGrassNewMapset::loadRegions()
         if ( coorNodes.item(0).isNull() ) continue;
         QDomElement coorElem = coorNodes.item(0).toElement();
         if ( coorElem.text().isNull() ) continue;
+
         QStringList coor = QStringList::split ( " ", coorElem.text() );
+        if ( coor.size() != 2 )
+        {
+            std::cerr << "Cannot parse coordinates: " << coorElem.text().ascii() << std::endl;
+            continue;
+        }
+
         QStringList ll = QStringList::split ( ",", coor[0] );
         QStringList ur = QStringList::split ( ",", coor[1] );
+        if ( ll.size() != 2 || ur.size() != 2 )
+        {
+            std::cerr << "Cannot parse coordinates: " << coorElem.text().ascii() << std::endl;
+            continue;
+        }
 
         // Add region
         mRegionsComboBox->insertItem ( nameElem.text() );
@@ -1019,6 +1042,7 @@ void QgsGrassNewMapset::drawRegion()
 
     if ( mCellHead.proj == PROJECTION_XY ) return; 
 
+    std::cerr << "pm.isNull() = " << pm.isNull() << std::endl;
     QPainter p ( &pm );
     p.setPen( QPen(QColor(255,0,0),3) );
 
@@ -1154,13 +1178,10 @@ void QgsGrassNewMapset::drawRegion()
 			 180+shift+(int)x2, 90-(int)points[i+1].y() );
 	}
     }
-    std::cerr << "<<<<<<<<<<" << std::endl;
 
     p.end();
-    std::cerr << "<<<<<<<<<<" << std::endl;
 
     mRegionMap->setPixmap( pm );
-    std::cerr << "<<<<<<<<<<" << std::endl;
 }
 
 /**************************** MAPSET ********************************/
@@ -1458,13 +1479,8 @@ void QgsGrassNewMapset::pageSelected( const QString & title )
 
 		mProjectionSelector->show();
 		
-		// Warning: QgsProjectionSelector::sridSelected() is not implemented!
-		//          -> use lstCoordinateSystems directly
 		connect( mProjectionSelector, SIGNAL(sridSelected(QString)), 
 			 this, SLOT(sridSelected(QString)));
-		//connect( mProjectionSelector->lstCoordinateSystems, SIGNAL(selectionChanged ()), 
-		//	 this, SLOT(projectionSelected()));
-
 
 		// Se current QGIS projection
                 int srsid = QgsProject::instance()->readNumEntry(

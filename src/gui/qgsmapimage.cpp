@@ -205,8 +205,9 @@ void QgsMapImage::render()
   pm.fill(mBgColor);
   paint->begin(&pm);
   
-  // TODO: antialiasing?
-  paint->setRenderHint(QPainter::Antialiasing);
+  // antialiasing
+  if (mAntiAliasing)
+    paint->setRenderHint(QPainter::Antialiasing);
 
 //  int myRenderCounter = 1;
   

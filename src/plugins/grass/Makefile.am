@@ -14,7 +14,8 @@ SUBDIRS = config modules themes
 
 INCLUDES = -I../../gui -I../../core
 
-DEFS=-DGRASS_BASE=\"$(GRASS_BASE)\" -DHAVE_OPENPTY=$(HAVE_OPENPTY) 
+DEFS=-DGRASS_BASE=\"$(GRASS_BASE)\" -DHAVE_OPENPTY=$(HAVE_OPENPTY)
+
 if !HAVE_QTMAC
 PREFIX=-DPREFIX=\"$(prefix)\"
 endif
@@ -22,7 +23,7 @@ endif
 plugindir = ${pkglibdir}
 
 grassdatadir = ${pkgdatadir}/grass/
-grassdata_DATA = *.gml
+grassdata_DATA = *.gml images/world.png
 
 %.moc.cpp: %.h
 	$(MOC) -o $@ $<

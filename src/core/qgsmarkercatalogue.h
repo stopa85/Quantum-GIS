@@ -18,14 +18,12 @@
 
 #include <iostream>
 
-#include <qbrush.h>
-#include <qpen.h>
-#include <qpixmap.h>
-#include <q3picture.h>
-#include <qdom.h>
-#include <qstringlist.h>
-
 class QString;
+class QStringList;
+class QPicture;
+class QPixmap;
+class QPen;
+class QBrush;
 
 /** Catalogue of point symbols */
 class QgsMarkerCatalogue{
@@ -43,7 +41,7 @@ public:
     /** Returns picture of the marker
      * \param fullName full name, e.g. hard:circle, svg:/home/usr1/marker1.svg
      */
-    Q3Picture marker ( QString fullName, int size, QPen pen, QBrush brush, int oversampling = 1, bool qtBug = true );
+    QPixmap marker ( QString fullName, int size, QPen pen, QBrush brush, bool qtBug = true );
 
 private:
 
@@ -56,10 +54,10 @@ private:
     QStringList mList;
 
     /** Hard coded */
-    Q3Picture hardMarker ( QString name, int size, QPen pen, QBrush brush, int oversampling = 1, bool qtBug = true );
+    QPicture hardMarker ( QString name, int size, QPen pen, QBrush brush, bool qtBug = true );
 
     /** Hard coded */
-    Q3Picture svgMarker ( QString name, int size, int oversampling = 1 );
+    QPixmap svgMarker ( QString name, int size );
 };
     
 #endif // QGSMARKERCATALOGUE_H

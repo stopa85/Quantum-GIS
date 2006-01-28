@@ -160,6 +160,10 @@ if test -f $QTDIR/include/qt/qglobal.h; then
 elif test -f $QTDIR/include/qt3/qglobal.h; then
   QTINC=$QTDIR/include/qt3
   QTVERTEST=$QTDIR/include/qt3
+elif test -f $QTDIR/include/Qt/qglobal.h -a -f $QTDIR/src/corelib/global/qglobal.h; then
+  # Windows: $QTDIR/include/Qt/qglobal.h includes $QTDIR/src/corelib/global/qglobal.h
+  QTINC=$QTDIR/include
+  QTVERTEST=$QTDIR/src/corelib/global/
 elif test -f $QTDIR/include/Qt/qglobal.h; then
   QTINC=$QTDIR/include
   QTVERTEST=$QTDIR/include/Qt
@@ -186,6 +190,7 @@ case "${QT_VER}" in
       QT4_OPENGLINC=$QTDIR/lib/QtOpenGL.framework/Headers
       QT4_SQLINC=$QTDIR/lib/QtSql.framework/Headers
       QT4_XMLINC=$QTDIR/lib/QtXml.framework/Headers
+      QT4_SVGINC=$QTDIR/lib/QtSvg.framework/Headers
 	  ;;
     *)
       QT4_3SUPPORTINC=$QTDIR/include/Qt3Support
@@ -195,6 +200,7 @@ case "${QT_VER}" in
       QT4_OPENGLINC=$QTDIR/include/QtOpenGL
       QT4_SQLINC=$QTDIR/include/QtSql
       QT4_XMLINC=$QTDIR/include/QtXml
+      QT4_SVGINC=$QTDIR/include/QtSvg
       ;;
     esac
     QT4_DESIGNERINC=$QTDIR/include/QtDesigner
@@ -232,19 +238,36 @@ if test $QT_MAJOR = "4" ; then
   # Hard code things for the moment
 
   # Check that moc is in path
-  AC_CHECK_PROG(MOC, moc, $QTDIR/bin/moc, , $QTDIR/bin)
-  if test x$MOC = x ; then
-    AC_MSG_ERROR([*** moc must be in path])
-  fi
-  # uic3 is the Qt user interface compiler in Qt3 legacy mode
-  AC_PATH_PROG(UIC, uic, , [$PATH:$QTDIR/bin])
-  if test x$UIC = x ; then
-    AC_MSG_ERROR([*** uic must be in path])
-  fi
-  # check for rcc
-  AC_PATH_PROG(RCC, rcc, , [$PATH:$QTDIR/bin])
-  if test x$RCC = x ; then
-    AC_MSG_ERROR([*** rcc must be in path])
+  if test $cross_compiling = "yes" ; then # MinGW
+      AC_CHECK_PROG(MOC, moc, moc)
+      if test x$MOC = x ; then
+	AC_MSG_ERROR([*** moc must be in path])
+      fi
+      # uic is the Qt user interface compiler
+      AC_CHECK_PROG(UIC, uic, uic)
+      if test x$UIC = x ; then
+	AC_MSG_ERROR([*** uic must be in path])
+      fi
+      # check for rcc
+      AC_CHECK_PROG(RCC, rcc, rcc)
+      if test x$RCC = x ; then
+	AC_MSG_ERROR([*** rcc must be in path])
+      fi
+  else
+      AC_CHECK_PROG(MOC, moc, $QTDIR/bin/moc, , $QTDIR/bin)
+      if test x$MOC = x ; then
+	AC_MSG_ERROR([*** moc must be in path])
+      fi
+      # uic is the Qt user interface compiler
+      AC_CHECK_PROG(UIC, uic, $QTDIR/bin/uic, , $QTDIR/bin)
+      if test x$UIC = x ; then
+	AC_MSG_ERROR([*** uic must be in path])
+      fi
+      # check for rcc
+      AC_CHECK_PROG(RCC, rcc, $QTDIR/bin/rcc, , $QTDIR/bin)
+      if test x$RCC = x ; then
+	AC_MSG_ERROR([*** rcc must be in path])
+      fi
   fi
 fi
 
@@ -257,7 +280,7 @@ if test $QT_MAJOR = "3" ; then
 QT_CXXFLAGS="-I$QTINC"
 fi
 if test $QT_MAJOR = "4" ; then
-QT_CXXFLAGS="-DQT3_SUPPORT -I$QT4_DEFAULTINC -I$QT4_3SUPPORTINC -I$QT4_COREINC -I$QT4_DESIGNERINC -I$QT4_GUIINC -I$QT4_NETWORKINC -I$QT4_OPENGLINC -I$QT4_SQLINC -I$QT4_XMLINC -I$QTINC"
+QT_CXXFLAGS="-DQT3_SUPPORT -I$QT4_DEFAULTINC -I$QT4_3SUPPORTINC -I$QT4_COREINC -I$QT4_DESIGNERINC -I$QT4_GUIINC -I$QT4_NETWORKINC -I$QT4_OPENGLINC -I$QT4_SQLINC -I$QT4_XMLINC -I$QTINC -I$QT4_SVGINC"
 fi
 QT_IS_EMBEDDED="no"
 # On unix, figure out if we're doing a static or dynamic link
@@ -318,8 +341,8 @@ case "${host}" in
       QT_IS_MT="yes"
       QT_IS_EMBEDDED="yes"
     elif test "x`ls $QTDIR/lib/QtCore.framework/QtCore 2> /dev/null`" != x ; then
-      QT_LIB="-Xlinker -F$QTDIR/lib -framework QtCore -framework Qt3Support -framework QtGui -framework QtNetwork -framework QtXml"
-      QT_CXXFLAGS="-DQT3_SUPPORT -F$QTDIR/lib -I$QT4_DEFAULTINC -I$QT4_3SUPPORTINC -I$QT4_COREINC -I$QT4_DESIGNERINC -I$QT4_GUIINC -I$QT4_NETWORKINC -I$QT4_OPENGLINC -I$QT4_SQLINC -I$QT4_XMLINC"
+      QT_LIB="-Xlinker -F$QTDIR/lib -framework QtCore -framework Qt3Support -framework QtGui -framework QtNetwork -framework QtXml -framework QtSvg"
+      QT_CXXFLAGS="-DQT3_SUPPORT -F$QTDIR/lib -I$QT4_DEFAULTINC -I$QT4_3SUPPORTINC -I$QT4_COREINC -I$QT4_DESIGNERINC -I$QT4_GUIINC -I$QT4_NETWORKINC -I$QT4_OPENGLINC -I$QT4_SQLINC -I$QT4_XMLINC -I$QT4_SVGINC"
       QT_IS_MT="yes"
     fi
     ;;
@@ -356,8 +379,8 @@ case "${host}" in
       QT_IS_MT="yes"
       QT_IS_EMBEDDED="yes"
     elif test "x`ls $QTDIR/${_lib}/libQtCore.* /usr/lib/libQtCore.* 2> /dev/null`" != x ; then
-      QT_LIB="-lQtCore -lQt3Support -lQtGui -lQtNetwork"
-QT_CXXFLAGS="-DQT3_SUPPORT -I$QT4_DEFAULTINC -I$QT4_3SUPPORTINC -I$QT4_COREINC -I$QT4_DESIGNERINC -I$QT4_GUIINC -I$QT4_NETWORKINC -I$QT4_OPENGLINC -I$QT4_SQLINC -I$QT4_XMLINC -I$QTINC"
+      QT_LIB="-lQtCore -lQt3Support -lQtGui -lQtNetwork -lQtSvg"
+QT_CXXFLAGS="-DQT3_SUPPORT -I$QT4_DEFAULTINC -I$QT4_3SUPPORTINC -I$QT4_COREINC -I$QT4_DESIGNERINC -I$QT4_GUIINC -I$QT4_NETWORKINC -I$QT4_OPENGLINC -I$QT4_SQLINC -I$QT4_XMLINC -I$QTINC -I$QT4_SVGINC"
       QT_IS_MT="yes"
     fi
     ;;
@@ -373,6 +396,9 @@ AC_MSG_RESULT([$QT_IS_EMBEDDED])
 QT_GUILINK=""
 QASSISTANTCLIENT_LDADD="-lqassistantclient"
 case "${host}" in
+  *-mingw*)
+     QT_LIBS="-lQtCore4 -lQt3Support4 -lQtGui4 -lQtNetwork4 -lQtXml4 -lQtSvg4"
+    ;;
   *irix*)
     QT_LIBS="$QT_LIB"
     if test $QT_IS_STATIC = yes ; then
@@ -453,7 +479,14 @@ if test x"$QT_IS_MT" = "xyes" ; then
   QT_CXXFLAGS="$QT_CXXFLAGS -D_REENTRANT -DQT_THREAD_SUPPORT"
 fi
 
-QT_LDADD="-L$QTDIR/${_lib} $QT_LIBS"
+case "${host}" in
+  *-mingw*)
+    QT_LDADD="-L$QTDIR/${_lib} $QT_LIBS"
+    ;;
+  *)
+    QT_LDADD="-L$QTDIR/${_lib} $QT_LIBS"
+    ;;
+esac
 
 if test x$QT_IS_STATIC = xyes ; then
   OLDLIBS="$LIBS"
