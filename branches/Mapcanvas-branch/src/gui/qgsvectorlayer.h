@@ -41,7 +41,7 @@ class QgsLabel;
 #include <vector>
 
 #include "q3valuevector.h"
-#include <Q3Picture>
+#include <QPixmap>
 
 #include "qgsmaplayer.h"
 #include "qgsattributeaction.h"
@@ -66,6 +66,9 @@ public:
 
   //! Destructor
   virtual ~QgsVectorLayer();
+
+  /** \brief accessor for transparency level.  */
+  unsigned int getTransparency();
 
   /**
    *   Returns the permanent storage type for this layer as a friendly name.
@@ -142,6 +145,9 @@ const QString displayField() const { return fieldIndex; }
    */
   bool addFeatures(std::vector<QgsFeature*>* features, bool makeSelected = TRUE);
 
+  /**Returns the path to an icon which characterises the type of layer*/
+  QString layerTypeIconPath();
+
   /**Fill the pixmaps and labels of the renderers into the treeview legend*/
   void refreshLegend();
 
@@ -163,6 +169,9 @@ signals:
   void selectionChanged(); 
   
 public slots:
+
+  /** \brief Mutator for transparency level. Should be between 0 and 255 */
+  void setTransparency(int); //
 
   void inOverview( bool );
 
@@ -397,7 +406,7 @@ public:
    *  \param widthScale line width scale
    *  \param symbolScale symbol scale
    */
-  void draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * cXf,  QPaintDevice * dst, double widthScale, double symbolScale, int oversampling = 1);
+  void draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * cXf,  QPaintDevice * dst, double widthScale, double symbolScale);
 
   /** \brief Draws the layer labels using coordinate transformation
    *  \param scale size scale, applied to all values in pixels
@@ -466,7 +475,7 @@ private:                       // Private attributes
 
   //! Draws features. May cause projections exceptions to be generated
   // (i.e., code that calls this function needs to catch them
-  void drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * cXf, Q3Picture* marker, double markerScaleFactor, bool projectionsEnabledFlag );
+  void drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * cXf, QPixmap* marker, double markerScaleFactor, bool projectionsEnabledFlag );
 
 private:                       // Private attributes
 

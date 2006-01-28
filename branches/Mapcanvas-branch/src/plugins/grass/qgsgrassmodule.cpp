@@ -63,6 +63,7 @@
 #include <QGridLayout>
 
 #include "qgis.h"
+#include "qgsapplication.h"
 #include "qgsmapcanvas.h"
 #include "qgsmaplayer.h"
 #include "qgsvectorlayer.h"
@@ -83,6 +84,38 @@ extern "C" {
 #include "qgsgrassmapcalc.h"
 #include "qgsgrasstools.h"
 
+bool QgsGrassModule::mExecPathInited = 0;
+QStringList QgsGrassModule::mExecPath;
+
+bool QgsGrassModule::inExecPath ( QString file )
+{
+    #ifdef QGISDEBUG
+    std::cerr << "QgsGrassModule::inExecPath()" << std::endl;
+    #endif
+    // Init mExecPath 
+    // Windows searches first in current directory
+    if ( !mExecPathInited ) 
+    {
+        QString path = getenv("PATH");
+        std::cerr << "path = " << path.ascii() << std::endl;
+
+        mExecPath = path.split ( ";" );
+        mExecPath.prepend ( QgsApplication::applicationDirPath() );
+        mExecPathInited = true;
+    }
+ 
+    // Search for module
+    for ( QStringList::iterator it = mExecPath.begin(); 
+          it != mExecPath.end(); ++it ) 
+    {
+        if ( QFile::exists ( *it + "/" + file ) ) 
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 QgsGrassModule::QgsGrassModule ( QgsGrassTools *tools, QgisApp *qgisApp, QgisIface *iface, 
 	                     QString path, QWidget * parent, const char * name, Qt::WFlags f )
              //:QgsGrassModuleBase ( parent, name, f )
@@ -93,12 +126,15 @@ QgsGrassModule::QgsGrassModule ( QgsGrassTools *tools, QgisApp *qgisApp, QgisIfa
     std::cerr << "QgsGrassModule()" << std::endl;
     #endif
 
+    setupUi(this);
+
     mPath = path;
     mTools = tools;
     mQgisApp = qgisApp;
     mIface = iface;
     mCanvas = mIface->getMapCanvas();
     mParent = parent;
+    //mAppDir = QgsApplication::applicationDirPath();
     mAppDir = mTools->appDir();
 
     /* Read module description and create options */
@@ -129,9 +165,31 @@ QgsGrassModule::QgsGrassModule ( QgsGrassTools *tools, QgisApp *qgisApp, QgisIfa
     QDomElement qDocElem = qDoc.documentElement();
 
     // Read GRASS module description
-    mXName = qDocElem.attribute("module");
+    QString xName = qDocElem.attribute("module");
+
+    // Binary modules on windows has .exe extension
+    // but not all modules have to be binary (can be scripts)
+    // => test if the module is in path and if it is not 
+    // add .exe and test again
+#ifdef WIN32
+    if ( inExecPath ( xName ) ) 
+    {
+        mXName = xName;
+    }
+    else if ( inExecPath ( xName + ".exe" ) )
+    {
+        mXName = xName + ".exe";
+    }
+    else 
+    {
+        std::cerr << "Module " << xName.ascii() << " not found" << std::endl;
+        return;
+    }
+#else
+    mXName = xName;
+#endif
     
-    if ( mXName == "r.mapcalc" )
+    if ( xName == "r.mapcalc" )
     {
         QGridLayout *layout = new QGridLayout ( mTabWidget->page(0), 1, 1 );
 
@@ -152,7 +210,7 @@ QgsGrassModule::QgsGrassModule ( QgsGrassTools *tools, QgisApp *qgisApp, QgisIfa
                                 
     // Create manual if available
     QString gisBase = getenv("GISBASE");
-    QString manPath = gisBase + "/docs/html/" + mXName + ".html";
+    QString manPath = gisBase + "/docs/html/" + xName + ".html";
     QFile manFile ( manPath );
     if ( manFile.exists() ) {
 	mManualTextBrowser->setSource ( manPath );
@@ -187,8 +245,8 @@ QgsGrassModuleOptions::QgsGrassModuleOptions (
     mQgisApp = qgisApp;
     mIface = iface;
     mCanvas = mIface->getMapCanvas();
+    //mAppDir = QgsApplication::applicationDirPath();
     mAppDir = mTools->appDir();
-
 }
 
 QgsGrassModuleOptions::~QgsGrassModuleOptions()
@@ -212,6 +270,7 @@ QgsGrassModuleStandardOptions::QgsGrassModuleStandardOptions (
 {
     #ifdef QGISDEBUG
     std::cerr << "QgsGrassModuleStandardOptions()" << std::endl;
+    std::cerr << "PATH = " <<  getenv ("PATH") << std::endl;
     #endif
 
     mXName = xname;
@@ -221,6 +280,11 @@ QgsGrassModuleStandardOptions::QgsGrassModuleStandardOptions (
     process->addArgument( mXName );
     process->addArgument( "--interface-description" );
 
+    // Attention: if a binary has the .exe extention it must be 
+    // also in mXName but we cannot append it here because 
+    // the modules can also be a script => ???
+    // For now create in GISBASE/bin copy of each module without 
+    // .exe extension
     if ( !process->start( ) ) {
 	QMessageBox::warning( 0, "Warning", "Cannot start module " + mXName );
 	return;
@@ -1042,12 +1106,20 @@ void QgsGrassModuleInput::updateQgisLayers()
 	}
     }
 
+    // Note: QDir::cleanPath is using '/' also on Windows
+    //QChar sep = QDir::separator();
+    QChar sep = '/';
+
     int nlayers = canvas->layerCount();
     for ( int i = 0; i < nlayers; i++ ) {
 	QgsMapLayer *layer = canvas->getZpos(i);
 
+        #ifdef QGISDEBUG
+        std::cerr << "layer->type() = " << layer->type() << std::endl;
+        #endif
 	if (  mType == Vector && layer->type() == QgsMapLayer::VECTOR ) {
 	    QgsVectorLayer *vector = (QgsVectorLayer*)layer;
+            std::cerr << "vector->providerType() = " << vector->providerType().ascii() << std::endl;
 	    if ( vector->providerType() != "grass" ) continue;
 
 	    //TODO dynamic_cast ?
@@ -1065,9 +1137,10 @@ void QgsGrassModuleInput::updateQgisLayers()
 	    }
 
 	    // TODO add map() mapset() location() gisbase() to grass provider
-	    QString source = QDir::cleanDirPath ( provider->getDataSourceUri() );
-
-	    QChar sep = QDir::separator();
+	    QString source = QDir::cleanPath ( provider->getDataSourceUri() );
+            #ifdef QGISDEBUG
+            std::cerr << "source = " << source.ascii() << std::endl;
+            #endif
 	    
 	    // Check GISBASE and LOCATION
 	    QStringList split = QStringList::split ( sep, source );
@@ -1081,11 +1154,19 @@ void QgsGrassModuleInput::updateQgisLayers()
 	    QString mapset = split.last();
 	    split.pop_back(); // mapset
 	    
-	    QDir locDir ( sep + split.join ( QString(sep) ) ) ;
-	    QString loc = locDir.canonicalPath();
+	    //QDir locDir ( sep + split.join ( QString(sep) ) ) ;
+	    //QString loc = locDir.canonicalPath();
+            QString loc =  source.remove ( QRegExp("/[^/]+/[^/]+/[^/]+$") ); 
 
 	    QDir curlocDir ( QgsGrass::getDefaultGisdbase() + sep + QgsGrass::getDefaultLocation() );
 	    QString curloc = curlocDir.canonicalPath();
+            
+            #ifdef QGISDEBUG
+            std::cerr << "loc = " << loc.ascii() << std::endl;
+            std::cerr << "curloc = " << curloc.ascii() << std::endl;
+            std::cerr << "mapset = " << mapset.ascii() << std::endl;
+            std::cerr << "QgsGrass::getDefaultMapset() = " << QgsGrass::getDefaultMapset().ascii() << std::endl;
+            #endif
             
 	    if ( loc != curloc ) continue;
 
@@ -1123,7 +1204,6 @@ void QgsGrassModuleInput::updateQgisLayers()
 	    // Check if it is GRASS raster
 	    QString source = QDir::cleanDirPath ( layer->source() ); 
 
-	    QChar sep = QDir::separator();
 	    if ( source.contains( "cellhd" ) == 0 ) continue;
 	    
 	    // Most probably GRASS layer, check GISBASE and LOCATION
@@ -1139,8 +1219,9 @@ void QgsGrassModuleInput::updateQgisLayers()
 	    QString mapset = split.last();
 	    split.pop_back(); // mapset
 	    
-	    QDir locDir ( sep + split.join ( QString(sep) ) ) ;
-	    QString loc = locDir.canonicalPath();
+	    //QDir locDir ( sep + split.join ( QString(sep) ) ) ;
+	    //QString loc = locDir.canonicalPath();
+            QString loc =  source.remove ( QRegExp("/[^/]+/[^/]+/[^/]+$") ); 
 
 	    QDir curlocDir ( QgsGrass::getDefaultGisdbase() + sep + QgsGrass::getDefaultLocation() );
 	    QString curloc = curlocDir.canonicalPath();

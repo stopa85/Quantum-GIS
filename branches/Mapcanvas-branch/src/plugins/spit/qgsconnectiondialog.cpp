@@ -15,11 +15,13 @@
  *                                                                         *
  ***************************************************************************/
  
+// $Id$
+
 #include <iostream>
-#include <qsettings.h>
-#include <qlineedit.h>
-#include <qcheckbox.h>
-#include <qmessagebox.h>
+
+#include <QSettings>
+#include <QMessageBox>
+
 extern "C"
 {
   #include <libpq-fe.h>
@@ -28,11 +30,10 @@ extern "C"
 #include "qgsconnectiondialog.h"
 #include "qgsmessageviewer.h"
 
-QgsConnectionDialog::QgsConnectionDialog (QWidget* parent, QString connName, bool modal, Qt::WFlags fl)
-	//: QgsConnectionDialogBase(parent,(const char *)connName,modal,fl)
-    //Tim commented out params during qt4 ui port - FIXME
-	: QgsConnectionDialogBase()
+QgsConnectionDialog::QgsConnectionDialog(QWidget *parent, const QString& connName, Qt::WFlags fl)
+	: QDialog(parent, fl)
 {
+    setupUi(this);
 	if (!connName.isEmpty()) {
 		QSettings settings("QuantumGIS", "qgis");
 		QString key = "/PostgreSQL/connections/" + connName;
@@ -79,9 +80,9 @@ void QgsConnectionDialog::testConnection()
 
 	if (PQstatus(pd) == CONNECTION_OK) {
 		// Database successfully opened; we can now issue SQL commands.
-		QMessageBox::information(this, "Test connection", "Connection to " + txtDatabase->text() + " was successfull");
+		QMessageBox::information(this, tr("Test connection"), tr("Connection to ") + txtDatabase->text() + tr(" was successfull"));
 	} else {
-		QMessageBox::information(this, "Test connection", "Connection failed - Check settings and try again ");
+		QMessageBox::information(this, tr("Test connection"), tr("Connection failed - Check settings and try again "));
 	}
  
   PQfinish(pd);
@@ -103,8 +104,8 @@ void QgsConnectionDialog::saveConnection()
 }
 
 void QgsConnectionDialog::helpInfo(){
-  QString message = "General Interface Help:\n\n";
-  QgsMessageViewer * e = new QgsMessageViewer(this, "HelpMessage");
+  QString message = tr("General Interface Help:\n\n");
+  QgsMessageViewer * e = new QgsMessageViewer(this);
   e->setMessage(message);
   e->exec();
 }

@@ -21,7 +21,7 @@
 #include <limits>
 #include <cmath>
 
-#include <qapplication.h>
+#include <qgsapplication.h>
 #include <qdatetime.h>
 #include <qdom.h>
 #include <qfileinfo.h>
@@ -50,6 +50,7 @@
 QgsMapLayer::QgsMapLayer(int type,
                          QString lyrname,
                          QString source) :
+        transparencyLevelInt(255), // 0 is completely transparent
         valid(true), // assume the layer is valid (data source exists and 
                      // can be used) until we learn otherwise
         dataSource(source),
@@ -80,14 +81,10 @@ QgsMapLayer::QgsMapLayer(int type,
     ID = lyrname + dt.toString("yyyyMMddhhmmsszzz");
     ID.replace(" ", "_");
 
-#if defined(WIN32) || defined(Q_OS_MACX)
-
-    QString PKGDATAPATH = qApp->applicationDirPath() + "/share/qgis";
-#endif
-
-    mInOverviewPixmap.load(QString(PKGDATAPATH) + QString("/images/icons/inoverview.png"));
-    mEditablePixmap.load(QString(PKGDATAPATH) + QString("/images/icons/editable.png"));
-    mProjectionErrorPixmap.load(QString(PKGDATAPATH) + QString("/images/icons/icon_projection_problem.png"));
+    QString myThemePath = QgsApplication::themePath();
+    mInOverviewPixmap.load(myThemePath + "/mActionInOverview.png");
+    mEditablePixmap.load(myThemePath + "/mIconEditable.png");
+    mProjectionErrorPixmap.load(myThemePath + "/mIconProjectionProblem.png");
     //mActionInOverview = new QAction( "in Overview", "Ctrl+O", this );
 
     //set some generous  defaults for scale based visibility
@@ -258,6 +255,12 @@ bool QgsMapLayer::readXML( QDomNode & layer_node )
        mCoordinateTransform=new QgsCoordinateTransform();
        mCoordinateTransform->readXML(srsNode);
     }
+    
+    //read transparency level
+    QDomNode transparencyNode = layer_node.namedItem("transparencyLevelInt");
+    QDomElement myElement = transparencyNode.toElement();
+    setTransparency(myElement.text().toInt());
+
 
     // now let the children grab what they need from the DOM node.
     return readXML_( layer_node );
@@ -341,6 +344,11 @@ bool QgsMapLayer::writeXML( QDomNode & layer_node, QDomDocument & document )
     //write the projection 
     mCoordinateTransform->writeXML(maplayer,document);
 
+    // <transparencyLevelInt>
+    QDomElement transparencyLevelIntElement = document.createElement( "transparencyLevelInt" );
+    QDomText    transparencyLevelIntText    = document.createTextNode( QString::number(getTransparency()) );
+    transparencyLevelIntElement.appendChild( transparencyLevelIntText );
+    maplayer.appendChild( transparencyLevelIntElement );
     // now append layer node to map layer node
 
     layer_node.appendChild( maplayer );

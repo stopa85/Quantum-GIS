@@ -111,6 +111,7 @@ wish to see edbug messages printed to stdout.
 
 #include "qgsrect.h"
 #include "qgisapp.h"
+#include "qgsapplication.h"
 //#include "qgscolortable.h"
 #include "qgsrasterlayerproperties.h"
 #include "qgsproject.h"
@@ -454,7 +455,6 @@ QgsRasterLayer::QgsRasterLayer(QString const & path, QString const & baseName)
     showDebugOverlayFlag(false),
     invertHistogramFlag(false),
     stdDevsToPlotDouble(0),
-    transparencyLevelInt(255), // 0 is completely transparent
     mTransparencySlider(0x0),
     mLayerProperties(0x0),
     mIdentifyResults(0),
@@ -538,12 +538,9 @@ QgsRasterLayer::readFile( QString const & fileName )
   buildRasterPyramidList();
 
   //load  up the pyramid icons
-#if defined(WIN32) || defined(Q_OS_MACX)
-  QString PKGDATAPATH = qApp->applicationDirPath() + "/share/qgis";
-#endif
-
-  mPyramidPixmap.load(QString(PKGDATAPATH) + QString("/images/icons/pyramid.png"));
-  mNoPyramidPixmap.load(QString(PKGDATAPATH) + QString("/images/icons/no_pyramid.png"));
+  QString myThemePath = QgsApplication::themePath();
+  QPixmap myPyramidPixmap(myThemePath + "/mIconPyramid.png");
+  QPixmap myNoPyramidPixmap(myThemePath + "/mIconNoPyramid.png");
 
   // Get the layer's projection info and set up the
   // QgsCoordinateTransform for this layer
@@ -4635,10 +4632,6 @@ bool QgsRasterLayer::readXML_( QDomNode & layer_node )
   myElement = snode.toElement();
   setStdDevsToPlot(myElement.text().toDouble());
 
-  snode = mnl.namedItem("transparencyLevelInt");
-  myElement = snode.toElement();
-  setTransparency(myElement.text().toInt());
-
   snode = mnl.namedItem("redBandNameQString");
   myElement = snode.toElement();
   setRedBandName(myElement.text());
@@ -4736,13 +4729,6 @@ bool QgsRasterLayer::readXML_( QDomNode & layer_node )
   rasterPropertiesElement.appendChild( stdDevsToPlotDoubleElement );
 
 
-  // <transparencyLevelInt>
-  QDomElement transparencyLevelIntElement = document.createElement( "transparencyLevelInt" );
-  QDomText    transparencyLevelIntText    = document.createTextNode( QString::number(getTransparency()) );
-
-  transparencyLevelIntElement.appendChild( transparencyLevelIntText );
-
-  rasterPropertiesElement.appendChild( transparencyLevelIntElement );
 
 
   // <redBandNameQString>
@@ -4966,7 +4952,6 @@ QgsRasterLayer::QgsRasterLayer(int dummy,
     showDebugOverlayFlag(false),
     invertHistogramFlag(false),
     stdDevsToPlotDouble(0),
-    transparencyLevelInt(255), // 0 is completely transparent
     mTransparencySlider(0x0),
     mLayerProperties(0x0),
     mIdentifyResults(0),
@@ -5207,6 +5192,11 @@ void QgsRasterLayer::showStatusMessage(QString const & theMessage)
     // Pass-through
     // TODO: See if we can connect signal-to-signal.  This is a kludge according to the Qt doc.
     emit setStatus(theMessage);
+}
+
+QString QgsRasterLayer::layerTypeIconPath()
+{
+  return (QgsApplication::themePath()+"/mIconLayer.png");
 }
 
 void QgsRasterLayer::refreshLegend()

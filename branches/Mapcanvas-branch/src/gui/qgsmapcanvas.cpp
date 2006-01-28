@@ -74,6 +74,7 @@ TODO:
 #include "qgsmaplayerregistry.h"
 #include "qgsmapoverviewcanvas.h"
 #include "qgsmeasure.h"
+#include "qgsrubberband.h"
 
 #include "qgsmapcanvas.h"
 #include "qgsmapcanvasproperties.h"
@@ -134,10 +135,16 @@ QgsMapCanvas::QgsMapCanvas()
   
   setMapTool(QGis::NoTool);
 
+  mRubberBand = 0;
   mMeasure = 0;
 
   mMapImage = new QgsMapImage(10,10);
-  setbgColor(Qt::white);
+
+  int myRedInt = QgsProject::instance()->readNumEntry("Gui","/CanvasColorRedPart",255);
+  int myGreenInt = QgsProject::instance()->readNumEntry("Gui","/CanvasColorGreenPart",255);
+  int myBlueInt = QgsProject::instance()->readNumEntry("Gui","/CanvasColorBluePart",255);
+  QColor myColor = QColor(myRedInt,myGreenInt,myBlueInt);
+  setCanvasColor(myColor);
   
   // create map canvas item which will show the map
   QgsMapCanvasMapImage* map = new QgsMapCanvasMapImage(mCanvas);
@@ -159,6 +166,10 @@ QgsMapCanvas::~QgsMapCanvas()
   
 } // dtor
 
+void QgsMapCanvas::enableAntiAliasing(bool theFlag)
+{
+  mMapImage->enableAntiAliasing(theFlag);
+} // anti aliasing
 
 QgsMapImage* QgsMapCanvas::mapImage()
 {
@@ -778,6 +789,7 @@ void QgsMapCanvas::mouseReleaseEvent(QMouseEvent * e)
           paint.end();
 #else
           delete mRubberBand;
+	  mRubberBand = 0;
 #endif
 
           if (mCurrentLayer)
@@ -944,10 +956,10 @@ void QgsMapCanvas::mouseMoveEvent(QMouseEvent * e)
     {
       case QGis::Select:
         // draw the rubber band box as the user drags the mouse
+        // TODO: Qt4 will have to do this a different way, using QRubberBand ...
 #if QT_VERSION < 0x040000
         mCanvasProperties->dragging = true;
 
-        // TODO: Qt4 will have to do this a different way, using QRubberBand ...
         paint.begin(this);
         paint.setPen(pen);
         paint.setRasterOp(Qt::XorROP);
@@ -1000,13 +1012,13 @@ void QgsMapCanvas::mouseMoveEvent(QMouseEvent * e)
 
 void QgsMapCanvas::drawLineToDigitisingCursor(QPainter* paint, bool last)
 {
+  // TODO: Qt4 will have to do this a different way, using QRubberBand ...
+#if QT_VERSION < 0x040000
   QColor digitcolor(QgsProject::instance()->readNumEntry("Digitizing","/LineColorRedPart",255),\
       QgsProject::instance()->readNumEntry("Digitizing","/LineColorGreenPart",0),\
       QgsProject::instance()->readNumEntry("Digitizing","/LineColorBluePart",0));
   paint->setPen(QPen(digitcolor,QgsProject::instance()->readNumEntry("Digitizing","/LineWidth",1),Qt::SolidLine));
 
-  // TODO: Qt4 will have to do this a different way, using QRubberBand ...
-#if QT_VERSION < 0x040000
   paint->setRasterOp(Qt::XorROP);
   std::list<QgsPoint>::iterator it;
   if(last)
@@ -1083,13 +1095,13 @@ void QgsMapCanvas::setMapTool(int tool)
 
 
 /** Write property of QColor bgColor. */
-void QgsMapCanvas::setbgColor(const QColor & _newVal)
+void QgsMapCanvas::setCanvasColor(const QColor & theColor)
 {
-  mMapImage->setBgColor(_newVal);
-  setEraseColor(_newVal);
+  mMapImage->setBgColor(theColor);
+  setEraseColor(theColor);
   
   if (mMapOverview)
-    mMapOverview->setbgColor(_newVal);
+    mMapOverview->setbgColor(theColor);
 } // setbgColor
 
 

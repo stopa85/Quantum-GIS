@@ -16,15 +16,16 @@
 #include <cmath>
 #include <iostream>
 
-#include <qpainter.h>
-#include <qpixmap.h>
-#include <qimage.h>
-#include <qbitmap.h>
-#include <qstring.h>
-#include <qstringlist.h>
-#include <qrect.h>
-#include <q3pointarray.h>
-#include <qdir.h>
+#include <QPen>
+#include <QBrush>
+#include <QPainter>
+#include <QPixmap>
+#include <QString>
+#include <QStringList>
+#include <QRect>
+#include <QPolygon>
+#include <QDir>
+#include <QPicture>
 
 #include "qgsapplication.h"
 #include "qgssvgcache.h"
@@ -83,60 +84,37 @@ QgsMarkerCatalogue *QgsMarkerCatalogue::instance()
     return QgsMarkerCatalogue::mMarkerCatalogue;
 }
 
-Q3Picture QgsMarkerCatalogue::marker ( QString fullName, int size, QPen pen, QBrush brush, int oversampling, bool qtBug )
+QPixmap QgsMarkerCatalogue::marker ( QString fullName, int size, QPen pen, QBrush brush, bool qtBug )
 {
-    //std::cerr << "QgsMarkerCatalogue::marker" << std::endl;
-    Q3Picture picture;
-    
-    if ( fullName.left(5) == "hard:" ) {
-        return hardMarker ( fullName.mid(5), size, pen, brush, oversampling, qtBug ); 
+    //std::cerr << "QgsMarkerCatalogue::marker " << fullName.toLocal8Bit().data() << " sice:" << size << std::endl;
+    if ( fullName.left(5) == "hard:" ) 
+    {
+        QPicture myPicture = hardMarker ( fullName.mid(5), size, pen, brush, qtBug ); 
+        QPixmap myPixmap = QPixmap (myPicture.width(),myPicture.height());
+        myPixmap.fill(QColor(255,255,255,0)); //transparent
+        QPainter myPainter(&myPixmap);
+        myPainter.drawPicture(0,0,myPicture);
+        return myPixmap;
     } else if ( fullName.left(4) == "svg:" ) {
-        return svgMarker ( fullName.mid(4), size, oversampling ); 
+        return svgMarker ( fullName.mid(4), size ); 
     }
 
-    return picture; // empty
+    return QPixmap(); // empty
 }
 
-Q3Picture QgsMarkerCatalogue::svgMarker ( QString name, int s, int oversampling )
+QPixmap QgsMarkerCatalogue::svgMarker ( QString name, int s)
 {
-    Q3Picture picture;
-    QPainter painter;
-    painter.begin(&picture);
+	QPixmap pixmap = QgsSVGCache::instance().getPixmap(name,s);
 
-    if ( oversampling <= 1 ) 
-    {
-	Q3Picture pic = QgsSVGCache::instance().getPicture(name);
-
-	QRect br = pic.boundingRect();
-
-	double scale = 1. * s / ( ( br.width() + br.height() ) / 2 ) ;
-
-	painter.scale ( scale, scale );
-	painter.drawPicture ( 0, 0, pic );
-
-    } 
-    else
-    {
-	QPixmap pixmap = QgsSVGCache::instance().getPixmap(name,1.);
-	
-	double scale = 1. * s / ( ( pixmap.width() + pixmap.height() ) / 2 ) ;
-	
-	pixmap = QgsSVGCache::instance().getPixmap(name,scale);
-
-	painter.drawPixmap ( 0, 0, pixmap );
-
-    }
-    painter.end();
-
-    return picture;
+    return pixmap;
 }
 
-Q3Picture QgsMarkerCatalogue::hardMarker ( QString name, int s, QPen pen, QBrush brush, int oversampling, bool qtBug )
+QPicture QgsMarkerCatalogue::hardMarker ( QString name, int s, QPen pen, QBrush brush, bool qtBug )
 {
     // Size of polygon symbols is calculated so that the area is equal to circle with 
     // diameter mPointSize
     
-    Q3Picture picture;
+    QPicture picture;
     
     // Size for circle
     int half = (int)floor(s/2.0); // number of points from center
@@ -146,6 +124,7 @@ Q3Picture QgsMarkerCatalogue::hardMarker ( QString name, int s, QPen pen, QBrush
     // Picture
     QPainter picpainter;
     picpainter.begin(&picture);
+    picpainter.setRenderHint(QPainter::Antialiasing);
     
     // Also width must be odd otherwise there are discrepancies visible in canvas!
     int lw = (int)(2*floor((double)pen.width()/2)+1); // -> lw > 0
@@ -166,7 +145,7 @@ Q3Picture QgsMarkerCatalogue::hardMarker ( QString name, int s, QPen pen, QBrush
     else if ( name == "diamond" ) 
     {
 	half = (int) ( sqrt(area/2.) );
-	Q3PointArray pa(4);
+	QPolygon pa(4);
 	pa.setPoint ( 0, 0, half);
 	pa.setPoint ( 1, half, 2*half);
 	pa.setPoint ( 2, 2*half, half);
@@ -214,52 +193,6 @@ Q3Picture QgsMarkerCatalogue::hardMarker ( QString name, int s, QPen pen, QBrush
     if ( name == "cross" || name == "cross2" ) {
         picture.setBoundingRect ( box ); 
     }
-
-    // If oversampling > 1 create pixmap 
-    
-    // Hardcoded symbols are not oversampled at present, because the problem is especially 
-    // with SVG markers (I am not sure why)
-    /*
-    if ( oversampling > 1 ) {
-	QRect br = picture.boundingRect();
-	QPixmap pixmap ( oversampling * br.width(), oversampling * br.height() );
-
-	// Find bg color (must differ from line and fill)
-	QColor transparent;
-	for ( int i = 0; i < 255; i++ ) {
-	    if ( pen.color().red() != i &&  brush.color().red() != i ) {
-		transparent = QColor ( i, 0, 0 );
-		break;
-	    }
-	}
-	
-	pixmap.fill( transparent );
-	QPainter pixpainter;
-	pixpainter.begin(&pixmap);
-	pixpainter.scale ( oversampling, oversampling );
-	pixpainter.drawPicture ( -br.x(), -br.y(), picture );
-	pixpainter.end();
-
-	QImage img = pixmap.convertToImage();
-	img.setAlphaBuffer(true);
-	for ( int i = 0; i < img.width(); i++ ) {
-	    for ( int j = 0; j < img.height(); j++ ) {
-		QRgb pixel = img.pixel(i, j);
-		int alpha = 255;
-		if ( qRed(pixel) == transparent.red() ) {
-		    alpha = 0;
-		}
-		img.setPixel ( i, j, qRgba(qRed(pixel), qGreen(pixel), qBlue(pixel), alpha) );
-	    }
-	}
-	img = img.smoothScale( br.width(), br.height());
-	pixmap.convertFromImage ( img );
-
-        picpainter.begin(&picture);
-	picpainter.drawPixmap ( 0, 0, pixmap );
-	picpainter.end();
-    } 
-    */
 
     return picture;
 }

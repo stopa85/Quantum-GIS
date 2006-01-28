@@ -35,8 +35,8 @@
 
 // set the default coordinate system
 //XXX this is not needed? : static const char* defaultWktKey = "Lat/Long - WGS 84";
-  QgsProjectProperties::QgsProjectProperties(QWidget *parent, const char *name, bool modal)
-: QDialog(parent, name, modal)
+  QgsProjectProperties::QgsProjectProperties(QWidget *parent, Qt::WFlags fl)
+: QDialog(parent, fl)
 {
   setupUi(this);
   connect(btnGrpMapUnits, SIGNAL(clicked(int)), this, SLOT(mapUnitChange(int)));
@@ -114,10 +114,18 @@
   myBlueInt = QgsProject::instance()->readNumEntry("Gui","/SelectionColorBluePart",0);
   myColour = QColor(myRedInt,myGreenInt,myBlueInt);
   pbnSelectionColour->setPaletteBackgroundColor (myColour);    
+  //get the colour for map canvas background and set button colour accordingly (default white)
+  myRedInt = QgsProject::instance()->readNumEntry("Gui","/CanvasColorRedPart",255);
+  myGreenInt = QgsProject::instance()->readNumEntry("Gui","/CanvasColorGreenPart",255);
+  myBlueInt = QgsProject::instance()->readNumEntry("Gui","/CanvasColorBluePart",255);
+  myColour = QColor(myRedInt,myGreenInt,myBlueInt);
+  pbnCanvasColor->setPaletteBackgroundColor (myColour);    
 }
 
 QgsProjectProperties::~QgsProjectProperties()
 {}
+
+
 
 // return the map units
 QGis::units QgsProjectProperties::mapUnits() const
@@ -268,6 +276,12 @@ void QgsProjectProperties::apply()
   QgsProject::instance()->writeEntry("Gui","/SelectionColorBluePart",myColour.blue()); 
   QgsRenderer::mSelectionColor=myColour;
 
+  //set the colour for canvas
+  myColour = pbnCanvasColor->paletteBackgroundColor();
+  QgsProject::instance()->writeEntry("Gui","/CanvasColorRedPart",myColour.red());
+  QgsProject::instance()->writeEntry("Gui","/CanvasColorGreenPart",myColour.green());
+  QgsProject::instance()->writeEntry("Gui","/CanvasColorBluePart",myColour.blue()); 
+  //todo XXX set canvas colour
   emit refresh();
 }
 
@@ -306,6 +320,14 @@ void QgsProjectProperties::on_pbnSelectionColour_clicked()
   }
 }
 
+void QgsProjectProperties::on_pbnCanvasColor_clicked()
+{
+  QColor color = QColorDialog::getColor(pbnCanvasColor->paletteBackgroundColor(),this);
+  if (color.isValid())
+  {
+    pbnCanvasColor->setPaletteBackgroundColor(color);
+  }
+}
 void QgsProjectProperties::on_pbnHelp_clicked()
 {
   std::cout << "running help" << std::endl; 

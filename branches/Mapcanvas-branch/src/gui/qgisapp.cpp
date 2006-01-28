@@ -427,15 +427,15 @@ void QgisApp::createActions()
 //#endif
   assert(connect(mActionAddLayer, SIGNAL(triggered()), this, SLOT(addDatabaseLayer())));
   //
-  mActionRemoveLayer= new QAction(QIcon(myIconPath+"/mActionRemoveLayer.png"), tr("Remove Layer"), this);
-  mActionRemoveLayer->setShortcut(tr("Ctrl+D"));
-  mActionRemoveLayer->setStatusTip(tr("Remove a Layer"));
-  connect(mActionRemoveLayer, SIGNAL(triggered()), this, SLOT(removeLayer()));
-  //
   mActionNewVectorLayer= new QAction(QIcon(myIconPath+"/mActionNewVectorLayer.png"), tr("New Vector Layer"), this);
   mActionNewVectorLayer->setShortcut(tr("N"));
   mActionNewVectorLayer->setStatusTip(tr("Create a New Vector Layer"));
   connect(mActionNewVectorLayer, SIGNAL(triggered()), this, SLOT(newVectorLayer()));
+  //
+  mActionRemoveLayer= new QAction(QIcon(myIconPath+"/mActionRemoveLayer.png"), tr("Remove Layer"), this);
+  mActionRemoveLayer->setShortcut(tr("Ctrl+D"));
+  mActionRemoveLayer->setStatusTip(tr("Remove a Layer"));
+  connect(mActionRemoveLayer, SIGNAL(triggered()), this, SLOT(removeLayer()));
   //
   mActionAddAllToOverview= new QAction(QIcon(myIconPath+"/mActionAddAllToOverview.png"), tr("Add All To Overview"), this);
   mActionAddAllToOverview->setShortcut(tr("+"));
@@ -611,6 +611,22 @@ void QgisApp::createActions()
   mActionCapturePolygon->setShortcut(tr("Ctrl+/"));
   mActionCapturePolygon->setStatusTip(tr("Capture Polygons"));
   connect(mActionCapturePolygon, SIGNAL(triggered()), this, SLOT(capturePolygon()));
+  //
+  mActionDeleteSelected = new QAction(QIcon(myIconPath+"/mActionDeleteSelected.png"), tr("Delete Seleced"), this);
+  mActionDeleteSelected->setStatusTip(tr("Delete Selected"));
+  connect(mActionDeleteSelected, SIGNAL(triggered()), this, SLOT(deleteSelected()));
+  //
+  mActionAddVertex = new QAction(QIcon(myIconPath+"/mActionAddVertex.png"), tr("Add Vertex"), this);
+  mActionAddVertex->setStatusTip(tr("Add Vertex"));
+  connect(mActionAddVertex, SIGNAL(triggered()), this, SLOT(addVertex()));
+  //
+  mActionDeleteVertex = new QAction(QIcon(myIconPath+"/mActionDeleteVertex.png"), tr("Delete Vertex"), this);
+  mActionDeleteVertex->setStatusTip(tr("Delete Vertex"));
+  connect(mActionDeleteVertex, SIGNAL(triggered()), this, SLOT(deleteVertex()));
+  //
+  mActionMoveVertex = new QAction(QIcon(myIconPath+"/mActionMoveVertex.png"), tr("Move Vertex"), this);
+  mActionMoveVertex->setStatusTip(tr("Move Vertex"));
+  connect(mActionMoveVertex, SIGNAL(triggered()), this, SLOT(moveVertex()));
 }
 
 void QgisApp::createActionGroups()
@@ -638,6 +654,13 @@ void QgisApp::createActionGroups()
   mMapToolGroup->addAction(mActionCapturePoint);
   mActionCapturePolygon->setCheckable(true);
   mMapToolGroup->addAction(mActionCapturePolygon);
+  mMapToolGroup->addAction(mActionDeleteSelected);
+  mActionAddVertex->setCheckable(true);
+  mMapToolGroup->addAction(mActionAddVertex);
+  mActionDeleteVertex->setCheckable(true);
+  mMapToolGroup->addAction(mActionDeleteVertex);
+  mActionMoveVertex->setCheckable(true);
+  mMapToolGroup->addAction(mActionMoveVertex);
 }
 
 void QgisApp::createMenus()
@@ -742,8 +765,8 @@ void QgisApp::createToolBars()
   mLayerToolBar->addAction(mActionAddLayer);
 #endif
   mLayerToolBar->addAction(mActionAddWmsLayer);
-  mLayerToolBar->addAction(mActionRemoveLayer);
   mLayerToolBar->addAction(mActionNewVectorLayer);
+  mLayerToolBar->addAction(mActionRemoveLayer);
   mLayerToolBar->addAction(mActionInOverview);
   mLayerToolBar->addAction(mActionAddAllToOverview);
   mLayerToolBar->addAction(mActionRemoveAllFromOverview);
@@ -763,6 +786,10 @@ void QgisApp::createToolBars()
   mDigitizeToolBar->addAction(mActionCapturePoint);
   mDigitizeToolBar->addAction(mActionCaptureLine);
   mDigitizeToolBar->addAction(mActionCapturePolygon);
+  mDigitizeToolBar->addAction(mActionDeleteSelected);
+  mDigitizeToolBar->addAction(mActionAddVertex);
+  mDigitizeToolBar->addAction(mActionDeleteVertex);
+  mDigitizeToolBar->addAction(mActionMoveVertex);
   //
   // Map Navigation Toolbar
   mMapNavToolBar = addToolBar(tr("Map Navigation"));
@@ -1049,7 +1076,17 @@ void QgisApp::createCanvas()
   // "theMapCanvas" used to find this canonical instance later
   mMapCanvas = new QgsMapCanvas(NULL, "theMapCanvas" );
   QWhatsThis::add(mMapCanvas, tr("Map canvas. This is where raster and vector layers are displayed when added to the map"));
-  mMapCanvas->setBackgroundColor(Qt::white); //QColor (220, 235, 255));
+  //set the canvas to the default background colour
+  //the default can be set in qgisoptions 
+  //use project properties to override the colour on a per project basis
+  QSettings mySettings;
+  int myRed = mySettings.value("/qgis/default_canvas_color_red",255).toInt();
+  int myGreen = mySettings.value("/qgis/default_canvas_color_green",255).toInt();
+  int myBlue = mySettings.value("/qgis/default_canvas_color_blue",255).toInt();
+  mMapCanvas->setCanvasColor(QColor(myRed,myGreen,myBlue));  // this is the fill co;our when rendering
+  mMapCanvas->setBackgroundColor(QColor(myRed,myGreen,myBlue)); // this is for the widget itself
+  
+  mMapCanvas->enableAntiAliasing(mySettings.value("/qgis/enable_anti_aliasing",false).toBool());
   mMapCanvas->setMinimumWidth(400);
   QVBoxLayout *myCanvasLayout = new QVBoxLayout;
   myCanvasLayout->addWidget(mMapCanvas);
@@ -1916,9 +1953,9 @@ bool QgisApp::isValidVectorFileName(QString * theFileNameQString)
   return isValidVectorFileName(*theFileNameQString);
 }
 
-
-
-#ifdef HAVE_POSTGRESQL
+#ifndef HAVE_POSTGRESQL
+void QgisApp::addDatabaseLayer(){}
+#else
 void QgisApp::addDatabaseLayer()
 {
   // only supports postgis layers at present
@@ -2733,6 +2770,13 @@ bool QgisApp::addProject(QString projectFile)
     if ( QgsProject::instance()->read( projectFile ) )
     {
       setTitleBarText_( *this );
+      int  myRedInt = QgsProject::instance()->readNumEntry("Gui","/CanvasColorRedPart",255);
+      int  myGreenInt = QgsProject::instance()->readNumEntry("Gui","/CanvasColorGreenPart",255);
+      int  myBlueInt = QgsProject::instance()->readNumEntry("Gui","/CanvasColorBluePart",255);
+      QColor myColor = QColor(myRedInt,myGreenInt,myBlueInt);
+      mMapCanvas->setCanvasColor(myColor); //this is fill colour before rendering starts
+      mMapCanvas->setBackgroundColor(myColor); // this is for the widget itself
+      qDebug("Canvas bacground color restored...");
 
       emit projectRead(); // let plug-ins know that we've read in a new
       // project so that they can check any project
@@ -3020,6 +3064,9 @@ void QgisApp::openProject(const QString & fileName)
 #ifdef QGISDEBUG
         std::cerr << "unable to load project " << fileName.toLocal8Bit().data() << "\n";
 #endif
+      }
+      else
+      {
       }
     }
     catch ( QgsIOException & io_exception )
@@ -3642,6 +3689,7 @@ void QgisApp::addVertex()
     delete mMapCursor;
     mMapCursor = new QCursor(mySelectQPixmap, 8, 8);
     mMapCanvas->setCursor(*mMapCursor);
+    mActionAddVertex->setOn(true);
   }
 }
 
@@ -3660,6 +3708,7 @@ void QgisApp::moveVertex()
     delete mMapCursor;
     mMapCursor = new QCursor(mySelectQPixmap, 8, 8);
     mMapCanvas->setCursor(*mMapCursor);
+    mActionMoveVertex->setOn(true);
   }
 }
 
@@ -3679,6 +3728,7 @@ void QgisApp::deleteVertex()
     delete mMapCursor;
     mMapCursor = new QCursor(mySelectQPixmap, 8, 8);
     mMapCanvas->setCursor(*mMapCursor);
+    mActionDeleteVertex->setOn(true);
   }
 }
 
@@ -4531,29 +4581,16 @@ void QgisApp::socketReadyRead()
 void QgisApp::options()
 {
   QgsOptions *optionsDialog = new QgsOptions(this);
-
-  // add the themes to the combo box on the option dialog
-  QDir themeDir(mAppDir + "/share/qgis/themes");
-  themeDir.setFilter(QDir::Dirs);
-  QStringList dirs = themeDir.entryList("*");
-  for(int i=0; i < dirs.count(); i++)
-  {
-    if(dirs[i] != "." && dirs[i] != "..")
-    {
-      optionsDialog->addTheme(dirs[i]);
-    }
-  }
-  optionsDialog->setCurrentTheme();
   if(optionsDialog->exec())
   {
     // set the theme if it changed
     setTheme(optionsDialog->theme());
     setupToolbarPopups(optionsDialog->theme());
-
     // set the visible flag for new layers
     mAddedLayersHidden = optionsDialog->newVisible();
+    QSettings mySettings;
+    mMapCanvas->enableAntiAliasing(mySettings.value("/qgis/enable_anti_aliasing").toBool());
   }
-
 }
 
 void QgisApp::helpContents()
@@ -5133,15 +5170,17 @@ void QgisApp::projectProperties()
   bool wasProjected = pp->isProjected();
 
   // Display the modal dialog box.
-  pp->exec();
-
-  // If the canvas projection settings changed, we need to recalculate the extents in the
-  // new coordinate system
-  if(pp->isProjected() != wasProjected)
+  if (pp->exec())
   {
     mMapCanvas->mapImage()->layers().updateFullExtent();
     //mMapCanvas->recalculateExtents();
   }
+    int  myRedInt = QgsProject::instance()->readNumEntry("Gui","/CanvasColorRedPart",255);
+    int  myGreenInt = QgsProject::instance()->readNumEntry("Gui","/CanvasColorGreenPart",255);
+    int  myBlueInt = QgsProject::instance()->readNumEntry("Gui","/CanvasColorBluePart",255);
+    QColor myColor = QColor(myRedInt,myGreenInt,myBlueInt);
+    mMapCanvas->setCanvasColor(myColor); //this is fil colour before rendering onto canvas
+    mMapCanvas->setBackgroundColor(myColor); // this is for the widget itself
   // Set the window title.
   setTitleBarText_( *this );
   // delete the property sheet object
@@ -5680,7 +5719,7 @@ void QgisApp::customProjection()
   // Create an instance of the Custom Projection Designer modeless dialog.
   // Autodelete the dialog when closing since a pointer is not retained.
   QgsCustomProjectionDialog * myDialog = new QgsCustomProjectionDialog(this,
-      "Projection Designer", Qt::WDestructiveClose);
+      Qt::WDestructiveClose);
   myDialog->show();
 }
 void QgisApp::showBookmarks()

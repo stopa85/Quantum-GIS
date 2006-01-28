@@ -23,28 +23,16 @@ email                : tim@linfiniti.com
 // includes
 
 #include <qgisapp.h>
+#include "qgisgui.h"
 #include <qgsmaplayer.h>
 #include "plugin.h"
 #include <qgsproject.h>
 #include <qgsmapcanvas.h>
 
-#include <q3toolbar.h>
-#include <qmenubar.h>
-#include <qmessagebox.h>
-#include <q3popupmenu.h>
-#include <qlineedit.h>
-#include <qaction.h>
-#include <qapplication.h>
-#include <qcursor.h>
-#include <qpixmap.h>
-#include <qpainter.h>
-#include <qfont.h>
-#include <qrect.h>
-#include <qbrush.h>
-#include <q3button.h>
-#include <qcheckbox.h>
-#include <q3paintdevicemetrics.h>
-#include <qglobal.h>
+#include <Q3Button>
+#include <Q3PaintDeviceMetrics>
+#include <Q3SimpleRichText>
+#include <QPainter>
 
 //non qt includes
 #include <iostream>
@@ -96,11 +84,7 @@ void QgsCopyrightLabelPlugin::initGui()
     pluginMenu->setWhatsThis(menuId, "Creates a copyright label that is displayed on the map canvas.");
 
     // Create the action for tool
-#if QT_VERSION < 0x040000
-    myQActionPointer = new QAction("Copyright Label", QIcon(icon), "&Wmi",0, this, "run");
-#else
     myQActionPointer = new QAction(QIcon(icon), "Copyright Label", this);
-#endif
     myQActionPointer->setWhatsThis("Creates a copyright label that is displayed on the map canvas.");
     // Connect the action to the run
     connect(myQActionPointer, SIGNAL(activated()), this, SLOT(run()));
@@ -124,7 +108,7 @@ void QgsCopyrightLabelPlugin::projectRead()
 
     mQFont.setFamily(QgsProject::instance()->readEntry("CopyrightLabel","/FontName","Arial"));
     mQFont.setPointSize(QgsProject::instance()->readNumEntry("CopyrightLabel","/FontSize",14));
-    mLabelQString = QgsProject::instance()->readEntry("CopyrightLabel","/Label","(c) QGIS 2006");
+    mLabelQString = QgsProject::instance()->readEntry("CopyrightLabel","/Label","&copy; QGIS 2006");
     mPlacement = QgsProject::instance()->readEntry("CopyrightLabel","/Placement","Bottom Right");
     mEnable = QgsProject::instance()->readBoolEntry("CopyrightLabel","/Enabled",true);
     // todo - read & store state of font color
@@ -139,7 +123,7 @@ void QgsCopyrightLabelPlugin::help()
 // Slot called when the buffer menu item is activated
 void QgsCopyrightLabelPlugin::run()
 {
-    QgsCopyrightLabelPluginGui *myPluginGui=new QgsCopyrightLabelPluginGui(qgisMainWindowPointer,"Copyright Label",true,0);
+    QgsCopyrightLabelPluginGui *myPluginGui=new QgsCopyrightLabelPluginGui(qgisMainWindowPointer, QgisGui::ModalDialogFlags);
     //listen for when the layer has been made so we can draw it
     //connect(myPluginGui, SIGNAL(drawRasterLayer(QString)), this, SLOT(drawRasterLayer(QString)));
     //connect(myPluginGui, SIGNAL(drawVectorLayer(QString,QString,QString)), this, SLOT(drawVectorLayer(QString,QString,QString)));

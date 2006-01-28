@@ -102,6 +102,8 @@ class QgsMapImage
     
     //! sets whether map image will be for overview
     void setOverview(bool isOverview = true) { mOverview = isOverview; }
+
+    void enableAntiAliasing(bool flag) { mAntiAliasing = flag; }
   
   protected:
     
@@ -142,6 +144,9 @@ class QgsMapImage
     
     //! indicates whether it's map image for overview
     bool mOverview;
+
+    //! indicates whether antialiasing will be used for rendering
+    bool mAntiAliasing;
 };
 
 #endif

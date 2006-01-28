@@ -291,6 +291,22 @@ public slots:
   void showBookmarks();
   //! Create a new spatial bookmark
   void newBookmark();
+  //! activates the capture point tool
+  void capturePoint();
+  //! activates the capture line tool
+  void captureLine();
+  //! activates the capture polygon tool
+  void capturePolygon();
+  /**Deletes the selected attributes for the currently selected vector layer*/
+  void deleteSelected();
+  //! activates the add vertex tool
+  void addVertex();
+  //! activates the move vertex tool
+  void moveVertex();
+  //! activates the delete vertex tool
+  void deleteVertex();
+  //! activates the selection tool
+  void select();
 
 public slots:
   void showProgress(int theProgress, int theTotalSteps);
@@ -374,28 +390,12 @@ private:
   void saveRecentProjectPath(QString projectPath, QSettings & settings);
   //! Update file menu with the current list of recently accessed projects
   void updateRecentProjectPaths();
-  /**Deletes the selected attributes for the currently selected vector layer*/
-  void deleteSelected();
   //! Read Well Known Binary stream from PostGIS
   //void readWKB(const char *, QStringList tables);
   //! draw layers
   void drawLayers();
   //! test function
   void testButton();
-  //! activates the capture point tool
-  void capturePoint();
-  //! activates the capture line tool
-  void captureLine();
-  //! activates the capture polygon tool
-  void capturePolygon();
-  //! activates the selection tool
-  void select();
-  //! activates the add vertex tool
-  void addVertex();
-  //! activates the move vertex tool
-  void moveVertex();
-  //! activates the delete vertex tool
-  void deleteVertex();
   //! cuts selected features on the active layer to the clipboard
   void editCut();
   //! copies selected features on the active layer to the clipboard
@@ -466,6 +466,10 @@ private:
   QAction *mActionCapturePoint;
   QAction *mActionCaptureLine;
   QAction *mActionCapturePolygon;
+  QAction *mActionDeleteSelected;
+  QAction *mActionAddVertex;
+  QAction *mActionDeleteVertex;
+  QAction *mActionMoveVertex;
   QAction *mActionZoomIn;
   QAction *mActionZoomOut;
   QAction *mActionZoomFullExtent;

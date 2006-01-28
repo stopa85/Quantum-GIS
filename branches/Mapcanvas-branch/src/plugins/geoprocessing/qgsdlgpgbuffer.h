@@ -21,14 +21,16 @@
 #ifndef QGSDLGPGBUFFER_H
 #define QGSDLGPGBUFFER_H
 #include "ui_qgsdlgpgbufferbase.h"
-#include <QDialog>
+#include "qgisgui.h"
+
 class QgisIface;
 class QDoubleValidator;
+
 class QgsDlgPgBuffer:public QDialog, private Ui::QgsDlgPgBufferBase
 {
   Q_OBJECT public:
   //! Constructor
-    QgsDlgPgBuffer( QgisIface * _qI = 0, QWidget * parent = 0, const char *name = 0);
+    QgsDlgPgBuffer( QgisIface * _qI = 0, QWidget * parent = 0, Qt::WFlags fl = QgisGui::ModalDialogFlags);
     //! Destructor
     QgsDlgPgBuffer::~QgsDlgPgBuffer();
     //! Set the information label in the dialog
@@ -58,11 +60,14 @@ class QgsDlgPgBuffer:public QDialog, private Ui::QgsDlgPgBufferBase
     //! Set the geometry column on the dialog
     void setGeometryColumn(QString name);
     public slots:
-    void on_buttonHelp_clicked();
+    void on_btnHelp_clicked();
     private:
       //! Pointer to the QGIS interface object
     QgisIface *qI;
     //! Input validator for the buffer distance
     QDoubleValidator *distanceValidator;
+    //! Context help id
+    static const int context_id = 272873129;
+
 };
 #endif // QGSDLGPGBUFFER_H

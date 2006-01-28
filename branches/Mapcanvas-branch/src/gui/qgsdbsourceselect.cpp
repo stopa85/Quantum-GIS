@@ -16,29 +16,24 @@ email                : sherman at mrcc.com
  *                                                                         *
  ***************************************************************************/
 /* $Id$ */
-#include <iostream>
-#include <cassert>
-#include <qsettings.h>
-#include <qpixmap.h>
-#include <Q3ListBox>
-#include <Q3ListView>
-#include <qstringlist.h>
-#include <QComboBox>
-#include <qpushbutton.h>
-#include <qmessagebox.h>
-#include <qinputdialog.h>
-#include <q3groupbox.h>
-#include <QTextOStream>
-#include "../../images/themes/default/point_layer.xpm"
-#include "../../images/themes/default/line_layer.xpm"
-#include "../../images/themes/default/polygon_layer.xpm"
+
 #include "qgsdbsourceselect.h"
+
+#include "qgisapp.h"
+#include "qgsapplication.h"
+#include "qgscontexthelp.h"
 #include "qgsnewconnection.h"
 #include "qgspgquerybuilder.h"
-#include "qgisapp.h"
-#include "qgscontexthelp.h"
-QgsDbSourceSelect::QgsDbSourceSelect(QgisApp *app, QWidget *parent, const char *name, bool modal)
-: QDialog(parent, name, modal), qgisApp(app)
+
+#include <QInputDialog>
+#include <QMessageBox>
+#include <QSettings>
+#include <QTextOStream>
+#include <cassert>
+#include <iostream>
+
+QgsDbSourceSelect::QgsDbSourceSelect(QgisApp *app, Qt::WFlags fl)
+: QDialog(app, fl), qgisApp(app)
 {
   setupUi(this);
   btnAdd->setEnabled(false);
@@ -268,9 +263,11 @@ void QgsDbSourceSelect::on_btnConnect_clicked()
     if (PQstatus(pd) == CONNECTION_OK)
     {
       // create the pixmaps for the layer types
-      QPixmap pxPoint(point_layer_xpm);
-      QPixmap pxLine(line_layer_xpm);
-      QPixmap pxPoly(polygon_layer_xpm);
+      QString myThemePath = QgsApplication::themePath();
+      QPixmap pxPoint(myThemePath+"/mIconPointLayer.png");
+      QPixmap pxLine(myThemePath+"/mIconLineLayer.png");
+      QPixmap pxPoly(myThemePath+"/mIconPolygonLayer.png");
+      assert (!pxPoint.isNull());
       //qDebug("Connection succeeded");
       // tell the DB that we want text encoded in UTF8
       PQsetClientEncoding(pd, "UNICODE");

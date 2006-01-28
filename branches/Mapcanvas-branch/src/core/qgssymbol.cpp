@@ -40,7 +40,6 @@ QgsSymbol::QgsSymbol(QGis::VectorType t, QString lvalue, QString uvalue, QString
       mType(t),
       mPointSymbolName( "hard:circle" ),
       mPointSize( 6 ),
-      mOversampling(1),
       mPointSymbolPixmap(1,1),
       mWidthScale(1.0),
       mCacheUpToDate( false ),
@@ -57,7 +56,6 @@ QgsSymbol::QgsSymbol(QGis::VectorType t, QString lvalue, QString uvalue, QString
       mBrush( c ),
       mPointSymbolName( "hard:circle" ),
       mPointSize( 6 ),
-      mOversampling(1),
       mPointSymbolPixmap(1,1),
       mWidthScale(1.0),
       mCacheUpToDate( false ),
@@ -67,7 +65,6 @@ QgsSymbol::QgsSymbol(QGis::VectorType t, QString lvalue, QString uvalue, QString
 QgsSymbol::QgsSymbol()
     : mPointSymbolName( "hard:circle" ),
       mPointSize( 6 ),
-      mOversampling(1),
       mPointSymbolPixmap(1,1),
       mWidthScale(1.0),
       mCacheUpToDate( false ),
@@ -80,7 +77,6 @@ QgsSymbol::QgsSymbol(QColor c)
       mBrush( c ),
       mPointSymbolName( "hard:circle" ),
       mPointSize( 6 ),
-      mOversampling(1),
       mPointSymbolPixmap(1,1),
       mWidthScale(1.0),
       mCacheUpToDate( false ),
@@ -88,7 +84,9 @@ QgsSymbol::QgsSymbol(QColor c)
 {}
 
 QgsSymbol::~QgsSymbol()
-{}
+{
+
+}
 
 
 QColor QgsSymbol::color() const
@@ -162,14 +160,6 @@ int QgsSymbol::pointSize() const
     return mPointSize;
 }
 
-QPixmap QgsSymbol::getPointSymbolAsPixmap( int oversampling )
-{
-    if ( !mCacheUpToDate || oversampling != mOversampling ) 
-    {
-	cache( oversampling, mSelectionColor );
-    }
-    return mPointSymbolPixmap;
-}
 
 QPixmap QgsSymbol::getLineSymbolAsPixmap()
 {
@@ -192,70 +182,39 @@ QPixmap QgsSymbol::getPolygonSymbolAsPixmap()
     return pix; //this is ok because of qts sharing mechanism 
 }
 
-Q3Picture QgsSymbol::getPointSymbolAsPicture( int oversampling, double widthScale,
+QPixmap QgsSymbol::getPointSymbolAsPixmap(  double widthScale,
                bool selected, QColor selectionColor )
 {
-    //std::cerr << "QgsSymbol::getPointSymbolAsPicture oversampling = " << oversampling <<
-    //	         " widthScale = " << widthScale << std::endl;
 
-    if ( oversampling >= 1 )  // called for canvas -> mPointSymbolPicture
-    {
-	if ( !mCacheUpToDate || oversampling != mOversampling 
+	if ( !mCacheUpToDate 
 	     || ( selected && mSelectionColor != selectionColor ) )
 	{
 	    if ( selected ) {
-	        cache( oversampling, selectionColor );
+	        cache(  selectionColor );
 	    } else {
-	        cache( oversampling, mSelectionColor );
+	        cache(  mSelectionColor );
 	    }
 	}
 	if ( selected ) {
-	    return mPointSymbolPictureSelected;
+	    return mPointSymbolPixmapSelected;
 	}
-        return mPointSymbolPicture;
-    }
+        return mPointSymbolPixmap;
 
-    // called by composer -> mPointSymbolPicture2
-    if ( !mCacheUpToDate2 || widthScale != mWidthScale 
-	 || ( selected && mSelectionColor2 != selectionColor ) )
-    {
-	if ( selected ) {
-	    cache2( widthScale, selectionColor );
-	} else {
-	    cache2( widthScale, mSelectionColor );
-	}
-    }
-    if ( selected ) {
-	return mPointSymbolPictureSelected2;
-    }
-    return mPointSymbolPicture2;
 }
 
-void QgsSymbol::cache( int oversampling, QColor selectionColor )
+void QgsSymbol::cache(  QColor selectionColor )
 {
     QPen pen = mPen;
     pen.setColor ( selectionColor ); 
     QBrush brush = mBrush;
     brush.setColor ( selectionColor ); 
 
-    mPointSymbolPicture = QgsMarkerCatalogue::instance()->marker ( mPointSymbolName, mPointSize,
-	                        mPen, mBrush, oversampling );
+    mPointSymbolPixmap = QgsMarkerCatalogue::instance()->marker ( mPointSymbolName, mPointSize,
+	                        mPen, mBrush );
     
-    mPointSymbolPictureSelected = QgsMarkerCatalogue::instance()->marker ( 
-	     mPointSymbolName, mPointSize, pen, brush, oversampling );
+    mPointSymbolPixmapSelected = QgsMarkerCatalogue::instance()->marker ( 
+	     mPointSymbolName, mPointSize, pen, brush );
 
-    QRect br = mPointSymbolPicture.boundingRect();
-    mPointSymbolPixmap.resize ( br.width(), br.height() );
-
-    // TODO - this is not correct, the background must be transparent
-    mPointSymbolPixmap.fill ( QColor(255,255,255) );
-
-    QPainter pixpainter;
-    pixpainter.begin(&mPointSymbolPixmap);
-    pixpainter.drawPicture ( -br.x(), -br.y(), mPointSymbolPicture );
-    pixpainter.end();
-
-    mOversampling = oversampling;
     mSelectionColor = selectionColor;
     mCacheUpToDate = true;
 }
@@ -264,20 +223,19 @@ void QgsSymbol::cache2( double widthScale, QColor selectionColor )
 {
     //std::cerr << "QgsSymbol::cache2 widthScale = " << widthScale << std::endl;
 
-    // Vector without oversampling with width scale */
     QPen pen = mPen;
     pen.setWidth ( (int) ( widthScale * pen.width() ) );
 
     
-    mPointSymbolPicture2 = QgsMarkerCatalogue::instance()->marker ( mPointSymbolName, mPointSize,
-	                        pen, mBrush, 1, false );
+    mPointSymbolPixmap2 = QgsMarkerCatalogue::instance()->marker ( mPointSymbolName, mPointSize,
+	                        pen, mBrush, false );
 
     QBrush brush = mBrush;
     brush.setColor ( selectionColor ); 
     pen.setColor ( selectionColor ); 
 
-    mPointSymbolPictureSelected2 = QgsMarkerCatalogue::instance()->marker ( 
-	               mPointSymbolName, mPointSize, pen, brush, 1, false );
+    mPointSymbolPixmapSelected2 = QgsMarkerCatalogue::instance()->marker ( 
+	               mPointSymbolName, mPointSize, pen, brush,  false );
 
     mSelectionColor2 = selectionColor;
     

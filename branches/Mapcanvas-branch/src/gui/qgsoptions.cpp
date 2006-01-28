@@ -16,6 +16,7 @@
  *                                                                         *
  ***************************************************************************/
 /* $Id$ */
+#include "qgsapplication.h"
 #include "qgsoptions.h"
 #include "qgis.h"
 #include "qgisapp.h"
@@ -23,6 +24,7 @@
 #include "qgssvgcache.h"
 #include <QFileDialog>
 #include <QSettings>
+#include <QColorDialog>
 #include <cassert>
 #include <iostream>
 #include <sqlite3.h>
@@ -30,8 +32,8 @@
  * \class QgsOptions - Set user options and preferences
  * Constructor
  */
-QgsOptions::QgsOptions(QWidget *parent, const char *name, bool modal) :
-  QDialog(parent, name, modal)
+QgsOptions::QgsOptions(QWidget *parent, Qt::WFlags fl) :
+  QDialog(parent, fl)
 {
   setupUi(this);
   connect(cmbTheme, SIGNAL(activated(const QString&)), this, SLOT(themeChanged(const QString&)));
@@ -45,22 +47,13 @@ QgsOptions::QgsOptions(QWidget *parent, const char *name, bool modal) :
   QSettings settings;
   QString browser = settings.readEntry("/qgis/browser");
   cmbBrowser->setCurrentText(browser);
-  // set the show splash option
   std::cout << "Standard Identify radius setting: " << QGis::DEFAULT_IDENTIFY_RADIUS << std::endl;
   int identifyValue = settings.readNumEntry("/Map/identifyRadius",QGis::DEFAULT_IDENTIFY_RADIUS);
   std::cout << "Standard Identify radius setting read from settings file: " << identifyValue << std::endl;
   spinBoxIdentifyValue->setValue(identifyValue);
-  bool hideSplashFlag = false;
-  if (settings.readEntry("/Splash/hideSplash")=="true")
-  {
-    hideSplashFlag =true;
-  }
-  cbxHideSplash->setChecked(hideSplashFlag);
 
   // set the current theme
   cmbTheme->setCurrentText(settings.readEntry("/Themes"));
-  // set the SVG oversampling factor
-  spbSVGOversampling->setValue(QgsSVGCache::instance().getOversampling());
   // set the display update threshold
   spinBoxUpdateThreshold->setValue(settings.readNumEntry("/Map/updateThreshold"));
   //set the default projection behaviour radio buttongs
@@ -82,15 +75,58 @@ QgsOptions::QgsOptions(QWidget *parent, const char *name, bool modal) :
   txtGlobalWKT->setText(myProjString);
   
   // populate combo box with ellipsoids
-  mQGisSettingsDir = QDir::homeDirPath () + "/.qgis/";
   getEllipsoidList();
   QString myEllipsoidId = settings.readEntry("/qgis/measure/ellipsoid", "WGS84");
   cmbEllipsoid->setCurrentText(getEllipsoidName(myEllipsoidId));
+  // add the themes to the combo box on the option dialog
+  QDir myThemeDir(QgsApplication::themePath());
+  myThemeDir.setFilter(QDir::Dirs);
+  QStringList myDirList = myThemeDir.entryList("*");
+  for(int i=0; i < myDirList.count(); i++)
+  {
+    if(myDirList[i] != "." && myDirList[i] != "..")
+    {
+      cmbTheme->insertItem(myDirList[i]);
+    }
+  }
+  // set the theme combo
+  cmbTheme->setCurrentText(settings.readEntry("/Themes","default"));
+  //set teh state of the checkboxes
+  chkAntiAliasing->setChecked(settings.value("/qgis/enable_anti_aliasing",false).toBool());
+  chkAddedVisibility->setChecked(!settings.value("/qgis/new_layers_visible",false).toBool());
+  cbxHideSplash->setChecked(settings.value("/qgis/hideSplash",false).toBool());
+  //set the colour for selections
+  int myRed = settings.value("/qgis/default_selection_color_red",255).toInt();
+  int myGreen = settings.value("/qgis/default_selection_color_green",255).toInt();
+  int myBlue = settings.value("/qgis/default_selection_color_blue",255).toInt();
+  pbnSelectionColour->setPaletteBackgroundColor(QColor(myRed,myGreen,myBlue));
+  //set teh default color for canvas background
+  myRed = settings.value("/qgis/default_canvas_color_red",255).toInt();
+  myGreen = settings.value("/qgis/default_canvas_color_green",255).toInt();
+  myBlue = settings.value("/qgis/default_canvas_color_blue",255).toInt();
+  pbnCanvasColor->setPaletteBackgroundColor(QColor(myRed,myGreen,myBlue));
 }
 
 //! Destructor
 QgsOptions::~QgsOptions(){}
 
+void QgsOptions::on_pbnSelectionColour_clicked()
+{
+  QColor color = QColorDialog::getColor(pbnSelectionColour->paletteBackgroundColor(),this);
+  if (color.isValid())
+  {
+    pbnSelectionColour->setPaletteBackgroundColor(color);
+  }
+}
+
+void QgsOptions::on_pbnCanvasColor_clicked()
+{
+  QColor color = QColorDialog::getColor(pbnCanvasColor->paletteBackgroundColor(),this);
+  if (color.isValid())
+  {
+    pbnCanvasColor->setPaletteBackgroundColor(color);
+  }
+}
 void QgsOptions::themeChanged(const QString &newThemeName)
 {
   // Slot to change the theme as user scrolls through the choices
@@ -110,6 +146,7 @@ void QgsOptions::saveOptions()
   settings.writeEntry("/Map/identifyRadius", spinBoxIdentifyValue->value());
   settings.writeEntry("/qgis/hideSplash",cbxHideSplash->isChecked());
   settings.writeEntry("/qgis/new_layers_visible",!chkAddedVisibility->isChecked());
+  settings.writeEntry("/qgis/enable_anti_aliasing",chkAntiAliasing->isChecked());
   if(cmbTheme->currentText().length() == 0)
   {
     settings.writeEntry("/Themes", "default");
@@ -117,8 +154,6 @@ void QgsOptions::saveOptions()
     settings.writeEntry("/Themes",cmbTheme->currentText());
   }
   settings.writeEntry("/Map/updateThreshold", spinBoxUpdateThreshold->value());
-  QgsSVGCache::instance().setOversampling(spbSVGOversampling->value());
-  settings.writeEntry("/qgis/svgoversampling", spbSVGOversampling->value());
   //check behaviour so default projection when new layer is added with no
   //projection defined...
   if (radPromptForProjection->isChecked())
@@ -139,29 +174,26 @@ void QgsOptions::saveOptions()
   settings.writeEntry("/Projections/defaultProjectionSRSID",(int)mGlobalSRSID);
 
   settings.writeEntry("/qgis/measure/ellipsoid", getEllipsoidAcronym(cmbEllipsoid->currentText()));
+  //set the colour for selections
+  QColor myColor = pbnSelectionColour->paletteBackgroundColor();
+  int myRed = settings.writeEntry("/qgis/default_selection_color_red",myColor.red());
+  int myGreen = settings.writeEntry("/qgis/default_selection_color_green",myColor.green());
+  int myBlue = settings.writeEntry("/qgis/default_selection_color_blue",myColor.blue());
+  //set teh default color for canvas background
+  myColor = pbnCanvasColor->paletteBackgroundColor();
+  myRed = settings.writeEntry("/qgis/default_canvas_color_red",myColor.red());
+  myGreen = settings.writeEntry("/qgis/default_canvas_color_green",myColor.green());
+  myBlue = settings.writeEntry("/qgis/default_canvas_color_blue",myColor.blue());
   
   //all done
   accept();
 }
 
 
-void QgsOptions::on_cbxHideSplash_toggled( bool )
-{
-
-}
-
-void QgsOptions::addTheme(QString item)
-{
-  cmbTheme->insertItem(item);
-}
 
 
 
-void QgsOptions::setCurrentTheme()
-{
-  QSettings settings;
-  cmbTheme->setCurrentText(settings.readEntry("/Themes","default"));
-}
+
 
 void QgsOptions::on_btnFindBrowser_clicked()
 {
@@ -228,7 +260,7 @@ void QgsOptions::getEllipsoidList()
   sqlite3_stmt *myPreparedStatement;
   int           myResult;
   //check the db is available
-  myResult = sqlite3_open(QString(mQGisSettingsDir+"qgis.db").latin1(), &myDatabase);
+  myResult = sqlite3_open(QgsApplication::qgisUserDbFilePath(), &myDatabase);
   if(myResult) 
   {
     std::cout <<  "Can't open database: " <<  sqlite3_errmsg(myDatabase) << std::endl; 
@@ -261,7 +293,7 @@ QString QgsOptions::getEllipsoidAcronym(QString theEllipsoidName)
   int           myResult;
   QString       myName;
   //check the db is available
-  myResult = sqlite3_open(QString(mQGisSettingsDir+"qgis.db").latin1(), &myDatabase);
+  myResult = sqlite3_open(QgsApplication::qgisUserDbFilePath(), &myDatabase);
   if(myResult) 
   {
     std::cout <<  "Can't open database: " <<  sqlite3_errmsg(myDatabase) << std::endl; 
@@ -293,7 +325,7 @@ QString QgsOptions::getEllipsoidName(QString theEllipsoidAcronym)
   int           myResult;
   QString       myName;
   //check the db is available
-  myResult = sqlite3_open(QString(mQGisSettingsDir+"qgis.db").latin1(), &myDatabase);
+  myResult = sqlite3_open(QgsApplication::qgisUserDbFilePath(), &myDatabase);
   if(myResult) 
   {
     std::cout <<  "Can't open database: " <<  sqlite3_errmsg(myDatabase) << std::endl; 

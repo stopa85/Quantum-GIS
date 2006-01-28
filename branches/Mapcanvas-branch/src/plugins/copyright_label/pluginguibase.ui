@@ -20,11 +20,28 @@
   </property>
   <layout class="QGridLayout" >
    <property name="margin" >
-    <number>10</number>
+    <number>9</number>
    </property>
    <property name="spacing" >
     <number>6</number>
    </property>
+   <item row="0" column="2" >
+    <widget class="QTextEdit" name="textEdit3" >
+     <property name="readOnly" >
+      <bool>true</bool>
+     </property>
+     <property name="html" >
+      <string>&lt;html>&lt;head>&lt;meta name="qrichtext" content="1" />&lt;/head>&lt;body style=" white-space: pre-wrap; font-family:Sans Serif; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;">&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">&lt;span style=" font-size:12pt;">Description&lt;/span>&lt;/p>&lt;p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">&lt;/p>&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Enter your copyright label below. This plugin supports basic html markup tags for formatting the label. For example:&lt;/p>&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">&lt;span style=" font-weight:600;">&amp;lt;B&amp;gt; Bold text &amp;lt;/B&amp;gt; &lt;/span>&lt;/p>&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-weight:600;">&lt;span style=" font-weight:400; font-style:italic;">&amp;lt;I&amp;gt; Italics &amp;lt;/I&amp;gt;&lt;/span>&lt;/p>&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-style:italic;">&lt;span style=" font-style:normal;">(note: &amp;amp;copy; gives a copyright symbol)&lt;/span>&lt;/p>&lt;/body>&lt;/html></string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="2" >
+    <widget class="QTextEdit" name="txtCopyrightText" >
+     <property name="html" >
+      <string>&lt;html>&lt;head>&lt;meta name="qrichtext" content="1" />&lt;/head>&lt;body style=" white-space: pre-wrap; font-family:Sans Serif; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;">&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">&lt;span style=" font-size:14pt;">© QGIS 2006&lt;/span>&lt;/p>&lt;/body>&lt;/html></string>
+     </property>
+    </widget>
+   </item>
    <item rowspan="4" row="0" column="1" >
     <widget class="Line" name="line1" >
      <property name="maximumSize" >
@@ -57,52 +74,6 @@
      </property>
      <property name="scaledContents" >
       <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="2" >
-    <widget class="Q3TextEdit" name="textEdit2" >
-     <property name="lineWidth" >
-      <number>1</number>
-     </property>
-     <property name="margin" >
-      <number>0</number>
-     </property>
-     <property name="text" >
-      <string>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;/head>&lt;body style=&quot;font-size:10pt;font-family:helvetica&quot;>
-&lt;p style=&quot;margin-top:18px&quot;>&lt;span style=&quot;font-size:19pt;font-weight:600&quot;>Description&lt;/span>&lt;/p>
-&lt;p>Enter your copyright label below. This plugin supports basic html markup tags for formatting the label.  For example:&lt;/p>
-&lt;p>&lt;span style=&quot;font-family:Courier New&quot;>&amp;lt;B&amp;gt; &lt;/span>&lt;span style=&quot;font-family:Courier New;font-weight:600&quot;>Bold text&lt;/span>&lt;span style=&quot;font-family:Courier New&quot;> &amp;lt;/B&amp;gt;&lt;br />&amp;lt;I&amp;gt; &lt;/span>&lt;span style=&quot;font-family:Courier New;font-style:italic&quot;>Italics&lt;/span>&lt;span style=&quot;font-family:Courier New&quot;> &amp;lt;/I&amp;gt;&lt;/span>&lt;/p>
-&lt;/body>&lt;/html>
-</string>
-     </property>
-     <property name="wordWrap" >
-      <enum>Q3TextEdit::WidgetWidth</enum>
-     </property>
-     <property name="readOnly" >
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="2" >
-    <widget class="Q3TextEdit" name="txtCopyrightText" >
-     <property name="frameShape" >
-      <enum>QFrame::Box</enum>
-     </property>
-     <property name="frameShadow" >
-      <enum>QFrame::Sunken</enum>
-     </property>
-     <property name="lineWidth" >
-      <number>1</number>
-     </property>
-     <property name="textFormat" >
-      <enum>Qt::PlainText</enum>
-     </property>
-     <property name="text" >
-      <string>© QGIS 20056</string>
-     </property>
-     <property name="wordWrap" >
-      <enum>Q3TextEdit::WidgetWidth</enum>
      </property>
     </widget>
    </item>
@@ -213,6 +184,16 @@
       <number>6</number>
      </property>
      <item>
+      <widget class="QPushButton" name="pbnHelp" >
+       <property name="text" >
+        <string>Help</string>
+       </property>
+       <property name="shortcut" >
+        <string>Alt+O</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <spacer>
        <property name="orientation" >
         <enum>Qt::Horizontal</enum>
@@ -222,8 +203,8 @@
        </property>
        <property name="sizeHint" >
         <size>
-         <width>400</width>
-         <height>21</height>
+         <width>281</width>
+         <height>26</height>
         </size>
        </property>
       </spacer>
@@ -254,15 +235,6 @@
  </widget>
  <layoutdefault spacing="6" margin="11" />
  <pixmapfunction></pixmapfunction>
- <customwidgets>
-  <customwidget>
-   <class>Q3TextEdit</class>
-   <extends></extends>
-   <header>q3textedit.h</header>
-   <container>0</container>
-   <pixmap></pixmap>
-  </customwidget>
- </customwidgets>
  <resources>
   <include location="copyright_plugin.qrc" />
  </resources>

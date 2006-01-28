@@ -16,6 +16,7 @@ email                : tim@linfiniti.com
  ***************************************************************************/
 
 
+#include "qgsapplication.h"
 #include "qgsrasterlayerproperties.h"
 #include "qgslayerprojectionselector.h"
 #include "qgsproject.h"
@@ -30,8 +31,8 @@ const char * const ident =
   "$Id$";
 
 
-QgsRasterLayerProperties::QgsRasterLayerProperties(QgsMapLayer *lyr, QWidget *parent, const char *name, bool modal)
-: QDialog(parent, name, modal), 
+QgsRasterLayerProperties::QgsRasterLayerProperties(QgsMapLayer *lyr, QWidget *parent, Qt::WFlags fl)
+: QDialog(parent, fl), 
   rasterLayer( dynamic_cast<QgsRasterLayer*>(lyr) )
 {
   setupUi(this);
@@ -194,12 +195,9 @@ QgsRasterLayerProperties::QgsRasterLayerProperties(QgsMapLayer *lyr, QWidget *pa
     cboGray->insertItem(tr("Not Set"));
   }
 
-  //
-#if defined(WIN32) || defined(Q_OS_MACX)
-  QString PKGDATAPATH = qApp->applicationDirPath() + "/share/qgis";
-#endif
-  QPixmap myPyramidPixmap(QString(PKGDATAPATH) + QString("/images/icons/pyramid.png"));
-  QPixmap myNoPyramidPixmap(QString(PKGDATAPATH) + QString("/images/icons/no_pyramid.png"));
+  QString myThemePath = QgsApplication::themePath();
+  QPixmap myPyramidPixmap(myThemePath + "/mIconPyramid.png");
+  QPixmap myNoPyramidPixmap(myThemePath + "/mIconNoPyramid.png");
 
   // Only do pyramids if dealing directly with GDAL.
   if (!(rasterLayer->usesProvider()))
@@ -458,11 +456,10 @@ void QgsRasterLayerProperties::on_buttonBuildPyramids_clicked()
   // repopulate the pyramids list
   //
   lbxPyramidResolutions->clear();
-#if defined(WIN32) || defined(Q_OS_MACX)
-  QString PKGDATAPATH = qApp->applicationDirPath() + "/share/qgis";
-#endif
-  QPixmap myPyramidPixmap(QString(PKGDATAPATH) + QString("/images/icons/pyramid.png"));
-  QPixmap myNoPyramidPixmap(QString(PKGDATAPATH) + QString("/images/icons/no_pyramid.png"));
+  QString myThemePath = QgsApplication::themePath();
+  QPixmap myPyramidPixmap(myThemePath + "/mIconPyramid.png");
+  QPixmap myNoPyramidPixmap(myThemePath + "/mIconNoPyramid.png");
+
   QgsRasterLayer::RasterPyramidList::iterator myRasterPyramidIterator;
   for ( myRasterPyramidIterator=myPyramidList.begin();
           myRasterPyramidIterator != myPyramidList.end();
@@ -502,9 +499,6 @@ void QgsRasterLayerProperties::on_buttonBuildPyramids_clicked()
 */
 void QgsRasterLayerProperties::sync()
 {
-  // XXX Remove the advanced symbology widget and debug overlay for 0.1 release
-
-  tabSymbology->removePage(TabPage);
   cboxShowDebugInfo->hide();
 
   //get the thumbnail for the layer
