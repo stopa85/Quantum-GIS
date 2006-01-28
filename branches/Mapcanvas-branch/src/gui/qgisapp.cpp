@@ -3753,19 +3753,6 @@ void QgisApp::pasteTransformations()
 }
 
 
-void QgisApp::drawPoint(double x, double y)
-{
-  QPainter paint;
-  //  QWMatrix mat (mScaleFactor, 0, 0, mScaleFactor, 0, 0);
-  paint.begin(mMapCanvas);
-  // paint.setWorldMatrix(mat);
-  paint.setWindow(*mMapWindow);
-
-  paint.setPen(Qt::blue);
-  paint.drawPoint((int) x, (int) y);
-  paint.end();
-}
-
 void QgisApp::drawLayers()
 {
   // what's the point if we don't have any layers?
