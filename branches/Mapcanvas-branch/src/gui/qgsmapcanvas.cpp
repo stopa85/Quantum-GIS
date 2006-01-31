@@ -30,7 +30,6 @@ email                : sherman at mrcc.com
 #include <QPixmap>
 #include <QRect>
 #include <QResizeEvent>
-#include <QRubberBand>
 #include <QSettings>
 #include <QString>
 #include <QStringList>
@@ -187,11 +186,11 @@ QgsMapCanvas::QgsMapCanvas()
   
   // by default, the canvas is rendered
   mRenderFlag = true;
-
-  setMouseTracking(true);
+  
+  viewport()->setMouseTracking(true);
   setFocusPolicy(Qt::StrongFocus);
   
-  setMapTool(QGis::NoTool);
+  setMapTool(QGis::Pan);
 
   mMapImage = new QgsMapImage(10,10);
 
@@ -205,7 +204,7 @@ QgsMapCanvas::QgsMapCanvas()
   QgsMapCanvasMapImage* map = new QgsMapCanvasMapImage(mCanvas);
   map->setPixmap(mMapImage->pixmap());
   map->show();
-      
+  
 } // QgsMapCanvas ctor
 
 
@@ -684,7 +683,7 @@ void QgsMapCanvas::keyReleaseEvent(QKeyEvent * e)
   }
 } //keyReleaseEvent()
 
-void QgsMapCanvas::mousePressEvent(QMouseEvent * e)
+void QgsMapCanvas::contentsMousePressEvent(QMouseEvent * e)
 {
   // call handler of current map tool
   if (mMapToolPtr)
@@ -707,7 +706,7 @@ void QgsMapCanvas::mousePressEvent(QMouseEvent * e)
 } // mousePressEvent
 
 
-void QgsMapCanvas::mouseReleaseEvent(QMouseEvent * e)
+void QgsMapCanvas::contentsMouseReleaseEvent(QMouseEvent * e)
 {
   // call handler of current map tool
   if (mMapToolPtr)
@@ -761,7 +760,7 @@ void QgsMapCanvas::zoomWithCenter(int x, int y, bool zoomIn)
 }
 
 
-void QgsMapCanvas::mouseMoveEvent(QMouseEvent * e)
+void QgsMapCanvas::contentsMouseMoveEvent(QMouseEvent * e)
 {
   // call handler of current map tool
   if (mMapToolPtr)

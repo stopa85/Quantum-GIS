@@ -311,13 +311,13 @@ private:
     void keyReleaseEvent(QKeyEvent * e);
 
     //! Overridden mouse move event
-    void mouseMoveEvent(QMouseEvent * e);
+    void contentsMouseMoveEvent(QMouseEvent * e);
 
     //! Overridden mouse press event
-    void mousePressEvent(QMouseEvent * e);
+    void contentsMousePressEvent(QMouseEvent * e);
 
     //! Overridden mouse release event
-    void mouseReleaseEvent(QMouseEvent * e);
+    void contentsMouseReleaseEvent(QMouseEvent * e);
 
     //! Overridden mouse wheel event
     void wheelEvent(QWheelEvent * e);

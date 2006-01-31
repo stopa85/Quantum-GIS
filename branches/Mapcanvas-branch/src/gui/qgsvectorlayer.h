@@ -1,5 +1,3 @@
-//Added by qt3to4:
-#include <Q3PopupMenu>
 /***************************************************************************
                           qgsvectorlayer.h  -  description
                              -------------------
@@ -34,14 +32,14 @@ class QgsData;
 class QgsRenderer;
 class QgsLegendItem;
 class QgsGeometry;
-class QgsIdentifyResults;
 class QgsLabel;
 
 #include <map>
 #include <vector>
 
-#include "q3valuevector.h"
 #include <QPixmap>
+#include <Q3PopupMenu>
+#include <Q3ValueVector>
 
 #include "qgsmaplayer.h"
 #include "qgsattributeaction.h"
@@ -50,6 +48,8 @@ class QgsLabel;
 #include "qgsvectordataprovider.h"
 #include "qgsvectorlayerproperties.h"
 class QgsAttributeTableDisplay;
+
+typedef std::map<int, std::map<QString,QString> > changed_attr_map;
 
 /*! \class QgsVectorLayer
  * \brief Vector layer backed by a data source provider
@@ -79,9 +79,6 @@ public:
    *   Capabilities for this layer in a friendly format.
    */
   QString capabilitiesString() const;
-
-  //! Identify feature found within the search rectangle
-  void identify(QgsRect *);
 
   //! Select features found within the search rectangle
   void select(QgsRect * rect, bool lock);
@@ -156,7 +153,7 @@ const QString displayField() const { return fieldIndex; }
 
   /**Returns true if this layer can be in the same symbology group with another layer*/
   bool isSymbologyCompatible(const QgsMapLayer& other) const;
-
+  
 signals:
   /**This signal is emitted when the layer leaves editing mode.
      The purpose is to tell QgsMapCanvas to remove the lines of
@@ -419,7 +416,13 @@ public:
   /** returns array of deleted feature IDs */
   std::set<int>& deletedFeatureIds() { return mDeleted; }
  
-protected:
+  /** returns array of features with changed attributes */
+  changed_attr_map& changedAttributes() { return mChangedAttributes; }
+
+  /**Sets whether some features are modified or not */
+  void setModified(bool modified = TRUE) { mModified = modified; }
+  
+  protected:
   /**Pointer to the table display object if there is one, else a pointer to 0*/
   QgsAttributeTableDisplay * tabledisplay;
   
@@ -441,7 +444,7 @@ protected:
   std::vector<QgsFeature*> mAddedFeatures;
   
   /** Changed attributes which are not commited */
-  std::map<int,std::map<QString,QString> > mChangedAttributes;
+  changed_attr_map mChangedAttributes;
   
   /** Changed geometries which are not commited. */
   std::map<int, QgsGeometry> mChangedGeometries;
@@ -548,8 +551,6 @@ private:                       // Private methods
   endian_t endian();
   // pointer for loading the provider library
   QLibrary *myLib;
-  //! Pointer to the identify results dialog
-  QgsIdentifyResults *ir;
   //! Update threshold for drawing features as they are read. A value of zero indicates
   // that no features will be drawn until all have been read
   int updateThreshold;

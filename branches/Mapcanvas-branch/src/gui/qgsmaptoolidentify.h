@@ -18,12 +18,26 @@
 #define QGSMAPTOOLIDENTIFY_H
 
 #include "qgsmaptool.h"
+#include "qgspoint.h"
 
+class QgsIdentifyResults;
+class QgsRasterLayer;
+class QgsVectorLayer;
 
+/**
+  \brief Map tool for identifying features in current layer
+             
+  after selecting a point shows dialog with identification results
+  - for raster layers shows value of underlying pixel
+  - for vector layers shows feature attributes within search radius
+    (allows to edit values when vector layer is in editing mode)
+*/
 class QgsMapToolIdentify : public QgsMapTool
 {
   public:
     QgsMapToolIdentify(QgsMapCanvas* canvas);
+    
+    ~QgsMapToolIdentify();
     
     //! Overridden mouse move event
     virtual void canvasMoveEvent(QMouseEvent * e);
@@ -33,6 +47,18 @@ class QgsMapToolIdentify : public QgsMapTool
   
     //! Overridden mouse release event
     virtual void canvasReleaseEvent(QMouseEvent * e);
+    
+  private:
+    
+    //! function for identifying raster layer
+    void identifyRasterLayer(QgsRasterLayer* layer, const QgsPoint& point);
+    
+    //! function for identifying vector layer
+    void identifyVectorLayer(QgsVectorLayer* layer, const QgsPoint& point);
+
+    //! Pointer to the identify results dialog
+    QgsIdentifyResults *mResults;
+    
 };
 
 #endif
