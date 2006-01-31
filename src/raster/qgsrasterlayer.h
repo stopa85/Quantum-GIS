@@ -217,7 +217,6 @@ The [type] part of the variable should be the type class of the variable written
 //
 class QgsRect;
 class QgsRasterLayerProperties;
-class QgsIdentifyResults;
 class GDALDataset;
 class GDALRasterBand;
 class QImage;
@@ -295,8 +294,8 @@ public:
     //                                      const char *theMessageCharArray,
     //                                      void *theData);
 
-    /** \brief Identify raster value(s) found in center of the search rectangle */
-    void identify(QgsRect *);
+    /** \brief Identify raster value(s) found on the point position */
+    void identify(const QgsPoint& point, std::map<QString,QString>& results);
 
     /** \brief Query gdal to find out the WKT projection string for this layer. This implements the virtual method of the same name defined in QgsMapLayer*/
     QString getProjectionWKT();
@@ -999,9 +998,6 @@ private:
        @todo XXX should consider generalizing this
     */
     QgsRasterLayerProperties * mLayerProperties;
-    
-    //! Pointer to the identify results dialog
-    QgsIdentifyResults *mIdentifyResults;
     
 /*
  * 

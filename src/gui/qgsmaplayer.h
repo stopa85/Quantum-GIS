@@ -20,6 +20,7 @@
 #define QGSMAPLAYER_H
 
 #include <vector>
+#include <map>
 
 #include <qwidget.h>
 #include <qobject.h>
@@ -109,11 +110,6 @@ public:
     virtual void draw(QPainter *, QgsRect *, int);
     virtual void draw(QPainter *, QgsRect *, QgsMapToPixel * ,QPaintDevice *);
     virtual void drawLabels(QPainter *, QgsRect *, QgsMapToPixel * ,QPaintDevice *);
-    /*! Identify the feature(s) in this layer that are contained in the search rectangle
-     */
-    virtual void identify(QgsRect *)
-    {}
-    ;
 
     /*!Select features on the map canvas by dragging a rectangle */
     virtual void select(QgsRect *, bool )

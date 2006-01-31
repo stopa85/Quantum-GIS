@@ -66,7 +66,6 @@
 #include "qgspoint.h"
 #include "qgsmaptopixel.h"
 #include "qgsvectorlayer.h"
-#include "qgsidentifyresults.h"
 #include "qgsattributetable.h"
 #include "qgsfeature.h"
 #include "qgsfield.h"
@@ -121,7 +120,6 @@ QgsVectorLayer::QgsVectorLayer(QString vectorLayerPath,
   providerKey(providerKey),
   valid(false),
   myLib(0),
-  ir(0),                    // initialize the identify results pointer
   updateThreshold(0),       // XXX better default value?
   mMinimumScale(0),
   mMaximumScale(0),
@@ -186,11 +184,6 @@ QgsVectorLayer::~QgsVectorLayer()
   delete popMenu;
   // delete the provider lib pointer
   delete myLib;
-
-  if ( ir )
-  {
-    delete ir;
-  }
 
   // Destroy and cached geometries and clear the references to them
   for (std::map<int, QgsGeometry*>::iterator it  = mCachedGeometries.begin(); 
@@ -1003,180 +996,6 @@ QgsVectorLayer::endian_t QgsVectorLayer::endian()
   return (htonl(1) == 1) ? QgsVectorLayer::XDR : QgsVectorLayer::NDR ;
 }
 
-void QgsVectorLayer::identify(QgsRect * r)
-{
-  QApplication::setOverrideCursor(Qt::WaitCursor);
-
-  QgsRect pr = inverseProjectRect(*r);
-  dataProvider->select(&pr, true);
-  int featureCount = 0;
-  QgsFeature *fet;
-
-  QgsDistanceArea calc;
-  calc.setSourceSRS(mCoordinateTransform->sourceSRS().srsid());
-
-  if ( !isEditable() ) {
-    // display features falling within the search radius
-    if( !ir )
-    {
-      // It is necessary to pass topLevelWidget()as parent, but there is no QWidget available.
-      //
-      // Win32 doesn't like this approach to creating the window and seems
-      // to work fine without it [gsherman]
-      QWidget *top = 0;
-#ifndef WIN32
-      foreach (QWidget *w, QApplication::topLevelWidgets())
-      {
-        if ( typeid(*w) == typeid(QgisApp) )
-        {
-          top = w;
-          break;
-        }
-      }
-#endif
-      ir = new QgsIdentifyResults(mActions, top);
-
-      // restore the identify window position and show it
-      ir->restorePosition();
-    } else {
-      ir->raise();
-      ir->clear();
-      ir->setActions ( mActions );
-    }
-
-    while ((fet = dataProvider->getNextFeature(true)))
-    {
-      featureCount++;
-
-      Q3ListViewItem *featureNode = ir->addNode("foo");
-      featureNode->setText(0, fieldIndex);
-      std::vector < QgsFeatureAttribute > attr = fet->attributeMap();
-      // Do this only once rather than each pass through the loop
-      int attrSize = attr.size();
-      for (register int i = 0; i < attrSize; i++)
-      {
-#ifdef QGISDEBUG
-        std::cout << attr[i].fieldName().toLocal8Bit().data() << " == " << fieldIndex.toLocal8Bit().data() << std::endl;
-#endif
-        if (attr[i].fieldName().lower() == fieldIndex)
-        {
-          featureNode->setText(1, attr[i].fieldValue());
-        }
-        ir->addAttribute(featureNode, attr[i].fieldName(), attr[i].fieldValue());
-      }
-
-      // measure distance or area
-      if (vectorType() == QGis::Line)
-      {
-        double dist = calc.measure(fet->geometry());
-        QString str = QString::number(dist/1000, 'f', 3);
-        str += " km";
-        ir->addAttribute(featureNode, ".Length", str);
-      }
-      else if (vectorType() == QGis::Polygon)
-      {
-        double area = calc.measure(fet->geometry());
-        QString str = QString::number(area/1000000, 'f', 3);
-        str += " km2";
-        ir->addAttribute(featureNode, ".Area", str);
-      }
-
-      // Add actions 
-
-      QgsAttributeAction::aIter iter = mActions.begin();
-      for (register int i = 0; iter != mActions.end(); ++iter, ++i)
-      {
-        ir->addAction( featureNode, i, tr("action"), iter->name() );
-      }
-
-      delete fet;
-    }
-
-#ifdef QGISDEBUG
-    std::cout << "Feature count on identify: " << featureCount << std::endl;
-#endif
-
-    //also test the not commited features //todo: eliminate copy past code
-    /*for(std::list<QgsFeature*>::iterator it=mAddedFeatures.begin();it!=mAddedFeatures.end();++it)
-      {
-      if((*it)->intersects(r))
-      {
-      featureCount++;
-      if (featureCount == 1)
-      {
-      ir = new QgsIdentifyResults(mActions);
-      }
-
-      QListViewItem *featureNode = ir->addNode("foo");
-      featureNode->setText(0, fieldIndex);
-      std::vector < QgsFeatureAttribute > attr = (*it)->attributeMap();
-      for (int i = 0; i < attr.size(); i++)
-      {
-#ifdef QGISDEBUG
-std::cout << attr[i].fieldName() << " == " << fieldIndex << std::endl;
-#endif
-if (attr[i].fieldName().lower() == fieldIndex)
-{
-featureNode->setText(1, attr[i].fieldValue());
-}
-ir->addAttribute(featureNode, attr[i].fieldName(), attr[i].fieldValue());
-} 
-}
-}*/
-
-    ir->setTitle(name() + " - " + QString::number(featureCount) + tr(" features found"));
-if (featureCount == 1) 
-{
-  ir->showAllAttributes();
-  ir->setTitle(name() + " - " + tr(" 1 feature found") );
-}
-if (featureCount == 0)
-{
-  //QMessageBox::information(0, tr("No features found"), tr("No features were found in the active layer at the point you clicked"));
-
-  ir->setTitle(name() + " - " + tr("No features found") );
-  ir->setMessage ( tr("No features found"), tr("No features were found in the active layer at the point you clicked") );
-}
-ir->show();
-} 
-else { // Edit attributes 
-  // TODO: what to do if more features were selected? - nearest?
-  if ( (fet = dataProvider->getNextFeature(true)) ) {
-    // Was already changed?
-    std::map<int,std::map<QString,QString> >::iterator it = mChangedAttributes.find(fet->featureId());
-
-    std::vector < QgsFeatureAttribute > old;
-    if ( it != mChangedAttributes.end() ) {
-      std::map<QString,QString> oldattr = (*it).second;
-      for( std::map<QString,QString>::iterator ait = oldattr.begin(); ait!=oldattr.end(); ++ait ) {
-        old.push_back ( QgsFeatureAttribute ( (*ait).first, (*ait).second ) );
-      }
-    } else {
-      old = fet->attributeMap();
-    }
-    QgsAttributeDialog ad( &old );
-
-    if ( ad.exec()==QDialog::Accepted ) {
-      std::map<QString,QString> attr;
-      // Do this only once rather than each pass through the loop
-      int oldSize = old.size();
-      for(register int i= 0; i < oldSize; ++i) {
-        attr.insert ( std::make_pair( old[i].fieldName(), ad.value(i) ) );
-      }
-      // Remove old if exists
-      it = mChangedAttributes.find(fet->featureId());
-
-      if ( it != mChangedAttributes.end() ) { // found
-        mChangedAttributes.erase ( it );
-      }
-
-      mChangedAttributes.insert ( std::make_pair( fet->featureId(), attr ) );
-      mModified=true;
-    }
-  }
-}
-QApplication::restoreOverrideCursor();
-}
 
 void QgsVectorLayer::table()
 {
