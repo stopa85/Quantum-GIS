@@ -1,0 +1,38 @@
+/***************************************************************************
+    qgsmaptoolidentify.h  -  map tool for identifying features
+    ---------------------
+    begin                : January 2006
+    copyright            : (C) 2006 by Martin Dobias
+    email                : wonder.sk at gmail dot com
+ ***************************************************************************
+ *                                                                         *
+ *   This program is free software; you can redistribute it and/or modify  *
+ *   it under the terms of the GNU General Public License as published by  *
+ *   the Free Software Foundation; either version 2 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *                                                                         *
+ ***************************************************************************/
+/* $Id$ */
+
+#ifndef QGSMAPTOOLIDENTIFY_H
+#define QGSMAPTOOLIDENTIFY_H
+
+#include "qgsmaptool.h"
+
+
+class QgsMapToolIdentify : public QgsMapTool
+{
+  public:
+    QgsMapToolIdentify(QgsMapCanvas* canvas);
+    
+    //! Overridden mouse move event
+    virtual void canvasMoveEvent(QMouseEvent * e);
+  
+    //! Overridden mouse press event
+    virtual void canvasPressEvent(QMouseEvent * e);
+  
+    //! Overridden mouse release event
+    virtual void canvasReleaseEvent(QMouseEvent * e);
+};
+
+#endif
