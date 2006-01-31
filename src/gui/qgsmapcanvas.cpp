@@ -20,7 +20,6 @@ email                : sherman at mrcc.com
 #include <QtGlobal>
 #include <Q3Canvas>
 #include <Q3CanvasRectangle>
-#include <Q3ListView>
 #include <QCursor>
 #include <QKeyEvent>
 #include <QMessageBox>
@@ -37,40 +36,23 @@ email                : sherman at mrcc.com
 #include <QStringList>
 #include <QWheelEvent>
 
-#include <iosfwd>
-#include <cmath>
-#include <cfloat>
-
 #include "qgis.h"
-#include "qgsrect.h"
-#include "qgsattributedialog.h"
-#include "qgsfeature.h"
-#include "qgslegend.h"
-#include "qgslegendlayerfile.h"
-#include "qgslegenditem.h"
-#include "qgsline.h"
-#include "qgslinesymbol.h"
+#include "qgsmapcanvas.h"
 #include "qgsmapimage.h"
 #include "qgsmaplayer.h"
-#include "qgsmaplayerinterface.h"
-#include "qgsmaptopixel.h"
-#include "qgsmarkersymbol.h"
-#include "qgspolygonsymbol.h"
-#include "qgsproject.h"
 #include "qgsmaplayerregistry.h"
+#include "qgsmaptopixel.h"
 #include "qgsmapoverviewcanvas.h"
-#include "qgsmeasure.h"
+#include "qgsproject.h"
 #include "qgsrubberband.h"
 
 // map tools
-#include "qgsmaptool.h"
 #include "qgsmaptoolcapture.h"
+#include "qgsmaptoolidentify.h"
 #include "qgsmaptoolselect.h"
 #include "qgsmaptoolvertexedit.h"
 #include "qgsmaptoolzoom.h"
-
-
-#include "qgsmapcanvas.h"
+#include "qgsmeasure.h"
 
 
 /**  @DEPRECATED: to be deleted, stuff from here should be moved elsewhere */
@@ -78,7 +60,7 @@ class QgsMapCanvas::CanvasProperties
 {
   public:
 
-    CanvasProperties() : panSelectorDown( false ), dragging( false ) { }
+    CanvasProperties() : panSelectorDown( false ) { }
 
     //!Flag to indicate status of mouse button
     bool mouseButtonDown;
@@ -92,11 +74,68 @@ class QgsMapCanvas::CanvasProperties
     //! Flag to indicate the pan selector key is held down by user
     bool panSelectorDown;
 
-    //! Flag to indicate a map canvas drag operation is taking place
-    bool dragging;
-  
 };
 
+
+//! map tool for emitting signal xyClickCoordinates
+class QgsMapToolEmitPoint : public QgsMapTool
+{
+  public:
+    QgsMapToolEmitPoint(QgsMapCanvas* canvas) : QgsMapTool(canvas)
+    {
+      canvas->setCursor(Qt::CrossCursor);
+    }
+    
+    //! Overridden mouse move event
+    virtual void canvasMoveEvent(QMouseEvent * e) { }
+  
+    //! Overridden mouse press event
+    virtual void canvasPressEvent(QMouseEvent * e)
+    {
+      QgsPoint idPoint = mCanvas->getCoordinateTransform()->toMapCoordinates(e->x(), e->y());
+      mCanvas->emitPointEvent(idPoint, e->button());
+    }
+  
+    //! Overridden mouse release event
+    virtual void canvasReleaseEvent(QMouseEvent * e) { }
+};
+
+
+//! map tool for panning map
+class QgsMapToolPan : public QgsMapTool
+{
+  public:
+    QgsMapToolPan(QgsMapCanvas* canvas) : QgsMapTool(canvas), mDragging(FALSE) { }
+    
+    //! Overridden mouse move event
+    virtual void canvasMoveEvent(QMouseEvent * e)
+    {
+      if (e->state() == Qt::LeftButton)
+      {
+        // show the pmCanvas as the user drags the mouse
+        mDragging = TRUE;
+        mCanvas->panAction(e);
+      }
+    }
+  
+    //! Overridden mouse press event
+    virtual void canvasPressEvent(QMouseEvent * e) { }
+  
+    //! Overridden mouse release event
+    virtual void canvasReleaseEvent(QMouseEvent * e)
+    {
+      if (mDragging)
+      {
+        mDragging = TRUE;
+        mCanvas->panActionEnd(e->pos());
+      }
+    }
+    
+  private:
+    
+    //! Flag to indicate a map canvas drag operation is taking place
+    bool mDragging;
+};
 
 
 #define RTTI_MapImage 11111
@@ -295,19 +334,13 @@ void QgsMapCanvas::refresh()
   update();
 } // refresh
 
-// The painter device parameter is optional - if ommitted it will default
-// to the pmCanvas (ie the gui map display). The idea is that you can pass
-// an alternative device such as one that will be used for printing or
-// saving a map view as an image file.
+
 void QgsMapCanvas::render()
 {
   
 #ifdef QGISDEBUG
   QString msg = mFrozen ? "frozen" : "thawed";
-  std::cout << ".............................." << std::endl;
-  std::cout << "...........Rendering.........." << std::endl;
-  std::cout << ".............................." << std::endl;
-  std::cout << name() << " canvas is " << msg.toLocal8Bit().data() << std::endl;
+  std::cout << "QgsMapCanvas::render: canvas is " << msg.toLocal8Bit().data() << std::endl;
 #endif
 
   if ((!mFrozen && mDirty))
@@ -321,11 +354,11 @@ void QgsMapCanvas::render()
       if (mRenderFlag)
         mMapImage->render();
 
-      //make verys sure progress bar arrives at 100%!
+      // make verys sure progress bar arrives at 100%!
       emit setProgress(1,1);
+      
 #ifdef QGISDEBUG
-
-      std::cout << "QgsMapCanvas::render: Done rendering map labels...emitting renderComplete(paint)\n";
+      std::cout << "QgsMapCanvas::render: Done rendering...emitting renderComplete(paint)\n";
 #endif
  
       QPainter *paint = new QPainter();
@@ -637,7 +670,6 @@ void QgsMapCanvas::keyReleaseEvent(QKeyEvent * e)
 #ifdef QGISDEBUG
         std::cout << "Releaseing pan selector" << std::endl;
 #endif
-        // mCanvasProperties->dragging = false;
         mCanvasProperties->panSelectorDown = false;
         panActionEnd(mCanvasProperties->mouseLastXY);
       }
@@ -654,53 +686,32 @@ void QgsMapCanvas::keyReleaseEvent(QKeyEvent * e)
 
 void QgsMapCanvas::mousePressEvent(QMouseEvent * e)
 {
-  //////////////////////////
-  // NEW MAP TOOLS
-  if (mMapTool == QGis::ZoomIn || mMapTool == QGis::ZoomOut ||
-      mMapTool == QGis::CapturePoint || mMapTool == QGis::CaptureLine || mMapTool == QGis::CapturePolygon ||
-      mMapTool == QGis::AddVertex || mMapTool == QGis::MoveVertex || mMapTool == QGis::DeleteVertex ||
-      mMapTool == QGis::MeasureDist || mMapTool == QGis::MeasureArea || mMapTool == QGis::Select)
-  {
+  // call handler of current map tool
+  if (mMapToolPtr)
     mMapToolPtr->canvasPressEvent(e);
-    return;
-  }
   
   if (mCanvasProperties->panSelectorDown)
     return;
 
-  // right button was pressed in zoom tool, return to previous non zoom tool
-  if ( e->button() == Qt::RightButton &&
+  // TODO: right button was pressed in zoom tool, return to previous non zoom tool
+/*  if ( e->button() == Qt::RightButton &&
       ( mMapTool == QGis::ZoomIn || mMapTool == QGis::ZoomOut || mMapTool == QGis::Pan ) )
   {
     //emit stopZoom();
     return;
-  }
+}*/
 
   mCanvasProperties->mouseButtonDown = true;
   mCanvasProperties->rubberStartPoint = e->pos();
-
-  if (mMapTool == QGis::EmitPoint)
-  {
-    QgsPoint  idPoint = getCoordinateTransform()->toMapCoordinates(e->x(), e->y());
-    emit xyClickCoordinates(idPoint);
-    emit xyClickCoordinates(idPoint,e->button());
-  }
 
 } // mousePressEvent
 
 
 void QgsMapCanvas::mouseReleaseEvent(QMouseEvent * e)
 {
-  //////////////////////////
-  // NEW MAP TOOLS
-  if (mMapTool == QGis::ZoomIn || mMapTool == QGis::ZoomOut ||
-      mMapTool == QGis::CapturePoint || mMapTool == QGis::CaptureLine || mMapTool == QGis::CapturePolygon ||
-      mMapTool == QGis::AddVertex || mMapTool == QGis::MoveVertex || mMapTool == QGis::DeleteVertex ||
-      mMapTool == QGis::MeasureDist || mMapTool == QGis::MeasureArea || mMapTool == QGis::Select)
-  {
+  // call handler of current map tool
+  if (mMapToolPtr)
     mMapToolPtr->canvasReleaseEvent(e);
-    return;
-  }
 
   mCanvasProperties->mouseButtonDown = false;
 
@@ -708,64 +719,12 @@ void QgsMapCanvas::mouseReleaseEvent(QMouseEvent * e)
     return;
 
   // right button was pressed in zoom tool, return to previous non zoom tool
-  if ( e->button() == Qt::RightButton &&
+/*  if ( e->button() == Qt::RightButton &&
       ( mMapTool == QGis::ZoomIn || mMapTool == QGis::ZoomOut || mMapTool == QGis::Pan ) )
   {
     emit stopZoom();
     return;
-  }
-
-  if (mCanvasProperties->dragging)
-  {
-    mCanvasProperties->dragging = false;
-
-    if (mMapTool == QGis::Pan)
-    {
-      panActionEnd(e->pos());
-    }
-  }
-  else // not dragging
-  {
-    // map tools that rely on a click not a drag
-    switch (mMapTool)
-    {
-
-      case QGis::Identify:
-        {
-          // call identify method for selected layer
-
-          if (mCurrentLayer)
-          {
-            // load identify radius from settings
-            QSettings settings;
-            int identifyValue = settings.readNumEntry("/qgis/map/identifyRadius", QGis::DEFAULT_IDENTIFY_RADIUS);
-
-            // create the search rectangle
-            double searchRadius = extent().width() * (identifyValue/1000.0);
-            QgsRect * search = new QgsRect();
-            // convert screen coordinates to map coordinates
-            QgsPoint idPoint = getCoordinateTransform()->toMapCoordinates(e->x(), e->y());
-            search->setXmin(idPoint.x() - searchRadius);
-            search->setXmax(idPoint.x() + searchRadius);
-            search->setYmin(idPoint.y() - searchRadius);
-            search->setYmax(idPoint.y() + searchRadius);
-
-            mCurrentLayer->identify(search);
-
-            delete search;
-          }
-          else
-          {
-            QMessageBox::warning(this,
-                tr("No active layer"),
-                tr("To identify features, you must choose an layer active by clicking on its name in the legend"));
-          }
-        }
-        break;
-
-    } // switch mMapTool
-
-  } // if dragging / else
+}*/
 
 } // mouseReleaseEvent
 
@@ -804,16 +763,9 @@ void QgsMapCanvas::zoomWithCenter(int x, int y, bool zoomIn)
 
 void QgsMapCanvas::mouseMoveEvent(QMouseEvent * e)
 {
-  //////////////////////////
-  // NEW MAP TOOLS
-  if (mMapTool == QGis::ZoomIn || mMapTool == QGis::ZoomOut ||
-      mMapTool == QGis::CapturePoint || mMapTool == QGis::CaptureLine || mMapTool == QGis::CapturePolygon ||
-      mMapTool == QGis::AddVertex || mMapTool == QGis::MoveVertex || mMapTool == QGis::DeleteVertex ||
-      mMapTool == QGis::MeasureDist || mMapTool == QGis::MeasureArea || mMapTool == QGis::Select)
-  {
+  // call handler of current map tool
+  if (mMapToolPtr)
     mMapToolPtr->canvasMoveEvent(e);
-    return;
-  }
   
   mCanvasProperties->mouseLastXY = e->pos();
 
@@ -821,15 +773,6 @@ void QgsMapCanvas::mouseMoveEvent(QMouseEvent * e)
   {
     panAction(e);
   }
-  else if (e->state() == Qt::LeftButton)
-  {
-    if (mMapTool == QGis::Pan)
-    {
-        // show the pmCanvas as the user drags the mouse
-        mCanvasProperties->dragging = true;
-        panAction(e);
-    }
-  } // if left button
 
   // show x y on status bar
   QPoint xy = e->pos();
@@ -881,9 +824,24 @@ void QgsMapCanvas::setMapTool(int tool)
     bool measureArea = (tool == QGis::MeasureArea);
     mMapToolPtr = new QgsMeasure(measureArea, this);
   }
-
-  if (tool == QGis::EmitPoint)
-    setCursor(Qt::CrossCursor);
+  else if (tool == QGis::Identify)
+  {
+    mMapToolPtr = new QgsMapToolIdentify(this);
+  }
+  else if (tool == QGis::EmitPoint)
+  {
+    mMapToolPtr = new QgsMapToolEmitPoint(this);
+  }
+  else if (tool == QGis::Pan)
+  {
+    mMapToolPtr = new QgsMapToolPan(this);
+  } 
+  else
+  {
+#ifdef QGISDEBUG
+    std::cout << "Unknown map tool!" << std::endl;
+#endif
+  }
 
 } // setMapTool
 
@@ -1087,4 +1045,11 @@ void QgsMapCanvas::panAction(QMouseEvent * e)
   
   // update canvas
   update();
+}
+
+
+void QgsMapCanvas::emitPointEvent(QgsPoint& point, Qt::ButtonState state)
+{
+  emit xyClickCoordinates(point);
+  emit xyClickCoordinates(point,state);
 }

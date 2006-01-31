@@ -185,7 +185,18 @@ class QgsMapCanvas : public Q3CanvasView
     //! used to determine if anti-aliasing is enabled or not
     void enableAntiAliasing(bool theFlag);
     
-public slots:
+    //! called from QgsMapToolEmitPoint to emit appopriate signal (temporary, should be sorted out)
+    void emitPointEvent(QgsPoint& point, Qt::ButtonState state);
+
+    // following 2 methods should be moved elsewhere or changed to private
+    // currently used by pan map tool
+    //! Ends pan action and redraws the canvas.
+    void panActionEnd(QPoint releasePoint);
+    //! Called when mouse is moving and pan is activated
+    void panAction(QMouseEvent * event);
+
+  
+  public slots:
 
     /**Sets dirty=true and calls render()*/
     void refresh();
@@ -319,12 +330,6 @@ private:
 
     //! Zooms to a given center and scale 
     void zoomByScale(int x, int y, double scaleFactor);
-
-    //! Ends pan action and redraws the canvas.
-    void panActionEnd(QPoint releasePoint);
-
-    //! Called when mouse is moving and pan is activated
-    void panAction(QMouseEvent * event);
 
     //! determines whether user has requested to suppress rendering
     bool mRenderFlag;
