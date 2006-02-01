@@ -82,6 +82,7 @@ libqgis_guiHEADERS =							\
 		qgscsexception.h				\
 		qgscoordinatetransform.h	\
 		qgscustomprojectiondialog.h			\
+		qgscursors.h			\
 		qgsdelattrdialog.h				\
 		qgsencodingfiledialog.h				\
 		qgsfeature.h						\
@@ -106,7 +107,9 @@ libqgis_guiHEADERS =							\
 		qgsmapserverexport.h				\
 		qgsmaptool.h						\
 		qgsmaptoolcapture.h				\
+		qgsmaptoolemitpoint.h			\
 		qgsmaptoolidentify.h			\
+		qgsmaptoolpan.h					\
 		qgsmaptoolselect.h				\
 		qgsmaptoolvertexedit.h			\
 		qgsmaptoolzoom.h					\
@@ -203,6 +206,7 @@ libqgis_gui_la_SOURCES =						\
 		qgscontcoldialog.cpp		\
 		qgscoordinatetransform.cpp			\
 		qgscontinuouscolrenderer.cpp		\
+		qgscursors.cpp		\
 		qgscustomprojectiondialog.cpp			\
 		qgsdelattrdialog.cpp		\
 		qgsencodingfiledialog.cpp	\
@@ -228,7 +232,9 @@ libqgis_gui_la_SOURCES =						\
 		qgsmapserverexport.cpp		\
 		qgsmaptool.cpp			\
 		qgsmaptoolcapture.cpp			\
+		qgsmaptoolemitpoint.cpp			\
 		qgsmaptoolidentify.cpp		\
+		qgsmaptoolpan.cpp				\
 		qgsmaptoolselect.cpp			\
 		qgsmaptoolvertexedit.cpp		\
 		qgsmaptoolzoom.cpp			\

@@ -21,8 +21,11 @@
 #include "qgsvectordataprovider.h"
 #include "qgsmaptopixel.h"
 #include "qgsproject.h"
+#include "qgscursors.h"
 #include <QMessageBox>
 #include <QPainter>
+#include <QPixmap>
+#include <QCursor>
 
 class QgsMapCanvasCross : public QgsMapCanvasItem
 {
@@ -63,15 +66,12 @@ class QgsMapCanvasCross : public QgsMapCanvasItem
 };
 
 
-QgsMapToolVertexEdit::QgsMapToolVertexEdit(QgsMapCanvas* canvas, QGis::MapTools tool)
-  : QgsMapTool(canvas)
+QgsMapToolVertexEdit::QgsMapToolVertexEdit(QgsMapCanvas* canvas, enum Tool tool)
+  : QgsMapTool(canvas), mTool(tool)
 {
-  if (tool == QGis::AddVertex)
-    mTool = AddVertex;
-  else if (tool == QGis::MoveVertex)
-    mTool = MoveVertex;
-  else if (tool == QGis::DeleteVertex)
-    mTool = DeleteVertex;
+  // TODO - select a real cursor
+  QPixmap mySelectQPixmap = QPixmap((const char **) capture_point_cursor);
+  mCanvas->setCursor(QCursor(mySelectQPixmap, 8, 8));
 }
 
 

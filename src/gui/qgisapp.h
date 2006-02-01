@@ -526,16 +526,12 @@ private:
   // use instance() now QgsMapLayerRegistry *mLayerRegistry;
   //! Table of contents (legend) for the map
   QgsLegend *mMapLegend;
-  //! Cursor for the map
-  QCursor *mMapCursor;
   //! Cursor for the overview map
   QCursor *mOverviewMapCursor;
   //! scale factor
   double mScaleFactor;
   //! Current map window extent in real-world coordinates
   QRect *mMapWindow;
-  //! Current map tool
-  int mMapTool;
   //! The previously selected non zoom map tool.
   int mPreviousNonZoomMapTool;
   //QCursor *mCursorZoomIn; //doesnt seem to be used anymore (TS)

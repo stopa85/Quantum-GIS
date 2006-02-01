@@ -1,6 +1,6 @@
 /***************************************************************************
-    qgsmaptool.h  -  base class for map canvas tools
-    ----------------------
+    qgsmaptoolpan.h  -  map tool for panning in map canvas
+    ---------------------
     begin                : January 2006
     copyright            : (C) 2006 by Martin Dobias
     email                : wonder.sk at gmail dot com
@@ -14,32 +14,36 @@
  ***************************************************************************/
 /* $Id$ */
 
+#ifndef QGSMAPTOOLPAN_H
+#define QGSMAPTOOLPAN_H
+
 #include "qgsmaptool.h"
-#include "qgsmapcanvas.h"
-#include "qgsmaptopixel.h"
-#include <QCursor>
+class QgsMapCanvas;
 
+#define MapTool_Pan  "pan"
 
-QgsMapTool::QgsMapTool(QgsMapCanvas* canvas)
-  : mCanvas(canvas), mCursor(NULL)
+class QgsMapToolPan : public QgsMapTool
 {
-}
+  public:
+    //! constructor
+    QgsMapToolPan(QgsMapCanvas* canvas);
+    
+    //! Overridden mouse move event
+    virtual void canvasMoveEvent(QMouseEvent * e);
+  
+    //! Overridden mouse press event
+    virtual void canvasPressEvent(QMouseEvent * e);
+  
+    //! Overridden mouse release event
+    virtual void canvasReleaseEvent(QMouseEvent * e);
+    
+    virtual const char* toolName() { return MapTool_Pan; }
+    
+  private:
+    
+    //! Flag to indicate a map canvas drag operation is taking place
+    bool mDragging;
+    
+};
 
-
-QgsMapTool::~QgsMapTool()
-{
-}
-
-
-QgsPoint QgsMapTool::toMapCoords(const QPoint& point)
-{
-  return mCanvas->getCoordinateTransform()->toMapCoordinates(point);
-}
-
-
-QPoint QgsMapTool::toCanvasCoords(const QgsPoint& point)
-{
-  double x = point.x(), y = point.y();
-  mCanvas->getCoordinateTransform()->transformInPlace(x,y);
-  return QPoint((int)(x+0.5), (int)(y+0.5)); // round the values
-}
+#endif

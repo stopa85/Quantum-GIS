@@ -1,6 +1,6 @@
 /***************************************************************************
-    qgsmaptool.h  -  base class for map canvas tools
-    ----------------------
+    qgsmaptoolemitpoint.h  -  map tool for signaling click on map canvas
+    ---------------------
     begin                : January 2006
     copyright            : (C) 2006 by Martin Dobias
     email                : wonder.sk at gmail dot com
@@ -14,32 +14,31 @@
  ***************************************************************************/
 /* $Id$ */
 
+#ifndef QGSMAPTOOLEMITPOINT_H
+#define QGSMAPTOOLEMITPOINT_H
+
 #include "qgsmaptool.h"
-#include "qgsmapcanvas.h"
-#include "qgsmaptopixel.h"
-#include <QCursor>
+
+#define MapTool_EmitPoint  "emit point"
+
+class QgsMapCanvas;
 
 
-QgsMapTool::QgsMapTool(QgsMapCanvas* canvas)
-  : mCanvas(canvas), mCursor(NULL)
+class QgsMapToolEmitPoint : public QgsMapTool
 {
-}
+  public:
+    QgsMapToolEmitPoint(QgsMapCanvas* canvas);
+    
+    //! Overridden mouse move event
+    virtual void canvasMoveEvent(QMouseEvent * e);
+  
+    //! Overridden mouse press event
+    virtual void canvasPressEvent(QMouseEvent * e);
+  
+    //! Overridden mouse release event
+    virtual void canvasReleaseEvent(QMouseEvent * e);
 
+    virtual const char* toolName() { return MapTool_EmitPoint; }
+};
 
-QgsMapTool::~QgsMapTool()
-{
-}
-
-
-QgsPoint QgsMapTool::toMapCoords(const QPoint& point)
-{
-  return mCanvas->getCoordinateTransform()->toMapCoordinates(point);
-}
-
-
-QPoint QgsMapTool::toCanvasCoords(const QgsPoint& point)
-{
-  double x = point.x(), y = point.y();
-  mCanvas->getCoordinateTransform()->transformInPlace(x,y);
-  return QPoint((int)(x+0.5), (int)(y+0.5)); // round the values
-}
+#endif

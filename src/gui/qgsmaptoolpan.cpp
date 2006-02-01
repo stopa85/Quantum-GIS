@@ -1,6 +1,6 @@
 /***************************************************************************
-    qgsmaptool.h  -  base class for map canvas tools
-    ----------------------
+    qgsmaptoolpan.h  -  map tool for panning in map canvas
+    ---------------------
     begin                : January 2006
     copyright            : (C) 2006 by Martin Dobias
     email                : wonder.sk at gmail dot com
@@ -14,32 +14,44 @@
  ***************************************************************************/
 /* $Id$ */
 
-#include "qgsmaptool.h"
+#include "qgsmaptoolpan.h"
 #include "qgsmapcanvas.h"
-#include "qgsmaptopixel.h"
+#include "qgscursors.h"
+#include <QBitmap>
 #include <QCursor>
 
 
-QgsMapTool::QgsMapTool(QgsMapCanvas* canvas)
-  : mCanvas(canvas), mCursor(NULL)
+QgsMapToolPan::QgsMapToolPan(QgsMapCanvas* canvas)
+  : QgsMapTool(canvas), mDragging(FALSE)
 {
+  // set cursor
+  QBitmap panBmp(16, 16, pan_bits, true);
+  QBitmap panBmpMask(16, 16, pan_mask_bits, true);
+  mCanvas->setCursor(QCursor(panBmp, panBmpMask, 5, 5));
 }
 
-
-QgsMapTool::~QgsMapTool()
+    
+void QgsMapToolPan::canvasMoveEvent(QMouseEvent * e)
+{
+  if (e->state() == Qt::LeftButton)
+  {
+    // show the pmCanvas as the user drags the mouse
+    mDragging = TRUE;
+    mCanvas->panAction(e);
+  }
+}
+  
+    
+void QgsMapToolPan::canvasPressEvent(QMouseEvent * e)
 {
 }
-
-
-QgsPoint QgsMapTool::toMapCoords(const QPoint& point)
+  
+    
+void QgsMapToolPan::canvasReleaseEvent(QMouseEvent * e)
 {
-  return mCanvas->getCoordinateTransform()->toMapCoordinates(point);
-}
-
-
-QPoint QgsMapTool::toCanvasCoords(const QgsPoint& point)
-{
-  double x = point.x(), y = point.y();
-  mCanvas->getCoordinateTransform()->transformInPlace(x,y);
-  return QPoint((int)(x+0.5), (int)(y+0.5)); // round the values
+  if (mDragging)
+  {
+    mDragging = TRUE;
+    mCanvas->panActionEnd(e->pos());
+  }
 }

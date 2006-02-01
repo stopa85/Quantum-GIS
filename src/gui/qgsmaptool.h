@@ -17,16 +17,22 @@
 #ifndef QGSMAPTOOL_H
 #define QGSMAPTOOL_H
 
+// TODO: moznost enabled / disabled - ak je napr. nevhodny typ layeru
+// (a vtedy sa aj kurzor docasne nastavi ten original)
 
 class QgsMapCanvas;
 class QMouseEvent;
 class QgsPoint;
 class QPoint;
+class QCursor;
+class QAction;
 
 class QgsMapTool
 {
   public:
-    virtual ~QgsMapTool() {}
+    
+    //! virtual destructor
+    virtual ~QgsMapTool();
     
     //! Mouse move event for overriding
     virtual void canvasMoveEvent(QMouseEvent * e) = 0;
@@ -40,10 +46,16 @@ class QgsMapTool
     //! Called when rendering has finished
     virtual void renderComplete() {}
     
+    void setAction(QAction* action) { mAction = action; }
+    
+    QAction* action() { return mAction; }
+    
+    virtual const char* toolName() { return "generic tool"; }
+    
   protected:
 
     //! constructor takes map canvas as a parameter
-    QgsMapTool(QgsMapCanvas* canvas) : mCanvas(canvas) {}
+    QgsMapTool(QgsMapCanvas* canvas);
         
     //! transformation from screen coordinates to map coordinates
     QgsPoint toMapCoords(const QPoint& point);
@@ -53,6 +65,13 @@ class QgsMapTool
     
     //! pointer to map canvas
     QgsMapCanvas* mCanvas;
+    
+    //! cursor used in map tool
+    QCursor* mCursor;
+    
+    //! optionally map tool can have pointer to action
+    //! which will be used to set that action as active
+    QAction* mAction;
 };
 
 #endif

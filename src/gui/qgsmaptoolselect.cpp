@@ -19,7 +19,7 @@
 #include "qgsmaptopixel.h"
 #include "qgsmapimage.h"
 #include "qgsmaplayer.h"
-
+#include "qgscursors.h"
 #include <QMessageBox>
 #include <QMouseEvent>
 #include <QRubberBand>
@@ -29,6 +29,8 @@
 QgsMapToolSelect::QgsMapToolSelect(QgsMapCanvas* canvas)
   : QgsMapTool(canvas), mDragging(false)
 {
+  QPixmap mySelectQPixmap = QPixmap((const char **) select_cursor);
+  mCanvas->setCursor(QCursor(mySelectQPixmap, 1, 1));
 }
 
 

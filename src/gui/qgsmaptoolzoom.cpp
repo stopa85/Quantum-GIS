@@ -18,28 +18,23 @@
 #include "qgsmapcanvas.h"
 #include "qgsmaptopixel.h"
 #include "qgsmapimage.h"
+#include "qgscursors.h"
 
 #include <QMouseEvent>
 #include <QRubberBand>
 #include <QRect>
+#include <QCursor>
+#include <QPixmap>
 
-/*
-  // erase the rubber band box
-  paint.begin(this);
-  paint.setPen(pen);
-  paint.setRasterOp(Qt::XorROP);
-  paint.drawRect(mCanvasProperties->zoomBox);
-  paint.end();
-*/
 
 QgsMapToolZoom::QgsMapToolZoom(QgsMapCanvas* canvas, bool zoomOut)
   : QgsMapTool(canvas), mZoomOut(zoomOut), mDragging(false)
 {
+  // set the cursor
+  QPixmap myZoomQPixmap = QPixmap((const char **) (zoomOut ? zoom_out : zoom_in));  
+  mCanvas->setCursor(QCursor(myZoomQPixmap, 7, 7));
 }
 
-QgsMapToolZoom::~QgsMapToolZoom()
-{
-}
 
 void QgsMapToolZoom::canvasMoveEvent(QMouseEvent * e)
 {

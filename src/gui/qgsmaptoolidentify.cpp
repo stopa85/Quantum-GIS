@@ -25,12 +25,19 @@
 #include "qgsfeature.h"
 #include "qgsfeatureattribute.h"
 #include "qgsattributedialog.h"
+#include "qgscursors.h"
 #include <QSettings>
 #include <QMessageBox>
+#include <QCursor>
+#include <QPixmap>
+
 
 QgsMapToolIdentify::QgsMapToolIdentify(QgsMapCanvas* canvas)
   : QgsMapTool(canvas), mResults(NULL)
 {
+  // set cursor
+  QPixmap myIdentifyQPixmap = QPixmap((const char **) identify_cursor);
+  mCanvas->setCursor(QCursor(myIdentifyQPixmap, 1, 1));
 }
     
 QgsMapToolIdentify::~QgsMapToolIdentify()

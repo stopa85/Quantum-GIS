@@ -239,7 +239,7 @@ void QgsMapImage::render()
 #ifdef QGISDEBUG
     std::cout << "QgsMapImage::render: Rendering layer " << ml->name().toLocal8Bit().data() << '\n'
       << "  Layer minscale " << ml->minScale() 
-      << ", maxscale " << ml->maxScale() << '.\n' 
+      << ", maxscale " << ml->maxScale() << '\n' 
       << "  Scale dep. visibility enabled? " 
       << ml->scaleBasedVisibility() << '\n'
       << "  Input extent: " << ml->extent().stringRep().toLocal8Bit().data() 
