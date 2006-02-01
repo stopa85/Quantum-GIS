@@ -45,29 +45,9 @@ public:
 
   // Enumerations
   //
-  // Maptool enumeration
-  enum MapTools
-  {
-    NoTool,
-    ZoomIn,
-    ZoomOut,
-    Pan,
-    Distance,
-    Identify,
-    Table,
-    Select,
-    CapturePoint,
-    CaptureLine,
-    CapturePolygon,
-    EmitPoint,
-    MeasureDist,
-    MeasureArea,
-    AddVertex,
-    MoveVertex,
-    DeleteVertex
-  };
+
   //! Used for symbology operations
-  // Featuure types
+  // Feature types
   enum WKBTYPE
   {
     WKBPoint = 1,

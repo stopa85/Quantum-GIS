@@ -19,7 +19,8 @@
 
 #include "qgsmaptool.h"
 #include "qgspoint.h"
-#include "qgis.h"
+
+#define MapTool_Capture  "capture"
 
 class QgsRubberBand;
 
@@ -29,7 +30,16 @@ class QgsRubberBand;
 class QgsMapToolCapture : public QgsMapTool
 {
   public:
-    QgsMapToolCapture(QgsMapCanvas* canvas, enum QGis::MapTools tool);
+  
+    enum CaptureTool
+    {
+      CapturePoint,
+      CaptureLine,
+      CapturePolygon
+    };
+
+    //! constructor
+    QgsMapToolCapture(QgsMapCanvas* canvas, enum CaptureTool tool);
 
     //! Overridden mouse move event
     virtual void canvasMoveEvent(QMouseEvent * e);
@@ -43,6 +53,8 @@ class QgsMapToolCapture : public QgsMapTool
     //! Resize rubber band
     virtual void renderComplete();
     
+    virtual const char* toolName() { return MapTool_Capture; }
+  
   protected:
     
     /** Helper function to inverse project a point if projections
@@ -51,13 +63,8 @@ class QgsMapToolCapture : public QgsMapTool
     QgsPoint maybeInversePoint(QgsPoint point, const char whenmsg[]);
 
     /** which capturing tool is being used */
-    enum CaptureTool
-    {
-      CapturePoint,
-      CaptureLine,
-      CapturePolygon
-    } mTool;
-
+    enum CaptureTool mTool;
+    
     /** Flag to indicate a map canvas capture operation is taking place */
     bool mCapturing;
     

@@ -18,16 +18,26 @@
 #define QGSMAPTOOLVERTEXEDIT_H
 
 #include "qgsmaptool.h"
-#include "qgis.h"
 #include "qgsgeometry.h"
 
 class QgsRubberBand;
 class QgsMapCanvasCross;
 
+#define MapTool_VertexEdit "vertex edit"
+
 class QgsMapToolVertexEdit : public QgsMapTool
 {
   public:
-    QgsMapToolVertexEdit(QgsMapCanvas* canvas, enum QGis::MapTools tool);
+  
+    enum Tool
+    {
+      AddVertex,
+      MoveVertex,
+      DeleteVertex
+    };
+  
+    //! constructor
+    QgsMapToolVertexEdit(QgsMapCanvas* canvas, enum Tool tool);
     
     //! Overridden mouse move event
     virtual void canvasMoveEvent(QMouseEvent * e);
@@ -38,6 +48,8 @@ class QgsMapToolVertexEdit : public QgsMapTool
     //! Overridden mouse release event
     virtual void canvasReleaseEvent(QMouseEvent * e);
 
+    virtual const char* toolName() { return MapTool_VertexEdit; }
+    
   private:
     
     //! create instance of rubber band
@@ -47,12 +59,7 @@ class QgsMapToolVertexEdit : public QgsMapTool
     double tolerance();
     
     //! current vertex edit tool
-    enum Tool
-    {
-      AddVertex,
-      MoveVertex,
-      DeleteVertex
-    } mTool;
+    enum Tool mTool;
     
     bool snapVertexWithContext(QgsPoint& point);
     

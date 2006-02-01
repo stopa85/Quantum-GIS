@@ -20,15 +20,16 @@
 #include "qgsmaptool.h"
 #include <QRect>
 
+#define MapTool_Zoom "zoom"
+
 class QRubberBand;
 
 class QgsMapToolZoom : public QgsMapTool
 {
   public:
+    //! constructor
     QgsMapToolZoom(QgsMapCanvas* canvas, bool zoomOut);
-    
-    ~QgsMapToolZoom();
-      
+          
     //! Overridden mouse move event
     virtual void canvasMoveEvent(QMouseEvent * e);
   
@@ -38,6 +39,8 @@ class QgsMapToolZoom : public QgsMapTool
     //! Overridden mouse release event
     virtual void canvasReleaseEvent(QMouseEvent * e);
 
+    virtual const char* toolName() { return MapTool_Zoom; }
+    
   protected:
     //! stores actual zoom rect
     QRect mZoomRect;

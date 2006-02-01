@@ -20,6 +20,8 @@
 #include "qgsmaptool.h"
 #include <QRect>
 
+#define MapTool_Select  "select"
+
 class QRubberBand;
 class QgsMapCanvas;
 
@@ -38,6 +40,8 @@ class QgsMapToolSelect : public QgsMapTool
     //! Overridden mouse release event
     virtual void canvasReleaseEvent(QMouseEvent * e);    
       
+    virtual const char* toolName() { return MapTool_Select; }
+    
   protected:
     
     //! stores actual select rect

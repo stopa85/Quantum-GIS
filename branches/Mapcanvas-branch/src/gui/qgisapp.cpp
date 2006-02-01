@@ -138,6 +138,19 @@
 #include <memory>
 #include <vector>
 
+//
+// Map tools
+//
+#include "qgsmaptoolcapture.h"
+#include "qgsmaptoolemitpoint.h"
+#include "qgsmaptoolidentify.h"
+#include "qgsmaptoolselect.h"
+#include "qgsmaptoolpan.h"
+#include "qgsmaptoolvertexedit.h"
+#include "qgsmaptoolzoom.h"
+#include "qgsmeasure.h"
+
+
 //#include "qgssisydialog.h"
 // XXX deprecated?? #include "qgslegenditem.h"
 
@@ -221,7 +234,6 @@ static void setTitleBarText_( QWidget & qgisApp )
 // constructor starts here
   QgisApp::QgisApp(QSplashScreen *splash, QWidget * parent, Qt::WFlags fl)
 : QMainWindow(parent,fl),
-  mMapTool(QGis::NoTool),
   mSplash(splash)
 {
 
@@ -265,7 +277,6 @@ static void setTitleBarText_( QWidget & qgisApp )
   QString caption = tr("Quantum GIS - ");
   caption += QString("%1 ('%2')").arg(QGis::qgisVersion).arg(QGis::qgisReleaseName);
   setCaption(caption);
-  mMapCursor = 0;
   // create the interfce
   mQgisInterface = new QgisIface(this);
 
@@ -1065,7 +1076,6 @@ void QgisApp::setupConnections()
   connect(mMapCanvas, SIGNAL(scaleChanged(QString)), this, SLOT(showScale(QString)));
   connect(mMapCanvas, SIGNAL(scaleChanged(QString)), this, SLOT(updateMouseCoordinatePrecision()));
   
-  connect(mMapCanvas, SIGNAL(stopZoom()), this, SLOT(stopZoom()));
   connect(mMapLegend, SIGNAL(currentChanged(Q3ListViewItem *)), this, SLOT(currentLayerChanged(Q3ListViewItem *)));
 
   connect(mRenderSuppressionCBox, SIGNAL(toggled(bool )), mMapCanvas, SLOT(setRenderFlag(bool)));
@@ -3291,33 +3301,11 @@ void QgisApp::exportMapServer()
 }
 void QgisApp::zoomIn()
 {
-  /*  QWMatrix m = mMapCanvas->worldMatrix();
-      m.scale( 2.0, 2.0 );
-      mMapCanvas->setWorldMatrix( m );
-      */
   qDebug ("Setting map tool to zoomIn");
-  if ( mMapCanvas->mapTool() != QGis::ZoomIn && mMapCanvas->mapTool() != QGis::ZoomOut
-      && mMapCanvas->mapTool() != QGis::Pan )
-  {
-    mPreviousNonZoomMapTool = mMapCanvas->mapTool();
-  }
-
-  mMapTool = QGis::ZoomIn;
-  mMapCanvas->setMapTool(mMapTool);
-  // set the cursor
-
-
-  QPixmap myZoomInQPixmap = QPixmap((const char **) zoom_in);
-  delete mMapCursor;
-  mMapCursor = new QCursor(myZoomInQPixmap, 7, 7);
-  mMapCanvas->setCursor(*mMapCursor);
-  // scale the extent
-  /* QgsRect ext = mMapCanvas->extent();
-     ext.scale(0.5);
-     mMapCanvas->setExtent(ext);
-     statusBar()->message(ext.stringRep(2));
-     mMapCanvas->clear();
-     mMapCanvas->render(); */
+  
+  QgsMapTool* tool = new QgsMapToolZoom(mMapCanvas, FALSE /* zoomOut */);
+  tool->setAction(mActionZoomIn);
+  mMapCanvas->setMapTool(tool);
 
   // notify the project we've made a change
   QgsProject::instance()->dirty(true);
@@ -3326,24 +3314,10 @@ void QgisApp::zoomIn()
 
 void QgisApp::zoomOut()
 {
-  if ( mMapCanvas->mapTool() != QGis::ZoomIn && mMapCanvas->mapTool() != QGis::ZoomOut
-      && mMapCanvas->mapTool() != QGis::Pan )
-  {
-    mPreviousNonZoomMapTool = mMapCanvas->mapTool();
-  }
+  QgsMapTool* tool = new QgsMapToolZoom(mMapCanvas, TRUE /* zoomOut */);
+  tool->setAction(mActionZoomOut);
+  mMapCanvas->setMapTool(tool);
 
-  mMapTool = QGis::ZoomOut;
-  mMapCanvas->setMapTool(mMapTool);
-
-  QPixmap myZoomOutQPixmap = QPixmap((const char **) zoom_out);
-  delete mMapCursor;
-  mMapCursor = new QCursor(myZoomOutQPixmap, 7, 7);
-  mMapCanvas->setCursor(*mMapCursor);
-
-  /*    QWMatrix m = mMapCanvas->worldMatrix();
-        m.scale( 0.5, 0.5 );
-        mMapCanvas->setWorldMatrix( m );
-        */
   // notify the project we've made a change
   QgsProject::instance()->dirty(true);
 }
@@ -3358,22 +3332,13 @@ void QgisApp::zoomToSelected()
 
 void QgisApp::pan()
 {
-  if ( mMapCanvas->mapTool() != QGis::ZoomIn && mMapCanvas->mapTool() != QGis::ZoomOut
-      && mMapCanvas->mapTool() != QGis::Pan )
-  {
-    mPreviousNonZoomMapTool = mMapCanvas->mapTool();
-  }
+  QgsMapTool* tool = new QgsMapToolPan(mMapCanvas);
+  tool->setAction(mActionPan);
+  mMapCanvas->setMapTool(tool);
 
-  mMapTool = QGis::Pan;
-  mMapCanvas->setMapTool(mMapTool);
-  QBitmap panBmp(16, 16, pan_bits, true);
-  QBitmap panBmpMask(16, 16, pan_mask_bits, true);
-  delete mMapCursor;
-  mMapCursor = new QCursor(panBmp, panBmpMask, 5, 5);
-  mMapCanvas->setCursor(*mMapCursor);
   // notify the project we've made a change
   QgsProject::instance()->dirty(true);
-
+  
 }
 
 void QgisApp::zoomFull()
@@ -3394,39 +3359,29 @@ void QgisApp::zoomPrevious()
 
 void QgisApp::identify()
 {
-  mMapTool = QGis::Identify;
-  mMapCanvas->setMapTool(mMapTool);
-
-  QPixmap myIdentifyQPixmap = QPixmap((const char **) identify_cursor);
-  delete mMapCursor;
-  mMapCursor = new QCursor(myIdentifyQPixmap, 1, 1);
-  mMapCanvas->setCursor(*mMapCursor);
-  mActionIdentify->setOn(true);
+  QgsMapTool* tool = new QgsMapToolIdentify(mMapCanvas);
+  tool->setAction(mActionIdentify);
+  mMapCanvas->setMapTool(tool);
 }
 
 void QgisApp::measure()
 {
-  mMapTool = QGis::MeasureDist;
-  mMapCanvas->setMapTool(mMapTool);
-
-  //QPixmap pm = QPixmap((const char **)  capture_point_cursor);
-  //delete mMapCursor;
-  //mMapCursor = new QCursor(pm, 8, 8);
-  mMapCanvas->setCursor( Qt::CrossCursor );
-  mActionMeasure->setOn(true);
+  QgsMapTool* tool = new QgsMeasure(FALSE /* area */, mMapCanvas);
+  tool->setAction(mActionMeasure);
+  mMapCanvas->setMapTool(tool);
 }
 
 void QgisApp::measureArea()
 {
-  mMapTool = QGis::MeasureArea;
-  mMapCanvas->setMapTool(mMapTool);
-
-  mMapCanvas->setCursor( Qt::CrossCursor );
-  mActionMeasureArea->setOn(true);
+  QgsMapTool* tool = new QgsMeasure(TRUE /* area */, mMapCanvas);
+  tool->setAction(mActionMeasureArea);
+  mMapCanvas->setMapTool(tool);
 }
 
 void QgisApp::stopZoom() 
 {
+  // TODO: doriesit
+  /*
   mActionZoomIn->setOn(false);
   mActionZoomIn->setOn(false);
   mActionPan->setOn(false);
@@ -3456,7 +3411,7 @@ void QgisApp::stopZoom()
     case QGis::MeasureArea:
       measureArea();
       break;
-  }
+  }*/
 }
 
 
@@ -3506,61 +3461,34 @@ void QgisApp::deleteSelected()
 
 void QgisApp::capturePoint()
 {
-  {
-    // set current map tool to select
-    mMapCanvas->setMapTool(QGis::CapturePoint);
-    QPixmap mySelectQPixmap = QPixmap((const char **) capture_point_cursor);
-    delete mMapCursor;
-    mMapCursor = new QCursor(mySelectQPixmap, 8, 8);
-    mMapCanvas->setCursor(*mMapCursor);
-
-    mActionCapturePoint->setOn(true);
-  }
+  // set current map tool to select
+  QgsMapTool* t = new QgsMapToolCapture(mMapCanvas, QgsMapToolCapture::CapturePoint);
+  t->setAction(mActionCapturePoint);
+  mMapCanvas->setMapTool(t);
 }
 
 void QgisApp::captureLine()
 {
-  {
-    mMapCanvas->setMapTool(QGis::CaptureLine);
-
-    QPixmap mySelectQPixmap = QPixmap((const char **) capture_point_cursor);
-    delete mMapCursor;
-    mMapCursor = new QCursor(mySelectQPixmap, 8, 8);
-    mMapCanvas->setCursor(*mMapCursor);
-
-    mActionCaptureLine->setOn(true);
-  }
+  QgsMapTool* t = new QgsMapToolCapture(mMapCanvas, QgsMapToolCapture::CapturePoint);
+  t->setAction(mActionCaptureLine);
+  mMapCanvas->setMapTool(t);
 }
 
 void QgisApp::capturePolygon()
 {
-  {
-    mMapCanvas->setMapTool(QGis::CapturePolygon);
-
-    QPixmap mySelectQPixmap = QPixmap((const char **) capture_point_cursor);
-    delete mMapCursor;
-    mMapCursor = new QCursor(mySelectQPixmap, 8, 8);
-    mMapCanvas->setCursor(*mMapCursor);
-
-    mActionCapturePolygon->setOn(true);
-  }
+  QgsMapTool* t = new QgsMapToolCapture(mMapCanvas, QgsMapToolCapture::CapturePoint);
+  t->setAction(mActionCapturePolygon);
+  mMapCanvas->setMapTool(t);
 }
 
 void QgisApp::select()
 {
-
-  // set current map tool to select
-  mMapCanvas->setMapTool(QGis::Select);
-
-  QPixmap mySelectQPixmap = QPixmap((const char **) select_cursor);
-  delete mMapCursor;
-  mMapCursor = new QCursor(mySelectQPixmap, 1, 1);
-  mMapCanvas->setCursor(*mMapCursor);
-  mActionSelect->setOn(true);
+  QgsMapTool* t = new QgsMapToolCapture(mMapCanvas, QgsMapToolCapture::CapturePoint);
+  t->setAction(mActionSelect);
+  mMapCanvas->setMapTool(t);
 }
 
 
-// TODO - select a real cursor
 void QgisApp::addVertex()
 {
 
@@ -3568,18 +3496,12 @@ void QgisApp::addVertex()
   std::cout << "QgisApp::addVertex." << std::endl;
 #endif
 
-  {
-    // set current map tool to select
-    mMapCanvas->setMapTool(QGis::AddVertex);
-    QPixmap mySelectQPixmap = QPixmap((const char **) capture_point_cursor);
-    delete mMapCursor;
-    mMapCursor = new QCursor(mySelectQPixmap, 8, 8);
-    mMapCanvas->setCursor(*mMapCursor);
-    mActionAddVertex->setOn(true);
-  }
+  QgsMapTool* t = new QgsMapToolVertexEdit(mMapCanvas, QgsMapToolVertexEdit::AddVertex);
+  t->setAction(mActionAddVertex);
+  mMapCanvas->setMapTool(t);
+  
 }
 
-// TODO - select a real cursor
 void QgisApp::moveVertex()
 {
 
@@ -3587,19 +3509,12 @@ void QgisApp::moveVertex()
   std::cout << "QgisApp::moveVertex." << std::endl;
 #endif
 
-  {
-    // set current map tool to select
-    mMapCanvas->setMapTool(QGis::MoveVertex);
-    QPixmap mySelectQPixmap = QPixmap((const char **) capture_point_cursor);
-    delete mMapCursor;
-    mMapCursor = new QCursor(mySelectQPixmap, 8, 8);
-    mMapCanvas->setCursor(*mMapCursor);
-    mActionMoveVertex->setOn(true);
-  }
+  QgsMapTool* t = new QgsMapToolVertexEdit(mMapCanvas, QgsMapToolVertexEdit::MoveVertex);
+  t->setAction(mActionMoveVertex);
+  mMapCanvas->setMapTool(t);
 }
 
 
-// TODO - select a real cursor
 void QgisApp::deleteVertex()
 {
 
@@ -3607,15 +3522,9 @@ void QgisApp::deleteVertex()
   std::cout << "QgisApp::deleteVertex." << std::endl;
 #endif
 
-  {
-    // set current map tool to select
-    mMapCanvas->setMapTool(QGis::DeleteVertex);
-    QPixmap mySelectQPixmap = QPixmap((const char **) capture_point_cursor);
-    delete mMapCursor;
-    mMapCursor = new QCursor(mySelectQPixmap, 8, 8);
-    mMapCanvas->setCursor(*mMapCursor);
-    mActionDeleteVertex->setOn(true);
-  }
+  QgsMapTool* t = new QgsMapToolVertexEdit(mMapCanvas, QgsMapToolVertexEdit::DeleteVertex);
+  t->setAction(mActionDeleteVertex);
+  mMapCanvas->setMapTool(t);
 }
 
 
@@ -3889,13 +3798,6 @@ void QgisApp::currentLayerChanged(Q3ListViewItem * lvi)
         //actionIdentify->setEnabled(FALSE);
         mActionSelect->setEnabled(FALSE);
         mActionOpenTable->setEnabled(FALSE);
-        // if one of these map tools is selected, set cursor to default
-        if (mMapTool == QGis::Identify || mMapTool == QGis::Select || mMapTool == QGis::Table)
-        {
-          delete mMapCursor;
-          mMapCursor = new QCursor();
-          mMapCanvas->setCursor(*mMapCursor);
-        }
       }
       else
       {
@@ -3935,19 +3837,6 @@ void QgisApp::currentLayerChanged(Q3ListViewItem * lvi)
           mActionIdentify->setEnabled(TRUE);
           mActionSelect->setEnabled(TRUE);
           mActionOpenTable->setEnabled(TRUE);
-          // if one of these map tools is selected, make sure appropriate cursor gets set
-          switch (mMapTool)
-          {
-            case QGis::Identify:
-              identify();
-              break;
-            case QGis::Select:
-              select();
-              break;
-            case QGis::Table:
-              attributeTable();
-              break;
-          }
         }
 
         // notify the project we've made a change

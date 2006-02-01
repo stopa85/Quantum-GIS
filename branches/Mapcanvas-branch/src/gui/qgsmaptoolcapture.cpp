@@ -22,28 +22,19 @@
 #include "qgsrubberband.h"
 #include "qgsvectorlayer.h"
 #include "qgsvectordataprovider.h"
-
+#include "qgscursors.h"
+#include <QCursor>
+#include <QPixmap>
 #include <QMessageBox>
 
 
-QgsMapToolCapture::QgsMapToolCapture(QgsMapCanvas* canvas, enum QGis::MapTools tool)
-  : QgsMapTool(canvas)
+QgsMapToolCapture::QgsMapToolCapture(QgsMapCanvas* canvas, enum CaptureTool tool)
+  : QgsMapTool(canvas), mTool(tool)
 {
-  if (tool == QGis::CapturePoint)
-    mTool = CapturePoint;
-  else if (tool == QGis::CaptureLine)
-    mTool = CaptureLine;
-  else if (tool == QGis::CapturePolygon)
-    mTool = CapturePolygon;
-  else
-  {
-#ifdef QGISDEBUG
-    std::cout << "Invalid capture tool!" << std::endl;
-#endif
-    mTool = CapturePoint;
-  }
-  
   mCapturing = FALSE;
+  
+  QPixmap mySelectQPixmap = QPixmap((const char **) capture_point_cursor);
+  mCanvas->setCursor(QCursor(mySelectQPixmap, 8, 8));
 }
 
 

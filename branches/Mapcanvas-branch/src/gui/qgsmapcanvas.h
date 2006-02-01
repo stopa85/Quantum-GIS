@@ -110,10 +110,10 @@ class QgsMapCanvas : public Q3CanvasView
     void zoomToSelected();
 
     /** \brief Sets the map tool currently being used on the canvas */
-    void setMapTool(int tool);
+    void setMapTool(QgsMapTool* mapTool);
 
     /**Returns the currently active tool*/
-    int mapTool();
+    QgsMapTool* mapTool();
 
     /** Write property of QColor bgColor. */
     virtual void setCanvasColor(const QColor & _newVal);
@@ -251,10 +251,6 @@ signals:
     
     //! Emitted when a new set of layers has been received
     void layersChanged();
-
-    /** emitted when right mouse button is pressed with zoom tool
-     *  QgisApp should catch it and reset tool to the last non zoom tool */
-    void stopZoom();
     
 protected:
     /// implementation struct
@@ -278,12 +274,6 @@ private:
      */
     QgsMapCanvas();
     
-    /**
-     * \brief Currently selected map tool.
-     * @see QGis::MapTools enum for valid values
-     */
-    int mMapTool;
-
     //! all map rendering is done in this class
     QgsMapImage* mMapImage;
     
@@ -348,8 +338,14 @@ private:
     Q3Canvas* mCanvas;
     
     //! pointer to current map tool
-    QgsMapTool* mMapToolPtr;
+    QgsMapTool* mMapTool;
+    
+    //! previous tool if current is for zooming/panning
+    QgsMapTool* mLastNonZoomMapTool;
 
+    //! recently used extent
+    QgsRect mLastExtent;
+    
     //! Scale factor multiple for default zoom in/out
     // TODO Make this customisable by the user
     static const double scaleDefaultMultiple;

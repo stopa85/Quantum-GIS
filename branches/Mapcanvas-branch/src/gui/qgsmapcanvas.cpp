@@ -40,20 +40,14 @@ email                : sherman at mrcc.com
 #include "qgsmapimage.h"
 #include "qgsmaplayer.h"
 #include "qgsmaplayerregistry.h"
+#include "qgsmaptool.h"
 #include "qgsmaptopixel.h"
 #include "qgsmapoverviewcanvas.h"
 #include "qgsproject.h"
 #include "qgsrubberband.h"
 
-// map tools
-#include "qgsmaptoolcapture.h"
-#include "qgsmaptoolidentify.h"
-#include "qgsmaptoolselect.h"
-#include "qgsmaptoolvertexedit.h"
 #include "qgsmaptoolzoom.h"
-#include "qgsmeasure.h"
-
-#include "qgsmapcanvasitem.h"
+#include "qgsmaptoolpan.h"
 
 /**  @DEPRECATED: to be deleted, stuff from here should be moved elsewhere */
 class QgsMapCanvas::CanvasProperties
@@ -74,67 +68,6 @@ class QgsMapCanvas::CanvasProperties
     //! Flag to indicate the pan selector key is held down by user
     bool panSelectorDown;
 
-};
-
-
-//! map tool for emitting signal xyClickCoordinates
-class QgsMapToolEmitPoint : public QgsMapTool
-{
-  public:
-    QgsMapToolEmitPoint(QgsMapCanvas* canvas) : QgsMapTool(canvas)
-    {
-      canvas->setCursor(Qt::CrossCursor);
-    }
-    
-    //! Overridden mouse move event
-    virtual void canvasMoveEvent(QMouseEvent * e) { }
-  
-    //! Overridden mouse press event
-    virtual void canvasPressEvent(QMouseEvent * e)
-    {
-      QgsPoint idPoint = mCanvas->getCoordinateTransform()->toMapCoordinates(e->x(), e->y());
-      mCanvas->emitPointEvent(idPoint, e->button());
-    }
-  
-    //! Overridden mouse release event
-    virtual void canvasReleaseEvent(QMouseEvent * e) { }
-};
-
-
-//! map tool for panning map
-class QgsMapToolPan : public QgsMapTool
-{
-  public:
-    QgsMapToolPan(QgsMapCanvas* canvas) : QgsMapTool(canvas), mDragging(FALSE) { }
-    
-    //! Overridden mouse move event
-    virtual void canvasMoveEvent(QMouseEvent * e)
-    {
-      if (e->state() == Qt::LeftButton)
-      {
-        // show the pmCanvas as the user drags the mouse
-        mDragging = TRUE;
-        mCanvas->panAction(e);
-      }
-    }
-  
-    //! Overridden mouse press event
-    virtual void canvasPressEvent(QMouseEvent * e) { }
-  
-    //! Overridden mouse release event
-    virtual void canvasReleaseEvent(QMouseEvent * e)
-    {
-      if (mDragging)
-      {
-        mDragging = TRUE;
-        mCanvas->panActionEnd(e->pos());
-      }
-    }
-    
-  private:
-    
-    //! Flag to indicate a map canvas drag operation is taking place
-    bool mDragging;
 };
 
 
@@ -180,7 +113,8 @@ QgsMapCanvas::QgsMapCanvas()
   
   mCurrentLayer = NULL;
   mMapOverview = NULL;
-  mMapToolPtr = NULL;
+  mMapTool = NULL;
+  mLastNonZoomMapTool = NULL;
   
   mDrawing = false;
   mFrozen = false;
@@ -192,8 +126,6 @@ QgsMapCanvas::QgsMapCanvas()
   viewport()->setMouseTracking(true);
   setFocusPolicy(Qt::StrongFocus);
   
-  setMapTool(QGis::Pan);
-
   mMapImage = new QgsMapImage(10,10);
 
   int myRedInt = QgsProject::instance()->readNumEntry("Gui","/CanvasColorRedPart",255);
@@ -215,7 +147,8 @@ QgsMapCanvas::QgsMapCanvas()
 
 QgsMapCanvas::~QgsMapCanvas()
 {
-  delete mMapToolPtr;
+  delete mMapTool;
+  delete mLastNonZoomMapTool;
   
   delete mCanvas;
 
@@ -367,8 +300,8 @@ void QgsMapCanvas::render()
         paint->begin(mMapImage->pixmap());
         
         // notifies current map tool
-        if (mMapToolPtr)
-          mMapToolPtr->renderComplete();
+        if (mMapTool)
+          mMapTool->renderComplete();
   
         // notify any listeners that rendering is complete
         //note that pmCanvas is not draw to gui yet
@@ -466,11 +399,13 @@ void QgsMapCanvas::updateFullExtent()
 
 void QgsMapCanvas::setExtent(QgsRect const & r)
 {
+  QgsRect current = extent();
   mMapImage->setExtent(r);
   emit extentsChanged(mMapImage->extent());
   updateScale();
   if (mMapOverview)
     mMapOverview->reflectChangedExtent();
+  mLastExtent = current;
 } // setExtent
   
 
@@ -509,8 +444,10 @@ void QgsMapCanvas::zoomFullExtent()
 
 void QgsMapCanvas::zoomPreviousExtent()
 {
-  // TODO:
-  std::cout << "------------> zoomPreviusExtent - stub" << std::endl;
+  QgsRect current = extent();
+  setExtent(mLastExtent);
+  mLastExtent = current;
+  refresh();
 } // zoomPreviousExtent
 
 
@@ -711,19 +648,18 @@ void QgsMapCanvas::keyReleaseEvent(QKeyEvent * e)
 void QgsMapCanvas::contentsMousePressEvent(QMouseEvent * e)
 {
   // call handler of current map tool
-  if (mMapToolPtr)
-    mMapToolPtr->canvasPressEvent(e);
+  if (mMapTool)
+    mMapTool->canvasPressEvent(e);
   
   if (mCanvasProperties->panSelectorDown)
     return;
 
-  // TODO: right button was pressed in zoom tool, return to previous non zoom tool
-/*  if ( e->button() == Qt::RightButton &&
-      ( mMapTool == QGis::ZoomIn || mMapTool == QGis::ZoomOut || mMapTool == QGis::Pan ) )
+  // right button was pressed in zoom tool, return to previous non zoom tool
+  QString name = mMapTool->toolName();
+  if (e->button() == Qt::RightButton && (mMapTool->toolName() == MapTool_Zoom || mMapTool->toolName() == MapTool_Pan))
   {
-    //emit stopZoom();
     return;
-}*/
+  }
 
   mCanvasProperties->mouseButtonDown = true;
   mCanvasProperties->rubberStartPoint = e->pos();
@@ -734,8 +670,8 @@ void QgsMapCanvas::contentsMousePressEvent(QMouseEvent * e)
 void QgsMapCanvas::contentsMouseReleaseEvent(QMouseEvent * e)
 {
   // call handler of current map tool
-  if (mMapToolPtr)
-    mMapToolPtr->canvasReleaseEvent(e);
+  if (mMapTool)
+    mMapTool->canvasReleaseEvent(e);
 
   mCanvasProperties->mouseButtonDown = false;
 
@@ -743,12 +679,22 @@ void QgsMapCanvas::contentsMouseReleaseEvent(QMouseEvent * e)
     return;
 
   // right button was pressed in zoom tool, return to previous non zoom tool
-/*  if ( e->button() == Qt::RightButton &&
-      ( mMapTool == QGis::ZoomIn || mMapTool == QGis::ZoomOut || mMapTool == QGis::Pan ) )
+  QString name = mMapTool->toolName();
+  if (e->button() == Qt::RightButton && (name == MapTool_Zoom || name == MapTool_Pan))
   {
-    emit stopZoom();
+#ifdef QGISDEBUG
+    std::cout << "Right click in map tool zoom or pan, last tool is " << (mLastNonZoomMapTool ? "not null." : "null.") <<  std::endl;
+#endif
+
+    // change to older non-zoom tool
+    if (mLastNonZoomMapTool)
+    {
+      QgsMapTool* t = mLastNonZoomMapTool;
+      mLastNonZoomMapTool = NULL;
+      setMapTool(t);
+    }
     return;
-}*/
+  }
 
 } // mouseReleaseEvent
 
@@ -788,8 +734,8 @@ void QgsMapCanvas::zoomWithCenter(int x, int y, bool zoomIn)
 void QgsMapCanvas::contentsMouseMoveEvent(QMouseEvent * e)
 {
   // call handler of current map tool
-  if (mMapToolPtr)
-    mMapToolPtr->canvasMoveEvent(e);
+  if (mMapTool)
+    mMapTool->canvasMoveEvent(e);
   
   mCanvasProperties->mouseLastXY = e->pos();
 
@@ -820,52 +766,33 @@ void QgsMapCanvas::zoomByScale(int x, int y, double scaleFactor)
 
 
 /** Sets the map tool currently being used on the canvas */
-void QgsMapCanvas::setMapTool(int tool)
+void QgsMapCanvas::setMapTool(QgsMapTool* tool)
 {
-  mMapTool = tool;
+  // make action active
+  if (tool->action())
+    tool->action()->setOn(true);
   
-  delete mMapToolPtr;
-  mMapToolPtr = NULL;
-  
-  if (tool == QGis::ZoomIn || tool == QGis::ZoomOut)
+  if (tool->toolName() == MapTool_Zoom || tool->toolName() == MapTool_Pan)
   {
-    mMapToolPtr = new QgsMapToolZoom(this, (tool == QGis::ZoomOut));
+    // if zoom or pan tool will be active, save old tool
+    // to bring it back on right click
+    if (mMapTool->toolName() == MapTool_Zoom || mMapTool->toolName() == MapTool_Pan)
+    {
+      delete mLastNonZoomMapTool;
+      mLastNonZoomMapTool = mMapTool;
+    }
   }
-  else if (tool == QGis::CaptureLine || tool == QGis::CapturePoint || tool == QGis::CapturePolygon)
-  {
-    mMapToolPtr = new QgsMapToolCapture(this, (enum QGis::MapTools) tool);
-  }
-  else if (tool == QGis::AddVertex || tool == QGis::MoveVertex || tool == QGis::DeleteVertex)
-  {
-    mMapToolPtr = new QgsMapToolVertexEdit(this, (enum QGis::MapTools) tool);
-  }
-  else if (tool == QGis::Select)
-  {
-    mMapToolPtr = new QgsMapToolSelect(this);
-  }
-  else if (tool == QGis::MeasureDist || tool == QGis::MeasureArea)
-  {
-    bool measureArea = (tool == QGis::MeasureArea);
-    mMapToolPtr = new QgsMeasure(measureArea, this);
-  }
-  else if (tool == QGis::Identify)
-  {
-    mMapToolPtr = new QgsMapToolIdentify(this);
-  }
-  else if (tool == QGis::EmitPoint)
-  {
-    mMapToolPtr = new QgsMapToolEmitPoint(this);
-  }
-  else if (tool == QGis::Pan)
-  {
-    mMapToolPtr = new QgsMapToolPan(this);
-  } 
   else
   {
-#ifdef QGISDEBUG
-    std::cout << "Unknown map tool!" << std::endl;
-#endif
+    // if there's already an old tool, delete it
+    delete mLastNonZoomMapTool;
+    mLastNonZoomMapTool = NULL;
+  
+    // non-zoom map tool
+    delete mMapTool;
   }
+  
+  mMapTool = tool;
 
 } // setMapTool
 
@@ -1008,7 +935,7 @@ bool QgsMapCanvas::writeXML(QDomNode & layerNode, QDomDocument & doc)
 }
 
 
-int QgsMapCanvas::mapTool()
+QgsMapTool* QgsMapCanvas::mapTool()
 {
   return mMapTool;
 }
@@ -1017,6 +944,7 @@ void QgsMapCanvas::panActionEnd(QPoint releasePoint)
 {
   // move map image to standard position
   canvasMapImage()->move(0,0);
+  //setContentsPos(0,0);
   
   // use start and end box points to calculate the extent
   QgsPoint start = getCoordinateTransform()->toMapCoordinates(mCanvasProperties->rubberStartPoint);
@@ -1064,17 +992,18 @@ void QgsMapCanvas::panAction(QMouseEvent * e)
 
   // move map image...
   QPoint pnt = e->pos() - mCanvasProperties->rubberStartPoint;
-  //canvasMapImage()->move(pnt.x(), pnt.y());
+  canvasMapImage()->move(pnt.x(), pnt.y());
   
-  // move all map canvas items
-  Q3CanvasItemList list = mCanvas->allItems();
+  // move all map canvas items - doesn't work well
+  // since only rectangles are moved, painting goes to the same area
+/*  Q3CanvasItemList list = mCanvas->allItems();
   Q3CanvasItemList::iterator it = list.begin();
   while (it != list.end())
   {
     Q3CanvasItem* item = *it;
     item->move(pnt.x(), pnt.y());
     it++;
-  }
+}*/
   
   // update canvas
   canvas()->update();

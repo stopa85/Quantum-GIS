@@ -47,6 +47,7 @@
 #include "qgsapplication.h"
 #include "qgsmapcanvas.h"
 #include "qgsmaplayer.h"
+#include "qgsmaptoolemitpoint.h"
 #include "qgsvectorlayer.h"
 #include "qgsdataprovider.h"
 #include "qgsmaptopixel.h"
@@ -1149,8 +1150,7 @@ void QgsGrassEdit::startTool(int tool)
       break;
   }
 
-  mCanvas->setMapTool ( QGis::EmitPoint );
-  mCanvas->setCursor (  Qt::CrossCursor );
+  mCanvas->setMapTool(new QgsMapToolEmitPoint(mCanvas));
 }
 
 void QgsGrassEdit::mouseEventReceiverClick( QgsPoint & point, Qt::ButtonState button )
@@ -1775,7 +1775,7 @@ void QgsGrassEdit::mouseEventReceiverMove ( QgsPoint & newPoint )
   std::cerr << "QgsGrassEdit::mouseEventReceiverMove() mTool = " << mTool << std::endl;
 #endif
 
-  if ( mCanvas->mapTool() != QGis::EmitPoint ) return;
+  if ( mCanvas->mapTool()->toolName() != MapTool_EmitPoint) return;
 
   statusBar()->message(mCanvasPrompt);
 

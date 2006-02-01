@@ -66,6 +66,8 @@ QgsMeasure::QgsMeasure(bool measureArea, QgsMapCanvas *mc, const char * name, Qt
 
     mRubberBand = new QgsRubberBand(mMapCanvas, mMeasureArea);
     mRubberBand->show();
+
+    mCanvas->setCursor(Qt::CrossCursor);
 }
 
 
