@@ -302,6 +302,8 @@ public slots:
   void deleteVertex();
   //! activates the selection tool
   void select();
+  //! refresh map canvas
+  void refreshMapCanvas();
 
 public slots:
   void showProgress(int theProgress, int theTotalSteps);
@@ -383,8 +385,6 @@ private:
   void updateRecentProjectPaths();
   //! Read Well Known Binary stream from PostGIS
   //void readWKB(const char *, QStringList tables);
-  //! draw layers
-  void drawLayers();
   //! test function
   void testButton();
   //! cuts selected features on the active layer to the clipboard

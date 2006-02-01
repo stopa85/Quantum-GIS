@@ -503,7 +503,7 @@ void QgisApp::createActions()
   mActionDraw= new QAction(QIcon(myIconPath+"/mActionDraw.png"), tr("Refresh"), this);
   mActionDraw->setShortcut(tr("Ctrl+R"));
   mActionDraw->setStatusTip(tr("Refresh Map"));
-  connect(mActionDraw, SIGNAL(triggered()), this, SLOT(drawLayers()));
+  connect(mActionDraw, SIGNAL(triggered()), this, SLOT(refreshMapCanvas()));
   //
   mActionZoomIn= new QAction(QIcon(myIconPath+"/mActionZoomIn.png"), tr("Zoom In"), this);
   mActionZoomIn->setShortcut(tr("z"));
@@ -1990,6 +1990,7 @@ void QgisApp::addDatabaseLayer()
   }
 
   qApp->processEvents();
+  mMapCanvas->freeze(false);
   mMapCanvas->refresh();
   QApplication::restoreOverrideCursor();
 } // QgisApp::addDatabaseLayer()
@@ -3688,17 +3689,13 @@ void QgisApp::pasteTransformations()
 }
 
 
-void QgisApp::drawLayers()
+void QgisApp::refreshMapCanvas()
 {
-  // what's the point if we don't have any layers?
-  if ( QgsMapLayerRegistry::instance()->mapLayers().empty() )
-  {
-    return;
-  }
+#ifdef QGISDEBUG
+  std::cout << "QgisApp:refreshMapCanvas" << std::endl;
+#endif
 
-  std::cout << "In  QgisApp::drawLayers()" << std::endl;
   mMapCanvas->refresh();
-
 }
 
 void QgisApp::showMouseCoordinate(QgsPoint & p)
@@ -4925,17 +4922,23 @@ void QgisApp::projectProperties()
       SLOT(projectionsEnabled(bool)));
   QApplication::restoreOverrideCursor();
   //pass any refresg signals off to canvases
-  connect (pp,SIGNAL(refresh()), mMapCanvas, SLOT(refresh()));
+  //connect (pp,SIGNAL(refresh()), mMapCanvas, SLOT(refresh()));
   connect (pp,SIGNAL(mapUnitsChanged()), mMapCanvas, SLOT(mapUnitsChanged()));  
 
   bool wasProjected = pp->isProjected();
+  long oldSRSID =  QgsProject::instance()->readNumEntry("SpatialRefSys","/ProjectSRSID",GEOSRS_ID);
 
   // Display the modal dialog box.
-  if (pp->exec())
+  pp->exec();
+  
+  long newSRSID =  QgsProject::instance()->readNumEntry("SpatialRefSys","/ProjectSRSID",GEOSRS_ID);
+  
+  // projections have been turned on/off or dest SRS has changed while projections are on
+  if (wasProjected != pp->isProjected() || (pp->isProjected() && oldSRSID != newSRSID))
   {
-    mMapCanvas->mapImage()->layers().updateFullExtent();
-    //mMapCanvas->recalculateExtents();
+    mMapCanvas->updateFullExtent();
   }
+  
     int  myRedInt = QgsProject::instance()->readNumEntry("Gui","/CanvasColorRedPart",255);
     int  myGreenInt = QgsProject::instance()->readNumEntry("Gui","/CanvasColorGreenPart",255);
     int  myBlueInt = QgsProject::instance()->readNumEntry("Gui","/CanvasColorBluePart",255);

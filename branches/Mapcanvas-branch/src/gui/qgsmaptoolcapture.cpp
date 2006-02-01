@@ -92,14 +92,13 @@ void QgsMapToolCapture::canvasReleaseEvent(QMouseEvent * e)
     return;
   }
 
-  QgsMapToPixel* transform = mCanvas->getCoordinateTransform();
   double tolerance  = QgsProject::instance()->readDoubleEntry("Digitizing","/Tolerance",0);
   
   // POINT CAPTURING
   if (mTool == CapturePoint)
   {
 
-    QgsPoint idPoint = transform->toMapCoordinates(e->x(), e->y());
+    QgsPoint idPoint = toMapCoords(e->pos());
     
     // why emit a signal? [MD]
     //emit xyClickCoordinates(idPoint);
@@ -161,11 +160,11 @@ void QgsMapToolCapture::canvasReleaseEvent(QMouseEvent * e)
       mRubberBand->show();
     }
   
-    QgsPoint digitisedPoint = transform->toMapCoordinates(e->x(), e->y());
+    QgsPoint digitisedPoint = toMapCoords(e->pos());
     vlayer->snapPoint(digitisedPoint, tolerance);
     mCaptureList.push_back(digitisedPoint);
   
-    mRubberBand->addPoint(e->pos());
+    mRubberBand->addPoint(digitisedPoint);
   
     if (e->button() == Qt::LeftButton)
     {
@@ -274,7 +273,7 @@ void QgsMapToolCapture::canvasMoveEvent(QMouseEvent * e)
   if (mCapturing)
   {
     // show the rubber-band from the last click
-    mRubberBand->movePoint(e->pos());
+    mRubberBand->movePoint(toMapCoords(e->pos()));
   }
 
 } // mouseMoveEvent
@@ -288,22 +287,4 @@ void QgsMapToolCapture::canvasPressEvent(QMouseEvent * e)
 
 void QgsMapToolCapture::renderComplete()
 {
-  if(mCaptureList.size() > 0)
-  {
-    mRubberBand->setGeometry(mCanvas->rect());
-    mRubberBand->reset(mTool == CapturePolygon);
-    try
-    {
-      for (std::list<QgsPoint>::iterator it = mCaptureList.begin(); it != mCaptureList.end(); ++it)
-      {
-        QgsPoint point = mCanvas->getCoordinateTransform()->transform(*it);
-        mRubberBand->addPoint(QPoint(int(point.x()), int(point.y())));
-      }
-    }
-    catch(QgsException &e)
-    {
-      // ignore this exception at present
-      std::cout << "QgsException: " << __FILE__ << __LINE__ << std::endl;
-    }
-  }
 }

@@ -20,6 +20,8 @@
 
 class QgsMapCanvas;
 class QMouseEvent;
+class QgsPoint;
+class QPoint;
 
 class QgsMapTool
 {
@@ -43,6 +45,13 @@ class QgsMapTool
     //! constructor takes map canvas as a parameter
     QgsMapTool(QgsMapCanvas* canvas) : mCanvas(canvas) {}
         
+    //! transformation from screen coordinates to map coordinates
+    QgsPoint toMapCoords(const QPoint& point);
+    
+    //! transformation from map coordinates to screen coordinates
+    QPoint toCanvasCoords(const QgsPoint& point);
+    
+    //! pointer to map canvas
     QgsMapCanvas* mCanvas;
 };
 
