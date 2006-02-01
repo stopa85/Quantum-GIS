@@ -16,6 +16,7 @@
 
 #include "qgsmaptoolidentify.h"
 #include "qgsmapcanvas.h"
+#include "qgsvectordataprovider.h"
 #include "qgsvectorlayer.h"
 #include "qgsrasterlayer.h"
 #include "qgsmaptopixel.h"

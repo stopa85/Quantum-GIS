@@ -160,6 +160,7 @@ libqgis_gui_la_MOC =							\
 		qgslinestyledialog.moc.cpp		\
 		qgslinestylewidget.moc.cpp			\
 		qgsludialog.moc.cpp			\
+		qgsmapimage.moc.cpp				\
 		qgsmapcanvas.moc.cpp				\
 		qgsmaplayerinterface.moc.cpp		\
 		qgsmaplayer.moc.cpp					\

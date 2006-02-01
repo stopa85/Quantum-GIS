@@ -19,7 +19,7 @@
 
 
 #include "qgis.h"
-#include <qgsrect.h>
+#include "qgsrect.h"
 #include <deque>
 
 #include <QColor>
@@ -62,8 +62,10 @@ class QgsMapLayerSet
  * - drawing in separate thread?
  */
 
-class QgsMapImage
+class QgsMapImage : public QObject
 {
+  Q_OBJECT
+      
   public:
     
     //! constructor, needs to specify pixmap size
@@ -104,6 +106,17 @@ class QgsMapImage
     void setOverview(bool isOverview = true) { mOverview = isOverview; }
 
     void enableAntiAliasing(bool flag) { mAntiAliasing = flag; }
+    
+  signals:
+    
+    void setProgress(int current, int total);
+    
+    void updateMap();
+    
+  public slots:
+    
+    //! called by signal from layer current being drawn
+    void onDrawingProgress(int current, int total);
   
   protected:
     

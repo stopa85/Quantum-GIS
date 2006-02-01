@@ -220,6 +220,9 @@ class QgsMapCanvas : public Q3CanvasView
     /** The map units may have changed, so cope with that */
     void mapUnitsChanged();
     
+    /** updates pixmap on render progress */
+    void updateMap();
+    
     
 signals:
     /** Let the owner know how far we are with render operations */

@@ -19,6 +19,7 @@
 #include "qgsmaptopixel.h"
 #include "qgsmaplayer.h"
 #include "qgsmaplayerregistry.h"
+#include "qgsproject.h"
 
 #include <QPixmap>
 #include <QPainter>
@@ -201,15 +202,14 @@ void QgsMapImage::render()
   mDrawing = true;
   QPainter *paint = new QPainter();
 
-  QPixmap pm(mPixmap->size());
-  pm.fill(mBgColor);
-  paint->begin(&pm);
+  mPixmap->fill(mBgColor);
+  paint->begin(mPixmap);
   
   // antialiasing
   if (mAntiAliasing)
     paint->setRenderHint(QPainter::Antialiasing);
 
-//  int myRenderCounter = 1;
+  int myRenderCounter = 0;
   
 #ifdef QGISDEBUG
   std::cout << "QgsMapCanvas::render: Starting to render layer stack." << std::endl;
@@ -224,7 +224,7 @@ void QgsMapImage::render()
     std::cout << "QgsMapImage::render: at layer item '" << (*li).toLocal8Bit().data() << "'." << std::endl;
 #endif
 
-    // TODO: emit setProgress(myRenderCounter++,zOrder.size());
+    emit setProgress(myRenderCounter++,layers.size());
     QgsMapLayer *ml = QgsMapLayerRegistry::instance()->mapLayer(*li);
 
     if (!ml)
@@ -261,15 +261,19 @@ void QgsMapImage::render()
       if ((ml->scaleBasedVisibility() && ml->minScale() < mScale && ml->maxScale() > mScale)
           || (!ml->scaleBasedVisibility()))
       {
+        connect(ml, SIGNAL(drawingProgress(int,int)), this, SLOT(onDrawingProgress(int,int)));        
+        
         QgsRect r1 = mExtent, r2;
         bool split = ml->projectExtent(r1, r2);
         //
                     // Now do the call to the layer that actually does
                     // the rendering work!
         //
-        ml->draw(paint, &r1, mCoordXForm, mPixmap);
+        ml->draw(paint, &r1, mCoordXForm);
         if (split)
-          ml->draw(paint, &r2, mCoordXForm, mPixmap);
+          ml->draw(paint, &r2, mCoordXForm);
+        
+        disconnect(ml, SIGNAL(drawingProgress(int,int)), this, SLOT(onDrawingProgress(int,int)));
       }
       else
       {
@@ -308,17 +312,17 @@ void QgsMapImage::render()
           QgsRect r1 = mExtent, r2;
           bool split = ml->projectExtent(r1, r2);
       
-          ml->drawLabels(paint, &r1, mCoordXForm, mPixmap);
+          ml->drawLabels(paint, &r1, mCoordXForm);
           if (split)
-            ml->drawLabels(paint, &r2, mCoordXForm, mPixmap);
+            ml->drawLabels(paint, &r2, mCoordXForm);
         }
       }
       li++;
     }
   } // if (!mOverview)
 
-  //make verys sure progress bar arrives at 100%!
-  // TODO: emit setProgress(1,1);
+  // make sure progress bar arrives at 100%!
+  emit setProgress(1,1);      
       
 #ifdef QGISDEBUG
   std::cout << "QgsMapCanvas::render: Done rendering map labels...emitting renderComplete(paint)\n";
@@ -332,7 +336,6 @@ void QgsMapImage::render()
   mDrawing = false;
   delete paint;
   
-  *mPixmap = pm;
 }
 
 void QgsMapImage::setMapUnits(QGis::units u)
@@ -342,6 +345,12 @@ void QgsMapImage::setMapUnits(QGis::units u)
   QgsProject::instance()->mapUnits(u); // TODO: sort out
 }
 
+void QgsMapImage::onDrawingProgress(int current, int total)
+{
+  // TODO: emit signal with progress
+  //std::cout << "onDrawingProgress: " << current << " / " << total << std::endl;
+  emit updateMap();
+}
 
 
 

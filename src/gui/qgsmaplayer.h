@@ -22,33 +22,25 @@
 #include <vector>
 #include <map>
 
-#include <qwidget.h>
-#include <qobject.h>
-#include <qpixmap.h>
-#include <qglobal.h>
+#include <QObject>
+#include <QPixmap>
 
-#include <qgsrect.h>
-#include <qgis.h>
-#include <qgsfield.h>
-
-#include <qgscoordinatetransform.h>
-//Added by qt3to4:
-#include <QEvent>
-#include <QKeyEvent>
-#include <QLabel>
-#include <QMenu>
+#include "qgis.h"
+#include "qgsrect.h"
+#include "qgsfield.h"
+#include "qgscoordinatetransform.h"
 
 class QAction;
 class QgisApp;
 class QgsMapToPixel;
 class QgsFeature;
-class Q3PopupMenu;
 class QgsLegendLayerFile;
 class QgsLegendSymbologyGroup;
+
 class QDomNode;
 class QDomDocument;
 class QEvent;
-class QLabel;
+class QMenu;
 
 /** \class QgsMapLayer
  * \brief Base class for all map layer types.
@@ -108,8 +100,8 @@ public:
 
 
     virtual void draw(QPainter *, QgsRect *, int);
-    virtual void draw(QPainter *, QgsRect *, QgsMapToPixel * ,QPaintDevice *);
-    virtual void drawLabels(QPainter *, QgsRect *, QgsMapToPixel * ,QPaintDevice *);
+    virtual void draw(QPainter *, QgsRect *, QgsMapToPixel *);
+    virtual void drawLabels(QPainter *, QgsRect *, QgsMapToPixel *);
 
     /*!Select features on the map canvas by dragging a rectangle */
     virtual void select(QgsRect *, bool )
@@ -151,7 +143,7 @@ public:
     virtual const int &featureType();
 
     /** Return the context menu for the layer */
-    virtual QMenu* contextMenu(){return popMenu;}
+    virtual QMenu* contextMenu();
 
     /**
      * Returns the sublayers of this layer

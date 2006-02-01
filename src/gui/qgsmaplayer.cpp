@@ -160,12 +160,12 @@ void QgsMapLayer::draw(QPainter *, QgsRect * viewExtent, int yTransform)
     //  std::cout << "In QgsMapLayer::draw" << std::endl;
 }
 
-void QgsMapLayer::draw(QPainter *, QgsRect *, QgsMapToPixel *,QPaintDevice * )
+void QgsMapLayer::draw(QPainter *, QgsRect *, QgsMapToPixel *)
 {
     //  std::cout << "In QgsMapLayer::draw" << std::endl;
 }
 
-void QgsMapLayer::drawLabels(QPainter *, QgsRect *, QgsMapToPixel *,QPaintDevice * )
+void QgsMapLayer::drawLabels(QPainter *, QgsRect *, QgsMapToPixel *)
 {
     //  std::cout << "In QgsMapLayer::draw" << std::endl;
 }
@@ -689,4 +689,9 @@ QgsRect QgsMapLayer::calcProjectedBoundingBox(QgsRect& extent)
   bb_extent.set(xmin, ymin, xmax, ymax);
 
   return bb_extent;
+}
+
+QMenu* QgsMapLayer::contextMenu()
+{
+  return popMenu;
 }
