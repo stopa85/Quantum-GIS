@@ -140,9 +140,7 @@ void QgsMeasure::addPoint(QgsPoint &point)
       mTable->ensureCellVisible(row,0);
     }
 
-    QgsMapToPixel *trans = mMapCanvas->getCoordinateTransform();
-    QgsPoint ppnt = trans->transform(point);
-    mRubberBand->addPoint(QPoint(int(ppnt.x()), int(ppnt.y())));
+    mRubberBand->addPoint(point);
 }
 
 void QgsMeasure::mousePress(QgsPoint &point)
@@ -162,24 +160,11 @@ void QgsMeasure::mouseMove(QgsPoint &point)
     //std::cout << "QgsMeasure::mouseMove" << point.x() << ", " << point.y() << std::endl;
 #endif
 
-  QgsMapToPixel *trans = mMapCanvas->getCoordinateTransform();
-  QgsPoint ppnt = trans->transform(point);
-  mRubberBand->movePoint(QPoint(int(ppnt.x()), int(ppnt.y())));
+  mRubberBand->movePoint(point);
 }
 
 void QgsMeasure::mapCanvasChanged()
 {
-#ifdef QGISDEBUG
-  std::cout << "QgsMeasure::mapCanvasChanged" << std::endl;
-#endif
-  mRubberBand->setGeometry(mMapCanvas->rect());
-  mRubberBand->reset(mMeasureArea);
-  QgsMapToPixel *trans = mMapCanvas->getCoordinateTransform();
-  for (std::vector<QgsPoint>::iterator it = mPoints.begin(); it != mPoints.end(); ++it)
-  {
-    QgsPoint ppnt = trans->transform(*it);
-    mRubberBand->addPoint(QPoint(int(ppnt.x()), int(ppnt.y())));
-  }
 }
 
 void QgsMeasure::close(void)

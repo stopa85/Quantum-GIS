@@ -53,6 +53,7 @@ email                : sherman at mrcc.com
 #include "qgsmaptoolzoom.h"
 #include "qgsmeasure.h"
 
+#include "qgsmapcanvasitem.h"
 
 /**  @DEPRECATED: to be deleted, stuff from here should be moved elsewhere */
 class QgsMapCanvas::CanvasProperties
@@ -204,6 +205,7 @@ QgsMapCanvas::QgsMapCanvas()
   // create map canvas item which will show the map
   QgsMapCanvasMapImage* map = new QgsMapCanvasMapImage(mCanvas);
   map->setPixmap(mMapImage->pixmap());
+  map->setZ(-10);
   map->show();
   
   connect(mMapImage, SIGNAL(updateMap()), this, SLOT(updateMap()));
@@ -442,6 +444,25 @@ QgsRect QgsMapCanvas::fullExtent() const
 {
   return mMapImage->layers().fullExtent();
 } // extent
+
+void QgsMapCanvas::updateFullExtent()
+{
+  // projection settings have changed
+  
+#ifdef QGISDEBUG
+  std::cout << "QgsMapCanvas::updateFullExtent" << std::endl;
+#endif
+
+  mMapImage->layers().updateFullExtent();
+  if (mMapOverview)
+  {
+    mMapOverview->mapImage()->layers().updateFullExtent();
+    mMapOverview->reflectChangedExtent();
+    updateOverview();
+  }
+  refresh();
+}
+
 
 void QgsMapCanvas::setExtent(QgsRect const & r)
 {
@@ -1043,10 +1064,20 @@ void QgsMapCanvas::panAction(QMouseEvent * e)
 
   // move map image...
   QPoint pnt = e->pos() - mCanvasProperties->rubberStartPoint;
-  canvasMapImage()->move(pnt.x(), pnt.y());
+  //canvasMapImage()->move(pnt.x(), pnt.y());
+  
+  // move all map canvas items
+  Q3CanvasItemList list = mCanvas->allItems();
+  Q3CanvasItemList::iterator it = list.begin();
+  while (it != list.end())
+  {
+    Q3CanvasItem* item = *it;
+    item->move(pnt.x(), pnt.y());
+    it++;
+  }
   
   // update canvas
-  update();
+  canvas()->update();
 }
 
 

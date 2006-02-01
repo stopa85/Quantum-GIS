@@ -22,6 +22,7 @@
 #include "qgsgeometry.h"
 
 class QgsRubberBand;
+class QgsMapCanvasCross;
 
 class QgsMapToolVertexEdit : public QgsMapTool
 {
@@ -39,6 +40,12 @@ class QgsMapToolVertexEdit : public QgsMapTool
 
   private:
     
+    //! create instance of rubber band
+    void createRubberBand();
+    
+    //! returns tolerance in map coordinates
+    double tolerance();
+    
     //! current vertex edit tool
     enum Tool
     {
@@ -48,6 +55,8 @@ class QgsMapToolVertexEdit : public QgsMapTool
     } mTool;
     
     bool snapVertexWithContext(QgsPoint& point);
+    
+    bool snapSegmentWithContext(QgsPoint& point);
     
     //! The snapped-to segment before this vertex number (identifying the vertex that is being moved)
     QgsGeometryVertexIndex mSnappedAtVertex;
@@ -63,20 +72,11 @@ class QgsMapToolVertexEdit : public QgsMapTool
     
     QgsRubberBand* mRubberBand;
     
-/*    
-    //! Is the beginning point of a rubber band valid?  (If not, this segment of the rubber band will not be drawn)
-    bool rubberStartPointIsValid;
+    bool mStartPointValid;
+    bool mStopPointValid;
+    
+    QgsMapCanvasCross* mCross;
 
-    //! Mid point of a rubber band
-    QPoint rubberMidPoint;
-
-    //! End point of a rubber band
-    QPoint rubberStopPoint;
-
-    //! Is the end point of a rubber band valid?  (If not, this segment of the rubber band will not be drawn)
-    bool rubberStopPointIsValid;
-
-*/
 };
 
 #endif

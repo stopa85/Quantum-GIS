@@ -97,6 +97,7 @@ libqgis_guiHEADERS =							\
 		qgslinestyledialog.h				\
 		qgsludialog.h					\
 		qgsmapcanvas.h						\
+		qgsmapcanvasitem.h			\
 		qgsmapimage.h						\
 		qgsmaplayer.h						\
 		qgsmaplayerinterface.h				\
@@ -162,6 +163,7 @@ libqgis_gui_la_MOC =							\
 		qgsludialog.moc.cpp			\
 		qgsmapimage.moc.cpp				\
 		qgsmapcanvas.moc.cpp				\
+		qgsmapcanvasitem.moc.cpp			\
 		qgsmaplayerinterface.moc.cpp		\
 		qgsmaplayer.moc.cpp					\
 		qgsmaplayerregistry.moc.cpp			\
@@ -218,11 +220,13 @@ libqgis_gui_la_SOURCES =						\
 		qgslinestylewidget.cpp				\
 		qgsludialog.cpp			\
 		qgsmapcanvas.cpp					\
+		qgsmapcanvasitem.cpp				\
 		qgsmapimage.cpp						\
 		qgsmaplayer.cpp						\
 		qgsmaplayerregistry.cpp				\
 		qgsmapoverviewcanvas.cpp			\
 		qgsmapserverexport.cpp		\
+		qgsmaptool.cpp			\
 		qgsmaptoolcapture.cpp			\
 		qgsmaptoolidentify.cpp		\
 		qgsmaptoolselect.cpp			\

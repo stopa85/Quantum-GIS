@@ -121,8 +121,8 @@ class QgsMapCanvas : public Q3CanvasView
     /** Emits signal scalChanged to update scale in main window */
     void updateScale();
 
-    /** Updates the full extent to include the mbr of the rectangle r */
-    void updateFullExtent(QgsRect const & r);
+    /** Updates the full extent */
+    void updateFullExtent();
 
     //! return the map layer at postion index in the layer stack
     QgsMapLayer *getZpos(int index);
