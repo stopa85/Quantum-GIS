@@ -829,6 +829,7 @@ void QgisApp::createStatusBar()
   //
   mProgressBar = new QProgressBar(statusBar());
   mProgressBar->setMaximumWidth(100);
+  mProgressBar->hide();
   QWhatsThis::add(mProgressBar, tr("Progress bar that displays the status of rendering layers and other time-intensive operations"));
   statusBar()->addWidget(mProgressBar, 1,true);
   // Bumped the font up one point size since 8 was too 
@@ -1059,7 +1060,7 @@ void QgisApp::setupConnections()
   connect(mMapCanvas, SIGNAL(xyCoordinates(QgsPoint &)), this, SLOT(showMouseCoordinate(QgsPoint &)));
   //signal when mouse in capturePoint mode and mouse clicked on canvas
   connect(mMapCanvas, SIGNAL(xyClickCoordinates(QgsPoint &)), this, SLOT(showCapturePointCoordinate(QgsPoint &)));
-  connect(mMapCanvas, SIGNAL(setProgress(int,int)), this, SLOT(showProgress(int,int)));
+  connect(mMapCanvas->mapImage(), SIGNAL(setProgress(int,int)), this, SLOT(showProgress(int,int)));
   connect(mMapCanvas, SIGNAL(extentsChanged(QgsRect )),this,SLOT(showExtents(QgsRect )));
   connect(mMapCanvas, SIGNAL(scaleChanged(QString)), this, SLOT(showScale(QString)));
   connect(mMapCanvas, SIGNAL(scaleChanged(QString)), this, SLOT(updateMouseCoordinatePrecision()));
@@ -4825,22 +4826,21 @@ void QgisApp::projectionsEnabled(bool theFlag)
 void QgisApp::showProgress(int theProgress, int theTotalSteps)
 {
 #ifdef QGISDEBUG
-  //std::cout << "setProgress called with " << theProgress << "/" << theTotalSteps << std::endl;
+  std::cout << "setProgress called with " << theProgress << "/" << theTotalSteps << std::endl;
 #endif
 
   if (theProgress==theTotalSteps)
   {
     mProgressBar->reset();
-  }
+    mProgressBar->hide();
+   }
   else
   {
-    /* @todo fix this!
     //only call show if not already hidden to reduce flicker
     if (!mProgressBar->isVisible())
     {
-    mProgressBar->show();
+      mProgressBar->show();
     }
-    */
     mProgressBar->setMaximum(theTotalSteps);
     mProgressBar->setValue(theProgress);
   }

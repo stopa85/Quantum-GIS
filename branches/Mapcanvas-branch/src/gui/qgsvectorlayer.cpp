@@ -339,15 +339,15 @@ void QgsVectorLayer::setDisplayField(QString fldName)
   }
 }
 
-void QgsVectorLayer::drawLabels(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * theMapToPixelTransform, QPaintDevice* dst)
+void QgsVectorLayer::drawLabels(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * theMapToPixelTransform)
 {
-  drawLabels(p, viewExtent, theMapToPixelTransform, dst, 1.);
+  drawLabels(p, viewExtent, theMapToPixelTransform, 1.);
 }
 
 // NOTE this is a temporary method added by Tim to prevent label clipping
 // which was occurring when labeller was called in the main draw loop
 // This method will probably be removed again in the near future!
-void QgsVectorLayer::drawLabels(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * theMapToPixelTransform, QPaintDevice* dst, double scale)
+void QgsVectorLayer::drawLabels(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * theMapToPixelTransform, double scale)
 {
 #ifdef QGISDEBUG
   qWarning("Starting draw of labels");
@@ -385,7 +385,7 @@ void QgsVectorLayer::drawLabels(QPainter * p, QgsRect * viewExtent, QgsMapToPixe
             bool sel=mSelected.find(fet->featureId()) != mSelected.end();
             mLabel->renderLabel ( p, viewExtent, *mCoordinateTransform, 
                 projectionsEnabledFlag,
-                theMapToPixelTransform, dst, fet, sel, 0, scale);
+                theMapToPixelTransform, fet, sel, 0, scale);
           }
         }
         delete fet;
@@ -398,7 +398,7 @@ void QgsVectorLayer::drawLabels(QPainter * p, QgsRect * viewExtent, QgsMapToPixe
       {
         bool sel=mSelected.find((*it)->featureId()) != mSelected.end();
         mLabel->renderLabel ( p, viewExtent, *mCoordinateTransform, projectionsEnabledFlag,
-            theMapToPixelTransform, dst, *it, sel, 0, scale);
+            theMapToPixelTransform, *it, sel, 0, scale);
       }
     }
     catch (QgsCsException &e)
@@ -788,13 +788,13 @@ std::cerr << i << ": " << ring->first[i]
 }
 
 
-void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * theMapToPixelTransform, QPaintDevice* dst)
+void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * theMapToPixelTransform)
 {
-  draw ( p, viewExtent, theMapToPixelTransform, dst, 1., 1.);
+  draw ( p, viewExtent, theMapToPixelTransform, 1., 1.);
 }
 
 void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * theMapToPixelTransform, 
-    QPaintDevice* dst, double widthScale, double symbolScale)
+    double widthScale, double symbolScale)
 {
   if ( /*1 == 1 */ m_renderer)
   {
@@ -844,6 +844,8 @@ void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * th
     mCachedGeometries.clear();
 
     dataProvider->select(viewExtent);
+    dataProvider->updateFeatureCount();
+    int totalFeatures = dataProvider->featureCount();
     int featureCount = 0;
     //  QgsFeature *ftest = dataProvider->getFirstFeature();
 #ifdef QGISDEBUG
@@ -870,7 +872,7 @@ void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * th
 #ifdef QGISDEBUG
         //      std::cout << "QgsVectorLayer::draw: got " << fet->featureId() << std::endl; 
 #endif
-
+    
         // XXX Something in our draw event is triggering an additional draw event when resizing [TE 01/26/06]
         // XXX Calling this will begin processing the next draw event causing image havoc and recursion crashes.
         //qApp->processEvents(); //so we can trap for esc press
@@ -879,14 +881,9 @@ void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * th
         // the threshold has been exceeded
         if(updateThreshold > 0)
         {
-          //copy the drawing buffer every updateThreshold elements
+          // signal progress in drawing
           if(0 == featureCount % updateThreshold)
-#if QT_VERSION < 0x040000
-            bitBlt(dst,0,0,p->device(),0,0,-1,-1,Qt::CopyROP,false);
-#else
-          // TODO: Double check if this is appropriate for Qt4 - probably better to use QPainter::drawPixmap().
-          bitBlt(dst,0,0,p->device(),0,0,-1,-1,Qt::AutoColor);
-#endif
+            emit drawingProgress(featureCount, totalFeatures);
         }
 
         if (fet == 0)

@@ -19,22 +19,8 @@
 #ifndef QGSVECTORLAYER_H
 #define QGSVECTORLAYER_H
 
-class QPainter;
-class QgsRect;
-class QLibrary;
-class QgsMapToPixel;
-class OGRLayer;
-class OGRDataSource;
-
-class QgisApp;
-class QgsMapToPixel;
-class QgsData;
-class QgsRenderer;
-class QgsLegendItem;
-class QgsGeometry;
-class QgsLabel;
-
 #include <map>
+#include <set>
 #include <vector>
 
 #include <QPixmap>
@@ -45,11 +31,26 @@ class QgsLabel;
 #include "qgsattributeaction.h"
 #include "qgsgeometry.h"
 #include "qgsgeometryvertexindex.h"
-#include "qgsvectordataprovider.h"
-#include "qgsvectorlayerproperties.h"
+
+class QPainter;
+class QLibrary;
+class OGRLayer;
+class OGRDataSource;
+
+class QgisApp;
 class QgsAttributeTableDisplay;
+class QgsData;
+class QgsGeometry;
+class QgsMapToPixel;
+class QgsLabel;
+class QgsLegendItem;
+class QgsRect;
+class QgsRenderer;
+class QgsVectorDataProvider;
+class QgsVectorLayerProperties;
 
 typedef std::map<int, std::map<QString,QString> > changed_attr_map;
+
 
 /*! \class QgsVectorLayer
  * \brief Vector layer backed by a data source provider
@@ -164,6 +165,9 @@ signals:
 
   /** This signal is emited when selection was changed */
   void selectionChanged(); 
+  
+  /** This signal is emitted when drawing features to tell current progress */
+  void drawingProgress(int current, int total);
   
 public slots:
 
@@ -403,12 +407,12 @@ public:
    *  \param widthScale line width scale
    *  \param symbolScale symbol scale
    */
-  void draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * cXf,  QPaintDevice * dst, double widthScale, double symbolScale);
+  void draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * cXf, double widthScale, double symbolScale);
 
   /** \brief Draws the layer labels using coordinate transformation
    *  \param scale size scale, applied to all values in pixels
    */
-  void drawLabels(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * cXf,  QPaintDevice * dst, double scale);
+  void drawLabels(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * cXf, double scale);
 
   /** returns array of added features */
   std::vector<QgsFeature*>& addedFeatures() { return mAddedFeatures; }
@@ -483,7 +487,7 @@ private:                       // Private attributes
 private:                       // Private attributes
 
   //! Draws the layer labels using coordinate transformation
-  void drawLabels(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * cXf,  QPaintDevice * dst);
+  void drawLabels(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * cXf);
 
   // Convenience function to transform the given point
   void transformPoint(double& x, double& y, 
@@ -516,7 +520,7 @@ private:                       // Private attributes
   void initContextMenu_(QgisApp *);
 
   //! Draws the layer using coordinate transformation
-  void draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * cXf,  QPaintDevice * dst);
+  void draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * cXf);
   //! Pointer to data provider derived from the abastract base class QgsDataProvider
   QgsVectorDataProvider *dataProvider;
   //! index of the primary label field

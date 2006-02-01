@@ -17,9 +17,11 @@
 #include "qgsmaptoolcapture.h"
 #include "qgsmapcanvas.h"
 #include "qgsmaptopixel.h"
-#include "qgsvectorlayer.h"
 #include "qgsfeature.h"
+#include "qgsproject.h"
 #include "qgsrubberband.h"
+#include "qgsvectorlayer.h"
+#include "qgsvectordataprovider.h"
 
 #include <QMessageBox>
 

@@ -23,6 +23,7 @@
 #include "qgssymbol.h"
 #include "qgsvectordataprovider.h"
 #include "qgsvectorlayer.h"
+#include "qgsvectorlayerproperties.h"
 
 #include <QColorDialog>
 

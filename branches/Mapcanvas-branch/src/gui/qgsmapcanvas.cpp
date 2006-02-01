@@ -152,6 +152,7 @@ class QgsMapCanvasMapImage : public Q3CanvasRectangle
   protected:
     void drawShape(QPainter & p)
     {
+      std::cerr << "~~~~~~~~~ drawing map pixmap" << std::endl;
       p.drawPixmap(int(x()), int(y()), *mPixmap);
     }
 
@@ -204,6 +205,8 @@ QgsMapCanvas::QgsMapCanvas()
   QgsMapCanvasMapImage* map = new QgsMapCanvasMapImage(mCanvas);
   map->setPixmap(mMapImage->pixmap());
   map->show();
+  
+  connect(mMapImage, SIGNAL(updateMap()), this, SLOT(updateMap()));
   
 } // QgsMapCanvas ctor
 
@@ -329,7 +332,7 @@ QgsMapLayer* QgsMapCanvas::currentLayer()
 void QgsMapCanvas::refresh()
 {
   clear();
-  render();
+  //render();
   update();
 } // refresh
 
@@ -351,32 +354,33 @@ void QgsMapCanvas::render()
       ///////////////////////////////////
       // RENDER
       if (mRenderFlag)
+      {
         mMapImage->render();
 
-      // make verys sure progress bar arrives at 100%!
-      emit setProgress(1,1);
-      
 #ifdef QGISDEBUG
-      std::cout << "QgsMapCanvas::render: Done rendering...emitting renderComplete(paint)\n";
+        std::cout << "QgsMapCanvas::render: Done rendering...emitting renderComplete(paint)\n";
 #endif
  
-      QPainter *paint = new QPainter();
-      paint->begin(mMapImage->pixmap());
-      
-      // notifies current map tool
-      if (mMapToolPtr)
-        mMapToolPtr->renderComplete();
-
-      // notify any listeners that rendering is complete
-      //note that pmCanvas is not draw to gui yet
-      emit renderComplete(paint);
-
-      paint->end();
-      mDrawing = false;
-      delete paint;
+        QPainter *paint = new QPainter();
+        paint->begin(mMapImage->pixmap());
+        
+        // notifies current map tool
+        if (mMapToolPtr)
+          mMapToolPtr->renderComplete();
+  
+        // notify any listeners that rendering is complete
+        //note that pmCanvas is not draw to gui yet
+        emit renderComplete(paint);
+  
+        paint->end();
+        mDrawing = false;
+        delete paint;
+        mDirty = false;
+        
+      }
     }
-    mDirty = false;
 
+    updateContents();
   }
 
 } // render
@@ -409,8 +413,8 @@ void QgsMapCanvas::drawContents(QPainter * p, int cx, int cy, int cw, int ch)
   
   if (mDirty)
   {
-    //mapImage()->setVisible(false);
     render();
+    return;
   }
 
   Q3CanvasView::drawContents(p,cx,cy,cw,ch);
@@ -736,7 +740,7 @@ void QgsMapCanvas::resizeEvent(QResizeEvent * e)
   
   mMapImage->setPixmapSize(width, height);
   updateScale();
-  clear();
+  refresh();
 } // resizeEvent
 
 
@@ -867,8 +871,7 @@ void QgsMapCanvas::layerStateChange()
 {
   // called when a layer has changed visibility setting
   
-  if (!mFrozen)
-    refresh();
+  refresh();
 
 } // layerStateChange
 
@@ -1051,4 +1054,12 @@ void QgsMapCanvas::emitPointEvent(QgsPoint& point, Qt::ButtonState state)
 {
   emit xyClickCoordinates(point);
   emit xyClickCoordinates(point,state);
+}
+
+
+void QgsMapCanvas::updateMap()
+{
+  // XXX updating is not possible since we're already in paint loop
+//  mCanvas->update();
+//  QApplication::processEvents();
 }
