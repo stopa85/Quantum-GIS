@@ -1080,8 +1080,7 @@ QPixmap QgsRasterLayer::getPaletteAsPixmap()
 
 void QgsRasterLayer::draw(QPainter * theQPainter,
                           QgsRect * theViewExtent,
-                          QgsMapToPixel * theQgsMapToPixel,
-                          QPaintDevice* dst)
+                          QgsMapToPixel * theQgsMapToPixel)
 {
 
 #ifdef QGISDEBUG
