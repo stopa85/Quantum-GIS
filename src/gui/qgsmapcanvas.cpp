@@ -267,7 +267,12 @@ QgsMapLayer* QgsMapCanvas::currentLayer()
 void QgsMapCanvas::refresh()
 {
   clear();
-  //render();
+#ifdef Q_WS_MACX
+  if (mDirty)
+  {
+    render();
+  }
+#endif
   update();
 } // refresh
 
@@ -339,7 +344,16 @@ void QgsMapCanvas::saveAsImage(QString theFileName, QPixmap * theQPixmap, QStrin
   }
 } // saveAsImage
 
+#ifdef Q_WS_MACX
+void QgsMapCanvas::paintEvent(QPaintEvent * ev)
+{
+  int cx, cy, cw, ch;
+  ev->rect().getRect(&cx, &cy, &cw, &ch);
+  QPainter p(this);
+  drawContents(&p, cx, cy, cw, ch);
+}
 
+#else
 void QgsMapCanvas::drawContents(QPainter * p, int cx, int cy, int cw, int ch)
 {
 #ifdef QGISDEBUG
@@ -354,6 +368,7 @@ void QgsMapCanvas::drawContents(QPainter * p, int cx, int cy, int cw, int ch)
 
   Q3CanvasView::drawContents(p,cx,cy,cw,ch);
 }
+#endif
 
 QgsMapCanvasMapImage* QgsMapCanvas::canvasMapImage()
 {
