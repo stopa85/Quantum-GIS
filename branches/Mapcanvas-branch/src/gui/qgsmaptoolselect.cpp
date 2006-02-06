@@ -30,7 +30,7 @@ QgsMapToolSelect::QgsMapToolSelect(QgsMapCanvas* canvas)
   : QgsMapTool(canvas), mDragging(false)
 {
   QPixmap mySelectQPixmap = QPixmap((const char **) select_cursor);
-  mCanvas->setCursor(QCursor(mySelectQPixmap, 1, 1));
+  mCursor = QCursor(mySelectQPixmap, 1, 1);
 }
 
 

@@ -37,7 +37,7 @@ QgsMapToolIdentify::QgsMapToolIdentify(QgsMapCanvas* canvas)
 {
   // set cursor
   QPixmap myIdentifyQPixmap = QPixmap((const char **) identify_cursor);
-  mCanvas->setCursor(QCursor(myIdentifyQPixmap, 1, 1));
+  mCursor = QCursor(myIdentifyQPixmap, 1, 1);
 }
     
 QgsMapToolIdentify::~QgsMapToolIdentify()

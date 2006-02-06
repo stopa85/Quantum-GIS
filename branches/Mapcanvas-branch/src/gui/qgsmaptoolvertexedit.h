@@ -48,7 +48,7 @@ class QgsMapToolVertexEdit : public QgsMapTool
     //! Overridden mouse release event
     virtual void canvasReleaseEvent(QMouseEvent * e);
 
-    virtual const char* toolName() { return MapTool_VertexEdit; }
+    virtual QString toolName() { return MapTool_VertexEdit; }
     
   private:
     

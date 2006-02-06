@@ -86,7 +86,7 @@ class QgsMapCanvasMapImage : public Q3CanvasRectangle
   protected:
     void drawShape(QPainter & p)
     {
-      std::cerr << "~~~~~~~~~ drawing map pixmap" << std::endl;
+      std::cerr << "~~~~~~~~~ drawing map pixmap at " << x() << "," << y() << std::endl;
       p.drawPixmap(int(x()), int(y()), *mPixmap);
     }
 
@@ -139,6 +139,8 @@ QgsMapCanvas::QgsMapCanvas()
   map->setPixmap(mMapImage->pixmap());
   map->setZ(-10);
   map->show();
+  
+  moveCanvasContents(TRUE);
   
   connect(mMapImage, SIGNAL(updateMap()), this, SLOT(updateMap()));
   
@@ -267,12 +269,6 @@ QgsMapLayer* QgsMapCanvas::currentLayer()
 void QgsMapCanvas::refresh()
 {
   clear();
-#ifdef Q_WS_MACX
-  if (mDirty)
-  {
-    render();
-  }
-#endif
   update();
 } // refresh
 
@@ -344,31 +340,24 @@ void QgsMapCanvas::saveAsImage(QString theFileName, QPixmap * theQPixmap, QStrin
   }
 } // saveAsImage
 
-#ifdef Q_WS_MACX
 void QgsMapCanvas::paintEvent(QPaintEvent * ev)
 {
+#ifdef QGISDEBUG
+  std::cout << "QgsMapCanvas::paintEvent" << std::endl;
+  QRect cr = contentsRect();
+  std::cout << "contents rect: " << cr.x() << " " << cr.y() << " " << cr.width() << " " << cr.height() << std::endl;
+  QRect vr = viewport()->rect();
+  std::cout << "viewport rect: " << vr.x() << " " << vr.y() << " " << vr.width() << " " << vr.height() << std::endl;
+#endif
+  
+  if (mDirty)
+    render();
+  
   int cx, cy, cw, ch;
   ev->rect().getRect(&cx, &cy, &cw, &ch);
   QPainter p(this);
   drawContents(&p, cx, cy, cw, ch);
 }
-
-#else
-void QgsMapCanvas::drawContents(QPainter * p, int cx, int cy, int cw, int ch)
-{
-#ifdef QGISDEBUG
-  std::cout << "QgsMapCanvas::drawContents" << std::endl;
-#endif
-  
-  if (mDirty)
-  {
-    render();
-    return;
-  }
-
-  Q3CanvasView::drawContents(p,cx,cy,cw,ch);
-}
-#endif
 
 QgsMapCanvasMapImage* QgsMapCanvas::canvasMapImage()
 {
@@ -660,21 +649,15 @@ void QgsMapCanvas::keyReleaseEvent(QKeyEvent * e)
   }
 } //keyReleaseEvent()
 
+
 void QgsMapCanvas::contentsMousePressEvent(QMouseEvent * e)
 {
   // call handler of current map tool
   if (mMapTool)
-    mMapTool->canvasPressEvent(e);
+    mMapTool->canvasPressEvent(e);  
   
   if (mCanvasProperties->panSelectorDown)
     return;
-
-  // right button was pressed in zoom tool, return to previous non zoom tool
-  QString name = mMapTool->toolName();
-  if (e->button() == Qt::RightButton && (mMapTool->toolName() == MapTool_Zoom || mMapTool->toolName() == MapTool_Pan))
-  {
-    return;
-  }
 
   mCanvasProperties->mouseButtonDown = true;
   mCanvasProperties->rubberStartPoint = e->pos();
@@ -686,30 +669,33 @@ void QgsMapCanvas::contentsMouseReleaseEvent(QMouseEvent * e)
 {
   // call handler of current map tool
   if (mMapTool)
+  {
     mMapTool->canvasReleaseEvent(e);
+    
+    // right button was pressed in zoom tool? return to previous non zoom tool
+    QString name = mMapTool->toolName();
+    if (e->button() == Qt::RightButton && (name == MapTool_Zoom || name == MapTool_Pan))
+    {
+#ifdef QGISDEBUG
+      std::cout << "Right click in map tool zoom or pan, last tool is " << (mLastNonZoomMapTool ? "not null." : "null.") <<  std::endl;
+#endif
 
+      // change to older non-zoom tool
+      if (mLastNonZoomMapTool)
+      {
+        QgsMapTool* t = mLastNonZoomMapTool;
+        mLastNonZoomMapTool = NULL;
+        setMapTool(t);
+      }
+      return;
+    }
+  }
+
+  
   mCanvasProperties->mouseButtonDown = false;
 
   if (mCanvasProperties->panSelectorDown)
     return;
-
-  // right button was pressed in zoom tool, return to previous non zoom tool
-  QString name = mMapTool->toolName();
-  if (e->button() == Qt::RightButton && (name == MapTool_Zoom || name == MapTool_Pan))
-  {
-#ifdef QGISDEBUG
-    std::cout << "Right click in map tool zoom or pan, last tool is " << (mLastNonZoomMapTool ? "not null." : "null.") <<  std::endl;
-#endif
-
-    // change to older non-zoom tool
-    if (mLastNonZoomMapTool)
-    {
-      QgsMapTool* t = mLastNonZoomMapTool;
-      mLastNonZoomMapTool = NULL;
-      setMapTool(t);
-    }
-    return;
-  }
 
 } // mouseReleaseEvent
 
@@ -748,10 +734,6 @@ void QgsMapCanvas::zoomWithCenter(int x, int y, bool zoomIn)
 
 void QgsMapCanvas::contentsMouseMoveEvent(QMouseEvent * e)
 {
-  // call handler of current map tool
-  if (mMapTool)
-    mMapTool->canvasMoveEvent(e);
-  
   mCanvasProperties->mouseLastXY = e->pos();
 
   if (mCanvasProperties->panSelectorDown)
@@ -759,6 +741,10 @@ void QgsMapCanvas::contentsMouseMoveEvent(QMouseEvent * e)
     panAction(e);
   }
 
+  // call handler of current map tool
+  if (mMapTool)
+    mMapTool->canvasMoveEvent(e);
+    
   // show x y on status bar
   QPoint xy = e->pos();
   QgsPoint coord = getCoordinateTransform()->toMapCoordinates(xy);
@@ -783,31 +769,40 @@ void QgsMapCanvas::zoomByScale(int x, int y, double scaleFactor)
 /** Sets the map tool currently being used on the canvas */
 void QgsMapCanvas::setMapTool(QgsMapTool* tool)
 {
-  // make action active
-  if (tool->action())
-    tool->action()->setOn(true);
+  if (mMapTool)
+    mMapTool->deactivate();
   
-  if (tool->toolName() == MapTool_Zoom || tool->toolName() == MapTool_Pan)
-  {
+#ifdef QGISDEBUG
+  std::cout << "setMapTool: using tool " <<
+      (tool ? tool->toolName().toLocal8Bit().data() : "null") << std::endl;
+#endif
+  
+  if (tool && (tool->toolName() == MapTool_Zoom || tool->toolName() == MapTool_Pan))
+  {        
     // if zoom or pan tool will be active, save old tool
     // to bring it back on right click
-    if (mMapTool->toolName() == MapTool_Zoom || mMapTool->toolName() == MapTool_Pan)
+    // (but only if it wasn't also zoom or pan tool)
+    if (mMapTool && mMapTool->toolName() != MapTool_Zoom && mMapTool->toolName() != MapTool_Pan)
     {
       delete mLastNonZoomMapTool;
       mLastNonZoomMapTool = mMapTool;
     }
+    
   }
   else
-  {
+  {    
     // if there's already an old tool, delete it
     delete mLastNonZoomMapTool;
     mLastNonZoomMapTool = NULL;
   
-    // non-zoom map tool
+    // delete current map tool
     delete mMapTool;
   }
   
+  // set new map tool and activate it
   mMapTool = tool;
+  if (mMapTool)
+    mMapTool->activate();
 
 } // setMapTool
 
@@ -957,9 +952,9 @@ QgsMapTool* QgsMapCanvas::mapTool()
 
 void QgsMapCanvas::panActionEnd(QPoint releasePoint)
 {
-  // move map image to standard position
-  canvasMapImage()->move(0,0);
-  //setContentsPos(0,0);
+  // move map image and other items to standard position
+  moveCanvasContents(TRUE); // TRUE means reset
+  //canvasMapImage()->move(0,0);
   
   // use start and end box points to calculate the extent
   QgsPoint start = getCoordinateTransform()->toMapCoordinates(mCanvasProperties->rubberStartPoint);
@@ -994,7 +989,7 @@ void QgsMapCanvas::panActionEnd(QPoint releasePoint)
     r.setYmin(r.yMin() - dy);
 
   }
-
+  
   setExtent(r);
   refresh();
 }
@@ -1005,23 +1000,37 @@ void QgsMapCanvas::panAction(QMouseEvent * e)
   std::cout << "QgsMapCanvas::panAction: entering." << std::endl;
 #endif
 
-  // move map image...
-  QPoint pnt = e->pos() - mCanvasProperties->rubberStartPoint;
-  canvasMapImage()->move(pnt.x(), pnt.y());
+  // move all map canvas items
+  moveCanvasContents();
   
-  // move all map canvas items - doesn't work well
-  // since only rectangles are moved, painting goes to the same area
-/*  Q3CanvasItemList list = mCanvas->allItems();
+  // update canvas
+  update();
+  //canvas()->update();
+}
+
+
+void QgsMapCanvas::moveCanvasContents(bool reset)
+{
+  QPoint pnt = viewport()->pos();
+  if (!reset)
+    pnt += mCanvasProperties->mouseLastXY - mCanvasProperties->rubberStartPoint;
+  
+  Q3CanvasItemList list = mCanvas->allItems();
   Q3CanvasItemList::iterator it = list.begin();
   while (it != list.end())
   {
     Q3CanvasItem* item = *it;
+    
+    // this will only move items virtually
     item->move(pnt.x(), pnt.y());
-    it++;
-}*/
+    
+    // this tells map canvas item to draw with offset
+    QgsMapCanvasItem* canvasItem = dynamic_cast<QgsMapCanvasItem*>(item);
+    if (canvasItem)
+      canvasItem->setPanningOffset(pnt);
   
-  // update canvas
-  canvas()->update();
+    it++;
+  }
 }
 
 

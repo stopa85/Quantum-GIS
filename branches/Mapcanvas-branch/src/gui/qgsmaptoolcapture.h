@@ -53,7 +53,7 @@ class QgsMapToolCapture : public QgsMapTool
     //! Resize rubber band
     virtual void renderComplete();
     
-    virtual const char* toolName() { return MapTool_Capture; }
+    virtual QString toolName() { return MapTool_Capture; }
   
   protected:
     

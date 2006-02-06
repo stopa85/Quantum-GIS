@@ -391,7 +391,7 @@ void QgisApp::createActions()
   mActionFileSaveAs= new QAction(QIcon(myIconPath+"/mActionFileSaveAs.png"), tr("Save Project &As..."), this);
   mActionFileSaveAs->setShortcut(tr("Ctrl+A"));
   mActionFileSaveAs->setStatusTip(tr("Save Project under a new name"));
-  connect(mActionFileSaveAs, SIGNAL(triggered()), this, SLOT(fileSaveAS()));
+  connect(mActionFileSaveAs, SIGNAL(triggered()), this, SLOT(fileSaveAs()));
   //
   mActionFilePrint= new QAction(QIcon(myIconPath+"/mActionFilePrint.png"), tr("&Print"), this);
   mActionFilePrint->setShortcut(tr("Ctrl+P"));
@@ -3483,7 +3483,7 @@ void QgisApp::capturePolygon()
 
 void QgisApp::select()
 {
-  QgsMapTool* t = new QgsMapToolCapture(mMapCanvas, QgsMapToolCapture::CapturePoint);
+  QgsMapTool* t = new QgsMapToolSelect(mMapCanvas);
   t->setAction(mActionSelect);
   mMapCanvas->setMapTool(t);
 }

@@ -39,7 +39,7 @@ class QgsMapToolZoom : public QgsMapTool
     //! Overridden mouse release event
     virtual void canvasReleaseEvent(QMouseEvent * e);
 
-    virtual const char* toolName() { return MapTool_Zoom; }
+    virtual QString toolName() { return MapTool_Zoom; }
     
   protected:
     //! stores actual zoom rect

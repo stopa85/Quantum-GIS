@@ -258,8 +258,13 @@ bool QgsMapLayer::readXML( QDomNode & layer_node )
     
     //read transparency level
     QDomNode transparencyNode = layer_node.namedItem("transparencyLevelInt");
-    QDomElement myElement = transparencyNode.toElement();
-    setTransparency(myElement.text().toInt());
+    if ( ! transparencyNode.isNull() )
+    {
+      // set transparency level only if it's in project
+      // (otherwise it sets the layer transparent)
+      QDomElement myElement = transparencyNode.toElement();
+      setTransparency(myElement.text().toInt());
+    }
 
 
     // now let the children grab what they need from the DOM node.
