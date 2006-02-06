@@ -17,11 +17,10 @@
 #include "qgsmaptool.h"
 #include "qgsmapcanvas.h"
 #include "qgsmaptopixel.h"
-#include <QCursor>
-
+#include <QAction>
 
 QgsMapTool::QgsMapTool(QgsMapCanvas* canvas)
-  : mCanvas(canvas), mCursor(NULL)
+  : mCanvas(canvas), mCursor(Qt::CrossCursor)
 {
 }
 
@@ -42,4 +41,20 @@ QPoint QgsMapTool::toCanvasCoords(const QgsPoint& point)
   double x = point.x(), y = point.y();
   mCanvas->getCoordinateTransform()->transformInPlace(x,y);
   return QPoint((int)(x+0.5), (int)(y+0.5)); // round the values
+}
+
+
+void QgsMapTool::activate()
+{
+  // make action active
+  if (mAction)
+    mAction->setOn(true);
+  
+  // set cursor (map tools usually set it in constructor
+  mCanvas->setCursor(mCursor);
+}
+    
+
+void QgsMapTool::deactivate()
+{
 }

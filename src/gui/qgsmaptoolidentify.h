@@ -50,7 +50,7 @@ class QgsMapToolIdentify : public QgsMapTool
     //! Overridden mouse release event
     virtual void canvasReleaseEvent(QMouseEvent * e);
     
-    virtual const char* toolName() { return MapTool_Identify; }
+    virtual QString toolName() { return MapTool_Identify; }
     
   private:
     

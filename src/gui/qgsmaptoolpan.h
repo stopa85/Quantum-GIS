@@ -37,7 +37,7 @@ class QgsMapToolPan : public QgsMapTool
     //! Overridden mouse release event
     virtual void canvasReleaseEvent(QMouseEvent * e);
     
-    virtual const char* toolName() { return MapTool_Pan; }
+    virtual QString toolName() { return MapTool_Pan; }
     
   private:
     

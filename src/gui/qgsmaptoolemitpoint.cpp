@@ -22,7 +22,7 @@
 QgsMapToolEmitPoint::QgsMapToolEmitPoint(QgsMapCanvas* canvas)
   : QgsMapTool(canvas)
 {
-  canvas->setCursor(Qt::CrossCursor);
+  mCursor = Qt::CrossCursor;
 }
     
     

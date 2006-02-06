@@ -32,7 +32,7 @@ QgsMapToolZoom::QgsMapToolZoom(QgsMapCanvas* canvas, bool zoomOut)
 {
   // set the cursor
   QPixmap myZoomQPixmap = QPixmap((const char **) (zoomOut ? zoom_out : zoom_in));  
-  mCanvas->setCursor(QCursor(myZoomQPixmap, 7, 7));
+  mCursor = QCursor(myZoomQPixmap, 7, 7);
 }
 
 

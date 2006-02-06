@@ -24,7 +24,8 @@
 #include <QPainter>
 
 QgsMapCanvasItem::QgsMapCanvasItem(QgsMapCanvas* mapCanvas)
-  : Q3CanvasRectangle(mapCanvas->canvas()), mMapCanvas(mapCanvas), mResizeType(ResizeAuto)
+  : Q3CanvasRectangle(mapCanvas->canvas()), mMapCanvas(mapCanvas),
+    mResizeType(ResizeAuto), mPanningOffset(0,0)
 {
   //setCanvas(mapCanvas->canvas());
   connect(mapCanvas, SIGNAL(extentsChanged(QgsRect)), this, SLOT(updatePosition()));
@@ -37,7 +38,7 @@ QgsMapCanvasItem::~QgsMapCanvasItem()
 
 QgsPoint QgsMapCanvasItem::toMapCoords(const QPoint& point)
 {
-  return mMapCanvas->getCoordinateTransform()->toMapCoordinates(point);
+  return mMapCanvas->getCoordinateTransform()->toMapCoordinates(point - mPanningOffset);
 }
     
 
@@ -45,7 +46,7 @@ QPoint QgsMapCanvasItem::toCanvasCoords(const QgsPoint& point)
 {
   double x = point.x(), y = point.y();
   mMapCanvas->getCoordinateTransform()->transformInPlace(x,y);
-  return QPoint((int)(x+0.5), (int)(y+0.5)); // round the values
+  return QPoint((int)(x+0.5), (int)(y+0.5)) + mPanningOffset; // round the values
 }
     
     
@@ -109,4 +110,9 @@ void QgsMapCanvasItem::updateCanvas()
 void QgsMapCanvasItem::setResizeType(ResizeType type)
 {
   mResizeType = type;
+}
+
+void QgsMapCanvasItem::setPanningOffset(const QPoint& point)
+{
+  mPanningOffset = point;
 }

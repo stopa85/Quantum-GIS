@@ -34,7 +34,7 @@ QgsMapToolCapture::QgsMapToolCapture(QgsMapCanvas* canvas, enum CaptureTool tool
   mCapturing = FALSE;
   
   QPixmap mySelectQPixmap = QPixmap((const char **) capture_point_cursor);
-  mCanvas->setCursor(QCursor(mySelectQPixmap, 8, 8));
+  mCursor = QCursor(mySelectQPixmap, 8, 8);
 }
 
 

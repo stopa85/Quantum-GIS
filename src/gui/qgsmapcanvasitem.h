@@ -47,6 +47,9 @@ class QgsMapCanvasItem : public QObject, public Q3CanvasRectangle
   
   public:
     
+    //! sets current offset, to be called from QgsMapCanvas
+    void setPanningOffset(const QPoint& point);
+    
     //! returns canvas item rectangle
     QgsRect rect();
     
@@ -78,6 +81,10 @@ class QgsMapCanvasItem : public QObject, public Q3CanvasRectangle
     
     //! determines which position updating policy will be used
     ResizeType mResizeType;
+
+    //! offset from normal position due current panning operation,
+    //! used when converting map coordinates to move map canvas items
+    QPoint mPanningOffset;
 };
 
 

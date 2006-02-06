@@ -318,16 +318,14 @@ private:
     //! Overridden resize event
     void resizeEvent(QResizeEvent * e);
 
-#ifdef Q_WS_MACX
     //! Overridden paint event
     void paintEvent(QPaintEvent * ev);
-#else
-    //! Overridden draw contents from canvas view
-    void drawContents(QPainter * p, int cx, int cy, int cw, int ch);
-#endif
 
     //! Zooms to a given center and scale 
     void zoomByScale(int x, int y, double scaleFactor);
+    
+    //! called when panning is in action, reset indicates end of panning
+    void moveCanvasContents(bool reset = FALSE);
 
     //! determines whether user has requested to suppress rendering
     bool mRenderFlag;
