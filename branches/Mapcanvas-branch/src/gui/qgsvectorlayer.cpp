@@ -40,24 +40,22 @@
 #include <netinet/in.h>
 #endif
 
+#include <Q3ListView>
+#include <Q3Picture>
+#include <Q3PopupMenu>
+#include <Q3ProgressDialog>
+
 #include <QAction>
-#include <qapplication.h>
-#include <qcursor.h>
-#include <q3listview.h>
-#include <qpainter.h>
-#include <q3pointarray.h>
-#include <qstring.h>
-#include <qmessagebox.h>
-#include <q3popupmenu.h>
-#include <qlabel.h>
-#include <q3listview.h>
-#include <qlibrary.h>
-#include <q3picture.h>
-#include <q3progressdialog.h>
-#include <qsettings.h>
-#include <qwidget.h>
-#include <qwidget.h>
-#include <qglobal.h>
+#include <QApplication>
+#include <QCursor>
+#include <QLabel>
+#include <QLibrary>
+#include <QMessageBox>
+#include <QPainter>
+#include <QPolygonF>
+#include <QString>
+#include <QSettings>
+#include <QWidget>
 
 #include "qgsapplication.h"
 #include "qgisapp.h"
@@ -472,13 +470,6 @@ unsigned char* QgsVectorLayer::drawLineString(unsigned char* feature,
   // Transform the points into map coordinates (and reproject if
   // necessary)
 
-  double oldx = x[0];
-  double oldy = y[0];
-
-#ifdef QGISDEBUG 
-  //std::cout <<"...WKBLineString start at (" << oldx << ", " << oldy << ")" <<std::endl;
-#endif
-
   transformPoints(x, y, z, mtp, projectionsEnabledFlag);
 
 #if defined(Q_WS_X11)
@@ -487,7 +478,7 @@ unsigned char* QgsVectorLayer::drawLineString(unsigned char* feature,
   // Look through the x and y coordinates and see if there are any
   // that need trimming. If one is found, there's no need to look at
   // the rest of them so end the loop at that point. 
-  for (register int i = 0; i < nPoints; ++i)
+  for (register unsigned int i = 0; i < nPoints; ++i)
     if (std::abs(x[i]) > QgsClipper::maxX ||
         std::abs(y[i]) > QgsClipper::maxY)
     {
@@ -497,20 +488,14 @@ unsigned char* QgsVectorLayer::drawLineString(unsigned char* feature,
     }
 #endif
 
-  // Cast points to int and put into the appropriate storage for the
-  // call to QPainter::drawFeature(). Apparently QT 4 will allow
-  // calls to drawPolyline with a QPointArray holding floats (or
-  // doubles?), so this loop may become unnecessary (but may still need
-  // the double* versions for the OGR coordinate transformation).
-  Q3PointArray pa(nPoints);
-  for (register int i = 0; i < nPoints; ++i)
+  // set up QPolygonF class with transformed points
+  QPolygonF pa(nPoints);
+  for (register unsigned int i = 0; i < nPoints; ++i)
   {
-    // Here we assume that a static cast is as fast as a C style case
-    // since type checking is done at compile time rather than
-    // runtime.
-    pa.setPoint(i, static_cast<int>(x[i] + 0.5),
-        static_cast<int>(y[i] + 0.5));
+    pa[i].setX(x[i]);
+    pa[i].setY(y[i]);
   }
+  
 #ifdef QGISDEBUGVERBOSE
   // this is only used for verbose debug output
   for (int i = 0; i < pa.size(); ++i)
@@ -535,7 +520,7 @@ unsigned char* QgsVectorLayer::drawLineString(unsigned char* feature,
   p->drawPolyline(pa);
   //restore the pen
   p->setPen(pen);
-
+  
   return ptr;
 }
 
@@ -566,7 +551,7 @@ unsigned char* QgsVectorLayer::drawPolygon(unsigned char* feature,
 
   for (register unsigned int idx = 0; idx < numRings; idx++)
   {
-    int nPoints = *((int*)ptr);
+    unsigned int nPoints = *((int*)ptr);
 
     ringTypePtr ring = new ringType(std::vector<double>(nPoints),
         std::vector<double>(nPoints));
@@ -605,15 +590,6 @@ std::cerr << jdx << ": "
       continue;
     }
 
-    // Transform the points into map coordinates (and reproject if
-    // necessary)
-    double oldx = ring->first[0];
-    double oldy = ring->second[0];
-
-#ifdef QGISDEBUG 
-    //std::cout <<"...WKBLineString start at (" << oldx << ", " << oldy << ")" <<std::endl;
-#endif
-
     transformPoints(ring->first, ring->second, zVector, mtp, projectionsEnabledFlag);
 
 #if defined(Q_WS_X11)
@@ -622,7 +598,7 @@ std::cerr << jdx << ": "
     // Look through the x and y coordinates and see if there are any
     // that need trimming. If one is found, there's no need to look at
     // the rest of them so end the loop at that point. 
-    for (register int i = 0; i < nPoints; ++i)
+    for (register unsigned int i = 0; i < nPoints; ++i)
     {
       if (std::abs(ring->first[i]) > QgsClipper::maxX ||
           std::abs(ring->second[i]) > QgsClipper::maxY)
@@ -660,14 +636,14 @@ std::cerr << i << ": " << ring->first[i]
   if (total_points > 0)
   {
     int ii = 0;
-    QPoint outerRingPt;
+    QPointF outerRingPt;
 
     // Stores the start index of each ring (first) and the number
     // of points in each ring (second).
     typedef std::vector<std::pair<unsigned int, unsigned int> > ringDetailType;
     ringDetailType ringDetails;
 
-    // Need to copy the polygon vertices into a QPointArray for the
+    // Need to copy the polygon vertices into a QPologynF for the
     // QPainter::drawpolygon() call. The size is the sum of points in
     // the polygon plus one extra point for each ring except for the
     // first ring.
@@ -675,7 +651,7 @@ std::cerr << i << ": " << ring->first[i]
     // Store size here and use it in the loop to avoid penalty of
     // multiple calls to size()
     int numRings = rings.size();
-    Q3PointArray pa(total_points + numRings - 1);
+    QPolygonF pa(total_points + numRings - 1);
     for (register int i = 0; i < numRings; ++i)
     {
       // Store the pointer in a variable with a short name so as to make
@@ -688,34 +664,39 @@ std::cerr << i << ": " << ring->first[i]
       // points in the ring.
       ringDetails.push_back(std::make_pair(ii, ringSize));
 
-      // Transfer points to the QPointArray
-      for (register int j = 0; j != ringSize; ++j)
-        pa.setPoint(ii++, static_cast<int>(r->first[j] + 0.5),
-            static_cast<int>(r->second[j] + 0.5));
+      // Transfer points to the array of QPointF
+      for (register unsigned int j = 0; j != ringSize; ++j, ++ii)
+      {
+        // there is maybe a bug in Qt4.1: when using doubles without rounding,
+        // I've experienced crashes (broken pipe) when drawing polygon
+        // with more than 3000 vertices  [MD]
+        pa[ii].setX(static_cast<int>(r->first[j] + 0.5));
+        pa[ii].setY(static_cast<int>(r->second[j] + 0.5));
+//        pa[ii].setX(r->first[j]);
+//        pa[ii].setY(r->second[j]);
+      }
 
       // Store the last point of the first ring, and insert it at
       // the end of all other rings. This makes all the other rings
       // appear as holes in the first ring.
       if (i == 0)
       {
-        outerRingPt.setX(pa.point(ii-1).x());
-        outerRingPt.setY(pa.point(ii-1).y());
+        outerRingPt.setX(pa[ii-1].x());
+        outerRingPt.setY(pa[ii-1].y());
       }
       else
-        pa.setPoint(ii++, outerRingPt);
+        pa[ii++] = outerRingPt;
 
       // Tidy up the pointed to pairs of vectors as we finish with them
       delete rings[i];
     }
-
 
 #ifdef QGISDEBUGVERBOSE
     // this is only for verbose debug output -- no optimzation is 
     // needed :)
     std::cerr << "Pixel points are:\n";
     for (int i = 0; i < pa.size(); ++i)
-      std::cerr << i << ": " << pa.point(i).x() << ", " 
-        << pa.point(i).y() << '\n';
+      std::cerr << i << ": " << pa[i].x() << ", " << pa[i].y() << '\n';
     std::cerr << "Ring positions are:\n";
     for (int i = 0; i < ringDetails.size(); ++i)
       std::cerr << ringDetails[i].first << ", "
@@ -775,15 +756,16 @@ std::cerr << i << ": " << ring->first[i]
     ringDetailType::const_iterator ri = ringDetails.begin();
 
     for (; ri != ringDetails.end(); ++ri)
-      p->drawPolygon(pa, FALSE, ri->first, ri->second);
+      p->drawPolygon(pa.constData() + ri->first, ri->second, Qt::OddEvenFill);
     
     //
     //restore brush and pen to original
     //
     p->setBrush ( brush );
     p->setPen ( pen );
-  }
-
+  
+  } // totalPoints > 0
+  
   return ptr;
 }
 
@@ -3177,12 +3159,11 @@ void QgsVectorLayer::drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * t
 #endif
 
         transformPoint(x, y, theMapToPixelTransform, projectionsEnabledFlag);
+        QPointF pt(x - (marker->width()/2),  y - (marker->height()/2));
 
         p->save();
         p->scale(markerScaleFactor,markerScaleFactor);
-        p->drawPixmap(static_cast<int>(x-(marker->width()/2)) ,
-            static_cast<int>(y-(marker->height()/2) ),
-            *marker);
+        p->drawPixmap(pt, *marker);
         p->restore();
 
         break;
@@ -3196,7 +3177,7 @@ void QgsVectorLayer::drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * t
         p->save();
         p->scale(markerScaleFactor, markerScaleFactor);
 
-        for (register int i = 0; i < nPoints; ++i)
+        for (register unsigned int i = 0; i < nPoints; ++i)
         {
           ptr += 5;
           double x = *((double *) ptr);
@@ -3209,7 +3190,8 @@ void QgsVectorLayer::drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * t
 #endif
 
           transformPoint(x, y, theMapToPixelTransform, projectionsEnabledFlag);
-
+          QPointF pt(x - (marker->width()/2),  y - (marker->height()/2));
+          
 #if defined(Q_WS_X11)
           // Work around a +/- 32768 limitation on coordinates in X11
           if (std::abs(x) > QgsClipper::maxX ||
@@ -3217,9 +3199,7 @@ void QgsVectorLayer::drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * t
             needToTrim = true;
           else
 #endif
-          p->drawPixmap(static_cast<int>(x-(marker->width()/2)) ,
-                static_cast<int>(y-(marker->height()/2) ),
-                *marker);
+          p->drawPixmap(pt, *marker);
         }
         p->restore();
 
@@ -3237,7 +3217,7 @@ void QgsVectorLayer::drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * t
         unsigned int numLineStrings = *((int*)ptr);
         ptr = feature + 9;
 
-        for (register int jdx = 0; jdx < numLineStrings; jdx++)
+        for (register unsigned int jdx = 0; jdx < numLineStrings; jdx++)
         {
           ptr = drawLineString(ptr, p, theMapToPixelTransform,
               projectionsEnabledFlag);
@@ -3255,7 +3235,7 @@ void QgsVectorLayer::drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * t
         unsigned char *ptr = feature + 5;
         unsigned int numPolygons = *((int*)ptr);
         ptr = feature + 9;
-        for (register int kdx = 0; kdx < numPolygons; kdx++)
+        for (register unsigned int kdx = 0; kdx < numPolygons; kdx++)
           ptr = drawPolygon(ptr, p, theMapToPixelTransform, 
               projectionsEnabledFlag);
         break;
