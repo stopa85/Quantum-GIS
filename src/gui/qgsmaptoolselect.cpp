@@ -53,7 +53,7 @@ void QgsMapToolSelect::canvasMoveEvent(QMouseEvent * e)
   }
   
   mSelectRect.setBottomRight(e->pos());
-  mRubberBand->setGeometry(mSelectRect);
+  mRubberBand->setGeometry(mSelectRect.normalized());
   mRubberBand->show();
 }
 

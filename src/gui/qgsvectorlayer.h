@@ -36,6 +36,7 @@ class QPainter;
 class QLibrary;
 class OGRLayer;
 class OGRDataSource;
+class QPixmap;
 
 class QgisApp;
 class QgsAttributeTableDisplay;
@@ -50,7 +51,6 @@ class QgsVectorDataProvider;
 class QgsVectorLayerProperties;
 
 typedef std::map<int, std::map<QString,QString> > changed_attr_map;
-
 
 /*! \class QgsVectorLayer
  * \brief Vector layer backed by a data source provider
