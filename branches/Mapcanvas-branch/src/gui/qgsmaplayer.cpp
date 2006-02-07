@@ -22,13 +22,13 @@
 #include <cmath>
 
 #include <qgsapplication.h>
-#include <qdatetime.h>
-#include <qdom.h>
-#include <qfileinfo.h>
-#include <qlabel.h>
-#include <q3listview.h>
-#include <qpainter.h>
-#include <qevent.h>
+#include <QDateTime>
+#include <QDomNode>
+#include <QFileInfo>
+#include <QPainter>
+#include <QAction>
+#include <QKeyEvent>
+#include <QMenu>
 
 #include "qgisapp.h"
 #include "qgsmaptopixel.h"
@@ -37,13 +37,6 @@
 #include "qgssymbol.h"
 #include "qgsmaplayer.h"
 #include "qgslegendlayerfile.h"
-#include "qgslegendsymbologygroup.h"
-//Added by qt3to4:
-#include <QAction>
-#include <QPixmap>
-#include <QKeyEvent>
-#include <Q3Frame>
-
 
 
 
@@ -58,7 +51,7 @@ QgsMapLayer::QgsMapLayer(int type,
         mShowInOverviewAction(0),
         mShowInOverview(false),
         mCoordinateTransform(0),
-        mLegendSymbologyGroupParent(0),
+        mLegend(0),
         mLegendLayerFile(0),
         ID(""),
         layerType(type),

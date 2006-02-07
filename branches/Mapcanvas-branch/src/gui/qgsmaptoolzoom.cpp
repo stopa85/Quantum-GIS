@@ -48,7 +48,7 @@ void QgsMapToolZoom::canvasMoveEvent(QMouseEvent * e)
     mZoomRect.setTopLeft(e->pos());
   }
   mZoomRect.setBottomRight(e->pos());
-  mRubberBand->setGeometry(mZoomRect);
+  mRubberBand->setGeometry(mZoomRect.normalized());
   mRubberBand->show();
 }
 

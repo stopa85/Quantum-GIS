@@ -52,7 +52,9 @@
 #include <QLibrary>
 #include <QMessageBox>
 #include <QPainter>
+#include <QPixmap>
 #include <QPolygonF>
+#include <QProgressDialog>
 #include <QString>
 #include <QSettings>
 #include <QWidget>
@@ -67,9 +69,7 @@
 #include "qgsattributetable.h"
 #include "qgsfeature.h"
 #include "qgsfield.h"
-#include "qgslegenditem.h"
-#include "qgslegendvectorsymbologyitem.h"
-#include "qgslegendsymbologygroup.h"
+#include "qgslegend.h"
 #include "qgsvectorlayerproperties.h"
 #include "qgsrenderer.h"
 #include "qgssinglesymrenderer.h"
@@ -1139,13 +1139,12 @@ void QgsVectorLayer::invertSelection()
 
   if(tabledisplay)
   {
-    //todo: show progress dialog
-    Q3ProgressDialog progress( "Invert Selection...", "Abort", mSelected.size(), 0, "progress", TRUE );
+    QProgressDialog progress( tr("Invert Selection..."), tr("Abort"), 0, mSelected.size(), tabledisplay);
     int i=0;
     for(std::set<int>::iterator iter=mSelected.begin();iter!=mSelected.end();++iter)
     {
       ++i;
-      progress.setProgress(i);
+      progress.setValue(i);
       qApp->processEvents();
       if(progress.wasCanceled())
       {
@@ -1206,29 +1205,38 @@ void QgsVectorLayer::showLayerProperties()
   qApp->setOverrideCursor(QCursor(Qt::WaitCursor));
 
 
+  if (!m_propertiesDialog)
+  {
 #ifdef QGISDEBUG
-  std::cerr << "Creating new QgsVectorLayerProperties object\n";
+    std::cerr << "Creating new QgsVectorLayerProperties object\n";
 #endif
-  m_propertiesDialog = new QgsVectorLayerProperties(this);
-  // Make sure that the UI starts out with the correct display
-  // field value
+    m_propertiesDialog = new QgsVectorLayerProperties(this);
+    // Make sure that the UI starts out with the correct display
+    // field value
 #ifdef QGISDEBUG
-  std::cerr << "Setting display field in prop dialog\n";
+    std::cerr << "Setting display field in prop dialog\n";
 #endif
-  m_propertiesDialog->setDisplayField(displayField());
+    m_propertiesDialog->setDisplayField(displayField());
 
 #ifdef QGISDEBUG
-  std::cerr << "Resetting prop dialog\n";
+    std::cerr << "Resetting prop dialog\n";
 #endif
-  m_propertiesDialog->reset();
+    m_propertiesDialog->reset();
 #ifdef QGISDEBUG
-  std::cerr << "Raising prop dialog\n";
+    std::cerr << "Raising prop dialog\n";
 #endif
-  m_propertiesDialog->raise();
+    m_propertiesDialog->raise();
 #ifdef QGISDEBUG
-  std::cerr << "Showing prop dialog\n";
+    std::cerr << "Showing prop dialog\n";
 #endif
-  m_propertiesDialog->show();
+    m_propertiesDialog->show();
+  }
+  else
+  {
+    m_propertiesDialog->show();
+    m_propertiesDialog->raise();
+  }
+
   // restore normal cursor
   qApp->restoreOverrideCursor();
 }
@@ -1860,7 +1868,9 @@ void QgsVectorLayer::startEditing()
   {
     if(!(dataProvider->capabilities()&QgsVectorDataProvider::AddFeatures))
     {
-      QMessageBox::information(0,"Start editing failed","Provider cannot be opened for editing",QMessageBox::Ok);
+      QMessageBox::information(0,tr("Start editing failed"),
+                               tr("Provider cannot be opened for editing"),
+                               QMessageBox::Ok);
     }
     else
     {
@@ -1890,7 +1900,7 @@ void QgsVectorLayer::stopEditing()
       {
         if(!commitChanges())
         {
-          QMessageBox::information(0,"Error","Could not commit changes",QMessageBox::Ok);
+          QMessageBox::information(0,tr("Error"),tr("Could not commit changes"),QMessageBox::Ok);
         }
         else
         {
@@ -1908,8 +1918,8 @@ void QgsVectorLayer::stopEditing()
       {
         if(!rollBack())
         {
-          QMessageBox::information(0,"Error",
-              "Problems during roll back",QMessageBox::Ok);
+          QMessageBox::information(0,tr("Error"),
+              tr("Problems during roll back"),QMessageBox::Ok);
         }
         //hide and delete the table because it is not up to date any more
         if (tabledisplay)
@@ -2436,7 +2446,7 @@ bool QgsVectorLayer::commitChanges()
     {
       if ( !dataProvider->changeAttributeValues ( mChangedAttributes ) ) 
       {
-        QMessageBox::warning(0,"Warning","Could not change attributes");
+        QMessageBox::warning(0,tr("Warning"),tr("Could not change attributes"));
       }
       mChangedAttributes.clear();
     }
@@ -2450,7 +2460,7 @@ bool QgsVectorLayer::commitChanges()
     {
       if ( !dataProvider->changeGeometryValues ( mChangedGeometries ) ) 
       {
-        QMessageBox::warning(0,"Error","Could not commit changes to geometries");
+        QMessageBox::warning(0,tr("Error"),tr("Could not commit changes to geometries"));
       }
       mChangedGeometries.clear();
     }
@@ -2659,9 +2669,27 @@ QString QgsVectorLayer::layerTypeIconPath()
 
 void QgsVectorLayer::refreshLegend()
 {
-  if(mLegendSymbologyGroupParent && m_renderer)
+  if(mLegend && m_renderer)
+    {
+      std::list< std::pair<QString, QIcon*> > itemList;
+      m_renderer->refreshLegend(&itemList);
+      if(m_renderer->needsAttributes()) //create an item for each classification field (only one for most renderers)
+	{
+	  std::list<int> classfieldlist = m_renderer->classificationAttributes();
+	  for(std::list<int>::iterator it = classfieldlist.begin(); it!=classfieldlist.end(); ++it)
+	    {
+	      const QgsField theField = (dataProvider->fields())[*it];
+	      QString classfieldname = theField.name();
+	      itemList.push_front(std::make_pair(classfieldname, (QIcon*)0));
+	    }
+	}
+      mLegend->changeSymbologySettings(getLayerID(), &itemList);
+    }
+
+#if 0
+  if(mLegendLayer && m_renderer)
   {
-    m_renderer->refreshLegend(mLegendSymbologyGroupParent);
+    m_renderer->refreshLegend(mLegendLayer);
   }
 
   //create an item for each classification field (currently only one for all renderers)
@@ -2676,15 +2704,16 @@ void QgsVectorLayer::refreshLegend()
         QString classfieldname = theField.name();
         QgsLegendSymbologyItem* item = new QgsLegendSymbologyItem();
         item->setText(0, classfieldname);
-        mLegendSymbologyGroupParent->insertChild(0, item);
+        static_cast<QTreeWidgetItem*>(mLegendLayer)->insertChild(0, item);
       }
     }
   }
-  if(mLegendSymbologyGroupParent)
+  if(mLegendLayer)
   {
     //copy the symbology changes for the other layers in the same symbology group
-    mLegendSymbologyGroupParent->updateLayerSymbologySettings(this);
+    mLegendLayer->updateLayerSymbologySettings(this);
   }
+#endif
 }
 
 bool QgsVectorLayer::copySymbologySettings(const QgsMapLayer& other)

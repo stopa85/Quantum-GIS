@@ -7,14 +7,15 @@ all: libs $(DLL)
 libs:
 	$(MAKE) -f Makefile libqgis_core.la
 
-$(DLL):
+$(DLL): .libs/libqgis_core.a
 	$(CXX) -shared -o $(DLL) \
 		-Wl,--out-implib=lib$(DLL).a \
 		-Wl,--export-all-symbols \
 		-Wl,--enable-auto-import \
 		-Wl,--whole-archive .libs/libqgis_core.a \
 		-Wl,--no-whole-archive \
-			$(LEGEND_A) $(GUI_A) $(RASTER_A) $(PROJSEL_A) $(COMPOSER_A) \
+			$(LEGEND_A) $(GUI_A) $(RASTER_A) $(PROJSEL_A) \
+			$(COMPOSER_A) $(LEGEND_A) $(GUI_A) $(COMPOSER_A) \
 			-lsqlite3 -lgeos -lproj -lgdal \
 			$(QT_LDADD) \
 			-lwsock32 -lmingw32

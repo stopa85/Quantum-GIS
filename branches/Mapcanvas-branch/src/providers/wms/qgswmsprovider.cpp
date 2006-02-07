@@ -245,11 +245,12 @@ QImage* QgsWmsProvider::draw(QgsRect  const & viewExtent, int pixelWidth, int pi
 
   // Bounding box in WMS format
   QString bbox;
+  // Warning: does not work with scientific notation
   bbox = QString("%1,%2,%3,%4").
-          arg(viewExtent.xMin()).
-          arg(viewExtent.yMin()).
-          arg(viewExtent.xMax()).
-          arg(viewExtent.yMax());
+          arg(viewExtent.xMin(),0,'f').
+          arg(viewExtent.yMin(),0,'f').
+          arg(viewExtent.xMax(),0,'f').
+          arg(viewExtent.yMax(),0,'f');
           
   // Width in WMS format
   QString width;
@@ -334,15 +335,23 @@ QImage* QgsWmsProvider::draw(QgsRect  const & viewExtent, int pixelWidth, int pi
 
   // compose the URL query string for the WMS server.
 
-  drawuri += "Service=WMS";
+  drawuri += "?Service=WMS";
   drawuri += "&";
   drawuri += "Version=1.1.0";
   drawuri += "&";
   drawuri += "Request=GetMap";
   drawuri += "&";
   drawuri += "BBox=" + bbox;
-  drawuri += "&";
-  drawuri += "SRS=EPSG:4326";
+  //drawuri += "&";
+  //drawuri += "SRS=EPSG:4326";
+  // TODO: for now use the first SRS of the first layer
+  if ( layersSupported.size() > 0 && 
+       layersSupported[0].crs.size() )
+  {
+    std::set<QString>::iterator it = layersSupported[0].crs.begin();
+    drawuri += "&";
+    drawuri += "SRS=" + *it;
+  }
   drawuri += "&";
   drawuri += "Width=" + width;
   drawuri += "&";
@@ -353,6 +362,8 @@ QImage* QgsWmsProvider::draw(QgsRect  const & viewExtent, int pixelWidth, int pi
   drawuri += "Styles=" + styles;
   drawuri += "&";
   drawuri += "Format=" + imageMimeType;
+  drawuri += "&";
+  drawuri += "Transparent=true";
 
   emit setStatus( QString("Test from QgsWmsProvider") );
 
@@ -390,12 +401,12 @@ QImage* QgsWmsProvider::draw(QgsRect  const & viewExtent, int pixelWidth, int pi
 #endif
 
 #ifdef QGISDEBUG
-  QFile file( "/tmp/qgis-wmsprovider-draw-raw.png" );
-  if ( file.open( QIODevice::WriteOnly ) ) 
-  {
-    file.writeBlock(imagesource);
-    file.close();
-  }
+  //QFile file( "/tmp/qgis-wmsprovider-draw-raw.png" );
+  //if ( file.open( QIODevice::WriteOnly ) ) 
+  //{
+  //  file.writeBlock(imagesource);
+  //  file.close();
+  //}
 #endif
 
   // Load into the final QImage.
@@ -555,12 +566,12 @@ void QgsWmsProvider::parseCapabilities(QByteArray  const & xml, QgsWmsCapabiliti
   QString responsestring(xml);
   qWarning("QgsWmsProvider::parseCapabilities, received the following data: "+responsestring);
   
-  QFile file( "/tmp/qgis-wmsprovider-capabilities.xml" );
-  if ( file.open( QIODevice::WriteOnly ) ) 
-  {
-    file.writeBlock(xml);
-    file.close();
-  }
+  //QFile file( "/tmp/qgis-wmsprovider-capabilities.xml" );
+  //if ( file.open( QIODevice::WriteOnly ) ) 
+  //{
+  //  file.writeBlock(xml);
+  //  file.close();
+  //}
 #endif
   
   // Convert completed document into a DOM
@@ -1096,7 +1107,8 @@ void QgsWmsProvider::parseStyle(QDomElement const & e, QgsWmsStyleProperty& styl
 }
 
 
-void QgsWmsProvider::parseLayer(QDomElement const & e, QgsWmsLayerProperty& layerProperty)
+void QgsWmsProvider::parseLayer(QDomElement const & e, QgsWmsLayerProperty& layerProperty,
+                                QgsWmsLayerProperty *parentProperty)
 {
 #ifdef QGISDEBUG
 //  std::cout << "QgsWmsProvider::parseLayer: entering." << std::endl;
@@ -1138,7 +1150,7 @@ void QgsWmsProvider::parseLayer(QDomElement const & e, QgsWmsLayerProperty& laye
             subLayerProperty.crs   = layerProperty.crs;
             // TODO
 
-            parseLayer(e1, subLayerProperty);
+            parseLayer(e1, subLayerProperty, &layerProperty );
 
             layerProperty.layer.push_back(subLayerProperty);
 
@@ -1188,6 +1200,14 @@ void QgsWmsProvider::parseLayer(QDomElement const & e, QgsWmsLayerProperty& laye
           else if (e1.tagName() == "BoundingBox")
           {
             // TODO
+              QgsWmsBoundingBoxProperty bbox;
+              bbox.box = QgsRect ( e1.attribute("minx").toDouble(),
+                                   e1.attribute("miny").toDouble(),
+                                   e1.attribute("maxx").toDouble(),
+                                   e1.attribute("maxy").toDouble()
+                                 );
+              bbox.crs = e1.attribute("SRS");
+              layerProperty.boundingBox.push_back ( bbox );
           }
           else if (e1.tagName() == "Dimension")
           {
@@ -1252,9 +1272,35 @@ void QgsWmsProvider::parseLayer(QDomElement const & e, QgsWmsLayerProperty& laye
 //    std::cout << "QgsWmsProvider::parseLayer:   srs is: '" << layerProperty.srs << "'." << std::endl;
 //    std::cout << "QgsWmsProvider::parseLayer:   bbox is: '" << layerProperty.latlonbbox.stringRep() << "'." << std::endl;
 
+    // inherit SRS and BoundingBox if not defined but available in parent 
+    if ( parentProperty ) 
+    {
+        if ( layerProperty.crs.size() == 0 )
+        {
+            layerProperty.crs = parentProperty->crs;
+        }
+        if ( layerProperty.boundingBox.size() == 0 )
+        {
+            layerProperty.boundingBox = parentProperty->boundingBox;
+        }
+    }
+
     // Store the extent so that it can be combined with others later
     // in calculateExtent()
-    extentForLayer[ layerProperty.name ] = layerProperty.ex_GeographicBoundingBox;
+    // For now use extent in the first SRS defined for the layer
+    //extentForLayer[ layerProperty.name ] = layerProperty.ex_GeographicBoundingBox;
+    if ( layerProperty.crs.size() > 0 ) 
+    {
+        for ( int i = 0; i < layerProperty.boundingBox.size(); i++ ) 
+        {
+            std::set<QString>::iterator it = layerProperty.crs.begin();
+            if ( layerProperty.boundingBox[i].crs == *it )
+            {
+                extentForLayer[ layerProperty.name ] = 
+                        layerProperty.boundingBox[i].box;
+            }
+        }
+    }
 
     // Insert into the local class' registry
     layersSupported.push_back(layerProperty);

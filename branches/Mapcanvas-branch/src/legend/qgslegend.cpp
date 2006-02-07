@@ -24,7 +24,7 @@
 #include "qgslegendgroup.h"
 #include "qgslegendlayer.h"
 #include "qgslegendpropertygroup.h"
-#include "qgslegendsymbologygroup.h"
+#include "qgslegendsymbologyitem.h"
 #include "qgslegendlayerfile.h"
 #include "qgslegendlayerfilegroup.h"
 #include "qgsmapcanvas.h"
@@ -53,7 +53,7 @@ const int AUTOSCROLL_MARGIN = 16;
    set mItemBeingMoved pointer to 0 to prevent SuSE 9.0 crash
 */
 QgsLegend::QgsLegend(QgisApp* app, QWidget * parent, const char *name)
-    : QTreeWidget(parent), mApp(app), mMousePressedFlag(false), mItemBeingMoved(0), mMapCanvas(0)
+  : QTreeWidget(parent), mApp(app), mMousePressedFlag(false), mItemBeingMoved(0), mMapCanvas(0), mShowLegendLayerFiles(false)
 {
   connect( this, SIGNAL(selectionChanged(QTreeWidgetItem *)),
            this, SLOT(updateLegendItem(QTreeWidgetItem *)) );
@@ -245,7 +245,7 @@ void QgsLegend::mouseMoveEvent(QMouseEvent * e)
 #ifdef QGISDEBUG
 	      qWarning("mouseMoveEvent::NO_ACTION");
 #endif
-	      if(mItemBeingMovedOrigPos != getItemPos(mItemBeingMoved))
+	      if(origin->type() == QgsLegendItem::LEGEND_LAYER_FILE && mItemBeingMovedOrigPos != getItemPos(mItemBeingMoved))
 		{
 		  resetToInitialPosition(mItemBeingMoved);
 		}
@@ -281,10 +281,8 @@ void QgsLegend::mouseReleaseEvent(QMouseEvent * e)
 	if(originType == QgsLegendItem::LEGEND_LAYER_FILE && destType == QgsLegendItem::LEGEND_LAYER_FILE_GROUP)
 	  {
 	    QgsMapLayer* origLayer = ((QgsLegendLayerFile*)(origin))->layer();
-	    
-	    if(origLayer->legendSymbologyGroupParent() != dest->nextSibling())
+	      if(1) //todo: find a test to avoid that symbology settings are copied if an item is moved within the same legend layer  
 	      {
-		origLayer->setLegendSymbologyGroupParent((QgsLegendSymbologyGroup*)(dest->nextSibling()));
 		if(dest->childCount() > 1)
 		  {
 		    //find the first layer in the legend layer group != origLayer and copy its settings
@@ -307,11 +305,11 @@ void QgsLegend::mouseReleaseEvent(QMouseEvent * e)
 	  {
 	    QgsMapLayer* origLayer = ((QgsLegendLayerFile*)(origin))->layer();
 	    QgsMapLayer* destLayer = ((QgsLegendLayerFile*)(dest))->layer();
+
 	    if(dest == origin)//origin item has been moved in mouseMoveEvent such that it is under the mouse cursor now
 	      {
-		if(origLayer->legendSymbologyGroupParent() != origin->parent())
-		  {
-		    origLayer->setLegendSymbologyGroupParent((QgsLegendSymbologyGroup*)(dynamic_cast<QgsLegendItem*>(origin->parent())->nextSibling()));
+		if(1) //todo: find a test to avoid that symbology settings are copied if an item is moved within the same legend layer  
+		{
 		    if(origin->parent()->childCount() > 1)
 		      {
 			//find the first layer in the legend layer group != origLayer and copy its settings
@@ -335,7 +333,7 @@ void QgsLegend::mouseReleaseEvent(QMouseEvent * e)
 		QgsMapLayer* origLayer = ((QgsLegendLayerFile*)(origin))->layer();
 		QgsMapLayer* destLayer = ((QgsLegendLayerFile*)(dest))->layer();
 		origLayer->copySymbologySettings(*destLayer);
-		origLayer->setLegendSymbologyGroupParent((QgsLegendSymbologyGroup*)(dynamic_cast<QgsLegendItem*>(dest->parent())->nextSibling()));
+		origLayer->setLegend((QgsLegend*)(dynamic_cast<QgsLegendItem*>(dest->parent())->nextSibling()));
 	      }
 	  }
 	
@@ -427,7 +425,11 @@ void QgsLegend::handleRightClickEvent(QTreeWidgetItem* item, const QPoint& posit
   theMenu.addAction(QIcon(QPixmap(iconsPath+QString("/folder_new.png"))), tr("&Add group"), this, SLOT(addGroup()));
   theMenu.addAction(QIcon(QPixmap(iconsPath+QString("/mActionExpandTree.png"))), tr("&Expand all"), this, SLOT(expandAll()));
   theMenu.addAction(QIcon(QPixmap(iconsPath+QString("/mActionCollapseTree.png"))), tr("&Collapse all"), this, SLOT(collapseAll()));
-  
+  QAction* showFileGroupsAction = theMenu.addAction(tr("Show file groups"), this, SLOT(showLegendLayerFileGroups(bool)));
+  showFileGroupsAction->setCheckable(true);
+  showFileGroupsAction->blockSignals(true);
+  showFileGroupsAction->setChecked(mShowLegendLayerFiles);
+  showFileGroupsAction->blockSignals(false);
   theMenu.exec(position);
 }
 
@@ -469,18 +471,20 @@ void QgsLegend::addLayer( QgsMapLayer * layer )
       }
     blockSignals(false);
    
-    QgsLegendSymbologyGroup * lsgroup = new QgsLegendSymbologyGroup(llayer,QString("Symbology"));
-    layer->setLegendSymbologyGroupParent(lsgroup);
-    QgsLegendPropertyGroup * lpgroup = new QgsLegendPropertyGroup(llayer,QString("Properties"));
+    layer->setLegend(this);
+    //QgsLegendPropertyGroup * lpgroup = new QgsLegendPropertyGroup(llayer,QString("Properties"));
     layer->setLegendLayerFile(llfile);
     layer->initContextMenu(mApp);
 
     insertTopLevelItem(0, llayer);
     
-    setExpanded(indexFromItem(llayer), false);
-    setExpanded(indexFromItem(lpgroup), true);
-    setExpanded(indexFromItem(lsgroup), true);
-    setExpanded(indexFromItem(llfgroup), true);
+    setExpanded(indexFromItem(llayer), true);
+    setExpanded(indexFromItem(llfgroup), false);
+    //todo: only if qsetting for 'legend layer file visible' is not set
+    if(!mShowLegendLayerFiles)
+      {
+	setItemHidden(llfgroup, true);
+      }
     
     updateMapCanvasLayerSet();
     
@@ -759,12 +763,21 @@ bool QgsLegend::writeXML( QDomNode & layer_node, QDomDocument & document )
 		    layerfilegroupnode = document.createElement("filegroup");
 		    if(isItemExpanded(item))
 		    {
-			layerfilegroupnode.setAttribute("open", "true");
+		      layerfilegroupnode.setAttribute("open", "true");
 		    }
 		    else
 		    {
-			layerfilegroupnode.setAttribute("open", "false");
+		      layerfilegroupnode.setAttribute("open", "false");
 		    }
+		    if(isItemHidden(item))
+		    {
+		      layerfilegroupnode.setAttribute("hidden", "true");
+		    }
+		    else
+		    {
+		      layerfilegroupnode.setAttribute("hidden", "false");
+		    }
+		       
 		    legendlayernode.appendChild(layerfilegroupnode);
 		    break;
 	    
@@ -875,6 +888,12 @@ bool QgsLegend::readXML(QDomNode& legendnode)
 		    }
 		  blockSignals(false);
 		  
+		  theMapLayer->setLegend(this);
+		  if(child.nextSibling().isNull())
+		    {
+		      theMapLayer->refreshLegend();
+		    }
+
 		  //set the layer type icon if this legendlayerfile is the last in the file group
 		  if(child.nextSibling().isNull())
 		  {
@@ -886,23 +905,8 @@ bool QgsLegend::readXML(QDomNode& legendnode)
 	    {
 	      QgsLegendLayerFileGroup* theFileGroup = new QgsLegendLayerFileGroup(lastLayer, "Files");
 	      childelem.attribute("open") == "true" ? expandItem(theFileGroup) : collapseItem(theFileGroup);
+	      childelem.attribute("hidden") == "true" ? setItemHidden(theFileGroup, true) : setItemHidden(theFileGroup, false);
 	      lastLayerFileGroup = theFileGroup;
-	    }
-	  else if(childelem.tagName() == "symbolgroup")
-	    {
-	      QgsLegendSymbologyGroup* theSymbologyGroup = new QgsLegendSymbologyGroup(lastLayer, "Symbology");
-	      childelem.attribute("open") == "true" ? expandItem(theSymbologyGroup) : collapseItem(theSymbologyGroup);
-	      //set symbology parent for all layers
-	      std::list<QgsMapLayer*> layerList = lastLayer->mapLayers();
-	      for(std::list<QgsMapLayer*>::iterator iter = layerList.begin(); iter != layerList.end(); ++iter)
-		{
-		  (*iter)->setLegendSymbologyGroupParent(theSymbologyGroup);
-		}
-	      //render the legend
-	      if(lastLayer->firstMapLayer())
-		{
-		  lastLayer->firstMapLayer()->refreshLegend();
-		}
 	    }
 	  else if(childelem.tagName() == "propertygroup")
 	    {
@@ -916,235 +920,6 @@ bool QgsLegend::readXML(QDomNode& legendnode)
     }
   return true;
 }
-
-#if 0
-bool QgsLegend::readXML(QDomNode& legendnode)
-{
-    QString open;
-    QgsLegendItem* theItem = dynamic_cast<QgsLegendItem*>(topLevelItem(0)); //first level hierarchy items
-    QgsLegendItem* prevchild = 0; //store last value of theItem because of legend group
-    QgsLegendItem* secondLevelItem = 0; //second level item
-    QgsLegendGroup* group = 0; //pointer to the last inserted legend group
-
-    QDomNode child = legendnode.firstChild();
-    if(!child.isNull())
-    {
-	do //iterate over legend layers/ legend groups
-	{
-	  if(!theItem)
-	    {
-	      break;
-	    }
-	    
-	    QDomElement legendlayerelem = child.toElement();
-	    
-	    if(legendlayerelem.tagName()=="legendgroup")
-	    {
-		group = new QgsLegendGroup(legendlayerelem.attribute("name")); 
-		insertTopLevelItem(0, group);
-
-		open = legendlayerelem.attribute("open");
-		if(open == "true")
-		  {
-		    setItemExpanded(group, true); //expand or collapse the item
-		  }
-		else
-		  {
-		    setItemExpanded(group, false);
-		  }
-
-		if(prevchild)
-		  {
-		    moveItem(group, prevchild);
-		  }
-		theItem = group->nextSibling();
-		if(!child.firstChild().isNull())
-		  {
-		    child = child.firstChild();//go one hierarchy step down
-		  }
-		else
-		  {
-		    child = child.nextSibling();
-		  }
-		continue;
-	    }
-
-	    open = legendlayerelem.attribute("open");
-	    if(child.parentNode().toElement().tagName()=="legendgroup")
-	    {
-	      removeItem(theItem);
-	      group->insertChild(0, theItem);
-	      QgsLegendItem* currentChild = group->firstChild();
-	      if(!currentChild)
-		{
-		  removeItem(theItem);
-		  group->insertChild(0, theItem);//insert the first child in the group
-		}
-	      else //find the last child and insert the new one after it
-		{
-		  removeItem(theItem);
-		  group->addChild(theItem);
-		}
-	    }
-	    if(open == "true")
-	      {
-		setItemExpanded(theItem, true);
-	      }
-	    else
-	      {
-		setItemExpanded(theItem, false);
-	      }
-	    theItem->setText(0, legendlayerelem.attribute("name"));
-
-	    //file group
-	    secondLevelItem = theItem->firstChild();
-	    QDomNode filegroupnode = child.firstChild();
-	    QDomElement filegroupelem = filegroupnode.toElement();
-
-	    open = filegroupelem.attribute("open");
-	    if(open == "true")
-	      {
-		setItemExpanded(secondLevelItem, true);
-	      }
-	    else
-	      {
-		setItemExpanded(secondLevelItem, false);
-	      }
-
-	    QDomNode layerfilenode = filegroupnode.firstChild();
-	    QDomElement layerfileelem = layerfilenode.toElement();
-     
-	    //remove the existing legendlayerfile and insert the one(s) according to the entries in the XML file
-	    if(secondLevelItem->child(0))
-	      {
-		QgsLegendLayerFile* llfdelete = dynamic_cast<QgsLegendLayerFile*>(secondLevelItem->child(0));
-		if(llfdelete)
-		  {
-		    removeItem(llfdelete);
-		    mStateOfCheckBoxes.erase(llfdelete);
-		  }
-	      }
-	    
-	    //if there are several legend layer files in this group, create the additional items
-	    std::map<QString,QgsMapLayer*> layers = QgsMapLayerRegistry::instance()->mapLayers();
-
-	    //find out the check state of the QgsLegendLayer in the while(true) loop below
-	    Qt::CheckState legendLayerCheckState;
-	    std::map<QString,QgsMapLayer*>::iterator it = layers.find(layerfileelem.attribute("layerid"));
-	    if(it != layers.end())
-		  {
-		    QgsMapLayer* newlayer = it->second;
-		    if(newlayer->visible())
-		      {
-			legendLayerCheckState = Qt::Checked;
-		      }
-		    else
-		      {
-			legendLayerCheckState = Qt::Unchecked;
-		      }
-		  }
-	    
-	    blockSignals(true);
-	    while(true)
-	      {
-		if(layerfilenode.isNull())
-		  {
-		    break;
-		  }
-		
-		std::map<QString,QgsMapLayer*>::iterator it = layers.find(layerfileelem.attribute("layerid"));
-		if(it != layers.end())
-		  {
-		    QgsMapLayer* newlayer = it->second;
-		    QgsLegendLayerFile* newfile = new QgsLegendLayerFile(QgsLegendLayerFile::nameFromLayer(newlayer), newlayer);
-		    if(newlayer->visible())
-		      {
-			if(legendLayerCheckState == Qt::Unchecked)
-			  {
-			    legendLayerCheckState = Qt::PartiallyChecked;
-			  }
-			newfile->setCheckState(0, Qt::Checked);
-			mStateOfCheckBoxes.insert(std::make_pair(newfile, Qt::Checked));
-		      }
-		    else
-		      {
-			if(legendLayerCheckState == Qt::Checked)
-			  {
-			    legendLayerCheckState = Qt::PartiallyChecked;
-			  }
-			newfile->setCheckState(0, Qt::Unchecked);
-			mStateOfCheckBoxes.insert(std::make_pair(newfile, Qt::Unchecked));
-		      }
-		    newlayer->setLegendLayerFile(newfile);
-		    newlayer->setLegendSymbologyGroupParent(dynamic_cast<QgsLegendSymbologyGroup*>(secondLevelItem->nextSibling()));
-		    newlayer->initContextMenu(mApp);
-
-		    //move newfile as the last child of the legendlayerfilegroup
-		    secondLevelItem->addChild(newfile);
-		  }
-		layerfilenode = layerfilenode.nextSibling();
-		layerfileelem = layerfilenode.toElement();
-	      }
-	    secondLevelItem->parent()->setCheckState(0, legendLayerCheckState);
-	    mStateOfCheckBoxes[secondLevelItem->parent()] = legendLayerCheckState;
-	    blockSignals(false);
-
-	    //symbology group
-	    secondLevelItem = secondLevelItem->nextSibling();
-	    QDomNode symbologygroupnode = filegroupnode.nextSibling();
-	    QDomElement symbologygroupelem = symbologygroupnode.toElement();
-
-	    open = symbologygroupelem.attribute("open");
-	    if(open == "true")
-	      {
-		setItemExpanded(secondLevelItem, true);//expand or collapse the item
-	      }
-	    else
-	      {
-		setItemExpanded(secondLevelItem, false);
-	      }
-
-	    //property group
-	    secondLevelItem = secondLevelItem->nextSibling();
-	    QDomNode propertygroupnode = symbologygroupnode.nextSibling();
-	    QDomElement propertygroupelem = propertygroupnode.toElement();
-	    open = propertygroupelem.attribute("open");
-	    if(open == "true")
-	      {
-	      setItemExpanded(secondLevelItem, true);
-	      }
-	    else
-	      {
-		setItemExpanded(secondLevelItem, false);
-	      }
-
-	    if(child.nextSibling().isNull() && !child.parentNode().isNull()) //go one hierarchy step up
-	      {
-		child = child.parentNode();
-	      }
-	    if(theItem->nextSibling() == 0)
-	      {
-		theItem = dynamic_cast<QgsLegendItem*>(theItem->parent());
-	      }
-
-	    if(!theItem)
-	      {
-		break;
-	      }
-
-	    prevchild = theItem;
-	    theItem = theItem->nextSibling();
-	    child = child.nextSibling();
-	    if(!theItem)
-	      {
-		break; //reached the end
-	      }
-	}
-	while(!(child.isNull()));
-    }
-    return true;
-}
-#endif //0
 
 void QgsLegend::storeInitialPosition(QTreeWidgetItem* li)
 {
@@ -1195,6 +970,30 @@ void QgsLegend::resetToInitialPosition(QTreeWidgetItem* li)
 #endif
       dynamic_cast<QgsLegendItem*>(li)->moveItem(dynamic_cast<QgsLegendItem*>(mRestoreItem));
     }
+}
+
+QgsLegendLayer* QgsLegend::findLegendLayer(const QString& layerKey)
+{
+  QgsLegendLayer* theLegendLayer = 0;
+  std::list<QgsMapLayer*> theMapLayers;
+  QTreeWidgetItem* theItem = firstItem();
+  do
+    {
+      theLegendLayer = dynamic_cast<QgsLegendLayer*>(theItem);
+      if(theLegendLayer) //item is a legend layer
+	{
+	  theMapLayers = theLegendLayer->mapLayers();
+	  for(std::list<QgsMapLayer*>::iterator it = theMapLayers.begin(); it != theMapLayers.end(); ++it)
+	    {
+	      if((*it)->getLayerID() == layerKey)
+		{
+		  return theLegendLayer;
+		}
+	    }
+	}
+    }
+  while(theItem = nextItem(theItem));
+  return 0;
 }
 
 bool QgsLegend::yCoordAboveCenter(QgsLegendItem* it, int ycoord)
@@ -1310,6 +1109,7 @@ QDomNode QgsLegend::nextDomNode(const QDomNode& theNode)
 
 void QgsLegend::moveItem(QTreeWidgetItem* move, QTreeWidgetItem* after)
 {
+  static_cast<QgsLegendItem*>(move)->storeAppearanceSettings();//store settings in the moved item and its childern
   if(move->parent())
     {
       move->parent()->takeChild(move->parent()->indexOfChild(move));
@@ -1326,6 +1126,7 @@ void QgsLegend::moveItem(QTreeWidgetItem* move, QTreeWidgetItem* after)
     {
       insertTopLevelItem(indexOfTopLevelItem(after)+1, move);
     }
+  static_cast<QgsLegendItem*>(move)->restoreAppearanceSettings();//apply the settings again
 }
 
 void QgsLegend::removeItem(QTreeWidgetItem* item)
@@ -1365,6 +1166,49 @@ void QgsLegend::updateMapCanvasLayerSet()
 #endif
 
   mMapCanvas->setLayerSet(layers);
+}
+
+void QgsLegend::changeSymbologySettings(const QString& key, const std::list< std::pair<QString, QIcon*> >* newSymbologyItems)
+{
+  QgsMapLayer* theMapLayer = QgsMapLayerRegistry::instance()->mapLayer(key);
+  if(!theMapLayer)
+    {
+      return;
+    }
+  QgsLegendLayer* theLegendLayer = findLegendLayer(key);
+  QgsLegendSymbologyItem* theSymbologyItem = 0;
+  if(!theLegendLayer)
+    {
+      return;
+    }
+  
+  //remove the symbology items under the legend layer
+  for(int i = theLegendLayer->childCount(); i >= 0; --i)
+    {
+      theSymbologyItem = dynamic_cast<QgsLegendSymbologyItem*>((theLegendLayer)->child(i));
+      if(theSymbologyItem)
+	{
+	  theLegendLayer->takeChild(i);
+	}
+    }
+
+  //add the new symbology items
+  if(newSymbologyItems)
+    {
+      int childposition = 0; //position to insert the items
+      for(std::list< std::pair<QString, QIcon*> >::const_iterator it= newSymbologyItems->begin(); it != newSymbologyItems->end(); ++it)
+	{
+	  QgsLegendSymbologyItem* theItem = new QgsLegendSymbologyItem();
+	  theItem->setText(0, it->first);
+	  theItem->setIcon(0, *(it->second));
+	  theLegendLayer->insertChild(childposition, theItem);
+	  delete (it->second);//free the memory for the QIcon*
+	  ++childposition;
+	}
+    }
+
+  //copy the legend settings for the other layer files in the same legend layer
+  theLegendLayer->updateLayerSymbologySettings(theMapLayer);
 }
 
 void QgsLegend::handleItemChange(QTreeWidgetItem* item, int row)
@@ -1465,4 +1309,20 @@ void QgsLegend::makeToTopLevelItem()
       removeItem(theItem);
       addTopLevelItem(theItem);
     }
+}
+
+void QgsLegend::showLegendLayerFileGroups(bool show)
+{
+  QgsLegendLayerFileGroup* theFileGroup = 0;
+  QTreeWidgetItem* theItem = firstItem();
+  do
+    {
+      theFileGroup = dynamic_cast<QgsLegendLayerFileGroup*>(theItem);
+      if(theFileGroup)
+	{
+	  setItemHidden(theFileGroup, !show);
+	}
+    }
+  while(theItem = nextItem(theItem));
+  mShowLegendLayerFiles = show;
 }
