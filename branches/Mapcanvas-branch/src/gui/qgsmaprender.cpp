@@ -1,5 +1,5 @@
 /***************************************************************************
-    qgsmapimage.cpp  -  class for rendering map layer set to pixmap
+    qgsmaprender.cpp  -  class for rendering map layer set
     ----------------------
     begin                : January 2006
     copyright            : (C) 2006 by Martin Dobias
@@ -14,7 +14,7 @@
  ***************************************************************************/
 /* $Id$ */
 
-#include "qgsmapimage.h"
+#include "qgsmaprender.h"
 #include "qgsscalecalculator.h"
 #include "qgsmaptopixel.h"
 #include "qgsmaplayer.h"
@@ -27,7 +27,7 @@
 
 
 
-QgsMapImage::QgsMapImage(int width, int height)
+QgsMapRender::QgsMapRender()
 {
   mCoordXForm = new QgsMapToPixel;
   mScaleCalculator = new QgsScaleCalculator;
@@ -35,39 +35,26 @@ QgsMapImage::QgsMapImage(int width, int height)
   mDrawing = false;
   mOverview = false;
   
-  mPixmap = new QPixmap(width, height);
-  
-  // set the logical dpi
-  mScaleCalculator->setDpi(mPixmap->logicalDpiX());
-
   // set default map units
   mMapUnits = QGis::METERS;
   mScaleCalculator->setMapUnits(mMapUnits);
 
-  // must be initialized at last
-  //adjustExtentToPixmap();
 }
 
-QgsMapImage::~QgsMapImage()
+QgsMapRender::~QgsMapRender()
 {
-  delete mPixmap;
   delete mCoordXForm;
   delete mScaleCalculator;
 }
 
 
-QgsRect QgsMapImage::extent()
+QgsRect QgsMapRender::extent()
 {
   return mExtent;
 }
 
 
-void QgsMapImage::setBgColor(const QColor& color)
-{
-  mBgColor = color;
-}
-
-bool QgsMapImage::setExtent(const QgsRect& extent)
+bool QgsMapRender::setExtent(const QgsRect& extent)
 {
 
   // Don't allow zooms where the current extent is so small that it
@@ -101,23 +88,23 @@ bool QgsMapImage::setExtent(const QgsRect& extent)
 
   mExtent = extent;
   if (!mExtent.isEmpty())
-    adjustExtentToPixmap();
+    adjustExtentToSize();
   return true;
 }
 
 
-void QgsMapImage::setPixmapSize(int width, int height)
+
+void QgsMapRender::setOutputSize(QSize size, int dpi)
 {
-  mPixmap->resize(QSize(width,height));
-  
-  adjustExtentToPixmap();
+  mSize = size;
+  mScaleCalculator->setDpi(dpi);
+  adjustExtentToSize();
 }
 
-
-void QgsMapImage::adjustExtentToPixmap()
-{ 
-  int myHeight = mPixmap->height();
-  int myWidth = mPixmap->width();
+void QgsMapRender::adjustExtentToSize()
+{
+  int myHeight = mSize.height();
+  int myWidth = mSize.width();
   
   if (!myWidth || !myHeight)
   {
@@ -179,10 +166,8 @@ void QgsMapImage::adjustExtentToPixmap()
 }
 
 
-void QgsMapImage::render()
+void QgsMapRender::render(QPainter* painter)
 {
- // TODO: check prerequisities
-  // - we have both extent and pixmap, extent is adjusted
 
 #ifdef QGISDEBUG
   std::cout << "========== Rendering ==========" << std::endl;
@@ -191,7 +176,6 @@ void QgsMapImage::render()
   if (mExtent.isEmpty())
   {
     std::cout << "empty extent... not rendering" << endl;
-    mPixmap->fill(mBgColor);
     return;
   }
 
@@ -200,15 +184,7 @@ void QgsMapImage::render()
     return;
   
   mDrawing = true;
-  QPainter *paint = new QPainter();
-
-  mPixmap->fill(mBgColor);
-  paint->begin(mPixmap);
   
-  // antialiasing
-  if (mAntiAliasing)
-    paint->setRenderHint(QPainter::Antialiasing);
-
   int myRenderCounter = 0;
   
 #ifdef QGISDEBUG
@@ -221,7 +197,7 @@ void QgsMapImage::render()
   while (li != layers.end())
   {
 #ifdef QGISDEBUG
-    std::cout << "QgsMapImage::render: at layer item '" << (*li).toLocal8Bit().data() << "'." << std::endl;
+    std::cout << "QgsMapRender::render: at layer item '" << (*li).toLocal8Bit().data() << "'." << std::endl;
 #endif
 
     emit setProgress(myRenderCounter++,layers.size());
@@ -230,14 +206,14 @@ void QgsMapImage::render()
     if (!ml)
     {
 #ifdef QGISDEBUG
-      std::cout << "QgsMapImage::render: layer not found in registry!" << std::endl;
+      std::cout << "QgsMapRender::render: layer not found in registry!" << std::endl;
 #endif
       li++;
       continue;
     }
         
 #ifdef QGISDEBUG
-    std::cout << "QgsMapImage::render: Rendering layer " << ml->name().toLocal8Bit().data() << '\n'
+    std::cout << "QgsMapRender::render: Rendering layer " << ml->name().toLocal8Bit().data() << '\n'
       << "  Layer minscale " << ml->minScale() 
       << ", maxscale " << ml->maxScale() << '\n' 
       << "  Scale dep. visibility enabled? " 
@@ -269,16 +245,16 @@ void QgsMapImage::render()
                     // Now do the call to the layer that actually does
                     // the rendering work!
         //
-        ml->draw(paint, &r1, mCoordXForm);
+        ml->draw(painter, &r1, mCoordXForm);
         if (split)
-          ml->draw(paint, &r2, mCoordXForm);
+          ml->draw(painter, &r2, mCoordXForm);
         
         disconnect(ml, SIGNAL(drawingProgress(int,int)), this, SLOT(onDrawingProgress(int,int)));
       }
       else
       {
 #ifdef QGISDEBUG
-        std::cout << "QgsMapImage::render: Layer not rendered because it is not within "
+        std::cout << "QgsMapRender::render: Layer not rendered because it is not within "
             << "the defined visibility scale range" << std::endl;
 #endif
       }
@@ -290,7 +266,7 @@ void QgsMapImage::render()
   } // while (li != end)
       
 #ifdef QGISDEBUG
-  std::cout << "QgsMapImage::render: Done rendering map layers...emitting renderComplete(paint)\n";
+  std::cout << "QgsMapRender::render: Done rendering map layers...emitting renderComplete(paint)\n";
 #endif
 
   if (!mOverview)
@@ -312,9 +288,9 @@ void QgsMapImage::render()
           QgsRect r1 = mExtent, r2;
           bool split = ml->projectExtent(r1, r2);
       
-          ml->drawLabels(paint, &r1, mCoordXForm);
+          ml->drawLabels(painter, &r1, mCoordXForm);
           if (split)
-            ml->drawLabels(paint, &r2, mCoordXForm);
+            ml->drawLabels(painter, &r2, mCoordXForm);
         }
       }
       li++;
@@ -332,80 +308,20 @@ void QgsMapImage::render()
   //note that pmCanvas is not draw to gui yet
   // TODO: emit renderComplete(paint);
 
-  paint->end();
   mDrawing = false;
-  delete paint;
-  
+
 }
 
-void QgsMapImage::setMapUnits(QGis::units u)
+void QgsMapRender::setMapUnits(QGis::units u)
 {
   mMapUnits = u;
   mScaleCalculator->setMapUnits(mMapUnits);
   QgsProject::instance()->mapUnits(u); // TODO: sort out
 }
 
-void QgsMapImage::onDrawingProgress(int current, int total)
+void QgsMapRender::onDrawingProgress(int current, int total)
 {
   // TODO: emit signal with progress
   //std::cout << "onDrawingProgress: " << current << " / " << total << std::endl;
   emit updateMap();
-}
-
-
-
-////////////////////////////////////////////////////////
-
-
-
-
-
-
-
-void QgsMapLayerSet::updateFullExtent()
-{
-#ifdef QGISDEBUG
-  std::cout << "QgsMapLayerSet::updateFullExtent() called !" << std::endl;
-#endif
-    
-  QgsMapLayerRegistry* registry = QgsMapLayerRegistry::instance();
-  bool projectionsEnabled = (QgsProject::instance()->readNumEntry("SpatialRefSys","/ProjectionsEnabled",0)!=0);
-  
-  // reset the map canvas extent since the extent may now be smaller
-  // We can't use a constructor since QgsRect normalizes the rectangle upon construction
-  mFullExtent.setMinimal();
-  
-  // iterate through the map layers and test each layers extent
-  // against the current min and max values
-  std::deque<QString>::iterator it = mLayerSet.begin();
-  while(it != mLayerSet.end())
-  {
-    QgsMapLayer * lyr = registry->mapLayer(*it);
-#ifdef QGISDEBUG 
-    std::cout << "Updating extent using " << lyr->name().toLocal8Bit().data() << std::endl;
-    std::cout << "Input extent: " << lyr->extent().stringRep().toLocal8Bit().data() << std::endl;
-#endif 
-    // Layer extents are stored in the coordinate system (CS) of the
-    // layer. The extent must be projected to the canvas CS prior to passing
-    // on to the updateFullExtent function
-    if (projectionsEnabled)
-    {
-      try
-      {
-        if ( ! lyr->coordinateTransform() )
-          throw QgsCsException( string("NO COORDINATE TRANSFORM FOUND FOR LAYER") );
-        
-        mFullExtent.unionRect(lyr->coordinateTransform()->transformBoundingBox(lyr->extent()));
-      }
-      catch (QgsCsException &cse)
-      {
-        qDebug( "Transform error caught in %s line %d:\n%s", __FILE__, __LINE__, cse.what());
-      }
-    }
-    else
-    {
-      mFullExtent.unionRect(lyr->extent());
-    }
-    it++;
-  } 
 }

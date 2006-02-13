@@ -17,7 +17,6 @@
 #include "qgsmaptoolselect.h"
 #include "qgsmapcanvas.h"
 #include "qgsmaptopixel.h"
-#include "qgsmapimage.h"
 #include "qgsmaplayer.h"
 #include "qgscursors.h"
 #include <QMessageBox>

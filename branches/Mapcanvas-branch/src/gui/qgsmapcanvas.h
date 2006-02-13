@@ -50,7 +50,8 @@ class QgsLegendView;
 class QgsMeasure;
 class QgsRubberBand;
 
-class QgsMapImage;
+class QgsMapRender;
+class QgsMapCanvasMap;
 class QgsMapOverviewCanvas;
 class QgsMapCanvasMapImage;
 class QgsMapTool;
@@ -78,7 +79,9 @@ class QgsMapCanvas : public Q3CanvasView
     
     void setOverview(QgsMapOverviewCanvas* overview);
     
-    QgsMapImage* mapImage();
+    QgsMapCanvasMap* map();
+    
+    QgsMapRender* mapRender();
     
     //! Accessor for the canvas pixmap
     QPixmap * canvasPixmap();
@@ -172,9 +175,6 @@ class QgsMapCanvas : public Q3CanvasView
 
     //! true if canvas currently drawing
     bool isDrawing();
-    
-    
-    QgsMapCanvasMapImage* canvasMapImage();
     
     //! returns current layer (set by legend widget)
     QgsMapLayer* currentLayer();
@@ -275,7 +275,10 @@ private:
     QgsMapCanvas();
     
     //! all map rendering is done in this class
-    QgsMapImage* mMapImage;
+    QgsMapRender* mMapRender;
+    
+    //! owns pixmap with rendered map and controls rendering
+    QgsMapCanvasMap* mMap;
     
     //! map overview widget - it's controlled by QgsMapCanvas
     QgsMapOverviewCanvas* mMapOverview;
@@ -318,9 +321,14 @@ private:
     //! Overridden resize event
     void resizeEvent(QResizeEvent * e);
 
+#ifdef Q_WS_MACX
     //! Overridden paint event
     void paintEvent(QPaintEvent * ev);
-
+#else
+    //! Overridden draw contents from canvas view
+    void drawContents(QPainter * p, int cx, int cy, int cw, int ch);
+#endif
+        
     //! Zooms to a given center and scale 
     void zoomByScale(int x, int y, double scaleFactor);
     

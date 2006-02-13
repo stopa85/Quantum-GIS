@@ -25,10 +25,10 @@
 #include <QWheelEvent>
 #include <QWidget>
 #include <deque>
-
+#include <QPixmap>
 
 class QgsMapCanvas;
-class QgsMapImage;
+class QgsMapRender;
 class QgsPanningWidget; // defined in .cpp
 
 class QgsMapOverviewCanvas : public QWidget
@@ -52,9 +52,10 @@ class QgsMapOverviewCanvas : public QWidget
     //! updates layer set for overview
     void setLayerSet(std::deque<QString>& layerSet);
     
-    //! returns map image class
-    QgsMapImage* mapImage();
-        
+    void enableAntiAliasing(bool flag) { mAntiAliasing = flag; }
+    
+    void updateFullExtent();
+    
   protected:
   
     //! Overridden paint event
@@ -84,9 +85,17 @@ class QgsMapOverviewCanvas : public QWidget
     //! main map canvas - used to get/set extent
     QgsMapCanvas* mMapCanvas;
     
-    //! map image for rendering
-    QgsMapImage* mMapImage;
-        
+    //! for rendering overview
+    QgsMapRender* mMapRender;
+    
+    //! pixmap where the map is stored
+    QPixmap mPixmap;
+    
+    //! background color
+    QColor mBgColor;
+
+    //! indicates whether antialiasing will be used for rendering
+    bool mAntiAliasing;
 };
 
 #endif
