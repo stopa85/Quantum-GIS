@@ -17,7 +17,6 @@
 #include "qgsmaptoolzoom.h"
 #include "qgsmapcanvas.h"
 #include "qgsmaptopixel.h"
-#include "qgsmapimage.h"
 #include "qgscursors.h"
 
 #include <QMouseEvent>
@@ -87,7 +86,7 @@ void QgsMapToolZoom::canvasReleaseEvent(QMouseEvent * e)
     if (mZoomOut)
     {
       QgsPoint cer = r.center();
-      QgsRect extent = mCanvas->mapImage()->extent();
+      QgsRect extent = mCanvas->extent();
     
       double sf;
       if (mZoomRect.width() > mZoomRect.height())

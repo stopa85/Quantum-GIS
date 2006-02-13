@@ -1,5 +1,5 @@
 /***************************************************************************
-    qgsmapimage.h  -  class for rendering map layer set to pixmap
+    qgsmaprender.h  -  class for rendering map layer set
     ----------------------
     begin                : January 2006
     copyright            : (C) 2006 by Martin Dobias
@@ -14,68 +14,39 @@
  ***************************************************************************/
 /* $Id$ */
 
-#ifndef QGSMAPIMAGE_H
-#define QGSMAPIMAGE_H
+#ifndef QGSMAPRENDER_H
+#define QGSMAPRENDER_H
 
 
 #include "qgis.h"
-#include "qgsrect.h"
-#include <deque>
+#include "qgsmaplayerset.h"
 
-#include <QColor>
-#include <QString>
-
-class QPixmap;
+class QPainter;
 class QgsScaleCalculator;
 class QgsMapToPixel;
 
 
-class QgsMapLayerSet
-{
-  public:
-    std::deque<QString>& layerSet() { return mLayerSet; }
-    int layerCount() { return mLayerSet.size(); }
-    void setLayerSet(const std::deque<QString>& layers) { mLayerSet = layers; updateFullExtent(); }
-    QgsRect fullExtent() { return mFullExtent; }
-  
-    // mainly for internal use, called directly only when projection changes
-    void updateFullExtent();
-    
-  private:
-    
-    std::deque<QString> mLayerSet;
-    QgsRect mFullExtent;
-};
-
-
-
-
 
 /**
- * \class QgsMapImage
- * \brief Class for rendering map layer set to pixmap
+ * \class QgsMapRender
+ * \brief Class for rendering map layer set
  *
- * \note
- * TODO:
- * - composition engine?
- * - callback for showing progress?
- * - drawing in separate thread?
  */
 
-class QgsMapImage : public QObject
+class QgsMapRender : public QObject
 {
   Q_OBJECT
       
   public:
     
-    //! constructor, needs to specify pixmap size
-    QgsMapImage(int width, int height);
+    //! constructor
+    QgsMapRender();
     
     //! destructor
-    ~QgsMapImage();
+    ~QgsMapRender();
 
     //! starts rendering
-    void render();
+    void render(QPainter* painter);
     
     //! sets extent and checks whether suitable (returns false if not)
     bool setExtent(const QgsRect& extent);
@@ -83,14 +54,6 @@ class QgsMapImage : public QObject
     //! returns current extent
     QgsRect extent();
     
-    //! changes pixmap size
-    void setPixmapSize(int width, int height);
-    
-    //! change background color
-    void setBgColor(const QColor& color);
-
-    QPixmap* pixmap() { return mPixmap; }
-
     void setLayerSet(const QgsMapLayerSet& layers) { mLayers = layers; }
     QgsMapLayerSet& layers() { return mLayers; }
     
@@ -105,7 +68,7 @@ class QgsMapImage : public QObject
     //! sets whether map image will be for overview
     void setOverview(bool isOverview = true) { mOverview = isOverview; }
 
-    void enableAntiAliasing(bool flag) { mAntiAliasing = flag; }
+    void setOutputSize(QSize size, int dpi);
     
   signals:
     
@@ -121,12 +84,9 @@ class QgsMapImage : public QObject
   protected:
     
     //! adjust extent to fit the pixmap size
-    void adjustExtentToPixmap();
+    void adjustExtentToSize();
     
   protected:
-    
-    //! Background color for the map canvas
-    QColor mBgColor;
     
     //! indicates drawing in progress
     bool mDrawing;
@@ -152,14 +112,10 @@ class QgsMapImage : public QObject
     //! current extent to be drawn
     QgsRect mExtent;
     
-    //! stores pixmap with rendered map
-    QPixmap* mPixmap;
-    
     //! indicates whether it's map image for overview
     bool mOverview;
-
-    //! indicates whether antialiasing will be used for rendering
-    bool mAntiAliasing;
+    
+    QSize mSize;
 };
 
 #endif

@@ -97,7 +97,7 @@
 #include "qgslegendlayer.h"
 #include "qgsmapcanvas.h"
 #include "qgsmapoverviewcanvas.h"
-#include "qgsmapimage.h"
+#include "qgsmaprender.h"
 #include "qgsmaplayer.h"
 #include "qgsmaplayerinterface.h"
 #include "qgsmaplayerregistry.h"
@@ -1075,7 +1075,7 @@ void QgisApp::setupConnections()
   connect(mMapCanvas, SIGNAL(xyCoordinates(QgsPoint &)), this, SLOT(showMouseCoordinate(QgsPoint &)));
   //signal when mouse in capturePoint mode and mouse clicked on canvas
   connect(mMapCanvas, SIGNAL(xyClickCoordinates(QgsPoint &)), this, SLOT(showCapturePointCoordinate(QgsPoint &)));
-  connect(mMapCanvas->mapImage(), SIGNAL(setProgress(int,int)), this, SLOT(showProgress(int,int)));
+  connect(mMapCanvas->mapRender(), SIGNAL(setProgress(int,int)), this, SLOT(showProgress(int,int)));
   connect(mMapCanvas, SIGNAL(extentsChanged(QgsRect )),this,SLOT(showExtents(QgsRect )));
   connect(mMapCanvas, SIGNAL(scaleChanged(QString)), this, SLOT(showScale(QString)));
   connect(mMapCanvas, SIGNAL(scaleChanged(QString)), this, SLOT(updateMouseCoordinatePrecision()));
