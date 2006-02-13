@@ -3732,32 +3732,30 @@ void QgisApp::zoomToLayerExtent()
   // zoom only if one or more layers loaded
   if(QgsMapLayerRegistry::instance()->count() > 0)
   {
-    // get the selected item
-    QTreeWidgetItem *li = mMapLegend->currentItem();
-    QgsLegendLayerFile* llf = dynamic_cast<QgsLegendLayerFile*>(li);
-    if(llf)
-    {
-      QgsMapLayer *layer = llf->layer();
-      // Check if the layer extent has to be transformed to the map canvas
-      // coordinate system
-#ifdef QGISDEBUG
-      std::cout << "Layer extent is : " << (layer->extent()).stringRep().toLocal8Bit().data() << std::endl;
-#endif
-      if (QgsProject::instance()->readNumEntry("SpatialRefSys","/ProjectionsEnabled",0)!=0)
+    
+    QgsMapLayer *layer = mMapLegend->currentLayer();
+    if(layer)
       {
-        QgsCoordinateTransform *ct = layer->coordinateTransform();
-        try {
-          QgsRect transformedExtent = ct->transform(layer->extent());
-          mMapCanvas->setExtent(transformedExtent);
+	// Check if the layer extent has to be transformed to the map canvas
+	// coordinate system
 #ifdef QGISDEBUG
-          std::cout << "Canvas extent is : " << transformedExtent.stringRep().toLocal8Bit().data() << std::endl;
+	std::cout << "Layer extent is : " << (layer->extent()).stringRep().toLocal8Bit().data() << std::endl;
 #endif
-        }
-        catch(QgsCsException &cse)
-        {
+	if (QgsProject::instance()->readNumEntry("SpatialRefSys","/ProjectionsEnabled",0)!=0)
+	  {
+	    QgsCoordinateTransform *ct = layer->coordinateTransform();
+	    try {
+	      QgsRect transformedExtent = ct->transform(layer->extent());
+	      mMapCanvas->setExtent(transformedExtent);
 #ifdef QGISDEBUG
-          std::cout << "Caught transform error in zoomToLayerExtent(). "
-            << "Setting untransformed extents." << std::endl;
+	      std::cout << "Canvas extent is : " << transformedExtent.stringRep().toLocal8Bit().data() << std::endl;
+#endif
+	    }
+	    catch(QgsCsException &cse)
+	      {
+#ifdef QGISDEBUG
+		std::cout << "Caught transform error in zoomToLayerExtent(). "
+			  << "Setting untransformed extents." << std::endl;
 #endif	
           mMapCanvas->setExtent(layer->extent());
         }
@@ -3768,9 +3766,9 @@ void QgisApp::zoomToLayerExtent()
       }
       mMapCanvas->refresh();
 
-      // notify the project we've made a change
-      QgsProject::instance()->dirty(true);
-    }
+	// notify the project we've made a change
+	QgsProject::instance()->dirty(true);
+      }
   }
 } // QgisApp::zoomToLayerExtent()
 
@@ -4408,34 +4406,18 @@ void QgisApp::openURL(QString url, bool useQgisDocDirectory)
 /** Get a pointer to the currently selected map layer */
 QgsMapLayer *QgisApp::activeLayer()
 {
-  QTreeWidgetItem *lvi = mMapLegend->currentItem();
-  QgsMapLayer *layer = 0;
-  if (lvi)
-  {
-    QgsLegendLayerFile* llf = dynamic_cast<QgsLegendLayerFile*>(lvi);
-    if(llf)
-    {
-      layer = llf->layer();
-    }
-  }
-  return layer;
+  return (mMapLegend->currentLayer());
 }
 
 QString QgisApp::activeLayerSource()
 {
   QString source;
-  QTreeWidgetItem *lvi = mMapLegend->currentItem();
-  QgsMapLayer *layer = 0;
-  if (lvi)
-  {
-    QgsLegendLayerFile* llf = dynamic_cast<QgsLegendLayerFile*>(lvi);
-    if(llf)
+  QgsMapLayer* layer = mMapLegend->currentLayer();
+  if(layer)
     {
-      layer = llf->layer();
+      return (layer->source());
     }
-    source = layer->source();
-  }
-  return source;
+  return "";
 }
 
 /** Add a vector layer directly without prompting user for location

@@ -50,6 +50,7 @@
 #include <QCursor>
 #include <QLabel>
 #include <QLibrary>
+#include <QPolygon>
 #include <QMessageBox>
 #include <QPainter>
 #include <QPixmap>
