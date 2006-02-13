@@ -14,6 +14,7 @@
  ***************************************************************************/
 /* $Id$ */
 
+#include "qgsattributedialog.h"
 #include "qgsmaptoolcapture.h"
 #include "qgsmapcanvas.h"
 #include "qgsmaptopixel.h"
@@ -125,7 +126,7 @@ void QgsMapToolCapture::canvasReleaseEvent(QMouseEvent * e)
       }
 
       // show the dialog to enter attribute values
-      if(f->attributeDialog())
+      if (QgsAttributeDialog::queryAttributes(*f))
         vlayer->addFeature(f);
       else
         delete f;
@@ -242,7 +243,7 @@ void QgsMapToolCapture::canvasReleaseEvent(QMouseEvent * e)
         f->addAttribute((*it).name(),vlayer->getDefaultValue(it->name(), f));
       }
   
-      if(f->attributeDialog())
+      if (QgsAttributeDialog::queryAttributes(*f))
         vlayer->addFeature(f);
       else
         delete f;

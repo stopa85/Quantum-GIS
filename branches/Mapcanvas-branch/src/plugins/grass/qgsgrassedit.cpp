@@ -53,10 +53,11 @@
 #include "qgsmaptopixel.h"
 #include "qgsfield.h"
 #include "qgsfeatureattribute.h"
+#include "qgslegend.h"
 
 extern "C" {
-#include <gis.h>
-#include <Vect.h>
+#include <grass/gis.h>
+#include <grass/Vect.h>
 }
 
 #include "../../src/providers/grass/qgsgrass.h"
@@ -87,6 +88,8 @@ QgsGrassEdit::QgsGrassEdit ( QgisApp *qgisApp, QgisIface *iface,
   mCanvas = mIface->getMapCanvas();
 
   // TODO QGIS: crash if canvas is empty
+
+  // At moment QgisIface::activeLayer() does not work
   QgsMapLayer *layer = (QgsMapLayer *) mIface->activeLayer();
 
   if ( !layer ) {

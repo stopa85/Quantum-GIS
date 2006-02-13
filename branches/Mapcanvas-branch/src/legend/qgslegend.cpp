@@ -491,28 +491,49 @@ void QgsLegend::addLayer( QgsMapLayer * layer )
     // first layer?
     if (mMapCanvas->layerCount() == 1)
       mMapCanvas->zoomFullExtent();
+    
+    setCurrentItem(llayer);
 }
 
 QgsMapLayer* QgsLegend::currentLayer()
 {
-    QgsLegendItem* citem=dynamic_cast<QgsLegendItem*>(currentItem());
+  QgsLegendItem* citem=dynamic_cast<QgsLegendItem*>(currentItem());
+  /*
+  // XXX commented out because QGIS crashed when switching projects [MD]
+  QList<QTreeWidgetItem*> selItems = selectedItems();
+    if(selItems.size() > 1)
+      {
+	return 0;
+      }
+    QList<QTreeWidgetItem*>::iterator it = selItems.begin();
+    QgsLegendItem* citem=dynamic_cast<QgsLegendItem*>(*it);
+  */
+
     if(citem)
     {
 	QgsLegendLayerFile* llf=dynamic_cast<QgsLegendLayerFile*>(citem);
 	if(llf)
 	{
-	    return llf->layer();
+	  return llf->layer(); //the current item is itself a legend layer file
 	}
 	else
 	{
 	    QgsLegendLayer* ll = dynamic_cast<QgsLegendLayer*>(citem);
 	    if(ll)
 	    {
-		return ll->firstMapLayer();
+	      return ll->firstMapLayer(); //the current item is a legend layer, so return its first layer
 	    }
 	    else
 	    {
-		return 0;
+	      QgsLegendLayer* lpl = dynamic_cast<QgsLegendLayer*>(citem->parent());
+	      if(lpl)
+		{
+		  return lpl->firstMapLayer(); //the parent of the current item is a legend layer, return its first layer
+		}
+	      else
+		{
+		  return 0;
+		}
 	    }
 	}
     }
