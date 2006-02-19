@@ -1,5 +1,5 @@
 /***************************************************************************
-                         qgsgrasydialog.h  -  description
+                         qgsgraduatedsymboldialog.h  -  description
                              -------------------
     begin                : Oct 2003
     copyright            : (C) 2003 by Marco Hugentobler
@@ -16,24 +16,24 @@
  ***************************************************************************/
 /* $Id$ */
 
-#ifndef QGSGRASYDIALOG_H
-#define QGSGRASYDIALOG_H
+#ifndef QGSGRADUATEDSYMBOLDIALOG_H
+#define QGSGRADUATEDSYMBOLDIALOG_H
 
-#include "ui_qgsgrasydialogbase.h"
-#include "qgssisydialog.h"
+#include "ui_qgsgraduatedsymboldialogbase.h"
+#include "qgssinglesymboldialog.h"
 #include <map>
 
 class QgsVectorLayer;
 
 
-class QgsGraSyDialog: public QDialog, private Ui::QgsGraSyDialogBase
+class QgsGraduatedSymbolDialog: public QDialog, private Ui::QgsGraduatedSymbolDialogBase
 {
     Q_OBJECT
  public:
     /**Enumeration describing the automatic settings of values*/
     enum mode{EMPTY, EQUAL_INTERVAL, QUANTILES};
-    QgsGraSyDialog(QgsVectorLayer* layer);
-    ~QgsGraSyDialog();
+    QgsGraduatedSymbolDialog(QgsVectorLayer* layer);
+    ~QgsGraduatedSymbolDialog();
  public slots:
      void apply();
  protected slots:
@@ -55,11 +55,11 @@ class QgsGraSyDialog: public QDialog, private Ui::QgsGraSyDialogBase
      /**Stores the classes*/
      std::map<QString,QgsSymbol*> mEntries;
      /**Dialog which shows the settings of the activated class*/
-     QgsSiSyDialog sydialog;
+     QgsSingleSymbolDialog sydialog;
      int mClassificationField;
  private:
      /**Default constructor is privat to not use is*/
-     QgsGraSyDialog();
+     QgsGraduatedSymbolDialog();
 };
 
 #endif

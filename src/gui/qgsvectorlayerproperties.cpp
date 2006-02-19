@@ -19,12 +19,12 @@
 
 #include "qgsvectorlayerproperties.h"
 #include "qgsattributeactiondialog.h"
-#include "qgscontcoldialog.h"
-#include "qgsgrasydialog.h"
+#include "qgscontinuouscolordialog.h"
+#include "qgsgraduatedsymboldialog.h"
 #include "qgslabeldialog.h"
 #include "qgslayerprojectionselector.h"
-#include "qgssisydialog.h"
-#include "qgsuvaldialog.h"
+#include "qgssinglesymboldialog.h"
+#include "qgsuniquevaluedialog.h"
 #include "qgsvectordataprovider.h"
 #include "qgsvectorlayer.h"
 #ifdef HAVE_POSTGRESQL
@@ -93,19 +93,19 @@ void QgsVectorLayerProperties::alterLayerDialog(const QString & dialogString)
     mRendererDialog=0;
     if(dialogString == tr("Single Symbol"))
     {
-	mRendererDialog = new QgsSiSyDialog(layer);
+	mRendererDialog = new QgsSingleSymbolDialog(layer);
     }
     else if(dialogString == tr("Graduated Symbol"))
     {
-	mRendererDialog = new QgsGraSyDialog(layer);
+	mRendererDialog = new QgsGraduatedSymbolDialog(layer);
     }
     else if(dialogString == tr("Continuous Color"))
     {
-	mRendererDialog = new QgsContColDialog(layer);
+	mRendererDialog = new QgsContinuousColorDialog(layer);
     }
     else if(dialogString == tr("Unique Value"))
     {
-	mRendererDialog = new QgsUValDialog(layer);
+	mRendererDialog = new QgsUniqueValueDialog(layer);
     }
     widgetStackRenderers->addWidget(mRendererDialog);
     widgetStackRenderers->raiseWidget(mRendererDialog);  
@@ -185,22 +185,22 @@ void QgsVectorLayerProperties::reset( void )
   QString rtype=layer->renderer()->name();
   if(rtype=="Single Symbol")
   {
-      mRendererDialog=new QgsSiSyDialog(layer);
+      mRendererDialog=new QgsSingleSymbolDialog(layer);
       legendtypecombobox->setCurrentIndex(0);
   }
   else if(rtype=="Graduated Symbol")
   {
-      mRendererDialog=new QgsGraSyDialog(layer);
+      mRendererDialog=new QgsGraduatedSymbolDialog(layer);
       legendtypecombobox->setCurrentIndex(1);
   }
   else if(rtype=="Continuous Color")
   {
-      mRendererDialog=new QgsContColDialog(layer);
+      mRendererDialog=new QgsContinuousColorDialog(layer);
       legendtypecombobox->setCurrentIndex(2);
   }
   else if(rtype == "Unique Value")
   {
-      mRendererDialog=new QgsUValDialog(layer);
+      mRendererDialog=new QgsUniqueValueDialog(layer);
       legendtypecombobox->setCurrentIndex(3);
   }
   
@@ -277,10 +277,10 @@ void QgsVectorLayerProperties::on_pbnApply_clicked()
   layer->setLayerName(displayName());
 
 
-  QgsSiSyDialog *sdialog = dynamic_cast < QgsSiSyDialog * >(widgetStackRenderers->visibleWidget());
-  QgsGraSyDialog *gdialog = dynamic_cast < QgsGraSyDialog * >(widgetStackRenderers->visibleWidget());
-  QgsContColDialog *cdialog = dynamic_cast < QgsContColDialog * >(widgetStackRenderers->visibleWidget());
-  QgsUValDialog* udialog = dynamic_cast< QgsUValDialog * >(widgetStackRenderers->visibleWidget()); 
+  QgsSingleSymbolDialog *sdialog = dynamic_cast < QgsSingleSymbolDialog * >(widgetStackRenderers->visibleWidget());
+  QgsGraduatedSymbolDialog *gdialog = dynamic_cast < QgsGraduatedSymbolDialog * >(widgetStackRenderers->visibleWidget());
+  QgsContinuousColorDialog *cdialog = dynamic_cast < QgsContinuousColorDialog * >(widgetStackRenderers->visibleWidget());
+  QgsUniqueValueDialog* udialog = dynamic_cast< QgsUniqueValueDialog * >(widgetStackRenderers->visibleWidget()); 
 
   if (sdialog)
     {

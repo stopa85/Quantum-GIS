@@ -1,5 +1,5 @@
 /***************************************************************************
-                         qgsuvaldialog.h  -  description
+                         qgsuniquevaluedialog.h  -  description
                              -------------------
     begin                : July 2004
     copyright            : (C) 2004 by Marco Hugentobler
@@ -16,22 +16,22 @@
  ***************************************************************************/
 /* $Id$ */
 
-#ifndef QGSUVALDIALOG_H
-#define QGSUVALDIALOG_H
+#ifndef QGSUNIQUEVALUEDIALOG_H
+#define QGSUNIQUEVALUEDIALOG_H
 
-#include "ui_qgsuvaldialogbase.h"
-#include "qgssisydialog.h"
+#include "ui_qgsuniquevaluedialogbase.h"
+#include "qgssinglesymboldialog.h"
 #include <map>
 
 class QgsVectorLayer;
 
 
-class QgsUValDialog: public QDialog, private Ui::QgsUValDialogBase
+class QgsUniqueValueDialog: public QDialog, private Ui::QgsUniqueValueDialogBase
 {
     Q_OBJECT
  public:
-    QgsUValDialog(QgsVectorLayer* vl);
-    ~QgsUValDialog();
+    QgsUniqueValueDialog(QgsVectorLayer* vl);
+    ~QgsUniqueValueDialog();
 
  public slots:
      void apply();
@@ -41,7 +41,7 @@ class QgsUValDialog: public QDialog, private Ui::QgsUValDialogBase
     QgsVectorLayer* mVectorLayer;
     /**Set to store the already entered values*/
     std::map<QString,QgsSymbol*> mValues;
-    QgsSiSyDialog sydialog;
+    QgsSingleSymbolDialog sydialog;
     /**Value for which symbology settings are displayed*/
     QString currentValue;
 

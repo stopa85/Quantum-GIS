@@ -2,31 +2,29 @@ QGTOP=../../../
 
 LDADD = $(PLUGIN_LIBS) 
 
-OBJECTS = ogrprovider_la-qgsogrprovider.o
-
-PROVIDER = .libs/ogrprovider.dll
+PROVIDER = .libs/postgresprovider.dll
 
 all: objects $(PROVIDER)
 
 objects:
 	$(MAKE) -f Makefile
 
-$(PROVIDER): $(OBJECTS)
+$(PROVIDER): .libs/postgresprovider.a
 	$(CXX) -shared -o $@ \
 		-Wl,--export-all-symbols \
 		-Wl,--enable-auto-import \
-		-Wl,--whole-archive ogrprovider_la-qgsogrprovider.o \
+		-Wl,--whole-archive .libs/postgresprovider.a \
 		-Wl,--no-whole-archive \
 			$(CORE_A) $(GUI_A) $(CORE_A) \
 			$(RASTER_A) $(PROJSEL_A) $(LEGEND_A) \
 			$(GUI_A) $(CORE_A) $(COMPOSER_A) $(GUI_A) \
-			-lgdal -lgeos -lsqlite3 -lproj \
+			-lpq -lgdal -lgeos -lsqlite3 -lproj  \
                         $(QT_LDADD) \
                         -lwsock32 -lmingw32
 	$(STRIP) $@ 
 
 install: all
 	mkdir -p $(prefix)/lib/qgis/
-	$(INSTALL) -m 755 .libs/ogrprovider.dll $(prefix)/lib/qgis/ogrprovider.dll
+	$(INSTALL) -m 755 .libs/postgresprovider.dll $(prefix)/lib/qgis/postgresprovider.dll
 
 include ../../../Makefile.win.rules

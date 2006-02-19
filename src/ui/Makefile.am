@@ -23,11 +23,11 @@ qgis_ui_UIC =	\
 		qgsattributeactiondialogbase.ui		\
 		qgsattributetablebase.ui		\
 		qgsbookmarksbase.ui		\
-		qgscontcoldialogbase.ui			\
+		qgscontinuouscolordialogbase.ui			\
 		qgsdelattrdialogbase.ui			\
 		qgsvectorlayerpropertiesbase.ui	\
 		qgsgeomtypedialogbase.ui		\
-		qgsgrasydialogbase.ui			\
+		qgsgraduatedsymboldialogbase.ui			\
 		qgshelpviewerbase.ui			\
 		qgsidentifyresultsbase.ui		\
 		qgslabeldialogbase.ui			\
@@ -45,8 +45,8 @@ qgis_ui_UIC =	\
 		qgsprojectpropertiesbase.ui		\
 		qgsrasterlayerpropertiesbase.ui		\
 		qgsserversourceselectbase.ui		\
-		qgssisydialogbase.ui			\
-		qgsuvaldialogbase.ui			\
+		qgssinglesymboldialogbase.ui			\
+		qgsuniquevaluedialogbase.ui			\
 		qgslayerprojectionselectorbase.ui \
 		qgscustomprojectiondialogbase.ui \
 		qgscomposerbase.ui \
@@ -58,16 +58,16 @@ qgis_ui_UIC =	\
 		qgscomposerpicturebase.ui \
 		qgscomposerscalebarbase.ui \
 		qgscomposervectorlegendbase.ui \
-		qgscontcoldialogbase.ui \
+		qgscontinuouscolordialogbase.ui \
 		qgsattributedialogbase.ui \
 		qgsfillstylewidgetbase.ui \
-		qgsgrasydialogbase.ui \
+		qgsgraduatedsymboldialogbase.ui \
 		qgslabeldialogbase.ui \
 		qgslinestylewidgetbase.ui \
 		qgsmeasurebase.ui \
 		qgspointstylewidgetbase.ui \
 		qgsidentifyresultsbase.ui \
-		qgsuvaldialogbase.ui \
+		qgsuniquevaluedialogbase.ui \
 		qgsattributetabledisplaybase.ui \
 		qgsaddattrdialogbase.ui \
 		qgsadvancedattrsearch.ui \
@@ -91,11 +91,11 @@ qgis_ui_UIHEADERS = ui_qgisappbase.h \
 		ui_qgsattributeactiondialogbase.h		\
 		ui_qgsattributetablebase.h		\
 		ui_qgsbookmarksbase.h		\
-		ui_qgscontcoldialogbase.h			\
+		ui_qgscontinuouscolordialogbase.h			\
 		ui_qgsdelattrdialogbase.h			\
 		ui_qgsvectorlayerpropertiesbase.h	\
 		ui_qgsgeomtypedialogbase.h		\
-		ui_qgsgrasydialogbase.h			\
+		ui_qgsgraduatedsymboldialogbase.h			\
 		ui_qgshelpviewerbase.h			\
 		ui_qgsidentifyresultsbase.h		\
 		ui_qgslabeldialogbase.h			\
@@ -113,8 +113,8 @@ qgis_ui_UIHEADERS = ui_qgisappbase.h \
 		ui_qgsprojectpropertiesbase.h		\
 		ui_qgsrasterlayerpropertiesbase.h		\
 		ui_qgsserversourceselectbase.h		\
-		ui_qgssisydialogbase.h			\
-		ui_qgsuvaldialogbase.h			\
+		ui_qgssinglesymboldialogbase.h			\
+		ui_qgsuniquevaluedialogbase.h			\
 		ui_qgslayerprojectionselectorbase.h \
 		ui_qgscustomprojectiondialogbase.h \
 		ui_qgscomposerbase.h \
@@ -126,10 +126,10 @@ qgis_ui_UIHEADERS = ui_qgisappbase.h \
 		ui_qgscomposerpicturebase.h \
 		ui_qgscomposerscalebarbase.h \
 		ui_qgscomposervectorlegendbase.h \
-		ui_qgscontcoldialogbase.h \
+		ui_qgscontinuouscolordialogbase.h \
 		ui_qgsattributedialogbase.h \
 		ui_qgsfillstylewidgetbase.h \
-		ui_qgsgrasydialogbase.h \
+		ui_qgsgraduatedsymboldialogbase.h \
 		ui_qgslabeldialogbase.h \
 		ui_qgslinestylewidgetbase.h \
 		ui_qgsmeasurebase.h \
@@ -144,7 +144,7 @@ qgis_ui_UIHEADERS = ui_qgisappbase.h \
 		ui_qgspatterndialogbase.h \
 		ui_qgslinestyledialogbase.h \
 		ui_qgsmarkerdialogbase.h \
-		ui_qgsuvaldialogbase.h \
+		ui_qgsuniquevaluedialogbase.h \
 		ui_qgsnewhttpconnectionbase.h \
 		ui_qgsnewconnectionbase.h \
 		../widgets/projectionselector/ui_qgsprojectionselectorbase.h
