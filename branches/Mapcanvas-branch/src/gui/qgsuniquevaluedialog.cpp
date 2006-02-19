@@ -1,5 +1,5 @@
 /***************************************************************************
-                         qgsuvaldialog.cpp  -  description
+                         qgsuniquevaluedialog.cpp  -  description
                              -------------------
     begin                : July 2004
     copyright            : (C) 2004 by Marco Hugentobler
@@ -16,16 +16,16 @@
  ***************************************************************************/
 /* $Id$ */
 
-#include "qgsuvaldialog.h"
+#include "qgsuniquevaluedialog.h"
 #include "qgsfeature.h"
 #include "qgsfeatureattribute.h"
 #include "qgssymbol.h"
-#include "qgsuniquevalrenderer.h"
+#include "qgsuniquevaluerenderer.h"
 #include "qgsvectordataprovider.h"
 #include "qgsvectorlayer.h"
 
 
-QgsUValDialog::QgsUValDialog(QgsVectorLayer* vl): QDialog(), mVectorLayer(vl), sydialog(vl)
+QgsUniqueValueDialog::QgsUniqueValueDialog(QgsVectorLayer* vl): QDialog(), mVectorLayer(vl), sydialog(vl)
 {
     setupUi(this);
     setSizeGripEnabled(true); 
@@ -48,7 +48,7 @@ QgsUValDialog::QgsUValDialog(QgsVectorLayer* vl): QDialog(), mVectorLayer(vl), s
     } 
     else
     {
-	qWarning("Warning, data provider is null in QgsUValDialog::QgsUValDialog");
+	qWarning("Warning, data provider is null in QgsUniqueValueDialog::QgsUniqueValueDialog");
 	return;
     }
 
@@ -58,7 +58,7 @@ QgsUValDialog::QgsUValDialog(QgsVectorLayer* vl): QDialog(), mVectorLayer(vl), s
     mSymbolWidgetStack->addWidget(&sydialog);
     mSymbolWidgetStack->raiseWidget(&sydialog);
 
-    const QgsUniqueValRenderer* renderer = dynamic_cast < const QgsUniqueValRenderer * >(mVectorLayer->renderer());
+    const QgsUniqueValueRenderer* renderer = dynamic_cast < const QgsUniqueValueRenderer * >(mVectorLayer->renderer());
     
     if (renderer)
     {
@@ -95,7 +95,7 @@ QgsUValDialog::QgsUValDialog(QgsVectorLayer* vl): QDialog(), mVectorLayer(vl), s
     mClassBreakBox->setCurrentItem(0);
 }
 
-QgsUValDialog::~QgsUValDialog()
+QgsUniqueValueDialog::~QgsUniqueValueDialog()
 {
     std::map<QString, QgsSymbol *>::iterator myValueIterator = mValues.begin();
     while ( myValueIterator != mValues.end() )
@@ -110,9 +110,9 @@ QgsUValDialog::~QgsUValDialog()
     mClassBreakBox->setCurrentItem(0);
 }
 
-void QgsUValDialog::apply()
+void QgsUniqueValueDialog::apply()
 {
-    QgsUniqueValRenderer *renderer = new QgsUniqueValRenderer(mVectorLayer->vectorType());
+    QgsUniqueValueRenderer *renderer = new QgsUniqueValueRenderer(mVectorLayer->vectorType());
 
     //go through mValues and add the entries to the renderer
     for(std::map<QString,QgsSymbol*>::iterator it=mValues.begin();it!=mValues.end();++it)
@@ -134,7 +134,7 @@ void QgsUValDialog::apply()
     mVectorLayer->refreshLegend();
 }
 
-void QgsUValDialog::changeClassificationAttribute(int nr)
+void QgsUniqueValueDialog::changeClassificationAttribute(int nr)
 {
     //delete old entries
     for(std::map<QString,QgsSymbol*>::iterator it=mValues.begin();it!=mValues.end();++it)
@@ -206,7 +206,7 @@ void QgsUValDialog::changeClassificationAttribute(int nr)
     mClassBreakBox->setCurrentItem(0);
 }
 
-void QgsUValDialog::changeCurrentValue()
+void QgsUniqueValueDialog::changeCurrentValue()
 {
     sydialog.blockSignals(true);//block signal to prevent sydialog from changing the current QgsRenderItem
     Q3ListBoxItem* item=mClassBreakBox->selectedItem();
@@ -224,7 +224,7 @@ void QgsUValDialog::changeCurrentValue()
     sydialog.blockSignals(false);
 }
 
-void QgsUValDialog::applySymbologyChanges()
+void QgsUniqueValueDialog::applySymbologyChanges()
 {
   Q3ListBoxItem* item=mClassBreakBox->selectedItem();
   QString value=item->text();

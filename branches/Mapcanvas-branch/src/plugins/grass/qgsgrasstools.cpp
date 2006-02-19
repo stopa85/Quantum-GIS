@@ -51,6 +51,7 @@
 #include <QCloseEvent>
 #include <QTabBar>
 #include <QListView>
+#include <QProcess>
 
 #include "qgis.h"
 #include "qgsapplication.h"
@@ -76,7 +77,16 @@ extern "C" {
 QgsGrassToolsTabWidget::QgsGrassToolsTabWidget( QWidget * parent ): 
         QTabWidget(parent)
 {
-    tabBar()->setIconSize( QSize(125,25) );
+    // Default height seems to be too small for our purpose
+    int height = 1.5 * tabBar()->iconSize().height();
+    // Max width (see QgsGrassModule::pixmap for hardcoded sizes)
+    int width = 3*height + 28 + 29;
+    tabBar()->setIconSize( QSize(width,height) );
+}
+
+QSize QgsGrassToolsTabWidget::iconSize()
+{
+    return tabBar()->iconSize();
 }
 
 QgsGrassToolsTabWidget::~QgsGrassToolsTabWidget() {}
@@ -131,9 +141,13 @@ QgsGrassTools::QgsGrassTools ( QgisApp *qgisApp, QgisIface *iface,
     //QString conf = QgsApplication::pkgDataPath() + "/grass/config/default.qgc";
     QString conf = mAppDir + "/share/qgis/grass/config/default.qgc";
 
+    restorePosition();
+
+    // Show before loadConfig() so that user can see loading
+    mModulesListView->show(); 
+
     loadConfig ( conf );
     //statusBar()->hide();
-    restorePosition();
 }
 
 void QgsGrassTools::moduleClicked( Q3ListViewItem * item )
@@ -158,8 +172,24 @@ void QgsGrassTools::moduleClicked( Q3ListViewItem * item )
     if ( name == "shell" )
     {
 #ifdef WIN32
-	 QMessageBox::warning( 0, "Warning",
-             "GRASS Shell is not supported on Windows." );
+         // Run MSYS if available
+         // Note: I was not able to run cmd.exe and command.com
+         //       with QProcess
+
+         QString msysPath = mAppDir + "/msys/msys.bat";
+         QFile file ( msysPath );
+
+         if ( !file.exists() ) 
+         {
+	     QMessageBox::warning( 0, "Warning",
+                 "Cannot find MSYS (" + msysPath + ")" );
+         } 
+         else
+         {
+             QProcess *proc = new QProcess(this);
+             proc->start (msysPath);
+         }
+         return;
 #else 
 
     #ifdef HAVE_OPENPTY
@@ -177,9 +207,21 @@ void QgsGrassTools::moduleClicked( Q3ListViewItem * item )
                                       mQgisApp, mIface, path, mTabWidget ) );
     }
     
-    QPixmap pixmap = QgsGrassModule::pixmap ( path, 25 ); 
+    int height = mTabWidget->iconSize().height();
+    QPixmap pixmap = QgsGrassModule::pixmap ( path, height ); 
+    
+    // Icon size in QT4 does not seem to be variable
+    // -> put smaller icons in the middle
+    QPixmap pixmap2 ( mTabWidget->iconSize() );
+    QPalette pal;
+    pixmap2.fill ( pal.color(QPalette::Window) );
+    QPainter painter(&pixmap2);
+    int x = (int) ( (mTabWidget->iconSize().width()-pixmap.width())/2 );
+    painter.drawPixmap ( x, 0, pixmap );
+    painter.end();
+
     QIcon is;
-    is.addPixmap ( pixmap );
+    is.addPixmap ( pixmap2 );
     mTabWidget->addTab ( m, is, "" );
 
    QgsGrassToolsTabWidget tw;
@@ -285,6 +327,8 @@ void QgsGrassTools::addModules (  Q3ListViewItem *parent, QDomElement &element )
 		item->setText( 1, name );
 		lastItem = item;
 	    }
+            // Show items during loading
+            mModulesListView->repaint();
 	}
 	n = n.nextSibling();
     }

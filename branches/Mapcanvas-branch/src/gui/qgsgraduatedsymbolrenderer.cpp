@@ -1,5 +1,5 @@
 /***************************************************************************
-                         qgssinglesymrenderer.cpp  -  description
+                         qgssinglesymbolrenderer.cpp  -  description
                              -------------------
     begin                : Oct 2003
     copyright            : (C) 2003 by Marco Hugentobler
@@ -18,8 +18,7 @@
 #include <cfloat>
 #include "qgis.h"
 #include "qgsfeature.h"
-#include "qgsgraduatedsymrenderer.h"
-#include "qgsgrasydialog.h"
+#include "qgsgraduatedsymbolrenderer.h"
 #include "qgslegendsymbologyitem.h"
 #include "qgssymbologyutils.h"
 #include "qgssvgcache.h"
@@ -28,14 +27,14 @@
 #include <q3picture.h>
 
 
-QgsGraduatedSymRenderer::QgsGraduatedSymRenderer(QGis::VectorType type)
+QgsGraduatedSymbolRenderer::QgsGraduatedSymbolRenderer(QGis::VectorType type)
 {
     mVectorType=type;
     //call superclass method to set up selection colour
     initialiseSelectionColor();
 }
 
-QgsGraduatedSymRenderer::QgsGraduatedSymRenderer(const QgsGraduatedSymRenderer& other)
+QgsGraduatedSymbolRenderer::QgsGraduatedSymbolRenderer(const QgsGraduatedSymbolRenderer& other)
 {
     mVectorType = other.mVectorType;
     mClassificationField = other.mClassificationField;
@@ -46,7 +45,7 @@ QgsGraduatedSymRenderer::QgsGraduatedSymRenderer(const QgsGraduatedSymRenderer& 
     }
 }
 
-QgsGraduatedSymRenderer& QgsGraduatedSymRenderer::operator=(const QgsGraduatedSymRenderer& other)
+QgsGraduatedSymbolRenderer& QgsGraduatedSymbolRenderer::operator=(const QgsGraduatedSymbolRenderer& other)
 {
     if(this != &other)
     {
@@ -61,17 +60,17 @@ QgsGraduatedSymRenderer& QgsGraduatedSymRenderer::operator=(const QgsGraduatedSy
     }
 }
 
-QgsGraduatedSymRenderer::~QgsGraduatedSymRenderer()
+QgsGraduatedSymbolRenderer::~QgsGraduatedSymbolRenderer()
 {
  
 }
 
-const std::list<QgsSymbol*> QgsGraduatedSymRenderer::symbols() const
+const std::list<QgsSymbol*> QgsGraduatedSymbolRenderer::symbols() const
 {
     return mSymbols;
 }
 
-void QgsGraduatedSymRenderer::removeSymbols()
+void QgsGraduatedSymbolRenderer::removeSymbols()
 {
     //free the memory first
     for (std::list < QgsSymbol * >::iterator it = mSymbols.begin(); it != mSymbols.end(); ++it)
@@ -83,7 +82,7 @@ void QgsGraduatedSymRenderer::removeSymbols()
     mSymbols.clear();
 }
 
-void QgsGraduatedSymRenderer::renderFeature(QPainter * p, QgsFeature * f, QPixmap* pic, 
+void QgsGraduatedSymbolRenderer::renderFeature(QPainter * p, QgsFeature * f, QPixmap* pic, 
 	double* scalefactor, bool selected, double widthScale)
 {
   //first find out the value for the classification attribute
@@ -141,7 +140,7 @@ void QgsGraduatedSymRenderer::renderFeature(QPainter * p, QgsFeature * f, QPixma
   }
 }
 
-void QgsGraduatedSymRenderer::readXML(const QDomNode& rnode, QgsVectorLayer& vl)
+void QgsGraduatedSymbolRenderer::readXML(const QDomNode& rnode, QgsVectorLayer& vl)
 {
     mVectorType = vl.vectorType();
     QDomNode classnode = rnode.namedItem("classificationfield");
@@ -162,19 +161,19 @@ void QgsGraduatedSymRenderer::readXML(const QDomNode& rnode, QgsVectorLayer& vl)
     vl.setRenderer(this);
 }
 
-std::list<int> QgsGraduatedSymRenderer::classificationAttributes() const
+std::list<int> QgsGraduatedSymbolRenderer::classificationAttributes() const
 {
     std::list<int> list;
     list.push_back(mClassificationField);
     return list;
 }
 
-QString QgsGraduatedSymRenderer::name() const
+QString QgsGraduatedSymbolRenderer::name() const
 {
     return "Graduated Symbol";
 }
 
-bool QgsGraduatedSymRenderer::writeXML( QDomNode & layer_node, QDomDocument & document ) const
+bool QgsGraduatedSymbolRenderer::writeXML( QDomNode & layer_node, QDomDocument & document ) const
 {
     bool returnval=true;
     QDomElement graduatedsymbol=document.createElement("graduatedsymbol");
@@ -193,8 +192,8 @@ bool QgsGraduatedSymRenderer::writeXML( QDomNode & layer_node, QDomDocument & do
     return returnval;
 }
 
-QgsRenderer* QgsGraduatedSymRenderer::clone() const
+QgsRenderer* QgsGraduatedSymbolRenderer::clone() const
 {
-    QgsGraduatedSymRenderer* r = new QgsGraduatedSymRenderer(*this);
+    QgsGraduatedSymbolRenderer* r = new QgsGraduatedSymbolRenderer(*this);
     return r;
 }

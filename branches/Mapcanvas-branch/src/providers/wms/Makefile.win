@@ -2,20 +2,18 @@ QGTOP=../../../
 
 LDADD = $(PLUGIN_LIBS) 
 
-OBJECTS = ogrprovider_la-qgsogrprovider.o
-
-PROVIDER = .libs/ogrprovider.dll
+PROVIDER = .libs/wmsprovider.dll
 
 all: objects $(PROVIDER)
 
 objects:
 	$(MAKE) -f Makefile
 
-$(PROVIDER): $(OBJECTS)
+$(PROVIDER): .libs/wmsprovider.a
 	$(CXX) -shared -o $@ \
 		-Wl,--export-all-symbols \
 		-Wl,--enable-auto-import \
-		-Wl,--whole-archive ogrprovider_la-qgsogrprovider.o \
+		-Wl,--whole-archive .libs/wmsprovider.a \
 		-Wl,--no-whole-archive \
 			$(CORE_A) $(GUI_A) $(CORE_A) \
 			$(RASTER_A) $(PROJSEL_A) $(LEGEND_A) \
@@ -27,6 +25,6 @@ $(PROVIDER): $(OBJECTS)
 
 install: all
 	mkdir -p $(prefix)/lib/qgis/
-	$(INSTALL) -m 755 .libs/ogrprovider.dll $(prefix)/lib/qgis/ogrprovider.dll
+	$(INSTALL) -m 755 .libs/wmsprovider.dll $(prefix)/lib/qgis/wmsprovider.dll
 
 include ../../../Makefile.win.rules

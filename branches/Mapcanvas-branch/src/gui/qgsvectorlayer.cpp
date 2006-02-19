@@ -73,12 +73,11 @@
 #include "qgslegend.h"
 #include "qgsvectorlayerproperties.h"
 #include "qgsrenderer.h"
-#include "qgssinglesymrenderer.h"
-#include "qgsgraduatedsymrenderer.h"
-#include "qgscontinuouscolrenderer.h"
-#include "qgsuniquevalrenderer.h"
+#include "qgssinglesymbolrenderer.h"
+#include "qgsgraduatedsymbolrenderer.h"
+#include "qgscontinuouscolorrenderer.h"
+#include "qgsuniquevaluerenderer.h"
 #include "qgsrenderitem.h"
-#include "qgssisydialog.h"
 #include "qgsproviderregistry.h"
 #include "qgsrect.h"
 #include "qgslabelattributes.h"
@@ -2069,22 +2068,22 @@ bool QgsVectorLayer::readXML_( QDomNode & layer_node )
 
   if (!singlenode.isNull())
   {
-    renderer = new QgsSingleSymRenderer(vectorType());
+    renderer = new QgsSingleSymbolRenderer(vectorType());
     renderer->readXML(singlenode, *this);
   }
   else if (!graduatednode.isNull())
   {
-    renderer = new QgsGraduatedSymRenderer(vectorType());
+    renderer = new QgsGraduatedSymbolRenderer(vectorType());
     renderer->readXML(graduatednode, *this);
   }
   else if (!continuousnode.isNull())
   {
-    renderer = new QgsContinuousColRenderer(vectorType());
+    renderer = new QgsContinuousColorRenderer(vectorType());
     renderer->readXML(continuousnode, *this);
   }
   else if (!uniquevaluenode.isNull())
   {
-    renderer = new QgsUniqueValRenderer(vectorType());
+    renderer = new QgsUniqueValueRenderer(vectorType());
     renderer->readXML(uniquevaluenode, *this);
   }
 
@@ -2247,6 +2246,17 @@ bool QgsVectorLayer::setDataProvider( QString const & provider )
   QDomText encodingText = document.createTextNode(dataProvider->encoding());
   encoding.appendChild( encodingText );
   layer_node.appendChild( encoding );
+
+  //classification field(s)
+  std::list<int> attributes=m_renderer->classificationAttributes();
+  const std::vector<QgsField> providerFields = dataProvider->fields();
+  for(std::list<int>::const_iterator it = attributes.begin(); it != attributes.end(); ++it)
+    {
+      QDomElement classificationElement = document.createElement("classificationattribute");
+      QDomText classificationText = document.createTextNode(providerFields[*it].name());
+      classificationElement.appendChild(classificationText);
+      layer_node.appendChild(classificationElement);
+    }
 
   // add the display field
 

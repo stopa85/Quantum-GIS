@@ -30,6 +30,7 @@
 #include <qinputdialog.h>
 #include <qsettings.h>
 #include <qpainter.h>
+#include <q3painter.h>
 #include <qpixmap.h>
 #include <qpen.h>
 #include <q3pointarray.h>
@@ -501,12 +502,18 @@ QPixmap QgsGrassModule::pixmap ( QString path, int height )
 	    QRect br = pic.boundingRect();
 
 	    double scale = 1. * height / br.height();
+
 	    int width = (int) ( scale * br.width() );
             if ( width <= 0 ) width = height; //should not happen
 	    QPixmap pixmap ( width, height );
 	    pixmap.fill ( QColor(255,255,255) );
 	    QPainter painter ( &pixmap );
+            painter.setRenderHint(QPainter::Antialiasing);
+
+            // I am not sure if this factor is OK
+            scale *= 72.0 / pixmap.logicalDpiX() ;
 	    painter.scale ( scale, scale );
+            
 	    painter.drawPicture ( -br.x(), -br.y(), pic );
 	    painter.end();
 	    
@@ -553,28 +560,31 @@ QPixmap QgsGrassModule::pixmap ( QString path, int height )
     pixmap.fill(QColor(255,255,255));
     QPainter painter ( &pixmap );
 
-    QPen pen(QColor(180,180,180),3);
-    painter.setPen(pen);
+    QColor color(200,200,200);
+    painter.setBrush(QBrush(color));
 
-    QBrush brush(QColor(180,180,180));
-    painter.setBrush(brush);
+    painter.setRenderHint(QPainter::Antialiasing);
     
     int pos = 0;
     for ( int i = 0; i < pixmaps.size(); i++ ) {
 	if ( i == 1 && pixmaps.size() == 3 ) { // +
 	    pos += buffer;
-	    painter.drawLine ( pos, height/2, pos+plusWidth+1, height/2 );
-	    painter.drawLine ( pos+plusWidth/2, height/2-plusWidth/2, pos+plusWidth/2, height/2+plusWidth/2+1 );
+    
+            painter.setPen( QPen(color,3) );
+	    painter.drawLine ( pos, height/2, pos+plusWidth, height/2 );
+	    painter.drawLine ( pos+plusWidth/2, height/2-plusWidth/2, pos+plusWidth/2, height/2+plusWidth/2 );
 	    pos += buffer + plusWidth;
 	}
 	if ( (i == 1 && pixmaps.size() == 2) || (i == 2 && pixmaps.size() == 3)  ) { // ->
 	    pos += buffer;
-	    painter.drawLine ( pos, height/2, pos+arrowWidth, height/2 );
+            painter.setPen( QPen(color,3) );
+	    painter.drawLine ( pos, height/2, pos+arrowWidth-arrowWidth/2, height/2 );
 
 	    Q3PointArray pa(3);
-	    pa.setPoint(0, pos+arrowWidth/2+1, height/2-arrowWidth/4);
+	    pa.setPoint(0, pos+arrowWidth/2+1, height/2-arrowWidth/2);
 	    pa.setPoint(1, pos+arrowWidth, height/2 );
-	    pa.setPoint(2, pos+arrowWidth/2+1, height/2+arrowWidth/4);
+	    pa.setPoint(2, pos+arrowWidth/2+1, height/2+arrowWidth/2);
+            painter.setPen( QPen(color,1) );
 	    painter.drawPolygon ( pa );
 	    
 	    pos += buffer + arrowWidth;
@@ -601,9 +611,25 @@ void QgsGrassModule::run()
 	
 	if ( mProcess.isRunning() ) {
 	}
+
 	mProcess.clearArguments();
 	mProcess.addArgument( mXName );
 	command = mXName;
+
+        // Check if output exists
+        QStringList outputExists = mOptions->checkOutput();
+        if ( outputExists.size() > 0 )
+        {
+            int ret = QMessageBox::question ( 0, "Warning", 
+                          "Output " + outputExists.join(",")
+                          + " exists! Overwrite?",  
+                          QMessageBox::Yes,  QMessageBox::No );
+
+            if ( ret == QMessageBox::No ) return;
+
+	    mProcess.addArgument( "--o" );
+	    command.append ( " --o" );
+        }
   
         QStringList list = mOptions->arguments();
 
@@ -754,7 +780,8 @@ QgsGrassModuleOption::QgsGrassModuleOption ( QgsGrassModule *module, QString key
 	                                   QDomElement &qdesc, QDomElement &gdesc, QDomNode &gnode,
 	                                   QWidget * parent)
                     : Q3GroupBox ( 1, Qt::Vertical, parent ),
-                      QgsGrassModuleItem ( module, key, qdesc, gdesc, gnode )
+                      QgsGrassModuleItem ( module, key, qdesc, gdesc, gnode ),
+	mIsOutput(false)
 {
     #ifdef QGISDEBUG
     std::cerr << "QgsGrassModuleOption::QgsGrassModuleOption" << std::endl;
@@ -771,6 +798,19 @@ QgsGrassModuleOption::QgsGrassModuleOption ( QgsGrassModule *module, QString key
     }
 	    
     setTitle ( " " + tit + " " );
+
+    // Is it output?
+    QDomNode promptNode = gnode.namedItem ( "gisprompt" );
+    if ( !promptNode.isNull() ) {
+	QDomElement promptElem = promptNode.toElement();
+	QString element = promptElem.attribute("element"); 
+	QString age = promptElem.attribute("age"); 
+	if ( age == "new" )
+        {
+            mOutputElement = element;
+            mIsOutput = true;
+	}
+    } 
 	
     // String without options 
     if ( !mHidden ) 
@@ -847,6 +887,34 @@ QgsGrassModuleOption::QgsGrassModuleOption ( QgsGrassModule *module, QString key
 	    }
 	}
     }
+}
+
+QString QgsGrassModuleOption::outputExists()
+{
+    std::cerr << "QgsGrassModuleOption::outputExists()" << std::endl;
+
+    if ( !mIsOutput ) return QString();
+
+    QString value = mLineEdit->text().trimmed();
+    std::cerr << "mKey = " << mKey.ascii() << std::endl;
+    std::cerr << "value = " << value.ascii() << std::endl;
+    std::cerr << "mOutputElement = " << mOutputElement.ascii() << std::endl;
+
+    if ( value.length() == 0 ) return QString();
+
+    QString path = QgsGrass::getDefaultGisdbase() + "/"
+                 + QgsGrass::getDefaultLocation() + "/"
+                 + QgsGrass::getDefaultMapset() + "/" 
+                 + mOutputElement + "/" + value;
+
+    QFileInfo fi(path);
+
+    if ( fi.exists() )
+    {
+        return (mLineEdit->text());
+    }
+
+    return QString();
 }
 
 QStringList QgsGrassModuleOption::options()
@@ -1075,6 +1143,36 @@ QgsGrassModuleInput::QgsGrassModuleInput ( QgsGrassModule *module,
     
     // Fill in QGIS layers 
     updateQgisLayers();
+}
+
+QStringList QgsGrassModuleStandardOptions::checkOutput()
+{
+    #ifdef QGISDEBUG
+    std::cerr << "QgsGrassModuleStandardOptions::checkOutput()" << std::endl;
+    #endif
+    QStringList list;
+
+    for ( int i = 0; i < mItems.size(); i++ ) 
+    {
+	if ( typeid(*(mItems[i])) != typeid (QgsGrassModuleOption) ) {
+	    continue;
+	}
+	QgsGrassModuleOption *opt = 
+	      dynamic_cast<QgsGrassModuleOption *> ( mItems[i] );
+    
+        std::cerr << "opt->key() = " << opt->key().ascii() << std::endl;
+
+	if ( opt->isOutput() )
+	{
+            QString out = opt->outputExists();
+            if ( !out.isNull() ) 
+            {
+	        list.append ( opt->key()+ ":" + out );
+            }
+	}
+    } 
+
+    return list;
 }
 
 void QgsGrassModuleInput::updateQgisLayers()

@@ -77,19 +77,18 @@ libqgis_guiHEADERS =							\
 		qgsattributetable.h				\
 		qgsbookmarks.h			\
 		qgsclipboard.h				\
-		qgscontcoldialog.h				\
-		qgscontinuouscolrenderer.h			\
+		qgscontinuouscolordialog.h				\
+		qgscontinuouscolorrenderer.h			\
 		qgscsexception.h				\
 		qgscoordinatetransform.h	\
 		qgscustomprojectiondialog.h			\
 		qgscursors.h			\
 		qgsdelattrdialog.h				\
 		qgsencodingfiledialog.h				\
-		qgsfeature.h						\
 		qgsfillstylewidget.h				\
 		qgsgeomtypedialog.h				\
-		qgsgraduatedsymrenderer.h			\
-		qgsgrasydialog.h				\
+		qgsgraduatedsymbolrenderer.h			\
+		qgsgraduatedsymboldialog.h				\
 		qgshelpviewer.h					\
 		qgsidentifyresults.h				\
 		qgslabeldialog.h				\
@@ -132,10 +131,11 @@ libqgis_guiHEADERS =							\
 		qgsrubberband.h						\
 		qgsrunprocess.h						\
 		qgsserversourceselect.h				\
-		qgssisydialog.h					\
+		qgssinglesymboldialog.h				\
+		qgssinglesymbolrenderer.h			\
 		qgsspatialrefsys.h					\
-		qgsuniquevalrenderer.h				\
-		qgsuvaldialog.h					\
+		qgsuniquevaluerenderer.h				\
+		qgsuniquevaluedialog.h					\
 		qgsvectorfilewriter.h				\
 		qgsvectorlayerproperties.h			
 
@@ -151,14 +151,14 @@ libqgis_gui_la_MOC =							\
 		qgsattributetabledisplay.moc.cpp		\
 		qgsattributetable.moc.cpp		\
 		qgsbookmarks.moc.cpp		\
-		qgscontcoldialog.moc.cpp		\
+		qgscontinuouscolordialog.moc.cpp		\
 		qgscoordinatetransform.moc.cpp		\
 		qgscustomprojectiondialog.moc.cpp 	\
 		qgsdelattrdialog.moc.cpp		\
 		qgsencodingfiledialog.moc.cpp		\
 		qgsfillstylewidget.moc.cpp			\
 		qgsgeomtypedialog.moc.cpp		\
-		qgsgrasydialog.moc.cpp			\
+		qgsgraduatedsymboldialog.moc.cpp			\
 		qgshelpviewer.moc.cpp			\
 		qgsidentifyresults.moc.cpp		\
 		qgslabeldialog.moc.cpp			\
@@ -187,8 +187,8 @@ libqgis_gui_la_MOC =							\
 		qgsrasterlayerproperties.moc.cpp	\
 		qgsrunprocess.moc.cpp				\
 		qgsserversourceselect.moc.cpp		\
-		qgssisydialog.moc.cpp			\
-		qgsuvaldialog.moc.cpp			\
+		qgssinglesymboldialog.moc.cpp			\
+		qgsuniquevaluedialog.moc.cpp			\
 		qgsvectorlayer.moc.cpp \
 		qgsvectorlayerproperties.moc.cpp	
 
@@ -206,18 +206,17 @@ libqgis_gui_la_SOURCES =						\
 		qgsattributetabledisplay.cpp	\
 		qgsbookmarks.cpp	\
 		qgsclipboard.cpp		\
-		qgscontcoldialog.cpp		\
+		qgscontinuouscolordialog.cpp		\
 		qgscoordinatetransform.cpp			\
-		qgscontinuouscolrenderer.cpp		\
+		qgscontinuouscolorrenderer.cpp		\
 		qgscursors.cpp		\
 		qgscustomprojectiondialog.cpp			\
 		qgsdelattrdialog.cpp		\
 		qgsencodingfiledialog.cpp	\
-		qgsfeature.cpp					\
 		qgsfillstylewidget.cpp				\
 		qgsgeomtypedialog.cpp		\
-		qgsgraduatedsymrenderer.cpp			\
-		qgsgrasydialog.cpp		\
+		qgsgraduatedsymbolrenderer.cpp			\
+		qgsgraduatedsymboldialog.cpp		\
 		qgshelpviewer.cpp		\
 		qgsidentifyresults.cpp		\
 		qgslabel.cpp						\
@@ -259,11 +258,11 @@ libqgis_gui_la_SOURCES =						\
 		qgsrubberband.cpp					\
 		qgsrunprocess.cpp					\
 		qgsserversourceselect.cpp	\
-		qgssinglesymrenderer.cpp			\
-		qgssisydialog.cpp		\
+		qgssinglesymboldialog.cpp	\
+		qgssinglesymbolrenderer.cpp			\
 		qgsspatialrefsys.cpp				\
-		qgsuniquevalrenderer.cpp			\
-		qgsuvaldialog.cpp		\
+		qgsuniquevaluerenderer.cpp			\
+		qgsuniquevaluedialog.cpp		\
 		qgsvectorfilewriter.cpp				\
 		qgsvectorlayer.cpp \
 		qgsvectorlayerproperties.cpp	

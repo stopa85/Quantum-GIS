@@ -503,6 +503,7 @@ void QgsGrassNewMapset::setGrassProjection()
                           &mProjUnits, (void **)hSRS, 0);
 
             } else {
+              // FIXME: added & before hSRS to enable compilation [MD]
                 ret = GPJ_osr_to_grass ( &mCellHead, &mProjInfo, 
                           &mProjUnits, &hSRS, 0);
             }

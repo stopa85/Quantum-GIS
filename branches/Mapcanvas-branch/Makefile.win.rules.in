@@ -1,16 +1,27 @@
+MAJOR_VERSION = @MAJOR_VERSION@
+MICRO_VERSION = @MICRO_VERSION@
+MINOR_VERSION = @MINOR_VERSION@
+
 CXX = @CXX@
+LDFLAGS = @LDFLAGS@
 STRIP = @STRIP@
 INSTALL = @INSTALL@
 prefix = @prefix@
+
+BINDIR = $(prefix)
+DLLDIR = $(prefix)
 
 QT_LDADD = @QT_LDADD@
 
 GDAL_LDADD = @GDAL_LDADD@
 #GDAL_LDADD = -lgdal
 GEOS_LDADD = @GEOS_LDADD@
+GRASS_BASE = @GRASS_BASE@
 GRASS_LIB = @GRASS_LIB@
 PROJ_LIB = @PROJ_LIB@
 
+PG_LIB = @PG_LIB@
+PG_INC = @PG_INC@
 
 RASTER_A = $(QGTOP)/src/raster/.libs/libqgis_raster.a
 COMPOSER_A = $(QGTOP)/src/composer/.libs/libqgis_composer.a
