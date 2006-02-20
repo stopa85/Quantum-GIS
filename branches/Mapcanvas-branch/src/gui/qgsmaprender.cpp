@@ -14,6 +14,8 @@
  ***************************************************************************/
 /* $Id$ */
 
+#include <cmath>
+
 #include "qgsmaprender.h"
 #include "qgsscalecalculator.h"
 #include "qgsmaptopixel.h"
@@ -75,8 +77,8 @@ bool QgsMapRender::setExtent(const QgsRect& extent)
   {
     // Use abs() on the extent to avoid the case where the extent is
     // symmetrical about 0.
-    double xMean = (std::abs(extent.xMin()) + std::abs(extent.xMax())) * 0.5;
-    double yMean = (std::abs(extent.yMin()) + std::abs(extent.yMax())) * 0.5;
+    double xMean = (fabs(extent.xMin()) + fabs(extent.xMax())) * 0.5;
+    double yMean = (fabs(extent.yMin()) + fabs(extent.yMax())) * 0.5;
 
     double xRange = extent.width() / xMean;
     double yRange = extent.height() / yMean;
