@@ -65,10 +65,6 @@
 //
 #include "plugingui.h"
 
-//
-// xpm for creating the toolbar icon
-// 
-#include "icon.h"
 
 #ifdef WIN32
 #define QGISEXTERN extern "C" __declspec( dllexport )
@@ -111,14 +107,14 @@ QgsGeorefPlugin::~QgsGeorefPlugin()
  */
 void QgsGeorefPlugin::initGui()
 {
-  QIcon iconset(qembed_findImage("icon"));
+  QIcon icon(":/icon.png");
 
   QMenu *pluginMenu = mQGisIface->getPluginMenu("&Georeferencer");
-  mMenuId = pluginMenu->insertItem(QIcon(iconset),"&Georeferencer", this, SLOT(run()));
+  mMenuId = pluginMenu->insertItem(icon,"&Georeferencer", this, SLOT(run()));
 
   // Create the action for tool
   //mQActionPointer = new QAction("Georeferencer", iconset, "&icon",0, this, "run");
-  mQActionPointer = new QAction(iconset, "&icon",0, this, "run");
+  mQActionPointer = new QAction(icon, "&icon",0, this, "run");
   // Connect the action to the run
   connect(mQActionPointer, SIGNAL(activated()), this, SLOT(run()));
   // Add the to the toolbar
@@ -134,7 +130,7 @@ void QgsGeorefPlugin::help()
 // Slot called when the buffer menu item is activated
 void QgsGeorefPlugin::run()
 {
-  QgsGeorefPluginGui *myPluginGui=new QgsGeorefPluginGui(mQGisApp,"Georeferencer",true,0);
+  QgsGeorefPluginGui *myPluginGui=new QgsGeorefPluginGui(mQGisApp); //,"Georeferencer",true,0);
   //listen for when the layer has been made so we can draw it
   connect(myPluginGui, SIGNAL(drawRasterLayer(QString)), this, SLOT(drawRasterLayer(QString)));
   connect(myPluginGui, SIGNAL(drawVectorLayer(QString,QString,QString)), this, SLOT(drawVectorLayer(QString,QString,QString)));

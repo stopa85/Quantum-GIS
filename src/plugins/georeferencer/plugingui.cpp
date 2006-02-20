@@ -17,10 +17,10 @@
 
 //qt includes
 #include <QFileDialog>
-#include <qlineedit.h>
-#include <qmessagebox.h>
-#include <qpushbutton.h>
-#include <qsettings.h>
+#include <QLineEdit>
+#include <QMessageBox>
+#include <QPushButton>
+#include <QSettings>
 
 //standard includes
 
@@ -33,8 +33,6 @@ QgsGeorefPluginGui::QgsGeorefPluginGui(QWidget* parent, Qt::WFlags fl)
 : QDialog(parent, fl)
 {
   setupUi(this);
-  connect(pbnEnterWorldCoords, SIGNAL(clicked()), 
-	  this, SLOT(openPointDialog()));
 }  
 
 
@@ -43,19 +41,13 @@ QgsGeorefPluginGui::~QgsGeorefPluginGui()
 }
 
 
-void QgsGeorefPluginGui::pbnOK_clicked()
-{
-  done(1);
-} 
-
-
-void QgsGeorefPluginGui::pbnCancel_clicked()
+void QgsGeorefPluginGui::on_pbnClose_clicked()
 {
  close(1);
 }
 
 
-void QgsGeorefPluginGui::pbnSelectRaster_clicked() {
+void QgsGeorefPluginGui::on_pbnSelectRaster_clicked() {
   QSettings settings("QuantumGIS", "qgis");
   QString dir = settings.readEntry("/Plugin-GeoReferencer/rasterdirectory");
   if (dir.isEmpty())
@@ -69,7 +61,7 @@ void QgsGeorefPluginGui::pbnSelectRaster_clicked() {
 }
 
 
-void QgsGeorefPluginGui::openPointDialog() {
+void QgsGeorefPluginGui::on_pbnEnterWorldCoords_clicked() {
   
   // do we think that this is a valid raster?
   if (!QgsRasterLayer::isValidRasterFileName(leSelectRaster->text())) {
@@ -132,7 +124,7 @@ void QgsGeorefPluginGui::openPointDialog() {
       writeEntry("SpatialRefSys", "/ProjectSRSID", mProjectSRSID);
   }
   
-  QgsPointDialog* dlg = new QgsPointDialog(layer, this, NULL, true);
+  QgsPointDialog* dlg = new QgsPointDialog(layer, this); //, NULL, true);
   connect(dlg, SIGNAL(loadLayer(QString)), this, SLOT(loadLayer(QString)));
   dlg->show();
 }

@@ -21,6 +21,10 @@
 #include "qgsimagewarper.h"
 #include "qgsgeorefwarpoptionsdialog.h"
 
+#include "qgsmaptoolemitpoint.h"
+#include "qgsmaptoolzoom.h"
+#include "qgsmaptoolpan.h"
+
 #include "zoom_in.xpm"
 #include "zoom_out.xpm"
 #include "pan.xpm"
@@ -44,7 +48,8 @@ QgsPointDialog::QgsPointDialog(QgsRasterLayer* layer, QWidget* parent, Qt::WFlag
   mCanvas->setBackgroundColor(Qt::white);
   mCanvas->setMinimumWidth(400);
   mCanvas->freeze(true);
-  mCanvas->addLayer(mLayer);
+  // TODO: add layer to map canvas!
+  //mCanvas->addLayer(mLayer);
   tbnAddPoint->setOn(true);
   
   // load previously added points
@@ -232,7 +237,7 @@ void QgsPointDialog::tbnZoomIn_changed(int state) {
     tbnPan->setOn(false);
     tbnAddPoint->setOn(false);
     tbnDeletePoint->setOn(false);
-    mCanvas->setMapTool(QGis::ZoomIn);
+    mCanvas->setMapTool(new QgsMapToolZoom(mCanvas, FALSE /* zoomOut */));
     delete mCursor;
     QPixmap pix((const char **)zoom_in2);
     mCursor = new QCursor(pix, 7, 7);
@@ -247,7 +252,7 @@ void QgsPointDialog::tbnZoomOut_changed(int state) {
     tbnPan->setOn(false);
     tbnAddPoint->setOn(false);
     tbnDeletePoint->setOn(false);
-    mCanvas->setMapTool(QGis::ZoomOut);
+    mCanvas->setMapTool(new QgsMapToolZoom(mCanvas, TRUE /* zoomOut */));
     delete mCursor;
     QPixmap pix((const char **)zoom_out);
     mCursor = new QCursor(pix, 7, 7);
@@ -268,7 +273,7 @@ void QgsPointDialog::tbnPan_changed(int state) {
     tbnZoomOut->setOn(false);
     tbnAddPoint->setOn(false);
     tbnDeletePoint->setOn(false);
-    mCanvas->setMapTool(QGis::Pan);
+    mCanvas->setMapTool(new QgsMapToolPan(mCanvas));
     delete mCursor;
     QPixmap pix((const char **)pan);
     mCursor = new QCursor(pix, 7, 7);
@@ -283,7 +288,7 @@ void QgsPointDialog::tbnAddPoint_changed(int state) {
     tbnZoomOut->setOn(false);
     tbnPan->setOn(false);
     tbnDeletePoint->setOn(false);
-    mCanvas->setMapTool(QGis::EmitPoint);
+    mCanvas->setMapTool(new QgsMapToolEmitPoint(mCanvas));
     delete mCursor;
     QPixmap pix((const char **)add_point);
     mCursor = new QCursor(pix, 7, 7);
@@ -298,13 +303,14 @@ void QgsPointDialog::tbnDeletePoint_changed(int state) {
     tbnZoomOut->setOn(false);
     tbnPan->setOn(false);
     tbnAddPoint->setOn(false);
-    mCanvas->setMapTool(QGis::EmitPoint);
+    QgsMapToolEmitPoint* tool = new QgsMapToolEmitPoint(mCanvas);
+    mCanvas->setMapTool(tool);
   }
 }
 
 
 void QgsPointDialog::showCoordDialog(QgsPoint& pixelCoords) {
-  MapCoordsDialog* mcd = new MapCoordsDialog(pixelCoords, this, NULL, true);
+  MapCoordsDialog* mcd = new MapCoordsDialog(pixelCoords, this); //, NULL, true);
   connect(mcd, SIGNAL(pointAdded(const QgsPoint&, const QgsPoint&)),
 	  this, SLOT(addPoint(const QgsPoint&, const QgsPoint&)));
   mcd->show();

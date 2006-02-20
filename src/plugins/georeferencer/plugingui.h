@@ -24,13 +24,14 @@ public:
     QgsGeorefPluginGui();
     QgsGeorefPluginGui( QWidget* parent = 0, Qt::WFlags fl = 0 );
     ~QgsGeorefPluginGui();
-    void pbnOK_clicked();
-    void pbnCancel_clicked();
-    void pbnSelectRaster_clicked();
 
 public slots:
-    void openPointDialog();
+    void on_pbnClose_clicked();
+    void on_pbnEnterWorldCoords_clicked();
+    void on_pbnSelectRaster_clicked();
+    
     void loadLayer(QString);
+    
 private:
     
    QString mProjBehaviour, mProjectSRS;
