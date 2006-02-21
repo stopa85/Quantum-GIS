@@ -129,6 +129,18 @@ QgsMapCanvas::~QgsMapCanvas()
   delete mMapTool;
   delete mLastNonZoomMapTool;
   
+  // delete canvas items prior to deleteing the canvas
+  // because they might try to update canvas when it's
+  // already being destructed, ends with segfault
+  Q3CanvasItemList list = mCanvas->allItems();
+  Q3CanvasItemList::iterator it = list.begin();
+  while (it != list.end())
+  {
+    Q3CanvasItem* item = *it;
+    delete item;
+    it++;
+  }
+  
   delete mCanvas;
 
   delete mMapRender;

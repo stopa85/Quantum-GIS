@@ -14,6 +14,9 @@
 
 #include <ui_pluginguibase.h>
 #include <QDialog>
+
+class QgisIface;
+
 /**
 @author Tim Sutton
 */
@@ -22,23 +25,20 @@ class QgsGeorefPluginGui : public QDialog, private Ui::QgsGeorefPluginGuiBase
 Q_OBJECT
 public:
     QgsGeorefPluginGui();
-    QgsGeorefPluginGui( QWidget* parent = 0, Qt::WFlags fl = 0 );
+    QgsGeorefPluginGui(QgisIface* theQgisInterface, QWidget* parent = 0, Qt::WFlags fl = 0);
     ~QgsGeorefPluginGui();
-
+    
 public slots:
     void on_pbnClose_clicked();
     void on_pbnEnterWorldCoords_clicked();
     void on_pbnSelectRaster_clicked();
     
-    void loadLayer(QString);
-    
 private:
     
    QString mProjBehaviour, mProjectSRS;
    int mProjectSRSID;
-signals:
-   void drawRasterLayer(QString);
-   void drawVectorLayer(QString,QString,QString);
+   QgisIface* mIface;
+
 };
 
 #endif
