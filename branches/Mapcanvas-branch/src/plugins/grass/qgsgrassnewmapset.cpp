@@ -503,9 +503,10 @@ void QgsGrassNewMapset::setGrassProjection()
                           &mProjUnits, (void **)hSRS, 0);
 
             } else {
-              // FIXME: added & before hSRS to enable compilation [MD]
+              // if you cannot compile this, you have old version of GRASS
+              // => use GRASS from CVS
                 ret = GPJ_osr_to_grass ( &mCellHead, &mProjInfo, 
-                          &mProjUnits, &hSRS, 0);
+                          &mProjUnits, hSRS, 0);
             }
 	    
 	    // Note: I seems that GPJ_osr_to_grass()returns always 1, 

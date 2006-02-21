@@ -46,30 +46,40 @@ void QgsMapLayerSet::updateFullExtent()
   while(it != mLayerSet.end())
   {
     QgsMapLayer * lyr = registry->mapLayer(*it);
-#ifdef QGISDEBUG 
-    std::cout << "Updating extent using " << lyr->name().toLocal8Bit().data() << std::endl;
-    std::cout << "Input extent: " << lyr->extent().stringRep().toLocal8Bit().data() << std::endl;
-#endif 
-    // Layer extents are stored in the coordinate system (CS) of the
-    // layer. The extent must be projected to the canvas CS prior to passing
-    // on to the updateFullExtent function
-    if (projectionsEnabled)
+    if (lyr == NULL)
     {
-      try
-      {
-        if ( ! lyr->coordinateTransform() )
-          throw QgsCsException( string("NO COORDINATE TRANSFORM FOUND FOR LAYER") );
-            
-        mFullExtent.unionRect(lyr->coordinateTransform()->transformBoundingBox(lyr->extent()));
-      }
-      catch (QgsCsException &cse)
-      {
-        qDebug( "Transform error caught in %s line %d:\n%s", __FILE__, __LINE__, cse.what());
-      }
+      std::cout << "WARNING: layer '" << (*it).toLocal8Bit().data()
+          << "' not found in map layer registry!" << std::endl;
     }
     else
     {
-      mFullExtent.unionRect(lyr->extent());
+    
+#ifdef QGISDEBUG 
+      std::cout << "Updating extent using " << lyr->name().toLocal8Bit().data() << std::endl;
+      std::cout << "Input extent: " << lyr->extent().stringRep().toLocal8Bit().data() << std::endl;
+#endif 
+      // Layer extents are stored in the coordinate system (CS) of the
+      // layer. The extent must be projected to the canvas CS prior to passing
+      // on to the updateFullExtent function
+      if (projectionsEnabled)
+      {
+        try
+        {
+          if ( ! lyr->coordinateTransform() )
+            throw QgsCsException( string("NO COORDINATE TRANSFORM FOUND FOR LAYER") );
+              
+          mFullExtent.unionRect(lyr->coordinateTransform()->transformBoundingBox(lyr->extent()));
+        }
+        catch (QgsCsException &cse)
+        {
+          qDebug( "Transform error caught in %s line %d:\n%s", __FILE__, __LINE__, cse.what());
+        }
+      }
+      else
+      {
+        mFullExtent.unionRect(lyr->extent());
+      }
+      
     }
     it++;
   } 

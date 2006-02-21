@@ -13,6 +13,7 @@
 #include "qgsleastsquares.h"
 #include "qgspointdialog.h"
 #include "qgsrasterlayer.h"
+#include "qgsmaplayerregistry.h"
 #include "qgsproject.h"
 
 //qt includes
@@ -29,8 +30,9 @@ QgsGeorefPluginGui::QgsGeorefPluginGui() : QgsGeorefPluginGuiBase()
   
 }
 
-QgsGeorefPluginGui::QgsGeorefPluginGui(QWidget* parent, Qt::WFlags fl)
-: QDialog(parent, fl)
+QgsGeorefPluginGui::QgsGeorefPluginGui(QgisIface* theQgisInterface,
+                                       QWidget* parent, Qt::WFlags fl)
+  : QDialog(parent, fl), mIface(theQgisInterface)
 {
   setupUi(this);
 }  
@@ -103,33 +105,20 @@ void QgsGeorefPluginGui::on_pbnEnterWorldCoords_clicked() {
   // XXX This is horrible, but it works and I'm tired / ll
   {
     QSettings settings("QuantumGIS", "qgis");
+    QgsProject* prj = QgsProject::instance();
     mProjBehaviour = settings.readEntry("/Projections/defaultBehaviour");
-    mProjectSRS = QgsProject::instance()->
-      readEntry("SpatialRefSys", "/ProjectSRSProj4String");
-    mProjectSRSID = QgsProject::instance()->
-      readNumEntry("SpatialRefSys", "/ProjectSRSID");
+    mProjectSRS = prj->readEntry("SpatialRefSys", "/ProjectSRSProj4String");
+    mProjectSRSID = prj->readNumEntry("SpatialRefSys", "/ProjectSRSID");
+    
     settings.writeEntry("/Projections/defaultBehaviour", "useProject");
-    QgsProject::instance()->
-      writeEntry("SpatialRefSys", "/ProjectSRSProj4String", GEOPROJ4);
-    QgsProject::instance()->
-    writeEntry("SpatialRefSys", "/ProjectSRSID", int(GEOSRS_ID));
-  }
-  QgsRasterLayer* layer = new QgsRasterLayer(raster, "Raster");
-  {
-    QSettings settings("QuantumGIS", "qgis");
+    prj->writeEntry("SpatialRefSys", "/ProjectSRSProj4String", GEOPROJ4);
+    prj->writeEntry("SpatialRefSys", "/ProjectSRSID", int(GEOSRS_ID));
+    
     settings.writeEntry("/Projections/defaultBehaviour", mProjBehaviour);
-    QgsProject::instance()->
-      writeEntry("SpatialRefSys", "/ProjectSRSProj4String", mProjectSRS);
-    QgsProject::instance()->
-      writeEntry("SpatialRefSys", "/ProjectSRSID", mProjectSRSID);
+    prj->writeEntry("SpatialRefSys", "/ProjectSRSProj4String", mProjectSRS);
+    prj->writeEntry("SpatialRefSys", "/ProjectSRSID", mProjectSRSID);
   }
   
-  QgsPointDialog* dlg = new QgsPointDialog(layer, this); //, NULL, true);
-  connect(dlg, SIGNAL(loadLayer(QString)), this, SLOT(loadLayer(QString)));
+  QgsPointDialog* dlg = new QgsPointDialog(raster, mIface, this);
   dlg->show();
-}
-
-
-void QgsGeorefPluginGui::loadLayer(QString str) {
-  emit drawRasterLayer(str);
 }

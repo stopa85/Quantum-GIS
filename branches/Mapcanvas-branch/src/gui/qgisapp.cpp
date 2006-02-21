@@ -4445,7 +4445,6 @@ void QgisApp::addVectorLayer(QString vectorLayerPath, QString baseName, QString 
 #endif
 
   layer = new QgsVectorLayer(vectorLayerPath, baseName, providerKey);
-  QObject::connect(layer, SIGNAL(editingStopped(bool)), mMapCanvas, SLOT(removeDigitizingLines(bool)));
 
   if( layer && layer->isValid() )
   {

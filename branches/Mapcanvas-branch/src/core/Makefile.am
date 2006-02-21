@@ -43,9 +43,6 @@ lib_LTLIBRARIES = libqgis_core.la
 
 libqgis_coreHEADERS =				\
 		qgis.h						\
-		qgsacetatelines.h			\
-		qgsacetateobject.h			\
-		qgsacetaterectangle.h		\
 		qgsapplication.h			\
 		qgsbookmarkitem.h			\
 		qgsclipper.h				\
@@ -103,9 +100,6 @@ libqgis_core_la_MOC =							\
 
 libqgis_core_la_SOURCES =\
 		qgis.cpp								\
-		qgsacetatelines.cpp					\
-		qgsacetateobject.cpp				\
-		qgsacetaterectangle.cpp				\
 		qgsapplication.cpp	\
 		qgsbookmarkitem.cpp	\
 		qgsclipper.cpp						\
