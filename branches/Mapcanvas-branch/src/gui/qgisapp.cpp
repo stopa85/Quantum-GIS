@@ -1105,6 +1105,7 @@ void QgisApp::createCanvas()
   tabWidget->widget(0)->setLayout(myCanvasLayout);
   // set the focus to the map canvas
   mMapCanvas->setFocus();
+  pan(); // set map tool - panning
 }
 
 void QgisApp::createOverview()
@@ -3379,42 +3380,6 @@ void QgisApp::measureArea()
   QgsMapTool* tool = new QgsMeasure(TRUE /* area */, mMapCanvas);
   tool->setAction(mActionMeasureArea);
   mMapCanvas->setMapTool(tool);
-}
-
-void QgisApp::stopZoom() 
-{
-  // TODO: doriesit
-  /*
-  mActionZoomIn->setOn(false);
-  mActionZoomIn->setOn(false);
-  mActionPan->setOn(false);
-
-  switch ( mPreviousNonZoomMapTool ) {
-    case QGis::Identify:
-      identify();
-      break;
-    case QGis::Select:
-      select();
-      break;
-    case QGis::CapturePoint:
-      capturePoint();
-      break;
-    case QGis::CaptureLine:
-      captureLine();
-      break;
-    case QGis::CapturePolygon:
-      capturePolygon();
-      break;
-    case QGis::EmitPoint:
-      mMapCanvas->setMapTool( QGis::EmitPoint );
-      break;
-    case QGis::MeasureDist:
-      measure();
-      break;
-    case QGis::MeasureArea:
-      measureArea();
-      break;
-  }*/
 }
 
 

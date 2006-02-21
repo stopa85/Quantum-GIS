@@ -20,7 +20,7 @@
 #include <QAction>
 
 QgsMapTool::QgsMapTool(QgsMapCanvas* canvas)
-  : mCanvas(canvas), mCursor(Qt::CrossCursor)
+  : mCanvas(canvas), mCursor(Qt::CrossCursor), mAction(NULL)
 {
 }
 
