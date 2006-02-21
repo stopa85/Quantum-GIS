@@ -312,7 +312,6 @@ public slots:
   void updateMouseCoordinatePrecision();
   void projectionsEnabled(bool theFlag);
   //    void debugHook();
-  void stopZoom();
   //! Add a vector layer to the map
   void addLayer();
   //! Exit Qgis
