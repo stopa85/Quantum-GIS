@@ -269,7 +269,8 @@ void QgsMapCanvas::refresh()
     render();
   }
 #endif
-  update();
+  
+  updateContents();
 } // refresh
 
 #ifdef Q_WS_MACX
@@ -681,9 +682,10 @@ void QgsMapCanvas::contentsMouseReleaseEvent(QMouseEvent * e)
 void QgsMapCanvas::resizeEvent(QResizeEvent * e)
 {
   int width = e->size().width(), height = e->size().height();
+//  int width = visibleWidth(), height = visibleHeight();
   mCanvas->resize(width, height);
   
-  mMap->resize(e->size());
+  mMap->resize(/*e->size()*/ QSize(width,height));
   
   updateScale();
   refresh();
@@ -982,14 +984,13 @@ void QgsMapCanvas::panAction(QMouseEvent * e)
   moveCanvasContents();
   
   // update canvas
-  update();
-  //canvas()->update();
+  updateContents();
 }
 
 
 void QgsMapCanvas::moveCanvasContents(bool reset)
 {
-  QPoint pnt = viewport()->pos();
+  QPoint pnt(0,0);
   if (!reset)
     pnt += mCanvasProperties->mouseLastXY - mCanvasProperties->rubberStartPoint;
   

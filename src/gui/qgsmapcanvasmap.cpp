@@ -53,10 +53,6 @@ void QgsMapCanvasMap::render()
   
   mRender->render(&paint);
 
-#ifdef QGISDEBUG
-  std::cout << "QgsMapCanvasMap::render: Done rendering...emitting renderComplete(paint)\n";
-#endif
-
   // TODO: notify any listeners that rendering is complete
   //emit renderComplete(paint);
 
