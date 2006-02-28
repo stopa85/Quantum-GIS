@@ -30,7 +30,6 @@ QgsMapCanvasMap::QgsMapCanvasMap(Q3Canvas *canvas, QgsMapRender* render)
 
 void QgsMapCanvasMap::drawShape(QPainter & p)
 {
-  std::cerr << "~~~~~~~~~ drawing map pixmap at " << x() << "," << y() << std::endl;
   p.drawPixmap(mOffset.x(), mOffset.y(), mPixmap);
 }
 
@@ -52,8 +51,5 @@ void QgsMapCanvasMap::render()
     paint.setRenderHint(QPainter::Antialiasing);
   
   mRender->render(&paint);
-
-  // TODO: notify any listeners that rendering is complete
-  //emit renderComplete(paint);
 
 }

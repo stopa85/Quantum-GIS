@@ -318,6 +318,12 @@ void QgsMapCanvas::render()
       mMap->render();
       mDirty = false;
     
+      // notify any listeners that rendering is complete
+      QPainter p;
+      p.begin(&mMap->pixmap());
+      emit renderComplete(&p);
+      p.end();
+      
       // notifies current map tool
       if (mMapTool)
         mMapTool->renderComplete();
