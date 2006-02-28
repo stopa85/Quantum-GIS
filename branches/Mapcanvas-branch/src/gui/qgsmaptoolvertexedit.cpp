@@ -16,6 +16,7 @@
 
 #include "qgsmaptoolvertexedit.h"
 #include "qgsmapcanvas.h"
+#include "qgsmapcanvasicon.h"
 #include "qgsrubberband.h"
 #include "qgsvectorlayer.h"
 #include "qgsvectordataprovider.h"
@@ -23,47 +24,8 @@
 #include "qgsproject.h"
 #include "qgscursors.h"
 #include <QMessageBox>
-#include <QPainter>
 #include <QPixmap>
 #include <QCursor>
-
-class QgsMapCanvasCross : public QgsMapCanvasItem
-{
-  public:
-    
-    QgsMapCanvasCross(QgsMapCanvas* mapCanvas)
-      : QgsMapCanvasItem(mapCanvas), crossSize(8)
-    {
-      mResizeType = ResizeManual;
-    }
-    
-    void setCenter(const QgsPoint& point) { mCenter = point; updatePosition(); updateCanvas(); }
-    
-    void drawShape(QPainter & p)
-    {
-      QPoint pt = toCanvasCoords(mCenter);
-      
-      // draw cross
-      p.setPen(QColor(255,0,0));
-      p.drawLine(pt.x() - crossSize, pt.y() - crossSize, pt.x() + crossSize, pt.y() + crossSize);
-      p.drawLine(pt.x() - crossSize, pt.y() + crossSize, pt.x() + crossSize, pt.y() - crossSize);
-    }
-    
-    //! handler for manual updating of position and size
-    void updatePositionManual()
-    {
-      QPoint pt = toCanvasCoords(mCenter);
-      move(pt.x() - crossSize, pt.y() - crossSize);
-      setSize(crossSize*2, crossSize*2);
-      show();
-    }
-    
-  protected:
-    
-    int crossSize;
-
-    QgsPoint mCenter;
-};
 
 
 QgsMapToolVertexEdit::QgsMapToolVertexEdit(QgsMapCanvas* canvas, enum Tool tool)
@@ -181,7 +143,8 @@ void QgsMapToolVertexEdit::canvasPressEvent(QMouseEvent * e)
     // Get the point of the snapped-to vertex
     mSnappedAtGeometry.vertexAt(x1, y1, mSnappedAtVertex);
     
-    mCross = new QgsMapCanvasCross(mCanvas);
+    mCross = new QgsMapCanvasIcon(mCanvas);
+    mCross->setIconType(QgsMapCanvasIcon::ICON_X);
     mCross->setCenter(QgsPoint(x1,y1));
   }
   

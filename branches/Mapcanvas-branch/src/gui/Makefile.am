@@ -97,6 +97,7 @@ libqgis_guiHEADERS =							\
 		qgslinestyledialog.h				\
 		qgsludialog.h					\
 		qgsmapcanvas.h						\
+		qgsmapcanvasicon.h			\
 		qgsmapcanvasitem.h			\
 		qgsmapcanvasmap.h			\
 		qgsmaplayer.h						\
@@ -226,6 +227,7 @@ libqgis_gui_la_SOURCES =						\
 		qgslinestylewidget.cpp				\
 		qgsludialog.cpp			\
 		qgsmapcanvas.cpp					\
+		qgsmapcanvasicon.cpp			\
 		qgsmapcanvasitem.cpp				\
 		qgsmapcanvasmap.cpp				\
 		qgsmaplayer.cpp						\
