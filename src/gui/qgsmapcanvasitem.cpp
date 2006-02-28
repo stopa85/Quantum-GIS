@@ -28,7 +28,6 @@ QgsMapCanvasItem::QgsMapCanvasItem(QgsMapCanvas* mapCanvas)
     mResizeType(ResizeAuto), mPanningOffset(0,0)
 {
   //setCanvas(mapCanvas->canvas());
-  connect(mapCanvas, SIGNAL(extentsChanged(QgsRect)), this, SLOT(updatePosition()));
 }
 
 QgsMapCanvasItem::~QgsMapCanvasItem()
@@ -68,22 +67,25 @@ void QgsMapCanvasItem::updatePosition()
 {
   if (mResizeType == ResizeAuto)
   {
-
-    QRect r(toCanvasCoords(QgsPoint(mRect.xMin(), mRect.yMin())),
-            toCanvasCoords(QgsPoint(mRect.xMax(), mRect.yMax())));
-    r = r.normalized();
+    QRect r; // empty rect by default
+    if (!mRect.isEmpty())
+    {
+      r = QRect(toCanvasCoords(QgsPoint(mRect.xMin(), mRect.yMin())),
+                toCanvasCoords(QgsPoint(mRect.xMax(), mRect.yMax())));
+      r = r.normalized();
+    }
     move(r.left(), r.top());
     setSize(r.width(), r.height());
-
-#ifdef QGISDEBUG
-    std::cout << "QgsMapCanvasItem::updatePosition: [" << r.left() << "," << r.top() << "]-["
-              << r.width() << "x" << r.height() << "]" << std::endl;
-#endif
   }
   else
   {
     updatePositionManual();
   }
+
+#ifdef QGISDEBUG
+    std::cout << "QgsMapCanvasItem::updatePosition: " << (mResizeType == ResizeAuto ? "<AUTO>" : "<MANUAL>")
+      << " [" << (int) x() << "," << (int) y() << "]-[" << width() << "x" << height() << "]" << std::endl;
+#endif
 }
 
 

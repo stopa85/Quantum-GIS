@@ -334,6 +334,9 @@ private:
     
     //! called when panning is in action, reset indicates end of panning
     void moveCanvasContents(bool reset = FALSE);
+    
+    //! called on resize or changed extent to notify canvas items to change their rectangle
+    void updateCanvasItemsPositions();
 
     //! determines whether user has requested to suppress rendering
     bool mRenderFlag;
