@@ -124,7 +124,12 @@ void QgsRubberBand::updateRect()
     for (i = 1; i < mPoints.size(); i++)
       r.combineExtentWith(mPoints[i].x(), mPoints[i].y());
     setRect(r);
-  }    
+  }
+  else
+  {
+    // set empty rect
+    setRect(QgsRect());
+  }
   
   setVisible(mPoints.size() > 1);
 }

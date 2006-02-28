@@ -390,6 +390,10 @@ void QgsMapCanvas::setExtent(QgsRect const & r)
   if (mMapOverview)
     mMapOverview->reflectChangedExtent();
   mLastExtent = current;
+  
+  // notify canvas items of change
+  updateCanvasItemsPositions();
+
 } // setExtent
   
 
@@ -687,9 +691,30 @@ void QgsMapCanvas::resizeEvent(QResizeEvent * e)
   
   mMap->resize(/*e->size()*/ QSize(width,height));
   
+  // notify canvas items of change
+  updateCanvasItemsPositions();
+  
   updateScale();
   refresh();
 } // resizeEvent
+
+
+void QgsMapCanvas::updateCanvasItemsPositions()
+{
+  Q3CanvasItemList list = mCanvas->allItems();
+  Q3CanvasItemList::iterator it = list.begin();
+  while (it != list.end())
+  {
+    QgsMapCanvasItem* item = dynamic_cast<QgsMapCanvasItem*>(*it);
+    
+    if (item)
+    {
+      item->updatePosition();
+    }
+  
+    it++;
+  }
+}
 
 
 void QgsMapCanvas::wheelEvent(QWheelEvent *e)
@@ -934,7 +959,6 @@ void QgsMapCanvas::panActionEnd(QPoint releasePoint)
 {
   // move map image and other items to standard position
   moveCanvasContents(TRUE); // TRUE means reset
-  //canvasMapImage()->move(0,0);
   
   // use start and end box points to calculate the extent
   QgsPoint start = getCoordinateTransform()->toMapCoordinates(mCanvasProperties->rubberStartPoint);
@@ -993,6 +1017,7 @@ void QgsMapCanvas::moveCanvasContents(bool reset)
   QPoint pnt(0,0);
   if (!reset)
     pnt += mCanvasProperties->mouseLastXY - mCanvasProperties->rubberStartPoint;
+  std::cout << "moveCanvasContents: pnt " << pnt.x() << "," << pnt.y() << std::endl;
   
   mMap->setPanningOffset(pnt);
   
@@ -1004,9 +1029,6 @@ void QgsMapCanvas::moveCanvasContents(bool reset)
     
     if (item != mMap)
     {
-      // this will only move items virtually
-      item->move(pnt.x(), pnt.y());
-      
       // this tells map canvas item to draw with offset
       QgsMapCanvasItem* canvasItem = dynamic_cast<QgsMapCanvasItem*>(item);
       if (canvasItem)
@@ -1015,6 +1037,10 @@ void QgsMapCanvas::moveCanvasContents(bool reset)
   
     it++;
   }
+
+  // show items
+  updateCanvasItemsPositions();
+
 }
 
 
