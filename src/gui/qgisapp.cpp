@@ -411,7 +411,7 @@ void QgisApp::createActions()
   mActionFileExit= new QAction(QIcon(myIconPath+"/mActionFileExit.png"), tr("Exit"), this);
   mActionFileExit->setShortcut(tr("Ctrl+Q"));
   mActionFileExit->setStatusTip(tr("Exit QGIS"));
-  connect(mActionFileExit, SIGNAL(triggered()), qApp, SLOT(quit()));
+  connect(mActionFileExit, SIGNAL(triggered()), this, SLOT(fileExit()));
   //
   // Layer Menu Related Items
   //
@@ -1097,7 +1097,6 @@ void QgisApp::createCanvas()
   int myGreen = mySettings.value("/qgis/default_canvas_color_green",255).toInt();
   int myBlue = mySettings.value("/qgis/default_canvas_color_blue",255).toInt();
   mMapCanvas->setCanvasColor(QColor(myRed,myGreen,myBlue));  // this is the fill co;our when rendering
-  mMapCanvas->setBackgroundColor(QColor(myRed,myGreen,myBlue)); // this is for the widget itself
   
   mMapCanvas->setMinimumWidth(400);
   QVBoxLayout *myCanvasLayout = new QVBoxLayout;
@@ -1700,7 +1699,8 @@ void QgisApp::addLayer()
 bool QgisApp::addLayer(QFileInfo const & vectorFile)
 {
   // let the user know we're going to possibly be taking a while
-  QApplication::setOverrideCursor(Qt::WaitCursor);
+// Let render() do its own cursor management
+//  QApplication::setOverrideCursor(Qt::WaitCursor);
 
   mMapCanvas->freeze();         // XXX why do we do this?
 
@@ -1738,7 +1738,8 @@ bool QgisApp::addLayer(QFileInfo const & vectorFile)
     if ( ! renderer )
     {
       mMapCanvas->freeze(false);
-      QApplication::restoreOverrideCursor();
+// Let render() do its own cursor management
+//      QApplication::restoreOverrideCursor();
 
       // XXX should we also delete the layer?
 
@@ -1777,7 +1778,9 @@ bool QgisApp::addLayer(QFileInfo const & vectorFile)
     delete layer;
 
     mMapCanvas->freeze(false);
-    QApplication::restoreOverrideCursor();
+
+// Let render() do its own cursor management
+//    QApplication::restoreOverrideCursor();
 
     return false;
   }
@@ -1788,7 +1791,8 @@ bool QgisApp::addLayer(QFileInfo const & vectorFile)
   
   mMapCanvas->refresh();
 
-  QApplication::restoreOverrideCursor();
+// Let render() do its own cursor management
+//  QApplication::restoreOverrideCursor();
 
   statusBar()->message(mMapCanvas->extent().stringRep(2));
 
@@ -1810,8 +1814,8 @@ bool QgisApp::addLayer(QStringList const &theLayerQStringList, const QString& en
 {
   mMapCanvas->freeze();
 
-  QApplication::setOverrideCursor(Qt::WaitCursor);
-
+// Let render() do its own cursor management
+//  QApplication::setOverrideCursor(Qt::WaitCursor);
 
   for ( QStringList::ConstIterator it = theLayerQStringList.begin();
       it != theLayerQStringList.end();
@@ -1832,7 +1836,9 @@ bool QgisApp::addLayer(QStringList const &theLayerQStringList, const QString& en
     if ( ! layer )
     {
       mMapCanvas->freeze(false);
-      QApplication::restoreOverrideCursor();
+
+// Let render() do its own cursor management
+//      QApplication::restoreOverrideCursor();
 
       // XXX insert meaningful whine to the user here
       return false;
@@ -1854,7 +1860,9 @@ bool QgisApp::addLayer(QStringList const &theLayerQStringList, const QString& en
       if ( ! renderer )
       {
         mMapCanvas->freeze(false);
-        QApplication::restoreOverrideCursor();
+
+// Let render() do its own cursor management
+//        QApplication::restoreOverrideCursor();
 
         // XXX insert meaningful whine to the user here
         return false;
@@ -1905,7 +1913,10 @@ bool QgisApp::addLayer(QStringList const &theLayerQStringList, const QString& en
   qApp->processEvents();    // XXX why does this need to be called manually?
   mMapCanvas->freeze(false);
   mMapCanvas->refresh();
-  QApplication::restoreOverrideCursor();
+
+// Let render() do its own cursor management
+//  QApplication::restoreOverrideCursor();
+
   statusBar()->message(mMapCanvas->extent().stringRep(2));
 
 
@@ -1943,7 +1954,8 @@ void QgisApp::addDatabaseLayer()
 
   if (dbs->exec())
   {
-    QApplication::setOverrideCursor(Qt::WaitCursor);
+// Let render() do its own cursor management
+//    QApplication::setOverrideCursor(Qt::WaitCursor);
 
 
     // repaint the canvas if it was covered by the dialog
@@ -2002,10 +2014,14 @@ void QgisApp::addDatabaseLayer()
     statusBar()->message(mMapCanvas->extent().stringRep(2));
   }
 
+  delete dbs;
   qApp->processEvents();
   mMapCanvas->freeze(false);
   mMapCanvas->refresh();
-  QApplication::restoreOverrideCursor();
+
+// Let render() do its own cursor management
+//  QApplication::restoreOverrideCursor();
+
 } // QgisApp::addDatabaseLayer()
 #endif
 
@@ -2343,7 +2359,7 @@ findLayers_( QString const & fileFilters, list<QDomNode> const & layerNodes )
 void QgisApp::fileExit()
 {
   removeAllLayers();
-  QApplication::exit();
+  qApp->exit(0);
 }
 
 
@@ -2723,7 +2739,6 @@ bool QgisApp::addProject(QString projectFile)
       int  myBlueInt = QgsProject::instance()->readNumEntry("Gui","/CanvasColorBluePart",255);
       QColor myColor = QColor(myRedInt,myGreenInt,myBlueInt);
       mMapCanvas->setCanvasColor(myColor); //this is fill colour before rendering starts
-      mMapCanvas->setBackgroundColor(myColor); // this is for the widget itself
       qDebug("Canvas bacground color restored...");
 
       emit projectRead(); // let plug-ins know that we've read in a new
@@ -4227,8 +4242,8 @@ void QgisApp::socketConnectionClosed()
       {
         // show more info
         QgsMessageViewer *mv = new QgsMessageViewer(this);
-        mv->setCaption(tr("QGIS - Changes in CVS Since Last Release"));
-        mv->setMessage(parts[2]);
+        mv->setCaption(tr("QGIS - Changes in SVN Since Last Release"));
+        mv->setMessageAsPlainText(parts[2]);
         mv->exec();
       }
     }
@@ -4395,7 +4410,10 @@ QString QgisApp::activeLayerSource()
 void QgisApp::addVectorLayer(QString vectorLayerPath, QString baseName, QString providerKey)
 {
   mMapCanvas->freeze();
-  QApplication::setOverrideCursor(Qt::WaitCursor);
+
+// Let render() do its own cursor management
+//  QApplication::setOverrideCursor(Qt::WaitCursor);
+
   // create the layer
   QgsVectorLayer *layer;
   /* Eliminate the need to instantiate the layer based on provider type.
@@ -4453,7 +4471,9 @@ void QgisApp::addVectorLayer(QString vectorLayerPath, QString baseName, QString 
   qApp->processEvents();
   mMapCanvas->freeze(false);
   mMapCanvas->refresh();
-  QApplication::restoreOverrideCursor();
+
+// Let render() do its own cursor management
+//  QApplication::restoreOverrideCursor();
 
 } // QgisApp::addVectorLayer
 
@@ -4462,7 +4482,10 @@ void QgisApp::addVectorLayer(QString vectorLayerPath, QString baseName, QString 
 void QgisApp::addMapLayer(QgsMapLayer *theMapLayer)
 {
   mMapCanvas->freeze();
-  QApplication::setOverrideCursor(Qt::WaitCursor);
+
+// Let render() do its own cursor management
+//  QApplication::setOverrideCursor(Qt::WaitCursor);
+
   if(theMapLayer->isValid())
   {
     // Register this layer with the layers registry
@@ -4483,7 +4506,9 @@ void QgisApp::addMapLayer(QgsMapLayer *theMapLayer)
   qApp->processEvents();
   mMapCanvas->freeze(false);
   mMapCanvas->refresh();
-  QApplication::restoreOverrideCursor();
+
+// Let render() do its own cursor management
+//  QApplication::restoreOverrideCursor();
 
 }
 
@@ -4777,14 +4802,15 @@ void QgisApp::projectProperties()
     mMapCanvas->updateFullExtent();
   }
   
-    int  myRedInt = QgsProject::instance()->readNumEntry("Gui","/CanvasColorRedPart",255);
-    int  myGreenInt = QgsProject::instance()->readNumEntry("Gui","/CanvasColorGreenPart",255);
-    int  myBlueInt = QgsProject::instance()->readNumEntry("Gui","/CanvasColorBluePart",255);
-    QColor myColor = QColor(myRedInt,myGreenInt,myBlueInt);
-    mMapCanvas->setCanvasColor(myColor); //this is fil colour before rendering onto canvas
-    mMapCanvas->setBackgroundColor(myColor); // this is for the widget itself
+  int  myRedInt = QgsProject::instance()->readNumEntry("Gui","/CanvasColorRedPart",255);
+  int  myGreenInt = QgsProject::instance()->readNumEntry("Gui","/CanvasColorGreenPart",255);
+  int  myBlueInt = QgsProject::instance()->readNumEntry("Gui","/CanvasColorBluePart",255);
+  QColor myColor = QColor(myRedInt,myGreenInt,myBlueInt);
+  mMapCanvas->setCanvasColor(myColor); // this is fill colour before rendering onto canvas
+  
   // Set the window title.
   setTitleBarText_( *this );
+  
   // delete the property sheet object
   delete pp;
 } // QgisApp::projectProperties
@@ -4978,7 +5004,10 @@ bool QgisApp::addRasterLayer(QFileInfo const & rasterFile, bool guiWarning)
   if (!addRasterLayer(layer))
   {
     mMapCanvas->freeze(false);
-    QApplication::restoreOverrideCursor();
+
+// Let render() do its own cursor management
+//    QApplication::restoreOverrideCursor();
+
     if(guiWarning)
     {
       // don't show the gui warning (probably because we are loading from command line)
@@ -4992,7 +5021,10 @@ bool QgisApp::addRasterLayer(QFileInfo const & rasterFile, bool guiWarning)
   {
     statusBar()->message(mMapCanvas->extent().stringRep(2));
     mMapCanvas->freeze(false);
-    QApplication::restoreOverrideCursor();
+
+// Let render() do its own cursor management
+//    QApplication::restoreOverrideCursor();
+
     return true;
   }
 
@@ -5023,7 +5055,10 @@ void QgisApp::addRasterLayer(QString const & rasterLayerPath,
 #endif
 
   mMapCanvas->freeze();
-  QApplication::setOverrideCursor(Qt::WaitCursor);
+
+// Let render() do its own cursor management
+//  QApplication::setOverrideCursor(Qt::WaitCursor);
+
   // create the layer
   QgsRasterLayer *layer;
   /* Eliminate the need to instantiate the layer based on provider type.
@@ -5095,7 +5130,9 @@ void QgisApp::addRasterLayer(QString const & rasterLayerPath,
   qApp->processEvents();
   mMapCanvas->freeze(false);
   mMapCanvas->refresh();
-  QApplication::restoreOverrideCursor();
+
+// Let render() do its own cursor management
+//  QApplication::restoreOverrideCursor();
 
 } // QgisApp::addRasterLayer
 
@@ -5115,7 +5152,9 @@ bool QgisApp::addRasterLayer(QStringList const &theFileNameQStringList, bool gui
 
   mMapCanvas->freeze(true);
 
-  QApplication::setOverrideCursor(Qt::WaitCursor);
+// Let render() do its own cursor management
+//  QApplication::setOverrideCursor(Qt::WaitCursor);
+
   // this is messy since some files in the list may be rasters and others may
   // be ogr layers. We'll set returnValue to false if one or more layers fail
   // to load.
@@ -5169,7 +5208,9 @@ bool QgisApp::addRasterLayer(QStringList const &theFileNameQStringList, bool gui
 
   statusBar()->message(mMapCanvas->extent().stringRep(2));
   mMapCanvas->freeze(false);
-  QApplication::restoreOverrideCursor();
+
+// Let render() do its own cursor management
+//  QApplication::restoreOverrideCursor();
 
   return returnValue;
 

@@ -20,6 +20,7 @@ email                : sherman at mrcc.com
 #include <QtGlobal>
 #include <Q3Canvas>
 #include <Q3CanvasRectangle>
+#include <QApplication>
 #include <QCursor>
 #include <QKeyEvent>
 #include <QMessageBox>
@@ -120,6 +121,7 @@ QgsMapCanvas::QgsMapCanvas()
   moveCanvasContents(TRUE);
   
   connect(mMapRender, SIGNAL(updateMap()), this, SLOT(updateMap()));
+  connect(mMapRender, SIGNAL(drawError(QgsMapLayer*)), this, SLOT(showError(QgsMapLayer*)));
   
 } // QgsMapCanvas ctor
 
@@ -315,6 +317,9 @@ void QgsMapCanvas::render()
   {
     if (mRenderFlag && mDirty)
     {
+      // Tell the user we're going to be a while
+      QApplication::setOverrideCursor(Qt::WaitCursor);
+
       mMap->render();
       mDirty = false;
     
@@ -327,6 +332,9 @@ void QgsMapCanvas::render()
       // notifies current map tool
       if (mMapTool)
         mMapTool->renderComplete();
+
+      // Tell the user we've finished going to be a while
+      QApplication::restoreOverrideCursor();
     }
 
   }
@@ -821,8 +829,16 @@ void QgsMapCanvas::setMapTool(QgsMapTool* tool)
 /** Write property of QColor bgColor. */
 void QgsMapCanvas::setCanvasColor(const QColor & theColor)
 {
+  // background of map's pixmap
   mMap->setBgColor(theColor);
-  setEraseColor(theColor);
+  
+  // background of the Q3CavnasView
+  QPalette palette;
+  palette.setColor(backgroundRole(), theColor);
+  setPalette(palette);
+  
+  // background of Q3Canvas
+  mCanvas->setBackgroundColor(theColor);
   
   if (mMapOverview)
     mMapOverview->setbgColor(theColor);
@@ -1063,3 +1079,17 @@ void QgsMapCanvas::updateMap()
 //  mCanvas->update();
 //  QApplication::processEvents();
 }
+
+
+void QgsMapCanvas::showError(QgsMapLayer * mapLayer)
+{
+  QMessageBox::warning(
+    this,
+    mapLayer->errorCaptionString(),
+    tr("Could not draw") + " " + mapLayer->name() + " " + tr("because") + ":\n" +
+      mapLayer->errorCaptionString()
+  );
+
+}
+
+// ENDS

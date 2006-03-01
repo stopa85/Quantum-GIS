@@ -223,6 +223,9 @@ class QgsMapCanvas : public Q3CanvasView
     /** updates pixmap on render progress */
     void updateMap();
     
+    //! show whatever error is exposed by the QgsMapLayer.
+    void showError(QgsMapLayer * mapLayer);
+    
     
 signals:
     /** Let the owner know how far we are with render operations */
@@ -273,7 +276,7 @@ private:
        private to force use of ctor with arguments
      */
     QgsMapCanvas();
-    
+
     //! all map rendering is done in this class
     QgsMapRender* mMapRender;
     

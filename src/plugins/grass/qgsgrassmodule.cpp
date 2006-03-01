@@ -184,6 +184,7 @@ QgsGrassModule::QgsGrassModule ( QgsGrassTools *tools, QgisApp *qgisApp, QgisIfa
     else 
     {
         std::cerr << "Module " << xName.ascii() << " not found" << std::endl;
+	QMessageBox::warning( 0, "Warning", "Module " + xName + " not found" );
         return;
     }
 #else
@@ -627,8 +628,12 @@ void QgsGrassModule::run()
 
             if ( ret == QMessageBox::No ) return;
 
-	    mProcess.addArgument( "--o" );
-	    command.append ( " --o" );
+            // r.mapcalc does not use standard parser
+            if ( typeid(*mOptions) != typeid(QgsGrassMapcalc) )
+            {
+	        mProcess.addArgument( "--o" );
+	        command.append ( " --o" );
+            }
         }
   
         QStringList list = mOptions->arguments();
@@ -702,6 +707,7 @@ void QgsGrassModule::readStderr()
 
     QString line;
     QRegExp rxpercent ( "GRASS_INFO_PERCENT: (\\d+)" );
+    QRegExp rxmessage ( "GRASS_INFO_MESSAGE\\(\\d+,\\d+\\): (.*)" );
     QRegExp rxwarning ( "GRASS_INFO_WARNING\\(\\d+,\\d+\\): (.*)" );
     QRegExp rxerror ( "GRASS_INFO_ERROR\\(\\d+,\\d+\\): (.*)" );
     QRegExp rxend ( "GRASS_INFO_END\\(\\d+,\\d+\\)" );
@@ -714,6 +720,8 @@ void QgsGrassModule::readStderr()
 	if ( rxpercent.search ( line ) != -1 ) {
 	    int progress = rxpercent.cap(1).toInt();
 	    mProgressBar->setProgress ( progress, 100 );
+	} else if ( rxmessage.search ( line ) != -1 ) {
+	    mOutputTextBrowser->append ( rxmessage.cap(1) );
 	} else if ( rxwarning.search ( line ) != -1 ) {
 	    QString warn = rxwarning.cap(1);
 	    QString img = mAppDir + "/share/qgis/themes/default/grass/grass_module_warning.png";
@@ -1167,7 +1175,7 @@ QStringList QgsGrassModuleStandardOptions::checkOutput()
             QString out = opt->outputExists();
             if ( !out.isNull() ) 
             {
-	        list.append ( opt->key()+ ":" + out );
+	        list.append ( out );
             }
 	}
     } 
@@ -1254,6 +1262,7 @@ void QgsGrassModuleInput::updateQgisLayers()
 	    //QDir locDir ( sep + split.join ( QString(sep) ) ) ;
 	    //QString loc = locDir.canonicalPath();
             QString loc =  source.remove ( QRegExp("/[^/]+/[^/]+/[^/]+$") ); 
+            loc = QDir(loc).canonicalPath();
 
 	    QDir curlocDir ( QgsGrass::getDefaultGisdbase() + sep + QgsGrass::getDefaultLocation() );
 	    QString curloc = curlocDir.canonicalPath();
@@ -1266,7 +1275,7 @@ void QgsGrassModuleInput::updateQgisLayers()
             #endif
             
 	    if ( loc != curloc ) continue;
-
+             
 	    if ( mUpdate && mapset != QgsGrass::getDefaultMapset() ) continue;
 
 	    // Check if it comes from source map if necessary
@@ -1319,6 +1328,7 @@ void QgsGrassModuleInput::updateQgisLayers()
 	    //QDir locDir ( sep + split.join ( QString(sep) ) ) ;
 	    //QString loc = locDir.canonicalPath();
             QString loc =  source.remove ( QRegExp("/[^/]+/[^/]+/[^/]+$") ); 
+            loc = QDir(loc).canonicalPath();
 
 	    QDir curlocDir ( QgsGrass::getDefaultGisdbase() + sep + QgsGrass::getDefaultLocation() );
 	    QString curloc = curlocDir.canonicalPath();

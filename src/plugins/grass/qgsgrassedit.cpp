@@ -500,6 +500,7 @@ void QgsGrassEdit::init()
   // TODO: how to get keyboard events from canvas (shortcuts)
 
   mNewPointAction->setOn(true); // Start NEW_POINT tool
+  startTool(QgsGrassEdit::NEW_POINT);
 
   restorePosition();
 
@@ -865,14 +866,13 @@ QgsGrassEdit::~QgsGrassEdit()
     mRubberBandLine->reset();
     delete mRubberBandLine;
     delete mRubberBandIcon;
+    delete mCanvasEdit;
+    mCanvas->refresh();
   }
 
   saveWindowLocation();
   mRunning = false;
   
-  delete mCanvasEdit;
-  
-  mCanvas->refresh();
 }
 
 bool QgsGrassEdit::isRunning(void)
@@ -890,6 +890,15 @@ void QgsGrassEdit::closeEdit(void)
 #ifdef QGISDEBUG
   std::cerr << "QgsGrassEdit::close()" << std::endl;
 #endif
+
+  // Disconnect signals
+  // Warning: it seems that slots (postRender) can be called even 
+  //          after disconnect (is it a queue?) 
+  disconnect( this, SLOT(mouseEventReceiverClick(QgsPoint &, Qt::ButtonState)));
+  disconnect( this, SLOT(mouseEventReceiverMove(QgsPoint &)));
+  disconnect( this, SLOT(postRender(QPainter *)));
+
+  mValid = false; // important for postRender
 
   if ( mAttributes ) {
     delete mAttributes;
@@ -1956,6 +1965,12 @@ void QgsGrassEdit::postRender(QPainter *)
 #ifdef QGISDEBUG
   std::cerr << "QgsGrassEdit::postRender" << std::endl;
 #endif
+
+  // Warning: it seems that this slot can be called even 
+  //          after disconnect (is it a queue?) 
+  //          -> check mValid
+
+  if ( !mValid ) return;
 
   displayMap(NULL);
 

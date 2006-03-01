@@ -278,29 +278,29 @@ void QgsDbSourceSelect::on_btnConnect_clicked()
       geomCol details;
       if (getGeometryColumnInfo(pd, details))
       {
-  geomCol::const_iterator iter = details.begin();
-  for (; iter != details.end(); ++iter)
-  {
-    QPixmap *p = 0;
-    if (iter->second == "POINT" || iter->second == "MULTIPOINT")
-      p = &pxPoint;
-    else if (iter->second == "MULTIPOLYGON" || iter->second == "POLYGON")
-      p = &pxPoly;
-    else if (iter->second == "LINESTRING" || iter->second == "MULTILINESTRING")
-      p = &pxLine;
+        geomCol::const_iterator iter = details.begin();
+        for (; iter != details.end(); ++iter)
+        {
+          QPixmap *p = 0;
+          if (iter->second == "POINT" || iter->second == "MULTIPOINT")
+            p = &pxPoint;
+          else if (iter->second == "MULTIPOLYGON" || iter->second == "POLYGON")
+            p = &pxPoly;
+          else if (iter->second == "LINESTRING" || iter->second == "MULTILINESTRING")
+            p = &pxLine;
 
-    if (p != 0)
-    {
-      Q3ListViewItem *lItem = new Q3ListViewItem(lstTables);
-      lItem->setText(1,iter->first);
-      lItem->setPixmap(0,*p);
-      lstTables->insertItem(lItem);
-    }
-    else
-    {
-      qDebug(("Unknown geometry type of " + iter->second).toLocal8Bit().data());
-    }
-  }
+          if (p != 0)
+          {
+            Q3ListViewItem *lItem = new Q3ListViewItem(lstTables);
+            lItem->setText(1,iter->first);
+            lItem->setPixmap(0,*p);
+            lstTables->insertItem(lItem);
+          }
+          else
+          {
+            qDebug(("Unknown geometry type of " + iter->second).toLocal8Bit().data());
+          }
+        }
       }
       else
       {
@@ -315,8 +315,8 @@ void QgsDbSourceSelect::on_btnConnect_clicked()
     {
       QMessageBox::warning(this, tr("Connection failed"),
           tr
-          ("Connection to %1 on %2 failed. Either the database is down or your settings are incorrect.%3Check your username and password and try again.%4%5").
-          arg(settings.readEntry(key + "/database")).arg(settings.readEntry(key + "/host")).arg("\n\n").arg("\n\n").arg(PQerrorMessage(pd)));
+          ("Connection to %1 on %2 failed. Either the database is down or your settings are incorrect.%3Check your username and password and try again.%4The database said:%5%6").
+          arg(settings.readEntry(key + "/database")).arg(settings.readEntry(key + "/host")).arg("\n\n").arg("\n\n").arg("\n").arg(PQerrorMessage(pd)));
     }
   }
 }
