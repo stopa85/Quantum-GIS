@@ -394,6 +394,8 @@ public:
 
   // TODO: Document this better.
   /** \brief   Renders the layer as an image
+   *  \return  A QImage - if the attempt to retrieve data for the draw was unsuccessful, returns 0
+   *           and more information can be found in errorString() and errorCaptionString()
    * TODO: Add pixel depth parameter (intended to match the display or printer device)
    * Ownership of the returned QImage remains with this provider and its lifetime
    * is guaranteed only until the next call to draw() or destruction of this provider.
@@ -401,8 +403,8 @@ public:
   QImage* draw(QgsRect const &  viewExtent, int pixelWidth, int pixelHeight);
 
   
-  /** Experimental function only **/
-  void getServerCapabilities();
+//  /** Experimental function only **/
+//  void getServerCapabilities();
   
   /* Example URI: http://ims.cr.usgs.gov:80/servlet/com.esri.wms.Esrimap/USGS_EDC_Trans_BTS_Roads?SERVICE=WMS&REQUEST=GetCapabilities */
 
@@ -461,6 +463,22 @@ public:
    */
   QString getMetadata();
 
+  /**
+   * If an operation returns 0 (e.g. draw()), this function
+   * returns the text of the error associated with the failure.
+   * Interactive users of this provider can then, for example,
+   * call a QMessageBox to display the contents.
+   */
+  QString errorCaptionString();
+
+  /**
+   * If an operation returns 0 (e.g. draw()), this function
+   * returns the text of the error associated with the failure.
+   * Interactive users of this provider can then, for example,
+   * call a QMessageBox to display the contents.
+   */
+  QString errorString();
+
     /** return a provider name
 
     Essentially just returns the provider key.  Should be used to build file
@@ -491,8 +509,8 @@ public:
     */
     QString description() const;
 
-  
-    signals:
+
+signals:
 
     /** \brief emit a signal to notify of a progress event */
     void setProgress(int theProgress, int theTotalSteps);
@@ -500,33 +518,35 @@ public:
     /** \brief emit a signal to be caught by qgisapp and display a msg on status bar */
     void setStatus(QString const &  theStatusQString);
 
-    
+
 public slots:
-  
+
   void showStatusMessage(QString const &  theMessage);
- 
-    
+
+
 private:
 
   /**
    * Retrieve and parse the (cached) Capabilities document from the server
+   * \param forceRefresh  if true, ignores any previous response cached in memory
+   *                      and always contact the server for a new copy.
+   * \return FALSE if the capabilities document could not be retreived or parsed - see errorString() for more info
    *
    * When this returns, "layers" will make sense.
    *
    * TODO: Make network-timeout tolerant
-   */ 
-  void retrieveServerCapabilities();
+   */
+  bool retrieveServerCapabilities(bool forceRefresh = FALSE);
 
 
   //! Test function: see if we can download a WMS' capabilites
-  void downloadCapabilitiesURI(QString const &  uri);
+  //! \return FALSE if the download failed in some way
+  bool downloadCapabilitiesURI(QString const &  uri);
 
-  //! Test function: see if we can download a map from a WMS
-  void drawTest(QString const & uri);
-  
   //! Test function: see if we can parse a WMS' capabilites
-  void parseCapabilities(QByteArray const & xml, QgsWmsCapabilitiesProperty& capabilitiesProperty);
-  
+  //! \return FALSE if the capabilities document could not be parsed - see errorString() for more info
+  bool parseCapabilities(QByteArray const & xml, QgsWmsCapabilitiesProperty& capabilitiesProperty);
+
   //! parse the WMS Service XML element
   void parseService(QDomElement const & e, QgsWmsServiceProperty& serviceProperty);
 
@@ -587,7 +607,7 @@ private:
   QString httpuri;
 
   //! URL part of URI (httpuri)
-  QString url;
+  QString baseUrl;
 
   //! HTTP proxy host name for the WMS for this layer
   QString httpproxyhost;
@@ -631,7 +651,7 @@ private:
   std::vector<QgsWmsLayerProperty> layersSupported;
 
   /**
-   * extents per layer
+   * extents per layer (in WMS CRS:84 datum)
    */
   std::map<QString, QgsRect> extentForLayer;
   
@@ -675,6 +695,18 @@ private:
    */
   int cachedPixelHeight;
 
+  /**
+   * The error caption associated with the last WMS error.
+   */
+  QString mErrorCaption;
+
+  /**
+   * The error message associated with the last WMS error.
+   */
+  QString mError;
+
 };
 
 #endif
+
+// ENDS

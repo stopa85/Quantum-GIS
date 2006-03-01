@@ -94,6 +94,7 @@ void QgsLegend::handleCurrentItemChanged(QTreeWidgetItem* current, QTreeWidgetIt
 void QgsLegend::addGroup()
 {
     QgsLegendGroup* group = new QgsLegendGroup(this, tr("group"));
+    mStateOfCheckBoxes.insert(std::make_pair(group, Qt::Checked)); //insert the check state into the map to query for changes later
     setExpanded(indexFromItem(group), true);
 }
 
@@ -235,8 +236,7 @@ void QgsLegend::mouseMoveEvent(QMouseEvent * e)
 	      setCursor( QCursor(Qt::PointingHandCursor) );
 	      if(origin->parent() != dest)
 		{
-		  removeItem(origin);
-		  dest->insert(origin, false);
+		  insertItem(origin, dest);
 		  setCurrentItem(origin);
 		}
 	    }
@@ -425,7 +425,7 @@ void QgsLegend::handleRightClickEvent(QTreeWidgetItem* item, const QPoint& posit
   theMenu.addAction(QIcon(QPixmap(iconsPath+QString("/folder_new.png"))), tr("&Add group"), this, SLOT(addGroup()));
   theMenu.addAction(QIcon(QPixmap(iconsPath+QString("/mActionExpandTree.png"))), tr("&Expand all"), this, SLOT(expandAll()));
   theMenu.addAction(QIcon(QPixmap(iconsPath+QString("/mActionCollapseTree.png"))), tr("&Collapse all"), this, SLOT(collapseAll()));
-  QAction* showFileGroupsAction = theMenu.addAction(tr("Show file groups"), this, SLOT(showLegendLayerFileGroups(bool)));
+  QAction* showFileGroupsAction = theMenu.addAction(tr("Show file groups"), this, SLOT(showLegendLayerFileGroups()));
   showFileGroupsAction->setCheckable(true);
   showFileGroupsAction->blockSignals(true);
   showFileGroupsAction->setChecked(mShowLegendLayerFiles);
@@ -451,7 +451,7 @@ int QgsLegend::getItemPos(QTreeWidgetItem* item)
 
 void QgsLegend::addLayer( QgsMapLayer * layer )
 {
-    QgsLegendLayer * llayer = new QgsLegendLayer(QString(layer->name()));
+  QgsLegendLayer * llayer = new QgsLegendLayer(layer->name());
     mStateOfCheckBoxes.insert(std::make_pair(llayer, Qt::Checked)); //insert the check state into the map to query for changes later
     QgsLegendLayerFileGroup * llfgroup = new QgsLegendLayerFileGroup(llayer,QString("Files"));
     QgsLegendLayerFile * llfile = new QgsLegendLayerFile(llfgroup, QgsLegendLayerFile::nameFromLayer(layer), layer);
@@ -690,7 +690,7 @@ bool QgsLegend::writeXML( QDomNode & layer_node, QDomDocument & document )
     QDomElement legendpropertynode;
     QDomElement legendlayerfilenode;
     QgsLegendLayerFile* llf;
-    Qt::CheckState cstate; //check state for legend layers
+    Qt::CheckState cstate; //check state for legend layers and legend groups
 
     QTreeWidgetItem* currentItem = firstItem();
     while(currentItem) 
@@ -716,6 +716,19 @@ bool QgsLegend::writeXML( QDomNode & layer_node, QDomDocument & document )
 			legendgroupnode.setAttribute("open","false");
 		    }
 		    legendgroupnode.setAttribute("name",item->text(0));
+		    cstate = item->checkState(0);
+		    if(cstate == Qt::Checked)
+		      {
+			legendgroupnode.setAttribute("checked","Qt::Checked");
+		      }
+		    else if(cstate == Qt::Unchecked)
+		      {
+			legendgroupnode.setAttribute("checked","Qt::Unchecked");
+		      }
+		    else if(cstate == Qt::PartiallyChecked)
+		      {
+			legendgroupnode.setAttribute("checked","Qt::PartiallyChecked");
+		      }
 		    legendnode.appendChild(legendgroupnode);
 		    tmplegendnode =  legendnode;
 		    legendnode = legendgroupnode;
@@ -846,6 +859,25 @@ bool QgsLegend::readXML(QDomNode& legendnode)
 	    {
 	      QgsLegendGroup* theGroup = new QgsLegendGroup(this, name);
 	      childelem.attribute("open") == "true" ? expandItem(theGroup) : collapseItem(theGroup);
+	      //set the checkbox of the legend group to the right state
+	      blockSignals(true);
+	      QString checked = childelem.attribute("checked");
+	      if(checked == "Qt::Checked")
+		{
+		  theGroup->setCheckState(0, Qt::Checked);
+		  mStateOfCheckBoxes.insert(std::make_pair(theGroup, Qt::Checked));
+		}
+	      else if(checked == "Qt::Unchecked")
+		{
+		  theGroup->setCheckState(0, Qt::Unchecked);
+		  mStateOfCheckBoxes.insert(std::make_pair(theGroup, Qt::Unchecked));
+		}
+	      else if(checked == "Qt::PartiallyChecked")
+		{
+		  theGroup->setCheckState(0, Qt::PartiallyChecked);
+		  mStateOfCheckBoxes.insert(std::make_pair(theGroup, Qt::PartiallyChecked));
+		}
+	      blockSignals(false);
 	      lastGroup = theGroup;
 	    }
 	  else if(childelem.tagName()=="legendlayer")
@@ -895,6 +927,8 @@ bool QgsLegend::readXML(QDomNode& legendnode)
 		{
 		  QgsMapLayer* theMapLayer = iter->second;
 		  QgsLegendLayerFile* theLegendLayerFile = new QgsLegendLayerFile(lastLayerFileGroup, QgsLegendLayerFile::nameFromLayer(theMapLayer), theMapLayer);
+		  theMapLayer->setLegendLayerFile(theLegendLayerFile);
+
 		  //set the check state
 		  blockSignals(true);
 		  if(theMapLayer->visible())
@@ -1128,6 +1162,20 @@ QDomNode QgsLegend::nextDomNode(const QDomNode& theNode)
     }
 }
 
+void QgsLegend::insertItem(QTreeWidgetItem* move, QTreeWidgetItem* into)
+{
+  QgsLegendItem* movedItem = dynamic_cast<QgsLegendItem*>(move);
+  QgsLegendItem* intoItem = dynamic_cast<QgsLegendItem*>(into);
+
+  if(movedItem && intoItem)
+    {
+      movedItem->storeAppearanceSettings();//store settings in the moved item and its children
+      removeItem(movedItem);
+      intoItem->insert(movedItem);
+      movedItem->restoreAppearanceSettings();//apply the settings again
+    }
+}
+
 void QgsLegend::moveItem(QTreeWidgetItem* move, QTreeWidgetItem* after)
 {
   static_cast<QgsLegendItem*>(move)->storeAppearanceSettings();//store settings in the moved item and its childern
@@ -1234,7 +1282,138 @@ void QgsLegend::changeSymbologySettings(const QString& key, const std::list< std
 
 void QgsLegend::handleItemChange(QTreeWidgetItem* item, int row)
 {
+  if(!item)
+    {
+      return;
+    }
+
   closePersistentEditor(item, row);
+
+  std::map<QTreeWidgetItem*, Qt::CheckState>::iterator it = mStateOfCheckBoxes.find(item);
+  if(it != mStateOfCheckBoxes.end())
+    {
+      if(it->second != item->checkState(0)) //the checkState has changed
+	{
+	  
+	  QgsLegendLayerFile* llf = dynamic_cast<QgsLegendLayerFile*>(item); //item is a layer file
+	  if(llf)
+	    {
+	      if(llf->layer())
+		{
+		  llf->layer()->setVisible(item->checkState(0) == Qt::Checked);
+		}
+	      //update check state of the legend layer
+	      QgsLegendLayer* ll = dynamic_cast<QgsLegendLayer*>(item->parent()->parent());
+	      if(ll)
+		{
+		  ll->updateCheckState();
+		  mStateOfCheckBoxes[ll] = ll->checkState(0);
+		}
+	      //update check state of the legend group (if any)
+	      if(item->parent()->parent()->parent())
+		{
+		  QgsLegendGroup* lg = dynamic_cast<QgsLegendGroup*>(item->parent()->parent()->parent());
+		  if(lg)
+		    {
+		      lg->updateCheckState();
+		      mStateOfCheckBoxes[lg] = lg->checkState(0);
+		    }
+		}
+	      mStateOfCheckBoxes[item] = item->checkState(0);
+	      return;
+	    }
+	  
+	  std::list<QgsLegendLayerFile*> subfiles;
+	  QgsLegendGroup* lg = dynamic_cast<QgsLegendGroup*>(item); //item is a legend group
+	  if(lg)
+	    {
+	      //set all the child layer files to the new check state
+	      subfiles = lg->legendLayerFiles();
+	      mMapCanvas->setRenderFlag(false);
+	      for(std::list<QgsLegendLayerFile*>::iterator iter = subfiles.begin(); iter != subfiles.end(); ++iter)
+		{
+#ifdef QGISDEBUG
+		  if(item->checkState(0) == Qt::Checked)
+		    {
+		      qWarning("item checked");
+		    }
+		  else if(item->checkState(0) == Qt::Unchecked)
+		    {
+		      qWarning("item unchecked");
+		    }
+		  else if(item->checkState(0) == Qt::PartiallyChecked)
+		    {
+		      qWarning("item partially checked");
+		    }
+#endif
+		  blockSignals(true);
+		  (*iter)->setCheckState(0, item->checkState(0));
+		  blockSignals(false);
+		  mStateOfCheckBoxes[(*iter)] = item->checkState(0);
+		  if((*iter)->layer())
+		    {
+		      (*iter)->layer()->setVisible(item->checkState(0) == Qt::Checked);
+		    }
+		}
+	      
+	      //update the check states of all child legend layers
+	      for(int i = 0; i < lg->childCount(); ++i)
+		{
+		  static_cast<QgsLegendLayer*>(lg->child(i))->updateCheckState();
+		  mStateOfCheckBoxes[lg->child(i)] = lg->child(i)->checkState(0);
+		}
+	      mMapCanvas->setRenderFlag(true);
+	      mStateOfCheckBoxes[item] = item->checkState(0);
+	      return;
+	    }
+	  
+	  QgsLegendLayer* ll = dynamic_cast<QgsLegendLayer*>(item); //item is a legend layer
+	  if(ll)
+	    {
+	      //set all the child layer files to the new check state
+	      subfiles = ll->legendLayerFiles();
+	      mMapCanvas->setRenderFlag(false);
+	      for(std::list<QgsLegendLayerFile*>::iterator iter = subfiles.begin(); iter != subfiles.end(); ++iter)
+		{
+		  blockSignals(true);
+		  (*iter)->setCheckState(0, item->checkState(0));
+		  blockSignals(false);
+		  mStateOfCheckBoxes[(*iter)] = item->checkState(0);
+		  if((*iter)->layer())
+		    {
+		      (*iter)->layer()->setVisible(item->checkState(0) == Qt::Checked);
+		    }
+		}
+	      if(ll->parent())
+		{
+		  static_cast<QgsLegendGroup*>(ll->parent())->updateCheckState();
+		  mStateOfCheckBoxes[ll->parent()] = ll->parent()->checkState(0);
+		}
+	      mMapCanvas->setRenderFlag(true);
+	      //update check state of the legend group
+	    }
+	  mStateOfCheckBoxes[item] = item->checkState(0);
+	}
+    }
+#if 0
+  QgsLegendGroup* lg = dynamic_cast<QgsLegendGroup*>(item);
+  if(lg)
+    {
+#ifdef QGISDEBUG
+      qWarning("detected legend group in QgsLegend::handleItemChange");
+#endif
+      std::map<QTreeWidgetItem*, Qt::CheckState>::iterator it = mStateOfCheckBoxes.find(item);
+      if(it != mStateOfCheckBoxes.end())
+	{
+	  if(it->second != item->checkState(0)) //the checkState has changed
+	    {
+	      bool checked = (item->checkState(0) == Qt::Checked);
+	      
+	    }
+	}
+      return;
+    }
+
   QgsLegendLayerFile* llf = dynamic_cast<QgsLegendLayerFile*>(item);
   if(llf)
     {
@@ -1251,7 +1430,7 @@ void QgsLegend::handleItemChange(QTreeWidgetItem* item, int row)
 		{
 		  bool checked = (item->checkState(0) == Qt::Checked); 
 		  theLayer->setVisible(checked);
-		  //todo: check, how the checkbox of the legendlayer needs to be updated
+		  //check, how the checkbox of the legendlayer needs to be updated
 		  QgsLegendLayer* ll = dynamic_cast<QgsLegendLayer*>(item->parent()->parent());
 		  std::list<QgsLegendLayerFile*> llfiles = ll->legendLayerFiles();
 		  std::list<QgsLegendLayerFile*>::iterator iter = llfiles.begin();
@@ -1311,6 +1490,7 @@ void QgsLegend::handleItemChange(QTreeWidgetItem* item, int row)
 	    }
 	}
     }
+#endif //0
 }
 
 void QgsLegend::openEditor()
@@ -1324,16 +1504,21 @@ void QgsLegend::openEditor()
 
 void QgsLegend::makeToTopLevelItem()
 {
-  QTreeWidgetItem* theItem = currentItem();
+  QgsLegendItem* theItem = dynamic_cast<QgsLegendItem*>(currentItem());
   if(theItem)
     {
+      theItem->storeAppearanceSettings();
       removeItem(theItem);
       addTopLevelItem(theItem);
+      theItem->restoreAppearanceSettings();
     }
 }
 
-void QgsLegend::showLegendLayerFileGroups(bool show)
+void QgsLegend::showLegendLayerFileGroups()
 {
+  // Toggle the boolean associated with the checkbox
+  mShowLegendLayerFiles = !mShowLegendLayerFiles;
+
   QgsLegendLayerFileGroup* theFileGroup = 0;
   QTreeWidgetItem* theItem = firstItem();
   do
@@ -1341,9 +1526,8 @@ void QgsLegend::showLegendLayerFileGroups(bool show)
       theFileGroup = dynamic_cast<QgsLegendLayerFileGroup*>(theItem);
       if(theFileGroup)
 	{
-	  setItemHidden(theFileGroup, !show);
+	  setItemHidden(theFileGroup, !mShowLegendLayerFiles);
 	}
     }
   while(theItem = nextItem(theItem));
-  mShowLegendLayerFiles = show;
 }

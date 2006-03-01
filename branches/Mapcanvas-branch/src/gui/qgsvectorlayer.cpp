@@ -770,9 +770,11 @@ std::cerr << i << ": " << ring->first[i]
 }
 
 
-void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * theMapToPixelTransform)
+bool QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * theMapToPixelTransform)
 {
   draw ( p, viewExtent, theMapToPixelTransform, 1., 1.);
+
+  return TRUE; // Assume success always
 }
 
 void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * theMapToPixelTransform, 
@@ -926,7 +928,7 @@ void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * th
       for(; it != mAddedFeatures.end(); ++it)
       {
         bool sel=mSelected.find((*it)->featureId()) != mSelected.end();
-        m_renderer->renderFeature(p, fet, &marker, &markerScaleFactor, 
+        m_renderer->renderFeature(p, *it, &marker, &markerScaleFactor, 
             sel, widthScale);
         double scale = markerScaleFactor * symbolScale;
         drawFeature(p,*it,theMapToPixelTransform,&marker,scale, 
@@ -1218,10 +1220,6 @@ void QgsVectorLayer::showLayerProperties()
 #endif
     m_propertiesDialog->setDisplayField(displayField());
 
-#ifdef QGISDEBUG
-    std::cerr << "Resetting prop dialog\n";
-#endif
-    m_propertiesDialog->reset();
 #ifdef QGISDEBUG
     std::cerr << "Raising prop dialog\n";
 #endif

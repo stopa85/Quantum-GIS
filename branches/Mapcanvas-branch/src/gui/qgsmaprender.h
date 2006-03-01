@@ -24,7 +24,7 @@
 class QPainter;
 class QgsScaleCalculator;
 class QgsMapToPixel;
-
+class QgsMapLayer;
 
 
 /**
@@ -75,6 +75,9 @@ class QgsMapRender : public QObject
     void setProgress(int current, int total);
     
     void updateMap();
+
+    //! emitted when layer's draw() returned FALSE
+    void drawError(QgsMapLayer*);
     
   public slots:
     

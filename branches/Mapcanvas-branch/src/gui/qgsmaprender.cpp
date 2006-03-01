@@ -247,9 +247,14 @@ void QgsMapRender::render(QPainter* painter)
                     // Now do the call to the layer that actually does
                     // the rendering work!
         //
-        ml->draw(painter, &r1, mCoordXForm);
+        if (!ml->draw(painter, &r1, mCoordXForm))
+          emit drawError(ml);
+        
         if (split)
-          ml->draw(painter, &r2, mCoordXForm);
+        {
+          if (!ml->draw(painter, &r2, mCoordXForm))
+            emit drawError(ml);
+        }
         
         disconnect(ml, SIGNAL(drawingProgress(int,int)), this, SLOT(onDrawingProgress(int,int)));
       }
