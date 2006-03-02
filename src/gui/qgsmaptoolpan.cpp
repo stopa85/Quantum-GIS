@@ -33,10 +33,9 @@ QgsMapToolPan::QgsMapToolPan(QgsMapCanvas* canvas)
     
 void QgsMapToolPan::canvasMoveEvent(QMouseEvent * e)
 {
-  if (e->state() == Qt::LeftButton)
+  if (mDragging && (e->buttons() & Qt::LeftButton))
   {
-    // show the pmCanvas as the user drags the mouse
-    mDragging = TRUE;
+    // move map and other canvas items
     mCanvas->panAction(e);
   }
 }
@@ -44,14 +43,18 @@ void QgsMapToolPan::canvasMoveEvent(QMouseEvent * e)
     
 void QgsMapToolPan::canvasPressEvent(QMouseEvent * e)
 {
+  if (e->button() == Qt::LeftButton)
+  {
+    mDragging = TRUE;
+  }
 }
   
     
 void QgsMapToolPan::canvasReleaseEvent(QMouseEvent * e)
 {
-  if (mDragging)
+  if (mDragging && e->button() == Qt::LeftButton)
   {
-    mDragging = TRUE;
     mCanvas->panActionEnd(e->pos());
+    mDragging = FALSE;
   }
 }
