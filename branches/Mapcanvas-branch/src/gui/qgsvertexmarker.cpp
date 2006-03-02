@@ -1,5 +1,5 @@
 /***************************************************************************
-    qgsmapcanvasicon.cpp  - canvas item which shows a simple icon
+    qgsvertexmarker.cpp  - canvas item which shows a simple vertex marker
     ---------------------
     begin                : February 2006
     copyright            : (C) 2006 by Martin Dobias
@@ -16,10 +16,10 @@
 
 #include <QPainter>
 
-#include "qgsmapcanvasicon.h"
+#include "qgsvertexmarker.h"
 
 
-QgsMapCanvasIcon::QgsMapCanvasIcon(QgsMapCanvas* mapCanvas)
+QgsVertexMarker::QgsVertexMarker(QgsMapCanvas* mapCanvas)
   : QgsMapCanvasItem(mapCanvas)
 {
   mIconSize = 10;
@@ -27,17 +27,17 @@ QgsMapCanvasIcon::QgsMapCanvasIcon(QgsMapCanvas* mapCanvas)
   mResizeType = ResizeManual;
 }
 
-void QgsMapCanvasIcon::setIconType(int type)
+void QgsVertexMarker::setIconType(int type)
 {
   mIconType = type;
 }
     
-void QgsMapCanvasIcon::setIconSize(int iconSize)
+void QgsVertexMarker::setIconSize(int iconSize)
 {
   mIconSize = iconSize;
 }
     
-void QgsMapCanvasIcon::setCenter(const QgsPoint& point)
+void QgsVertexMarker::setCenter(const QgsPoint& point)
 {
    mCenter = point;
    updatePosition();
@@ -45,7 +45,7 @@ void QgsMapCanvasIcon::setCenter(const QgsPoint& point)
 }
 
 
-void QgsMapCanvasIcon::drawShape(QPainter & p)
+void QgsVertexMarker::drawShape(QPainter & p)
 {
   QPoint pt = toCanvasCoords(mCenter);
   int x = pt.x(), y = pt.y();
@@ -79,7 +79,7 @@ void QgsMapCanvasIcon::drawShape(QPainter & p)
 }
     
 
-void QgsMapCanvasIcon::updatePositionManual()
+void QgsVertexMarker::updatePositionManual()
 {
   QPoint pt = toCanvasCoords(mCenter);
   int s = (mIconSize - 1) / 2;

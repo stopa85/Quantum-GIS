@@ -97,7 +97,6 @@ libqgis_guiHEADERS =							\
 		qgslinestyledialog.h				\
 		qgsludialog.h					\
 		qgsmapcanvas.h						\
-		qgsmapcanvasicon.h			\
 		qgsmapcanvasitem.h			\
 		qgsmapcanvasmap.h			\
 		qgsmaplayer.h						\
@@ -138,7 +137,8 @@ libqgis_guiHEADERS =							\
 		qgsuniquevaluerenderer.h				\
 		qgsuniquevaluedialog.h					\
 		qgsvectorfilewriter.h				\
-		qgsvectorlayerproperties.h			
+		qgsvectorlayerproperties.h			\
+		qgsvertexmarker.h
 
 ## files generated from MOC
 libqgis_gui_la_MOC =							\
@@ -227,7 +227,6 @@ libqgis_gui_la_SOURCES =						\
 		qgslinestylewidget.cpp				\
 		qgsludialog.cpp			\
 		qgsmapcanvas.cpp					\
-		qgsmapcanvasicon.cpp			\
 		qgsmapcanvasitem.cpp				\
 		qgsmapcanvasmap.cpp				\
 		qgsmaplayer.cpp						\
@@ -267,7 +266,8 @@ libqgis_gui_la_SOURCES =						\
 		qgsuniquevaluedialog.cpp		\
 		qgsvectorfilewriter.cpp				\
 		qgsvectorlayer.cpp \
-		qgsvectorlayerproperties.cpp	
+		qgsvectorlayerproperties.cpp		\
+		qgsvertexmarker.cpp
 
 if HAVE_POSTGRESQL
 postgresHEADERS = qgsdbsourceselect.h		\

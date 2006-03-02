@@ -36,7 +36,7 @@ class QCloseEvent;
 #include "qgisiface.h"
 #include "qgsmaptopixel.h"
 class QgsRubberBand;
-class QgsMapCanvasIcon;
+class QgsVertexMarker;
 class QgsGrassEditLayer;
 
 class QgsGrassProvider;
@@ -389,7 +389,7 @@ private:
 
     // Canvas items
     QgsRubberBand *mRubberBandLine;
-    QgsMapCanvasIcon *mRubberBandIcon;
+    QgsVertexMarker *mRubberBandIcon;
     QgsGrassEditLayer* mCanvasEdit;
 };
 
