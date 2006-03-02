@@ -16,7 +16,7 @@
 
 #include "qgsmaptoolvertexedit.h"
 #include "qgsmapcanvas.h"
-#include "qgsmapcanvasicon.h"
+#include "qgsvertexmarker.h"
 #include "qgsrubberband.h"
 #include "qgsvectorlayer.h"
 #include "qgsvectordataprovider.h"
@@ -143,8 +143,8 @@ void QgsMapToolVertexEdit::canvasPressEvent(QMouseEvent * e)
     // Get the point of the snapped-to vertex
     mSnappedAtGeometry.vertexAt(x1, y1, mSnappedAtVertex);
     
-    mCross = new QgsMapCanvasIcon(mCanvas);
-    mCross->setIconType(QgsMapCanvasIcon::ICON_X);
+    mCross = new QgsVertexMarker(mCanvas);
+    mCross->setIconType(QgsVertexMarker::ICON_X);
     mCross->setCenter(QgsPoint(x1,y1));
   }
   

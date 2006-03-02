@@ -54,7 +54,7 @@
 #include "qgsfield.h"
 #include "qgsfeatureattribute.h"
 #include "qgslegend.h"
-#include "qgsmapcanvasicon.h"
+#include "qgsvertexmarker.h"
 #include "qgsrubberband.h"
 
 extern "C" {
@@ -485,7 +485,7 @@ void QgsGrassEdit::init()
   mPixmap = &mCanvasEdit->pixmap();
 
   mRubberBandLine = new QgsRubberBand(mCanvas);
-  mRubberBandIcon = new QgsMapCanvasIcon(mCanvas);
+  mRubberBandIcon = new QgsVertexMarker(mCanvas);
   mRubberBandLine->setZ(20);
   mRubberBandIcon->setZ(20);
   mRubberBandLine->show();
@@ -1594,7 +1594,7 @@ void QgsGrassEdit::mouseEventReceiverClick( QgsPoint & point, Qt::ButtonState bu
               if ( dist1 < dist2 ) mSelectedPart--;
 
               displayDynamic ( mEditPoints->x[mSelectedPart], mEditPoints->y[mSelectedPart], 
-                  QgsMapCanvasIcon::ICON_BOX, mSize );
+                  QgsVertexMarker::ICON_BOX, mSize );
 
               setCanvasPropmt( tr("Delete vertex"), "", tr("Release vertex") );
             } else {
@@ -1666,7 +1666,7 @@ void QgsGrassEdit::mouseEventReceiverClick( QgsPoint & point, Qt::ButtonState bu
               mSelectedPart = Vect_line_distance ( mEditPoints, point.x(), point.y(), 0.0, 0, 
                   &xl, &yl, NULL, NULL, NULL, NULL );
 
-              displayDynamic ( xl, yl, QgsMapCanvasIcon::ICON_X, mSize );
+              displayDynamic ( xl, yl, QgsVertexMarker::ICON_X, mSize );
 
               setCanvasPropmt( tr("Split the line"), "", tr("Release the line") );
             } else {
@@ -2070,7 +2070,7 @@ void QgsGrassEdit::displayElement ( int line, const QPen & pen, int size, QPaint
   }
 
   if ( type & GV_POINTS ) {
-    displayIcon ( mPoints->x[0], mPoints->y[0], pen, QgsMapCanvasIcon::ICON_CROSS, size, painter );
+    displayIcon ( mPoints->x[0], mPoints->y[0], pen, QgsVertexMarker::ICON_CROSS, size, painter );
   } else { // line
     QgsPoint point;
     Q3PointArray pointArray(mPoints->n_points);
@@ -2114,21 +2114,21 @@ void QgsGrassEdit::eraseElement ( int line )
 
     double x, y;
     mProvider->nodeCoor( node1, &x, &y );
-    displayIcon ( x, y, mSymb[SYMB_BACKGROUND], QgsMapCanvasIcon::ICON_X, mSize );
+    displayIcon ( x, y, mSymb[SYMB_BACKGROUND], QgsVertexMarker::ICON_X, mSize );
 
     mProvider->nodeCoor( node2, &x, &y );
-    displayIcon ( x, y, mSymb[SYMB_BACKGROUND], QgsMapCanvasIcon::ICON_X, mSize );
+    displayIcon ( x, y, mSymb[SYMB_BACKGROUND], QgsVertexMarker::ICON_X, mSize );
   }
 }
 
 void QgsGrassEdit::eraseDynamic ( void )
 {
-  displayDynamic ( 0, 0.0, 0.0, QgsMapCanvasIcon::ICON_NONE, 0 );
+  displayDynamic ( 0, 0.0, 0.0, QgsVertexMarker::ICON_NONE, 0 );
 }
 
 void QgsGrassEdit::displayDynamic ( struct line_pnts *Points )
 {
-  displayDynamic ( Points, 0.0, 0.0, QgsMapCanvasIcon::ICON_NONE, 0 );
+  displayDynamic ( Points, 0.0, 0.0, QgsVertexMarker::ICON_NONE, 0 );
 }
 
 void QgsGrassEdit::displayDynamic ( double x, double y, int type, int size )
@@ -2178,7 +2178,7 @@ void QgsGrassEdit::displayNode ( int node, const QPen & pen, int size, QPainter 
 
   if ( !(mProvider->nodeCoor(node,&x,&y )) ) return;
 
-  displayIcon ( x, y, pen, QgsMapCanvasIcon::ICON_X, size, painter );
+  displayIcon ( x, y, pen, QgsVertexMarker::ICON_X, size, painter );
 }
 
 void QgsGrassEdit::displayIcon ( double x, double y, const QPen & pen, 
@@ -2210,7 +2210,7 @@ void QgsGrassEdit::displayIcon ( double x, double y, const QPen & pen,
   myPainter->setPen ( pen );
 
   switch ( type ) {
-    case QgsMapCanvasIcon::ICON_CROSS :
+    case QgsVertexMarker::ICON_CROSS :
       pointArray.setPoint( 0, px-m, py ); 
       pointArray.setPoint( 1, px+m, py ); 
       myPainter->drawPolyline ( pointArray );
@@ -2219,7 +2219,7 @@ void QgsGrassEdit::displayIcon ( double x, double y, const QPen & pen,
       pointArray.setPoint( 1, px, py-m ); 
       myPainter->drawPolyline ( pointArray );
       break;
-    case QgsMapCanvasIcon::ICON_X :
+    case QgsVertexMarker::ICON_X :
       pointArray.setPoint( 0, px-m, py+m ); 
       pointArray.setPoint( 1, px+m, py-m ); 
       myPainter->drawPolyline ( pointArray );
@@ -2228,7 +2228,7 @@ void QgsGrassEdit::displayIcon ( double x, double y, const QPen & pen,
       pointArray.setPoint( 1, px+m, py+m ); 
       myPainter->drawPolyline ( pointArray );
       break;
-    case QgsMapCanvasIcon::ICON_BOX :
+    case QgsVertexMarker::ICON_BOX :
       pointArray.resize(5);
       pointArray.setPoint( 0, px-m, py-m ); 
       pointArray.setPoint( 1, px+m, py-m ); 

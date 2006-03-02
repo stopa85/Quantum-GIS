@@ -21,7 +21,7 @@
 #include "qgsgeometry.h"
 
 class QgsRubberBand;
-class QgsMapCanvasIcon;
+class QgsVertexMarker;
 
 #define MapTool_VertexEdit "vertex edit"
 
@@ -82,7 +82,7 @@ class QgsMapToolVertexEdit : public QgsMapTool
     bool mStartPointValid;
     bool mStopPointValid;
     
-    QgsMapCanvasIcon* mCross;
+    QgsVertexMarker* mCross;
 
 };
 

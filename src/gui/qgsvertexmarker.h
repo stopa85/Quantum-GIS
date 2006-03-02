@@ -1,5 +1,5 @@
 /***************************************************************************
-    qgsmapcanvasicon.h  - canvas item which shows a simple icon
+    qgsvertexmarker.h  - canvas item which shows a simple vertex marker
     ---------------------
     begin                : February 2006
     copyright            : (C) 2006 by Martin Dobias
@@ -14,15 +14,15 @@
  ***************************************************************************/
 /* $Id$ */
 
-#ifndef QGSMAPCANVASICON_H
-#define QGSMAPCANVASICON_H
+#ifndef QGSVERTEXMARKER_H
+#define QGSVERTEXMARKER_H
 
 #include "qgsmapcanvasitem.h"
 #include "qgspoint.h"
 
 class QPainter;
 
-class QgsMapCanvasIcon : public QgsMapCanvasItem
+class QgsVertexMarker : public QgsMapCanvasItem
 {
   public:
     
@@ -35,7 +35,7 @@ class QgsMapCanvasIcon : public QgsMapCanvasItem
       ICON_BOX
     };
 
-    QgsMapCanvasIcon(QgsMapCanvas* mapCanvas);
+    QgsVertexMarker(QgsMapCanvas* mapCanvas);
     
     void setCenter(const QgsPoint& point);
     
