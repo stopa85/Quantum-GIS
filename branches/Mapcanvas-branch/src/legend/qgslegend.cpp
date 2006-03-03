@@ -172,7 +172,6 @@ void QgsLegend::mouseMoveEvent(QMouseEvent * e)
 
 	// remember item we've pressed as the one being moved
 	// and where it was originally
-	//QTreeWidgetItem* item = itemAt(contentsToViewport(mLastPressPos));
 	QTreeWidgetItem* item = itemAt(mLastPressPos);
 	if(item)
 	{
@@ -253,7 +252,6 @@ void QgsLegend::mouseMoveEvent(QMouseEvent * e)
 	    }
 	}     
     }
-    //QTreeWidget::mouseMoveEvent(e);
 }
 
 void QgsLegend::mouseReleaseEvent(QMouseEvent * e)
@@ -337,8 +335,12 @@ void QgsLegend::mouseReleaseEvent(QMouseEvent * e)
 	      }
 	  }
 	
-   // z-order has changed - update layer set
-   updateMapCanvasLayerSet();
+	 std::deque<QString> layersAfterRelease = layerIDs(); //test if canvas redraw is really necessary
+   if(layersAfterRelease != mLayersPriorToMove)
+   {
+     // z-order has changed - update layer set
+     updateMapCanvasLayerSet();
+   }
       }
   }
   mMousePressedFlag = false;
@@ -998,6 +1000,7 @@ void QgsLegend::storeInitialPosition(QTreeWidgetItem* li)
       mRestoreInformation = YOUNGER_SIBLING;
       mRestoreItem = ((QgsLegendItem*)(li))->findYoungerSibling();
     }
+  mLayersPriorToMove = layerIDs();
 }
 
 void QgsLegend::resetToInitialPosition(QTreeWidgetItem* li)
@@ -1211,6 +1214,12 @@ void QgsLegend::removeItem(QTreeWidgetItem* item)
 }
 
 void QgsLegend::updateMapCanvasLayerSet()
+{ 
+  std::deque<QString> layers = layerIDs();
+  mMapCanvas->setLayerSet(layers);
+}
+
+std::deque<QString> QgsLegend::layerIDs()
 {
   std::deque<QString> layers;
   QTreeWidgetItem* theItem = firstItem();
@@ -1234,7 +1243,7 @@ void QgsLegend::updateMapCanvasLayerSet()
     }
 #endif
 
-  mMapCanvas->setLayerSet(layers);
+  return layers;
 }
 
 void QgsLegend::changeSymbologySettings(const QString& key, const std::list< std::pair<QString, QIcon*> >* newSymbologyItems)
