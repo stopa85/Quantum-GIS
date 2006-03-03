@@ -136,6 +136,10 @@ class QgsLegend : public QTreeWidget
   /**Removes an item from the legend. This is e.g. necessary before shifting it to another place*/
   void removeItem(QTreeWidgetItem* item);
 
+  /**Returns the ids of the layers contained in this legend. The order is bottom->top*/
+  std::deque<QString> layerIDs();
+  
+  /**Updates layer set of map canvas*/
   void updateMapCanvasLayerSet();
 
   /**Removes the symbology items of a layer and adds new ones. If other files are in the same legend layer, the new symbology settings are copied.
@@ -222,6 +226,7 @@ this item may be moved back to the original position with resetToInitialPosition
   /**Returns the legend layer to which a map layer gelongs*/
   QgsLegendLayer* findLegendLayer(const QString& layerKey);
 
+
   private slots:
 
   /**Calls 'handleRightClickEvent' on the item*/
@@ -295,6 +300,10 @@ private:
   QTreeWidgetItem* mRestoreItem;
 
   bool mShowLegendLayerFiles;
+
+  /**Stores the layer ordering before a mouse Move. After the move, this is used to
+   decide if the mapcanvas really has to be refreshed*/
+  std::deque<QString> mLayersPriorToMove;
 
   /*!
    * A fuction sed to determin how far down in the list an item is (starting with one for the first Item.
