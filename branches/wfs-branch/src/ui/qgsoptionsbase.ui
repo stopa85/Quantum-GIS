@@ -1,0 +1,658 @@
+<ui version="4.0" >
+ <author></author>
+ <comment></comment>
+ <exportmacro></exportmacro>
+ <class>QgsOptionsBase</class>
+ <widget class="QDialog" name="QgsOptionsBase" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>517</width>
+    <height>413</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>QGIS Options</string>
+  </property>
+  <property name="windowIcon" >
+   <iconset/>
+  </property>
+  <property name="sizeGripEnabled" >
+   <bool>true</bool>
+  </property>
+  <layout class="QGridLayout" >
+   <property name="margin" >
+    <number>9</number>
+   </property>
+   <property name="spacing" >
+    <number>6</number>
+   </property>
+   <item row="0" column="0" >
+    <widget class="QTabWidget" name="tabWidget" >
+     <widget class="QWidget" name="tabAppearance" >
+      <attribute name="title" >
+       <string>&amp;Appearance</string>
+      </attribute>
+      <layout class="QGridLayout" >
+       <property name="margin" >
+        <number>9</number>
+       </property>
+       <property name="spacing" >
+        <number>6</number>
+       </property>
+       <item row="3" column="0" >
+        <spacer>
+         <property name="orientation" >
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" >
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="2" column="0" >
+        <widget class="QGroupBox" name="groupBox_9" >
+         <property name="title" >
+          <string>Default Map Appearance (Overridden by project properties)</string>
+         </property>
+         <layout class="QGridLayout" >
+          <property name="margin" >
+           <number>9</number>
+          </property>
+          <property name="spacing" >
+           <number>6</number>
+          </property>
+          <item row="0" column="2" >
+           <widget class="QLabel" name="label" >
+            <property name="text" >
+             <string>Background Color:</string>
+            </property>
+            <property name="buddy" >
+             <cstring>pbnCanvasColor</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="3" >
+           <widget class="QToolButton" name="pbnCanvasColor" >
+            <property name="text" >
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1" >
+           <widget class="QToolButton" name="pbnSelectionColour" >
+            <property name="minimumSize" >
+             <size>
+              <width>10</width>
+              <height>22</height>
+             </size>
+            </property>
+            <property name="text" >
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0" >
+           <widget class="QLabel" name="textLabel1_9" >
+            <property name="text" >
+             <string>Selection Color:</string>
+            </property>
+            <property name="buddy" >
+             <cstring>pbnSelectionColour</cstring>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="1" column="0" >
+        <widget class="QGroupBox" name="groupBox_2" >
+         <property name="title" >
+          <string>&amp;Icon Theme</string>
+         </property>
+         <layout class="QGridLayout" >
+          <property name="margin" >
+           <number>9</number>
+          </property>
+          <property name="spacing" >
+           <number>6</number>
+          </property>
+          <item row="1" column="0" colspan="3" >
+           <widget class="QLabel" name="textLabel1_5" >
+            <property name="text" >
+             <string>&lt;b>Note: &lt;/b>Theme changes take effect the next time QGIS is started</string>
+            </property>
+            <property name="alignment" >
+             <set>Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0" >
+           <widget class="QLabel" name="textLabel1_4" >
+            <property name="sizePolicy" >
+             <sizepolicy>
+              <hsizetype>0</hsizetype>
+              <vsizetype>5</vsizetype>
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text" >
+             <string>Theme</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1" >
+           <widget class="QComboBox" name="cmbTheme" >
+            <property name="duplicatesEnabled" >
+             <bool>false</bool>
+            </property>
+            <item>
+             <property name="text" >
+              <string/>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="0" column="2" >
+           <spacer>
+            <property name="orientation" >
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" >
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="0" column="0" >
+        <widget class="QGroupBox" name="groupBox" >
+         <property name="title" >
+          <string>&amp;Splash screen</string>
+         </property>
+         <layout class="QGridLayout" >
+          <property name="margin" >
+           <number>9</number>
+          </property>
+          <property name="spacing" >
+           <number>6</number>
+          </property>
+          <item row="0" column="0" >
+           <widget class="QCheckBox" name="cbxHideSplash" >
+            <property name="text" >
+             <string>Hide splash screen at startup</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="TabPage" >
+      <attribute name="title" >
+       <string>&amp;Rendering</string>
+      </attribute>
+      <layout class="QGridLayout" >
+       <property name="margin" >
+        <number>9</number>
+       </property>
+       <property name="spacing" >
+        <number>6</number>
+       </property>
+       <item row="3" column="0" >
+        <spacer>
+         <property name="orientation" >
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" >
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="2" column="0" >
+        <widget class="QGroupBox" name="groupBox_8" >
+         <property name="title" >
+          <string>Anti-aliasing</string>
+         </property>
+         <layout class="QGridLayout" >
+          <property name="margin" >
+           <number>9</number>
+          </property>
+          <property name="spacing" >
+           <number>6</number>
+          </property>
+          <item row="0" column="0" >
+           <widget class="QCheckBox" name="chkAntiAliasing" >
+            <property name="text" >
+             <string>Make lines appear less jagged at the expense of some drawing performance</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="1" column="0" >
+        <widget class="QGroupBox" name="groupBox_4" >
+         <property name="title" >
+          <string>Initial Visibility</string>
+         </property>
+         <layout class="QGridLayout" >
+          <property name="margin" >
+           <number>9</number>
+          </property>
+          <property name="spacing" >
+           <number>6</number>
+          </property>
+          <item row="0" column="0" >
+           <widget class="QCheckBox" name="chkAddedVisibility" >
+            <property name="text" >
+             <string>New la&amp;yers added to the map are not displayed</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="0" column="0" >
+        <widget class="QGroupBox" name="groupBox_5" >
+         <property name="title" >
+          <string>&amp;Update during drawing</string>
+         </property>
+         <layout class="QGridLayout" >
+          <property name="margin" >
+           <number>9</number>
+          </property>
+          <property name="spacing" >
+           <number>6</number>
+          </property>
+          <item row="0" column="2" >
+           <widget class="QLabel" name="textLabel2_2" >
+            <property name="text" >
+             <string>features</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1" >
+           <widget class="QSpinBox" name="spinBoxUpdateThreshold" >
+            <property name="toolTip" >
+             <string>Map display will be updated (drawn) after this many features have been read from the data source</string>
+            </property>
+            <property name="maximum" >
+             <number>1000000</number>
+            </property>
+            <property name="value" >
+             <number>1000</number>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0" >
+           <widget class="QLabel" name="textLabel1_6" >
+            <property name="text" >
+             <string>Update display after reading</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0" colspan="3" >
+           <widget class="QLabel" name="textLabel3" >
+            <property name="text" >
+             <string>(Set to 0 to not update the display until all features have been read)</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tabMap" >
+      <attribute name="title" >
+       <string>&amp;Selection &amp;&amp; Measuring</string>
+      </attribute>
+      <layout class="QGridLayout" >
+       <property name="margin" >
+        <number>9</number>
+       </property>
+       <property name="spacing" >
+        <number>6</number>
+       </property>
+       <item row="2" column="0" >
+        <spacer>
+         <property name="orientation" >
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" >
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="1" column="0" >
+        <widget class="QGroupBox" name="groupBox_6" >
+         <property name="title" >
+          <string>Measure tool</string>
+         </property>
+         <layout class="QGridLayout" >
+          <property name="margin" >
+           <number>9</number>
+          </property>
+          <property name="spacing" >
+           <number>6</number>
+          </property>
+          <item row="0" column="0" >
+           <widget class="QLabel" name="textLabel1_8" >
+            <property name="text" >
+             <string>Ellipsoid for distance calculations:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1" >
+           <widget class="QComboBox" name="cmbEllipsoid" />
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="0" column="0" >
+        <widget class="QGroupBox" name="groupBox_7" >
+         <property name="title" >
+          <string>Search radius</string>
+         </property>
+         <layout class="QGridLayout" >
+          <property name="margin" >
+           <number>9</number>
+          </property>
+          <property name="spacing" >
+           <number>6</number>
+          </property>
+          <item row="1" column="0" colspan="2" >
+           <widget class="QLabel" name="textLabel2" >
+            <property name="text" >
+             <string>&lt;html>
+
+&lt;b>Note:&lt;/b> Specify the value in thousandths.  The search radius is calculated as:&lt;br>
+
+&amp;nbsp;&amp;nbsp;&lt;i>(Map View Width) * ( Value/1000.0)&lt;/i>
+
+&lt;br>
+
+By default QGIS uses a value of 5. Increase the value if you have trouble
+
+identifying features without zooming in very close.
+
+&lt;/html></string>
+            </property>
+            <property name="wordWrap" >
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1" >
+           <widget class="QSpinBox" name="spinBoxIdentifyValue" >
+            <property name="maximum" >
+             <number>100</number>
+            </property>
+            <property name="minimum" >
+             <number>1</number>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0" >
+           <widget class="QLabel" name="textLabel1_3" >
+            <property name="text" >
+             <string>Search Radius for Identifying Features</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="TabPage" >
+      <attribute name="title" >
+       <string>Pro&amp;jection</string>
+      </attribute>
+      <layout class="QGridLayout" >
+       <property name="margin" >
+        <number>9</number>
+       </property>
+       <property name="spacing" >
+        <number>6</number>
+       </property>
+       <item row="3" column="0" >
+        <spacer>
+         <property name="orientation" >
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" >
+          <size>
+           <width>51</width>
+           <height>31</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="2" column="0" >
+        <widget class="QPushButton" name="pbnSelectProjection" >
+         <property name="text" >
+          <string>Select Global Default ...</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0" >
+        <widget class="QTextBrowser" name="txtGlobalWKT" />
+       </item>
+       <item row="0" column="0" >
+        <widget class="QGroupBox" name="grpProjectionBehaviour" >
+         <property name="title" >
+          <string>When layer is loaded that has no projection information</string>
+         </property>
+         <layout class="QVBoxLayout" >
+          <property name="margin" >
+           <number>9</number>
+          </property>
+          <property name="spacing" >
+           <number>6</number>
+          </property>
+          <item>
+           <widget class="QRadioButton" name="radPromptForProjection" >
+            <property name="text" >
+             <string>Prompt for projection.</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radUseProjectProjection" >
+            <property name="text" >
+             <string>Project wide default projection will be used.</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radUseGlobalProjection" >
+            <property name="text" >
+             <string>Global default projection displa&amp;yed below will be used.</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tabHelpBrowser" >
+      <attribute name="title" >
+       <string>Help &amp;Browser</string>
+      </attribute>
+      <layout class="QGridLayout" >
+       <property name="margin" >
+        <number>9</number>
+       </property>
+       <property name="spacing" >
+        <number>6</number>
+       </property>
+       <item row="2" column="0" colspan="2" >
+        <spacer>
+         <property name="orientation" >
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" >
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="1" column="0" colspan="3" >
+        <widget class="QLabel" name="textLabel1_2" >
+         <property name="text" >
+          <string>&lt;b>Note:&lt;/b> The browser must be in your PATH or you can specify the full path above</string>
+         </property>
+         <property name="wordWrap" >
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2" >
+        <widget class="QPushButton" name="btnFindBrowser" >
+         <property name="maximumSize" >
+          <size>
+           <width>21</width>
+           <height>21</height>
+          </size>
+         </property>
+         <property name="text" >
+          <string>...</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1" >
+        <widget class="QComboBox" name="cmbBrowser" >
+         <property name="editable" >
+          <bool>true</bool>
+         </property>
+         <item>
+          <property name="text" >
+           <string>epiphany</string>
+          </property>
+         </item>
+         <item>
+          <property name="text" >
+           <string>firefox</string>
+          </property>
+         </item>
+         <item>
+          <property name="text" >
+           <string>mozilla-firefox</string>
+          </property>
+         </item>
+         <item>
+          <property name="text" >
+           <string>galeon</string>
+          </property>
+         </item>
+         <item>
+          <property name="text" >
+           <string>konqueror</string>
+          </property>
+         </item>
+         <item>
+          <property name="text" >
+           <string>mozilla</string>
+          </property>
+         </item>
+         <item>
+          <property name="text" >
+           <string>opera</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="0" column="0" >
+        <widget class="QLabel" name="textLabel1" >
+         <property name="text" >
+          <string>Open help documents with</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+   <item row="1" column="0" >
+    <layout class="QHBoxLayout" >
+     <property name="margin" >
+      <number>0</number>
+     </property>
+     <property name="spacing" >
+      <number>6</number>
+     </property>
+     <item>
+      <spacer>
+       <property name="orientation" >
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeType" >
+        <enum>QSizePolicy::Expanding</enum>
+       </property>
+       <property name="sizeHint" >
+        <size>
+         <width>20</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="buttonOk" >
+       <property name="text" >
+        <string>&amp;Ok</string>
+       </property>
+       <property name="shortcut" >
+        <string>Alt+O</string>
+       </property>
+       <property name="autoDefault" >
+        <bool>true</bool>
+       </property>
+       <property name="default" >
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="buttonCancel" >
+       <property name="text" >
+        <string>&amp;Cancel</string>
+       </property>
+       <property name="shortcut" >
+        <string/>
+       </property>
+       <property name="autoDefault" >
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <layoutdefault spacing="6" margin="11" />
+ <pixmapfunction></pixmapfunction>
+ <resources/>
+ <connections/>
+</ui>
