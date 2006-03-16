@@ -22,12 +22,12 @@ qgis_ui_UIC =	\
 		qgsattributedialogbase.ui		\
 		qgsattributeactiondialogbase.ui		\
 		qgsattributetablebase.ui		\
-		qgsbookmarksbase.ui		\
-		qgscontinuouscolordialogbase.ui			\
+		qgsbookmarksbase.ui			\
+		qgscontinuouscolordialogbase.ui		\
 		qgsdelattrdialogbase.ui			\
-		qgsvectorlayerpropertiesbase.ui	\
+		qgsvectorlayerpropertiesbase.ui		\
 		qgsgeomtypedialogbase.ui		\
-		qgsgraduatedsymboldialogbase.ui			\
+		qgsgraduatedsymboldialogbase.ui		\
 		qgshelpviewerbase.ui			\
 		qgsidentifyresultsbase.ui		\
 		qgslabeldialogbase.ui			\
@@ -45,8 +45,8 @@ qgis_ui_UIC =	\
 		qgsprojectpropertiesbase.ui		\
 		qgsrasterlayerpropertiesbase.ui		\
 		qgsserversourceselectbase.ui		\
-		qgssinglesymboldialogbase.ui			\
-		qgsuniquevaluedialogbase.ui			\
+		qgssinglesymboldialogbase.ui		\
+		qgsuniquevaluedialogbase.ui		\
 		qgslayerprojectionselectorbase.ui \
 		qgscustomprojectiondialogbase.ui \
 		qgscomposerbase.ui \
@@ -80,7 +80,8 @@ qgis_ui_UIC =	\
 		qgsmarkerdialogbase.ui \
 		qgsnewhttpconnectionbase.ui \
 		qgsnewconnectionbase.ui \
-		../widgets/projectionselector/qgsprojectionselectorbase.ui
+		../widgets/projectionselector/qgsprojectionselectorbase.ui \
+		qgsxsdformbase.ui
 
 ## all the ui files generate a corresponding header file
 qgis_ui_UIHEADERS = ui_qgisappbase.h \
@@ -147,7 +148,8 @@ qgis_ui_UIHEADERS = ui_qgisappbase.h \
 		ui_qgsuniquevaluedialogbase.h \
 		ui_qgsnewhttpconnectionbase.h \
 		ui_qgsnewconnectionbase.h \
-		../widgets/projectionselector/ui_qgsprojectionselectorbase.h
+		../widgets/projectionselector/ui_qgsprojectionselectorbase.h \
+		ui_qgsxsdformbase.h
 
 
 postgresUIHEADERS = ui_qgsdbsourceselectbase.h	\

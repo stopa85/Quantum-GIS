@@ -12,8 +12,11 @@ if HAVE_QTMAC
 MAC = mac
 endif
 # NOTE - the order of the SUBDIRS is important. Currently the providers
-#        depend on the existence of libqgis_gui. 
+#        depend on the existence of libqgis_gui.
 #        gui *must* be specified immediately before the providers
-#        subdirectory. 
-SUBDIRS =  core ui legend raster composer widgets gui providers plugins $(MAC) helpviewer
-
+#        subdirectory.
+#        The gui subdirectory
+#        depends on the views which in turn
+#        depends on the delegates which in turn
+#        depends on the models.
+SUBDIRS =  core ui legend raster composer widgets models delegates views gui providers plugins $(MAC) helpviewer

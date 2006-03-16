@@ -834,4 +834,59 @@ fi
 
 AM_CONDITIONAL([USE_PYTHON], [test "$ac_use_python" = "yes"])
 ])
+
+dnl Xerces-C settings
 dnl
+dnl Adapted from source: OpenSAML
+dnl http://anoncvs.internet2.edu/cgi-bin/viewcvs.cgi/opensaml/c/configure.ac?rev=1.42.2.1&content-type=text/vnd.viewcvs-markup
+dnl
+dnl it sets:
+dnl   XERCES_CFLAGS
+dnl   XERCES_LDADD
+
+dnl TODO: Just warn and turn off WFS if Xerces not found.
+dnl       But if we want to use Xerces for general schema
+dnl       serialisation then maybe keep the enforcement.
+
+AC_DEFUN([AQ_CHECK_XERCES],
+[
+AC_ARG_WITH(xerces,
+    AC_HELP_STRING([--with-xerces=DIR],
+      [Xerces-C installation directory, e.g. '--with-xerces=/usr/local']),
+    [if test x_$with_xerces != x_/usr; then
+       XERCES_LDADD="-L${with_xerces}/lib"
+       XERCES_CFLAGS="-I${with_xerces}/include"
+     fi])
+XERCES_LDADD="-lxerces-c $XERCES_LDADD"
+AC_CHECK_HEADER([xercesc/dom/DOM.hpp],,
+                AC_MSG_ERROR([unable to find xerces header files]))
+
+dnl We can un-comment the below if we ever wanted to test for a
+dnl specific xerces-C version
+
+dnl AC_MSG_CHECKING([Xerces version])
+dnl AC_PREPROC_IFELSE(
+dnl 	[AC_LANG_PROGRAM([#include <xercesc/util/XercesVersion.hpp>],
+dnl [#if  _XERCES_VERSION != 20600
+dnl int i = 0;
+dnl #else
+dnl #error cannot use version 2.6.0
+dnl #endif])],
+dnl 	[AC_MSG_RESULT(OK)],
+dnl 	[AC_MSG_FAILURE([Xerces-C v2.6.0 has bugs that inhibit use with signed XML, please use special 2.6.1 tarball provided by Shibboleth Project])])
+
+dnl Try the Xerces linking test some other time
+
+dnl AC_TRY_LINK(
+dnl         [#include <xercesc/util/PlatformUtils.hpp>],
+dnl         [xercesc::XMLPlatformUtils::Initialize()],
+dnl         [AC_DEFINE(HAVE_LIBXERCESC,1,[Define if Xerces-C library was found])],
+dnl         [AC_MSG_ERROR([unable to link with Xerces])])
+
+AC_SUBST(XERCES_CFLAGS)
+AC_SUBST(XERCES_LDADD)
+])
+
+dnl End Xerces-C settings
+
+dnl ENDS

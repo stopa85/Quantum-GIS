@@ -105,6 +105,9 @@
 #include "qgsvectordataprovider.h"
 #include "../../images/themes/default/qgis.xpm"
 
+// experimental for WFS implementation
+#include "qgsxsdform.h"
+
 //
 // Gdal/Ogr includes
 //
@@ -404,6 +407,40 @@ void QgisApp::createActions()
   mActionFileExit->setShortcut(tr("Ctrl+Q"));
   mActionFileExit->setStatusTip(tr("Exit QGIS"));
   connect(mActionFileExit, SIGNAL(triggered()), this, SLOT(fileExit()));
+
+  //
+  // Edit Menu Related Items
+  // (TODO: Add Icons)
+  mActionEditCut = new QAction(tr("Cu&t"), this);
+  mActionEditCut->setShortcut(tr("Ctrl+X"));
+  mActionEditCut->setStatusTip(tr("Cut selected objects to the clipboard"));
+  connect(mActionEditCut, SIGNAL(triggered()), this, SLOT(editCut()));
+  //
+  mActionEditCopy = new QAction(tr("&Copy"), this);
+  mActionEditCopy->setShortcut(tr("Ctrl+C"));
+  mActionEditCopy->setStatusTip(tr("Copy selected objects to the clipboard"));
+  connect(mActionEditCopy, SIGNAL(triggered()), this, SLOT(editCopy()));
+  //
+  mActionEditPaste = new QAction(tr("&Paste"), this);
+  mActionEditPaste->setShortcut(tr("Ctrl+V"));
+  mActionEditPaste->setStatusTip(tr("Paste objects from the clipboard"));
+  connect(mActionEditPaste, SIGNAL(triggered()), this, SLOT(editPaste()));
+  //
+  mActionPasteTransformations = new QAction(tr("Paste &Transformations"), this);
+  mActionPasteTransformations->setStatusTip(tr("Select how fields get transformed from source to destination"));
+  connect(mActionPasteTransformations, SIGNAL(triggered()), this, SLOT(pasteTransformations()));
+  //
+  mActionToggleSnapNearestVertex = new QAction(tr("Snap to Vertex"), this);
+  mActionToggleSnapNearestVertex->setStatusTip(tr("Snap added or moved verticies to existing verticies if nearby"));
+  connect(mActionToggleSnapNearestVertex, SIGNAL(triggered()), this, SLOT(toggleSnapNearestVertex()));
+  //
+  // TODO
+
+  // experimental for WFS implementation
+  mActionShowXsdForm = new QAction(tr("View XSD Form (test)"), this);
+  mActionShowXsdForm->setStatusTip(tr("Experimental - show an XSD-aware view on an XML document"));
+  connect(mActionShowXsdForm, SIGNAL(triggered()), this, SLOT(showXsdForm()));
+
   //
   // Layer Menu Related Items
   //
@@ -500,7 +537,7 @@ void QgisApp::createActions()
   mActionCheckQgisVersion= new QAction(QIcon(myIconPath+"/mActionCheckQgisVersion.png"), tr("Check Qgis Version"), this);
   mActionCheckQgisVersion->setStatusTip(tr("Check if your QGIS version is up to date (requires internet access)"));
   connect(mActionCheckQgisVersion, SIGNAL(triggered()), this, SLOT(checkQgisVersion()));
-  // 
+  //
   // View Menu Items
   //
   mActionDraw= new QAction(QIcon(myIconPath+"/mActionDraw.png"), tr("Refresh"), this);
@@ -618,17 +655,17 @@ void QgisApp::createActions()
   mActionDeleteSelected->setStatusTip(tr("Delete Selected"));
   connect(mActionDeleteSelected, SIGNAL(triggered()), this, SLOT(deleteSelected()));
   //
-  mActionAddVertex = new QAction(QIcon(myIconPath+"/mActionAddVertex.png"), tr("Add Vertex"), this);
-  mActionAddVertex->setStatusTip(tr("Add Vertex"));
+  mActionAddVertex = new QAction(QIcon(myIconPath+"/mActionAddVertex.png"), tr("&Add Vertex"), this);
+  mActionAddVertex->setStatusTip(tr("Allows you to click on map objects to add verticies"));
   connect(mActionAddVertex, SIGNAL(triggered()), this, SLOT(addVertex()));
   //
-  mActionDeleteVertex = new QAction(QIcon(myIconPath+"/mActionDeleteVertex.png"), tr("Delete Vertex"), this);
-  mActionDeleteVertex->setStatusTip(tr("Delete Vertex"));
-  connect(mActionDeleteVertex, SIGNAL(triggered()), this, SLOT(deleteVertex()));
-  //
-  mActionMoveVertex = new QAction(QIcon(myIconPath+"/mActionMoveVertex.png"), tr("Move Vertex"), this);
-  mActionMoveVertex->setStatusTip(tr("Move Vertex"));
+  mActionMoveVertex = new QAction(QIcon(myIconPath+"/mActionMoveVertex.png"), tr("&Move Vertex"), this);
+  mActionMoveVertex->setStatusTip(tr("Allows you to drag on map objects to move verticies"));
   connect(mActionMoveVertex, SIGNAL(triggered()), this, SLOT(moveVertex()));
+  //
+  mActionDeleteVertex = new QAction(QIcon(myIconPath+"/mActionDeleteVertex.png"), tr("&Delete Vertex"), this);
+  mActionDeleteVertex->setStatusTip(tr("Allows you to click on map objects to delete verticies"));
+  connect(mActionDeleteVertex, SIGNAL(triggered()), this, SLOT(deleteVertex()));
 }
 
 void QgisApp::createActionGroups()
@@ -687,6 +724,25 @@ void QgisApp::createMenus()
   mFileMenu->addAction(mActionFileExit);
 
   //
+  // Edit Menu
+  mEditMenu = menuBar()->addMenu(tr("&Edit"));
+  mEditMenu->addAction(mActionEditCut);
+  mEditMenu->addAction(mActionEditCopy);
+  mEditMenu->addAction(mActionEditPaste);
+  mEditMenu->addSeparator();
+  mEditMenu->addAction(mActionAddVertex);
+  mEditMenu->addAction(mActionMoveVertex);
+  mEditMenu->addAction(mActionDeleteVertex);
+  mEditMenu->addSeparator();
+  mEditMenu->addAction(mActionPasteTransformations);
+  mEditMenu->addSeparator();
+  mEditMenu->addAction(mActionToggleSnapNearestVertex);
+
+  // experimental for WFS implementation
+  mEditMenu->addSeparator();
+  mEditMenu->addAction(mActionShowXsdForm);
+
+  //
   // View Menu
   mViewMenu = menuBar()->addMenu(tr("&View"));
   mViewMenu->addAction(mActionZoomFullExtent);
@@ -696,7 +752,7 @@ void QgisApp::createMenus()
   mViewMenu->addAction(mActionDraw);
   mViewMenu->addAction(mActionShowBookmarks);
   mViewMenu->addAction(mActionNewBookmark);
-    
+
   //
   // Layers Menu
   mLayerMenu = menuBar()->addMenu(tr("&Layer"));
@@ -3594,7 +3650,26 @@ void QgisApp::pasteTransformations()
 }
 
 
+void QgisApp::toggleSnapNearestVertex()
+{
+  // TODO: Make this useful
+  mActionToggleSnapNearestVertex->setChecked( !mActionToggleSnapNearestVertex->isChecked() );
+}
+
+
+// experimental for WFS implementation
+void QgisApp::showXsdForm()
+{
+  QgsXsdForm *xsdf = new QgsXsdForm(this);
+
+  mMapCanvas->freeze();
+
+  xsdf->exec();
+}
+
+
 void QgisApp::refreshMapCanvas()
+
 {
 #ifdef QGISDEBUG
   std::cout << "QgisApp:refreshMapCanvas" << std::endl;
@@ -4264,6 +4339,7 @@ void QgisApp::socketConnectionClosed()
       if (result == 0)
       {
         // show more info
+        //! \todo shouldn't *mv be a plain mv, otherwise we'll leak memory?
         QgsMessageViewer *mv = new QgsMessageViewer(this);
         mv->setCaption(tr("QGIS - Changes in SVN Since Last Release"));
         mv->setMessageAsPlainText(parts[2]);
