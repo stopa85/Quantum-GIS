@@ -27,9 +27,9 @@ dnl number. This means that development work on 0.8 will be versioned as
 dnl 0.7devel1, 0.7devel2, etc.
 dnl ---------------------------------------------------------------------------
 MAJOR_VERSION=0
-MINOR_VERSION=7
-MICRO_VERSION=9
-EXTRA_VERSION=10
+MINOR_VERSION=8
+MICRO_VERSION=0
+EXTRA_VERSION=1
 if test $EXTRA_VERSION -eq 0; then
     VERSION=${MAJOR_VERSION}.${MINOR_VERSION}.${MICRO_VERSION}
 else
@@ -103,6 +103,20 @@ AQ_CHECK_GEOS
 if test x"$ac_geos" = "xno"; then
   AC_MSG_ERROR("GEOS is required and was not found")
 fi
+
+dnl ---------------------------------------------------------------------------
+dnl OGC Web Feature Service client (depends on Xerces-C)
+dnl ---------------------------------------------------------------------------
+AC_ARG_ENABLE(wfs,
+  AC_HELP_STRING([--disable-wfs],
+                 [Disable the WFS client (built by default if libxerces-c is found)]),
+                 [ac_wfs=$enableval], [ac_wfs=yes])
+AC_MSG_CHECKING([if the Web Feature Service client should be built])
+AC_MSG_RESULT($ac_wfs)
+if [ test $ac_wfs = yes ] ; then
+  AQ_CHECK_XERCES
+fi
+AM_CONDITIONAL([HAVE_WFS], [test "$ac_wfs" = "yes"])
 
 dnl ---------------------------------------------------------------------------
 dnl PROJ
@@ -464,6 +478,8 @@ AC_CONFIG_FILES([
   src/Makefile 
   src/composer/Makefile
   src/core/Makefile
+  src/delegates/Makefile
+  src/delegates/xsd/Makefile
   src/designer/Makefile
   src/helpviewer/Makefile
   src/gui/Makefile
@@ -471,6 +487,8 @@ AC_CONFIG_FILES([
   src/mac/Contents/Makefile
   src/mac/Contents/Resources/Makefile
   src/mac/Makefile
+  src/models/Makefile
+  src/models/xsd/Makefile
   src/plugins/Makefile
   src/plugins/copyright_label/Makefile
   src/plugins/delimited_text/Makefile
@@ -491,11 +509,16 @@ AC_CONFIG_FILES([
   src/providers/delimitedtext/Makefile
   src/providers/gpx/Makefile
   src/providers/grass/Makefile
+  src/providers/ogc/Makefile
+  src/providers/ogc/ows/Makefile
+  src/providers/ogc/ows/wfs/Makefile
+  src/providers/ogc/ows/wms/Makefile
   src/providers/ogr/Makefile
   src/providers/postgres/Makefile
-  src/providers/wms/Makefile
   src/raster/Makefile
   src/ui/Makefile
+  src/views/Makefile
+  src/views/xsdform/Makefile
   src/widgets/Makefile
   src/widgets/projectionselector/Makefile
   tools/Makefile
@@ -521,6 +544,7 @@ echo "GPS/GPX       : $have_expat_lib"
 echo "PROJ4         : $have_proj_lib"
 echo "SQLITE3       : $have_sqlite3_lib"
 echo "Python        : $ac_use_python"
+echo "WFS           : $ac_wfs"
 echo ""
 echo "Debug         : $ac_debug"
 echo "Plugin dir    : ${libdir}/$PACKAGE"

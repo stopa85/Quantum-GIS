@@ -1,0 +1,124 @@
+<ui version="4.0" >
+ <author></author>
+ <comment></comment>
+ <exportmacro></exportmacro>
+ <class>QgsXsdFormBase</class>
+ <widget class="QDialog" name="QgsXsdFormBase" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>600</width>
+    <height>505</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>XSD-Aware Form Experiment</string>
+  </property>
+  <property name="windowIcon" >
+   <iconset/>
+  </property>
+  <property name="sizeGripEnabled" >
+   <bool>true</bool>
+  </property>
+  <property name="modal" >
+   <bool>true</bool>
+  </property>
+  <layout class="QGridLayout" >
+   <property name="margin" >
+    <number>9</number>
+   </property>
+   <property name="spacing" >
+    <number>6</number>
+   </property>
+   <item row="4" column="3" >
+    <widget class="QPushButton" name="btnCancel" >
+     <property name="text" >
+      <string>C&amp;lose</string>
+     </property>
+     <property name="shortcut" >
+      <string>Alt+L</string>
+     </property>
+     <property name="autoDefault" >
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0" >
+    <widget class="QPushButton" name="btnHelp" >
+     <property name="enabled" >
+      <bool>false</bool>
+     </property>
+     <property name="text" >
+      <string>Help</string>
+     </property>
+     <property name="shortcut" >
+      <string>F1</string>
+     </property>
+     <property name="autoDefault" >
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="1" >
+    <spacer>
+     <property name="orientation" >
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeType" >
+      <enum>QSizePolicy::Expanding</enum>
+     </property>
+     <property name="sizeHint" >
+      <size>
+       <width>284</width>
+       <height>31</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="4" column="2" >
+    <widget class="QPushButton" name="btnAdd" >
+     <property name="enabled" >
+      <bool>false</bool>
+     </property>
+     <property name="text" >
+      <string>&amp;Add</string>
+     </property>
+     <property name="shortcut" >
+      <string>Alt+A</string>
+     </property>
+     <property name="autoDefault" >
+      <bool>true</bool>
+     </property>
+     <property name="default" >
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0" colspan="4" >
+    <widget class="QGroupBox" name="GroupBox1" >
+     <property name="title" >
+      <string>XSD Attributes</string>
+     </property>
+     <layout class="QGridLayout" >
+      <property name="margin" >
+       <number>9</number>
+      </property>
+      <property name="spacing" >
+       <number>6</number>
+      </property>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <layoutdefault spacing="6" margin="11" />
+ <pixmapfunction></pixmapfunction>
+ <tabstops>
+  <tabstop>btnAdd</tabstop>
+  <tabstop>btnCancel</tabstop>
+  <tabstop>btnHelp</tabstop>
+ </tabstops>
+ <resources/>
+ <connections/>
+</ui>

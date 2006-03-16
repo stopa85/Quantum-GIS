@@ -23,7 +23,7 @@
 #include "qgsnewhttpconnection.h"
 #include "qgsnumericsortlistviewitem.h"
 #include "qgsproviderregistry.h"
-#include "../providers/wms/qgswmsprovider.h"
+#include "../providers/ogc/ows/wms/qgswmsprovider.h"
 #include "qgscontexthelp.h"
 
 #include "qgsproject.h"

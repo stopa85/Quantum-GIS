@@ -291,12 +291,6 @@ public slots:
   void capturePolygon();
   /**Deletes the selected attributes for the currently selected vector layer*/
   void deleteSelected();
-  //! activates the add vertex tool
-  void addVertex();
-  //! activates the move vertex tool
-  void moveVertex();
-  //! activates the delete vertex tool
-  void deleteVertex();
   //! activates the selection tool
   void select();
   //! refresh map canvas
@@ -335,6 +329,28 @@ public slots:
   void measureArea();
   //! show the attribute table for the currently selected layer
   void attributeTable();
+
+  //! activates the add vertex tool
+  void addVertex();
+  //! activates the move vertex tool
+  void moveVertex();
+  //! activates the delete vertex tool
+  void deleteVertex();
+  //! cuts selected features on the active layer to the clipboard
+  void editCut();
+  //! copies selected features on the active layer to the clipboard
+  void editCopy();
+  //! copies features on the clipboard to the active layer
+  void editPaste();
+  //! shows the paste-transformations dialog
+  void pasteTransformations();
+
+  //! selects snap-to-nearest-vertex mode
+  void toggleSnapNearestVertex();
+
+  //! show an XSD-aware view on an XML document - experimental for WFS implementation
+  void showXsdForm();
+
 
 signals:
   /** emitted when a key is pressed and we want non widget sublasses to be able
@@ -383,14 +399,6 @@ private:
   //void readWKB(const char *, QStringList tables);
   //! test function
   void testButton();
-  //! cuts selected features on the active layer to the clipboard
-  void editCut();
-  //! copies selected features on the active layer to the clipboard
-  void editCopy();
-  //! copies features on the clipboard to the active layer
-  void editPaste();
-  //! shows the paste-transformations dialog
-  void pasteTransformations();
   //! check to see if file is dirty and if so, prompt the user th save it
   int saveDirty();
   //! Set the pointer to the splash screen so status messages can be
@@ -454,9 +462,6 @@ private:
   QAction *mActionCaptureLine;
   QAction *mActionCapturePolygon;
   QAction *mActionDeleteSelected;
-  QAction *mActionAddVertex;
-  QAction *mActionDeleteVertex;
-  QAction *mActionMoveVertex;
   QAction *mActionZoomIn;
   QAction *mActionZoomOut;
   QAction *mActionZoomFullExtent;
@@ -475,6 +480,20 @@ private:
   QAction *mActionAddWmsLayer;
   QAction *mActionInOverview;
   QAction *mActionDraw;
+
+  QAction *mActionEditCut;
+  QAction *mActionEditCopy;
+  QAction *mActionEditPaste;
+  QAction *mActionAddVertex;
+  QAction *mActionMoveVertex;
+  QAction *mActionDeleteVertex;
+  QAction *mActionPasteTransformations;
+
+  QAction *mActionToggleSnapNearestVertex;
+
+  // experimental for WFS implementation
+  QAction *mActionShowXsdForm;
+
   //
   //tool groups -------------------------------------
   QActionGroup *mMapToolGroup;
@@ -482,6 +501,7 @@ private:
   //menus   -----------------------------------------
   QMenu *mFileMenu;
   QMenu *mRecentProjectsMenu;
+  QMenu *mEditMenu;
   QMenu *mViewMenu;
   QMenu *mLayerMenu;
   QMenu *mSettingsMenu;
