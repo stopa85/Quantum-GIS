@@ -90,7 +90,6 @@ libqgis_guiHEADERS =							\
 		qgshelpviewer.h					\
 		qgsidentifyresults.h				\
 		qgslabeldialog.h				\
-		qgslabel.h							\
 		qgslayerprojectionselector.h \
 		qgslinestyledialog.h				\
 		qgsludialog.h					\
@@ -216,7 +215,6 @@ libqgis_gui_la_SOURCES =						\
 		qgsgraduatedsymboldialog.cpp		\
 		qgshelpviewer.cpp		\
 		qgsidentifyresults.cpp		\
-		qgslabel.cpp						\
 		qgslabeldialog.cpp		\
 		qgslayerprojectionselector.cpp \
 		qgslinestyledialog.cpp		\
