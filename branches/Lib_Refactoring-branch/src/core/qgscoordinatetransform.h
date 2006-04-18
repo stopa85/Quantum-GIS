@@ -33,9 +33,7 @@ class QDomDocument;
 #include <iostream>
 #include <vector>
 
-extern "C"{
-#include <proj_api.h>
-}
+typedef void* projPJ;
 class QString;
 
 /*! \class QgsCoordinateTransform

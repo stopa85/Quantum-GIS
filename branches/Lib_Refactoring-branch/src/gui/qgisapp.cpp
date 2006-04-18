@@ -232,6 +232,9 @@ static void setTitleBarText_( QWidget & qgisApp )
   createOverview();
   createLegend();
   
+  // set QGIS specific srs validation
+  QgsSpatialRefSys::setCustomSrsValidation(QgisGui::customSrsValidation);
+  
   fileNew(); // prepare empty project
 
   mSplash->showMessage(tr("Checking database"), Qt::AlignHCenter | Qt::AlignBottom);

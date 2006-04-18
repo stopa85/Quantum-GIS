@@ -11,15 +11,15 @@
 class QDomNode;
 class QDomDocument;
 
-#include <sqlite3.h>
+// forward declaration for sqlite3
+typedef struct sqlite3 sqlite3;
 
 //qgis includes
-#include <qgis.h>
+#include "qgis.h"
 
-//gdal and ogr includes
-#include <ogr_api.h>
-#include <ogr_spatialref.h>
-#include <cpl_error.h>
+class QgsSpatialRefSys;
+typedef void (*CUSTOM_SRS_VALIDATION)(QgsSpatialRefSys*);
+
 
 /*!
  * \class QgsSpatialRefSys
@@ -28,48 +28,32 @@ class QDomDocument;
 class QgsSpatialRefSys
 {
     public:
+      
+        enum SRS_TYPE {
+          QGIS_SRSID,
+          POSTGIS_SRID,
+          EPSG
+        };
+        
         //! Default constructor
-
         QgsSpatialRefSys();
+        
         /*! 
          * Constructs a SRS object from a WKT string
          * @param theWkt A String containing a valid Wkt def
          */
         explicit QgsSpatialRefSys(QString theWkt);
 
-        /*!
-         * Constructs a SRS object from the following component parts
-         *
-         * @param  long theSrsId The internal sqlite3 srs.db primary key for this srs 
-         * @param  QString the Description A textual description of the srs.
-         * @param  QString theProjectionAcronym The official proj4 acronym for the projection family
-         * @param  QString theEllipsoidAcronym The official proj4 acronym for the ellipoid
-         * @param  QString theProj4String Proj4 format specifies (excluding proj and ellips) that define this srs.
-         * @param  bool theGeoFlag Whether this is a geographic or projected coordinate system
-         * @param  long theSRID If available, the Postgis spatial_ref_sys identifier for this srs (defaults to 0)
-         * @param  long theEpsg If available the ESPG identifier for this srs (defaults to 0)
-         *
-         * @note THIS CTOR WILL PROABBLY BE REMOVED!!!!!!!!!!!!!!!!
+        /*! Use this constructor when you want to create a SRS object using 
+         *  a postgis SRID, an EPSG id or a QGIS SRS_ID.
+         * @param theId The ID no valid for the chosen coordinate system id type
+         * @param theType One of the types described in QgsSpatialRefSys::SRS_TYPE
          */
-        QgsSpatialRefSys(long theSrsId, 
-                QString theDescription, 
-                QString theProjectionAcronym, 
-                QString theEllipsoidAcronym, 
-                QString theProj4String,
-                long theSRID,
-                long theEpsg,
-                bool theGeoFlag);
+        QgsSpatialRefSys(const long theId, SRS_TYPE theType=POSTGIS_SRID);
 
-         enum SRS_TYPE {QGIS_SRSID,POSTGIS_SRID, EPSG};
-         /*! Use this constructor when you want to create a SRS object using 
-          *  a postgis SRID, an EPSG id or a QGIS SRS_ID.
-          * @param theId The ID no valid for the chosen coordinate system id type
-          * @param theType One of the types described in QgsSpatialRefSys::SRS_TYPE
-          */
-         QgsSpatialRefSys(const long theId, SRS_TYPE theType=POSTGIS_SRID);
 
-         // Assignment operator
-         QgsSpatialRefSys& operator=(const QgsSpatialRefSys& srs);
+        //! Assignment operator
+        QgsSpatialRefSys& operator=(const QgsSpatialRefSys& srs);
 
         // Misc helper functions -----------------------
 
@@ -201,10 +185,10 @@ class QgsSpatialRefSys
          *  is inconclusive.
          */
          bool equals(QString theProj4String);
-         /*! A helper to get an ogr representation of this srs
-          * @return OGRSpatialReference
+         /*! A helper to get an wkt representation of this srs
+          * @return string containing Wkt of the srs
           */
-         OGRSpatialReference toOgrSrs();
+         QString toWkt();
 
          /*! Restores state from the given DOM node.
          * @param theNode The node from which state will be restored
@@ -234,6 +218,11 @@ class QgsSpatialRefSys
          */
          static QString getProj4FromSrsId(const int theSrsId);
 
+         /** Sets custom function to force valid SRS
+          *  QGIS uses implementation in QgisGui::customSrsValidation
+          */
+         static void setCustomSrsValidation(CUSTOM_SRS_VALIDATION f);
+         
         // Accessors -----------------------------------
 
          /*! Get the SrsId - if possible
@@ -346,6 +335,8 @@ class QgsSpatialRefSys
 
         //! Work out the projection units and set the appropriate local variable
         void setMapUnits();
+        
+        static CUSTOM_SRS_VALIDATION mCustomSrsValidation;
 };
 
 

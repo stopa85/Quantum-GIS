@@ -3,28 +3,28 @@
 #include <cassert>
 #include <cmath>
 #include <iostream>
-#include <sqlite3.h>
-#include <QSettings>
-#include <QRegExp>
-#include <QFileInfo>
+
 #include <QDir>
-#include <projects.h>
 #include <QDomNode>
 #include <QDomElement>
+#include <QFileInfo>
 #include <QMessageBox>
+#include <QRegExp>
 
-#include <qgsapplication.h>
-#include <qgslayerprojectionselector.h>
+//#include <projects.h>
+
+#include "qgsapplication.h"
 #include "qgslogger.h"
-#include <qgsproject.h>
-#include <qgis.h> //const vals declared here
+#include "qgis.h" //const vals declared here
 
+#include <sqlite3.h>
 
 //gdal and ogr includes (needed for == operator)
 #include <ogr_api.h>
 #include <ogr_spatialref.h>
 #include <cpl_error.h>
 
+CUSTOM_SRS_VALIDATION QgsSpatialRefSys::mCustomSrsValidation = NULL;
 
 //--------------------------
 
@@ -42,19 +42,6 @@ QgsSpatialRefSys::QgsSpatialRefSys(QString theWkt)
   createFromWkt(theWkt);
 }
 
-QgsSpatialRefSys::QgsSpatialRefSys(long theSrsId,
-                                   QString theDescription,
-                                   QString theProjectionAcronym,
-                                   QString theEllipsoidAcronym,
-                                   QString theProj4String,
-                                   long theSRID,
-                                   long theEpsg, 
-                                   bool theGeoFlag)
-  : mMapUnits(QGis::UNKNOWN),
-    mIsValidFlag(0)
-{
-  // NOOP
-}
 
 QgsSpatialRefSys::QgsSpatialRefSys(const long theId, SRS_TYPE theType)
   : mMapUnits(QGis::UNKNOWN),
@@ -173,38 +160,10 @@ void QgsSpatialRefSys::validate()
       return;
     }
   }
-  QSettings mySettings;
-  QString myDefaultProjectionOption =
-    mySettings.readEntry("/Projections/defaultBehaviour");
-  if (myDefaultProjectionOption=="prompt")
-  {
-    //@note this class is not a descendent of QWidget so we cant pass
-    //it in the ctor of the layer projection selector
 
-    QgsLayerProjectionSelector * mySelector = new QgsLayerProjectionSelector();
-    long myDefaultSRS =
-      QgsProject::instance()->readNumEntry("SpatialRefSys","/ProjectSRSID",GEOSRS_ID);
-    mySelector->setSelectedSRSID(myDefaultSRS);
-    if(mySelector->exec())
-    {
-      createFromSrsId(mySelector->getCurrentSRSID());
-    }
-    else
-    {
-      QApplication::restoreOverrideCursor();
-    }
-    delete mySelector;
-  }
-  else if (myDefaultProjectionOption=="useProject")
-  {
-    // XXX TODO: Change project to store selected CS as 'projectSRS' not 'selectedWKT'
-    mProj4String = QgsProject::instance()->readEntry("SpatialRefSys","//ProjectSRSProj4String",GEOPROJ4);
-  }
-  else ///Projections/defaultBehaviour==useDefault
-  {
-    // XXX TODO: Change global settings to store default CS as 'defaultSRS' not 'defaultProjectionWKT'
-    mProj4String = mySettings.readEntry("/Projections/defaultSRS",GEOPROJ4);
-  }
+  // try to validate using custom validation routines
+  if (mCustomSrsValidation)
+    mCustomSrsValidation(this);
 
   //
   // This is the second check after the user assigned SRS has been retrieved
@@ -222,8 +181,8 @@ void QgsSpatialRefSys::validate()
     //default to proj 4..if all else fails we will use that for this srs
     mProj4String = GEOPROJ4;
   }
-  createFromProj4(mProj4String);
-  return;
+  createFromProj4(mProj4String);  
+
 }
 
 bool QgsSpatialRefSys::createFromSrid(long theSrid)
@@ -1086,11 +1045,24 @@ bool QgsSpatialRefSys::equals(QString theProj4CharArray)
   return myMatchFlag;
 }
 
-OGRSpatialReference QgsSpatialRefSys::toOgrSrs()
+QString QgsSpatialRefSys::toWkt()
 {
-  OGRSpatialReference myOgrSpatialRef1;
-  OGRErr myInputResult1 = myOgrSpatialRef1.importFromProj4(mProj4String.latin1());
-  return myOgrSpatialRef1;
+  OGRSpatialReference myOgrSpatialRef;
+  OGRErr myInputResult = myOgrSpatialRef.importFromProj4(mProj4String.latin1());
+  
+  QString myWkt;
+
+  if (myInputResult == OGRERR_NONE)
+  {
+    char* WKT;
+    if(myOgrSpatialRef.exportToWkt(&WKT) == OGRERR_NONE)
+    {
+      myWkt = WKT;
+      OGRFree(WKT);
+    }    
+  }
+    
+  return myWkt;
 }
 
 bool QgsSpatialRefSys::readXML( QDomNode & theNode )
@@ -1288,4 +1260,9 @@ int QgsSpatialRefSys::openDb(QString path, sqlite3 **db)
     
   }
   return myResult;
+}
+
+void QgsSpatialRefSys::setCustomSrsValidation(CUSTOM_SRS_VALIDATION f)
+{
+  mCustomSrsValidation = f;
 }

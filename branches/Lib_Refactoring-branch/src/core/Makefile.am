@@ -48,6 +48,7 @@ libqgis_coreHEADERS =				\
 		qgsclipper.h				\
 		qgscolortable.h				\
 		qgscontexthelp.h			\
+		qgscoordinatetransform.h			\
 		qgscsexception.h			\
 		qgscustomsymbol.h			\
 		qgsdatamanager.h			\
@@ -87,6 +88,7 @@ libqgis_coreHEADERS =				\
 		qgssearchstring.h			\
         qgssearchtreenode.h			\
 		qgssinglesymrenderer.h		\
+		qgsspatialrefsys.h		\
 		qgssymbol.h					\
 		qgssymbologyutils.h			\
 		qgsvectordataprovider.h		
@@ -94,6 +96,7 @@ libqgis_coreHEADERS =				\
 ## files generated from MOC                             
 libqgis_core_la_MOC =							\
 		qgscontexthelp.moc.cpp			\
+		qgscoordinatetransform.moc.cpp		\
 		qgsdataprovider.moc.cpp				\
 		qgsrasterdataprovider.moc.cpp		
 
@@ -104,6 +107,7 @@ libqgis_core_la_SOURCES =\
 		qgsclipper.cpp						\
 		qgscolortable.cpp					\
 		qgscontexthelp.cpp		\
+		qgscoordinatetransform.cpp		\
 		qgscustomsymbol.cpp		\
 		qgsdatamanager.cpp				\
 		qgsdatasource.cpp		\
@@ -141,6 +145,7 @@ libqgis_core_la_SOURCES =\
 		qgssearchstringlexer.ll		\
 		qgssearchstringparser.yy	\
 		qgssearchtreenode.cpp		\
+		qgsspatialrefsys.cpp		\
 		qgssymbol.cpp						\
 		qgssymbologyutils.cpp		\
 		qgsvectordataprovider.cpp			
