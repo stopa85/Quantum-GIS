@@ -25,6 +25,10 @@
 // Qt4-only includes to go here
 #include <QTextOStream>
 
+extern "C" {
+#include <proj_api.h>
+}
+
 QgsCoordinateTransform::QgsCoordinateTransform( ) : QObject(), mSourceSRS(), mDestSRS()
 
 {

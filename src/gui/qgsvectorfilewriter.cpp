@@ -137,24 +137,7 @@ bool QgsVectorFileWriter::initialise()
   OGRSpatialReferenceH mySpatialReferenceSystemHandle = NULL;
   QgsSpatialRefSys mySpatialRefSys;
   mySpatialRefSys.validate();
-  char* WKT;
-  QString myWKT = NULL;
-  if(mySpatialRefSys.toOgrSrs().exportToWkt(&WKT)==OGRERR_NONE)
-  {
-#ifdef QGISDEBUG
-      qWarning("export to WKT successful****************************************************************************************************");
-#endif
-      myWKT=WKT;
-#ifdef QGISDEBUG
-      qWarning(("WKT is:WKT "+myWKT).toLocal8Bit().data());
-#endif    
-  }
-  else
-  {
-#ifdef QGISDEBUG
-      qWarning("export to WKT failed*******************************************************************************************************3");
-#endif      
-  }
+  QString myWKT = mySpatialRefSys.toWkt();
 
  
   //sample below shows how to extract srs from a raster

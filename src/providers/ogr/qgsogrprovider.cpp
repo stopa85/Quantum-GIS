@@ -1466,16 +1466,8 @@ const std::list<std::pair<QString, QString> >& attributes)
     OGRSpatialReference* reference = NULL;
     QgsSpatialRefSys mySpatialRefSys;
     mySpatialRefSys.validate();
-    char* WKT;
-    QString myWKT = NULL;
-    if(mySpatialRefSys.toOgrSrs().exportToWkt(&WKT)==OGRERR_NONE)
-    {
-	myWKT=WKT;
-    }
-    else
-    {
-	QgsLogger::warning("createEmptyDataSource: export of srs to wkt failed");
-    }
+    QString myWKT = mySpatialRefSys.toWkt();
+    
     if( !myWKT.isNull()  &&  myWKT.length() != 0 )
     {
 	reference = new OGRSpatialReference(myWKT.toLocal8Bit().data());

@@ -79,7 +79,6 @@ libqgis_guiHEADERS =							\
 		qgscontinuouscolordialog.h				\
 		qgscontinuouscolorrenderer.h			\
 		qgscsexception.h				\
-		qgscoordinatetransform.h	\
 		qgscustomprojectiondialog.h			\
 		qgscursors.h			\
 		qgsdelattrdialog.h				\
@@ -132,7 +131,6 @@ libqgis_guiHEADERS =							\
 		qgsserversourceselect.h				\
 		qgssinglesymboldialog.h				\
 		qgssinglesymbolrenderer.h			\
-		qgsspatialrefsys.h					\
 		qgsuniquevaluerenderer.h				\
 		qgsuniquevaluedialog.h					\
 		qgsvectorfilewriter.h				\
@@ -152,7 +150,6 @@ libqgis_gui_la_MOC =							\
 		qgsattributetable.moc.cpp		\
 		qgsbookmarks.moc.cpp		\
 		qgscontinuouscolordialog.moc.cpp		\
-		qgscoordinatetransform.moc.cpp		\
 		qgscustomprojectiondialog.moc.cpp 	\
 		qgsdelattrdialog.moc.cpp		\
 		qgsencodingfiledialog.moc.cpp		\
@@ -195,6 +192,7 @@ libqgis_gui_la_MOC =							\
 
 libqgis_gui_la_SOURCES =						\
 		qgisapp.cpp							\
+		qgisgui.cpp				\
 		qgisiface.cpp			\
 		qgisinterface.cpp	\
 		qgsabout.cpp		\
@@ -207,7 +205,6 @@ libqgis_gui_la_SOURCES =						\
 		qgsbookmarks.cpp	\
 		qgsclipboard.cpp		\
 		qgscontinuouscolordialog.cpp		\
-		qgscoordinatetransform.cpp			\
 		qgscontinuouscolorrenderer.cpp		\
 		qgscursors.cpp		\
 		qgscustomprojectiondialog.cpp			\
@@ -260,7 +257,6 @@ libqgis_gui_la_SOURCES =						\
 		qgsserversourceselect.cpp	\
 		qgssinglesymboldialog.cpp	\
 		qgssinglesymbolrenderer.cpp			\
-		qgsspatialrefsys.cpp				\
 		qgsuniquevaluerenderer.cpp			\
 		qgsuniquevaluedialog.cpp		\
 		qgsvectorfilewriter.cpp				\
