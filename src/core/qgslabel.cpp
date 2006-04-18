@@ -33,7 +33,6 @@
 #include "qgscoordinatetransform.h"
 
 #include "qgslabelattributes.h"
-#include "qgslabeldialog.h"
 #include "qgslabel.h"
 
 // use M_PI define PI 3.141592654

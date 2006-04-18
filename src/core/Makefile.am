@@ -62,6 +62,7 @@ libqgis_coreHEADERS =				\
 		qgsfield.h					\
 		qgsgeometry.h				\
 		qgsgeometryvertexindex.h	\
+		qgslabel.h					\
 		qgslabelattributes.h		\
 		qgsline.h					\
 		qgslinesymbol.h				\
@@ -118,6 +119,7 @@ libqgis_core_la_SOURCES =\
 		qgsfield.cpp						\
 		qgsgeometry.cpp						\
 		qgsgeometryvertexindex.cpp			\
+		qgslabel.cpp				\
 		qgslabelattributes.cpp		\
 		qgsline.cpp			\
 		qgslinesymbol.cpp		\

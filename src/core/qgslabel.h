@@ -22,14 +22,12 @@
 #include <qdom.h>
 
 class QString;
-class QWidget;
 class QPainter;
 class QPaintDevice;
 
 class QgsPoint;
 class QgsFeature;
 class QgsField;
-class QgsMapCanvas;
 class QgsLabelAttributes;
 class QgsRect;
 class QgsMapToPixel;
@@ -67,8 +65,6 @@ public:
 	BorderStyle,
 	LabelFieldCount
     };
-
-    void dialog( QWidget * parent = 0 );
 
     /** \brief render label
      *  \param sizeScale global scale factor for size in pixels, labels in map units are not scaled
