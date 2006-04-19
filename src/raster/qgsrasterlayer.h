@@ -802,9 +802,6 @@ public slots:
      **/
     void updateProgress(int,int);
 
-    /** sets whether this is in overview or not */
-    void inOverview( bool );
-
     /** \brief Slot called when the popup menu transparency slider has been moved.*/
     void popupTransparencySliderMoved(int);
      

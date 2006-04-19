@@ -126,7 +126,7 @@ void QgsUniqueValueDialog::apply()
 
     renderer->setClassificationField(mClassificationComboBox->currentItem());
     mVectorLayer->setRenderer(renderer);
-    mVectorLayer->refreshLegend();
+    //mVectorLayer->refreshLegend();
 }
 
 void QgsUniqueValueDialog::changeClassificationAttribute(int nr)

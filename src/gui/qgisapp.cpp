@@ -343,13 +343,6 @@ void QgisApp::readSettings()
   mThemeName = settings.readEntry("/Themes","default");
 
 
-  // Set the initial visibility flag for layers
-  // This user option allows the user to turn off inital drawing of
-  // layers when they are added to the map. This is useful when adding
-  // many layers and the user wants to adjusty symbology, etc prior to
-  // actually viewing the layer.
-  mAddedLayersVisible = settings.readBoolEntry("/qgis/new_layers_visible", 1);
-
   // Add the recently accessed project file paths to the File menu
   mRecentProjectPaths = settings.readListEntry("/UI/recentProjectsList");
 
@@ -1654,7 +1647,6 @@ bool QgisApp::addLayer(QFileInfo const & vectorFile)
 
     // Register this layer with the layers registry
     QgsMapLayerRegistry::instance()->addMapLayer(layer);
-    layer->refreshLegend();
 
     // connect up any keypresses to be passed tot he layer (e.g. so esc can stop rendering)
 #ifdef QGISDEBUG
@@ -1732,9 +1724,6 @@ bool QgisApp::addLayer(QStringList const &theLayerQStringList, const QString& en
 
     QgsVectorLayer *layer = new QgsVectorLayer(*it, base, "ogr");
     Q_CHECK_PTR( layer );
-    // set the visibility based on user preference for newly added
-    // layers
-    layer->setVisible(mAddedLayersVisible);
 
     if ( ! layer )
     {
@@ -1771,7 +1760,6 @@ bool QgisApp::addLayer(QStringList const &theLayerQStringList, const QString& en
 
       // Register this layer with the layers registry
       QgsMapLayerRegistry::instance()->addMapLayer(layer);
-      layer->refreshLegend();
 
       // connect up any keypresses to be passed tot he layer (e.g. so esc can stop rendering)
 #ifdef QGISDEBUG
@@ -1875,16 +1863,12 @@ void QgisApp::addDatabaseLayer()
       QgsVectorLayer *layer = new QgsVectorLayer(connInfo + " table=" + *it, *it, "postgres");
       if (layer->isValid())
       {
-        // set initial visibility based on user preference
-        layer->setVisible(mAddedLayersVisible);
-
         // give it a random color
         QgsSingleSymbolRenderer *renderer = new QgsSingleSymbolRenderer(layer->vectorType());  // add single symbol renderer as default
         layer->setRenderer(renderer);
 
         // register this layer with the central layers registry
         QgsMapLayerRegistry::instance()->addMapLayer(layer);
-        layer->refreshLegend();
 
         // connect up any keypresses to be passed tot he layer (e.g. so esc can stop rendering)
 #ifdef QGISDEBUG
@@ -3038,6 +3022,8 @@ void QgisApp::saveMapAsImage(QString theImageFileNameQString, QPixmap * theQPixm
 //reimplements method from base (gui) class
 void QgisApp::addAllToOverview()
 {
+  // TODO: move to legend
+  /*
   std::map<QString, QgsMapLayer *> myMapLayers = QgsMapLayerRegistry::instance()->mapLayers();
   std::map<QString, QgsMapLayer *>::iterator myMapIterator;
   for ( myMapIterator = myMapLayers.begin(); myMapIterator != myMapLayers.end(); ++myMapIterator )
@@ -3049,11 +3035,14 @@ void QgisApp::addAllToOverview()
   
   // notify the project we've made a change
   QgsProject::instance()->dirty(true);
+  */
 }
 
 //reimplements method from base (gui) class
 void QgisApp::removeAllFromOverview()
 {
+  // TODO: move to legend
+  /*
   std::map<QString, QgsMapLayer *> myMapLayers = QgsMapLayerRegistry::instance()->mapLayers();
   std::map<QString, QgsMapLayer *>::iterator myMapIterator;
   for ( myMapIterator = myMapLayers.begin(); myMapIterator != myMapLayers.end(); ++myMapIterator )
@@ -3065,12 +3054,15 @@ void QgisApp::removeAllFromOverview()
   
   // notify the project we've made a change
   QgsProject::instance()->dirty(true);
+  */
 } // QgisApp::removeAllFromOverview()
 
 
 //reimplements method from base (gui) class
 void QgisApp::hideAllLayers()
 {
+  // TODO: move to legend
+  /*
   // what's the point if we don't have any layers?
   if ( QgsMapLayerRegistry::instance()->mapLayers().empty() )
   {
@@ -3095,12 +3087,15 @@ void QgisApp::hideAllLayers()
 
   // notify the project we've made a change
   QgsProject::instance()->dirty(true);
+  */
 }
 
 
 // reimplements method from base (gui) class
 void QgisApp::showAllLayers()
 {
+  // TODO: move to legend
+  /*
   // what's the point if we don't have any layers?
   if ( QgsMapLayerRegistry::instance()->mapLayers().empty() )
   {
@@ -3125,6 +3120,7 @@ void QgisApp::showAllLayers()
 
   // notify the project we've made a change
   QgsProject::instance()->dirty(true);
+  */
 }
 
 void QgisApp::exportMapServer()
@@ -3495,6 +3491,8 @@ void QgisApp::menubar_highlighted( int i )
 // toggle overview status
 void QgisApp::inOverview()
 {
+  // TODO: make working
+  /*
 #ifdef QGISDEBUG
   std::cout << "QGisApp::inOverview" << std::endl;
 #endif
@@ -3505,6 +3503,7 @@ void QgisApp::inOverview()
     layer->inOverview( ! layer->showInOverviewStatus() );
     mMapCanvas->updateOverview();
   }
+  */
 } // QgisApp::inOverview(bool)
 
 
@@ -4037,8 +4036,7 @@ void QgisApp::options()
   {
     // set the theme if it changed
     setTheme(optionsDialog->theme());
-    // set the visible flag for new layers
-    mAddedLayersVisible = optionsDialog->newVisible();
+
     QSettings mySettings;
     mMapCanvas->enableAntiAliasing(mySettings.value("/qgis/enable_anti_aliasing").toBool());
   }
@@ -4176,7 +4174,6 @@ void QgisApp::addVectorLayer(QString vectorLayerPath, QString baseName, QString 
     // give it a random color
     QgsSingleSymbolRenderer *renderer = new QgsSingleSymbolRenderer(layer->vectorType());  //add single symbol renderer as default
     layer->setRenderer(renderer);
-    layer->refreshLegend();
     // add it to the mapcanvas collection
     // mMapCanvas->addLayer(layer); No longer necessary since adding to registry will add to canvas
 
@@ -4871,7 +4868,6 @@ bool QgisApp::addRasterLayer(QFileInfo const & rasterFile, bool guiWarning)
   else
   {
     statusBar()->message(mMapCanvas->extent().stringRep(2));
-    layer->refreshLegend();
     mMapCanvas->freeze(false);
 
 // Let render() do its own cursor management
@@ -5028,11 +5024,7 @@ bool QgisApp::addRasterLayer(QStringList const &theFileNameQStringList, bool gui
       // create the layer
       QgsRasterLayer *layer = new QgsRasterLayer(*myIterator, myBaseNameQString);
 
-      // set initial visibility based on user preference
-      layer->setVisible(mAddedLayersVisible);
-
       addRasterLayer(layer);
-      layer->refreshLegend();
 
       //only allow one copy of a ai grid file to be loaded at a
       //time to prevent the user selecting all adfs in 1 dir which

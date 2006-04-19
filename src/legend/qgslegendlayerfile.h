@@ -32,24 +32,38 @@ class QgsLegendLayerFile : public QgsLegendItem
 {
 public:
     QgsLegendLayerFile(QTreeWidgetItem * theLegendItem, QString theString, QgsMapLayer* theLayer);
-    QgsLegendLayerFile(QString theString, QgsMapLayer* theLayer);
     ~QgsLegendLayerFile();
     bool isLeafNode() {return true;}
     DRAG_ACTION accept(LEGEND_ITEM_TYPE type);
     QgsLegendItem::DRAG_ACTION accept(const QgsLegendItem* li) const;
     QgsMapLayer* layer() const {return mLayer;}
-    /**Returns the pixmap containing the file symbol.
-     This method is used by QgsMapLayer to paint additional
-    information (overview, editable, pyramides) to the pixmap*/
-    QPixmap getOriginalPixmap() const;
-    void setLegendPixmap(const QPixmap& pix);
+    
+    /** updates item to the current state of the layer */
+    void updateLegendItem();
+    
     /**Sets mVisibilityCheckBox to on/off*/
     void toggleCheckBox(bool state);
+
     /**Returns a label for a layer. Is static such that
      the name can be passed to the constructor of QgsLegendLayerFile*/
     static QString nameFromLayer(QgsMapLayer* layer);
+    
+    
+    void setVisible(bool visible = TRUE);
+    bool isVisible();
+    
+    void setInOverview(bool inOverview = TRUE);
+    bool isInOverview();
+    
  protected:
     QgsMapLayer* mLayer;
+    
+    /** Flag whether layer is visible */
+    bool mVisible;
+    
+    /** Flag whether layer is shown in overview */
+    bool mInOverview;
+
 };
 
 #endif

@@ -386,7 +386,6 @@ void QgsRasterLayerProperties::apply()
   pixmapLegend->setPixmap(rasterLayer->getLegendQPixmap());
   pixmapLegend->setScaledContents(true);
   pixmapLegend->repaint(false);
-  rasterLayer->updateItemPixmap();
   
   //see if the user would like debug overlays
   if (cboxShowDebugInfo->isChecked()
@@ -403,7 +402,6 @@ void QgsRasterLayerProperties::apply()
   rasterLayer->drawThumbnail(&myQPixmap);
   pixmapThumbnail->setPixmap(myQPixmap);
   //make sure the layer is redrawn
-  rasterLayer->refreshLegend();
   rasterLayer->triggerRepaint();
 }//apply
 
@@ -482,7 +480,6 @@ void QgsRasterLayerProperties::on_buttonBuildPyramids_clicked()
   pixmapLegend->setPixmap(rasterLayer->getLegendQPixmap());
   pixmapLegend->setScaledContents(true);
   pixmapLegend->repaint(false);
-  rasterLayer->updateItemPixmap();
   //populate the metadata tab's text browser widget with gdal metadata info
   txtbMetadata->setText(rasterLayer->getMetadata());
 }

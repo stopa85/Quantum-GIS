@@ -779,7 +779,7 @@ static QgsLegend * _findLegend()
 
    @note XML of form:
 
-   <maplayer type="vector" visible="1" showInOverviewFlag="0">
+   <maplayer type="vector">
       <layername>Hydrop</layername>
       <datasource>/data/usgs/city_shp/hydrop.shp</datasource>
       <zorder>0</zorder>
@@ -880,7 +880,6 @@ static pair< bool, list<QDomNode> > _getMapLayers(QDomDocument const &doc)
         if ( mapLayer->readXML(node) )
         {
             mapLayer = QgsMapLayerRegistry::instance()->addMapLayer(mapLayer);
-	    mapLayer->refreshLegend();
         }
         else
         {

@@ -1783,14 +1783,6 @@ void QgsVectorLayer::startEditing()
     else
     {
       mEditable=true;
-      if(isValid())
-      {
-        updateItemPixmap();
-        if(mToggleEditingAction)
-        {
-          mToggleEditingAction->setChecked(true);
-        }
-      }
     }
   }
 }
@@ -1846,14 +1838,6 @@ void QgsVectorLayer::stopEditing()
     }
     mEditable=false;
     mModified=false;
-    if(isValid())
-    {
-      updateItemPixmap();
-      if(mToggleEditingAction)
-      {
-        mToggleEditingAction->setChecked(false);
-      }
-    }
   }
 }
 
@@ -2265,12 +2249,6 @@ bool QgsVectorLayer::setDataProvider( QString const & provider )
 } // bool QgsVectorLayer::writeXML_
 
 
-/** we wouldn't have to do this if slots were inherited */
-void QgsVectorLayer::inOverview( bool b )
-{
-  QgsMapLayer::inOverview( b );
-}
-
 int QgsVectorLayer::findFreeId()
 {
   int freeid=-INT_MAX;
@@ -2581,6 +2559,8 @@ QString QgsVectorLayer::layerTypeIconPath()
 
 void QgsVectorLayer::refreshLegend()
 {
+  // TODO: move elsewhere
+  /*
   if(mLegend && m_renderer)
     {
       std::list< std::pair<QString, QPixmap> > itemList;
@@ -2597,6 +2577,7 @@ void QgsVectorLayer::refreshLegend()
 	}
       mLegend->changeSymbologySettings(getLayerID(), &itemList);
     }
+  */
 }
 
 bool QgsVectorLayer::copySymbologySettings(const QgsMapLayer& other)

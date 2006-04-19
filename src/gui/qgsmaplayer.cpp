@@ -21,7 +21,6 @@
 #include <limits>
 #include <cmath>
 
-#include <qgsapplication.h>
 #include <QDateTime>
 #include <QDomNode>
 #include <QFileInfo>
@@ -36,8 +35,6 @@
 #include "qgsproject.h"
 #include "qgssymbol.h"
 #include "qgsmaplayer.h"
-#include "qgslegend.h"
-#include "qgslegendlayerfile.h"
 
 
 
@@ -48,33 +45,21 @@ QgsMapLayer::QgsMapLayer(int type,
         valid(true), // assume the layer is valid (data source exists and 
                      // can be used) until we learn otherwise
         dataSource(source),
-        internalName(lyrname),
-        mShowInOverviewAction(0),
-        mShowInOverview(false),
         mCoordinateTransform(0),
-        mLegend(0),
-        mLegendLayerFile(0),
         ID(""),
-        layerType(type),
-        m_visible(true)
+        layerType(type)
 
 {
   QgsDebugMsg("QgsMapLayer::QgsMapLayer - lyrname is '" + lyrname);
 
     // Set the display name = internal name
-    layerName = internalName;
+    layerName = lyrname;
     QgsDebugMsg("QgsMapLayer::QgsMapLayer - layerName is '" + layerName);
 
     // Generate the unique ID of this layer
     QDateTime dt = QDateTime::currentDateTime();
     ID = lyrname + dt.toString("yyyyMMddhhmmsszzz");
     ID.replace(" ", "_");
-
-    QString myThemePath = QgsApplication::themePath();
-    mInOverviewPixmap.load(myThemePath + "/mActionInOverview.png");
-    mEditablePixmap.load(myThemePath + "/mIconEditable.png");
-    mProjectionErrorPixmap.load(myThemePath + "/mIconProjectionProblem.png");
-    //mActionInOverview = new QAction( "in Overview", "Ctrl+O", this );
 
     //set some generous  defaults for scale based visibility
     mMinScale = 0;
@@ -105,9 +90,6 @@ void QgsMapLayer::setLayerName(const QString & _newVal)
 {
   QgsDebugMsg("QgsMapLayer::setLayerName: new name is '" + _newVal);
   layerName = _newVal;
-  // And update the legend if one exists
-  if (mLegend)
-    mLegend->setName(mLegendLayerFile, layerName);
 }
 
 /** Read property of QString layerName. */
@@ -120,11 +102,6 @@ QString const & QgsMapLayer::name() const
 QString const & QgsMapLayer::source() const
 {
     return dataSource;
-}
-
-QString const & QgsMapLayer::sourceName() const
-{
-    return internalName;
 }
 
 const QgsRect QgsMapLayer::extent()
@@ -170,28 +147,6 @@ bool QgsMapLayer::readXML( QDomNode & layer_node )
 
     // XXX not needed? QString type = element.attribute("type");
 
-    QString visible = element.attribute("visible");
-
-    if ( "1" == visible )
-    {
-        setVisible( true );
-    }
-    else
-    {
-        setVisible( false );
-    }
-
-    QString showInOverview = element.attribute("showInOverviewFlag");
-
-    if ( "1" == showInOverview )
-    {
-        mShowInOverview = true;
-    }
-    else
-    {
-        mShowInOverview = false;
-    }
-
     // use scale dependent visibility flag
     QString scaleBasedVisibility = element.attribute("scaleBasedVisibilityFlag");
     if ( "1" == scaleBasedVisibility )
@@ -214,7 +169,7 @@ bool QgsMapLayer::readXML( QDomNode & layer_node )
 
     // the internal name is just the data source basename
     QFileInfo dataSourceFileInfo( dataSource );
-    internalName = dataSourceFileInfo.baseName();
+    //internalName = dataSourceFileInfo.baseName();
 
     // set ID
     mnl = layer_node.namedItem("id");
@@ -273,27 +228,6 @@ bool QgsMapLayer::writeXML( QDomNode & layer_node, QDomDocument & document )
 {
     // general layer metadata
     QDomElement maplayer = document.createElement( "maplayer" );
-
-    // visible flag
-    if ( visible() )
-    {
-        maplayer.setAttribute( "visible", 1 );
-    }
-    else
-    {
-        maplayer.setAttribute( "visible", 0 );
-    }
-
-
-    // show in overview flag
-    if ( showInOverviewStatus() )
-    {
-        maplayer.setAttribute( "showInOverviewFlag", 1 );
-    }
-    else
-    {
-        maplayer.setAttribute( "showInOverviewFlag", 0 );
-    }
 
     // use scale dependent visibility flag
     if ( scaleBasedVisibility() )
@@ -372,111 +306,13 @@ bool QgsMapLayer::isValid()
     return valid;
 }
 
-bool QgsMapLayer::visible()
-{
-    return m_visible;
-}
-
-void QgsMapLayer::setVisible(bool vis)
-{
-  if (m_visible != vis)
-  {
-      m_visible = vis;
-      if(mLegendLayerFile)
-      {
-	  mLegendLayerFile->toggleCheckBox(vis);
-      }
-      emit visibilityChanged();
-  }
-}
-
-
-
-void QgsMapLayer::inOverview( bool b )
-{
-    // will we have to propogate changes?
-    bool updateNecessary = mShowInOverview != b;
-
-    mShowInOverview = b;
-
-    if ( updateNecessary ) // update the show in overview popup menu item
-    {	
-        updateOverviewPopupItem();
-        updateItemPixmap();
-
-        emit showInOverview(this,mShowInOverview);
-    }
-} // QgsMapLayer::inOverview
-
-
-
-// void QgsMapLayer::toggleShowInOverview()
-// {
-//   if (mShowInOverview==false)
-//   {
-// #ifdef QGISDEBUG
-//     std::cout << "Map layer " << ID << " requested to be added to the overview " << std::endl;
-// #endif
-//     mShowInOverview=true;
-//   }
-//   else
-//   {
-// #ifdef QGISDEBUG
-//     std::cout << "Map layer " << ID << " requested to be removed from the overview " << std::endl;
-// #endif
-//     mShowInOverview=false;
-//   }
-//   //update the show in overview popup menu item
-//   updateOverviewPopupItem();
-//   updateItemPixmap();
-//   emit showInOverview(ID,mShowInOverview);
-// }
-
-
-void QgsMapLayer::updateItemPixmap()
-{
-    if (mLegendLayerFile)
-    {
-        QPixmap pix=mLegendLayerFile->getOriginalPixmap();
-        if(mShowInOverview)
-        {
-            //add overview glasses to the pixmap
-            QPainter p(&pix);
-            p.drawPixmap(0,0,mInOverviewPixmap);
-        }
-        if(isEditable())
-        {
-            //add editing icon to the pixmap
-            QPainter p(&pix);
-            p.drawPixmap(30,0,mEditablePixmap);
-        }
-	mLegendLayerFile->setLegendPixmap(pix);
-    }
-}
 
 void QgsMapLayer::invalidTransformInput()
 {
   QgsLogger::warning("QgsMapLayer::invalidTransformInput() called");
-    if (mLegendLayerFile)             // XXX should we know about our legend?
-    {
-        QPixmap pix=mLegendLayerFile->getOriginalPixmap();
-        if(mShowInOverview)
-        {
-            //add overview glasses to the pixmap
-            QPainter p(&pix);
-            p.drawPixmap(60,0,mProjectionErrorPixmap);
-        }
-	    mLegendLayerFile->setLegendPixmap(pix);
-    }
+  // TODO: emit a signal - it will be used to update legend
 }
 
-void QgsMapLayer::updateOverviewPopupItem()
-{
-  if (mShowInOverviewAction)
-    {
-      mShowInOverviewAction->setChecked(mShowInOverview);
-    }
-}
 
 const int &QgsMapLayer::featureType()
 {
@@ -664,4 +500,35 @@ QgsRect QgsMapLayer::calcProjectedBoundingBox(QgsRect& extent)
   bb_extent.set(xmin, ymin, xmax, ymax);
 
   return bb_extent;
+}
+
+void QgsMapLayer::setScaleBasedVisibility(bool theVisibilityFlag)
+{
+  mScaleBasedVisibility = theVisibilityFlag;
+}
+
+bool QgsMapLayer::scaleBasedVisibility()
+{
+  return mScaleBasedVisibility;
+}
+
+void QgsMapLayer::setMinScale(float theMinScale)
+{
+  mMinScale = theMinScale;
+}
+    
+float QgsMapLayer::minScale()
+{
+  return mMinScale;
+}
+
+    
+void QgsMapLayer::setMaxScale(float theMaxScale)
+{
+  mMaxScale = theMaxScale;
+}
+
+float QgsMapLayer::maxScale()
+{
+  return mMaxScale;
 }

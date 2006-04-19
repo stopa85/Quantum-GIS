@@ -110,7 +110,8 @@ void QgsComposerMap::draw ( QPainter *painter, QgsRect *extent, QgsMapToPixel *t
     for ( int i = 0; i < nlayers; i++ ) {
       QgsMapLayer *layer = mMapCanvas->getZpos(i);
 
-      if ( !layer->visible() ) continue;
+      // TODO: what to do with invisible layers
+      //if ( !layer->visible() ) continue;
 
       if ( layer->type() == QgsMapLayer::VECTOR ) {
 	  QgsVectorLayer *vector = dynamic_cast <QgsVectorLayer*> (layer);
@@ -160,7 +161,8 @@ void QgsComposerMap::draw ( QPainter *painter, QgsRect *extent, QgsMapToPixel *t
     for ( int i = 0; i < nlayers; i++ ) {
       QgsMapLayer *layer = mMapCanvas->getZpos(i);
 	
-      if ( !layer->visible() ) continue;
+      // TODO: what to do with invisible layers
+      //if ( !layer->visible() ) continue;
       
       if ( layer->type() == QgsMapLayer::VECTOR ) {
 	  QgsVectorLayer *vector = dynamic_cast <QgsVectorLayer*> (layer);

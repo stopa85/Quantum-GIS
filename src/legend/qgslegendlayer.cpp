@@ -110,38 +110,44 @@ QgsLegendItem::DRAG_ACTION QgsLegendLayer::accept(const QgsLegendItem* li) const
   return NO_ACTION;
 }
 
-QgsMapLayer* QgsLegendLayer::firstMapLayer()
+QgsLegendLayerFile* QgsLegendLayer::firstLayerFile()
 {
   //first find the legend layer file group
   QgsLegendLayerFileGroup* llfg = 0;
   for(int i = 0; i < childCount(); ++i)
+  {
+    llfg = dynamic_cast<QgsLegendLayerFileGroup*>(child(i));
+    if(llfg)
     {
-      llfg = dynamic_cast<QgsLegendLayerFileGroup*>(child(i));
-      if(llfg)
-	{
-	  break;
-	}
+      break;
     }
+  }
 
   if(!llfg)
-    {
-      return 0;
-    }
+  {
+    return 0;
+  }
 
   QTreeWidgetItem* llf = llfg->child(0);
   if(!llf)
-    {
-      return 0;
-    }
+  {
+    return 0;
+  }
   QgsLegendLayerFile* legendlayerfile = dynamic_cast<QgsLegendLayerFile*>(llf);
-  if (legendlayerfile)
-    {
-      return legendlayerfile->layer();
-    }
+  return legendlayerfile;
+}
+
+QgsMapLayer* QgsLegendLayer::firstMapLayer()
+{
+  QgsLegendLayerFile* llf = firstLayerFile();
+  if (llf)
+  {
+    return llf->layer();
+  }
   else
-    {
-      return 0;
-    }
+  {
+    return 0;
+  }
 }
 
 std::list<QgsMapLayer*> QgsLegendLayer::mapLayers()
@@ -228,3 +234,4 @@ void QgsLegendLayer::updateCheckState()
       treeWidget()->blockSignals(false);
     }
 }
+

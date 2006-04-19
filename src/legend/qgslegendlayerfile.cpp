@@ -17,51 +17,37 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
+
 #include "qgsapplication.h"
 #include "qgslegend.h"
 #include "qgslegendlayerfile.h"
 #include "qgsmaplayer.h"
+
 #include <QCoreApplication>
 #include <QPainter>
+#include <QSettings>
+
 
 QgsLegendLayerFile::QgsLegendLayerFile(QTreeWidgetItem * theLegendItem, QString theString, QgsMapLayer* theLayer)
-    : QgsLegendItem(theLegendItem, theString), mLayer(theLayer)
+  : QgsLegendItem(theLegendItem, theString), mLayer(theLayer)
 {
-  mType = LEGEND_LAYER_FILE;
-  QPixmap originalPixmap = getOriginalPixmap();
-  //ensure the overview glasses is painted if necessary
-  if(mLayer->showInOverviewStatus())
-  {
-      QPixmap inOverviewPixmap(QgsApplication::themePath()+"/mActionInOverview.png");
-      QPainter p(&originalPixmap);
-      p.drawPixmap(0,0,inOverviewPixmap);
-  }
-  setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsEnabled | Qt::ItemIsSelectable);
-  QIcon originalIcon(originalPixmap);
-  setCheckState (0, Qt::Checked );
-  setText(0, theString);
-  setIcon(0, originalIcon);
-}
+  // Set the initial visibility flag for layers
+  // This user option allows the user to turn off inital drawing of
+  // layers when they are added to the map. This is useful when adding
+  // many layers and the user wants to adjusty symbology, etc prior to
+  // actually viewing the layer.
+  QSettings settings;
+  mVisible = settings.readBoolEntry("/qgis/new_layers_visible", 1);
 
-QgsLegendLayerFile::QgsLegendLayerFile(QString theString, QgsMapLayer* theLayer)
-    : QgsLegendItem(), mLayer(theLayer)
-{
+  // not in overview by default
+  mInOverview = FALSE;
+  
   mType = LEGEND_LAYER_FILE;
-  QPixmap originalPixmap = getOriginalPixmap();
-  //ensure the overview glasses is painted if necessary
-  if(mLayer->showInOverviewStatus())
-  {
-    QPixmap inOverviewPixmap(QgsApplication::themePath()+"/mActionInOverview.png");
-    QPainter p(&originalPixmap);
-    p.drawPixmap(0,0,inOverviewPixmap);
-  }
+  
   setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsEnabled | Qt::ItemIsSelectable);
-  QIcon originalIcon(originalPixmap);
-  setCheckState (0, Qt::Checked );
+  setCheckState(0, Qt::Checked);
   setText(0, theString);
-  setIcon(0, originalIcon);
 }
-
 
 QgsLegendLayerFile::~QgsLegendLayerFile()
 {
@@ -84,16 +70,37 @@ QgsLegendItem::DRAG_ACTION QgsLegendLayerFile::accept(const QgsLegendItem* li) c
   return NO_ACTION;
 }
 
-QPixmap QgsLegendLayerFile::getOriginalPixmap() const
-{
-    QPixmap myPixmap(QgsApplication::themePath()+"mActionFileSmall.png");
-    return myPixmap;
-}
 
-void QgsLegendLayerFile::setLegendPixmap(const QPixmap& pix)
+void QgsLegendLayerFile::updateLegendItem()
 {
+  QPixmap pix = legend()->pixmaps().mOriginalPixmap;
+  
+  if(mInOverview)
+  {
+    //add overview glasses to the pixmap
+    QPainter p(&pix);
+    p.drawPixmap(0,0, legend()->pixmaps().mInOverviewPixmap);
+  }
+  if(mLayer->isEditable())
+  {
+    //add editing icon to the pixmap
+    QPainter p(&pix);
+    p.drawPixmap(30,0, legend()->pixmaps().mEditablePixmap);
+  }
+
+  /*
+  // TODO:
+  if(mLayer->hasProjectionError())
+  {
+    //add overview glasses to the pixmap
+    QPainter p(&pix);
+    p.drawPixmap(60,0, legend()->pixmaps().mProjectionErrorPixmap);
+  }
+  */
+  
   QIcon theIcon(pix);
   setIcon(0, theIcon);
+
 }
 
 void QgsLegendLayerFile::toggleCheckBox(bool state)
@@ -118,3 +125,23 @@ QString QgsLegendLayerFile::nameFromLayer(QgsMapLayer* layer)
   return sourcename;
 }
 
+
+void QgsLegendLayerFile::setVisible(bool visible)
+{
+  mVisible = visible;
+}
+
+bool QgsLegendLayerFile::isVisible()
+{
+  return mVisible;
+}
+
+void QgsLegendLayerFile::setInOverview(bool inOverview)
+{
+  mInOverview = inOverview;
+}
+
+bool QgsLegendLayerFile::isInOverview()
+{
+  return mInOverview;
+}
