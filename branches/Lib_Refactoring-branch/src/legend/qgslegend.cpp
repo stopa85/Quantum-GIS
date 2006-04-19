@@ -31,7 +31,10 @@
 #include "qgsmaplayer.h"
 #include "qgsmaplayerregistry.h"
 #include "qgsproject.h"
+#include "qgsrasterlayer.h"
 #include "qgsrasterlayerproperties.h"
+#include "qgsvectorlayerproperties.h"
+#include "qgsvectordataprovider.h"
 #include <float.h>
 #include <QCoreApplication>
 #include <QPixmap>
@@ -54,7 +57,7 @@ const int AUTOSCROLL_MARGIN = 16;
    set mItemBeingMoved pointer to 0 to prevent SuSE 9.0 crash
 */
 QgsLegend::QgsLegend(QgisApp* app, QWidget * parent, const char *name)
-  : QTreeWidget(parent), mApp(app), mMousePressedFlag(false), mItemBeingMoved(0), mMapCanvas(0), mShowLegendLayerFiles(false), mMinimumIconSize(20, 20)
+  : QTreeWidget(parent), mApp(app), mMousePressedFlag(false), mItemBeingMoved(0), mShowLegendLayerFiles(false), mMapCanvas(0), mMinimumIconSize(20, 20)
 {
   connect( this, SIGNAL(itemChanged(QTreeWidgetItem*, int)),
 	   this, SLOT(handleItemChange(QTreeWidgetItem*, int)));
@@ -344,36 +347,7 @@ void QgsLegend::mouseReleaseEvent(QMouseEvent * e)
 
 void QgsLegend::mouseDoubleClickEvent(QMouseEvent* e)
 {
-    QgsLegendItem* li = dynamic_cast<QgsLegendItem*>(currentItem());
-    QgsMapLayer* ml = 0;
-
-    if(li)
-    {
-	if(li->type() == QgsLegendItem::LEGEND_LAYER_FILE)
-	{
-	  QgsLegendLayerFile* llf = dynamic_cast<QgsLegendLayerFile*>(li);
-	  ml = llf->layer();
-	}
-	else if(li->type() == QgsLegendItem::LEGEND_LAYER)
-	{
-	  QgsLegendLayer* ll = dynamic_cast<QgsLegendLayer*>(li);
-	  ml = ll->firstMapLayer();
-	}
-       
-	if (ml && ml->type() == QgsMapLayer::RASTER)
-	  {
-	    QgsRasterLayerProperties *rlp = new QgsRasterLayerProperties(ml);
-	    if (rlp->exec())
-	      {
-		delete rlp;
-		QCoreApplication::processEvents();
-	      }
-	  }
-	else if(ml) //vector
-	  {
-	    ml->showLayerProperties();
-	  }
-    }
+  legendLayerShowProperties();
 }
 
 void QgsLegend::handleRightClickEvent(QTreeWidgetItem* item, const QPoint& position)
@@ -387,13 +361,89 @@ void QgsLegend::handleRightClickEvent(QTreeWidgetItem* item, const QPoint& posit
       return;
     }
 
+  // TODO: synchronize LEGEND_LAYER_FILE and LEGEND_LAYER menus a bit?
+  
   QgsLegendItem* li = dynamic_cast<QgsLegendItem*>(item);
   if(li)
     {
       if(li->type() == QgsLegendItem::LEGEND_LAYER_FILE)
 	{
-	  (static_cast<QgsLegendLayerFile*>(li))->layer()->contextMenu()->exec(position);
-	  return;
+    QgsMapLayer* layer = (static_cast<QgsLegendLayerFile*>(li))->layer();
+	  
+    theMenu.addAction(tr("&Zoom to layer extent"), this, SLOT(zoomToLayerExtent()));
+    
+    // TODO: decide whether to use toggle in overview or add/remove to/from overview
+    //mShowInOverviewAction = popMenu->addAction(tr("Toggle in Overview"), app, SLOT(inOverview()));
+    //mShowInOverviewAction->setCheckable(true);
+    theMenu.addAction(QIcon(QPixmap(iconsPath+QString("/mActionAddAllToOverview.png"))), tr("&Add to overview"), this, SLOT(legendLayerAddToOverview()));
+    theMenu.addAction(QIcon(QPixmap(iconsPath+QString("/mActionRemoveAllFromOverview.png"))), tr("&Remove from overview"), this, SLOT(legendLayerRemoveFromOverview()));
+    theMenu.addAction(QIcon(QPixmap(iconsPath+QString("/mActionRemove.png"))), tr("&Remove"), this, SLOT(legendLayerRemove()));
+
+    if (layer->type() == QgsMapLayer::VECTOR)
+    {
+      QgsVectorLayer* vlayer = dynamic_cast<QgsVectorLayer*>(layer);
+      
+      theMenu.addAction(tr("&Open attribute table"), mApp, SLOT(attributeTable()));
+      theMenu.addSeparator();
+    
+      int cap = vlayer->getDataProvider()->capabilities();
+      if((cap & QgsVectorDataProvider::AddFeatures)
+          ||(cap & QgsVectorDataProvider::DeleteFeatures))
+      {
+        QAction* toggleEditingAction = theMenu.addAction(tr("Allow Editing"),vlayer,SLOT(toggleEditing()));
+        toggleEditingAction->setCheckable(true);
+        toggleEditingAction->blockSignals(true);
+        toggleEditingAction->setChecked(vlayer->isEditable());
+        toggleEditingAction->blockSignals(false);
+      }
+    
+      if(cap & QgsVectorDataProvider::SaveAsShapefile)
+      {
+        // add the save as shapefile menu item
+        theMenu.addSeparator();
+        theMenu.addAction(tr("Save as shapefile..."), vlayer, SLOT(saveAsShapefile()));
+      }
+      
+    }
+    else if (layer->type() == QgsMapLayer::RASTER)
+    {
+      QgsRasterLayer* rlayer = dynamic_cast<QgsRasterLayer*>(layer);
+      
+      /*
+      //In qt4, inserting a slider in QMenu seems difficult
+      popMenu->setCheckable ( true );
+    
+      QLabel * myTransparencyLabel = new QLabel( popMenu );
+    
+      myTransparencyLabel->setFrameStyle( Q3Frame::Panel | Q3Frame::Raised );
+      myTransparencyLabel->setText( tr("<center><b>Transparency</b></center>") );
+    
+    // TODO: Qt4 will have to use a QAction instead
+    #if QT_VERSION < 0x040000
+      popMenu->insertItem(myTransparencyLabel);
+    
+      // XXX why GUI element here?
+      // XXX Dunno who put the above comment in, but whole context menu is a gui element! TS
+      mTransparencySlider = new QSlider(0,255,5,255-transparencyLevelInt,Qt::Horizontal,popMenu);
+      mTransparencySlider->setTickmarks(QSlider::TicksBothSides);
+      mTransparencySlider->setTickInterval(25);
+      mTransparencySlider->setTracking(false); //stop slider emmitting a signal until mouse released
+    
+      connect(mTransparencySlider, SIGNAL(valueChanged(int)), this, SLOT(popupTransparencySliderMoved(int)));
+    
+      popMenu->insertItem(mTransparencySlider);
+    #endif
+      */
+
+      theMenu.addAction(tr("&Convert to..."), rlayer, SLOT(convertTo()));
+    }
+     
+    // properties goes on bottom of menu for consistency with normal ui standards
+    // e.g. kde stuff
+    theMenu.addAction(tr("&Properties"), this, SLOT(legendLayerShowProperties()));
+   
+    theMenu.exec(position);
+    return;
 	}
       else if(li->type() == QgsLegendItem::LEGEND_LAYER)
 	{
@@ -475,7 +525,6 @@ void QgsLegend::addLayer( QgsMapLayer * layer )
     layer->setLegend(this);
     //QgsLegendPropertyGroup * lpgroup = new QgsLegendPropertyGroup(llayer,QString("Properties"));
     layer->setLegendLayerFile(llfile);
-    layer->initContextMenu(mApp);
 
     insertTopLevelItem(0, llayer);
     
@@ -630,22 +679,90 @@ void QgsLegend::legendLayerRemoveFromOverview()
 
 void QgsLegend::legendLayerShowProperties()
 {
-   QgsLegendItem* citem=dynamic_cast<QgsLegendItem*>(currentItem());
-    if(!citem)
+  QgsLegendItem* li = dynamic_cast<QgsLegendItem*>(currentItem());
+  QgsMapLayer* ml = 0;
+
+  if(!li)
+  {
+    return;
+  }
+  
+  if(li->type() == QgsLegendItem::LEGEND_LAYER_FILE)
+  {
+    QgsLegendLayerFile* llf = dynamic_cast<QgsLegendLayerFile*>(li);
+    ml = llf->layer();
+  }
+  else if(li->type() == QgsLegendItem::LEGEND_LAYER)
+  {
+    QgsLegendLayer* ll = dynamic_cast<QgsLegendLayer*>(li);
+    ml = ll->firstMapLayer();
+  }
+       
+  if (!ml)
+  {
+    return;
+  }
+  
+  //QgsDebugMsg("Showing layer properties dialog");
+  
+  if (ml->type() == QgsMapLayer::RASTER)
+  {
+    QgsRasterLayerProperties *rlp = new QgsRasterLayerProperties(ml);
+    if (rlp->exec())
     {
-	return;
+      delete rlp;
+      QCoreApplication::processEvents();
     }
-    QgsLegendLayer* ll = dynamic_cast<QgsLegendLayer*>(citem);
-    if(!ll)
+      
+      /*
+        void QgsRasterLayer::showLayerProperties()
+        {
+        qApp->setOverrideCursor(QCursor(Qt::WaitCursor));
+        if ( ! mLayerProperties )
+        {
+        mLayerProperties = new QgsRasterLayerProperties(this);
+        QgsDebugMsg("Creating new raster properties dialog instance");
+      }
+
+        mLayerProperties->sync();
+        mLayerProperties->raise();
+        mLayerProperties->show();
+        qApp->restoreOverrideCursor();
+      } // QgsRasterLayer::showLayerProperties()
+      */      
+  }
+  else // VECTOR
+  {
+    QgsVectorLayer* vlayer = dynamic_cast<QgsVectorLayer*>(ml);
+    
+    QgsVectorLayerProperties* vlp = new QgsVectorLayerProperties(vlayer);
+    if (vlp->exec())
     {
-	return;
+      delete vlp;
+      QCoreApplication::processEvents();
     }
-    QgsMapLayer* ml = ll->firstMapLayer(); 
-    if(!ml)
-    {
-	return;
-    }
-    ml->showLayerProperties();
+    
+    /*
+    // TODO: this was previous implementation which saved the instance of the dialog
+    
+    // Set wait cursor while the property dialog is created
+    // and initialized
+    qApp->setOverrideCursor(QCursor(Qt::WaitCursor));
+
+    QgsVectorLayerProperties* propertiesDialog = new QgsVectorLayerProperties(vlayer);
+    
+    // Make sure that the UI starts out with the correct display
+    // field value
+    propertiesDialog->setDisplayField(displayField());
+
+    propertiesDialog->raise();
+    propertiesDialog->show();
+
+    // restore normal cursor
+    qApp->restoreOverrideCursor();
+    */
+  }
+  
 }
 
 void QgsLegend::expandAll()

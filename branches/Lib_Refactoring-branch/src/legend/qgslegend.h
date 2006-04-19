@@ -188,7 +188,7 @@ public slots:
 
   /**Removes the current LegendLayer and all its LegendLayerFiles*/
   void legendLayerRemove();
-
+  
 protected:
 
   /*!Event handler for mouse movements.

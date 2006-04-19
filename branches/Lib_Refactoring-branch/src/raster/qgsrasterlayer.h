@@ -61,7 +61,6 @@
  *     QFileInfo myFileInfo(myFileNameQString);
  *     QString myBaseNameQString = myFileInfo.baseName();
  *     QgsRasterLayer *myRasterLayer = new QgsRasterLayer(myFileNameQString, myBaseNameQString);
- *     myRasterLayer->initContextMenu(this); //prepare the right click pop up menu
  *
  *  In order to automate redrawing of a raster layer, you should like it to a map canvas like this :
  *  
@@ -730,12 +729,6 @@ public:
      */
     virtual void setSubLayerVisibility(QString const & name, bool vis);
 
-    /** tailor the right-click context menu with raster layer only stuff 
-
-      @note called by QgsMapLayer::initContextMenu();
-     */
-    void initContextMenu_(QgisApp *);
-
     /** \brief Emit a signal asking for a repaint. (inherited from maplayer) */
     void triggerRepaint();
     /** \brief Obtain GDAL Metadata for this layer */
@@ -828,10 +821,6 @@ public slots:
                           const char *theMessageCharArray,
                           void *theData);    
 */
-
-    /** \brief This method is called when the properties for this layer needs to be modified. 
-     * invokes an instance of the QgsRasterLayerProperties dialog box.*/
-    /* virtual */ void showLayerProperties();
 
   /** Populate the histogram vector for a given layer
   * @param theBandNoInt - which band to compute the histogram for
@@ -1037,12 +1026,7 @@ private:
     //Transparency slider for popup menu
     QSlider * mTransparencySlider; 
 
-    /* raster properties dialog 
 
-       @todo XXX should consider generalizing this
-    */
-    QgsRasterLayerProperties * mLayerProperties;
-    
 /*
  * 
  * New functions that will convert this class to a data provider interface

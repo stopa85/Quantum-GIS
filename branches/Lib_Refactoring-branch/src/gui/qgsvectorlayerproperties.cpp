@@ -242,7 +242,6 @@ void QgsVectorLayerProperties::on_btnHelp_clicked()
 void QgsVectorLayerProperties::on_pbnOK_clicked()
 {
   on_pbnApply_clicked();
-  layer->setLayerProperties(0);
   close(true);
 }
 void QgsVectorLayerProperties::on_pbnApply_clicked()

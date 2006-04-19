@@ -529,7 +529,8 @@ QgsFeature *QgsOgrProvider::getNextFeature(std::list<int> const& attlist, int fe
         }
         else
         {
-	  QgsDebugMsg("Testing geometry using mbr");
+          // too much debug output with this msg
+	        //QgsDebugMsg("Testing geometry using mbr");
           break;
         }
       }

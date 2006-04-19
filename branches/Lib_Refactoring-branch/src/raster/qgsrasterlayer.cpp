@@ -454,7 +454,6 @@ QgsRasterLayer::QgsRasterLayer(QString const & path, QString const & baseName)
     invertHistogramFlag(false),
     stdDevsToPlotDouble(0),
     mTransparencySlider(0x0),
-    mLayerProperties(0x0),
     dataProvider(0)
 
 {
@@ -815,24 +814,6 @@ QDateTime QgsRasterLayer::lastModified ( QString const & name )
 
   return t;
 }
-
-
-void QgsRasterLayer::showLayerProperties()
-{
-  QgsDebugMsg("SHOWING RASTER LAYER PROPERTIES DIALOG");
-  qApp->setOverrideCursor(QCursor(Qt::WaitCursor));
-  if ( ! mLayerProperties )
-  {
-    mLayerProperties = new QgsRasterLayerProperties(this);
-    QgsDebugMsg("Creating new raster properties dialog instance");
-  }
-
-  mLayerProperties->sync();
-  mLayerProperties->raise();
-  mLayerProperties->show();
-  qApp->restoreOverrideCursor();
-} // QgsRasterLayer::showLayerProperties()
-
 
 
 // emit a signal asking for a repaint
@@ -3671,38 +3652,6 @@ void QgsRasterLayer::setSubLayerVisibility(QString const &  name, bool vis)
 }
 
 
-
-void QgsRasterLayer::initContextMenu_(QgisApp * theApp)
-{
-#if 0 //In qt4, inserting a slider in QMenu seems difficult
-  popMenu->setCheckable ( true );
-
-  QLabel * myTransparencyLabel = new QLabel( popMenu );
-
-  myTransparencyLabel->setFrameStyle( Q3Frame::Panel | Q3Frame::Raised );
-  myTransparencyLabel->setText( tr("<center><b>Transparency</b></center>") );
-
-// TODO: Qt4 will have to use a QAction instead
-#if QT_VERSION < 0x040000
-  popMenu->insertItem(myTransparencyLabel);
-
-  // XXX why GUI element here?
-  // XXX Dunno who put the above comment in, but whole context menu is a gui element! TS
-  mTransparencySlider = new QSlider(0,255,5,255-transparencyLevelInt,Qt::Horizontal,popMenu);
-  mTransparencySlider->setTickmarks(QSlider::TicksBothSides);
-  mTransparencySlider->setTickInterval(25);
-  mTransparencySlider->setTracking(false); //stop slider emmitting a signal until mouse released
-
-  connect(mTransparencySlider, SIGNAL(valueChanged(int)), this, SLOT(popupTransparencySliderMoved(int)));
-
-  popMenu->insertItem(mTransparencySlider);
-#endif
-
-#endif //0
-
-  popMenu->addAction(tr("&Convert to..."), this, SLOT(convertTo()));
-} // QgsRasterLayer::initContextMenu
-
 void QgsRasterLayer::updateProgress(int theProgress, int theMax)
 {
   //simply propogate it on!
@@ -4830,7 +4779,6 @@ QgsRasterLayer::QgsRasterLayer(int dummy,
     invertHistogramFlag(false),
     stdDevsToPlotDouble(0),
     mTransparencySlider(0x0),
-    mLayerProperties(0x0),
     mProviderKey(providerKey),
     dataProvider(0),
     mEditable(false),
