@@ -59,41 +59,31 @@ When compiling you can make sure DEBUG is defined by including -DDEBUG in the gc
 wish to see edbug messages printed to stdout.
  
 */
-#include "qgslegend.h"
-#include "qgslegendlayer.h"
-#include <qgslogger.h>
-#include "qgsrasterlayer.h"
-#include "qgsmaptopixel.h"
-//Added by qt3to4:
-#include <Q3Frame>
-#include <QPixmap>
 
 #include <cstdio>
 #include <cmath>
 #include <limits>
 #include <iostream>
 
-#include <qapplication.h>
-#include <qcursor.h>
-#include <qpainter.h>
-#include <qimage.h>
-#include <qfont.h>
-#include <qfile.h>
-#include <qfileinfo.h>
-#include <qfontmetrics.h>
-#include <qmatrix.h>
-#include <q3popupmenu.h>
-#include <qmessagebox.h>
-#include <qregexp.h>
-#include <qslider.h>
-#include <qlabel.h>
-#include <qdom.h>
-#include <q3listview.h>
-#include <qwidget.h>
-#include <qwidget.h>
-#include <qsettings.h>
-#include <qglobal.h>
 #include <QIcon>
+#include <QImage>
+#include <QFont>
+#include <QFile>
+#include <QFileInfo>
+#include <QFontMetrics>
+#include <QMatrix>
+#include <QPainter>
+#include <QPixmap>
+#include <QRegExp>
+#include <QLabel>
+//#include <QDom>
+
+// TODO: dependencies to remove
+#include <QApplication>
+#include <QCursor>
+#include <QMessageBox>
+#include <QWidget>
+#include <QSettings>
 
 
 /*
@@ -103,23 +93,24 @@ wish to see edbug messages printed to stdout.
  *
  */ 
  
-#include <qlibrary.h>
+#include <QLibrary>
 
 /*
  * END
  */
 
+#include "qgsrasterlayer.h"
 
-#include "qgsrect.h"
 #include "qgisapp.h"
 #include "qgsapplication.h"
-//#include "qgscolortable.h"
-#include "qgsrasterlayerproperties.h"
-#include "qgsproject.h"
 #include "qgsattributeaction.h"
-#include "qgsmaplayerregistry.h"
-#include "qgsspatialrefsys.h"
 #include "qgslogger.h"
+#include "qgsmaplayerregistry.h"
+#include "qgsmaptopixel.h"
+#include "qgsproject.h"
+#include "qgsrasterlayerproperties.h"
+#include "qgsrect.h"
+#include "qgsspatialrefsys.h"
 
 /*
  * 
@@ -453,7 +444,6 @@ QgsRasterLayer::QgsRasterLayer(QString const & path, QString const & baseName)
     showDebugOverlayFlag(false),
     invertHistogramFlag(false),
     stdDevsToPlotDouble(0),
-    mTransparencySlider(0x0),
     dataProvider(0)
 
 {
@@ -3681,12 +3671,6 @@ void QgsRasterLayer::popupTransparencySliderMoved(int theInt)
 void QgsRasterLayer::setTransparency(unsigned int theInt)
 {
   QgsDebugMsg("Set transparency called with : " + QString::number(theInt));
-  // XXX bad to have GUI elements in this class mTransparencySlider->setValue(255-theInt);
-  //delegate rest to transparency slider
-  if ( mTransparencySlider )
-  {
-    mTransparencySlider->setValue(255-theInt);    
-  }
   transparencyLevelInt=theInt;
 } //  QgsRasterLayer::setTransparency(unsigned int theInt)
 
@@ -4768,7 +4752,6 @@ QgsRasterLayer::QgsRasterLayer(int dummy,
     showDebugOverlayFlag(false),
     invertHistogramFlag(false),
     stdDevsToPlotDouble(0),
-    mTransparencySlider(0x0),
     mProviderKey(providerKey),
     dataProvider(0),
     mEditable(false),

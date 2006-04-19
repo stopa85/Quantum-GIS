@@ -52,7 +52,6 @@
 #include <QSettings>
 
 #include "qgis.h" //for globals
-#include "qgisapp.h"
 #include "qgsapplication.h"
 #include "qgsattributedialog.h"
 #include "qgsattributetable.h"
@@ -65,14 +64,12 @@
 #include "qgsgraduatedsymbolrenderer.h"
 #include "qgslabel.h"
 #include "qgslabelattributes.h"
-#include "qgslegend.h"
 #include "qgslogger.h"
 #include "qgsmaplayerregistry.h"
 #include "qgsmaptopixel.h"
 #include "qgspoint.h"
 #include "qgsproject.h"
 #include "qgsproviderregistry.h"
-#include "qgsrect.h"
 #include "qgsrect.h"
 #include "qgsrenderer.h"
 #include "qgsrenderitem.h"
@@ -85,7 +82,6 @@
 #ifdef Q_WS_X11
 #include "qgsclipper.h"
 #endif
-//#include "wkbheader.h"
 
 #ifdef TESTPROVIDERLIB
 #include <dlfcn.h>
