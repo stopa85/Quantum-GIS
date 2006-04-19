@@ -28,7 +28,6 @@
 #include <QPainter>
 #include <QAction>
 #include <QKeyEvent>
-#include <QMenu>
 
 #include "qgisapp.h"
 #include "qgslogger.h"
@@ -50,7 +49,6 @@ QgsMapLayer::QgsMapLayer(int type,
                      // can be used) until we learn otherwise
         dataSource(source),
         internalName(lyrname),
-        popMenu(0),
         mShowInOverviewAction(0),
         mShowInOverview(false),
         mCoordinateTransform(0),
@@ -514,25 +512,6 @@ void QgsMapLayer::connectNotify( const char * signal )
 } //  QgsMapLayer::connectNotify
 
 
-void QgsMapLayer::initContextMenu(QgisApp * app)
-{
-    popMenu = new QMenu();
-
-    // Initialise and insert Qt4 QAction
-    popMenu->addAction(tr("&Zoom to extent of selected layer"), app, SLOT(zoomToLayerExtent()));
-    mShowInOverviewAction = popMenu->addAction(tr("Toggle in Overview"), app, SLOT(inOverview()));
-    mShowInOverviewAction->setCheckable(true);
-    popMenu->addSeparator();
-    popMenu->addSeparator();
-    popMenu->addAction(tr("&Remove"), app, SLOT(removeLayer()));
-
-    // now give the sub-classes a chance to tailor the context menu
-    initContextMenu_( app );
-    //properties goes on bottom of menu for consistency with normal ui standards
-    //e.g. kde stuff
-    popMenu->addAction(tr("&Properties"), this, SLOT(showLayerProperties()));
-} // QgsMapLayer::initContextMenu(QgisApp * app)
-
 
 
 
@@ -685,9 +664,4 @@ QgsRect QgsMapLayer::calcProjectedBoundingBox(QgsRect& extent)
   bb_extent.set(xmin, ymin, xmax, ymax);
 
   return bb_extent;
-}
-
-QMenu* QgsMapLayer::contextMenu()
-{
-  return popMenu;
 }

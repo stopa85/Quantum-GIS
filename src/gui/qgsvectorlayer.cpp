@@ -106,7 +106,6 @@ QgsVectorLayer::QgsVectorLayer(QString vectorLayerPath,
   tabledisplay(0),
   m_renderer(0),
   mLabel(0),
-  m_propertiesDialog(0),
   providerKey(providerKey),
   valid(false),
   myLib(0),
@@ -126,9 +125,6 @@ QgsVectorLayer::QgsVectorLayer(QString vectorLayerPath,
   if(valid)
   {
     setCoordinateSystem();
-
-    // Default for the popup menu
-    popMenu = 0;
 
     // Get the update threshold from user settings. We
     // do this only on construction to avoid the penality of
@@ -167,14 +163,8 @@ QgsVectorLayer::~QgsVectorLayer()
   {
     delete m_renderer;
   }
-  if (m_propertiesDialog)
-  {
-    delete m_propertiesDialog;
-  }
   // delete the provider object
   delete dataProvider;
-  // delete the popu pmenu
-  delete popMenu;
   // delete the provider lib pointer
   delete myLib;
 
@@ -1167,46 +1157,6 @@ void QgsVectorLayer::setProviderEncoding(const QString& encoding)
 }
 
 
-void QgsVectorLayer::showLayerProperties()
-{
-  // Set wait cursor while the property dialog is created
-  // and initialized
-  qApp->setOverrideCursor(QCursor(Qt::WaitCursor));
-
-
-  if (!m_propertiesDialog)
-  {
-#ifdef QGISDEBUG
-    std::cerr << "Creating new QgsVectorLayerProperties object\n";
-#endif
-    m_propertiesDialog = new QgsVectorLayerProperties(this);
-    // Make sure that the UI starts out with the correct display
-    // field value
-#ifdef QGISDEBUG
-    std::cerr << "Setting display field in prop dialog\n";
-#endif
-    m_propertiesDialog->setDisplayField(displayField());
-
-#ifdef QGISDEBUG
-    std::cerr << "Raising prop dialog\n";
-#endif
-    m_propertiesDialog->raise();
-#ifdef QGISDEBUG
-    std::cerr << "Showing prop dialog\n";
-#endif
-    m_propertiesDialog->show();
-  }
-  else
-  {
-    m_propertiesDialog->show();
-    m_propertiesDialog->raise();
-  }
-
-  // restore normal cursor
-  qApp->restoreOverrideCursor();
-}
-
-
 const QgsRenderer* QgsVectorLayer::renderer() const
 {
   return m_renderer;
@@ -1262,45 +1212,6 @@ QGis::VectorType QgsVectorLayer::vectorType() const
   return QGis::Unknown;
 }
 
-QgsVectorLayerProperties *QgsVectorLayer::propertiesDialog()
-{
-  return m_propertiesDialog;
-}
-
-
-void QgsVectorLayer::initContextMenu_(QgisApp * app)
-{
-
-  popMenu->addAction(tr("&Open attribute table"), app, SLOT(attributeTable()));
-
-  popMenu->addSeparator();
-
-  int cap=dataProvider->capabilities();
-  if((cap&QgsVectorDataProvider::AddFeatures)
-      ||(cap&QgsVectorDataProvider::DeleteFeatures))
-  {
-    mToggleEditingAction = popMenu->addAction(tr("Allow Editing"),this,SLOT(toggleEditing()));
-    mToggleEditingAction->setCheckable(true);
-    mToggleEditingAction->blockSignals(true);
-    if(mEditable)
-      {
-	mToggleEditingAction->setChecked(true);
-      }
-    else
-      {
-	mToggleEditingAction->setChecked(false);
-      }
-    mToggleEditingAction->blockSignals(false);
-  }
-
-  if(cap&QgsVectorDataProvider::SaveAsShapefile)
-  {
-    // add the save as shapefile menu item
-    popMenu->addSeparator();
-    popMenu->addAction(tr("Save as shapefile..."), this, SLOT(saveAsShapefile()));
-  }
-
-} // QgsVectorLayer::initContextMenu_(QgisApp * app)
 
 QgsRect QgsVectorLayer::bBoxOfSelected()
 {
@@ -1359,19 +1270,6 @@ QgsRect QgsVectorLayer::bBoxOfSelected()
 
   return retval;
 }
-
-void QgsVectorLayer::setLayerProperties(QgsVectorLayerProperties * properties)
-{
-  m_propertiesDialog = properties;
-  // Make sure that the UI gets the correct display
-  // field value
-
-  if(m_propertiesDialog)
-  {
-    m_propertiesDialog->setDisplayField(displayField());
-  }
-}
-
 
 
 QgsFeature * QgsVectorLayer::getFirstFeature(bool fetchAttributes, bool selected) const

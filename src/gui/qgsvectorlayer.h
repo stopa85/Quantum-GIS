@@ -90,10 +90,7 @@ public:
   void setDisplayField(QString fldName=0);
 
   //! Returns the primary display field name used in the identify results dialog
-const QString displayField() const { return fieldIndex; }
-
-  //! Initialize the context menu
-  void initContextMenu(QgisApp * app);
+  const QString displayField() const { return fieldIndex; }
 
   enum SHAPETYPE
   {
@@ -181,21 +178,22 @@ public slots:
   void select(int number);
   void removeSelection();
   void triggerRepaint();
-  /**Shows the properties dialog*/
-  virtual void showLayerProperties();
 
+  //! Save as shapefile
+  void saveAsShapefile();
+
+  void toggleEditing();
+  void startEditing();
+  void stopEditing();
+  
 public:
 
   /**Returns a pointer to the renderer*/
   const QgsRenderer* renderer() const;
   /**Sets the renderer. If a renderer is already present, it is deleted*/
   void setRenderer(QgsRenderer * r);
-  /**Sets m_propertiesDialog*/
-  void setLayerProperties(QgsVectorLayerProperties * properties);
   /**Returns point, line or polygon*/
   QGis::VectorType vectorType() const;
-  /**Returns a pointer to the properties dialog*/
-  QgsVectorLayerProperties *propertiesDialog();
   /**Returns the bounding box of the selected features. If there is no selection, QgsRect(0,0,0,0) is returned*/
   virtual QgsRect bBoxOfSelected();
   //! Return the provider type for this layer
@@ -356,9 +354,6 @@ public:
   /**Returns true if the provider has been modified since the last commit*/
   virtual bool isModified() const {return mModified;}
 
-  //! Save as shapefile
-  virtual void saveAsShapefile();
-
   /**Snaps a point to the closest vertex if there is one within the snapping tolerance
      @param point       The point which is set to the position of a vertex if there is one within the snapping tolerance.
      If there is no point within this tolerance, point is left unchanged.
@@ -459,23 +454,12 @@ public:
   QgsLabel *mLabel;
   /**Display labels */
   bool mLabelOn;
-  /**Dialog to set the properties*/
-  QgsVectorLayerProperties *m_propertiesDialog;
   /**Goes through all features and finds a free id (e.g. to give it temporarily to a not-commited feature)*/
   int findFreeId();
   /**Writes the changes to disk*/
   bool commitChanges();
   /**Discards the edits*/
   bool rollBack();
-
-
- 
-protected slots:
-  void toggleEditing();
-  
-  void startEditing();
-  
-  void stopEditing();
 
 
 private:                       // Private attributes
@@ -512,12 +496,6 @@ private:                       // Private attributes
   // the byte after the end of the polygon binary data stream (WKB).
   unsigned char* drawPolygon(unsigned char* WKBpolygon, QPainter* p, 
       QgsMapToPixel* mtp, bool projectionsEnabledFlag);
-
-  /** tailor the right-click context menu with vector layer only stuff
-
-    @note called by QgsMapLayer::initContextMenu();
-   */
-  void initContextMenu_(QgisApp *);
 
   //! Draws the layer using coordinate transformation
   //! Returns FALSE if an error occurred during drawing

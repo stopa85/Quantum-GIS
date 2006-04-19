@@ -32,6 +32,7 @@ email                : sherman at mrcc.com
 #include <QMessageBox>
 #include <QAction>
 #include <QApplication>
+#include <QMenu>
 
 #include "qgsdlgpgbuffer.h"
 #include "qgspggeoprocessing.h"

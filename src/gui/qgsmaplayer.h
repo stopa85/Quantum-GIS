@@ -24,8 +24,6 @@
 
 #include <QObject>
 #include <QPixmap>
-#include <QMenu> // not forward declared because other .h files
-                 // inherit from us and we're being nice to them.
 
 #include "qgis.h"
 #include "qgsrect.h"
@@ -145,9 +143,6 @@ public:
     /** Read property of int featureType. */
     virtual const int &featureType();
 
-    /** Return the context menu for the layer */
-    virtual QMenu* contextMenu();
-
     /**
      * Returns the sublayers of this layer
      *
@@ -182,29 +177,8 @@ public:
     enum LAYERS
     {
         VECTOR,
-        RASTER,
-        DATABASE
+        RASTER
     };
-
-    /**Shows the properties dialog for the map layer*/
-    virtual void showLayerProperties() = 0;
-
-    /**
-        All inherited layers must be able to display a conext menu if requested
-
-        @note Calls initContextMenu_()
-    */
-    void initContextMenu(QgisApp * app);
-
-    /**
-        Allows children to tailor context menu
-
-        @note Calls initContextMenu_()
-    */
-    virtual void initContextMenu_(QgisApp * app)
-    {
-        // NOP; children can optionally over-ride
-    }
 
     void setLegendLayerFile(QgsLegendLayerFile* llf) {mLegendLayerFile = llf;}
 
@@ -428,9 +402,6 @@ protected:
 
     /** Internal name of the layer. Derived from the datasource */
     QString internalName;
-
-    //! context menu
-    QMenu* popMenu;
 
     //! the action in popmenu that sets overview status
     QAction* mShowInOverviewAction;

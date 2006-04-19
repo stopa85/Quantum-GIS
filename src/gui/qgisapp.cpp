@@ -1628,7 +1628,6 @@ bool QgisApp::addLayer(QFileInfo const & vectorFile)
   {
     // init the context menu so it can connect to slots
     // in main app
-    // XXX move to legend::addLayer() layer->initContextMenu(this);
 
     // XXX What about the rest of these?  Where should they be moved, if at
     // XXX all?  Some of this functionality is taken care of in the
@@ -1751,10 +1750,6 @@ bool QgisApp::addLayer(QStringList const &theLayerQStringList, const QString& en
     if (layer->isValid())
     {
       layer->setProviderEncoding(enc);
-      // init the context menu so it can connect to slots
-      // in main app
-
-      // XXX now taken care of in legend layer->initContextMenu(this);
 
       //add single symbol renderer as default
       QgsSingleSymbolRenderer *renderer = new QgsSingleSymbolRenderer(layer->vectorType());
@@ -4177,8 +4172,6 @@ void QgisApp::addVectorLayer(QString vectorLayerPath, QString baseName, QString 
   {
     // Register this layer with the layers registry
     QgsMapLayerRegistry::instance()->addMapLayer(layer);
-    // init the context menu so it can connect to slots in main app
-    // now taken care of in legend layer->initContextMenu(this);
 
     // give it a random color
     QgsSingleSymbolRenderer *renderer = new QgsSingleSymbolRenderer(layer->vectorType());  //add single symbol renderer as default
@@ -4235,8 +4228,6 @@ void QgisApp::addMapLayer(QgsMapLayer *theMapLayer)
   {
     // Register this layer with the layers registry
     QgsMapLayerRegistry::instance()->addMapLayer(theMapLayer);
-    // init the context menu so it can connect to slots in main app
-    // XXX now taken care of in legend theMapLayer->initContextMenu(this);
     // add it to the mapcanvas collection
     // not necessary since adding to registry adds to canvas mMapCanvas->addLayer(theMapLayer);
 
@@ -4580,7 +4571,7 @@ void QgisApp::activateDeactivateLayerRelatedActions(const QgsMapLayer* layer)
     }
 
   /***********Vector layers****************/
-  if(layer->type() == QgsMapLayer::VECTOR || layer->type() == QgsMapLayer::DATABASE)
+  if(layer->type() == QgsMapLayer::VECTOR)
     {
       mActionSelect->setEnabled(true);
       mActionOpenTable->setEnabled(true);
@@ -4825,9 +4816,6 @@ bool QgisApp::addRasterLayer(QgsRasterLayer * theRasterLayer, bool theForceRedra
         mMapCanvas,
         SLOT(recalculateExtents()));
 
-    // init the context menu so it can connect to slots in main app
-    // XXX now taken care of in legend theRasterLayer->initContextMenu(this);
-
     // add it to the mapcanvas collection
     // no longer necessary since adding to registry automatically adds to canvas
     // mMapCanvas->addLayer(theRasterLayer);
@@ -4952,8 +4940,6 @@ void QgisApp::addRasterLayer(QString const & rasterLayerPath,
   {
     // Register this layer with the layers registry
     QgsMapLayerRegistry::instance()->addMapLayer(layer);
-    // init the context menu so it can connect to slots in main app
-    // now taken care of in legend layer->initContextMenu(this);
 
     // connect up any request the raster may make to update the app progress
     QObject::connect(layer,
