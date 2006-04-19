@@ -22,6 +22,7 @@
 // QT4 includes make sure to use the new <CamelCase> style!
 //
 #include <Q3ListViewItem>
+#include <Q3PopupMenu>
 #include <QAction>
 #include <QApplication>
 #include <QBitmap>

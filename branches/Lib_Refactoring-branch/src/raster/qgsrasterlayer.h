@@ -165,12 +165,12 @@ The [type] part of the variable should be the type class of the variable written
 // Includes
 // 
  
-#include <q3valuevector.h>
-#include <q3valuelist.h> 
-#include <q3valuevector.h> 
-#include <qslider.h>
-#include <qdatetime.h>
+#include <Q3ValueVector>
+#include <Q3ValueList> 
+#include <QDateTime>
+#include <QPixmap>
 
+#include <gdal_priv.h> // because of GDALDataType
 
 /*
  * 
@@ -179,7 +179,7 @@ The [type] part of the variable should be the type class of the variable written
  *
  */ 
  
-#include <qlibrary.h>
+#include <QLibrary>
 
 /*
  * END
@@ -201,28 +201,23 @@ The [type] part of the variable should be the type class of the variable written
  */ 
  
 #include "qgsrasterdataprovider.h"
-//Added by qt3to4:
-#include <QPixmap>
-#include <Q3PopupMenu>
 
 /*
  * END
  */
 
 
-#include <gdal_priv.h>
+
 //
 // Forward declarations
 //
 class QgsRect;
 class QgsRasterLayerProperties;
-class GDALDataset;
-class GDALRasterBand;
 class QImage;
 
-//
-// Structs
-//
+class GDALDataset;
+class GDALRasterBand;
+
 
 
   
@@ -1020,8 +1015,6 @@ private:
     /** \brief This list holds a series of RasterPyramid structs
      * which store infomation for each potential pyramid level for this raster.*/
     RasterPyramidList mPyramidList;
-    //Transparency slider for popup menu
-    QSlider * mTransparencySlider; 
 
 
 /*
