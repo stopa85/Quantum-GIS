@@ -51,6 +51,8 @@ public:
     /**Returns the map layer associated with the first QgsLegendLayerFile or 0 if
      there is no QgsLegendLayerFile*/
     QgsMapLayer* firstMapLayer();
+    /**Returns first map layer's file or 0 if there's no QgsLegendLayerFile */
+    QgsLegendLayerFile* firstLayerFile();
     /**Returns the map layers associated with the QgsLegendLayerFiles*/
     std::list<QgsMapLayer*> mapLayers();
     /**Returns the legend layer file items associated with this legend layer*/

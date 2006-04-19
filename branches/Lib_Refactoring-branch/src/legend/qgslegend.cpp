@@ -79,6 +79,7 @@ QgsLegend::QgsLegend(QgisApp* app, QWidget * parent, const char *name)
   header()->setHidden(1);
   setRootIsDecorated(true);
 
+  initPixmaps();
 }
 
 
@@ -329,7 +330,6 @@ void QgsLegend::mouseReleaseEvent(QMouseEvent * e)
 		QgsMapLayer* origLayer = ((QgsLegendLayerFile*)(origin))->layer();
 		QgsMapLayer* destLayer = ((QgsLegendLayerFile*)(dest))->layer();
 		origLayer->copySymbologySettings(*destLayer);
-		origLayer->setLegend((QgsLegend*)(dynamic_cast<QgsLegendItem*>(dest->parent())->nextSibling()));
 	      }
 	  }
 	
@@ -506,7 +506,7 @@ void QgsLegend::addLayer( QgsMapLayer * layer )
     
     //set the correct check states
     blockSignals(true);
-    if(layer->visible())
+    if(llfile->isVisible())
       {
 	llfile->setCheckState(0, Qt::Checked);
 	llayer->setCheckState(0, Qt::Checked);
@@ -522,9 +522,7 @@ void QgsLegend::addLayer( QgsMapLayer * layer )
       }
     blockSignals(false);
    
-    layer->setLegend(this);
     //QgsLegendPropertyGroup * lpgroup = new QgsLegendPropertyGroup(llayer,QString("Properties"));
-    layer->setLegendLayerFile(llfile);
 
     insertTopLevelItem(0, llayer);
     
@@ -535,6 +533,8 @@ void QgsLegend::addLayer( QgsMapLayer * layer )
       {
 	setItemHidden(llfgroup, true);
       }
+      
+    llfile->updateLegendItem();
     
     updateMapCanvasLayerSet();
     
@@ -644,15 +644,16 @@ void QgsLegend::legendLayerAddToOverview()
        return;
    }
 
-   std::list<QgsMapLayer*> maplayers = ll->mapLayers();
-   for(std::list<QgsMapLayer*>::iterator it = maplayers.begin(); it!=maplayers.end(); ++it)
+   std::list<QgsLegendLayerFile*> maplayers = ll->legendLayerFiles();
+   for(std::list<QgsLegendLayerFile*>::iterator it = maplayers.begin(); it!=maplayers.end(); ++it)
    {
        if(*it)
        {
-	       (*it)->inOverview(true);
+	       (*it)->setInOverview(true);
        }
    }
 
+   // TODO: new overview set
    mMapCanvas->updateOverview();
 }
 
@@ -664,23 +665,24 @@ void QgsLegend::legendLayerRemoveFromOverview()
    {
        return;
    }
-   std::list<QgsMapLayer*> maplayers = ll->mapLayers();
-
-   for(std::list<QgsMapLayer*>::iterator it = maplayers.begin(); it!=maplayers.end(); ++it)
+   
+   std::list<QgsLegendLayerFile*> maplayers = ll->legendLayerFiles();
+   for(std::list<QgsLegendLayerFile*>::iterator it = maplayers.begin(); it!=maplayers.end(); ++it)
    {
-       if(*it)
-       {
-	   (*it)->inOverview(false); //else
-       }
+     if(*it)
+     {
+       (*it)->setInOverview(false);
+     }
    }
 
+   // TODO: new overview set
    mMapCanvas->updateOverview();
 }
 
 void QgsLegend::legendLayerShowProperties()
 {
   QgsLegendItem* li = dynamic_cast<QgsLegendItem*>(currentItem());
-  QgsMapLayer* ml = 0;
+  QgsLegendLayerFile* llf = 0;
 
   if(!li)
   {
@@ -689,21 +691,22 @@ void QgsLegend::legendLayerShowProperties()
   
   if(li->type() == QgsLegendItem::LEGEND_LAYER_FILE)
   {
-    QgsLegendLayerFile* llf = dynamic_cast<QgsLegendLayerFile*>(li);
-    ml = llf->layer();
+    llf = dynamic_cast<QgsLegendLayerFile*>(li);
   }
   else if(li->type() == QgsLegendItem::LEGEND_LAYER)
   {
     QgsLegendLayer* ll = dynamic_cast<QgsLegendLayer*>(li);
-    ml = ll->firstMapLayer();
+    llf = ll->firstLayerFile();
   }
        
-  if (!ml)
+  if (!llf)
   {
     return;
   }
   
   //QgsDebugMsg("Showing layer properties dialog");
+  
+  QgsMapLayer* ml = llf->layer();
   
   if (ml->type() == QgsMapLayer::RASTER)
   {
@@ -763,6 +766,8 @@ void QgsLegend::legendLayerShowProperties()
     */
   }
   
+  llf->updateLegendItem();
+
 }
 
 void QgsLegend::expandAll()
@@ -928,9 +933,19 @@ bool QgsLegend::writeXML( QDomNode & layer_node, QDomDocument & document )
 		llf = dynamic_cast<QgsLegendLayerFile*>(item);
 		if(llf)
 		  {
-		    legendlayerfilenode.setAttribute("layerid", llf->layer()->getLayerID());
+        QgsMapLayer* layer = llf->layer();
+        
+        // layer id
+		    legendlayerfilenode.setAttribute("layerid", layer->getLayerID());
 		    layerfilegroupnode.appendChild(legendlayerfilenode);
-		  }
+		  
+        // visible flag
+        legendlayerfilenode.setAttribute( "visible", llf->isVisible());
+
+        // show in overview flag
+        legendlayerfilenode.setAttribute( "inOverview", llf->isInOverview());
+    
+    }
 		break;
 
 		default: //do nothing for the leaf nodes
@@ -1031,15 +1046,19 @@ bool QgsLegend::readXML(QDomNode& legendnode)
 	      //find out the legendlayer
 	      std::map<QString,QgsMapLayer*> mapLayers = QgsMapLayerRegistry::instance()->mapLayers();
 	      std::map<QString, QgsMapLayer*>::const_iterator iter = mapLayers.find(childelem.attribute("layerid"));
+       
 	      if(iter != mapLayers.end() && lastLayerFileGroup)
 		{
 		  QgsMapLayer* theMapLayer = iter->second;
 		  QgsLegendLayerFile* theLegendLayerFile = new QgsLegendLayerFile(lastLayerFileGroup, QgsLegendLayerFile::nameFromLayer(theMapLayer), theMapLayer);
-		  theMapLayer->setLegendLayerFile(theLegendLayerFile);
 
-		  //set the check state
+      // load layer's visibility and 'show in overview' flag
+      theLegendLayerFile->setVisible(atoi(childelem.attribute("visible")));
+      theLegendLayerFile->setInOverview(atoi(childelem.attribute("inOverview")));
+		  
+      //set the check state
 		  blockSignals(true);
-		  if(theMapLayer->visible())
+		  if(theLegendLayerFile->isVisible())
 		    {
 		      mStateOfCheckBoxes.insert(std::make_pair(theLegendLayerFile, Qt::Checked));
 		      theLegendLayerFile->setCheckState(0, Qt::Checked);
@@ -1051,17 +1070,13 @@ bool QgsLegend::readXML(QDomNode& legendnode)
 		    }
 		  blockSignals(false);
 		  
-		  theMapLayer->setLegend(this);
-		  if(child.nextSibling().isNull())
-		    {
-		      theMapLayer->refreshLegend();
-		    }
-
 		  //set the layer type icon if this legendlayerfile is the last in the file group
 		  if(child.nextSibling().isNull())
 		  {
 		    static_cast<QgsLegendLayer*>(theLegendLayerFile->parent()->parent())->setLayerTypeIcon();
 		  }
+    
+      theLegendLayerFile->updateLegendItem();
 		}
 	    }
 	  else if(childelem.tagName()=="filegroup")
@@ -1498,7 +1513,7 @@ void QgsLegend::handleItemChange(QTreeWidgetItem* item, int row)
 	    {
 	      if(llf->layer())
 		{
-		  llf->layer()->setVisible(item->checkState(0) == Qt::Checked);
+		  llf->setVisible(item->checkState(0) == Qt::Checked);
 		}
 	      //update check state of the legend layer
 	      QgsLegendLayer* ll = dynamic_cast<QgsLegendLayer*>(item->parent()->parent());
@@ -1551,7 +1566,7 @@ void QgsLegend::handleItemChange(QTreeWidgetItem* item, int row)
 		  mStateOfCheckBoxes[(*iter)] = item->checkState(0);
 		  if((*iter)->layer())
 		    {
-		      (*iter)->layer()->setVisible(item->checkState(0) == Qt::Checked);
+		      (*iter)->setVisible(item->checkState(0) == Qt::Checked);
 		    }
 		}
 	      
@@ -1580,7 +1595,7 @@ void QgsLegend::handleItemChange(QTreeWidgetItem* item, int row)
 		  mStateOfCheckBoxes[(*iter)] = item->checkState(0);
 		  if((*iter)->layer())
 		    {
-		      (*iter)->layer()->setVisible(item->checkState(0) == Qt::Checked);
+		      (*iter)->setVisible(item->checkState(0) == Qt::Checked);
 		    }
 		}
 	      if(ll->parent())
@@ -1706,4 +1721,13 @@ void QgsLegend::zoomToLayerExtent()
   mMapCanvas->setExtent(QgsRect(xmin, ymin, xmax, ymax));
   mMapCanvas->render();
   mMapCanvas->refresh();
+}
+
+void QgsLegend::initPixmaps()
+{
+  QString myThemePath = QgsApplication::themePath();
+  mPixmaps.mOriginalPixmap.load(myThemePath + "/mActionFileSmall.png");
+  mPixmaps.mInOverviewPixmap.load(myThemePath + "/mActionInOverview.png");
+  mPixmaps.mEditablePixmap.load(myThemePath + "/mIconEditable.png");
+  mPixmaps.mProjectionErrorPixmap.load(myThemePath + "/mIconProjectionProblem.png");
 }

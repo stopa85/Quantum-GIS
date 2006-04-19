@@ -229,7 +229,7 @@ QRect QgsComposerVectorLegend::render ( QPainter *p )
       int nlayers = mMapCanvas->layerCount();
       for ( int i = nlayers - 1; i >= 0; i-- ) {
 	  QgsMapLayer *layer = mMapCanvas->getZpos(i);
-	  if ( !layer->visible() ) continue;
+	  //if ( !layer->visible() ) continue;
 	  if ( layer->type() != QgsMapLayer::VECTOR ) continue;
 
 	  QString layerId = layer->getLayerID();
@@ -254,7 +254,7 @@ QRect QgsComposerVectorLegend::render ( QPainter *p )
 
 	  for ( int j = nlayers - 1; j >= 0; j-- ) {
 	    QgsMapLayer *layer2 = mMapCanvas->getZpos(j);
-	    if ( !layer2->visible() ) continue;
+//	    if ( !layer2->visible() ) continue;
 	    if ( layer2->type() != QgsMapLayer::VECTOR ) continue;
 	      
 	    QString layerId2 = layer2->getLayerID();;
@@ -670,7 +670,8 @@ void QgsComposerVectorLegend::setOptions ( void )
       for ( int i = 0; i < nlayers; i++ ) {
     QgsMapLayer *layer = mMapCanvas->getZpos(i);
     
-    if ( !layer->visible() ) continue;
+    //if ( !layer->visible() ) continue;
+
     //if ( layer->type() != QgsMapLayer::VECTOR ) continue;
 
     Q3CheckListItem *li = new Q3CheckListItem ( mLayersListView, layer->name(), Q3CheckListItem::CheckBox );
@@ -851,7 +852,7 @@ bool QgsComposerVectorLegend::writeSettings ( void )
       for ( int i = 0; i < nlayers; i++ ) {
     QgsMapLayer *layer = mMapCanvas->getZpos(i);
     
-    if ( !layer->visible() ) continue;
+    //if ( !layer->visible() ) continue;
 
     QString id = layer->getLayerID();
                 path.sprintf("/composition_%d/vectorlegend_%d/layers/layer_%s/", mComposition->id(), mId, (const char *)id.toLocal8Bit().data() ); 

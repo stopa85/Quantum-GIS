@@ -244,38 +244,34 @@ void QgsMapRender::render(QPainter* painter)
     }
 #endif
 
-    if ((!mOverview && ml->visible()) || (mOverview && ml->showInOverviewStatus()))
+    if ((ml->scaleBasedVisibility() && ml->minScale() < mScale && ml->maxScale() > mScale)
+        || (!ml->scaleBasedVisibility()))
     {
-      if ((ml->scaleBasedVisibility() && ml->minScale() < mScale && ml->maxScale() > mScale)
-          || (!ml->scaleBasedVisibility()))
+      connect(ml, SIGNAL(drawingProgress(int,int)), this, SLOT(onDrawingProgress(int,int)));        
+      
+      QgsRect r1 = mExtent, r2;
+      bool split = ml->projectExtent(r1, r2);
+      //
+                  // Now do the call to the layer that actually does
+                  // the rendering work!
+      //
+      if (!ml->draw(painter, &r1, mCoordXForm))
+        emit drawError(ml);
+      
+      if (split)
       {
-        connect(ml, SIGNAL(drawingProgress(int,int)), this, SLOT(onDrawingProgress(int,int)));        
-        
-        QgsRect r1 = mExtent, r2;
-        bool split = ml->projectExtent(r1, r2);
-        //
-                    // Now do the call to the layer that actually does
-                    // the rendering work!
-        //
-        if (!ml->draw(painter, &r1, mCoordXForm))
+        if (!ml->draw(painter, &r2, mCoordXForm))
           emit drawError(ml);
-        
-        if (split)
-        {
-          if (!ml->draw(painter, &r2, mCoordXForm))
-            emit drawError(ml);
-        }
-        
-        disconnect(ml, SIGNAL(drawingProgress(int,int)), this, SLOT(onDrawingProgress(int,int)));
       }
-      else
-      {
-	QgsDebugMsg("QgsMapRender::render: Layer not rendered because it is not within the defined \
-visibility scale range")
-      }
-        
-    } // if (ml->visible())
-    
+      
+      disconnect(ml, SIGNAL(drawingProgress(int,int)), this, SLOT(onDrawingProgress(int,int)));
+    }
+    else
+    {
+      QgsDebugMsg("QgsMapRender::render: Layer not rendered because it is not within the defined "
+                  "visibility scale range");
+    }
+
     li++;
     
   } // while (li != end)
@@ -291,7 +287,7 @@ visibility scale range")
       // TODO: emit setProgress((myRenderCounter++),zOrder.size());
       QgsMapLayer *ml = QgsMapLayerRegistry::instance()->mapLayer(*li);
   
-      if (ml && ml->visible() && (ml->type() != QgsMapLayer::RASTER))
+      if (ml && (ml->type() != QgsMapLayer::RASTER))
       {
         // only make labels if the layer is visible
         // after scale dep viewing settings are checked

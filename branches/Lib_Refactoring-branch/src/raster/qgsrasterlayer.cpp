@@ -4628,16 +4628,6 @@ bool QgsRasterLayer::readXML_( QDomNode & layer_node )
 
 
 
-/** we wouldn't have to do this if slots were inherited
- 
-XXX Actually this <I>should</I> be inherited.
-*/
-void QgsRasterLayer::inOverview( bool b )
-{
-  QgsMapLayer::inOverview( b );
-} // QgsRasterLayer::inOverview( bool )
-
-
 void QgsRasterLayer::identify(const QgsPoint& point, std::map<QString,QString>& results)
 {
   double x = point.x();
@@ -5005,12 +4995,15 @@ QString QgsRasterLayer::layerTypeIconPath()
 
 void QgsRasterLayer::refreshLegend()
 {
+  // move elsewhere
+  /*
   if(mLegend)
     {
       std::list< std::pair<QString, QPixmap> > itemList;
       itemList.push_back(std::make_pair("", getLegendQPixmap(true)));
       mLegend->changeSymbologySettings(getLayerID(), &itemList);
     }
+  */
 }
 
 

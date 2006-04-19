@@ -171,8 +171,6 @@ public slots:
   /** \brief Mutator for transparency level. Should be between 0 and 255 */
   void setTransparency(unsigned int);
 
-  void inOverview( bool );
-
   /**Sets the 'tabledisplay' to 0 again*/
   void invalidateTableDisplay();
   void select(int number);

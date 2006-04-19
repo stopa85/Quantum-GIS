@@ -235,13 +235,15 @@ void QgsMapserverExport::writeMapFile()
 #endif
       // set visibility (STATUS)
       mapFile << "  STATUS ";
-      if (lyr->visible())
-      {
+      
+      // TODO: what to do with visibility
+      //if (lyr->visible())
+      //{
         mapFile << "ON";
-      } else
-      {
-        mapFile << "OFF";
-      }
+      //} else
+      //{
+      //  mapFile << "OFF";
+      //}
       mapFile << std::endl;
 
       // data source (DATA)

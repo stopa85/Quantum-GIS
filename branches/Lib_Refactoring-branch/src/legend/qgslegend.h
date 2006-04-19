@@ -163,6 +163,9 @@ class QgsLegend : public QTreeWidget
       the given QgsLegendLayerFile */
   void setName(QgsLegendLayerFile* w, QString layerName);
 
+  class QgsLegendPixmaps;
+  /**Returns structure with legend pixmaps*/
+  QgsLegendPixmaps& pixmaps() { return mPixmaps; }
 
 public slots:
 
@@ -244,6 +247,9 @@ this item may be moved back to the original position with resetToInitialPosition
   /**Checks mPixmapWidthValues and mPixmapHeightValues and sets a new icon size if necessary*/
   void adjustIconSize();
 
+  /**Initialize pixmaps - called when QgsLegend is constructed */
+  void initPixmaps();
+
   private slots:
 
   /**Calls 'handleRightClickEvent' on the item*/
@@ -273,7 +279,7 @@ this item may be moved back to the original position with resetToInitialPosition
   /**Zooms to extent of the current legend layer (considers there may be several
    legend layer files*/
   void zoomToLayerExtent();
-
+  
 private:
 
   /**Pointer to QGisApp, needed for signal/slot reasons*/
@@ -355,6 +361,24 @@ private:
 
   /**QgsLegend does not set the icon with/height to values lower than the minimum icon size*/
   QSize mMinimumIconSize;
+  
+  /** structure which holds pixmap which are used in legend */
+  class QgsLegendPixmaps
+  {
+  public:
+    //! Pixmap which is shown by default
+    QPixmap mOriginalPixmap;
+    
+    //! Pixmap to show a bogus vertex was encoutnered in this layer (applies to vector layers only)
+    QPixmap mProjectionErrorPixmap;
+
+    //! Pixmap to show if this layer is represented in overview or now
+    QPixmap mInOverviewPixmap;
+
+    //! Pixmap to show it this layer has currently editing turned on
+    QPixmap mEditablePixmap;
+
+  } mPixmaps;
 
 signals:
   void zOrderChanged(QgsLegend * lv);

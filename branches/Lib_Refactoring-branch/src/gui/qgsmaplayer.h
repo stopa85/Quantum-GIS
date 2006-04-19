@@ -30,12 +30,9 @@
 #include "qgsfield.h"
 #include "qgscoordinatetransform.h"
 
-class QAction;
-class QgisApp;
 class QgsMapToPixel;
 class QgsFeature;
 class QgsLegend;
-class QgsLegendLayerFile;
 
 class QDomNode;
 class QDomDocument;
@@ -79,23 +76,11 @@ public:
      */
     QString const & name() const;
 
-    /*! Get the internal name of the layer. This is the name used to created the
-     * layer from the data source
-     * @return internal datasource name of the layer
-     */
-    QString const & sourceName() const;
-
     /*! Virtual function to calculate the extent of the current layer.
      * This function must be overridden in all child classes and implemented
      * based on the layer type
      */
     virtual QgsRect calculateExtent();
-
-    /*! Accesor for mShowInOverviewFlag */
-    bool showInOverviewStatus()
-    {
-        return mShowInOverview;
-    }
 
 
     virtual void draw(QPainter *, QgsRect *, int);
@@ -130,9 +115,6 @@ public:
 
     /** Read property of QString labelField. */
     virtual const QString & labelField();
-
-    //! Visibility of the layer
-    bool visible();
 
     //! Returns the source for the layer
     QString const & source() const;
@@ -179,8 +161,6 @@ public:
         VECTOR,
         RASTER
     };
-
-    void setLegendLayerFile(QgsLegendLayerFile* llf) {mLegendLayerFile = llf;}
 
     /**True if the layer can be edited*/
     virtual bool isEditable() const =0;
@@ -241,12 +221,6 @@ public:
     /**Returns the path to an icon which characterises the type of layer*/
     virtual QString layerTypeIconPath() = 0;
 
-    void setLegend(QgsLegend* legend) {mLegend = legend;}
-    const QgsLegend* legend() {return mLegend;}
-
-    /**Refresh the symbology part of the legend. Specific implementations have to be provided by subclasses*/
-    virtual void refreshLegend() = 0;
-
     /**Copies the symbology settings from another layer. Returns true in case of success*/
     virtual bool copySymbologySettings(const QgsMapLayer& other) = 0;
 
@@ -286,62 +260,21 @@ public  slots:
     //! keyPress event so we can check if cancel was pressed
     void keyPressed ( QKeyEvent * e );
 
-    //! set visibility
-    void setVisible(bool vis);
-
-    /*! Slot connected to popup menus of derived classes. Used to indicate whether this layer
-     * should be shown or hidden in the map overview. */
-    //virtual void toggleShowInOverview();
-
-    /**Copies the legend pixmap of this layer to the legenditem and adds an overview glasses if necessary*/
-    void updateItemPixmap();
-
-    /**Ensures that the overview item in the popup menu is checked/ unchecked correctly*/
-    void updateOverviewPopupItem();
-
-    /** set whether this layer is in the overview or not
-
-    @note this will hopefully eventually supercede toggleOverviewStatus() since
-    this makes explicit the state change
-
-    */
-    virtual void inOverview( bool );
-
     /** Accessor and mutator for the minimum scale member */
-    void setMinScale(float theMinScale)
-    {
-        mMinScale=theMinScale;
-    };
-    float minScale()
-    {
-        return mMinScale;
-    };
+    void setMinScale(float theMinScale);
+    float minScale();
 
     /** Accessor and mutator for the maximum scale member */
-    void setMaxScale(float theMaxScale)
-    {
-        mMaxScale=theMaxScale;
-    };
-    float maxScale()
-    {
-        return mMaxScale;
-    };
+    void setMaxScale(float theMaxScale);
+    float maxScale();
 
     /** Accessor and mutator for the scale based visilibility flag */
-    void setScaleBasedVisibility( bool theVisibilityFlag)
-    {
-        mScaleBasedVisibility=theVisibilityFlag;
-    };
-    bool scaleBasedVisibility()
-    {
-        return mScaleBasedVisibility;
-    };
+    void setScaleBasedVisibility( bool theVisibilityFlag);
+    bool scaleBasedVisibility();
 
     /** Used to ask the layer for its projection as a WKT string. Must be reimplemented by each provider. */
     virtual QString getProjectionWKT()  = 0 ;
 signals:
-
-    void visibilityChanged(void);
 
     /** \brief emit a signal to notify of a progress event */
     void setProgress(int theProgress, int theTotalSteps);
@@ -351,12 +284,6 @@ signals:
 
     /** This signal should be connected with the slot QgsMapCanvas::refresh() */
     void repaintRequested();
-
-    /** This is used to notify the application whether this layer should be shown in overview or not. */
-    //@{
-    //void showInOverview(QString theLayerId, bool);
-    void showInOverview(QgsMapLayer * maplayer, bool);
-    //@}
 
     /** This is used to send a request that any mapcanvas using this layer update its extents */
     void recalculateExtents();
@@ -389,47 +316,14 @@ protected:
     //! Geometry type as defined in enum WKBTYPE (qgis.h)
     int geometryType;
 
-    /** Pixmap to show a bogus vertex was encoutnered in this layer (applies to vector layers only) */
-    QPixmap mProjectionErrorPixmap;
-
-    //! A little pixmap to show if this layer is represented in overview or now
-    QPixmap mInOverviewPixmap;
-
-    QPixmap mEditablePixmap;
-
     /** Name of the layer - used for display  */
     QString layerName;
 
-    /** Internal name of the layer. Derived from the datasource */
-    QString internalName;
-
-    //! the action in popmenu that sets overview status
-    QAction* mShowInOverviewAction;
-
-    /** Whether this layer is to be shown in the overview map or not */
-    bool mShowInOverview;
-
-    //   /** action item for pop-up menu
-
-    //       @note obviously should be in synch with mShowInOverview
-
-    //       Is set in context menu.
-
-    //       @todo this is a GUI element and should not be here
-    //   */
-    //   QAction* mActionInOverview;
     /** A flag to let the draw() render loop know if the user has requested drawing be cancelled */
     bool mDrawingCancelled;
 
     //! A QgsCoordinateTransform is used for on the fly reprojection of map layers
     QgsCoordinateTransform * mCoordinateTransform; 
-
-    /**Pointer to the legend layer item of the legend*/
-    QgsLegend* mLegend;
-
-    /**Pointer to the legend layer file of the legend. It is used to modify the pixmap with overview
-     glasses, editing or pyramid symbols*/
-    QgsLegendLayerFile* mLegendLayerFile;
 
 private:                       // Private attributes
 
@@ -449,9 +343,6 @@ private:                       // Private attributes
     QString tag;
 
     
-    /**  true if visible ? */
-    bool m_visible;
-
     /** debugging member
         invoked when a connect() is made to this object
     */
