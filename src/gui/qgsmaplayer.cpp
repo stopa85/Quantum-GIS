@@ -29,6 +29,8 @@
 #include <QKeyEvent>
 
 #include "qgisapp.h"
+#include "qgscoordinatetransform.h"
+#include "qgsfield.h"
 #include "qgslogger.h"
 #include "qgsmaptopixel.h"
 #include "qgsrect.h"
@@ -118,11 +120,6 @@ QgsRect QgsMapLayer::calculateExtent()
     return rect;
 }
 
-void QgsMapLayer::draw(QPainter *, QgsRect * viewExtent, int yTransform)
-{
-    //  std::cout << "In QgsMapLayer::draw" << std::endl;
-}
-
 bool QgsMapLayer::draw(QPainter *, QgsRect *, QgsMapToPixel *)
 {
     //  std::cout << "In QgsMapLayer::draw" << std::endl;
@@ -133,13 +130,6 @@ void QgsMapLayer::drawLabels(QPainter *, QgsRect *, QgsMapToPixel *)
 {
     //  std::cout << "In QgsMapLayer::draw" << std::endl;
 }
-
-/** Read property of QString labelField. */
-const QString & QgsMapLayer::labelField()
-{
-    return m_labelField;
-}
-
 
 bool QgsMapLayer::readXML( QDomNode & layer_node )
 {
@@ -294,12 +284,6 @@ bool QgsMapLayer::writeXML_( QDomNode & layer_node, QDomDocument & document )
 
 
 
-
-/** Write property of QString labelField. */
-void QgsMapLayer::setLabelField(const QString & _newVal)
-{
-    m_labelField = _newVal;
-}
 
 bool QgsMapLayer::isValid()
 {
@@ -531,4 +515,20 @@ void QgsMapLayer::setMaxScale(float theMaxScale)
 float QgsMapLayer::maxScale()
 {
   return mMaxScale;
+}
+
+
+QStringList QgsMapLayer::subLayers()
+{
+  return QStringList();  // Empty
+}
+    
+void QgsMapLayer::setLayerOrder(QStringList layers)
+{
+      // NOOP
+}
+
+void QgsMapLayer::setSubLayerVisibility(QString name, bool vis)
+{
+      // NOOP
 }

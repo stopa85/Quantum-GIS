@@ -27,6 +27,7 @@
 #include "qgsfeatureattribute.h"
 #include "qgsattributedialog.h"
 #include "qgscursors.h"
+#include "qgscoordinatetransform.h"
 #include <QSettings>
 #include <QMessageBox>
 #include <QCursor>

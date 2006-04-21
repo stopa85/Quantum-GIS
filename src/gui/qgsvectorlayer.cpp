@@ -311,6 +311,7 @@ void QgsVectorLayer::setDisplayField(QString fldName)
     }
 
     // set this to be the label field as well
+    // TODO: what's this? ... not used in raster layers [MD]
     setLabelField(fieldIndex);
   }
 }
@@ -3340,3 +3341,7 @@ void QgsVectorLayer::setTransparency(unsigned int theInt)
   transparencyLevelInt=theInt;
 } //  QgsRasterLayer::setTransparency(unsigned int theInt)
 
+void QgsVectorLayer::setLabelField(QString fldName)
+{
+  // TODO:???
+}

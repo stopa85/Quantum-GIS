@@ -20,6 +20,7 @@
 #include "qgsvectorlayerproperties.h"
 #include "qgsattributeactiondialog.h"
 #include "qgscontinuouscolordialog.h"
+#include "qgscoordinatetransform.h"
 #include "qgsgraduatedsymboldialog.h"
 #include "qgslabeldialog.h"
 #include "qgslayerprojectionselector.h"

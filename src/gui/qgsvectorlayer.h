@@ -37,6 +37,7 @@ class QPixmap;
 class QgisApp;
 class QgsAttributeTableDisplay;
 class QgsData;
+class QgsFeature;
 class QgsGeometry;
 class QgsMapToPixel;
 class QgsLabel;
@@ -151,6 +152,9 @@ public:
 
   /**Returns true if this layer can be in the same symbology group with another layer*/
   bool isSymbologyCompatible(const QgsMapLayer& other) const;
+  
+  /** Sets field used for labeling */
+  void setLabelField(QString fldName);
   
 signals:
   /**This signal is emitted when the layer leaves editing mode.

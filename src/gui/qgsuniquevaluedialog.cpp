@@ -18,6 +18,7 @@
 
 #include "qgsuniquevaluedialog.h"
 #include "qgsfeature.h"
+#include "qgsfield.h"
 #include "qgsfeatureattribute.h"
 #include "qgssymbol.h"
 #include "qgsuniquevaluerenderer.h"

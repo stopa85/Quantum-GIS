@@ -23,6 +23,7 @@
 #include <QComboBox>
 #include <qglobal.h>
 
+#include "qgsfield.h"
 #include "qgspastetransformations.h"
 #include "qgsmaplayerregistry.h"
 

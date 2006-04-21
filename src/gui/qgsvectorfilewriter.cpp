@@ -16,7 +16,9 @@
  *                                                                         *
  ***************************************************************************/
 /* $Id$ */
+
 #include "qgsvectorfilewriter.h"
+#include "qgsspatialrefsys.h"
 
 #include <iostream>
 #include <QString>
