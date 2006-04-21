@@ -316,7 +316,7 @@ public:
      
     /** \brief This is called when the view on the rasterlayer needs to be refreshed (redrawn).  */
     bool draw(QPainter * theQPainter, QgsRect * theViewExtent, 
-              QgsMapToPixel * theQgsMapToPixel);
+              QgsMapToPixel * theQgsMapToPixel, QgsCoordinateTransform* ct);
 
     /** \brief This is an overloaded version of the above function that is called by both draw above and drawThumbnail */
     void draw(QPainter * theQPainter, QgsRasterViewPort * myRasterViewPort,

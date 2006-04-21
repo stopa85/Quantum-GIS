@@ -99,7 +99,6 @@ libqgis_guiHEADERS =							\
 		qgsmaplayer.h						\
 		qgsmaplayerinterface.h				\
 		qgsmaplayerregistry.h				\
-		qgsmaplayerset.h			\
 		qgsmapoverviewcanvas.h				\
 		qgsmapserverexport.h				\
 		qgsmaptool.h						\
@@ -225,7 +224,6 @@ libqgis_gui_la_SOURCES =						\
 		qgsmapcanvasmap.cpp				\
 		qgsmaplayer.cpp						\
 		qgsmaplayerregistry.cpp				\
-		qgsmaplayerset.cpp			\
 		qgsmapoverviewcanvas.cpp			\
 		qgsmapserverexport.cpp		\
 		qgsmaptool.cpp			\

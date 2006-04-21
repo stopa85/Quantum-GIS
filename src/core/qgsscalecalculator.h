@@ -58,6 +58,9 @@ class QgsScaleCalculator
      */
     void setMapUnits(QGis::units mapUnits);
 
+    /** Returns current map units */
+    QGis::units mapUnits() const;
+    
     /**
      * Calculate the scale
      * @param mapExtent QgsRect containing the current map extent

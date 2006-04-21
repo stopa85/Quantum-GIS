@@ -262,11 +262,10 @@ void QgsMapOverviewCanvas::setbgColor(const QColor& color)
 
 void QgsMapOverviewCanvas::setLayerSet(std::deque<QString>& layerSet)
 {
-  QgsMapLayerSet& layers = mMapRender->layers();
-  layers.setLayerSet(layerSet);
+  mMapRender->setLayerSet(layerSet);
 }
 
 void QgsMapOverviewCanvas::updateFullExtent()
 {
-  mMapRender->layers().updateFullExtent();
+  mMapRender->updateFullExtent();
 }

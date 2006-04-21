@@ -56,12 +56,15 @@ class QgsCoordinateTransform: public QObject
     /*! Default constructor. Make sure you use initialised() manually if you use this one! */
     QgsCoordinateTransform() ;
 
-  /** Constructs a QgsCoordinateTransform using QgsSpatialRefSys objects.
-   * @param theSource SRS, typically of the layer's coordinate system
-   * @param theDest SRS, typically of the map canvas coordinate system
-   */
-  QgsCoordinateTransform(const QgsSpatialRefSys& theSource, 
-                         const QgsSpatialRefSys& theDest);
+    /** Constructs a QgsCoordinateTransform using QgsSpatialRefSys objects.
+    * @param theSource SRS, typically of the layer's coordinate system
+    * @param theDest SRS, typically of the map canvas coordinate system
+    */
+    QgsCoordinateTransform(const QgsSpatialRefSys& theSource, 
+                          const QgsSpatialRefSys& theDest);
+  
+    /** Constructs a QgsCoordinateTransform using SRS ID of source and destination SRS */
+    QgsCoordinateTransform(long theSourceSrsId, long theDestSrsId);
 
     /*!
      * Constructs a QgsCoordinateTransform using the Well Known Text representation
@@ -184,7 +187,6 @@ class QgsCoordinateTransform: public QObject
     */
     bool isShortCircuited() {return mShortCircuit;};
 
- public slots:
     /*! Change the destination coordinate system by passing it a qgis srsid
     * A QGIS srsid is a unique key value to an entry on the tbl_srs in the
     * srs.db sqlite database.
@@ -196,6 +198,7 @@ class QgsCoordinateTransform: public QObject
     * @param theSRSID -  A long representing the srsid of the srs to be used */
     void setDestSRSID (long theSRSID);
 
+  public slots:
     //!initialise is used to actually create the Transformer instance
     void initialise();
 

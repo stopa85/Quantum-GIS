@@ -80,7 +80,7 @@ public:
    */
   QString capabilitiesString() const;
 
-  //! Select features found within the search rectangle
+  //! Select features found within the search rectangle (in layer's coordinates)
   void select(QgsRect * rect, bool lock);
 
   //!Select not selected features and deselect selected ones
@@ -408,12 +408,12 @@ public:
    *  \param widthScale line width scale
    *  \param symbolScale symbol scale
    */
-  void draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * cXf, double widthScale, double symbolScale);
+  void draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * cXf, QgsCoordinateTransform* ct, double widthScale, double symbolScale);
 
   /** \brief Draws the layer labels using coordinate transformation
    *  \param scale size scale, applied to all values in pixels
    */
-  void drawLabels(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * cXf, double scale);
+  void drawLabels(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * cXf, QgsCoordinateTransform* ct, double scale);
 
   /** returns array of added features */
   std::vector<QgsFeature*>& addedFeatures() { return mAddedFeatures; }
@@ -474,41 +474,34 @@ public:
 private:                       // Private attributes
 
   //! Draws features. May cause projections exceptions to be generated
-  // (i.e., code that calls this function needs to catch them
-  void drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * cXf, QPixmap* marker, double markerScaleFactor, bool projectionsEnabledFlag );
-
-private:                       // Private attributes
+  //! (i.e., code that calls this function needs to catch them
+  void drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * cXf, QgsCoordinateTransform* ct,
+                   QPixmap* marker, double markerScaleFactor);
 
   //! Draws the layer labels using coordinate transformation
-  void drawLabels(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * cXf);
+  void drawLabels(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * cXf, QgsCoordinateTransform* ct);
 
-  // Convenience function to transform the given point
-  void transformPoint(double& x, double& y, 
-      QgsMapToPixel* mtp, bool projectionsEnabledFlag);
+  //! Convenience function to transform the given point
+  void transformPoint(double& x, double& y,
+                      QgsMapToPixel* mtp, QgsCoordinateTransform* ct);
   
-  void transformPoints(std::vector<double>& x, std::vector<double>& y,
-      std::vector<double>& z,
-      QgsMapToPixel* mtp, bool projectionsEnabledFlag);
+  void transformPoints(std::vector<double>& x, std::vector<double>& y, std::vector<double>& z,
+                       QgsMapToPixel* mtp, QgsCoordinateTransform* ct);
 
-  // Inverse projects the given rectangle if coordinate transforms are
-  // in effect. Alters the given rectangle
-  QgsRect inverseProjectRect(const QgsRect& r) const;
-
-  // Draw the linestring as given in the WKB format. Returns a pointer
-  // to the byte after the end of the line string binary data stream
-  // (WKB).
+  //! Draw the linestring as given in the WKB format. Returns a pointer
+  //! to the byte after the end of the line string binary data stream
+  //! (WKB).
   unsigned char* drawLineString(unsigned char* WKBlinestring, QPainter* p,
-      QgsMapToPixel* mtp, 
-      bool projectionsEnabledFlag);
+                                QgsMapToPixel* mtp, QgsCoordinateTransform* ct);
 
-  // Draw the polygon as given in the WKB format. Returns a pointer to
-  // the byte after the end of the polygon binary data stream (WKB).
+  //! Draw the polygon as given in the WKB format. Returns a pointer to
+  //! the byte after the end of the polygon binary data stream (WKB).
   unsigned char* drawPolygon(unsigned char* WKBpolygon, QPainter* p, 
-      QgsMapToPixel* mtp, bool projectionsEnabledFlag);
+                             QgsMapToPixel* mtp, QgsCoordinateTransform* ct);
 
   //! Draws the layer using coordinate transformation
   //! Returns FALSE if an error occurred during drawing
-  bool draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * cXf);
+  bool draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * cXf, QgsCoordinateTransform* ct);
 
   //! Pointer to data provider derived from the abastract base class QgsDataProvider
   QgsVectorDataProvider *dataProvider;

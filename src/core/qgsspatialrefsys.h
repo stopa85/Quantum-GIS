@@ -3,7 +3,6 @@
 
 //Standard includes
 #include <ostream>
-#include <istream>
 
 //qt includes
 #include <QString>
@@ -386,27 +385,4 @@ inline std::ostream& operator << (std::ostream& os, const QgsSpatialRefSys &r)
   return os << mySummary.toLocal8Bit().data() << std::endl;
 }
 
-
-/*
-//! Input stream operator
-inline std::istream& operator>> (std::istream& str, QgsSpatialRefSys& r)
-{
-  //std::cout << "FIXME FIXME" << __FILE__ << ":" << __LINE__ << std::endl;
-  std::string s;
-  str >> s;
-  
-  //QString srs = s.c_str();
-  // split the string into the parts to created the object
-  //QStringList parts = QStringList::split(QRegExp("\t"),srs);
-  // r.setSrid(parts[0]);
-  // r.setAuthName(parts[1]);
-  // r.setAuthSrid(parts[2]);
-  // r.setSrText(parts[3]);
-  // r.setProjText(parts[4]);
-  // r.setName(parts[5]);
-  //
-  return str;
-  
-} 
-*/
 #endif // QGSSPATIALREFSYS_H

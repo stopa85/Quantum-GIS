@@ -67,10 +67,9 @@ QgsVectorLayerProperties::QgsVectorLayerProperties(QgsVectorLayer * lyr,
       }
   }
 
-  if ( layer->coordinateTransform() )
-  {
-      leSpatialRefSys->setText(layer->coordinateTransform()->sourceSRS().proj4String());
-  }
+  QgsSpatialRefSys srs(layer->srsId(), QgsSpatialRefSys::QGIS_SRSID);
+  leSpatialRefSys->setText(srs.proj4String());
+  
   connect(sliderTransparency, SIGNAL(valueChanged(int)), this, SLOT(sliderTransparency_valueChanged(int)));
 
 } // QgsVectorLayerProperties ctor
@@ -433,13 +432,8 @@ QString QgsVectorLayerProperties::getMetadata()
 
   try
   {
-    QgsCoordinateTransform * coordinateTransform = layer->coordinateTransform();
-
-    if ( ! coordinateTransform )
-    {
-        throw QgsCsException( std::string("unable to get layer coordinate transform object") );
-    }
-
+    /*    
+    // TODO: currently disabled, will revisit later [MD]
     QgsRect myProjectedExtent = coordinateTransform->transformBoundingBox(layer->extent());
     myMetadataQString += "<tr><td bgcolor=\"white\">";
     myMetadataQString += tr("In project spatial reference system units : ") + 
@@ -452,8 +446,9 @@ QString QgsVectorLayerProperties::getMetadata()
                          "," + 
                          QString::number(myProjectedExtent.yMax());
     myMetadataQString += "</td></tr>";
+    */
 
-
+    QgsSpatialRefSys srs(layer->srsId(), QgsSpatialRefSys::QGIS_SRSID);
 
     // 
     // Display layer spatial ref system
@@ -462,18 +457,21 @@ QString QgsVectorLayerProperties::getMetadata()
     myMetadataQString += tr("Layer Spatial Reference System:");
     myMetadataQString += "</td></tr>";  
     myMetadataQString += "<tr><td bgcolor=\"white\">";
-    myMetadataQString += coordinateTransform->sourceSRS().proj4String().replace(QRegExp("\"")," \"");                       
+    myMetadataQString += srs.proj4String().replace(QRegExp("\"")," \"");                       
     myMetadataQString += "</td></tr>";
 
     // 
     // Display project (output) spatial ref system
     //  
+    /*
+    // TODO: disabled for now, will revisit later [MD]
     myMetadataQString += "<tr><td bgcolor=\"gray\">";
     myMetadataQString += tr("Project (Output) Spatial Reference System:");
     myMetadataQString += "</td></tr>";  
     myMetadataQString += "<tr><td bgcolor=\"white\">";
     myMetadataQString += coordinateTransform->destSRS().proj4String().replace(QRegExp("\"")," \"");                       
     myMetadataQString += "</td></tr>";
+    */
 
   }
   catch(QgsCsException &cse)
@@ -551,24 +549,18 @@ QString QgsVectorLayerProperties::getMetadata()
 
 void QgsVectorLayerProperties::on_pbnChangeSpatialRefSys_clicked()
 {
-    
-
     QgsLayerProjectionSelector * mySelector = new QgsLayerProjectionSelector(this);
-    long myDefaultSRS =layer->coordinateTransform()->sourceSRS().srsid();
-    if (myDefaultSRS==0)
-    {
-      myDefaultSRS=QgsProject::instance()->readNumEntry("SpatialRefSys","/ProjectSRSID",GEOSRS_ID);
-    }
-    mySelector->setSelectedSRSID(myDefaultSRS);
+    mySelector->setSelectedSRSID(layer->srsId());
     if(mySelector->exec())
     {
-      layer->coordinateTransform()->sourceSRS().createFromSrsId(mySelector->getCurrentSRSID());
-      layer->coordinateTransform()->initialise();
+      layer->setSrsId(mySelector->getCurrentSRSID());
     }
     else
     {
       QApplication::restoreOverrideCursor();
     }
     delete mySelector;
-    leSpatialRefSys->setText(layer->coordinateTransform()->sourceSRS().proj4String());
+
+    QgsSpatialRefSys srs(layer->srsId(), QgsSpatialRefSys::QGIS_SRSID);
+    leSpatialRefSys->setText(srs.proj4String());
 }

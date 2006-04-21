@@ -80,8 +80,8 @@ QString QgsLabel::fieldValue ( int attr, QgsFeature *feature )
 }
 
 void QgsLabel::renderLabel( QPainter * painter, QgsRect *viewExtent,
-                            const QgsCoordinateTransform& coordTransform,
-                            bool doCoordTransform, QgsMapToPixel *transform,
+                            QgsCoordinateTransform* coordTransform,
+                            QgsMapToPixel *transform,
                             QgsFeature *feature, bool selected, QgsLabelAttributes *classAttributes,
        			    double sizeScale )
 {
@@ -201,11 +201,11 @@ void QgsLabel::renderLabel( QPainter * painter, QgsRect *viewExtent,
     }
 
     // Convert point to projected units
-    if (doCoordTransform)
+    if (coordTransform)
     {
       try
       {
-	point = (const_cast<QgsCoordinateTransform&>(coordTransform)).transform(point);
+	       point = coordTransform->transform(point);
       }
       catch(QgsCsException &cse)
       {

@@ -83,12 +83,12 @@ public:
      * @param mtp Transformation class
      * @return FALSE if an error occurred during drawing
      */
-    virtual bool draw(QPainter* painter, QgsRect* rect, QgsMapToPixel* mtp);
+    virtual bool draw(QPainter* painter, QgsRect* rect, QgsMapToPixel* mtp, QgsCoordinateTransform* ct);
     
     /** Draw labels
      * @TODO to be removed: used only in vector layers
      */
-    virtual void drawLabels(QPainter* painter, QgsRect* rect, QgsMapToPixel* mtp);
+    virtual void drawLabels(QPainter* painter, QgsRect* rect, QgsMapToPixel* mtp, QgsCoordinateTransform* ct);
 
     /** Return the extent of the layer as a QRect */
     const QgsRect extent();
@@ -160,22 +160,6 @@ public:
     */
     bool writeXML(QDomNode & layer_node, QDomDocument & document);
 
-    /** Accessor for the coordinate transformation object */
-    QgsCoordinateTransform * coordinateTransform();
-
-    /** A simple helper method to find out if on the fly projections 
-        are enabled or not */
-    bool projectionsEnabled() const;
-    
-    /** Convenience function to project an extent into the layer source
-     * SRS, but also split it into two extents if it crosses
-     * the +/- 180 degree line. Modifies the given extent to be in the
-     * source SRS coordinates, and if it was split, returns true, and
-     * also sets the contents of the r2 parameter
-     * @TODO: to be removed
-     */
-    bool projectExtent(QgsRect& extent, QgsRect& r2);
-
     /** Copies the symbology settings from another layer. Returns true in case of success */
     virtual bool copySymbologySettings(const QgsMapLayer& other) = 0;
 
@@ -201,6 +185,11 @@ public:
      */
     virtual QString errorString();
 
+    /** Returns ID of the layer's spatial reference system */
+    long srsId();
+    
+    /** Sets SRS ID of the layer */
+    void setSrsId(long srsid);
 
 public slots:
 
@@ -256,13 +245,6 @@ protected:
     /** debugging member - invoked when a connect() is made to this object */
     void connectNotify( const char * signal );
 
-    /** Calculates the bounding box of the given extent in the inverse
-     *  projected spatial reference system.
-     * @TODO to be removed - project dependency
-     */
-    QgsRect calcProjectedBoundingBox(QgsRect& extent);
-
-
     /** Transparency level for this layer should be 0-255 (255 being opaque) */
     unsigned int mTransparencyLevel;
   
@@ -278,10 +260,8 @@ protected:
     /** Name of the layer - used for display */
     QString mLayerName;
 
-    /** A QgsCoordinateTransform is used for on the fly reprojection of map layers
-     * @TODO to be removed - project dependency
-     */
-    QgsCoordinateTransform * mCoordinateTransform; 
+    /** ID of layer's Spatial reference system */
+    long mLayerSrsId;
 
 private:
 

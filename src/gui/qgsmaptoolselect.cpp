@@ -90,5 +90,6 @@ void QgsMapToolSelect::canvasReleaseEvent(QMouseEvent * e)
   bool lock = (e->state() == Qt::ControlModifier);
   
   QgsVectorLayer* vlayer = dynamic_cast<QgsVectorLayer*>(mCanvas->currentLayer());
+  search = toLayerCoords(vlayer, search);
   vlayer->select(&search, lock);
 }

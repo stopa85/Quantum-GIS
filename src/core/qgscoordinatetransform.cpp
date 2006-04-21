@@ -42,6 +42,12 @@ QgsCoordinateTransform::QgsCoordinateTransform(const QgsSpatialRefSys& source,
   initialise();
 }
 
+QgsCoordinateTransform::QgsCoordinateTransform(long theSourceSrsId, long theDestSrsId)
+  : mSourceSRS(theSourceSrsId, QgsSpatialRefSys::QGIS_SRSID),
+    mDestSRS(theDestSrsId, QgsSpatialRefSys::QGIS_SRSID)
+{
+  initialise();
+}
 
 QgsCoordinateTransform::QgsCoordinateTransform( QString theSourceSRS, QString theDestSRS ) : QObject()
 

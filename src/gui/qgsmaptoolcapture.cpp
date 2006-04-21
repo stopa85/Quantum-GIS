@@ -19,6 +19,7 @@
 #include "qgsfield.h"
 #include "qgsmaptoolcapture.h"
 #include "qgsmapcanvas.h"
+#include "qgsmaprender.h"
 #include "qgsmaptopixel.h"
 #include "qgsfeature.h"
 #include "qgsproject.h"
@@ -44,33 +45,6 @@ QgsMapToolCapture::~QgsMapToolCapture()
 {
   delete mRubberBand;
   mRubberBand = 0;
-}
-
-
-QgsPoint QgsMapToolCapture::maybeInversePoint(QgsPoint point, const char whenmsg[])
-{
-  QgsVectorLayer *vlayer = dynamic_cast <QgsVectorLayer*>(mCanvas->currentLayer());
-  QgsPoint transformedPoint;
-
-  if( mCanvas->projectionsEnabled() )
-  {
-    // Do reverse transformation before saving. If possible!
-    try
-    {
-      transformedPoint = vlayer->coordinateTransform()->transform(point, QgsCoordinateTransform::INVERSE);
-    }
-    catch(QgsCsException &cse)
-    {
-      //#ifdef QGISDEBUG
-      std::cout << "Caught transform error when " << whenmsg <<"." 
-          << "Setting untransformed values." << std::endl;
-      //#endif  
-      // Transformation failed,. Bail out with original rectangle.
-      return point;
-    }
-    return transformedPoint;
-  }
-  return point;
 }
 
 
@@ -111,10 +85,10 @@ void QgsMapToolCapture::canvasReleaseEvent(QMouseEvent * e)
     {
       QgsFeature* f = new QgsFeature(0,"WKBPoint");
       
-      // snap point to points within the vector layer snapping tolerance
-      vlayer->snapPoint(idPoint, tolerance);
       // project to layer's SRS
-      QgsPoint savePoint = maybeInversePoint(idPoint, "adding point");
+      QgsPoint savePoint = toLayerCoords(vlayer, idPoint);
+      // snap point to points within the vector layer snapping tolerance
+      vlayer->snapPoint(savePoint, tolerance);
       
       // create geos geometry and attach it to feature      
       int size=5+2*sizeof(double);
@@ -161,7 +135,7 @@ void QgsMapToolCapture::canvasReleaseEvent(QMouseEvent * e)
       mRubberBand->show();
     }
   
-    QgsPoint digitisedPoint = toMapCoords(e->pos());
+    QgsPoint digitisedPoint = toLayerCoords(vlayer, e->pos());
     vlayer->snapPoint(digitisedPoint, tolerance);
     mCaptureList.push_back(digitisedPoint);
   
@@ -196,7 +170,7 @@ void QgsMapToolCapture::canvasReleaseEvent(QMouseEvent * e)
         double x,y;
         for(std::list<QgsPoint>::iterator it=mCaptureList.begin();it!=mCaptureList.end();++it)
         {
-          QgsPoint savePoint = maybeInversePoint(*it, "adding line");
+          QgsPoint savePoint = *it;
           x = savePoint.x();
           y = savePoint.y();
   
@@ -222,7 +196,7 @@ void QgsMapToolCapture::canvasReleaseEvent(QMouseEvent * e)
         std::list<QgsPoint>::iterator it;
         for(it=mCaptureList.begin();it!=mCaptureList.end();++it)
         {
-          QgsPoint savePoint = maybeInversePoint(*it, "adding poylgon");
+          QgsPoint savePoint = *it;
           x = savePoint.x();
           y = savePoint.y();
   
@@ -234,7 +208,7 @@ void QgsMapToolCapture::canvasReleaseEvent(QMouseEvent * e)
         }
         // close the polygon
         it=mCaptureList.begin();
-        QgsPoint savePoint = maybeInversePoint(*it, "closing polygon");
+        QgsPoint savePoint = *it;
         x = savePoint.x();
         y = savePoint.y();
   
