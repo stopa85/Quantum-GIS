@@ -14,6 +14,7 @@
  ***************************************************************************/
 /* $Id$ */
 
+#include "qgscoordinatetransform.h"
 #include "qgsmaptool.h"
 #include "qgsmaplayer.h"
 #include "qgsmapcanvas.h"

@@ -23,6 +23,7 @@
 #include "qgsaddattrdialog.h"
 #include "qgsdelattrdialog.h"
 #include "qgsfeature.h"
+#include "qgsfield.h"
 #include "qgssearchquerybuilder.h"
 #include "qgssearchtreenode.h"
 #include "qgsvectorlayer.h"

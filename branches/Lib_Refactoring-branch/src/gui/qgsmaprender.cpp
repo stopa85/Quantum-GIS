@@ -16,6 +16,7 @@
 
 #include <cmath>
 
+#include "qgscoordinatetransform.h"
 #include "qgslogger.h"
 #include "qgsmaprender.h"
 #include "qgsscalecalculator.h"

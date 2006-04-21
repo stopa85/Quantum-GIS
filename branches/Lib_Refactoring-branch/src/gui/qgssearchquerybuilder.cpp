@@ -18,6 +18,7 @@
 #include <q3listbox.h>
 #include <QMessageBox>
 #include "qgsfeature.h"
+#include "qgsfield.h"
 #include "qgssearchquerybuilder.h"
 #include "qgssearchstring.h"
 #include "qgssearchtreenode.h"

@@ -21,6 +21,7 @@
 
 //qgis includes
 #include "qgscontexthelp.h"
+#include "qgscoordinatetransform.h"
 #include "qgsmaplayer.h"
 #include "qgsmaplayerregistry.h"
 #include "qgsproject.h"

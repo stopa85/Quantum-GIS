@@ -23,25 +23,21 @@
 #include <map>
 
 #include <QObject>
-#include <QPixmap>
 
 #include "qgis.h"
 #include "qgsrect.h"
-#include "qgsfield.h"
-#include "qgscoordinatetransform.h"
 
+class QgsCoordinateTransform;
+class QgsField;
 class QgsMapToPixel;
-class QgsFeature;
-class QgsLegend;
 
 class QDomNode;
 class QDomDocument;
 class QKeyEvent;
 
 /** \class QgsMapLayer
- * \brief Base class for all map layer types.
- * This class is the base class for all map layer types (shapefile,
- * raster, database).
+ *  \brief Base class for all map layer types.
+ * This class is the base class for all map layer types (vector, raster).
  */
 class QgsMapLayer : public QObject
 {
@@ -49,74 +45,62 @@ class QgsMapLayer : public QObject
 
 public:
 
-    /*! Constructor
+    /** Constructor
      * @param type Type of layer as defined in LAYERS enum
      * @param lyrname Display Name of the layer
      */
     QgsMapLayer(int type = 0, QString lyrname = QString::null, QString source = QString::null);
 
-    //! Destructor
-    virtual ~ QgsMapLayer();
+    /** Destructor */
+    virtual ~QgsMapLayer();
 
-    /*! Get the type of the layer
+    /** Get the type of the layer
      * @return Integer matching a value in the LAYERS enum
      */
     int type() const;
 
-    /*! Get this layer's unique ID */
+    /** Get this layer's unique ID, this ID is used to access this layer from map layer registry */
     QString const & getLayerID() const;
 
-    /*! Set the display name of the layer
-       # @param name New name for the layer
+    /** Set the display name of the layer
+     * @param name New name for the layer
      */
     void setLayerName(const QString & name);
 
-    /*! Get the display name of the layer
+    /** Get the display name of the layer
      * @return the layer name
      */
     QString const & name() const;
 
-    /*! Virtual function to calculate the extent of the current layer.
+    /** Virtual function to calculate the extent of the current layer.
      * This function must be overridden in all child classes and implemented
      * based on the layer type
      */
     virtual QgsRect calculateExtent();
 
-
-    virtual void draw(QPainter *, QgsRect *, int);
-
-    //! Returns FALSE if an error occurred during drawing
-    virtual bool draw(QPainter *, QgsRect *, QgsMapToPixel *);
-    virtual void drawLabels(QPainter *, QgsRect *, QgsMapToPixel *);
-
-    /*!Select features on the map canvas by dragging a rectangle */
-    virtual void select(QgsRect *, bool )
-    {}
-    ;
-
-    /*! Display the attribute table for the layer
+    /** Render the layer, to be overridden in child classes
+     * @param painter Painter that to be used for rendered output
+     * @param rect Extent of the layer to be drawn
+     * @param mtp Transformation class
+     * @return FALSE if an error occurred during drawing
      */
-    virtual void table()
-    {}
-    ;
-
-    /*! Return the extent of the layer as a QRect
+    virtual bool draw(QPainter* painter, QgsRect* rect, QgsMapToPixel* mtp);
+    
+    /** Draw labels
+     * @TODO to be removed: used only in vector layers
      */
+    virtual void drawLabels(QPainter* painter, QgsRect* rect, QgsMapToPixel* mtp);
+
+    /** Return the extent of the layer as a QRect */
     const QgsRect extent();
 
-    /*! Returns the status of the layer. An invalid layer is one which has a bad datasource
+    /*! Return the status of the layer. An invalid layer is one which has a bad datasource
      * or other problem. Child classes set this flag when intialized
-     *@return True if the layer is valid and can be accessed
+     * @return True if the layer is valid and can be accessed
      */
     bool isValid();
 
-    /** Write property of QString labelField. */
-    virtual void setLabelField(const QString & _newVal);
-
-    /** Read property of QString labelField. */
-    virtual const QString & labelField();
-
-    //! Returns the source for the layer
+    /** Returns the source for the layer */
     QString const & source() const;
 
     /** Write property of int featureType. */
@@ -127,48 +111,31 @@ public:
 
     /**
      * Returns the sublayers of this layer
-     *
      * (Useful for providers that manage their own layers, such as WMS)
-     *
      */
-    virtual QStringList subLayers()
-    {
-      return QStringList();  // Empty
-    }
+    virtual QStringList subLayers();
     
     /**
      * Reorders the *previously selected* sublayers of this layer from bottom to top
-     *
      * (Useful for providers that manage their own layers, such as WMS)
-     *
      */
-    virtual void setLayerOrder(QStringList layers)
-    {
-      // NOOP
-    }
+    virtual void setLayerOrder(QStringList layers);
     
-    /**
-     * Set the visibility of the given sublayer name
-     */
-    virtual void setSubLayerVisibility(QString name, bool vis)
-    {
-      // NOOP
-    }
+    /** Set the visibility of the given sublayer name */
+    virtual void setSubLayerVisibility(QString name, bool vis);
 
-    //! Layers enum defining the types of layers that can be added to a map
+    /** Layers enum defining the types of layers that can be added to a map */
     enum LAYERS
     {
         VECTOR,
         RASTER
     };
 
-    /**True if the layer can be edited*/
-    virtual bool isEditable() const =0;
+    /** True if the layer can be edited */
+    virtual bool isEditable() const = 0;
 
     /** sets state from DOM document
-
        @param layer_node is DOM node corresponding to ``maplayer'' tag
-
        @note
 
        The DOM node corresponds to a DOM document project file XML element read
@@ -180,15 +147,12 @@ public:
        Invoked by QgsProject::read().
 
        @returns true if successful
-
      */
-    bool readXML( QDomNode & layer_node );
+    bool readXML(QDomNode & layer_node);
 
 
     /** stores state in DOM node
-
        @param layer_node is DOM node corresponding to ``projectlayers'' tag
-
        @note
 
        The DOM node corresponds to a DOM document project file XML element to be
@@ -200,9 +164,8 @@ public:
        Invoked by QgsProject::write().
 
        @returns true if successful
-
     */
-    bool writeXML( QDomNode & layer_node, QDomDocument & document );
+    bool writeXML(QDomNode & layer_node, QDomDocument & document);
 
     /** Accessor for the coordinate transformation object */
     QgsCoordinateTransform * coordinateTransform();
@@ -211,27 +174,31 @@ public:
         are enabled or not */
     bool projectionsEnabled() const;
     
-    // Convenience function to project an extent into the layer source
-    // SRS, but also split it into two extents if it crosses
-    // the +/- 180 degree line. Modifies the given extent to be in the
-    // source SRS coordinates, and if it was split, returns true, and
-    // also sets the contents of the r2 parameter
+    /** Convenience function to project an extent into the layer source
+     * SRS, but also split it into two extents if it crosses
+     * the +/- 180 degree line. Modifies the given extent to be in the
+     * source SRS coordinates, and if it was split, returns true, and
+     * also sets the contents of the r2 parameter
+     * @TODO: to be removed
+     */
     bool projectExtent(QgsRect& extent, QgsRect& r2);
 
-    /**Returns the path to an icon which characterises the type of layer*/
+    /** Returns the path to an icon which characterises the type of layer */
     virtual QString layerTypeIconPath() = 0;
 
-    /**Copies the symbology settings from another layer. Returns true in case of success*/
+    /** Copies the symbology settings from another layer. Returns true in case of success */
     virtual bool copySymbologySettings(const QgsMapLayer& other) = 0;
 
-    /**Returns true if this layer can be in the same symbology group with another layer*/
+    /** Returns true if this layer can be in the same symbology group with another layer */
     virtual bool isSymbologyCompatible(const QgsMapLayer& other) const = 0;
 
+    /** Return a list of field names for this layer
+     * @TODO: to be removed - used only in vector layer
+     */
     virtual std::vector < QgsField > const &fields() const;
 
-    /** \brief accessor for transparency level.  */
+    /** Accessor for transparency level. */
     virtual unsigned int getTransparency()=0;
-
 
     /**
      * If an operation returns 0 (e.g. draw()), this function
@@ -250,14 +217,17 @@ public:
     virtual QString errorString();
 
 
-public  slots:
-    /** \brief Mutator for transparency level. Should be between 0 and 255 */
+public slots:
+
+    /** Mutator for transparency level. Should be between 0 and 255 */
     virtual void setTransparency(unsigned int)=0;
-   //! event handler for when a coordinate transofrm fails due to bad vertex error
-   virtual void invalidTransformInput();
+    
+    /** Event handler for when a coordinate transform fails due to bad vertex error */
+    virtual void invalidTransformInput();
 
-
-    //! keyPress event so we can check if cancel was pressed
+    /** keyPress event so we can check if cancel was pressed
+     * @TODO: to be removed
+     */
     void keyPressed ( QKeyEvent * e );
 
     /** Accessor and mutator for the minimum scale member */
@@ -273,16 +243,19 @@ public  slots:
     bool scaleBasedVisibility();
 
     /** Used to ask the layer for its projection as a WKT string. Must be reimplemented by each provider. */
-    virtual QString getProjectionWKT()  = 0 ;
+    virtual QString getProjectionWKT() = 0;
+
 signals:
 
-    /** \brief emit a signal to notify of a progress event */
+    /** Emit a signal to notify of a progress event */
     void setProgress(int theProgress, int theTotalSteps);
 
-    /** \brief emit a signal to be caught by gisapp and display a msg on status bar */
+    /** Emit a signal with status (e.g. to be caught by QgiAapp and display a msg on status bar) */
     void setStatus(QString theStatusQString);
 
-    /** This signal should be connected with the slot QgsMapCanvas::refresh() */
+    /** This signal should be connected with the slot QgsMapCanvas::refresh()
+     * @TODO: to be removed - GUI dependency
+     */
     void repaintRequested();
 
     /** This is used to send a request that any mapcanvas using this layer update its extents */
@@ -290,7 +263,7 @@ signals:
 
 protected:
 
-    /** \brief Transparency level for this layer should be 0-255 (255 being opaque)  */
+    /** Transparency level for this layer should be 0-255 (255 being opaque) */
     unsigned int transparencyLevelInt;
   
     /** called by readXML(), used by children to read state specific to them from
@@ -304,52 +277,55 @@ protected:
     virtual bool writeXML_( QDomNode & layer_node, QDomDocument & document );
 
 
-    //! Extent of the layer
+    /** Extent of the layer */
     QgsRect layerExtent;
 
-    //! Indicates if the layer is valid and can be drawn
+    /** Indicates if the layer is valid and can be drawn */
     bool valid;
 
-    //! data source description string, varies by layer type
+    /** data source description string, varies by layer type */
     QString dataSource;
 
-    //! Geometry type as defined in enum WKBTYPE (qgis.h)
+    /** Geometry type as defined in enum WKBTYPE (qgis.h)
+     * @TODO to be moved to vector layer
+     */
     int geometryType;
 
-    /** Name of the layer - used for display  */
+    /** Name of the layer - used for display */
     QString layerName;
 
     /** A flag to let the draw() render loop know if the user has requested drawing be cancelled */
     bool mDrawingCancelled;
 
-    //! A QgsCoordinateTransform is used for on the fly reprojection of map layers
+    /** A QgsCoordinateTransform is used for on the fly reprojection of map layers
+     * @TODO to be removed - project dependency
+     */
     QgsCoordinateTransform * mCoordinateTransform; 
 
-private:                       // Private attributes
+private:
 
-    /// QgsMapLayer not copyable
+    /** private copy constructor - QgsMapLayer not copyable */
     QgsMapLayer( QgsMapLayer const & );
 
-    /// QgsMapLayer not copyable
+    /** private assign operator - QgsMapLayer not copyable */
     QgsMapLayer & operator=( QgsMapLayer const & );
 
-    /** Unique ID of this layer - used to refer to this layer  in QGIS code */
+    /** Unique ID of this layer - used to refer to this layer in map layer registry */
     QString ID;
 
-    /** Type of the layer (eg. vector, raster, database  */
+    /** Type of the layer (eg. vector, raster) */
     int layerType;
 
-    //! Tag for embedding additional information
+    /** Tag for embedding additional information */
     QString tag;
 
-    
     /** debugging member
         invoked when a connect() is made to this object
     */
     void connectNotify( const char * signal );
 
-    // Calculates the bounding box of the given extent in the inverse
-    // projected spatial reference system.
+    /** Calculates the bounding box of the given extent in the inverse
+        projected spatial reference system. */
     QgsRect calcProjectedBoundingBox(QgsRect& extent);
 
     /** Minimum scale at which this layer should be displayed */
@@ -358,11 +334,6 @@ private:                       // Private attributes
     float mMaxScale;
     /** A flag that tells us whether to use the above vars to restrict layer visibility */
     bool mScaleBasedVisibility;
-
-public:                        // Public attributes
-
-    /** map label ? */
-    QString m_labelField;
 
 };
 

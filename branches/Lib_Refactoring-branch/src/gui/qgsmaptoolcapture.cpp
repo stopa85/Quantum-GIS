@@ -15,6 +15,8 @@
 /* $Id$ */
 
 #include "qgsattributedialog.h"
+#include "qgscoordinatetransform.h"
+#include "qgsfield.h"
 #include "qgsmaptoolcapture.h"
 #include "qgsmapcanvas.h"
 #include "qgsmaptopixel.h"

@@ -14,6 +14,8 @@
  ***************************************************************************/
 /* $Id$ */
 
+#include "qgscoordinatetransform.h"
+#include "qgsexception.h"
 #include "qgslogger.h"
 #include "qgsmaplayerset.h"
 #include "qgsmaplayerregistry.h"

@@ -17,7 +17,7 @@
 #include "qgsmaptoolselect.h"
 #include "qgsmapcanvas.h"
 #include "qgsmaptopixel.h"
-#include "qgsmaplayer.h"
+#include "qgsvectorlayer.h"
 #include "qgscursors.h"
 #include <QMessageBox>
 #include <QMouseEvent>
@@ -67,10 +67,11 @@ void QgsMapToolSelect::canvasReleaseEvent(QMouseEvent * e)
   delete mRubberBand;
   mRubberBand = 0;
 
-  if (!mCanvas->currentLayer())
+  if (!mCanvas->currentLayer() ||
+      dynamic_cast<QgsVectorLayer*>(mCanvas->currentLayer()) == NULL)
   {
     QMessageBox::warning(mCanvas, QObject::tr("No active layer"),
-       QObject::tr("To select features, you must choose an layer active by clicking on its name in the legend"));
+       QObject::tr("To select features, you must choose a vector layer by clicking on its name in the legend"));
     return;
   }
     
@@ -87,6 +88,7 @@ void QgsMapToolSelect::canvasReleaseEvent(QMouseEvent * e)
   // if Ctrl key is pressed, selected features will be added to selection
   // instead of removing old selection
   bool lock = (e->state() == Qt::ControlModifier);
-  mCanvas->currentLayer()->select(&search, lock);
-
+  
+  QgsVectorLayer* vlayer = dynamic_cast<QgsVectorLayer*>(mCanvas->currentLayer());
+  vlayer->select(&search, lock);
 }

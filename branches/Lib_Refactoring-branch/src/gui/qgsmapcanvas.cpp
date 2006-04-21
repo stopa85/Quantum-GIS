@@ -37,6 +37,8 @@ email                : sherman at mrcc.com
 #include <QWheelEvent>
 
 #include "qgis.h"
+#include "qgscoordinatetransform.h"
+#include "qgsexception.h"
 #include "qgsmapcanvas.h"
 #include "qgsmapcanvasmap.h"
 #include "qgsmaplayer.h"

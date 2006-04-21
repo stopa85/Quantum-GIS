@@ -17,6 +17,7 @@ email                : tim@linfiniti.com
 
 
 #include "qgsapplication.h"
+#include "qgscoordinatetransform.h"
 #include "qgsrasterlayerproperties.h"
 #include "qgslayerprojectionselector.h"
 #include "qgsproject.h"

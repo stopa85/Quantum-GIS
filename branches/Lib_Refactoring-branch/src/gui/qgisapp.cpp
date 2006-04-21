@@ -70,9 +70,11 @@
 #include "qgsbookmarkitem.h"
 #include "qgsbookmarks.h"
 #include "qgscomposer.h"
-#include <qgscursors.h>
+#include "qgscoordinatetransform.h"
+#include "qgscursors.h"
 #include "qgscustomprojectiondialog.h"
 #include "qgsencodingfiledialog.h"
+#include "qgsexception.h"
 #include "qgsgeomtypedialog.h"
 #include "qgshelpviewer.h"
 #include "qgslegend.h"
@@ -3221,21 +3223,27 @@ void QgisApp::measureArea()
 
 void QgisApp::attributeTable()
 {
-  std::cerr << ">> = " << std::endl;
   QgsMapLayer *layer = mMapLegend->currentLayer();
-  std::cerr << ">> = " << std::endl;
   if (layer)
   {
-  std::cerr << ">>> = " << std::endl;
-    layer->table();
-  std::cerr << ">>> = " << std::endl;
+  
+    QgsVectorLayer* vlayer = dynamic_cast<QgsVectorLayer*>(layer);
+    if (vlayer)
+    {
+      vlayer->table();
+    }
+    else
+    {
+      QMessageBox::information(this, tr("Not a vector layer"),
+        tr("To open an attribute table, you must select a vector layer in the legend"));
+    }
+
   }
   else
   {
     QMessageBox::information(this, tr("No Layer Selected"),
-        tr("To open an attribute table, you must select a layer in the legend"));
+        tr("To open an attribute table, you must select a vector layer in the legend"));
   }
-  std::cerr << ">> = " << std::endl;
 }
 
 void QgisApp::deleteSelected()

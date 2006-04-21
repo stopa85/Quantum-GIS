@@ -20,6 +20,7 @@
 
 #include "qgisapp.h"
 #include "qgsapplication.h"
+#include "qgscoordinatetransform.h"
 #include "qgslegend.h"
 #include "qgslegendgroup.h"
 #include "qgslegendlayer.h"
