@@ -23,6 +23,7 @@
 #include <set>
 #include <vector>
 
+#include "qgis.h"
 #include "qgsmaplayer.h"
 #include "qgsattributeaction.h"
 #include "qgsgeometry.h"
@@ -37,6 +38,7 @@ class QPixmap;
 class QgisApp;
 class QgsAttributeTableDisplay;
 class QgsData;
+class QgsField;
 class QgsFeature;
 class QgsGeometry;
 class QgsMapToPixel;
@@ -155,7 +157,13 @@ public:
   
   /** Sets field used for labeling */
   void setLabelField(QString fldName);
-  
+
+  /** Write property of int featureType. */
+  void setFeatureType(const int &_newVal);
+
+  /** Read property of int featureType. */
+  const int & featureType();
+
 signals:
   /**This signal is emitted when the layer leaves editing mode.
      The purpose is to tell QgsMapCanvas to remove the lines of
@@ -285,7 +293,6 @@ public:
    * Number of attribute fields for a feature in the layer
    */
   virtual int fieldCount() const;
-
 
   /**
     Return a list of field names for this layer
@@ -449,6 +456,9 @@ public:
   
   /** Changed geometries which are not commited. */
   std::map<int, QgsGeometry> mChangedGeometries;
+  
+  /** Geometry type as defined in enum WKBTYPE (qgis.h) */
+  int mGeometryType;
   
   /**Renderer object which holds the information about how to display the features*/
   QgsRenderer *m_renderer;

@@ -797,9 +797,6 @@ public slots:
      **/
     void updateProgress(int,int);
 
-    /** \brief Slot called when the popup menu transparency slider has been moved.*/
-    void popupTransparencySliderMoved(int);
-     
     /** \brief Create  gdal pyramid overviews  for this layer.
     * This will speed up performance at the expense of hard drive space.
     * Also, write access to the file is required. If no paramter is passed in

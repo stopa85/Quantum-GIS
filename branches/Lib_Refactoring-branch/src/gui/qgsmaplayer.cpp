@@ -43,25 +43,25 @@
 QgsMapLayer::QgsMapLayer(int type,
                          QString lyrname,
                          QString source) :
-        transparencyLevelInt(255), // 0 is completely transparent
-        valid(true), // assume the layer is valid (data source exists and 
+        mTransparencyLevel(255), // 0 is completely transparent
+        mValid(true), // assume the layer is valid (data source exists and 
                      // can be used) until we learn otherwise
-        dataSource(source),
+        mDataSource(source),
         mCoordinateTransform(0),
-        ID(""),
-        layerType(type)
+        mID(""),
+        mLayerType(type)
 
 {
   QgsDebugMsg("QgsMapLayer::QgsMapLayer - lyrname is '" + lyrname);
 
     // Set the display name = internal name
-    layerName = lyrname;
-    QgsDebugMsg("QgsMapLayer::QgsMapLayer - layerName is '" + layerName);
+    mLayerName = lyrname;
+    QgsDebugMsg("QgsMapLayer::QgsMapLayer - layerName is '" + mLayerName);
 
     // Generate the unique ID of this layer
     QDateTime dt = QDateTime::currentDateTime();
-    ID = lyrname + dt.toString("yyyyMMddhhmmsszzz");
-    ID.replace(" ", "_");
+    mID = lyrname + dt.toString("yyyyMMddhhmmsszzz");
+    mID.replace(" ", "_");
 
     //set some generous  defaults for scale based visibility
     mMinScale = 0;
@@ -78,37 +78,37 @@ QgsMapLayer::~QgsMapLayer()
 
 int QgsMapLayer::type() const
 {
-    return layerType;
+    return mLayerType;
 }
 
 /** Get this layer's unique ID */
 QString const & QgsMapLayer::getLayerID() const
 {
-    return ID;
+    return mID;
 }
 
 /** Write property of QString layerName. */
 void QgsMapLayer::setLayerName(const QString & _newVal)
 {
   QgsDebugMsg("QgsMapLayer::setLayerName: new name is '" + _newVal);
-  layerName = _newVal;
+  mLayerName = _newVal;
 }
 
 /** Read property of QString layerName. */
 QString const & QgsMapLayer::name() const
 {
-  QgsDebugMsg("QgsMapLayer::name: returning name '" + layerName);
-  return layerName;
+  QgsDebugMsg("QgsMapLayer::name: returning name '" + mLayerName);
+  return mLayerName;
 }
 
 QString const & QgsMapLayer::source() const
 {
-    return dataSource;
+    return mDataSource;
 }
 
 const QgsRect QgsMapLayer::extent()
 {
-    return layerExtent;
+    return mLayerExtent;
 }
 
 QgsRect QgsMapLayer::calculateExtent()
@@ -153,12 +153,10 @@ bool QgsMapLayer::readXML( QDomNode & layer_node )
     // set data source
     QDomNode mnl = layer_node.namedItem("datasource");
     QDomElement mne = mnl.toElement();
-    dataSource = mne.text();
-
-    const char * dataSourceStr = dataSource.toLocal8Bit().data(); // debugger probe
+    mDataSource = mne.text();
 
     // the internal name is just the data source basename
-    QFileInfo dataSourceFileInfo( dataSource );
+    QFileInfo dataSourceFileInfo( mDataSource );
     //internalName = dataSourceFileInfo.baseName();
 
     // set ID
@@ -166,19 +164,16 @@ bool QgsMapLayer::readXML( QDomNode & layer_node )
     if ( ! mnl.isNull() ) 
     {
         mne = mnl.toElement();
-        if ( ! mne.isNull() && mne.text().length() > 10 ) { // should be at least 17 (yyyyMMddhhmmsszzz)
-	    ID = mne.text();
-	}
+        if ( ! mne.isNull() && mne.text().length() > 10 ) // should be at least 17 (yyyyMMddhhmmsszzz)
+        {
+            mID = mne.text();
+        }
     }
 
     // set name
     mnl = layer_node.namedItem("layername");
     mne = mnl.toElement();
     setLayerName( mne.text() );
-
-    const char * layerNameStr = mne.text().toLocal8Bit().data(); // debugger probe
-
-
 
     //read srs
     QDomNode srsNode = layer_node.namedItem("coordinatetransform");
@@ -287,7 +282,7 @@ bool QgsMapLayer::writeXML_( QDomNode & layer_node, QDomDocument & document )
 
 bool QgsMapLayer::isValid()
 {
-    return valid;
+    return mValid;
 }
 
 
@@ -297,24 +292,6 @@ void QgsMapLayer::invalidTransformInput()
   // TODO: emit a signal - it will be used to update legend
 }
 
-
-const int &QgsMapLayer::featureType()
-{
-    return geometryType;
-}
-
-/** Write property of int featureType. */
-void QgsMapLayer::setFeatureType(const int &_newVal)
-{
-    geometryType = _newVal;
-}
-
-std::vector<QgsField> const & QgsMapLayer::fields() const
-{
-    static std::vector<QgsField> bogus; // bogus empty container
-
-    return bogus;
-} // QgsMapLayer::fields()
 
 QString QgsMapLayer::errorCaptionString()
 {
@@ -472,7 +449,7 @@ QgsRect QgsMapLayer::calcProjectedBoundingBox(QgsRect& extent)
   double xmax = std::numeric_limits<double>::min();
   double ymin = std::numeric_limits<double>::max();
   double ymax = std::numeric_limits<double>::min();
-  for (int i = 0; i < top.size(); ++i)
+  for (unsigned int i = 0; i < top.size(); ++i)
   {
     xmin = std::min(xmin, left[i].x());
     xmax = std::max(xmax, right[i].x());
