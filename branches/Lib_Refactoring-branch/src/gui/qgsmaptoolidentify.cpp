@@ -27,7 +27,7 @@
 #include "qgsfeatureattribute.h"
 #include "qgsattributedialog.h"
 #include "qgscursors.h"
-#include "qgscoordinatetransform.h"
+
 #include <QSettings>
 #include <QMessageBox>
 #include <QCursor>
@@ -198,19 +198,8 @@ void QgsMapToolIdentify::identifyVectorLayer(QgsVectorLayer* layer, const QgsPoi
   r.setYmin(point.y() - searchRadius);
   r.setYmax(point.y() + searchRadius);
   
-  if (layer->projectionsEnabled())
-  { 
-    try
-    {
-      r = layer->coordinateTransform()->transform(r, QgsCoordinateTransform::INVERSE);
-    }
-    catch (QgsCsException &e)
-    {
-      qDebug("Inverse transform error in %s line %d:\n%s",
-             __FILE__, __LINE__, e.what());
-    }
-  }
-  
+  r = toLayerCoords(layer, r);
+
   int featureCount = 0;
   QgsFeature *fet;
   QgsAttributeAction& actions = *layer->actions();
@@ -219,7 +208,7 @@ void QgsMapToolIdentify::identifyVectorLayer(QgsVectorLayer* layer, const QgsPoi
   dataProvider->select(&r, true);
 
   QgsDistanceArea calc;
-  calc.setSourceSRS(layer->coordinateTransform()->sourceSRS().srsid());
+  calc.setSourceSRS(layer->srsId());
   
   if ( !layer->isEditable() )
   {

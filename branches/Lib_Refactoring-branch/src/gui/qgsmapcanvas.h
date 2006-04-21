@@ -178,7 +178,7 @@ class QgsMapCanvas : public Q3CanvasView
     
     //! returns current layer (set by legend widget)
     QgsMapLayer* currentLayer();
-
+    
     //! Zooms in/out with a given center (uses zoomByScale)
     void zoomWithCenter(int x, int y, bool zoomIn);
 

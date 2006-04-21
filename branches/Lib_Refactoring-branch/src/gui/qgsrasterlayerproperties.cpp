@@ -225,10 +225,9 @@ QgsRasterLayerProperties::QgsRasterLayerProperties(QgsMapLayer *lyr, QWidget *pa
     }
   }
 
-  if ( rasterLayer->coordinateTransform() )
-  {
-    leSpatialRefSys->setText(rasterLayer->coordinateTransform()->sourceSRS().proj4String());
-  }
+  QgsSpatialRefSys srs(rasterLayer->srsId(), QgsSpatialRefSys::QGIS_SRSID);
+  leSpatialRefSys->setText(srs.proj4String());
+
   //draw the histogram
   //on_pbnHistRefresh_clicked();
 
@@ -1062,21 +1061,17 @@ void QgsRasterLayerProperties::on_pbnChangeSpatialRefSys_clicked()
     
 
     QgsLayerProjectionSelector * mySelector = new QgsLayerProjectionSelector(this);
-    long myDefaultSRS = rasterLayer->coordinateTransform()->sourceSRS().srsid();
-    if (myDefaultSRS==0)
-    {
-      myDefaultSRS=QgsProject::instance()->readNumEntry("SpatialRefSys","/ProjectSRSID",GEOSRS_ID);
-    }
-    mySelector->setSelectedSRSID(myDefaultSRS);
+    mySelector->setSelectedSRSID(rasterLayer->srsId());
     if(mySelector->exec())
     {
-      rasterLayer->coordinateTransform()->sourceSRS().createFromSrsId(mySelector->getCurrentSRSID());
-      rasterLayer->coordinateTransform()->initialise();
+      rasterLayer->setSrsId(mySelector->getCurrentSRSID());
     }
     else
     {
       QApplication::restoreOverrideCursor();
     }
     delete mySelector;
-    leSpatialRefSys->setText(rasterLayer->coordinateTransform()->sourceSRS().proj4String());
+    
+    QgsSpatialRefSys srs(rasterLayer->srsId(), QgsSpatialRefSys::QGIS_SRSID);
+    leSpatialRefSys->setText(srs.proj4String());
 }

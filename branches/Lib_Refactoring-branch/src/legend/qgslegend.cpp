@@ -20,7 +20,6 @@
 
 #include "qgisapp.h"
 #include "qgsapplication.h"
-#include "qgscoordinatetransform.h"
 #include "qgslegend.h"
 #include "qgslegendgroup.h"
 #include "qgslegendlayer.h"
@@ -31,6 +30,7 @@
 #include "qgsmapcanvas.h"
 #include "qgsmaplayer.h"
 #include "qgsmaplayerregistry.h"
+#include "qgsmaprender.h"
 #include "qgsproject.h"
 #include "qgsrasterlayer.h"
 #include "qgsrasterlayerproperties.h"
@@ -1673,56 +1673,21 @@ void QgsLegend::zoomToLayerExtent()
       return;
     }
 
-  double xmin = DBL_MAX;
-  double ymin = DBL_MAX;
-  double xmax = -DBL_MAX;
-  double ymax = -DBL_MAX;
-
-  QgsRect transformedExtent;
-  QgsRect layerExtent;
-  QgsCoordinateTransform *ct;
   QgsMapLayer* theLayer;
-
   for(std::list<QgsLegendLayerFile*>::iterator it= layerFiles.begin(); it != layerFiles.end(); ++it)
     {
       theLayer = (*it)->layer();
       if(theLayer)
-	{
-	  layerExtent = theLayer->extent();
-	  ct = theLayer->coordinateTransform();
-	  if(ct)
-	    {
-	      //transform layer extent to canvas coordinate system
-	      transformedExtent = ct->transform(layerExtent);
-	    }
-	  else
-	    {
-	      transformedExtent = layerExtent;
-	    }
-
-	  if(transformedExtent.xMin() < xmin)
-	    {
-	      xmin = transformedExtent.xMin();
-	    }
-	  if(transformedExtent.yMin() < ymin)
-	    {
-	      ymin = transformedExtent.yMin();
-	    }
-	  if(transformedExtent.xMax() > xmax)
-	    {
-	      xmax = transformedExtent.xMax();
-	    }
-	  if(transformedExtent.yMax() > ymax)
-	    {
-	      ymax = transformedExtent.yMax();
-	    }
-	}
+      {
+        QgsRect extent = mMapCanvas->mapRender()->layerExtentToOutputExtent(theLayer, theLayer->extent());
+        //zoom to bounding box
+        mMapCanvas->setExtent(extent);
+        mMapCanvas->refresh();
+        break;
+      }
+   
     }
 
-  //zoom to bounding box
-  mMapCanvas->setExtent(QgsRect(xmin, ymin, xmax, ymax));
-  mMapCanvas->render();
-  mMapCanvas->refresh();
 }
 
 void QgsLegend::initPixmaps()

@@ -3528,46 +3528,15 @@ void QgisApp::removeAllLayers()
 
 void QgisApp::zoomToLayerExtent()
 {
-  // zoom only if one or more layers loaded
-  if(QgsMapLayerRegistry::instance()->count() > 0)
+  QgsMapLayer *layer = mMapLegend->currentLayer();
+  if (layer)
   {
-    
-    QgsMapLayer *layer = mMapLegend->currentLayer();
-    if(layer)
-      {
-	// Check if the layer extent has to be transformed to the map canvas
-	// coordinate system
-#ifdef QGISDEBUG
-	std::cout << "Layer extent is : " << (layer->extent()).stringRep().toLocal8Bit().data() << std::endl;
-#endif
-	if (QgsProject::instance()->readNumEntry("SpatialRefSys","/ProjectionsEnabled",0)!=0)
-	  {
-	    QgsCoordinateTransform *ct = layer->coordinateTransform();
-	    try {
-	      QgsRect transformedExtent = ct->transform(layer->extent());
-	      mMapCanvas->setExtent(transformedExtent);
-#ifdef QGISDEBUG
-	      std::cout << "Canvas extent is : " << transformedExtent.stringRep().toLocal8Bit().data() << std::endl;
-#endif
-	    }
-	    catch(QgsCsException &cse)
-	      {
-#ifdef QGISDEBUG
-		std::cout << "Caught transform error in zoomToLayerExtent(). "
-			  << "Setting untransformed extents." << std::endl;
-#endif	
-          mMapCanvas->setExtent(layer->extent());
-        }
-      }
-      else
-      {
-        mMapCanvas->setExtent(layer->extent());
-      }
-      mMapCanvas->refresh();
+    QgsRect extent = mMapCanvas->mapRender()->layerExtentToOutputExtent(layer, layer->extent());
+    mMapCanvas->setExtent(extent);
+    mMapCanvas->refresh();
 
-	// notify the project we've made a change
-	QgsProject::instance()->dirty(true);
-      }
+    // notify the project we've made a change
+    QgsProject::instance()->dirty(true);
   }
 } // QgisApp::zoomToLayerExtent()
 
@@ -4504,7 +4473,7 @@ void QgisApp::projectProperties()
   // dialog results in the construction of the spatial reference
   // system QMap
   QApplication::setOverrideCursor(Qt::WaitCursor);
-  QgsProjectProperties *pp = new QgsProjectProperties(this);
+  QgsProjectProperties *pp = new QgsProjectProperties(mMapCanvas, this);
   // if called from the status bar, show the projection tab
   if(mShowProjectionTab)
   {
@@ -4516,28 +4485,28 @@ void QgisApp::projectProperties()
   // changing things in the project properties dialog box
   connect(pp, SIGNAL(displayPrecisionChanged()), this, 
       SLOT(updateMouseCoordinatePrecision()));
-  //listen to changes in on the fly projection state
-  connect(pp, SIGNAL(projectionEnabled(bool)), this, 
-      SLOT(projectionsEnabled(bool)));
   QApplication::restoreOverrideCursor();
+
   //pass any refresg signals off to canvases
   //connect (pp,SIGNAL(refresh()), mMapCanvas, SLOT(refresh()));
-  connect (pp,SIGNAL(mapUnitsChanged()), mMapCanvas, SLOT(mapUnitsChanged()));  
 
-  bool wasProjected = pp->isProjected();
-  long oldSRSID =  QgsProject::instance()->readNumEntry("SpatialRefSys","/ProjectSRSID",GEOSRS_ID);
+  QgsMapRender* myRender = mMapCanvas->mapRender();
+  bool wasProjected = myRender->projectionsEnabled();
+  long oldSRSID = myRender->destinationSrsId();
 
   // Display the modal dialog box.
   pp->exec();
-  
-  long newSRSID =  QgsProject::instance()->readNumEntry("SpatialRefSys","/ProjectSRSID",GEOSRS_ID);
+
+  long newSRSID = myRender->destinationSrsId();
+  bool isProjected = myRender->projectionsEnabled();
   
   // projections have been turned on/off or dest SRS has changed while projections are on
-  if (wasProjected != pp->isProjected() || (pp->isProjected() && oldSRSID != newSRSID))
+  if (wasProjected != isProjected || (isProjected && oldSRSID != newSRSID))
   {
+    // TODO: would be better to try to reproject current extent to the new one
     mMapCanvas->updateFullExtent();
   }
-  
+
   int  myRedInt = QgsProject::instance()->readNumEntry("Gui","/CanvasColorRedPart",255);
   int  myGreenInt = QgsProject::instance()->readNumEntry("Gui","/CanvasColorGreenPart",255);
   int  myBlueInt = QgsProject::instance()->readNumEntry("Gui","/CanvasColorBluePart",255);

@@ -316,21 +316,20 @@ void QgsVectorLayer::setDisplayField(QString fldName)
   }
 }
 
-void QgsVectorLayer::drawLabels(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * theMapToPixelTransform)
+void QgsVectorLayer::drawLabels(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * theMapToPixelTransform, QgsCoordinateTransform* ct)
 {
-  drawLabels(p, viewExtent, theMapToPixelTransform, 1.);
+  drawLabels(p, viewExtent, theMapToPixelTransform, ct, 1.);
 }
 
 // NOTE this is a temporary method added by Tim to prevent label clipping
 // which was occurring when labeller was called in the main draw loop
 // This method will probably be removed again in the near future!
-void QgsVectorLayer::drawLabels(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * theMapToPixelTransform, double scale)
+void QgsVectorLayer::drawLabels(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * theMapToPixelTransform, QgsCoordinateTransform* ct, double scale)
 {
   QgsDebugMsg("Starting draw of labels");
 
   if ( /*1 == 1 */ m_renderer && mLabelOn)
   {
-    bool projectionsEnabledFlag = projectionsEnabled();
     std::list<int> attributes=m_renderer->classificationAttributes();
     // Add fields required for labels
     mLabel->addRequiredFields ( &attributes );
@@ -356,8 +355,7 @@ void QgsVectorLayer::drawLabels(QPainter * p, QgsRect * viewExtent, QgsMapToPixe
           if(mDeleted.find(fet->featureId())==mDeleted.end())//don't render labels of deleted features
           {
             bool sel=mSelected.find(fet->featureId()) != mSelected.end();
-            mLabel->renderLabel ( p, viewExtent, *mCoordinateTransform, 
-                projectionsEnabledFlag,
+            mLabel->renderLabel ( p, viewExtent, ct, 
                 theMapToPixelTransform, fet, sel, 0, scale);
           }
         }
@@ -370,7 +368,7 @@ void QgsVectorLayer::drawLabels(QPainter * p, QgsRect * viewExtent, QgsMapToPixe
       for(std::vector<QgsFeature*>::iterator it=mAddedFeatures.begin();it!=mAddedFeatures.end();++it)
       {
         bool sel=mSelected.find((*it)->featureId()) != mSelected.end();
-        mLabel->renderLabel ( p, viewExtent, *mCoordinateTransform, projectionsEnabledFlag,
+        mLabel->renderLabel ( p, viewExtent, ct,
             theMapToPixelTransform, *it, sel, 0, scale);
       }
     }
@@ -390,39 +388,11 @@ void QgsVectorLayer::drawLabels(QPainter * p, QgsRect * viewExtent, QgsMapToPixe
   }
 }
 
-QgsRect QgsVectorLayer::inverseProjectRect(const QgsRect& r) const
-{
-  // Undo a coordinate transformation if one was in effect
-  if (projectionsEnabled())
-  { 
-    try
-    {
-      QgsPoint p1 = mCoordinateTransform->transform(r.xMin(), r.yMin(), 
-          QgsCoordinateTransform::INVERSE);
-      QgsPoint p2 = mCoordinateTransform->transform(r.xMax(), r.yMax(), 
-          QgsCoordinateTransform::INVERSE);
-#ifdef QGISDEBUG
-      QgsDebugMsg("Projections are enabled");
-      QgsDebugMsg("Rectangle was: "+r.stringRep(true));
-      QgsRect tt(p1, p2);
-      QgsDebugMsg("Inverse transformed to: "+tt.stringRep(true))
-#endif
-      return QgsRect(p1, p2);
-
-    }
-    catch (QgsCsException &e)
-    {
-      QgsLogger::critical("Inverse transform error in " + QString(__FILE__) + ", line " + QString(__LINE__));
-    }
-  }
-  // fall through for all failures
-  return QgsRect(r);
-}
 
 unsigned char* QgsVectorLayer::drawLineString(unsigned char* feature, 
     QPainter* p,
-    QgsMapToPixel* mtp, 
-    bool projectionsEnabledFlag)
+    QgsMapToPixel* mtp,
+    QgsCoordinateTransform* ct)
 {
   unsigned char *ptr = feature + 5;
   unsigned int nPoints = *((int*)ptr);
@@ -444,7 +414,7 @@ unsigned char* QgsVectorLayer::drawLineString(unsigned char* feature,
   // Transform the points into map coordinates (and reproject if
   // necessary)
 
-  transformPoints(x, y, z, mtp, projectionsEnabledFlag);
+  transformPoints(x, y, z, mtp, ct);
 
 #if defined(Q_WS_X11)
   // Work around a +/- 32768 limitation on coordinates in X11
@@ -502,7 +472,7 @@ unsigned char* QgsVectorLayer::drawLineString(unsigned char* feature,
 unsigned char* QgsVectorLayer::drawPolygon(unsigned char* feature, 
     QPainter* p, 
     QgsMapToPixel* mtp, 
-    bool projectionsEnabledFlag)
+    QgsCoordinateTransform* ct)
 {
   typedef std::pair<std::vector<double>, std::vector<double> > ringType;
   typedef ringType* ringTypePtr;
@@ -563,7 +533,7 @@ std::cerr << jdx << ": "
       continue;
     }
 
-    transformPoints(ring->first, ring->second, zVector, mtp, projectionsEnabledFlag);
+    transformPoints(ring->first, ring->second, zVector, mtp, ct);
 
 #if defined(Q_WS_X11)
     // Work around a +/- 32768 limitation on coordinates in X11
@@ -749,14 +719,14 @@ std::cerr << i << ": " << ring->first[i]
 }
 
 
-bool QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * theMapToPixelTransform)
+bool QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * theMapToPixelTransform, QgsCoordinateTransform* ct)
 {
-  draw ( p, viewExtent, theMapToPixelTransform, 1., 1.);
+  draw ( p, viewExtent, theMapToPixelTransform, ct, 1., 1.);
 
   return TRUE; // Assume success always
 }
 
-void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * theMapToPixelTransform, 
+void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * theMapToPixelTransform, QgsCoordinateTransform* ct,
     double widthScale, double symbolScale)
 {
   if ( /*1 == 1 */ m_renderer)
@@ -801,7 +771,6 @@ void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * th
     QgsDebugMsg("Starting draw of features");
     QgsFeature *fet;
 
-    bool projectionsEnabledFlag = projectionsEnabled();
     std::list<int> attributes=m_renderer->classificationAttributes();
 
     /*
@@ -863,8 +832,7 @@ void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * th
                 sel, widthScale );
 
             double scale = markerScaleFactor * symbolScale;
-            drawFeature(p,fet,theMapToPixelTransform,&marker, scale, 
-                projectionsEnabledFlag);
+            drawFeature(p,fet,theMapToPixelTransform,ct, &marker, scale);
 
             ++featureCount;
             delete fet;
@@ -881,8 +849,7 @@ void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * th
         m_renderer->renderFeature(p, *it, &marker, &markerScaleFactor, 
             sel, widthScale);
         double scale = markerScaleFactor * symbolScale;
-        drawFeature(p,*it,theMapToPixelTransform,&marker,scale, 
-            projectionsEnabledFlag);
+        drawFeature(p,*it,theMapToPixelTransform,ct, &marker,scale);
       }
     }
     catch (QgsCsException &cse)
@@ -998,8 +965,7 @@ void QgsVectorLayer::select(QgsRect * rect, bool lock)
     }
   }
 
-  QgsRect r = inverseProjectRect(*rect);
-  dataProvider->select(&r, true);
+  dataProvider->select(rect, true);
 
   QgsFeature *fet;
 
@@ -2667,7 +2633,7 @@ bool QgsVectorLayer::snapPoint(QgsPoint& point, double tolerance)
   double minvertexdist;//the distance between 'point' and 'vertexFeature'
 
   QgsRect selectrect(point.x()-tolerance,point.y()-tolerance,point.x()+tolerance,point.y()+tolerance);
-  selectrect = inverseProjectRect(selectrect);
+
   dataProvider->reset();
   dataProvider->select(&selectrect);
 
@@ -2996,8 +2962,8 @@ bool QgsVectorLayer::snapSegmentWithContext(QgsPoint& point,
 }
 
 
-void QgsVectorLayer::drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * theMapToPixelTransform, 
-    QPixmap * marker, double markerScaleFactor, bool projectionsEnabledFlag)
+void QgsVectorLayer::drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * theMapToPixelTransform, QgsCoordinateTransform* ct, 
+    QPixmap * marker, double markerScaleFactor)
 {
   // Only have variables, etc outside the switch() statement that are
   // used in all cases of the statement (otherwise they may get
@@ -3028,7 +2994,7 @@ void QgsVectorLayer::drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * t
         //  std::cout <<"...WKBPoint (" << x << ", " << y << ")" <<std::endl;
 #endif
 
-        transformPoint(x, y, theMapToPixelTransform, projectionsEnabledFlag);
+        transformPoint(x, y, theMapToPixelTransform, ct);
         QPointF pt(x - (marker->width()/2),  y - (marker->height()/2));
 
         p->save();
@@ -3059,7 +3025,7 @@ void QgsVectorLayer::drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * t
           std::cout <<"...WKBMultiPoint (" << x << ", " << y << ")" <<std::endl;
 #endif
 
-          transformPoint(x, y, theMapToPixelTransform, projectionsEnabledFlag);
+          transformPoint(x, y, theMapToPixelTransform, ct);
           QPointF pt(x - (marker->width()/2),  y - (marker->height()/2));
           
 #if defined(Q_WS_X11)
@@ -3077,8 +3043,7 @@ void QgsVectorLayer::drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * t
       }
     case WKBLineString:
       {
-        drawLineString(feature, p, theMapToPixelTransform,
-            projectionsEnabledFlag);
+        drawLineString(feature, p, theMapToPixelTransform, ct);
         break;
       }
     case WKBMultiLineString:
@@ -3089,15 +3054,13 @@ void QgsVectorLayer::drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * t
 
         for (register unsigned int jdx = 0; jdx < numLineStrings; jdx++)
         {
-          ptr = drawLineString(ptr, p, theMapToPixelTransform,
-              projectionsEnabledFlag);
+          ptr = drawLineString(ptr, p, theMapToPixelTransform, ct);
         }
         break;
       }
     case WKBPolygon:
       {
-        drawPolygon(feature, p, theMapToPixelTransform,
-            projectionsEnabledFlag);
+        drawPolygon(feature, p, theMapToPixelTransform, ct);
         break;
       }
     case WKBMultiPolygon:
@@ -3106,8 +3069,7 @@ void QgsVectorLayer::drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * t
         unsigned int numPolygons = *((int*)ptr);
         ptr = feature + 9;
         for (register unsigned int kdx = 0; kdx < numPolygons; kdx++)
-          ptr = drawPolygon(ptr, p, theMapToPixelTransform, 
-              projectionsEnabledFlag);
+          ptr = drawPolygon(ptr, p, theMapToPixelTransform, ct);
         break;
       }
     default:
@@ -3128,17 +3090,13 @@ void QgsVectorLayer::saveAsShapefile()
 }
 void QgsVectorLayer::setCoordinateSystem()
 {
-  delete mCoordinateTransform;
-  mCoordinateTransform=new QgsCoordinateTransform();
-  //slot is defined inthe maplayer superclass
-  connect(mCoordinateTransform, SIGNAL(invalidTransformInput()), this, SLOT(invalidTransformInput()));
-
-  QgsDebugMsg("QgsVectorLayer::setCoordinateSystem ------------------------------------------------start");
   QgsDebugMsg("QgsVectorLayer::setCoordinateSystem ----- Computing Coordinate System");
+  
   //
   // Get the layers project info and set up the QgsCoordinateTransform 
   // for this layer
   //
+  QgsSpatialRefSys srs;
   int srid = getProjectionSrid();
 
   if(srid == 0)
@@ -3149,62 +3107,24 @@ void QgsVectorLayer::setCoordinateSystem()
       mySourceWKT=QString("");
     }
     QgsDebugMsg("QgsVectorLayer::setCoordinateSystem --- using wkt " + mySourceWKT);
-    mCoordinateTransform->sourceSRS().createFromWkt(mySourceWKT);
-    //mCoordinateTransform->sourceSRS()->createFromWkt(getProjectionWKT());
+    srs.createFromWkt(mySourceWKT);
   }
   else
   {
     QgsDebugMsg("QgsVectorLayer::setCoordinateSystem --- using srid " + QString::number(srid));
-    mCoordinateTransform->sourceSRS().createFromSrid(srid);
+    srs.createFromSrid(srid);
   }
 
   //QgsSpatialRefSys provides a mechanism for FORCE a srs to be valid
   //which is inolves falling back to system, project or user selected
   //defaults if the srs is not properly intialised.
   //we only nee to do that if the srs is not alreay valid
-  if (!mCoordinateTransform->sourceSRS().isValid())
+  if (!srs.isValid())
   {
-    mCoordinateTransform->sourceSRS().validate();
-  }
-  //get the project projections WKT, defaulting to this layer's projection
-  //if none exists....
-  //First get the SRS for the default projection WGS 84
-  //QString defaultWkt = QgsSpatialReferences::instance()->getSrsBySrid("4326")->srText();
-
-  // if no other layers exist, set the output projection to be
-  // the same as the input projection, otherwise set the output to the
-  // project srs
-
-  QgsDebugMsg("Layer registry has " + QString::number(QgsMapLayerRegistry::instance()->count()) + " layers ");
-  if (QgsMapLayerRegistry::instance()->count() ==0)
-  {
-    mCoordinateTransform->destSRS().createFromProj4(
-        mCoordinateTransform->sourceSRS().proj4String());
-    //first layer added will set the default project level projection
-    //TODO remove cast if poss!
-    int mySrsId = static_cast<int>(mCoordinateTransform->sourceSRS().srsid());
-    if (mySrsId)
-    {
-      QgsProject::instance()->writeEntry("SpatialRefSys","/ProjectSRSID",mySrsId);
-    }
-  }
-  else 
-  {
-    mCoordinateTransform->destSRS().createFromSrsId(
-        QgsProject::instance()->readNumEntry("SpatialRefSys","/ProjectSRSID",0));
-  }
-  if (!mCoordinateTransform->destSRS().isValid())
-  {
-    mCoordinateTransform->destSRS().validate();  
+    srs.validate();
   }
 
-
-  //initialise the transform - you should do this any time one of the SRS's changes
-
-  mCoordinateTransform->initialise();
-
-
-
+  mLayerSrsId = srs.srsid();
 }
 
 bool QgsVectorLayer::commitAttributeChanges(const std::set<QString>& deleted,
@@ -3283,13 +3203,13 @@ bool QgsVectorLayer::commitAttributeChanges(const std::set<QString>& deleted,
 inline void QgsVectorLayer::transformPoint(double& x, 
     double& y, 
     QgsMapToPixel* mtp,
-    bool projectionsEnabledFlag)
+    QgsCoordinateTransform* ct)
 {
   // transform the point
-  if (projectionsEnabledFlag)
+  if (ct)
   {
     double z = 0;
-    mCoordinateTransform->transformInPlace(x, y, z);
+    ct->transformInPlace(x, y, z);
   }
 
   // transform from projected coordinate system to pixel 
@@ -3299,11 +3219,11 @@ inline void QgsVectorLayer::transformPoint(double& x,
 
 inline void QgsVectorLayer::transformPoints(
     std::vector<double>& x, std::vector<double>& y, std::vector<double>& z,
-    QgsMapToPixel* mtp, bool projectionsEnabledFlag)
+    QgsMapToPixel* mtp, QgsCoordinateTransform* ct)
 {
   // transform the point
-  if (projectionsEnabledFlag)
-    mCoordinateTransform->transformInPlace(x, y, z);
+  if (ct)
+    ct->transformInPlace(x, y, z);
 
   // transform from projected coordinate system to pixel 
   // position on map canvas

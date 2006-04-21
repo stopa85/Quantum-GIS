@@ -70,8 +70,8 @@ public:
      *  \param sizeScale global scale factor for size in pixels, labels in map units are not scaled
      */
     void renderLabel ( QPainter* painter, QgsRect* viewExtent, 
-                       const QgsCoordinateTransform& coordTransform,
-                       bool doCoordTransform, QgsMapToPixel *transform,
+                       QgsCoordinateTransform* coordTransform,
+                       QgsMapToPixel *transform,
 		       QgsFeature *feature, bool selected, QgsLabelAttributes *classAttributes=0, double sizeScale = 1.);
     
     /** Reads the renderer configuration from an XML file

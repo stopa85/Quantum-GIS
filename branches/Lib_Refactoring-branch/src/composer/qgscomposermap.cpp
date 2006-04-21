@@ -15,11 +15,12 @@
  *                                                                         *
  ***************************************************************************/
 #include "qgscomposermap.h"
-
+#include "qgscoordinatetransform.h"
 #include "qgsmapcanvas.h"
 #include "qgsmaplayer.h"
 #include "qgsmaptopixel.h"
 #include "qgsproject.h"
+#include "qgsmaprender.h"
 #include "qgsvectorlayer.h"
 #include <QPainter>
 #include <iostream>
@@ -106,9 +107,19 @@ void QgsComposerMap::draw ( QPainter *painter, QgsRect *extent, QgsMapToPixel *t
 {
     mMapCanvas->freeze(true);  // necessary ?
     int nlayers = mMapCanvas->layerCount();
+    QgsCoordinateTransform* ct;
 
     for ( int i = 0; i < nlayers; i++ ) {
       QgsMapLayer *layer = mMapCanvas->getZpos(i);
+      
+      if (mMapCanvas->projectionsEnabled())
+      {
+        ct = new QgsCoordinateTransform(layer->srsId(), mMapCanvas->mapRender()->destinationSrsId());
+      }
+      else
+      {
+        ct = NULL;
+      }
 
       // TODO: what to do with invisible layers
       //if ( !layer->visible() ) continue;
@@ -124,12 +135,15 @@ void QgsComposerMap::draw ( QPainter *painter, QgsRect *extent, QgsMapToPixel *t
 
           QgsRect r1, r2;
           r1 = *extent;
-          bool split = layer->projectExtent(r1, r2);
-	  vector->draw( painter, &r1, transform, widthScale, symbolScale);
+          // TODO: revisit later and make this QgsMapRender-aware [MD]
+          // bool split = layer->projectExtent(r1, r2);
+          bool split = false;
+          
+	  vector->draw( painter, &r1, transform, ct, widthScale, symbolScale);
 
           if ( split )
           {
-	      vector->draw( painter, &r2, transform, widthScale, symbolScale);
+	      vector->draw( painter, &r2, transform, ct, widthScale, symbolScale);
           }
       } else { 
 	  // raster
@@ -146,21 +160,32 @@ void QgsComposerMap::draw ( QPainter *painter, QgsRect *extent, QgsMapToPixel *t
               painter->save();
 	      painter->scale( 1./multip, 1./multip);
 
-	      layer->draw( painter, extent, &trans);
+	      layer->draw( painter, extent, &trans, ct);
               
 	      painter->restore();
 	  } 
 	  else 
 	  {
-	      layer->draw( painter, extent, transform);
+	      layer->draw( painter, extent, transform, ct);
 	  }
       }
+      
+      delete ct;
     }
     
     // Draw vector labels
     for ( int i = 0; i < nlayers; i++ ) {
       QgsMapLayer *layer = mMapCanvas->getZpos(i);
 	
+      if (mMapCanvas->projectionsEnabled())
+      {
+        ct = new QgsCoordinateTransform(layer->srsId(), mMapCanvas->mapRender()->destinationSrsId());
+      }
+      else
+      {
+        ct = NULL;
+      }
+      
       // TODO: what to do with invisible layers
       //if ( !layer->visible() ) continue;
       
@@ -172,10 +197,12 @@ void QgsComposerMap::draw ( QPainter *painter, QgsRect *extent, QgsMapToPixel *t
 	      if ( plotStyle() == QgsComposition::Postscript ) {
 		  fontScale = QgsComposition::psFontScaleFactor() * 72.0 / mComposition->resolution();
 	      }
-	      vector->drawLabels (  painter, extent, transform, fontScale );
+	      vector->drawLabels (  painter, extent, transform, ct, fontScale );
 	  }
 
       }
+    
+      delete ct;
     }
     
     mMapCanvas->freeze(false);

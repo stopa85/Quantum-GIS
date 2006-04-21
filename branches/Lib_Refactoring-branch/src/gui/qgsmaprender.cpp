@@ -15,6 +15,7 @@
 /* $Id$ */
 
 #include <cmath>
+#include <cfloat>
 
 #include "qgscoordinatetransform.h"
 #include "qgslogger.h"
@@ -23,7 +24,6 @@
 #include "qgsmaptopixel.h"
 #include "qgsmaplayer.h"
 #include "qgsmaplayerregistry.h"
-#include "qgsproject.h"
 
 #include <QPixmap>
 #include <QPainter>
@@ -40,8 +40,7 @@ QgsMapRender::QgsMapRender()
   mOverview = false;
   
   // set default map units
-  mMapUnits = QGis::METERS;
-  mScaleCalculator->setMapUnits(mMapUnits);
+  mScaleCalculator->setMapUnits(QGis::METERS);
 
   mSize = QSize(0,0);
 }
@@ -188,7 +187,6 @@ void QgsMapRender::render(QPainter* painter)
     return;
   }
 
-
   if (mDrawing)
     return;
   
@@ -196,16 +194,17 @@ void QgsMapRender::render(QPainter* painter)
   
   int myRenderCounter = 0;
   
+  QgsCoordinateTransform* ct;
+
 #ifdef QGISDEBUG
   QgsDebugMsg("QgsMapRender::render: Starting to render layer stack.");
   QTime renderTime;
   renderTime.start();
 #endif
   // render all layers in the stack, starting at the base
-  std::deque<QString> layers = mLayers.layerSet();
-  std::deque<QString>::iterator li = layers.begin();
+  std::deque<QString>::iterator li = mLayerSet.begin();
   
-  while (li != layers.end())
+  while (li != mLayerSet.end())
   {
     QgsDebugMsg("QgsMapRender::render: at layer item '" + (*li));
 
@@ -217,7 +216,7 @@ void QgsMapRender::render(QPainter* painter)
     // added these comments and debug statement to help others...
     QgsDebugMsg("If there is a QPaintEngine error here, it is caused by an emit call");
 
-    emit setProgress(myRenderCounter++,layers.size());
+    emit setProgress(myRenderCounter++, mLayerSet.size());
     QgsMapLayer *ml = QgsMapLayerRegistry::instance()->mapLayer(*li);
 
     if (!ml)
@@ -234,15 +233,6 @@ void QgsMapRender::render(QPainter* painter)
 		QgsLogger::debug("  Scale dep. visibility enabled? ", ml->scaleBasedVisibility(), 1,\
 				 __FILE__, __FUNCTION__, __LINE__);
 		QgsLogger::debug("  Input extent: " + ml->extent().stringRep(), 1, __FILE__, __FUNCTION__, __LINE__);
-    try
-    {
-      QgsDebugMsg("  Transformed extent: " + ml->coordinateTransform()->transformBoundingBox(ml->extent()).stringRep());
-    }
-    catch (QgsCsException &cse)
-    {
-      QgsLogger::warning("Transform error caught in " + QString(__FILE__) + " line " + QString(__LINE__) +\
-			 QString(cse.what()));
-    }
 #endif
 
     if ((ml->scaleBasedVisibility() && ml->minScale() < mScale && ml->maxScale() > mScale)
@@ -251,19 +241,31 @@ void QgsMapRender::render(QPainter* painter)
       connect(ml, SIGNAL(drawingProgress(int,int)), this, SLOT(onDrawingProgress(int,int)));        
       
       QgsRect r1 = mExtent, r2;
-      bool split = ml->projectExtent(r1, r2);
+      bool split = splitLayersExtent(ml, r1, r2);
       //
                   // Now do the call to the layer that actually does
                   // the rendering work!
       //
-      if (!ml->draw(painter, &r1, mCoordXForm))
+      
+      if (projectionsEnabled())
+      {
+        ct = new QgsCoordinateTransform(ml->srsId(), mDestSRS);
+      }
+      else
+      {
+        ct = NULL;
+      }
+      
+      if (!ml->draw(painter, &r1, mCoordXForm, ct))
         emit drawError(ml);
       
       if (split)
       {
-        if (!ml->draw(painter, &r2, mCoordXForm))
+        if (!ml->draw(painter, &r2, mCoordXForm, ct))
           emit drawError(ml);
       }
+      
+      delete ct;
       
       disconnect(ml, SIGNAL(drawingProgress(int,int)), this, SLOT(onDrawingProgress(int,int)));
     }
@@ -282,8 +284,8 @@ void QgsMapRender::render(QPainter* painter)
   if (!mOverview)
   {
     // render all labels for vector layers in the stack, starting at the base
-    li = layers.begin();
-    while (li != layers.end())
+    li = mLayerSet.begin();
+    while (li != mLayerSet.end())
     {
       // TODO: emit setProgress((myRenderCounter++),zOrder.size());
       QgsMapLayer *ml = QgsMapLayerRegistry::instance()->mapLayer(*li);
@@ -296,11 +298,22 @@ void QgsMapRender::render(QPainter* painter)
             || (!ml->scaleBasedVisibility()))
         {
           QgsRect r1 = mExtent, r2;
-          bool split = ml->projectExtent(r1, r2);
+          bool split = splitLayersExtent(ml, r1, r2);
       
-          ml->drawLabels(painter, &r1, mCoordXForm);
+          if (projectionsEnabled())
+          {
+            ct = new QgsCoordinateTransform(ml->srsId(), mDestSRS);
+          }
+          else
+          {
+            ct = NULL;
+          }
+      
+          ml->drawLabels(painter, &r1, mCoordXForm, ct);
           if (split)
-            ml->drawLabels(painter, &r2, mCoordXForm);
+            ml->drawLabels(painter, &r2, mCoordXForm, ct);
+          
+          delete ct;
         }
       }
       li++;
@@ -321,9 +334,17 @@ void QgsMapRender::render(QPainter* painter)
 
 void QgsMapRender::setMapUnits(QGis::units u)
 {
-  mMapUnits = u;
-  mScaleCalculator->setMapUnits(mMapUnits);
-  QgsProject::instance()->mapUnits(u); // TODO: sort out
+  mScaleCalculator->setMapUnits(u);
+
+  // Since the map units have changed, force a recalculation of the scale.
+  updateScale();
+
+  emit mapUnitsChanged();
+}
+
+QGis::units QgsMapRender::mapUnits() const
+{
+  return mScaleCalculator->mapUnits();
 }
 
 void QgsMapRender::onDrawingProgress(int current, int total)
@@ -331,4 +352,188 @@ void QgsMapRender::onDrawingProgress(int current, int total)
   // TODO: emit signal with progress
   //std::cout << "onDrawingProgress: " << current << " / " << total << std::endl;
   emit updateMap();
+}
+
+
+
+void QgsMapRender::setProjectionsEnabled(bool enabled)
+{
+  mProjectionsEnabled = enabled;
+  // TODO: some initialization/notification stuff?
+}
+
+bool QgsMapRender::projectionsEnabled()
+{
+  return mProjectionsEnabled;
+}
+
+void QgsMapRender::setDestinationSrsId(long srsId)
+{
+  mDestSRS = srsId;
+  // TODO: some initialization/notification stuff?
+}
+
+long QgsMapRender::destinationSrsId()
+{
+  return mDestSRS;
+}
+
+
+bool QgsMapRender::splitLayersExtent(QgsMapLayer* layer, QgsRect& extent, QgsRect& r2)
+{
+  bool split = false;
+
+  if (projectionsEnabled())
+  {
+    try
+    {
+      QgsCoordinateTransform transform(layer->srsId(), mDestSRS);
+      
+#ifdef QGISDEBUG
+      QgsLogger::debug<QgsRect>("Getting extent of canvas in layers CS. Canvas is ", extent, __FILE__,\
+        __FUNCTION__, __LINE__);
+#endif
+      // Split the extent into two if the source SRS is
+      // geographic and the extent crosses the split in
+      // geographic coordinates (usually +/- 180 degrees,
+      // and is assumed to be so here), and draw each
+      // extent separately.
+      static const double splitCoord = 180.0;
+
+      if (transform.sourceSRS().geographicFlag())
+      {
+        // Note: ll = lower left point
+        //   and ur = upper right point
+        QgsPoint ll = transform.transform(extent.xMin(), extent.yMin(),
+                                          QgsCoordinateTransform::INVERSE);
+
+        QgsPoint ur = transform.transform(extent.xMax(), extent.yMax(), 
+                                          QgsCoordinateTransform::INVERSE);
+
+        if (ll.x() > ur.x())
+        {
+          extent.set(ll, QgsPoint(splitCoord, ur.y()));
+          r2.set(QgsPoint(-splitCoord, ll.y()), ur);
+          split = true;
+        }
+        else // no need to split
+        {
+          extent = transform.transformBoundingBox(extent, QgsCoordinateTransform::INVERSE);
+        }
+      }
+      else // can't cross 180
+      {
+        extent = transform.transformBoundingBox(extent, QgsCoordinateTransform::INVERSE);
+      }
+    }
+    catch (QgsCsException &cse)
+    {
+      QgsLogger::warning("Transform error caught in " + QString(__FILE__) + ", line " + QString::number(__LINE__));
+      extent = QgsRect(-DBL_MAX, -DBL_MAX, DBL_MAX, DBL_MAX);
+      r2     = QgsRect(-DBL_MAX, -DBL_MAX, DBL_MAX, DBL_MAX);
+    }
+  }
+  return split;
+}
+
+
+QgsRect QgsMapRender::layerExtentToOutputExtent(QgsMapLayer* theLayer, QgsRect extent)
+{
+  if (projectionsEnabled())
+  {
+    try
+    {
+      QgsCoordinateTransform transform(theLayer->srsId(), mDestSRS);
+      transform.transformBoundingBox(extent);
+    }
+    catch (QgsCsException &cse)
+    {
+      qDebug( "Transform error caught in %s line %d:\n%s", __FILE__, __LINE__, cse.what());
+    }
+  }
+  else
+  {
+    // leave extent unchanged
+  }
+  
+  return extent;
+}
+
+QgsPoint QgsMapRender::outputCoordsToLayerCoords(QgsMapLayer* theLayer, QgsPoint point)
+{
+  if (projectionsEnabled())
+  {
+    try
+    {
+      QgsCoordinateTransform xform(theLayer->srsId(), mDestSRS);
+      point = xform.transform(point, QgsCoordinateTransform::INVERSE);
+    }
+    catch (QgsCsException &cse)
+    {
+      qDebug( "Transform error caught in %s line %d:\n%s", __FILE__, __LINE__, cse.what());
+    }
+  }
+  else
+  {
+    // leave point without transformation
+  }
+  return point;
+}
+
+QgsRect QgsMapRender::outputCoordsToLayerCoords(QgsMapLayer* theLayer, QgsRect rect)
+{
+  if (projectionsEnabled())
+  {
+    try
+    {
+      QgsCoordinateTransform xform(theLayer->srsId(), mDestSRS);
+      rect = xform.transform(rect, QgsCoordinateTransform::INVERSE);
+    }
+    catch (QgsCsException &cse)
+    {
+      qDebug( "Transform error caught in %s line %d:\n%s", __FILE__, __LINE__, cse.what());
+    }
+  }
+  return rect;
+}
+
+
+void QgsMapRender::updateFullExtent()
+{
+  QgsDebugMsg("QgsMapRender::updateFullExtent() called !");
+  QgsMapLayerRegistry* registry = QgsMapLayerRegistry::instance();
+  
+  // reset the map canvas extent since the extent may now be smaller
+  // We can't use a constructor since QgsRect normalizes the rectangle upon construction
+  mFullExtent.setMinimal();
+  
+  // iterate through the map layers and test each layers extent
+  // against the current min and max values
+  std::deque<QString>::iterator it = mLayerSet.begin();
+  while(it != mLayerSet.end())
+  {
+    QgsMapLayer * lyr = registry->mapLayer(*it);
+    if (lyr == NULL)
+    {
+      QgsLogger::warning("WARNING: layer '" + (*it) + "' not found in map layer registry!");
+    }
+    else
+    {
+      QgsDebugMsg("Updating extent using " + lyr->name());
+      QgsDebugMsg("Input extent: " + lyr->extent().stringRep());
+      
+      // Layer extents are stored in the coordinate system (CS) of the
+      // layer. The extent must be projected to the canvas CS
+      QgsRect extent = layerExtentToOutputExtent(lyr, lyr->extent());
+      mFullExtent.unionRect(extent);
+
+    }
+    it++;
+  } 
+}
+
+void QgsMapRender::setLayerSet(const std::deque<QString>& layers)
+{
+  mLayerSet = layers;
+  updateFullExtent();
 }

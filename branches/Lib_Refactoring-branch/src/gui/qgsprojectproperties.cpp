@@ -22,8 +22,10 @@
 //qgis includes
 #include "qgscontexthelp.h"
 #include "qgscoordinatetransform.h"
+#include "qgsmapcanvas.h"
 #include "qgsmaplayer.h"
 #include "qgsmaplayerregistry.h"
+#include "qgsmaprender.h"
 #include "qgsproject.h"
 #include "qgsrenderer.h"
 
@@ -34,10 +36,8 @@
 #include <iostream>
 
 
-// set the default coordinate system
-//XXX this is not needed? : static const char* defaultWktKey = "Lat/Long - WGS 84";
-  QgsProjectProperties::QgsProjectProperties(QWidget *parent, Qt::WFlags fl)
-: QDialog(parent, fl)
+QgsProjectProperties::QgsProjectProperties(QgsMapCanvas* mapCanvas, QWidget *parent, Qt::WFlags fl)
+  : QDialog(parent, fl), mMapCanvas(mapCanvas)
 {
   setupUi(this);
   connect(btnGrpMapUnits, SIGNAL(clicked(int)), this, SLOT(mapUnitChange(int)));
@@ -45,43 +45,27 @@
   connect(buttonCancel, SIGNAL(clicked()), this, SLOT(reject()));
   connect(buttonOk, SIGNAL(clicked()), this, SLOT(accept()));
 
-  QGis::units myUnit = QgsProject::instance()->mapUnits();
+  ///////////////////////////////////////////////////////////
+  // Properties stored in map canvas's QgsMapRender
+  // these ones are propagated to QgsProject by a signal
+  
+  QgsMapRender* myRender = mMapCanvas->mapRender();
+  QGis::units myUnit = myRender->mapUnits();
   setMapUnits(myUnit);
-  title(QgsProject::instance()->title());
 
   //see if the user wants on the fly projection enabled
-  int myProjectionEnabledFlag = 
-    QgsProject::instance()->readNumEntry("SpatialRefSys","/ProjectionsEnabled",0);
-  if (myProjectionEnabledFlag==0)
-  {
-    cbxProjectionEnabled->setChecked(false);
-  }
-  else
-  {
-    cbxProjectionEnabled->setChecked(true);
-  }
+  bool myProjectionEnabled = myRender->projectionsEnabled();
+  cbxProjectionEnabled->setChecked(myProjectionEnabled);
+  
   // set the default wkt to WGS 84
-  long mySRSID =  QgsProject::instance()->readNumEntry("SpatialRefSys","/ProjectSRSID",GEOSRS_ID);
+  long mySRSID = myRender->destinationSrsId();
   projectionSelector->setSelectedSRSID(mySRSID);
+
+  ///////////////////////////////////////////////////////////
+  // Properties stored in QgsProject
   
-  
-  // 
-  // If the user changes the projection for the project, we need to 
-  // fire a signal to each layer telling it to change its coordinateTransform
-  // member's output projection. These connects I'm setting up should be
-  // automatically cleaned up when this project props dialog closes
-  std::map<QString, QgsMapLayer *> myMapLayers 
-    = QgsMapLayerRegistry::instance()->mapLayers();
-  std::map<QString, QgsMapLayer *>::iterator myMapIterator;
-  for ( myMapIterator = myMapLayers.begin(); myMapIterator != myMapLayers.end(); ++myMapIterator )
-  {
-    QgsMapLayer * myMapLayer = myMapIterator->second;
-    connect(this,
-        SIGNAL(setDestSRSID(long)),
-        myMapLayer->coordinateTransform(),
-        SLOT(setDestSRSID(long)));   
-  }
-    
+  title(QgsProject::instance()->title());
+
   // get the manner in which the number of decimal places in the mouse
   // position display is set (manual or automatic)
   bool automaticPrecision = QgsProject::instance()->readBoolEntry("PositionPrecision","/Automatic");
@@ -131,16 +115,13 @@ QgsProjectProperties::~QgsProjectProperties()
 // return the map units
 QGis::units QgsProjectProperties::mapUnits() const
 {
-  return QgsProject::instance()->mapUnits();
+  return mMapCanvas->mapRender()->mapUnits();
 }
 
 
 void QgsProjectProperties::mapUnitChange(int unit)
 {
-  /*
-     QgsProject::instance()->mapUnits(
-     static_cast<QGis::units>(unit));
-     */
+  // nothing needed to be done immediately after changing map units
 }
 
 
@@ -163,7 +144,7 @@ void QgsProjectProperties::setMapUnits(QGis::units unit)
   {
     radDecimalDegrees->setChecked(true);
   }
-  QgsProject::instance()->mapUnits(unit);
+  mMapCanvas->mapRender()->setMapUnits(unit);
 }
 
 
@@ -201,26 +182,12 @@ void QgsProjectProperties::apply()
     mapUnit=QGis::DEGREES;
   }
 
-  QgsProject::instance()->mapUnits(mapUnit);
+  QgsMapRender* myRender = mMapCanvas->mapRender();
+      
+  myRender->setMapUnits(mapUnit);
 
-  // Set the project title
-  QgsProject::instance()->title( title() );
+  myRender->setProjectionsEnabled(cbxProjectionEnabled->isChecked());
 
-#ifdef QGISDEBUG
-  std::cout << "Projection changed, notifying all layers" << std::endl;
-#endif      
-  //tell the project if projections are to be used or not...      
-  if (cbxProjectionEnabled->isChecked())
-  {
-    QgsProject::instance()->writeEntry("SpatialRefSys","/ProjectionsEnabled",1);
-
-    emit projectionEnabled(true);
-  }
-  else
-  {
-    QgsProject::instance()->writeEntry("SpatialRefSys","/ProjectionsEnabled",0);
-    emit projectionEnabled(false);
-  }
   // Only change the projection if there is a node in the tree
   // selected that has an srid. This prevents error if the user
   // selects a top-level node rather than an actual coordinate
@@ -228,12 +195,12 @@ void QgsProjectProperties::apply()
   long mySRSID = projectionSelector->getCurrentSRSID();
   if (mySRSID)
   {
-    emit setDestSRSID(mySRSID); 
-    // write the projection's _id_ to the project settings rather
-    QgsProject::instance()->writeEntry("SpatialRefSys","/ProjectSRSID",(int)mySRSID);
+    myRender->setDestinationSrsId(mySRSID);
+    
     // write the currently selected projections _proj string_ to project settings
     std::cout << "SpatialRefSys/ProjectSRSProj4String: " <<  projectionSelector->getCurrentProj4String().toLocal8Bit().data() << std::endl;
     QgsProject::instance()->writeEntry("SpatialRefSys","/ProjectSRSProj4String",projectionSelector->getCurrentProj4String());
+
     // Set the map units to the projected coordinates if we are projecting
     if (isProjected())
     {
@@ -241,10 +208,12 @@ void QgsProjectProperties::apply()
       // If we couldn't get the map units, default to the value in the
       // projectproperties dialog box (set above)
       if (srs.mapUnits() != QGis::UNKNOWN)
-        QgsProject::instance()->mapUnits(srs.mapUnits());
+        myRender->setMapUnits(srs.mapUnits());
     }
   }
-  emit mapUnitsChanged();
+
+  // Set the project title
+  QgsProject::instance()->title( title() );
 
   // set the mouse display precision method and the
   // number of decimal places for the manual option

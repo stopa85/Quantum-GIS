@@ -168,7 +168,7 @@ QgsMapRender* QgsMapCanvas::mapRender()
 
 QgsMapLayer* QgsMapCanvas::getZpos(int index)
 {
-  QString layer = mMapRender->layers().layerSet()[index];
+  QString layer = mMapRender->layerSet()[index];
   return QgsMapLayerRegistry::instance()->mapLayer(layer);
 }
 
@@ -210,15 +210,13 @@ QgsMapToPixel * QgsMapCanvas::getCoordinateTransform()
 
 void QgsMapCanvas::setLayerSet(std::deque<QString>& layerSet)
 {
-  QgsMapLayerSet& layers = mMapRender->layers();
-  
   int i;
   for (i = 0; i < layerCount(); i++)
   {
     QObject::disconnect(getZpos(i), SIGNAL(repaintRequested()), this, SLOT(refresh()));
   }
   
-  layers.setLayerSet(layerSet);
+  mMapRender->setLayerSet(layerSet);
   
   for (i = 0; i < layerCount(); i++)
   {
@@ -362,7 +360,7 @@ QgsRect QgsMapCanvas::extent() const
 
 QgsRect QgsMapCanvas::fullExtent() const
 {
-  return mMapRender->layers().fullExtent();
+  return mMapRender->fullExtent();
 } // extent
 
 void QgsMapCanvas::updateFullExtent()
@@ -373,7 +371,7 @@ void QgsMapCanvas::updateFullExtent()
   std::cout << "QgsMapCanvas::updateFullExtent" << std::endl;
 #endif
 
-  mMapRender->layers().updateFullExtent();
+  mMapRender->updateFullExtent();
   if (mMapOverview)
   {
     mMapOverview->updateFullExtent();
@@ -444,25 +442,17 @@ void QgsMapCanvas::zoomPreviousExtent()
 
 bool QgsMapCanvas::projectionsEnabled()
 {
-  if (QgsProject::instance()->readNumEntry("SpatialRefSys","/ProjectionsEnabled",0)!=0)
-  {
-    return true;
-  }
-  else
-  {
-    return false;
-  }
+  return mMapRender->projectionsEnabled();
 }
 
 void QgsMapCanvas::mapUnitsChanged()
 {
   // We assume that if the map units have changed, the changed value
-  // will be accessible from QgsProject.
-  setMapUnits(QgsProject::instance()->mapUnits());
-  // Since the map units have changed, force a recalculation of the scale.
-  mMapRender->updateScale();
+  // will be accessible from QgsMapRender
+
   // And then force a redraw of the scale number in the status bar
   updateScale();
+
   // And then redraw the map to force the scale bar to update
   // itself. This is less than ideal as the entire map gets redrawn
   // just to get the scale bar to redraw itself. If we ask the scale
@@ -470,7 +460,7 @@ void QgsMapCanvas::mapUnitsChanged()
   // scale bar is not removed, and we end up with two scale bars in
   // the same location. This can perhaps be fixed when/if the scale
   // bar is done as a transparent layer on top of the map canvas.
-  render();
+  refresh();
 }
 
 void QgsMapCanvas::zoomToSelected()
@@ -479,32 +469,7 @@ void QgsMapCanvas::zoomToSelected()
 
   if (lyr)
   {
-
-
-    QgsRect rect ;
-    if (projectionsEnabled())
-    {
-      try
-      {      
-        if ( ! lyr->coordinateTransform() )
-        {
-#ifdef QGISDEBUG 
-          std::cout << "Throwing exception "<< __FILE__ << __LINE__ << std::endl; 
-#endif
-          throw QgsCsException( std::string("NO COORDINATE TRANSFORM FOUND FOR LAYER") );
-        }
-
-        rect = lyr->coordinateTransform()->transformBoundingBox(lyr->bBoxOfSelected());
-      }
-      catch (QgsCsException &cse)
-      {
-        qDebug( "Transform error caught in %s line %d:\n%s", __FILE__, __LINE__, cse.what());
-      }
-    }
-    else
-    {
-      rect = lyr->bBoxOfSelected();
-    }
+    QgsRect rect = mMapRender->layerExtentToOutputExtent(lyr, lyr->bBoxOfSelected());
 
     // no selected features, only one selected point feature 
     //or two point features with the same x- or y-coordinates
@@ -837,7 +802,7 @@ void QgsMapCanvas::setCanvasColor(const QColor & theColor)
 
 int QgsMapCanvas::layerCount() const
 {
-  return mMapRender->layers().layerCount();
+  return mMapRender->layerSet().size();
 } // layerCount
 
 
@@ -937,7 +902,7 @@ bool QgsMapCanvas::writeXML(QDomNode & layerNode, QDomDocument & doc)
   extentNode.appendChild(xMax);
   extentNode.appendChild(yMax);
   
-  std::deque<QString>& layers = mMapRender->layers().layerSet();
+  std::deque<QString>& layers = mMapRender->layerSet();
 
   // Iterate over layers in zOrder
   // Call writeXML() on each

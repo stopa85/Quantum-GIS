@@ -21,7 +21,8 @@
 #include "ui_qgsprojectpropertiesbase.h"
 #include "qgis.h"
 #include "qgisgui.h"
-class QColor; 
+class QColor;
+class QgsMapCanvas;
 
 /*!  Dialog to set project level properties
 
@@ -33,7 +34,7 @@ class QgsProjectProperties : public QDialog, private Ui::QgsProjectPropertiesBas
   Q_OBJECT
 public:
     //! Constructor
-  QgsProjectProperties(QWidget *parent = 0, Qt::WFlags fl = QgisGui::ModalDialogFlags);
+  QgsProjectProperties(QgsMapCanvas* mapCanvas, QWidget *parent = 0, Qt::WFlags fl = QgisGui::ModalDialogFlags);
 
   //! Destructor
   ~QgsProjectProperties();
@@ -98,20 +99,13 @@ public slots:
   void on_pbnHelp_clicked();
 
 signals:
-  /*! This signal is used to notify all coordinateTransform objects to update
-   * their dest SRSID because the project output projection system is changed 
-   * @param srsid srs.db tbl_srs pkey value of the newly assigned srs
-   */
-  void setDestSRSID(long theSRSID);   
   //! Signal used to inform listeners that the mouse display precision may have changed
   void displayPrecisionChanged();
-  //! Signal used to inform listeners that the map units may of
-  //changed (and that the new value can be found in QgsProject.
-  void mapUnitsChanged();
   //! let listening canvases know to refresh
   void refresh();
-  //! notification of when on the fly projections are enabled / disabled
-  void projectionEnabled(bool);
+  
 private:
-static const int context_id = 1173513647;
+  static const int context_id = 1173513647;
+  
+  QgsMapCanvas* mMapCanvas;
 };

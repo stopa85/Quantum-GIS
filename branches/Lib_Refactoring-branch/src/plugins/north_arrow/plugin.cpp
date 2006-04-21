@@ -29,6 +29,7 @@ email                : tim@linfiniti.com
 #include "plugin.h"
 #include "qgsproject.h"
 #include "qgsmapcanvas.h"
+#include "qgsmaprender.h"
 #include "qgsapplication.h"
 
 // qt includes
@@ -293,9 +294,8 @@ bool QgsNorthArrowPlugin::calculateNorthDirection()
 
   if (mapCanvas.layerCount() > 0)
   {
-    // Grab an SRS from any layer
-    QgsMapLayer& mapLayer = *(mapCanvas.getZpos(0));
-    QgsSpatialRefSys& outputSRS = mapLayer.coordinateTransform()->destSRS();
+    long srsid = mapCanvas.mapRender()->destinationSrsId();
+    QgsSpatialRefSys outputSRS(srsid, QgsSpatialRefSys::QGIS_SRSID);
 
     if (outputSRS.isValid() && !outputSRS.geographicFlag())
     {

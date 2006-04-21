@@ -530,56 +530,36 @@ QgsRasterLayer::readFile( QString const & fileName )
   // Get the layer's projection info and set up the
   // QgsCoordinateTransform for this layer
   // NOTE: we must do this before getMetadata is called
-  mCoordinateTransform = new QgsCoordinateTransform();
+
   QString mySourceWKT = getProjectionWKT();
 
   QgsDebugMsg("--------------------------------------------------------------------------------------");
   QgsDebugMsg("QgsRasterLayer::readFile --- using wkt\n" + mySourceWKT);
   QgsDebugMsg("--------------------------------------------------------------------------------------");
 
-  mCoordinateTransform->sourceSRS().createFromWkt(mySourceWKT);
+  QgsSpatialRefSys srs;
+  srs.createFromWkt(mySourceWKT);
   //get the project projection, defaulting to this layer's projection
   //if none exists....
-  if (!mCoordinateTransform->sourceSRS().isValid())
+  if (!srs.isValid())
   {
-    mCoordinateTransform->sourceSRS().validate();
+    srs.validate();
   }
-  QString myDestWKT = QgsProject::instance()->readEntry("SpatialRefSys","/WKT",mySourceWKT);
+  mLayerSrsId = srs.srsid();
+
   //set up the coordinat transform - in the case of raster this is mainly used to convert
   //the inverese projection of the map extents of the canvas when zzooming in etc. so
   //that they match the coordinate system of this layer
-  // if no other layers exist, set the output projection to be
-  // the same as the input projection, otherwise set the output to the
-  // project srs
   QgsDebugMsg("Layer registry has " + QString::number(QgsMapLayerRegistry::instance()->count()) + "layers");
 
   if (QgsMapLayerRegistry::instance()->count() ==0)
   {
-     mCoordinateTransform->destSRS().createFromProj4(
-           mCoordinateTransform->sourceSRS().proj4String());
-    //first layer added will set the default project level projection
-    //TODO remove cast if poss!
-    int mySrsId = static_cast<int>(mCoordinateTransform->sourceSRS().srsid());
-    if (mySrsId)
-    {
-      QgsProject::instance()->writeEntry("SpatialRefSys","/ProjectSRSID",mySrsId);
-    }
+    // if no other layers exist, set the output projection to be
+    // the same as the input projection, otherwise set the output to the
+    // project srs
+    
+    // TODO: revisit [MD]
   }
-  else 
-  {
-      mCoordinateTransform->destSRS().createFromSrsId(
-        QgsProject::instance()->readNumEntry("SpatialRefSys","/ProjectSRSID",0));
-  }
-  if (!mCoordinateTransform->destSRS().isValid())
-  {
-    mCoordinateTransform->destSRS().validate();  
-  }
-
-  
-  //initialise the transform - you should do this any time one of the SRS's changes
-
-  mCoordinateTransform->initialise();
-
 
   getMetadata();
 
@@ -1024,7 +1004,8 @@ QPixmap QgsRasterLayer::getPaletteAsPixmap()
 
 bool QgsRasterLayer::draw(QPainter * theQPainter,
                           QgsRect * theViewExtent,
-                          QgsMapToPixel * theQgsMapToPixel)
+                          QgsMapToPixel * theQgsMapToPixel,
+                          QgsCoordinateTransform* )
 {
   QgsDebugMsg("QgsRasterLayer::draw(4 arguments): entered.");
 
@@ -3880,21 +3861,25 @@ QString QgsRasterLayer::getMetadata()
     myMetadataQString += "</td></tr>";
   }  // if (mProviderKey.isEmpty())
 
+  QgsSpatialRefSys srs(mLayerSrsId, QgsSpatialRefSys::QGIS_SRSID);
 
    myMetadataQString += "<tr><td bgcolor=\"gray\">";
    myMetadataQString += tr("Layer Spatial Reference System: ");
    myMetadataQString += "</td></tr>";
    myMetadataQString += "<tr><td bgcolor=\"white\">";
-   myMetadataQString += mCoordinateTransform->sourceSRS().proj4String();
+   myMetadataQString += srs.proj4String();
    myMetadataQString += "</td></tr>";
 
   // output coordinate system
+   // TODO: this is not related to layer, to be removed? [MD]
+   /*  
   myMetadataQString += "<tr><td bgcolor=\"gray\">";
   myMetadataQString += tr("Project Spatial Reference System: ");
   myMetadataQString += "</td></tr>";
   myMetadataQString += "<tr><td bgcolor=\"white\">";
   myMetadataQString +=  mCoordinateTransform->destSRS().proj4String();
   myMetadataQString += "</td></tr>";
+   */
 
   if (mProviderKey.isEmpty())
   {
@@ -4879,24 +4864,10 @@ void QgsRasterLayer::setDataProvider( QString const & provider,
 	  QgsDebugMsg("QgsRasterLayer::setDataProvider: mLayerName: " + mLayerName);
 
 
-          //
-          // Get the layers project info and set up the QgsCoordinateTransform for this layer
-          //
-          
-          // get the project projection
-          // TODO: defaulting to this layer's projection if none exists....
-          QString myDestWKT = QgsProject::instance()->readEntry("SpatialRefSys","/WKT","");
-          
-          // set up the coordinate transform - in the case of raster this is mainly used to convert
-          // the inverese projection of the map extents of the canvas when zooming in etc. so
-          // that they match the coordinate system of this layer
-	  QgsDebugMsg("QgsRasterLayer::setDataProvider: myDestWKT: " + myDestWKT);
           // Hard-code the source coordinate reference for now
           // TODO: Make WMS projection-aware.    
-          mCoordinateTransform = new QgsCoordinateTransform(4326,  
-                                                            myDestWKT,
-                                                            QgsSpatialRefSys::EPSG);
-        
+          QgsSpatialRefSys srs(EPSGID, QgsSpatialRefSys::EPSG);
+          mLayerSrsId = srs.srsid();
         }
       }
       else

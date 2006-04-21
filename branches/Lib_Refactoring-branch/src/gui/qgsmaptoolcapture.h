@@ -67,11 +67,6 @@ class QgsMapToolCapture : public QgsMapTool
   
   protected:
     
-    /** Helper function to inverse project a point if projections
-        are enabled. Failsafe, returns the sent point if anything fails.
-        @whenmsg is a part fo the error message. */
-    QgsPoint maybeInversePoint(QgsPoint point, const char whenmsg[]);
-
     /** which capturing tool is being used */
     enum CaptureTool mTool;
     

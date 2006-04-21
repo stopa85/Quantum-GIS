@@ -41,6 +41,11 @@ void QgsScaleCalculator::setMapUnits(QGis::units mapUnits)
   mMapUnits = mapUnits;
 }
 
+QGis::units QgsScaleCalculator::mapUnits() const
+{
+  return mMapUnits;
+}
+
 double QgsScaleCalculator::calculate(QgsRect &mapExtent, int canvasWidth)
 {
   double conversionFactor; 

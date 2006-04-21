@@ -16,25 +16,16 @@
  ***************************************************************************/
 /* $Id$ */
 
-#include <cfloat>
 #include <iostream>
-#include <limits>
-#include <cmath>
 
 #include <QDateTime>
 #include <QDomNode>
 #include <QFileInfo>
-#include <QPainter>
-#include <QAction>
-#include <QKeyEvent>
 
-#include "qgisapp.h"
-#include "qgscoordinatetransform.h"
 #include "qgsfield.h"
 #include "qgslogger.h"
 #include "qgsmaptopixel.h"
 #include "qgsrect.h"
-#include "qgsproject.h"
 #include "qgssymbol.h"
 #include "qgsmaplayer.h"
 
@@ -47,7 +38,7 @@ QgsMapLayer::QgsMapLayer(int type,
         mValid(true), // assume the layer is valid (data source exists and 
                      // can be used) until we learn otherwise
         mDataSource(source),
-        mCoordinateTransform(0),
+        mLayerSrsId(GEOSRS_ID),
         mID(""),
         mLayerType(type)
 
@@ -120,13 +111,13 @@ QgsRect QgsMapLayer::calculateExtent()
     return rect;
 }
 
-bool QgsMapLayer::draw(QPainter *, QgsRect *, QgsMapToPixel *)
+bool QgsMapLayer::draw(QPainter *, QgsRect *, QgsMapToPixel *, QgsCoordinateTransform *)
 {
     //  std::cout << "In QgsMapLayer::draw" << std::endl;
     return false;
 }
 
-void QgsMapLayer::drawLabels(QPainter *, QgsRect *, QgsMapToPixel *)
+void QgsMapLayer::drawLabels(QPainter *, QgsRect *, QgsMapToPixel *, QgsCoordinateTransform *)
 {
     //  std::cout << "In QgsMapLayer::draw" << std::endl;
 }
@@ -176,11 +167,11 @@ bool QgsMapLayer::readXML( QDomNode & layer_node )
     setLayerName( mne.text() );
 
     //read srs
-    QDomNode srsNode = layer_node.namedItem("coordinatetransform");
+    QDomNode srsNode = layer_node.namedItem("srsid");
     if( ! srsNode.isNull()  )
     {
-       mCoordinateTransform=new QgsCoordinateTransform();
-       mCoordinateTransform->readXML(srsNode);
+      QDomElement myElement = srsNode.toElement();
+      mLayerSrsId = myElement.text().toLong();
     }
     
     //read transparency level
@@ -252,9 +243,11 @@ bool QgsMapLayer::writeXML( QDomNode & layer_node, QDomDocument & document )
     // This is no longer stored in the project file. It is superflous since the layers
     // are written and read in the proper order.
 
-    //write the projection 
-    mCoordinateTransform->writeXML(maplayer,document);
-
+    // spatial reference system id
+    QDomElement mySrsIdElement = document.createElement( "srsid" );
+    mySrsIdElement.appendChild(document.createTextNode( QString::number(srsId())));
+    maplayer.appendChild(mySrsIdElement);
+    
     // <transparencyLevelInt>
     QDomElement transparencyLevelIntElement = document.createElement( "transparencyLevelInt" );
     QDomText    transparencyLevelIntText    = document.createTextNode( QString::number(getTransparency()) );
@@ -310,148 +303,6 @@ void QgsMapLayer::connectNotify( const char * signal )
 
 
 
-
-
-    /** Accessor for the coordinate transformation object */
-QgsCoordinateTransform * QgsMapLayer::coordinateTransform() 
-{
-#ifdef QGISDEBUG
- QgsDebugMsg("Maplayer asked for coordinateTransform which is....");
- if (!mCoordinateTransform)
- {
-   QgsDebugMsg("*NOT* valid");
- }
- else
- {
-   QgsDebugMsg("valid");
- }
- 
-#endif
-  
- return mCoordinateTransform;
-}
-
-bool QgsMapLayer::projectionsEnabled() const
-{
-  if (QgsProject::instance()->readNumEntry("SpatialRefSys","/ProjectionsEnabled",0)!=0)
-  {
-    return true;
-  }
-  else
-  {
-    return false;
-  }
-}
-
-bool QgsMapLayer::projectExtent(QgsRect& extent, QgsRect& r2)
-{
-  bool split = false;
-
-  if (projectionsEnabled())
-  {
-    try
-    {
-#ifdef QGISDEBUG
-      QgsLogger::debug<QgsRect>("Getting extent of canvas in layers CS. Canvas is ", extent, __FILE__,\
-				__FUNCTION__, __LINE__);
-#endif
-      // Split the extent into two if the source SRS is
-      // geographic and the extent crosses the split in
-      // geographic coordinates (usually +/- 180 degrees,
-      // and is assumed to be so here), and draw each
-      // extent separately.
-      static const double splitCoord = 180.0;
-
-      if (mCoordinateTransform->sourceSRS().geographicFlag())
-      {
-        // Note: ll = lower left point
-        //   and ur = upper right point
-        QgsPoint ll = mCoordinateTransform->transform(
-                          extent.xMin(), extent.yMin(), 
-                          QgsCoordinateTransform::INVERSE);
-
-        QgsPoint ur = mCoordinateTransform->transform(
-                          extent.xMax(), extent.yMax(), 
-                          QgsCoordinateTransform::INVERSE);
-
-        if (ll.x() > ur.x())
-        {
-          extent.set(ll, QgsPoint(splitCoord, ur.y()));
-          r2.set(QgsPoint(-splitCoord, ll.y()), ur);
-          split = true;
-        }
-        else // no need to split
-          extent = mCoordinateTransform->transformBoundingBox(extent, QgsCoordinateTransform::INVERSE);
-      }
-      else // can't cross 180
-        extent = mCoordinateTransform->transformBoundingBox(extent, QgsCoordinateTransform::INVERSE);
-    }
-    catch (QgsCsException &cse)
-      {
-	QgsLogger::warning("Transform error caught in " + QString(__FILE__) + ", line " + QString::number(__LINE__));
-        extent = QgsRect(-DBL_MAX, -DBL_MAX, DBL_MAX, DBL_MAX);
-        r2     = QgsRect(-DBL_MAX, -DBL_MAX, DBL_MAX, DBL_MAX);
-      }
-  }
-  return split;
-}
-
-QgsRect QgsMapLayer::calcProjectedBoundingBox(QgsRect& extent)
-{
-  // Calculate the bounding box of the canvas extent when
-  // inverse projected to the source SRS. This is done by
-  // looking at 10 points on each edge of the rectangular canvas
-  // extent. This seems to be a sufficient number to get a good
-  // approximation to the bounding box.
-  static const double numPoints = 10.0;
-
-  std::vector<QgsPoint> left, right, top, bottom;
-  QgsPoint pt;
-  // Populate the vectors
-
-  for (int i = 0; i < numPoints; ++i)
-  {
-    // the left and right boundary
-    pt.setX(extent.xMin());
-    pt.setY(extent.yMin() + extent.height()
-            / numPoints * static_cast<double>(i));
-    left.push_back(mCoordinateTransform->transform(pt, 
-                   QgsCoordinateTransform::INVERSE));
-    pt.setX(extent.xMax());
-    right.push_back(mCoordinateTransform->transform(pt, 
-                    QgsCoordinateTransform::INVERSE));
-
-    // the top and bottom boundary
-    pt.setY(extent.yMin());
-    pt.setX(extent.xMin() + extent.width() 
-            / numPoints * static_cast<double>(i));
-    bottom.push_back(mCoordinateTransform->transform(pt,
-                     QgsCoordinateTransform::INVERSE));
-    pt.setY(extent.yMax());
-    top.push_back(mCoordinateTransform->transform(pt,
-                  QgsCoordinateTransform::INVERSE));
-  }
-
-  // Calculate the bounding box and use that for the extent
-        
-  double xmin = std::numeric_limits<double>::max();
-  double xmax = std::numeric_limits<double>::min();
-  double ymin = std::numeric_limits<double>::max();
-  double ymax = std::numeric_limits<double>::min();
-  for (unsigned int i = 0; i < top.size(); ++i)
-  {
-    xmin = std::min(xmin, left[i].x());
-    xmax = std::max(xmax, right[i].x());
-    ymin = std::min(ymin, bottom[i].y());
-    ymax = std::max(ymax, top[i].y());
-  }
-
-  QgsRect bb_extent;
-  bb_extent.set(xmin, ymin, xmax, ymax);
-
-  return bb_extent;
-}
-
 void QgsMapLayer::setScaleBasedVisibility(bool theVisibilityFlag)
 {
   mScaleBasedVisibility = theVisibilityFlag;
@@ -497,4 +348,14 @@ void QgsMapLayer::setLayerOrder(QStringList layers)
 void QgsMapLayer::setSubLayerVisibility(QString name, bool vis)
 {
       // NOOP
+}
+
+long QgsMapLayer::srsId()
+{
+  return mLayerSrsId;
+}
+
+void QgsMapLayer::setSrsId(long srsid)
+{
+  mLayerSrsId = srsid;
 }

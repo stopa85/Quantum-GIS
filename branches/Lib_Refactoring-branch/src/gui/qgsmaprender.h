@@ -17,9 +17,11 @@
 #ifndef QGSMAPRENDER_H
 #define QGSMAPRENDER_H
 
+#include <deque>
+#include <QString>
 
 #include "qgis.h"
-#include "qgsmaplayerset.h"
+#include "qgsrect.h"
 
 class QPainter;
 class QgsScaleCalculator;
@@ -54,9 +56,6 @@ class QgsMapRender : public QObject
     //! returns current extent
     QgsRect extent();
     
-    void setLayerSet(const QgsMapLayerSet& layers) { mLayers = layers; }
-    QgsMapLayerSet& layers() { return mLayers; }
-    
     QgsMapToPixel* coordXForm() { return mCoordXForm; }
     
     double scale() const { return mScale; }
@@ -65,7 +64,7 @@ class QgsMapRender : public QObject
     //! Recalculate the map scale
     void updateScale();
 
-    QGis::units mapUnits() const { return mMapUnits; }
+    QGis::units mapUnits() const;
     void setMapUnits(QGis::units u);
     
     //! sets whether map image will be for overview
@@ -73,25 +72,68 @@ class QgsMapRender : public QObject
 
     void setOutputSize(QSize size, int dpi);
     
+    //! transform extent in layer's SRS to extent in output SRS
+    QgsRect layerExtentToOutputExtent(QgsMapLayer* theLayer, QgsRect extent);
+    
+    //! transform coordinates from output SRS to layer's SRS
+    QgsPoint outputCoordsToLayerCoords(QgsMapLayer* theLayer, QgsPoint point);
+
+    //! transform rect's coordinates from output SRS to layer's SRS
+    QgsRect outputCoordsToLayerCoords(QgsMapLayer* theLayer, QgsRect rect);
+    
+    //! sets whether to use projections for this layer set
+    void setProjectionsEnabled(bool enabled);
+    
+    //! returns true if projections are enabled for this layer set
+    bool projectionsEnabled();
+    
+    //! sets destination spatial reference system - by QGIS SRS ID
+    void setDestinationSrsId(long srsId);
+    
+    //! returns SRS ID of destination spatial reference system
+    long destinationSrsId();
+
+    //! returns current extent of layer set
+    QgsRect fullExtent() { return mFullExtent; }
+    
+    //! returns current layer set
+    std::deque<QString>& layerSet() { return mLayerSet; }
+    
+    //! change current layer set
+    void setLayerSet(const std::deque<QString>& layers);
+
+    //! updates extent of the layer set
+    void updateFullExtent();
+
   signals:
     
     void setProgress(int current, int total);
     
     void updateMap();
+    
+    void mapUnitsChanged();
 
     //! emitted when layer's draw() returned FALSE
     void drawError(QgsMapLayer*);
-    
+
   public slots:
     
     //! called by signal from layer current being drawn
     void onDrawingProgress(int current, int total);
-  
+
   protected:
     
     //! adjust extent to fit the pixmap size
     void adjustExtentToSize();
     
+    /** Convenience function to project an extent into the layer source
+     * SRS, but also split it into two extents if it crosses
+     * the +/- 180 degree line. Modifies the given extent to be in the
+     * source SRS coordinates, and if it was split, returns true, and
+     * also sets the contents of the r2 parameter
+     */
+    bool splitLayersExtent(QgsMapLayer* layer, QgsRect& extent, QgsRect& r2);
+
   protected:
     
     //! indicates drawing in progress
@@ -103,17 +145,11 @@ class QgsMapRender : public QObject
     //! Map scale at its current zool level
     double mScale;
     
-    //! map units
-    QGis::units mMapUnits;
-    
     //! scale calculator
     QgsScaleCalculator * mScaleCalculator;
     
     //! utility class for transformation between map and pixmap units
     QgsMapToPixel* mCoordXForm;
-    
-    //! layers for rendering
-    QgsMapLayerSet mLayers;
     
     //! current extent to be drawn
     QgsRect mExtent;
@@ -122,6 +158,19 @@ class QgsMapRender : public QObject
     bool mOverview;
     
     QSize mSize;
+
+    //! detemines whether on the fly projection support is enabled
+    bool mProjectionsEnabled;
+    
+    //! destination spatial reference system of the projection
+    long mDestSRS;
+
+    //! stores array of layers to be rendered (identified by string)
+    std::deque<QString> mLayerSet;
+    
+    //! full extent of the layer set
+    QgsRect mFullExtent;
+
 };
 
 #endif
