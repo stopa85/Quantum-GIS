@@ -3176,15 +3176,7 @@ void QgsVectorLayer::drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * t
 #ifdef QGISDEBUG 
         //  std::cout <<"...WKBPoint (" << x << ", " << y << ")" <<std::endl;
 #endif
-
-        transformPoint(x, y, theMapToPixelTransform, projectionsEnabledFlag);
-        QPointF pt(x - (marker->width()/2),  y - (marker->height()/2));
-
-        p->save();
-        p->scale(markerScaleFactor,markerScaleFactor);
-        p->drawPixmap(pt, *marker);
-        p->restore();
-
+	drawPixmap(p, marker, x, y, markerScaleFactor, theMapToPixelTransform, projectionsEnabledFlag);
         break;
       }
     case WKBMultiPoint:
@@ -3192,9 +3184,6 @@ void QgsVectorLayer::drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * t
         unsigned char *ptr = feature + 5;
         unsigned int nPoints = *((int*)ptr);
         ptr += 4;
-
-        p->save();
-        p->scale(markerScaleFactor, markerScaleFactor);
 
         for (register unsigned int i = 0; i < nPoints; ++i)
         {
@@ -3207,10 +3196,7 @@ void QgsVectorLayer::drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * t
 #ifdef QGISDEBUG 
           std::cout <<"...WKBMultiPoint (" << x << ", " << y << ")" <<std::endl;
 #endif
-
-          transformPoint(x, y, theMapToPixelTransform, projectionsEnabledFlag);
-          QPointF pt(x - (marker->width()/2),  y - (marker->height()/2));
-          
+ 
 #if defined(Q_WS_X11)
           // Work around a +/- 32768 limitation on coordinates in X11
           if (std::abs(x) > QgsClipper::maxX ||
@@ -3218,9 +3204,8 @@ void QgsVectorLayer::drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * t
             needToTrim = true;
           else
 #endif
-          p->drawPixmap(pt, *marker);
+	    drawPixmap(p, marker, x, y, markerScaleFactor, theMapToPixelTransform, projectionsEnabledFlag);
         }
-        p->restore();
 
         break;
       }
@@ -3228,6 +3213,10 @@ void QgsVectorLayer::drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * t
       {
         drawLineString(feature, p, theMapToPixelTransform,
             projectionsEnabledFlag);
+	if(m_renderer && m_renderer->containsPixmap())//inserted to ev. place additional objects, e.g. diagrams
+	  {
+	    drawFeaturePixmap(fet, p, marker, markerScaleFactor, theMapToPixelTransform, projectionsEnabledFlag);
+	  }
         break;
       }
     case WKBMultiLineString:
@@ -3241,12 +3230,20 @@ void QgsVectorLayer::drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * t
           ptr = drawLineString(ptr, p, theMapToPixelTransform,
               projectionsEnabledFlag);
         }
+	if(m_renderer && m_renderer->containsPixmap())//inserted to ev. place additional objects, e.g. diagrams
+	  {
+	    drawFeaturePixmap(fet, p, marker, markerScaleFactor, theMapToPixelTransform, projectionsEnabledFlag);
+	  }
         break;
       }
     case WKBPolygon:
       {
         drawPolygon(feature, p, theMapToPixelTransform,
             projectionsEnabledFlag);
+	if(m_renderer && m_renderer->containsPixmap())//inserted to ev. place additional objects, e.g. diagrams
+	  {
+	    drawFeaturePixmap(fet, p, marker, markerScaleFactor, theMapToPixelTransform, projectionsEnabledFlag);
+	  }
         break;
       }
     case WKBMultiPolygon:
@@ -3257,6 +3254,10 @@ void QgsVectorLayer::drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * t
         for (register unsigned int kdx = 0; kdx < numPolygons; kdx++)
           ptr = drawPolygon(ptr, p, theMapToPixelTransform, 
               projectionsEnabledFlag);
+	if(m_renderer && m_renderer->containsPixmap())//inserted to ev. place additional objects, e.g. diagrams
+	  {
+	    drawFeaturePixmap(fet, p, marker, markerScaleFactor, theMapToPixelTransform, projectionsEnabledFlag);
+	  }
         break;
       }
     default:
@@ -3267,7 +3268,27 @@ void QgsVectorLayer::drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * t
   }
 }
 
+void QgsVectorLayer::drawFeaturePixmap(QgsFeature* f, QPainter* p, const QPixmap* pix,\
+double scaleFactor, QgsMapToPixel* theMapToPixelTransform, bool projectionsEnabledFlag)
+{
+  QgsPoint labelpoint; 
+  if(f->geometry()->labelPoint(labelpoint))
+    {
+      drawPixmap(p, pix, labelpoint.x(), labelpoint.y(), scaleFactor,\
+		 theMapToPixelTransform, projectionsEnabledFlag);
+    }
+}
 
+void QgsVectorLayer::drawPixmap(QPainter* p, const QPixmap* pix, double x, double y, double scaleFactor,\
+QgsMapToPixel* theMapToPixelTransform, bool projectionsEnabledFlag)
+{
+  transformPoint(x, y, theMapToPixelTransform, projectionsEnabledFlag);
+  QPointF pt(x - (pix->width()/2),  y - (pix->height()/2));
+  p->save();
+  p->scale(scaleFactor, scaleFactor);
+  p->drawPixmap(pt, *pix);
+  p->restore();
+}
 
 void QgsVectorLayer::saveAsShapefile()
 {

@@ -489,6 +489,14 @@ private:                       // Private attributes
   //! Draws the layer labels using coordinate transformation
   void drawLabels(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * cXf);
 
+  /**Calculates the labelpoint of a feature and calls drawPixmap*/
+  void drawFeaturePixmap(QgsFeature* f, QPainter* p, const QPixmap* pix, double scaleFactor,\
+QgsMapToPixel* theMapToPixelTransform, bool projectionsEnabledFlag);
+
+  /**draw a scaled pixmap at the location of (map) coordinates x and y*/
+  void drawPixmap(QPainter* p, const QPixmap* pix, double x, double y, double scaleFactor,\
+QgsMapToPixel* theMapToPixelTransform, bool projectionsEnabledFlag);
+
   // Convenience function to transform the given point
   void transformPoint(double& x, double& y, 
       QgsMapToPixel* mtp, bool projectionsEnabledFlag);
