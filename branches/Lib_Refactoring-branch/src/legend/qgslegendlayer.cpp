@@ -20,7 +20,11 @@
 #include "qgslegendlayer.h"
 #include "qgslegendlayerfile.h"
 #include "qgslegendlayerfilegroup.h"
+
+#include "qgsapplication.h"
 #include "qgsmaplayer.h"
+#include "qgsvectorlayer.h"
+
 #include <iostream>
 #include <QCoreApplication>
 #include <QIcon>
@@ -59,14 +63,40 @@ void QgsLegendLayer::setLayerTypeIcon()
 {
   QgsMapLayer* firstLayer = firstMapLayer();
   if(firstLayer)
+  {
+    QString myThemePath = QgsApplication::themePath();
+    QString myPath;
+
+    if (firstLayer->type() == QgsMapLayer::VECTOR)
     {
-      QFileInfo file(firstLayer->layerTypeIconPath());
-      if(file.exists())
-	{
-	  QIcon myIcon(file.absoluteFilePath());
-	  setIcon(0, myIcon);
-	}
+      QgsVectorLayer* vlayer = dynamic_cast<QgsVectorLayer*>(firstLayer);
+      switch(vlayer->vectorType())
+      {
+        case QgsVectorLayer::Point:
+          myPath = myThemePath+"/mIconPointLayer.png";
+          break;
+        case QgsVectorLayer::Line:
+          myPath = myThemePath+"/mIconLineLayer.png";
+          break;
+        case QgsVectorLayer::Polygon:
+          myPath = myThemePath+"/mIconPolygonLayer.png";
+        default:
+          myPath = myThemePath+"/mIconLayer.png";
+      }
     }
+    else // RASTER
+    {
+      myPath = myThemePath+"/mIconLayer.png";
+    }
+
+    
+    QFileInfo file(myPath);
+    if(file.exists())
+    {
+      QIcon myIcon(file.absoluteFilePath());
+      setIcon(0, myIcon);
+    }
+  }
 }
 
 bool QgsLegendLayer::isLeafNode()

@@ -176,9 +176,6 @@ public:
      */
     bool projectExtent(QgsRect& extent, QgsRect& r2);
 
-    /** Returns the path to an icon which characterises the type of layer */
-    virtual QString layerTypeIconPath() = 0;
-
     /** Copies the symbology settings from another layer. Returns true in case of success */
     virtual bool copySymbologySettings(const QgsMapLayer& other) = 0;
 
@@ -212,11 +209,6 @@ public slots:
     
     /** Event handler for when a coordinate transform fails due to bad vertex error */
     virtual void invalidTransformInput();
-
-    /** keyPress event so we can check if cancel was pressed
-     * @TODO: to be removed
-     */
-    void keyPressed ( QKeyEvent * e );
 
     /** Accessor and mutator for the minimum scale member */
     void setMinScale(float theMinScale);
@@ -285,9 +277,6 @@ protected:
 
     /** Name of the layer - used for display */
     QString mLayerName;
-
-    /** A flag to let the draw() render loop know if the user has requested drawing be cancelled */
-    bool mDrawingCancelled;
 
     /** A QgsCoordinateTransform is used for on the fly reprojection of map layers
      * @TODO to be removed - project dependency

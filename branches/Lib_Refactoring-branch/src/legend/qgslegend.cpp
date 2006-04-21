@@ -34,6 +34,7 @@
 #include "qgsproject.h"
 #include "qgsrasterlayer.h"
 #include "qgsrasterlayerproperties.h"
+#include "qgsvectorlayer.h"
 #include "qgsvectorlayerproperties.h"
 #include "qgsvectordataprovider.h"
 #include <float.h>

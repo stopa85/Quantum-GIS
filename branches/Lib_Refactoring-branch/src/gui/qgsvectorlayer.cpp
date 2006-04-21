@@ -804,8 +804,6 @@ void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * th
     bool projectionsEnabledFlag = projectionsEnabled();
     std::list<int> attributes=m_renderer->classificationAttributes();
 
-    mDrawingCancelled=false; //pressing esc will change this to true
-
     /*
        QTime t;
        t.start();
@@ -819,7 +817,7 @@ void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * th
         // XXX Something in our draw event is triggering an additional draw event when resizing [TE 01/26/06]
         // XXX Calling this will begin processing the next draw event causing image havoc and recursion crashes.
         //qApp->processEvents(); //so we can trap for esc press
-        if (mDrawingCancelled) return;
+        //if (mDrawingCancelled) return;
         // If update threshold is greater than 0, check to see if
         // the threshold has been exceeded
         if(updateThreshold > 0)
@@ -2534,24 +2532,6 @@ bool QgsVectorLayer::addFeatures(std::vector<QgsFeature*>* features, bool makeSe
     updateExtents();
   }  
   return true;
-}
-
-QString QgsVectorLayer::layerTypeIconPath()
-{
-  QString myThemePath = QgsApplication::themePath();
-  switch(vectorType())
-    {
-    case Point:
-      return (myThemePath+"/mIconPointLayer.png");
-      break;
-    case Line:
-      return (myThemePath+"/mIconLineLayer.png");
-      break;
-    case Polygon:
-      return (myThemePath+"/mIconPolygonLayer.png");
-    default:
-      return (myThemePath+"/mIconLayer.png");
-    }
 }
 
 void QgsVectorLayer::refreshLegend()
