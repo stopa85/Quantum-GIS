@@ -19,13 +19,14 @@
  
 #ifndef QGSMAPLAYERREGISTRY_H
 #define QGSMAPLAYERREGISTRY_H
+
 #include <map>
-#include <qobject.h>
-#include "qgsmaplayer.h"
-#include "qgsvectorlayer.h"
+#include <QObject>
 
 class QString;
 class QStringList;
+
+class QgsMapLayer;
 
 /**
 * \class QgsMapLayerRegistry
@@ -83,10 +84,6 @@ public:
 
  */
  void removeAllMapLayers();
-
- //! Get a vector layer from the registry - the the requested key does not exist or
- //does not correspond to a vector layer, null returned!
- QgsVectorLayer * getVectorLayer(QString theLayerId);
 
 signals:
 

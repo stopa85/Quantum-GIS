@@ -44,16 +44,16 @@ email                : sherman at mrcc.com
 #include "qgsmaplayer.h"
 #include "qgsmaplayerregistry.h"
 #include "qgsmaptool.h"
+#include "qgsmaptoolpan.h"
+#include "qgsmaptoolzoom.h"
 #include "qgsmaptopixel.h"
 #include "qgsmapoverviewcanvas.h"
 #include "qgsmaprender.h"
+#include "qgsmessageviewer.h"
 #include "qgsproject.h"
 #include "qgsrubberband.h"
+#include "qgsvectorlayer.h"
 
-#include "qgsmessageviewer.h"
-
-#include "qgsmaptoolzoom.h"
-#include "qgsmaptoolpan.h"
 
 /**  @DEPRECATED: to be deleted, stuff from here should be moved elsewhere */
 class QgsMapCanvas::CanvasProperties

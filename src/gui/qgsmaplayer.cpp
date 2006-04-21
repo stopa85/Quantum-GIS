@@ -312,17 +312,6 @@ void QgsMapLayer::connectNotify( const char * signal )
 
 
 
-void QgsMapLayer::keyPressed ( QKeyEvent * e )
-{
-  if (e->key()==Qt::Key_Escape) mDrawingCancelled = true;
-// The following statment causes a crash on WIN32 and should be 
-// enclosed in an #ifdef QGISDEBUG if its really necessary. Its
-// commented out for now. [gsherman]
-//  std::cout << e->text().toLocal8Bit().data() << " pressed in maplayer !" << std::endl;
-  e->ignore();
-}
-
-
     /** Accessor for the coordinate transformation object */
 QgsCoordinateTransform * QgsMapLayer::coordinateTransform() 
 {

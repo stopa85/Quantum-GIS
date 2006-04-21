@@ -19,8 +19,8 @@
 #include <iostream>
 
 #include "qgsmaplayerregistry.h"
+#include "qgsmaplayer.h"
 #include "qgslogger.h"
-#include "qgsproject.h"
 
 
 //
@@ -50,29 +50,6 @@ const int QgsMapLayerRegistry::count()
 {
   return mMapLayers.size();
 }
- //! Get a vector layer from the registry - the the requested key does not exist or
- //does not correspond to a vector layer, null returned!
- QgsVectorLayer * QgsMapLayerRegistry::getVectorLayer(QString theLayerId)
-{
-  QgsVectorLayer * myVectorLayer = (QgsVectorLayer*) mMapLayers[theLayerId];
-  if (myVectorLayer)
-  {
-    if (myVectorLayer->type() == QgsMapLayer::VECTOR)
-    {
-      return myVectorLayer;
-    }
-    else
-    {
-      return 0;
-    }
-  }
-  else
-  {
-    return 0;
-  }
-}
-
-  
 
 QgsMapLayer * QgsMapLayerRegistry::mapLayer(QString theLayerId)  
 {
@@ -103,9 +80,6 @@ QgsMapLayer *
     if (theEmitSignal)
       emit layerWasAdded(theMapLayer);
 
-    // notify the project we've made a change
-    QgsProject::instance()->dirty(true);
-
     return mMapLayers[theMapLayer->getLayerID()];
   }
   else
@@ -127,8 +101,6 @@ void QgsMapLayerRegistry::removeMapLayer(QString theLayerId, bool theEmitSignal)
   QgsDebugMsg("QgsMapLayerRegistry::removemaplayer - unregistering map layer.");
   mMapLayers.erase(theLayerId);
   QgsDebugMsg("QgsMapLayerRegistry::removemaplayer - operation complete.");
-  // notify the project we've made a change
-  QgsProject::instance()->dirty(true);
 }
 
 void QgsMapLayerRegistry::removeAllMapLayers()
@@ -150,9 +122,6 @@ void QgsMapLayerRegistry::removeAllMapLayers()
       myMapIterator = mMapLayers.begin(); // since iterator invalidated due to
                                         // erase(), reset to new first element
   }
-
-  // notify the project we've made a change
-  QgsProject::instance()->dirty(true);
 
 } // QgsMapLayerRegistry::removeAllMapLayers()
 

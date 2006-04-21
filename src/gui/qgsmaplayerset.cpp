@@ -17,6 +17,7 @@
 #include "qgscoordinatetransform.h"
 #include "qgsexception.h"
 #include "qgslogger.h"
+#include "qgsmaplayer.h"
 #include "qgsmaplayerset.h"
 #include "qgsmaplayerregistry.h"
 #include "qgsproject.h"
@@ -62,7 +63,7 @@ void QgsMapLayerSet::updateFullExtent()
         try
         {
           if ( ! lyr->coordinateTransform() )
-            throw QgsCsException( string("NO COORDINATE TRANSFORM FOUND FOR LAYER") );
+            throw QgsCsException( std::string("NO COORDINATE TRANSFORM FOUND FOR LAYER") );
               
           mFullExtent.unionRect(lyr->coordinateTransform()->transformBoundingBox(lyr->extent()));
         }
