@@ -161,7 +161,8 @@ class QgsGeometry {
     /**Creates a geos geometry from this features geometry. Note, that the returned object needs to be deleted*/
     geos::Geometry* geosGeometry() const;
 
-
+    /**Calculates a point for label (or diagram) placing. Returns false in case of error*/
+    bool labelPoint(QgsPoint& p) const;
 
   private:
 

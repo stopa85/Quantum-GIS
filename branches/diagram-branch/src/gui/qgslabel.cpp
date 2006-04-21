@@ -188,7 +188,10 @@ void QgsLabel::renderLabel( QPainter * painter, QgsRect *viewExtent,
     /* Coordinates */
     double x, y, xoffset, yoffset, ang;
 
-    point = labelPoint ( feature );
+    if(!feature->geometry()->labelPoint(point))
+      {
+	return;
+      }
 
     value = fieldValue ( XCoordinate, feature );
     if ( !value.isEmpty() )
@@ -413,152 +416,6 @@ QString QgsLabel::labelField ( int attr )
 QgsLabelAttributes *QgsLabel::layerAttributes ( void )
 {
     return mLabelAttributes;
-}
-
-QgsPoint QgsLabel::labelPoint ( QgsFeature *feature )
-{
-    int wkbType;
-    double *x, *y;
-    unsigned char *ptr;
-    int *nPoints;
-
-    unsigned char *geom = feature->getGeometry();
-
-    memcpy(&wkbType, (geom+1), sizeof(wkbType));
-
-    QgsPoint point;
-
-    switch (wkbType)
-    {
-    case QGis::WKBPoint:
-        x = (double *) (geom + 5);
-        y = (double *) (geom + 5 + sizeof(double));
-        point.setX(*x);
-        point.setY(*y);
-        break;
-
-    case QGis::WKBLineString: // Line center
-        double dx, dy, tl, l;
-        ptr = geom + 5;
-        nPoints = (int *)ptr;
-        ptr = geom + 1 + 2 * sizeof(int);
-
-        tl = 0;
-        for (int i = 1; i < *nPoints; i++)
-        {
-            dx = ((double *)ptr)[2*i] - ((double *)ptr)[2*i-2];
-            dy = ((double *)ptr)[2*i+1] - ((double *)ptr)[2*i-1];
-            tl += sqrt(dx*dx + dy*dy);
-        }
-        tl /= 2;
-
-        l = 0;
-        for (int i = 1; i < *nPoints; i++)
-        {
-            double dl;
-
-            dx = ((double *)ptr)[2*i] - ((double *)ptr)[2*i-2];
-            dy = ((double *)ptr)[2*i+1] - ((double *)ptr)[2*i-1];
-            dl = sqrt(dx*dx + dy*dy);
-
-            if ( l+dl > tl )
-            {
-                l = tl - l;
-                double k = l/dl;
-
-                point.setX ( ((double *)ptr)[2*i-2] +  k * dx  );
-                point.setY ( ((double *)ptr)[2*i-1] + k * dy );
-                break;
-            }
-            l += dl;
-        }
-        break;
-
-    case QGis::WKBPolygon:
-        double sx, sy;
-        ptr = geom + 1 + 2 * sizeof(int); // set pointer to the first ring
-        nPoints = (int *) ptr;
-        ptr += 4;
-
-        sx = sy = 0;
-        for (int i = 0; i < *nPoints-1; i++)
-        {
-            sx += ((double *)ptr)[2*i];
-            sy += ((double *)ptr)[2*i+1];
-        }
-        point.setX ( sx/(*nPoints-1) );
-        point.setY ( sy/(*nPoints-1) );
-
-        break;
-    case QGis::WKBMultiPolygon:
-        break; ///// <--------------remove this when code below needs testing..........
-        {
-            double sx, sy;
-            unsigned char *ptr;
-            int idx, kdx;
-            int *numPolygons, *numRings;
-
-            // get the number of polygons
-            ptr = geom + 5;
-            numPolygons = (int *) ptr;
-#ifdef QGISDEBUG
-
-            std::cout << "Finding label point for mutipolygon with "
-            << *numPolygons << " parts " << std::endl;
-#endif
-            //for (kdx = 0; kdx < *numPolygons; kdx++)
-            for (kdx = 0; kdx < 1; kdx++) //just label the first sub polygon
-            {
-                //skip the endian and feature type info and
-                // get number of rings in the polygon
-                ptr+=14;
-                numRings = (int *) ptr;
-                ptr += 4;
-#ifdef QGISDEBUG
-
-                std::cout << "Multipolygon part " << kdx << " ring iteration  " << std::endl;
-#endif
-
-                for (idx = 0; idx < *numRings; idx++)
-                {
-#ifdef QGISDEBUG
-                    std::cout << "Multipolygon part " << kdx << " ring " << idx
-                    << std::endl;
-#endif
-                    // get number of points in the ring
-                    nPoints = (int *) ptr;
-                    ptr += 4;
-                    sx = sy = 0;
-
-                    //loop through vertices skipping last which == first
-                    for (int i = 0; i < *nPoints-1; i++)
-                    {
-                        x = (double *)ptr;
-                        ptr += sizeof(double);
-                        y = (double *)ptr;
-                        ptr += sizeof(double);
-                        sx += *x;
-                        sy += *y;
-#ifdef QGISDEBUG
-
-                        std::cout << "\tVertex " << i << " x: " << *x << " y: " << *y  << std::endl;
-#endif
-
-                    }
-                }
-#ifdef QGISDEBUG
-                std::cout << "Setting multipart polygon label point to" << sx/(*nPoints-1) << ", "<< sy/(*nPoints-1) << std::endl;
-#endif
-
-                point.setX ( sx/(*nPoints-1) );
-                point.setY ( sy/(*nPoints-1) );
-            }
-            break;
-
-
-        }
-    }
-    return QgsPoint ( point );
 }
 
 void QgsLabel::readXML( const QDomNode& node )

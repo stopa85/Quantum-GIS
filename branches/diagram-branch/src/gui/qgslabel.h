@@ -109,9 +109,6 @@ public:
     QString fieldValue ( int attr, QgsFeature *feature );
 
 private:
-    /** Get label point for simple feature in map units */
-    QgsPoint labelPoint ( QgsFeature *feature );
-    
     /** Color to draw selected features */
     QColor mSelectionColor;
     
