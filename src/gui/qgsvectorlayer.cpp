@@ -489,7 +489,7 @@ unsigned char* QgsVectorLayer::drawLineString(unsigned char* feature,
   //
   QPen myTransparentPen = p->pen(); // store current pen
   QColor myColor = myTransparentPen.color();
-  myColor.setAlpha(transparencyLevelInt);
+  myColor.setAlpha(mTransparencyLevel);
   myTransparentPen.setColor(myColor);
   p->setPen(myTransparentPen);
   p->drawPolyline(pa);
@@ -714,11 +714,11 @@ std::cerr << i << ": " << ring->first[i]
     //
     QBrush myTransparentBrush = p->brush();
     QColor myColor = brush.color();
-    myColor.setAlpha(transparencyLevelInt);
+    myColor.setAlpha(mTransparencyLevel);
     myTransparentBrush.setColor(myColor);
     QPen myTransparentPen = p->pen(); // store current pen
     myColor = myTransparentPen.color();
-    myColor.setAlpha(transparencyLevelInt);
+    myColor.setAlpha(mTransparencyLevel);
     myTransparentPen.setColor(myColor);
     //
     // draw the polygon fill
@@ -1363,24 +1363,24 @@ void QgsVectorLayer::updateExtents()
     if(mDeleted.size()==0)
     {
       // get the extent of the layer from the provider
-      layerExtent.setXmin(dataProvider->extent()->xMin());
-      layerExtent.setYmin(dataProvider->extent()->yMin());
-      layerExtent.setXmax(dataProvider->extent()->xMax());
-      layerExtent.setYmax(dataProvider->extent()->yMax());
+      mLayerExtent.setXmin(dataProvider->extent()->xMin());
+      mLayerExtent.setYmin(dataProvider->extent()->yMin());
+      mLayerExtent.setXmax(dataProvider->extent()->xMax());
+      mLayerExtent.setYmax(dataProvider->extent()->yMax());
     }
     else
     {
       QgsFeature* fet=0;
       QgsRect bb;
 
-      layerExtent.setMinimal();
+      mLayerExtent.setMinimal();
       dataProvider->reset();
       while(fet=dataProvider->getNextFeature(false))
       {
         if(mDeleted.find(fet->featureId())==mDeleted.end())
         {
           bb=fet->boundingBox();
-          layerExtent.combineExtentWith(&bb);
+          mLayerExtent.combineExtentWith(&bb);
         }
         delete fet;
       }
@@ -1396,7 +1396,7 @@ void QgsVectorLayer::updateExtents()
   for(std::vector<QgsFeature*>::iterator iter=mAddedFeatures.begin();iter!=mAddedFeatures.end();++iter)
   {
     QgsRect bb=(*iter)->boundingBox();
-    layerExtent.combineExtentWith(&bb);
+    mLayerExtent.combineExtentWith(&bb);
 
   }
 
@@ -1425,7 +1425,7 @@ void QgsVectorLayer::setSubsetString(QString subset)
   {
     dataProvider->setSubsetString(subset);
     // get the updated data source string from the provider
-    dataSource = dataProvider->getDataSourceUri();
+    mDataSource = dataProvider->getDataSourceUri();
     updateExtents();
   }
   //trigger a recalculate extents request to any attached canvases
@@ -1862,7 +1862,7 @@ int QgsVectorLayer::maximumScale()
 bool QgsVectorLayer::readXML_( QDomNode & layer_node )
 {
 #ifdef QGISDEBUG
-  std::cerr << "Datasource in QgsVectorLayer::readXML_: " << dataSource.toLocal8Bit().data() << std::endl;
+  std::cerr << "Datasource in QgsVectorLayer::readXML_: " << mDataSource.toLocal8Bit().data() << std::endl;
 #endif
   // process the attribute actions
   mActions.readXML(layer_node);
@@ -1886,8 +1886,8 @@ bool QgsVectorLayer::readXML_( QDomNode & layer_node )
     // if the provider string isn't empty, then we successfully
     // got the stored provider
   }
-  else if ((dataSource.find("host=") > -1) &&
-      (dataSource.find("dbname=") > -1))
+  else if ((mDataSource.find("host=") > -1) &&
+      (mDataSource.find("dbname=") > -1))
   {
     providerKey = "postgres";
   }
@@ -2019,7 +2019,7 @@ bool QgsVectorLayer::setDataProvider( QString const & provider )
   //XXX - This was a dynamic cast but that kills the Windows
   //      version big-time with an abnormal termination error
   dataProvider = 
-    (QgsVectorDataProvider*)(QgsProviderRegistry::instance()->getProvider(provider,dataSource));
+    (QgsVectorDataProvider*)(QgsProviderRegistry::instance()->getProvider(provider,mDataSource));
 
   if (dataProvider)
   {
@@ -2047,13 +2047,13 @@ bool QgsVectorLayer::setDataProvider( QString const & provider )
       QString s = mbr->stringRep();
       QgsDebugMsg("Extent of layer: " +  s);
       // store the extent
-      layerExtent.setXmax(mbr->xMax());
-      layerExtent.setXmin(mbr->xMin());
-      layerExtent.setYmax(mbr->yMax());
-      layerExtent.setYmin(mbr->yMin());
+      mLayerExtent.setXmax(mbr->xMax());
+      mLayerExtent.setXmin(mbr->xMin());
+      mLayerExtent.setYmax(mbr->yMax());
+      mLayerExtent.setYmin(mbr->yMin());
 
       // get and store the feature type
-      geometryType = dataProvider->geometryType();
+      mGeometryType = dataProvider->geometryType();
 
       // look at the fields in the layer and set the primary
       // display field using some real fuzzy logic
@@ -2061,15 +2061,15 @@ bool QgsVectorLayer::setDataProvider( QString const & provider )
 
       if (providerKey == "postgres")
       {
-	QgsDebugMsg("Beautifying layer name " + layerName);
+	QgsDebugMsg("Beautifying layer name " + mLayerName);
         // adjust the display name for postgres layers
-        layerName = layerName.mid(layerName.find(".") + 1);
-        layerName = layerName.left(layerName.find("(") - 1);   // Take one away, to avoid a trailing space
-	QgsDebugMsg("Beautifying layer name " + layerName);
+        mLayerName = mLayerName.mid(mLayerName.find(".") + 1);
+        mLayerName = mLayerName.left(mLayerName.find("(") - 1);   // Take one away, to avoid a trailing space
+	QgsDebugMsg("Beautifying layer name " + mLayerName);
       }
 
       // upper case the first letter of the layer name
-      layerName = layerName.left(1).upper() + layerName.mid(1);
+      mLayerName = mLayerName.left(1).upper() + mLayerName.mid(1);
 
       // label
       mLabel = new QgsLabel ( dataProvider->fields() );
@@ -2079,7 +2079,7 @@ bool QgsVectorLayer::setDataProvider( QString const & provider )
     {
 #ifdef QGISDEBUG
       qDebug( "%s:%d invalid provider plugin %s", 
-          __FILE__, __LINE__, dataSource.ascii() );
+          __FILE__, __LINE__, mDataSource.ascii() );
       return false;
 #endif
     }
@@ -3332,16 +3332,28 @@ inline void QgsVectorLayer::transformPoints(
 
 unsigned int QgsVectorLayer::getTransparency()
 {
-  return transparencyLevelInt;
+  return mTransparencyLevel;
 }
 
 //should be between 0 and 255
 void QgsVectorLayer::setTransparency(unsigned int theInt)
 {
-  transparencyLevelInt=theInt;
+  mTransparencyLevel=theInt;
 } //  QgsRasterLayer::setTransparency(unsigned int theInt)
 
 void QgsVectorLayer::setLabelField(QString fldName)
 {
   // TODO:???
 }
+
+const int & QgsVectorLayer::featureType()
+{
+  return mGeometryType;
+}
+
+/** Write property of int featureType. */
+void QgsVectorLayer::setFeatureType(const int &_newVal)
+{
+  mGeometryType = _newVal;
+}
+

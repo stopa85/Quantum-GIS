@@ -206,23 +206,27 @@ void QgsMapserverExport::writeMapFile()
       std::cout << "\tMapsrver Export checking feature type" << std::endl;
 #endif
       mapFile << "  TYPE ";
-      switch (lyr->featureType())
+      if (lyr->type() == QgsMapLayer::VECTOR)
       {
-        case QGis::WKBPoint:
-        case QGis::WKBMultiPoint:
-          mapFile << "POINT";
-          break;
-        case QGis::WKBLineString:
-        case QGis::WKBMultiLineString:
-          mapFile << "LINE";
-          isLine = true;
-          break;
-        case QGis::WKBPolygon:
-        case QGis::WKBMultiPolygon:
-          mapFile << "POLYGON";
-          isPolygon = true;
-          break;
-                 
+        QgsVectorLayer* vlayer = dynamic_cast<QgsVectorLayer*>(lyr);
+        switch (vlayer->featureType())
+        {
+          case QGis::WKBPoint:
+          case QGis::WKBMultiPoint:
+            mapFile << "POINT";
+            break;
+          case QGis::WKBLineString:
+          case QGis::WKBMultiLineString:
+            mapFile << "LINE";
+            isLine = true;
+            break;
+          case QGis::WKBPolygon:
+          case QGis::WKBMultiPolygon:
+            mapFile << "POLYGON";
+            isPolygon = true;
+            break;
+                  
+        }
       }
       if(lyr->type() == QgsMapLayer::RASTER)
       {

@@ -207,6 +207,8 @@ void QgsPasteTransformations::layerChanged(const QString& layerName, std::vector
           << std::endl;
 #endif
 
+/*
+// XXX What does this code do??? [MD]
   std::vector<QgsField> layerFields = 
     (mMapNameLookup[ layerName ])->fields();
 
@@ -224,6 +226,7 @@ void QgsPasteTransformations::layerChanged(const QString& layerName, std::vector
 
     fields->push_back(it->name());
   }
+*/
 
   restoreTransfers( sourceLayerComboBox     ->currentText(),
                     destinationLayerComboBox->currentText() );

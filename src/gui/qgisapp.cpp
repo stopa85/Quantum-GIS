@@ -3373,18 +3373,14 @@ void QgisApp::editCopy()
 #endif
   if (activeLayer())
   {
-#ifdef QGISDEBUG
-    std::cerr << "QgisApp::editCopy: has active layer, feature type " << activeLayer()->featureType() << "."
-      << std::endl;
-#endif
     // Test for feature support in this layer
     QgsVectorLayer* activeVectorLayer = dynamic_cast<QgsVectorLayer*>(activeLayer());
 
     if (activeVectorLayer != 0)
     {
 #ifdef QGISDEBUG
-      std::cerr << "QgisApp::editCopy: has active vector layer."
-        << std::endl;
+    std::cerr << "QgisApp::editCopy: has active vector layer, feature type " << activeVectorLayer->featureType() << "."
+      << std::endl;
 #endif
       clipboard()->replaceWithCopyOf( *(activeVectorLayer->selectedFeatures()) );
     }  

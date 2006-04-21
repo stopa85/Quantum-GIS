@@ -24,16 +24,15 @@
 
 #include <QObject>
 
-#include "qgis.h"
 #include "qgsrect.h"
 
 class QgsCoordinateTransform;
-class QgsField;
 class QgsMapToPixel;
 
 class QDomNode;
 class QDomDocument;
 class QKeyEvent;
+class QPainter;
 
 /** \class QgsMapLayer
  *  \brief Base class for all map layer types.
@@ -102,12 +101,6 @@ public:
 
     /** Returns the source for the layer */
     QString const & source() const;
-
-    /** Write property of int featureType. */
-    virtual void setFeatureType(const int &_newVal);
-
-    /** Read property of int featureType. */
-    virtual const int &featureType();
 
     /**
      * Returns the sublayers of this layer
@@ -192,11 +185,6 @@ public:
     /** Returns true if this layer can be in the same symbology group with another layer */
     virtual bool isSymbologyCompatible(const QgsMapLayer& other) const = 0;
 
-    /** Return a list of field names for this layer
-     * @TODO: to be removed - used only in vector layer
-     */
-    virtual std::vector < QgsField > const &fields() const;
-
     /** Accessor for transparency level. */
     virtual unsigned int getTransparency()=0;
 
@@ -263,9 +251,6 @@ signals:
 
 protected:
 
-    /** Transparency level for this layer should be 0-255 (255 being opaque) */
-    unsigned int transparencyLevelInt;
-  
     /** called by readXML(), used by children to read state specific to them from
         project files.
     */
@@ -276,23 +261,30 @@ protected:
     */
     virtual bool writeXML_( QDomNode & layer_node, QDomDocument & document );
 
+    /** debugging member - invoked when a connect() is made to this object */
+    void connectNotify( const char * signal );
 
+    /** Calculates the bounding box of the given extent in the inverse
+     *  projected spatial reference system.
+     * @TODO to be removed - project dependency
+     */
+    QgsRect calcProjectedBoundingBox(QgsRect& extent);
+
+
+    /** Transparency level for this layer should be 0-255 (255 being opaque) */
+    unsigned int mTransparencyLevel;
+  
     /** Extent of the layer */
-    QgsRect layerExtent;
+    QgsRect mLayerExtent;
 
     /** Indicates if the layer is valid and can be drawn */
-    bool valid;
+    bool mValid;
 
     /** data source description string, varies by layer type */
-    QString dataSource;
-
-    /** Geometry type as defined in enum WKBTYPE (qgis.h)
-     * @TODO to be moved to vector layer
-     */
-    int geometryType;
+    QString mDataSource;
 
     /** Name of the layer - used for display */
-    QString layerName;
+    QString mLayerName;
 
     /** A flag to let the draw() render loop know if the user has requested drawing be cancelled */
     bool mDrawingCancelled;
@@ -311,22 +303,13 @@ private:
     QgsMapLayer & operator=( QgsMapLayer const & );
 
     /** Unique ID of this layer - used to refer to this layer in map layer registry */
-    QString ID;
+    QString mID;
 
     /** Type of the layer (eg. vector, raster) */
-    int layerType;
+    int mLayerType;
 
     /** Tag for embedding additional information */
-    QString tag;
-
-    /** debugging member
-        invoked when a connect() is made to this object
-    */
-    void connectNotify( const char * signal );
-
-    /** Calculates the bounding box of the given extent in the inverse
-        projected spatial reference system. */
-    QgsRect calcProjectedBoundingBox(QgsRect& extent);
+    QString mTag;
 
     /** Minimum scale at which this layer should be displayed */
     float mMinScale;
