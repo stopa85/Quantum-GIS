@@ -27,6 +27,7 @@
 
 #include "qgis.h"
 #include "qgsfeature.h"
+#include "qgsfeatureattribute.h"
 #include "qgsfield.h"
 #include "qgsrect.h"
 #include "qgsmaptopixel.h"

@@ -56,6 +56,7 @@
 #include <qgsconfig.h>
 #include "qgsexception.h"
 #include "qgsproject.h"
+#include "qgsrect.h"
 
 static const char * const ident_ = "$Id$";
 

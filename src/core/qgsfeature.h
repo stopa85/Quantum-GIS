@@ -17,17 +17,12 @@ email                : sherman at mrcc.com
 #ifndef QGSFEATURE_H
 #define QGSFEATURE_H
 
-//#include <geos.h>
-#include <qstring.h>
+#include <QString>
 #include <map>
 #include <vector>
 
-#include "qgis.h"
-
-#include "qgsfeatureattribute.h"
-#include "qgsgeometry.h"
-//#include "qgspoint.h"
-
+class QgsFeatureAttribute;
+class QgsGeometry;
 class QgsRect;
 
 /** \class QgsFeature - Feature attribute class.
@@ -232,10 +227,6 @@ class QgsFeature {
      /**Returns the bounding box of this feature*/
      QgsRect boundingBox() const;
 // 
-     /** Creates a geos geometry from this features geometry. Note, that the returned object needs to be deleted.
-         @note  This function is deprecated - use geometry()->geosGeometry() instead.
-      */
-     geos::Geometry* geosGeometry() const;
 
   private:
 

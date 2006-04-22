@@ -22,6 +22,7 @@
 //
 
 #include <qgisapp.h>
+#include <qgisiface.h>
 #include <qgisgui.h>
 #include <qgsmaplayer.h>
 #include <qgsrasterlayer.h>

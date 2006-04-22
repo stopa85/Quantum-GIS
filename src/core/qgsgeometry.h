@@ -17,14 +17,13 @@ email                : morb at ozemail dot com dot au
 #ifndef QGSGEOMETRY_H
 #define QGSGEOMETRY_H
 
-#include <qstring.h>
+#include <QString>
 
-#include <geos.h>
+#include <geos.h> // TODO: try to change to forward declarations
 
-#include "qgsgeometryvertexindex.h"
-#include "qgspoint.h"
-#include "qgsrect.h"
-
+class QgsGeometryVertexIndex;
+class QgsPoint;
+class QgsRect;
 
 /** 
  * Represents a geometry with input and output in formats specified by 

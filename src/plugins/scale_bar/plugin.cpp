@@ -22,14 +22,16 @@ email                : sbr00pwb@users.sourceforge.net
 
 // includes
 
-#include <qgisapp.h>
+#include "qgisapp.h"
+#include "qgisiface.h"
 #include "qgisgui.h"
-#include <qgsmaplayer.h>
-#include "plugin.h"
-#include "qgsproject.h"
 #include "qgsmapcanvas.h"
-#include <qgspoint.h>
-#include <qgsmaptopixel.h>
+#include "qgsmaplayer.h"
+#include "qgsmaptopixel.h"
+#include "qgspoint.h"
+#include "qgsproject.h"
+
+#include "plugin.h"
 
 #include <QPainter>
 #include <QAction>

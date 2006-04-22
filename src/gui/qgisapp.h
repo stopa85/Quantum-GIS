@@ -34,20 +34,18 @@ class QMenu;
 class QPixmap;
 class QSplashScreen;
 
-class QgsPoint;
-class QgsLegend;
-class QgsMapLayer;
-class QgsProviderRegistry;
-class QgsHelpViewer;
-class QgsMapCanvas;
-class QgsMapLayerRegistry;
-class QgsRasterLayer;
+class QgisIface;
+class QgsClipboard;
 class QgsComposer;
-
-#include "qgisiface.h"
-//#include "qgsconfig.h"
-
-#include "qgsclipboard.h"
+class QgsHelpViewer;
+class QgsLegend;
+class QgsMapCanvas;
+class QgsMapLayer;
+class QgsMapLayerRegistry;
+class QgsPoint;
+class QgsProviderRegistry;
+class QgsRasterLayer;
+class QgsRect;
 
 #include <map>
 
@@ -303,7 +301,7 @@ public slots:
 
 public slots:
   void showProgress(int theProgress, int theTotalSteps);
-  void showExtents(QgsRect theExtents);
+  void showExtents();
   void showStatusMessage(QString theMessage);
   void updateMouseCoordinatePrecision();
   void projectionsEnabled(bool theFlag);
@@ -554,7 +552,7 @@ private:
   //! The number of decimal places to use if not automatic
   unsigned int mMousePrecisionDecimalPlaces;
   /** QGIS-internal vector feature clipboard */
-  QgsClipboard mInternalClipboard;
+  QgsClipboard* mInternalClipboard;
   //! Flag to indicate how the project properties dialog was summoned
   bool mShowProjectionTab;
   /** String containing supporting vector file formats 

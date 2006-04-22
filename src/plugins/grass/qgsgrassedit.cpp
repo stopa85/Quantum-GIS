@@ -14,41 +14,45 @@
  *                                                                         *
  ***************************************************************************/
 #include <iostream>
-#include <qdir.h>
-#include <qevent.h>
-#include <qfile.h>
-#include <qsettings.h>
-#include <qpixmap.h>
-#include <q3listbox.h>
-#include <qstringlist.h>
-#include <qlabel.h>
-#include <QComboBox>
-#include <qspinbox.h>
-#include <qmessagebox.h>
-#include <qinputdialog.h>
-#include <qsettings.h>
-#include <qpainter.h>
-#include <qpixmap.h>
-#include <qpen.h>
-#include <q3pointarray.h>
-#include <qcursor.h>
-#include <qnamespace.h>
-#include <q3listview.h>
-#include <qcolordialog.h>
-#include <q3table.h>
-#include <qstatusbar.h>
-#include <qglobal.h>
 
+//#include <qnamespace.h>
+#include <QtGlobal>
+#include <QColorDialog>
+#include <Q3ListBox>
+#include <Q3ListView>
+#include <Q3PointArray>
+#include <Q3Table>
+#include <QAction>
 #include <QActionGroup>
 #include <QCloseEvent>
+#include <QComboBox>
+#include <QCursor>
+#include <QDir>
+#include <QEvent>
+#include <QFile>
+#include <QInputDialog>
+#include <QLabel>
+#include <QMessageBox>
+#include <QPainter>
+#include <QPen>
+#include <QPixmap>
+#include <QSettings>
+#include <QSpinBox>
+#include <QStatusBar>
+#include <QStringList>
 #include <QToolBar>
 
+
 #include "qgis.h"
+#include "qgisapp.h"
+#include "qgisiface.h"
 #include "qgsapplication.h"
 #include "qgsmapcanvas.h"
+#include "qgsmapcanvasitem.h"
 #include "qgsmaplayer.h"
 #include "qgsvectorlayer.h"
 #include "qgsdataprovider.h"
+#include "qgsmaptoolpan.h"
 #include "qgsmaptopixel.h"
 #include "qgsfield.h"
 #include "qgsfeatureattribute.h"
@@ -68,8 +72,6 @@ extern "C" {
 #include "qgsgrassedittools.h"
 #include "qgsgrassutils.h"
 
-#include "qgsmapcanvasitem.h"
-#include "qgsmaptoolpan.h"
 
 class QgsGrassEditLayer : public QgsMapCanvasItem
 {

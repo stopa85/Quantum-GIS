@@ -20,6 +20,7 @@
 // includes
 
 #include "qgisapp.h"
+#include "qgisiface.h"
 #include "qgisgui.h"
 #include "qgsmaplayerregistry.h"
 #include "qgsmaplayer.h"

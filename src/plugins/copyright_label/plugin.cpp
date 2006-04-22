@@ -22,12 +22,14 @@ email                : tim@linfiniti.com
 
 // includes
 
-#include <qgisapp.h>
+#include "qgisapp.h"
+#include "qgisiface.h"
 #include "qgisgui.h"
-#include <qgsmaplayer.h>
+#include "qgsmapcanvas.h"
+#include "qgsmaplayer.h"
+#include "qgsproject.h"
+
 #include "plugin.h"
-#include <qgsproject.h>
-#include <qgsmapcanvas.h>
 
 #include <Q3Button>
 #include <Q3PaintDeviceMetrics>

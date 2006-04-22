@@ -56,6 +56,7 @@ email                : sherman at mrcc.com
 #include "qgsdataprovider.h"
 #include "qgsfeature.h"
 #include "qgsfield.h"
+#include "qgsgeometry.h"
 #include "qgslogger.h"
 #include "qgis.h"
 
@@ -395,7 +396,7 @@ QgsFeature *QgsOgrProvider::getNextFeature(bool fetchAttributes)
 	   if(mUseIntersect)
 	   {
 	       geos::Geometry *geosGeom = 0;
-	       geosGeom=f->geosGeometry();
+         geosGeom=f->geometry()->geosGeometry();
 	       assert(geosGeom != 0);
          
 	       char *sWkt = new char[2 * mSelectionRectangle->WkbSize()];

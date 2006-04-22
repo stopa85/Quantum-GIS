@@ -148,10 +148,10 @@ inline void QgsClipper::trimFeatureToBoundary(
   // shape as open or closed. False is appropriate for polygons and
   // true for polylines.
 
-  int i1 = inX.size() - 1; // start with last point
+  unsigned int i1 = inX.size() - 1; // start with last point
 
   // and compare to the first point initially.
-  for (int i2 = 0; i2 < inX.size() ; ++i2)
+  for (unsigned int i2 = 0; i2 < inX.size() ; ++i2)
   { // look at each edge of the polygon in turn
     if (inside(inX[i2], inY[i2], b)) // end point of edge is inside boundary
     {

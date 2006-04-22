@@ -33,15 +33,7 @@
 #include <cassert>
 #include <limits>
 
-// for htonl
-#ifdef WIN32
-#include <winsock.h>
-#else
-#include <netinet/in.h>
-#endif
-
 #include <QApplication>
-#include <QCursor>
 #include <QLibrary>
 #include <QMessageBox>
 #include <QPainter>
@@ -51,34 +43,40 @@
 #include <QString>
 #include <QSettings>
 
-#include "qgis.h" //for globals
-#include "qgsapplication.h"
+#include "qgsvectorlayer.h"
+
+// renderers
+#include "qgscontinuouscolorrenderer.h"
+#include "qgsgraduatedsymbolrenderer.h"
+#include "qgsrenderer.h"
+#include "qgsrenderitem.h"
+#include "qgssinglesymbolrenderer.h"
+#include "qgsuniquevaluerenderer.h"
+
+// gui
 #include "qgsattributedialog.h"
 #include "qgsattributetable.h"
 #include "qgsattributetabledisplay.h"
-#include "qgscontinuouscolorrenderer.h"
+
+#include "qgis.h" //for globals
+#include "qgsapplication.h"
 #include "qgscoordinatetransform.h"
 #include "qgsdistancearea.h"
 #include "qgsfeature.h"
 #include "qgsfield.h"
-#include "qgsgraduatedsymbolrenderer.h"
+#include "qgsgeometry.h"
+#include "qgsgeometryvertexindex.h"
 #include "qgslabel.h"
 #include "qgslabelattributes.h"
 #include "qgslogger.h"
 #include "qgsmaplayerregistry.h"
 #include "qgsmaptopixel.h"
 #include "qgspoint.h"
-#include "qgsproject.h"
 #include "qgsproviderregistry.h"
 #include "qgsrect.h"
-#include "qgsrenderer.h"
-#include "qgsrenderitem.h"
-#include "qgssinglesymbolrenderer.h"
 #include "qgsspatialrefsys.h"
-#include "qgsuniquevaluerenderer.h"
 #include "qgsvectordataprovider.h"
-#include "qgsvectorlayer.h"
-#include "qgsvectorlayerproperties.h"
+
 #ifdef Q_WS_X11
 #include "qgsclipper.h"
 #endif
@@ -103,7 +101,6 @@ QgsVectorLayer::QgsVectorLayer(QString vectorLayerPath,
   m_renderer(0),
   mLabel(0),
   providerKey(providerKey),
-  valid(false),
   myLib(0),
   updateThreshold(0),       // XXX better default value?
   mMinimumScale(0),
@@ -118,7 +115,7 @@ QgsVectorLayer::QgsVectorLayer(QString vectorLayerPath,
   {
     setDataProvider( providerKey );
   }
-  if(valid)
+  if(mValid)
   {
     setCoordinateSystem();
 
@@ -143,7 +140,7 @@ QgsVectorLayer::~QgsVectorLayer()
 {
   QgsDebugMsg("In QgsVectorLayer destructor");
 
-  valid=false;
+  mValid=false;
 
   if(isEditable())
   {
@@ -197,7 +194,7 @@ QString QgsVectorLayer::capabilitiesString() const
 int QgsVectorLayer::getProjectionSrid()
 {
   //delegate to the provider
-  if (valid)
+  if (mValid)
   {
     QgsDebugMsg("Getting srid from provider...");
     return dataProvider->getSrid();
@@ -211,7 +208,7 @@ int QgsVectorLayer::getProjectionSrid()
 QString QgsVectorLayer::getProjectionWKT()
 {
   //delegate to the provider
-  if (valid)
+  if (mValid)
   {
     return dataProvider->getProjectionWKT();
   }
@@ -780,7 +777,7 @@ void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * th
 
     try
     {
-      while (fet = dataProvider->getNextFeature(attributes, updateThreshold))
+      while ((fet = dataProvider->getNextFeature(attributes, updateThreshold)))
         //      while((fet = dataProvider->getNextFeature(attributes)))
       {
         // XXX Something in our draw event is triggering an additional draw event when resizing [TE 01/26/06]
@@ -871,25 +868,6 @@ void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * th
 }
 
 
-QgsVectorLayer::endian_t QgsVectorLayer::endian()
-{
-  //     char *chkEndian = new char[4];
-  //     memset(chkEndian, '\0', 4);
-  //     chkEndian[0] = 0xE8;
-
-  //     int *ce = (int *) chkEndian;
-  //     int retVal;
-  //     if (232 == *ce)
-  //       retVal = NDR;
-  //     else
-  //       retVal = XDR;
-
-  //     delete [] chkEndian;
-
-  return (htonl(1) == 1) ? QgsVectorLayer::XDR : QgsVectorLayer::NDR ;
-}
-
-
 void QgsVectorLayer::table()
 {
   if (tabledisplay)
@@ -969,7 +947,7 @@ void QgsVectorLayer::select(QgsRect * rect, bool lock)
 
   QgsFeature *fet;
 
-  while (fet = dataProvider->getNextFeature(false))
+  while ((fet = dataProvider->getNextFeature(false)))
   {
     if(mDeleted.find(fet->featureId())==mDeleted.end())//don't select deleted features
     {
@@ -1033,7 +1011,7 @@ void QgsVectorLayer::invertSelection()
   QgsFeature *fet;
   dataProvider->reset();
 
-  while (fet = dataProvider->getNextFeature(true))
+  while ((fet = dataProvider->getNextFeature(true)))
   {
     if(mDeleted.find(fet->featureId())==mDeleted.end())//don't select deleted features
     {
@@ -1270,7 +1248,7 @@ QgsFeature * QgsVectorLayer::getNextFeature(bool fetchAttributes, bool selected)
   if ( selected )
   {
     QgsFeature *fet;
-    while ( fet = dataProvider->getNextFeature(fetchAttributes) )
+    while ((fet = dataProvider->getNextFeature(fetchAttributes)))
     {
       bool sel = mSelected.find(fet->featureId()) != mSelected.end();
       if ( sel ) return fet;
@@ -1339,7 +1317,7 @@ void QgsVectorLayer::updateExtents()
 
       mLayerExtent.setMinimal();
       dataProvider->reset();
-      while(fet=dataProvider->getNextFeature(false))
+      while ((fet=dataProvider->getNextFeature(false)))
       {
         if(mDeleted.find(fet->featureId())==mDeleted.end())
         {
@@ -1449,7 +1427,7 @@ bool QgsVectorLayer::addFeature(QgsFeature* f, bool alsoUpdateExtent)
     }
 
     //set the endian properly
-    int end=endian();
+    int end = QgsApplication::endian();
     memcpy(f->getGeometry(),&end,1);
 
     /*    //assign a temporary id to the feature
@@ -1860,10 +1838,6 @@ bool QgsVectorLayer::readXML_( QDomNode & layer_node )
     providerKey = "ogr";
   }
 
-#ifdef QGISDEBUG
-  const char * dataproviderStr = providerKey.ascii(); // debugger probe
-#endif
-
   if ( ! setDataProvider( providerKey ) )
   {
     return false;
@@ -1966,7 +1940,7 @@ bool QgsVectorLayer::readXML_( QDomNode & layer_node )
     mLabel->readXML(labelattributesnode);
   }
 
-  return valid;               // should be true if read successfully
+  return mValid;               // should be true if read successfully
 
 } // void QgsVectorLayer::readXML_
 
@@ -1989,9 +1963,9 @@ bool QgsVectorLayer::setDataProvider( QString const & provider )
   {
     QgsDebug( "Instantiated the data provider plugin" );
 
-    if (dataProvider->isValid())
+    mValid = dataProvider->isValid();
+    if (mValid)
     {
-      valid = true;
 
       // TODO: Check if the provider has the capability to send fullExtentCalculated
       connect(dataProvider, SIGNAL( fullExtentCalculated() ), 
@@ -2134,8 +2108,8 @@ bool QgsVectorLayer::setDataProvider( QString const & provider )
 
   // renderer specific settings
 
-  const QgsRenderer * myRenderer;
-  if( myRenderer = renderer())
+  const QgsRenderer * myRenderer = renderer();
+  if( myRenderer )
   {
     myRenderer->writeXML(layer_node, document);
   }
@@ -2153,9 +2127,9 @@ bool QgsVectorLayer::setDataProvider( QString const & provider )
   // XXX therefore becomes a candidate to be generalized into a separate
   // XXX function.  I think.
 
-  QgsLabel * myLabel;
+  QgsLabel * myLabel = this->label();
 
-  if ( myLabel = this->label() )
+  if ( myLabel )
   {
     std::stringstream labelXML;
 

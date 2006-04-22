@@ -37,7 +37,9 @@
 
 #include <qgis.h>
 #include <qgsfeature.h>
+#include <qgsfeatureattribute.h>
 #include <qgsfield.h>
+#include <qgsgeometry.h>
 #include <qgsrect.h>
 #include <qgsmessageviewer.h>
 

@@ -18,6 +18,9 @@ email                : morb at ozemail dot com dot au
 
 #include "qgis.h"
 #include "qgsgeometry.h"
+#include "qgsgeometryvertexindex.h"
+#include "qgspoint.h"
+#include "qgsrect.h"
 
 
 // Set up static GEOS geometry factory

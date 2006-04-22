@@ -65,16 +65,19 @@
 //
 #include "qgisapp.h"
 #include "qgis.h"
+#include "qgisiface.h"
 #include "qgsabout.h"
 #include "qgsapplication.h"
 #include "qgsbookmarkitem.h"
 #include "qgsbookmarks.h"
+#include "qgsclipboard.h"
 #include "qgscomposer.h"
 #include "qgscoordinatetransform.h"
 #include "qgscursors.h"
 #include "qgscustomprojectiondialog.h"
 #include "qgsencodingfiledialog.h"
 #include "qgsexception.h"
+#include "qgsfeature.h"
 #include "qgsgeomtypedialog.h"
 #include "qgshelpviewer.h"
 #include "qgslegend.h"
@@ -235,6 +238,8 @@ static void setTitleBarText_( QWidget & qgisApp )
   createOverview();
   createLegend();
   
+  mInternalClipboard = new QgsClipboard;
+  
   // set QGIS specific srs validation
   QgsSpatialRefSys::setCustomSrsValidation(QgisGui::customSrsValidation);
   
@@ -333,7 +338,9 @@ static void setTitleBarText_( QWidget & qgisApp )
 
 
 QgisApp::~QgisApp()
-{}
+{
+  delete mInternalClipboard;
+}
 
 // restore any application settings stored in QSettings
 void QgisApp::readSettings()
@@ -983,7 +990,7 @@ void QgisApp::setupConnections()
   connect(mMapCanvas, SIGNAL(xyCoordinates(QgsPoint &)), this, SLOT(showMouseCoordinate(QgsPoint &)));
   //signal when mouse in capturePoint mode and mouse clicked on canvas
   connect(mMapCanvas->mapRender(), SIGNAL(setProgress(int,int)), this, SLOT(showProgress(int,int)));
-  connect(mMapCanvas, SIGNAL(extentsChanged(QgsRect )),this,SLOT(showExtents(QgsRect )));
+  connect(mMapCanvas, SIGNAL(extentsChanged()),this,SLOT(showExtents()));
   connect(mMapCanvas, SIGNAL(scaleChanged(QString)), this, SLOT(showScale(QString)));
   connect(mMapCanvas, SIGNAL(scaleChanged(QString)), this, SLOT(updateMouseCoordinatePrecision()));
 
@@ -4413,10 +4420,11 @@ void QgisApp::showProgress(int theProgress, int theTotalSteps)
 
 }
 
-void QgisApp::showExtents(QgsRect theExtents)
+void QgisApp::showExtents()
 {
   // update the statusbar with the current extents.
-  statusBar()->message(QString(tr("Extents: ")) + theExtents.stringRep(true));
+  QgsRect myExtents = mMapCanvas->extent();
+  statusBar()->message(QString(tr("Extents: ")) + myExtents.stringRep(true));
 
 } // QgisApp::showExtents
 
@@ -4527,11 +4535,9 @@ QgsMapLayerRegistry * QgisApp::getLayerRegistry()
 }
 
 
-
-
 QgsClipboard * QgisApp::clipboard()
 {
-  return &mInternalClipboard;
+  return mInternalClipboard;
 }
 
 void QgisApp::activateDeactivateLayerRelatedActions(const QgsMapLayer* layer)

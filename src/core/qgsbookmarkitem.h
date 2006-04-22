@@ -18,8 +18,10 @@
  /* $Id$ */
 #ifndef QGSBOOKMARKITEM_H
 #define QGSBOOKMARKITEM_H
-class QString;
-class QgsRect;
+
+#include <QString>
+#include "qgsrect.h"
+
 /*!
  * \class QgsBookmarkItem
  * \brief A spatial bookmark record that is stored in a sqlite3

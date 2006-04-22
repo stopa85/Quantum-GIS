@@ -17,8 +17,10 @@
 #define QGSGRASSPROVIDER_H
 
 class QgsFeature;
+class QgsFeatureAttribute;
 class QgsField;
-#include <qdatetime.h>
+
+#include <QDateTime>
 #include "qgsvectordataprovider.h"
 
 /* Update.

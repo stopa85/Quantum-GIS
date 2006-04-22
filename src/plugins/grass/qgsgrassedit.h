@@ -17,24 +17,25 @@
 #define QGSGRASSEDIT_H
 
 #include <vector>
-//Added by qt3to4:
-#include <QPixmap>
-#include <QCloseEvent>
-#include <QAction>
 
+#include <Q3PointArray>
+#include <QMainWindow>
+
+class QAction;
+class QPainter;
+class QPen;
+class QPixmap;
 class QString;
 class QCloseEvent;
 
-#include <q3pointarray.h>
-#include <qcursor.h>
-#include <qpen.h>
-#include <qpainter.h>
 
-// Must be here, so that it is included to moc file
-#include "qgisapp.h"
 #include "qgspoint.h"
-#include "qgisiface.h"
-#include "qgsmaptopixel.h"
+
+class QgisApp;
+class QgisIface;
+class QgsMapCanvas;
+class QgsMapLayer;
+class QgsMapToPixel;
 class QgsRubberBand;
 class QgsVertexMarker;
 class QgsGrassEditLayer;
@@ -42,7 +43,6 @@ class QgsGrassAttributes;
 
 class QgsGrassProvider;
 #include "ui_qgsgrasseditbase.h"
-#include <QMainWindow>
 #include "qgsgrassselect.h"
 
 // forward declaration of edit tools

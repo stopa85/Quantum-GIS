@@ -19,7 +19,7 @@
 #ifndef QGISINTERFACE_H
 #define QGISINTERFACE_H
 
-#include <QAction> 
+class QAction;
 #include <QWidget>
 
 #include <map>

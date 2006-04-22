@@ -39,9 +39,8 @@ class QPixmap;
 #include <q3process.h>
 #include <q3canvas.h>
 
-// Must be here, so that it is included to moc file
-#include "qgisapp.h"
-#include "qgisiface.h"
+class QgisApp;
+class QgisIface;
 
 class QgsGrassProvider;
 class QgsGrassTools;

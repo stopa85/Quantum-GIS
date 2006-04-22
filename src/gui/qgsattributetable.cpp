@@ -27,6 +27,7 @@
 
 #include "qgsattributetable.h"
 #include "qgsfeature.h"
+#include "qgsfeatureattribute.h"
 #include "qgsfield.h"
 #include "qgsvectordataprovider.h"
 #include "qgsvectorlayer.h"

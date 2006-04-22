@@ -19,7 +19,7 @@ email                : morb at ozemail dot com dot au
 
 #include <vector>
 
-#include <qstring.h>
+class QString;
 
 
  /**

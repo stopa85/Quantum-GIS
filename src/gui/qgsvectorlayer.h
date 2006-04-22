@@ -26,8 +26,6 @@
 #include "qgis.h"
 #include "qgsmaplayer.h"
 #include "qgsattributeaction.h"
-#include "qgsgeometry.h"
-#include "qgsgeometryvertexindex.h"
 
 class QPainter;
 class QLibrary;
@@ -41,6 +39,7 @@ class QgsData;
 class QgsField;
 class QgsFeature;
 class QgsGeometry;
+class QgsGeometryVertexIndex;
 class QgsMapToPixel;
 class QgsLabel;
 class QgsLegendItem;
@@ -205,11 +204,6 @@ public:
   virtual QgsRect bBoxOfSelected();
   //! Return the provider type for this layer
   QString providerType();
-  //! Return the validity of the layer
-  inline bool isValid()
-  {
-    return valid;
-  }
 
   /** reads vector layer specific state from project file DOM node.
 
@@ -513,19 +507,7 @@ private:                       // Private attributes
   QString providerKey;
 
   //! Flag to indicate if this is a valid layer
-  bool valid;
   bool registered;
-
-  /** constants for endian-ness
-    XDR is network, or big-endian, byte order
-    NDR is little-endian byte order
-  */
-  typedef enum ENDIAN
-  {
-    XDR = 0,
-    NDR = 1
-  }
-  endian_t;
 
   enum WKBTYPE
   {
@@ -537,8 +519,7 @@ private:                       // Private attributes
     WKBMultiPolygon
   };
 private:                       // Private methods
-  endian_t endian();
-  // pointer for loading the provider library
+  //! pointer for loading the provider library
   QLibrary *myLib;
   //! Update threshold for drawing features as they are read. A value of zero indicates
   // that no features will be drawn until all have been read

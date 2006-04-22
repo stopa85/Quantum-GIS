@@ -26,6 +26,7 @@
 #include <QMenu>
 
 #include "qgisapp.h"
+#include "qgisiface.h"
 #include "qgsspitplugin.h"
 #include "qgsspit.h"
 // xpm for creating the toolbar icon

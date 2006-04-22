@@ -24,6 +24,7 @@ email                : sherman at mrcc.com
 #include <iostream>
 #include <vector>
 #include "qgisapp.h"
+#include "qgisiface.h"
 #include "qgsmaplayer.h"
 #include "qgsvectorlayer.h"
 #include "qgsvectordataprovider.h"

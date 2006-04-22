@@ -68,6 +68,17 @@ class QgsApplication: public QApplication
 
     //! Returns the path to the current theme directory.
     static const QString& themePath() { return mThemePath; }
+    
+    /** constants for endian-ness */
+    typedef enum ENDIAN
+    {
+      XDR = 0,  // network, or big-endian, byte order
+      NDR = 1   // little-endian byte order
+    }
+    endian_t;
+    
+    //! Returns whether this machine uses big or little endian
+    static endian_t endian();
 
   private:
     static QString mPrefixPath;

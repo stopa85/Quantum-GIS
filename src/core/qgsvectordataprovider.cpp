@@ -14,6 +14,8 @@
  ***************************************************************************/
 /* $Id$ */
 
+#include <iostream>
+
 #include "qgsvectordataprovider.h"
 #include "qgsfeature.h"
 #include "qgssearchtreenode.h"
