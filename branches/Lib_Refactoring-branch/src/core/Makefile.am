@@ -67,6 +67,9 @@ libqgis_coreHEADERS =				\
 		qgsline.h					\
 		qgslinesymbol.h				\
 		qgslogger.h				\
+		qgsmaplayer.h				\
+		qgsmaplayerregistry.h		\
+		qgsmaprender.h			\
 		qgsmaptopixel.h				\
 		qgsmarkercatalogue.h		\
 		qgsmarkersymbol.h			\
@@ -99,6 +102,9 @@ libqgis_core_la_MOC =							\
 		qgscontexthelp.moc.cpp			\
 		qgscoordinatetransform.moc.cpp		\
 		qgsdataprovider.moc.cpp				\
+		qgsmaplayer.moc.cpp				\
+		qgsmaplayerregistry.moc.cpp		\
+		qgsmaprender.moc.cpp			\
 		qgsrasterdataprovider.moc.cpp		
 
 libqgis_core_la_SOURCES =\
@@ -124,6 +130,9 @@ libqgis_core_la_SOURCES =\
 		qgsline.cpp			\
 		qgslinesymbol.cpp		\
 		qgslogger.cpp			\
+		qgsmaplayer.cpp				\
+		qgsmaplayerregistry.cpp		\
+		qgsmaprender.cpp			\
 		qgsmaptopixel.cpp					\
 		qgsmarkercatalogue.cpp				\
 		qgsmarkersymbol.cpp					\
