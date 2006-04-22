@@ -43,17 +43,21 @@ class QgsDistanceArea
     //! Destructor
     ~QgsDistanceArea();
     
+    //! sets whether coordinates must be projected to ellipsoid before measuring
+    void setProjectionsEnabled(bool flag);
+
+    //! returns projections enabled flag
+    bool projectionsEnabled() { return mProjectionsEnabled; }
+    
     //! sets source spatial reference system (by QGIS SRS)
     void setSourceSRS(long srsid);
-    //! sets project's SRS as source
-    void setProjectAsSourceSRS();
+    
     //! returns source spatial reference system
     long sourceSRS() { return mSourceRefSys; }
 
     //! sets ellipsoid by its acronym
     bool setEllipsoid(const QString& ellipsoid);
-    //! sets ellipsoid which has been specified in preferences
-    bool setDefaultEllipsoid();
+    
     //! returns ellipsoid's acronym
     const QString& ellipsoid() { return mEllipsoid; }
     
@@ -113,6 +117,9 @@ class QgsDistanceArea
     
     //! used for transforming coordinates from source SRS to ellipsoid's coordinates
     QgsCoordinateTransform* mCoordTransform;
+    
+    //! indicates whether we will transform coordinates
+    bool mProjectionsEnabled;
     
     //! id of the source spatial reference system
     long mSourceRefSys;

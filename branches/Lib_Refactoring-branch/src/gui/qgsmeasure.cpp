@@ -20,8 +20,10 @@
 #include "qgscontexthelp.h"
 #include "qgsdistancearea.h"
 #include "qgsmapcanvas.h"
+#include "qgsmaprender.h"
 #include "qgsmaptopixel.h"
 #include "qgsrubberband.h"
+#include "qgsspatialrefsys.h"
 
 #include <QSettings>
 #include <iostream>
@@ -103,9 +105,15 @@ void QgsMeasure::addPoint(QgsPoint &point)
     
     if (mPoints.size() == 1)
     {
-      // ensure that we have correct settings
-      mCalc->setDefaultEllipsoid();
-      mCalc->setProjectAsSourceSRS();
+      // set ellipsoid
+      QSettings settings;
+      QString ellipsoid = settings.readEntry("/qgis/measure/ellipsoid", "WGS84");
+
+      // set source SRS and projections enabled flag
+      QgsMapRender* mapRender = mCanvas->mapRender();
+      mCalc->setProjectionsEnabled(mapRender->projectionsEnabled());
+      int srsid = mapRender->destinationSrs().srsid();
+      mCalc->setSourceSRS(srsid);
     }
 
     if (mMeasureArea && mPoints.size() > 2)

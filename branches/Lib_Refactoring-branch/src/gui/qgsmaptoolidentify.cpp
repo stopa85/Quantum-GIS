@@ -188,6 +188,7 @@ void QgsMapToolIdentify::identifyVectorLayer(QgsVectorLayer* layer, const QgsPoi
   // load identify radius from settings
   QSettings settings;
   int identifyValue = settings.readNumEntry("/qgis/map/identifyRadius", QGis::DEFAULT_IDENTIFY_RADIUS);
+  QString ellipsoid = settings.readEntry("/qgis/measure/ellipsoid", "WGS84");
 
   // create the search rectangle
   double searchRadius = mCanvas->extent().width() * (identifyValue/1000.0);
@@ -207,7 +208,10 @@ void QgsMapToolIdentify::identifyVectorLayer(QgsVectorLayer* layer, const QgsPoi
   QgsVectorDataProvider* dataProvider = layer->getDataProvider();
   dataProvider->select(&r, true);
 
+  // init distance/area calculator
   QgsDistanceArea calc;
+  calc.setProjectionsEnabled(TRUE); // always project
+  calc.setEllipsoid(ellipsoid);
   calc.setSourceSRS(layer->srs().srsid());
   
   if ( !layer->isEditable() )
