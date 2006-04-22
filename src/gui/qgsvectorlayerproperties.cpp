@@ -17,6 +17,9 @@
  ***************************************************************************/
  /* $Id$ */
 
+#include "qgisplugin.h"
+#include "qgspluginregistry.h"
+#include "qgsrendererplugin.h"
 #include "qgsvectorlayerproperties.h"
 #include "qgsattributeactiondialog.h"
 #include "qgscontinuouscolordialog.h"
@@ -177,6 +180,17 @@ void QgsVectorLayerProperties::reset( void )
 	  legendtypecombobox->insertItem(tr("Continuous Color"));
 	  legendtypecombobox->insertItem(tr("Unique Value"));
       }
+      //find renderer plugins
+      std::list<QgisPlugin*> rplugins = QgsPluginRegistry::instance()->rendererPlugins();
+      QgsRendererPlugin* theRendererPlugin = 0;
+      for(std::list<QgisPlugin*>::iterator it =  rplugins.begin(); it != rplugins.end(); ++it)
+	{
+	  theRendererPlugin = dynamic_cast<QgsRendererPlugin*>(*it);
+	  if(theRendererPlugin)
+	    {
+	      legendtypecombobox->insertItem(tr(theRendererPlugin->rendererName()));
+	    }
+	}
     }
 
   //find out the type of renderer in the vectorlayer, create a dialog with these settings and add it to the form

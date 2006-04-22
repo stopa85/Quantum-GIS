@@ -23,6 +23,8 @@
 #include <qdir.h>
 #include <qlibrary.h>
 #include <qapplication.h>
+#include "qgisplugin.h"
+#include "qgslogger.h"
 #include "qgsprovidermetadata.h"
 #include "qgspluginregistry.h"
 
@@ -65,6 +67,25 @@ QgisPlugin *QgsPluginRegistry::plugin(QString name)
       retval = pmd->plugin();
     }
   return retval;
+}
+
+std::list<QgisPlugin*> QgsPluginRegistry::rendererPlugins()
+{
+  QgisPlugin* thePlugin = 0;
+  std::list<QgisPlugin*> result;
+  for(std::map<QString,QgsPluginMetadata*>::iterator it = plugins.begin(); it != plugins.end(); ++it)
+    {
+      QgsDebugMsg("Plugin name is: " + it->first);
+      if(it->second)
+	{
+	  thePlugin = it->second->plugin();
+	  if(thePlugin && thePlugin->type() == QgisPlugin::RENDERER)
+	    {
+	      result.push_back(thePlugin);
+	    }
+	}
+    }
+  return result;
 }
 
 void QgsPluginRegistry::addPlugin(QString library, QString name, QgisPlugin * plugin)
