@@ -96,9 +96,7 @@ libqgis_guiHEADERS =							\
 		qgsmapcanvas.h						\
 		qgsmapcanvasitem.h			\
 		qgsmapcanvasmap.h			\
-		qgsmaplayer.h						\
 		qgsmaplayerinterface.h				\
-		qgsmaplayerregistry.h				\
 		qgsmapoverviewcanvas.h				\
 		qgsmapserverexport.h				\
 		qgsmaptool.h						\
@@ -108,7 +106,6 @@ libqgis_guiHEADERS =							\
 		qgsmaptoolselect.h				\
 		qgsmaptoolvertexedit.h			\
 		qgsmaptoolzoom.h					\
-		qgsmaprender.h				\
 		qgsmarkerdialog.h				\
 		qgsmeasure.h					\
 		qgsmessageviewer.h					\
@@ -165,10 +162,7 @@ libqgis_gui_la_MOC =							\
 		qgsmapcanvasitem.moc.cpp			\
 		qgsmapcanvasmap.moc.cpp			\
 		qgsmaplayerinterface.moc.cpp		\
-		qgsmaplayer.moc.cpp					\
-		qgsmaplayerregistry.moc.cpp			\
 		qgsmapoverviewcanvas.moc.cpp		\
-		qgsmaprender.moc.cpp			\
 		qgsmapserverexport.moc.cpp		\
 		qgsmarkerdialog.moc.cpp			\
 		qgsmeasure.moc.cpp			\
@@ -222,8 +216,6 @@ libqgis_gui_la_SOURCES =						\
 		qgsmapcanvas.cpp					\
 		qgsmapcanvasitem.cpp				\
 		qgsmapcanvasmap.cpp				\
-		qgsmaplayer.cpp						\
-		qgsmaplayerregistry.cpp				\
 		qgsmapoverviewcanvas.cpp			\
 		qgsmapserverexport.cpp		\
 		qgsmaptool.cpp			\
@@ -233,7 +225,6 @@ libqgis_gui_la_SOURCES =						\
 		qgsmaptoolselect.cpp			\
 		qgsmaptoolvertexedit.cpp		\
 		qgsmaptoolzoom.cpp			\
-		qgsmaprender.cpp			\
 		qgsmarkerdialog.cpp		\
 		qgsmeasure.cpp			\
 		qgsmessageviewer.cpp				\
