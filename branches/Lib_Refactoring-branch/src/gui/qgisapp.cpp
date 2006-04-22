@@ -990,6 +990,8 @@ void QgisApp::setupConnections()
   connect(mMapCanvas, SIGNAL(xyCoordinates(QgsPoint &)), this, SLOT(showMouseCoordinate(QgsPoint &)));
   //signal when mouse in capturePoint mode and mouse clicked on canvas
   connect(mMapCanvas->mapRender(), SIGNAL(setProgress(int,int)), this, SLOT(showProgress(int,int)));
+  connect(mMapCanvas->mapRender(), SIGNAL(projectionsEnabled(bool)), this, SLOT(projectionsEnabled(bool)));
+  connect(mMapCanvas->mapRender(), SIGNAL(destinationSrsChanged(long)), this, SLOT(destinationSrsChanged(long)));
   connect(mMapCanvas, SIGNAL(extentsChanged()),this,SLOT(showExtents()));
   connect(mMapCanvas, SIGNAL(scaleChanged(QString)), this, SLOT(showScale(QString)));
   connect(mMapCanvas, SIGNAL(scaleChanged(QString)), this, SLOT(updateMouseCoordinatePrecision()));
@@ -2331,9 +2333,7 @@ void QgisApp::fileNew(bool thePromptToSaveFlag)
   mMapCanvas->freeze(false);
   mMapCanvas->refresh();
   
-  //set the projections enabled icon in the status bar
-  int myProjectionEnabledFlag = prj->readNumEntry("SpatialRefSys","/ProjectionsEnabled",0);
-  projectionsEnabled(myProjectionEnabledFlag);  
+  mMapCanvas->mapRender()->setProjectionsEnabled(FALSE);
   
   pan(); // set map tool - panning
 
@@ -2562,7 +2562,8 @@ void QgisApp::fileOpen()
   //set the projections enabled icon in the status bar
   int myProjectionEnabledFlag =
     QgsProject::instance()->readNumEntry("SpatialRefSys","/ProjectionsEnabled",0);
-  projectionsEnabled(myProjectionEnabledFlag);
+  mMapCanvas->mapRender()->setProjectionsEnabled(myProjectionEnabledFlag);
+
 } // QgisApp::fileOpen
 
 
@@ -2822,7 +2823,7 @@ void QgisApp::openProject(QAction *action)
   //set the projections enabled icon in the status bar
   int myProjectionEnabledFlag =
     QgsProject::instance()->readNumEntry("SpatialRefSys","/ProjectionsEnabled",0);
-  projectionsEnabled(myProjectionEnabledFlag);
+  mMapCanvas->mapRender()->setProjectionsEnabled(myProjectionEnabledFlag);
 
 } // QgisApp::openProject
 
@@ -4376,8 +4377,19 @@ void QgisApp::removePluginToolBarIcon(QAction *qAction)
   qAction->removeFrom(mPluginToolBar);
 }
 
+void QgisApp::destinationSrsChanged(long srsid)
+{
+  // save this information to project
+  QgsProject::instance()->writeEntry("SpatialRefSys", "/ProjectSRSID", (int)srsid);
+
+}
+
 void QgisApp::projectionsEnabled(bool theFlag)
 {
+  // save this information to project
+  QgsProject::instance()->writeEntry("SpatialRefSys","/ProjectionsEnabled", (theFlag?1:0));
+
+  // update icon
   QString myIconPath = QgsApplication::themePath();
   if (theFlag)
   {

@@ -213,14 +213,14 @@ void QgsMapCanvas::setLayerSet(std::deque<QString>& layerSet)
   int i;
   for (i = 0; i < layerCount(); i++)
   {
-    QObject::disconnect(getZpos(i), SIGNAL(repaintRequested()), this, SLOT(refresh()));
+    disconnect(getZpos(i), SIGNAL(repaintRequested()), this, SLOT(refresh()));
   }
   
   mMapRender->setLayerSet(layerSet);
   
   for (i = 0; i < layerCount(); i++)
   {
-    QObject::connect(getZpos(i), SIGNAL(repaintRequested()), this, SLOT(refresh()));
+    connect(getZpos(i), SIGNAL(repaintRequested()), this, SLOT(refresh()));
   }
 
   if (mMapOverview)
@@ -237,7 +237,27 @@ void QgsMapCanvas::setLayerSet(std::deque<QString>& layerSet)
 
 void QgsMapCanvas::setOverview(QgsMapOverviewCanvas* overview)
 {
-  mMapOverview = overview;
+  if (mMapOverview)
+  {
+    // disconnect old map overview if exists
+    disconnect(mMapRender, SIGNAL(projectionsEnabled(bool)),
+               mMapOverview, SLOT(projectionsEnabled(bool)));
+    disconnect(mMapRender, SIGNAL(destinationSrsChanged(long)),
+               mMapOverview, SLOT(destinationSrsChanged(long)));
+
+    // map overview is not owned by map canvas so don't delete it...
+  }
+  
+  if (overview)
+  {
+    mMapOverview = overview;
+  
+    // connect to the map render to copy its projection settings
+    connect(mMapRender, SIGNAL(projectionsEnabled(bool)),
+            overview,     SLOT(projectionsEnabled(bool)));
+    connect(mMapRender, SIGNAL(destinationSrsChanged(long)),
+            overview,     SLOT(destinationSrsChanged(long)));
+  }
 }
 
 

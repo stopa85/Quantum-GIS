@@ -109,6 +109,10 @@ class QgsMapRender : public QObject
     
     void setProgress(int current, int total);
     
+    void projectionsEnabled(bool flag);
+    
+    void destinationSrsChanged(long srsId);
+    
     void updateMap();
     
     void mapUnitsChanged();
