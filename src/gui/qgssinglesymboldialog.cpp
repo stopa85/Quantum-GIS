@@ -303,7 +303,6 @@ void QgsSingleSymbolDialog::apply()
     QgsSingleSymbolRenderer *renderer = new QgsSingleSymbolRenderer(mVectorLayer->vectorType());
     renderer->addSymbol(sy);
     mVectorLayer->setRenderer(renderer);
-    //mVectorLayer->refreshLegend();
 }
 
 void QgsSingleSymbolDialog::set ( const QgsSymbol *sy ) 

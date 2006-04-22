@@ -2474,28 +2474,6 @@ bool QgsVectorLayer::addFeatures(std::vector<QgsFeature*>* features, bool makeSe
   return true;
 }
 
-void QgsVectorLayer::refreshLegend()
-{
-  // TODO: move elsewhere
-  /*
-  if(mLegend && m_renderer)
-    {
-      std::list< std::pair<QString, QPixmap> > itemList;
-      m_renderer->refreshLegend(&itemList);
-      if(m_renderer->needsAttributes()) //create an item for each classification field (only one for most renderers)
-	{
-	  std::list<int> classfieldlist = m_renderer->classificationAttributes();
-	  for(std::list<int>::iterator it = classfieldlist.begin(); it!=classfieldlist.end(); ++it)
-	    {
-	      const QgsField theField = (dataProvider->fields())[*it];
-	      QString classfieldname = theField.name();
-	      itemList.push_front(std::make_pair(classfieldname, QPixmap()));
-	    }
-	}
-      mLegend->changeSymbologySettings(getLayerID(), &itemList);
-    }
-  */
-}
 
 bool QgsVectorLayer::copySymbologySettings(const QgsMapLayer& other)
 {

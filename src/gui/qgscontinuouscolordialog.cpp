@@ -158,8 +158,6 @@ void QgsContinuousColorDialog::apply()
     renderer->setMinimumSymbol(minsymbol);
     renderer->setMaximumSymbol(maxsymbol);
     renderer->setClassificationField(classfield);
-
-    //mVectorLayer->refreshLegend();
 }
 
 void QgsContinuousColorDialog::selectMinimumColor()

@@ -537,6 +537,7 @@ void QgsLegend::addLayer( QgsMapLayer * layer )
       }
       
     llfile->updateLegendItem();
+    refreshLayerSymbology(layer->getLayerID());
     
     updateMapCanvasLayerSet();
     
@@ -713,6 +714,7 @@ void QgsLegend::legendLayerShowProperties()
   if (ml->type() == QgsMapLayer::RASTER)
   {
     QgsRasterLayerProperties *rlp = new QgsRasterLayerProperties(ml);
+    connect(rlp, SIGNAL(refreshLegend(QString)), this, SLOT(refreshLayerSymbology(QString)));
     if (rlp->exec())
     {
       delete rlp;
@@ -741,6 +743,7 @@ void QgsLegend::legendLayerShowProperties()
     QgsVectorLayer* vlayer = dynamic_cast<QgsVectorLayer*>(ml);
     
     QgsVectorLayerProperties* vlp = new QgsVectorLayerProperties(vlayer);
+    connect(vlp, SIGNAL(refreshLegend(QString)), this, SLOT(refreshLayerSymbology(QString)));
     if (vlp->exec())
     {
       delete vlp;
@@ -1079,7 +1082,8 @@ bool QgsLegend::readXML(QDomNode& legendnode)
 		  }
     
       theLegendLayerFile->updateLegendItem();
-		}
+      refreshLayerSymbology(theMapLayer->getLayerID());
+  }
 	    }
 	  else if(childelem.tagName()=="filegroup")
 	    {
@@ -1395,59 +1399,25 @@ std::deque<QString> QgsLegend::layerIDs()
   return layers;
 }
 
-void QgsLegend::changeSymbologySettings(const QString& key, const std::list< std::pair<QString, QPixmap> >* newSymbologyItems)
-{
-  QgsMapLayer* theMapLayer = QgsMapLayerRegistry::instance()->mapLayer(key);
-  if(!theMapLayer)
-    {
-      return;
-    }
-  QgsLegendLayer* theLegendLayer = findLegendLayer(key);
-  QgsLegendSymbologyItem* theSymbologyItem = 0;
-  if(!theLegendLayer)
-    {
-      return;
-    }
 
+void QgsLegend::refreshLayerSymbology(QString key)
+{
+  QgsLegendLayer* theLegendLayer = findLegendLayer(key);
+  if(!theLegendLayer)
+  {
+    return;
+  }
+  
   //store the current item
   QTreeWidgetItem* theCurrentItem = currentItem();
+
+  theLegendLayer->refreshSymbology(key);
   
-  //remove the symbology items under the legend layer
-  for(int i = theLegendLayer->childCount(); i >= 0; --i)
-    {
-      theSymbologyItem = dynamic_cast<QgsLegendSymbologyItem*>((theLegendLayer)->child(i));
-      if(theSymbologyItem)
-	{
-	  removePixmapWidthValue(theSymbologyItem->pixmapWidth());
-	  removePixmapHeightValue(theSymbologyItem->pixmapHeight());
-	  delete (theLegendLayer->takeChild(i));
-	}
-    }
-
-  //add the new symbology items
-  if(newSymbologyItems)
-    {
-      int childposition = 0; //position to insert the items
-      for(std::list< std::pair<QString, QPixmap> >::const_iterator it= newSymbologyItems->begin(); it != newSymbologyItems->end(); ++it)
-	{
-	  QgsLegendSymbologyItem* theItem = new QgsLegendSymbologyItem(it->second.width(), it->second.height());
-	  theItem->setText(0, it->first);
-	  theItem->setIcon(0, QIcon(it->second));
-	  theLegendLayer->insertChild(childposition, theItem);
-	  //add the width and height values to the multisets
-	  addPixmapWidthValue(theItem->pixmapWidth());
-	  addPixmapHeightValue(theItem->pixmapHeight());
-	  ++childposition;
-	}
-    }
-
-  //copy the legend settings for the other layer files in the same legend layer
-  theLegendLayer->updateLayerSymbologySettings(theMapLayer);
-
   //restore the current item again
   setCurrentItem(theCurrentItem);
   adjustIconSize();
 }
+
 
 void QgsLegend::addPixmapWidthValue(int width)
 {

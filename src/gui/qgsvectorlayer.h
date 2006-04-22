@@ -42,7 +42,6 @@ class QgsGeometry;
 class QgsGeometryVertexIndex;
 class QgsMapToPixel;
 class QgsLabel;
-class QgsLegendItem;
 class QgsRect;
 class QgsRenderer;
 class QgsVectorDataProvider;
@@ -141,9 +140,6 @@ public:
       Insert a copy of the given features into the layer
    */
   bool addFeatures(std::vector<QgsFeature*>* features, bool makeSelected = TRUE);
-
-  /**Fill the pixmaps and labels of the renderers into the treeview legend*/
-  void refreshLegend();
 
   /**Copies the symbology settings from another layer. Returns true in case of success*/
   bool copySymbologySettings(const QgsMapLayer& other);

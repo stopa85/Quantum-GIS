@@ -298,6 +298,9 @@ void QgsVectorLayerProperties::on_pbnApply_clicked()
   }
   layer->setTransparency(static_cast < unsigned int >(255 - sliderTransparency->value()));
   
+  // update symbology
+  emit refreshLegend(layer->getLayerID());
+  
   layer->triggerRepaint();
 
 }

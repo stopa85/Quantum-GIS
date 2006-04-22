@@ -143,10 +143,6 @@ class QgsLegend : public QTreeWidget
   /**Updates layer set of map canvas*/
   void updateMapCanvasLayerSet();
 
-  /**Removes the symbology items of a layer and adds new ones. If other files are in the same legend layer, the new symbology settings are copied.
-   Note: the QIcon* are deleted and therefore need to be allocated by calling functions using operator new*/
-  void changeSymbologySettings(const QString& key, const std::list< std::pair<QString, QPixmap> >* newSymbologyItems);
-  
   /**Adds an entry to mPixmapWidthValues*/
   void addPixmapWidthValue(int width);
 
@@ -174,6 +170,9 @@ public slots:
 
     void setMapCanvas(QgsMapCanvas * canvas){mMapCanvas = canvas;}
 
+    /**Updates symbology items for a layer*/
+    void refreshLayerSymbology(QString key);
+  
  /*!
    * Slot called to clear the tree of all items
    * @note Usually connected to a QgsMapCanvas that will ask its legend to clear itself.

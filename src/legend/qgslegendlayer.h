@@ -57,12 +57,27 @@ public:
     std::list<QgsMapLayer*> mapLayers();
     /**Returns the legend layer file items associated with this legend layer*/
     std::list<QgsLegendLayerFile*> legendLayerFiles();
-    /**Copies the symbology settings of the layer to all maplayers in the QgsLegendLayerFileGroup.
-   This method should be called whenever a layer in this group changes it symbology settings
-  (normally from QgsMapLayer::refreshLegend)*/
-    void updateLayerSymbologySettings(const QgsMapLayer* mapLayer);
     /**Goes through all the legendlayerfiles and sets check state to checked/partially checked/unchecked*/
     void updateCheckState();
+
+    /**Updates symbology of the layer and copies symbology to other layer files in the group*/
+    void refreshSymbology(const QString& key);
+
+protected:
+    
+    /** Removes the symbology items of a layer and adds new ones.
+     * If other files are in the same legend layer, the new symbology settings are copied.
+     * Note: the QIcon* are deleted and therefore need to be allocated by calling
+     * functions using operator new
+     */
+    void changeSymbologySettings(const QgsMapLayer* mapLayer,
+                                 const std::list< std::pair<QString, QPixmap> >* newSymbologyItems);
+    
+    /** Copies the symbology settings of the layer to all maplayers in the QgsLegendLayerFileGroup.
+     * This method should be called whenever a layer in this group changes it symbology settings
+     */
+    void updateLayerSymbologySettings(const QgsMapLayer* mapLayer);
+
 };
 
 #endif

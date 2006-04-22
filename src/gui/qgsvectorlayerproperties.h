@@ -63,6 +63,11 @@ class QgsVectorLayerProperties : public QDialog, private Ui::QgsVectorLayerPrope
   void on_pbnQueryBuilder_clicked();
   void on_pbnIndex_clicked();
   void on_pbnChangeSpatialRefSys_clicked();
+  
+  signals:
+    
+    /** emitted when changes to layer were saved to update legend */
+    void refreshLegend(QString layerID);
 
   protected:
   QgsVectorLayer *layer;
