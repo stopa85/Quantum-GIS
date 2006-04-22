@@ -4919,19 +4919,6 @@ void QgsRasterLayer::showStatusMessage(QString const & theMessage)
     emit setStatus(theMessage);
 }
 
-void QgsRasterLayer::refreshLegend()
-{
-  // move elsewhere
-  /*
-  if(mLegend)
-    {
-      std::list< std::pair<QString, QPixmap> > itemList;
-      itemList.push_back(std::make_pair("", getLegendQPixmap(true)));
-      mLegend->changeSymbologySettings(getLayerID(), &itemList);
-    }
-  */
-}
-
 
 QString QgsRasterLayer::errorCaptionString()
 {

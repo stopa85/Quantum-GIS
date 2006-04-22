@@ -400,6 +400,10 @@ void QgsRasterLayerProperties::apply()
   QPixmap myQPixmap = QPixmap(pixmapThumbnail->width(),pixmapThumbnail->height());
   rasterLayer->drawThumbnail(&myQPixmap);
   pixmapThumbnail->setPixmap(myQPixmap);
+  
+  // update symbology
+  emit refreshLegend(rasterLayer->getLayerID());
+  
   //make sure the layer is redrawn
   rasterLayer->triggerRepaint();
 }//apply

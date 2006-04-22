@@ -223,7 +223,6 @@ void QgsGraduatedSymbolDialog::apply()
 	   renderer->setClassificationField(iter->second);
 	}
 	mVectorLayer->setRenderer(renderer);
-	//mVectorLayer->refreshLegend();
 }
 
 void QgsGraduatedSymbolDialog::adjustClassification()

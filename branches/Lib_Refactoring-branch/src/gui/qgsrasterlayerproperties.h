@@ -61,6 +61,12 @@ class QgsRasterLayerProperties : public QDialog, private Ui::QgsRasterLayerPrope
         /** Override the SRS specified when the layer was loaded */
         void on_pbnChangeSpatialRefSys_clicked();
         
+  signals:
+    
+        /** emitted when changes to layer were saved to update legend */
+        void refreshLegend(QString layerID);
+
+
     private:
         /** \brief Pointer to the raster layer that this property dilog changes the behaviour of. */
         QgsRasterLayer * rasterLayer;
