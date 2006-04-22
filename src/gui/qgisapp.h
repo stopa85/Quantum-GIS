@@ -305,7 +305,7 @@ public slots:
   void showStatusMessage(QString theMessage);
   void updateMouseCoordinatePrecision();
   void projectionsEnabled(bool theFlag);
-  void destinationSrsChanged(long srsid);
+  void destinationSrsChanged();
   //    void debugHook();
   //! Add a vector layer to the map
   void addLayer();

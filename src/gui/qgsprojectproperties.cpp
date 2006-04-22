@@ -58,7 +58,7 @@ QgsProjectProperties::QgsProjectProperties(QgsMapCanvas* mapCanvas, QWidget *par
   cbxProjectionEnabled->setChecked(myProjectionEnabled);
   
   // set the default wkt to WGS 84
-  long mySRSID = myRender->destinationSrsId();
+  long mySRSID = myRender->destinationSrs().srsid();
   projectionSelector->setSelectedSRSID(mySRSID);
 
   ///////////////////////////////////////////////////////////
@@ -195,7 +195,8 @@ void QgsProjectProperties::apply()
   long mySRSID = projectionSelector->getCurrentSRSID();
   if (mySRSID)
   {
-    myRender->setDestinationSrsId(mySRSID);
+    QgsSpatialRefSys srs(mySRSID, QgsSpatialRefSys::QGIS_SRSID);
+    myRender->setDestinationSrs(srs);
     
     // write the currently selected projections _proj string_ to project settings
     std::cout << "SpatialRefSys/ProjectSRSProj4String: " <<  projectionSelector->getCurrentProj4String().toLocal8Bit().data() << std::endl;
@@ -204,7 +205,6 @@ void QgsProjectProperties::apply()
     // Set the map units to the projected coordinates if we are projecting
     if (isProjected())
     {
-      QgsSpatialRefSys srs(mySRSID, QgsSpatialRefSys::QGIS_SRSID);
       // If we couldn't get the map units, default to the value in the
       // projectproperties dialog box (set above)
       if (srs.mapUnits() != QGis::UNKNOWN)

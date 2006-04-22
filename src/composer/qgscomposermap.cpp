@@ -114,7 +114,7 @@ void QgsComposerMap::draw ( QPainter *painter, QgsRect *extent, QgsMapToPixel *t
       
       if (mMapCanvas->projectionsEnabled())
       {
-        ct = new QgsCoordinateTransform(layer->srsId(), mMapCanvas->mapRender()->destinationSrsId());
+        ct = new QgsCoordinateTransform(layer->srs(), mMapCanvas->mapRender()->destinationSrs());
       }
       else
       {
@@ -179,7 +179,7 @@ void QgsComposerMap::draw ( QPainter *painter, QgsRect *extent, QgsMapToPixel *t
 	
       if (mMapCanvas->projectionsEnabled())
       {
-        ct = new QgsCoordinateTransform(layer->srsId(), mMapCanvas->mapRender()->destinationSrsId());
+        ct = new QgsCoordinateTransform(layer->srs(), mMapCanvas->mapRender()->destinationSrs());
       }
       else
       {

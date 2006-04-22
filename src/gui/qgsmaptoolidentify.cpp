@@ -208,7 +208,7 @@ void QgsMapToolIdentify::identifyVectorLayer(QgsVectorLayer* layer, const QgsPoi
   dataProvider->select(&r, true);
 
   QgsDistanceArea calc;
-  calc.setSourceSRS(layer->srsId());
+  calc.setSourceSRS(layer->srs().srsid());
   
   if ( !layer->isEditable() )
   {

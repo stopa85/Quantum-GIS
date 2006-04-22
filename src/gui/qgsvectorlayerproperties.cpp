@@ -67,8 +67,7 @@ QgsVectorLayerProperties::QgsVectorLayerProperties(QgsVectorLayer * lyr,
       }
   }
 
-  QgsSpatialRefSys srs(layer->srsId(), QgsSpatialRefSys::QGIS_SRSID);
-  leSpatialRefSys->setText(srs.proj4String());
+  leSpatialRefSys->setText(layer->srs().proj4String());
   
   connect(sliderTransparency, SIGNAL(valueChanged(int)), this, SLOT(sliderTransparency_valueChanged(int)));
 
@@ -448,8 +447,6 @@ QString QgsVectorLayerProperties::getMetadata()
     myMetadataQString += "</td></tr>";
     */
 
-    QgsSpatialRefSys srs(layer->srsId(), QgsSpatialRefSys::QGIS_SRSID);
-
     // 
     // Display layer spatial ref system
     //
@@ -457,7 +454,7 @@ QString QgsVectorLayerProperties::getMetadata()
     myMetadataQString += tr("Layer Spatial Reference System:");
     myMetadataQString += "</td></tr>";  
     myMetadataQString += "<tr><td bgcolor=\"white\">";
-    myMetadataQString += srs.proj4String().replace(QRegExp("\"")," \"");                       
+    myMetadataQString += layer->srs().proj4String().replace(QRegExp("\"")," \"");                       
     myMetadataQString += "</td></tr>";
 
     // 
@@ -550,10 +547,11 @@ QString QgsVectorLayerProperties::getMetadata()
 void QgsVectorLayerProperties::on_pbnChangeSpatialRefSys_clicked()
 {
     QgsLayerProjectionSelector * mySelector = new QgsLayerProjectionSelector(this);
-    mySelector->setSelectedSRSID(layer->srsId());
+    mySelector->setSelectedSRSID(layer->srs().srsid());
     if(mySelector->exec())
     {
-      layer->setSrsId(mySelector->getCurrentSRSID());
+      QgsSpatialRefSys srs(mySelector->getCurrentSRSID(), QgsSpatialRefSys::QGIS_SRSID);
+      layer->setSrs(srs);
     }
     else
     {
@@ -561,6 +559,5 @@ void QgsVectorLayerProperties::on_pbnChangeSpatialRefSys_clicked()
     }
     delete mySelector;
 
-    QgsSpatialRefSys srs(layer->srsId(), QgsSpatialRefSys::QGIS_SRSID);
-    leSpatialRefSys->setText(srs.proj4String());
+    leSpatialRefSys->setText(layer->srs().proj4String());
 }

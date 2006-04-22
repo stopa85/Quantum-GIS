@@ -225,8 +225,7 @@ QgsRasterLayerProperties::QgsRasterLayerProperties(QgsMapLayer *lyr, QWidget *pa
     }
   }
 
-  QgsSpatialRefSys srs(rasterLayer->srsId(), QgsSpatialRefSys::QGIS_SRSID);
-  leSpatialRefSys->setText(srs.proj4String());
+  leSpatialRefSys->setText(rasterLayer->srs().proj4String());
 
   //draw the histogram
   //on_pbnHistRefresh_clicked();
@@ -1061,10 +1060,11 @@ void QgsRasterLayerProperties::on_pbnChangeSpatialRefSys_clicked()
     
 
     QgsLayerProjectionSelector * mySelector = new QgsLayerProjectionSelector(this);
-    mySelector->setSelectedSRSID(rasterLayer->srsId());
+    mySelector->setSelectedSRSID(rasterLayer->srs().srsid());
     if(mySelector->exec())
     {
-      rasterLayer->setSrsId(mySelector->getCurrentSRSID());
+      QgsSpatialRefSys srs(mySelector->getCurrentSRSID(), QgsSpatialRefSys::QGIS_SRSID);
+      rasterLayer->setSrs(srs);
     }
     else
     {
@@ -1072,6 +1072,5 @@ void QgsRasterLayerProperties::on_pbnChangeSpatialRefSys_clicked()
     }
     delete mySelector;
     
-    QgsSpatialRefSys srs(rasterLayer->srsId(), QgsSpatialRefSys::QGIS_SRSID);
-    leSpatialRefSys->setText(srs.proj4String());
+    leSpatialRefSys->setText(rasterLayer->srs().proj4String());
 }

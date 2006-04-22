@@ -28,6 +28,7 @@
 
 class QgsCoordinateTransform;
 class QgsMapToPixel;
+class QgsSpatialRefSys;
 
 class QDomNode;
 class QDomDocument;
@@ -185,12 +186,12 @@ public:
      */
     virtual QString errorString();
 
-    /** Returns ID of the layer's spatial reference system */
-    long srsId();
+    /** Returns layer's spatial reference system */
+    const QgsSpatialRefSys& srs();
     
-    /** Sets SRS ID of the layer */
-    void setSrsId(long srsid);
-
+    /** Sets layer's spatial reference system */
+    void setSrs(const QgsSpatialRefSys& srs);
+    
 public slots:
 
     /** Mutator for transparency level. Should be between 0 and 255 */
@@ -260,8 +261,8 @@ protected:
     /** Name of the layer - used for display */
     QString mLayerName;
 
-    /** ID of layer's Spatial reference system */
-    long mLayerSrsId;
+    /** layer's Spatial reference system */
+    QgsSpatialRefSys* mSRS;
 
 private:
 
