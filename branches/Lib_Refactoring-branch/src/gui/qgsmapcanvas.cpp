@@ -242,8 +242,8 @@ void QgsMapCanvas::setOverview(QgsMapOverviewCanvas* overview)
     // disconnect old map overview if exists
     disconnect(mMapRender, SIGNAL(projectionsEnabled(bool)),
                mMapOverview, SLOT(projectionsEnabled(bool)));
-    disconnect(mMapRender, SIGNAL(destinationSrsChanged(long)),
-               mMapOverview, SLOT(destinationSrsChanged(long)));
+    disconnect(mMapRender, SIGNAL(destinationSrsChanged()),
+               mMapOverview, SLOT(destinationSrsChanged()));
 
     // map overview is not owned by map canvas so don't delete it...
   }
@@ -255,8 +255,8 @@ void QgsMapCanvas::setOverview(QgsMapOverviewCanvas* overview)
     // connect to the map render to copy its projection settings
     connect(mMapRender, SIGNAL(projectionsEnabled(bool)),
             overview,     SLOT(projectionsEnabled(bool)));
-    connect(mMapRender, SIGNAL(destinationSrsChanged(long)),
-            overview,     SLOT(destinationSrsChanged(long)));
+    connect(mMapRender, SIGNAL(destinationSrsChanged()),
+            overview,     SLOT(destinationSrsChanged()));
   }
 }
 

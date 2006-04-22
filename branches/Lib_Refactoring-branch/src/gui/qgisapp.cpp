@@ -991,7 +991,7 @@ void QgisApp::setupConnections()
   //signal when mouse in capturePoint mode and mouse clicked on canvas
   connect(mMapCanvas->mapRender(), SIGNAL(setProgress(int,int)), this, SLOT(showProgress(int,int)));
   connect(mMapCanvas->mapRender(), SIGNAL(projectionsEnabled(bool)), this, SLOT(projectionsEnabled(bool)));
-  connect(mMapCanvas->mapRender(), SIGNAL(destinationSrsChanged(long)), this, SLOT(destinationSrsChanged(long)));
+  connect(mMapCanvas->mapRender(), SIGNAL(destinationSrsChanged()), this, SLOT(destinationSrsChanged()));
   connect(mMapCanvas, SIGNAL(extentsChanged()),this,SLOT(showExtents()));
   connect(mMapCanvas, SIGNAL(scaleChanged(QString)), this, SLOT(showScale(QString)));
   connect(mMapCanvas, SIGNAL(scaleChanged(QString)), this, SLOT(updateMouseCoordinatePrecision()));
@@ -4377,9 +4377,10 @@ void QgisApp::removePluginToolBarIcon(QAction *qAction)
   qAction->removeFrom(mPluginToolBar);
 }
 
-void QgisApp::destinationSrsChanged(long srsid)
+void QgisApp::destinationSrsChanged()
 {
   // save this information to project
+  long srsid = mMapCanvas->mapRender()->destinationSrs().srsid();
   QgsProject::instance()->writeEntry("SpatialRefSys", "/ProjectSRSID", (int)srsid);
 
 }
@@ -4512,12 +4513,12 @@ void QgisApp::projectProperties()
 
   QgsMapRender* myRender = mMapCanvas->mapRender();
   bool wasProjected = myRender->projectionsEnabled();
-  long oldSRSID = myRender->destinationSrsId();
+  long oldSRSID = myRender->destinationSrs().srsid();
 
   // Display the modal dialog box.
   pp->exec();
 
-  long newSRSID = myRender->destinationSrsId();
+  long newSRSID = myRender->destinationSrs().srsid();
   bool isProjected = myRender->projectionsEnabled();
   
   // projections have been turned on/off or dest SRS has changed while projections are on

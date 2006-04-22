@@ -275,7 +275,8 @@ void QgsMapOverviewCanvas::projectionsEnabled(bool flag)
   mMapRender->setProjectionsEnabled(flag);
 }
 
-void QgsMapOverviewCanvas::destinationSrsChanged(long srsId)
+void QgsMapOverviewCanvas::destinationSrsChanged()
 {
-  mMapRender->setDestinationSrsId(srsId);
+  const QgsSpatialRefSys& srs = mMapCanvas->mapRender()->destinationSrs();
+  mMapRender->setDestinationSrs(srs);
 }

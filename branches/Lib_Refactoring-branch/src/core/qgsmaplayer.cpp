@@ -28,22 +28,22 @@
 #include "qgsrect.h"
 #include "qgssymbol.h"
 #include "qgsmaplayer.h"
-
+#include "qgsspatialrefsys.h"
 
 
 QgsMapLayer::QgsMapLayer(int type,
                          QString lyrname,
                          QString source) :
         mTransparencyLevel(255), // 0 is completely transparent
-        mValid(true), // assume the layer is valid (data source exists and 
-                     // can be used) until we learn otherwise
+        mValid(FALSE), // assume the layer is invalid
         mDataSource(source),
-        mLayerSrsId(GEOSRS_ID),
         mID(""),
         mLayerType(type)
 
 {
-  QgsDebugMsg("QgsMapLayer::QgsMapLayer - lyrname is '" + lyrname);
+    QgsDebugMsg("QgsMapLayer::QgsMapLayer - lyrname is '" + lyrname);
+    
+    mSRS = new QgsSpatialRefSys(GEOSRS_ID, QgsSpatialRefSys::QGIS_SRSID); // WGS 84
 
     // Set the display name = internal name
     mLayerName = lyrname;
@@ -64,7 +64,7 @@ QgsMapLayer::QgsMapLayer(int type,
 
 QgsMapLayer::~QgsMapLayer()
 {
-    //delete mCoordinateTransform; //crash when removing layers. Why?
+  delete mSRS;
 }
 
 int QgsMapLayer::type() const
@@ -167,11 +167,11 @@ bool QgsMapLayer::readXML( QDomNode & layer_node )
     setLayerName( mne.text() );
 
     //read srs
-    QDomNode srsNode = layer_node.namedItem("srsid");
+    QDomNode srsNode = layer_node.namedItem("srs");
     if( ! srsNode.isNull()  )
     {
-      QDomElement myElement = srsNode.toElement();
-      mLayerSrsId = myElement.text().toLong();
+      QDomNode mySrsNode = srsNode.namedItem("spatialrefsys");
+      mSRS->readXML(mySrsNode);
     }
     
     //read transparency level
@@ -244,9 +244,9 @@ bool QgsMapLayer::writeXML( QDomNode & layer_node, QDomDocument & document )
     // are written and read in the proper order.
 
     // spatial reference system id
-    QDomElement mySrsIdElement = document.createElement( "srsid" );
-    mySrsIdElement.appendChild(document.createTextNode( QString::number(srsId())));
-    maplayer.appendChild(mySrsIdElement);
+    QDomElement mySrsElement = document.createElement( "srs" );
+    mSRS->writeXML(mySrsElement, document);
+    maplayer.appendChild(mySrsElement);
     
     // <transparencyLevelInt>
     QDomElement transparencyLevelIntElement = document.createElement( "transparencyLevelInt" );
@@ -350,12 +350,12 @@ void QgsMapLayer::setSubLayerVisibility(QString name, bool vis)
       // NOOP
 }
 
-long QgsMapLayer::srsId()
+const QgsSpatialRefSys& QgsMapLayer::srs()
 {
-  return mLayerSrsId;
+  return *mSRS;
 }
 
-void QgsMapLayer::setSrsId(long srsid)
+void QgsMapLayer::setSrs(const QgsSpatialRefSys& srs)
 {
-  mLayerSrsId = srsid;
+  *mSRS = srs;
 }

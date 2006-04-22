@@ -45,7 +45,7 @@ QgsMapRender::QgsMapRender()
   mSize = QSize(0,0);
   
   mProjectionsEnabled = FALSE;
-  mDestSRS = GEOSRS_ID; // WGS 84
+  mDestSRS = new QgsSpatialRefSys(GEOSRS_ID, QgsSpatialRefSys::QGIS_SRSID); // WGS 84
 
 }
 
@@ -53,6 +53,7 @@ QgsMapRender::~QgsMapRender()
 {
   delete mCoordXForm;
   delete mScaleCalculator;
+  delete mDestSRS;
 }
 
 
@@ -253,7 +254,7 @@ void QgsMapRender::render(QPainter* painter)
       
       if (projectionsEnabled())
       {
-        ct = new QgsCoordinateTransform(ml->srsId(), mDestSRS);
+        ct = new QgsCoordinateTransform(ml->srs(), *mDestSRS);
       }
       else
       {
@@ -306,7 +307,7 @@ void QgsMapRender::render(QPainter* painter)
       
           if (projectionsEnabled())
           {
-            ct = new QgsCoordinateTransform(ml->srsId(), mDestSRS);
+            ct = new QgsCoordinateTransform(ml->srs(), *mDestSRS);
           }
           else
           {
@@ -371,15 +372,15 @@ bool QgsMapRender::projectionsEnabled()
   return mProjectionsEnabled;
 }
 
-void QgsMapRender::setDestinationSrsId(long srsId)
+void QgsMapRender::setDestinationSrs(const QgsSpatialRefSys& srs)
 {
-  mDestSRS = srsId;
-  emit destinationSrsChanged(srsId);
+  *mDestSRS = srs;
+  emit destinationSrsChanged();
 }
 
-long QgsMapRender::destinationSrsId()
+const QgsSpatialRefSys& QgsMapRender::destinationSrs()
 {
-  return mDestSRS;
+  return *mDestSRS;
 }
 
 
@@ -391,7 +392,7 @@ bool QgsMapRender::splitLayersExtent(QgsMapLayer* layer, QgsRect& extent, QgsRec
   {
     try
     {
-      QgsCoordinateTransform transform(layer->srsId(), mDestSRS);
+      QgsCoordinateTransform tr(layer->srs(), *mDestSRS);
       
 #ifdef QGISDEBUG
       QgsLogger::debug<QgsRect>("Getting extent of canvas in layers CS. Canvas is ", extent, __FILE__,\
@@ -404,15 +405,15 @@ bool QgsMapRender::splitLayersExtent(QgsMapLayer* layer, QgsRect& extent, QgsRec
       // extent separately.
       static const double splitCoord = 180.0;
 
-      if (transform.sourceSRS().geographicFlag())
+      if (tr.sourceSRS().geographicFlag())
       {
         // Note: ll = lower left point
         //   and ur = upper right point
-        QgsPoint ll = transform.transform(extent.xMin(), extent.yMin(),
-                                          QgsCoordinateTransform::INVERSE);
+        QgsPoint ll = tr.transform(extent.xMin(), extent.yMin(),
+                                   QgsCoordinateTransform::INVERSE);
 
-        QgsPoint ur = transform.transform(extent.xMax(), extent.yMax(), 
-                                          QgsCoordinateTransform::INVERSE);
+        QgsPoint ur = tr.transform(extent.xMax(), extent.yMax(), 
+                                   QgsCoordinateTransform::INVERSE);
 
         if (ll.x() > ur.x())
         {
@@ -422,12 +423,12 @@ bool QgsMapRender::splitLayersExtent(QgsMapLayer* layer, QgsRect& extent, QgsRec
         }
         else // no need to split
         {
-          extent = transform.transformBoundingBox(extent, QgsCoordinateTransform::INVERSE);
+          extent = tr.transformBoundingBox(extent, QgsCoordinateTransform::INVERSE);
         }
       }
       else // can't cross 180
       {
-        extent = transform.transformBoundingBox(extent, QgsCoordinateTransform::INVERSE);
+        extent = tr.transformBoundingBox(extent, QgsCoordinateTransform::INVERSE);
       }
     }
     catch (QgsCsException &cse)
@@ -447,7 +448,7 @@ QgsRect QgsMapRender::layerExtentToOutputExtent(QgsMapLayer* theLayer, QgsRect e
   {
     try
     {
-      QgsCoordinateTransform tr(theLayer->srsId(), mDestSRS);
+      QgsCoordinateTransform tr(theLayer->srs(), *mDestSRS);
       extent = tr.transformBoundingBox(extent);
     }
     catch (QgsCsException &cse)
@@ -469,8 +470,8 @@ QgsPoint QgsMapRender::outputCoordsToLayerCoords(QgsMapLayer* theLayer, QgsPoint
   {
     try
     {
-      QgsCoordinateTransform xform(theLayer->srsId(), mDestSRS);
-      point = xform.transform(point, QgsCoordinateTransform::INVERSE);
+      QgsCoordinateTransform tr(theLayer->srs(), *mDestSRS);
+      point = tr.transform(point, QgsCoordinateTransform::INVERSE);
     }
     catch (QgsCsException &cse)
     {
@@ -490,8 +491,8 @@ QgsRect QgsMapRender::outputCoordsToLayerCoords(QgsMapLayer* theLayer, QgsRect r
   {
     try
     {
-      QgsCoordinateTransform xform(theLayer->srsId(), mDestSRS);
-      rect = xform.transform(rect, QgsCoordinateTransform::INVERSE);
+      QgsCoordinateTransform tr(theLayer->srs(), *mDestSRS);
+      rect = tr.transform(rect, QgsCoordinateTransform::INVERSE);
     }
     catch (QgsCsException &cse)
     {

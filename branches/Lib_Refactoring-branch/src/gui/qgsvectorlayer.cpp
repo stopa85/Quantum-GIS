@@ -3070,7 +3070,6 @@ void QgsVectorLayer::setCoordinateSystem()
   // Get the layers project info and set up the QgsCoordinateTransform 
   // for this layer
   //
-  QgsSpatialRefSys srs;
   int srid = getProjectionSrid();
 
   if(srid == 0)
@@ -3081,24 +3080,23 @@ void QgsVectorLayer::setCoordinateSystem()
       mySourceWKT=QString("");
     }
     QgsDebugMsg("QgsVectorLayer::setCoordinateSystem --- using wkt " + mySourceWKT);
-    srs.createFromWkt(mySourceWKT);
+    mSRS->createFromWkt(mySourceWKT);
   }
   else
   {
     QgsDebugMsg("QgsVectorLayer::setCoordinateSystem --- using srid " + QString::number(srid));
-    srs.createFromSrid(srid);
+    mSRS->createFromSrid(srid);
   }
 
   //QgsSpatialRefSys provides a mechanism for FORCE a srs to be valid
   //which is inolves falling back to system, project or user selected
   //defaults if the srs is not properly intialised.
   //we only nee to do that if the srs is not alreay valid
-  if (!srs.isValid())
+  if (!mSRS->isValid())
   {
-    srs.validate();
+    mSRS->validate();
   }
 
-  mLayerSrsId = srs.srsid();
 }
 
 bool QgsVectorLayer::commitAttributeChanges(const std::set<QString>& deleted,

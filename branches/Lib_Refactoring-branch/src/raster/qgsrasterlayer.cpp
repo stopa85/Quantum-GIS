@@ -537,15 +537,13 @@ QgsRasterLayer::readFile( QString const & fileName )
   QgsDebugMsg("QgsRasterLayer::readFile --- using wkt\n" + mySourceWKT);
   QgsDebugMsg("--------------------------------------------------------------------------------------");
 
-  QgsSpatialRefSys srs;
-  srs.createFromWkt(mySourceWKT);
+  mSRS->createFromWkt(mySourceWKT);
   //get the project projection, defaulting to this layer's projection
   //if none exists....
-  if (!srs.isValid())
+  if (!mSRS->isValid())
   {
-    srs.validate();
+    mSRS->validate();
   }
-  mLayerSrsId = srs.srsid();
 
   //set up the coordinat transform - in the case of raster this is mainly used to convert
   //the inverese projection of the map extents of the canvas when zzooming in etc. so
@@ -3861,13 +3859,11 @@ QString QgsRasterLayer::getMetadata()
     myMetadataQString += "</td></tr>";
   }  // if (mProviderKey.isEmpty())
 
-  QgsSpatialRefSys srs(mLayerSrsId, QgsSpatialRefSys::QGIS_SRSID);
-
    myMetadataQString += "<tr><td bgcolor=\"gray\">";
    myMetadataQString += tr("Layer Spatial Reference System: ");
    myMetadataQString += "</td></tr>";
    myMetadataQString += "<tr><td bgcolor=\"white\">";
-   myMetadataQString += srs.proj4String();
+   myMetadataQString += mSRS->proj4String();
    myMetadataQString += "</td></tr>";
 
   // output coordinate system
@@ -4866,8 +4862,7 @@ void QgsRasterLayer::setDataProvider( QString const & provider,
 
           // Hard-code the source coordinate reference for now
           // TODO: Make WMS projection-aware.    
-          QgsSpatialRefSys srs(EPSGID, QgsSpatialRefSys::EPSG);
-          mLayerSrsId = srs.srsid();
+          *mSRS = QgsSpatialRefSys(EPSGID, QgsSpatialRefSys::EPSG);
         }
       }
       else

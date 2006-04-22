@@ -60,7 +60,7 @@ class QgsMapOverviewCanvas : public QWidget
     
     void projectionsEnabled(bool flag);
     
-    void destinationSrsChanged(long srsId);
+    void destinationSrsChanged();
     
   protected:
   

@@ -24,10 +24,11 @@
 #include "qgsrect.h"
 
 class QPainter;
-class QgsScaleCalculator;
+
 class QgsMapToPixel;
 class QgsMapLayer;
-
+class QgsScaleCalculator;
+class QgsSpatialRefSys;
 
 /**
  * \class QgsMapRender
@@ -87,11 +88,11 @@ class QgsMapRender : public QObject
     //! returns true if projections are enabled for this layer set
     bool projectionsEnabled();
     
-    //! sets destination spatial reference system - by QGIS SRS ID
-    void setDestinationSrsId(long srsId);
+    //! sets destination spatial reference system
+    void setDestinationSrs(const QgsSpatialRefSys& srs);
     
     //! returns SRS ID of destination spatial reference system
-    long destinationSrsId();
+    const QgsSpatialRefSys& destinationSrs();
 
     //! returns current extent of layer set
     QgsRect fullExtent() { return mFullExtent; }
@@ -111,7 +112,7 @@ class QgsMapRender : public QObject
     
     void projectionsEnabled(bool flag);
     
-    void destinationSrsChanged(long srsId);
+    void destinationSrsChanged();
     
     void updateMap();
     
@@ -167,7 +168,7 @@ class QgsMapRender : public QObject
     bool mProjectionsEnabled;
     
     //! destination spatial reference system of the projection
-    long mDestSRS;
+    QgsSpatialRefSys* mDestSRS;
 
     //! stores array of layers to be rendered (identified by string)
     std::deque<QString> mLayerSet;
