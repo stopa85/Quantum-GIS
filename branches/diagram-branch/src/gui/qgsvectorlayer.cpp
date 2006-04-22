@@ -91,7 +91,6 @@
 #include <dlfcn.h>
 #endif
 
-
 static const char * const ident_ = "$Id$";
 
 // typedef for the QgsDataProvider class factory
