@@ -39,10 +39,14 @@ QgsMapRender::QgsMapRender()
   mDrawing = false;
   mOverview = false;
   
-  // set default map units
-  mScaleCalculator->setMapUnits(QGis::METERS);
+  // set default map units - we use WGS 84 thus use degrees
+  setMapUnits(QGis::DEGREES);
 
   mSize = QSize(0,0);
+  
+  mProjectionsEnabled = FALSE;
+  mDestSRS = GEOSRS_ID; // WGS 84
+
 }
 
 QgsMapRender::~QgsMapRender()
@@ -359,7 +363,7 @@ void QgsMapRender::onDrawingProgress(int current, int total)
 void QgsMapRender::setProjectionsEnabled(bool enabled)
 {
   mProjectionsEnabled = enabled;
-  // TODO: some initialization/notification stuff?
+  emit projectionsEnabled(enabled);
 }
 
 bool QgsMapRender::projectionsEnabled()
@@ -370,7 +374,7 @@ bool QgsMapRender::projectionsEnabled()
 void QgsMapRender::setDestinationSrsId(long srsId)
 {
   mDestSRS = srsId;
-  // TODO: some initialization/notification stuff?
+  emit destinationSrsChanged(srsId);
 }
 
 long QgsMapRender::destinationSrsId()
@@ -443,8 +447,8 @@ QgsRect QgsMapRender::layerExtentToOutputExtent(QgsMapLayer* theLayer, QgsRect e
   {
     try
     {
-      QgsCoordinateTransform transform(theLayer->srsId(), mDestSRS);
-      transform.transformBoundingBox(extent);
+      QgsCoordinateTransform tr(theLayer->srsId(), mDestSRS);
+      extent = tr.transformBoundingBox(extent);
     }
     catch (QgsCsException &cse)
     {
@@ -525,11 +529,14 @@ void QgsMapRender::updateFullExtent()
       // Layer extents are stored in the coordinate system (CS) of the
       // layer. The extent must be projected to the canvas CS
       QgsRect extent = layerExtentToOutputExtent(lyr, lyr->extent());
+      
+      QgsDebugMsg("Output extent: " + extent.stringRep());
       mFullExtent.unionRect(extent);
 
     }
     it++;
-  } 
+  }
+  QgsDebugMsg("Full extent: " + mFullExtent.stringRep());
 }
 
 void QgsMapRender::setLayerSet(const std::deque<QString>& layers)

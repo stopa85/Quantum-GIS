@@ -56,6 +56,12 @@ class QgsMapOverviewCanvas : public QWidget
     
     void updateFullExtent();
     
+  public slots:
+    
+    void projectionsEnabled(bool flag);
+    
+    void destinationSrsChanged(long srsId);
+    
   protected:
   
     //! Overridden paint event

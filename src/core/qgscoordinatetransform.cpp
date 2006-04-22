@@ -17,6 +17,7 @@
 /* $Id$ */
 #include <cassert>
 #include "qgscoordinatetransform.h"
+#include "qgslogger.h"
 
 //qt includes
 #include <QDomNode>
@@ -95,9 +96,8 @@ void QgsCoordinateTransform::setSourceSRS(const QgsSpatialRefSys& theSRS)
 }
 void QgsCoordinateTransform::setDestSRS(const QgsSpatialRefSys& theSRS)
 {
-#ifdef QGISDEBUG
-  std::cout << "QgsCoordinateTransform::setDestSRS called" << std::endl;
-#endif
+  QgsDebugMsg("QgsCoordinateTransform::setDestSRS called");
+  
   mDestSRS = theSRS;
   initialise();
 }
@@ -106,9 +106,8 @@ void QgsCoordinateTransform::setDestSRS(const QgsSpatialRefSys& theSRS)
 void QgsCoordinateTransform::setDestSRSID (long theSRSID)
 {
   //!todo Add some logic here to determine if the srsid is a system or user one
-#ifdef QGISDEBUG
-  std::cout << "QgsCoordinateTransform::setDestSRSID slot called" << std::endl;
-#endif
+  QgsDebugMsg("QgsCoordinateTransform::setDestSRSID slot called");
+  
   mDestSRS.createFromSrsId(theSRSID);
   initialise();
 }
@@ -213,7 +212,7 @@ QgsPoint QgsCoordinateTransform::transform(const QgsPoint thePoint,TransformDire
   catch(QgsCsException &cse)
   {
     // rethrow the exception
-    std::cout << "Throwing exception " << __FILE__ << __LINE__ << std::endl; 
+    QgsDebugMsg("Rethrowing QgsCsException"); 
     throw cse;
   }
 
@@ -233,7 +232,7 @@ QgsPoint QgsCoordinateTransform::transform(const double theX, const double theY=
   catch(QgsCsException &cse)
   {
     // rethrow the exception
-    std::cout << "Throwing exception " << __FILE__ << __LINE__ << std::endl; 
+    QgsDebugMsg("Rethrowing QgsCsException");
     throw cse;
   }
 }
@@ -262,7 +261,7 @@ QgsRect QgsCoordinateTransform::transform(const QgsRect theRect,TransformDirecti
   catch(QgsCsException &cse)
   {
     // rethrow the exception
-    std::cout << "Throwing exception " << __FILE__ << __LINE__ << std::endl; 
+    QgsDebugMsg("Rethrowing QgsCsException");
     throw cse;
   }
 
@@ -301,7 +300,7 @@ void QgsCoordinateTransform::transformInPlace(double& x, double& y, double& z,
   catch(QgsCsException &cse)
   {
     // rethrow the exception
-    std::cout << "Throwing exception " << __FILE__ << __LINE__ << std::endl; 
+    QgsDebugMsg("Rethrowing QgsCsException"); 
     throw cse;
   }
 }
@@ -327,7 +326,7 @@ void QgsCoordinateTransform::transformInPlace(std::vector<double>& x,
   catch(QgsCsException &cse)
   {
     // rethrow the exception
-    std::cout << "Throwing exception " << __FILE__ << __LINE__ << std::endl; 
+    QgsDebugMsg("Rethrowing QgsCsException");
     throw cse;
   }
 }
@@ -354,9 +353,9 @@ QgsRect QgsCoordinateTransform::transformBoundingBox(const QgsRect rect, Transfo
   double x[numP * numP];
   double y[numP * numP];
   double z[numP * numP];
-#ifdef QGISDEBUG   
-  std::cout << "Entering transformBoundingBox..." << std::endl;
-#endif 
+
+  QgsDebugMsg("Entering transformBoundingBox...");
+  
   // Populate the vectors
 
   double dx = rect.width()  / (double)(numP - 1);
@@ -391,8 +390,8 @@ QgsRect QgsCoordinateTransform::transformBoundingBox(const QgsRect rect, Transfo
   }
   catch(QgsCsException &cse)
   {
-  // rethrow the exception
-    std::cout << "Throwing exception " << __FILE__ << __LINE__ << std::endl; 
+    // rethrow the exception
+    QgsDebugMsg("Retrowing QgsCsException...");
     throw cse;
   }
 
@@ -402,9 +401,10 @@ QgsRect QgsCoordinateTransform::transformBoundingBox(const QgsRect rect, Transfo
   {
     bb_rect.combineExtentWith(x[i], y[i]);
   }
-#ifdef QGISDEBUG 
-  std::cout << "Projected extent: " << (bb_rect.stringRep()).toLocal8Bit().data() << std::endl;
-#endif 
+  
+  // .toLocal8Bit().data()
+  QgsDebugMsg("Projected extent: " + (bb_rect.stringRep()));
+  
   return bb_rect;
 }
 
@@ -479,11 +479,11 @@ void QgsCoordinateTransform::transformCoords( const int& numPoints, double *x, d
     }
 
     pjErr << tr("with error: ") << pj_strerrno(projResult) << '\n';
-#ifdef QGISDEBUG
-  std::cout << "Projection failed emitting invalid transform signal: \n" << msg.toLocal8Bit().data() << std::endl;
-#endif
+  
+    QgsDebugMsg("Projection failed, emitting invalid transform signal: " + msg); /*.toLocal8Bit().data()*/
     emit invalidTransformInput();
-    std::cout << "Throwing exception " << __FILE__ << __LINE__ << std::endl; 
+    
+    QgsDebugMsg("Throwing QgsCsException"); 
     throw  QgsCsException(msg);
   }
   // if the result is lat/long, convert the results from radians back
@@ -505,9 +505,9 @@ void QgsCoordinateTransform::transformCoords( const int& numPoints, double *x, d
 
 bool QgsCoordinateTransform::readXML( QDomNode & theNode )
 {
-#ifdef QGISDEBUG
-  std::cout << "Reading Coordinate Transform from xml ------------------------!" << std::endl;
-#endif
+  
+  QgsDebugMsg("Reading Coordinate Transform from xml ------------------------!");
+  
   QDomNode mySrcNodeParent = theNode.namedItem("sourcesrs");
   QDomNode mySrcNode = mySrcNodeParent.namedItem("spatialrefsys");
   mSourceSRS.readXML(mySrcNode);

@@ -269,3 +269,13 @@ void QgsMapOverviewCanvas::updateFullExtent()
 {
   mMapRender->updateFullExtent();
 }
+
+void QgsMapOverviewCanvas::projectionsEnabled(bool flag)
+{
+  mMapRender->setProjectionsEnabled(flag);
+}
+
+void QgsMapOverviewCanvas::destinationSrsChanged(long srsId)
+{
+  mMapRender->setDestinationSrsId(srsId);
+}
