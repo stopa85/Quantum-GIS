@@ -386,7 +386,7 @@ void QgsMapCanvas::setExtent(QgsRect const & r)
 {
   QgsRect current = extent();
   mMapRender->setExtent(r);
-  emit extentsChanged(mMapRender->extent());
+  emit extentsChanged();
   updateScale();
   if (mMapOverview)
     mMapOverview->reflectChangedExtent();

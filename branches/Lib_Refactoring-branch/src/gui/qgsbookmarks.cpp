@@ -207,7 +207,7 @@ void QgsBookmarks::zoomToBookmark()
               xmax.toDouble(),
               ymax.toDouble()));
         // redraw the map
-        dynamic_cast<QgisApp*>(mParent)->getInterface()->getMapCanvas()->refresh();
+        dynamic_cast<QgisApp*>(mParent)->getMapCanvas()->refresh();
 
 
       }

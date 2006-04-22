@@ -15,7 +15,10 @@ email                : sherman at mrcc.com
 /* $Id$ */
 
 #include "qgsfeature.h"
+#include "qgsfeatureattribute.h"
+#include "qgsgeometry.h"
 #include "qgsrect.h"
+
 #include <iostream>
 #include <cfloat>
 #ifdef WIN32
@@ -1647,8 +1650,3 @@ QgsRect QgsFeature::boundingBox() const
 //     }
 // }
 // 
-
-geos::Geometry* QgsFeature::geosGeometry() const
-{
-  return mGeometry->geosGeometry();
-}

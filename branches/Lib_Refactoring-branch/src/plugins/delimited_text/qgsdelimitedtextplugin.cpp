@@ -23,6 +23,7 @@ Functions:
 // includes
 
 #include "qgisapp.h"
+#include "qgisiface.h"
 #include "qgisgui.h"
 #include "qgsmaplayer.h"
 #include "qgsdelimitedtextplugin.h"

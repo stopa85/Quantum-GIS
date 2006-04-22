@@ -14,6 +14,7 @@
  *                                                                         *
  ***************************************************************************/
 
+#include "qgisapp.h"
 #include "qgsmapcanvas.h"
 #include "qgsgrassedittools.h"
 #include "qgsgrassedit.h"

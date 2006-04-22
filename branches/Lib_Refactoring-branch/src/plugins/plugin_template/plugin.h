@@ -41,11 +41,13 @@
 #include <QObject>
 
 //QGIS includes
-#include <qgisapp.h>
 #include "../qgisplugin.h"
 
 //forward declarations
+class QAction;
 class QToolBar;
+
+class QgisIface;
 
 /**
 * \class Plugin

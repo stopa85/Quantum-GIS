@@ -236,7 +236,7 @@ signals:
     void scaleChanged(QString);
 
     //! Emitted when the extents of the map change
-    void extentsChanged(QgsRect);
+    void extentsChanged();
 
     /** Emitted when the canvas has rendered.
 

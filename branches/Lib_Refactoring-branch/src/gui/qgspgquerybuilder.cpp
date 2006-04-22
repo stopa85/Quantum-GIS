@@ -4,7 +4,7 @@
                Date                 : 2004-11-19
                Copyright            : (C) 2004 by Gary E.Sherman
                Email                : sherman at mrcc.com
-/***************************************************************************
+ ***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *

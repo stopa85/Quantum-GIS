@@ -36,6 +36,7 @@
 #include "qgsdataprovider.h"
 #include "qgsencodingfiledialog.h"
 #include "qgsfeature.h"
+#include "qgsfeatureattribute.h"
 #include "qgsfield.h"
 #include "qgsrect.h"
 

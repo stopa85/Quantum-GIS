@@ -22,7 +22,8 @@ email                : tim@linfiniti.com
 
 // includes
 
-#include <qgisapp.h>
+#include "qgisapp.h"
+#include "qgisiface.h"
 #include "qgisgui.h"
 #include "qgscoordinatetransform.h"
 #include "qgsmaplayer.h"

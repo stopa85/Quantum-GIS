@@ -4,7 +4,7 @@
     Date                 : 02-Jan-2006
     Copyright            : (C) 2006 by Tom Elwertowski
     Email                : telwertowski at users dot sourceforge dot net
-/***************************************************************************
+ ***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -17,6 +17,13 @@
 #include "qgsapplication.h"
 
 #include <QDir>
+
+// for htonl
+#ifdef WIN32
+#include <winsock.h>
+#else
+#include <netinet/in.h>
+#endif
 
 QString QgsApplication::mPrefixPath;
 QString QgsApplication::mPluginPath;
@@ -145,4 +152,9 @@ const QString QgsApplication::srsDbFilePath()
 const QString QgsApplication::svgPath()
 {
   return mPkgDataPath + QString("/svg/");
+}
+
+QgsApplication::endian_t QgsApplication::endian()
+{
+  return (htonl(1) == 1) ? XDR : NDR ;
 }

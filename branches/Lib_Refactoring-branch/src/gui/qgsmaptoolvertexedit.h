@@ -19,6 +19,7 @@
 
 #include "qgsmaptool.h"
 #include "qgsgeometry.h"
+#include "qgsgeometryvertexindex.h"
 
 class QgsRubberBand;
 class QgsVertexMarker;

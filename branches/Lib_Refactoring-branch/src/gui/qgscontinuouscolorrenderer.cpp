@@ -15,15 +15,16 @@
  *                                                                         *
  ***************************************************************************/
 /* $Id$ */
+
 #include "qgscontinuouscolorrenderer.h"
-#include "qgis.h"
-#include "qgsvectorlayer.h"
-#include <cfloat>
+#include "qgsfeatureattribute.h"
 #include "qgslegenditem.h"
-#include "qgssymbologyutils.h"
 #include "qgsmarkercatalogue.h"
 #include "qgssymbol.h"
+#include "qgssymbologyutils.h"
+#include "qgsvectorlayer.h"
 
+#include <cfloat>
 #include <QDomElement>
 #include <QPainter>
 #include <QPixmap>

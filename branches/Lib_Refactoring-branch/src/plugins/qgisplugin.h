@@ -23,7 +23,8 @@
 
 #include <qstring.h>
 
-#include <qgisapp.h>
+class QgisApp;
+class QgisInterface;
 
 //#include "qgisplugingui.h"
 

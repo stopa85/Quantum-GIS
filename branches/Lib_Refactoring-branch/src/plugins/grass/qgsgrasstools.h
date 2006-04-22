@@ -24,16 +24,16 @@ class Q3ListView;
 class Q3ListViewItem;
 class QDomNode;
 class QDomElement;
+class QSize;
 
-// Must be here, so that it is included to moc file
-#include "qgisapp.h"
-#include "qgisiface.h"
-
+class QgisApp;
+class QgisIface;
 class QgsGrassProvider;
 class QgsGrassBrowser;
+class QgsMapCanvas;
+
 #include <QDialog>
-#include <QTabBar>
-class QSize;
+#include <QTabWidget>
 
 class QgsGrassToolsTabWidget: public QTabWidget
 {

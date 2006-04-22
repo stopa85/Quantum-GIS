@@ -22,7 +22,7 @@
 
 #include <vector>
 
-#include "qgsfeature.h"
+class QgsFeature;
 
 /**
 

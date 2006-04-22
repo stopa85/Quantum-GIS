@@ -45,6 +45,8 @@
 #include <QToolBar>
 
 #include "qgis.h"
+#include "qgisapp.h"
+#include "qgisiface.h"
 #include "qgsapplication.h"
 #include "qgsmapcanvas.h"
 #include "qgsmaplayer.h"

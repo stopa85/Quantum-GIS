@@ -43,6 +43,7 @@
 // 
 
 #include <qgisapp.h>
+#include <qgisiface.h>
 #include <qgsmaplayer.h>
 #include <qgsrasterlayer.h>
 #include "plugin.h"

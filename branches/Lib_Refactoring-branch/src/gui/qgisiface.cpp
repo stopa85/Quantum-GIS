@@ -20,6 +20,7 @@
 #include <QString>
 #include <QMenu>
 
+#include "qgisiface.h"
 #include "qgisinterface.h"
 #include "qgisapp.h"
 #include "qgsmaplayer.h"

@@ -18,6 +18,7 @@
 #include <cfloat>
 #include "qgis.h"
 #include "qgsfeature.h"
+#include "qgsfeatureattribute.h"
 #include "qgsgraduatedsymbolrenderer.h"
 #include "qgslegendsymbologyitem.h"
 #include "qgssymbologyutils.h"

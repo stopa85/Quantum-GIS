@@ -37,6 +37,7 @@
 #include "qgis.h"
 #include "qgsdataprovider.h"
 #include "qgsfeature.h"
+#include "qgsfeatureattribute.h"
 #include "qgsfield.h"
 #include "qgsrect.h"
 #include "qgsgpxprovider.h"

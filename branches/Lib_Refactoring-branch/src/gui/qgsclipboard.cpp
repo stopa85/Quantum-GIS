@@ -26,7 +26,9 @@
 #include <QClipboard>
 
 #include "qgsclipboard.h"
-
+#include "qgsfeature.h"
+#include "qgsfeatureattribute.h"
+#include "qgsgeometry.h"
 
 QgsClipboard::QgsClipboard()
   : mFeatureClipboard(0)
