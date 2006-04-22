@@ -110,6 +110,24 @@ void QgsVectorLayerProperties::alterLayerDialog(const QString & dialogString)
     {
 	mRendererDialog = new QgsUniqueValueDialog(layer);
     }
+    else
+      {
+	//possibly a renderer from a plugin?
+	std::list<QgisPlugin*> rplugins = QgsPluginRegistry::instance()->rendererPlugins();
+	QgsRendererPlugin* theRendererPlugin = 0;
+	for(std::list<QgisPlugin*>::iterator it =  rplugins.begin(); it != rplugins.end(); ++it)
+	  {
+	    theRendererPlugin = dynamic_cast<QgsRendererPlugin*>(*it);
+	    if(theRendererPlugin)
+	      {
+		if(dialogString == (tr(theRendererPlugin->rendererName())))
+		  {
+		    mRendererDialog = theRendererPlugin->rendererDialog(layer);
+		    break;
+		  }
+	      }
+	  }
+      }
     widgetStackRenderers->addWidget(mRendererDialog);
     widgetStackRenderers->raiseWidget(mRendererDialog);  
 }
