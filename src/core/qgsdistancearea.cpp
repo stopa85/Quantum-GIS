@@ -14,14 +14,12 @@
  ***************************************************************************/
 /* $Id$ */
 
-#include <math.h>
+#include <cmath>
 #include <sqlite3.h>
-#include <qdir.h>
-#include <qsettings.h>
+#include <QDir>
 
 #include "qgis.h"
 #include "qgspoint.h"
-#include "qgsproject.h"
 #include "qgscoordinatetransform.h"
 #include "qgsspatialrefsys.h"
 #include "qgsgeometry.h"
@@ -34,9 +32,10 @@
 QgsDistanceArea::QgsDistanceArea()
 {
   // init with default settings
+  mProjectionsEnabled = FALSE;
   mCoordTransform = new QgsCoordinateTransform;
-  setDefaultEllipsoid();
-  setProjectAsSourceSRS();
+  setSourceSRS(GEOSRS_ID); // WGS 84
+  setEllipsoid("WGS84");
 }
 
 
@@ -46,27 +45,17 @@ QgsDistanceArea::~QgsDistanceArea()
 }
 
 
+void QgsDistanceArea::setProjectionsEnabled(bool flag)
+{
+  mProjectionsEnabled = flag;
+}
+
+
 void QgsDistanceArea::setSourceSRS(long srsid)
 {
   QgsSpatialRefSys srcSRS;
   srcSRS.createFromSrsId(srsid);
   mCoordTransform->setSourceSRS(srcSRS);
-}
-
-
-void QgsDistanceArea::setProjectAsSourceSRS()
-{
-  // This function used to only get the /ProjectSRSID if on-the-fly
-  // projection was enabled (and used a default value in all other
-  // cases). However, even if it was not, a valid value for
-  // /ProjectSRSID is most likely available, and we now use it in all
-  // cases (as it gives correct distances and areas even when
-  // on-the-fly projection is turned off). The default of GEOSRS_ID
-  // is still applied if all else fails.
-
-  int srsid = QgsProject::instance()->readNumEntry("SpatialRefSys","/ProjectSRSID",GEOSRS_ID);
-
-  setSourceSRS(srsid);
 }
 
 
@@ -168,26 +157,6 @@ bool QgsDistanceArea::setEllipsoid(const QString& ellipsoid)
 }
 
 
-bool QgsDistanceArea::setDefaultEllipsoid()
-{
-  QString defEll("WGS84");
-  QString ellKey("/qgis/measure/ellipsoid");
-  QSettings settings;
-  QString ellipsoid = settings.readEntry(ellKey, defEll);
-
-  // Somehow/sometimes the settings file can have a blank ellipsoid
-  // value. This is undesirable, so force a valid default value in
-  // that case, and fix the problem by writing a valid value.
-  if (ellipsoid.isEmpty())
-  {
-    ellipsoid = defEll;
-    settings.writeEntry(ellKey, ellipsoid);
-  }
-
-  return setEllipsoid(ellipsoid);
-}
-
-
 double QgsDistanceArea::measure(QgsGeometry* geometry)
 {
   unsigned char* wkb = geometry->wkbBuffer();
@@ -265,11 +234,19 @@ double QgsDistanceArea::measureLine(const std::vector<QgsPoint>& points)
   
   double total = 0;
   QgsPoint p1, p2;
-  p1 = mCoordTransform->transform(points[0]);
+  
+  if (mProjectionsEnabled)
+    p1 = mCoordTransform->transform(points[0]);
+  else
+    p1 = points[0];
   
   for (int i = 1; i < points.size(); i++)
   {
-    p2 = mCoordTransform->transform(points[i]);
+    if (mProjectionsEnabled)
+      p2 = mCoordTransform->transform(points[i]);
+    else
+      p2 = points[i];
+
     total = computeDistanceBearing(p1,p2);
     p1 = p2;
   }
@@ -278,8 +255,12 @@ double QgsDistanceArea::measureLine(const std::vector<QgsPoint>& points)
 
 double QgsDistanceArea::measureLine(const QgsPoint& p1, const QgsPoint& p2)
 {
-  QgsPoint pp1 = mCoordTransform->transform(p1);
-  QgsPoint pp2 = mCoordTransform->transform(p2);
+  QgsPoint pp1 = p1, pp2 = p2;
+  if (mProjectionsEnabled)
+  {
+    pp1 = mCoordTransform->transform(p1);
+    pp2 = mCoordTransform->transform(p2);
+  }
   return computeDistanceBearing(pp1, pp2);
 }
 
@@ -314,7 +295,11 @@ unsigned char* QgsDistanceArea::measurePolygon(unsigned char* feature, double* a
       y = *((double *) ptr);
       ptr += sizeof(double);
     
-      points[jdx] = mCoordTransform->transform(QgsPoint(x,y));
+      points[jdx] = QgsPoint(x,y);
+      if (mProjectionsEnabled)
+      {
+        points[jdx] = mCoordTransform->transform(points[jdx]);
+      }
     }
 
     if (points.size() > 2)
@@ -333,12 +318,19 @@ unsigned char* QgsDistanceArea::measurePolygon(unsigned char* feature, double* a
 
 double QgsDistanceArea::measurePolygon(const std::vector<QgsPoint>& points)
 {
-  std::vector<QgsPoint> pts(points.size());
-  for (int i = 0; i < points.size(); i++)
+  if (mProjectionsEnabled)
   {
-    pts[i] = mCoordTransform->transform(points[i]);
+    std::vector<QgsPoint> pts(points.size());
+    for (int i = 0; i < points.size(); i++)
+    {
+        pts[i] = mCoordTransform->transform(points[i]);
+    }
+    return computePolygonArea(pts);
   }
-  return computePolygonArea(pts);
+  else
+  {
+    return computePolygonArea(points);
+  }
 }
 
 
