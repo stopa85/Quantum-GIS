@@ -359,3 +359,13 @@ void QgsMapLayer::setSrs(const QgsSpatialRefSys& srs)
 {
   *mSRS = srs;
 }
+
+unsigned int QgsMapLayer::getTransparency()
+{
+  return mTransparencyLevel;
+}
+
+void QgsMapLayer::setTransparency(unsigned int theInt)
+{
+  mTransparencyLevel = theInt;
+}

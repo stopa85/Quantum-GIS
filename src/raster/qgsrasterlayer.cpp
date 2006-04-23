@@ -3628,21 +3628,6 @@ void QgsRasterLayer::updateProgress(int theProgress, int theMax)
 }
 
 
-//should be between 0 and 255
-void QgsRasterLayer::setTransparency(unsigned int theInt)
-{
-  QgsDebugMsg("Set transparency called with : " + QString::number(theInt));
-  mTransparencyLevel = theInt;
-} //  QgsRasterLayer::setTransparency(unsigned int theInt)
-
-
-
-unsigned int QgsRasterLayer::getTransparency()
-{
-  return mTransparencyLevel;
-}
-
-
 
 // convenience function for building getMetadata() HTML table cells
 static
