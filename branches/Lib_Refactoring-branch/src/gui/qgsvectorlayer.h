@@ -28,7 +28,6 @@
 #include "qgsattributeaction.h"
 
 class QPainter;
-class QLibrary;
 class OGRLayer;
 class OGRDataSource;
 class QPixmap;
@@ -59,184 +58,121 @@ class QgsVectorLayer : public QgsMapLayer
 
 public:
 
-  //! Constructor
+  /** Constructor */
   QgsVectorLayer(QString baseName = 0, QString path = 0, QString providerLib = 0);
 
-  //! Destructor
+  /** Destructor */
   virtual ~QgsVectorLayer();
 
-  /** \brief accessor for transparency level.  */
-  unsigned int getTransparency();
-
-  /**
-   *   Returns the permanent storage type for this layer as a friendly name.
-   */
+  /** Returns the permanent storage type for this layer as a friendly name. */
   QString storageType() const;
 
-  /**
-   *   Capabilities for this layer in a friendly format.
-   */
+  /** Capabilities for this layer in a friendly format. */
   QString capabilitiesString() const;
 
-  //! Select features found within the search rectangle (in layer's coordinates)
+  /** Select features found within the search rectangle (in layer's coordinates) */
   void select(QgsRect * rect, bool lock);
 
-  //!Select not selected features and deselect selected ones
+  /** Select not selected features and deselect selected ones */
   void invertSelection();
 
-  //! Display the attribute table
+  /** Display the attribute table
+   *  TODO: remove */
   void table();
 
-  //! Set the primary display field to be used in the identify results dialog
+  /** Set the primary display field to be used in the identify results dialog */
   void setDisplayField(QString fldName=0);
 
-  //! Returns the primary display field name used in the identify results dialog
-  const QString displayField() const { return fieldIndex; }
-
-  enum SHAPETYPE
-  {
-    Point,
-    Line,
-    Polygon
-  };
+  /** Returns the primary display field name used in the identify results dialog */
+  const QString displayField() const;
 
   /** bind layer to a specific data provider
-
      @param provider should be "postgres", "ogr", or ??
-
      @todo XXX should this return bool?  Throw exceptions?
   */
   bool setDataProvider( QString const & provider );
   
-  //! Setup the coordinate system tranformation for the layer
-  void setCoordinateSystem();
-
-  /**Returns the data provider*/
+  /** Returns the data provider */
   QgsVectorDataProvider* getDataProvider();
 
-  /**Returns the data provider in a const-correct manner*/
+  /** Returns the data provider in a const-correct manner */
   const QgsVectorDataProvider* getDataProvider() const;
 
-  /**Sets the textencoding of the data provider*/
+  /** Sets the textencoding of the data provider */
   void setProviderEncoding(const QString& encoding);
 
-  /** \brief Query data provider to find out the WKT projection string for this layer. This implements the virtual method of the same name defined in QgsMapLayer*/
+  /** Query data provider to find out the WKT projection string for this layer.
+   *  This implements the virtual method of the same name defined in QgsMapLayer
+   */
   QString getProjectionWKT();
-  /*!
+
+  /**
    * Gets the SRID of the layer by querying the underlying data provider
    * @return The SRID if the provider is able to provide it, otherwise 0
    */
   int getProjectionSrid();
+  
+  /** Setup the coordinate system tranformation for the layer */
+  void setCoordinateSystem();
+
   QgsLabel *label();
 
   QgsAttributeAction* actions() { return &mActions; }
 
-  /**
-      Get a copy of the user-selected features
-   */  
+  /** Get a copy of the user-selected features */  
   virtual std::vector<QgsFeature>* selectedFeatures();
 
-  /**
-      Insert a copy of the given features into the layer
-   */
+  /** Insert a copy of the given features into the layer */
   bool addFeatures(std::vector<QgsFeature*>* features, bool makeSelected = TRUE);
 
-  /**Copies the symbology settings from another layer. Returns true in case of success*/
+  /** Copies the symbology settings from another layer. Returns true in case of success */
   bool copySymbologySettings(const QgsMapLayer& other);
 
-  /**Returns true if this layer can be in the same symbology group with another layer*/
+  /** Returns true if this layer can be in the same symbology group with another layer */
   bool isSymbologyCompatible(const QgsMapLayer& other) const;
   
-  /** Sets field used for labeling */
-  void setLabelField(QString fldName);
-
-  /** Write property of int featureType. */
-  void setFeatureType(const int &_newVal);
-
   /** Read property of int featureType. */
-  const int & featureType();
-
-signals:
-  /**This signal is emitted when the layer leaves editing mode.
-     The purpose is to tell QgsMapCanvas to remove the lines of
-     (unfinished) features
-  @param norepaint true: there is no repaint at all. False: QgsMapCanvas
-  decides, if a repaint is necessary or not*/
-  void editingStopped(bool norepaint);
-
-  /** This signal is emited when selection was changed */
-  void selectionChanged(); 
+  const int & featureType() const;
   
-  /** This signal is emitted when drawing features to tell current progress */
-  void drawingProgress(int current, int total);
-  
-public slots:
-
-  /** \brief Mutator for transparency level. Should be between 0 and 255 */
-  void setTransparency(unsigned int);
-
-  /**Sets the 'tabledisplay' to 0 again*/
-  void invalidateTableDisplay();
-  void select(int number);
-  void removeSelection();
-  void triggerRepaint();
-
-  //! Save as shapefile
-  void saveAsShapefile();
-
-  void toggleEditing();
-  void startEditing();
-  void stopEditing();
-  
-public:
-
-  /**Returns a pointer to the renderer*/
+  /** Returns a pointer to the renderer */
   const QgsRenderer* renderer() const;
-  /**Sets the renderer. If a renderer is already present, it is deleted*/
+
+  /** Sets the renderer. If a renderer is already present, it is deleted */
   void setRenderer(QgsRenderer * r);
-  /**Returns point, line or polygon*/
+
+  /** Returns point, line or polygon */
   QGis::VectorType vectorType() const;
-  /**Returns the bounding box of the selected features. If there is no selection, QgsRect(0,0,0,0) is returned*/
+
+  /** Returns the bounding box of the selected features. If there is no selection, QgsRect(0,0,0,0) is returned */
   virtual QgsRect bBoxOfSelected();
-  //! Return the provider type for this layer
-  QString providerType();
+
+  /** Return the provider type for this layer */
+  QString providerType() const;
 
   /** reads vector layer specific state from project file DOM node.
-
-      @note
-
-      Called by QgsMapLayer::readXML().
-
-  */
-  /* virtual */ bool readXML_( QDomNode & layer_node );
-
+   *  @note Called by QgsMapLayer::readXML().
+   */
+  virtual bool readXML_( QDomNode & layer_node );
 
   /** write vector layer specific state to project file DOM node.
-
-      @note
-
-      Called by QgsMapLayer::writeXML().
-
-  */
-  /* virtual */ bool writeXML_( QDomNode & layer_node, QDomDocument & doc );
+   *  @note Called by QgsMapLayer::writeXML().
+   */
+  virtual bool writeXML_( QDomNode & layer_node, QDomDocument & doc );
 
 
-  /**
-  * Get the first feature resulting from a select operation
+  /** Get the first feature resulting from a select operation
   * @param selected selected feeatures only
   * @return QgsFeature
   */
   virtual QgsFeature * getFirstFeature(bool fetchAttributes=false, bool selected=false) const;
 
-  /**
-  * Get the next feature resulting from a select operation
+  /** Get the next feature resulting from a select operation
   * @param selected selected feeatures only
   * @return QgsFeature
   */
   virtual QgsFeature * getNextFeature(bool fetchAttributes=false, bool selected=false) const;
 
-  /**
-   * Get the next feature using new method
+  /** Get the next feature using new method
    * TODO - make this pure virtual once it works and change existing providers
    *        to use this method of fetching features
    */
@@ -251,23 +187,21 @@ public:
    */
   virtual long featureCount() const;
 
-  /**
-   * Update the feature count 
+  /** Update the feature count 
    * @return long containing the number of features in the datasource
    */
   virtual long updateFeatureCount() const;
 
-  /**
-   * Update the extents for the layer. This is necessary if features are
-   * added/deleted or the layer has been subsetted.
+  /** Update the extents for the layer. This is necessary if features are
+   *  added/deleted or the layer has been subsetted.
    */
   virtual void updateExtents();
 
   /**
    * Set the string (typically sql) used to define a subset of the layer
    * @param subset The subset string. This may be the where clause of a sql statement
-   * or other defintion string specific to the underlying dataprovider and data
-   * store.
+   *               or other defintion string specific to the underlying dataprovider
+   *               and data store.
    */
   virtual void setSubsetString(QString subset);
 
@@ -276,6 +210,7 @@ public:
    * @return The subset string or QString::null if not implemented by the provider
    */
   virtual QString subsetString();
+
   /**
    * Number of attribute fields for a feature in the layer
    */
@@ -314,41 +249,25 @@ public:
   bool deleteVertexAt(int atFeatureId,
                       QgsGeometryVertexIndex atVertex);
 
-  /**Deletes the selected features
-     @return true in case of success and false otherwise*/
+  /** Deletes the selected features
+   *  @return true in case of success and false otherwise
+   */
   bool deleteSelectedFeatures();
 
-  /**Returns the default value for the attribute @c attr for the feature
-     @c f. */
+  /** Returns the default value for the attribute @c attr for the feature @c f. */
   QString getDefaultValue(const QString& attr, QgsFeature* f);
 
-  /**Set labels on */
+  /** Set labels on */
   void setLabelOn( bool on );
 
-  /**Label is on */
+  /** Label is on */
   bool labelOn( void );
 
-  /**
-   * Minimum scale at which the layer is rendered
-   * @return Scale as integer 
-   */
-  int minimumScale();
-  /**
-   * Maximum scale at which the layer is rendered
-   * @return Scale as integer 
-   */
-  int maximumScale();
-  /**
-   * Is scale dependent rendering in effect?
-   * @return true if so
-   */
-  bool scaleDependentRender();
+  /** Returns true if the provider is in editing mode */
+  virtual bool isEditable() const;
 
-  /**Returns true if the provider is in editing mode*/
-  virtual bool isEditable() const {return (mEditable&&dataProvider);}
-
-  /**Returns true if the provider has been modified since the last commit*/
-  virtual bool isModified() const {return mModified;}
+  /** Returns true if the provider has been modified since the last commit */
+  virtual bool isModified() const;
 
   /**Snaps a point to the closest vertex if there is one within the snapping tolerance
      @param point       The point which is set to the position of a vertex if there is one within the snapping tolerance.
@@ -406,20 +325,131 @@ public:
   void drawLabels(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * cXf, QgsCoordinateTransform* ct, double scale);
 
   /** returns array of added features */
-  std::vector<QgsFeature*>& addedFeatures() { return mAddedFeatures; }
+  std::vector<QgsFeature*>& addedFeatures();
 
   /** returns array of deleted feature IDs */
-  std::set<int>& deletedFeatureIds() { return mDeleted; }
+  std::set<int>& deletedFeatureIds();
  
   /** returns array of features with changed attributes */
-  changed_attr_map& changedAttributes() { return mChangedAttributes; }
+  changed_attr_map& changedAttributes();
 
-  /**Sets whether some features are modified or not */
-  void setModified(bool modified = TRUE) { mModified = modified; }
+  /** Sets whether some features are modified or not */
+  void setModified(bool modified = TRUE);
   
-  protected:
-  /**Pointer to the table display object if there is one, else a pointer to 0*/
+public slots:
+
+  /** Sets the 'tabledisplay' to 0 again */
+  void invalidateTableDisplay();
+  void select(int number);
+  void removeSelection();
+  void triggerRepaint();
+
+  /** Save as shapefile */
+  void saveAsShapefile();
+
+  void toggleEditing();
+  void startEditing();
+  void stopEditing();
+  
+signals:
+
+  /** This signal is emitted when the layer leaves editing mode.
+   *  The purpose is to tell QgsMapCanvas to remove the lines of
+   *  (unfinished) features
+   *  @param norepaint True: no repaint at all. False: QgsMapCanvas decides, if a repaint is necessary or not
+   */
+  void editingStopped(bool norepaint);
+
+  /** This signal is emited when selection was changed */
+  void selectionChanged(); 
+
+  /** This signal is emitted when drawing features to tell current progress */
+  void drawingProgress(int current, int total);
+  
+
+private:                       // Private methods
+
+  /** vector layers are not copyable */
+  QgsVectorLayer( QgsVectorLayer const & rhs );
+
+  /** vector layers are not copyable */
+  QgsVectorLayer & operator=( QgsVectorLayer const & rhs );
+
+  /** Draws features. May cause projections exceptions to be generated
+   *  (i.e., code that calls this function needs to catch them
+   */
+  void drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * cXf, QgsCoordinateTransform* ct,
+                   QPixmap* marker, double markerScaleFactor);
+
+  /** Draws the layer labels using coordinate transformation */
+  void drawLabels(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * cXf, QgsCoordinateTransform* ct);
+
+  /** Convenience function to transform the given point */
+  void transformPoint(double& x, double& y,
+                      QgsMapToPixel* mtp, QgsCoordinateTransform* ct);
+  
+  void transformPoints(std::vector<double>& x, std::vector<double>& y, std::vector<double>& z,
+                       QgsMapToPixel* mtp, QgsCoordinateTransform* ct);
+
+  /** Draw the linestring as given in the WKB format. Returns a pointer
+   * to the byte after the end of the line string binary data stream (WKB).
+   */
+  unsigned char* drawLineString(unsigned char* WKBlinestring, QPainter* p,
+                                QgsMapToPixel* mtp, QgsCoordinateTransform* ct);
+
+  /** Draw the polygon as given in the WKB format. Returns a pointer to
+   *  the byte after the end of the polygon binary data stream (WKB).
+   */
+  unsigned char* drawPolygon(unsigned char* WKBpolygon, QPainter* p, 
+                             QgsMapToPixel* mtp, QgsCoordinateTransform* ct);
+
+  /** Draws the layer using coordinate transformation
+   *  @return FALSE if an error occurred during drawing
+   */
+  bool draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * cXf, QgsCoordinateTransform* ct);
+
+  /** Goes through all features and finds a free id (e.g. to give it temporarily to a not-commited feature) */
+  int findFreeId();
+
+  /** Writes the changes to disk */
+  bool commitChanges();
+
+  /** Discards the edits */
+  bool rollBack();
+
+
+private:                       // Private attributes
+
+  /**Toggle editing action in the context menu
+    TODO: remove */
+  QAction* mToggleEditingAction;
+
+  /**Pointer to the table display object if there is one, else a pointer to 0
+    TODO: remove */
   QgsAttributeTableDisplay * tabledisplay;
+  
+  /** Update threshold for drawing features as they are read. A value of zero indicates
+   *  that no features will be drawn until all have been read
+   */
+  int mUpdateThreshold;
+
+  /** Pointer to data provider derived from the abastract base class QgsDataProvider */
+  QgsVectorDataProvider *mDataProvider;
+
+  /** index of the primary label field */
+  QString mDisplayField;
+
+  /** Data provider key */
+  QString mProviderKey;
+
+  /** The user-defined actions that are accessed from the Identify Results dialog box */
+  QgsAttributeAction mActions;
+
+  /** Flag indicating whether the layer is in editing mode or not */
+  bool mEditable;
+  
+  /** Flag indicating whether the layer has been modified since the last commit */
+  bool mModified;
   
   /** cache of the committed geometries retrieved for the current display */
   std::map<int, QgsGeometry*> mCachedGeometries;
@@ -428,7 +458,7 @@ public:
   std::set<int> mSelected;
   
   /** Set holding the feature IDs that are in "set A" for a future geometry algebra operation
-      TODO: BM: Do something useful with this.
+  TODO: BM: Do something useful with this.
    */
   std::set<int> mSubjected;
   
@@ -447,104 +477,14 @@ public:
   /** Geometry type as defined in enum WKBTYPE (qgis.h) */
   int mGeometryType;
   
-  /**Renderer object which holds the information about how to display the features*/
-  QgsRenderer *m_renderer;
-  /**Label */
+  /** Renderer object which holds the information about how to display the features */
+  QgsRenderer *mRenderer;
+
+  /** Label */
   QgsLabel *mLabel;
-  /**Display labels */
+
+  /** Display labels */
   bool mLabelOn;
-  /**Goes through all features and finds a free id (e.g. to give it temporarily to a not-commited feature)*/
-  int findFreeId();
-  /**Writes the changes to disk*/
-  bool commitChanges();
-  /**Discards the edits*/
-  bool rollBack();
-
-
-private:                       // Private attributes
-
-  //! Draws features. May cause projections exceptions to be generated
-  //! (i.e., code that calls this function needs to catch them
-  void drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * cXf, QgsCoordinateTransform* ct,
-                   QPixmap* marker, double markerScaleFactor);
-
-  //! Draws the layer labels using coordinate transformation
-  void drawLabels(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * cXf, QgsCoordinateTransform* ct);
-
-  //! Convenience function to transform the given point
-  void transformPoint(double& x, double& y,
-                      QgsMapToPixel* mtp, QgsCoordinateTransform* ct);
-  
-  void transformPoints(std::vector<double>& x, std::vector<double>& y, std::vector<double>& z,
-                       QgsMapToPixel* mtp, QgsCoordinateTransform* ct);
-
-  //! Draw the linestring as given in the WKB format. Returns a pointer
-  //! to the byte after the end of the line string binary data stream
-  //! (WKB).
-  unsigned char* drawLineString(unsigned char* WKBlinestring, QPainter* p,
-                                QgsMapToPixel* mtp, QgsCoordinateTransform* ct);
-
-  //! Draw the polygon as given in the WKB format. Returns a pointer to
-  //! the byte after the end of the polygon binary data stream (WKB).
-  unsigned char* drawPolygon(unsigned char* WKBpolygon, QPainter* p, 
-                             QgsMapToPixel* mtp, QgsCoordinateTransform* ct);
-
-  //! Draws the layer using coordinate transformation
-  //! Returns FALSE if an error occurred during drawing
-  bool draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * cXf, QgsCoordinateTransform* ct);
-
-  //! Pointer to data provider derived from the abastract base class QgsDataProvider
-  QgsVectorDataProvider *dataProvider;
-
-  //! index of the primary label field
-  QString fieldIndex;
-
-  //! Data provider key
-  QString providerKey;
-
-  //! Flag to indicate if this is a valid layer
-  bool registered;
-
-  enum WKBTYPE
-  {
-    WKBPoint = 1,
-    WKBLineString,
-    WKBPolygon,
-    WKBMultiPoint,
-    WKBMultiLineString,
-    WKBMultiPolygon
-  };
-private:                       // Private methods
-  //! pointer for loading the provider library
-  QLibrary *myLib;
-  //! Update threshold for drawing features as they are read. A value of zero indicates
-  // that no features will be drawn until all have been read
-  int updateThreshold;
-  //! Minimum scale factor at which the layer is displayed
-  int mMinimumScale;
-  //! Maximum scale factor at which the layer is displayed
-  int mMaximumScale;
-  //! Flag to indicate if scale dependent rendering is in effect
-  bool mScaleDependentRender;
-
-  /// vector layers are not copyable
-  QgsVectorLayer( QgsVectorLayer const & rhs );
-
-  /// vector layers are not copyable
-  QgsVectorLayer & operator=( QgsVectorLayer const & rhs );
-
-  // The user-defined actions that are accessed from the
-  // Identify Results dialog box
-  QgsAttributeAction mActions;
-
-  /**Flag indicating whether the layer is in editing mode or not*/
-  bool mEditable;
-  
-  /**Flag indicating whether the layer has been modified since the last commit*/
-  bool mModified;
-  
-  /**Toggle editing action in the context menu*/
-  QAction* mToggleEditingAction;
 
 };
 

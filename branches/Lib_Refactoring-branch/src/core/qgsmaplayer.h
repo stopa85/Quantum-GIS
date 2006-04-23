@@ -168,8 +168,11 @@ public:
     virtual bool isSymbologyCompatible(const QgsMapLayer& other) const = 0;
 
     /** Accessor for transparency level. */
-    virtual unsigned int getTransparency()=0;
+    unsigned int getTransparency();
 
+    /** Mutator for transparency level. Should be between 0 and 255 */
+    void setTransparency(unsigned int);
+    
     /**
      * If an operation returns 0 (e.g. draw()), this function
      * returns the text of the error associated with the failure.
@@ -194,9 +197,6 @@ public:
     
 public slots:
 
-    /** Mutator for transparency level. Should be between 0 and 255 */
-    virtual void setTransparency(unsigned int)=0;
-    
     /** Event handler for when a coordinate transform fails due to bad vertex error */
     virtual void invalidTransformInput();
 

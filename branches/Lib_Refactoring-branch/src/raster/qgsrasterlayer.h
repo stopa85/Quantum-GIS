@@ -388,8 +388,6 @@ public:
     const  QString getRasterBandName(int theBandNoInt);
     /** \brief Find out whether a given band exists.    */
     bool hasBand(QString const &  theBandName);
-    /** \brief accessor for transparency level.  */
-    unsigned int getTransparency();
     /** \brief Call any inline image manipulation filters */
     void filterLayer(QImage * theQImage);
     /** \brief Accessor for red band name (allows alternate mappings e.g. map blue as red colour). */
@@ -776,11 +774,7 @@ public:
      */
     const QgsRasterDataProvider* getDataProvider() const;
 
-
-
 public slots:    
-    /** \brief Mutator for transparency level. Should be between 0 and 255 */
-    void setTransparency(unsigned int);
     /**
      * Convert this raster to another format
      */

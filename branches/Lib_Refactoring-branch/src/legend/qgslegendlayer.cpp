@@ -78,13 +78,13 @@ void QgsLegendLayer::setLayerTypeIcon()
       QgsVectorLayer* vlayer = dynamic_cast<QgsVectorLayer*>(firstLayer);
       switch(vlayer->vectorType())
       {
-        case QgsVectorLayer::Point:
+        case QGis::Point:
           myPath = myThemePath+"/mIconPointLayer.png";
           break;
-        case QgsVectorLayer::Line:
+        case QGis::Line:
           myPath = myThemePath+"/mIconLineLayer.png";
           break;
-        case QgsVectorLayer::Polygon:
+        case QGis::Polygon:
           myPath = myThemePath+"/mIconPolygonLayer.png";
           break;
         default:
