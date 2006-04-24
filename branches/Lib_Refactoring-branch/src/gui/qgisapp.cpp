@@ -3238,7 +3238,8 @@ void QgisApp::attributeTable()
     QgsVectorLayer* vlayer = dynamic_cast<QgsVectorLayer*>(layer);
     if (vlayer)
     {
-      vlayer->table();
+      // TODO: revisit and repair [MD]
+      //vlayer->table();
     }
     else
     {

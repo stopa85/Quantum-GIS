@@ -489,7 +489,7 @@ void QgsMapCanvas::zoomToSelected()
 
   if (lyr)
   {
-    QgsRect rect = mMapRender->layerExtentToOutputExtent(lyr, lyr->bBoxOfSelected());
+    QgsRect rect = mMapRender->layerExtentToOutputExtent(lyr, lyr->boundingBoxOfSelected());
 
     // no selected features, only one selected point feature 
     //or two point features with the same x- or y-coordinates

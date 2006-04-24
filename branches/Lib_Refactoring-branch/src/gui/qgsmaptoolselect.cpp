@@ -19,6 +19,8 @@
 #include "qgsmaptopixel.h"
 #include "qgsvectorlayer.h"
 #include "qgscursors.h"
+
+#include <QApplication>
 #include <QMessageBox>
 #include <QMouseEvent>
 #include <QRubberBand>
@@ -91,5 +93,8 @@ void QgsMapToolSelect::canvasReleaseEvent(QMouseEvent * e)
   
   QgsVectorLayer* vlayer = dynamic_cast<QgsVectorLayer*>(mCanvas->currentLayer());
   search = toLayerCoords(vlayer, search);
+  
+  QApplication::setOverrideCursor(Qt::WaitCursor);
   vlayer->select(&search, lock);
+  QApplication::restoreOverrideCursor();
 }

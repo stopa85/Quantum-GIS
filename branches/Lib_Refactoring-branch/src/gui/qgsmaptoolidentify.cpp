@@ -206,6 +206,7 @@ void QgsMapToolIdentify::identifyVectorLayer(QgsVectorLayer* layer, const QgsPoi
   QgsAttributeAction& actions = *layer->actions();
   QString fieldIndex = layer->displayField();
   QgsVectorDataProvider* dataProvider = layer->getDataProvider();
+  
   dataProvider->select(&r, true);
 
   // init distance/area calculator

@@ -128,3 +128,18 @@ QgsLegend* QgsLegendItem::legend() const
   QgsLegend* legendPtr = dynamic_cast<QgsLegend*>(treeWidgetPtr);
   return legendPtr;
 }
+
+QTreeWidgetItem* QgsLegendItem::child(int i) const
+{
+  return QTreeWidgetItem::child(i);
+}
+
+QTreeWidgetItem* QgsLegendItem::parent() const
+{
+  return QTreeWidgetItem::parent();
+}
+
+void QgsLegendItem::insertChild(int index, QTreeWidgetItem *child)
+{
+  QTreeWidgetItem::insertChild(index, child);
+}

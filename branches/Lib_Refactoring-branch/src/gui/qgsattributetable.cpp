@@ -622,18 +622,38 @@ void QgsAttributeTable::bringSelectedToTop()
 
 }
 
-void QgsAttributeTable::selectRowsWithId(const std::vector<int>& ids)
+void QgsAttributeTable::selectRowsWithId(const std::set<int>& ids)
 {
+  /*
+  // if selecting rows takes too much time we can use progress dialog
+    QProgressDialog progress( tr("Updating selection..."), tr("Abort"), 0, mSelected.size(), tabledisplay);
+    int i=0;
+    for(std::set<int>::iterator iter=mSelected.begin();iter!=mSelected.end();++iter)
+    {
+      ++i;
+      progress.setValue(i);
+      qApp->processEvents();
+      if(progress.wasCanceled())
+      {
+        //deselect the remaining features if action was canceled
+        mSelected.erase(iter,--mSelected.end());
+        break;
+      }
+      selectRowWithId(*iter);//todo: avoid that the table gets repainted during each selection
+    }
+  */
+  
+  
   // to select more rows at once effectively, we stop sending signals to handleChangedSelections()
   // otherwise it will repaint map everytime row is selected
   
   QObject::disconnect(this, SIGNAL(selectionChanged()), this, SLOT(handleChangedSelections()));
     
   clearSelection(false);
-  for (int i = 0; i < ids.size(); i++)
+  std::set<int>::const_iterator it;
+  for (it = ids.begin(); it != ids.end(); it++)
   {
-    selectRowWithId(ids[i]);
-    emit selected(ids[i]);
+    selectRowWithId(*it);
   }
   
   QObject::connect(this, SIGNAL(selectionChanged()), this, SLOT(handleChangedSelections()));
@@ -641,7 +661,7 @@ void QgsAttributeTable::selectRowsWithId(const std::vector<int>& ids)
   emit repaintRequested();
 }
 
-void QgsAttributeTable::showRowsWithId(const std::vector<int>& ids)
+void QgsAttributeTable::showRowsWithId(const std::set<int>& ids)
 {
   setUpdatesEnabled(false);
   
@@ -650,8 +670,11 @@ void QgsAttributeTable::showRowsWithId(const std::vector<int>& ids)
     hideRow(i);
   
   // show only matching rows
-  for (int i = 0; i < ids.size(); i++)
-    showRow(rowIdMap[ids[i]]);
+  std::set<int>::const_iterator it;
+  for (it = ids.begin(); it != ids.end(); it++)
+  {
+    showRow(rowIdMap[*it]);
+  }
   
   clearSelection(); // deselect all
   setUpdatesEnabled(true);

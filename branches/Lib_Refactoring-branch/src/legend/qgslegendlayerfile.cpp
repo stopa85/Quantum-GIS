@@ -22,14 +22,19 @@
 #include "qgslegend.h"
 #include "qgslegendlayerfile.h"
 #include "qgsmaplayer.h"
+#include "qgsvectorlayer.h"
 
-#include <QCoreApplication>
+// attribute table
+#include "qgsattributetable.h"
+#include "qgsattributetabledisplay.h"
+
+#include <QApplication>
 #include <QPainter>
 #include <QSettings>
 
 
 QgsLegendLayerFile::QgsLegendLayerFile(QTreeWidgetItem * theLegendItem, QString theString, QgsMapLayer* theLayer)
-  : QgsLegendItem(theLegendItem, theString), mLayer(theLayer)
+  : QgsLegendItem(theLegendItem, theString), mLayer(theLayer), mTableDisplay(NULL)
 {
   // Set the initial visibility flag for layers
   // This user option allows the user to turn off inital drawing of
@@ -47,10 +52,21 @@ QgsLegendLayerFile::QgsLegendLayerFile(QTreeWidgetItem * theLegendItem, QString 
   setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsEnabled | Qt::ItemIsSelectable);
   setCheckState(0, Qt::Checked);
   setText(0, theString);
+
+  // get notifications of changed selection - used to update attribute table
+  connect(mLayer, SIGNAL(selectionChanged()), this, SLOT(selectionChanged()));
+
+  // get notifications of modified layer - used to close table as it's out of sync
+  connect(mLayer, SIGNAL(wasModified(bool)), this, SLOT(closeTable(bool)));
 }
 
 QgsLegendLayerFile::~QgsLegendLayerFile()
 {
+  if (mTableDisplay)
+  {
+    mTableDisplay->close();
+    delete mTableDisplay;
+  }
 }
 
 QgsLegendItem::DRAG_ACTION QgsLegendLayerFile::accept(LEGEND_ITEM_TYPE type)
@@ -144,4 +160,77 @@ void QgsLegendLayerFile::setInOverview(bool inOverview)
 bool QgsLegendLayerFile::isInOverview()
 {
   return mInOverview;
+}
+
+
+void QgsLegendLayerFile::table()
+{
+  QgsVectorLayer* vlayer = dynamic_cast<QgsVectorLayer*>(mLayer);
+  if (!vlayer)
+    return;
+  
+  QgsAttributeAction& actions = *vlayer->actions();
+  
+  if (mTableDisplay)
+  {
+    
+    mTableDisplay->raise();
+
+    // Give the table the most recent copy of the actions for this layer.
+    mTableDisplay->table()->setAttributeActions(actions);
+  }
+  else
+  {
+    // display the attribute table
+    QApplication::setOverrideCursor(Qt::waitCursor);
+    mTableDisplay = new QgsAttributeTableDisplay(vlayer);
+    mTableDisplay->table()->fillTable(vlayer);
+    mTableDisplay->table()->setSorting(true);
+
+    connect(mTableDisplay, SIGNAL(deleted()), this, SLOT(invalidateTableDisplay()));
+
+    mTableDisplay->setTitle(tr("Attribute table - ") + name());
+    mTableDisplay->show();
+
+    // Give the table the most recent copy of the actions for this layer.
+    mTableDisplay->table()->setAttributeActions(actions);
+    
+    // select rows which should be selected
+    selectionChanged();
+    
+    // etablish the necessary connections between the table and the vector layer
+    connect(mTableDisplay->table(), SIGNAL(selected(int)), mLayer, SLOT(select(int)));
+    connect(mTableDisplay->table(), SIGNAL(selectionRemoved()), mLayer, SLOT(removeSelection()));
+    connect(mTableDisplay->table(), SIGNAL(repaintRequested()), mLayer, SLOT(triggerRepaint()));
+    
+    QApplication::restoreOverrideCursor();
+  }
+
+}
+
+void QgsLegendLayerFile::invalidateTableDisplay()
+{
+  // from signal deleted() - table doesn't exist anymore, just erase our pointer
+  mTableDisplay = 0;
+}
+
+void QgsLegendLayerFile::selectionChanged()
+{
+  if (!mTableDisplay)
+    return;
+
+  QgsVectorLayer* vlayer = dynamic_cast<QgsVectorLayer*>(mLayer);
+  const std::set<int>& ids = vlayer->selectedFeaturesIds();
+  mTableDisplay->table()->selectRowsWithId(ids);
+
+}
+
+void QgsLegendLayerFile::closeTable(bool onlyGeometryWasChanged)
+{
+  if (mTableDisplay)
+  {
+    mTableDisplay->close();
+    delete mTableDisplay;
+    mTableDisplay = NULL;
+  }
 }

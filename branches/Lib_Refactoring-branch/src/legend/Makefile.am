@@ -19,7 +19,8 @@ lib_LTLIBRARIES = libqgis_legend.la
 %.moc.cpp: %.h
 	$(MOC) -o $@ $<
 
-qgis_MOC = 	qgslegend.moc.cpp
+qgis_MOC = 	qgslegend.moc.cpp \
+						qgslegendlayerfile.moc.cpp
 
 libqgis_legend_la_SOURCES =	qgslegendgroup.cpp \
 				qgslegend.cpp \
@@ -27,6 +28,7 @@ libqgis_legend_la_SOURCES =	qgslegendgroup.cpp \
 				qgslegenditem.cpp \
 				qgslegendlayer.cpp \
 				qgslegendlayerfile.cpp \
+				qgslegendlayerfile.moc.cpp \
 				qgslegendlayerfilegroup.cpp \
 				qgslegendpropertygroup.cpp \
 				qgslegendpropertyitem.cpp \

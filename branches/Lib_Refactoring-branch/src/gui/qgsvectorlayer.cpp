@@ -21,26 +21,22 @@
  ***************************************************************************/
 /*  $Id$ */
 
-#include <iostream>
-#include <iosfwd>
+#include <cassert>
 #include <cfloat>
 #include <cstring>
 #include <cmath>
-#include <sstream>
-#include <memory>
-#include <vector>
-#include <utility>
-#include <cassert>
+#include <iosfwd>
+#include <iostream>
 #include <limits>
+#include <memory>
+#include <sstream>
+#include <utility>
 
-#include <QApplication>
 #include <QMessageBox>
 #include <QPainter>
 #include <QPixmap>
 #include <QPolygonF>
-#include <QProgressDialog>
 #include <QString>
-#include <QSettings>
 
 #include "qgsvectorlayer.h"
 
@@ -52,23 +48,17 @@
 #include "qgssinglesymbolrenderer.h"
 #include "qgsuniquevaluerenderer.h"
 
-// gui
-#include "qgsattributedialog.h"
-#include "qgsattributetable.h"
-#include "qgsattributetabledisplay.h"
+#include "qgsattributeaction.h"
 
 #include "qgis.h" //for globals
 #include "qgsapplication.h"
 #include "qgscoordinatetransform.h"
-#include "qgsdistancearea.h"
 #include "qgsfeature.h"
 #include "qgsfield.h"
 #include "qgsgeometry.h"
 #include "qgsgeometryvertexindex.h"
 #include "qgslabel.h"
-#include "qgslabelattributes.h"
 #include "qgslogger.h"
-#include "qgsmaplayerregistry.h"
 #include "qgsmaptopixel.h"
 #include "qgspoint.h"
 #include "qgsproviderregistry.h"
@@ -96,15 +86,16 @@ QgsVectorLayer::QgsVectorLayer(QString vectorLayerPath,
     QString baseName,
     QString providerKey)
 : QgsMapLayer(VECTOR, baseName, vectorLayerPath),
-  tabledisplay(0),
-  mRenderer(0),
-  mLabel(0),
-  mProviderKey(providerKey),
   mUpdateThreshold(0),       // XXX better default value?
+  mProviderKey(providerKey),
   mEditable(false),
   mModified(false),
-  mToggleEditingAction(0)
+  mRenderer(0),
+  mLabel(0),
+  mLabelOn(false)
 {
+  mActions = new QgsAttributeAction;
+  
   // if we're given a provider type, try to create and bind one to this layer
   if ( ! mProviderKey.isEmpty() )
   {
@@ -144,11 +135,6 @@ QgsVectorLayer::~QgsVectorLayer()
     stopEditing();
   }
 
-  if (tabledisplay)
-  {
-    tabledisplay->close();
-    delete tabledisplay;
-  }
   if (mRenderer)
   {
     delete mRenderer;
@@ -165,6 +151,7 @@ QgsVectorLayer::~QgsVectorLayer()
   }
   mCachedGeometries.clear();
 
+  delete mActions;
 }
 
 QString QgsVectorLayer::storageType() const
@@ -860,81 +847,26 @@ void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * th
 }
 
 
-void QgsVectorLayer::table()
-{
-  if (tabledisplay)
-  {
-    tabledisplay->raise();
-    // Give the table the most recent copy of the actions for this
-    // layer.
-    tabledisplay->table()->setAttributeActions(mActions);
-  }
-  else
-  {
-    // display the attribute table
-    QApplication::setOverrideCursor(Qt::waitCursor);
-    tabledisplay = new QgsAttributeTableDisplay(this);
-    connect(tabledisplay, SIGNAL(deleted()), this, SLOT(invalidateTableDisplay()));
-    tabledisplay->table()->fillTable(this);
-    tabledisplay->table()->setSorting(true);
-
-
-    tabledisplay->setTitle(tr("Attribute table - ") + name());
-    tabledisplay->show();
-    tabledisplay->table()->clearSelection();  //deselect the first row
-
-    // Give the table the most recent copy of the actions for this
-    // layer.
-    tabledisplay->table()->setAttributeActions(mActions);
-
-    QObject::disconnect(tabledisplay->table(), SIGNAL(selectionChanged()), tabledisplay->table(), SLOT(handleChangedSelections()));
-
-    for (std::set<int>::iterator it = mSelected.begin(); it != mSelected.end(); ++it)
-    {
-      tabledisplay->table()->selectRowWithId(*it);//todo: avoid that the table gets repainted during each selection
-#ifdef QGISDEBUG
-      qWarning(("selecting row with id " + QString::number(*it)).toLocal8Bit().data());
-#endif
-
-    }
-
-    QObject::connect(tabledisplay->table(), SIGNAL(selectionChanged()), tabledisplay->table(), SLOT(handleChangedSelections()));
-
-    //etablish the necessary connections between the table and the shapefilelayer
-    QObject::connect(tabledisplay->table(), SIGNAL(selected(int)), this, SLOT(select(int)));
-    QObject::connect(tabledisplay->table(), SIGNAL(selectionRemoved()), this, SLOT(removeSelection()));
-    QObject::connect(tabledisplay->table(), SIGNAL(repaintRequested()), this, SLOT(triggerRepaint()));
-    QApplication::restoreOverrideCursor();
-  }
-
-} // QgsVectorLayer::table
-
-void QgsVectorLayer::select(int number)
+void QgsVectorLayer::select(int number, bool emitSignal)
 {
   mSelected.insert(number);
-  emit selectionChanged();
+  
+  if (emitSignal)
+  {
+    emit selectionChanged();
+  }
 }
 
 void QgsVectorLayer::select(QgsRect * rect, bool lock)
 {
-  QApplication::setOverrideCursor(Qt::WaitCursor);
   // normalize the rectangle
   rect->normalize();
-  if (tabledisplay)
-  {
-    QObject::disconnect(tabledisplay->table(), SIGNAL(selectionChanged()), tabledisplay->table(), SLOT(handleChangedSelections()));
-    QObject::disconnect(tabledisplay->table(), SIGNAL(selected(int)), this, SLOT(select(int))); //disconnecting because of performance reason
-  }
-
+  
   if (lock == false)
   {
-    removeSelection();        //only if ctrl-button is not pressed
-    if (tabledisplay)
-    {
-      tabledisplay->table()->clearSelection();
-    }
+    removeSelection(FALSE); // don't emit signal
   }
-
+  
   mDataProvider->select(rect, true);
 
   QgsFeature *fet;
@@ -943,11 +875,7 @@ void QgsVectorLayer::select(QgsRect * rect, bool lock)
   {
     if(mDeleted.find(fet->featureId())==mDeleted.end())//don't select deleted features
     {
-      select(fet->featureId());
-      if (tabledisplay)
-      {
-        tabledisplay->table()->selectRowWithId(fet->featureId());
-      }
+      select(fet->featureId(), FALSE); // don't emit signal
     }
     delete fet;
   }
@@ -957,48 +885,23 @@ void QgsVectorLayer::select(QgsRect * rect, bool lock)
   {
     if((*it)->geometry()->intersects(rect))
     {
-      select((*it)->featureId());
-      if (tabledisplay)
-      {
-        tabledisplay->table()->selectRowWithId((*it)->featureId());
-      }
+      select((*it)->featureId(), FALSE); // don't emit signal
     }
   }
-
-  if (tabledisplay)
-  {
-    QObject::connect(tabledisplay->table(), SIGNAL(selectionChanged()), tabledisplay->table(), SLOT(handleChangedSelections()));
-    QObject::connect(tabledisplay->table(), SIGNAL(selected(int)), this, SLOT(select(int)));  //disconnecting because of performance reason
-  }
-  triggerRepaint();
-  QApplication::restoreOverrideCursor();
 
   emit selectionChanged();
 }
 
 void QgsVectorLayer::invertSelection()
 {
-  QApplication::setOverrideCursor(Qt::waitCursor);
-  if (tabledisplay)
-  {
-    QObject::disconnect(tabledisplay->table(), SIGNAL(selectionChanged()), tabledisplay->table(), SLOT(handleChangedSelections()));
-    QObject::disconnect(tabledisplay->table(), SIGNAL(selected(int)), this, SLOT(select(int))); //disconnecting because of performance reason
-    tabledisplay->hide();
-  }
-
-
-  //copy the ids of selected features to tmp
+  // copy the ids of selected features to tmp
   std::list<int> tmp;
-  for(std::set<int>::iterator iter=mSelected.begin();iter!=mSelected.end();++iter)
+  for(feature_ids::iterator iter=mSelected.begin(); iter!=mSelected.end(); ++iter)
   {
     tmp.push_back(*iter);
   }
 
-  removeSelection();
-  if (tabledisplay)
-  {
-    tabledisplay->table()->clearSelection();
-  }
+  removeSelection(FALSE); // don't emit signal
 
   QgsFeature *fet;
   mDataProvider->reset();
@@ -1007,13 +910,14 @@ void QgsVectorLayer::invertSelection()
   {
     if(mDeleted.find(fet->featureId())==mDeleted.end())//don't select deleted features
     {
-      select(fet->featureId());
+      select(fet->featureId(), FALSE); // don't emit signal
     }
   }
 
+  // consider also newly added features
   for(std::vector<QgsFeature*>::iterator iter=mAddedFeatures.begin();iter!=mAddedFeatures.end();++iter)
   {
-    select((*iter)->featureId());
+    select((*iter)->featureId(), FALSE); // don't emit signal
   }
 
   for(std::list<int>::iterator iter=tmp.begin();iter!=tmp.end();++iter)
@@ -1021,52 +925,20 @@ void QgsVectorLayer::invertSelection()
     mSelected.erase(*iter);
   }
 
-  if(tabledisplay)
-  {
-    QProgressDialog progress( tr("Invert Selection..."), tr("Abort"), 0, mSelected.size(), tabledisplay);
-    int i=0;
-    for(std::set<int>::iterator iter=mSelected.begin();iter!=mSelected.end();++iter)
-    {
-      ++i;
-      progress.setValue(i);
-      qApp->processEvents();
-      if(progress.wasCanceled())
-      {
-        //deselect the remaining features if action was canceled
-        mSelected.erase(iter,--mSelected.end());
-        break;
-      }
-      tabledisplay->table()->selectRowWithId(*iter);//todo: avoid that the table gets repainted during each selection
-    }
-  }
-
-  if (tabledisplay)
-  {
-    QObject::connect(tabledisplay->table(), SIGNAL(selectionChanged()), tabledisplay->table(), SLOT(handleChangedSelections()));
-    QObject::connect(tabledisplay->table(), SIGNAL(selected(int)), this, SLOT(select(int)));  //disconnecting because of performance reason
-    tabledisplay->show();
-  }
-
-  triggerRepaint();
-  QApplication::restoreOverrideCursor();
-
   emit selectionChanged();
 }
 
-void QgsVectorLayer::removeSelection()
+void QgsVectorLayer::removeSelection(bool emitSignal)
 {
   mSelected.clear();
-  emit selectionChanged();
+
+  if (emitSignal)
+    emit selectionChanged();
 }
 
 void QgsVectorLayer::triggerRepaint()
 { 
   emit repaintRequested();
-}
-
-void QgsVectorLayer::invalidateTableDisplay()
-{
-  tabledisplay = 0;
 }
 
 QgsVectorDataProvider* QgsVectorLayer::getDataProvider()
@@ -1144,7 +1016,7 @@ QGis::VectorType QgsVectorLayer::vectorType() const
 }
 
 
-QgsRect QgsVectorLayer::bBoxOfSelected()
+QgsRect QgsVectorLayer::boundingBoxOfSelected()
 {
   if(mSelected.size()==0)//no selected features
   {
@@ -1469,15 +1341,8 @@ qWarning("assigned feature id "+QString::number(tempid));
     // and add to the known added features.
     f->setFeatureId(addedIdLowWaterMark);
     mAddedFeatures.push_back(f);
-    mModified=true;
-
-    //hide and delete the table because it is not up to date any more
-    if (tabledisplay)
-    {
-      tabledisplay->close();
-      delete tabledisplay;
-      tabledisplay=0;
-    }
+    
+    setModified(TRUE);
 
     if (alsoUpdateExtent)
     {
@@ -1513,7 +1378,7 @@ bool QgsVectorLayer::insertVertexBefore(double x, double y, int atFeatureId,
 
     mChangedGeometries[atFeatureId].insertVertexBefore(x, y, beforeVertex);
 
-    mModified=true;
+    setModified(TRUE, TRUE); // only geometry was changed
 
     // TODO - refresh map here?
 
@@ -1551,7 +1416,7 @@ bool QgsVectorLayer::moveVertexAt(double x, double y, int atFeatureId,
 
     mChangedGeometries[atFeatureId].moveVertexAt(x, y, atVertex);
 
-    mModified=true;
+    setModified(TRUE, TRUE); // only geometry was changed
 
     // TODO - refresh map here?
 
@@ -1590,7 +1455,7 @@ bool QgsVectorLayer::deleteVertexAt(int atFeatureId,
     // TODO: Hanlde if we delete the only remaining meaningful vertex of a geometry
     mChangedGeometries[atFeatureId].deleteVertexAt(atVertex);
 
-    mModified=true;
+    setModified(TRUE, TRUE); // only geometry was changed
 
     // TODO - refresh map here?
 
@@ -1626,7 +1491,7 @@ bool QgsVectorLayer::deleteSelectedFeatures()
     return false;
   }
 
-  for(std::set<int>::iterator it=mSelected.begin();it!=mSelected.end();++it)
+  for(feature_ids::iterator it=mSelected.begin();it!=mSelected.end();++it)
   {
     bool notcommitedfeature=false;
     //first test, if the feature with this id is a not-commited feature
@@ -1651,19 +1516,10 @@ bool QgsVectorLayer::deleteSelectedFeatures()
 
   if(mSelected.size()>0)
   {
-    mModified=true;
-    /*      mSelected.clear();*/
-    removeSelection();
+    setModified(TRUE);
+    removeSelection(FALSE); // don't emit signal
     triggerRepaint();
     updateExtents();
-
-    //hide and delete the table because it is not up to date any more
-    if (tabledisplay)
-    {
-      tabledisplay->close();
-      delete tabledisplay;
-      tabledisplay=0;
-    }
 
   }
 
@@ -1687,16 +1543,13 @@ bool QgsVectorLayer::labelOn ( void )
 
 void QgsVectorLayer::toggleEditing()
 {
-  if(mToggleEditingAction)
+  if (!isEditable())
   {
-    if (mToggleEditingAction->isChecked() ) //checking of the QAction is done before calling this slot
-    {
-      startEditing();
-    }
-    else
-    {
-      stopEditing();
-    }
+    startEditing();
+  }
+  else
+  {
+    stopEditing();
   }
 }
 
@@ -1736,13 +1589,6 @@ void QgsVectorLayer::stopEditing()
         else
         {
           mDataProvider->updateExtents();
-          //hide and delete the table because it is not up to date any more
-          if (tabledisplay)
-          {
-            tabledisplay->close();
-            delete tabledisplay;
-            tabledisplay=0;
-          }
         }
       }
       else if(commit==1)
@@ -1751,13 +1597,6 @@ void QgsVectorLayer::stopEditing()
         {
           QMessageBox::information(0,tr("Error"),
               tr("Problems during roll back"),QMessageBox::Ok);
-        }
-        //hide and delete the table because it is not up to date any more
-        if (tabledisplay)
-        {
-          tabledisplay->close();
-          delete tabledisplay;
-          tabledisplay=0;
         }
       }
       emit editingStopped(true);
@@ -1768,7 +1607,7 @@ void QgsVectorLayer::stopEditing()
       emit editingStopped(false);
     }
     mEditable=false;
-    mModified=false;
+    setModified(FALSE);
   }
 }
 
@@ -1779,7 +1618,7 @@ bool QgsVectorLayer::readXML_( QDomNode & layer_node )
   std::cerr << "Datasource in QgsVectorLayer::readXML_: " << mDataSource.toLocal8Bit().data() << std::endl;
 #endif
   // process the attribute actions
-  mActions.readXML(layer_node);
+  mActions->readXML(layer_node);
 
   //process provider key
   QDomNode pkeyNode = layer_node.namedItem("provider");
@@ -2076,7 +1915,7 @@ bool QgsVectorLayer::setDataProvider( QString const & provider )
 
   // add attribute actions
 
-  mActions.writeXML(layer_node, document);
+  mActions->writeXML(layer_node, document);
 
   // renderer specific settings
 
@@ -2272,7 +2111,7 @@ bool QgsVectorLayer::commitChanges()
     if(mDeleted.size()>0)
     {
       std::list<int> deletelist;
-      for(std::set<int>::iterator it=mDeleted.begin();it!=mDeleted.end();++it)
+      for(feature_ids::iterator it=mDeleted.begin();it!=mDeleted.end();++it)
       {
         deletelist.push_back(*it);
         mSelected.erase(*it);//just in case the feature is still selected
@@ -2311,6 +2150,19 @@ bool QgsVectorLayer::rollBack()
 }
 
 
+void QgsVectorLayer::setSelectedFeatures(feature_ids& ids)
+{
+  // TODO: check whether features with these ID exist
+  mSelected = ids;
+  emit selectionChanged();
+}
+
+const feature_ids& QgsVectorLayer::selectedFeaturesIds() const
+{
+  return mSelected;
+}
+
+
 std::vector<QgsFeature>* QgsVectorLayer::selectedFeatures()
 {
 #ifdef QGISDEBUG
@@ -2326,7 +2178,7 @@ std::vector<QgsFeature>* QgsVectorLayer::selectedFeatures()
   //TODO: Maybe make this a bit more heap-friendly (i.e. see where we can use references instead of copies)
   std::vector<QgsFeature>* features = new std::vector<QgsFeature>;
 
-  for (std::set<int>::iterator it  = mSelected.begin();
+  for (feature_ids::iterator it  = mSelected.begin();
       it != mSelected.end();
       ++it)
   {
@@ -2421,17 +2273,13 @@ bool QgsVectorLayer::addFeatures(std::vector<QgsFeature*>* features, bool makeSe
 
     if (makeSelected)
     {
-      mSelected.clear();
+      removeSelection(FALSE); // don't emit signal
     }
 
     for (std::vector<QgsFeature*>::iterator iter  = features->begin();
         iter != features->end();
         ++iter)
     {
-      // TODO: Tidy these next two lines up
-
-      //      QgsFeature f = (*iter);
-      //      addFeature(&f, FALSE);
 
       addFeature(*iter);
 
@@ -2442,6 +2290,11 @@ bool QgsVectorLayer::addFeatures(std::vector<QgsFeature*>* features, bool makeSe
     }
 
     updateExtents();
+    
+    if (makeSelected)
+    {
+      emit selectionChanged();
+    }
   }  
   return true;
 }
@@ -3178,7 +3031,7 @@ std::vector<QgsFeature*>& QgsVectorLayer::addedFeatures()
   return mAddedFeatures;
 }
 
-std::set<int>& QgsVectorLayer::deletedFeatureIds()
+feature_ids& QgsVectorLayer::deletedFeatureIds()
 {
   return mDeleted;
 }
@@ -3188,7 +3041,8 @@ changed_attr_map& QgsVectorLayer::changedAttributes()
   return mChangedAttributes;
 }
 
-void QgsVectorLayer::setModified(bool modified)
+void QgsVectorLayer::setModified(bool modified, bool onlyGeometry)
 {
   mModified = modified;
+  emit wasModified(onlyGeometry);
 }

@@ -25,16 +25,11 @@
 
 #include "qgis.h"
 #include "qgsmaplayer.h"
-#include "qgsattributeaction.h"
 
 class QPainter;
-class OGRLayer;
-class OGRDataSource;
 class QPixmap;
 
-class QgisApp;
-class QgsAttributeTableDisplay;
-class QgsData;
+class QgsAttributeAction;
 class QgsField;
 class QgsFeature;
 class QgsGeometry;
@@ -44,9 +39,9 @@ class QgsLabel;
 class QgsRect;
 class QgsRenderer;
 class QgsVectorDataProvider;
-class QgsVectorLayerProperties;
 
 typedef std::map<int, std::map<QString,QString> > changed_attr_map;
+typedef std::set<int> feature_ids;
 
 /*! \class QgsVectorLayer
  * \brief Vector layer backed by a data source provider
@@ -69,16 +64,6 @@ public:
 
   /** Capabilities for this layer in a friendly format. */
   QString capabilitiesString() const;
-
-  /** Select features found within the search rectangle (in layer's coordinates) */
-  void select(QgsRect * rect, bool lock);
-
-  /** Select not selected features and deselect selected ones */
-  void invertSelection();
-
-  /** Display the attribute table
-   *  TODO: remove */
-  void table();
 
   /** Set the primary display field to be used in the identify results dialog */
   void setDisplayField(QString fldName=0);
@@ -117,11 +102,35 @@ public:
 
   QgsLabel *label();
 
-  QgsAttributeAction* actions() { return &mActions; }
+  QgsAttributeAction* actions() { return mActions; }
+
+  
+  
+  /** Select features found within the search rectangle (in layer's coordinates) */
+  void select(QgsRect * rect, bool lock);
+
+  /** Select feature by its ID, optionally emit signal selectionChanged() */
+  void select(int featureId, bool emitSignal = TRUE);
+  
+  /** Clear selection */
+  void removeSelection(bool emitSignal = TRUE);
+  
+  /** Select not selected features and deselect selected ones */
+  void invertSelection();
 
   /** Get a copy of the user-selected features */  
-  virtual std::vector<QgsFeature>* selectedFeatures();
+  std::vector<QgsFeature>* selectedFeatures();
+  
+  /** Return reference to identifiers of selected features */
+  const feature_ids& selectedFeaturesIds() const;
+  
+  /** Change selection to the new set of features */
+  void setSelectedFeatures(feature_ids& ids);
 
+  /** Returns the bounding box of the selected features. If there is no selection, QgsRect(0,0,0,0) is returned */
+  QgsRect boundingBoxOfSelected();
+
+  
   /** Insert a copy of the given features into the layer */
   bool addFeatures(std::vector<QgsFeature*>* features, bool makeSelected = TRUE);
 
@@ -142,9 +151,6 @@ public:
 
   /** Returns point, line or polygon */
   QGis::VectorType vectorType() const;
-
-  /** Returns the bounding box of the selected features. If there is no selection, QgsRect(0,0,0,0) is returned */
-  virtual QgsRect bBoxOfSelected();
 
   /** Return the provider type for this layer */
   QString providerType() const;
@@ -328,20 +334,16 @@ public:
   std::vector<QgsFeature*>& addedFeatures();
 
   /** returns array of deleted feature IDs */
-  std::set<int>& deletedFeatureIds();
+  feature_ids& deletedFeatureIds();
  
   /** returns array of features with changed attributes */
   changed_attr_map& changedAttributes();
 
   /** Sets whether some features are modified or not */
-  void setModified(bool modified = TRUE);
+  void setModified(bool modified = TRUE, bool onlyGeometryWasModified = FALSE);
   
 public slots:
 
-  /** Sets the 'tabledisplay' to 0 again */
-  void invalidateTableDisplay();
-  void select(int number);
-  void removeSelection();
   void triggerRepaint();
 
   /** Save as shapefile */
@@ -361,11 +363,14 @@ signals:
   void editingStopped(bool norepaint);
 
   /** This signal is emited when selection was changed */
-  void selectionChanged(); 
+  void selectionChanged();
+  
+  /** This signal is emitted when modifications has been done on layer */
+  void wasModified(bool onlyGeometry);
 
   /** This signal is emitted when drawing features to tell current progress */
   void drawingProgress(int current, int total);
-  
+
 
 private:                       // Private methods
 
@@ -420,14 +425,6 @@ private:                       // Private methods
 
 private:                       // Private attributes
 
-  /**Toggle editing action in the context menu
-    TODO: remove */
-  QAction* mToggleEditingAction;
-
-  /**Pointer to the table display object if there is one, else a pointer to 0
-    TODO: remove */
-  QgsAttributeTableDisplay * tabledisplay;
-  
   /** Update threshold for drawing features as they are read. A value of zero indicates
    *  that no features will be drawn until all have been read
    */
@@ -443,7 +440,7 @@ private:                       // Private attributes
   QString mProviderKey;
 
   /** The user-defined actions that are accessed from the Identify Results dialog box */
-  QgsAttributeAction mActions;
+  QgsAttributeAction* mActions;
 
   /** Flag indicating whether the layer is in editing mode or not */
   bool mEditable;
@@ -455,15 +452,10 @@ private:                       // Private attributes
   std::map<int, QgsGeometry*> mCachedGeometries;
   
   /** Set holding the feature IDs that are activated */
-  std::set<int> mSelected;
-  
-  /** Set holding the feature IDs that are in "set A" for a future geometry algebra operation
-  TODO: BM: Do something useful with this.
-   */
-  std::set<int> mSubjected;
+  feature_ids mSelected;
   
   /** Deleted feature IDs which are not commited */
-  std::set<int> mDeleted;
+  feature_ids mDeleted;
   
   /** New features which are not commited */
   std::vector<QgsFeature*> mAddedFeatures;
