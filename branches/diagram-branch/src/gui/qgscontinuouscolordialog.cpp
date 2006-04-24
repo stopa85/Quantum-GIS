@@ -28,7 +28,7 @@
 
 
 QgsContinuousColorDialog::QgsContinuousColorDialog(QgsVectorLayer * layer)
-    : QDialog(), mVectorLayer(layer)
+  : QgsRendererDialog(layer)
 {
     setupUi(this);
 #ifdef QGISDEBUG

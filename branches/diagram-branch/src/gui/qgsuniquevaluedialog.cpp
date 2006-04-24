@@ -25,7 +25,7 @@
 #include "qgsvectorlayer.h"
 
 
-QgsUniqueValueDialog::QgsUniqueValueDialog(QgsVectorLayer* vl): QDialog(), mVectorLayer(vl), sydialog(vl)
+QgsUniqueValueDialog::QgsUniqueValueDialog(QgsVectorLayer* vl): QgsRendererDialog(vl), sydialog(vl)
 {
     setupUi(this);
     setSizeGripEnabled(true); 

@@ -27,7 +27,7 @@
 #include <QPainter>
 
 
-QgsSingleSymbolDialog::QgsSingleSymbolDialog(): QDialog(), mVectorLayer(0)
+QgsSingleSymbolDialog::QgsSingleSymbolDialog(): QgsRendererDialog(0)
 {
     setupUi(this);
 #ifdef QGISDEBUG
@@ -35,7 +35,7 @@ QgsSingleSymbolDialog::QgsSingleSymbolDialog(): QDialog(), mVectorLayer(0)
 #endif
 }
 
-QgsSingleSymbolDialog::QgsSingleSymbolDialog(QgsVectorLayer * layer): QDialog(), mVectorLayer(layer)
+QgsSingleSymbolDialog::QgsSingleSymbolDialog(QgsVectorLayer * layer): QgsRendererDialog(layer)
 {
     setupUi(this);
 #ifdef QGISDEBUG

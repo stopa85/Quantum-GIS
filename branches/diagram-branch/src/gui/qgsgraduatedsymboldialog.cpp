@@ -24,7 +24,7 @@
 #include "qgsvectorlayer.h"
 
 
-QgsGraduatedSymbolDialog::QgsGraduatedSymbolDialog(QgsVectorLayer * layer): QDialog(), mVectorLayer(layer), sydialog(layer)
+QgsGraduatedSymbolDialog::QgsGraduatedSymbolDialog(QgsVectorLayer * layer): QgsRendererDialog(layer), sydialog(layer)
 {
     setupUi(this);
 #ifdef QGISDEBUG
@@ -117,7 +117,7 @@ QgsGraduatedSymbolDialog::QgsGraduatedSymbolDialog(QgsVectorLayer * layer): QDia
     mClassBreakBox->setCurrentItem(0);
 }
 
-QgsGraduatedSymbolDialog::QgsGraduatedSymbolDialog(): QDialog(), mVectorLayer(0), sydialog(0)
+QgsGraduatedSymbolDialog::QgsGraduatedSymbolDialog(): QgsRendererDialog(0), sydialog(0)
 {
     setupUi(this);
 #ifdef QGISDEBUG

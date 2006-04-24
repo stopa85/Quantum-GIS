@@ -126,6 +126,7 @@ libqgis_guiHEADERS =							\
 		qgsprojectproperties.h			\
 		qgsrangerenderitem.h				\
 		qgsrasterlayerproperties.h		\
+		qgsrendererdialog.h			\
 		qgsrubberband.h						\
 		qgsrunprocess.h						\
 		qgssearchquerybuilder.h			\
