@@ -26,6 +26,7 @@
 #include "qgsgraduatedsymboldialog.h"
 #include "qgslabeldialog.h"
 #include "qgslayerprojectionselector.h"
+#include "qgsrendererdialog.h"
 #include "qgssinglesymboldialog.h"
 #include "qgsuniquevaluedialog.h"
 #include "qgsvectordataprovider.h"
@@ -309,27 +310,12 @@ void QgsVectorLayerProperties::on_pbnApply_clicked()
   layer->setLayerName(displayName());
 
 
-  QgsSingleSymbolDialog *sdialog = dynamic_cast < QgsSingleSymbolDialog * >(widgetStackRenderers->visibleWidget());
-  QgsGraduatedSymbolDialog *gdialog = dynamic_cast < QgsGraduatedSymbolDialog * >(widgetStackRenderers->visibleWidget());
-  QgsContinuousColorDialog *cdialog = dynamic_cast < QgsContinuousColorDialog * >(widgetStackRenderers->visibleWidget());
-  QgsUniqueValueDialog* udialog = dynamic_cast< QgsUniqueValueDialog * >(widgetStackRenderers->visibleWidget()); 
-
-  if (sdialog)
+  //apply new renderer settings to the vector layer
+  QgsRendererDialog* rdialog = dynamic_cast <QgsRendererDialog*>(widgetStackRenderers->visibleWidget());
+  if(rdialog)
     {
-      sdialog->apply();
-    } 
-  else if (gdialog)
-  {
-      gdialog->apply();
-  }
-  else if (cdialog)
-    {
-      cdialog->apply();
+      rdialog->apply();
     }
-  else if(udialog)
-  {
-      udialog->apply();
-  }
   layer->setTransparency(static_cast < unsigned int >(255 - sliderTransparency->value()));
   
   layer->triggerRepaint();

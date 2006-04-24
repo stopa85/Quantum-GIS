@@ -20,25 +20,19 @@
 #define QGSUNIQUEVALUEDIALOG_H
 
 #include "ui_qgsuniquevaluedialogbase.h"
+#include "qgsrendererdialog.h"
 #include "qgssinglesymboldialog.h"
 #include <map>
 
-class QgsVectorLayer;
-
-
-class QgsUniqueValueDialog: public QDialog, private Ui::QgsUniqueValueDialogBase
+class QgsUniqueValueDialog: public QgsRendererDialog, private Ui::QgsUniqueValueDialogBase
 {
     Q_OBJECT
  public:
     QgsUniqueValueDialog(QgsVectorLayer* vl);
     ~QgsUniqueValueDialog();
-
- public slots:
      void apply();
 
  protected:
-    /**Pointer to the associated vector layer*/
-    QgsVectorLayer* mVectorLayer;
     /**Set to store the already entered values*/
     std::map<QString,QgsSymbol*> mValues;
     QgsSingleSymbolDialog sydialog;

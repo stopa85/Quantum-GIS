@@ -20,14 +20,13 @@
 #define QGSSINGLESYMBOLDIALOG_H
 
 #include "ui_qgssinglesymboldialogbase.h"
+#include "qgsrendererdialog.h"
 #include <vector>
 
 class QgsSymbol;
-class QgsVectorLayer;
-
 
 /**QgsSingleSymbolDialog is a dialog to set symbology for the legend type 'single symbol'*/
-class QgsSingleSymbolDialog: public QDialog, private Ui::QgsSingleSymbolDialogBase
+class QgsSingleSymbolDialog: public QgsRendererDialog, private Ui::QgsSingleSymbolDialogBase
 {
     Q_OBJECT
 public:
@@ -45,15 +44,12 @@ public:
     void setFillStyle(Qt::BrushStyle fstyle);
     void setLabel(QString label);
     QString label();
+    /**applies the changes to the vector layer*/
+    void apply();
 
-
-protected:
-    QgsVectorLayer* mVectorLayer;
 public slots:
     /* set from QgsSymbol */
     void set(const QgsSymbol *sy);
-    /**applies the changes to the vector layer*/
-    void apply();
     /**applies the changes to the QgsSymbol */
     void apply( QgsSymbol *sy);
     /**emits the signal settingsChanged()*/

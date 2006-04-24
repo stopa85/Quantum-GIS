@@ -21,24 +21,20 @@
 #define QGSCONTINUOUSCOLORDIALOG_H
 
 #include "ui_qgscontinuouscolordialogbase.h"
+#include "qgsrendererdialog.h"
 #include <map>
 
-class QgsVectorLayer;
-
-
-class QgsContinuousColorDialog: public QDialog, private Ui::QgsContinuousColorDialogBase
+class QgsContinuousColorDialog: public QgsRendererDialog, private Ui::QgsContinuousColorDialogBase
 {
     Q_OBJECT
  public: 
     QgsContinuousColorDialog(QgsVectorLayer* layer);
     ~QgsContinuousColorDialog();
- public slots:
     void apply();	
  protected slots:
     void selectMinimumColor();
     void selectMaximumColor();
  protected:
-    QgsVectorLayer* mVectorLayer;
     /**Stores the names and numbers of the fields with numeric values*/
      std::map<QString,int> mFieldMap;
  private:

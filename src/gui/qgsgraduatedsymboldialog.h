@@ -20,13 +20,11 @@
 #define QGSGRADUATEDSYMBOLDIALOG_H
 
 #include "ui_qgsgraduatedsymboldialogbase.h"
+#include "qgsrendererdialog.h"
 #include "qgssinglesymboldialog.h"
 #include <map>
 
-class QgsVectorLayer;
-
-
-class QgsGraduatedSymbolDialog: public QDialog, private Ui::QgsGraduatedSymbolDialogBase
+class QgsGraduatedSymbolDialog: public QgsRendererDialog, private Ui::QgsGraduatedSymbolDialogBase
 {
     Q_OBJECT
  public:
@@ -34,7 +32,6 @@ class QgsGraduatedSymbolDialog: public QDialog, private Ui::QgsGraduatedSymbolDi
     enum mode{EMPTY, EQUAL_INTERVAL, QUANTILES};
     QgsGraduatedSymbolDialog(QgsVectorLayer* layer);
     ~QgsGraduatedSymbolDialog();
- public slots:
      void apply();
  protected slots:
      /**Changes only the number of classes*/
@@ -48,8 +45,6 @@ class QgsGraduatedSymbolDialog: public QDialog, private Ui::QgsGraduatedSymbolDi
      /**Shows a dialog to modify lower and upper values*/
      void changeClass(Q3ListBoxItem* item);
  protected:
-     /**Pointer to the associated vector layer*/
-     QgsVectorLayer* mVectorLayer;
      /**Stores the names and numbers of the fields with numeric values*/
      std::map<QString,int> mFieldMap;
      /**Stores the classes*/
