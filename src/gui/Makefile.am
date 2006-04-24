@@ -78,7 +78,6 @@ libqgis_guiHEADERS =							\
 		qgsclipboard.h				\
 		qgscontinuouscolordialog.h				\
 		qgscontinuouscolorrenderer.h			\
-		qgscsexception.h				\
 		qgscustomprojectiondialog.h			\
 		qgscursors.h			\
 		qgsdelattrdialog.h				\
@@ -118,7 +117,6 @@ libqgis_guiHEADERS =							\
 		qgspointstylewidget.h				\
 		qgsproject.h					\
 		qgsprojectproperties.h			\
-		qgsrangerenderitem.h				\
 		qgsrasterlayerproperties.h		\
 		qgsrubberband.h						\
 		qgsrunprocess.h						\
@@ -287,7 +285,7 @@ libqgis_gui_la_CXXFLAGS = $(PREFIX) $(PLUGINPATH) $(PKGDATAPATH) $(GDAL_CFLAGS) 
 ##         additional files that need to be installed go here
 ## ----------------------------------------------------------------------
 ##
-pkginclude_HEADERS = $(qgisHEADERS) 
+pkginclude_HEADERS = $(libqgis_guiHEADERS) 
 
 pkginclude_dir = $(includedir)/qgis
 

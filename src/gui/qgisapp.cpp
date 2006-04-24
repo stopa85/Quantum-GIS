@@ -271,20 +271,19 @@ static void setTitleBarText_( QWidget & qgisApp )
   mQgisInterface = new QgisIface(this);
 
 
+  // load providers
+  mSplash->showMessage(tr("Checking provider plugins"), Qt::AlignHCenter | Qt::AlignBottom);
+  qApp->processEvents();
+  QgsApplication::initQgis();
+  
   //
   // Create the plugin registry and load plugins
   //
-  // Get pointer to the provider registry singleton
-  QString plib = QgsApplication::pluginPath();
-  // set the provider plugin path
-  mProviderRegistry = QgsProviderRegistry::instance(plib);
-#ifdef QGISDEBUG
-  std::cout << "Plugins and providers are installed in " << plib.toLocal8Bit().data() << std::endl;
-#endif
+ 
   // load any plugins that were running in the last session
   mSplash->showMessage(tr("Restoring loaded plugins"), Qt::AlignHCenter | Qt::AlignBottom);
   qApp->processEvents();
-  restoreSessionPlugins(plib);
+  restoreSessionPlugins(QgsApplication::pluginPath());
 
   /* Delete this I think - Tim - FIXME 
   //
@@ -340,6 +339,9 @@ static void setTitleBarText_( QWidget & qgisApp )
 QgisApp::~QgisApp()
 {
   delete mInternalClipboard;
+  
+  // delete map layer registry and provider registry
+  QgsApplication::exitQgis();
 }
 
 // restore any application settings stored in QSettings
@@ -1233,7 +1235,7 @@ abt->setWhatsNew(watsNew);
 
   // add the available plugins to the list
   QString providerInfo = "<b>" + tr("Available Data Provider Plugins") + "</b><br>";
-  abt->setPluginInfo(providerInfo + mProviderRegistry->pluginList(true));
+  abt->setPluginInfo(providerInfo + QgsProviderRegistry::instance()->pluginList(true));
   QApplication::restoreOverrideCursor();
   abt->show();
   abt->exec();
@@ -4541,12 +4543,6 @@ void QgisApp::projectProperties()
   // delete the property sheet object
   delete pp;
 } // QgisApp::projectProperties
-
-
-QgsMapLayerRegistry * QgisApp::getLayerRegistry()
-{
-  return QgsMapLayerRegistry::instance();
-}
 
 
 QgsClipboard * QgisApp::clipboard()

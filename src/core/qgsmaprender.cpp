@@ -363,8 +363,12 @@ void QgsMapRender::onDrawingProgress(int current, int total)
 
 void QgsMapRender::setProjectionsEnabled(bool enabled)
 {
-  mProjectionsEnabled = enabled;
-  emit projectionsEnabled(enabled);
+  if (mProjectionsEnabled != enabled)
+  {
+    mProjectionsEnabled = enabled;
+    updateFullExtent();
+    emit projectionsEnabled(enabled);
+  }
 }
 
 bool QgsMapRender::projectionsEnabled()
@@ -374,8 +378,12 @@ bool QgsMapRender::projectionsEnabled()
 
 void QgsMapRender::setDestinationSrs(const QgsSpatialRefSys& srs)
 {
-  *mDestSRS = srs;
-  emit destinationSrsChanged();
+  if (*mDestSRS != srs)
+  {
+    *mDestSRS = srs;
+    updateFullExtent();
+    emit destinationSrsChanged();
+  }
 }
 
 const QgsSpatialRefSys& QgsMapRender::destinationSrs()

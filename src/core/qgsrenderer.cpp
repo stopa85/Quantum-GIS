@@ -1,9 +1,15 @@
 #include "qgslegendvectorsymbologyitem.h"
 #include "qgsrenderer.h"
 #include "qgssymbol.h"
-//Added by qt3to4:
+
+#include <QColor>
 #include <QPixmap>
-#include <QIcon>
+#include <QString>
+
+// TODO: remove! [MD]
+#include "qgsproject.h"
+#include <QDomNode>
+#include <QDomDocument>
 
 
 QColor QgsRenderer::mSelectionColor=QColor(0,0,0);
@@ -60,3 +66,10 @@ void QgsRenderer::refreshLegend(std::list< std::pair<QString, QPixmap> >* symbol
     }
 }
 
+void QgsRenderer::initialiseSelectionColor()
+{
+  int myRedInt = QgsProject::instance()->readNumEntry("Gui","/SelectionColorRedPart",255);
+  int myGreenInt = QgsProject::instance()->readNumEntry("Gui","/SelectionColorGreenPart",255);
+  int myBlueInt = QgsProject::instance()->readNumEntry("Gui","/SelectionColorBluePart",0);
+  mSelectionColor = QColor(myRedInt,myGreenInt,myBlueInt);
+}

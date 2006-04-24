@@ -27,7 +27,6 @@ using namespace std;
 #include <QString>
 #include <QDir>
 #include <QLibrary>
-#include <QApplication>
 
 
 #include "qgis.h"

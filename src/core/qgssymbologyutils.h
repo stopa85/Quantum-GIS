@@ -19,9 +19,10 @@
 #ifndef QGSSYMBOLOGYUTILS_H
 #define QGSSYMBOLOGYUTILS_H
 
-#include <qnamespace.h> 
-#include <qstring.h>
-#include <qpixmap.h>
+#include <Qt>
+
+class QPixmap;
+class QString;
 
 /**Namespace containing static methods which are useful for the symbology widgets*/
 namespace QgsSymbologyUtils

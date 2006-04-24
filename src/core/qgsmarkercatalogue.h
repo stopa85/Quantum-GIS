@@ -16,8 +16,6 @@
 #ifndef QGSMARKERCATALOGUE_H
 #define QGSMARKERCATALOGUE_H
 
-#include <iostream>
-
 class QString;
 class QStringList;
 class QPicture;

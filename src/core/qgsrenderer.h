@@ -25,17 +25,12 @@ class QPainter;
 class QgsDlgVectorLayerProperties;
 class QPixmap;
 class QDomNode;
+class QDomDocument;
 class QColor;
 
-#include <fstream>
-#include <list>
-#include <QTreeWidgetItem>
-#include <qstring.h>
-#include <qdom.h>
-
 #include "qgis.h"
-#include "qgsproject.h"
-#include <qcolor.h>
+
+#include <list>
 
 class QgsRenderItem;
 class QgsSymbol;
@@ -87,11 +82,4 @@ class QgsRenderer
     QGis::VectorType mVectorType;
 };
 
-inline void QgsRenderer::initialiseSelectionColor()
-{
-    int myRedInt = QgsProject::instance()->readNumEntry("Gui","/SelectionColorRedPart",255);
-    int myGreenInt = QgsProject::instance()->readNumEntry("Gui","/SelectionColorGreenPart",255);
-    int myBlueInt = QgsProject::instance()->readNumEntry("Gui","/SelectionColorBluePart",0);
-    mSelectionColor = QColor(myRedInt,myGreenInt,myBlueInt);
-}
 #endif // QGSRENDERER_H

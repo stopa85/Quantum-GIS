@@ -19,6 +19,7 @@
 #include "qgscontinuouscolorrenderer.h"
 #include "qgsmapcanvas.h"
 #include "qgsmaplayer.h"
+#include "qgsproject.h"
 #include "qgsrenderer.h"
 #include "qgssymbol.h"
 #include "qgsvectorlayer.h"

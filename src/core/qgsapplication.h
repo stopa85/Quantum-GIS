@@ -69,6 +69,21 @@ class QgsApplication: public QApplication
     //! Returns the path to the current theme directory.
     static const QString& themePath() { return mThemePath; }
     
+    //! Alters prefix path - used by 3rd party apps
+    static void setPrefixPath(const QString& thePrefixPath, bool useDefaultPaths = FALSE);
+    
+    //! Alters plugin path - used by 3rd party apps
+    static void setPluginPath(const QString& thePluginPath);
+
+    //! Alters pkg data path - used by 3rd party apps
+    static void setPkgDataPath(const QString& thePkgDataPath);
+    
+    //! loads providers
+    static void initQgis();
+
+    //! deletes provider registry and map layer registry
+    static void exitQgis();
+    
     /** constants for endian-ness */
     typedef enum ENDIAN
     {
