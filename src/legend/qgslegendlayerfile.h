@@ -24,12 +24,15 @@
 #include <QPixmap>
 
 class QgsMapLayer;
+class QgsAttributeTableDisplay;
 
 /**
 @author Tim Sutton
 */
 class QgsLegendLayerFile : public QgsLegendItem
 {
+  Q_OBJECT;
+  
 public:
     QgsLegendLayerFile(QTreeWidgetItem * theLegendItem, QString theString, QgsMapLayer* theLayer);
     ~QgsLegendLayerFile();
@@ -55,6 +58,20 @@ public:
     void setInOverview(bool inOverview = TRUE);
     bool isInOverview();
     
+  public slots:
+    
+    /**Open attribute table*/
+    void table();
+    
+    /**Connected to deleted() signal of attribute table*/
+    void invalidateTableDisplay();
+
+    /**Connected to layer's selectionChanged() */
+    void selectionChanged();
+    
+    /**Connected to layer's wasModified() */
+    void closeTable(bool onlyGeometryWasChanged);
+    
  protected:
     QgsMapLayer* mLayer;
     
@@ -63,6 +80,9 @@ public:
     
     /** Flag whether layer is shown in overview */
     bool mInOverview;
+
+    /** Pointer to the table display object if there is one, otherwise NULL */
+    QgsAttributeTableDisplay* mTableDisplay;
 
 };
 

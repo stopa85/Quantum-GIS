@@ -213,7 +213,9 @@ void QgsAttributeTableDisplay::invertSelection()
 {
   if(mLayer)
   {
+    QApplication::setOverrideCursor(Qt::waitCursor);
     mLayer->invertSelection();
+    QApplication::restoreOverrideCursor();
   }
 }
 
@@ -276,7 +278,7 @@ void QgsAttributeTableDisplay::searchShowResultsChanged(int item)
     table()->showAllRows();
     
     // select matching
-    table()->selectRowsWithId(mSearchIds);
+    mLayer->setSelectedFeatures(mSearchIds);
   
     if (item == 1) // select matching and bring to top
       table()->bringSelectedToTop();
@@ -321,7 +323,7 @@ void QgsAttributeTableDisplay::doSearch(const QString& searchString)
   {
     if (searchTree->checkAgainst(fet->attributeMap()))
     {
-      mSearchIds.push_back(fet->featureId());
+      mSearchIds.insert(fet->featureId());
     }
     delete fet;
     

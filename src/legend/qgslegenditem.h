@@ -34,8 +34,9 @@ This is an abstract base class that all qgis legen items inerit from
 
 @author Tim Sutton
 */
-class QgsLegendItem : public QTreeWidgetItem
+class QgsLegendItem : public QTreeWidgetItem, public QObject
 {
+
 public:
     QgsLegendItem(QTreeWidgetItem*, QString);
     QgsLegendItem (QTreeWidget*,QString);
@@ -98,7 +99,17 @@ public:
     void restoreAppearanceSettings();
     /**Returns a pointer to the legend widget*/
     QgsLegend* legend() const;
-protected:
+    /**Returns child of the item - convenience function to distinguish between
+       QTreeWidgetItem's and QObject's child() function */
+    QTreeWidgetItem* child(int i) const;
+    /**Returns parent of the item - convenience function to distinguish between
+       QTreeWidgetItem's and QObject's parent() function */
+    QTreeWidgetItem* parent() const;
+    /**Inserts child - convenience function to distinguish between
+      QTreeWidgetItem's and QObject's insertChild() function */
+    void insertChild(int index, QTreeWidgetItem *child);
+
+  protected:
    bool mLeafNodeFlag;
    LEGEND_ITEM_TYPE mType;
    /**Stores expanded property when storeAppearanceSettings is called*/

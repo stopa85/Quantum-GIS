@@ -82,9 +82,9 @@ class QgsAttributeTable:public Q3Table
     /**Swaps the selected rows such that the selected ones are on the top of the table*/
     void bringSelectedToTop();
     /** Selects rows with chosen feature IDs */
-    void selectRowsWithId(const std::vector<int>& ids);
+    void selectRowsWithId(const std::set<int>& ids);
     /** Shows only rows with chosen feature IDs, others get hidden */
-    void showRowsWithId(const std::vector<int>& ids);
+    void showRowsWithId(const std::set<int>& ids);
     /** Shows all rows */
     void showAllRows();
 

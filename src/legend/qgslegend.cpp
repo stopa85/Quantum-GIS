@@ -385,7 +385,7 @@ void QgsLegend::handleRightClickEvent(QTreeWidgetItem* item, const QPoint& posit
     {
       QgsVectorLayer* vlayer = dynamic_cast<QgsVectorLayer*>(layer);
       
-      theMenu.addAction(tr("&Open attribute table"), mApp, SLOT(attributeTable()));
+      theMenu.addAction(tr("&Open attribute table"), li, SLOT(table()));
       theMenu.addSeparator();
     
       int cap = vlayer->getDataProvider()->capabilities();
