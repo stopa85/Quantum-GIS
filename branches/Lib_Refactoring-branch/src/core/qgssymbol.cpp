@@ -24,7 +24,8 @@
 #include "qgsmarkercatalogue.h"
 
 #include <QPainter>
-#include <QString>
+#include <QDomNode>
+#include <QDomDocument>
 
 QgsSymbol::QgsSymbol(QGis::VectorType t, QString lvalue, QString uvalue, QString label) : 
       mLowerValue(lvalue),

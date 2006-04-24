@@ -178,6 +178,10 @@ class QgsSpatialRefSys
          *  Internally it will delegate to the equals method described below
          */
          bool operator==(const QgsSpatialRefSys &theSrs);
+        /*! Overloaded != operator used to compare to SRS's.
+          *  Returns opposite bool value to operator ==
+         */
+         bool operator!=(const QgsSpatialRefSys &theSrs);
         /*! Overloaded == operator used to compare to SRS's.
          *  Internally it will use OGR isSameSRS() or isSameGeoSRS() methods as appropriate.
          *  Additionally logic may also be applied if the result from the OGR methods

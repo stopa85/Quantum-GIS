@@ -24,6 +24,7 @@
 #include "qgisinterface.h"
 #include "qgisapp.h"
 #include "qgsmaplayer.h"
+#include "qgsmaplayerregistry.h"
 #include "qgsmapcanvas.h"
 #include "qgslegend.h"
 
@@ -131,7 +132,7 @@ QgsMapCanvas * QgisIface::getMapCanvas()
 
 QgsMapLayerRegistry * QgisIface::getLayerRegistry() 
 {
-  return qgis->getLayerRegistry();
+  return QgsMapLayerRegistry::instance();
 }
 
 

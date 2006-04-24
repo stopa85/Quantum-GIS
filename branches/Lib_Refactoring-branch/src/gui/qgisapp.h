@@ -43,7 +43,6 @@ class QgsMapCanvas;
 class QgsMapLayer;
 class QgsMapLayerRegistry;
 class QgsPoint;
-class QgsProviderRegistry;
 class QgsRasterLayer;
 class QgsRect;
 
@@ -141,11 +140,6 @@ class QgisApp : public QMainWindow, public Ui::QgisAppBase
   void saveMapAsImage(QString, QPixmap *);
   /** Get the mapcanvas object from the app */
   QgsMapCanvas * getMapCanvas() { return mMapCanvas; };
-  /** return the layer registry
-    @note
-    Returns QgsMapLayerRegistry::instance(); i.e., it's a Singleton
-    */
-  QgsMapLayerRegistry * getLayerRegistry();
   //! Set theme (icons)
   void setTheme(QString themeName="default");
   //! Setup the toolbar popup menus for a given theme
@@ -534,7 +528,6 @@ private:
   QString mVersionMessage;
   QSplashScreen *mSplash;
   friend class QgisIface;
-  QgsProviderRegistry *mProviderRegistry;
   //! application directory
   QString mAppDir;
   //! help viewer

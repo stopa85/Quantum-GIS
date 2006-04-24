@@ -974,6 +974,12 @@ bool QgsSpatialRefSys::operator==(const QgsSpatialRefSys &theSrs)
 
 }
 
+bool QgsSpatialRefSys::operator!=(const QgsSpatialRefSys &theSrs)
+{
+  return  ! (*this == theSrs);
+}
+
+
 bool QgsSpatialRefSys::equals(QString theProj4CharArray)
 {
   //qWarning("QgsSpatialRefSys::operator==(const char *theProj4CharArray) called ");

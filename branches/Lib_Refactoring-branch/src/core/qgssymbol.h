@@ -25,9 +25,9 @@
 #include <QBrush>
 #include <QPen>
 #include <QPixmap>
-#include <QDomNode>
 
-class QString;
+class QDomNode;
+class QDomDocument;
 
 /**Encapsulates settings for drawing (QPen, QBrush, Point symbol) and classification
  (lower value, upper value)*/

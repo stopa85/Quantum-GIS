@@ -15,9 +15,11 @@
  *                                                                         *
  ***************************************************************************/
 /* $Id$ */
-#include <qstring.h>
+
 #include <cassert>
 #include "qgsrenderitem.h"
+
+#include <QDomNode>
 
 QgsRenderItem::QgsRenderItem(): mSymbol(new QgsSymbol())
 {

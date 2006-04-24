@@ -75,7 +75,7 @@ double QgsScaleCalculator::calculate(QgsRect &mapExtent, int canvasWidth)
   QgsDebugMsg("Using conversionFactor of " + QString::number(conversionFactor));
   if (canvasWidth == 0 || mDpi == 0)
   {
-    QgsDebug("Can't calculate scale from the input values");
+    QgsDebugMsg("Can't calculate scale from the input values");
     return 0;
   }
   double scale = (delta * conversionFactor)/(canvasWidth/mDpi);

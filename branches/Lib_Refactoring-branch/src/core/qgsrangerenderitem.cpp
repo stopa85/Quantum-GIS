@@ -17,6 +17,10 @@
 /* $Id$ */
 #include "qgsrangerenderitem.h"
 
+#include <QDomNode>
+#include <QDomDocument>
+
+
 QgsRangeRenderItem::QgsRangeRenderItem():QgsRenderItem()
 {
 

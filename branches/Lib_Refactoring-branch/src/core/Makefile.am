@@ -90,8 +90,7 @@ libqgis_coreHEADERS =				\
 		qgsrenderitem.h				\
 		qgsscalecalculator.h		\
 		qgssearchstring.h			\
-        qgssearchtreenode.h			\
-		qgssinglesymrenderer.h		\
+    qgssearchtreenode.h			\
 		qgsspatialrefsys.h		\
 		qgssymbol.h					\
 		qgssymbologyutils.h			\
@@ -182,7 +181,7 @@ libqgis_core_la_CXXFLAGS = $(PREFIX) $(PLUGINPATH) $(PKGDATAPATH) $(CXXFLAGS) $(
 ##         additional files that need to be installed go here
 ## ----------------------------------------------------------------------
 ##
-pkginclude_HEADERS = $(qgisHEADERS) 
+pkginclude_HEADERS = $(libqgis_coreHEADERS) 
 
 pkginclude_dir = $(includedir)/qgis
 

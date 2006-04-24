@@ -15,6 +15,8 @@
 /* $Id$ */
 
 #include "qgsapplication.h"
+#include "qgsmaplayerregistry.h"
+#include "qgsproviderregistry.h"
 
 #include <QDir>
 
@@ -47,19 +49,40 @@ QgsApplication::QgsApplication(int & argc, char ** argv, bool GUIenabled)
 : QApplication(argc, argv, GUIenabled)
 {
 #if defined(Q_WS_MACX) || defined(Q_WS_WIN32)
-  mPrefixPath = applicationDirPath();
-  mPluginPath = mPrefixPath + QString("/lib/qgis");
-  mPkgDataPath = mPrefixPath + QString("/share/qgis");
+  setPrefixPath(applicationDirPath());
+  setPluginPath(mPrefixPath + QString("/lib/qgis"));
+  setPkgDataPath(mPrefixPath + QString("/share/qgis"));
 #else
-  mPrefixPath = PREFIX;
-  mPluginPath = PLUGINPATH;
-  mPkgDataPath = PKGDATAPATH;
+  setPrefixPath(PREFIX);
+  setPluginPath(PLUGINPATH);
+  setPkgDataPath(PKGDATAPATH);
 #endif
-  mThemePath = mPkgDataPath + QString("/themes/default/");
 }
 
 QgsApplication::~QgsApplication()
 {}
+
+void QgsApplication::setPrefixPath(const QString& thePrefixPath, bool useDefaultPaths)
+{
+  mPrefixPath = thePrefixPath;
+  if (useDefaultPaths)
+  {
+    setPluginPath(mPrefixPath + QString("/lib/qgis"));
+    setPkgDataPath(mPrefixPath + QString("/share/qgis"));
+  }
+}
+
+void QgsApplication::setPluginPath(const QString& thePluginPath)
+{
+  mPluginPath = thePluginPath;
+}
+
+void QgsApplication::setPkgDataPath(const QString& thePkgDataPath)
+{
+  mPkgDataPath = thePkgDataPath;
+  mThemePath = mPkgDataPath + QString("/themes/default/");
+}
+
 
 /*!
   Set the theme path to the specified theme.
@@ -157,4 +180,19 @@ const QString QgsApplication::svgPath()
 QgsApplication::endian_t QgsApplication::endian()
 {
   return (htonl(1) == 1) ? XDR : NDR ;
+}
+
+void QgsApplication::initQgis()
+{
+  // set the provider plugin path (this creates provider registry)
+  QgsProviderRegistry::instance(pluginPath());
+  
+  // create map layer registry if doesn't exist
+  QgsMapLayerRegistry::instance();
+}
+
+void QgsApplication::exitQgis()
+{
+  delete QgsMapLayerRegistry::instance();
+  delete QgsProviderRegistry::instance();
 }

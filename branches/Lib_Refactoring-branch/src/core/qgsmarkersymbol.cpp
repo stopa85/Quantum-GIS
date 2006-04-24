@@ -20,6 +20,9 @@
 #include "qpainter.h"
 #include "qgssymbologyutils.h"
 
+#include <QDomNode>
+#include <QDomDocument>
+
 void QgsMarkerSymbol::setPicture(const QString& svgpath)
 {
     mSvgPath=svgpath;
