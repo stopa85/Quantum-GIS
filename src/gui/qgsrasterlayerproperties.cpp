@@ -25,6 +25,7 @@ email                : tim@linfiniti.com
 #include "qgsrasterlayer.h"
 #include "qgsrasterpyramid.h"
 
+#include <QMessageBox>
 #include <QPainter>
 #include <QPolygon>
 #include <iostream>
@@ -453,7 +454,46 @@ void QgsRasterLayerProperties::on_buttonBuildPyramids_clicked()
   //
   // Ask raster layer to build the pyramids
   //
-  rasterLayer->buildPyramids(myPyramidList,cboResamplingMethod->currentText());  
+  
+  // let the user know we're going to possibly be taking a while
+  QApplication::setOverrideCursor(Qt::WaitCursor);
+  QString res = rasterLayer->buildPyramids(myPyramidList,cboResamplingMethod->currentText());
+  QApplication::restoreOverrideCursor();
+  if (!res.isNull())
+  {
+    if (res == "ERROR_WRITE_ACCESS")
+    {
+      QMessageBox myMessageBox( tr("Write access denied"),
+                                tr("Write access denied. Adjust the file permissions and try again.\n\n"),
+                                QMessageBox::Warning,
+                                QMessageBox::Ok,
+                                Qt::NoButton,
+                                Qt::NoButton );
+      myMessageBox.exec();
+    }
+    else if (res == "ERROR_WRITE_FORMAT")
+    {
+      QMessageBox myMessageBox( tr("Building pyramids failed."),
+                                tr("The file was not writeable. Some formats can not be written to, only read. You can also try to check the permissions and then try again."),
+                                QMessageBox::Warning,
+                                QMessageBox::Ok,
+                                Qt::NoButton,
+                                Qt::NoButton );
+      myMessageBox.exec();
+    }
+    else if (res == "FAILED_NOT_SUPPORTED")
+    {
+      QMessageBox myMessageBox( tr("Building pyramids failed."),
+                                tr("Building pyramid overviews is not supported on this type of raster."),
+                                QMessageBox::Warning,
+                                QMessageBox::Ok,
+                                Qt::NoButton,
+                                Qt::NoButton );
+      myMessageBox.exec();
+    }
+  }
+
+  
   //
   // repopulate the pyramids list
   //

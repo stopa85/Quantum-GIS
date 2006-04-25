@@ -80,12 +80,6 @@ wish to see edbug messages printed to stdout.
 #include <QPixmap>
 #include <QRegExp>
 
-// TODO: dependencies to remove
-#include <QApplication>
-#include <QCursor>
-#include <QMessageBox>
-
-
 /*
  * 
  * New includes that will convert this class to a data provider interface
@@ -4008,8 +4002,8 @@ QString QgsRasterLayer::getMetadata()
   return myMetadataQString;
 }
 
-void QgsRasterLayer::buildPyramids(RasterPyramidList const & theRasterPyramidList, 
-                                   QString const & theResamplingMethod)
+QString QgsRasterLayer::buildPyramids(RasterPyramidList const & theRasterPyramidList, 
+                                      QString const & theResamplingMethod)
 {
   emit setProgress(0,0);
   //first test if the file is writeable
@@ -4017,37 +4011,20 @@ void QgsRasterLayer::buildPyramids(RasterPyramidList const & theRasterPyramidLis
   
   if (!myQFile.isWritable())
   {
-
-    QMessageBox myMessageBox( tr("Write access denied"),
-                              tr("Write access denied. Adjust the file permissions and try again.\n\n"),
-                              QMessageBox::Warning,
-                              QMessageBox::Ok,
-                              Qt::NoButton,
-                              Qt::NoButton );
-    myMessageBox.exec();
-
-    return;
+    return "ERROR_WRITE_ACCESS";
   }
-  // let the user know we're going to possibly be taking a while
-  QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+
   GDALAllRegister();
   //close the gdal dataset and reopen it in read / write mode
   delete gdalDataset;
   gdalDataset = (GDALDataset *) GDALOpen(mDataSource.toLocal8Bit().data(), GA_Update);
   
   // if the dataset couldn't be opened in read / write mode, tell the user
-  if (!gdalDataset) {
+  if (!gdalDataset)
+  {
     emit setProgress(0,0);
-    QApplication::restoreOverrideCursor();
-    QMessageBox myMessageBox( tr("Building pyramids failed."),
-			      tr("The file was not writeable. Some formats can not be written to, only read. You can also try to check the permissions and then try again."),
-			      QMessageBox::Warning,
-			      QMessageBox::Ok,
-			      Qt::NoButton,
-			      Qt::NoButton );
-    myMessageBox.exec();
     gdalDataset = (GDALDataset *) GDALOpen(mDataSource.toLocal8Bit().data(), GA_ReadOnly);
-    return;
+    return "ERROR_WRITE_FORMAT";
   }
 
   //
@@ -4107,18 +4084,10 @@ void QgsRasterLayer::buildPyramids(RasterPyramidList const & theRasterPyramidLis
         {
            //something bad happenend
            //QString myString = QString (CPLGetLastError());
-           QApplication::restoreOverrideCursor();
-           QMessageBox myMessageBox( tr("Building pyramids failed."),
-                              tr("Building pyramid overviews is not supported on this type of raster."),
-                              QMessageBox::Warning,
-                              QMessageBox::Ok,
-                              Qt::NoButton,
-                              Qt::NoButton );
-            myMessageBox.exec();
             delete gdalDataset;
             gdalDataset = (GDALDataset *) GDALOpen(mDataSource.toLocal8Bit().data(), GA_ReadOnly);
             emit setProgress(0,0);
-            return;
+            return "FAILED_NOT_SUPPORTED";
         }
         myCountInt++;
         //make sure the raster knows it has pyramids
@@ -4135,7 +4104,7 @@ void QgsRasterLayer::buildPyramids(RasterPyramidList const & theRasterPyramidLis
   delete gdalDataset;
   gdalDataset = (GDALDataset *) GDALOpen(mDataSource.toLocal8Bit().data(), GA_ReadOnly);
   emit setProgress(0,0);
-  QApplication::restoreOverrideCursor();
+  return NULL; // returning null on success
 }
 
 QgsRasterLayer::RasterPyramidList  QgsRasterLayer::buildRasterPyramidList()
