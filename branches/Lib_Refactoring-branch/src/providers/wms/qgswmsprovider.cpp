@@ -28,17 +28,11 @@
 
 #include "qgshttptransaction.h"
 
-#include <q3network.h>
-#include <q3http.h>
-#include <q3url.h>
-
-#include <qglobal.h>
-#if QT_VERSION >= 0x040000
-#include <Q3Picture>
-#endif
+#include <QImage>
+#include <QUrl>
 
 #ifdef QGISDEBUG
-#include <qfile.h>
+#include <QFile>
 #endif
 
 #ifdef WIN32
@@ -441,10 +435,10 @@ QImage* QgsWmsProvider::draw(QgsRect  const & viewExtent, int pixelWidth, int pi
 
 
   QString layers = visibleLayers.join(",");
-  Q3Url::encode( layers );
+  QUrl::encode( layers );
 
   QString styles = visibleStyles.join(",");
-  Q3Url::encode( styles );
+  QUrl::encode( styles );
 
 
   // compose the URL query string for the WMS server.
@@ -2287,7 +2281,7 @@ QString QgsWmsProvider::identifyAsHtml(const QgsPoint& point)
   }
 
   QString layers = visibleLayers.join(",");
-  Q3Url::encode( layers );
+  QUrl::encode( layers );
 
   // Compose request to WMS server
 

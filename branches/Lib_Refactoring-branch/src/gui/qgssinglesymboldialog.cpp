@@ -63,8 +63,7 @@ QgsSingleSymbolDialog::QgsSingleSymbolDialog(QgsVectorLayer * layer): QDialog(),
     for ( QStringList::iterator it = ml.begin(); it != ml.end(); ++it ) 
     {
       mMarkers.push_back ( *it );
-      QPixmap pic = QgsMarkerCatalogue::instance()->marker ( *it, size,
-          pen, brush );
+      QPixmap pic = QPixmap::fromImage(QgsMarkerCatalogue::instance()->marker( *it, size, pen, brush ));
       mPointSymbolComboBox->insertItem ( pic );
       if (layer->vectorType() != QGis::Point)
       {
@@ -308,7 +307,7 @@ void QgsSingleSymbolDialog::apply()
 void QgsSingleSymbolDialog::set ( const QgsSymbol *sy ) 
 {
 	// Set point symbol
-        for ( int i = 0; i < mMarkers.size(); i++ ) {
+  for ( uint i = 0; i < mMarkers.size(); i++ ) {
 	    if ( mMarkers[i] ==  sy->pointSymbolName() ) {
 	        mPointSymbolComboBox->setCurrentItem ( i );
 		break;

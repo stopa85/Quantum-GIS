@@ -28,6 +28,7 @@
 #include "qgsmaplayerregistry.h"
 #include "qgsrasterlayer.h"
 #include "qgsrenderer.h"
+#include "qgssymbol.h"
 #include "qgsvectorlayer.h"
 #include "qgsvectordataprovider.h"
 
@@ -283,33 +284,17 @@ void QgsLegendLayer::refreshSymbology(const QString& key)
   if (theMapLayer->type() == QgsMapLayer::VECTOR) // VECTOR
   {
     QgsVectorLayer* vlayer = dynamic_cast<QgsVectorLayer*>(theMapLayer);
-    const QgsRenderer* renderer = vlayer->renderer();
-    std::list< std::pair<QString, QPixmap> > itemList;
-    renderer->refreshLegend(&itemList);
-    if(renderer->needsAttributes()) //create an item for each classification field (only one for most renderers)
-    {
-      std::list<int> classfieldlist = renderer->classificationAttributes();
-      for(std::list<int>::iterator it = classfieldlist.begin(); it!=classfieldlist.end(); ++it)
-      {
-        const QgsField theField = (vlayer->getDataProvider()->fields())[*it];
-        QString classfieldname = theField.name();
-        itemList.push_front(std::make_pair(classfieldname, QPixmap()));
-      }
-    }
-    changeSymbologySettings(theMapLayer, &itemList);
+    vectorLayerSymbology(vlayer); // get and change symbology
   }
   else // RASTER
   {
     QgsRasterLayer* rlayer = dynamic_cast<QgsRasterLayer*>(theMapLayer);
-    std::list< std::pair<QString, QPixmap> > itemList;
-    itemList.push_back(std::make_pair("", rlayer->getLegendQPixmap(true)));
-    
-    changeSymbologySettings(theMapLayer, &itemList);
+    rasterLayerSymbology(rlayer); // get and change symbology
   }
 }
 
 void QgsLegendLayer::changeSymbologySettings(const QgsMapLayer* theMapLayer,
-                                             const std::list< std::pair<QString, QPixmap> >* newSymbologyItems)
+                                             const SymbologyList& newSymbologyItems)
 {
   if(!theMapLayer)
   {
@@ -332,24 +317,93 @@ void QgsLegendLayer::changeSymbologySettings(const QgsMapLayer* theMapLayer,
   }
 
   //add the new symbology items
-  if(newSymbologyItems)
+  int childposition = 0; //position to insert the items
+  for(SymbologyList::const_iterator it= newSymbologyItems.begin(); it != newSymbologyItems.end(); ++it)
   {
-    int childposition = 0; //position to insert the items
-    for(std::list< std::pair<QString, QPixmap> >::const_iterator it= newSymbologyItems->begin(); it != newSymbologyItems->end(); ++it)
-    {
-      QgsLegendSymbologyItem* theItem = new QgsLegendSymbologyItem(it->second.width(), it->second.height());
-      theItem->setText(0, it->first);
-      theItem->setIcon(0, QIcon(it->second));
-      insertChild(childposition, theItem);
+    QgsLegendSymbologyItem* theItem = new QgsLegendSymbologyItem(it->second.width(), it->second.height());
+    theItem->setText(0, it->first);
+    theItem->setIcon(0, QIcon(it->second));
+    insertChild(childposition, theItem);
 
-      //add the width and height values to the multisets
-      myLegend->addPixmapWidthValue(theItem->pixmapWidth());
-      myLegend->addPixmapHeightValue(theItem->pixmapHeight());
-      ++childposition;
-    }
+    //add the width and height values to the multisets
+    myLegend->addPixmapWidthValue(theItem->pixmapWidth());
+    myLegend->addPixmapHeightValue(theItem->pixmapHeight());
+    ++childposition;
   }
 
   //copy the legend settings for the other layer files in the same legend layer
   updateLayerSymbologySettings(theMapLayer);
 
+}
+
+
+
+void QgsLegendLayer::vectorLayerSymbology(const QgsVectorLayer* layer)
+{
+  SymbologyList itemList;
+
+  //add the new items
+  QString lw, uv, label;
+  const QgsRenderer* renderer = layer->renderer();
+  const std::list<QgsSymbol*> sym = renderer->symbols();
+
+  for(std::list<QgsSymbol*>::const_iterator it=sym.begin(); it!=sym.end(); ++it)
+  {
+    QImage img;
+    if((*it)->type() == QGis::Point)
+    {
+      img = (*it)->getPointSymbolAsImage();
+    }
+    else if((*it)->type() == QGis::Line)
+    {
+      img = (*it)->getLineSymbolAsImage();
+    }
+    else //polygon
+    {
+      img = (*it)->getPolygonSymbolAsImage();
+    }
+
+    QString values;
+    lw = (*it)->lowerValue();
+    if(!lw.isEmpty())
+    {
+      values += lw;
+    }
+    uv = (*it)->upperValue();
+    if(!uv.isEmpty())
+    {
+      values += " - ";
+      values += uv;
+    }
+    label = (*it)->label();
+    if(!label.isEmpty())
+    {
+      values += " ";
+      values += label;
+    }
+
+    QPixmap pix = QPixmap::fromImage(img); // convert to pixmap
+    itemList.push_back(std::make_pair(values, pix));
+  }
+
+  if(renderer->needsAttributes()) //create an item for each classification field (only one for most renderers)
+  {
+    std::list<int> classfieldlist = renderer->classificationAttributes();
+    for(std::list<int>::iterator it = classfieldlist.begin(); it!=classfieldlist.end(); ++it)
+    {
+      const QgsField theField = (layer->getDataProvider()->fields())[*it];
+      QString classfieldname = theField.name();
+      itemList.push_front(std::make_pair(classfieldname, QPixmap()));
+    }
+  }
+
+  changeSymbologySettings(layer, itemList);
+}
+
+void QgsLegendLayer::rasterLayerSymbology(QgsRasterLayer* layer)
+{
+  SymbologyList itemList;
+  itemList.push_back(std::make_pair("", layer->getLegendQPixmap(true)));
+    
+  changeSymbologySettings(layer, itemList);
 }

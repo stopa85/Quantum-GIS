@@ -25,7 +25,7 @@
 
 class QgsSymbol;
 class QPainter;
-class QPixmap;
+class QImage;
 
 /**Renderer class which interpolates rgb values linear between the minimum and maximum value of the classification field*/
 class QgsContinuousColorRenderer: public QgsRenderer
@@ -36,7 +36,7 @@ class QgsContinuousColorRenderer: public QgsRenderer
     QgsContinuousColorRenderer& operator=(const QgsContinuousColorRenderer& other);
     virtual ~QgsContinuousColorRenderer();
     /**Renders the feature using the minimum and maximum value of the classification field*/
-    void renderFeature(QPainter* p, QgsFeature* f, QPixmap* pic, double* scalefactor, bool selected,  double widthScale = 1.);
+    void renderFeature(QPainter* p, QgsFeature* f, QImage* img, double* scalefactor, bool selected,  double widthScale = 1.);
     /**Returns the number of the classification field*/
     int classificationField() const;
     /**Sets the id of the classification field*/

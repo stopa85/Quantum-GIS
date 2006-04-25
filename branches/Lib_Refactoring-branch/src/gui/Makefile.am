@@ -112,8 +112,10 @@ libqgis_guiHEADERS =							\
 		qgsoptions.h					\
 		qgspastetransformations.h			\
 		qgspatterndialog.h				\
+		qgspluginitem.h					\
 		qgspluginmanager.h				\
 		qgspluginmetadata.h				\
+		qgspluginregistry.h				\
 		qgspointstylewidget.h				\
 		qgsproject.h					\
 		qgsprojectproperties.h			\
@@ -230,8 +232,10 @@ libqgis_gui_la_SOURCES =						\
 		qgsoptions.cpp			\
 		qgspastetransformations.cpp	\
 		qgspatterndialog.cpp		\
+		qgspluginitem.cpp				\
 		qgspluginmanager.cpp		\
 		qgspluginmetadata.cpp		\
+		qgspluginregistry.cpp		\
 		qgspointstylewidget.cpp				\
 		qgsproject.cpp			\
 		qgsprojectproperties.cpp	\

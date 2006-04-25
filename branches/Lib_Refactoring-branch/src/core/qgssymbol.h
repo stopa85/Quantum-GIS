@@ -19,12 +19,10 @@
 #ifndef QGSSYMBOL_H
 #define QGSSYMBOL_H
 
-#include <iostream>
-
 #include "qgis.h"
 #include <QBrush>
 #include <QPen>
-#include <QPixmap>
+#include <QImage>
 
 class QDomNode;
 class QDomDocument;
@@ -85,14 +83,14 @@ class QgsSymbol{
     virtual ~QgsSymbol();
 
     //! Get a little icon for the legend
-    virtual QPixmap getLineSymbolAsPixmap();
+    virtual QImage getLineSymbolAsImage();
 
     //! Get a little icon for the legend
-    virtual QPixmap getPolygonSymbolAsPixmap();
+    virtual QImage getPolygonSymbolAsImage();
     
-    /** Get QPixmap representation of point symbol with current settings
+    /** Get QImage representation of point symbol with current settings
       */
-    virtual QPixmap getPointSymbolAsPixmap( double widthScale = 1., 
+    virtual QImage getPointSymbolAsImage( double widthScale = 1., 
 	               bool selected = false, QColor selectionColor = Qt::yellow );
 
     /**Writes the contents of the symbol to a configuration file
@@ -133,28 +131,28 @@ class QgsSymbol{
 
     
     /* Point symbol cache  */
-    QPixmap mPointSymbolPixmap;
+    QImage mPointSymbolImage;
 
     /* Point symbol cache  */
-    QPixmap mPointSymbolPixmapSelected;
+    QImage mPointSymbolImageSelected;
 
-    /* Current line width scale used by mPointSymbolVectorPixmap */
+    /* Current line width scale used by mPointSymbolVectorImage */
     double mWidthScale;
     
     /* Point symbol cache but with line width scale mWidthScale */
-    QPixmap mPointSymbolPixmap2;
-    QPixmap mPointSymbolPixmapSelected2;
+    QImage mPointSymbolImage2;
+    QImage mPointSymbolImageSelected2;
     
-    /* Create point symbol mPointSymbolPixmap/mPointSymbolPixmap cache */
+    /* Create point symbol mPointSymbolImage/mPointSymbolImage cache */
     void cache(  QColor selectionColor );
 
-    /* Create point symbol mPointSymbolPixmap2 cache */
+    /* Create point symbol mPointSymbolImage2 cache */
     void cache2( double widthScale, QColor selectionColor );
 
-    /* mPointSymbolPixmap/mPointSymbolPixmap cache updated */
+    /* mPointSymbolImage/mPointSymbolImage cache updated */
     bool mCacheUpToDate;
 
-    /* mPointSymbolPixmap2 cache updated */
+    /* mPointSymbolImage2 cache updated */
     bool mCacheUpToDate2;
 
     /* Selection color used in cache */

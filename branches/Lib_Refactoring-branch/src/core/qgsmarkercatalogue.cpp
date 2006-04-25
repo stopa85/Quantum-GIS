@@ -19,7 +19,7 @@ email                : blazek@itc.it
 #include <QPen>
 #include <QBrush>
 #include <QPainter>
-#include <QPixmap>
+#include <QImage>
 #include <QString>
 #include <QStringList>
 #include <QRect>
@@ -85,7 +85,7 @@ QgsMarkerCatalogue *QgsMarkerCatalogue::instance()
   return QgsMarkerCatalogue::mMarkerCatalogue;
 }
 
-QPixmap QgsMarkerCatalogue::marker ( QString fullName, int size, QPen pen, QBrush brush, bool qtBug )
+QImage QgsMarkerCatalogue::marker ( QString fullName, int size, QPen pen, QBrush brush, bool qtBug )
 {
   //std::cerr << "QgsMarkerCatalogue::marker " << fullName.toLocal8Bit().data() << " sice:" << size << std::endl;
   if ( fullName.left(5) == "hard:" ) 
@@ -96,10 +96,10 @@ QPixmap QgsMarkerCatalogue::marker ( QString fullName, int size, QPen pen, QBrus
   {
     return svgMarker ( fullName.mid(4), size ); 
   }
-  return QPixmap(); // empty
+  return QImage(); // empty
 }
 
-QPixmap QgsMarkerCatalogue::svgMarker ( QString filename, int scaleFactor)
+QImage QgsMarkerCatalogue::svgMarker ( QString filename, int scaleFactor)
 {
   QSvgRenderer mySVG;
   mySVG.load(filename);
@@ -108,62 +108,31 @@ QPixmap QgsMarkerCatalogue::svgMarker ( QString filename, int scaleFactor)
   // proportion of scale factor as in oritignal SVG TS XXX
   if (scaleFactor < 1) scaleFactor=1;
 
-  //QPixmap myPixmap = QPixmap(width,height);
-  QPixmap myPixmap = QPixmap(scaleFactor,scaleFactor);
+  // starting with transparent QImage
+  QImage myImage = QImage(scaleFactor,scaleFactor, QImage::Format_ARGB32_Premultiplied);
+  myImage.fill(0);
 
-  // The following is window-system-conditional since (at least)
-  // the combination of Qt 4.1.0 and RealVNC's Xvnc 4.1
-  // will result in the pixmap becoming invisible if it is filled
-  // with a non-opaque colour.
-  // This is probably because Xvnc 4.1 doesn't have the RENDER
-  // extension compiled into it.
-#if defined(Q_WS_X11)
-  // Do a runtime test to see if the X RENDER extension is available
-  if ( myPixmap.x11PictureHandle() )
-  {
-#endif
-    myPixmap.fill(QColor(255,255,255,0)); // transparent
-#if defined(Q_WS_X11)
-  }
-  else
-  {
-    myPixmap.fill(QColor(255,255,255)); // opaque
-  }
-#endif
-  QPainter myPainter(&myPixmap);
+  QPainter myPainter;
+  myPainter.begin(&myImage);
   myPainter.setRenderHint(QPainter::Antialiasing);
   mySVG.render(&myPainter);
+  myPainter.end();
 
-  return myPixmap;
+  return myImage;
 }
 
-QPixmap QgsMarkerCatalogue::hardMarker ( QString name, int s, QPen pen, QBrush brush, bool qtBug )
+QImage QgsMarkerCatalogue::hardMarker ( QString name, int s, QPen pen, QBrush brush, bool qtBug )
 {
   //Note teh +1 offset below is required because the 
   //scaling to odd numbers below will cause clipping otherwise
-  QPixmap myPixmap = QPixmap (s+1,s+1);
+  
+  // starting with transparent QImage
+  QImage myImage = QImage (s+1,s+1, QImage::Format_ARGB32_Premultiplied);
+  myImage.fill(0);
 
-  // The following is window-system-conditional since (at least)
-  // the combination of Qt 4.1.0 and RealVNC's Xvnc 4.1
-  // will result in the pixmap becoming invisible if it is filled
-  // with a non-opaque colour.
-  // This is probably because Xvnc 4.1 doesn't have the RENDER
-  // extension compiled into it.
-#if defined(Q_WS_X11)
-  // Do a runtime test to see if the X RENDER extension is available
-  if ( myPixmap.x11PictureHandle() )
-  {
-#endif
-    myPixmap.fill(QColor(255,255,255,0)); // transparent
-#if defined(Q_WS_X11)
-  }
-  else
-  {
-    myPixmap.fill(QColor(255,255,255)); // opaque
-  }
-#endif
+  QPainter myPainter;
+  myPainter.begin(&myImage);
 
-  QPainter myPainter(&myPixmap);
   // Size of polygon symbols is calculated so that the area is equal to circle with 
   // diameter mPointSize
 
@@ -250,6 +219,6 @@ QPixmap QgsMarkerCatalogue::hardMarker ( QString name, int s, QPen pen, QBrush b
   }
   myPainter.end();
 
-  return myPixmap;
+  return myImage;
 }
 

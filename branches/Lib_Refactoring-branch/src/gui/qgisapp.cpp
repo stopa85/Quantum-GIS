@@ -84,6 +84,7 @@
 #include "qgslegendlayerfile.h"
 #include "qgslegendlayerfile.h"
 #include "qgslegendlayer.h"
+#include "qgslogger.h"
 #include "qgsmapcanvas.h"
 #include "qgsmapoverviewcanvas.h"
 #include "qgsmaprender.h"
@@ -103,8 +104,8 @@
 #include "qgsrasterlayer.h"
 #include "qgsrasterlayerproperties.h"
 #include "qgsrect.h"
+#include "qgsrenderer.h"
 #include "qgsserversourceselect.h"
-#include "qgssinglesymbolrenderer.h"
 #include "qgsvectorfilewriter.h"
 #include "qgsvectorlayer.h"
 #include "qgisplugin.h"
@@ -120,6 +121,7 @@
 // Other includes
 //
 #include <algorithm>
+#include <cassert>
 #include <cmath>
 #include <functional>
 #include <iomanip>
@@ -222,9 +224,11 @@ static void setTitleBarText_( QWidget & qgisApp )
 {
 
   setupUi(this);
+
   mSplash->showMessage(tr("Reading settings"), Qt::AlignHCenter | Qt::AlignBottom);
   qApp->processEvents();
   readSettings();
+
   mSplash->showMessage(tr("Setting up the GUI"), Qt::AlignHCenter | Qt::AlignBottom);
   qApp->processEvents();
   createActions();
@@ -238,8 +242,18 @@ static void setTitleBarText_( QWidget & qgisApp )
   createOverview();
   createLegend();
   
-  mInternalClipboard = new QgsClipboard;
-  
+  mComposer = new QgsComposer(this); // Map composer
+  mInternalClipboard = new QgsClipboard; // create clipboard
+  mQgisInterface = new QgisIface(this); // create the interfce
+
+  // set application's icon
+  setIcon(QPixmap(qgis_xpm));
+
+  // set application's caption
+  QString caption = tr("Quantum GIS - ");
+  caption += QString("%1 ('%2')").arg(QGis::qgisVersion).arg(QGis::qgisReleaseName);
+  setCaption(caption);
+
   // set QGIS specific srs validation
   QgsSpatialRefSys::setCustomSrsValidation(QgisGui::customSrsValidation);
   
@@ -249,57 +263,16 @@ static void setTitleBarText_( QWidget & qgisApp )
   qApp->processEvents();
   createDB();    
 
-  // register all GDAL and OGR plug-ins
-  // Should this be here? isnt it the job of the provider? Tim
-  OGRRegisterAll();
-
-  QPixmap icon;
-  icon = QPixmap(qgis_xpm);
-  setIcon(icon);
-  // store startup location
-  QDir *d = new QDir();
-  mStartupPath = d->absPath();
-  delete d;
-  QBitmap zoomincur;
-  //  zoomincur = QBitmap(cursorzoomin);
-  QBitmap zoomincurmask;
-  //  zoomincurmask = QBitmap(cursorzoomin_mask);
-  QString caption = tr("Quantum GIS - ");
-  caption += QString("%1 ('%2')").arg(QGis::qgisVersion).arg(QGis::qgisReleaseName);
-  setCaption(caption);
-  // create the interfce
-  mQgisInterface = new QgisIface(this);
-
-
   // load providers
   mSplash->showMessage(tr("Checking provider plugins"), Qt::AlignHCenter | Qt::AlignBottom);
   qApp->processEvents();
   QgsApplication::initQgis();
   
-  //
   // Create the plugin registry and load plugins
-  //
- 
   // load any plugins that were running in the last session
   mSplash->showMessage(tr("Restoring loaded plugins"), Qt::AlignHCenter | Qt::AlignBottom);
   qApp->processEvents();
   restoreSessionPlugins(QgsApplication::pluginPath());
-
-  /* Delete this I think - Tim - FIXME 
-  //
-  // Create the map layer registry. Any layers loaded will
-  // register themselves here. Deleting layers shouls ONLY
-  // be done by means of a removeMapLayer call to the regsitry.
-  // This allows a single layer instance to be shared
-  // between more than one canvas. The registry is a singleton
-  // and is constructed using the static instance call.
-
-  // syntactic sugar shortcut for instance handle
-  //QgsMapLayerRegistry * mapLayerRegistry = QgsMapLayerRegistry::instance();
-  */
-
-  // Map composer
-  mComposer = new QgsComposer(this);
 
   mSplash->showMessage(tr("Initializing file filters"), Qt::AlignHCenter | Qt::AlignBottom);
   qApp->processEvents();
@@ -339,6 +312,7 @@ static void setTitleBarText_( QWidget & qgisApp )
 QgisApp::~QgisApp()
 {
   delete mInternalClipboard;
+  delete mQgisInterface;
   
   // delete map layer registry and provider registry
   QgsApplication::exitQgis();
@@ -347,8 +321,6 @@ QgisApp::~QgisApp()
 // restore any application settings stored in QSettings
 void QgisApp::readSettings()
 {
-  // get the application dir
-  mAppDir = QgsApplication::prefixPath();
 
   QSettings settings;
   // get the users theme preference from the settings
@@ -891,11 +863,6 @@ void QgisApp::createStatusBar()
       this, SLOT(projectPropertiesProjections()));//bring up the project props dialog when clicked
   statusBar()->addWidget(mOnTheFlyProjectionStatusButton,0,true);
   statusBar()->showMessage(tr("Ready"));
-}
-
-QString QgisApp::themePath()
-{
-  return mAppDir +"/share/qgis/themes/" + mThemeName + "/";
 }
 
 
@@ -1489,6 +1456,7 @@ static void buildSupportedVectorFileFilter_(QString & fileFilters)
 #endif // DEPRECATED
 
   fileFilters = QgsProviderRegistry::instance()->fileVectorFilters();
+  QgsDebugMsg("Vector file filters: " + fileFilters);
 
 }                               // buildSupportedVectorFileFilter_()
 
@@ -1633,32 +1601,6 @@ bool QgisApp::addLayer(QFileInfo const & vectorFile)
 
   if (layer->isValid())
   {
-    // init the context menu so it can connect to slots
-    // in main app
-
-    // XXX What about the rest of these?  Where should they be moved, if at
-    // XXX all?  Some of this functionality is taken care of in the
-    // XXX QgsProject::read() (If layers added via that.)
-
-    //add single symbol renderer as default
-    QgsSingleSymbolRenderer *renderer = new QgsSingleSymbolRenderer(layer->vectorType());
-
-    Q_CHECK_PTR( renderer );
-
-    if ( ! renderer )
-    {
-      mMapCanvas->freeze(false);
-// Let render() do its own cursor management
-//      QApplication::restoreOverrideCursor();
-
-      // XXX should we also delete the layer?
-
-      // XXX insert meaningful whine to the user here
-      return false;
-    }
-
-    layer->setRenderer(renderer);
-
     // Register this layer with the layers registry
     QgsMapLayerRegistry::instance()->addMapLayer(layer);
 
@@ -1753,24 +1695,6 @@ bool QgisApp::addLayer(QStringList const &theLayerQStringList, const QString& en
     if (layer->isValid())
     {
       layer->setProviderEncoding(enc);
-
-      //add single symbol renderer as default
-      QgsSingleSymbolRenderer *renderer = new QgsSingleSymbolRenderer(layer->vectorType());
-
-      Q_CHECK_PTR( renderer );
-
-      if ( ! renderer )
-      {
-        mMapCanvas->freeze(false);
-
-// Let render() do its own cursor management
-//        QApplication::restoreOverrideCursor();
-
-        // XXX insert meaningful whine to the user here
-        return false;
-      }
-
-      layer->setRenderer(renderer);
 
       // Register this layer with the layers registry
       QgsMapLayerRegistry::instance()->addMapLayer(layer);
@@ -1877,10 +1801,6 @@ void QgisApp::addDatabaseLayer()
       QgsVectorLayer *layer = new QgsVectorLayer(connInfo + " table=" + *it, *it, "postgres");
       if (layer->isValid())
       {
-        // give it a random color
-        QgsSingleSymbolRenderer *renderer = new QgsSingleSymbolRenderer(layer->vectorType());  // add single symbol renderer as default
-        layer->setRenderer(renderer);
-
         // register this layer with the central layers registry
         QgsMapLayerRegistry::instance()->addMapLayer(layer);
 
@@ -2306,7 +2226,7 @@ void QgisApp::fileNew(bool thePromptToSaveFlag)
   prj->writeEntry("Gui","/SelectionColorRedPart",myRed);
   prj->writeEntry("Gui","/SelectionColorGreenPart",myGreen);
   prj->writeEntry("Gui","/SelectionColorBluePart",myBlue); 
-  QgsRenderer::mSelectionColor=QColor(myRed,myGreen,myBlue);
+  QgsRenderer::setSelectionColor(QColor(myRed,myGreen,myBlue));
 
   //set the canvas to the default background colour
   //the default can be set in qgisoptions 
@@ -4047,7 +3967,7 @@ void QgisApp::openURL(QString url, bool useQgisDocDirectory)
   // open help in user browser
   if (useQgisDocDirectory)
   {
-    url = "file://" + mAppDir + "/share/qgis/doc/" + url;
+    url = "file://" + QgsApplication::prefixPath() + "/share/qgis/doc/" + url;
   }
 #ifdef Q_OS_MACX
   /* Use Mac OS X Launch Services which uses the user's default browser
@@ -4100,7 +4020,7 @@ void QgisApp::openURL(QString url, bool useQgisDocDirectory)
     helpProcess->start(browser,myArgs);
   }
   /*  mHelpViewer = new QgsHelpViewer(this,"helpviewer",false);
-      mHelpViewer->showContent(mAppDir +"/share/doc","index.html");
+      mHelpViewer->showContent(QgsApplication::prefixPath() +"/share/doc","index.html");
       mHelpViewer->show(); */
 #endif
 }
@@ -4155,12 +4075,6 @@ void QgisApp::addVectorLayer(QString vectorLayerPath, QString baseName, QString 
   {
     // Register this layer with the layers registry
     QgsMapLayerRegistry::instance()->addMapLayer(layer);
-
-    // give it a random color
-    QgsSingleSymbolRenderer *renderer = new QgsSingleSymbolRenderer(layer->vectorType());  //add single symbol renderer as default
-    layer->setRenderer(renderer);
-    // add it to the mapcanvas collection
-    // mMapCanvas->addLayer(layer); No longer necessary since adding to registry will add to canvas
 
     // connect up any keypresses to be passed tot he layer (e.g. so esc can stop rendering)
 #ifdef QGISDEBUG

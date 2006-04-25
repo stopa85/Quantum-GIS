@@ -20,6 +20,7 @@
 #include "qgsfield.h"
 #include "qgsgraduatedsymbolrenderer.h"
 #include "qgsludialog.h"
+#include "qgssymbol.h"
 #include "qgsvectordataprovider.h"
 #include "qgsvectorlayer.h"
 
@@ -35,8 +36,8 @@ QgsGraduatedSymbolDialog::QgsGraduatedSymbolDialog(QgsVectorLayer * layer): QDia
     setSizeGripEnabled(true);
 
     //find out the numerical fields of mVectorLayer
-    QgsVectorDataProvider *provider;
-    if (provider = dynamic_cast<QgsVectorDataProvider *>(mVectorLayer->getDataProvider()))
+    QgsVectorDataProvider *provider = mVectorLayer->getDataProvider();
+    if (provider)
     {
 	std::vector < QgsField > const & fields = provider->fields();
 	int fieldnumber = 0;
@@ -85,7 +86,6 @@ QgsGraduatedSymbolDialog::QgsGraduatedSymbolDialog(QgsVectorLayer * layer): QDia
 	}
 	classificationComboBox->setCurrentText(classfield);
 
-	QGis::VectorType m_type = mVectorLayer->vectorType();
 	numberofclassesspinbox->setValue(list.size());
 	//fill the items of the renderer into mValues
 	for(std::list<QgsSymbol*>::iterator it=list.begin();it!=list.end();++it)
@@ -144,7 +144,6 @@ void QgsGraduatedSymbolDialog::adjustNumberOfClasses()
     }
     
     std::map < QString, int >::iterator iter = mFieldMap.find(fieldstring);
-    int field = iter->second;
 }
 
 void QgsGraduatedSymbolDialog::apply()
@@ -156,7 +155,7 @@ void QgsGraduatedSymbolDialog::apply()
 	
 	QgsGraduatedSymbolRenderer* renderer = new QgsGraduatedSymbolRenderer(mVectorLayer->vectorType());
 
-	for (int item=0;item<mClassBreakBox->count();++item)
+	for (uint item=0;item<mClassBreakBox->count();++item)
         {
 	    QString classbreak=mClassBreakBox->text(item);
 	    std::map<QString,QgsSymbol*>::iterator it=mEntries.find(classbreak);
@@ -190,7 +189,7 @@ void QgsGraduatedSymbolDialog::apply()
 	    
 	    //test, if lower_bound is numeric or not (making a subclass of QString would be the proper solution)
 	    bool lbcontainsletter = false;
-	    for (uint j = 0; j < lower_bound.length(); j++)
+	    for (int j = 0; j < lower_bound.length(); j++)
             {
 		if (lower_bound.ref(j).isLetter())
                 {
@@ -200,7 +199,7 @@ void QgsGraduatedSymbolDialog::apply()
 	    
 	    //test, if upper_bound is numeric or not (making a subclass of QString would be the proper solution)
 	    bool ubcontainsletter = false;
-	    for (uint j = 0; j < upper_bound.length(); j++)
+	    for (int j = 0; j < upper_bound.length(); j++)
             {
 		if (upper_bound.ref(j).isLetter())
                 {

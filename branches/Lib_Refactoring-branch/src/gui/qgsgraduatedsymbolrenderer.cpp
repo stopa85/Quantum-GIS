@@ -15,23 +15,25 @@
  *                                                                         *
  ***************************************************************************/
 /* $Id$ */
-#include <cfloat>
+
 #include "qgis.h"
+#include "qgslogger.h"
 #include "qgsfeature.h"
 #include "qgsfeatureattribute.h"
 #include "qgsgraduatedsymbolrenderer.h"
-#include "qgslegendsymbologyitem.h"
+#include "qgssymbol.h"
 #include "qgssymbologyutils.h"
+#include "qgsvectorlayer.h"
+
 #include <QDomNode>
 #include <QDomElement>
-#include <QPixmap>
+#include <QImage>
+#include <QPainter>
 
 
 QgsGraduatedSymbolRenderer::QgsGraduatedSymbolRenderer(QGis::VectorType type)
 {
     mVectorType=type;
-    //call superclass method to set up selection colour
-    initialiseSelectionColor();
 }
 
 QgsGraduatedSymbolRenderer::QgsGraduatedSymbolRenderer(const QgsGraduatedSymbolRenderer& other)
@@ -84,7 +86,7 @@ void QgsGraduatedSymbolRenderer::removeSymbols()
     mSymbols.clear();
 }
 
-void QgsGraduatedSymbolRenderer::renderFeature(QPainter * p, QgsFeature * f, QPixmap* pic, 
+void QgsGraduatedSymbolRenderer::renderFeature(QPainter * p, QgsFeature * f, QImage* img, 
 	double* scalefactor, bool selected, double widthScale)
 {
   //first find out the value for the classification attribute
@@ -103,16 +105,16 @@ void QgsGraduatedSymbolRenderer::renderFeature(QPainter * p, QgsFeature * f, QPi
 
   if (it == mSymbols.end())      //value is contained in no item
   {
-    std::cout << "Warning, value is contained in no class" << std::endl << std::flush;
+    QgsDebugMsg("Warning, value is contained in no class");
     return;
   } 
   else
   {
     //set the qpen and qpainter to the right values
     // Point 
-    if ( pic && mVectorType == QGis::Point ) 
+    if ( img && mVectorType == QGis::Point ) 
     {
-      *pic = (*it)->getPointSymbolAsPixmap(  widthScale,
+      *img = (*it)->getPointSymbolAsImage(  widthScale,
           selected, mSelectionColor );
 
       if ( scalefactor ) *scalefactor = 1;

@@ -27,7 +27,7 @@
 #include "qgsmaplayer.h"
 
 class QPainter;
-class QPixmap;
+class QImage;
 
 class QgsAttributeAction;
 class QgsField;
@@ -384,7 +384,7 @@ private:                       // Private methods
    *  (i.e., code that calls this function needs to catch them
    */
   void drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * cXf, QgsCoordinateTransform* ct,
-                   QPixmap* marker, double markerScaleFactor);
+                   QImage* marker, double markerScaleFactor);
 
   /** Draws the layer labels using coordinate transformation */
   void drawLabels(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * cXf, QgsCoordinateTransform* ct);

@@ -19,16 +19,11 @@
 #ifndef QGSGRADUATEDSYMBOLRENDERER_H
 #define QGSGRADUATEDSYMBOLRENDERER_H
 
-#include <QPixmap>
-#include "qgsrenderer.h"
-#include "qgsrangerenderitem.h"
 #include <list>
-#include <iostream>
-#include "qgspoint.h"
-#include "qpainter.h"
-#include "qgsmaptopixel.h"
-#include "qgsfeature.h"
-#include "qgsvectorlayer.h"
+
+#include "qgsrenderer.h"
+
+class QgsVectorLayer;
 
 /**This class contains the information for graduate symbol rendering*/
 class QgsGraduatedSymbolRenderer: public QgsRenderer
@@ -49,7 +44,7 @@ class QgsGraduatedSymbolRenderer: public QgsRenderer
      \param p a painter (usually the one from the current map canvas)
      \param f a pointer to a feature to render
      \param t the transform object containing the information how to transform the map coordinates to screen coordinates*/
-    void renderFeature(QPainter* p, QgsFeature* f, QPixmap* pic, double* scalefactor, bool selected, double widthScale = 1.);
+    void renderFeature(QPainter* p, QgsFeature* f, QImage* img, double* scalefactor, bool selected, double widthScale = 1.);
     /**Sets the number of the classicifation field
     \param field the number of the field to classify*/
     void setClassificationField(int field);

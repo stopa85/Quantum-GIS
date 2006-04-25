@@ -41,7 +41,6 @@ class QgsHelpViewer;
 class QgsLegend;
 class QgsMapCanvas;
 class QgsMapLayer;
-class QgsMapLayerRegistry;
 class QgsPoint;
 class QgsRasterLayer;
 class QgsRect;
@@ -156,8 +155,6 @@ public slots:
   void about();
   //! Add a raster layer to the map (will prompt user for filename using dlg )
   void addRasterLayer();
-  //! Get the path to the active theme dir
-  QString themePath();
   //#ifdef HAVE_POSTGRESQL
   //! Add a databaselayer to the map
   void addDatabaseLayer();
@@ -482,9 +479,6 @@ private:
   //!The name of the active theme
   QString mThemeName;
 
-  //! A central registry that keeps track of all loaded layers.
-  // prefer QgsMapLayerRegistry::instance() to emphasize Singleton
-  ///QgsMapLayerRegistry * mMapLayerRegistry;
   //! Widget that will live on the statusbar to display scale
   QLabel * mScaleLabel;
   //! Widget that will live in the statusbar to display coords
@@ -507,8 +501,6 @@ private:
   QMenu *toolPopupCapture;
   //! Map canvas
   QgsMapCanvas *mMapCanvas;
-  //! Map layer registry
-  // use instance() now QgsMapLayerRegistry *mLayerRegistry;
   //! Table of contents (legend) for the map
   QgsLegend *mMapLegend;
   //! Cursor for the overview map
@@ -528,8 +520,6 @@ private:
   QString mVersionMessage;
   QSplashScreen *mSplash;
   friend class QgisIface;
-  //! application directory
-  QString mAppDir;
   //! help viewer
   QgsHelpViewer *mHelpViewer;
   //! menu map (key is name, value is menu id)

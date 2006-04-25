@@ -15,24 +15,23 @@
  *                                                                         *
  ***************************************************************************/
 /* $Id$ */
+
 #include "qgis.h"
 #include "qgssinglesymbolrenderer.h"
-#include "qgsfeature.h"
-#include "qgis.h"
-#include "qgsvectorlayer.h"
-#include "qgslegenditem.h"
-#include "qgssymbologyutils.h"
 
-#include <QString>
+#include "qgsfeature.h"
+#include "qgssymbol.h"
+#include "qgssymbologyutils.h"
+#include "qgsvectorlayer.h"
+
 #include <QDomNode>
+#include <QImage>
 #include <QPainter>
-#include <QPixmap>
+#include <QString>
 
 QgsSingleSymbolRenderer::QgsSingleSymbolRenderer(QGis::VectorType type)
 {
     mVectorType=type;
-    //call superclass method to set up selection colour
-    initialiseSelectionColor();
   
     //initial setting based on random color
     QgsSymbol* sy = new QgsSymbol(mVectorType);
@@ -84,12 +83,12 @@ void QgsSingleSymbolRenderer::addSymbol(QgsSymbol* sy)
     mSymbol=sy;
 }
 
-void QgsSingleSymbolRenderer::renderFeature(QPainter * p, QgsFeature * f, QPixmap* pic, 
+void QgsSingleSymbolRenderer::renderFeature(QPainter * p, QgsFeature * f, QImage* img, 
 	         double* scalefactor, bool selected, double widthScale)
 {
 	// Point 
-	if ( pic && mVectorType == QGis::Point) {
-	    *pic = mSymbol->getPointSymbolAsPixmap(  widthScale, 
+	if ( img && mVectorType == QGis::Point) {
+	    *img = mSymbol->getPointSymbolAsImage(  widthScale, 
 					 selected, mSelectionColor );
 	    
 	    if ( scalefactor ) *scalefactor = 1;

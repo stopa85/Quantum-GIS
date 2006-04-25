@@ -21,16 +21,11 @@
 #ifndef QGSRASTERDATAPROVIDER_H
 #define QGSRASTERDATAPROVIDER_H
 
-#include <set>
-#include <map>
-#include <qobject.h>
-#include <qtextcodec.h>
-#include <qimage.h>
 
 #include "qgsdataprovider.h"
-#include "qgspoint.h"
-#include <qgsrasterviewport.h>
 
+class QImage;
+class QgsPoint;
 
 /** Base class for raster data providers
  *

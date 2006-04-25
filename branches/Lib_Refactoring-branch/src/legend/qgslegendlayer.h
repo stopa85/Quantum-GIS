@@ -28,7 +28,12 @@ class QgsLegendLayer;
 class QgsLegendLayerFile;
 class QgsLegendPropertyGroup;
 class QgsMapLayer;
+class QgsRasterLayer;
+class QgsVectorLayer;
+
 class QTreeWidget;
+
+typedef std::list< std::pair<QString, QPixmap> > SymbologyList;
 
 /**
 Container for layer, including layer file(s), symbology class breaks and properties
@@ -65,13 +70,18 @@ public:
 
 protected:
     
+    /** Prepare and change symbology for vector layer */
+    void vectorLayerSymbology(const QgsVectorLayer* mapLayer);
+    
+    /** Prepare and change symbology for raster layer */
+    void rasterLayerSymbology(QgsRasterLayer* mapLayer);
+    
     /** Removes the symbology items of a layer and adds new ones.
      * If other files are in the same legend layer, the new symbology settings are copied.
      * Note: the QIcon* are deleted and therefore need to be allocated by calling
      * functions using operator new
      */
-    void changeSymbologySettings(const QgsMapLayer* mapLayer,
-                                 const std::list< std::pair<QString, QPixmap> >* newSymbologyItems);
+    void changeSymbologySettings(const QgsMapLayer* mapLayer, const SymbologyList& newSymbologyItems);
     
     /** Copies the symbology settings of the layer to all maplayers in the QgsLegendLayerFileGroup.
      * This method should be called whenever a layer in this group changes it symbology settings

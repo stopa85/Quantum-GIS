@@ -25,9 +25,7 @@
 #include "qgsmaplayer.h"
 #include "qgsmaplayerregistry.h"
 
-#include <QPixmap>
 #include <QPainter>
-#include <Q3PaintDeviceMetrics>
 #include <QTime>
 
 
