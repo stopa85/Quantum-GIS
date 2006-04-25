@@ -38,10 +38,10 @@ public:
  QString library(QString pluginKey);
  //! Retrieve the metadata for a plugin by name
  QgsPluginMetadata * pluginMetadata(QString name);
+ //returns the metadata of all plugins
+ std::list<QgsPluginMetadata*> pluginData();
  //! Retrieve a pointer to a loaded plugin by name
  QgisPlugin * plugin(QString name);
- //! Returns all renderer plugins
- std::list<QgisPlugin*> rendererPlugins();
  //! Add a plugin to the map of loaded plugins
  void addPlugin(QString _library, QString _name, QgisPlugin * _plugin);
  //! Remove a plugin from the list of loaded plugins

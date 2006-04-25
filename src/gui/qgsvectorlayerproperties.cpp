@@ -114,7 +114,7 @@ void QgsVectorLayerProperties::alterLayerDialog(const QString & dialogString)
     else
       {
 	//possibly a renderer from a plugin?
-	std::list<QgisPlugin*> rplugins = QgsPluginRegistry::instance()->rendererPlugins();
+	std::list<QgisPlugin*> rplugins = rendererPlugins();
 	QgsRendererPlugin* theRendererPlugin = 0;
 	for(std::list<QgisPlugin*>::iterator it =  rplugins.begin(); it != rplugins.end(); ++it)
 	  {
@@ -200,7 +200,7 @@ void QgsVectorLayerProperties::reset( void )
 	  legendtypecombobox->insertItem(tr("Unique Value"));
       }
       //find renderer plugins
-      std::list<QgisPlugin*> rplugins = QgsPluginRegistry::instance()->rendererPlugins();
+      std::list<QgisPlugin*> rplugins = rendererPlugins();
       QgsRendererPlugin* theRendererPlugin = 0;
       for(std::list<QgisPlugin*>::iterator it =  rplugins.begin(); it != rplugins.end(); ++it)
 	{
@@ -590,3 +590,23 @@ void QgsVectorLayerProperties::on_pbnChangeSpatialRefSys_clicked()
     delete mySelector;
     leSpatialRefSys->setText(layer->coordinateTransform()->sourceSRS().proj4String());
 }
+
+std::list<QgisPlugin*> QgsVectorLayerProperties::rendererPlugins() const
+{
+  std::list<QgisPlugin*> result;
+  QgisPlugin* thePlugin = 0;
+  std::list<QgsPluginMetadata*> pluginData = QgsPluginRegistry::instance()->pluginData();
+  for(std::list<QgsPluginMetadata*>::iterator it = pluginData.begin(); it != pluginData.end(); ++it)
+    {
+      if(*it)
+	{
+	  thePlugin = (*it)->plugin();
+	  if(thePlugin && thePlugin->type() == QgisPlugin::RENDERER)
+	    {
+	      result.push_back(thePlugin);
+	    }
+	}
+    }
+  return result;
+}
+

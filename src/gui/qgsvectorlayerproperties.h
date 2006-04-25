@@ -24,6 +24,7 @@
 #include "qgisgui.h"
 #include "qgsrenderer.h"
 
+class QgisPlugin;
 class QgsAttributeActionDialog;
 class QgsLabelDialog;
 class QgsVectorLayer;
@@ -74,8 +75,7 @@ class QgsVectorLayerProperties : public QDialog, private Ui::QgsVectorLayerPrope
   QgsLabelDialog* labelDialog;
   /**Actions dialog. If apply is pressed, the actions are stored for later use */
   QgsAttributeActionDialog* actionDialog;
-  /**Buffer pixmap which takes the picture of renderers before they are assigned to the vector layer*/
-  //QPixmap bufferPixmap;
+  std::list<QgisPlugin*> rendererPlugins() const;
 };
 
 inline QString QgsVectorLayerProperties::displayName()
