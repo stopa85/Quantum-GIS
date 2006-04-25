@@ -168,7 +168,6 @@ The [type] part of the variable should be the type class of the variable written
 #include <Q3ValueVector>
 #include <Q3ValueList> 
 #include <QDateTime>
-#include <QPixmap>
 
 #include <gdal_priv.h> // because of GDALDataType
 
@@ -180,6 +179,7 @@ The [type] part of the variable should be the type class of the variable written
  */ 
  
 #include <QLibrary>
+#include "qgsrasterdataprovider.h"
 
 /*
  * END
@@ -188,33 +188,20 @@ The [type] part of the variable should be the type class of the variable written
  
 #include "qgspoint.h"
 #include "qgsmaplayer.h"
-#include "qgscolortable.h"
 #include "qgsrasterlayer.h"
-#include "qgsrasterbandstats.h"
-#include "qgsrasterpyramid.h"
-
-/*
- * 
- * New includes that will convert this class to a data provider interface
- * (B Morley)
- *
- */ 
- 
-#include "qgsrasterdataprovider.h"
-
-/*
- * END
- */
-
 
 
 //
 // Forward declarations
 //
+class QgsColorTable;
 class QgsRect;
+class QgsRasterBandStats;
+class QgsRasterPyramid;
 class QgsRasterLayerProperties;
 class QgsRasterViewPort;
 class QImage;
+class QPixmap;
 
 class GDALDataset;
 class GDALRasterBand;
@@ -368,10 +355,7 @@ public:
         stdDevsToPlotDouble = theDouble;
     };
     /** \brief Get the number of bands in this layer  */
-    const unsigned int getBandCount()
-    {
-        return rasterStatsVector.size();
-    };
+    const unsigned int getBandCount();
     /** \brief Get RasterBandStats for a band given its number (read only)  */
     const  QgsRasterBandStats getRasterBandStats(int);
     /** \brief  Check whether a given band number has stats associated with it */
@@ -994,9 +978,6 @@ private:
     double maxGrayDouble;
     /** \brief Whether this raster has overviews / pyramids or not */
     bool hasPyramidsFlag;
-    /** \brief These are two little icons used to indicate whether a 
-     * layer has pyramds bult or not. */
-    QPixmap mPyramidPixmap, mNoPyramidPixmap;
     /** \brief This list holds a series of RasterPyramid structs
      * which store infomation for each potential pyramid level for this raster.*/
     RasterPyramidList mPyramidList;
