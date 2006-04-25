@@ -189,6 +189,10 @@ QgsProviderRegistry::QgsProviderRegistry(QString pluginPath)
 } // QgsProviderRegistry ctor
 
 
+QgsProviderRegistry::~QgsProviderRegistry()
+{
+}
+
 
 /** convenience function for finding any existing data providers that match "providerKey"
 

@@ -16,15 +16,16 @@
 #ifndef QGSMARKERCATALOGUE_H
 #define QGSMARKERCATALOGUE_H
 
+class QImage;
 class QString;
 class QStringList;
 class QPicture;
-class QPixmap;
 class QPen;
 class QBrush;
 
 /** Catalogue of point symbols */
-class QgsMarkerCatalogue{
+class QgsMarkerCatalogue
+{
 
 public:
     //! Destructor
@@ -39,10 +40,10 @@ public:
     /** Returns picture of the marker
      * \param fullName full name, e.g. hard:circle, svg:/home/usr1/marker1.svg
      */
-    QPixmap marker ( QString fullName, int size, QPen pen, QBrush brush, bool qtBug = true );
+    QImage marker ( QString fullName, int size, QPen pen, QBrush brush, bool qtBug = true );
 
     /* Returns a pixmap given a filename of a svg marker */
-    static QPixmap svgMarker ( QString name, int size );
+    static QImage svgMarker ( QString name, int size );
 private:
 
     /**Constructor*/
@@ -54,7 +55,7 @@ private:
     QStringList mList;
 
     /** Hard coded */
-    QPixmap hardMarker ( QString name, int size, QPen pen, QBrush brush, bool qtBug = true );
+    QImage hardMarker ( QString name, int size, QPen pen, QBrush brush, bool qtBug = true );
 
 };
     

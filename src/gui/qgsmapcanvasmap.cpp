@@ -43,7 +43,7 @@ void QgsMapCanvasMap::resize(QSize size)
 void QgsMapCanvasMap::render()
 {
   // use temporary image for rendering
-  QImage image(size(), QImage::Format_RGB32);
+  QImage image(size(), QImage::Format_ARGB32_Premultiplied);
   
   image.fill(mBgColor.rgb());
 

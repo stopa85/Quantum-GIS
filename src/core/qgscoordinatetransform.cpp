@@ -30,6 +30,10 @@ extern "C" {
 #include <proj_api.h>
 }
 
+// if defined shows all information about transform to stdout
+#undef COORDINATE_TRANSFORM_VERBOSE
+
+
 QgsCoordinateTransform::QgsCoordinateTransform( ) : QObject(), mSourceSRS(), mDestSRS()
 
 {
@@ -169,6 +173,7 @@ void QgsCoordinateTransform::initialise()
     mInitialisedFlag = false;
   }
 
+#ifdef COORDINATE_TRANSFORM_VERBOSE
   if (mInitialisedFlag)
   {
 
@@ -188,6 +193,13 @@ void QgsCoordinateTransform::initialise()
     std::cout << "The OGR Coordinate transformation FAILED TO INITIALISE!" << std::endl;
     std::cout << "------------------------------------------------------------"<< std::endl;
   }
+#else
+  if (!mInitialisedFlag)
+  {
+    QgsDebugMsg("Coordinate transformation failed to initialize!");
+  }
+#endif
+
 }
 
 //

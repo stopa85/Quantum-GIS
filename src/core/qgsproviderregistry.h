@@ -22,13 +22,14 @@
 
 #include <map>
 
-#include <qdir.h>
-#include <qstring.h>
-
+#include <QDir>
+#include <QString>
 
 
 class QgsDataProvider;
 class QgsProviderMetadata;
+
+
 
 /** canonical manager of data providers
 
@@ -36,29 +37,26 @@ class QgsProviderMetadata;
 */
 class QgsProviderRegistry
 {
-public:
 
-    /** means of accessing canonical single instance
-     */
+  public:
+
+    /** means of accessing canonical single instance  */
     static QgsProviderRegistry* instance(QString pluginPath = QString::null);
     
-    /** Virtual dtor */
-    virtual ~QgsProviderRegistry() {};
+    /** Virtual dectructor */
+    virtual ~QgsProviderRegistry();
 
     QString library(QString const & providerKey) const;
 
     QString pluginList(bool asHtml = false) const;
 
-    /// return library directory where plugins are found
+    /** return library directory where plugins are found */
     QDir const & libraryDirectory() const;
 
     void setLibraryDirectory(QDir const & path);
  
     QgsDataProvider * getProvider( QString const & providerKey, 
                                    QString const & dataSource );
-
-    /// type for data provider metadata associative container
-    typedef std::map<QString,QgsProviderMetadata*> Providers;
 
     /** return vector file filter string
 
@@ -74,7 +72,7 @@ public:
     */
     virtual QString fileVectorFilters() const;
 
-  /** open the given vector data source
+    /** open the given vector data source
   
     Similar to open(QString const &), except that the user specifies a data provider 
     with which to open the data source instead of using the default data provider
@@ -94,23 +92,25 @@ public:
     Eventually would be nice if could make QgsDataManager smart
     enough to figure out whether the given name mapped to a vector,
     raster, or database source.
-  */
-  QgsDataProvider * openVector( QString const & dataSource, QString const & providerKey );
-  
+    */
+    QgsDataProvider * openVector( QString const & dataSource, QString const & providerKey );
 
 
-private:
+    /** type for data provider metadata associative container */
+    typedef std::map<QString,QgsProviderMetadata*> Providers;
+
+  private:
 
     /** ctor private since instance() creates it */
     QgsProviderRegistry(QString pluginPath);
 
-    /// pointer to canonical Singleton object
+    /** pointer to canonical Singleton object */
     static QgsProviderRegistry* _instance;
 
-    /// associative container of provider metadata handles
+    /** associative container of provider metadata handles */
     Providers mProviders;
 
-    /// directory in which provider plugins are installed
+    /** directory in which provider plugins are installed */
     QDir mLibraryDirectory;
 
     /** file filter string for vector files

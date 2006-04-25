@@ -15,24 +15,22 @@
  *                                                                         *
  ***************************************************************************/
 /* $Id$ */
+
 #include "qgsuniquevaluerenderer.h"
 #include "qgsfeatureattribute.h"
 #include "qgsfeature.h"
 #include "qgsvectorlayer.h"
 #include "qgssymbol.h"
 #include "qgssymbologyutils.h"
+
 #include <QDomNode>
 #include <QPainter>
-#include <QPixmap>
+#include <QImage>
 #include <vector>
 
 QgsUniqueValueRenderer::QgsUniqueValueRenderer(QGis::VectorType type): mClassificationField(0)
 {
     mVectorType = type;
-
-//call superclass method to set up selection colour
-    initialiseSelectionColor();
-
 }
 
 QgsUniqueValueRenderer::QgsUniqueValueRenderer(const QgsUniqueValueRenderer& other)
@@ -95,7 +93,7 @@ int QgsUniqueValueRenderer::classificationField()
     return mClassificationField;
 }
     
-void QgsUniqueValueRenderer::renderFeature(QPainter* p, QgsFeature* f,QPixmap* pic, 
+void QgsUniqueValueRenderer::renderFeature(QPainter* p, QgsFeature* f,QImage* img, 
 	double* scalefactor, bool selected, double widthScale)
 {
     std::vector < QgsFeatureAttribute > vec = f->attributeMap();
@@ -106,8 +104,8 @@ void QgsUniqueValueRenderer::renderFeature(QPainter* p, QgsFeature* f,QPixmap* p
 	QgsSymbol* symbol = it->second;
 
 	// Point 
-	if ( pic && mVectorType == QGis::Point ) {
-	    *pic = symbol->getPointSymbolAsPixmap(  widthScale,
+	if ( img && mVectorType == QGis::Point ) {
+	    *img = symbol->getPointSymbolAsImage(  widthScale,
 		                                       selected, mSelectionColor );
 	    
 	    if ( scalefactor ) *scalefactor = 1;

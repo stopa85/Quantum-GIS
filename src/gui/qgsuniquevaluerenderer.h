@@ -21,10 +21,6 @@
 #include "qgsrenderer.h"
 #include <map>
 
-class QgsSymbol;
-class QPixmap;
-class QPainter;
-
 class QgsUniqueValueRenderer: public QgsRenderer
 {
  public:
@@ -32,7 +28,7 @@ class QgsUniqueValueRenderer: public QgsRenderer
     QgsUniqueValueRenderer(const QgsUniqueValueRenderer& other);
     QgsUniqueValueRenderer& operator=(const QgsUniqueValueRenderer& other);
     virtual ~QgsUniqueValueRenderer();
-    void renderFeature(QPainter* p, QgsFeature* f,QPixmap* pic, double* scalefactor, bool selected, double widthScale = 1.);
+    void renderFeature(QPainter* p, QgsFeature* f,QImage* img, double* scalefactor, bool selected, double widthScale = 1.);
     /**Reads the renderer configuration from an XML file
      @param rnode the DOM node to read 
      @param vl the vector layer which will be associated with the renderer*/

@@ -32,9 +32,9 @@
 #include <sstream>
 #include <utility>
 
+#include <QImage>
 #include <QMessageBox>
 #include <QPainter>
-#include <QPixmap>
 #include <QPolygonF>
 #include <QString>
 
@@ -63,6 +63,7 @@
 #include "qgspoint.h"
 #include "qgsproviderregistry.h"
 #include "qgsrect.h"
+#include "qgssinglesymbolrenderer.h"
 #include "qgsspatialrefsys.h"
 #include "qgsvectordataprovider.h"
 
@@ -104,6 +105,10 @@ QgsVectorLayer::QgsVectorLayer(QString vectorLayerPath,
   if(mValid)
   {
     setCoordinateSystem();
+    
+    // add single symbol renderer as default
+    QgsSingleSymbolRenderer *renderer = new QgsSingleSymbolRenderer(vectorType());
+    setRenderer(renderer);
 
     // Get the update threshold from user settings. We
     // do this only on construction to avoid the penality of
@@ -717,7 +722,7 @@ void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * th
 
     QPen pen;
     /*Pointer to a marker image*/
-    QPixmap marker;
+    QImage marker;
     /*Scale factor of the marker image*/
     double markerScaleFactor=1.;
 
@@ -2740,7 +2745,7 @@ bool QgsVectorLayer::snapSegmentWithContext(QgsPoint& point,
 
 
 void QgsVectorLayer::drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * theMapToPixelTransform, QgsCoordinateTransform* ct, 
-    QPixmap * marker, double markerScaleFactor)
+    QImage * marker, double markerScaleFactor)
 {
   // Only have variables, etc outside the switch() statement that are
   // used in all cases of the statement (otherwise they may get
@@ -2776,7 +2781,7 @@ void QgsVectorLayer::drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * t
 
         p->save();
         p->scale(markerScaleFactor,markerScaleFactor);
-        p->drawPixmap(pt, *marker);
+        p->drawImage(pt, *marker);
         p->restore();
 
         break;
@@ -2812,7 +2817,7 @@ void QgsVectorLayer::drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * t
             needToTrim = true;
           else
 #endif
-          p->drawPixmap(pt, *marker);
+          p->drawImage(pt, *marker);
         }
         p->restore();
 

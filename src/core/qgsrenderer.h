@@ -19,11 +19,9 @@
 #define QGSRENDERER_H
 
 class QgsFeature;
-class QgsMapToPixel;
 class QgsVectorLayer;
 class QPainter;
-class QgsDlgVectorLayerProperties;
-class QPixmap;
+class QImage;
 class QDomNode;
 class QDomDocument;
 class QColor;
@@ -42,13 +40,13 @@ class QgsRenderer
     /** Default ctor sets up selection colour from project properties */
     QgsRenderer();
     /** Virtual destructor because we have virtual methods... */
-    virtual ~QgsRenderer() {};
+    virtual ~QgsRenderer();
     /**A vector layer passes features to a renderer object to change the brush and pen of the qpainter
      @param p the painter storing brush and pen
      @param f a pointer to the feature to be rendered
      @param pic pointer to a marker from SVG (is only used by marker renderers)
      @param scalefactor pointer to the scale factor for the marker image*/
-    virtual void renderFeature(QPainter* p, QgsFeature* f,QPixmap* pic, double* scalefactor, bool selected, double widthScale = 1.)=0;
+    virtual void renderFeature(QPainter* p, QgsFeature* f,QImage* pic, double* scalefactor, bool selected, double widthScale = 1.)=0;
     /**Reads the renderer configuration from an XML file
      @param rnode the DOM node to read 
      @param vl the vector layer which will be associated with the renderer*/
@@ -64,21 +62,19 @@ class QgsRenderer
     virtual std::list<int> classificationAttributes() const=0;
     /**Returns the renderers name*/
     virtual QString name() const=0;    
-    /** Set up the selection color by reading approriate values from project props */
-    void initialiseSelectionColor();
     /**Return symbology items*/
     virtual const std::list<QgsSymbol*> symbols() const=0;
-    /**Deletes the child items of the legendparent and add new ones according to the 
-     QgsSymbols contained in this renderer*/
-    virtual void refreshLegend(std::list< std::pair<QString, QPixmap> >* symbologyList) const;
     /**Returns a copy of the renderer (a deep copy on the heap)*/
     virtual QgsRenderer* clone() const=0;
-    /**Color to draw selected features - static so we can change it in proj props and automatically 
-       all renderers are updated*/
-    static QColor mSelectionColor;
+    /** Change selection color */
+    static void setSelectionColor(QColor color);
    
  protected:
-    /**Layer type*/
+    /**Color to draw selected features - static so we can change it in proj props and automatically 
+     all renderers are updated*/
+   static QColor mSelectionColor;
+
+   /**Layer type*/
     QGis::VectorType mVectorType;
 };
 

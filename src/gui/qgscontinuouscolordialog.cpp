@@ -39,8 +39,8 @@ QgsContinuousColorDialog::QgsContinuousColorDialog(QgsVectorLayer * layer)
     QObject::connect(btnMaxValue, SIGNAL(clicked()), this, SLOT(selectMaximumColor()));
 
     //find out the numerical fields of mVectorLayer
-    QgsVectorDataProvider *provider;
-    if (provider = dynamic_cast<QgsVectorDataProvider*>(mVectorLayer->getDataProvider()))
+    QgsVectorDataProvider *provider = mVectorLayer->getDataProvider();
+    if (provider)
     {
 	std::vector < QgsField > const & fields = provider->fields();
 	int fieldnumber = 0;

@@ -20,14 +20,7 @@
 #define QGSSINGLESYMBOLRENDERER_H
 
 #include "qgsrenderer.h"
-#include "qgsrenderitem.h"
-#include "qgssymbol.h"
-#include "qgspoint.h"
-#include "qgsmaptopixel.h"
 
-class QPainter;
-class QPixmap;
-class QgsFeature;
 
 /**Render class to display all the features with a single QgsSymbol*/
 class QgsSingleSymbolRenderer: public QgsRenderer
@@ -42,7 +35,7 @@ class QgsSingleSymbolRenderer: public QgsRenderer
     /*Returns a pointer to mSymbol*/
     const QgsSymbol* symbol() const;
     /**Renders an OGRFeature*/
-    void renderFeature(QPainter* p, QgsFeature* f, QPixmap* pic, double* scalefactor, bool selected, double widthScale = 1.);
+    void renderFeature(QPainter* p, QgsFeature* f, QImage* img, double* scalefactor, bool selected, double widthScale = 1.);
     /**Reads the renderer configuration from an XML file
      @param rnode the DOM node to read 
      @param vl the vector layer which will be associated with the renderer*/

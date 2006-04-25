@@ -109,6 +109,7 @@ wish to see edbug messages printed to stdout.
 #include "qgsmaptopixel.h"
 #include "qgsproject.h"
 #include "qgsrasterlayerproperties.h"
+#include "qgsrasterviewport.h"
 #include "qgsrect.h"
 #include "qgsspatialrefsys.h"
 

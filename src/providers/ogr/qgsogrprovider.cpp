@@ -1264,6 +1264,9 @@ QGISEXTERN QString fileVectorFilters()
     {
         return myFileFilters;
     }
+    
+    // register ogr plugins
+    OGRRegisterAll();
 
     // first get the GDAL driver manager
 

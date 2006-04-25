@@ -34,7 +34,7 @@ QgsSymbol::QgsSymbol(QGis::VectorType t, QString lvalue, QString uvalue, QString
       mType(t),
       mPointSymbolName( "hard:circle" ),
       mPointSize( 6 ),
-      mPointSymbolPixmap(1,1),
+      mPointSymbolImage(1,1, QImage::Format_ARGB32_Premultiplied),
       mWidthScale(1.0),
       mCacheUpToDate( false ),
       mCacheUpToDate2( false )
@@ -50,7 +50,7 @@ QgsSymbol::QgsSymbol(QGis::VectorType t, QString lvalue, QString uvalue, QString
       mBrush( c ),
       mPointSymbolName( "hard:circle" ),
       mPointSize( 6 ),
-      mPointSymbolPixmap(1,1),
+      mPointSymbolImage(1,1, QImage::Format_ARGB32_Premultiplied),
       mWidthScale(1.0),
       mCacheUpToDate( false ),
       mCacheUpToDate2( false )
@@ -59,7 +59,7 @@ QgsSymbol::QgsSymbol(QGis::VectorType t, QString lvalue, QString uvalue, QString
 QgsSymbol::QgsSymbol()
     : mPointSymbolName( "hard:circle" ),
       mPointSize( 6 ),
-      mPointSymbolPixmap(1,1),
+      mPointSymbolImage(1,1, QImage::Format_ARGB32_Premultiplied),
       mWidthScale(1.0),
       mCacheUpToDate( false ),
       mCacheUpToDate2( false )
@@ -71,7 +71,7 @@ QgsSymbol::QgsSymbol(QColor c)
       mBrush( c ),
       mPointSymbolName( "hard:circle" ),
       mPointSize( 6 ),
-      mPointSymbolPixmap(1,1),
+      mPointSymbolImage(1,1, QImage::Format_ARGB32_Premultiplied),
       mWidthScale(1.0),
       mCacheUpToDate( false ),
       mCacheUpToDate2( false )
@@ -155,28 +155,28 @@ int QgsSymbol::pointSize() const
 }
 
 
-QPixmap QgsSymbol::getLineSymbolAsPixmap()
+QImage QgsSymbol::getLineSymbolAsImage()
 {
-    QPixmap pix(15, 15);
-    pix.fill();
-    QPainter p(&pix);
+    QImage img(15, 15, QImage::Format_ARGB32_Premultiplied);
+    img.fill(QColor(255,255,255,0).rgba());
+    QPainter p(&img);
     p.setPen(mPen);
     p.drawLine(0, 0, 15, 15);
-    return pix; //this is ok because of qts sharing mechanism
+    return img; //this is ok because of qts sharing mechanism
 }
 
-QPixmap QgsSymbol::getPolygonSymbolAsPixmap()
+QImage QgsSymbol::getPolygonSymbolAsImage()
 {
-   QPixmap pix(15, 15);
-   pix.fill();
-   QPainter p(&pix);
+   QImage img(15, 15, QImage::Format_ARGB32_Premultiplied);
+   img.fill(QColor(255,255,255,0).rgba());
+   QPainter p(&img);
    p.setPen(mPen);
    p.setBrush(mBrush);
    p.drawRect(0, 0, 15, 15);
-    return pix; //this is ok because of qts sharing mechanism 
+   return img; //this is ok because of qts sharing mechanism 
 }
 
-QPixmap QgsSymbol::getPointSymbolAsPixmap(  double widthScale,
+QImage QgsSymbol::getPointSymbolAsImage(  double widthScale,
                bool selected, QColor selectionColor )
 {
 
@@ -189,11 +189,13 @@ QPixmap QgsSymbol::getPointSymbolAsPixmap(  double widthScale,
 	        cache(  mSelectionColor );
 	    }
 	}
-	if ( selected ) {
-	    return mPointSymbolPixmapSelected;
-	}
-        return mPointSymbolPixmap;
 
+	if ( selected )
+  {
+	    return mPointSymbolImageSelected;
+	}
+        
+ return mPointSymbolImage;
 }
 
 void QgsSymbol::cache(  QColor selectionColor )
@@ -203,10 +205,10 @@ void QgsSymbol::cache(  QColor selectionColor )
     QBrush brush = mBrush;
     brush.setColor ( selectionColor ); 
 
-    mPointSymbolPixmap = QgsMarkerCatalogue::instance()->marker ( mPointSymbolName, mPointSize,
+    mPointSymbolImage = QgsMarkerCatalogue::instance()->marker ( mPointSymbolName, mPointSize,
 	                        mPen, mBrush );
     
-    mPointSymbolPixmapSelected = QgsMarkerCatalogue::instance()->marker ( 
+    mPointSymbolImageSelected = QgsMarkerCatalogue::instance()->marker ( 
 	     mPointSymbolName, mPointSize, pen, brush );
 
     mSelectionColor = selectionColor;
@@ -221,14 +223,14 @@ void QgsSymbol::cache2( double widthScale, QColor selectionColor )
     pen.setWidth ( (int) ( widthScale * pen.width() ) );
 
     
-    mPointSymbolPixmap2 = QgsMarkerCatalogue::instance()->marker ( mPointSymbolName, mPointSize,
+    mPointSymbolImage2 = QgsMarkerCatalogue::instance()->marker ( mPointSymbolName, mPointSize,
 	                        pen, mBrush, false );
 
     QBrush brush = mBrush;
     brush.setColor ( selectionColor ); 
     pen.setColor ( selectionColor ); 
 
-    mPointSymbolPixmapSelected2 = QgsMarkerCatalogue::instance()->marker ( 
+    mPointSymbolImageSelected2 = QgsMarkerCatalogue::instance()->marker ( 
 	               mPointSymbolName, mPointSize, pen, brush,  false );
 
     mSelectionColor2 = selectionColor;

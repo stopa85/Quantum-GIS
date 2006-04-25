@@ -213,6 +213,7 @@ The [type] part of the variable should be the type class of the variable written
 //
 class QgsRect;
 class QgsRasterLayerProperties;
+class QgsRasterViewPort;
 class QImage;
 
 class GDALDataset;

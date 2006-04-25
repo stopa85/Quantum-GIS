@@ -27,13 +27,11 @@
 #include <cfloat>
 #include <QDomElement>
 #include <QPainter>
-#include <QPixmap>
+#include <QImage>
 
 QgsContinuousColorRenderer::QgsContinuousColorRenderer(QGis::VectorType type): mMinimumSymbol(0), mMaximumSymbol(0)
 {
     mVectorType = type;
-    //call superclass method to set up selection colour
-    initialiseSelectionColor();
 }
 
 QgsContinuousColorRenderer::QgsContinuousColorRenderer(const QgsContinuousColorRenderer& other)
@@ -76,7 +74,7 @@ void QgsContinuousColorRenderer::setMaximumSymbol(QgsSymbol* sy)
   mMaximumSymbol = sy;
 }
 
-void QgsContinuousColorRenderer::renderFeature(QPainter * p, QgsFeature * f, QPixmap* pic, 
+void QgsContinuousColorRenderer::renderFeature(QPainter * p, QgsFeature * f, QImage* img, 
 	double* scalefactor, bool selected, double widthScale)
 {
   if ((mMinimumSymbol && mMaximumSymbol))
@@ -118,7 +116,7 @@ void QgsContinuousColorRenderer::renderFeature(QPainter * p, QgsFeature * f, QPi
       blue = int (mincolor.blue());
     }
 
-    if ( mVectorType == QGis::Point && pic) {
+    if ( mVectorType == QGis::Point && img) {
       // TODO we must get always new marker -> slow, but continuous color for points 
       // probably is not used frequently
 
@@ -139,7 +137,7 @@ void QgsContinuousColorRenderer::renderFeature(QPainter * p, QgsFeature * f, QPi
       }
       brush.setStyle ( Qt::SolidPattern );
 
-      *pic = QgsMarkerCatalogue::instance()->marker ( mMinimumSymbol->pointSymbolName(), mMinimumSymbol->pointSize(),
+      *img = QgsMarkerCatalogue::instance()->marker ( mMinimumSymbol->pointSymbolName(), mMinimumSymbol->pointSize(),
           pen, brush);
 
       if ( scalefactor ) *scalefactor = 1;

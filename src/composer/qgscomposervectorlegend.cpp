@@ -304,7 +304,7 @@ QRect QgsComposerVectorLegend::render ( QPainter *p )
 	      if ( itemHeights[icnt] < mSymbolHeight ) { // init first
 		  itemHeights[icnt] = mSymbolHeight;
 	      }
-	      QPixmap pic = sym->getPointSymbolAsPixmap(0,widthScale);
+        QPixmap pic = QPixmap::fromImage(sym->getPointSymbolAsImage(0,widthScale));
 
 
 	      int h = (int) ( scale * pic.height() );
@@ -386,7 +386,7 @@ QRect QgsComposerVectorLegend::render ( QPainter *p )
 	  double scale = map->symbolScale() * mComposition->scale();
 
 	  // Get the picture of appropriate size directly from catalogue
-	  QPixmap pic = sym->getPointSymbolAsPixmap(0,widthScale);
+    QPixmap pic = QPixmap::fromImage(sym->getPointSymbolAsImage(0,widthScale));
 	      
 	
 	  painter->save();
