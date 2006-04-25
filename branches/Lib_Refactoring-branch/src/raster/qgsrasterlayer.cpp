@@ -65,25 +65,25 @@ wish to see edbug messages printed to stdout.
 #include <limits>
 #include <iostream>
 
-#include <QIcon>
-#include <QImage>
-#include <QFont>
+#include <gdal_priv.h>
+
+#include <QDomNode>
 #include <QFile>
 #include <QFileInfo>
+#include <QFont>
 #include <QFontMetrics>
+#include <QIcon>
+#include <QImage>
+#include <QLabel>
 #include <QMatrix>
 #include <QPainter>
 #include <QPixmap>
 #include <QRegExp>
-#include <QLabel>
-//#include <QDom>
 
 // TODO: dependencies to remove
 #include <QApplication>
 #include <QCursor>
 #include <QMessageBox>
-#include <QWidget>
-#include <QSettings>
 
 
 /*
@@ -95,40 +95,24 @@ wish to see edbug messages printed to stdout.
  
 #include <QLibrary>
 
-/*
- * END
- */
-
-#include "qgsrasterlayer.h"
-
-#include "qgisapp.h"
-#include "qgsapplication.h"
-#include "qgsattributeaction.h"
-#include "qgslogger.h"
-#include "qgsmaplayerregistry.h"
-#include "qgsmaptopixel.h"
-#include "qgsproject.h"
-#include "qgsrasterlayerproperties.h"
-#include "qgsrasterviewport.h"
-#include "qgsrect.h"
-#include "qgsspatialrefsys.h"
-
-/*
- * 
- * New includes that will convert this class to a data provider interface
- * (B Morley)
- *
- */ 
-
 #include "qgsproviderregistry.h"
 
 /*
  * END
  */
 
-#include "../providers/wms/qgswmsprovider.h"
+#include "qgsrasterlayer.h"
 
-#include <gdal_priv.h>
+#include "qgsapplication.h"
+#include "qgslogger.h"
+#include "qgsmaplayerregistry.h"
+#include "qgsmaptopixel.h"
+#include "qgsrasterbandstats.h"
+#include "qgsrasterpyramid.h"
+#include "qgsrasterviewport.h"
+#include "qgsrect.h"
+#include "qgsspatialrefsys.h"
+
 
 //////////////////////////////////////////////////////////
 //
@@ -522,11 +506,6 @@ QgsRasterLayer::readFile( QString const & fileName )
 
   //populate the list of what pyramids exist
   buildRasterPyramidList();
-
-  //load  up the pyramid icons
-  QString myThemePath = QgsApplication::themePath();
-  QPixmap myPyramidPixmap(myThemePath + "/mIconPyramid.png");
-  QPixmap myNoPyramidPixmap(myThemePath + "/mIconNoPyramid.png");
 
   // Get the layer's projection info and set up the
   // QgsCoordinateTransform for this layer
@@ -3315,16 +3294,22 @@ QPixmap QgsRasterLayer::getLegendQPixmap(bool theWithNameFlag)
     //apply the matrix
     QPixmap myQPixmap2 = myLegendQPixmap.xForm(myQWMatrix);
     QPainter myQPainter(&myQPixmap2);
+    
+    //load  up the pyramid icons
+    QString myThemePath = QgsApplication::themePath();
+    QPixmap myPyramidPixmap(myThemePath + "/mIconPyramid.png");
+    QPixmap myNoPyramidPixmap(myThemePath + "/mIconNoPyramid.png");
+
     //
     // Overlay a pyramid icon
     //
     if (hasPyramidsFlag)
     {
-      myQPainter.drawPixmap(0,myHeightInt-mPyramidPixmap.height(),mPyramidPixmap);
+      myQPainter.drawPixmap(0,myHeightInt-myPyramidPixmap.height(),myPyramidPixmap);
     }
     else
     {
-      myQPainter.drawPixmap(0,myHeightInt-mNoPyramidPixmap.height(),mNoPyramidPixmap);
+      myQPainter.drawPixmap(0,myHeightInt-myNoPyramidPixmap.height(),myNoPyramidPixmap);
     }
     //
     // Overlay the layername
@@ -4928,6 +4913,10 @@ const QgsRasterDataProvider* QgsRasterLayer::getDataProvider() const
   return dataProvider;
 }
 
+const unsigned int QgsRasterLayer::getBandCount()
+{
+  return rasterStatsVector.size();
+};
 
 
 // ENDS
