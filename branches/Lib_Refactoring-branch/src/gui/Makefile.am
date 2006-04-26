@@ -266,10 +266,7 @@ postgresMOC = qgsdbsourceselect.moc.cpp		\
 		  qgsnewconnection.moc.cpp		\
 		  qgspgquerybuilder.moc.cpp
 		  
-postgresLIBHEADERS = qgspgutil.h
-postgresLIBSOURCES = qgspgutil.cpp
-
-libqgis_gui_la_SOURCES += $(postgresSOURCES) $(postgresLIBSOURCES) $(postgresMOC)
+libqgis_gui_la_SOURCES += $(postgresSOURCES) $(postgresMOC)
 endif
 
 AM_YFLAGS       = -d
@@ -300,11 +297,9 @@ EXTRA_DIST=
 
 if HAVE_POSTGRESQL
 
-EXTRA_DIST += $(postgresSOURCES) \
-		$(postgresLIBSOURCES) 
+EXTRA_DIST += $(postgresSOURCES)
 		
-pkginclude_HEADERS += $(postgresHEADERS) \
-		$(postgresLIBHEADERS) \
-		$(libqgisHEADERS) 
+pkginclude_HEADERS += $(postgresHEADERS)
+
 endif
 

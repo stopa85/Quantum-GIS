@@ -214,7 +214,13 @@ static void setTitleBarText_( QWidget & qgisApp )
   qgisApp.setCaption( caption );
 } // setTitleBarText_( QWidget * qgisApp )
 
-
+/**
+ Creator function for output viewer
+*/
+static QgsMessageOutput* messageOutputViewer_()
+{
+  return new QgsMessageViewer();
+}
 
 
 // constructor starts here
@@ -256,6 +262,8 @@ static void setTitleBarText_( QWidget & qgisApp )
 
   // set QGIS specific srs validation
   QgsSpatialRefSys::setCustomSrsValidation(QgisGui::customSrsValidation);
+  // set graphical message output
+  QgsMessageOutput::setMessageOutputCreator(messageOutputViewer_);
   
   fileNew(); // prepare empty project
 

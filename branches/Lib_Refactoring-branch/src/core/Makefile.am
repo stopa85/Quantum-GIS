@@ -73,6 +73,7 @@ libqgis_coreHEADERS =				\
 		qgsmaptopixel.h				\
 		qgsmarkercatalogue.h		\
 		qgsmarkersymbol.h			\
+		qgsmessageoutput.h		\
 		qgsnumericsortlistviewitem.h\
 		qgspoint.h					\
 		qgspolygonsymbol.h			\
@@ -108,6 +109,7 @@ libqgis_core_la_MOC =							\
 		qgsmaplayer.moc.cpp				\
 		qgsmaplayerregistry.moc.cpp		\
 		qgsmaprender.moc.cpp			\
+		qgsmessageoutput.moc.cpp		\
 		qgsrasterdataprovider.moc.cpp		\
 		\
 		raster/qgsrasterlayer.moc.cpp
@@ -141,6 +143,7 @@ libqgis_core_la_SOURCES =\
 		qgsmaptopixel.cpp					\
 		qgsmarkercatalogue.cpp				\
 		qgsmarkersymbol.cpp					\
+		qgsmessageoutput.cpp			\
 		qgsnumericsortlistviewitem.cpp			\
 		qgspoint.cpp						\
 		qgspolygonsymbol.cpp		\
