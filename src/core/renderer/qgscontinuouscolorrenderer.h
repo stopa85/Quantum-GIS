@@ -14,7 +14,7 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
-/* $Id$ */
+/* $Id: qgscontinuouscolorrenderer.h 5371 2006-04-25 01:52:13Z wonder $ */
 #ifndef QGSCONTINUOUSCOLORRENDERER_H
 #define QGSCONTINUOUSCOLORRENDERER_H
 

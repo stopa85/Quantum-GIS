@@ -44,6 +44,7 @@ lib_LTLIBRARIES = libqgis_core.la
 libqgis_coreHEADERS =				\
 		qgis.h						\
 		qgsapplication.h			\
+		qgsattributeaction.h		\
 		qgsbookmarkitem.h			\
 		qgsclipper.h				\
 		qgscolortable.h				\
@@ -82,23 +83,31 @@ libqgis_coreHEADERS =				\
 		qgsproviderextentcalcevent.h\
 		qgsprovidermetadata.h		\
 		qgsproviderregistry.h		\
-		qgsrangerenderitem.h		\
 		qgsrasterdataprovider.h		\
 		qgsrect.h					\
-		qgsrenderer.h				\
-		qgsrenderitem.h				\
+		qgsrunprocess.h			\
 		qgsscalecalculator.h		\
 		qgssearchstring.h			\
     qgssearchtreenode.h			\
 		qgsspatialrefsys.h		\
 		qgssymbol.h					\
 		qgssymbologyutils.h			\
+		qgsvectorfilewriter.h		\
+		qgsvectorlayer.h			\
 		qgsvectordataprovider.h		\
     \
 		raster/qgsrasterbandstats.h \
 		raster/qgsrasterpyramid.h \
     raster/qgsrasterlayer.h \
-	  raster/qgsrasterviewport.h
+	  raster/qgsrasterviewport.h \
+		\
+		renderer/qgscontinuouscolorrenderer.h \
+		renderer/qgsgraduatedsymbolrenderer.h \
+		renderer/qgsrangerenderitem.h	\
+		renderer/qgsrenderer.h \
+		renderer/qgsrenderitem.h \
+		renderer/qgssinglesymbolrenderer.h \
+		renderer/qgsuniquevaluerenderer.h
 						
 
 ## files generated from MOC                             
@@ -111,12 +120,15 @@ libqgis_core_la_MOC =							\
 		qgsmaprender.moc.cpp			\
 		qgsmessageoutput.moc.cpp		\
 		qgsrasterdataprovider.moc.cpp		\
+		qgsrunprocess.moc.cpp			\
+		qgsvectorlayer.moc.cpp \
 		\
 		raster/qgsrasterlayer.moc.cpp
 
 libqgis_core_la_SOURCES =\
 		qgis.cpp								\
 		qgsapplication.cpp	\
+		qgsattributeaction.cpp	\
 		qgsbookmarkitem.cpp	\
 		qgsclipper.cpp						\
 		qgscolortable.cpp					\
@@ -152,11 +164,9 @@ libqgis_core_la_SOURCES =\
 		qgsproviderextentcalcevent.cpp		\
 		qgsprovidermetadata.cpp		\
 		qgsproviderregistry.cpp				\
-		qgsrangerenderitem.cpp				\
 		qgsrasterdataprovider.cpp	\
 		qgsrect.cpp							\
-		qgsrenderer.cpp						\
-		qgsrenderitem.cpp					\
+		qgsrunprocess.cpp				\
 		qgsscalecalculator.cpp				\
 		qgssearchstring.cpp             \
 		qgssearchstringlexer.ll		\
@@ -165,9 +175,19 @@ libqgis_core_la_SOURCES =\
 		qgsspatialrefsys.cpp		\
 		qgssymbol.cpp						\
 		qgssymbologyutils.cpp		\
+		qgsvectorfilewriter.cpp		\
+		qgsvectorlayer.cpp		\
 		qgsvectordataprovider.cpp \
 		\
-		raster/qgsrasterlayer.cpp
+		raster/qgsrasterlayer.cpp \
+		\
+		renderer/qgscontinuouscolorrenderer.cpp \
+		renderer/qgsgraduatedsymbolrenderer.cpp \
+		renderer/qgssinglesymbolrenderer.cpp \
+		renderer/qgsrangerenderitem.cpp \
+		renderer/qgsrenderer.cpp \
+		renderer/qgsrenderitem.cpp \
+		renderer/qgsuniquevaluerenderer.cpp
 		
 
 AM_YFLAGS       = -d
@@ -179,10 +199,10 @@ nodist_libqgis_core_la_SOURCES = $(libqgis_core_la_MOC)
 BUILT_SOURCES = $(libqgis_core_la_YACC) $(libqgis_core_la_MOC)  $(postgresMOC)
 
 
-libqgis_core_la_LIBADD = $(QT_LDADD) $(GEOS_LDADD) $(PYTHON_LIB) -lsqlite3
+libqgis_core_la_LIBADD = $(QT_LDADD) $(GEOS_LDADD) $(PYTHON_LIB) $(GDAL_LDADD) -lsqlite3
 libqgis_core_la_LDFLAGS = -version-info $(INTERFACE_VERSION)
 
-libqgis_core_la_CXXFLAGS = $(PREFIX) $(PLUGINPATH) $(PKGDATAPATH) $(CXXFLAGS) $(EXTRA_CXXFLAGS) $(QT_CXXFLAGS) $(PG_INC) $(DEBUG_QGIS) $(GEOS_CFLAGS) $(PYTHON_INCLUDE_DIR) $(HAVE_PYTHON)
+libqgis_core_la_CXXFLAGS = $(PREFIX) $(PLUGINPATH) $(PKGDATAPATH) $(CXXFLAGS) $(EXTRA_CXXFLAGS) $(QT_CXXFLAGS) $(PG_INC) $(DEBUG_QGIS) $(GEOS_CFLAGS) $(PYTHON_INCLUDE_DIR) $(HAVE_PYTHON) -Iraster -Irenderer
 
 # Link headers to include directory
 all-local:

@@ -69,7 +69,6 @@ libqgis_guiHEADERS =							\
 		qgisinterface.h \
 		qgsabout.h				\
 		qgsaddattrdialog.h				\
-		qgsattributeaction.h		\
 		qgsattributeactiondialog.h			\
 		qgsattributedialog.h				\
 		qgsattributetabledisplay.h			\
@@ -77,14 +76,12 @@ libqgis_guiHEADERS =							\
 		qgsbookmarks.h			\
 		qgsclipboard.h				\
 		qgscontinuouscolordialog.h				\
-		qgscontinuouscolorrenderer.h			\
 		qgscustomprojectiondialog.h			\
 		qgscursors.h			\
 		qgsdelattrdialog.h				\
 		qgsencodingfiledialog.h				\
 		qgsfillstylewidget.h				\
 		qgsgeomtypedialog.h				\
-		qgsgraduatedsymbolrenderer.h			\
 		qgsgraduatedsymboldialog.h				\
 		qgshelpviewer.h					\
 		qgsidentifyresults.h				\
@@ -121,14 +118,10 @@ libqgis_guiHEADERS =							\
 		qgsprojectproperties.h			\
 		qgsrasterlayerproperties.h		\
 		qgsrubberband.h						\
-		qgsrunprocess.h						\
 		qgssearchquerybuilder.h			\
 		qgsserversourceselect.h				\
 		qgssinglesymboldialog.h				\
-		qgssinglesymbolrenderer.h			\
-		qgsuniquevaluerenderer.h				\
 		qgsuniquevaluedialog.h					\
-		qgsvectorfilewriter.h				\
 		qgsvectorlayerproperties.h			\
 		qgsvertexmarker.h
 
@@ -174,12 +167,10 @@ libqgis_gui_la_MOC =							\
 		qgspointstylewidget.moc.cpp			\
 		qgsprojectproperties.moc.cpp		\
 		qgsrasterlayerproperties.moc.cpp	\
-		qgsrunprocess.moc.cpp				\
 		qgssearchquerybuilder.moc.cpp	\
 		qgsserversourceselect.moc.cpp		\
 		qgssinglesymboldialog.moc.cpp			\
 		qgsuniquevaluedialog.moc.cpp			\
-		qgsvectorlayer.moc.cpp \
 		qgsvectorlayerproperties.moc.cpp	
 
 libqgis_gui_la_SOURCES =						\
@@ -189,7 +180,6 @@ libqgis_gui_la_SOURCES =						\
 		qgisinterface.cpp	\
 		qgsabout.cpp		\
 		qgsaddattrdialog.cpp		\
-	  qgsattributeaction.cpp				\
 		qgsattributeactiondialog.cpp	\
 		qgsattributedialog.cpp		\
 		qgsattributetable.cpp		\
@@ -197,14 +187,12 @@ libqgis_gui_la_SOURCES =						\
 		qgsbookmarks.cpp	\
 		qgsclipboard.cpp		\
 		qgscontinuouscolordialog.cpp		\
-		qgscontinuouscolorrenderer.cpp		\
 		qgscursors.cpp		\
 		qgscustomprojectiondialog.cpp			\
 		qgsdelattrdialog.cpp		\
 		qgsencodingfiledialog.cpp	\
 		qgsfillstylewidget.cpp				\
 		qgsgeomtypedialog.cpp		\
-		qgsgraduatedsymbolrenderer.cpp			\
 		qgsgraduatedsymboldialog.cpp		\
 		qgshelpviewer.cpp		\
 		qgsidentifyresults.cpp		\
@@ -241,15 +229,10 @@ libqgis_gui_la_SOURCES =						\
 		qgsprojectproperties.cpp	\
 		qgsrasterlayerproperties.cpp	\
 		qgsrubberband.cpp					\
-		qgsrunprocess.cpp					\
 		qgssearchquerybuilder.cpp		\
 		qgsserversourceselect.cpp	\
 		qgssinglesymboldialog.cpp	\
-		qgssinglesymbolrenderer.cpp			\
-		qgsuniquevaluerenderer.cpp			\
 		qgsuniquevaluedialog.cpp		\
-		qgsvectorfilewriter.cpp				\
-		qgsvectorlayer.cpp \
 		qgsvectorlayerproperties.cpp		\
 		qgsvertexmarker.cpp
 

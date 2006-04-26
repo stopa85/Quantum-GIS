@@ -14,7 +14,7 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
-/* $Id$ */
+/* $Id: qgsuniquevaluerenderer.h 5371 2006-04-25 01:52:13Z wonder $ */
 #ifndef QGSUNIQUEVALUERENDERER_H
 #define QGSUNIQUEVALUERENDERER_H
 

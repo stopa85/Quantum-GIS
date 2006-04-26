@@ -17,12 +17,11 @@
 /* $Id$ */
 #ifndef QGSRENDERITEM_H
 #define QGSRENDERITEM_H
-#include <map>
-#include "qgssymbol.h"
 
 class QgsSymbol;
-class QString;
-
+class QDomNode;
+class QDomDocument;
+#include <QString>
 
 /**A renderitem contains a symbol together with the attribute value for which it is valid and a label*/
 class QgsRenderItem {

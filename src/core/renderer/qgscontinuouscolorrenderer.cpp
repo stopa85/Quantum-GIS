@@ -14,11 +14,10 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
-/* $Id$ */
+/* $Id: qgscontinuouscolorrenderer.cpp 5371 2006-04-25 01:52:13Z wonder $ */
 
 #include "qgscontinuouscolorrenderer.h"
 #include "qgsfeatureattribute.h"
-#include "qgslegenditem.h"
 #include "qgsmarkercatalogue.h"
 #include "qgssymbol.h"
 #include "qgssymbologyutils.h"
