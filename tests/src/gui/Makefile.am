@@ -92,7 +92,6 @@ GLOBALLDADD = $(QT_LDADD) \
 				$(GDAL_LDADD) \
 				-lproj \
 				../../../src/core/libqgis_core.la \
-				../../../src/raster/libqgis_raster.la \
 				../../../src/legend/libqgis_legend.la \
 				../../../src/gui/libqgis_gui.la \
 				../../../src/composer/libqgis_composer.la  
@@ -101,8 +100,7 @@ GLOBALCXXFLAGS = $(CXXFLAGS) \
 				$(GDAL_CFLAGS) \
 				$(QT_CXXFLAGS) \
 				$(PG_INC) \
-				-I../../../src/raster \
-				-I../../../src/core \
+				-I../../../src/core/include \
 				-I../../../src/widgets/projectionselector \
 				-I../../../src/ui \
 				-I../../../src/gui

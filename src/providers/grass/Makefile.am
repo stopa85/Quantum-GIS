@@ -2,7 +2,7 @@
 ## $Id$
 ##
 
-INCLUDES = -I../../core -I../../gui
+INCLUDES = -I../../core/include -I../../gui
 
 DEFS=-DGRASS_BASE=\"$(GRASS_BASE)\"
 

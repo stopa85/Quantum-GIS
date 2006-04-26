@@ -153,7 +153,7 @@ postgresUIHEADERS = ui_qgsdbsourceselectbase.h	\
 BUILT_SOURCES = $(qgis_ui_UIHEADERS) $(postgresUIHEADERS) 
 # the following is not used anywhere so its commented out
 #qgis_ui_LDADD = $(LDADD) $(QT_LDADD) 
-qgis_ui_CXXFLAGS = $(PREFIX) $(PLUGINPATH) $(PKGDATAPATH) $(GDAL_CFLAGS) $(CXXFLAGS) $(EXTRA_CXXFLAGS) $(QT_CXXFLAGS) $(PG_INC) $(DEBUG_QGIS) -I../widgets/projectionselector/ -I./legend/ -I./raster/
+qgis_ui_CXXFLAGS = $(PREFIX) $(PLUGINPATH) $(PKGDATAPATH) $(GDAL_CFLAGS) $(CXXFLAGS) $(EXTRA_CXXFLAGS) $(QT_CXXFLAGS) $(PG_INC) $(DEBUG_QGIS) -I../widgets/projectionselector/ -I./legend/
 
 CLEANFILES = $(BUILT_SOURCES)
 
