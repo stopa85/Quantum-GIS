@@ -302,7 +302,7 @@ void QgsSpit::addFile()
     }
     QgsMessageViewer * e = new QgsMessageViewer( this );
     e->setMessageAsPlainText( message + error1 + error2 );
-    e->exec();
+    e->exec(); // deletes itself on close
   }
 }
 
@@ -398,7 +398,7 @@ void QgsSpit::helpInfo()
                tr("[Help] - display this help dialog") + "\n\n" );
   QgsMessageViewer * e = new QgsMessageViewer( this );
   e->setMessageAsPlainText( message );
-  e->exec();
+  e->exec(); // deletes itself on close
 }
 
 PGconn* QgsSpit::checkConnection()

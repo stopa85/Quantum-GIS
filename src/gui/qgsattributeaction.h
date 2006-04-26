@@ -34,7 +34,6 @@
 
 class QDomNode;
 class QDomDocument;
-class QgsMessageViewer;
 
 
 /*! \class QgsAction

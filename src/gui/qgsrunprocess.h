@@ -25,7 +25,7 @@
 #include <QObject>
 
 class Q3Process;
-class QgsMessageViewer;
+class QgsMessageOutput;
 class QStringList;
 
 /* A class than executes an external program/script, etc and
@@ -62,7 +62,7 @@ class QgsRunProcess: public QObject
   void die();
 
   Q3Process* mProcess;
-  QgsMessageViewer* mLogViewer;
+  QgsMessageOutput* mOutput;
 };
 
 #endif

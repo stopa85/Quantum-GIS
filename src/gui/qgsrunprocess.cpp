@@ -21,12 +21,11 @@
 
 #include "qgsrunprocess.h"
 
-#include "qgsmessageviewer.h"
-#include <QMessageBox>
+#include "qgsmessageoutput.h"
 #include <Q3Process>
 
 QgsRunProcess::QgsRunProcess(const QStringList& args,
-			     bool capture) : mProcess(NULL), mLogViewer(NULL)
+			     bool capture) : mProcess(NULL), mOutput(NULL)
 {
   // Make up a string from the command and arguments that we'll use
   // for display purposes
@@ -50,24 +49,27 @@ QgsRunProcess::QgsRunProcess(const QStringList& args,
 
   if (!mProcess->start())
   {
-    QMessageBox::critical(0, tr("Unable to run command"), 
-			  tr("Unable to run the command") + "\n" + whole_cmd +
-			  "\n", QMessageBox::Ok, Qt::NoButton);
+    mOutput = QgsMessageOutput::createMessageOutput();
+    mOutput->setMessage( tr("Unable to run command") + "\n" + whole_cmd,
+                         QgsMessageOutput::MessageText);
     // Didn't work, so no need to hang around
     die();
   }
   else if (capture)
   {
-    // Create a dialog box to display the output. Use the
-    // QgsMessageViewer dialog, but tweak its behaviour to suit our
-    // needs. It will delete itself when the dialog box is closed.
-    mLogViewer = new QgsMessageViewer(0, Qt::WDestructiveClose);
-    mLogViewer->setCaption(whole_cmd);
-    mLogViewer->setMessageAsHtml( "<b>" + tr("Starting") + " " + whole_cmd + "...</b>" );
-    mLogViewer->show();
-    // Be told when the dialog box is closed (it gets destroyed when
-    // closed because of the Qt flag used when it was created above).
-    connect(mLogViewer, SIGNAL(destroyed()), this, SLOT(dialogGone()));
+    // Use QgsMessageOutput for displaying output to user
+    // It will delete itself when the dialog box is closed.
+    mOutput = QgsMessageOutput::createMessageOutput();
+    mOutput->setMessage( whole_cmd + "<br>" + "<b>" + tr("Starting") + " " + whole_cmd + "...</b>",
+                         QgsMessageOutput::MessageHtml);
+    mOutput->showMessage(false); // non-blocking
+  
+    // get notification of delete if it's derived from QObject
+    QObject* mOutputObj = dynamic_cast<QObject*>(mOutput);
+    if (mOutputObj)
+    {
+      connect(mOutputObj, SIGNAL(destroyed()), this, SLOT(dialogGone()));
+    }
   }
   else
     // We're not capturing the output from the process, so we don't
@@ -93,7 +95,8 @@ void QgsRunProcess::stdoutAvailable()
     QString line;
     while ((line = mProcess->readLineStdout()) != QString::null)
     {
-      mLogViewer->appendMessage(line);
+      if (mOutput)
+        mOutput->appendMessage(line);
     }
   }
 }
@@ -104,12 +107,14 @@ void QgsRunProcess::stderrAvailable()
   if (mProcess->canReadLineStderr())
   {
     QString line;
-    mLogViewer->appendMessage("<font color=red>");
+    mOutput->appendMessage("<font color=red>");
     while ((line = mProcess->readLineStderr()) != QString::null)
     {
-      mLogViewer->appendMessage(line);
+      if (mOutput)
+        mOutput->appendMessage(line);
     }
-    mLogViewer->appendMessage("</font>");
+    if (mOutput)
+      mOutput->appendMessage("</font>");
   }
 }
 
@@ -122,9 +127,9 @@ void QgsRunProcess::processExit()
   // (unless it was never created in the first case, which is what the
   // test against 0 is for).
 
-  if (mLogViewer != 0)
+  if (mOutput != 0)
   {
-    mLogViewer->appendMessage( "<b>" + tr("Done") + "</b>" );
+    mOutput->appendMessage( "<b>" + tr("Done") + "</b>" );
   }
 
   // Since the dialog box takes care of deleting itself, and the

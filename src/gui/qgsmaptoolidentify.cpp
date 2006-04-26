@@ -379,9 +379,7 @@ void QgsMapToolIdentify::showError(QgsMapLayer * mapLayer)
     QObject::tr("Could not identify objects on") + " " + mapLayer->name() + " " + QObject::tr("because") + ":\n" +
     mapLayer->errorString()
   );
-  mv->exec();
-  delete mv;
-
+  mv->exec(); // deletes itself on close
 }
 
 // ENDS
