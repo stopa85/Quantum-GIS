@@ -16,6 +16,7 @@
  ***************************************************************************/
 /* $Id$ */
 #include "qgsrangerenderitem.h"
+#include "qgssymbol.h"
 
 #include <QDomNode>
 #include <QDomDocument>

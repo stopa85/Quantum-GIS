@@ -18,6 +18,7 @@
 
 #include <cassert>
 #include "qgsrenderitem.h"
+#include "qgssymbol.h"
 
 #include <QDomNode>
 

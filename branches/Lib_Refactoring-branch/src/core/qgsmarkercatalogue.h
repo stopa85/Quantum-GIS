@@ -16,9 +16,10 @@
 #ifndef QGSMARKERCATALOGUE_H
 #define QGSMARKERCATALOGUE_H
 
+#include <QStringList>
+
 class QImage;
 class QString;
-class QStringList;
 class QPicture;
 class QPen;
 class QBrush;
