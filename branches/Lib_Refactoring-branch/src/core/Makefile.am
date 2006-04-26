@@ -92,7 +92,13 @@ libqgis_coreHEADERS =				\
 		qgsspatialrefsys.h		\
 		qgssymbol.h					\
 		qgssymbologyutils.h			\
-		qgsvectordataprovider.h		
+		qgsvectordataprovider.h		\
+    \
+		raster/qgsrasterbandstats.h \
+		raster/qgsrasterpyramid.h \
+    raster/qgsrasterlayer.h \
+	  raster/qgsrasterviewport.h
+						
 
 ## files generated from MOC                             
 libqgis_core_la_MOC =							\
@@ -102,7 +108,9 @@ libqgis_core_la_MOC =							\
 		qgsmaplayer.moc.cpp				\
 		qgsmaplayerregistry.moc.cpp		\
 		qgsmaprender.moc.cpp			\
-		qgsrasterdataprovider.moc.cpp		
+		qgsrasterdataprovider.moc.cpp		\
+		\
+		raster/qgsrasterlayer.moc.cpp
 
 libqgis_core_la_SOURCES =\
 		qgis.cpp								\
@@ -154,22 +162,38 @@ libqgis_core_la_SOURCES =\
 		qgsspatialrefsys.cpp		\
 		qgssymbol.cpp						\
 		qgssymbologyutils.cpp		\
-		qgsvectordataprovider.cpp			
+		qgsvectordataprovider.cpp \
+		\
+		raster/qgsrasterlayer.cpp
 		
 
 AM_YFLAGS       = -d
-qgis_YACC       = qgssearchstringparser.h
+libqgis_core_la_YACC = qgssearchstringparser.h
 
 
 nodist_libqgis_core_la_SOURCES = $(libqgis_core_la_MOC)  
 
-BUILT_SOURCES = $(libqgis_core_la_MOC) $(qgis_YACC)  $(postgresMOC)
+BUILT_SOURCES = $(libqgis_core_la_YACC) $(libqgis_core_la_MOC)  $(postgresMOC)
 
 
 libqgis_core_la_LIBADD = $(QT_LDADD) $(GEOS_LDADD) $(PYTHON_LIB) -lsqlite3
 libqgis_core_la_LDFLAGS = -version-info $(INTERFACE_VERSION)
 
 libqgis_core_la_CXXFLAGS = $(PREFIX) $(PLUGINPATH) $(PKGDATAPATH) $(CXXFLAGS) $(EXTRA_CXXFLAGS) $(QT_CXXFLAGS) $(PG_INC) $(DEBUG_QGIS) $(GEOS_CFLAGS) $(PYTHON_INCLUDE_DIR) $(HAVE_PYTHON)
+
+# Link headers to include directory
+all-local:
+	rm -rf include/
+	mkdir include
+	includes='$(pkginclude_HEADERS)' ; \
+	for file in $$includes ; do \
+	  base=`basename $$file` ; \
+		ln -s ../$$file include/$$base ; \
+	done
+
+clean-local:
+	rm -rf include/
+
 
 ##
 ## ----------------------------------------------------------------------

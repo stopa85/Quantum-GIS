@@ -494,7 +494,6 @@ AC_CONFIG_FILES([
   src/providers/ogr/Makefile
   src/providers/postgres/Makefile
   src/providers/wms/Makefile
-  src/raster/Makefile
   src/ui/Makefile
   src/widgets/Makefile
   src/widgets/projectionselector/Makefile
@@ -505,7 +504,6 @@ AC_CONFIG_FILES([
   tests/src/Makefile
   tests/src/core/Makefile
   tests/src/gui/Makefile
-  tests/src/raster/Makefile
   qgis.spec
 ])
 

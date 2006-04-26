@@ -51,7 +51,7 @@ BUILT_SOURCES = $(plugin_MOC) $(plugin_UI) $(plugin_RES)
 
 libScaleBarplugin_la_LIBADD = $(QT_LDADD) ../../core/libqgis_core.la
 libScaleBarplugin_la_LDFLAGS = -avoid-version -module
-libScaleBarplugin_la_CXXFLAGS = $(CXXFLAGS) $(EXTRA_CXXFLAGS) $(QT_CXXFLAGS) $(DEBUG_QGIS) $(GDAL_CFLAGS) $(GEOS_CFLAGS) -I../../gui -I../../ui -I../../core 
+libScaleBarplugin_la_CXXFLAGS = $(CXXFLAGS) $(EXTRA_CXXFLAGS) $(QT_CXXFLAGS) $(DEBUG_QGIS) $(GDAL_CFLAGS) $(GEOS_CFLAGS) -I../../gui -I../../ui -I../../core/include
 
 CLEANFILES = $(BUILT_SOURCES)
 

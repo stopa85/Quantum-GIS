@@ -1,4 +1,4 @@
-INCLUDES = -I../../core/ -I../../gui
+INCLUDES = -I../../core/include/ -I../../gui/
 
 plugindir = ${pkglibdir}
 plugin_LTLIBRARIES = ogrprovider.la 
