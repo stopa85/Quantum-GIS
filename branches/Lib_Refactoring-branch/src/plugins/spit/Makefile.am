@@ -13,7 +13,7 @@
 plugindir = ${pkglibdir}
 
 plugin_LTLIBRARIES = spitplugin.la
-bin_PROGRAMS = spit
+##bin_PROGRAMS = spit
 
 
 %.moc.cpp: %.h
