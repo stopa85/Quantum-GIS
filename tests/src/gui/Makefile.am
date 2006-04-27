@@ -58,7 +58,6 @@ noinst_PROGRAMS = testqgisapp \
 		testqgspastetransformations \
 		testqgspatterndialog \
 		testqgspgquerybuilder \
-		testqgspgutil \
 		testqgspluginmanager \
 		testqgspluginmetadata \
 		testqgspointstylewidget \
@@ -133,7 +132,6 @@ BUILT_SOURCES = $(testqgisapp_MOC) \
 		$(testqgspointstylewidget_MOC) \
 		$(testqgspluginmetadata_MOC) \
 		$(testqgspluginmanager_MOC) \
-		$(testqgspgutil_MOC) \
 		$(testqgspgquerybuilder_MOC) \
 		$(testqgspatterndialog_MOC) \
 		$(testqgspastetransformations_MOC) \
@@ -451,11 +449,6 @@ testqgspgquerybuilder_MOC = testqgspgquerybuilder.moc.cpp
 testqgspgquerybuilder_SOURCES = testqgspgquerybuilder.cpp
 testqgspgquerybuilder_LDADD = $(GLOBALLDADD)
 testqgspgquerybuilder_CXXFLAGS =  $(GLOBALCXXFLAGS)
-
-testqgspgutil_MOC = testqgspgutil.moc.cpp
-testqgspgutil_SOURCES = testqgspgutil.cpp
-testqgspgutil_LDADD = $(GLOBALLDADD)
-testqgspgutil_CXXFLAGS =  $(GLOBALCXXFLAGS)
 
 testqgspluginmanager_MOC = testqgspluginmanager.moc.cpp
 testqgspluginmanager_SOURCES = testqgspluginmanager.cpp
