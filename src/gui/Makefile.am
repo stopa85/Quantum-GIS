@@ -106,6 +106,7 @@ libqgis_guiHEADERS =							\
 		qgsmeasure.h					\
 		qgsmessageviewer.h					\
 		qgsnewhttpconnection.h				\
+		qgsnumericsortlistviewitem.h		\
 		qgsoptions.h					\
 		qgspastetransformations.h			\
 		qgspatterndialog.h				\
@@ -116,6 +117,7 @@ libqgis_guiHEADERS =							\
 		qgspointstylewidget.h				\
 		qgsproject.h					\
 		qgsprojectproperties.h			\
+		qgsprojectproperty.h		\
 		qgsrasterlayerproperties.h		\
 		qgsrubberband.h						\
 		qgssearchquerybuilder.h			\
@@ -217,6 +219,7 @@ libqgis_gui_la_SOURCES =						\
 		qgsmeasure.cpp			\
 		qgsmessageviewer.cpp				\
 		qgsnewhttpconnection.cpp	\
+		qgsnumericsortlistviewitem.cpp		\
 		qgsoptions.cpp			\
 		qgspastetransformations.cpp	\
 		qgspatterndialog.cpp		\
@@ -227,6 +230,7 @@ libqgis_gui_la_SOURCES =						\
 		qgspointstylewidget.cpp				\
 		qgsproject.cpp			\
 		qgsprojectproperties.cpp	\
+		qgsprojectproperty.cpp	\
 		qgsrasterlayerproperties.cpp	\
 		qgsrubberband.cpp					\
 		qgssearchquerybuilder.cpp		\

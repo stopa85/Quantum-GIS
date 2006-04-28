@@ -392,7 +392,7 @@ void QgsLegend::handleRightClickEvent(QTreeWidgetItem* item, const QPoint& posit
       if((cap & QgsVectorDataProvider::AddFeatures)
           ||(cap & QgsVectorDataProvider::DeleteFeatures))
       {
-        QAction* toggleEditingAction = theMenu.addAction(tr("Allow Editing"),vlayer,SLOT(toggleEditing()));
+        QAction* toggleEditingAction = theMenu.addAction(tr("Allow Editing"),li,SLOT(toggleEditing()));
         toggleEditingAction->setCheckable(true);
         toggleEditingAction->blockSignals(true);
         toggleEditingAction->setChecked(vlayer->isEditable());

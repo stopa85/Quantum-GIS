@@ -3188,27 +3188,40 @@ void QgisApp::attributeTable()
 void QgisApp::deleteSelected()
 {
   QgsMapLayer *layer = mMapLegend->currentLayer();
-  if(layer)
-  {
-    QgsVectorLayer* vlayer = dynamic_cast<QgsVectorLayer*>(layer);
-    if(vlayer)
-    {
-      if(!vlayer->deleteSelectedFeatures())
-      {
-        QMessageBox::information(this, tr("Problem deleting features"),
-            tr("A problem occured during deletion of features"));
-      }
-    }
-    else
-    {
-      QMessageBox::information(this, tr("No Vector Layer Selected"),
-          tr("Deleting features only works on vector layers"));
-    }
-  }
-  else
+  if(!layer)
   {
     QMessageBox::information(this, tr("No Layer Selected"),
-        tr("To delete features, you must select a vector layer in the legend"));
+                              tr("To delete features, you must select a vector layer in the legend"));
+    return;
+  }
+    
+  QgsVectorLayer* vlayer = dynamic_cast<QgsVectorLayer*>(layer);
+  if(!vlayer)
+  {
+    QMessageBox::information(this, tr("No Vector Layer Selected"),
+                              tr("Deleting features only works on vector layers"));
+    return;
+  }
+      
+  if(!(vlayer->getDataProvider()->capabilities() & QgsVectorDataProvider::DeleteFeatures))
+  {
+    QMessageBox::information(0, tr("Provider does not support deletion"), 
+                            tr("Data provider does not support deleting features"));
+    return;
+  }
+
+  if(!vlayer->isEditable())
+  {
+    QMessageBox::information(0, tr("Layer not editable"), 
+                            tr("The current layer is not editable. Choose 'Allow editing' in the legend item right click menu"));
+    return;
+  }
+
+  
+  if(!vlayer->deleteSelectedFeatures())
+  {
+    QMessageBox::information(this, tr("Problem deleting features"),
+        tr("A problem occured during deletion of features"));
   }
 
   // notify the project we've made a change

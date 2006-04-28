@@ -34,7 +34,7 @@ class TestQgsApplication: public QObject
           std::cout << "User DB PATH: " << QgsApplication::qgisUserDbFilePath().toLocal8Bit().data() << std::endl;
 
           QgsApplication::initQgis();
-          QStringList myLayerList;
+/*          QStringList myLayerList;
           myLayerList << "../../../points.shp";
           QStringList::Iterator myIterator = myLayerList.begin();
           while( myIterator!= myLayerList.end() )
@@ -94,7 +94,7 @@ class TestQgsApplication: public QObject
           QgsMapLayerRegistry::instance()->removeAllMapLayers();
 
           // save image
-          img.save("render.png","png");
+          img.save("render.png","png");*/
           QgsApplication::exitQgis();
         };
     void QgsApplicationselectTheme()

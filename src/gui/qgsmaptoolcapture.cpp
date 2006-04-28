@@ -54,15 +54,23 @@ void QgsMapToolCapture::canvasReleaseEvent(QMouseEvent * e)
   
   if (!vlayer)
   {
-    QMessageBox::information(0,"Not a vector layer","The current layer is not a vector layer",QMessageBox::Ok);
+    QMessageBox::information(0, QObject::tr("Not a vector layer"),
+            QObject::tr("The current layer is not a vector layer"),QMessageBox::Ok);
     return;
   }
   
+  if(!(vlayer->getDataProvider()->capabilities() & QgsVectorDataProvider::AddFeatures))
+  {
+    QMessageBox::information(0, QObject::tr("Layer cannot be added to"),
+            QObject::tr("The data provider for this layer does not support the addition of features."));
+    return;
+  }
+
   if (!vlayer->isEditable())
   {
-    QMessageBox::information(0,"Layer not editable",
-                             "Cannot edit the vector layer. To make it editable, go to the file item of the layer, right click and check 'Allow Editing'.",
-                             QMessageBox::Ok);
+    QMessageBox::information(0,QObject::tr("Layer not editable"),
+            QObject::tr("Cannot edit the vector layer. To make it editable, go to the file item "
+                        "of the layer, right click and check 'Allow Editing'."), QMessageBox::Ok);
     return;
   }
 

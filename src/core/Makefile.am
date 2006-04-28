@@ -75,10 +75,8 @@ libqgis_coreHEADERS =				\
 		qgsmarkercatalogue.h		\
 		qgsmarkersymbol.h			\
 		qgsmessageoutput.h		\
-		qgsnumericsortlistviewitem.h\
 		qgspoint.h					\
 		qgspolygonsymbol.h			\
-		qgsprojectproperty.h		\
 		qgsprovidercountcalcevent.h	\
 		qgsproviderextentcalcevent.h\
 		qgsprovidermetadata.h		\
@@ -156,10 +154,8 @@ libqgis_core_la_SOURCES =\
 		qgsmarkercatalogue.cpp				\
 		qgsmarkersymbol.cpp					\
 		qgsmessageoutput.cpp			\
-		qgsnumericsortlistviewitem.cpp			\
 		qgspoint.cpp						\
 		qgspolygonsymbol.cpp		\
-		qgsprojectproperty.cpp				\
 		qgsprovidercountcalcevent.cpp		\
 		qgsproviderextentcalcevent.cpp		\
 		qgsprovidermetadata.cpp		\

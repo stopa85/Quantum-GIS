@@ -23,10 +23,9 @@
 #define QGSRUNPROCESS_H
 
 #include <QObject>
+#include <QProcess>
 
-class Q3Process;
 class QgsMessageOutput;
-class QStringList;
 
 /* A class than executes an external program/script, etc and
  * optionally captures the standard output and error from the
@@ -41,28 +40,29 @@ class QgsRunProcess: public QObject
   // using new, the Named Consturctor Idiom is used, and one needs to
   // use the create() static function to get an instance of this class.
 
-  // The arg parameter is passed to QProcess::setArguments(), so it
-  // needs to be appropriate for that function. If capture is true,
-  // the standard output and error from the process will be displayed
-  // in a dialog box.
-  static QgsRunProcess* create(const QStringList& args, bool capture)
-    { return new QgsRunProcess(args, capture); }
+  // The action argument contains string with the command.
+  // If capture is true, the standard output and error from the process
+  // will be sent to QgsMessageOuptut - usually a dialog box.
+  static QgsRunProcess* create(const QString& action, bool capture)
+    { return new QgsRunProcess(action, capture); }
 
  public slots:
   void stdoutAvailable();
   void stderrAvailable();
-  void processExit();
+  void processError(QProcess::ProcessError);
+  void processExit(int,QProcess::ExitStatus);
   void dialogGone();
 
  private:
-  QgsRunProcess(const QStringList& args, bool capture);
+  QgsRunProcess(const QString& action, bool capture);
   ~QgsRunProcess();
 
   // Deletes the instance of the class
   void die();
 
-  Q3Process* mProcess;
+  QProcess* mProcess;
   QgsMessageOutput* mOutput;
+  QString mCommand;
 };
 
 #endif

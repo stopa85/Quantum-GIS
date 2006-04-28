@@ -57,48 +57,10 @@ void QgsAttributeAction::doAction(unsigned int index, const std::vector<std::pai
 
   if (action != end())
   {
-    // The action will be divided into separate arguments that are
-    // passed to a QProcess instance. Spaces are used to delimit
-    // arguments, except for spaces inside pairs of ". A \" will be
-    // replaced by a ". The replacement of the %field_name is done
-    // after the parsing into arguments.
-    bool in_quote = false;
-    QStringList args;
-    QString current_arg;
-    QString cmd = action->action();
-    for (int i = 0; i < cmd.length(); ++i)
-    {
-      // Deal with \"
-      if (i < cmd.length()-1 && cmd[i] == '\\' && cmd[i+1] == '\"')
-      {
-	current_arg += '\"';
-	++i;
-      }
-      // Found a delimiter, create a new argument
-      else if (cmd[i].isSpace() && !in_quote && current_arg.length() > 0)
-      {
-	QString strippedCmd = current_arg.stripWhiteSpace();
-	if (strippedCmd.length() > 0)
-	  args << expandAction(strippedCmd, values, defaultValueIndex);
-	current_arg = "";
-      }
-      // Starting a new quote
-      else if (cmd[i] == '\"' && !in_quote)
-	in_quote = true;
-      // Ending a quote
-      else if (cmd[i] == '\"' && in_quote)
-	in_quote = false;
-      else
-	current_arg += cmd[i];
-    }
-
-    // Pick up the last argument if it has something of interest
-    if (!current_arg.stripWhiteSpace().isEmpty())
-      args << expandAction(current_arg.stripWhiteSpace(), values, defaultValueIndex);
-
     // The QgsRunProcess instance created by this static function
     // deletes itself when no longer needed.
-    QgsRunProcess::create(args, action->capture());
+    // we don't have to create agument list anymore as with qt3
+    QgsRunProcess::create(action->action(), action->capture());
   }
 }
 
