@@ -399,13 +399,10 @@ void QgsLegend::handleRightClickEvent(QTreeWidgetItem* item, const QPoint& posit
         toggleEditingAction->blockSignals(false);
       }
     
-      if(cap & QgsVectorDataProvider::SaveAsShapefile)
-      {
-        // add the save as shapefile menu item
-        theMenu.addSeparator();
-        theMenu.addAction(tr("Save as shapefile..."), vlayer, SLOT(saveAsShapefile()));
-      }
-      
+      // add the save as shapefile menu item
+      theMenu.addSeparator();
+      theMenu.addAction(tr("Save as shapefile..."), li, SLOT(saveAsShapefile()));
+
     }
     else if (layer->type() == QgsMapLayer::RASTER)
     {

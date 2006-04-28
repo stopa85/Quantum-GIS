@@ -61,3 +61,8 @@ void QgsMessageViewer::showMessage(bool blocking)
   else
     show();
 }
+
+void QgsMessageViewer::setTitle(const QString& title)
+{
+  setCaption(title);
+}

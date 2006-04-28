@@ -24,21 +24,17 @@
 #include <map>
 #include <vector>
 
-#include <QSet>
-
 #include "qgsrasterdataprovider.h"
 #include "qgsrect.h"
 
-#include <qgscoordinatetransform.h>
-
 #include "qgsdatasourceuri.h"
 
-#include <qstring.h>
-#include <qstringlist.h>
-#include <qobject.h>
-#include <q3http.h>
-#include <qdom.h>
+#include <QSet>
+#include <QString>
+#include <QStringList>
+#include <QDomDocument>
 
+class QgsCoordinateTransform;
 
 /*
  * The following structs reflect the WMS XML schema,

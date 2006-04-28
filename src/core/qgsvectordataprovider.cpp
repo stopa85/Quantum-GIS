@@ -151,15 +151,6 @@ QString QgsVectorDataProvider::capabilitiesString() const
 #endif
   }
 
-  if (abilities & QgsVectorDataProvider::SaveAsShapefile)
-  {
-    abilitiesList += "Save As Shapefile";
-#ifdef QGISDEBUG
-        std::cerr << "QgsVectorDataProvider::capabilitiesString "
-          << "Save As Shapefile" << std::endl;
-#endif
-  }
-
   if (abilities & QgsVectorDataProvider::CreateSpatialIndex)
   {
     // TODO: Tighten up this test.  See QgsOgrProvider for details.

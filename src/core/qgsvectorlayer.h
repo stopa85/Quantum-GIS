@@ -342,12 +342,12 @@ public:
   /** Sets whether some features are modified or not */
   void setModified(bool modified = TRUE, bool onlyGeometryWasModified = FALSE);
   
+  /** Save as shapefile */
+  QString saveAsShapefile(QString path, QString encoding);
+
 public slots:
 
   void triggerRepaint();
-
-  /** Save as shapefile */
-  void saveAsShapefile();
 
   void toggleEditing();
   void startEditing();

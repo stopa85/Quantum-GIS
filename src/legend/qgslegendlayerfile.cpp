@@ -28,7 +28,10 @@
 #include "qgsattributetable.h"
 #include "qgsattributetabledisplay.h"
 
+#include "qgsencodingfiledialog.h"
+
 #include <QApplication>
+#include <QMessageBox>
 #include <QPainter>
 #include <QSettings>
 
@@ -232,5 +235,64 @@ void QgsLegendLayerFile::closeTable(bool onlyGeometryWasChanged)
     mTableDisplay->close();
     delete mTableDisplay;
     mTableDisplay = NULL;
+  }
+}
+
+void QgsLegendLayerFile::saveAsShapefile()
+{
+  if (mLayer->type() != QgsMapLayer::VECTOR)
+    return;
+
+  QgsVectorLayer* vlayer = dynamic_cast<QgsVectorLayer*>(mLayer);
+  
+  // get a name for the shapefile
+  // Get a file to process, starting at the current directory
+  QSettings settings;
+  QString filter =  QString("Shapefiles (*.shp)");
+  QString dirName = settings.readEntry("/UI/lastShapefileDir", ".");
+
+  QgsEncodingFileDialog* openFileDialog = new QgsEncodingFileDialog(0,
+      tr("Save layer as..."),
+      dirName,
+      filter,
+      QString("UTF-8"));
+
+  // allow for selection of more than one file
+  //openFileDialog->setMode(QFileDialog::AnyFile);
+
+  if (openFileDialog->exec() != QDialog::Accepted)
+    return;
+    
+  QString enc = openFileDialog->encoding();
+  QString shapefileName = openFileDialog->selectedFile();
+  
+  if (shapefileName.isNull())
+    return;
+
+  // add the extension if not present
+  if (shapefileName.find(".shp") == -1)
+  {
+    shapefileName += ".shp";
+  }
+  
+  QString error = vlayer->saveAsShapefile(shapefileName, enc);
+  
+  if (error == "DRIVER_NOT_FOUND")
+  {
+    QMessageBox::warning(0, "Driver not found", "ESRI Shapefile driver is not available");
+  }
+  else if (error == "ERROR_CREATE_SOURCE")
+  {
+    QMessageBox::warning(0, "Error creating shapefile",
+                         "The shapefile could not be created (" +
+                             shapefileName + ")");
+  }
+  else if (error == "ERROR_CREATE_LAYER")
+  {
+    QMessageBox::warning(0, "Error", "Layer creation failed");
+  }
+  else
+  {
+    QMessageBox::information( 0, "Saving done", "Export to Shapefile has been completed");
   }
 }

@@ -23,11 +23,13 @@
 #include <fstream>
 #include <iostream>
 
+#include "qgscoordinatetransform.h"
 #include "qgsrect.h"
 #include "qgsspatialrefsys.h"
 
 #include "qgshttptransaction.h"
 
+#include <QHttp>
 #include <QImage>
 #include <QUrl>
 

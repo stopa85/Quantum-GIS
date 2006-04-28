@@ -17,8 +17,7 @@ email                : sherman at mrcc.com
 /* $Id$ */
 
 #include "qgsogrprovider.h"
-//Added by qt3to4:
-#include <Q3CString>
+
 
 #ifndef WIN32
 #include <netinet/in.h>
@@ -35,10 +34,10 @@ email                : sherman at mrcc.com
 #include <cpl_error.h>
 #include "ogr_api.h"//only for a test
 
+#include <Q3CString>
 #include <QtDebug>
 #include <QFile>
 #include <QFileInfo>
-#include <QMessageBox>
 #include <QMap>
 #include <QString>
 

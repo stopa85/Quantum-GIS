@@ -20,12 +20,10 @@ email                : sherman at mrcc.com
 #include "qgsvectordataprovider.h"
 #include <geos.h>
 
-#include <ogr_spatialref.h>
-#include <ogrsf_frmts.h>
-
 class QgsFeature;
 class QgsField;
 class OGRDataSource;
+class OGRSFDriver;
 class OGRLayer;
 class OGRFeature;
 class OGREnvelope;

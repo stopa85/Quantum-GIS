@@ -53,6 +53,9 @@ class QgsMessageOutput
     //! message to be appended to the current text
     virtual void appendMessage(const QString& message) = 0;
     
+    //! set title for the messages
+    virtual void setTitle(const QString& title) = 0;
+    
     //! display the message to the user
     virtual void showMessage(bool blocking = true) = 0;
     
@@ -88,6 +91,8 @@ class QgsMessageOutputConsole : public QObject, public QgsMessageOutput
     
     virtual void appendMessage(const QString& message);
     
+    virtual void setTitle(const QString& title);
+    
     //! sends the message to the standard output
     virtual void showMessage(bool blocking = true);
     
@@ -100,6 +105,9 @@ class QgsMessageOutputConsole : public QObject, public QgsMessageOutput
     
     //! stores current message
     QString mMessage;
+    
+    //! stores current title
+    QString mTitle;
 
 };
 

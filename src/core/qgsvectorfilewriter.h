@@ -31,6 +31,11 @@
 class QgsVectorFileWriter
 {
     public:
+      
+      /** Write contents of vector layer to a shapefile */
+      static QString writeVectorLayerAsShapefile(QString path, QString encoding, QgsVectorLayer* layer);
+
+
   QgsVectorFileWriter(QString theOutputFileName, QString fileEncoding, QgsVectorLayer * theVectorLayer);
         QgsVectorFileWriter(QString theOutputFileName, QString fileEncoding, OGRwkbGeometryType theGeometryType);
         ~QgsVectorFileWriter() ;
