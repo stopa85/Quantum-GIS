@@ -26,6 +26,7 @@
 #include "qgsmaplayerregistry.h"
 
 #include <QPainter>
+#include <QListIterator>
 #include <QTime>
 
 
@@ -549,5 +550,17 @@ void QgsMapRender::updateFullExtent()
 void QgsMapRender::setLayerSet(const std::deque<QString>& layers)
 {
   mLayerSet = layers;
+  updateFullExtent();
+}
+
+void QgsMapRender::setLayerSet(const QStringList layers)
+{
+  //convert the stringlist to a deque 
+  QListIterator<QString> i(layers);
+  mLayerSet.clear();
+  while (i.hasNext())
+  {
+    mLayerSet.push_back(i.next());
+  }
   updateFullExtent();
 }
