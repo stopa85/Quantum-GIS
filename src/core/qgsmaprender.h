@@ -19,6 +19,7 @@
 
 #include <deque>
 #include <QString>
+#include <QStringList>
 
 #include "qgis.h"
 #include "qgsrect.h"
@@ -102,6 +103,9 @@ class QgsMapRender : public QObject
     
     //! change current layer set
     void setLayerSet(const std::deque<QString>& layers);
+
+    //!Overloaded version of above menthod to change current layer set
+    void setLayerSet(const QStringList layers);
 
     //! updates extent of the layer set
     void updateFullExtent();
