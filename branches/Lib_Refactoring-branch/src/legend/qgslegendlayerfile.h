@@ -72,6 +72,9 @@ public:
     /**Connected to layer's wasModified() */
     void closeTable(bool onlyGeometryWasChanged);
     
+    /**Save as shapefile*/
+    void saveAsShapefile();
+    
  protected:
     QgsMapLayer* mLayer;
     

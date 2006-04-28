@@ -17,21 +17,22 @@
  ***************************************************************************/
 /* $Id$ */
 
-#include "qgsvectorfilewriter.h"
+#include "qgsapplication.h"
+#include "qgsfield.h"
+#include "qgsfeature.h"
+#include "qgsfeatureattribute.h"
+#include "qgslogger.h"
 #include "qgsspatialrefsys.h"
+#include "qgsvectorfilewriter.h"
+#include "qgsvectordataprovider.h"
 
 #include <iostream>
 #include <QString>
 #include <QTextCodec>
 
 // Includes for ogr shaprewriting
-//#include "gdal.h"
-//#include "gdal_alg.h"
-//#include "cpl_conv.h"
-#include "ogr_srs_api.h"
-#ifndef WIN32
-#include <netinet/in.h>
-#endif
+#include <ogr_srs_api.h>
+#include <ogrsf_frmts.h>
 
 QgsVectorFileWriter::QgsVectorFileWriter(QString theOutputFileName, QString fileEncoding, QgsVectorLayer * theVectorLayer)
 {
@@ -421,21 +422,143 @@ bool QgsVectorFileWriter::writePolygon(unsigned char* wkb, int size)
 
 int QgsVectorFileWriter::endian()
 {
-#ifdef WIN32
-  return NDR;
-#else
-    // XXX why re-calculate this all the time?  Why not just calculate this
-    // XXX once and return the value?  For that matter, some machines have
-    // XXX endian.h, which stores the constant variable for local endian-ness.
-    if ( 23 == htons( 23 ) )
+  return QgsApplication::endian();
+}
+
+
+QString QgsVectorFileWriter::writeVectorLayerAsShapefile(QString shapefileName, QString enc, QgsVectorLayer* layer)
+{
+  // save the layer as a shapefile
+  QString driverName = "ESRI Shapefile";
+  OGRSFDriver *poDriver;
+  OGRRegisterAll();
+  poDriver =
+      OGRSFDriverRegistrar::GetRegistrar()->
+      GetDriverByName((const char *)driverName.toLocal8Bit().data());
+  
+  if (poDriver == NULL)
+  {
+    return "DRIVER_NOT_FOUND";
+  }
+
+  OGRDataSource *poDS;
+  // create the data source
+  poDS = poDriver->CreateDataSource((const char *) shapefileName, NULL);
+  if (poDS == NULL)
+  {
+    return "ERROR_CREATE_SOURCE";
+  }
+  
+  QgsDebugMsg("Created data source");
+  
+  QTextCodec* saveCodec = QTextCodec::codecForName(enc.toLocal8Bit().data());
+  if(!saveCodec)
+  {
+      QgsDebugMsg("error finding QTextCodec for " + enc);
+      saveCodec = QTextCodec::codecForLocale();
+  }
+ 
+  // datasource created, now create the output layer, use utf8() for now.
+  OGRLayer *poLayer;
+  poLayer =
+      poDS->CreateLayer((const char *) (shapefileName.
+      left(shapefileName.find(".shp"))).utf8(), NULL,
+  static_cast < OGRwkbGeometryType > (1), NULL);
+  
+  if (poLayer == NULL)
+  {
+    return "ERROR_CREATE_LAYER";
+  }
+  
+  QgsDebugMsg("created layer");
+  
+  const std::vector<QgsField>& attributeFields = layer->fields();
+    
+  // TODO: calculate the field lengths
+  //int *lengths = getFieldLengths();
+  int lengths[] = { 1,2,3 }; // dummy lengths!
+  
+  // create the fields
+  QgsDebugMsg("creating " + QString("%d").arg(attributeFields.size()) + " fields");
+
+  for (uint i = 0; i < attributeFields.size(); i++)
+  {
+    // check the field length - if > 10 we need to truncate it
+    QgsField attrField = attributeFields[i];
+    if (attrField.name().length() > 10)
     {
-        // if host byte order is same as network (big-endian) byte order, then
-        // this is a big-endian environment
-        return XDR;
+      attrField = attrField.name().left(10);
+    }
+
+    // all fields are created as string (for now)
+    // TODO: make it type-aware
+    OGRFieldDefn fld(saveCodec->fromUnicode(attrField.name()), OFTString);
+
+    // set the length for the field -- but we don't know what it is...
+    fld.SetWidth(lengths[i]);
+
+    // create the field
+    QgsDebugMsg("creating field " + attrField.name() + " width length " + QString("%d").arg(lengths[i]));
+    if (poLayer->CreateField(&fld) != OGRERR_NONE)
+    {
+      QgsDebugMsg("error creating field " + attrField.name());
+    }
+  }
+
+  QgsDebugMsg("Done creating fields, saving features");
+
+  QgsVectorDataProvider* provider = layer->getDataProvider();
+  provider->reset();
+  QgsFeature* fet;
+  while ((fet = provider->getNextFeature(true)))
+  {
+    // create the feature
+    OGRFeature *poFeature = new OGRFeature(poLayer->GetLayerDefn());
+
+    QgsDebugMsg("Setting the field values");
+
+    const std::vector<QgsFeatureAttribute>& attributes = fet->attributeMap();
+
+    for (uint i = 0; i < attributeFields.size(); i++)
+    {
+      QString value = attributes[i].fieldValue();
+      if (!value.isNull())
+      {
+        QgsDebugMsg("Setting " + attributeFields[i].name() + " to " + value);
+        poFeature->SetField(saveCodec->fromUnicode(attributeFields[i].name()).data(),
+                            saveCodec->fromUnicode(value).data());
+      }
+      else
+      {
+        poFeature->SetField(saveCodec->fromUnicode(attributeFields[i].name()).data(), "");
+      }
     }
     
-    // otherwise this must be little-endian
+    // TODO: get the geometry and save it
+    OGRPoint *poPoint = new OGRPoint();
+    poPoint->setX(0);
+    poPoint->setY(0);
+//    QString sX = parts[fieldPositions[mXField]];
+//    QString sY = parts[fieldPositions[mYField]];
+//    poPoint->setX(sX.toDouble());
+//    poPoint->setY(sY.toDouble());
 
-    return NDR;
-#endif
+    QgsDebugMsg("Setting geometry");
+
+    poFeature->SetGeometryDirectly(poPoint);
+    if (poLayer->CreateFeature(poFeature) != OGRERR_NONE)
+    {
+      QgsDebugMsg("Failed to create feature in shapefile");
+    }
+    else
+    {
+      QgsDebugMsg("Added feature");
+    }
+
+    delete poFeature;
+    delete fet;
+  }
+  
+  delete poDS;
+
 }

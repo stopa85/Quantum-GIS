@@ -212,9 +212,6 @@ public:
 
   int capabilities() const;
 
-  //! Save the layer as a shapefile
-  bool saveAsShapefile();
-
   QgsDataSourceURI *getURI()
   {
     return 0;

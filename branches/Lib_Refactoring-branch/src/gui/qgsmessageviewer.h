@@ -34,6 +34,8 @@ class QgsMessageViewer: public QDialog, public QgsMessageOutput, private Ui::Qgs
     
     virtual void showMessage(bool blocking = true);
 
+    virtual void setTitle(const QString& title);
+
     // Call one of the setMessage...() functions first.
     // Subsequent calls to appendMessage use the format as determined
     // by the call to setMessage...()

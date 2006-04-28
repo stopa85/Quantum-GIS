@@ -27,12 +27,11 @@
 // Changed #include <qapp.h> to <qapplication.h>. Apparently some
 // debian distros do not include the qapp.h wrapper and the compilation
 // fails. [gsherman]
-#include <qapplication.h>
-
-#include <qfile.h>
-#include <qtextstream.h>
-#include <qstringlist.h>
-#include <qrect.h>
+#include <QApplication>
+#include <QFile>
+#include <QTextStream>
+#include <QStringList>
+#include <QRect>
 
 #include "qgis.h"
 #include "qgsdataprovider.h"

@@ -49,7 +49,6 @@ class QgsVectorDataProvider : public QgsDataProvider
         ChangeAttributeValues = 1 <<  2,
         AddAttributes =         1 <<  3,    // TODO: what is this exactly?
         DeleteAttributes =      1 <<  4,
-        SaveAsShapefile =       1 <<  5,
         CreateSpatialIndex =    1 <<  6,
         SelectAtId =            1 <<  7,
         ChangeGeometries =      1 <<  8
@@ -212,13 +211,6 @@ class QgsVectorDataProvider : public QgsDataProvider
        * @return std::vector containing QgsFeature objects that intersect rect
        */
       virtual std::vector<QgsFeature>& identify(QgsRect *rect) = 0;
-
-      /** saves current data as Shape file, if it can */
-      virtual bool saveAsShapefile()
-      {
-        // NOP by default
-        return false;
-      }
 
       /**Creates a spatial index on the datasource (if supported by the provider type). Returns true in case of success*/
       virtual bool createSpatialIndex();

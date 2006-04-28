@@ -23,7 +23,6 @@
 
 #include <QStringList>
 #include <QApplication>
-#include <QMessageBox>
 #include <QEvent>
 #include <QCustomEvent>
 #include <QTextOStream>
@@ -40,8 +39,8 @@
 #include <qgsfeatureattribute.h>
 #include <qgsfield.h>
 #include <qgsgeometry.h>
+#include <qgsmessageoutput.h>
 #include <qgsrect.h>
-#include <qgsmessageviewer.h>
 
 #include "qgsprovidercountcalcevent.h"
 #include "qgsproviderextentcalcevent.h"
@@ -1637,13 +1636,13 @@ bool QgsPostgresProvider::addFeature(QgsFeature* f, int primaryKeyHighWater)
     PGresult* result=PQexec(connection, (const char *)(insert.utf8()));
     if(result==0)
     {
-      QMessageBox::information(0,"INSERT error","An error occured during feature insertion",QMessageBox::Ok);
+      showMessageBox("INSERT error","An error occured during feature insertion");
       return false;
     }
     ExecStatusType message=PQresultStatus(result);
     if(message==PGRES_FATAL_ERROR)
     {
-      QMessageBox::information(0,"INSERT error",QString(PQresultErrorMessage(result)),QMessageBox::Ok);
+      showMessageBox("INSERT error",QString(PQresultErrorMessage(result)));
       return false;
     }
     
@@ -1678,13 +1677,13 @@ bool QgsPostgresProvider::deleteFeature(int id)
   PGresult* result=PQexec(connection, (const char *)(sql.utf8()));
   if(result==0)
   {
-    QMessageBox::information(0,"DELETE error","An error occured during deletion from disk",QMessageBox::Ok);
+    showMessageBox("DELETE error","An error occured during deletion from disk");
     return false;
   }
   ExecStatusType message=PQresultStatus(result);
   if(message==PGRES_FATAL_ERROR)
   {
-    QMessageBox::information(0,"DELETE error",QString(PQresultErrorMessage(result)),QMessageBox::Ok);
+    showMessageBox("DELETE error",QString(PQresultErrorMessage(result)));
     return false;
   }
 
@@ -1784,7 +1783,7 @@ bool QgsPostgresProvider::addAttributes(std::map<QString,QString> const & name)
       ExecStatusType message=PQresultStatus(result);
       if(message==PGRES_FATAL_ERROR)
       {
-        QMessageBox::information(0,"ALTER TABLE error",QString(PQresultErrorMessage(result)),QMessageBox::Ok);
+        showMessageBox("ALTER TABLE error",QString(PQresultErrorMessage(result)));
       } 
     }
   }
@@ -1811,7 +1810,7 @@ bool QgsPostgresProvider::deleteAttributes(std::set<QString> const & name)
       ExecStatusType message=PQresultStatus(result);
       if(message==PGRES_FATAL_ERROR)
       {
-        QMessageBox::information(0,"ALTER TABLE error",QString(PQresultErrorMessage(result)),QMessageBox::Ok);
+        showMessageBox("ALTER TABLE error",QString(PQresultErrorMessage(result)));
       }
     }
     else
@@ -1871,7 +1870,7 @@ bool QgsPostgresProvider::changeAttributeValues(std::map<int,std::map<QString,QS
         ExecStatusType message=PQresultStatus(result);
         if(message==PGRES_FATAL_ERROR)
         {
-          QMessageBox::information(0,"UPDATE error",QString(PQresultErrorMessage(result)),QMessageBox::Ok);
+          showMessageBox("UPDATE error",QString(PQresultErrorMessage(result)));
         }
       }
     }
@@ -1951,20 +1950,14 @@ bool QgsPostgresProvider::changeGeometryValues(std::map<int, QgsGeometry> & geom
       PGresult* result=PQexec(connection, (const char *)(sql.utf8()));
       if (result==0)
       {
-        QMessageBox::critical(0, "PostGIS error", 
-                                 "An error occured contacting the PostgreSQL databse",
-                                 QMessageBox::Ok,
-                                 Qt::NoButton);
+        showMessageBox("PostGIS error", "An error occured contacting the PostgreSQL databse");
         return false;
       }
       ExecStatusType message=PQresultStatus(result);
       if(message==PGRES_FATAL_ERROR)
       {
-        QMessageBox::information(0, "PostGIS error", 
-                                 "The PostgreSQL databse returned: "
-                                   + QString(PQresultErrorMessage(result)),
-                                 QMessageBox::Ok,
-                                 Qt::NoButton);
+        showMessageBox("PostGIS error", "The PostgreSQL databse returned: "
+                                   + QString(PQresultErrorMessage(result)));
         return false;
       }
                        
@@ -2552,10 +2545,10 @@ PGresult* QgsPostgresProvider::executeDbCommand(PGconn* connection,
 void QgsPostgresProvider::showMessageBox(const QString& title, 
 					 const QString& text)
 {
-  QgsMessageViewer* message = new QgsMessageViewer();
-  message->setCaption(title);
-  message->setMessageAsPlainText(text);
-  message->exec(); // modal
+  QgsMessageOutput* message = QgsMessageOutput::createMessageOutput();
+  message->setTitle(title);
+  message->setMessage(text, QgsMessageOutput::MessageText);
+  message->showMessage();
 }
 
 void QgsPostgresProvider::showMessageBox(const QString& title, 

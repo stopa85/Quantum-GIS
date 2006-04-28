@@ -31,11 +31,6 @@ extern "C"
 #include <queue>
 #include <fstream>
 
-class QString;
-
-class OGRDataSource;
-class OGRLayer;
-
 class QgsFeature;
 class QgsField;
 class QgsGeometry;

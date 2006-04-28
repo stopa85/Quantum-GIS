@@ -66,6 +66,7 @@
 #include "qgssinglesymbolrenderer.h"
 #include "qgsspatialrefsys.h"
 #include "qgsvectordataprovider.h"
+#include "qgsvectorfilewriter.h"
 
 #ifdef Q_WS_X11
 #include "qgsclipper.h"
@@ -2864,12 +2865,6 @@ void QgsVectorLayer::drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * t
 
 
 
-void QgsVectorLayer::saveAsShapefile()
-{
-  // call the dataproviders saveAsShapefile method
-  mDataProvider->saveAsShapefile();
-  //  QMessageBox::information(0,"Save As Shapefile", "Someday...");
-}
 void QgsVectorLayer::setCoordinateSystem()
 {
   QgsDebugMsg("QgsVectorLayer::setCoordinateSystem ----- Computing Coordinate System");
@@ -3050,4 +3045,9 @@ void QgsVectorLayer::setModified(bool modified, bool onlyGeometry)
 {
   mModified = modified;
   emit wasModified(onlyGeometry);
+}
+
+QString QgsVectorLayer::saveAsShapefile(QString path, QString encoding)
+{
+  return QgsVectorFileWriter::writeVectorLayerAsShapefile(path, encoding, this);
 }

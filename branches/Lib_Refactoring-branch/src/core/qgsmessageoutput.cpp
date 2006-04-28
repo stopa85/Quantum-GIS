@@ -60,7 +60,16 @@ void QgsMessageOutputConsole::appendMessage(const QString& message)
 
 void QgsMessageOutputConsole::showMessage(bool)
 {
+  // show title if provided
+  if (!mTitle.isNull())
+    std::cout << mTitle.toLocal8Bit().data() << ":" << std::endl;
+  // show the message
   std::cout << mMessage.toLocal8Bit().data() << std::endl;
   emit destroyed();
   delete this;
+}
+
+void QgsMessageOutputConsole::setTitle(const QString& title)
+{
+  mTitle = title;
 }

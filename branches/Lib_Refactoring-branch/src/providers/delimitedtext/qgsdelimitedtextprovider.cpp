@@ -21,20 +21,19 @@
 #include <cfloat>
 #include <iostream>
 
-#include <qfile.h>
-#include <qdatastream.h>
-#include <qtextstream.h>
-#include <qstringlist.h>
+#include <QtGlobal>
+#include <QFile>
+#include <QDataStream>
+#include <QTextStream>
+#include <QStringList>
+#include <QRegExp>
+#include <QUrl>
+
 #include <qmessagebox.h>
 #include <qsettings.h>
-#include <qregexp.h>
-#include <q3url.h>
-#include <qglobal.h>
 
-#include <ogrsf_frmts.h>
 
 #include "qgsdataprovider.h"
-#include "qgsencodingfiledialog.h"
 #include "qgsfeature.h"
 #include "qgsfeatureattribute.h"
 #include "qgsfield.h"
@@ -73,10 +72,10 @@ QgsDelimitedTextProvider::QgsDelimitedTextProvider(QString const &uri)
   temp = parameters.grep("yField=");
   mYField = temp.size()? temp[0].mid(temp[0].find("=") + 1) : "";
   // Decode the parts of the uri. Good if someone entered '=' as a delimiter, for instance.
-  Q3Url::decode(mFileName);
-  Q3Url::decode(mDelimiter);
-  Q3Url::decode(mXField);
-  Q3Url::decode(mYField);
+  QUrl::decode(mFileName);
+  QUrl::decode(mDelimiter);
+  QUrl::decode(mXField);
+  QUrl::decode(mYField);
 #ifdef QGISDEBUG
   std::cerr << "Data source uri is " << (const char *)uri.toLocal8Bit().data() << std::endl;
   std::cerr << "Delimited text file is: " << (const char *)mFileName.toLocal8Bit().data() << std::endl;
@@ -732,205 +731,7 @@ bool QgsDelimitedTextProvider::boundsCheck(double x, double y)
 
 int QgsDelimitedTextProvider::capabilities() const
 {
-    return QgsVectorDataProvider::SaveAsShapefile;
-}
-
-
-bool QgsDelimitedTextProvider::saveAsShapefile()
-{
-  // save the layer as a shapefile
-  QString driverName = "ESRI Shapefile";
-  OGRSFDriver *poDriver;
-  OGRRegisterAll();
-  poDriver =
-    OGRSFDriverRegistrar::GetRegistrar()->
-    GetDriverByName((const char *)driverName.toLocal8Bit().data());
-  bool returnValue = true;
-  if (poDriver != NULL)
-  {
-    // get a name for the shapefile
-    // Get a file to process, starting at the current directory
-    // Set inital dir to last used in delimited text plugin
-    QSettings settings;
-    QString enc;
-    QString shapefileName;
-    QString filter =  QString("Shapefiles (*.shp)");
-    QString dirName = settings.readEntry("/Plugin-DelimitedText/text_path", "./");
-
-    QgsEncodingFileDialog* openFileDialog = new QgsEncodingFileDialog(0,
-                                                                      tr("Save layer as..."),
-                                                                      dirName,
-                                                                      filter,
-                                                                      QString("UTF-8"));
-
-    // allow for selection of more than one file
-    openFileDialog->setMode(QFileDialog::AnyFile);
-
-
-    if (openFileDialog->exec() == QDialog::Accepted)
-    {
-        shapefileName = openFileDialog->selectedFile();
-        enc = openFileDialog->encoding();
-    }
-    else
-    {
-      return returnValue;
-    }
-
-    if (!shapefileName.isNull())
-    {
-      // add the extension if not present
-      if (shapefileName.find(".shp") == -1)
-      {
-        shapefileName += ".shp";
-      }
-      OGRDataSource *poDS;
-      // create the data source
-      poDS = poDriver->CreateDataSource((const char *) shapefileName, NULL);
-      if (poDS != NULL)
-      {
-        QTextCodec* saveCodec = QTextCodec::codecForName(enc.toLocal8Bit().data());
-        if(!saveCodec)
-        {
-#ifdef QGISDEBUG
-          qWarning("error finding QTextCodec in QgsDelimitedTextProvider::saveAsShapefile()");
-#endif
-          saveCodec = QTextCodec::codecForLocale();
-        }
- 
-        std::cerr << "created datasource" << std::endl;
-        // datasource created, now create the output layer, use utf8() for now.
-        OGRLayer *poLayer;
-        poLayer =
-           poDS->CreateLayer((const char *) (shapefileName.
-                             left(shapefileName.find(".shp"))).utf8(), NULL,
-                              static_cast < OGRwkbGeometryType > (1), NULL);
-        if (poLayer != NULL)
-        {
-          std::cerr << "created layer" << std::endl;
-          // calculate the field lengths
-          int *lengths = getFieldLengths();
-          // create the fields
-          std::cerr << "creating " << attributeFields.
-            size() << " fields" << std::endl;
-          for (int i = 0; i < attributeFields.size(); i++)
-          {
-            // check the field length - if > 10 we need to truncate it
-            QgsField attrField = attributeFields[i];
-            if (attrField.name().length() > 10)
-            {
-              attrField = attrField.name().left(10);
-            }
-            // all fields are created as string (for now)
-            OGRFieldDefn fld(saveCodec->fromUnicode(attrField.name()), OFTString);
-            // set the length for the field -- but we don't know what it is...
-            fld.SetWidth(lengths[i]);
-            // create the field
-            std::cerr << "creating field " << (const char *)attrField.
-              name().toLocal8Bit().data() << " width length " << lengths[i] << std::endl;
-            if (poLayer->CreateField(&fld) != OGRERR_NONE)
-            {
-              QMessageBox::warning(0, "Error",
-                                   "Error creating field " + attrField.name());
-            }
-          }
-          // read the delimited text file and create the features
-          std::cerr << "Done creating fields" << std::endl;
-          // read the line
-          reset();
-          QTextStream stream(mFile);
-          QString line;
-          while (!stream.atEnd())
-          {
-            line = stream.readLine(); // line of text excluding '\n'
-            std::cerr << (const char *)line.toLocal8Bit().data() << std::endl;
-            // split the line
-            QStringList parts =
-              QStringList::split(QRegExp(mDelimiter), line, true);
-            std::cerr << "Split line into " << parts.size() << std::endl;
-
-            // create the feature
-            OGRFeature *poFeature;
-
-            poFeature = new OGRFeature(poLayer->GetLayerDefn());
-
-            // iterate over the parts and set the fields
-            std::cerr << "Setting the field values" << std::endl;
-            // set limit - we will ignore extra fields on the line
-            int limit = attributeFields.size();
-
-            if (parts.size() < limit)
-            {
-
-              // this is bad - not enough values where supplied on the line
-              // TODO We should inform the user about this...
-            }
-            else
-            {
-
-              for (int i = 0; i < limit; i++)
-              {
-                if (parts[i] != QString::null)
-                {
-                  std::cerr << "Setting " << i << " " << (const char *)attributeFields[i].
-                    name().toLocal8Bit().data() << " to " << (const char *)parts[i].toLocal8Bit().data() << std::endl;
-                  poFeature->SetField(saveCodec->fromUnicode(attributeFields[i].name()).data(),
-                                      saveCodec->fromUnicode(parts[i]).data());
-
-                }
-                else
-                {
-                  poFeature->SetField(saveCodec->fromUnicode(attributeFields[i].name()).data(), "");
-                }
-              }
-              std::cerr << "Field values set" << std::endl;
-              // create the point
-              OGRPoint *poPoint = new OGRPoint();
-              QString sX = parts[fieldPositions[mXField]];
-              QString sY = parts[fieldPositions[mYField]];
-              poPoint->setX(sX.toDouble());
-              poPoint->setY(sY.toDouble());
-              std::cerr << "Setting geometry" << std::endl;
-
-              poFeature->SetGeometryDirectly(poPoint);
-              if (poLayer->CreateFeature(poFeature) != OGRERR_NONE)
-              {
-                std::cerr << "Failed to create feature in shapefile" << std::
-                  endl;
-              }
-              else
-              {
-                std::cerr << "Added feature" << std::endl;
-              }
-
-              delete poFeature;
-            }
-          }
-          delete poDS;
-        }
-        else
-        {
-          QMessageBox::warning(0, "Error", "Layer creation failed");
-        }
-
-      }
-      else
-      {
-        QMessageBox::warning(0, "Error creating shapefile",
-                             "The shapefile could not be created (" +
-                             shapefileName + ")");
-      }
-
-    }
-    //std::cerr << "Saving to " << shapefileName << std::endl; 
-  }
-  else
-  {
-    QMessageBox::warning(0, "Driver not found",
-                         driverName + " driver is not available");
-    returnValue = false;
-  }
-  return returnValue;
+    return 0;
 }
 
 
