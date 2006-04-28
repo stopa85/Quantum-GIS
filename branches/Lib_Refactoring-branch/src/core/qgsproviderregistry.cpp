@@ -23,7 +23,6 @@
 
 using namespace std;
 
-#include <QMessageBox>
 #include <QString>
 #include <QDir>
 #include <QLibrary>
@@ -32,6 +31,7 @@ using namespace std;
 #include "qgis.h"
 #include "qgsdataprovider.h"
 #include "qgslogger.h"
+#include "qgsmessageoutput.h"
 #include "qgsprovidermetadata.h"
 
 
@@ -89,7 +89,11 @@ QgsProviderRegistry::QgsProviderRegistry(QString pluginPath)
                               "No QGIS data provider plugins found in:");
     msg += "\n" + mLibraryDirectory.path() + "\n\n";
     msg += QObject::tr("No vector layers can be loaded. Check your QGIS installation");
-    QMessageBox::critical(0, QObject::tr("No Data Providers"), msg);
+    
+    QgsMessageOutput* output = QgsMessageOutput::createMessageOutput();
+    output->setTitle(QObject::tr("No Data Providers"));
+    output->setMessage(msg, QgsMessageOutput::MessageText);
+    output->showMessage();
   } 
   else
   {

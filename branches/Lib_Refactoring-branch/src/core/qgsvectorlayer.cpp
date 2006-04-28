@@ -33,7 +33,6 @@
 #include <utility>
 
 #include <QImage>
-#include <QMessageBox>
 #include <QPainter>
 #include <QPolygonF>
 #include <QString>
@@ -135,11 +134,6 @@ QgsVectorLayer::~QgsVectorLayer()
   QgsDebugMsg("In QgsVectorLayer destructor");
 
   mValid=false;
-
-  if(isEditable())
-  {
-    stopEditing();
-  }
 
   if (mRenderer)
   {
@@ -1280,21 +1274,20 @@ bool QgsVectorLayer::addFeature(QgsFeature* f, bool alsoUpdateExtent)
 {
   static int addedIdLowWaterMark = 0;
 
-  if(mDataProvider)
+  if (!mDataProvider)
   {
-    if(!(mDataProvider->capabilities() & QgsVectorDataProvider::AddFeatures))
-    {
-      QMessageBox::information(0, tr("Layer cannot be added to"), 
-          tr("The data provider for this layer does not support the addition of features."));
-      return false;
-    }
+    return false;
+  }
+    
+  if(!(mDataProvider->capabilities() & QgsVectorDataProvider::AddFeatures))
+  {
+    return false;
+  }
 
-    if(!isEditable())
-    {
-      QMessageBox::information(0, tr("Layer not editable"), 
-          tr("The current layer is not editable. Choose 'Allow editing' in the legend item right click menu."));
-      return false;
-    }
+  if(!isEditable())
+  {
+    return false;
+  }
 
     //set the endian properly
     int end = QgsApplication::endian();
@@ -1318,27 +1311,20 @@ qWarning("assigned feature id "+QString::number(tempid));
     //assign a temporary id to the feature (use negative numbers)
     addedIdLowWaterMark--;
 
-#ifdef QGISDEBUG
-    qWarning("assigned feature id "+QString::number(addedIdLowWaterMark));
-#endif
+    QgsDebugMsg("Assigned feature id " + QString::number(addedIdLowWaterMark));
 
     // Change the fields on the feature to suit the destination
     // in the paste transformation transfer.
     // TODO: Could be done more efficiently for large pastes
     std::map<int, QString> fields = f->fields();
 
-#ifdef QGISDEBUG
-    std::cout << "QgsVectorLayer::addFeature: about to traverse fields." << std::endl;
-#endif
+    QgsDebugMsg("QgsVectorLayer::addFeature: about to traverse fields.");
+    
     for (std::map<int, QString>::iterator it  = fields.begin();
         it != fields.end();
         ++it)
     {
-#ifdef QGISDEBUG
-      std::cout << "QgsVectorLayer::addFeature: inspecting field '"
-        << (it->second).toLocal8Bit().data()
-        << "'." << std::endl;
-#endif
+      QgsDebugMsg("QgsVectorLayer::addFeature: inspecting field '" + it->second + "'.");
 
     }
 
@@ -1356,8 +1342,6 @@ qWarning("assigned feature id "+QString::number(tempid));
     }  
 
     return true;
-  }
-  return false;
 }
 
 
@@ -1485,15 +1469,11 @@ bool QgsVectorLayer::deleteSelectedFeatures()
 {
   if(!(mDataProvider->capabilities() & QgsVectorDataProvider::DeleteFeatures))
   {
-    QMessageBox::information(0, tr("Provider does not support deletion"), 
-        tr("Data provider does not support deleting features"));
     return false;
   }
 
   if(!isEditable())
   {
-    QMessageBox::information(0, tr("Layer not editable"), 
-        tr("The current layer is not editable. Choose 'Allow editing' in the legend item right click menu"));
     return false;
   }
 
@@ -1547,77 +1527,25 @@ bool QgsVectorLayer::labelOn ( void )
   return mLabelOn;
 }
 
-void QgsVectorLayer::toggleEditing()
+
+
+bool QgsVectorLayer::startEditing()
 {
-  if (!isEditable())
+  if (!mDataProvider)
   {
-    startEditing();
+    return false;
   }
-  else
+    
+  if(!(mDataProvider->capabilities()&QgsVectorDataProvider::AddFeatures))
   {
-    stopEditing();
+    return false;
   }
+      
+  mEditable=true;
+  return true;
 }
 
-
-void QgsVectorLayer::startEditing()
-{
-  if(mDataProvider)
-  {
-    if(!(mDataProvider->capabilities()&QgsVectorDataProvider::AddFeatures))
-    {
-      QMessageBox::information(0,tr("Start editing failed"),
-                               tr("Provider cannot be opened for editing"),
-                               QMessageBox::Ok);
-    }
-    else
-    {
-      mEditable=true;
-    }
-  }
-}
-
-void QgsVectorLayer::stopEditing()
-{
-  if(mDataProvider)
-  {
-    if(mModified)
-    {
-      //commit or roll back?
-      int commit=QMessageBox::information(0,tr("Stop editing"),tr("Do you want to save the changes?"),tr("&Yes"),tr("&No"),QString::null,0,1);	
-
-      if(commit==0)
-      {
-        if(!commitChanges())
-        {
-          QMessageBox::information(0,tr("Error"),tr("Could not commit changes"),QMessageBox::Ok);
-        }
-        else
-        {
-          mDataProvider->updateExtents();
-        }
-      }
-      else if(commit==1)
-      {
-        if(!rollBack())
-        {
-          QMessageBox::information(0,tr("Error"),
-              tr("Problems during roll back"),QMessageBox::Ok);
-        }
-      }
-      emit editingStopped(true);
-      triggerRepaint();
-    }
-    else
-    {
-      emit editingStopped(false);
-    }
-    mEditable=false;
-    setModified(FALSE);
-  }
-}
-
-
+  
 bool QgsVectorLayer::readXML_( QDomNode & layer_node )
 {
 #ifdef QGISDEBUG
@@ -2038,29 +1966,27 @@ int QgsVectorLayer::findFreeId()
 
 bool QgsVectorLayer::commitChanges()
 {
-  if(mDataProvider)
+  if (!mDataProvider)
   {
-#ifdef QGISDEBUG
-    qWarning("in QgsVectorLayer::commitChanges");
-#endif
-    bool returnvalue=true;
+    return false;
+  }
+  
+  if (!isEditable())
+  {
+    return false;
+  }
 
-#ifdef QGISDEBUG
-    std::cout << "QgsVectorLayer::commitChanges: Committing new features"
-      << "." << std::endl;
+  bool returnvalue=true;
 
-    for(std::vector<QgsFeature*>::iterator it=mAddedFeatures.begin();it!=mAddedFeatures.end();++it)
-    {
-      std::cout << "QgsVectorLayer::commitChanges: Got: " << (*it)->geometry()->wkt().toLocal8Bit().data()
-        << "." << std::endl;
-    }
+  // Commit new features
+  if( mAddedFeatures.size() > 0 ) 
+  {
+    QgsDebugMsg("Committing new features");
 
-#endif
-
-    // Commit new features
     std::list<QgsFeature*> addedlist;
     for(std::vector<QgsFeature*>::iterator it=mAddedFeatures.begin();it!=mAddedFeatures.end();++it)
     {
+      QgsDebugMsg("Got: " + (*it)->geometry()->wkt() + ".");
       addedlist.push_back(*it);
     }
 
@@ -2068,6 +1994,7 @@ bool QgsVectorLayer::commitChanges()
       // TODO: Make the Provider accept a pointer to vector instead of a list - more memory efficient
       //    if ( !(mDataProvider->addFeatures(mAddedFeatures)) )
     {
+      QgsLogger::warning(tr("Could not add new features"));
       returnvalue=false;
     }
 
@@ -2077,81 +2004,91 @@ bool QgsVectorLayer::commitChanges()
       delete *it;
     }
     mAddedFeatures.clear();
-
-#ifdef QGISDEBUG
-    std::cout << "QgsVectorLayer::commitChanges: Committing changed attributes"
-      << "." << std::endl;
-#endif
-
-    // Commit changed attributes
-    if( mChangedAttributes.size() > 0 ) 
-    {
-      if ( !mDataProvider->changeAttributeValues ( mChangedAttributes ) ) 
-      {
-        QMessageBox::warning(0,tr("Warning"),tr("Could not change attributes"));
-      }
-      mChangedAttributes.clear();
-    }
-
-#ifdef QGISDEBUG
-    std::cout << "QgsVectorLayer::commitChanges: Committing changed geometries"
-      << "." << std::endl;
-#endif
-    // Commit changed geometries
-    if( mChangedGeometries.size() > 0 ) 
-    {
-      if ( !mDataProvider->changeGeometryValues ( mChangedGeometries ) ) 
-      {
-        QMessageBox::warning(0,tr("Error"),tr("Could not commit changes to geometries"));
-      }
-      mChangedGeometries.clear();
-    }
-
-
-#ifdef QGISDEBUG
-    std::cout << "QgsVectorLayer::commitChanges: Committing deleted features"
-      << "." << std::endl;
-#endif
-
-    // Commit deleted features
-    if(mDeleted.size()>0)
-    {
-      std::list<int> deletelist;
-      for(feature_ids::iterator it=mDeleted.begin();it!=mDeleted.end();++it)
-      {
-        deletelist.push_back(*it);
-        mSelected.erase(*it);//just in case the feature is still selected
-      }
-      if(!mDataProvider->deleteFeatures(deletelist))
-      {
-        returnvalue=false;
-      }
-    }
-
-    return returnvalue;
   }
-  else
+
+  // Commit changed attributes
+  if( mChangedAttributes.size() > 0 ) 
   {
-    return false;
+    QgsDebugMsg("Committing changed attributes.");
+    
+    if ( !mDataProvider->changeAttributeValues ( mChangedAttributes ) ) 
+    {
+      QgsLogger::warning(tr("Could not change attributes"));
+      returnvalue=false;
+    }
+    mChangedAttributes.clear();
   }
+
+  // Commit changed geometries
+  if( mChangedGeometries.size() > 0 ) 
+  {
+    QgsDebugMsg("Committing changed geometries.");
+    
+    if ( !mDataProvider->changeGeometryValues ( mChangedGeometries ) ) 
+    {
+      QgsLogger::warning(tr("Could not commit changes to geometries"));
+      returnvalue=false;
+    }
+    mChangedGeometries.clear();
+  }
+
+  // Commit deleted features
+  if(mDeleted.size()>0)
+  {
+    QgsDebugMsg("Committing deleted features.");
+
+    std::list<int> deletelist;
+    for(feature_ids::iterator it=mDeleted.begin();it!=mDeleted.end();++it)
+    {
+      deletelist.push_back(*it);
+      mSelected.erase(*it);//just in case the feature is still selected
+    }
+    if(!mDataProvider->deleteFeatures(deletelist))
+    {
+      QgsLogger::warning(tr("Could not commit deleted geometries"));
+      returnvalue=false;
+    }
+    mDeleted.clear();
+  }
+
+  mEditable = false;
+  setModified(FALSE);
+  
+  mDataProvider->updateExtents();
+
+  return returnvalue;
 }
 
 bool QgsVectorLayer::rollBack()
 {
-  // TODO: Roll back changed features
-
-  // Roll back added features
-  // Delete the features themselves before deleting the references to them.
-  for(std::vector<QgsFeature*>::iterator it=mAddedFeatures.begin();it!=mAddedFeatures.end();++it)
+  if (!isEditable())
   {
-    delete *it;
+    return false;
   }
-  mAddedFeatures.clear();
+  
+  if (isModified())
+  {
+    // roll back changed attributes
+    mChangedAttributes.clear();
 
-  // Roll back deleted features
-  mDeleted.clear();
+    // roll back changed geometries
+    mChangedGeometries.clear();
+  
+    // Roll back added features
+    // Delete the features themselves before deleting the references to them.
+    for(std::vector<QgsFeature*>::iterator it=mAddedFeatures.begin();it!=mAddedFeatures.end();++it)
+    {
+      delete *it;
+    }
+    mAddedFeatures.clear();
 
-  updateExtents();
+    // Roll back deleted features
+    mDeleted.clear();
+  }
+
+  mEditable = false;
+  setModified(FALSE);
+  
   return true;
 }
 
@@ -2260,48 +2197,47 @@ std::vector<QgsFeature>* QgsVectorLayer::selectedFeatures()
 
 bool QgsVectorLayer::addFeatures(std::vector<QgsFeature*>* features, bool makeSelected)
 {
-  if (mDataProvider)
-  {  
-    if(!(mDataProvider->capabilities() & QgsVectorDataProvider::AddFeatures))
-    {
-      QMessageBox::information(0, tr("Layer cannot be added to"), 
-          tr("The data provider for this layer does not support the addition of features."));
-      return false;
-    }
+  if (!mDataProvider)
+  { 
+    return false;
+  }
+  
+  if(!(mDataProvider->capabilities() & QgsVectorDataProvider::AddFeatures))
+  {
+    return false;
+  }
+  
+  if (!isEditable())
+  {
+    return false;
+  }
 
-    if(!isEditable())
-    {
-      QMessageBox::information(0, tr("Layer not editable"), 
-          tr("The current layer is not editable. Choose 'Allow editing' in the legend item right click menu."));
-      return false;
-    }
 
+  if (makeSelected)
+  {
+    removeSelection(FALSE); // don't emit signal
+  }
+
+  for (std::vector<QgsFeature*>::iterator iter  = features->begin();
+      iter != features->end();
+      ++iter)
+  {
+
+    addFeature(*iter);
 
     if (makeSelected)
     {
-      removeSelection(FALSE); // don't emit signal
+      mSelected.insert((*iter)->featureId());
     }
+  }
 
-    for (std::vector<QgsFeature*>::iterator iter  = features->begin();
-        iter != features->end();
-        ++iter)
-    {
-
-      addFeature(*iter);
-
-      if (makeSelected)
-      {
-        mSelected.insert((*iter)->featureId());
-      }
-    }
-
-    updateExtents();
-    
-    if (makeSelected)
-    {
-      emit selectionChanged();
-    }
-  }  
+  updateExtents();
+  
+  if (makeSelected)
+  {
+    emit selectionChanged();
+  }
+  
   return true;
 }
 

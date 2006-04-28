@@ -23,6 +23,7 @@
 #include "qgslegendlayerfile.h"
 #include "qgsmaplayer.h"
 #include "qgsvectorlayer.h"
+#include "qgsvectordataprovider.h"
 
 // attribute table
 #include "qgsattributetable.h"
@@ -295,4 +296,54 @@ void QgsLegendLayerFile::saveAsShapefile()
   {
     QMessageBox::information( 0, "Saving done", "Export to Shapefile has been completed");
   }
+}
+
+void QgsLegendLayerFile::toggleEditing()
+{
+  QgsVectorLayer* vlayer = dynamic_cast<QgsVectorLayer*>(mLayer);
+  if (!vlayer)
+    return;
+  
+  if (!vlayer->isEditable())
+  {
+    vlayer->startEditing();
+    if(!(vlayer->getDataProvider()->capabilities() & QgsVectorDataProvider::AddFeatures))
+    {
+      QMessageBox::information(0,tr("Start editing failed"),
+                               tr("Provider cannot be opened for editing"),
+                               QMessageBox::Ok);
+    }
+  }
+  else
+  {
+    // if not modified, just stop editing
+    if (!vlayer->isModified())
+    {
+      vlayer->rollBack();
+    }
+
+    // commit or roll back?
+    int commit = QMessageBox::information(0,tr("Stop editing"),
+                                          tr("Do you want to save the changes?"),
+                                          tr("&Yes"),tr("&No"),QString::null,0,1);  
+
+    if(commit==0)
+    {
+      if(!vlayer->commitChanges())
+      {
+        QMessageBox::information(0,tr("Error"),tr("Could not commit changes"),QMessageBox::Ok);
+      }
+    }
+    else if(commit==1)
+    {
+      if(!vlayer->rollBack())
+      {
+        QMessageBox::information(0,tr("Error"),
+                                 tr("Problems during roll back"),QMessageBox::Ok);
+      }
+    }
+    vlayer->triggerRepaint();
+    
+  }
+
 }

@@ -1,20 +1,16 @@
 #include "qgsspatialrefsys.h"
 
-#include <cassert>
 #include <cmath>
-#include <iostream>
 
 #include <QDir>
 #include <QDomNode>
 #include <QDomElement>
 #include <QFileInfo>
-#include <QMessageBox>
 #include <QRegExp>
-
-//#include <projects.h>
 
 #include "qgsapplication.h"
 #include "qgslogger.h"
+#include "qgsmessageoutput.h"
 #include "qgis.h" //const vals declared here
 
 #include <sqlite3.h>
@@ -487,7 +483,7 @@ bool QgsSpatialRefSys::createFromProj4 (const QString theProj4String)
   myStart = myEllipseRegExp.search(theProj4String, myStart);
   if (myStart==-1)
   {
-    std::cout << "QgsSpatialRefSys::createFromProj4 error proj string supplied has no +ellps argument" << std::endl;
+    QgsLogger::warning("QgsSpatialRefSys::createFromProj4 error proj string supplied has no +ellps argument");
 
     return mIsValidFlag;
   }
@@ -1260,9 +1256,11 @@ int QgsSpatialRefSys::openDb(QString path, sqlite3 **db)
     // XXX This will likely never happen since on open, sqlite creates the
     //     database if it does not exist.
     // ... unfortunately it happens on Windows
-    QMessageBox::warning(0,"Error","Could not open SRS database "
-                + path + "<br>Error(" + QString::number(myResult)
-                + "): " + QString(sqlite3_errmsg(*db)) ); 
+    QgsMessageOutput* output = QgsMessageOutput::createMessageOutput();
+    output->setTitle("Error");
+    output->setMessage("Could not open SRS database " + path +
+        "<br>Error(" + QString::number(myResult) + "): " +
+        QString(sqlite3_errmsg(*db)), QgsMessageOutput::MessageText); 
     
   }
   return myResult;

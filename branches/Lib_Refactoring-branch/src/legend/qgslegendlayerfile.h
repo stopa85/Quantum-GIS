@@ -75,6 +75,9 @@ public:
     /**Save as shapefile*/
     void saveAsShapefile();
     
+    /**Toggle editing for layer*/
+    void toggleEditing();
+    
  protected:
     QgsMapLayer* mLayer;
     

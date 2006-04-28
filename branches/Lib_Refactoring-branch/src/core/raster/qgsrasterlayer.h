@@ -165,8 +165,8 @@ The [type] part of the variable should be the type class of the variable written
 // Includes
 // 
  
-#include <Q3ValueVector>
-#include <Q3ValueList> 
+#include <QVector>
+#include <QList> 
 #include <QDateTime>
 
 #include <gdal_priv.h> // because of GDALDataType
@@ -188,7 +188,6 @@ The [type] part of the variable should be the type class of the variable written
  
 #include "qgspoint.h"
 #include "qgsmaplayer.h"
-#include "qgsrasterlayer.h"
 
 
 //
@@ -257,7 +256,7 @@ public:
     /** \brief  A vector containing one RasterBandStats struct per raster band in this raster layer.
      * Note that while very RasterBandStats element will have the name and number of its associated
      * band populated, any additional stats are calculated on a need to know basis.*/
-    typedef Q3ValueVector<QgsRasterBandStats> RasterStatsVector;
+    typedef QVector<QgsRasterBandStats> RasterStatsVector;
 
 
     /** \brief  A list containing one RasterPyramid struct per 
@@ -268,7 +267,7 @@ public:
      * we will check to see if a pyramid matching these dimensions already exists
      * in the raster layer, and if so mark the exists flag as true. */
       
-    typedef Q3ValueList<QgsRasterPyramid> RasterPyramidList;
+    typedef QList<QgsRasterPyramid> RasterPyramidList;
 
     /** \brief This typedef is used when the showProgress function is passed to gdal as a function
     pointer. */

@@ -345,22 +345,20 @@ public:
   /** Save as shapefile */
   QString saveAsShapefile(QString path, QString encoding);
 
+  /** Make layer editable */
+  bool startEditing();
+  
+  /** Stop editing and write the changes to the provider */
+  bool commitChanges();
+
+  /** Stop editing and discard the edits */
+  bool rollBack();
+
 public slots:
 
   void triggerRepaint();
 
-  void toggleEditing();
-  void startEditing();
-  void stopEditing();
-  
 signals:
-
-  /** This signal is emitted when the layer leaves editing mode.
-   *  The purpose is to tell QgsMapCanvas to remove the lines of
-   *  (unfinished) features
-   *  @param norepaint True: no repaint at all. False: QgsMapCanvas decides, if a repaint is necessary or not
-   */
-  void editingStopped(bool norepaint);
 
   /** This signal is emited when selection was changed */
   void selectionChanged();
@@ -370,7 +368,6 @@ signals:
 
   /** This signal is emitted when drawing features to tell current progress */
   void drawingProgress(int current, int total);
-
 
 private:                       // Private methods
 
@@ -415,12 +412,6 @@ private:                       // Private methods
 
   /** Goes through all features and finds a free id (e.g. to give it temporarily to a not-commited feature) */
   int findFreeId();
-
-  /** Writes the changes to disk */
-  bool commitChanges();
-
-  /** Discards the edits */
-  bool rollBack();
 
 
 private:                       // Private attributes
