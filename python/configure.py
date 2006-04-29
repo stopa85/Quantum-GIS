@@ -37,8 +37,9 @@ installs.append([["__init__.py", "qgisconfig.py"], mod_dir])
 # Create the Makefile.  The QtModuleMakefile class provided by the
 # pyqtconfig module takes care of all the extra preprocessor, compiler and
 # linker flags needed by the Qt library.
-makefile = PyQt4.pyqtconfig.QtGuiModuleMakefile(
+makefile = sipconfig.ModuleMakefile(
         configuration=config,
+        qt=["QtCore","QtGui","QtXml"],
         build_file=build_file,
         installs=installs,
         install_dir=mod_dir
