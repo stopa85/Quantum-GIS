@@ -1,4 +1,6 @@
 
+#include "qgsconfig.h"
+
 #include "qgis.h"
 
 // Version constants

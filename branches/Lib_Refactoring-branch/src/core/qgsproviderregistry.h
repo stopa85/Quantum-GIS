@@ -46,17 +46,31 @@ class QgsProviderRegistry
     /** Virtual dectructor */
     virtual ~QgsProviderRegistry();
 
+    /** Return path for the library of the provider */
     QString library(QString const & providerKey) const;
 
+    /** Return list of provider plugins found */
     QString pluginList(bool asHtml = false) const;
 
     /** return library directory where plugins are found */
-    QDir const & libraryDirectory() const;
+    const QDir & libraryDirectory() const;
 
+    /** Set library directory where to search for plugins */
     void setLibraryDirectory(QDir const & path);
  
-    QgsDataProvider * getProvider( QString const & providerKey, 
-                                   QString const & dataSource );
+    /** Create an instance of the provider
+        @param providerKey identificator of the provider
+        @param dataSource  string containing data source for the provider
+        @return instance of provider or NULL on error
+     */
+    QgsDataProvider * getProvider( const QString & providerKey, 
+                                   const QString & dataSource );
+    
+    /** Return list of available providers by their keys */
+    QStringList providerList() const;
+
+    /** Return metadata of the provider or NULL if not found */
+    const QgsProviderMetadata* providerMetadata(const QString& providerKey) const;
 
     /** return vector file filter string
 
@@ -93,11 +107,12 @@ class QgsProviderRegistry
     enough to figure out whether the given name mapped to a vector,
     raster, or database source.
     */
-    QgsDataProvider * openVector( QString const & dataSource, QString const & providerKey );
+    //QgsDataProvider * openVector( QString const & dataSource, QString const & providerKey );
 
 
     /** type for data provider metadata associative container */
     typedef std::map<QString,QgsProviderMetadata*> Providers;
+    
 
   private:
 
