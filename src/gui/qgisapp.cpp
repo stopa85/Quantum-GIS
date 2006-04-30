@@ -64,8 +64,8 @@
 // QGIS Specific Includes
 //
 #include "qgisapp.h"
+#include "qgisappinterface.h"
 #include "qgis.h"
-#include "qgisiface.h"
 #include "qgsabout.h"
 #include "qgsapplication.h"
 #include "qgsbookmarkitem.h"
@@ -161,7 +161,7 @@ class QTreeWidgetItem;
 
 /* typedefs for plugins */
 typedef QgsMapLayerInterface *create_it();
-typedef QgisPlugin *create_ui(QgisApp * qgis, QgisIface * qI);
+typedef QgisPlugin *create_ui(QgisInterface * qI);
 typedef QString name_t();
 typedef QString description_t();
 typedef int type_t();
@@ -250,7 +250,7 @@ static QgsMessageOutput* messageOutputViewer_()
   
   mComposer = new QgsComposer(this); // Map composer
   mInternalClipboard = new QgsClipboard; // create clipboard
-  mQgisInterface = new QgisIface(this); // create the interfce
+  mQgisInterface = new QgisAppInterface(this); // create the interfce
 
   // set application's icon
   setIcon(QPixmap(qgis_xpm));
@@ -3493,11 +3493,6 @@ void QgisApp::zoomToLayerExtent()
 } // QgisApp::zoomToLayerExtent()
 
 
-QgisIface *QgisApp::getInterface()
-{
-  return mQgisInterface;
-}
-
 void QgisApp::showPluginManager()
 {
   QgsPluginManager *pm = new QgsPluginManager(this);
@@ -3553,7 +3548,7 @@ void QgisApp::loadPlugin(QString name, QString description, QString theFullPathN
             create_ui *cf = (create_ui *) myLib->resolve("classFactory");
             if (cf)
             {
-              QgisPlugin *pl = cf(this, mQgisInterface);
+              QgisPlugin *pl = cf(mQgisInterface);
               if (pl)
               {
                 pl->initGui();
@@ -3795,7 +3790,7 @@ void QgisApp::testPluginFunctions()
             std::cout << "Getting pointer to a QgisPlugin object from the library\n";
 #endif
 
-            QgisPlugin *pl = cf(this, mQgisInterface);
+            QgisPlugin *pl = cf(mQgisInterface);
 #ifdef QGISDEBUG
 
             std::cout << "Displaying name, version, and description\n";
@@ -4050,17 +4045,6 @@ void QgisApp::openURL(QString url, bool useQgisDocDirectory)
 QgsMapLayer *QgisApp::activeLayer()
 {
   return (mMapLegend->currentLayer());
-}
-
-QString QgisApp::activeLayerSource()
-{
-  QString source;
-  QgsMapLayer* layer = mMapLegend->currentLayer();
-  if(layer)
-    {
-      return (layer->source());
-    }
-  return "";
 }
 
 /** Add a vector layer directly without prompting user for location

@@ -42,8 +42,7 @@
 // Required qgis includes
 // 
 
-#include <qgisapp.h>
-#include <qgisiface.h>
+#include <qgisinterface.h>
 #include <qgsmaplayer.h>
 #include <qgsrasterlayer.h>
 #include "plugin.h"
@@ -91,9 +90,8 @@ static const QgisPlugin::PLUGINTYPE sPluginType = QgisPlugin::UI;
  * @param theQGisApp - Pointer to the QGIS main window
  * @param theQGisInterface - Pointer to the QGIS interface object
  */
-QgsGeorefPlugin::QgsGeorefPlugin(QgisApp * theQGisApp, QgisIface * theQgisInterface):
+QgsGeorefPlugin::QgsGeorefPlugin(QgisInterface * theQgisInterface):
                  QgisPlugin(sName,sDescription,sPluginVersion,sPluginType),
-                 mQGisApp(theQGisApp), 
                  mQGisIface(theQgisInterface)
 {
 }
@@ -131,7 +129,7 @@ void QgsGeorefPlugin::help()
 // Slot called when the buffer menu item is activated
 void QgsGeorefPlugin::run()
 {
-  QgsGeorefPluginGui *myPluginGui=new QgsGeorefPluginGui(mQGisIface, mQGisApp);
+  QgsGeorefPluginGui *myPluginGui=new QgsGeorefPluginGui(mQGisIface, mQGisIface->getMainWindow());
   myPluginGui->show();
 }
 
@@ -170,9 +168,9 @@ void QgsGeorefPlugin::unload()
  * of the plugin class
  */
 // Class factory to return a new instance of the plugin class
-QGISEXTERN QgisPlugin * classFactory(QgisApp * theQGisAppPointer, QgisIface * theQgisInterfacePointer)
+QGISEXTERN QgisPlugin * classFactory(QgisInterface * theQgisInterfacePointer)
 {
-  return new QgsGeorefPlugin(theQGisAppPointer, theQgisInterfacePointer);
+  return new QgsGeorefPlugin(theQgisInterfacePointer);
 }
 // Return the name of the plugin - note that we do not user class members as
 // the class may not yet be insantiated when this method is called.

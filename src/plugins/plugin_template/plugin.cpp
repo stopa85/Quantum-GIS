@@ -21,8 +21,7 @@
 // QGIS Specific includes
 //
 
-#include <qgisapp.h>
-#include <qgisiface.h>
+#include <qgisinterface.h>
 #include <qgisgui.h>
 #include <qgsmaplayer.h>
 #include <qgsrasterlayer.h>
@@ -66,15 +65,12 @@ static const QgisPlugin::PLUGINTYPE sPluginType = QgisPlugin::UI;
 //////////////////////////////////////////////////////////////////////
 
 /**
- * Constructor for the plugin. The plugin is passed a pointer to the main app
- * and an interface object that provides access to exposed functions in QGIS.
- * @param theQGisApp - Pointer to the QGIS main window
+ * Constructor for the plugin. The plugin is passed a pointer 
+ * an interface object that provides access to exposed functions in QGIS.
  * @param theQGisInterface - Pointer to the QGIS interface object
  */
-[pluginname]::[pluginname](QgisApp * theQGisApp, 
-				       QgisIface * theQgisInterface):
+[pluginname]::[pluginname](QgisInterface * theQgisInterface):
                  QgisPlugin(sName,sDescription,sPluginVersion,sPluginType),
-                 mQGisApp(theQGisApp), 
                  mQGisIface(theQgisInterface)
 {
 }
@@ -181,9 +177,9 @@ void [pluginname]::drawVectorLayer(QString thePathNameQString, QString theBaseNa
  * of the plugin class
  */
 // Class factory to return a new instance of the plugin class
-QGISEXTERN QgisPlugin * classFactory(QgisApp * theQGisAppPointer, QgisIface * theQgisInterfacePointer)
+QGISEXTERN QgisPlugin * classFactory(QgisInterface * theQgisInterfacePointer)
 {
-  return new [pluginname](theQGisAppPointer, theQgisInterfacePointer);
+  return new [pluginname](theQgisInterfacePointer);
 }
 // Return the name of the plugin - note that we do not user class members as
 // the class may not yet be insantiated when this method is called.

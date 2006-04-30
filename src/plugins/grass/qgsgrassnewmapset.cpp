@@ -47,6 +47,7 @@
 #include <Q3Wizard>
 
 #include "qgis.h"
+#include "qgisinterface.h"
 #include "qgsapplication.h"
 #include "qgsmapcanvas.h"
 #include "qgsproject.h"
@@ -63,7 +64,7 @@
 
 bool QgsGrassNewMapset::mRunning = false;
 
-QgsGrassNewMapset::QgsGrassNewMapset ( QgisApp *qgisApp, QgisIface *iface, 
+QgsGrassNewMapset::QgsGrassNewMapset ( QgisInterface *iface, 
 	QgsGrassPlugin *plugin, QWidget * parent, 
         const char * name, Qt::WFlags f ):
         Q3Wizard(parent, name, false, f),
@@ -76,7 +77,6 @@ QgsGrassNewMapset::QgsGrassNewMapset ( QgisApp *qgisApp, QgisIface *iface,
     setupUi(this);
 
     mRunning = true;
-    mQgisApp = qgisApp;
     mIface = iface;
     mProjectionSelector = 0;
     mPreviousPage = -1;
@@ -629,7 +629,7 @@ void QgsGrassNewMapset::setRegionPage()
         mRegionButton->show();
         mSetRegionFrame->show();
 
-	QgsRect ext = mQgisApp->getMapCanvas()->extent();
+	QgsRect ext = mIface->getMapCanvas()->extent();
 
 	if ( ext.xMin() >= ext.xMax() || ext.yMin() >= ext.yMax() )
 	{
@@ -658,7 +658,7 @@ void QgsGrassNewMapset::setGrassRegionDefaults()
     std::cerr << "current project srsid = " << srsid << std::endl;
 #endif
         
-    QgsRect ext = mQgisApp->getMapCanvas()->extent();
+    QgsRect ext = mIface->getMapCanvas()->extent();
     bool extSet = false;
     if ( ext.xMin() < ext.xMax() && ext.yMin() < ext.yMax() )
     {
@@ -995,7 +995,7 @@ void QgsGrassNewMapset::setCurrentRegion()
     std::cerr << "QgsGrassNewMapset::setCurrentRegion()" << std::endl;
 #endif
 
-    QgsRect ext = mQgisApp->getMapCanvas()->extent();
+    QgsRect ext = mIface->getMapCanvas()->extent();
 
     int srsid = QgsProject::instance()->readNumEntry(
 	   "SpatialRefSys","/ProjectSRSID",0);

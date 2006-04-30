@@ -26,8 +26,7 @@ class QDomNode;
 class QDomElement;
 class QSize;
 
-class QgisApp;
-class QgisIface;
+class QgisInterface;
 class QgsGrassProvider;
 class QgsGrassBrowser;
 class QgsMapCanvas;
@@ -59,7 +58,7 @@ class QgsGrassTools: public QDialog
 
 public:
     //! Constructor
-    QgsGrassTools ( QgisApp *qgisApp, QgisIface *iface, 
+    QgsGrassTools ( QgisInterface *iface, 
 	           QWidget * parent = 0, const char * name = 0, Qt::WFlags f = 0 );
 
     //! Destructor
@@ -104,11 +103,8 @@ signals:
     void regionChanged();
 
 private:
-    //! QGIS application
-    QgisApp *mQgisApp;
-
     //! Pointer to the QGIS interface object
-    QgisIface *mIface;
+    QgisInterface *mIface;
 
     //! Pointer to canvas
     QgsMapCanvas *mCanvas;

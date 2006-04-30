@@ -22,8 +22,7 @@ email                : sbr00pwb@users.sourceforge.net
 
 // includes
 
-#include "qgisapp.h"
-#include "qgisiface.h"
+#include "qgisinterface.h"
 #include "qgisgui.h"
 #include "qgsmapcanvas.h"
 #include "qgsmaplayer.h"
@@ -73,10 +72,8 @@ static const QgisPlugin::PLUGINTYPE type_ = QgisPlugin::UI;
  * @param qgis Pointer to the QGIS main window
  * @param _qI Pointer to the QGIS interface object
  */
-QgsScaleBarPlugin::QgsScaleBarPlugin(QgisApp * theQGisApp,
-                                     QgisIface * theQgisInterFace):
+QgsScaleBarPlugin::QgsScaleBarPlugin(QgisInterface * theQgisInterFace):
         QgisPlugin(name_,description_,version_,type_),
-        qgisMainWindowPointer(theQGisApp),
         qGisInterface(theQgisInterFace)
 {
   mPreferredSize = 30;
@@ -114,7 +111,7 @@ void QgsScaleBarPlugin::initGui()
   //render the scale bar each time the map is rendered
   connect(qGisInterface->getMapCanvas(), SIGNAL(renderComplete(QPainter *)), this, SLOT(renderScaleBar(QPainter *)));
   //this resets this plugin up if a project is loaded
-  connect(qgisMainWindowPointer, SIGNAL(projectRead()), this, SLOT(projectRead()));
+  connect(qGisInterface->getMainWindow(), SIGNAL(projectRead()), this, SLOT(projectRead()));
   // Add the icon to the toolbar
   qGisInterface->addToolBarIcon(myQActionPointer);
 }
@@ -145,7 +142,7 @@ void QgsScaleBarPlugin::help()
 // Slot called when the  menu item is activated
 void QgsScaleBarPlugin::run()
 {
-  QgsScaleBarPluginGui *myPluginGui=new QgsScaleBarPluginGui(qgisMainWindowPointer, QgisGui::ModalDialogFlags);
+  QgsScaleBarPluginGui *myPluginGui=new QgsScaleBarPluginGui(qGisInterface->getMainWindow(), QgisGui::ModalDialogFlags);
   myPluginGui->setPreferredSize(mPreferredSize);
   myPluginGui->setSnapping(mSnapping);
   myPluginGui->setPlacement(mPlacement);
@@ -579,9 +576,9 @@ void QgsScaleBarPlugin::setColour(QColor theQColor)
  * of the plugin class
  */
 // Class factory to return a new instance of the plugin class
-QGISEXTERN QgisPlugin * classFactory(QgisApp * theQGisAppPointer, QgisIface * theQgisInterfacePointer)
+QGISEXTERN QgisPlugin * classFactory(QgisInterface * theQgisInterfacePointer)
 {
-  return new QgsScaleBarPlugin(theQGisAppPointer, theQgisInterfacePointer);
+  return new QgsScaleBarPlugin(theQgisInterfacePointer);
 }
 
 // Return the name of the plugin - note that we do not user class members as

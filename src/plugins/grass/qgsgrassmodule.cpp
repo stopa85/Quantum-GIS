@@ -72,6 +72,7 @@
 #include <QProcess>
 
 #include "qgis.h"
+#include "qgisinterface.h"
 #include "qgsapplication.h"
 #include "qgsmapcanvas.h"
 #include "qgsmaplayer.h"
@@ -185,7 +186,7 @@ QStringList QgsGrassModule::execArguments ( QString module )
     return arguments;
 }
 
-QgsGrassModule::QgsGrassModule ( QgsGrassTools *tools, QgisApp *qgisApp, QgisIface *iface, 
+QgsGrassModule::QgsGrassModule ( QgsGrassTools *tools, QgisInterface *iface, 
 	                     QString path, QWidget * parent, const char * name, Qt::WFlags f )
              :QgsGrassModuleBase ( ), mSuccess(false)
 {
@@ -197,7 +198,6 @@ QgsGrassModule::QgsGrassModule ( QgsGrassTools *tools, QgisApp *qgisApp, QgisIfa
 
     mPath = path;
     mTools = tools;
-    mQgisApp = qgisApp;
     mIface = iface;
     mCanvas = mIface->getMapCanvas();
     mParent = parent;
@@ -262,7 +262,7 @@ QgsGrassModule::QgsGrassModule ( QgsGrassTools *tools, QgisApp *qgisApp, QgisIfa
         QGridLayout *layout = new QGridLayout ( mTabWidget->page(0), 1, 1 );
 
         mOptions = new QgsGrassMapcalc ( mTools, this,
-               mQgisApp, mIface, mTabWidget->page(0) );
+               mIface, mTabWidget->page(0) );
 
         QWidget *w = dynamic_cast<QWidget *>(mOptions);
         			
@@ -273,7 +273,7 @@ QgsGrassModule::QgsGrassModule ( QgsGrassTools *tools, QgisApp *qgisApp, QgisIfa
     else
     {
         mOptions = new QgsGrassModuleStandardOptions ( mTools, this,
-               mQgisApp, mIface, mXName, qDocElem, mTabWidget->page(0) );
+               mIface, mXName, qDocElem, mTabWidget->page(0) );
     }
 
     // Hide display if there is no output
@@ -309,7 +309,7 @@ QgsGrassModule::QgsGrassModule ( QgsGrassTools *tools, QgisApp *qgisApp, QgisIfa
 
 QgsGrassModuleOptions::QgsGrassModuleOptions ( 
            QgsGrassTools *tools, QgsGrassModule *module,
-           QgisApp *qgisApp, QgisIface *iface )
+           QgisInterface *iface )
 {
     #ifdef QGISDEBUG
     std::cerr << "QgsGrassModuleOptions()" << std::endl;
@@ -317,7 +317,6 @@ QgsGrassModuleOptions::QgsGrassModuleOptions (
 
     mTools = tools;
     mModule = module;
-    mQgisApp = qgisApp;
     mIface = iface;
     mCanvas = mIface->getMapCanvas();
     //mAppDir = QgsApplication::applicationDirPath();
@@ -337,10 +336,10 @@ QStringList QgsGrassModuleOptions::arguments()
 
 QgsGrassModuleStandardOptions::QgsGrassModuleStandardOptions ( 
            QgsGrassTools *tools, QgsGrassModule *module,
-           QgisApp *qgisApp, QgisIface *iface, 
+           QgisInterface *iface, 
 	   QString xname, QDomElement qDocElem,
            QWidget * parent, const char * name, Qt::WFlags f )
-             :QgsGrassModuleOptions( tools, module, qgisApp, iface),
+             :QgsGrassModuleOptions( tools, module, iface),
               QWidget ( parent, name, f )
 {
     #ifdef QGISDEBUG
@@ -1363,8 +1362,7 @@ void QgsGrassModule::viewOutput()
     }
 }
 
-QgisIface *QgsGrassModule::qgisIface() { return mIface; }
-QgisApp *QgsGrassModule::qgisApp() { return mQgisApp; }
+QgisInterface *QgsGrassModule::qgisIface() { return mIface; }
 
 QgsGrassModule::~QgsGrassModule()
 {

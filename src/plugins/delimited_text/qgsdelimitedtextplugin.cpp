@@ -22,8 +22,7 @@ Functions:
 
 // includes
 
-#include "qgisapp.h"
-#include "qgisiface.h"
+#include "qgisinterface.h"
 #include "qgisgui.h"
 #include "qgsmaplayer.h"
 #include "qgsdelimitedtextplugin.h"
@@ -54,8 +53,8 @@ static const char *pluginVersion = "Version 0.2";
  * @param qgis Pointer to the QGIS main window
  * @param _qI Pointer to the QGIS interface object
  */
-  QgsDelimitedTextPlugin::QgsDelimitedTextPlugin(QgisApp * theQGisApp, QgisIface * theQgisInterFace):
-qgisMainWindowPointer(theQGisApp), qGisInterface(theQgisInterFace)
+  QgsDelimitedTextPlugin::QgsDelimitedTextPlugin(QgisInterface * theQgisInterFace)
+  : qGisInterface(theQgisInterFace)
 {
   /** Initialize the plugin and set the required attributes */
   pluginNameQString = "DelimitedTextLayer";
@@ -126,8 +125,8 @@ void QgsDelimitedTextPlugin::initGui()
 void QgsDelimitedTextPlugin::run()
 {
   QgsDelimitedTextPluginGui *myQgsDelimitedTextPluginGui=
-    new QgsDelimitedTextPluginGui(qGisInterface, qgisMainWindowPointer,
-        QgisGui::ModalDialogFlags);
+    new QgsDelimitedTextPluginGui(qGisInterface,
+             qGisInterface->getMainWindow(), QgisGui::ModalDialogFlags);
   //listen for when the layer has been made so we can draw it
   connect(myQgsDelimitedTextPluginGui, 
       SIGNAL(drawRasterLayer(QString)), 
@@ -165,10 +164,9 @@ void QgsDelimitedTextPlugin::unload()
  * of the plugin class
  */
 // Class factory to return a new instance of the plugin class
-QGISEXTERN QgisPlugin * classFactory(QgisApp * theQGisAppPointer, 
-    QgisIface * theQgisInterfacePointer)
+QGISEXTERN QgisPlugin * classFactory(QgisInterface * theQgisInterfacePointer)
 {
-  return new QgsDelimitedTextPlugin(theQGisAppPointer, theQgisInterfacePointer);
+  return new QgsDelimitedTextPlugin(theQgisInterfacePointer);
 }
 
 // Return the name of the plugin - note that we do not user class members as

@@ -28,6 +28,9 @@ QgsMapTool::QgsMapTool(QgsMapCanvas* canvas)
 
 QgsMapTool::~QgsMapTool()
 {
+  // notify map canvas of being deleted
+  if (mCanvas->mapTool() == this)
+    mCanvas->setMapTool( NULL);
 }
 
 

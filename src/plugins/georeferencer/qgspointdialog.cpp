@@ -11,7 +11,7 @@
 #include <QTextStream>
 #include <QToolButton>
 
-#include "qgisiface.h"
+#include "qgisinterface.h"
 #include "qgsapplication.h"
 #include "qgspointdialog.h"
 #include "mapcoordsdialog.h"
@@ -52,7 +52,7 @@ class QgsGeorefTool : public QgsMapTool
 };
 
 
-QgsPointDialog::QgsPointDialog(QString layerPath, QgisIface* theQgisInterface,
+QgsPointDialog::QgsPointDialog(QString layerPath, QgisInterface* theQgisInterface,
                                 QWidget* parent, Qt::WFlags fl) 
   : QDialog(parent, fl), mIface(theQgisInterface)
 {

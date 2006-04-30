@@ -31,8 +31,7 @@ class QCloseEvent;
 
 #include "qgspoint.h"
 
-class QgisApp;
-class QgisIface;
+class QgisInterface;
 class QgsMapCanvas;
 class QgsMapLayer;
 class QgsMapToPixel;
@@ -114,10 +113,10 @@ public:
     };
 
     //! Constructor
-    QgsGrassEdit ( QgisApp *qgisApp, QgisIface *iface, 
+    QgsGrassEdit ( QgisInterface *iface, 
 	           QWidget * parent = 0, Qt::WFlags f = 0 );
 
-    QgsGrassEdit ( QgisApp *qgisApp, QgisIface *iface, 
+    QgsGrassEdit ( QgisInterface *iface, 
                    QgsGrassProvider *provider,
 	           QWidget * parent = 0, Qt::WFlags f = 0 );
 
@@ -275,11 +274,8 @@ private:
     //! Status: true - active vector was successfully opened for editing
     bool mValid;
     
-    //! QGIS application
-    QgisApp *mQgisApp; 
-    
     //! Pointer to the QGIS interface object
-    QgisIface *mIface;
+    QgisInterface *mIface;
 
     //! Pointer to canvas 
     QgsMapCanvas *mCanvas;

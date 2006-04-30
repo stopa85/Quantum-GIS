@@ -45,10 +45,9 @@
 
 #include <qgsrasterlayer.h>
 #include "qgis.h"
-#include "qgisapp.h"
 #include "qgsmaplayer.h"
 #include "qgsvectorlayer.h"
-#include "qgisiface.h"
+#include "qgisinterface.h"
 #include "qgsmapcanvas.h"
 #include "qgsmaptool.h"
 #include "qgsmaptopixel.h"
@@ -144,7 +143,7 @@ class QgsGrassRegionEdit : public QgsMapTool
 
 
 
-QgsGrassRegion::QgsGrassRegion ( QgsGrassPlugin *plugin,  QgisApp *qgisApp, QgisIface *iface,
+QgsGrassRegion::QgsGrassRegion ( QgsGrassPlugin *plugin,  QgisInterface *iface,
         QWidget * parent, Qt::WFlags f ) 
         :QDialog(parent, f), QgsGrassRegionBase ( )
 {
@@ -155,7 +154,6 @@ QgsGrassRegion::QgsGrassRegion ( QgsGrassPlugin *plugin,  QgisApp *qgisApp, Qgis
     setupUi(this);
 
     mPlugin = plugin;
-    mQgisApp = qgisApp;
     mInterface = iface;
     mCanvas = mInterface->getMapCanvas();
     restorePosition();
@@ -472,14 +470,14 @@ void QgsGrassRegion::accept()
     }
 
     saveWindowLocation();
-    mQgisApp->pan(); // change to pan tool
+    mCanvas->setMapTool(NULL);
     delete this;
 }
 
 void QgsGrassRegion::reject()
 {
     saveWindowLocation();
-    mQgisApp->pan(); // change to pan tool
+    mCanvas->setMapTool(NULL);
     delete this;
 }
 
