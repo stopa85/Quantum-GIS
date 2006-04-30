@@ -23,6 +23,7 @@
 #include "qgsnewhttpconnection.h"
 #include "qgsnumericsortlistviewitem.h"
 #include "qgsproviderregistry.h"
+#include "qgsspatialrefsys.h"
 #include "../providers/wms/qgswmsprovider.h"
 #include "qgscontexthelp.h"
 
