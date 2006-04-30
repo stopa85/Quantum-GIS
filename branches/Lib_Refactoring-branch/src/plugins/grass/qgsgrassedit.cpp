@@ -44,8 +44,7 @@
 
 
 #include "qgis.h"
-#include "qgisapp.h"
-#include "qgisiface.h"
+#include "qgisinterface.h"
 #include "qgsapplication.h"
 #include "qgsmapcanvas.h"
 #include "qgsmapcanvasitem.h"
@@ -104,7 +103,7 @@ class QgsGrassEditLayer : public QgsMapCanvasItem
 
 bool QgsGrassEdit::mRunning = false;
 
-QgsGrassEdit::QgsGrassEdit ( QgisApp *qgisApp, QgisIface *iface, 
+QgsGrassEdit::QgsGrassEdit ( QgisInterface *iface, 
     QWidget * parent, Qt::WFlags f )
     :QMainWindow(parent,f), QgsGrassEditBase ()
 {
@@ -118,7 +117,6 @@ QgsGrassEdit::QgsGrassEdit ( QgisApp *qgisApp, QgisIface *iface,
   mValid = false;
   mTool = QgsGrassEdit::NONE;
   mSuspend = false;
-  mQgisApp = qgisApp;
   mIface = iface;
   mNewMap = false;
 
@@ -165,7 +163,7 @@ bool QgsGrassEdit::isEditable ( QgsMapLayer *layer )
   return true;
 }
 
-QgsGrassEdit::QgsGrassEdit ( QgisApp *qgisApp, QgisIface *iface, 
+QgsGrassEdit::QgsGrassEdit ( QgisInterface *iface, 
     QgsGrassProvider *provider,
     QWidget * parent, Qt::WFlags f )
     :QMainWindow(parent, 0, f), QgsGrassEditBase ()
@@ -180,7 +178,6 @@ QgsGrassEdit::QgsGrassEdit ( QgisApp *qgisApp, QgisIface *iface,
   mValid = false;
   mTool = QgsGrassEdit::NONE;
   mSuspend = false;
-  mQgisApp = qgisApp;
   mIface = iface;
   mNewMap = true;
 
@@ -924,8 +921,8 @@ void QgsGrassEdit::closeEdit(void)
 #endif
 
   // grass edit tool would become invalid
-  // so change it to another one, e.g. pan tool
-  mQgisApp->pan();
+  // ...delete it, it will notify map canvas
+  delete mCanvas->mapTool();
 
   // Disconnect signals
   // Warning: it seems that slots (postRender) can be called even 

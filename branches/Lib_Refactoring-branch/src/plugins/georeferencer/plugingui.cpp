@@ -30,7 +30,7 @@ QgsGeorefPluginGui::QgsGeorefPluginGui() : QgsGeorefPluginGuiBase()
   
 }
 
-QgsGeorefPluginGui::QgsGeorefPluginGui(QgisIface* theQgisInterface,
+QgsGeorefPluginGui::QgsGeorefPluginGui(QgisInterface* theQgisInterface,
                                        QWidget* parent, Qt::WFlags fl)
   : QDialog(parent, fl), mIface(theQgisInterface)
 {

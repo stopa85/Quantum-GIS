@@ -23,8 +23,7 @@ email                : sherman at mrcc.com
 // includes
 #include <iostream>
 #include <vector>
-#include "qgisapp.h"
-#include "qgisiface.h"
+#include "qgisinterface.h"
 #include "qgsmaplayer.h"
 #include "qgsvectorlayer.h"
 #include "qgsvectordataprovider.h"
@@ -57,9 +56,10 @@ static const QgisPlugin::PLUGINTYPE type_ = QgisPlugin::UI;
  * @param qgis Pointer to the QGIS main window
  * @parma _qI Pointer to the QGIS interface object
  */
-QgsPgGeoprocessing::QgsPgGeoprocessing(QgisApp * qgis, QgisIface * _qI)
-    : qgisMainWindow(qgis), qI(_qI), 
-      QgisPlugin( name_, description_, version_, type_ )
+QgsPgGeoprocessing::QgsPgGeoprocessing(QgisInterface * _qI)
+  : QgisPlugin( name_, description_, version_, type_ ),
+    qgisMainWindow(_qI->getMainWindow()),
+    qI(_qI)
 {
 }
 
@@ -428,9 +428,9 @@ void QgsPgGeoprocessing::unload()
  * of the plugin class
  */
 // Class factory to return a new instance of the plugin class
-extern "C" QgisPlugin * classFactory(QgisApp * qgis, QgisIface * qI)
+extern "C" QgisPlugin * classFactory(QgisInterface * qI)
 {
-  return new QgsPgGeoprocessing(qgis, qI);
+  return new QgsPgGeoprocessing(qI);
 }
 
 // Return the name of the plugin

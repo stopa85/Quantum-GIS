@@ -1,5 +1,5 @@
 /***************************************************************************
-                          qgsiface.cpp
+                          qgisappinterface.cpp
                           Interface class for accessing exposed functions
                           in QgisApp
                              -------------------
@@ -16,133 +16,122 @@
  *                                                                         *
  ***************************************************************************/
 /* $Id$ */
+
 #include <iostream>
 #include <QString>
 #include <QMenu>
 
-#include "qgisiface.h"
-#include "qgisinterface.h"
+#include "qgisappinterface.h"
 #include "qgisapp.h"
 #include "qgsmaplayer.h"
 #include "qgsmaplayerregistry.h"
 #include "qgsmapcanvas.h"
 #include "qgslegend.h"
 
-QgisIface::QgisIface(QgisApp * _qgis, const char *name):qgis(_qgis)
+QgisAppInterface::QgisAppInterface(QgisApp * _qgis)
+  : qgis(_qgis)
 {
+    // connect signals
     connect ( qgis->legend(), SIGNAL(currentLayerChanged(QgsMapLayer *)),
-              this, SLOT(emitCurrentLayerChanged(QgsMapLayer *)) );
+              this, SIGNAL(currentLayerChanged(QgsMapLayer *)) );
 
 }
 
-QgisIface::~QgisIface()
+QgisAppInterface::~QgisAppInterface()
 {
 }
 
-void QgisIface::zoomFull()
+void QgisAppInterface::zoomFull()
 {
   qgis->zoomFull();
 }
 
-void QgisIface::zoomPrevious()
+void QgisAppInterface::zoomPrevious()
 {
   qgis->zoomPrevious();
 }
 
-void QgisIface::zoomActiveLayer()
+void QgisAppInterface::zoomActiveLayer()
 {
   qgis->zoomToLayerExtent();
 }
 
-bool QgisIface::addVectorLayer(QString vectorLayerPath, QString baseName, QString providerKey)
+bool QgisAppInterface::addVectorLayer(QString vectorLayerPath, QString baseName, QString providerKey)
 {
   qgis->addVectorLayer(vectorLayerPath, baseName, providerKey);
   //TODO fix this so it returns something meaningfull
   return true;
 }
 
-bool QgisIface::addRasterLayer(QString rasterLayerPath)
+bool QgisAppInterface::addRasterLayer(QString rasterLayerPath)
 {
   return qgis->addRasterLayer( QStringList(rasterLayerPath) );
 }
 
-bool QgisIface::addRasterLayer(QgsRasterLayer * theRasterLayer, bool theForceRenderFlag)
+bool QgisAppInterface::addRasterLayer(QgsRasterLayer * theRasterLayer, bool theForceRenderFlag)
 {
   return qgis->addRasterLayer(theRasterLayer, theForceRenderFlag);
 }
 
-bool QgisIface::addProject(QString theProjectName)
+bool QgisAppInterface::addProject(QString theProjectName)
 {
   return qgis->addProject(theProjectName);
 }
 
-void QgisIface::newProject(bool thePromptToSaveFlag)
+void QgisAppInterface::newProject(bool thePromptToSaveFlag)
 {
   qgis->fileNew(thePromptToSaveFlag);
 }
 
-QgsMapLayer *QgisIface::activeLayer()
+QgsMapLayer *QgisAppInterface::activeLayer()
 {
   return qgis->activeLayer();
 }
 
-QString QgisIface::activeLayerSource()
-{
-  return qgis->activeLayerSource();
-}
-
-QMenu* QgisIface::getPluginMenu(QString menuName)
+QMenu* QgisAppInterface::getPluginMenu(QString menuName)
 {
   return qgis->getPluginMenu(menuName);
 }
 
-void QgisIface::removePluginMenuItem(QString name, int menuId)
+void QgisAppInterface::removePluginMenuItem(QString name, int menuId)
 {
   qgis->removePluginMenuItem(name, menuId);
 }
 
-int QgisIface::addToolBarIcon(QAction * qAction)
+int QgisAppInterface::addToolBarIcon(QAction * qAction)
 {
   // add the menu to the master Plugins menu
   return qgis->addPluginToolBarIcon(qAction);
 }
-void QgisIface::removeToolBarIcon(QAction *qAction)
+void QgisAppInterface::removeToolBarIcon(QAction *qAction)
 {
   qgis->removePluginToolBarIcon(qAction);
 }
-void QgisIface::openURL(QString url, bool useQgisDocDirectory)
+QToolBar* QgisAppInterface::addToolBar(QString name)
+{
+  qgis->addToolBar(name);
+}
+void QgisAppInterface::openURL(QString url, bool useQgisDocDirectory)
 {
   qgis->openURL(url, useQgisDocDirectory);
 }
 
-std::map<QString, int> QgisIface::menuMapByName()
+std::map<QString, int> QgisAppInterface::menuMapByName()
 {
   return qgis->menuMapByName();
 }
 
-std::map<int, QString> QgisIface::menuMapById()
+std::map<int, QString> QgisAppInterface::menuMapById()
 {
   return qgis->menuMapById();
 }
   
-QgsMapCanvas * QgisIface::getMapCanvas()
+QgsMapCanvas * QgisAppInterface::getMapCanvas()
 {
   return qgis->getMapCanvas();
 }
 
-QgsMapLayerRegistry * QgisIface::getLayerRegistry() 
+QWidget * QgisAppInterface::getMainWindow()
 {
-  return QgsMapLayerRegistry::instance();
-}
-
-
-QgisApp * 
-QgisIface::app()
-{
-    return qgis;
-} // QgisIface::app()
-
-void QgisIface::emitCurrentLayerChanged ( QgsMapLayer * layer )
-{
-    emit currentLayerChanged ( layer );
+  return qgis;
 }

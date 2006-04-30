@@ -19,8 +19,7 @@
 
 // includes
 
-#include "qgisapp.h"
-#include "qgisiface.h"
+#include "qgisinterface.h"
 #include "qgisgui.h"
 #include "qgsmaplayerregistry.h"
 #include "qgsmaplayer.h"
@@ -79,9 +78,8 @@ static const QgisPlugin::PLUGINTYPE type_ = QgisPlugin::UI;
  * @param qgis Pointer to the QGIS main window
  * @param _qI Pointer to the QGIS interface object
  */
-QgsGPSPlugin::QgsGPSPlugin(QgisApp * theQGisApp, QgisIface * theQgisInterFace):
+QgsGPSPlugin::QgsGPSPlugin(QgisInterface * theQgisInterFace):
   QgisPlugin(name_,description_,version_,type_),
-  mMainWindowPointer(theQGisApp), 
   mQGisInterface(theQgisInterFace)
 {
   setupBabel();
@@ -130,8 +128,9 @@ void QgsGPSPlugin::run()
   // find all GPX layers
   std::vector<QgsVectorLayer*> gpxLayers;
   std::map<QString, QgsMapLayer*>::const_iterator iter;
-  for (iter = mQGisInterface->getLayerRegistry()->mapLayers().begin();
-       iter != mQGisInterface->getLayerRegistry()->mapLayers().end(); ++iter) {
+  QgsMapLayerRegistry* registry = QgsMapLayerRegistry::instance();
+  for (iter =  registry->mapLayers().begin();
+       iter != registry->mapLayers().end(); ++iter) {
     if (iter->second->type() == QgsMapLayer::VECTOR) {
       QgsVectorLayer* vLayer = dynamic_cast<QgsVectorLayer*>(iter->second);
       if (vLayer->providerType() == "gpx")
@@ -140,7 +139,7 @@ void QgsGPSPlugin::run()
   }
   
   QgsGPSPluginGui *myPluginGui = 
-    new QgsGPSPluginGui(mImporters, mDevices, gpxLayers, mMainWindowPointer, 
+    new QgsGPSPluginGui(mImporters, mDevices, gpxLayers, mQGisInterface->getMainWindow(),
 			QgisGui::ModalDialogFlags);
   //listen for when the layer has been made so we can draw it
   connect(myPluginGui, SIGNAL(drawRasterLayer(QString)), 
@@ -167,7 +166,7 @@ void QgsGPSPlugin::run()
 
 void QgsGPSPlugin::createGPX() {
   QString fileName = 
-    QFileDialog::getSaveFileName(mMainWindowPointer,
+    QFileDialog::getSaveFileName(mQGisInterface->getMainWindow(),
                  tr("Save new GPX file as..."), "." , tr("GPS eXchange file (*.gpx)"));
   if (!fileName.isEmpty()) {
     QFileInfo fileInfo(fileName);
@@ -574,10 +573,9 @@ void QgsGPSPlugin::setupBabel() {
  * of the plugin class
  */
 // Class factory to return a new instance of the plugin class
-QGISEXTERN QgisPlugin * classFactory(QgisApp * theQGisAppPointer, 
-				     QgisIface * theQgisInterfacePointer)
+QGISEXTERN QgisPlugin * classFactory(QgisInterface * theQgisInterfacePointer)
 {
-  return new QgsGPSPlugin(theQGisAppPointer, theQgisInterfacePointer);
+  return new QgsGPSPlugin(theQgisInterfacePointer);
 }
 
 // Return the name of the plugin - note that we do not user class members as

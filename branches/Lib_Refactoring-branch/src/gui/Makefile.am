@@ -65,7 +65,7 @@ qgis_CXXFLAGS = $(PREFIX) $(PLUGINPATH) $(PKGDATAPATH) $(GDAL_CFLAGS) $(CXXFLAGS
 
 libqgis_guiHEADERS =							\
 		qgisapp.h							\
-		qgisiface.h					\
+		qgisappinterface.h					\
 		qgisinterface.h \
 		qgsabout.h				\
 		qgsaddattrdialog.h				\
@@ -131,7 +131,7 @@ libqgis_guiHEADERS =							\
 libqgis_gui_la_MOC =							\
 		qgisapp.moc.cpp						\
 		qgisinterface.moc.cpp	\
-		qgisiface.moc.cpp \
+		qgisappinterface.moc.cpp \
 		qgsabout.moc.cpp		\
 		qgsaddattrdialog.moc.cpp		\
 		qgsattributeactiondialog.moc.cpp	\
@@ -178,7 +178,7 @@ libqgis_gui_la_MOC =							\
 libqgis_gui_la_SOURCES =						\
 		qgisapp.cpp							\
 		qgisgui.cpp				\
-		qgisiface.cpp			\
+		qgisappinterface.cpp			\
 		qgisinterface.cpp	\
 		qgsabout.cpp		\
 		qgsaddattrdialog.cpp		\

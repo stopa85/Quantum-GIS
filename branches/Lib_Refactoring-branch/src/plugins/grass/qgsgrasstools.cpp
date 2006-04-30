@@ -54,8 +54,7 @@
 #include <QHeaderView>
 
 #include "qgis.h"
-#include "qgisapp.h"
-#include "qgisiface.h"
+#include "qgisinterface.h"
 #include "qgsapplication.h"
 #include "qgsmapcanvas.h"
 #include "qgsmaplayer.h"
@@ -95,7 +94,7 @@ QSize QgsGrassToolsTabWidget::iconSize()
 
 QgsGrassToolsTabWidget::~QgsGrassToolsTabWidget() {}
 
-QgsGrassTools::QgsGrassTools ( QgisApp *qgisApp, QgisIface *iface, 
+QgsGrassTools::QgsGrassTools ( QgisInterface *iface, 
 	                     QWidget * parent, const char * name, Qt::WFlags f )
              :QDialog ( parent )
 {
@@ -106,7 +105,6 @@ QgsGrassTools::QgsGrassTools ( QgisApp *qgisApp, QgisIface *iface,
    setWindowTitle ( "GRASS Tools" );
 //    setupUi(this);
 
-    mQgisApp = qgisApp;
     mIface = iface;
     mCanvas = mIface->getMapCanvas();
 
@@ -246,7 +244,7 @@ void QgsGrassTools::moduleClicked( Q3ListViewItem * item )
     else
     {
 	m = dynamic_cast<QWidget *> ( new QgsGrassModule ( this, 
-                                      mQgisApp, mIface, path, mTabWidget ) );
+                                      mIface, path, mTabWidget ) );
     }
     
     int height = mTabWidget->iconSize().height();

@@ -793,6 +793,15 @@ void QgsMapCanvas::setMapTool(QgsMapTool* tool)
     mLastNonZoomMapTool = NULL;
   
     // delete current map tool
+    // If map tool that is being deleted finds out
+    // that it's going to be deleted while it's being active
+    // it calls setMapTool(NULL)
+    
+    // first set current map tool as null
+    QgsMapTool* lastTool = mMapTool;
+    mMapTool = NULL;
+    
+    // then delete the tool
     delete mMapTool;
   }
   

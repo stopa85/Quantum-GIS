@@ -34,7 +34,7 @@ class QMenu;
 class QPixmap;
 class QSplashScreen;
 
-class QgisIface;
+class QgisAppInterface;
 class QgsClipboard;
 class QgsComposer;
 class QgsHelpViewer;
@@ -62,11 +62,7 @@ class QgisApp : public QMainWindow, public Ui::QgisAppBase
   QgisApp(QSplashScreen *splash, QWidget * parent = 0, Qt::WFlags fl = Qt::WType_TopLevel);
   //! Destructor
   ~QgisApp();
-  /*
-   * Get the plugin interface from the application
-   */
-  QgisIface *getInterface();
-  /*
+  /**
    * Add a vector layer to the canvas
    */
   void addVectorLayer(QString vectorLayerPath, QString baseName, QString providerKey);
@@ -232,8 +228,6 @@ public slots:
   void exportMapServer();
   //! Return pointer to the active layer
   QgsMapLayer *activeLayer();
-  //! Return data source of the active layer
-  QString activeLayerSource();
   //! Open the help contents in a browser
   void helpContents();
   //! Open the QGIS homepage in users browser
@@ -515,11 +509,14 @@ private:
   QString mStartupPath;
   //! full path name of the current map file (if it has been saved or loaded)
   QString mFullPathName;
-  QgisIface *mQgisInterface;
+
+  //! interface to QgisApp for plugins
+  QgisAppInterface *mQgisInterface;
+  friend class QgisAppInterface;
+
   QTcpSocket *mSocket;
   QString mVersionMessage;
   QSplashScreen *mSplash;
-  friend class QgisIface;
   //! help viewer
   QgsHelpViewer *mHelpViewer;
   //! menu map (key is name, value is menu id)
