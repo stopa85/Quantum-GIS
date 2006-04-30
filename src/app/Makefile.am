@@ -37,7 +37,6 @@ else
 bin_PROGRAMS = qgis
 endif
 
-lib_LTLIBRARIES = libqgis_gui.la
 
 
 ##
@@ -46,15 +45,15 @@ lib_LTLIBRARIES = libqgis_gui.la
 ## ----------------------------------------------------------------------
 ##
 
-qgis_SOURCES =	main.cpp
+qgis_SOURCES = main.cpp $(qgisSOURCES) $(qgisMOC)
 
-qgis_LDADD = $(LDADD) $(QT_LDADD) $(GDAL_LDADD) $(PG_LIB) $(GEOS_LDADD) $(PYTHON_LIB) -lproj -lsqlite3 libqgis_gui.la ../core/libqgis_core.la
+qgis_LDADD = $(LDADD) $(QT_LDADD) $(GDAL_LDADD) $(PG_LIB) $(GEOS_LDADD) $(PYTHON_LIB) -lproj -lsqlite3 ../gui/libqgis_gui.la ../core/libqgis_core.la ../widgets/projectionselector/libqgsprojectionselector.la
 if HAVE_QTMAC
 qgis_LDFLAGS = -framework ApplicationServices
 else
 qgis_LDFLAGS = -rdynamic
 endif
-qgis_CXXFLAGS = $(PREFIX) $(PLUGINPATH) $(PKGDATAPATH) $(GDAL_CFLAGS) $(CXXFLAGS) $(EXTRA_CXXFLAGS) $(QT_CXXFLAGS) $(PG_INC) $(DEBUG_QGIS)  $(HAVE_PYTHON) $(GEOS_CFLAGS) $(PYTHON_INCLUDE_DIR) -I../ui/ -I../widgets/projectionselector/ -I../core/ -I../plugins/
+qgis_CXXFLAGS = $(PREFIX) $(PLUGINPATH) $(PKGDATAPATH) $(GDAL_CFLAGS) $(CXXFLAGS) $(EXTRA_CXXFLAGS) $(QT_CXXFLAGS) $(PG_INC) $(DEBUG_QGIS)  $(HAVE_PYTHON) $(GEOS_CFLAGS) $(PYTHON_INCLUDE_DIR) -Icomposer -Ilegend -I../ui/ -I../widgets/projectionselector/ -I../core/include/ -I../gui/ -I../plugins/
 
 ##
 ## ----------------------------------------------------------------------
@@ -127,14 +126,13 @@ composerSOURCES = \
 
 ##
 ## ----------------------------------------------------------------------
-##         libqgis_gui-gui stuff starts here
+##         QGIS app stuff starts here
 ## ----------------------------------------------------------------------
 ##
 
-libqgis_guiHEADERS =							\
+qgisHEADERS =							\
 		qgisapp.h							\
 		qgisappinterface.h					\
-		qgisinterface.h \
 		qgsabout.h				\
 		qgsaddattrdialog.h				\
 		qgsattributeactiondialog.h			\
@@ -145,7 +143,6 @@ libqgis_guiHEADERS =							\
 		qgsclipboard.h				\
 		qgscontinuouscolordialog.h				\
 		qgscustomprojectiondialog.h			\
-		qgscursors.h			\
 		qgsdelattrdialog.h				\
 		qgsencodingfiledialog.h				\
 		qgsfillstylewidget.h				\
@@ -157,22 +154,14 @@ libqgis_guiHEADERS =							\
 		qgslayerprojectionselector.h \
 		qgslinestyledialog.h				\
 		qgsludialog.h					\
-		qgsmapcanvas.h						\
-		qgsmapcanvasitem.h			\
-		qgsmapcanvasmap.h			\
 		qgsmaplayerinterface.h				\
-		qgsmapoverviewcanvas.h				\
 		qgsmapserverexport.h				\
-		qgsmaptool.h						\
 		qgsmaptoolcapture.h				\
 		qgsmaptoolidentify.h			\
-		qgsmaptoolpan.h					\
 		qgsmaptoolselect.h				\
 		qgsmaptoolvertexedit.h			\
-		qgsmaptoolzoom.h					\
 		qgsmarkerdialog.h				\
 		qgsmeasure.h					\
-		qgsmessageviewer.h					\
 		qgsnewhttpconnection.h				\
 		qgsnumericsortlistviewitem.h		\
 		qgsoptions.h					\
@@ -187,7 +176,6 @@ libqgis_guiHEADERS =							\
 		qgsprojectproperties.h			\
 		qgsprojectproperty.h		\
 		qgsrasterlayerproperties.h		\
-		qgsrubberband.h						\
 		qgssearchquerybuilder.h			\
 		qgsserversourceselect.h				\
 		qgssinglesymboldialog.h				\
@@ -199,9 +187,8 @@ libqgis_guiHEADERS =							\
 
 
 ## files generated from MOC
-libqgis_gui_la_MOC =							\
+qgisMOC =							\
 		qgisapp.moc.cpp						\
-		qgisinterface.moc.cpp	\
 		qgisappinterface.moc.cpp \
 		qgsabout.moc.cpp		\
 		qgsaddattrdialog.moc.cpp		\
@@ -224,11 +211,7 @@ libqgis_gui_la_MOC =							\
 		qgslinestyledialog.moc.cpp		\
 		qgslinestylewidget.moc.cpp			\
 		qgsludialog.moc.cpp			\
-		qgsmapcanvas.moc.cpp				\
-		qgsmapcanvasitem.moc.cpp			\
-		qgsmapcanvasmap.moc.cpp			\
 		qgsmaplayerinterface.moc.cpp		\
-		qgsmapoverviewcanvas.moc.cpp		\
 		qgsmapserverexport.moc.cpp		\
 		qgsmarkerdialog.moc.cpp			\
 		qgsmeasure.moc.cpp			\
@@ -248,11 +231,9 @@ libqgis_gui_la_MOC =							\
 		$(legendMOC) \
 		$(composerMOC)
 
-libqgis_gui_la_SOURCES =						\
+qgisSOURCES =						\
 		qgisapp.cpp							\
-		qgisgui.cpp				\
 		qgisappinterface.cpp			\
-		qgisinterface.cpp	\
 		qgsabout.cpp		\
 		qgsaddattrdialog.cpp		\
 		qgsattributeactiondialog.cpp	\
@@ -262,7 +243,6 @@ libqgis_gui_la_SOURCES =						\
 		qgsbookmarks.cpp	\
 		qgsclipboard.cpp		\
 		qgscontinuouscolordialog.cpp		\
-		qgscursors.cpp		\
 		qgscustomprojectiondialog.cpp			\
 		qgsdelattrdialog.cpp		\
 		qgsencodingfiledialog.cpp	\
@@ -276,21 +256,13 @@ libqgis_gui_la_SOURCES =						\
 		qgslinestyledialog.cpp		\
 		qgslinestylewidget.cpp				\
 		qgsludialog.cpp			\
-		qgsmapcanvas.cpp					\
-		qgsmapcanvasitem.cpp				\
-		qgsmapcanvasmap.cpp				\
-		qgsmapoverviewcanvas.cpp			\
 		qgsmapserverexport.cpp		\
-		qgsmaptool.cpp			\
 		qgsmaptoolcapture.cpp			\
 		qgsmaptoolidentify.cpp		\
-		qgsmaptoolpan.cpp				\
 		qgsmaptoolselect.cpp			\
 		qgsmaptoolvertexedit.cpp		\
-		qgsmaptoolzoom.cpp			\
 		qgsmarkerdialog.cpp		\
 		qgsmeasure.cpp			\
-		qgsmessageviewer.cpp				\
 		qgsnewhttpconnection.cpp	\
 		qgsnumericsortlistviewitem.cpp		\
 		qgsoptions.cpp			\
@@ -305,7 +277,6 @@ libqgis_gui_la_SOURCES =						\
 		qgsprojectproperties.cpp	\
 		qgsprojectproperty.cpp	\
 		qgsrasterlayerproperties.cpp	\
-		qgsrubberband.cpp					\
 		qgssearchquerybuilder.cpp		\
 		qgsserversourceselect.cpp	\
 		qgssinglesymboldialog.cpp	\
@@ -328,29 +299,22 @@ postgresMOC = qgsdbsourceselect.moc.cpp		\
 		  qgsnewconnection.moc.cpp		\
 		  qgspgquerybuilder.moc.cpp
 		  
-libqgis_gui_la_SOURCES += $(postgresSOURCES) $(postgresMOC)
+qgisSOURCES += $(postgresSOURCES) $(postgresMOC)
 endif
 
-AM_YFLAGS       = -d
 
-nodist_libqgis_gui_la_SOURCES = $(libqgis_gui_la_MOC)
+BUILT_SOURCES = $(qgisMOC) $(postgresMOC)
 
-BUILT_SOURCES = $(libqgis_gui_la_MOC) $(qgis_YACC)  $(postgresMOC)
-
-
-libqgis_gui_la_LIBADD = ../core/libqgis_core.la ../widgets/projectionselector/libqgsprojectionselector.la $(QT_LDADD) $(GEOS_LDADD) $(GDAL_LDADD) $(PYTHON_LIB) -lsqlite3
-libqgis_gui_la_LDFLAGS = -version-info $(INTERFACE_VERSION)
-
-libqgis_gui_la_CXXFLAGS = $(PREFIX) $(PLUGINPATH) $(PKGDATAPATH) $(GDAL_CFLAGS) $(CXXFLAGS) $(EXTRA_CXXFLAGS) $(QT_CXXFLAGS) $(PG_INC) $(DEBUG_QGIS) $(GEOS_CFLAGS) $(PYTHON_INCLUDE_DIR) $(HAVE_PYTHON) -I../ui/ -I../widgets/projectionselector/ -I../core/include -Ilegend -Icomposer -I../plugins/
 
 ##
 ## ----------------------------------------------------------------------
 ##         additional files that need to be installed go here
 ## ----------------------------------------------------------------------
 ##
-pkginclude_HEADERS = $(libqgis_guiHEADERS) 
 
-pkginclude_dir = $(includedir)/qgis
+## don't install headers
+##pkginclude_HEADERS = $(qgisHEADERS) 
+##pkginclude_dir = $(includedir)/qgis
 
 
 CLEANFILES = $(BUILT_SOURCES)
@@ -361,7 +325,7 @@ if HAVE_POSTGRESQL
 
 EXTRA_DIST += $(postgresSOURCES)
 		
-pkginclude_HEADERS += $(postgresHEADERS)
+##pkginclude_HEADERS += $(postgresHEADERS)
 
 endif
 
