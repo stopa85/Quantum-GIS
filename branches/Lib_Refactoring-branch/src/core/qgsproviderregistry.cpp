@@ -181,6 +181,10 @@ QgsProviderRegistry::QgsProviderRegistry(QString pluginPath)
 #endif
         }
       }
+      else
+      {
+        QgsDebugMsg("Couldn't load " + fi.filePath());
+      }
 
       //++it;
 
