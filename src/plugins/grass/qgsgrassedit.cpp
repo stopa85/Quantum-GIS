@@ -55,7 +55,6 @@
 #include "qgsmaptopixel.h"
 #include "qgsfield.h"
 #include "qgsfeatureattribute.h"
-#include "qgslegend.h"
 #include "qgsvertexmarker.h"
 #include "qgsrubberband.h"
 

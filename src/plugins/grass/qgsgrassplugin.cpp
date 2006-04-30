@@ -17,7 +17,6 @@
 
 // includes
 #include "qgsmaplayer.h"
-#include "qgslegend.h"
 #include "qgisinterface.h"
 #include "qgsmapcanvas.h"
 #include "qgsmaplayer.h"

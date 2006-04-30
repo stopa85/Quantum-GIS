@@ -48,13 +48,81 @@ lib_LTLIBRARIES = libqgis_gui.la
 
 qgis_SOURCES =	main.cpp
 
-qgis_LDADD = ../legend/libqgis_legend.la ../composer/libqgis_composer.la $(LDADD) $(QT_LDADD) $(GDAL_LDADD) $(PG_LIB) $(GEOS_LDADD) $(PYTHON_LIB) -lproj -lsqlite3 libqgis_gui.la ../core/libqgis_core.la
+qgis_LDADD = $(LDADD) $(QT_LDADD) $(GDAL_LDADD) $(PG_LIB) $(GEOS_LDADD) $(PYTHON_LIB) -lproj -lsqlite3 libqgis_gui.la ../core/libqgis_core.la
 if HAVE_QTMAC
 qgis_LDFLAGS = -framework ApplicationServices
 else
 qgis_LDFLAGS = -rdynamic
 endif
-qgis_CXXFLAGS = $(PREFIX) $(PLUGINPATH) $(PKGDATAPATH) $(GDAL_CFLAGS) $(CXXFLAGS) $(EXTRA_CXXFLAGS) $(QT_CXXFLAGS) $(PG_INC) $(DEBUG_QGIS)  $(HAVE_PYTHON) $(GEOS_CFLAGS) $(PYTHON_INCLUDE_DIR) -I../ui/ -I../widgets/projectionselector/ -I../legend/ -I../composer/ -I../core/ -I../plugins/
+qgis_CXXFLAGS = $(PREFIX) $(PLUGINPATH) $(PKGDATAPATH) $(GDAL_CFLAGS) $(CXXFLAGS) $(EXTRA_CXXFLAGS) $(QT_CXXFLAGS) $(PG_INC) $(DEBUG_QGIS)  $(HAVE_PYTHON) $(GEOS_CFLAGS) $(PYTHON_INCLUDE_DIR) -I../ui/ -I../widgets/projectionselector/ -I../core/ -I../plugins/
+
+##
+## ----------------------------------------------------------------------
+##         QGIS Legend
+## ----------------------------------------------------------------------
+##
+
+
+legendMOC = \
+             legend/qgslegend.moc.cpp \
+             legend/qgslegendlayerfile.moc.cpp
+
+legendSOURCES = \
+			  legend/qgslegendgroup.cpp \
+        legend/qgslegend.cpp \
+        legend/qgslegenditem.cpp \
+        legend/qgslegendlayer.cpp \
+        legend/qgslegendlayerfile.cpp \
+        legend/qgslegendlayerfilegroup.cpp \
+        legend/qgslegendpropertygroup.cpp \
+        legend/qgslegendpropertyitem.cpp \
+        legend/qgslegendsymbologygroup.cpp \
+        legend/qgslegendsymbologyitem.cpp \
+        legend/qgslegendvectorsymbologyitem.cpp
+
+legendHEADERS =
+
+
+##
+## ----------------------------------------------------------------------
+##         QGIS Composer
+## ----------------------------------------------------------------------
+##
+
+
+
+composerMOC = \
+    composer/qgscomposer.moc.cpp  \
+    composer/qgscomposerlabel.moc.cpp      \
+    composer/qgscomposerpicture.moc.cpp      \
+    composer/qgscomposermap.moc.cpp        \
+    composer/qgscomposerscalebar.moc.cpp     \
+    composer/qgscomposervectorlegend.moc.cpp   \
+    composer/qgscomposerview.moc.cpp       \
+    composer/qgscomposition.moc.cpp
+
+composerHEADERS =
+##composerHEADERS = \
+##    composer/qgscomposer.h \
+##    composer/qgscomposeritem.h         \
+##    composer/qgscomposerlabel.h          \
+##    composer/qgscomposerpicture.h        \
+##    composer/qgscomposermap.h          \
+##    composer/qgscomposerscalebar.h       \
+##    composer/qgscomposervectorlegend.h     \
+##    composer/qgscomposerview.h         \
+##    composer/qgscomposition.h
+
+composerSOURCES = \
+		composer/qgscomposer.cpp \
+    composer/qgscomposeritem.cpp         \
+    composer/qgscomposerlabel.cpp        \
+    composer/qgscomposerpicture.cpp        \
+    composer/qgscomposermap.cpp          \
+    composer/qgscomposerscalebar.cpp       \
+    composer/qgscomposervectorlegend.cpp     \
+    composer/qgscomposerview.cpp         \
+    composer/qgscomposition.cpp
 
 
 ##
@@ -125,7 +193,10 @@ libqgis_guiHEADERS =							\
 		qgssinglesymboldialog.h				\
 		qgsuniquevaluedialog.h					\
 		qgsvectorlayerproperties.h			\
-		qgsvertexmarker.h
+		qgsvertexmarker.h			\
+		$(legendHEADERS) \
+		$(composerHEADERS)
+
 
 ## files generated from MOC
 libqgis_gui_la_MOC =							\
@@ -173,7 +244,9 @@ libqgis_gui_la_MOC =							\
 		qgsserversourceselect.moc.cpp		\
 		qgssinglesymboldialog.moc.cpp			\
 		qgsuniquevaluedialog.moc.cpp			\
-		qgsvectorlayerproperties.moc.cpp	
+		qgsvectorlayerproperties.moc.cpp	\
+		$(legendMOC) \
+		$(composerMOC)
 
 libqgis_gui_la_SOURCES =						\
 		qgisapp.cpp							\
@@ -238,7 +311,9 @@ libqgis_gui_la_SOURCES =						\
 		qgssinglesymboldialog.cpp	\
 		qgsuniquevaluedialog.cpp		\
 		qgsvectorlayerproperties.cpp		\
-		qgsvertexmarker.cpp
+		qgsvertexmarker.cpp			\
+		$(legendSOURCES) \
+		$(composerSOURCES)
 
 if HAVE_POSTGRESQL
 postgresHEADERS = qgsdbsourceselect.h		\
@@ -263,10 +338,10 @@ nodist_libqgis_gui_la_SOURCES = $(libqgis_gui_la_MOC)
 BUILT_SOURCES = $(libqgis_gui_la_MOC) $(qgis_YACC)  $(postgresMOC)
 
 
-libqgis_gui_la_LIBADD = ../core/libqgis_core.la ../legend/libqgis_legend.la ../composer/libqgis_composer.la ../widgets/projectionselector/libqgsprojectionselector.la $(QT_LDADD) $(GEOS_LDADD) $(GDAL_LDADD) $(PYTHON_LIB) -lsqlite3
+libqgis_gui_la_LIBADD = ../core/libqgis_core.la ../widgets/projectionselector/libqgsprojectionselector.la $(QT_LDADD) $(GEOS_LDADD) $(GDAL_LDADD) $(PYTHON_LIB) -lsqlite3
 libqgis_gui_la_LDFLAGS = -version-info $(INTERFACE_VERSION)
 
-libqgis_gui_la_CXXFLAGS = $(PREFIX) $(PLUGINPATH) $(PKGDATAPATH) $(GDAL_CFLAGS) $(CXXFLAGS) $(EXTRA_CXXFLAGS) $(QT_CXXFLAGS) $(PG_INC) $(DEBUG_QGIS) $(GEOS_CFLAGS) $(PYTHON_INCLUDE_DIR) $(HAVE_PYTHON) -I../ui/ -I../widgets/projectionselector/ -I../legend/ -I../composer/ -I../core/include/ -I../plugins/
+libqgis_gui_la_CXXFLAGS = $(PREFIX) $(PLUGINPATH) $(PKGDATAPATH) $(GDAL_CFLAGS) $(CXXFLAGS) $(EXTRA_CXXFLAGS) $(QT_CXXFLAGS) $(PG_INC) $(DEBUG_QGIS) $(GEOS_CFLAGS) $(PYTHON_INCLUDE_DIR) $(HAVE_PYTHON) -I../ui/ -I../widgets/projectionselector/ -I../core/include -Ilegend -Icomposer -I../plugins/
 
 ##
 ## ----------------------------------------------------------------------
