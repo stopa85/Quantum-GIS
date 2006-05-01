@@ -77,6 +77,8 @@ libqgis_coreHEADERS =				\
 		qgsmessageoutput.h		\
 		qgspoint.h					\
 		qgspolygonsymbol.h			\
+		qgsproject.h				\
+		qgsprojectproperty.h		\
 		qgsprovidercountcalcevent.h	\
 		qgsproviderextentcalcevent.h\
 		qgsprovidermetadata.h		\
@@ -117,6 +119,7 @@ libqgis_core_la_MOC =							\
 		qgsmaplayerregistry.moc.cpp		\
 		qgsmaprender.moc.cpp			\
 		qgsmessageoutput.moc.cpp		\
+		qgsproject.moc.cpp		\
 		qgsrasterdataprovider.moc.cpp		\
 		qgsrunprocess.moc.cpp			\
 		qgsvectorlayer.moc.cpp \
@@ -156,6 +159,8 @@ libqgis_core_la_SOURCES =\
 		qgsmessageoutput.cpp			\
 		qgspoint.cpp						\
 		qgspolygonsymbol.cpp		\
+		qgsproject.cpp			\
+		qgsprojectproperty.cpp			\
 		qgsprovidercountcalcevent.cpp		\
 		qgsproviderextentcalcevent.cpp		\
 		qgsprovidermetadata.cpp		\

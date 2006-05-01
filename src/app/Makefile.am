@@ -172,16 +172,13 @@ qgisHEADERS =							\
 		qgspluginmetadata.h				\
 		qgspluginregistry.h				\
 		qgspointstylewidget.h				\
-		qgsproject.h					\
 		qgsprojectproperties.h			\
-		qgsprojectproperty.h		\
 		qgsrasterlayerproperties.h		\
 		qgssearchquerybuilder.h			\
 		qgsserversourceselect.h				\
 		qgssinglesymboldialog.h				\
 		qgsuniquevaluedialog.h					\
 		qgsvectorlayerproperties.h			\
-		qgsvertexmarker.h			\
 		$(legendHEADERS) \
 		$(composerHEADERS)
 
@@ -273,16 +270,13 @@ qgisSOURCES =						\
 		qgspluginmetadata.cpp		\
 		qgspluginregistry.cpp		\
 		qgspointstylewidget.cpp				\
-		qgsproject.cpp			\
 		qgsprojectproperties.cpp	\
-		qgsprojectproperty.cpp	\
 		qgsrasterlayerproperties.cpp	\
 		qgssearchquerybuilder.cpp		\
 		qgsserversourceselect.cpp	\
 		qgssinglesymboldialog.cpp	\
 		qgsuniquevaluedialog.cpp		\
 		qgsvectorlayerproperties.cpp		\
-		qgsvertexmarker.cpp			\
 		$(legendSOURCES) \
 		$(composerSOURCES)
 

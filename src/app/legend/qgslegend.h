@@ -191,6 +191,12 @@ public slots:
   /**Removes the current LegendLayer and all its LegendLayerFiles*/
   void legendLayerRemove();
   
+  /** called to read legend settings from project */
+  void readProject(const QDomDocument &);
+    
+  /** called to write legend settings to project */
+  void writeProject(QDomDocument &);
+
 protected:
 
   /*!Event handler for mouse movements.

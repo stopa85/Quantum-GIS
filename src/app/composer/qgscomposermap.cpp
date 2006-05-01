@@ -381,7 +381,7 @@ double QgsComposerMap::scaleFromUserScale ( double us )
 {
     double s;
     
-    switch ( QgsProject::instance()->mapUnits() ) {
+    switch ( mComposition->mapCanvas()->mapUnits() ) {
   case QGis::METERS :
       s = 1000. * mComposition->scale() / us;
       break;
@@ -399,7 +399,7 @@ double QgsComposerMap::userScaleFromScale ( double s )
 { 
     double us;
     
-    switch ( QgsProject::instance()->mapUnits() ) {
+    switch ( mComposition->mapCanvas()->mapUnits() ) {
   case QGis::METERS :
       us = 1000. * mComposition->scale() / s; 
       break;
@@ -544,7 +544,7 @@ void QgsComposerMap::setOptions ( void )
     mHeightLineEdit->setText ( QString("%1").arg( mComposition->toMM(Q3CanvasRectangle::height()),0,'g') );
     
     // Scale
-    switch ( QgsProject::instance()->mapUnits() ) {
+    switch ( mComposition->mapCanvas()->mapUnits() ) {
   case QGis::METERS :
   case QGis::FEET :
             mScaleLineEdit->setText ( QString("%1").arg((int)mUserScale) );

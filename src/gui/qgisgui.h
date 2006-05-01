@@ -18,8 +18,6 @@
 
 #include <Qt>
 
-class QgsSpatialRefSys;
-
 /*!
  * /namespace QgisGui
  * /brief The QgisGui namespace contains constants used throughout the QGIS GUI.
@@ -46,15 +44,6 @@ namespace QgisGui
    */
   static const Qt::WFlags ModalDialogFlags =
       Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowMaximizeButtonHint;
-
-  /**
-   * This function contains forced validation of SRS used in QGIS.
-   * There are 3 options depending on the settings:
-   * - ask for SRS using projection selecter
-   * - use project's SRS
-   * - use predefined global SRS
-   */
-  void customSrsValidation(QgsSpatialRefSys* srs);
 
 }
 

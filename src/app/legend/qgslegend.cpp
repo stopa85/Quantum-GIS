@@ -20,6 +20,7 @@
 
 #include "qgisapp.h"
 #include "qgsapplication.h"
+#include "qgslogger.h"
 #include "qgslegend.h"
 #include "qgslegendgroup.h"
 #include "qgslegendlayer.h"
@@ -67,8 +68,13 @@ QgsLegend::QgsLegend(QgisApp* app, QWidget * parent, const char *name)
   connect( this, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)),
 	   this, SLOT(handleCurrentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)));
   
+  // project handling
+  connect(QgsProject::instance(), SIGNAL(readProject(const QDomDocument &)),
+          this, SLOT(readProject(const QDomDocument &)));
+  connect(QgsProject::instance(), SIGNAL(writeProject(QDomDocument &)),
+          this, SLOT(writeProject(QDomDocument &)));
 
- setSortingEnabled(false);
+  setSortingEnabled(false);
   setDragEnabled(false);
   setAutoScroll(true);
   QFont f("Arial", 10, QFont::Normal);
@@ -1664,4 +1670,33 @@ void QgsLegend::initPixmaps()
   mPixmaps.mInOverviewPixmap.load(myThemePath + "/mActionInOverview.png");
   mPixmaps.mEditablePixmap.load(myThemePath + "/mIconEditable.png");
   mPixmaps.mProjectionErrorPixmap.load(myThemePath + "/mIconProjectionProblem.png");
+}
+
+void QgsLegend::readProject(const QDomDocument & doc)
+{
+  QDomNodeList nodes = doc.elementsByTagName("legend");
+  if (nodes.count())
+  {
+    QDomNode node = nodes.item(0);
+    readXML(node);
+  }
+  else
+  {
+    QgsDebugMsg("Couldn't read legend information from project");
+  }
+}
+  
+void QgsLegend::writeProject(QDomDocument & doc)
+{
+  QDomNodeList nl = doc.elementsByTagName("qgis");
+  if (!nl.count())
+  {
+    QgsDebugMsg("Unable to find qgis element in project file");
+    return;
+  }
+  QDomNode qgisNode = nl.item(0);  // there should only be one, so zeroth element ok
+  
+  QDomElement mapcanvasNode = doc.createElement("legend");
+  qgisNode.appendChild(mapcanvasNode);
+  writeXML(mapcanvasNode, doc);
 }
