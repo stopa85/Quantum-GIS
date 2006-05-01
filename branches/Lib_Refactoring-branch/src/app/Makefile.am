@@ -139,6 +139,7 @@ qgisHEADERS =							\
 		qgsattributedialog.h				\
 		qgsattributetabledisplay.h			\
 		qgsattributetable.h				\
+		qgsbookmarkitem.h			\
 		qgsbookmarks.h			\
 		qgsclipboard.h				\
 		qgscontinuouscolordialog.h				\
@@ -237,6 +238,7 @@ qgisSOURCES =						\
 		qgsattributedialog.cpp		\
 		qgsattributetable.cpp		\
 		qgsattributetabledisplay.cpp	\
+		qgsbookmarkitem.cpp		\
 		qgsbookmarks.cpp	\
 		qgsclipboard.cpp		\
 		qgscontinuouscolordialog.cpp		\

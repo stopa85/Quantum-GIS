@@ -45,16 +45,11 @@ libqgis_coreHEADERS =				\
 		qgis.h						\
 		qgsapplication.h			\
 		qgsattributeaction.h		\
-		qgsbookmarkitem.h			\
 		qgsclipper.h				\
-		qgscolortable.h				\
 		qgscontexthelp.h			\
 		qgscoordinatetransform.h			\
 		qgscsexception.h			\
-		qgscustomsymbol.h			\
-		qgsdatamanager.h			\
 		qgsdataprovider.h			\
-		qgsdatasource.h				\
 		qgsdatasourceuri.h			\
 		qgsdistancearea.h			\
 		qgsexception.h				\
@@ -96,6 +91,7 @@ libqgis_coreHEADERS =				\
 		qgsvectorlayer.h			\
 		qgsvectordataprovider.h		\
     \
+		raster/qgscolortable.h		\
 		raster/qgsrasterbandstats.h \
 		raster/qgsrasterpyramid.h \
     raster/qgsrasterlayer.h \
@@ -130,14 +126,9 @@ libqgis_core_la_SOURCES =\
 		qgis.cpp								\
 		qgsapplication.cpp	\
 		qgsattributeaction.cpp	\
-		qgsbookmarkitem.cpp	\
 		qgsclipper.cpp						\
-		qgscolortable.cpp					\
 		qgscontexthelp.cpp		\
 		qgscoordinatetransform.cpp		\
-		qgscustomsymbol.cpp		\
-		qgsdatamanager.cpp				\
-		qgsdatasource.cpp		\
 		qgsdistancearea.cpp			\
 		qgsexception.cpp				\
 		qgsfeature.cpp					\
@@ -180,6 +171,7 @@ libqgis_core_la_SOURCES =\
 		qgsvectorlayer.cpp		\
 		qgsvectordataprovider.cpp \
 		\
+		raster/qgscolortable.cpp		\
 		raster/qgsrasterlayer.cpp \
 		\
 		renderer/qgscontinuouscolorrenderer.cpp \
