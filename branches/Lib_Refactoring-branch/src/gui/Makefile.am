@@ -43,6 +43,7 @@ libqgis_guiHEADERS =							\
 		qgsmaptoolpan.h					\
 		qgsmaptoolzoom.h					\
 		qgsmessageviewer.h					\
+		qgsprojectionselector.h		\
 		qgsrubberband.h					\
 		qgsvertexmarker.h
 		
@@ -53,7 +54,8 @@ libqgis_gui_la_MOC =							\
 		qgsmapcanvas.moc.cpp				\
 		qgsmapcanvasitem.moc.cpp			\
 		qgsmapcanvasmap.moc.cpp			\
-		qgsmapoverviewcanvas.moc.cpp
+		qgsmapoverviewcanvas.moc.cpp		\
+		qgsprojectionselector.moc.cpp
 		
 libqgis_gui_la_SOURCES =						\
 		qgisgui.cpp				\
@@ -67,6 +69,7 @@ libqgis_gui_la_SOURCES =						\
 		qgsmaptoolpan.cpp				\
 		qgsmaptoolzoom.cpp			\
 		qgsmessageviewer.cpp				\
+		qgsprojectionselector.cpp		\
 		qgsrubberband.cpp					\
 		qgsvertexmarker.cpp
 		

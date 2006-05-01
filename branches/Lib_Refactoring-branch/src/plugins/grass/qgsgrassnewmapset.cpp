@@ -54,7 +54,7 @@
 #include "qgsrect.h"
 #include "qgscoordinatetransform.h"
 #include "qgsspatialrefsys.h"
-#include "../../src/widgets/projectionselector/qgsprojectionselector.h"
+#include "qgsprojectionselector.h"
 
 #include "../../src/providers/grass/qgsgrass.h"
 #include "qgsgrassnewmapset.h"

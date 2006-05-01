@@ -124,7 +124,7 @@ BUILT_SOURCES = $(plugin_MOC) $(plugin_UI)
 
 grassplugin_la_LIBADD = $(QT_LDADD) ../../providers/grass/libqgisgrass.la $(GRASS_LIB) $(PG_LIB) $(GDAL_LDADD) ../../gui/libqgis_gui.la ../../core/libqgis_core.la
 grassplugin_la_LDFLAGS = -avoid-version -module
-grassplugin_la_CXXFLAGS = $(PREFIX) $(CXXFLAGS) -I$(GRASS_INC) $(DEFS) $(EXTRA_CXXFLAGS) $(QT_CXXFLAGS) $(DEBUG_QGIS) -I$(PG_INC)  $(GDAL_CFLAGS) $(GEOS_CFLAGS) -I../../legend/ -I../../ui -I../../widgets/projectionselector
+grassplugin_la_CXXFLAGS = $(PREFIX) $(CXXFLAGS) -I$(GRASS_INC) $(DEFS) $(EXTRA_CXXFLAGS) $(QT_CXXFLAGS) $(DEBUG_QGIS) -I$(PG_INC)  $(GDAL_CFLAGS) $(GEOS_CFLAGS) -I../../ui
 
 CLEANFILES = $(BUILT_SOURCES)
 

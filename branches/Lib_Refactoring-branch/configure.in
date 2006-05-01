@@ -462,12 +462,11 @@ AC_CONFIG_FILES([
   images/themes/nkids/Makefile
   resources/Makefile
   src/Makefile 
-  src/composer/Makefile
+  src/app/Makefile
   src/core/Makefile
   src/designer/Makefile
   src/helpviewer/Makefile
   src/gui/Makefile
-  src/legend/Makefile
   src/mac/Contents/Makefile
   src/mac/Contents/Resources/Makefile
   src/mac/Makefile
@@ -495,8 +494,6 @@ AC_CONFIG_FILES([
   src/providers/postgres/Makefile
   src/providers/wms/Makefile
   src/ui/Makefile
-  src/widgets/Makefile
-  src/widgets/projectionselector/Makefile
   tools/Makefile
   tools/mapserver_export/Makefile
   tools/qgis_config/Makefile
