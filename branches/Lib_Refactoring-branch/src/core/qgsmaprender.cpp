@@ -24,7 +24,10 @@
 #include "qgsmaptopixel.h"
 #include "qgsmaplayer.h"
 #include "qgsmaplayerregistry.h"
+//#include "qgsspatialrefsys.h"
 
+#include <QDomDocument>
+#include <QDomNode>
 #include <QPainter>
 #include <QListIterator>
 #include <QTime>
@@ -563,4 +566,140 @@ void QgsMapRender::setLayerSet(const QStringList layers)
     mLayerSet.push_back(i.next());
   }
   updateFullExtent();
+}
+
+
+bool QgsMapRender::readXML(QDomNode & theNode)
+{
+  QDomNode myNode = theNode.namedItem("units");
+  QDomElement element = myNode.toElement();
+  
+  // set units
+  QGis::units units;
+  if ("meters" == element.text())
+  {
+    units = QGis::METERS;
+  }
+  else if ("feet" == element.text())
+  {
+    units = QGis::FEET;
+  }
+  else if ("degrees" == element.text())
+  {
+    units = QGis::DEGREES;
+  }
+  else if ("unknown" == element.text())
+  {
+    units = QGis::UNKNOWN;
+  }
+  else
+  {
+    QgsDebugMsg("Unknown map unit type " + element.text());
+    units = QGis::DEGREES;
+  }
+  setMapUnits(units);
+
+  
+  // set extent
+  QgsRect aoi;
+  QDomNode extentNode = theNode.namedItem("extent");
+
+  QDomNode xminNode = extentNode.namedItem("xmin");
+  QDomNode yminNode = extentNode.namedItem("ymin");
+  QDomNode xmaxNode = extentNode.namedItem("xmax");
+  QDomNode ymaxNode = extentNode.namedItem("ymax");
+
+  QDomElement exElement = xminNode.toElement();
+  double xmin = exElement.text().toDouble();
+  aoi.setXmin(xmin);
+
+  exElement = yminNode.toElement();
+  double ymin = exElement.text().toDouble();
+  aoi.setYmin(ymin);
+
+  exElement = xmaxNode.toElement();
+  double xmax = exElement.text().toDouble();
+  aoi.setXmax(xmax);
+
+  exElement = ymaxNode.toElement();
+  double ymax = exElement.text().toDouble();
+  aoi.setYmax(ymax);
+
+  setExtent(aoi);
+  
+  // set projections flag
+  QDomNode projNode = theNode.namedItem("projections");
+  element = projNode.toElement();
+  setProjectionsEnabled(element.text().toInt());
+  
+  // set destination SRS
+  QgsSpatialRefSys srs;
+  QDomNode srsNode = theNode.namedItem("destinationsrs");
+  srs.readXML(srsNode);
+  setDestinationSrs(srs);
+}
+
+bool QgsMapRender::writeXML(QDomNode & theNode, QDomDocument & theDoc)
+{
+  // units
+  
+  QDomElement unitsNode = theDoc.createElement("units");
+  theNode.appendChild(unitsNode);
+
+  QString unitsString;
+
+  switch (mapUnits())
+  {
+    case QGis::METERS:
+      unitsString = "meters";
+      break;
+    case QGis::FEET:
+      unitsString = "feet";
+      break;
+    case QGis::DEGREES:
+      unitsString = "degrees";
+      break;
+    case QGis::UNKNOWN:
+    default:
+      unitsString = "unknown";
+      break;
+  }
+
+
+  // Write current view extents
+  QDomElement extentNode = theDoc.createElement("extent");
+  theNode.appendChild(extentNode);
+
+  QDomElement xMin = theDoc.createElement("xmin");
+  QDomElement yMin = theDoc.createElement("ymin");
+  QDomElement xMax = theDoc.createElement("xmax");
+  QDomElement yMax = theDoc.createElement("ymax");
+
+  QgsRect r = extent();
+  QDomText xMinText = theDoc.createTextNode(QString::number(r.xMin(), 'f'));
+  QDomText yMinText = theDoc.createTextNode(QString::number(r.yMin(), 'f'));
+  QDomText xMaxText = theDoc.createTextNode(QString::number(r.xMax(), 'f'));
+  QDomText yMaxText = theDoc.createTextNode(QString::number(r.yMax(), 'f'));
+
+  xMin.appendChild(xMinText);
+  yMin.appendChild(yMinText);
+  xMax.appendChild(xMaxText);
+  yMax.appendChild(yMaxText);
+
+  extentNode.appendChild(xMin);
+  extentNode.appendChild(yMin);
+  extentNode.appendChild(xMax);
+  extentNode.appendChild(yMax);
+
+  // projections enabled
+  QDomElement projNode = theDoc.createElement("projections");
+  theNode.appendChild(projNode);
+
+  QDomText projText = theDoc.createTextNode(QString::number(projectionsEnabled()));
+  projNode.appendChild(projText);
+  
+  // destination SRS
+  QDomElement srsNode = theDoc.createElement("destinationsrs");
+  theNode.appendChild(srsNode);
+  destinationSrs().writeXML(srsNode, theDoc);
 }

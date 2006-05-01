@@ -213,7 +213,7 @@ class QgsSpatialRefSys
          * @param theDom The document in which state will be stored
          * @return bool True on success, False on failure
          */
-          bool writeXML( QDomNode & theNode, QDomDocument & theDoc );
+          bool writeXML( QDomNode & theNode, QDomDocument & theDoc ) const;
 
          /** A static helper function to find out the proj4 string for a srsid
            * @param int theSrsId The srsid used for the lookup

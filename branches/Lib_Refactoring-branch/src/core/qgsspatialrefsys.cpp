@@ -1121,7 +1121,7 @@ bool QgsSpatialRefSys::readXML( QDomNode & theNode )
 
 }
 
-bool QgsSpatialRefSys::writeXML( QDomNode & theNode, QDomDocument & theDoc )
+bool QgsSpatialRefSys::writeXML( QDomNode & theNode, QDomDocument & theDoc ) const
 {
 
   QDomElement myLayerNode = theNode.toElement();

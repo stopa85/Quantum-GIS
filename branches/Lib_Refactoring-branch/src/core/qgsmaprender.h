@@ -24,6 +24,8 @@
 #include "qgis.h"
 #include "qgsrect.h"
 
+class QDomDocument;
+class QDomNode;
 class QPainter;
 
 class QgsMapToPixel;
@@ -109,6 +111,12 @@ class QgsMapRender : public QObject
 
     //! updates extent of the layer set
     void updateFullExtent();
+
+    //! read settings
+    bool readXML(QDomNode & theNode);
+
+    //! write settings
+    bool writeXML(QDomNode & theNode, QDomDocument & theDoc);
 
   signals:
     

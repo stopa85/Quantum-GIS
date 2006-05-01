@@ -23,11 +23,12 @@
 #define QGSPROJECT_H
 
 #include <memory>
+#include <QObject>
 
-#include <qgsscalecalculator.h>
-
+//#include <QDomDocument>
 
 class QFileInfo;
+class QDomDocument;
 class QDomNode;
 
 
@@ -48,8 +49,10 @@ class QDomNode;
   qgis can one day have simultaneous multiple projects.
 
 */
-class QgsProject
+class QgsProject : public QObject
 {
+  Q_OBJECT
+
 public:
 
     /**
@@ -71,20 +74,6 @@ public:
     /** returns title */
     QString const & title() const;
     //@}
-
-    /**
-     * Gets the currently select map units
-     * @return int which matches a value in the units enum in QGis::units
-     */
-    QGis::units mapUnits() const;
-
-
-    /**
-     * Set the map units
-     * @param new units type
-     */
-    void mapUnits(QGis::units u);
-
 
     /**
        the dirty flag is true if the project has been modified since the last
@@ -264,6 +253,13 @@ public:
     */
     void dumpProperties() const;
 
+  signals:
+    
+    //! emitted when project is being read
+    void readProject(const QDomDocument &);
+    
+    //! emitted when project is being written
+    void writeProject(QDomDocument &);
 
 private:
 

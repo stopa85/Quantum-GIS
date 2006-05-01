@@ -17,29 +17,24 @@
 
 #include "qgsproject.h"
 
+#include <deque>
 #include <memory>
 #include <cassert>
 #include <iostream>
 
-using namespace std;
-
-#include "qgslegend.h"
+#include "qgslogger.h"
 #include "qgsrect.h"
 #include "qgsvectorlayer.h"
 #include "qgsrasterlayer.h"
 #include "qgsmaplayerregistry.h"
 #include "qgsexception.h"
 #include "qgsprojectproperty.h"
-#include "qgsmapcanvas.h"
 
 #include <QApplication>
 #include <QFileInfo>
 #include <QDomNode>
-#include <QWidget>
 #include <QObject>
 #include <QTextStream>
-#include <QToolBox>
-#include <QSplitter>
 
 
 static const char *const ident_ = "$Id$";
@@ -314,13 +309,9 @@ QgsProject * QgsProject::theProject_;
      /// true if project has been modified since it has been read or saved
      bool dirty;
 
-     /// map units for current project
-     QGis::units mapUnits;
-
      Imp()
          : title(""), 
-           dirty(false), 
-           mapUnits(QGis::METERS)
+           dirty(false)
      {                             // top property node is the root
                                    // "properties" that contains all plug-in
                                    // and extra property keys and values
@@ -334,7 +325,6 @@ QgsProject * QgsProject::theProject_;
          QgsDebug( "Clearing project properties Impl->clear();" );
 
          properties_.clearKeys();
-         mapUnits = QGis::METERS;
          title = "";
 
          // reset some default project properties
@@ -395,21 +385,6 @@ QgsProject * QgsProject::theProject_;
  } // QgsProject::title() const
 
 
- QGis::units QgsProject::mapUnits() const
- {
-     return imp_->mapUnits;
- } // QGis::units QgsProject::mapUnits() const
-
-
-
- void QgsProject::mapUnits(QGis::units u)
- {
-     imp_->mapUnits = u;
-
-     dirty(true);
- } // void QgsProject::mapUnits(QGis::units u)
-
-
  bool QgsProject::dirty() const
  {
      return imp_->dirty;
@@ -447,59 +422,6 @@ QgsProject * QgsProject::theProject_;
      topQgsPropertyKey.dump();
  } // dump_
 
-
-
- /**
-    Fetches extents, or area of interest, saved in project.
-
-    @note extent XML of form:
-    <extent>
-    <xmin>[number]</xmin>
-    <ymin>[number]</ymin>
-    <xmax>[number]</xmax>
-    <ymax>[number]</ymax>
-    </extent>
-
- */
- static bool _getExtents(QDomDocument const &doc, QgsRect & aoi)
- {
-     QDomNodeList extents = doc.elementsByTagName("extent");
-
-     if (extents.count() > 1)
-     {
-         qDebug
-             ("there appears to be more than one extent in the project\nusing first one");
-     } else if (extents.count() < 1) // no extents found, so bail
-     {
-         return false;
-     }
-
-     QDomNode extentNode = extents.item(0);
-
-     QDomNode xminNode = extentNode.namedItem("xmin");
-     QDomNode yminNode = extentNode.namedItem("ymin");
-     QDomNode xmaxNode = extentNode.namedItem("xmax");
-     QDomNode ymaxNode = extentNode.namedItem("ymax");
-
-     QDomElement exElement = xminNode.toElement();
-     double xmin = exElement.text().toDouble();
-     aoi.setXmin(xmin);
-
-     exElement = yminNode.toElement();
-     double ymin = exElement.text().toDouble();
-     aoi.setYmin(ymin);
-
-     exElement = xmaxNode.toElement();
-     double xmax = exElement.text().toDouble();
-     aoi.setXmax(xmax);
-
-     exElement = ymaxNode.toElement();
-     double ymax = exElement.text().toDouble();
-     aoi.setYmax(ymax);
-
-     return true;
-
- }                               // _getExtents
 
 
 
@@ -603,52 +525,6 @@ _getProperties(QDomDocument const &doc, QgsPropertyKey & project_properties)
 
 
 
-/**
-   Get the project map units
-
-   XML in file has this form:
-   <units>feet</units>
-*/
-static bool _getMapUnits(QDomDocument const &doc)
-{
-    QDomNodeList nl = doc.elementsByTagName("units");
-
-    // since "units" is a new project file type, legacy project files will not
-    // have this element.  If we do have such a legacy project file missing
-    // "units", then just return;
-    if (!nl.count())
-    {
-        return false;
-    }
-
-    QDomNode node = nl.item(0);   // there should only be one, so zeroth element ok
-    QDomElement element = node.toElement();
-
-    if ("meters" == element.text())
-    {
-        QgsProject::instance()->mapUnits(QGis::METERS);
-    } else if ("feet" == element.text())
-    {
-        QgsProject::instance()->mapUnits(QGis::FEET);
-    } else if ("degrees" == element.text())
-    {
-        QgsProject::instance()->mapUnits(QGis::DEGREES);
-    } else if ("unknown" == element.text())
-    {
-        QgsProject::instance()->mapUnits(QGis::UNKNOWN);
-    } else
-    {
-        std::
-            cerr << __FILE__ << ":" << __LINE__ << " unknown map unit type " <<
-            element.text().toLocal8Bit().data() << "\n";
-        false;
-    }
-
-    return true;
-
-} // _getMapUnits
-
-
 
 /**
    Get the project title
@@ -716,58 +592,6 @@ static QString _getVersion(QDomDocument const &doc)
 } // _getVersion
 
 
-/**
-   locate a qgsMapCanvas object
-*/
-static QgsMapCanvas * _findMapCanvas()
-{
-  QgsMapCanvas * theMapCanvas = 0x0;
-  QString canonicalMapCanvasName = "theMapCanvas";
-
-  QWidgetList wlist = QApplication::topLevelWidgets();
-  foreach (QWidget *widget, QApplication::topLevelWidgets()) 
-  {
-    theMapCanvas = dynamic_cast <QgsMapCanvas *>(widget->child(canonicalMapCanvasName)); 
-    if (theMapCanvas)
-    {
-      break;
-    }
-  }
-
-  if (theMapCanvas)
-  {
-    return theMapCanvas;
-  } 
-  else
-  {
-    qDebug("Unable to find the map canvas widget with name " + canonicalMapCanvasName);
-
-    return 0x0;                 // XXX some sort of error value? Exception?
-  }
-} // _findMapCanvas
-
-
-
-static QgsLegend * _findLegend()
-{
-  QString canonicalLegendName = "theMapLegend";
-  QgsLegend* theLegend = 0;
-
-  QWidgetList wlist = QApplication::topLevelWidgets();
-  foreach (QWidget *widget, QApplication::topLevelWidgets()) 
-  {
-    theLegend = dynamic_cast <QgsLegend *>(widget->child(canonicalLegendName.toLocal8Bit().data(), 0, true)); 
-    if(theLegend)
-      {
-	break;
-      }
-  }
-  
-  return theLegend;
-
-} // _findLegend
-
-
 
 /**
    Read map layers from project file
@@ -815,7 +639,7 @@ static QgsLegend * _findLegend()
    </maplayer>
 
 */
-static pair< bool, list<QDomNode> > _getMapLayers(QDomDocument const &doc)
+static std::pair< bool, std::list<QDomNode> > _getMapLayers(QDomDocument const &doc)
 {
     // Layer order is implicit in the order they are stored in the project file
 
@@ -825,7 +649,7 @@ static pair< bool, list<QDomNode> > _getMapLayers(QDomDocument const &doc)
 
     QString wk;
 
-    list<QDomNode> brokenNodes; // a list of DOM nodes corresponding to layers
+    std::list<QDomNode> brokenNodes; // a list of DOM nodes corresponding to layers
                                 // that we were unable to load; this could be
                                 // because the layers were removed or
                                 // re-located after the project was last saved
@@ -851,13 +675,10 @@ static pair< bool, list<QDomNode> > _getMapLayers(QDomDocument const &doc)
 
         QString type = element.attribute("type");
 
+        QgsDebugMsg("Layer type is " + type);
 
         QgsMapLayer *mapLayer;
-#ifdef QGISDEBUG
-
-        std::cerr << "type is " << type.toLocal8Bit().data() << std::endl;
-#endif
-
+        
         if (type == "vector")
         {
             mapLayer = new QgsVectorLayer;
@@ -870,10 +691,9 @@ static pair< bool, list<QDomNode> > _getMapLayers(QDomDocument const &doc)
 
         if (!mapLayer)
         {
-#ifdef QGISDEBUG
-            std::cerr << __FILE__ << " : " << __LINE__ << " unable to create layer\n";
-#endif
-            return make_pair(false, brokenNodes);
+          QgsDebugMsg("Unable to create layer");
+          
+          return make_pair(false, brokenNodes);
         }
 
         // have the layer restore state that is stored in DOM node
@@ -885,7 +705,7 @@ static pair< bool, list<QDomNode> > _getMapLayers(QDomDocument const &doc)
         {
             delete mapLayer;
 
-            qDebug( "%s:%d unable to load %s layer", __FILE__, __LINE__, (const char *)type.toLocal8Bit().data() );
+            QgsDebugMsg("Unable to load " + type + " layer");
 
             returnStatus = false; // flag that we had problems loading layers
 
@@ -896,93 +716,6 @@ static pair< bool, list<QDomNode> > _getMapLayers(QDomDocument const &doc)
     return make_pair(returnStatus, brokenNodes);
 
 } // _getMapLayers
-
-
-/**
-   Sets the given canvas' extents
-
-*/
-static void _setCanvasExtent(QgsRect const &newExtent)
-{
-    // first find the canonical map canvas
-    QgsMapCanvas *theMapCanvas = _findMapCanvas();
-
-    if (!theMapCanvas)
-    {
-      // Don't produce an error message here because _findMapCanvas
-      // does one already.
-      return;                     // XXX some sort of error value? Exception?
-    }
-
-    theMapCanvas->setExtent(newExtent);
-
-    // XXX sometimes the canvases are frozen here, sometimes not; this is a
-    // XXX worrisome inconsistency; regardless, unfreeze the canvases to ensure
-    // XXX a redraw
-    theMapCanvas->freeze(false);
-    
-    theMapCanvas->update();
-
-}                               // _setCanvasExtent()
-
-
-
-/**
-   Get the full extent for the given canvas.
-
-   This is used to get the full extent of the main map canvas so that we can
-   set the overview canvas to that instead of stupidly setting the overview
-   canvas to the *same* extent that's in the main map canvas.
-
-*/
-static QgsRect _getFullExtent()
-{
-    // XXX since this is a cut-n-paste from above, maybe generalize to a
-    // XXX separate function?
-    // first find the canonical map canvas
-    QgsMapCanvas *theMapCanvas = _findMapCanvas();
-
-    if (!theMapCanvas)
-    {
-      // _findMapCanvas() will produce an error if the map canvas wasn't found
-        return QgsRect();           // XXX some sort of error value? Exception?
-    }
-
-
-    return theMapCanvas->fullExtent();
-
-} // _getFullExtent( )
-
-
-
-
-
-
-/**
-   Get the  extent for the given canvas.
-
-   This is used to get the  extent of the main map canvas so that we can
-   set the overview canvas to that instead of stupidly setting the overview
-   canvas to the *same* extent that's in the main map canvas.
-
-*/
-static QgsRect _getExtent()
-{
-    // XXX since this is a cut-n-paste from above, maybe generalize to a
-    // XXX separate function?
-    // first find the canonical map canvas
-    QgsMapCanvas *theMapCanvas = _findMapCanvas();
-
-    if (!theMapCanvas)
-    {
-      // _findMapCanvas will produce an error if the map canvas wasn't found
-        return QgsRect();           // XXX some sort of error value? Exception?
-    }
-
-
-    return theMapCanvas->extent();
-
-} // _getExtent( )
 
 
 
@@ -1046,9 +779,7 @@ bool QgsProject::read()
     imp_->file.close();
 
 
-#ifdef QGISDEBUG
-    qWarning(("opened document " + imp_->file.name()).toLocal8Bit().data());
-#endif
+    QgsDebugMsg("Opened document " + imp_->file.name());
 
     // before we start loading everything, let's clear out the current set of
     // properties first so that we don't have the properties from the previous
@@ -1059,8 +790,7 @@ bool QgsProject::read()
     // now get any properties
     _getProperties(*doc, imp_->properties_);
 
-    qDebug("%s:%d %d properties read", __FILE__, __LINE__,
-           imp_->properties_.count());
+    QgsDebugMsg(QString(imp_->properties_.count()) + " properties read");
 
     dump_(imp_->properties_);
 
@@ -1075,54 +805,30 @@ bool QgsProject::read()
 
     if ( fileVersion.isNull() )
     {
-        QgsDebug( "project file has no version string" );
+        QgsDebugMsg( "project file has no version string" );
     }
     else
     {
-        QgsDebug( QString("project file has version " + fileVersion).ascii() );
+        QgsDebugMsg( "project file has version " + QString(fileVersion) );
     }
 
     // XXX some day insert version checking
 
-#ifdef QGISDEBUG
-    qDebug(("Project title: " + imp_->title).toLocal8Bit().data());
-#endif
+    QgsDebugMsg("Project title: " + imp_->title);
 
-    // now set the map units; note, alters QgsProject::instance().
-    _getMapUnits(*doc);
-    QgsMapCanvas* canvas = _findMapCanvas();
-    if (canvas)
-      canvas->setMapUnits(mapUnits());
+    // read the project: used by map canvas and legend
+    emit readProject(*doc);
 
     // get the map layers
-    pair< bool, list<QDomNode> > getMapLayersResults =  _getMapLayers(*doc);
-
-    QgsRect savedExtent;
-
-    if (!_getExtents(*doc, savedExtent))
-    {
-#ifdef QGISDEBUG
-        qDebug("Unable to get extents from project file.");
-#endif
-
-        // Since we could be executing this from the test harness which
-        // doesn't *have* layers -- nor a GUI for that matter -- we'll just
-        // leave in the whining and boldly stomp on.
-
-         throw QgsException("Cannot get extents from " + imp_->file.name());
-
-         // return false;
-    }
+    std::pair< bool, std::list<QDomNode> > getMapLayersResults =  _getMapLayers(*doc);
 
     if ( ! getMapLayersResults.first )
     {
-#ifdef QGISDEBUG
-        qDebug("Unable to get map layers from project file.");
-#endif
+        QgsDebugMsg("Unable to get map layers from project file.");
 
         if ( ! getMapLayersResults.second.empty() )
         {
-            qDebug( "%s:%d there are %d broken layers", __FILE__, __LINE__, getMapLayersResults.second.size() );
+          QgsDebugMsg("there are " + QString(getMapLayersResults.second.size()) + " broken layers");
         }
 
         // Since we could be executing this from the test harness which
@@ -1132,19 +838,6 @@ bool QgsProject::read()
         throw QgsProjectBadLayerException( getMapLayersResults.second );
 
 //         return false;
-    }
-
-    //restore legend
-      
-    QgsLegend* theLegend = _findLegend();
-    if(theLegend)
-    {
-      QDomNodeList ll = doc->elementsByTagName("legend");
-      if(ll.count()==1)
-      {
-        QDomNode legendnode = ll.item(0);
-        theLegend->readXML(legendnode);
-      }
     }
 
     // can't be dirty since we're allegedly in pristine state
@@ -1174,17 +867,13 @@ bool QgsProject::read( QDomNode & layerNode )
     }
     else
     {
-#ifdef QGISDEBUG
-        std::cerr << __FILE__ << " : " << __LINE__ << " bad layer type\n";
-#endif
+        QgsDebugMsg("bad layer type");
         return false;
     }
 
     if (!mapLayer)
     {
-#ifdef QGISDEBUG
-        std::cerr << __FILE__ << " : " << __LINE__ << " unable to create layer\n";
-#endif
+        QgsDebugMsg("unable to create layer");
         return false;
     }
 
@@ -1197,7 +886,7 @@ bool QgsProject::read( QDomNode & layerNode )
     {
         delete mapLayer;
 
-        qDebug( "%s:%d unable to load %s layer", __FILE__, __LINE__, (const char *)type.toLocal8Bit().data() );
+        QgsDebugMsg("unable to load " + type + " layer");
 
         return false;
     }
@@ -1264,56 +953,33 @@ bool QgsProject::write()
 
   QDomText titleText = doc->createTextNode(title());  // XXX why have title TWICE?
   titleNode.appendChild(titleText);
+  
+  // let map canvas and legend write their information
+  emit writeProject(*doc);
 
-  // units
+  // within top level node save list of layers
+  std::map<QString,QgsMapLayer*> & layers = QgsMapLayerRegistry::instance()->mapLayers();
 
-  QDomElement unitsNode = doc->createElement("units");
-  qgisNode.appendChild(unitsNode);
+  // Iterate over layers in zOrder
+  // Call writeXML() on each
+  QDomElement projectLayersNode = doc->createElement("projectlayers");
+  projectLayersNode.setAttribute("layercount", qulonglong( layers.size() ));
 
-  QString unitsString;
-
-  switch (instance()->imp_->mapUnits)
+  std::map<QString,QgsMapLayer*>::iterator li = layers.begin();
+  while (li != layers.end())
   {
-      case QGis::METERS:
-          unitsString = "meters";
-          break;
-      case QGis::FEET:
-          unitsString = "feet";
-          break;
-      case QGis::DEGREES:
-          unitsString = "degrees";
-          break;
-      case QGis::UNKNOWN:
-      default:
-          unitsString = "unknown";
-          break;
+    //QgsMapLayer *ml = QgsMapLayerRegistry::instance()->mapLayer(*li);
+    QgsMapLayer* ml = li->second;
+
+    if (ml)
+    {
+      ml->writeXML(projectLayersNode, *doc);
+    }
+    li++;
   }
 
-  QDomText unitsText = doc->createTextNode(unitsString);
-  unitsNode.appendChild(unitsText);
-
-  // extents and layers info are written by the map canvas
-  // find the canonical map canvas
-  QgsMapCanvas *theMapCanvas = _findMapCanvas();
-
-  if (!theMapCanvas)
-  {
-    // Actually this might be run from the test harness, and therefore
-    // there won't be a GUI, so no map canvas.   Just blithely continue on.
-  }
-  else
-  {
-    theMapCanvas->writeXML(qgisNode, *doc);
-  }
-
-  //save legend settings
-  QgsLegend* theLegend = _findLegend();
-  if(theLegend)
-  {
-    theLegend->writeXML(qgisNode, *doc);
-    //theLegend->saveToProject();
-  }
-
+  qgisNode.appendChild(projectLayersNode);
+  
   // now add the optional extra properties
 
   dump_(imp_->properties_);
@@ -1351,9 +1017,8 @@ bool QgsProject::write()
 
 void QgsProject::clearProperties()
 {
-#ifdef QGISDEBUG
-    std::cout << "Clearing project properties QgsProject::clearProperties()" << std::endl;
-#endif
+    QgsDebugMsg("Clearing project properties QgsProject::clearProperties()");
+    
     imp_->clear();
 
     dirty(true);
