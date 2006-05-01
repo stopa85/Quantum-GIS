@@ -15,5 +15,5 @@ endif
 #        depend on the existence of libqgis_gui. 
 #        gui *must* be specified immediately before the providers
 #        subdirectory. 
-SUBDIRS =  core ui widgets gui app providers plugins $(MAC) helpviewer
+SUBDIRS =  core ui gui app providers plugins $(MAC) helpviewer
 
