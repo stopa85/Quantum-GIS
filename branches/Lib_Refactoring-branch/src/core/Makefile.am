@@ -61,17 +61,13 @@ libqgis_coreHEADERS =				\
 		qgslabel.h					\
 		qgslabelattributes.h		\
 		qgsline.h					\
-		qgslinesymbol.h				\
 		qgslogger.h				\
 		qgsmaplayer.h				\
 		qgsmaplayerregistry.h		\
 		qgsmaprender.h			\
 		qgsmaptopixel.h				\
-		qgsmarkercatalogue.h		\
-		qgsmarkersymbol.h			\
 		qgsmessageoutput.h		\
 		qgspoint.h					\
-		qgspolygonsymbol.h			\
 		qgsproject.h				\
 		qgsprojectproperty.h		\
 		qgsprovidercountcalcevent.h	\
@@ -85,8 +81,6 @@ libqgis_coreHEADERS =				\
 		qgssearchstring.h			\
     qgssearchtreenode.h			\
 		qgsspatialrefsys.h		\
-		qgssymbol.h					\
-		qgssymbologyutils.h			\
 		qgsvectorfilewriter.h		\
 		qgsvectorlayer.h			\
 		qgsvectordataprovider.h		\
@@ -103,7 +97,15 @@ libqgis_coreHEADERS =				\
 		renderer/qgsrenderer.h \
 		renderer/qgsrenderitem.h \
 		renderer/qgssinglesymbolrenderer.h \
-		renderer/qgsuniquevaluerenderer.h
+		renderer/qgsuniquevaluerenderer.h \
+		\
+		symbology/qgssymbol.h \
+		symbology/qgssymbologyutils.h \
+		symbology/qgslinesymbol.h \
+		symbology/qgsmarkercatalogue.h \
+		symbology/qgsmarkersymbol.h \
+		symbology/qgspolygonsymbol.h
+	
 						
 
 ## files generated from MOC                             
@@ -139,17 +141,13 @@ libqgis_core_la_SOURCES =\
 		qgslabel.cpp				\
 		qgslabelattributes.cpp		\
 		qgsline.cpp			\
-		qgslinesymbol.cpp		\
 		qgslogger.cpp			\
 		qgsmaplayer.cpp				\
 		qgsmaplayerregistry.cpp		\
 		qgsmaprender.cpp			\
 		qgsmaptopixel.cpp					\
-		qgsmarkercatalogue.cpp				\
-		qgsmarkersymbol.cpp					\
 		qgsmessageoutput.cpp			\
 		qgspoint.cpp						\
-		qgspolygonsymbol.cpp		\
 		qgsproject.cpp			\
 		qgsprojectproperty.cpp			\
 		qgsprovidercountcalcevent.cpp		\
@@ -165,8 +163,6 @@ libqgis_core_la_SOURCES =\
 		qgssearchstringparser.yy	\
 		qgssearchtreenode.cpp		\
 		qgsspatialrefsys.cpp		\
-		qgssymbol.cpp						\
-		qgssymbologyutils.cpp		\
 		qgsvectorfilewriter.cpp		\
 		qgsvectorlayer.cpp		\
 		qgsvectordataprovider.cpp \
@@ -180,7 +176,14 @@ libqgis_core_la_SOURCES =\
 		renderer/qgsrangerenderitem.cpp \
 		renderer/qgsrenderer.cpp \
 		renderer/qgsrenderitem.cpp \
-		renderer/qgsuniquevaluerenderer.cpp
+		renderer/qgsuniquevaluerenderer.cpp \
+		\
+		symbology/qgssymbol.cpp \
+		symbology/qgssymbologyutils.cpp \
+		symbology/qgslinesymbol.cpp \
+		symbology/qgsmarkercatalogue.cpp \
+		symbology/qgsmarkersymbol.cpp \
+		symbology/qgspolygonsymbol.cpp
 		
 
 AM_YFLAGS       = -d
@@ -195,7 +198,7 @@ BUILT_SOURCES = $(libqgis_core_la_YACC) $(libqgis_core_la_MOC)  $(postgresMOC)
 libqgis_core_la_LIBADD = $(QT_LDADD) $(GEOS_LDADD) $(PYTHON_LIB) $(GDAL_LDADD) -lsqlite3
 libqgis_core_la_LDFLAGS = -version-info $(INTERFACE_VERSION)
 
-libqgis_core_la_CXXFLAGS = $(PREFIX) $(PLUGINPATH) $(PKGDATAPATH) $(CXXFLAGS) $(EXTRA_CXXFLAGS) $(QT_CXXFLAGS) $(PG_INC) $(DEBUG_QGIS) $(GEOS_CFLAGS) $(PYTHON_INCLUDE_DIR) $(HAVE_PYTHON) -Iraster -Irenderer
+libqgis_core_la_CXXFLAGS = $(PREFIX) $(PLUGINPATH) $(PKGDATAPATH) $(CXXFLAGS) $(EXTRA_CXXFLAGS) $(QT_CXXFLAGS) $(PG_INC) $(DEBUG_QGIS) $(GEOS_CFLAGS) $(PYTHON_INCLUDE_DIR) $(HAVE_PYTHON) -Iraster -Irenderer -Isymbology
 
 # Link headers to include directory
 all-local:

@@ -48,7 +48,7 @@ email                : sherman at mrcc.com
 #include "qgsproject.h"
 #include "qgsrubberband.h"
 #include "qgsvectorlayer.h"
-//#include <math.h>
+#include <math.h>
 
 /**  @DEPRECATED: to be deleted, stuff from here should be moved elsewhere */
 class QgsMapCanvas::CanvasProperties
