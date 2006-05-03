@@ -1011,6 +1011,10 @@ void QgisApp::setupConnections()
   connect(QgsMapLayerRegistry::instance(), SIGNAL(layerWasAdded(QgsMapLayer*)),
           mMapLegend, SLOT(addLayer(QgsMapLayer *)));
   
+  connect(mMapLegend, SIGNAL(currentLayerChanged(QgsMapLayer*)),
+          this, SLOT(activateDeactivateLayerRelatedActions(QgsMapLayer*)));
+
+  
   //signal when mouse moved over window (coords display in status bar)
   connect(mMapCanvas, SIGNAL(xyCoordinates(QgsPoint &)), this, SLOT(showMouseCoordinate(QgsPoint &)));
   //signal when mouse in capturePoint mode and mouse clicked on canvas
@@ -1062,7 +1066,7 @@ void QgisApp::createOverview()
 void QgisApp::createLegend()
 {
   //legend
-  mMapLegend = new QgsLegend(this,NULL, "theMapLegend");
+  mMapLegend = new QgsLegend(NULL, "theMapLegend");
   mMapLegend->setObjectName("theMapLegend");
   mMapLegend->setMapCanvas(mMapCanvas);
   QWhatsThis::add(mMapLegend, tr("Map legend that displays all the layers currently on the map canvas. Click on the check box to turn a layer on or off. Double click on a layer in the legend to customize its appearance and set other properties."));
@@ -4516,7 +4520,7 @@ QgsClipboard * QgisApp::clipboard()
   return mInternalClipboard;
 }
 
-void QgisApp::activateDeactivateLayerRelatedActions(const QgsMapLayer* layer)
+void QgisApp::activateDeactivateLayerRelatedActions(QgsMapLayer* layer)
 {
   if(!layer)
     {

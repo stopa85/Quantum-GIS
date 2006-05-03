@@ -18,7 +18,6 @@
  ***************************************************************************/
 /* $Id$ */
 
-#include "qgisapp.h"
 #include "qgsapplication.h"
 #include "qgslogger.h"
 #include "qgslegend.h"
@@ -59,8 +58,8 @@ const int AUTOSCROLL_MARGIN = 16;
  
    set mItemBeingMoved pointer to 0 to prevent SuSE 9.0 crash
 */
-QgsLegend::QgsLegend(QgisApp* app, QWidget * parent, const char *name)
-  : QTreeWidget(parent), mApp(app), mMousePressedFlag(false), mItemBeingMoved(0), mShowLegendLayerFiles(false), mMapCanvas(0), mMinimumIconSize(20, 20)
+QgsLegend::QgsLegend(QWidget * parent, const char *name)
+  : QTreeWidget(parent), mMousePressedFlag(false), mItemBeingMoved(0), mShowLegendLayerFiles(false), mMapCanvas(0), mMinimumIconSize(20, 20)
 {
   connect( this, SIGNAL(itemChanged(QTreeWidgetItem*, int)),
 	   this, SLOT(handleItemChange(QTreeWidgetItem*, int)));
@@ -99,10 +98,7 @@ QgsLegend::~QgsLegend()
 void QgsLegend::handleCurrentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* previous)
 {
   QgsMapLayer *layer = currentLayer();
-  if(mApp)
-    {
-      mApp->activateDeactivateLayerRelatedActions( layer );
-    }
+  
   if(mMapCanvas)
     {
       mMapCanvas->setCurrentLayer( layer );
