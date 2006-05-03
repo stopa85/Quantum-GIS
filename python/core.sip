@@ -9,6 +9,7 @@
 
 %Include qgis.sip
 %Include qgsapplication.sip
+// TODO: %Include qgscolortable.sip
 %Include qgscoordinatetransform.sip
 %Include qgsdataprovider.sip
 %Include qgsdatasourceuri.sip
@@ -25,6 +26,11 @@
 %Include qgspoint.sip
 %Include qgsprovidermetadata.sip
 %Include qgsproviderregistry.sip
+%Include qgsrasterbandstats.sip
+%Include qgsrasterdataprovider.sip
+%Include qgsrasterlayer.sip
+%Include qgsrasterpyramid.sip
+%Include qgsrasterviewport.sip
 %Include qgsrect.sip
 %Include qgsrenderer.sip
 %Include qgsscalecalculator.sip
