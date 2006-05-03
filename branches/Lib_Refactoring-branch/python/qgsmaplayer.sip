@@ -3,24 +3,27 @@
  *  \brief Base class for all map layer types.
  * This class is the base class for all map layer types (vector, raster).
  */
-class QgsMapLayer : QObject
+class QgsMapLayer // TODO: problem when derived from QObject
 {
 %TypeHeaderCode
 #include <qgsmaplayer.h>
 %End
 
 %ConvertToSubClassCode
-  QgsMapLayer* ml = dynamic_cast<QgsMapLayer*>(sipCpp); // TODO: is this cast needed?
-  if (ml && ml->type() == QgsMapLayer::VECTOR)
+
+  if (sipCpp->type() == QgsMapLayer::VECTOR)
   {
     sipClass = sipClass_QgsVectorLayer;
   }
+  else if (sipCpp->type() == QgsMapLayer::RASTER)
+  {
+    sipClass = sipClass_QgsRasterLayer;
+  }
   else
   {
-    // TODO: add when wrapped
-    //sipClass = sipClass_QgsRasterLayer;
     sipClass = 0;
   }
+
 %End
 
 public:
