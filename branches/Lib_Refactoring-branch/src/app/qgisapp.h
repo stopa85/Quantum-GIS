@@ -141,9 +141,6 @@ class QgisApp : public QMainWindow, public Ui::QgisAppBase
   void setupToolbarPopups(QString themeName);
   //! Returns a pointer to the internal clipboard
   QgsClipboard * clipboard();
-  /** Activates or deactivates actions depending on the current maplayer type.
-   Is called from the legend when the current legend item has changed*/
-  void activateDeactivateLayerRelatedActions(const QgsMapLayer* layer);
 
 //private slots:
 public slots:
@@ -283,6 +280,10 @@ public slots:
   void refreshMapCanvas();
   //! returns pointer to map legend
   QgsLegend *legend() { return mMapLegend; }
+
+  /** Activates or deactivates actions depending on the current maplayer type.
+  Is called from the legend when the current legend item has changed*/
+  void activateDeactivateLayerRelatedActions(QgsMapLayer* layer);
 
 public slots:
   void showProgress(int theProgress, int theTotalSteps);

@@ -16,6 +16,8 @@ email                : morb at ozemail dot com dot au
 
 #include <limits>
 
+#include <geos.h>
+
 #include "qgis.h"
 #include "qgsgeometry.h"
 #include "qgsgeometryvertexindex.h"

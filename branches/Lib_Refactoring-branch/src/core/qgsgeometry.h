@@ -18,8 +18,15 @@ email                : morb at ozemail dot com dot au
 #define QGSGEOMETRY_H
 
 #include <QString>
+#include <vector>
 
-#include <geos.h> // TODO: try to change to forward declarations
+namespace geos
+{
+  class CoordinateSequence;
+  class Geometry;
+  class GeometryFactory;
+  class Polygon;
+}
 
 class QgsGeometryVertexIndex;
 class QgsPoint;

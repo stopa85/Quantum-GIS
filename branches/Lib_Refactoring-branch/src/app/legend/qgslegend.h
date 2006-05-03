@@ -25,7 +25,6 @@
 #include <set>
 #include <QTreeWidget>
 
-class QgisApp;
 class QgsLegendLayer;
 class QgsLegendLayerFile;
 class QgsLegendItem;
@@ -92,7 +91,7 @@ class QgsLegend : public QTreeWidget
    * @param theParent An optional parent widget
    * @param theName An optional name for the widget
    */
-  QgsLegend(QgisApp* app, QWidget * parent = 0, const char *name = 0);
+  QgsLegend(QWidget * parent = 0, const char *name = 0);
 
   //! Destructor
    ~QgsLegend();
@@ -286,9 +285,6 @@ this item may be moved back to the original position with resetToInitialPosition
   void zoomToLayerExtent();
   
 private:
-
-  /**Pointer to QGisApp, needed for signal/slot reasons*/
-  QgisApp* mApp;
 
    /*! Prevent the copying of QgsLegends
    * @todo See if this is really required - we may want multiple map, canvas and 
