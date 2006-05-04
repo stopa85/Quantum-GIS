@@ -319,6 +319,14 @@ public:
             const std::map<QString,QString>& added,
             std::map<int,std::map<QString,QString> >& changed);
 
+  /** Draws the layer using coordinate transformation
+   *  @return FALSE if an error occurred during drawing
+   */
+  bool draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * cXf, QgsCoordinateTransform* ct);
+
+  /** Draws the layer labels using coordinate transformation */
+  void drawLabels(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * cXf, QgsCoordinateTransform* ct);
+
   /** \brief Draws the layer using coordinate transformation
    *  \param widthScale line width scale
    *  \param symbolScale symbol scale
@@ -383,9 +391,6 @@ private:                       // Private methods
   void drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * cXf, QgsCoordinateTransform* ct,
                    QImage* marker, double markerScaleFactor);
 
-  /** Draws the layer labels using coordinate transformation */
-  void drawLabels(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * cXf, QgsCoordinateTransform* ct);
-
   /** Convenience function to transform the given point */
   void transformPoint(double& x, double& y,
                       QgsMapToPixel* mtp, QgsCoordinateTransform* ct);
@@ -404,11 +409,6 @@ private:                       // Private methods
    */
   unsigned char* drawPolygon(unsigned char* WKBpolygon, QPainter* p, 
                              QgsMapToPixel* mtp, QgsCoordinateTransform* ct);
-
-  /** Draws the layer using coordinate transformation
-   *  @return FALSE if an error occurred during drawing
-   */
-  bool draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * cXf, QgsCoordinateTransform* ct);
 
   /** Goes through all features and finds a free id (e.g. to give it temporarily to a not-commited feature) */
   int findFreeId();
