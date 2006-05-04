@@ -204,16 +204,17 @@ void QgsMapRender::render(QPainter* painter)
   QgsCoordinateTransform* ct;
 
 #ifdef QGISDEBUG
-  QgsDebugMsg("QgsMapRender::render: Starting to render layer stack.");
+  QgsDebugMsg("Starting to render layer stack.");
   QTime renderTime;
   renderTime.start();
 #endif
+
   // render all layers in the stack, starting at the base
   std::deque<QString>::iterator li = mLayerSet.begin();
   
   while (li != mLayerSet.end())
   {
-    QgsDebugMsg("QgsMapRender::render: at layer item '" + (*li));
+    QgsDebugMsg("Rendering at layer item " + (*li));
 
     // This call is supposed to cause the progress bar to
     // advance. However, it seems that updating the progress bar is
@@ -233,14 +234,11 @@ void QgsMapRender::render(QPainter* painter)
       continue;
     }
         
-#ifdef QGISDEBUG
-		QgsDebugMsg("QgsMapRender::render: Rendering layer " + ml->name());
-		QgsLogger::debug("  Layer minscale ", ml->minScale(), 1, __FILE__, __FUNCTION__, __LINE__);
-		QgsLogger::debug("  Layer maxscale ", ml->maxScale(), 1, __FILE__, __FUNCTION__, __LINE__);
-		QgsLogger::debug("  Scale dep. visibility enabled? ", ml->scaleBasedVisibility(), 1,\
-				 __FILE__, __FUNCTION__, __LINE__);
-		QgsLogger::debug("  Input extent: " + ml->extent().stringRep(), 1, __FILE__, __FUNCTION__, __LINE__);
-#endif
+		QgsDebugMsg("Rendering layer " + ml->name());
+    QgsDebugMsg("  Layer minscale " + QString("%1").arg(ml->minScale()) );
+    QgsDebugMsg("  Layer maxscale " + QString("%1").arg(ml->maxScale()) );
+    QgsDebugMsg("  Scale dep. visibility enabled? " + QString("%1").arg(ml->scaleBasedVisibility()) );
+    QgsDebugMsg("  Input extent: " + ml->extent().stringRep());
 
     if ((ml->scaleBasedVisibility() && ml->minScale() < mScale && ml->maxScale() > mScale)
         || (!ml->scaleBasedVisibility()))
@@ -278,7 +276,7 @@ void QgsMapRender::render(QPainter* painter)
     }
     else
     {
-      QgsDebugMsg("QgsMapRender::render: Layer not rendered because it is not within the defined "
+      QgsDebugMsg("Layer not rendered because it is not within the defined "
                   "visibility scale range");
     }
 
@@ -286,7 +284,7 @@ void QgsMapRender::render(QPainter* painter)
     
   } // while (li != end)
       
-    QgsDebugMsg("QgsMapRender::render: Done rendering map layers");
+    QgsDebugMsg("Done rendering map layers");
 
   if (!mOverview)
   {
@@ -331,8 +329,7 @@ void QgsMapRender::render(QPainter* painter)
   emit setProgress(1,1);      
       
 #ifdef QGISDEBUG
-  QgsLogger::debug("QgsMapRender::render: Rendering done in (seconds)", renderTime.elapsed() / 1000.0, 1,\
-		   __FILE__, __FUNCTION__, __LINE__);
+  QgsDebugMsg("Rendering done in (seconds): " + QString("%1").arg(renderTime.elapsed() / 1000.0) );
 #endif
 
   mDrawing = false;
@@ -637,6 +634,8 @@ bool QgsMapRender::readXML(QDomNode & theNode)
   QDomNode srsNode = theNode.namedItem("destinationsrs");
   srs.readXML(srsNode);
   setDestinationSrs(srs);
+  
+  return true;
 }
 
 bool QgsMapRender::writeXML(QDomNode & theNode, QDomDocument & theDoc)
@@ -702,4 +701,6 @@ bool QgsMapRender::writeXML(QDomNode & theNode, QDomDocument & theDoc)
   QDomElement srsNode = theDoc.createElement("destinationsrs");
   theNode.appendChild(srsNode);
   destinationSrs().writeXML(srsNode, theDoc);
+  
+  return true;
 }
