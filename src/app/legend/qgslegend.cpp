@@ -794,12 +794,9 @@ void QgsLegend::collapseAll()
       }
 }
 
-bool QgsLegend::writeXML( QDomNode & layer_node, QDomDocument & document )
+bool QgsLegend::writeXML( QDomNode & legendnode, QDomDocument & document )
 {
-    QDomElement legendnode = document.createElement("legend");
-    layer_node.appendChild(legendnode);
-
-    QDomElement tmplegendnode = legendnode; /*copy of the legendnode*/
+    QDomNode tmplegendnode = legendnode; /*copy of the legendnode*/
     QDomElement legendgroupnode;
     QDomElement legendlayernode;
     QDomElement layerfilegroupnode;

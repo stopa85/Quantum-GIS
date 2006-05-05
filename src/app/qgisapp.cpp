@@ -2518,32 +2518,6 @@ void QgisApp::fileOpen()
       qDebug( "%s:%d BAD LAYERS FOUND", __FILE__, __LINE__ );
     }
   }
-  //loop through all layers in the layers registry and connect up 
-  // keybindings for the escape key
-  std::map<QString, QgsMapLayer *> myMapLayers 
-    = QgsMapLayerRegistry::instance()->mapLayers();
-  std::map<QString, QgsMapLayer *>::iterator myMapIterator;
-  for ( myMapIterator = myMapLayers.begin(); myMapIterator != myMapLayers.end(); ++myMapIterator )
-  {
-
-    QgsMapLayer * myMapLayer = myMapIterator->second;
-    QObject::connect(this,
-        SIGNAL(keyPressed(QKeyEvent *)),
-        myMapLayer,
-        SLOT(keyPressed(QKeyEvent* )));
-
-    //add hooks for letting layer know canvas needs to recalc the layer extents
-    QObject::connect(myMapLayer,
-        SIGNAL(recalculateExtents()),
-        mMapCanvas,
-        SLOT(recalculateExtents()));
-
-  }
-
-  //set the projections enabled icon in the status bar
-  int myProjectionEnabledFlag =
-    QgsProject::instance()->readNumEntry("SpatialRefSys","/ProjectionsEnabled",0);
-  mMapCanvas->mapRender()->setProjectionsEnabled(myProjectionEnabledFlag);
 
 } // QgisApp::fileOpen
 

@@ -663,6 +663,8 @@ bool QgsMapRender::writeXML(QDomNode & theNode, QDomDocument & theDoc)
       unitsString = "unknown";
       break;
   }
+  QDomText unitsText = theDoc.createTextNode(unitsString);
+  unitsNode.appendChild(unitsText);
 
 
   // Write current view extents

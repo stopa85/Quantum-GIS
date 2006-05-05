@@ -816,9 +816,6 @@ bool QgsProject::read()
 
     QgsDebugMsg("Project title: " + imp_->title);
 
-    // read the project: used by map canvas and legend
-    emit readProject(*doc);
-
     // get the map layers
     std::pair< bool, std::list<QDomNode> > getMapLayersResults =  _getMapLayers(*doc);
 
@@ -839,6 +836,9 @@ bool QgsProject::read()
 
 //         return false;
     }
+
+    // read the project: used by map canvas and legend
+    emit readProject(*doc);
 
     // can't be dirty since we're allegedly in pristine state
     dirty(false);
