@@ -98,9 +98,9 @@ void [pluginname]::initGui()
   // Connect the action to the run
   connect(mQActionPointer, SIGNAL(activated()), this, SLOT(run()));
   // Add the toolbar
-  mToolBarPointer = new QToolBar((QMainWindow *) mQGisApp, "[menuname]");
+  mToolBarPointer = new QToolBar(mQGisIface->getMainWindow(), "[menuname]");
   mToolBarPointer->setLabel("[menuitemname]");
-  // Add the to the toolbar
+  // Add the icon to the toolbar
   mQGisIface->addToolBarIcon(mQActionPointer);
 
 }
@@ -116,7 +116,7 @@ void [pluginname]::help()
 // not be enough
 void [pluginname]::run()
 {
-  [pluginname]Gui *myPluginGui=new [pluginname]Gui(mQGisApp, QgisGui::ModalDialogFlags);
+  [pluginname]Gui *myPluginGui=new [pluginname]Gui(mQGisIface->getMainWindow(), QgisGui::ModalDialogFlags);
   //listen for when the layer has been made so we can draw it
   connect(myPluginGui, SIGNAL(drawRasterLayer(QString)), this, SLOT(drawRasterLayer(QString)));
   connect(myPluginGui, SIGNAL(drawVectorLayer(QString,QString,QString)), this, SLOT(drawVectorLayer(QString,QString,QString)));
