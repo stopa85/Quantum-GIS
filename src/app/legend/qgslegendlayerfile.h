@@ -23,6 +23,8 @@
 #include <qgslegenditem.h>
 #include <QPixmap>
 
+#include "qgsmapcanvas.h"
+
 class QgsMapLayer;
 class QgsAttributeTableDisplay;
 
@@ -39,7 +41,9 @@ public:
     bool isLeafNode() {return true;}
     DRAG_ACTION accept(LEGEND_ITEM_TYPE type);
     QgsLegendItem::DRAG_ACTION accept(const QgsLegendItem* li) const;
-    QgsMapLayer* layer() const {return mLayer;}
+    QgsMapLayer* layer() { return mLyr.layer(); }
+    const QgsMapLayer* layer() const { return mLyr.layer(); }
+    QgsMapCanvasLayer& canvasLayer() { return mLyr; }
     
     /** updates item to the current state of the layer */
     void updateLegendItem();
@@ -79,14 +83,10 @@ public:
     void toggleEditing();
     
  protected:
-    QgsMapLayer* mLayer;
-    
-    /** Flag whether layer is visible */
-    bool mVisible;
-    
-    /** Flag whether layer is shown in overview */
-    bool mInOverview;
 
+    /** layer identified by its layer id */
+    QgsMapCanvasLayer mLyr;
+   
     /** Pointer to the table display object if there is one, otherwise NULL */
     QgsAttributeTableDisplay* mTableDisplay;
 

@@ -280,3 +280,8 @@ void QgsMapOverviewCanvas::destinationSrsChanged()
   const QgsSpatialRefSys& srs = mMapCanvas->mapRender()->destinationSrs();
   mMapRender->setDestinationSrs(srs);
 }
+
+std::deque<QString>& QgsMapOverviewCanvas::layerSet()
+{
+  return mMapRender->layerSet();
+}

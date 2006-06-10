@@ -209,30 +209,61 @@ QgsMapToPixel * QgsMapCanvas::getCoordinateTransform()
   return mMapRender->coordXForm();
 }
 
-void QgsMapCanvas::setLayerSet(std::deque<QString>& layerSet)
+void QgsMapCanvas::setLayerSet(QList<QgsMapCanvasLayer>& layers)
 {
   int i;
-  for (i = 0; i < layerCount(); i++)
+  
+  // create layer set
+  std::deque<QString> layerSet, layerSetOverview;
+  
+  for (i = 0; i < layers.size(); i++)
   {
-    disconnect(getZpos(i), SIGNAL(repaintRequested()), this, SLOT(refresh()));
+    QgsMapCanvasLayer& lyr = layers[i];
+    if (lyr.visible())
+    {
+      layerSet.push_back(lyr.layer()->getLayerID());
+    }
+    if (lyr.inOverview())
+    {
+      layerSetOverview.push_back(lyr.layer()->getLayerID());
+    }
   }
   
-  mMapRender->setLayerSet(layerSet);
+  std::deque<QString>& layerSetOld = mMapRender->layerSet();
   
-  for (i = 0; i < layerCount(); i++)
+  // update only if needed
+  if (layerSetOld != layerSet)
   {
-    connect(getZpos(i), SIGNAL(repaintRequested()), this, SLOT(refresh()));
+    for (i = 0; i < layerCount(); i++)
+    {
+      disconnect(getZpos(i), SIGNAL(repaintRequested()), this, SLOT(refresh()));
+    }
+    
+    mMapRender->setLayerSet(layerSet);
+  
+    for (i = 0; i < layerCount(); i++)
+    {
+      connect(getZpos(i), SIGNAL(repaintRequested()), this, SLOT(refresh()));
+    }
   }
+  
 
   if (mMapOverview)
   {
-    mMapOverview->setLayerSet(layerSet);
-    updateOverview();
+    std::deque<QString>& layerSetOvOld = mMapOverview->layerSet();
+    if (layerSetOvOld != layerSetOverview)
+    {
+      mMapOverview->setLayerSet(layerSetOverview);
+      updateOverview();
+    }
   }
   
-  emit layersChanged();
+  if (layerSetOld != layerSet)
+  {
+    emit layersChanged();
   
-  refresh();
+    refresh();
+  }
 
 } // addLayer
 
@@ -576,7 +607,7 @@ void QgsMapCanvas::keyPressEvent(QKeyEvent * e)
         // Pass it on
         e->ignore();
         
-        QgsDebugMsg("Ignoring key: " + QString(e->key()));
+        QgsDebugMsg("Ignoring key: " + QString::number(e->key()));
 
     }
   }
@@ -602,7 +633,7 @@ void QgsMapCanvas::keyReleaseEvent(QKeyEvent * e)
       // Pass it on
       e->ignore();
       
-      QgsDebugMsg("Ignoring key release: " + QString(e->key()));
+      QgsDebugMsg("Ignoring key release: " + QString::number(e->key()));
   }
 } //keyReleaseEvent()
 
@@ -694,7 +725,7 @@ void QgsMapCanvas::wheelEvent(QWheelEvent *e)
   // wheel forward (away) from the user zooms in by a factor of 2.
   // TODO The scale factor needs to be customizable by the user.
   
-  QgsDebugMsg("Wheel event delta " + QString(e->delta()));
+  QgsDebugMsg("Wheel event delta " + QString::number(e->delta()));
 
   // change extent
   zoomWithCenter(e->x(), e->y(), e->delta() > 0);
@@ -846,7 +877,7 @@ double QgsMapCanvas::mupp() const
 
 void QgsMapCanvas::setMapUnits(QGis::units u)
 {
-  QgsDebugMsg("Setting map units to " + QString(static_cast<int>(u)) );
+  QgsDebugMsg("Setting map units to " + QString::number(static_cast<int>(u)) );
 
   mMapRender->setMapUnits(u);
 }
@@ -940,7 +971,7 @@ void QgsMapCanvas::moveCanvasContents(bool reset)
   if (!reset)
     pnt += mCanvasProperties->mouseLastXY - mCanvasProperties->rubberStartPoint;
   
-  QgsDebugMsg("moveCanvasContents: pnt " + QString(pnt.x()) + "," + QString(pnt.y()) );
+  QgsDebugMsg("moveCanvasContents: pnt " + QString::number(pnt.x()) + "," + QString::number(pnt.y()) );
   
   mMap->setPanningOffset(pnt);
   

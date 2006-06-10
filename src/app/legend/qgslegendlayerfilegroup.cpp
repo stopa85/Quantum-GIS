@@ -58,7 +58,7 @@ QgsLegendItem::DRAG_ACTION QgsLegendLayerFileGroup::accept(const QgsLegendItem* 
 	    if(llf)
 	      {
 		QgsMapLayer* childlayer = llf->layer();
-		QgsMapLayer* newlayer = (dynamic_cast<const QgsLegendLayerFile*>(li))->layer();
+		const QgsMapLayer* newlayer = (dynamic_cast<const QgsLegendLayerFile*>(li))->layer();
 		if(newlayer->isSymbologyCompatible(*childlayer))
 		  {
 		    return INSERT;

@@ -102,23 +102,6 @@ void QgsGeorefPluginGui::on_pbnEnterWorldCoords_clicked() {
     }
   }
   
-  // XXX This is horrible, but it works and I'm tired / ll
-  {
-    QSettings settings("QuantumGIS", "qgis");
-    QgsProject* prj = QgsProject::instance();
-    mProjBehaviour = settings.readEntry("/Projections/defaultBehaviour");
-    mProjectSRS = prj->readEntry("SpatialRefSys", "/ProjectSRSProj4String");
-    mProjectSRSID = prj->readNumEntry("SpatialRefSys", "/ProjectSRSID");
-    
-    settings.writeEntry("/Projections/defaultBehaviour", "useProject");
-    prj->writeEntry("SpatialRefSys", "/ProjectSRSProj4String", GEOPROJ4);
-    prj->writeEntry("SpatialRefSys", "/ProjectSRSID", int(GEOSRS_ID));
-    
-    settings.writeEntry("/Projections/defaultBehaviour", mProjBehaviour);
-    prj->writeEntry("SpatialRefSys", "/ProjectSRSProj4String", mProjectSRS);
-    prj->writeEntry("SpatialRefSys", "/ProjectSRSID", mProjectSRSID);
-  }
-  
   QgsPointDialog* dlg = new QgsPointDialog(raster, mIface, this);
   dlg->show();
 }

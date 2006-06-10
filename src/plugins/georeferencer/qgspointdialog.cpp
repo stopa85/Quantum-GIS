@@ -130,8 +130,9 @@ QgsPointDialog::QgsPointDialog(QString layerPath, QgisInterface* theQgisInterfac
   registry->addMapLayer(layer, FALSE);  
   
   // add layer to map canvas
-  std::deque<QString> layers;
-  layers.push_back(layer->getLayerID());
+  QList<QgsMapCanvasLayer> layers;
+  QgsMapCanvasLayer lyr(layer);
+  layers.append(lyr);
   mCanvas->setLayerSet(layers);
   
   // load previously added points

@@ -56,6 +56,36 @@ class QgsMapCanvasMap;
 class QgsMapOverviewCanvas;
 class QgsMapTool;
 
+/** \class QgsMapCanvasLayer
+  \brief class that stores additional layer's flags together with pointer to the layer
+*/
+class QgsMapCanvasLayer
+{
+public:
+  QgsMapCanvasLayer(QgsMapLayer* layer, bool visible = TRUE, bool inOverview = FALSE)
+  : mLayer(layer), mVisible(visible), mInOverview(inOverview) {}
+  
+  void setVisible(bool visible) { mVisible = visible; }
+  void setInOverview(bool inOverview) { mInOverview = inOverview; }
+  
+  bool visible() const { return mVisible; }
+  bool inOverview() const { return mInOverview; }
+  
+  QgsMapLayer* layer() { return mLayer; }
+  const QgsMapLayer* layer() const { return mLayer; }
+  
+private:
+  
+  QgsMapLayer* mLayer;
+    
+  /** Flag whether layer is visible */
+  bool mVisible;
+    
+  /** Flag whether layer is shown in overview */
+  bool mInOverview;
+};
+
+
 /*! \class QgsMapCanvas
  * \brief Map canvas class for displaying all GIS data types.
  */
@@ -71,7 +101,7 @@ class QgsMapCanvas : public Q3CanvasView
     //! Destructor
     ~QgsMapCanvas();
 
-    void setLayerSet(std::deque<QString>& layerSet);
+    void setLayerSet(QList<QgsMapCanvasLayer>& layers);
     
     void setCurrentLayer(QgsMapLayer* layer);
     

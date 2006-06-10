@@ -38,7 +38,7 @@
 
 
 QgsLegendLayerFile::QgsLegendLayerFile(QTreeWidgetItem * theLegendItem, QString theString, QgsMapLayer* theLayer)
-  : QgsLegendItem(theLegendItem, theString), mLayer(theLayer), mTableDisplay(NULL)
+  : QgsLegendItem(theLegendItem, theString), mLyr(theLayer), mTableDisplay(NULL)
 {
   // Set the initial visibility flag for layers
   // This user option allows the user to turn off inital drawing of
@@ -46,10 +46,11 @@ QgsLegendLayerFile::QgsLegendLayerFile(QTreeWidgetItem * theLegendItem, QString 
   // many layers and the user wants to adjusty symbology, etc prior to
   // actually viewing the layer.
   QSettings settings;
-  mVisible = settings.readBoolEntry("/qgis/new_layers_visible", 1);
+  bool visible = settings.readBoolEntry("/qgis/new_layers_visible", 1);
+  mLyr.setVisible(visible);
 
   // not in overview by default
-  mInOverview = FALSE;
+  mLyr.setInOverview(FALSE);
   
   mType = LEGEND_LAYER_FILE;
   
@@ -58,10 +59,10 @@ QgsLegendLayerFile::QgsLegendLayerFile(QTreeWidgetItem * theLegendItem, QString 
   setText(0, theString);
 
   // get notifications of changed selection - used to update attribute table
-  connect(mLayer, SIGNAL(selectionChanged()), this, SLOT(selectionChanged()));
+  connect(mLyr.layer(), SIGNAL(selectionChanged()), this, SLOT(selectionChanged()));
 
   // get notifications of modified layer - used to close table as it's out of sync
-  connect(mLayer, SIGNAL(wasModified(bool)), this, SLOT(closeTable(bool)));
+  connect(mLyr.layer(), SIGNAL(wasModified(bool)), this, SLOT(closeTable(bool)));
 }
 
 QgsLegendLayerFile::~QgsLegendLayerFile()
@@ -95,13 +96,13 @@ void QgsLegendLayerFile::updateLegendItem()
 {
   QPixmap pix = legend()->pixmaps().mOriginalPixmap;
   
-  if(mInOverview)
+  if(mLyr.inOverview())
   {
     //add overview glasses to the pixmap
     QPainter p(&pix);
     p.drawPixmap(0,0, legend()->pixmaps().mInOverviewPixmap);
   }
-  if(mLayer->isEditable())
+  if(mLyr.layer()->isEditable())
   {
     //add editing icon to the pixmap
     QPainter p(&pix);
@@ -110,7 +111,7 @@ void QgsLegendLayerFile::updateLegendItem()
 
   /*
   // TODO:
-  if(mLayer->hasProjectionError())
+  if(mLyr.layer()->hasProjectionError())
   {
     //add overview glasses to the pixmap
     QPainter p(&pix);
@@ -148,28 +149,28 @@ QString QgsLegendLayerFile::nameFromLayer(QgsMapLayer* layer)
 
 void QgsLegendLayerFile::setVisible(bool visible)
 {
-  mVisible = visible;
+  mLyr.setVisible(visible);
 }
 
 bool QgsLegendLayerFile::isVisible()
 {
-  return mVisible;
+  return mLyr.visible();
 }
 
 void QgsLegendLayerFile::setInOverview(bool inOverview)
 {
-  mInOverview = inOverview;
+  mLyr.setInOverview(inOverview);
 }
 
 bool QgsLegendLayerFile::isInOverview()
 {
-  return mInOverview;
+  return mLyr.inOverview();
 }
 
 
 void QgsLegendLayerFile::table()
 {
-  QgsVectorLayer* vlayer = dynamic_cast<QgsVectorLayer*>(mLayer);
+  QgsVectorLayer* vlayer = dynamic_cast<QgsVectorLayer*>(mLyr.layer());
   if (!vlayer)
     return;
   
@@ -203,9 +204,9 @@ void QgsLegendLayerFile::table()
     selectionChanged();
     
     // etablish the necessary connections between the table and the vector layer
-    connect(mTableDisplay->table(), SIGNAL(selected(int)), mLayer, SLOT(select(int)));
-    connect(mTableDisplay->table(), SIGNAL(selectionRemoved()), mLayer, SLOT(removeSelection()));
-    connect(mTableDisplay->table(), SIGNAL(repaintRequested()), mLayer, SLOT(triggerRepaint()));
+    connect(mTableDisplay->table(), SIGNAL(selected(int)), mLyr.layer(), SLOT(select(int)));
+    connect(mTableDisplay->table(), SIGNAL(selectionRemoved()), mLyr.layer(), SLOT(removeSelection()));
+    connect(mTableDisplay->table(), SIGNAL(repaintRequested()), mLyr.layer(), SLOT(triggerRepaint()));
     
     QApplication::restoreOverrideCursor();
   }
@@ -223,7 +224,7 @@ void QgsLegendLayerFile::selectionChanged()
   if (!mTableDisplay)
     return;
 
-  QgsVectorLayer* vlayer = dynamic_cast<QgsVectorLayer*>(mLayer);
+  QgsVectorLayer* vlayer = dynamic_cast<QgsVectorLayer*>(mLyr.layer());
   const std::set<int>& ids = vlayer->selectedFeaturesIds();
   mTableDisplay->table()->selectRowsWithId(ids);
 
@@ -241,10 +242,10 @@ void QgsLegendLayerFile::closeTable(bool onlyGeometryWasChanged)
 
 void QgsLegendLayerFile::saveAsShapefile()
 {
-  if (mLayer->type() != QgsMapLayer::VECTOR)
+  if (mLyr.layer()->type() != QgsMapLayer::VECTOR)
     return;
 
-  QgsVectorLayer* vlayer = dynamic_cast<QgsVectorLayer*>(mLayer);
+  QgsVectorLayer* vlayer = dynamic_cast<QgsVectorLayer*>(mLyr.layer());
   
   // get a name for the shapefile
   // Get a file to process, starting at the current directory
@@ -300,7 +301,7 @@ void QgsLegendLayerFile::saveAsShapefile()
 
 void QgsLegendLayerFile::toggleEditing()
 {
-  QgsVectorLayer* vlayer = dynamic_cast<QgsVectorLayer*>(mLayer);
+  QgsVectorLayer* vlayer = dynamic_cast<QgsVectorLayer*>(mLyr.layer());
   if (!vlayer)
     return;
   

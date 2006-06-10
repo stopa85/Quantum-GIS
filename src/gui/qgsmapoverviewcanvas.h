@@ -52,6 +52,8 @@ class QgsMapOverviewCanvas : public QWidget
     //! updates layer set for overview
     void setLayerSet(std::deque<QString>& layerSet);
     
+    std::deque<QString>& layerSet();
+    
     void enableAntiAliasing(bool flag) { mAntiAliasing = flag; }
     
     void updateFullExtent();
