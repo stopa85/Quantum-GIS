@@ -655,7 +655,9 @@ void QgsLegend::legendLayerAddToOverview()
        }
    }
 
-   // TODO: new overview set
+   // update layer set
+   updateMapCanvasLayerSet();
+   
    mMapCanvas->updateOverview();
 }
 
@@ -677,7 +679,9 @@ void QgsLegend::legendLayerRemoveFromOverview()
      }
    }
 
-   // TODO: new overview set
+   // update layer set
+   updateMapCanvasLayerSet();
+   
    mMapCanvas->updateOverview();
 }
 
@@ -1364,7 +1368,25 @@ void QgsLegend::removeItem(QTreeWidgetItem* item)
 
 void QgsLegend::updateMapCanvasLayerSet()
 { 
-  std::deque<QString> layers = layerIDs();
+  //std::deque<QString> layers = layerIDs();
+  
+  QList<QgsMapCanvasLayer> layers;
+  
+  // create list of the layers
+  QTreeWidgetItem* theItem = firstItem();
+  while (theItem)
+  {
+    QgsLegendItem *li = dynamic_cast<QgsLegendItem*>(theItem);
+    QgsLegendLayerFile* llf = dynamic_cast<QgsLegendLayerFile*>(li);
+    if(llf)
+    {
+      QgsMapCanvasLayer& lyr = llf->canvasLayer();
+      layers.append(lyr);
+    }
+    theItem = nextItem(theItem);
+  }
+
+  // set layers in canvas
   mMapCanvas->setLayerSet(layers);
 }
 
@@ -1577,6 +1599,9 @@ void QgsLegend::handleItemChange(QTreeWidgetItem* item, int row)
 	  mStateOfCheckBoxes[item] = item->checkState(0);
 	}
     }
+    
+    // update layer set
+    updateMapCanvasLayerSet();
 }
 
 void QgsLegend::openEditor()
