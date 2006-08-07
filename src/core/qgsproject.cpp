@@ -63,8 +63,9 @@ QgsProject * QgsProject::theProject_;
  static 
  QStringList makeKeyTokens_(QString const &scope, QString const &key)
  {
-     const char * scope_str = scope.toLocal8Bit().data(); // debugger probes
-     const char * key_str   = key.toLocal8Bit().data();
+     // XXX - debugger probes
+     //const char * scope_str = scope.toLocal8Bit().data();
+     //const char * key_str   = key.toLocal8Bit().data();
 
      QStringList keyTokens = QStringList(scope);
      keyTokens += QStringList::split('/', key);
@@ -118,7 +119,7 @@ QgsProject * QgsProject::theProject_;
              {
                  return currentProperty;
              }
-             else if ( nextProperty = currentProperty->find( keySequence.first() ) )
+             else if (( nextProperty = currentProperty->find( keySequence.first() ) ))
              {
                  if ( nextProperty->isKey() )
                  {
@@ -196,7 +197,7 @@ QgsProject * QgsProject::theProject_;
 
                  return currentProperty;
              }
-             else if ( newProperty = currentProperty->find( keySequence.first() ) )
+             else if (( newProperty = currentProperty->find( keySequence.first() ) ))
              {
                  currentProperty = dynamic_cast<QgsPropertyKey*>(newProperty);
 
@@ -266,7 +267,7 @@ QgsProject * QgsProject::theProject_;
              {
                  previousQgsPropertyKey->removeKey( currentProperty->name() );
              }
-             else if ( nextProperty = currentProperty->find( keySequence.first() ) )
+             else if ( 0 == ( nextProperty = currentProperty->find( keySequence.first() ) ) )
              {
                  previousQgsPropertyKey = currentProperty;
                  currentProperty = dynamic_cast<QgsPropertyKey*>(nextProperty);
@@ -481,7 +482,7 @@ _getProperties(QDomDocument const &doc, QgsPropertyKey & project_properties)
 
     if ( ! project_properties.readXML( propertyNode ) )
     {
-        qDebug("%s:%d project_properties.readXML() failed");
+        qDebug("Project_properties.readXML() failed");
     }
 
 // DEPRECATED as functionality has been shoved down to QgsProperyKey::readXML()
@@ -668,7 +669,7 @@ static std::pair< bool, std::list<QDomNode> > _getMapLayers(QDomDocument const &
 
     bool returnStatus = true;
 
-    for (size_t i = 0; i < nl.count(); i++)
+    for (int i = 0; i < nl.count(); i++)
     {
         QDomNode node = nl.item(i);
         QDomElement element = node.toElement();
