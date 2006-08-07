@@ -551,7 +551,11 @@ bool QgsGeometry::moveVertexAt(double x, double y,
 	    return false;
 	  }
       }
+    default:
+        // Unsupported geometry types
+        return false;
     }
+
   }
 		    
   return false;
@@ -673,21 +677,20 @@ bool QgsGeometry::vertexAt(double &x, double &y,
 	      return true;
 	    }
 	}
-
-      else if(mGeometry)
+    else if(mGeometry)
 	{
 	  int wkbType;
 
 	  memcpy(&wkbType, (mGeometry+1), sizeof(int));
 	  switch (wkbType)
 	    {
-            case QGis::WKBPoint:
+          case QGis::WKBPoint:
 	      {
                 // TODO
                 return FALSE;
                 break;
 	      }
-            case QGis::WKBLineString:
+          case QGis::WKBLineString:
 	      {
                 unsigned char *ptr;
                 int *nPoints;
@@ -702,14 +705,15 @@ bool QgsGeometry::vertexAt(double &x, double &y,
 #endif
                 // return error if underflow
                 if (0 > atVertex.back())
-		  {
-		    return FALSE;
-		  }
+		        {
+		            return FALSE;
+		        }
+
                 // return error if overflow
                 if (*nPoints <= atVertex.back())
-		  {
-		    return FALSE;
-		  }
+                {
+                    return FALSE;
+                }
 		
                 // copy the vertex coordinates                      
                 ptr = mGeometry + 9 + (atVertex.back() * 16);
@@ -765,13 +769,14 @@ bool QgsGeometry::vertexAt(double &x, double &y,
 	  return true;
 	  
 	}
-      else
-	{
+    else
+    {
 #ifdef QGISDEBUG
 	  qWarning("error: no mGeometry pointer in QgsGeometry::vertexAt");
 #endif
-	  return false;
 	}     
+	
+    return false;
 }
 
 
@@ -2231,7 +2236,7 @@ bool QgsGeometry::insertVertexToPolygon(int beforeVertex, double x, double y)
   for(int i = 0; i < originalpoly->getNumInteriorRing(); ++i)
     {
       numRingPoints = 0;
-      const geos::LineString* innerRing = originalpoly->getInteriorRingN(i);
+      // const geos::LineString* innerRing = originalpoly->getInteriorRingN(i);
       for(int j = 0; j < originalpoly->getNumInteriorRing(); ++j)
 	{
 	  newSequence->add(coordinates->getAt(coordinateCounter), true);
@@ -2282,7 +2287,7 @@ geos::Polygon* QgsGeometry::createPolygonFromCoordSequence(const geos::Coordinat
 
   std::vector<geos::Geometry*>* newInnerRings = new std::vector<geos::Geometry*>(pointsInRings.size()-1);
   
-  for(int i = 0; i < pointsInRings.size()-1; ++i)
+  for(std::vector<int>::size_type i = 0; i < pointsInRings.size()-1; ++i)
     {
       geos::CoordinateSequence* innerRingSequence = new geos::DefaultCoordinateSequence();
       for(int j = 0; j < pointsInRings[i+1]; ++j)
