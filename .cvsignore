@@ -20,5 +20,7 @@ stamp-h1
 *.kdevses
 *.loT
 *.in
+*.swp
+*~
 .deps
 .libs
