@@ -240,7 +240,7 @@ double QgsDistanceArea::measureLine(const std::vector<QgsPoint>& points)
   else
     p1 = points[0];
   
-  for (int i = 1; i < points.size(); i++)
+  for (std::vector<QgsPoint>::size_type i = 1; i < points.size(); i++)
   {
     if (mProjectionsEnabled)
       p2 = mCoordTransform->transform(points[i]);
@@ -288,7 +288,7 @@ unsigned char* QgsDistanceArea::measurePolygon(unsigned char* feature, double* a
 
     // Extract the points from the WKB and store in a pair of
     // vectors.
-    for (unsigned int jdx = 0; jdx < nPoints; jdx++)
+    for (int jdx = 0; jdx < nPoints; jdx++)
     {
       x = *((double *) ptr);
       ptr += sizeof(double);
@@ -321,7 +321,7 @@ double QgsDistanceArea::measurePolygon(const std::vector<QgsPoint>& points)
   if (mProjectionsEnabled)
   {
     std::vector<QgsPoint> pts(points.size());
-    for (int i = 0; i < points.size(); i++)
+    for (std::vector<QgsPoint>::size_type i = 0; i < points.size(); i++)
     {
         pts[i] = mCoordTransform->transform(points[i]);
     }
