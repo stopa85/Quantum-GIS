@@ -81,7 +81,7 @@ be the right choice for apps without GUI.
 */
 class QgsMessageOutputConsole : public QObject, public QgsMessageOutput
 {
-  Q_OBJECT;
+  Q_OBJECT
   
   public:
     
