@@ -35,7 +35,7 @@ class QgsMapLayer;
 */
 class QgsMapLayerRegistry : public QObject
 {
-   Q_OBJECT;
+   Q_OBJECT
 
 public:
 

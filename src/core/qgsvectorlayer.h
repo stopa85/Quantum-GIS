@@ -49,7 +49,7 @@ typedef std::set<int> feature_ids;
 
 class QgsVectorLayer : public QgsMapLayer
 {
-  Q_OBJECT;
+  Q_OBJECT
 
 public:
 

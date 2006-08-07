@@ -41,7 +41,7 @@ class QPainter;
  */
 class QgsMapLayer : public QObject
 {
-    Q_OBJECT;
+    Q_OBJECT
 
 public:
 

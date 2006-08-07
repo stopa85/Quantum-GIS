@@ -33,7 +33,7 @@ class QgsMessageOutput;
  */
 class QgsRunProcess: public QObject
 {
-  Q_OBJECT;
+  Q_OBJECT
 
  public:
   // This class deletes itself, so to ensure that it is only created
