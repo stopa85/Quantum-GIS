@@ -497,10 +497,6 @@ AC_CONFIG_FILES([
   tools/Makefile
   tools/mapserver_export/Makefile
   tools/qgis_config/Makefile
-  tests/Makefile
-  tests/src/Makefile
-  tests/src/core/Makefile
-  tests/src/gui/Makefile
   qgis.spec
 ])
 
@@ -521,6 +517,9 @@ echo "GPS/GPX       : $have_expat_lib"
 echo "PROJ4         : $have_proj_lib"
 echo "SQLITE3       : $have_sqlite3_lib"
 echo "Python        : $ac_use_python"
+echo ""
+echo "CPPFLAGS      : $CPPFLAGS"
+echo "CXXFLAGS      : $CXXFLAGS"
 echo ""
 echo "Debug         : $ac_debug"
 echo "Plugin dir    : ${libdir}/$PACKAGE"
