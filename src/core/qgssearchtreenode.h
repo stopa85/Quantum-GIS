@@ -71,7 +71,7 @@ public:
       opGE,   // >=
       opLE,   // <=
       opRegexp, // ~
-      opLike, // LIKE
+      opLike  // LIKE
     };
 
     //! constructors
