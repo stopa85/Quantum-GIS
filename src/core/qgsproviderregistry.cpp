@@ -308,11 +308,6 @@ QgsDataProvider* QgsProviderRegistry::getProvider( QString const & providerKey,
   // XXX should I check for and possibly delete any pre-existing providers?
   // XXX How often will that scenario occur?
 
-#ifdef QGISDEBUG
-    const char * providerStr = providerKey.ascii(); // debugger probe
-    const char * dataSourceStr = dataSource.ascii(); // ditto
-#endif
-
   // load the plugin
   QString lib = library(providerKey);
 
