@@ -49,6 +49,9 @@ then
  # for additional details
  ./autogen.sh $AUTOGEN_FLAGS --prefix=${1} \
                              --enable-static=no \
+                             --enable-unittests \
                              --with-qtdir=$QTDIR \
                              --with-grass=/usr/lib/grass && make && make install
 
+cd tests/src
+./runtests.sh

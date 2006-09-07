@@ -310,8 +310,6 @@ void QgsLegendLayer::changeSymbologySettings(const QgsMapLayer* theMapLayer,
     theSymbologyItem = dynamic_cast<QgsLegendSymbologyItem*>(child(i));
     if(theSymbologyItem)
     {
-      myLegend->removePixmapWidthValue(theSymbologyItem->pixmapWidth());
-      myLegend->removePixmapHeightValue(theSymbologyItem->pixmapHeight());
       delete takeChild(i);
     }
   }
@@ -325,9 +323,6 @@ void QgsLegendLayer::changeSymbologySettings(const QgsMapLayer* theMapLayer,
     theItem->setIcon(0, QIcon(it->second));
     insertChild(childposition, theItem);
 
-    //add the width and height values to the multisets
-    myLegend->addPixmapWidthValue(theItem->pixmapWidth());
-    myLegend->addPixmapHeightValue(theItem->pixmapHeight());
     ++childposition;
   }
 
@@ -403,7 +398,8 @@ void QgsLegendLayer::vectorLayerSymbology(const QgsVectorLayer* layer)
 void QgsLegendLayer::rasterLayerSymbology(QgsRasterLayer* layer)
 {
   SymbologyList itemList;
-  itemList.push_back(std::make_pair("", layer->getLegendQPixmap(true)));
+  QPixmap legendpixmap = layer->getLegendQPixmap(true).scaled(20, 20, Qt::KeepAspectRatio); 
+  itemList.push_back(std::make_pair("", legendpixmap));   
     
   changeSymbologySettings(layer, itemList);
 }
