@@ -334,6 +334,20 @@ double QgsDistanceArea::measurePolygon(const std::vector<QgsPoint>& points)
 }
 
 
+double QgsDistanceArea::getBearing(const QgsPoint& p1, const QgsPoint& p2)
+{
+  QgsPoint pp1 = p1, pp2 = p2;
+  if (mProjectionsEnabled)
+  {
+    pp1 = mCoordTransform->transform(p1);
+    pp2 = mCoordTransform->transform(p2);
+  }
+  
+  double bearing;
+  double dist = computeDistanceBearing(pp1, pp2, &bearing);
+  return bearing;
+}
+
 
 ///////////////////////////////////////////////////////////
 // distance calculation

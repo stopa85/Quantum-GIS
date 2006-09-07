@@ -102,6 +102,9 @@ class QgisAppInterface : public QgisInterface
         /** Remove menu item from the plugins menu */
         void removePluginMenuItem(QString name, int menuId);
     
+        /** Return a pointer to the toolbox (where additional pages can be inserted) */
+        virtual QToolBox* getToolBox();
+
     private:
 
         /// QgisInterface aren't copied

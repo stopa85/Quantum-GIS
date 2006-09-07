@@ -135,3 +135,8 @@ QWidget * QgisAppInterface::getMainWindow()
 {
   return qgis;
 }
+
+QToolBox* QgisAppInterface::getToolBox()
+{
+  return qgis->toolBox;
+}

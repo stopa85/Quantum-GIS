@@ -22,6 +22,7 @@
 class QAction;
 class QMenu;
 class QToolBar;
+class QToolBox;
 class QWidget;
 #include <QObject>
 
@@ -115,6 +116,9 @@ class QgisInterface : public QObject
 
     /** Remove menu item from the plugins menu */
     virtual void removePluginMenuItem(QString name, int menuId)=0;
+    
+    /** Return a pointer to the toolbox (where additional pages can be inserted) */
+    virtual QToolBox* getToolBox()=0;
 
   signals:
     /** Emited whenever current (selected) layer changes.

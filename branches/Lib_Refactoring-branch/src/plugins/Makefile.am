@@ -14,6 +14,7 @@ endif
 
 
 SUBDIRS = $(GEOPROCESSING) \
+		navigation \
 		$(SPIT) \
 		$(GRASS) \
 		$(COMMUNITY) \
