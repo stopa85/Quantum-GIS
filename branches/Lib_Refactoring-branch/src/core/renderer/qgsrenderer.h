@@ -68,6 +68,8 @@ class QgsRenderer
     virtual QgsRenderer* clone() const=0;
     /** Change selection color */
     static void setSelectionColor(QColor color);
+    /**Returns true if this renderer returns a pixmap in the render method (e.g. for point data or diagrams)*/
+    virtual bool containsPixmap() const;
    
  protected:
     /**Color to draw selected features - static so we can change it in proj props and automatically 

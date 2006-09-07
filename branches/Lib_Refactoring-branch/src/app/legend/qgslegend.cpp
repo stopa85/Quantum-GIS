@@ -117,7 +117,10 @@ void QgsLegend::removeAll()
 {
   mStateOfCheckBoxes.clear();
   clear();
+  mPixmapWidthValues.clear();
+  mPixmapHeightValues.clear();
   updateMapCanvasLayerSet();
+  setIconSize(mMinimumIconSize);
 }
 
 void QgsLegend::removeLayer(QString layer_key)
@@ -139,6 +142,7 @@ void QgsLegend::removeLayer(QString layer_key)
 		  //remove the map entry for the checkbox
 		  mStateOfCheckBoxes.erase(llf);
 		  removeItem(llf);
+		  delete llf;
 		  break;
 		}
 	    }
@@ -147,6 +151,7 @@ void QgsLegend::removeLayer(QString layer_key)
     }
 
     updateMapCanvasLayerSet();
+    adjustIconSize();
 }
 
 void QgsLegend::mousePressEvent(QMouseEvent * e)
@@ -599,6 +604,7 @@ void QgsLegend::legendGroupRemove()
             child = lg->child(0);
         }
 	delete lg;
+	adjustIconSize();
     }
 }
 
@@ -635,6 +641,8 @@ void QgsLegend::legendLayerRemove()
      mMapCanvas->refresh();
    }
    removeItem(ll);
+   delete ll;
+   adjustIconSize();
 }
 
 void QgsLegend::legendLayerAddToOverview()

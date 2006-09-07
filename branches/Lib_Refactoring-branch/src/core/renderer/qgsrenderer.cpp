@@ -20,3 +20,15 @@ void QgsRenderer::setSelectionColor(QColor color)
 {
   mSelectionColor = color;
 }
+
+bool QgsRenderer::containsPixmap() const
+{
+  //default implementation returns true only for points
+  switch(mVectorType)
+    {
+    case QGis::Point:
+       return true;
+    default:
+      return false;
+    }
+}

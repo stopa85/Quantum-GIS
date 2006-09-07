@@ -3567,6 +3567,7 @@ void QgisApp::loadPlugin(QString name, QString description, QString theFullPathN
 
       switch (pType())
       {
+        case QgisPlugin::RENDERER:
         case QgisPlugin::UI:
           {
             // UI only -- doesn't use mapcanvas
