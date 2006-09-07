@@ -91,9 +91,7 @@ GLOBALLDADD = $(QT_LDADD) \
 				$(GDAL_LDADD) \
 				-lproj \
 				../../../src/core/libqgis_core.la \
-				../../../src/legend/libqgis_legend.la \
-				../../../src/gui/libqgis_gui.la \
-				../../../src/composer/libqgis_composer.la  
+				../../../src/gui/libqgis_gui.la
 GLOBALCXXFLAGS = $(CXXFLAGS) \
 				$(EXTRA_CXXFLAGS) \
 				$(GDAL_CFLAGS) \
