@@ -78,6 +78,9 @@ class QgsDistanceArea
     
     //! measures polygon area
     double measurePolygon(const std::vector<QgsPoint>& points);
+    
+    //! compute bearing - in radians
+    double getBearing(const QgsPoint& p1, const QgsPoint& p2);
 
   protected:
     

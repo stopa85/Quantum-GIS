@@ -498,6 +498,7 @@ AC_CONFIG_FILES([
   tools/mapserver_export/Makefile
   tools/qgis_config/Makefile
   qgis.spec
+	src/plugins/navigation/Makefile
 ])
 
 AC_OUTPUT
