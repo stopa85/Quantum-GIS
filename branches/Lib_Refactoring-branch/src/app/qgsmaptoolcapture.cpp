@@ -92,7 +92,6 @@ void QgsMapToolCapture::canvasReleaseEvent(QMouseEvent * e)
     if(vlayer->getDataProvider()->capabilities()&QgsVectorDataProvider::AddFeatures)
     {
       QgsFeature* f = new QgsFeature(0,"WKBPoint");
-      
       // project to layer's SRS
       QgsPoint savePoint = toLayerCoords(vlayer, idPoint);
       // snap point to points within the vector layer snapping tolerance
@@ -146,7 +145,6 @@ void QgsMapToolCapture::canvasReleaseEvent(QMouseEvent * e)
     QgsPoint digitisedPoint = toLayerCoords(vlayer, e->pos());
     vlayer->snapPoint(digitisedPoint, tolerance);
     mCaptureList.push_back(digitisedPoint);
-  
     mRubberBand->addPoint(digitisedPoint);
   
     if (e->button() == Qt::LeftButton)
@@ -256,7 +254,11 @@ void QgsMapToolCapture::canvasMoveEvent(QMouseEvent * e)
   if (mCapturing)
   {
     // show the rubber-band from the last click
-    mRubberBand->movePoint(toMapCoords(e->pos()));
+    QgsVectorLayer *vlayer = dynamic_cast <QgsVectorLayer*>(mCanvas->currentLayer());
+    double tolerance  = QgsProject::instance()->readDoubleEntry("Digitizing","/Tolerance",0);
+    QgsPoint rbpoint = toMapCoords(e->pos());
+    vlayer->snapPoint(rbpoint, tolerance); //show snapping during dragging
+    mRubberBand->movePoint(rbpoint);
   }
 
 } // mouseMoveEvent

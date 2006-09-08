@@ -1939,6 +1939,10 @@ bool QgsPostgresProvider::changeGeometryValues(std::map<int, QgsGeometry> & geom
       sql+=" WHERE " +primaryKey+"="+QString::number(iter->first);
 
 #ifdef QGISDEBUG
+      qWarning(sql);
+#endif
+
+#ifdef QGISDEBUG
       std::cerr << "QgsPostgresProvider::changeGeometryValues: Updating with '"
                 << sql.toLocal8Bit().data()
                 << "'."
@@ -2488,12 +2492,30 @@ bool QgsPostgresProvider::getGeometryDetails()
   if (!srid.isEmpty() && !fType.isEmpty())
   {
     valid = true;
-    if (fType == "POINT" || fType == "MULTIPOINT")
-      geomType = QGis::WKBPoint;
-    else if (fType == "LINESTRING" || fType == "MULTILINESTRING")
-      geomType = QGis::WKBLineString;
-    else if (fType == "POLYGON" || fType == "MULTIPOLYGON")
-      geomType = QGis::WKBPolygon;
+    if (fType == "POINT")
+      {
+	geomType = QGis::WKBPoint;
+      }
+    else if(fType == "MULTIPOINT")
+      {
+	geomType = QGis::WKBMultiPoint;
+      }
+    else if(fType == "LINESTRING")
+      {
+	geomType = QGis::WKBLineString;
+      }
+    else if(fType == "MULTILINESTRING")
+      {
+	geomType = QGis::WKBMultiLineString;
+      }
+    else if (fType == "POLYGON")
+      {
+	geomType = QGis::WKBPolygon;
+      }
+    else if(fType == "MULTIPOLYGON")
+      {
+	geomType = QGis::WKBMultiPolygon;
+      }
     else
     {
       showMessageBox(tr("Unknown geometry type"), 

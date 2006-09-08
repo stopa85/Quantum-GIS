@@ -16,6 +16,8 @@
 
 #include "qgisinterface.h"
 #include "qgsmapcanvas.h"
+#include "qgsmaplayer.h"
+#include "qgsvectorlayer.h"
 #include "qgsgrassedittools.h"
 #include "qgsgrassedit.h"
 #include "qgsgrassattributes.h"
@@ -36,7 +38,7 @@ QgsGrassEditTool::QgsGrassEditTool(QgsGrassEdit* edit)
 
 void QgsGrassEditTool::canvasPressEvent(QMouseEvent * event)
 {
-  QgsPoint point = toMapCoords(event->pos());
+  QgsPoint point = toLayerCoords(e->layer(), event->pos());
   mouseClick(point,  event->button());
 
   // Set last click
@@ -51,7 +53,7 @@ void QgsGrassEditTool::canvasPressEvent(QMouseEvent * event)
 
 void QgsGrassEditTool::canvasMoveEvent(QMouseEvent * event)
 {
-  QgsPoint point = toMapCoords(event->pos());
+  QgsPoint point = toLayerCoords(e->layer(), event->pos());
   mouseMove(point);
 
   e->statusBar()->message(e->mCanvasPrompt);
@@ -462,7 +464,20 @@ void QgsGrassEditDeleteVertex::mouseClick(QgsPoint & point, Qt::ButtonState butt
         int type = e->mProvider->readLine ( e->mPoints, e->mCats, e->mSelectedLine );
         Vect_line_delete_point ( e->mPoints, e->mSelectedPart );
 
-        e->mProvider->rewriteLine ( e->mSelectedLine, type, e->mPoints, e->mCats );
+        if ( e->mPoints->n_points < 2 ) // delete line
+        {
+	    e->mProvider->deleteLine ( e->mSelectedLine );
+
+	    // Check orphan records
+	    for ( int i = 0 ; i < e->mCats->n_cats; i++ ) {
+	      e->checkOrphan ( e->mCats->field[i], e->mCats->cat[i] );
+	    }
+        }
+        else 
+        {
+	    e->mProvider->rewriteLine ( e->mSelectedLine, type, e->mPoints, e->mCats );
+        }
+
         e->updateSymb();
         e->displayUpdated();
 
@@ -635,7 +650,7 @@ void QgsGrassEditDeleteLine::mouseClick(QgsPoint & point, Qt::ButtonState button
 
       if ( e->mSelectedLine == 0 ) 
         e->mSelectedLine = e->mProvider->findLine ( point.x(), point.y(), GV_LINE|GV_BOUNDARY, thresh );
-
+      
       if ( e->mSelectedLine ) { // highlite, propmt
         e->displayElement ( e->mSelectedLine, e->mSymb[QgsGrassEdit::SYMB_HIGHLIGHT], e->mSize );
         e->setCanvasPropmt( QObject::tr("Delete selected / select next"), "", QObject::tr("Release selected") );

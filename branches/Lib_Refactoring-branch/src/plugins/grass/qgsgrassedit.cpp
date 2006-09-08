@@ -49,6 +49,7 @@
 #include "qgsmapcanvas.h"
 #include "qgsmapcanvasitem.h"
 #include "qgsmaplayer.h"
+#include "qgsmaprender.h"
 #include "qgsvectorlayer.h"
 #include "qgsdataprovider.h"
 #include "qgsmaptoolpan.h"
@@ -57,6 +58,7 @@
 #include "qgsfeatureattribute.h"
 #include "qgsvertexmarker.h"
 #include "qgsrubberband.h"
+#include "qgsproject.h"
 
 extern "C" {
 #include <grass/gis.h>
@@ -119,6 +121,8 @@ QgsGrassEdit::QgsGrassEdit ( QgisInterface *iface,
   mIface = iface;
   mNewMap = false;
 
+  mProjectionEnabled = (QgsProject::instance()->readNumEntry("SpatialRefSys","/ProjectionsEnabled",0)!=0);
+
   mCanvas = mIface->getMapCanvas();
 
   // TODO QGIS: crash if canvas is empty
@@ -129,10 +133,10 @@ QgsGrassEdit::QgsGrassEdit ( QgisInterface *iface,
   if ( !isEditable(layer) ) return;
 
   //TODO dynamic_cast ?
-  QgsVectorLayer *vector = (QgsVectorLayer*)layer;
+  mLayer = (QgsVectorLayer*)layer;
 
   //TODO dynamic_cast ?
-  mProvider = (QgsGrassProvider *) vector->getDataProvider();
+  mProvider = (QgsGrassProvider *) mLayer->getDataProvider();
 
   init();
 
@@ -179,6 +183,8 @@ QgsGrassEdit::QgsGrassEdit ( QgisInterface *iface,
   mSuspend = false;
   mIface = iface;
   mNewMap = true;
+
+  mProjectionEnabled = (QgsProject::instance()->readNumEntry("SpatialRefSys","/ProjectionsEnabled",0)!=0);
 
   mCanvas = mIface->getMapCanvas();
 
@@ -1095,11 +1101,20 @@ double QgsGrassEdit::threshold ( void )
   int snapPixels = mSnapPixels->text().toInt();
 
   // Convert to map units (not nice)
-  mTransform = mCanvas->getCoordinateTransform();
-  double x1 = mTransform->toMapCoordinates( 0, 0 ).x();
-  double x2 = mTransform->toMapCoordinates( snapPixels, 0 ).x();
+  QgsPoint p1, p2;
+  p1 = mTransform->toMapCoordinates(0, 0 ); 
+  p2 = mTransform->toMapCoordinates(snapPixels, 0); 
 
-  return ( x2 - x1 );
+  if ( mProjectionEnabled ) 
+  {
+      p1 = mCanvas->mapRender()->outputCoordsToLayerCoords(mLayer, p1);
+      p2 = mCanvas->mapRender()->outputCoordsToLayerCoords(mLayer, p2);
+  }
+
+  double dx = p2.x() - p1.x();
+  double dy = p2.y() - p1.y();
+  double thresh = sqrt ( dx*dx + dy*dy );
+  return thresh;
 }
 
 void QgsGrassEdit::snap (  double *x, double *y )
@@ -1459,6 +1474,7 @@ void QgsGrassEdit::displayUpdated (void)
 #endif
 
   mTransform = mCanvas->getCoordinateTransform();
+  mProjectionEnabled = (QgsProject::instance()->readNumEntry("SpatialRefSys","/ProjectionsEnabled",0)!=0);
 
   QPainter *painter = new QPainter();
   painter->begin(mPixmap);
@@ -1516,7 +1532,7 @@ void QgsGrassEdit::displayElement ( int line, const QPen & pen, int size, QPaint
     for ( int i = 0; i < mPoints->n_points; i++ ) {
       point.setX(mPoints->x[i]);
       point.setY(mPoints->y[i]);
-      mTransform->transform(&point);
+      point = transformLayerToCanvas ( point );
       pointArray.setPoint( i, static_cast<int>(round(point.x())), 
           static_cast<int>(round(point.y())) ); 
     }
@@ -1584,7 +1600,10 @@ void QgsGrassEdit::displayDynamic ( struct line_pnts *Points, double x, double y
 #endif
     QgsPoint point;
 
-    mTransform = mCanvas->getCoordinateTransform();
+    //mTransform = mCanvas->getCoordinateTransform();
+
+    // Dynamic points are in layer coordinate system, we have to 
+    // reproject them to current coordinate system if necessary
 
     mRubberBandLine->reset();
 
@@ -1594,13 +1613,15 @@ void QgsGrassEdit::displayDynamic ( struct line_pnts *Points, double x, double y
         {
 	    point.setX(Points->x[i]);
 	    point.setY(Points->y[i]);
-      mRubberBandLine->addPoint(point);
+            point = transformLayerToMap ( point );
+            mRubberBandLine->addPoint(point);
         }
     }
 
     mRubberBandIcon->setIconType(type);
     mRubberBandIcon->setIconSize(size);
-    mRubberBandIcon->setCenter(QgsPoint(x,y));
+    point = transformLayerToMap (QgsPoint(x,y) );
+    mRubberBandIcon->setCenter(point);
 }
 
 void QgsGrassEdit::displayNode ( int node, const QPen & pen, int size, QPainter *painter )
@@ -1618,6 +1639,17 @@ void QgsGrassEdit::displayNode ( int node, const QPen & pen, int size, QPainter 
   displayIcon ( x, y, pen, QgsVertexMarker::ICON_X, size, painter );
 }
 
+QgsPoint QgsGrassEdit::transformLayerToCanvas ( QgsPoint point)
+{
+    point = mCanvas->mapRender()->layerCoordsToOutputCoords(mLayer, point);
+    return mTransform->transform(point);
+}
+
+QgsPoint QgsGrassEdit::transformLayerToMap ( QgsPoint point)
+{
+  return mCanvas->mapRender()->layerCoordsToOutputCoords(mLayer, point);
+}
+
 void QgsGrassEdit::displayIcon ( double x, double y, const QPen & pen, 
     int type, int size, QPainter *painter )
 {
@@ -1630,7 +1662,8 @@ void QgsGrassEdit::displayIcon ( double x, double y, const QPen & pen,
 
   point.setX(x);
   point.setY(y);
-  mTransform->transform(&point);
+  
+  point = transformLayerToCanvas ( point );
 
   int px = static_cast<int>(round(point.x()));
   int py = static_cast<int>(round(point.y()));

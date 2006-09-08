@@ -413,6 +413,9 @@ private:                       // Private methods
   /** Goes through all features and finds a free id (e.g. to give it temporarily to a not-commited feature) */
   int findFreeId();
 
+  /**Caches all the (commited) geometries to mCachedFeatures, e.g. when entering editing mode*/
+  void cacheGeometries();
+
 
 private:                       // Private attributes
 

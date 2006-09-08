@@ -47,13 +47,19 @@ void QgsMapToolVertexEdit::canvasMoveEvent(QMouseEvent * e)
 {
   if (e->buttons() == Qt::LeftButton && (mTool == AddVertex || mTool == MoveVertex))
   {
-  
-#ifdef QGISDEBUG
-        qWarning("Moving rubber band for moveVertex");
-#endif
-
       int index = (mStartPointValid ? 1 : 0);
-      mRubberBand->movePoint(index, toMapCoords(e->pos()));
+      //snap to nearest vertex of vectorlayer
+      QgsPoint rbpoint = toMapCoords(e->pos());
+      if(mTool == AddVertex)
+	{
+	  snapVertex(rbpoint, mSnappedAtFeatureId, mSnappedBeforeVertex.back());
+	  mRubberBand->movePoint(index, rbpoint);
+	}
+      else if(mTool == MoveVertex)
+	{
+	  snapVertex(rbpoint, mSnappedAtFeatureId, mSnappedAtVertex.back());
+	  mRubberBand->movePoint(index, rbpoint);
+	}
   }
 
 }
@@ -76,9 +82,13 @@ void QgsMapToolVertexEdit::canvasPressEvent(QMouseEvent * e)
         std::cout << "QgsMapCanvas::mousePressEvent: QGis::AddVertex." << std::endl;
 #endif
 
-    // TODO: Find nearest segment of the selected line, move that node to the mouse location
+    //Find nearest segment of the selected line, move that node to the mouse location
     if (!snapSegmentWithContext(point))
-      return;
+      {
+	QMessageBox::warning(0, "Error", "Could not snap vertex. Have you set the tolerance?",
+                         QMessageBox::Ok, Qt::NoButton);
+	return;
+      }
       
     index = mSnappedBeforeVertex;
 
@@ -108,9 +118,13 @@ void QgsMapToolVertexEdit::canvasPressEvent(QMouseEvent * e)
     // Find the closest line segment to the mouse position
     // Then set up the rubber band to its endpoints
 
-    // TODO: Find nearest segment of the selected line, move that node to the mouse location    
+    //Find nearest segment of the selected line, move that node to the mouse location    
     if (!snapVertexWithContext(point))
-      return;
+      {
+	QMessageBox::warning(0, "Error", "Could not snap vertex. Have you set the tolerance?",
+                         QMessageBox::Ok, Qt::NoButton);
+	return;
+      }
 
 #ifdef QGISDEBUG
     qWarning("Creating rubber band for moveVertex");
@@ -150,7 +164,11 @@ void QgsMapToolVertexEdit::canvasPressEvent(QMouseEvent * e)
   
     // TODO: Find nearest segment of the selected line, move that node to the mouse location
     if (!snapVertexWithContext(point))
-      return;
+      {
+	QMessageBox::warning(0, "Error", "Could not snap vertex. Have you set the tolerance?",
+                         QMessageBox::Ok, Qt::NoButton);
+	return;
+      }
       
     // Get the point of the snapped-to vertex
     mSnappedAtGeometry.vertexAt(x1, y1, mSnappedAtVertex);
@@ -219,8 +237,6 @@ bool QgsMapToolVertexEdit::snapVertexWithContext(QgsPoint& point)
   if (!vlayer->snapVertexWithContext(point, atVertex, atFeatureId, atGeometry, tolerance()))
   {
     mSnappedAtFeatureId = -1;
-    QMessageBox::warning(0, "Error", "Could not snap vertex. Have you set the tolerance?",
-                         QMessageBox::Ok, Qt::NoButton);
     return FALSE;
   }
   else
@@ -235,6 +251,24 @@ bool QgsMapToolVertexEdit::snapVertexWithContext(QgsPoint& point)
     mSnappedAtGeometry   = atGeometry;
     return TRUE;
   }
+}
+
+void QgsMapToolVertexEdit::snapVertex(QgsPoint& point, int exclFeatureId, int exclVertexNr)
+{
+  QgsVectorLayer* vlayer = dynamic_cast<QgsVectorLayer*>(mCanvas->currentLayer());
+  if(vlayer)
+    {
+      QgsGeometryVertexIndex vIndex;
+      int snappedFeatureId;
+      QgsGeometry snappedGeometry;
+      //do the snapping to a copy point first
+      QgsPoint cpyPoint = point;
+      vlayer->snapVertexWithContext(cpyPoint, vIndex, snappedFeatureId, snappedGeometry, tolerance());
+      if(snappedFeatureId != exclFeatureId || vIndex.back() != exclVertexNr)
+	{
+	  point = cpyPoint;
+	}
+    }
 }
 
 
@@ -274,6 +308,9 @@ void QgsMapToolVertexEdit::canvasReleaseEvent(QMouseEvent * e)
   if (mTool == AddVertex)
   {
 
+    //snap to nearest vertex of vectorlayer
+    snapVertex(point, mSnappedAtFeatureId, mSnappedBeforeVertex.back());
+
 #ifdef QGISDEBUG
     std::cout << "QgsMapToolVertexEdit::canvasReleaseEvent: AddVertex." << std::endl;
 #endif
@@ -282,19 +319,19 @@ void QgsMapToolVertexEdit::canvasReleaseEvent(QMouseEvent * e)
     mRubberBand = 0;
   
     // Add the new vertex
-    //todo: snap to nearest vertex of vectorlayer
     vlayer->insertVertexBefore(point.x(), point.y(), mSnappedAtFeatureId, mSnappedBeforeVertex);
     mCanvas->refresh();
   }
   else if (mTool == MoveVertex)
   {
+    //snap to nearest vertex of vectorlayer
+    snapVertex(point, mSnappedAtFeatureId, mSnappedAtVertex.back());
 #ifdef QGISDEBUG
     std::cout << "QgsMapToolVertexEdit::canvasReleaseEvent: MoveVertex." << std::endl;
 #endif
 
     delete mRubberBand;
     mRubberBand = 0;
-    //todo: snap to nearest vertex of vectorlayer
     vlayer->moveVertexAt(point.x(), point.y(), mSnappedAtFeatureId, mSnappedAtVertex);
     mCanvas->refresh();
   }
@@ -329,4 +366,3 @@ void QgsMapToolVertexEdit::deactivate()
   delete mRubberBand;
   mRubberBand = 0;
 }
-

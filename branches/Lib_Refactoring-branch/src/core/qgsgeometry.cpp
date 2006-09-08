@@ -318,30 +318,31 @@ QgsPoint QgsGeometry::closestVertex(const QgsPoint& point, QgsGeometryVertexInde
 	    {
 		unsigned char* ptr=mGeometry+5;
 		int* nlines=(int*)ptr;
-		int* npoints;
+		int* npoints = 0;
 		ptr+=sizeof(int);
 		for(int index=0;index<*nlines;++index)
 		{
-		    npoints=(int*)ptr;
-		    ptr+=sizeof(int);
-		    for(int index2=0;index2<*npoints;++index2)
+		  ptr += (sizeof(int) + 1);
+		  npoints=(int*)ptr;
+		  ptr+=sizeof(int);
+		  for(int index2=0;index2<*npoints;++index2)
 		    {
-			tempx=(double*)ptr;
-			ptr+=sizeof(double);
-			tempy=(double*)ptr;
-			if(point.sqrDist(*tempx,*tempy)<actdist)
+		      tempx=(double*)ptr;
+		      ptr+=sizeof(double);
+		      tempy=(double*)ptr;
+		      ptr+=sizeof(double);
+		      if(point.sqrDist(*tempx,*tempy)<actdist)
 			{
-			    x=*tempx;
-			    y=*tempy;
-			    actdist=point.sqrDist(*tempx,*tempy);
-			    vertexnr = vertexcounter;
+			  x=*tempx;
+			  y=*tempy;
+			  actdist=point.sqrDist(*tempx,*tempy);
+			  vertexnr = vertexcounter;
 			}
-			ptr+=sizeof(double);
-			++vertexcounter;
+		      ++vertexcounter;
 		    }
 		}
 	    }
-		break;
+	    break;
 
 	    case QGis::WKBMultiPolygon:
 	    {
@@ -487,6 +488,7 @@ bool QgsGeometry::moveVertexAt(double x, double y, QgsGeometryVertexIndex atVert
 	int pointindex = 0;
 	for(int linenr = 0; linenr < *nrLines; ++linenr)
 	  {
+	    ptr += sizeof(int) + 1;
 	    nrPoints = (int*)ptr;
 	    ptr += sizeof(int);
 	    if(vertexnr >= pointindex && vertexnr < pointindex + (*nrPoints))
@@ -645,6 +647,9 @@ bool QgsGeometry::deleteVertexAt(QgsGeometryVertexIndex atVertex)
 	int pointindex = 0;
 	for(int linenr = 0; linenr < *nLines; ++linenr)
 	  {
+	    memcpy(newBufferPtr, ptr, sizeof(int) + 1);
+	    ptr += (sizeof(int) + 1);
+	    newBufferPtr += (sizeof(int) + 1);
 	    nPoints = (int*)ptr;
 	    ptr += sizeof(int);
 	    int newNPoint;
@@ -663,6 +668,7 @@ bool QgsGeometry::deleteVertexAt(QgsGeometryVertexIndex atVertex)
 		newNPoint = *nPoints;
 	      }
 	    memcpy(newBufferPtr, &newNPoint, sizeof(int));
+	    newBufferPtr += sizeof(int);
 
 	    for(int pointnr = 0; pointnr < *nPoints; ++pointnr)
 	      {
@@ -845,7 +851,6 @@ bool QgsGeometry::insertVertexBefore(double x, double y, QgsGeometryVertexIndex 
     {
     case QGis::WKBPoint://cannot insert a vertex before another one on point types
     case QGis::WKBMultiPoint:
-      break;
     case QGis::WKBLineString:
       {
 	int* nPoints = (int*)ptr;
@@ -876,6 +881,51 @@ bool QgsGeometry::insertVertexBefore(double x, double y, QgsGeometryVertexIndex 
 	break;
       }
     case QGis::WKBMultiLineString:
+      {
+	int* nLines = (int*)ptr;
+	int* nPoints = 0; //number of points in a line
+	ptr += sizeof(int);
+	memcpy(newBufferPtr, nLines, sizeof(int));
+	newBufferPtr += sizeof(int);
+	int pointindex = 0;
+
+	for(int linenr = 0; linenr < *nLines; ++linenr)
+	  {
+	    memcpy(newBufferPtr, ptr, sizeof(int) + 1);
+	    ptr += (sizeof(int) + 1);
+	    newBufferPtr += (sizeof(int) + 1);
+	    nPoints = (int*)ptr;
+	    int newNPoints;
+	    if(vertexnr >= pointindex && vertexnr < (pointindex + (*nPoints)))//point is in this ring
+	      {
+		newNPoints = (*nPoints)+1;
+	      }
+	    else
+	      {
+		newNPoints = *nPoints;
+	      }
+	    memcpy(newBufferPtr, &newNPoints, sizeof(double));
+	    newBufferPtr += sizeof(int);
+	    ptr += sizeof(int);
+
+	    for(int pointnr = 0; pointnr < *nPoints; ++pointnr)
+	      {
+		memcpy(newBufferPtr, ptr, sizeof(double));//x
+		memcpy(newBufferPtr+sizeof(double), ptr+sizeof(double), sizeof(double));//y
+		ptr += 2*sizeof(double);
+		newBufferPtr += 2*sizeof(double);
+		++pointindex;
+		if(pointindex == vertexnr)
+		  {
+		    memcpy(newBufferPtr, &x, sizeof(double));
+		    memcpy(newBufferPtr+sizeof(double), &y, sizeof(double));
+		    newBufferPtr += 2*sizeof(double);
+		    success = true;
+		  }
+	      }
+	  }
+	break;
+      }
     case QGis::WKBPolygon:
       {
 	int* nRings = (int*)ptr;
@@ -1097,6 +1147,7 @@ bool QgsGeometry::vertexAt(double &x, double &y,
 		ptr += sizeof(int);
 		for(int linenr = 0; linenr < *nLines; ++linenr)
 		  {
+		    ptr += sizeof(int) + 1;
 		    nPoints = (int*)ptr;
 		    ptr += sizeof(int);
 		    for(int pointnr = 0; pointnr < *nPoints; ++pointnr)
@@ -1277,6 +1328,7 @@ QgsPoint QgsGeometry::closestSegmentWithContext(QgsPoint& point,
 	int pointindex = 0;//global pointindex
 	for(int linenr = 0; linenr < *nLines; ++linenr)
 	  {
+	    ptr += sizeof(int) + 1;
 	    nPoints = (int*)ptr;
 	    ptr += sizeof(int);
 	    prevx = 0;

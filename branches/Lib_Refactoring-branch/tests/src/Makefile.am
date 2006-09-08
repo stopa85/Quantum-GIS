@@ -11,3 +11,7 @@
 SUBDIRS = core \
           gui
 
+all: 
+	@echo Running unit tests
+	./runtests.sh 
+
