@@ -525,7 +525,7 @@ QgsFeature *QgsOgrProvider::getNextFeature(std::list<int> const& attlist, int fe
         {
           // test this geometry to see if it should be
           // returned 
-	  QgsDebugMsg("Testing geometry using intersect");
+	  //QgsDebugMsg("Testing geometry using intersect");
         }
         else
         {

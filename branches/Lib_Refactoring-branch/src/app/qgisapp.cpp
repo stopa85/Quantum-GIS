@@ -3027,66 +3027,22 @@ void QgisApp::removeAllFromOverview()
 //reimplements method from base (gui) class
 void QgisApp::hideAllLayers()
 {
-  // TODO: move to legend
-  /*
-  // what's the point if we don't have any layers?
-  if ( QgsMapLayerRegistry::instance()->mapLayers().empty() )
-  {
-    return;
-  }
-
 #ifdef QGISDEBUG
   std::cout << "hiding all layers!" << std::endl;
 #endif
 
-  mMapCanvas->freeze(true);
-  std::map<QString, QgsMapLayer *> myMapLayers = QgsMapLayerRegistry::instance()->mapLayers();
-  std::map<QString, QgsMapLayer *>::iterator myMapIterator;
-  for ( myMapIterator = myMapLayers.begin(); myMapIterator != myMapLayers.end(); ++myMapIterator )
-  {
-    QgsMapLayer * myMapLayer = myMapIterator->second;
-    myMapLayer->setVisible(false);
-  }
-  // draw the map
-  mMapCanvas->freeze(false);
-  mMapCanvas->refresh();
-
-  // notify the project we've made a change
-  QgsProject::instance()->dirty(true);
-  */
+  legend()->selectAll(false);
 }
 
 
 // reimplements method from base (gui) class
 void QgisApp::showAllLayers()
 {
-  // TODO: move to legend
-  /*
-  // what's the point if we don't have any layers?
-  if ( QgsMapLayerRegistry::instance()->mapLayers().empty() )
-  {
-    return;
-  }
-
 #ifdef QGISDEBUG
   std::cout << "Showing all layers!" << std::endl;
 #endif
 
-  mMapCanvas->freeze(true);
-  std::map<QString, QgsMapLayer *> myMapLayers = QgsMapLayerRegistry::instance()->mapLayers();
-  std::map<QString, QgsMapLayer *>::iterator myMapIterator;
-  for ( myMapIterator = myMapLayers.begin(); myMapIterator != myMapLayers.end(); ++myMapIterator )
-  {
-    QgsMapLayer * myMapLayer = myMapIterator->second;
-    myMapLayer->setVisible(true);
-  }
-  // draw the map
-  mMapCanvas->freeze(false);
-  mMapCanvas->refresh();
-
-  // notify the project we've made a change
-  QgsProject::instance()->dirty(true);
-  */
+  legend()->selectAll(true);
 }
 
 void QgisApp::exportMapServer()

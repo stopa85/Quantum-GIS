@@ -89,9 +89,9 @@ class QgsGeometry {
     void setGeos(geos::Geometry* geos);
 
     /**
-       Returns the vertex closest to the given point
+       Returns the vertex closest to the given point (and also vertex index and squared distance)
     */
-    QgsPoint closestVertex(const QgsPoint& point) const;
+    QgsPoint closestVertex(const QgsPoint& point, QgsGeometryVertexIndex& atVertex, double& sqrDist) const;
 
     /** Insert a new vertex before the given vertex index,
      *  ring and item (first number is index 0)
@@ -110,10 +110,7 @@ class QgsGeometry {
      *  ring and item (first number is index 0)
      *  to the given coordinates.
      *  Returns FALSE if atVertex does not correspond to a valid vertex
-     *  on this geometry (including if this geometry is a Point).
-     *  It is up to the caller to distinguish between
-     *  these error conditions.  (Or maybe we add another method to this
-     *  object to help make the distinction?)
+     *  on this geometry
      */
     bool moveVertexAt(double x, double y, QgsGeometryVertexIndex atVertex);
 
@@ -248,19 +245,6 @@ class QgsGeometry {
                             int beforeVertex,
                             const geos::CoordinateSequence*  old_sequence,
                                   geos::CoordinateSequence** new_sequence);
-
-    /**Moves a vertex of mGeos to a new position. Internally, a new polygon is created instead of mGeos.
-     Returns true in case of success*/
-    bool movePolygonVertex(int atVertex, double x, double y);
-
-    bool deleteVertexFromPolygon(int atVertex);
-
-    bool insertVertexToPolygon(int beforeVertex, double x, double y);
-
-    /**Creates a new polygon from a coordinate sequence
-     @param coords The coordinate array for the new polygon (the new polygon does not take ownership of the sequence
-    @param pointsInRings A vector containing the number of points going into each ring*/
-    geos::Polygon* createPolygonFromCoordSequence(const geos::CoordinateSequence* coords, const std::vector<int>& pointsInRings) const;
 
 }; // class QgsGeometry
 

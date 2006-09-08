@@ -180,6 +180,13 @@ public slots:
   void removeAll();
 
   /*!
+   * Called when the user wishes to toggle on or off all of the layers in
+   * the legend, and in the map.
+   * @return void
+   */
+  void selectAll(bool select);
+
+  /*!
    * Slot called when user wishes to add a new empty layer group to the legend.
    * The user will be prompted for the name of the newly added group.
    * @return void
@@ -266,6 +273,8 @@ this item may be moved back to the original position with resetToInitialPosition
   void legendLayerRemoveFromOverview();
   /**Shows the property dialog of the first legend layer file in a legend layer*/
   void legendLayerShowProperties();
+  /**Toggles the editing mode of the first layer file of a legend layer*/
+  void legendLayerToggleEditing();
    /**Sets all listview items to open*/
   void expandAll();
   /**Sets all listview items to closed*/

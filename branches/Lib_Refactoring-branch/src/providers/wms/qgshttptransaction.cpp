@@ -24,9 +24,8 @@
 
 #include "qgshttptransaction.h"
 
-#include <qapplication.h>
+#include <QApplication>
 #include <QUrl>
-
 #include <QTimer>
 
 static int NETWORK_TIMEOUT_MSEC = (120 * 1000);  // 120 seconds
@@ -110,7 +109,14 @@ bool QgsHttpTransaction::getSynchronously(QByteArray &respondedContent, int redi
 #endif
 
   httpresponse.truncate(0);
-  httpid = http->get( httpurl );
+
+  // Some WMS servers don't like receiving a http request that
+  // includes the scheme, host and port (the
+  // http://www.address.bit:80), so remove that from the url before
+  // executing an http GET.
+  QString pathAndQuery = httpurl.remove(0, 
+                         httpurl.indexOf(qurl.path()));
+  httpid = http->get( pathAndQuery );
 
   connect(http, SIGNAL( requestStarted ( int ) ),
           this,      SLOT( dataStarted ( int ) ) );
