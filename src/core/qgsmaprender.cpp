@@ -473,6 +473,27 @@ QgsRect QgsMapRender::layerExtentToOutputExtent(QgsMapLayer* theLayer, QgsRect e
   return extent;
 }
 
+QgsPoint QgsMapRender::layerCoordsToOutputCoords(QgsMapLayer* theLayer, QgsPoint point)
+{
+  if (projectionsEnabled())
+  {
+    try
+    {
+      QgsCoordinateTransform tr(theLayer->srs(), *mDestSRS);
+      point = tr.transform(point, QgsCoordinateTransform::FORWARD);
+    }
+    catch (QgsCsException &cse)
+    {
+      qDebug( "Transform error caught in %s line %d:\n%s", __FILE__, __LINE__, cse.what());
+    }
+  }
+  else
+  {
+    // leave point without transformation
+  }
+  return point;
+}
+
 QgsPoint QgsMapRender::outputCoordsToLayerCoords(QgsMapLayer* theLayer, QgsPoint point)
 {
   if (projectionsEnabled())

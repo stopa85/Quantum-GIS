@@ -79,6 +79,9 @@ class QgsMapRender : public QObject
     //! transform extent in layer's SRS to extent in output SRS
     QgsRect layerExtentToOutputExtent(QgsMapLayer* theLayer, QgsRect extent);
     
+    //! transform coordinates from layer's SRS to output SRS
+    QgsPoint layerCoordsToOutputCoords(QgsMapLayer* theLayer, QgsPoint point);
+    
     //! transform coordinates from output SRS to layer's SRS
     QgsPoint outputCoordsToLayerCoords(QgsMapLayer* theLayer, QgsPoint point);
 
