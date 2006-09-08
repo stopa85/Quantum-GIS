@@ -123,6 +123,22 @@ void QgsLegend::removeAll()
   setIconSize(mMinimumIconSize);
 }
 
+void QgsLegend::selectAll(bool select)
+{
+  QTreeWidgetItem* theItem = firstItem();
+
+  while (theItem)
+  {
+    QgsLegendItem* litem = dynamic_cast<QgsLegendItem*>(theItem);
+    if(litem && litem->type() == QgsLegendItem::LEGEND_LAYER_FILE)
+      {
+	theItem->setCheckState(0, (select ? Qt::Checked : Qt::Unchecked));
+	handleItemChange(theItem, 0);
+      }
+    theItem = nextItem(theItem);
+  }
+}
+
 void QgsLegend::removeLayer(QString layer_key)
 {
   QTreeWidgetItem* theItem = firstItem();
@@ -287,24 +303,22 @@ void QgsLegend::mouseReleaseEvent(QMouseEvent * e)
 	if(originType == QgsLegendItem::LEGEND_LAYER_FILE && destType == QgsLegendItem::LEGEND_LAYER_FILE_GROUP)
 	  {
 	    QgsMapLayer* origLayer = ((QgsLegendLayerFile*)(origin))->layer();
-	      if(1) //todo: find a test to avoid that symbology settings are copied if an item is moved within the same legend layer  
+	    if(dest->childCount() > 1)
 	      {
-		if(dest->childCount() > 1)
+		//find the first layer in the legend layer group != origLayer and copy its settings
+		QgsLegendItem* currentItem = dynamic_cast<QgsLegendItem*>(dest->child(0));
+		while(currentItem)
 		  {
-		    //find the first layer in the legend layer group != origLayer and copy its settings
-		    QgsLegendItem* currentItem = dynamic_cast<QgsLegendItem*>(dest->child(0));
-		    while(currentItem)
+		    if(currentItem != origin)
 		      {
-			if(currentItem != origin)
-			  {
-			    QgsMapLayer* origLayer = ((QgsLegendLayerFile*)(origin))->layer();
-			    QgsMapLayer* currentLayer = ((QgsLegendLayerFile*)(currentItem))->layer();
-			    origLayer->copySymbologySettings(*currentLayer);
-			    break;
-			  }
-			currentItem = currentItem->nextSibling();
+			QgsMapLayer* origLayer = ((QgsLegendLayerFile*)(origin))->layer();
+			QgsMapLayer* currentLayer = ((QgsLegendLayerFile*)(currentItem))->layer();
+			origLayer->copySymbologySettings(*currentLayer);
+			break;
 		      }
-		  }
+		    currentItem = currentItem->nextSibling();
+		  }                  
+		mMapCanvas->refresh();
 	      }
 	  }
 	else if(originType == QgsLegendItem::LEGEND_LAYER_FILE && destType == QgsLegendItem::LEGEND_LAYER_FILE)
@@ -314,24 +328,22 @@ void QgsLegend::mouseReleaseEvent(QMouseEvent * e)
 
 	    if(dest == origin)//origin item has been moved in mouseMoveEvent such that it is under the mouse cursor now
 	      {
-		if(1) //todo: find a test to avoid that symbology settings are copied if an item is moved within the same legend layer  
-		{
-		    if(origin->parent()->childCount() > 1)
+		if(origin->parent()->childCount() > 1)
+		  {
+		    //find the first layer in the legend layer group != origLayer and copy its settings
+		    QTreeWidgetItem* currentItem = dest->parent()->child(0);
+		    while(currentItem)
 		      {
-			//find the first layer in the legend layer group != origLayer and copy its settings
-			QTreeWidgetItem* currentItem = dest->parent()->child(0);
-			while(currentItem)
+			if(currentItem != origin)
 			  {
-			    if(currentItem != origin)
-			      {
-				QgsMapLayer* origLayer = ((QgsLegendLayerFile*)(origin))->layer();
-				QgsMapLayer* currentLayer = ((QgsLegendLayerFile*)(currentItem))->layer();
-				origLayer->copySymbologySettings(*currentLayer);
-				break;
-			      }
-			    currentItem = dynamic_cast<QgsLegendItem*>(currentItem)->nextSibling();
+			    QgsMapLayer* origLayer = ((QgsLegendLayerFile*)(origin))->layer();
+			    QgsMapLayer* currentLayer = ((QgsLegendLayerFile*)(currentItem))->layer();
+			    origLayer->copySymbologySettings(*currentLayer);
+			    break;
 			  }
+			currentItem = dynamic_cast<QgsLegendItem*>(currentItem)->nextSibling();
 		      }
+		   mMapCanvas->refresh(); 
 		  }
 	      }
 	    else
@@ -462,6 +474,22 @@ void QgsLegend::handleRightClickEvent(QTreeWidgetItem* item, const QPoint& posit
 	    {
 	      theMenu.addAction(tr("&Make to toplevel item"), this, SLOT(makeToTopLevelItem()));
 	    }
+	  //add entry 'allow editing'
+	  QAction* toggleEditingAction = theMenu.addAction(tr("&Allow editing"), this, SLOT(legendLayerToggleEditing()));
+	  toggleEditingAction->setCheckable(true);
+	  QgsLegendLayer* theLayer = dynamic_cast<QgsLegendLayer*>(li);
+	  if(theLayer)
+	    {
+	      QgsVectorLayer* theVectorLayer = dynamic_cast<QgsVectorLayer*>(theLayer->firstMapLayer());
+	      if(!theVectorLayer || theLayer->mapLayers().size() !=1)
+		{
+		  toggleEditingAction->setEnabled(false);
+		}
+	      if(theVectorLayer)
+		{
+		  toggleEditingAction->setChecked(theVectorLayer->isEditable());
+		}
+	    }
 	}
       else if(li->type() == QgsLegendItem::LEGEND_GROUP)
 	{
@@ -509,6 +537,7 @@ void QgsLegend::addLayer( QgsMapLayer * layer )
     QgsLegendLayerFileGroup * llfgroup = new QgsLegendLayerFileGroup(llayer,QString("Files"));
     QgsLegendLayerFile * llfile = new QgsLegendLayerFile(llfgroup, QgsLegendLayerFile::nameFromLayer(layer), layer);
     llayer->setLayerTypeIcon();
+    llayer->setToolTip(0, layer->source());
     
     //set the correct check states
     blockSignals(true);
@@ -784,6 +813,22 @@ void QgsLegend::legendLayerShowProperties()
   
   llf->updateLegendItem();
 
+}
+
+void QgsLegend::legendLayerToggleEditing()
+{
+  QgsLegendLayer* ll = dynamic_cast<QgsLegendLayer*>(currentItem());
+  if(!ll)
+    {
+      return;
+    }
+  QgsVectorLayer* theVectorLayer = dynamic_cast<QgsVectorLayer*>(ll->firstMapLayer());
+  if(!theVectorLayer)
+    {
+      return;
+    }
+
+    // TODO: call QgsLegendLayerFile::toggleEditing ... for first or all files? [MD]
 }
 
 void QgsLegend::expandAll()

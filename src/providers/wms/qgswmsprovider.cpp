@@ -29,9 +29,9 @@
 
 #include "qgshttptransaction.h"
 
-#include <QHttp>
-#include <QImage>
 #include <QUrl>
+#include <QImage>
+#include <QSet>
 
 #ifdef QGISDEBUG
 #include <QFile>
@@ -337,7 +337,7 @@ void QgsWmsProvider::setImageCrs(QString const & crs)
 
   if (
       (crs != imageCrs)
-      and
+      &&
       (! crs.isEmpty() )
      )
   {
@@ -911,12 +911,16 @@ bool QgsWmsProvider::parseCapabilitiesDOM(QByteArray const & xml, QgsWmsCapabili
 
           if      (e.tagName() == "Service")
           {
+#ifdef QGISDEBUG
             std::cout << "  Service." << std::endl;
+#endif
             parseService(e, capabilitiesProperty.service);
           }
           else if (e.tagName() == "Capability")
           {
+#ifdef QGISDEBUG
             std::cout << "  Capability." << std::endl;
+#endif
             parseCapability(e, capabilitiesProperty.capability);
           }
 
@@ -1167,7 +1171,9 @@ void QgsWmsProvider::parseKeywordList(QDomElement  const & e, QStringList& keywo
       if( !e1.isNull() ) {
           if      (e1.tagName() == "Keyword")
           {
+#ifdef QGISDEBUG
             std::cout << "      Keyword." << std::endl; 
+#endif
             keywordListProperty += e1.text();
           }
       }
@@ -1192,7 +1198,9 @@ void QgsWmsProvider::parseGet(QDomElement const & e, QgsWmsGetProperty& getPrope
       if( !e1.isNull() ) {
           if      (e1.tagName() == "OnlineResource")
           {
+#ifdef QGISDEBUG
             std::cout << "      OnlineResource." << std::endl;
+#endif
             parseOnlineResource(e1, getProperty.onlineResource);
           }
       }
@@ -1217,7 +1225,9 @@ void QgsWmsProvider::parsePost(QDomElement const & e, QgsWmsPostProperty& postPr
       if( !e1.isNull() ) {
           if      (e1.tagName() == "OnlineResource")
           {
+#ifdef QGISDEBUG
             std::cout << "      OnlineResource." << std::endl;
+#endif
             parseOnlineResource(e1, postProperty.onlineResource);
           }
       }
@@ -1242,12 +1252,16 @@ void QgsWmsProvider::parseHttp(QDomElement const & e, QgsWmsHttpProperty& httpPr
       if( !e1.isNull() ) {
           if      (e1.tagName() == "Get")
           {
+#ifdef QGISDEBUG
             std::cout << "      Get." << std::endl;
+#endif
             parseGet(e1, httpProperty.get);
           }
           else if (e1.tagName() == "Post")
           {
+#ifdef QGISDEBUG
             std::cout << "      Post." << std::endl;
+#endif
             parsePost(e1, httpProperty.post);
           }
       }
@@ -1272,7 +1286,9 @@ void QgsWmsProvider::parseDcpType(QDomElement const & e, QgsWmsDcpTypeProperty& 
       if( !e1.isNull() ) {
           if      (e1.tagName() == "HTTP")
           {
+#ifdef QGISDEBUG
             std::cout << "      HTTP." << std::endl; 
+#endif
             parseHttp(e1, dcpType.http);
           }
       }
@@ -1297,12 +1313,16 @@ void QgsWmsProvider::parseOperationType(QDomElement const & e, QgsWmsOperationTy
       if( !e1.isNull() ) {
           if      (e1.tagName() == "Format")
           {
+#ifdef QGISDEBUG
             std::cout << "      Format." << std::endl; 
+#endif
             operationType.format += e1.text();
           }
           else if (e1.tagName() == "DCPType")
           {
+#ifdef QGISDEBUG
             std::cout << "      DCPType." << std::endl;
+#endif
             QgsWmsDcpTypeProperty dcp;
             parseDcpType(e1, dcp);
             operationType.dcpType.push_back(dcp);
@@ -1329,12 +1349,16 @@ void QgsWmsProvider::parseRequest(QDomElement const & e, QgsWmsRequestProperty& 
       if( !e1.isNull() ) {
           if      (e1.tagName() == "GetMap")
           {
+#ifdef QGISDEBUG
             std::cout << "      GetMap." << std::endl; 
+#endif
             parseOperationType(e1, requestProperty.getMap);
           }
           else if (e1.tagName() == "GetFeatureInfo")
           {
+#ifdef QGISDEBUG
             std::cout << "      GetFeatureInfo." << std::endl;
+#endif
             parseOperationType(e1, requestProperty.getFeatureInfo);
           }
       }
@@ -1681,7 +1705,9 @@ bool QgsWmsProvider::parseServiceExceptionReportDOM(QByteArray const & xml)
 
           if      (e.tagName() == "ServiceException")
           {
+#ifdef QGISDEBUG
             std::cout << "  ServiceException." << std::endl;
+#endif
             parseServiceException(e);
           }
 

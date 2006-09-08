@@ -29,10 +29,9 @@
 
 #include "qgsdatasourceuri.h"
 
-#include <QSet>
 #include <QString>
 #include <QStringList>
-#include <QDomDocument>
+#include <QDomElement>
 
 class QgsCoordinateTransform;
 
