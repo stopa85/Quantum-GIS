@@ -1,0 +1,5 @@
+
+FILE (GLOB_RECURSE IMAGES *.svg)
+
+INSTALL (FILES ${IMAGES}
+         DESTINATION ${QGIS_DATA_DIR}/images/svg)

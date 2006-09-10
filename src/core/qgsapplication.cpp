@@ -49,9 +49,7 @@ QgsApplication::QgsApplication(int & argc, char ** argv, bool GUIenabled)
 : QApplication(argc, argv, GUIenabled)
 {
 #if defined(Q_WS_MACX) || defined(Q_WS_WIN32)
-  setPrefixPath(applicationDirPath());
-  setPluginPath(mPrefixPath + QString("/lib/qgis"));
-  setPkgDataPath(mPrefixPath + QString("/share/qgis"));
+  setPrefixPath(applicationDirPath(), TRUE);
 #else
   setPrefixPath(PREFIX);
   setPluginPath(PLUGINPATH);
@@ -67,8 +65,13 @@ void QgsApplication::setPrefixPath(const QString& thePrefixPath, bool useDefault
   mPrefixPath = thePrefixPath;
   if (useDefaultPaths)
   {
+#if defined(Q_WS_WIN32)
+	setPluginPath(mPrefixPath + QString("/plugins"));
+	setPkgDataPath(mPrefixPath);
+#else
     setPluginPath(mPrefixPath + QString("/lib/qgis"));
     setPkgDataPath(mPrefixPath + QString("/share/qgis"));
+#endif
   }
 }
 
