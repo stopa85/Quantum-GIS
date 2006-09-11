@@ -14,7 +14,7 @@ PROJECT(qgis)
 #############################################################
 # CMake settings
 
-CMAKE_MINIMUM_REQUIRED(VERSION 2.4.3)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.4.2)
 
 SET(CMAKE_COLOR_MAKEFILE ON)
 
@@ -45,8 +45,8 @@ ENDIF (NOT BISON_EXECUTABLE)
 #############################################################
 # search for dependencies
 
-FIND_PACKAGE(PROJ     REQUIRED)
-FIND_PACKAGE(SQLITE3  REQUIRED)
+FIND_PACKAGE(Proj     REQUIRED)
+FIND_PACKAGE(Sqlite3  REQUIRED)
 FIND_PACKAGE(GEOS     REQUIRED)
 FIND_PACKAGE(GDAL     REQUIRED)
 

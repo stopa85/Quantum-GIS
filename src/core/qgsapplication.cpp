@@ -20,6 +20,8 @@
 
 #include <QDir>
 
+#include <qgsconfig.h>
+
 // for htonl
 #ifdef WIN32
 #include <winsock.h>
@@ -51,9 +53,7 @@ QgsApplication::QgsApplication(int & argc, char ** argv, bool GUIenabled)
 #if defined(Q_WS_MACX) || defined(Q_WS_WIN32)
   setPrefixPath(applicationDirPath(), TRUE);
 #else
-  setPrefixPath(PREFIX);
-  setPluginPath(PLUGINPATH);
-  setPkgDataPath(PKGDATAPATH);
+  setPrefixPath(PREFIX, TRUE);
 #endif
 }
 
