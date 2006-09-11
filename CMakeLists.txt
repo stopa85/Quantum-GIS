@@ -8,8 +8,9 @@ PROJECT(qgis)
 #
 # TODO:
 # - includes for libs
+# - nice output when configured
 # - python bindings
-# - more providers and plugins
+# - GRASS, georeferencer
 # - rename *.ui files to have the same filename as their implementation
 #   e.g. instead of blahblahbase.ui use blahblah.ui
 #   reasons:
@@ -27,6 +28,11 @@ SET(CMAKE_COLOR_MAKEFILE ON)
 
 # set path to additional CMake modules
 SET(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
+
+# it's possible to set PLUGINS_ALSO_BINARIES to TRUE
+# then some plugins that can run as standalone apps will be built
+# also as standalone apps
+SET (PLUGINS_ALSO_BINARIES FALSE)
 
 
 #############################################################
@@ -56,6 +62,8 @@ FIND_PACKAGE(Proj     REQUIRED)
 FIND_PACKAGE(Sqlite3  REQUIRED)
 FIND_PACKAGE(GEOS     REQUIRED)
 FIND_PACKAGE(GDAL     REQUIRED)
+FIND_PACKAGE(Postgres)
+FIND_PACKAGE(Expat)
 
 #############################################################
 # search for Qt4
