@@ -1,2 +1,2 @@
 
-SUBDIRS (ogr)
+SUBDIRS (ogr wms)

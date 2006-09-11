@@ -239,10 +239,19 @@ INCLUDE_DIRECTORIES(.
 
 ADD_EXECUTABLE(qgis ${QGIS_APP_UIS_H} ${QGIS_APP_MOC_SRCS} ${QGIS_APP_SRCS})
 
-TARGET_LINK_LIBRARIES(qgis
-  ${QT_LIBRARIES}
-  qgis_core_s
-  qgis_gui_s
-)
+# MinGW has problems with linking DLLs so we're using static linking
+IF (WIN32)
+  TARGET_LINK_LIBRARIES(qgis
+    ${QT_LIBRARIES}
+    qgis_core_s
+    qgis_gui_s
+  )
+ELSE (WIN32)
+  TARGET_LINK_LIBRARIES(qgis
+    ${QT_LIBRARIES}
+    qgis_core
+    qgis_gui
+  )
+ENDIF (WIN32)
 
 INSTALL(TARGETS qgis  RUNTIME DESTINATION ${QGIS_BIN_DIR})

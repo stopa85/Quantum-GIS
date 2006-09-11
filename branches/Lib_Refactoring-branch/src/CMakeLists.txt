@@ -1,2 +1,2 @@
 
-SUBDIRS(core gui app providers)
+SUBDIRS(core gui app providers plugins)

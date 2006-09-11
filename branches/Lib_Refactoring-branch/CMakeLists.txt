@@ -2,14 +2,22 @@
 PROJECT(qgis)
 
 # BUGS:
-# - linking qgis.exe : The input line is too long
+# - linking qgis.exe on windows results in: The input line is too long
 #   (need to delete moc_ui_*.obj files from build\src\app\CMakeFiles\qgis.dir\build.make)
 # - using shared libraries for linking with qgis.exe (bad output exe)
+# - wms (at least on linux) can't be loaded
 #
 # TODO:
 # - includes for libs
-# - doc, i18n, python
-# - providers, plugins
+# - python bindings
+# - more providers and plugins
+# - rename *.ui files to have the same filename as their implementation
+#   e.g. instead of blahblahbase.ui use blahblah.ui
+#   reasons:
+#   1. it's more common in Qt4
+#   2. build system will be simpler (no need to call QT4_WRAP_CPP for ui_*.h)
+#      because dependencies are added automatically
+#   (another possibility is to create custom target for building UI)
 
 #############################################################
 # CMake settings
@@ -67,6 +75,9 @@ INCLUDE( ${QT_USE_FILE} )
 
 ADD_DEFINITIONS( -Wall )
 
+IF (CMAKE_BUILD_TYPE MATCHES Debug)
+  ADD_DEFINITIONS(-DQGISDEBUG=1)
+ENDIF (CMAKE_BUILD_TYPE MATCHES Debug)
 
 #############################################################
 # platform specific stuff
@@ -102,8 +113,14 @@ ENDIF (WIN32)
 
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/qgsconfig.h.in ${CMAKE_SOURCE_DIR}/qgsconfig.h)
 
-
 #############################################################
 # process subdirs
 
-SUBDIRS(src images resources)
+SUBDIRS(src doc images resources i18n)
+
+
+#############################################################
+# install stuff
+
+INSTALL (FILES AUTHORS
+         DESTINATION ${QGIS_DATA_DIR}/doc)
