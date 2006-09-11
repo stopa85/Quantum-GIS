@@ -5,7 +5,6 @@ PROJECT(qgis)
 # - linking qgis.exe on windows results in: The input line is too long
 #   (need to delete moc_ui_*.obj files from build\src\app\CMakeFiles\qgis.dir\build.make)
 # - using shared libraries for linking with qgis.exe (bad output exe)
-# - wms (at least on linux) can't be loaded
 #
 # TODO:
 # - includes for libs
