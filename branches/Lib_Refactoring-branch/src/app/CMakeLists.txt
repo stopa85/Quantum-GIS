@@ -185,7 +185,7 @@ legend/qgslegend.h
 legend/qgslegendlayerfile.h
 )
 
-IF (WITH_POSTGRES)
+IF (POSTGRES_FOUND)
   SET (QGIS_APP_SRCS ${QGIS_APP_SRCS}
           qgsdbsourceselect.cpp
 		  qgsnewconnection.cpp
@@ -196,7 +196,10 @@ IF (WITH_POSTGRES)
 		  qgsnewconnection.h
 		  qgspgquerybuilder.h
   )
-ENDIF (WITH_POSTGRES)
+
+  ADD_DEFINITIONS(-DHAVE_POSTGRESQL)
+
+ENDIF (POSTGRES_FOUND)
 
 IF (WIN32)
 
@@ -253,5 +256,9 @@ ELSE (WIN32)
     qgis_gui
   )
 ENDIF (WIN32)
+
+IF (POSTGRES_FOUND)
+  TARGET_LINK_LIBRARIES (qgis ${POSTGRES_LIBRARY})
+ENDIF (POSTGRES_FOUND)
 
 INSTALL(TARGETS qgis  RUNTIME DESTINATION ${QGIS_BIN_DIR})

@@ -25,7 +25,7 @@
 #include <stdlib.h>  // atof()
   
 #include "qgssearchtreenode.h"
-#include "qgssearchstringparser.h"
+#include "qgssearchstringparser.hpp"
 
 %}
 

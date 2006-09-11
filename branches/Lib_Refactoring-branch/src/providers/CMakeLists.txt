@@ -1,2 +1,10 @@
 
-SUBDIRS (ogr wms)
+SUBDIRS (ogr wms delimitedtext)
+
+IF (POSTGRES_FOUND)
+  SUBDIRS (postgres)
+ENDIF (POSTGRES_FOUND)
+
+IF (EXPAT_FOUND)
+  SUBDIRS (gpx)
+ENDIF (EXPAT_FOUND)
