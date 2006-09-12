@@ -1,0 +1,84 @@
+/***************************************************************************
+    qgsmapcanvasmap.cpp  -  draws the map in map canvas
+    ----------------------
+    begin                : February 2006
+    copyright            : (C) 2006 by Martin Dobias
+    email                : wonder.sk at gmail dot com
+ ***************************************************************************
+ *                                                                         *
+ *   This program is free software; you can redistribute it and/or modify  *
+ *   it under the terms of the GNU General Public License as published by  *
+ *   the Free Software Foundation; either version 2 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *                                                                         *
+ ***************************************************************************/
+/* $Id$ */
+
+#include "qgsmapcanvasmap.h"
+#include "qgsmaprender.h"
+
+#include <QPainter>
+
+QgsMapCanvasMap::QgsMapCanvasMap(Q3Canvas *canvas, QgsMapRender* render)
+  : Q3CanvasRectangle(canvas), mRender(render)
+{
+  setZ(-10);
+  move(0,0);
+  resize(QSize(1,1));
+  mUseQImageToRender = false;
+}
+
+
+void QgsMapCanvasMap::drawShape(QPainter & p)
+{
+  p.drawPixmap(mOffset.x(), mOffset.y(), mPixmap);
+}
+
+void QgsMapCanvasMap::resize(QSize size)
+{
+  setSize(size.width(), size.height());
+  mPixmap = QPixmap(size);
+  mRender->setOutputSize(size, mPixmap.logicalDpiX());
+}
+
+void QgsMapCanvasMap::render()
+{
+  // Rendering to a QImage gives incorrectly filled polygons in some
+  // cases (as at Qt4.1.4), but it is the only renderer that supports
+  // anti-aliasing, so we provide the means to swap between QImage and
+  // QPixmap. 
+
+  if (mUseQImageToRender)
+  {
+    // use temporary image for rendering
+    QImage image(size(), QImage::Format_RGB32);
+  
+    image.fill(mBgColor.rgb());
+
+    QPainter paint;
+    paint.begin(&image);
+    // Clip drawing to the QImage
+    paint.setClipRect(image.rect());
+
+    // antialiasing
+    if (mAntiAliasing)
+      paint.setRenderHint(QPainter::Antialiasing);
+  
+    mRender->render(&paint);
+
+    paint.end();
+  
+    // convert QImage to QPixmap to acheive faster drawing on screen
+    mPixmap = QPixmap::fromImage(image);
+  }
+  else
+  {
+    mPixmap.fill(mBgColor.rgb());
+    QPainter paint;
+    paint.begin(&mPixmap);
+    // Clip our drawing to the QPixmap
+    paint.setClipRect(mPixmap.rect());
+    mRender->render(&paint);
+    paint.end();
+  }
+}
