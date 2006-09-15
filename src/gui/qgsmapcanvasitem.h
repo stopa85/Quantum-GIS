@@ -23,7 +23,7 @@
 class QgsMapCanvas;
 class QPainter;
 
-class QgsMapCanvasItem : public QObject, public Q3CanvasRectangle
+class GUI_EXPORT QgsMapCanvasItem : public QObject, public Q3CanvasRectangle
 {
   Q_OBJECT;
   

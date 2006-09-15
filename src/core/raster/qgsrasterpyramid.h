@@ -1,7 +1,7 @@
 #ifndef QGSRASTERPYRAMID
 #define QGSRASTERPYRAMID
 /** \brief This struct is used to store pyramid info for the raster layer. */
-class QgsRasterPyramid
+class CORE_EXPORT QgsRasterPyramid
 {
   public:
   /** \brief The pyramid level as implemented in gdal (level 2 is half orignal raster size etc) */

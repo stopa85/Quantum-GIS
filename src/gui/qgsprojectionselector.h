@@ -19,7 +19,7 @@ class QResizeEvent;
 /**
   @author Tim Sutton
   */
-class QgsProjectionSelector: public QWidget, private Ui::QgsProjectionSelectorBase
+class GUI_EXPORT QgsProjectionSelector: public QWidget, private Ui::QgsProjectionSelectorBase
 {
   Q_OBJECT
     public:

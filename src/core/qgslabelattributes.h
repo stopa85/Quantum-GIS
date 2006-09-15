@@ -74,7 +74,7 @@ class QBrush;
  *   Each attribute is either se or unset.
  */
 
-class QgsLabelAttributes
+class  CORE_EXPORT QgsLabelAttributes
 {
 public:
     /** Constructor.

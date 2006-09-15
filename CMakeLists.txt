@@ -2,9 +2,8 @@
 PROJECT(qgis)
 
 # BUGS:
-# - linking qgis.exe on windows results in: The input line is too long
+# - linking qgis.exe on mingw results in: The input line is too long
 #   (need to delete moc_ui_*.obj files from build\src\app\CMakeFiles\qgis.dir\build.make)
-# - using shared libraries for linking with qgis.exe (bad output exe)
 #
 # TODO:
 # - includes for libs
@@ -95,10 +94,6 @@ IF (WIN32)
   SET (QGIS_DATA_DIR   ${CMAKE_INSTALL_PREFIX})
   SET (QGIS_PLUGIN_DIR ${CMAKE_INSTALL_PREFIX}/plugins)
 
-  # without this option linking qgis_gui to qgis_core fails
-  MESSAGE(STATUS "Setting -enable-runtime-pseudo-reloc")
-  SET(CMAKE_SHARED_LINKER_FLAGS  ${CMAKE_SHARED_LINKER_FLAGS} -Wl,--enable-runtime-pseudo-reloc)
-
 ELSE (WIN32)
 
   # common for MAC and UNIX
@@ -112,6 +107,17 @@ ELSE (WIN32)
     ADD_DEFINITIONS(-DPKGDATAPATH=\\"${QGIS_DATA_DIR}\\")
   ENDIF (UNIX)
 
+ENDIF (WIN32)
+
+
+IF (WIN32)
+  # expect that classes are being imported
+  ADD_DEFINITIONS("-DCORE_EXPORT=__declspec(dllimport)")
+  ADD_DEFINITIONS("-DGUI_EXPORT=__declspec(dllimport)")
+ELSE (WIN32)
+  # other compilers don't use that MSVC construct
+  ADD_DEFINITIONS(-DCORE_EXPORT=)
+  ADD_DEFINITIONS(-DGUI_EXPORT=)
 ENDIF (WIN32)
 
 

@@ -39,7 +39,7 @@ class QgsSpatialRefSys;
  *
  */
 
-class QgsMapRender : public QObject
+class CORE_EXPORT QgsMapRender : public QObject
 {
   Q_OBJECT
       

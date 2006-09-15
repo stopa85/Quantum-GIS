@@ -31,7 +31,7 @@
 /** \brief The RasterBandStats struct is a container for statistics about a single
  * raster band.
  */
-class QgsRasterBandStats
+class CORE_EXPORT QgsRasterBandStats
 {
   public:
     /** \brief The name of the band that these stats belong to. */

@@ -34,7 +34,7 @@ class QgsPoint;
  *         sense for Raster layers.
  */
  
-class QgsRasterDataProvider : public QgsDataProvider
+class CORE_EXPORT QgsRasterDataProvider : public QgsDataProvider
 {
  
   Q_OBJECT

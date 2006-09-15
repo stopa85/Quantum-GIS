@@ -31,7 +31,7 @@
 
 #include <qevent.h>
 
-class QGis
+class CORE_EXPORT QGis
 { 
 public:
   // Version constants

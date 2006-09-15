@@ -9,7 +9,7 @@ INCLUDE_DIRECTORIES( . ../../core)
 ADD_LIBRARY(wmsprovider SHARED ${WMS_SRCS} ${WMS_MOC_SRCS})
 
 TARGET_LINK_LIBRARIES(wmsprovider
-  ${QT_LIBRARY}
+  ${QT_LIBRARIES}
   qgis_core
 )
 

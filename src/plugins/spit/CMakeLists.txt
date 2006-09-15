@@ -59,11 +59,13 @@ INCLUDE_DIRECTORIES(
      ../../gui
      ..
      ${POSTGRES_INCLUDE_DIR}
+     ${GDAL_INCLUDE_DIR}
 )
 
 TARGET_LINK_LIBRARIES(spitplugin
   ${QT_LIBRARIES}
   ${POSTGRES_LIBRARY}
+  ${GDAL_LIBRARY}
   qgis_core
   qgis_gui
 )

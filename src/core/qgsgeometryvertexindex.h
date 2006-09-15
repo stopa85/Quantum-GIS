@@ -32,7 +32,7 @@ class QString;
   * @author Brendan Morley
   */
 
-class QgsGeometryVertexIndex {
+class CORE_EXPORT QgsGeometryVertexIndex {
 
   public:
   

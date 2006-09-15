@@ -26,7 +26,7 @@
 class QgsVectorLayer;
 
 /**This class contains the information for graduate symbol rendering*/
-class QgsGraduatedSymbolRenderer: public QgsRenderer
+class CORE_EXPORT QgsGraduatedSymbolRenderer: public QgsRenderer
 {
  public:
     QgsGraduatedSymbolRenderer(QGis::VectorType type);

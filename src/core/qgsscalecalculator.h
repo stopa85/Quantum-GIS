@@ -30,7 +30,7 @@ class QgsRect;
  * \brief Calculates scale for a given combination of canvas size, map extent,
  * and monitor dpi.
  */
-class QgsScaleCalculator
+class CORE_EXPORT QgsScaleCalculator
 {
   public:
 

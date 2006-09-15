@@ -77,10 +77,6 @@ class QgsMapCanvas::CanvasProperties
 const double QgsMapCanvas::scaleDefaultMultiple = 2.0;
 
 
-/** note this is private and so shouldn't be accessible */
-QgsMapCanvas::QgsMapCanvas()
-{}
-
   QgsMapCanvas::QgsMapCanvas(QWidget * parent, const char *name)
 : Q3CanvasView(parent, name),
   mCanvasProperties(new CanvasProperties)

@@ -24,7 +24,7 @@
 
 class QgsMapRender;
 
-class QgsMapCanvasMap : public Q3CanvasRectangle
+class GUI_EXPORT QgsMapCanvasMap : public Q3CanvasRectangle
 {
   public:
     

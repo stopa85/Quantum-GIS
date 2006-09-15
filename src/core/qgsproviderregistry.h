@@ -35,7 +35,7 @@ class QgsProviderMetadata;
 
   This is a Singleton class that manages data provider access.
 */
-class QgsProviderRegistry
+class CORE_EXPORT QgsProviderRegistry
 {
 
   public:

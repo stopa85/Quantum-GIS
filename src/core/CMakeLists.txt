@@ -1,5 +1,4 @@
 
-###ADD_DEFINITIONS(-DBUILD_QGIS_CORE)
 
 #############################################################
 # sources
@@ -95,6 +94,14 @@ INCLUDE_DIRECTORIES( ../.. raster renderer symbology .
   ${GDAL_INCLUDE_DIR}
 )
 
+IF (WIN32)
+  IF (MSVC)
+    ADD_DEFINITIONS("-DCORE_EXPORT=__declspec(dllexport)")
+  ELSE (MSVC)
+    ADD_DEFINITIONS("-UCORE_EXPORT -DCORE_EXPORT=__declspec(dllexport)")
+  ENDIF (MSVC)
+ENDIF (WIN32)
+
 #############################################################
 # qgis_core library
 
@@ -113,22 +120,6 @@ TARGET_LINK_LIBRARIES(qgis_core
   ${GDAL_LIBRARY}
   ${PLATFORM_LIBRARIES}
 )
-
-IF (WIN32)
-
-ADD_LIBRARY(qgis_core_s STATIC ${QGIS_CORE_SRCS} ${QGIS_CORE_MOC_SRCS})
-
-TARGET_LINK_LIBRARIES(qgis_core_s
-  ${QT_LIBRARIES} ${QT_QTSVG_LIBRARY}
-  ${PROJ_LIBRARY}
-  ${SQLITE3_LIBRARY}
-  ${GEOS_LIBRARY}
-  ${GDAL_LIBRARY}
-  ${PLATFORM_LIBRARIES}
-)
-
-ENDIF (WIN32)
-
 
 INSTALL(TARGETS qgis_core
   RUNTIME DESTINATION ${QGIS_BIN_DIR}

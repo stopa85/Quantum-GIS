@@ -24,7 +24,7 @@ class QDomDocument;
 #include <QString>
 
 /**A renderitem contains a symbol together with the attribute value for which it is valid and a label*/
-class QgsRenderItem {
+class CORE_EXPORT QgsRenderItem {
  protected:
     /**Symbol to use in rendering the class*/
     QgsSymbol* mSymbol;

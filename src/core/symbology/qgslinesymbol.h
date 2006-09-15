@@ -24,7 +24,7 @@ class QString;
 /*! \class QgsLineSymbol
  * \brief Symbol for displaying lines
  */
-class QgsLineSymbol : public QgsSymbol{
+class CORE_EXPORT QgsLineSymbol : public QgsSymbol{
  public:
     //! Constructor
     QgsLineSymbol();

@@ -25,7 +25,7 @@ class QPen;
 class QBrush;
 
 /** Catalogue of point symbols */
-class QgsMarkerCatalogue
+class CORE_EXPORT QgsMarkerCatalogue
 {
 
 public:

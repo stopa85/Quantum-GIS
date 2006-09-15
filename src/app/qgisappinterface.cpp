@@ -109,7 +109,7 @@ void QgisAppInterface::removeToolBarIcon(QAction *qAction)
 }
 QToolBar* QgisAppInterface::addToolBar(QString name)
 {
-  qgis->addToolBar(name);
+  return qgis->addToolBar(name);
 }
 void QgisAppInterface::openURL(QString url, bool useQgisDocDirectory)
 {

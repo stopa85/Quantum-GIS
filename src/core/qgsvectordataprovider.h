@@ -33,7 +33,7 @@ class QgsGeometry;
 /** Base class for vector data providers
  */
  
-class QgsVectorDataProvider : public QgsDataProvider
+class CORE_EXPORT QgsVectorDataProvider : public QgsDataProvider
 {
 
     // XXX no  signals or slots, so not needed Q_OBJECT

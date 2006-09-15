@@ -43,7 +43,7 @@ class QgsRect;
  * @author Brendan Morley
  */
 
-class QgsGeometry {
+class CORE_EXPORT QgsGeometry {
 
   public:
   

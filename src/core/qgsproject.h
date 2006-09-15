@@ -49,7 +49,7 @@ class QDomNode;
   qgis can one day have simultaneous multiple projects.
 
 */
-class QgsProject : public QObject
+class CORE_EXPORT QgsProject : public QObject
 {
   Q_OBJECT
 

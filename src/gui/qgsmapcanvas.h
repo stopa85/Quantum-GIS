@@ -59,7 +59,7 @@ class QgsMapTool;
 /** \class QgsMapCanvasLayer
   \brief class that stores additional layer's flags together with pointer to the layer
 */
-class QgsMapCanvasLayer
+class GUI_EXPORT QgsMapCanvasLayer
 {
 public:
   QgsMapCanvasLayer(QgsMapLayer* layer, bool visible = TRUE, bool inOverview = FALSE)
@@ -90,7 +90,7 @@ private:
  * \brief Map canvas class for displaying all GIS data types.
  */
 
-class QgsMapCanvas : public Q3CanvasView
+class GUI_EXPORT QgsMapCanvas : public Q3CanvasView
 {
     Q_OBJECT;
 
@@ -302,11 +302,6 @@ private:
        copy like a hot potato leaving the copyer in a weird state.
      */
     QgsMapCanvas( QgsMapCanvas const & );
-
-    /**
-       private to force use of ctor with arguments
-     */
-    QgsMapCanvas();
 
     //! all map rendering is done in this class
     QgsMapRender* mMapRender;

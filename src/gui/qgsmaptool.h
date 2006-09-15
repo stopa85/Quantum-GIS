@@ -29,7 +29,7 @@ class QPoint;
 class QAction;
 
 
-class QgsMapTool
+class GUI_EXPORT QgsMapTool
 {
   public:
     

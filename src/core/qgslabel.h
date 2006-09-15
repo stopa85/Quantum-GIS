@@ -34,7 +34,7 @@ class QgsMapToPixel;
 class QgsCoordinateTransform;
 
 /** Render class to display labels */
-class QgsLabel
+class CORE_EXPORT QgsLabel
 {
 public:
     QgsLabel ( std::vector<QgsField> const & fields  );

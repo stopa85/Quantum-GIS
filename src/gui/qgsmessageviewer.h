@@ -22,7 +22,7 @@
 #include <qgisgui.h>
 #include "qgsmessageoutput.h"
 
-class QgsMessageViewer: public QDialog, public QgsMessageOutput, private Ui::QgsMessageViewer
+class GUI_EXPORT QgsMessageViewer: public QDialog, public QgsMessageOutput, private Ui::QgsMessageViewer
 {
   public:
     QgsMessageViewer(QWidget *parent = 0, Qt::WFlags fl = QgisGui::ModalDialogFlags);
