@@ -18,7 +18,7 @@
 
 #include <QApplication>
 
-class QgsApplication: public QApplication
+class CORE_EXPORT QgsApplication: public QApplication
 {
   public:
     QgsApplication(int & argc, char ** argv, bool GUIenabled);

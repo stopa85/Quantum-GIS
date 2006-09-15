@@ -36,7 +36,7 @@
 // for drawing items to an X11 display which have a limit on the
 // magnitude of the screen coordinates (+/- 32768, i.e. 16 bit integer).
 
-class QgsClipper
+class CORE_EXPORT QgsClipper
 {
  public:
 

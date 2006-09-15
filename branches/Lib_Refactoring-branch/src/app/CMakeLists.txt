@@ -207,18 +207,26 @@ IF (WIN32)
   # Note: can't include .rc directly to source files
   # as it's ignored when used MinGW
 
-  FIND_PROGRAM(WINDRES windres)
   IF (NOT WINDRES)
-    MESSAGE(FATAL_ERROR "windres not found - aborting")
+    FIND_PROGRAM(WINDRES windres)
+    IF (NOT WINDRES)
+      MESSAGE(FATAL_ERROR "windres not found - aborting")
+    ENDIF (NOT WINDRES)
   ENDIF (NOT WINDRES)
 
   ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/qgis_win32.obj
-                     COMMAND windres.exe -I${CMAKE_CURRENT_SOURCE_DIR}/..
+                     COMMAND ${WINDRES}  -I${CMAKE_CURRENT_SOURCE_DIR}/..
                                          -i${CMAKE_CURRENT_SOURCE_DIR}/../qgis_win32.rc
                                          -o ${CMAKE_CURRENT_BINARY_DIR}/qgis_win32.obj)
   SET(QGIS_APP_SRCS ${QGIS_APP_SRCS} ${CMAKE_CURRENT_BINARY_DIR}/qgis_win32.obj)
 
 ENDIF (WIN32)
+
+# This is the right way to include icon in MSVC but currently
+# it ends with error that qgis_win322.ico is old DIB and it has to be converted
+#IF (MSVC)
+#  SET (QGIS_APP_SRCS ${QGIS_APP_SRCS} ${CMAKE_CURRENT_SOURCE_DIR}/../qgis_win32.rc)
+#ENDIF (MSVC)
 
 
 # TODO: better way for ui?
@@ -238,24 +246,20 @@ INCLUDE_DIRECTORIES(.
   ${GDAL_INCLUDE_DIR}
 )
 
+IF (POSTGRES_FOUND)
+  INCLUDE_DIRECTORIES(${POSTGRES_INCLUDE_DIR})
+ENDIF (POSTGRES_FOUND)
+
+
 #############
 
 ADD_EXECUTABLE(qgis ${QGIS_APP_UIS_H} ${QGIS_APP_MOC_SRCS} ${QGIS_APP_SRCS})
 
-# MinGW has problems with linking DLLs so we're using static linking
-IF (WIN32)
-  TARGET_LINK_LIBRARIES(qgis
-    ${QT_LIBRARIES}
-    qgis_core_s
-    qgis_gui_s
-  )
-ELSE (WIN32)
-  TARGET_LINK_LIBRARIES(qgis
-    ${QT_LIBRARIES}
-    qgis_core
-    qgis_gui
-  )
-ENDIF (WIN32)
+TARGET_LINK_LIBRARIES(qgis
+  ${QT_LIBRARIES}
+  qgis_core
+  qgis_gui
+)
 
 IF (POSTGRES_FOUND)
   TARGET_LINK_LIBRARIES (qgis ${POSTGRES_LIBRARY})

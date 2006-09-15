@@ -24,7 +24,7 @@ typedef void (*CUSTOM_SRS_VALIDATION)(QgsSpatialRefSys*);
  * \class QgsSpatialRefSys
  * \brief Class for storing a spatial reference system (SRS)
  */ 
-class QgsSpatialRefSys
+class CORE_EXPORT QgsSpatialRefSys
 {
     public:
       

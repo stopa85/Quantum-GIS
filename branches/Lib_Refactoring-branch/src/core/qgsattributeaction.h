@@ -39,7 +39,7 @@ class QDomDocument;
 /*! \class QgsAction
  * \brief Utility class that encapsulates an action and associated information
  */
-class QgsAction
+class CORE_EXPORT QgsAction
 {
  public:
   QgsAction(QString name, QString action, bool capture) :
@@ -65,7 +65,7 @@ class QgsAction
  * attributes.
  */
 
-class QgsAttributeAction
+class  CORE_EXPORT QgsAttributeAction
 {
  public:
 

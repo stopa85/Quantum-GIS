@@ -21,7 +21,7 @@
 #include "qgsrenderer.h"
 #include <map>
 
-class QgsUniqueValueRenderer: public QgsRenderer
+class CORE_EXPORT QgsUniqueValueRenderer: public QgsRenderer
 {
  public:
     QgsUniqueValueRenderer(QGis::VectorType type);

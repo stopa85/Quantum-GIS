@@ -34,7 +34,7 @@ class QgsRenderItem;
 class QgsSymbol;
 
 /**Abstract base class for renderers. A renderer holds all the information necessary to draw the contents of a vector layer to a map canvas. The vector layer then passes each feature to paint to the renderer*/
-class QgsRenderer
+class CORE_EXPORT QgsRenderer
 {
  public:
     /** Default ctor sets up selection colour from project properties */

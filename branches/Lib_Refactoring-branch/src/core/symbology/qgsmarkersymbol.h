@@ -23,7 +23,7 @@
 #include <q3picture.h>
 
 /**Representation of a marker symbol*/
-class QgsMarkerSymbol : public QgsSymbol
+class CORE_EXPORT QgsMarkerSymbol : public QgsSymbol
 {
  public:
     /**Constructor*/

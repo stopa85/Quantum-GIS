@@ -37,7 +37,7 @@ QGIS application uses QgsMessageView class for displaying a dialog to the user.
 Object deletes itself when it's not needed anymore. Children should use
 signal destroyed() to notify the deletion
 */
-class QgsMessageOutput
+class CORE_EXPORT QgsMessageOutput
 {
   public:
     

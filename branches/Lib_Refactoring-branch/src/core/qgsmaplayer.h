@@ -39,7 +39,7 @@ class QPainter;
  *  \brief Base class for all map layer types.
  * This class is the base class for all map layer types (vector, raster).
  */
-class QgsMapLayer : public QObject
+class CORE_EXPORT QgsMapLayer : public QObject
 {
     Q_OBJECT
 

@@ -31,7 +31,7 @@ class QgsMapCanvas;
 class QgsMapRender;
 class QgsPanningWidget; // defined in .cpp
 
-class QgsMapOverviewCanvas : public QWidget
+class GUI_EXPORT QgsMapOverviewCanvas : public QWidget
 {
   Q_OBJECT;
   

@@ -47,7 +47,7 @@ typedef std::set<int> feature_ids;
  * \brief Vector layer backed by a data source provider
  */
 
-class QgsVectorLayer : public QgsMapLayer
+class CORE_EXPORT QgsVectorLayer : public QgsMapLayer
 {
   Q_OBJECT
 

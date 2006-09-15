@@ -22,7 +22,7 @@
 #include "qgsrenderitem.h"
 
 /**A Renderer for ranges of values (e.g. used for graduated colors)*/
-class QgsRangeRenderItem: public QgsRenderItem
+class CORE_EXPORT QgsRangeRenderItem: public QgsRenderItem
 {
  public:
     QgsRangeRenderItem();

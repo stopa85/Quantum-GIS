@@ -624,7 +624,7 @@ bool QgsWmsProvider::retrieveServerCapabilities(bool forceRefresh)
   std::cout << "QgsWmsProvider::retrieveServerCapabilities: entering." << std::endl;
 #endif
 
-  if ( httpcapabilitiesresponse.isNull() or
+  if ( httpcapabilitiesresponse.isNull() ||
        forceRefresh )
   {
 
@@ -878,7 +878,7 @@ bool QgsWmsProvider::parseCapabilitiesDOM(QByteArray const & xml, QgsWmsCapabili
   if (!
       (
        (docElem.tagName() == "WMS_Capabilities")     // (1.3 vintage)
-       or
+       ||
        (docElem.tagName() == "WMT_MS_Capabilities")  // (1.1.1 vintage)
       )
      )
@@ -1854,6 +1854,7 @@ bool QgsWmsProvider::isValid()
 QString QgsWmsProvider::wmsVersion()
 {
   // TODO
+  return NULL;
 } 
 
 QStringList QgsWmsProvider::supportedImageEncodings()

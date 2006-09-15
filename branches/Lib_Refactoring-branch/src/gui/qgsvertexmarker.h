@@ -22,7 +22,7 @@
 
 class QPainter;
 
-class QgsVertexMarker : public QgsMapCanvasItem
+class GUI_EXPORT QgsVertexMarker : public QgsMapCanvasItem
 {
   public:
     

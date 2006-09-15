@@ -30,7 +30,7 @@ class QgsRect;
  *@author Gary E.Sherman
  */
 
-class QgsFeature {
+class CORE_EXPORT QgsFeature {
 
   public:
 

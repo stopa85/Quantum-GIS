@@ -36,7 +36,7 @@ class QgsSearchTreeValue;
  * node is terminal (has no children) if it's a number, column ref or string
  * non-terminal is only node with operator - with 1 or 2 children
  */
-class QgsSearchTreeNode
+class CORE_EXPORT QgsSearchTreeNode
 {
 public:
 

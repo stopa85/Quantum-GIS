@@ -23,7 +23,7 @@
 
 
 /**Render class to display all the features with a single QgsSymbol*/
-class QgsSingleSymbolRenderer: public QgsRenderer
+class CORE_EXPORT QgsSingleSymbolRenderer: public QgsRenderer
 {
  public:
     QgsSingleSymbolRenderer(QGis::VectorType type);

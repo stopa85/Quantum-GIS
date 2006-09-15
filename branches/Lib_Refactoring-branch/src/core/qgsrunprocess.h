@@ -31,7 +31,7 @@ class QgsMessageOutput;
  * optionally captures the standard output and error from the
  * process and displays them in a dialog box.
  */
-class QgsRunProcess: public QObject
+class CORE_EXPORT QgsRunProcess: public QObject
 {
   Q_OBJECT
 

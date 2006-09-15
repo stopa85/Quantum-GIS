@@ -18,7 +18,7 @@ INCLUDE_DIRECTORIES(
 ADD_LIBRARY(delimitedtextprovider SHARED ${DTEXT_SRCS})
 
 TARGET_LINK_LIBRARIES(delimitedtextprovider
-  ${QT_LIBRARY}
+  ${QT_LIBRARIES}
   ${GDAL_LIBRARY}
   ${GEOS_LIBRARY}
   qgis_core

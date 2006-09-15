@@ -41,6 +41,15 @@ INCLUDE_DIRECTORIES(. ../.. ../core
      ${SQLITE3_INCLUDE_DIR}
      ${CMAKE_CURRENT_BINARY_DIR})
 
+IF (WIN32)
+  IF (MSVC)
+    ADD_DEFINITIONS("-DGUI_EXPORT=__declspec(dllexport)")
+  ELSE (MSVC)
+    ADD_DEFINITIONS("-UGUI_EXPORT -DGUI_EXPORT=__declspec(dllexport)")
+  ENDIF (MSVC)
+ENDIF (WIN32)
+
+
 #############################################################
 # qgis_gui library
 
@@ -53,18 +62,6 @@ TARGET_LINK_LIBRARIES(qgis_gui
   ${SQLITE3_LIBRARIES}
   qgis_core
 )
-
-IF (WIN32)
-
-ADD_LIBRARY(qgis_gui_s STATIC ${QGIS_GUI_SRCS} ${QGIS_GUI_MOC_SRCS})
-
-TARGET_LINK_LIBRARIES(qgis_gui_s
-  ${QT_LIBRARIES}
-  ${SQLITE3_LIBRARIES}
-  qgis_core_s
-)
-
-ENDIF (WIN32)
 
 INSTALL(TARGETS qgis_gui
   RUNTIME DESTINATION ${QGIS_BIN_DIR}

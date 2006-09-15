@@ -214,7 +214,7 @@ class GDALRasterBand;
  *  onto the mapcanvas..
  */
 
-class QgsRasterLayer : public QgsMapLayer
+class CORE_EXPORT QgsRasterLayer : public QgsMapLayer
 {
     Q_OBJECT
 public:

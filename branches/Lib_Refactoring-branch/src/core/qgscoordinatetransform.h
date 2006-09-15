@@ -49,7 +49,7 @@ class QString;
 * of the layer. For example, a forward transformation transforms coordinates from the
 * layers coordinate system to the map canvas.
 */
-class QgsCoordinateTransform: public QObject
+class CORE_EXPORT QgsCoordinateTransform: public QObject
 {
   Q_OBJECT
  public:

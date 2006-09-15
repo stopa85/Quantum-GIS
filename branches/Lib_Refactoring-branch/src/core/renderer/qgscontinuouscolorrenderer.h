@@ -28,7 +28,7 @@ class QPainter;
 class QImage;
 
 /**Renderer class which interpolates rgb values linear between the minimum and maximum value of the classification field*/
-class QgsContinuousColorRenderer: public QgsRenderer
+class CORE_EXPORT QgsContinuousColorRenderer: public QgsRenderer
 {
  public:
     QgsContinuousColorRenderer(QGis::VectorType type);

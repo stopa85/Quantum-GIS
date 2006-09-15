@@ -28,7 +28,7 @@
 // OGR Includes
 #include "ogr_api.h"
 
-class QgsVectorFileWriter
+class CORE_EXPORT QgsVectorFileWriter
 {
     public:
       

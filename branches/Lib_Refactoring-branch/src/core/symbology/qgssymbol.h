@@ -29,7 +29,7 @@ class QDomDocument;
 
 /**Encapsulates settings for drawing (QPen, QBrush, Point symbol) and classification
  (lower value, upper value)*/
-class QgsSymbol{
+class CORE_EXPORT QgsSymbol{
 
  public:
     /**Constructor*/

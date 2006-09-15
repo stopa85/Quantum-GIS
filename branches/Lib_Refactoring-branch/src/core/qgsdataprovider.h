@@ -49,7 +49,7 @@ class QgsSpatialRefSys;
  */
 
 
-class QgsDataProvider : public QObject 
+class CORE_EXPORT QgsDataProvider : public QObject 
 {
   Q_OBJECT
 

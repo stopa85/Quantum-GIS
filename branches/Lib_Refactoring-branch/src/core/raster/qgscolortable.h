@@ -40,7 +40,7 @@ typedef struct {
     unsigned char min_c1, min_c2, min_c3, min_c4;
     unsigned char max_c1, max_c2, max_c3, max_c4;
 } RAMP;
-class QgsColorTable
+class CORE_EXPORT QgsColorTable
 {
 public:
     /** 

@@ -19,7 +19,7 @@
 #define QGSCSEXCEPTION_H
 
 #include "qgsexception.h"
-class QgsCsException : public QgsException
+class CORE_EXPORT QgsCsException : public QgsException
 {
   public:
     QgsCsException(std::string const &what) : QgsException(what){};

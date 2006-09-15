@@ -108,6 +108,14 @@ wish to see edbug messages printed to stdout.
 #include "qgsspatialrefsys.h"
 
 
+// workaround for MSVC compiler which already has defined macro max
+// that interferes with calling std::numeric_limits<int>::max
+#ifdef _MSC_VER
+# ifdef max(x,y)
+#  undef max(x,y)
+# endif
+#endif
+
 //////////////////////////////////////////////////////////
 //
 // Static Methods and members first....

@@ -45,7 +45,7 @@ class QgsRasterLayer;
  * could provide their own implementation to be able to use plugins.
  */
 
-class QgisInterface : public QObject
+class GUI_EXPORT QgisInterface : public QObject
 {
   Q_OBJECT;
 

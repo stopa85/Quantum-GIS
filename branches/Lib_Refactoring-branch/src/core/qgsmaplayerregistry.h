@@ -33,7 +33,7 @@ class QgsMapLayer;
 * \brief This class tracks map layers that are currently loaded an provides
 * a means to fetch a pointer to a map layer and delete it
 */
-class QgsMapLayerRegistry : public QObject
+class CORE_EXPORT QgsMapLayerRegistry : public QObject
 {
    Q_OBJECT
 

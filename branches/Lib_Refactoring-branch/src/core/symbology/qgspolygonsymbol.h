@@ -24,7 +24,7 @@ class QString;
 /*! \class QgsPolygonSymbol
  * \brief Symbol for displaying polygons
  */
-class QgsPolygonSymbol : public QgsSymbol{
+class CORE_EXPORT QgsPolygonSymbol : public QgsSymbol{
  public:
     //! Constructor
     QgsPolygonSymbol();
