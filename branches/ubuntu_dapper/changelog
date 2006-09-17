@@ -1,3 +1,21 @@
+qgis (0.7.9+svn20060816) unstable; urgency=low
+
+  * SVN Snapshot build with latest bugfixes 
+
+ -- Tim Sutton <tim@linfiniti.com>  Wed, 16 Aug 2006 10:20:45 -0300
+
+qgis (0.7.9+svn20060714) unstable; urgency=low
+
+  * Second build of 0.8 preview 1 which should fix broken gdal-grass deps 
+
+ -- Tim Sutton <tim@linfiniti.com>  Fri, 14 Jul 2006 18:58:59 -0300
+
+qgis (0.7.9+svn20060630) unstable; urgency=low
+
+  * Fix incorrect dep on debiangis version of gdal instead of the one that comes with Ubuntu
+
+ -- Tim Sutton <tim@linfiniti.com>  Fri, 30 Jun 2006 19:12:02 -0300
+
 qgis (0.7.9+svn19042006) unstable; urgency=low
 
   * Resolve packaging issue where some libs were not included in package 
