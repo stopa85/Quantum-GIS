@@ -29,7 +29,7 @@
 
 QgsIdentifyResults::QgsIdentifyResults(const QgsAttributeAction& actions,
     QWidget *parent, Qt::WFlags f)
-: QWidget(parent, f),
+: QDialog(parent, f),
   mActions(actions), mClickedOnValue(0), mActionPopup(0)
 {
   setupUi(this);
@@ -84,9 +84,6 @@ void QgsIdentifyResults::popupContextMenu(Q3ListViewItem* item,
     QLabel* popupLabel = new QLabel( mActionPopup );
     popupLabel->setText( tr("<center>Run action</center>") );
 // TODO: Qt4 uses "QAction"s - need to refactor.
-#if QT_VERSION < 0x040000
-    mActionPopup->insertItem(popupLabel);
-#endif
     mActionPopup->insertSeparator();
 
     QgsAttributeAction::aIter iter = mActions.begin();
@@ -204,6 +201,14 @@ void QgsIdentifyResults::showAllAttributes() {
   for ( ; *qlvii; ++qlvii)
     lstResults->setOpen(*qlvii, true);
 }
+
+/** adjust all of the colums to show their contents */
+void QgsIdentifyResults::adjustColumnWidths() 
+{ 
+  lstResults->adjustColumn(0); 
+  lstResults->adjustColumn(1); 
+}
+
 
 void QgsIdentifyResults::clear()
 {

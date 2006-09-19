@@ -586,15 +586,20 @@ std::cerr << i << ": " << ring->first[i]
       ringDetails.push_back(std::make_pair(ii, ringSize));
 
       // Transfer points to the array of QPointF
-      for (register unsigned int j = 0; j != ringSize; ++j, ++ii)
+      //for (register unsigned int j = 0; j != ringSize; ++j, ++ii)
+      for (register unsigned int j = 0; j != ringSize; ++j, ii++)
       {
         // there is maybe a bug in Qt4.1: when using doubles without rounding,
         // I've experienced crashes (broken pipe) when drawing polygon
         // with more than 3000 vertices  [MD]
-        pa[ii].setX(static_cast<int>(r->first[j] + 0.5));
-        pa[ii].setY(static_cast<int>(r->second[j] + 0.5));
-//        pa[ii].setX(r->first[j]);
-//        pa[ii].setY(r->second[j]);
+        //pa[ii].setX(static_cast<int>(r->first[j] + 0.5));
+        //pa[ii].setY(static_cast<int>(r->second[j] + 0.5));
+
+        // The crash was probably caused by writing outside 
+        // pa(total_points + numRings - 1) size, because
+        // cycle was using ++ii insted of ii++ => reenabled floating point
+        pa[ii].setX(r->first[j]);
+        pa[ii].setY(r->second[j]);
       }
 
       // Store the last point of the first ring, and insert it at
@@ -726,12 +731,9 @@ void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * th
     if(mEditable)
     {
       // Destroy all cached geometries and clear the references to them
-      for (std::map<int, QgsGeometry*>::iterator it  = mCachedGeometries.begin(); it != mCachedGeometries.end(); ++it )
-      {
-        delete (*it).second;
-      }
-      mCachedGeometries.clear();
-	  }
+      deleteCachedGeometries();
+      
+    }
 
     mDataProvider->reset();
     mDataProvider->select(viewExtent);
@@ -845,19 +847,24 @@ void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * th
 
 void QgsVectorLayer::cacheGeometries() 
 { 
-  for(std::map<int, QgsGeometry*>::iterator it = mCachedGeometries.begin(); it != mCachedGeometries.end(); ++it)
-    {
-      delete it->second;
-    }
-  mCachedGeometries.clear();
   if(mDataProvider)
+  {
+    QgsFeature* f = 0;
+    while(f = mDataProvider->getNextFeature(false))
     {
-      QgsFeature* f = 0;
-      while(f = mDataProvider->getNextFeature(false))
-        {
-          mCachedGeometries.insert(std::make_pair(f->featureId(), f->geometryAndOwnership()));
-        }
+      mCachedGeometries.insert(std::make_pair(f->featureId(), f->geometryAndOwnership()));
+      delete f;
     }
+  }
+}
+
+void QgsVectorLayer::deleteCachedGeometries()
+{
+  for (std::map<int, QgsGeometry*>::iterator it  = mCachedGeometries.begin(); it != mCachedGeometries.end(); ++it )
+  {
+    delete (*it).second;
+  }
+  mCachedGeometries.clear();
 }
 
 void QgsVectorLayer::select(int number, bool emitSignal)
@@ -1028,6 +1035,10 @@ QGis::VectorType QgsVectorLayer::vectorType() const
   return QGis::Unknown;
 }
 
+QGis::WKBTYPE QgsVectorLayer::getGeometryType() const
+{
+  return (QGis::WKBTYPE)(mGeometryType);
+}
 
 QgsRect QgsVectorLayer::boundingBoxOfSelected()
 {
@@ -1302,10 +1313,6 @@ bool QgsVectorLayer::addFeature(QgsFeature* f, bool alsoUpdateExtent)
     return false;
   }
 
-    //set the endian properly
-    int end = QgsApplication::endian();
-    memcpy(f->getGeometry(),&end,1);
-
     //assign a temporary id to the feature (use negative numbers)
     addedIdLowWaterMark--;
 
@@ -1510,7 +1517,8 @@ bool QgsVectorLayer::startEditing()
   {
     return false;
   }
-      
+
+  cacheGeometries();
   mEditable=true;
   return true;
 }
@@ -1935,6 +1943,8 @@ int QgsVectorLayer::findFreeId()
 
 bool QgsVectorLayer::commitChanges()
 {
+  deleteCachedGeometries();
+  
   if (!mDataProvider)
   {
     return false;
@@ -2028,6 +2038,8 @@ bool QgsVectorLayer::commitChanges()
 
 bool QgsVectorLayer::rollBack()
 {
+  deleteCachedGeometries();
+
   if (!isEditable())
   {
     return false;
@@ -2059,7 +2071,6 @@ bool QgsVectorLayer::rollBack()
   return true;
 }
 
-
 void QgsVectorLayer::setSelectedFeatures(feature_ids& ids)
 {
   // TODO: check whether features with these ID exist
@@ -2075,89 +2086,48 @@ const feature_ids& QgsVectorLayer::selectedFeaturesIds() const
 
 std::vector<QgsFeature>* QgsVectorLayer::selectedFeatures()
 {
-#ifdef QGISDEBUG
-  std::cout << "QgsVectorLayer::selectedFeatures: entering"
-    << "." << std::endl;
-#endif
-
   if (!mDataProvider)
   {
     return 0;
   }
-
-  //TODO: Maybe make this a bit more heap-friendly (i.e. see where we can use references instead of copies)
+  
   std::vector<QgsFeature>* features = new std::vector<QgsFeature>;
-
-  for (feature_ids::iterator it  = mSelected.begin();
-      it != mSelected.end();
-      ++it)
-  {
-    // Check this selected item against the committed or changed features
-    if ( mCachedGeometries.find(*it) != mCachedGeometries.end() )
+  if(mSelected.size() == 0)
     {
-#ifdef QGISDEBUG
-      std::cout << "QgsVectorLayer::selectedFeatures: found a cached geometry: " 
-        << std::endl;
-#endif
-
-      QgsFeature* f = new QgsFeature();
-      int row = 0;  //TODO: Get rid of this
-
-      mDataProvider->getFeatureAttributes(*it, row, f);
-
-      // TODO: Should deep-copy here
-      f->setGeometry(*mCachedGeometries[*it]);
-
-#ifdef QGISDEBUG
-      std::cout << "QgsVectorLayer::selectedFeatures: '" << f->geometry()->wkt().toLocal8Bit().data() << "'"
-        << "." << std::endl;
-#endif
-
-      // TODO: Mutate with uncommitted attributes / geometry
-
-      // TODO: Retrieve details from provider
-      /*      features.push_back(
-              QgsFeature(mCachedFeatures[*it],
-              mChangedAttributes,
-              mChangedGeometries)
-              );*/
-
-      features->push_back(*f);
-
-#ifdef QGISDEBUG
-      std::cout << "QgsVectorLayer::selectedFeatures: added to feature vector"
-        << "." << std::endl;
-#endif
-
+      return features;
     }
 
+  //we need to cache all the features first (which has already been done if a layer is editable)
+  if(!mEditable)
+    {
+      deleteCachedGeometries();
+      cacheGeometries();
+    }
+
+  for (std::set<int>::iterator it  = mSelected.begin(); it != mSelected.end(); ++it)
+  {
+    // Check this selected item against the committed or cached features
+    if ( mCachedGeometries.find(*it) != mCachedGeometries.end() )
+    {
+      QgsFeature* f = new QgsFeature();
+      f->setGeometry(*mCachedGeometries[*it]);//makes a deep copy of the geometry
+      features->push_back(*f);
+      continue;
+    }
+    
     // Check this selected item against the uncommitted added features
-    for (std::vector<QgsFeature*>::iterator iter  = mAddedFeatures.begin();
+    /*for (std::vector<QgsFeature*>::iterator iter  = mAddedFeatures.begin();
         iter != mAddedFeatures.end();
         ++iter)
     {
       if ( (*it) == (*iter)->featureId() )
       {
-#ifdef QGISDEBUG
-        std::cout << "QgsVectorLayer::selectedFeatures: found an added geometry: " 
-          << std::endl;
-#endif
-        features->push_back( **iter );
+        features->push_back( **iter ); //shouldn't we make a deep copy here?
         break;
       }
-    }
-
-#ifdef QGISDEBUG
-    std::cout << "QgsVectorLayer::selectedFeatures: finished with feature ID " << (*it)
-      << "." << std::endl;
-#endif
+      }*/
 
   } // for each selected
-
-#ifdef QGISDEBUG
-  std::cout << "QgsVectorLayer::selectedFeatures: exiting"
-    << "." << std::endl;
-#endif
 
   return features;
 }
@@ -2612,7 +2582,8 @@ void QgsVectorLayer::drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * t
 #endif
 
         transformPoint(x, y, theMapToPixelTransform, ct);
-        QPointF pt(x - (marker->width()/2),  y - (marker->height()/2));
+        //QPointF pt(x - (marker->width()/2),  y - (marker->height()/2));
+        QPointF pt(x/markerScaleFactor - (marker->width()/2),  y/markerScaleFactor - (marker->height()/2));
 
         p->save();
         p->scale(markerScaleFactor,markerScaleFactor);
@@ -2643,7 +2614,8 @@ void QgsVectorLayer::drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * t
 #endif
 
           transformPoint(x, y, theMapToPixelTransform, ct);
-          QPointF pt(x - (marker->width()/2),  y - (marker->height()/2));
+          //QPointF pt(x - (marker->width()/2),  y - (marker->height()/2));
+          QPointF pt(x/markerScaleFactor - (marker->width()/2),  y/markerScaleFactor - (marker->height()/2));
           
 #if defined(Q_WS_X11)
           // Work around a +/- 32768 limitation on coordinates in X11

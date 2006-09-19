@@ -1176,8 +1176,6 @@ int QgsOgrProvider::capabilities() const
     if (ogrLayer->TestCapability("RandomWrite"))
     // TRUE if the SetFeature() method is operational on this layer.
     {
-      ability |= QgsVectorDataProvider::ChangeAttributeValues;
-
       // TODO According to http://shapelib.maptools.org/ (Shapefile C Library V1.2)
       // TODO "You can't modify the vertices of existing structures".
       // TODO Need to work out versions of shapelib vs versions of GDAL/OGR
@@ -1522,6 +1520,8 @@ const std::list<std::pair<QString, QString> >& attributes)
 	if(it->second == "Real")
 	{
 	    OGRFieldDefn field(it->first, OFTReal);
+	    field.SetPrecision(3);
+	    field.SetWidth(32);
 	    if(layer->CreateField(&field) != OGRERR_NONE)
 	    {
 		QgsLogger::warning("creation of OFTReal field failed");

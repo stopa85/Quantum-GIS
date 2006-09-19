@@ -165,11 +165,13 @@ The [type] part of the variable should be the type class of the variable written
 // Includes
 // 
  
-#include <QVector>
-#include <QList> 
 #include <QDateTime>
+#include <QVector>
+#include <QList>
 
-#include <gdal_priv.h> // because of GDALDataType
+
+#include "qgspoint.h"
+#include "qgsmaplayer.h"
 
 /*
  * 
@@ -178,17 +180,13 @@ The [type] part of the variable should be the type class of the variable written
  *
  */ 
  
-#include <QLibrary>
 #include "qgsrasterdataprovider.h"
 
 /*
  * END
  */
 
- 
-#include "qgspoint.h"
-#include "qgsmaplayer.h"
-
+#include <gdal_priv.h>
 
 //
 // Forward declarations
@@ -204,7 +202,8 @@ class QPixmap;
 
 class GDALDataset;
 class GDALRasterBand;
-
+class QSlider;
+class QLibrary;
 
 
   

@@ -111,12 +111,11 @@ class GUI_EXPORT QgisInterface : public QObject
     /** Return a pointer to the main window (instance of QgisApp in case of QGIS) */
     virtual QWidget * getMainWindow()=0;
 
-    /** Return a pointer to submenu with the specified name */
-    virtual QMenu* getPluginMenu(QString menuName)=0;
+    /** Add action to the plugins menu */
+    virtual void addPluginMenu(QString name, QAction* action)=0;
+    /** Remove action from the plugins menu */
+    virtual void removePluginMenu(QString name, QAction* action)=0;
 
-    /** Remove menu item from the plugins menu */
-    virtual void removePluginMenuItem(QString name, int menuId)=0;
-    
     /** Return a pointer to the toolbox (where additional pages can be inserted) */
     virtual QToolBox* getToolBox()=0;
 

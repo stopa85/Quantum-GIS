@@ -82,8 +82,6 @@ class QgsGridMakerPlugin:public QObject, public QgisPlugin
   QString pluginDescriptionQString;
   //! Plugin type as defined in QgisPlugin::PLUGINTYPE
   int pluginType;
-  //! Id of the plugin's menu. Used for unloading
-  int menuId;
   //! Pointer to the QGIS interface object
   QgisInterface *qGisInterface;
   //! Pointer to the QAction object used in the menu and toolbar

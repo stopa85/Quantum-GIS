@@ -30,6 +30,7 @@
 #include <QPainter>
 #include <Q3Picture>
 #include <QPrinter>
+#include <QPrintDialog>
 #include <QSettings>
 #include <QIcon>
 #include <QPixmap>
@@ -280,7 +281,10 @@ void QgsComposer::on_mActionPrint_activated(void)
 
   mPrinter->setResolution ( mComposition->resolution() );
 
-  if ( mPrinter->setup(this) ) {
+  //if ( mPrinter->setup(this) ) {
+  QPrintDialog printDialog ( mPrinter, this);
+  if ( printDialog.exec() == QDialog::Accepted ) 
+  {
     // TODO: mPrinter->setup() moves the composer under Qgisapp, get it to foreground somehow
     //       raise() for now, is it something better?
     raise ();
@@ -306,7 +310,7 @@ void QgsComposer::on_mActionPrint_activated(void)
 
     mComposition->setPlotStyle ( QgsComposition::Postscript );
 
-    if ( mPrinter->outputToFile() ) {
+    if ( !mPrinter->outputFileName().isNull() ) {
       try {
       std::cout << "Print to file" << std::endl;
 

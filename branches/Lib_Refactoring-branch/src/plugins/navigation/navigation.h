@@ -105,8 +105,6 @@ private:
   ////////////////////////////////////////////////////////////////////
   
   int mPluginType;
-  //! Id of the plugin's menu. Used for unloading
-  int mMenuId;
   //! Pointer to our toolbar
   QToolBar *mToolBarPointer;
   //! Pointer to the QGIS interface object

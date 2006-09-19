@@ -100,14 +100,14 @@ void QgsSingleSymbolRenderer::renderFeature(QPainter * p, QgsFeature * f, QImage
 	    if( !selected ) 
 	    {
 		QPen pen=mSymbol->pen();
-		pen.setWidth ( (int) (widthScale * pen.width()) );
+		pen.setWidthF ( widthScale * pen.width() );
 		p->setPen(pen);
 		p->setBrush(mSymbol->brush());
 	    }
 	    else
 	    {
 		QPen pen=mSymbol->pen();
-		pen.setWidth ( (int) (widthScale * pen.width()) );
+		pen.setWidthF ( widthScale * pen.width() );
 		pen.setColor(mSelectionColor);
 		QBrush brush=mSymbol->brush();
 		brush.setColor(mSelectionColor);

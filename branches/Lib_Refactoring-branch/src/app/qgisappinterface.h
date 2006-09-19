@@ -96,12 +96,11 @@ class QgisAppInterface : public QgisInterface
         */
         QWidget * getMainWindow();
 
-        /** Return a pointer to submenu with the specified name */
-        QMenu* getPluginMenu(QString menuName);
+        /** Add action to the plugins menu */
+        void addPluginMenu(QString name, QAction* action); 
+        /** Remove action from the plugins menu */
+        void removePluginMenu(QString name, QAction* action); 
 
-        /** Remove menu item from the plugins menu */
-        void removePluginMenuItem(QString name, int menuId);
-    
         /** Return a pointer to the toolbox (where additional pages can be inserted) */
         virtual QToolBox* getToolBox();
 

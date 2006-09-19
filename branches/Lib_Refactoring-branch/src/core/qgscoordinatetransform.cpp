@@ -22,8 +22,6 @@
 //qt includes
 #include <QDomNode>
 #include <QDomElement>
-
-// Qt4-only includes to go here
 #include <QTextOStream>
 #include <QApplication>
 
@@ -107,7 +105,6 @@ void QgsCoordinateTransform::setSourceSRS(const QgsSpatialRefSys& theSRS)
 void QgsCoordinateTransform::setDestSRS(const QgsSpatialRefSys& theSRS)
 {
   QgsDebugMsg("QgsCoordinateTransform::setDestSRS called");
-  
   mDestSRS = theSRS;
   initialise();
 }
@@ -117,7 +114,6 @@ void QgsCoordinateTransform::setDestSRSID (long theSRSID)
 {
   //!todo Add some logic here to determine if the srsid is a system or user one
   QgsDebugMsg("QgsCoordinateTransform::setDestSRSID slot called");
-  
   mDestSRS.createFromSrsId(theSRSID);
   initialise();
 }
@@ -178,26 +174,21 @@ void QgsCoordinateTransform::initialise()
   {
     mInitialisedFlag = false;
   }
-
 #ifdef COORDINATE_TRANSFORM_VERBOSE
   if (mInitialisedFlag)
   {
-
-    std::cout << "------------------------------------------------------------"<< std::endl;
-    std::cout << "QgsCoordinateTransform::initialise()" << std::endl;
-    std::cout << "The OGR Coordinate transformation for this layer was set to" << std::endl;
-    // note overloaded << operator on qgsspatialrefsys cant be used on pointers -
-    // so we dereference them like this (*mSourceSRS) (Thanks Lars for pointing that out)
-    std::cout << "INPUT: " << std::endl << mSourceSRS << std::endl;
-    std::cout << "OUTPUT: " << std::endl << mDestSRS  << std::endl;
-    std::cout << "------------------------------------------------------------" << std::endl;
+    QgsDebugMsg("------------------------------------------------------------");
+    QgsDebugMsg("QgsCoordinateTransform::initialise()");
+    QgsDebugMsg("The OGR Coordinate transformation for this layer was set to");
+    QgsLogger::debug<QgsSpatialRefSys>("Input", mSourceSRS, __FILE__, __FUNCTION__, __LINE__);
+    QgsLogger::debug<QgsSpatialRefSys>("Output", mDestSRS, __FILE__, __FUNCTION__, __LINE__);
+    QgsDebugMsg("------------------------------------------------------------");
   }
   else
   {
-    std::cout << "------------------------------------------------------------"<< std::endl;
-    std::cout << "QgsCoordinateTransform::initialise()" << std::endl;
-    std::cout << "The OGR Coordinate transformation FAILED TO INITIALISE!" << std::endl;
-    std::cout << "------------------------------------------------------------"<< std::endl;
+    QgsDebugMsg("------------------------------------------------------------");
+    QgsDebugMsg("The OGR Coordinate transformation FAILED TO INITIALISE!");
+    QgsDebugMsg("------------------------------------------------------------");
   }
 #else
   if (!mInitialisedFlag)
@@ -230,7 +221,7 @@ QgsPoint QgsCoordinateTransform::transform(const QgsPoint thePoint,TransformDire
   catch(QgsCsException &cse)
   {
     // rethrow the exception
-    QgsDebugMsg("Rethrowing QgsCsException"); 
+    QgsLogger::warning("Throwing exception " + QString(__FILE__) + QString(__LINE__));
     throw cse;
   }
 
@@ -250,7 +241,7 @@ QgsPoint QgsCoordinateTransform::transform(const double theX, const double theY=
   catch(QgsCsException &cse)
   {
     // rethrow the exception
-    QgsDebugMsg("Rethrowing QgsCsException");
+    QgsLogger::warning("Throwing exception " + QString(__FILE__) + QString(__LINE__));
     throw cse;
   }
 }
@@ -264,9 +255,6 @@ QgsRect QgsCoordinateTransform::transform(const QgsRect theRect,TransformDirecti
   double x2 = theRect.xMax();
   double y2 = theRect.yMax();
 
-#ifdef QGISDEBUG
-  std::cout << this;
-#endif
   // Number of points to reproject------+
   //                                    |
   //                                    V
@@ -279,25 +267,20 @@ QgsRect QgsCoordinateTransform::transform(const QgsRect theRect,TransformDirecti
   catch(QgsCsException &cse)
   {
     // rethrow the exception
-    QgsDebugMsg("Rethrowing QgsCsException");
+    QgsLogger::warning("Throwing exception " + QString(__FILE__) + QString(__LINE__));
     throw cse;
   }
 
 #ifdef QGISDEBUG
-  std::cout << "Rect projection..."
-  << "Xmin : "
-  << theRect.xMin()
-  << "-->" << x1
-  << ", Ymin: "
-  << theRect.yMin()
-  << " -->" << y1
-  << "Xmax : "
-  << theRect.xMax()
-  << "-->" << x2
-  << ", Ymax: "
-  << theRect.yMax()
-  << " -->" << y2
-  << std::endl;
+  QgsDebugMsg("Rect projection...");
+  QgsLogger::debug("Xmin : ", theRect.xMin(), 1, __FILE__, __FUNCTION__, __LINE__);
+  QgsLogger::debug("-->", x1, 1, __FILE__, __FUNCTION__, __LINE__);
+  QgsLogger::debug("Ymin : ", theRect.yMin(), 1, __FILE__, __FUNCTION__, __LINE__);
+  QgsLogger::debug("-->", y1, 1, __FILE__, __FUNCTION__, __LINE__);
+  QgsLogger::debug("Xmax : ", theRect.xMax(), 1, __FILE__, __FUNCTION__, __LINE__);
+  QgsLogger::debug("-->", x2, 1, __FILE__, __FUNCTION__, __LINE__);
+  QgsLogger::debug("Ymax : ", theRect.yMax(), 1, __FILE__, __FUNCTION__, __LINE__);
+  QgsLogger::debug("-->", y2, 1, __FILE__, __FUNCTION__, __LINE__);
 #endif
   return QgsRect(x1, y1, x2 , y2);
 }
@@ -317,8 +300,8 @@ void QgsCoordinateTransform::transformInPlace(double& x, double& y, double& z,
   }
   catch(QgsCsException &cse)
   {
-    // rethrow the exception
-    QgsDebugMsg("Rethrowing QgsCsException"); 
+    // rethrow the exception 
+    QgsLogger::warning("Throwing exception " + QString(__FILE__) + QString(__LINE__));
     throw cse;
   }
 }
@@ -344,7 +327,7 @@ void QgsCoordinateTransform::transformInPlace(std::vector<double>& x,
   catch(QgsCsException &cse)
   {
     // rethrow the exception
-    QgsDebugMsg("Rethrowing QgsCsException");
+    QgsLogger::warning("Throwing exception " + QString(__FILE__) + QString(__LINE__));
     throw cse;
   }
 }
@@ -408,8 +391,8 @@ QgsRect QgsCoordinateTransform::transformBoundingBox(const QgsRect rect, Transfo
   }
   catch(QgsCsException &cse)
   {
-    // rethrow the exception
-    QgsDebugMsg("Retrowing QgsCsException...");
+  // rethrow the exception
+    QgsLogger::warning("Throwing exception " + QString(__FILE__) + QString(__LINE__));
     throw cse;
   }
 
@@ -420,8 +403,7 @@ QgsRect QgsCoordinateTransform::transformBoundingBox(const QgsRect rect, Transfo
     bb_rect.combineExtentWith(x[i], y[i]);
   }
   
-  // .toLocal8Bit().data()
-  QgsDebugMsg("Projected extent: " + (bb_rect.stringRep()));
+  QgsDebugMsg("Projected extent: " + QString((bb_rect.stringRep()).toLocal8Bit().data()));
   
   return bb_rect;
 }
@@ -498,10 +480,11 @@ void QgsCoordinateTransform::transformCoords( const int& numPoints, double *x, d
 
     pjErr << tr("with error: ") << pj_strerrno(projResult) << '\n';
   
-    QgsDebugMsg("Projection failed, emitting invalid transform signal: " + msg); /*.toLocal8Bit().data()*/
+    QgsDebugMsg("Projection failed emitting invalid transform signal: " + QString(msg.toLocal8Bit().data()));
+
     emit invalidTransformInput();
     
-    QgsDebugMsg("Throwing QgsCsException"); 
+    QgsLogger::warning("Throwing exception " + QString(__FILE__) + QString(__LINE__));
     throw  QgsCsException(msg);
   }
   // if the result is lat/long, convert the results from radians back

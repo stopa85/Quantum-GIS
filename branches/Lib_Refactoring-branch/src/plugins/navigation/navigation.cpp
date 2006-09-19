@@ -85,15 +85,8 @@ Navigation::~Navigation()
  */
 void Navigation::initGui()
 {
-  // we create a single menu entry for this plugin - though you can easily add more here if you need to
-  QMenu *pluginMenu = mQGisIface->getPluginMenu("&Navigation");
-  //set the icon from the resource file
-  mMenuId = pluginMenu->insertItem(QIcon(":/navigation/navigation.png"),"&Navigation", this, SLOT(run()));
-  //create a tooltip for the menu entry 
-  pluginMenu->setWhatsThis(mMenuId, tr("Replace this with a short description of the what the plugin does"));
-
   // Create the action for tool
-  mQActionPointer = new QAction(QIcon(":/navigation/navigation.png"),"Navigation", this);
+  mQActionPointer = new QAction(QIcon(":/navigation/navigation.png"),tr("&Navigation"), this);
   // Connect the action to the run
   connect(mQActionPointer, SIGNAL(activated()), this, SLOT(run()));
   // Add the toolbar
@@ -101,6 +94,8 @@ void Navigation::initGui()
   mToolBarPointer->setLabel("Navigation");
   // Add the icon to the toolbar
   mQGisIface->addToolBarIcon(mQActionPointer);
+  // Add to the plugins menu
+  mQGisIface->addPluginMenu(tr("&Navigation"), mQActionPointer);
 
   // create gps core
   mGps = new GpsCore(mQGisIface);
@@ -131,7 +126,7 @@ void Navigation::run()
 void Navigation::unload()
 {
   // remove the GUI
-  mQGisIface->removePluginMenuItem("&Navigation",mMenuId);
+  mQGisIface->removePluginMenu(tr("&Navigation"),mQActionPointer);
   mQGisIface->removeToolBarIcon(mQActionPointer);
   delete mQActionPointer;
   

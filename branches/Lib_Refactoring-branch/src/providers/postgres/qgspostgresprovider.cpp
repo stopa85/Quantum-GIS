@@ -51,14 +51,13 @@
 #include "qgspostgresextentthread.h"
 
 #include "qgspostgisbox3d.h"
+#include "qgslogger.h"
 
 #ifdef WIN32
 #define QGISEXTERN extern "C" __declspec( dllexport )
 #else
 #define QGISEXTERN extern "C"
 #endif
-
-#define QGISDEBUG
 
 const QString POSTGRES_KEY = "postgres";
 const QString POSTGRES_DESCRIPTION = "PostgreSQL/PostGIS data provider";
@@ -75,7 +74,6 @@ QgsPostgresProvider::QgsPostgresProvider(QString const & uri)
   // For postgres, the connection information is passed as a space delimited
   // string:
   //  host=192.168.1.5 dbname=test port=5342 user=gsherman password=xxx table=tablename
-  std::cout << "Data source uri is " << uri.toLocal8Bit().data() << std::endl;
 
   // Strip the table and sql statement name off and store them
   int sqlStart = uri.find(" sql");
@@ -374,7 +372,7 @@ QgsPostgresProvider::~QgsPostgresProvider()
 #endif
   PQfinish(connection);
 
-  std::cout << "QgsPostgresProvider: deconstructing." << std::endl;
+  QgsDebugMsg("QgsPostgresProvider: deconstructing.");
 
   //pLog.flush();
 }

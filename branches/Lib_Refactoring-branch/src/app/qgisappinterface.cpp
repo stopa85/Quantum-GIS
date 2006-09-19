@@ -88,14 +88,14 @@ QgsMapLayer *QgisAppInterface::activeLayer()
   return qgis->activeLayer();
 }
 
-QMenu* QgisAppInterface::getPluginMenu(QString menuName)
+void QgisAppInterface::addPluginMenu(QString name, QAction* action)
 {
-  return qgis->getPluginMenu(menuName);
+  qgis->addPluginMenu(name, action);
 }
 
-void QgisAppInterface::removePluginMenuItem(QString name, int menuId)
+void QgisAppInterface::removePluginMenu(QString name, QAction* action)
 {
-  qgis->removePluginMenuItem(name, menuId);
+  qgis->removePluginMenu(name, action);
 }
 
 int QgisAppInterface::addToolBarIcon(QAction * qAction)
