@@ -77,6 +77,30 @@ QgsSymbol::QgsSymbol(QColor c)
       mCacheUpToDate2( false )
 {}
 
+QgsSymbol::QgsSymbol(const QgsSymbol& s)
+{
+  if (this != &s)
+  {
+    mLowerValue = s.mLowerValue;
+    mUpperValue = s.mUpperValue;
+    mLabel = s.mLabel;
+    mType = s.mType;
+    mPen = s.mPen;
+    mBrush = s.mBrush;
+    mPointSymbolName = s.mPointSymbolName;
+    mPointSize = s.mPointSize;
+    mPointSymbolImage = s.mPointSymbolImage;
+    mPointSymbolImageSelected = s.mPointSymbolImageSelected;
+    mWidthScale = s.mWidthScale;
+    mPointSymbolImage2 = s.mPointSymbolImage2;
+    mPointSymbolImageSelected2 = s.mPointSymbolImageSelected2;
+    mCacheUpToDate = s.mCacheUpToDate;
+    mCacheUpToDate2 = s.mCacheUpToDate2;
+    mSelectionColor = s.mSelectionColor;
+    mSelectionColor2 = s.mSelectionColor2;
+  }
+}
+
 QgsSymbol::~QgsSymbol()
 {
 
@@ -203,7 +227,10 @@ void QgsSymbol::cache(  QColor selectionColor )
     QPen pen = mPen;
     pen.setColor ( selectionColor ); 
     QBrush brush = mBrush;
-    brush.setColor ( selectionColor ); 
+    // For symbols that have a different coloured border, the line
+    // below causes the fill colour to be wrong for the print
+    // composer. Not sure why... 
+    // brush.setColor ( selectionColor ); 
 
     mPointSymbolImage = QgsMarkerCatalogue::instance()->marker ( mPointSymbolName, mPointSize,
 	                        mPen, mBrush );

@@ -100,6 +100,12 @@ public:
      */
     bool isValid();
 
+    /*! Gets a version of the internal layer definition that has sensitive 
+      *  bits removed (for example, the password). This function should 
+      * be used when displaying the source name for general viewing. 
+     */ 
+    QString publicSource() const;
+
     /** Returns the source for the layer */
     QString const & source() const;
 
@@ -195,6 +201,10 @@ public:
     /** Sets layer's spatial reference system */
     void setSrs(const QgsSpatialRefSys& srs);
     
+    
+    /** A convenience function to capitalise the layer name */
+    static QString capitaliseLayerName(const QString name);
+  
 public slots:
 
     /** Event handler for when a coordinate transform fails due to bad vertex error */

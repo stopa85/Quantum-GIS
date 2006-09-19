@@ -818,6 +818,7 @@ bool QgsOgrProvider::addFeature(QgsFeature* f)
   OGRFeatureDefn* fdef=ogrLayer->GetLayerDefn();
   OGRFeature* feature=new OGRFeature(fdef);
   QGis::WKBTYPE ftype;
+  OGRErr err;
   memcpy(&ftype, (f->getGeometry()+1), sizeof(int));
   switch(ftype)
   {
@@ -825,7 +826,12 @@ bool QgsOgrProvider::addFeature(QgsFeature* f)
       {
         OGRPoint* p=new OGRPoint();
         p->importFromWkb(f->getGeometry(),1+sizeof(int)+2*sizeof(double));
-        OGRErr err = feature->SetGeometry(p);
+        err = feature->SetGeometry(p);
+	if(err != OGRERR_NONE)
+	  {
+	    delete p;
+	    return false;
+	  }
         break;
       }
     case QGis::WKBLineString:
@@ -834,7 +840,12 @@ bool QgsOgrProvider::addFeature(QgsFeature* f)
         int length;
         memcpy(&length,f->getGeometry()+1+sizeof(int),sizeof(int));
         l->importFromWkb(f->getGeometry(),1+2*sizeof(int)+2*length*sizeof(double));
-        feature->SetGeometry(l);
+        err = feature->SetGeometry(l);
+	if(err != OGRERR_NONE)
+	  {
+	    delete l;
+	    return false;
+	  }
         break;
       }
     case QGis::WKBPolygon:
@@ -854,7 +865,12 @@ bool QgsOgrProvider::addFeature(QgsFeature* f)
           ptr+=(2*sizeof(double));
         }
         pol->importFromWkb(f->getGeometry(),1+2*sizeof(int)+numrings*sizeof(int)+totalnumpoints*2*sizeof(double));
-        feature->SetGeometry(pol);
+        err = feature->SetGeometry(pol);
+	if(err != OGRERR_NONE)
+	  {
+	    delete pol;
+	    return false;
+	  }
         break;
       }
     case QGis::WKBMultiPoint:
@@ -864,7 +880,12 @@ bool QgsOgrProvider::addFeature(QgsFeature* f)
         //determine how many points
         memcpy(&count,f->getGeometry()+1+sizeof(int),sizeof(int));
         multip->importFromWkb(f->getGeometry(),1+2*sizeof(int)+count*2*sizeof(double));
-        feature->SetGeometry(multip);
+        err = feature->SetGeometry(multip);
+	if(err != OGRERR_NONE)
+	  {
+	    delete multip;
+	    return false;
+	  }
         break;
       }
     case QGis::WKBMultiLineString:
@@ -887,7 +908,12 @@ bool QgsOgrProvider::addFeature(QgsFeature* f)
         }
         int size=1+2*sizeof(int)+numlines*sizeof(int)+totalpoints*2*sizeof(double);
         multil->importFromWkb(f->getGeometry(),size);
-        feature->SetGeometry(multil);
+        err = feature->SetGeometry(multil);
+	if(err != OGRERR_NONE)
+	  {
+	    delete multil;
+	    return false;
+	  }
         break;
       }
     case QGis::WKBMultiPolygon:
@@ -918,7 +944,12 @@ bool QgsOgrProvider::addFeature(QgsFeature* f)
         }
         int size=1+2*sizeof(int)+numpolys*sizeof(int)+totalrings*sizeof(int)+totalpoints*2*sizeof(double);
         multipol->importFromWkb(f->getGeometry(),size);
-        feature->SetGeometry(multipol);
+        err = feature->SetGeometry(multipol);
+	if(err != OGRERR_NONE)
+	  {
+	    delete multipol;
+	    return false;
+	  }
         break;
       }
   }
@@ -1100,6 +1131,7 @@ bool QgsOgrProvider::deleteFeatures(std::list<int> const & id)
       returnvalue=false;
     }
   }
+  ogrLayer->SyncToDisk();
   return returnvalue;
 }
 

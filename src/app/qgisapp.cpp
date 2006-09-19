@@ -449,7 +449,7 @@ void QgisApp::createActions()
   mActionAddRasterLayer= new QAction(QIcon(myIconPath+"/mActionAddRasterLayer.png"), tr("Add a Raster Layer..."), this);
   mActionAddRasterLayer->setShortcut(tr("R","Add a Raster Layer"));
   mActionAddRasterLayer->setStatusTip(tr("Add a Raster Layer"));
-  assert(connect(mActionAddRasterLayer, SIGNAL(triggered()), this, SLOT(addRasterLayer())));
+  connect(mActionAddRasterLayer, SIGNAL(triggered()), this, SLOT(addRasterLayer()));
   //
   mActionAddLayer= new QAction(QIcon(myIconPath+"/mActionAddLayer.png"), tr("Add a PostGIS Layer..."), this);
   mActionAddLayer->setShortcut(tr("D","Add a PostGIS Layer"));
@@ -461,7 +461,7 @@ void QgisApp::createActions()
 //  std::cout << "HAVE_POSTGRESQL not defined" << std::endl; 
 //  assert(0);
 //#endif
-  assert(connect(mActionAddLayer, SIGNAL(triggered()), this, SLOT(addDatabaseLayer())));
+  connect(mActionAddLayer, SIGNAL(triggered()), this, SLOT(addDatabaseLayer()));
   //
   mActionNewVectorLayer= new QAction(QIcon(myIconPath+"/mActionNewVectorLayer.png"), tr("New Vector Layer..."), this);
   mActionNewVectorLayer->setShortcut(tr("N","Create a New Vector Layer"));
@@ -634,10 +634,15 @@ void QgisApp::createActions()
   // Digitising Toolbar Items
   //
 
-  mActionStartEditing = new QAction(QIcon(myIconPath+"/mActionStartEditing.png"), tr("Start Editing"), this);
+  mActionStartEditing = new QAction(QIcon(myIconPath+"/mActionStartEditing.png"), 
+                                    tr("Start editing the current layer"), this);
   connect(mActionStartEditing, SIGNAL(triggered()), this, SLOT(startEditing()));
-  mActionStopEditing = new QAction(QIcon(myIconPath+"/mActionStopEditing.png"), tr("Stop Editing"), this);
+  //
+  mActionStopEditing = new QAction(QIcon(myIconPath+"/mActionStopEditing.png"), 
+                                   tr("Stop editing the current layer"), this);
+  mActionStopEditing->setStatusTip(tr("Stop editing the current layer")); 
   connect(mActionStopEditing, SIGNAL(triggered()), this, SLOT(stopEditing()));
+  //
   mActionCapturePoint= new QAction(QIcon(myIconPath+"/mActionCapturePoint.png"), tr("Capture Point"), this);
   mActionCapturePoint->setShortcut(tr(".","Capture Points"));
   mActionCapturePoint->setStatusTip(tr("Capture Points"));
@@ -2246,8 +2251,11 @@ findLayers_( QString const & fileFilters, list<QDomNode> const & layerNodes )
 
 void QgisApp::fileExit()
 {
-  removeAllLayers();
-  qApp->exit(0);
+  if (saveDirty() != QMessageBox::Cancel)
+  {
+    removeAllLayers();
+    qApp->exit(0);
+  }
 }
 
 
@@ -2609,7 +2617,7 @@ bool QgisApp::addProject(QString projectFile)
 
 
 
-void QgisApp::fileSave()
+bool QgisApp::fileSave()
 {
   // if we don't have a filename, then obviously we need to get one; note
   // that the project file name is reset to null in fileNew()
@@ -2644,7 +2652,7 @@ void QgisApp::fileSave()
     {
       // if they didn't select anything, just return
       // delete saveFileDialog; auto_ptr auto destroys
-      return;
+      return false;
     }
 
     // make sure we have the .qgs extension in the file name
@@ -2693,7 +2701,7 @@ void QgisApp::fileSave()
         Qt::NoButton );
 
   }
-
+  return true;
 } // QgisApp::fileSave
 
 
@@ -4032,7 +4040,7 @@ void QgisApp::openURL(QString url, bool useQgisDocDirectory)
     QString myHeading = tr("QGIS Browser Selection");
     QString myMessage = tr("Enter the name of a web browser to use (eg. konqueror).\n");
     myMessage += tr("Enter the full path if the browser is not in your PATH.\n");
-    myMessage += tr("You can change this option later by selecting Preferences from the Settings menu.");
+    myMessage += tr("You can change this option later by selecting Options from the Settings menu (Help Browser tab).");
     QString text = QInputDialog::getText(myHeading,
         myMessage,
         QLineEdit::Normal,
@@ -4226,7 +4234,8 @@ int QgisApp::saveDirty()
         QMessageBox::Cancel | QMessageBox::Escape);
     if (QMessageBox::Yes == answer )
     {
-      fileSave();
+      if (!fileSave())
+	answer = QMessageBox::Cancel;
     }
   }
 
@@ -4235,6 +4244,15 @@ int QgisApp::saveDirty()
   return answer;
 
 } // QgisApp::saveDirty()
+
+
+void QgisApp::closeEvent(QCloseEvent* event)
+{
+  // We'll close in our own good time, thank you very much
+  event->ignore();
+  // Do the usual checks and ask if they want to save, etc
+  fileExit();
+}
 
 
 void QgisApp::whatsThis()
@@ -4689,7 +4707,6 @@ void QgisApp::addRasterLayer()
   //mMapCanvas->freeze(true);
 
   QString fileFilters;
-
 
   QStringList selectedFiles;
   QString e;//only for parameter correctness

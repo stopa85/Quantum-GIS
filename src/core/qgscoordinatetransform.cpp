@@ -25,6 +25,7 @@
 
 // Qt4-only includes to go here
 #include <QTextOStream>
+#include <QApplication>
 
 extern "C" {
 #include <proj_api.h>
@@ -34,14 +35,17 @@ extern "C" {
 #undef COORDINATE_TRANSFORM_VERBOSE
 
 
+
 QgsCoordinateTransform::QgsCoordinateTransform( ) : QObject(), mSourceSRS(), mDestSRS()
 
 {
+    setFinder();
 }
 
 QgsCoordinateTransform::QgsCoordinateTransform(const QgsSpatialRefSys& source, 
                                                const QgsSpatialRefSys& dest)
 {
+    setFinder();
   mSourceSRS = source;
   mDestSRS = dest;
   initialise();
@@ -57,6 +61,7 @@ QgsCoordinateTransform::QgsCoordinateTransform(long theSourceSrsId, long theDest
 QgsCoordinateTransform::QgsCoordinateTransform( QString theSourceSRS, QString theDestSRS ) : QObject()
 
 {
+    setFinder();
   mSourceSRS.createFromWkt(theSourceSRS);
   mDestSRS.createFromWkt(theDestSRS);
   // initialize the coordinate system data structures
@@ -70,6 +75,7 @@ QgsCoordinateTransform::QgsCoordinateTransform(long theSourceSrid,
     QString theDestWKT,
     QgsSpatialRefSys::SRS_TYPE theSourceSRSType): QObject()
 {
+    setFinder();
 
   mSourceSRS.createFromId(theSourceSrid, theSourceSRSType);
   mDestSRS.createFromWkt(theDestWKT);
@@ -549,3 +555,30 @@ bool QgsCoordinateTransform::writeXML( QDomNode & theNode, QDomDocument & theDoc
 
   return true;
 }
+
+const char *finder( const char *name )
+{
+    QString proj;
+#ifdef WIN32
+    proj = QApplication::applicationDirPath() 
+           + "/share/proj/" + QString(name);
+#endif
+    return proj.ascii(); 
+}
+
+void QgsCoordinateTransform::setFinder()
+{
+#ifdef WIN32
+    // Attention! It should be possible to set PROJ_LIB
+    // but it can happen that it was previously set by installer
+    // (version 0.7) and the old installation was deleted
+
+    // Another problem: PROJ checks if pj_finder was set before 
+    // PROJ_LIB enviroment variable. pj_finder is probably set in 
+    // GRASS gproj library when plugin is loaded, consequently 
+    // PROJ_LIB is ignored 
+
+    pj_set_finder( finder );
+#endif
+}
+

@@ -23,6 +23,7 @@
 #include "../qgisplugin.h"
 
 #include <QObject>
+#include <QStringList>
 class QgisInterface;
 class QAction;
 class QToolBar;
@@ -61,7 +62,7 @@ class QgsNorthArrowPlugin:public QObject, public QgisPlugin
   //! show the help document
   void help();
   //! set north arrow placement
-  void setPlacement(QString);
+  void setPlacement(int);
   //! enable or disable north arrow
   void setEnabled(bool);
   //! enable or disable the automatic setting of the arrow direction
@@ -85,8 +86,9 @@ class QgsNorthArrowPlugin:public QObject, public QgisPlugin
   bool mEnable;
   //! enable or disable the automatic setting of the arrow direction
   bool mAutomatic;
-  // The placement string
-  QString mPlacement;
+  // The placement index and translated text
+  int mPlacementIndex;
+  QStringList mPlacementLabels;
   //! Id of the plugin's menu. Used for unloading
   int menuId;
   //! Pointer to our toolbar
