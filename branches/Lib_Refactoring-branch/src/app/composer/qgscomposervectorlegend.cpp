@@ -304,8 +304,8 @@ QRect QgsComposerVectorLegend::render ( QPainter *p )
 	      if ( itemHeights[icnt] < mSymbolHeight ) { // init first
 		  itemHeights[icnt] = mSymbolHeight;
 	      }
-        QPixmap pic = QPixmap::fromImage(sym->getPointSymbolAsImage(0,widthScale));
 
+        QPixmap pic = QPixmap::fromImage(sym->getPointSymbolAsImage(widthScale, false));
 
 	      int h = (int) ( scale * pic.height() );
 	      if ( h > itemHeights[icnt] ) {
@@ -362,7 +362,7 @@ QRect QgsComposerVectorLegend::render ( QPainter *p )
 	layer = mMapCanvas->getZpos(groupLayers[j]);
 	QgsVectorLayer *vector = dynamic_cast <QgsVectorLayer*> (layer);
 	const QgsRenderer *renderer = vector->renderer();
-	
+
 	// Symbol
 	std::list<QgsSymbol*> symbols = renderer->symbols();
 
@@ -386,13 +386,12 @@ QRect QgsComposerVectorLegend::render ( QPainter *p )
 	  double scale = map->symbolScale() * mComposition->scale();
 
 	  // Get the picture of appropriate size directly from catalogue
-    QPixmap pic = QPixmap::fromImage(sym->getPointSymbolAsImage(0,widthScale));
-	      
-	
+    QPixmap pic = QPixmap::fromImage(sym->getPointSymbolAsImage(widthScale,false,sym->color()));
+
 	  painter->save();
 	  painter->scale(scale,scale);
-	  painter->drawPixmap ( static_cast<int>( (1.*mMargin+mSymbolWidth/2)/scale-pic.width()-1.*pic.width()/2),
-		     static_cast<int>( (1.*localHeight+symbolHeight/2)/scale-pic.height()-1.*pic.height()/2),
+	  painter->drawPixmap ( static_cast<int>( (1.*mMargin+mSymbolWidth/2)/scale-pic.width()/2),
+                                static_cast<int>( (1.*localHeight+symbolHeight/2)/scale-1.*pic.height()/2),
 		     pic );
 	  painter->restore();
 

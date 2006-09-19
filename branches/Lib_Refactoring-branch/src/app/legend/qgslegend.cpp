@@ -98,11 +98,11 @@ QgsLegend::~QgsLegend()
 void QgsLegend::handleCurrentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* previous)
 {
   QgsMapLayer *layer = currentLayer();
-  
+      
   if(mMapCanvas)
-    {
-      mMapCanvas->setCurrentLayer( layer );
-    }
+  {
+    mMapCanvas->setCurrentLayer( layer );
+  }
   emit currentLayerChanged ( layer );
 }   
 
@@ -537,7 +537,7 @@ void QgsLegend::addLayer( QgsMapLayer * layer )
     QgsLegendLayerFileGroup * llfgroup = new QgsLegendLayerFileGroup(llayer,QString("Files"));
     QgsLegendLayerFile * llfile = new QgsLegendLayerFile(llfgroup, QgsLegendLayerFile::nameFromLayer(layer), layer);
     llayer->setLayerTypeIcon();
-    llayer->setToolTip(0, layer->source());
+    llayer->setToolTip(0, layer->publicSource());
     
     //set the correct check states
     blockSignals(true);
@@ -581,42 +581,45 @@ void QgsLegend::addLayer( QgsMapLayer * layer )
     setCurrentItem(llayer);
 }
 
-QgsMapLayer* QgsLegend::currentLayer()
+QgsLegendLayerFile* QgsLegend::currentLayerFile()
 {
   QgsLegendItem* citem=dynamic_cast<QgsLegendItem*>(currentItem());
   
   if(citem)
+  {
+    QgsLegendLayerFile* llf=dynamic_cast<QgsLegendLayerFile*>(citem);
+    if(llf)
     {
-      QgsLegendLayerFile* llf=dynamic_cast<QgsLegendLayerFile*>(citem);
-      if(llf)
-	{
-	  return llf->layer(); //the current item is itself a legend layer file
-	}
-      else
-	{
-	  QgsLegendLayer* ll = dynamic_cast<QgsLegendLayer*>(citem);
-	  if(ll)
-	    {
-	      return ll->firstMapLayer(); //the current item is a legend layer, so return its first layer
-	    }
-	  else
-	    {
-	      QgsLegendLayer* lpl = dynamic_cast<QgsLegendLayer*>(citem->parent());
-	      if(lpl)
-		{
-		  return lpl->firstMapLayer(); //the parent of the current item is a legend layer, return its first layer
-		}
-	      else
-		{
-		  return 0;
-		}
-	    }
-	}
+      return llf; //the current item is itself a legend layer file
     }
+      
+    QgsLegendLayer* ll = dynamic_cast<QgsLegendLayer*>(citem);
+    if(ll)
+    {
+      return ll->firstLayerFile(); //the current item is a legend layer, so return its first layer
+    }
+    
+    QgsLegendLayer* lpl = dynamic_cast<QgsLegendLayer*>(citem->parent());
+    if(lpl)
+    {
+      return lpl->firstLayerFile(); //the parent of the current item is a legend layer, return its first layer
+    }  
+  }
+
+  return 0;
+}
+
+QgsMapLayer* QgsLegend::currentLayer()
+{
+  QgsLegendLayerFile* llf = currentLayerFile();
+  if (llf)
+  {
+    return llf->layer();
+  }
   else
-    {
-      return 0;
-    }
+  {
+    return 0;
+  }
 }
 
 void QgsLegend::legendGroupRemove()
@@ -639,39 +642,51 @@ void QgsLegend::legendGroupRemove()
 
 void QgsLegend::legendLayerRemove()
 {
-    //remove all layers of the current legendLayer
+    //if the current item is a legend layer: remove all layers of the current legendLayer
    QgsLegendLayer* ll = dynamic_cast<QgsLegendLayer*>(currentItem());
-   if(!ll)
+   if(ll)
    {
-       return;
-   }
-
-   std::list<QgsMapLayer*> maplayers = ll->mapLayers();
-   mStateOfCheckBoxes.erase(ll);
-
-   //todo: also remove the entries for the QgsLegendLayerFiles from the map
-   std::list<QgsLegendLayerFile*> llfiles = ll->legendLayerFiles();
-   for(std::list<QgsLegendLayerFile*>::iterator it = llfiles.begin(); it != llfiles.end(); ++it)
-     {
-       mStateOfCheckBoxes.erase(*it);
-     }
-
-   for(std::list<QgsMapLayer*>::iterator it = maplayers.begin(); it!=maplayers.end(); ++it)
-   {
-       //remove the layer
-       if(*it)
+     std::list<QgsMapLayer*> maplayers = ll->mapLayers();
+     mStateOfCheckBoxes.erase(ll);
+     
+     //also remove the entries for the QgsLegendLayerFiles from the map
+     std::list<QgsLegendLayerFile*> llfiles = ll->legendLayerFiles();
+     for(std::list<QgsLegendLayerFile*>::iterator it = llfiles.begin(); it != llfiles.end(); ++it)
        {
-	   QgsMapLayerRegistry::instance()->removeMapLayer((*it)->getLayerID());
+	 mStateOfCheckBoxes.erase(*it);
        }
+     
+     for(std::list<QgsMapLayer*>::iterator it = maplayers.begin(); it!=maplayers.end(); ++it)
+       {
+	 //remove the layer
+	 if(*it)
+	   {
+	     QgsMapLayerRegistry::instance()->removeMapLayer((*it)->getLayerID());
+	   }
+       }
+     
+     if(maplayers.size()>0)
+       {
+	 mMapCanvas->refresh();
+       }
+     removeItem(ll);
+     delete ll;
+     adjustIconSize();
+     return;
    }
 
-   if(maplayers.size()>0)
-   {
-     mMapCanvas->refresh();
-   }
-   removeItem(ll);
-   delete ll;
-   adjustIconSize();
+   //if the current item is a legend layer file
+   QgsLegendLayerFile* llf = dynamic_cast<QgsLegendLayerFile*>(currentItem());
+   if(llf)
+     {
+       if(llf->layer())
+	 {
+	   //the map layer registry emits a signal an this will remove the legend layer
+	   //from the legend and from memory by calling QgsLegend::removeLayer(QString layer key)
+	   QgsMapLayerRegistry::instance()->removeMapLayer(llf->layer()->getLayerID());
+	 }
+     }
+   return;
 }
 
 void QgsLegend::legendLayerAddToOverview()
@@ -803,6 +818,7 @@ void QgsLegend::legendLayerShowProperties()
     // field value
     propertiesDialog->setDisplayField(displayField());
 
+    propertiesDialog->reset();
     propertiesDialog->raise();
     propertiesDialog->show();
 
@@ -1487,6 +1503,7 @@ void QgsLegend::refreshLayerSymbology(QString key)
   //restore the current item again
   setCurrentItem(theCurrentItem);
   adjustIconSize();
+  setExpanded(indexFromItem(theLegendLayer), true);//make sure the symbology items are visible
 }
 
 

@@ -79,7 +79,13 @@ void QgsMapToolCapture::canvasReleaseEvent(QMouseEvent * e)
   // POINT CAPTURING
   if (mTool == CapturePoint)
   {
-
+    //check we only use this tool for point/multipoint layers
+    if(vlayer->vectorType() != QGis::Point)
+      {
+	QMessageBox::information(0,"Wrong editing tool", "Cannot apply the 'capture point' tool on this vector layer",\
+QMessageBox::Ok);
+	return;
+      }
     QgsPoint idPoint = toMapCoords(e->pos());
     
     // emit signal - QgisApp can catch it and save point position to clipboard
@@ -127,8 +133,22 @@ void QgsMapToolCapture::canvasReleaseEvent(QMouseEvent * e)
   }  
   else if (mTool == CaptureLine || mTool == CapturePolygon)
   {
-    // LINE & POLYGON CAPTURING
-  
+    //check we only use the line tool for line/multiline layers
+    if(mTool == CaptureLine && vlayer->vectorType() != QGis::Line)
+      {
+	QMessageBox::information(0,"Wrong editing tool", "Cannot apply the 'capture line' tool on this vector layer",\
+QMessageBox::Ok);
+	return;
+      }
+
+    //check we only use the polygon tool for polygon/multipolygon layers
+    if(mTool == CapturePolygon && vlayer->vectorType() != QGis::Polygon)
+      {
+	QMessageBox::information(0,"Wrong editing tool", "Cannot apply the 'capture polygon' tool on this vector layer",\
+QMessageBox::Ok);
+	return;
+      }
+
     if (mCaptureList.size() == 0)
     {
       mRubberBand = new QgsRubberBand(mCanvas, mTool == CapturePolygon);
@@ -142,10 +162,11 @@ void QgsMapToolCapture::canvasReleaseEvent(QMouseEvent * e)
       mRubberBand->show();
     }
   
-    QgsPoint digitisedPoint = toLayerCoords(vlayer, e->pos());
+    QgsPoint mapPoint = toMapCoords(e->pos());
+    QgsPoint digitisedPoint = toLayerCoords(vlayer, mapPoint);
     vlayer->snapPoint(digitisedPoint, tolerance);
     mCaptureList.push_back(digitisedPoint);
-    mRubberBand->addPoint(digitisedPoint);
+    mRubberBand->addPoint(mapPoint);
   
     if (e->button() == Qt::LeftButton)
     {
@@ -256,9 +277,10 @@ void QgsMapToolCapture::canvasMoveEvent(QMouseEvent * e)
     // show the rubber-band from the last click
     QgsVectorLayer *vlayer = dynamic_cast <QgsVectorLayer*>(mCanvas->currentLayer());
     double tolerance  = QgsProject::instance()->readDoubleEntry("Digitizing","/Tolerance",0);
-    QgsPoint rbpoint = toMapCoords(e->pos());
-    vlayer->snapPoint(rbpoint, tolerance); //show snapping during dragging
-    mRubberBand->movePoint(rbpoint);
+    QgsPoint mapPoint = toMapCoords(e->pos());
+    QgsPoint layerPoint = toLayerCoords(vlayer, mapPoint);
+    vlayer->snapPoint(layerPoint, tolerance); //show snapping during dragging
+    mRubberBand->movePoint(mapPoint);
   }
 
 } // mouseMoveEvent

@@ -216,6 +216,9 @@ public slots:
     //! Window with attributes closed
     void attributesClosed();
 
+    //! Recieve key press from different widget 
+    void keyPress(QKeyEvent *e); 
+
 signals:
     void finished(); 
 
@@ -225,6 +228,9 @@ private:
 
     //! Pointer to edited layer
     QgsVectorLayer *mLayer;
+
+    //! Pointer to toolbar
+    QToolBar *mToolBar;
     
     //! Point / node size (later make editable array of Sizes)
     int mSize;
@@ -391,6 +397,8 @@ private:
     /** Snap to nearest node in current threshold */
     void snap ( QgsPoint & point );
     void snap ( double *x, double *y);
+    /** Snap point line  considering line starting point */
+    void snap ( QgsPoint & point, double startX, double startY);
 
     /** Attributes */
     QgsGrassAttributes *mAttributes;

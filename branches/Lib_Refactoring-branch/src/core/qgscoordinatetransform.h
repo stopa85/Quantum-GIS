@@ -251,6 +251,11 @@ class CORE_EXPORT QgsCoordinateTransform: public QObject
      * Proj4 data structure of the destination projection (map canvas coordinate system)
      */
     projPJ mDestinationProjection;
+
+    /*!
+     * Finder for PROJ grid files.
+     */
+    void setFinder();
 };
 
 //! Output stream operator

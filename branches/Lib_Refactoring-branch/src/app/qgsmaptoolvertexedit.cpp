@@ -16,6 +16,7 @@
 
 #include "qgsmaptoolvertexedit.h"
 #include "qgsmapcanvas.h"
+#include "qgsmaprender.h"
 #include "qgsvertexmarker.h"
 #include "qgsrubberband.h"
 #include "qgsvectorlayer.h"
@@ -199,8 +200,10 @@ bool QgsMapToolVertexEdit::snapSegmentWithContext(QgsPoint& point)
   if (!vlayer)
     return FALSE;
   
+  QgsPoint layerPoint = toLayerCoords(vlayer, point);
+  
   // TODO: Find nearest segment of the selected line, move that node to the mouse location
-  if (!vlayer->snapSegmentWithContext(point, beforeVertex, atFeatureId, atGeometry, tolerance()))
+  if (!vlayer->snapSegmentWithContext(layerPoint, beforeVertex, atFeatureId, atGeometry, tolerance()))
   {
     mSnappedAtFeatureId = -1;
     QMessageBox::warning(0, "Error", "Could not snap segment. Have you set the tolerance?",
@@ -234,7 +237,9 @@ bool QgsMapToolVertexEdit::snapVertexWithContext(QgsPoint& point)
   if (!vlayer)
     return FALSE;
   
-  if (!vlayer->snapVertexWithContext(point, atVertex, atFeatureId, atGeometry, tolerance()))
+  QgsPoint layerPoint = toLayerCoords(vlayer, point);
+  
+  if (!vlayer->snapVertexWithContext(layerPoint, atVertex, atFeatureId, atGeometry, tolerance()))
   {
     mSnappedAtFeatureId = -1;
     return FALSE;
@@ -262,11 +267,12 @@ void QgsMapToolVertexEdit::snapVertex(QgsPoint& point, int exclFeatureId, int ex
       int snappedFeatureId;
       QgsGeometry snappedGeometry;
       //do the snapping to a copy point first
-      QgsPoint cpyPoint = point;
+      QgsPoint cpyPoint = toLayerCoords(vlayer, point);
       vlayer->snapVertexWithContext(cpyPoint, vIndex, snappedFeatureId, snappedGeometry, tolerance());
       if(snappedFeatureId != exclFeatureId || vIndex.back() != exclVertexNr)
 	{
-	  point = cpyPoint;
+    // convert back from layer coordinates to map coords
+    point = mCanvas->mapRender()->layerCoordsToOutputCoords(vlayer, cpyPoint);
 	}
     }
 }
@@ -303,7 +309,7 @@ void QgsMapToolVertexEdit::canvasReleaseEvent(QMouseEvent * e)
     return;
   }
   
-  QgsPoint point = toMapCoords(e->pos());
+  QgsPoint point = toLayerCoords(vlayer, e->pos());
   
   if (mTool == AddVertex)
   {

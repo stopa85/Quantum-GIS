@@ -21,6 +21,7 @@
 #include <QDateTime>
 #include <QDomNode>
 #include <QFileInfo>
+#include <QSettings> // TODO: get rid of it [MD]
 
 #include "qgsfield.h"
 #include "qgslogger.h"
@@ -46,7 +47,7 @@ QgsMapLayer::QgsMapLayer(int type,
     mSRS = new QgsSpatialRefSys(GEOSRS_ID, QgsSpatialRefSys::QGIS_SRSID); // WGS 84
 
     // Set the display name = internal name
-    mLayerName = lyrname;
+    mLayerName = capitaliseLayerName(lyrname);
     QgsDebugMsg("QgsMapLayer::QgsMapLayer - layerName is '" + mLayerName);
 
     // Generate the unique ID of this layer
@@ -82,7 +83,7 @@ QString const & QgsMapLayer::getLayerID() const
 void QgsMapLayer::setLayerName(const QString & _newVal)
 {
   QgsDebugMsg("QgsMapLayer::setLayerName: new name is '" + _newVal);
-  mLayerName = _newVal;
+  mLayerName = capitaliseLayerName(_newVal);
 }
 
 /** Read property of QString layerName. */
@@ -90,6 +91,16 @@ QString const & QgsMapLayer::name() const
 {
   QgsDebugMsg("QgsMapLayer::name: returning name '" + mLayerName);
   return mLayerName;
+}
+
+QString QgsMapLayer::publicSource() const 
+{ 
+  // Redo this every time we're asked for it, as we don't know if 
+  // dataSource has changed. 
+  static QRegExp regexp(" password=.* "); 
+  regexp.setMinimal(true); 
+  QString safeName(mDataSource); 
+  return safeName.replace(regexp, " "); 
 }
 
 QString const & QgsMapLayer::source() const
@@ -368,4 +379,19 @@ unsigned int QgsMapLayer::getTransparency()
 void QgsMapLayer::setTransparency(unsigned int theInt)
 {
   mTransparencyLevel = theInt;
+}
+
+QString QgsMapLayer::capitaliseLayerName(const QString name)
+{
+  // Capitalise the first letter of the layer name if requested
+  QSettings settings;
+  bool capitaliseLayerName = 
+         settings.value("qgis/capitaliseLayerName", QVariant(false)).toBool();
+
+  QString layerName(name);
+
+  if (capitaliseLayerName)
+    layerName = layerName.left(1).upper() + layerName.mid(1);
+
+  return layerName;
 }

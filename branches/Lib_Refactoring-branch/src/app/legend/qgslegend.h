@@ -96,7 +96,10 @@ class QgsLegend : public QTreeWidget
   //! Destructor
    ~QgsLegend();
 
-  /*!Returns the current layer if the current item is a QgsLegendLayerFile.
+   /** Returns QgsLegendLayerFile associated with current layer */
+   QgsLegendLayerFile* currentLayerFile();
+  
+   /*!Returns the current layer if the current item is a QgsLegendLayerFile.
    If the current item is a QgsLegendLayer, its first maplayer is returned.
   Else, 0 is returned.*/
   QgsMapLayer* currentLayer();
