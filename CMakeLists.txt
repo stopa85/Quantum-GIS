@@ -9,7 +9,6 @@ PROJECT(qgis)
 # - includes for libs
 # - nice output when configured
 # - python bindings
-# - GRASS, georeferencer
 # - rename *.ui files to have the same filename as their implementation
 #   e.g. instead of blahblahbase.ui use blahblah.ui
 #   reasons:
@@ -21,7 +20,7 @@ PROJECT(qgis)
 #############################################################
 # CMake settings
 
-CMAKE_MINIMUM_REQUIRED(VERSION 2.4.2)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.4.3)
 
 SET(CMAKE_COLOR_MAKEFILE ON)
 
@@ -63,6 +62,19 @@ FIND_PACKAGE(GEOS     REQUIRED)
 FIND_PACKAGE(GDAL     REQUIRED)
 FIND_PACKAGE(Postgres)
 FIND_PACKAGE(Expat)
+FIND_PACKAGE(GSL)
+FIND_PACKAGE(GRASS)
+
+IF (POSTGRES_FOUND)
+  # following variable is used in qgsconfig.h
+  SET (HAVE_POSTGRESQL TRUE)
+ENDIF (POSTGRES_FOUND)
+
+# unistd.h is missing on MSVC and causes compile error
+# however in generated file from GnuWin32's flex it's not possible
+# to define YY_NO_UNISTD_H
+#INCLUDE(CheckIncludeFile)
+#CHECK_INCLUDE_FILE(unistd.h HAVE_UNISTD_H)
 
 #############################################################
 # search for Qt4
@@ -125,6 +137,8 @@ ENDIF (WIN32)
 # create qgsconfig.h
 
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/qgsconfig.h.in ${CMAKE_SOURCE_DIR}/qgsconfig.h)
+
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR})
 
 #############################################################
 # process subdirs

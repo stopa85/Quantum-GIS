@@ -36,7 +36,7 @@ qgsprojectionselector.h
 # TODO: find better way to include ui_*.h in dependencies
 QT4_WRAP_CPP(QGIS_GUI_MOC_SRCS ${QGIS_GUI_MOC_HDRS} ${QGIS_GUI_UIS_H})
 
-INCLUDE_DIRECTORIES(. ../.. ../core
+INCLUDE_DIRECTORIES(. ../core
      ../core/raster ../core/renderer ../core/symbology
      ${SQLITE3_INCLUDE_DIR}
      ${CMAKE_CURRENT_BINARY_DIR})

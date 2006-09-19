@@ -28,6 +28,7 @@
 *
 * This API documentation provides information about all classes that make up QGIS.
 */
+#include "qgsconfig.h"
 
 #include <qevent.h>
 
