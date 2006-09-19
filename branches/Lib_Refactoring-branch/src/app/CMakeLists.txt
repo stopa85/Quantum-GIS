@@ -196,9 +196,6 @@ IF (POSTGRES_FOUND)
 		  qgsnewconnection.h
 		  qgspgquerybuilder.h
   )
-
-  ADD_DEFINITIONS(-DHAVE_POSTGRESQL)
-
 ENDIF (POSTGRES_FOUND)
 
 IF (WIN32)
@@ -232,10 +229,9 @@ ENDIF (WIN32)
 # TODO: better way for ui?
 QT4_WRAP_CPP(QGIS_APP_MOC_SRCS ${QGIS_APP_MOC_HDRS} ${QGIS_APP_UIS_H})
 
-INCLUDE_DIRECTORIES(.
-     ./composer ./legend
+INCLUDE_DIRECTORIES(
+     . composer legend
      ${CMAKE_CURRENT_BINARY_DIR}
-     ../.. # for qgsconfig.h
      ../core
      ../core/raster ../core/renderer ../core/symbology
      ../gui

@@ -85,8 +85,7 @@ raster/qgsrasterlayer.h
 
 QT4_WRAP_CPP(QGIS_CORE_MOC_SRCS ${QGIS_CORE_MOC_HDRS})
 
-# TODO: ../.. because of qgsconfig.h
-INCLUDE_DIRECTORIES( ../.. raster renderer symbology .
+INCLUDE_DIRECTORIES(. raster renderer symbology
   ${QT_QTSVG_INCLUDE_DIR}
   ${PROJ_INCLUDE_DIR}
   ${SQLITE3_INCLUDE_DIR}
