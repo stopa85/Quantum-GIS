@@ -106,6 +106,9 @@ QgsComposerScalebar::QgsComposerScalebar ( QgsComposition *composition, int id )
     mBrush(QColor(150,150,150))
 {
     std::cout << "QgsComposerScalebar::QgsComposerScalebar()" << std::endl;
+
+    setupUi(this);
+
     mId = id;
     mSelected = false;
 
@@ -177,15 +180,10 @@ QRect QgsComposerScalebar::render ( QPainter *p )
     font.setPointSizeFloat ( size );
     QFontMetrics metrics ( font );
     
-    // TODO: For output to Postscript the font must be scaled. But how?
-    //       The factor is an empirical value.
-    //       In any case, each font scales in in different way even if painter.scale()
-    //       is used instead of font size!!! -> Postscript is never exactly the same as
-    //       in preview.
-    double factor = QgsComposition::psFontScaleFactor();
-
-    double pssize = factor * 72.0 * mFont.pointSizeFloat() / mComposition->resolution();
-    double psscale = pssize/size;
+    if ( plotStyle() == QgsComposition::Postscript ) 
+    {
+        font.setPointSizeF ( metrics.ascent() * 72.0 / mComposition->resolution() );
+    }
 
     // Not sure about Style Strategy, QFont::PreferMatch?
     font.setStyleStrategy ( (QFont::StyleStrategy) (QFont::PreferOutline | QFont::PreferAntialias) );
@@ -253,15 +251,7 @@ QRect QgsComposerScalebar::render ( QPainter *p )
 	    int x = barLx+i*segwidth-shift;
 	    int y = cy-ticksize-offset-metrics.descent();
 
-            if ( plotStyle() == QgsComposition::Postscript ) {
-		painter->save();
-		painter->translate(x,y);
-		painter->scale ( psscale, psscale );
-		painter->drawText( 0, 0, txt );
-		painter->restore();
-	    } else {
-	        painter->drawText( x, y, txt );
-	    }
+	    painter->drawText( x, y, txt );
 	}
 	
 	ymin = cy - ticksize - offset - h;
@@ -358,7 +348,7 @@ void QgsComposerScalebar::sizeChanged ( )
 {
     mSegmentLength = mSegmentLengthLineEdit->text().toDouble();
     mNumSegments = mNumSegmentsLineEdit->text().toInt();
-    mPen.setWidth ( mLineWidthSpinBox->value() );
+    mPen.setWidthF ( mLineWidthSpinBox->value() );
     mMapUnitsPerUnit = mMapUnitsPerUnitLineEdit->text().toInt();
     recalculate();
     Q3CanvasPolygonalItem::update();
@@ -366,7 +356,7 @@ void QgsComposerScalebar::sizeChanged ( )
     writeSettings();
 }
 
-void QgsComposerScalebar::on_mLineWidthSpinBox_returnPressed() { sizeChanged(); }
+void QgsComposerScalebar::on_mLineWidthSpinBox_valueChanged() { sizeChanged(); }
 void QgsComposerScalebar::on_mMapUnitsPerUnitLineEdit_returnPressed() { sizeChanged(); }
 void QgsComposerScalebar::on_mNumSegmentsLineEdit_returnPressed() { sizeChanged(); }
 void QgsComposerScalebar::on_mSegmentLengthLineEdit_returnPressed() { sizeChanged(); }
@@ -421,7 +411,7 @@ void QgsComposerScalebar::setOptions ( void )
     mUnitLabelLineEdit->setText( mUnitLabel );
     mMapUnitsPerUnitLineEdit->setText( QString::number(mMapUnitsPerUnit ) );
 
-    mLineWidthSpinBox->setValue ( mPen.width() );
+    mLineWidthSpinBox->setValue ( mPen.widthF() );
     
     // Maps
     mMapComboBox->clear();
@@ -488,7 +478,7 @@ bool QgsComposerScalebar::writeSettings ( void )
     QgsProject::instance()->writeEntry( "Compositions", path+"font/underline", mFont.underline() );
     QgsProject::instance()->writeEntry( "Compositions", path+"font/strikeout", mFont.strikeOut() );
     
-    QgsProject::instance()->writeEntry( "Compositions", path+"pen/width", (int)mPen.width() );
+    QgsProject::instance()->writeEntry( "Compositions", path+"pen/width", (double)mPen.widthF() );
 
     return true; 
 }
@@ -515,7 +505,7 @@ bool QgsComposerScalebar::readSettings ( void )
     mFont.setUnderline(  QgsProject::instance()->readBoolEntry("Compositions", path+"font/underline", false, &ok) );
     mFont.setStrikeOut(  QgsProject::instance()->readBoolEntry("Compositions", path+"font/strikeout", false, &ok) );
 
-    mPen.setWidth(  QgsProject::instance()->readNumEntry("Compositions", path+"pen/width", 1, &ok) );
+    mPen.setWidthF(  QgsProject::instance()->readDoubleEntry("Compositions", path+"pen/width", 1, &ok) );
     
     recalculate();
     

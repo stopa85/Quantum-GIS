@@ -673,6 +673,18 @@ void QgisApp::createActions()
   mActionMoveVertex = new QAction(QIcon(myIconPath+"/mActionMoveVertex.png"), tr("Move Vertex"), this);
   mActionMoveVertex->setStatusTip(tr("Move Vertex"));
   connect(mActionMoveVertex, SIGNAL(triggered()), this, SLOT(moveVertex()));
+
+  mActionEditCut = new QAction(QIcon(myIconPath+"/mActionEditCut.png"), tr("Cut Features"), this);
+  mActionEditCut->setStatusTip(tr("Cut selected features"));
+  connect(mActionEditCut, SIGNAL(triggered()), this, SLOT(editCut()));
+
+  mActionEditCopy = new QAction(QIcon(myIconPath+"/mActionEditCopy.png"), tr("Copy Features"), this);
+  mActionEditCopy->setStatusTip(tr("Copy selected features"));
+  connect(mActionEditCopy, SIGNAL(triggered()), this, SLOT(editCopy()));
+
+  mActionEditPaste = new QAction(QIcon(myIconPath+"/mActionEditPaste.png"), tr("Paste Features"), this);
+  mActionEditPaste->setStatusTip(tr("Paste selected features"));
+  connect(mActionEditPaste, SIGNAL(triggered()), this, SLOT(editPaste()));
 }
 
 void QgisApp::createActionGroups()
@@ -842,6 +854,9 @@ void QgisApp::createToolBars()
   mDigitizeToolBar->addAction(mActionAddVertex);
   mDigitizeToolBar->addAction(mActionDeleteVertex);
   mDigitizeToolBar->addAction(mActionMoveVertex);
+  mDigitizeToolBar->addAction(mActionEditCut);
+  mDigitizeToolBar->addAction(mActionEditCopy);
+  mDigitizeToolBar->addAction(mActionEditPaste);
   //
   // Map Navigation Toolbar
   mMapNavToolBar = addToolBar(tr("Map Navigation"));
@@ -3082,7 +3097,7 @@ void QgisApp::exportMapServer()
 }
 void QgisApp::zoomIn()
 {
-  qDebug ("Setting map tool to zoomIn");
+  QgsDebugMsg ("Setting map tool to zoomIn");
   
   QgsMapTool* tool = new QgsMapToolZoom(mMapCanvas, FALSE /* zoomOut */);
   tool->setAction(mActionZoomIn);
@@ -3211,7 +3226,7 @@ void QgisApp::deleteSelected()
   if(!vlayer->isEditable())
   {
     QMessageBox::information(0, tr("Layer not editable"), 
-                            tr("The current layer is not editable. Choose 'Allow editing' in the legend item right click menu"));
+                             tr("The current layer is not editable. Choose 'Start editing' in the digitizing toolbar."));
     return;
   }
 
@@ -3347,8 +3362,8 @@ void QgisApp::editPaste()
 
     if (activeVectorLayer != 0)
     {
-      //      activeVectorLayer->addFeatures( &(clipboard()->copyOf()) );
       activeVectorLayer->addFeatures( clipboard()->copyOf() );
+      mMapCanvas->refresh();
     }  
   }  
 }
@@ -4295,41 +4310,57 @@ void QgisApp::populateMenuMaps()
   }
   while(menuId != -1);
 }
-int QgisApp::addPluginMenu(QString menuText, QMenu *menu)
-{
-  return mPluginMenu->insertItem(menuText, menu);
-}
 
 QMenu* QgisApp::getPluginMenu(QString menuName)
 {
-  for (unsigned int i = 0; i < mPluginMenu->count(); ++i)
-    if (mPluginMenu->text(mPluginMenu->idAt(i)) == menuName)
-    {
-      QMenuItem* item = mPluginMenu->findItem(mPluginMenu->idAt(i));
-      return item->menu();
-    }
+  // This is going to record the menu item that the potentially new
+  // menu item is going to be inserted before. A value of 0 will a new
+  // menu item to be appended.
+  QAction* before = 0;
 
-  // It doesn't exist, so create one
-  Q3PopupMenu* menu = new Q3PopupMenu(mPluginMenu);
-  mPluginMenu->insertItem(menuName, menu);
+  QList<QAction*> actions = mPluginMenu->actions();
+  // Avoid 1 because the first item (number 0) is 'Plugin Manager',
+  // which we  want to stay first. Search in reverse order as that
+  // makes it easier to find out where which item a new menu item
+  // should go before (since the insertMenu() function requires a
+  // 'before' argument).
+  for (unsigned int i = actions.count()-1; i > 0; --i)
+  {
+    if (actions.at(i)->text() == menuName)
+    {
+      return actions.at(i)->menu();
+    }
+    // Find out where to put the menu item, assuming that it is a new one
+    //
+    // This bit of code assumes that the menu items are already in
+    // alphabetical order, which they will be if the menus are all
+    // created using this function.
+    if (menuName.localeAwareCompare(actions.at(i)->text()) <= 0)
+      before = actions.at(i);
+  }
+
+  // It doesn't exist, so create 
+  QMenu* menu = new QMenu(menuName, this);
+  // Where to put it? - we worked that out above...
+  mPluginMenu->insertMenu(before, menu);
+
   return menu;
 }
 
-void QgisApp::removePluginMenuItem(QString name, int menuId)
+void QgisApp::addPluginMenu(QString name, QAction* action)
 {
-  // TODO: Qt4 will have to do this a different way...
-#if QT_VERSION < 0x040000
-  for (int i = 0; i < mPluginMenu->count(); ++i)
-    if (mPluginMenu->text(mPluginMenu->idAt(i)) == name)
+  QMenu* menu = getPluginMenu(name);
+  menu->addAction(action);
+}
+
+void QgisApp::removePluginMenu(QString name, QAction* action)
+{
+  QMenu* menu = getPluginMenu(name);
+  menu->removeAction(action);
+  if (menu->actions().count() == 0)
     {
-      QMenuItem* item = mPluginMenu->findItem(mPluginMenu->idAt(i));
-      Q3PopupMenu* popup = item->popup();
-      popup->removeItem(menuId);
-      if (popup->count() == 0)
-        mPluginMenu->removeItem(mPluginMenu->idAt(i));
-      break;
+      mPluginMenu->removeAction(menu->menuAction());
     }
-#endif
 }
 
 int QgisApp::addPluginToolBarIcon (QAction * qAction)
@@ -4525,6 +4556,7 @@ void QgisApp::activateDeactivateLayerRelatedActions(QgsMapLayer* layer)
       mActionSelect->setEnabled(true);
       mActionOpenTable->setEnabled(true);
       mActionIdentify->setEnabled(true);
+      mActionEditCopy->setEnabled(true);
 
       const QgsVectorLayer* vlayer = dynamic_cast<const QgsVectorLayer*>(layer);
       const QgsVectorDataProvider* dprovider = vlayer->getDataProvider();
@@ -4536,21 +4568,25 @@ void QgisApp::activateDeactivateLayerRelatedActions(QgsMapLayer* layer)
 	    {
 	      mActionStartEditing->setEnabled(true);
 	      mActionStopEditing->setEnabled(true);
+	      mActionEditPaste->setEnabled(true);
 	    }
 	  else
 	    {
 	      mActionStartEditing->setEnabled(false);
 	      mActionStopEditing->setEnabled(false);
+	      mActionEditPaste->setEnabled(false);
 	    }
 
 	  //does provider allow deleting of features?
 	  if(dprovider->capabilities() & QgsVectorDataProvider::DeleteFeatures)
 	    {
 	      mActionDeleteSelected->setEnabled(true);
+	      mActionEditCut->setEnabled(true);
 	    }
 	  else
 	    {
 	      mActionDeleteSelected->setEnabled(false);
+	      mActionEditCut->setEnabled(false);
 	    }
 
 
@@ -4628,6 +4664,9 @@ void QgisApp::activateDeactivateLayerRelatedActions(QgsMapLayer* layer)
       mActionAddVertex->setEnabled(false);
       mActionDeleteVertex->setEnabled(false);
       mActionMoveVertex->setEnabled(false);
+      mActionEditCopy->setEnabled(false);
+      mActionEditCut->setEnabled(false);
+      mActionEditPaste->setEnabled(false);
 
       const QgsRasterLayer* vlayer = dynamic_cast<const QgsRasterLayer*> (layer);
       const QgsRasterDataProvider* dprovider = vlayer->getDataProvider();

@@ -300,6 +300,7 @@ QgsPoint QgsGeometry::closestVertex(const QgsPoint& point, QgsGeometryVertexInde
 		ptr+=sizeof(int);
 		for(int index=0;index<*npoints;++index)
 		{
+		  ptr += (1+sizeof(int)); //skip endian and point type
 		    tempx=(double*)ptr;
 		    tempy=(double*)(ptr+sizeof(double));
 		    if(point.sqrDist(*tempx,*tempy)<actdist)
@@ -353,6 +354,7 @@ QgsPoint QgsGeometry::closestVertex(const QgsPoint& point, QgsGeometryVertexInde
 		ptr+=sizeof(int);
 		for(int index=0;index<*npolys;++index)
 		{
+		  ptr += (1 + sizeof(int)); //skip endian and polygon type
 		    nrings=(int*)ptr;
 		    ptr+=sizeof(int);
 		    for(int index2=0;index2<*nrings;++index2)
@@ -465,6 +467,21 @@ bool QgsGeometry::moveVertexAt(double x, double y, QgsGeometryVertexIndex atVert
 	  }
       }
     case QGis::WKBMultiPoint:
+      {
+	int* nrPoints = (int*)ptr;
+	if(vertexnr > *nrPoints || vertexnr < 0)
+	  {
+	    return false;
+	  }
+	ptr += sizeof(int);
+	ptr += (2*sizeof(double)+1+sizeof(int))*vertexnr;
+	ptr += (1+sizeof(int));
+	memcpy(ptr, &x, sizeof(double));
+	ptr += sizeof(double);
+	memcpy(ptr, &y, sizeof(double));
+	mDirtyGeos = true;
+	return true;
+      }
     case QGis::WKBLineString:
       {
 	int* nrPoints = (int*)ptr;
@@ -548,6 +565,7 @@ bool QgsGeometry::moveVertexAt(double x, double y, QgsGeometryVertexIndex atVert
 
 	for(int polynr = 0; polynr < *nrPolygons; ++polynr)
 	  {
+	    ptr += (1 + sizeof(int)); //skip endian and polygon type
 	    nrRings = (int*)ptr;
 	    ptr += sizeof(int);
 	    for(int ringnr = 0; ringnr< *nrRings; ++ringnr)
@@ -609,6 +627,9 @@ bool QgsGeometry::deleteVertexAt(QgsGeometryVertexIndex atVertex)
 	break; //cannot remove the only point vertex
       }
     case QGis::WKBMultiPoint:
+      {
+	//todo
+      }
     case QGis::WKBLineString:
       {
 	int* nPoints = (int*)ptr;
@@ -757,6 +778,9 @@ bool QgsGeometry::deleteVertexAt(QgsGeometryVertexIndex atVertex)
 
 	for(int polynr = 0; polynr < *nPolys; ++polynr)
 	  {
+	    memcpy(newBufferPtr, ptr, (1 + sizeof(int))); 
+	    ptr += (1 + sizeof(int)); //skip endian and polygon type
+	    newBufferPtr += (1 + sizeof(int));
 	    nRings = (int*)ptr;
 	    memcpy(newBufferPtr, nRings, sizeof(int));
 	    newBufferPtr += sizeof(int);
@@ -850,7 +874,15 @@ bool QgsGeometry::insertVertexBefore(double x, double y, QgsGeometryVertexIndex 
   switch(wkbType)
     {
     case QGis::WKBPoint://cannot insert a vertex before another one on point types
+      {
+	delete newbuffer;
+	return false;
+      }
     case QGis::WKBMultiPoint:
+      {
+	//todo
+	break;
+      }
     case QGis::WKBLineString:
       {
 	int* nPoints = (int*)ptr;
@@ -972,18 +1004,21 @@ bool QgsGeometry::insertVertexBefore(double x, double y, QgsGeometryVertexIndex 
     case QGis::WKBMultiPolygon:
       {
 	int* nPolys = (int*)ptr;
-	ptr += sizeof(int);
 	int* nRings = 0; //number of rings in a polygon
 	int* nPoints = 0; //number of points in a ring
-	memcpy(newBufferPtr, &nPolys, sizeof(int));
+	memcpy(newBufferPtr, nPolys, sizeof(int));
+	ptr += sizeof(int);
 	newBufferPtr += sizeof(int);
 	int pointindex = 0;
 
 	for(int polynr = 0; polynr < *nPolys; ++polynr)
 	  {
+	    memcpy(newBufferPtr, ptr, (1 + sizeof(int)));
+	    ptr += (1 + sizeof(int));//skip endian and polygon type
+	    newBufferPtr += (1 + sizeof(int));
 	    nRings = (int*)ptr;
 	    ptr += sizeof(int);
-	    memcpy(newBufferPtr, &nRings, sizeof(int));
+	    memcpy(newBufferPtr, nRings, sizeof(int));
 	    newBufferPtr += sizeof(int);
 
 	    for(int ringnr = 0; ringnr < *nRings; ++ringnr)
@@ -1132,7 +1167,8 @@ bool QgsGeometry::vertexAt(double &x, double &y,
 		  {
 		    return false;
 		  }
-		ptr += atVertex.back()*2*sizeof(double);
+		ptr += atVertex.back()*(2*sizeof(double)+1+sizeof(int));
+		ptr += 1+sizeof(int);
 		memcpy(&x, ptr, sizeof(double));
 		ptr += sizeof(double);
 		memcpy(&y, ptr, sizeof(double));
@@ -1175,6 +1211,7 @@ bool QgsGeometry::vertexAt(double &x, double &y,
 		ptr += sizeof(int);
 		for(int polynr = 0; polynr < *nPolygons; ++polynr)
 		  {
+		    ptr += (1 + sizeof(int)); //skip endian and polygon type
 		    nRings = (int*)ptr;
 		    ptr += sizeof(int);
 		    for(int ringnr = 0; ringnr < *nRings; ++ringnr)
@@ -1400,11 +1437,13 @@ QgsPoint QgsGeometry::closestSegmentWithContext(QgsPoint& point,
 	ptr += sizeof(int);
 	for(int polynr = 0; polynr < *nPolygons; ++polynr)
 	  {
+	    ptr += (1 + sizeof(int));
 	    nRings = (int*)ptr;
 	    ptr += sizeof(int);
 	    for(int ringnr = 0; ringnr < *nRings; ++ringnr)
 	      {
 		nPoints = (int*)ptr;
+		ptr += sizeof(int);
 		prevx = 0;
 		prevy = 0;
 		for(int pointnr = 0; pointnr < *nPoints; ++pointnr)
@@ -1492,7 +1531,36 @@ QgsRect QgsGeometry::boundingBox() const
           ymax=*y;
         }
         break;
-
+      case QGis::WKBMultiPoint:
+	{
+	  ptr = mGeometry + 1 + sizeof(int);
+	  nPoints = (int *) ptr;
+	  for (idx = 0; idx < *nPoints; idx++)
+	    {
+	      ptr += (1+sizeof(int));
+	      x = (double *) ptr;
+	      ptr += sizeof(double);
+	      y = (double *) ptr;
+	      ptr += sizeof(double);
+	      if (*x < xmin)
+		{
+		  xmin=*x;
+		}
+	      if (*x > xmax)
+		{
+		  xmax=*x;
+		}
+	      if (*y < ymin)
+		{
+		  ymin=*y;
+		}
+	      if (*y > ymax)
+		{
+		  ymax=*y;
+		}
+	    }
+	  break;
+	}
       case QGis::WKBLineString:
         // get number of points in the line
         ptr = mGeometry + 5;
@@ -1818,6 +1886,7 @@ bool QgsGeometry::exportToWkt(unsigned char * geom) const
 		ptr=geom+5+sizeof(int);
 		for(idx=0;idx<*nPoints;++idx)
 		{
+		  ptr += (1+sizeof(int));
 		    if(idx!=0)
 		    {
 			mWkt+=", ";
@@ -2009,6 +2078,7 @@ geos::Geometry* QgsGeometry::geosGeometry() const
 	    ptr = mGeometry + 1 + 2 * sizeof(int);
 	    for (idx = 0; idx < *nPoints; idx++)
 	    {
+	      ptr += (1 + sizeof(int));
 		x = (double *) ptr;
 		ptr += sizeof(double);
 		y = (double *) ptr;

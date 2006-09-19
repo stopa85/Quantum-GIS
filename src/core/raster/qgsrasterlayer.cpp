@@ -60,19 +60,32 @@ wish to see edbug messages printed to stdout.
  
 */
 
+#include "qgslogger.h"
+#include "qgsrasterlayer.h"
+#include "qgsmaptopixel.h"
+
+
 #include <cstdio>
 #include <cmath>
 #include <limits>
 #include <iostream>
 
-#include <gdal_priv.h>
-
-#include <QDomNode>
+#include <QApplication>
+#include <QCursor>
+#include <QPainter>
+#include <QImage>
+#include <QFont>
 #include <QFile>
 #include <QFileInfo>
-#include <QFont>
 #include <QFontMetrics>
-#include <QIcon>
+#include <QMatrix>
+#include <QMessageBox>
+#include <QRegExp>
+#include <QSlider>
+#include <QLabel>
+#include <QDomNode>
+#include <QDomElement>
+#include <QFrame>
 #include <QImage>
 #include <QLabel>
 #include <QMatrix>
@@ -724,17 +737,11 @@ QDateTime QgsRasterLayer::lastModified ( QString const & name )
       if ( f.open ( QIODevice::ReadOnly ) )
       {
         QString dir = fi.dirPath() + "/../../../";
-#if QT_VERSION < 0x040000
-        QString ln;
-        while ( f.readLine(ln,100) != -1 )
-        {
-#else
-        // In Qt4, QFile::readLine now expects a bare char*
+
         char buf[101];
         while ( f.readLine(buf,100) != -1 )
         {
           QString ln = QString(buf);
-#endif
           QStringList sl = QStringList::split ( ' ', ln.stripWhiteSpace() );
           QString map = sl.first();
           sl.pop_front();
@@ -3036,7 +3043,8 @@ void QgsRasterLayer::setGrayBandName(QString const &  theBandNameQString)
   {
     //find out the name of this band
     QgsRasterBandStats myRasterBandStats = rasterStatsVector[myIteratorInt];
-    std::cout << __FILE__ << ":" << __LINE__ << "Checking if " << myRasterBandStats.bandName.data() << " == " << grayBandNameQString.data() << std::endl;
+    QgsDebugMsg("Checking if " + myRasterBandStats.bandName + " == " 
+                + grayBandNameQString);
     if (myRasterBandStats.bandName == theBandNameQString)
     {
       grayBandNameQString = theBandNameQString;

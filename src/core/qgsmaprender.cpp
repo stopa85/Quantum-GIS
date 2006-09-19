@@ -192,7 +192,7 @@ void QgsMapRender::render(QPainter* painter)
 
   if (mExtent.isEmpty())
   {
-    QgsLogger::warning("empty extent... not rendering");
+    QgsLogger::debug("empty extent... not rendering");
     return;
   }
 
@@ -226,7 +226,7 @@ void QgsMapRender::render(QPainter* painter)
     // added these comments and debug statement to help others...
     QgsDebugMsg("If there is a QPaintEngine error here, it is caused by an emit call");
 
-    emit setProgress(myRenderCounter++, mLayerSet.size());
+    //emit setProgress(myRenderCounter++, mLayerSet.size());
     QgsMapLayer *ml = QgsMapLayerRegistry::instance()->mapLayer(*li);
 
     if (!ml)

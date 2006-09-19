@@ -72,8 +72,6 @@ class QgsPgGeoprocessing:public QObject, public QgisPlugin
   bool gistAvailable;
   bool projAvailable;
   
-    //! Id of the plugin's menu. Used for unloading
-    int menuId;
     //! Pionter to QGIS main application object
     QWidget *qgisMainWindow;
     //! Pointer to the QGIS interface object

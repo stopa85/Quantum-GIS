@@ -48,6 +48,8 @@ QgsComposerMap::QgsComposerMap ( QgsComposition *composition, int id, int x, int
 QgsComposerMap::QgsComposerMap ( QgsComposition *composition, int id )
     : Q3CanvasRectangle(0,0,10,10,0)
 {
+    setupUi(this);
+
     mComposition = composition;
     mId = id;
     mMapCanvas = mComposition->mapCanvas();
@@ -194,8 +196,16 @@ void QgsComposerMap::draw ( QPainter *painter, QgsRect *extent, QgsMapToPixel *t
 
 	  if ( vector->labelOn() ) {
 	      double fontScale = 25.4 * mFontScale * mComposition->scale() / 72;
-	      if ( plotStyle() == QgsComposition::Postscript ) {
-		  fontScale = QgsComposition::psFontScaleFactor() * 72.0 / mComposition->resolution();
+	      if ( plotStyle() == QgsComposition::Postscript ) 
+              {
+		  //fontScale = QgsComposition::psFontScaleFactor() * 72.0 / mComposition->resolution();
+
+                  // TODO
+                  // This is not completely correct because fonts written to postscript
+                  // should use size metrics.ascent() * 72.0 / mComposition->resolution();
+                  // We could add a factor for metrics.ascent()/size but it is variable
+                  // Add a parrameter in drawLables() ?
+		  fontScale = 72.0 / mComposition->resolution();
 	      }
 	      vector->drawLabels (  painter, extent, transform, ct, fontScale );
 	  }
@@ -312,7 +322,9 @@ void QgsComposerMap::draw ( QPainter & painter )
 
     // Draw frame around
     if ( mFrame ) {
-      painter.setPen( QPen(QColor(0,0,0), 1) );
+      QPen pen(QColor(0,0,0));
+      pen.setWidthF(0.2);
+      painter.setPen( pen );
       painter.setBrush( Qt::NoBrush );
 	    painter.save();
       painter.translate ( Q3CanvasRectangle::x(), Q3CanvasRectangle::y() );

@@ -152,6 +152,9 @@ public:
   /** Returns point, line or polygon */
   QGis::VectorType vectorType() const;
 
+  /**Returns the WKBType or WKBUnknown in case of error*/
+  QGis::WKBTYPE getGeometryType() const;
+
   /** Return the provider type for this layer */
   QString providerType() const;
 
@@ -197,11 +200,6 @@ public:
    * @return long containing the number of features in the datasource
    */
   virtual long updateFeatureCount() const;
-
-  /** Update the extents for the layer. This is necessary if features are
-   *  added/deleted or the layer has been subsetted.
-   */
-  virtual void updateExtents();
 
   /**
    * Set the string (typically sql) used to define a subset of the layer
@@ -366,6 +364,11 @@ public slots:
 
   void triggerRepaint();
 
+  /** Update the extents for the layer. This is necessary if features are
+   *  added/deleted or the layer has been subsetted.
+   */
+  virtual void updateExtents();
+
 signals:
 
   /** This signal is emited when selection was changed */
@@ -415,6 +418,8 @@ private:                       // Private methods
 
   /**Caches all the (commited) geometries to mCachedFeatures, e.g. when entering editing mode*/
   void cacheGeometries();
+  /**Deletes the geometries in mCachedGeometries*/
+  void deleteCachedGeometries();
 
 
 private:                       // Private attributes
