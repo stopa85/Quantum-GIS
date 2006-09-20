@@ -89,9 +89,26 @@ class CORE_EXPORT QgsGeometry {
     void setGeos(geos::Geometry* geos);
 
     /**
-       Returns the vertex closest to the given point (and also vertex index, squared distance and indexes of the vertices before/after)
+       Returns the vertex closest to the given point 
+       (and also vertex index, squared distance and indexes of the vertices before/after)
     */
     QgsPoint closestVertex(const QgsPoint& point, QgsGeometryVertexIndex& atVertex, int& beforeVertex, int& afterVertex, double& sqrDist) const;
+
+
+    /**
+       Returns the indexes of the vertices before and after the given vertex index.
+
+       This function takes into account the following factors:
+
+       1. If the given vertex index is at the end of a linestring,
+          the adjacent index will be -1 (for "no adjacent vertex")
+       2. If the given vertex index is at the end of a linear ring
+          (such as in a polygon), the adjacent index will take into
+          account the first vertex is equal to the last vertex (and will
+          skip equal vertex positions).
+    */
+    void adjacentVerticies(const QgsGeometryVertexIndex& atVertex, int& beforeVertex, int& afterVertex) const;
+
 
     /** Insert a new vertex before the given vertex index,
      *  ring and item (first number is index 0)
@@ -167,8 +184,11 @@ class CORE_EXPORT QgsGeometry {
     /**Returns the bounding box of this feature*/
     QgsRect boundingBox() const;
 
-    /**Test for intersection with a rectangle (uses GEOS)*/
+    /** Test for intersection with a rectangle (uses GEOS) */
     bool intersects(QgsRect* r) const;
+
+    /** Test for containment of a point (uses GEOS) */
+    bool contains(QgsPoint* p) const;
 
     /**Creates a geos geometry from this features geometry. Note, that the returned object needs to be deleted*/
     geos::Geometry* geosGeometry() const;
@@ -179,6 +199,7 @@ class CORE_EXPORT QgsGeometry {
 
     // Private static members
 
+    //! This is used to create new GEOS variables.
     static geos::GeometryFactory* geosGeometryFactory;
 
 

@@ -23,6 +23,7 @@
 #include <QMessageBox>
 #include <QPainter>
 #include <QImageWriter>
+#include <QSettings>
 
 #include <cmath>
 #include <iostream>
@@ -151,7 +152,9 @@ void QgsComposerPicture::loadPicture ( void )
         // Dummy picture
         QPainter  p;
 	p.begin( &mPicture );
-  	p.setPen( QPen(QColor(0,0,0), 1) );
+        QPen pen(QColor(0,0,0));
+        pen.setWidthF(3.0);
+  	p.setPen( pen );
 	p.setBrush( QBrush( QColor( 150, 150, 150) ) );
 
         int w, h; 
@@ -491,11 +494,21 @@ QString QgsComposerPicture::pictureDialog ( void )
     }
     filters += " )";
 
+    // Retrieve the last used directory
+    QSettings settings;
+    QString lastUsedDir = settings.readEntry("/UI/lastComposerPictureDir", ".");
+
     QString file = QFileDialog::getOpenFileName(
                     0,
                     tr("Choose a file"),
-                    ".",
+                    lastUsedDir,
                     filters );
+    if (file.length() != 0)
+    {
+      QFileInfo myFile(file);
+      QString myPath = myFile.dirPath();
+      settings.writeEntry("/UI/lastComposerPictureDir", myPath);
+    }
 
     return file; 
 }

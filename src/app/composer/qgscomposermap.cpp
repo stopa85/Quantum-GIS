@@ -89,7 +89,7 @@ void QgsComposerMap::init ()
     mPreviewModeComboBox->setCurrentItem ( Cache );
 
     mWidthScale = 1.0 / mComposition->scale();
-    mSymbolScale = 1.0;
+    mSymbolScale = 0.5;
     mFontScale = 1.0;
 
     mFrame = true;
@@ -308,13 +308,8 @@ void QgsComposerMap::draw ( QPainter & painter )
       painter.save();
       painter.translate ( Q3CanvasRectangle::x(), Q3CanvasRectangle::y() );
 
-#if QT_VERSION < 0x040000
-      // Note: CoordDevice doesn't work well
-      painter.setClipRect ( 0, 0, Q3CanvasRectangle::width(), Q3CanvasRectangle::height(), QPainter::CoordPainter );
-#else
       // TODO: Qt4 appears to force QPainter::CoordDevice - need to check if this is actually valid.
       painter.setClipRect ( 0, 0, Q3CanvasRectangle::width(), Q3CanvasRectangle::height() );
-#endif
 
       draw( &painter, &mExtent, &transform);
       painter.restore();
@@ -323,7 +318,7 @@ void QgsComposerMap::draw ( QPainter & painter )
     // Draw frame around
     if ( mFrame ) {
       QPen pen(QColor(0,0,0));
-      pen.setWidthF(0.2*mComposition->scale());
+      pen.setWidthF(0.6*mComposition->scale());
       painter.setPen( pen );
       painter.setBrush( Qt::NoBrush );
 	    painter.save();
