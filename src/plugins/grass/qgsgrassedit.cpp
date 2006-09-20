@@ -73,6 +73,10 @@ extern "C" {
 #include "qgsgrassedittools.h"
 #include "qgsgrassutils.h"
 
+#ifdef _MSC_VER
+#define round(x)  ((x) >= 0 ? floor((x)+0.5) : floor((x)-0.5))
+#endif
+
 
 class QgsGrassEditLayer : public QgsMapCanvasItem
 {

@@ -11,6 +11,7 @@ SET (OGR_SRCS qgsgpxprovider.cpp gpsdata.cpp)
 INCLUDE_DIRECTORIES(
   ../../core
   ${GEOS_INCLUDE_DIR}
+  ${EXPAT_INCLUDE_DIR}
 )
 
 ADD_LIBRARY(gpxprovider SHARED ${OGR_SRCS})

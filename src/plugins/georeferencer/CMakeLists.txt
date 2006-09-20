@@ -49,6 +49,7 @@ INCLUDE_DIRECTORIES(
      ../../gui
      ..
      ${GSL_INCLUDE_DIR}
+     ${GDAL_INCLUDE_DIR}
 )
 
 TARGET_LINK_LIBRARIES(georefplugin

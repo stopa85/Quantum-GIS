@@ -16,6 +16,11 @@
 #include <cmath>
 #include <iostream>
 
+// MSVC compiler doesn't have defined M_PI in math.h
+#ifndef M_PI
+#define M_PI          3.14159265358979323846
+#endif
+
 GpsCore::GpsCore(QgisInterface* qgis)
   : mQgis(qgis)
 {
