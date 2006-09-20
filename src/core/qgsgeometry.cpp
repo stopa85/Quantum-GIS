@@ -219,7 +219,7 @@ void QgsGeometry::setGeos(geos::Geometry* geos)
 
 }
 
-QgsPoint QgsGeometry::closestVertex(const QgsPoint& point, QgsGeometryVertexIndex& atVertex, double& sqrDist) const
+QgsPoint QgsGeometry::closestVertex(const QgsPoint& point, QgsGeometryVertexIndex& atVertex, int& beforeVertex, int& afterVertex, double& sqrDist) const
 {
   if(mDirtyWkb)
     {
@@ -235,6 +235,9 @@ QgsPoint QgsGeometry::closestVertex(const QgsPoint& point, QgsGeometryVertexInde
 	double x,y;
 	double *tempx,*tempy;
 	memcpy(&wkbType, (mGeometry+1), sizeof(int));
+	beforeVertex = -1;
+	afterVertex = -1;
+
 	switch (wkbType)
 	{
 	    case QGis::WKBPoint:
@@ -260,6 +263,22 @@ QgsPoint QgsGeometry::closestVertex(const QgsPoint& point, QgsGeometryVertexInde
 			y=*tempy;
 			actdist=point.sqrDist(*tempx,*tempy);
 			vertexnr = index;
+			if(index == 0)//assign the rubber band indices
+			  {
+			    beforeVertex = -1;
+			  }
+			else
+			  {
+			    beforeVertex = index-1;
+			  }
+			if(index == (*npoints - 1))
+			  {
+			    afterVertex = -1;
+			  }
+			else
+			  {
+			    afterVertex = index+1;
+			  }
 		    }
 		    ptr+=sizeof(double);
 		}
@@ -285,6 +304,22 @@ QgsPoint QgsGeometry::closestVertex(const QgsPoint& point, QgsGeometryVertexInde
 			    y=*tempy;
 			    actdist=point.sqrDist(*tempx,*tempy);
 			    vertexnr = vertexcounter;
+			    //assign the rubber band indices
+			    if(index2 == 0)
+			      {
+				beforeVertex = vertexcounter+(*npoints-2);
+				afterVertex = vertexcounter+1;
+			      }
+			    else if(index2 == (*npoints-1))
+			      {
+				beforeVertex = vertexcounter-1;
+				afterVertex = vertexcounter - (*npoints-2);
+			      }
+			    else
+			      {
+				beforeVertex = vertexcounter-1;
+				afterVertex = vertexcounter+1;
+			      }
 			}
 			ptr+=sizeof(double);
 			++vertexcounter;
@@ -338,6 +373,23 @@ QgsPoint QgsGeometry::closestVertex(const QgsPoint& point, QgsGeometryVertexInde
 			  y=*tempy;
 			  actdist=point.sqrDist(*tempx,*tempy);
 			  vertexnr = vertexcounter;
+
+			  if(index2 == 0)//assign the rubber band indices
+			    {
+			      beforeVertex = -1;
+			    }
+			  else
+			    {
+			      beforeVertex = vertexnr-1;
+			    }
+			  if(index2 == (*npoints)-1)
+			    {
+			      afterVertex = -1;
+			    }
+			  else
+			    {
+			      afterVertex = vertexnr+1;
+			    }
 			}
 		      ++vertexcounter;
 		    }
@@ -372,6 +424,23 @@ QgsPoint QgsGeometry::closestVertex(const QgsPoint& point, QgsGeometryVertexInde
 			       y=*tempy;
 			       actdist=point.sqrDist(*tempx,*tempy);
 			       vertexnr = vertexcounter;
+			       
+			       //assign the rubber band indices
+			       if(index3 == 0)
+				 {
+				   beforeVertex = vertexcounter+(*npoints-2);
+				   afterVertex = vertexcounter+1;
+				 }
+			       else if(index3 == (*npoints-1))
+				 {
+				   beforeVertex = vertexcounter-1;
+				   afterVertex = vertexcounter - (*npoints-2);
+				 }
+			       else
+				 {
+				   beforeVertex = vertexcounter-1;
+				   afterVertex = vertexcounter+1;
+				 }
 			   }
 			   ptr+=sizeof(double); 
 			   ++vertexcounter;
@@ -1105,12 +1174,12 @@ bool QgsGeometry::vertexAt(double &x, double &y,
 		    memcpy(&x, ptr, sizeof(double));
 		    ptr += sizeof(double);
 		    memcpy(&y, ptr, sizeof(double));
+		    return true;
 		  }
 		else
 		  {
 		    return FALSE;
 		  }
-                break;
 	      }
           case QGis::WKBLineString:
 	      {
@@ -1130,7 +1199,7 @@ bool QgsGeometry::vertexAt(double &x, double &y,
                 memcpy(&x, ptr, sizeof(double));
                 ptr += sizeof(double);
                 memcpy(&y, ptr, sizeof(double));
-                break;
+                return true;
 	      }
             case QGis::WKBPolygon:
 	      {
@@ -1151,7 +1220,7 @@ bool QgsGeometry::vertexAt(double &x, double &y,
 			    memcpy(&x, ptr, sizeof(double));
 			    ptr += sizeof(double);
 			    memcpy(&y, ptr, sizeof(double));
-			    break;
+			    return true;
 			  }
 			ptr += 2*sizeof(double);
 			++pointindex;
@@ -1172,7 +1241,7 @@ bool QgsGeometry::vertexAt(double &x, double &y,
 		memcpy(&x, ptr, sizeof(double));
 		ptr += sizeof(double);
 		memcpy(&y, ptr, sizeof(double));
-                break;
+                return true;
 	      }    
             case QGis::WKBMultiLineString:
 	      {
@@ -1193,7 +1262,7 @@ bool QgsGeometry::vertexAt(double &x, double &y,
 			    memcpy(&x, ptr, sizeof(double));
 			    ptr += sizeof(double);
 			    memcpy(&y, ptr, sizeof(double));
-			    break;
+			    return true;
 			  }
 			ptr += 2*sizeof(double);
 			++pointindex;
@@ -1217,6 +1286,7 @@ bool QgsGeometry::vertexAt(double &x, double &y,
 		    for(int ringnr = 0; ringnr < *nRings; ++ringnr)
 		      {
 			nPoints = (int*)ptr;
+			ptr += sizeof(int);
 			for(int pointnr = 0; pointnr < *nPoints; ++pointnr)
 			  {
 			    if(pointindex == atVertex.back())
@@ -1224,7 +1294,7 @@ bool QgsGeometry::vertexAt(double &x, double &y,
 				memcpy(&x, ptr, sizeof(double));
 				ptr += sizeof(double);
 				memcpy(&y, ptr, sizeof(double));
-				break;
+				return true;
 			      }
 			    ++pointindex;
 			    ptr += 2*sizeof(double);
@@ -1240,13 +1310,6 @@ bool QgsGeometry::vertexAt(double &x, double &y,
 	      return false;
 	      break;
 	    }
-	  
-#ifdef QGISDEBUG
-	  std::cout << "QgsGeometry::vertexAt: Exiting TRUE." << std::endl;
-#endif
-	  
-	  return true;
-	  
 	}
     else
     {
@@ -1256,6 +1319,30 @@ bool QgsGeometry::vertexAt(double &x, double &y,
 	}     
 	
     return false;
+}
+
+
+double QgsGeometry::sqrDistToVertexAt(QgsPoint& point,
+                                      QgsGeometryVertexIndex& atVertex) const
+{
+  double x;
+  double y;
+
+  if (vertexAt(x, y, atVertex))
+  {
+#ifdef QGISDEBUG
+    std::cout << "QgsGeometry::sqrDistToVertexAt: Exiting with distance to " << x << " " << y << "." << std::endl;
+#endif
+    return point.sqrDist(x, y);
+  }
+  else
+  {
+#ifdef QGISDEBUG
+    std::cout << "QgsGeometry::sqrDistToVertexAt: Exiting with std::numeric_limits<double>::max()." << std::endl;
+#endif
+    // probably safest to bail out with a very large number
+    return std::numeric_limits<double>::max();
+  }
 }
 
 

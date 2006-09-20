@@ -136,7 +136,7 @@ void QgsContinuousColorRenderer::renderFeature(QPainter * p, QgsFeature * f, QIm
       }
       brush.setStyle ( Qt::SolidPattern );
 
-      *img = QgsMarkerCatalogue::instance()->marker ( mMinimumSymbol->pointSymbolName(), mMinimumSymbol->pointSize(),
+      *img = QgsMarkerCatalogue::instance()->pixmapMarker ( mMinimumSymbol->pointSymbolName(), mMinimumSymbol->pointSize(),
           pen, brush);
 
       if ( scalefactor ) *scalefactor = 1;

@@ -89,9 +89,9 @@ class CORE_EXPORT QgsGeometry {
     void setGeos(geos::Geometry* geos);
 
     /**
-       Returns the vertex closest to the given point (and also vertex index and squared distance)
+       Returns the vertex closest to the given point (and also vertex index, squared distance and indexes of the vertices before/after)
     */
-    QgsPoint closestVertex(const QgsPoint& point, QgsGeometryVertexIndex& atVertex, double& sqrDist) const;
+    QgsPoint closestVertex(const QgsPoint& point, QgsGeometryVertexIndex& atVertex, int& beforeVertex, int& afterVertex, double& sqrDist) const;
 
     /** Insert a new vertex before the given vertex index,
      *  ring and item (first number is index 0)
@@ -138,6 +138,15 @@ class CORE_EXPORT QgsGeometry {
      *  If FALSE, x and y are not modified.
      */
     bool vertexAt(double &x, double &y, QgsGeometryVertexIndex atVertex) const;
+
+    /**
+        Returns the squared cartesian distance between the given point
+        to the given vertex index (vertex at the given position number,
+        ring and item (first number is index 0))
+
+     */
+    double sqrDistToVertexAt(QgsPoint& point,
+                             QgsGeometryVertexIndex& atVertex) const;
 
     /**
         Returns, in atVertex, the closest vertex in this geometry to the given point.

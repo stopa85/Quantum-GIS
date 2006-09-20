@@ -59,6 +59,7 @@ GLOBALCXXFLAGS = $(CXXFLAGS) \
 				$(EXTRA_CXXFLAGS) \
 				$(GDAL_CFLAGS) \
 				$(QT_CXXFLAGS) \
+        $(GEOS_CFLAGS) \
 				$(PG_INC) \
 				-I../../../src/core/include
 
