@@ -151,3 +151,7 @@ SUBDIRS(src doc images resources i18n)
 
 INSTALL (FILES AUTHORS
          DESTINATION ${QGIS_DATA_DIR}/doc)
+
+# manual page... install also on windows?
+INSTALL (FILES qgis.man
+         DESTINATION ${CMAKE_INSTALL_PREFIX}/man/man1)
