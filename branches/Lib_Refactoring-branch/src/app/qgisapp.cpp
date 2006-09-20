@@ -52,6 +52,7 @@
 #include <QProcess>
 #include <QProgressBar>
 #include <QSettings>
+#include <QSplashScreen>
 #include <QStringList>
 #include <QTcpSocket>
 #include <QTextStream>
@@ -59,13 +60,14 @@
 #include <QToolTip>
 #include <QVBoxLayout>
 #include <QWhatsThis>
-#include <QSplashScreen>
 //
 // QGIS Specific Includes
 //
+#include "../../images/themes/default/qgis.xpm"
 #include "qgisapp.h"
 #include "qgisappinterface.h"
 #include "qgis.h"
+#include "qgisplugin.h"
 #include "qgsabout.h"
 #include "qgsapplication.h"
 #include "qgsbookmarkitem.h"
@@ -86,11 +88,11 @@
 #include "qgslegendlayer.h"
 #include "qgslogger.h"
 #include "qgsmapcanvas.h"
-#include "qgsmapoverviewcanvas.h"
-#include "qgsmaprender.h"
 #include "qgsmaplayer.h"
 #include "qgsmaplayerinterface.h"
 #include "qgsmaplayerregistry.h"
+#include "qgsmapoverviewcanvas.h"
+#include "qgsmaprender.h"
 #include "qgsmapserverexport.h"
 #include "qgsmessageviewer.h"
 #include "qgsoptions.h"
@@ -106,11 +108,9 @@
 #include "qgsrect.h"
 #include "qgsrenderer.h"
 #include "qgsserversourceselect.h"
+#include "qgsvectordataprovider.h"
 #include "qgsvectorfilewriter.h"
 #include "qgsvectorlayer.h"
-#include "qgisplugin.h"
-#include "qgsvectordataprovider.h"
-#include "../../images/themes/default/qgis.xpm"
 
 //
 // Gdal/Ogr includes
@@ -135,8 +135,8 @@
 //
 #include "qgsmaptoolcapture.h"
 #include "qgsmaptoolidentify.h"
-#include "qgsmaptoolselect.h"
 #include "qgsmaptoolpan.h"
+#include "qgsmaptoolselect.h"
 #include "qgsmaptoolvertexedit.h"
 #include "qgsmaptoolzoom.h"
 #include "qgsmeasure.h"
@@ -1700,11 +1700,6 @@ bool QgisApp::addLayer(QFileInfo const & vectorFile)
         SIGNAL(keyPressed(QKeyEvent *)),
         layer,
         SLOT(keyPressed(QKeyEvent* )));
-    //add hooks for letting layer know canvas needs to recalc the layer extents
-    QObject::connect(layer,
-        SIGNAL(recalculateExtents()),
-        mMapCanvas,
-        SLOT(recalculateExtents()));
 
   }
   else
@@ -1796,12 +1791,6 @@ bool QgisApp::addLayer(QStringList const &theLayerQStringList, const QString& en
           SIGNAL(keyPressed(QKeyEvent *)),
           layer,
           SLOT(keyPressed(QKeyEvent* )));
-      //add hooks for letting layer know canvas needs to recalc the layer extents
-      QObject::connect(layer,
-          SIGNAL(recalculateExtents()),
-          mMapCanvas,
-          SLOT(recalculateExtents()));
-
     }
     else
     {
@@ -1901,12 +1890,6 @@ void QgisApp::addDatabaseLayer()
             SIGNAL(keyPressed(QKeyEvent *)),
             layer,
             SLOT(keyPressed(QKeyEvent* )));
-        //add hooks for letting layer know canvas needs to recalc the layer extents
-        QObject::connect(layer,
-            SIGNAL(recalculateExtents()),
-            mMapCanvas,
-            SLOT(recalculateExtents()));
-
       }
       else
       {
@@ -2617,7 +2600,7 @@ bool QgisApp::addProject(QString projectFile)
     qDebug( "%s:%d BAD LAYERS FOUND", __FILE__, __LINE__ );
 
     QMessageBox::critical( 0x0, 
-        tr("Unable to open project"), e.what(), QMessageBox::Ok, 
+        tr("Unable to open project"), QString::fromLocal8Bit(e.what()), QMessageBox::Ok, 
         Qt::NoButton );
 
     mMapCanvas->freeze(false);
@@ -4138,13 +4121,6 @@ void QgisApp::addVectorLayer(QString vectorLayerPath, QString baseName, QString 
         layer,
         SLOT(keyPressed(QKeyEvent* )));
 
-
-    //add hooks for letting layer know canvas needs to recalc the layer extents
-    QObject::connect(layer,
-        SIGNAL(recalculateExtents()),
-        mMapCanvas,
-        SLOT(recalculateExtents()));
-
     QgsProject::instance()->dirty(false); // XXX this might be redundant
 
     statusBar()->message(mMapCanvas->extent().stringRep(2));
@@ -4811,11 +4787,6 @@ bool QgisApp::addRasterLayer(QgsRasterLayer * theRasterLayer, bool theForceRedra
         SIGNAL(keyPressed(QKeyEvent * )),
         theRasterLayer,
         SLOT(keyPressed(QKeyEvent* )));
-    //add hooks for letting layer know canvas needs to recalc the layer extents
-    QObject::connect(theRasterLayer,
-        SIGNAL(recalculateExtents()),
-        mMapCanvas,
-        SLOT(recalculateExtents()));
 
     // add it to the mapcanvas collection
     // no longer necessary since adding to registry automatically adds to canvas
@@ -4960,13 +4931,6 @@ void QgisApp::addRasterLayer(QString const & rasterLayerPath,
         SIGNAL(keyPressed(QKeyEvent * )),
         layer,
         SLOT(keyPressed(QKeyEvent* )));
-
-
-    //add hooks for letting layer know canvas needs to recalc the layer extents
-    QObject::connect(layer,
-        SIGNAL(recalculateExtents()),
-        mMapCanvas,
-        SLOT(recalculateExtents()));
 
     QgsProject::instance()->dirty(false); // XXX this might be redundant
 

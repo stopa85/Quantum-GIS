@@ -50,6 +50,9 @@ class CORE_EXPORT QgsApplication: public QApplication
 
     //! Returns the path to the splash screen image directory.
     static const QString splashPath();
+    
+    //! Returns the path to the icons image directory.
+    static const QString iconsPath();
 
     //! Returns the path to the srs.db file.
     static const QString srsDbFilePath();

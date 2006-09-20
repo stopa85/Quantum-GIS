@@ -282,6 +282,8 @@ public:
 
   /**Snaps a point to the closest vertex if there is one within the snapping tolerance
      @param atVertex          Set to a vertex index of the snapped-to vertex
+     @param beforeVertexIndex Returns the index of the vertex before atVertex (for rubber band purposes). -1 if no vertex is before
+     @param afterVertexIndex  Returns the index of the vertex after atVertex (for rubber band purposes). -1 if no vertex is after
      @param snappedFeatureId  Set to the feature ID that where the snapped-to vertex belongs to.
      @param snappedGeometry   Set to the geometry that the snapped-to vertex belongs to.
      @param tolerance         The snapping tolerance
@@ -291,11 +293,13 @@ public:
    */
   bool snapVertexWithContext(QgsPoint& point,
                              QgsGeometryVertexIndex& atVertex,
+			     int& beforeVertexIndex,
+			     int& afterVertexIndex,
                              int& snappedFeatureId,
                              QgsGeometry& snappedGeometry,
                              double tolerance);
 
-  /**Snaps a point to the closest line segment if there is one within the snapping tolerance (mSnappingTolerance)
+  /**Snaps a point to the closest line segment if there is one within the snapping tolerance
      @param beforeVertex      Set to a value where the snapped-to segment is before this vertex index
      @param snappedFeatureId  Set to the feature ID that where the snapped-to segment belongs to.
      @param snappedGeometry   Set to the geometry that the snapped-to segment belongs to.
@@ -420,6 +424,8 @@ private:                       // Private methods
   void cacheGeometries();
   /**Deletes the geometries in mCachedGeometries*/
   void deleteCachedGeometries();
+  /**Draws a vertex symbol at (screen) coordinates x, y*/
+  void drawVertexMarker(int x, int y, QPainter& p);
 
 
 private:                       // Private attributes

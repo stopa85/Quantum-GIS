@@ -307,26 +307,12 @@ QgsMapLayer* QgsMapCanvas::currentLayer()
 
 void QgsMapCanvas::refresh()
 {
-  clear();
-#ifdef Q_WS_MACX
-  if (mDirty)
+  if (mRenderFlag)
   {
-    render();
+    clear();
+    updateContents();
   }
-#endif
-  
-  updateContents();
 } // refresh
-
-#ifdef Q_WS_MACX
-void QgsMapCanvas::paintEvent(QPaintEvent * ev)
-{
-  int cx, cy, cw, ch;
-  ev->rect().getRect(&cx, &cy, &cw, &ch);
-  QPainter p(this);
-  drawContents(&p, cx, cy, cw, ch);
-}
-#else
 
 void QgsMapCanvas::drawContents(QPainter * p, int cx, int cy, int cw, int ch)
 {
@@ -344,7 +330,6 @@ void QgsMapCanvas::drawContents(QPainter * p, int cx, int cy, int cw, int ch)
   
   Q3CanvasView::drawContents(p, cx, cy, cw, ch);
 }
-#endif
   
 void QgsMapCanvas::render()
 {
