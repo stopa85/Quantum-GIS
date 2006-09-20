@@ -307,6 +307,8 @@ QRect QgsComposerVectorLegend::render ( QPainter *p )
 		itemLabels[icnt] = sym->label();
 		  } else {
 		itemLabels[icnt] = sym->lowerValue();
+                if (sym->upperValue().length() > 0)
+                  itemLabels[icnt] += " - " + sym->upperValue();
 		  }
 	      }
 		  
@@ -455,7 +457,9 @@ void QgsComposerVectorLegend::draw ( QPainter & painter )
     // Draw background rectangle
 
     if ( mFrame ) {
-  painter.setPen( QPen(QColor(0,0,0), 1) );
+      QPen pen(QColor(0,0,0));
+      pen.setWidthF(2.0);
+  painter.setPen( pen );
   painter.setBrush( QBrush( QColor(255,255,255), Qt::SolidPattern) );
 
   painter.save();

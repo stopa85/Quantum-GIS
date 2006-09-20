@@ -89,11 +89,11 @@ QgsOgrProvider::QgsOgrProvider(QString const & uri)
   QgsDebugMsg("Data source uri is " + uri);
 
   // try to open for update
-  ogrDataSource = OGRSFDriverRegistrar::Open((const char *) uri.toLocal8Bit().data(), TRUE, &ogrDriver);
+  ogrDataSource = OGRSFDriverRegistrar::Open(QFile::encodeName(uri).constData(), TRUE, &ogrDriver);
   if(ogrDataSource == NULL)
   {
     // try to open read-only
-    ogrDataSource = OGRSFDriverRegistrar::Open((const char *) uri.toLocal8Bit().data(),FALSE, &ogrDriver);
+    ogrDataSource = OGRSFDriverRegistrar::Open(QFile::encodeName(uri).constData(), FALSE, &ogrDriver);
 
     //TODO Need to set a flag or something to indicate that the layer
     //TODO is in read-only mode, otherwise edit ops will fail
@@ -1403,11 +1403,35 @@ QGISEXTERN QString fileVectorFilters()
         {
             // XXX needs file filter extension
         }
+        else if (driverName.startsWith("GRASS")) 
+        { 
+          // XXX needs file filter extension 
+        } 
+        else if (driverName.startsWith("KML")) 
+        { 
+          // XXX needs file filter extension 
+        } 
+        else if (driverName.startsWith("Interlis 1")) 
+        { 
+          // XXX needs file filter extension 
+        } 
+        else if (driverName.startsWith("Interlis 2")) 
+        { 
+          // XXX needs file filter extension 
+        } 
+        else if (driverName.startsWith("SQLite")) 
+        { 
+          // XXX needs file filter extension 
+        } 
+        else if (driverName.startsWith("MySQL")) 
+        { 
+          // XXX needs file filter extension 
+        } 
         else
         {
             // NOP, we don't know anything about the current driver
             // with regards to a proper file filter string
-	    QgsLogger::warning("fileVectorFilters, unknown driver: " + driverName);
+	    QgsLogger::debug("fileVectorFilters, unknown driver: " + driverName);
         }
 
     }                           // each loaded GDAL driver
@@ -1507,8 +1531,23 @@ const std::list<std::pair<QString, QString> >& attributes)
 	reference = new OGRSpatialReference(myWKT.toLocal8Bit().data());
     }
 
+    // Map the qgis geometry type to the OGR geometry type
+    OGRwkbGeometryType OGRvectortype = wkbUnknown;
+    switch (vectortype)
+    {
+    case QGis::WKBPoint:
+      OGRvectortype = wkbPoint;
+      break;
+    case QGis::WKBLineString:
+      OGRvectortype = wkbLineString;
+      break;
+    case QGis::WKBPolygon:
+      OGRvectortype = wkbPolygon;
+      break;
+    }
+
     OGRLayer* layer;	
-    layer = dataSource->CreateLayer(QFileInfo(uri).baseName(), reference, (OGRwkbGeometryType)vectortype, NULL);
+    layer = dataSource->CreateLayer(QFileInfo(uri).baseName(), reference, OGRvectortype, NULL);
     if(layer == NULL)
     {
 	return false;

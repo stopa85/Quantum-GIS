@@ -153,6 +153,11 @@ void QgsMapCanvas::enableAntiAliasing(bool theFlag)
     mMapOverview->enableAntiAliasing(theFlag);
 } // anti aliasing
 
+void QgsMapCanvas::useQImageToRender(bool theFlag)
+{
+  mMap->useQImageToRender(theFlag);
+}
+
 QgsMapCanvasMap* QgsMapCanvas::map()
 {
   return mMap;

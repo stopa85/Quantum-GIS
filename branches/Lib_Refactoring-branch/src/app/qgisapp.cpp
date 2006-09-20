@@ -513,12 +513,18 @@ void QgisApp::createActions()
   // Help Menu Related items
   //
   mActionHelpContents= new QAction(QIcon(myIconPath+"/mActionHelpContents.png"), tr("Help Contents"), this);
+#ifdef Q_WS_MAC
+  mActionHelpContents->setShortcut(tr("Ctrl+?","Help Documentation (Mac)"));
+#else
   mActionHelpContents->setShortcut(tr("F1","Help Documentation"));
+#endif
   mActionHelpContents->setStatusTip(tr("Help Documentation"));
   connect(mActionHelpContents, SIGNAL(triggered()), this, SLOT(helpContents()));
   //
   mActionQgisHomePage= new QAction(QIcon(myIconPath+"/mActionQgisHomePage.png"), tr("Qgis Home Page"), this);
+#ifndef Q_WS_MAC
   mActionQgisHomePage->setShortcut(tr("Ctrl+H","QGIS Home Page"));
+#endif
   mActionQgisHomePage->setStatusTip(tr("QGIS Home Page"));
   connect(mActionQgisHomePage, SIGNAL(triggered()), this, SLOT(helpQgisHomePage()));
   //
@@ -1087,6 +1093,7 @@ void QgisApp::createOverview()
   // moved here to set anti aliasing to both map canvas and overview
   QSettings mySettings;
   mMapCanvas->enableAntiAliasing(mySettings.value("/qgis/enable_anti_aliasing",false).toBool());
+  mMapCanvas->useQImageToRender(mySettings.value("/qgis/use_qimage_to_render",false).toBool());
 }
 
 
@@ -2398,9 +2405,15 @@ void QgisApp::newVectorLayer()
   filename = openFileDialog->selectedFile();
   enc = openFileDialog->encoding();
 
-  settings.writeEntry("/UI//lastVectorFileFilter", openFileDialog->selectedFilter());
+  // If the file exists, delete it otherwise we'll end up loading that
+  // file, which can cause problems (e.g., if the file contains
+  // linestrings, but we're wanting to create points, we'll end up
+  // with a linestring file).
+  QFile::remove(filename);
 
-  settings.writeEntry("/UI//lastVectorFileFilterDir", openFileDialog->directory().absolutePath());
+  settings.writeEntry("/UI/lastVectorFileFilter", openFileDialog->selectedFilter());
+
+  settings.writeEntry("/UI/lastVectorFileFilterDir", openFileDialog->directory().absolutePath());
   settings.writeEntry("/UI/encoding", openFileDialog->encoding());
 
   delete openFileDialog;
@@ -3165,7 +3178,7 @@ void QgisApp::attributeTable()
     if (vlayer)
     {
       // TODO: revisit and repair [MD]
-      //vlayer->table();
+      //layer->table(this);
     }
     else
     {
@@ -3296,59 +3309,62 @@ void QgisApp::deleteVertex()
 }
 
 
-void QgisApp::editCut()
+void QgisApp::editCut(QgsMapLayer * layerContainingSelection)
 {
-  if (activeLayer())
+  QgsMapLayer * selectionLayer = (layerContainingSelection != 0) ?
+                                 (layerContainingSelection) :
+                                 (activeLayer());
+
+  if (selectionLayer)
   {
     // Test for feature support in this layer
-    QgsVectorLayer* activeVectorLayer = dynamic_cast<QgsVectorLayer*>(activeLayer());
+    QgsVectorLayer* selectionVectorLayer = dynamic_cast<QgsVectorLayer*>(selectionLayer);
 
-    if (activeVectorLayer != 0)
+    if (selectionVectorLayer != 0)
     {
-
-      clipboard()->replaceWithCopyOf( *(activeVectorLayer->selectedFeatures()) );
-      activeVectorLayer->deleteSelectedFeatures();
-    }  
-  }  
+      clipboard()->replaceWithCopyOf( *(selectionVectorLayer->selectedFeatures()) );
+      selectionVectorLayer->deleteSelectedFeatures();
+    }
+  }
 }
 
 
-void QgisApp::editCopy()
+void QgisApp::editCopy(QgsMapLayer * layerContainingSelection)
 {
-#ifdef QGISDEBUG
-  std::cerr << "QgisApp::editCopy: entered."
-    << std::endl;
-#endif
-  if (activeLayer())
+  QgsMapLayer * selectionLayer = (layerContainingSelection != 0) ?
+                                 (layerContainingSelection) :
+                                 (activeLayer());
+
+  if (selectionLayer)
   {
     // Test for feature support in this layer
-    QgsVectorLayer* activeVectorLayer = dynamic_cast<QgsVectorLayer*>(activeLayer());
+    QgsVectorLayer* selectionVectorLayer = dynamic_cast<QgsVectorLayer*>(selectionLayer);
 
-    if (activeVectorLayer != 0)
+    if (selectionVectorLayer != 0)
     {
-#ifdef QGISDEBUG
-    std::cerr << "QgisApp::editCopy: has active vector layer, feature type " << activeVectorLayer->featureType() << "."
-      << std::endl;
-#endif
-      clipboard()->replaceWithCopyOf( *(activeVectorLayer->selectedFeatures()) );
-    }  
-  }  
+      clipboard()->replaceWithCopyOf( *(selectionVectorLayer->selectedFeatures()) );
+    }
+  }
 }
 
 
-void QgisApp::editPaste()
+void QgisApp::editPaste(QgsMapLayer * destinationLayer)
 {
-  if (activeLayer())
+  QgsMapLayer * pasteLayer = (destinationLayer != 0) ?
+                             (destinationLayer) :
+                             (activeLayer());
+
+  if (pasteLayer)
   {
     // Test for feature support in this layer
-    QgsVectorLayer* activeVectorLayer = dynamic_cast<QgsVectorLayer*>(activeLayer());
+    QgsVectorLayer* pasteVectorLayer = dynamic_cast<QgsVectorLayer*>(pasteLayer);
 
-    if (activeVectorLayer != 0)
+    if (pasteVectorLayer != 0)
     {
-      activeVectorLayer->addFeatures( clipboard()->copyOf() );
+      pasteVectorLayer->addFeatures( clipboard()->copyOf() );
       mMapCanvas->refresh();
-    }  
-  }  
+    }
+  }
 }
 
 
@@ -3991,6 +4007,7 @@ void QgisApp::options()
 
     QSettings mySettings;
     mMapCanvas->enableAntiAliasing(mySettings.value("/qgis/enable_anti_aliasing").toBool());
+    mMapCanvas->useQImageToRender(mySettings.value("/qgis/use_qimage_to_render").toBool());
   }
 }
 

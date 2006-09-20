@@ -188,7 +188,9 @@ void QgsLegendLayerFile::table()
   {
     // display the attribute table
     QApplication::setOverrideCursor(Qt::waitCursor);
-    mTableDisplay = new QgsAttributeTableDisplay(vlayer);
+    // TODO: pointer to QgisApp should be passed instead of NULL
+    // but we don't have pointer to it. [MD]
+    mTableDisplay = new QgsAttributeTableDisplay(vlayer, NULL);
     mTableDisplay->table()->fillTable(vlayer);
     mTableDisplay->table()->setSorting(true);
 

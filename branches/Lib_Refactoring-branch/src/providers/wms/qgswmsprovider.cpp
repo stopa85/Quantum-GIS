@@ -21,6 +21,7 @@
 #include "qgslogger.h"
 #include "qgswmsprovider.h"
 
+#include <math.h>
 #include <fstream>
 #include <iostream>
 
@@ -1664,6 +1665,12 @@ void QgsWmsProvider::parseLayer(QDomElement const & e, QgsWmsLayerProperty& laye
 
     // Insert into the local class' registry
     layersSupported.push_back(layerProperty);
+
+    //if there are several <Layer> elements without a parent layer, the style list needs to be cleared
+    if(atleaf)
+      {
+	layerProperty.style.clear();
+      }
   }
 
 #ifdef QGISDEBUG
@@ -1936,6 +1943,13 @@ bool QgsWmsProvider::calculateExtent()
     catch(QgsCsException &cse)
       {
 	continue; //ignore extents of layers which cannot be transformed info the required CRS
+      }
+
+    //make sure extent does not contain 'inf' or 'nan'
+    if(!isfinite(extent.xMin()) || !isfinite((int)extent.yMin()) || !isfinite(extent.xMax()) || \
+!isfinite((int)extent.yMax()))
+      {
+	continue;
       }
 
     // add to the combined extent of all the active sublayers

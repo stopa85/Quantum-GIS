@@ -4,7 +4,6 @@ favicon.ico
 index.html
 install.pdf
 qgisdoc.css
-README
 userguide.pdf
 )
 

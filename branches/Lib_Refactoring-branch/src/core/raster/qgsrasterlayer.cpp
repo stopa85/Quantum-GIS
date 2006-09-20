@@ -386,7 +386,7 @@ bool QgsRasterLayer::isValidRasterFileName(QString const & theFileNameQString)
   GDALAllRegister();
 
   //open the file using gdal making sure we have handled locale properly
-  myDataset = GDALOpen( (const char*)(theFileNameQString.toLocal8Bit().data()), GA_ReadOnly );
+  myDataset = GDALOpen( QFile::encodeName(theFileNameQString).constData(), GA_ReadOnly );
   if( myDataset == NULL )
   {
     return false;
@@ -485,7 +485,7 @@ QgsRasterLayer::readFile( QString const & fileName )
   GDALAllRegister();
 
   //open the dataset making sure we handle char encoding of locale properly
-  gdalDataset = (GDALDataset *) GDALOpen((const char*)(fileName.toLocal8Bit().data()), GA_ReadOnly);
+  gdalDataset = (GDALDataset *) GDALOpen(QFile::encodeName(fileName).constData(), GA_ReadOnly);
 
   if (gdalDataset == NULL)
   {
@@ -4011,13 +4011,13 @@ QString QgsRasterLayer::buildPyramids(RasterPyramidList const & theRasterPyramid
   GDALAllRegister();
   //close the gdal dataset and reopen it in read / write mode
   delete gdalDataset;
-  gdalDataset = (GDALDataset *) GDALOpen(mDataSource.toLocal8Bit().data(), GA_Update);
+  gdalDataset = (GDALDataset *) GDALOpen(QFile::encodeName(mDataSource).constData(), GA_Update);
   
   // if the dataset couldn't be opened in read / write mode, tell the user
   if (!gdalDataset)
   {
     emit setProgress(0,0);
-    gdalDataset = (GDALDataset *) GDALOpen(mDataSource.toLocal8Bit().data(), GA_ReadOnly);
+    gdalDataset = (GDALDataset *) GDALOpen(QFile::encodeName(mDataSource).constData(), GA_ReadOnly);
     return "ERROR_WRITE_FORMAT";
   }
 
@@ -4079,7 +4079,7 @@ QString QgsRasterLayer::buildPyramids(RasterPyramidList const & theRasterPyramid
            //something bad happenend
            //QString myString = QString (CPLGetLastError());
             delete gdalDataset;
-            gdalDataset = (GDALDataset *) GDALOpen(mDataSource.toLocal8Bit().data(), GA_ReadOnly);
+            gdalDataset = (GDALDataset *) GDALOpen(QFile::encodeName(mDataSource).constData(), GA_ReadOnly);
             emit setProgress(0,0);
             return "FAILED_NOT_SUPPORTED";
         }
@@ -4096,7 +4096,7 @@ QString QgsRasterLayer::buildPyramids(RasterPyramidList const & theRasterPyramid
   QgsDebugMsg("Pyramid overviews built");
   //close the gdal dataset and reopen it in read only mode
   delete gdalDataset;
-  gdalDataset = (GDALDataset *) GDALOpen(mDataSource.toLocal8Bit().data(), GA_ReadOnly);
+  gdalDataset = (GDALDataset *) GDALOpen(QFile::encodeName(mDataSource).constData(), GA_ReadOnly);
   emit setProgress(0,0);
   return NULL; // returning null on success
 }
