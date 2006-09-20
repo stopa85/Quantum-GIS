@@ -43,6 +43,7 @@ INCLUDE_DIRECTORIES(
      ../../core ../../core/raster ../../core/renderer ../../core/symbology
      ../../gui
      ..
+     ${EXPAT_INCLUDE_DIR}
 )
 
 TARGET_LINK_LIBRARIES(gpsimporterplugin

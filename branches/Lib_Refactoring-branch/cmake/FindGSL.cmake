@@ -24,7 +24,17 @@
 
 
 IF(WIN32)
-  MESSAGE(SEND_ERROR "FindGSL.cmake: gnu scientific library GSL not (yet) supported on WIN32")
+
+  SET(GSL_PREFIX "" CACHE PATH "Path to GSL directory")
+
+  FIND_LIBRARY(GSL_LIB gsl PATH ${GSL_PREFIX}/lib)
+  FIND_LIBRARY(GSLCBLAS_LIB gslcblas PATH ${GSL_PREFIX}/lib)
+
+  FIND_PATH(GSL_INCLUDE_DIR gsl/gsl_version.h ${GSL_PREFIX}/include)
+
+  IF (GSL_LIB AND GSLCBLAS_LIB)
+    SET (GSL_LIBRARIES ${GSL_LIB} ${GSL_CBLAS_LIB} m)
+  ENDIF (GSL_LIB AND GSLCBLAS_LIB)
   
 ELSE(WIN32)
   IF(UNIX) 
@@ -81,7 +91,6 @@ ELSE(WIN32)
         GSL_LINK_DIRECTORIES
         GSL_DEFINITIONS
       )
-      MESSAGE(STATUS "Using GSL from ${GSL_PREFIX}")
       
     ELSE(GSL_CONFIG)
       MESSAGE("FindGSL.cmake: gsl-config not found. Please set it manually. GSL_CONFIG=${GSL_CONFIG}")
@@ -96,6 +105,8 @@ IF(GSL_LIBRARIES)
 
     SET(GSL_FOUND 1)
     
+    MESSAGE(STATUS "Using GSL from ${GSL_PREFIX}")
+
   ENDIF(GSL_INCLUDE_DIR OR GSL_CXX_FLAGS)
 ENDIF(GSL_LIBRARIES)
 

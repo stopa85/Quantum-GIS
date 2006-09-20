@@ -53,6 +53,10 @@ email                : tim@linfiniti.com
 #define QGISEXTERN extern "C"
 #endif
 
+#ifdef _MSC_VER
+#define round(x)  ((x) >= 0 ? floor((x)+0.5) : floor((x)-0.5))
+#endif
+
 //
 static const char * const ident_ = "$Id$";
 

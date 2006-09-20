@@ -58,6 +58,10 @@ email                : sbr00pwb@users.sourceforge.net
 #define QGISEXTERN extern "C"
 #endif
 
+#ifdef _MSC_VER
+#define round(x)  ((x) >= 0 ? floor((x)+0.5) : floor((x)-0.5))
+#endif
+
 static const char * const ident_ = "$Id$";
 
 static const char * const name_ = "ScaleBar";
