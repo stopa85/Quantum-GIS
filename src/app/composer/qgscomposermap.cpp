@@ -141,11 +141,11 @@ void QgsComposerMap::draw ( QPainter *painter, QgsRect *extent, QgsMapToPixel *t
           // bool split = layer->projectExtent(r1, r2);
           bool split = false;
           
-	  vector->draw( painter, &r1, transform, ct, widthScale, symbolScale);
+          vector->draw( painter, &r1, transform, ct, FALSE, widthScale, symbolScale);
 
           if ( split )
           {
-	      vector->draw( painter, &r2, transform, ct, widthScale, symbolScale);
+	      vector->draw( painter, &r2, transform, ct, FALSE, widthScale, symbolScale);
           }
       } else { 
 	  // raster
@@ -162,13 +162,13 @@ void QgsComposerMap::draw ( QPainter *painter, QgsRect *extent, QgsMapToPixel *t
               painter->save();
 	      painter->scale( 1./multip, 1./multip);
 
-	      layer->draw( painter, extent, &trans, ct);
+	      layer->draw( painter, extent, &trans, ct, FALSE);
               
 	      painter->restore();
 	  } 
 	  else 
 	  {
-	      layer->draw( painter, extent, transform, ct);
+	      layer->draw( painter, extent, transform, ct, FALSE);
 	  }
       }
       

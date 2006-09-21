@@ -34,7 +34,6 @@ class QDomDocument;
 class QDomNode;
 class QMouseEvent;
 class QTreeWidgetItem;
-class Q3PopupMenu;
 
 /**
    \class QgsLegend
@@ -164,6 +163,8 @@ class QgsLegend : public QTreeWidget
   class QgsLegendPixmaps;
   /**Returns structure with legend pixmaps*/
   QgsLegendPixmaps& pixmaps() { return mPixmaps; }
+  
+  void updateCheckStates(QTreeWidgetItem* item, Qt::CheckState state) {mStateOfCheckBoxes[item] = state;}
 
 public slots:
 

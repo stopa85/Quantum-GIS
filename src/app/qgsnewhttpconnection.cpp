@@ -23,7 +23,6 @@ QgsNewHttpConnection::QgsNewHttpConnection(QWidget *parent, const QString& connN
                     : QDialog(parent, fl)
 {
   setupUi(this);
-  connect(btnHelp, SIGNAL(clicked()), this, SLOT(helpInfo()));
   connect(btnCancel, SIGNAL(clicked()), this, SLOT(reject()));
   connect(btnOk, SIGNAL(clicked()), this, SLOT(saveConnection()));
 
@@ -42,13 +41,6 @@ QgsNewHttpConnection::QgsNewHttpConnection(QWidget *parent, const QString& connN
       txtProxyUser->setText(settings.readEntry(key + "/proxyuser"));
       txtProxyPass->setText(settings.readEntry(key + "/proxypassword"));
     }
-
-  QWidget::setTabOrder(txtName, txtUrl);
-  QWidget::setTabOrder(txtUrl, (QWidget*)btnOk);
-  QWidget::setTabOrder((QWidget*)btnOk, (QWidget*)btnCancel);
-  QWidget::setTabOrder((QWidget*)btnCancel, (QWidget*)btnHelp);
-  QWidget::setTabOrder((QWidget*)btnHelp, txtName);
-  
 }
 
 QgsNewHttpConnection::~QgsNewHttpConnection()

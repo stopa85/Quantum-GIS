@@ -23,6 +23,7 @@
 #include "qgsattributeaction.h"
 #include <QWidget>
 #include <vector>
+#include <map>
 
 class QCloseEvent;
 class Q3ListViewItem;
@@ -43,10 +44,15 @@ class QgsIdentifyResults: public QDialog, private Ui::QgsIdentifyResultsBase
   QgsIdentifyResults(const QgsAttributeAction& actions, QWidget *parent = 0, Qt::WFlags f = 0);
 
   ~QgsIdentifyResults();
+
   /** Add an attribute to the feature display node */
   void addAttribute(Q3ListViewItem *parent, QString field, QString value);
+
   /** Add an attribute */
   void addAttribute(QString field, QString value);
+
+  /** Add a derived attribute (e.g. Length, Area) to the feature display node */
+  void addDerivedAttribute(Q3ListViewItem *parent, QString field, QString value);
 
   /** Add an action to the feature display node */
   void addAction(Q3ListViewItem *parent, int id, QString field, QString value);
@@ -84,12 +90,25 @@ class QgsIdentifyResults: public QDialog, private Ui::QgsIdentifyResultsBase
     /* Item in tree was clicked */
     void clicked ( Q3ListViewItem *lvi );
 
+    //! Context help
+    void on_buttonHelp_clicked();
+
  private:
   
   QgsAttributeAction mActions;
   int mClickedOnValue;
   QMenu* mActionPopup;
   std::vector<std::pair<QString, QString> > mValues;
+  static const int context_id = -689216579;
+
+  /**
+   Keeps track of what derived-attribute (e.g. Length, Area)
+   root nodes have been generated for each feature in this widget.
+
+   First item:  Feature root node
+   Second item: Derived-attribute root node for that feature
+   */
+  std::map<Q3ListViewItem *, Q3ListViewItem *> mDerivedAttributeRootNodes;
 };
 
 #endif

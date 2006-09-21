@@ -122,7 +122,7 @@ QgsRect QgsMapLayer::calculateExtent()
     return rect;
 }
 
-bool QgsMapLayer::draw(QPainter *, QgsRect *, QgsMapToPixel *, QgsCoordinateTransform *)
+bool QgsMapLayer::draw(QPainter *, QgsRect *, QgsMapToPixel *, QgsCoordinateTransform *, bool)
 {
     //  std::cout << "In QgsMapLayer::draw" << std::endl;
     return false;

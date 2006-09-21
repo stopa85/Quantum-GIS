@@ -55,9 +55,9 @@ public:
     QgsLegendItem::DRAG_ACTION accept(const QgsLegendItem* li) const;
     /**Returns the map layer associated with the first QgsLegendLayerFile or 0 if
      there is no QgsLegendLayerFile*/
-    QgsMapLayer* firstMapLayer();
+    QgsMapLayer* firstMapLayer() const;
     /**Returns first map layer's file or 0 if there's no QgsLegendLayerFile */
-    QgsLegendLayerFile* firstLayerFile();
+    QgsLegendLayerFile* firstLayerFile() const;
     /**Returns the map layers associated with the QgsLegendLayerFiles*/
     std::list<QgsMapLayer*> mapLayers();
     /**Returns the legend layer file items associated with this legend layer*/
@@ -68,7 +68,11 @@ public:
     /**Updates symbology of the layer and copies symbology to other layer files in the group*/
     void refreshSymbology(const QString& key);
 
-protected:
+    /**Goes through all the legendlayerfiles and adds editing/overview pixmaps to the icon. If not all layer files
+    have the same editing/overview state, a tristate is applied*/
+    void updateIcon();
+  
+  protected:
     
     /** Prepare and change symbology for vector layer */
     void vectorLayerSymbology(const QgsVectorLayer* mapLayer);
@@ -88,6 +92,7 @@ protected:
      */
     void updateLayerSymbologySettings(const QgsMapLayer* mapLayer);
 
+    QPixmap getOriginalPixmap() const;
 };
 
 #endif

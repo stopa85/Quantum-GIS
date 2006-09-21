@@ -32,7 +32,6 @@
 #include <QMessageBox>
 #include <QCursor>
 #include <QPixmap>
-#include <QObject>
 
 
 QgsMapToolIdentify::QgsMapToolIdentify(QgsMapCanvas* canvas)
@@ -49,7 +48,7 @@ QgsMapToolIdentify::~QgsMapToolIdentify()
 {
   if (mResults)
   {
-    delete mResults;
+    mResults->done(0);
   }
 
   if (mViewer)
@@ -130,6 +129,10 @@ void QgsMapToolIdentify::identifyRasterLayer(QgsRasterLayer* layer, const QgsPoi
   {
     QgsAttributeAction aa;
     mResults = new QgsIdentifyResults(aa, mCanvas->window());
+    mResults->setAttribute(Qt::WA_DeleteOnClose);
+    // Be informed when the dialog box is closed so that we can stop using it. 
+    connect(mResults, SIGNAL(accepted()), this, SLOT(resultsDialogGone()));
+    connect(mResults, SIGNAL(rejected()), this, SLOT(resultsDialogGone()));
     mResults->restorePosition();
   }
   else
@@ -158,9 +161,9 @@ void QgsMapToolIdentify::identifyRasterWmsLayer(QgsRasterLayer* layer, const Qgs
     return;
   }
 
-  QString html = layer->identifyAsHtml(point);
+  QString text = layer->identifyAsText(point);
 
-  if (html.isEmpty())
+  if (text.isEmpty())
   {
     showError(layer);
     return;
@@ -172,8 +175,7 @@ void QgsMapToolIdentify::identifyRasterWmsLayer(QgsRasterLayer* layer, const Qgs
   }
 
   mViewer->setCaption( layer->name() );
-  mViewer->setMessageAsPlainText( html );
-//  mViewer->setMessageAsHtml( html );
+  mViewer->setMessageAsPlainText( text );
 
 //  mViewer->exec();
   mViewer->show();
@@ -221,7 +223,10 @@ void QgsMapToolIdentify::identifyVectorLayer(QgsVectorLayer* layer, const QgsPoi
     if(!mResults)
     {
       mResults = new QgsIdentifyResults(actions, mCanvas->window());
-
+      mResults->setAttribute(Qt::WA_DeleteOnClose);
+      // Be informed when the dialog box is closed so that we can stop using it.
+      connect(mResults, SIGNAL(accepted()), this, SLOT(resultsDialogGone()));
+      connect(mResults, SIGNAL(rejected()), this, SLOT(resultsDialogGone()));
       // restore the identify window position and show it
       mResults->restorePosition();
     }
@@ -255,20 +260,21 @@ void QgsMapToolIdentify::identifyVectorLayer(QgsVectorLayer* layer, const QgsPoi
         mResults->addAttribute(featureNode, attr[i].fieldName(), attr[i].fieldValue());
       }
 
-      // measure distance or area
+      // Calculate derived attributes and insert:
+      // measure distance or area depending on geometry type
       if (layer->vectorType() == QGis::Line)
       {
         double dist = calc.measure(fet->geometry());
         QString str = QString::number(dist/1000, 'f', 3);
         str += " km";
-        mResults->addAttribute(featureNode, ".Length", str);
+        mResults->addDerivedAttribute(featureNode, QObject::tr("Length"), str);
       }
       else if (layer->vectorType() == QGis::Polygon)
       {
         double area = calc.measure(fet->geometry());
         QString str = QString::number(area/1000000, 'f', 3);
-        str += " km2";
-        mResults->addAttribute(featureNode, ".Area", str);
+        str += " km^2";
+        mResults->addDerivedAttribute(featureNode, QObject::tr("Area"), str);
       }
 
       // Add actions 
@@ -382,6 +388,11 @@ void QgsMapToolIdentify::showError(QgsMapLayer * mapLayer)
     mapLayer->errorString()
   );
   mv->exec(); // deletes itself on close
+}
+
+void QgsMapToolIdentify::resultsDialogGone()
+{
+  mResults = 0;
 }
 
 // ENDS

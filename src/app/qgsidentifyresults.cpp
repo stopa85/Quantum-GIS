@@ -18,6 +18,7 @@
 /* $Id$ */
 
 #include "qgsidentifyresults.h"
+#include "qgscontexthelp.h"
 #include "qgsapplication.h"
 
 #include <QCloseEvent>
@@ -31,7 +32,9 @@
 QgsIdentifyResults::QgsIdentifyResults(const QgsAttributeAction& actions,
     QWidget *parent, Qt::WFlags f)
 : QDialog(parent, f),
-  mActions(actions), mClickedOnValue(0), mActionPopup(0)
+  mActions(actions),
+  mClickedOnValue(0),
+  mActionPopup(0)
 {
   setupUi(this);
   lstResults->setResizeMode(Q3ListView::AllColumns);
@@ -54,7 +57,7 @@ QgsIdentifyResults::~QgsIdentifyResults()
 void QgsIdentifyResults::close()
 {
   saveWindowLocation();
-  hide();
+  done(0);
 }
 // Save the current window size/position before closing 
 // from window menu or X in titlebar
@@ -157,14 +160,39 @@ void QgsIdentifyResults::saveWindowLocation()
   settings.writeEntry("/Windows/Identify/w", s.width());
   settings.writeEntry("/Windows/Identify/h", s.height());
 } 
+
 /** add an attribute and its value to the list */
 void QgsIdentifyResults::addAttribute(Q3ListViewItem * fnode, QString field, QString value)
 {
   new Q3ListViewItem(fnode, field, value);
 }
+
 void QgsIdentifyResults::addAttribute(QString field, QString value)
 {
   new Q3ListViewItem(lstResults, field, value);
+}
+
+void QgsIdentifyResults::addDerivedAttribute(Q3ListViewItem * fnode, QString field, QString value)
+{
+  // TODO: When we migrate this to a Qt4 QTreeViewWidget,
+  //       this should be added as italic text instead
+
+  Q3ListViewItem * daRootNode;
+
+  // Determine if this is the first derived attribute for this
+  // feature or not
+  if (mDerivedAttributeRootNodes.find(fnode) != mDerivedAttributeRootNodes.end())
+  {
+    // Reuse existing derived-attribute root node
+    daRootNode = mDerivedAttributeRootNodes[fnode];
+  }
+  else
+  {
+    // Create new derived-attribute root node
+    daRootNode = new Q3ListViewItem(fnode, tr("(Derived)"));
+  }
+
+  new Q3ListViewItem(daRootNode, field, value);
 }
 
 void QgsIdentifyResults::addAction(Q3ListViewItem * fnode, int id, QString field, QString value)
@@ -262,4 +290,8 @@ void QgsIdentifyResults::clicked ( Q3ListViewItem *item )
   }
 
   mActions.doAction(id, mValues, mClickedOnValue);
+}
+void QgsIdentifyResults::on_buttonHelp_clicked()
+{
+  QgsContextHelp::run(context_id);
 }

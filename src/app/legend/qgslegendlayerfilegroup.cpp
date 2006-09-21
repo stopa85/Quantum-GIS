@@ -15,6 +15,7 @@
  *                                                                         *
  ***************************************************************************/
 
+#include "qgslegendlayer.h"
 #include "qgslegendlayerfilegroup.h"
 #include "qgslegendlayerfile.h"
 #include "qgslegendsymbologygroup.h"
@@ -75,6 +76,7 @@ bool QgsLegendLayerFileGroup::insert(QgsLegendItem* newItem)
   if ( newItem->type() == LEGEND_LAYER_FILE )
     {
       QgsLegendItem* oldItem = firstChild();
+
       if(!oldItem)//this item is the first child
 	{
 	  insertChild(0, newItem);
@@ -127,4 +129,33 @@ bool QgsLegendLayerFileGroup::containsLegendLayerFile(const QgsLegendLayerFile* 
 	}
     }
   return result;
+}
+
+void QgsLegendLayerFileGroup::receive(QgsLegendItem* newChild)
+{
+  if(newChild->type() == LEGEND_LAYER_FILE)
+    {
+      QgsLegendLayer* ll = dynamic_cast<QgsLegendLayer*>(parent());
+      if(ll)
+	{
+	  ll->updateIcon();
+	  ll->updateCheckState();
+	}
+    }
+}
+
+void QgsLegendLayerFileGroup::release(QgsLegendItem* formerChild)
+{
+#ifdef QGISDEBUG
+  qWarning("In QgsLegendLayerFileGroup::release");
+#endif
+  if(formerChild->type() == LEGEND_LAYER_FILE)
+    {
+      QgsLegendLayer* ll = dynamic_cast<QgsLegendLayer*>(parent());
+      if(ll)
+	{
+	  ll->updateIcon();
+	  ll->updateCheckState();
+	}
+    }
 }

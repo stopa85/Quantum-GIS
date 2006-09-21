@@ -105,7 +105,7 @@ signals:
   void refresh();
   
 private:
-  static const int context_id = 1173513647;
+  static const int context_id = 361087368;
   
   QgsMapCanvas* mMapCanvas;
 };

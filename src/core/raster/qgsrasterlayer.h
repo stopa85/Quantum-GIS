@@ -284,12 +284,12 @@ public:
      *
      * \param point[in]  an image pixel coordinate in the last requested extent of layer.
      *
-     * \retval  An HTML document containing the return from the WMS server
+     * \return  A text document containing the return from the WMS server
      *
      * \note  The arbitraryness of the returned document is enforced by WMS standards
      *        up to at least v1.3.0
      */
-    QString identifyAsHtml(const QgsPoint& point);
+    QString identifyAsText(const QgsPoint& point);
 
     /** \brief Query gdal to find out the WKT projection string for this layer. This implements the virtual method of the same name defined in QgsMapLayer*/
     QString getProjectionWKT();
@@ -300,9 +300,17 @@ public:
     /** \brief Get an 8x8 pixmap of the colour palette. If the layer has no palette a white pixmap will be returned. */
      QPixmap getPaletteAsPixmap();
      
-    /** \brief This is called when the view on the rasterlayer needs to be refreshed (redrawn).  */
-    bool draw(QPainter * theQPainter, QgsRect * theViewExtent, 
-              QgsMapToPixel * theQgsMapToPixel, QgsCoordinateTransform* ct);
+    /** \brief This is called when the view on the rasterlayer needs to be refreshed (redrawn).   
+         
+        \param drawingToEditingCanvas  Are we drawing to an editable canvas? 
+                                       currently not used, but retain to be similar to 
+                                       the QgsVectorLayer interface 
+     */
+    bool draw(QPainter * theQPainter,
+              QgsRect * theViewExtent, 
+              QgsMapToPixel * theQgsMapToPixel,
+              QgsCoordinateTransform* ct,
+              bool drawingToEditingCanvas);
 
     /** \brief This is an overloaded version of the above function that is called by both draw above and drawThumbnail */
     void draw(QPainter * theQPainter, QgsRasterViewPort * myRasterViewPort,
@@ -690,7 +698,7 @@ public:
      * (Useful for providers that manage their own layers, such as WMS)
      *
      */
-    QStringList subLayers();
+    QStringList subLayers() const;
     
     /**
      * Reorders the *previously selected* sublayers of this layer from bottom to top
@@ -1013,6 +1021,16 @@ public:
   //! Does this layer use a provider for setting/retrieving data?
   bool usesProvider();
 
+  /**
+   * Sets a proxy for the path given in the constructor
+   *
+   * \retval TRUE if proxy setting is successful (if indeed it is supported)
+   */
+  bool setProxy(QString const & host = 0,
+                            int port = 80,
+                QString const & user = 0,
+                QString const & pass = 0);
+
   //! Which provider is being used for this Raster Layer?
   QString providerKey();
 
@@ -1029,7 +1047,7 @@ private:
   //! pointer for loading the provider library
   QLibrary *myLib;
 
-  //! Pointer to data provider derived from the abastract base class QgsDataProvider
+  //! Pointer to data provider derived from the abstract base class QgsDataProvider
   QgsRasterDataProvider *dataProvider;
 
   /**Flag indicating wheter the layer is in editing mode or not*/

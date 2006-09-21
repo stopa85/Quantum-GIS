@@ -4236,7 +4236,7 @@ int QgisApp::saveDirty()
 
     // prompt user to save
     answer = QMessageBox::information(this, tr("Save?"),
-        tr("Do you want to save the current project?"),
+        tr("<p>Do you want to save the current project?</p>"),
         QMessageBox::Yes | QMessageBox::Default,
         QMessageBox::No,
         QMessageBox::Cancel | QMessageBox::Escape);
@@ -4597,7 +4597,10 @@ void QgisApp::activateDeactivateLayerRelatedActions(QgsMapLayer* layer)
 	      mActionCapturePolygon->setEnabled(false);
 	      mActionAddVertex->setEnabled(false);
 	      mActionDeleteVertex->setEnabled(false);
-	      mActionMoveVertex->setEnabled(false);
+	      if(dprovider->capabilities() & QgsVectorDataProvider::ChangeGeometries)
+		{
+		  mActionMoveVertex->setEnabled(true);
+		}
 	      return;
 	    }
 	  else if(vlayer->vectorType() == QGis::Line)

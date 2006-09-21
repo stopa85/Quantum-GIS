@@ -211,6 +211,7 @@ qgisMOC =							\
 		qgsludialog.moc.cpp			\
 		qgsmaplayerinterface.moc.cpp		\
 		qgsmapserverexport.moc.cpp		\
+		qgsmaptoolidentify.moc.cpp		\
 		qgsmarkerdialog.moc.cpp			\
 		qgsmeasure.moc.cpp			\
 		qgsnewhttpconnection.moc.cpp		\

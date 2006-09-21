@@ -88,8 +88,13 @@ QgsOgrProvider::QgsOgrProvider(QString const & uri)
 
   QgsDebugMsg("Data source uri is " + uri);
 
-  // try to open for update
+  // try to open for update, but disable error messages to avoid a
+  // message if the file is read only, because we cope with that
+  // ourselves.
+  CPLPushErrorHandler(&CPLQuietErrorHandler);
   ogrDataSource = OGRSFDriverRegistrar::Open(QFile::encodeName(uri).constData(), TRUE, &ogrDriver);
+  CPLPopErrorHandler();
+
   if(ogrDataSource == NULL)
   {
     // try to open read-only
@@ -181,6 +186,24 @@ void QgsOgrProvider::loadFields()
     if(fdef)
     {
       geomType = fdef->GetGeomType();
+
+      //Some ogr drivers (e.g. GML) are not able to determine the geometry type of a layer like this.
+      //In such cases, we examine the first feature 
+      if(geomType == wkbUnknown) 
+	{
+	  ogrLayer->ResetReading();
+	  OGRFeature* firstFeature = ogrLayer->GetNextFeature();
+	  if(firstFeature)
+	    {
+	      OGRGeometry* firstGeometry = firstFeature->GetGeometryRef();
+	      if(firstGeometry)
+		{
+		  geomType = firstGeometry->getGeometryType();
+		}
+	    }
+	  ogrLayer->ResetReading();
+	}
+      
       for(int i=0;i<fdef->GetFieldCount();++i)
       {
         OGRFieldDefn *fldDef = fdef->GetFieldDefn(i);
@@ -720,6 +743,56 @@ void QgsOgrProvider::getFeatureAttributes(OGRFeature *ogrFet, QgsFeature *f){
   }
 }
 
+void QgsOgrProvider::getFeatureAttributes(int key, int &row, QgsFeature *f)
+{
+  if(!valid)
+  {
+      QgsLogger::critical("Read attempt on an invalid shapefile data source");
+      return;
+  }
+
+  OGRFeature* fet;
+  OGRGeometry* geom;
+
+  if ((fet = ogrLayer->GetFeature(key)) != NULL)
+  {
+    getFeatureAttributes(fet, f);
+
+    delete fet;
+  }
+}
+
+void QgsOgrProvider::getFeatureGeometry(int key, QgsFeature *f)
+{
+  if(!valid)
+  {
+      QgsLogger::critical("Read attempt on an invalid shapefile data source");
+      return;
+  }
+
+  OGRFeature* fet;
+  OGRGeometry* geom;
+
+  if ((fet = ogrLayer->GetFeature(key)) != NULL)
+  {
+    if (geom = fet->GetGeometryRef())
+    {
+      geom = fet->GetGeometryRef();
+      // get the wkb representation
+      unsigned char *feature = new unsigned char[geom->WkbSize()];
+      geom->exportToWkb((OGRwkbByteOrder) endian(), feature);
+      OGRFeatureDefn * featureDefinition = fet->GetDefnRef();
+      QString featureTypeName = featureDefinition ? 
+                                QString(featureDefinition->GetName()) : 
+                                QString("");
+
+      f->setGeometryAndOwnership(feature, geom->WkbSize());
+
+    }
+    delete fet;
+  }
+}
+
 std::vector<QgsField> const & QgsOgrProvider::fields() const
 {
   return attributeFields;
@@ -1156,10 +1229,18 @@ int QgsOgrProvider::capabilities() const
     // the #defines we want to test for here.
 
     if (ogrLayer->TestCapability("RandomRead"))
-    // TRUE if the GetFeature() method works for this layer.
+    // TRUE if the GetFeature() method works *efficiently* for this layer.
+    // TODO: Perhaps influence if QGIS caches into memory 
+    //       (vs read from disk every time) based on this setting.
     {
-      // TODO: Perhaps influence if QGIS caches into memory (vs read from disk every time) based on this setting.
+      ability |= QgsVectorDataProvider::RandomSelectGeometryAtId;
     }
+    else
+    {
+      ability |= QgsVectorDataProvider::SequentialSelectGeometryAtId;
+    }
+    ability |= QgsVectorDataProvider::SelectGeometryAtId;
+
 
     if (ogrLayer->TestCapability("SequentialWrite"))
     // TRUE if the CreateFeature() method works for this layer.
@@ -1172,7 +1253,10 @@ int QgsOgrProvider::capabilities() const
     {
       ability |= DeleteFeatures;
     }
-
+    
+    //seems to work with newer ogr versions
+    //ability |= ChangeAttributeValues;
+    
     if (ogrLayer->TestCapability("RandomWrite"))
     // TRUE if the SetFeature() method is operational on this layer.
     {

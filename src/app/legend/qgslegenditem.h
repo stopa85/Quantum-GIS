@@ -108,6 +108,10 @@ public:
     /**Inserts child - convenience function to distinguish between
       QTreeWidgetItem's and QObject's insertChild() function */
     void insertChild(int index, QTreeWidgetItem *child);
+    /**Do preparations after a new child was inserted (default empty)*/
+    virtual void receive(QgsLegendItem* newChild){}
+    /**Do cleanups after a child item leaves (default empty)*/
+    virtual void release(QgsLegendItem* formerChild){}
 
   protected:
    bool mLeafNodeFlag;
