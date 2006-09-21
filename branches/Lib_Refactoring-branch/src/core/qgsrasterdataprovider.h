@@ -57,6 +57,21 @@ public:
     virtual ~QgsRasterDataProvider() {};
 
     /**
+     *
+     * Sets a proxy for the URL given in the constructor
+     *
+     *
+     * \retval TRUE if proxy setting is successful (if indeed it is supported)
+     */
+    virtual bool setProxy(QString const & host,
+                                      int port,
+                          QString const & user,
+                          QString const & pass)
+    {
+      return FALSE;
+    }
+
+    /**
      * Add the list of WMS layer names to be rendered by this server
      */
     virtual void addLayers(QStringList const & layers,
@@ -66,10 +81,15 @@ public:
     virtual QStringList supportedImageEncodings() = 0;
 
     /**
+     * Get the image encoding (as a MIME type) used in the transfer from (e.g.) the WMS server
+     */
+    virtual QString imageEncoding() const = 0;
+
+    /**
      * Set the image encoding (as a MIME type) used in the transfer from (e.g.) the WMS server
      */
     virtual void setImageEncoding(QString  const & mimeType) = 0;
- 
+
     /**
      * Set the image projection (in WMS CRS format) used in the transfer from (e.g.) the WMS server
      */
@@ -113,7 +133,7 @@ public:
      *
      * \param point[in]  The pixel coordinate (as it was displayed locally on screen)
      *
-     * \retval  An HTML document containing the return from the WMS server
+     * \return  A text document containing the return from the WMS server
      *
      * \note WMS Servers prefer to receive coordinates in image space, therefore
      *       this function expects coordinates in that format.
@@ -121,7 +141,7 @@ public:
      * \note  The arbitraryness of the returned document is enforced by WMS standards
      *        up to at least v1.3.0
      */
-    virtual QString identifyAsHtml(const QgsPoint& point) = 0;
+    virtual QString identifyAsText(const QgsPoint& point) = 0;
 
     /**
      * \brief   Returns the caption error text for the last error in this provider

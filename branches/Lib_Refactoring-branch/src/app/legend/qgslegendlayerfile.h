@@ -45,9 +45,13 @@ public:
     const QgsMapLayer* layer() const { return mLyr.layer(); }
     QgsMapCanvasLayer& canvasLayer() { return mLyr; }
     
+    QPixmap getOriginalPixmap() const;
+
     /** updates item to the current state of the layer */
     void updateLegendItem();
     
+    void setIconAppearance(bool inOverview, bool editable);
+
     /**Sets mVisibilityCheckBox to on/off*/
     void toggleCheckBox(bool state);
 

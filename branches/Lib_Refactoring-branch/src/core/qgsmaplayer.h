@@ -84,7 +84,7 @@ public:
      * @param mtp Transformation class
      * @return FALSE if an error occurred during drawing
      */
-    virtual bool draw(QPainter* painter, QgsRect* rect, QgsMapToPixel* mtp, QgsCoordinateTransform* ct);
+    virtual bool draw(QPainter* painter, QgsRect* rect, QgsMapToPixel* mtp, QgsCoordinateTransform* ct, bool);
     
     /** Draw labels
      * @TODO to be removed: used only in vector layers

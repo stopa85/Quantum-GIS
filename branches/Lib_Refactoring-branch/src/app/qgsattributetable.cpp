@@ -370,6 +370,8 @@ void QgsAttributeTable::deleteAttribute(const QString& name)
     mEdited=true;
 }
 
+
+/* Deprecated: See QgisApp::editCopy() instead */
 void QgsAttributeTable::copySelectedRows()
 {
   // Copy selected rows to the clipboard
@@ -414,21 +416,23 @@ void QgsAttributeTable::copySelectedRows()
 
 bool QgsAttributeTable::commitChanges(QgsVectorLayer* layer)
 {
-    bool returnvalue=true;
-    if(layer)
-    {
-	if(!layer->commitAttributeChanges(mDeletedAttributes, mAddedAttributes, mChangedValues))
-	{
-	    returnvalue=false;
-	}
-    }
-    else
-    {
-	returnvalue=false;
-    }
+  bool isSuccessful = FALSE;
+
+  if(layer)
+  {
+    isSuccessful = layer->commitAttributeChanges(
+                            mDeletedAttributes,
+                            mAddedAttributes,
+                            mChangedValues);
+  }
+
+  if (isSuccessful)
+  {
     mEdited=false;
     clearEditingStructures();
-    return returnvalue;
+  }
+
+  return isSuccessful;
 }
 
 bool QgsAttributeTable::rollBack(QgsVectorLayer* layer)

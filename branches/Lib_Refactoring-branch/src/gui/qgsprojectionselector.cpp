@@ -73,6 +73,17 @@ void QgsProjectionSelector::showEvent ( QShowEvent * theEvent )
     applyUserProjList(&mCrsFilter);
   }
 
+  // check if a paricular projection is waiting
+  // to be pre-selected, and if so, to select it now.
+  if (mSRSNameSelectionPending)
+  {
+    applySRSNameSelection();
+  }
+  if (mSRSIDSelectionPending)
+  {
+    applySRSIDSelection();
+  }
+
   // Pass up the inheritance heirarchy
   QWidget::showEvent(theEvent);
 }
@@ -148,7 +159,15 @@ void QgsProjectionSelector::setSelectedSRSName(QString theSRSName)
 {
   mSRSNameSelection = theSRSName;
   mSRSNameSelectionPending = TRUE;
-  applySRSNameSelection();
+  mSRSIDSelectionPending = FALSE;  // only one type can be pending at a time
+
+  if (isVisible())
+  {
+    applySRSNameSelection();
+  }
+  // else we will wait for the projection selector to
+  // become visible (with the showEvent()) and set the
+  // selection there
 }
 
 
@@ -156,7 +175,15 @@ void QgsProjectionSelector::setSelectedSRSID(long theSRSID)
 {
   mSRSIDSelection = theSRSID;
   mSRSIDSelectionPending = TRUE;
-  applySRSIDSelection();
+  mSRSNameSelectionPending = FALSE;  // only one type can be pending at a time
+
+  if (isVisible())
+  {
+    applySRSIDSelection();
+  }
+  // else we will wait for the projection selector to
+  // become visible (with the showEvent()) and set the
+  // selection there
 }
 
 
@@ -758,6 +785,7 @@ void QgsProjectionSelector::coordinateSystemSelected( QTreeWidgetItem * theItem)
     {
       myDescription+=(myProjString);
     }
+
     lstCoordinateSystems->scrollToItem(theItem);
     teProjection->setText(myDescription);
   }

@@ -263,12 +263,12 @@ void QgsMapRender::render(QPainter* painter)
         ct = NULL;
       }
       
-      if (!ml->draw(painter, &r1, mCoordXForm, ct))
+      if (!ml->draw(painter, &r1, mCoordXForm, ct, !mOverview))
         emit drawError(ml);
       
       if (split)
       {
-        if (!ml->draw(painter, &r2, mCoordXForm, ct))
+        if (!ml->draw(painter, &r2, mCoordXForm, ct, !mOverview))
           emit drawError(ml);
       }
       

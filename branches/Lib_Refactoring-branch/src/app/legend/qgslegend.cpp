@@ -37,17 +37,16 @@
 #include "qgsvectorlayer.h"
 #include "qgsvectorlayerproperties.h"
 #include "qgsvectordataprovider.h"
-#include <float.h>
+
+#include <cfloat>
 #include <QCoreApplication>
 #include <QPixmap>
 #include <QMouseEvent>
 #include <iostream>
 #include <QTreeWidgetItem>
-#include <Q3PopupMenu>
 #include <QMenu>
 #include <QFont>
 #include <QHeaderView>
-#include <Q3ListViewItem>
 
 static const char *const ident_ = "$Id$";
 
@@ -79,10 +78,8 @@ QgsLegend::QgsLegend(QWidget * parent, const char *name)
   QFont f("Arial", 10, QFont::Normal);
   setFont(f);
   setBackgroundColor(QColor(192, 192, 192));
+
   setColumnCount(1);
-  QStringList myList("Layers");
-  setHeaderLabels(myList);
-  //added by Tim to hide the header - header is unneccessary
   header()->setHidden(1);
   setRootIsDecorated(true);
 
@@ -704,7 +701,6 @@ void QgsLegend::legendLayerAddToOverview()
 	       (*it)->setInOverview(true);
        }
    }
-
    // update layer set
    updateMapCanvasLayerSet();
    
@@ -728,7 +724,6 @@ void QgsLegend::legendLayerRemoveFromOverview()
        (*it)->setInOverview(false);
      }
    }
-
    // update layer set
    updateMapCanvasLayerSet();
    
@@ -1198,6 +1193,7 @@ void QgsLegend::storeInitialPosition(QTreeWidgetItem* li)
 
 void QgsLegend::resetToInitialPosition(QTreeWidgetItem* li)
 {
+  QgsLegendItem* formerParent = dynamic_cast<QgsLegendItem*>(li->parent()); //todo: make sure legend layers are updated
   if(mRestoreInformation == FIRST_ITEM)
     {
 #ifdef QGISDEBUG
@@ -1212,14 +1208,27 @@ void QgsLegend::resetToInitialPosition(QTreeWidgetItem* li)
       qWarning("FIRST_CHILD");
 #endif
       removeItem(li);
+      if(formerParent)
+	{
+	  formerParent->release((QgsLegendItem*)li);
+	}
       mRestoreItem->insertChild(0, li);
+      ((QgsLegendItem*)mRestoreItem)->receive((QgsLegendItem*)li);
     }
   else if(mRestoreInformation == YOUNGER_SIBLING)
     {
 #ifdef QGISDEBUG
       qWarning("YOUNGER_SIBLING");
 #endif
+      if(formerParent)
+	{
+	  formerParent->release((QgsLegendItem*)li);
+	}
       dynamic_cast<QgsLegendItem*>(li)->moveItem(dynamic_cast<QgsLegendItem*>(mRestoreItem));
+      if(mRestoreItem->parent())
+	{
+	  ((QgsLegendItem*)(mRestoreItem->parent()))->receive((QgsLegendItem*)li);
+	}
     }
 }
 
@@ -1392,9 +1401,15 @@ void QgsLegend::insertItem(QTreeWidgetItem* move, QTreeWidgetItem* into)
 
   if(movedItem && intoItem)
     {
+      QgsLegendItem* parentItem = dynamic_cast<QgsLegendItem*>(movedItem->parent());
       movedItem->storeAppearanceSettings();//store settings in the moved item and its children
       removeItem(movedItem);
       intoItem->insert(movedItem);
+      if(parentItem)
+	{
+	  parentItem->release(movedItem); //give the former parent item the possibility to do cleanups
+	}
+      intoItem->receive(movedItem);
       movedItem->restoreAppearanceSettings();//apply the settings again
     }
 }

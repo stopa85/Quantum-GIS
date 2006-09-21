@@ -17,6 +17,8 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
+
+#include "qgsapplication.h"
 #include "qgslegend.h"
 #include "qgslegendlayer.h"
 #include "qgslegendlayerfile.h"
@@ -35,6 +37,7 @@
 #include <iostream>
 #include <QCoreApplication>
 #include <QIcon>
+#include <QPainter>
 
 QgsLegendLayer::QgsLegendLayer(QTreeWidgetItem* parent,QString name)
     : QgsLegendItem(parent, name)
@@ -68,43 +71,8 @@ QgsLegendLayer::~QgsLegendLayer()
 
 void QgsLegendLayer::setLayerTypeIcon()
 {
-  QgsMapLayer* firstLayer = firstMapLayer();
-  if(firstLayer)
-  {
-    QString myThemePath = QgsApplication::themePath();
-    QString myPath;
-
-    if (firstLayer->type() == QgsMapLayer::VECTOR)
-    {
-      QgsVectorLayer* vlayer = dynamic_cast<QgsVectorLayer*>(firstLayer);
-      switch(vlayer->vectorType())
-      {
-        case QGis::Point:
-          myPath = myThemePath+"/mIconPointLayer.png";
-          break;
-        case QGis::Line:
-          myPath = myThemePath+"/mIconLineLayer.png";
-          break;
-        case QGis::Polygon:
-          myPath = myThemePath+"/mIconPolygonLayer.png";
-          break;
-        default:
-          myPath = myThemePath+"/mIconLayer.png";
-      }
-    }
-    else // RASTER
-    {
-      myPath = myThemePath+"/mIconLayer.png";
-    }
-
-    
-    QFileInfo file(myPath);
-    if(file.exists())
-    {
-      QIcon myIcon(file.absoluteFilePath());
-      setIcon(0, myIcon);
-    }
-  }
+  QIcon myIcon(getOriginalPixmap());
+  setIcon(0, myIcon);
 }
 
 bool QgsLegendLayer::isLeafNode()
@@ -148,7 +116,7 @@ QgsLegendItem::DRAG_ACTION QgsLegendLayer::accept(const QgsLegendItem* li) const
   return NO_ACTION;
 }
 
-QgsLegendLayerFile* QgsLegendLayer::firstLayerFile()
+QgsLegendLayerFile* QgsLegendLayer::firstLayerFile() const
 {
   //first find the legend layer file group
   QgsLegendLayerFileGroup* llfg = 0;
@@ -175,7 +143,7 @@ QgsLegendLayerFile* QgsLegendLayer::firstLayerFile()
   return legendlayerfile;
 }
 
-QgsMapLayer* QgsLegendLayer::firstMapLayer()
+QgsMapLayer* QgsLegendLayer::firstMapLayer() const
 {
   QgsLegendLayerFile* llf = firstLayerFile();
   if (llf)
@@ -269,6 +237,8 @@ void QgsLegendLayer::updateCheckState()
     {
       treeWidget()->blockSignals(true);
       setCheckState(0, theState);
+      //notify the legend that the check state has changed
+      legend()->updateCheckStates(this, theState);
       treeWidget()->blockSignals(false);
     }
 }
@@ -402,4 +372,82 @@ void QgsLegendLayer::rasterLayerSymbology(QgsRasterLayer* layer)
   itemList.push_back(std::make_pair("", legendpixmap));   
     
   changeSymbologySettings(layer, itemList);
+}
+
+void QgsLegendLayer::updateIcon()
+{
+  QPixmap newIcon(getOriginalPixmap());
+
+  QgsMapLayer* theLayer = firstMapLayer();
+  QgsLegendLayerFile* theFile = firstLayerFile();
+
+  if(mapLayers().size() == 1)
+    {
+  
+      //overview
+      if(theFile->isInOverview())
+	{
+	  // Overlay the overview icon on the default icon
+	  QPixmap myPixmap(QgsApplication::themePath()+"mIconOverview.png");
+	  QPainter p(&newIcon);
+	  p.drawPixmap(0,0,myPixmap);
+	  p.end();
+	}
+      
+      //editable
+      if(theLayer->isEditable())
+	{
+	  // Overlay the editable icon on the default icon
+	  QPixmap myPixmap(QgsApplication::themePath()+"mIconEditable.png");
+	  QPainter p(&newIcon);
+	  p.drawPixmap(0,0,myPixmap);
+	  p.end();
+	}
+    }
+
+  QIcon theIcon(newIcon);
+  setIcon(0, theIcon);
+}
+
+QPixmap QgsLegendLayer::getOriginalPixmap() const
+{
+  QgsMapLayer* firstLayer = firstMapLayer();
+  if(firstLayer)
+  {
+    QString myThemePath = QgsApplication::themePath();
+    QString myPath;
+
+    if (firstLayer->type() == QgsMapLayer::VECTOR)
+    {
+      QgsVectorLayer* vlayer = dynamic_cast<QgsVectorLayer*>(firstLayer);
+      switch(vlayer->vectorType())
+      {
+        case QGis::Point:
+          myPath = myThemePath+"/mIconPointLayer.png";
+          break;
+        case QGis::Line:
+          myPath = myThemePath+"/mIconLineLayer.png";
+          break;
+        case QGis::Polygon:
+          myPath = myThemePath+"/mIconPolygonLayer.png";
+          break;
+        default:
+          myPath = myThemePath+"/mIconLayer.png";
+      }
+    }
+    else // RASTER
+    {
+      myPath = myThemePath+"/mIconLayer.png";
+    }
+
+    
+    QFileInfo file(myPath);
+    if(file.exists())
+    {
+      return QPixmap(file.absoluteFilePath());
+    }
+  }
+
+  QPixmap emptyPixmap;
+  return emptyPixmap;
 }

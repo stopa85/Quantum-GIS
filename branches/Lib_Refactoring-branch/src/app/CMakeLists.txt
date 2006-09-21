@@ -156,6 +156,7 @@ qgslinestylewidget.h
 qgsludialog.h
 qgsmaplayerinterface.h
 qgsmapserverexport.h
+qgsmaptoolidentify.h
 qgsmarkerdialog.h
 qgsmeasure.h
 qgsnewhttpconnection.h

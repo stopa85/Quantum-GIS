@@ -20,6 +20,7 @@
 
 #include "qgsapplication.h"
 #include "qgslegend.h"
+#include "qgslegendlayer.h"
 #include "qgslegendlayerfile.h"
 #include "qgsmaplayer.h"
 #include "qgsvectorlayer.h"
@@ -91,6 +92,11 @@ QgsLegendItem::DRAG_ACTION QgsLegendLayerFile::accept(const QgsLegendItem* li) c
   return NO_ACTION;
 }
 
+QPixmap QgsLegendLayerFile::getOriginalPixmap() const
+{
+  QPixmap myPixmap(QgsApplication::themePath()+"mActionFileSmall.png");
+  return myPixmap;
+}
 
 void QgsLegendLayerFile::updateLegendItem()
 {
@@ -122,6 +128,36 @@ void QgsLegendLayerFile::updateLegendItem()
   QIcon theIcon(pix);
   setIcon(0, theIcon);
 
+}
+
+void QgsLegendLayerFile::setIconAppearance(bool inOverview,
+                                           bool editable)
+{
+  QPixmap newIcon(getOriginalPixmap());
+
+  if (inOverview)
+  {
+    // Overlay the overview icon on the default icon
+    QPixmap myPixmap(QgsApplication::themePath()+"mIconOverview.png");
+    QPainter p(&newIcon);
+    p.drawPixmap(0,0,myPixmap);
+    p.end();
+  }
+  
+  if (editable)
+  {
+    // Overlay the editable icon on the default icon
+    QPixmap myPixmap(QgsApplication::themePath()+"mIconEditable.png");
+    QPainter p(&newIcon);
+    p.drawPixmap(0,0,myPixmap);
+    p.end();
+  }
+
+  QIcon theIcon(newIcon);
+  setIcon(0, theIcon);
+
+  //also update the icon of the legend layer
+  ((QgsLegendLayer*)(parent()->parent()))->updateIcon();
 }
 
 void QgsLegendLayerFile::toggleCheckBox(bool state)

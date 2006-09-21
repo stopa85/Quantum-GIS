@@ -25,6 +25,7 @@
 
 #include <QDesktopWidget>
 #include <QFileDialog>
+#include <QFileInfo>
 #include <QMatrix>
 #include <QMessageBox>
 #include <QPainter>
@@ -140,8 +141,17 @@ void QgsComposer::removeWidgetChildren ( QWidget *w )
       if( ob->isWidgetType() ) 
       {
         QWidget *ow = (QWidget *) ob;
-        w->removeChild ( ob );
-        ow->hide ();
+
+        // The following line is legacy Qt3, is not supported in Qt4
+        // and can cause a SIGABRT
+        //w->removeChild ( ob );
+        // instead:
+        ow->setParent(0);
+        // TODO: Eventually mItemOptionsFrame should be made
+        // a Qt4 QStackedWidget and all this removeWidgetChildren
+        // shenanigans can alledgedly go away
+
+        ow->hide();
       }
     }
   }
@@ -533,6 +543,7 @@ void QgsComposer::on_mActionExportAsImage_activated(void)
   QSettings myQSettings;  // where we keep last used filter in persistant state
   QString myLastUsedFormat = myQSettings.readEntry("/UI/lastSaveAsImageFormat", "PNG" );
   QString myLastUsedFile = myQSettings.readEntry("/UI/lastSaveAsImageFile","qgis.png");
+  QFileInfo file(myLastUsedFile);
 
   // get a list of supported output image types
   int myCounterInt=0;
@@ -564,11 +575,11 @@ void QgsComposer::on_mActionExportAsImage_activated(void)
       new QFileDialog(
         this,
         tr("Choose a filename to save the map image as"),
-        ".",
+        file.path(),
         myFilters
         )
       );
-  myQFileDialog->selectFile( myLastUsedFile );
+  myQFileDialog->selectFile( file.fileName() );
 
   // allow for selection of more than one file
   myQFileDialog->setMode(QFileDialog::AnyFile);
@@ -624,11 +635,12 @@ void QgsComposer::on_mActionExportAsSVG_activated(void)
 {
   QSettings myQSettings;
   QString myLastUsedFile = myQSettings.readEntry("/UI/lastSaveAsSvgFile","qgis.svg");
+  QFileInfo file(myLastUsedFile);
 
   QFileDialog *myQFileDialog = new QFileDialog( this, tr("Choose a filename to save the map as"),
-                                                ".", "SVG Format (*.svg *SVG)" );
+                                                file.path(), "SVG Format (*.svg *SVG)" );
   
-  myQFileDialog->selectFile( myLastUsedFile );
+  myQFileDialog->selectFile( file.fileName() );
   myQFileDialog->setMode(QFileDialog::AnyFile);
   myQFileDialog->setAcceptMode(QFileDialog::AcceptSave);
 

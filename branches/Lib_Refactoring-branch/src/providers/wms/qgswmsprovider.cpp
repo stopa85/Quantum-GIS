@@ -21,7 +21,7 @@
 #include "qgslogger.h"
 #include "qgswmsprovider.h"
 
-#include <math.h>
+#include <cmath>
 #include <fstream>
 #include <iostream>
 
@@ -34,6 +34,7 @@
 #include <QUrl>
 #include <QImage>
 #include <QSet>
+
 
 #ifdef QGISDEBUG
 #include <QFile>
@@ -76,60 +77,6 @@ QgsWmsProvider::QgsWmsProvider(QString const & uri)
   // assume this is a valid layer until we determine otherwise
   valid = true;
 
-  // URI is in form: URL[ proxyhost[ proxyport[ proxyuser[ proxypass]]]
-
-  // Split proxy from the provider-encoded uri  
-  QStringList drawuriparts = QStringList::split(" ", httpuri, TRUE);
-
-  baseUrl = drawuriparts.front();
-  drawuriparts.pop_front();
-
-  if (drawuriparts.count())
-  {
-    mHttpProxyHost = drawuriparts.front();
-    drawuriparts.pop_front();
-
-    if (drawuriparts.count())
-    {
-      bool conversionOK;
-      mHttpProxyPort = drawuriparts.front().toInt(&conversionOK);
-      if (!conversionOK)
-      {
-        mHttpProxyPort = 80;  // standard HTTP port
-      }
-
-      drawuriparts.pop_front();
-
-      if (drawuriparts.count())
-      {
-        bool conversionOK;
-        mHttpProxyUser = drawuriparts.front();
-
-        drawuriparts.pop_front();
-
-        if (drawuriparts.count())
-        {
-          bool conversionOK;
-          mHttpProxyPass = drawuriparts.front();
-
-          drawuriparts.pop_front();
-
-        }
-        else
-        {
-          mHttpProxyPass = QString();  // none
-        }
-      }
-      else
-      {
-        mHttpProxyUser = QString();  // anonymous
-      }
-    }
-    else
-    {
-      mHttpProxyPort = 80;  // standard HTTP port
-    }
-  }
 
   // URL can be in 3 forms:
   // 1) http://xxx.xxx.xx/yyy/yyy
@@ -137,6 +84,8 @@ QgsWmsProvider::QgsWmsProvider(QString const & uri)
   // 3) http://xxx.xxx.xx/yyy/yyy?zzz=www
 
   // Prepare the URI so that we can later simply append param=value
+  baseUrl = httpuri;
+
   if ( !(baseUrl.contains("?")) ) 
   {
     baseUrl.append("?");
@@ -199,6 +148,18 @@ QgsWmsProvider::~QgsWmsProvider()
 
 }
 
+bool QgsWmsProvider::setProxy(QString const & host,
+                                          int port,
+                              QString const & user,
+                              QString const & pass)
+{
+  mHttpProxyHost = host;
+  mHttpProxyPort = port;
+  mHttpProxyUser = user;
+  mHttpProxyPass = pass;
+
+  return TRUE;
+}
 
 bool QgsWmsProvider::supportedLayers(std::vector<QgsWmsLayerProperty> & layers)
 {
@@ -317,6 +278,12 @@ void QgsWmsProvider::setLayerOrder(QStringList const &  layers)
 void QgsWmsProvider::setSubLayerVisibility(QString const & name, bool vis)
 {
   activeSubLayerVisibility[name] = vis;
+}
+
+
+QString QgsWmsProvider::imageEncoding() const
+{
+  return imageMimeType;
 }
 
 
@@ -1884,10 +1851,16 @@ QStringList QgsWmsProvider::supportedImageEncodings()
   return mCapabilities.capability.request.getMap.format;
 } 
 
-  
-QStringList QgsWmsProvider::subLayers()
+
+QStringList QgsWmsProvider::subLayers() const
 {
   return activeSubLayers;
+}
+
+
+QStringList QgsWmsProvider::subLayerStyles() const
+{
+  return activeSubStyles;
 }
 
 
@@ -1946,8 +1919,8 @@ bool QgsWmsProvider::calculateExtent()
       }
 
     //make sure extent does not contain 'inf' or 'nan'
-    if(!isfinite(extent.xMin()) || !isfinite((int)extent.yMin()) || !isfinite(extent.xMax()) || \
-!isfinite((int)extent.yMax()))
+    if(!std::isfinite(extent.xMin()) || !std::isfinite((int)extent.yMin()) || !std::isfinite(extent.xMax()) || \
+       !std::isfinite((int)extent.yMax()))
       {
 	continue;
       }
@@ -2324,27 +2297,36 @@ QString QgsWmsProvider::getMetadata()
 }
 
 
-QString QgsWmsProvider::identifyAsHtml(const QgsPoint& point)
+QString QgsWmsProvider::identifyAsText(const QgsPoint& point)
 {
 #ifdef QGISDEBUG
-  std::cout << "QgsWmsProvider::identifyAsHtml: entering." << std::endl;
+  std::cout << "QgsWmsProvider::identifyAsText: entering." << std::endl;
 #endif
 
   // Collect which layers to query on
 
-  QStringList visibleLayers = QStringList();
+  QStringList queryableLayers = QStringList();
 
-  for ( QStringList::Iterator it  = activeSubLayers.begin(); 
-                              it != activeSubLayers.end(); 
-                            ++it ) 
+  // Test for which layers are suitable for querying with
+  for ( QStringList::const_iterator it  = activeSubLayers.begin(); 
+                                    it != activeSubLayers.end(); 
+                                  ++it )
   {
+    // Is sublayer visible?
     if (TRUE == activeSubLayerVisibility.find( *it )->second)
     {
-      visibleLayers += *it;
+      // Is sublayer queryable?
+      if (TRUE == mQueryableForLayer.find( *it )->second)
+      {
+#ifdef QGISDEBUG
+  std::cout << "QgsWmsProvider::identifyAsText: '" << (*it).toLocal8Bit().data() << "' is queryable." << std::endl;
+#endif
+        queryableLayers += *it;
+      }
     }
   }
 
-  QString layers = visibleLayers.join(",");
+  QString layers = queryableLayers.join(",");
   QUrl::encode( layers );
 
   // Compose request to WMS server
@@ -2373,18 +2355,13 @@ QString QgsWmsProvider::identifyAsHtml(const QgsPoint& point)
   requestUrl += QString( "Y=%1" )
                    .arg( point.y() );
 
-  QString html = retrieveUrl(requestUrl);
-
-  if (html.isEmpty())
-  {
-    return QString();
-  }
+  QString text = retrieveUrl(requestUrl);
 
 #ifdef QGISDEBUG
-  std::cout << "QgsWmsProvider::identifyAsHtml: exiting with '"
-            << html.toLocal8Bit().data() << "'." << std::endl;
+  std::cout << "QgsWmsProvider::identifyAsText: exiting with '"
+            << text.toLocal8Bit().data() << "'." << std::endl;
 #endif
-  return html;
+  return text;
 }
 
 

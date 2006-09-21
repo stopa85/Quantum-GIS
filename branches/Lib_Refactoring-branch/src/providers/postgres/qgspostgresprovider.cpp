@@ -778,6 +778,62 @@ void QgsPostgresProvider::getFeatureAttributes(int key, int &row,
   }
 }
 
+
+void QgsPostgresProvider::getFeatureGeometry(int key, QgsFeature *f)
+{
+  if (!valid)
+  {
+    return;
+  }
+
+  QString cursor = QString("declare qgisf binary cursor for "
+                           "select asbinary(%1,'%2') from %3 where %4 = %5")
+                   .arg(geometryColumn)
+                   .arg(endianString())
+                   .arg(mSchemaTableName)
+                   .arg(primaryKey)
+                   .arg(key);
+
+#ifdef QGISDEBUG
+  std::cerr << "QgsPostgresProvider::getFeatureGeometry using: " << cursor.toLocal8Bit().data() << std::endl; 
+#endif
+
+  PQexec(connection, "begin work");
+  PQexec(connection, (const char *)(cursor.utf8()));
+
+  QString fetch = "fetch forward 1 from qgisf";
+  PGresult *geomResult = PQexec(connection, (const char *)fetch);
+
+  if (PQntuples(geomResult) == 0)
+  {
+    // Nothing found - therefore nothing to change
+    PQexec(connection,"end work");
+    PQclear(geomResult);
+    return;
+  }
+
+  int row = 0;
+
+  int returnedLength = PQgetlength(geomResult, row, 0);
+
+  if(returnedLength > 0)
+  {
+      unsigned char *wkbgeom = new unsigned char[returnedLength];
+      memcpy(wkbgeom, PQgetvalue(geomResult, row, 0), returnedLength);
+      f->setGeometryAndOwnership(wkbgeom, returnedLength);
+  }
+  else
+  {
+    //--std::cout <<"Couldn't get the feature geometry in binary form" << std::endl;
+  }
+
+  PQclear(geomResult);
+
+  PQexec(connection,"end work");
+
+}
+
+
 std::vector<QgsField> const & QgsPostgresProvider::fields() const
 {
   return attributeFields;
@@ -1547,6 +1603,7 @@ bool QgsPostgresProvider::addFeature(QgsFeature* f, int primaryKeyHighWater)
       if (
            (fieldname != geometryColumn) &&
            (fieldname != primaryKey) &&
+           (!(it->fieldValue().isEmpty())) && 
            (fieldInLayer)
          )
       {
@@ -1636,6 +1693,7 @@ bool QgsPostgresProvider::addFeature(QgsFeature* f, int primaryKeyHighWater)
       if (
            (fieldname != geometryColumn) &&
            (fieldname != primaryKey) &&
+           (!(it->fieldValue().isEmpty())) && 
            (fieldInLayer)
          )
       {
@@ -1648,8 +1706,9 @@ bool QgsPostgresProvider::addFeature(QgsFeature* f, int primaryKeyHighWater)
                 << "." << std::endl;
 #endif
         
-        //add quotes if the field is a character or date type
-      if(fieldvalue != "NULL" && fieldvalue != "DEFAULT")
+        //add quotes if the field is a character or date type and not
+        //the postgres provided default value
+      if(fieldvalue != "NULL" && fieldvalue != getDefaultValue(it->fieldName(), f))
         {
           for(std::vector<QgsField>::iterator iter=attributeFields.begin();iter!=attributeFields.end();++iter)
           {
@@ -1664,6 +1723,7 @@ bool QgsPostgresProvider::addFeature(QgsFeature* f, int primaryKeyHighWater)
                  )
               {
                 charactertype=true;
+                break; // no need to continue with this loop
               }
             }
           }
@@ -1690,13 +1750,13 @@ bool QgsPostgresProvider::addFeature(QgsFeature* f, int primaryKeyHighWater)
     PGresult* result=PQexec(connection, (const char *)(insert.utf8()));
     if(result==0)
     {
-      showMessageBox("INSERT error","An error occured during feature insertion");
+      showMessageBox(tr("INSERT error"),tr("An error occured during feature insertion"));
       return false;
     }
     ExecStatusType message=PQresultStatus(result);
     if(message==PGRES_FATAL_ERROR)
     {
-      showMessageBox("INSERT error",QString(PQresultErrorMessage(result)));
+      showMessageBox(tr("INSERT error"),QString(PQresultErrorMessage(result)));
       return false;
     }
     
@@ -1717,7 +1777,29 @@ bool QgsPostgresProvider::addFeature(QgsFeature* f, int primaryKeyHighWater)
 
 QString QgsPostgresProvider::getDefaultValue(const QString& attr, QgsFeature* f)
 {
-  return "DEFAULT";
+  // Get the default column value from the Postgres information
+  // schema. If there is no default we return an empty string.
+
+  // Maintaining a cache of the results of this query would be quite
+  // simple and if this query is called lots, could save some time.
+
+  QString sql("SELECT column_default FROM "
+              "information_schema.columns WHERE "
+              "column_default IS NOT NULL AND "
+              "table_schema = '" + mSchemaName + "' AND "
+              "table_name = '" + mTableName + "' AND "
+              "column_name = '" + attr + "'");
+
+  QString defaultValue("");
+
+  PGresult* result = PQexec(connection, (const char*)(sql.utf8()));
+
+  if (PQntuples(result) == 1)
+    defaultValue = PQgetvalue(result, 0, 0);
+
+  PQclear(result);
+
+  return defaultValue;
 }
 
 bool QgsPostgresProvider::deleteFeature(int id)
@@ -1731,13 +1813,13 @@ bool QgsPostgresProvider::deleteFeature(int id)
   PGresult* result=PQexec(connection, (const char *)(sql.utf8()));
   if(result==0)
   {
-    showMessageBox("DELETE error","An error occured during deletion from disk");
+    showMessageBox(tr("DELETE error"),tr("An error occured during deletion from disk"));
     return false;
   }
   ExecStatusType message=PQresultStatus(result);
   if(message==PGRES_FATAL_ERROR)
   {
-    showMessageBox("DELETE error",QString(PQresultErrorMessage(result)));
+    showMessageBox(tr("DELETE error"),QString(PQresultErrorMessage(result)));
     return false;
   }
 
@@ -1908,24 +1990,7 @@ bool QgsPostgresProvider::changeAttributeValues(std::map<int,std::map<QString,QS
   {
     for(std::map<QString,QString>::const_iterator siter=(*iter).second.begin();siter!=(*iter).second.end();++siter)
     {
-      QString value=(*siter).second;
-
-      //find out, if value contains letters and quote if yes
-      bool text=false;
-      for(int i=0;i<value.length();++i)
-      {
-        if(value[i].isLetter())
-        {
-          text=true;
-        }
-      }
-      if(text)
-      {
-        value.prepend("'");
-        value.append("'");
-      }
-
-      QString sql="UPDATE "+mSchemaTableName+" SET "+(*siter).first+"="+value+" WHERE " +primaryKey+"="+QString::number((*iter).first);
+      QString sql="UPDATE "+mSchemaTableName+" SET "+(*siter).first+"='"+(*siter).second+"' WHERE " +primaryKey+"="+QString::number((*iter).first);
 #ifdef QGISDEBUG
       qWarning(sql);
 #endif
@@ -2067,13 +2132,13 @@ bool QgsPostgresProvider::changeGeometryValues(std::map<int, QgsGeometry> & geom
       PGresult* result=PQexec(connection, (const char *)(sql.utf8()));
       if (result==0)
       {
-        showMessageBox("PostGIS error", "An error occured contacting the PostgreSQL databse");
+        showMessageBox(tr("PostGIS error"), tr("An error occured contacting the PostgreSQL databse"));
         return false;
       }
       ExecStatusType message=PQresultStatus(result);
       if(message==PGRES_FATAL_ERROR)
       {
-        showMessageBox("PostGIS error", "The PostgreSQL databse returned: "
+        showMessageBox(tr("PostGIS error"), tr("The PostgreSQL databse returned: ")
                                    + QString(PQresultErrorMessage(result)));
         return false;
       }
@@ -2252,7 +2317,8 @@ int QgsPostgresProvider::capabilities() const
            QgsVectorDataProvider::ChangeAttributeValues |
            QgsVectorDataProvider::AddAttributes |
            QgsVectorDataProvider::DeleteAttributes |
-           QgsVectorDataProvider::ChangeGeometries
+           QgsVectorDataProvider::ChangeGeometries |
+           QgsVectorDataProvider::SelectGeometryAtId
          );
 }
 

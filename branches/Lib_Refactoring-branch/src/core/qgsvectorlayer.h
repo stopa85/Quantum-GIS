@@ -104,7 +104,8 @@ public:
 
   QgsAttributeAction* actions() { return mActions; }
 
-  
+  /** The number of features that are selected in this layer */
+  int selectedFeatureCount();
   
   /** Select features found within the search rectangle (in layer's coordinates) */
   void select(QgsRect * rect, bool lock);
@@ -314,9 +315,24 @@ public:
                               QgsGeometry& snappedGeometry,
                               double tolerance);
 
-  /**Commits edited attributes. Depending on the feature id,
-     the changes are written to not commited features or redirected to
-     the data provider*/
+  /**
+    Commits edited attributes. Depending on the feature id,
+    the changes are written to not commited features or redirected to
+    the data provider
+
+    The commits (in this version) occur in three distinct stages,
+    (delete attributes, add attributes, change attribute values)
+    so if a stage fails, it's difficult to roll back cleanly.
+
+    \todo Need to indicate at which stage the failed commit occurred,
+          for better cleanup and recovery from the error.
+
+    \param deleted  Set of attribute names (i.e. columns) to delete
+    \param added    Map (name, type) of attribute names (i.e. columns) to add
+    \param changed  Map (feature ID, Map (attribute name, new value) )
+                      of attribute values to change
+
+   */
   bool commitAttributeChanges(const std::set<QString>& deleted,
             const std::map<QString,QString>& added,
             std::map<int,std::map<QString,QString> >& changed);
@@ -324,7 +340,11 @@ public:
   /** Draws the layer using coordinate transformation
    *  @return FALSE if an error occurred during drawing
    */
-  bool draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * cXf, QgsCoordinateTransform* ct);
+  bool draw(QPainter * p,
+            QgsRect * viewExtent,
+            QgsMapToPixel * cXf,
+            QgsCoordinateTransform* ct,
+            bool drawingToEditingCanvas);
 
   /** Draws the layer labels using coordinate transformation */
   void drawLabels(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * cXf, QgsCoordinateTransform* ct);
@@ -333,7 +353,13 @@ public:
    *  \param widthScale line width scale
    *  \param symbolScale symbol scale
    */
-  void draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * cXf, QgsCoordinateTransform* ct, double widthScale, double symbolScale);
+  void draw(QPainter * p,
+            QgsRect * viewExtent,
+            QgsMapToPixel * cXf,
+            QgsCoordinateTransform* ct,
+            bool drawingToEditingCanvas,
+            double widthScale,
+            double symbolScale);
 
   /** \brief Draws the layer labels using coordinate transformation
    *  \param scale size scale, applied to all values in pixels
@@ -358,7 +384,21 @@ public:
   /** Make layer editable */
   bool startEditing();
   
-  /** Stop editing and write the changes to the provider */
+  /**
+    Attempts to commit any changes to disk.  Returns the result of the attempt.
+    If a commit fails, the in-memory changes are left alone.
+
+    This allows editing to continue if the commit failed on e.g. a
+    disallowed value in a Postgres database - the user can re-edit and try
+    again.
+
+    The commits (in this version) occur in four distinct stages,
+    (add features, change attributes, change geometries, delete features)
+    so if a stage fails, it's difficult to roll back cleanly.
+    Therefore any error message also includes which stage failed so 
+    that the user has some chance of repairing the damage cleanly.
+
+   */
   bool commitChanges();
 
   /** Stop editing and discard the edits */
@@ -395,8 +435,13 @@ private:                       // Private methods
   /** Draws features. May cause projections exceptions to be generated
    *  (i.e., code that calls this function needs to catch them
    */
-  void drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * cXf, QgsCoordinateTransform* ct,
-                   QImage* marker, double markerScaleFactor);
+  void drawFeature(QPainter* p,
+                   QgsFeature* fet,
+                   QgsMapToPixel * cXf,
+                   QgsCoordinateTransform* ct,
+                   QImage* marker,
+                   double markerScaleFactor,
+                   bool drawingToEditingCanvas);
 
   /** Convenience function to transform the given point */
   void transformPoint(double& x, double& y,
@@ -408,23 +453,29 @@ private:                       // Private methods
   /** Draw the linestring as given in the WKB format. Returns a pointer
    * to the byte after the end of the line string binary data stream (WKB).
    */
-  unsigned char* drawLineString(unsigned char* WKBlinestring, QPainter* p,
-                                QgsMapToPixel* mtp, QgsCoordinateTransform* ct);
+  unsigned char* drawLineString(unsigned char* WKBlinestring,
+                                QPainter* p,
+                                QgsMapToPixel* mtp,
+                                QgsCoordinateTransform* ct,
+                                bool drawingToEditingCanvas);
 
   /** Draw the polygon as given in the WKB format. Returns a pointer to
    *  the byte after the end of the polygon binary data stream (WKB).
    */
-  unsigned char* drawPolygon(unsigned char* WKBpolygon, QPainter* p, 
-                             QgsMapToPixel* mtp, QgsCoordinateTransform* ct);
+  unsigned char* drawPolygon(unsigned char* WKBpolygon,
+                             QPainter* p, 
+                             QgsMapToPixel* mtp,
+                             QgsCoordinateTransform* ct,
+                             bool drawingToEditingCanvas);
 
   /** Goes through all features and finds a free id (e.g. to give it temporarily to a not-commited feature) */
   int findFreeId();
 
-  /**Caches all the (commited) geometries to mCachedFeatures, e.g. when entering editing mode*/
+  /**Caches all the (commited) geometries to mCachedGeometries - somewhat out of date as mCachedGeometries should only contain geometries currently visible on the canvas */
   void cacheGeometries();
   /**Deletes the geometries in mCachedGeometries*/
   void deleteCachedGeometries();
-  /**Draws a vertex symbol at (screen) coordinates x, y*/
+  /** Draws a vertex symbol at (screen) coordinates x, y. (Useful to assist vertex editing.) */
   void drawVertexMarker(int x, int y, QPainter& p);
 
 
@@ -453,16 +504,24 @@ private:                       // Private attributes
   /** Flag indicating whether the layer has been modified since the last commit */
   bool mModified;
   
-  /** cache of the committed geometries retrieved for the current display */
+  /** cache of the committed geometries retrieved *for the current display* */
   std::map<int, QgsGeometry*> mCachedGeometries;
   
-  /** Set holding the feature IDs that are activated */
-  feature_ids mSelected;
+  /** Set holding the feature IDs that are activated.  Note that if a feature 
+      subsequently gets deleted (i.e. by its addition to mDeletedFeatureIds), 
+      it always needs to be removed from mSelectedFeatureIds as well. 
+   */ 
+  feature_ids mSelectedFeatureIds;
   
-  /** Deleted feature IDs which are not commited */
-  feature_ids mDeleted;
+  /** Deleted feature IDs which are not commited.  Note a feature can be added and then deleted 
+      again before the change is committed - in that case the added feature would be removed 
+      from mAddedFeatures only and *not* entered here.
+   */ 
+  feature_ids mDeletedFeatureIds;
   
-  /** New features which are not commited */
+  /** New features which are not commited.  Note a feature can be added and then changed, 
+      therefore the details here can be overridden by mChangedAttributes and mChangedGeometries.
+   */  
   std::vector<QgsFeature*> mAddedFeatures;
   
   /** Changed attributes which are not commited */

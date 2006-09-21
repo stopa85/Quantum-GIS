@@ -144,14 +144,9 @@ QgsVectorLayer::~QgsVectorLayer()
   
   delete mLabel;
 
-  // Destroy and cached geometries and clear the references to them
-  for (std::map<int, QgsGeometry*>::iterator it  = mCachedGeometries.begin(); 
-      it != mCachedGeometries.end();
-      ++it )
-  {
-    delete (*it).second;
-  }
-  mCachedGeometries.clear();
+  // Destroy any cached geometries and clear the references to them
+  deleteCachedGeometries();
+
   delete mActions;
 }
 
@@ -329,9 +324,10 @@ void QgsVectorLayer::drawLabels(QPainter * p, QgsRect * viewExtent, QgsMapToPixe
         // Render label
         if ( fet != 0 )
         {
-          if(mDeleted.find(fet->featureId())==mDeleted.end())//don't render labels of deleted features
+          //don't render labels of deleted features
+          if(mDeletedFeatureIds.find(fet->featureId())==mDeletedFeatureIds.end())
           {
-            bool sel=mSelected.find(fet->featureId()) != mSelected.end();
+            bool sel=mSelectedFeatureIds.find(fet->featureId()) != mSelectedFeatureIds.end();
             mLabel->renderLabel ( p, viewExtent, ct, 
                 theMapToPixelTransform, fet, sel, 0, scale);
           }
@@ -344,7 +340,7 @@ void QgsVectorLayer::drawLabels(QPainter * p, QgsRect * viewExtent, QgsMapToPixe
       //XXX changed from std::vector to std::list in merge from 0.7 to head (TS)
       for(std::vector<QgsFeature*>::iterator it=mAddedFeatures.begin();it!=mAddedFeatures.end();++it)
       {
-        bool sel=mSelected.find((*it)->featureId()) != mSelected.end();
+        bool sel=mSelectedFeatureIds.find((*it)->featureId()) != mSelectedFeatureIds.end();
         mLabel->renderLabel ( p, viewExtent, ct,
             theMapToPixelTransform, *it, sel, 0, scale);
       }
@@ -369,7 +365,8 @@ void QgsVectorLayer::drawLabels(QPainter * p, QgsRect * viewExtent, QgsMapToPixe
 unsigned char* QgsVectorLayer::drawLineString(unsigned char* feature, 
     QPainter* p,
     QgsMapToPixel* mtp,
-    QgsCoordinateTransform* ct)
+    QgsCoordinateTransform* ct,
+    bool drawingToEditingCanvas)
 {
   unsigned char *ptr = feature + 5;
   unsigned int nPoints = *((int*)ptr);
@@ -441,8 +438,12 @@ unsigned char* QgsVectorLayer::drawLineString(unsigned char* feature,
   p->setPen(myTransparentPen);
   p->drawPolyline(pa);
 
-  if(mEditable)
-    {
+  // draw vertex markers if in editing mode, but only to the main canvas
+  if (
+      (mEditable) &&
+      (drawingToEditingCanvas)
+     )
+  {
       std::vector<double>::const_iterator xIt;
       std::vector<double>::const_iterator yIt;
       for(xIt = x.begin(), yIt = y.begin(); xIt != x.end(); ++xIt, ++yIt)
@@ -460,7 +461,8 @@ unsigned char* QgsVectorLayer::drawLineString(unsigned char* feature,
 unsigned char* QgsVectorLayer::drawPolygon(unsigned char* feature, 
     QPainter* p, 
     QgsMapToPixel* mtp, 
-    QgsCoordinateTransform* ct)
+    QgsCoordinateTransform* ct,
+    bool drawingToEditingCanvas)
 {
   typedef std::pair<std::vector<double>, std::vector<double> > ringType;
   typedef ringType* ringTypePtr;
@@ -700,7 +702,11 @@ std::cerr << i << ": " << ring->first[i]
     for (; ri != ringDetails.end(); ++ri)
       p->drawPolygon(pa.constData() + ri->first, ri->second, Qt::OddEvenFill);
     
-    if(mEditable)//draw the vertex markers
+    // draw vertex markers if in editing mode, but only to the main canvas
+    if (
+        (mEditable) &&
+        (drawingToEditingCanvas)
+       )
       {
 	for(int i = 0; i < pa.size(); ++i)
 	  {
@@ -720,15 +726,24 @@ std::cerr << i << ": " << ring->first[i]
 }
 
 
-bool QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * theMapToPixelTransform, QgsCoordinateTransform* ct)
+bool QgsVectorLayer::draw(QPainter * p,
+                          QgsRect * viewExtent,
+                          QgsMapToPixel * theMapToPixelTransform,
+                          QgsCoordinateTransform* ct,
+                          bool drawingToEditingCanvas)
 {
-  draw ( p, viewExtent, theMapToPixelTransform, ct, 1., 1.);
+  draw ( p, viewExtent, theMapToPixelTransform, ct, drawingToEditingCanvas, 1., 1.);
 
   return TRUE; // Assume success always
 }
 
-void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * theMapToPixelTransform, QgsCoordinateTransform* ct,
-    double widthScale, double symbolScale)
+void QgsVectorLayer::draw(QPainter * p,
+                          QgsRect * viewExtent,
+                          QgsMapToPixel * theMapToPixelTransform,
+                          QgsCoordinateTransform* ct,
+                          bool drawingToEditingCanvas,
+                          double widthScale,
+                          double symbolScale)
 {
   if (mRenderer)
   {
@@ -750,7 +765,6 @@ void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * th
     {
       // Destroy all cached geometries and clear the references to them
       deleteCachedGeometries();
-      
     }
 
     mDataProvider->reset();
@@ -795,7 +809,7 @@ void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * th
           // Cache this for the use of (e.g.) modifying the feature's geometry.
           //          mCachedGeometries[fet->featureId()] = fet->geometryAndOwnership();
 
-          if (mDeleted.find(fet->featureId()) != mDeleted.end())
+          if (mDeletedFeatureIds.find(fet->featureId()) != mDeletedFeatureIds.end())
           {
             continue; //dont't draw feature marked as deleted
           }
@@ -810,12 +824,26 @@ void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * th
           mCachedGeometries[fet->featureId()] = fet->geometryAndOwnership();
         }
                 
-        //check if feature is selected
-        bool sel=mSelected.find(fet->featureId()) != mSelected.end();
+        // check if feature is selected
+        // only show selections of the current layer
+        // TODO: create a mechanism to let layer know whether it's current layer or not [MD]
+        bool sel;
+        if (
+            /*(mLegend->currentLayer() == this) && TODO!*/
+            (mSelectedFeatureIds.find(fet->featureId()) != mSelectedFeatureIds.end())
+           )
+        {
+          sel = TRUE;
+        }
+        else
+        {
+          sel = FALSE;
+        }
+
         mRenderer->renderFeature(p, fet, &marker, &markerScaleFactor, sel, widthScale );
 
         double scale = markerScaleFactor * symbolScale;
-        drawFeature(p,fet,theMapToPixelTransform,ct, &marker, scale);
+        drawFeature(p,fet,theMapToPixelTransform,ct, &marker, scale, drawingToEditingCanvas);
 
         ++featureCount;
         delete fet;
@@ -827,7 +855,7 @@ void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * th
         std::vector<QgsFeature*>::iterator it = mAddedFeatures.begin();
         for(; it != mAddedFeatures.end(); ++it)
         {
-          bool sel=mSelected.find((*it)->featureId()) != mSelected.end();
+          bool sel=mSelectedFeatureIds.find((*it)->featureId()) != mSelectedFeatureIds.end();
           mRenderer->renderFeature(p, *it, &marker, &markerScaleFactor, 
               sel, widthScale);
           double scale = markerScaleFactor * symbolScale;
@@ -840,7 +868,7 @@ void QgsVectorLayer::draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * th
           //give a deep copy of the geometry to mCachedGeometry because it will be erased at each redraw
           QgsGeometry* deepCopy = new QgsGeometry(*((*it)->geometry()));
           mCachedGeometries.insert(std::make_pair((*it)->featureId(), deepCopy));
-          drawFeature(p,*it,theMapToPixelTransform,ct, &marker,scale);
+          drawFeature(p,*it,theMapToPixelTransform,ct, &marker,scale, drawingToEditingCanvas);
         }
       }
 
@@ -867,7 +895,10 @@ void QgsVectorLayer::cacheGeometries()
 { 
   if(mDataProvider)
   {
-    QgsFeature* f = 0;
+    QgsFeature* f;
+    
+    mDataProvider->reset();
+    
     while(f = mDataProvider->getNextFeature(false))
     {
       mCachedGeometries.insert(std::make_pair(f->featureId(), f->geometryAndOwnership()));
@@ -878,6 +909,8 @@ void QgsVectorLayer::cacheGeometries()
 
 void QgsVectorLayer::deleteCachedGeometries()
 {
+  // Destroy any cached geometries and clear the references to them
+
   for (std::map<int, QgsGeometry*>::iterator it  = mCachedGeometries.begin(); it != mCachedGeometries.end(); ++it )
   {
     delete (*it).second;
@@ -896,7 +929,7 @@ void QgsVectorLayer::drawVertexMarker(int x, int y, QPainter& p)
 
 void QgsVectorLayer::select(int number, bool emitSignal)
 {
-  mSelected.insert(number);
+  mSelectedFeatureIds.insert(number);
   
   if (emitSignal)
   {
@@ -920,7 +953,7 @@ void QgsVectorLayer::select(QgsRect * rect, bool lock)
 
   while ((fet = mDataProvider->getNextFeature(false)))
   {
-    if(mDeleted.find(fet->featureId())==mDeleted.end())//don't select deleted features
+    if(mDeletedFeatureIds.find(fet->featureId())==mDeletedFeatureIds.end())//don't select deleted features
     {
       select(fet->featureId(), FALSE); // don't emit signal
     }
@@ -943,7 +976,7 @@ void QgsVectorLayer::invertSelection()
 {
   // copy the ids of selected features to tmp
   std::list<int> tmp;
-  for(feature_ids::iterator iter=mSelected.begin(); iter!=mSelected.end(); ++iter)
+  for(feature_ids::iterator iter=mSelectedFeatureIds.begin();iter!=mSelectedFeatureIds.end();++iter)
   {
     tmp.push_back(*iter);
   }
@@ -955,7 +988,7 @@ void QgsVectorLayer::invertSelection()
 
   while ((fet = mDataProvider->getNextFeature(true)))
   {
-    if(mDeleted.find(fet->featureId())==mDeleted.end())//don't select deleted features
+    if(mDeletedFeatureIds.find(fet->featureId())==mDeletedFeatureIds.end())//don't select deleted features
     {
       select(fet->featureId(), FALSE); // don't emit signal
     }
@@ -969,7 +1002,7 @@ void QgsVectorLayer::invertSelection()
 
   for(std::list<int>::iterator iter=tmp.begin();iter!=tmp.end();++iter)
   {
-    mSelected.erase(*iter);
+    mSelectedFeatureIds.erase(*iter);
   }
 
   emit selectionChanged();
@@ -977,7 +1010,7 @@ void QgsVectorLayer::invertSelection()
 
 void QgsVectorLayer::removeSelection(bool emitSignal)
 {
-  mSelected.clear();
+  mSelectedFeatureIds.clear();
 
   if (emitSignal)
     emit selectionChanged();
@@ -1073,7 +1106,7 @@ QGis::WKBTYPE QgsVectorLayer::getGeometryType() const
 
 QgsRect QgsVectorLayer::boundingBoxOfSelected()
 {
-  if(mSelected.size()==0)//no selected features
+  if(mSelectedFeatureIds.size()==0)//no selected features
   {
     return QgsRect(0,0,0,0);
   }
@@ -1085,7 +1118,7 @@ QgsRect QgsVectorLayer::boundingBoxOfSelected()
   retval.setMinimal();
   while ((fet = mDataProvider->getNextFeature(false)))
   {
-    if (mSelected.find(fet->featureId()) != mSelected.end())
+    if (mSelectedFeatureIds.find(fet->featureId()) != mSelectedFeatureIds.end())
     {
       r=fet->geometry()->boundingBox();
       retval.combineExtentWith(&r);
@@ -1095,7 +1128,7 @@ QgsRect QgsVectorLayer::boundingBoxOfSelected()
   //also go through the not commited features
   for(std::vector<QgsFeature*>::iterator iter=mAddedFeatures.begin();iter!=mAddedFeatures.end();++iter)
   {
-    if(mSelected.find((*iter)->featureId())!=mSelected.end())
+    if(mSelectedFeatureIds.find((*iter)->featureId())!=mSelectedFeatureIds.end())
     {
       r=(*iter)->geometry()->boundingBox();
       retval.combineExtentWith(&r);
@@ -1144,7 +1177,7 @@ QgsFeature * QgsVectorLayer::getFirstFeature(bool fetchAttributes, bool selected
     QgsFeature *fet = mDataProvider->getFirstFeature(fetchAttributes);
     while(fet)
     {
-      bool sel = mSelected.find(fet->featureId()) != mSelected.end();
+      bool sel = mSelectedFeatureIds.find(fet->featureId()) != mSelectedFeatureIds.end();
       if ( sel ) return fet;
       fet = mDataProvider->getNextFeature(fetchAttributes);
     }
@@ -1169,7 +1202,7 @@ QgsFeature * QgsVectorLayer::getNextFeature(bool fetchAttributes, bool selected)
     QgsFeature *fet;
     while ((fet = mDataProvider->getNextFeature(fetchAttributes)))
     {
-      bool sel = mSelected.find(fet->featureId()) != mSelected.end();
+      bool sel = mSelectedFeatureIds.find(fet->featureId()) != mSelectedFeatureIds.end();
       if ( sel ) return fet;
     }
     return 0;
@@ -1221,7 +1254,7 @@ void QgsVectorLayer::updateExtents()
 {
   if(mDataProvider)
   {
-    if(mDeleted.size()==0)
+    if(mDeletedFeatureIds.size()==0)
     {
       // get the extent of the layer from the provider
       mLayerExtent.setXmin(mDataProvider->extent()->xMin());
@@ -1238,7 +1271,7 @@ void QgsVectorLayer::updateExtents()
       mDataProvider->reset();
       while ((fet=mDataProvider->getNextFeature(false)))
       {
-        if(mDeleted.find(fet->featureId())==mDeleted.end())
+        if(mDeletedFeatureIds.find(fet->featureId())==mDeletedFeatureIds.end())
         {
           bb=fet->boundingBox();
           mLayerExtent.combineExtentWith(&bb);
@@ -1486,7 +1519,7 @@ bool QgsVectorLayer::deleteSelectedFeatures()
     return false;
   }
 
-  for(feature_ids::iterator it=mSelected.begin();it!=mSelected.end();++it)
+  for(feature_ids::iterator it=mSelectedFeatureIds.begin();it!=mSelectedFeatureIds.end();++it)
   {
     bool notcommitedfeature=false;
     //first test, if the feature with this id is a not-commited feature
@@ -1504,11 +1537,11 @@ bool QgsVectorLayer::deleteSelectedFeatures()
     }
     if(!notcommitedfeature)
     {
-      mDeleted.insert(*it);
+      mDeletedFeatureIds.insert(*it);
     }
   }
 
-  if(mSelected.size()>0)
+  if(mSelectedFeatureIds.size()>0)
   {
     setModified(TRUE);
     removeSelection(FALSE); // don't emit signal
@@ -1549,7 +1582,10 @@ bool QgsVectorLayer::startEditing()
     return false;
   }
 
-  cacheGeometries();
+  // No longer need to cache all geometries
+  // instead, mCachedGeometries is refreshed every time the
+  // screen is redrawn.
+  //cacheGeometries();
   mEditable=true;
   return true;
 }
@@ -1979,16 +2015,20 @@ bool QgsVectorLayer::commitChanges()
   {
     return false;
   }
+  
+  /*
+     Unfortunately the commits occur in four distinct stages,
+     (add features, change attributes, change geometries, delete features)
+     so if a stage fails, it's difficult to roll back cleanly.
+     Therefore the error messages become a bit complicated to generate.
+   */
 
-  bool returnvalue=true;
-
-  // Commit new features
-  if( mAddedFeatures.size() > 0 ) 
+  // Attempt the commit of new features
+  bool addedFeaturesOk = FALSE;
+  if (mAddedFeatures.size() > 0)
   {
-    QgsDebugMsg("Committing new features");
-
     std::list<QgsFeature*> addedlist;
-    for(std::vector<QgsFeature*>::iterator it=mAddedFeatures.begin();it!=mAddedFeatures.end();++it)
+    for (std::vector<QgsFeature*>::iterator it = mAddedFeatures.begin(); it != mAddedFeatures.end(); ++it)
     {
       //QgsDebugMsg("Got: " + (*it)->geometry()->wkt() + ".");
       addedlist.push_back(*it);
@@ -1996,61 +2036,123 @@ bool QgsVectorLayer::commitChanges()
 
     if(!mDataProvider->addFeatures(addedlist))
     {
-      QgsLogger::warning(tr("Could not add new features"));
-      returnvalue=false;
-    }
+      QStringList errorStrings;
+      errorStrings += tr("Could not commit the added features.");
+      errorStrings += tr("No other types of changes will be committed at this time.");
 
-    // Delete the features themselves before deleting the references to them.
-    for(std::vector<QgsFeature*>::iterator it=mAddedFeatures.begin();it!=mAddedFeatures.end();++it)
-    {
-      delete *it;
+      // TODO: use an error string or something to store error to be retrieved later [MD]
+      //QMessageBox::warning(0, tr("Error"), errorStrings.join(" "));
+      return FALSE;
     }
-    mAddedFeatures.clear();
+    else
+    {
+      // Added features committed OK, remove the in-memory changes
+
+      // Delete the features themselves before deleting the references to them.
+      for (std::vector<QgsFeature*>::iterator it = mAddedFeatures.begin(); it != mAddedFeatures.end(); ++it)
+      {
+        delete *it;
+      }
+      mAddedFeatures.clear();
+      addedFeaturesOk = TRUE;
+    }
   }
 
-  // Commit changed attributes
-  if( mChangedAttributes.size() > 0 ) 
+  // Attempt the commit of changed attributes
+  bool changedAttributesOk = FALSE;
+  if (mChangedAttributes.size() > 0)
   {
-    QgsDebugMsg("Committing changed attributes.");
-    
-    if ( !mDataProvider->changeAttributeValues ( mChangedAttributes ) ) 
+    if (!mDataProvider->changeAttributeValues(mChangedAttributes))
     {
-      QgsLogger::warning(tr("Could not change attributes"));
-      returnvalue=false;
+      QStringList errorStrings;
+      errorStrings += tr("Could not commit the changed attributes.");
+      if (addedFeaturesOk)
+      {
+        errorStrings += tr("However, the added features were committed OK.");
+      }
+      errorStrings += tr("No other types of changes will be committed at this time.");
+
+      // TODO: use an error string or something to store error to be retrieved later [MD]
+      //QMessageBox::warning(0, tr("Error"), errorStrings.join(" "));
+      return FALSE;
     }
-    mChangedAttributes.clear();
+    else
+    {
+      // Changed attributes committed OK, remove the in-memory changes
+      mChangedAttributes.clear();
+      changedAttributesOk = TRUE;
+    }
   }
 
-  // Commit changed geometries
-  if( mChangedGeometries.size() > 0 ) 
+  // Attempt the commit of changed geometries
+  bool changedGeometriesOk = FALSE;
+  if (mChangedGeometries.size() > 0)
   {
-    QgsDebugMsg("Committing changed geometries.");
-    
-    if ( !mDataProvider->changeGeometryValues ( mChangedGeometries ) ) 
+    if (!mDataProvider->changeGeometryValues(mChangedGeometries))
     {
-      QgsLogger::warning(tr("Could not commit changes to geometries"));
-      returnvalue=false;
+      QStringList errorStrings;
+      errorStrings += tr("Could not commit the changed geometries.");
+      if (addedFeaturesOk)
+      {
+        errorStrings += tr("However, the added features were committed OK.");
+      }
+      if (changedAttributesOk)
+      {
+        errorStrings += tr("However, the changed attributes were committed OK.");
+      }
+      errorStrings += tr("No other types of changes will be committed at this time.");
+
+      // TODO: use an error string or something to store error to be retrieved later [MD]
+      //QMessageBox::warning(0, tr("Error"), errorStrings.join(" "));
+      return FALSE;
     }
-    mChangedGeometries.clear();
+    else
+    {
+      // Changed geometries committed OK, remove the in-memory changes
+      mChangedGeometries.clear();
+      changedGeometriesOk = TRUE;
+    }
   }
 
-  // Commit deleted features
-  if(mDeleted.size()>0)
+  // Attempt the commit of deleted features
+  bool deletedFeaturesOk = FALSE;
+  if (mDeletedFeatureIds.size() > 0)
   {
-    QgsDebugMsg("Committing deleted features.");
-
     std::list<int> deletelist;
-    for(feature_ids::iterator it=mDeleted.begin();it!=mDeleted.end();++it)
+    for (feature_ids::iterator it = mDeletedFeatureIds.begin(); it != mDeletedFeatureIds.end(); ++it)
     {
       deletelist.push_back(*it);
-      mSelected.erase(*it);//just in case the feature is still selected
+      mSelectedFeatureIds.erase(*it);//just in case the feature is still selected
     }
-    if(!mDataProvider->deleteFeatures(deletelist))
+
+    if (!mDataProvider->deleteFeatures(deletelist))
     {
-      QgsLogger::warning(tr("Could not commit deleted geometries"));
-      returnvalue=false;
+      QStringList errorStrings;
+      errorStrings += tr("Could not commit the deleted features.");
+      if (addedFeaturesOk)
+      {
+        errorStrings += tr("However, the added features were committed OK.");
+      }
+      if (changedAttributesOk)
+      {
+        errorStrings += tr("However, the changed attributes were committed OK.");
+      }
+      if (changedGeometriesOk)
+      {
+        errorStrings += tr("However, the changed geometries were committed OK.");
+      }
+      errorStrings += tr("No other types of changes will be committed at this time.");
+
+      // TODO: use an error string or something to store error to be retrieved later [MD]
+      //QMessageBox::warning(0, tr("Error"), errorStrings.join(" "));
+      return FALSE;
     }
-    mDeleted.clear();
+    else
+    {
+      // Deleted features committed OK, remove the in-memory changes
+      mDeletedFeatureIds.clear();
+      deletedFeaturesOk = TRUE;
+    }
   }
 
   mEditable = false;
@@ -2061,7 +2163,7 @@ bool QgsVectorLayer::commitChanges()
 
   triggerRepaint();
   
-  return returnvalue;
+  return TRUE;
 }
 
 bool QgsVectorLayer::rollBack()
@@ -2088,9 +2190,9 @@ bool QgsVectorLayer::rollBack()
       delete *it;
     }
     mAddedFeatures.clear();
-
+  
     // Roll back deleted features
-    mDeleted.clear();
+    mDeletedFeatureIds.clear();
   }
 
   mEditable = false;
@@ -2104,13 +2206,18 @@ bool QgsVectorLayer::rollBack()
 void QgsVectorLayer::setSelectedFeatures(feature_ids& ids)
 {
   // TODO: check whether features with these ID exist
-  mSelected = ids;
+  mSelectedFeatureIds = ids;
   emit selectionChanged();
+}
+
+int QgsVectorLayer::selectedFeatureCount()
+{
+  return mSelectedFeatureIds.size();
 }
 
 const feature_ids& QgsVectorLayer::selectedFeaturesIds() const
 {
-  return mSelected;
+  return mSelectedFeatureIds;
 }
 
 
@@ -2122,41 +2229,76 @@ std::vector<QgsFeature>* QgsVectorLayer::selectedFeatures()
   }
   
   std::vector<QgsFeature>* features = new std::vector<QgsFeature>;
-  if(mSelected.size() == 0)
-    {
-      return features;
-    }
-
-  //we need to cache all the features first (which has already been done if a layer is editable)
-  if(!mEditable)
-    {
-      deleteCachedGeometries();
-      cacheGeometries();
-    }
-
-  for (std::set<int>::iterator it  = mSelected.begin(); it != mSelected.end(); ++it)
+  if(mSelectedFeatureIds.size() == 0)
   {
-    // Check this selected item against the committed or cached features
-    if ( mCachedGeometries.find(*it) != mCachedGeometries.end() )
-    {
-      QgsFeature* f = new QgsFeature();
-      f->setGeometry(*mCachedGeometries[*it]);//makes a deep copy of the geometry
-      features->push_back(*f);
-      continue;
-    }
-    
+    // short cut
+    return features;
+  }
+
+  // we don't need to cache features ... it just adds unnecessary time
+  // as we don't need to pull *everything* from disk
+
+  // Go through each selected feature ID and determine
+  // its current geometry and attributes
+  
+  for (feature_ids::iterator it  = mSelectedFeatureIds.begin(); it != mSelectedFeatureIds.end(); ++it)
+  {
+    QgsFeature* initialFeature;
+
+    // Pull the original version of the feature from disk or memory
+    // as appropriate
+
     // Check this selected item against the uncommitted added features
-    /*for (std::vector<QgsFeature*>::iterator iter  = mAddedFeatures.begin();
+    bool selectionIsAddedFeature = FALSE;
+
+    for (std::vector<QgsFeature*>::iterator iter  = mAddedFeatures.begin();
         iter != mAddedFeatures.end();
         ++iter)
     {
       if ( (*it) == (*iter)->featureId() )
       {
-        features->push_back( **iter ); //shouldn't we make a deep copy here?
-        break;
+#ifdef QGISDEBUG
+        std::cout << "QgsVectorLayer::selectedFeatures: found an added geometry: " << std::endl;
+#endif
+        initialFeature = new QgsFeature(**iter);
+        selectionIsAddedFeature = TRUE;
       }
-      }*/
+    }
 
+    if (!selectionIsAddedFeature)
+    {
+      // pull committed version from disk
+      initialFeature = new QgsFeature(*it);
+
+      int row = 0;  //TODO: Get rid of this, but getFeatureAttributes()
+                    //      needs it for some reason
+      mDataProvider->getFeatureAttributes(*it, row, initialFeature);
+
+      if ( mChangedGeometries.find(*it) == mChangedGeometries.end() )
+      {
+         // also pull committed geometry from disk as we will
+         // not need to overwrite it later
+
+         if (mDataProvider->capabilities() & QgsVectorDataProvider::SelectGeometryAtId)
+         {
+           mDataProvider->getFeatureGeometry(*it, initialFeature);
+         }
+         else
+         {
+           // TODO: handle error somehow [MD]
+           //QMessageBox::information(0, tr("Cannot retrieve features"),
+           //     tr("The provider for the current layer cannot retrieve geometry for the selected features.  This version of the provider does not have this capability."));
+         }
+       }
+
+     }
+
+     // Transform the feature to the "current" in-memory version
+     QgsFeature finalFeature = QgsFeature(*initialFeature, mChangedAttributes, mChangedGeometries);
+
+     delete initialFeature;
+
+     features->push_back(finalFeature);
   } // for each selected
 
   return features;
@@ -2179,22 +2321,25 @@ bool QgsVectorLayer::addFeatures(std::vector<QgsFeature*>* features, bool makeSe
     return false;
   }
 
-
   if (makeSelected)
   {
-    removeSelection(FALSE); // don't emit signal
+    mSelectedFeatureIds.clear();
   }
 
   for (std::vector<QgsFeature*>::iterator iter  = features->begin();
       iter != features->end();
       ++iter)
   {
+    // TODO: Tidy these next two lines up
+
+    //      QgsFeature f = (*iter);
+    //      addFeature(&f, FALSE);
 
     addFeature(*iter);
 
     if (makeSelected)
     {
-      mSelected.insert((*iter)->featureId());
+      mSelectedFeatureIds.insert((*iter)->featureId());
     }
   }
 
@@ -2204,7 +2349,7 @@ bool QgsVectorLayer::addFeatures(std::vector<QgsFeature*>* features, bool makeSe
   {
     emit selectionChanged();
   }
-  
+
   return true;
 }
 
@@ -2647,8 +2792,13 @@ bool QgsVectorLayer::snapSegmentWithContext(QgsPoint& point, QgsGeometryVertexIn
 }
 
 
-void QgsVectorLayer::drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * theMapToPixelTransform, QgsCoordinateTransform* ct, 
-    QImage * marker, double markerScaleFactor)
+void QgsVectorLayer::drawFeature(QPainter* p,
+                                 QgsFeature* fet,
+                                 QgsMapToPixel * theMapToPixelTransform,
+                                 QgsCoordinateTransform* ct,
+                                 QImage * marker,
+                                 double markerScaleFactor,
+                                 bool drawingToEditingCanvas)
 {
   // Only have variables, etc outside the switch() statement that are
   // used in all cases of the statement (otherwise they may get
@@ -2730,7 +2880,7 @@ void QgsVectorLayer::drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * t
       }
     case QGis::WKBLineString:
       {
-        drawLineString(feature, p, theMapToPixelTransform, ct);
+        drawLineString(feature, p, theMapToPixelTransform, ct, drawingToEditingCanvas);
         break;
       }
     case QGis::WKBMultiLineString:
@@ -2741,13 +2891,13 @@ void QgsVectorLayer::drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * t
 
         for (register unsigned int jdx = 0; jdx < numLineStrings; jdx++)
         {
-          ptr = drawLineString(ptr, p, theMapToPixelTransform, ct);
+          ptr = drawLineString(ptr, p, theMapToPixelTransform, ct, drawingToEditingCanvas);
         }
         break;
       }
     case QGis::WKBPolygon:
       {
-        drawPolygon(feature, p, theMapToPixelTransform, ct);
+        drawPolygon(feature, p, theMapToPixelTransform, ct, drawingToEditingCanvas);
         break;
       }
     case QGis::WKBMultiPolygon:
@@ -2756,7 +2906,7 @@ void QgsVectorLayer::drawFeature(QPainter* p, QgsFeature* fet, QgsMapToPixel * t
         unsigned int numPolygons = *((int*)ptr);
         ptr = feature + 9;
         for (register unsigned int kdx = 0; kdx < numPolygons; kdx++)
-          ptr = drawPolygon(ptr, p, theMapToPixelTransform, ct);
+          ptr = drawPolygon(ptr, p, theMapToPixelTransform, ct, drawingToEditingCanvas);
         break;
       }
     default:
@@ -2937,7 +3087,7 @@ std::vector<QgsFeature*>& QgsVectorLayer::addedFeatures()
 
 feature_ids& QgsVectorLayer::deletedFeatureIds()
 {
-  return mDeleted;
+  return mDeletedFeatureIds;
 }
 
 changed_attr_map& QgsVectorLayer::changedAttributes()

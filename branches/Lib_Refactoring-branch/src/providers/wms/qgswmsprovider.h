@@ -344,8 +344,7 @@ public:
   /**
   * Constructor for the provider. 
   *
-  * \param   uri   HTTP URL of the Web Server, optionally followed by a space then the proxy host name,
-  *                another space, and the proxy host port.  If no proxy is declared then we will
+  * \param   uri   HTTP URL of the Web Server.  If setProxy() is not also called then we will
   *                contact the host directly.
   *
   */
@@ -353,6 +352,16 @@ public:
 
   //! Destructor
   virtual ~QgsWmsProvider();
+
+  /**
+   *
+   * Sets an HTTP proxy for the URL given in the constructor
+   *
+   */
+  virtual bool setProxy(QString const & host = 0,
+                                    int port = 80,
+                        QString const & user = 0,
+                        QString const & pass = 0);
 
   /**
    * \brief   Returns a list of the supported layers of the WMS server
@@ -400,6 +409,11 @@ public:
    * Set the visibility of the given sublayer name
    */
   void setSubLayerVisibility(QString const & name, bool vis);
+
+  /**
+   * Get the image encoding (as a MIME type) used in the transfer from the WMS server
+   */
+  QString imageEncoding() const;
 
   /**
    * Set the image encoding (as a MIME type) used in the transfer from the WMS server
@@ -475,7 +489,18 @@ public:
    * layers in some way at the server, before it serves them to this
    * WMS client.
    */
-  QStringList subLayers();
+  QStringList subLayers() const;
+
+  /**
+   * Sub-layer styles for each sub-layer handled by this provider,
+   * in order from bottom to top
+   *
+   * Sub-layer styles are used to abstract the way the WMS server can symbolise
+   * layers in some way at the server, before it serves them to this
+   * WMS client.
+   */
+  QStringList subLayerStyles() const;
+
 
   // TODO: Get the WMS connection
   
@@ -500,7 +525,7 @@ public:
    *
    * \param point[in]  The pixel coordinate (as it was displayed locally on screen)
    *
-   * \retval  An HTML document containing the return from the WMS server
+   * \return  A text document containing the return from the WMS server
    *
    * \note WMS Servers prefer to receive coordinates in image space, therefore
    *       this function expects coordinates in that format.
@@ -508,7 +533,7 @@ public:
    * \note  The arbitraryness of the returned document is enforced by WMS standards
    *        up to at least v1.3.0
    */
-  QString identifyAsHtml(const QgsPoint& point);
+  QString identifyAsText(const QgsPoint& point);
 
   /**
    * \brief   Returns the caption error text for the last error in this provider

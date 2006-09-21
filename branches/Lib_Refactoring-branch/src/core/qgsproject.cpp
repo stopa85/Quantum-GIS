@@ -820,6 +820,8 @@ bool QgsProject::read()
     // get the map layers
     std::pair< bool, std::list<QDomNode> > getMapLayersResults =  _getMapLayers(*doc);
 
+    // review the integrity of the retrieved map layers
+
     if ( ! getMapLayersResults.first )
     {
         QgsDebugMsg("Unable to get map layers from project file.");
