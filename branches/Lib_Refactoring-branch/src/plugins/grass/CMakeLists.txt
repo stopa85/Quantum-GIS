@@ -73,6 +73,8 @@ INCLUDE_DIRECTORIES(
      ../../gui
      ..
      ${GRASS_INCLUDE_DIR}
+     ${GDAL_INCLUDE_DIR}
+     ${PROJ_INCLUDE_DIR}
 )
 
 TARGET_LINK_LIBRARIES(grassplugin

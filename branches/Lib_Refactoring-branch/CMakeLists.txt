@@ -92,6 +92,12 @@ FIND_PACKAGE(Qt4 REQUIRED)
 
 INCLUDE( ${QT_USE_FILE} )
 
+FIND_PROGRAM(QT_LRELEASE_EXECUTABLE
+    NAMES lrelease
+    PATHS ${QT_BINARY_DIR}
+    NO_DEFAULT_PATH
+    )
+
 #############################################################
 # enable warnings
 
