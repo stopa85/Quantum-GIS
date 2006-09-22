@@ -16,7 +16,9 @@
  ***************************************************************************/
 
 #include "qgsfeature.h"
+#include "qgsfeatureattribute.h"
 #include "qgsfield.h"
+#include "qgsgeometry.h"
 #include "qgshttptransaction.h"
 #include "qgswfsprovider.h"
 #include "qgslogger.h"

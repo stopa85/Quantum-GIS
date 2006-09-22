@@ -1,5 +1,6 @@
 
 SET(QGIS_GUI_UIS
+  ../ui/qgslayerprojectionselectorbase.ui
   ../ui/qgsmessageviewer.ui
   ../ui/qgsprojectionselectorbase.ui
 )
@@ -8,6 +9,7 @@ SET(QGIS_GUI_SRCS
 qgisgui.cpp
 qgisinterface.cpp
 qgscursors.cpp
+qgslayerprojectionselector.cpp
 qgsmapcanvas.cpp
 qgsmapcanvasitem.cpp
 qgsmapcanvasmap.cpp
@@ -26,6 +28,7 @@ QT4_WRAP_UI(QGIS_GUI_UIS_H ${QGIS_GUI_UIS})
 
 SET(QGIS_GUI_MOC_HDRS
 qgisinterface.h
+qgslayerprojectionselector.h
 qgsmapcanvas.h
 qgsmapcanvasitem.h
 qgsmapcanvasmap.h
