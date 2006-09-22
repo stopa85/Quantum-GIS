@@ -44,6 +44,15 @@ class GUI_EXPORT QgsMessageViewer: public QDialog, public QgsMessageOutput, priv
     void setMessageAsHtml(const QString& msg);
     // Treats the given text as plain text
     void setMessageAsPlainText(const QString& msg);
+    // A checkbox that can be used for something like 
+    // "don't show this message again"
+    void setCheckBoxText(const QString& text);
+    // Make the check box visible/invisible
+    void setCheckBoxVisible(bool visible);
+    // Sets the check state
+    void setCheckBoxState(Qt::CheckState state);
+    // The state of the checkbox
+    Qt::CheckState checkBoxState();
 };
 
 #endif

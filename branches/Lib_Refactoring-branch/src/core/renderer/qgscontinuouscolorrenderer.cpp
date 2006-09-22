@@ -149,6 +149,15 @@ void QgsContinuousColorRenderer::renderFeature(QPainter * p, QgsFeature * f, QIm
     else
     {
       p->setBrush(QColor(red, green, blue));
+      if (mDrawPolygonOutline)
+      {
+        QPen pen;
+        pen.setColor(QColor(0,0,0));
+        pen.setWidthF(widthScale*mMinimumSymbol->pen().width());
+        p->setPen(pen);
+      }
+      else
+        p->setPen(Qt::NoPen);
     }
     if(selected)
     {
@@ -168,6 +177,18 @@ void QgsContinuousColorRenderer::readXML(const QDomNode& rnode, QgsVectorLayer& 
     QDomNode classnode = rnode.namedItem("classificationfield");
     int classificationfield = classnode.toElement().text().toInt();
     this->setClassificationField(classificationfield);
+    
+    //polygon outline
+    QDomNode polyoutlinenode = rnode.namedItem("polygonoutline");
+    QString polyoutline = polyoutlinenode.toElement().text();
+    if(polyoutline == "0")
+    {
+	    mDrawPolygonOutline = false;
+    }
+    else if(polyoutline == "1")
+    {
+	    mDrawPolygonOutline = true;
+    }
 
     //read the settings for the renderitem of the minimum value
     QDomNode lowernode = rnode.namedItem("lowestsymbol");
@@ -211,6 +232,14 @@ bool QgsContinuousColorRenderer::writeXML( QDomNode & layer_node, QDomDocument &
     QDomText classificationfieldtxt=document.createTextNode(QString::number(mClassificationField));
     classificationfield.appendChild(classificationfieldtxt);
     continuoussymbol.appendChild(classificationfield);
+    
+    //polygon outlines
+    QDomElement drawPolygonOutlines = document.createElement("polygonoutline");
+    int drawPolyInt = mDrawPolygonOutline ? 1 : 0;
+    QDomText drawPolygonText = document.createTextNode(QString::number(drawPolyInt));
+    drawPolygonOutlines.appendChild(drawPolygonText);
+    continuoussymbol.appendChild(drawPolygonOutlines);
+    
     QDomElement lowestsymbol=document.createElement("lowestsymbol");
     continuoussymbol.appendChild(lowestsymbol);
     if(mMinimumSymbol)

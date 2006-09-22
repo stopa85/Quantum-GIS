@@ -152,6 +152,10 @@ void QgsMapToolVertexEdit::canvasPressEvent(QMouseEvent * e)
 
     snapPoint = point;
     QgsVectorLayer* vlayer = dynamic_cast<QgsVectorLayer*>(mCanvas->currentLayer());
+    if(!vlayer)
+    {
+	    return;
+    }
     if(vlayer->vectorType() == QGis::Point)//snap to point for point/multipoint layers
       {
 	if(!snapVertexWithContext(snapPoint))

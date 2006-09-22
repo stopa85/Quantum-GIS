@@ -94,7 +94,6 @@
 #include "qgsmaplayerregistry.h"
 #include "qgsmapoverviewcanvas.h"
 #include "qgsmaprender.h"
-#include "qgsmapserverexport.h"
 #include "qgsmessageviewer.h"
 #include "qgsoptions.h"
 #include "qgspastetransformations.h"
@@ -591,11 +590,13 @@ void QgisApp::createActions()
   mActionSelect= new QAction(QIcon(myIconPath+"/mActionSelect.png"), tr("Select Features"), this);
   mActionSelect->setStatusTip(tr("Select Features"));
   connect(mActionSelect, SIGNAL(triggered()), this, SLOT(select()));
+  mActionSelect->setEnabled(false);
   //
   mActionOpenTable= new QAction(QIcon(myIconPath+"/mActionOpenTable.png"), tr("Open Table"), this);
   //mActionOpenTable->setShortcut(tr("Ctrl+O","Open Table"));
   mActionOpenTable->setStatusTip(tr("Open Table"));
   connect(mActionOpenTable, SIGNAL(triggered()), this, SLOT(attributeTable()));
+  mActionOpenTable->setEnabled(false);
   //
   mActionMeasure= new QAction(QIcon(myIconPath+"/mActionMeasure.png"), tr("Measure Line "), this);
   mActionMeasure->setShortcut(tr("Ctrl+M","Measure a Line"));
@@ -654,44 +655,54 @@ void QgisApp::createActions()
   mActionCapturePoint->setShortcut(tr(".","Capture Points"));
   mActionCapturePoint->setStatusTip(tr("Capture Points"));
   connect(mActionCapturePoint, SIGNAL(triggered()), this, SLOT(capturePoint()));
+  mActionCapturePoint->setEnabled(false);
   //
   mActionCaptureLine= new QAction(QIcon(myIconPath+"/mActionCaptureLine.png"), tr("Capture Line"), this);
   mActionCaptureLine->setShortcut(tr("/","Capture Lines"));
   mActionCaptureLine->setStatusTip(tr("Capture Lines"));
   connect(mActionCaptureLine, SIGNAL(triggered()), this, SLOT(captureLine()));
+  mActionCaptureLine->setEnabled(false);
   //
   mActionCapturePolygon= new QAction(QIcon(myIconPath+"/mActionCapturePolygon.png"), tr("Capture Polygon"), this);
   mActionCapturePolygon->setShortcut(tr("Ctrl+/","Capture Polygons"));
   mActionCapturePolygon->setStatusTip(tr("Capture Polygons"));
   connect(mActionCapturePolygon, SIGNAL(triggered()), this, SLOT(capturePolygon()));
+  mActionCapturePolygon->setEnabled(false);
   //
   mActionDeleteSelected = new QAction(QIcon(myIconPath+"/mActionDeleteSelected.png"), tr("Delete Seleced"), this);
   mActionDeleteSelected->setStatusTip(tr("Delete Selected"));
   connect(mActionDeleteSelected, SIGNAL(triggered()), this, SLOT(deleteSelected()));
+  mActionDeleteSelected->setEnabled(false);
   //
   mActionAddVertex = new QAction(QIcon(myIconPath+"/mActionAddVertex.png"), tr("Add Vertex"), this);
   mActionAddVertex->setStatusTip(tr("Add Vertex"));
   connect(mActionAddVertex, SIGNAL(triggered()), this, SLOT(addVertex()));
+  mActionAddVertex->setEnabled(false);
   //
   mActionDeleteVertex = new QAction(QIcon(myIconPath+"/mActionDeleteVertex.png"), tr("Delete Vertex"), this);
   mActionDeleteVertex->setStatusTip(tr("Delete Vertex"));
   connect(mActionDeleteVertex, SIGNAL(triggered()), this, SLOT(deleteVertex()));
+  mActionDeleteVertex->setEnabled(false);
   //
   mActionMoveVertex = new QAction(QIcon(myIconPath+"/mActionMoveVertex.png"), tr("Move Vertex"), this);
   mActionMoveVertex->setStatusTip(tr("Move Vertex"));
   connect(mActionMoveVertex, SIGNAL(triggered()), this, SLOT(moveVertex()));
+  mActionMoveVertex->setEnabled(false);
 
   mActionEditCut = new QAction(QIcon(myIconPath+"/mActionEditCut.png"), tr("Cut Features"), this);
   mActionEditCut->setStatusTip(tr("Cut selected features"));
   connect(mActionEditCut, SIGNAL(triggered()), this, SLOT(editCut()));
+  mActionEditCut->setEnabled(false);
 
   mActionEditCopy = new QAction(QIcon(myIconPath+"/mActionEditCopy.png"), tr("Copy Features"), this);
   mActionEditCopy->setStatusTip(tr("Copy selected features"));
   connect(mActionEditCopy, SIGNAL(triggered()), this, SLOT(editCopy()));
+  mActionEditCopy->setEnabled(false);
 
   mActionEditPaste = new QAction(QIcon(myIconPath+"/mActionEditPaste.png"), tr("Paste Features"), this);
   mActionEditPaste->setStatusTip(tr("Paste selected features"));
   connect(mActionEditPaste, SIGNAL(triggered()), this, SLOT(editPaste()));
+  mActionEditPaste->setEnabled(false);
 }
 
 void QgisApp::createActionGroups()
@@ -3087,26 +3098,32 @@ void QgisApp::showAllLayers()
 void QgisApp::exportMapServer()
 {
   // check to see if there are any layers to export
-  if (mMapCanvas->layerCount() > 0)
-  {
-    QgsMapserverExport *mse = new QgsMapserverExport(mMapCanvas, this);
-    if (mse->exec())
-    {
-      mse->write();
-    }
-    delete mse;
-  }
-  else
-  {
-    QMessageBox::warning(this, tr("No Map Layers"),
-        tr("No layers to export. You must add at least one layer to the map in order to export the view."));
-  }
+  // Possibly we may reinstate this in the future if we provide 'active project' export again
+  //if (mMapCanvas->layerCount() > 0)
+  //{
+    QString myMSExportPath = QgsApplication::msexportAppPath(); 
+    QProcess *process = new QProcess;
+    process->start(myMSExportPath);
+
+    // Delete this object if the process terminates
+    connect(process, SIGNAL(finished(int, QProcess::ExitStatus)), 
+        SLOT(processExited()));
+
+    // Delete the process if the application quits
+    connect(qApp, SIGNAL(aboutToQuit()), process, SLOT(terminate()));
+
+  //}
+  //else
+  //{
+  //  QMessageBox::warning(this, tr("No Map Layers"),
+  //      tr("No layers to export. You must add at least one layer to the map in order to export the view."));
+  //}
 }
 void QgisApp::zoomIn()
 {
   QgsDebugMsg ("Setting map tool to zoomIn");
   
-  QgsMapTool* tool = new QgsMapToolZoom(mMapCanvas, FALSE /* zoomOut */);
+  QgsMapTool* tool = new QgsMapToolZoom(mMapCanvas, FALSE /* zoomIn */);
   tool->setAction(mActionZoomIn);
   mMapCanvas->setMapTool(tool);
 
