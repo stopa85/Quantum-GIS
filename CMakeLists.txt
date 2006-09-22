@@ -56,14 +56,18 @@ ENDIF (NOT BISON_EXECUTABLE)
 #############################################################
 # search for dependencies
 
+# required
 FIND_PACKAGE(Proj)
 FIND_PACKAGE(Sqlite3)
 FIND_PACKAGE(GEOS)
 FIND_PACKAGE(GDAL)
-FIND_PACKAGE(Postgres)
-FIND_PACKAGE(Expat)
-FIND_PACKAGE(GSL)
-FIND_PACKAGE(GRASS)
+
+# optional
+FIND_PACKAGE(Postgres) # PostgreSQL provider, SPIT plugin
+FIND_PACKAGE(Expat)    # GPS importer plugin
+FIND_PACKAGE(GSL)      # Georeferencer
+FIND_PACKAGE(GRASS)    # GRASS plugin
+FIND_PACKAGE(PythonLibs) # MapServer export tool
 
 IF (NOT PROJ_FOUND OR NOT SQLITE3_FOUND OR NOT GEOS_FOUND OR NOT GDAL_FOUND)
   MESSAGE (SEND_ERROR "Some dependencies were not found!")
@@ -74,11 +78,17 @@ IF (POSTGRES_FOUND)
   SET (HAVE_POSTGRESQL TRUE)
 ENDIF (POSTGRES_FOUND)
 
-# unistd.h is missing on MSVC and causes compile error
-# however in generated file from GnuWin32's flex it's not possible
-# to define YY_NO_UNISTD_H
-#INCLUDE(CheckIncludeFile)
-#CHECK_INCLUDE_FILE(unistd.h HAVE_UNISTD_H)
+IF (PYTHON_LIBRARIES AND PYTHON_INCLUDE_PATH)
+  SET (PYTHON_FOUND TRUE)
+  MESSAGE(STATUS "Python found")
+
+  # TODO: should not be needed, report it to CMake devs
+  IF (UNIX)
+    SET (PYTHON_LIBRARIES ${PYTHON_LIBRARIES} util)
+  ENDIF (UNIX)
+
+ENDIF (PYTHON_LIBRARIES AND PYTHON_INCLUDE_PATH)
+
 
 #############################################################
 # search for Qt4
@@ -183,7 +193,7 @@ ENDIF (QGIS_NO_SVNVERSION)
 #############################################################
 # process subdirs
 
-SUBDIRS(src doc images resources i18n)
+SUBDIRS(src doc images resources i18n tools)
 
 
 #############################################################
