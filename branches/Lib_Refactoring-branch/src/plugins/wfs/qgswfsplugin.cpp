@@ -15,6 +15,7 @@
  *                                                                         *
  ***************************************************************************/
 
+#include "qgisinterface.h"
 #include "qgsproviderregistry.h"
 #include "qgswfssourceselect.h"
 #include "qgssinglesymbolrenderer.h"
@@ -30,7 +31,9 @@
 #define QGISEXTERN extern "C"
 #endif
 
-QgsWFSPlugin::QgsWFSPlugin(QgisApp* app, QgisIface* iface): QgisPlugin("WFS plugin", "A plugin to add WFS layers to the QGIS canvas", "Version 0.0001", QgisPlugin::MAPLAYER), mApp(app), mIface(iface), mWfsDialogAction(0)
+QgsWFSPlugin::QgsWFSPlugin(QgisInterface* iface)
+: QgisPlugin("WFS plugin", "A plugin to add WFS layers to the QGIS canvas", "Version 0.0001", QgisPlugin::MAPLAYER), 
+  mIface(iface), mWfsDialogAction(0)
 {
 
 }
@@ -71,9 +74,9 @@ void QgsWFSPlugin::showSourceDialog()
   serverDialog.exec();
 }
 
-QGISEXTERN QgisPlugin * classFactory(QgisApp * theQGisAppPointer, QgisIface * theQgisInterfacePointer)
+QGISEXTERN QgisPlugin * classFactory(QgisInterface * theQgisInterfacePointer)
 {
-  return new QgsWFSPlugin(theQGisAppPointer, theQgisInterfacePointer);
+  return new QgsWFSPlugin(theQgisInterfacePointer);
 }
 
 QGISEXTERN QString name()

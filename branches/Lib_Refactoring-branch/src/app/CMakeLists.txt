@@ -24,7 +24,6 @@ qgsgraduatedsymboldialog.cpp
 qgshelpviewer.cpp
 qgsidentifyresults.cpp
 qgslabeldialog.cpp
-qgslayerprojectionselector.cpp
 qgslinestyledialog.cpp
 qgslinestylewidget.cpp
 qgsludialog.cpp
@@ -101,7 +100,7 @@ SET(QGIS_APP_UIS
 ../ui/qgshelpviewerbase.ui
 ../ui/qgsidentifyresultsbase.ui
 ../ui/qgslabeldialogbase.ui
-../ui/qgslayerprojectionselectorbase.ui
+#../ui/qgslayerprojectionselectorbase.ui
 ../ui/qgslinestyledialogbase.ui
 ../ui/qgslinestylewidgetbase.ui
 ../ui/qgsludialogbase.ui
@@ -150,7 +149,6 @@ qgsgraduatedsymboldialog.h
 qgshelpviewer.h
 qgsidentifyresults.h
 qgslabeldialog.h
-qgslayerprojectionselector.h
 qgslinestyledialog.h
 qgslinestylewidget.h
 qgsludialog.h

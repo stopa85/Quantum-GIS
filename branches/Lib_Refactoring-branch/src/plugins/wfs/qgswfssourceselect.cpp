@@ -15,7 +15,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#include "qgisiface.h"
+#include "qgisinterface.h"
 #include "qgswfssourceselect.h"
 #include "../../providers/wfs/qgswfsprovider.h"
 #include "qgsnewhttpconnection.h"
@@ -24,7 +24,7 @@
 #include <QMessageBox>
 #include <QSettings>
 
-QgsWFSSourceSelect::QgsWFSSourceSelect(QWidget* parent, QgisIface* iface): QDialog(parent), mIface(iface) 
+QgsWFSSourceSelect::QgsWFSSourceSelect(QWidget* parent, QgisInterface* iface): QDialog(parent), mIface(iface) 
 {
   setupUi(this);
   
