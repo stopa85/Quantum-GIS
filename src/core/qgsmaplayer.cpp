@@ -53,7 +53,13 @@ QgsMapLayer::QgsMapLayer(int type,
     // Generate the unique ID of this layer
     QDateTime dt = QDateTime::currentDateTime();
     mID = lyrname + dt.toString("yyyyMMddhhmmsszzz");
-    mID.replace(" ", "_");
+    // Tidy the ID up to avoid characters that may cause problems
+    // elsewhere (e.g in some parts of XML). Replaces every non-word
+    // character (word characters are the alphabet, numbers and
+    // underscore) with an underscore. 
+    // Note that the first backslashe in the regular expression is
+    // there for the compiler, so the pattern is actually \W
+    mID.replace(QRegExp("[\\W]"), "_");
 
     //set some generous  defaults for scale based visibility
     mMinScale = 0;

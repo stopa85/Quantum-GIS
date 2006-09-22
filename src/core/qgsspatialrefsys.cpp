@@ -1261,7 +1261,7 @@ int QgsSpatialRefSys::openDb(QString path, sqlite3 **db)
     output->setMessage("Could not open SRS database " + path +
         "<br>Error(" + QString::number(myResult) + "): " +
         QString(sqlite3_errmsg(*db)), QgsMessageOutput::MessageText); 
-    
+    output->showMessage();
   }
   return myResult;
 }

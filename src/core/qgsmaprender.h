@@ -101,7 +101,7 @@ class CORE_EXPORT QgsMapRender : public QObject
     const QgsSpatialRefSys& destinationSrs();
 
     //! returns current extent of layer set
-    QgsRect fullExtent() { return mFullExtent; }
+    QgsRect fullExtent();
     
     //! returns current layer set
     std::deque<QString>& layerSet() { return mLayerSet; }

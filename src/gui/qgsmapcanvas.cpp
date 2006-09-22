@@ -455,7 +455,10 @@ void QgsMapCanvas::clear()
 
 void QgsMapCanvas::zoomFullExtent()
 {
-  setExtent(fullExtent());
+  QgsRect extent = fullExtent();
+  // If the full extent is an empty set, don't do the zoom
+  if (!extent.isEmpty())
+    setExtent(extent);
   refresh();
 
 } // zoomFullExtent
@@ -649,8 +652,6 @@ void QgsMapCanvas::contentsMouseReleaseEvent(QMouseEvent * e)
   // call handler of current map tool
   if (mMapTool)
   {
-    mMapTool->canvasReleaseEvent(e);
-    
     // right button was pressed in zoom tool? return to previous non zoom tool
     if (e->button() == Qt::RightButton && mMapTool->isZoomTool())
     {
@@ -666,6 +667,7 @@ void QgsMapCanvas::contentsMouseReleaseEvent(QMouseEvent * e)
       }
       return;
     }
+    mMapTool->canvasReleaseEvent(e);
   }
 
   
@@ -818,6 +820,20 @@ void QgsMapCanvas::setMapTool(QgsMapTool* tool)
 
 } // setMapTool
 
+void QgsMapCanvas::unsetMapTool(QgsMapTool* tool)
+{
+  if (mMapTool && mMapTool == tool)
+  {
+    mMapTool->deactivate();
+    mMapTool = NULL;
+  }
+
+  if ( mLastNonZoomMapTool && mLastNonZoomMapTool == tool)
+  {
+    mLastNonZoomMapTool->deactivate(); // ? necessary
+    mLastNonZoomMapTool = NULL;
+  }
+} 
 
 /** Write property of QColor bgColor. */
 void QgsMapCanvas::setCanvasColor(const QColor & theColor)

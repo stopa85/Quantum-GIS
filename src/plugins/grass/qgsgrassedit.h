@@ -38,6 +38,7 @@ class QgsMapToPixel;
 class QgsRubberBand;
 class QgsVertexMarker;
 class QgsVectorLayer;
+class QgsMapTool;
 class QgsGrassEditLayer;
 class QgsGrassAttributes;
 
@@ -292,6 +293,9 @@ private:
 
     //! Status: true - active vector was successfully opened for editing
     bool mValid;
+
+    //! Initialization complete
+    bool mInited;
     
     //! Pointer to the QGIS interface object
     QgisInterface *mIface;
@@ -432,6 +436,9 @@ private:
     QAction *mDeleteLineAction;
     QAction *mEditAttributesAction;
     QAction *mCloseEditAction;
+
+    // Current map tool
+    QgsMapTool	*mMapTool;
 
     // Is projection enabled?
     bool mProjectionEnabled;

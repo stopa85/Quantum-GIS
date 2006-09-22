@@ -54,6 +54,7 @@
 #include "qgisapp.h"
 #include "qgsapplication.h"
 #include <qgsconfig.h>
+#include <qgssvnversion.h>
 #include "qgsexception.h"
 #include "qgsproject.h"
 #include "qgsrect.h"
@@ -64,7 +65,8 @@ static const char * const ident_ = "$Id$";
  */
 void usage( std::string const & appName )
 {
-  std::cerr << "Quantum GIS - " << VERSION << " 'Simon'\n" 
+  std::cerr << "Quantum GIS - " << VERSION << " 'Simon' (" 
+            << QGSSVNVERSION << ")\n" 
       << "Quantum GIS (QGIS) is a viewer for spatial data sets, including\n" 
       << "raster and vector data.\n"  
       << "Usage: " << appName <<  " [options] [FILES]\n"  
@@ -231,8 +233,13 @@ int main(int argc, char *argv[])
   // save the image to disk and then exit
   QString mySnapshotFileName="";
 
-  // This behaviour will set initial extent of map canvas
+  // This behaviour will set initial extent of map canvas, but only if
+  // there are no command line arguments. This gives a usable map
+  // extent when qgis starts with no layers loaded. When layers are
+  // loaded, we let the layers define the initial extent.
   QString myInitialExtent="";
+  if (argc == 1)
+    myInitialExtent="-1,-1,1,1";
 
   // This behaviour will allow you to force the use of a translation file
   // which is useful for testing

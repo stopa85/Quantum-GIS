@@ -21,6 +21,7 @@ email                : morb at ozemail dot com dot au
 #include "qgis.h"
 #include "qgsgeometry.h"
 #include "qgsgeometryvertexindex.h"
+#include "qgslogger.h"
 #include "qgspoint.h"
 #include "qgsrect.h"
 
@@ -2093,6 +2094,51 @@ bool QgsGeometry::intersects(QgsRect* r) const
     return returnval;
 }
 
+bool QgsGeometry::fast_intersects(const QgsRect* r) const
+{
+  bool returnval=false;
+  
+  //use the geos export of QgsGeometry
+  geos::Geometry *geosGeom = geosGeometry();
+
+  //write the selection rectangle to wkt by hand
+    QString rectwkt="POLYGON((";
+    rectwkt+=QString::number(r->xMin(),'f',3);
+    rectwkt+=" ";
+    rectwkt+=QString::number(r->yMin(),'f',3);
+    rectwkt+=",";
+    rectwkt+=QString::number(r->xMax(),'f',3);
+    rectwkt+=" ";
+    rectwkt+=QString::number(r->yMin(),'f',3);
+    rectwkt+=",";
+    rectwkt+=QString::number(r->xMax(),'f',3);
+    rectwkt+=" ";
+    rectwkt+=QString::number(r->yMax(),'f',3);
+    rectwkt+=",";
+    rectwkt+=QString::number(r->xMin(),'f',3);
+    rectwkt+=" ";
+    rectwkt+=QString::number(r->yMax(),'f',3);
+    rectwkt+=",";
+    rectwkt+=QString::number(r->xMin(),'f',3);
+    rectwkt+=" ";
+    rectwkt+=QString::number(r->yMin(),'f',3);
+    rectwkt+="))";
+    geos::GeometryFactory *gf = new geos::GeometryFactory();
+    geos::WKTReader *wktReader = new geos::WKTReader(gf);
+    geos::Geometry *geosRect = wktReader->read( qstrdup(rectwkt) );
+    
+    if(geosGeom->intersects(geosRect))
+    {
+      returnval=true;
+    }
+      
+    delete geosGeom;
+    delete geosRect;
+    delete gf;
+    delete wktReader;
+    return returnval;
+}
+
 
 bool QgsGeometry::contains(QgsPoint* p) const
 {
@@ -2112,9 +2158,7 @@ bool QgsGeometry::contains(QgsPoint* p) const
 
 bool QgsGeometry::exportToWkt(unsigned char * geom) const
 {
-#ifdef QGISDEBUG
-  std::cout << "QgsGeometry::exportToWkt: entered." << std::endl;
-#endif
+  QgsDebugMsg("QgsGeometry::exportToWkt: entered");
 
     if(geom)
     {
@@ -2122,6 +2166,7 @@ bool QgsGeometry::exportToWkt(unsigned char * geom) const
 	double *x,*y;
 
 	mWkt="";
+        // Will this really work when geom[0] == 0 ???? I (gavin) think not.
 	wkbType = (geom[0] == 1) ? geom[1] : geom[4];
 	switch (wkbType)
 	{
@@ -2138,6 +2183,7 @@ bool QgsGeometry::exportToWkt(unsigned char * geom) const
 	    }
 	    case QGis::WKBLineString:
 	    {
+	      QgsDebugMsg("QgsGeometry::exportToWkt: LINESTRING found");
 		unsigned char *ptr;
 		int *nPoints;
 		int idx;
@@ -2166,6 +2212,7 @@ bool QgsGeometry::exportToWkt(unsigned char * geom) const
 	    }
 	    case QGis::WKBPolygon:
 	    {
+	      QgsDebugMsg("QgsGeometry::exportToWkt: POLYGON found");
 		unsigned char *ptr;
 		int idx, jdx;
 		int *numRings, *nPoints;
@@ -2245,6 +2292,7 @@ bool QgsGeometry::exportToWkt(unsigned char * geom) const
 
 	    case QGis::WKBMultiLineString:
 	    {
+	      QgsDebugMsg("QgsGeometry::exportToWkt: MULTILINESTRING found");
 		unsigned char *ptr;
 		int idx, jdx, numLineStrings;
 		int *nPoints;
@@ -2284,6 +2332,7 @@ bool QgsGeometry::exportToWkt(unsigned char * geom) const
 
 	    case QGis::WKBMultiPolygon:
 	    {
+	      QgsDebugMsg("QgsGeometry::exportToWkt: MULTIPOLYGON found");
 		unsigned char *ptr;
 		int idx, jdx, kdx;
 		int *numPolygons, *numRings, *nPoints;
@@ -2313,6 +2362,10 @@ bool QgsGeometry::exportToWkt(unsigned char * geom) const
 			ptr += 4;
 			for (jdx = 0; jdx < *nPoints; jdx++)
 			{
+			  if(jdx!=0)
+			    {
+			      mWkt+=",";
+			    }
 			    x = (double *) ptr;
 			    mWkt+=QString::number(*x,'f',6);
 			    ptr += sizeof(double);

@@ -22,6 +22,7 @@
 #include "qgscontinuouscolordialog.h"
 #include "qgscoordinatetransform.h"
 #include "qgsgraduatedsymboldialog.h"
+#include "qgslabel.h"
 #include "qgslabeldialog.h"
 #include "qgslayerprojectionselector.h"
 #include "qgssinglesymboldialog.h"
@@ -207,6 +208,8 @@ void QgsVectorLayerProperties::reset( void )
 
   QObject::connect(legendtypecombobox, SIGNAL(activated(const QString &)), this, SLOT(alterLayerDialog(const QString &)));
 
+  // reset fields in label dialog
+  layer->label()->setFields ( layer->fields() );
   
   //set the metadata contents
   teMetadata->setText(getMetadata());

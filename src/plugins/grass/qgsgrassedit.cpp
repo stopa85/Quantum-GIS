@@ -111,7 +111,8 @@ bool QgsGrassEdit::mRunning = false;
 
 QgsGrassEdit::QgsGrassEdit ( QgisInterface *iface, 
     QWidget * parent, Qt::WFlags f )
-    :QMainWindow(parent,f), QgsGrassEditBase ()
+    :QMainWindow(parent,f), QgsGrassEditBase (), mMapTool(0),
+    mCanvasEdit(0), mRubberBandLine(0), mRubberBandIcon(0), mInited(false)
 {
 #ifdef QGISDEBUG
   std::cerr << "QgsGrassEdit()" << std::endl;
@@ -197,7 +198,8 @@ void QgsGrassEdit::keyPress(QKeyEvent *e)
 QgsGrassEdit::QgsGrassEdit ( QgisInterface *iface, 
     QgsGrassProvider *provider,
     QWidget * parent, Qt::WFlags f )
-    :QMainWindow(parent, 0, f), QgsGrassEditBase ()
+    :QMainWindow(parent, 0, f), QgsGrassEditBase (), mMapTool(0),
+    mCanvasEdit(0), mRubberBandLine(0), mRubberBandIcon(0), mInited(false)
 {
 #ifdef QGISDEBUG
   std::cerr << "QgsGrassEdit()" << std::endl;
@@ -540,6 +542,7 @@ void QgsGrassEdit::init()
   restorePosition();
 
   mValid = true; 
+  mInited = true; 
 }
 
 void QgsGrassEdit::attributeTableFieldChanged ( void )
@@ -921,21 +924,28 @@ QgsGrassEdit::~QgsGrassEdit()
   std::cerr << "QgsGrassEdit::~QgsGrassEdit()" << std::endl;
 #endif
 
-  if (mCanvasEdit) {
-    
+  // we can only call some methods if init was complete,
+  // note that we cannot use mValid because it is disabled before
+  // destructor is called
+  if (mInited) 
+  {
+    if ( mMapTool ) mCanvas->unsetMapTool ( mMapTool );
+    // TODO: delete tool? Probably
+
     eraseDynamic();
     mRubberBandLine->hide();
     mRubberBandIcon->hide();
     mRubberBandLine->reset();
     delete mRubberBandLine;
     delete mRubberBandIcon;
-    delete mCanvasEdit;
-    mCanvas->refresh();
-  }
-
-  saveWindowLocation();
-  mRunning = false;
   
+    delete mCanvasEdit;
+  
+    mCanvas->refresh();
+  
+    saveWindowLocation();
+  }
+  mRunning = false;
 }
 
 bool QgsGrassEdit::isRunning(void)
@@ -1238,7 +1248,10 @@ void QgsGrassEdit::startTool(int tool)
     displayElement ( mSelectedLine, mSymb[mLineSymb[mSelectedLine]], mSize );
 
   // close old tool by setting NULL tool
-  mCanvas->setMapTool(NULL);
+  // TODO: delete old tool? (check in set/unsetMapTool canvas methods)
+  if ( mMapTool ) mCanvas->unsetMapTool ( mMapTool );
+  mCanvas->setMapTool(NULL); // ? necessary
+  mMapTool = NULL;
 
   // All necessary data were written -> reset mEditPoints etc.
   Vect_reset_line ( mEditPoints );
@@ -1324,7 +1337,7 @@ void QgsGrassEdit::startTool(int tool)
   // assign newly created tool to map canvas
   // canvas will take care of destroying it
   mCanvas->setMapTool(t);
-
+  mMapTool = t;
 }
 
 

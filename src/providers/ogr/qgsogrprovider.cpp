@@ -834,11 +834,12 @@ QString QgsOgrProvider::minValue(int position)
 
 QString QgsOgrProvider::maxValue(int position)
 {
-  if(position>=fieldCount())
+  if(position>=fieldCount() || position < 0)
   {
 #ifdef QGISDEBUG
     QgsLogger::warning("Warning: access requested to invalid position in QgsOgrProvider::maxValue(..)");
-#endif    
+#endif
+    return "";
   }
   if(minmaxcachedirty)
   {
@@ -1031,19 +1032,28 @@ bool QgsOgrProvider::addFeature(QgsFeature* f)
   for(int i=0;i<f->attributeMap().size();++i)
   {
     QString s=(f->attributeMap())[i].fieldValue();
+    
+    //find a matching field for the new attribute
+    QString newAttribute = (f->attributeMap())[i].fieldName();
+    int targetAttributeId = fdef->GetFieldIndex(newAttribute);
+    if(targetAttributeId == -1)
+      {
+	continue;
+      }
+
     if(!s.isEmpty())
     {
-      if(fdef->GetFieldDefn(i)->GetType()==OFTInteger)
+      if(fdef->GetFieldDefn(targetAttributeId)->GetType()==OFTInteger)
       {
-        feature->SetField(i,s.toInt());
+        feature->SetField(targetAttributeId,s.toInt());
       }
-      else if(fdef->GetFieldDefn(i)->GetType()==OFTReal)
+      else if(fdef->GetFieldDefn(targetAttributeId)->GetType()==OFTReal)
       {
-        feature->SetField(i,s.toDouble());
+        feature->SetField(targetAttributeId,s.toDouble());
       }
-      else if(fdef->GetFieldDefn(i)->GetType()==OFTString)
+      else if(fdef->GetFieldDefn(targetAttributeId)->GetType()==OFTString)
       {
-	  feature->SetField(i,s.ascii());
+	  feature->SetField(targetAttributeId,s.ascii());
       }
       else
       {
@@ -1254,9 +1264,6 @@ int QgsOgrProvider::capabilities() const
       ability |= DeleteFeatures;
     }
     
-    //seems to work with newer ogr versions
-    //ability |= ChangeAttributeValues;
-    
     if (ogrLayer->TestCapability("RandomWrite"))
     // TRUE if the SetFeature() method is operational on this layer.
     {
@@ -1265,6 +1272,7 @@ int QgsOgrProvider::capabilities() const
       // TODO Need to work out versions of shapelib vs versions of GDAL/OGR
       // TODO And test appropriately.
 
+      ability |= ChangeAttributeValues;
       // This provider can't change geometries yet anyway (cf. Postgres provider)
       // ability |= QgsVectorDataProvider::ChangeGeometries;
     }

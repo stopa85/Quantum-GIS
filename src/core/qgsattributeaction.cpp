@@ -74,9 +74,7 @@ QgsAttributeAction::aIter QgsAttributeAction::retrieveAction(unsigned int index)
   {
     a_iter = mActions.begin();
     for (unsigned int i = 0; i < index; ++i, ++a_iter)
-    {
-        // idle
-    }
+      {}
   }
   return a_iter;
 }
@@ -100,7 +98,7 @@ QString QgsAttributeAction::expandAction(QString action, const std::vector<std::
   // for the actual substitutions.
 
   QString expanded_action;
-  if (clickedOnValue >= 0 && clickedOnValue < static_cast<int>(values.size()))
+  if (clickedOnValue >= 0 && clickedOnValue < static_cast<unsigned int>(values.size()))
     expanded_action = action.replace("%%", values[clickedOnValue].second);
   else
     expanded_action = action;

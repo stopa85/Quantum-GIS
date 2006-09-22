@@ -570,6 +570,12 @@ void QgsMapRender::updateFullExtent()
   QgsDebugMsg("Full extent: " + mFullExtent.stringRep());
 }
 
+QgsRect QgsMapRender::fullExtent()
+{
+  updateFullExtent();
+  return mFullExtent;
+}
+
 void QgsMapRender::setLayerSet(const std::deque<QString>& layers)
 {
   mLayerSet = layers;

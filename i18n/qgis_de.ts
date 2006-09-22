@@ -62,10 +62,6 @@
       <translation>OGR Vektorebene öffnen</translation>
     </message>
     <message>
-      <source>Project file read error</source>
-      <translation>Fehler beim lesen des Projektes</translation>
-    </message>
-    <message>
       <source> at line </source>
       <translation>bei Linie</translation>
     </message>
@@ -216,6 +212,26 @@
     <message>
       <source>Select point on line</source>
       <translation>Punkt in der Mitte selektieren</translation>
+    </message>
+    <message>
+      <source>Length</source>
+      <translation>Länge</translation>
+    </message>
+    <message>
+      <source>Area</source>
+      <translation>Fläche</translation>
+    </message>
+    <message>
+      <source>Could not snap segment. Have you set the tolerance in Settings > Project Properties > General?</source>
+      <translation>Konnte das Segment nicht schnappen. Haben Sie die Schnappdistanz unter Einstellungen -> Projekteigenschaften -> Allgemein eingestellt?</translation>
+    </message>
+    <message>
+      <source>Could not snap vertex. Have you set the tolerance in Settings > Project Properties > General?</source>
+      <translation>Konnten den Vertex nicht schnappen. Haben Sie die Schnappdistanz unter Einstellungen -> Projekteigenschaften-> Allgemeines eingestellt?</translation>
+    </message>
+    <message>
+      <source>Project file read error: </source>
+      <translation>Fehler beim Lesen der Projektionsdatei:</translation>
     </message>
   </context>
   <context>
@@ -1270,10 +1286,6 @@
       <translation>Speichern?</translation>
     </message>
     <message>
-      <source>Do you want to save the current project?</source>
-      <translation>Wollen Sie das aktuelle Projekt abspeichern?</translation>
-    </message>
-    <message>
       <source>Clipboard contents set to: </source>
       <translation>Inhalt der Zwischenablage setzen auf: </translation>
     </message>
@@ -1324,6 +1336,15 @@
     <message>
       <source>Paste selected features</source>
       <translation>Füge selektierte Objekte ein</translation>
+    </message>
+    <message>
+      <source>Ctrl+?</source>
+      <comment>Help Documentation (Mac)</comment>
+      <translation>Ctrl+?</translation>
+    </message>
+    <message>
+      <source>&lt;p>Do you want to save the current project?&lt;/p></source>
+      <translation>&lt;p>Wollen Sie das aktuelle Projekt abspeichern?&lt;p></translation>
     </message>
   </context>
   <context>
@@ -1390,6 +1411,18 @@
     <message>
       <source>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;/head>&lt;body style=&quot; white-space: pre-wrap; font-family:Arial; font-size:12pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>&lt;p align='center' style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:Sans Serif; font-size:9pt;&quot;>Quantum GIS is licensed under the GNU General Public License&lt;/p>&lt;p align='center' style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:Sans Serif; font-size:9pt;&quot;>http://www.gnu.org/licenses&lt;/p>&lt;/body>&lt;/html></source>
       <translation>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;/head>&lt;body style=&quot; white-space: pre-wrap; font-family:Arial; font-size:12pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>&lt;p align='center' style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:Sans Serif; font-size:9pt;&quot;>Quantum GIS ist lizensiert unter der GNU General Public License&lt;/p>&lt;p align='center' style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:Sans Serif; font-size:9pt;&quot;>http://www.gnu.org/licenses&lt;/p>&lt;/body>&lt;/html></translation>
+    </message>
+    <message>
+      <source>QGIS Browser Selection</source>
+      <translation>QGIS Browserauswahl</translation>
+    </message>
+    <message>
+      <source>Enter the name of a web browser to use (eg. konqueror).
+Enter the full path if the browser is not in your PATH.
+You can change this option later by selection Options from the Settings menu (Help Browser tab).</source>
+      <translation>Bitte geben Sie den Namen Ihres Webbrowsers ein (z.B. Konqueror). 
+Falls der Browser nicht im Pfad liegt, geben Sie bitte den kompletten Pfadnamen an. 
+Sie können das jederzeit im Einstellungsmenü unter Optionen ändern.</translation>
     </message>
   </context>
   <context>
@@ -2523,7 +2556,7 @@
     </message>
     <message>
       <source>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;/head>&lt;body style=&quot; white-space: pre-wrap; font-family:Sans Serif; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:14pt;&quot;>© QGIS 2006&lt;/span>&lt;/p>&lt;/body>&lt;/html></source>
-      <translation type="unfinished" />
+      <translation>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;/head>&lt;body style=&quot; white-space: pre-wrap; font-family:Sans Serif; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:14pt;&quot;>© QGIS 2006&lt;/span>&lt;/p>&lt;/body>&lt;/html></translation>
     </message>
   </context>
   <context>
@@ -3083,6 +3116,11 @@ has failed. The database said:
     <message>
       <source>Save layer as...</source>
       <translation>Ebene speichern als...</translation>
+    </message>
+    <message>
+      <source>Note: the following lines were not loaded because Qgis was unable to determine values for the x and y coordinates:
+</source>
+      <translation>Beachte: Die folgenden Linien wurden nicht geladen, da QGIS die Werte für die X und Y Koordinaten nicht herausfinden konnte.</translation>
     </message>
   </context>
   <context>
@@ -4596,6 +4634,10 @@ has failed. The database said:
 This may be a problem in your network connection or at the WMS server.</source>
       <translation>Netzwerk hatte Timeout nach %1 Sekunden der Inaktivität. Dies könnte auf ein Problem mit Ihrer Netzwerkverbindung oder der des WMS-Servers hindeuten.</translation>
     </message>
+    <message>
+      <source>HTTP transaction completed, however there was an error: %1</source>
+      <translation>HTTP Übertragung beendet, aber es trat ein Fehler auf: %1</translation>
+    </message>
   </context>
   <context>
     <name>QgsIdentifyResults</name>
@@ -4606,6 +4648,10 @@ This may be a problem in your network connection or at the WMS server.</source>
     <message>
       <source>Run action</source>
       <translation>Aktion starten</translation>
+    </message>
+    <message>
+      <source>(Derived)</source>
+      <translation>(abgeleitet)</translation>
     </message>
   </context>
   <context>
@@ -4933,6 +4979,10 @@ This may be a problem in your network connection or at the WMS server.</source>
     <message>
       <source>Show file groups</source>
       <translation>Zeige Dateigruppen</translation>
+    </message>
+    <message>
+      <source>&amp;Save as shapefile...</source>
+      <translation>&amp;Speichere als Shapefile...</translation>
     </message>
   </context>
   <context>
@@ -5361,12 +5411,36 @@ Ausführliche Fehlerinformation:</translation>
       <source>5432</source>
       <translation>5432</translation>
     </message>
+    <message>
+      <source>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;/head>&lt;body style=&quot; white-space: pre-wrap; font-family:Sans Serif; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:12pt;&quot;>Restrict the displayed tables to those that are in the geometry_columns table&lt;/p>&lt;/body>&lt;/html></source>
+      <translation>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;/head>&lt;body style=&quot; white-space: pre-wrap; font-family:Sans Serif; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:12pt;&quot;>Beschränkt die Darstellung der Tabellen nur auf die Tabellen in geometry_tables.&lt;/p>&lt;/body>&lt;/html></translation>
+    </message>
+    <message>
+      <source>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;/head>&lt;body style=&quot; white-space: pre-wrap; font-family:Sans Serif; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:12pt;&quot;>Restricts the displayed tables to those that are in the geometry_columns table. This can speed up the initial display of spatial tables.&lt;/p>&lt;/body>&lt;/html></source>
+      <translation>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;/head>&lt;body style=&quot; white-space: pre-wrap; font-family:Sans Serif; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:12pt;&quot;>Beschränkt die dargestellten Tabellen auf die, die in geometry_tables eingetragen sind. Das kann das erste Anzeigen der Tabellen enorm beschleunigen.&lt;/p>&lt;/body>&lt;/html></translation>
+    </message>
+    <message>
+      <source>Only look in the geometry_columns table</source>
+      <translation>Nur in geometry_columns nachschauen.</translation>
+    </message>
+    <message>
+      <source>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;/head>&lt;body style=&quot; white-space: pre-wrap; font-family:Sans Serif; font-size:12pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>Restrict the search to the public schema for spatial tables not in the geometry_columns table&lt;/p>&lt;/body>&lt;/html></source>
+      <translation>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;/head>&lt;body style=&quot; white-space: pre-wrap; font-family:Sans Serif; font-size:12pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>Beschränkt die Suchefür Tabellen, die nicht in der geometry_column stehen, auf das Public Schema.&lt;/p>&lt;/body>&lt;/html></translation>
+    </message>
+    <message>
+      <source>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;/head>&lt;body style=&quot; white-space: pre-wrap; font-family:Sans Serif; font-size:12pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>When searching for spatial tables that are not in the geometry_columns tables, restrict the search to tables that are in the public schema (for some databases this can save lots of time)&lt;/p>&lt;/body>&lt;/html></source>
+      <translation>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;/head>&lt;body style=&quot; white-space: pre-wrap; font-family:Sans Serif; font-size:12pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>Wenn nach Tabellen mit räumlichen Informationen gesucht werden soll, die nicht in der Tabelle geometry_columns stehen, beschränke die Suche auf die tabelle des public Schemas (Bei einigen Datenbanken kann dies eine Menge Zeit sparen.)&lt;/p>&lt;/body>&lt;/html></translation>
+    </message>
+    <message>
+      <source>Only look in the 'public' schema</source>
+      <translation>Nur im 'public' Schema nachschauen.</translation>
+    </message>
   </context>
   <context>
     <name>QgsNewHttpConnectionBase</name>
     <message>
       <source>Create a New WMS connection</source>
-      <translation>Erzeuge eine Neue WMS-Verbindung</translation>
+      <translation>Erzeuge eine neue WMS-Verbindung</translation>
     </message>
     <message>
       <source>Connection Information</source>
@@ -5701,10 +5775,6 @@ Ausführliche Fehlerinformation:</translation>
       <translation>Setzte Ebenennamen in Kapitälchen.</translation>
     </message>
     <message>
-      <source>Anti-aliasing</source>
-      <translation>Anti-aliasing</translation>
-    </message>
-    <message>
       <source>Make lines appear less jagged at the expense of some drawing performance</source>
       <translation>Zeichne die Linien weniger gezackt auf Kosten der Zeichengeschwindigkeit.</translation>
     </message>
@@ -5774,6 +5844,18 @@ Standardmäßig benutzt QGIS einen Wert von 5. Verkleinern Sie den Wert, wenn Si
       <source>&lt;b>Note:&lt;/b> The browser must be in your PATH or you can specify the full path above</source>
       <translation>&lt;b>Bemerkung:&lt;/b> Der Browser muss im Suchpfad (PATH) liegen oder alternativ mit voller Pfadangabe angegeben werden.</translation>
     </message>
+    <message>
+      <source>Rendering</source>
+      <translation>Zeichne</translation>
+    </message>
+    <message>
+      <source>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;/head>&lt;body style=&quot; white-space: pre-wrap; font-family:Sans Serif; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>Selecting this will unselect the 'make lines less' jagged toggle&lt;/p>&lt;/body>&lt;/html></source>
+      <translation>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;/head>&lt;body style=&quot; white-space: pre-wrap; font-family:Sans Serif; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>Wenn Sie diese Option auswählen, wird der Knopf 'Linien weniger gezackt zeichnen' deselektiert.&lt;/p>&lt;/body>&lt;/html></translation>
+    </message>
+    <message>
+      <source>Fix problems with incorrectly filled polygons</source>
+      <translation>Behebe Problem mit falsch gefüllten Polygonen.</translation>
+    </message>
   </context>
   <context>
     <name>QgsPasteTransformationsBase</name>
@@ -5827,6 +5909,10 @@ Standardmäßig benutzt QGIS einen Wert von 5. Verkleinern Sie den Wert, wenn Si
     <message>
       <source>Ok</source>
       <translation>OK</translation>
+    </message>
+    <message>
+      <source>No Fill</source>
+      <translation>Keine Füllung</translation>
     </message>
   </context>
   <context>
@@ -6428,6 +6514,48 @@ Alternativ kann die oid-Spalte von PostgresSQL benutzt werden.</translation>
 </source>
       <translation>anfänglich schien die Ebene geeignet, allerdings enthält sie keine eindeutigen Daten, insofern nicht geeignet.</translation>
     </message>
+    <message>
+      <source>INSERT error</source>
+      <translation>INSERT Fehler</translation>
+    </message>
+    <message>
+      <source>An error occured during feature insertion</source>
+      <translation>Ein Fehler ist während des Einfügens eines Objekts aufgetreten.</translation>
+    </message>
+    <message>
+      <source>The sql was:
+
+</source>
+      <translation>Das SQL-Statement war:</translation>
+    </message>
+    <message>
+      <source>SQL error</source>
+      <translation>SQL-Fehler</translation>
+    </message>
+    <message>
+      <source>DELETE error</source>
+      <translation>DELETE Fehler</translation>
+    </message>
+    <message>
+      <source>An error occured during deletion from disk</source>
+      <translation>Ein Fehler ist beim Löschen von der Festplatte aufgetreten.</translation>
+    </message>
+    <message>
+      <source>PostGIS error</source>
+      <translation>PostGIS-Fehler</translation>
+    </message>
+    <message>
+      <source>An error occured contacting the PostgreSQL databse</source>
+      <translation>Ein Fehler ist beim Kontaktieren der PostgreSQL-Datenbank aufgetreten.</translation>
+    </message>
+    <message>
+      <source>The PostgreSQL databse returned: </source>
+      <translation>Die PostgreSQL-Datenbank hat zurückgegeben:</translation>
+    </message>
+    <message>
+      <source>When trying: </source>
+      <translation>Versuchen:</translation>
+    </message>
   </context>
   <context>
     <name>QgsProjectPropertiesBase</name>
@@ -6820,10 +6948,6 @@ Alternativ kann die oid-Spalte von PostgresSQL benutzt werden.</translation>
       <translation>Für diese Art von Raster können keine Pyramiden erstellt werden. </translation>
     </message>
     <message>
-      <source>&amp;Convert to...</source>
-      <translation>&amp;Konvertiere zu...</translation>
-    </message>
-    <message>
       <source>Dataset Description</source>
       <translation>Datensatzbeschreibung</translation>
     </message>
@@ -6831,13 +6955,13 @@ Alternativ kann die oid-Spalte von PostgresSQL benutzt werden.</translation>
       <source>No Data Value</source>
       <translation>NODATA Wert</translation>
     </message>
+    <message>
+      <source>and all other files</source>
+      <translation>und alle anderen Dateien</translation>
+    </message>
   </context>
   <context>
     <name>QgsRasterLayerProperties</name>
-    <message>
-      <source>No Data:</source>
-      <translation>Keine Daten:</translation>
-    </message>
     <message>
       <source>&lt;h3>Multiband Image Notes&lt;/h3>&lt;p>This is a multiband image. You can choose to render it as grayscale or color (RGB). For color images, you can associate bands to colors arbitarily. For example, if you have a seven band landsat image, you may choose to render it as:&lt;/p>&lt;ul>&lt;li>Visible Blue (0.45 to 0.52 microns) - not mapped&lt;/li>&lt;li>Visible Green (0.52 to 0.60 microns) - not mapped&lt;/li>&lt;/li>Visible Red (0.63 to 0.69 microns) - mapped to red in image&lt;/li>&lt;li>Near Infrared (0.76 to 0.90 microns) - mapped to green in image&lt;/li>&lt;li>Mid Infrared (1.55 to 1.75 microns) - not mapped&lt;/li>&lt;li>Thermal Infrared (10.4 to 12.5 microns) - not mapped&lt;/li>&lt;li>Mid Infrared (2.08 to 2.35 microns) - mapped to blue in image&lt;/li>&lt;/ul></source>
       <translation>&lt;h3>Bemerkung zu Multiband-Bild&lt;/h3>&lt;p>Dies ist ein Multibandbild. Man kann wählen, es als Grayscale oder Farbe(RGB) anzuzeigen. Für Farbbilder kann man Farben willkürlich zu den Bändern wählen. Zum Beispiel, wenn man ein Siebenband-Landsat-Bild hat, kann man es folgendermassen anzeigen:&lt;/p>&lt;ul>&lt;li>Sichtbares Blau (0.45 bis 0.52 Microns) - nicht abgebildet&lt;/li>&lt;li>Sichtbares Grün (0.52 bis 0.60 Microns) - nicht abgebildet&lt;/li>&lt;/li>Sichtbares Rot (0.63 bis 0.69 Microns) - im Bild auf Rot abgebildet&lt;/li>&lt;li>Nahes Infrarot (0.76 bis 0.90 Microns) - im Bild auf Grün abgebildet&lt;/li>&lt;li>Mittleres Infrarot (1.55 bis 1.75 Microns) - nicht abgebildet&lt;/li>&lt;li>Thermales Infrarot (10.4 bis 12.5 Microns) - nicht abgebildet&lt;/li>&lt;li>Mittleres Infrarot (2.08 bis 2.35 Microns) - im Bild auf blau abgebildet&lt;/li>&lt;/ul></translation>
@@ -6863,20 +6987,28 @@ Alternativ kann die oid-Spalte von PostgresSQL benutzt werden.</translation>
       <translation>Ausgeflippt</translation>
     </message>
     <message>
-      <source>Columns:</source>
-      <translation>Spalten:</translation>
-    </message>
-    <message>
-      <source>Rows:</source>
-      <translation>Zeilen:</translation>
-    </message>
-    <message>
       <source>Palette</source>
       <translation>Palette</translation>
     </message>
     <message>
       <source>Not Set</source>
       <translation>Nicht gesetzt</translation>
+    </message>
+    <message>
+      <source>Columns: </source>
+      <translation>Spalten:</translation>
+    </message>
+    <message>
+      <source>Rows: </source>
+      <translation>Reihen:</translation>
+    </message>
+    <message>
+      <source>No-Data Value: </source>
+      <translation>NODATA-Wert:</translation>
+    </message>
+    <message>
+      <source>n/a</source>
+      <translation>n/a</translation>
     </message>
   </context>
   <context>
@@ -7548,6 +7680,10 @@ Alternativ kann die oid-Spalte von PostgresSQL benutzt werden.</translation>
       <source>Label:</source>
       <translation>Beschriftung:</translation>
     </message>
+    <message>
+      <source>No Fill</source>
+      <translation>Keine Füllung</translation>
+    </message>
   </context>
   <context>
     <name>QgsSpit</name>
@@ -7999,20 +8135,48 @@ Alternativ kann die oid-Spalte von PostgresSQL benutzt werden.</translation>
       <translation>Problem beim Rückgängigmachen (rollback).</translation>
     </message>
     <message>
-      <source>Warning</source>
-      <translation>Warnung</translation>
-    </message>
-    <message>
-      <source>Could not change attributes</source>
-      <translation>Konnte die Attribute nicht ändern.</translation>
-    </message>
-    <message>
-      <source>Could not commit changes to geometries</source>
-      <translation>Konnte die Änderungen der Geometrien nicht wegschreiben.</translation>
-    </message>
-    <message>
       <source>The current layer is not editable. Choose 'Start editing' in the digitizing toolbar.</source>
       <translation>Die aktuelle Ebene ist nicht editierbar. Bitte wählen sie 'Digitalisierung starten' aus der Digitalisiertoolbarleiste.</translation>
+    </message>
+    <message>
+      <source>Could not commit the added features.</source>
+      <translation>Konnte die hinzugefügten Objekte nicht übernehmen.</translation>
+    </message>
+    <message>
+      <source>No other types of changes will be committed at this time.</source>
+      <translation>Keine anderen Änderungen werden zu dieser Zeit übermittelt.</translation>
+    </message>
+    <message>
+      <source>Could not commit the changed attributes.</source>
+      <translation>Konnte die Änderungen an den Attributen nicht übermitteln.</translation>
+    </message>
+    <message>
+      <source>However, the added features were committed OK.</source>
+      <translation>Wieauchimmer, die hinzugefügten Objekte wurden korrekt übermittelt.</translation>
+    </message>
+    <message>
+      <source>Could not commit the changed geometries.</source>
+      <translation>Konnte die Ändernungen der Geometrien nicht übermitteln.</translation>
+    </message>
+    <message>
+      <source>However, the changed attributes were committed OK.</source>
+      <translation>Wieauchimmer, die Änderungen der Attribute wurden korrekt übermittelt.</translation>
+    </message>
+    <message>
+      <source>Could not commit the deleted features.</source>
+      <translation>Konnte die gelöschten Objekte nicht übermitteln.</translation>
+    </message>
+    <message>
+      <source>However, the changed geometries were committed OK.</source>
+      <translation>Wieauchimmer, die geänderten Geometrien wurden korrekt übermittelt.</translation>
+    </message>
+    <message>
+      <source>Cannot retrieve features</source>
+      <translation>Kann die Objekte nicht abfragen.</translation>
+    </message>
+    <message>
+      <source>The provider for the current layer cannot retrieve geometry for the selected features.  This version of the provider does not have this capability.</source>
+      <translation>Der Provider für die aktuelle Ebene kann die Geometrie für das selektierte Objekt nicht abfragen. Diese Version des Providers unterstützt das Feature nicht.</translation>
     </message>
   </context>
   <context>
@@ -8476,7 +8640,7 @@ Alternativ kann die oid-Spalte von PostgresSQL benutzt werden.</translation>
     </message>
     <message>
       <source>Cascade Count</source>
-      <translation type="unfinished" />
+      <translation>Kaskadiere Anzahl</translation>
     </message>
     <message>
       <source>Fixed Width</source>

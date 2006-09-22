@@ -51,6 +51,7 @@ QgsAttributeTable::QgsAttributeTable(QWidget * parent, const char *name):
   QObject::connect(this, SIGNAL(selectionChanged()), this, SLOT(handleChangedSelections()));
   connect(this, SIGNAL(contextMenuRequested(int, int, const QPoint&)), this, SLOT(popupMenu(int, int, const QPoint&)));
   connect(this, SIGNAL(valueChanged(int, int)), this, SLOT(storeChangedValue(int,int)));
+  connect(verticalHeader(), SIGNAL(released(int)), this, SLOT(rowClicked(int))); 
   setReadOnly(true);
   setFocus();
 }
@@ -129,7 +130,6 @@ void QgsAttributeTable::handleChangedSelections()
   //if there is no current selection, there is nothing to do
   if (currentSelection() == -1)
     {
-      emit repaintRequested();
       return;
     }
 
@@ -140,8 +140,9 @@ void QgsAttributeTable::handleChangedSelections()
       emit selected(text(index, 0).toInt());
     }
 
-  //emit repaintRequested();
-
+  //don't send the signal repaintRequested() from here
+  //but in contentsMouseReleaseEvent() and rowClicked(int)
+  //todo: don't repaint in case of double clicks
 }
 
 void QgsAttributeTable::insertFeatureId(int id, int row)
@@ -267,12 +268,6 @@ void QgsAttributeTable::qsort(int lower, int upper, int col, bool ascending, boo
       qsort(lower, i - 1, col, ascending, alphanumeric);
       qsort(i + 1, upper, col, ascending, alphanumeric);
     }
-}
-
-void QgsAttributeTable::contentsMouseReleaseEvent(QMouseEvent * e)
-{
-  contentsMouseMoveEvent(e);    //send out a move event to keep the selections updated 
-  emit repaintRequested();
 }
 
 void QgsAttributeTable::popupMenu(int row, int col, const QPoint& pos)
@@ -691,4 +686,42 @@ void QgsAttributeTable::showAllRows()
 {
   for (int i = 0; i < numRows(); i++)
     showRow(i);
+}
+
+void QgsAttributeTable::rowClicked(int row)
+{
+  if(checkSelectionChanges())//only repaint the canvas if the selection has changed
+    {
+      emit repaintRequested();
+    }
+}
+
+void QgsAttributeTable::contentsMouseReleaseEvent(QMouseEvent* e)
+{
+  Q3Table::contentsMouseReleaseEvent(e);
+  if(checkSelectionChanges())//only repaint the canvas if the selection has changed
+    {
+      emit repaintRequested();
+    }
+}
+
+bool QgsAttributeTable::checkSelectionChanges()
+{
+  std::set<int> theCurrentSelection;
+  Q3TableSelection cselection;
+  cselection = selection(currentSelection());
+  for (int index = cselection.topRow(); index <= cselection.bottomRow(); index++)
+    {
+      theCurrentSelection.insert(index);
+    }
+
+  if(theCurrentSelection == mLastSelectedRows)
+    {
+      return false;
+    }
+  else
+    {
+      mLastSelectedRows = theCurrentSelection;
+      return true;
+    }
 }

@@ -154,6 +154,9 @@ static const char *const mSupportedRasterFormats[] =
     "GRASS",
     "GTiff",
     "HFA",
+    "JP2ECW",
+    "JP2KAK",
+    "JP2MrSID",
     "JPEG2000",
     "MrSID",
     "SDTS",
@@ -199,8 +202,9 @@ void QgsRasterLayer::buildSupportedRasterFileFilter(QString & theFileFiltersStri
   QStringList metadataTokens;   // essentially the metadata string delimited by '='
 
   QString catchallFilter;       // for Any file(*.*), but also for those
-  // drivers with no specific file
-  // filter
+                                // drivers with no specific file filter
+
+  GDALDriver *jp2Driver = NULL; // first JPEG2000 driver found
 
   // Grind through all the drivers and their respective metadata.
   // We'll add a file filter for those drivers that have a file
@@ -277,6 +281,17 @@ void QgsRasterLayer::buildSupportedRasterFileFilter(QString & theFileFiltersStri
       {
         // XXX add check for SDTS; in that case we want (*CATD.DDF)
         QString glob = "*." + myGdalDriverExtension;
+        // Add only the first JP2 driver found to the filter list (it's the one GDAL uses)
+        if (myGdalDriverDescription == "JPEG2000" ||
+            myGdalDriverDescription.startsWith("JP2"))	// JP2ECW, JP2KAK, JP2MrSID
+        {
+          if (!jp2Driver)
+          {
+            jp2Driver = myGdalDriver;   // first JP2 driver found
+            glob += " *.j2k";           // add alternate extension
+          }
+          else break;               // skip if already found a JP2 driver
+        }
         theFileFiltersString += myGdalDriverLongName + " (" + glob.lower() + " " + glob.upper() + ");;";
 
         break;            // ... to next driver, if any.
@@ -321,16 +336,6 @@ void QgsRasterLayer::buildSupportedRasterFileFilter(QString & theFileFiltersStri
       {
         catchallFilter += QString(myGdalDriver->GetDescription()) + " ";
       }
-    }
-    
-    // A number of drivers support JPEG 2000. Add it in for those.
-    if (  myGdalDriverDescription.startsWith("MrSID") 
-          || myGdalDriverDescription.startsWith("ECW")
-          || myGdalDriverDescription.startsWith("JPEG2000")
-          || myGdalDriverDescription.startsWith("JP2KAK") )
-    {
-      QString glob = "*.jp2 *.j2k";
-      theFileFiltersString += "JPEG 2000 (" + glob.lower() + " " + glob.upper() + ");;";
     }
 
     myGdalDriverExtension = myGdalDriverLongName = "";  // reset for next driver
@@ -658,8 +663,14 @@ QString QgsRasterLayer::getProjectionWKT()
    {
       //try to get the gcp srs from the raster layer if available
       myWKTString=QString(gdalDataset->GetGCPProjection());
-    }
-    
+
+      mySRS.createFromWkt(myWKTString);
+      if (!mySRS.isValid())
+      {
+        // use force and make SRS valid!
+        mySRS.validate();
+      }
+   }
    
    return myWKTString;
 }
@@ -4393,7 +4404,14 @@ bool QgsRasterLayer::readXML_( QDomNode & layer_node )
     // Collect CRS
     QString crs = QString("EPSG:%1").arg(srs().epsg());
 
-    setDataProvider( mProviderKey, layers, styles, format, crs );
+    // Collect proxy information
+    QString proxyHost = rpNode.namedItem("wmsProxyHost").toElement().text();
+    int     proxyPort = rpNode.namedItem("wmsProxyPort").toElement().text().toInt();
+    QString proxyUser = rpNode.namedItem("wmsProxyUser").toElement().text();
+    QString proxyPass = rpNode.namedItem("wmsProxyPass").toElement().text();
+
+    setDataProvider( mProviderKey, layers, styles, format, crs,
+                     proxyHost, proxyPort, proxyUser, proxyPass );
   }
   else
   {
@@ -4528,6 +4546,34 @@ bool QgsRasterLayer::readXML_( QDomNode & layer_node )
       document.createTextNode(dataProvider->imageEncoding());
     formatElement.appendChild(formatText);
     rasterPropertiesElement.appendChild(formatElement);
+
+    // <rasterproperties><wmsProxyHost>
+    QDomElement proxyHostElement = document.createElement("wmsProxyHost");
+    QDomText proxyHostText =
+      document.createTextNode(dataProvider->proxyHost());
+    proxyHostElement.appendChild(proxyHostText);
+    rasterPropertiesElement.appendChild(proxyHostElement);
+
+    // <rasterproperties><wmsProxyPort>
+    QDomElement proxyPortElement = document.createElement("wmsProxyPort");
+    QDomText proxyPortText =
+      document.createTextNode( QString::number(dataProvider->proxyPort()) );
+    proxyPortElement.appendChild(proxyPortText);
+    rasterPropertiesElement.appendChild(proxyPortElement);
+
+    // <rasterproperties><wmsProxyUser>
+    QDomElement proxyUserElement = document.createElement("wmsProxyUser");
+    QDomText proxyUserText =
+      document.createTextNode(dataProvider->proxyUser());
+    proxyUserElement.appendChild(proxyUserText);
+    rasterPropertiesElement.appendChild(proxyUserElement);
+
+    // <rasterproperties><wmsProxyPass>
+    QDomElement proxyPassElement = document.createElement("wmsProxyPass");
+    QDomText proxyPassText =
+      document.createTextNode(dataProvider->proxyPass());
+    proxyPassElement.appendChild(proxyPassText);
+    rasterPropertiesElement.appendChild(proxyPassElement);
   }
 
   // <showDebugOverlayFlag>
@@ -4753,7 +4799,11 @@ QgsRasterLayer::QgsRasterLayer(int dummy,
                                QStringList const & layers,
                                QStringList const & styles,
                                QString const & format,
-                               QString const & crs )
+                               QString const & crs,
+                               QString const & proxyHost,
+                               int proxyPort,
+                               QString const & proxyUser,
+                               QString const & proxyPass )
     : QgsMapLayer(RASTER, baseName, rasterLayerPath),
     rasterXDimInt( std::numeric_limits<int>::max() ),
     rasterYDimInt( std::numeric_limits<int>::max() ),
@@ -4781,7 +4831,8 @@ QgsRasterLayer::QgsRasterLayer(int dummy,
   // if we're given a provider type, try to create and bind one to this layer
   if ( ! providerKey.isEmpty() )
   {
-    setDataProvider( providerKey, layers, styles, format, crs );
+    setDataProvider( providerKey, layers, styles, format, crs,
+                     proxyHost, proxyPort, proxyUser, proxyPass );
   }
 
   // Default for the popup menu
@@ -4820,7 +4871,11 @@ void QgsRasterLayer::setDataProvider( QString const & provider,
                                       QStringList const & layers,
                                       QStringList const & styles,
                                       QString const & format,
-                                      QString const & crs )
+                                      QString const & crs,
+                                      QString const & proxyHost,
+                                      int proxyPort,
+                                      QString const & proxyUser,
+                                      QString const & proxyPass )
 {
   // XXX should I check for and possibly delete any pre-existing providers?
   // XXX How often will that scenario occur?
@@ -4887,6 +4942,7 @@ void QgsRasterLayer::setDataProvider( QString const & provider,
           dataProvider->addLayers(layers, styles);
           dataProvider->setImageEncoding(format);
           dataProvider->setImageCrs(crs);
+          dataProvider->setProxy(proxyHost, proxyPort, proxyUser, proxyPass);
 
           // get the extent
           QgsRect *mbr = dataProvider->extent();
@@ -4903,6 +4959,8 @@ void QgsRasterLayer::setDataProvider( QString const & provider,
           // upper case the first letter of the layer name
           QgsDebugMsg("QgsRasterLayer::setDataProvider: mLayerName: " + name());
 
+          // set up the raster drawing style
+          drawingStyle = MULTI_BAND_COLOR;  //sensible default
 
           // Setup source SRS
           *mSRS = QgsSpatialRefSys();
