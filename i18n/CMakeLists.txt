@@ -10,7 +10,7 @@ MACRO(ADD_TRANSLATION_FILES _sources )
 
       ADD_CUSTOM_COMMAND(
          OUTPUT ${_out}
-         COMMAND lrelease
+         COMMAND ${QT_LRELEASE_EXECUTABLE}
          ARGS -verbose ${_in} -qm ${_out}
          DEPENDS ${_in}
       )

@@ -15,6 +15,8 @@ SET(GRASS_LIB_SRCS qgsgrassprovider.cpp qgsgrass.cpp)
 INCLUDE_DIRECTORIES (
   ../../core
   ${GRASS_INCLUDE_DIR}
+  ${GDAL_INCLUDE_DIR}
+  ${PROJ_INCLUDE_DIR}
 )
 
 ADD_LIBRARY (qgisgrass SHARED ${GRASS_LIB_SRCS})
