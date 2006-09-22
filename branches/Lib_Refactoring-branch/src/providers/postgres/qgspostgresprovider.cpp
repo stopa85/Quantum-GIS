@@ -1995,17 +1995,24 @@ bool QgsPostgresProvider::changeAttributeValues(std::map<int,std::map<QString,QS
       qWarning(sql);
 #endif
 
-      //send sql statement and do error handling
+      // s end sql statement and do error handling
+      // TODO: Make all error handling like this one
       PGresult* result=PQexec(connection, (const char *)(sql.utf8()));
-      if(result==0)
+      if (result==0)
       {
-        returnvalue=false;
-        ExecStatusType message=PQresultStatus(result);
-        if(message==PGRES_FATAL_ERROR)
-        {
-          showMessageBox("UPDATE error",QString(PQresultErrorMessage(result)));
-        }
+        showMessageBox(tr("PostGIS error"),
+                       tr("An error occured contacting the PostgreSQL databse"));
+        return false;
       }
+      ExecStatusType message=PQresultStatus(result);
+      if(message==PGRES_FATAL_ERROR)
+      {
+        showMessageBox(tr("PostGIS error"),tr("The PostgreSQL databse returned: ")
+                        + QString(PQresultErrorMessage(result))
+                        + "\n" + tr("When trying: ") + sql);
+        return false;
+      }
+
     }
   }
   PQexec(connection,"COMMIT");
@@ -2139,7 +2146,8 @@ bool QgsPostgresProvider::changeGeometryValues(std::map<int, QgsGeometry> & geom
       if(message==PGRES_FATAL_ERROR)
       {
         showMessageBox(tr("PostGIS error"), tr("The PostgreSQL databse returned: ")
-                                   + QString(PQresultErrorMessage(result)));
+                                   + QString(PQresultErrorMessage(result))
+                                   + "\n" + tr("When trying: ") + sql);
         return false;
       }
                        

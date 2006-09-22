@@ -98,7 +98,7 @@ search_cond:
     | search_cond AND search_cond { $$ = new QgsSearchTreeNode(QgsSearchTreeNode::opAND, $1, $3); joinTmpNodes($$,$1,$3); }
     | NOT search_cond             { $$ = new QgsSearchTreeNode(QgsSearchTreeNode::opNOT, $2,  0); joinTmpNodes($$,$2, 0); }
     | '(' search_cond ')'         { $$ = $2; }
-    | predicate;
+    | predicate
     ;
 
     // more predicates to come
@@ -156,7 +156,7 @@ QgsSearchTreeNode* parseSearchString(const QString& str, QString& parserErrorMsg
   // list should be empty when starting
   Q_ASSERT(gTmpNodes.count() == 0);
 
-  set_input_buffer((const char*)str);
+  set_input_buffer(str.toUtf8().constData());
   int res = yyparse();
  
   // list should be empty when parsing was OK

@@ -80,11 +80,7 @@ BUILT_SOURCES = $(spit_MOC) $(spit_UI) $(spitplugin_la_MOC)
 
 spitplugin_la_LIBADD = $(QT_LDADD)  $(PG_LIB) $(GDAL_LDADD) ../../core/libqgis_core.la ../../gui/libqgis_gui.la
 spitplugin_la_LDFLAGS = -avoid-version -module
-<<<<<<< .working
-spitplugin_la_CXXFLAGS = $(CXXFLAGS) $(EXTRA_CXXFLAGS) $(GDAL_CFLAGS) $(QT_CXXFLAGS) $(PG_INC) $(GEOS_CFLAGS) -I../../gui -I../../ui -I../../core/include
-=======
-spitplugin_la_CXXFLAGS = $(CXXFLAGS) $(EXTRA_CXXFLAGS) $(GDAL_CFLAGS) $(QT_CXXFLAGS) $(PG_INC) -I../../gui -I../../ui -I../../core
->>>>>>> .merge-right.r5556
+spitplugin_la_CXXFLAGS = $(CXXFLAGS) $(EXTRA_CXXFLAGS) $(GEOS_FLAGS) $(GDAL_CFLAGS) $(QT_CXXFLAGS) $(PG_INC) -I../../gui -I../../ui -I../../core
 
 
 spit_LDADD = $(QT_LDADD)  $(PG_LIB) $(GDAL_LDADD) ../../core/libqgis_core.la ../../gui/libqgis_gui.la

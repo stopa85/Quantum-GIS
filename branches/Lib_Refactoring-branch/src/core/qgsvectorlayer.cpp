@@ -119,11 +119,6 @@ QgsVectorLayer::QgsVectorLayer(QString vectorLayerPath,
     //QSettings settings;
     //mUpdateThreshold = settings.readNumEntry("Map/updateThreshold", 1000);
     
-    //editing is now enabled by default
-    if(mDataProvider->capabilities()&QgsVectorDataProvider::AddFeatures)
-    {
-      startEditing();
-    }
   }
 } // QgsVectorLayer ctor
 
@@ -2004,8 +1999,6 @@ int QgsVectorLayer::findFreeId()
 
 bool QgsVectorLayer::commitChanges()
 {
-  deleteCachedGeometries();
-  
   if (!mDataProvider)
   {
     return false;
@@ -2155,6 +2148,8 @@ bool QgsVectorLayer::commitChanges()
     }
   }
 
+  deleteCachedGeometries();
+  
   mEditable = false;
   setModified(FALSE);
   
@@ -2168,8 +2163,6 @@ bool QgsVectorLayer::commitChanges()
 
 bool QgsVectorLayer::rollBack()
 {
-  deleteCachedGeometries();
-
   if (!isEditable())
   {
     return false;
@@ -2194,6 +2187,8 @@ bool QgsVectorLayer::rollBack()
     // Roll back deleted features
     mDeletedFeatureIds.clear();
   }
+
+  deleteCachedGeometries();
 
   mEditable = false;
   setModified(FALSE);

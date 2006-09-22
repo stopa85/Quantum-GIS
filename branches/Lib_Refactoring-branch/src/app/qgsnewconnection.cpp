@@ -45,6 +45,17 @@ QgsNewConnection::QgsNewConnection(QWidget *parent, const QString& connName, Qt:
       }
       txtPort->setText(port);
       txtUsername->setText(settings.readEntry(key + "/username"));
+      Qt::CheckState s = Qt::Checked;
+      if ( ! settings.readBoolEntry(key + "/publicOnly", false))
+	s = Qt::Unchecked;
+      cb_publicSchemaOnly->setCheckState(s);
+      s = Qt::Checked;
+      if ( ! settings.readBoolEntry(key + "/geometrycolumnsOnly", false))
+	s = Qt::Unchecked;
+      cb_geometryColumnsOnly->setCheckState(s);
+      // Ensure that cb_plublicSchemaOnly is set correctly
+      on_cb_geometryColumnsOnly_clicked();
+
       if (settings.readEntry(key + "/save") == "true")
         {
           txtPassword->setText(settings.readEntry(key + "/password"));
@@ -69,6 +80,13 @@ void QgsNewConnection::on_btnConnect_clicked()
 void QgsNewConnection::on_btnCancel_clicked(){
   // cancel the dialog
   reject();
+}
+void QgsNewConnection::on_cb_geometryColumnsOnly_clicked()
+{
+  if (cb_geometryColumnsOnly->checkState() == Qt::Checked)
+    cb_publicSchemaOnly->setEnabled(false);
+  else
+    cb_publicSchemaOnly->setEnabled(true);
 }
 
 /** end  Autoconnected SLOTS **/
@@ -114,6 +132,8 @@ void QgsNewConnection::saveConnection()
   settings.writeEntry(baseKey + "/port", txtPort->text());
   settings.writeEntry(baseKey + "/username", txtUsername->text());
   settings.writeEntry(baseKey + "/password", txtPassword->text());
+  settings.writeEntry(baseKey + "/publicOnly", cb_publicSchemaOnly->isChecked());
+  settings.writeEntry(baseKey + "/geometryColumnsOnly", cb_geometryColumnsOnly->isChecked());
   if (chkStorePassword->isChecked())
     {
       settings.writeEntry(baseKey + "/save", "true");

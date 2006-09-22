@@ -355,12 +355,6 @@ void QgsLegendLayerFile::toggleEditing()
   }
   else
   {
-    // if not modified, just stop editing
-    if (!vlayer->isModified())
-    {
-      vlayer->rollBack();
-    }
-
     // commit or roll back?
     int commit = QMessageBox::information(0,tr("Stop editing"),
                                           tr("Do you want to save the changes?"),
@@ -371,6 +365,10 @@ void QgsLegendLayerFile::toggleEditing()
       if(!vlayer->commitChanges())
       {
         QMessageBox::information(0,tr("Error"),tr("Could not commit changes"),QMessageBox::Ok);
+      
+        // Leave the in-memory editing state alone,
+        // to give the user a chance to enter different values
+        // and try the commit again later
       }
     }
     else if(commit==1)
@@ -384,5 +382,7 @@ void QgsLegendLayerFile::toggleEditing()
     vlayer->triggerRepaint();
     
   }
+  
+  updateLegendItem();
 
 }

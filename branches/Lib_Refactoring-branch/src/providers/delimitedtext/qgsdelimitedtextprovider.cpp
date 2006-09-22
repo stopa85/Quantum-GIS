@@ -26,19 +26,19 @@
 #include <QDataStream>
 #include <QTextStream>
 #include <QStringList>
+#include <QMessageBox>
+#include <QSettings>
 #include <QRegExp>
 #include <QUrl>
-
-#include <qmessagebox.h>
-#include <qsettings.h>
 
 
 #include "qgsdataprovider.h"
 #include "qgsfeature.h"
 #include "qgsfeatureattribute.h"
 #include "qgsfield.h"
+#include "qgsmessageoutput.h"
 #include "qgsrect.h"
-
+#include "qgis.h"
 
 #ifdef WIN32
 #define QGISEXTERN extern "C" __declspec( dllexport )
@@ -54,7 +54,8 @@ static const QString TEXT_PROVIDER_DESCRIPTION = "Delimited text data provider";
 
 QgsDelimitedTextProvider::QgsDelimitedTextProvider(QString const &uri)
     : QgsVectorDataProvider(uri), 
-      mMinMaxCacheDirty(true)
+      mMinMaxCacheDirty(true),
+      mShowInvalidLines(true)
 {
   // Get the file name and mDelimiter out of the uri
   mFileName = uri.left(uri.find("?"));
@@ -99,7 +100,7 @@ QgsDelimitedTextProvider::QgsDelimitedTextProvider(QString const &uri)
       mFile = new QFile(mFileName);
       if (mFile->open(QIODevice::ReadOnly))
       {
-        QTextStream stream(mFile);
+        mStream = new QTextStream(mFile);
         QString line;
         mNumberFeatures = 0;
         int xyCount = 0;
@@ -108,10 +109,11 @@ QgsDelimitedTextProvider::QgsDelimitedTextProvider(QString const &uri)
         mExtent = new QgsRect();
         //commented out by Tim for now - setMinimal needs to be merged in from 0.7 branch
         //mExtent->setMinimal(); // This defeats normalization
-        while (!stream.atEnd())
+        bool firstPoint = true;
+        while (!mStream->atEnd())
         {
           lineNumber++;
-          line = stream.readLine(); // line of text excluding '\n', default local 8 bit encoding.
+          line = mStream->readLine(); // line of text excluding '\n', default local 8 bit encoding.
           if (mNumberFeatures++ == 0)
           {
             // Get the fields from the header row and store them in the 
@@ -124,8 +126,8 @@ QgsDelimitedTextProvider::QgsDelimitedTextProvider(QString const &uri)
             QStringList fieldList =
               QStringList::split(QRegExp(mDelimiter), line, true);
 #ifdef QGISDEBUG
-            std::cerr << "Split line into " << fieldList.
-              size() << " parts" << std::endl;
+            std::cerr << "Split line into " 
+                      << fieldList.size() << " parts" << std::endl;
 #endif
             // We don't know anything about a text based field other
             // than its name. All fields are assumed to be text
@@ -194,23 +196,32 @@ QgsDelimitedTextProvider::QgsDelimitedTextProvider(QString const &uri)
             bool yOk = true;
             double x = sX.toDouble(&xOk);
             double y = sY.toDouble(&yOk);
+
             if (xOk && yOk)
             {
-              if (x > mExtent->xMax())
+              if (!firstPoint)
               {
-                mExtent->setXmax(x);
+                if (x > mExtent->xMax())
+                {
+                  mExtent->setXmax(x);
+                }
+                if (x < mExtent->xMin())
+                {
+                  mExtent->setXmin(x);
+                }
+                if (y > mExtent->yMax())
+                {
+                  mExtent->setYmax(y);
+                }
+                if (y < mExtent->yMin())
+                {
+                  mExtent->setYmin(y);
+                }
               }
-              if (x < mExtent->xMin())
-              {
-                mExtent->setXmin(x);
-              }
-              if (y > mExtent->yMax())
-              {
-                mExtent->setYmax(y);
-              }
-              if (y < mExtent->yMin())
-              {
-                mExtent->setYmin(y);
+              else
+              { // Extent for the first point is just the first point
+                mExtent->set(x,y,x,y);
+                firstPoint = false;
               }
             }
           }
@@ -264,6 +275,7 @@ QgsDelimitedTextProvider::~QgsDelimitedTextProvider()
 {
   mFile->close();
   delete mFile;
+  delete mStream;
   for (int i = 0; i < fieldCount(); i++)
   {
     delete mMinMaxCache[i];
@@ -338,13 +350,9 @@ QgsDelimitedTextProvider::getNextFeature_( QgsFeature & feature,
     // before we do anything else, assume that there's something wrong with
     // the feature
     feature.setValid( false );
-
-    QTextStream textStream( mFile );
-
-    if ( ! textStream.atEnd() )
+    while ( ! mStream->atEnd() )
     {
-      QString line = textStream.readLine(); // Default local 8 bit encoding
-
+      QString line = mStream->readLine(); // Default local 8 bit encoding
         // lex the tokens from the current data line
         QStringList tokens = QStringList::split(QRegExp(mDelimiter), line, true);
 
@@ -357,62 +365,32 @@ QgsDelimitedTextProvider::getNextFeature_( QgsFeature & feature,
         double x = tokens[xFieldPos].toDouble( &xOk );
         double y = tokens[yFieldPos].toDouble( &yOk );
 
-        if ( xOk && yOk )
+        if (! (xOk && yOk))
         {
-            // if the user has selected an area, constrain iterator to
-            // features that are within that area
-            if ( mSelectionRectangle && ! boundsCheck(x,y) )
-            {
-                bool foundFeature = false;
+          // Accumulate any lines that weren't ok, to report on them
+          // later, and look at the next line in the file, but only if
+          // we need to.
+          if (mShowInvalidLines)
+            mInvalidLines << line;
 
-                while ( ! textStream.atEnd() && 
-                        (xOk && yOk) )
-                {
-                    if ( boundsCheck(x,y) )
-                    {
-                        foundFeature = true;
-                        break;
-                    }
+          continue;
+        }
 
-                    ++mFid;     // since we're skipping to next feature,
-                                // increment ID
+        // Give every valid line in the file an id, even if it's not
+        // in the current extent or bounds.
+        ++mFid;             // increment to next feature ID
 
-                    line = textStream.readLine();
+        if (! boundsCheck(x,y))
+          continue;
 
-                    tokens = QStringList::split(QRegExp(mDelimiter), line, true);
-
-                    x = tokens[xFieldPos].toDouble( &xOk );
-                    y = tokens[yFieldPos].toDouble( &yOk );
-                }
-
-                // there were no other features from the current one forward
-                // that were within the selection region
-                if ( ! foundFeature )
-                {
-                    return false;
-                }
-            }
-
-            // at this point, one way or another, the current feature values
-            // are valid
+        // at this point, one way or another, the current feature values
+        // are valid
            feature.setValid( true );
-
-           ++mFid;             // increment to next feature ID
 
            feature.setFeatureId( mFid );
 
-           unsigned char * geometry = new unsigned char[sizeof(wkbPoint)];
            QByteArray  buffer;
-           buffer.setRawData( (const char*)geometry, sizeof(wkbPoint) ); // buffer
-                                                                         // points
-                                                                         // to
-                                                                         // geometry
-
-#if QT_VERSION < 0x040000
-           QDataStream s( buffer, QIODevice::WriteOnly ); // open on buffers's data
-#else
            QDataStream s( &buffer, QIODevice::WriteOnly ); // open on buffers's data
-#endif
 
            switch ( endian() )
            {
@@ -428,19 +406,18 @@ QgsDelimitedTextProvider::getNextFeature_( QgsFeature & feature,
                    break;
                default :
                    qDebug( "%s:%d unknown endian", __FILE__, __LINE__ );
-                   delete [] geometry;
+                   //delete [] geometry;
                    return false;
            }
 
-           s << (Q_UINT32)1; // 1 is for WKBPoint
+           s << (Q_UINT32)QGis::WKBPoint;
            s << x;
            s << y;
 
+           unsigned char* geometry = new unsigned char[buffer.size()];
+           memcpy(geometry, buffer.data(), buffer.size());
 
            feature.setGeometryAndOwnership( geometry, sizeof(wkbPoint) );
-
-           // ensure that the buffer doesn't delete the data on us
-           buffer.resetRawData( (const char*)geometry, sizeof(wkbPoint) );
 
            if ( getAttributes && ! desiredAttributes )
            {
@@ -461,12 +438,31 @@ QgsDelimitedTextProvider::getNextFeature_( QgsFeature & feature,
                    feature.addAttribute(attributeFields[*i].name(), tokens[*i]);
                }
            }
-
+           // We have a good line, so return
            return true;
 
-        } // if able to get x and y coordinates
-
     } // ! textStream EOF
+
+    // End of the file. If there are any lines that couldn't be
+    // loaded, display them now.
+
+    if (mShowInvalidLines && !mInvalidLines.isEmpty())
+    {
+      mShowInvalidLines = false;
+      QgsMessageOutput* output = QgsMessageOutput::createMessageOutput();
+      output->setTitle(tr("Error"));
+      output->setMessage(tr("Note: the following lines were not loaded because Qgis was "
+                            "unable to determine values for the x and y coordinates:\n"),
+                         QgsMessageOutput::MessageText);
+      
+      for (int i = 0; i < mInvalidLines.size(); ++i)
+        output->appendMessage(mInvalidLines.at(i));
+      
+      output->showMessage();
+
+      // We no longer need these lines.
+      mInvalidLines.empty();
+    }
 
     return false;
 
@@ -533,12 +529,8 @@ void QgsDelimitedTextProvider::select(QgsRect * rect, bool useIntersect)
   // compare each point against the rectangle.
   // We store the rect and use it in getNextFeature to determine if the
   // feature falls in the selection area
-  mSelectionRectangle = new QgsRect((*rect));
-  // Select implies an upcoming feature read so we reset the data source
   reset();
-  // Reset the feature id to 0
-  mFid = 0;
-
+  mSelectionRectangle = new QgsRect((*rect));
 }
 
 
@@ -632,14 +624,17 @@ std::vector<QgsField> const & QgsDelimitedTextProvider::fields() const
 
 void QgsDelimitedTextProvider::reset()
 {
-  // Reset the file pointer to BOF
-  mFile->reset();
   // Reset feature id to 0
   mFid = 0;
   // Skip ahead one line since first record is always assumed to be
   // the header record
-  QTextStream stream(mFile);
-  stream.readLine();
+  mStream->seek(0);
+  mStream->readLine();
+  //reset any spatial filters
+  if(mSelectionRectangle && mExtent)
+    {
+      *mSelectionRectangle = *mExtent;
+    }
 }
 
 QString QgsDelimitedTextProvider::minValue(int position)
@@ -718,10 +713,12 @@ bool QgsDelimitedTextProvider::isValid()
  */
 bool QgsDelimitedTextProvider::boundsCheck(double x, double y)
 {
-  bool inBounds = (((x < mSelectionRectangle->xMax()) &&
-                    (x > mSelectionRectangle->xMin())) &&
-                   ((y < mSelectionRectangle->yMax()) &&
-                    (y > mSelectionRectangle->yMin())));
+  bool inBounds(true);
+  if (mSelectionRectangle)
+    inBounds = (((x < mSelectionRectangle->xMax()) &&
+                 (x > mSelectionRectangle->xMin())) &&
+                ((y < mSelectionRectangle->yMax()) &&
+                 (y > mSelectionRectangle->yMin())));
   // QString hit = inBounds?"true":"false";
 
   // std::cerr << "Checking if " << x << ", " << y << " is in " << 
@@ -760,11 +757,10 @@ int *QgsDelimitedTextProvider::getFieldLengths()
   {
     reset();
     // read the line
-    QTextStream stream(mFile);
     QString line;
-    while (!stream.atEnd())
+    while (!mStream->atEnd())
     {
-      line = stream.readLine(); // line of text excluding '\n'
+      line = mStream->readLine(); // line of text excluding '\n'
       // split the line
       QStringList parts = QStringList::split(QRegExp(mDelimiter), line, true);
       // iterate over the parts and update the max value

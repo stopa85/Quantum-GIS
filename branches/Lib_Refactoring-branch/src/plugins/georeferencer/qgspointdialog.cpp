@@ -1,6 +1,5 @@
 #include <cmath>
 
-#include <Q3Frame>
 #include <QPushButton>
 #include <QComboBox>
 #include <QFileDialog>
@@ -224,7 +223,7 @@ void QgsPointDialog::on_pbnGenerateAndLoad_clicked()
 void QgsPointDialog::on_pbnSelectWorldFile_clicked()
 {
   QString filename = QFileDialog::getSaveFileName(this,
-              "Choose a name for the world file", ".");
+              tr("Choose a name for the world file"), ".");
   leSelectWorldFile->setText(filename);
 }
 
@@ -232,7 +231,7 @@ void QgsPointDialog::on_pbnSelectWorldFile_clicked()
 void QgsPointDialog::on_pbnSelectModifiedRaster_clicked()
 {
   QString filename = QFileDialog::getSaveFileName(this,
-              "Choose a name for the world file", ".");
+              tr("Choose a name for the world file"), ".");
   if (filename.right(4) != ".tif")
     filename += ".tif";
   leSelectModifiedRaster->setText(filename);
@@ -265,12 +264,12 @@ bool QgsPointDialog::generateWorldFile()
     }
     else if (cmbTransformType->currentItem() == 1)
     {
-      int res = QMessageBox::warning(this, "Warning",
-			     "A Helmert transform requires modifications in "
+      int res = QMessageBox::warning(this, tr("Warning"),
+			     tr("A Helmert transform requires modifications in "
 			     "the raster layer.\nThe modifed raster will be "
 			     "saved in a new file and a world file will be "
 			     "generated for this new file instead.\nAre you "
-			     "sure that this is what you want?",
+			     "sure that this is what you want?"),
 			     QMessageBox::No, QMessageBox::Yes);
       if (res == QMessageBox::No)
 	       return false;
@@ -278,16 +277,16 @@ bool QgsPointDialog::generateWorldFile()
     }
     else if (cmbTransformType->currentItem() == 2)
     {
-      QMessageBox::critical(this, "Not implemented!",
-			    "An affine transform requires changing the "
+      QMessageBox::critical(this, tr("Not implemented!"),
+			    tr("An affine transform requires changing the "
 			    "original raster file. This is not yet "
-			    "supported.");
+			    "supported."));
       return false;
     }
   }
   catch (std::domain_error& e)
   {
-    QMessageBox::critical(this, "Error", QString(e.what()));
+    QMessageBox::critical(this, tr("Error"), QString(e.what()));
     return false;
   }
 
@@ -309,8 +308,8 @@ bool QgsPointDialog::generateWorldFile()
   QFile file(leSelectWorldFile->text());
   if (!file.open(QIODevice::WriteOnly))
   {
-    QMessageBox::critical(this, "Error", 
-         "Could not write to " + leSelectWorldFile->text());
+    QMessageBox::critical(this, tr("Error"), 
+         tr("Could not write to ") + leSelectWorldFile->text());
     return false;
   }
   QTextStream stream(&file);

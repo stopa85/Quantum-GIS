@@ -60,6 +60,7 @@
 #include <QToolTip>
 #include <QVBoxLayout>
 #include <QWhatsThis>
+#include <QtGlobal>
 //
 // QGIS Specific Includes
 //
@@ -261,11 +262,11 @@ static void customSrsValidation_(QgsSpatialRefSys* srs)
     proj4String = QgsProject::instance()->readEntry("SpatialRefSys","//ProjectSRSProj4String",GEOPROJ4);
     srs->createFromProj4(proj4String);  
   }
-  else ///Projections/defaultBehaviour==useDefault
+  else ///Projections/defaultBehaviour==useGlobal
   {
     // XXX TODO: Change global settings to store default CS as 'defaultSRS' not 'defaultProjectionWKT'
-    proj4String = mySettings.readEntry("/Projections/defaultSRS",GEOPROJ4);
-    srs->createFromProj4(proj4String);  
+    int srs_id = mySettings.readNumEntry("/Projections/defaultProjectionSRSID",GEOSRS_ID); 
+    srs->createFromSrsId(srs_id); 
   }
 
 }
@@ -1237,6 +1238,9 @@ void QgisApp::about()
      QgsAbout *abt = new QgsAbout();
      QString versionString = tr("Version ");
      versionString += QGis::qgisVersion;
+     versionString += " (";
+     versionString += QGis::qgisSvnVersion;
+     versionString += ")";
 #ifdef HAVE_POSTGRESQL
 
 versionString += tr(" with PostgreSQL support");
@@ -1244,6 +1248,9 @@ versionString += tr(" with PostgreSQL support");
 
 versionString += tr(" (no PostgreSQL support)");
 #endif
+ versionString += tr("\nCompiled against Qt ") + QT_VERSION_STR
+   + tr(", running against Qt ") + qVersion();
+
 #ifdef WIN32
   // special version stuff for windows (if required)
   //  versionString += "\nThis is a Windows preview release - not for production use";
@@ -1944,7 +1951,11 @@ void QgisApp::addWmsLayer()
         wmss->selectedLayers(),
         wmss->selectedStylesForSelectedLayers(),
         wmss->selectedImageEncoding(),
-        wmss->selectedCrs()
+	wmss->selectedCrs(),
+	wmss->connProxyHost(),
+	wmss->connProxyPort(),
+	wmss->connProxyUser(),
+	wmss->connProxyPass()
         );
   }
 }
@@ -4891,7 +4902,11 @@ void QgisApp::addRasterLayer(QString const & rasterLayerPath,
     QStringList const & layers,
     QStringList const & styles,
     QString const & format,
-    QString const & crs)
+    QString const & crs,
+    QString const & proxyHost, 
+    int proxyPort, 
+    QString const & proxyUser,
+    QString const & proxyPassword)
 {
 
 #ifdef QGISDEBUG
@@ -4921,7 +4936,8 @@ void QgisApp::addRasterLayer(QString const & rasterLayerPath,
 #endif
 
   // TODO: Remove the 0 when the raster layer becomes a full provider gateway.
-  layer = new QgsRasterLayer(0, rasterLayerPath, baseName, providerKey, layers, styles, format, crs);
+  layer = new QgsRasterLayer(0, rasterLayerPath, baseName, providerKey, layers, styles, format, crs,
+			     proxyHost, proxyPort, proxyUser, proxyPassword);
 
 #ifdef QGISDEBUG
   std::cout << "QgisApp::addRasterLayer: Constructed new layer." << std::endl;
