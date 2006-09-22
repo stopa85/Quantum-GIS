@@ -64,7 +64,15 @@ void QgsGeorefPluginGui::on_pbnSelectRaster_clicked() {
 
 
 void QgsGeorefPluginGui::on_pbnEnterWorldCoords_clicked() {
-  
+
+  // Is there a filename
+  if (leSelectRaster->text().isEmpty())
+  {
+    QMessageBox::critical(this, tr("Error"), 
+			  tr("You need to specify a file to georeference first."));
+
+    return;
+  }
   // do we think that this is a valid raster?
   if (!QgsRasterLayer::isValidRasterFileName(leSelectRaster->text())) {
     QMessageBox::critical(this, tr("Error"), 
@@ -94,11 +102,16 @@ void QgsGeorefPluginGui::on_pbnEnterWorldCoords_clicked() {
   // check if there already is a world file
   if (!worldfile.isEmpty()) {
     if (QFile::exists(worldfile)) {
-      QMessageBox::critical(this, tr("Error"),
-			    tr("The selected file already seems to have a ")+
-			    tr("world file! If you want to replace it with a ")+
-			    tr("new world file, remove the old one first."));
-      return;
+      int r = QMessageBox::question(this, tr("World file exists"),
+                       tr("<p>The selected file already seems to have a ")+
+                       tr("world file! Do you want to replace it with the ")+
+		       tr("new world file?</p>"),
+                       QMessageBox::Yes|QMessageBox::Default, 
+                       QMessageBox::No|QMessageBox::Escape);
+      if (r == QMessageBox::No)
+        return;
+      else
+        QFile::remove(worldfile);
     }
   }
   

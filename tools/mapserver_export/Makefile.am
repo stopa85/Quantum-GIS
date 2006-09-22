@@ -11,7 +11,15 @@
 # $Id: Makefile.am 4200 2005-11-12 01:37:49Z gsherman $
 
 bin_PROGRAMS = msexport
+if HAVE_QTMAC
+MAC = mac
+endif
 
+if !HAVE_QTMAC
+PREFIX=-DPREFIX=\"$(prefix)\"
+PLUGINPATH=-DPLUGINPATH=\"$(pkglibdir)\"
+PKGDATAPATH=-DPKGDATAPATH=\"$(pkgdatadir)\"
+endif
 
 %.moc.cpp: %.h
 	$(MOC) -o $@ $<
@@ -53,7 +61,7 @@ BUILT_SOURCES = $(msexport_MOC) $(msexport_UI)
 
 
 msexport_LDADD = $(QT_LDADD) $(PYTHON_LIB)
-msexport_CXXFLAGS = $(CXXFLAGS) $(EXTRA_CXXFLAGS) $(QT_CXXFLAGS) $(PYTHON_INCLUDE_DIR) -I../../src
+msexport_CXXFLAGS = $(CXXFLAGS) $(PKGDATAPATH) $(EXTRA_CXXFLAGS) $(QT_CXXFLAGS) $(PYTHON_INCLUDE_DIR) -I../../src
 
 CLEANFILES = $(BUILT_SOURCES)
 
@@ -64,5 +72,27 @@ lib_LTLIBRARIES = libmsexport.la
 libmsexport_la_SOURCES = qgsmapserverexport.cpp qgsmapserverexport.moc.cpp msexport_wrap.cxx
 
 libmsexport_la_LIBADD = $(PYTHON_LIB) $(QT_LDADD)
-libmsexport_la_CXXFLAGS = $(CXXFLAGS) $(EXTRA_CXXFLAGS) $(QT_CXXFLAGS) $(PYTHON_INCLUDE_DIR) -I../../src
+libmsexport_la_CXXFLAGS = $(CXXFLAGS) $(PKGDATAPATH) $(EXTRA_CXXFLAGS) $(QT_CXXFLAGS) $(PYTHON_INCLUDE_DIR) -I../../src
 #msexport_la_LDFLAGS
+
+# Qt/Mac app needs to be inside a bundle to function correctly
+MACBINDIR = $(bindir)/msexport.app/Contents/MacOS
+
+install-exec-hook:
+if HAVE_QTMAC
+	$(mkinstalldirs) $(MACBINDIR)
+	mv $(bindir)/msexport $(MACBINDIR)
+endif
+
+
+#
+# Put script into an appropriate dir
+#
+pythondir = ${pkgdatadir}/python
+if HAVE_QTMAC
+	pythondir=$(MACBINDIR)/share/qgis/python
+endif
+
+python_DATA = *.py
+
+EXTRA_DIST = $(python_DATA)

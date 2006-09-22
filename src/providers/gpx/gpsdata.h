@@ -27,7 +27,6 @@
 #include <vector>
 
 #include <expat.h>
-
 #include <QString>
 #include <QTextStream>
 

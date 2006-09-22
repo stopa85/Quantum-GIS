@@ -14,9 +14,9 @@
 //qgis includes
 #include "qgis.h" //<--magick numbers
 #include "qgsapplication.h"
+#include "qgslogger.h"
 
 //qt includes
-#include <QDir>
 #include <QFileInfo>
 #include <QMessageBox>
 
@@ -61,7 +61,15 @@ QgsCustomProjectionDialog::QgsCustomProjectionDialog(QWidget *parent, Qt::WFlags
   //getProjList();
   //getEllipsoidList();
   mRecordCountLong=getRecordCount();
-  on_pbnFirst_clicked();
+  if (mRecordCountLong > 0)
+    on_pbnFirst_clicked();
+  else
+    on_pbnNew_clicked();
+  //automatically go to insert mode if there are not recs yet
+  if (mRecordCountLong<1)
+  {
+    on_pbnNew_clicked();
+  }
 }
 
 QgsCustomProjectionDialog::~QgsCustomProjectionDialog()
@@ -425,15 +433,23 @@ void QgsCustomProjectionDialog::on_pbnFirst_clicked()
   //enable nav buttons as appropriate
   pbnFirst->setEnabled(false);
   pbnPrevious->setEnabled(false);
-  if (mCurrentRecordLong==mRecordCountLong)
+  //automatically go to insert mode if there are not recs yet
+  if (mRecordCountLong < 1)
+  {
+    on_pbnNew_clicked();
+    pbnDelete->setEnabled(false);
+  }
+  else if (mCurrentRecordLong==mRecordCountLong)
   {
     pbnNext->setEnabled(false);
     pbnLast->setEnabled(false);
+    pbnDelete->setEnabled(false);
   }
   else
   {
     pbnNext->setEnabled(true);
     pbnLast->setEnabled(true);
+    pbnDelete->setEnabled(false);
   }
 }
 
@@ -691,6 +707,7 @@ void QgsCustomProjectionDialog::on_pbnNew_clicked()
     pbnPrevious->setEnabled(false);
     pbnNext->setEnabled(false);
     pbnLast->setEnabled(false);
+    pbnDelete->setEnabled(false);
     pbnNew->setText(tr("Abort"));
     //clear the controls
     leName->setText("");
@@ -982,7 +999,7 @@ void QgsCustomProjectionDialog::cboProjectionFamily_highlighted( const QString &
 
 QString QgsCustomProjectionDialog::getProjFromParameters()
 {
-  std::cout << "QgsCustomProjectionDialog::getProjFromParameters()" << std::endl;
+  QgsLogger::debug("QgsCustomProjectionDialog::getProjFromParameters()");
   QString myProj4String = leParameters->text();
   QRegExp myProjRegExp( "\\+proj=[a-zA-Z]*" );    
   int myStart= 0;
@@ -1002,7 +1019,7 @@ QString QgsCustomProjectionDialog::getProjFromParameters()
 
 QString QgsCustomProjectionDialog::getEllipseFromParameters()
 {
-  std::cout << "QgsCustomProjectionDialog::getEllipseFromParameters()" << std::endl;
+  QgsLogger::debug("QgsCustomProjectionDialog::getEllipseFromParameters()");
   QString myProj4String = leParameters->text();
   QRegExp myEllipseRegExp( "\\+ellps=[a-zA-Z0-9\\-_]*" );    
   int myStart= 0;

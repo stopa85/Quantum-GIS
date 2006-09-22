@@ -231,7 +231,7 @@ void QgsMapRender::render(QPainter* painter)
 
     if (!ml)
     {
-      QgsLogger::warning("QgsMapRender::render: layer not found in registry!");
+      QgsLogger::warning("Layer not found in registry!");
       li++;
       continue;
     }

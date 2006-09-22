@@ -22,7 +22,7 @@
 #include <cfloat>
 #include <iostream>
 #include <limits>
-#include <math.h>
+#include <cmath>
 
 // Changed #include <qapp.h> to <qapplication.h>. Apparently some
 // debian distros do not include the qapp.h wrapper and the compilation
@@ -30,8 +30,7 @@
 #include <QApplication>
 #include <QFile>
 #include <QTextStream>
-#include <QStringList>
-#include <QRect>
+#include <QObject>
 
 #include "qgis.h"
 #include "qgsdataprovider.h"
@@ -41,6 +40,7 @@
 #include "qgsrect.h"
 #include "qgsgpxprovider.h"
 #include "gpsdata.h"
+#include <qgslogger.h>
 
 #ifdef WIN32
 #define QGISEXTERN extern "C" __declspec( dllexport )
@@ -56,7 +56,7 @@ const char* QgsGPXProvider::attr[] = { "name", "elevation", "symbol", "number",
 
 const QString GPX_KEY = "gpx";
 
-const QString GPX_DESCRIPTION = "GPS eXchange format provider";
+const QString GPX_DESCRIPTION = QObject::tr("GPS eXchange format provider");
 
 
 QgsGPXProvider::QgsGPXProvider(QString const & uri) : 
@@ -73,7 +73,7 @@ QgsGPXProvider::QgsGPXProvider(QString const & uri) :
   // get the filename and the type parameter from the URI
   int fileNameEnd = uri.find('?');
   if (fileNameEnd == -1 || uri.mid(fileNameEnd + 1, 5) != "type=") {
-    std::cerr<<"Bad URI - you need to specify the feature type"<<std::endl;
+    QgsLogger::warning(tr("Bad URI - you need to specify the feature type."));
     return;
   }
   QString typeStr = uri.mid(fileNameEnd + 6);
@@ -132,7 +132,7 @@ QgsGPXProvider::~QgsGPXProvider() {
 
 QString QgsGPXProvider::storageType()
 {
-  return "GPS eXchange file";
+  return tr("GPS eXchange file");
 }
 
 
@@ -413,8 +413,8 @@ std::vector<QgsFeature>& QgsGPXProvider::identify(QgsRect * rect) {
   // reset the data source since we need to be able to read through
   // all features
   reset();
-  std::cerr << "Attempting to identify features falling within "
-	    << rect->stringRep().toLocal8Bit().data() << std::endl; 
+  QgsLogger::debug("Attempting to identify features falling within " +
+                   rect->stringRep()); 
   // select the features
   select(rect);
   // temporary fix to get this to compile under windows
@@ -494,8 +494,8 @@ void QgsGPXProvider::reset() {
 
 QString QgsGPXProvider::minValue(int position) {
   if (position >= fieldCount()) {
-    std::cerr<<"Warning: access requested to invalid position "
-	     <<"in QgsGPXProvider::minValue(..)"<<std::endl;
+    QgsLogger::warning(tr("Warning: access requested to invalid position "
+                       "in QgsGPXProvider::minValue(..)"));
   }
   if (mMinMaxCacheDirty) {
     fillMinMaxCash();
@@ -506,8 +506,8 @@ QString QgsGPXProvider::minValue(int position) {
 
 QString QgsGPXProvider::maxValue(int position) {
   if (position >= fieldCount()) {
-    std::cerr<<"Warning: access requested to invalid position "
-	     <<"in QgsGPXProvider::maxValue(..)"<<std::endl;
+    QgsLogger::warning(tr("Warning: access requested to invalid position "
+                       "in QgsGPXProvider::maxValue(..)"));
   }
   if (mMinMaxCacheDirty) {
     fillMinMaxCash();
@@ -828,7 +828,7 @@ size_t QgsGPXProvider::layerCount() const
 
 QString QgsGPXProvider::getDefaultValue(const QString& attr, QgsFeature* f) {
   if (attr == "source")
-    return "Digitized in QGIS";
+    return tr("Digitized in QGIS");
   return "";
 }
 
@@ -838,10 +838,10 @@ QString QgsGPXProvider::getDefaultValue(const QString& attr, QgsFeature* f) {
  */
 bool QgsGPXProvider::boundsCheck(double x, double y)
 {
-  bool inBounds = (((x < mSelectionRectangle->xMax()) &&
-        (x > mSelectionRectangle->xMin())) &&
-      ((y < mSelectionRectangle->yMax()) &&
-       (y > mSelectionRectangle->yMin())));
+  bool inBounds = (((x <= mSelectionRectangle->xMax()) &&
+        (x >= mSelectionRectangle->xMin())) &&
+      ((y <= mSelectionRectangle->yMax()) &&
+       (y >= mSelectionRectangle->yMin())));
   QString hit = inBounds?"true":"false";
   return inBounds;
 }

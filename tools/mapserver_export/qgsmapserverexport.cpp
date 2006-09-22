@@ -22,23 +22,27 @@ email                : sherman at mrcc.com
 #include <qlineedit.h>
 #include <qcheckbox.h>
 #include <QComboBox>
+#include <QSettings>
 #include <qmessagebox.h>
 #include <qcolor.h>
 #include <qregexp.h>
 #include <qstring.h>
 #include <QWidget>
+#include <QApplication>
 #include "qgsmapserverexport.h"
-#include "ui_qgsmapserverexportbase.h"
 
 
 // constructor
 QgsMapserverExport::QgsMapserverExport(QWidget * parent, Qt::WFlags fl)
 : QDialog(parent, fl)  
 {
+  setupUi(this);
 //   initialize python
   initPy();
-
-  setupUi(this);
+  qDebug("Reading setttings");
+  QSettings mySettings;
+  txtMapFilePath->setText(mySettings.value("mapserverExport/lastMapFile","").toString());
+  txtQgisFilePath->setText(mySettings.value("mapserverExport/lastQgsFile","").toString());
 
 }
 
@@ -84,8 +88,8 @@ void QgsMapserverExport::on_chkExpLayersOnly_clicked(bool isChecked)
     txtMapHeight->setEnabled(!isChecked);
     cmbMapUnits->setEnabled(!isChecked);
     cmbMapImageType->setEnabled(!isChecked);
-    txtMinScale->setEnabled(!isChecked);
-    txtMaxScale->setEnabled(!isChecked);
+    //txtMinScale->setEnabled(!isChecked);
+    //txtMaxScale->setEnabled(!isChecked);
     txtWebTemplate->setEnabled(!isChecked);
     txtWebHeader->setEnabled(!isChecked);
     txtWebFooter->setEnabled(!isChecked);
@@ -96,14 +100,27 @@ void QgsMapserverExport::on_chkExpLayersOnly_clicked(bool isChecked)
 
 void QgsMapserverExport::on_buttonOk_clicked()
 {
+  qDebug("Writing setttings");
+  QSettings mySettings;
+  mySettings.setValue("mapserverExport/lastMapFile",txtMapFilePath->text());
+  mySettings.setValue("mapserverExport/lastQgsFile",txtQgisFilePath->text());
   
   char *cstr;
   PyObject *pstr, *pmod, *pclass, *pinst, *pmeth, *pargs;
   //TODO Need to append the path to the qgis python files using the path to the
   //     Python files in the QGIS install directory
   PyRun_SimpleString("import sys");
-  QString curdir = "/home/gsherman/development/qgis_qt_port/tools/mapserver_export";
-  QString sysCmd = QString("sys.path.append('%1')").arg(curdir);
+#if defined(Q_WS_MACX) || defined(Q_WS_WIN32)
+  QString prefixPath = QApplication::applicationDirPath();
+  QString dataPath = prefixPath + QString("/share/qgis");
+#else
+  QString dataPath ( PKGDATAPATH );
+#endif
+  dataPath = dataPath.trimmed();
+  QString scriptDir = dataPath + QDir::separator() + "python";
+  qDebug("Python scripts directory: " + scriptDir.toLocal8Bit());
+  //QString curdir = "/home/gsherman/development/qgis_qt_port/tools/mapserver_export";
+  QString sysCmd = QString("sys.path.append('%1')").arg(scriptDir);
   PyRun_SimpleString(sysCmd.ascii());
 
   // Import the module
@@ -128,10 +145,9 @@ void QgsMapserverExport::on_buttonOk_clicked()
   {
     std::cout << "Initializing all options" << std::endl; 
     pmeth = PyObject_GetAttrString(pinst, "setOptions");
-    pargs = Py_BuildValue("(ssssssssss)", 
+    pargs = Py_BuildValue("(ssssssss)", 
         cmbMapUnits->currentText().ascii(), cmbMapImageType->currentText().ascii(), 
         txtMapName->text().ascii(), txtMapWidth->text().ascii(), txtMapHeight->text().ascii(), 
-        txtMinScale->text().ascii(), txtMaxScale->text().ascii(), 
         txtWebTemplate->text().ascii(), txtWebFooter->text().ascii(),txtWebHeader->text().ascii());
     pstr = PyEval_CallObject(pmeth, pargs);
 
@@ -141,7 +157,7 @@ void QgsMapserverExport::on_buttonOk_clicked()
   }
   // Get the writeMapFile method from the Qgis2Map class
   pmeth = PyObject_GetAttrString(pinst, "writeMapFile");
-  pargs = Py_BuildValue("( )");
+  pargs = Py_BuildValue("()");
   // Execute the writeMapFile method to parse the QGIS project file and create the .map file
   pstr = PyEval_CallObject(pmeth, pargs);
   // Show the return value
