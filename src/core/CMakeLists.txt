@@ -97,7 +97,7 @@ IF (WIN32)
   IF (MSVC)
     ADD_DEFINITIONS("-DCORE_EXPORT=__declspec(dllexport)")
   ELSE (MSVC)
-    ADD_DEFINITIONS("-UCORE_EXPORT -DCORE_EXPORT=__declspec(dllexport)")
+    ADD_DEFINITIONS("-UCORE_EXPORT \"-DCORE_EXPORT=__declspec(dllexport)\"")
   ENDIF (MSVC)
 ENDIF (WIN32)
 
