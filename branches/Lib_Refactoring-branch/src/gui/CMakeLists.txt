@@ -48,7 +48,7 @@ IF (WIN32)
   IF (MSVC)
     ADD_DEFINITIONS("-DGUI_EXPORT=__declspec(dllexport)")
   ELSE (MSVC)
-    ADD_DEFINITIONS("-UGUI_EXPORT -DGUI_EXPORT=__declspec(dllexport)")
+    ADD_DEFINITIONS("-UGUI_EXPORT \"-DGUI_EXPORT=__declspec(dllexport)\"")
   ENDIF (MSVC)
 ENDIF (WIN32)
 

@@ -100,7 +100,7 @@ SET(QGIS_APP_UIS
 ../ui/qgshelpviewerbase.ui
 ../ui/qgsidentifyresultsbase.ui
 ../ui/qgslabeldialogbase.ui
-#../ui/qgslayerprojectionselectorbase.ui
+../ui/qgslayerprojectionselectorbase.ui
 ../ui/qgslinestyledialogbase.ui
 ../ui/qgslinestylewidgetbase.ui
 ../ui/qgsludialogbase.ui

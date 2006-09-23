@@ -144,8 +144,8 @@ ENDIF (WIN32)
 
 IF (WIN32)
   # expect that classes are being imported
-  ADD_DEFINITIONS("-DCORE_EXPORT=__declspec(dllimport)")
-  ADD_DEFINITIONS("-DGUI_EXPORT=__declspec(dllimport)")
+  ADD_DEFINITIONS("\"-DCORE_EXPORT=__declspec(dllimport)\"")
+  ADD_DEFINITIONS("\"-DGUI_EXPORT=__declspec(dllimport)\"")
 ELSE (WIN32)
   # other compilers don't use that MSVC construct
   ADD_DEFINITIONS(-DCORE_EXPORT=)
@@ -176,7 +176,7 @@ ELSE (QGIS_NO_SVNVERSION)
 
   IF (WIN32)
     # TODO: create qgssvnversion.h properly
-    ADD_CUSTOM_TARGET(svnversion echo '\#define QGSSVNVERSION \"svn\"' > qgssvnversion.h
+    ADD_CUSTOM_TARGET(svnversion echo "#define QGSSVNVERSION \"svn\"" > qgssvnversion.h
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
   ELSE (WIN32)
     ADD_CUSTOM_TARGET(svnversion ALL
