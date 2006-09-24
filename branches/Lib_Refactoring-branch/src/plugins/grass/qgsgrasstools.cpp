@@ -135,17 +135,7 @@ QgsGrassTools::QgsGrassTools ( QgisInterface *iface,
                 + "/" + QgsGrass::getDefaultMapset();
     setCaption(title);
 
-    // Warning: QgsApplication initialized in main.cpp
-    //          is not valid here (static libraries / linking)
-
-#if defined(WIN32) || defined(Q_OS_MACX)
-    mAppDir = qApp->applicationDirPath();
-#else
-    mAppDir = PREFIX;
-#endif
-
-    //QString conf = QgsApplication::pkgDataPath() + "/grass/config/default.qgc";
-    QString conf = mAppDir + "/share/qgis/grass/config/default.qgc";
+    QString conf = QgsApplication::pkgDataPath() + "/grass/config/default.qgc";
 
     restorePosition();
 
@@ -177,8 +167,7 @@ void QgsGrassTools::moduleClicked( Q3ListViewItem * item )
     
     if ( name.length() == 0 ) return;  // Section
     
-    //QString path = QgsApplication::pkgDataPath() + "/grass/modules/" + name;
-    QString path = mAppDir + "/share/qgis/grass/modules/" + name;
+    QString path = QgsApplication::pkgDataPath() + "/grass/modules/" + name;
     #ifdef QGISDEBUG
     std::cerr << "path = " << path.ascii() << std::endl;
     #endif
@@ -210,7 +199,7 @@ void QgsGrassTools::moduleClicked( Q3ListViewItem * item )
          // Note: I was not able to run cmd.exe and command.com
          //       with QProcess
 
-         QString msysPath = mAppDir + "/msys/msys.bat";
+         QString msysPath = appDir() + "/msys/msys.bat";
          QFile file ( msysPath );
 
          if ( !file.exists() ) 
@@ -357,8 +346,7 @@ void QgsGrassTools::addModules (  Q3ListViewItem *parent, QDomElement &element )
 		QString name = e.attribute("name");
 	        std::cout << "name = " << name.toLocal8Bit().data() << std::endl;
 
-                //QString path = QgsApplication::pkgDataPath() + "/grass/modules/" + name;
-                QString path = mAppDir + "/share/qgis/grass/modules/" + name;
+                QString path = QgsApplication::pkgDataPath() + "/grass/modules/" + name;
                 QString label = QgsGrassModule::label ( path );
 		QPixmap pixmap = QgsGrassModule::pixmap ( path, 25 ); 
 
@@ -398,8 +386,7 @@ QgsGrassTools::~QgsGrassTools()
 
 QString QgsGrassTools::appDir(void)
 {
-    //return QgsApplication::applicationDirPath();
-    return mAppDir;
+    return QgsApplication::applicationDirPath();
 }
 
 void QgsGrassTools::close(void)

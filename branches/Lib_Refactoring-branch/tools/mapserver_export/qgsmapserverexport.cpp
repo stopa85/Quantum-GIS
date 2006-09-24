@@ -200,6 +200,7 @@ void QgsMapserverExport::setFileName(QString fn)
 
 QString QgsMapserverExport::fullPathName()
 {
+  return QString(); // return something to allow compilation
   //return fullPath;
 }
 

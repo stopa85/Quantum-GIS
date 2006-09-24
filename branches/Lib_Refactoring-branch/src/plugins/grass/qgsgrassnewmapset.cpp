@@ -781,13 +781,7 @@ void QgsGrassNewMapset::loadRegions()
     std::cerr << "QgsGrassNewMapset::loadRegions()" << std::endl;
 #endif
 
-#if defined(WIN32) || defined(Q_OS_MACX)
-    QString appDir = qApp->applicationDirPath();
-#else
-    QString appDir = PREFIX;
-#endif
-
-    QString path = appDir + "/share/qgis/grass/locations.gml";
+    QString path = QgsApplication::pkgDataPath() + "/grass/locations.gml";
 #ifdef QGISDEBUG
     std::cerr << "load:" << path.local8Bit().data() << std::endl;
 #endif

@@ -21,7 +21,7 @@
 #include "qgslogger.h"
 #include "qgswmsprovider.h"
 
-#include <cmath>
+#include <math.h>
 #include <fstream>
 #include <iostream>
 
@@ -35,6 +35,10 @@
 #include <QImage>
 #include <QSet>
 
+#ifdef _MSC_VER
+#include <float.h>
+#define isfinite(x) _finite(x)
+#endif
 
 #ifdef QGISDEBUG
 #include <QFile>
@@ -1950,8 +1954,8 @@ bool QgsWmsProvider::calculateExtent()
       }
 
     //make sure extent does not contain 'inf' or 'nan'
-    if(!std::isfinite(extent.xMin()) || !std::isfinite((int)extent.yMin()) || !std::isfinite(extent.xMax()) || \
-       !std::isfinite((int)extent.yMax()))
+    if(!isfinite(extent.xMin()) || !isfinite((int)extent.yMin()) ||
+       !isfinite(extent.xMax()) || !isfinite((int)extent.yMax()))
       {
 	continue;
       }

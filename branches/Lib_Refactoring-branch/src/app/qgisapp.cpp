@@ -4059,7 +4059,7 @@ void QgisApp::openURL(QString url, bool useQgisDocDirectory)
   // open help in user browser
   if (useQgisDocDirectory)
   {
-    url = "file://" + QgsApplication::prefixPath() + "/share/qgis/doc/" + url;
+    url = "file://" + QgsApplication::pkgDataPath() + "/doc/" + url;
   }
 #ifdef Q_OS_MACX
   /* Use Mac OS X Launch Services which uses the user's default browser

@@ -109,9 +109,6 @@ private:
     //! Pointer to canvas
     QgsMapCanvas *mCanvas;
 
-    //! QGIS directory
-    QString mAppDir;
-
     //! Browser
     QgsGrassBrowser *mBrowser;
 

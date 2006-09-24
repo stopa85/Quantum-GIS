@@ -17,6 +17,7 @@
 /* $Id$ */
 #include "qgsattributedialog.h"
 #include "qgsfeature.h"
+#include "qgslogger.h"
 #include <QTableWidgetItem>
 #include <QSettings>
 
@@ -119,12 +120,8 @@ void QgsAttributeDialog::restorePositionAndColumnWidth()
 
 void QgsAttributeDialog::setAttributeValueChanged(int row, int column)
 {
-#ifdef QGISDEBUG
-        std::cout << "QgsAttributeDialog::setAttributeValueChanged: Entered with "
-          << "row " << row
-          << "column " << column
-          << "." << std::endl;
-#endif
+  QgsDebugMsg("Entered with row " + QString::number(row) +
+              ", column " + QString::number(column) + ".");
 
   mRowIsDirty.at(row) = TRUE;
 }
