@@ -63,7 +63,7 @@ QgsWFSProvider::~QgsWFSProvider()
 QgsFeature* QgsWFSProvider::getFirstFeature(bool fetchAttributes)
 {
   reset();
-  getNextFeature(fetchAttributes);
+  return getNextFeature(fetchAttributes);
 }
 
 QgsFeature* QgsWFSProvider::getNextFeature(bool fetchAttributes)

@@ -1471,11 +1471,11 @@ void QgsGrassModule::readStderr()
 	    mOutputTextBrowser->append ( rxmessage.cap(1) );
 	} else if ( rxwarning.search ( line ) != -1 ) {
 	    QString warn = rxwarning.cap(1);
-	    QString img = mAppDir + "/share/qgis/themes/default/grass/grass_module_warning.png";
+	    QString img = QgsApplication::pkgDataPath() + "/themes/default/grass/grass_module_warning.png";
 	    mOutputTextBrowser->append ( "<img src=\"" + img + "\">" + warn );
 	} else if ( rxerror.search ( line ) != -1 ) {
 	    QString error = rxerror.cap(1);
-	    QString img = mAppDir + "/share/qgis/themes/default/grass/grass_module_error.png";
+	    QString img = QgsApplication::pkgDataPath() + "/themes/default/grass/grass_module_error.png";
 	    mOutputTextBrowser->append ( "<img src=\"" + img + "\">" + error );
 	} else if ( rxend.search ( line ) != -1 ) {
 	    // Do nothing

@@ -144,8 +144,15 @@ ENDIF (WIN32)
 
 IF (WIN32)
   # expect that classes are being imported
-  ADD_DEFINITIONS("\"-DCORE_EXPORT=__declspec(dllimport)\"")
-  ADD_DEFINITIONS("\"-DGUI_EXPORT=__declspec(dllimport)\"")
+  # Note: MSVC doesn't like when the macros are quotes
+  # and MSYS doesn't like them unqouted (bacause of braces)
+  IF (MSVC)
+    ADD_DEFINITIONS("-DCORE_EXPORT=__declspec(dllimport)")
+    ADD_DEFINITIONS("-DGUI_EXPORT=__declspec(dllimport)")
+  ELSE (MSVC)
+    ADD_DEFINITIONS("\"-DCORE_EXPORT=__declspec(dllimport)\"")
+    ADD_DEFINITIONS("\"-DGUI_EXPORT=__declspec(dllimport)\"")
+  ENDIF (MSVC)
 ELSE (WIN32)
   # other compilers don't use that MSVC construct
   ADD_DEFINITIONS(-DCORE_EXPORT=)

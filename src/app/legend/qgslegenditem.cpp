@@ -27,22 +27,12 @@
 QgsLegendItem::QgsLegendItem(QTreeWidgetItem * theItem ,QString theName)
  : QTreeWidgetItem(theItem)
 {
-#if defined(Q_OS_MACX) || defined(WIN32)
-  QString pkgDataPath(QCoreApplication::applicationDirPath()+QString("/share/qgis"));
-#else
-  QString pkgDataPath(PKGDATAPATH);
-#endif
   setText(0, theName);
 }
 
 QgsLegendItem::QgsLegendItem(QTreeWidget* theListView,QString theString)
  : QTreeWidgetItem(theListView)
 {
-#if defined(Q_OS_MACX) || defined(WIN32)
-  QString pkgDataPath(QCoreApplication::applicationDirPath()+QString("/share/qgis"));
-#else
-  QString pkgDataPath(PKGDATAPATH);
-#endif
   setText(0, theString);
 }
 

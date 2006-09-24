@@ -32,6 +32,14 @@
 
 #include "qgsrect.h"
 
+// workaround for MSVC compiler which already has defined macro max
+// that interferes with calling std::numeric_limits<int>::max
+#ifdef _MSC_VER
+# ifdef max(x,y)
+#  undef max(x,y)
+# endif
+#endif
+
 
 /** This is the parent class for all GPS data classes (except tracksegment).
     It contains the variables that all GPS objects can have.
