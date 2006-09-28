@@ -17,19 +17,19 @@
 #ifndef QGSMAPCANVASMAP_H
 #define QGSMAPCANVASMAP_H
 
-#include <Q3CanvasRectangle>
+#include <QGraphicsRectItem>
 #include <QPixmap>
 
 #define RTTI_Map 11111
 
 class QgsMapRender;
 
-class GUI_EXPORT QgsMapCanvasMap : public Q3CanvasRectangle
+class GUI_EXPORT QgsMapCanvasMap : public QGraphicsRectItem
 {
   public:
     
     //! constructor
-    QgsMapCanvasMap(Q3Canvas *canvas, QgsMapRender* render);
+    QgsMapCanvasMap(QgsMapCanvas* canvas);
     
     //! resize canvas item and pixmap
     void resize(QSize size);
@@ -41,32 +41,32 @@ class GUI_EXPORT QgsMapCanvasMap : public Q3CanvasRectangle
     
     void useQImageToRender(bool flag) { mUseQImageToRender = flag; }
 
-    QPixmap& pixmap() { return mPixmap; }
-    
     //! renders map using QgsMapRender to mPixmap
     void render();
     
     void setBgColor(const QColor& color) { mBgColor = color; }
     
-    void setPanningOffset(const QPoint& point) { mOffset = point; }
+    void setPanningOffset(const QPoint& point);
     
-  protected:
+    QPixmap& pixmap() { return mPixmap; }
     
-    //! called by map canvas to draw map
-    void drawShape(QPainter & p);
+    void paint(QPainter* p, const QStyleOptionGraphicsItem*, QWidget*);
 
+    QRectF boundingRect() const;
+  
+  
   private:
-
-    //! pixmap that holds rendered map
-    QPixmap mPixmap;
 
     //! indicates whether antialiasing will be used for rendering
     bool mAntiAliasing;
     
     //! Whether to use a QPixmap or a QImage for the rendering
     bool mUseQImageToRender;
+    
+    QPixmap mPixmap;
 
-    QgsMapRender* mRender;
+    //QgsMapRender* mRender;
+    QgsMapCanvas* mCanvas;
     
     QColor mBgColor;
     

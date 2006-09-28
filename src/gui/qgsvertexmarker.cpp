@@ -39,52 +39,45 @@ void QgsVertexMarker::setIconSize(int iconSize)
 void QgsVertexMarker::setCenter(const QgsPoint& point)
 {
    mCenter = point;
-   updatePosition();
+   setPos(toCanvasCoords(mCenter));
    updateCanvas();
 }
 
 
-void QgsVertexMarker::drawShape(QPainter & p)
+void QgsVertexMarker::paint(QPainter* p)
 {
-  QPoint pt = toCanvasCoords(mCenter);
-  int x = pt.x(), y = pt.y();
+  QPointF pt = toCanvasCoords(mCenter);
+  qreal x = pt.x(), y = pt.y();
   int s = (mIconSize - 1) / 2;
-  
-  // draw cross
-  p.setPen(QColor(255,0,0));
+
+  p->setPen(QColor(255,0,0));
   switch (mIconType)
   {
     case ICON_NONE:
       break;
       
     case ICON_CROSS:
-      p.drawLine(x-s, y, x+s, y);
-      p.drawLine(x, y-s, x, y+s);
+      p->drawLine(QLineF(x-s, y, x+s, y));
+      p->drawLine(QLineF(x, y-s, x, y+s));
       break;
       
     case ICON_X:
-      p.drawLine(x-s, y-s, x+s, y+s);
-      p.drawLine(x-s, y+s, x+s, y-s);
+      p->drawLine(QLineF(x-s, y-s, x+s, y+s));
+      p->drawLine(QLineF(x-s, y+s, x+s, y-s));
       break;
       
     case ICON_BOX:
-      p.drawLine(x-s, y-s, x+s, y-s);
-      p.drawLine(x+s, y-s, x+s, y+s);
-      p.drawLine(x+s, y+s, x-s, y+s);
-      p.drawLine(x-s, y+s, x-s, y-s);
+      p->drawLine(QLineF(x-s, y-s, x+s, y-s));
+      p->drawLine(QLineF(x+s, y-s, x+s, y+s));
+      p->drawLine(QLineF(x+s, y+s, x-s, y+s));
+      p->drawLine(QLineF(x-s, y+s, x-s, y-s));
       break;
-  
   }
 }
-    
 
-void QgsVertexMarker::updatePosition()
+
+QRectF QgsVertexMarker::boundingRect() const
 {
-  QPoint pt = toCanvasCoords(mCenter);
   int s = (mIconSize - 1) / 2;
-  move(pt.x() - s, pt.y() - s);
-  setSize(mIconSize, mIconSize);
-  show();
+  return QRectF(-s,-s,s,s);
 }
-
-

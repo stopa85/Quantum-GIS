@@ -28,7 +28,7 @@
 #include "qgis.h"
 
 #include <QDomDocument>
-#include <Q3CanvasView>
+#include <QGraphicsView>
 
 class QWheelEvent;
 class QPixmap;
@@ -41,7 +41,7 @@ class QDomDocument;
 class QPaintDevice;
 class QMouseEvent;
 class QRubberBand;
-class Q3Canvas;
+class QGraphicsScene;
 
 class QgsMapToPixel;
 class QgsMapLayer;
@@ -90,7 +90,7 @@ private:
  * \brief Map canvas class for displaying all GIS data types.
  */
 
-class GUI_EXPORT QgsMapCanvas : public Q3CanvasView
+class GUI_EXPORT QgsMapCanvas : public QGraphicsView
 {
     Q_OBJECT;
 
@@ -114,7 +114,7 @@ class GUI_EXPORT QgsMapCanvas : public Q3CanvasView
     QgsMapRender* mapRender();
     
     //! Accessor for the canvas pixmap
-    QPixmap * canvasPixmap();
+    QPixmap& canvasPixmap();
 
     //! Get the last reported scale of the canvas
     double getScale();
@@ -154,7 +154,7 @@ class GUI_EXPORT QgsMapCanvas : public Q3CanvasView
 
     /**Returns the currently active tool*/
     QgsMapTool* mapTool();
-
+    
     /** Write property of QColor bgColor. */
     virtual void setCanvasColor(const QColor & _newVal);
 
@@ -352,13 +352,13 @@ private:
     void keyReleaseEvent(QKeyEvent * e);
 
     //! Overridden mouse move event
-    void contentsMouseMoveEvent(QMouseEvent * e);
+    void mouseMoveEvent(QMouseEvent * e);
 
     //! Overridden mouse press event
-    void contentsMousePressEvent(QMouseEvent * e);
+    void mousePressEvent(QMouseEvent * e);
 
     //! Overridden mouse release event
-    void contentsMouseReleaseEvent(QMouseEvent * e);
+    void mouseReleaseEvent(QMouseEvent * e);
 
     //! Overridden mouse wheel event
     void wheelEvent(QWheelEvent * e);
@@ -366,9 +366,6 @@ private:
     //! Overridden resize event
     void resizeEvent(QResizeEvent * e);
 
-    //! Overridden draw contents from canvas view
-    void drawContents(QPainter * p, int cx, int cy, int cw, int ch);
-        
     //! Zooms to a given center and scale 
     void zoomByScale(int x, int y, double scaleFactor);
     
@@ -389,7 +386,8 @@ private:
     //! current layer in legend
     QgsMapLayer* mCurrentLayer;
 
-    Q3Canvas* mCanvas;
+    //! graphics scene manages canvas items
+    QGraphicsScene* mScene;
     
     //! pointer to current map tool
     QgsMapTool* mMapTool;

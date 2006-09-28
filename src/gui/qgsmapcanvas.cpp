@@ -18,10 +18,11 @@ email                : sherman at mrcc.com
 
 
 #include <QtGlobal>
-#include <Q3Canvas>
-#include <Q3CanvasRectangle>
 #include <QApplication>
 #include <QCursor>
+#include <QGraphicsItem>
+#include <QGraphicsScene>
+#include <QGraphicsView>
 #include <QKeyEvent>
 #include <QMouseEvent>
 #include <QPainter>
@@ -78,13 +79,13 @@ const double QgsMapCanvas::scaleDefaultMultiple = 2.0;
 
 
   QgsMapCanvas::QgsMapCanvas(QWidget * parent, const char *name)
-: Q3CanvasView(parent, name),
+: QGraphicsView(parent),
   mCanvasProperties(new CanvasProperties)
 {
-  mCanvas = new Q3Canvas();
-  setCanvas(mCanvas);
-  setHScrollBarMode(Q3ScrollView::AlwaysOff);
-  setVScrollBarMode(Q3ScrollView::AlwaysOff);
+  mScene = new QGraphicsScene();
+  setScene(mScene);
+  setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+  setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   
   mCurrentLayer = NULL;
   mMapOverview = NULL;
@@ -98,14 +99,15 @@ const double QgsMapCanvas::scaleDefaultMultiple = 2.0;
   // by default, the canvas is rendered
   mRenderFlag = true;
   
-  viewport()->setMouseTracking(true);
+  setMouseTracking(true);
   setFocusPolicy(Qt::StrongFocus);
   
   mMapRender = new QgsMapRender;
 
   // create map canvas item which will show the map
-  mMap = new QgsMapCanvasMap(mCanvas, mMapRender);
-  mMap->show();
+  mMap = new QgsMapCanvasMap(this);
+  mScene->addItem(mMap);
+  mScene->update(); // porting??
   
   moveCanvasContents(TRUE);
   
@@ -129,16 +131,16 @@ QgsMapCanvas::~QgsMapCanvas()
   // delete canvas items prior to deleteing the canvas
   // because they might try to update canvas when it's
   // already being destructed, ends with segfault
-  Q3CanvasItemList list = mCanvas->allItems();
-  Q3CanvasItemList::iterator it = list.begin();
+  QList<QGraphicsItem*> list = mScene->items();
+  QList<QGraphicsItem*>::iterator it = list.begin();
   while (it != list.end())
   {
-    Q3CanvasItem* item = *it;
+    QGraphicsItem* item = *it;
     delete item;
     it++;
   }
   
-  delete mCanvas;
+  delete mScene;
 
   delete mMapRender;
   // mCanvasProperties auto-deleted via std::auto_ptr
@@ -167,6 +169,7 @@ QgsMapRender* QgsMapCanvas::mapRender()
 {
   return mMapRender;
 }
+
 
 QgsMapLayer* QgsMapCanvas::getZpos(int index)
 {
@@ -315,27 +318,13 @@ void QgsMapCanvas::refresh()
   if (mRenderFlag)
   {
     clear();
-    updateContents();
+    
+    // schedule update of map
+    mMap->update();
   }
 } // refresh
 
-void QgsMapCanvas::drawContents(QPainter * p, int cx, int cy, int cw, int ch)
-{
-  //QgsDebugMsg("QgsMapCanvas::drawContents");
-  
-  if (mDirty && mRenderFlag && !mFrozen)
-  {
-    render();
-    
-    // XXX painting pixmap immediately after it's been rendered
-    // doesn't work, ending with warnings that painter isn't active
-    updateContents();
-    return;
-  }
-  
-  Q3CanvasView::drawContents(p, cx, cy, cw, ch);
-}
-  
+
 void QgsMapCanvas::render()
 {
   QgsDebugMsg("Starting rendering");
@@ -632,7 +621,7 @@ void QgsMapCanvas::keyReleaseEvent(QKeyEvent * e)
 } //keyReleaseEvent()
 
 
-void QgsMapCanvas::contentsMousePressEvent(QMouseEvent * e)
+void QgsMapCanvas::mousePressEvent(QMouseEvent * e)
 {
   // call handler of current map tool
   if (mMapTool)
@@ -647,7 +636,7 @@ void QgsMapCanvas::contentsMousePressEvent(QMouseEvent * e)
 } // mousePressEvent
 
 
-void QgsMapCanvas::contentsMouseReleaseEvent(QMouseEvent * e)
+void QgsMapCanvas::mouseReleaseEvent(QMouseEvent * e)
 {
   // call handler of current map tool
   if (mMapTool)
@@ -682,19 +671,9 @@ void QgsMapCanvas::resizeEvent(QResizeEvent * e)
 {
   int width = e->size().width(), height = e->size().height();
 //  int width = visibleWidth(), height = visibleHeight();
-  mCanvas->resize(width, height);
+  mScene->setSceneRect(QRectF(0,0,width, height));
 
-  // Adjust the size (in pixels) of that we draw by the margins in
-  // the widget that the drawing eventually gets placed in. In my testing
-  // the margin was 2 pixels on each border. Add 1 more pixel just to
-  // be sure that the drawn map appears fully within the margins in
-  // the widget.
-  int top, bottom, right, left;
-  getContentsMargins(&left, &top, &right, &bottom);
-  width = width - (left + right + 1);
-  height = height - (top + bottom + 1);
-
-  mMap->resize(/*e->size()*/ QSize(width,height));
+  mMap->resize(QSize(width,height));
 
   // notify canvas items of change
   updateCanvasItemsPositions();
@@ -706,8 +685,10 @@ void QgsMapCanvas::resizeEvent(QResizeEvent * e)
 
 void QgsMapCanvas::updateCanvasItemsPositions()
 {
-  Q3CanvasItemList list = mCanvas->allItems();
-  Q3CanvasItemList::iterator it = list.begin();
+  // TODO: porting: this is probably not needed
+/*
+  QList<QGraphicsItem*> list = mScene->items();
+  QList<QGraphicsItem*>::iterator it = list.begin();
   while (it != list.end())
   {
     QgsMapCanvasItem* item = dynamic_cast<QgsMapCanvasItem*>(*it);
@@ -719,6 +700,7 @@ void QgsMapCanvas::updateCanvasItemsPositions()
   
     it++;
   }
+  */
 }
 
 
@@ -741,7 +723,7 @@ void QgsMapCanvas::zoomWithCenter(int x, int y, bool zoomIn)
 }
 
 
-void QgsMapCanvas::contentsMouseMoveEvent(QMouseEvent * e)
+void QgsMapCanvas::mouseMoveEvent(QMouseEvent * e)
 {
   mCanvasProperties->mouseLastXY = e->pos();
 
@@ -806,7 +788,7 @@ void QgsMapCanvas::setMapTool(QgsMapTool* tool)
     // it calls setMapTool(NULL)
     
     // first set current map tool as null
-    QgsMapTool* lastTool = mMapTool;
+    //QgsMapTool* lastTool = mMapTool;
     mMapTool = NULL;
     
     // then delete the tool
@@ -841,13 +823,15 @@ void QgsMapCanvas::setCanvasColor(const QColor & theColor)
   // background of map's pixmap
   mMap->setBgColor(theColor);
   
-  // background of the Q3CavnasView
-  QPalette palette;
+  // background of the QGraphicsView
+  QBrush bgBrush(theColor);
+  setBackgroundBrush(bgBrush);
+  /*QPalette palette;
   palette.setColor(backgroundRole(), theColor);
-  setPalette(palette);
+  setPalette(palette);*/
   
-  // background of Q3Canvas
-  mCanvas->setBackgroundColor(theColor);
+  // background of QGraphicsScene
+  mScene->setBackgroundBrush(bgBrush);
 } // setbgColor
 
 
@@ -879,9 +863,9 @@ bool QgsMapCanvas::isFrozen()
 } // freeze
 
 
-QPixmap * QgsMapCanvas::canvasPixmap()
+QPixmap& QgsMapCanvas::canvasPixmap()
 {
-  return &mMap->pixmap();
+  return mMap->pixmap();
 } // canvasPixmap
 
 
@@ -979,7 +963,7 @@ void QgsMapCanvas::panAction(QMouseEvent * e)
   moveCanvasContents();
   
   // update canvas
-  updateContents();
+  //updateContents(); // TODO: need to update?
 }
 
 void QgsMapCanvas::moveCanvasContents(bool reset)
@@ -992,11 +976,11 @@ void QgsMapCanvas::moveCanvasContents(bool reset)
   
   mMap->setPanningOffset(pnt);
   
-  Q3CanvasItemList list = mCanvas->allItems();
-  Q3CanvasItemList::iterator it = list.begin();
+  QList<QGraphicsItem*> list = mScene->items();
+  QList<QGraphicsItem*>::iterator it = list.begin();
   while (it != list.end())
   {
-    Q3CanvasItem* item = *it;
+    QGraphicsItem* item = *it;
     
     if (item != mMap)
     {
