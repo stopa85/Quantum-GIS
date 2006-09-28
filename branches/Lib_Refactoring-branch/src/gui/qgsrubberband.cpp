@@ -93,24 +93,23 @@ void QgsRubberBand::movePoint(int index, const QgsPoint& p)
 /*!
   Draw the shape in response to an update event.
 */
-void QgsRubberBand::drawShape(QPainter & p)
+void QgsRubberBand::paint(QPainter* p)
 {
   if (mPoints.size() > 1)
   {
-    QPolygon pts;
-    int i;
-    for (i = 0; i < mPoints.size(); i++)
-      pts.append(toCanvasCoords(mPoints[i]));
+    QPolygonF pts;
+    for (uint i = 0; i < mPoints.size(); i++)
+      pts.append(toCanvasCoords(mPoints[i])-pos());
     
-    p.setPen(mPen);
-    p.setBrush(mBrush);
+    p->setPen(mPen);
+    p->setBrush(mBrush);
     if (mIsPolygon)
     {
-      p.drawPolygon(pts);
+      p->drawPolygon(pts);
     }
     else
     {
-      p.drawPolyline(pts);
+      p->drawPolyline(pts);
     }
   }
 }
@@ -120,8 +119,7 @@ void QgsRubberBand::updateRect()
   if (mPoints.size() > 0)
   {
     QgsRect r(mPoints[0], mPoints[0]);
-    int i;
-    for (i = 1; i < mPoints.size(); i++)
+    for (uint i = 1; i < mPoints.size(); i++)
       r.combineExtentWith(mPoints[i].x(), mPoints[i].y());
     setRect(r);
   }

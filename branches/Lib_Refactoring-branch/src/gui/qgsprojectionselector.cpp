@@ -18,6 +18,7 @@
 //qgis includes
 #include "qgis.h" //magick numbers here
 #include "qgsapplication.h"
+#include "qgslogger.h"
 
 //qt includes
 #include <QDir>
@@ -146,10 +147,7 @@ QString QgsProjectionSelector::ogcWmsCrsFilterAsSqlExpression(QSet<QString> * cr
     sqlExpression += ")";
   }
 
-#ifdef QGISDEBUG
-  std::cout << "QgsProjectionSelector::crsFilterAsSqlExpression: exiting with '"
-            << sqlExpression.toLocal8Bit().data() << "'." << std::endl;
-#endif
+  QgsDebugMsg("exiting with '" + sqlExpression + "'.");
 
   return sqlExpression;
 }
@@ -196,9 +194,7 @@ void QgsProjectionSelector::applySRSNameSelection()
      )
   {
     //get the srid given the wkt so we can pick the correct list item
-#ifdef QGISDEBUG
-    std::cout << "QgsProjectionSelector::applySRSNameSelection called with \n" << mSRSNameSelection.toLocal8Bit().data() << std::endl;
-#endif
+    QgsDebugMsg("called with " + mSRSNameSelection);
     QList<QTreeWidgetItem*> nodes = lstCoordinateSystems->findItems(mSRSNameSelection, Qt::MatchExactly|Qt::MatchRecursive, 0);
   
     if (nodes.count() > 0)
@@ -276,8 +272,8 @@ QString QgsProjectionSelector::getCurrentProj4String()
       QString myDatabaseFileName;
       QString mySrsId = myItem->text(1);
 
-      std::cout << " QgsProjectionSelector::getCurrentProj4String :  mySrsId = " << mySrsId.toLocal8Bit().data() << std::endl;
-      std::cout << " QgsProjectionSelector::getCurrentProj4String :  USER_PROJECTION_START_ID = " << USER_PROJECTION_START_ID << std::endl;
+      QgsDebugMsg("mySrsId = " + mySrsId);
+      QgsDebugMsg("USER_PROJECTION_START_ID = " + QString::number(USER_PROJECTION_START_ID));
       //
       // Determine if this is a user projection or a system on
       // user projection defs all have srs_id >= 100000
@@ -289,20 +285,15 @@ QString QgsProjectionSelector::getCurrentProj4String()
         myFileInfo.setFile(myDatabaseFileName);
         if ( !myFileInfo.exists( ) ) //its unlikely that this condition will ever be reached
         {
-          std::cout << " QgsProjectionSelector::getCurrentProj4String :  users qgis.db not found" << std::endl;
+          QgsLogger::warning("user's qgis.db not found: " + myDatabaseFileName);
           return NULL;
-        }
-        else
-        {
-          QgsDebug(myDatabaseFileName);
-          QgsDebug("File not found");
         }
       }
       else //must be  a system projection then
       {
         myDatabaseFileName =  mSrsDatabaseFileName;
       }
-      std::cout << "QgsProjectionSelector::getCurrentProj4String db = " << myDatabaseFileName.toLocal8Bit().data() << std::endl;
+      QgsDebugMsg("db = " + myDatabaseFileName);
 
 
       sqlite3 *db;
@@ -310,7 +301,7 @@ QString QgsProjectionSelector::getCurrentProj4String()
       rc = sqlite3_open(myDatabaseFileName.toLocal8Bit().data(), &db);
       if(rc)
       {
-        std::cout <<  "Can't open database: " <<  sqlite3_errmsg(db) << std::endl;
+        QgsLogger::warning("Can't open database: " + QString(sqlite3_errmsg(db)));
         // XXX This will likely never happen since on open, sqlite creates the
         //     database if it does not exist.
         assert(rc == 0);
@@ -320,9 +311,8 @@ QString QgsProjectionSelector::getCurrentProj4String()
       sqlite3_stmt *ppStmt;
       QString sql = "select parameters from tbl_srs where srs_id = ";
       sql += mySrsId;
-#ifdef QGISDEBUG
-      std::cout << "Selection sql : " << sql.toLocal8Bit().data() << std::endl;
-#endif
+      
+      QgsDebugMsg("Selection sql: " + sql);
 
       rc = sqlite3_prepare(db, sql.utf8(), sql.length(), &ppStmt, &pzTail);
       // XXX Need to free memory from the error msg if one is set
@@ -973,11 +963,7 @@ long QgsProjectionSelector::getLargestSRSIDMatch(QString theSql)
       }
     }
   }
-  else
-  {
-    QgsDebug(myDatabaseFileName);
-    QgsDebug("File not found");
-  }
+  
   //only bother looking in srs.db if it wasnt found above
 
   myResult = sqlite3_open(mSrsDatabaseFileName.toLocal8Bit().data(), &myDatabase);

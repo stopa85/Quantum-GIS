@@ -149,7 +149,7 @@ void QgsGrassPlugin::initGui()
 
   // Create region rubber band
   mRegionBand = new QgsRubberBand(mCanvas, 1);
-  mRegionBand->setZ(20);
+  mRegionBand->setZValue(20);
   mRegionBand->hide();
 
   // Create the action for tool

@@ -20,11 +20,9 @@ class PositionMarker : public QgsMapCanvasItem
     
     void setAngle(double angle);
     
-    //void setIconSize(int iconSize);
+    void paint(QPainter* p);
 
-    void drawShape(QPainter & p);
-
-    void updatePosition();
+    QRectF boundingRect() const;
     
   protected:
     

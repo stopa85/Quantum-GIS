@@ -43,10 +43,10 @@ class GUI_EXPORT QgsVertexMarker : public QgsMapCanvasItem
     
     void setIconSize(int iconSize);
     
-    void drawShape(QPainter & p);
-
-    void updatePosition();
+    void paint(QPainter* p);
     
+    QRectF boundingRect() const;
+
   protected:
     
     //! icon to be shown

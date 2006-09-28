@@ -38,7 +38,7 @@ class GUI_EXPORT QgsRubberBand: public QgsMapCanvasItem
     void movePoint(int index, const QgsPoint& p);
 
   protected:
-    virtual void drawShape(QPainter & p);
+    virtual void paint(QPainter* p);
     
     //! recalculates needed rectangle
     void updateRect();
