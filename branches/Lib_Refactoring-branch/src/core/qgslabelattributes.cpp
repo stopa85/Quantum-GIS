@@ -350,7 +350,7 @@ bool QgsLabelAttributes::borderColorIsSet ( void ) const
     return mBorderColorIsSet;
 }
 
-const QColor & QgsLabelAttributes::borderColor ( void ) const
+QColor QgsLabelAttributes::borderColor ( void ) const
 {
     return mBorderPen.color();
 }

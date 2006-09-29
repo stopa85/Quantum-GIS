@@ -350,7 +350,7 @@ double QgsDistanceArea::getBearing(const QgsPoint& p1, const QgsPoint& p2)
   }
   
   double bearing;
-  double dist = computeDistanceBearing(pp1, pp2, &bearing);
+  computeDistanceBearing(pp1, pp2, &bearing);
   return bearing;
 }
 

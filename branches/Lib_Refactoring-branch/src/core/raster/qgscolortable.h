@@ -73,7 +73,7 @@ public:
     int interpretation ( void );
 
     /** \brief Add a discrete color */
-    void add ( int index, unsigned char c1, unsigned char c2, unsigned char c3, unsigned char c4 = 0 );
+    void add ( uint index, unsigned char c1, unsigned char c2, unsigned char c3, unsigned char c4 = 0 );
 
     /** \brief Add a ramp rule */ 
     void add ( double min,  double max,

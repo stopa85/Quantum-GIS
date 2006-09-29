@@ -315,7 +315,7 @@ void QgsLabel::renderLabel( QPainter * painter, QgsRect *viewExtent,
     {
       std::vector<QgsPoint> points;
       labelPoint ( points, feature );
-      for (int i = 0; i < points.size(); ++i)
+      for (uint i = 0; i < points.size(); ++i)
       {
         renderLabel(painter, points[i], coordTransform, 
                     transform, text, font, pen, dx, dy,
@@ -436,7 +436,7 @@ void QgsLabel::setLabelField ( int attr, const QString str )
     mLabelField[attr] = str;
 
     mLabelFieldIdx[attr] = -1;
-    for ( int i = 0; i < mField.size(); i++ )
+    for ( uint i = 0; i < mField.size(); i++ )
     {
         if ( mField[i].name().compare(str) == 0 )
         {

@@ -45,10 +45,10 @@ QgsColorTable::~QgsColorTable()
 {
 }
 
-void QgsColorTable::add ( int index, unsigned char c1, unsigned char c2, unsigned char c3, unsigned char c4 )
+void QgsColorTable::add ( uint index, unsigned char c1, unsigned char c2, unsigned char c3, unsigned char c4 )
 {
 #ifdef QGISDEBUG
-    QgsLogger::debug("QgsColorTable::add() index", index, 1, __FILE__, __FUNCTION__, __LINE__);
+    QgsLogger::debug("QgsColorTable::add() index", (int)index, 1, __FILE__, __FUNCTION__, __LINE__);
 #endif
 
     if ( mDiscrete.size() == 0 ) {
@@ -138,7 +138,7 @@ bool QgsColorTable::color ( double value, int *c1, int *c2, int *c3 )
 	    return true;
 	}
     } else if ( mDiscrete.size() > 0 ) {
-	int index = (int) value;
+	uint index = (uint) value;
 	if ( index < mDiscrete.size() ) {
 	    *c1 = mDiscrete[index].c1;
 	    *c2 = mDiscrete[index].c2;
@@ -186,15 +186,15 @@ void QgsColorTable::print ( void )
     QgsLogger::debug("******** Color table ********", 1, __FILE__, __FUNCTION__,  __LINE__);
     QgsLogger::debug("Discrete table size", (int)mDiscrete.size(), 1, __FILE__, __FUNCTION__,  __LINE__);
 
-    for ( int i = 0; i < mDiscrete.size(); i++ ) {
-	QgsLogger::debug("i", i, 2, __FILE__, __FUNCTION__,  __LINE__);
+    for ( uint i = 0; i < mDiscrete.size(); i++ ) {
+      QgsLogger::debug("i", (int)i, 2, __FILE__, __FUNCTION__,  __LINE__);
 	QgsLogger::debug("c1", (int) mDiscrete[i].c1, 2, __FILE__, __FUNCTION__,  __LINE__);
 	QgsLogger::debug("c2", (int) mDiscrete[i].c2, 2, __FILE__, __FUNCTION__,  __LINE__);
 	QgsLogger::debug("c3", (int) mDiscrete[i].c3, 2, __FILE__, __FUNCTION__,  __LINE__);
     }
 
     QgsLogger::debug("Ramp table size", (int)mRamp.size(), 1, __FILE__, __FUNCTION__,  __LINE__);
-    for ( int i = 0; i < mRamp.size(); i++ ) {
+    for ( uint i = 0; i < mRamp.size(); i++ ) {
         std::cerr << "  min = " << mRamp[i].min << " max = " << mRamp[i].max 
 	          << " min_c1 = " << (int)mRamp[i].min_c1 << " min_c2 = " << (int)mRamp[i].min_c2 
 	          << " min_c3 = " << (int)mRamp[i].min_c3 << " max_c1 = " << (int)mRamp[i].max_c1
