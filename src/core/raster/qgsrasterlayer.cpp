@@ -4293,7 +4293,11 @@ void *QgsRasterLayer::readData ( GDALRasterBand *gdalBand, QgsRasterViewPort *vi
                                       viewPort->drawableAreaXDimInt,
                                       viewPort->drawableAreaYDimInt,
                                       type, 0, 0 );
-                                      
+  if (myErr != CPLE_None)
+  {
+    QgsLogger::warning("RaterIO error: " + QString(CPLGetLastErrorMsg()));
+  }
+
   return data;
 }
 
@@ -4691,7 +4695,7 @@ void QgsRasterLayer::identify(const QgsPoint& point, std::map<QString,QString>& 
     int col = (int) floor ( (x - mLayerExtent.xMin()) / xres );
     int row = (int) floor ( (mLayerExtent.yMax() - y) / yres );
 
-    QgsDebugMsg( "row = " + QString::number(row) + " col = " + QString::number(col))
+    QgsDebugMsg( "row = " + QString::number(row) + " col = " + QString::number(col));
 
     for ( int i = 1; i <= gdalDataset->GetRasterCount(); i++ )
     {
@@ -4701,6 +4705,11 @@ void QgsRasterLayer::identify(const QgsPoint& point, std::map<QString,QString>& 
       void *data = CPLMalloc ( size );
 
       CPLErr err = gdalBand->RasterIO ( GF_Read, col, row, 1, 1, data, 1, 1, type, 0, 0 );
+
+      if (err != CPLE_None)
+      {
+        QgsLogger::warning("RaterIO error: " + QString(CPLGetLastErrorMsg()));
+      }
 
       double value = readValue ( data, type, 0 );
 #ifdef QGISDEBUG

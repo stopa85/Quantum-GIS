@@ -903,6 +903,9 @@ bool QgsGeometry::moveVertexAt(double x, double y, QgsGeometryVertexIndex atVert
 	  }
 	return false;
       }
+    
+    default:
+      return false;
     }
 }
 

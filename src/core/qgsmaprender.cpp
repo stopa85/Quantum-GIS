@@ -201,8 +201,6 @@ void QgsMapRender::render(QPainter* painter)
   
   mDrawing = true;
   
-  int myRenderCounter = 0;
-  
   QgsCoordinateTransform* ct;
 
 #ifdef QGISDEBUG

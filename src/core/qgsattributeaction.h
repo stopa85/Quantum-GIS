@@ -89,7 +89,7 @@ class  CORE_EXPORT QgsAttributeAction
   // index into values which indicates which value in the values vector
   // is to be used if the action has a default placeholder. 
   void doAction(unsigned int index, const std::vector<std::pair<QString, QString> >& values,
-		int defaultValueIndex = 0);
+		uint defaultValueIndex = 0);
 
   //! Returns a const_iterator that points to the QgsAction at the
   // given position in the data collection. The insertion order is
@@ -115,7 +115,7 @@ class  CORE_EXPORT QgsAttributeAction
   //! Expands the given action, replacing all %'s with the value as
   // given.  
   static QString expandAction(QString action, const std::vector<std::pair<QString, QString> >& values,
-			      int defaultValueIndex);
+			      uint defaultValueIndex);
 
   //! Writes the actions out in XML format
   bool writeXML(QDomNode& layer_node, QDomDocument& doc) const;

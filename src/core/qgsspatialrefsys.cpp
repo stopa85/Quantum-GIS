@@ -1115,10 +1115,7 @@ bool QgsSpatialRefSys::readXML( QDomNode & theNode )
      //@TODO this srs needs to be validated!!!
      mIsValidFlag=true;//shamelessly hard coded for now
       
-#ifdef WIN32
-	 return true;
-#endif
-
+     return true;
 }
 
 bool QgsSpatialRefSys::writeXML( QDomNode & theNode, QDomDocument & theDoc ) const
@@ -1166,10 +1163,8 @@ bool QgsSpatialRefSys::writeXML( QDomNode & theNode, QDomDocument & theDoc ) con
   mySrsElement.appendChild(myGeographicFlagElement);
 
   myLayerNode.appendChild( mySrsElement );
-#ifdef WIN32
-  return true;
-#endif
 
+  return true;
 }
 
 

@@ -163,7 +163,7 @@ public:
     /* Border */
     void  setBorderColor ( const QColor &color );
     bool  borderColorIsSet ( void ) const;
-    const QColor & borderColor ( void ) const;
+    QColor borderColor ( void ) const;
 
     void  setBorderWidth ( int width );
     bool  borderWidthIsSet ( void ) const;

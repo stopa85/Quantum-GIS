@@ -41,7 +41,7 @@ void QgsAttributeAction::addAction(QString name, QString action,
 }
 
 void QgsAttributeAction::doAction(unsigned int index, const std::vector<std::pair<QString, QString> >& values,
-				  int defaultValueIndex) 
+				  uint defaultValueIndex) 
 {
   aIter action = retrieveAction(index);
 
@@ -80,7 +80,7 @@ QgsAttributeAction::aIter QgsAttributeAction::retrieveAction(unsigned int index)
 }
 
 QString QgsAttributeAction::expandAction(QString action, const std::vector<std::pair<QString, QString> >& values, 
-					 int clickedOnValue)
+					 uint clickedOnValue)
 {
   // This function currently replaces all %% characters in the action
   // with the value from values[clickedOnValue].second, and then

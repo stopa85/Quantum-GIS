@@ -20,6 +20,7 @@
 #include "qgssinglesymbolrenderer.h"
 
 #include "qgsfeature.h"
+#include "qgslogger.h"
 #include "qgssymbol.h"
 #include "qgssymbologyutils.h"
 #include "qgsvectorlayer.h"
@@ -127,7 +128,7 @@ void QgsSingleSymbolRenderer::readXML(const QDomNode& rnode, QgsVectorLayer& vl)
     
     if ( synode.isNull() )
     {
-        qDebug( "%s:%d in project file no symbol node in renderitem DOM" );
+        QgsDebugMsg("No symbol node in project file's renderitem DOM");
         // XXX abort?
     }
     else

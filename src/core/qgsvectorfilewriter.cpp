@@ -247,6 +247,11 @@ bool QgsVectorFileWriter::createField(QString theName, OGRFieldType theType, int
           break;
       case OFTBinary:
           break;
+      case OFTDate:
+      case OFTTime:
+      case OFTDateTime:
+          //XXX Find out how this is used!!!!!!!
+          break;
   }
 
   OGR_L_CreateField( mLayerHandle, myFieldDefinitionHandle, FALSE );
@@ -561,4 +566,5 @@ QString QgsVectorFileWriter::writeVectorLayerAsShapefile(QString shapefileName, 
   
   delete poDS;
 
+  return NULL;
 }
