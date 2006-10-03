@@ -235,8 +235,10 @@ void QgsMapCanvas::setLayerSet(QList<QgsMapCanvasLayer>& layers)
   
   std::deque<QString>& layerSetOld = mMapRender->layerSet();
   
+  bool layerSetChanged = (layerSetOld != layerSet);
+  
   // update only if needed
-  if (layerSetOld != layerSet)
+  if (layerSetChanged)
   {
     for (i = 0; i < layerCount(); i++)
     {
@@ -262,8 +264,9 @@ void QgsMapCanvas::setLayerSet(QList<QgsMapCanvasLayer>& layers)
     }
   }
   
-  if (layerSetOld != layerSet)
+  if (layerSetChanged)
   {
+    QgsDebugMsg("Layers have changed, refreshing");
     emit layersChanged();
   
     refresh();
@@ -685,8 +688,6 @@ void QgsMapCanvas::resizeEvent(QResizeEvent * e)
 
 void QgsMapCanvas::updateCanvasItemsPositions()
 {
-  // TODO: porting: this is probably not needed
-/*
   QList<QGraphicsItem*> list = mScene->items();
   QList<QGraphicsItem*>::iterator it = list.begin();
   while (it != list.end())
@@ -700,7 +701,6 @@ void QgsMapCanvas::updateCanvasItemsPositions()
   
     it++;
   }
-  */
 }
 
 

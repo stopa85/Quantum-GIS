@@ -96,6 +96,11 @@ class QgsGrassEditLayer : public QgsMapCanvasItem
       return QRectF(0,0, mMapCanvas->width(), mMapCanvas->height());
     }
     
+    virtual void updatePosition()
+    {
+      setPos(QPointF(mPanningOffset));
+    }
+    
     QPixmap& pixmap() { return mPixmap; }
     
   private:
@@ -516,7 +521,6 @@ void QgsGrassEdit::init()
   connect( mCanvas, SIGNAL(renderComplete(QPainter *)), this, SLOT(postRender(QPainter *)));
 
   mCanvasEdit = new QgsGrassEditLayer(mCanvas);
-  mCanvasEdit->show();
   
   mPixmap = &mCanvasEdit->pixmap();
 
@@ -524,8 +528,6 @@ void QgsGrassEdit::init()
   mRubberBandIcon = new QgsVertexMarker(mCanvas);
   mRubberBandLine->setZValue(20);
   mRubberBandIcon->setZValue(20);
-  mRubberBandLine->show();
-  mRubberBandIcon->show();
 
   // Init GUI values
   mCatModeBox->insertItem( "Next not used", CAT_MODE_NEXT );
@@ -1543,7 +1545,10 @@ void QgsGrassEdit::displayMap ()
   painter->end();
   delete painter;
   
-  mCanvas->update();
+  // porting mCanvas->update();
+  mCanvasEdit->update();
+  mRubberBandIcon->update();
+  mRubberBandLine->update();
 }
 
 void QgsGrassEdit::displayUpdated (void)
@@ -1580,7 +1585,10 @@ void QgsGrassEdit::displayUpdated (void)
   painter->end();
   delete painter;
 
-  mCanvas->update();
+  // porting mCanvas->update();
+  mCanvasEdit->update();
+  mRubberBandIcon->update();
+  mRubberBandLine->update();
 }
 
 void QgsGrassEdit::displayElement ( int line, const QPen & pen, int size, QPainter *painter)
@@ -1622,7 +1630,8 @@ void QgsGrassEdit::displayElement ( int line, const QPen & pen, int size, QPaint
 
   if ( !painter ) {
     myPainter->end();
-    mCanvas->update();
+    // porting mCanvas->update();
+    mCanvasEdit->update();
     delete myPainter;
   }
 }
@@ -1790,7 +1799,8 @@ void QgsGrassEdit::displayIcon ( double x, double y, const QPen & pen,
 
   if ( !painter ) {
     myPainter->end();
-    mCanvas->update();
+    //mCanvas->update();
+    mCanvasEdit->update();
     delete myPainter;
   }
 }

@@ -8,8 +8,7 @@ QgsGeorefDataPoint::QgsGeorefDataPoint(QgsMapCanvas* mapCanvas, int id,
  : QgsMapCanvasItem(mapCanvas), mId(id),
    mPixelCoords(pixelCoords), mMapCoords(mapCoords)
 {
-  // TODO: update position when extents has changed
-  setPos(toCanvasCoords(mPixelCoords));
+  updatePosition();
 }
 
 
@@ -32,4 +31,9 @@ void QgsGeorefDataPoint::paint(QPainter* p)
 QRectF QgsGeorefDataPoint::boundingRect() const
 {
   return QRectF(-2,-2, mTextBounds.width() + 6, mTextBounds.height() + 6);
+}
+
+void QgsGeorefDataPoint::updatePosition()
+{
+  setPos(toCanvasCoords(mPixelCoords));
 }

@@ -90,7 +90,7 @@ void QgsMapLayer::setLayerName(const QString & _newVal)
 {
   QgsDebugMsg("QgsMapLayer::setLayerName: new name is '" + _newVal);
   mLayerName = capitaliseLayerName(_newVal);
-  // TODO: emit signal that layer name has been changed (for legend) [MD]
+  emit layerNameChanged();
 }
 
 /** Read property of QString layerName. */
