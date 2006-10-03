@@ -59,7 +59,7 @@ void QgsRubberBand::reset(bool isPolygon)
   mPoints.resize(1); // addPoint assumes an initial allocated point
   mIsPolygon = isPolygon;
   updateRect();
-  updateCanvas();
+  update();
 }
 
 /*!
@@ -70,7 +70,7 @@ void QgsRubberBand::addPoint(const QgsPoint & p)
   mPoints[mPoints.size()-1] = p; // Current mouse position becomes added point
   mPoints.push_back(p); // Allocate new point to continue tracking current mouse position
   updateRect();
-  updateCanvas();
+  update();
 }
 
 /*!
@@ -80,14 +80,14 @@ void QgsRubberBand::movePoint(const QgsPoint & p)
 {
   mPoints[mPoints.size()-1] = p; // Update current mouse position
   updateRect();
-  updateCanvas();
+  update();
 }
 
 void QgsRubberBand::movePoint(int index, const QgsPoint& p)
 {
   mPoints[index] = p;
   updateRect();
-  updateCanvas();
+  update();
 }
 
 /*!

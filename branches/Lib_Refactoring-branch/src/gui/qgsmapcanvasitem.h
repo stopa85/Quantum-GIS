@@ -41,12 +41,15 @@ class GUI_EXPORT QgsMapCanvasItem : public QObject, public QGraphicsItem
     virtual void paint(QPainter * painter,
                        const QStyleOptionGraphicsItem * option,
                        QWidget * widget = 0);
-
+    
     //! schedules map canvas for repaint
     void updateCanvas();
     
 
   public:
+
+    //! called on changed extent or resize event to update position of the item
+    virtual void updatePosition();
 
     //! default implementation for canvas items
     virtual QRectF boundingRect() const;

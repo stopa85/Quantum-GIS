@@ -86,6 +86,9 @@ public:
     /**Toggle editing for layer*/
     void toggleEditing();
     
+    /**Layer name has changed - set it also in legend*/
+    void layerNameChanged();
+    
  protected:
 
     /** layer identified by its layer id */

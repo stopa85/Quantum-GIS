@@ -230,8 +230,11 @@ signals:
     /** Emit a signal to notify of a progress event */
     void setProgress(int theProgress, int theTotalSteps);
 
-    /** Emit a signal with status (e.g. to be caught by QgiAapp and display a msg on status bar) */
+    /** Emit a signal with status (e.g. to be caught by QgisApp and display a msg on status bar) */
     void setStatus(QString theStatusQString);
+    
+    /** Emit a signal that layer name has been changed */
+    void layerNameChanged();
 
     /** This signal should be connected with the slot QgsMapCanvas::refresh()
      * @TODO: to be removed - GUI dependency

@@ -280,25 +280,31 @@ void QgsLegend::mouseReleaseEvent(QMouseEvent * e)
   QTreeWidget::mouseReleaseEvent(e);
   setCursor(QCursor(Qt::ArrowCursor));
 
-  if (mItemBeingMoved)
+  mMousePressedFlag = false;
+
+  if (!mItemBeingMoved)
   {
-      QTreeWidgetItem *destItem = itemAt(e->pos());
+    return;
+  }
       
-      QgsLegendItem* origin = dynamic_cast<QgsLegendItem*>(mItemBeingMoved);
-      QgsLegendItem* dest = dynamic_cast<QgsLegendItem*>(destItem);
+  QTreeWidgetItem *destItem = itemAt(e->pos());
+      
+  QgsLegendItem* origin = dynamic_cast<QgsLegendItem*>(mItemBeingMoved);
+  QgsLegendItem* dest = dynamic_cast<QgsLegendItem*>(destItem);
 
-      if(!dest || !origin)
-      {
-	  return;
-      }
+  // no change?
+  if(!dest || !origin || getItemPos(dest) == mItemBeingMovedOrigPos)
+  {
+    mItemBeingMoved = NULL;
+    return;
+  }
 
-      if(dest && origin && getItemPos(dest) != mItemBeingMovedOrigPos)
-      {
 	QgsLegendItem::LEGEND_ITEM_TYPE originType = origin->type();
 	QgsLegendItem::LEGEND_ITEM_TYPE destType = dest->type();
 
 	if(originType == QgsLegendItem::LEGEND_LAYER_FILE && destType == QgsLegendItem::LEGEND_LAYER_FILE_GROUP)
 	  {
+      QgsDebugMsg("Legend layer file moved to layer file group");
 	    QgsMapLayer* origLayer = ((QgsLegendLayerFile*)(origin))->layer();
 	    if(dest->childCount() > 1)
 	      {
@@ -315,11 +321,11 @@ void QgsLegend::mouseReleaseEvent(QMouseEvent * e)
 		      }
 		    currentItem = currentItem->nextSibling();
 		  }                  
-		mMapCanvas->refresh();
 	      }
 	  }
 	else if(originType == QgsLegendItem::LEGEND_LAYER_FILE && destType == QgsLegendItem::LEGEND_LAYER_FILE)
 	  {
+      QgsDebugMsg("Legend layer file moved to legend layer file");
 	    QgsMapLayer* origLayer = ((QgsLegendLayerFile*)(origin))->layer();
 	    QgsMapLayer* destLayer = ((QgsLegendLayerFile*)(dest))->layer();
 
@@ -340,7 +346,6 @@ void QgsLegend::mouseReleaseEvent(QMouseEvent * e)
 			  }
 			currentItem = dynamic_cast<QgsLegendItem*>(currentItem)->nextSibling();
 		      }
-		   mMapCanvas->refresh(); 
 		  }
 	      }
 	    else
@@ -350,6 +355,10 @@ void QgsLegend::mouseReleaseEvent(QMouseEvent * e)
 		origLayer->copySymbologySettings(*destLayer);
 	      }
 	  }
+    else
+    {
+      QgsDebugMsg("Other type of drag'n'drop happened!");
+    }
 	
 	 std::deque<QString> layersAfterRelease = layerIDs(); //test if canvas redraw is really necessary
    if(layersAfterRelease != mLayersPriorToMove)
@@ -357,9 +366,7 @@ void QgsLegend::mouseReleaseEvent(QMouseEvent * e)
      // z-order has changed - update layer set
      updateMapCanvasLayerSet();
    }
-      }
-  }
-  mMousePressedFlag = false;
+
   mItemBeingMoved = NULL;
 }
 

@@ -47,6 +47,8 @@ class GUI_EXPORT QgsVertexMarker : public QgsMapCanvasItem
     
     QRectF boundingRect() const;
 
+    virtual void updatePosition();
+
   protected:
     
     //! icon to be shown

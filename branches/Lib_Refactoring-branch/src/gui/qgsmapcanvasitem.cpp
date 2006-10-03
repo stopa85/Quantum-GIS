@@ -18,6 +18,7 @@
 #include "qgsmapcanvasitem.h"
 #include "qgsmapcanvas.h"
 #include "qgsmaptopixel.h"
+#include <QGraphicsScene>
 #include <QRect>
 #include <QPen>
 #include <QBrush>
@@ -31,7 +32,7 @@ QgsMapCanvasItem::QgsMapCanvasItem(QgsMapCanvas* mapCanvas)
 
 QgsMapCanvasItem::~QgsMapCanvasItem()
 {
-  updateCanvas(); // shedule redraw of canvas
+  update(); // shedule redraw of canvas
 }
 
 void QgsMapCanvasItem::paint(QPainter * painter,
@@ -74,16 +75,19 @@ void QgsMapCanvasItem::setRect(const QgsRect& rect)
     r = r.normalized();
   }
   
+  // update the point prior to changing its position
+  update();
+  
   // set position in canvas where the item will have coordinate (0,0)
   setPos(r.topLeft());
-  mItemSize = QSizeF(r.width()+1,r.height()+1);
+  mItemSize = QSizeF(r.width()+2,r.height()+2);
   
 #ifdef QGISDEBUG
   std::cout << "QgsMapCanvasItem::setRect: "  << " [" << (int) r.left() << ","
      << (int) r.top() << "]-[" << (int) r.width() << "x" << (int) r.height() << "]" << std::endl;
 #endif
   
-  updateCanvas();
+  update();
 }
 
 QRectF QgsMapCanvasItem::boundingRect() const
@@ -96,7 +100,13 @@ void QgsMapCanvasItem::updateCanvas()
 {
   update();
   // porting: update below should not be needed anymore
-  //mMapCanvas->canvas()->update(); //Contents();
+  //mMapCanvas->scene()->update(); //Contents();
+}
+
+void QgsMapCanvasItem::updatePosition()
+{
+  // default implementation: recalculate position of the item
+  setRect(mRect);
 }
 
 

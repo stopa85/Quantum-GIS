@@ -17,6 +17,8 @@ class QgsGeorefDataPoint : public QgsMapCanvasItem
     //! handler for manual updating of position and size
     virtual QRectF boundingRect() const;
     
+    virtual void updatePosition();
+    
     //! returns coordinates of the point
     QgsPoint pixelCoords() { return mPixelCoords; }
     QgsPoint mapCoords() { return mMapCoords; }

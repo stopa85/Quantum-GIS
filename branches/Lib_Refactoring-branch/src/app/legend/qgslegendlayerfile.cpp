@@ -64,6 +64,8 @@ QgsLegendLayerFile::QgsLegendLayerFile(QTreeWidgetItem * theLegendItem, QString 
 
   // get notifications of modified layer - used to close table as it's out of sync
   connect(mLyr.layer(), SIGNAL(wasModified(bool)), this, SLOT(closeTable(bool)));
+  
+  connect(mLyr.layer(), SIGNAL(layerNameChanged()), this, SLOT(layerNameChanged()));
 }
 
 QgsLegendLayerFile::~QgsLegendLayerFile()
@@ -385,4 +387,13 @@ void QgsLegendLayerFile::toggleEditing()
   
   updateLegendItem();
 
+}
+
+void QgsLegendLayerFile::layerNameChanged()
+{
+  QString name = mLyr.layer()->name();
+  setText(0, name);
+
+  // set also parent's name
+  legend()->setName(this, name);
 }
