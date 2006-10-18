@@ -67,7 +67,7 @@ public:
      * @param mtp Transformation class
      * @return FALSE if an error occurred during drawing
      */
-    virtual bool draw(QPainter* painter, QgsRect* rect, QgsMapToPixel* mtp, QgsCoordinateTransform* ct);
+    virtual bool draw(QPainter* painter, QgsRect* rect, QgsMapToPixel* mtp, QgsCoordinateTransform* ct, bool);
     
     /** Draw labels
      * @TODO to be removed: used only in vector layers
@@ -82,6 +82,12 @@ public:
      * @return True if the layer is valid and can be accessed
      */
     bool isValid();
+
+    /*! Gets a version of the internal layer definition that has sensitive 
+      *  bits removed (for example, the password). This function should 
+      * be used when displaying the source name for general viewing. 
+     */ 
+    QString publicSource() const;
 
     /** Returns the source for the layer */
     const QString & source() const;
@@ -177,6 +183,9 @@ public:
     
     /** Sets layer's spatial reference system */
     void setSrs(const QgsSpatialRefSys& srs);
+
+    /** A convenience function to capitalise the layer name */
+    static QString capitaliseLayerName(const QString name);
     
 public slots:
 
@@ -205,6 +214,9 @@ signals:
 
     /** Emit a signal with status (e.g. to be caught by QgiAapp and display a msg on status bar) */
     void setStatus(QString theStatusQString);
+
+    /** Emit a signal that layer name has been changed */
+    void layerNameChanged();
 
     /** This signal should be connected with the slot QgsMapCanvas::refresh()
      * @TODO: to be removed - GUI dependency

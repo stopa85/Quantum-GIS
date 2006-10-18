@@ -94,6 +94,9 @@ static void qtgui_UpdatePyArgv(PyObject *argvlist, int argc, char **argv)
     //! Returns the path to the help application.
     static const QString helpAppPath();
 
+    //! Returns the path to the mapserver export application.
+    static const QString msexportAppPath();
+
     //! Returns the path to the translation directory.
     static const QString i18nPath();
 
@@ -108,6 +111,9 @@ static void qtgui_UpdatePyArgv(PyObject *argvlist, int argc, char **argv)
 
     //! Returns the path to the splash screen image directory.
     static const QString splashPath();
+
+    //! Returns the path to the icons image directory.
+    static const QString iconsPath();
 
     //! Returns the path to the srs.db file.
     static const QString srsDbFilePath();

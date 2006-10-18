@@ -30,5 +30,7 @@ class QgsDataSourceURI
   QString username;
   //! password
   QString password;
-  };
+  //! All in a single string
+  QString text();
+};
 

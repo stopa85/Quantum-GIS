@@ -36,7 +36,7 @@ public:
     Not emitting signal is useful when you want to use registry also for layers
     which won't be used in main map canvas but will be used in a special one
  */
- QgsMapLayer *  addMapLayer(QgsMapLayer * theMapLayer, bool theEmitSignal = TRUE);
+ QgsMapLayer *  addMapLayer(QgsMapLayer * theMapLayer /Transfer/, bool theEmitSignal = TRUE);
 
  /** Remove a layer from qgis
 

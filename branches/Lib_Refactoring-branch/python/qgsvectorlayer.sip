@@ -42,7 +42,7 @@ public:
   QgsVectorDataProvider* getDataProvider();
 
   /** Returns the data provider in a const-correct manner */
-  const QgsVectorDataProvider* getDataProvider() const;
+// TODO:  const QgsVectorDataProvider* getDataProvider() const;
 
   /** Sets the textencoding of the data provider */
   void setProviderEncoding(const QString& encoding);
@@ -65,7 +65,9 @@ public:
   //QgsLabel *label();
   //QgsAttributeAction* actions() { return mActions; }
 
-  
+  /** The number of features that are selected in this layer */
+  int selectedFeatureCount();
+
   /** Select features found within the search rectangle (in layer's coordinates) */
   void select(QgsRect * rect, bool lock);
 
@@ -117,6 +119,9 @@ public:
   /** Returns point, line or polygon */
   QGis::VectorType vectorType() const;
 
+  /**Returns the WKBType or WKBUnknown in case of error*/
+  QGis::WKBTYPE getGeometryType() const;
+
   /** Return the provider type for this layer */
   QString providerType() const;
 
@@ -162,11 +167,6 @@ public:
    * @return long containing the number of features in the datasource
    */
   virtual long updateFeatureCount() const;
-
-  /** Update the extents for the layer. This is necessary if features are
-   *  added/deleted or the layer has been subsetted.
-   */
-  virtual void updateExtents();
 
   /**
    * Set the string (typically sql) used to define a subset of the layer
@@ -250,6 +250,8 @@ public:
 
   /**Snaps a point to the closest vertex if there is one within the snapping tolerance
      @param atVertex          Set to a vertex index of the snapped-to vertex
+     @param beforeVertexIndex Returns the index of the vertex before atVertex (for rubber band purposes). -1 if no vertex is before
+     @param afterVertexIndex  Returns the index of the vertex after atVertex (for rubber band purposes). -1 if no vertex is after
      @param snappedFeatureId  Set to the feature ID that where the snapped-to vertex belongs to.
      @param snappedGeometry   Set to the geometry that the snapped-to vertex belongs to.
      @param tolerance         The snapping tolerance
@@ -259,6 +261,8 @@ public:
    */
   bool snapVertexWithContext(QgsPoint& point,
                              QgsGeometryVertexIndex& atVertex,
+                             int& beforeVertexIndex,
+                             int& afterVertexIndex,
                              int& snappedFeatureId,
                              QgsGeometry& snappedGeometry,
                              double tolerance);
@@ -278,19 +282,53 @@ public:
                               QgsGeometry& snappedGeometry,
                               double tolerance);
 
-  /**Commits edited attributes. Depending on the feature id,
-     the changes are written to not commited features or redirected to
-     the data provider*/
+  /**
+    Commits edited attributes. Depending on the feature id,
+    the changes are written to not commited features or redirected to
+    the data provider
+
+    The commits (in this version) occur in three distinct stages,
+    (delete attributes, add attributes, change attribute values)
+    so if a stage fails, it's difficult to roll back cleanly.
+
+    \todo Need to indicate at which stage the failed commit occurred,
+          for better cleanup and recovery from the error.
+
+    \param deleted  Set of attribute names (i.e. columns) to delete
+    \param added    Map (name, type) of attribute names (i.e. columns) to add
+    \param changed  Map (feature ID, Map (attribute name, new value) )
+                      of attribute values to change
+
+   */
   // TODO: wrap
   //bool commitAttributeChanges(const std::set<QString>& deleted,
   //          const std::map<QString,QString>& added,
   //          std::map<int,std::map<QString,QString> >& changed);
 
+
+  /** Draws the layer using coordinate transformation
+   *  @return FALSE if an error occurred during drawing
+   */
+  bool draw(QPainter * p,
+            QgsRect * viewExtent,
+            QgsMapToPixel * cXf,
+            QgsCoordinateTransform* ct,
+            bool drawingToEditingCanvas);
+
+  /** Draws the layer labels using coordinate transformation */
+  void drawLabels(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * cXf, QgsCoordinateTransform* ct);
+
   /** \brief Draws the layer using coordinate transformation
    *  \param widthScale line width scale
    *  \param symbolScale symbol scale
    */
-  void draw(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * cXf, QgsCoordinateTransform* ct, double widthScale, double symbolScale);
+  void draw(QPainter * p,
+            QgsRect * viewExtent,
+            QgsMapToPixel * cXf,
+            QgsCoordinateTransform* ct,
+            bool drawingToEditingCanvas,
+            double widthScale,
+            double symbolScale);
 
   /** \brief Draws the layer labels using coordinate transformation
    *  \param scale size scale, applied to all values in pixels
@@ -318,7 +356,21 @@ public:
   /** Make layer editable */
   bool startEditing();
   
-  /** Stop editing and write the changes to the provider */
+  /**
+    Attempts to commit any changes to disk.  Returns the result of the attempt.
+    If a commit fails, the in-memory changes are left alone.
+
+    This allows editing to continue if the commit failed on e.g. a
+    disallowed value in a Postgres database - the user can re-edit and try
+    again.
+
+    The commits (in this version) occur in four distinct stages,
+    (add features, change attributes, change geometries, delete features)
+    so if a stage fails, it's difficult to roll back cleanly.
+    Therefore any error message also includes which stage failed so 
+    that the user has some chance of repairing the damage cleanly.
+
+   */
   bool commitChanges();
 
   /** Stop editing and discard the edits */
@@ -327,6 +379,11 @@ public:
 public slots:
 
   void triggerRepaint();
+
+  /** Update the extents for the layer. This is necessary if features are
+   *  added/deleted or the layer has been subsetted.
+   */
+  virtual void updateExtents();
 
 signals:
 
