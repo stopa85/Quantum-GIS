@@ -5,7 +5,7 @@
 %Import QtGui/QtGuimod.sip
 %Import QtXml/QtXmlmod.sip
 
-%Import core.sip
+%Import core/core.sip
 
 // TODO: more files to wrap
 
