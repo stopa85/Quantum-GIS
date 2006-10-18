@@ -46,6 +46,8 @@ public:
  * */
  const int count();
  
+ ~QgsMapLayerRegistry();
+ 
  //! Retrieve a pointer to a loaded plugin by id
  QgsMapLayer * mapLayer(QString theLayerId);
 

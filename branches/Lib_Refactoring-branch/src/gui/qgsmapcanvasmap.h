@@ -20,9 +20,9 @@
 #include <QGraphicsRectItem>
 #include <QPixmap>
 
-#define RTTI_Map 11111
 
 class QgsMapRender;
+class QgsMapCanvas;
 
 class GUI_EXPORT QgsMapCanvasMap : public QGraphicsRectItem
 {
@@ -34,9 +34,6 @@ class GUI_EXPORT QgsMapCanvasMap : public QGraphicsRectItem
     //! resize canvas item and pixmap
     void resize(QSize size);
     
-    //! unique identification for this canvas item
-    int rtti () const { return RTTI_Map; }
-
     void enableAntiAliasing(bool flag) { mAntiAliasing = flag; }
     
     void useQImageToRender(bool flag) { mUseQImageToRender = flag; }

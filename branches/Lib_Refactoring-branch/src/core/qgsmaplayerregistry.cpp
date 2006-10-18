@@ -45,6 +45,13 @@ QgsMapLayerRegistry::QgsMapLayerRegistry(QObject *parent, const char *name) : QO
   QgsDebugMsg("QgsMapLayerRegistry created!");
   // constructor does nothing
 }
+
+QgsMapLayerRegistry::~QgsMapLayerRegistry()
+{
+  removeAllMapLayers();
+  QgsDebugMsg("QgsMapLayerRegistry is gone!");
+}
+
 // get the layer count (number of registered layers)
 const int QgsMapLayerRegistry::count()
 {

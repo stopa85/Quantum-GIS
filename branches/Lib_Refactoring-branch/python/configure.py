@@ -90,6 +90,7 @@ for mk in [ makefile_core, makefile_gui ]:
 makefile_gui.extra_libs.append("qgis_gui")
 makefile_gui.extra_lib_dirs.append("../../build/src/gui")
 makefile_gui.extra_include_dirs.append("../../src/gui")
+makefile_gui.extra_include_dirs.append("../../build/src/gui")
 makefile_gui.extra_cxxflags.append("-DGUI_EXPORT=")
 
 # Generate the Makefile itself.
