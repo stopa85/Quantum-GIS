@@ -6,7 +6,7 @@ import PyQt4.pyqtconfig
 # @SIP_CONFIGURATION@
 
 class Configuration(pyqtconfig.Configuration):
-    """The class that represents Hello configuration values.
+    """The class that represents QGIS configuration values.
     """
     def __init__(self, sub_cfg=None):
         """Initialise an instance of the class.
@@ -25,7 +25,7 @@ class Configuration(pyqtconfig.Configuration):
 
         pyqtconfig.Configuration.__init__(self, cfg)
 
-class HelloModuleMakefile(pyqtconfig.QtModuleMakefile):
+class QgisModuleMakefile(pyqtconfig.QtModuleMakefile):
     """The Makefile class for modules that %Import qgis_core.
     """
     def finalise(self):
@@ -33,6 +33,7 @@ class HelloModuleMakefile(pyqtconfig.QtModuleMakefile):
         """
         # Make sure our C++ library is linked.
         self.extra_libs.append("qgis_core")
+        self.extra_libs.append("qgis_gui")
 
         # Let the super-class do what it needs to.
         pyqtconfig.QtModuleMakefile.finalise(self)

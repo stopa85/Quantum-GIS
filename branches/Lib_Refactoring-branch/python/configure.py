@@ -1,5 +1,6 @@
 
 import os
+import glob
 import sipconfig
 import PyQt4.pyqtconfig
 
@@ -22,15 +23,18 @@ mod_dir = os.path.join(config.default_mod_dir, "qgis")
 sip_dir = os.path.join(config.default_sip_dir, "qgis")
   
 # Run SIP to generate the code.
-os.system(" ".join([config.sip_bin, "-c", ".", "-b", build_file, "-I", config.pyqt_sip_dir, qt_sip_flags, "core.sip"]))
+#os.system(" ".join([config.sip_bin, "-c", ".", "-b", build_file, "-I", config.pyqt_sip_dir, qt_sip_flags, "core.sip"]))
+os.system(" ".join([config.sip_bin, "-c", ".", "-b", build_file, "-I", config.pyqt_sip_dir, qt_sip_flags, "gui.sip"]))
 
 # We are going to install the SIP specification file for this module and
 # its configuration module.
 installs = []
 
-installs.append(["core.sip", sip_dir])
+# install all sip files
+sips = glob.glob("*.sip")
+for sip in sips:
+  installs.append([sip, sip_dir])
 
-# TODO: add all *.sip files to the installs
 
 installs.append([["__init__.py", "qgisconfig.py"], mod_dir])
 
@@ -51,10 +55,10 @@ makefile = sipconfig.ModuleMakefile(
 # Add the library we are wrapping.  The name doesn't include any platform
 # specific prefixes or extensions (e.g. the "lib" prefix on UNIX, or the
 # ".dll" extension on Windows).
-makefile.extra_libs = ["qgis_core"]
-makefile.extra_lib_dirs = ["../build/src/core"]  # TODO: make universal!
-makefile.extra_include_dirs = ["../src/core","../src/core/raster","../src/core/renderer","../src/core/symbology",".."]
-makefile.extra_cxxflags = ["-DCORE_EXPORT="]
+makefile.extra_libs = ["qgis_core", "qgis_gui"]
+makefile.extra_lib_dirs = ["../build/src/core", "../build/src/gui"]  # TODO: make universal!
+makefile.extra_include_dirs = ["../src/core","../src/core/raster","../src/core/renderer","../src/core/symbology","../src/gui",".."]
+makefile.extra_cxxflags = ["-DCORE_EXPORT=", "-DGUI_EXPORT="]
 
 # Generate the Makefile itself.
 makefile.generate()
