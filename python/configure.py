@@ -52,8 +52,9 @@ makefile = sipconfig.ModuleMakefile(
 # specific prefixes or extensions (e.g. the "lib" prefix on UNIX, or the
 # ".dll" extension on Windows).
 makefile.extra_libs = ["qgis_core"]
-makefile.extra_lib_dirs = ["../src/core/.libs"]
-makefile.extra_include_dirs = ["../src/core/include"]
+makefile.extra_lib_dirs = ["../build/src/core"]  # TODO: make universal!
+makefile.extra_include_dirs = ["../src/core","../src/core/raster","../src/core/renderer","../src/core/symbology",".."]
+makefile.extra_cxxflags = ["-DCORE_EXPORT="]
 
 # Generate the Makefile itself.
 makefile.generate()

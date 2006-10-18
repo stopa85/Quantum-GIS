@@ -60,9 +60,26 @@ class QgsGeometry
     //void setGeos(geos::Geometry* geos);
 
     /**
-       Returns the vertex closest to the given point
+       Returns the vertex closest to the given point 
+       (and also vertex index, squared distance and indexes of the vertices before/after)
     */
-    QgsPoint closestVertex(const QgsPoint& point) const;
+    QgsPoint closestVertex(const QgsPoint& point, QgsGeometryVertexIndex& atVertex, int& beforeVertex, int& afterVertex, double& sqrDist) const;
+
+
+    /**
+       Returns the indexes of the vertices before and after the given vertex index.
+
+       This function takes into account the following factors:
+
+       1. If the given vertex index is at the end of a linestring,
+          the adjacent index will be -1 (for "no adjacent vertex")
+       2. If the given vertex index is at the end of a linear ring
+          (such as in a polygon), the adjacent index will take into
+          account the first vertex is equal to the last vertex (and will
+          skip equal vertex positions).
+    */
+    void adjacentVerticies(const QgsGeometryVertexIndex& atVertex, int& beforeVertex, int& afterVertex) const;
+
 
     /** Insert a new vertex before the given vertex index,
      *  ring and item (first number is index 0)
@@ -81,10 +98,7 @@ class QgsGeometry
      *  ring and item (first number is index 0)
      *  to the given coordinates.
      *  Returns FALSE if atVertex does not correspond to a valid vertex
-     *  on this geometry (including if this geometry is a Point).
-     *  It is up to the caller to distinguish between
-     *  these error conditions.  (Or maybe we add another method to this
-     *  object to help make the distinction?)
+     *  on this geometry 
      */
     bool moveVertexAt(double x, double y, QgsGeometryVertexIndex atVertex);
 
@@ -99,6 +113,15 @@ class QgsGeometry
      *  object to help make the distinction?)
      */
     bool deleteVertexAt(QgsGeometryVertexIndex atVertex);
+
+    /**
+        Returns the squared cartesian distance between the given point
+        to the given vertex index (vertex at the given position number,
+        ring and item (first number is index 0))
+
+     */
+    double sqrDistToVertexAt(QgsPoint& point,
+                             QgsGeometryVertexIndex& atVertex) const;
 
     /**
      *  Modifies x and y to indicate the location of
@@ -134,6 +157,12 @@ class QgsGeometry
 
     /**Test for intersection with a rectangle (uses GEOS)*/
     bool intersects(QgsRect* r) const;
+
+    /**Also tests for intersection, but uses direct geos export of QgsGeometry instead wkb export and geos wkb import. Therefore this method is faster and could replace QgsGeometry::intersects in the future*/
+    bool fast_intersects(const QgsRect* r) const;
+
+    /** Test for containment of a point (uses GEOS) */
+    bool contains(QgsPoint* p) const;
 
     /**Creates a geos geometry from this features geometry. Note, that the returned object needs to be deleted*/
     // TODO: unsupported class... would be possible to use PyGEOS?

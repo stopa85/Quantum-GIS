@@ -105,6 +105,14 @@ class QgsVectorDataProvider : QgsDataProvider /Abstract/
      * TODO: Get rid of "row" and set up provider-internal caching instead
      */
     virtual void getFeatureAttributes(int oid, int& row, QgsFeature *f);
+
+      /**
+       * Fetch geometry for a particular feature with id "key",
+       * modifies "f" in-place.
+       *
+       * This function is enabled if capabilities() returns "SelectGeometryAtId".
+       */
+      virtual void getFeatureGeometry(int key, QgsFeature *f);
     
     /**
        * Number of attribute fields for a feature in the layer
@@ -269,6 +277,9 @@ class QgsVectorDataProvider : QgsDataProvider /Abstract/
        * @param wkt Well known text of the target (map canvas) SRS
        */
       virtual void setWKT(QString wkt);
+
+      /**Returns the index of a field name or -1 if the field does not exist*/
+      int indexFromFieldName(const QString& fieldName) const;
 
 };
 

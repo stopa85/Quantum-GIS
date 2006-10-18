@@ -83,12 +83,12 @@ public:
      *
      * \param point[in]  an image pixel coordinate in the last requested extent of layer.
      *
-     * \retval  An HTML document containing the return from the WMS server
+     * \return  A text document containing the return from the WMS server
      *
      * \note  The arbitraryness of the returned document is enforced by WMS standards
      *        up to at least v1.3.0
      */
-    QString identifyAsHtml(const QgsPoint& point);
+    QString identifyAsText(const QgsPoint& point);
 
     /** \brief Query gdal to find out the WKT projection string for this layer. This implements the virtual method of the same name defined in QgsMapLayer*/
     QString getProjectionWKT();
@@ -99,9 +99,17 @@ public:
     /** \brief Get an 8x8 pixmap of the colour palette. If the layer has no palette a white pixmap will be returned. */
      QPixmap getPaletteAsPixmap();
      
-    /** \brief This is called when the view on the rasterlayer needs to be refreshed (redrawn).  */
-    bool draw(QPainter * theQPainter, QgsRect * theViewExtent, 
-              QgsMapToPixel * theQgsMapToPixel, QgsCoordinateTransform* ct);
+    /** \brief This is called when the view on the rasterlayer needs to be refreshed (redrawn).
+         
+        \param drawingToEditingCanvas  Are we drawing to an editable canvas? 
+                                       currently not used, but retain to be similar to 
+                                       the QgsVectorLayer interface 
+     */
+    bool draw(QPainter * theQPainter,
+              QgsRect * theViewExtent, 
+              QgsMapToPixel * theQgsMapToPixel,
+              QgsCoordinateTransform* ct,
+              bool drawingToEditingCanvas);
 
     /** \brief This is an overloaded version of the above function that is called by both draw above and drawThumbnail */
     void draw(QPainter * theQPainter, QgsRasterViewPort * myRasterViewPort,
@@ -472,7 +480,7 @@ public:
      *
      *  \retval 0 if not using the data provider model (i.e. directly using GDAL)
      */
-    const QgsRasterDataProvider* getDataProvider() const;
+  // TODO:  const QgsRasterDataProvider* getDataProvider() const;
 
 public slots:    
     /**
@@ -559,16 +567,35 @@ public:
                  const QStringList & layers = QStringList(),
                  const QStringList & styles = QStringList(),
                  const QString & format = QString(),
-                 const QString & crs = QString());
+                 const QString & crs = QString(),
+                 const QString & proxyHost = QString(),
+                 int proxyPort = 80,
+                 const QString & proxyUser = QString(),
+                 const QString & proxyPass = QString());
 
   void setDataProvider( const QString & provider,
                         const QStringList & layers,
                         const QStringList & styles,
                         const QString & format,
-                        const QString & crs );
+                        const QString & crs,
+                        const QString & proxyHost,
+                        int proxyPort,
+                        const QString & proxyUser,
+                        const QString & proxyPass );
+
 
   //! Does this layer use a provider for setting/retrieving data?
   bool usesProvider();
+
+  /**
+   * Sets a proxy for the path given in the constructor
+   *
+   * \retval TRUE if proxy setting is successful (if indeed it is supported)
+   */
+  bool setProxy(const QString & host = 0,
+                            int port = 80,
+                const QString & user = 0,
+                const QString & pass = 0);
 
   //! Which provider is being used for this Raster Layer?
   QString providerKey();
