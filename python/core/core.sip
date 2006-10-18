@@ -23,6 +23,7 @@
 %Include qgsmaplayerregistry.sip
 %Include qgsmaprender.sip
 %Include qgsmaptopixel.sip
+%Include qgsmessageoutput.sip
 %Include qgspoint.sip
 %Include qgsprovidermetadata.sip
 %Include qgsproviderregistry.sip

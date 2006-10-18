@@ -167,9 +167,6 @@ class GUI_EXPORT QgsMapCanvas : public QGraphicsView
     //! return the map layer at postion index in the layer stack
     QgsMapLayer *getZpos(int index);
     
-    //! return the layer by name
-    QgsMapLayer *layerByName(QString n);
-
     //! return number of layers on the map
     int layerCount() const;
 
@@ -197,18 +194,6 @@ class GUI_EXPORT QgsMapCanvas : public QGraphicsView
 
     //! Get the current coordinate transform
     QgsMapToPixel * getCoordinateTransform();
-
-    /** stores state in DOM node
-        layerNode is DOM node corresponding to ``qgis'' tag
-
-        The DOM node corresponds to a DOM document project file XML element to be
-        written by QgsProject.
-
-        Invoked by QgsProject::write().
-
-        returns true if successful
-    */
-    bool writeXML( QDomNode & layerNode, QDomDocument & doc );
 
     //! true if canvas currently drawing
     bool isDrawing();
@@ -303,6 +288,36 @@ signals:
     void keyReleased(QKeyEvent * e);
     
 protected:
+    //! Overridden key press event
+    void keyPressEvent(QKeyEvent * e);
+
+    //! Overridden key release event
+    void keyReleaseEvent(QKeyEvent * e);
+
+    //! Overridden mouse move event
+    void mouseMoveEvent(QMouseEvent * e);
+
+    //! Overridden mouse press event
+    void mousePressEvent(QMouseEvent * e);
+
+    //! Overridden mouse release event
+    void mouseReleaseEvent(QMouseEvent * e);
+
+    //! Overridden mouse wheel event
+    void wheelEvent(QWheelEvent * e);
+
+    //! Overridden resize event
+    void resizeEvent(QResizeEvent * e);
+
+    //! Zooms to a given center and scale 
+    void zoomByScale(int x, int y, double scaleFactor);
+    
+    //! called when panning is in action, reset indicates end of panning
+    void moveCanvasContents(bool reset = FALSE);
+    
+    //! called on resize or changed extent to notify canvas items to change their rectangle
+    void updateCanvasItemsPositions();
+
     /// implementation struct
     class CanvasProperties;
 
@@ -345,36 +360,6 @@ private:
      */
     bool mDirty;
     
-    //! Overridden key press event
-    void keyPressEvent(QKeyEvent * e);
-
-    //! Overridden key release event
-    void keyReleaseEvent(QKeyEvent * e);
-
-    //! Overridden mouse move event
-    void mouseMoveEvent(QMouseEvent * e);
-
-    //! Overridden mouse press event
-    void mousePressEvent(QMouseEvent * e);
-
-    //! Overridden mouse release event
-    void mouseReleaseEvent(QMouseEvent * e);
-
-    //! Overridden mouse wheel event
-    void wheelEvent(QWheelEvent * e);
-
-    //! Overridden resize event
-    void resizeEvent(QResizeEvent * e);
-
-    //! Zooms to a given center and scale 
-    void zoomByScale(int x, int y, double scaleFactor);
-    
-    //! called when panning is in action, reset indicates end of panning
-    void moveCanvasContents(bool reset = FALSE);
-    
-    //! called on resize or changed extent to notify canvas items to change their rectangle
-    void updateCanvasItemsPositions();
-
     //! determines whether user has requested to suppress rendering
     bool mRenderFlag;
     

@@ -104,10 +104,10 @@ class GUI_EXPORT QgsProjectionSelector: public QWidget, private Ui::QgsProjectio
       /** Used to ensure the projection list view is actually populated */
       void showEvent ( QShowEvent * theEvent );
 
-    private:
       /** Used to manage column sizes */
       void resizeEvent ( QResizeEvent * theEvent );
 
+  private:
       /**
        * \brief converts the CRS group to a SQL expression fragment
        *

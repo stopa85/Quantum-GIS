@@ -48,7 +48,7 @@ class QgsMapCanvas : QGraphicsView
     
     void updateOverview();
     
-    // TODO void setOverview(QgsMapOverviewCanvas* overview);
+    void setOverview(QgsMapOverviewCanvas* overview);
     
     QgsMapCanvasMap* map();
     

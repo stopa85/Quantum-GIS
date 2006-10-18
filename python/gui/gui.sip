@@ -7,11 +7,18 @@
 
 %Import core/core.sip
 
-// TODO: more files to wrap
 
+%Include qgisinterface.sip
+%Include qgslayerprojectionselector.sip
 %Include qgsmapcanvas.sip
+%Include qgsmapcanvasitem.sip
 %Include qgsmapcanvasmap.sip
 %Include qgsmaptool.sip
 %Include qgsmaptoolpan.sip
 %Include qgsmaptoolzoom.sip
+%Include qgsmapoverviewcanvas.sip
+%Include qgsmessageviewer.sip
+%Include qgsprojectionselector.sip
+%Include qgsrubberband.sip
+%Include qgsvertexmarker.sip
 

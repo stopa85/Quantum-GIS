@@ -31,7 +31,6 @@ qgisinterface.h
 qgslayerprojectionselector.h
 qgsmapcanvas.h
 qgsmapcanvasitem.h
-qgsmapcanvasmap.h
 qgsmapoverviewcanvas.h
 qgsprojectionselector.h
 )

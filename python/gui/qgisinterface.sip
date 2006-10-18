@@ -1,37 +1,3 @@
-/***************************************************************************
-                          qgisinterface.h 
- Interface class for exposing functions in QgisApp for use by plugins
-                             -------------------
-  begin                : 2004-02-11
-  copyright            : (C) 2004 by Gary E.Sherman
-  email                : sherman at mrcc.com
- ***************************************************************************/
-
-/***************************************************************************
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************/
-/* $Id$ */
-#ifndef QGISINTERFACE_H
-#define QGISINTERFACE_H
-
-class QAction;
-class QMenu;
-class QToolBar;
-class QToolBox;
-class QWidget;
-#include <QObject>
-
-#include <map>
-
-class QgisApp;
-class QgsMapLayer;
-class QgsMapCanvas;
-class QgsRasterLayer;
 
 /** 
  * \class QgisInterface
@@ -45,9 +11,11 @@ class QgsRasterLayer;
  * could provide their own implementation to be able to use plugins.
  */
 
-class GUI_EXPORT QgisInterface : public QObject
+class QgisInterface : QObject
 {
-  Q_OBJECT;
+%TypeHeaderCode
+#include <qgisinterface.h>
+%End
 
   public:
 
@@ -121,4 +89,3 @@ class GUI_EXPORT QgisInterface : public QObject
 
 };
 
-#endif //#ifndef QGISINTERFACE_H
