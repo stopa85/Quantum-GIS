@@ -103,6 +103,7 @@
 #include "qgsproject.h"
 #include "qgsprojectproperties.h"
 #include "qgsproviderregistry.h"
+#include "qgspythondialog.h"
 #include "qgsrasterlayer.h"
 #include "qgsrasterlayerproperties.h"
 #include "qgsrect.h"
@@ -368,6 +369,7 @@ static void customSrsValidation_(QgsSpatialRefSys* srs)
 QgisApp::~QgisApp()
 {
   delete mInternalClipboard;
+  delete mPythonConsole;
   delete mQgisInterface;
   
   // delete map layer registry and provider registry
@@ -703,6 +705,18 @@ void QgisApp::createActions()
   mActionEditPaste->setStatusTip(tr("Paste selected features"));
   connect(mActionEditPaste, SIGNAL(triggered()), this, SLOT(editPaste()));
   mActionEditPaste->setEnabled(false);
+  
+  // python
+  mActionShowPythonDialog = new QAction(tr("Python console"), this);
+  connect(mActionShowPythonDialog, SIGNAL(triggered()), this, SLOT(showPythonDialog()));
+  mPythonConsole = NULL;
+}
+
+void QgisApp::showPythonDialog()
+{
+  if (mPythonConsole == NULL)
+    mPythonConsole = new QgsPythonDialog(mQgisInterface);
+  mPythonConsole->show();
 }
 
 void QgisApp::createActionGroups()
@@ -799,6 +813,7 @@ void QgisApp::createMenus()
   // Plugins Menu
   mPluginMenu = menuBar()->addMenu(tr("&Plugins"));
   mPluginMenu->addAction(mActionShowPluginManager);
+  mPluginMenu->addAction(mActionShowPythonDialog);
 
   // Add the plugin manager action to it
   //actionPluginManager->addTo(mPluginMenu);

@@ -42,6 +42,7 @@ class QgsLegend;
 class QgsMapCanvas;
 class QgsMapLayer;
 class QgsPoint;
+class QgsPythonDialog;
 class QgsRasterLayer;
 class QgsRect;
 
@@ -329,6 +330,8 @@ public slots:
   void measureArea();
   //! show the attribute table for the currently selected layer
   void attributeTable();
+  //! show python console
+  void showPythonDialog();
 
   //! cuts selected features on the active layer to the clipboard
   /**
@@ -488,6 +491,7 @@ private:
   QAction *mActionAddWmsLayer;
   QAction *mActionInOverview;
   QAction *mActionDraw;
+  QAction *mActionShowPythonDialog;
   //
   //tool groups -------------------------------------
   QActionGroup *mMapToolGroup;
@@ -574,6 +578,8 @@ private:
     Suitable for a QFileDialog file filter.  Build in ctor.
     */
   QString mRasterFileFilter;
+  
+  QgsPythonDialog* mPythonConsole;
 };
 
 #endif
