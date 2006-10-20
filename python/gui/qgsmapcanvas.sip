@@ -35,6 +35,13 @@ class QgsMapCanvas : QGraphicsView
 #include <qgsmapcanvas.h>
 %End
 
+%ConvertToSubClassCode
+  if (dynamic_cast<QgsMapCanvas*>(sipCpp) != NULL)
+    sipClass = sipClass_QgsMapCanvas;
+  else
+    sipClass = NULL;
+%End
+
  public:
     //! Constructor
     QgsMapCanvas(QWidget * parent = 0, const char *name = 0);

@@ -10,6 +10,10 @@ class QgsMapCanvasMap : QGraphicsRectItem
 	{
 		sipClass = sipClass_QgsMapCanvasMap;
 	}
+  else 
+  {
+    sipClass = NULL;
+  }
 %End
 
   public:

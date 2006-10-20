@@ -5,6 +5,15 @@ class QgsMapTool
 #include <qgsmaptool.h>
 %End
 
+%ConvertToSubClassCode
+  if (dynamic_cast<QgsMapToolZoom*>(sipCpp) != NULL)
+    sipClass = sipClass_QgsMapToolZoom;
+  else if (dynamic_cast<QgsMapToolPan*>(sipCpp) != NULL)
+    sipClass = sipClass_QgsMapToolPan;
+  else
+    sipClass = NULL;
+%End
+
   public:
     
     //! virtual destructor
