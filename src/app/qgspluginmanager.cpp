@@ -15,6 +15,13 @@
  *                                                                         *
  ***************************************************************************/
 /* $Id$ */
+
+#include "qgsconfig.h"
+
+#ifdef HAVE_PYTHON
+#include <Python.h>
+#endif
+
 #include <iostream>
 #include <QApplication>
 #include <QFileDialog>
@@ -24,11 +31,11 @@
 #include <QLibrary>
 #include <QSettings>
 #include "qgisplugin.h"
+#include "qgslogger.h"
 #include "qgspluginmanager.h"
 #include "qgspluginitem.h"
 #include "qgsproviderregistry.h"
 #include "qgspluginregistry.h"
-
 
 #define TESTLIB
 #ifdef TESTLIB
@@ -54,11 +61,19 @@ QgsPluginManager::QgsPluginManager(QWidget * parent, Qt::WFlags fl)
 
   txtPluginDir->setText(pr->libraryDirectory().path());
   getPluginDescriptions();
+#ifdef HAVE_PYTHON
+  // initialize python
+  Py_Initialize();
+  getPythonPluginDescriptions();
+#endif
 }
 
 
 QgsPluginManager::~QgsPluginManager()
 {
+#ifdef HAVE_PYTHON
+  Py_Finalize();
+#endif
 }
 
 void QgsPluginManager::on_btnBrowse_clicked()
@@ -67,6 +82,77 @@ void QgsPluginManager::on_btnBrowse_clicked()
   txtPluginDir->setText(s);
   getPluginDescriptions();
 }
+
+#ifdef HAVE_PYTHON
+
+QString QgsPluginManager::getPythonPluginMetadata(QString pluginName, QString function)
+{
+  PyObject* module = PyImport_AddModule("__main__");
+  PyObject* dict = PyModule_GetDict(module);
+  QString command = pluginName + "." + function + "()";
+  QString retval = "???";
+  
+  PyObject* obj = PyRun_String(command.toLocal8Bit().data(), Py_eval_input, dict, dict);
+  if (PyErr_Occurred())
+  {
+    PyErr_Print(); // TODO: PyErr_Fetch(...)
+    std::cout << "Python ERROR!" << std::endl;
+    PyErr_Clear();
+  }
+  else if (PyString_Check(obj))
+  {
+    retval = PyString_AS_STRING(obj);
+  }
+  else
+  {
+    std::cout << "Bad python return value!" << std::endl;
+  }
+  Py_XDECREF(obj);
+  return retval;
+}
+
+void QgsPluginManager::getPythonPluginDescriptions()
+{
+  // TODO: have own path for python plugins
+  QString strPythonDir = txtPluginDir->text() + "/python";
+
+  // look in (plugin_dir)/python for directories
+  QDir pluginDir(strPythonDir, "*", QDir::Name | QDir::IgnoreCase, QDir::Dirs | QDir::NoDotAndDotDot);
+  
+  // alter sys.path to search for packages & modules in (plugin_dir)/python
+  QString strInit = "import sys\n"
+                    "sys.path.insert(0, '" + strPythonDir + "')";
+  
+  PyRun_SimpleString(strInit.toLocal8Bit().data());
+
+  //PyRun_SimpleString("from qgis.core import *\nfrom qgis.gui import *");
+
+  for (uint i = 0; i < pluginDir.count(); i++)
+  {
+    QString pluginName = pluginDir[i];
+    
+    // import plugin's package
+    QString command = "import " + pluginName;
+    PyRun_SimpleString(command.toLocal8Bit().data());
+    
+    // get information from the plugin
+    QString name = getPythonPluginMetadata(pluginName, "name");
+    QString description = getPythonPluginMetadata(pluginName, "description");
+    QString version = getPythonPluginMetadata(pluginName, "version");
+    
+    if (name == "???" || description == "???" || version == "???")
+      continue;
+    
+    // add to the list box
+    Q3CheckListItem *pl = new Q3CheckListItem(lstPlugins, "[P] " + name, Q3CheckListItem::CheckBox);
+    pl->setText(1, version);
+    pl->setText(2, description);
+    pl->setText(3, pluginDir[i]);
+  }
+  
+}
+#endif
+
 
 void QgsPluginManager::getPluginDescriptions()
 {
@@ -81,14 +167,15 @@ sharedLibExtension = "*.so*";
   QDir pluginDir(txtPluginDir->text(), sharedLibExtension, QDir::Name | QDir::IgnoreCase, QDir::Files | QDir::NoSymLinks);
 
   if (pluginDir.count() == 0)
-    {
+  {
       QMessageBox::information(this, tr("No Plugins"), tr("No QGIS plugins found in ") + txtPluginDir->text());
-  } else
-    {
-      std::cout << "PLUGIN MANAGER:" << std::endl;
-      for (unsigned i = 0; i < pluginDir.count(); i++)
-        {
-          QString lib = QString("%1/%2").arg(txtPluginDir->text()).arg(pluginDir[i]);
+      return;
+  }
+
+  QgsDebugMsg("PLUGIN MANAGER:");
+  for (uint i = 0; i < pluginDir.count(); i++)
+  {
+    QString lib = QString("%1/%2").arg(txtPluginDir->text()).arg(pluginDir[i]);
 
 #ifdef TESTLIB
           // This doesn't work on WIN32 and causes problems with plugins
@@ -101,96 +188,103 @@ sharedLibExtension = "*.so*";
           // renders plugins unloadable)
 
 //          void *handle = dlopen((const char *) lib, RTLD_LAZY);
-          void *handle = dlopen(lib.toLocal8Bit().data(), RTLD_LAZY | RTLD_GLOBAL);
-          if (!handle)
-            {
-              std::cout << "Error in dlopen: " << dlerror() << std::endl;
-
-          } else
-            {
-              std::cout << "dlopen suceeded for " << lib.toLocal8Bit().data() << std::endl;
-              dlclose(handle);
-            }
+    void *handle = dlopen(lib.toLocal8Bit().data(), RTLD_LAZY | RTLD_GLOBAL);
+    if (!handle)
+    {
+      QgsDebugMsg("Error in dlopen: ");
+      QgsDebugMsg(dlerror());
+    }
+    else
+    {
+      QgsDebugMsg("dlopen suceeded for " + lib);
+      dlclose(handle);
+    }
 #endif //#ifndef WIN32 && Q_OS_MACX
 #endif //#ifdef TESTLIB
 
-
-          std::cout << "Examining " << lib.toLocal8Bit().data() << std::endl;
-          QLibrary *myLib = new QLibrary(lib);
-          bool loaded = myLib->load();
-          if (loaded)
-            {
-              std::cout << "Loaded " << myLib->library().toLocal8Bit().data() << std::endl;
-              // Don't bother with libraries that are providers
-              //if(!myLib->resolve("isProvider"))
-
-	      //MH: Replaced to allow for plugins that are linked to providers
-	      //type is only used in non-provider plugins 
-	      if(myLib->resolve("type"))
-              {
-                name_t *pName = (name_t *) myLib->resolve("name");
-                description_t *pDesc = (description_t *) myLib->resolve("description");
-                version_t *pVersion = (version_t *) myLib->resolve("version");
-#ifdef QGISDEBUG
-                // show the values (or lack of) for each function
-                if(pName){
-                  std::cout << "Plugin name: " << pName().toLocal8Bit().data() << std::endl;
-                }else{
-                  std::cout << "Plugin name not returned when queried\n";
-                }
-                if(pDesc){
-                  std::cout << "Plugin description: " << pDesc().toLocal8Bit().data() << std::endl;
-                }else{
-                  std::cout << "Plugin description not returned when queried\n";
-                }
-                if(pVersion){
-                  std::cout << "Plugin version: " << pVersion().toLocal8Bit().data() << std::endl;
-                }else{
-                  std::cout << "Plugin version not returned when queried\n";
-                }
-#endif
-                if (pName && pDesc && pVersion)
-                {
-                  Q3CheckListItem *pl = new Q3CheckListItem(lstPlugins, pName(), Q3CheckListItem::CheckBox); //, pDesc(), pluginDir[i])
-                  pl->setText(1, pVersion());
-                  pl->setText(2, pDesc());
-                  pl->setText(3, pluginDir[i]);
-
-#ifdef QGISDEBUG
-                  std::cout << "Getting an instance of the QgsPluginRegistry" << std::endl;
-#endif
-                  // check to see if the plugin is loaded and set the checkbox accordingly
-                  QgsPluginRegistry *pRegistry = QgsPluginRegistry::instance();
-                  // get the library using the plugin description
-#ifdef QGISDEBUG
-                  std::cout << "Getting library name from the registry" << std::endl;
-#endif
-                  QString libName = pRegistry->library(pName());
-                  if (libName.length() > 0)
-                  {
-#ifdef QGISDEBUG
-                    std::cout << "Found library name in the registry" << std::endl;
-#endif
-                    if (libName == myLib->library())
-                    {
-                      // set the checkbox
-                      pl->setOn(true);
-                    }
-                  }
-                } 
-                else
-                {
-                  std::cout << "Failed to get name, description, or type for " << myLib->library().toLocal8Bit().data() << std::endl;
-                }
-              } 
-            }
-          else
-          {
-            std::cout << "Failed to load " << myLib->library().toLocal8Bit().data() << std::endl;
-          }
-        }
+    QgsDebugMsg("Examining: " + lib);
+    QLibrary *myLib = new QLibrary(lib);
+    bool loaded = myLib->load();
+    if (!loaded)
+    {
+      QgsDebugMsg("Failed to load: " + myLib->library());
+      delete myLib;
+      continue;
     }
+
+    QgsDebugMsg("Loaded library: " + myLib->library());
+
+    // Don't bother with libraries that are providers
+    //if(!myLib->resolve("isProvider"))
+
+    //MH: Replaced to allow for plugins that are linked to providers
+    //type is only used in non-provider plugins 
+    if (!myLib->resolve("type"))
+    {
+      delete myLib;
+      continue;
+    }
+    
+    // resolve the metadata from plugin
+    name_t *pName = (name_t *) myLib->resolve("name");
+    description_t *pDesc = (description_t *) myLib->resolve("description");
+    version_t *pVersion = (version_t *) myLib->resolve("version");
+
+    // show the values (or lack of) for each function
+    if(pName){
+      QgsDebugMsg("Plugin name: " + pName());
+    }else{
+      QgsDebugMsg("Plugin name not returned when queried\n");
+    }
+    if(pDesc){
+      QgsDebugMsg("Plugin description: " + pDesc());
+    }else{
+      QgsDebugMsg("Plugin description not returned when queried\n");
+    }
+    if(pVersion){
+      QgsDebugMsg("Plugin version: " + pVersion());
+    }else{
+      QgsDebugMsg("Plugin version not returned when queried\n");
+    }
+
+    if (!pName || !pDesc || !pVersion)
+    {
+      QgsDebugMsg("Failed to get name, description, or type for " + myLib->library());
+      delete myLib;
+      continue;
+    }
+
+    Q3CheckListItem *pl = new Q3CheckListItem(lstPlugins, pName(), Q3CheckListItem::CheckBox); //, pDesc(), pluginDir[i])
+    pl->setText(1, pVersion());
+    pl->setText(2, pDesc());
+    pl->setText(3, pluginDir[i]);
+
+    QgsDebugMsg("Getting an instance of the QgsPluginRegistry");
+
+    // check to see if the plugin is loaded and set the checkbox accordingly
+    QgsPluginRegistry *pRegistry = QgsPluginRegistry::instance();
+
+    // get the library using the plugin description
+    QString libName = pRegistry->library(pName());
+    if (libName.length() == 0)
+    {
+      QgsDebugMsg("Couldn't find library name in the registry");
+    }
+    else
+    {
+      QgsDebugMsg("Found library name in the registry");
+      if (libName == myLib->library())
+      {
+        // set the checkbox
+        pl->setOn(true);
+      }
+    }
+
+    delete myLib;
+  }
 }
+
+
 void QgsPluginManager::on_btnOk_clicked()
 {
   unload();
@@ -232,19 +326,23 @@ std::vector < QgsPluginItem > QgsPluginManager::getSelectedPlugins()
   std::vector < QgsPluginItem > pis;
   Q3CheckListItem *lvi = (Q3CheckListItem *) lstPlugins->firstChild();
   while (lvi != 0)
+  {
+    if (lvi->isOn())
     {
-      if (lvi->isOn())
-        {
-
-          pis.push_back(QgsPluginItem(lvi->text(0), lvi->text(2), txtPluginDir->text() + "/" + lvi->text(3)));
-      } else
-        {
-
-        }
-      lvi = (Q3CheckListItem *) lvi->nextSibling();
+      QString pluginName = lvi->text(0);
+      
+      // python plugins have prefx [P] in the list
+      bool pythonic = (pluginName.indexOf("[P] ") == 0);
+      if (pythonic)
+        pluginName = pluginName.mid(4);
+      
+      pis.push_back(QgsPluginItem(pluginName, lvi->text(2), txtPluginDir->text() + "/" + lvi->text(3), 0, pythonic));
     }
+    lvi = (Q3CheckListItem *) lvi->nextSibling();
+  }
   return pis;
 }
+
 void QgsPluginManager::on_btnSelectAll_clicked()
 {
   // select all plugins

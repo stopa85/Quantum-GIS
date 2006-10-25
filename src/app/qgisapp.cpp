@@ -18,6 +18,14 @@
  ***************************************************************************/
 /* $Id$ */
 
+
+#include "qgsconfig.h"
+
+// python must be before Qt headers, otherwise it doesn't want to compile
+#ifdef HAVE_PYTHON
+#include <Python.h>
+#endif
+
 //
 // QT4 includes make sure to use the new <CamelCase> style!
 //
@@ -103,7 +111,6 @@
 #include "qgsproject.h"
 #include "qgsprojectproperties.h"
 #include "qgsproviderregistry.h"
-#include "qgspythondialog.h"
 #include "qgsrasterlayer.h"
 #include "qgsrasterlayerproperties.h"
 #include "qgsrect.h"
@@ -151,6 +158,10 @@
 
 #ifdef HAVE_POSTGRESQL
 #include "qgsdbsourceselect.h"
+#endif
+
+#ifdef HAVE_PYTHON
+#include "qgspythondialog.h"
 #endif
 
 #ifndef WIN32
@@ -325,6 +336,12 @@ static void customSrsValidation_(QgsSpatialRefSys* srs)
   qApp->processEvents();
   QgsApplication::initQgis();
   
+#ifdef HAVE_PYTHON
+  mSplash->showMessage(tr("Starting Python"), Qt::AlignHCenter | Qt::AlignBottom);
+  qApp->processEvents();
+  initPython();
+#endif
+
   // Create the plugin registry and load plugins
   // load any plugins that were running in the last session
   mSplash->showMessage(tr("Restoring loaded plugins"), Qt::AlignHCenter | Qt::AlignBottom);
@@ -359,7 +376,7 @@ static void customSrsValidation_(QgsSpatialRefSys* srs)
   mSplash->showMessage(tr("Restoring window state"), Qt::AlignHCenter | Qt::AlignBottom);
   qApp->processEvents();
   restoreWindowState();
-
+  
   mSplash->showMessage(tr("QGIS Ready!"), Qt::AlignHCenter | Qt::AlignBottom);
   qApp->processEvents();
 } // QgisApp ctor
@@ -369,8 +386,11 @@ static void customSrsValidation_(QgsSpatialRefSys* srs)
 QgisApp::~QgisApp()
 {
   delete mInternalClipboard;
-  delete mPythonConsole;
   delete mQgisInterface;
+  
+#ifdef HAVE_PYTHON
+  delete mPythonConsole;
+#endif
   
   // delete map layer registry and provider registry
   QgsApplication::exitQgis();
@@ -706,18 +726,44 @@ void QgisApp::createActions()
   connect(mActionEditPaste, SIGNAL(triggered()), this, SLOT(editPaste()));
   mActionEditPaste->setEnabled(false);
   
-  // python
+#ifdef HAVE_PYTHON  
   mActionShowPythonDialog = new QAction(tr("Python console"), this);
   connect(mActionShowPythonDialog, SIGNAL(triggered()), this, SLOT(showPythonDialog()));
   mPythonConsole = NULL;
+#endif
 }
 
+#ifdef HAVE_PYTHON
 void QgisApp::showPythonDialog()
 {
   if (mPythonConsole == NULL)
     mPythonConsole = new QgsPythonDialog(mQgisInterface);
   mPythonConsole->show();
 }
+
+void QgisApp::initPython()
+{
+  Py_Initialize();
+  
+  QString strPythonDir = QgsApplication::pluginPath() + "/python";
+  // alter sys.path to search for packages & modules in (plugin_dir)/python
+  QString strInit = "import sys\n"
+      "from sip import wrapinstance, unwrapinstance\n"
+      "from qgis.core import *\n"
+      "from qgis.gui import *\n\n"
+      "sys.path.insert(0, '" + strPythonDir + "')\n"
+      "print sys.path\n\n"
+      "iface = wrapinstance(" + QString::number((unsigned long) mQgisInterface) + ", QgisInterface)\n"
+      "plugins = {}\n";
+  
+  std::cout << strInit.toLocal8Bit().data() << std::endl;
+  PyRun_SimpleString(strInit.toLocal8Bit().data());
+  
+  // TODO: error checking, on error disable python support
+
+}
+
+#endif
 
 void QgisApp::createActionGroups()
 {
@@ -813,7 +859,9 @@ void QgisApp::createMenus()
   // Plugins Menu
   mPluginMenu = menuBar()->addMenu(tr("&Plugins"));
   mPluginMenu->addAction(mActionShowPluginManager);
+#ifdef HAVE_PYTHON
   mPluginMenu->addAction(mActionShowPythonDialog);
+#endif
 
   // Add the plugin manager action to it
   //actionPluginManager->addTo(mPluginMenu);
@@ -3593,10 +3641,51 @@ void QgisApp::showPluginManager()
     while (it != pi.end())
     {
       QgsPluginItem plugin = *it;
-      loadPlugin(plugin.name(), plugin.description(), plugin.fullPath());
+      if (plugin.isPython())
+      {
+        loadPythonPlugin(plugin.fullPath());
+      }
+      else
+      {
+        loadPlugin(plugin.name(), plugin.description(), plugin.fullPath());
+      }
       it++;
     }
   }
+}
+
+void QgisApp::loadPythonPlugin(QString pluginName)
+{
+#ifdef HAVE_PYTHON
+  QFileInfo fi(pluginName);
+  
+  QString name = fi.baseName();
+  QgsDebugMsg("I should load python plugin: " + name);
+  
+  // load plugin's package
+  QString command = "import " + name + "\n"
+      "reload(" + name + ")"; // ensure that plugin is reloaded when changed
+  std::cout << command.toLocal8Bit().data() << std::endl;
+  PyRun_SimpleString(command.toLocal8Bit().data());
+  
+  // create an instance of the plugin
+  QString pluginPythonVar = "plugins['" + name + "']";
+  command = pluginPythonVar + " = " + name + ".classFactory(iface)";
+  //std::cout << command.toLocal8Bit().data() << std::endl;
+  PyRun_SimpleString(command.toLocal8Bit().data());
+  
+  // initGui
+  command = pluginPythonVar + ".initGui()";
+  //std::cout << command.toLocal8Bit().data() << std::endl;
+  PyRun_SimpleString(command.toLocal8Bit().data());
+  
+  // TODO: tests etc.
+  
+  // TODO: add to plugin registry
+
+#else
+  QgsDebugMsg("Python is not enabled in QGIS.");
+#endif
 }
 
 void QgisApp::loadPlugin(QString name, QString description, QString theFullPathName)

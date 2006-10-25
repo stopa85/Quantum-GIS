@@ -30,22 +30,12 @@ QgsPythonDialog::QgsPythonDialog(QgisInterface* pIface, QWidget *parent)
   setupUi(this);
   mIface = pIface;
   
-  Py_Initialize();
-  
-  PyRun_SimpleString("from qgis.core import *\nfrom qgis.gui import *");
-  QString import = \
-      "print \"Welcome to QGIS console\"\n"
-      "from sip import wrapinstance\n"
-      "iface = wrapinstance(" + QString::number((unsigned int) pIface) + "L, QgisInterface)\n";
-  PyRun_SimpleString(import.toLocal8Bit().data());
-
   module = PyImport_AddModule("__main__");
   dict = PyModule_GetDict(module);
 }
 
 QgsPythonDialog::~QgsPythonDialog()
 {
-  Py_Finalize();
 }
 
 void QgsPythonDialog::on_edtCmdLine_returnPressed()
