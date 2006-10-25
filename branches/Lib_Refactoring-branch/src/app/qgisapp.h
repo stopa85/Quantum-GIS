@@ -51,6 +51,7 @@ class QgsRect;
 #include <ui_qgisappbase.h>
 #include <QMainWindow>
 
+#include "qgsconfig.h"
 
 /*! \class QgisApp
  * \brief Main window for the Qgis application
@@ -185,6 +186,8 @@ public slots:
   void showPluginManager();
   //! plugin loader
   void loadPlugin(QString name, QString description, QString mFullPath);
+  //! python plugin loader
+  void loadPythonPlugin(QString name);
   //! Find the QMenu with the given name (ie the user visible text on the menu item)
   QMenu* getPluginMenu(QString menuName);
   //! Add the action to the submenu with the given name under the plugin menu
@@ -330,8 +333,13 @@ public slots:
   void measureArea();
   //! show the attribute table for the currently selected layer
   void attributeTable();
+  
+#ifdef HAVE_PYTHON
   //! show python console
   void showPythonDialog();
+  //! initialize python
+  void initPython();
+#endif
 
   //! cuts selected features on the active layer to the clipboard
   /**
@@ -491,7 +499,9 @@ private:
   QAction *mActionAddWmsLayer;
   QAction *mActionInOverview;
   QAction *mActionDraw;
+#ifdef HAVE_PYTHON
   QAction *mActionShowPythonDialog;
+#endif
   //
   //tool groups -------------------------------------
   QActionGroup *mMapToolGroup;
@@ -578,8 +588,10 @@ private:
     Suitable for a QFileDialog file filter.  Build in ctor.
     */
   QString mRasterFileFilter;
-  
+
+#ifdef HAVE_PYTHON
   QgsPythonDialog* mPythonConsole;
+#endif
 };
 
 #endif

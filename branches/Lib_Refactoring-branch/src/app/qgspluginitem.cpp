@@ -18,8 +18,8 @@
 #include <qstring.h>
 #include "qgspluginitem.h"
 
-QgsPluginItem::QgsPluginItem(QString _name, QString _description, QString _fullPath, QString _type):
-m_name(_name), m_description(_description), m_fullPath(_fullPath), m_type(_type)
+QgsPluginItem::QgsPluginItem(QString _name, QString _description, QString _fullPath, QString _type, bool _python):
+m_name(_name), m_description(_description), m_fullPath(_fullPath), m_type(_type), m_python(_python)
 {
 
 }
@@ -42,6 +42,11 @@ QString QgsPluginItem::fullPath()
 QString QgsPluginItem::type()
 {
   return m_type;
+}
+
+bool QgsPluginItem::isPython()
+{
+  return m_python;
 }
 
 QgsPluginItem::~QgsPluginItem()
