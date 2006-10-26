@@ -61,8 +61,9 @@ public:
   /** Setup the coordinate system tranformation for the layer */
   void setCoordinateSystem();
 
-  // TODO: QgsLabel and QgsAttributeAction not yet wrapped
-  //QgsLabel *label();
+  QgsLabel *label();
+
+  // TODO: QgsAttributeAction not yet wrapped
   //QgsAttributeAction* actions() { return mActions; }
 
   /** The number of features that are selected in this layer */

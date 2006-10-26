@@ -18,12 +18,13 @@
 #define QGSLABELATTRIBUTES_H
 
 #include <qnamespace.h>
-#include <qpen.h>
+
+#include <QBrush>
+#include <QFont>
+#include <QPen>
+
 class QString;
-class QFont;
 class QColor;
-class QPen;
-class QBrush;
 
 /** This class can be used to store attributes needed for label rendering. 
  *

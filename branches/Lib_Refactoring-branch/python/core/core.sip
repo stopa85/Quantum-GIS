@@ -19,6 +19,8 @@
 %Include qgsfield.sip
 %Include qgsgeometry.sip
 %Include qgsgeometryvertexindex.sip
+%Include qgslabel.sip
+%Include qgslabelattributes.sip
 %Include qgslogger.sip
 %Include qgsmaplayer.sip
 %Include qgsmaplayerregistry.sip
