@@ -67,9 +67,24 @@ QgisPlugin *QgsPluginRegistry::plugin(QString name)
   return retval;
 }
 
+bool QgsPluginRegistry::isPythonPlugin(QString name)
+{
+  QgsPluginMetadata* pmd = plugins[name];
+  if (pmd)
+    return pmd->isPython();
+  else
+    return false;
+}
+
 void QgsPluginRegistry::addPlugin(QString library, QString name, QgisPlugin * plugin)
 {
   plugins[name] = new QgsPluginMetadata(library, name, plugin);
+}
+
+
+void QgsPluginRegistry::addPythonPlugin(QString packageName, QString pluginName)
+{
+  plugins[pluginName] = new QgsPluginMetadata(packageName, pluginName, NULL, true); // true == python plugin
 }
 
 void QgsPluginRegistry::removePlugin(QString name)

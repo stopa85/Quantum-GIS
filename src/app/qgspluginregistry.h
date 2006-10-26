@@ -40,8 +40,12 @@ public:
  QgsPluginMetadata * pluginMetadata(QString name);
  //! Retrieve a pointer to a loaded plugin by name
  QgisPlugin * plugin(QString name);
+ //! Return whether the plugin is pythonic
+ bool isPythonPlugin(QString name);
  //! Add a plugin to the map of loaded plugins
  void addPlugin(QString _library, QString _name, QgisPlugin * _plugin);
+ //! Add a plugin written in python
+ void addPythonPlugin(QString packageName, QString pluginName);
  //! Remove a plugin from the list of loaded plugins
  void removePlugin(QString name);
 protected:

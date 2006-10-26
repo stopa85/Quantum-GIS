@@ -129,25 +129,44 @@ void QgsPluginManager::getPythonPluginDescriptions()
 
   for (uint i = 0; i < pluginDir.count(); i++)
   {
-    QString pluginName = pluginDir[i];
+    QString packageName = pluginDir[i];
     
     // import plugin's package
-    QString command = "import " + pluginName;
+    QString command = "import " + packageName;
     PyRun_SimpleString(command.toLocal8Bit().data());
     
     // get information from the plugin
-    QString name = getPythonPluginMetadata(pluginName, "name");
-    QString description = getPythonPluginMetadata(pluginName, "description");
-    QString version = getPythonPluginMetadata(pluginName, "version");
+    QString pluginName = getPythonPluginMetadata(packageName, "name");
+    QString description = getPythonPluginMetadata(packageName, "description");
+    QString version = getPythonPluginMetadata(packageName, "version");
     
-    if (name == "???" || description == "???" || version == "???")
+    if (pluginName == "???" || description == "???" || version == "???")
       continue;
     
     // add to the list box
-    Q3CheckListItem *pl = new Q3CheckListItem(lstPlugins, "[P] " + name, Q3CheckListItem::CheckBox);
+    Q3CheckListItem *pl = new Q3CheckListItem(lstPlugins, pluginName, Q3CheckListItem::CheckBox);
     pl->setText(1, version);
     pl->setText(2, description);
-    pl->setText(3, pluginDir[i]);
+    pl->setText(3, "python:" + packageName);
+  
+    // check to see if the plugin is loaded and set the checkbox accordingly
+    QgsPluginRegistry *pRegistry = QgsPluginRegistry::instance();
+    
+    QString libName = pRegistry->library(pluginName);
+    if (libName.length() == 0 || !pRegistry->isPythonPlugin(pluginName))
+    {
+      QgsDebugMsg("Couldn't find library name in the registry");
+    }
+    else
+    {
+      QgsDebugMsg("Found library name in the registry");
+      if (libName == packageName)
+      {
+        // set the checkbox
+        pl->setOn(true);
+      }
+    }
+  
   }
   
 }
@@ -307,15 +326,33 @@ void QgsPluginManager::unload()
 #ifdef QGISDEBUG
           std::cout << "Checking to see if " << lvi->text(0).toLocal8Bit().data() << " is loaded" << std::endl;
 #endif
-          QgisPlugin *plugin = pRegistry->plugin(lvi->text(0));
-          if (plugin)
+          
+          QString pluginName = lvi->text(0);
+
+          if (pRegistry->isPythonPlugin(pluginName))
           {
-            plugin->unload();
-            // remove the plugin from the registry
-            pRegistry->removePlugin(lvi->text(0));
-            //disable it to the qsettings file [ts]
-            settings.writeEntry("/Plugins/" + lvi->text(0), false);
+#ifdef HAVE_PYTHON
+            // unload and delete plugin!
+            QString packageName = pRegistry->library(pluginName);
+            QString varName = "plugins['" + packageName + "']";
+            QString command = varName + ".unload()\n"
+                              "del " + varName;
+            PyRun_SimpleString(command.toLocal8Bit().data());
+#endif
           }
+          else // C++ plugin
+          {
+            QgisPlugin *plugin = pRegistry->plugin(pluginName);
+            if (plugin)
+            {
+              plugin->unload();
+            }
+          }
+
+          // remove the plugin from the registry
+          pRegistry->removePlugin(pluginName);
+          //disable it to the qsettings file [ts]
+          settings.writeEntry("/Plugins/" + pluginName, false);
         }
       lvi = (Q3CheckListItem *) lvi->nextSibling();
     }
@@ -330,13 +367,20 @@ std::vector < QgsPluginItem > QgsPluginManager::getSelectedPlugins()
     if (lvi->isOn())
     {
       QString pluginName = lvi->text(0);
+      bool pythonic = false;
       
-      // python plugins have prefx [P] in the list
-      bool pythonic = (pluginName.indexOf("[P] ") == 0);
-      if (pythonic)
-        pluginName = pluginName.mid(4);
+      QString library = lvi->text(3);
+      if (library.left(7) == "python:")
+      {
+        library = library.mid(7);
+        pythonic = true;
+      }
+      else // C++ plugin
+      {
+        library = txtPluginDir->text() + "/" + library;
+      }
       
-      pis.push_back(QgsPluginItem(pluginName, lvi->text(2), txtPluginDir->text() + "/" + lvi->text(3), 0, pythonic));
+      pis.push_back(QgsPluginItem(pluginName, lvi->text(2), library, 0, pythonic));
     }
     lvi = (Q3CheckListItem *) lvi->nextSibling();
   }

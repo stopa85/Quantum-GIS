@@ -1389,44 +1389,32 @@ abt->setWhatsNew(watsNew);
 
 void QgisApp::restoreSessionPlugins(QString thePluginDirString)
 {
-
   QSettings mySettings;
-#ifdef QGISDEBUG
 
-  std::cerr << " -------------------- Restoring plugins from last session " << thePluginDirString.toLocal8Bit().data() << std::endl;
-#endif
-  // check all libs in the current plugin directory and get name and descriptions
+  QgsDebugMsg("Restoring plugins from last session " + thePluginDirString);
+  
 #ifdef WIN32
-
-  QDir myPluginDir(thePluginDirString, "*.dll", QDir::Name | QDir::IgnoreCase, QDir::Files | QDir::NoSymLinks);
+  QString pluginExt = "*.dll";
 #else
-
-  QDir myPluginDir(thePluginDirString, "*.so*", QDir::Name | QDir::IgnoreCase, QDir::Files | QDir::NoSymLinks);
+  QString pluginExt = "*.so*";
 #endif
 
-  if (myPluginDir.count() == 0)
+  // check all libs in the current plugin directory and get name and descriptions
+  QDir myPluginDir(thePluginDirString, pluginExt, QDir::Name | QDir::IgnoreCase, QDir::Files | QDir::NoSymLinks);
+
+  for (uint i = 0; i < myPluginDir.count(); i++)
   {
-    //erk! do nothing
-    return;
-  }
-  else
-  {
-    for (unsigned i = 0; i < myPluginDir.count(); i++)
+    QString myFullPath = thePluginDirString + "/" + myPluginDir[i];
+
+    QgsDebugMsg("Examining " + myFullPath);
+
+    QLibrary *myLib = new QLibrary(myFullPath);
+    bool loaded = myLib->load();
+    if (loaded)
     {
-      QString myFullPath = thePluginDirString + "/" + myPluginDir[i];
-#ifdef QGISDEBUG
-
-      std::cerr << "Examining " << myFullPath.toLocal8Bit().data() << std::endl;
-#endif
-
-      QLibrary *myLib = new QLibrary(myFullPath);
-      bool loaded = myLib->load();
-      if (loaded)
-      {
-#ifdef QGISDEBUG
         //purposely leaving this one to stdout!
         std::cout << "Loaded " << myLib->library().toLocal8Bit().data() << std::endl;
-#endif
+        
         name_t * myName =(name_t *) myLib->resolve("name");
         description_t *  myDescription = (description_t *)  myLib->resolve("description");
         version_t *  myVersion =  (version_t *) myLib->resolve("version");
@@ -1439,28 +1427,25 @@ void QgisApp::restoreSessionPlugins(QString thePluginDirString)
 
           if (mySettings.readBoolEntry("/Plugins/" + myEntryName))
           {
-#ifdef QGISDEBUG
-            std::cerr << " -------------------- loading " << myEntryName.toLocal8Bit().data() << std::endl;
-#endif
+            QgsDebugMsg("Loading plugin: " + myEntryName);
 
             loadPlugin(myName(), myDescription(), myFullPath);
           }
         }
         else
         {
-#ifdef QGISDEBUG
-          std::cerr << "Failed to get name, description, or type for " << myLib->library().toLocal8Bit().data() << std::endl;
-#endif
-
+          QgsDebugMsg("Failed to get name, description, or type for " + myLib->library());
         }
-      }
-      else
-      {
-        std::cerr << "Failed to load " << myLib->library().toLocal8Bit().data() << std::endl;
-      }
-      delete myLib;
     }
+    else
+    {
+      QgsDebugMsg("Failed to load " + myLib->library());
+    }
+    delete myLib;
   }
+
+  // TODO: check for python plugins
+  // possibly move all plugin stuff to a special class
 
 }
 
@@ -3643,7 +3628,7 @@ void QgisApp::showPluginManager()
       QgsPluginItem plugin = *it;
       if (plugin.isPython())
       {
-        loadPythonPlugin(plugin.fullPath());
+        loadPythonPlugin(plugin.fullPath(), plugin.name());
       }
       else
       {
@@ -3654,13 +3639,14 @@ void QgisApp::showPluginManager()
   }
 }
 
-void QgisApp::loadPythonPlugin(QString pluginName)
+void QgisApp::loadPythonPlugin(QString packageName, QString pluginName)
 {
 #ifdef HAVE_PYTHON
-  QFileInfo fi(pluginName);
+//  QFileInfo fi(packageName);
   
-  QString name = fi.baseName();
-  QgsDebugMsg("I should load python plugin: " + name);
+//  QString name = fi.baseName();
+  QString name = packageName;
+  QgsDebugMsg("I should load python plugin: " + pluginName + " (package: " + name + ")");
   
   // load plugin's package
   QString command = "import " + name + "\n"
@@ -3681,7 +3667,9 @@ void QgisApp::loadPythonPlugin(QString pluginName)
   
   // TODO: tests etc.
   
-  // TODO: add to plugin registry
+  // add to plugin registry
+  QgsPluginRegistry *pRegistry = QgsPluginRegistry::instance();
+  pRegistry->addPythonPlugin(name, pluginName);
 
 #else
   QgsDebugMsg("Python is not enabled in QGIS.");
