@@ -30,14 +30,16 @@ class QString;
 class QgsPluginMetadata
 {
 public:
- QgsPluginMetadata(QString _libraryPath, QString _name, QgisPlugin *_plugin);
+ QgsPluginMetadata(QString _libraryPath, QString _name, QgisPlugin *_plugin, bool _python=false);
  QString name();
  QString library();
  QgisPlugin *plugin();
+ bool isPython();
 private:
  QString m_name;
  QString libraryPath;
  QgisPlugin *m_plugin;
+ bool m_python;
 };
 #endif //QGSPLUGINMETADATA_H
 

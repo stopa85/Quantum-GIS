@@ -187,7 +187,7 @@ public slots:
   //! plugin loader
   void loadPlugin(QString name, QString description, QString mFullPath);
   //! python plugin loader
-  void loadPythonPlugin(QString name);
+  void loadPythonPlugin(QString packageName, QString pluginName);
   //! Find the QMenu with the given name (ie the user visible text on the menu item)
   QMenu* getPluginMenu(QString menuName);
   //! Add the action to the submenu with the given name under the plugin menu
