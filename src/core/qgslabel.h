@@ -19,8 +19,10 @@
 
 #include <vector>
 #include <list>
-#include <qdom.h>
 
+#include <QColor>
+
+class QDomNode;
 class QString;
 class QPainter;
 class QPaintDevice;
