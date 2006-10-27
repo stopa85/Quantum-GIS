@@ -465,6 +465,9 @@ long QgsProjectionSelector::getCurrentSRSID()
 void QgsProjectionSelector::setOgcWmsCrsFilter(QSet<QString> crsFilter)
 {
   mCrsFilter = crsFilter;
+  mProjListDone = false;
+  mUserProjListDone = false;
+  lstCoordinateSystems->clear();
 }
 
 

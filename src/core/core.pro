@@ -13,17 +13,27 @@
 include(../../settings.pro)
 TEMPLATE=lib
 TARGET=qgis_core
-system(echo $$QGSSVNVERSION > qgssvnversion.h)
+#need to figure out how to automate making qgssvnversion file
+#  line below doesnt work
+#system(echo $$QGSSVNVERSION >> qgssvnversion.h)
 #suffix debug to target if applicable
 CONFIG(debug, debug|release){
   TARGET = $$member(TARGET, 0)-debug
 }
 LIBS += $${GDALLIBADD}
+LIBS += $${SQLITELIBADD}
+LIBS += $${GEOSLIBADD}
+LIBS += $${PROJLIBADD}
 DESTDIR=$${QGISLIBDIR}
+QT += network qt3support xml svg core gui
+QT = $$unique(QT)
 message("Building libs into $${DESTDIR}")
 
 #AM_YFLAGS       = -d
 #qgis_YACC       = qgssearchstringparser.h
+#LEXSOURCES       = qgssearchstringlexer.ll \
+#        	    qgssearchstringparser.yy
+
 HEADERS =				\
 		qgis.h					\
 		qgsapplication.h			\
@@ -31,8 +41,9 @@ HEADERS =				\
 		qgsclipper.h				\
 		qgscolortable.h				\
 		qgscontexthelp.h			\
-		qgscsexception.h			\
 		qgscustomsymbol.h			\
+		qgscoordinatetransform.h                \
+		qgsspatialrefsys.h                      \
 		qgsdatamanager.h			\
 		qgsdataprovider.h			\
 		qgsdatasource.h				\
@@ -54,7 +65,6 @@ HEADERS =				\
 		qgsmarkersymbol.h			\
 		qgsnumericsortlistviewitem.h		\
 		qgspluginitem.h				\
-		qgspluginregistry.h			\
 		qgspoint.h				\
 		qgspolygonsymbol.h			\
 		qgsprojectproperty.h			\
@@ -70,16 +80,19 @@ HEADERS =				\
 		qgsscalecalculator.h			\
 		qgssearchstring.h			\
                 qgssearchtreenode.h			\
-		qgssinglesymrenderer.h			\
 		qgssymbol.h				\
 		qgssymbologyutils.h			\
+		qgssearchstringparser.h                \
 		qgsvectordataprovider.h		
 
+HEADERS = $$unique(HEADERS)
 
 SOURCES =\
 		qgis.cpp				\
 		qgsapplication.cpp			\
 		qgsbookmarkitem.cpp			\
+		qgscoordinatetransform.cpp              \
+		qgsspatialrefsys.cpp                    \
 		qgsclipper.cpp				\
 		qgscolortable.cpp			\
 		qgscontexthelp.cpp			\
@@ -103,7 +116,6 @@ SOURCES =\
 		qgsmarkersymbol.cpp			\
 		qgsnumericsortlistviewitem.cpp		\
 		qgspluginitem.cpp			\
-		qgspluginregistry.cpp			\
 		qgspoint.cpp				\
 		qgspolygonsymbol.cpp			\
 		qgsprojectproperty.cpp			\
@@ -118,11 +130,13 @@ SOURCES =\
 		qgsrenderitem.cpp			\
 		qgsscalecalculator.cpp			\
 		qgssearchstring.cpp   		        \
-		qgssearchstringlexer.ll			\
-		qgssearchstringparser.yy		\
 		qgssearchtreenode.cpp			\
 		qgssymbol.cpp				\
 		qgssymbologyutils.cpp			\
+		qgssearchstringlexer.cc                 \
+		qgssearchstringparser.cc                \
 		qgsvectordataprovider.cpp			
+
+
 
 

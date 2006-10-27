@@ -1494,7 +1494,12 @@ void QgsRasterLayer::drawSingleBandGray(QPainter * theQPainter, QgsRasterViewPor
       double myGrayValDouble = readValue ( myGdalScanData, myDataType,
                                            myColumnInt * theRasterViewPort->drawableAreaXDimInt + myRowInt );
 
-      if ( myGrayValDouble == noDataValueDouble ) 
+      // If noDataValueDouble is 'nan', the comparison
+      // against myGrayValDouble will always fail ( nan==nan always
+      // returns false, by design), hence the slightly odd comparison
+      // of myGrayValDouble against itself. 
+      if ( myGrayValDouble == noDataValueDouble ||
+           myGrayValDouble != myGrayValDouble)
       {
 
         myQImage.setPixel(myRowInt, myColumnInt, qRgba(255,255,255,0 ));
@@ -1570,7 +1575,7 @@ void QgsRasterLayer::drawSingleBandPseudoColor(QPainter * theQPainter,
   myQImage.setAlphaBuffer(true);
   myQImage.fill(qRgba(255,255,255,0 )); // fill transparent
 
-  //calculate the adjusted matrix stats - which come into affect if the user has chosen
+  //calculate the adjusted matrix stats - which come into effect if the user has chosen
   QgsRasterBandStats myAdjustedRasterBandStats = getRasterBandStats(theBandNoInt);
 
   int myRedInt = 0;
@@ -2779,7 +2784,7 @@ const QgsRasterBandStats QgsRasterLayer::getRasterBandStats(int theBandNoInt)
           double myDouble = readValue ( myData, myDataType, iX + iY * myXBlockSize );
 
           if ( fabs(myDouble - noDataValueDouble) < myPrecision ||
-               myDouble < GDALminimum )
+               myDouble < GDALminimum || myDouble != myDouble)
           {
             continue; // NULL
           }
@@ -2804,7 +2809,7 @@ const QgsRasterBandStats QgsRasterLayer::getRasterBandStats(int theBandNoInt)
               myRasterBandStats.maxValDouble = myDouble;
             }
             //only increment the running total if it is not a nodata value
-            if (myDouble != noDataValueDouble)
+            if (myDouble != noDataValueDouble || myDouble != myDouble)
             {
               myRasterBandStats.sumDouble += myDouble;
               ++myRasterBandStats.elementCountInt;
@@ -2852,7 +2857,7 @@ const QgsRasterBandStats QgsRasterLayer::getRasterBandStats(int theBandNoInt)
           double myDouble = readValue ( myData, myDataType, iX + iY * myXBlockSize );
 
           if ( fabs(myDouble - noDataValueDouble) < myPrecision ||
-               myDouble < GDALminimum )
+               myDouble < GDALminimum || myDouble != myDouble)
           {
             continue; // NULL
           }

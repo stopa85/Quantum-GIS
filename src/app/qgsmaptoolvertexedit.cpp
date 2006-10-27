@@ -387,6 +387,9 @@ void QgsMapToolVertexEdit::snapVertex(QgsPoint& point, int exclFeatureId, int ex
     point = mCanvas->mapRender()->layerCoordsToOutputCoords(vlayer, cpyPoint);
 	}
     }
+  // TODO: return type is bool but no logic exists to determine the
+  // appropriate return value. We return true to make it compile on Windows...
+  return true;
 }
 
 

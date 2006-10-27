@@ -14,23 +14,26 @@
 # This file builds the gui library - the app is built in a separate pro file
 #
 
-include(../../../settings.pro)
-TARGET=delimitedtextprovider
-TEMPLATE = lib
+include(../../settings.pro)
+include(../ui/ui.pro)
+TEMPLATE=app
+TARGET=qgis
 #suffix debug to target if applicable
 CONFIG(debug, debug|release){
   TARGET = $$member(TARGET, 0)-debug
 }
 LIBS += $${GDALLIBADD}
-LIBS += $${GEOSLIBADD}
+#LIBS += $${SQLITELIBADD}
+#LIBS += $${GEOSLIBADD}
 #LIBS += $${PROJLIBADD}
-LIBS += $${QGISCORELIBADD}
+#LIBS += $${QGISCORELIBADD}
 LIBS += $${QGISGUILIBADD}
-LIBS += $${QGISPROJECTIONSELECTORLIBADD}
-DESTDIR=$${QGISPROVIDERDIR}
-QT += qt3support svg core gui xml network
+#LIBS += $${QGISPROJECTIONSELECTORLIBADD}
+DESTDIR=$${QGISBINDIR}
+#QT += qt3support svg core gui xml network
+QT  += gui core
 message("Building libs into $${DESTDIR}")
 
-CONFIG += qt dll thread debug rtti
-HEADERS += qgsdelimitedtextprovider.h
-SOURCES += qgsdelimitedtextprovider.cpp 
+win32: RC_FILE = ../../win_build/qgis.rc
+
+SOURCES = main.cpp					\
