@@ -155,7 +155,7 @@ public:
 
     void  setBufferColor ( const QColor &color );
     bool  bufferColorIsSet ( void ) const;
-    const QColor & bufferColor ( void ) const;
+    QColor bufferColor ( void ) const;
 
     void  setBufferStyle ( Qt::BrushStyle style );
     bool  bufferStyleIsSet ( void ) const;

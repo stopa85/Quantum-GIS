@@ -454,6 +454,7 @@ private:                       // Private methods
    * to the byte after the end of the line string binary data stream (WKB).
    */
   unsigned char* drawLineString(unsigned char* WKBlinestring,
+                                bool hasZValue,
                                 QPainter* p,
                                 QgsMapToPixel* mtp,
                                 QgsCoordinateTransform* ct,
@@ -463,7 +464,8 @@ private:                       // Private methods
    *  the byte after the end of the polygon binary data stream (WKB).
    */
   unsigned char* drawPolygon(unsigned char* WKBpolygon,
-                             QPainter* p, 
+                             bool hasZValue,
+                             QPainter* p,
                              QgsMapToPixel* mtp,
                              QgsCoordinateTransform* ct,
                              bool drawingToEditingCanvas);

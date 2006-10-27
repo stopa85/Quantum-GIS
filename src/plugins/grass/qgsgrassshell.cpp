@@ -42,7 +42,11 @@ extern "C" {
 #ifdef Q_OS_MACX
 #include <util.h>
 #else
+#ifdef __NetBSD__
+#include <util.h>
+#else
 #include <pty.h>
+#endif
 #endif
 #include <sys/types.h>
 #include <sys/stat.h>

@@ -48,6 +48,8 @@ QgsVectorLayerProperties::QgsVectorLayerProperties(QgsVectorLayer * lyr,
   QVBoxLayout *layout = new QVBoxLayout( labelOptionsFrame );
   labelDialog = new QgsLabelDialog ( layer->label(), labelOptionsFrame);
   layout->addWidget( labelDialog );
+  connect(labelDialog, SIGNAL(labelSourceSet()), 
+          this, SLOT(setLabelCheckBox()));
 
   // Create the Actions dialog tab
   QgsVectorDataProvider *dp = dynamic_cast<QgsVectorDataProvider *>(layer->getDataProvider());
@@ -76,7 +78,8 @@ QgsVectorLayerProperties::QgsVectorLayerProperties(QgsVectorLayer * lyr,
 
 QgsVectorLayerProperties::~QgsVectorLayerProperties()
 {
-    
+  disconnect(labelDialog, SIGNAL(labelSourceSet()), 
+          this, SLOT(setLabelCheckBox()));  
 }
 void QgsVectorLayerProperties::sliderTransparency_valueChanged(int theValue)
 {
@@ -84,6 +87,11 @@ void QgsVectorLayerProperties::sliderTransparency_valueChanged(int theValue)
   int myInt = static_cast < int >((theValue / 255.0) * 100);  //255.0 to prevent integer division
   lblTransparencyPercent->setText(tr("Transparency: ") + QString::number(myInt) + "%");
 }//sliderTransparency_valueChanged
+
+void QgsVectorLayerProperties::setLabelCheckBox()
+{
+  labelCheckBox->setCheckState(Qt::Checked);
+}
 
 void QgsVectorLayerProperties::alterLayerDialog(const QString & dialogString)
 {

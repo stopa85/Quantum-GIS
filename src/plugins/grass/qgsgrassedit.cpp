@@ -229,13 +229,13 @@ QgsGrassEdit::QgsGrassEdit ( QgisInterface *iface,
 void QgsGrassEdit::init()
 {
   if ( !(mProvider->isGrassEditable()) ) {
-    QMessageBox::warning( 0, "Warning", "You are not owner of the mapset, "
-        "cannot open the vector for editing." );
+    QMessageBox::warning( 0, tr("Warning"), tr("You are not owner of the mapset, "
+        "cannot open the vector for editing.") );
     return;
   }
 
   if ( !(mProvider->startEdit()) ) {
-    QMessageBox::warning( 0, "Warning", "Cannot open vector for update." );
+    QMessageBox::warning( 0, tr("Warning"), tr("Cannot open vector for update." ));
     return;
   }
 
@@ -694,9 +694,9 @@ void QgsGrassEdit::alterTable ( void )
     QString *error = mProvider->createTable ( field, mAttributeTable->item(0,0)->text(), sql );  
 
     if ( !error->isEmpty() ) {
-      QMessageBox::warning( 0, "Warning", *error );
+      QMessageBox::warning( 0, tr("Warning"), *error );
     } else {
-      QMessageBox::information( 0, "Info", "The table was created" );
+      QMessageBox::information( 0, tr("Info"), tr("The table was created") );
       QString str;
       str.sprintf ( "%d", field );
       mFieldBox->insertItem( str );
@@ -719,7 +719,7 @@ void QgsGrassEdit::alterTable ( void )
       QString *error = mProvider->addColumn ( field, sql );  
 
       if ( !error->isEmpty() ) {
-        QMessageBox::warning( 0, "Warning", *error );
+        QMessageBox::warning( 0, tr("Warning"), *error );
       }
       delete error;
     }
@@ -1087,7 +1087,7 @@ int QgsGrassEdit::writeLine ( int type, struct line_pnts *Points )
         QString *error = mProvider->insertAttributes ( field, cat );
 
         if ( !error->isEmpty() ) {
-          QMessageBox::warning( 0, "Warning", *error );
+          QMessageBox::warning( 0, tr("Warning"), *error );
         }
         delete error;
       }
@@ -1326,7 +1326,7 @@ void QgsGrassEdit::startTool(int tool)
       
     case EDIT_CATS:
       mTool = NONE;
-      QMessageBox::warning( 0, "Warning", "Tool not yet implemented." );
+      QMessageBox::warning( 0, tr("Warning"), tr("Tool not yet implemented.") );
       break;
 
     default:
@@ -1353,15 +1353,15 @@ void QgsGrassEdit::checkOrphan ( int field, int cat )
   QString *error = mProvider->isOrphan ( field, cat, &orphan );
 
   if ( !error->isEmpty() ) {
-      QMessageBox::warning( 0, "Warning", "Cannot check orphan record: "
+      QMessageBox::warning( 0, tr("Warning"), tr("Cannot check orphan record: ")
                 + *error );
       return;
   }
   if ( !orphan ) return;
 
-  int ret = QMessageBox::question ( 0, "Warning", 
-	      "Orphan record was left in attribute table. "
-	      "<br>Delete the record?",  
+  int ret = QMessageBox::question ( 0, tr("Warning"), 
+	     tr("Orphan record was left in attribute table. "
+	      "<br>Delete the record?"),  
 	      QMessageBox::Yes,  QMessageBox::No );
 
   if ( ret == QMessageBox::No ) return;
@@ -1369,7 +1369,7 @@ void QgsGrassEdit::checkOrphan ( int field, int cat )
   // Delete record
   error = mProvider->deleteAttributes ( field, cat );
   if ( !error->isEmpty() ) {
-      QMessageBox::warning( 0, "Warning", "Cannot delete orphan record: "
+      QMessageBox::warning( 0, tr("Warning"), tr("Cannot delete orphan record: ")
                 + *error );
       return;
   }
@@ -1398,7 +1398,7 @@ void QgsGrassEdit::addAttributes ( int field, int cat )
     if ( cols->size() == 0 ) {
       QString str;
       str.setNum( field );
-      QMessageBox::warning( 0, "Warning", "Cannot describe table for field " + str );
+      QMessageBox::warning( 0, tr("Warning"), tr("Cannot describe table for field ") + str );
     } else {
       std::vector<QgsFeatureAttribute> *atts = 
         mProvider->attributes ( field, cat );
@@ -1455,7 +1455,7 @@ void QgsGrassEdit::addCat ( int line )
       QString *error = mProvider->insertAttributes ( field, cat );
 
       if ( !error->isEmpty() ) {
-        QMessageBox::warning( 0, "Warning", *error );
+        QMessageBox::warning( 0, tr("Warning"), *error );
       }
       delete error;
     }
@@ -1702,8 +1702,12 @@ void QgsGrassEdit::displayDynamic ( struct line_pnts *Points, double x, double y
 	    point.setX(Points->x[i]);
 	    point.setY(Points->y[i]);
             point = transformLayerToMap ( point );
-            mRubberBandLine->addPoint(point);
+            mRubberBandLine->addPoint(point, false); // false = don't update now
         }
+        // Now add the last point again and force update of rubberband.
+        // This should improve the performance as canvas is updated only once
+        // and not with every added point to rubberband.
+        mRubberBandLine->addPoint(point, true);
     }
 
     mRubberBandIcon->setIconType(type);
