@@ -434,11 +434,9 @@ QImage* QgsWmsProvider::draw(QgsRect  const & viewExtent, int pixelWidth, int pi
 #endif
 
 
-  QString layers = visibleLayers.join(",");
-  QUrl::encode( layers );
+  QString layers = QUrl::toPercentEncoding(visibleLayers.join(","));
 
-  QString styles = visibleStyles.join(",");
-  QUrl::encode( styles );
+  QString styles = QUrl::toPercentEncoding(visibleStyles.join(","));
 
 
   // compose the URL query string for the WMS server.
@@ -2361,8 +2359,7 @@ QString QgsWmsProvider::identifyAsText(const QgsPoint& point)
     }
   }
 
-  QString layers = queryableLayers.join(",");
-  QUrl::encode( layers );
+  QString layers = QUrl::toPercentEncoding(queryableLayers.join(","));
 
   // Compose request to WMS server
 

@@ -33,7 +33,6 @@
 #include <QCursor>
 #include <QPixmap>
 
-
 QgsMapToolIdentify::QgsMapToolIdentify(QgsMapCanvas* canvas)
   : QgsMapTool(canvas),
     mResults(0),
@@ -243,7 +242,7 @@ void QgsMapToolIdentify::identifyVectorLayer(QgsVectorLayer* layer, const QgsPoi
     {
       featureCount++;
 
-      Q3ListViewItem *featureNode = mResults->addNode("foo");
+      QTreeWidgetItem* featureNode = mResults->addNode("foo");
       featureNode->setText(0, fieldIndex);
       std::vector < QgsFeatureAttribute > attr = fet->attributeMap();
       // Do this only once rather than each pass through the loop
@@ -415,4 +414,7 @@ void QgsMapToolIdentify::resultsDialogGone()
   mResults = 0;
 }
 
-// ENDS
+void QgsMapToolIdentify::deactivate()
+{
+  mResults->done(0); // close the window
+}

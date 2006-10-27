@@ -1,5 +1,5 @@
 
-SUBDIRS (ogr wms delimitedtext)
+SUBDIRS (ogr wms delimitedtext wfs)
 
 IF (POSTGRES_FOUND)
   SUBDIRS (postgres)

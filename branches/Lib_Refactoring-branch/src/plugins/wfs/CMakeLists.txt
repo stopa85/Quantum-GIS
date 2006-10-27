@@ -5,7 +5,6 @@
 SET (WFS_SRCS
      qgswfsplugin.cpp
      qgswfssourceselect.cpp
-     ../../app/qgsnewhttpconnection.cpp
 )
 
 SET (WFS_UIS
@@ -18,7 +17,6 @@ SET (WFS_UIS
 SET (WFS_MOC_HDRS
      qgswfsplugin.h
      qgswfssourceselect.h
-     ../../app/qgsnewhttpconnection.h
 )
 
 #SET (WFS_RCCS  northarrow_plugin.qrc)
@@ -41,6 +39,7 @@ INCLUDE_DIRECTORIES(
      ..
      ../../providers/wfs
      ../../app # for QgsNewHttpConnection
+     ${GEOS_INCLUDE_DIR}/geos
 )
 
 TARGET_LINK_LIBRARIES(wfsplugin

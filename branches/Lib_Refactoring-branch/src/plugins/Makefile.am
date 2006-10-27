@@ -12,6 +12,9 @@ if HAVE_GRASS
 GRASS = grass
 endif
 
+if HAVE_WFS
+WFS = wfs
+endif
 
 SUBDIRS = $(GEOPROCESSING) \
 		navigation \
@@ -24,7 +27,8 @@ SUBDIRS = $(GEOPROCESSING) \
 		grid_maker \
 		north_arrow \
 		copyright_label \
-		scale_bar 
+		scale_bar \
+		$(WFS) 
 		
 EXTRA_DIST = \
 		plugin_builder.pl \

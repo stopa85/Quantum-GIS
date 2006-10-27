@@ -288,8 +288,13 @@ static void customSrsValidation_(QgsSpatialRefSys* srs)
 : QMainWindow(parent,fl),
   mSplash(splash)
 {
-
   setupUi(this);
+
+  mSplash->showMessage(tr("Checking database"), Qt::AlignHCenter | Qt::AlignBottom);
+  qApp->processEvents();
+  // Do this early on before anyone else opens it and prevents us copying it
+  createDB();    
+
 
   mSplash->showMessage(tr("Reading settings"), Qt::AlignHCenter | Qt::AlignBottom);
   qApp->processEvents();
@@ -307,7 +312,7 @@ static void customSrsValidation_(QgsSpatialRefSys* srs)
   createCanvas();
   createOverview();
   createLegend();
-  
+
   mComposer = new QgsComposer(this); // Map composer
   mInternalClipboard = new QgsClipboard; // create clipboard
   mQgisInterface = new QgisAppInterface(this); // create the interfce
@@ -326,10 +331,7 @@ static void customSrsValidation_(QgsSpatialRefSys* srs)
   QgsMessageOutput::setMessageOutputCreator(messageOutputViewer_);
   
   fileNew(); // prepare empty project
-
-  mSplash->showMessage(tr("Checking database"), Qt::AlignHCenter | Qt::AlignBottom);
   qApp->processEvents();
-  createDB();    
 
   // load providers
   mSplash->showMessage(tr("Checking provider plugins"), Qt::AlignHCenter | Qt::AlignBottom);
@@ -388,6 +390,20 @@ QgisApp::~QgisApp()
   delete mInternalClipboard;
   delete mQgisInterface;
   
+  delete mMapTools.mZoomIn;
+  delete mMapTools.mZoomOut;
+  delete mMapTools.mPan;
+  delete mMapTools.mIdentify;
+  delete mMapTools.mMeasureDist;
+  delete mMapTools.mMeasureArea;
+  delete mMapTools.mCapturePoint;
+  delete mMapTools.mCaptureLine;
+  delete mMapTools.mCapturePolygon;
+  delete mMapTools.mSelect;
+  delete mMapTools.mVertexAdd;
+  delete mMapTools.mVertexMove;
+  delete mMapTools.mVertexDelete;
+
 #ifdef HAVE_PYTHON
   delete mPythonConsole;
 #endif
@@ -630,6 +646,18 @@ void QgisApp::createActions()
   mActionShowBookmarks->setStatusTip(tr("Show Bookmarks"));
   connect(mActionShowBookmarks, SIGNAL(triggered()), this, SLOT(showBookmarks()));
   //
+  mActionShowAllToolbars = new QAction(tr("Show most toolbars"), this);
+  mActionShowAllToolbars->setShortcut(tr("S", "Show most toolbars"));
+  mActionShowAllToolbars->setStatusTip(tr("Show most toolbars"));
+  connect(mActionShowAllToolbars, SIGNAL(triggered()), this,
+          SLOT(showAllToolbars()));
+  //
+  mActionHideAllToolbars = new QAction(tr("Hide most toolbars"), this);
+  mActionHideAllToolbars->setShortcut(tr("H", "Hide most toolbars"));
+  mActionHideAllToolbars->setStatusTip(tr("Hide most toolbars"));
+  connect(mActionHideAllToolbars, SIGNAL(triggered()), this,
+          SLOT(hideAllToolbars()));
+  //
   mActionNewBookmark= new QAction(QIcon(myIconPath+"/mActionNewBookmark.png"), tr("New Bookmark..."), this);
   mActionNewBookmark->setShortcut(tr("Ctrl+B","New Bookmark"));
   mActionNewBookmark->setStatusTip(tr("New Bookmark"));
@@ -796,6 +824,7 @@ void QgisApp::createActionGroups()
 
 void QgisApp::createMenus()
 {
+  QString myIconPath = QgsApplication::themePath();
   //
   // File Menu
   mFileMenu = menuBar()->addMenu(tr("&File"));
@@ -825,7 +854,14 @@ void QgisApp::createMenus()
   mViewMenu->addAction(mActionDraw);
   mViewMenu->addAction(mActionShowBookmarks);
   mViewMenu->addAction(mActionNewBookmark);
-    
+  mToolbarMenu = mViewMenu->addMenu(QIcon(myIconPath+"/mActionOptions.png"),
+                                    tr("&Toolbars..."));
+
+  //
+  // View:toolbars menu
+  mToolbarMenu->addAction(mActionShowAllToolbars);
+  mToolbarMenu->addAction(mActionHideAllToolbars);
+
   //
   // Layers Menu
   mLayerMenu = menuBar()->addMenu(tr("&Layer"));
@@ -1140,6 +1176,34 @@ void QgisApp::createCanvas()
   tabWidget->widget(0)->setLayout(myCanvasLayout);
   // set the focus to the map canvas
   mMapCanvas->setFocus();
+
+  // create tools
+  mMapTools.mZoomIn = new QgsMapToolZoom(mMapCanvas, FALSE /* zoomIn */);
+  mMapTools.mZoomIn->setAction(mActionZoomIn);
+  mMapTools.mZoomOut = new QgsMapToolZoom(mMapCanvas, TRUE /* zoomOut */);
+  mMapTools.mZoomOut->setAction(mActionZoomOut);
+  mMapTools.mPan = new QgsMapToolPan(mMapCanvas);
+  mMapTools.mPan->setAction(mActionPan);
+  mMapTools.mIdentify = new QgsMapToolIdentify(mMapCanvas);
+  mMapTools.mIdentify->setAction(mActionIdentify);
+  mMapTools.mMeasureDist = new QgsMeasure(FALSE /* area */, mMapCanvas);
+  mMapTools.mMeasureDist->setAction(mActionMeasure);
+  mMapTools.mMeasureArea = new QgsMeasure(TRUE /* area */, mMapCanvas);
+  mMapTools.mMeasureArea->setAction(mActionMeasureArea);
+  mMapTools.mCapturePoint = new QgsMapToolCapture(mMapCanvas, QgsMapToolCapture::CapturePoint);
+  mMapTools.mCapturePoint->setAction(mActionCapturePoint);
+  mMapTools.mCaptureLine = new QgsMapToolCapture(mMapCanvas, QgsMapToolCapture::CaptureLine);
+  mMapTools.mCaptureLine->setAction(mActionCaptureLine);
+  mMapTools.mCapturePolygon = new QgsMapToolCapture(mMapCanvas, QgsMapToolCapture::CapturePolygon);
+  mMapTools.mCapturePolygon->setAction(mActionCapturePolygon);
+  mMapTools.mSelect = new QgsMapToolSelect(mMapCanvas);
+  mMapTools.mSelect->setAction(mActionSelect);
+  mMapTools.mVertexAdd = new QgsMapToolVertexEdit(mMapCanvas, QgsMapToolVertexEdit::AddVertex);
+  mMapTools.mVertexAdd->setAction(mActionAddVertex);
+  mMapTools.mVertexMove = new QgsMapToolVertexEdit(mMapCanvas, QgsMapToolVertexEdit::MoveVertex);
+  mMapTools.mVertexMove->setAction(mActionMoveVertex);
+  mMapTools.mVertexDelete = new QgsMapToolVertexEdit(mMapCanvas, QgsMapToolVertexEdit::DeleteVertex);
+  mMapTools.mVertexDelete->setAction(mActionDeleteVertex);
 }
 
 void QgisApp::createOverview()
@@ -3176,13 +3240,14 @@ void QgisApp::exportMapServer()
   //      tr("No layers to export. You must add at least one layer to the map in order to export the view."));
   //}
 }
+
+
+
 void QgisApp::zoomIn()
 {
   QgsDebugMsg ("Setting map tool to zoomIn");
   
-  QgsMapTool* tool = new QgsMapToolZoom(mMapCanvas, FALSE /* zoomIn */);
-  tool->setAction(mActionZoomIn);
-  mMapCanvas->setMapTool(tool);
+  mMapCanvas->setMapTool(mMapTools.mZoomIn);
 
   // notify the project we've made a change
   QgsProject::instance()->dirty(true);
@@ -3191,9 +3256,7 @@ void QgisApp::zoomIn()
 
 void QgisApp::zoomOut()
 {
-  QgsMapTool* tool = new QgsMapToolZoom(mMapCanvas, TRUE /* zoomOut */);
-  tool->setAction(mActionZoomOut);
-  mMapCanvas->setMapTool(tool);
+  mMapCanvas->setMapTool(mMapTools.mZoomOut);
 
   // notify the project we've made a change
   QgsProject::instance()->dirty(true);
@@ -3209,9 +3272,7 @@ void QgisApp::zoomToSelected()
 
 void QgisApp::pan()
 {
-  QgsMapTool* tool = new QgsMapToolPan(mMapCanvas);
-  tool->setAction(mActionPan);
-  mMapCanvas->setMapTool(tool);
+  mMapCanvas->setMapTool(mMapTools.mPan);
 }
 
 void QgisApp::zoomFull()
@@ -3232,23 +3293,17 @@ void QgisApp::zoomPrevious()
 
 void QgisApp::identify()
 {
-  QgsMapTool* tool = new QgsMapToolIdentify(mMapCanvas);
-  tool->setAction(mActionIdentify);
-  mMapCanvas->setMapTool(tool);
+  mMapCanvas->setMapTool(mMapTools.mIdentify);
 }
 
 void QgisApp::measure()
 {
-  QgsMapTool* tool = new QgsMeasure(FALSE /* area */, mMapCanvas);
-  tool->setAction(mActionMeasure);
-  mMapCanvas->setMapTool(tool);
+  mMapCanvas->setMapTool(mMapTools.mMeasureDist);
 }
 
 void QgisApp::measureArea()
 {
-  QgsMapTool* tool = new QgsMeasure(TRUE /* area */, mMapCanvas);
-  tool->setAction(mActionMeasureArea);
-  mMapCanvas->setMapTool(tool);
+  mMapCanvas->setMapTool(mMapTools.mMeasureArea);
 }
 
 
@@ -3325,9 +3380,7 @@ void QgisApp::deleteSelected()
 void QgisApp::capturePoint()
 {
   // set current map tool to select
-  QgsMapTool* t = new QgsMapToolCapture(mMapCanvas, QgsMapToolCapture::CapturePoint);
-  t->setAction(mActionCapturePoint);
-  mMapCanvas->setMapTool(t);
+  mMapCanvas->setMapTool(mMapTools.mCapturePoint);
   
   // FIXME: is this still actual or something old that's not used anymore?
   //connect(t, SIGNAL(xyClickCoordinates(QgsPoint &)), this, SLOT(showCapturePointCoordinate(QgsPoint &)));
@@ -3335,62 +3388,35 @@ void QgisApp::capturePoint()
 
 void QgisApp::captureLine()
 {
-  QgsMapTool* t = new QgsMapToolCapture(mMapCanvas, QgsMapToolCapture::CaptureLine);
-  t->setAction(mActionCaptureLine);
-  mMapCanvas->setMapTool(t);
+  mMapCanvas->setMapTool(mMapTools.mCaptureLine);
 }
 
 void QgisApp::capturePolygon()
 {
-  QgsMapTool* t = new QgsMapToolCapture(mMapCanvas, QgsMapToolCapture::CapturePolygon);
-  t->setAction(mActionCapturePolygon);
-  mMapCanvas->setMapTool(t);
+  mMapCanvas->setMapTool(mMapTools.mCapturePolygon);
 }
 
 void QgisApp::select()
 {
-  QgsMapTool* t = new QgsMapToolSelect(mMapCanvas);
-  t->setAction(mActionSelect);
-  mMapCanvas->setMapTool(t);
+  mMapCanvas->setMapTool(mMapTools.mSelect);
 }
 
 
 void QgisApp::addVertex()
 {
-
-#ifdef QGISDEBUG
-  std::cout << "QgisApp::addVertex." << std::endl;
-#endif
-
-  QgsMapTool* t = new QgsMapToolVertexEdit(mMapCanvas, QgsMapToolVertexEdit::AddVertex);
-  t->setAction(mActionAddVertex);
-  mMapCanvas->setMapTool(t);
+  mMapCanvas->setMapTool(mMapTools.mVertexAdd);
   
 }
 
 void QgisApp::moveVertex()
 {
-
-#ifdef QGISDEBUG
-  std::cout << "QgisApp::moveVertex." << std::endl;
-#endif
-
-  QgsMapTool* t = new QgsMapToolVertexEdit(mMapCanvas, QgsMapToolVertexEdit::MoveVertex);
-  t->setAction(mActionMoveVertex);
-  mMapCanvas->setMapTool(t);
+  mMapCanvas->setMapTool(mMapTools.mVertexMove);
 }
 
 
 void QgisApp::deleteVertex()
 {
-
-#ifdef QGISDEBUG
-  std::cout << "QgisApp::deleteVertex." << std::endl;
-#endif
-
-  QgsMapTool* t = new QgsMapToolVertexEdit(mMapCanvas, QgsMapToolVertexEdit::DeleteVertex);
-  t->setAction(mActionDeleteVertex);
-  mMapCanvas->setMapTool(t);
+  mMapCanvas->setMapTool(mMapTools.mVertexDelete);
 }
 
 
@@ -5263,3 +5289,24 @@ void QgisApp::newBookmark()
     }
   }
 }      
+
+void QgisApp::showAllToolbars()
+{
+  setToolbarVisibility(true);
+}
+
+void QgisApp::hideAllToolbars()
+{
+  setToolbarVisibility(false);
+}
+
+void QgisApp::setToolbarVisibility(bool visibility)
+{
+  mFileToolBar->setVisible(visibility);
+  mLayerToolBar->setVisible(visibility);
+  mMapNavToolBar->setVisible(visibility);
+  mDigitizeToolBar->setVisible(visibility);
+  mAttributesToolBar->setVisible(visibility);
+  mPluginToolBar->setVisible(visibility);
+  mHelpToolBar->setVisible(visibility);
+}

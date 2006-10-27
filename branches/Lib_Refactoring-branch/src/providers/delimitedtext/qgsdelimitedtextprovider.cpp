@@ -73,10 +73,10 @@ QgsDelimitedTextProvider::QgsDelimitedTextProvider(QString const &uri)
   temp = parameters.grep("yField=");
   mYField = temp.size()? temp[0].mid(temp[0].find("=") + 1) : "";
   // Decode the parts of the uri. Good if someone entered '=' as a delimiter, for instance.
-  QUrl::decode(mFileName);
-  QUrl::decode(mDelimiter);
-  QUrl::decode(mXField);
-  QUrl::decode(mYField);
+  mFileName  = QUrl::fromPercentEncoding(mFileName.toUtf8());
+  mDelimiter = QUrl::fromPercentEncoding(mDelimiter.toUtf8());
+  mXField    = QUrl::fromPercentEncoding(mXField.toUtf8());
+  mYField    = QUrl::fromPercentEncoding(mYField.toUtf8());
 #ifdef QGISDEBUG
   std::cerr << "Data source uri is " << (const char *)uri.toLocal8Bit().data() << std::endl;
   std::cerr << "Delimited text file is: " << (const char *)mFileName.toLocal8Bit().data() << std::endl;
@@ -715,10 +715,10 @@ bool QgsDelimitedTextProvider::boundsCheck(double x, double y)
 {
   bool inBounds(true);
   if (mSelectionRectangle)
-    inBounds = (((x < mSelectionRectangle->xMax()) &&
-                 (x > mSelectionRectangle->xMin())) &&
-                ((y < mSelectionRectangle->yMax()) &&
-                 (y > mSelectionRectangle->yMin())));
+    inBounds = (((x <= mSelectionRectangle->xMax()) &&
+                 (x >= mSelectionRectangle->xMin())) &&
+                ((y <= mSelectionRectangle->yMax()) &&
+                 (y >= mSelectionRectangle->yMin())));
   // QString hit = inBounds?"true":"false";
 
   // std::cerr << "Checking if " << x << ", " << y << " is in " << 
