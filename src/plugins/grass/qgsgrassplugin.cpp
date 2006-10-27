@@ -150,7 +150,6 @@ void QgsGrassPlugin::initGui()
   // Create region rubber band
   mRegionBand = new QgsRubberBand(mCanvas, 1);
   mRegionBand->setZValue(20);
-  mRegionBand->hide();
 
   // Create the action for tool
   mOpenMapsetAction = new QAction( tr("Open mapset"), this );
@@ -240,7 +239,7 @@ void QgsGrassPlugin::mapsetChanged ()
         mOpenToolsAction->setEnabled(false);
 	mRegionAction->setEnabled(false);
 	mEditRegionAction->setEnabled(false);
-        mRegionBand->hide();
+        mRegionBand->reset();
         mCloseMapsetAction->setEnabled(false);
         mNewVectorAction->setEnabled(false);
 
@@ -260,9 +259,7 @@ void QgsGrassPlugin::mapsetChanged ()
         QSettings settings("QuantumGIS", "qgis");
 	bool on = settings.readBoolEntry ("/GRASS/region/on", true );
 	mRegionAction->setOn(on);
-        if ( on ) {
-            mRegionBand->show();
-        }
+  switchRegion(on);
 
         if ( mTools ) 
         {
@@ -611,9 +608,8 @@ void QgsGrassPlugin::switchRegion(bool on)
 
   if ( on ) {
     displayRegion();
-    mRegionBand->show();
   } else {
-    mRegionBand->hide();
+    mRegionBand->reset();
   }
 }
 

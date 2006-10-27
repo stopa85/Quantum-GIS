@@ -59,8 +59,7 @@ BUILT_SOURCES = $(plugin_MOC) $(plugin_UI)
 wfsplugin_la_LIBADD = $(QT_LDADD) \
 			    $(GDAL_LDADD) \
 			    ../../core/libqgis_core.la \
-			    ../../gui/libqgis_gui.la \
-				../../providers/wfs/libwfsprovider.la
+			    ../../gui/libqgis_gui.la
 
 wfsplugin_la_CFLAGS = $(CFLAGS) $(EXTRA_CFLAGS) $(DEBUG_QGIS)
 wfsplugin_la_CXXFLAGS = $(CXXFLAGS) \
@@ -69,12 +68,14 @@ wfsplugin_la_CXXFLAGS = $(CXXFLAGS) \
 			      $(DEBUG_QGIS) \
 			      $(GDAL_CFLAGS) \
 			      $(GEOS_CFLAGS) \
+				$(GEOS_CFLAGS)/geos \
 			      	-I../../core \
 			      	-I../../ui \
 			      	-I../../gui \
 			  	-I../../raster \
 				-I../../../include/qgis \
 				-I../../providers/wfs \
-				-I../../widgets/projectionselector
+				-I../../widgets/projectionselector \
+				-I..
 
 wfsplugin_la_LDFLAGS = -avoid-version -module

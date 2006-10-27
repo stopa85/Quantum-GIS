@@ -41,7 +41,9 @@ class QgsHelpViewer;
 class QgsLegend;
 class QgsMapCanvas;
 class QgsMapLayer;
+class QgsMapTool;
 class QgsPoint;
+class QgsProviderRegistry;
 class QgsPythonDialog;
 class QgsRasterLayer;
 class QgsRect;
@@ -266,6 +268,12 @@ public slots:
   void showBookmarks();
   //! Create a new spatial bookmark
   void newBookmark();
+  //! Lets the user show all of the toolbars
+  void showAllToolbars();
+  //! Lets the user hide all of the toolbars
+  void hideAllToolbars();
+  //! Sets the visibility of the toolbars
+  void setToolbarVisibility(bool visibility);
   //! activates the capture point tool
   void capturePoint();
   //! activates the capture line tool
@@ -496,6 +504,8 @@ private:
   QAction *mActionAddWmsLayer;
   QAction *mActionInOverview;
   QAction *mActionDraw;
+  QAction *mActionShowAllToolbars;
+  QAction *mActionHideAllToolbars;
 #ifdef HAVE_PYTHON
   QAction *mActionShowPythonDialog;
 #endif
@@ -507,10 +517,29 @@ private:
   QMenu *mFileMenu;
   QMenu *mRecentProjectsMenu;
   QMenu *mViewMenu;
+  QMenu *mToolbarMenu;
   QMenu *mLayerMenu;
   QMenu *mSettingsMenu;
   QMenu *mHelpMenu;
 
+  class Tools
+  {
+    public:
+      QgsMapTool* mZoomIn;
+      QgsMapTool* mZoomOut;
+      QgsMapTool* mPan;
+      QgsMapTool* mIdentify;
+      QgsMapTool* mMeasureDist;
+      QgsMapTool* mMeasureArea;
+      QgsMapTool* mCapturePoint;
+      QgsMapTool* mCaptureLine;
+      QgsMapTool* mCapturePolygon;
+      QgsMapTool* mSelect;
+      QgsMapTool* mVertexAdd;
+      QgsMapTool* mVertexMove;
+      QgsMapTool* mVertexDelete;
+  } mMapTools;
+  
   //!The name of the active theme
   QString mThemeName;
 

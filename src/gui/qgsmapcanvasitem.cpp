@@ -83,8 +83,8 @@ void QgsMapCanvasItem::setRect(const QgsRect& rect)
   mItemSize = QSizeF(r.width()+2,r.height()+2);
   
 #ifdef QGISDEBUG
-  std::cout << "QgsMapCanvasItem::setRect: "  << " [" << (int) r.left() << ","
-     << (int) r.top() << "]-[" << (int) r.width() << "x" << (int) r.height() << "]" << std::endl;
+//  std::cout << "QgsMapCanvasItem::setRect: "  << " [" << (int) r.left() << ","
+//     << (int) r.top() << "]-[" << (int) r.width() << "x" << (int) r.height() << "]" << std::endl;
 #endif
   
   update();

@@ -248,20 +248,6 @@ void QgsWFSProvider::select(QgsRect *mbr, bool useIntersect)
   mFeatureIterator = mSelectedFeatures->begin();
 }
 
-int QgsWFSProvider::getCapabilities(const QString& uri, QgsWFSProvider::REQUEST_ENCODING e, std::list<QString>& typenames, std::list< std::list<QString> >& crs)
-{
-  switch(e)
-    {
-    case QgsWFSProvider::GET:
-      return getCapabilitiesGET(uri, typenames, crs);
-    case QgsWFSProvider::POST:
-      return getCapabilitiesPOST(uri, typenames, crs);
-    case QgsWFSProvider::SOAP:
-      return getCapabilitiesSOAP(uri, typenames, crs);
-    }
-  return 1;
-}
-
 int QgsWFSProvider::getFeature(const QString& uri)
 {
   //GET or SOAP?
@@ -319,77 +305,6 @@ int QgsWFSProvider::describeFeatureType(const QString& uri, std::vector<QgsField
       return describeFeatureTypeSOAP(uri, fields);
     }
   return 1;
-}
-
-int QgsWFSProvider::getCapabilitiesGET(const QString& uri, std::list<QString>& typenames, std::list< std::list<QString> >& crs)
-{
-  QString request = uri + "SERVICE=WFS&REQUEST=GetCapabilities&VERSION=1.1.1";
-  QByteArray result;
-  QgsHttpTransaction http(request);
-  http.getSynchronously(result);
-  
-  QDomDocument capabilitiesDocument;
-  if(!capabilitiesDocument.setContent(result, true))
-    {
-      return 1; //error
-    }
-  
-  
-
-  //get the <FeatureType> elements
-  QDomNodeList featureTypeList = capabilitiesDocument.elementsByTagNameNS(WFS_NAMESPACE, "FeatureType");
-  for(unsigned int i = 0; i < featureTypeList.length(); ++i)
-    {
-      QDomElement featureTypeElem = featureTypeList.at(i).toElement();
-      std::list<QString> featureSRSList; //SRS list for this feature
-
-      //Name
-      QDomNodeList nameList = featureTypeElem.elementsByTagNameNS(WFS_NAMESPACE, "Name");
-      if(nameList.length() > 0)
-	{
-	  typenames.push_back(nameList.at(0).toElement().text());
-	}
-      
-      //DefaultSRS is always the first entry in the feature crs list
-      QDomNodeList defaultSRSList = featureTypeElem.elementsByTagNameNS(WFS_NAMESPACE, "DefaultSRS");
-      if(defaultSRSList.length() > 0)
-	{
-	  featureSRSList.push_back(defaultSRSList.at(0).toElement().text());
-	}
-
-      //OtherSRS
-      QDomNodeList otherSRSList = featureTypeElem.elementsByTagNameNS(WFS_NAMESPACE, "OtherSRS");
-      for(unsigned int i = 0; i < otherSRSList.length(); ++i)
-	{
-	  featureSRSList.push_back(otherSRSList.at(i).toElement().text());
-	}
-
-      //Support <SRS> for compatibility with older versions
-      QDomNodeList srsList = featureTypeElem.elementsByTagNameNS(WFS_NAMESPACE, "SRS");
-      for(unsigned int i = 0; i < srsList.length(); ++i)
-	{
-	  featureSRSList.push_back(srsList.at(i).toElement().text());
-	}
-
-      crs.push_back(featureSRSList);
-    }
-
-
-  //print out result for a test
-  QString resultString(result);
-  qWarning(resultString);
-
-  return 0;
-}
-
-int QgsWFSProvider::getCapabilitiesPOST(const QString& uri, std::list<QString>& typenames, std::list< std::list<QString> >& crs)
-{
-  return 1; //soon...
-}
-
-int QgsWFSProvider::getCapabilitiesSOAP(const QString& uri, std::list<QString>& typenames, std::list< std::list<QString> >& crs)
-{
-  return 1; //soon...
 }
 
 int QgsWFSProvider::getFeatureGET(const QString& uri, const QString& geometryAttribute)
@@ -826,7 +741,7 @@ int QgsWFSProvider::getWkbFromGML2Polygon(const QDomElement& geometryElement, un
     }
 
   //calculate number of bytes to allocate
-  int nrings = 1 + innerBoundaryList.size();
+  int nrings = ringCoordinates.size();
   int npoints = 0;//total number of points
   for(std::vector<std::list<QgsPoint> >::const_iterator it = ringCoordinates.begin(); it != ringCoordinates.end(); ++it)
     {
@@ -1138,7 +1053,7 @@ int QgsWFSProvider::getWkbFromGML2MultiPolygon(const QDomElement& geometryElemen
 	{
 	  continue;
 	}
-      currentLinearRingElement = linearRingNodeList.at(i).toElement();
+      currentLinearRingElement = linearRingNodeList.at(0).toElement();
       currentCoordinateList = currentLinearRingElement.elementsByTagNameNS(GML_NAMESPACE, "coordinates");
       if(currentCoordinateList.size() < 1)
 	{
@@ -1152,16 +1067,16 @@ int QgsWFSProvider::getWkbFromGML2MultiPolygon(const QDomElement& geometryElemen
 
       //find interior rings
       QDomNodeList innerBoundaryList = currentPolygonElement.elementsByTagNameNS(GML_NAMESPACE, "innerBoundaryIs");
-      for(int i = 0; i < innerBoundaryList.size(); ++i)
+      for(int j = 0; j < innerBoundaryList.size(); ++j)
 	{
 	  std::list<QgsPoint> ringCoordinates;
-	  currentInnerBoundaryElement = innerBoundaryList.at(i).toElement();
-	  linearRingNodeList = currentOuterBoundaryElement.elementsByTagNameNS(GML_NAMESPACE, "LinearRing");
+	  currentInnerBoundaryElement = innerBoundaryList.at(j).toElement();
+	  linearRingNodeList = currentInnerBoundaryElement.elementsByTagNameNS(GML_NAMESPACE, "LinearRing");
 	  if(linearRingNodeList.size() < 1)
 	    {
 	      continue;
 	    }
-	  currentLinearRingElement = linearRingNodeList.at(i).toElement(); 
+	  currentLinearRingElement = linearRingNodeList.at(0).toElement(); 
 	  currentCoordinateList = currentLinearRingElement.elementsByTagNameNS(GML_NAMESPACE, "coordinates");
 	  if(currentCoordinateList.size() < 1)
 	    {

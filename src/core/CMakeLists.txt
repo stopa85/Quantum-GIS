@@ -17,6 +17,7 @@ qgsfeatureattribute.cpp
 qgsfield.cpp
 qgsgeometry.cpp
 qgsgeometryvertexindex.cpp
+qgshttptransaction.cpp
 qgslabel.cpp
 qgslabelattributes.cpp
 qgsline.cpp
@@ -71,6 +72,7 @@ SET(QGIS_CORE_MOC_HDRS
 qgscontexthelp.h
 qgscoordinatetransform.h
 qgsdataprovider.h
+qgshttptransaction.h
 qgsmaplayer.h
 qgsmaplayerregistry.h
 qgsmaprender.h

@@ -2,9 +2,7 @@
 ########################################################
 # Files
 
-SET(WFS_SRCS qgswfsprovider.cpp qgshttptransaction.cpp)
-
-SET(WFS_MOC_HDRS qgshttptransaction.h)
+SET(WFS_SRCS qgswfsprovider.cpp)
 
 
 ########################################################
@@ -14,9 +12,10 @@ QT4_WRAP_CPP(WFS_MOC_SRCS ${WFS_MOC_HDRS})
 
 INCLUDE_DIRECTORIES (
   ../../core
+  ${GEOS_INCLUDE_DIR}/geos
 )
 
-ADD_LIBRARY (wfsprovider SHARED ${WFS_SRCS} ${WFS_MOC_SRCS})
+ADD_LIBRARY (wfsprovider SHARED ${WFS_SRCS})
 
 TARGET_LINK_LIBRARIES (wfsprovider
   ${QT_LIBRARIES}
