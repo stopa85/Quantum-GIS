@@ -14,9 +14,10 @@ message(******************** settings.pro ***********************)
 #################################################################
 
 unix:WORKDIR=$$system(pwd)
-win32:WORKDIR=c:/temp/
+#a hack to get the current working dir under windows
+win32:WORKDIR=$$system(cd)
 message(Building in $${WORKDIR})
-QGIS_APP_NAME=omgui1
+QGIS_APP_NAME=qgis
 QGIS_LOCALPLUGIN=true
 QGIS_WEBSERVICESPLUGIN=false #disabled until renato gets it fully implemented
 QGIS_DUMMYPLUGIN=false
@@ -58,8 +59,11 @@ LANGUAGE  = C++
 CONFIG += exceptions
 # Require that there are no undefined symbols in any libs!
 QMAKE_LFLAGS_SHLIB *= --no-undefined
+#clear all qt modules - each pro should specify exactly which qt modules it wants
+QT =
 
-QGSSVNVERSION="version0.8pre2"
+QGSSVNVERSION=version0.8pre2
+DEFINES += HAVE_POSTGRESQL=0
 #################################################################
 ##
 ## Destination dir
@@ -94,8 +98,11 @@ linux-g++:QGISLIBDIR=$${DESTDIR}/lib
 macx:QGISLIBDIR=$${QGISBINDIR}
 win32:QGISLIBDIR=$${DESTDIR}
 
-QGISPLUGINDIR=$${QGISBINDIR}/plugins
-macx:QGISPLUGINDIR=$${DESTDIR}/$${QGIS_APP_NAME}.app/Contents/plugins
+QGISPLUGINDIR=$${DESTDIR}/lib/qgis
+macx:QGISPLUGINDIR=$${DESTDIR}/$${QGIS_APP_NAME}.app/Contents/lib/qgis
+
+QGISPROVIDERDIR=$${QGISBINDIR}/lib/qgis
+macx:QGISPROVIDERDIR=$${DESTDIR}/$${QGIS_APP_NAME}.app/Contents/lib/qgis
 
 message(WORKDIR      : $${WORKDIR})
 message(DESTDIR      : $${DESTDIR})
@@ -105,35 +112,46 @@ message(QGISPLUGINDIR : $${QGISPLUGINDIR})
 
 #################################################################
 ##
-## Library names
+## Libraries to link to (used on a case by case basis as needed)
 ##
 #################################################################
 
-QGISLIBADD=-lomgui
-QGISWIDGETSLIBADD=-lomgwidgets
-QGISSOAPLIBADD=-lomgsoap
-OPENMODELLERLIBADD=-lopenmodeller
+QGISCORELIBADD=-lqgis_core
 CONFIG(debug, debug|release){
-  QGISLIBADD=$$member(QGISLIBADD, 0)-debug
-  #win32:LIBS += -lomgui-debug$${VER_MAJ}
-  QGISWIDGETSLIBADD=$$member(QGISWIDGETSLIBADD, 0)-debug
-  QGISSOAPLIBADD=$$member(QGISSOAPLIBADD, 0)-debug
-  win32:OPENMODELLERLIBADD=$$member(OPENMODELLERLIBADD, 0)-debug
+  QGISCORELIBADD=$$member(QGISCORELIBADD, 0)-debug
 }
-win32:EXPATLIBADD=libexpat-1
-unix:EXPATLIBADD= #not needed for unix
+
+QGISPROJECTIONSELECTORLIBADD=-lqgis_projectionselector
+CONFIG(debug, debug|release){
+  QGISPROJECTIONSELECTORLIBADD=$$member(QGISPROJECTIONSELECTORLIBADD, 0)-debug
+}
+
+#not currently used since I had to incorporate composer into gui lib due to 
+#cyclical dependency issues
+QGISCOMPOSERLIBADD=-lqgis_composer
+CONFIG(debug, debug|release){
+  QGISCOMPOSERLIBADD=$$member(QGISCOMPOSERLIBADD, 0)-debug
+}
+
+QGISGUILIBADD=-lqgis_gui
+CONFIG(debug, debug|release){
+  QGISGUILIBADD=$$member(QGISGUILIBADD, 0)-debug
+}
+
 win32:GDALLIBADD=-lgdal
 unix:GDALLIBADD=-lgdal
 macx:GDALLIBADD=-framework gdal
 
-contains(QGIS_USE_QGIS,true){
-  QGISLIBADD = -lqgis_core -lqgis_gui -lproj
-}
+SQLITELIBADD=-lsqlite3
+PROJLIBADD=-lproj
+GEOSLIBADD=-lgeos
+GRASSLIBADD=-lgrass
 
+win32:LIBS += -lWs2_32
 
 #################################################################
 #
-# Lib search paths
+# Lib search paths (globally set for all pro files)
 #
 #################################################################
 
@@ -146,43 +164,23 @@ macx:LIBS+=-L$${QGISLIBDIR}
 macx:LIBS+=-F/Library/Frameworks/
 macx:LIBS+=-L/usr/local/lib
 
-contains(QGIS_USE_QGIS,true){
-  QT+= qt3support
-  #For mac we specify the path into a qgis.app bundle for the libs
-  #on other systems we will assume they are already in the path
-  macx:QGISDIR=/Users/timsutton/apps/qgis.app/Contents/MacOS/
-  linux-g++:QGISDIR=/home/timlinux/apps
-  #linux-g++:/usr
-  QGISLIBDIR=$${QGISDIR}/lib
-  LIBS+=-L$${QGISLIBDIR}
-
-  QGISPLUGINDIR=$${QGISLIBDIR}/qgis
-  DEFINES += QGISPLUGINDIR=$${QGISPLUGINDIR}
-  DEFINES += WITH_QGIS
-}
 
 #################################################################
 #
-# Include paths
+# Include paths (globally set for all pro files)
 #
 #################################################################
 
-linux-g++:INCLUDEPATH += /usr/lib/ccache/include
-contains(QGIS_USE_QGIS,true){
-  macx:QGISSRCDIR=/Users/timsutton/dev/cpp/qgis/src
-  linux-g++:QGISSRCDIR=/home/timlinux/dev/cpp/qgis/src
-  win32:QGISSRCDIR=c:/dev/cpp/qgis/src
-  
-  unix:INCLUDEPATH += $${QGISDIR}/include/qgis
-  win32:INCLUDEPATH += $${QGISSRCDIR}
-  win32:INCLUDEPATH += c:/msys/local/include
-  INCLUDEPATH +=$${QGISSRCDIR}/core \
-                $${QGISSRCDIR}/gui \
-                $${QGISSRCDIR}/plugins \
-                $${QGISSRCDIR}/providers \
-                $${QGISSRCDIR}/raster \
-                $${QGISSRCDIR}/ui 
-}
+INCLUDEPATH +=$${WORKDIR}/src \
+              $${WORKDIR}/src/core \
+              $${WORKDIR}/src/gui \
+              $${WORKDIR}/src/legend \
+              $${WORKDIR}/src/composer \
+              $${WORKDIR}/src/widgets/projectionselector \
+              $${WORKDIR}/src/plugins \
+              $${WORKDIR}/src/providers \
+              $${WORKDIR}/src/raster \
+              $${WORKDIR}/src/ui 
 
 #################################################################
 #
@@ -192,10 +190,8 @@ contains(QGIS_USE_QGIS,true){
 
 win32{
   message(Installing for windows!)
-  INCLUDEPATH += . 
-  INCLUDEPATH += C:/MinGW/include
-  INCLUDEPATH += C:/cygwin/usr/local/src/om/src
-  INCLUDEPATH += c:/dev/cpp/om/src
+  #add any win specific rules here 
+  INCLUDEPATH += c:/msys/local/include
 }
 
 
@@ -206,7 +202,6 @@ win32{
 #################################################################
 
 macx{
-  INCLUDEPATH += /usr/local/include/openmodeller
   #fixme should not need the next line
   #INCLUDEPATH += /Users/timsutton/dev/cpp/om/src
   FRAMEWORKSDIR=$${DESTDIR}/$${QGIS_APP_NAME}.app/Contents/Frameworks
@@ -220,44 +215,6 @@ macx{
     message(Gdal framework copied into the bundle)
   }
   system(cp mac/Info.plist $${DESTDIR}/bin/$${QGIS_APP_NAME}.app/Contents)
-}
-
-####################################################
-
-
-# Whether we should build the local om plugin
-contains(QGIS_LOCALPLUGIN,true){
-  message("Building with omglocalplugin support")
-  #make available as a c++ compiler macro
-  DEFINES += WITH_LOCAL_PLUGIN
-}else {
-  message("OmgLocalPlugin support disabled")
-}
-
-####################################################
-
-# Whether we should build the webservices om plugin
-contains(QGIS_WEBSERVICESPLUGIN,true){
-  message("Building with omgwebservicesplugin support")
-  #make available as a c++ compiler macro
-  DEFINES += WITH_WEBSERVICES_PLUGIN
-}else{
-  message("OmgWebServicesPlugin support disabled")
-  #nullify soap lib include if WS is disabled
-  QGISSOAPLIBADD=
-}
-
-####################################################
-
-
-# Whether we should build with experimental/incomplete features
-# enabled on the GUI
-contains(QGIS_ALLOW_EXPERIMENTAL,false){
-  message("Building with NO_EXPERIMENTAL features visible to user")
-  #make available as a c++ compiler macro
-  DEFINES += QGIS_NO_EXPERIMENTAL
-}else{
-  message("EXPERIMENTAL features will be visible to user")
 }
 
 
@@ -275,4 +232,3 @@ linux-g++:OBJECTS_DIR =  $${OBJDIR}/o/linux
 win32:OBJECTS_DIR     =  $${OBJDIR}/o/win32
 #These next two are not currently needed for this simple project
 #RCC_DIR               =  $${OBJDIR}/rcc
-#RC_FILE               =  $${APPNAME}.rc

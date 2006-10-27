@@ -385,7 +385,13 @@ void QgsMapToolIdentify::identifyVectorLayer(QgsVectorLayer* layer, const QgsPoi
       }
     }
     else
+    {
       QApplication::restoreOverrideCursor();
+      QMessageBox::information(0, tr("No features found"), 
+			       tr("<p>No features were found within the search radius. "
+				  "Note that it is currently not possible to use the "
+				  "identify tool on unsaved features.</p>"));
+    }
   }
   dataProvider->reset();
 }
@@ -416,5 +422,6 @@ void QgsMapToolIdentify::resultsDialogGone()
 
 void QgsMapToolIdentify::deactivate()
 {
-  mResults->done(0); // close the window
+  if (mResults)
+    mResults->done(0); // close the window
 }
