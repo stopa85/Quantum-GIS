@@ -732,7 +732,6 @@ int QgsDelimitedTextProvider::capabilities() const
 }
 
 
-
 size_t QgsDelimitedTextProvider::layerCount() const
 {
     return 1;                   // XXX How to calculate the layers?

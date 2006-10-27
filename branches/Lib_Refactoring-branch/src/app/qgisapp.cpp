@@ -550,11 +550,6 @@ void QgisApp::createActions()
   mActionQgisHomePage->setStatusTip(tr("QGIS Home Page"));
   connect(mActionQgisHomePage, SIGNAL(triggered()), this, SLOT(helpQgisHomePage()));
   //
-  mActionQgisSourceForgePage= new QAction(QIcon(myIconPath+"/mActionQgisSourceForgePage.png"), tr("Qgis Sourceforge"), this);
-  // mActionQgisSourceForgePage->setShortcut(tr("Alt+H","Visit QGIS SourceForge page"));
-  mActionQgisSourceForgePage->setStatusTip(tr("Visit QGIS SourceForge page"));
-  connect(mActionQgisSourceForgePage, SIGNAL(triggered()), this, SLOT(helpQgisSourceForge()));
-  //
   mActionHelpAbout= new QAction(QIcon(myIconPath+"/mActionHelpAbout.png"), tr("About"), this);
   mActionHelpAbout->setStatusTip(tr("About QGIS"));
   connect(mActionHelpAbout, SIGNAL(triggered()), this, SLOT(about()));
@@ -875,7 +870,6 @@ void QgisApp::createMenus()
   mHelpMenu = menuBar()->addMenu(tr("&Help"));
   mHelpMenu->addAction(mActionHelpContents);
   mHelpMenu->addAction(mActionQgisHomePage);
-  mHelpMenu->addAction(mActionQgisSourceForgePage);
   mHelpMenu->addAction(mActionCheckQgisVersion);
   mHelpMenu->addAction(mActionHelpAbout);
 }
@@ -1080,7 +1074,6 @@ void QgisApp::setTheme(QString theThemeName)
   mActionOptions->setIconSet(QIcon(QPixmap(myIconPath + "/mActionOptions.png")));
   mActionHelpContents->setIconSet(QIcon(QPixmap(myIconPath + "/mActionHelpContents.png")));
   mActionQgisHomePage->setIconSet(QIcon(QPixmap(myIconPath + "/mActionQgisHomePage.png")));
-  mActionQgisSourceForgePage->setIconSet(QIcon(QPixmap(myIconPath + "/mActionQgisSourceForgePage.png")));
   mActionHelpAbout->setIconSet(QIcon(QPixmap(myIconPath + "/mActionHelpAbout.png")));
   mActionDraw->setIconSet(QIcon(QPixmap(myIconPath + "/mActionDraw.png")));
   mActionCapturePoint->setIconSet(QIcon(QPixmap(myIconPath + "/mActionCapturePoint.png")));
@@ -2923,20 +2916,21 @@ bool QgisApp::openLayer(const QString & fileName)
 {
   QFileInfo fileInfo(fileName);
   // try to load it as raster
-  bool ok = addRasterLayer(fileInfo, false);
+  bool ok = false;
+  CPLPushErrorHandler(CPLQuietErrorHandler); 
+  if (QgsRasterLayer::isValidRasterFileName(fileName))
+    ok = addRasterLayer(fileInfo, false);
+  else // nope - try to load it as a shape/ogr
+    ok = addLayer(fileInfo);
+  CPLPopErrorHandler();
+
   if (!ok)
   {
-    // nope - try to load it as a shape/ogr
-    ok = addLayer(fileInfo);
     // we have no idea what this file is...
-    if (!ok)
-    {
-      std::cout << "Unable to load " << fileName.toLocal8Bit().data() << std::endl;
-    }
+    std::cout << "Unable to load " << fileName.toLocal8Bit().data() << std::endl;
   }
-#ifdef WIN32
-  return true;
-#endif
+
+  return ok;
 }
 
 
@@ -3000,9 +2994,18 @@ void QgisApp::saveMapAsImage()
   // get a list of supported output image types
   int myCounterInt=0;
   QString myFilters;
-  for ( ; myCounterInt < QPictureIO::outputFormats().count(); myCounterInt++ )
+  QList<QByteArray> formats = QPictureIO::outputFormats();
+  // Workaround for a problem with Qt4 - calls to outputFormats tend
+  // to return nothing :(
+  if (formats.count() == 0)
   {
-    QString myFormat=QString(QPictureIO::outputFormats().at( myCounterInt ));
+    formats.append("png");
+    formats.append("jpg");
+  }
+
+  for ( ; myCounterInt < formats.count(); myCounterInt++ )
+  {
+    QString myFormat=QString(formats.at( myCounterInt ));
     QString myFilter = createFileFilter_(myFormat + " format", "*."+myFormat);
     myFilters += myFilter;
     myFilterMap[myFilter] = myFormat;
@@ -3049,6 +3052,12 @@ void QgisApp::saveMapAsImage()
   std::cout << "Selected filter: " << myFilterString.toLocal8Bit().data() << std::endl;
   std::cout << "Image type to be passed to mapcanvas: " << (myFilterMap[myFilterString]).toLocal8Bit().data() << std::endl;
 #endif
+
+  // Add the file type suffix to the filename if required
+  if (!myOutputFileNameQString.endsWith(myFilterMap[myFilterString]))
+  {
+    myOutputFileNameQString += "." + myFilterMap[myFilterString];
+  }
 
   myQSettings.writeEntry("/UI/lastSaveAsImageFilter" , myFilterString);
   myQSettings.writeEntry("/UI/lastSaveAsImageDir", myQFileDialog->directory().absolutePath());
@@ -4141,11 +4150,6 @@ void QgisApp::helpQgisHomePage()
   openURL("http://qgis.org", false);
 }
 
-void QgisApp::helpQgisSourceForge()
-{
-  openURL("http://sourceforge.net/projects/qgis", false);
-}
-
 void QgisApp::openURL(QString url, bool useQgisDocDirectory)
 {
   // open help in user browser
@@ -4978,6 +4982,7 @@ bool QgisApp::addRasterLayer(QFileInfo const & rasterFile, bool guiWarning)
           + tr(" is not a valid or recognized raster data source"));
       QMessageBox::critical(this, tr("Invalid Data Source"), msg);
     }
+    delete layer;
     return false;
   }
   else

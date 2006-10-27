@@ -699,6 +699,7 @@ bool QgsWmsProvider::retrieveServerCapabilities(bool forceRefresh)
 
 QByteArray QgsWmsProvider::retrieveUrl(QString url)
 {
+  QgsDebugMsg("WMS request Url: " + url);
   QgsHttpTransaction http(
     url,
     mHttpProxyHost,
@@ -1954,11 +1955,10 @@ bool QgsWmsProvider::calculateExtent()
       }
 
     //make sure extent does not contain 'inf' or 'nan'
-    if(!isfinite(extent.xMin()) || !isfinite((int)extent.yMin()) ||
-       !isfinite(extent.xMax()) || !isfinite((int)extent.yMax()))
-      {
-	continue;
-      }
+    if (!extent.isFinite())
+    {
+      continue;
+    }
 
     // add to the combined extent of all the active sublayers
     if (firstLayer)

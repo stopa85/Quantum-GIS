@@ -358,6 +358,7 @@ void QgsVectorLayer::drawLabels(QPainter * p, QgsRect * viewExtent, QgsMapToPixe
 
 
 unsigned char* QgsVectorLayer::drawLineString(unsigned char* feature, 
+    bool hasZValue,
     QPainter* p,
     QgsMapToPixel* mtp,
     QgsCoordinateTransform* ct,
@@ -378,6 +379,9 @@ unsigned char* QgsVectorLayer::drawLineString(unsigned char* feature,
     ptr += sizeof(double);
     y[i] = *((double *) ptr);
     ptr += sizeof(double);
+  
+    if (hasZValue) // ignore Z value
+      ptr += sizeof(double);
   }
 
   // Transform the points into map coordinates (and reproject if
@@ -454,6 +458,7 @@ unsigned char* QgsVectorLayer::drawLineString(unsigned char* feature,
 }
 
 unsigned char* QgsVectorLayer::drawPolygon(unsigned char* feature, 
+    bool hasZValue,
     QPainter* p, 
     QgsMapToPixel* mtp, 
     QgsCoordinateTransform* ct,
@@ -503,6 +508,10 @@ std::cerr << "Points for ring " << idx << " ("
       ptr += sizeof(double);
       ring->second[jdx] = *((double *) ptr);
       ptr += sizeof(double);
+      
+      if (hasZValue)
+        ptr += sizeof(double);
+      
       /*
 #ifdef QGISDEBUG
 std::cerr << jdx << ": " 
@@ -1057,16 +1066,27 @@ QGis::VectorType QgsVectorLayer::vectorType() const
     switch (type)
     {
       case QGis::WKBPoint:
+      case QGis::WKBPoint25D:
         return QGis::Point;
+
       case QGis::WKBLineString:
+      case QGis::WKBLineString25D:
         return QGis::Line;
+
       case QGis::WKBPolygon:
+      case QGis::WKBPolygon25D:
         return QGis::Polygon;
+
       case QGis::WKBMultiPoint:
+      case QGis::WKBMultiPoint25D:
         return QGis::Point;
+
       case QGis::WKBMultiLineString:
+      case QGis::WKBMultiLineString25D:
         return QGis::Line;
+
       case QGis::WKBMultiPolygon:
+      case QGis::WKBMultiPolygon25D:
         return QGis::Polygon;
     }
 #ifdef QGISDEBUG
@@ -2816,6 +2836,7 @@ void QgsVectorLayer::drawFeature(QPainter* p,
   switch (wkbType)
   {
     case QGis::WKBPoint:
+    case QGis::WKBPoint25D:
       {
         double x = *((double *) (feature + 5));
         double y = *((double *) (feature + 5 + sizeof(double)));
@@ -2836,6 +2857,7 @@ void QgsVectorLayer::drawFeature(QPainter* p,
         break;
       }
     case QGis::WKBMultiPoint:
+    case QGis::WKBMultiPoint25D:
       {
         unsigned char *ptr = feature + 5;
         unsigned int nPoints = *((int*)ptr);
@@ -2851,6 +2873,9 @@ void QgsVectorLayer::drawFeature(QPainter* p,
           ptr += sizeof(double);
           double y = *((double *) ptr);
           ptr += sizeof(double);
+          
+          if (wkbType == QGis::WKBMultiPoint25D) // ignore Z value
+            ptr += sizeof(double);
 
 #ifdef QGISDEBUG 
           std::cout <<"...WKBMultiPoint (" << x << ", " << y << ")" <<std::endl;
@@ -2874,34 +2899,58 @@ void QgsVectorLayer::drawFeature(QPainter* p,
         break;
       }
     case QGis::WKBLineString:
+    case QGis::WKBLineString25D:
       {
-        drawLineString(feature, p, theMapToPixelTransform, ct, drawingToEditingCanvas);
+        drawLineString(feature,
+                       (wkbType == QGis::WKBLineString25D),
+                       p,
+                       theMapToPixelTransform,
+                       ct,
+                       drawingToEditingCanvas);
         break;
       }
     case QGis::WKBMultiLineString:
-      {
+    case QGis::WKBMultiLineString25D:
+    {
         unsigned char* ptr = feature + 5;
         unsigned int numLineStrings = *((int*)ptr);
         ptr = feature + 9;
 
         for (register unsigned int jdx = 0; jdx < numLineStrings; jdx++)
         {
-          ptr = drawLineString(ptr, p, theMapToPixelTransform, ct, drawingToEditingCanvas);
+          ptr = drawLineString(ptr,
+                               (wkbType == QGis::WKBMultiLineString25D),
+                               p,
+                               theMapToPixelTransform,
+                               ct,
+                               drawingToEditingCanvas);
         }
         break;
       }
     case QGis::WKBPolygon:
-      {
-        drawPolygon(feature, p, theMapToPixelTransform, ct, drawingToEditingCanvas);
+    case QGis::WKBPolygon25D:
+    {
+        drawPolygon(feature,
+                    (wkbType == QGis::WKBPolygon25D),
+                    p,
+                    theMapToPixelTransform,
+                    ct,
+                    drawingToEditingCanvas);
         break;
       }
     case QGis::WKBMultiPolygon:
-      {
+    case QGis::WKBMultiPolygon25D:
+    {
         unsigned char *ptr = feature + 5;
         unsigned int numPolygons = *((int*)ptr);
         ptr = feature + 9;
         for (register unsigned int kdx = 0; kdx < numPolygons; kdx++)
-          ptr = drawPolygon(ptr, p, theMapToPixelTransform, ct, drawingToEditingCanvas);
+          ptr = drawPolygon(ptr,
+                            (wkbType == QGis::WKBMultiPolygon25D),
+                            p,
+                            theMapToPixelTransform, 
+                            ct,
+                            drawingToEditingCanvas);
         break;
       }
     default:

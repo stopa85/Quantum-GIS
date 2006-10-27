@@ -2498,9 +2498,6 @@ geos::Geometry* QgsGeometry::geosGeometry() const
 		ptr += sizeof(double);
 		y = (double *) ptr;
 		ptr += sizeof(double);
-#ifdef QGISDEBUG
-		qWarning("QgsGeometry::geosGeometry: adding coordinate pair "+QString::number(*x)+"//"+QString::number(*y));
-#endif
 		sequence->add(geos::Coordinate(*x,*y));
 	    }
 	    return geosGeometryFactory->createLineString(sequence); 
@@ -2612,9 +2609,6 @@ geos::Geometry* QgsGeometry::geosGeometry() const
 			ptr += sizeof(double);
 			y = (double *) ptr;
 			ptr += sizeof(double);
-#ifdef QGISDEBUG
-			//qWarning("adding coordinate pair "+QString::number(*x)+"//"+QString::number(*y));
-#endif
 			sequence->add(geos::Coordinate(*x,*y));
 		    }
 		    geos::LinearRing* ring=geosGeometryFactory->createLinearRing(sequence);
@@ -2732,9 +2726,9 @@ bool QgsGeometry::exportGeosToWkb() const
       for (int n = 0; n < numPoints; n++)
       {
 #ifdef QGISDEBUG
-  std::cout << "QgsGeometry::exportGeosToWkb: Adding " 
-            << sequence->getAt(n).x << ", " 
-            << sequence->getAt(n).y << "." << std::endl;
+	//std::cout << "QgsGeometry::exportGeosToWkb: Adding " 
+	//  << sequence->getAt(n).x << ", " 
+	//  << sequence->getAt(n).y << "." << std::endl;
 #endif
         // assign x
         memcpy(ptr, &(sequence->getAt(n).x), sizeof(double));

@@ -126,7 +126,26 @@ void QgsDelimitedTextPluginGui::updateFieldLists()
             cmbXField->insertItem(*it);
             cmbYField->insertItem(*it);
           }
-        }           
+        }  
+        // Have a go at setting the selected items in the X and Y
+        // combo boxes to something sensible.
+        int indexX = cmbXField->findText("lon", Qt::MatchContains);
+        int indexY = cmbXField->findText("lat", Qt::MatchContains);
+        if (indexX != -1 && indexY != -1)
+        {
+          cmbXField->setCurrentIndex(indexX);
+          cmbYField->setCurrentIndex(indexY);
+        }
+        else
+        {
+          indexX = cmbXField->findText("x", Qt::MatchContains);
+          indexY = cmbXField->findText("y", Qt::MatchContains);
+          if (indexX != -1 && indexY != -1)
+          {
+            cmbXField->setCurrentIndex(indexX);
+            cmbYField->setCurrentIndex(indexY);
+          }
+        }
         // enable the buttons
         enableButtons();
       }
