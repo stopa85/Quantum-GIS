@@ -75,57 +75,6 @@ legend/qgslegendsymbologyitem.cpp
 legend/qgslegendvectorsymbologyitem.cpp
 )
 
-SET(QGIS_APP_UIS
-../ui/qgisappbase.ui
-../ui/qgsabout.ui
-../ui/qgsaddattrdialogbase.ui
-../ui/qgsattributeactiondialogbase.ui
-../ui/qgsattributedialogbase.ui
-../ui/qgsattributetablebase.ui
-../ui/qgsbookmarksbase.ui
-../ui/qgscomposerbase.ui
-../ui/qgscomposerlabelbase.ui
-../ui/qgscomposermapbase.ui
-../ui/qgscomposerpicturebase.ui
-../ui/qgscomposerscalebarbase.ui
-../ui/qgscomposervectorlegendbase.ui
-../ui/qgscompositionbase.ui
-../ui/qgscontinuouscolordialogbase.ui
-../ui/qgscustomprojectiondialogbase.ui
-../ui/qgsdbsourceselectbase.ui
-../ui/qgsdelattrdialogbase.ui
-../ui/qgsfillstylewidgetbase.ui
-../ui/qgsgeomtypedialogbase.ui
-../ui/qgsgraduatedsymboldialogbase.ui
-../ui/qgshelpviewerbase.ui
-../ui/qgsidentifyresultsbase.ui
-../ui/qgslabeldialogbase.ui
-../ui/qgslayerprojectionselectorbase.ui
-../ui/qgslinestyledialogbase.ui
-../ui/qgslinestylewidgetbase.ui
-../ui/qgsludialogbase.ui
-../ui/qgsmapserverexportbase.ui
-../ui/qgsmarkerdialogbase.ui
-../ui/qgsmeasurebase.ui
-../ui/qgsmessageviewer.ui
-../ui/qgsnewconnectionbase.ui
-../ui/qgsnewhttpconnectionbase.ui
-../ui/qgsoptionsbase.ui
-../ui/qgspastetransformationsbase.ui
-../ui/qgspatterndialogbase.ui
-../ui/qgspgquerybuilderbase.ui
-../ui/qgspluginmanagerbase.ui
-../ui/qgspointstylewidgetbase.ui
-../ui/qgsprojectionselectorbase.ui
-../ui/qgsprojectpropertiesbase.ui
-../ui/qgsrasterlayerpropertiesbase.ui
-../ui/qgsserversourceselectbase.ui
-../ui/qgssinglesymboldialogbase.ui
-../ui/qgsuniquevaluedialogbase.ui
-../ui/qgsvectorlayerpropertiesbase.ui
-../ui/qgsvectorsymbologywidgetbase.ui
-)
-
 
 SET (QGIS_APP_MOC_HDRS
 
@@ -200,8 +149,10 @@ ENDIF (POSTGRES_FOUND)
 IF (PYTHON_FOUND)
   SET (QGIS_APP_SRCS ${QGIS_APP_SRCS} qgspythondialog.cpp)
   SET (QGIS_APP_MOC_HDRS ${QGIS_APP_MOC_HDRS} qgspythondialog.h)
-  SET (QGIS_APP_UIS ${QGIS_APP_UIS} ../ui/qgspythondialog.ui)
 ENDIF (PYTHON_FOUND)
+
+QT4_WRAP_CPP(QGIS_APP_MOC_SRCS ${QGIS_APP_MOC_HDRS})
+
 
 IF (WIN32)
 
@@ -231,14 +182,10 @@ ENDIF (WIN32)
 #ENDIF (MSVC)
 
 
-QT4_WRAP_UI(QGIS_APP_UIS_H ${QGIS_APP_UIS})
-
-# TODO: better way for ui?
-QT4_WRAP_CPP(QGIS_APP_MOC_SRCS ${QGIS_APP_MOC_HDRS} ${QGIS_APP_UIS_H})
-
 INCLUDE_DIRECTORIES(
      . composer legend
      ${CMAKE_CURRENT_BINARY_DIR}
+     ${CMAKE_CURRENT_BINARY_DIR}/../ui
      ../core
      ../core/raster ../core/renderer ../core/symbology
      ../gui
@@ -259,7 +206,7 @@ ENDIF (PYTHON_FOUND)
 
 #############
 
-ADD_EXECUTABLE(qgis ${QGIS_APP_UIS_H} ${QGIS_APP_MOC_SRCS} ${QGIS_APP_SRCS})
+ADD_EXECUTABLE(qgis ${QGIS_APP_SRCS} ${QGIS_APP_MOC_SRCS})
 
 TARGET_LINK_LIBRARIES(qgis
   ${QT_LIBRARIES}
