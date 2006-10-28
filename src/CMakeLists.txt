@@ -1,2 +1,2 @@
 
-SUBDIRS(core gui app providers plugins helpviewer)
+SUBDIRS(core ui gui app providers plugins helpviewer)

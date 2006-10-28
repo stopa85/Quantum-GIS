@@ -1,10 +1,4 @@
 
-SET(QGIS_GUI_UIS
-  ../ui/qgslayerprojectionselectorbase.ui
-  ../ui/qgsmessageviewer.ui
-  ../ui/qgsprojectionselectorbase.ui
-)
-
 SET(QGIS_GUI_SRCS
 qgisgui.cpp
 qgisinterface.cpp
@@ -23,9 +17,6 @@ qgsrubberband.cpp
 qgsvertexmarker.cpp
 )
 
-QT4_WRAP_UI(QGIS_GUI_UIS_H ${QGIS_GUI_UIS})
-
-
 SET(QGIS_GUI_MOC_HDRS
 qgisinterface.h
 qgslayerprojectionselector.h
@@ -35,13 +26,14 @@ qgsmapoverviewcanvas.h
 qgsprojectionselector.h
 )
 
-# TODO: find better way to include ui_*.h in dependencies
-QT4_WRAP_CPP(QGIS_GUI_MOC_SRCS ${QGIS_GUI_MOC_HDRS} ${QGIS_GUI_UIS_H})
+QT4_WRAP_CPP(QGIS_GUI_MOC_SRCS ${QGIS_GUI_MOC_HDRS})
 
 INCLUDE_DIRECTORIES(. ../core
      ../core/raster ../core/renderer ../core/symbology
      ${SQLITE3_INCLUDE_DIR}
-     ${CMAKE_CURRENT_BINARY_DIR})
+     ${CMAKE_CURRENT_BINARY_DIR}
+     ${CMAKE_CURRENT_BINARY_DIR}/../ui
+)
 
 IF (WIN32)
   IF (MSVC)
@@ -56,7 +48,6 @@ ENDIF (WIN32)
 # qgis_gui library
 
 
-# ${QGIS_GUI_UIS_H}
 ADD_LIBRARY(qgis_gui SHARED ${QGIS_GUI_SRCS} ${QGIS_GUI_MOC_SRCS})
 
 TARGET_LINK_LIBRARIES(qgis_gui

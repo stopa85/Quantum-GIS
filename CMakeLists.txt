@@ -6,16 +6,12 @@ PROJECT(qgis)
 #   (need to delete moc_ui_*.obj files from build\src\app\CMakeFiles\qgis.dir\build.make)
 #
 # TODO:
-# - includes for libs
+# - install includes for libs
 # - nice output when configured
 # - python bindings
 # - rename *.ui files to have the same filename as their implementation
 #   e.g. instead of blahblahbase.ui use blahblah.ui
-#   reasons:
-#   1. it's more common in Qt4
-#   2. build system will be simpler (no need to call QT4_WRAP_CPP for ui_*.h)
-#      because dependencies are added automatically
-#   (another possibility is to create custom target for building UI)
+#   because it's more common in Qt4
 
 #############################################################
 # CMake settings
