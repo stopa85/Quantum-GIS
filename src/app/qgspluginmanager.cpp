@@ -18,10 +18,6 @@
 
 #include "qgsconfig.h"
 
-#ifdef HAVE_PYTHON
-#include <Python.h>
-#endif
-
 #include <iostream>
 #include <QApplication>
 #include <QFileDialog>
@@ -36,6 +32,10 @@
 #include "qgspluginitem.h"
 #include "qgsproviderregistry.h"
 #include "qgspluginregistry.h"
+
+#ifdef HAVE_PYTHON
+#include "qgspythonutils.h"
+#endif
 
 #define TESTLIB
 #ifdef TESTLIB
@@ -61,19 +61,12 @@ QgsPluginManager::QgsPluginManager(QWidget * parent, Qt::WFlags fl)
 
   txtPluginDir->setText(pr->libraryDirectory().path());
   getPluginDescriptions();
-#ifdef HAVE_PYTHON
-  // initialize python
-  Py_Initialize();
   getPythonPluginDescriptions();
-#endif
 }
 
 
 QgsPluginManager::~QgsPluginManager()
 {
-#ifdef HAVE_PYTHON
-  Py_Finalize();
-#endif
 }
 
 void QgsPluginManager::on_btnBrowse_clicked()
@@ -83,62 +76,26 @@ void QgsPluginManager::on_btnBrowse_clicked()
   getPluginDescriptions();
 }
 
-#ifdef HAVE_PYTHON
-
-QString QgsPluginManager::getPythonPluginMetadata(QString pluginName, QString function)
-{
-  PyObject* module = PyImport_AddModule("__main__");
-  PyObject* dict = PyModule_GetDict(module);
-  QString command = pluginName + "." + function + "()";
-  QString retval = "???";
-  
-  PyObject* obj = PyRun_String(command.toLocal8Bit().data(), Py_eval_input, dict, dict);
-  if (PyErr_Occurred())
-  {
-    PyErr_Print(); // TODO: PyErr_Fetch(...)
-    std::cout << "Python ERROR!" << std::endl;
-    PyErr_Clear();
-  }
-  else if (PyString_Check(obj))
-  {
-    retval = PyString_AS_STRING(obj);
-  }
-  else
-  {
-    std::cout << "Bad python return value!" << std::endl;
-  }
-  Py_XDECREF(obj);
-  return retval;
-}
 
 void QgsPluginManager::getPythonPluginDescriptions()
 {
-  // TODO: have own path for python plugins
-  QString strPythonDir = txtPluginDir->text() + "/python";
-
-  // look in (plugin_dir)/python for directories
-  QDir pluginDir(strPythonDir, "*", QDir::Name | QDir::IgnoreCase, QDir::Dirs | QDir::NoDotAndDotDot);
+#ifdef HAVE_PYTHON
   
-  // alter sys.path to search for packages & modules in (plugin_dir)/python
-  QString strInit = "import sys\n"
-                    "sys.path.insert(0, '" + strPythonDir + "')";
-  
-  PyRun_SimpleString(strInit.toLocal8Bit().data());
-
-  //PyRun_SimpleString("from qgis.core import *\nfrom qgis.gui import *");
+  // look for plugins
+  QDir pluginDir(QgsPythonUtils::pluginsPath(), "*",
+                 QDir::Name | QDir::IgnoreCase, QDir::Dirs | QDir::NoDotAndDotDot);
 
   for (uint i = 0; i < pluginDir.count(); i++)
   {
     QString packageName = pluginDir[i];
     
     // import plugin's package
-    QString command = "import " + packageName;
-    PyRun_SimpleString(command.toLocal8Bit().data());
+    QgsPythonUtils::loadPlugin(packageName);
     
     // get information from the plugin
-    QString pluginName = getPythonPluginMetadata(packageName, "name");
-    QString description = getPythonPluginMetadata(packageName, "description");
-    QString version = getPythonPluginMetadata(packageName, "version");
+    QString pluginName  = QgsPythonUtils::getPluginMetadata(packageName, "name");
+    QString description = QgsPythonUtils::getPluginMetadata(packageName, "description");
+    QString version     = QgsPythonUtils::getPluginMetadata(packageName, "version");
     
     if (pluginName == "???" || description == "???" || version == "???")
       continue;
@@ -168,9 +125,8 @@ void QgsPluginManager::getPythonPluginDescriptions()
     }
   
   }
-  
-}
 #endif
+}
 
 
 void QgsPluginManager::getPluginDescriptions()
@@ -332,12 +288,11 @@ void QgsPluginManager::unload()
           if (pRegistry->isPythonPlugin(pluginName))
           {
 #ifdef HAVE_PYTHON
-            // unload and delete plugin!
             QString packageName = pRegistry->library(pluginName);
-            QString varName = "plugins['" + packageName + "']";
-            QString command = varName + ".unload()\n"
-                              "del " + varName;
-            PyRun_SimpleString(command.toLocal8Bit().data());
+            QgsPythonUtils::unloadPlugin(packageName);
+
+            //disable it to the qsettings file
+            settings.writeEntry("/PythonPlugins/" + packageName, false);
 #endif
           }
           else // C++ plugin
@@ -347,12 +302,12 @@ void QgsPluginManager::unload()
             {
               plugin->unload();
             }
+            //disable it to the qsettings file [ts]
+            settings.writeEntry("/Plugins/" + pluginName, false);
           }
 
           // remove the plugin from the registry
           pRegistry->removePlugin(pluginName);
-          //disable it to the qsettings file [ts]
-          settings.writeEntry("/Plugins/" + pluginName, false);
         }
       lvi = (Q3CheckListItem *) lvi->nextSibling();
     }

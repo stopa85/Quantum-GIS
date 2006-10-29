@@ -343,8 +343,6 @@ public slots:
 #ifdef HAVE_PYTHON
   //! show python console
   void showPythonDialog();
-  //! initialize python
-  void initPython();
 #endif
 
   //! cuts selected features on the active layer to the clipboard

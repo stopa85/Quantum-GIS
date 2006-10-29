@@ -22,8 +22,6 @@
 #include "ui_qgspluginmanagerbase.h"
 #include "qgisgui.h"
 
-#include "qgsconfig.h"
-
 class QgsPluginItem;
 /*!
  * \brief Plugin manager for loading/unloading plugins
@@ -39,12 +37,8 @@ class QgsPluginManager : public QDialog, private Ui::QgsPluginManagerBase
     ~QgsPluginManager();
     //! Get description of plugins (name, etc)
     void getPluginDescriptions();
-#ifdef HAVE_PYTHON
-    //! Get description of plugins in python
+    //! Get description of plugins in python (does nothing when python is disabled)
     void getPythonPluginDescriptions();
-    //! get information from plugin
-    QString getPythonPluginMetadata(QString pluginName, QString function);
-#endif
     //! Unload the selected plugins
     void unload();
     //! Gets the selected plugins

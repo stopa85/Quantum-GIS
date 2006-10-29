@@ -147,7 +147,7 @@ ENDIF (POSTGRES_FOUND)
 
 # Python support
 IF (PYTHON_FOUND)
-  SET (QGIS_APP_SRCS ${QGIS_APP_SRCS} qgspythondialog.cpp)
+  SET (QGIS_APP_SRCS ${QGIS_APP_SRCS} qgspythondialog.cpp qgspythonutils.cpp)
   SET (QGIS_APP_MOC_HDRS ${QGIS_APP_MOC_HDRS} qgspythondialog.h)
 ENDIF (PYTHON_FOUND)
 
