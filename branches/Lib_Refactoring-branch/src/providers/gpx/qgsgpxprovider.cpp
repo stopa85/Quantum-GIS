@@ -37,6 +37,7 @@
 #include "qgsfeature.h"
 #include "qgsfeatureattribute.h"
 #include "qgsfield.h"
+#include "qgsgeometry.h"
 #include "qgsrect.h"
 #include "qgsgpxprovider.h"
 #include "gpsdata.h"
@@ -568,13 +569,14 @@ bool QgsGPXProvider::addFeatures(std::list<QgsFeature*> flist) {
 
 
 bool QgsGPXProvider::addFeature(QgsFeature* f) {
-  unsigned char* geo = f->getGeometry();
+  unsigned char* geo = f->geometry()->wkbBuffer();
+  QGis::WKBTYPE wkbType = f->geometry()->wkbType();
   bool success = false;
   GPSObject* obj = NULL;
   const std::vector<QgsFeatureAttribute>& attrs(f->attributeMap());
   
   // is it a waypoint?
-  if (mFeatureType == WaypointType && geo != NULL && geo[geo[0] == NDR ? 1 : 4] == QGis::WKBPoint) {
+  if (mFeatureType == WaypointType && geo != NULL && wkbType == QGis::WKBPoint) {
     
     // add geometry
     Waypoint wpt;
@@ -600,7 +602,7 @@ bool QgsGPXProvider::addFeature(QgsFeature* f) {
   }
   
   // is it a route?
-  if (mFeatureType == RouteType && geo != NULL && geo[geo[0] == NDR ? 1 : 4] == QGis::WKBLineString) {
+  if (mFeatureType == RouteType && geo != NULL && wkbType == QGis::WKBLineString) {
 
     Route rte;
     
@@ -643,7 +645,7 @@ bool QgsGPXProvider::addFeature(QgsFeature* f) {
   }
   
   // is it a track?
-  if (mFeatureType == TrackType && geo != NULL && geo[geo[0] == NDR ? 1 : 4] == QGis::WKBLineString) {
+  if (mFeatureType == TrackType && geo != NULL && wkbType == QGis::WKBLineString) {
 
     Track trk;
     TrackSegment trkseg;

@@ -20,6 +20,8 @@ email                : morb at ozemail dot com dot au
 #include <QString>
 #include <vector>
 
+#include "qgis.h"
+
 namespace geos
 {
   class CoordinateSequence;
@@ -82,6 +84,9 @@ class CORE_EXPORT QgsGeometry {
        Returns the QString containing this geometry in WKT format.
     */
     QString const& wkt() const; 
+    
+    /** Returns type of wkb (point / linestring / polygon etc.) */
+    QGis::WKBTYPE wkbType() const;
 
     /**
        Set the geometry, feeding in a geometry in GEOS format.

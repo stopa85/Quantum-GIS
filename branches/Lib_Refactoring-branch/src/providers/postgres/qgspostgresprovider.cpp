@@ -1659,8 +1659,9 @@ bool QgsPostgresProvider::addFeature(QgsFeature* f, int primaryKeyHighWater)
     insert+=") VALUES (GeomFromWKB('";
 
     // Add the WKB geometry to the INSERT statement
-    unsigned char* geom = f->getGeometry();
-    for (int i=0; i < f->getGeometrySize(); ++i)
+    QgsGeometry* geometry = f->geometry();
+    unsigned char* geom = geometry->wkbBuffer();
+    for (int i=0; i < geometry->wkbSize(); ++i)
     {
       if (useWkbHex)
       {

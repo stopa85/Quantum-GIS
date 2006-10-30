@@ -9,12 +9,15 @@ class QgsFeature
 %TypeHeaderCode
 #include <qgsfeature.h>
 %End
+    
+    // sip doesn't recognize size_t, thus using typedef
+    typedef unsigned int size_t;
 
   public:
 
     //! Constructor
     QgsFeature();
-    QgsFeature(int id, const QString & typeName = "" );
+    QgsFeature(int id, QString typeName = "" );
 
     /** create a copy of this feature in its uncommitted state.
         To do this, you also pass in a reference to the feature's
@@ -52,12 +55,12 @@ class QgsFeature
 
     /** returns the feature's type name
      */
-     const QString & typeName() const;
+     QString typeName() const;
 
 
     /** sets the feature's type name
      */
-     void typeName( const QString & typeName );
+     void setTypeName(QString typeName);
 
     /**
      * Get the attributes for this feature.
@@ -126,26 +129,6 @@ class QgsFeature
      */
     QgsGeometry * geometryAndOwnership();
     
-    /** gets the most recent in-memory version of the geometry (deprecated function in favour of geometry()) */
-    unsigned char * getGeometry() const;
-
-//     /** gets only the committed version of the geometry */
-//     unsigned char * getCommittedGeometry() const;
-//     
-//     /** gets the most recent in-memory version of the geometry only
-//         if it has been modified since committed (isDirty() == TRUE) */
-//     unsigned char * getModifiedGeometry() const;
-
-    typedef unsigned int size_t;
-
-    size_t getGeometrySize() const;
-
-/*    size_t getCommittedGeometrySize() const;
-
-    size_t getModifiedGeometrySize() const;*/
-    
-    const QString & wellKnownText() const; 
-
     /** Set this feature's geometry from another QgsGeometry object (deep copy)
      */
     void setGeometry(QgsGeometry& geom);
