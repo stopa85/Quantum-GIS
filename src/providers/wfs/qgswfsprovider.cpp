@@ -91,8 +91,9 @@ QgsFeature* QgsWFSProvider::getNextFeature(std::list<int> const & attlist, int f
 	}
 
       QgsFeature* f = new QgsFeature();
-      unsigned char* geom = ((QgsFeature*)(*mFeatureIterator))->getGeometry();
-      int geomSize = ((QgsFeature*)(*mFeatureIterator))->getGeometrySize();
+      QgsGeometry* geometry = ((QgsFeature*)(*mFeatureIterator))->geometry();
+      unsigned char* geom = geometry->wkbBuffer();
+      int geomSize = geometry->wkbSize();
       
       unsigned char* copiedGeom = new unsigned char[geomSize];
       memcpy(copiedGeom, geom, geomSize);

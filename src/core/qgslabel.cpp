@@ -28,6 +28,7 @@
 #include "qgis.h"
 #include "qgsfeature.h"
 #include "qgsfeatureattribute.h"
+#include "qgsgeometry.h"
 #include "qgsfield.h"
 #include "qgsrect.h"
 #include "qgsmaptopixel.h"
@@ -460,10 +461,10 @@ QgsLabelAttributes *QgsLabel::layerAttributes ( void )
 
 void QgsLabel::labelPoint ( std::vector<QgsPoint>& points, QgsFeature *feature )
 {
-  unsigned char *geom = feature->getGeometry();
-  int wkbType;
-  memcpy(&wkbType, (geom+1), sizeof(wkbType));
-
+  QgsGeometry* geometry = feature->geometry();
+  unsigned char *geom = geometry->wkbBuffer();
+  QGis::WKBTYPE wkbType = geometry->wkbType();
+  
   QgsPoint point;
 
   switch (wkbType)

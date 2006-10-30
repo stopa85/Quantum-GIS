@@ -2824,10 +2824,10 @@ void QgsVectorLayer::drawFeature(QPainter* p,
   bool needToTrim = false;
 #endif
 
-  unsigned char* feature = fet->getGeometry();
+  QgsGeometry* geom = fet->geometry();
+  unsigned char* feature = geom->wkbBuffer();
 
-  unsigned int wkbType;
-  memcpy(&wkbType, (feature+1), sizeof(wkbType));
+  QGis::WKBTYPE wkbType = geom->wkbType();
 
 #ifdef QGISDEBUG
   //std::cout <<"Entering drawFeature()" << std::endl;

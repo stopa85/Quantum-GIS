@@ -344,7 +344,7 @@ bool QgsOgrProvider::getNextFeature(QgsFeature &f, bool fetchAttributes)
       OGRFeatureDefn * featureDefinition = fet->GetDefnRef();
       QString featureTypeName =   
         featureDefinition ? QString(featureDefinition->GetName()) : QString("");
-      f.typeName( featureTypeName );
+      f.setTypeName( featureTypeName );
 
       if(fetchAttributes){
         getFeatureAttributes(fet, &f);
@@ -890,15 +890,16 @@ bool QgsOgrProvider::addFeature(QgsFeature* f)
   bool returnValue = true;
   OGRFeatureDefn* fdef=ogrLayer->GetLayerDefn();
   OGRFeature* feature=new OGRFeature(fdef);
-  QGis::WKBTYPE ftype;
+  QGis::WKBTYPE ftype = f->geometry()->wkbType();
+  unsigned char* wkb = f->geometry()->wkbBuffer();
   OGRErr err;
-  memcpy(&ftype, (f->getGeometry()+1), sizeof(int));
+  
   switch(ftype)
   {
     case QGis::WKBPoint:
       {
         OGRPoint* p=new OGRPoint();
-        p->importFromWkb(f->getGeometry(),1+sizeof(int)+2*sizeof(double));
+        p->importFromWkb(wkb,1+sizeof(int)+2*sizeof(double));
         err = feature->SetGeometry(p);
 	if(err != OGRERR_NONE)
 	  {
@@ -911,8 +912,8 @@ bool QgsOgrProvider::addFeature(QgsFeature* f)
       {
         OGRLineString* l=new OGRLineString();
         int length;
-        memcpy(&length,f->getGeometry()+1+sizeof(int),sizeof(int));
-        l->importFromWkb(f->getGeometry(),1+2*sizeof(int)+2*length*sizeof(double));
+        memcpy(&length,wkb+1+sizeof(int),sizeof(int));
+        l->importFromWkb(wkb,1+2*sizeof(int)+2*length*sizeof(double));
         err = feature->SetGeometry(l);
 	if(err != OGRERR_NONE)
 	  {
@@ -927,7 +928,7 @@ bool QgsOgrProvider::addFeature(QgsFeature* f)
         int numrings;
         int totalnumpoints=0;
         int numpoints;//number of points in one ring
-        unsigned char* ptr=f->getGeometry()+1+sizeof(int);
+        unsigned char* ptr=wkb+1+sizeof(int);
         memcpy(&numrings,ptr,sizeof(int));
         ptr+=sizeof(int);
         for(int i=0;i<numrings;++i)
@@ -937,7 +938,7 @@ bool QgsOgrProvider::addFeature(QgsFeature* f)
           totalnumpoints+=numpoints;
           ptr+=(2*sizeof(double));
         }
-        pol->importFromWkb(f->getGeometry(),1+2*sizeof(int)+numrings*sizeof(int)+totalnumpoints*2*sizeof(double));
+        pol->importFromWkb(wkb,1+2*sizeof(int)+numrings*sizeof(int)+totalnumpoints*2*sizeof(double));
         err = feature->SetGeometry(pol);
 	if(err != OGRERR_NONE)
 	  {
@@ -951,8 +952,8 @@ bool QgsOgrProvider::addFeature(QgsFeature* f)
         OGRMultiPoint* multip= new OGRMultiPoint();
         int count;
         //determine how many points
-        memcpy(&count,f->getGeometry()+1+sizeof(int),sizeof(int));
-        multip->importFromWkb(f->getGeometry(),1+2*sizeof(int)+count*2*sizeof(double));
+        memcpy(&count,wkb+1+sizeof(int),sizeof(int));
+        multip->importFromWkb(wkb,1+2*sizeof(int)+count*2*sizeof(double));
         err = feature->SetGeometry(multip);
 	if(err != OGRERR_NONE)
 	  {
@@ -965,10 +966,10 @@ bool QgsOgrProvider::addFeature(QgsFeature* f)
       {
         OGRMultiLineString* multil=new OGRMultiLineString();
         int numlines;
-        memcpy(&numlines,f->getGeometry()+1+sizeof(int),sizeof(int));
+        memcpy(&numlines,wkb+1+sizeof(int),sizeof(int));
         int totalpoints=0;
         int numpoints;//number of point in one line
-        unsigned char* ptr=f->getGeometry()+9;
+        unsigned char* ptr=wkb+9;
         for(int i=0;i<numlines;++i)
         {
           memcpy(&numpoints,ptr,sizeof(int));
@@ -980,7 +981,7 @@ bool QgsOgrProvider::addFeature(QgsFeature* f)
           }
         }
         int size=1+2*sizeof(int)+numlines*sizeof(int)+totalpoints*2*sizeof(double);
-        multil->importFromWkb(f->getGeometry(),size);
+        multil->importFromWkb(wkb,size);
         err = feature->SetGeometry(multil);
 	if(err != OGRERR_NONE)
 	  {
@@ -993,12 +994,12 @@ bool QgsOgrProvider::addFeature(QgsFeature* f)
       {
         OGRMultiPolygon* multipol=new OGRMultiPolygon();
         int numpolys;
-        memcpy(&numpolys,f->getGeometry()+1+sizeof(int),sizeof(int));
+        memcpy(&numpolys,wkb+1+sizeof(int),sizeof(int));
         int numrings;//number of rings in one polygon
         int totalrings=0;
         int totalpoints=0;
         int numpoints;//number of points in one ring
-        unsigned char* ptr=f->getGeometry()+9;
+        unsigned char* ptr=wkb+9;
 
         for(int i=0;i<numpolys;++i)
         {
@@ -1016,7 +1017,7 @@ bool QgsOgrProvider::addFeature(QgsFeature* f)
           }
         }
         int size=1+2*sizeof(int)+numpolys*sizeof(int)+totalrings*sizeof(int)+totalpoints*2*sizeof(double);
-        multipol->importFromWkb(f->getGeometry(),size);
+        multipol->importFromWkb(wkb,size);
         err = feature->SetGeometry(multipol);
 	if(err != OGRERR_NONE)
 	  {
@@ -1028,7 +1029,7 @@ bool QgsOgrProvider::addFeature(QgsFeature* f)
   }
 
   //add possible attribute information
-  for(int i=0;i<f->attributeMap().size();++i)
+  for(unsigned int i=0;i<f->attributeMap().size();++i)
   {
     QString s=(f->attributeMap())[i].fieldValue();
     

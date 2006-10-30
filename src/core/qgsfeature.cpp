@@ -42,7 +42,7 @@ QgsFeature::QgsFeature()
 }
 
 
-QgsFeature::QgsFeature(int id, QString const & typeName )
+QgsFeature::QgsFeature(int id, QString typeName)
     : mFid(id), 
       mGeometry(0),
       mOwnsGeometry(0),
@@ -293,106 +293,6 @@ QgsGeometry * QgsFeature::geometryAndOwnership()
 
 
 
-unsigned char * QgsFeature::getGeometry() const
-{
-
-  return mGeometry->wkbBuffer();
-  
-/*#ifdef QGISDEBUG
-      std::cout << "QgsFeature::getGeometry: mDirty is " << mDirty 
-                << ", feature address:" << this << "." << std::endl;
-#endif
-  
-  if (mDirty)
-  {
-#ifdef QGISDEBUG
-      std::cout << "QgsFeature::getGeometry: getting modified geometry for " << featureId() << "." << std::endl;
-#endif
-    return modifiedGeometry;
-  }
-  else
-  {
-#ifdef QGISDEBUG
-      std::cout << "QgsFeature::getGeometry: getting committed geometry for " << featureId() << "." << std::endl;
-#endif
-    return geometry;
-  }  */
-}
-
-/*
-unsigned char * QgsFeature::getCommittedGeometry() const
-{
-  // TODO: Store modifiedGeometry per-edit.
-  // Otherwise we may have memory problems with very large geometries
-  // as we currently have to keep a full copy of both geometries in memory
-#ifdef QGISDEBUG
-      std::cout << "QgsFeature::getCommittedGeometry: doing for " << featureId() << "." << std::endl;
-#endif
-  return geometry;
-}
-
-
-unsigned char * QgsFeature::getModifiedGeometry() const
-{
-  // TODO: Store modifiedGeometry per-edit.
-  // Otherwise we may have memory problems with very large geometries
-  // as we currently have to keep a full copy of both geometries in memory
-#ifdef QGISDEBUG
-      std::cout << "QgsFeature::getCommittedGeometry: doing for " << featureId() << "." << std::endl;
-#endif
-  return modifiedGeometry;
-}*/
-
-
-size_t QgsFeature::getGeometrySize() const
-{
-  if (mGeometry)
-  {
-    return mGeometry->wkbSize();
-  }
-  else
-  {
-    return 0;
-  }    
-} 
-
-
-/*
-size_t QgsFeature::getCommittedGeometrySize() const
-{
-    return geometrySize;
-}
-
-
-size_t QgsFeature::getModifiedGeometrySize() const
-{
-    return modifiedGeometrySize;
-}
-*/
-
-
-/**
- * Return well known text representation of this feature
- */
-QString const & QgsFeature::wellKnownText() const
-{
-  if (mGeometry)
-  {
-    return mGeometry->wkt();
-  }
-  else
-  {
-    static QString emptyString("");
-    return emptyString;   // TODO: Test for mGeometry in all functions of this class
-  }  
-/*  
-    if(mWKT.isNull())
-    {
-	exportToWKT();
-    }
-    return mWKT;*/
-}
-
 /** Set the feature id
 */
 void QgsFeature::setFeatureId(int id)
@@ -402,7 +302,7 @@ void QgsFeature::setFeatureId(int id)
 }
 
 
-QString const & QgsFeature::typeName() const
+QString QgsFeature::typeName() const
 {
   return mTypeName;
 } // QgsFeature::typeName
@@ -411,7 +311,7 @@ QString const & QgsFeature::typeName() const
 
 /** sets the feature's type name
  */
-void QgsFeature::typeName( QString const & typeName )
+void QgsFeature::setTypeName(QString typeName)
 {
     mTypeName = typeName;
 } // QgsFeature::typeName

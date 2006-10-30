@@ -197,6 +197,15 @@ QString const& QgsGeometry::wkt() const
   return mWkt;
 }
 
+QGis::WKBTYPE QgsGeometry::wkbType() const
+{
+  unsigned char *geom = wkbBuffer(); // ensure that wkb representation exists
+  unsigned int wkbType;
+  memcpy(&wkbType, (geom+1), sizeof(wkbType));
+  
+  return (QGis::WKBTYPE) wkbType;
+}
+
 void QgsGeometry::setGeos(geos::Geometry* geos)
 {
   // TODO - make this more heap-friendly

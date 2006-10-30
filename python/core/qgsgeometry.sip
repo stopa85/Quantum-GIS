@@ -55,7 +55,10 @@ class QgsGeometry
     */
     const QString & wkt() const; 
 
-    /**
+    /** Returns type of wkb (point / linestring / polygon etc.) */
+    QGis::WKBTYPE wkbType() const;
+
+   /**
        Set the geometry, feeding in a geometry in GEOS format.
     */
     // TODO: unsupported class... would be possible to use PyGEOS?

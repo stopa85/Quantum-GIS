@@ -36,7 +36,7 @@ class CORE_EXPORT QgsFeature {
 
     //! Constructor
     QgsFeature();
-    QgsFeature(int id, QString const & typeName = "" );
+    QgsFeature(int id, QString typeName = "" );
 
     /** create a copy of this feature in its uncommitted state.
         To do this, you also pass in a reference to the feature's
@@ -75,12 +75,12 @@ class CORE_EXPORT QgsFeature {
 
     /** returns the feature's type name
      */
-     QString const & typeName() const;
+     QString typeName() const;
 
 
     /** sets the feature's type name
      */
-     void typeName( QString const & typeName );
+     void setTypeName(QString typeName);
 
     /**
      * Get the attributes for this feature.
@@ -147,24 +147,6 @@ class CORE_EXPORT QgsFeature {
      */
     QgsGeometry * geometryAndOwnership();
     
-    /** gets the most recent in-memory version of the geometry (deprecated function in favour of geometry()) */
-    unsigned char * getGeometry() const;
-
-//     /** gets only the committed version of the geometry */
-//     unsigned char * getCommittedGeometry() const;
-//     
-//     /** gets the most recent in-memory version of the geometry only
-//         if it has been modified since committed (isDirty() == TRUE) */
-//     unsigned char * getModifiedGeometry() const;
-
-    size_t getGeometrySize() const;
-
-/*    size_t getCommittedGeometrySize() const;
-
-    size_t getModifiedGeometrySize() const;*/
-    
-    QString const& wellKnownText() const; 
-
     /** Set this feature's geometry from another QgsGeometry object (deep copy)
      */
     void setGeometry(QgsGeometry& geom);
