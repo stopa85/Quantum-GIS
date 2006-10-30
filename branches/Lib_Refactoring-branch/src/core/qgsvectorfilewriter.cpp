@@ -35,6 +35,9 @@
 #include <ogr_srs_api.h>
 #include <ogrsf_frmts.h>
 
+//  needed for OFTDate (supported from GDAL 1.3.2)
+#include <gdal_version.h>
+
 QgsVectorFileWriter::QgsVectorFileWriter(QString theOutputFileName, QString fileEncoding, QgsVectorLayer * theVectorLayer)
 {
   std::cout << "QgsVectorFileWriter constructor called with " << theOutputFileName.toLocal8Bit().data() << 
@@ -248,11 +251,13 @@ bool QgsVectorFileWriter::createField(QString theName, OGRFieldType theType, int
           break;
       case OFTBinary:
           break;
+#if GDAL_VERSION_NUM >= 1320
       case OFTDate:
       case OFTTime:
       case OFTDateTime:
           //XXX Find out how this is used!!!!!!!
           break;
+#endif
   }
 
   OGR_L_CreateField( mLayerHandle, myFieldDefinitionHandle, FALSE );

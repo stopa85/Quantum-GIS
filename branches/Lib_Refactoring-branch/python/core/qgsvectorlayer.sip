@@ -42,7 +42,8 @@ public:
   QgsVectorDataProvider* getDataProvider();
 
   /** Returns the data provider in a const-correct manner */
-// TODO:  const QgsVectorDataProvider* getDataProvider() const;
+  // SIP: has the same python signature, not needed
+  //const QgsVectorDataProvider* getDataProvider() const;
 
   /** Sets the textencoding of the data provider */
   void setProviderEncoding(const QString& encoding);
@@ -108,8 +109,7 @@ public:
   bool isSymbologyCompatible(const QgsMapLayer& other) const;
   
   /** Read property of int featureType. */
-  // TODO: wrap
-  //const int & featureType() const;
+  int featureType() const;
   
   /** Returns a pointer to the renderer */
   const QgsRenderer* renderer() const;
@@ -141,13 +141,15 @@ public:
   * @param selected selected feeatures only
   * @return QgsFeature
   */
-  virtual QgsFeature * getFirstFeature(bool fetchAttributes=false, bool selected=false) const;
+  // SIP: marked as factory as ownership of the feature is transferred
+  virtual QgsFeature * getFirstFeature(bool fetchAttributes=false, bool selected=false) const /Factory/;
 
   /** Get the next feature resulting from a select operation
   * @param selected selected feeatures only
   * @return QgsFeature
   */
-  virtual QgsFeature * getNextFeature(bool fetchAttributes=false, bool selected=false) const;
+  // SIP: marked as factory as ownership of the feature is transferred
+  virtual QgsFeature * getNextFeature(bool fetchAttributes=false, bool selected=false) const /Factory/;
 
   /** Get the next feature using new method
    * TODO - make this pure virtual once it works and change existing providers

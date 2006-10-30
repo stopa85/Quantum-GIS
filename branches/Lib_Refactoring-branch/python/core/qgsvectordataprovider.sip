@@ -58,26 +58,29 @@ class QgsVectorDataProvider : QgsDataProvider /Abstract/
        * Gets the feature at the given feature ID.
        * @return  QgsFeature
        */
-      virtual QgsFeature * getFeatureAtId(int featureId);
+      // SIP: marked as factory - caller must delete the feature
+      virtual QgsFeature * getFeatureAtId(int featureId) /Factory/;
       
       /** 
        * Get the first feature resulting from a select operation
        * @return QgsFeature
        */
-      virtual QgsFeature * getFirstFeature(bool fetchAttributes = false) = 0;
+      // SIP: marked as factory - caller must delete the feature
+      virtual QgsFeature * getFirstFeature(bool fetchAttributes = false) = 0 /Factory/;
 
       /** 
        * Get the next feature resutling from a select operation
        * @return QgsFeature
        */
-      virtual QgsFeature * getNextFeature(bool fetchAttributes = false) = 0;
+      // SIP: marked as factory - caller must delete the feature
+      virtual QgsFeature * getNextFeature(bool fetchAttributes = false) = 0 /Factory/;
 
       /**Get the next feature resulting from a select operation.
        *@param attlist a list containing the indexes of the attribute fields to copy
-     * @param featureQueueSize   a hint to the provider as to how many features are likely to be retrieved in a batch
+       * @param featureQueueSize   a hint to the provider as to how many features are likely to be retrieved in a batch
        */
       // TODO: custom handling needed
-      //virtual QgsFeature* getNextFeature(const std::list<int> & attlist, int featureQueueSize = 1);
+      //virtual QgsFeature* getNextFeature(const std::list<int> & attlist, int featureQueueSize = 1) /Factory/;
 
       /**
        * Get the next feature using new method

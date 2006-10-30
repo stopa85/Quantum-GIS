@@ -142,7 +142,7 @@ public:
   bool isSymbologyCompatible(const QgsMapLayer& other) const;
   
   /** Read property of int featureType. */
-  const int & featureType() const;
+  int featureType() const;
   
   /** Returns a pointer to the renderer */
   const QgsRenderer* renderer() const;

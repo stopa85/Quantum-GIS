@@ -3104,7 +3104,7 @@ inline void QgsVectorLayer::transformPoints(
 }
 
 
-const int & QgsVectorLayer::featureType() const
+int QgsVectorLayer::featureType() const
 {
   return mGeometryType;
 }
