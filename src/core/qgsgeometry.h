@@ -18,9 +18,10 @@ email                : morb at ozemail dot com dot au
 #define QGSGEOMETRY_H
 
 #include <QString>
-#include <vector>
+#include <QVector>
 
 #include "qgis.h"
+#include "qgspoint.h"
 
 namespace geos
 {
@@ -29,6 +30,22 @@ namespace geos
   class GeometryFactory;
   class Polygon;
 }
+
+
+/** polyline is represented as a vector of points */
+typedef QVector<QgsPoint> QgsPolyline;
+
+/** polygon: first item of the list is outer ring, inner rings (if any) start from second item */
+typedef QVector<QgsPolyline> QgsPolygon;
+    
+/** a collection of QgsPoints that share a common collection of attributes */
+typedef QVector<QgsPoint> QgsMultiPoint;
+
+/** a collection of QgsPolylines that share a common collection of attributes */
+typedef QVector<QgsPolyline> QgsMultiPolyline;
+
+/** a collection of QgsPolygons that share a common collection of attributes */
+typedef QVector<QgsPolygon> QgsMultiPolygon;
 
 class QgsGeometryVertexIndex;
 class QgsPoint;
@@ -87,6 +104,12 @@ class CORE_EXPORT QgsGeometry {
     
     /** Returns type of wkb (point / linestring / polygon etc.) */
     QGis::WKBTYPE wkbType() const;
+    
+    /** Returns type of the vector */
+    QGis::VectorType vectorType() const;
+    
+    /** Returns true if wkb of the geometry is of WKBMulti* type */
+    bool isMultipart() const;
 
     /**
        Set the geometry, feeding in a geometry in GEOS format.
@@ -202,6 +225,31 @@ class CORE_EXPORT QgsGeometry {
     geos::Geometry* geosGeometry() const;
 
 
+    /* Accessor functions for getting geometry data */
+    
+    /** return contents of the geometry as a point
+        if wkbType is WKBPoint, otherwise returns [0,0] */
+    QgsPoint asPoint();
+    
+    /** return contents of the geometry as a polyline
+        if wkbType is WKBLineString, otherwise an empty list */
+    QgsPolyline asPolyline();
+    
+    /** return contents of the geometry as a polygon
+        if wkbType is WKBPolygon, otherwise an empty list */
+    QgsPolygon asPolygon();
+    
+    /** return contents of the geometry as a polygon
+        if wkbType is WKBPolygon, otherwise an empty list */
+    QgsMultiPoint asMultiPoint();
+    
+    /** return contents of the geometry as a polygon
+        if wkbType is WKBPolygon, otherwise an empty list */
+    QgsMultiPolyline asMultiPolyline();
+    
+    /** return contents of the geometry as a polygon
+        if wkbType is WKBPolygon, otherwise an empty list */
+    QgsMultiPolygon asMultiPolygon();
 
   private:
 
@@ -283,6 +331,15 @@ class CORE_EXPORT QgsGeometry {
                             int beforeVertex,
                             const geos::CoordinateSequence*  old_sequence,
                                   geos::CoordinateSequence** new_sequence);
+
+    /** return point from wkb */
+    QgsPoint asPoint(unsigned char*& ptr, bool hasZValue);
+    
+    /** return polyline from wkb */
+    QgsPolyline asPolyline(unsigned char*& ptr, bool hasZValue);
+    
+    /** return polygon from wkb */
+    QgsPolygon asPolygon(unsigned char*& ptr, bool hasZValue);
 
 }; // class QgsGeometry
 
