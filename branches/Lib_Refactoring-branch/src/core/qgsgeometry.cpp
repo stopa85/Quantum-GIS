@@ -206,6 +206,38 @@ QGis::WKBTYPE QgsGeometry::wkbType() const
   return (QGis::WKBTYPE) wkbType;
 }
 
+
+QGis::VectorType QgsGeometry::vectorType() const
+{
+  QGis::WKBTYPE type = wkbType();
+  if (type == QGis::WKBPoint || type == QGis::WKBPoint25D ||
+      type == QGis::WKBMultiPoint || type == QGis::WKBMultiPoint25D)
+    return QGis::Point;
+  if (type == QGis::WKBLineString || type == QGis::WKBLineString25D ||
+      type == QGis::WKBMultiLineString || type == QGis::WKBMultiLineString25D)
+    return QGis::Line;
+  if (type == QGis::WKBPolygon || type == QGis::WKBPolygon25D ||
+      type == QGis::WKBMultiPolygon || type == QGis::WKBMultiPolygon25D)
+    return QGis::Polygon;
+
+  return QGis::Unknown;
+}
+
+bool QgsGeometry::isMultipart() const
+{
+  QGis::WKBTYPE type = wkbType();
+  if (type == QGis::WKBMultiPoint ||
+      type == QGis::WKBMultiPoint25D ||
+      type == QGis::WKBMultiLineString ||
+      type == QGis::WKBMultiLineString25D ||
+      type == QGis::WKBMultiPolygon ||
+      type == QGis::WKBMultiPolygon25D)
+    return true;
+    
+  return false;
+}
+
+
 void QgsGeometry::setGeos(geos::Geometry* geos)
 {
   // TODO - make this more heap-friendly
@@ -227,6 +259,8 @@ void QgsGeometry::setGeos(geos::Geometry* geos)
   mDirtyGeos  = FALSE;
   mDirtyWkt   = TRUE;
 
+  // convert also to wkb
+  wkbBuffer();
 }
 
 QgsPoint QgsGeometry::closestVertex(const QgsPoint& point, QgsGeometryVertexIndex& atVertex, int& beforeVertex, int& afterVertex, double& sqrDist) const
@@ -2956,4 +2990,182 @@ double QgsGeometry::distanceSquaredPointToSegment(QgsPoint& point,
           ( yn - point.y() ) * ( yn - point.y() )
          );
 
+}
+
+QgsPoint QgsGeometry::asPoint(unsigned char*& ptr, bool hasZValue)
+{
+  ptr += 5;
+  double* x = (double *) (ptr);
+  double* y = (double *) (ptr + sizeof(double));
+  ptr += 2 * sizeof(double);
+
+  if (hasZValue)
+    ptr += sizeof(double);
+
+  return QgsPoint(*x,*y);
+}
+
+
+QgsPolyline QgsGeometry::asPolyline(unsigned char*& ptr, bool hasZValue)
+{
+  double x,y;
+  ptr += 5;
+  unsigned int nPoints = *((int*)ptr);
+  ptr += 4;
+  
+  QgsPolyline line(nPoints);
+
+  // Extract the points from the WKB format into the x and y vectors. 
+  for (uint i = 0; i < nPoints; ++i)
+  {
+    x = *((double *) ptr);
+    y = *((double *) ptr);
+    
+    ptr += 2 * sizeof(double);
+    
+    line[i] = QgsPoint(x,y);
+  
+    if (hasZValue) // ignore Z value
+      ptr += sizeof(double);
+  }
+
+  return line;
+}
+
+
+QgsPolygon QgsGeometry::asPolygon(unsigned char*& ptr, bool hasZValue)
+{
+  double x,y;
+
+  ptr += 5;
+
+  // get number of rings in the polygon
+  unsigned int numRings = *((int*)ptr);
+  ptr += 4;
+
+  if ( numRings == 0 )  // sanity check for zero rings in polygon
+    return QgsPolygon();
+
+  QgsPolygon rings(numRings);
+  
+  for (uint idx = 0; idx < numRings; idx++)
+  {
+    uint nPoints = *((int*)ptr);
+    ptr += 4;
+    
+    QgsPolyline ring(nPoints);
+
+    for (uint jdx = 0; jdx < nPoints; jdx++)
+    {
+      x = *((double *) ptr);
+      y = *((double *) ptr);
+
+      ptr += 2 * sizeof(double);
+      
+      if (hasZValue)
+        ptr += sizeof(double);
+    
+      ring[jdx] = QgsPoint(x,y);
+    }
+    
+    rings[idx] = ring;
+  }
+  
+  return rings;
+}
+
+
+QgsPoint QgsGeometry::asPoint()
+{
+  QGis::WKBTYPE type = wkbType();
+  if (type != QGis::WKBPoint && type != QGis::WKBPoint25D)
+    return QgsPoint(0,0);
+
+  unsigned char* ptr = mGeometry;
+  return asPoint(ptr, type == QGis::WKBPoint25D);
+}
+
+QgsPolyline QgsGeometry::asPolyline()
+{
+  QGis::WKBTYPE type = wkbType();
+  if (type != QGis::WKBLineString && type != QGis::WKBLineString25D)
+    return QgsPolyline();
+  
+  unsigned char *ptr = mGeometry;
+  return asPolyline(ptr, type == QGis::WKBLineString25D);
+}
+
+QgsPolygon QgsGeometry::asPolygon()
+{
+  QGis::WKBTYPE type = wkbType();
+  if (type != QGis::WKBPolygon && type != QGis::WKBPolygon25D)
+    return QgsPolygon();
+  
+  unsigned char *ptr = mGeometry;
+  return asPolygon(ptr, type == QGis::WKBPolygon25D);
+}
+
+QgsMultiPoint QgsGeometry::asMultiPoint()
+{
+  QGis::WKBTYPE type = wkbType();
+  if (type != QGis::WKBMultiPoint && type != QGis::WKBMultiPoint25D)
+    return QgsMultiPoint();
+  
+  bool hasZValue = (type == QGis::WKBMultiPoint25D);
+
+  unsigned char* ptr = mGeometry + 5;
+  unsigned int nPoints = *((int*)ptr);
+  ptr += 4;
+  
+  QgsMultiPoint points(nPoints);
+  for (uint i = 0; i < nPoints; i++)
+  {
+    points[i] = asPoint(ptr, hasZValue);
+  }
+
+  return points;
+}
+
+QgsMultiPolyline QgsGeometry::asMultiPolyline()
+{
+  QGis::WKBTYPE type = wkbType();
+  if (type != QGis::WKBMultiLineString && type != QGis::WKBMultiLineString25D)
+    return QgsMultiPolyline();
+  
+  bool hasZValue = (type == QGis::WKBMultiLineString25D);
+
+  unsigned char* ptr = mGeometry + 5;
+  unsigned int numLineStrings = *((int*)ptr);
+  ptr += 4;
+
+  QgsMultiPolyline lines(numLineStrings);
+
+  for (uint i = 0; i < numLineStrings; i++)
+  {
+    lines[i] = asPolyline(ptr, hasZValue);
+  }
+  
+  return lines;
+}
+
+QgsMultiPolygon QgsGeometry::asMultiPolygon()
+{
+  QGis::WKBTYPE type = wkbType();
+  if (type != QGis::WKBMultiPolygon && type != QGis::WKBMultiPolygon25D)
+    return QgsMultiPolygon();
+  
+  bool hasZValue = (type == QGis::WKBMultiPolygon25D);
+
+  unsigned char* ptr = mGeometry + 5;
+  unsigned int numPolygons = *((int*)ptr);
+  ptr += 4;
+
+  QgsMultiPolygon polygons(numPolygons);
+
+  for (uint i = 0; i < numPolygons; i++)
+  {
+    polygons[i] = asPolygon(ptr, hasZValue);
+  }
+  
+  return polygons;
 }

@@ -5,8 +5,10 @@ class QgsPoint
 
 %TypeHeaderCode
 #include <qgspoint.h>
+#include <QString>
 %End
 
+    
 public:
     /// Default constructor
   QgsPoint();
@@ -68,6 +70,15 @@ public:
     
   //! Multiply x and y by the given value
   void multiply(const double& scalar);
+  
+  
+  SIP_PYOBJECT __repr__();
+%MethodCode
+    QString str = "(" + QString::number(sipCpp->x()) + "," + QString::number(sipCpp->y()) + ")";
+    //QString str("(%f,%f)").arg(sipCpp->x()).arg(sipCpp->y());
+    sipRes = PyString_FromString(str.toLocal8Bit().data());
+%End
+
   
 }; // class QgsPOint
 

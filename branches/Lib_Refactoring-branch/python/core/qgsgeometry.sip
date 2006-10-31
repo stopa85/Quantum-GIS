@@ -1,14 +1,169 @@
 
-/** 
- * Represents a geometry with input and output in formats specified by 
- * (at least) the Open Geospatial Consortium (WKB / WKT), and containing
- * various functions for geoprocessing of the geometry.
- *
- * The geometry is represented internally by the OGC WKB format, though
- * perhaps this will be migrated to GEOS geometry in future.
- *
- * @author Brendan Morley
- */
+/** polyline is just a list of points */
+typedef QVector<QgsPoint> QgsPolyline;
+
+/** polygon: first item of the list is outer ring, inner rings (if any) start from second item */
+typedef QVector< QVector<QgsPoint> > QgsPolygon;
+    
+/** a collection of QgsPoints that share a common collection of attributes */
+typedef QVector<QgsPoint> QgsMultiPoint;
+
+/** a collection of QgsPolylines that share a common collection of attributes */
+typedef QVector< QVector<QgsPoint> > QgsMultiPolyline;
+
+/** a collection of QgsPolygons that share a common collection of attributes */
+typedef QVector< QVector< QVector<QgsPoint> > > QgsMultiPolygon;
+
+    
+template <TYPE>
+%MappedType QVector< QVector<TYPE> >
+{
+%TypeHeaderCode
+#include <QVector>
+%End
+
+%ConvertFromTypeCode
+  // Create the list.
+  PyObject *l;
+
+  if ((l = PyList_New(sipCpp->size())) == NULL)
+    return NULL;
+      
+  const sipMappedType* qvector_qgspoint = sipFindMappedType("QVector<QgsPoint>");
+      
+  // Set the list elements.
+  for (int i = 0; i < sipCpp->size(); ++i)
+  {
+    QVector<TYPE>* t = new QVector<TYPE>(sipCpp->at(i));
+    PyObject *tobj;
+
+    if ((tobj = sipConvertFromMappedType(t, qvector_qgspoint, sipTransferObj)) == NULL)
+    {
+      Py_DECREF(l);
+      delete t;
+      return NULL;
+    }
+    PyList_SET_ITEM(l, i, tobj);
+  }
+ 
+  return l;
+%End
+
+%ConvertToTypeCode
+  // Check the type if that is all that is required.
+  if (sipIsErr == NULL)
+  {
+    if (!PyList_Check(sipPy))
+      return 0;
+
+    for (int i = 0; i < PyList_GET_SIZE(sipPy); ++i)
+      if (!sipCanConvertToInstance(PyList_GET_ITEM(sipPy, i), sipClass_TYPE, SIP_NOT_NONE))
+        return 0;
+
+    return 1;
+  }
+
+  const sipMappedType* qvector_qgspoint = sipFindMappedType("QVector<QgsPoint>");
+  
+  QVector< QVector<TYPE> > *ql = new QVector< QVector<TYPE> >;
+
+  for (int i = 0; i < PyList_GET_SIZE(sipPy); ++i)
+  {
+    int state;
+    //TYPE *t = reinterpret_cast<TYPE *>(sipConvertToInstance(PyList_GET_ITEM(sipPy, i), sipClass_TYPE, sipTransferObj, SIP_NOT_NONE, &state, sipIsErr));
+    QVector<TYPE> * t = reinterpret_cast< QVector<TYPE> * >(sipConvertToMappedType(PyList_GET_ITEM(sipPy, i), qvector_qgspoint, sipTransferObj, SIP_NOT_NONE, &state, sipIsErr));
+
+    if (*sipIsErr)
+    {
+      sipReleaseInstance(t, sipClass_TYPE, state);
+      delete ql;
+      return 0;
+    }
+    ql->append(*t);
+    sipReleaseInstance(t, sipClass_TYPE, state);
+  }
+
+  *sipCppPtr = ql;
+  return sipGetState(sipTransferObj);
+%End
+
+};
+
+
+template <TYPE>
+%MappedType QVector< QVector< QVector<TYPE> > >
+{
+%TypeHeaderCode
+#include <QVector>
+%End
+
+%ConvertFromTypeCode
+  // Create the list.
+  PyObject *l;
+
+  if ((l = PyList_New(sipCpp->size())) == NULL)
+    return NULL;
+      
+  const sipMappedType* qvector_qgspoint = sipFindMappedType("QVector<QVector<QgsPoint> >");
+      
+  // Set the list elements.
+  for (int i = 0; i < sipCpp->size(); ++i)
+  {
+    QVector<QVector<TYPE> >* t = new QVector<QVector<TYPE> >(sipCpp->at(i));
+    PyObject *tobj;
+
+    if ((tobj = sipConvertFromMappedType(t, qvector_qgspoint, sipTransferObj)) == NULL)
+    {
+      Py_DECREF(l);
+      delete t;
+      return NULL;
+    }
+    PyList_SET_ITEM(l, i, tobj);
+  }
+  return l;
+%End
+
+%ConvertToTypeCode
+  // Check the type if that is all that is required.
+  if (sipIsErr == NULL)
+  {
+    if (!PyList_Check(sipPy))
+      return 0;
+
+    for (int i = 0; i < PyList_GET_SIZE(sipPy); ++i)
+      if (!sipCanConvertToInstance(PyList_GET_ITEM(sipPy, i), sipClass_TYPE, SIP_NOT_NONE))
+        return 0;
+
+    return 1;
+  }
+
+  const sipMappedType* qvector_qgspoint = sipFindMappedType("QVector<QVector<QgsPoint> >");
+  
+  QVector< QVector< QVector<TYPE> > > *ql = new QVector< QVector< QVector<TYPE> > >;
+
+  for (int i = 0; i < PyList_GET_SIZE(sipPy); ++i)
+  {
+    int state;
+    //TYPE *t = reinterpret_cast<TYPE *>(sipConvertToInstance(PyList_GET_ITEM(sipPy, i), sipClass_TYPE, sipTransferObj, SIP_NOT_NONE, &state, sipIsErr));
+    QVector<QVector<TYPE> > * t = reinterpret_cast< QVector< QVector<TYPE> > * >(sipConvertToMappedType(PyList_GET_ITEM(sipPy, i), qvector_qgspoint, sipTransferObj, SIP_NOT_NONE, &state, sipIsErr));
+
+    if (*sipIsErr)
+    {
+      sipReleaseInstance(t, sipClass_TYPE, state);
+      delete ql;
+      return 0;
+    }
+    ql->append(*t);
+    sipReleaseInstance(t, sipClass_TYPE, state);
+  }
+
+  *sipCppPtr = ql;
+  return sipGetState(sipTransferObj);
+%End
+
+};
+
+
 
 class QgsGeometry
 {
@@ -58,7 +213,13 @@ class QgsGeometry
     /** Returns type of wkb (point / linestring / polygon etc.) */
     QGis::WKBTYPE wkbType() const;
 
-   /**
+    /** Returns type of the vector */
+    QGis::VectorType vectorType() const;
+
+    /** Returns true if wkb of the geometry is of WKBMulti* type */
+    bool isMultipart() const;
+
+    /**
        Set the geometry, feeding in a geometry in GEOS format.
     */
     // TODO: unsupported class... would be possible to use PyGEOS?
@@ -173,6 +334,32 @@ class QgsGeometry
     // TODO: unsupported class... would be possible to use PyGEOS?
     //geos::Geometry* geosGeometry() const;
 
+    
+    /* Accessor functions for getting geometry data */
+    
+    /** return contents of the geometry as a point
+        if wkbType is WKBPoint, otherwise returns [0,0] */
+    QgsPoint asPoint();
+    
+    /** return contents of the geometry as a polyline
+        if wkbType is WKBLineString, otherwise an empty list */
+    QgsPolyline asPolyline();
+    
+    /** return contents of the geometry as a polygon
+        if wkbType is WKBPolygon, otherwise an empty list */
+    QgsPolygon asPolygon();
+    
+    /** return contents of the geometry as a polygon
+        if wkbType is WKBPolygon, otherwise an empty list */
+    QgsMultiPoint asMultiPoint();
+    
+    /** return contents of the geometry as a polygon
+        if wkbType is WKBPolygon, otherwise an empty list */
+    QgsMultiPolyline asMultiPolyline();
+    
+    /** return contents of the geometry as a polygon
+        if wkbType is WKBPolygon, otherwise an empty list */
+    QgsMultiPolygon asMultiPolygon();
 
 }; // class QgsGeometry
 
