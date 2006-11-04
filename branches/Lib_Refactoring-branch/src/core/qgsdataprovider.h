@@ -17,25 +17,15 @@
 #ifndef QQGSDATAPROVIDER_H
 #define QQGSDATAPROVIDER_H
 
-#include <vector>
-#include <list>
-
-// for htonl
-#ifdef WIN32
-#include <winsock.h>
-#else
-#include <netinet/in.h>
-#endif
 
 #include <QObject>
 #include <QString>
 #include <QStringList>
 
 class QgsRect;
-class QgsFeature;
-class QgsField;
-class QgsDataSourceURI;
 class QgsSpatialRefSys;
+
+
 /** \class QgsDataProvider
  * \brief Abstract base class for spatial data provider implementations
  * @author Gary E.Sherman
@@ -64,32 +54,23 @@ class CORE_EXPORT QgsDataProvider : public QObject
        */
       virtual ~QgsDataProvider() {};
 
-      /*! Set the QgsSpatialReferenceSystem for this layer..
+      /**
+       * Set the QgsSpatialReferenceSystem for this layer.
        * @note Must be reimplemented by each provider. 
+       *
        * @param theSRS QgsSpatialRefSys to be assigned to this layer
-       *        A complete copy of the passed in SRS will be made.
+       *               A complete copy of the passed in SRS will be made.
        */
-      virtual void setSRS(QgsSpatialRefSys * theSRS){};
+      virtual void setSRS(const QgsSpatialRefSys& theSRS) = 0;
 
       /*! Get the QgsSpatialRefSys for this layer
        * @note Must be reimplemented by each provider. 
        * If the provider isn't capable of returning
        * its projection an empty srs will be return, ti will return 0
        */
-      virtual QgsSpatialRefSys * getSRS(){return 0;};
+      virtual QgsSpatialRefSys getSRS() = 0;
 
-
-      /** Used to ask the layer for its projection as a WKT string. 
-       *
-       * Must be reimplemented by each provider. 
-       *
-       * @note XXXXX WARNING THIS METHOD WILL BE DEPRECATED
-       *       XXXXX in favour of SpatialRefSys accessors
-       *       XXXXX and mutators!
-       *
-       */
-      virtual QString getProjectionWKT()  = 0 ;
-
+      
       /** 
        * Set the data source specification. This may be a path or database
        * connection string
@@ -105,66 +86,28 @@ class CORE_EXPORT QgsDataProvider : public QObject
        * connection string
        * @return data source specification
        */
-      virtual QString const & getDataSourceUri() const
+      virtual QString dataSourceUri() const
       {
           return mDataSourceURI;
       }
 
-      /**
-         XXX why have the string versions then this?
-      */
-      virtual QgsDataSourceURI * getURI() = 0;
+      
       /**
        * Get the extent of the layer
        * @return QgsRect containing the extent of the layer
        */
-      virtual QgsRect * extent() = 0;
+      virtual QgsRect extent() = 0;
 
-      /**
-       * Identify features within the search radius specified by rect
-       * @param rect Bounding rectangle of search radius
-       * @return std::vector containing QgsFeature objects that intersect rect
-       */
-      //virtual std::vector<QgsFeature>& QgsDataProvider::identify(QgsRect *rect)=0;
-
-      /** type for byte order
-
-        XDR is for network byte order, or big-endian
-        NDR is for little-endian systems
-
-        @note that default values were taken from similarly named WKB types
-        */
-      typedef enum
-      {
-        XDR = 0,                    // network byte order (big-endian)
-        NDR = 1                     // little endian
-      } endian_t;
-
-      /**
-        Return the endian of this layer.
-
-        XDR for network, or big-endian, byte order
-        NDR for little-endian byte order
-
-        @note 
-
-        By default this returns the endian-ness of the current platform.
-        Sub-classes are free to over-ride this to perhaps return endian-ness of
-        data as stored persistently instead of local hardware architecture
-        endian-ness.
-        */
-      virtual endian_t endian() const
-      {
-        return (htonl(1) == 1) ? XDR : NDR;
-      }
-
+      
       /**
        * Returns true if this is a valid layer. It is up to individual providers
        * to determine what constitutes a valid layer
        */
-      virtual bool isValid()=0;
+      virtual bool isValid() = 0;
 
-      /* Reset the layer - for an OGRLayer, this means clearing the
+      
+      /**
+       * Reset the layer - for an OGRLayer, this means clearing the
        * spatial filter and calling ResetReading
        */
       virtual void reset()
@@ -172,6 +115,7 @@ class CORE_EXPORT QgsDataProvider : public QObject
         // NOP by default 
       }
 
+      
       /**
        * Update the extents of the layer. Not implemented by default
        */
@@ -179,6 +123,8 @@ class CORE_EXPORT QgsDataProvider : public QObject
       {
         // NOP by default
       }
+
+
       /**
        * Set the subset string used to create a subset of features in
        * the layer. This may be a sql where clause or any other string
@@ -189,6 +135,8 @@ class CORE_EXPORT QgsDataProvider : public QObject
       {
         // NOP by default
       }
+
+
       /**
        * Returns the subset definition string (typically sql) currently in
        * use by the layer and used by the provider to limit the feature set.
@@ -200,6 +148,7 @@ class CORE_EXPORT QgsDataProvider : public QObject
         return QString::null;
       }
 
+
       /**
        * Sub-layers handled by this provider, in order from bottom to top
        *
@@ -210,6 +159,7 @@ class CORE_EXPORT QgsDataProvider : public QObject
       {
         return QStringList();  // Empty
       }
+
 
       /**
        * Sub-layer styles for each sub-layer handled by this provider,
@@ -223,13 +173,14 @@ class CORE_EXPORT QgsDataProvider : public QObject
         return QStringList();  // Empty
       }
 
-      /** return the number of layers for the current data source
 
-          @note 
-
-         Should this be subLayerCount() instead?
-      */
-      virtual size_t layerCount() const = 0;
+      /** 
+       * return the number of layers for the current data source
+       */
+      virtual uint subLayerCount() const
+      {
+        return 0;
+      }
 
 
       /**
@@ -241,7 +192,8 @@ class CORE_EXPORT QgsDataProvider : public QObject
       {
         // NOOP
       }
-    
+
+
       /**
        * Set the visibility of the given sublayer name
        */
@@ -249,6 +201,7 @@ class CORE_EXPORT QgsDataProvider : public QObject
       {
         // NOOP
       }
+
 
       /** return a provider name
 
@@ -325,9 +278,9 @@ signals:
 
 private:
 
-    /** Universal Resource Identifier for source data
-
-       This could be a file, database, or server address.
+    /**
+     * Universal Resource Identifier for source data.
+     * This could be a file, database, or server address.
      */
     QString mDataSourceURI;
 
@@ -335,4 +288,3 @@ private:
 
 
 #endif
-

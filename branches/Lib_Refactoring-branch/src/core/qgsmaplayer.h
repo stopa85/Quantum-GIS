@@ -84,12 +84,12 @@ public:
      * @param mtp Transformation class
      * @return FALSE if an error occurred during drawing
      */
-    virtual bool draw(QPainter* painter, QgsRect* rect, QgsMapToPixel* mtp, QgsCoordinateTransform* ct, bool);
+    virtual bool draw(QPainter* painter, QgsRect& rect, QgsMapToPixel* mtp, QgsCoordinateTransform* ct, bool);
     
     /** Draw labels
      * @TODO to be removed: used only in vector layers
      */
-    virtual void drawLabels(QPainter* painter, QgsRect* rect, QgsMapToPixel* mtp, QgsCoordinateTransform* ct);
+    virtual void drawLabels(QPainter* painter, QgsRect& rect, QgsMapToPixel* mtp, QgsCoordinateTransform* ct);
 
     /** Return the extent of the layer as a QRect */
     const QgsRect extent();
@@ -221,9 +221,6 @@ public slots:
     /** Accessor and mutator for the scale based visilibility flag */
     void setScaleBasedVisibility( bool theVisibilityFlag);
     bool scaleBasedVisibility();
-
-    /** Used to ask the layer for its projection as a WKT string. Must be reimplemented by each provider. */
-    virtual QString getProjectionWKT() = 0;
 
 signals:
 

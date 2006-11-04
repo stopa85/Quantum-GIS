@@ -35,7 +35,7 @@ class CORE_EXPORT QgsSingleSymbolRenderer: public QgsRenderer
     /*Returns a pointer to mSymbol*/
     const QgsSymbol* symbol() const;
     /**Renders an OGRFeature*/
-    void renderFeature(QPainter* p, QgsFeature* f, QImage* img, double* scalefactor, bool selected, double widthScale = 1.);
+    void renderFeature(QPainter* p, QgsFeature& f, QImage* img, double* scalefactor, bool selected, double widthScale = 1.);
     /**Reads the renderer configuration from an XML file
      @param rnode the DOM node to read 
      @param vl the vector layer which will be associated with the renderer*/
@@ -48,7 +48,7 @@ class CORE_EXPORT QgsSingleSymbolRenderer: public QgsRenderer
     /**Returns false, no attributes neede for single symbol*/
     bool needsAttributes() const;
     /**Returns an empty list, since no classification attributes are used*/
-    std::list<int> classificationAttributes() const;
+    QgsAttributeList classificationAttributes() const;
     /**Returns the renderers name*/
     virtual QString name() const;
     /**Returns a list containing mSymbol*/

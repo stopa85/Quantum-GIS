@@ -1,17 +1,11 @@
 
-//typedef std::map<int, std::map<QString,QString> > changed_attr_map;
-//typedef std::set<int> feature_ids;
-
-/*! \class QgsVectorLayer
- * \brief Vector layer backed by a data source provider
- */
 
 class QgsVectorLayer : QgsMapLayer
 {
 %TypeHeaderCode
 #include <qgsvectorlayer.h>
 %End
-  
+
 public:
 
   /** Constructor */
@@ -36,42 +30,29 @@ public:
      @param provider should be "postgres", "ogr", or ??
      @todo XXX should this return bool?  Throw exceptions?
   */
-  bool setDataProvider( const QString & provider );
+  bool setDataProvider(const QString & provider );
   
   /** Returns the data provider */
   QgsVectorDataProvider* getDataProvider();
 
   /** Returns the data provider in a const-correct manner */
-  // SIP: has the same python signature, not needed
   //const QgsVectorDataProvider* getDataProvider() const;
 
   /** Sets the textencoding of the data provider */
   void setProviderEncoding(const QString& encoding);
 
-  /** Query data provider to find out the WKT projection string for this layer.
-   *  This implements the virtual method of the same name defined in QgsMapLayer
-   */
-  QString getProjectionWKT();
-
-  /**
-   * Gets the SRID of the layer by querying the underlying data provider
-   * @return The SRID if the provider is able to provide it, otherwise 0
-   */
-  int getProjectionSrid();
-  
   /** Setup the coordinate system tranformation for the layer */
   void setCoordinateSystem();
 
   QgsLabel *label();
 
-  // TODO: QgsAttributeAction not yet wrapped
-  //QgsAttributeAction* actions() { return mActions; }
+  // TODO: wrap QgsAttributeAction* actions();
 
   /** The number of features that are selected in this layer */
   int selectedFeatureCount();
-
+  
   /** Select features found within the search rectangle (in layer's coordinates) */
-  void select(QgsRect * rect, bool lock);
+  void select(QgsRect & rect, bool lock);
 
   /** Select feature by its ID, optionally emit signal selectionChanged() */
   void select(int featureId, bool emitSignal = TRUE);
@@ -83,33 +64,26 @@ public:
   void invertSelection();
 
   /** Get a copy of the user-selected features */  
-  // TODO: wrap
-  //std::vector<QgsFeature>* selectedFeatures();
+  QList<QgsFeature> selectedFeatures();
   
   /** Return reference to identifiers of selected features */
-  // TODO: wrap
-  //const feature_ids& selectedFeaturesIds() const;
+  const QSet<int>& selectedFeaturesIds() const;
   
   /** Change selection to the new set of features */
-  // TODO: wrap
-  //void setSelectedFeatures(feature_ids& ids);
+  void setSelectedFeatures(const QSet<int>& ids);
 
   /** Returns the bounding box of the selected features. If there is no selection, QgsRect(0,0,0,0) is returned */
   QgsRect boundingBoxOfSelected();
 
   
   /** Insert a copy of the given features into the layer */
-  // TODO: wrap
-  //bool addFeatures(std::vector<QgsFeature*>* features, bool makeSelected = TRUE);
+  bool addFeatures(QList<QgsFeature> features, bool makeSelected = TRUE);
 
   /** Copies the symbology settings from another layer. Returns true in case of success */
   bool copySymbologySettings(const QgsMapLayer& other);
 
   /** Returns true if this layer can be in the same symbology group with another layer */
   bool isSymbologyCompatible(const QgsMapLayer& other) const;
-  
-  /** Read property of int featureType. */
-  int featureType() const;
   
   /** Returns a pointer to the renderer */
   const QgsRenderer* renderer() const;
@@ -121,7 +95,7 @@ public:
   QGis::VectorType vectorType() const;
 
   /**Returns the WKBType or WKBUnknown in case of error*/
-  QGis::WKBTYPE getGeometryType() const;
+  QGis::WKBTYPE geometryType() const;
 
   /** Return the provider type for this layer */
   QString providerType() const;
@@ -137,19 +111,11 @@ public:
   virtual bool writeXML_( QDomNode & layer_node, QDomDocument & doc );
 
 
-  /** Get the first feature resulting from a select operation
-  * @param selected selected feeatures only
-  * @return QgsFeature
-  */
-  // SIP: marked as factory as ownership of the feature is transferred
-  virtual QgsFeature * getFirstFeature(bool fetchAttributes=false, bool selected=false) const /Factory/;
-
   /** Get the next feature resulting from a select operation
   * @param selected selected feeatures only
   * @return QgsFeature
   */
-  // SIP: marked as factory as ownership of the feature is transferred
-  virtual QgsFeature * getNextFeature(bool fetchAttributes=false, bool selected=false) const /Factory/;
+  virtual QgsFeature * getNextFeature(bool fetchAttributes=false, bool selected=false) const;
 
   /** Get the next feature using new method
    * TODO - make this pure virtual once it works and change existing providers
@@ -194,14 +160,13 @@ public:
     Return a list of field names for this layer
    @return vector of field names
   */
-  // TODO: wrap
-  //virtual const std::vector<QgsField> & fields() const;
+  virtual const QMap<int, QgsField> & fields() const;
 
   /** Adds a feature
       @param lastFeatureInBatch  If True, will also go to the effort of e.g. updating the extents.
       @return                    Irue in case of success and False in case of error
    */
-  bool addFeature(QgsFeature* f, bool alsoUpdateExtent = TRUE);
+  bool addFeature(QgsFeature& f, bool alsoUpdateExtent = TRUE);
   
   
   /** Insert a new vertex before the given vertex number,
@@ -264,13 +229,13 @@ public:
    */
   bool snapVertexWithContext(QgsPoint& point,
                              QgsGeometryVertexIndex& atVertex,
-                             int& beforeVertexIndex,
-                             int& afterVertexIndex,
+			     int& beforeVertexIndex,
+			     int& afterVertexIndex,
                              int& snappedFeatureId,
                              QgsGeometry& snappedGeometry,
                              double tolerance);
 
-  /**Snaps a point to the closest line segment if there is one within the snapping tolerance (mSnappingTolerance)
+  /**Snaps a point to the closest line segment if there is one within the snapping tolerance
      @param beforeVertex      Set to a value where the snapped-to segment is before this vertex index
      @param snappedFeatureId  Set to the feature ID that where the snapped-to segment belongs to.
      @param snappedGeometry   Set to the geometry that the snapped-to segment belongs to.
@@ -303,30 +268,28 @@ public:
                       of attribute values to change
 
    */
-  // TODO: wrap
-  //bool commitAttributeChanges(const std::set<QString>& deleted,
-  //          const std::map<QString,QString>& added,
-  //          std::map<int,std::map<QString,QString> >& changed);
-
+  bool commitAttributeChanges(const QSet<int>& deleted,
+                              const QMap<QString, QString>& added,
+                              const QMap<int, QMap<int, QgsFeatureAttribute> >& changed);
 
   /** Draws the layer using coordinate transformation
    *  @return FALSE if an error occurred during drawing
    */
   bool draw(QPainter * p,
-            QgsRect * viewExtent,
+            QgsRect & viewExtent,
             QgsMapToPixel * cXf,
             QgsCoordinateTransform* ct,
             bool drawingToEditingCanvas);
 
   /** Draws the layer labels using coordinate transformation */
-  void drawLabels(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * cXf, QgsCoordinateTransform* ct);
+  void drawLabels(QPainter * p, QgsRect & viewExtent, QgsMapToPixel * cXf, QgsCoordinateTransform* ct);
 
   /** \brief Draws the layer using coordinate transformation
    *  \param widthScale line width scale
    *  \param symbolScale symbol scale
    */
   void draw(QPainter * p,
-            QgsRect * viewExtent,
+            QgsRect & viewExtent,
             QgsMapToPixel * cXf,
             QgsCoordinateTransform* ct,
             bool drawingToEditingCanvas,
@@ -336,19 +299,16 @@ public:
   /** \brief Draws the layer labels using coordinate transformation
    *  \param scale size scale, applied to all values in pixels
    */
-  void drawLabels(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * cXf, QgsCoordinateTransform* ct, double scale);
+  void drawLabels(QPainter * p, QgsRect & viewExtent, QgsMapToPixel * cXf, QgsCoordinateTransform* ct, double scale);
 
   /** returns array of added features */
-  // TODO: wrap
-  //std::vector<QgsFeature*>& addedFeatures();
+  QList<QgsFeature>& addedFeatures();
 
   /** returns array of deleted feature IDs */
-  // TODO: wrap
-  //feature_ids& deletedFeatureIds();
+  QSet<int>& deletedFeatureIds();
  
   /** returns array of features with changed attributes */
-  // TODO: wrap
-  //changed_attr_map& changedAttributes();
+  QMap<int, QMap<int, QgsFeatureAttribute> >& changedAttributes();
 
   /** Sets whether some features are modified or not */
   void setModified(bool modified = TRUE, bool onlyGeometryWasModified = FALSE);
@@ -402,7 +362,7 @@ signals:
 private:                       // Private methods
 
   /** vector layers are not copyable */
-  QgsVectorLayer( const QgsVectorLayer& rhs );
+  QgsVectorLayer( const QgsVectorLayer & rhs );
 
 };
 

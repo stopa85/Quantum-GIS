@@ -1,41 +1,202 @@
 
-/** Base class for vector data providers
- */
+
+%MappedType QSet<int>
+{
+%TypeHeaderCode
+#include <QSet>
+%End
+
+%ConvertFromTypeCode
+  // Create the list.
+  PyObject *l;
+
+  if ((l = PyList_New(sipCpp->size())) == NULL)
+    return NULL;
+      
+  // Set the list elements.
+  int i;
+  for (QSet<int>::iterator it = sipCpp->begin(); it != sipCpp->end(); ++it, ++i)
+  {
+    PyObject *tobj;
+
+    if ((tobj = PyInt_FromLong(*it)) == NULL)
+    {
+      Py_DECREF(l);
+      return NULL;
+    }
+    PyList_SET_ITEM(l, i, tobj);
+  }
  
-class QgsVectorDataProvider : QgsDataProvider /Abstract/
+  return l;
+%End
+
+%ConvertToTypeCode
+  // Check the type if that is all that is required.
+  if (sipIsErr == NULL)
+    return PyList_Check(sipPy);
+
+  QSet<int> *qset = new QSet<int>;
+
+  for (int i = 0; i < PyList_GET_SIZE(sipPy); ++i)
+  {
+    qset->insert(PyInt_AsLong(PyList_GET_ITEM(sipPy, i)));
+  }
+
+  *sipCppPtr = qset;
+  return sipGetState(sipTransferObj);
+%End
+
+};
+
+
+
+%MappedType QMap<int, QMap<int, QgsFeatureAttribute> >
+{
+%TypeHeaderCode
+#include <QMap>
+%End
+
+%ConvertFromTypeCode
+  // Create the list.
+  PyObject *d;
+
+  if ((d = PyDict_New()) == NULL)
+    return NULL;
+      
+  const sipMappedType* qmap2 = sipFindMappedType("QMap<int, QgsFeatureAttribute>");
+      
+  // Set the list elements.
+  for (QMap<int, QMap<int, QgsFeatureAttribute> >::iterator it = sipCpp->begin(); it != sipCpp->end(); ++it)
+  {
+    QMap<int, QgsFeatureAttribute>* t = new QMap<int, QgsFeatureAttribute>(*it);
+    
+    PyObject *kobj = PyInt_FromLong(it.key());
+    PyObject *tobj = sipConvertFromMappedType(t, qmap2, sipTransferObj);
+
+    if (kobj == NULL || tobj == NULL || PyDict_SetItem(d, kobj, tobj) < 0)
+    {
+      Py_DECREF(d);
+      
+      if (kobj)
+        Py_DECREF(kobj);
+
+      if (tobj)
+        Py_DECREF(tobj);
+      else
+        delete t;
+
+      return NULL;
+    }
+  
+    Py_DECREF(kobj);
+    Py_DECREF(tobj);
+  }
+ 
+  return d;
+%End
+
+%ConvertToTypeCode
+  PyObject *kobj, *tobj, *tobj2;
+
+  // Check the type if that is all that is required.
+  if (sipIsErr == NULL)
+  {
+    if (!PyDict_Check(sipPy))
+      return 0;
+
+    int i = 0;
+    while (PyDict_Next(sipPy, &i, &kobj, &tobj))
+    {
+      if (PyDict_Check(tobj))
+        return 0;
+
+      while (PyDict_Next(tobj, &i, &kobj, &tobj2))
+        if (!sipCanConvertToInstance(tobj2, sipClass_QgsFeatureAttribute, SIP_NOT_NONE))
+          return 0;
+    }
+
+    return 1;
+  }
+
+  const sipMappedType* qmap2 = sipFindMappedType("QMap<int, QgsFeatureAttribute>");
+  
+  QMap<int, QMap<int, QgsFeatureAttribute> > *qm = new QMap<int, QMap<int, QgsFeatureAttribute> >;
+
+  int i = 0;
+  while (PyDict_Next(sipPy, &i, &kobj, &tobj))
+  {
+    int state;
+    int k = PyInt_AsLong(kobj);
+    
+    QMap<int, QgsFeatureAttribute> * t =
+        reinterpret_cast< QMap<int, QgsFeatureAttribute> * >(sipConvertToMappedType(tobj, qmap2, sipTransferObj, SIP_NOT_NONE, &state, sipIsErr));
+
+    if (*sipIsErr)
+    {
+      sipReleaseInstance(t, sipClass_QgsFeatureAttribute, state);
+
+      delete qm;
+      return 0;
+    }
+
+    qm->insert(k, *t);
+
+    sipReleaseInstance(t, sipClass_QgsFeatureAttribute, state);
+  }
+
+  *sipCppPtr = qm;
+  return sipGetState(sipTransferObj);
+%End
+
+};
+
+
+
+
+class QgsVectorDataProvider : QgsDataProvider
 {
 %TypeHeaderCode
 #include <qgsvectordataprovider.h>
 %End
 
-    // XXX no  signals or slots, so not needed Q_OBJECT
-
     public:
 
       // If you add to this, please also add to capabilitiesString()
+      /**
+       * enumeration with capabilities that providers might implement
+       */
       enum Capability
       {
-        NoCapabilities =           0,
-        AddFeatures =              1,
-        DeleteFeatures =           2,
-        ChangeAttributeValues =    4,
-        AddAttributes =            8,    // TODO: what is this exactly?
-        DeleteAttributes =        16,
-        CreateSpatialIndex =      64,
-        SelectAtId =             128,
-        ChangeGeometries =       256
+        NoCapabilities =               0,
+        AddFeatures =                  1,
+        DeleteFeatures =               2,
+        ChangeAttributeValues =        4,
+        AddAttributes =                8,
+        DeleteAttributes =             16,
+        SaveAsShapefile =              32,
+        CreateSpatialIndex =           64,
+        SelectAtId =                   128,
+        ChangeGeometries =             256,
+        SelectGeometryAtId =           512,
+        RandomSelectGeometryAtId =     1024,
+        SequentialSelectGeometryAtId = 2048
       };
 
-      QgsVectorDataProvider();
+      /**
+       * Constructor of the vector provider
+       * @param uri  uniform resource locator (URI) for a dataset
+       */
+      QgsVectorDataProvider(QString uri = QString());
 
-      QgsVectorDataProvider( const QString & uri );
-
+      /**
+       * Destructor
+       */
       virtual ~QgsVectorDataProvider();
 
       /**
-       *   Returns the permanent storage type for this layer as a friendly name.
+       * Returns the permanent storage type for this layer as a friendly name.
        */
-      virtual QString storageType();
+      virtual QString storageType() const;
 
       /**
        * Select features based on a bounding rectangle. Features can be retrieved 
@@ -47,54 +208,45 @@ class QgsVectorDataProvider : QgsDataProvider /Abstract/
        * overlap.
        *
        */
-      virtual void select(QgsRect *mbr, bool useIntersect=false)=0;
+      virtual void select(QgsRect mbr, bool useIntersect = false) = 0;
+
       /**
        * Update the feature count based on current spatial filter. If not
        * overridden in the data provider this function returns -1
        */
       virtual long updateFeatureCount();
-      
+
       /** 
        * Gets the feature at the given feature ID.
-       * @return  QgsFeature
+       * @param featureId id of the feature
+       * @param feature feature which will receive the data
+       * @param fetchGeoemtry if true, geometry will be fetched from the provider
+       * @param fetchAttributes a list containing the indexes of the attribute fields to copy
+       * @return True when feature was found, otherwise false
        */
-      // SIP: marked as factory - caller must delete the feature
-      virtual QgsFeature * getFeatureAtId(int featureId) /Factory/;
-      
-      /** 
-       * Get the first feature resulting from a select operation
-       * @return QgsFeature
-       */
-      // SIP: marked as factory - caller must delete the feature
-      virtual QgsFeature * getFirstFeature(bool fetchAttributes = false) = 0 /Factory/;
-
-      /** 
-       * Get the next feature resutling from a select operation
-       * @return QgsFeature
-       */
-      // SIP: marked as factory - caller must delete the feature
-      virtual QgsFeature * getNextFeature(bool fetchAttributes = false) = 0 /Factory/;
-
-      /**Get the next feature resulting from a select operation.
-       *@param attlist a list containing the indexes of the attribute fields to copy
-       * @param featureQueueSize   a hint to the provider as to how many features are likely to be retrieved in a batch
-       */
-      // TODO: custom handling needed
-      //virtual QgsFeature* getNextFeature(const std::list<int> & attlist, int featureQueueSize = 1) /Factory/;
+      virtual bool getFeatureAtId(int featureId,
+                                  QgsFeature& feature,
+                                  bool fetchGeometry = true,
+                                  QList<int> fetchAttributes = QList<int>());
 
       /**
-       * Get the next feature using new method
-       * TODO - make this pure virtual once it works and change existing providers
-       *        to use this method of fetching features
+       * Get the next feature resulting from a select operation.
+       * @param feature feature which will receive data from the provider
+       * @param fetchGeoemtry if true, geometry will be fetched from the provider
+       * @param fetchAttributes a list containing the indexes of the attribute fields to copy
+       * @param featureQueueSize  a hint to the provider as to how many features are likely to be retrieved in a batch
+       * @return true when there was a feature to fetch, false when end was hit
        */
+      virtual bool getNextFeature(QgsFeature& feature,
+                                  bool fetchGeometry = true,
+                                  QList<int> fetchAttributes = QList<int>(),
+                                  uint featureQueueSize = 1) = 0;
 
-      virtual bool getNextFeature(QgsFeature &feature, bool fetchAttributes = false) = 0;
-
-      /** Get feature type.
-       * Gets the feature type as defined in WKBTYPE (qgis.h).
+      /**
+       * Get feature type.
        * @return int representing the feature type
        */
-      virtual int geometryType() const = 0;
+      virtual QGis::WKBTYPE geometryType() const = 0;
 
 
       /**
@@ -104,10 +256,10 @@ class QgsVectorDataProvider : QgsDataProvider /Abstract/
       virtual long featureCount() const = 0;
 
       /**
-     * Get the attributes associated with a feature
-     * TODO: Get rid of "row" and set up provider-internal caching instead
-     */
-    virtual void getFeatureAttributes(int oid, int& row, QgsFeature *f);
+       * Get the attributes associated with a feature
+       * TODO: Get rid of "row" and set up provider-internal caching instead
+       */
+      virtual void getFeatureAttributes(int key, int& row, QgsFeature *f);
 
       /**
        * Fetch geometry for a particular feature with id "key",
@@ -116,18 +268,17 @@ class QgsVectorDataProvider : QgsDataProvider /Abstract/
        * This function is enabled if capabilities() returns "SelectGeometryAtId".
        */
       virtual void getFeatureGeometry(int key, QgsFeature *f);
-    
-    /**
-       * Number of attribute fields for a feature in the layer
-       */
-      virtual int fieldCount() const = 0;
 
       /**
-       * Return a list of field names for this layer
-       * @return vector of field names
+       * Number of attribute fields for a feature in the layer
        */
-      // TODO: needed %MethodCode
-      //virtual const std::vector<QgsField> & fields() const = 0;
+      virtual uint fieldCount() const = 0;
+
+      /**
+       * Return a map of indexes with field names for this layer
+       * @return map of fields
+       */
+      virtual const QMap<int, QgsField> & fields() const = 0;
 
       /** 
        * Reset the layer to clear any spatial filtering or other contstraints that
@@ -138,73 +289,71 @@ class QgsVectorDataProvider : QgsDataProvider /Abstract/
        */
       virtual void reset() = 0;
 
-      /**Returns the minimum value of an attributs
-        @param position the number of the attribute*/
-      virtual QString minValue(int position) = 0;
+      /**
+       * Returns the minimum value of an attributs
+       * @param position the number of the attribute
+       */
+      virtual QString minValue(uint position) = 0;
 
-      /**Returns the maximum value of an attributs
-        @param position the number of the attribute*/
-      virtual QString maxValue(int position) = 0;
+      /**
+       * Returns the maximum value of an attributs
+       * @param position the number of the attribute
+       */
+      virtual QString maxValue(uint position) = 0;
 
-      /**Adds a list of features
-        @return true in case of success and false in case of failure*/
-      // TODO: wrap
-      //virtual bool addFeatures(const std::list<QgsFeature*> flist);
+      /**
+       * Adds a list of features
+       * @return true in case of success and false in case of failure
+       */
+      virtual bool addFeatures(QList<QgsFeature> & flist);
 
-      /**Deletes a feature
-        @param id list containing feature ids to delete
-        @return true in case of success and false in case of failure*/
-      // TODO: wrap
-      //virtual bool deleteFeatures(const std::list<int> & id);
+      /** 
+       * Deletes a feature
+       * @param id list containing feature ids to delete
+       * @return true in case of success and false in case of failure
+       */
+      virtual bool deleteFeatures(const QSet<int> & id);
 
-      /**Adds new attributes
-        @param name map with attribute name as key and type as value
-        @return true in case of success and false in case of failure*/
-      // TODO: wrap
-      //virtual bool addAttributes(const std::map<QString,QString> & name);
+      /**
+       * Adds new attributes
+       * @param attributes map with attribute name as key and type as value
+       * @return true in case of success and false in case of failure
+       */
+      virtual bool addAttributes(const QMap<QString, QString> & attributes);
 
-      /**Deletes existing attributes
-        @param names of the attributes to delete
-        @return true in case of success and false in case of failure*/
-      // TODO: wrap
-      //virtual bool deleteAttributes(const std::set<QString> & name);
+      /**
+       * Deletes existing attributes
+       * @param attributes a set containing indexes of attributes
+       * @return true in case of success and false in case of failure
+       */
+      virtual bool deleteAttributes(const QSet<int> & attributes);
 
-      /**Changes attribute values of existing features
-        @param attr_map a map containing the new attributes. The integer is the feature id,
-        the first QString is the attribute name and the second one is the new attribute value
-        @return true in case of success and false in case of failure*/
-      // TODO: wrap
-      //virtual bool changeAttributeValues(const std::map<int,std::map<QString,QString> > & attr_map);
+      /**
+       * Changes attribute values of existing features.
+       * @param attr_map a map containing changed attributes
+       * @return true in case of success and false in case of failure 
+       */
+      virtual bool changeAttributeValues(const QMap<int, QMap<int, QgsFeatureAttribute> > & attr_map);
 
-      /**Returns the default value for attribute @c attr for feature @c f. */
+      /**
+       * Returns the default value for attribute @c attr for feature @c f.
+       */
       virtual QString getDefaultValue(const QString & attr, QgsFeature* f);
 
       /**
-       Changes geometries of existing features
-       @param geometry_map   A std::map containing the feature IDs to change the geometries of. 
-                             the second map parameter being the new geometries themselves
-       @return               true in case of success and false in case of failure
-     */
-      // TODO: wrap
-      //virtual bool changeGeometryValues(std::map<int, QgsGeometry> & geometry_map);
-
-    /**
-       * Identify features within the search radius specified by rect
-       * @param rect Bounding rectangle of search radius
-       * @return std::vector containing QgsFeature objects that intersect rect
+       * Changes geometries of existing features
+       * @param geometry_map   A std::map containing the feature IDs to change the geometries of. 
+       *                       the second map parameter being the new geometries themselves
+       * @return               true in case of success and false in case of failure
        */
-      // TODO: wrap
-      //virtual std::vector<QgsFeature>& identify(QgsRect *rect) = 0;
+      virtual bool changeGeometryValues(QMap<int, QgsGeometry> & geometry_map);
 
-      /**Creates a spatial index on the datasource (if supported by the provider type). Returns true in case of success*/
+      /**
+       * Creates a spatial index on the datasource (if supported by the provider type).
+       * @return true in case of success
+       */
       virtual bool createSpatialIndex();
 
-      /** Sets filter based on attribute values. Returns false when input string contains errors */
-      //virtual bool setAttributeFilter(const QgsSearchString& attributeFilter);
-
-      /** Returns current attribute filter */
-      //virtual QgsSearchString getAttributeFilter();
-      
       /** Returns a bitmask containing the supported capabilities
           Note, some capabilities may change depending on whether
           a spatial filter is active on this provider, so it may
@@ -217,72 +366,24 @@ class QgsVectorDataProvider : QgsDataProvider /Abstract/
        */
       QString capabilitiesString() const;
 
-      // TODO: wrap
-      //const std::list<QString>& nonNumericalTypes();
-      //const std::list<QString>& numericalTypes();
-
+      /**
+       * Set encoding used for accessing data from layer
+       */
       virtual void setEncoding(const QString& e);
+      
+      /**
+       * Get encoding which is used for accessing data
+       */
       QString encoding() const;
-
-      /*! Indicates if the provider does its own coordinate transforms
-       * @return true if the provider transforms its coordinates, otherwise false
+      
+      /**
+       * Returns the index of a field name or -1 if the field does not exist
        */
-      virtual bool supportsNativeTransform();
-      /*! Used to determine if the provider supports transformation using the
-       * SRID of the target SRS.
-       *
-       * @note XXXXX WARNING THIS METHOD WILL BE DEPRECATED
-       *       XXXXX in favour of SpatialRefSys accessors
-       *       XXXXX and mutators!
-       *
-       * @return true if SRID is used, otherwise false
-       */
-      virtual bool usesSrid();
-      /*! Used to determine if the provider supports transformation using the
-       * WKT of the target SRS.
-       *
-       * @note XXXXX WARNING THIS METHOD WILL BE DEPRECATED
-       *       XXXXX in favour of SpatialRefSys accessors
-       *       XXXXX and mutators!
-       *
-       * @return true if WKT is used, otherwise false
-       */
-      virtual bool usesWKT();
-      /*! Set the SRID of the target SRS.
-       * This is only implemented if the provider supports native
-       * transformation of its coordinates
-       *
-       * @note XXXXX WARNING THIS METHOD WILL BE DEPRECATED
-       *       XXXXX in favour of SpatialRefSys accessors
-       *       XXXXX and mutators!
-       *
-       * @param srid Spatial reference id of the target (map canvas)
-       */
-      virtual void setSrid(int srid);
-      /*! Get the SRID of the target SRS
-       * If the provider isn't capable of reporting the SRID of
-       * the projection, ti will return 0
-       *
-       * @note XXXXX WARNING THIS METHOD WILL BE DEPRECATED
-       *       XXXXX in favour of SpatialRefSys accessors
-       *       XXXXX and mutators!
-       *
-       */
-      virtual int getSrid();
-      /*! Set the WKT of the target SRS.
-       * This is only implemented if the provider supports native
-       * transformation of its coordinates
-       *
-       * @note XXXXX WARNING THIS METHOD WILL BE DEPRECATED
-       *       XXXXX in favour of SpatialRefSys accessors
-       *       XXXXX and mutators!
-       *
-       * @param wkt Well known text of the target (map canvas) SRS
-       */
-      virtual void setWKT(QString wkt);
-
-      /**Returns the index of a field name or -1 if the field does not exist*/
       int indexFromFieldName(const QString& fieldName) const;
+      
+      /**
+       * Return list of indexes to fetch all attributes in getNextFeature()
+       */
+      QList<int> allAttributesList();
 
 };
-

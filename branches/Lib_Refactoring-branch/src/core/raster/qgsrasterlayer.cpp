@@ -989,7 +989,7 @@ QPixmap QgsRasterLayer::getPaletteAsPixmap()
 
 
 bool QgsRasterLayer::draw(QPainter * theQPainter,
-                          QgsRect * theViewExtent,
+                          QgsRect & theViewExtent,
                           QgsMapToPixel * theQgsMapToPixel,
                           QgsCoordinateTransform*,
                           bool drawingToEditingCanvas)
@@ -1008,7 +1008,7 @@ bool QgsRasterLayer::draw(QPainter * theQPainter,
   }    
   
   // clip raster extent to view extent
-  QgsRect myRasterExtent = theViewExtent->intersect(&mLayerExtent);
+  QgsRect myRasterExtent = theViewExtent.intersect(&mLayerExtent);
   if (myRasterExtent.isEmpty())
   {
     // nothing to do
@@ -1016,7 +1016,7 @@ bool QgsRasterLayer::draw(QPainter * theQPainter,
   }
   
 #ifdef QGISDEBUG
-  QgsLogger::debug<QgsRect>("QgsRasterLayer::draw(4 arguments): theViewExtent is ", (*theViewExtent), __FILE__, __FUNCTION__, __LINE__, 1);
+  QgsLogger::debug<QgsRect>("QgsRasterLayer::draw(4 arguments): theViewExtent is ", theViewExtent, __FILE__, __FUNCTION__, __LINE__, 1);
   QgsLogger::debug<QgsRect>("QgsRasterLayer::draw(4 arguments): myRasterExtent is ", myRasterExtent, __FILE__, __FUNCTION__, __LINE__, 1);
 #endif
 
@@ -1036,8 +1036,8 @@ bool QgsRasterLayer::draw(QPainter * theQPainter,
   // calculate raster pixel offsets from origin to clipped rect
   // we're only interested in positive offsets where the origin of the raster
   // is northwest of the origin of the view
-  myRasterViewPort->rectXOffsetFloat = (theViewExtent->xMin() - mLayerExtent.xMin()) / fabs(adfGeoTransform[1]);
-  myRasterViewPort->rectYOffsetFloat = (mLayerExtent.yMax() - theViewExtent->yMax()) / fabs(adfGeoTransform[5]);
+  myRasterViewPort->rectXOffsetFloat = (theViewExtent.xMin() - mLayerExtent.xMin()) / fabs(adfGeoTransform[1]);
+  myRasterViewPort->rectYOffsetFloat = (mLayerExtent.yMax() - theViewExtent.yMax()) / fabs(adfGeoTransform[5]);
   
   if (myRasterViewPort->rectXOffsetFloat < 0 )
   {
@@ -4959,16 +4959,16 @@ void QgsRasterLayer::setDataProvider( QString const & provider,
           dataProvider->setProxy(proxyHost, proxyPort, proxyUser, proxyPass);
 
           // get the extent
-          QgsRect *mbr = dataProvider->extent();
+          QgsRect mbr = dataProvider->extent();
 
           // show the extent
-          QString s = mbr->stringRep();
+          QString s = mbr.stringRep();
 	  QgsDebugMsg("QgsRasterLayer::setDataProvider: Extent of layer: " + s);
           // store the extent
-          mLayerExtent.setXmax(mbr->xMax());
-          mLayerExtent.setXmin(mbr->xMin());
-          mLayerExtent.setYmax(mbr->yMax());
-          mLayerExtent.setYmin(mbr->yMin());
+          mLayerExtent.setXmax(mbr.xMax());
+          mLayerExtent.setXmin(mbr.xMin());
+          mLayerExtent.setYmax(mbr.yMax());
+          mLayerExtent.setYmin(mbr.yMin());
 
           // upper case the first letter of the layer name
           QgsDebugMsg("QgsRasterLayer::setDataProvider: mLayerName: " + name());

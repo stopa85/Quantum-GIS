@@ -20,14 +20,16 @@
 #ifndef QGSSEARCHTREENODE_H
 #define QGSSEARCHTREENODE_H
 
-#include <qstring.h>
-#include <vector>
+#include <QMap>
+#include <QString>
 #include "qgsfeatureattribute.h"
 
 // forward declaration due recursive declaration
 class QgsFeatureAttribute;
 
 class QgsSearchTreeValue;
+
+typedef QMap<int, QgsFeatureAttribute> QgsAttributeMap;
 
 /**
  * QgsSearchTreeNode
@@ -110,7 +112,7 @@ public:
     QString makeSearchString();
 
     //! checks whether the node tree is valid against supplied attributes
-    bool checkAgainst(const std::vector<QgsFeatureAttribute>& attributes);
+    bool checkAgainst(const QgsAttributeMap& attributes);
     
     //! checks if there were errors during evaluation
     bool hasError() { return (!mError.isEmpty()); }
@@ -121,11 +123,11 @@ public:
 protected:
 
     //! returns scalar value of node
-    QgsSearchTreeValue valueAgainst(const std::vector<QgsFeatureAttribute>& attributes);
+    QgsSearchTreeValue valueAgainst(const QgsAttributeMap& attributes);
     
     //! wrapper around valueAgainst()
     bool getValue(QgsSearchTreeValue& value, QgsSearchTreeNode* node,
-                  const std::vector<QgsFeatureAttribute>& attributes);
+                  const QgsAttributeMap& attributes);
 
     //! strips mText when node is of string type
     void stripText();

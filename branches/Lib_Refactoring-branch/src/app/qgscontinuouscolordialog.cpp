@@ -42,11 +42,11 @@ QgsContinuousColorDialog::QgsContinuousColorDialog(QgsVectorLayer * layer)
     QgsVectorDataProvider *provider = mVectorLayer->getDataProvider();
     if (provider)
     {
-	std::vector < QgsField > const & fields = provider->fields();
+	const QgsFieldMap & fields = provider->fields();
 	int fieldnumber = 0;
 	QString str;
 
-	for (std::vector < QgsField >::const_iterator it = fields.begin(); it != fields.end(); ++it)
+	for (QgsFieldMap::const_iterator it = fields.begin(); it != fields.end(); ++it)
         {
 	    QString type = (*it).type();
 	    if (type != "String" && type != "varchar" && type != "geometry")

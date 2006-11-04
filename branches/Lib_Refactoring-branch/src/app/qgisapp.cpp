@@ -3406,7 +3406,8 @@ void QgisApp::editCut(QgsMapLayer * layerContainingSelection)
 
     if (selectionVectorLayer != 0)
     {
-      clipboard()->replaceWithCopyOf( *(selectionVectorLayer->selectedFeatures()) );
+      QgsFeatureList features = selectionVectorLayer->selectedFeatures();
+      clipboard()->replaceWithCopyOf( features );
       selectionVectorLayer->deleteSelectedFeatures();
     }
   }
@@ -3426,7 +3427,8 @@ void QgisApp::editCopy(QgsMapLayer * layerContainingSelection)
 
     if (selectionVectorLayer != 0)
     {
-      clipboard()->replaceWithCopyOf( *(selectionVectorLayer->selectedFeatures()) );
+      QgsFeatureList features = selectionVectorLayer->selectedFeatures();
+      clipboard()->replaceWithCopyOf( features );
     }
   }
 }

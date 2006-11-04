@@ -18,6 +18,7 @@
 #include "qgsattributedialog.h"
 #include "qgscoordinatetransform.h"
 #include "qgsfield.h"
+#include "qgsfeatureattribute.h"
 #include "qgsmaptoolcapture.h"
 #include "qgsmapcanvas.h"
 #include "qgsmaprender.h"
@@ -111,7 +112,7 @@ QMessageBox::Ok);
       double x = savePoint.x();
       double y = savePoint.y();
 
-      if(vlayer->getGeometryType() == QGis::WKBPoint)
+      if(vlayer->geometryType() == QGis::WKBPoint)
 	{
 	  size=1+sizeof(int)+2*sizeof(double);
 	  wkb = new unsigned char[size];
@@ -121,7 +122,7 @@ QMessageBox::Ok);
 	  memcpy(&wkb[5], &x, sizeof(double));
 	  memcpy(&wkb[5]+sizeof(double), &y, sizeof(double));
 	}
-      else if(vlayer->getGeometryType() == QGis::WKBMultiPoint)
+      else if(vlayer->geometryType() == QGis::WKBMultiPoint)
 	{
 	  size = 2+3*sizeof(int)+2*sizeof(double);
 	  wkb = new unsigned char[size];
@@ -146,15 +147,16 @@ QMessageBox::Ok);
 
       f->setGeometryAndOwnership(&wkb[0],size);
       // add the fields to the QgsFeature
-      std::vector<QgsField> fields=vlayer->fields();
-      for(std::vector<QgsField>::iterator it=fields.begin();it!=fields.end();++it)
+      const QgsFieldMap& fields=vlayer->fields();
+      for(QgsFieldMap::const_iterator it = fields.begin(); it != fields.end(); ++it)
       {
-        f->addAttribute((*it).name(), vlayer->getDefaultValue(it->name(),f));
+        QString name = it->name();
+        f->addAttribute(it.key(), QgsFeatureAttribute(name, vlayer->getDefaultValue(name,f)));
       }
 
       // show the dialog to enter attribute values
       if (QgsAttributeDialog::queryAttributes(*f))
-        vlayer->addFeature(f);
+        vlayer->addFeature(*f);
       else
         delete f;
       
@@ -219,7 +221,7 @@ QMessageBox::Ok);
       char end=QgsApplication::endian();
       if(mTool == CaptureLine)
       {
-        if(vlayer->getGeometryType() == QGis::WKBLineString) 
+        if(vlayer->geometryType() == QGis::WKBLineString) 
         {
           size=1+2*sizeof(int)+2*mCaptureList.size()*sizeof(double);
           wkb= new unsigned char[size];
@@ -243,7 +245,7 @@ QMessageBox::Ok);
             position+=sizeof(double);
           }
         }
-        else if(vlayer->getGeometryType() == QGis::WKBMultiLineString)
+        else if(vlayer->geometryType() == QGis::WKBMultiLineString)
         {
           size = 1+2*sizeof(int)+1+2*sizeof(int)+2*mCaptureList.size()*sizeof(double);
           wkb= new unsigned char[size];
@@ -281,7 +283,7 @@ QMessageBox::Ok);
       }
       else // polygon
       {
-        if(vlayer->getGeometryType() == QGis::WKBPolygon)
+        if(vlayer->geometryType() == QGis::WKBPolygon)
         {
           size=1+3*sizeof(int)+2*(mCaptureList.size()+1)*sizeof(double);
           wkb= new unsigned char[size];
@@ -318,7 +320,7 @@ QMessageBox::Ok);
     
           memcpy(&wkb[position],&y,sizeof(double));
         }
-        else if(vlayer->getGeometryType() == QGis::WKBMultiPolygon)
+        else if(vlayer->geometryType() == QGis::WKBMultiPolygon)
         {
           size = 2+5*sizeof(int)+2*(mCaptureList.size()+1)*sizeof(double);
           wkb = new unsigned char[size];
@@ -369,14 +371,15 @@ QMessageBox::Ok);
       f->setGeometryAndOwnership(&wkb[0],size);
   
       // add the fields to the QgsFeature
-      std::vector<QgsField> fields=vlayer->fields();
-      for(std::vector<QgsField>::iterator it=fields.begin();it!=fields.end();++it)
+      const QgsFieldMap& fields = vlayer->fields();
+      for(QgsFieldMap::const_iterator it = fields.begin(); it != fields.end(); ++it)
       {
-        f->addAttribute((*it).name(),vlayer->getDefaultValue(it->name(), f));
+        QString name = it->name();
+        f->addAttribute(it.key(), QgsFeatureAttribute(name, vlayer->getDefaultValue(name, f)));
       }
   
       if (QgsAttributeDialog::queryAttributes(*f))
-        vlayer->addFeature(f);
+        vlayer->addFeature(*f);
       else
         delete f;
       

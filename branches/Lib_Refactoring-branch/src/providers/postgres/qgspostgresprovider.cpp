@@ -17,6 +17,13 @@
 
 /* $Id$ */
 
+// for htonl
+#ifdef WIN32
+#include <winsock.h>
+#else
+#include <netinet/in.h>
+#endif
+
 #include <fstream>
 #include <iostream>
 #include <cassert>
@@ -27,20 +34,16 @@
 #include <QCustomEvent>
 #include <QTextOStream>
 
-// for ntohl
-#ifdef WIN32
-#include <winsock.h>
-#else
-#include <netinet/in.h>
-#endif
 
 #include <qgis.h>
+#include <qgsapplication.h>
 #include <qgsfeature.h>
 #include <qgsfeatureattribute.h>
 #include <qgsfield.h>
 #include <qgsgeometry.h>
 #include <qgsmessageoutput.h>
 #include <qgsrect.h>
+#include <qgsspatialrefsys.h>
 
 #include "qgsprovidercountcalcevent.h"
 #include "qgsproviderextentcalcevent.h"
@@ -77,42 +80,20 @@ QgsPostgresProvider::QgsPostgresProvider(QString const & uri)
   // string:
   //  host=192.168.1.5 dbname=test port=5342 user=gsherman password=xxx table=tablename
 
-  // Strip the table and sql statement name off and store them
-  int sqlStart = uri.find(" sql");
-  int tableStart = uri.find("table=");
 #ifdef QGISDEBUG
   qDebug(  "****************************************");
   qDebug(  "****   Postgresql Layer Creation   *****" );
   qDebug(  "****************************************");
   qDebug(  (const char*)(QString("URI: ") + uri).toLocal8Bit().data() );
-  QString msg;
-
-  qDebug(  "tableStart: " + msg.setNum(tableStart) );
-  qDebug(  "sqlStart: " + msg.setNum(sqlStart));
-#endif 
-  mTableName = uri.mid(tableStart + 6, sqlStart - tableStart -6);
-  if(sqlStart > -1)
-  { 
-    sqlWhereClause = uri.mid(sqlStart + 5);
-  }
-  else
-  {
-    sqlWhereClause = QString::null;
-  }
-  QString connInfo = uri.left(uri.find("table="));
-#ifdef QGISDEBUG
-  qDebug( (const char*)(QString("Table name is ") + mTableName).toLocal8Bit().data());
-  qDebug( (const char*)(QString("SQL is ") + sqlWhereClause).toLocal8Bit().data() );
-  qDebug( "Connection info is " + connInfo);
 #endif
-  // calculate the schema if specified
-  mSchemaName = "";
-  if (mTableName.find(".") > -1) {
-    mSchemaName = mTableName.left(mTableName.find("."));
-  }
-  geometryColumn = mTableName.mid(mTableName.find(" (") + 2);
-  geometryColumn.truncate(geometryColumn.length() - 1);
-  mTableName = mTableName.mid(mTableName.find(".") + 1, mTableName.find(" (") - (mTableName.find(".") + 1)); 
+
+  mUri = QgsDataSourceURI(uri);
+
+  /* populate members from the uri structure */
+  mSchemaName = mUri.schema;
+  mTableName = mUri.table;
+  geometryColumn = mUri.geometryColumn;
+  sqlWhereClause = mUri.sql;
 
   // Keep a schema qualified table name for convenience later on.
   if (mSchemaName.length() > 0)
@@ -120,40 +101,12 @@ QgsPostgresProvider::QgsPostgresProvider(QString const & uri)
   else
     mSchemaTableName = "\"" + mTableName + "\"";
 
-  /* populate the uri structure */
-  mUri.schema = mSchemaName;
-  mUri.table = mTableName;
-  mUri.geometryColumn = geometryColumn;
-  mUri.sql = sqlWhereClause;
-  // parse the connection info
-  QStringList conParts = QStringList::split(" ", connInfo);
-  QStringList parm = QStringList::split("=", conParts[0]);
-  if(parm.size() == 2)
-  {
-    mUri.host = parm[1];
-  }
-  parm = QStringList::split("=", conParts[1]);
-  if(parm.size() == 2)
-  {
-    mUri.database = parm[1];
-  }
-  parm = QStringList::split("=", conParts[2]);
-  if(parm.size() == 2)
-  {
-    mUri.port = parm[1];
-  }
 
-  parm = QStringList::split("=", conParts[3]);
-  if(parm.size() == 2)
-  {
-    mUri.username = parm[1];
-  }
-  parm = QStringList::split("=", conParts[4]);
-  if(parm.size() == 2)
-  {
-    mUri.password = parm[1];
-  }
-  /* end uri structure */
+#ifdef QGISDEBUG
+  qDebug( (const char*)(QString("Table name is ") + mTableName).toLocal8Bit().data());
+  qDebug( (const char*)(QString("SQL is ") + sqlWhereClause).toLocal8Bit().data() );
+  qDebug( "Connection info is " + mUri.connInfo);
+#endif
 
 #ifdef QGISDEBUG
   std::cerr << "Geometry column is: " << geometryColumn.toLocal8Bit().data() << std::endl;
@@ -165,7 +118,7 @@ QgsPostgresProvider::QgsPostgresProvider(QString const & uri)
 #ifdef QGISDEBUG
   std::cerr << "Opened log file for " << mTableName.toLocal8Bit().data() << std::endl;
 #endif
-  PGconn *pd = PQconnectdb((const char *) connInfo);
+  PGconn *pd = PQconnectdb((const char *) mUri.connInfo);
   // check the connection status
   if (PQstatus(pd) == CONNECTION_OK)
   {
@@ -280,7 +233,7 @@ QgsPostgresProvider::QgsPostgresProvider(QString const & uri)
 
         if(fieldName!=geometryColumn)
         {
-          attributeFields.push_back(QgsField(fieldName, fieldType, fieldSize.toInt(), fieldModifier));
+          attributeFields.insert(i, QgsField(fieldName, fieldType, fieldSize.toInt(), fieldModifier));
         }
       }
       PQclear(result);
@@ -298,7 +251,7 @@ QgsPostgresProvider::QgsPostgresProvider(QString const & uri)
 
 #ifdef POSTGRESQL_THREADS
       std::cout << "QgsPostgresProvider: About to touch mExtentThread" << std::endl;
-      mExtentThread.setConnInfo( connInfo );
+      mExtentThread.setConnInfo( mUri.connInfo );
       mExtentThread.setTableName( mTableName );
       mExtentThread.setSqlWhereClause( sqlWhereClause );
       mExtentThread.setGeometryColumn( geometryColumn );
@@ -308,7 +261,7 @@ QgsPostgresProvider::QgsPostgresProvider(QString const & uri)
       std::cout << "QgsPostgresProvider: Main thread just dispatched mExtentThread" << std::endl;
 
       std::cout << "QgsPostgresProvider: About to touch mCountThread" << std::endl;
-      mCountThread.setConnInfo( connInfo );
+      mCountThread.setConnInfo( mUri.connInfo );
       mCountThread.setTableName( mTableName );
       mCountThread.setSqlWhereClause( sqlWhereClause );
       mCountThread.setGeometryColumn( geometryColumn );
@@ -336,11 +289,13 @@ QgsPostgresProvider::QgsPostgresProvider(QString const & uri)
   }
 
   //fill type names into lists
+  /* TODO [MD]  
   mNumericalTypes.push_back("double precision");
   mNumericalTypes.push_back("int4");
   mNumericalTypes.push_back("int8");
   mNonNumericalTypes.push_back("text");
   mNonNumericalTypes.push_back("varchar(30)");
+  */
 
   if (primaryKey.isEmpty())
   {
@@ -384,113 +339,14 @@ QString QgsPostgresProvider::storageType()
   return "PostgreSQL database with PostGIS extension";
 }
 
-//TODO - we may not need this function - consider removing it from
-//       the dataprovider.h interface
-/**
- * Get the first feature resutling from a select operation
- * @return QgsFeature
- */
-//TODO - this function is a stub and always returns 0
-QgsFeature *QgsPostgresProvider::getFirstFeature(bool fetchAttributes)
+
+
+bool QgsPostgresProvider::getNextFeature(QgsFeature& feat,
+                                         bool fetchGeometry,
+                                         QgsAttributeList fetchAttributes,
+                                         uint featureQueueSize)
 {
-  QgsFeature *f = 0;
-  if (valid) {
-    //--std::cout << "getting first feature\n";
 
-    f = new QgsFeature();
-    /*  f->setGeometry(getGeometryPointer(feat));
-        if(fetchAttributes){
-        getFeatureAttributes(feat, f);
-        } */
-  }
-  return f;
-}
-
-bool QgsPostgresProvider::getNextFeature(QgsFeature &feature, bool fetchAttributes)
-{
-  return true;
-}
-
-/**
- * Get the next feature resutling from a select operation
- * Return 0 if there are no features in the selection set
- * @return QgsFeature
- */
-QgsFeature *QgsPostgresProvider::getNextFeature(bool fetchAttributes)
-{
-  QgsFeature *f = 0;
-  
-  int row = 0;  // TODO: Make this useful
-
-  if (valid){
-    QString fetch = "fetch forward 1 from qgisf";
-    queryResult = PQexec(connection, (const char *)fetch);
-    //    std::cerr << "Error: " << PQerrorMessage(connection) << std::endl;
-    //   std::cerr << "Fetched " << PQntuples(queryResult) << "rows" << std::endl;
-    if(PQntuples(queryResult) == 0){
-      PQexec(connection, "end work");
-      ready = false;
-      return 0;
-    } 
-    //  //--std::cout <<"Raw value of the geometry field: " << PQgetvalue(queryResult,0,PQfnumber(queryResult,"qgs_feature_geometry")) << std::endl;
-    //--std::cout << "Length of oid is " << PQgetlength(queryResult,0, PQfnumber(queryResult,"oid")) << std::endl;
-
-    // get the value of the primary key based on type
-
-    int oid = *(int *)PQgetvalue(queryResult, row, PQfnumber(queryResult,"\""+primaryKey+"\""));
-#ifdef QGISDEBUG
-    // std::cerr << "OID from database: " << oid << std::endl; 
-#endif
-
-    if (swapEndian)
-      oid = ntohl(oid); // convert oid to opposite endian
-
-    // oid is the key to be used in fetching attributes if 
-    // fetchAttributes = true
-#ifdef QGISDEBUG
-    //    std::cerr << "Using OID: " << oid << std::endl;
-#endif
-    f = new QgsFeature(oid);
-    if (fetchAttributes)
-      getFeatureAttributes(oid, row, f);
-
-    int returnedLength = PQgetlength(queryResult, row, PQfnumber(queryResult,"qgs_feature_geometry"));
-    //--std::cerr << __FILE__ << ":" << __LINE__ << " Returned length is " << returnedLength << std::endl;
-    if(returnedLength > 0)
-    {
-      unsigned char *feature = new unsigned char[returnedLength + 1];
-      memset(feature, '\0', returnedLength + 1);
-      memcpy(feature, PQgetvalue(queryResult, row, PQfnumber(queryResult,"qgs_feature_geometry")), returnedLength);
-#ifdef QGISDEBUG
-      // a bit verbose
-      //int wkbType = *((int *) (feature + 1));
-      //std::cout << "WKBtype is: " << wkbType << std::endl;
-#endif
-      f->setGeometryAndOwnership(feature, returnedLength + 1);
-    }
-    else
-    {
-      //--std::cout <<"Couldn't get the feature geometry in binary form" << std::endl;
-    }
-    
-    PQclear(queryResult);
-  }
-  else
-  {
-    //--std::cout << "Read attempt on an invalid postgresql data source\n";
-  }
-  return f;
-}
-
-// // TODO: Remove completely (see morb_au)
-// QgsFeature* QgsPostgresProvider::getNextFeature(std::list<int> const & attlist)
-// {
-//   return getNextFeature(attlist, 1);
-// }
-
-QgsFeature* QgsPostgresProvider::getNextFeature(std::list<int> const & attlist, int featureQueueSize)
-{
-  QgsFeature *f = 0;
   if (valid)
   {
   
@@ -517,7 +373,7 @@ QgsFeature* QgsPostgresProvider::getNextFeature(std::list<int> const & attlist, 
 #endif  
         PQexec(connection, "end work");
         ready = false;
-        return 0;
+        return false;
       }
       
       for (int row = 0; row < rows; row++)
@@ -529,35 +385,42 @@ QgsFeature* QgsPostgresProvider::getNextFeature(std::list<int> const & attlist, 
 	if (swapEndian)
 	  oid = ntohl(oid); // convert oid to opposite endian
 
-        f = new QgsFeature(oid);
-        if(!attlist.empty())
-        {
-          getFeatureAttributes(oid, row, f, attlist);
-        }
-        int returnedLength = PQgetlength(queryResult, row, PQfnumber(queryResult,"qgs_feature_geometry")); 
-        if(returnedLength > 0)
-        {
-          unsigned char *feature = new unsigned char[returnedLength + 1];
-          memset(feature, '\0', returnedLength + 1);
-          memcpy(feature, PQgetvalue(queryResult, row, PQfnumber(queryResult,"qgs_feature_geometry")), returnedLength); 
-    #ifdef QGISDEBUG
-          // Too verbose
-          //int wkbType = *((int *) (feature + 1));
-          //std::cout << "WKBtype is: " << wkbType << std::endl;
-    #endif
-          f->setGeometryAndOwnership(feature, returnedLength + 1);
-    
-        }
+        // set ID
+        feat.setFeatureId(oid);
+
+        // fetch attributes
+        if (fetchAttributes.count() == fieldCount())
+          getFeatureAttributes(oid, row, feat); // only one sql query to get all attributes
         else
+          getFeatureAttributes(oid, row, feat, fetchAttributes); // ineffective: one sql per attribute
+        
+        if (fetchGeometry)
         {
-          //--std::cout <<"Couldn't get the feature geometry in binary form" << std::endl;
+          int returnedLength = PQgetlength(queryResult, row, PQfnumber(queryResult,"qgs_feature_geometry")); 
+          if(returnedLength > 0)
+          {
+            unsigned char *feature = new unsigned char[returnedLength + 1];
+            memset(feature, '\0', returnedLength + 1);
+            memcpy(feature, PQgetvalue(queryResult, row, PQfnumber(queryResult,"qgs_feature_geometry")), returnedLength); 
+      #ifdef QGISDEBUG
+            // Too verbose
+            //int wkbType = *((int *) (feature + 1));
+            //std::cout << "WKBtype is: " << wkbType << std::endl;
+      #endif
+            feat.setGeometryAndOwnership(feature, returnedLength + 1);
+      
+          }
+          else
+          {
+            //--std::cout <<"Couldn't get the feature geometry in binary form" << std::endl;
+          }
         }
 
 #ifdef QGISDEBUG
 //      std::cout << "QgsPostgresProvider::getNextFeature: pushing " << f->featureId() << std::endl; 
 #endif
   
-        mFeatureQueue.push(f);
+        mFeatureQueue.push(feat);
         
       } // for each row in queue
       
@@ -572,12 +435,13 @@ QgsFeature* QgsPostgresProvider::getNextFeature(std::list<int> const & attlist, 
     
     // Now return the next feature from the queue
     
-    f = mFeatureQueue.front();
+    feat = mFeatureQueue.front();
     mFeatureQueue.pop();
     
   }
   else 
   {
+    return false;
     //--std::cout << "Read attempt on an invalid postgresql data source\n";
   }
   
@@ -585,21 +449,22 @@ QgsFeature* QgsPostgresProvider::getNextFeature(std::list<int> const & attlist, 
 //      std::cout << "QgsPostgresProvider::getNextFeature: returning " << f->featureId() << std::endl; 
 #endif
 
-  return f;   
+  return true;
 }
+
 
 /**
  * Select features based on a bounding rectangle. Features can be retrieved
  * with calls to getFirstFeature and getNextFeature.
  * @param mbr QgsRect containing the extent to use in selecting features
  */
-void QgsPostgresProvider::select(QgsRect * rect, bool useIntersect)
+void QgsPostgresProvider::select(QgsRect rect, bool useIntersect)
 {
   // spatial query to select features
 
 #ifdef QGISDEBUG
-  std::cerr << "Selection rectangle is " << *rect << std::endl;
-  std::cerr << "Selection polygon is " << rect->asPolygon().toLocal8Bit().data() << std::endl;
+  std::cerr << "Selection rectangle is " << rect << std::endl;
+  std::cerr << "Selection polygon is " << rect.asPolygon().toLocal8Bit().data() << std::endl;
 #endif
 
   QString declare = QString("declare qgisf binary cursor for select \""
@@ -610,7 +475,7 @@ void QgsPostgresProvider::select(QgsRect * rect, bool useIntersect)
 #endif
   if(useIntersect){
     //    declare += " where intersects(" + geometryColumn;
-    //    declare += ", GeometryFromText('BOX3D(" + rect->asWKTCoords();
+    //    declare += ", GeometryFromText('BOX3D(" + rect.asWKTCoords();
     //    declare += ")'::box3d,";
     //    declare += srid;
     //    declare += "))";
@@ -618,18 +483,18 @@ void QgsPostgresProvider::select(QgsRect * rect, bool useIntersect)
     // Contributed by #qgis irc "creeping"
     // This version actually invokes PostGIS's use of spatial indexes
     declare += " where " + geometryColumn;
-    declare += " && setsrid('BOX3D(" + rect->asWKTCoords();
+    declare += " && setsrid('BOX3D(" + rect.asWKTCoords();
     declare += ")'::box3d,";
     declare += srid;
     declare += ")";
     declare += " and intersects(" + geometryColumn;
-    declare += ", setsrid('BOX3D(" + rect->asWKTCoords();
+    declare += ", setsrid('BOX3D(" + rect.asWKTCoords();
     declare += ")'::box3d,";
     declare += srid;
     declare += "))";
   }else{
     declare += " where " + geometryColumn;
-    declare += " && setsrid('BOX3D(" + rect->asWKTCoords();
+    declare += " && setsrid('BOX3D(" + rect.asWKTCoords();
     declare += ")'::box3d,";
     declare += srid;
     declare += ")";
@@ -649,30 +514,15 @@ void QgsPostgresProvider::select(QgsRect * rect, bool useIntersect)
   PQexec(connection,"begin work");
   PQexec(connection, (const char *)(declare.utf8()));
   
-  // TODO - see if this deallocates member features
   mFeatureQueue.empty();
 }
 
 
-QgsDataSourceURI * QgsPostgresProvider::getURI()
+QgsDataSourceURI& QgsPostgresProvider::getURI()
 {
-  return &mUri;
+  return mUri;
 }
 
-
-/**
- * Identify features within the search radius specified by rect
- * @param rect Bounding rectangle of search radius
- * @return std::vector containing QgsFeature objects that intersect rect
- */
-std::vector<QgsFeature>& QgsPostgresProvider::identify(QgsRect * rect)
-{
-  features.clear();
-  // select the features
-  select(rect);
-
-  return features;
-}
 
 /* unsigned char * QgsPostgresProvider::getGeometryPointer(OGRFeature *fet){
 //  OGRGeometry *geom = fet->GetGeometryRef();
@@ -685,24 +535,24 @@ return gPtr;
 
 } */
 
-void QgsPostgresProvider::setExtent( QgsRect* newExtent )
+void QgsPostgresProvider::setExtent( QgsRect& newExtent )
 {
-  layerExtent.setXmax( newExtent->xMax() );
-  layerExtent.setXmin( newExtent->xMin() );
-  layerExtent.setYmax( newExtent->yMax() );
-  layerExtent.setYmin( newExtent->yMin() );
+  layerExtent.setXmax( newExtent.xMax() );
+  layerExtent.setXmin( newExtent.xMin() );
+  layerExtent.setYmax( newExtent.yMax() );
+  layerExtent.setYmin( newExtent.yMin() );
 }
 
 // TODO - make this function return the real extent_
-QgsRect *QgsPostgresProvider::extent()
+QgsRect QgsPostgresProvider::extent()
 {
-  return &layerExtent;      //extent_->MinX, extent_->MinY, extent_->MaxX, extent_->MaxY);
+  return layerExtent;      //extent_->MinX, extent_->MinY, extent_->MaxX, extent_->MaxY);
 }
 
 /** 
  * Return the feature type
  */
-int QgsPostgresProvider::geometryType() const
+QGis::WKBTYPE QgsPostgresProvider::geometryType() const
 {
   return geomType;
 }
@@ -718,7 +568,7 @@ long QgsPostgresProvider::featureCount() const
 /**
  * Return the number of fields
  */
-int QgsPostgresProvider::fieldCount() const
+uint QgsPostgresProvider::fieldCount() const
 {
   return attributeFields.size();
 }
@@ -726,7 +576,8 @@ int QgsPostgresProvider::fieldCount() const
 /**
  * Fetch attributes for a selected feature
  */
-void QgsPostgresProvider::getFeatureAttributes(int key, int &row, QgsFeature *f) {
+void QgsPostgresProvider::getFeatureAttributes(int key, int &row, QgsFeature& f)
+{
 
   QString sql = QString("select * from %1 where \"%2\" = %3").arg(mSchemaTableName).arg(primaryKey).arg(key);
 
@@ -743,7 +594,7 @@ void QgsPostgresProvider::getFeatureAttributes(int key, int &row, QgsFeature *f)
       // Add the attribute to the feature
       //QString val = mEncoding->toUnicode(PQgetvalue(attr,0, i));
 	QString val = QString::fromUtf8 (PQgetvalue(attr, row, i));
-      f->addAttribute(fld, val);
+  f.addAttribute(i, QgsFeatureAttribute(fld, val));
     }
   }
   PQclear(attr);
@@ -751,11 +602,11 @@ void QgsPostgresProvider::getFeatureAttributes(int key, int &row, QgsFeature *f)
 
 /**Fetch attributes with indices contained in attlist*/
 void QgsPostgresProvider::getFeatureAttributes(int key, int &row,
-    QgsFeature *f, 
-    std::list<int> const & attlist)
+    QgsFeature &f, const QgsAttributeList& attlist)
 {
-  std::list<int>::const_iterator iter;
-  for(iter=attlist.begin();iter!=attlist.end();++iter)
+  int i = 0;
+  QgsAttributeList::const_iterator iter;
+  for(iter = attlist.begin(); iter != attlist.end(); ++iter, ++i)
   {
     QString sql = QString("select \"%1\" from %2 where \"%3\" = %4")
       .arg(fields()[*iter].name())
@@ -772,14 +623,14 @@ void QgsPostgresProvider::getFeatureAttributes(int key, int &row,
     {
       // Add the attribute to the feature
 	QString val = QString::fromUtf8(PQgetvalue(attr, 0, 0));
-      f->addAttribute(fld, val);
+  f.addAttribute(i, QgsFeatureAttribute(fld, val));
     }
     PQclear(attr);
   }
 }
 
 
-void QgsPostgresProvider::getFeatureGeometry(int key, QgsFeature *f)
+void QgsPostgresProvider::getFeatureGeometry(int key, QgsFeature& f)
 {
   if (!valid)
   {
@@ -820,7 +671,7 @@ void QgsPostgresProvider::getFeatureGeometry(int key, QgsFeature *f)
   {
       unsigned char *wkbgeom = new unsigned char[returnedLength];
       memcpy(wkbgeom, PQgetvalue(geomResult, row, 0), returnedLength);
-      f->setGeometryAndOwnership(wkbgeom, returnedLength);
+      f.setGeometryAndOwnership(wkbgeom, returnedLength);
   }
   else
   {
@@ -834,7 +685,7 @@ void QgsPostgresProvider::getFeatureGeometry(int key, QgsFeature *f)
 }
 
 
-std::vector<QgsField> const & QgsPostgresProvider::fields() const
+const QgsFieldMap & QgsPostgresProvider::fields() const
 {
   return attributeFields;
 }
@@ -862,7 +713,6 @@ void QgsPostgresProvider::reset()
   PQexec(connection, (const char *)(declare.utf8()));
   //--std::cout << "Error: " << PQerrorMessage(connection) << std::endl;
   
-  // TODO - see if this deallocates member features
   mFeatureQueue.empty();
 
   ready = true;
@@ -890,12 +740,12 @@ return typeName;
 /** @todo XXX Perhaps this should be promoted to QgsDataProvider? */
 QString QgsPostgresProvider::endianString()
 {
-  switch ( endian() )
+  switch ( QgsApplication::endian() )
   {
-    case QgsDataProvider::NDR : 
+    case QgsApplication::NDR : 
       return QString("NDR");
       break;
-    case QgsDataProvider::XDR : 
+    case QgsApplication::XDR : 
       return QString("XDR");
       break;
     default :
@@ -1501,7 +1351,7 @@ void QgsPostgresProvider::findColumns(tableCols& cols)
 }
 
 // Returns the minimum value of an attribute
-QString QgsPostgresProvider::minValue(int position){
+QString QgsPostgresProvider::minValue(uint position){
   // get the field name 
   QgsField fld = attributeFields[position];
   QString sql;
@@ -1521,7 +1371,7 @@ QString QgsPostgresProvider::minValue(int position){
 
 // Returns the maximum value of an attribute
 
-QString QgsPostgresProvider::maxValue(int position){
+QString QgsPostgresProvider::maxValue(uint position){
   // get the field name 
   QgsField fld = attributeFields[position];
   QString sql;
@@ -1560,15 +1410,13 @@ bool QgsPostgresProvider::isValid(){
   return valid;
 }
 
-bool QgsPostgresProvider::addFeature(QgsFeature* f, int primaryKeyHighWater)
+bool QgsPostgresProvider::addFeature(QgsFeature& f, int primaryKeyHighWater)
 {
 #ifdef QGISDEBUG
       std::cout << "QgsPostgresProvider::addFeature: Entering."
                 << "." << std::endl;
 #endif
   
-  if (f)
-  {
     // Determine which insertion method to use for WKB
     // PostGIS 1.0+ uses BYTEA
     // earlier versions use HEX
@@ -1611,14 +1459,14 @@ bool QgsPostgresProvider::addFeature(QgsFeature* f, int primaryKeyHighWater)
     
     
     //add the names of the other fields to the insert
-    std::vector<QgsFeatureAttribute> attributevec=f->attributeMap();
+    const QgsAttributeMap& attributevec = f.attributeMap();
     
 #ifdef QGISDEBUG
       std::cout << "QgsPostgresProvider::addFeature: Got attribute map"
                 << "." << std::endl;
 #endif
     
-    for(std::vector<QgsFeatureAttribute>::iterator it=attributevec.begin();it!=attributevec.end();++it)
+    for(QgsAttributeMap::const_iterator it = attributevec.begin(); it != attributevec.end(); ++it)
     {
       QString fieldname=it->fieldName();
 
@@ -1633,9 +1481,9 @@ bool QgsPostgresProvider::addFeature(QgsFeature* f, int primaryKeyHighWater)
       // they have been pasted from other layers with a different field map)
       bool fieldInLayer = FALSE;
       
-      for (std::vector<QgsField>::iterator iter  = attributeFields.begin();
-                                           iter != attributeFields.end();
-                                         ++iter)
+      for (QgsFieldMap::iterator iter  = attributeFields.begin();
+                                 iter != attributeFields.end();
+                               ++iter)
       {
         if ( iter->name() == it->fieldName() )
         {
@@ -1659,7 +1507,7 @@ bool QgsPostgresProvider::addFeature(QgsFeature* f, int primaryKeyHighWater)
     insert+=") VALUES (GeomFromWKB('";
 
     // Add the WKB geometry to the INSERT statement
-    QgsGeometry* geometry = f->geometry();
+    QgsGeometry* geometry = f.geometry();
     unsigned char* geom = geometry->wkbBuffer();
     for (int i=0; i < geometry->wkbSize(); ++i)
     {
@@ -1711,7 +1559,7 @@ bool QgsPostgresProvider::addFeature(QgsFeature* f, int primaryKeyHighWater)
     insert += QString::number(primaryKeyHighWater);
 
     //add the field values to the insert statement
-    for(std::vector<QgsFeatureAttribute>::iterator it=attributevec.begin();it!=attributevec.end();++it)
+    for(QgsAttributeMap::const_iterator it=attributevec.begin();it!=attributevec.end();++it)
     {
       QString fieldname=it->fieldName();
 #ifdef QGISDEBUG
@@ -1724,9 +1572,9 @@ bool QgsPostgresProvider::addFeature(QgsFeature* f, int primaryKeyHighWater)
       // they have been pasted from other layers with a different field map)
       bool fieldInLayer = FALSE;
       
-      for (std::vector<QgsField>::iterator iter  = attributeFields.begin();
-                                           iter != attributeFields.end();
-                                         ++iter)
+      for (QgsFieldMap::iterator iter  = attributeFields.begin();
+                                 iter != attributeFields.end();
+                               ++iter)
       {
         if ( iter->name() == it->fieldName() )
         {
@@ -1755,7 +1603,7 @@ bool QgsPostgresProvider::addFeature(QgsFeature* f, int primaryKeyHighWater)
         //the postgres provided default value
       if(fieldvalue != "NULL" && fieldvalue != getDefaultValue(it->fieldName(), f))
         {
-          for(std::vector<QgsField>::iterator iter=attributeFields.begin();iter!=attributeFields.end();++iter)
+          for(QgsFieldMap::iterator iter=attributeFields.begin();iter!=attributeFields.end();++iter)
           {
             if(iter->name()==it->fieldName())
             {
@@ -1810,17 +1658,9 @@ bool QgsPostgresProvider::addFeature(QgsFeature* f, int primaryKeyHighWater)
                 << "." << std::endl;
 #endif
     return true;
-  }
-  
-#ifdef QGISDEBUG
-      std::cout << "QgsPostgresProvider::addFeature: Exiting with false."
-                << "." << std::endl;
-#endif
-  
-  return false;
 }
 
-QString QgsPostgresProvider::getDefaultValue(const QString& attr, QgsFeature* f)
+QString QgsPostgresProvider::getDefaultValue(const QString& attr, QgsFeature& f)
 {
   // Get the default column value from the Postgres information
   // schema. If there is no default we return an empty string.
@@ -1923,14 +1763,14 @@ QString QgsPostgresProvider::postgisVersion(PGconn *connection)
   return postgisVersionInfo;
 }
 
-bool QgsPostgresProvider::addFeatures(std::list<QgsFeature*> const flist)
+bool QgsPostgresProvider::addFeatures(QgsFeatureList & flist)
 {
   bool returnvalue=true;
   PQexec(connection,"BEGIN");
 
   int primaryKeyHighWater = maxPrimaryKeyValue();
 
-  for(std::list<QgsFeature*>::const_iterator it=flist.begin();it!=flist.end();++it)
+  for(QgsFeatureList::iterator it=flist.begin();it!=flist.end();++it)
   {
     primaryKeyHighWater++;
     if(!addFeature(*it, primaryKeyHighWater))
@@ -1944,11 +1784,11 @@ bool QgsPostgresProvider::addFeatures(std::list<QgsFeature*> const flist)
   return returnvalue;
 }
 
-bool QgsPostgresProvider::deleteFeatures(std::list<int> const & id)
+bool QgsPostgresProvider::deleteFeatures(const QgsFeatureIds & id)
 {
   bool returnvalue=true;
   PQexec(connection,"BEGIN");
-  for(std::list<int>::const_iterator it=id.begin();it!=id.end();++it)
+  for(QgsFeatureIds::const_iterator it=id.begin();it!=id.end();++it)
   {
     if(!deleteFeature(*it))
     {
@@ -1960,13 +1800,13 @@ bool QgsPostgresProvider::deleteFeatures(std::list<int> const & id)
   return returnvalue;
 }
 
-bool QgsPostgresProvider::addAttributes(std::map<QString,QString> const & name)
+bool QgsPostgresProvider::addAttributes(const QgsNewAttributesMap & name)
 {
   bool returnvalue=true;
   PQexec(connection,"BEGIN");
-  for(std::map<QString,QString>::const_iterator iter=name.begin();iter!=name.end();++iter)
+  for(QgsNewAttributesMap::const_iterator iter=name.begin();iter!=name.end();++iter)
   {
-    QString sql="ALTER TABLE "+mSchemaTableName+" ADD COLUMN "+(*iter).first+" "+(*iter).second;
+    QString sql="ALTER TABLE "+mSchemaTableName+" ADD COLUMN "+iter.key()+" "+iter.value();
 #ifdef QGISDEBUG
     qWarning(sql);
 #endif
@@ -1987,13 +1827,14 @@ bool QgsPostgresProvider::addAttributes(std::map<QString,QString> const & name)
   return returnvalue;
 }
 
-bool QgsPostgresProvider::deleteAttributes(std::set<QString> const & name)
+bool QgsPostgresProvider::deleteAttributes(const QgsAttributeIds& name)
 {
   bool returnvalue=true;
   PQexec(connection,"BEGIN");
-  for(std::set<QString>::const_iterator iter=name.begin();iter!=name.end();++iter)
+  for(QgsAttributeIds::const_iterator iter=name.begin();iter!=name.end();++iter)
   {
-    QString sql="ALTER TABLE "+mSchemaTableName+" DROP COLUMN "+(*iter);
+    QString column = attributeFields[*iter].name();
+    QString sql="ALTER TABLE "+mSchemaTableName+" DROP COLUMN "+column;
 #ifdef QGISDEBUG
     qWarning(sql);
 #endif
@@ -2011,14 +1852,7 @@ bool QgsPostgresProvider::deleteAttributes(std::set<QString> const & name)
     else
     {
       //delete the attribute from attributeFields
-      for(std::vector<QgsField>::iterator it=attributeFields.begin();it!=attributeFields.end();++it)
-      {
-        if((*it).name()==(*iter))
-        {
-          attributeFields.erase(it);
-          break;
-        }
-      }
+      attributeFields.remove(*iter);
     }
   }
   PQexec(connection,"COMMIT");
@@ -2026,16 +1860,22 @@ bool QgsPostgresProvider::deleteAttributes(std::set<QString> const & name)
   return returnvalue;
 }
 
-bool QgsPostgresProvider::changeAttributeValues(std::map<int,std::map<QString,QString> > const & attr_map)
+bool QgsPostgresProvider::changeAttributeValues(const QgsChangedAttributesMap & attr_map)
 {
   bool returnvalue=true; 
   PQexec(connection,"BEGIN");
 
-  for(std::map<int,std::map<QString,QString> >::const_iterator iter=attr_map.begin();iter!=attr_map.end();++iter)
+  // cycle through the features
+  for(QgsChangedAttributesMap::const_iterator iter=attr_map.begin();iter!=attr_map.end();++iter)
   {
-    for(std::map<QString,QString>::const_iterator siter=(*iter).second.begin();siter!=(*iter).second.end();++siter)
+    int fid = iter.key();
+    const QgsAttributeMap& attrs = iter.value();
+
+    // cycle through the changed attributes of the feature
+    for(QgsAttributeMap::const_iterator siter = attrs.begin(); siter != attrs.end(); ++siter)
     {
-      QString sql="UPDATE "+mSchemaTableName+" SET "+(*siter).first+"='"+(*siter).second+"' WHERE \"" +primaryKey+"\"="+QString::number((*iter).first);
+      QString sql="UPDATE "+mSchemaTableName+" SET "+siter->fieldName()+"='"+siter->fieldValue()+
+          "' WHERE \"" +primaryKey+"\"="+QString::number(fid);
 #ifdef QGISDEBUG
       qWarning(sql);
 #endif
@@ -2065,7 +1905,7 @@ bool QgsPostgresProvider::changeAttributeValues(std::map<int,std::map<QString,QS
   return returnvalue;
 }
 
-bool QgsPostgresProvider::changeGeometryValues(std::map<int, QgsGeometry> & geometry_map)
+bool QgsPostgresProvider::changeGeometryValues(QgsGeometryMap & geometry_map)
 {
 #ifdef QGISDEBUG
       std::cerr << "QgsPostgresProvider::changeGeometryValues: entering."
@@ -2100,9 +1940,9 @@ bool QgsPostgresProvider::changeGeometryValues(std::map<int, QgsGeometry> & geom
 
   PQexec(connection,"BEGIN");
 
-  for(std::map<int, QgsGeometry>::const_iterator iter  = geometry_map.begin();
-                                                 iter != geometry_map.end();
-                                               ++iter)
+  for(QgsGeometryMap::const_iterator iter  = geometry_map.begin();
+                                             iter != geometry_map.end();
+                                           ++iter)
   {
 
 #ifdef QGISDEBUG
@@ -2110,11 +1950,11 @@ bool QgsPostgresProvider::changeGeometryValues(std::map<int, QgsGeometry> & geom
                 << std::endl;
 #endif
     
-    if (iter->second.wkbBuffer())
+    if (iter->wkbBuffer())
     {
 #ifdef QGISDEBUG
       std::cerr << "QgsPostgresProvider::changeGeometryValues: iterating over feature id "
-                << iter->first
+                << iter.key()
                 << std::endl;
 #endif
     
@@ -2124,8 +1964,8 @@ bool QgsPostgresProvider::changeGeometryValues(std::map<int, QgsGeometry> & geom
       sql += "GeomFromWKB('";
 
       // Add the WKB geometry to the UPDATE statement
-      unsigned char* geom = iter->second.wkbBuffer();
-      for (int i=0; i < iter->second.wkbSize(); ++i)
+      unsigned char* geom = iter->wkbBuffer();
+      for (int i=0; i < iter->wkbSize(); ++i)
       {
         if (useWkbHex)
         {
@@ -2170,7 +2010,7 @@ bool QgsPostgresProvider::changeGeometryValues(std::map<int, QgsGeometry> & geom
         sql += "::bytea',"+srid+")";
       }
 
-      sql += " WHERE \"" +primaryKey+"\"="+QString::number(iter->first);
+      sql += " WHERE \"" +primaryKey+"\"="+QString::number(iter.key());
 
 #ifdef QGISDEBUG
       std::cerr << "QgsPostgresProvider::changeGeometryValues: Updating with '"
@@ -2356,11 +2196,6 @@ bool QgsPostgresProvider::changeGeometryValues(std::map<int, QgsGeometry> & geom
   return returnvalue;
 }
 
-
-bool QgsPostgresProvider::supportsSaveAsShapefile() const
-{
-  return false;
-}
 
 int QgsPostgresProvider::capabilities() const
 {
@@ -2588,7 +2423,8 @@ void QgsPostgresProvider::customEvent( QCustomEvent * e )
       // Collect the new extent from the event and set this layer's
       // extent with it.
 
-      setExtent( (QgsRect*) e->data() );
+      QgsRect* r = (QgsRect*) e->data();
+      setExtent( *r );
 
 
       std::cout << "QgsPostgresProvider: new extent has been saved" << std::endl;
@@ -2619,6 +2455,10 @@ void QgsPostgresProvider::customEvent( QCustomEvent * e )
 
       std::cout << "QgsPostgresProvider: count is " << numberFeatures << std::endl;
 
+      break;
+      
+    default:
+      // do nothing
       break;
   }
 
@@ -2817,11 +2657,33 @@ void QgsPostgresProvider::showMessageBox(const QString& title,
   showMessageBox(title, text.join("\n"));
 }
 
-int QgsPostgresProvider::getSrid()
+
+void QgsPostgresProvider::setSRS(const QgsSpatialRefSys& theSRS)
 {
-  return srid.toInt();
+  // TODO implement [MD]
 }
 
+QgsSpatialRefSys QgsPostgresProvider::getSRS()
+{
+  QgsSpatialRefSys srs;
+  srs.createFromSrid(srid.toInt());
+  return srs;
+}
+
+QString QgsPostgresProvider::subsetString()
+{
+  return sqlWhereClause;
+}
+
+PGconn * QgsPostgresProvider::pgConnection()
+{
+  return connection;
+}
+
+QString QgsPostgresProvider::getTableName()
+{
+  return mTableName;
+}
 
 
 size_t QgsPostgresProvider::layerCount() const

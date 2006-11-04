@@ -1,4 +1,76 @@
 
+
+template <TYPE>
+%MappedType QSet<TYPE>
+{
+%TypeHeaderCode
+#include <QSet>
+%End
+
+%ConvertFromTypeCode
+  // Create the list.
+  PyObject *l;
+
+  if ((l = PyList_New(sipCpp->size())) == NULL)
+    return NULL;
+      
+  // Set the list elements.
+  int i;
+  for (QSet<TYPE>::iterator it = sipCpp->begin(); it != sipCpp->end(); ++it, ++i)
+  {
+    TYPE *t = new TYPE(*it);
+    PyObject *tobj;
+
+    if ((tobj = sipConvertFromNewInstance(t, sipClass_TYPE, sipTransferObj)) == NULL)
+    {
+      Py_DECREF(l);
+      delete t;
+      return NULL;
+    }
+    PyList_SET_ITEM(l, i, tobj);
+  }
+ 
+  return l;
+%End
+
+%ConvertToTypeCode
+  // Check the type if that is all that is required.
+  if (sipIsErr == NULL)
+  {
+    if (!PyList_Check(sipPy))
+      return 0;
+
+    for (int i = 0; i < PyList_GET_SIZE(sipPy); ++i)
+      if (!sipCanConvertToInstance(PyList_GET_ITEM(sipPy, i), sipClass_TYPE, SIP_NOT_NONE))
+        return 0;
+
+    return 1;
+  }
+
+  QSet<TYPE> *qset = new QSet<TYPE>;
+
+  for (int i = 0; i < PyList_GET_SIZE(sipPy); ++i)
+  {
+    int state;
+    TYPE* t = reinterpret_cast<TYPE *>(sipConvertToInstance(PyList_GET_ITEM(sipPy, i), sipClass_TYPE, sipTransferObj, SIP_NOT_NONE, &state, sipIsErr));
+
+    if (*sipIsErr)
+    {
+      sipReleaseInstance(t, sipClass_TYPE, state);
+      delete qset;
+      return 0;
+    }
+    qset->insert(*t);
+    sipReleaseInstance(t, sipClass_TYPE, state);
+  }
+
+  *sipCppPtr = qset;
+  return sipGetState(sipTransferObj);
+%End
+
+};
+
+
 /**
   @author Tim Sutton
   */
@@ -15,7 +87,7 @@ class QgsProjectionSelector: QWidget //, private Ui::QgsProjectionSelectorBase
 
       ~QgsProjectionSelector();
 
-      typedef QSet<QString> QStringSet;
+      //typedef QSet<QString> QStringSet;
 
       /**
        * \brief Populate the proj tree view with user defined projection names...
@@ -26,7 +98,7 @@ class QgsProjectionSelector: QWidget //, private Ui::QgsProjectionSelectorBase
        *
        * \todo Should this be public?
        */
-      // TODO void applyUserProjList(QStringSet * crsFilter = 0);
+      void applyUserProjList(QSet<QString> * crsFilter = 0);
 
       /**
        * \brief Populate the proj tree view with system projection names...
@@ -37,7 +109,7 @@ class QgsProjectionSelector: QWidget //, private Ui::QgsProjectionSelectorBase
        *
        * \todo Should this be public?
        */
-      // TODO void applyProjList(QStringSet * crsFilter = 0);
+      void applyProjList(QSet<QString> * crsFilter = 0);
 
       void updateProjAndEllipsoidAcronyms(int theSrsid, QString theProj4String);
 
@@ -84,7 +156,7 @@ class QgsProjectionSelector: QWidget //, private Ui::QgsProjectionSelectorBase
        *
        * \warning This function's behaviour is undefined if it is called after the widget is shown.
        */
-      // TODO void setOgcWmsCrsFilter(QStringSet crsFilter);
+      void setOgcWmsCrsFilter(QSet<QString> crsFilter);
 
       void on_pbnFind_clicked();
 

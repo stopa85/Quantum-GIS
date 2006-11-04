@@ -483,7 +483,7 @@ QString QgsVectorFileWriter::writeVectorLayerAsShapefile(QString shapefileName, 
   
   QgsDebugMsg("created layer");
   
-  const std::vector<QgsField>& attributeFields = layer->fields();
+  const QgsFieldMap & attributeFields = layer->fields();
     
   // TODO: calculate the field lengths
   //int *lengths = getFieldLengths();
@@ -519,20 +519,25 @@ QString QgsVectorFileWriter::writeVectorLayerAsShapefile(QString shapefileName, 
   QgsDebugMsg("Done creating fields, saving features");
 
   QgsVectorDataProvider* provider = layer->getDataProvider();
+  QgsFeature fet;
+  QgsAttributeList allAttr = provider->allAttributesList();
+
   provider->reset();
-  QgsFeature* fet;
-  while ((fet = provider->getNextFeature(true)))
+
+  while (provider->getNextFeature(fet, true, allAttr))
   {
     // create the feature
     OGRFeature *poFeature = new OGRFeature(poLayer->GetLayerDefn());
 
     QgsDebugMsg("Setting the field values");
 
-    const std::vector<QgsFeatureAttribute>& attributes = fet->attributeMap();
-
-    for (uint i = 0; i < attributeFields.size(); i++)
+    const QgsAttributeMap& attributes = fet.attributeMap();
+    QgsAttributeMap::const_iterator it;
+    
+    for (it = attributes.begin(); it != attributes.end(); it++)
     {
-      QString value = attributes[i].fieldValue();
+      QString value = it.value().fieldValue();
+      uint i = it.key();
       if (!value.isNull())
       {
         QgsDebugMsg("Setting " + attributeFields[i].name() + " to " + value);
@@ -544,6 +549,7 @@ QString QgsVectorFileWriter::writeVectorLayerAsShapefile(QString shapefileName, 
         poFeature->SetField(saveCodec->fromUnicode(attributeFields[i].name()).data(), "");
       }
     }
+    
     
     // TODO: get the geometry and save it
     OGRPoint *poPoint = new OGRPoint();
@@ -567,7 +573,6 @@ QString QgsVectorFileWriter::writeVectorLayerAsShapefile(QString shapefileName, 
     }
 
     delete poFeature;
-    delete fet;
   }
   
   delete poDS;

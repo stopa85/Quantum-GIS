@@ -130,6 +130,7 @@ template <TYPE>
     if (!PyList_Check(sipPy))
       return 0;
 
+    // TODO: this is not correct!
     for (int i = 0; i < PyList_GET_SIZE(sipPy); ++i)
       if (!sipCanConvertToInstance(PyList_GET_ITEM(sipPy, i), sipClass_TYPE, SIP_NOT_NONE))
         return 0;
@@ -224,6 +225,8 @@ class QgsGeometry
     */
     // TODO: unsupported class... would be possible to use PyGEOS?
     //void setGeos(geos::Geometry* geos);
+
+    double distance(QgsGeometry& geom);
 
     /**
        Returns the vertex closest to the given point 
@@ -322,10 +325,10 @@ class QgsGeometry
     QgsRect boundingBox() const;
 
     /**Test for intersection with a rectangle (uses GEOS)*/
-    bool intersects(QgsRect* r) const;
+    bool intersects(const QgsRect& r) const;
 
     /**Also tests for intersection, but uses direct geos export of QgsGeometry instead wkb export and geos wkb import. Therefore this method is faster and could replace QgsGeometry::intersects in the future*/
-    bool fast_intersects(const QgsRect* r) const;
+    bool fast_intersects(const QgsRect& r) const;
 
     /** Test for containment of a point (uses GEOS) */
     bool contains(QgsPoint* p) const;

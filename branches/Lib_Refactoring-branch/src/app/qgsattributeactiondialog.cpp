@@ -28,7 +28,7 @@ back to QgsVectorLayer.
 
 
 QgsAttributeActionDialog::QgsAttributeActionDialog(QgsAttributeAction* actions,
-						   const std::vector<QgsField>& fields,
+						   const QgsFieldMap& fields,
 						   QWidget* parent):
   QWidget(parent), mActions(actions)
 {
@@ -47,8 +47,8 @@ QgsAttributeActionDialog::QgsAttributeActionDialog(QgsAttributeAction* actions,
   // Populate the combo box with the field names. Will the field names
   // change? If so, they need to be passed into the init() call, or
   // some access to them retained in this class.
-  for (int i = 0; i < fields.size(); ++i)
-    fieldComboBox->insertItem(fields[i].name());
+  for (QgsFieldMap::const_iterator it = fields.begin(); it != fields.end(); it++)
+    fieldComboBox->insertItem(it->name());
 }
 
 void QgsAttributeActionDialog::init()

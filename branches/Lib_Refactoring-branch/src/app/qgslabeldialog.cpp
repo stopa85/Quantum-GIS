@@ -74,12 +74,12 @@ void QgsLabelDialog::init ( )
   QgsLabelAttributes * myLabelAttributes = mLabel->layerAttributes();
   //populate a string list with all the field names which will be used to set up the 
   //data bound combos
-  std::vector<QgsField> myFieldsVector = mLabel->fields();
+  QgsFieldMap& myFieldsMap = mLabel->fields();
   QStringList myFieldStringList;
   myFieldStringList.append ( "" );
-  for (unsigned int i = 0; i < myFieldsVector.size(); i++ ) 
+  for (QgsFieldMap::iterator it = myFieldsMap.begin(); it != myFieldsMap.end(); ++it ) 
   {
-    myFieldStringList.append ( myFieldsVector[i].name() );
+    myFieldStringList.append ( it->name() );
   }
   //
   //now set all the combos that need field lists using the string list

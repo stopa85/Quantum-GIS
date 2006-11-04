@@ -16,7 +16,7 @@ class QgsRenderer /Abstract/
      @param f a pointer to the feature to be rendered
      @param pic pointer to a marker from SVG (is only used by marker renderers)
      @param scalefactor pointer to the scale factor for the marker image*/
-    virtual void renderFeature(QPainter* p, QgsFeature* f,QImage* pic, double* scalefactor, bool selected, double widthScale = 1)=0;
+    virtual void renderFeature(QPainter* p, QgsFeature& f,QImage* pic, double* scalefactor, bool selected, double widthScale = 1)=0;
     /**Reads the renderer configuration from an XML file
      @param rnode the DOM node to read 
      @param vl the vector layer which will be associated with the renderer*/
@@ -27,8 +27,7 @@ class QgsRenderer /Abstract/
     /** Returns true, if attribute values are used by the renderer and false otherwise*/
     virtual bool needsAttributes() const=0;
     /**Returns a list with indexes of classification attributes*/
-    // TODO: wrap
-    //virtual std::list<int> classificationAttributes() const=0;
+    QList<int> classificationAttributes() const=0;
     /**Returns the renderers name*/
     virtual QString name() const=0;    
     /**Return symbology items*/

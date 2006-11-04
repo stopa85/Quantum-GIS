@@ -25,7 +25,9 @@
 #include "qgsdelattrdialog.h"
 #include "qgsfeature.h"
 #include "qgsfield.h"
+#include "qgslogger.h"
 #include "qgssearchquerybuilder.h"
+#include "qgssearchstring.h"
 #include "qgssearchtreenode.h"
 #include "qgsvectorlayer.h"
 #include "qgsvectordataprovider.h"
@@ -55,9 +57,6 @@ QgsAttributeTableDisplay::QgsAttributeTableDisplay(QgsVectorLayer* layer, QgisAp
   connect(btnAdvancedSearch, SIGNAL(clicked()), this, SLOT(advancedSearch()));
   connect(btnClose, SIGNAL(clicked()), this, SLOT(close()));
 
-  mAddAttributeButton->setEnabled(false);
-  mDeleteAttributeButton->setEnabled(false);
-
   btnStopEditing->setEnabled(false);
   int cap=layer->getDataProvider()->capabilities();
   if((cap&QgsVectorDataProvider::ChangeAttributeValues)
@@ -75,11 +74,11 @@ QgsAttributeTableDisplay::QgsAttributeTableDisplay(QgsVectorLayer* layer, QgisAp
   QgsVectorDataProvider* provider = mLayer->getDataProvider();
   if (provider)
   {
-    std::vector < QgsField > fields = provider->fields();
+    const QgsFieldMap& fields = provider->fields();
     int fieldcount = provider->fieldCount();
-    for (int h = 1; h <= fieldcount; h++)
+    for (int h = 0; h < fieldcount; h++)
     {
-      mSearchColumns->insertItem(fields[h - 1].name());
+      mSearchColumns->insertItem(fields[h].name());
     }
   }
   
@@ -313,26 +312,23 @@ void QgsAttributeTableDisplay::doSearch(const QString& searchString)
     return;
   }
 
-#ifdef QGISDEBUG
-  std::cout << "Search by attribute: " << searchString.toLocal8Bit().data() << std::endl
-            << " parsed as: " << search.tree()->makeSearchString().toLocal8Bit().data() << std::endl;
-#endif
+  QgsDebugMsg("Search by attribute: " + searchString + " parsed as: " + search.tree()->makeSearchString());
 
   QApplication::setOverrideCursor(Qt::waitCursor);
 
   // TODO: need optimized getNextFeature which won't extract geometry
   // or search by traversing table ... which one is quicker?
-  QgsFeature* fet;
+  QgsFeature fet;
   QgsVectorDataProvider* provider = mLayer->getDataProvider();
   provider->reset();
   mSearchIds.clear();
-  while ((fet = provider->getNextFeature(true)))
+  QgsAttributeList all = provider->allAttributesList();
+  while (provider->getNextFeature(fet, false, all))
   {
-    if (searchTree->checkAgainst(fet->attributeMap()))
+    if (searchTree->checkAgainst(fet.attributeMap()))
     {
-      mSearchIds.insert(fet->featureId());
+      mSearchIds.insert(fet.featureId());
     }
-    delete fet;
     
     // check if there were errors during evaulating
     if (searchTree->hasError())

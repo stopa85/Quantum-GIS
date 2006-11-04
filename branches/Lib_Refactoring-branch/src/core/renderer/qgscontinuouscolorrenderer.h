@@ -36,7 +36,7 @@ class CORE_EXPORT QgsContinuousColorRenderer: public QgsRenderer
     QgsContinuousColorRenderer& operator=(const QgsContinuousColorRenderer& other);
     virtual ~QgsContinuousColorRenderer();
     /**Renders the feature using the minimum and maximum value of the classification field*/
-    void renderFeature(QPainter* p, QgsFeature* f, QImage* img, double* scalefactor, bool selected,  double widthScale = 1.);
+    void renderFeature(QPainter* p, QgsFeature& f, QImage* img, double* scalefactor, bool selected,  double widthScale = 1.);
     /**Returns the number of the classification field*/
     int classificationField() const;
     /**Sets the id of the classification field*/
@@ -63,7 +63,7 @@ class CORE_EXPORT QgsContinuousColorRenderer: public QgsRenderer
     /** Returns true*/
     bool needsAttributes() const;
     /**Returns a list with the index of the classification attribute*/
-    std::list<int> classificationAttributes() const;
+    QgsAttributeList classificationAttributes() const;
     /**Returns the renderers name*/
     QString name() const;
     /**Return symbology items*/

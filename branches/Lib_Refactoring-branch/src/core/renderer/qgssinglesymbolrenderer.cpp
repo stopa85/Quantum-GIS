@@ -84,7 +84,7 @@ void QgsSingleSymbolRenderer::addSymbol(QgsSymbol* sy)
     mSymbol=sy;
 }
 
-void QgsSingleSymbolRenderer::renderFeature(QPainter * p, QgsFeature * f, QImage* img, 
+void QgsSingleSymbolRenderer::renderFeature(QPainter * p, QgsFeature & f, QImage* img, 
 	         double* scalefactor, bool selected, double widthScale)
 {
 	// Point 
@@ -154,10 +154,9 @@ bool QgsSingleSymbolRenderer::writeXML( QDomNode & layer_node, QDomDocument & do
 }
 
 
-std::list<int> QgsSingleSymbolRenderer::classificationAttributes() const
+QgsAttributeList QgsSingleSymbolRenderer::classificationAttributes() const
 {
-  std::list<int> list;
-  return list;//return an empty list
+  return QgsAttributeList(); // return an empty list
 }
 
 QString QgsSingleSymbolRenderer::name() const

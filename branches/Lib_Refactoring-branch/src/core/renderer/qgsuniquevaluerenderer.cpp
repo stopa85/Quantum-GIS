@@ -94,11 +94,12 @@ int QgsUniqueValueRenderer::classificationField()
     return mClassificationField;
 }
     
-void QgsUniqueValueRenderer::renderFeature(QPainter* p, QgsFeature* f,QImage* img, 
+void QgsUniqueValueRenderer::renderFeature(QPainter* p, QgsFeature& f,QImage* img, 
 	double* scalefactor, bool selected, double widthScale)
 {
-    std::vector < QgsFeatureAttribute > vec = f->attributeMap();
-    QString value = vec[0].fieldValue();
+    const QgsAttributeMap& attrs = f.attributeMap();
+    QString value = attrs[mClassificationField].fieldValue();
+  
     std::map<QString,QgsSymbol*>::iterator it=mSymbols.find(value);
     if(it!=mSymbols.end())
     {
@@ -175,10 +176,10 @@ QString QgsUniqueValueRenderer::name() const
     return "Unique Value";
 }
 
-std::list<int> QgsUniqueValueRenderer::classificationAttributes() const
+QgsAttributeList QgsUniqueValueRenderer::classificationAttributes() const
 {
-    std::list<int> list;
-    list.push_back(mClassificationField);
+    QgsAttributeList list;
+    list.append(mClassificationField);
     return list;
 }
 

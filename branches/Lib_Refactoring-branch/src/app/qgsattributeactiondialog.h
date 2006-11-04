@@ -26,10 +26,11 @@ back to QgsVectorLayer.
 
 #include "ui_qgsattributeactiondialogbase.h"
 #include "qgsfield.h"
-#include <vector>
+#include <QMap>
 
 class QgsAttributeAction;
 
+typedef QMap<int, QgsField> QgsFieldMap;
 
 class QgsAttributeActionDialog: public QWidget, private Ui::QgsAttributeActionDialogBase
 {
@@ -37,7 +38,7 @@ class QgsAttributeActionDialog: public QWidget, private Ui::QgsAttributeActionDi
   
  public:
   QgsAttributeActionDialog(QgsAttributeAction* actions, 
-			   const std::vector<QgsField>& fields,
+			   const QgsFieldMap& fields,
 			   QWidget* parent = 0);
 
   ~QgsAttributeActionDialog() {};
