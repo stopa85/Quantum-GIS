@@ -129,13 +129,13 @@ QgsRect QgsMapLayer::calculateExtent()
     return rect;
 }
 
-bool QgsMapLayer::draw(QPainter *, QgsRect *, QgsMapToPixel *, QgsCoordinateTransform *, bool)
+bool QgsMapLayer::draw(QPainter *, QgsRect &, QgsMapToPixel *, QgsCoordinateTransform *, bool)
 {
     //  std::cout << "In QgsMapLayer::draw" << std::endl;
     return false;
 }
 
-void QgsMapLayer::drawLabels(QPainter *, QgsRect *, QgsMapToPixel *, QgsCoordinateTransform *)
+void QgsMapLayer::drawLabels(QPainter *, QgsRect &, QgsMapToPixel *, QgsCoordinateTransform *)
 {
     //  std::cout << "In QgsMapLayer::draw" << std::endl;
 }

@@ -86,12 +86,12 @@ void QgsGraduatedSymbolRenderer::removeSymbols()
     mSymbols.clear();
 }
 
-void QgsGraduatedSymbolRenderer::renderFeature(QPainter * p, QgsFeature * f, QImage* img, 
+void QgsGraduatedSymbolRenderer::renderFeature(QPainter * p, QgsFeature & f, QImage* img, 
 	double* scalefactor, bool selected, double widthScale)
 {
   //first find out the value for the classification attribute
-  std::vector < QgsFeatureAttribute > vec = f->attributeMap();
-  double value = vec[0].fieldValue().toDouble();
+  const QgsAttributeMap& attrs = f.attributeMap();
+  double value = attrs[mClassificationField].fieldValue().toDouble();
 
   std::list < QgsSymbol* >::iterator it;
   //find the first render item which contains the feature
@@ -165,10 +165,10 @@ void QgsGraduatedSymbolRenderer::readXML(const QDomNode& rnode, QgsVectorLayer& 
     vl.setRenderer(this);
 }
 
-std::list<int> QgsGraduatedSymbolRenderer::classificationAttributes() const
+QgsAttributeList QgsGraduatedSymbolRenderer::classificationAttributes() const
 {
-    std::list<int> list;
-    list.push_back(mClassificationField);
+    QgsAttributeList list;
+    list.append(mClassificationField);
     return list;
 }
 

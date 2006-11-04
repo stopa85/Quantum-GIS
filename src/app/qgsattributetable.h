@@ -33,6 +33,7 @@ class QAction;
 class QMenu;
 
 #include "qgsattributeaction.h"
+#include "qgsvectorlayer.h"
 
 #include <vector>
 #include <utility>
@@ -97,9 +98,9 @@ class QgsAttributeTable:public Q3Table
     /**Swaps the selected rows such that the selected ones are on the top of the table*/
     void bringSelectedToTop();
     /** Selects rows with chosen feature IDs */
-    void selectRowsWithId(const std::set<int>& ids);
+    void selectRowsWithId(const QgsFeatureIds& ids);
     /** Shows only rows with chosen feature IDs, others get hidden */
-    void showRowsWithId(const std::set<int>& ids);
+    void showRowsWithId(const QgsFeatureIds& ids);
     /** Shows all rows */
     void showAllRows();
 
@@ -127,12 +128,12 @@ class QgsAttributeTable:public Q3Table
     bool mEdited;
     /**Map containing the added attributes. The key is the attribute name
       and the value the attribute type*/
-    std::map<QString,QString> mAddedAttributes;
+    QgsNewAttributesMap mAddedAttributes;
     /**Set containing the attribute names of deleted attributes*/
-    std::set<QString> mDeletedAttributes;
+    QgsFeatureIds mDeletedAttributes;
     /**Nested map containing the changed attribute values. The int is the feature id, 
       the first QString the attribute name and the second QString the new value*/
-    std::map<int,std::map<QString,QString> > mChangedValues;
+    QgsChangedAttributesMap mChangedValues;
     /**Stors the numbers of the last selected rows. This is used to check for selection changes before emit repaintRequested()*/
     std::set<int> mLastSelectedRows;
 
@@ -148,7 +149,7 @@ class QgsAttributeTable:public Q3Table
       @name attribut name*/
     void removeAttrColumn(const QString& name);
     /** puts attributes of feature to the chosen table row */
-    void putFeatureInTable(int row, QgsFeature* fet);
+    void putFeatureInTable(int row, QgsFeature& fet);
     void contentsMouseReleaseEvent(QMouseEvent* e);
     /**This function compares the current selection and the selection of the last repaint. Returns true if there are differences in the selection.
      Also, mLastSelectedRows is updated*/
@@ -168,6 +169,8 @@ signals:
     int mClickedOnValue;
     QMenu* mActionPopup;
     QgsAttributeAction mActions;
+    
+    QgsFieldMap mFields;
 };
 
 #endif

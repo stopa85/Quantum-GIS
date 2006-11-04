@@ -1830,27 +1830,8 @@ void QgsWmsProvider::parseServiceException(QDomElement const & e)
 }
 
 
-QgsDataSourceURI * QgsWmsProvider::getURI()
-{
 
-  QgsDataSourceURI* dsuri;
-   
-  dsuri = new QgsDataSourceURI;
-  
-  //TODO
-  
-  return dsuri;
-}
-
-
-void QgsWmsProvider::setURI(QgsDataSourceURI * uri)
-{
-  // TODO
-} 
-
-
-
-QgsRect *QgsWmsProvider::extent()
+QgsRect QgsWmsProvider::extent()
 {
   if (extentDirty)
   {
@@ -1860,7 +1841,7 @@ QgsRect *QgsWmsProvider::extent()
     }
   }
 
-  return &layerExtent;
+  return layerExtent;
 }
 
 void QgsWmsProvider::reset()
@@ -2394,6 +2375,18 @@ QString QgsWmsProvider::identifyAsText(const QgsPoint& point)
             << text.toLocal8Bit().data() << "'." << std::endl;
 #endif
   return text;
+}
+
+
+void QgsWmsProvider::setSRS(const QgsSpatialRefSys& theSRS)
+{
+  // TODO: implement
+}
+
+QgsSpatialRefSys QgsWmsProvider::getSRS()
+{
+  // TODO: implement
+  return QgsSpatialRefSys();
 }
 
 

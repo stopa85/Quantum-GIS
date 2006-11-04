@@ -105,7 +105,7 @@ QgsComposerMap::~QgsComposerMap()
      std::cerr << "QgsComposerMap::~QgsComposerMap" << std::endl;
 }
 
-void QgsComposerMap::draw ( QPainter *painter, QgsRect *extent, QgsMapToPixel *transform)
+void QgsComposerMap::draw ( QPainter *painter, QgsRect &extent, QgsMapToPixel *transform)
 {
     mMapCanvas->freeze(true);  // necessary ?
     int nlayers = mMapCanvas->layerCount();
@@ -136,16 +136,16 @@ void QgsComposerMap::draw ( QPainter *painter, QgsRect *extent, QgsMapToPixel *t
 	  double symbolScale = mSymbolScale * mComposition->scale();
 
           QgsRect r1, r2;
-          r1 = *extent;
+          r1 = extent;
           // TODO: revisit later and make this QgsMapRender-aware [MD]
           // bool split = layer->projectExtent(r1, r2);
           bool split = false;
           
-          vector->draw( painter, &r1, transform, ct, FALSE, widthScale, symbolScale);
+          vector->draw( painter, r1, transform, ct, FALSE, widthScale, symbolScale);
 
           if ( split )
           {
-	      vector->draw( painter, &r2, transform, ct, FALSE, widthScale, symbolScale);
+	      vector->draw( painter, r2, transform, ct, FALSE, widthScale, symbolScale);
           }
       } else { 
 	  // raster
@@ -259,7 +259,7 @@ void QgsComposerMap::cache ( void )
 
     QPainter p(&mCachePixmap);
     
-    draw( &p, &mCacheExtent, &transform);
+    draw( &p, mCacheExtent, &transform);
     p.end();
 
     mNumCachedLayers = mMapCanvas->layerCount();
@@ -311,7 +311,7 @@ void QgsComposerMap::draw ( QPainter & painter )
       // TODO: Qt4 appears to force QPainter::CoordDevice - need to check if this is actually valid.
       painter.setClipRect ( 0, 0, Q3CanvasRectangle::width(), Q3CanvasRectangle::height() );
 
-      draw( &painter, &mExtent, &transform);
+      draw( &painter, mExtent, &transform);
       painter.restore();
     } 
 

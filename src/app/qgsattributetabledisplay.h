@@ -21,7 +21,7 @@
 #define QGSATTRIBUTETABLEDISPLAY_H
 
 #include "ui_qgsattributetablebase.h"
-#include <set>
+
 
 class QgsAttributeTable;
 class QgsVectorLayer;
@@ -55,7 +55,7 @@ class QgsAttributeTableDisplay:public QDialog, private Ui::QgsAttributeTableBase
     virtual void closeEvent(QCloseEvent* ev);
 
     /** array of feature IDs that match last searched condition */
-    std::set<int> mSearchIds;
+    QgsFeatureIds mSearchIds;
 
   protected slots:
     void deleteAttributes();

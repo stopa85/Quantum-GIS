@@ -39,11 +39,11 @@ QgsGraduatedSymbolDialog::QgsGraduatedSymbolDialog(QgsVectorLayer * layer): QDia
     QgsVectorDataProvider *provider = mVectorLayer->getDataProvider();
     if (provider)
     {
-	std::vector < QgsField > const & fields = provider->fields();
+	const QgsFieldMap & fields = provider->fields();
 	int fieldnumber = 0;
 	QString str;
 	
-	for (std::vector < QgsField >::const_iterator it = fields.begin(); 
+	for (QgsFieldMap::const_iterator it = fields.begin(); 
              it != fields.end(); 
              ++it)
         {

@@ -44,7 +44,7 @@ class CORE_EXPORT QgsGraduatedSymbolRenderer: public QgsRenderer
      \param p a painter (usually the one from the current map canvas)
      \param f a pointer to a feature to render
      \param t the transform object containing the information how to transform the map coordinates to screen coordinates*/
-    void renderFeature(QPainter* p, QgsFeature* f, QImage* img, double* scalefactor, bool selected, double widthScale = 1.);
+    void renderFeature(QPainter* p, QgsFeature& f, QImage* img, double* scalefactor, bool selected, double widthScale = 1.);
     /**Sets the number of the classicifation field
     \param field the number of the field to classify*/
     void setClassificationField(int field);
@@ -58,7 +58,7 @@ class CORE_EXPORT QgsGraduatedSymbolRenderer: public QgsRenderer
     /** Returns true*/
     bool needsAttributes() const;
     /**Returns a list with the index to the classification field*/
-    std::list<int> classificationAttributes() const;
+    QgsAttributeList classificationAttributes() const;
     /**Returns the renderers name*/
     QString name() const;
     /**Returns the symbols of the items*/

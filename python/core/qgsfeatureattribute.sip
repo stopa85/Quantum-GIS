@@ -43,5 +43,11 @@ public:
 
   void setNumeric(bool num = true);
 
+  SIP_PYOBJECT __repr__();
+%MethodCode
+    QString str = sipCpp->fieldName() + " = " + sipCpp->fieldValue();
+    sipRes = PyString_FromString(str.toLocal8Bit().data());
+%End
+
 }; // class QgsFeatureAttribute
 

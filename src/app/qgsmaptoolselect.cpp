@@ -95,6 +95,6 @@ void QgsMapToolSelect::canvasReleaseEvent(QMouseEvent * e)
   search = toLayerCoords(vlayer, search);
   
   QApplication::setOverrideCursor(Qt::WaitCursor);
-  vlayer->select(&search, lock);
+  vlayer->select(search, lock);
   QApplication::restoreOverrideCursor();
 }

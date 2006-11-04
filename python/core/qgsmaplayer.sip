@@ -204,9 +204,6 @@ public slots:
     void setScaleBasedVisibility( bool theVisibilityFlag);
     bool scaleBasedVisibility();
 
-    /** Used to ask the layer for its projection as a WKT string. Must be reimplemented by each provider. */
-    virtual QString getProjectionWKT() = 0;
-
 signals:
 
     /** Emit a signal to notify of a progress event */

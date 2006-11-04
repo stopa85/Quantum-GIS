@@ -115,6 +115,8 @@ class CORE_EXPORT QgsGeometry {
        Set the geometry, feeding in a geometry in GEOS format.
     */
     void setGeos(geos::Geometry* geos);
+    
+    double distance(QgsGeometry& geom);
 
     /**
        Returns the vertex closest to the given point 
@@ -213,10 +215,10 @@ class CORE_EXPORT QgsGeometry {
     QgsRect boundingBox() const;
 
     /** Test for intersection with a rectangle (uses GEOS) */
-    bool intersects(QgsRect* r) const;
+    bool intersects(const QgsRect& r) const;
 
     /**Also tests for intersection, but uses direct geos export of QgsGeometry instead wkb export and geos wkb import. Therefore this method is faster and could replace QgsGeometry::intersects in the future*/
-    bool fast_intersects(const QgsRect* r) const;
+    bool fast_intersects(const QgsRect& r) const;
 
     /** Test for containment of a point (uses GEOS) */
     bool contains(QgsPoint* p) const;

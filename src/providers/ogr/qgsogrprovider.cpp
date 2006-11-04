@@ -18,10 +18,8 @@ email                : sherman at mrcc.com
 
 #include "qgsogrprovider.h"
 
+#include <geos.h>
 
-#ifndef WIN32
-#include <netinet/in.h>
-#endif
 #include <iostream>
 #include <cfloat>
 #include <cassert>
@@ -51,12 +49,14 @@ email                : sherman at mrcc.com
 #endif 
 
 
-#include "qgssearchtreenode.h"
+#include "qgsapplication.h"
 #include "qgsdataprovider.h"
 #include "qgsfeature.h"
+#include "qgsfeatureattribute.h"
 #include "qgsfield.h"
 #include "qgsgeometry.h"
 #include "qgslogger.h"
+#include "qgsspatialrefsys.h"
 #include "qgis.h"
 
 
@@ -140,7 +140,7 @@ QgsOgrProvider::QgsOgrProvider(QString const & uri)
 
   //resize the cache matrix
   minmaxcache=new double*[fieldCount()];
-  for(int i=0;i<fieldCount();i++)
+  for(uint i=0;i<fieldCount();i++)
   {
     minmaxcache[i]=new double[2];
   }
@@ -151,14 +151,16 @@ QgsOgrProvider::QgsOgrProvider(QString const & uri)
   //    std::cerr << "Creating the wktReader\n";
   wktReader = new geos::WKTReader(geometryFactory);
 
+  /* TODO: [MD]
   mNumericalTypes.push_back("Integer");
   mNumericalTypes.push_back("Real");
   mNonNumericalTypes.push_back("String");
+  */
 }
 
 QgsOgrProvider::~QgsOgrProvider()
 {
-  for(int i=0;i<fieldCount();i++)
+  for(uint i=0;i<fieldCount();i++)
   {
     delete[] minmaxcache[i];
   }
@@ -181,7 +183,7 @@ void QgsOgrProvider::setEncoding(const QString& e)
 void QgsOgrProvider::loadFields()
 {
     //the attribute fields need to be read again when the encoding changes
-    attributeFields.clear();
+    mAttributeFields.clear();
     OGRFeatureDefn* fdef = ogrLayer->GetLayerDefn();
     if(fdef)
     {
@@ -209,7 +211,7 @@ void QgsOgrProvider::loadFields()
         OGRFieldDefn *fldDef = fdef->GetFieldDefn(i);
         OGRFieldType type = type = fldDef->GetType();
         bool numeric = (type == OFTInteger || type == OFTReal);
-        attributeFields.push_back(QgsField(
+        mAttributeFields.insert(i, QgsField(
               mEncoding->toUnicode(fldDef->GetNameRef()), 
               mEncoding->toUnicode(fldDef->GetFieldTypeName(type)),
               fldDef->GetWidth(),
@@ -219,377 +221,105 @@ void QgsOgrProvider::loadFields()
     }
 }
 
-QString QgsOgrProvider::getProjectionWKT()
-{ 
-  QgsDebugMsg("QgsOgrProvider::getProjectionWKT()");
-  OGRSpatialReference * mySpatialRefSys = ogrLayer->GetSpatialRef();
-  if (mySpatialRefSys == NULL)
-  {
-    QgsLogger::critical("QgsOgrProvider::getProjectionWKT() --- no wkt found..returning null"); 
-    return NULL;
-  }
-  else
-  {
-    // if appropriate, morph the projection from ESRI form
-    QString fileName = ogrDataSource->GetName();
-    QgsDebugMsg("Data source file name is : " + fileName); 
-    if(fileName.contains(".shp"))
-    {
-      QgsDebugMsg("Morphing " + fileName + " WKT from ESRI"); 
-      // morph it
-      mySpatialRefSys->morphFromESRI();
-    }
-    // get the proj4 text
-    char * ppszProj4;
-    mySpatialRefSys->exportToProj4   ( &ppszProj4 );
-    QgsDebugMsg(ppszProj4); 
-    char    *pszWKT = NULL;
-    mySpatialRefSys->exportToWkt( &pszWKT );
-    QString myWKTString = QString(pszWKT);
-    OGRFree(pszWKT);  
-    return myWKTString;
-  }
-}
 
-
-QString QgsOgrProvider::storageType()
+QString QgsOgrProvider::storageType() const
 {
   // Delegate to the driver loaded in by OGR
   return ogrDriverName;
 }
 
 
-/**
- * Get the first feature resutling from a select operation
- * @return QgsFeature
- */
-QgsFeature * QgsOgrProvider::getFirstFeature(bool fetchAttributes)
+bool QgsOgrProvider::getNextFeature(QgsFeature& feature,
+                                    bool fetchGeometry,
+                                    QgsAttributeList fetchAttributes,
+                                    uint featureQueueSize)
 {
-  QgsFeature *f = 0;
-
-  if(valid)
+  
+  if (!valid)
   {
-    QgsDebugMsg("getting first feature");
-    ogrLayer->ResetReading();
-
-    OGRFeature * feat = ogrLayer->GetNextFeature();
-
-    Q_CHECK_PTR( feat  );
-
-    if(feat)
-    {
-      QgsDebugMsg("First feature is not null");
-    }
-    else
-    {
-      QgsLogger::warning("First feature is null");
-      return 0x0;               // so return a null feature indicating that we got a null feature
-    }
-
-    // get the feature type name, if any
-    OGRFeatureDefn * featureDefinition = feat->GetDefnRef();
-    QString featureTypeName =   
-      featureDefinition ? QString(featureDefinition->GetName()) : QString("");
-
-    f = new QgsFeature(feat->GetFID(), featureTypeName );
-
-    Q_CHECK_PTR( f );
-
-    if ( ! f )                  // return null if we can't get a new QgsFeature
-    {
-      delete feat;
-
-      return 0x0;
-    }
-
-    size_t geometry_size = feat->GetGeometryRef()->WkbSize();
-    f->setGeometryAndOwnership(getGeometryPointer(feat), geometry_size);
-
-    if(fetchAttributes)
-    {
-      getFeatureAttributes(feat, f);
-    }
-
-    delete feat;
-
+    QgsLogger::warning("Read attempt on an invalid shapefile data source");
+    return false;
   }
 
-  return f;
+  OGRFeature *fet;
 
-} // QgsOgrProvider::getFirstFeature()
-
-
-
-
-bool QgsOgrProvider::getNextFeature(QgsFeature &f, bool fetchAttributes)
-{
-  bool returnValue;
-  if(valid){
-    //std::cerr << "getting next feature\n";
-    // skip features without geometry
-    OGRFeature *fet;
-    while ((fet = ogrLayer->GetNextFeature()) != NULL) {
-      if (fet->GetGeometryRef())
-        break;
+  // skip features without geometry
+  while ((fet = ogrLayer->GetNextFeature()) != NULL)
+  {
+    if (fet->GetGeometryRef() != NULL)
+    {
+      break;
     }
-    if(fet){
-      OGRGeometry *geom = fet->GetGeometryRef();
-
-      // get the wkb representation
-      unsigned char *feature = new unsigned char[geom->WkbSize()];
-      geom->exportToWkb((OGRwkbByteOrder) endian(), feature);
-      f.setFeatureId(fet->GetFID());
-      f.setGeometryAndOwnership(feature, geom->WkbSize());
-
-      OGRFeatureDefn * featureDefinition = fet->GetDefnRef();
-      QString featureTypeName =   
-        featureDefinition ? QString(featureDefinition->GetName()) : QString("");
-      f.setTypeName( featureTypeName );
-
-      if(fetchAttributes){
-        getFeatureAttributes(fet, &f);
-      }
-      /*   char *wkt = new char[2 * geom->WkbSize()];
-           geom->exportToWkt(&wkt);
-           f->setWellKnownText(wkt);
-           delete[] wkt;  */
-      delete fet;
-      returnValue = true;
-    }else{
-#ifdef QGISDEBUG
-      QgsLogger::warning("Feature is null");
-      f.setValid(false);
-      returnValue = false;
-#endif
-      // probably should reset reading here
-      ogrLayer->ResetReading();
-    }
-
-
-  }else{
-    QgsLogger::critical("Read attempt on an invalid shapefile data source");
-  }
-  return returnValue;
-}
-
-/**
- * Get the next feature resutling from a select operation
- * Return 0 if there are no features in the selection set
- * @return QgsFeature
- */
-QgsFeature *QgsOgrProvider::getNextFeature(bool fetchAttributes)
-{
-   if(!valid)
-   {
-       QgsLogger::critical("Read attempt on an invalid shapefile data source");
-       return 0;
-   }
-   
-   OGRFeature* fet;
-   OGRGeometry* geom;
-   QgsFeature *f = 0;
-   while((fet = ogrLayer->GetNextFeature()) != NULL)
-   {
-     
-     if (fet->GetGeometryRef())
-       {
-	   geom = fet->GetGeometryRef();
-	   // get the wkb representation
-	   unsigned char *feature = new unsigned char[geom->WkbSize()];
-	   geom->exportToWkb((OGRwkbByteOrder) endian(), feature);
-	   OGRFeatureDefn * featureDefinition = fet->GetDefnRef();
-	   QString featureTypeName =   featureDefinition ? QString(featureDefinition->GetName()) : QString("");
-
-	   f = new QgsFeature(fet->GetFID(), featureTypeName);
-	   f->setGeometryAndOwnership(feature, geom->WkbSize());
-	   if(fetchAttributes  /*|| !mAttributeFilter.isEmpty()*/)
-	   {
-	       getFeatureAttributes(fet, f);
-	   
-        // filtering by attribute
-        // TODO: improve, speed up!
-/*        if (!mAttributeFilter.isEmpty() && !mAttributeFilter.tree()->checkAgainst(f->attributeMap()))
-        {
-          delete fet;
-          continue;
-        }    */
-	   }
-    
-	   if(mUseIntersect)
-	   {
-	       geos::Geometry *geosGeom = 0;
-         geosGeom=f->geometry()->geosGeometry();
-	       assert(geosGeom != 0);
+      
+    delete fet;
+  
+    /* TODO: [MD]
+    if (mUseIntersect)
+    {
+      geos::Geometry *geosGeom = 0;
+      geosGeom = f->geometry()->geosGeometry();
+      assert(geosGeom != 0);
          
-	       char *sWkt = new char[2 * mSelectionRectangle->WkbSize()];
-	       mSelectionRectangle->exportToWkt(&sWkt);  
-	       geos::Geometry *geosRect = wktReader->read(sWkt);
-	       assert(geosRect != 0);
-	       if(geosGeom->intersects(geosRect))
-	       {
-		   QgsDebugMsg("intersection found");
-		   delete[] sWkt;
-		   delete geosGeom;
-		   break;
-	       }
-	       else
-	       {
-		   QgsDebugMsg("no intersection found");
-		   delete[] sWkt;
-		   delete geosGeom;
-		   delete f;
-		   f=0;
-	       }
-	   }
-	   else
-	   {
-	       break;
-	   }
-       }
-	   delete fet;
-   }
-   return f;
-}
-
-/**
- * Get the next feature resutling from a select operation
- * Return 0 if there are no features in the selection set
- * @return QgsFeature
- */
-/*QgsFeature *QgsOgrProvider::getNextFeature(bool fetchAttributes)
-{
-  QgsFeature *f = 0;
-  if(valid){
-    OGRFeature *fet;
-    OGRGeometry *geom;
-    while ((fet = ogrLayer->GetNextFeature()) != NULL) {
-      if (fet->GetGeometryRef())
-	{
-        if(mUseIntersect)
-        {
-          geom  =  fet->GetGeometryRef();
-          char *wkt = new char[2 * geom->WkbSize()];
-          geom->exportToWkt(&wkt);
-          geos::Geometry *geosGeom = wktReader->read(wkt);
-          assert(geosGeom != 0);
-          QgsDebugMsg("Geometry type of geos object is : " + geosGeom->getGeometryType()); 
-          // get the selection rectangle and create a geos geometry from it
-          char *sWkt = new char[2 * mSelectionRectangle->WkbSize()];
-          mSelectionRectangle->exportToWkt(&sWkt);
-          std::cerr << "Passing " << sWkt << " to goes\n";    
-          geos::Geometry *geosRect = wktReader->read(sWkt);
-          assert(geosRect != 0);
-          std::cerr << "About to apply intersects function\n";
-          // test the geometry
-          if(geosGeom->intersects(geosRect))
-          {
-            std::cerr << "Intersection found\n";
-            break;
-          }
-          //XXX For some reason deleting these on win32 causes segfault
-          //XXX Someday I'll figure out why...
-          //delete[] wkt;  
-          //delete[] sWkt;  
-        }
-        else
-        {
-          break;
-        }
-      }
-    }
-    if(fet){
-      geom = fet->GetGeometryRef();
-
-      // get the wkb representation
-      unsigned char *feature = new unsigned char[geom->WkbSize()];
-      geom->exportToWkb((OGRwkbByteOrder) endian(), feature);
-
-      OGRFeatureDefn * featureDefinition = fet->GetDefnRef();
-      QString featureTypeName =   
-        featureDefinition ? QString(featureDefinition->GetName()) : QString("");
-
-      f = new QgsFeature(fet->GetFID(), featureTypeName);
-      f->setGeometryAndOwnership(feature, geom->WkbSize());
-
-      if(fetchAttributes){
-        getFeatureAttributes(fet, f);
-      }
-      delete fet;
-    }else{
-#ifdef QGISDEBUG
-      std::cerr << "Feature is null\n";
-#endif
-      // probably should reset reading here
-      ogrLayer->ResetReading();
-    }
-
-
-  }else{
-#ifdef QGISDEBUG    
-    std::cerr << "Read attempt on an invalid shapefile data source\n";
-#endif
-  }
-  return f;
-}*/
-
-
-QgsFeature *QgsOgrProvider::getNextFeature(std::list<int> const& attlist, int featureQueueSize)
-{
-  QgsFeature *f = 0; 
-  if(valid)
-  {
-    // skip features without geometry
-    OGRFeature *fet;
-    while ((fet = ogrLayer->GetNextFeature()) != NULL) {
-
-      if (fet->GetGeometryRef())
+      char *sWkt = new char[2 * mSelectionRectangle->WkbSize()];
+      mSelectionRectangle->exportToWkt(&sWkt);  
+      geos::Geometry *geosRect = wktReader->read(sWkt);
+      assert(geosRect != 0);
+      if(geosGeom->intersects(geosRect))
       {
-        if(mUseIntersect)
-        {
-          // test this geometry to see if it should be
-          // returned 
-	  //QgsDebugMsg("Testing geometry using intersect");
-        }
-        else
-        {
-          // too much debug output with this msg
-	        //QgsDebugMsg("Testing geometry using mbr");
-          break;
-        }
+        QgsDebugMsg("intersection found");
+        delete[] sWkt;
+        delete geosGeom;
+        break;
       }
-    }
-    if(fet)
+      else
+      {
+        QgsDebugMsg("no intersection found");
+        delete[] sWkt;
+        delete geosGeom;
+        delete f;
+        f=0;
+      }
+    }*/
+  }
+  
+  if (fet)
+  {
+    // get type name
+    OGRFeatureDefn * featureDefinition = fet->GetDefnRef();
+    QString featureTypeName =   
+        featureDefinition ? QString(featureDefinition->GetName()) : QString("");
+    
+    feature = QgsFeature(fet->GetFID(), featureTypeName);
+
+    if (fetchGeometry)
     {
       OGRGeometry *geom = fet->GetGeometryRef();
+    
       // get the wkb representation
-      unsigned char *feature = new unsigned char[geom->WkbSize()];
-      geom->exportToWkb((OGRwkbByteOrder) endian(), feature);
-      OGRFeatureDefn * featureDefinition = fet->GetDefnRef();
-      QString featureTypeName =   
-        featureDefinition ? QString(featureDefinition->GetName()) : QString("");
+      unsigned char *wkb = new unsigned char[geom->WkbSize()];
+      geom->exportToWkb((OGRwkbByteOrder) QgsApplication::endian(), wkb);
+    
+      feature.setGeometryAndOwnership(wkb, geom->WkbSize());
+    }
 
-      f = new QgsFeature(fet->GetFID(), featureTypeName);
-      f->setGeometryAndOwnership(feature, geom->WkbSize());
-      for(std::list<int>::const_iterator it=attlist.begin();it!=attlist.end();++it)
-      {
-        getFeatureAttribute(fet,f,*it);
-      }
-      delete fet;
-      //delete [] feature;
-    }
-    else
+    for(QgsAttributeList::iterator it = fetchAttributes.begin(); it != fetchAttributes.end(); ++it)
     {
-      QgsDebugMsg("Feature is null");  
-      // probably should reset reading here
-      ogrLayer->ResetReading();
+      getFeatureAttribute(fet,feature,*it);
     }
+    delete fet;
+
+    return true;
   }
   else
   {
-    QgsLogger::warning("Read attempt on an invalid shapefile data source");
+    QgsDebugMsg("Feature is null");  
+    // probably should reset reading here
+    ogrLayer->ResetReading();
+    return false;
   }
-  return f;
 }
+
+
 
 /**
  * Select features based on a bounding rectangle. Features can be retrieved
@@ -600,16 +330,16 @@ QgsFeature *QgsOgrProvider::getNextFeature(std::list<int> const& attlist, int fe
  * stored. If true, a secondary filter (using GEOS) is applied to each
  * feature in the getNextFeature function.
  */
-void QgsOgrProvider::select(QgsRect *rect, bool useIntersect)
+void QgsOgrProvider::select(QgsRect rect, bool useIntersect)
 {
   mUseIntersect = useIntersect;
   // spatial query to select features
 #ifdef QGISDEBUG
-  QgsLogger::debug<QgsRect>("Selection rectangle is: ", *rect, __FILE__, __FUNCTION__, __LINE__, 1);
+  QgsLogger::debug<QgsRect>("Selection rectangle is: ", rect, __FILE__, __FUNCTION__, __LINE__, 1);
 #endif
   OGRGeometry *filter = 0;
   filter = OGRGeometryFactory::createGeometry(wkbPolygon);
-  QString wktExtent = QString("POLYGON ((%1))").arg(rect->asPolygon());
+  QString wktExtent = QString("POLYGON ((%1))").arg(rect.asPolygon());
   const char *wktText = (const char *)wktExtent;
 
   if(useIntersect)
@@ -622,7 +352,7 @@ void QgsOgrProvider::select(QgsRect *rect, bool useIntersect)
   }
 
   // reset the extent for the ogr filter
-  wktExtent = QString("POLYGON ((%1))").arg(rect->asPolygon());
+  wktExtent = QString("POLYGON ((%1))").arg(rect.asPolygon());
   wktText = (const char *)wktExtent;
 
   OGRErr result = ((OGRPolygon *) filter)->importFromWkt((char **)&wktText);
@@ -643,38 +373,23 @@ void QgsOgrProvider::select(QgsRect *rect, bool useIntersect)
 
 
 
-/**
- * Identify features within the search radius specified by rect
- * @param rect Bounding rectangle of search radius
- * @return std::vector containing QgsFeature objects that intersect rect
- */
-std::vector<QgsFeature>& QgsOgrProvider::identify(QgsRect * rect)
+unsigned char * QgsOgrProvider::getGeometryPointer(OGRFeature *fet)
 {
-  // select the features
-  select(rect);
-#ifdef WIN32
-  //TODO fix this later for win32
-  std::vector<QgsFeature> feat;
-  return feat;
-#endif
-}
-
-unsigned char * QgsOgrProvider::getGeometryPointer(OGRFeature *fet){
   OGRGeometry *geom = fet->GetGeometryRef();
   unsigned char *gPtr=0;
   // get the wkb representation
   gPtr = new unsigned char[geom->WkbSize()];
 
-  geom->exportToWkb((OGRwkbByteOrder) endian(), gPtr);
+  geom->exportToWkb((OGRwkbByteOrder) QgsApplication::endian(), gPtr);
   return gPtr;
 
 }
 
 
-QgsRect *QgsOgrProvider::extent()
+QgsRect QgsOgrProvider::extent()
 {
   mExtentRect.set(extent_->MinX, extent_->MinY, extent_->MaxX, extent_->MaxY);
-  return &mExtentRect;
+  return mExtentRect;
 }
 
 
@@ -687,9 +402,9 @@ size_t QgsOgrProvider::layerCount() const
 /** 
  * Return the feature type
  */
-int QgsOgrProvider::geometryType() const
+QGis::WKBTYPE QgsOgrProvider::geometryType() const
 {
-  return geomType;
+  return (QGis::WKBTYPE) geomType;
 }
 
 /** 
@@ -703,12 +418,12 @@ long QgsOgrProvider::featureCount() const
 /**
  * Return the number of fields
  */
-int QgsOgrProvider::fieldCount() const
+uint QgsOgrProvider::fieldCount() const
 {
-  return attributeFields.size();
+  return mAttributeFields.size();
 }
 
-void QgsOgrProvider::getFeatureAttribute(OGRFeature * ogrFet, QgsFeature * f, int attindex)
+void QgsOgrProvider::getFeatureAttribute(OGRFeature * ogrFet, QgsFeature & f, int attindex)
 {
   OGRFieldDefn *fldDef = ogrFet->GetFieldDefnRef(attindex);
 
@@ -720,29 +435,12 @@ void QgsOgrProvider::getFeatureAttribute(OGRFeature * ogrFet, QgsFeature * f, in
 
   QString fld = mEncoding->toUnicode(fldDef->GetNameRef());
   QByteArray cstr(ogrFet->GetFieldAsString(attindex));
-  bool numeric = attributeFields[attindex].isNumeric();
 
-  f->addAttribute(fld, mEncoding->toUnicode(cstr), numeric);
+  f.addAttribute(attindex, QgsFeatureAttribute(fld, mEncoding->toUnicode(cstr)));
 }
 
-/**
- * Fetch attributes for a selected feature
- */
-void QgsOgrProvider::getFeatureAttributes(OGRFeature *ogrFet, QgsFeature *f){
-  for (int i = 0; i < ogrFet->GetFieldCount(); i++) {
-    getFeatureAttribute(ogrFet,f,i);
-    // add the feature attributes to the tree
-    /*OGRFieldDefn *fldDef = ogrFet->GetFieldDefnRef(i);
-    QString fld = mEncoding->toUnicode(fldDef->GetNameRef());
-    //    OGRFieldType fldType = fldDef->GetType();
-    QString val;
 
-    val = ogrFet->GetFieldAsString(i);
-    f->addAttribute(fld, val);*/
-  }
-}
-
-void QgsOgrProvider::getFeatureAttributes(int key, int &row, QgsFeature *f)
+void QgsOgrProvider::getFeatureAttributes(int key, int &row, QgsFeature &f)
 {
   if(!valid)
   {
@@ -751,11 +449,12 @@ void QgsOgrProvider::getFeatureAttributes(int key, int &row, QgsFeature *f)
   }
 
   OGRFeature* fet;
-  OGRGeometry* geom;
 
   if ((fet = ogrLayer->GetFeature(key)) != NULL)
   {
-    getFeatureAttributes(fet, f);
+    int count = fet->GetFieldCount();
+    for (int i = 0; i < count; i++)
+      getFeatureAttribute(fet, f, i);
 
     delete fet;
   }
@@ -779,7 +478,7 @@ void QgsOgrProvider::getFeatureGeometry(int key, QgsFeature *f)
       geom = fet->GetGeometryRef();
       // get the wkb representation
       unsigned char *feature = new unsigned char[geom->WkbSize()];
-      geom->exportToWkb((OGRwkbByteOrder) endian(), feature);
+      geom->exportToWkb((OGRwkbByteOrder) QgsApplication::endian(), feature);
       OGRFeatureDefn * featureDefinition = fet->GetDefnRef();
       QString featureTypeName = featureDefinition ? 
                                 QString(featureDefinition->GetName()) : 
@@ -792,19 +491,13 @@ void QgsOgrProvider::getFeatureGeometry(int key, QgsFeature *f)
   }
 }
 
-std::vector<QgsField> const & QgsOgrProvider::fields() const
+const QgsFieldMap & QgsOgrProvider::fields() const
 {
-  return attributeFields;
+  return mAttributeFields;
 }
 
 void QgsOgrProvider::reset()
 {
-  // TODO: check whether it supports normal SQL or only that "restricted_sql"
-  if (mAttributeFilter.isEmpty())
-    ogrLayer->SetAttributeFilter(NULL);
-  else
-    ogrLayer->SetAttributeFilter(mAttributeFilter.string());
-
   ogrLayer->SetSpatialFilter(0);
   ogrLayer->ResetReading();
   // Reset the use intersect flag on a provider reset, otherwise only the last
@@ -815,7 +508,7 @@ void QgsOgrProvider::reset()
   mUseIntersect = false;
 }
 
-QString QgsOgrProvider::minValue(int position)
+QString QgsOgrProvider::minValue(uint position)
 {
   if(position>=fieldCount())
   {
@@ -831,9 +524,9 @@ QString QgsOgrProvider::minValue(int position)
 }
 
 
-QString QgsOgrProvider::maxValue(int position)
+QString QgsOgrProvider::maxValue(uint position)
 {
-  if(position>=fieldCount() || position < 0)
+  if(position>=fieldCount())
   {
 #ifdef QGISDEBUG
     QgsLogger::warning("Warning: access requested to invalid position in QgsOgrProvider::maxValue(..)");
@@ -849,18 +542,19 @@ QString QgsOgrProvider::maxValue(int position)
 
 void QgsOgrProvider::fillMinMaxCash()
 {
-  for(int i=0;i<fieldCount();i++)
+  for(uint i=0;i<fieldCount();i++)
   {
     minmaxcache[i][0]=DBL_MAX;
     minmaxcache[i][1]=-DBL_MAX;
   }
 
-  QgsFeature* f=getFirstFeature(true);
-  do
+  QgsFeature f;
+  QgsAttributeList all = allAttributesList();
+  while (getNextFeature(f, false, all))
   {
-    for(int i=0;i<fieldCount();i++)
+    for(uint i = 0; i < fieldCount(); i++)
     {
-      double value=(f->attributeMap())[i].fieldValue().toDouble();
+      double value = (f.attributeMap())[i].fieldValue().toDouble();
       if(value<minmaxcache[i][0])
       {
         minmaxcache[i][0]=value;  
@@ -870,9 +564,8 @@ void QgsOgrProvider::fillMinMaxCash()
         minmaxcache[i][1]=value;  
       }
     }
-    delete f;
 
-  }while(f=getNextFeature(true));
+  }
 
   minmaxcachedirty=false;
 }
@@ -885,13 +578,13 @@ bool QgsOgrProvider::isValid()
   return valid;
 }
 
-bool QgsOgrProvider::addFeature(QgsFeature* f)
+bool QgsOgrProvider::addFeature(QgsFeature& f)
 { 
   bool returnValue = true;
   OGRFeatureDefn* fdef=ogrLayer->GetLayerDefn();
   OGRFeature* feature=new OGRFeature(fdef);
-  QGis::WKBTYPE ftype = f->geometry()->wkbType();
-  unsigned char* wkb = f->geometry()->wkbBuffer();
+  QGis::WKBTYPE ftype = f.geometry()->wkbType();
+  unsigned char* wkb = f.geometry()->wkbBuffer();
   OGRErr err;
   
   switch(ftype)
@@ -1027,14 +720,16 @@ bool QgsOgrProvider::addFeature(QgsFeature* f)
         break;
       }
   }
+  
+  QgsAttributeMap attrs = f.attributeMap();
 
   //add possible attribute information
-  for(unsigned int i=0;i<f->attributeMap().size();++i)
+  for(int i = 0; i < attrs.size(); ++i)
   {
-    QString s=(f->attributeMap())[i].fieldValue();
+    QString s = attrs[i].fieldValue();
     
     //find a matching field for the new attribute
-    QString newAttribute = (f->attributeMap())[i].fieldName();
+    QString newAttribute = attrs[i].fieldName();
     int targetAttributeId = fdef->GetFieldIndex(newAttribute);
     if(targetAttributeId == -1)
       {
@@ -1073,10 +768,11 @@ bool QgsOgrProvider::addFeature(QgsFeature* f)
   return returnValue;
 }
 
-bool QgsOgrProvider::addFeatures(std::list<QgsFeature*> const flist)
+
+bool QgsOgrProvider::addFeatures(QgsFeatureList & flist)
 {
   bool returnvalue=true;
-  for(std::list<QgsFeature*>::const_iterator it=flist.begin();it!=flist.end();++it)
+  for(QgsFeatureList::iterator it = flist.begin(); it != flist.end(); ++it)
   {
     if(!addFeature(*it))
     {
@@ -1086,33 +782,33 @@ bool QgsOgrProvider::addFeatures(std::list<QgsFeature*> const flist)
   return returnvalue;
 }
 
-bool QgsOgrProvider::addAttributes(std::map<QString,QString> const & name)
+bool QgsOgrProvider::addAttributes(const QgsNewAttributesMap & attributes)
 {
     bool returnvalue=true;
 
-    for(std::map<QString,QString>::const_iterator iter=name.begin();iter!=name.end();++iter)
+    for(QgsNewAttributesMap::const_iterator iter = attributes.begin(); iter != attributes.end(); ++iter)
     {
-	if(iter->second=="OFTInteger")
+	if(*iter=="OFTInteger")
 	{
-	    OGRFieldDefn fielddefn(iter->first,OFTInteger);
+      OGRFieldDefn fielddefn(iter.key(),OFTInteger);
 	    if(ogrLayer->CreateField(&fielddefn)!=OGRERR_NONE)
 	    {
 		QgsLogger::warning("QgsOgrProvider.cpp: writing of OFTInteger field failed");	
 		returnvalue=false;
 	    }
 	}
-	else if(iter->second=="OFTReal")
+  else if(*iter=="OFTReal")
 	{
-	    OGRFieldDefn fielddefn(iter->first,OFTReal);
+      OGRFieldDefn fielddefn(iter.key(),OFTReal);
 	    if(ogrLayer->CreateField(&fielddefn)!=OGRERR_NONE)
 	    {
 		QgsLogger::warning("QgsOgrProvider.cpp: writing of OFTReal field failed");
 		returnvalue=false;
 	    }
 	}
-	else if(iter->second=="OFTString")
+  else if(*iter=="OFTString")
 	{
-	    OGRFieldDefn fielddefn(iter->first,OFTString);
+      OGRFieldDefn fielddefn(iter.key(),OFTString);
 	    if(ogrLayer->CreateField(&fielddefn)!=OGRERR_NONE)
 	    {
 		QgsLogger::warning("QgsOgrProvider.cpp: writing of OFTString field failed");
@@ -1128,54 +824,50 @@ bool QgsOgrProvider::addAttributes(std::map<QString,QString> const & name)
     return returnvalue;
 }
 
-bool QgsOgrProvider::changeAttributeValues(std::map<int,std::map<QString,QString> > const & attr_map)
+bool QgsOgrProvider::changeAttributeValues(const QgsChangedAttributesMap & attr_map)
 {   
-  std::map<int,std::map<QString,QString> > am = attr_map; // stupid, but I don't know other way to convince gcc to compile
-  for( std::map<int,std::map<QString,QString> >::iterator it=am.begin();it!=am.end();++it)
+  for(QgsChangedAttributesMap::const_iterator it = attr_map.begin(); it != attr_map.end(); ++it)
   {
-    long fid = (long) (*it).first;
+    long fid = (long) it.key();
 
     OGRFeature *of = ogrLayer->GetFeature ( fid );
 
-    if ( !of ) {
+    if ( !of )
+    {
       QgsLogger::warning("QgsOgrProvider::changeAttributeValues, Cannot read feature, cannot change attributes");
       return false;
     }
 
-    std::map<QString,QString> attr = (*it).second;
+    const QgsAttributeMap& attr = it.value();
 
-    for( std::map<QString,QString>::iterator it2 = attr.begin(); it2!=attr.end(); ++it2 )
+    for( QgsAttributeMap::const_iterator it2 = attr.begin(); it2 != attr.end(); ++it2 )
     {
-	QString name = (*it2).first;
-	QString value = (*it2).second;
+      int f = it2.key();
+      QString name = it2->fieldName();
+      QString value = it2->fieldValue();
 		
-	int fc = of->GetFieldCount();
-	for ( int f = 0; f < fc; f++ ) {
-	    OGRFieldDefn *fd = of->GetFieldDefnRef ( f );
-	    
-    if ( name.compare( mEncoding->toUnicode(fd->GetNameRef()) ) == 0 ) {
-		OGRFieldType type = fd->GetType();
-		switch ( type ) {
+      OGRFieldDefn *fd = of->GetFieldDefnRef ( f );
+      
+      OGRFieldType type = fd->GetType();
+      switch ( type )
+      {
 		    case OFTInteger:
 		        of->SetField ( f, value.toInt() );
-			break;
+            break;
 		    case OFTReal:
 		        of->SetField ( f, value.toDouble() );
-			break;
+            break;
 		    case OFTString:
 		        of->SetField ( f, value.ascii() );
-			break;
+            break;
 		    default:
-			QgsLogger::warning("QgsOgrProvider::changeAttributeValues, Unknown field type,\
-cannot change attribute");
-			break;
-		}
+      			QgsLogger::warning("QgsOgrProvider::changeAttributeValues, Unknown field type, cannot change attribute");
+      			break;
+		    }
 
-		continue;
-	    }	
-	}
-	ogrLayer->SetFeature ( of );
-    }
+	   }
+     
+	   ogrLayer->SetFeature ( of );
   }
 
   ogrLayer->SyncToDisk();
@@ -1183,58 +875,62 @@ cannot change attribute");
   return true;
 }
 
-bool QgsOgrProvider::changeGeometryValues(std::map<int, QgsGeometry> & geometry_map)
+bool QgsOgrProvider::changeGeometryValues(QgsGeometryMap & geometry_map)
 {
   OGRFeature* theOGRFeature = 0;
   OGRGeometry* theNewGeometry = 0;
 
-  for(std::map<int, QgsGeometry>::iterator it = geometry_map.begin(); it != geometry_map.end(); ++it)
+  for (QgsGeometryMap::iterator it = geometry_map.begin(); it != geometry_map.end(); ++it)
+  {
+    theOGRFeature = ogrLayer->GetFeature(it.key());
+    if(!theOGRFeature)
     {
-      theOGRFeature = ogrLayer->GetFeature(it->first);
-      if(!theOGRFeature)
-	{
-	  QgsLogger::warning("QgsOgrProvider::changeGeometryValues, cannot find feature");
-	  continue;
-	}
-
-      //create an OGRGeometry
-      if(OGRGeometryFactory::createFromWkb(it->second.wkbBuffer(), ogrLayer->GetSpatialRef(), &theNewGeometry, it->second.wkbSize()) != OGRERR_NONE)
-	{
-	  QgsLogger::warning("QgsOgrProvider::changeGeometryValues, error while creating new OGRGeometry");
-	  delete theNewGeometry;
-	  theNewGeometry = 0;
-	  continue;
-	}
-
-      if(!theNewGeometry)
-	{
-	  QgsLogger::warning("QgsOgrProvider::changeGeometryValues, new geometry is NULL");
-	  continue;
-	}
-      
-      //set the new geometry
-      if(theOGRFeature->SetGeometryDirectly(theNewGeometry) != OGRERR_NONE)
-	{
-	  QgsLogger::warning("QgsOgrProvider::changeGeometryValues, error while replacing geometry");
-	  delete theNewGeometry;
-	  theNewGeometry = 0;
-	  continue;
-	}
-      ogrLayer->SetFeature(theOGRFeature);
+      QgsLogger::warning("QgsOgrProvider::changeGeometryValues, cannot find feature");
+      continue;
     }
+
+    //create an OGRGeometry
+    if (OGRGeometryFactory::createFromWkb(it->wkbBuffer(),
+                                          ogrLayer->GetSpatialRef(),
+                                          &theNewGeometry,
+                                          it->wkbSize()) != OGRERR_NONE)
+    {
+      QgsLogger::warning("QgsOgrProvider::changeGeometryValues, error while creating new OGRGeometry");
+      delete theNewGeometry;
+      theNewGeometry = 0;
+      continue;
+    }
+
+    if(!theNewGeometry)
+    {
+      QgsLogger::warning("QgsOgrProvider::changeGeometryValues, new geometry is NULL");
+      continue;
+    }
+      
+    //set the new geometry
+    if(theOGRFeature->SetGeometryDirectly(theNewGeometry) != OGRERR_NONE)
+    {
+      QgsLogger::warning("QgsOgrProvider::changeGeometryValues, error while replacing geometry");
+      delete theNewGeometry;
+      theNewGeometry = 0;
+      continue;
+    }
+    
+    ogrLayer->SetFeature(theOGRFeature);
+  }
   ogrLayer->SyncToDisk();
   return true;
 }
 
 bool QgsOgrProvider::createSpatialIndex()
 {
-    QString filename=getDataSourceUri().section('/',-1,-1);//find out the filename from the uri
+    QString filename=dataSourceUri().section('/',-1,-1);//find out the filename from the uri
     QString layername=filename.section('.',0,0);
     QString sql="CREATE SPATIAL INDEX ON "+layername;
     ogrDataSource->ExecuteSQL (sql.ascii(), ogrLayer->GetSpatialFilter(),"");
     //find out, if the .qix file is there
-    QString indexname = getDataSourceUri();
-    indexname.truncate(getDataSourceUri().length()-filename.length());
+    QString indexname = dataSourceUri();
+    indexname.truncate(dataSourceUri().length()-filename.length());
     indexname=indexname+layername+".qix";
     QFile indexfile(indexname);
     if(indexfile.exists())
@@ -1247,10 +943,10 @@ bool QgsOgrProvider::createSpatialIndex()
     }
 }
 
-bool QgsOgrProvider::deleteFeatures(std::list<int> const & id)
+bool QgsOgrProvider::deleteFeatures(const QgsFeatureIds & id)
 {
   bool returnvalue=true;
-  for(std::list<int>::const_iterator it=id.begin();it!=id.end();++it)
+  for (QgsFeatureIds::const_iterator it = id.begin(); it != id.end(); ++it)
   {
     if(!deleteFeature(*it))
     {
@@ -1575,7 +1271,7 @@ QGISEXTERN QString fileVectorFilters()
     myFileFilters += "All files (*.*)";
 
 #ifdef QGISDEBUG
-    qDebug() << myFileFilters;
+    //qDebug() << myFileFilters;
 #endif
     return myFileFilters;
 
@@ -1734,3 +1430,48 @@ const std::list<std::pair<QString, QString> >& attributes)
 
 
 
+QgsSpatialRefSys QgsOgrProvider::getSRS()
+{
+  QgsDebugMsg("QgsOgrProvider::getSRS()");
+
+  QgsSpatialRefSys srs;
+  
+  OGRSpatialReference * mySpatialRefSys = ogrLayer->GetSpatialRef();
+  if (mySpatialRefSys == NULL)
+  {
+    QgsLogger::critical("QgsOgrProvider::getProjectionWKT() --- no wkt found..returning null"); 
+  }
+  else
+  {
+    // if appropriate, morph the projection from ESRI form
+    QString fileName = ogrDataSource->GetName();
+    QgsDebugMsg("Data source file name is : " + fileName); 
+    if(fileName.contains(".shp"))
+    {
+      QgsDebugMsg("Morphing " + fileName + " WKT from ESRI"); 
+      // morph it
+      mySpatialRefSys->morphFromESRI();
+    }
+    // get the proj4 text
+    char * ppszProj4;
+    mySpatialRefSys->exportToProj4   ( &ppszProj4 );
+    QgsDebugMsg(ppszProj4); 
+    char    *pszWKT = NULL;
+    mySpatialRefSys->exportToWkt( &pszWKT );
+    QString myWKTString = QString(pszWKT);
+    OGRFree(pszWKT);  
+    
+    // create SRS from WKT
+    srs.createFromWkt( myWKTString );
+  }
+
+  return srs;
+}
+
+void QgsOgrProvider::setSRS(const QgsSpatialRefSys& theSRS)
+{
+  // TODO: how to change SRS? that one from GetSpatialRef() should not be changed
+  
+  //OGRSpatialReference * mySpatialRefSys = ogrLayer->GetSpatialRef();
+  //mySpatialRefSys->importFromWkt(theSRS.toWkt());
+}

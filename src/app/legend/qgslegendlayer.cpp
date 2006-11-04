@@ -353,10 +353,11 @@ void QgsLegendLayer::vectorLayerSymbology(const QgsVectorLayer* layer)
 
   if(renderer->needsAttributes()) //create an item for each classification field (only one for most renderers)
   {
-    std::list<int> classfieldlist = renderer->classificationAttributes();
-    for(std::list<int>::iterator it = classfieldlist.begin(); it!=classfieldlist.end(); ++it)
+    QgsAttributeList classfieldlist = renderer->classificationAttributes();
+    const QgsFieldMap& fields = layer->getDataProvider()->fields();
+    for(QgsAttributeList::iterator it = classfieldlist.begin(); it!=classfieldlist.end(); ++it)
     {
-      const QgsField theField = (layer->getDataProvider()->fields())[*it];
+      const QgsField& theField = fields[*it];
       QString classfieldname = theField.name();
       itemList.push_front(std::make_pair(classfieldname, QPixmap()));
     }

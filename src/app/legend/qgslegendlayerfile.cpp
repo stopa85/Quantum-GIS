@@ -265,7 +265,7 @@ void QgsLegendLayerFile::selectionChanged()
     return;
 
   QgsVectorLayer* vlayer = dynamic_cast<QgsVectorLayer*>(mLyr.layer());
-  const std::set<int>& ids = vlayer->selectedFeaturesIds();
+  const QgsFeatureIds& ids = vlayer->selectedFeaturesIds();
   mTableDisplay->table()->selectRowsWithId(ids);
 
 }

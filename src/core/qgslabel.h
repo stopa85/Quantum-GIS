@@ -18,9 +18,10 @@
 #define QGSLABEL_H
 
 #include <vector>
-#include <list>
 
 #include <QColor>
+#include <QList>
+#include <QMap>
 
 class QDomNode;
 class QString;
@@ -35,11 +36,17 @@ class QgsRect;
 class QgsMapToPixel;
 class QgsCoordinateTransform;
 
+#include "qgsfield.h"
+
+typedef QList<int> QgsAttributeList;
+
+typedef QMap<int, QgsField> QgsFieldMap;
+
 /** Render class to display labels */
 class CORE_EXPORT QgsLabel
 {
 public:
-    QgsLabel ( std::vector<QgsField> const & fields  );
+    QgsLabel ( const QgsFieldMap & fields  );
 
     ~QgsLabel();
 
@@ -71,10 +78,10 @@ public:
     /** \brief render label
      *  \param sizeScale global scale factor for size in pixels, labels in map units are not scaled
      */
-    void renderLabel ( QPainter* painter, QgsRect* viewExtent, 
+    void renderLabel ( QPainter* painter, QgsRect& viewExtent, 
                        QgsCoordinateTransform* coordTransform,
                        QgsMapToPixel *transform,
-		       QgsFeature *feature, bool selected, QgsLabelAttributes *classAttributes=0, double sizeScale = 1.);
+		       QgsFeature &feature, bool selected, QgsLabelAttributes *classAttributes=0, double sizeScale = 1.);
 
     /** Reads the renderer configuration from an XML file
      @param rnode the DOM node to read 
@@ -85,13 +92,13 @@ public:
     void writeXML(std::ostream& xml);
 
     //! add vector of required fields to existing list of fields
-    void addRequiredFields ( std::list<int> *fields );
+    void addRequiredFields ( QgsAttributeList& fields );
 
     //! Set available fields
-    void setFields( std::vector<QgsField> const & fields  );
+    void setFields( const QgsFieldMap & fields  );
 
     //! Available vector fields
-    std::vector<QgsField> & fields ( void );
+    QgsFieldMap & fields ( void );
 
     //! Pointer to default attributes
     QgsLabelAttributes *layerAttributes ( void );
@@ -107,7 +114,7 @@ public:
      *                       3) value is defined
      *  otherwise returns empty string
     */
-    QString fieldValue ( int attr, QgsFeature *feature );
+    QString fieldValue ( int attr, QgsFeature& feature );
 
 private:
     /** Does the actual rendering of a label at the given point
@@ -122,7 +129,7 @@ private:
                      double ang);
 
     /** Get label point for simple feature in map units */
-    void labelPoint ( std::vector<QgsPoint>&, QgsFeature *feature );
+    void labelPoint ( std::vector<QgsPoint>&, QgsFeature & feature );
 
     /** Get label point for the given feature in wkb format. */
     unsigned char* labelPoint( QgsPoint& point, unsigned char* wkb);
@@ -134,7 +141,7 @@ private:
     QgsLabelAttributes *mLabelAttributes;
     
     //! Available layer fields
-    std::vector<QgsField> mField;
+    QgsFieldMap mField;
 
     //! Label fields
     std::vector<QString> mLabelField;

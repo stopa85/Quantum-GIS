@@ -17,6 +17,7 @@
 #include "qgsmessageviewer.h"
 #include "qgsmaptoolidentify.h"
 #include "qgsmapcanvas.h"
+#include "qgsspatialrefsys.h"
 #include "qgsvectordataprovider.h"
 #include "qgsvectorlayer.h"
 #include "qgsrasterlayer.h"
@@ -25,6 +26,7 @@
 #include "qgsdistancearea.h"
 #include "qgsfeature.h"
 #include "qgsfeatureattribute.h"
+#include "qgslogger.h"
 #include "qgsattributedialog.h"
 #include "qgscursors.h"
 
@@ -203,12 +205,13 @@ void QgsMapToolIdentify::identifyVectorLayer(QgsVectorLayer* layer, const QgsPoi
   r = toLayerCoords(layer, r);
 
   int featureCount = 0;
-  QgsFeature *fet;
+  QgsFeature feat;
   QgsAttributeAction& actions = *layer->actions();
   QString fieldIndex = layer->displayField();
   QgsVectorDataProvider* dataProvider = layer->getDataProvider();
+  QgsAttributeList allAttributes = dataProvider->allAttributesList();
   
-  dataProvider->select(&r, true);
+  dataProvider->select(r, true);
 
   // init distance/area calculator
   QgsDistanceArea calc;
@@ -238,39 +241,37 @@ void QgsMapToolIdentify::identifyVectorLayer(QgsVectorLayer* layer, const QgsPoi
 
     QApplication::setOverrideCursor(Qt::WaitCursor);
 
-    while ((fet = dataProvider->getNextFeature(true)))
+    while (dataProvider->getNextFeature(feat, true, allAttributes))
     {
       featureCount++;
 
       QTreeWidgetItem* featureNode = mResults->addNode("foo");
       featureNode->setText(0, fieldIndex);
-      std::vector < QgsFeatureAttribute > attr = fet->attributeMap();
-      // Do this only once rather than each pass through the loop
-      int attrSize = attr.size();
-      for (register int i = 0; i < attrSize; i++)
+      const QgsAttributeMap& attr = feat.attributeMap();
+      
+      for (QgsAttributeMap::const_iterator it = attr.begin(); it != attr.end(); ++it)
       {
-#ifdef QGISDEBUG
-        std::cout << attr[i].fieldName().toLocal8Bit().data() << " == " << fieldIndex.toLocal8Bit().data() << std::endl;
-#endif
-        if (attr[i].fieldName().lower() == fieldIndex)
+        QgsDebugMsg(it->fieldName() + " == " + fieldIndex);
+        
+        if (it->fieldName().lower() == fieldIndex)
         {
-          featureNode->setText(1, attr[i].fieldValue());
+          featureNode->setText(1, it->fieldValue());
         }
-        mResults->addAttribute(featureNode, attr[i].fieldName(), attr[i].fieldValue());
+        mResults->addAttribute(featureNode, it->fieldName(), it->fieldValue());
       }
 
       // Calculate derived attributes and insert:
       // measure distance or area depending on geometry type
       if (layer->vectorType() == QGis::Line)
       {
-        double dist = calc.measure(fet->geometry());
+        double dist = calc.measure(feat.geometry());
         QString str = QString::number(dist/1000, 'f', 3);
         str += " km";
         mResults->addDerivedAttribute(featureNode, QObject::tr("Length"), str);
       }
       else if (layer->vectorType() == QGis::Polygon)
       {
-        double area = calc.measure(fet->geometry());
+        double area = calc.measure(feat.geometry());
         QString str = QString::number(area/1000000, 'f', 3);
         str += " km^2";
         mResults->addDerivedAttribute(featureNode, QObject::tr("Area"), str);
@@ -283,12 +284,9 @@ void QgsMapToolIdentify::identifyVectorLayer(QgsVectorLayer* layer, const QgsPoi
         mResults->addAction( featureNode, i, QObject::tr("action"), iter->name() );
       }
 
-      delete fet;
     }
 
-#ifdef QGISDEBUG
-    std::cout << "Feature count on identify: " << featureCount << std::endl;
-#endif
+    QgsDebugMsg("Feature count on identify: " + QString::number(featureCount));
 
     //also test the not commited features //todo: eliminate copy past code
 
@@ -312,40 +310,34 @@ void QgsMapToolIdentify::identifyVectorLayer(QgsVectorLayer* layer, const QgsPoi
   {
     // Edit attributes 
     // TODO: what to do if more features were selected? - nearest?
-    changed_attr_map& changedAttributes = layer->changedAttributes();
+    QgsChangedAttributesMap& changedAttributes = layer->changedAttributes();
     
     QApplication::setOverrideCursor(Qt::WaitCursor);
 
-    if ( (fet = dataProvider->getNextFeature(true)) )
+    if (dataProvider->getNextFeature(feat,true,allAttributes))
     {
       // these are the values to populate the dialog with
-      std::vector < QgsFeatureAttribute > old;
-
       // start off with list of committed attribute values
-      old = fet->attributeMap();
+      QgsAttributeMap old = feat.attributeMap();
 
       // Test if this feature already changed since the last commit
 
-      changed_attr_map::iterator it = changedAttributes.find(fet->featureId());
+      QgsChangedAttributesMap::iterator it = changedAttributes.find(feat.featureId());
       if ( it != changedAttributes.end() )
       {
         // Yes, this feature already has in-memory attribute changes
 
         // go through and apply the modified-but-not-committed values
-        std::map<QString,QString> oldattr = (*it).second;
+        QgsAttributeMap oldattr = *it;
         int index=0;
-        for ( std::vector<QgsFeatureAttribute>::const_iterator
-                oldit  = old.begin();
-                oldit != old.end();
-              ++oldit)
+        for (QgsAttributeMap::const_iterator oldit = old.begin(); oldit != old.end(); ++oldit)
         {
-          std::map<QString,QString>::iterator ait =
-            oldattr.find( (*oldit).fieldName() );
+          QgsAttributeMap::iterator ait = oldattr.find( oldit.key() );
           if ( ait != oldattr.end() )
           {
             // replace the committed value with the
             // modified-but-not-committed value
-            old[index] = QgsFeatureAttribute ( (*ait).first, (*ait).second );
+            old[index] = *ait;
           }
 
           ++index;
@@ -355,15 +347,13 @@ void QgsMapToolIdentify::identifyVectorLayer(QgsVectorLayer* layer, const QgsPoi
       QApplication::restoreOverrideCursor();
 
       // Show the attribute value editing dialog
-      QgsAttributeDialog ad( &old );
+      QgsAttributeDialog ad( old );
 
       if (ad.exec() == QDialog::Accepted)
       {
 
-        int oldSize = old.size();
-
-
-        for (int i = 0; i < oldSize; ++i)
+        int i = 0;
+        for (QgsAttributeMap::const_iterator oldit = old.begin(); oldit != old.end(); ++oldit, ++i)
         {
           // only apply changed values if they were edited by the user
           if (ad.isDirty(i))
@@ -375,7 +365,8 @@ void QgsMapToolIdentify::identifyVectorLayer(QgsVectorLayer* layer, const QgsPoi
           << ad.value(i).toLocal8Bit().data()
           << "." << std::endl;
 #endif
-            changedAttributes[ fet->featureId() ][ old[i].fieldName() ] = ad.value(i);
+            QgsAttributeMap& chattr = changedAttributes[ feat.featureId() ];
+            chattr[i] = QgsFeatureAttribute(oldit->fieldName(), ad.value(i));
 
             // propagate "dirtyness" to the layer
             layer->setModified();

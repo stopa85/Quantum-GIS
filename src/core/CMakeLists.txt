@@ -10,6 +10,7 @@ qgsattributeaction.cpp
 qgsclipper.cpp
 qgscontexthelp.cpp
 qgscoordinatetransform.cpp
+qgsdatasourceuri.cpp
 qgsdistancearea.cpp
 qgsexception.cpp
 qgsfeature.cpp

@@ -19,12 +19,13 @@
 #ifndef QGSVECTORLAYER_H
 #define QGSVECTORLAYER_H
 
-#include <map>
-#include <set>
-#include <vector>
+#include <QMap>
+#include <QSet>
+#include <QList>
 
 #include "qgis.h"
 #include "qgsmaplayer.h"
+#include "qgsfeature.h"
 
 class QPainter;
 class QImage;
@@ -40,8 +41,24 @@ class QgsRect;
 class QgsRenderer;
 class QgsVectorDataProvider;
 
-typedef std::map<int, std::map<QString,QString> > changed_attr_map;
-typedef std::set<int> feature_ids;
+
+class QgsGeometry;
+class QgsRect;
+class QgsFeature;
+
+//typedef QList<QgsField>   QgsFieldList;
+typedef QList<QgsFeature> QgsFeatureList;
+typedef QList<int>       QgsAttributeList;
+
+typedef QSet<int> QgsFeatureIds;
+typedef QSet<int> QgsAttributeIds;
+
+// key = attribute name, value = attribute type
+typedef QMap<QString, QString> QgsNewAttributesMap;
+
+typedef QMap<int, QgsField> QgsFieldMap;
+
+
 
 /*! \class QgsVectorLayer
  * \brief Vector layer backed by a data source provider
@@ -86,17 +103,6 @@ public:
   /** Sets the textencoding of the data provider */
   void setProviderEncoding(const QString& encoding);
 
-  /** Query data provider to find out the WKT projection string for this layer.
-   *  This implements the virtual method of the same name defined in QgsMapLayer
-   */
-  QString getProjectionWKT();
-
-  /**
-   * Gets the SRID of the layer by querying the underlying data provider
-   * @return The SRID if the provider is able to provide it, otherwise 0
-   */
-  int getProjectionSrid();
-  
   /** Setup the coordinate system tranformation for the layer */
   void setCoordinateSystem();
 
@@ -108,7 +114,7 @@ public:
   int selectedFeatureCount();
   
   /** Select features found within the search rectangle (in layer's coordinates) */
-  void select(QgsRect * rect, bool lock);
+  void select(QgsRect & rect, bool lock);
 
   /** Select feature by its ID, optionally emit signal selectionChanged() */
   void select(int featureId, bool emitSignal = TRUE);
@@ -120,29 +126,26 @@ public:
   void invertSelection();
 
   /** Get a copy of the user-selected features */  
-  std::vector<QgsFeature>* selectedFeatures();
+  QgsFeatureList selectedFeatures();
   
   /** Return reference to identifiers of selected features */
-  const feature_ids& selectedFeaturesIds() const;
+  const QgsFeatureIds& selectedFeaturesIds() const;
   
   /** Change selection to the new set of features */
-  void setSelectedFeatures(feature_ids& ids);
+  void setSelectedFeatures(const QgsFeatureIds& ids);
 
   /** Returns the bounding box of the selected features. If there is no selection, QgsRect(0,0,0,0) is returned */
   QgsRect boundingBoxOfSelected();
 
   
   /** Insert a copy of the given features into the layer */
-  bool addFeatures(std::vector<QgsFeature*>* features, bool makeSelected = TRUE);
+  bool addFeatures(QgsFeatureList features, bool makeSelected = TRUE);
 
   /** Copies the symbology settings from another layer. Returns true in case of success */
   bool copySymbologySettings(const QgsMapLayer& other);
 
   /** Returns true if this layer can be in the same symbology group with another layer */
   bool isSymbologyCompatible(const QgsMapLayer& other) const;
-  
-  /** Read property of int featureType. */
-  int featureType() const;
   
   /** Returns a pointer to the renderer */
   const QgsRenderer* renderer() const;
@@ -154,7 +157,7 @@ public:
   QGis::VectorType vectorType() const;
 
   /**Returns the WKBType or WKBUnknown in case of error*/
-  QGis::WKBTYPE getGeometryType() const;
+  QGis::WKBTYPE geometryType() const;
 
   /** Return the provider type for this layer */
   QString providerType() const;
@@ -169,12 +172,6 @@ public:
    */
   virtual bool writeXML_( QDomNode & layer_node, QDomDocument & doc );
 
-
-  /** Get the first feature resulting from a select operation
-  * @param selected selected feeatures only
-  * @return QgsFeature
-  */
-  virtual QgsFeature * getFirstFeature(bool fetchAttributes=false, bool selected=false) const;
 
   /** Get the next feature resulting from a select operation
   * @param selected selected feeatures only
@@ -225,13 +222,13 @@ public:
     Return a list of field names for this layer
    @return vector of field names
   */
-  virtual std::vector<QgsField> const & fields() const;
+  virtual const QgsFieldMap & fields() const;
 
   /** Adds a feature
       @param lastFeatureInBatch  If True, will also go to the effort of e.g. updating the extents.
       @return                    Irue in case of success and False in case of error
    */
-  bool addFeature(QgsFeature* f, bool alsoUpdateExtent = TRUE);
+  bool addFeature(QgsFeature& f, bool alsoUpdateExtent = TRUE);
   
   
   /** Insert a new vertex before the given vertex number,
@@ -333,28 +330,28 @@ public:
                       of attribute values to change
 
    */
-  bool commitAttributeChanges(const std::set<QString>& deleted,
-            const std::map<QString,QString>& added,
-            std::map<int,std::map<QString,QString> >& changed);
+  bool commitAttributeChanges(const QgsAttributeIds& deleted,
+                              const QgsNewAttributesMap& added,
+                              const QgsChangedAttributesMap& changed);
 
   /** Draws the layer using coordinate transformation
    *  @return FALSE if an error occurred during drawing
    */
   bool draw(QPainter * p,
-            QgsRect * viewExtent,
+            QgsRect & viewExtent,
             QgsMapToPixel * cXf,
             QgsCoordinateTransform* ct,
             bool drawingToEditingCanvas);
 
   /** Draws the layer labels using coordinate transformation */
-  void drawLabels(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * cXf, QgsCoordinateTransform* ct);
+  void drawLabels(QPainter * p, QgsRect & viewExtent, QgsMapToPixel * cXf, QgsCoordinateTransform* ct);
 
   /** \brief Draws the layer using coordinate transformation
    *  \param widthScale line width scale
    *  \param symbolScale symbol scale
    */
   void draw(QPainter * p,
-            QgsRect * viewExtent,
+            QgsRect & viewExtent,
             QgsMapToPixel * cXf,
             QgsCoordinateTransform* ct,
             bool drawingToEditingCanvas,
@@ -364,16 +361,16 @@ public:
   /** \brief Draws the layer labels using coordinate transformation
    *  \param scale size scale, applied to all values in pixels
    */
-  void drawLabels(QPainter * p, QgsRect * viewExtent, QgsMapToPixel * cXf, QgsCoordinateTransform* ct, double scale);
+  void drawLabels(QPainter * p, QgsRect & viewExtent, QgsMapToPixel * cXf, QgsCoordinateTransform* ct, double scale);
 
   /** returns array of added features */
-  std::vector<QgsFeature*>& addedFeatures();
+  QgsFeatureList& addedFeatures();
 
   /** returns array of deleted feature IDs */
-  feature_ids& deletedFeatureIds();
+  QgsFeatureIds& deletedFeatureIds();
  
   /** returns array of features with changed attributes */
-  changed_attr_map& changedAttributes();
+  QgsChangedAttributesMap& changedAttributes();
 
   /** Sets whether some features are modified or not */
   void setModified(bool modified = TRUE, bool onlyGeometryWasModified = FALSE);
@@ -436,7 +433,7 @@ private:                       // Private methods
    *  (i.e., code that calls this function needs to catch them
    */
   void drawFeature(QPainter* p,
-                   QgsFeature* fet,
+                   QgsFeature& fet,
                    QgsMapToPixel * cXf,
                    QgsCoordinateTransform* ct,
                    QImage* marker,
@@ -507,30 +504,30 @@ private:                       // Private attributes
   bool mModified;
   
   /** cache of the committed geometries retrieved *for the current display* */
-  std::map<int, QgsGeometry*> mCachedGeometries;
+  QgsGeometryMap mCachedGeometries;
   
   /** Set holding the feature IDs that are activated.  Note that if a feature 
       subsequently gets deleted (i.e. by its addition to mDeletedFeatureIds), 
       it always needs to be removed from mSelectedFeatureIds as well. 
    */ 
-  feature_ids mSelectedFeatureIds;
+  QgsFeatureIds mSelectedFeatureIds;
   
   /** Deleted feature IDs which are not commited.  Note a feature can be added and then deleted 
       again before the change is committed - in that case the added feature would be removed 
       from mAddedFeatures only and *not* entered here.
    */ 
-  feature_ids mDeletedFeatureIds;
+  QgsFeatureIds mDeletedFeatureIds;
   
   /** New features which are not commited.  Note a feature can be added and then changed, 
       therefore the details here can be overridden by mChangedAttributes and mChangedGeometries.
    */  
-  std::vector<QgsFeature*> mAddedFeatures;
+  QgsFeatureList mAddedFeatures;
   
   /** Changed attributes which are not commited */
-  changed_attr_map mChangedAttributes;
+  QgsChangedAttributesMap mChangedAttributes;
   
   /** Changed geometries which are not commited. */
-  std::map<int, QgsGeometry> mChangedGeometries;
+  QgsGeometryMap mChangedGeometries;
   
   /** Geometry type as defined in enum WKBTYPE (qgis.h) */
   int mGeometryType;

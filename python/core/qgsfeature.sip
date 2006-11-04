@@ -1,8 +1,4 @@
 
-/** \class QgsFeature - Feature attribute class.
- * Encapsulates a single feature including id and field/value.
- *@author Gary E.Sherman
- */
 
 class QgsFeature
 {
@@ -10,14 +6,12 @@ class QgsFeature
 #include <qgsfeature.h>
 %End
     
-    // sip doesn't recognize size_t, thus using typedef
-    typedef unsigned int size_t;
-
   public:
 
+    typedef unsigned int size_t;
+    
     //! Constructor
-    QgsFeature();
-    QgsFeature(int id, QString typeName = "" );
+    QgsFeature(int id = 0, QString typeName = "" );
 
     /** create a copy of this feature in its uncommitted state.
         To do this, you also pass in a reference to the feature's
@@ -27,14 +21,12 @@ class QgsFeature
         This is useful in the cut/copy routine, where you'd
         want a copy of the "current" feature, not the on-disk feature.
      */
-    
-    // TODO: unsupported, must use manual init
-    //QgsFeature( const QgsFeature & rhs,
-    //            std::map<int,std::map<QString,QString> > & changedAttributes,
-    //            std::map<int, QgsGeometry> & changedGeometries );
+     QgsFeature( const QgsFeature & rhs,
+                 const QMap<int, QMap<int, QgsFeatureAttribute> >& changedAttributes,
+                 const QMap<int, QgsGeometry> & changedGeometries );
 
     /** copy ctor needed due to internal pointer */
-    QgsFeature( const QgsFeature & rhs );
+    QgsFeature(const QgsFeature & rhs );
 
     //! Destructor
     ~QgsFeature();
@@ -55,44 +47,37 @@ class QgsFeature
 
     /** returns the feature's type name
      */
-     QString typeName() const;
+    QString typeName() const;
 
 
     /** sets the feature's type name
      */
-     void setTypeName(QString typeName);
+    void setTypeName(QString typeName);
 
     /**
      * Get the attributes for this feature.
      * @return A std::map containing the field name/value mapping
      */
-    // TODO: unsupported, must use %MethodCode
-    //const std::vector<QgsFeatureAttribute>& attributeMap();
+    const QMap<int, QgsFeatureAttribute> & attributeMap() const;
 
     /** 
      * Add an attribute to the map
      */
-    void addAttribute(const QString & field, const QString & value = "", bool numeric = false);
+    void addAttribute(int field, QgsFeatureAttribute attr);
 
     /**Deletes an attribute and its value*/
-    void deleteAttribute(const QString& name);
+    void deleteAttribute(int field);
 
     /**Changes an existing attribute value
-       @param name attribute name
-       @param newval new value*/
-    void changeAttributeValue(const QString& name, const QString& newval);
-
-    /**Changes an existing attribute name.  The value is unchanged.
-       @param name attribute name
-       @param newname new name*/
-    void changeAttributeName(const QString& name, const QString& newname);
+        @param field index of the field
+        @param attr attribute name and value to be set */
+    void changeAttribute(int field, QgsFeatureAttribute attr);
 
     /**
      * Get the fields for this feature
      * @return A std::map containing field position (index) and field name
      */
-    // TODO: unsupported, must use %MethodCode
-    //const std::map<int, QString>& fields();
+    QMap<int, QString> fields() const;
 
     /**
      * Return the validity of this feature. This is normally set by
@@ -127,7 +112,7 @@ class QgsFeature
      * Get the geometry object associated with this feature
      * The caller assumes responsibility for the QgsGeometry*'s destruction.
      */
-    QgsGeometry * geometryAndOwnership();
+    QgsGeometry * geometryAndOwnership() /Factory/;
     
     /** Set this feature's geometry from another QgsGeometry object (deep copy)
      */
@@ -140,57 +125,9 @@ class QgsFeature
      */
     void setGeometryAndOwnership(unsigned char * geom, size_t length);
     
-    /** Set bulk-modified WKB geometry 
-        \note   this function assumes the Geometry is not committed. 
-     */
-/*    void setModifiedGeometry(unsigned char * geom, size_t length);*/
+    /**Returns the bounding box of this feature*/
+    QgsRect boundingBox() const;
+
     
-    /** Insert a new vertex before the given vertex number,
-     *  ring and item (first number is index 0)
-     *  Not meaningful for Point geometries
-     */
-//     bool insertVertexBefore(double x, double y, int beforeVertex = 0, int atRing = 0, int atItem = 0);
-
-    /** Moves the vertex at the given position number,
-     *  ring and item (first number is index 0)
-     *  to the given coordinates
-     */
-/*    bool moveVertexAt(double x, double y, int atVertex = 0, int atRing = 0, int atItem = 0);*/
-    
-    /**
-     *  Modifies x and y to indicate the location of
-     *  the vertex at the given position number,
-     *  ring and item (first number is index 0)
-     *  to the given coordinates
-     */
-/*    bool vertexAt(double &x, double &y, int atVertex = 0, int atRing = 0, int atItem = 0) const;*/
-
-//     /**Test for intersection with a rectangle (uses GEOS)*/
-//     bool intersects(QgsRect* r) const;
-
-    /**Returns the Vertex closest to a given point*/
-//     QgsPoint closestVertex(const QgsPoint& point) const;
-
-    /** Returns the line segment closest to the given point in beforeVertex, atRing and atItem
-        Returns the SQUARE of the closest distance in minDist.
-        Returns the closest point on the line segment to the given point
-        
-                
-        TODO: point handling
-        TODO: const correctness
-     */
-//    QgsPoint closestSegment(QgsPoint& point, 
-//                            QgsPoint& segStart, QgsPoint& segStop,
-//                            double& minSqrDist);
-
-//     QgsPoint QgsFeature::closestSegmentWithContext(QgsPoint& point, 
-//                                                    int& beforeVertex, int& atRing, int& atItem,
-//                                                    double& minSqrDist);
-//                             
-//                             
-     /**Returns the bounding box of this feature*/
-     QgsRect boundingBox() const;
-// 
-
 }; // class QgsFeature
 

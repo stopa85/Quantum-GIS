@@ -261,12 +261,12 @@ void QgsMapRender::render(QPainter* painter)
         ct = NULL;
       }
       
-      if (!ml->draw(painter, &r1, mCoordXForm, ct, !mOverview))
+      if (!ml->draw(painter, r1, mCoordXForm, ct, !mOverview))
         emit drawError(ml);
       
       if (split)
       {
-        if (!ml->draw(painter, &r2, mCoordXForm, ct, !mOverview))
+        if (!ml->draw(painter, r2, mCoordXForm, ct, !mOverview))
           emit drawError(ml);
       }
       
@@ -314,9 +314,9 @@ void QgsMapRender::render(QPainter* painter)
             ct = NULL;
           }
       
-          ml->drawLabels(painter, &r1, mCoordXForm, ct);
+          ml->drawLabels(painter, r1, mCoordXForm, ct);
           if (split)
-            ml->drawLabels(painter, &r2, mCoordXForm, ct);
+            ml->drawLabels(painter, r2, mCoordXForm, ct);
           
           delete ct;
         }

@@ -9,6 +9,7 @@
 
 
 %Include qgisinterface.sip
+%Include qgisplugin.sip
 %Include qgslayerprojectionselector.sip
 %Include qgsmapcanvas.sip
 %Include qgsmapcanvasitem.sip

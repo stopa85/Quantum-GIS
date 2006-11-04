@@ -30,17 +30,6 @@ email                : sherman at mrcc.com
 /** \class QgsFeature
  * \brief Encapsulates a spatial feature with attributes
  */
-//! Constructor
-QgsFeature::QgsFeature()
-    : mFid(0), 
-      mGeometry(0),
-      mOwnsGeometry(0),
-      mValid(false),
-      mDirty(0)
-{
-  // NOOP
-}
-
 
 QgsFeature::QgsFeature(int id, QString typeName)
     : mFid(id), 
@@ -54,55 +43,36 @@ QgsFeature::QgsFeature(int id, QString typeName)
 }
 
 QgsFeature::QgsFeature( QgsFeature const & rhs,
-                        std::map<int,std::map<QString,QString> > & changedAttributes,
-                        std::map<int, QgsGeometry> & changedGeometries )
-    : mFid( rhs.mFid ), 
-      fieldNames( rhs.fieldNames ),
-      mValid( rhs.mValid ),
-      mDirty( rhs.mDirty ),
-      mTypeName( rhs.mTypeName )
+                        const QgsChangedAttributesMap & changedAttributes,
+                        const QgsGeometryMap & changedGeometries )
+  : mFid( rhs.mFid ), 
+    mValid( rhs.mValid ),
+    mDirty( rhs.mDirty ),
+    mTypeName( rhs.mTypeName )
 
 {
-
-  // Copy the attributes over.
-  if ( changedAttributes.find(mFid) == changedAttributes.end() )
+  // copy attributes from rhs feature
+  mAttributes = rhs.mAttributes;
+  
+  if (changedAttributes.contains(mFid))
   {
-    // copy attributes purely from rhs feature
-    attributes = rhs.attributes;
+    // get map of changed attributes
+    const QgsAttributeMap& changed = changedAttributes[mFid];
+  
+    // changet the attributes which were provided in the attribute map
+    for (QgsAttributeMap::const_iterator it = changed.begin(); it != changed.end(); ++it)
+    {
+      changeAttribute(it.key(), it.value());
+    }
+  }
+  
+  if (changedGeometries.contains(mFid))
+  {
+    // deep-copy geometry purely from changedGeometries
+    mGeometry     = new QgsGeometry(changedGeometries[mFid]);
+    mOwnsGeometry = TRUE;
   }
   else
-  {
-    attributes.clear();
-  
-    // TODO copy attributes from rhs feature with override from changedAttributes
-    for (std::vector<QgsFeatureAttribute>::iterator iter  = attributes.begin();
-                                                    iter != attributes.end();
-                                                  ++iter)
-    {
-  
-      // See if we have a changed attribute for this field
-      if ( 
-           changedAttributes[mFid].find( iter->fieldName() ) == 
-           changedAttributes[mFid].end() 
-         )
-      {
-        // No, copy from rhs feature
-        attributes.push_back(changedAttributes[mFid][ iter->fieldName() ]);
-      }
-      else
-      {
-        // Yes, copy from changedAttributes
-        attributes.push_back(QgsFeatureAttribute(iter->fieldName(),
-                                                 changedAttributes[mFid][ iter->fieldName() ]
-                            ));
-      }  
-      
-    } 
-  }
-  
-
-  // Copy the geometry over
-  if ( changedGeometries.find(mFid) == changedGeometries.end() )
   {
     // copy geometry purely from rhs feature
     if ( rhs.mGeometry )
@@ -116,20 +86,13 @@ QgsFeature::QgsFeature( QgsFeature const & rhs,
       mOwnsGeometry = FALSE;
     }
   }
-  else
-  {
-    // deep-copy geometry purely from changedGeometries
-    mGeometry     = new QgsGeometry(changedGeometries[mFid]);
-    mOwnsGeometry = TRUE;
-  }
 
 }                        
 
 
 QgsFeature::QgsFeature( QgsFeature const & rhs )
     : mFid( rhs.mFid ), 
-      attributes( rhs.attributes ),
-      fieldNames( rhs.fieldNames ),
+      mAttributes( rhs.mAttributes ),
       mValid( rhs.mValid ),
       mDirty( rhs.mDirty ),
       mTypeName( rhs.mTypeName )
@@ -157,8 +120,7 @@ QgsFeature & QgsFeature::operator=( QgsFeature const & rhs )
 
   mFid =  rhs.mFid ; 
   mDirty =  rhs.mDirty ; 
-  attributes =  rhs.attributes ;
-  fieldNames =  rhs.fieldNames ;
+  mAttributes =  rhs.mAttributes ;
   mValid =  rhs.mValid ;
   mTypeName = rhs.mTypeName;
 
@@ -204,76 +166,46 @@ int QgsFeature::featureId() const
  * Get the attributes for this feature.
  * @return A std::map containing the field name/value mapping
  */
-const std::vector < QgsFeatureAttribute > &QgsFeature::attributeMap()
+const QgsAttributeMap& QgsFeature::attributeMap() const
 {
-#ifdef QGISDEBUG
-//      std::cout << "QgsFeature::attributeMap: Returning attributes"
-//                << "." << std::endl;
-#endif
-  
-  return attributes;
+  return mAttributes;
 }
 
 /**
  * Add an attribute to the map
  */
-void QgsFeature::addAttribute(QString const&  field, QString const & value, bool numeric)
+void QgsFeature::addAttribute(int field, QgsFeatureAttribute attr)
 {
-  attributes.push_back(QgsFeatureAttribute(field, value, numeric));
+  mAttributes.insert(field, attr);
 }
 
 /**Deletes an attribute and its value*/
-void QgsFeature::deleteAttribute(const QString& name)
+void QgsFeature::deleteAttribute(int field)
 {
-    for(std::vector<QgsFeatureAttribute>::iterator iter=attributes.begin();iter!=attributes.end();++iter)
-    {
-	if(iter->fieldName()==name)
-	{
-	    attributes.erase(iter);
-	    break;
-	}
-    }
+  mAttributes.remove(field);
 }
 
-/**Changes an existing attribute value
-   @param name attribute name
-   @param newval new value*/
-void QgsFeature::changeAttributeValue(const QString& name, const QString& newval)
+
+void QgsFeature::changeAttribute(int field, QgsFeatureAttribute attr)
 {
-   for(std::vector<QgsFeatureAttribute>::iterator iter=attributes.begin();iter!=attributes.end();++iter)
-    {
-	if(iter->fieldName()==name)
-	{
-	    iter->setFieldValue(newval);
-	    break;
-	}
-    } 
+  mAttributes[field] = attr;
 }
 
-void QgsFeature::changeAttributeName(const QString& name, const QString& newname)
-{
-   // TODO: This was added for Paste Transformations, but as this is called per transfer,
-   // per feature pasted, this can get inefficient.  It may be worth calculating once per
-   // paste action and caching for each subsequent feature in that paste action.
-   for(std::vector<QgsFeatureAttribute>::iterator iter=attributes.begin();iter!=attributes.end();++iter)
-    {
-	if(iter->fieldName()==name)
-	{
-	    iter->setFieldName(newname);
-	    break;
-	}
-    } 
-}
 
 /**
  * Get the fields for this feature
  * @return A std::map containing field position (index) and field name
  */
-const std::map < int, QString > &QgsFeature::fields()
+QgsFieldNameMap QgsFeature::fields() const
 {
-#ifdef QGISDEBUG
-       std::cout << "QgsFeature::fields: Returning fieldNames." << std::endl;
-#endif
+  QgsFieldNameMap fieldNames;
+  QgsAttributeMap::const_iterator it;
+  
+  for (it = mAttributes.begin(); it != mAttributes.end(); it++)
+  {
+    fieldNames.insert(it.key(), it.value().fieldName());
+  }
+
   return fieldNames;
 }
 

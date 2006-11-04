@@ -47,7 +47,7 @@ static const char * const ident_ =
     "$Id$";
 
 
-QgsLabel::QgsLabel( std::vector<QgsField> const & fields )
+QgsLabel::QgsLabel( const QgsFieldMap & fields )
 {
 
     mField = fields;
@@ -64,29 +64,29 @@ QgsLabel::QgsLabel( std::vector<QgsField> const & fields )
 QgsLabel::~QgsLabel()
 {}
 
-QString QgsLabel::fieldValue ( int attr, QgsFeature *feature )
+QString QgsLabel::fieldValue ( int attr, QgsFeature &feature )
 {
     if ( mLabelField[attr].isEmpty() )
       {
         return QString();
       }
 
-    std::vector<QgsFeatureAttribute> fields =  feature->attributeMap();
-
-    for ( unsigned int i = 0; i < fields.size(); i++ )
+    const QgsAttributeMap& attrs = feature.attributeMap();
+    QgsAttributeMap::const_iterator it;
+    
+    for (it = attrs.begin(); it != attrs.end(); it++)
     {
-      if ( fields[i].fieldName().compare(mLabelField[attr]) == 0 )
-        {
-            return fields[i].fieldValue();
-        }
+      if (it.value().fieldName() == mLabelField[attr])
+        return it.value().fieldValue();
     }
+
     return QString();
 }
 
-void QgsLabel::renderLabel( QPainter * painter, QgsRect *viewExtent,
+void QgsLabel::renderLabel( QPainter * painter, QgsRect &viewExtent,
                             QgsCoordinateTransform* coordTransform,
                             QgsMapToPixel *transform,
-                            QgsFeature *feature, bool selected, QgsLabelAttributes *classAttributes,
+                            QgsFeature &feature, bool selected, QgsLabelAttributes *classAttributes,
        			    double sizeScale )
 {
 #if QGISDEBUG > 3
@@ -392,17 +392,14 @@ void QgsLabel::renderLabel(QPainter* painter, QgsPoint point,
     painter->restore();
 }
 
-void QgsLabel::addRequiredFields ( std::list<int> *fields )
+void QgsLabel::addRequiredFields ( QgsAttributeList& fields )
 {
-    for ( int i = 0; i < LabelFieldCount; i++ )
+    for ( uint i = 0; i < LabelFieldCount; i++ )
     {
         if ( mLabelFieldIdx[i] == -1 )
             continue;
         bool found = false;
-        for (std::list<int>::iterator it = fields->
-                                           begin();
-                it != fields->end();
-                ++it)
+        for (QgsAttributeList::iterator it = fields.begin(); it != fields.end(); ++it)
         {
             if ( *it == mLabelFieldIdx[i] )
             {
@@ -412,18 +409,17 @@ void QgsLabel::addRequiredFields ( std::list<int> *fields )
         }
         if (!found)
         {
-            fields->push_back(mLabelFieldIdx[i])
-            ;
+            fields.append(mLabelFieldIdx[i]);
         }
     }
 }
 
-void QgsLabel::setFields( std::vector<QgsField> const & fields  )
+void QgsLabel::setFields( const QgsFieldMap & fields  )
 {
     mField = fields;
 }
 
-std::vector<QgsField> & QgsLabel::fields ( void )
+QgsFieldMap & QgsLabel::fields ( void )
 {
     return mField;
 }
@@ -459,9 +455,9 @@ QgsLabelAttributes *QgsLabel::layerAttributes ( void )
     return mLabelAttributes;
 }
 
-void QgsLabel::labelPoint ( std::vector<QgsPoint>& points, QgsFeature *feature )
+void QgsLabel::labelPoint ( std::vector<QgsPoint>& points, QgsFeature & feature )
 {
-  QgsGeometry* geometry = feature->geometry();
+  QgsGeometry* geometry = feature.geometry();
   unsigned char *geom = geometry->wkbBuffer();
   QGis::WKBTYPE wkbType = geometry->wkbType();
   

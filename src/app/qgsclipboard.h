@@ -20,9 +20,12 @@
 #ifndef QGSCLIPBOARD_H
 #define QGSCLIPBOARD_H
 
-#include <vector>
+#include <QList>
 
 class QgsFeature;
+
+typedef QList<QgsFeature> QgsFeatureList;
+
 
 /**
 
@@ -61,14 +64,14 @@ public:
    *  Place a copy of features on the internal clipboard, 
    *  destroying the previous contents.
    */
-  void replaceWithCopyOf( std::vector<QgsFeature> features );
+  void replaceWithCopyOf( QgsFeatureList& features );
 
   /*
    *  Returns a copy of features on the internal clipboard, 
    *  the caller assumes responsibility fot destroying the contents
    *  when it's done with it.
    */
-  std::vector<QgsFeature*>* copyOf();
+  QgsFeatureList copyOf();
   
   /*
    *  Clears the internal clipboard.
@@ -87,7 +90,7 @@ private:
         Stored as values not pointers as each clipboard operation
         involves a deep copy anyway.
      */
-    std::vector<QgsFeature> mFeatureClipboard;
+    QgsFeatureList mFeatureClipboard;
 
 };
 

@@ -209,7 +209,7 @@ void QgsMapserverExport::writeMapFile()
       if (lyr->type() == QgsMapLayer::VECTOR)
       {
         QgsVectorLayer* vlayer = dynamic_cast<QgsVectorLayer*>(lyr);
-        switch (vlayer->featureType())
+        switch (vlayer->geometryType())
         {
           case QGis::WKBPoint:
           case QGis::WKBMultiPoint:
@@ -260,27 +260,26 @@ void QgsMapserverExport::writeMapFile()
         case QgsMapLayer::VECTOR:
           // get the provider type
           {
-            QString providerType = 
-              dynamic_cast<QgsVectorLayer*>(lyr)->providerType();
+            QgsVectorLayer* vlyr = dynamic_cast<QgsVectorLayer*>(lyr);
+            QString providerType = vlyr->providerType();
             if(providerType == "postgres")
             {
-              QgsDataSourceURI *dUri = 
-                dynamic_cast<QgsVectorLayer *>(lyr)->getDataProvider()->getURI();
-              mapFile << "CONNECTION \"user=" << dUri->username.toLocal8Bit().data();
-              if(dUri->password.length() > 0)
+              QgsDataSourceURI dUri(vlyr->getDataProvider()->dataSourceUri());
+              mapFile << "CONNECTION \"user=" << dUri.username.toLocal8Bit().data();
+              if(dUri.password.length() > 0)
               {
-                mapFile << " password="<< dUri->password.toLocal8Bit().data();
+                mapFile << " password="<< dUri.password.toLocal8Bit().data();
               }
-              mapFile  << " dbname=" << dUri->database.toLocal8Bit().data() 
-                << " host=" << dUri->host.toLocal8Bit().data()
-                << " port=" << dUri->port.toLocal8Bit().data()
+              mapFile  << " dbname=" << dUri.database.toLocal8Bit().data() 
+                << " host=" << dUri.host.toLocal8Bit().data()
+                << " port=" << dUri.port.toLocal8Bit().data()
                 << "\"" << std::endl; 
               mapFile << "CONNECTIONTYPE postgis" << std::endl; 
-              mapFile << "DATA \"" << dUri->geometryColumn.toLocal8Bit().data() << " from " 
-                << dUri->table.toLocal8Bit().data() << "\"" << std::endl; 
-              if(dUri->sql.length() > 0)
+              mapFile << "DATA \"" << dUri.geometryColumn.toLocal8Bit().data() << " from " 
+                << dUri.table.toLocal8Bit().data() << "\"" << std::endl; 
+              if(dUri.sql.length() > 0)
               {
-                mapFile << "FILTER \"" << dUri->sql.toLocal8Bit().data() << "\"" << std::endl; 
+                mapFile << "FILTER \"" << dUri.sql.toLocal8Bit().data() << "\"" << std::endl; 
               }
 
             }

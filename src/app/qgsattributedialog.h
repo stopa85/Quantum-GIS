@@ -20,7 +20,7 @@
 
 #include "ui_qgsattributedialogbase.h"
 
-#include "qgsfeatureattribute.h"
+#include "qgsfeature.h"
 #include <vector>
 
 class QDialog;
@@ -31,7 +31,7 @@ class QgsAttributeDialog: public QDialog, private Ui::QgsAttributeDialogBase
     Q_OBJECT
 
   public:
-    QgsAttributeDialog(const std::vector<QgsFeatureAttribute>* attributes);
+    QgsAttributeDialog(const QgsAttributeMap& attributes);
 
     ~QgsAttributeDialog();
 

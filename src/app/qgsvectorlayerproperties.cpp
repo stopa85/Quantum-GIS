@@ -57,7 +57,7 @@ QgsVectorLayerProperties::QgsVectorLayerProperties(QgsVectorLayer * lyr,
   QgsVectorDataProvider *dp = dynamic_cast<QgsVectorDataProvider *>(layer->getDataProvider());
   QVBoxLayout *actionLayout = new QVBoxLayout( actionOptionsFrame );
   actionLayout->setMargin(0);
-  std::vector<QgsField> fields = dp->fields();
+  QgsFieldMap fields = dp->fields();
   actionDialog = new QgsAttributeActionDialog ( layer->actions(), fields, 
                                                 actionOptionsFrame );
   actionLayout->addWidget( actionDialog );
@@ -161,11 +161,10 @@ void QgsVectorLayerProperties::reset( void )
   }
 
   //get field list for display field combo
-  std::vector<QgsField> myFields = dp->fields();
-  for (int i = 0; i < myFields.size(); i++)
+  const QgsFieldMap& myFields = dp->fields();
+  for (QgsFieldMap::const_iterator it = myFields.begin(); it != myFields.end(); ++it)
   {
-    QgsField myField = myFields[i];            
-    displayFieldComboBox->insertItem( myField.name() );
+    displayFieldComboBox->insertItem( it->name() );
   }   
 
   // set up the scale based layer visibility stuff....
@@ -329,8 +328,8 @@ void QgsVectorLayerProperties::on_pbnQueryBuilder_clicked()
   QgsPostgresProvider * myPGProvider = (QgsPostgresProvider *) dp;
   // create the query builder object using the table name
   // and postgres connection from the provider
-  QgsPgQueryBuilder *pqb =
-      new QgsPgQueryBuilder(myPGProvider->getURI(), this);
+  QgsDataSourceURI uri(myPGProvider->dataSourceUri());
+  QgsPgQueryBuilder *pqb = new QgsPgQueryBuilder(&uri, this);
        
   // Set the sql in the query builder to the same in the prop dialog
   // (in case the user has already changed it)
@@ -529,11 +528,10 @@ QString QgsVectorLayerProperties::getMetadata()
  
   //get info for each field by looping through them
   QgsVectorDataProvider *myDataProvider = dynamic_cast<QgsVectorDataProvider *>(layer->getDataProvider());
-  std::vector<QgsField> myFields = myDataProvider->fields();
-  for (int i = 0; i < myFields.size(); i++)
+  const QgsFieldMap& myFields = myDataProvider->fields();
+  for (QgsFieldMap::const_iterator it = myFields.begin(); it != myFields.end(); ++it)
   {
- 
-    QgsField myField = myFields[i];
+    const QgsField& myField = *it;
     
     myMetadataQString += "<tr><td bgcolor=\"white\">";
     myMetadataQString += myField.name();

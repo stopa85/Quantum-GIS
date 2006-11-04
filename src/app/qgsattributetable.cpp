@@ -29,6 +29,7 @@
 #include "qgsfeature.h"
 #include "qgsfeatureattribute.h"
 #include "qgsfield.h"
+#include "qgslogger.h"
 #include "qgsvectordataprovider.h"
 #include "qgsvectorlayer.h"
 
@@ -333,12 +334,12 @@ bool QgsAttributeTable::addAttribute(const QString& name, const QString& type)
 	    return false;
 	}
     }
-    mAddedAttributes.insert(std::make_pair(name,type));
-#ifdef QGISDEBUG
-    qWarning(("inserting attribute "+name+" of type "+type).toLocal8Bit().data());
+    mAddedAttributes.insert(name,type);
+    
+    QgsDebugMsg("inserting attribute " + name + " of type " + type + ", numCols: " + QString::number(numCols()) );
+    
     //add a new column at the end of the table
-    qWarning(("numCols: "+QString::number(numCols())).toLocal8Bit().data());
-#endif
+        
     insertColumns(numCols());
     horizontalHeader()->setLabel(numCols()-1,name);
     mEdited=true;
@@ -348,18 +349,17 @@ bool QgsAttributeTable::addAttribute(const QString& name, const QString& type)
 void QgsAttributeTable::deleteAttribute(const QString& name)
 {
     //check, if there is already an attribute with this name in mAddedAttributes
-    std::map<QString,QString>::iterator iter=mAddedAttributes.find(name);
+    QgsNewAttributesMap::iterator iter = mAddedAttributes.find(name);
     if(iter!=mAddedAttributes.end())
     {
-	mAddedAttributes.erase(iter);
+	mAddedAttributes.remove(iter);
 	removeAttrColumn(name);
     }
     else
     {
-#ifdef QGISDEBUG
-	qWarning(("QgsAttributeTable: deleteAttribute "+name).toLocal8Bit().data());
-#endif
-	mDeletedAttributes.insert(name);
+	QgsDebugMsg("QgsAttributeTable: deleteAttribute " + name);
+  
+  // TODO: [MD] mDeletedAttributes.insert(name);
 	removeAttrColumn(name);
     }
     mEdited=true;
@@ -447,19 +447,20 @@ void QgsAttributeTable::fillTable(QgsVectorLayer* layer)
   QgsVectorDataProvider* provider=layer->getDataProvider();
   if(provider)
   {
-    QgsFeature *fet;
+    QgsFeature fet;
     int row = 0;
-  
-    std::vector<QgsFeature*>& addedFeatures = layer->addedFeatures();
-    std::set<int>& deletedFeatures = layer->deletedFeatureIds();
+    
+    QgsFeatureList& addedFeatures = layer->addedFeatures();
+    QgsFeatureIds& deletedFeatures = layer->deletedFeatureIds();
 
     // set up the column headers
     Q3Header *colHeader = horizontalHeader();
-    std::vector < QgsField > fields = provider->fields();
+    mFields = provider->fields();
     int fieldcount=provider->fieldCount();
 #ifdef QGISDEBUG
-    for (int l = 0; l < fields.size(); l++)
-      std::cout << "field: " << fields[l].name().toLocal8Bit().data() << " | " << fields[l].isNumeric() << " | " << fields[l].type().toLocal8Bit().data() << std::endl;
+    for (int l = 0; l < mFields.size(); l++)
+      QgsDebugMsg("field: " + mFields[l].name() + " | " +
+                  QString::number(mFields[l].isNumeric()) + " | " + mFields[l].type());
 #endif
   
     setNumRows(provider->featureCount() + addedFeatures.size() - deletedFeatures.size());
@@ -468,26 +469,25 @@ void QgsAttributeTable::fillTable(QgsVectorLayer* layer)
 
     for (int h = 1; h <= fieldcount; h++)
     {
-        colHeader->setLabel(h, fields[h - 1].name());
-#ifdef QGISDEBUG
-        qWarning("Setting column label "+fields[h - 1].name());
-#endif
+        colHeader->setLabel(h, mFields[h - 1].name());
+        
+        QgsDebugMsg("Setting column label " + mFields[h - 1].name());
     }
 
     //go through the features and fill the values into the table
     provider->reset();
-    while ((fet = provider->getNextFeature(true)))
+    QgsAttributeList all = provider->allAttributesList();
+    while (provider->getNextFeature(fet, false, all))
     {
-      if(deletedFeatures.find(fet->featureId()) == deletedFeatures.end())
+      if (!deletedFeatures.contains(fet.featureId()))
       {
         putFeatureInTable(row, fet);
         row++;
       }
-      delete fet;
     }
 
     //also consider the not commited features
-    for(std::vector<QgsFeature*>::iterator it = addedFeatures.begin(); it != addedFeatures.end(); it++)
+    for(QgsFeatureList::iterator it = addedFeatures.begin(); it != addedFeatures.end(); it++)
     {
       putFeatureInTable(row, *it);
       row++;
@@ -497,7 +497,7 @@ void QgsAttributeTable::fillTable(QgsVectorLayer* layer)
   }
 }
 
-void QgsAttributeTable::putFeatureInTable(int row, QgsFeature* fet)
+void QgsAttributeTable::putFeatureInTable(int row, QgsFeature& fet)
 {
   if(row >= numRows())//prevent a crash if a provider doesn't update the feature count properly
     {
@@ -505,10 +505,10 @@ void QgsAttributeTable::putFeatureInTable(int row, QgsFeature* fet)
     }
   
   //id-field
-  int id = fet->featureId();
+  int id = fet.featureId();
   setText(row, 0, QString::number(id));
   insertFeatureId(id, row);  //insert the id into the search tree of qgsattributetable
-  const std::vector < QgsFeatureAttribute >& attr = fet->attributeMap();
+  const QgsAttributeMap& attr = fet.attributeMap();
   for (int i = 0; i < attr.size(); i++)
   {
     // get the field values
@@ -524,22 +524,20 @@ void QgsAttributeTable::storeChangedValue(int row, int column)
 	//find feature id
 	int id=text(row,0).toInt();
 	QString attribute=horizontalHeader()->label(column);
-#ifdef QGISDEBUG
-	qWarning(("feature id: "+QString::number(id)).toLocal8Bit().data());
-	qWarning(("attribute: "+attribute).toLocal8Bit().data());
-#endif
-	std::map<int,std::map<QString,QString> >::iterator iter=mChangedValues.find(id);
-	if(iter==mChangedValues.end())
-	{
-	    std::map<QString,QString> themap;
-	    mChangedValues.insert(std::make_pair(id,themap));
-	    iter=mChangedValues.find(id);
-	}
-	iter->second.erase(attribute);
-	iter->second.insert(std::make_pair(attribute,text(row,column)));
-#ifdef QGISDEBUG
-	qWarning(("value: "+text(row,column)).toLocal8Bit().data());
-#endif	
+	
+  QgsDebugMsg("feature id: " + QString::number(id));
+	QgsDebugMsg("attribute: " + attribute);
+
+  // add empty map for feature if doesn't exist
+  if (!mChangedValues.contains(id))
+  {
+    mChangedValues.insert(id, QgsAttributeMap());
+  }
+  
+  uint index = mFields.key(attribute);
+  mChangedValues[id].insert(index, QgsFeatureAttribute(attribute, text(row,column)) );
+  
+	QgsDebugMsg("value: " + text(row,column));
 	mEdited=true;
     }
 }
@@ -548,10 +546,6 @@ void QgsAttributeTable::clearEditingStructures()
 {
     mDeletedAttributes.clear();
     mAddedAttributes.clear();
-    for(std::map<int,std::map<QString,QString> >::iterator iter=mChangedValues.begin();iter!=mChangedValues.end();++iter)
-    {
-	iter->second.clear();
-    }
     mChangedValues.clear();
 }
 
@@ -623,7 +617,7 @@ void QgsAttributeTable::bringSelectedToTop()
 
 }
 
-void QgsAttributeTable::selectRowsWithId(const std::set<int>& ids)
+void QgsAttributeTable::selectRowsWithId(const QgsFeatureIds& ids)
 {
   /*
   // if selecting rows takes too much time we can use progress dialog
@@ -651,7 +645,7 @@ void QgsAttributeTable::selectRowsWithId(const std::set<int>& ids)
   QObject::disconnect(this, SIGNAL(selectionChanged()), this, SLOT(handleChangedSelections()));
     
   clearSelection(false);
-  std::set<int>::const_iterator it;
+  QgsFeatureIds::const_iterator it;
   for (it = ids.begin(); it != ids.end(); it++)
   {
     selectRowWithId(*it);
@@ -662,7 +656,7 @@ void QgsAttributeTable::selectRowsWithId(const std::set<int>& ids)
   emit repaintRequested();
 }
 
-void QgsAttributeTable::showRowsWithId(const std::set<int>& ids)
+void QgsAttributeTable::showRowsWithId(const QgsFeatureIds& ids)
 {
   setUpdatesEnabled(false);
   
@@ -671,7 +665,7 @@ void QgsAttributeTable::showRowsWithId(const std::set<int>& ids)
     hideRow(i);
   
   // show only matching rows
-  std::set<int>::const_iterator it;
+  QgsFeatureIds::const_iterator it;
   for (it = ids.begin(); it != ids.end(); it++)
   {
     showRow(rowIdMap[*it]);

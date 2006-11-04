@@ -29,9 +29,10 @@
 #include "qgsfeature.h"
 #include "qgsfeatureattribute.h"
 #include "qgsgeometry.h"
+#include "qgslogger.h"
 
 QgsClipboard::QgsClipboard()
-  : mFeatureClipboard(0)
+  : mFeatureClipboard()
 {
 }
 
@@ -39,7 +40,7 @@ QgsClipboard::~QgsClipboard()
 {
 }
 
-void QgsClipboard::replaceWithCopyOf( std::vector<QgsFeature> features )
+void QgsClipboard::replaceWithCopyOf( QgsFeatureList& features )
 {
 
   // Replace the QGis clipboard.
@@ -56,20 +57,16 @@ void QgsClipboard::replaceWithCopyOf( std::vector<QgsFeature> features )
   bool firstFeature = TRUE;
 
   // then the field contents
-  for (std::vector<QgsFeature>::iterator it  = features.begin();
-                                         it != features.end();
-                                       ++it)
+  for (QgsFeatureList::iterator it = features.begin(); it != features.end(); ++it)
   {
-    std::vector<QgsFeatureAttribute> attributes = it->attributeMap();
+    QgsAttributeMap attributes = it->attributeMap();
 
     // first do the field names
     if (firstFeature)
     {
       textFields += "wkt_geom";
 
-      for (std::vector<QgsFeatureAttribute>::iterator it2  = attributes.begin();
-                                                      it2 != attributes.end();
-                                                    ++it2)
+      for (QgsAttributeMap::iterator it2 = attributes.begin(); it2 != attributes.end(); ++it2)
       {
         textFields += it2->fieldName();
       }
@@ -86,9 +83,7 @@ void QgsClipboard::replaceWithCopyOf( std::vector<QgsFeature> features )
 #ifdef QGISDEBUG
 //       std::cout << "QgsClipboard::replaceWithCopyOf: about to traverse fields." << std::endl;
 #endif
-    for (std::vector<QgsFeatureAttribute>::iterator it2  = attributes.begin();
-                                                    it2 != attributes.end();
-                                                  ++it2)
+    for (QgsAttributeMap::iterator it2 = attributes.begin(); it2 != attributes.end(); ++it2)
     {
 #ifdef QGISDEBUG
 //       std::cout << "QgsClipboard::replaceWithCopyOf: inspecting field '"
@@ -130,26 +125,14 @@ void QgsClipboard::replaceWithCopyOf( std::vector<QgsFeature> features )
 
 }
 
-std::vector<QgsFeature*>* QgsClipboard::copyOf()
+QgsFeatureList QgsClipboard::copyOf()
 {
 
-#ifdef QGISDEBUG
-        std::cerr << "QgsClipboard::copyOf: returning clipboard."
-                  << std::endl;
-#endif
+  QgsDebugMsg("QgsClipboard::copyOf: returning clipboard.");
   
-  std::vector<QgsFeature*>* featuresCopy = new std::vector<QgsFeature*>;
-
   //TODO: Slurp from the system clipboard as well.
 
-  for (std::vector<QgsFeature>::iterator it  = mFeatureClipboard.begin();
-                                         it != mFeatureClipboard.end();
-                                       ++it)
-  {
-    featuresCopy->push_back( new QgsFeature(*it) );
-  }
-  
-  return featuresCopy;
+  return mFeatureClipboard;
     
 //  return mFeatureClipboard;
   
@@ -157,22 +140,15 @@ std::vector<QgsFeature*>* QgsClipboard::copyOf()
 
 void QgsClipboard::clear()
 {
-  
   mFeatureClipboard.clear();
 
-#ifdef QGISDEBUG
-        std::cerr << "QgsClipboard::clear: cleared clipboard."
-                  << std::endl;
-#endif
+  QgsDebugMsg("QgsClipboard::clear: cleared clipboard.");
 }
   
 void QgsClipboard::insert( QgsFeature& feature )
 {
   mFeatureClipboard.push_back(feature);
-#ifdef QGISDEBUG
-        std::cerr << "QgsClipboard::insert: inserted " << feature.geometry()->wkt().toLocal8Bit().data()
-                  << std::endl;
-#endif
-
+        
+  QgsDebugMsg("QgsClipboard::insert: inserted " + feature.geometry()->wkt());
 }
  

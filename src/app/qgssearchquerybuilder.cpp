@@ -53,10 +53,10 @@ QgsSearchQueryBuilder::~QgsSearchQueryBuilder()
 
 void QgsSearchQueryBuilder::populateFields()
 {
-  const std::vector<QgsField>& fields = mLayer->fields();
-  for (uint i = 0; i < fields.size(); i++)
+  const QgsFieldMap& fields = mLayer->fields();
+  for (QgsFieldMap::const_iterator it = fields.begin(); it != fields.end(); ++it)
   {
-    QgsField f = fields[i];
+    QgsField f = it.value();
     QString fieldName = f.name();
     mFieldMap[fieldName] = f;
     lstFields->insertItem(fieldName);
@@ -73,17 +73,16 @@ void QgsSearchQueryBuilder::getFieldValues(uint limit)
   QString fieldName = field.name().lower();
   bool numeric = field.isNumeric();
   
-  // TODO: need optimized getNextFeature which won't extract geometry
-  QgsFeature* fet;
+  QgsFeature feat;
   QString value;
-  std::vector<QgsFeatureAttribute>::const_iterator it;
   QgsVectorDataProvider* provider = mLayer->getDataProvider();
   provider->reset();
-  while ((fet = provider->getNextFeature(true)) &&
+  QgsAttributeList allAttributes = provider->allAttributesList();
+  while (provider->getNextFeature(feat, false, allAttributes) &&
          (limit == 0 || lstValues->count() != limit))
   {
-    const std::vector<QgsFeatureAttribute>& attributes = fet->attributeMap();
-    for (it = attributes.begin(); it != attributes.end(); it++)
+    const QgsAttributeMap& attributes = feat.attributeMap();
+    for (QgsAttributeMap::const_iterator it = attributes.begin(); it != attributes.end(); it++)
     {
       if ( (*it).fieldName().lower() == fieldName)
       {
@@ -102,7 +101,6 @@ void QgsSearchQueryBuilder::getFieldValues(uint limit)
     if (lstValues->findItem(value) == 0)
       lstValues->insertItem(value);
     
-    delete fet;   
   }
   provider->reset();
   
@@ -154,18 +152,16 @@ long QgsSearchQueryBuilder::countRecords(QString searchString)
   QApplication::setOverrideCursor(Qt::waitCursor);
   
   int count = 0;
-
-  // TODO: need optimized getNextFeature which won't extract geometry
-  QgsFeature* fet;
+  QgsFeature feat;
   QgsVectorDataProvider* provider = mLayer->getDataProvider();
   provider->reset();
-  while ((fet = provider->getNextFeature(true)))
+  QgsAttributeList allAttributes = provider->allAttributesList();
+  while (provider->getNextFeature(feat, false, allAttributes))
   {
-    if (searchTree->checkAgainst(fet->attributeMap()))
+    if (searchTree->checkAgainst(feat.attributeMap()))
     {
       count++;
     }
-    delete fet;
     
     // check if there were errors during evaulating
     if (searchTree->hasError())

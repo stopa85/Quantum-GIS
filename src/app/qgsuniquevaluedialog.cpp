@@ -35,12 +35,10 @@ QgsUniqueValueDialog::QgsUniqueValueDialog(QgsVectorLayer* vl): QDialog(), mVect
     QgsVectorDataProvider *provider;
     if (provider = dynamic_cast<QgsVectorDataProvider *>(mVectorLayer->getDataProvider()))
     {
-	std::vector < QgsField > const & fields = provider->fields();
+	const QgsFieldMap & fields = provider->fields();
 	QString str;
 	
-	for (std::vector < QgsField >::const_iterator it = fields.begin(); 
-             it != fields.end(); 
-             ++it)
+	for (QgsFieldMap::const_iterator it = fields.begin(); it != fields.end(); ++it)
         {
 	    str = (*it).name();
 	    str = str.left(1).upper() + str.right(str.length() - 1);  //make the first letter uppercase
@@ -60,8 +58,8 @@ QgsUniqueValueDialog::QgsUniqueValueDialog(QgsVectorLayer* vl): QDialog(), mVect
 	mClassBreakBox->clear();
 	
 	// XXX - mloskot - fix for Ticket #31 (bug)
-	std::list<int> attributes = renderer->classificationAttributes();
-	std::list<int>::iterator iter = attributes.begin();
+	QgsAttributeList attributes = renderer->classificationAttributes();
+  QgsAttributeList::iterator iter = attributes.begin();
 	int classattr = *iter;
 	mClassificationComboBox->setCurrentItem(classattr);
 
@@ -142,19 +140,18 @@ void QgsUniqueValueDialog::changeClassificationAttribute(int nr)
     if (provider)
     {
 	QString value;
-	std::list<int> attlist;
-	attlist.push_back(nr);
-	std::vector < QgsFeatureAttribute > vec;
+	QgsAttributeList attlist;
+	attlist.append(nr);
 	QgsSymbol* symbol;
 
 	provider->reset();
-	QgsFeature* f;
+	QgsFeature feat;
 
 	//go through all the features and insert their value into the map and into mClassBreakBox
 	mClassBreakBox->clear();
-	while((f=provider->getNextFeature(attlist)))
+	while(provider->getNextFeature(feat, false, attlist))
 	{
-	    vec = f->attributeMap();
+      const QgsAttributeMap& vec = feat.attributeMap();
 	    value=vec[0].fieldValue();
 	   
 	    if(mValues.find(value)==mValues.end())
@@ -162,7 +159,6 @@ void QgsUniqueValueDialog::changeClassificationAttribute(int nr)
 		symbol=new QgsSymbol(mVectorLayer->vectorType(), value);
 		mValues.insert(std::make_pair(value,symbol));
 	    }
-	    delete f;
 	}
 
 	//set symbology for all QgsSiSyDialogs

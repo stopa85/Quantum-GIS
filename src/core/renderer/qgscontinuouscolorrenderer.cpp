@@ -73,14 +73,14 @@ void QgsContinuousColorRenderer::setMaximumSymbol(QgsSymbol* sy)
   mMaximumSymbol = sy;
 }
 
-void QgsContinuousColorRenderer::renderFeature(QPainter * p, QgsFeature * f, QImage* img, 
+void QgsContinuousColorRenderer::renderFeature(QPainter * p, QgsFeature & f, QImage* img, 
 	double* scalefactor, bool selected, double widthScale)
 {
   if ((mMinimumSymbol && mMaximumSymbol))
   {
     //first find out the value for the classification attribute
-    std::vector < QgsFeatureAttribute > vec = f->attributeMap();
-    double fvalue = vec[0].fieldValue().toDouble();
+    const QgsAttributeMap& attrs = f.attributeMap();
+    double fvalue = attrs[mClassificationField].fieldValue().toDouble();
 
     //double fvalue = vec[mClassificationField].fieldValue().toDouble();
     double minvalue = mMinimumSymbol->lowerValue().toDouble();
@@ -210,10 +210,10 @@ void QgsContinuousColorRenderer::readXML(const QDomNode& rnode, QgsVectorLayer& 
     vl.setRenderer(this);
 }
 
-std::list<int> QgsContinuousColorRenderer::classificationAttributes() const
+QgsAttributeList QgsContinuousColorRenderer::classificationAttributes() const
 {
-    std::list<int> list;
-    list.push_back(mClassificationField);
+    QgsAttributeList list;
+    list.append(mClassificationField);
     return list;
 }
 

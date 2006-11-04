@@ -17,26 +17,39 @@ email                : sherman at mrcc.com
 #ifndef QGSFEATURE_H
 #define QGSFEATURE_H
 
+#include <QMap>
 #include <QString>
-#include <map>
-#include <vector>
 
 class QgsFeatureAttribute;
 class QgsGeometry;
 class QgsRect;
 
-/** \class QgsFeature - Feature attribute class.
- * Encapsulates a single feature including id and field/value.
- *@author Gary E.Sherman
- */
 
+// key = field index, value = field name and attribute value
+typedef QMap<int, QgsFeatureAttribute> QgsAttributeMap;
+
+// key = feature id, value = changed attributes
+typedef QMap<int, QgsAttributeMap> QgsChangedAttributesMap;
+
+// key = feature id, value = changed geometry
+typedef QMap<int, QgsGeometry> QgsGeometryMap;
+
+// key = field index, value = field name
+typedef QMap<int, QString> QgsFieldNameMap;
+
+
+/**
+ * @class QgsFeature - Feature attribute class.
+ * Encapsulates a single feature including id and field/value.
+ *
+ * @author Gary E.Sherman
+ */
 class CORE_EXPORT QgsFeature {
 
   public:
 
     //! Constructor
-    QgsFeature();
-    QgsFeature(int id, QString typeName = "" );
+    QgsFeature(int id = 0, QString typeName = "" );
 
     /** create a copy of this feature in its uncommitted state.
         To do this, you also pass in a reference to the feature's
@@ -46,9 +59,9 @@ class CORE_EXPORT QgsFeature {
         This is useful in the cut/copy routine, where you'd
         want a copy of the "current" feature, not the on-disk feature.
      */
-    QgsFeature( QgsFeature const & rhs,
-                std::map<int,std::map<QString,QString> > & changedAttributes,
-                std::map<int, QgsGeometry> & changedGeometries );
+    QgsFeature( const QgsFeature & rhs,
+                const QgsChangedAttributesMap & changedAttributes,
+                const QgsGeometryMap & changedGeometries );
 
     /** copy ctor needed due to internal pointer */
     QgsFeature( QgsFeature const & rhs );
@@ -86,31 +99,26 @@ class CORE_EXPORT QgsFeature {
      * Get the attributes for this feature.
      * @return A std::map containing the field name/value mapping
      */
-    const std::vector<QgsFeatureAttribute>& attributeMap();
+    const QgsAttributeMap& attributeMap() const;
 
     /** 
      * Add an attribute to the map
      */
-    void addAttribute(QString const & field, QString const & value = "", bool numeric = false);
+    void addAttribute(int field, QgsFeatureAttribute attr);
 
     /**Deletes an attribute and its value*/
-    void deleteAttribute(const QString& name);
+    void deleteAttribute(int field);
 
     /**Changes an existing attribute value
-       @param name attribute name
-       @param newval new value*/
-    void changeAttributeValue(const QString& name, const QString& newval);
-
-    /**Changes an existing attribute name.  The value is unchanged.
-       @param name attribute name
-       @param newname new name*/
-    void changeAttributeName(const QString& name, const QString& newname);
+       @param field index of the field
+       @param attr attribute name and value to be set */
+    void changeAttribute(int field, QgsFeatureAttribute attr);
 
     /**
      * Get the fields for this feature
      * @return A std::map containing field position (index) and field name
      */
-    const std::map<int, QString>& fields();
+    QgsFieldNameMap fields() const;
 
     /**
      * Return the validity of this feature. This is normally set by
@@ -215,11 +223,8 @@ class CORE_EXPORT QgsFeature {
     //! feature id
     int mFid;
 
-    //! std::map containing field name/value pairs
-    std::vector<QgsFeatureAttribute> attributes;
-
-    //! std::map containing the field index and name
-    std::map<int, QString> fieldNames;
+    /** map of attributes accessed by field index */
+    QgsAttributeMap mAttributes;
 
     /** pointer to geometry in binary WKB format
 

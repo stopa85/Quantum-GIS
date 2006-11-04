@@ -16,26 +16,23 @@
  ***************************************************************************/
 /* $Id$ */
 #include "qgsattributedialog.h"
-#include "qgsfeature.h"
+#include "qgsfeatureattribute.h"
 #include "qgslogger.h"
 #include <QTableWidgetItem>
 #include <QSettings>
 
-QgsAttributeDialog::QgsAttributeDialog(const std::vector<QgsFeatureAttribute>* attributes)
+QgsAttributeDialog::QgsAttributeDialog(const QgsAttributeMap& attributes)
   : QDialog(),
     _settingsPath("/Windows/AttributeDialog/"),
-    mRowIsDirty(attributes->size(), FALSE)
+    mRowIsDirty(attributes.size(), FALSE)
 {
     restorePositionAndColumnWidth();
 
     setupUi(this);
-    mTable->setRowCount(attributes->size());
+    mTable->setRowCount(attributes.size());
 
     int index=0;
-    for ( std::vector<QgsFeatureAttribute>::const_iterator
-            it  = attributes->begin();
-            it != attributes->end();
-          ++it)
+    for (QgsAttributeMap::const_iterator it = attributes.begin(); it != attributes.end(); ++it)
     {
       // set attribute name
 
@@ -77,14 +74,14 @@ bool QgsAttributeDialog::isDirty(int row)
 
 bool QgsAttributeDialog::queryAttributes(QgsFeature& f)
 {
-  const std::vector<QgsFeatureAttribute> featureAttributes = f.attributeMap();
-  QgsAttributeDialog attdialog(&featureAttributes);
+  QgsAttributeMap featureAttributes = f.attributeMap();
+  QgsAttributeDialog attdialog(featureAttributes);
 
   if (attdialog.exec() == QDialog::Accepted)
   {
     for (int i = 0; i < featureAttributes.size(); ++i)
     {
-      f.changeAttributeValue(featureAttributes[i].fieldName(), attdialog.value(i));
+      f.changeAttribute(i, QgsFeatureAttribute(featureAttributes[i].fieldName(), attdialog.value(i)));
     }
     return true;
   }
