@@ -109,6 +109,9 @@ ENDIF (WIN32)
 
 ADD_LIBRARY(qgis_core SHARED ${QGIS_CORE_SRCS} ${QGIS_CORE_MOC_SRCS})
 
+# make sure to create qgssvnversion.h before compiling
+ADD_DEPENDENCIES(qgis_core svnversion)
+
 # because of htonl
 IF (WIN32)
   SET(PLATFORM_LIBRARIES wsock32)

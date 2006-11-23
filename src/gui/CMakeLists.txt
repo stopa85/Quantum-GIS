@@ -50,6 +50,9 @@ ENDIF (WIN32)
 
 ADD_LIBRARY(qgis_gui SHARED ${QGIS_GUI_SRCS} ${QGIS_GUI_MOC_SRCS})
 
+# make sure that UI files will be processed first
+ADD_DEPENDENCIES(qgis_gui ui)
+
 TARGET_LINK_LIBRARIES(qgis_gui
   ${QT_LIBRARIES}
   ${SQLITE3_LIBRARIES}
