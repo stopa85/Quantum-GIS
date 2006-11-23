@@ -29,5 +29,8 @@ ADD_TRANSLATION_FILES (QM_FILES ${TS_FILES})
 ADD_CUSTOM_TARGET (translations ALL
                    DEPENDS ${QM_FILES})
 
+# first compile sources, then compile translations
+ADD_DEPENDENCIES (translations qgis)
+
 INSTALL (FILES ${QM_FILES}
          DESTINATION ${QGIS_DATA_DIR}/i18n)
