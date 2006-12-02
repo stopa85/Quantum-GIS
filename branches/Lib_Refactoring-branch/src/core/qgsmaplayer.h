@@ -60,7 +60,7 @@ public:
     int type() const;
 
     /** Get this layer's unique ID, this ID is used to access this layer from map layer registry */
-    QString const & getLayerID() const;
+    QString getLayerID() const;
 
     /** Set the display name of the layer
      * @param name New name for the layer

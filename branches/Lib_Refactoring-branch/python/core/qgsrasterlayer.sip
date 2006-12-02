@@ -106,7 +106,7 @@ public:
                                        the QgsVectorLayer interface 
      */
     bool draw(QPainter * theQPainter,
-              QgsRect * theViewExtent, 
+              QgsRect & theViewExtent, 
               QgsMapToPixel * theQgsMapToPixel,
               QgsCoordinateTransform* ct,
               bool drawingToEditingCanvas);

@@ -261,10 +261,20 @@ class CORE_EXPORT QgsVectorDataProvider : public QgsDataProvider
        */
       QgsAttributeList allAttributesList();
 
+
+      /**
+       * Set whether provider should return also features that don't have
+       * associated geometry. FALSE by default
+       */
+      void setFetchFeaturesWithoutGeom(bool fetch);
+
     protected:
 
       /** Encoding */
       QTextCodec* mEncoding;
+
+      /** should provider fetch also features that don't have geometry? */
+      bool mFetchFeaturesWithoutGeom;
 
 };
 

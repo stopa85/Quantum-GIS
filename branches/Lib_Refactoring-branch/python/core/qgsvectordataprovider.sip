@@ -14,8 +14,8 @@
     return NULL;
       
   // Set the list elements.
-  int i;
-  for (QSet<int>::iterator it = sipCpp->begin(); it != sipCpp->end(); ++it, ++i)
+  QSet<int>::iterator it = sipCpp->begin();
+  for (int i = 0; it != sipCpp->end(); ++it, ++i)
   {
     PyObject *tobj;
 
@@ -26,7 +26,7 @@
     }
     PyList_SET_ITEM(l, i, tobj);
   }
- 
+
   return l;
 %End
 
@@ -385,5 +385,11 @@ class QgsVectorDataProvider : QgsDataProvider
        * Return list of indexes to fetch all attributes in getNextFeature()
        */
       QList<int> allAttributesList();
+
+      /**
+       * Set whether provider should return also features that don't have
+       * associated geometry. FALSE by default
+       */
+      void setFetchFeaturesWithoutGeom(bool fetch);
 
 };

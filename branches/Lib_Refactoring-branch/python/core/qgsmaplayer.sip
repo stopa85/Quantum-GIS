@@ -43,7 +43,7 @@ public:
     int type() const;
 
     /** Get this layer's unique ID, this ID is used to access this layer from map layer registry */
-    const QString & getLayerID() const;
+    QString getLayerID() const;
 
     /** Set the display name of the layer
      * @param name New name for the layer
@@ -67,12 +67,12 @@ public:
      * @param mtp Transformation class
      * @return FALSE if an error occurred during drawing
      */
-    virtual bool draw(QPainter* painter, QgsRect* rect, QgsMapToPixel* mtp, QgsCoordinateTransform* ct, bool);
+    virtual bool draw(QPainter* painter, QgsRect& rect, QgsMapToPixel* mtp, QgsCoordinateTransform* ct, bool);
     
     /** Draw labels
      * @TODO to be removed: used only in vector layers
      */
-    virtual void drawLabels(QPainter* painter, QgsRect* rect, QgsMapToPixel* mtp, QgsCoordinateTransform* ct);
+    virtual void drawLabels(QPainter* painter, QgsRect& rect, QgsMapToPixel* mtp, QgsCoordinateTransform* ct);
 
     /** Return the extent of the layer as a QRect */
     const QgsRect extent();
