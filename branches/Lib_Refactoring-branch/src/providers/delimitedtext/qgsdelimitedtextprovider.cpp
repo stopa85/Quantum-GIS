@@ -32,12 +32,14 @@
 #include <QUrl>
 
 
+#include "qgsapplication.h"
 #include "qgsdataprovider.h"
 #include "qgsfeature.h"
 #include "qgsfeatureattribute.h"
 #include "qgsfield.h"
 #include "qgsmessageoutput.h"
 #include "qgsrect.h"
+#include "qgsspatialrefsys.h"
 #include "qgis.h"
 
 #ifdef WIN32
@@ -52,10 +54,10 @@ static const QString TEXT_PROVIDER_DESCRIPTION = "Delimited text data provider";
 
 
 
-QgsDelimitedTextProvider::QgsDelimitedTextProvider(QString const &uri)
+QgsDelimitedTextProvider::QgsDelimitedTextProvider(QString uri)
     : QgsVectorDataProvider(uri), 
-      mMinMaxCacheDirty(true),
-      mShowInvalidLines(true)
+      mShowInvalidLines(true),
+      mMinMaxCacheDirty(true)
 {
   // Get the file name and mDelimiter out of the uri
   mFileName = uri.left(uri.find("?"));
@@ -85,7 +87,7 @@ QgsDelimitedTextProvider::QgsDelimitedTextProvider(QString const &uri)
   std::cerr << "yField is: " << (const char *)mYField.toLocal8Bit().data() << std::endl;
 #endif
   // Set the selection rectangle to null
-  mSelectionRectangle = 0;
+  mSelectionRectangle = QgsRect();
   // assume the layer is invalid until proven otherwise
   mValid = false;
   if (!mFileName.isEmpty() && !mDelimiter.isEmpty() && !mXField.isEmpty() &&
@@ -106,7 +108,7 @@ QgsDelimitedTextProvider::QgsDelimitedTextProvider(QString const &uri)
         int xyCount = 0;
         int lineNumber = 0;
         // set the initial extent
-        mExtent = new QgsRect();
+        mExtent = QgsRect();
         //commented out by Tim for now - setMinimal needs to be merged in from 0.7 branch
         //mExtent->setMinimal(); // This defeats normalization
         bool firstPoint = true;
@@ -138,7 +140,7 @@ QgsDelimitedTextProvider::QgsDelimitedTextProvider(QString const &uri)
               QString field = *it;
               if (field.length() > 0)
               {
-                attributeFields.push_back(QgsField(*it, "Text"));
+                attributeFields[fieldPos] = QgsField(*it, "Text");
                 fieldPositions[*it] = fieldPos++;
                 // check to see if this field matches either the x or y field 
                 if (mXField == *it)
@@ -201,26 +203,26 @@ QgsDelimitedTextProvider::QgsDelimitedTextProvider(QString const &uri)
             {
               if (!firstPoint)
               {
-                if (x > mExtent->xMax())
+                if (x > mExtent.xMax())
                 {
-                  mExtent->setXmax(x);
+                  mExtent.setXmax(x);
                 }
-                if (x < mExtent->xMin())
+                if (x < mExtent.xMin())
                 {
-                  mExtent->setXmin(x);
+                  mExtent.setXmin(x);
                 }
-                if (y > mExtent->yMax())
+                if (y > mExtent.yMax())
                 {
-                  mExtent->setYmax(y);
+                  mExtent.setYmax(y);
                 }
-                if (y < mExtent->yMin())
+                if (y < mExtent.yMin())
                 {
-                  mExtent->setYmin(y);
+                  mExtent.setYmin(y);
                 }
               }
               else
               { // Extent for the first point is just the first point
-                mExtent->set(x,y,x,y);
+                mExtent.set(x,y,x,y);
                 firstPoint = false;
               }
             }
@@ -234,7 +236,7 @@ QgsDelimitedTextProvider::QgsDelimitedTextProvider(QString const &uri)
 #ifdef QGISDEBUG
           std::cerr << "Data store is valid" << std::endl;
           std::cerr << "Number of features " << mNumberFeatures << std::endl;
-          std::cerr << "Extents " << (const char *)mExtent->stringRep().toLocal8Bit().data() << std::endl;
+          std::cerr << "Extents " << (const char *)mExtent.stringRep().toLocal8Bit().data() << std::endl;
 #endif
           mValid = true;
         }
@@ -259,7 +261,7 @@ QgsDelimitedTextProvider::QgsDelimitedTextProvider(QString const &uri)
     else
       // file does not exist
       std::
-        cerr << "Data source " << (const char *)getDataSourceUri().toLocal8Bit().data() << " could not be opened" <<
+        cerr << "Data source " << (const char *)dataSourceUri().toLocal8Bit().data() << " could not be opened" <<
         std::endl;
 
   }
@@ -276,7 +278,7 @@ QgsDelimitedTextProvider::~QgsDelimitedTextProvider()
   mFile->close();
   delete mFile;
   delete mStream;
-  for (int i = 0; i < fieldCount(); i++)
+  for (uint i = 0; i < fieldCount(); i++)
   {
     delete mMinMaxCache[i];
   }
@@ -284,37 +286,18 @@ QgsDelimitedTextProvider::~QgsDelimitedTextProvider()
 }
 
 
-QString QgsDelimitedTextProvider::storageType()
+QString QgsDelimitedTextProvider::storageType() const
 {
   return "Delimited text file";
 }
 
 
 /**
- * Get the first feature resutling from a select operation
- * @return QgsFeature
- */
-QgsFeature * QgsDelimitedTextProvider::getFirstFeature(bool fetchAttributes)
-{
-    QgsFeature *f = new QgsFeature;
-
-    reset();                    // reset back to first feature
-
-    if ( getNextFeature_( *f, fetchAttributes ) )
-    {
-        return f;
-    }
-
-    delete f;
-
-    return 0x0;
-} // QgsDelimitedTextProvider::getFirstFeature(bool fetchAttributes)
-
-/**
 
   insure double value is properly translated into locate endian-ness
 
 */
+/*
 static
 double
 translateDouble_( double d )
@@ -340,12 +323,11 @@ translateDouble_( double d )
     return to.fpval;
 
 } // translateDouble_
-
+*/
 
 bool
 QgsDelimitedTextProvider::getNextFeature_( QgsFeature & feature, 
-                                           bool getAttributes,
-                                           std::list<int> const * desiredAttributes )
+                                           QgsAttributeList desiredAttributes )
 {
     // before we do anything else, assume that there's something wrong with
     // the feature
@@ -392,15 +374,15 @@ QgsDelimitedTextProvider::getNextFeature_( QgsFeature & feature,
            QByteArray  buffer;
            QDataStream s( &buffer, QIODevice::WriteOnly ); // open on buffers's data
 
-           switch ( endian() )
+           switch ( QgsApplication::endian() )
            {
-               case QgsDataProvider::NDR :
+               case QgsApplication::NDR :
                    // we're on a little-endian platform, so tell the data
                    // stream to use that
                    s.setByteOrder( QDataStream::LittleEndian );
                    s << (Q_UINT8)1; // 1 is for little-endian
                    break;
-               case QgsDataProvider::XDR :
+               case QgsApplication::XDR :
                    // don't change byte order since QDataStream is big endian by default
                    s << (Q_UINT8)0; // 0 is for big-endian
                    break;
@@ -419,25 +401,16 @@ QgsDelimitedTextProvider::getNextFeature_( QgsFeature & feature,
 
            feature.setGeometryAndOwnership( geometry, sizeof(wkbPoint) );
 
-           if ( getAttributes && ! desiredAttributes )
+           if ( desiredAttributes.size() > 0 )
            {
-               for (int fi = 0; fi < attributeFields.size(); fi++)
-               {
-                   feature.addAttribute(attributeFields[fi].name(), tokens[fi]);
-               }
-           }
-           // regardless of whether getAttributes is true or not, if the
-           // programmer went through the trouble of passing in such a list of
-           // attribute fields, then obviously they want them
-           else if ( desiredAttributes )
-           {
-               for ( std::list<int>::const_iterator i = desiredAttributes->begin();
-                     i != desiredAttributes->end();
+               for ( QgsAttributeList::const_iterator i = desiredAttributes.begin();
+                     i != desiredAttributes.end();
                      ++i )
                {
-                   feature.addAttribute(attributeFields[*i].name(), tokens[*i]);
+                   feature.addAttribute(*i, QgsFeatureAttribute(attributeFields[*i].name(), tokens[*i]));
                }
            }
+           
            // We have a good line, so return
            return true;
 
@@ -469,50 +442,13 @@ QgsDelimitedTextProvider::getNextFeature_( QgsFeature & feature,
 } // getNextFeature_( QgsFeature & feature )
 
 
-
-/**
-  Get the next feature resulting from a select operation
-  Return 0 if there are no features in the selection set
- * @return false if unable to get the next feature
- */
-bool QgsDelimitedTextProvider::getNextFeature(QgsFeature & feature,
-                                              bool fetchAttributes)
+bool QgsDelimitedTextProvider::getNextFeature(QgsFeature& feature,
+                              bool fetchGeometry,
+                              QgsAttributeList fetchAttributes,
+                              uint featureQueueSize)
 {
-    return getNextFeature_( feature, fetchAttributes );
-} // QgsDelimitedTextProvider::getNextFeature
-
-
-
-QgsFeature * QgsDelimitedTextProvider::getNextFeature(bool fetchAttributes)
-{
-    QgsFeature * f = new QgsFeature;
-
-    if ( getNextFeature( *f, fetchAttributes ) )
-    {
-        return f;
-    }
-    
-    delete f;
-
-    return 0x0;
-} // QgsDelimitedTextProvider::getNextFeature(bool fetchAttributes)
-
-
-
-QgsFeature * QgsDelimitedTextProvider::getNextFeature(std::list<int> const & desiredAttributes, int featureQueueSize)
-{
-    QgsFeature * f = new QgsFeature;
-
-    if ( getNextFeature_( *f, true, &desiredAttributes ) )
-    {
-        return f;
-    }
-    
-    delete f;
-
-    return 0x0;
-
-} // QgsDelimitedTextProvider::getNextFeature(std::list < int >&attlist)
+  return getNextFeature_(feature, fetchAttributes);
+}
 
 
 
@@ -522,7 +458,7 @@ QgsFeature * QgsDelimitedTextProvider::getNextFeature(std::list<int> const & des
  * with calls to getFirstFeature and getNextFeature.
  * @param mbr QgsRect containing the extent to use in selecting features
  */
-void QgsDelimitedTextProvider::select(QgsRect * rect, bool useIntersect)
+void QgsDelimitedTextProvider::select(QgsRect rect, bool useIntersect)
 {
 
   // Setting a spatial filter doesn't make much sense since we have to
@@ -530,57 +466,25 @@ void QgsDelimitedTextProvider::select(QgsRect * rect, bool useIntersect)
   // We store the rect and use it in getNextFeature to determine if the
   // feature falls in the selection area
   reset();
-  mSelectionRectangle = new QgsRect((*rect));
+  mSelectionRectangle = rect;
 }
 
 
-/**
- * Identify features within the search radius specified by rect
- * @param rect Bounding rectangle of search radius
- * @return std::vector containing QgsFeature objects that intersect rect
- */
-std::vector < QgsFeature > &QgsDelimitedTextProvider::identify(QgsRect * rect)
-{
-  // reset the data source since we need to be able to read through
-  // all features
-  reset();
-  std::cerr << "Attempting to identify features falling within " << (const char *)rect->
-    stringRep().toLocal8Bit().data() << std::endl;
-  // select the features
-  select(rect);
-#ifdef WIN32
-  //TODO fix this later for win32
-  std::vector < QgsFeature > feat;
-  return feat;
-#endif
-
-}
-
-/*
-   unsigned char * QgsDelimitedTextProvider::getGeometryPointer(OGRFeature *fet){
-   unsigned char *gPtr=0;
-// get the wkb representation
-
-//geom->exportToWkb((OGRwkbByteOrder) endian(), gPtr);
-return gPtr;
-
-}
-*/
 
 
 // Return the extent of the layer
-QgsRect *QgsDelimitedTextProvider::extent()
+QgsRect QgsDelimitedTextProvider::extent()
 {
-  return new QgsRect(mExtent->xMin(), mExtent->yMin(), mExtent->xMax(),
-                     mExtent->yMax());
+  return QgsRect(mExtent.xMin(), mExtent.yMin(), mExtent.xMax(),
+                     mExtent.yMax());
 }
 
 /** 
  * Return the feature type
  */
-int QgsDelimitedTextProvider::geometryType() const
+QGis::WKBTYPE QgsDelimitedTextProvider::geometryType() const
 {
-  return 1;                     // WKBPoint
+  return QGis::WKBPoint;
 }
 
 /** 
@@ -594,30 +498,13 @@ long QgsDelimitedTextProvider::featureCount() const
 /**
  * Return the number of fields
  */
-int QgsDelimitedTextProvider::fieldCount() const
+uint QgsDelimitedTextProvider::fieldCount() const
 {
   return attributeFields.size();
 }
 
-/**
- * Fetch attributes for a selected feature
- */
-void QgsDelimitedTextProvider::getFeatureAttributes(int key, QgsFeature * f)
-{
-  //for (int i = 0; i < ogrFet->GetFieldCount(); i++) {
 
-  //  // add the feature attributes to the tree
-  //  OGRFieldDefn *fldDef = ogrFet->GetFieldDefnRef(i);
-  //  QString fld = fldDef->GetNameRef();
-  //  //    OGRFieldType fldType = fldDef->GetType();
-  //  QString val;
-
-  //  val = ogrFet->GetFieldAsString(i);
-  //  f->addAttribute(fld, val);
-  //}
-}
-
-std::vector<QgsField> const & QgsDelimitedTextProvider::fields() const
+const QgsFieldMap & QgsDelimitedTextProvider::fields() const
 {
   return attributeFields;
 }
@@ -631,13 +518,10 @@ void QgsDelimitedTextProvider::reset()
   mStream->seek(0);
   mStream->readLine();
   //reset any spatial filters
-  if(mSelectionRectangle && mExtent)
-    {
-      *mSelectionRectangle = *mExtent;
-    }
+  mSelectionRectangle = mExtent;
 }
 
-QString QgsDelimitedTextProvider::minValue(int position)
+QString QgsDelimitedTextProvider::minValue(uint position)
 {
   if (position >= fieldCount())
   {
@@ -653,7 +537,7 @@ QString QgsDelimitedTextProvider::minValue(int position)
 }
 
 
-QString QgsDelimitedTextProvider::maxValue(int position)
+QString QgsDelimitedTextProvider::maxValue(uint position)
 {
   if (position >= fieldCount())
   {
@@ -670,7 +554,7 @@ QString QgsDelimitedTextProvider::maxValue(int position)
 
 void QgsDelimitedTextProvider::fillMinMaxCash()
 {
-  for (int i = 0; i < fieldCount(); i++)
+  for (uint i = 0; i < fieldCount(); i++)
   {
     mMinMaxCache[i][0] = DBL_MAX;
     mMinMaxCache[i][1] = -DBL_MAX;
@@ -682,7 +566,7 @@ void QgsDelimitedTextProvider::fillMinMaxCash()
   getNextFeature(f, true);
   do
   {
-    for (int i = 0; i < fieldCount(); i++)
+    for (uint i = 0; i < fieldCount(); i++)
     {
       double value = (f.attributeMap())[i].fieldValue().toDouble();
       if (value < mMinMaxCache[i][0])
@@ -700,9 +584,6 @@ void QgsDelimitedTextProvider::fillMinMaxCash()
   mMinMaxCacheDirty = false;
 }
 
-//TODO - add sanity check for shape file layers, to include cheking to
-//       see if the .shp, .dbf, .shx files are all present and the layer
-//       actually has features
 bool QgsDelimitedTextProvider::isValid()
 {
   return mValid;
@@ -714,11 +595,11 @@ bool QgsDelimitedTextProvider::isValid()
 bool QgsDelimitedTextProvider::boundsCheck(double x, double y)
 {
   bool inBounds(true);
-  if (mSelectionRectangle)
-    inBounds = (((x <= mSelectionRectangle->xMax()) &&
-                 (x >= mSelectionRectangle->xMin())) &&
-                ((y <= mSelectionRectangle->yMax()) &&
-                 (y >= mSelectionRectangle->yMin())));
+  if (!mSelectionRectangle.isEmpty())
+    inBounds = (((x <= mSelectionRectangle.xMax()) &&
+                 (x >= mSelectionRectangle.xMin())) &&
+                ((y <= mSelectionRectangle.yMax()) &&
+                 (y >= mSelectionRectangle.yMin())));
   // QString hit = inBounds?"true":"false";
 
   // std::cerr << "Checking if " << x << ", " << y << " is in " << 
@@ -730,13 +611,6 @@ int QgsDelimitedTextProvider::capabilities() const
 {
     return 0;
 }
-
-
-size_t QgsDelimitedTextProvider::layerCount() const
-{
-    return 1;                   // XXX How to calculate the layers?
-} // QgsOgrProvider::layerCount()
-
 
 
 int *QgsDelimitedTextProvider::getFieldLengths()
@@ -780,6 +654,16 @@ int *QgsDelimitedTextProvider::getFieldLengths()
   return lengths;
 }
 
+void QgsDelimitedTextProvider::setSRS(const QgsSpatialRefSys& theSRS)
+{
+  // TODO: make provider projection-aware
+}
+  
+QgsSpatialRefSys QgsDelimitedTextProvider::getSRS()
+{
+  // TODO: make provider projection-aware
+  return QgsSpatialRefSys(); // return default SRS
+}
 
 
 
