@@ -80,7 +80,7 @@ int QgsMapLayer::type() const
 }
 
 /** Get this layer's unique ID */
-QString const & QgsMapLayer::getLayerID() const
+QString QgsMapLayer::getLayerID() const
 {
     return mID;
 }

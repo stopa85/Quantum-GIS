@@ -23,7 +23,8 @@
 
 QgsVectorDataProvider::QgsVectorDataProvider(QString uri)
     : QgsDataProvider(uri),
-      mEncoding(QTextCodec::codecForLocale())
+      mEncoding(QTextCodec::codecForLocale()),
+      mFetchFeaturesWithoutGeom(FALSE)
 {
 }
 
@@ -234,4 +235,9 @@ QgsAttributeList QgsVectorDataProvider::allAttributesList()
     list.append(i);
 
   return list;
+}
+
+void QgsVectorDataProvider::setFetchFeaturesWithoutGeom(bool fetch)
+{
+  mFetchFeaturesWithoutGeom = fetch;
 }

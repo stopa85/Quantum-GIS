@@ -1278,7 +1278,7 @@ const QgsFieldMap & QgsVectorLayer::fields() const
   if ( ! mDataProvider )
   {
     QgsLogger::warning(" QgsVectorLayer::fields() invoked with null mDataProvider");
-    return QgsFieldMap();
+    assert(false);
   }
 
   return mDataProvider->fields();

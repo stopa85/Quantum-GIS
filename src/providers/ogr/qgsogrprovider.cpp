@@ -78,7 +78,12 @@ static const QString TEXT_PROVIDER_DESCRIPTION =
 
 
 QgsOgrProvider::QgsOgrProvider(QString const & uri)
-    : QgsVectorDataProvider(uri), ogrDataSource(0), extent_(0), ogrLayer(0), ogrDriver(0), minmaxcachedirty(true)
+ : QgsVectorDataProvider(uri),
+   ogrDataSource(0),
+   extent_(0),
+   ogrLayer(0),
+   ogrDriver(0),
+   minmaxcachedirty(true)
 {
   OGRRegisterAll();
 
@@ -246,7 +251,7 @@ bool QgsOgrProvider::getNextFeature(QgsFeature& feature,
   // skip features without geometry
   while ((fet = ogrLayer->GetNextFeature()) != NULL)
   {
-    if (fet->GetGeometryRef() != NULL)
+    if (fet->GetGeometryRef() != NULL || mFetchFeaturesWithoutGeom)
     {
       break;
     }
@@ -1439,7 +1444,7 @@ QgsSpatialRefSys QgsOgrProvider::getSRS()
   OGRSpatialReference * mySpatialRefSys = ogrLayer->GetSpatialRef();
   if (mySpatialRefSys == NULL)
   {
-    QgsLogger::critical("QgsOgrProvider::getProjectionWKT() --- no wkt found..returning null"); 
+    QgsLogger::warning("no spatial reference found"); 
   }
   else
   {
