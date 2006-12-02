@@ -107,16 +107,6 @@ class CORE_EXPORT QgsDataProvider : public QObject
 
       
       /**
-       * Reset the layer - for an OGRLayer, this means clearing the
-       * spatial filter and calling ResetReading
-       */
-      virtual void reset()
-      { 
-        // NOP by default 
-      }
-
-      
-      /**
        * Update the extents of the layer. Not implemented by default
        */
       virtual void updateExtents()
