@@ -40,6 +40,7 @@
 # endif
 #endif
 
+typedef QSet<int> QgsFeatureIds;
 
 /** This is the parent class for all GPS data classes (except tracksegment).
     It contains the variables that all GPS objects can have.
@@ -139,7 +140,7 @@ class GPSData {
   /** This function returns a pointer to a dynamically allocated QgsRect
       which is the bounding box for this dataset. You'll have to deallocate it
       yourself. */
-  QgsRect* getExtent() const;
+  QgsRect getExtent() const;
   
 
   /** Returns the number of waypoints in this dataset. */
@@ -193,13 +194,13 @@ class GPSData {
   TrackIterator addTrack(const Track& trk);
   
   /** This function removes the waypoints whose IDs are in the list. */
-  void removeWaypoints(std::list<int> const & ids);
+  void removeWaypoints(const QgsFeatureIds & ids);
   
   /** This function removes the routes whose IDs are in the list. */
-  void removeRoutes(std::list<int> const & ids);
+  void removeRoutes(const QgsFeatureIds & ids);
   
   /** This function removes the tracks whose IDs are in the list. */
-  void removeTracks(std::list<int> const & ids);
+  void removeTracks(const QgsFeatureIds & ids);
   
   /** This function will write the contents of this GPSData object as XML to
       the given text stream. */
