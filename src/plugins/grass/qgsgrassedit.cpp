@@ -986,7 +986,7 @@ void QgsGrassEdit::closeEdit(void)
   // Add new layers
   if ( mNewMap )
   {
-     QString uri = QDir::cleanDirPath ( mProvider->getDataSourceUri() );
+     QString uri = QDir::cleanDirPath ( mProvider->dataSourceUri() );
      std::cerr << "uri = " << uri.ascii() << std::endl;
      // Note: QDir::cleanPath is using '/' also on Windows
      //QChar sep = QDir::separator();
