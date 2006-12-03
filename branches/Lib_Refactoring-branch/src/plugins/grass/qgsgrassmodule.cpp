@@ -89,6 +89,7 @@ extern "C" {
 #include <grass/Vect.h>
 }
 
+
 #include "../../src/providers/grass/qgsgrass.h"
 #include "../../src/providers/grass/qgsgrassprovider.h"
 #include "qgsgrassattributes.h"
@@ -2224,7 +2225,7 @@ void QgsGrassModuleInput::updateQgisLayers()
 	    }
 
 	    // TODO add map() mapset() location() gisbase() to grass provider
-	    QString source = QDir::cleanPath ( provider->getDataSourceUri() );
+	    QString source = QDir::cleanPath ( provider->dataSourceUri() );
             #ifdef QGISDEBUG
             std::cerr << "source = " << source.ascii() << std::endl;
             #endif
@@ -2292,7 +2293,12 @@ void QgsGrassModuleInput::updateQgisLayers()
 
 	    mMapLayers.push_back ( vector );
 	    mVectorLayerNames.push_back ( grassLayer );
-            std::vector<QgsField> fields = vector->fields();
+            
+            // convert from QgsFieldMap to std::vector<QgsField>
+            QgsFieldMap flds = vector->fields();
+            std::vector<QgsField> fields;
+            for (QgsFieldMap::iterator it = flds.begin(); it != flds.end(); ++it)
+              fields.push_back(it.value());
 	    mVectorFields.push_back ( fields );
 	} 
 	else if ( mType == Raster && layer->type() == QgsMapLayer::RASTER ) 
@@ -2587,24 +2593,24 @@ void QgsGrassModuleGdalInput::updateQgisLayers()
             if ( vector->providerType() == "postgres" ) 
             {
                 // Construct OGR DSN
-                QgsDataSourceURI *dsUri = provider->getURI();
-                uri = "PG:host=" + dsUri->host 
-                      + " dbname=" + dsUri->database; 
+                QgsDataSourceURI dsUri(provider->dataSourceUri());
+                uri = "PG:host=" + dsUri.host 
+                      + " dbname=" + dsUri.database; 
 
-                if ( dsUri->port.length() > 0 ) 
-		    uri += " port=" + dsUri->port;
+                if ( dsUri.port.length() > 0 ) 
+		    uri += " port=" + dsUri.port;
 
-                if ( dsUri->username.length() > 0 ) 
-		    uri += " user=" + dsUri->username;
+                if ( dsUri.username.length() > 0 ) 
+		    uri += " user=" + dsUri.username;
 
-                if ( dsUri->password.length() > 0 ) 
-		    uri += " password=" + dsUri->password;
+                if ( dsUri.password.length() > 0 ) 
+		    uri += " password=" + dsUri.password;
 
-                ogrLayer = dsUri->schema + "." + dsUri->table;
+                ogrLayer = dsUri.schema + "." + dsUri.table;
             }
             else
             {
-	        uri = provider->getDataSourceUri();
+	        uri = provider->dataSourceUri();
                 ogrLayer = "";
             }
 
@@ -2846,19 +2852,20 @@ void QgsGrassModuleSelection::updateSelection()
     if ( keyField < 0 ) return;
     
     QString cats;
-    QgsFeature *feature = vector->getFirstFeature(true, true);
+    provider->reset();
+    QgsFeature* feature;
 
     int i = 0;
-    while ( feature )
+    while ( (feature = vector->getNextFeature(true, true)) != NULL )
     {
-	std::vector<QgsFeatureAttribute> attr = feature->attributeMap();
+	QgsAttributeMap attr = feature->attributeMap();
 	if ( attr.size() > keyField )
 	{
 	    if ( i > 0 ) cats.append( "," );
 	    cats.append( attr[keyField].fieldValue() );
 	    i++;
 	}
-        feature = vector->getNextFeature(true, true);
+        delete feature;
     }
     if ( mVectorLayer != vector ) 
     {
