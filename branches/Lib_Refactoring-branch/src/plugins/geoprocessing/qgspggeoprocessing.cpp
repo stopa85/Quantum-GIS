@@ -139,11 +139,11 @@ void QgsPgGeoprocessing::buffer()
         bb->setBufferLayerName(tableName.mid(tableName.find(".") + 1) + "_buffer");
         // set the fields on the dialog box drop-down
         QgsVectorDataProvider *dp = dynamic_cast<QgsVectorDataProvider *>(lyr->getDataProvider());
-        std::vector < QgsField > flds = dp->fields();
-        for (int i = 0; i < flds.size(); i++) {
+        QgsFieldMap flds = dp->fields();
+        for (QgsFieldMap::iterator it = flds.begin(); it != flds.end(); ++it) {
           // check the field type -- if its int we can use it
-          if (flds[i].type().find("int") > -1) {
-            bb->addFieldItem(flds[i].name());
+          if (it->type().find("int") > -1) {
+            bb->addFieldItem(it->name());
           }
         }
         // connect to the database

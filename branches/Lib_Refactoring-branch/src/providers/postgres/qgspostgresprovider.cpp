@@ -2423,9 +2423,10 @@ void QgsPostgresProvider::customEvent( QCustomEvent * e )
       // Collect the new extent from the event and set this layer's
       // extent with it.
 
-      QgsRect* r = (QgsRect*) e->data();
-      setExtent( *r );
-
+      {
+        QgsRect* r = (QgsRect*) e->data();
+        setExtent( *r );
+      }
 
       std::cout << "QgsPostgresProvider: new extent has been saved" << std::endl;
 
@@ -2449,9 +2450,7 @@ void QgsPostgresProvider::customEvent( QCustomEvent * e )
 
       std::cout << "QgsPostgresProvider: count has been calculated" << std::endl;
 
-      QgsProviderCountCalcEvent* e1 = (QgsProviderCountCalcEvent*) e;
-
-      numberFeatures = e1->numberFeatures();
+      numberFeatures = ((QgsProviderCountCalcEvent*) e)->numberFeatures();
 
       std::cout << "QgsPostgresProvider: count is " << numberFeatures << std::endl;
 
