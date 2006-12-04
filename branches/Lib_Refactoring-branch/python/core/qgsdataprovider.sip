@@ -62,13 +62,6 @@ class QgsDataProvider : QObject
 
       
       /**
-       * Reset the layer - for an OGRLayer, this means clearing the
-       * spatial filter and calling ResetReading
-      */
-      virtual void reset();
-
-      
-      /**
        * Update the extents of the layer. Not implemented by default
       */
       virtual void updateExtents();
