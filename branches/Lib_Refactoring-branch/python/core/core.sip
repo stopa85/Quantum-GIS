@@ -39,6 +39,7 @@
 %Include qgsrect.sip
 %Include qgsrenderer.sip
 %Include qgsscalecalculator.sip
+%Include qgsspatialindex.sip
 %Include qgsspatialrefsys.sip
 %Include qgsvectordataprovider.sip
 %Include qgsvectorlayer.sip

@@ -63,6 +63,8 @@ symbology/qgsmarkersymbol.cpp
 symbology/qgspolygonsymbol.cpp
 symbology/qgssymbol.cpp
 symbology/qgssymbologyutils.cpp
+
+spatialindex/qgsspatialindex.cpp
 )
 
 ADD_FLEX_FILES(QGIS_CORE_SRCS qgssearchstringlexer.ll)
@@ -105,9 +107,34 @@ IF (WIN32)
 ENDIF (WIN32)
 
 #############################################################
+# spatial indexing library
+
+# add path prefix to every specified file
+MACRO(PATH_PREFIX OUTPUT PREFIX)
+  FOREACH(F ${ARGN})
+    SET(${OUTPUT} ${${OUTPUT}} ${PREFIX}/${F})
+  ENDFOREACH(F)
+ENDMACRO(PATH_PREFIX)
+
+# tools library
+PATH_PREFIX(TOOLS_SRC tools   ExternalSort.cc ExternalSort.h TemporaryFile.cc Tools.cc)
+PATH_PREFIX(GEOM_SRC geometry LineSegment.cc Point.cc Region.cc)
+
+# spatial index library
+PATH_PREFIX(SPINDEX_SRC spatialindex SpatialIndexImpl.cc)
+PATH_PREFIX(STMAN_SRC storagemanager Buffer.cc DiskStorageManager.cc MemoryStorageManager.cc RandomEvictionsBuffer.cc)
+PATH_PREFIX(RTREE_SRC rtree BulkLoader.cc Index.cc Leaf.cc Node.cc RTree.cc Statistics.cc)
+
+INCLUDE_DIRECTORIES(spatialindex/include)
+
+SET(SPINDEX_SRC ${TOOLS_SRC} ${GEOM_SRC} ${SPINDEX_SRC} ${STMAN_SRC} ${RTREE_SRC})
+
+PATH_PREFIX(INDEX_SRC spatialindex ${SPINDEX_SRC})
+
+#############################################################
 # qgis_core library
 
-ADD_LIBRARY(qgis_core SHARED ${QGIS_CORE_SRCS} ${QGIS_CORE_MOC_SRCS})
+ADD_LIBRARY(qgis_core SHARED ${QGIS_CORE_SRCS} ${QGIS_CORE_MOC_SRCS} ${INDEX_SRC})
 
 # make sure to create qgssvnversion.h before compiling
 ADD_DEPENDENCIES(qgis_core svnversion)
