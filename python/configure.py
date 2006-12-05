@@ -83,7 +83,7 @@ makefile_gui = sipconfig.ModuleMakefile(
 for mk in [ makefile_core, makefile_gui ]:
   mk.extra_libs = ["qgis_core"]
   mk.extra_lib_dirs = ["../../build/src/core"]  # TODO: make universal!
-  mk.extra_include_dirs = ["../../src/core","../../src/core/raster","../../src/core/renderer","../../src/core/symbology","../.."]
+  mk.extra_include_dirs = ["../../src/core","../../src/core/raster","../../src/core/renderer","../../src/core/spatialindex","../../src/core/symbology","../.."]
   mk.extra_cxxflags = ["-DCORE_EXPORT="]
 
 # more settings for gui lib
