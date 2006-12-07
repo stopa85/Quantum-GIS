@@ -632,7 +632,7 @@ void QgsGrassModuleStandardOptions::freezeOutput()
 		QgsGrassProvider *provider = (QgsGrassProvider *) vector->getDataProvider();
 
 		// TODO add map() mapset() location() gisbase() to grass provider
-		QString source = QDir::cleanPath ( provider->getDataSourceUri() );
+		QString source = QDir::cleanPath ( provider->dataSourceUri() );
 		#ifdef QGISDEBUG
 		std::cerr << "source = " << source.ascii() << std::endl;
 		#endif
@@ -706,7 +706,7 @@ void QgsGrassModuleStandardOptions::thawOutput()
 		QgsGrassProvider *provider = (QgsGrassProvider *) vector->getDataProvider();
 
 		// TODO add map() mapset() location() gisbase() to grass provider
-		QString source = QDir::cleanPath ( provider->getDataSourceUri() );
+		QString source = QDir::cleanPath ( provider->dataSourceUri() );
 		#ifdef QGISDEBUG
 		std::cerr << "source = " << source.ascii() << std::endl;
 		#endif
