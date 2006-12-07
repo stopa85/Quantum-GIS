@@ -24,6 +24,20 @@
 
 #include <Tools.h>
 
+#ifdef WIN32
+#include <fcntl.h>
+int mkstemp(char* prefix)
+{
+	char* filename = tempnam(".", prefix);
+	if (filename == NULL)
+		return -1;
+	int fd = open(filename, O_RDWR | O_BINARY | O_CREAT, 0444);
+	if (fd < 0)
+		return -1;
+	return fd;
+}
+#endif
+
 Tools::TemporaryFile::TemporaryFile()
  : m_currentFile(0),
    m_fileSize(0),

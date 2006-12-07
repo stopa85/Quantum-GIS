@@ -26,6 +26,11 @@
 
 #include "RandomEvictionsBuffer.h"
 
+#ifdef WIN32
+double drand48(void) { return rand(); }
+void srand48(long seed) { srand(seed); }
+#endif
+
 using namespace SpatialIndex;
 using namespace SpatialIndex::StorageManager;
 using std::map;

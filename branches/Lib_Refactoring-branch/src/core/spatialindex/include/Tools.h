@@ -51,7 +51,9 @@
 	#endif
 #endif
 
+#ifndef WIN32
 #include <sys/resource.h>
+#endif
 #include <unistd.h>
 
 #if HAVE_PTHREAD_H

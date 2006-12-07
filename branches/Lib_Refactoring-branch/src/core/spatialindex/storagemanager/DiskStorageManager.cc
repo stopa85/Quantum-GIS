@@ -27,6 +27,11 @@
 #include <sys/stat.h>
 #include <stdio.h>
 
+#ifdef WIN32
+#include <io.h>
+#define fsync(fd) _commit(fd)
+#endif
+
 #include "DiskStorageManager.h"
 
 using namespace SpatialIndex;

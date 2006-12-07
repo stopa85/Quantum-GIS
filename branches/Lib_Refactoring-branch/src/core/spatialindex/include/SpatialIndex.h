@@ -38,11 +38,6 @@
 
 using namespace Tools::Geometry;
 
-# if !HAVE_MEMCPY
-#  define memcpy(d, s, n) bcopy ((s), (d), (n))
-#  define memmove(d, s, n) bcopy ((s), (d), (n))
-# endif
-
 # if !HAVE_BZERO
 #  define bzero(d, n) memset((d), 0, (n))
 # endif
