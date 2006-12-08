@@ -136,7 +136,7 @@ template<TYPE>
     int j = 0;
     while (PyDict_Next(tobj, &j, &kobj2, &tobj2))
     {
-      int k2 = PyInt_AsLong(kobj);
+      int k2 = PyInt_AsLong(kobj2);
       int state;
       
       TYPE* fa = reinterpret_cast<TYPE*>(sipConvertToInstance(tobj2, sipClass_TYPE, sipTransferObj,SIP_NOT_NONE,&state,sipIsErr));
