@@ -48,9 +48,8 @@
 
 };
 
-
-
-%MappedType QMap<int, QMap<int, QgsFeatureAttribute> >
+template<TYPE>
+%MappedType QMap<int, QMap<int, TYPE> >
 {
 %TypeHeaderCode
 #include <QMap>
@@ -63,12 +62,12 @@
   if ((d = PyDict_New()) == NULL)
     return NULL;
       
-  const sipMappedType* qmap2 = sipFindMappedType("QMap<int, QgsFeatureAttribute>");
+  const sipMappedType* qmap2 = sipFindMappedType("QMap<int, TYPE>");
       
   // Set the list elements.
-  for (QMap<int, QMap<int, QgsFeatureAttribute> >::iterator it = sipCpp->begin(); it != sipCpp->end(); ++it)
+  for (QMap<int, QMap<int, TYPE> >::iterator it = sipCpp->begin(); it != sipCpp->end(); ++it)
   {
-    QMap<int, QgsFeatureAttribute>* t = new QMap<int, QgsFeatureAttribute>(*it);
+    QMap<int, TYPE>* t = new QMap<int, TYPE>(*it);
     
     PyObject *kobj = PyInt_FromLong(it.key());
     PyObject *tobj = sipConvertFromMappedType(t, qmap2, sipTransferObj);
@@ -96,7 +95,7 @@
 %End
 
 %ConvertToTypeCode
-  PyObject *kobj, *tobj, *tobj2;
+  PyObject *kobj, *tobj, *kobj2, *tobj2;
 
   // Check the type if that is all that is required.
   if (sipIsErr == NULL)
@@ -107,41 +106,52 @@
     int i = 0;
     while (PyDict_Next(sipPy, &i, &kobj, &tobj))
     {
-      if (PyDict_Check(tobj))
+      if (!PyDict_Check(tobj))
         return 0;
-
-      while (PyDict_Next(tobj, &i, &kobj, &tobj2))
-        if (!sipCanConvertToInstance(tobj2, sipClass_QgsFeatureAttribute, SIP_NOT_NONE))
+        
+      int j = 0;
+      while (PyDict_Next(tobj, &j, &kobj2, &tobj2))
+      {
+        if (!sipCanConvertToInstance(tobj2, sipClass_TYPE, SIP_NOT_NONE))
           return 0;
+      }
+      
     }
-
     return 1;
   }
-
-  const sipMappedType* qmap2 = sipFindMappedType("QMap<int, QgsFeatureAttribute>");
   
-  QMap<int, QMap<int, QgsFeatureAttribute> > *qm = new QMap<int, QMap<int, QgsFeatureAttribute> >;
+  QMap<int, QMap<int, TYPE> > *qm = new QMap<int, QMap<int, TYPE> >;
+  
 
   int i = 0;
   while (PyDict_Next(sipPy, &i, &kobj, &tobj))
   {
-    int state;
     int k = PyInt_AsLong(kobj);
     
-    QMap<int, QgsFeatureAttribute> * t =
-        reinterpret_cast< QMap<int, QgsFeatureAttribute> * >(sipConvertToMappedType(tobj, qmap2, sipTransferObj, SIP_NOT_NONE, &state, sipIsErr));
-
-    if (*sipIsErr)
+    // using sipConvertToMappedType to convert directly to QMap<int, TYPE> doesn't work
+    // and ends with a segfault
+    
+    QMap<int, TYPE> qm2;
+    
+    int j = 0;
+    while (PyDict_Next(tobj, &j, &kobj2, &tobj2))
     {
-      sipReleaseInstance(t, sipClass_QgsFeatureAttribute, state);
-
-      delete qm;
-      return 0;
+      int k2 = PyInt_AsLong(kobj);
+      int state;
+      
+      TYPE* fa = reinterpret_cast<TYPE*>(sipConvertToInstance(tobj2, sipClass_TYPE, sipTransferObj,SIP_NOT_NONE,&state,sipIsErr));
+      
+      if (*sipIsErr)
+      {
+        sipReleaseInstance(tobj2, sipClass_TYPE, state);
+        delete qm;
+        return 0;
+      }
+      
+      qm2.insert(k2, *fa);
+      sipReleaseInstance(tobj2, sipClass_TYPE, state);
     }
-
-    qm->insert(k, *t);
-
-    sipReleaseInstance(t, sipClass_QgsFeatureAttribute, state);
+    qm->insert(k, qm2);
   }
 
   *sipCppPtr = qm;
