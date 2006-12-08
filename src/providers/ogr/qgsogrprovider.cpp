@@ -852,27 +852,32 @@ bool QgsOgrProvider::changeAttributeValues(const QgsChangedAttributesMap & attr_
       QString value = it2->fieldValue();
 		
       OGRFieldDefn *fd = of->GetFieldDefnRef ( f );
+      if (fd == NULL)
+      {
+        QgsLogger::warning("QgsOgrProvider::changeAttributeValues, Field " + QString::number(f) + " doesn't exist");
+        continue;
+      }
       
       OGRFieldType type = fd->GetType();
       switch ( type )
       {
-		    case OFTInteger:
-		        of->SetField ( f, value.toInt() );
-            break;
-		    case OFTReal:
-		        of->SetField ( f, value.toDouble() );
-            break;
-		    case OFTString:
-		        of->SetField ( f, value.ascii() );
-            break;
-		    default:
-      			QgsLogger::warning("QgsOgrProvider::changeAttributeValues, Unknown field type, cannot change attribute");
-      			break;
-		    }
+        case OFTInteger:
+          of->SetField ( f, value.toInt() );
+          break;
+        case OFTReal:
+          of->SetField ( f, value.toDouble() );
+          break;
+        case OFTString:
+          of->SetField ( f, value.ascii() );
+          break;
+        default:
+          QgsLogger::warning("QgsOgrProvider::changeAttributeValues, Unknown field type, cannot change attribute");
+          break;
+      }
 
-	   }
-     
-	   ogrLayer->SetFeature ( of );
+    }
+
+    ogrLayer->SetFeature ( of );
   }
 
   ogrLayer->SyncToDisk();
