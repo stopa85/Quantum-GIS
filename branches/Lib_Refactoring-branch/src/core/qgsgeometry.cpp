@@ -3008,7 +3008,7 @@ QgsPolyline QgsGeometry::asPolyline(unsigned char*& ptr, bool hasZValue)
   for (uint i = 0; i < nPoints; ++i)
   {
     x = *((double *) ptr);
-    y = *((double *) ptr + sizeof(double));
+    y = *((double *) (ptr + sizeof(double)));
     
     ptr += 2 * sizeof(double);
     
@@ -3047,7 +3047,7 @@ QgsPolygon QgsGeometry::asPolygon(unsigned char*& ptr, bool hasZValue)
     for (uint jdx = 0; jdx < nPoints; jdx++)
     {
       x = *((double *) ptr);
-      y = *((double *) ptr + sizeof(double));
+      y = *((double *) (ptr + sizeof(double)));
 
       ptr += 2 * sizeof(double);
       
