@@ -86,12 +86,31 @@ QgsDataSourceURI::QgsDataSourceURI(QString uri)
   {
     username = parm[1];
   }
-  parm = QStringList::split("=", conParts[4]);
-  if(parm.size() == 2)
-  {
-    password = parm[1];
-  }
-  /* end uri structure */   
+  
+  // The password can have '=' and ' ' characters in it, so we can't 
+  // use the split on '=' and ' ' technique - use indexOf() 
+  // instead. 
+  QString key="password='"; 
+  int i = connInfo.indexOf(key); 
+  if (i != -1) 
+  { 
+    QString pass = connInfo.mid(i+key.length()); 
+    // Now walk through the string till we find a ' character, but 
+    // need to allow for an escaped ' character (which will be the 
+    // \' character pair). 
+    int n = 0; 
+    bool escaped = false; 
+    while (n < pass.length() && (pass[n] != '\'' || escaped)) 
+    { 
+      if (pass[n] == '\\') 
+        escaped = true; 
+      else 
+        escaped = false; 
+      n++; 
+    } 
+    // The -1 is to remove the trailing ' character 
+    password = pass.left(n-1); 
+  } 
 }
 
 
@@ -101,8 +120,8 @@ QString QgsDataSourceURI::text() const
       " dbname=" + database + 
       " port=" + port + 
       " user=" + username + 
-      " password=" + password + 
-      " table=" + schema + '.' + table + 
+      " password='" + password + 
+      "' table=" + schema + '.' + table + 
       " (" + geometryColumn + ")" +
       " sql=" + sql);
 }

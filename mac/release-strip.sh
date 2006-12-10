@@ -12,12 +12,12 @@ strip -x $PREFIX/bin/qgis-config
 strip -x $PREFIX/bin/spit
 
 strip -x $PREFIX/lib/libmsexport.0.0.0.dylib
-strip -x $PREFIX/lib/libqgis_composer.0.0.1.dylib
-strip -x $PREFIX/lib/libqgis_core.0.0.1.dylib
-strip -x $PREFIX/lib/libqgis_gui.0.0.1.dylib
-strip -x $PREFIX/lib/libqgis_legend.0.0.1.dylib
+strip -x $PREFIX/lib/libqgis_composer.1.0.0.dylib
+strip -x $PREFIX/lib/libqgis_core.1.0.0.dylib
+strip -x $PREFIX/lib/libqgis_gui.1.0.0.dylib
+strip -x $PREFIX/lib/libqgis_legend.1.0.0.dylib
 strip -x $PREFIX/lib/libqgis_raster.0.0.0.dylib
-strip -x $PREFIX/lib/libqgisgrass.0.0.1.dylib
+strip -x $PREFIX/lib/libqgisgrass.1.0.0.dylib
 strip -x $PREFIX/lib/qgis/copyrightlabelplugin.so 
 strip -x $PREFIX/lib/qgis/delimitedtextplugin.so
 strip -x $PREFIX/lib/qgis/delimitedtextprovider.so
@@ -28,24 +28,26 @@ strip -x $PREFIX/lib/qgis/grassplugin.so
 strip -x $PREFIX/lib/qgis/grassprovider.so 
 strip -x $PREFIX/lib/qgis/gridmakerplugin.so 
 strip -x $PREFIX/lib/qgis/libScaleBarplugin.so
+strip -x $PREFIX/lib/qgis/libwfsprovider.so
 strip -x $PREFIX/lib/qgis/northarrowplugin.so
 strip -x $PREFIX/lib/qgis/ogrprovider.so
 strip -x $PREFIX/lib/qgis/pggeoprocessingplugin.so
 strip -x $PREFIX/lib/qgis/postgresprovider.so
 strip -x $PREFIX/lib/qgis/spitplugin.so
+strip -x $PREFIX/lib/qgis/wfsplugin.so
 strip -x $PREFIX/lib/qgis/wmsprovider.so
 strip -x $PREFIX/lib/qgis/libqgsprojectionselector.dylib
 #strip -x $PREFIX/lib/qgis/libopenmodellerplugin.so 
 
-strip -x $PREFIX/lib/Qt3Support.framework/Versions/4.0/Qt3Support
-strip -x $PREFIX/lib/QtCore.framework/Versions/4.0/QtCore
-strip -x $PREFIX/lib/QtGui.framework/Versions/4.0/QtGui
-strip -x $PREFIX/lib/QtNetwork.framework/Versions/4.0/QtNetwork
-strip -x $PREFIX/lib/QtSql.framework/Versions/4.0/QtSql
-strip -x $PREFIX/lib/QtSvg.framework/Versions/4.0/QtSvg
-strip -x $PREFIX/lib/QtXml.framework/Versions/4.0/QtXml
-strip -x $PREFIX/lib/libQtDesigner.4.1.4.dylib
-strip -x $PREFIX/lib/libQtTest.4.1.4.dylib
+strip -x $PREFIX/lib/Qt3Support.framework/Versions/4/Qt3Support
+strip -x $PREFIX/lib/QtCore.framework/Versions/4/QtCore
+strip -x $PREFIX/lib/QtGui.framework/Versions/4/QtGui
+strip -x $PREFIX/lib/QtNetwork.framework/Versions/4/QtNetwork
+strip -x $PREFIX/lib/QtSql.framework/Versions/4/QtSql
+strip -x $PREFIX/lib/QtSvg.framework/Versions/4/QtSvg
+strip -x $PREFIX/lib/QtXml.framework/Versions/4/QtXml
+strip -x $PREFIX/lib/QtDesigner.framework/Versions/4/QtDesigner
+strip -x $PREFIX/lib/QtTest.framework/Versions/4/QtTest
 strip -x $PREFIX/imageformats/libqjpeg.dylib
 
 strip -x $PREFIX/lib/libgdal.1.10.0.dylib
@@ -76,7 +78,7 @@ strip -x $PREFIX/lib/libpq.4.1.dylib
 
 for LIBGRASS in datetime dbmibase dbmiclient dgl dig2 form gis gmath gproj I linkm rtree shape vask vect
 do
-	strip -x $PREFIX/lib/grass/libgrass_$LIBGRASS.6.0.2.dylib
+	strip -x $PREFIX/lib/grass/libgrass_$LIBGRASS.6.2.0.dylib
 done
 
 # Delete unneeded files in application bundle

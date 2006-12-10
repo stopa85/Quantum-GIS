@@ -22,13 +22,21 @@ CONFIG(debug, debug|release){
   TARGET = $$member(TARGET, 0)-debug
 }
 
+
+# This is a hack (thanks freddy!) because many plugins use the
+# same class names and file names we need to force the compiler
+# to create separate object files for them.
+MYDIRNAME=scale_bar
+MOC_DIR = $${OBJDIR}/moc/plugins/$${MYDIRNAME}
+UI_DIR = $${OBJDIR}/ui/plugins/$${MYDIRNAME}
+win32:OBJECTS_DIR = $${OBJDIR}/o/win32/plugins/$${MYDIRNAME}
+INCLUDEPATH += $${OBJDIR}/ui 
+
 LIBS += $${QGISCORELIBADD}
 LIBS += $${QGISGUILIBADD}
 DESTDIR=$${QGISPLUGINDIR}
 QT += qt3support svg core gui xml network
 message("Building libs into $${DESTDIR}")
-
-CONFIG += qt dll thread debug rtti
 
 
 HEADERS += plugin.h \

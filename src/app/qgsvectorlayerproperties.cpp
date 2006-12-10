@@ -29,6 +29,7 @@
 #include "qgsuniquevaluedialog.h"
 #include "qgsvectordataprovider.h"
 #include "qgsvectorlayer.h"
+#include "qgscontexthelp.h"
 #ifdef HAVE_POSTGRESQL
 #include "qgspgquerybuilder.h"
 #include "../providers/postgres/qgspostgresprovider.h"
@@ -245,7 +246,7 @@ void QgsVectorLayerProperties::on_pbnCancel_clicked()
 }
 void QgsVectorLayerProperties::on_btnHelp_clicked()
 {
-
+  QgsContextHelp::run(context_id);
 }
 void QgsVectorLayerProperties::on_pbnOK_clicked()
 {

@@ -51,10 +51,22 @@ unix:VERSION = 1.0.0
 ##
 #################################################################
 CONFIG += warn_off 
+
+#
+# Building both debug and release versions (turned off by default)
+#
+
 #create both debug and relase makefiles
-CONFIG += debug_and_release
+#CONFIG += debug_and_release
 #build both release and debug targets when make is run
-CONFIG += build_all 
+#CONFIG += build_all 
+
+#
+# Building release only version
+#
+
+CONFIG += release
+
 LANGUAGE  = C++
 CONFIG += exceptions
 # Require that there are no undefined symbols in any libs!
@@ -191,8 +203,9 @@ INCLUDEPATH +=$${WORKDIR}/src \
               $${WORKDIR}/src/plugins \
               $${WORKDIR}/src/providers \
               $${WORKDIR}/src/raster \
-	      $${WORKDIR}/src/providers/wfs \
+      	      $${WORKDIR}/src/providers/wfs \
               $${WORKDIR}/src/ui 
+INCLUDEPATH += $${OBJDIR}/ui 
 
 #################################################################
 #

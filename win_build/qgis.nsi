@@ -35,7 +35,7 @@ SetCompressor zlib
 ; Start menu page
 var ICONS_GROUP
 !define MUI_STARTMENUPAGE_NODISABLE
-!define MUI_STARTMENUPAGE_DEFAULTFOLDER "Quantum GIS"
+!define MUI_STARTMENUPAGE_DEFAULTFOLDER "QuantumGIS"
 !define MUI_STARTMENUPAGE_REGISTRY_ROOT "${PRODUCT_UNINST_ROOT_KEY}"
 !define MUI_STARTMENUPAGE_REGISTRY_KEY "${PRODUCT_UNINST_KEY}"
 !define MUI_STARTMENUPAGE_REGISTRY_VALUENAME "${PRODUCT_STARTMENU_REGVAL}"
@@ -78,7 +78,7 @@ FunctionEnd
 
 Name "${PRODUCT_NAME} ${PRODUCT_VERSION}"
 OutFile "qgis_setup.exe"
-InstallDir "$PROGRAMFILES\Quantum GIS"
+InstallDir "$PROGRAMFILES\QuantumGIS"
 InstallDirRegKey HKLM "${PRODUCT_DIR_REGKEY}" ""
 ShowInstDetails show
 ShowUnInstDetails show
@@ -103,6 +103,7 @@ Section "MainSection" SEC01
   File /r "C:\dev\cpp\qgis\qgis-release\lib"
   File /r "C:\dev\cpp\qgis\qgis-release\share"
   File /r "C:\dev\cpp\qgis\qgis-release\nad"
+  File /r "C:\dev\cpp\qgis\qgis-release\msys"
  
 ; Shortcuts
 ; Next line is important - added by Tim
@@ -183,6 +184,7 @@ Section Uninstall
   RMDir /r "$INSTDIR/lib"
   RMDir /r "$INSTDIR/share"
   RMDir /r "$INSTDIR/nad"
+  RMDir /r "$INSTDIR/msys"
 ;----------------- icons and shortcuts
   Delete "$SMPROGRAMS\$ICONS_GROUP\Uninstall.lnk"
   Delete "$SMPROGRAMS\$ICONS_GROUP\Website.lnk"
