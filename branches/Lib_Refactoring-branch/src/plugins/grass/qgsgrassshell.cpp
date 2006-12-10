@@ -45,7 +45,12 @@ extern "C" {
 #ifdef __NetBSD__
 #include <util.h>
 #else
+#ifdef __FreeBSD__
+#include <termios.h>
+#include <libutil.h>
+#else
 #include <pty.h>
+#endif
 #endif
 #endif
 #include <sys/types.h>

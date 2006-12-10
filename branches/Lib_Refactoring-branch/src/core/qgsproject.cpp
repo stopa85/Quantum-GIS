@@ -29,6 +29,7 @@
 #include "qgsmaplayerregistry.h"
 #include "qgsexception.h"
 #include "qgsprojectproperty.h"
+#include "qgslogger.h"
 
 #include <QApplication>
 #include <QFileInfo>
@@ -813,9 +814,32 @@ bool QgsProject::read()
         QgsDebugMsg( "project file has version " + QString(fileVersion) );
     }
 
-    // XXX some day insert version checking
+    QStringList fileVersionParts = fileVersion.split(".");
+    QStringList qgisVersionParts = QString(QGis::qgisVersion).split(".");
 
     QgsDebugMsg("Project title: " + imp_->title);
+    
+    bool older = false;
+
+    if (fileVersionParts.size() != 3 || qgisVersionParts.size() != 3)
+      older = false; // probably an older version
+    else
+    {
+      if (fileVersionParts.at(0) < qgisVersionParts.at(0))
+        older = true;
+      else if (fileVersionParts.at(1) < qgisVersionParts.at(1))
+        older = true;
+      else if (fileVersionParts.at(2) < qgisVersionParts.at(2))
+        older = true;
+    }
+
+    if (older)
+    {
+      QgsLogger::warning("Loading a file that was saved with an older "
+                         "version of qgis (saved in " + fileVersion +
+                         ", loaded in " + QGis::qgisVersion +
+                         "). Problems may occur.");
+    }
 
     // get the map layers
     std::pair< bool, std::list<QDomNode> > getMapLayersResults =  _getMapLayers(*doc);

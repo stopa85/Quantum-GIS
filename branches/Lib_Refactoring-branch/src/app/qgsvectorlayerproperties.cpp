@@ -74,6 +74,7 @@ QgsVectorLayerProperties::QgsVectorLayerProperties(QgsVectorLayer * lyr,
   }
 
   leSpatialRefSys->setText(layer->srs().proj4String());
+  leSpatialRefSys->setCursorPosition(0);
   
   connect(sliderTransparency, SIGNAL(valueChanged(int)), this, SLOT(sliderTransparency_valueChanged(int)));
 
@@ -578,4 +579,5 @@ void QgsVectorLayerProperties::on_pbnChangeSpatialRefSys_clicked()
     delete mySelector;
 
     leSpatialRefSys->setText(layer->srs().proj4String());
+    leSpatialRefSys->setCursorPosition(0);
 }
