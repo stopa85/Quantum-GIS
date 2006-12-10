@@ -71,7 +71,7 @@ class CORE_EXPORT QgsVectorLayer : public QgsMapLayer
 public:
 
   /** Constructor */
-  QgsVectorLayer(QString baseName = 0, QString path = 0, QString providerLib = 0);
+  QgsVectorLayer(QString path = 0, QString baseName = 0, QString providerLib = 0);
 
   /** Destructor */
   virtual ~QgsVectorLayer();

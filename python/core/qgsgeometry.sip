@@ -184,6 +184,10 @@ class QgsGeometry
     //! Destructor
     ~QgsGeometry();
 
+
+    /** static method that creates geometry from WKT */
+    static QgsGeometry* fromWkt(QString wkt) /Factory/;
+    
     typedef unsigned int size_t;
 
     
