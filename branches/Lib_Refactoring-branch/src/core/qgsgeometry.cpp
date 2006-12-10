@@ -72,6 +72,14 @@ QgsGeometry::QgsGeometry( QgsGeometry const & rhs )
   }    
 }
 
+QgsGeometry* QgsGeometry::fromWkt(QString wkt)
+{
+  geos::WKTReader reader(geosGeometryFactory);
+  geos::Geometry* geom = reader.read(wkt.toLocal8Bit().data());
+  QgsGeometry* g = new QgsGeometry;
+  g->setGeos(geom);
+  return g;
+}
 
 QgsGeometry & QgsGeometry::operator=( QgsGeometry const & rhs )
 {

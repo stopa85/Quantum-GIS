@@ -79,7 +79,9 @@ class CORE_EXPORT QgsGeometry {
     //! Destructor
     ~QgsGeometry();
 
-    
+    /** static method that creates geometry from WKT */
+    static QgsGeometry* fromWkt(QString wkt);
+   
     /** 
        Set the geometry, feeding in the buffer containing OGC Well-Known Binary and the buffer's length.
        This class will take ownership of the buffer.
