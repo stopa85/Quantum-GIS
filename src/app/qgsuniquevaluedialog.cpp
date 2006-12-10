@@ -41,7 +41,6 @@ QgsUniqueValueDialog::QgsUniqueValueDialog(QgsVectorLayer* vl): QDialog(), mVect
 	for (QgsFieldMap::const_iterator it = fields.begin(); it != fields.end(); ++it)
         {
 	    str = (*it).name();
-	    str = str.left(1).upper() + str.right(str.length() - 1);  //make the first letter uppercase
 	    mClassificationComboBox->insertItem(str);
         }
     } 

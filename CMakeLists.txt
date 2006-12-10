@@ -206,7 +206,7 @@ SUBDIRS(src doc images resources i18n tools)
 #############################################################
 # install stuff
 
-INSTALL (FILES AUTHORS
+INSTALL (FILES AUTHORS SPONSORS
          DESTINATION ${QGIS_DATA_DIR}/doc)
 
 # manual page... install also on windows?
