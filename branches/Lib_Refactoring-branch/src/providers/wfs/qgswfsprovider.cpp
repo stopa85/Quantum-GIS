@@ -47,7 +47,7 @@ QgsWFSProvider::QgsWFSProvider(const QString& uri)
     {
       mValid = true;
       //set spatial filter to the whole extent
-      select(&mExtent, false);
+      select(mExtent, false);
     }
   else
     {
