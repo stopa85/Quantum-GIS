@@ -247,6 +247,7 @@ void QgsMapCanvas::setLayerSet(QList<QgsMapCanvasLayer>& layers)
     for (i = 0; i < layerCount(); i++)
     {
       disconnect(getZpos(i), SIGNAL(repaintRequested()), this, SLOT(refresh()));
+      disconnect(getZpos(i), SIGNAL(selectionChanged()), this, SLOT(refresh()));
     }
     
     mMapRender->setLayerSet(layerSet);
@@ -254,6 +255,7 @@ void QgsMapCanvas::setLayerSet(QList<QgsMapCanvasLayer>& layers)
     for (i = 0; i < layerCount(); i++)
     {
       connect(getZpos(i), SIGNAL(repaintRequested()), this, SLOT(refresh()));
+      connect(getZpos(i), SIGNAL(selectionChanged()), this, SLOT(refresh()));
     }
   }
   
