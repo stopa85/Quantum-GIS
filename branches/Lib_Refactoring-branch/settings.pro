@@ -63,7 +63,7 @@ QMAKE_LFLAGS_SHLIB *= --no-undefined
 QT =
 
 QGSSVNVERSION=version0.8pre2
-DEFINES += HAVE_POSTGRESQL=0
+DEFINES += HAVE_POSTGRESQL=1
 #################################################################
 ##
 ## Destination dir
@@ -116,6 +116,17 @@ message(QGISPLUGINDIR : $${QGISPLUGINDIR})
 ##
 #################################################################
 
+QGISGRASSPROVIDERLIBADD=-lgrassprovider
+CONFIG(debug, debug|release){
+  QGISGRASSPROVIDERLIBADD=$$member(QGISGRASSPROVIDERLIBADD, 0)-debug
+}
+GRASSLIBADD=-lgrass_vect -lgrass_dig2 -lgrass_dgl -lgrass_rtree \
+            -lgrass_linkm -lgrass_dbmiclient -lgrass_dbmibase \
+            -lgrass_I -lgrass_gproj -lgrass_gmath -lgrass_gis \
+            -lgrass_datetime
+
+POSTGRESLIBADD=-lpq	    
+
 QGISCORELIBADD=-lqgis_core
 CONFIG(debug, debug|release){
   QGISCORELIBADD=$$member(QGISCORELIBADD, 0)-debug
@@ -145,7 +156,6 @@ macx:GDALLIBADD=-framework gdal
 SQLITELIBADD=-lsqlite3
 PROJLIBADD=-lproj
 GEOSLIBADD=-lgeos
-GRASSLIBADD=-lgrass
 
 win32:LIBS += -lWs2_32
 
@@ -158,6 +168,7 @@ win32:LIBS += -lWs2_32
 #win32:LIBS+=-LC:\MinGW\lib
 win32:LIBS+=-LC:\msys\local\lib
 win32:LIBS+=-L$${DESTDIR}
+win32:LIBS+=-L$${DESTDIR}/lib/qgis
 linux-g++:LIBS+=-L$${DESTDIR}/lib
 linux-g++:LIBS+=-L/usr/lib/ccache/lib
 macx:LIBS+=-L$${QGISLIBDIR}
@@ -193,7 +204,7 @@ win32{
   message(Installing for windows!)
   #add any win specific rules here 
   INCLUDEPATH += c:/msys/local/include
-  INCLUDEPATH += c:/msys/local/include/geos
+  #INCLUDEPATH += c:/msys/local/include/geos
 }
 
 
