@@ -285,8 +285,12 @@ QString QgsProjectionSelector::getCurrentProj4String()
         myFileInfo.setFile(myDatabaseFileName);
         if ( !myFileInfo.exists( ) ) //its unlikely that this condition will ever be reached
         {
-          QgsLogger::warning("user's qgis.db not found: " + myDatabaseFileName);
+          QgsDebugMsg("users qgis.db not found");
           return NULL;
+        }
+        else
+        {
+          QgsDebugMsg("users qgis.db found");
         }
       }
       else //must be  a system projection then

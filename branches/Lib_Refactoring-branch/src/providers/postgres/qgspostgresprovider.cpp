@@ -101,6 +101,7 @@ QgsPostgresProvider::QgsPostgresProvider(QString const & uri)
   QgsDebugMsg("Table name is " + mTableName);
   QgsDebugMsg("SQL is " + sqlWhereClause);
   QgsDebugMsg("Connection info is " + mUri.connInfo);
+  
   QgsDebugMsg("Geometry column is: " + geometryColumn);
   QgsDebugMsg("Schema is: " + mSchemaName);
   QgsDebugMsg("Table name is: " + mTableName);
@@ -1197,11 +1198,15 @@ void QgsPostgresProvider::findColumns(tableCols& cols)
     temp.table_type       = PQgetvalue(result, i, 6);
     temp.column_type      = PQgetvalue(result, i, 7);
 
-    QgsDebugMsg(temp.view_schema + "." + temp.view_name + "." +
-	        temp.view_column_name + " <- " + temp.table_schema + "." +
-	        temp.table_name + "." + temp.column_name + " is a '" +
-	        temp.table_type + "' of type " + temp.column_type);
-    
+    QgsDebugMsg(temp.view_schema + "." 
+	      + temp.view_name + "." 
+	      + temp.view_column_name + " <- " 
+	      + temp.table_schema + "." 
+	      + temp.table_name + "." 
+	      + temp.column_name + " is a '" 
+	      + temp.table_type + "' of type " 
+		+ temp.column_type);
+
     columnRelations[temp.view_schema + '.' +
 		    temp.view_name + '.' +
 		    temp.view_column_name] = temp;

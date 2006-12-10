@@ -24,6 +24,7 @@ email                : tim@linfiniti.com
 #include "qgsrasterbandstats.h"
 #include "qgsrasterlayer.h"
 #include "qgsrasterpyramid.h"
+#include "qgscontexthelp.h"
 
 #include <QMessageBox>
 #include <QPainter>
@@ -1152,4 +1153,8 @@ void QgsRasterLayerProperties::on_pbnChangeSpatialRefSys_clicked()
     delete mySelector;
     
     leSpatialRefSys->setText(rasterLayer->srs().proj4String());
+}
+void QgsRasterLayerProperties::on_buttonHelp_clicked()
+{
+  QgsContextHelp::run(context_id);
 }

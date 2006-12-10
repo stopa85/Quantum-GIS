@@ -83,6 +83,7 @@ class QgsVectorLayerProperties : public QDialog, private Ui::QgsVectorLayerPrope
   QgsAttributeActionDialog* actionDialog;
   /**Buffer pixmap which takes the picture of renderers before they are assigned to the vector layer*/
   //QPixmap bufferPixmap;
+  static const int context_id = 94000531;
 };
 
 inline QString QgsVectorLayerProperties::displayName()

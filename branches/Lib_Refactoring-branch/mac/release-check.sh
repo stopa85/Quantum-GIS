@@ -13,12 +13,12 @@ otool -L $PREFIX/bin/qgis-config
 otool -L $PREFIX/bin/spit
 
 otool -L $PREFIX/lib/libmsexport.0.0.0.dylib
-otool -L $PREFIX/lib/libqgis_composer.0.0.1.dylib
-otool -L $PREFIX/lib/libqgis_core.0.0.1.dylib
-otool -L $PREFIX/lib/libqgis_gui.0.0.1.dylib
-otool -L $PREFIX/lib/libqgis_legend.0.0.1.dylib
+otool -L $PREFIX/lib/libqgis_composer.1.0.0.dylib
+otool -L $PREFIX/lib/libqgis_core.1.0.0.dylib
+otool -L $PREFIX/lib/libqgis_gui.1.0.0.dylib
+otool -L $PREFIX/lib/libqgis_legend.1.0.0.dylib
 otool -L $PREFIX/lib/libqgis_raster.0.0.0.dylib
-otool -L $PREFIX/lib/libqgisgrass.0.0.1.dylib
+otool -L $PREFIX/lib/libqgisgrass.1.0.0.dylib
 otool -L $PREFIX/lib/qgis/copyrightlabelplugin.so 
 otool -L $PREFIX/lib/qgis/delimitedtextplugin.so
 otool -L $PREFIX/lib/qgis/delimitedtextprovider.so
@@ -29,24 +29,26 @@ otool -L $PREFIX/lib/qgis/grassplugin.so
 otool -L $PREFIX/lib/qgis/grassprovider.so 
 otool -L $PREFIX/lib/qgis/gridmakerplugin.so 
 otool -L $PREFIX/lib/qgis/libScaleBarplugin.so
+otool -L $PREFIX/lib/qgis/libwfsprovider.so
 otool -L $PREFIX/lib/qgis/northarrowplugin.so
 otool -L $PREFIX/lib/qgis/ogrprovider.so
 otool -L $PREFIX/lib/qgis/pggeoprocessingplugin.so
 otool -L $PREFIX/lib/qgis/postgresprovider.so
 otool -L $PREFIX/lib/qgis/spitplugin.so
+otool -L $PREFIX/lib/qgis/wfsplugin.so
 otool -L $PREFIX/lib/qgis/wmsprovider.so
 otool -L $PREFIX/lib/qgis/libqgsprojectionselector.dylib
 #otool -L $PREFIX/lib/qgis/libopenmodellerplugin.so 
 
-otool -L $PREFIX/lib/Qt3Support.framework/Versions/4.0/Qt3Support
-otool -L $PREFIX/lib/QtCore.framework/Versions/4.0/QtCore
-otool -L $PREFIX/lib/QtGui.framework/Versions/4.0/QtGui
-otool -L $PREFIX/lib/QtNetwork.framework/Versions/4.0/QtNetwork
-otool -L $PREFIX/lib/QtSql.framework/Versions/4.0/QtSql
-otool -L $PREFIX/lib/QtSvg.framework/Versions/4.0/QtSvg
-otool -L $PREFIX/lib/QtXml.framework/Versions/4.0/QtXml
-otool -L $PREFIX/lib/libQtDesigner.4.1.4.dylib
-otool -L $PREFIX/lib/libQtTest.4.1.4.dylib
+otool -L $PREFIX/lib/Qt3Support.framework/Versions/4/Qt3Support
+otool -L $PREFIX/lib/QtCore.framework/Versions/4/QtCore
+otool -L $PREFIX/lib/QtGui.framework/Versions/4/QtGui
+otool -L $PREFIX/lib/QtNetwork.framework/Versions/4/QtNetwork
+otool -L $PREFIX/lib/QtSql.framework/Versions/4/QtSql
+otool -L $PREFIX/lib/QtSvg.framework/Versions/4/QtSvg
+otool -L $PREFIX/lib/QtXml.framework/Versions/4/QtXml
+otool -L $PREFIX/lib/QtDesigner.framework/Versions/4/QtDesigner
+otool -L $PREFIX/lib/QtTest.framework/Versions/4/QtTest
 otool -L $PREFIX/imageformats/libqjpeg.dylib
 
 otool -L $PREFIX/lib/libgdal.1.10.0.dylib
@@ -77,5 +79,5 @@ otool -L $PREFIX/lib/libpq.4.1.dylib
 
 for LIBGRASS in datetime dbmibase dbmiclient dgl dig2 form gis gmath gproj I linkm rtree shape vask vect
 do
-	otool -L $PREFIX/lib/grass/libgrass_$LIBGRASS.6.0.2.dylib
+	otool -L $PREFIX/lib/grass/libgrass_$LIBGRASS.6.2.0.dylib
 done
