@@ -148,6 +148,7 @@ QgsGrassMapcalc::QgsGrassMapcalc (
     mActionDeleteItem = new QAction( QIcon(myIconPath+"mapcalc_delete.png"), 
                         tr("Delete selected item"), this);
     mActionDeleteItem->setCheckable ( true );
+    mActionDeleteItem->setEnabled ( false );
     ag->addAction ( mActionDeleteItem );
     tb->addAction ( mActionDeleteItem );
     connect ( mActionDeleteItem, SIGNAL(triggered()), this, SLOT(deleteItem()) );
@@ -799,6 +800,7 @@ void QgsGrassMapcalc::setTool( int tool )
 
     showOptions(mTool);
     setToolActionsOff(); 
+    mActionDeleteItem->setEnabled( false );
     mCanvas->update();
 }
 

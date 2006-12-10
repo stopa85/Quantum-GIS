@@ -7,10 +7,11 @@
 ####################################################################
 
 TEMPLATE = subdirs
-SUBDIRS =  delimited_text 
-#\
-#           grid_maker \
-#           copyright_label \
+SUBDIRS =  delimited_text \
+           scale_bar \
+           grid_maker \
+	   north_arrow \
+           wfs \
+           copyright_label 
 #      	    gps_importer \
-#           scale_bar \
 #           spit
