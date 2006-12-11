@@ -350,7 +350,8 @@ bool QgsPostgresProvider::getNextFeature(QgsFeature& feat,
       {
         QgsDebugMsg("End of features");
         
-        PQexec(connection, "end work");
+        if (ready)
+          PQexec(connection, "end work");
         ready = false;
         return false;
       }
@@ -480,6 +481,7 @@ void QgsPostgresProvider::select(QgsRect rect, bool useIntersect)
     PQexec(connection, "end work");
   }
   PQexec(connection,"begin work");
+  ready = true;
   PQexec(connection, (const char *)(declare.utf8()));
   
   mFeatureQueue.empty();
@@ -613,8 +615,11 @@ void QgsPostgresProvider::getFeatureGeometry(int key, QgsFeature& f)
                    .arg(key);
 
   QgsDebugMsg("using: " + cursor); 
-
+  
+  if (ready)
+    PQexec(connection, "end work");
   PQexec(connection, "begin work");
+  ready = true;
   PQexec(connection, (const char *)(cursor.utf8()));
 
   QString fetch = "fetch forward 1 from qgisf";
@@ -623,7 +628,9 @@ void QgsPostgresProvider::getFeatureGeometry(int key, QgsFeature& f)
   if (PQntuples(geomResult) == 0)
   {
     // Nothing found - therefore nothing to change
-    PQexec(connection,"end work");
+    if (ready)
+      PQexec(connection,"end work");
+    ready = false;
     PQclear(geomResult);
     return;
   }
@@ -645,7 +652,9 @@ void QgsPostgresProvider::getFeatureGeometry(int key, QgsFeature& f)
 
   PQclear(geomResult);
 
-  PQexec(connection,"end work");
+  if (ready)
+    PQexec(connection,"end work");
+  ready = false;
 
 }
 
@@ -671,7 +680,8 @@ void QgsPostgresProvider::reset()
   QgsDebugMsg("Setting up binary cursor: " + declare);
   
   // set up the cursor
-  PQexec(connection,"end work");
+  if (ready)
+    PQexec(connection,"end work");
 
   PQexec(connection,"begin work");
   PQexec(connection, (const char *)(declare.utf8()));

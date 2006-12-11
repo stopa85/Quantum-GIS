@@ -419,6 +419,10 @@ void QgisApp::readSettings()
   // Add the recently accessed project file paths to the File menu
   mRecentProjectPaths = settings.readListEntry("/UI/recentProjectsList");
 
+  // Set the behaviour when the map splitters are resized
+  bool splitterRedraw = settings.value("/qgis/splitterRedraw", true).toBool();
+  canvasLegendSplit->setOpaqueResize(splitterRedraw);
+  legendOverviewSplit->setOpaqueResize(splitterRedraw);
 }
 
 
@@ -1198,6 +1202,10 @@ void QgisApp::createOverview()
   QSettings mySettings;
   mMapCanvas->enableAntiAliasing(mySettings.value("/qgis/enable_anti_aliasing",false).toBool());
   mMapCanvas->useQImageToRender(mySettings.value("/qgis/use_qimage_to_render",false).toBool());
+
+  int action = mySettings.value("/qgis/wheel_action", 0).toInt();
+  double zoomFactor = mySettings.value("/qgis/zoom_factor", 2).toDouble();
+  mMapCanvas->setWheelAction((QgsMapCanvas::WheelAction) action, zoomFactor);
 }
 
 
@@ -1312,7 +1320,8 @@ void QgisApp::saveWindowState()
   settings.writeEntry("/Geometry/y", p.y());
   settings.writeEntry("/Geometry/w", s.width());
   settings.writeEntry("/Geometry/h", s.height());
-
+  settings.setValue("/Geometry/canvasSplitterState", canvasLegendSplit->saveState());
+  settings.setValue("/Geometry/legendSplitterState", legendOverviewSplit->saveState());
 }
 
 void QgisApp::restoreWindowState()
@@ -1332,6 +1341,9 @@ void QgisApp::restoreWindowState()
   int y = settings.readNumEntry("/Geometry/y", (dh - 400) / 2);
   resize(w, h);
   move(x, y);
+
+  canvasLegendSplit->restoreState(settings.value("/Geometry/canvasSplitterState").toByteArray());
+  legendOverviewSplit->restoreState(settings.value("/Geometry/legendSplitterState").toByteArray());
 }
 ///////////// END OF GUI SETUP ROUTINES ///////////////
 
@@ -1473,6 +1485,7 @@ void QgisApp::restoreSessionPlugins(QString thePluginDirString)
     else
     {
       QgsDebugMsg("Failed to load " + myLib->library());
+      QgsDebugMsg("Reason: " + myLib->errorString());
     }
     delete myLib;
   }
@@ -2811,6 +2824,7 @@ bool QgisApp::fileSave()
   {
     if ( QgsProject::instance()->write() )
     {
+      setTitleBarText_(*this); // update title bar
       statusBar()->message(tr("Saved project to:") + " " + QgsProject::instance()->filename() );
 
       if (isNewProject)
@@ -2893,6 +2907,7 @@ void QgisApp::fileSaveAs()
 
   if ( QgsProject::instance()->write() )
   {
+    setTitleBarText_(*this); // update title bar
     statusBar()->message(tr("Saved project to:") + " " + QgsProject::instance()->filename() );
     // add this to the list of recently used project files
     saveRecentProjectPath(fullPath.filePath(), settings);
@@ -4155,6 +4170,14 @@ void QgisApp::options()
     QSettings mySettings;
     mMapCanvas->enableAntiAliasing(mySettings.value("/qgis/enable_anti_aliasing").toBool());
     mMapCanvas->useQImageToRender(mySettings.value("/qgis/use_qimage_to_render").toBool());
+  
+    int action = mySettings.value("/qgis/wheel_action", 0).toInt();
+    double zoomFactor = mySettings.value("/qgis/zoom_factor", 2).toDouble();
+    mMapCanvas->setWheelAction((QgsMapCanvas::WheelAction) action, zoomFactor);
+
+    bool splitterRedraw = mySettings.value("/qgis/splitterRedraw", true).toBool();
+    canvasLegendSplit->setOpaqueResize(splitterRedraw);
+    legendOverviewSplit->setOpaqueResize(splitterRedraw);
   }
 }
 

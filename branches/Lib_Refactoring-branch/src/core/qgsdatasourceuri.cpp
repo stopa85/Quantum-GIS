@@ -20,6 +20,7 @@
 #include "qgsdatasourceuri.h"
 
 #include <QStringList>
+#include <QRegExp>
 
 QgsDataSourceURI::QgsDataSourceURI()
 {
@@ -34,17 +35,40 @@ QgsDataSourceURI::QgsDataSourceURI(QString uri)
   
   // TODO: improve parsing
   
+  // A little bit of backwards compability. At r6193 the schema/table 
+  // names became fully quoted, but with the problem that earlier 
+  // project files then didn't load. This bit of code puts in the 
+  // quotes that are now required. 
+  QString uriModified = uri; 
+  int start = uriModified.indexOf("table=\""); 
+  if (start == -1) 
+    { 
+      // Need to put in some "'s 
+      start = uriModified.indexOf("table="); 
+      uriModified.insert(start+6, '"'); 
+      int start_dot = uriModified.indexOf('.', start+7); 
+      if (start_dot != -1) 
+        { 
+          uriModified.insert(start_dot, '"'); 
+          uriModified.insert(start_dot+2, '"'); 
+        } 
+      // and one at the end 
+      int end = uriModified.indexOf(' ',start); 
+      if (end != -1) 
+        uriModified.insert(end, '"'); 
+    }  
+  
   // Strip the table and sql statement name off and store them
-  int sqlStart = uri.find(" sql");
-  int tableStart = uri.find("table=");
+  int sqlStart = uriModified.find(" sql");
+  int tableStart = uriModified.find("table=");
   
   // set table name
-  table = uri.mid(tableStart + 6, sqlStart - tableStart -6);
+  table = uriModified.mid(tableStart + 6, sqlStart - tableStart -6);
 
   // set sql where clause
   if(sqlStart > -1)
   { 
-    sql = uri.mid(sqlStart + 5);
+    sql = uriModified.mid(sqlStart + 5);
   }
   else
   {
@@ -52,16 +76,19 @@ QgsDataSourceURI::QgsDataSourceURI(QString uri)
   }
   
   // calculate the schema if specified
-  schema = "";
-  if (table.find(".") > -1) {
-    schema = table.left(table.find("."));
-  }
-  geometryColumn = table.mid(table.find(" (") + 2);
-  geometryColumn.truncate(geometryColumn.length() - 1);
-  table = table.mid(table.find(".") + 1, table.find(" (") - (table.find(".") + 1)); 
+
+  // Pick up some stuff from the uriModified: basically two bits of text 
+  // inside double quote marks, separated by a . 
+  QRegExp reg("\"(.+)\"\\.\"(.+)\".+\\((.+)\\)");
+  reg.indexIn(table); 
+  QStringList stuff = reg.capturedTexts(); 
+
+  schema = stuff[1]; 
+  table = stuff[2]; 
+  geometryColumn = stuff[3]; 
 
   // set connection info
-  connInfo = uri.left(uri.find("table="));
+  connInfo = uriModified.left(uriModified.find("table="));
   
   // parse the connection info
   QStringList conParts = QStringList::split(" ", connInfo);

@@ -190,11 +190,11 @@ void QgsMapToolIdentify::identifyVectorLayer(QgsVectorLayer* layer, const QgsPoi
   
   // load identify radius from settings
   QSettings settings;
-  int identifyValue = settings.readNumEntry("/qgis/map/identifyRadius", QGis::DEFAULT_IDENTIFY_RADIUS);
+  double identifyValue = settings.value("/Map/identifyRadius", QGis::DEFAULT_IDENTIFY_RADIUS).toDouble();
   QString ellipsoid = settings.readEntry("/qgis/measure/ellipsoid", "WGS84");
 
   // create the search rectangle
-  double searchRadius = mCanvas->extent().width() * (identifyValue/1000.0);
+  double searchRadius = mCanvas->extent().width() * (identifyValue/100.0);
     
   QgsRect r;
   r.setXmin(point.x() - searchRadius);
@@ -296,12 +296,18 @@ void QgsMapToolIdentify::identifyVectorLayer(QgsVectorLayer* layer, const QgsPoi
       mResults->showAllAttributes();
       mResults->setTitle(layer->name() + " - " + QObject::tr(" 1 feature found") );
     }
-    if (featureCount == 0)
+    else if (featureCount == 0)
     {
       mResults->setTitle(layer->name() + " - " + QObject::tr("No features found") );
       mResults->setMessage ( QObject::tr("No features found"), QObject::tr("No features were found in the active layer at the point you clicked") );
     }
-    
+    else
+    {
+      QString title = layer->name();
+      title += QString(" - %1").arg(featureCount);
+      title += QObject::tr(" features found");
+      mResults->setTitle(title);    
+    }
     QApplication::restoreOverrideCursor();
 
     mResults->show();

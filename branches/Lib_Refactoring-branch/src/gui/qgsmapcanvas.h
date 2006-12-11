@@ -94,7 +94,10 @@ class GUI_EXPORT QgsMapCanvas : public QGraphicsView
 {
     Q_OBJECT;
 
- public:
+  public:
+    
+    enum WheelAction { WheelZoom, WheelZoomAndRecenter, WheelNothing };
+        
     //! Constructor
     QgsMapCanvas(QWidget * parent = 0, const char *name = 0);
 
@@ -202,7 +205,13 @@ class GUI_EXPORT QgsMapCanvas : public QGraphicsView
     //! returns current layer (set by legend widget)
     QgsMapLayer* currentLayer();
     
-    //! Zooms in/out with a given center (uses zoomByScale)
+    //! set wheel action and zoom factor (should be greater than 1)
+    void setWheelAction(WheelAction action, double factor = 2);
+
+    //! Zooms in/out preserving
+    void zoom(bool zoomIn);
+
+    //! Zooms in/out with a given center
     void zoomWithCenter(int x, int y, bool zoomIn);
 
     //! used to determine if anti-aliasing is enabled or not
@@ -310,9 +319,6 @@ protected:
     //! Overridden resize event
     void resizeEvent(QResizeEvent * e);
 
-    //! Zooms to a given center and scale 
-    void zoomByScale(int x, int y, double scaleFactor);
-    
     //! called when panning is in action, reset indicates end of panning
     void moveCanvasContents(bool reset = FALSE);
     
@@ -385,8 +391,10 @@ private:
     QgsRect mLastExtent;
     
     //! Scale factor multiple for default zoom in/out
-    // TODO Make this customisable by the user
-    static const double scaleDefaultMultiple;
+    double mWheelZoomFactor;
+    
+    //! Mouse wheel action
+    WheelAction mWheelAction;
 
 }; // class QgsMapCanvas
 
