@@ -54,7 +54,7 @@ QgsOptions::QgsOptions(QWidget *parent, Qt::WFlags fl) :
 #ifdef QGISDEBUG
   std::cout << "Standard Identify radius setting: " << QGis::DEFAULT_IDENTIFY_RADIUS << std::endl;
 #endif
-  int identifyValue = settings.readNumEntry("/Map/identifyRadius",QGis::DEFAULT_IDENTIFY_RADIUS);
+  double identifyValue = settings.value("/Map/identifyRadius",QGis::DEFAULT_IDENTIFY_RADIUS).toDouble();
 #ifdef QGISDEBUG
   std::cout << "Standard Identify radius setting read from settings file: " << identifyValue << std::endl;
 #endif
@@ -138,6 +138,11 @@ QgsOptions::QgsOptions(QWidget *parent, Qt::WFlags fl) :
   pbnCanvasColor->setPalette( QColor(myRed,myGreen,myBlue) );
 
   capitaliseCheckBox->setChecked(settings.value("qgis/capitaliseLayerName", QVariant(false)).toBool());
+  
+  cmbWheelAction->setCurrentIndex(settings.value("/qgis/wheel_action", 0).toInt());
+  spinZoomFactor->setValue(settings.value("/qgis/zoom_factor", 2).toDouble());
+
+  cbxSplitterRedraw->setChecked(settings.value("/qgis/splitterRedraw", QVariant(true)).toBool());
 }
 
 //! Destructor
@@ -242,6 +247,11 @@ void QgsOptions::saveOptions()
   myRed = settings.writeEntry("/qgis/default_canvas_color_red",myColor.red());
   myGreen = settings.writeEntry("/qgis/default_canvas_color_green",myColor.green());
   myBlue = settings.writeEntry("/qgis/default_canvas_color_blue",myColor.blue());
+
+  settings.writeEntry("/qgis/wheel_action", cmbWheelAction->currentIndex());
+  settings.writeEntry("/qgis/zoom_factor", spinZoomFactor->value());
+
+  settings.setValue("/qgis/splitterRedraw", cbxSplitterRedraw->isChecked());  
 
   //all done
   accept();

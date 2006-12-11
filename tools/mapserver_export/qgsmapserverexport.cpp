@@ -29,7 +29,7 @@ email                : sherman at mrcc.com
 #include <qstring.h>
 #include <QWidget>
 #include <QApplication>
-#include "../src/core/qgscontexthelp.h"
+#include "../../src/core/qgscontexthelp.h"
 #include "qgsmapserverexport.h"
 
 

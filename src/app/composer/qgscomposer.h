@@ -30,6 +30,7 @@ class QDomNode;
 class QDomDocument;
 class QMoveEvent;
 class QResizeEvent;
+class QFile;
 
 /* The constructor creates empty composer, without compositions and mFirstTime set to true. 
  * - if signal projectRead() is recieved all old compositions are deleted and
@@ -146,15 +147,31 @@ public slots:
     //! Save window state
     void saveWindowState();
 
+    //! Slot for when the help button is clicked
+    void on_helpPButton_clicked();
+
+    //! Slot for when the close button is clicked
+    void on_closePButton_clicked();
+
 private:
     //! Set teh pixmap / icons on the toolbar buttons
     void setupTheme();
     //! remove widget childrens
     void removeWidgetChildren ( QWidget *w );
 
+    /** \brief move up the content of the file
+        \param file file
+	\param from starting position
+	\param shift shift in bytes 
+    */
+    bool shiftFileContent ( QFile *file, Q_LONG start, int shift );
+    
     //! Set buttons up
     void setToolActionsOff (void);
 
+    //! returns new world matrix for canvas view after zoom with factor scaleChange
+    QMatrix updateMatrix(double scaleChange);
+    
     //! Pointer to composer view
     QgsComposerView *mView;
 
@@ -175,6 +192,10 @@ private:
 
     //! Layout
     QGridLayout *mItemOptionsLayout;
+
+    //! Help context id
+    static const int context_id = 985715179;
+
 };
 
 #endif

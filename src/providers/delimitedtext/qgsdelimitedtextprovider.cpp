@@ -86,6 +86,11 @@ QgsDelimitedTextProvider::QgsDelimitedTextProvider(QString uri)
   std::cerr << "xField is: " << (const char *)mXField.toLocal8Bit().data() << std::endl;
   std::cerr << "yField is: " << (const char *)mYField.toLocal8Bit().data() << std::endl;
 #endif
+  
+  // if delimiter contains some special characters, convert them
+  // (we no longer use delimiter as regexp as it introduces problems with special characters)
+  mDelimiter.replace("\\t", "\t"); // replace "\t" with a real tabulator
+  
   // Set the selection rectangle to null
   mSelectionRectangle = QgsRect();
   // assume the layer is invalid until proven otherwise
@@ -125,8 +130,7 @@ QgsDelimitedTextProvider::QgsDelimitedTextProvider(QString uri)
               cerr << "Attempting to split the input line: " << (const char *)line.toLocal8Bit().data() <<
               " using delimiter " << (const char *)mDelimiter.toLocal8Bit().data() << std::endl;
 #endif
-            QStringList fieldList =
-              QStringList::split(QRegExp(mDelimiter), line, true);
+            QStringList fieldList = QStringList::split(mDelimiter, line, true);
 #ifdef QGISDEBUG
             std::cerr << "Split line into " 
                       << fieldList.size() << " parts" << std::endl;
@@ -175,7 +179,7 @@ QgsDelimitedTextProvider::QgsDelimitedTextProvider(QString uri)
             //  std::cout << line << std::endl; 
             // split the line on the delimiter
             QStringList parts =
-              QStringList::split(QRegExp(mDelimiter), line, true);
+              QStringList::split(mDelimiter, line, true);
             //if(parts.size() == attributeFields.size())
             //{
             //  // we can populate attributes if required
@@ -336,7 +340,7 @@ QgsDelimitedTextProvider::getNextFeature_( QgsFeature & feature,
     {
       QString line = mStream->readLine(); // Default local 8 bit encoding
         // lex the tokens from the current data line
-        QStringList tokens = QStringList::split(QRegExp(mDelimiter), line, true);
+        QStringList tokens = QStringList::split(mDelimiter, line, true);
 
         bool xOk = false;
         bool yOk = false;
@@ -635,7 +639,7 @@ int *QgsDelimitedTextProvider::getFieldLengths()
     {
       line = mStream->readLine(); // line of text excluding '\n'
       // split the line
-      QStringList parts = QStringList::split(QRegExp(mDelimiter), line, true);
+      QStringList parts = QStringList::split(mDelimiter, line, true);
       // iterate over the parts and update the max value
       for (int i = 0; i < parts.size(); i++)
       {
