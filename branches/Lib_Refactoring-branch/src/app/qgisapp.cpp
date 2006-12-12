@@ -336,7 +336,9 @@ static void customSrsValidation_(QgsSpatialRefSys* srs)
   mSplash->showMessage(tr("Starting Python"), Qt::AlignHCenter | Qt::AlignBottom);
   qApp->processEvents();
   QgsPythonUtils::initPython(mQgisInterface);
-  // TODO: error checking, on error disable python support
+
+  if (!QgsPythonUtils::isEnabled())
+    mActionShowPythonDialog->setEnabled(false);
 #endif
 
   // Create the plugin registry and load plugins
@@ -1492,26 +1494,37 @@ void QgisApp::restoreSessionPlugins(QString thePluginDirString)
 
 #ifdef HAVE_PYTHON
   
-  // check for python plugins
-  QDir pluginDir(QgsPythonUtils::pluginsPath(), "*",
-                 QDir::Name | QDir::IgnoreCase, QDir::Dirs | QDir::NoDotAndDotDot);
-
-  for (uint i = 0; i < pluginDir.count(); i++)
+  if (QgsPythonUtils::isEnabled())
   {
-    QString packageName = pluginDir[i];
-    
-    // import plugin's package
-    QgsPythonUtils::loadPlugin(packageName);
-    
-    // get information from the plugin
-    QString pluginName  = QgsPythonUtils::getPluginMetadata(packageName, "name");
-    QString description = QgsPythonUtils::getPluginMetadata(packageName, "description");
-    QString version     = QgsPythonUtils::getPluginMetadata(packageName, "version");
-    
-    if (mySettings.readBoolEntry("/PythonPlugins/" + packageName))
+  
+    // check for python plugins
+    QDir pluginDir(QgsPythonUtils::pluginsPath(), "*",
+                  QDir::Name | QDir::IgnoreCase, QDir::Dirs | QDir::NoDotAndDotDot);
+  
+    for (uint i = 0; i < pluginDir.count(); i++)
     {
-      loadPythonPlugin(packageName, pluginName);
+      QString packageName = pluginDir[i];
+      
+      // import plugin's package
+      QgsPythonUtils::loadPlugin(packageName);
+      
+      // get information from the plugin
+      QString pluginName  = QgsPythonUtils::getPluginMetadata(packageName, "name");
+      QString description = QgsPythonUtils::getPluginMetadata(packageName, "description");
+      QString version     = QgsPythonUtils::getPluginMetadata(packageName, "version");
+      
+      if (pluginName == "__error__" || description == "__error__" || version == "__error__")
+      {
+        QMessageBox::warning(0, tr("Python error"), tr("Error when reading metadata of plugin ") + packageName);
+        continue;
+      }
+      
+      if (mySettings.readBoolEntry("/PythonPlugins/" + packageName))
+      {
+        loadPythonPlugin(packageName, pluginName);
+      }
     }
+  
   }
 #endif
 }
@@ -3691,6 +3704,8 @@ void QgisApp::showPluginManager()
 void QgisApp::loadPythonPlugin(QString packageName, QString pluginName)
 {
 #ifdef HAVE_PYTHON
+  if (!QgsPythonUtils::isEnabled())
+    return;
   
   QgsDebugMsg("I should load python plugin: " + pluginName + " (package: " + packageName + ")");
   
