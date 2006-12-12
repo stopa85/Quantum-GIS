@@ -80,6 +80,8 @@ void QgsPluginManager::on_btnBrowse_clicked()
 void QgsPluginManager::getPythonPluginDescriptions()
 {
 #ifdef HAVE_PYTHON
+  if (!QgsPythonUtils::isEnabled())
+    return;
   
   // look for plugins
   QDir pluginDir(QgsPythonUtils::pluginsPath(), "*",

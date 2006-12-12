@@ -31,8 +31,6 @@ class QgisInterface;
 
  For now, default path for python plugins is QgsApplication::pluginPath() + "/python"
 
- TODO: use native python calls instead of using PyRun_SimpleString
- TODO: add error checking and reporting
  */
 class QgsPythonUtils
 {
@@ -46,8 +44,17 @@ class QgsPythonUtils
     //! close python interpreter
     static void exitPython();
 
-    //! run a python statement (wrapper for PyRun_SimpleString)
-    static void runSimpleString(QString command);
+    //! returns true if python support is ready to use (must be inited first)
+    static bool isEnabled();
+    
+    //! run a statement (wrapper for PyRun_String)
+    //! this command is more advanced as enables error checking etc.
+    //! @return true if no error occured
+    static bool runString(QString command);
+    
+    //! get information about error to the supplied arguments
+    //! @return false if there was no python error
+    static bool getError(QString& errorClassName, QString& errorText);
     
     /* python console related functions */
     
@@ -58,15 +65,6 @@ class QgsPythonUtils
     
     //! get back to the original settings (i.e. write output to stdout)
     static void uninstallConsoleHooks();
-    
-    //! run a statement (wrapper for PyRun_String)
-    //! this command is more advanced as enables error checking etc.
-    //! @return true if no error occured
-    static bool runString(QString command);
-    
-    //! get information about error to the supplied arguments
-    //! @return false if there was no python error
-    static bool getError(QString& errorClassName, QString& errorText);
     
     //! get result from the last statement as a string
     static QString getResult();
@@ -80,19 +78,22 @@ class QgsPythonUtils
     static QString pluginsPath();
     
     //! load python plugin (import)
-    static void loadPlugin(QString packageName);
+    static bool loadPlugin(QString packageName);
     
     //! start plugin: add to active plugins and call initGui()
-    static void startPlugin(QString packageName);
+    static bool startPlugin(QString packageName);
     
     //! helper function to get some information about plugin
     //! @param function one of these strings: name, tpye, version, description
     static QString getPluginMetadata(QString pluginName, QString function);
 
     //! unload plugin
-    static void unloadPlugin(QString packageName);
+    static bool unloadPlugin(QString packageName);
 
   protected:
+    
+    static void installErrorHook();
+
     
     //! path where 
     static QString mPluginsPath;
@@ -102,4 +103,7 @@ class QgsPythonUtils
     
     //! dictionary of module __main__
     static PyObject* mMainDict;
+    
+    //! flag determining that python support is enabled
+    static bool mPythonEnabled;
 };
