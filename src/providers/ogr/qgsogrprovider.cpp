@@ -782,7 +782,6 @@ bool QgsOgrProvider::addFeature(QgsFeature& f)
   }
   ++numberFeatures;
   delete feature;
-  ogrLayer->SyncToDisk();
   return returnValue;
 }
 
@@ -797,6 +796,10 @@ bool QgsOgrProvider::addFeatures(QgsFeatureList & flist)
       returnvalue=false;
     }
   }
+
+  // flush features
+  ogrLayer->SyncToDisk();
+
   return returnvalue;
 }
 
