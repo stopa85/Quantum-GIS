@@ -1,14 +1,9 @@
 
 PROJECT(qgis)
 
-# BUGS:
-# - linking qgis.exe on mingw results in: The input line is too long
-#   (need to delete moc_ui_*.obj files from build\src\app\CMakeFiles\qgis.dir\build.make)
-#
 # TODO:
 # - install includes for libs
 # - nice output when configured
-# - python bindings
 # - rename *.ui files to have the same filename as their implementation
 #   e.g. instead of blahblahbase.ui use blahblah.ui
 #   because it's more common in Qt4
@@ -64,6 +59,7 @@ FIND_PACKAGE(Expat)    # GPS importer plugin
 FIND_PACKAGE(GSL)      # Georeferencer
 FIND_PACKAGE(GRASS)    # GRASS plugin
 FIND_PACKAGE(PythonLibs) # MapServer export tool
+FIND_PACKAGE(PythonInterp) # test for sip and PyQt4
 
 IF (NOT PROJ_FOUND OR NOT SQLITE3_FOUND OR NOT GEOS_FOUND OR NOT GDAL_FOUND)
   MESSAGE (SEND_ERROR "Some dependencies were not found!")
@@ -75,19 +71,55 @@ IF (POSTGRES_FOUND)
 ENDIF (POSTGRES_FOUND)
 
 
+#############################################################
+# python support
+
+MACRO (TRY_RUN_PYTHON RESULT CMD)
+  IF (PYTHONINTERP_FOUND)
+    
+    EXEC_PROGRAM(${PYTHON_EXECUTABLE} ARGS -c "\"${CMD}\""
+                 OUTPUT_VARIABLE out
+                 RETURN_VALUE retval)
+    IF (retval EQUAL 0)
+      SET (${RESULT} TRUE)
+    ELSE (retval EQUAL 0)
+      SET (${RESULT} FALSE)
+    ENDIF (retval EQUAL 0)
+  
+  ELSE (PYTHONINTERP_FOUND)
+    SET (${${RESULT}} FALSE)
+  ENDIF (PYTHONINTERP_FOUND)
+ENDMACRO (TRY_RUN_PYTHON)
+
+
+# enable/disable python support (mapserver export tool and bindings)
 IF (PYTHON_LIBRARIES AND PYTHON_INCLUDE_PATH)
   SET (PYTHON_FOUND TRUE)
-  MESSAGE(STATUS "Python found")
+  MESSAGE(STATUS "Python libraries found")
 
   # TODO: should not be needed, report it to CMake devs
   IF (UNIX)
     SET (PYTHON_LIBRARIES ${PYTHON_LIBRARIES} util)
   ENDIF (UNIX)
   
-  # TODO: check also for PyQt4 and SIP prior to setting this TRUE
-  SET (HAVE_PYTHON TRUE)
+  # check for SIP
+  TRY_RUN_PYTHON (HAVE_SIP_MODULE "from sip import wrapinstance")
+  FIND_PROGRAM (SIP_BINARY_PATH sip)
+
+  # check for PyQt4
+  TRY_RUN_PYTHON (HAVE_PYQT4 "from PyQt4 import QtCore, QtGui")
+  
+  # if SIP and PyQt4 are found, enable bindings
+  IF (HAVE_SIP_MODULE AND SIP_BINARY_PATH AND HAVE_PYQT4)
+    SET (HAVE_PYTHON TRUE)
+    MESSAGE(STATUS "Python bindings enabled")
+  ELSE (HAVE_SIP_MODULE AND SIP_BINARY_PATH AND HAVE_PYQT4)
+    SET (HAVE_PYTHON FALSE)
+    MESSAGE(STATUS "Python bindings disabled")
+  ENDIF (HAVE_SIP_MODULE AND SIP_BINARY_PATH AND HAVE_PYQT4)
 
 ENDIF (PYTHON_LIBRARIES AND PYTHON_INCLUDE_PATH)
+
 
 
 #############################################################
@@ -201,6 +233,10 @@ ENDIF (QGIS_NO_SVNVERSION)
 # process subdirs
 
 SUBDIRS(src doc images resources i18n tools)
+
+IF (HAVE_PYTHON)
+  SUBDIRS (python)
+ENDIF (HAVE_PYTHON)
 
 
 #############################################################
