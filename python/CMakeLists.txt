@@ -23,16 +23,28 @@ ADD_CUSTOM_COMMAND(OUTPUT compile_python_gui PRE_LINK
 
 
 # python's site-packages dir: bindings will be installed here
-SET (CMD "
+IF (UNIX)
+  SET (CMD "
 import sys
 v = sys.version_info
 print sys.exec_prefix + '/lib/python' + str(v[0]) + '.' + str(v[1]) + '/site-packages'
 ")
+ELSE (UNIX)
+  SET (CMD "
+import sys
+print sys.exec_prefix + '/lib/site-packages'
+")
+ENDIF (UNIX)
+
 EXEC_PROGRAM(${PYTHON_EXECUTABLE} ARGS -c "\"${CMD}\"" OUTPUT_VARIABLE SITE_PKG_PATH)
 
-
 # Step 4: install built libs to python's site packages
-SET(BINDINGS_LIBS ${CMAKE_CURRENT_BINARY_DIR}/core/core.so
-                  ${CMAKE_CURRENT_BINARY_DIR}/gui/gui.so)
+IF (WIN32)
+  SET(BINDINGS_LIBS ${CMAKE_CURRENT_BINARY_DIR}/core/core.pyd
+                    ${CMAKE_CURRENT_BINARY_DIR}/gui/gui.pyd)
+ELSE (WIN32)
+  SET(BINDINGS_LIBS ${CMAKE_CURRENT_BINARY_DIR}/core/core.so
+                    ${CMAKE_CURRENT_BINARY_DIR}/gui/gui.so)
+ENDIF (WIN32)
 
 INSTALL(FILES __init__.py qgisconfig.py ${BINDINGS_LIBS} DESTINATION ${SITE_PKG_PATH}/qgis)

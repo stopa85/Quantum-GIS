@@ -42,7 +42,7 @@ class QgsRect;
 class QgsPoint;
 #include <QList>
 
-class QgsSpatialIndex
+class CORE_EXPORT QgsSpatialIndex
 {
 
 public:
