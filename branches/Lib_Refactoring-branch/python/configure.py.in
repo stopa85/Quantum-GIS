@@ -7,6 +7,7 @@ import PyQt4.pyqtconfig
 src_path = '@CMAKE_SOURCE_DIR@'
 build_path = '@CMAKE_BINARY_DIR@'
 python_path = src_path + '/python'
+gdal_inc_dir = '@GDAL_INCLUDE_DIR@'
 
 # create paths for temporary files if don't exist
 if not os.path.isdir("./core"):
@@ -98,7 +99,8 @@ for mk in [ makefile_core, makefile_gui ]:
                            src_path+"/src/core/renderer",
                            src_path+"/src/core/spatialindex",
                            src_path+"/src/core/symbology",
-                           src_path]
+                           src_path,
+                           gdal_inc_dir]
   mk.extra_cxxflags = ["-DCORE_EXPORT="]
 
 # more settings for gui lib

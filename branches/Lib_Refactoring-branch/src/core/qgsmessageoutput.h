@@ -79,7 +79,7 @@ class CORE_EXPORT QgsMessageOutput
 This class outputs messages to the standard output. Therefore it might
 be the right choice for apps without GUI.
 */
-class QgsMessageOutputConsole : public QObject, public QgsMessageOutput
+class CORE_EXPORT QgsMessageOutputConsole : public QObject, public QgsMessageOutput
 {
   Q_OBJECT
   
