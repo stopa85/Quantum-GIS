@@ -752,7 +752,7 @@ bool QgsOgrProvider::addFeature(QgsFeature& f)
     
     //find a matching field for the new attribute
     QString newAttribute = attrs[i].fieldName();
-    int targetAttributeId = fdef->GetFieldIndex(newAttribute);
+    int targetAttributeId = fdef->GetFieldIndex(mEncoding->fromUnicode(newAttribute).constData());
     if(targetAttributeId == -1)
       {
 	continue;
@@ -770,7 +770,11 @@ bool QgsOgrProvider::addFeature(QgsFeature& f)
       }
       else if(fdef->GetFieldDefn(targetAttributeId)->GetType()==OFTString)
       {
-	  feature->SetField(targetAttributeId,s.ascii());
+#ifdef QGISDEBUG
+        std::cerr << "Writing string attribute " << newAttribute.toLocal8Bit().data() <<
+	          " with " << s.toLocal8Bit().data() << ", encoding " << mEncoding->name().data() << "\n";
+#endif
+        feature->SetField(targetAttributeId,mEncoding->fromUnicode(s).constData());
       }
       else
       {
@@ -815,7 +819,7 @@ bool QgsOgrProvider::addAttributes(const QgsNewAttributesMap & attributes)
     {
 	if(*iter=="OFTInteger")
 	{
-      OGRFieldDefn fielddefn(iter.key(),OFTInteger);
+      OGRFieldDefn fielddefn(mEncoding->fromUnicode(iter.key()).data(),OFTInteger);
 	    if(ogrLayer->CreateField(&fielddefn)!=OGRERR_NONE)
 	    {
 		QgsLogger::warning("QgsOgrProvider.cpp: writing of OFTInteger field failed");	
@@ -824,7 +828,7 @@ bool QgsOgrProvider::addAttributes(const QgsNewAttributesMap & attributes)
 	}
   else if(*iter=="OFTReal")
 	{
-      OGRFieldDefn fielddefn(iter.key(),OFTReal);
+      OGRFieldDefn fielddefn(mEncoding->fromUnicode(iter.key()).data(),OFTReal);
 	    if(ogrLayer->CreateField(&fielddefn)!=OGRERR_NONE)
 	    {
 		QgsLogger::warning("QgsOgrProvider.cpp: writing of OFTReal field failed");
@@ -833,7 +837,7 @@ bool QgsOgrProvider::addAttributes(const QgsNewAttributesMap & attributes)
 	}
   else if(*iter=="OFTString")
 	{
-      OGRFieldDefn fielddefn(iter.key(),OFTString);
+      OGRFieldDefn fielddefn(mEncoding->fromUnicode(iter.key()).data(),OFTString);
 	    if(ogrLayer->CreateField(&fielddefn)!=OGRERR_NONE)
 	    {
 		QgsLogger::warning("QgsOgrProvider.cpp: writing of OFTString field failed");
@@ -888,7 +892,7 @@ bool QgsOgrProvider::changeAttributeValues(const QgsChangedAttributesMap & attr_
           of->SetField ( f, value.toDouble() );
           break;
         case OFTString:
-          of->SetField ( f, value.ascii() );
+          of->SetField ( f, mEncoding->fromUnicode(value).constData() );
           break;
         default:
           QgsLogger::warning("QgsOgrProvider::changeAttributeValues, Unknown field type, cannot change attribute");
@@ -1362,8 +1366,11 @@ QGISEXTERN bool isProvider()
 @param vectortype point/line/polygon or multitypes
 @param attributes a list of name/type pairs for the initial attributes
 @return true in case of success*/
-QGISEXTERN bool createEmptyDataSource(const QString& uri,const QString& format, QGis::WKBTYPE vectortype, \
-const std::list<std::pair<QString, QString> >& attributes)
+QGISEXTERN bool createEmptyDataSource(const QString& uri,
+                                      const QString& format,
+                                      const QString& encoding,
+                                      QGis::WKBTYPE vectortype,
+                                      const std::list<std::pair<QString, QString> >& attributes)
 {
     OGRSFDriver* driver;
     OGRRegisterAll();
@@ -1407,18 +1414,21 @@ const std::list<std::pair<QString, QString> >& attributes)
     }
 
     OGRLayer* layer;	
-    layer = dataSource->CreateLayer(QFileInfo(uri).baseName(), reference, OGRvectortype, NULL);
+    layer = dataSource->CreateLayer(QFile::encodeName(QFileInfo(uri).baseName()).constData(), reference, OGRvectortype, NULL);
     if(layer == NULL)
     {
 	return false;
     }
 
     //create the attribute fields
+    
+    QTextCodec* codec=QTextCodec::codecForName(encoding.toLocal8Bit().data());
+    
     for(std::list<std::pair<QString, QString> >::const_iterator it= attributes.begin(); it != attributes.end(); ++it)
     {
 	if(it->second == "Real")
 	{
-	    OGRFieldDefn field(it->first, OFTReal);
+	    OGRFieldDefn field(codec->fromUnicode(it->first).data(), OFTReal);
 	    field.SetPrecision(3);
 	    field.SetWidth(32);
 	    if(layer->CreateField(&field) != OGRERR_NONE)
@@ -1428,7 +1438,7 @@ const std::list<std::pair<QString, QString> >& attributes)
 	}
 	else if(it->second == "Integer")
 	{
-	    OGRFieldDefn field(it->first, OFTInteger);
+	    OGRFieldDefn field(codec->fromUnicode(it->first).data(), OFTInteger);
 	    if(layer->CreateField(&field) != OGRERR_NONE)
 	    {
 		QgsLogger::warning("creation of OFTInteger field failed");
@@ -1436,7 +1446,7 @@ const std::list<std::pair<QString, QString> >& attributes)
 	}
 	else if(it->second == "String")
 	{
-	    OGRFieldDefn field(it->first, OFTString);
+	    OGRFieldDefn field(codec->fromUnicode(it->first).data(), OFTString);
 	    if(layer->CreateField(&field) != OGRERR_NONE)
 	    {
 	      QgsLogger::warning("creation of OFTString field failed");

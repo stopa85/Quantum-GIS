@@ -654,13 +654,13 @@ void QgisApp::createActions()
   connect(mActionShowBookmarks, SIGNAL(triggered()), this, SLOT(showBookmarks()));
   //
   mActionShowAllToolbars = new QAction(tr("Show most toolbars"), this);
-  mActionShowAllToolbars->setShortcut(tr("S", "Show most toolbars"));
+  mActionShowAllToolbars->setShortcut(tr("T", "Show most toolbars"));
   mActionShowAllToolbars->setStatusTip(tr("Show most toolbars"));
   connect(mActionShowAllToolbars, SIGNAL(triggered()), this,
           SLOT(showAllToolbars()));
   //
   mActionHideAllToolbars = new QAction(tr("Hide most toolbars"), this);
-  mActionHideAllToolbars->setShortcut(tr("H", "Hide most toolbars"));
+  mActionHideAllToolbars->setShortcut(tr("Ctrl+T", "Hide most toolbars"));
   mActionHideAllToolbars->setStatusTip(tr("Hide most toolbars"));
   connect(mActionHideAllToolbars, SIGNAL(triggered()), this,
           SLOT(hideAllToolbars()));
@@ -695,7 +695,8 @@ void QgisApp::createActions()
   //
 
   mActionStartEditing = new QAction(QIcon(myIconPath+"/mActionStartEditing.png"), 
-                                    tr("Start editing the current layer"), this);
+                                    tr("Start editing the current layer"), this); 
+  mActionStartEditing->setStatusTip(tr("Start editing the current layer")); 
   connect(mActionStartEditing, SIGNAL(triggered()), this, SLOT(startEditing()));
   //
   mActionStopEditing = new QAction(QIcon(myIconPath+"/mActionStopEditing.png"), 
@@ -823,6 +824,7 @@ void QgisApp::createMenus()
   mFileMenu->addAction(mActionFileSave);
   mFileMenu->addAction(mActionFileSaveAs);
   mFileMenu->addAction(mActionSaveMapAsImage);
+  mFileMenu->addSeparator();
   mFileMenu->addAction(mActionExportMapServer);
   mFileMenu->addAction(mActionFilePrint);
   mFileMenu->addSeparator();
@@ -836,8 +838,10 @@ void QgisApp::createMenus()
   mViewMenu->addAction(mActionZoomToLayer);
   mViewMenu->addAction(mActionZoomLast);
   mViewMenu->addAction(mActionDraw);
+  mViewMenu->addSeparator();
   mViewMenu->addAction(mActionShowBookmarks);
   mViewMenu->addAction(mActionNewBookmark);
+  mViewMenu->addSeparator();
   mToolbarMenu = mViewMenu->addMenu(QIcon(myIconPath+"/mActionOptions.png"),
                                     tr("&Toolbars..."));
 
@@ -855,11 +859,14 @@ void QgisApp::createMenus()
   mLayerMenu->addAction(mActionAddLayer);
 #endif
   mLayerMenu->addAction(mActionAddWmsLayer);
+  mLayerMenu->addSeparator();
   mLayerMenu->addAction(mActionRemoveLayer);
   mLayerMenu->addAction(mActionNewVectorLayer);
+  mLayerMenu->addSeparator();
   mLayerMenu->addAction(mActionInOverview);
   mLayerMenu->addAction(mActionAddAllToOverview);
   mLayerMenu->addAction(mActionRemoveAllFromOverview);
+  mLayerMenu->addSeparator();
   mLayerMenu->addAction(mActionHideAllLayers);
   mLayerMenu->addAction(mActionShowAllLayers);
 
@@ -877,6 +884,7 @@ void QgisApp::createMenus()
 #ifdef HAVE_PYTHON
   mPluginMenu->addAction(mActionShowPythonDialog);
 #endif
+  mPluginMenu->addSeparator();
 
   // Add the plugin manager action to it
   //actionPluginManager->addTo(mPluginMenu);
@@ -889,8 +897,10 @@ void QgisApp::createMenus()
   menuBar()->addSeparator();
   mHelpMenu = menuBar()->addMenu(tr("&Help"));
   mHelpMenu->addAction(mActionHelpContents);
+  mHelpMenu->addSeparator();
   mHelpMenu->addAction(mActionQgisHomePage);
   mHelpMenu->addAction(mActionCheckQgisVersion);
+  mHelpMenu->addSeparator();
   mHelpMenu->addAction(mActionHelpAbout);
 }
 
@@ -1000,7 +1010,7 @@ void QgisApp::createStatusBar()
   // plenty of display space on 1024x768 resolutions
   QFont myFont( "Arial", 9 );
   statusBar()->setFont(myFont);
-  mScaleLabel = new QLabel(QString("Scale"),statusBar());
+  mScaleLabel = new QLabel(QString(),statusBar());
   mScaleLabel->setFont(myFont);
   mScaleLabel->setMinimumWidth(10);
   mScaleLabel->setMargin(3);
@@ -1008,7 +1018,7 @@ void QgisApp::createStatusBar()
   QWhatsThis::add(mScaleLabel, tr("Displays the current map scale"));
   statusBar()->addWidget(mScaleLabel, 0,true);
   //coords status bar widget
-  mCoordsLabel = new QLabel(QString("Coordinates:"), statusBar());
+  mCoordsLabel = new QLabel(QString(), statusBar());
   mCoordsLabel->setMinimumWidth(10);
   mCoordsLabel->setFont(myFont);
   mCoordsLabel->setMargin(3);
@@ -1357,8 +1367,10 @@ void QgisApp::restoreWindowState()
 
 void QgisApp::about()
 {
+  static QgsAbout *abt = NULL;
+  if (!abt) {
      QApplication::setOverrideCursor(Qt::WaitCursor);
-     QgsAbout *abt = new QgsAbout();
+     abt = new QgsAbout();
      QString versionString = tr("Version ");
      versionString += QGis::qgisVersion;
      versionString += " (";
@@ -1432,9 +1444,10 @@ abt->setWhatsNew(watsNew);
   QString providerInfo = "<b>" + tr("Available Data Provider Plugins") + "</b><br>";
   abt->setPluginInfo(providerInfo + QgsProviderRegistry::instance()->pluginList(true));
   QApplication::restoreOverrideCursor();
+  }
   abt->show();
-  abt->exec();
-
+  abt->raise();
+  abt->setActiveWindow();
 }
 
 /** Load up any plugins used in the last session
@@ -2587,22 +2600,22 @@ void QgisApp::newVectorLayer()
 #ifdef QGISDEBUG
     qWarning("ogr provider loaded");
 #endif
-    typedef bool (*createEmptyDataSourceProc)(const QString&, const QString&, QGis::WKBTYPE, \
+    typedef bool (*createEmptyDataSourceProc)(const QString&, const QString&, const QString&, QGis::WKBTYPE, \
         const std::list<std::pair<QString, QString> >&);
     createEmptyDataSourceProc createEmptyDataSource=(createEmptyDataSourceProc)myLib->resolve("createEmptyDataSource");
     if(createEmptyDataSource)
     {
       if(geometrytype == QGis::WKBPoint)
       {
-        createEmptyDataSource(filename,fileformat,QGis::WKBPoint, attributes);
+        createEmptyDataSource(filename,fileformat, enc, QGis::WKBPoint, attributes);
       }
       else if (geometrytype == QGis::WKBLineString)
       {
-        createEmptyDataSource(filename,fileformat,QGis::WKBLineString, attributes);
+        createEmptyDataSource(filename,fileformat, enc, QGis::WKBLineString, attributes);
       }
       else if(geometrytype == QGis::WKBPolygon)
       {
-        createEmptyDataSource(filename,fileformat,QGis::WKBPolygon, attributes);
+        createEmptyDataSource(filename,fileformat, enc, QGis::WKBPolygon, attributes);
       }
       else
       {
@@ -4080,7 +4093,8 @@ void QgisApp::checkQgisVersion()
   connect(mSocket, SIGNAL(connected()), SLOT(socketConnected()));
   connect(mSocket, SIGNAL(connectionClosed()), SLOT(socketConnectionClosed()));
   connect(mSocket, SIGNAL(readyRead()), SLOT(socketReadyRead()));
-  connect(mSocket, SIGNAL(error(int)), SLOT(socketError(int)));
+  connect(mSocket, SIGNAL(error(QAbstractSocket::SocketError)), 
+                   SLOT(socketError(QAbstractSocket::SocketError)));
   mSocket->connectToHost("mrcc.com", 80);
 }
 
@@ -4151,25 +4165,32 @@ void QgisApp::socketConnectionClosed()
     QMessageBox::warning(this, tr("QGIS Version Information"), tr("Unable to get current version information from server"));
   }
 }
-void QgisApp::socketError(int e)
+void QgisApp::socketError(QAbstractSocket::SocketError e)
 {
+  if (e == QAbstractSocket::RemoteHostClosedError)
+    return;
+
   QApplication::restoreOverrideCursor();
   // get error type
   QString detail;
   switch (e)
   {
-    case QTcpSocket::ErrConnectionRefused:
+    case QAbstractSocket::ConnectionRefusedError:
       detail = tr("Connection refused - server may be down");
       break;
-    case QTcpSocket::ErrHostNotFound:
+    case QAbstractSocket::HostNotFoundError:
       detail = tr("QGIS server was not found");
       break;
-    case QTcpSocket::ErrSocketRead:
-      detail = tr("Error reading from server");
+    case QAbstractSocket::NetworkError:
+      detail = tr("Network error while communicating with server");
+      break;
+    default:
+      detail = tr("Unknown network socket error");
       break;
   }
+
   // show version message from server
-  QMessageBox::critical(this, tr("QGIS Version Information"), tr("Unable to connect to the QGIS Version server") + "\n" + detail);
+  QMessageBox::critical(this, tr("QGIS Version Information"), tr("Unable to communicate with QGIS Version server") + "\n" + detail);
 }
 
 void QgisApp::socketReadyRead()
@@ -5296,7 +5317,7 @@ void QgisApp::showBookmarks()
   static QgsBookmarks *bookmarks = NULL;
   if (bookmarks == NULL)
   {
-    bookmarks = new QgsBookmarks(this);
+    bookmarks = new QgsBookmarks(this, Qt::WindowMinMaxButtonsHint);
   }
   bookmarks->show();
   bookmarks->raise();

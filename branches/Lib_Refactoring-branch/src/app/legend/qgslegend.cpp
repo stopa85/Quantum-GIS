@@ -1771,31 +1771,45 @@ void QgsLegend::zoomToLayerExtent()
   //find current Layer
   QgsLegendLayer* currentLayer=dynamic_cast<QgsLegendLayer*>(currentItem());
   if(!currentLayer)
-    {
-      return;
-    }
+  {
+    return;
+  }
 
   std::list<QgsLegendLayerFile*> layerFiles = currentLayer->legendLayerFiles();
   if(layerFiles.size() == 0)
-    {
-      return;
-    }
+  {
+    return;
+  }
 
   QgsMapLayer* theLayer;
+  bool first(true);
+  QgsRect extent;
+  
   for(std::list<QgsLegendLayerFile*>::iterator it= layerFiles.begin(); it != layerFiles.end(); ++it)
+  {
+    theLayer = (*it)->layer();
+    if (!theLayer)
+      continue;
+      
+    QgsRect lyrExtent = mMapCanvas->mapRender()->layerExtentToOutputExtent(theLayer, theLayer->extent());
+    
+    if (!lyrExtent.isFinite())
+      lyrExtent = theLayer->extent();
+  
+    if (first)
     {
-      theLayer = (*it)->layer();
-      if(theLayer)
-      {
-        QgsRect extent = mMapCanvas->mapRender()->layerExtentToOutputExtent(theLayer, theLayer->extent());
-        //zoom to bounding box
-        mMapCanvas->setExtent(extent);
-        mMapCanvas->refresh();
-        break;
-      }
-   
+      extent = lyrExtent;
+      first = false;
     }
+    else
+    {
+      extent.combineExtentWith(&lyrExtent);
+    }
+  }
 
+  //zoom to bounding box
+  mMapCanvas->setExtent(extent);
+  mMapCanvas->refresh();
 }
 
 void QgsLegend::initPixmaps()

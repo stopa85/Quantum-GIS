@@ -136,7 +136,7 @@ QgsDataSourceURI::QgsDataSourceURI(QString uri)
       n++; 
     } 
     // The -1 is to remove the trailing ' character 
-    password = pass.left(n-1); 
+    password = pass.left(n); 
   } 
 }
 

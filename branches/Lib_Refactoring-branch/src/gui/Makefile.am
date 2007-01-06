@@ -98,5 +98,5 @@ pkginclude_dir = $(includedir)/qgis
 
 CLEANFILES = $(BUILT_SOURCES)
 
-EXTRA_DIST=
+EXTRA_DIST = $(libqgis_gui_la_MOC)
 

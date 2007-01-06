@@ -52,6 +52,7 @@ class QgsRect;
 
 #include <ui_qgisappbase.h>
 #include <QMainWindow>
+#include <QAbstractSocket>
 
 #include "qgsconfig.h"
 
@@ -258,7 +259,7 @@ public slots:
   void socketConnected();
   void socketConnectionClosed();
   void socketReadyRead();
-  void socketError(int e);
+  void socketError(QAbstractSocket::SocketError e);
   //! Set project properties, including map untis
   void projectProperties();
   //! Open project properties dialog and show the projections tab

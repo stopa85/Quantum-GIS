@@ -31,8 +31,12 @@
 #define QGISEXTERN extern "C"
 #endif
 
+static const QString name_ = QObject::tr("WFS plugin");
+static const QString description_ = QObject::tr("Adds WFS layers to the QGIS canvas");
+static const QString version_ = QObject::tr("Version 0.0001");
+
 QgsWFSPlugin::QgsWFSPlugin(QgisInterface* iface)
-: QgisPlugin("WFS plugin", "A plugin to add WFS layers to the QGIS canvas", "Version 0.0001", QgisPlugin::MAPLAYER), 
+: QgisPlugin(name_, description_, version_, QgisPlugin::MAPLAYER), 
   mIface(iface), mWfsDialogAction(0)
 {
 
@@ -75,17 +79,17 @@ QGISEXTERN QgisPlugin * classFactory(QgisInterface * theQgisInterfacePointer)
 
 QGISEXTERN QString name()
 {
-  return QString("WFS plugin");
+  return name_;
 }
 
 QGISEXTERN QString description()
 {
-  return QString("A plugin to add WFS layers to the QGIS canvas");
+  return description_;
 }
 
 QGISEXTERN QString version()
 {
-  return QString("Version 0.0001");
+  return version_;
 }
 
 QGISEXTERN int type()

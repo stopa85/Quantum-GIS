@@ -1546,6 +1546,7 @@ void QgsRasterLayer::drawSingleBandGray(QPainter * theQPainter, QgsRasterViewPor
 	      + QString::number(paintXoffset) + ", " + QString::number(paintYoffset)\
 	      + " to "\
 	      + QString::number(static_cast<int>(theRasterViewPort->topLeftPoint.x() + 0.5))\
+              + ", "\
 	      + QString::number(static_cast<int>(theRasterViewPort->topLeftPoint.y() + 0.5))\
 	      + ".");
 
@@ -2304,6 +2305,7 @@ QgsDebugMsg("QgsRasterLayer::drawSingleBandGray: painting image to canvas from "
 	      + QString::number(paintXoffset) + ", " + QString::number(paintYoffset)\
 	      + " to "\
 	      + QString::number(static_cast<int>(theRasterViewPort->topLeftPoint.x() + 0.5))\
+	      + ", "\
 	      + QString::number(static_cast<int>(theRasterViewPort->topLeftPoint.y() + 0.5))\
 	      + ".");
 
@@ -2437,6 +2439,7 @@ QgsDebugMsg("QgsRasterLayer::drawSingleBandGray: painting image to canvas from s
 	      + QString::number(paintXoffset) + ", " + QString::number(paintYoffset)\
 	      + " to "\
 	      + QString::number(static_cast<int>(theRasterViewPort->topLeftPoint.x() + 0.5))\
+	      + ", "\
 	      + QString::number(static_cast<int>(theRasterViewPort->topLeftPoint.y() + 0.5))\
 	      + ".");
 
@@ -4286,7 +4289,7 @@ void *QgsRasterLayer::readData ( GDALRasterBand *gdalBand, QgsRasterViewPort *vi
 	      ", " + QString::number(viewPort->rectYOffsetInt)+\
 	      ", source size: " + QString::number(viewPort->clippedWidthInt)+\
 	      ", " + QString::number(viewPort->clippedHeightInt)+\
-	      "dest size: " + QString::number(viewPort->drawableAreaXDimInt)+\
+	      ", dest size: " + QString::number(viewPort->drawableAreaXDimInt)+\
 	      ", " + QString::number(viewPort->drawableAreaYDimInt));
 
   CPLErr myErr = gdalBand->RasterIO ( GF_Read,
