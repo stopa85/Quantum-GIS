@@ -294,7 +294,7 @@ QgsGrassModule::QgsGrassModule ( QgsGrassTools *tools, QgisInterface *iface,
     QString manPath = gisBase + "/docs/html/" + xName + ".html";
     QFile manFile ( manPath );
     if ( manFile.exists() ) {
-	mManualTextBrowser->setSource ( manPath );
+	mManualTextBrowser->setSource ( "file://" + manPath );
     }
     
     connect ( &mProcess, SIGNAL(readyReadStandardOutput()), this, SLOT(readStdout()));

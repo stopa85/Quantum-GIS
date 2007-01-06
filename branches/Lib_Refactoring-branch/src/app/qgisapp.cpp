@@ -54,6 +54,7 @@
 #include <QProgressBar>
 #include <QSettings>
 #include <QSplashScreen>
+#include <QStatusBar>
 #include <QStringList>
 #include <QTcpSocket>
 #include <QTextStream>
@@ -62,6 +63,15 @@
 #include <QVBoxLayout>
 #include <QWhatsThis>
 #include <QtGlobal>
+
+//
+// Mac OS X Includes
+// Must include before GEOS 3 due to unqualified use of 'Point'
+//
+#ifdef Q_OS_MACX
+#include <ApplicationServices/ApplicationServices.h>
+#endif
+
 //
 // QGIS Specific Includes
 //
@@ -145,10 +155,6 @@
 //
 // Conditional Includes
 //
-#ifdef Q_OS_MACX
-#include <ApplicationServices/ApplicationServices.h>
-#endif
-
 #ifdef HAVE_POSTGRESQL
 #include "qgsdbsourceselect.h"
 #endif
@@ -715,7 +721,7 @@ void QgisApp::createActions()
   connect(mActionCapturePolygon, SIGNAL(triggered()), this, SLOT(capturePolygon()));
   mActionCapturePolygon->setEnabled(false);
   //
-  mActionDeleteSelected = new QAction(QIcon(myIconPath+"/mActionDeleteSelected.png"), tr("Delete Seleced"), this);
+  mActionDeleteSelected = new QAction(QIcon(myIconPath+"/mActionDeleteSelected.png"), tr("Delete Selected"), this);
   mActionDeleteSelected->setStatusTip(tr("Delete Selected"));
   connect(mActionDeleteSelected, SIGNAL(triggered()), this, SLOT(deleteSelected()));
   mActionDeleteSelected->setEnabled(false);
@@ -1133,7 +1139,7 @@ void QgisApp::setupConnections()
   //signal when mouse moved over window (coords display in status bar)
   connect(mMapCanvas, SIGNAL(xyCoordinates(QgsPoint &)), this, SLOT(showMouseCoordinate(QgsPoint &)));
   //signal when mouse in capturePoint mode and mouse clicked on canvas
-  connect(mMapCanvas->mapRender(), SIGNAL(setProgress(int,int)), this, SLOT(showProgress(int,int)));
+  connect(mMapCanvas->mapRender(), SIGNAL(drawingProgress(int,int)), this, SLOT(showProgress(int,int)));
   connect(mMapCanvas->mapRender(), SIGNAL(projectionsEnabled(bool)), this, SLOT(projectionsEnabled(bool)));
   connect(mMapCanvas->mapRender(), SIGNAL(destinationSrsChanged()), this, SLOT(destinationSrsChanged()));
   connect(mMapCanvas, SIGNAL(extentsChanged()),this,SLOT(showExtents()));
@@ -3249,6 +3255,10 @@ void QgisApp::exportMapServer()
   //{
     QString myMSExportPath = QgsApplication::msexportAppPath(); 
     QProcess *process = new QProcess;
+#ifdef WIN32
+    // quote the application path on windows
+    myMSExportPath = QString("\"") + myMSExportPath + QString("\"");
+#endif
     process->start(myMSExportPath);
 
     // Delete this object if the process terminates
@@ -4580,7 +4590,7 @@ void QgisApp::projectionsEnabled(bool theFlag)
 void QgisApp::showProgress(int theProgress, int theTotalSteps)
 {
 #ifdef QGISDEBUG
-  std::cout << "setProgress called with " << theProgress << "/" << theTotalSteps << std::endl;
+  std::cout << "showProgress called with " << theProgress << "/" << theTotalSteps << std::endl;
 #endif
 
   if (theProgress==theTotalSteps)
@@ -4971,7 +4981,7 @@ bool QgisApp::addRasterLayer(QgsRasterLayer * theRasterLayer, bool theForceRedra
 
     // connect up any request the raster may make to update the app progress
     QObject::connect(theRasterLayer,
-        SIGNAL(setProgress(int,int)),
+        SIGNAL(drawingProgress(int,int)),
         this,
         SLOT(showProgress(int,int)));
     // connect up any request the raster may make to update the statusbar message
@@ -5122,7 +5132,7 @@ void QgisApp::addRasterLayer(QString const & rasterLayerPath,
 
     // connect up any request the raster may make to update the app progress
     QObject::connect(layer,
-        SIGNAL(setProgress(int,int)),
+        SIGNAL(drawingProgress(int,int)),
         this,
         SLOT(showProgress(int,int)));
     // connect up any request the raster may make to update the statusbar message

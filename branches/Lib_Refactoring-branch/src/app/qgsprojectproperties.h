@@ -22,12 +22,8 @@
 #include "qgis.h"
 #include "qgisgui.h"
 
-class QColor;
 class QgsMapCanvas;
 
-#ifdef Q_WS_WIN
-#include <QWindowsStyle>
-#endif
 
 /*!  Dialog to set project level properties
 
@@ -64,12 +60,6 @@ public:
   /*! Indicates that the projection switch is on */
   bool isProjected();
 public slots:
-  /*! 
-   * Slot called when a new button (unit) is selected
-   * @param int specifying which button was selected. The button ids match the enum
-   * values in QGis::units
-   */
-  void mapUnitChange(int);
   /*!
    * Slot called when apply button is pressed 
    */
@@ -114,10 +104,5 @@ private:
   static const int context_id = 361087368;
   
   QgsMapCanvas* mMapCanvas;
-
-#ifdef Q_WS_WIN
-  //! Holds the classic Windows style that is used to render buttons with a background color
-  QWindowsStyle mWindowsStyle;
-#endif
 
 };

@@ -4,7 +4,7 @@
 
 SET (MSEXPORT_SRCS
      qgsmapserverexport.cpp
-     main.cpp
+     ms_main.cpp
      msexport_wrap.cxx
 )
 

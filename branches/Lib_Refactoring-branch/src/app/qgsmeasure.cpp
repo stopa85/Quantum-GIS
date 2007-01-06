@@ -25,6 +25,7 @@
 #include "qgsrubberband.h"
 #include "qgsspatialrefsys.h"
 
+#include "QMessageBox"
 #include <QSettings>
 #include <iostream>
 
@@ -72,6 +73,35 @@ void QgsMeasure::activate()
   restorePosition();
   QgsMapTool::activate();
   mRightMouseClicked = false;
+
+  // set ellipsoid
+  QSettings settings;
+  QString ellipsoid = settings.readEntry("/qgis/measure/ellipsoid", "WGS84");
+
+  // set source SRS and projections enabled flag
+  QgsMapRender* mapRender = mCanvas->mapRender();
+  mCalc->setProjectionsEnabled(mapRender->projectionsEnabled());
+  int srsid = mapRender->destinationSrs().srsid();
+  mCalc->setSourceSRS(srsid);
+  
+  // If we suspect that they have data that is projected, yet the
+  // map SRS is set to a geographic one, warn them.
+  if (mCalc->geographic() &&
+      (mMapCanvas->extent().height() > 360 || 
+       mMapCanvas->extent().width() > 720))
+  {
+    QMessageBox::warning(this, tr("Incorrect measure results"),
+        tr("<p>This map is defined with a geographic coordinate system "
+           "(latitude/longitude) "
+           "but the map extents suggest that it is actually a projected "
+           "coordinate system (e.g., Mercator). "
+           "If so, the results from line or area measurements will be "
+           "incorrect.</p>"
+           "<p>To fix this, explicitly set an appropriate map coordinate "
+           "system using the <tt>Settings:Project Properties</tt> menu."),
+                         QMessageBox::Ok,
+                         QMessageBox::NoButton);
+  }
 }
     
 void QgsMeasure::deactivate()
@@ -122,19 +152,6 @@ void QgsMeasure::addPoint(QgsPoint &point)
     QgsPoint pnt(point);
     mPoints.push_back(pnt);
     
-    if (mPoints.size() == 1)
-    {
-      // set ellipsoid
-      QSettings settings;
-      QString ellipsoid = settings.readEntry("/qgis/measure/ellipsoid", "WGS84");
-
-      // set source SRS and projections enabled flag
-      QgsMapRender* mapRender = mCanvas->mapRender();
-      mCalc->setProjectionsEnabled(mapRender->projectionsEnabled());
-      int srsid = mapRender->destinationSrs().srsid();
-      mCalc->setSourceSRS(srsid);
-    }
-
     if (mMeasureArea && mPoints.size() > 2)
     {
       double area = mCalc->measurePolygon(mPoints);

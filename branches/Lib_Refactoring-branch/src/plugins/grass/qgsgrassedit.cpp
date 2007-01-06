@@ -408,7 +408,7 @@ void QgsGrassEdit::init()
 
   // Restore symbology
   QString spath = "/GRASS/edit/symb/";
-  QSettings settings("QuantumGIS", "qgis");
+  QSettings settings;
 
   mLineWidth = settings.readNumEntry (
                  spath + "lineWidth", 1 );
@@ -734,7 +734,7 @@ void QgsGrassEdit::changeSymbology(Q3ListViewItem * item, const QPoint & pnt, in
   std::cerr << "QgsGrassEdit::changeSymbology() col = " << col << std::endl;
 #endif
 
-  QSettings settings("QuantumGIS", "qgis");
+  QSettings settings;
 
   if ( !item ) return;
 
@@ -771,7 +771,7 @@ void QgsGrassEdit::lineWidthChanged()
 #ifdef QGISDEBUG
     std::cerr << "QgsGrassEdit::lineWidthChanged()" << std::endl;
 #endif
-    QSettings settings("QuantumGIS", "qgis");
+    QSettings settings;
     mLineWidth = mLineWidthSpinBox->value();
 
     for ( int i = 0; i < SYMB_COUNT; i++ ) {
@@ -787,7 +787,7 @@ void QgsGrassEdit::markerSizeChanged()
 #ifdef QGISDEBUG
     std::cerr << "QgsGrassEdit::markerSizeChanged()" << std::endl;
 #endif
-    QSettings settings("QuantumGIS", "qgis");
+    QSettings settings;
     mSize = mMarkerSizeSpinBox->value();
     QString spath = "/GRASS/edit/symb/";
     settings.writeEntry ( spath + "markerSize", mSize );
@@ -795,7 +795,7 @@ void QgsGrassEdit::markerSizeChanged()
 
 void QgsGrassEdit::restorePosition()
 {
-  QSettings settings("QuantumGIS", "qgis");
+  QSettings settings;
   int ww = settings.readNumEntry("/GRASS/windows/edit/w", 420);
   int wh = settings.readNumEntry("/GRASS/windows/edit/h", 150);
   int wx = settings.readNumEntry("/GRASS/windows/edit/x", 100);
@@ -806,7 +806,7 @@ void QgsGrassEdit::restorePosition()
 
 void QgsGrassEdit::saveWindowLocation()
 {
-  QSettings settings("QuantumGIS", "qgis");
+  QSettings settings;
   QPoint p = this->pos();
   QSize s = this->size();
   settings.writeEntry("/GRASS/windows/edit/x", p.x());

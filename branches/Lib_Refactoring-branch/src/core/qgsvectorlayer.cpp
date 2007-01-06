@@ -1178,8 +1178,11 @@ void QgsVectorLayer::updateExtents()
       {
         if (!mDeletedFeatureIds.contains(fet.featureId()))
         {
-          bb = fet.boundingBox();
-          mLayerExtent.combineExtentWith(&bb);
+          if (fet.geometry())
+          {
+            bb = fet.boundingBox();
+            mLayerExtent.combineExtentWith(&bb);
+          }
         }
       }
     }

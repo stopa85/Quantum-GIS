@@ -18,7 +18,6 @@ email                : sherman at mrcc.com
 
 #include "qgsogrprovider.h"
 
-#include <geos.h>
 
 #include <iostream>
 #include <cfloat>
@@ -150,11 +149,11 @@ QgsOgrProvider::QgsOgrProvider(QString const & uri)
     minmaxcache[i]=new double[2];
   }
   // create the geos objects
-  geometryFactory = new geos::GeometryFactory();
+  geometryFactory = new GEOS_GEOM::GeometryFactory();
   assert(geometryFactory!=0);
   // create the reader
   //    std::cerr << "Creating the wktReader\n";
-  wktReader = new geos::WKTReader(geometryFactory);
+  wktReader = new GEOS_IO::WKTReader(geometryFactory);
 
   /* TODO: [MD]
   mNumericalTypes.push_back("Integer");
@@ -261,13 +260,13 @@ bool QgsOgrProvider::getNextFeature(QgsFeature& feature,
     /* TODO: [MD]
     if (mUseIntersect)
     {
-      geos::Geometry *geosGeom = 0;
+      GEOS_GEOM::Geometry *geosGeom = 0;
       geosGeom = f->geometry()->geosGeometry();
       assert(geosGeom != 0);
          
       char *sWkt = new char[2 * mSelectionRectangle->WkbSize()];
       mSelectionRectangle->exportToWkt(&sWkt);  
-      geos::Geometry *geosRect = wktReader->read(sWkt);
+      GEOS_GEOM::Geometry *geosRect = wktReader->read(sWkt);
       assert(geosRect != 0);
       try // geos might throw exception on error 
       { 
@@ -276,8 +275,13 @@ bool QgsOgrProvider::getNextFeature(QgsFeature& feature,
           returnval=true; 
         } 
       } 
-      catch (geos::TopologyException* e) 
+      catch (GEOS_UTIL::TopologyException* e) 
       { 
+#if GEOS_VERSION_MAJOR < 3
+        QString error = e->toString().c_str();
+#else
+        QString error = e->what();
+#endif
         QString error = e->toString().c_str(); 
         QgsLogger::warning("GEOS: " + error);
       }

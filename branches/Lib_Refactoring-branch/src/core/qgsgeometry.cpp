@@ -16,7 +16,6 @@ email                : morb at ozemail dot com dot au
 
 #include <limits>
 
-#include <geos.h>
 
 #include "qgis.h"
 #include "qgsgeometry.h"
@@ -27,7 +26,7 @@ email                : morb at ozemail dot com dot au
 
 
 // Set up static GEOS geometry factory
-geos::GeometryFactory* QgsGeometry::geosGeometryFactory = new geos::GeometryFactory();
+GEOS_GEOM::GeometryFactory* QgsGeometry::geosGeometryFactory = new GEOS_GEOM::GeometryFactory();
 
 
 QgsGeometry::QgsGeometry()
@@ -246,7 +245,7 @@ bool QgsGeometry::isMultipart() const
 }
 
 
-void QgsGeometry::setGeos(geos::Geometry* geos)
+void QgsGeometry::setGeos(GEOS_GEOM::Geometry* geos)
 {
   // TODO - make this more heap-friendly
 
@@ -754,8 +753,8 @@ void QgsGeometry::adjacentVerticies(const QgsGeometryVertexIndex& atVertex, int&
 
 bool QgsGeometry::insertVertexBefore(double x, double y,
                                      int beforeVertex,
-                                     const geos::CoordinateSequence*  old_sequence,
-                                           geos::CoordinateSequence** new_sequence)
+                                     const GEOS_GEOM::CoordinateSequence*  old_sequence,
+                                           GEOS_GEOM::CoordinateSequence** new_sequence)
 
 {
   // Bounds checking
@@ -768,7 +767,7 @@ bool QgsGeometry::insertVertexBefore(double x, double y,
   int numPoints = old_sequence->getSize();
 
   // Copy to the new sequence, including the new vertex
-  (*new_sequence) = new geos::DefaultCoordinateSequence();
+  (*new_sequence) = new GEOS_GEOM::DefaultCoordinateSequence();
 
   bool inserted = FALSE;
   for (int i = 0; i < numPoints; i++)
@@ -776,7 +775,7 @@ bool QgsGeometry::insertVertexBefore(double x, double y,
     // Do we insert the new vertex here?
     if (beforeVertex == i)
     {
-      (*new_sequence)->add( geos::Coordinate(x, y) );
+      (*new_sequence)->add( GEOS_GEOM::Coordinate(x, y) );
       inserted = TRUE;
     }
     (*new_sequence)->add( old_sequence->getAt(i) );
@@ -786,9 +785,9 @@ bool QgsGeometry::insertVertexBefore(double x, double y,
   {
     // The beforeVertex is greater than the actual number of vertices
     // in the geometry - append it.
-    (*new_sequence)->add( geos::Coordinate(x, y) );
+    (*new_sequence)->add( GEOS_GEOM::Coordinate(x, y) );
   }
-// TODO: Check that the sequence is still simple, e.g. with geos::Geometry->isSimple()
+// TODO: Check that the sequence is still simple, e.g. with GEOS_GEOM::Geometry->isSimple()
 
   return inserted;
 }
@@ -1440,10 +1439,10 @@ bool QgsGeometry::vertexAt(double &x, double &y,
 {
       if(mGeos)//try to find the vertex from the Geos geometry (it present)
 	{
-	  geos::CoordinateSequence* cs = mGeos->getCoordinates();
+	  GEOS_GEOM::CoordinateSequence* cs = mGeos->getCoordinates();
 	  if(cs)
 	    {
-	      const geos::Coordinate& coord = cs->getAt(atVertex.back());
+	      const GEOS_GEOM::Coordinate& coord = cs->getAt(atVertex.back());
 	      x = coord.x;
 	      y = coord.y;
 	      delete cs;
@@ -1654,7 +1653,7 @@ QgsPoint QgsGeometry::closestVertexWithContext(QgsPoint& point,
 
   if (mGeos)
   {
-    geos::CoordinateSequence* sequence = mGeos->getCoordinates();
+    GEOS_GEOM::CoordinateSequence* sequence = mGeos->getCoordinates();
 	if(sequence)
 	  {
 	    for(int i = 0; i < sequence->getSize(); ++i)
@@ -2108,9 +2107,9 @@ bool QgsGeometry::intersects(const QgsRect& r) const
 {
     bool returnval=false;
 
-    geos::GeometryFactory *gf = new geos::GeometryFactory();
-    geos::WKTReader *wktReader = new geos::WKTReader(gf);
-    geos::Geometry *geosGeom = wktReader->read( qstrdup(wkt()) );
+    GEOS_GEOM::GeometryFactory *gf = new GEOS_GEOM::GeometryFactory();
+    GEOS_IO::WKTReader *wktReader = new GEOS_IO::WKTReader(gf);
+    GEOS_GEOM::Geometry *geosGeom = wktReader->read( qstrdup(wkt()) );
 
     //write the selection rectangle to wkt by hand
     QString rectwkt="POLYGON((";
@@ -2135,7 +2134,7 @@ bool QgsGeometry::intersects(const QgsRect& r) const
     rectwkt+=QString::number(r.yMin(),'f',3);
     rectwkt+="))";
     
-    geos::Geometry *geosRect = wktReader->read( qstrdup(rectwkt) );
+    GEOS_GEOM::Geometry *geosRect = wktReader->read( qstrdup(rectwkt) );
     try // geos might throw exception on error
     {
       if(geosGeom->intersects(geosRect))
@@ -2143,9 +2142,13 @@ bool QgsGeometry::intersects(const QgsRect& r) const
         returnval=true;
       }
     }
-    catch (geos::TopologyException* e)
+    catch (GEOS_UTIL::TopologyException* e)
     {
+#if GEOS_VERSION_MAJOR < 3
       QString error = e->toString().c_str();
+#else
+      QString error = e->what();
+#endif
       QgsLogger::warning("GEOS: " + error);
     }
  
@@ -2161,7 +2164,7 @@ bool QgsGeometry::fast_intersects(const QgsRect& r) const
   bool returnval=false;
   
   //use the geos export of QgsGeometry
-  geos::Geometry *geosGeom = geosGeometry();
+  GEOS_GEOM::Geometry *geosGeom = geosGeometry();
 
   //write the selection rectangle to wkt by hand
     QString rectwkt="POLYGON((";
@@ -2185,9 +2188,9 @@ bool QgsGeometry::fast_intersects(const QgsRect& r) const
     rectwkt+=" ";
     rectwkt+=QString::number(r.yMin(),'f',3);
     rectwkt+="))";
-    geos::GeometryFactory *gf = new geos::GeometryFactory();
-    geos::WKTReader *wktReader = new geos::WKTReader(gf);
-    geos::Geometry *geosRect = wktReader->read( qstrdup(rectwkt) );
+    GEOS_GEOM::GeometryFactory *gf = new GEOS_GEOM::GeometryFactory();
+    GEOS_IO::WKTReader *wktReader = new GEOS_IO::WKTReader(gf);
+    GEOS_GEOM::Geometry *geosRect = wktReader->read( qstrdup(rectwkt) );
     
     try // geos might throw exception on error
     {
@@ -2196,9 +2199,13 @@ bool QgsGeometry::fast_intersects(const QgsRect& r) const
         returnval=true;
       }
     }
-    catch (geos::TopologyException* e)
+    catch (GEOS_UTIL::TopologyException* e)
     {
+#if GEOS_VERSION_MAJOR < 3
       QString error = e->toString().c_str();
+#else
+      QString error = e->what();
+#endif
       QgsLogger::warning("GEOS: " + error);
     }
       
@@ -2216,7 +2223,7 @@ bool QgsGeometry::contains(QgsPoint* p) const
 
     exportWkbToGeos();
 
-    geos::Point* geosPoint = geosGeometryFactory->createPoint(geos::Coordinate(p->x(), p->y()));
+    GEOS_GEOM::Point* geosPoint = geosGeometryFactory->createPoint(GEOS_GEOM::Coordinate(p->x(), p->y()));
 
     returnval = mGeos->contains(geosPoint);
 
@@ -2487,7 +2494,7 @@ bool QgsGeometry::exportToWkt() const
 
 
 
-geos::Geometry* QgsGeometry::geosGeometry() const
+GEOS_GEOM::Geometry* QgsGeometry::geosGeometry() const
 {
 
     if (!mDirtyGeos)
@@ -2526,11 +2533,11 @@ geos::Geometry* QgsGeometry::geosGeometry() const
 	   y = (double *) (mGeometry + 5 + sizeof(double));
            
            mDirtyGeos = FALSE;
-	   return geosGeometryFactory->createPoint(geos::Coordinate(*x,*y));
+	   return geosGeometryFactory->createPoint(GEOS_GEOM::Coordinate(*x,*y));
 	}
 	case QGis::WKBMultiPoint:
 	{
-	    std::vector<geos::Geometry*>* points=new std::vector<geos::Geometry*>;
+	    std::vector<GEOS_GEOM::Geometry*>* points=new std::vector<GEOS_GEOM::Geometry*>;
 	    ptr = mGeometry + 5;
 	    nPoints = (int *) ptr;
 	    ptr = mGeometry + 1 + 2 * sizeof(int);
@@ -2541,7 +2548,7 @@ geos::Geometry* QgsGeometry::geosGeometry() const
 		ptr += sizeof(double);
 		y = (double *) ptr;
 		ptr += sizeof(double);
-		points->push_back(geosGeometryFactory->createPoint(geos::Coordinate(*x,*y)));
+		points->push_back(geosGeometryFactory->createPoint(GEOS_GEOM::Coordinate(*x,*y)));
 	    }
 	    return geosGeometryFactory->createMultiPoint(points);
 	}
@@ -2549,7 +2556,7 @@ geos::Geometry* QgsGeometry::geosGeometry() const
 	{
       QgsDebugMsg("QgsGeometry::geosGeometry: Linestring found");
 
-	    geos::DefaultCoordinateSequence* sequence=new geos::DefaultCoordinateSequence();
+	    GEOS_GEOM::DefaultCoordinateSequence* sequence=new GEOS_GEOM::DefaultCoordinateSequence();
 	    ptr = mGeometry + 5;
 	    nPoints = (int *) ptr;
 	    ptr = mGeometry + 1 + 2 * sizeof(int);
@@ -2559,18 +2566,18 @@ geos::Geometry* QgsGeometry::geosGeometry() const
 		ptr += sizeof(double);
 		y = (double *) ptr;
 		ptr += sizeof(double);
-		sequence->add(geos::Coordinate(*x,*y));
+		sequence->add(GEOS_GEOM::Coordinate(*x,*y));
 	    }
 	    return geosGeometryFactory->createLineString(sequence); 
 	}
 	case QGis::WKBMultiLineString:
 	{
-	    std::vector<geos::Geometry*>* lines=new std::vector<geos::Geometry*>;
+	    std::vector<GEOS_GEOM::Geometry*>* lines=new std::vector<GEOS_GEOM::Geometry*>;
 	    numLineStrings = (int) (mGeometry[5]);
 	    ptr = mGeometry + 9;
 	    for (jdx = 0; jdx < numLineStrings; jdx++)
 	    {
-		geos::DefaultCoordinateSequence* sequence=new geos::DefaultCoordinateSequence();
+		GEOS_GEOM::DefaultCoordinateSequence* sequence=new GEOS_GEOM::DefaultCoordinateSequence();
 		// each of these is a wbklinestring so must handle as such
 		lsb = *ptr;
 		ptr += 5;   // skip type since we know its 2
@@ -2582,7 +2589,7 @@ geos::Geometry* QgsGeometry::geosGeometry() const
 		    ptr += sizeof(double);
 		    y = (double *) ptr;
 		    ptr += sizeof(double);
-		    sequence->add(geos::Coordinate(*x,*y));
+		    sequence->add(GEOS_GEOM::Coordinate(*x,*y));
 		}
 		lines->push_back(geosGeometryFactory->createLineString(sequence));
 	    }
@@ -2596,15 +2603,15 @@ geos::Geometry* QgsGeometry::geosGeometry() const
 	    numRings = (int *) (mGeometry + 1 + sizeof(int));
 	    ptr = mGeometry + 1 + 2 * sizeof(int);
 	    
-	    geos::LinearRing* outer=0;
-	    std::vector<geos::Geometry*>* inner=new std::vector<geos::Geometry*>;
+	    GEOS_GEOM::LinearRing* outer=0;
+	    std::vector<GEOS_GEOM::Geometry*>* inner=new std::vector<GEOS_GEOM::Geometry*>;
 
 	    for (idx = 0; idx < *numRings; idx++)
 	    {
 
     //QgsDebugMsg("Ring nr: "+QString::number(idx));
 
-		geos::DefaultCoordinateSequence* sequence=new geos::DefaultCoordinateSequence();
+		GEOS_GEOM::DefaultCoordinateSequence* sequence=new GEOS_GEOM::DefaultCoordinateSequence();
 		// get number of points in the ring
 		nPoints = (int *) ptr;
 		ptr += 4;
@@ -2615,9 +2622,9 @@ geos::Geometry* QgsGeometry::geosGeometry() const
 		    ptr += sizeof(double);
 		    y = (double *) ptr;
 		    ptr += sizeof(double);
-		    sequence->add(geos::Coordinate(*x,*y));
+		    sequence->add(GEOS_GEOM::Coordinate(*x,*y));
 		}
-		geos::LinearRing* ring=geosGeometryFactory->createLinearRing(sequence);
+		GEOS_GEOM::LinearRing* ring=geosGeometryFactory->createLinearRing(sequence);
 		if(idx==0)
 		{
 		    outer=ring;
@@ -2634,7 +2641,7 @@ geos::Geometry* QgsGeometry::geosGeometry() const
 	{
 	    QgsDebugMsg("Multipolygon found");
 
-	    std::vector<geos::Geometry *> *polygons=new std::vector<geos::Geometry *>;
+	    std::vector<GEOS_GEOM::Geometry *> *polygons=new std::vector<GEOS_GEOM::Geometry *>;
 	    // get the number of polygons
 	    ptr = mGeometry + 5;
 	    numPolygons = (int *) ptr;
@@ -2644,8 +2651,8 @@ geos::Geometry* QgsGeometry::geosGeometry() const
 		
     //QgsDebugMsg("Polygon nr: "+QString::number(kdx));
 
-		geos::LinearRing* outer=0;
-		std::vector<geos::Geometry*>* inner=new std::vector<geos::Geometry*>;
+		GEOS_GEOM::LinearRing* outer=0;
+		std::vector<GEOS_GEOM::Geometry*>* inner=new std::vector<GEOS_GEOM::Geometry*>;
 
 		//skip the endian and mGeometry type info and
 		// get number of rings in the polygon
@@ -2656,7 +2663,7 @@ geos::Geometry* QgsGeometry::geosGeometry() const
 		{
 		    //QgsDebugMsg("Ring nr: "+QString::number(idx));
 
-		    geos::DefaultCoordinateSequence* sequence=new geos::DefaultCoordinateSequence();
+		    GEOS_GEOM::DefaultCoordinateSequence* sequence=new GEOS_GEOM::DefaultCoordinateSequence();
 		    // get number of points in the ring
 		    nPoints = (int *) ptr;
 		    ptr += 4;
@@ -2667,9 +2674,9 @@ geos::Geometry* QgsGeometry::geosGeometry() const
 			ptr += sizeof(double);
 			y = (double *) ptr;
 			ptr += sizeof(double);
-			sequence->add(geos::Coordinate(*x,*y));
+			sequence->add(GEOS_GEOM::Coordinate(*x,*y));
 		    }
-		    geos::LinearRing* ring=geosGeometryFactory->createLinearRing(sequence);
+		    GEOS_GEOM::LinearRing* ring=geosGeometryFactory->createLinearRing(sequence);
 		    if(idx==0)
 		    {
 			outer=ring;
@@ -2736,13 +2743,13 @@ bool QgsGeometry::exportGeosToWkb() const
 
   switch (mGeos->getGeometryTypeId())
   {
-    case geos::GEOS_POINT:                 // a point
+    case GEOS_GEOM::GEOS_POINT:                 // a point
     {
       // TODO
       break;
-    } // case geos::GEOS_POINT
+    } // case GEOS_GEOM::GEOS_POINT
 
-    case geos::GEOS_LINESTRING:            // a linestring
+    case GEOS_GEOM::GEOS_LINESTRING:            // a linestring
     {
       QgsDebugMsg("Got a geos::GEOS_LINESTRING.");
 
@@ -2773,8 +2780,8 @@ bool QgsGeometry::exportGeosToWkb() const
       memcpy(ptr, &numPoints, 4);
       ptr += 4;
 
-      geos::LineString* geosls = static_cast<geos::LineString*>(mGeos);
-      const geos::CoordinateSequence* sequence = geosls->getCoordinatesRO();
+      GEOS_GEOM::LineString* geosls = static_cast<GEOS_GEOM::LineString*>(mGeos);
+      const GEOS_GEOM::CoordinateSequence* sequence = geosls->getCoordinatesRO();
 
       // assign points
       for (int n = 0; n < numPoints; n++)
@@ -2797,20 +2804,20 @@ bool QgsGeometry::exportGeosToWkb() const
       return true;
 
       // TODO: Deal with endian-ness
-    } // case geos::GEOS_LINESTRING
+    } // case GEOS_GEOM::GEOS_LINESTRING
 
-    case geos::GEOS_LINEARRING:            // a linear ring (linestring with 1st point == last point)
+    case GEOS_GEOM::GEOS_LINEARRING:            // a linear ring (linestring with 1st point == last point)
     {
       // TODO
       break;
-    } // case geos::GEOS_LINEARRING
+    } // case GEOS_GEOM::GEOS_LINEARRING
 
-    case geos::GEOS_POLYGON:               // a polygon
+    case GEOS_GEOM::GEOS_POLYGON:               // a polygon
     {
       int geometrySize;
       double x, y; //point coordinates
-      geos::Polygon* thePolygon = dynamic_cast<geos::Polygon*>(mGeos);
-      const geos::LineString* theRing = 0;
+      GEOS_GEOM::Polygon* thePolygon = dynamic_cast<GEOS_GEOM::Polygon*>(mGeos);
+      const GEOS_GEOM::LineString* theRing = 0;
       int nPointsInRing = 0;
 
       if(thePolygon)
@@ -2855,7 +2862,7 @@ bool QgsGeometry::exportGeosToWkb() const
 		nPointsInRing = theRing->getNumPoints();
 		memcpy(&mGeometry[position], &nPointsInRing, sizeof(int));
 		position += sizeof(int);
-		const geos::CoordinateSequence* ringSequence = theRing->getCoordinatesRO();
+		const GEOS_GEOM::CoordinateSequence* ringSequence = theRing->getCoordinatesRO();
 		//for(int j = 0; j < nPointsInRing; ++j)
 		for(int j = 0; j <ringSequence->getSize(); ++j)
 		      {
@@ -2898,31 +2905,31 @@ bool QgsGeometry::exportGeosToWkb() const
 	  //error
 	}
       break;
-    } // case geos::GEOS_POLYGON
+    } // case GEOS_GEOM::GEOS_POLYGON
 
-    case geos::GEOS_MULTIPOINT:            // a collection of points
+    case GEOS_GEOM::GEOS_MULTIPOINT:            // a collection of points
     {
       // TODO
       break;
-    } // case geos::GEOS_MULTIPOINT
+    } // case GEOS_GEOM::GEOS_MULTIPOINT
 
-    case geos::GEOS_MULTILINESTRING:       // a collection of linestrings
+    case GEOS_GEOM::GEOS_MULTILINESTRING:       // a collection of linestrings
     {
       // TODO
       break;
-    } // case geos::GEOS_MULTILINESTRING
+    } // case GEOS_GEOM::GEOS_MULTILINESTRING
 
-    case geos::GEOS_MULTIPOLYGON:          // a collection of polygons
+    case GEOS_GEOM::GEOS_MULTIPOLYGON:          // a collection of polygons
     {
       // TODO
       break;
-    } // case geos::GEOS_MULTIPOLYGON
+    } // case GEOS_GEOM::GEOS_MULTIPOLYGON
 
-    case geos::GEOS_GEOMETRYCOLLECTION:    // a collection of heterogeneus geometries
+    case GEOS_GEOM::GEOS_GEOMETRYCOLLECTION:    // a collection of heterogeneus geometries
     {
       // TODO
       break;
-    } // case geos::GEOS_GEOMETRYCOLLECTION
+    } // case GEOS_GEOM::GEOS_GEOMETRYCOLLECTION
 
   } // switch (mGeos->getGeometryTypeId())
 

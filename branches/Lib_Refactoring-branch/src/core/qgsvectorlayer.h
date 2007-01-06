@@ -418,9 +418,6 @@ signals:
   /** This signal is emitted when modifications has been done on layer */
   void wasModified(bool onlyGeometry);
 
-  /** This signal is emitted when drawing features to tell current progress */
-  void drawingProgress(int current, int total);
-
 private:                       // Private methods
 
   /** vector layers are not copyable */
