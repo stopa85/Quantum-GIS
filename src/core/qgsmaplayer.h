@@ -225,7 +225,7 @@ public slots:
 signals:
 
     /** Emit a signal to notify of a progress event */
-    void setProgress(int theProgress, int theTotalSteps);
+    void drawingProgress(int theProgress, int theTotalSteps);
 
     /** Emit a signal with status (e.g. to be caught by QgisApp and display a msg on status bar) */
     void setStatus(QString theStatusQString);

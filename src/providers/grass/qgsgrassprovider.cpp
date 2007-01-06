@@ -1898,6 +1898,7 @@ std::vector<QgsFeatureAttribute> *QgsGrassProvider::attributes ( int field, int 
     #endif
 
     if ( nRecords < 1 ) {
+	db_close_database_shutdown_driver ( driver );
         std::cerr << "No DB record" << std::endl;
 	return att;
     }
@@ -1907,6 +1908,7 @@ std::vector<QgsFeatureAttribute> *QgsGrassProvider::attributes ( int field, int 
 
     int more;
     if ( db_fetch (&databaseCursor, DB_NEXT, &more) != DB_OK ) {
+	db_close_database_shutdown_driver ( driver );
 	std::cout << "Cannot fetch DB record" << std::endl;
 	return att;
     }

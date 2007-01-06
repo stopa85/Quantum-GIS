@@ -224,7 +224,7 @@ void QgsMapRender::render(QPainter* painter)
     // added these comments and debug statement to help others...
     QgsDebugMsg("If there is a QPaintEngine error here, it is caused by an emit call");
 
-    //emit setProgress(myRenderCounter++, mLayerSet.size());
+    //emit drawingProgress(myRenderCounter++, mLayerSet.size());
     QgsMapLayer *ml = QgsMapLayerRegistry::instance()->mapLayer(*li);
 
     if (!ml)
@@ -292,7 +292,7 @@ void QgsMapRender::render(QPainter* painter)
     li = mLayerSet.begin();
     while (li != mLayerSet.end())
     {
-      // TODO: emit setProgress((myRenderCounter++),zOrder.size());
+      // TODO: emit drawingProgress((myRenderCounter++),zOrder.size());
       QgsMapLayer *ml = QgsMapLayerRegistry::instance()->mapLayer(*li);
   
       if (ml && (ml->type() != QgsMapLayer::RASTER))
@@ -326,7 +326,7 @@ void QgsMapRender::render(QPainter* painter)
   } // if (!mOverview)
 
   // make sure progress bar arrives at 100%!
-  emit setProgress(1,1);      
+  emit drawingProgress(1,1);      
       
 #ifdef QGISDEBUG
   QgsDebugMsg("Rendering done in (seconds): " + QString("%1").arg(renderTime.elapsed() / 1000.0) );

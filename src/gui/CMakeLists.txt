@@ -2,6 +2,7 @@
 SET(QGIS_GUI_SRCS
 qgisgui.cpp
 qgisinterface.cpp
+qgscolorbutton.cpp
 qgscursors.cpp
 qgsencodingfiledialog.cpp
 qgslayerprojectionselector.cpp

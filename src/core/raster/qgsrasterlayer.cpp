@@ -2687,7 +2687,7 @@ const QgsRasterBandStats QgsRasterLayer::getRasterBandStats(int theBandNoInt)
 
   emit setStatus(QString("Calculating stats for ")+name());
   //reset the main app progress bar
-  emit setProgress(0,0);
+  emit drawingProgress(0,0);
 
   // let the user know we're going to possibly be taking a while
   QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
@@ -2757,7 +2757,7 @@ const QgsRasterBandStats QgsRasterLayer::getRasterBandStats(int theBandNoInt)
 
   for( int iYBlock = 0; iYBlock < myNYBlocks; iYBlock++ )
   {
-    emit setProgress ( iYBlock, myNYBlocks * 2 );
+    emit drawingProgress ( iYBlock, myNYBlocks * 2 );
 
     for( int iXBlock = 0; iXBlock < myNXBlocks; iXBlock++ )
     {
@@ -2829,7 +2829,7 @@ const QgsRasterBandStats QgsRasterLayer::getRasterBandStats(int theBandNoInt)
   //for the second pass we will get the sum of the squares / mean
   for( int iYBlock = 0; iYBlock < myNYBlocks; iYBlock++ )
   {
-    emit setProgress ( iYBlock+myNYBlocks, myNYBlocks * 2 );
+    emit drawingProgress ( iYBlock+myNYBlocks, myNYBlocks * 2 );
 
     for( int iXBlock = 0; iXBlock < myNXBlocks; iXBlock++ )
     {
@@ -2915,7 +2915,7 @@ const QgsRasterBandStats QgsRasterLayer::getRasterBandStats(int theBandNoInt)
   QgsDebugMsg("adding stats to stats collection at position " + QString::number(theBandNoInt - 1));
   //add this band to the class stats map
   rasterStatsVector[theBandNoInt - 1] = myRasterBandStats;
-  emit setProgress(rasterYDimInt, rasterYDimInt); //reset progress
+  emit drawingProgress(rasterYDimInt, rasterYDimInt); //reset progress
   QApplication::restoreOverrideCursor(); //restore the cursor
   QgsDebugMsg("Stats collection completed returning");
   return myRasterBandStats;
@@ -3615,7 +3615,7 @@ void QgsRasterLayer::setSubLayerVisibility(QString const &  name, bool vis)
 void QgsRasterLayer::updateProgress(int theProgress, int theMax)
 {
   //simply propogate it on!
-  emit setProgress (theProgress,theMax);
+  emit drawingProgress (theProgress,theMax);
 }
 
 
@@ -4016,7 +4016,7 @@ QString QgsRasterLayer::getMetadata()
 QString QgsRasterLayer::buildPyramids(RasterPyramidList const & theRasterPyramidList, 
                                       QString const & theResamplingMethod)
 {
-  emit setProgress(0,0);
+  emit drawingProgress(0,0);
   //first test if the file is writeable
   QFileInfo myQFile(mDataSource);
   
@@ -4033,7 +4033,7 @@ QString QgsRasterLayer::buildPyramids(RasterPyramidList const & theRasterPyramid
   // if the dataset couldn't be opened in read / write mode, tell the user
   if (!gdalDataset)
   {
-    emit setProgress(0,0);
+    emit drawingProgress(0,0);
     gdalDataset = (GDALDataset *) GDALOpen(QFile::encodeName(mDataSource).constData(), GA_ReadOnly);
     return "ERROR_WRITE_FORMAT";
   }
@@ -4059,7 +4059,7 @@ QString QgsRasterLayer::buildPyramids(RasterPyramidList const & theRasterPyramid
     if ((*myRasterPyramidIterator).existsFlag)
     {
       QgsDebugMsg("Building.....");
-      emit setProgress(myCountInt,myTotalInt);
+      emit drawingProgress(myCountInt,myTotalInt);
       int myOverviewLevelsIntArray[1] = {(*myRasterPyramidIterator).levelInt };
       /* From : http://remotesensing.org/gdal/classGDALDataset.html#a23
       * pszResampling : one of "NEAREST", "AVERAGE" or "MODE" controlling the downsampling method applied.
@@ -4097,7 +4097,7 @@ QString QgsRasterLayer::buildPyramids(RasterPyramidList const & theRasterPyramid
            //QString myString = QString (CPLGetLastError());
             delete gdalDataset;
             gdalDataset = (GDALDataset *) GDALOpen(QFile::encodeName(mDataSource).constData(), GA_ReadOnly);
-            emit setProgress(0,0);
+            emit drawingProgress(0,0);
             return "FAILED_NOT_SUPPORTED";
         }
         myCountInt++;
@@ -4114,7 +4114,7 @@ QString QgsRasterLayer::buildPyramids(RasterPyramidList const & theRasterPyramid
   //close the gdal dataset and reopen it in read only mode
   delete gdalDataset;
   gdalDataset = (GDALDataset *) GDALOpen(QFile::encodeName(mDataSource).constData(), GA_ReadOnly);
-  emit setProgress(0,0);
+  emit drawingProgress(0,0);
   return NULL; // returning null on success
 }
 

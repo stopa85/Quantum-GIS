@@ -221,7 +221,6 @@
     </item>
    </layout>
   </widget>
-  <widget class="QStatusBar" name="statusbar" />
   <widget class="QToolBar" name="toolBar" >
    <property name="orientation" >
     <enum>Qt::Horizontal</enum>
@@ -241,6 +240,7 @@
    <addaction name="mActionRefreshView" />
    <addaction name="separator" />
    <addaction name="mActionAddNewMap" />
+   <addaction name="mActionAddImage" />
    <addaction name="mActionAddNewLabel" />
    <addaction name="mActionAddNewVectLegend" />
    <addaction name="mActionAddNewScalebar" />

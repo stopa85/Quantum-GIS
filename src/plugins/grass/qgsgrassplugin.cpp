@@ -136,7 +136,7 @@ void QgsGrassPlugin::initGui()
   mNewMapset = 0;
   mRegion = 0; 
 
-  QSettings settings("QuantumGIS", "qgis");
+  QSettings settings;
 
   QgsGrass::init();
 
@@ -256,7 +256,7 @@ void QgsGrassPlugin::mapsetChanged ()
         mCloseMapsetAction->setEnabled(true);
         mNewVectorAction->setEnabled(true);
   
-        QSettings settings("QuantumGIS", "qgis");
+        QSettings settings;
 	bool on = settings.readBoolEntry ("/GRASS/region/on", true );
 	mRegionAction->setOn(on);
   switchRegion(on);
@@ -603,7 +603,7 @@ void QgsGrassPlugin::switchRegion(bool on)
   std::cout << "QgsGrassPlugin::switchRegion()" << std::endl;
 #endif
 
-  QSettings settings("QuantumGIS", "qgis");
+  QSettings settings;
   settings.writeEntry ("/GRASS/region/on", on );
 
   if ( on ) {
@@ -660,7 +660,7 @@ void QgsGrassPlugin::setRegionPen(QPen & pen)
   mRegionBand->setColor ( mRegionPen.color() );
   mRegionBand->setWidth ( mRegionPen.width() );
 
-  QSettings settings("QuantumGIS", "qgis");
+  QSettings settings;
   settings.writeEntry ("/GRASS/region/color", mRegionPen.color().name() );
   settings.writeEntry ("/GRASS/region/width", (int) mRegionPen.width() );
 }

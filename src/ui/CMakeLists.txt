@@ -28,7 +28,6 @@ SET(QGIS_UIS
   qgslinestyledialogbase.ui
   qgslinestylewidgetbase.ui
   qgsludialogbase.ui
-  qgsmapserverexportbase.ui
   qgsmarkerdialogbase.ui
   qgsmeasurebase.ui
   qgsmessageviewer.ui

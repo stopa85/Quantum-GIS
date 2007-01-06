@@ -142,6 +142,7 @@ qgisHEADERS =							\
 		qgsbookmarkitem.h			\
 		qgsbookmarks.h			\
 		qgsclipboard.h				\
+		qgscolorbutton.h				\
 		qgscontinuouscolordialog.h				\
 		qgscustomprojectiondialog.h			\
 		qgsdelattrdialog.h				\
@@ -242,6 +243,7 @@ qgisSOURCES =						\
 		qgsbookmarkitem.cpp		\
 		qgsbookmarks.cpp	\
 		qgsclipboard.cpp		\
+		qgscolorbutton.cpp		\
 		qgscontinuouscolordialog.cpp		\
 		qgscustomprojectiondialog.cpp			\
 		qgsdelattrdialog.cpp		\

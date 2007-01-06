@@ -33,22 +33,11 @@ QgsSingleSymbolDialog::QgsSingleSymbolDialog(): QDialog(), mVectorLayer(0)
 #ifdef QGISDEBUG
     qWarning("constructor QgsSingleSymbolDialog called WITHOUT a layer");
 #endif
-    #ifdef Q_WS_WIN
-        // Coloured labels do not work under the Windows XP style - use plain Windows buttons instead
-        btnFillColor->setStyle(&mWindowsStyle);
-	btnOutlineColor->setStyle(&mWindowsStyle);
-    #endif
 }
 
 QgsSingleSymbolDialog::QgsSingleSymbolDialog(QgsVectorLayer * layer): QDialog(), mVectorLayer(layer)
 {
     setupUi(this);
-
-#ifdef Q_WS_WIN
-        // Coloured labels do not work under the Windows XP style - use plain Windows buttons instead
-        btnFillColor->setStyle(&mWindowsStyle);
-	btnOutlineColor->setStyle(&mWindowsStyle);
-#endif
 
 #ifdef QGISDEBUG
     qWarning("constructor QgsSingleSymbolDialog called WITH a layer");
@@ -131,8 +120,6 @@ QgsSingleSymbolDialog::QgsSingleSymbolDialog(QgsVectorLayer * layer): QDialog(),
 
         if (mVectorLayer && mVectorLayer->vectorType() == QGis::Line)
         {
-//            lblFillColor->unsetPalette();
-            btnFillColor->setPalette(QPalette());      // reset to default application palette
             btnFillColor->setEnabled(false);
             grpPattern->setEnabled(false);
             mGroupPoint->setEnabled(false);
@@ -192,13 +179,10 @@ QgsSingleSymbolDialog::~QgsSingleSymbolDialog()
 
 void QgsSingleSymbolDialog::selectOutlineColor()
 {
-    QColor c = QColorDialog::getColor(btnOutlineColor->paletteBackgroundColor(),this);
+    QColor c = QColorDialog::getColor(btnOutlineColor->color(), this);
     
     if ( c.isValid() ) {
-// old Qt3 idiom
-//        lblOutlineColor->setPaletteBackgroundColor(c);
-// new Qt4 idiom
-        btnOutlineColor->setPalette(c);
+        btnOutlineColor->setColor(c);
         emit settingsChanged();
     }
     
@@ -207,13 +191,10 @@ void QgsSingleSymbolDialog::selectOutlineColor()
 
 void QgsSingleSymbolDialog::selectFillColor()
 {
-    QColor c = QColorDialog::getColor(btnFillColor->paletteBackgroundColor(),this);
+    QColor c = QColorDialog::getColor(btnFillColor->color(), this);
 
     if ( c.isValid() ) {
-// old Qt3 idiom
-//        lblFillColor->setPaletteBackgroundColor(c);
-// new Qt4 idiom
-        btnFillColor->setPalette(c);
+        btnFillColor->setColor(c);
         emit settingsChanged();
     }
 
@@ -223,9 +204,9 @@ void QgsSingleSymbolDialog::selectFillColor()
 void QgsSingleSymbolDialog::apply( QgsSymbol *sy )
 {
     //query the values of the widgets and set the symbology of the vector layer
-    sy->setFillColor(btnFillColor->paletteBackgroundColor());
+    sy->setFillColor(btnFillColor->color());
     sy->setLineWidth(outlinewidthspinbox->value());
-    sy->setColor(btnOutlineColor->paletteBackgroundColor());
+    sy->setColor(btnOutlineColor->color());
 
     //
     // Apply point symbol
@@ -346,16 +327,9 @@ void QgsSingleSymbolDialog::set ( const QgsSymbol *sy )
 	// ... but, drawLine is not correct with width > 0 -> until solved set to 0
 	outlinewidthspinbox->setMinValue(0);
 
+    btnFillColor->setColor( sy->brush().color() );
 
-// old Qt3 idiom
-//        lblFillColor->setPaletteBackgroundColor(sy->brush().color());
-// new Qt4 idiom
-        btnFillColor->setPalette( sy->brush().color() );
-
-// old Qt3 idiom
-//        lblOutlineColor->setPaletteBackgroundColor(sy->pen().color());
-// new Qt4 idiom
-        btnOutlineColor->setPalette( sy->pen().color() );
+    btnOutlineColor->setColor( sy->pen().color() );
 
 	//stylebutton->setName(QgsSymbologyUtils::penStyle2Char(sy->pen().style()));
 	//stylebutton->setPixmap(QgsSymbologyUtils::char2LinePixmap(stylebutton->name()));
@@ -442,10 +416,7 @@ void QgsSingleSymbolDialog::set ( const QgsSymbol *sy )
 
 void QgsSingleSymbolDialog::setOutlineColor(QColor& c)
 {
-// old Qt3 idiom
-//    lblOutlineColor->setPaletteBackgroundColor(c);
-// new Qt4 idiom
-    btnOutlineColor->setPalette(c);
+    btnOutlineColor->setColor(c);
 }
 
 void QgsSingleSymbolDialog::setOutlineStyle(Qt::PenStyle pstyle)
@@ -467,10 +438,7 @@ void QgsSingleSymbolDialog::setOutlineStyle(Qt::PenStyle pstyle)
 
 void QgsSingleSymbolDialog::setFillColor(QColor& c)
 {
-// old Qt3 idiom
-//    lblFillColor->setPaletteBackgroundColor(c);
-// new Qt4 idiom
-    btnFillColor->setPalette(c);
+    btnFillColor->setColor(c);
 }
 
 void QgsSingleSymbolDialog::setFillStyle(Qt::BrushStyle fstyle)
@@ -519,7 +487,7 @@ void QgsSingleSymbolDialog::setOutlineWidth(int width)
 
 QColor QgsSingleSymbolDialog::getOutlineColor()
 {
-    return btnOutlineColor->paletteBackgroundColor();
+    return btnOutlineColor->color();
 }
 
 Qt::PenStyle QgsSingleSymbolDialog::getOutlineStyle()
@@ -546,7 +514,7 @@ int QgsSingleSymbolDialog::getOutlineWidth()
 
 QColor QgsSingleSymbolDialog::getFillColor()
 {
-    return btnFillColor->paletteBackgroundColor();
+    return btnFillColor->color();
 }
 
 Qt::BrushStyle QgsSingleSymbolDialog::getFillStyle()
