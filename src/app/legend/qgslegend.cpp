@@ -293,9 +293,9 @@ void QgsLegend::mouseReleaseEvent(QMouseEvent * e)
   QgsLegendItem* dest = dynamic_cast<QgsLegendItem*>(destItem);
 
   // no change?
-  if(!dest || !origin || getItemPos(dest) == mItemBeingMovedOrigPos)
+  if(!dest || !origin)
   {
-    mItemBeingMoved = NULL;
+    checkLayerOrderUpdate();
     return;
   }
 
@@ -360,12 +360,7 @@ void QgsLegend::mouseReleaseEvent(QMouseEvent * e)
       QgsDebugMsg("Other type of drag'n'drop happened!");
     }
 	
-	 std::deque<QString> layersAfterRelease = layerIDs(); //test if canvas redraw is really necessary
-   if(layersAfterRelease != mLayersPriorToMove)
-   {
-     // z-order has changed - update layer set
-     updateMapCanvasLayerSet();
-   }
+	checkLayerOrderUpdate();
 
   mItemBeingMoved = NULL;
 }
@@ -1839,4 +1834,17 @@ void QgsLegend::writeProject(QDomDocument & doc)
   QDomElement mapcanvasNode = doc.createElement("legend");
   qgisNode.appendChild(mapcanvasNode);
   writeXML(mapcanvasNode, doc);
+}
+
+
+bool QgsLegend::checkLayerOrderUpdate()
+{
+  std::deque<QString> layersAfterRelease = layerIDs(); //test if canvas redraw is really necessary
+  if(layersAfterRelease != mLayersPriorToMove)
+    {
+      // z-order has changed - update layer set
+      updateMapCanvasLayerSet();
+      return true;
+    }
+  return false;
 }

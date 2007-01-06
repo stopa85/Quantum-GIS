@@ -43,7 +43,7 @@ void QgsMapToolSelect::canvasPressEvent(QMouseEvent * e)
 
 void QgsMapToolSelect::canvasMoveEvent(QMouseEvent * e)
 {
-  if (e->state() != Qt::LeftButton && e->state() != Qt::LeftButton + Qt::ControlModifier)
+  if ( e->buttons() != Qt::LeftButton )
     return;
   
   if (!mDragging)
@@ -89,7 +89,7 @@ void QgsMapToolSelect::canvasReleaseEvent(QMouseEvent * e)
 
   // if Ctrl key is pressed, selected features will be added to selection
   // instead of removing old selection
-  bool lock = (e->state() == Qt::ControlModifier);
+  bool lock = (e->modifiers() & Qt::ControlModifier);
   
   QgsVectorLayer* vlayer = dynamic_cast<QgsVectorLayer*>(mCanvas->currentLayer());
   search = toLayerCoords(vlayer, search);

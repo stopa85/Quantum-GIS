@@ -3,6 +3,7 @@ SET(QGIS_GUI_SRCS
 qgisgui.cpp
 qgisinterface.cpp
 qgscursors.cpp
+qgsencodingfiledialog.cpp
 qgslayerprojectionselector.cpp
 qgsmapcanvas.cpp
 qgsmapcanvasitem.cpp
@@ -19,6 +20,7 @@ qgsvertexmarker.cpp
 
 SET(QGIS_GUI_MOC_HDRS
 qgisinterface.h
+qgsencodingfiledialog.h
 qgslayerprojectionselector.h
 qgsmapcanvas.h
 qgsmapcanvasitem.h

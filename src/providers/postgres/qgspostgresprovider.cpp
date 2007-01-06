@@ -1549,6 +1549,9 @@ bool QgsPostgresProvider::addFeature(QgsFeature& f, int primaryKeyHighWater)
           }
         }
 
+        // important: escape quotes in field value
+        fieldvalue.replace("'", "''");
+
         if(charactertype)
         {
           insert+="'";
@@ -1795,9 +1798,12 @@ bool QgsPostgresProvider::changeAttributeValues(const QgsChangedAttributesMap & 
     // cycle through the changed attributes of the feature
     for(QgsAttributeMap::const_iterator siter = attrs.begin(); siter != attrs.end(); ++siter)
     {
-      QString sql="UPDATE "+mSchemaTableName+" SET "+siter->fieldName()+"='"+siter->fieldValue()+
-          "' WHERE \"" +primaryKey+"\"="+QString::number(fid);
-      
+      QString val = siter->fieldValue();
+
+      // escape quotes
+      val.replace("'", "''");
+       
+      QString sql="UPDATE "+mSchemaTableName+" SET "+siter->fieldName()+"='"+val+"' WHERE \"" +primaryKey+"\"="+QString::number(fid);
       QgsDebugMsg(sql);
 
       // s end sql statement and do error handling

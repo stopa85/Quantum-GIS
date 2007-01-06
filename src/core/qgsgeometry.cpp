@@ -2744,9 +2744,7 @@ bool QgsGeometry::exportGeosToWkb() const
 
     case geos::GEOS_LINESTRING:            // a linestring
     {
-#ifdef QGISDEBUG
-  std::cout << "QgsGeometry::exportGeosToWkb: Got a geos::GEOS_LINESTRING." << std::endl;
-#endif
+      QgsDebugMsg("Got a geos::GEOS_LINESTRING.");
 
       // TODO
       int numPoints = mGeos->getNumPoints();
