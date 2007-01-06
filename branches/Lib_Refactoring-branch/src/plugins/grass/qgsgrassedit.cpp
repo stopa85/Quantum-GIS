@@ -1439,6 +1439,7 @@ void QgsGrassEdit::addCat ( int line )
   }
 
   line = mProvider->rewriteLine ( line, type, mPoints, mCats );
+  mSelectedLine = line;
   if ( mAttributes ) mAttributes->setLine ( line );
   updateSymb();
   increaseMaxCat();
@@ -1474,6 +1475,7 @@ void QgsGrassEdit::deleteCat ( int line, int field, int cat )
   Vect_field_cat_del ( mCats, field, cat );
 
   line = mProvider->rewriteLine ( line, type, mPoints, mCats );
+  mSelectedLine = line;
   if ( mAttributes ) mAttributes->setLine ( line );
 
   // Check orphan record

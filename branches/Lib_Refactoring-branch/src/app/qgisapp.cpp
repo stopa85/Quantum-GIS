@@ -2090,11 +2090,11 @@ void QgisApp::addWmsLayer()
         wmss->selectedLayers(),
         wmss->selectedStylesForSelectedLayers(),
         wmss->selectedImageEncoding(),
-	wmss->selectedCrs(),
-	wmss->connProxyHost(),
-	wmss->connProxyPort(),
-	wmss->connProxyUser(),
-	wmss->connProxyPass()
+        wmss->selectedCrs(),
+        wmss->connProxyHost(),
+        wmss->connProxyPort(),
+        wmss->connProxyUser(),
+        wmss->connProxyPass()
         );
   }
 }
@@ -5027,6 +5027,7 @@ bool QgisApp::addRasterLayer(QFileInfo const & rasterFile, bool guiWarning)
   if (!addRasterLayer(layer))
   {
     mMapCanvas->freeze(false);
+    QApplication::restoreOverrideCursor();
 
 // Let render() do its own cursor management
 //    QApplication::restoreOverrideCursor();
@@ -5045,6 +5046,7 @@ bool QgisApp::addRasterLayer(QFileInfo const & rasterFile, bool guiWarning)
   {
     statusBar()->message(mMapCanvas->extent().stringRep(2));
     mMapCanvas->freeze(false);
+    QApplication::restoreOverrideCursor();
 
 // Let render() do its own cursor management
 //    QApplication::restoreOverrideCursor();

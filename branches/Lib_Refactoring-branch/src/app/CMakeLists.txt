@@ -17,7 +17,6 @@ qgsclipboard.cpp
 qgscontinuouscolordialog.cpp
 qgscustomprojectiondialog.cpp
 qgsdelattrdialog.cpp
-qgsencodingfiledialog.cpp
 qgsfillstylewidget.cpp
 qgsgeomtypedialog.cpp
 qgsgraduatedsymboldialog.cpp
@@ -90,7 +89,6 @@ qgsbookmarks.h
 qgscontinuouscolordialog.h
 qgscustomprojectiondialog.h
 qgsdelattrdialog.h
-qgsencodingfiledialog.h
 qgsfillstylewidget.h
 qgsgeomtypedialog.h
 qgsgraduatedsymboldialog.h

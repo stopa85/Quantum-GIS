@@ -11,26 +11,41 @@
 #################################################################
 
 #
-# This file builds the wfs plugin
+# This file builds the spit plugin
 #
 
 include(../../../settings.pro)
-TARGET=wfsplugin
+TARGET=geoprocessingplugin
 TEMPLATE = lib
 #suffix debug to target if applicable
 CONFIG(debug, debug|release){
   TARGET = $$member(TARGET, 0)-debug
 }
 
+# This is a hack (thanks freddy!) because many plugins use the
+# same class names and file names we need to force the compiler
+# to create separate object files for them.
+MYDIRNAME=spit
+MOC_DIR = $${OBJDIR}/moc/plugins/$${MYDIRNAME}
+UI_DIR = $${OBJDIR}/ui/plugins/$${MYDIRNAME}
+win32:OBJECTS_DIR = $${OBJDIR}/o/win32/plugins/$${MYDIRNAME}
+INCLUDEPATH += $${OBJDIR}/ui 
+
 LIBS += $${QGISCORELIBADD}
 LIBS += $${QGISGUILIBADD}
+LIBS += $${POSTGRESLIBADD}
+
+
 DESTDIR=$${QGISPLUGINDIR}
 QT += qt3support svg core gui xml network
-message("Building libs into $${DESTDIR}")
-INCLUDEPATH += $${GEOSINCADD}
 
-HEADERS += qgswfsplugin.h \
-           qgswfssourceselect.h 
-FORMS +=  qgswfssourceselectbase.ui
-SOURCES += qgswfsplugin.cpp \
-           qgswfssourceselect.cpp 
+message("Building libs into $${DESTDIR}")
+
+
+HEADERS += qgsdlgpgbuffer.h \
+           qgspggeoprocessing.h 
+
+INTERFACES += qgsdlgpgbufferbase.ui 
+
+SOURCES += qgsdlgpgbuffer.cpp \
+           qgspggeoprocessing.cpp
