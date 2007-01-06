@@ -146,23 +146,16 @@ bool QgsMapLayer::readXML( QDomNode & layer_node )
 
     // XXX not needed? QString type = element.attribute("type");
 
-    // use scale dependent visibility flag
-    QString scaleBasedVisibility = element.attribute("scaleBasedVisibilityFlag");
-    if ( "1" == scaleBasedVisibility )
-    {
-        setScaleBasedVisibility(true);
-    }
-    else
-    {
-        setScaleBasedVisibility(false);
-    }
-    setMinScale(element.attribute("minScale").toFloat());
-    setMaxScale(element.attribute("maxScale").toFloat());
-
     // set data source
     QDomNode mnl = layer_node.namedItem("datasource");
     QDomElement mne = mnl.toElement();
     mDataSource = mne.text();
+
+    // now let the children grab what they need from the DOM node.
+    if (!readXML_( layer_node ))
+    {
+      return false;
+    }
 
     // the internal name is just the data source basename
     QFileInfo dataSourceFileInfo( mDataSource );
@@ -178,6 +171,19 @@ bool QgsMapLayer::readXML( QDomNode & layer_node )
             mID = mne.text();
         }
     }
+
+    // use scale dependent visibility flag
+    QString scaleBasedVisibility = element.attribute("scaleBasedVisibilityFlag");
+    if ( "1" == scaleBasedVisibility )
+    {
+        setScaleBasedVisibility(true);
+    }
+    else
+    {
+        setScaleBasedVisibility(false);
+    }
+    setMinScale(element.attribute("minScale").toFloat());
+    setMaxScale(element.attribute("maxScale").toFloat());
 
     // set name
     mnl = layer_node.namedItem("layername");
@@ -202,10 +208,7 @@ bool QgsMapLayer::readXML( QDomNode & layer_node )
       setTransparency(myElement.text().toInt());
     }
 
-
-    // now let the children grab what they need from the DOM node.
-    return readXML_( layer_node );
-
+    return true;
 } // void QgsMapLayer::readXML
 
 
