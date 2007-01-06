@@ -1048,8 +1048,11 @@ QgsRect QgsVectorLayer::boundingBoxOfSelected()
   {
     if (mSelectedFeatureIds.contains(fet.featureId()))
     {
-      r = fet.geometry()->boundingBox();
-      retval.combineExtentWith(&r);
+      if(fet.geometry())
+      {
+        r=fet.boundingBox();
+        retval.combineExtentWith(&r);
+      }
     }
   }
 

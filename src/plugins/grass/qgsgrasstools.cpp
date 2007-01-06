@@ -117,11 +117,11 @@ QgsGrassTools::QgsGrassTools ( QgisInterface *iface,
 
 
     mModulesListView = new Q3ListView();
-    mTabWidget->addTab( mModulesListView, "Modules" );
+    mTabWidget->addTab( mModulesListView, tr("Modules") );
     mModulesListView->addColumn("col1",0);
     
     // Set list view
-    mModulesListView->setColumnText(0,"Modules");
+    mModulesListView->setColumnText(0,tr("Modules"));
     mModulesListView->clear();
     mModulesListView->setSorting(-1);
     mModulesListView->setRootIsDecorated(true);
@@ -149,7 +149,7 @@ QgsGrassTools::QgsGrassTools ( QgisInterface *iface,
     // Warning: if browser is on the first page modules are 
     // displayed over the browser
     mBrowser = new QgsGrassBrowser ( mIface, this );
-    mTabWidget->addTab( mBrowser, "Browser" );
+    mTabWidget->addTab( mBrowser, tr("Browser") );
 
     connect( mBrowser, SIGNAL(regionChanged()), 
 		         this, SLOT(emitRegionChanged()) );

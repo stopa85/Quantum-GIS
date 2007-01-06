@@ -75,7 +75,7 @@ extern "C" {
 #include "grass_edit.xpm"
 #include "grass_region.xpm"
 #include "grass_region_edit.xpm"
-static const char *pluginVersion = "Version 0.1";
+static const QString pluginVersion = QObject::tr("Version 0.1");
 
 /**
  * Constructor for the plugin. The plugin is passed a pointer to the main app
@@ -87,9 +87,9 @@ QgsGrassPlugin::QgsGrassPlugin(QgisInterface * theQgisInterFace):
   qGisInterface(theQgisInterFace)
 {
   /** Initialize the plugin and set the required attributes */
-  pluginNameQString = "GrassVector";
-  pluginVersionQString = "0.1";
-  pluginDescriptionQString = "GRASS layer";
+  pluginNameQString = tr("GrassVector");
+  pluginVersionQString = tr("0.1");
+  pluginDescriptionQString = tr("GRASS layer");
 }
 
 QgsGrassPlugin::~QgsGrassPlugin()
@@ -827,13 +827,13 @@ extern "C" QgisPlugin * classFactory(QgisInterface * theQgisInterfacePointer)
 // the class may not yet be insantiated when this method is called.
 extern "C" QString name()
 {
-  return QString("GRASS");
+  return QObject::tr("GRASS");
 }
 
 // Return the description
 extern "C" QString description()
 {
-  return QString("GRASS layer");
+  return QObject::tr("GRASS layer");
 }
 
 // Return the type (either UI or MapLayer plugin)
