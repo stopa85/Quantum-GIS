@@ -7,9 +7,9 @@
 #    GEOS_LIBRARY
 
 
-FIND_PATH(GEOS_INCLUDE_DIR geos.h /usr/include /usr/local/include)
+FIND_PATH(GEOS_INCLUDE_DIR geos.h /usr/local/include /usr/include)
 
-FIND_LIBRARY(GEOS_LIBRARY NAMES geos PATH /usr/lib /usr/local/lib)
+FIND_LIBRARY(GEOS_LIBRARY NAMES geos PATH /usr/local/lib /usr/lib)
 
 IF (GEOS_INCLUDE_DIR AND GEOS_LIBRARY)
    SET(GEOS_FOUND TRUE)
