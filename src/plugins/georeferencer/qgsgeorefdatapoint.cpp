@@ -14,7 +14,7 @@ QgsGeorefDataPoint::QgsGeorefDataPoint(QgsMapCanvas* mapCanvas, int id,
 
 void QgsGeorefDataPoint::paint(QPainter* p)
 {
-  QString msg = QString("X %1\nY %2").arg(int(mMapCoords.x())).arg(int(mMapCoords.y()));
+  QString msg = QString("X %1\nY %2").arg(QString::number(mMapCoords.x(),'f')).arg(QString::number(mMapCoords.y(),'f'));
   QFont font;
   p->setFont(QFont("helvetica", 9));
   p->setPen(Qt::black);

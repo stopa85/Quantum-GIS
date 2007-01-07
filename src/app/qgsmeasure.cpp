@@ -47,6 +47,11 @@ QgsMeasure::QgsMeasure(bool measureArea, QgsMapCanvas *mc, Qt::WFlags f)
 
     mTable->setLeftMargin(0); // hide row labels
 
+    // Set one cell row where to update current distance
+    // If measuring area, the table doesn't get shown
+    mTable->setNumRows(1);
+    mTable->setText(0, 0, QString::number(0, 'f',1));
+
     mTable->horizontalHeader()->setLabel( 0, tr("Segments (in meters)") );
     //mTable->horizontalHeader()->setLabel( 1, tr("Total") );
     //mTable->horizontalHeader()->setLabel( 2, tr("Azimuth") );
@@ -74,15 +79,8 @@ void QgsMeasure::activate()
   QgsMapTool::activate();
   mRightMouseClicked = false;
 
-  // set ellipsoid
-  QSettings settings;
-  QString ellipsoid = settings.readEntry("/qgis/measure/ellipsoid", "WGS84");
-
-  // set source SRS and projections enabled flag
-  QgsMapRender* mapRender = mCanvas->mapRender();
-  mCalc->setProjectionsEnabled(mapRender->projectionsEnabled());
-  int srsid = mapRender->destinationSrs().srsid();
-  mCalc->setSourceSRS(srsid);
+  // ensure that we have correct settings
+  updateProjection();
   
   // If we suspect that they have data that is projected, yet the
   // map SRS is set to a geographic one, warn them.
@@ -101,6 +99,7 @@ void QgsMeasure::activate()
            "system using the <tt>Settings:Project Properties</tt> menu."),
                          QMessageBox::Ok,
                          QMessageBox::NoButton);
+    mWrongProjectProjection = true;
   }
 }
     
@@ -128,15 +127,27 @@ QgsMeasure::~QgsMeasure()
 
 void QgsMeasure::restart(void )
 {
+    updateProjection();
     mPoints.resize(0);
-    mTable->setNumRows(0);
+    // Set one cell row where to update current distance
+    // If measuring area, the table doesn't get shown
+    mTable->setNumRows(1);
+    mTable->setText(0, 0, QString::number(0, 'f',1));
     mTotal = 0.;
     
     updateUi();
 
     mRubberBand->reset(mMeasureArea);
 
+    // re-read color settings
+    QSettings settings;
+    int myRed = settings.value("/qgis/default_measure_color_red", 180).toInt();
+    int myGreen = settings.value("/qgis/default_measure_color_green", 180).toInt();
+    int myBlue = settings.value("/qgis/default_measure_color_blue", 180).toInt();
+    mRubberBand->setColor(QColor(myRed, myGreen, myBlue));
+
     mRightMouseClicked = false;
+    mWrongProjectProjection = false;
 }
 
 void QgsMeasure::addPoint(QgsPoint &point)
@@ -144,6 +155,12 @@ void QgsMeasure::addPoint(QgsPoint &point)
 #ifdef QGISDEBUG
     std::cout << "QgsMeasure::addPoint" << point.x() << ", " << point.y() << std::endl;
 #endif
+
+    if (mWrongProjectProjection)
+    {
+      updateProjection();
+      mWrongProjectProjection = false;
+    }
 
     // don't add points with the same coordinates
     if (mPoints.size() > 0 && point == mPoints[0])
@@ -168,13 +185,14 @@ void QgsMeasure::addPoint(QgsPoint &point)
       mTotal += d;
       editTotal->setText(formatDistance(mTotal));
 	
-    	mTable->setNumRows ( mPoints.size()-1 );
 
 	    int row = mPoints.size()-2;
       mTable->setText(row, 0, QString::number(d, 'f',1));
       //mTable->setText ( row, 1, QString::number(mTotal) );
+      mTable->setNumRows ( mPoints.size() );
       
-      mTable->ensureCellVisible(row,0);
+      mTable->setText(row + 1, 0, QString::number(0, 'f',1));
+      mTable->ensureCellVisible(row + 1,0);
     }
 
     mRubberBand->addPoint(point);
@@ -216,6 +234,7 @@ void QgsMeasure::mouseMove(QgsPoint &point)
     QgsPoint p1 = tmpPoints[last], p2 = tmpPoints[last+1];
 
     double d = mCalc->measureLine(p1,p2);
+    mTable->setText(last, 0, QString::number(d, 'f',1));
     editTotal->setText(formatDistance(mTotal + d));
   }
 }
@@ -321,6 +340,26 @@ void QgsMeasure::updateUi()
     editTotal->setText(formatDistance(0));
   }
   
+}
+
+void QgsMeasure::updateProjection()
+{
+  // set ellipsoid
+  QSettings settings;
+  QString ellipsoid = settings.readEntry("/qgis/measure/ellipsoid", "WGS84");
+  mCalc->setEllipsoid(ellipsoid);
+
+  // set source SRS and projections enabled flag
+  QgsMapRender* mapRender = mCanvas->mapRender();
+  mCalc->setProjectionsEnabled(mapRender->projectionsEnabled());
+  int srsid = mapRender->destinationSrs().srsid();
+  mCalc->setSourceSRS(srsid);
+  
+  int myRed = settings.value("/qgis/default_measure_color_red", 180).toInt();
+  int myGreen = settings.value("/qgis/default_measure_color_green", 180).toInt();
+  int myBlue = settings.value("/qgis/default_measure_color_blue", 180).toInt();
+  mRubberBand->setColor(QColor(myRed, myGreen, myBlue));
+
 }
 
 //////////////////////////

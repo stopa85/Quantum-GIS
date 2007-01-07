@@ -538,15 +538,6 @@ QgsRasterLayer::readFile( QString const & fileName )
   //that they match the coordinate system of this layer
   QgsDebugMsg("Layer registry has " + QString::number(QgsMapLayerRegistry::instance()->count()) + "layers");
 
-  if (QgsMapLayerRegistry::instance()->count() ==0)
-  {
-    // if no other layers exist, set the output projection to be
-    // the same as the input projection, otherwise set the output to the
-    // project srs
-    
-    // TODO: revisit [MD]
-  }
-
   getMetadata();
 
   // Use the affine transform to get geo coordinates for
@@ -614,6 +605,7 @@ QgsRasterLayer::readFile( QString const & fileName )
     redBandNameQString = "Red"; // sensible default
     greenBandNameQString = "Green"; // sensible default
     blueBandNameQString = "Blue";// sensible default
+    transparentBandNameQString = tr("Not Set"); // sensible default
     grayBandNameQString = tr("Not Set");  //sensible default
     drawingStyle = PALETTED_MULTI_BAND_COLOR; //sensible default
   }
@@ -631,6 +623,11 @@ QgsRasterLayer::readFile( QString const & fileName )
     {
       blueBandNameQString = tr("Not Set");  // sensible default
     }
+    if (gdalDataset->GetRasterCount() > 3)
+      transparentBandNameQString = getRasterBandName(4);
+    else
+      transparentBandNameQString = tr("Not Set");
+
     grayBandNameQString = tr("Not Set");  //sensible default
     drawingStyle = MULTI_BAND_COLOR;  //sensible default
   }
@@ -640,6 +637,7 @@ QgsRasterLayer::readFile( QString const & fileName )
     redBandNameQString = tr("Not Set"); //sensible default
     greenBandNameQString = tr("Not Set"); //sensible default
     blueBandNameQString = tr("Not Set");  //sensible default
+    transparentBandNameQString = tr("Not Set");  //sensible default
     drawingStyle = SINGLE_BAND_GRAY;  //sensible default
     grayBandNameQString = getRasterBandName(1); // usually gdal will return gray or undefined  
   }
@@ -1076,24 +1074,21 @@ __FUNCTION__, __LINE__);
   myRasterViewPort->clippedYMinDouble = (myRasterExtent.yMin() - adfGeoTransform[3]) / adfGeoTransform[5];
   myRasterViewPort->clippedYMaxDouble = (myRasterExtent.yMax() - adfGeoTransform[3]) / adfGeoTransform[5];
 
-  // We do a "+2" for each of the 2 assignments below because:
-  //  + 1 to simulate a ceil() out of static_cast<int> which otherwise is just a truncation.
-  //  + 1 to allow for the fact that the left hand source pixel may be mostly scrolled out of view
-  //      and therefore a fraction of a pixel would "leak" in the right hand side.
-  //      (we could test for this case more explicitly if we wanted to be pedantic, but
-  //       it's easier to just add one pixel "just in case")
-  myRasterViewPort->clippedWidthInt =
-    abs(static_cast < int >(myRasterViewPort->clippedXMaxDouble - myRasterViewPort->clippedXMinDouble)) + 2;
-  myRasterViewPort->clippedHeightInt =
-    abs(static_cast < int >(myRasterViewPort->clippedYMaxDouble - myRasterViewPort->clippedYMinDouble)) + 2;
-  
-/*
-  // Add one to the raster dimensions to guard against the integer truncation
-  // effects of static_cast<int>
-  // TODO: Can we get rid of this now that we are rounding at the point of the static_cast?
-  myRasterViewPort->clippedWidthInt++;
-  myRasterViewPort->clippedHeightInt++;
-*/
+  // Sometimes the Ymin/Ymax are reversed.
+  if (myRasterViewPort->clippedYMinDouble > myRasterViewPort->clippedYMaxDouble)
+  {
+    double t = myRasterViewPort->clippedYMinDouble;
+    myRasterViewPort->clippedYMinDouble = myRasterViewPort->clippedYMaxDouble;
+    myRasterViewPort->clippedYMaxDouble = t;
+  }
+
+  // Set the clipped width and height to encompass all of the source pixels
+  // that could end up being displayed.
+  myRasterViewPort->clippedWidthInt = 
+    static_cast<int>(ceil(myRasterViewPort->clippedXMaxDouble) - floor(myRasterViewPort->clippedXMinDouble));
+
+  myRasterViewPort->clippedHeightInt = 
+    static_cast<int>(ceil(myRasterViewPort->clippedYMaxDouble) - floor(myRasterViewPort->clippedYMinDouble));
   
   // but make sure the intended SE corner extent doesn't exceed the SE corner
   // of the source raster, otherwise GDAL's RasterIO gives an error and returns nothing.
@@ -1111,91 +1106,14 @@ __FUNCTION__, __LINE__);
       rasterYDimInt - myRasterViewPort->rectYOffsetInt;
   }
 
-/*
-  if (myRasterViewPort->clippedWidthInt > rasterXDimInt)
-  {
-    myRasterViewPort->clippedWidthInt = rasterXDimInt;
-  }
-  if (myRasterViewPort->clippedHeightInt > rasterYDimInt)
-  {
-    myRasterViewPort->clippedHeightInt = rasterYDimInt;
-  }
-*/
-
   // get dimensions of clipped raster image in device coordinate space (this is the size of the viewport)
   myRasterViewPort->topLeftPoint = theQgsMapToPixel->transform(myRasterExtent.xMin(), myRasterExtent.yMax());
   myRasterViewPort->bottomRightPoint = theQgsMapToPixel->transform(myRasterExtent.xMax(), myRasterExtent.yMin());
 
-  // Try a different method - round up to the nearest whole source pixel.
   myRasterViewPort->drawableAreaXDimInt =
     abs(static_cast<int> (myRasterViewPort->clippedWidthInt  / theQgsMapToPixel->mapUnitsPerPixel() * adfGeoTransform[1]));
   myRasterViewPort->drawableAreaYDimInt =
     abs(static_cast<int> (myRasterViewPort->clippedHeightInt / theQgsMapToPixel->mapUnitsPerPixel() * adfGeoTransform[5]));
-
-/*
-  myRasterViewPort->drawableAreaXDimInt =
-    static_cast<int> ((myRasterViewPort->clippedXMaxDouble - myRasterViewPort->clippedXMinDouble) /
-                       theQgsMapToPixel->mapUnitsPerPixel() * adfGeoTransform[1]);
-
-  myRasterViewPort->drawableAreaYDimInt =
-    static_cast<int> ((myRasterViewPort->clippedYMaxDouble - myRasterViewPort->clippedYMinDouble) /
-                       theQgsMapToPixel->mapUnitsPerPixel() * adfGeoTransform[5]);
-*/
-
-/*
-  // Since GDAL's RasterIO can't handle floating point, we have to round to
-  // the nearest pixel.  Add 0.5 to get rounding instead of truncation
-  // out of static_cast<int>.
-  myRasterViewPort->drawableAreaXDimInt =
-    static_cast<int>(myRasterViewPort->bottomRightPoint.x() + 0.5) -
-    static_cast<int>(myRasterViewPort->topLeftPoint    .x() + 0.5);
-
-
-*/
-
-  // get dimensions of clipped raster image in raster pixel space/ RasterIO will do the scaling for us.
-  // So for example, if the user is zoomed in a long way, there may only be e.g. 5x5 pixels retrieved from
-  // the raw raster data, but rasterio will seamlessly scale the up to whatever the screen coordinats are
-  // e.g. a 600x800 display window (see next section below)
-  myRasterViewPort->clippedXMinDouble = (myRasterExtent.xMin() - adfGeoTransform[0]) / adfGeoTransform[1];
-  myRasterViewPort->clippedXMaxDouble = (myRasterExtent.xMax() - adfGeoTransform[0]) / adfGeoTransform[1];
-  myRasterViewPort->clippedYMinDouble = (myRasterExtent.yMin() - adfGeoTransform[3]) / adfGeoTransform[5];
-  myRasterViewPort->clippedYMaxDouble = (myRasterExtent.yMax() - adfGeoTransform[3]) / adfGeoTransform[5];
-  myRasterViewPort->clippedWidthInt =
-    abs(static_cast < int >(myRasterViewPort->clippedXMaxDouble - myRasterViewPort->clippedXMinDouble));
-  myRasterViewPort->clippedHeightInt =
-    abs(static_cast < int >(myRasterViewPort->clippedYMaxDouble - myRasterViewPort->clippedYMinDouble));
-
-  // Add one to the raster dimensions to guard against the integer truncation
-  // effects of static_cast<int>
-  // TODO: Can we get rid of this now that we are rounding at the point of the static_cast?
-  myRasterViewPort->clippedWidthInt++;
-  myRasterViewPort->clippedHeightInt++;
-
-  // make sure we don't exceed size of raster, otherwise GDAL RasterIO doesn't like it
-  if (myRasterViewPort->clippedWidthInt > rasterXDimInt)
-  {
-    myRasterViewPort->clippedWidthInt = rasterXDimInt;
-  }
-  if (myRasterViewPort->clippedHeightInt > rasterYDimInt)
-  {
-    myRasterViewPort->clippedHeightInt = rasterYDimInt;
-  }
-
-  // get dimensions of clipped raster image in device coordinate space (this is the size of the viewport)
-  myRasterViewPort->topLeftPoint = theQgsMapToPixel->transform(myRasterExtent.xMin(), myRasterExtent.yMax());
-  myRasterViewPort->bottomRightPoint = theQgsMapToPixel->transform(myRasterExtent.xMax(), myRasterExtent.yMin());
-
-  // Since GDAL's RasterIO can't handle floating point, we have to round to
-  // the nearest pixel.  Add 0.5 to get rounding instead of truncation
-  // out of static_cast<int>.
-  myRasterViewPort->drawableAreaXDimInt =
-    static_cast<int>(myRasterViewPort->bottomRightPoint.x() + 0.5) -
-    static_cast<int>(myRasterViewPort->topLeftPoint    .x() + 0.5);
-
-  myRasterViewPort->drawableAreaYDimInt =
-    static_cast<int>(myRasterViewPort->bottomRightPoint.y() + 0.5) -
-    static_cast<int>(myRasterViewPort->topLeftPoint    .y() + 0.5);
 
 #ifdef QGISDEBUG
   QgsLogger::debug("QgsRasterLayer::draw: mapUnitsPerPixel", theQgsMapToPixel->mapUnitsPerPixel(), 1, __FILE__,\
@@ -2356,6 +2274,20 @@ void QgsRasterLayer::drawMultiBandColor(QPainter * theQPainter, QgsRasterViewPor
   void *myGdalGreenData = readData ( myGdalGreenBand, theRasterViewPort );
   void *myGdalBlueData = readData ( myGdalBlueBand, theRasterViewPort );
 
+  bool haveTransparencyBand(false);
+  GDALRasterBand *myGdalTransparentBand;
+  GDALDataType myTransparentType;
+  void *myGdalTransparentData;
+
+  if (transparentBandNameQString != tr("Not Set"))
+  {
+    haveTransparencyBand = true;
+    int myTransparentBandNoInt = getRasterBandNumber(transparentBandNameQString); 
+    myGdalTransparentBand = gdalDataset->GetRasterBand(myTransparentBandNoInt);
+    myTransparentType = myGdalTransparentBand->GetRasterDataType();
+    myGdalTransparentData = readData ( myGdalTransparentBand, theRasterViewPort );
+  }
+
   QImage myQImage = QImage(theRasterViewPort->drawableAreaXDimInt, theRasterViewPort->drawableAreaYDimInt, 32);
   //myQImage.fill(0);
   myQImage.setAlphaBuffer(true);
@@ -2370,9 +2302,16 @@ void QgsRasterLayer::drawMultiBandColor(QPainter * theQPainter, QgsRasterViewPor
                                               myColumnInt * theRasterViewPort->drawableAreaXDimInt + myRowInt );
       double myBlueValueDouble  = readValue ( myGdalBlueData, myBlueType,
                                               myColumnInt * theRasterViewPort->drawableAreaXDimInt + myRowInt );
+      if (haveTransparencyBand)
+      {
+        double myTransparentValueDouble  = readValue ( myGdalTransparentData, myTransparentType,
+                                           myColumnInt * theRasterViewPort->drawableAreaXDimInt + myRowInt );
+        if (myTransparentValueDouble == 0.0)
+          continue;
+      }
 
       // TODO: check all channels ?
-      if ( myRedValueDouble == noDataValueDouble || myRedValueDouble != myRedValueDouble )
+      if ( myRedValueDouble == noDataValueDouble || myRedValueDouble != myRedValueDouble)
       {
 #ifdef QGISDEBUG
 	QgsLogger::debug("myRedValueDouble", myRedValueDouble, __FILE__, __FUNCTION__, __LINE__, 1);
@@ -2462,6 +2401,8 @@ QgsDebugMsg("QgsRasterLayer::drawSingleBandGray: painting image to canvas from s
   CPLFree(myGdalRedData);
   CPLFree(myGdalGreenData);
   CPLFree(myGdalBlueData);
+  if (haveTransparencyBand)
+    CPLFree(myGdalTransparentData);
 }
 
 
@@ -3030,6 +2971,38 @@ void QgsRasterLayer::setBlueBandName(QString const &  theBandNameQString)
   return;
 }
 
+//mutator for transparent band name
+void QgsRasterLayer::setTransparentBandName(QString const &  theBandNameQString)
+{
+  //check if the band is unset
+  if (theBandNameQString == tr("Not Set"))
+  {
+    transparentBandNameQString = theBandNameQString;
+    return;
+  }
+  //check if the image is paletted
+  if (rasterLayerType == PALETTE && (theBandNameQString == "Red" || theBandNameQString == "Green" || theBandNameQString == "Blue"))
+  {
+    transparentBandNameQString = theBandNameQString;
+    return;
+  }
+  //check that a valid band name was passed
+
+  for (int myIteratorInt = 0; myIteratorInt < rasterStatsVector.size(); ++myIteratorInt)
+  {
+    //find out the name of this band
+    QgsRasterBandStats myRasterBandStats = rasterStatsVector[myIteratorInt];
+    if (myRasterBandStats.bandName == theBandNameQString)
+    {
+      transparentBandNameQString = theBandNameQString;
+      return;
+    }
+  }
+
+  //if no matches were found default to not set
+  transparentBandNameQString = tr("Not Set");
+  return;
+}
 
 
 //mutator for gray band name
@@ -3708,10 +3681,10 @@ QString QgsRasterLayer::getMetadata()
     myMetadataQString += tr("Dataset Description");
     myMetadataQString += "</td></tr>";
     myMetadataQString += "<tr><td bgcolor=\"white\">";
-    myMetadataQString += QString(gdalDataset->GetDescription());
+    myMetadataQString += QFile::decodeName(gdalDataset->GetDescription());
     myMetadataQString += "</td></tr>";
   
-    
+     
     char ** GDALmetadata = gdalDataset->GetMetadata();
     
     if ( GDALmetadata )

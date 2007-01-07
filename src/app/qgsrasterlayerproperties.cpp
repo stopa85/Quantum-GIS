@@ -206,10 +206,12 @@ QgsRasterLayerProperties::QgsRasterLayerProperties(QgsMapLayer *lyr, QWidget *pa
       cboRed->insertItem(myQString);
       cboGreen->insertItem(myQString);
       cboBlue->insertItem(myQString);
+      cboTransparent->insertItem(myQString);
     }
     cboRed->insertItem(tr("Not Set"));
     cboGreen->insertItem(tr("Not Set"));
     cboBlue->insertItem(tr("Not Set"));
+    cboTransparent->insertItem(tr("Not Set"));
     if (cboGray->count() != 1)
       cboGray->insertItem(tr("Not Set"));
   }
@@ -292,6 +294,7 @@ void QgsRasterLayerProperties::apply()
   rasterLayer->setGreenBandName(cboGreen->currentText());
   rasterLayer->setBlueBandName(cboBlue->currentText());
   rasterLayer->setGrayBandName(cboGray->currentText());
+  rasterLayer->setTransparentBandName(cboTransparent->currentText());
   //set the appropriate color ramping type
   if (cboColorMap->currentText() == tr("Pseudocolor"))
   {
@@ -723,6 +726,7 @@ void QgsRasterLayerProperties::sync()
   cboGreen->setCurrentText(rasterLayer->getGreenBandName());
   cboBlue->setCurrentText(rasterLayer->getBlueBandName());
   cboGray->setCurrentText(rasterLayer->getGrayBandName());
+  cboTransparent->setCurrentText(rasterLayer->getTransparentBandName());
 
 
 } // QgsRasterLayerProperties::sync()

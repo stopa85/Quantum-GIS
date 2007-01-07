@@ -22,6 +22,7 @@
 //qgis includes
 #include "qgscontexthelp.h"
 #include "qgscoordinatetransform.h"
+#include "qgslogger.h"
 #include "qgsmapcanvas.h"
 #include "qgsmaplayer.h"
 #include "qgsmaplayerregistry.h"
@@ -59,6 +60,7 @@ QgsProjectProperties::QgsProjectProperties(QgsMapCanvas* mapCanvas, QWidget *par
   
   // set the default wkt to WGS 84
   long mySRSID = myRender->destinationSrs().srsid();
+  QgsDebugMsg("Read project SRSID: " + QString::number(mySRSID));
   projectionSelector->setSelectedSRSID(mySRSID);
 
   ///////////////////////////////////////////////////////////
