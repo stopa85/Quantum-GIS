@@ -11,8 +11,8 @@
 
 IF(WIN32)
 
-  FIND_PATH(GDAL_INCLUDE_DIR gdal.h /usr/include /usr/local/include)
-  FIND_LIBRARY(GDAL_LIBRARY NAMES gdal PATH /usr/lib /usr/local/lib)
+  FIND_PATH(GDAL_INCLUDE_DIR gdal.h /usr/local/include /usr/include)
+  FIND_LIBRARY(GDAL_LIBRARY NAMES gdal PATH /usr/local/lib /usr/lib)
 
   
 ELSE(WIN32)

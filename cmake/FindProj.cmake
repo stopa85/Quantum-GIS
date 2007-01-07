@@ -7,9 +7,9 @@
 #    PROJ_LIBRARY
 
 
-FIND_PATH(PROJ_INCLUDE_DIR proj_api.h /usr/include /usr/local/include)
+FIND_PATH(PROJ_INCLUDE_DIR proj_api.h /usr/local/include /usr/include)
 
-FIND_LIBRARY(PROJ_LIBRARY NAMES proj PATH /usr/lib /usr/local/lib)
+FIND_LIBRARY(PROJ_LIBRARY NAMES proj PATH /usr/local/lib /usr/lib)
 
 IF (PROJ_INCLUDE_DIR AND PROJ_LIBRARY)
    SET(PROJ_FOUND TRUE)
