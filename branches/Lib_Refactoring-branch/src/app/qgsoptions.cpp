@@ -122,8 +122,16 @@ QgsOptions::QgsOptions(QWidget *parent, Qt::WFlags fl) :
   myGreen = settings.value("/qgis/default_canvas_color_green",255).toInt();
   myBlue = settings.value("/qgis/default_canvas_color_blue",255).toInt();
   pbnCanvasColor->setColor( QColor(myRed,myGreen,myBlue) );
+  
+  // set the default color for the measure tool
+  myRed = settings.value("/qgis/default_measure_color_red",180).toInt();
+  myGreen = settings.value("/qgis/default_measure_color_green",180).toInt();
+  myBlue = settings.value("/qgis/default_measure_color_blue",180).toInt();
+  pbnMeasureColour->setColor( QColor(myRed,myGreen,myBlue) );
 
   capitaliseCheckBox->setChecked(settings.value("qgis/capitaliseLayerName", QVariant(false)).toBool());
+
+  chbAskToSaveProjectChanges->setChecked(settings.value("qgis/askToSaveProjectChanges", QVariant(true)).toBool());
   
   cmbWheelAction->setCurrentIndex(settings.value("/qgis/wheel_action", 0).toInt());
   spinZoomFactor->setValue(settings.value("/qgis/zoom_factor", 2).toDouble());
@@ -151,6 +159,16 @@ void QgsOptions::on_pbnCanvasColor_clicked()
     pbnCanvasColor->setColor(color);
   }
 }
+
+void QgsOptions::on_pbnMeasureColour_clicked()
+{
+  QColor color = QColorDialog::getColor(pbnMeasureColour->color(), this);
+  if (color.isValid())
+  {
+    pbnMeasureColour->setColor(color);
+  }
+}
+
 void QgsOptions::themeChanged(const QString &newThemeName)
 {
   // Slot to change the theme as user scrolls through the choices
@@ -173,6 +191,7 @@ void QgsOptions::saveOptions()
   settings.writeEntry("/qgis/enable_anti_aliasing",chkAntiAliasing->isChecked());
   settings.writeEntry("/qgis/use_qimage_to_render", !(chkUseQPixmap->isChecked()));
   settings.setValue("qgis/capitaliseLayerName", capitaliseCheckBox->isChecked());
+  settings.setValue("qgis/askToSaveProjectChanges", chbAskToSaveProjectChanges->isChecked());
 
   if(cmbTheme->currentText().length() == 0)
   {
@@ -213,6 +232,12 @@ void QgsOptions::saveOptions()
   myRed = settings.writeEntry("/qgis/default_canvas_color_red",myColor.red());
   myGreen = settings.writeEntry("/qgis/default_canvas_color_green",myColor.green());
   myBlue = settings.writeEntry("/qgis/default_canvas_color_blue",myColor.blue());
+
+  //set the default color for the measure tool
+  myColor = pbnMeasureColour->color();
+  settings.setValue("/qgis/default_measure_color_red",myColor.red());
+  settings.setValue("/qgis/default_measure_color_green",myColor.green());
+  settings.setValue("/qgis/default_measure_color_blue",myColor.blue());
 
   settings.writeEntry("/qgis/wheel_action", cmbWheelAction->currentIndex());
   settings.writeEntry("/qgis/zoom_factor", spinZoomFactor->value());

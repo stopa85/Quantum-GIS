@@ -17,6 +17,7 @@
 
 
 #include "qgslogger.h"
+#include <QtDebug>
 
 void QgsLogger::debug(const QString& msg, int debuglevel, const char* file, const char* function, int line)
 {
