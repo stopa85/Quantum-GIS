@@ -26,7 +26,6 @@ qgslabeldialog.cpp
 qgslinestyledialog.cpp
 qgslinestylewidget.cpp
 qgsludialog.cpp
-qgsmapserverexport.cpp
 qgsmaptoolcapture.cpp
 qgsmaptoolidentify.cpp
 qgsmaptoolselect.cpp
@@ -99,7 +98,6 @@ qgslinestyledialog.h
 qgslinestylewidget.h
 qgsludialog.h
 qgsmaplayerinterface.h
-qgsmapserverexport.h
 qgsmaptoolidentify.h
 qgsmarkerdialog.h
 qgsmeasure.h

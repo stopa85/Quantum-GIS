@@ -2,6 +2,8 @@
 
 ADD_CUSTOM_TARGET (python ALL DEPENDS run_sip compile_python_core compile_python_gui)
 
+ADD_DEPENDENCIES (python qgis_core qgis_gui)
+
 # Step 1: during configuration
 # create file configure.py from configure.py.in
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/configure.py.in
@@ -16,10 +18,12 @@ ADD_CUSTOM_COMMAND(OUTPUT run_sip PRE_BUILD
 # Step 3: run make in core and gui subdirs
 ADD_CUSTOM_COMMAND(OUTPUT compile_python_core PRE_LINK
                    COMMAND ${CMAKE_MAKE_PROGRAM}
-                   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/core)
+                   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/core
+                   DEPENDS run_sip)
 ADD_CUSTOM_COMMAND(OUTPUT compile_python_gui PRE_LINK
                    COMMAND ${CMAKE_MAKE_PROGRAM}
-                   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/gui)
+                   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/gui
+                   DEPENDS run_sip)
 
 
 # python's site-packages dir: bindings will be installed here
