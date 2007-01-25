@@ -13,6 +13,8 @@
 #include "qgsgpsdevicedialog.h"
 #include "qgsmaplayer.h"
 #include "qgsdataprovider.h"
+#include "qgscontexthelp.h"
+#include <qgslogger.h>
 
 //qt includes
 #include <QFileDialog>
@@ -201,10 +203,10 @@ void QgsGPSPluginGui::on_pbnCancel_clicked()
 
 void QgsGPSPluginGui::on_pbnGPXSelectFile_clicked()
 {
-  std::cout << " Gps File Importer::pbnGPXSelectFile_clicked() " << std::endl;
+  QgsLogger::debug(" Gps File Importer::pbnGPXSelectFile_clicked() ");
   QString myFileTypeQString;
-  QString myFilterString="GPS eXchange format (*.gpx)";
-  QSettings settings("QuantumGIS", "qgis");
+  QString myFilterString=tr("GPS eXchange format (*.gpx)");
+  QSettings settings;
   QString dir = settings.readEntry("/Plugin-GPS/gpxdirectory");
   if (dir.isEmpty())
     dir = ".";
@@ -214,7 +216,7 @@ void QgsGPSPluginGui::on_pbnGPXSelectFile_clicked()
           dir, //initial dir
           myFilterString, //filters to select
           &myFileTypeQString); //the pointer to store selected filter
-  std::cout << "Selected filetype filter is : " << myFileTypeQString.toLocal8Bit().data() << std::endl;
+  QgsLogger::debug("Selected filetype filter is : " + myFileTypeQString);
   leGPXFile->setText(myFileNameQString);
 }
 
@@ -231,11 +233,11 @@ void QgsGPSPluginGui::on_pbnIMPInput_clicked() {
   std::map<QString, QgsBabelFormat*>::const_iterator iter;
   iter = mImporters.find(mImpFormat);
   if (iter == mImporters.end()) {
-    std::cerr << "Unknown file format selected: "
-	      << myFileType.left(myFileType.length() - 6).toLocal8Bit().data() << std::endl;
+    QgsLogger::warning("Unknown file format selected: " +
+                       myFileType.left(myFileType.length() - 6));
   }
   else {
-    std::cerr << iter->first.toLocal8Bit().data() << " selected" << std::endl;
+    QgsLogger::debug(iter->first + " selected");
     leIMPInput->setText(myFileName);
     cmbIMPFeature->clear();
     if (iter->second->supportsWaypoints())
@@ -285,7 +287,7 @@ void QgsGPSPluginGui::populatePortComboBoxes() {
   
 #endif
 
-#ifdef freebsd
+#ifdef __FreeBSD__ // freebsd
   // and freebsd devices (untested)
   QString freebsdDev("/dev/cuaa%1");
   for (int i = 0; i < 10; ++i) {
@@ -296,6 +298,18 @@ void QgsGPSPluginGui::populatePortComboBoxes() {
     else
       break;
   }
+
+  // and the ucom devices (serial USB adaptors)
+  freebsdDev = "/dev/ucom%1";
+  for (int i = 0; i < 10; ++i) {
+    if (QFileInfo(freebsdDev.arg(i)).exists()) {
+      cmbDLPort->insertItem(freebsdDev.arg(i));
+      cmbULPort->insertItem(freebsdDev.arg(i));
+    }
+    else
+      break;
+  }
+ 
 #endif
   
 #ifdef sparc
@@ -314,14 +328,16 @@ void QgsGPSPluginGui::populatePortComboBoxes() {
 #ifdef WIN32
   cmbULPort->insertItem("com1");
   cmbULPort->insertItem("com2");
+  cmbULPort->insertItem("usb:");
   cmbDLPort->insertItem("com1");
   cmbDLPort->insertItem("com2");
+  cmbDLPort->insertItem("usb:");
 #endif
 
   // OSX, OpenBSD, NetBSD etc? Anyone?
   
   // remember the last ports used
-  QSettings settings("QuantumGIS", "qgis");
+  QSettings settings;
   QString lastDLPort = settings.readEntry("/Plugin-GPS/lastdlport", "");
   QString lastULPort = settings.readEntry("/Plugin-GPS/lastulport", "");
   for (int i = 0; i < cmbDLPort->count(); ++i) {
@@ -349,7 +365,7 @@ void QgsGPSPluginGui::populateIMPBabelFormats() {
   mBabelFilter = "";
   cmbULDevice->clear();
   cmbDLDevice->clear();
-  QSettings settings("QuantumGIS", "qgis");
+  QSettings settings;
   QString lastDLDevice = settings.readEntry("/Plugin-GPS/lastdldevice", "");
   QString lastULDevice = settings.readEntry("/Plugin-GPS/lastuldevice", "");
   BabelMap::const_iterator iter;
@@ -384,3 +400,7 @@ void QgsGPSPluginGui::devicesUpdated() {
 }
 
 
+void QgsGPSPluginGui::on_pbnHelp_clicked()
+{
+  QgsContextHelp::run(context_id);
+}

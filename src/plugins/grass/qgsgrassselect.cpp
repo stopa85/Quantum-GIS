@@ -49,7 +49,7 @@ QgsGrassSelect::QgsGrassSelect(int type):QgsGrassSelectBase()
       lastLocation = QgsGrass::getDefaultLocation();
       lastMapset = QgsGrass::getDefaultMapset();
     } else {
-      QSettings settings("QuantumGIS", "qgis");
+      QSettings settings;
       lastGisdbase = settings.readEntry("/GRASS/lastGisdbase");
       //check we got something from qsettings otherwise default to users home dir
       if (lastGisdbase.isEmpty())
@@ -65,21 +65,21 @@ QgsGrassSelect::QgsGrassSelect(int type):QgsGrassSelectBase()
     switch ( type ) 
     {
 	case QgsGrassSelect::VECTOR:
-	    setCaption ( "Select GRASS Vector Layer" );
+	    setCaption ( tr("Select GRASS Vector Layer") );
             break;
 
 	case QgsGrassSelect::RASTER:
 	    /* Remove layer combo box */
 	    Layer->hide();
 	    elayer->hide();
-	    setCaption ( "Select GRASS Raster Layer" );
+	    setCaption ( tr("Select GRASS Raster Layer") );
 	    break;
 
 	case QgsGrassSelect::MAPCALC:
 	    /* Remove layer combo box */
 	    Layer->hide();
 	    elayer->hide();
-	    setCaption ( "Select GRASS mapcalc schema" );
+	    setCaption ( tr("Select GRASS mapcalc schema") );
 	    break;
 	    
 	case QgsGrassSelect::MAPSET:
@@ -87,7 +87,7 @@ QgsGrassSelect::QgsGrassSelect(int type):QgsGrassSelectBase()
 	    elayer->hide();
 	    MapName->hide();
 	    emap->hide();
-	    setCaption ( "Select GRASS Mapset" );
+	    setCaption ( tr("Select GRASS Mapset") );
 	    break;
     }
 	    
@@ -108,7 +108,7 @@ void QgsGrassSelect::restorePosition()
   optionsFrame->adjustSize ();
   adjustSize ();
   
-  QSettings settings("QuantumGIS", "qgis");
+  QSettings settings;
   int ww = settings.readNumEntry("/GRASS/windows/select/w", 500);
   int wh = settings.readNumEntry("/GRASS/windows/select/h", 100);
   int wx = settings.readNumEntry("/GRASS/windows/select/x", 100);
@@ -119,7 +119,7 @@ void QgsGrassSelect::restorePosition()
 
 void QgsGrassSelect::saveWindowLocation()
 {
-  QSettings settings("QuantumGIS", "qgis");
+  QSettings settings;
   QPoint p = this->pos();
   QSize s = this->size();
   settings.writeEntry("/GRASS/windows/select/x", p.x());
@@ -152,21 +152,32 @@ void QgsGrassSelect::setLocations()
     for ( unsigned int i = 0; i < d.count(); i++ ) {
 	if ( d[i] == "." || d[i] == ".." ) continue; 
 
-	QString chf = egisdbase->text() + "/" + d[i] + "/PERMANENT/DEFAULT_WIND";
-	
-	if ( !QFile::exists ( chf ) ) continue;
+	QString ldpath = egisdbase->text() + "/" + d[i];
+
+        /* TODO: G_is_location() was added to GRASS 6.1 06-05-24,
+           enable its use after some period (others do update) */
+        /*
+        if ( QgsGrass::versionMajor() > 6 || QgsGrass::versionMinor() > 0 )
+        { 
+            if ( !G_is_location( ldpath.toLocal8Bit().constData() ) ) continue;
+        }
+        else
+        {
+        */
+	    QString chf = egisdbase->text() + "/" + d[i] + "/PERMANENT/DEFAULT_WIND";
+	    if ( !QFile::exists ( chf ) ) continue;
+        //}
              	    
-	// if type is MAPSET check also if at least one mapset woned by user exists
+	// if type is MAPSET check also if at least one mapset owned by user exists
         if  ( QgsGrassSelect::type == QgsGrassSelect::MAPSET )
 	{
 	    bool exists = false;
 	    
-	    QString ldpath = egisdbase->text() + "/" + d[i];
 	    QDir ld = QDir( ldpath );
          
-	    for ( unsigned int j = 0; j < ld.count(); j++ ) {
-		QString windf = ldpath + "/" + ld[j] + "/WIND";
-		if ( !QFile::exists ( windf ) ) continue;
+	    for ( unsigned int j = 0; j < ld.count(); j++ ) 
+            {
+                if ( !QgsGrass::isMapset( ldpath + "/" + ld[j] ) ) continue;
 		
 		QFileInfo info ( ldpath + "/" + ld[j] );
 		if ( !info.isWritable() ) continue;
@@ -214,10 +225,10 @@ void QgsGrassSelect::setMapsets()
     int sel = -1;
 
     // Go through all subdirs and add all subdirs from vector/ 
-    for ( unsigned int i = 0; i < ld.count(); i++ ) {
-	QString windf = ldpath + "/" + ld[i] + "/WIND";
-	
-	if ( QFile::exists ( windf ) ) {
+    for ( unsigned int i = 0; i < ld.count(); i++ ) 
+    {
+        if ( QgsGrass::isMapset( ldpath + "/" + ld[i] ) ) 
+        {
 	    emapset->insertItem ( ld[i], -1 );
 	    if ( ld[i] == lastMapset ) {
 		sel = idx;
@@ -251,38 +262,35 @@ void QgsGrassSelect::setMaps()
     int idx = 0;
     int sel = -1;
 
-    if (type == VECTOR ) { // vector
-	ldpath.append ( "/vector/" );
-	QDir md = QDir( ldpath );
+    if (type == VECTOR ) // vector
+    {
+        QStringList list = QgsGrass::vectors ( egisdbase->text(), 
+                              elocation->currentText(), emapset->currentText() );
 	
-	for ( unsigned int j = 0; j < md.count(); j++ ) {
-	    QString chf = ldpath + md[j] + "/head";
-	    
-	    if ( QFile::exists ( chf ) ) {
-		QString m = QString( md[j] );
-		emap->insertItem ( m, -1 );
-		if ( m == lastVectorMap ) {
-		    sel = idx;
-		}
-		idx++;
-	    }
+	for ( int j = 0; j < list.count(); j++ ) 
+        {
+	    emap->insertItem ( list[j], -1 );
+	    if ( list[j] == lastVectorMap ) sel = idx;
+	    idx++;
 	}
-    } else if ( type == RASTER ) {
+        
+    } 
+    else if ( type == RASTER ) 
+    {
 	/* add cells */
-	QDir md = QDir( ldpath + "/cell/" );
-	md.setFilter (QDir::Files);
+        QStringList list = QgsGrass::rasters ( egisdbase->text(), 
+                              elocation->currentText(), emapset->currentText() );
 	
-	for ( unsigned int j = 0; j < md.count(); j++ ) {
-	    QString m = QString( md[j] );
-	    emap->insertItem ( m, -1 );
-	    if ( m == lastRasterMap ) {
-		sel = idx;
-	    }
+	for ( int j = 0; j < list.count(); j++ ) 
+        {
+	    emap->insertItem ( list[j], -1 );
+	    if ( list[j] == lastRasterMap ) sel = idx;
 	    idx++;
 	}
 
 	/* add groups */
-	md = QDir( ldpath + "/group/" );
+        // TODO add QgsGrass::groups ( use G_list( G_ELEMENT_GROUP) )
+	QDir md = QDir( ldpath + "/group/" );
 	md.setFilter (QDir::Dirs);
 	
 	for ( unsigned int j = 0; j < md.count(); j++ ) {
@@ -347,6 +355,20 @@ void QgsGrassSelect::setLayers()
 	idx++;
     }
 	
+    // if last used layer has not been found
+    // make default a map from layer 1
+    if (sel == -1)
+    {
+      for ( int j = 0; j < layers.count(); j++ )
+      {
+        if (layers[j].left(1) == "1")
+        {
+          sel = j;
+          break;
+        }
+      }
+    }
+    
     if ( sel >= 0 ) {
         elayer->setCurrentItem(sel);
     } else {
@@ -382,7 +404,7 @@ QStringList QgsGrassSelect::vectorLayers ( QString gisdbase,
 
     if ( level < 2 ) {
         std::cerr << "Cannot open vector on level 2" << std::endl;
-	QMessageBox::warning( 0, "Warning", "Cannot open vector on level 2 (topology not available)." );
+	QMessageBox::warning( 0, tr("Warning"), tr("Cannot open vector on level 2 (topology not available).") );
 	return list;
     }
 
@@ -440,7 +462,7 @@ void QgsGrassSelect::on_GisdbaseBrowse_clicked()
 {
     
     QString Gisdbase = QFileDialog::getExistingDirectory( this,
-                                 "Choose existing GISDBASE", egisdbase->text() );
+                                 tr("Choose existing GISDBASE"), egisdbase->text() );
 
     if ( !Gisdbase.isNull() ) 
     {
@@ -456,13 +478,13 @@ void QgsGrassSelect::on_ok_clicked()
     lastGisdbase = QString( gisdbase );
     
     if ( elocation->count() == 0 ) {
-        QString msg = "Wrong GISDBASE, no locations available.";
-	QMessageBox::warning(this, "Wrong GISDBASE", msg);
+        QString msg = tr("Wrong GISDBASE, no locations available.");
+	QMessageBox::warning(this, tr("Wrong GISDBASE"), msg);
 	return;
     }
 
     //write to qgsettings as gisdbase seems to be valid
-    QSettings settings("QuantumGIS", "qgis");
+    QSettings settings;
     settings.writeEntry("/GRASS/lastGisdbase",lastGisdbase );
 
     location = elocation->currentText();
@@ -474,8 +496,8 @@ void QgsGrassSelect::on_ok_clicked()
     map = emap->currentText().stripWhiteSpace();
 
     if ( type != QgsGrassSelect::MAPSET && map.isEmpty() ) {
-        QString msg = "Select a map.";
-	QMessageBox::warning(0, "No map", msg);
+        QString msg = tr("Select a map.");
+	QMessageBox::warning(0, tr("No map"), msg);
 	return;
     }
 
@@ -483,8 +505,8 @@ void QgsGrassSelect::on_ok_clicked()
     {
         if ( elayer->count() == 0 ) 
         { 
-	    QMessageBox::warning(0, "No layer", 
-                    "No layers available in this map");
+	    QMessageBox::warning(0, tr("No layer"), 
+                    tr("No layers available in this map"));
             return;
         }
         lastVectorMap = map;

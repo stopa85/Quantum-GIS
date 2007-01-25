@@ -10,11 +10,11 @@
 
 EXTRA_DIST = \
 	AUTHORS \
+	SPONSORS \
 	BUGS \
 	ChangeLog \
 	COPYING \
 	create_qm_files.sh \
-	doc \
 	INSTALL \
 	$(man1_MANS) \
 	NEWS \
@@ -28,7 +28,7 @@ man1_MANS = qgis.man
 
 docdatadir = $(datadir)/$(PACKAGE)/doc
 
-docdata_DATA = AUTHORS
+docdata_DATA = AUTHORS SPONSORS
 
 if WITH_UNITTESTS
 TESTS = tests
@@ -58,3 +58,16 @@ release: UIcheck distdir
 			> $(distdir)/qgis.spec
 	BZIP2=$(BZIP2_ENV) $(AMTAR)$(TAR) --bzip2 -chof $(distdir).tar.bz2 $(distdir)
 	-rm -rf $(distdir)
+
+BUILT_SOURCES = qgssvnversion.h
+
+.PHONY : qgssvnversion.h 
+qgssvnversion.h:
+	@if [ "$(HAVE_SVNVERSION)" == "yes" ]; then \
+	  QGSSVNDEF="#define QGSSVNVERSION \"`svnversion .`\""; \
+	else \
+	  QGSSVNDEF="#define QGSSVNVERSION \"unknown\""; \
+	fi; \
+	if [ "`grep QGSSVNVERSION qgssvnversion.h 2>/dev/null`" != "$$QGSSVNDEF" ]; then \
+		echo $$QGSSVNDEF > qgssvnversion.h; \
+	fi

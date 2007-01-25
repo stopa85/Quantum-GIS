@@ -15,63 +15,60 @@
  ***************************************************************************/
 #include <iostream>
 
-#include <qapplication.h>
-#include <qdir.h>
-#include <qfile.h>
-#include <qsettings.h>
-#include <qpixmap.h>
-#include <q3listbox.h>
-#include <qstringlist.h>
-#include <qlabel.h>
 #include <QComboBox>
-#include <qspinbox.h>
-#include <qpushbutton.h>
-#include <qmessagebox.h>
-#include <qinputdialog.h>
-#include <qsettings.h>
-#include <qpainter.h>
-#include <q3painter.h>
-#include <qpixmap.h>
-#include <qpen.h>
-#include <q3pointarray.h>
-#include <qcursor.h>
-#include <qnamespace.h>
-#include <q3listview.h>
-#include <qcolordialog.h>
-#include <q3table.h>
-#include <qstatusbar.h>
-#include <qevent.h>
-#include <qpoint.h>
-#include <qsize.h>
-#include <qdom.h>
-#include <qtabwidget.h>
-#include <qlayout.h>
-#include <q3process.h>
+#include <QDoubleValidator>
+#include <QFileDialog>
+#include <QGridLayout>
+#include <QGroupBox>
+#include <QHBoxLayout>
+#include <QIntValidator>
+#include <QProcess>
+#include <QPushButton>
+#include <QRegExpValidator>
+#include <QVBoxLayout>
 #include <q3cstring.h>
-#include <qlineedit.h>
-#include <q3textbrowser.h>
-#include <qdir.h>
-#include <qregexp.h>
+#include <q3groupbox.h>
+#include <q3listbox.h>
+#include <q3listview.h>
+#include <q3painter.h>
+#include <q3picture.h>
+#include <q3pointarray.h>
+#include <q3process.h>
 #include <q3progressbar.h>
 #include <q3stylesheet.h>
-#include <q3groupbox.h>
-#include <qpainter.h>
-#include <qpixmap.h>
-#include <q3picture.h>
+#include <q3table.h>
+#include <q3textbrowser.h>
+#include <qapplication.h>
+#include <qcolordialog.h>
+#include <qcursor.h>
+#include <qdir.h>
+#include <qdir.h>
+#include <qdom.h>
+#include <qevent.h>
+#include <qfile.h>
 #include <qimage.h>
-//Added by qt3to4:
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QGridLayout>
-#include <QIntValidator>
-#include <QDoubleValidator>
-#include <QRegExpValidator>
-#include <QPushButton>
-#include <QGroupBox>
-#include <QFileDialog>
-#include <QProcess>
+#include <qinputdialog.h>
+#include <qlabel.h>
+#include <qlayout.h>
+#include <qlineedit.h>
+#include <qmessagebox.h>
+#include <qnamespace.h>
+#include <qpainter.h>
+#include <qpen.h>
+#include <qpixmap.h>
+#include <qpoint.h>
+#include <qpushbutton.h>
+#include <qregexp.h>
+#include <qsettings.h>
+#include <qsize.h>
+#include <qspinbox.h>
+#include <qstatusbar.h>
+#include <qstringlist.h>
+#include <qtabwidget.h>
+#include <QUrl>
 
 #include "qgis.h"
+#include "qgisinterface.h"
 #include "qgsapplication.h"
 #include "qgsmapcanvas.h"
 #include "qgsmaplayer.h"
@@ -87,6 +84,7 @@ extern "C" {
 #include <grass/gis.h>
 #include <grass/Vect.h>
 }
+
 
 #include "../../src/providers/grass/qgsgrass.h"
 #include "../../src/providers/grass/qgsgrassprovider.h"
@@ -112,7 +110,11 @@ QString QgsGrassModule::findExec ( QString file )
         QString path = getenv("PATH");
         std::cerr << "path = " << path.ascii() << std::endl;
 
+#ifdef WIN32
         mExecPath = path.split ( ";" );
+#else
+        mExecPath = path.split ( ":" );
+#endif
         mExecPath.prepend ( QgsApplication::applicationDirPath() );
         mExecPathInited = true;
     }
@@ -185,7 +187,7 @@ QStringList QgsGrassModule::execArguments ( QString module )
     return arguments;
 }
 
-QgsGrassModule::QgsGrassModule ( QgsGrassTools *tools, QgisApp *qgisApp, QgisIface *iface, 
+QgsGrassModule::QgsGrassModule ( QgsGrassTools *tools, QgisInterface *iface, 
 	                     QString path, QWidget * parent, const char * name, Qt::WFlags f )
              :QgsGrassModuleBase ( ), mSuccess(false)
 {
@@ -197,7 +199,6 @@ QgsGrassModule::QgsGrassModule ( QgsGrassTools *tools, QgisApp *qgisApp, QgisIfa
 
     mPath = path;
     mTools = tools;
-    mQgisApp = qgisApp;
     mIface = iface;
     mCanvas = mIface->getMapCanvas();
     mParent = parent;
@@ -262,7 +263,7 @@ QgsGrassModule::QgsGrassModule ( QgsGrassTools *tools, QgisApp *qgisApp, QgisIfa
         QGridLayout *layout = new QGridLayout ( mTabWidget->page(0), 1, 1 );
 
         mOptions = new QgsGrassMapcalc ( mTools, this,
-               mQgisApp, mIface, mTabWidget->page(0) );
+               mIface, mTabWidget->page(0) );
 
         QWidget *w = dynamic_cast<QWidget *>(mOptions);
         			
@@ -273,7 +274,7 @@ QgsGrassModule::QgsGrassModule ( QgsGrassTools *tools, QgisApp *qgisApp, QgisIfa
     else
     {
         mOptions = new QgsGrassModuleStandardOptions ( mTools, this,
-               mQgisApp, mIface, mXName, qDocElem, mTabWidget->page(0) );
+               mIface, mXName, qDocElem, mTabWidget->page(0) );
     }
 
     // Hide display if there is no output
@@ -289,7 +290,11 @@ QgsGrassModule::QgsGrassModule ( QgsGrassTools *tools, QgisApp *qgisApp, QgisIfa
     QString manPath = gisBase + "/docs/html/" + xName + ".html";
     QFile manFile ( manPath );
     if ( manFile.exists() ) {
-	mManualTextBrowser->setSource ( manPath );
+      mManualTextBrowser->setSource ( QUrl::fromLocalFile( manPath ) );
+    }
+    else
+    {
+      QMessageBox::warning( 0, "Warning", "Cannot find man page " + manPath );
     }
     
     connect ( &mProcess, SIGNAL(readyReadStandardOutput()), this, SLOT(readStdout()));
@@ -309,7 +314,7 @@ QgsGrassModule::QgsGrassModule ( QgsGrassTools *tools, QgisApp *qgisApp, QgisIfa
 
 QgsGrassModuleOptions::QgsGrassModuleOptions ( 
            QgsGrassTools *tools, QgsGrassModule *module,
-           QgisApp *qgisApp, QgisIface *iface )
+           QgisInterface *iface )
 {
     #ifdef QGISDEBUG
     std::cerr << "QgsGrassModuleOptions()" << std::endl;
@@ -317,7 +322,6 @@ QgsGrassModuleOptions::QgsGrassModuleOptions (
 
     mTools = tools;
     mModule = module;
-    mQgisApp = qgisApp;
     mIface = iface;
     mCanvas = mIface->getMapCanvas();
     //mAppDir = QgsApplication::applicationDirPath();
@@ -337,10 +341,10 @@ QStringList QgsGrassModuleOptions::arguments()
 
 QgsGrassModuleStandardOptions::QgsGrassModuleStandardOptions ( 
            QgsGrassTools *tools, QgsGrassModule *module,
-           QgisApp *qgisApp, QgisIface *iface, 
+           QgisInterface *iface, 
 	   QString xname, QDomElement qDocElem,
            QWidget * parent, const char * name, Qt::WFlags f )
-             :QgsGrassModuleOptions( tools, module, qgisApp, iface),
+             :QgsGrassModuleOptions( tools, module, iface),
               QWidget ( parent, name, f )
 {
     #ifdef QGISDEBUG
@@ -590,6 +594,154 @@ QStringList QgsGrassModuleStandardOptions::checkOutput()
     return list;
 }
 
+void QgsGrassModuleStandardOptions::freezeOutput()
+{
+    #ifdef QGISDEBUG
+    std::cerr << "QgsGrassModuleStandardOptions::freezeOutput()" << std::endl;
+    #endif
+
+#ifdef WIN32
+    for ( int i = 0; i < mItems.size(); i++ ) 
+    {
+	if ( typeid(*(mItems[i])) != typeid (QgsGrassModuleOption) ) {
+	    continue;
+	}
+	QgsGrassModuleOption *opt = 
+	      dynamic_cast<QgsGrassModuleOption *> ( mItems[i] );
+    
+        std::cerr << "opt->key() = " << opt->key().ascii() << std::endl;
+
+	if ( opt->isOutput() 
+		&& opt->outputType() == QgsGrassModuleOption::Vector )
+	{
+            std::cerr << "freeze vector layers" << std::endl;
+
+    	    QChar sep = '/';
+
+	    int nlayers = mCanvas->layerCount();
+	    for ( int i = 0; i < nlayers; i++ ) 
+	    {
+		QgsMapLayer *layer = mCanvas->getZpos(i);
+
+		if (  layer->type() != QgsMapLayer::VECTOR ) continue;
+
+		QgsVectorLayer *vector = (QgsVectorLayer*)layer;
+		if ( vector->providerType() != "grass" ) continue;
+
+		//TODO dynamic_cast ?
+		QgsGrassProvider *provider = (QgsGrassProvider *) vector->getDataProvider();
+
+		// TODO add map() mapset() location() gisbase() to grass provider
+		QString source = QDir::cleanPath ( provider->dataSourceUri() );
+		#ifdef QGISDEBUG
+		std::cerr << "source = " << source.ascii() << std::endl;
+		#endif
+		
+		// Check GISBASE and LOCATION
+		QStringList split = QStringList::split ( sep, source );
+		
+		if ( split.size() < 4 ) continue;
+		split.pop_back(); // layer
+
+		QString map = split.last();
+		split.pop_back(); // map
+
+		QString mapset = split.last();
+		split.pop_back(); // mapset
+		
+		QString loc =  source.remove ( QRegExp("/[^/]+/[^/]+/[^/]+$") ); 
+		loc = QDir(loc).canonicalPath();
+
+		QDir curlocDir ( QgsGrass::getDefaultGisdbase() + sep + QgsGrass::getDefaultLocation() );
+		QString curloc = curlocDir.canonicalPath();
+		
+		if ( loc != curloc ) continue;
+
+		if ( mapset != QgsGrass::getDefaultMapset() ) continue;
+
+		if ( provider->isFrozen() ) continue;
+
+		provider->freeze();
+	    }
+	}
+    } 
+#endif
+}
+
+void QgsGrassModuleStandardOptions::thawOutput()
+{
+    #ifdef QGISDEBUG
+    std::cerr << "QgsGrassModuleStandardOptions::thawOutput()" << std::endl;
+    #endif
+
+#ifdef WIN32
+    for ( int i = 0; i < mItems.size(); i++ ) 
+    {
+	if ( typeid(*(mItems[i])) != typeid (QgsGrassModuleOption) ) {
+	    continue;
+	}
+	QgsGrassModuleOption *opt = 
+	      dynamic_cast<QgsGrassModuleOption *> ( mItems[i] );
+    
+        std::cerr << "opt->key() = " << opt->key().ascii() << std::endl;
+
+	if ( opt->isOutput() 
+		&& opt->outputType() == QgsGrassModuleOption::Vector )
+	{
+            std::cerr << "thaw vector layers" << std::endl;
+
+    	    QChar sep = '/';
+
+	    int nlayers = mCanvas->layerCount();
+	    for ( int i = 0; i < nlayers; i++ ) 
+	    {
+		QgsMapLayer *layer = mCanvas->getZpos(i);
+
+		if (  layer->type() != QgsMapLayer::VECTOR ) continue;
+
+		QgsVectorLayer *vector = (QgsVectorLayer*)layer;
+		if ( vector->providerType() != "grass" ) continue;
+
+		//TODO dynamic_cast ?
+		QgsGrassProvider *provider = (QgsGrassProvider *) vector->getDataProvider();
+
+		// TODO add map() mapset() location() gisbase() to grass provider
+		QString source = QDir::cleanPath ( provider->dataSourceUri() );
+		#ifdef QGISDEBUG
+		std::cerr << "source = " << source.ascii() << std::endl;
+		#endif
+		
+		// Check GISBASE and LOCATION
+		QStringList split = QStringList::split ( sep, source );
+		
+		if ( split.size() < 4 ) continue;
+		split.pop_back(); // layer
+
+		QString map = split.last();
+		split.pop_back(); // map
+
+		QString mapset = split.last();
+		split.pop_back(); // mapset
+		
+		QString loc =  source.remove ( QRegExp("/[^/]+/[^/]+/[^/]+$") ); 
+		loc = QDir(loc).canonicalPath();
+
+		QDir curlocDir ( QgsGrass::getDefaultGisdbase() + sep + QgsGrass::getDefaultLocation() );
+		QString curloc = curlocDir.canonicalPath();
+		
+		if ( loc != curloc ) continue;
+
+		if ( mapset != QgsGrass::getDefaultMapset() ) continue;
+
+		if ( !provider->isFrozen() ) continue;
+
+		provider->thaw();
+	    }
+	}
+    } 
+#endif
+}
+
 QStringList QgsGrassModuleStandardOptions::output(int type )
 {
     #ifdef QGISDEBUG
@@ -805,7 +957,7 @@ bool QgsGrassModuleStandardOptions::usesRegion ()
     #ifdef QGISDEBUG
     std::cerr << "QgsGrassModuleStandardOptions::usesRegion()" << std::endl;
     #endif
-
+ 
     for ( int i = 0; i < mItems.size(); i++ ) 
     {
 	if ( typeid(*(mItems[i])) == typeid (QgsGrassModuleInput) )
@@ -813,23 +965,23 @@ bool QgsGrassModuleStandardOptions::usesRegion ()
             QgsGrassModuleInput *item = 
                     dynamic_cast<QgsGrassModuleInput *>(mItems[i]);
 
-            if ( item->type() == QgsGrassModuleInput::Raster ) 
+            if ( item->useRegion() ) 
                 return true;
 	}
 
+        /* It only make sense to check input, right? 
+         * Output has no region yet */
 	if ( typeid(*(mItems[i])) == typeid (QgsGrassModuleOption) ) 
         {
 	     QgsGrassModuleOption *item = 
 	            dynamic_cast<QgsGrassModuleOption *> ( mItems[i] );
     
-             if ( item->isOutput() 
-                  && item->outputType() == QgsGrassModuleOption::Raster )
-             {
+             if ( item->usesRegion() )
                  return true;
-             }
 	}
     }
 
+    std::cerr << "NO usesRegion()" << std::endl;
     return false;
 }
 
@@ -1034,25 +1186,18 @@ void QgsGrassModule::run()
 	    QStringList outsideRegion = mOptions->checkRegion();
 	    if ( outsideRegion.size() > 0 )
 	    {
-                if  ( QgsGrass::versionMajor() >= 6 && QgsGrass::versionMinor() >= 1 )
-                {
-		    int ret = QMessageBox::question ( 0, "Warning", 
-				  "Input " + outsideRegion.join(",")
-				  + " outside current region!",  
-				"Use input region", "Continue", "Cancel" );
-
-		    if ( ret == 2 ) return;
-		    if ( ret == 0 ) resetRegion = true;
-                }
-                else 
-                {
-		    int ret = QMessageBox::question ( 0, "Warning", 
-				  "Input " + outsideRegion.join(",")
-				  + " outside current region!",  
-				  "Continue", "Cancel" );
-
-		    if ( ret == 1 ) return;
-                }
+	      QMessageBox::QMessageBox questionBox( QMessageBox::Question, "Warning", 
+	        "Input " + outsideRegion.join(",") + " outside current region!",  
+	        QMessageBox::Ok | QMessageBox::Cancel );
+	      QPushButton *resetButton = NULL;
+	      if  ( QgsGrass::versionMajor() > 6 || QgsGrass::versionMajor() == 6 && QgsGrass::versionMinor() >= 1 )
+	      {
+	        resetButton = questionBox.addButton(tr("Use Input Region"), QMessageBox::DestructiveRole);
+	      }
+	      questionBox.exec();
+	      QAbstractButton *clicked = questionBox.clickedButton();
+	      if ( clicked == questionBox.button(QMessageBox::Cancel) ) return;
+	      if ( clicked == resetButton ) resetRegion = true;
 
                 if ( resetRegion ) 
                 {
@@ -1070,12 +1215,12 @@ void QgsGrassModule::run()
         QStringList outputExists = mOptions->checkOutput();
         if ( outputExists.size() > 0 )
         {
-            int ret = QMessageBox::question ( 0, "Warning", 
+            QMessageBox::StandardButton ret = QMessageBox::question ( 0, "Warning", 
                           "Output " + outputExists.join(",")
                           + " exists! Overwrite?",  
-                          QMessageBox::Yes,  QMessageBox::No );
+                          QMessageBox::Ok | QMessageBox::Cancel );
 
-            if ( ret == QMessageBox::No ) return;
+            if ( ret == QMessageBox::Cancel ) return;
 
             // r.mapcalc does not use standard parser
             if ( typeid(*mOptions) != typeid(QgsGrassMapcalc) )
@@ -1096,11 +1241,23 @@ void QgsGrassModule::run()
   
         QStringList list = mOptions->arguments();
 
+        QStringList argumentsHtml;
 	for ( QStringList::Iterator it = list.begin(); it != list.end(); ++it ) {
 	    std::cerr << "option: " << (*it).toLocal8Bit().data() << std::endl;
 	    //command.append ( " " + *it );
 	    arguments.append ( *it );
 	    //mProcess.addArgument( *it );
+            
+            // Quote options with special characters so that user 
+            // can copy-paste-run the command
+            if ( (*it).contains ( QRegExp("[ <>\\$|;&]" ) ) )
+            {
+                argumentsHtml.append( "'" + *it + "'" );
+            }
+            else
+            {
+                argumentsHtml.append( *it );
+            }
 	}
 
 	/* WARNING - TODO: there was a bug in GRASS 6.0.0 / 6.1.CVS (< 2005-04-29):
@@ -1114,7 +1271,7 @@ void QgsGrassModule::run()
 	
 	mOutputTextBrowser->clear();
 
-        QString commandHtml = mXName + " " + arguments.join(" ");
+        QString commandHtml = mXName + " " + argumentsHtml.join(" ");
 
 	std::cerr << "command: " << commandHtml.toLocal8Bit().data() << std::endl;
 	commandHtml.replace ( "&", "&amp;" );
@@ -1211,6 +1368,9 @@ void QgsGrassModule::run()
 	QString cmd = execArguments.takeFirst();
         execArguments += arguments;
 
+	// Freeze output vector on Windows
+        mOptions->freezeOutput();
+
         mProcess.setEnvironment ( environment );
 	mProcess.start( cmd, execArguments );
 
@@ -1240,6 +1400,7 @@ void QgsGrassModule::finished(int exitCode, QProcess::ExitStatus exitStatus )
 	    mProgressBar->setProgress ( 100, 100 ); 
             mSuccess = true;
             mViewButton->setEnabled(true);
+	    mOptions->thawOutput();
 	} else {
 	    mOutputTextBrowser->append( "<B>Finished with error</B>" );
 	}
@@ -1256,12 +1417,22 @@ void QgsGrassModule::readStdout()
     #endif
 
     QString line;
+    QRegExp rxpercent ( "GRASS_INFO_PERCENT: (\\d+)" );
+
     mProcess.setReadChannel ( QProcess::StandardOutput );
     while ( mProcess.canReadLine() ) {
        	//line = QString::fromLocal8Bit( mProcess.readLineStdout().ascii() );
         QByteArray ba = mProcess.readLine();
        	line = QString::fromLocal8Bit( QString(ba).ascii() );
-	mOutputTextBrowser->append ( line );
+
+        // GRASS_INFO_PERCENT is catched here only because of bugs in GRASS,
+	// normaly it should be printed to stderr
+	if ( rxpercent.search ( line ) != -1 ) {
+	    int progress = rxpercent.cap(1).toInt();
+	    mProgressBar->setProgress ( progress, 100 );
+	} else {
+	    mOutputTextBrowser->append ( line );
+	}
     }
 }
 
@@ -1285,7 +1456,7 @@ void QgsGrassModule::readStderr()
        	//line = QString::fromLocal8Bit( mProcess.readLineStderr().ascii() );
         QByteArray ba = mProcess.readLine();
        	line = QString::fromLocal8Bit( QString(ba).ascii() );
-        //std::cerr << "stderr: " << line << std::endl;
+        //std::cerr << "line: '" << line.ascii() << "'" << std::endl;
 
 	if ( rxpercent.search ( line ) != -1 ) {
 	    int progress = rxpercent.cap(1).toInt();
@@ -1294,11 +1465,11 @@ void QgsGrassModule::readStderr()
 	    mOutputTextBrowser->append ( rxmessage.cap(1) );
 	} else if ( rxwarning.search ( line ) != -1 ) {
 	    QString warn = rxwarning.cap(1);
-	    QString img = mAppDir + "/share/qgis/themes/default/grass/grass_module_warning.png";
+	    QString img = QgsApplication::pkgDataPath() + "/themes/default/grass/grass_module_warning.png";
 	    mOutputTextBrowser->append ( "<img src=\"" + img + "\">" + warn );
 	} else if ( rxerror.search ( line ) != -1 ) {
 	    QString error = rxerror.cap(1);
-	    QString img = mAppDir + "/share/qgis/themes/default/grass/grass_module_error.png";
+	    QString img = QgsApplication::pkgDataPath() + "/themes/default/grass/grass_module_error.png";
 	    mOutputTextBrowser->append ( "<img src=\"" + img + "\">" + error );
 	} else if ( rxend.search ( line ) != -1 ) {
 	    // Do nothing
@@ -1336,16 +1507,32 @@ void QgsGrassModule::viewOutput()
 			   QgsGrass::getDefaultLocation(),
 			   QgsGrass::getDefaultMapset(), map );
 
+         // check whether there are 1_* layers
+         // if so, 0_* layers won't be added
+         bool onlyLayer1 = false;
+         for ( int j = 0; j < layers.count(); j++ )
+         {
+           if (layers[j].left(1) == "1")
+           {
+             onlyLayer1 = true;
+             break;
+           }
+         }
+           
          // TODO common method for add all layers
          for ( int j = 0; j < layers.count(); j++ )
          {
              QString uri = QgsGrass::getDefaultGisdbase() + "/"
 		       + QgsGrass::getDefaultLocation() + "/"
 		       + QgsGrass::getDefaultMapset() + "/" 
-		       + map + "/" + layers[i];
+		       + map + "/" + layers[j];
+             
+             // skip 0_* layers
+             if (onlyLayer1 && layers[j].left(1) != "1")
+               continue;
 
              // TODO vector layer name
-             mIface->addVectorLayer( uri, layers[i], "grass");
+             mIface->addVectorLayer( uri, layers[j], "grass");
          }
     }
 
@@ -1363,8 +1550,7 @@ void QgsGrassModule::viewOutput()
     }
 }
 
-QgisIface *QgsGrassModule::qgisIface() { return mIface; }
-QgisApp *QgsGrassModule::qgisApp() { return mQgisApp; }
+QgisInterface *QgsGrassModule::qgisIface() { return mIface; }
 
 QgsGrassModule::~QgsGrassModule()
 {
@@ -1550,12 +1736,34 @@ QgsGrassModuleOption::QgsGrassModuleOption ( QgsGrassModule *module, QString key
                     }
                 }
             }
-
-            addLineEdit();
-
-            // add/delete buttons for multiple options
-   	    if ( gelem.attribute("multiple") == "yes" ) 
+            
+            QDomNode keydescNode = gnode.namedItem ( "keydesc" );
+            if (!keydescNode.isNull())
             {
+              // fixed number of line edits
+              // Example:
+              // <keydesc>
+              //    <item order="1">rows</item>
+              //    <item order="2">columns</item>
+              // </keydesc>
+              
+              QDomNodeList keydescs = keydescNode.childNodes();
+              for (int k = 0; k < keydescs.count(); k++)
+              {
+                QDomNode nodeItem = keydescs.at(k);
+                QString itemDesc = nodeItem.toElement().text().stripWhiteSpace();
+                //QString itemDesc = nodeItem.firstChild().toText().data();
+                std::cerr << "keydesc item = " << itemDesc.toLocal8Bit().data() << std::endl;
+                
+                addLineEdit();
+              }
+              
+              setLayout(mLayout);
+            }
+   	    else if ( gelem.attribute("multiple") == "yes" ) 
+            {
+                // variable number of line edits
+                // add/delete buttons for multiple options
                 QHBoxLayout *l = new QHBoxLayout (this);
                 QVBoxLayout *vl = new QVBoxLayout ();
                 l->insertLayout( -1, mLayout );
@@ -1575,10 +1783,29 @@ QgsGrassModuleOption::QgsGrassModuleOption ( QgsGrassModule *module, QString key
             }
             else 
             {
+                // only one line edit
+                addLineEdit();
                 setLayout ( mLayout );
             }  
 	}
     }
+
+    mUsesRegion = false;
+    QString region = qdesc.attribute("region");
+    if ( region.length() > 0 )
+    {
+        if ( region == "yes" )
+            mUsesRegion = true;
+    }
+    else
+    {
+    std::cerr << "\n\n\n\n**************************" << std::endl;
+    std::cerr << "isOutput = " << isOutput() << std::endl;
+    std::cerr << "mOutputType = " << mOutputType << std::endl;
+        if ( isOutput() && mOutputType == Raster )
+            mUsesRegion = true;
+    }
+    std::cerr << "mUsesRegion = " << mUsesRegion << std::endl;
 }
 
 void QgsGrassModuleOption::addLineEdit()
@@ -1904,8 +2131,11 @@ QgsGrassModuleInput::QgsGrassModuleInput ( QgsGrassModule *module,
                                       QSizePolicy:: Preferred );
     l->addWidget ( mLayerComboBox );
 
-    if ( mType == Raster  && 
-         QgsGrass::versionMajor() >= 6 && QgsGrass::versionMinor() >= 1 )
+    QString region = qdesc.attribute("region");
+    if ( mType == Raster
+         && QgsGrass::versionMajor() >= 6 && QgsGrass::versionMinor() >= 1
+         && region != "no"
+       )
     {
         QString iconPath = QgsApplication::themePath() + "/grass/";
         
@@ -1939,6 +2169,18 @@ QgsGrassModuleInput::QgsGrassModuleInput ( QgsGrassModule *module,
 	    connect ( mapInput, SIGNAL(valueChanged()), this, SLOT(updateQgisLayers()) );
 	}
     }
+
+    mUsesRegion = false;
+    if ( region.length() > 0 )
+    {
+        if ( region == "yes" )
+            mUsesRegion = true;
+    }
+    else
+    {
+        if ( type() == Raster ) 
+            mUsesRegion = true;
+    }
     
     // Fill in QGIS layers 
     updateQgisLayers();
@@ -1948,7 +2190,7 @@ bool QgsGrassModuleInput::useRegion()
 {
     std::cerr << "QgsGrassModuleInput::useRegion()" << std::endl;
 
-    if ( mType == Raster && mRegionButton &&
+    if ( mUsesRegion && mType == Raster && mRegionButton &&
          mRegionButton->isChecked() )
     {
         return true;
@@ -2016,7 +2258,7 @@ void QgsGrassModuleInput::updateQgisLayers()
 	    }
 
 	    // TODO add map() mapset() location() gisbase() to grass provider
-	    QString source = QDir::cleanPath ( provider->getDataSourceUri() );
+	    QString source = QDir::cleanPath ( provider->dataSourceUri() );
             #ifdef QGISDEBUG
             std::cerr << "source = " << source.ascii() << std::endl;
             #endif
@@ -2084,7 +2326,12 @@ void QgsGrassModuleInput::updateQgisLayers()
 
 	    mMapLayers.push_back ( vector );
 	    mVectorLayerNames.push_back ( grassLayer );
-            std::vector<QgsField> fields = vector->fields();
+            
+            // convert from QgsFieldMap to std::vector<QgsField>
+            QgsFieldMap flds = vector->fields();
+            std::vector<QgsField> fields;
+            for (QgsFieldMap::iterator it = flds.begin(); it != flds.end(); ++it)
+              fields.push_back(it.value());
 	    mVectorFields.push_back ( fields );
 	} 
 	else if ( mType == Raster && layer->type() == QgsMapLayer::RASTER ) 
@@ -2340,8 +2587,11 @@ QgsGrassModuleGdalInput::QgsGrassModuleGdalInput (
     
     // Connect to canvas 
     QgsMapCanvas *canvas = mModule->qgisIface()->getMapCanvas();
-    connect ( canvas, SIGNAL(addedLayer(QgsMapLayer *)), this, SLOT(updateQgisLayers()) );
-    connect ( canvas, SIGNAL(removedLayer(QString)), this, SLOT(updateQgisLayers()) );
+
+    // It seems that addedLayer/removedLayer does not work
+    //connect ( canvas, SIGNAL(addedLayer(QgsMapLayer *)), this, SLOT(updateQgisLayers()) );
+    //connect ( canvas, SIGNAL(removedLayer(QString)), this, SLOT(updateQgisLayers()) );
+    connect ( canvas, SIGNAL(layersChanged()), this, SLOT(updateQgisLayers()) );
     
     // Fill in QGIS layers 
     updateQgisLayers();
@@ -2376,24 +2626,24 @@ void QgsGrassModuleGdalInput::updateQgisLayers()
             if ( vector->providerType() == "postgres" ) 
             {
                 // Construct OGR DSN
-                QgsDataSourceURI *dsUri = provider->getURI();
-                uri = "PG:host=" + dsUri->host 
-                      + " dbname=" + dsUri->database; 
+                QgsDataSourceURI dsUri(provider->dataSourceUri());
+                uri = "PG:host=" + dsUri.host 
+                      + " dbname=" + dsUri.database; 
 
-                if ( dsUri->port.length() > 0 ) 
-		    uri += " port=" + dsUri->port;
+                if ( dsUri.port.length() > 0 ) 
+		    uri += " port=" + dsUri.port;
 
-                if ( dsUri->username.length() > 0 ) 
-		    uri += " user=" + dsUri->username;
+                if ( dsUri.username.length() > 0 ) 
+		    uri += " user=" + dsUri.username;
 
-                if ( dsUri->password.length() > 0 ) 
-		    uri += " password=" + dsUri->password;
+                if ( dsUri.password.length() > 0 ) 
+		    uri += " password=" + dsUri.password;
 
-                ogrLayer = dsUri->schema + "." + dsUri->table;
+                ogrLayer = dsUri.schema + "." + dsUri.table;
             }
             else
             {
-	        uri = provider->getDataSourceUri();
+	        uri = provider->dataSourceUri();
                 ogrLayer = "";
             }
 
@@ -2635,19 +2885,20 @@ void QgsGrassModuleSelection::updateSelection()
     if ( keyField < 0 ) return;
     
     QString cats;
-    QgsFeature *feature = vector->getFirstFeature(true, true);
+    provider->reset();
+    QgsFeature* feature;
 
     int i = 0;
-    while ( feature )
+    while ( (feature = vector->getNextFeature(true, true)) != NULL )
     {
-	std::vector<QgsFeatureAttribute> attr = feature->attributeMap();
+	QgsAttributeMap attr = feature->attributeMap();
 	if ( attr.size() > keyField )
 	{
 	    if ( i > 0 ) cats.append( "," );
 	    cats.append( attr[keyField].fieldValue() );
 	    i++;
 	}
-        feature = vector->getNextFeature(true, true);
+        delete feature;
     }
     if ( mVectorLayer != vector ) 
     {

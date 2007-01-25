@@ -25,8 +25,13 @@
 #include <QSettings>
 #include <QPixmap>
 #include <QHeaderView>
+#include <QTextCodec>
+#include <QList>
+#include <QTableWidgetItem>
 
 #include <iostream>
+    
+#include "qgsencodingfiledialog.h"
 
 #include "qgspgutil.h"
 #include "qgsspit.h"
@@ -35,6 +40,7 @@
 #include "qgsmessageviewer.h"
 #include "spiticon.xpm"
 #include "spit_icons.h"
+#include "qgslogger.h"
 
 // Qt implementation of alignment() + changed the numeric types to be shown on the left as well
 /* Is this still needed? Numbers in Qt4 table seem to be left justified by default.
@@ -98,7 +104,7 @@ QgsSpit::~QgsSpit()
 
 void QgsSpit::populateConnectionList()
 {
-  QSettings settings("QuantumGIS", "qgis");
+  QSettings settings;
   QStringList keys = settings.subkeyList( "/PostgreSQL/connections" );
   QStringList::Iterator it = keys.begin();
   cmbConnections->clear();
@@ -111,7 +117,7 @@ void QgsSpit::populateConnectionList()
 
 void QgsSpit::newConnection()
 {
-  QgsConnectionDialog * con = new QgsConnectionDialog( this, "New Connection" );
+  QgsConnectionDialog * con = new QgsConnectionDialog( this, tr("New Connection") );
 
   if ( con->exec() )
   {
@@ -132,11 +138,11 @@ void QgsSpit::editConnection()
 
 void QgsSpit::removeConnection()
 {
-  QSettings settings("QuantumGIS", "qgis");
+  QSettings settings;
   QString key = "/PostgreSQL/connections/" + cmbConnections->currentText();
   QString msg = tr("Are you sure you want to remove the [") + cmbConnections->currentText() + tr("] connection and all associated settings?");
-  int result = QMessageBox::information( this, tr("Confirm Delete"), msg, tr("Yes"), tr("No") );
-  if ( result == 0 )
+  QMessageBox::StandardButton result = QMessageBox::information( this, tr("Confirm Delete"), msg, QMessageBox::Ok | QMessageBox::Cancel);
+  if ( result == QMessageBox::Ok )
   {
     settings.removeEntry( key + "/host" );
     settings.removeEntry( key + "/database" );
@@ -156,17 +162,25 @@ void QgsSpit::addFile()
   QString error2 = "";
   bool exist;
   bool is_error = false;
-  QSettings settings("QuantumGIS", "qgis");
+  QSettings settings;
 
-  QStringList files = QFileDialog::getOpenFileNames(this,
-                        "Add Shapefiles",
+  QgsEncodingFileDialog dlg(this,
+                        tr("Add Shapefiles"),
                         settings.readEntry( "/Plugin-Spit/last_directory" ),
-                        "Shapefiles (*.shp);;All files (*.*)" );
+                        tr("Shapefiles (*.shp);;All files (*.*)"),
+                        settings.readEntry( "/Plugin-Spit/last_encoding" ) );
+  dlg.setMode(QFileDialog::ExistingFiles);
+  
+  if (dlg.exec() != QDialog::Accepted)
+    return;
+  QStringList files = dlg.selectedFiles();
+
   if ( files.size() > 0 )
   {
     // Save the directory for future use
     QFileInfo fi( files[ 0 ] );
     settings.writeEntry( "/Plugin-Spit/last_directory", fi.dirPath( true ) );
+    settings.writeEntry( "/Plugin-Spit/last_encoding", dlg.encoding());
   }
   // Process the files
   for ( QStringList::Iterator it = files.begin(); it != files.end(); ++it )
@@ -197,7 +211,7 @@ void QgsSpit::addFile()
 
       if ( !is_error )
       {
-        QgsShapeFile * file = new QgsShapeFile( name );
+        QgsShapeFile * file = new QgsShapeFile( name, dlg.encoding() );
         if ( file->is_valid() )
         {
           /* XXX getFeatureClass actually does a whole bunch
@@ -302,7 +316,7 @@ void QgsSpit::addFile()
     }
     QgsMessageViewer * e = new QgsMessageViewer( this );
     e->setMessageAsPlainText( message + error1 + error2 );
-    e->exec();
+    e->exec(); // deletes itself on close
   }
 }
 
@@ -327,7 +341,9 @@ void QgsSpit::removeFile()
   for ( int i = temp.size()-1; i >= 0; --i )
     tblShapefiles->removeRow( temp[ i ] );
 
-  tblShapefiles->setCurrentCell( -1, 0 );
+  QList<QTableWidgetItem*> selected = tblShapefiles->selectedItems();
+  for (int i = 0; i < selected.count(); ++i)
+    selected[i]->setSelected(false);
 }
 
 void QgsSpit::removeAllFiles()
@@ -398,12 +414,12 @@ void QgsSpit::helpInfo()
                tr("[Help] - display this help dialog") + "\n\n" );
   QgsMessageViewer * e = new QgsMessageViewer( this );
   e->setMessageAsPlainText( message );
-  e->exec();
+  e->exec(); // deletes itself on close
 }
 
 PGconn* QgsSpit::checkConnection()
 {
-  QSettings settings("QuantumGIS", "qgis");
+  QSettings settings;
   PGconn * pd;
   bool result = true;
   QString connName = cmbConnections->currentText();
@@ -426,16 +442,49 @@ PGconn* QgsSpit::checkConnection()
       QMessageBox::warning( this, tr("Import Shapefiles"), tr("Connection failed - Check settings and try again") );
       result = false;
     }
+  
+    int errcode = PQsetClientEncoding(pd, "UNICODE");
+#ifdef QGISDEBUG
+    if(errcode==0)
+      qWarning("encoding successfully set");
+    else if(errcode==-1)
+      qWarning("error in setting encoding");
+    else
+      qWarning("undefined return value from encoding setting");
+#endif
+  
   }
-  if ( result )
+
+  if (result )
+  {
+    // Check that the database actually has postgis in it.
+    QString sql1 = "SELECT postgis_lib_version()"; // available from v 0.9.0 onwards
+    QString sql2 = "SELECT postgis_version()"; // depreciated 
+
+    PGresult* ver = PQexec(pd, sql1.toLocal8Bit().data());
+    if ( PQresultStatus(ver) != PGRES_TUPLES_OK)
+    {
+      // In case the version of postgis is older than 0.9.0, try the
+      // depreciated call before erroring out.
+      PQclear(ver);
+      ver = PQexec(pd, sql2.toLocal8Bit().data());
+      if ( PQresultStatus(ver) != PGRES_TUPLES_OK)
+      {
+        QMessageBox::warning( this, tr("PostGIS not available"),
+                              tr("<p>The chosen database does not have PostGIS installed, "
+                                 "but this is required for storage of spatial data.</p>"));
+        return NULL;
+      }
+    }
     return pd;
+  }
   else
     return NULL;
 }
 
 void QgsSpit::getSchema()
 {
-  QSettings settings("QuantumGIS", "qgis");
+  QSettings settings;
   schema_list.clear();
   schema_list << "public";
   PGconn* pd = checkConnection();
@@ -481,10 +530,12 @@ void QgsSpit::updateSchema()
 
 void QgsSpit::import()
 {
-  tblShapefiles->setCurrentCell( -1, 0 );
+  QList<QTableWidgetItem*> selected = tblShapefiles->selectedItems();
+  for (int i = 0; i < selected.count(); ++i)
+    selected[i]->setSelected(false);
 
   QString connName = cmbConnections->currentText();
-  QSettings settings("QuantumGIS", "qgis");
+  QSettings settings;
   bool cancelled = false;
   PGconn* pd = checkConnection();
   QString query;
@@ -533,15 +584,12 @@ void QgsSpit::import()
 
       // duplicate field check
       std::vector<QString> names_copy = fileList[ i ] ->column_names;
-      std::cerr << "Size of names_copy before sort: " << names_copy.size() << std::endl;
       QString dupl = "";
       std::sort( names_copy.begin(), names_copy.end() );
-      std::cerr << "Size of names_copy after sort: " << names_copy.size() << std::endl;
 
       for ( int k = 1; k < names_copy.size(); k++ )
       {
-        std::cerr << "USING :" << names_copy[ k ].toLocal8Bit().data() << " index " << k << std::endl;
-        qWarning( "Checking to see if " + names_copy[ k ] + " == " + names_copy[ k - 1 ] );
+        QgsDebugMsg( tr("Checking to see if ") + names_copy[ k ] + " == " + names_copy[ k - 1 ] );
         if ( names_copy[ k ] == names_copy[ k - 1 ] )
           dupl += names_copy[ k ] + "\n";
       }
@@ -566,11 +614,16 @@ void QgsSpit::import()
               + tblShapefiles->item( i, ColDBSCHEMA )->text() + "\'";
       res = PQexec( pd, ( const char * ) query );
       rel_exists1 = ( PQntuples( res ) > 0 );
+
       if ( PQresultStatus( res ) != PGRES_TUPLES_OK )
       {
-        qWarning( PQresultErrorMessage( res ) );
-        QMessageBox::warning( &pro, tr("Import Shapefiles"), error );
+        QString err = PQresultErrorMessage( res );
+        QMessageBox::warning( &pro, tr("Import Shapefiles"), error + "\n" +
+                              tr("<p>Error while executing the SQL:</p><p>") +
+                              query + tr("</p><p>The database said:") +
+                              err + "</p>" );
         pro.setValue( pro.value() + tblShapefiles->item( i, ColFEATURECOUNT )->text().toInt() );
+        PQclear(res);
         continue;
       }
       else
@@ -581,13 +634,19 @@ void QgsSpit::import()
       query = "SELECT tablename FROM pg_tables WHERE tablename=\'" + tblShapefiles->item( i, ColDBRELATIONNAME )->text() + "\' AND schemaname=\'" +
               tblShapefiles->item( i, ColDBSCHEMA )->text() + "\'";
       res = PQexec( pd, ( const char * ) query );
-      qWarning( query );
+
       rel_exists2 = ( PQntuples( res ) > 0 );
+
       if ( PQresultStatus( res ) != PGRES_TUPLES_OK )
       {
-        qWarning( PQresultErrorMessage( res ) );
-        QMessageBox::warning( &pro, tr("Import Shapefiles"), error );
+        QString err = PQresultErrorMessage( res );
+        QMessageBox::warning( &pro, tr("Import Shapefiles"), error + "\n" +
+                              tr("<p>Error while executing the SQL:</p><p>") +
+                              query + tr("</p><p>The database said:") +
+                              err + "</p>" );
+
         pro.setValue( pro.value() + tblShapefiles->item( i, ColFEATURECOUNT )->text().toInt() );
+        PQclear(res);
         continue;
       }
       else
@@ -600,9 +659,13 @@ void QgsSpit::import()
       res = PQexec( pd, query );
       if ( PQresultStatus( res ) != PGRES_COMMAND_OK )
       {
-        qWarning( PQresultErrorMessage( res ) );
-        QMessageBox::warning( &pro, tr("Import Shapefiles"), error );
+        QString err = PQresultErrorMessage( res );
+        QMessageBox::warning( &pro, tr("Import Shapefiles"), error + "\n" +
+                              tr("<p>Error while executing the SQL:</p><p>") +
+                              query + tr("</p><p>The database said:") +
+                              err + "</p>" );
         pro.setValue( pro.value() + tblShapefiles->item( i, ColFEATURECOUNT )->text().toInt() );
+        PQclear(res);
         continue;
       }
       else
@@ -616,13 +679,16 @@ void QgsSpit::import()
       else
         query += tblShapefiles->item( i, ColDBSCHEMA )->text() + "\', \'public\'";
       res = PQexec( pd, query );
-      qWarning( query );
+
       if ( PQresultStatus( res ) != PGRES_COMMAND_OK )
       {
-        qWarning( PQresultErrorMessage( res ) );
-        qWarning( PQresStatus( PQresultStatus( res ) ) );
-        QMessageBox::warning( &pro, tr("Import Shapefiles"), error );
+        QString err = PQresultErrorMessage( res );
+        QMessageBox::warning( &pro, tr("Import Shapefiles"), error + "\n" +
+                              tr("<p>Error while executing the SQL:</p><p>") +
+                              query + tr("</p><p>The database said:") +
+                              err + "</p>" );
         pro.setValue( pro.value() + tblShapefiles->item( i, ColFEATURECOUNT )->text().toInt() );
+        PQclear(res);
         continue;
       }
       else
@@ -630,34 +696,32 @@ void QgsSpit::import()
         PQclear( res );
       }
 
-      QMessageBox *del_confirm;
       if ( rel_exists1 || rel_exists2 )
       {
-        del_confirm = new QMessageBox( tr("Import Shapefiles - Relation Exists"),
+        QMessageBox::StandardButton del_confirm = QMessageBox::warning( this,
+                                       tr("Import Shapefiles - Relation Exists"),
                                        tr("The Shapefile:" ) + "\n" + tblShapefiles->item( i, 0 )->text() + "\n" + tr("will use [") +
                                        tblShapefiles->item( i, ColDBRELATIONNAME )->text() + tr("] relation for its data,") + "\n" + tr("which already exists and possibly contains data.") + "\n" +
                                        tr("To avoid data loss change the \"DB Relation Name\"") + "\n" + tr("for this Shapefile in the main dialog file list.") + "\n\n" +
                                        tr("Do you want to overwrite the [") + tblShapefiles->item( i, ColDBRELATIONNAME )->text() + tr("] relation?"),
-                                       QMessageBox::Warning,
-                                       QMessageBox::Yes | QMessageBox::Default,
-                                       QMessageBox::No | QMessageBox::Escape,
-                                       Qt::NoButton, 
-                                       this
-//                                       tr("Relation Exists") 
-                                     );
+                                       QMessageBox::Ok | QMessageBox::Cancel );
 
-        if ( del_confirm->exec() == QMessageBox::Yes )
+        if ( del_confirm == QMessageBox::Ok )
         {
           if ( rel_exists2 )
           {
             query = "DROP TABLE " + tblShapefiles->item( i, ColDBRELATIONNAME )->text();
-            qWarning( query );
+
             res = PQexec( pd, ( const char * ) query );
             if ( PQresultStatus( res ) != PGRES_COMMAND_OK )
             {
-              qWarning( PQresultErrorMessage( res ) );
-              QMessageBox::warning( &pro, tr("Import Shapefiles"), error );
+              QString err = PQresultErrorMessage( res );
+              QMessageBox::warning( &pro, tr("Import Shapefiles"), error + "\n" +
+                                    tr("<p>Error while executing the SQL:</p><p>") +
+                                    query + tr("</p><p>The database said:") +
+                                    err + "</p>" );
               pro.setValue( pro.value() + tblShapefiles->item( i, ColFEATURECOUNT )->text().toInt() );
+              PQclear(res);
               continue;
             }
             else
@@ -672,13 +736,17 @@ void QgsSpit::import()
               fileList[i]->getTable()+"\', \'"+txtGeomName->text()+"')";*/
             query = "DELETE FROM geometry_columns WHERE f_table_schema=\'" + tblShapefiles->item( i, ColDBSCHEMA )->text() + "\' AND " +
                     "f_table_name=\'" + tblShapefiles->item( i, ColDBRELATIONNAME )->text() + "\'";
-            qWarning( query );
+
             res = PQexec( pd, ( const char * ) query );
             if ( PQresultStatus( res ) != PGRES_COMMAND_OK )
             {
-              qWarning( PQresultErrorMessage( res ) );
-              QMessageBox::warning( &pro, tr("Import Shapefiles"), error );
+              QString err = PQresultErrorMessage( res );
+              QMessageBox::warning( &pro, tr("Import Shapefiles"), error + "\n" +
+                                    tr("<p>Error while executing the SQL:</p><p>") +
+                                    query + tr("</p><p>The database said:") +
+                                    err + "</p>" );
               pro.setValue( pro.value() + tblShapefiles->item( i, ColFEATURECOUNT )->text().toInt() );
+              PQclear(res);
               continue;
             }
             else
@@ -693,8 +761,12 @@ void QgsSpit::import()
           res = PQexec( pd, query );
           if ( PQresultStatus( res ) != PGRES_COMMAND_OK )
           {
-            qWarning( PQresultErrorMessage( res ) );
-            QMessageBox::warning( &pro, tr("Import Shapefiles"), error );
+            QString err = PQresultErrorMessage( res );
+            QMessageBox::warning( &pro, tr("Import Shapefiles"), error + "\n" +
+                                  tr("<p>Error while executing the SQL:</p><p>") +
+                                  query + tr("</p><p>The database said:") +
+                                  err + "</p>" );
+            PQclear(res);
           }
           else
           {
@@ -708,15 +780,26 @@ void QgsSpit::import()
       // importing file here
       int temp_progress = pro.value();
       cancelled = false;
-      if ( fileList[ i ] ->insertLayer( settings.readEntry( gl_key + connName + "/database" ), tblShapefiles->item( i, ColDBSCHEMA )->text(),
-                                        txtGeomName->text(), QString( "%1" ).arg( spinSrid->value() ), pd, pro, cancelled ) && !cancelled )
+
+      QString dbname = settings.readEntry( gl_key + connName + "/database" );
+      QString schema = tblShapefiles->item( i, ColDBSCHEMA )->text();
+      QString srid = QString( "%1" ).arg( spinSrid->value() );
+      QString errorText;
+
+      bool layerInserted = fileList[ i ] ->insertLayer( dbname, schema, txtGeomName->text(), 
+                                                        srid, pd, pro, cancelled, errorText );
+      if ( layerInserted && !cancelled )
       { // if file has been imported successfully
         query = "COMMIT";
         res = PQexec( pd, query );
         if ( PQresultStatus( res ) != PGRES_COMMAND_OK )
         {
-          qWarning( PQresultErrorMessage( res ) );
-          QMessageBox::warning( &pro, tr("Import Shapefiles"), error );
+          QString err = PQresultErrorMessage( res );
+          QMessageBox::warning( &pro, tr("Import Shapefiles"), error + "\n" +
+                                tr("<p>Error while executing the SQL:</p><p>") +
+                                query + tr("</p><p>The database said:") +
+                                err + "</p>" );
+          PQclear(res);
           continue;
         }
         else
@@ -740,13 +823,18 @@ void QgsSpit::import()
       else if ( !cancelled )
       { // if problem importing file occured
         pro.setValue( temp_progress + tblShapefiles->item( i, ColFEATURECOUNT )->text().toInt() );
-        QMessageBox::warning( this, tr("Import Shapefiles"), error );
+        QString errTxt = error + "\n" + errorText;
+        QMessageBox::warning( this, tr("Import Shapefiles"), errTxt );
         query = "ROLLBACK";
         res = PQexec( pd, query );
         if ( PQresultStatus( res ) != PGRES_COMMAND_OK )
         {
-          qWarning( PQresultErrorMessage( res ) );
-          QMessageBox::warning( &pro, tr("Import Shapefiles"), error );
+          QString err = PQresultErrorMessage( res );
+          QMessageBox::warning( &pro, tr("Import Shapefiles"), error + "\n" +
+                                tr("<p>Error while executing the SQL:</p><p>") +
+                                query + tr("</p><p>The database said:") +
+                                err + "</p>" );
+          PQclear(res);
         }
         else
         {

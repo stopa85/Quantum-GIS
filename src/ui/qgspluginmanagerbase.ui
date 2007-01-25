@@ -1,7 +1,4 @@
 <ui version="4.0" >
- <author></author>
- <comment></comment>
- <exportmacro></exportmacro>
  <class>QgsPluginManagerBase</class>
  <widget class="QDialog" name="QgsPluginManagerBase" >
   <property name="geometry" >
@@ -14,6 +11,9 @@
   </property>
   <property name="windowTitle" >
    <string>QGIS Plugin Manger</string>
+  </property>
+  <property name="modal" >
+   <bool>true</bool>
   </property>
   <layout class="QGridLayout" >
    <property name="margin" >
@@ -35,6 +35,9 @@
        <property name="text" >
         <string>Plugin Directory</string>
        </property>
+       <property name="buddy" >
+        <cstring>txtPluginDir</cstring>
+       </property>
       </widget>
      </item>
      <item>
@@ -44,7 +47,7 @@
       <widget class="QPushButton" name="btnBrowse" >
        <property name="maximumSize" >
         <size>
-         <width>30</width>
+         <width>60</width>
          <height>32767</height>
         </size>
        </property>
@@ -186,10 +189,8 @@
  <customwidgets>
   <customwidget>
    <class>Q3ListView</class>
-   <extends></extends>
+   <extends>Q3Frame</extends>
    <header>q3listview.h</header>
-   <container>0</container>
-   <pixmap></pixmap>
   </customwidget>
  </customwidgets>
  <resources/>

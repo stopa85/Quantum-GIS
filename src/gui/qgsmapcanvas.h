@@ -14,7 +14,7 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
-/* $Id$ */
+/* $Id: qgsmapcanvas.h 5341 2006-04-22 12:11:36Z wonder $ */
 
 #ifndef QGSMAPCANVAS_H
 #define QGSMAPCANVAS_H
@@ -28,7 +28,7 @@
 #include "qgis.h"
 
 #include <QDomDocument>
-#include <Q3CanvasView>
+#include <QGraphicsView>
 
 class QWheelEvent;
 class QPixmap;
@@ -37,10 +37,11 @@ class QKeyEvent;
 class QResizeEvent;
 
 class QColor;
+class QDomDocument;
 class QPaintDevice;
 class QMouseEvent;
 class QRubberBand;
-class Q3Canvas;
+class QGraphicsScene;
 
 class QgsMapToPixel;
 class QgsMapLayer;
@@ -53,25 +54,57 @@ class QgsRubberBand;
 class QgsMapRender;
 class QgsMapCanvasMap;
 class QgsMapOverviewCanvas;
-class QgsMapCanvasMapImage;
 class QgsMapTool;
+
+/** \class QgsMapCanvasLayer
+  \brief class that stores additional layer's flags together with pointer to the layer
+*/
+class GUI_EXPORT QgsMapCanvasLayer
+{
+public:
+  QgsMapCanvasLayer(QgsMapLayer* layer, bool visible = TRUE, bool inOverview = FALSE)
+  : mLayer(layer), mVisible(visible), mInOverview(inOverview) {}
+  
+  void setVisible(bool visible) { mVisible = visible; }
+  void setInOverview(bool inOverview) { mInOverview = inOverview; }
+  
+  bool visible() const { return mVisible; }
+  bool inOverview() const { return mInOverview; }
+  
+  QgsMapLayer* layer() { return mLayer; }
+  const QgsMapLayer* layer() const { return mLayer; }
+  
+private:
+  
+  QgsMapLayer* mLayer;
+    
+  /** Flag whether layer is visible */
+  bool mVisible;
+    
+  /** Flag whether layer is shown in overview */
+  bool mInOverview;
+};
+
 
 /*! \class QgsMapCanvas
  * \brief Map canvas class for displaying all GIS data types.
  */
 
-class QgsMapCanvas : public Q3CanvasView
+class GUI_EXPORT QgsMapCanvas : public QGraphicsView
 {
     Q_OBJECT;
 
- public:
+  public:
+    
+    enum WheelAction { WheelZoom, WheelZoomAndRecenter, WheelNothing };
+        
     //! Constructor
     QgsMapCanvas(QWidget * parent = 0, const char *name = 0);
 
     //! Destructor
     ~QgsMapCanvas();
 
-    void setLayerSet(std::deque<QString>& layerSet);
+    void setLayerSet(QList<QgsMapCanvasLayer>& layers);
     
     void setCurrentLayer(QgsMapLayer* layer);
     
@@ -84,7 +117,7 @@ class QgsMapCanvas : public Q3CanvasView
     QgsMapRender* mapRender();
     
     //! Accessor for the canvas pixmap
-    QPixmap * canvasPixmap();
+    QPixmap& canvasPixmap();
 
     //! Get the last reported scale of the canvas
     double getScale();
@@ -114,10 +147,18 @@ class QgsMapCanvas : public Q3CanvasView
 
     /** \brief Sets the map tool currently being used on the canvas */
     void setMapTool(QgsMapTool* mapTool);
+    
+    /** \brief Unset the current map tool or last non zoom tool
+     *
+     * This is called from destructor of map tools to make sure
+     * that this map tool won't be used any more.
+     * You don't have to call it manualy, QgsMapTool takes care of it.
+     */
+    void unsetMapTool(QgsMapTool* mapTool);
 
     /**Returns the currently active tool*/
     QgsMapTool* mapTool();
-
+    
     /** Write property of QColor bgColor. */
     virtual void setCanvasColor(const QColor & _newVal);
 
@@ -130,9 +171,6 @@ class QgsMapCanvas : public Q3CanvasView
     //! return the map layer at postion index in the layer stack
     QgsMapLayer *getZpos(int index);
     
-    //! return the layer by name
-    QgsMapLayer *layerByName(QString n);
-
     //! return number of layers on the map
     int layerCount() const;
 
@@ -161,30 +199,27 @@ class QgsMapCanvas : public Q3CanvasView
     //! Get the current coordinate transform
     QgsMapToPixel * getCoordinateTransform();
 
-    /** stores state in DOM node
-        layerNode is DOM node corresponding to ``qgis'' tag
-
-        The DOM node corresponds to a DOM document project file XML element to be
-        written by QgsProject.
-
-        Invoked by QgsProject::write().
-
-        returns true if successful
-    */
-    bool writeXML( QDomNode & layerNode, QDomDocument & doc );
-
     //! true if canvas currently drawing
     bool isDrawing();
     
     //! returns current layer (set by legend widget)
     QgsMapLayer* currentLayer();
+    
+    //! set wheel action and zoom factor (should be greater than 1)
+    void setWheelAction(WheelAction action, double factor = 2);
 
-    //! Zooms in/out with a given center (uses zoomByScale)
+    //! Zooms in/out preserving
+    void zoom(bool zoomIn);
+
+    //! Zooms in/out with a given center
     void zoomWithCenter(int x, int y, bool zoomIn);
 
     //! used to determine if anti-aliasing is enabled or not
     void enableAntiAliasing(bool theFlag);
     
+    //! Select which Qt class to render with
+    void useQImageToRender(bool theFlag);
+
     // following 2 methods should be moved elsewhere or changed to private
     // currently used by pan map tool
     //! Ends pan action and redraws the canvas.
@@ -225,6 +260,11 @@ class QgsMapCanvas : public Q3CanvasView
     //! show whatever error is exposed by the QgsMapLayer.
     void showError(QgsMapLayer * mapLayer);
     
+    //! called to read map canvas settings from project
+    void readProject(const QDomDocument &);
+    
+    //! called to write map canvas settings to project
+    void writeProject(QDomDocument &);
     
 signals:
     /** Let the owner know how far we are with render operations */
@@ -236,7 +276,7 @@ signals:
     void scaleChanged(QString);
 
     //! Emitted when the extents of the map change
-    void extentsChanged(QgsRect);
+    void extentsChanged();
 
     /** Emitted when the canvas has rendered.
 
@@ -250,8 +290,41 @@ signals:
     
     //! Emitted when a new set of layers has been received
     void layersChanged();
+
+    //! Emit key press event
+    void keyPressed(QKeyEvent * e);
+
+    //! Emit key release event
+    void keyReleased(QKeyEvent * e);
     
 protected:
+    //! Overridden key press event
+    void keyPressEvent(QKeyEvent * e);
+
+    //! Overridden key release event
+    void keyReleaseEvent(QKeyEvent * e);
+
+    //! Overridden mouse move event
+    void mouseMoveEvent(QMouseEvent * e);
+
+    //! Overridden mouse press event
+    void mousePressEvent(QMouseEvent * e);
+
+    //! Overridden mouse release event
+    void mouseReleaseEvent(QMouseEvent * e);
+
+    //! Overridden mouse wheel event
+    void wheelEvent(QWheelEvent * e);
+
+    //! Overridden resize event
+    void resizeEvent(QResizeEvent * e);
+
+    //! called when panning is in action, reset indicates end of panning
+    void moveCanvasContents(bool reset = FALSE);
+    
+    //! called on resize or changed extent to notify canvas items to change their rectangle
+    void updateCanvasItemsPositions();
+
     /// implementation struct
     class CanvasProperties;
 
@@ -267,11 +340,6 @@ private:
        copy like a hot potato leaving the copyer in a weird state.
      */
     QgsMapCanvas( QgsMapCanvas const & );
-
-    /**
-       private to force use of ctor with arguments
-     */
-    QgsMapCanvas();
 
     //! all map rendering is done in this class
     QgsMapRender* mMapRender;
@@ -299,44 +367,6 @@ private:
      */
     bool mDirty;
     
-    //! Overridden key press event
-    void keyPressEvent(QKeyEvent * e);
-
-    //! Overridden key release event
-    void keyReleaseEvent(QKeyEvent * e);
-
-    //! Overridden mouse move event
-    void contentsMouseMoveEvent(QMouseEvent * e);
-
-    //! Overridden mouse press event
-    void contentsMousePressEvent(QMouseEvent * e);
-
-    //! Overridden mouse release event
-    void contentsMouseReleaseEvent(QMouseEvent * e);
-
-    //! Overridden mouse wheel event
-    void wheelEvent(QWheelEvent * e);
-
-    //! Overridden resize event
-    void resizeEvent(QResizeEvent * e);
-
-#ifdef Q_WS_MACX
-    //! Overridden paint event
-    void paintEvent(QPaintEvent * ev);
-#else
-    //! Overridden draw contents from canvas view
-    void drawContents(QPainter * p, int cx, int cy, int cw, int ch);
-#endif
-        
-    //! Zooms to a given center and scale 
-    void zoomByScale(int x, int y, double scaleFactor);
-    
-    //! called when panning is in action, reset indicates end of panning
-    void moveCanvasContents(bool reset = FALSE);
-    
-    //! called on resize or changed extent to notify canvas items to change their rectangle
-    void updateCanvasItemsPositions();
-
     //! determines whether user has requested to suppress rendering
     bool mRenderFlag;
     
@@ -348,7 +378,8 @@ private:
     //! current layer in legend
     QgsMapLayer* mCurrentLayer;
 
-    Q3Canvas* mCanvas;
+    //! graphics scene manages canvas items
+    QGraphicsScene* mScene;
     
     //! pointer to current map tool
     QgsMapTool* mMapTool;
@@ -360,8 +391,10 @@ private:
     QgsRect mLastExtent;
     
     //! Scale factor multiple for default zoom in/out
-    // TODO Make this customisable by the user
-    static const double scaleDefaultMultiple;
+    double mWheelZoomFactor;
+    
+    //! Mouse wheel action
+    WheelAction mWheelAction;
 
 }; // class QgsMapCanvas
 

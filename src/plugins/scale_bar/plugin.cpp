@@ -22,14 +22,15 @@ email                : sbr00pwb@users.sourceforge.net
 
 // includes
 
-#include <qgisapp.h>
+#include "qgisinterface.h"
 #include "qgisgui.h"
-#include <qgsmaplayer.h>
-#include "plugin.h"
-#include "qgsproject.h"
 #include "qgsmapcanvas.h"
-#include <qgspoint.h>
-#include <qgsmaptopixel.h>
+#include "qgsmaplayer.h"
+#include "qgsmaptopixel.h"
+#include "qgspoint.h"
+#include "qgsproject.h"
+
+#include "plugin.h"
 
 #include <QPainter>
 #include <QAction>
@@ -57,11 +58,15 @@ email                : sbr00pwb@users.sourceforge.net
 #define QGISEXTERN extern "C"
 #endif
 
+#ifdef _MSC_VER
+#define round(x)  ((x) >= 0 ? floor((x)+0.5) : floor((x)-0.5))
+#endif
+
 static const char * const ident_ = "$Id$";
 
-static const char * const name_ = "ScaleBar";
-static const char * const description_ = "Plugin to draw scale bar on map";
-static const char * const version_ = "Version 0.1";
+static const QString name_ = QObject::tr("ScaleBar");
+static const QString description_ = QObject::tr("Draws a scale bar");
+static const QString version_ = QObject::tr("Version 0.1");
 static const QgisPlugin::PLUGINTYPE type_ = QgisPlugin::UI;
 
 
@@ -71,15 +76,18 @@ static const QgisPlugin::PLUGINTYPE type_ = QgisPlugin::UI;
  * @param qgis Pointer to the QGIS main window
  * @param _qI Pointer to the QGIS interface object
  */
-QgsScaleBarPlugin::QgsScaleBarPlugin(QgisApp * theQGisApp,
-                                     QgisIface * theQgisInterFace):
+QgsScaleBarPlugin::QgsScaleBarPlugin(QgisInterface * theQgisInterFace):
         QgisPlugin(name_,description_,version_,type_),
-        qgisMainWindowPointer(theQGisApp),
         qGisInterface(theQgisInterFace)
 {
+  mPlacementLabels << tr("Bottom Left") << tr("Top Left") 
+                   << tr("Top Right") << tr("Bottom Right");
+  mPlacementIndex = 1;
+  mStyleLabels << tr("Tick Down") << tr("Tick Up") 
+               << tr("Bar") << tr("Box");
+
   mPreferredSize = 30;
-  mPlacement = "Top Left";
-  mStyle = "Tick Down";
+  mStyleIndex = 0;
   mEnabled = true;
   mSnapping = true;
   mColour = Qt::black;
@@ -95,26 +103,18 @@ QgsScaleBarPlugin::~QgsScaleBarPlugin()
  */
 void QgsScaleBarPlugin::initGui()
 {
-  QMenu *pluginMenu = qGisInterface->getPluginMenu(tr("&Decorations"));
-  menuId = pluginMenu->insertItem(QIcon(icon),tr("&ScaleBar"), this, SLOT(run()));
-
-  pluginMenu->setWhatsThis(menuId, tr("Creates a scale bar that is displayed on the map canvas"));
-
   // Create the action for tool
-#if QT_VERSION < 0x040000
-  myQActionPointer = new QAction(tr("Scale Bar"), QIcon(icon), "&Wmi",0, this, "run");
-#else
-  myQActionPointer = new QAction(QIcon(icon), tr("Scale Bar"), this);
-#endif
+  myQActionPointer = new QAction(QIcon(icon), tr("&Scale Bar"), this);
   myQActionPointer->setWhatsThis(tr("Creates a scale bar that is displayed on the map canvas"));
   // Connect the action to the run
   connect(myQActionPointer, SIGNAL(activated()), this, SLOT(run()));
   //render the scale bar each time the map is rendered
   connect(qGisInterface->getMapCanvas(), SIGNAL(renderComplete(QPainter *)), this, SLOT(renderScaleBar(QPainter *)));
   //this resets this plugin up if a project is loaded
-  connect(qgisMainWindowPointer, SIGNAL(projectRead()), this, SLOT(projectRead()));
+  connect(qGisInterface->getMainWindow(), SIGNAL(projectRead()), this, SLOT(projectRead()));
   // Add the icon to the toolbar
   qGisInterface->addToolBarIcon(myQActionPointer);
+  qGisInterface->addPluginMenu(tr("&Decorations"), myQActionPointer);
 }
 
 void QgsScaleBarPlugin::projectRead()
@@ -125,8 +125,8 @@ void QgsScaleBarPlugin::projectRead()
 
 
     mPreferredSize = QgsProject::instance()->readNumEntry("ScaleBar","/PreferredSize",30);
-    mStyle = QgsProject::instance()->readEntry("ScaleBar","/Style","Tick Down");
-    mPlacement = QgsProject::instance()->readEntry("ScaleBar","/Placement","Top Left");
+    mStyleIndex = QgsProject::instance()->readNumEntry("ScaleBar","/Style",0);
+    mPlacementIndex = QgsProject::instance()->readNumEntry("ScaleBar","/Placement",2);
     mEnabled = QgsProject::instance()->readBoolEntry("ScaleBar","/Enabled",true);
     mSnapping = QgsProject::instance()->readBoolEntry("ScaleBar","/Snapping",true);
     int myRedInt = QgsProject::instance()->readNumEntry("ScaleBar","/ColorRedPart",0);
@@ -143,19 +143,21 @@ void QgsScaleBarPlugin::help()
 // Slot called when the  menu item is activated
 void QgsScaleBarPlugin::run()
 {
-  QgsScaleBarPluginGui *myPluginGui=new QgsScaleBarPluginGui(qgisMainWindowPointer, QgisGui::ModalDialogFlags);
+  QgsScaleBarPluginGui *myPluginGui=new QgsScaleBarPluginGui(qGisInterface->getMainWindow(), QgisGui::ModalDialogFlags);
   myPluginGui->setPreferredSize(mPreferredSize);
   myPluginGui->setSnapping(mSnapping);
-  myPluginGui->setPlacement(mPlacement);
+  myPluginGui->setPlacementLabels(mPlacementLabels);
+  myPluginGui->setPlacement(mPlacementIndex);
   myPluginGui->setEnabled(mEnabled);
-  myPluginGui->setStyle(mStyle);
+  myPluginGui->setStyleLabels(mStyleLabels);
+  myPluginGui->setStyle(mStyleIndex);
   myPluginGui->setColour(mColour);
 
   connect(myPluginGui, SIGNAL(changePreferredSize(int)), this, SLOT(setPreferredSize(int)));
   connect(myPluginGui, SIGNAL(changeSnapping(bool)), this, SLOT(setSnapping(bool)));
-  connect(myPluginGui, SIGNAL(changePlacement(QString)), this, SLOT(setPlacement(QString)));
+  connect(myPluginGui, SIGNAL(changePlacement(int)), this, SLOT(setPlacement(int)));
   connect(myPluginGui, SIGNAL(changeEnabled(bool)), this, SLOT(setEnabled(bool)));
-  connect(myPluginGui, SIGNAL(changeStyle(QString)), this, SLOT(setStyle(QString)));
+  connect(myPluginGui, SIGNAL(changeStyle(int)), this, SLOT(setStyle(int)));
   connect(myPluginGui, SIGNAL(changeColour(QColor)), this, SLOT(setColour(QColor)));
   connect(myPluginGui, SIGNAL(refreshCanvas()), this, SLOT(refreshCanvas()));
   myPluginGui->show();
@@ -294,28 +296,25 @@ void QgsScaleBarPlugin::renderScaleBar(QPainter * theQPainter)
     //determine the origin of scale bar depending on placement selected
     int myOriginX=myMargin;
     int myOriginY=myMargin;
-    if (mPlacement==tr("Top Left"))
+    switch (mPlacementIndex)
     {
-      myOriginX=myMargin;
-      myOriginY=myMargin;
-    }
-    else if (mPlacement==tr("Bottom Left"))
-    {
+    case 0: // Bottom Left
       myOriginX=myMargin;
       myOriginY=myCanvasHeight - myMargin;
-    }
-    else if (mPlacement==tr("Top Right"))
-    {
+      break;
+    case 1: // Top Left
+      myOriginX=myMargin;
+      myOriginY=myMargin;
+      break;
+    case 2: // Top Right
       myOriginX=myCanvasWidth - ((int) myTotalScaleBarWidth) - myMargin;
       myOriginY=myMargin;
-    }
-    else if (mPlacement==tr("Bottom Right"))
-    {
+      break;
+    case 3: // Bottom Right
       myOriginX=myCanvasWidth - ((int) myTotalScaleBarWidth) - myMargin;
       myOriginY=myCanvasHeight - myMargin;
-    }
-    else
-    {
+      break;
+    default:
       std::cout << "Unable to determine where to put scale bar so defaulting to top left" << std::endl;
     }
 
@@ -327,7 +326,9 @@ void QgsScaleBarPlugin::renderScaleBar(QPainter * theQPainter)
     int myScaleBarWidthInt = (int) myScaleBarWidth;
 
     //Create array of vertices for scale bar depending on style
-    if (mStyle==tr("Tick Down"))
+    switch (mStyleIndex)
+    {
+    case 0: // Tick Down
     {
       QPolygon myTickDownArray(4);
       //draw a buffer first so bar shows up on dark images
@@ -348,8 +349,9 @@ void QgsScaleBarPlugin::renderScaleBar(QPainter * theQPainter)
               (myScaleBarWidthInt + myOriginX), (myOriginY + myMajorTickSize)
               );
       theQPainter->drawPolyline(myTickDownArray);
+      break;
     }
-    else if (mStyle==tr("Tick Up"))
+    case 1: // tick up
     {
       QPolygon myTickUpArray(4);
       //draw a buffer first so bar shows up on dark images
@@ -370,8 +372,9 @@ void QgsScaleBarPlugin::renderScaleBar(QPainter * theQPainter)
               (myScaleBarWidthInt + myOriginX),  myOriginY
               );
       theQPainter->drawPolyline(myTickUpArray);
+      break;
     }
-    else if (mStyle==tr("Bar"))
+    case 2: // Bar
     {
       QPolygon myBarArray(2);
       //draw a buffer first so bar shows up on dark images
@@ -388,8 +391,9 @@ void QgsScaleBarPlugin::renderScaleBar(QPainter * theQPainter)
               (myScaleBarWidthInt + myOriginX),  (myOriginY + (myMajorTickSize/2))
               );
       theQPainter->drawPolyline(myBarArray);
+      break;
     }
-    else if (mStyle==tr("Box"))
+    case 3: // box
     {
       // Want square corners for a box
       myBackgroundPen.setJoinStyle( Qt::MiterJoin );
@@ -427,6 +431,10 @@ void QgsScaleBarPlugin::renderScaleBar(QPainter * theQPainter)
               midPointX                    ,  myOriginY
               );
       theQPainter->drawPolygon(myBoxArray);
+      break;
+    }
+    default:
+      std::cerr << "Unknown style\n";
     }
 
     //Do actual drawing of scale bar
@@ -517,7 +525,7 @@ void QgsScaleBarPlugin::renderScaleBar(QPainter * theQPainter)
 void QgsScaleBarPlugin::unload()
 {
   // remove the GUI
-  qGisInterface->removePluginMenuItem(tr("&Decorations"),menuId);
+  qGisInterface->removePluginMenu(tr("&Decorations"),myQActionPointer);
   qGisInterface->removeToolBarIcon(myQActionPointer);
 
   // remove the northarrow from the canvas
@@ -529,10 +537,10 @@ void QgsScaleBarPlugin::unload()
 }
 
 //! set placement of scale bar
-void QgsScaleBarPlugin::setPlacement(QString theQString)
+void QgsScaleBarPlugin::setPlacement(int placementIndex)
 {
-  mPlacement = theQString;
-  QgsProject::instance()->writeEntry("ScaleBar","/Placement",mPlacement);
+  mPlacementIndex = placementIndex;
+  QgsProject::instance()->writeEntry("ScaleBar","/Placement",mPlacementIndex);
 }
 
 //! set preferred size of scale bar
@@ -556,10 +564,10 @@ void QgsScaleBarPlugin::setEnabled(bool theBool)
   QgsProject::instance()->writeEntry("ScaleBar","/Enabled",mEnabled);
 }
 //! set scale bar enable
-void QgsScaleBarPlugin::setStyle(QString theStyleQString)
+void QgsScaleBarPlugin::setStyle(int styleIndex)
 {
-  mStyle = theStyleQString;
-   QgsProject::instance()->writeEntry("ScaleBar","/Style",mStyle);
+  mStyleIndex = styleIndex;
+  QgsProject::instance()->writeEntry("ScaleBar","/Style",mStyleIndex);
 }
 //! set the scale bar colour
 void QgsScaleBarPlugin::setColour(QColor theQColor)
@@ -577,9 +585,9 @@ void QgsScaleBarPlugin::setColour(QColor theQColor)
  * of the plugin class
  */
 // Class factory to return a new instance of the plugin class
-QGISEXTERN QgisPlugin * classFactory(QgisApp * theQGisAppPointer, QgisIface * theQgisInterfacePointer)
+QGISEXTERN QgisPlugin * classFactory(QgisInterface * theQgisInterfacePointer)
 {
-  return new QgsScaleBarPlugin(theQGisAppPointer, theQgisInterfacePointer);
+  return new QgsScaleBarPlugin(theQgisInterfacePointer);
 }
 
 // Return the name of the plugin - note that we do not user class members as

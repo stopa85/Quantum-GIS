@@ -11,9 +11,9 @@
 	<key>CFBundleSignature</key>
 	<string>QGIS</string>
 	<key>CFBundleGetInfoString</key>
-	<string>QGIS @VERSION, © 2002-2006 QGIS Development Team</string>
+	<string>QGIS @VERSION (@SVNVERSION), © 2002-2007 QGIS Development Team</string>
 	<key>CFBundleShortVersionString</key>
-	<string>@SHORTVERSION</string>
+	<string>@SHORTVERSION (@SVNVERSION)</string>
 	<key>CFBundleVersion</key>
 	<string>@VERSION</string>
 	<key>CFBundleIconFile</key>
@@ -179,6 +179,7 @@
 		<string>en</string>
 		<string>cs_CZ</string>
 		<string>de</string>
+		<string>es</string>
 		<string>fr</string>
 		<string>id</string>
 		<string>it</string>
@@ -187,9 +188,11 @@
 		<string>nl</string>
 		<string>pl_PL</string>
 		<string>pt_BR</string>
+		<string>ro</string>
 		<string>ru</string>
 		<string>sk</string>
 		<string>sv</string>
+		<string>vi</string>
 		<string>zh_CN</string>
 	</array>
 </dict>

@@ -17,8 +17,10 @@
 #define QGSGRASSPROVIDER_H
 
 class QgsFeature;
+class QgsFeatureAttribute;
 class QgsField;
-#include <qdatetime.h>
+
+#include <QDateTime>
 #include "qgsvectordataprovider.h"
 
 /* Update.
@@ -33,6 +35,12 @@ class QgsField;
  * 
  * Member variables which must be updated after updateMap() are marked !UPDATE! in this file.
  */
+
+/* Freezing.
+ * Because open file cannot be deleted on Windows it is necessary to
+ * close output vector from GRASS tools before a module is run.
+ * This is not however solution for multiple instances of QGIS.
+ */ 
 
 /* Editing.
  * If editing is started by startEdit, vector map is reopened in update mode, and GMAP.update 
@@ -64,7 +72,7 @@ struct GLAYER
   int     nColumns;              // number of columns in database table, if 0, attributes are not available
   // and category (column name 'cat') is used instead
   int     keyColumn;             // number of key column
-  std::vector<QgsField> fields;  // description of layer fields
+  QgsFieldMap fields;  // description of layer fields
   int     nAttributes;           // number of attributes read to the memory (may be < nRecords)
   GATT    *attributes;           // vector of attributes
   double  (*minmax)[2];          // minimum and maximum values of attributes
@@ -82,6 +90,10 @@ struct GMAP
   QString path;          // path to the layer gisdbase+location+mapset+mapName
   bool    valid;         // true if map is opened, once the map is closed,
   // valid is set to false and no more used
+  
+  // Vector temporally disabled. Necessary for GRASS Tools on Windows
+  bool frozen;
+	
   struct  Map_info *map; // map header
   int     nUsers;        // number layers using this map
   int     update;        // true if the map is opened in update mode -> disabled standard reading
@@ -101,48 +113,26 @@ class QgsGrassProvider : public QgsVectorDataProvider
 {
 public:
 
-  QgsGrassProvider(QString const & uri = "");
+  QgsGrassProvider(QString uri = QString());
 
   virtual ~QgsGrassProvider();
 
   /**
     *   Returns the permanent storage type for this layer as a friendly name.
     */
-  QString storageType();
+  QString storageType() const;
 
-  /** Used to ask the layer for its projection as a WKT string. Implements
-   * virtual method of same name in QgsDataProvider. */
-  QString getProjectionWKT(void);
-
-  /* Following functions work only until first edit operation! (category index used) */
-
-  /**
-   * Get the first feature resulting from a select operation
-   * @return QgsFeature
-   */
-  QgsFeature * getFirstFeature(bool fetchAttributes=false);
-
-  /** 
-   * Get the next feature resutling from a select operation
-   * @return QgsFeature
-   */
-  QgsFeature * getNextFeature(bool fetchAttributes=false);
-  bool getNextFeature(QgsFeature &feature, bool fetchAttributes=false);
-  QgsFeature* getNextFeature(std::list<int> const & attlist, int featureQueueSize = 1);
+  /** This function works only until first edit operation! (category index used) */
+  virtual bool getNextFeature(QgsFeature& feature,
+                              bool fetchGeometry = true,
+                              QgsAttributeList fetchAttributes = QgsAttributeList(),
+                              uint featureQueueSize = 1);
 	
   /** 
    * Get the feature type as defined in WKBTYPE (qgis.h). 
    * @return int representing the feature type
    */
-  int geometryType() const;
-
-  /** return the number of layers for the current data source
-
-    @note 
-
-    Should this be subLayerCount() instead?
-  */
-  size_t layerCount() const;
+  QGis::WKBTYPE geometryType() const;
 
 
   /** 
@@ -153,31 +143,24 @@ public:
   /** 
    * Get the number of fields in the layer
    */
-  int fieldCount() const;
+  uint fieldCount() const;
 
   /**
    * Select features based on a bounding rectangle. Features can be retrieved 
    * with calls to getFirstFeature and getNextFeature.
    * @param mbr QgsRect containing the extent to use in selecting features
    */
-  void select(QgsRect *mbr, bool useIntersect=false);
+  void select(QgsRect mbr, bool useIntersect=false);
 
 	
-  /**
-   * Identify features within the search radius specified by rect
-   * @param rect Bounding rectangle of search radius
-   * @return std::vector containing QgsFeature objects that intersect rect
-   */
-  virtual std::vector<QgsFeature>& identify(QgsRect *rect);
-
   /** Return the extent for this data layer
    */
-  virtual QgsRect *extent();
+  virtual QgsRect extent();
 
   /**
    * Get the field information for the layer
    */
-  std::vector<QgsField> const& fields() const;
+  const QgsFieldMap & fields() const;
 
   // ! Key (category) field index
   int keyField();
@@ -189,11 +172,11 @@ public:
 
   /**Returns the minimum value of an attribut
      @param position the number of the attribute*/
-  QString minValue(int position);
+  QString minValue(uint position);
 
   /**Returns the maximum value of an attribut
      @param position the number of the attribute*/
-  QString maxValue(int position);
+  QString maxValue(uint position);
 
   /** Update (reload) non static members (marked !UPDATE!) from the static layer and the map.
    *   This method MUST be called whenever lastUpdate of the map is later then mapLastUpdate 
@@ -205,6 +188,10 @@ public:
    */
   bool isValid();
 
+  void setSRS(const QgsSpatialRefSys& theSRS);
+
+  QgsSpatialRefSys getSRS();
+  
   // ----------------------------------- Edit ----------------------------------
 	
   /** Is the layer editable? I.e. the layer is valid and current user is owner of the mapset
@@ -219,11 +206,26 @@ public:
    */
   bool isEdited();
 
+  /** Returns true if the layer is currently froze, i.e. a module
+   *  from GRASS Tools is writing to this vector
+   *   @return true in update mode
+   *   @return false not edited
+   */
+  bool isFrozen();
+
   /** Start editing. Reopen the vector for update and set GMAP.update = true
-   *   @return true success
-   *   @return false failed to reopen success
+   *   @return true is frozen 
+   *   @return false is not frozen
    */
   bool startEdit();
+
+  /** Freeze vector. 
+   */
+  void freeze();
+
+  /** Thaw vector. 
+   */
+  void thaw();
 
   /** Close editing. Rebuild topology, GMAP.update = false 
    *   @param newMap set to true if a new map was created
@@ -447,8 +449,6 @@ public:
 
   /** Get maximum category for field index */
   int cidxGetMaxCat ( int idx );
-  /** get data source uri (not implemented) */
-  QgsDataSourceURI * getURI(){ return 0;};
   
   /** Returns GRASS layer number */
   int grassLayer();
@@ -516,7 +516,7 @@ private:
   int     mLayerType;     // layer type POINT, LINE, ...
   int     mGrassType;     // grass feature type: GV_POINT, GV_LINE | GV_BOUNDARY, GV_AREA, 
   // ( GV_BOUNDARY, GV_CENTROID )
-  int     mQgisType;      // WKBPoint, WKBLineString, ...
+  QGis::WKBTYPE mQgisType;// WKBPoint, WKBLineString, ...
   int     mLayerId;       // ID used in layers
   struct  Map_info *mMap; // vector header pointer
   int     mMapVersion;    // The version of the map for which the instance was last time updated
@@ -540,8 +540,11 @@ private:
 
   bool    mValid;                // !UPDATE! 
   long    mNumberFeatures;       // !UPDATE!
-	
+
   void resetSelection(bool sel); // reset selection
+
+  // Reopen map after edit or freeze
+  bool reopenMap();
 
   // -----------------------------------------------------------------------------------------
   /* Static variables and methods.
@@ -660,7 +663,7 @@ private:
    *  @param cat category number
    *  @param attlist a list containing the index number of the fields to set
    */
-  void setFeatureAttributes ( int layerId, int cat, QgsFeature *feature, std::list<int> const & attlist);
+  void setFeatureAttributes ( int layerId, int cat, QgsFeature *feature, const QgsAttributeList & attlist);
 
   /* Static arrays of opened layers and vectors */
   static 	std::vector<GLAYER> mLayers; // Map + field/attributes

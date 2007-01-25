@@ -27,7 +27,8 @@ public:
     QgsCopyrightLabelPluginGui( QWidget* parent = 0, Qt::WFlags fl = 0 );
     ~QgsCopyrightLabelPluginGui();
     void setText(QString);
-    void setPlacement(QString);
+    void setPlacementLabels(QStringList&);
+    void setPlacement(int);
 
 public slots:
     void on_pbnOK_clicked();
@@ -36,7 +37,7 @@ public slots:
     void setEnabled(bool); 
      
 private:
-    static const int context_id = 732921842;
+    static const int context_id = 32338213;
     
 signals:
    //void drawRasterLayer(QString);
@@ -44,7 +45,7 @@ signals:
    void changeFont(QFont);
    void changeLabel(QString);
    void changeColor(QColor);
-   void changePlacement(QString);
+   void changePlacement(int);
    void enableCopyrightLabel(bool);
   
 };

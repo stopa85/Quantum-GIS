@@ -17,32 +17,33 @@
 #define QGSGRASSEDIT_H
 
 #include <vector>
-//Added by qt3to4:
-#include <QPixmap>
-#include <QCloseEvent>
-#include <QAction>
 
+#include <Q3PointArray>
+#include <QMainWindow>
+
+class QAction;
+class QPainter;
+class QPen;
+class QPixmap;
 class QString;
 class QCloseEvent;
 
-#include <q3pointarray.h>
-#include <qcursor.h>
-#include <qpen.h>
-#include <qpainter.h>
 
-// Must be here, so that it is included to moc file
-#include "qgisapp.h"
 #include "qgspoint.h"
-#include "qgisiface.h"
-#include "qgsmaptopixel.h"
+
+class QgisInterface;
+class QgsMapCanvas;
+class QgsMapLayer;
+class QgsMapToPixel;
 class QgsRubberBand;
 class QgsVertexMarker;
+class QgsVectorLayer;
+class QgsMapTool;
 class QgsGrassEditLayer;
 class QgsGrassAttributes;
 
 class QgsGrassProvider;
 #include "ui_qgsgrasseditbase.h"
-#include <QMainWindow>
 #include "qgsgrassselect.h"
 
 // forward declaration of edit tools
@@ -114,10 +115,10 @@ public:
     };
 
     //! Constructor
-    QgsGrassEdit ( QgisApp *qgisApp, QgisIface *iface, 
+    QgsGrassEdit ( QgisInterface *iface, 
 	           QWidget * parent = 0, Qt::WFlags f = 0 );
 
-    QgsGrassEdit ( QgisApp *qgisApp, QgisIface *iface, 
+    QgsGrassEdit ( QgisInterface *iface, 
                    QgsGrassProvider *provider,
 	           QWidget * parent = 0, Qt::WFlags f = 0 );
 
@@ -150,6 +151,9 @@ public:
 
     //! Check orphan database records
     void checkOrphan ( int field, int cat );
+
+    //! pointer to layer
+    QgsVectorLayer *layer() { return mLayer; }
 
 public slots:
     // TODO: once available in QGIS, use only one reciver for all signals
@@ -213,15 +217,30 @@ public slots:
     //! Window with attributes closed
     void attributesClosed();
 
+    //! Recieve key press from different widget 
+    void keyPress(QKeyEvent *e); 
+
 signals:
     void finished(); 
 
 private:
     //! Editing is already running
     static bool mRunning;
+
+    //! Pointer to edited layer
+    QgsVectorLayer *mLayer;
+
+    //! Pointer to toolbar
+    QToolBar *mToolBar;
     
     //! Point / node size (later make editable array of Sizes)
     int mSize;
+
+    //! Transform from layer coordinates to canvas including reprojection
+    QgsPoint transformLayerToCanvas ( QgsPoint point);
+
+    //! Transform from layer coordinates to current projection
+    QgsPoint transformLayerToMap ( QgsPoint point);
 
     //! Display all lines and nodes
     void displayMap (); 
@@ -274,12 +293,12 @@ private:
 
     //! Status: true - active vector was successfully opened for editing
     bool mValid;
-    
-    //! QGIS application
-    QgisApp *mQgisApp; 
+
+    //! Initialization complete
+    bool mInited;
     
     //! Pointer to the QGIS interface object
-    QgisIface *mIface;
+    QgisInterface *mIface;
 
     //! Pointer to canvas 
     QgsMapCanvas *mCanvas;
@@ -382,6 +401,8 @@ private:
     /** Snap to nearest node in current threshold */
     void snap ( QgsPoint & point );
     void snap ( double *x, double *y);
+    /** Snap point line  considering line starting point */
+    void snap ( QgsPoint & point, double startX, double startY);
 
     /** Attributes */
     QgsGrassAttributes *mAttributes;
@@ -415,6 +436,12 @@ private:
     QAction *mDeleteLineAction;
     QAction *mEditAttributesAction;
     QAction *mCloseEditAction;
+
+    // Current map tool
+    QgsMapTool	*mMapTool;
+
+    // Is projection enabled?
+    bool mProjectionEnabled;
 
     // Canvas items
     QgsRubberBand *mRubberBandLine;

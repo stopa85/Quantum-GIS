@@ -24,21 +24,14 @@
 #include <map>
 #include <vector>
 
-#include <QSet>
-
 #include "qgsrasterdataprovider.h"
 #include "qgsrect.h"
 
-#include <qgscoordinatetransform.h>
+#include <QString>
+#include <QStringList>
+#include <QDomElement>
 
-#include "qgsdatasourceuri.h"
-
-#include <qstring.h>
-#include <qstringlist.h>
-#include <qobject.h>
-#include <q3http.h>
-#include <qdom.h>
-
+class QgsCoordinateTransform;
 
 /*
  * The following structs reflect the WMS XML schema,
@@ -349,8 +342,7 @@ public:
   /**
   * Constructor for the provider. 
   *
-  * \param   uri   HTTP URL of the Web Server, optionally followed by a space then the proxy host name,
-  *                another space, and the proxy host port.  If no proxy is declared then we will
+  * \param   uri   HTTP URL of the Web Server.  If setProxy() is not also called then we will
   *                contact the host directly.
   *
   */
@@ -358,6 +350,36 @@ public:
 
   //! Destructor
   virtual ~QgsWmsProvider();
+
+  /**
+   * Gets the HTTP proxy host used for this connection
+   */
+  virtual QString proxyHost() const;
+
+  /**
+   * Gets the HTTP proxy port used for this connection
+   */
+  virtual int proxyPort() const;
+
+  /**
+   * Gets the HTTP proxy user name used for this connection
+   */
+  virtual QString proxyUser() const;
+
+  /**
+   * Gets the HTTP proxy user password used for this connection
+   */
+  virtual QString proxyPass() const;
+
+  /**
+   *
+   * Sets an HTTP proxy for the URL given in the constructor
+   *
+   */
+  virtual bool setProxy(QString const & host = 0,
+                                    int port = 80,
+                        QString const & user = 0,
+                        QString const & pass = 0);
 
   /**
    * \brief   Returns a list of the supported layers of the WMS server
@@ -380,12 +402,28 @@ public:
   virtual QSet<QString> supportedCrsForLayers(QStringList const & layers);
 
   /**
+   * Set the QgsSpatialReferenceSystem for this layer.
+   * @note Must be reimplemented by each provider. 
+   *
+   * @param theSRS QgsSpatialRefSys to be assigned to this layer
+   *               A complete copy of the passed in SRS will be made.
+   */
+  virtual void setSRS(const QgsSpatialRefSys& theSRS);
+
+  /*! Get the QgsSpatialRefSys for this layer
+   * @note Must be reimplemented by each provider. 
+   * If the provider isn't capable of returning
+   * its projection an empty srs will be return, ti will return 0
+   */
+  virtual QgsSpatialRefSys getSRS();
+  
+  /**
    * Add the list of WMS layer names to be rendered by this server
    */
   void addLayers(QStringList const &  layers,
                  QStringList const &  styles = QStringList());
 
-
+  
   /** return the number of layers for the current data source
 
     @note 
@@ -405,6 +443,11 @@ public:
    * Set the visibility of the given sublayer name
    */
   void setSubLayerVisibility(QString const & name, bool vis);
+
+  /**
+   * Get the image encoding (as a MIME type) used in the transfer from the WMS server
+   */
+  QString imageEncoding() const;
 
   /**
    * Set the image encoding (as a MIME type) used in the transfer from the WMS server
@@ -440,23 +483,9 @@ public:
   
   /* Example URI: http://ims.cr.usgs.gov:80/servlet/com.esri.wms.Esrimap/USGS_EDC_Trans_BTS_Roads?SERVICE=WMS&REQUEST=GetCapabilities */
 
-  /** Used to ask the layer for its projection as a WKT string. Implements
-   * virtual method of same name in QgsDataProvider. */
-  QString getProjectionWKT()  {return QString("Not implemented yet");} ;
-
-  /**
-   * Get the data source URI structure used by this layer
-   */
-  QgsDataSourceURI * getURI();
-
-  /**
-   * Set the data source URI used by this layer
-   */
-  void setURI(QgsDataSourceURI * uri);
-
   /** Return the extent for this data layer
   */
-  virtual QgsRect *extent();
+  virtual QgsRect extent();
 
   /** Reset the layer - for a PostgreSQL layer, this means clearing the PQresult
    * pointer and setting it to 0
@@ -480,7 +509,18 @@ public:
    * layers in some way at the server, before it serves them to this
    * WMS client.
    */
-  QStringList subLayers();
+  QStringList subLayers() const;
+
+  /**
+   * Sub-layer styles for each sub-layer handled by this provider,
+   * in order from bottom to top
+   *
+   * Sub-layer styles are used to abstract the way the WMS server can symbolise
+   * layers in some way at the server, before it serves them to this
+   * WMS client.
+   */
+  QStringList subLayerStyles() const;
+
 
   // TODO: Get the WMS connection
   
@@ -505,7 +545,7 @@ public:
    *
    * \param point[in]  The pixel coordinate (as it was displayed locally on screen)
    *
-   * \retval  An HTML document containing the return from the WMS server
+   * \return  A text document containing the return from the WMS server
    *
    * \note WMS Servers prefer to receive coordinates in image space, therefore
    *       this function expects coordinates in that format.
@@ -513,7 +553,7 @@ public:
    * \note  The arbitraryness of the returned document is enforced by WMS standards
    *        up to at least v1.3.0
    */
-  QString identifyAsHtml(const QgsPoint& point);
+  QString identifyAsText(const QgsPoint& point);
 
   /**
    * \brief   Returns the caption error text for the last error in this provider

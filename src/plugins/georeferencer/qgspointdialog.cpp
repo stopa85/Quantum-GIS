@@ -1,17 +1,11 @@
 #include <cmath>
 
-#include <Q3Frame>
-#include <QPushButton>
-#include <QComboBox>
 #include <QFileDialog>
-#include <QHBoxLayout>
-#include <QLayout>
-#include <QLineEdit>
+#include <QFileInfo>
 #include <QMessageBox>
 #include <QTextStream>
-#include <QToolButton>
 
-#include "qgisiface.h"
+#include "qgisinterface.h"
 #include "qgsapplication.h"
 #include "qgspointdialog.h"
 #include "mapcoordsdialog.h"
@@ -52,7 +46,7 @@ class QgsGeorefTool : public QgsMapTool
 };
 
 
-QgsPointDialog::QgsPointDialog(QString layerPath, QgisIface* theQgisInterface,
+QgsPointDialog::QgsPointDialog(QString layerPath, QgisInterface* theQgisInterface,
                                 QWidget* parent, Qt::WFlags fl) 
   : QDialog(parent, fl), mIface(theQgisInterface)
 {
@@ -120,6 +114,18 @@ QgsPointDialog::QgsPointDialog(QString layerPath, QgisIface* theQgisInterface,
   mCanvas->setMinimumWidth(400);
   mCanvas->freeze(true);
   
+  // set up map tools
+  mToolZoomIn = new QgsMapToolZoom(mCanvas, FALSE /* zoomOut */); 
+  mToolZoomIn->setAction(mActionZoomIn);
+  mToolZoomOut = new QgsMapToolZoom(mCanvas, TRUE /* zoomOut */); 
+  mToolZoomOut->setAction(mActionZoomOut);
+  mToolPan = new QgsMapToolPan(mCanvas); 
+  mToolPan->setAction(mActionPan);
+  mToolAddPoint = new QgsGeorefTool(mCanvas, this, TRUE /* addPoint */); 
+  mToolAddPoint->setAction(mActionAddPoint);
+  mToolDeletePoint = new QgsGeorefTool(mCanvas, this, FALSE /* addPoint */); 
+  mToolDeletePoint->setAction(mActionDeletePoint);
+  
   // open raster layer
   QgsRasterLayer* layer = new QgsRasterLayer(layerPath, "Raster");
   mLayer = layer;
@@ -130,8 +136,9 @@ QgsPointDialog::QgsPointDialog(QString layerPath, QgisIface* theQgisInterface,
   registry->addMapLayer(layer, FALSE);  
   
   // add layer to map canvas
-  std::deque<QString> layers;
-  layers.push_back(layer->getLayerID());
+  QList<QgsMapCanvasLayer> layers;
+  QgsMapCanvasLayer lyr(layer);
+  layers.append(lyr);
   mCanvas->setLayerSet(layers);
   
   // load previously added points
@@ -139,13 +146,17 @@ QgsPointDialog::QgsPointDialog(QString layerPath, QgisIface* theQgisInterface,
   if (pointFile.open(QIODevice::ReadOnly)) {
     QTextStream points(&pointFile);
     QString tmp;
+    // read the header
     points>>tmp>>tmp>>tmp>>tmp;
+    // read the first line
+    double mapX, mapY, pixelX, pixelY;
+    points>>mapX>>mapY>>pixelX>>pixelY;
     while (!points.atEnd()) {
-      double mapX, mapY, pixelX, pixelY;
-      points>>mapX>>mapY>>pixelX>>pixelY;
       QgsPoint mapCoords(mapX, mapY);
       QgsPoint pixelCoords(pixelX, pixelY);
       addPoint(pixelCoords, mapCoords);
+      // read the next line
+      points>>mapX>>mapY>>pixelX>>pixelY;
     }
   }
   
@@ -156,7 +167,13 @@ QgsPointDialog::QgsPointDialog(QString layerPath, QgisIface* theQgisInterface,
 
   // set adding points as default tool
   addPoint();
-  
+
+  // set the currently supported transforms
+  cmbTransformType->addItem(tr("Linear"));
+  cmbTransformType->addItem(tr("Helmert"));
+
+  enableModifiedRasterControls(false);
+
   mCanvas->refresh();
 }
 
@@ -168,6 +185,12 @@ QgsPointDialog::~QgsPointDialog()
   {
     QgsMapLayerRegistry::instance()->removeMapLayer(mLayer->getLayerID(), FALSE);
   }
+  
+  delete mToolZoomIn;
+  delete mToolZoomOut;
+  delete mToolPan;
+  delete mToolAddPoint;
+  delete mToolDeletePoint;
 }
 
 
@@ -210,10 +233,13 @@ void QgsPointDialog::on_pbnGenerateAndLoad_clicked()
     mLayer = 0;
     
     // load raster to the main map canvas of QGIS
-    if (cmbTransformType->currentItem() == 0)
+    if (cmbTransformType->currentText() == tr("Linear"))
       mIface->addRasterLayer(source);
     else 
       mIface->addRasterLayer(leSelectModifiedRaster->text());
+
+    // This should cause a map refresh
+    mIface->getMapCanvas()->refresh();
 
     accept();
   }
@@ -223,7 +249,7 @@ void QgsPointDialog::on_pbnGenerateAndLoad_clicked()
 void QgsPointDialog::on_pbnSelectWorldFile_clicked()
 {
   QString filename = QFileDialog::getSaveFileName(this,
-              "Choose a name for the world file", ".");
+              tr("Choose a name for the world file"), ".");
   leSelectWorldFile->setText(filename);
 }
 
@@ -231,13 +257,37 @@ void QgsPointDialog::on_pbnSelectWorldFile_clicked()
 void QgsPointDialog::on_pbnSelectModifiedRaster_clicked()
 {
   QString filename = QFileDialog::getSaveFileName(this,
-              "Choose a name for the world file", ".");
+              tr("Choose a name for the world file"), ".");
   if (filename.right(4) != ".tif")
     filename += ".tif";
   leSelectModifiedRaster->setText(filename);
   leSelectWorldFile->setText(guessWorldFileName(filename));
 }
 
+void QgsPointDialog::on_cmbTransformType_currentIndexChanged(const QString& value)
+{
+  if (value == tr("Helmert"))
+  {
+    enableModifiedRasterControls(true);
+    // Make up a modified raster field name based on the layer file name
+    QString filename(mLayer->source());
+    QFileInfo file(mLayer->source());
+    int pos = filename.size()-file.suffix().size()-1;
+    filename.insert(pos, tr("-modified", "Georeferencer:QgsPointDialog.cpp - used to modify a user given filename"));
+    pos = filename.size()-file.suffix().size();
+    filename.replace(pos, filename.size(), "tif");
+
+    leSelectModifiedRaster->setText(filename);
+    leSelectWorldFile->setText(guessWorldFileName(filename));
+  }
+  else
+  {
+    // Reset to the default filenames
+    leSelectModifiedRaster->setText("");
+    enableModifiedRasterControls(false);
+    leSelectWorldFile->setText(guessWorldFileName(mLayer->source()));
+  }
+}
 
 bool QgsPointDialog::generateWorldFile()
 {
@@ -258,35 +308,45 @@ bool QgsPointDialog::generateWorldFile()
   // (might throw std::domain_error)
   try
   {
-    if (cmbTransformType->currentItem() == 0)
+    if (cmbTransformType->currentText() == tr("Linear"))
     {
       QgsLeastSquares::linear(mapCoords, pixelCoords, origin, pixelSize);
     }
-    else if (cmbTransformType->currentItem() == 1)
+    else if (cmbTransformType->currentText() == tr("Helmert"))
     {
-      int res = QMessageBox::warning(this, "Warning",
-			     "A Helmert transform requires modifications in "
-			     "the raster layer.\nThe modifed raster will be "
-			     "saved in a new file and a world file will be "
-			     "generated for this new file instead.\nAre you "
-			     "sure that this is what you want?",
-			     QMessageBox::No, QMessageBox::Yes);
-      if (res == QMessageBox::No)
+      QMessageBox::StandardButton res = QMessageBox::warning(this, tr("Warning"),
+		     tr("<p>A Helmert transform requires modifications in "
+		     "the raster layer.</p><p>The modifed raster will be "
+		     "saved in a new file and a world file will be "
+		     "generated for this new file instead.</p><p>Are you "
+		     "sure that this is what you want?</p>") + 
+		     "<p><i>" + tr("Currently all modified files will be written in TIFF format.") + 
+		     "</i><p>", QMessageBox::Ok | QMessageBox::Cancel);
+      if (res == QMessageBox::Cancel)
 	       return false;
+
       QgsLeastSquares::helmert(mapCoords, pixelCoords, origin, pixelSize, rotation);
     }
-    else if (cmbTransformType->currentItem() == 2)
+    else if (cmbTransformType->currentText() == tr("Affine"))
     {
-      QMessageBox::critical(this, "Not implemented!",
-			    "An affine transform requires changing the "
+      QMessageBox::critical(this, tr("Not implemented!"),
+			    tr("<p>An affine transform requires changing the "
 			    "original raster file. This is not yet "
-			    "supported.");
+			    "supported.</p>"));
       return false;
+    }
+    else
+    {
+      QMessageBox::critical(this, tr("Not implemented!"),
+			    tr("<p>The ") +
+                            cmbTransformType->currentText() +
+                            tr(" transform is not yet supported.</p>"));
+      return false;      
     }
   }
   catch (std::domain_error& e)
   {
-    QMessageBox::critical(this, "Error", QString(e.what()));
+    QMessageBox::critical(this, tr("Error"), QString(e.what()));
     return false;
   }
 
@@ -294,6 +354,7 @@ bool QgsPointDialog::generateWorldFile()
   double xOffset, yOffset;
   if (rotation != 0)
   {
+
     QgsGeorefWarpOptionsDialog d(this);
     d.exec();
     bool useZeroForTrans;
@@ -303,13 +364,13 @@ bool QgsPointDialog::generateWorldFile()
     warper.warp(mLayer->source(), leSelectModifiedRaster->text(), 
 		            xOffset, yOffset, resampling, useZeroForTrans);
   }
-  
+
   // write the world file
   QFile file(leSelectWorldFile->text());
   if (!file.open(QIODevice::WriteOnly))
   {
-    QMessageBox::critical(this, "Error", 
-         "Could not write to " + leSelectWorldFile->text());
+    QMessageBox::critical(this, tr("Error"), 
+         tr("Could not write to ") + leSelectWorldFile->text());
     return false;
   }
   QTextStream stream(&file);
@@ -317,9 +378,8 @@ bool QgsPointDialog::generateWorldFile()
 	<<0<<endl
 	<<0<<endl
 	<<-pixelSize<<endl
-	<<(origin.x() - xOffset * pixelSize)<<endl
-	<<(origin.y() + yOffset * pixelSize)<<endl;  
-  
+	<<QString::number(origin.x() - xOffset * pixelSize, 'f')<<endl
+	<<QString::number(origin.y() + yOffset * pixelSize, 'f')<<endl;  
   // write the data points in case we need them later
   QFile pointFile(mLayer->source() + ".points");
   if (pointFile.open(QIODevice::WriteOnly))
@@ -329,7 +389,8 @@ bool QgsPointDialog::generateWorldFile()
     for (unsigned int i = 0; i < mapCoords.size(); ++i)
     {
       points<<(QString("%1\t%2\t%3\t%4").
-	       arg(mapCoords[i].x()).arg(mapCoords[i].y()).
+	       arg(QString::number(mapCoords[i].x(), 'f')).
+               arg(QString::number(mapCoords[i].y(), 'f')).
 	       arg(pixelCoords[i].x()).arg(pixelCoords[i].y()))<<endl;
     }
   }
@@ -339,17 +400,13 @@ bool QgsPointDialog::generateWorldFile()
 
 void QgsPointDialog::zoomIn()
 {
-  QgsMapToolZoom* tool = new QgsMapToolZoom(mCanvas, FALSE /* zoomOut */); 
-  tool->setAction(mActionZoomIn);
-  mCanvas->setMapTool(tool);
+  mCanvas->setMapTool(mToolZoomIn);
 }
 
 
 void QgsPointDialog::zoomOut()
 {
-  QgsMapToolZoom* tool = new QgsMapToolZoom(mCanvas, TRUE /* zoomOut */); 
-  tool->setAction(mActionZoomOut);
-  mCanvas->setMapTool(tool);
+  mCanvas->setMapTool(mToolZoomOut);
 }
 
 
@@ -362,25 +419,19 @@ void QgsPointDialog::zoomToLayer()
 
 void QgsPointDialog::pan()
 {
-  QgsMapToolPan* tool = new QgsMapToolPan(mCanvas); 
-  tool->setAction(mActionPan);
-  mCanvas->setMapTool(tool);
+  mCanvas->setMapTool(mToolPan);
 }
 
 
 void QgsPointDialog::addPoint()
 {
-  QgsGeorefTool* tool = new QgsGeorefTool(mCanvas, this, TRUE /* addPoint */); 
-  tool->setAction(mActionAddPoint);
-  mCanvas->setMapTool(tool);
+  mCanvas->setMapTool(mToolAddPoint);
 }
 
 
 void QgsPointDialog::deletePoint()
 {
-  QgsGeorefTool* tool = new QgsGeorefTool(mCanvas, this, FALSE /* addPoint */); 
-  tool->setAction(mActionDeletePoint);
-  mCanvas->setMapTool(tool);
+  mCanvas->setMapTool(mToolDeletePoint);
 }
 
 
@@ -398,19 +449,20 @@ void QgsPointDialog::deleteDataPoint(QgsPoint& coords)
   std::vector<QgsGeorefDataPoint*>::iterator it = mPoints.begin();
   
   double maxDistSqr = (5 * mCanvas->mupp())*(5 * mCanvas->mupp());
-//#ifdef QGISDEBUG
+#ifdef QGISDEBUG
   std::cout << "deleteDataPoint! maxDistSqr: " << maxDistSqr << std::endl;
-//#endif
+#endif
   for ( ; it != mPoints.end(); it++)
   {
     QgsGeorefDataPoint* pt = *it;
     double x = pt->pixelCoords().x() - coords.x();
     double y = pt->pixelCoords().y() - coords.y();
-//#ifdef QGISDEBUG
+#ifdef QGISDEBUG
   std::cout << "deleteDataPoint! test: " << (x*x+y*y) << std::endl;
-//#endif
+#endif
     if ((x*x + y*y) < maxDistSqr)
     {
+      delete *it;
       mPoints.erase(it);
       mCanvas->refresh();
       break;
@@ -421,7 +473,7 @@ void QgsPointDialog::deleteDataPoint(QgsPoint& coords)
 
 void QgsPointDialog::enableRelevantControls()
 {
-  if (cmbTransformType->currentItem() == 0)
+  if (cmbTransformType->currentText() == tr("Linear"))
   {
     leSelectModifiedRaster->setEnabled(false);
     pbnSelectModifiedRaster->setEnabled(false);
@@ -432,7 +484,7 @@ void QgsPointDialog::enableRelevantControls()
     pbnSelectModifiedRaster->setEnabled(true);
   }
   
-  if ((cmbTransformType->currentItem() == 0 &&
+  if ((cmbTransformType->currentText() == tr("Linear") &&
        !leSelectWorldFile->text().isEmpty()) ||
       (!leSelectWorldFile->text().isEmpty() &&
        !leSelectModifiedRaster->text().isEmpty()))
@@ -459,4 +511,11 @@ QString QgsPointDialog::guessWorldFileName(const QString& raster)
     worldfile += 'w';
   }
   return worldfile;
+}
+
+void QgsPointDialog::enableModifiedRasterControls(bool state)
+{
+  lblSelectModifiedRaster->setEnabled(state);
+  pbnSelectModifiedRaster->setEnabled(state);
+  leSelectModifiedRaster->setEnabled(state);
 }

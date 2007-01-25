@@ -55,7 +55,7 @@ void QgsGPSDeviceDialog::on_pbnNewDevice_clicked() {
 void QgsGPSDeviceDialog::on_pbnDeleteDevice_clicked() {
   if (QMessageBox::warning(this, tr("Are you sure?"), 
 		   tr("Are you sure that you want to delete this device?"),
-       QMessageBox::Ok, QMessageBox::Cancel) == QMessageBox::Ok) {
+       QMessageBox::Ok | QMessageBox::Cancel) == QMessageBox::Ok) {
 
     std::map<QString, QgsGPSDevice*>::iterator iter = 
       mDevices.find(lbDeviceList->currentItem()->text());
@@ -149,7 +149,7 @@ void QgsGPSDeviceDialog::slotSelectionChanged() {
 
 void QgsGPSDeviceDialog::writeDeviceSettings() {
   QStringList deviceNames;
-  QSettings settings("QuantumGIS", "qgis");
+  QSettings settings;
   QString devPath = "/Plugin-GPS/devices/%1";
   settings.remove("/Plugin-GPS/devices");
 

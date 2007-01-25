@@ -14,47 +14,52 @@
  *                                                                         *
  ***************************************************************************/
 #include <iostream>
-#include <qdir.h>
-#include <qevent.h>
-#include <qfile.h>
-#include <qsettings.h>
-#include <qpixmap.h>
-#include <q3listbox.h>
-#include <qstringlist.h>
-#include <qlabel.h>
-#include <QComboBox>
-#include <qspinbox.h>
-#include <qmessagebox.h>
-#include <qinputdialog.h>
-#include <qsettings.h>
-#include <qpainter.h>
-#include <qpixmap.h>
-#include <qpen.h>
-#include <q3pointarray.h>
-#include <qcursor.h>
-#include <qnamespace.h>
-#include <q3listview.h>
-#include <qcolordialog.h>
-#include <q3table.h>
-#include <qstatusbar.h>
-#include <qglobal.h>
 
+//#include <qnamespace.h>
+#include <QtGlobal>
+#include <QColorDialog>
+#include <Q3ListBox>
+#include <Q3ListView>
+#include <Q3PointArray>
+#include <Q3Table>
+#include <QAction>
 #include <QActionGroup>
 #include <QCloseEvent>
+#include <QComboBox>
+#include <QCursor>
+#include <QDir>
+#include <QEvent>
+#include <QFile>
+#include <QInputDialog>
+#include <QLabel>
+#include <QMessageBox>
+#include <QPainter>
+#include <QPen>
+#include <QPixmap>
+#include <QSettings>
+#include <QSpinBox>
+#include <QStatusBar>
+#include <QStringList>
 #include <QToolBar>
 
+
 #include "qgis.h"
+#include "qgisinterface.h"
 #include "qgsapplication.h"
 #include "qgsmapcanvas.h"
+#include "qgsmapcanvasitem.h"
 #include "qgsmaplayer.h"
+#include "qgsmaprender.h"
 #include "qgsvectorlayer.h"
 #include "qgsdataprovider.h"
+#include "qgsmaptoolpan.h"
 #include "qgsmaptopixel.h"
 #include "qgsfield.h"
 #include "qgsfeatureattribute.h"
-#include "qgslegend.h"
 #include "qgsvertexmarker.h"
 #include "qgsrubberband.h"
+#include "qgsproject.h"
+#include "qgslogger.h"
 
 extern "C" {
 #include <grass/gis.h>
@@ -68,8 +73,10 @@ extern "C" {
 #include "qgsgrassedittools.h"
 #include "qgsgrassutils.h"
 
-#include "qgsmapcanvasitem.h"
-#include "qgsmaptoolpan.h"
+#ifdef _MSC_VER
+#define round(x)  ((x) >= 0 ? floor((x)+0.5) : floor((x)-0.5))
+#endif
+
 
 class QgsGrassEditLayer : public QgsMapCanvasItem
 {
@@ -77,18 +84,21 @@ class QgsGrassEditLayer : public QgsMapCanvasItem
     
     QgsGrassEditLayer(QgsMapCanvas* mapCanvas):QgsMapCanvasItem(mapCanvas)
     {
-      updatePosition();
     }
     
-    virtual void drawShape(QPainter & p)
+    virtual void paint(QPainter* p)
     {
-      p.drawPixmap(mPanningOffset.x(),mPanningOffset.y(), mPixmap);
+      p->drawPixmap(0,0, mPixmap);
+    }
+    
+    virtual QRectF boundingRect() const
+    {
+      return QRectF(0,0, mMapCanvas->width(), mMapCanvas->height());
     }
     
     virtual void updatePosition()
-    {      
-      move(mPanningOffset.x(),mPanningOffset.y());
-      setSize(mMapCanvas->width(), mMapCanvas->height());      
+    {
+      setPos(QPointF(mPanningOffset));
     }
     
     QPixmap& pixmap() { return mPixmap; }
@@ -102,9 +112,10 @@ class QgsGrassEditLayer : public QgsMapCanvasItem
 
 bool QgsGrassEdit::mRunning = false;
 
-QgsGrassEdit::QgsGrassEdit ( QgisApp *qgisApp, QgisIface *iface, 
+QgsGrassEdit::QgsGrassEdit ( QgisInterface *iface, 
     QWidget * parent, Qt::WFlags f )
-    :QMainWindow(parent,f), QgsGrassEditBase ()
+    :QMainWindow(parent,f), QgsGrassEditBase (), mMapTool(0),
+    mCanvasEdit(0), mRubberBandLine(0), mRubberBandIcon(0), mInited(false)
 {
 #ifdef QGISDEBUG
   std::cerr << "QgsGrassEdit()" << std::endl;
@@ -116,9 +127,10 @@ QgsGrassEdit::QgsGrassEdit ( QgisApp *qgisApp, QgisIface *iface,
   mValid = false;
   mTool = QgsGrassEdit::NONE;
   mSuspend = false;
-  mQgisApp = qgisApp;
   mIface = iface;
   mNewMap = false;
+
+  mProjectionEnabled = (QgsProject::instance()->readNumEntry("SpatialRefSys","/ProjectionsEnabled",0)!=0);
 
   mCanvas = mIface->getMapCanvas();
 
@@ -130,10 +142,10 @@ QgsGrassEdit::QgsGrassEdit ( QgisApp *qgisApp, QgisIface *iface,
   if ( !isEditable(layer) ) return;
 
   //TODO dynamic_cast ?
-  QgsVectorLayer *vector = (QgsVectorLayer*)layer;
+  mLayer = (QgsVectorLayer*)layer;
 
   //TODO dynamic_cast ?
-  mProvider = (QgsGrassProvider *) vector->getDataProvider();
+  mProvider = (QgsGrassProvider *) mLayer->getDataProvider();
 
   init();
 
@@ -143,30 +155,54 @@ bool QgsGrassEdit::isEditable ( QgsMapLayer *layer )
 {
   if ( !layer ) return false;
 
-  std::cerr << "layer name: " << layer->name().toLocal8Bit().data() << std::endl;
+  QgsDebugMsg("layer name: " + layer->name());
 
   if ( layer->type() != QgsMapLayer::VECTOR ) {
-    std::cerr << "The selected layer is not vector." << std::endl;
+    QgsDebugMsg("The selected layer is not vector.");
     return false;
   }
 
   //TODO dynamic_cast ?
   QgsVectorLayer *vector = (QgsVectorLayer*)layer;
 
-  std::cerr << "Vector layer type: " << vector->providerType().toLocal8Bit().data() << std::endl;
+  QgsDebugMsg("Vector layer type: " + vector->providerType());
 
   if ( vector->providerType() != "grass" ) {
-    std::cerr << "The selected layer is not GRASS." << std::endl;
+    QgsDebugMsg("The selected layer is not GRASS.");
     return false;
   }
 
   return true;
 }
 
-QgsGrassEdit::QgsGrassEdit ( QgisApp *qgisApp, QgisIface *iface, 
+void QgsGrassEdit::keyPress(QKeyEvent *e) 
+{
+    std::cerr << "QgsGrassEdit::keyPress" << std::endl;
+    // This does not work:
+    //keyPressEvent(e); 
+
+    // TODO: this is not optimal
+    switch ( e->key() )
+    {
+        case Qt::Key_F1: newPoint(); break;  
+        case Qt::Key_F2: newLine(); break;  
+        case Qt::Key_F3: newBoundary(); break;  
+        case Qt::Key_F4: newCentroid(); break;  
+        case Qt::Key_F5: moveVertex(); break;  
+        case Qt::Key_F6: addVertex(); break;  
+        case Qt::Key_F7: deleteVertex(); break;  
+        case Qt::Key_F9: moveLine(); break;  
+        case Qt::Key_F10: splitLine(); break;  
+        case Qt::Key_F11: deleteLine(); break;  
+        default: break;
+    }
+}
+
+QgsGrassEdit::QgsGrassEdit ( QgisInterface *iface, 
     QgsGrassProvider *provider,
     QWidget * parent, Qt::WFlags f )
-    :QMainWindow(parent, 0, f), QgsGrassEditBase ()
+    :QMainWindow(parent, 0, f), QgsGrassEditBase (), mMapTool(0),
+    mCanvasEdit(0), mRubberBandLine(0), mRubberBandIcon(0), mInited(false)
 {
 #ifdef QGISDEBUG
   std::cerr << "QgsGrassEdit()" << std::endl;
@@ -178,9 +214,10 @@ QgsGrassEdit::QgsGrassEdit ( QgisApp *qgisApp, QgisIface *iface,
   mValid = false;
   mTool = QgsGrassEdit::NONE;
   mSuspend = false;
-  mQgisApp = qgisApp;
   mIface = iface;
   mNewMap = true;
+
+  mProjectionEnabled = (QgsProject::instance()->readNumEntry("SpatialRefSys","/ProjectionsEnabled",0)!=0);
 
   mCanvas = mIface->getMapCanvas();
 
@@ -192,89 +229,90 @@ QgsGrassEdit::QgsGrassEdit ( QgisApp *qgisApp, QgisIface *iface,
 void QgsGrassEdit::init()
 {
   if ( !(mProvider->isGrassEditable()) ) {
-    QMessageBox::warning( 0, "Warning", "You are not owner of the mapset, "
-        "cannot open the vector for editing." );
+    QMessageBox::warning( 0, tr("Warning"), tr("You are not owner of the mapset, "
+        "cannot open the vector for editing.") );
     return;
   }
 
   if ( !(mProvider->startEdit()) ) {
-    QMessageBox::warning( 0, "Warning", "Cannot open vector for update." );
+    QMessageBox::warning( 0, tr("Warning"), tr("Cannot open vector for update." ));
     return;
   }
 
+  connect ( mCanvas, SIGNAL(keyPressed(QKeyEvent *)), this, SLOT(keyPress(QKeyEvent *)) );
+
   QString myIconPath = QgsApplication::themePath() + "/grass/";
 
-
-  QToolBar *tb = addToolBar(tr("Edit tools"));
+  mToolBar = addToolBar(tr("Edit tools"));
 
   mNewPointAction = new QAction(
           QIcon(myIconPath+"grass_new_point.png"), tr("New point"), this);
   mNewPointAction->setShortcut ( QKeySequence(Qt::Key_F1) ); 
-  tb->addAction ( mNewPointAction );
+  mToolBar->addAction ( mNewPointAction );
   connect ( mNewPointAction, SIGNAL(triggered()), this, SLOT(newPoint()) );
 
   mNewLineAction = new QAction(
           QIcon(myIconPath+"grass_new_line.png"), tr("New line"), this);
   mNewLineAction->setShortcut ( QKeySequence(Qt::Key_F2) ); 
-  tb->addAction ( mNewLineAction );
+  mToolBar->addAction ( mNewLineAction );
   connect ( mNewLineAction, SIGNAL(triggered()), this, SLOT(newLine()) );
 
   mNewBoundaryAction = new QAction(
           QIcon(myIconPath+"grass_new_boundary.png"), tr("New boundary"), this);
   mNewBoundaryAction->setShortcut ( QKeySequence(Qt::Key_F3) ); 
-  tb->addAction ( mNewBoundaryAction );
+  mToolBar->addAction ( mNewBoundaryAction );
   connect ( mNewBoundaryAction, SIGNAL(triggered()), this, SLOT(newBoundary()) );
 
   mNewCentroidAction = new QAction(
           QIcon(myIconPath+"grass_new_centroid.png"), tr("New centroid"), this);
   mNewCentroidAction->setShortcut ( QKeySequence(Qt::Key_F4) ); 
-  tb->addAction ( mNewCentroidAction );
+  mToolBar->addAction ( mNewCentroidAction );
   connect ( mNewCentroidAction, SIGNAL(triggered()), this, SLOT(newCentroid()) );
 
   mMoveVertexAction = new QAction(
           QIcon(myIconPath+"grass_move_vertex.png"), tr("Move vertex"), this);
   mMoveVertexAction->setShortcut ( QKeySequence(Qt::Key_F5) ); 
-  tb->addAction ( mMoveVertexAction );
+  mToolBar->addAction ( mMoveVertexAction );
   connect ( mMoveVertexAction, SIGNAL(triggered()), this, SLOT(moveVertex()) );
 
   mAddVertexAction = new QAction(
           QIcon(myIconPath+"grass_add_vertex.png"), tr("Add vertex"), this);
   mAddVertexAction->setShortcut ( QKeySequence(Qt::Key_F6) ); 
-  tb->addAction ( mAddVertexAction );
+  mToolBar->addAction ( mAddVertexAction );
   connect ( mAddVertexAction, SIGNAL(triggered()), this, SLOT(addVertex()) );
 
   mDeleteVertexAction = new QAction(
           QIcon(myIconPath+"grass_delete_vertex.png"), tr("Delete vertex"), this);
   mDeleteVertexAction->setShortcut ( QKeySequence(Qt::Key_F7) ); 
-  tb->addAction ( mDeleteVertexAction );
+  mToolBar->addAction ( mDeleteVertexAction );
   connect ( mDeleteVertexAction, SIGNAL(triggered()), this, SLOT(deleteVertex()) );
 
   mMoveLineAction = new QAction(
           QIcon(myIconPath+"grass_move_line.png"), tr("Move element"), this);
   mMoveLineAction->setShortcut ( QKeySequence(Qt::Key_F9) ); 
-  tb->addAction ( mMoveLineAction );
+  mToolBar->addAction ( mMoveLineAction );
   connect ( mMoveLineAction, SIGNAL(triggered()), this, SLOT(moveLine()) );
 
   mSplitLineAction = new QAction(
           QIcon(myIconPath+"grass_split_line.png"), tr("Split line"), this);
   mSplitLineAction->setShortcut ( QKeySequence(Qt::Key_F10) ); 
-  tb->addAction ( mSplitLineAction );
+  mToolBar->addAction ( mSplitLineAction );
   connect ( mSplitLineAction, SIGNAL(triggered()), this, SLOT(splitLine()) );
 
   mDeleteLineAction = new QAction(
           QIcon(myIconPath+"grass_delete_line.png"), tr("Delete element"), this);
   mDeleteLineAction->setShortcut ( QKeySequence(Qt::Key_F11) ); 
-  tb->addAction ( mDeleteLineAction );
+  mToolBar->addAction ( mDeleteLineAction );
   connect ( mDeleteLineAction, SIGNAL(triggered()), this, SLOT(deleteLine()) );
 
   mEditAttributesAction = new QAction(
           QIcon(myIconPath+"grass_edit_attributes.png"), tr("Edit attributes"), this);
-  tb->addAction ( mEditAttributesAction );
+  mToolBar->addAction ( mEditAttributesAction );
   connect ( mEditAttributesAction, SIGNAL(triggered()), this, SLOT(editAttributes()) );
 
   mCloseEditAction = new QAction(
           QIcon(myIconPath+"grass_close_edit.png"), tr("Close"), this);
-  tb->addAction ( mCloseEditAction );
+  mToolBar->addAction ( mCloseEditAction );
   connect ( mCloseEditAction, SIGNAL(triggered()), this, SLOT(closeEdit()) );
   
   mNewPointAction->setCheckable ( true );
@@ -370,7 +408,7 @@ void QgsGrassEdit::init()
 
   // Restore symbology
   QString spath = "/GRASS/edit/symb/";
-  QSettings settings("QuantumGIS", "qgis");
+  QSettings settings;
 
   mLineWidth = settings.readNumEntry (
                  spath + "lineWidth", 1 );
@@ -483,16 +521,13 @@ void QgsGrassEdit::init()
   connect( mCanvas, SIGNAL(renderComplete(QPainter *)), this, SLOT(postRender(QPainter *)));
 
   mCanvasEdit = new QgsGrassEditLayer(mCanvas);
-  mCanvasEdit->show();
   
   mPixmap = &mCanvasEdit->pixmap();
 
   mRubberBandLine = new QgsRubberBand(mCanvas);
   mRubberBandIcon = new QgsVertexMarker(mCanvas);
-  mRubberBandLine->setZ(20);
-  mRubberBandIcon->setZ(20);
-  mRubberBandLine->show();
-  mRubberBandIcon->show();
+  mRubberBandLine->setZValue(20);
+  mRubberBandIcon->setZValue(20);
 
   // Init GUI values
   mCatModeBox->insertItem( "Next not used", CAT_MODE_NEXT );
@@ -507,6 +542,7 @@ void QgsGrassEdit::init()
   restorePosition();
 
   mValid = true; 
+  mInited = true; 
 }
 
 void QgsGrassEdit::attributeTableFieldChanged ( void )
@@ -658,9 +694,9 @@ void QgsGrassEdit::alterTable ( void )
     QString *error = mProvider->createTable ( field, mAttributeTable->item(0,0)->text(), sql );  
 
     if ( !error->isEmpty() ) {
-      QMessageBox::warning( 0, "Warning", *error );
+      QMessageBox::warning( 0, tr("Warning"), *error );
     } else {
-      QMessageBox::information( 0, "Info", "The table was created" );
+      QMessageBox::information( 0, tr("Info"), tr("The table was created") );
       QString str;
       str.sprintf ( "%d", field );
       mFieldBox->insertItem( str );
@@ -683,7 +719,7 @@ void QgsGrassEdit::alterTable ( void )
       QString *error = mProvider->addColumn ( field, sql );  
 
       if ( !error->isEmpty() ) {
-        QMessageBox::warning( 0, "Warning", *error );
+        QMessageBox::warning( 0, tr("Warning"), *error );
       }
       delete error;
     }
@@ -698,7 +734,7 @@ void QgsGrassEdit::changeSymbology(Q3ListViewItem * item, const QPoint & pnt, in
   std::cerr << "QgsGrassEdit::changeSymbology() col = " << col << std::endl;
 #endif
 
-  QSettings settings("QuantumGIS", "qgis");
+  QSettings settings;
 
   if ( !item ) return;
 
@@ -735,7 +771,7 @@ void QgsGrassEdit::lineWidthChanged()
 #ifdef QGISDEBUG
     std::cerr << "QgsGrassEdit::lineWidthChanged()" << std::endl;
 #endif
-    QSettings settings("QuantumGIS", "qgis");
+    QSettings settings;
     mLineWidth = mLineWidthSpinBox->value();
 
     for ( int i = 0; i < SYMB_COUNT; i++ ) {
@@ -751,7 +787,7 @@ void QgsGrassEdit::markerSizeChanged()
 #ifdef QGISDEBUG
     std::cerr << "QgsGrassEdit::markerSizeChanged()" << std::endl;
 #endif
-    QSettings settings("QuantumGIS", "qgis");
+    QSettings settings;
     mSize = mMarkerSizeSpinBox->value();
     QString spath = "/GRASS/edit/symb/";
     settings.writeEntry ( spath + "markerSize", mSize );
@@ -759,7 +795,7 @@ void QgsGrassEdit::markerSizeChanged()
 
 void QgsGrassEdit::restorePosition()
 {
-  QSettings settings("QuantumGIS", "qgis");
+  QSettings settings;
   int ww = settings.readNumEntry("/GRASS/windows/edit/w", 420);
   int wh = settings.readNumEntry("/GRASS/windows/edit/h", 150);
   int wx = settings.readNumEntry("/GRASS/windows/edit/x", 100);
@@ -770,7 +806,7 @@ void QgsGrassEdit::restorePosition()
 
 void QgsGrassEdit::saveWindowLocation()
 {
-  QSettings settings("QuantumGIS", "qgis");
+  QSettings settings;
   QPoint p = this->pos();
   QSize s = this->size();
   settings.writeEntry("/GRASS/windows/edit/x", p.x());
@@ -888,21 +924,28 @@ QgsGrassEdit::~QgsGrassEdit()
   std::cerr << "QgsGrassEdit::~QgsGrassEdit()" << std::endl;
 #endif
 
-  if (mCanvasEdit) {
-    
+  // we can only call some methods if init was complete,
+  // note that we cannot use mValid because it is disabled before
+  // destructor is called
+  if (mInited) 
+  {
+    // delete tool if exists
+    delete mMapTool;
+
     eraseDynamic();
     mRubberBandLine->hide();
     mRubberBandIcon->hide();
     mRubberBandLine->reset();
     delete mRubberBandLine;
     delete mRubberBandIcon;
-    delete mCanvasEdit;
-    mCanvas->refresh();
-  }
-
-  saveWindowLocation();
-  mRunning = false;
   
+    delete mCanvasEdit;
+  
+    mCanvas->refresh();
+  
+    saveWindowLocation();
+  }
+  mRunning = false;
 }
 
 bool QgsGrassEdit::isRunning(void)
@@ -922,8 +965,8 @@ void QgsGrassEdit::closeEdit(void)
 #endif
 
   // grass edit tool would become invalid
-  // so change it to another one, e.g. pan tool
-  mQgisApp->pan();
+  // ...delete it, it will notify map canvas
+  delete mCanvas->mapTool();
 
   // Disconnect signals
   // Warning: it seems that slots (postRender) can be called even 
@@ -943,7 +986,7 @@ void QgsGrassEdit::closeEdit(void)
   // Add new layers
   if ( mNewMap )
   {
-     QString uri = QDir::cleanDirPath ( mProvider->getDataSourceUri() );
+     QString uri = QDir::cleanDirPath ( mProvider->dataSourceUri() );
      std::cerr << "uri = " << uri.ascii() << std::endl;
      // Note: QDir::cleanPath is using '/' also on Windows
      //QChar sep = QDir::separator();
@@ -1044,7 +1087,7 @@ int QgsGrassEdit::writeLine ( int type, struct line_pnts *Points )
         QString *error = mProvider->insertAttributes ( field, cat );
 
         if ( !error->isEmpty() ) {
-          QMessageBox::warning( 0, "Warning", *error );
+          QMessageBox::warning( 0, tr("Warning"), *error );
         }
         delete error;
       }
@@ -1097,11 +1140,20 @@ double QgsGrassEdit::threshold ( void )
   int snapPixels = mSnapPixels->text().toInt();
 
   // Convert to map units (not nice)
-  mTransform = mCanvas->getCoordinateTransform();
-  double x1 = mTransform->toMapCoordinates( 0, 0 ).x();
-  double x2 = mTransform->toMapCoordinates( snapPixels, 0 ).x();
+  QgsPoint p1, p2;
+  p1 = mTransform->toMapCoordinates(0, 0 ); 
+  p2 = mTransform->toMapCoordinates(snapPixels, 0); 
 
-  return ( x2 - x1 );
+  if ( mProjectionEnabled ) 
+  {
+      p1 = mCanvas->mapRender()->outputCoordsToLayerCoords(mLayer, p1);
+      p2 = mCanvas->mapRender()->outputCoordsToLayerCoords(mLayer, p2);
+  }
+
+  double dx = p2.x() - p1.x();
+  double dy = p2.y() - p1.y();
+  double thresh = sqrt ( dx*dx + dy*dy );
+  return thresh;
 }
 
 void QgsGrassEdit::snap (  double *x, double *y )
@@ -1121,6 +1173,45 @@ void QgsGrassEdit::snap (  QgsPoint & point )
   double y = point.y();
 
   snap ( &x, &y );
+
+  point.setX(x);
+  point.setY(y);
+}
+
+void QgsGrassEdit::snap (  QgsPoint & point, double startX, double startY )
+{
+  double x = point.x();
+  double y = point.y();
+
+  double thresh = threshold();
+
+  // Start
+  double startDist = hypot ( x-startX, y-startY);
+  bool startIn = false;
+  if ( startDist <= thresh ) startIn = true;
+
+  // Nearest node
+  double nodeX, nodeY;     
+  double nodeDist;
+  bool nodeIn = false;
+  int node = mProvider->findNode ( x, y, thresh );
+
+  if ( node > 0 ) 
+  {
+       mProvider->nodeCoor ( node, &nodeX, &nodeY );
+       nodeDist = hypot ( x-nodeX, y-nodeY);
+       nodeIn = true;
+  }
+
+  // Choose
+  if ( (startIn && !nodeIn) || (startIn && nodeIn && startDist < nodeDist)  ) 
+  {
+      x = startX; y = startY;
+  }
+  else if ( (!startIn && nodeIn) || (startIn && nodeIn && startDist > nodeDist) ) 
+  {
+      x = nodeX; y = nodeY;
+  } 
 
   point.setX(x);
   point.setY(y);
@@ -1156,8 +1247,12 @@ void QgsGrassEdit::startTool(int tool)
   if ( mSelectedLine > 0 )
     displayElement ( mSelectedLine, mSymb[mLineSymb[mSelectedLine]], mSize );
 
-  // close old tool by setting NULL tool
-  mCanvas->setMapTool(NULL);
+  // close old tool
+  if (mMapTool)
+  {
+    delete mMapTool;
+    mMapTool = NULL;
+  }
 
   // All necessary data were written -> reset mEditPoints etc.
   Vect_reset_line ( mEditPoints );
@@ -1172,67 +1267,66 @@ void QgsGrassEdit::startTool(int tool)
   // Start new tool
   mTool = tool;
 
-  QgsMapTool* t = NULL;
   switch (mTool)
   {
     case NEW_POINT:
-      t = new QgsGrassEditNewPoint(this, false);
-      t->setAction(mNewPointAction);
+      mMapTool = new QgsGrassEditNewPoint(this, false);
+      mMapTool->setAction(mNewPointAction);
       break;
       
     case NEW_CENTROID:
-      t = new QgsGrassEditNewPoint(this, true);
-      t->setAction(mNewCentroidAction);
+      mMapTool = new QgsGrassEditNewPoint(this, true);
+      mMapTool->setAction(mNewCentroidAction);
       break;
       
     case NEW_LINE:
-      t = new QgsGrassEditNewLine(this, false);
-      t->setAction(mNewLineAction);
+      mMapTool = new QgsGrassEditNewLine(this, false);
+      mMapTool->setAction(mNewLineAction);
       break;
   
     case NEW_BOUNDARY:
-      t = new QgsGrassEditNewLine(this, true);
-      t->setAction(mNewBoundaryAction);
+      mMapTool = new QgsGrassEditNewLine(this, true);
+      mMapTool->setAction(mNewBoundaryAction);
       break;
       
     case MOVE_VERTEX:
-      t = new QgsGrassEditMoveVertex(this);
-      t->setAction(mMoveVertexAction);
+      mMapTool = new QgsGrassEditMoveVertex(this);
+      mMapTool->setAction(mMoveVertexAction);
       break;
       
     case ADD_VERTEX:
-      t = new QgsGrassEditAddVertex(this);
-      t->setAction(mAddVertexAction);
+      mMapTool = new QgsGrassEditAddVertex(this);
+      mMapTool->setAction(mAddVertexAction);
       break;
       
     case DELETE_VERTEX:
-      t = new QgsGrassEditDeleteVertex(this);
-      t->setAction(mDeleteVertexAction);
+      mMapTool = new QgsGrassEditDeleteVertex(this);
+      mMapTool->setAction(mDeleteVertexAction);
       break;
       
     case MOVE_LINE:
-      t = new QgsGrassEditMoveLine(this);
-      t->setAction(mMoveLineAction);
+      mMapTool = new QgsGrassEditMoveLine(this);
+      mMapTool->setAction(mMoveLineAction);
       break;
       
     case DELETE_LINE:
-      t = new QgsGrassEditDeleteLine(this);
-      t->setAction(mDeleteLineAction);
+      mMapTool = new QgsGrassEditDeleteLine(this);
+      mMapTool->setAction(mDeleteLineAction);
       break;
       
     case SPLIT_LINE:
-      t = new QgsGrassEditSplitLine(this);
-      t->setAction(mSplitLineAction);
+      mMapTool = new QgsGrassEditSplitLine(this);
+      mMapTool->setAction(mSplitLineAction);
       break;
       
     case EDIT_ATTRIBUTES:
-      t = new QgsGrassEditAttributes(this);
-      t->setAction(mEditAttributesAction);
+      mMapTool = new QgsGrassEditAttributes(this);
+      mMapTool->setAction(mEditAttributesAction);
       break;
       
     case EDIT_CATS:
       mTool = NONE;
-      QMessageBox::warning( 0, "Warning", "Tool not yet implemented." );
+      QMessageBox::warning( 0, tr("Warning"), tr("Tool not yet implemented.") );
       break;
 
     default:
@@ -1241,9 +1335,7 @@ void QgsGrassEdit::startTool(int tool)
   }
     
   // assign newly created tool to map canvas
-  // canvas will take care of destroying it
-  mCanvas->setMapTool(t);
-
+  mCanvas->setMapTool(mMapTool);
 }
 
 
@@ -1259,23 +1351,23 @@ void QgsGrassEdit::checkOrphan ( int field, int cat )
   QString *error = mProvider->isOrphan ( field, cat, &orphan );
 
   if ( !error->isEmpty() ) {
-      QMessageBox::warning( 0, "Warning", "Cannot check orphan record: "
+      QMessageBox::warning( 0, tr("Warning"), tr("Cannot check orphan record: ")
                 + *error );
       return;
   }
   if ( !orphan ) return;
 
-  int ret = QMessageBox::question ( 0, "Warning", 
-	      "Orphan record was left in attribute table. "
-	      "<br>Delete the record?",  
-	      QMessageBox::Yes,  QMessageBox::No );
+  QMessageBox::StandardButton ret = QMessageBox::question ( 0, tr("Warning"), 
+	     tr("Orphan record was left in attribute table. "
+	      "<br>Delete the record?"),  
+	      QMessageBox::Ok | QMessageBox::Cancel );
 
-  if ( ret == QMessageBox::No ) return;
+  if ( ret == QMessageBox::Cancel ) return;
 
   // Delete record
   error = mProvider->deleteAttributes ( field, cat );
   if ( !error->isEmpty() ) {
-      QMessageBox::warning( 0, "Warning", "Cannot delete orphan record: "
+      QMessageBox::warning( 0, tr("Warning"), tr("Cannot delete orphan record: ")
                 + *error );
       return;
   }
@@ -1304,7 +1396,7 @@ void QgsGrassEdit::addAttributes ( int field, int cat )
     if ( cols->size() == 0 ) {
       QString str;
       str.setNum( field );
-      QMessageBox::warning( 0, "Warning", "Cannot describe table for field " + str );
+      QMessageBox::warning( 0, tr("Warning"), tr("Cannot describe table for field ") + str );
     } else {
       std::vector<QgsFeatureAttribute> *atts = 
         mProvider->attributes ( field, cat );
@@ -1347,6 +1439,7 @@ void QgsGrassEdit::addCat ( int line )
   }
 
   line = mProvider->rewriteLine ( line, type, mPoints, mCats );
+  mSelectedLine = line;
   if ( mAttributes ) mAttributes->setLine ( line );
   updateSymb();
   increaseMaxCat();
@@ -1361,7 +1454,7 @@ void QgsGrassEdit::addCat ( int line )
       QString *error = mProvider->insertAttributes ( field, cat );
 
       if ( !error->isEmpty() ) {
-        QMessageBox::warning( 0, "Warning", *error );
+        QMessageBox::warning( 0, tr("Warning"), *error );
       }
       delete error;
     }
@@ -1382,6 +1475,7 @@ void QgsGrassEdit::deleteCat ( int line, int field, int cat )
   Vect_field_cat_del ( mCats, field, cat );
 
   line = mProvider->rewriteLine ( line, type, mPoints, mCats );
+  mSelectedLine = line;
   if ( mAttributes ) mAttributes->setLine ( line );
 
   // Check orphan record
@@ -1451,7 +1545,10 @@ void QgsGrassEdit::displayMap ()
   painter->end();
   delete painter;
   
-  mCanvas->updateContents();
+  // porting mCanvas->update();
+  mCanvasEdit->update();
+  mRubberBandIcon->update();
+  mRubberBandLine->update();
 }
 
 void QgsGrassEdit::displayUpdated (void)
@@ -1461,6 +1558,7 @@ void QgsGrassEdit::displayUpdated (void)
 #endif
 
   mTransform = mCanvas->getCoordinateTransform();
+  mProjectionEnabled = (QgsProject::instance()->readNumEntry("SpatialRefSys","/ProjectionsEnabled",0)!=0);
 
   QPainter *painter = new QPainter();
   painter->begin(mPixmap);
@@ -1487,12 +1585,15 @@ void QgsGrassEdit::displayUpdated (void)
   painter->end();
   delete painter;
 
-  mCanvas->updateContents();
+  // porting mCanvas->update();
+  mCanvasEdit->update();
+  mRubberBandIcon->update();
+  mRubberBandLine->update();
 }
 
 void QgsGrassEdit::displayElement ( int line, const QPen & pen, int size, QPainter *painter)
 {
-#if QGISDEBUG
+#ifdef QGISDEBUG
   std::cerr << "QgsGrassEdit::displayElement() line = " << line << std::endl;
 #endif
 
@@ -1518,7 +1619,7 @@ void QgsGrassEdit::displayElement ( int line, const QPen & pen, int size, QPaint
     for ( int i = 0; i < mPoints->n_points; i++ ) {
       point.setX(mPoints->x[i]);
       point.setY(mPoints->y[i]);
-      mTransform->transform(&point);
+      point = transformLayerToCanvas ( point );
       pointArray.setPoint( i, static_cast<int>(round(point.x())), 
           static_cast<int>(round(point.y())) ); 
     }
@@ -1529,7 +1630,8 @@ void QgsGrassEdit::displayElement ( int line, const QPen & pen, int size, QPaint
 
   if ( !painter ) {
     myPainter->end();
-    mCanvas->updateContents();
+    // porting mCanvas->update();
+    mCanvasEdit->update();
     delete myPainter;
   }
 }
@@ -1572,7 +1674,7 @@ void QgsGrassEdit::displayDynamic ( struct line_pnts *Points )
 
 void QgsGrassEdit::displayDynamic ( double x, double y, int type, int size )
 {
-#if QGISDEBUG
+#ifdef QGISDEBUG
   std::cerr << "QgsGrassEdit::displayDynamic icon" << std::endl;
 #endif
 
@@ -1581,12 +1683,15 @@ void QgsGrassEdit::displayDynamic ( double x, double y, int type, int size )
 
 void QgsGrassEdit::displayDynamic ( struct line_pnts *Points, double x, double y, int type, int size )
 {
-#if QGISDEBUG
+#ifdef QGISDEBUG
    std::cerr << "QgsGrassEdit::displayDynamic Points = " << Points << " type = " << type  << std::endl;
 #endif
     QgsPoint point;
 
-    mTransform = mCanvas->getCoordinateTransform();
+    //mTransform = mCanvas->getCoordinateTransform();
+
+    // Dynamic points are in layer coordinate system, we have to 
+    // reproject them to current coordinate system if necessary
 
     mRubberBandLine->reset();
 
@@ -1596,18 +1701,24 @@ void QgsGrassEdit::displayDynamic ( struct line_pnts *Points, double x, double y
         {
 	    point.setX(Points->x[i]);
 	    point.setY(Points->y[i]);
-      mRubberBandLine->addPoint(point);
+            point = transformLayerToMap ( point );
+            mRubberBandLine->addPoint(point, false); // false = don't update now
         }
+        // Now add the last point again and force update of rubberband.
+        // This should improve the performance as canvas is updated only once
+        // and not with every added point to rubberband.
+        mRubberBandLine->addPoint(point, true);
     }
 
     mRubberBandIcon->setIconType(type);
     mRubberBandIcon->setIconSize(size);
-    mRubberBandIcon->setCenter(QgsPoint(x,y));
+    point = transformLayerToMap (QgsPoint(x,y) );
+    mRubberBandIcon->setCenter(point);
 }
 
 void QgsGrassEdit::displayNode ( int node, const QPen & pen, int size, QPainter *painter )
 {
-#if QGISDEBUG
+#ifdef QGISDEBUG
   std::cerr << "QgsGrassEdit::displayNode() node = " << node << std::endl;
 #endif
 
@@ -1620,10 +1731,21 @@ void QgsGrassEdit::displayNode ( int node, const QPen & pen, int size, QPainter 
   displayIcon ( x, y, pen, QgsVertexMarker::ICON_X, size, painter );
 }
 
+QgsPoint QgsGrassEdit::transformLayerToCanvas ( QgsPoint point)
+{
+    point = mCanvas->mapRender()->layerCoordsToOutputCoords(mLayer, point);
+    return mTransform->transform(point);
+}
+
+QgsPoint QgsGrassEdit::transformLayerToMap ( QgsPoint point)
+{
+  return mCanvas->mapRender()->layerCoordsToOutputCoords(mLayer, point);
+}
+
 void QgsGrassEdit::displayIcon ( double x, double y, const QPen & pen, 
     int type, int size, QPainter *painter )
 {
-#if QGISDEBUG
+#ifdef QGISDEBUG
   std::cerr << "QgsGrassEdit::displayIcon()" << std::endl;
 #endif
 
@@ -1632,7 +1754,8 @@ void QgsGrassEdit::displayIcon ( double x, double y, const QPen & pen,
 
   point.setX(x);
   point.setY(y);
-  mTransform->transform(&point);
+  
+  point = transformLayerToCanvas ( point );
 
   int px = static_cast<int>(round(point.x()));
   int py = static_cast<int>(round(point.y()));
@@ -1680,7 +1803,8 @@ void QgsGrassEdit::displayIcon ( double x, double y, const QPen & pen,
 
   if ( !painter ) {
     myPainter->end();
-    mCanvas->updateContents();
+    //mCanvas->update();
+    mCanvasEdit->update();
     delete myPainter;
   }
 }

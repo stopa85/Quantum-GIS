@@ -33,6 +33,7 @@ gpsimporterplugin_la_SOURCES = \
 	qgsgpsdevice.h \
 	qgsgpsdevice.cpp \
 	qgsgpsplugingui.cpp \
+	qgsgpsplugingui.h \
 	qgsgpsdevicedialog.cpp \
 	$(plugin_UI)\
 	$(plugin_MOC) \
@@ -56,13 +57,13 @@ plugin_UIC = \
 
 plugin_RES = qgsgps_plugin.qrc.cpp
 
-plugin_QRC = qgsgps_plugin.qrc
+#plugin_QRC = qgsgps_plugin.qrc
 
-BUILT_SOURCES = $(plugin_MOC) $(plugin_UI)
+BUILT_SOURCES = $(plugin_MOC) $(plugin_UI) $(plugin_RES)
 
 gpsimporterplugin_la_LIBADD = $(QT_LDADD)  $(GDAL_LDADD)  ../../gui/libqgis_gui.la ../../core/libqgis_core.la
 gpsimporterplugin_la_CFLAGS = $(CFLAGS) $(EXTRA_CFLAGS) $(DEBUG_QGIS)
-gpsimporterplugin_la_CXXFLAGS = $(CXXFLAGS) $(EXTRA_CXXFLAGS) $(QT_CXXFLAGS) $(DEBUG_QGIS) $(GDAL_CFLAGS) $(GEOS_CFLAGS) -I../../core -I../../ui -I../../gui
+gpsimporterplugin_la_CXXFLAGS = $(CXXFLAGS) $(EXTRA_CXXFLAGS) $(QT_CXXFLAGS) $(DEBUG_QGIS) $(GDAL_CFLAGS) $(GEOS_CFLAGS) -I../../core/include -I../../ui -I../../gui
 gpsimporterplugin_la_LDFLAGS = -avoid-version -module 
 
 CLEANFILES = $(BUILT_SOURCES)
@@ -74,7 +75,6 @@ CLEANFILES = $(BUILT_SOURCES)
 EXTRA_DIST = $(plugin_UIC) icon.xpm \
 	ui_qgsgpspluginguibase.h \
 	ui_qgsgpsdevicedialogbase.h \
-	ui_qgsgpsplugingui.h \
 	qgsgpsplugin.h \
 	qgsgpsdevicedialog.h
 

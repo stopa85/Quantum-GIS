@@ -18,27 +18,30 @@
 
 /* $Id$ */
 
+#include "qgslogger.h"
 #include "qgswmsprovider.h"
 
+#include <math.h>
 #include <fstream>
 #include <iostream>
 
+#include "qgscoordinatetransform.h"
 #include "qgsrect.h"
 #include "qgsspatialrefsys.h"
 
 #include "qgshttptransaction.h"
 
-#include <q3network.h>
-#include <q3http.h>
-#include <q3url.h>
+#include <QUrl>
+#include <QImage>
+#include <QSet>
 
-#include <qglobal.h>
-#if QT_VERSION >= 0x040000
-#include <Q3Picture>
+#ifdef _MSC_VER
+#include <float.h>
+#define isfinite(x) _finite(x)
 #endif
 
 #ifdef QGISDEBUG
-#include <qfile.h>
+#include <QFile>
 #endif
 
 #ifdef WIN32
@@ -78,60 +81,6 @@ QgsWmsProvider::QgsWmsProvider(QString const & uri)
   // assume this is a valid layer until we determine otherwise
   valid = true;
 
-  // URI is in form: URL[ proxyhost[ proxyport[ proxyuser[ proxypass]]]
-
-  // Split proxy from the provider-encoded uri  
-  QStringList drawuriparts = QStringList::split(" ", httpuri, TRUE);
-
-  baseUrl = drawuriparts.front();
-  drawuriparts.pop_front();
-
-  if (drawuriparts.count())
-  {
-    mHttpProxyHost = drawuriparts.front();
-    drawuriparts.pop_front();
-
-    if (drawuriparts.count())
-    {
-      bool conversionOK;
-      mHttpProxyPort = drawuriparts.front().toInt(&conversionOK);
-      if (!conversionOK)
-      {
-        mHttpProxyPort = 80;  // standard HTTP port
-      }
-
-      drawuriparts.pop_front();
-
-      if (drawuriparts.count())
-      {
-        bool conversionOK;
-        mHttpProxyUser = drawuriparts.front();
-
-        drawuriparts.pop_front();
-
-        if (drawuriparts.count())
-        {
-          bool conversionOK;
-          mHttpProxyPass = drawuriparts.front();
-
-          drawuriparts.pop_front();
-
-        }
-        else
-        {
-          mHttpProxyPass = QString();  // none
-        }
-      }
-      else
-      {
-        mHttpProxyUser = QString();  // anonymous
-      }
-    }
-    else
-    {
-      mHttpProxyPort = 80;  // standard HTTP port
-    }
-  }
 
   // URL can be in 3 forms:
   // 1) http://xxx.xxx.xx/yyy/yyy
@@ -139,6 +88,8 @@ QgsWmsProvider::QgsWmsProvider(QString const & uri)
   // 3) http://xxx.xxx.xx/yyy/yyy?zzz=www
 
   // Prepare the URI so that we can later simply append param=value
+  baseUrl = httpuri;
+
   if ( !(baseUrl.contains("?")) ) 
   {
     baseUrl.append("?");
@@ -201,6 +152,43 @@ QgsWmsProvider::~QgsWmsProvider()
 
 }
 
+
+QString QgsWmsProvider::proxyHost() const
+{
+  return mHttpProxyHost;
+}
+
+
+int QgsWmsProvider::proxyPort() const
+{
+  return mHttpProxyPort;
+}
+
+
+QString QgsWmsProvider::proxyUser() const
+{
+  return mHttpProxyUser;
+}
+
+
+QString QgsWmsProvider::proxyPass() const
+{
+  return mHttpProxyPass;
+}
+
+
+bool QgsWmsProvider::setProxy(QString const & host,
+                                          int port,
+                              QString const & user,
+                              QString const & pass)
+{
+  mHttpProxyHost = host;
+  mHttpProxyPort = port;
+  mHttpProxyUser = user;
+  mHttpProxyPass = pass;
+
+  return TRUE;
+}
 
 bool QgsWmsProvider::supportedLayers(std::vector<QgsWmsLayerProperty> & layers)
 {
@@ -322,6 +310,12 @@ void QgsWmsProvider::setSubLayerVisibility(QString const & name, bool vis)
 }
 
 
+QString QgsWmsProvider::imageEncoding() const
+{
+  return imageMimeType;
+}
+
+
 void QgsWmsProvider::setImageEncoding(QString const & mimeType)
 {
 #ifdef QGISDEBUG
@@ -341,7 +335,7 @@ void QgsWmsProvider::setImageCrs(QString const & crs)
 
   if (
       (crs != imageCrs)
-      and
+      &&
       (! crs.isEmpty() )
      )
   {
@@ -440,11 +434,9 @@ QImage* QgsWmsProvider::draw(QgsRect  const & viewExtent, int pixelWidth, int pi
 #endif
 
 
-  QString layers = visibleLayers.join(",");
-  Q3Url::encode( layers );
+  QString layers = QUrl::toPercentEncoding(visibleLayers.join(","));
 
-  QString styles = visibleStyles.join(",");
-  Q3Url::encode( styles );
+  QString styles = QUrl::toPercentEncoding(visibleStyles.join(","));
 
 
   // compose the URL query string for the WMS server.
@@ -628,7 +620,7 @@ bool QgsWmsProvider::retrieveServerCapabilities(bool forceRefresh)
   std::cout << "QgsWmsProvider::retrieveServerCapabilities: entering." << std::endl;
 #endif
 
-  if ( httpcapabilitiesresponse.isNull() or
+  if ( httpcapabilitiesresponse.isNull() ||
        forceRefresh )
   {
 
@@ -705,6 +697,7 @@ bool QgsWmsProvider::retrieveServerCapabilities(bool forceRefresh)
 
 QByteArray QgsWmsProvider::retrieveUrl(QString url)
 {
+  QgsDebugMsg("WMS request Url: " + url);
   QgsHttpTransaction http(
     url,
     mHttpProxyHost,
@@ -829,16 +822,28 @@ bool QgsWmsProvider::downloadCapabilitiesURI(QString const & uri)
 
 }
 */
-
+#include <fstream>
 bool QgsWmsProvider::parseCapabilitiesDOM(QByteArray const & xml, QgsWmsCapabilitiesProperty& capabilitiesProperty)
 {
 #ifdef QGISDEBUG
   std::cout << "QgsWmsProvider::parseCapabilitiesDOM: entering." << std::endl;
 
-  //test the content of the QByteArray
-  QString responsestring(xml);
-  qWarning("QgsWmsProvider::parseCapabilitiesDOM, received the following data: "+responsestring);
-  
+  //test the content of the QByteArray.
+  // There is a bug in Qt4.1.2, due for fixing in 4.2.0, where
+  // QString(QByteArray) uses strlen to find the length of the
+  // QByteArray. However, there are no guarantees that the QByteArray
+  // has a terminating \0, and hence this can cause a crash, so we supply
+  // the qbytearray to qstring in a way that ensures that there is a
+  // terminating \0, and just to be safe, we also give it the actual
+  // size.
+
+  // Also, the Qt qWarning() function has a limit of 8192 bytes per
+  // message, which can easily be exceeded by wms capability
+  // documents, so we use the qgs logger stuff instead which doesn't
+  // have that limitation.
+
+  QString responsestring(QString::fromAscii(xml.constData(), xml.size()));
+  QgsLogger::debug("QgsWmsProvider::parseCapabilitiesDOM, received the following data: "+responsestring);
   
   //QFile file( "/tmp/qgis-wmsprovider-capabilities.xml" );
   //if ( file.open( QIODevice::WriteOnly ) ) 
@@ -864,9 +869,7 @@ bool QgsWmsProvider::parseCapabilitiesDOM(QByteArray const & xml, QgsWmsCapabili
 
     mError += "\n" + tr("This is probably due to an incorrect WMS Server URL.");
 
-#ifdef QGISDEBUG
-  qWarning("DOM Exception: "+mError);
-#endif
+  QgsLogger::debug("DOM Exception: "+mError);
 
     return FALSE;
   }
@@ -882,7 +885,7 @@ bool QgsWmsProvider::parseCapabilitiesDOM(QByteArray const & xml, QgsWmsCapabili
   if (!
       (
        (docElem.tagName() == "WMS_Capabilities")     // (1.3 vintage)
-       or
+       ||
        (docElem.tagName() == "WMT_MS_Capabilities")  // (1.1.1 vintage)
       )
      )
@@ -896,9 +899,7 @@ bool QgsWmsProvider::parseCapabilitiesDOM(QByteArray const & xml, QgsWmsCapabili
 
     mError += "\n" + tr("This is probably due to an incorrect WMS Server URL.");
 
-#ifdef QGISDEBUG
-  qWarning("DOM Exception: "+mError);
-#endif
+  QgsLogger::debug("DOM Exception: "+mError);
 
     return FALSE;
   }
@@ -915,12 +916,16 @@ bool QgsWmsProvider::parseCapabilitiesDOM(QByteArray const & xml, QgsWmsCapabili
 
           if      (e.tagName() == "Service")
           {
+#ifdef QGISDEBUG
             std::cout << "  Service." << std::endl;
+#endif
             parseService(e, capabilitiesProperty.service);
           }
           else if (e.tagName() == "Capability")
           {
+#ifdef QGISDEBUG
             std::cout << "  Capability." << std::endl;
+#endif
             parseCapability(e, capabilitiesProperty.capability);
           }
 
@@ -1171,7 +1176,9 @@ void QgsWmsProvider::parseKeywordList(QDomElement  const & e, QStringList& keywo
       if( !e1.isNull() ) {
           if      (e1.tagName() == "Keyword")
           {
+#ifdef QGISDEBUG
             std::cout << "      Keyword." << std::endl; 
+#endif
             keywordListProperty += e1.text();
           }
       }
@@ -1196,7 +1203,9 @@ void QgsWmsProvider::parseGet(QDomElement const & e, QgsWmsGetProperty& getPrope
       if( !e1.isNull() ) {
           if      (e1.tagName() == "OnlineResource")
           {
+#ifdef QGISDEBUG
             std::cout << "      OnlineResource." << std::endl;
+#endif
             parseOnlineResource(e1, getProperty.onlineResource);
           }
       }
@@ -1221,7 +1230,9 @@ void QgsWmsProvider::parsePost(QDomElement const & e, QgsWmsPostProperty& postPr
       if( !e1.isNull() ) {
           if      (e1.tagName() == "OnlineResource")
           {
+#ifdef QGISDEBUG
             std::cout << "      OnlineResource." << std::endl;
+#endif
             parseOnlineResource(e1, postProperty.onlineResource);
           }
       }
@@ -1246,12 +1257,16 @@ void QgsWmsProvider::parseHttp(QDomElement const & e, QgsWmsHttpProperty& httpPr
       if( !e1.isNull() ) {
           if      (e1.tagName() == "Get")
           {
+#ifdef QGISDEBUG
             std::cout << "      Get." << std::endl;
+#endif
             parseGet(e1, httpProperty.get);
           }
           else if (e1.tagName() == "Post")
           {
+#ifdef QGISDEBUG
             std::cout << "      Post." << std::endl;
+#endif
             parsePost(e1, httpProperty.post);
           }
       }
@@ -1276,7 +1291,9 @@ void QgsWmsProvider::parseDcpType(QDomElement const & e, QgsWmsDcpTypeProperty& 
       if( !e1.isNull() ) {
           if      (e1.tagName() == "HTTP")
           {
+#ifdef QGISDEBUG
             std::cout << "      HTTP." << std::endl; 
+#endif
             parseHttp(e1, dcpType.http);
           }
       }
@@ -1301,12 +1318,16 @@ void QgsWmsProvider::parseOperationType(QDomElement const & e, QgsWmsOperationTy
       if( !e1.isNull() ) {
           if      (e1.tagName() == "Format")
           {
+#ifdef QGISDEBUG
             std::cout << "      Format." << std::endl; 
+#endif
             operationType.format += e1.text();
           }
           else if (e1.tagName() == "DCPType")
           {
+#ifdef QGISDEBUG
             std::cout << "      DCPType." << std::endl;
+#endif
             QgsWmsDcpTypeProperty dcp;
             parseDcpType(e1, dcp);
             operationType.dcpType.push_back(dcp);
@@ -1333,12 +1354,16 @@ void QgsWmsProvider::parseRequest(QDomElement const & e, QgsWmsRequestProperty& 
       if( !e1.isNull() ) {
           if      (e1.tagName() == "GetMap")
           {
+#ifdef QGISDEBUG
             std::cout << "      GetMap." << std::endl; 
+#endif
             parseOperationType(e1, requestProperty.getMap);
           }
           else if (e1.tagName() == "GetFeatureInfo")
           {
+#ifdef QGISDEBUG
             std::cout << "      GetFeatureInfo." << std::endl;
+#endif
             parseOperationType(e1, requestProperty.getFeatureInfo);
           }
       }
@@ -1509,10 +1534,7 @@ void QgsWmsProvider::parseLayer(QDomElement const & e, QgsWmsLayerProperty& laye
               layerProperty.crs.push_back(*i);
             }
           }
-          else if (
-                   (e1.tagName() == "EX_GeographicBoundingBox")  ||
-                   (e1.tagName() == "LatLonBoundingBox")        // legacy from earlier versions of WMS
-                  )
+          else if (e1.tagName() == "LatLonBoundingBox")        // legacy from earlier versions of WMS
           {
 
 //            std::cout << "      LLBB is: '" << e1.attribute("minx") << "'." << std::endl;
@@ -1527,6 +1549,23 @@ void QgsWmsProvider::parseLayer(QDomElement const & e, QgsWmsLayerProperty& laye
                                                 e1.attribute("maxy").toDouble()
                                               );
           }
+	  else if(e1.tagName() == "EX_GeographicBoundingBox") //for WMS 1.3
+	    {
+	      QDomElement wBoundLongitudeElem = n1.namedItem("westBoundLongitude").toElement();
+	      QDomElement eBoundLongitudeElem = n1.namedItem("eastBoundLongitude").toElement();
+	      QDomElement sBoundLatitudeElem = n1.namedItem("southBoundLatitude").toElement();
+	      QDomElement nBoundLatitudeElem = n1.namedItem("northBoundLatitude").toElement();
+	      double wBLong, eBLong, sBLat, nBLat;
+	      bool wBOk, eBOk, sBOk, nBOk;
+	      wBLong = wBoundLongitudeElem.text().toDouble(&wBOk);
+	      eBLong = eBoundLongitudeElem.text().toDouble(&eBOk);
+	      sBLat = sBoundLatitudeElem.text().toDouble(&sBOk);
+	      nBLat = nBoundLatitudeElem.text().toDouble(&nBOk);
+	      if(wBOk && eBOk && sBOk && nBOk)
+		{
+		  layerProperty.ex_GeographicBoundingBox = QgsRect(wBLong, sBLat, eBLong, nBLat);
+		}
+	    }
           else if (e1.tagName() == "BoundingBox")
           {
               // TODO: overwrite inherited
@@ -1629,6 +1668,12 @@ void QgsWmsProvider::parseLayer(QDomElement const & e, QgsWmsLayerProperty& laye
 
     // Insert into the local class' registry
     layersSupported.push_back(layerProperty);
+
+    //if there are several <Layer> elements without a parent layer, the style list needs to be cleared
+    if(atleaf)
+      {
+	layerProperty.style.clear();
+      }
   }
 
 #ifdef QGISDEBUG
@@ -1644,7 +1689,7 @@ bool QgsWmsProvider::parseServiceExceptionReportDOM(QByteArray const & xml)
 
   //test the content of the QByteArray
   QString responsestring(xml);
-  qWarning("QgsWmsProvider::parseServiceExceptionReportDOM, received the following data: "+responsestring);
+  QgsLogger::debug("QgsWmsProvider::parseServiceExceptionReportDOM, received the following data: "+responsestring);
 #endif
 
   // Convert completed document into a DOM
@@ -1662,9 +1707,7 @@ bool QgsWmsProvider::parseServiceExceptionReportDOM(QByteArray const & xml)
                 .arg(errorLine)
                 .arg(errorColumn) );
 
-#ifdef QGISDEBUG
-  qWarning("DOM Exception: "+mError);
-#endif
+  QgsLogger::debug("DOM Exception: "+mError);
 
     return FALSE;
   }
@@ -1685,7 +1728,9 @@ bool QgsWmsProvider::parseServiceExceptionReportDOM(QByteArray const & xml)
 
           if      (e.tagName() == "ServiceException")
           {
+#ifdef QGISDEBUG
             std::cout << "  ServiceException." << std::endl;
+#endif
             parseServiceException(e);
           }
 
@@ -1785,27 +1830,8 @@ void QgsWmsProvider::parseServiceException(QDomElement const & e)
 }
 
 
-QgsDataSourceURI * QgsWmsProvider::getURI()
-{
 
-  QgsDataSourceURI* dsuri;
-   
-  dsuri = new QgsDataSourceURI;
-  
-  //TODO
-  
-  return dsuri;
-}
-
-
-void QgsWmsProvider::setURI(QgsDataSourceURI * uri)
-{
-  // TODO
-} 
-
-
-
-QgsRect *QgsWmsProvider::extent()
+QgsRect QgsWmsProvider::extent()
 {
   if (extentDirty)
   {
@@ -1815,7 +1841,7 @@ QgsRect *QgsWmsProvider::extent()
     }
   }
 
-  return &layerExtent;
+  return layerExtent;
 }
 
 void QgsWmsProvider::reset()
@@ -1832,6 +1858,7 @@ bool QgsWmsProvider::isValid()
 QString QgsWmsProvider::wmsVersion()
 {
   // TODO
+  return NULL;
 } 
 
 QStringList QgsWmsProvider::supportedImageEncodings()
@@ -1839,10 +1866,16 @@ QStringList QgsWmsProvider::supportedImageEncodings()
   return mCapabilities.capability.request.getMap.format;
 } 
 
-  
-QStringList QgsWmsProvider::subLayers()
+
+QStringList QgsWmsProvider::subLayers() const
 {
   return activeSubLayers;
+}
+
+
+QStringList QgsWmsProvider::subLayerStyles() const
+{
+  return activeSubStyles;
 }
 
 
@@ -1881,23 +1914,33 @@ bool QgsWmsProvider::calculateExtent()
     mCoordinateTransform = new QgsCoordinateTransform(qgisSrsSource, qgisSrsDest);
   }
 
+  bool firstLayer = true; //flag to know if a layer is the first to be successfully transformed
   for ( QStringList::Iterator it  = activeSubLayers.begin(); 
                               it != activeSubLayers.end(); 
                             ++it ) 
   {
-
+    QgsDebugMsg("Sublayer Iterator: "+*it);
     // This is the extent for the layer name in *it
     QgsRect extent = extentForLayer.find( *it )->second;
 
     // Convert to the user's CRS as required
-    extent =
-      mCoordinateTransform->transformBoundingBox(
-        extent,
-        QgsCoordinateTransform::FORWARD
-      );
+    try
+      {
+	extent = mCoordinateTransform->transformBoundingBox(extent, QgsCoordinateTransform::FORWARD);
+      }
+    catch(QgsCsException &cse)
+      {
+	continue; //ignore extents of layers which cannot be transformed info the required CRS
+      }
+
+    //make sure extent does not contain 'inf' or 'nan'
+    if (!extent.isFinite())
+    {
+      continue;
+    }
 
     // add to the combined extent of all the active sublayers
-    if ( it == activeSubLayers.begin() )
+    if (firstLayer)
     {
       layerExtent = extent;
     }
@@ -1905,6 +1948,8 @@ bool QgsWmsProvider::calculateExtent()
     {
       layerExtent.combineExtentWith( &extent );
     }
+
+    firstLayer = false;
   
 #ifdef QGISDEBUG
   std::cout << "QgsWmsProvider::calculateExtent: combined extent is '" << 
@@ -2266,28 +2311,36 @@ QString QgsWmsProvider::getMetadata()
 }
 
 
-QString QgsWmsProvider::identifyAsHtml(const QgsPoint& point)
+QString QgsWmsProvider::identifyAsText(const QgsPoint& point)
 {
 #ifdef QGISDEBUG
-  std::cout << "QgsWmsProvider::identifyAsHtml: entering." << std::endl;
+  std::cout << "QgsWmsProvider::identifyAsText: entering." << std::endl;
 #endif
 
   // Collect which layers to query on
 
-  QStringList visibleLayers = QStringList();
+  QStringList queryableLayers = QStringList();
 
-  for ( QStringList::Iterator it  = activeSubLayers.begin(); 
-                              it != activeSubLayers.end(); 
-                            ++it ) 
+  // Test for which layers are suitable for querying with
+  for ( QStringList::const_iterator it  = activeSubLayers.begin(); 
+                                    it != activeSubLayers.end(); 
+                                  ++it )
   {
+    // Is sublayer visible?
     if (TRUE == activeSubLayerVisibility.find( *it )->second)
     {
-      visibleLayers += *it;
+      // Is sublayer queryable?
+      if (TRUE == mQueryableForLayer.find( *it )->second)
+      {
+#ifdef QGISDEBUG
+  std::cout << "QgsWmsProvider::identifyAsText: '" << (*it).toLocal8Bit().data() << "' is queryable." << std::endl;
+#endif
+        queryableLayers += *it;
+      }
     }
   }
 
-  QString layers = visibleLayers.join(",");
-  Q3Url::encode( layers );
+  QString layers = QUrl::toPercentEncoding(queryableLayers.join(","));
 
   // Compose request to WMS server
 
@@ -2315,18 +2368,25 @@ QString QgsWmsProvider::identifyAsHtml(const QgsPoint& point)
   requestUrl += QString( "Y=%1" )
                    .arg( point.y() );
 
-  QString html = retrieveUrl(requestUrl);
-
-  if (html.isEmpty())
-  {
-    return QString();
-  }
+  QString text = retrieveUrl(requestUrl);
 
 #ifdef QGISDEBUG
-  std::cout << "QgsWmsProvider::identifyAsHtml: exiting with '"
-            << html.toLocal8Bit().data() << "'." << std::endl;
+  std::cout << "QgsWmsProvider::identifyAsText: exiting with '"
+            << text.toLocal8Bit().data() << "'." << std::endl;
 #endif
-  return html;
+  return text;
+}
+
+
+void QgsWmsProvider::setSRS(const QgsSpatialRefSys& theSRS)
+{
+  // TODO: implement
+}
+
+QgsSpatialRefSys QgsWmsProvider::getSRS()
+{
+  // TODO: implement
+  return QgsSpatialRefSys();
 }
 
 

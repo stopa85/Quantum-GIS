@@ -14,19 +14,26 @@
  ***************************************************************************/
 /* $Id$ */
 
-#include <math.h>
+#include <cmath>
 #include <sqlite3.h>
-#include <qdir.h>
-#include <qsettings.h>
+#include <QDir>
+#include <QString>
+#include <QLocale>
+#include <QObject>
 
 #include "qgis.h"
 #include "qgspoint.h"
-#include "qgsproject.h"
 #include "qgscoordinatetransform.h"
 #include "qgsspatialrefsys.h"
 #include "qgsgeometry.h"
 #include "qgsdistancearea.h"
 #include "qgsapplication.h"
+#include "qgslogger.h"
+
+// MSVC compiler doesn't have defined M_PI in math.h
+#ifndef M_PI
+#define M_PI          3.14159265358979323846
+#endif
 
 #define DEG2RAD(x)    ((x)*M_PI/180)
 
@@ -34,9 +41,10 @@
 QgsDistanceArea::QgsDistanceArea()
 {
   // init with default settings
+  mProjectionsEnabled = FALSE;
   mCoordTransform = new QgsCoordinateTransform;
-  setDefaultEllipsoid();
-  setProjectAsSourceSRS();
+  setSourceSRS(GEOSRS_ID); // WGS 84
+  setEllipsoid("WGS84");
 }
 
 
@@ -46,27 +54,17 @@ QgsDistanceArea::~QgsDistanceArea()
 }
 
 
+void QgsDistanceArea::setProjectionsEnabled(bool flag)
+{
+  mProjectionsEnabled = flag;
+}
+
+
 void QgsDistanceArea::setSourceSRS(long srsid)
 {
   QgsSpatialRefSys srcSRS;
   srcSRS.createFromSrsId(srsid);
   mCoordTransform->setSourceSRS(srcSRS);
-}
-
-
-void QgsDistanceArea::setProjectAsSourceSRS()
-{
-  // This function used to only get the /ProjectSRSID if on-the-fly
-  // projection was enabled (and used a default value in all other
-  // cases). However, even if it was not, a valid value for
-  // /ProjectSRSID is most likely available, and we now use it in all
-  // cases (as it gives correct distances and areas even when
-  // on-the-fly projection is turned off). The default of GEOSRS_ID
-  // is still applied if all else fails.
-
-  int srsid = QgsProject::instance()->readNumEntry("SpatialRefSys","/ProjectSRSID",GEOSRS_ID);
-
-  setSourceSRS(srsid);
 }
 
 
@@ -154,6 +152,7 @@ bool QgsDistanceArea::setEllipsoid(const QString& ellipsoid)
   // get spatial ref system for ellipsoid
   QString proj4 = "+proj=longlat +ellps=";
   proj4 += ellipsoid;
+  proj4 += " +no_defs";
   QgsSpatialRefSys destSRS;
   destSRS.createFromProj4(proj4);
   
@@ -165,26 +164,6 @@ bool QgsDistanceArea::setEllipsoid(const QString& ellipsoid)
   
   mEllipsoid = ellipsoid;
   return true;
-}
-
-
-bool QgsDistanceArea::setDefaultEllipsoid()
-{
-  QString defEll("WGS84");
-  QString ellKey("/qgis/measure/ellipsoid");
-  QSettings settings;
-  QString ellipsoid = settings.readEntry(ellKey, defEll);
-
-  // Somehow/sometimes the settings file can have a blank ellipsoid
-  // value. This is undesirable, so force a valid default value in
-  // that case, and fix the problem by writing a valid value.
-  if (ellipsoid.isEmpty())
-  {
-    ellipsoid = defEll;
-    settings.writeEntry(ellKey, ellipsoid);
-  }
-
-  return setEllipsoid(ellipsoid);
 }
 
 
@@ -265,22 +244,56 @@ double QgsDistanceArea::measureLine(const std::vector<QgsPoint>& points)
   
   double total = 0;
   QgsPoint p1, p2;
-  p1 = mCoordTransform->transform(points[0]);
   
-  for (int i = 1; i < points.size(); i++)
+  try
   {
-    p2 = mCoordTransform->transform(points[i]);
-    total = computeDistanceBearing(p1,p2);
-    p1 = p2;
+    if (mProjectionsEnabled)
+      p1 = mCoordTransform->transform(points[0]);
+    else
+      p1 = points[0];
+    
+    for (std::vector<QgsPoint>::size_type i = 1; i < points.size(); i++)
+    {
+      if (mProjectionsEnabled)
+        p2 = mCoordTransform->transform(points[i]);
+      else
+        p2 = points[i];
+  
+      total = computeDistanceBearing(p1,p2);
+      p1 = p2;
+    }
+    
+    return total;
   }
-  return total;
+  catch (QgsCsException &cse)
+  {
+    QgsLogger::warning(QObject::tr("Caught a coordinate system exception while trying to transform a point. Unable to calculate line length."));
+    return 0.0;
+  }
+
 }
 
 double QgsDistanceArea::measureLine(const QgsPoint& p1, const QgsPoint& p2)
 {
-  QgsPoint pp1 = mCoordTransform->transform(p1);
-  QgsPoint pp2 = mCoordTransform->transform(p2);
-  return computeDistanceBearing(pp1, pp2);
+  try
+  {
+    QgsPoint pp1 = p1, pp2 = p2;
+    if (mProjectionsEnabled)
+    {
+      pp1 = mCoordTransform->transform(p1);
+      pp2 = mCoordTransform->transform(p2);
+      return computeDistanceBearing(pp1, pp2);
+    }
+    else
+    {
+      return sqrt((p2.x()-p1.x())*(p2.x()-p1.x()) + (p2.y()-p1.y())*(p2.y()-p1.y()));
+    }
+  }
+  catch (QgsCsException &cse)
+  {
+    QgsLogger::warning(QObject::tr("Caught a coordinate system exception while trying to transform a point. Unable to calculate line length."));
+    return 0.0;
+  }
 }
 
 
@@ -299,32 +312,43 @@ unsigned char* QgsDistanceArea::measurePolygon(unsigned char* feature, double* a
   double x,y, areaTmp;
   *area = 0;
 
-  for (unsigned int idx = 0; idx < numRings; idx++)
+  try
   {
-    int nPoints = *((int*)ptr);
-    points.resize(nPoints);
-    ptr += 4;
-
-    // Extract the points from the WKB and store in a pair of
-    // vectors.
-    for (unsigned int jdx = 0; jdx < nPoints; jdx++)
+    for (unsigned int idx = 0; idx < numRings; idx++)
     {
-      x = *((double *) ptr);
-      ptr += sizeof(double);
-      y = *((double *) ptr);
-      ptr += sizeof(double);
-    
-      points[jdx] = mCoordTransform->transform(QgsPoint(x,y));
-    }
+      int nPoints = *((int*)ptr);
+      points.resize(nPoints);
+      ptr += 4;
 
-    if (points.size() > 2)
-    {
-      areaTmp = computePolygonArea(points);
-      if (idx == 0)
-        *area += areaTmp; // exterior ring
-      else
-        *area -= areaTmp; // interior rings
+      // Extract the points from the WKB and store in a pair of
+      // vectors.
+      for (int jdx = 0; jdx < nPoints; jdx++)
+      {
+        x = *((double *) ptr);
+        ptr += sizeof(double);
+        y = *((double *) ptr);
+        ptr += sizeof(double);
+
+        points[jdx] = QgsPoint(x,y);
+        if (mProjectionsEnabled)
+        {
+          points[jdx] = mCoordTransform->transform(points[jdx]);
+        }
+      }
+
+      if (points.size() > 2)
+      {
+        areaTmp = computePolygonArea(points);
+        if (idx == 0)
+          *area += areaTmp; // exterior ring
+        else
+          *area -= areaTmp; // interior rings
+      }
     }
+  }
+  catch (QgsCsException &cse)
+  {
+    QgsLogger::warning(QObject::tr("Caught a coordinate system exception while trying to transform a point. Unable to calculate polygon area."));
   }
   
   return ptr;
@@ -333,14 +357,44 @@ unsigned char* QgsDistanceArea::measurePolygon(unsigned char* feature, double* a
 
 double QgsDistanceArea::measurePolygon(const std::vector<QgsPoint>& points)
 {
-  std::vector<QgsPoint> pts(points.size());
-  for (int i = 0; i < points.size(); i++)
+  
+  try
   {
-    pts[i] = mCoordTransform->transform(points[i]);
+    if (mProjectionsEnabled)
+    {
+      std::vector<QgsPoint> pts(points.size());
+      for (std::vector<QgsPoint>::size_type i = 0; i < points.size(); i++)
+      {
+        pts[i] = mCoordTransform->transform(points[i]);
+      }
+      return computePolygonArea(pts);
+    }
+    else
+    {
+      return computePolygonArea(points);
+    }
   }
-  return computePolygonArea(pts);
+  catch (QgsCsException &cse)
+  {
+    QgsLogger::warning(QObject::tr("Caught a coordinate system exception while trying to transform a point. Unable to calculate polygon area."));
+    return 0.0;
+  }
 }
 
+
+double QgsDistanceArea::getBearing(const QgsPoint& p1, const QgsPoint& p2)
+{
+  QgsPoint pp1 = p1, pp2 = p2;
+  if (mProjectionsEnabled)
+  {
+    pp1 = mCoordTransform->transform(p1);
+    pp2 = mCoordTransform->transform(p2);
+  }
+  
+  double bearing;
+  computeDistanceBearing(pp1, pp2, &bearing);
+  return bearing;
+}
 
 
 ///////////////////////////////////////////////////////////
@@ -478,6 +532,10 @@ double QgsDistanceArea::computePolygonArea(const std::vector<QgsPoint>& points)
   double Qbar1, Qbar2;
   double area;
 
+  if (! mProjectionsEnabled)
+  {
+    return computePolygonFlatArea(points);
+  }
   int n = points.size();
   x2 = DEG2RAD(points[n-1].x());
   y2 = DEG2RAD(points[n-1].y());
@@ -522,3 +580,109 @@ double QgsDistanceArea::computePolygonArea(const std::vector<QgsPoint>& points)
   return area;
 }
 
+double QgsDistanceArea::computePolygonFlatArea(const std::vector<QgsPoint>& points)
+{
+  // Normal plane area calculations.
+  double area = 0.0;
+  int i, size;
+  
+  size = points.size();
+
+  // QgsDebugMsg("New area calc, nr of points: " + QString::number(size));
+  for(i = 0; i < size; i++)
+  {
+    // QgsDebugMsg("Area from point: " + (points[i]).stringRep(2));
+    // Using '% size', so that we always end with the starting point
+    // and thus close the polygon.
+    area = area + points[i].x()*points[(i+1) % size].y() - points[(i+1) % size].x()*points[i].y();
+  }
+  // QgsDebugMsg("Area from point: " + (points[i % size]).stringRep(2));
+  area = area / 2.0;
+  return area;
+}
+
+QString QgsDistanceArea::textUnit(double value, int decimals, QGis::units u, bool isArea)
+{
+  QString unitLabel;
+
+
+  switch (u)
+  {
+  case QGis::METERS: 
+    if (isArea)
+    {
+      if (value > 1000000.0)
+      {
+	unitLabel = QObject::tr(" km2");
+	value = value / 1000000.0;
+      }
+      else if (value > 1000.0)
+      {
+	unitLabel = QObject::tr(" ha");
+	value = value / 10000.0;
+      }
+      else
+      {
+	unitLabel = QObject::tr(" m2");
+      }
+    }
+    else
+    {
+      if (value > 1000.0)
+      {
+	unitLabel=QObject::tr(" km");
+	value = value/1000;
+      }
+      else if (value < 0.01)
+      {
+	unitLabel=QObject::tr(" mm");
+	value = value*1000;
+      }
+      else if (value < 0.1)
+      {
+	unitLabel=QObject::tr(" cm");
+	value = value*100;
+      }
+      else
+      {
+	unitLabel=QObject::tr(" m"); 
+      }
+    }
+    break;
+  case QGis::FEET:
+    if (isArea)
+    {
+      unitLabel = QObject::tr(" sq ft");
+    }
+    else
+    {
+      if (value == 1.0)
+	unitLabel=QObject::tr(" foot"); 
+      else
+	unitLabel=QObject::tr(" feet"); 
+    }
+    break;
+  case QGis::DEGREES:
+    if (isArea)
+    {
+      unitLabel = QObject::tr(" sq.deg.");
+    }
+    else
+    {
+      if (value == 1.0)
+	unitLabel=QObject::tr(" degree"); 
+      else
+	unitLabel=QObject::tr(" degrees"); 
+    }
+    break;
+  case QGis::UNKNOWN:
+    unitLabel=QObject::tr(" unknown");
+  default: 
+    std::cout << "Error: not picked up map units - actual value = " 
+	      << u << std::endl;
+  };
+
+
+  return QLocale::system().toString(value, 'f', decimals) + unitLabel;
+
+}

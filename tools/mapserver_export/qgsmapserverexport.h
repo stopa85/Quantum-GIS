@@ -51,11 +51,12 @@ public:
 	OPEN
 	};
   public slots:
-	void showHelp();
+  void showHelp();
+  void on_buttonBox_helpRequested();
   void on_btnChooseFile_clicked();
   void on_chkExpLayersOnly_clicked(bool);
   void on_btnChooseProjectFile_clicked();
-  void on_buttonOk_clicked();
+  void apply();
   private:
   void initPy();
   void writeMapFile(void);
@@ -63,6 +64,7 @@ public:
   QString qgisProjectFile;
   bool neverSaved;
   int action;
+  static const int context_id = 863656587;
 };
 
 #endif //QGSMAPSERVEREXPORT_H

@@ -19,6 +19,7 @@ i18ndir = ${pkgdatadir}/i18n
 nodist_i18n_DATA = \
 		qgis_cs_CZ.qm \
 		qgis_de.qm \
+		qgis_es.qm \
 		qgis_fr.qm \
 		qgis_id.qm \
 		qgis_it.qm \
@@ -27,14 +28,17 @@ nodist_i18n_DATA = \
 		qgis_nl.qm \
 		qgis_pl_PL.qm \
 		qgis_pt_BR.qm \
+		qgis_ro.qm \
 		qgis_ru.qm \
 		qgis_sk.qm \
 		qgis_sv.qm \
 		qgis_lv.qm \
+		qgis_vi.qm \
 		qgis_zh_CN.qm
 i18n_SOURCES = \
 		qgis_cs_CZ.ts \
 		qgis_de.ts \
+		qgis_es.ts \
 		qgis_fr.ts \
 		qgis_id.ts \
 		qgis_it.ts \
@@ -43,12 +47,14 @@ i18n_SOURCES = \
 		qgis_nl.ts \
 		qgis_pl_PL.ts \
 		qgis_pt_BR.ts \
+		qgis_ro.ts \
 		qgis_ru.ts \
 		qgis_sk.ts \
 		qgis_sv.ts \
 		qgis_lv.ts \
+		qgis_vi.ts \
 		qgis_zh_CN.ts
 %.qm: %.ts
-	cd ..; ./create_qm_files.sh
+	cd ..; /bin/sh ./create_qm_files.sh
 
 EXTRA_DIST = $(i18n_SOURCES)

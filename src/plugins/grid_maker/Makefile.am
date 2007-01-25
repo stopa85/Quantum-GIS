@@ -19,8 +19,11 @@ plugindir = ${pkglibdir}
 #for plugin so
 plugin_LTLIBRARIES = gridmakerplugin.la
 
-#for standalon executable
+# For standalone executable
+# don't build on mingw since we haven't figured out the makefile issues
+if MINGW_FALSE
 bin_PROGRAMS = gridmaker 
+endif
 
 %.moc.cpp: %.h
 	$(MOC) -o $@ $<
@@ -58,13 +61,13 @@ plugin_UIC = pluginguibase.ui
 
 plugin_RES = gridmaker_plugin.qrc.cpp
 
-plugin_QRC = gridmaker_plugin.qrc
+#plugin_QRC = gridmaker_plugin.qrc
 
 BUILT_SOURCES = $(plugin_MOC) $(plugin_UI) $(plugin_RES)
 
 gridmakerplugin_la_LIBADD = $(QT_LDADD) $(GDAL_LDADD) ../../core/libqgis_core.la ../../gui/libqgis_gui.la
 gridmakerplugin_la_CFLAGS = $(CFLAGS) $(EXTRA_CFLAGS) $(DEBUG_QGIS)
-gridmakerplugin_la_CXXFLAGS = $(CXXFLAGS) $(EXTRA_CXXFLAGS) $(QT_CXXFLAGS) $(DEBUG_QGIS) $(GDAL_CFLAGS) $(GEOS_CFLAGS) -I../../core -I../../ui -I../../gui 
+gridmakerplugin_la_CXXFLAGS = $(CXXFLAGS) $(EXTRA_CXXFLAGS) $(QT_CXXFLAGS) $(DEBUG_QGIS) $(GDAL_CFLAGS) $(GEOS_CFLAGS) -I../../core/include -I../../ui -I../../gui 
 gridmakerplugin_la_LDFLAGS = -avoid-version -module
 
 ##

@@ -18,12 +18,13 @@
 #include <limits>
 #include <stdexcept>
 
-#include <qfile.h>
-//Added by qt3to4:
+#include <QFile>
 #include <QTextStream>
+#include <QObject>
+#include <QSet>
 
 #include "gpsdata.h"
-
+#include <qgslogger.h>
 
 QString GPSObject::xmlify(const QString& str) {
   QString tmp = str;
@@ -131,10 +132,19 @@ GPSData::GPSData() {
 }
 
 
-QgsRect* GPSData::getExtent() const {
-  return new QgsRect(xMin, yMin, xMax, yMax);
+QgsRect GPSData::getExtent() const {
+  return QgsRect(xMin, yMin, xMax, yMax);
 }
 
+void GPSData::setNoDataExtent() {
+  if (getNumberOfWaypoints() + getNumberOfRoutes() + getNumberOfTracks() == 0)
+  {
+    xMin = -1.0;
+    xMax =  1.0;
+    yMin = -1.0;
+    yMax =  1.0;
+  }
+}
 
 int GPSData::getNumberOfWaypoints() const {
   return waypoints.size();
@@ -239,10 +249,10 @@ GPSData::TrackIterator GPSData::addTrack(const Track& trk) {
 }
 
 
-void GPSData::removeWaypoints(std::list<int> const & ids) {
-  std::list<int> ids2 = ids;
-  ids2.sort();
-  std::list<int>::const_iterator iter = ids2.begin();
+void GPSData::removeWaypoints(const QgsFeatureIds & ids) {
+  QList<int> ids2 = ids.toList();
+  qSort(ids2);
+  QList<int>::const_iterator iter = ids2.begin();
   WaypointIterator wIter;
   for (wIter = waypoints.begin(); 
        wIter != waypoints.end() && iter != ids2.end(); ) {
@@ -257,10 +267,10 @@ void GPSData::removeWaypoints(std::list<int> const & ids) {
 }
   
 
-void GPSData::removeRoutes(std::list<int> const & ids) {
-  std::list<int> ids2 = ids;
-  ids2.sort();
-  std::list<int>::const_iterator iter = ids2.begin();
+void GPSData::removeRoutes(const QgsFeatureIds & ids) {
+  QList<int> ids2 = ids.toList();
+  qSort(ids2);
+  QList<int>::const_iterator iter = ids2.begin();
   RouteIterator rIter;
   for (rIter = routes.begin(); rIter != routes.end() && iter != ids2.end(); ) {
     RouteIterator tmpIter = rIter;
@@ -274,10 +284,10 @@ void GPSData::removeRoutes(std::list<int> const & ids) {
 }
   
 
-void GPSData::removeTracks(std::list<int> const & ids) {
-  std::list<int> ids2 = ids;
-  ids2.sort();
-  std::list<int>::const_iterator iter = ids2.begin();
+void GPSData::removeTracks(const QgsFeatureIds & ids) {
+  QList<int> ids2 = ids.toList();
+  qSort(ids2);
+  QList<int>::const_iterator iter = ids2.begin();
   TrackIterator tIter;
   for (tIter = tracks.begin(); tIter != tracks.end() && iter != ids2.end(); ) {
     TrackIterator tmpIter = tIter;
@@ -312,11 +322,11 @@ GPSData* GPSData::getData(const QString& filename) {
   if (dataObjects.find(filename) == dataObjects.end()) {
     QFile file(filename);
     if (!file.open(QIODevice::ReadOnly)) {
-      qWarning("Couldn't open the data source: " + filename);
+      QgsLogger::warning(QObject::tr("Couldn't open the data source: ") + filename);
       return 0;
     }
     GPSData* data = new GPSData;
-    std::cerr << "Loading file " << filename.toLocal8Bit().data() << std::endl;
+    QgsLogger::debug("Loading file " + filename);
     GPXHandler handler(*data);
     bool failed = false;
     
@@ -331,24 +341,27 @@ GPSData* GPSData::getData(const QString& filename) {
     while (!file.atEnd()) {
       long int readBytes = file.readBlock(buffer, bufsize);
       if (file.atEnd())
-  atEnd = 1;
+        atEnd = 1;
       if (!XML_Parse(p, buffer, readBytes, atEnd)) {
-  std::cerr<<"Parse error at line "
-     <<XML_GetCurrentLineNumber(p)<<": "
-     <<XML_ErrorString(XML_GetErrorCode(p))<<std::endl;
-  failed = true;
-  break;
+        QgsLogger::warning(QObject::tr("Parse error at line ") +
+                           QString("%1").arg(XML_GetCurrentLineNumber(p)) + 
+                           " : " +
+                           QString(XML_ErrorString(XML_GetErrorCode(p))));
+        failed = true;
+        break;
       }
     }
     delete [] buffer;
     XML_ParserFree(p);
     if (failed)
       return 0;
-    
+
+    data->setNoDataExtent();
+
     dataObjects[filename] = std::pair<GPSData*, unsigned>(data, 0);
   }
   else
-    std::cerr << filename.toLocal8Bit().data() << " is already loaded"<<std::endl;
+    QgsLogger::debug(filename + " is already loaded");
   
   // return a pointer and increase the reference count for that filename
   DataMap::iterator iter = dataObjects.find(filename);
@@ -363,9 +376,9 @@ void GPSData::releaseData(const QString& filename) {
      it if the reference count becomes 0 */
   DataMap::iterator iter = dataObjects.find(filename);
   if (iter != dataObjects.end()) {
-    std::cerr << "unrefing " << filename.toLocal8Bit().data() << std::endl;
+    QgsLogger::debug("unrefing " + filename);
     if (--(iter->second.second) == 0) {
-      std::cerr << "No one's using " << filename.toLocal8Bit().data() << ", I'll erase it" << std::endl;
+      QgsLogger::debug("No one's using " + filename + ", I'll erase it");
       delete iter->second.first;
       dataObjects.erase(iter);
     }
@@ -380,7 +393,7 @@ GPSData::DataMap GPSData::dataObjects;
 
 
 bool GPXHandler::startElement(const XML_Char* qName, const XML_Char** attr) {
-  //std::cerr<<"<"<<qName<<">"<<std::endl;
+
   if (!std::strcmp(qName, "gpx")) {
     parseModes.push(ParsingDocument);
     mData = GPSData();
@@ -392,9 +405,9 @@ bool GPXHandler::startElement(const XML_Char* qName, const XML_Char** attr) {
     mWpt = Waypoint();
     for (int i = 0; attr[2*i] != NULL; ++i) {
       if (!std::strcmp(attr[2*i], "lat"))
-  mWpt.lat = QString(attr[2*i+1]).toDouble();
+        mWpt.lat = QString(attr[2*i+1]).toDouble();
       else if (!std::strcmp(attr[2*i], "lon"))
-  mWpt.lon = QString(attr[2*i+1]).toDouble();
+        mWpt.lon = QString(attr[2*i+1]).toDouble();
     }
     mObj = &mWpt;
   }
@@ -412,8 +425,8 @@ bool GPXHandler::startElement(const XML_Char* qName, const XML_Char** attr) {
   // common properties
   else if (!std::strcmp(qName, "name")) {
     if (parseModes.top() == ParsingWaypoint ||
-  parseModes.top() == ParsingRoute ||
-  parseModes.top() == ParsingTrack) {
+        parseModes.top() == ParsingRoute ||
+        parseModes.top() == ParsingTrack) {
       mString = &mObj->name;
       mCharBuffer = "";
       parseModes.push(ParsingString);
@@ -423,8 +436,8 @@ bool GPXHandler::startElement(const XML_Char* qName, const XML_Char** attr) {
   }
   else if (!std::strcmp(qName, "cmt")) {
     if (parseModes.top() == ParsingWaypoint ||
-  parseModes.top() == ParsingRoute ||
-  parseModes.top() == ParsingTrack) {
+        parseModes.top() == ParsingRoute ||
+        parseModes.top() == ParsingTrack) {
       mString = &mObj->cmt;
       mCharBuffer = "";
       parseModes.push(ParsingString);
@@ -434,8 +447,8 @@ bool GPXHandler::startElement(const XML_Char* qName, const XML_Char** attr) {
   }
   else if (!std::strcmp(qName, "desc")) {
     if (parseModes.top() == ParsingWaypoint ||
-  parseModes.top() == ParsingRoute ||
-  parseModes.top() == ParsingTrack) {
+        parseModes.top() == ParsingRoute ||
+        parseModes.top() == ParsingTrack) {
       mString = &mObj->desc;
       mCharBuffer = "";
       parseModes.push(ParsingString);
@@ -445,8 +458,8 @@ bool GPXHandler::startElement(const XML_Char* qName, const XML_Char** attr) {
   }
   else if (!std::strcmp(qName, "src")) {
     if (parseModes.top() == ParsingWaypoint ||
-  parseModes.top() == ParsingRoute ||
-  parseModes.top() == ParsingTrack) {
+        parseModes.top() == ParsingRoute ||
+        parseModes.top() == ParsingTrack) {
       mString = &mObj->src;
       mCharBuffer = "";
       parseModes.push(ParsingString);
@@ -456,8 +469,8 @@ bool GPXHandler::startElement(const XML_Char* qName, const XML_Char** attr) {
   }
   else if (!std::strcmp(qName, "url")) {
     if (parseModes.top() == ParsingWaypoint ||
-  parseModes.top() == ParsingRoute ||
-  parseModes.top() == ParsingTrack) {
+        parseModes.top() == ParsingRoute ||
+        parseModes.top() == ParsingTrack) {
       mString = &mObj->url;
       mCharBuffer = "";
       parseModes.push(ParsingString);
@@ -467,8 +480,8 @@ bool GPXHandler::startElement(const XML_Char* qName, const XML_Char** attr) {
   }
   else if (!std::strcmp(qName, "urlname")) {
     if (parseModes.top() == ParsingWaypoint ||
-  parseModes.top() == ParsingRoute ||
-  parseModes.top() == ParsingTrack) {
+        parseModes.top() == ParsingRoute ||
+        parseModes.top() == ParsingTrack) {
       mString = &mObj->urlname;
       mCharBuffer = "";
       parseModes.push(ParsingString);
@@ -517,10 +530,10 @@ bool GPXHandler::startElement(const XML_Char* qName, const XML_Char** attr) {
     if (parseModes.top() == ParsingRoute) {
       mRtept = Routepoint();
       for (int i = 0; attr[2*i] != NULL; ++i) {
-  if (!std::strcmp(attr[2*i], "lat"))
-    mRtept.lat = QString(attr[2*i+1]).toDouble();
-  else if (!std::strcmp(attr[2*i], "lon"))
-    mRtept.lon = QString(attr[2*i+1]).toDouble();
+        if (!std::strcmp(attr[2*i], "lat"))
+          mRtept.lat = QString(attr[2*i+1]).toDouble();
+        else if (!std::strcmp(attr[2*i], "lon"))
+          mRtept.lon = QString(attr[2*i+1]).toDouble();
       }
       parseModes.push(ParsingRoutepoint);
     }
@@ -541,10 +554,10 @@ bool GPXHandler::startElement(const XML_Char* qName, const XML_Char** attr) {
     if (parseModes.top() == ParsingTrackSegment) {
       mTrkpt = Trackpoint();
       for (int i = 0; attr[2*i] != NULL; ++i) {
-  if (!std::strcmp(attr[2*i], "lat"))
-    mTrkpt.lat = QString(attr[2*i+1]).toDouble();
-  else if (!std::strcmp(attr[2*i], "lon"))
-    mTrkpt.lon = QString(attr[2*i+1]).toDouble();
+        if (!std::strcmp(attr[2*i], "lat"))
+          mTrkpt.lat = QString(attr[2*i+1]).toDouble();
+        else if (!std::strcmp(attr[2*i], "lon"))
+          mTrkpt.lon = QString(attr[2*i+1]).toDouble();
       }
       parseModes.push(ParsingTrackpoint);
     }

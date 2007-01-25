@@ -25,7 +25,7 @@
 #include <QAction>
 #include <QMenu>
 
-#include "qgisapp.h"
+#include "qgisinterface.h"
 #include "qgsspitplugin.h"
 #include "qgsspit.h"
 // xpm for creating the toolbar icon
@@ -39,9 +39,9 @@
 
 static const char * const ident_ = "$Id$";
 
-static const char * const name_ = "SPIT";
-static const char * const description_ = "Shapefile to PostgreSQL/PostGIS Import Tool";
-static const char * const version_ = "Version 0.1";
+static const QString name_ = QObject::tr("SPIT");
+static const QString description_ = QObject::tr("Shapefile to PostgreSQL/PostGIS Import Tool");
+static const QString version_ = QObject::tr("Version 0.1");
 static const QgisPlugin::PLUGINTYPE type_ = QgisPlugin::UI;
 
 
@@ -52,10 +52,10 @@ static const QgisPlugin::PLUGINTYPE type_ = QgisPlugin::UI;
 * @param qgis Pointer to the QGIS main window
 * @parma _qI Pointer to the QGIS interface object
 */
-QgsSpitPlugin::QgsSpitPlugin(QgisApp * qgis, QgisIface * _qI)
-    : qgisMainWindow(qgis), 
-      qI(_qI),
-      QgisPlugin(name_, description_, version_, type_ )
+QgsSpitPlugin::QgsSpitPlugin(QgisInterface * _qI)
+  : QgisPlugin(name_, description_, version_, type_ ),
+    qgisMainWindow(_qI->getMainWindow()), 
+    qI(_qI)
 {
 }
 
@@ -69,27 +69,22 @@ QgsSpitPlugin::~QgsSpitPlugin()
 */
 void QgsSpitPlugin::initGui()
 {
-    QMenu *pluginMenu = qI->getPluginMenu("&Spit");
-    menuId = pluginMenu->insertItem(QIcon(spitIcon),tr("&Import Shapefiles to PostgreSQL"), this, SLOT(spit()));
-
-    pluginMenu->setWhatsThis(menuId,tr("Import shapefiles into a PostGIS-enabled PostgreSQL database. "
-        "The schema and field names can be customized on import")); 
-
      // Create the action for tool
-    spitAction = new QAction(QIcon(spitIcon), tr("Import Shapefiles to PostgreSQL"), this);
+    spitAction = new QAction(QIcon(spitIcon), tr("&Import Shapefiles to PostgreSQL"), this);
     spitAction->setWhatsThis(tr("Import shapefiles into a PostGIS-enabled PostgreSQL database. "
         "The schema and field names can be customized on import")); 
     // Connect the action to the spit slot
     connect(spitAction, SIGNAL(activated()), this, SLOT(spit()));
-     // Add the icon to the toolbar
+     // Add the icon to the toolbar and to the plugin menu
     qI->addToolBarIcon(spitAction); 
+    qI->addPluginMenu(tr("&Spit"), spitAction); 
 
 }
 
 // Slot called when the shapefile to postgres menu item is activated
 void QgsSpitPlugin::spit()
 {
- QgsSpit *spitDlg = new QgsSpit();
+ QgsSpit *spitDlg = new QgsSpit(qgisMainWindow, Qt::Window);
  spitDlg->show();
 }
 
@@ -98,8 +93,8 @@ void QgsSpitPlugin::spit()
 void QgsSpitPlugin::unload()
 {
     // remove the GUI
-    qI->removePluginMenuItem("&Spit",menuId);
     qI->removeToolBarIcon(spitAction);
+    qI->removePluginMenu(tr("&Spit"), spitAction);
     delete spitAction;
 }
 
@@ -109,9 +104,9 @@ void QgsSpitPlugin::unload()
 * of the plugin class
 */
 // Class factory to return a new instance of the plugin class
-QGISEXTERN QgisPlugin * classFactory(QgisApp * qgis, QgisIface * qI)
+QGISEXTERN QgisPlugin * classFactory(QgisInterface * qI)
 {
-    return new QgsSpitPlugin(qgis, qI);
+    return new QgsSpitPlugin(qI);
 }
 
 // Return the name of the plugin

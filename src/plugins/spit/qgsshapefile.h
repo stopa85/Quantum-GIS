@@ -26,6 +26,7 @@
 #include <ogrsf_frmts.h>
 
 class QProgressDialog;
+class QTextCodec;
 
 class OGRLayer;
 class OGRDataSource;
@@ -40,11 +41,13 @@ class QgsShapeFile : public QObject
   Q_OBJECT
   public:
 
-  QgsShapeFile(QString filename);
+  QgsShapeFile(QString filename, QString encoding = QString());
   ~QgsShapeFile();
   int getFeatureCount();
   QString getFeatureClass();
-  bool insertLayer(QString dbname, QString schema, QString geom_col, QString srid, PGconn * conn, QProgressDialog& pro, bool &fin);
+  bool insertLayer(QString dbname, QString schema, QString geom_col, 
+                   QString srid, PGconn * conn, QProgressDialog& pro, 
+                   bool &fin, QString& errorText);
     
   bool is_valid();
   QString getName();
@@ -69,6 +72,7 @@ class QgsShapeFile : public QObject
   QString filename;
   QString geom_type;
   QStringList geometries;
+  QTextCodec* codec;
 
   public slots:
   void cancelImport();

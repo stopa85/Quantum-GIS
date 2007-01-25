@@ -14,7 +14,10 @@
  *                                                                         *
  ***************************************************************************/
 
+#include "qgisinterface.h"
 #include "qgsmapcanvas.h"
+#include "qgsmaplayer.h"
+#include "qgsvectorlayer.h"
 #include "qgsgrassedittools.h"
 #include "qgsgrassedit.h"
 #include "qgsgrassattributes.h"
@@ -35,7 +38,7 @@ QgsGrassEditTool::QgsGrassEditTool(QgsGrassEdit* edit)
 
 void QgsGrassEditTool::canvasPressEvent(QMouseEvent * event)
 {
-  QgsPoint point = toMapCoords(event->pos());
+  QgsPoint point = toLayerCoords(e->layer(), event->pos());
   mouseClick(point,  event->button());
 
   // Set last click
@@ -50,7 +53,7 @@ void QgsGrassEditTool::canvasPressEvent(QMouseEvent * event)
 
 void QgsGrassEditTool::canvasMoveEvent(QMouseEvent * event)
 {
-  QgsPoint point = toMapCoords(event->pos());
+  QgsPoint point = toLayerCoords(e->layer(), event->pos());
   mouseMove(point);
 
   e->statusBar()->message(e->mCanvasPrompt);
@@ -92,11 +95,12 @@ void QgsGrassEditNewPoint::mouseClick(QgsPoint & point, Qt::ButtonState button)
 
     if ( e->mAttributes ) 
     {
+        e->mAttributes->setLine ( line );
         e->mAttributes->clear();
     }
     else
     {
-        e->mAttributes = new QgsGrassAttributes ( e, e->mProvider, line, e->mQgisApp );
+        e->mAttributes = new QgsGrassAttributes ( e, e->mProvider, line, e->mIface->getMainWindow() );
     }
     for ( int i = 0; i < e->mCats->n_cats; i++ ) {
       e->addAttributes ( e->mCats->field[i], e->mCats->cat[i] );
@@ -149,8 +153,20 @@ void QgsGrassEditNewLine::mouseClick(QgsPoint & point, Qt::ButtonState button)
 {
   switch ( button ) {
     case Qt::LeftButton:
-      e->snap ( point ); 
+      if ( e->mEditPoints->n_points > 2 )
+      {
+          e->snap ( point, e->mEditPoints->x[0], e->mEditPoints->y[0] ); 
+      }
+      else
+      {
+          e->snap ( point ); 
+      }
       Vect_append_point ( e->mEditPoints, point.x(), point.y(), 0.0 );
+
+      // Draw
+      Vect_reset_line ( e->mPoints );
+      Vect_append_points ( e->mPoints, e->mEditPoints, GV_FORWARD );
+      e->displayDynamic ( e->mPoints );
       break;
     case Qt::MidButton:
       if ( e->mEditPoints->n_points > 0 ) {
@@ -179,11 +195,12 @@ void QgsGrassEditNewLine::mouseClick(QgsPoint & point, Qt::ButtonState button)
 
 	if ( e->mAttributes ) 
 	{
+            e->mAttributes->setLine ( line );
 	    e->mAttributes->clear();
 	}
 	else
 	{
-	    e->mAttributes = new QgsGrassAttributes ( e, e->mProvider, line, e->mQgisApp );
+      e->mAttributes = new QgsGrassAttributes ( e, e->mProvider, line, e->mIface->getMainWindow() );
 	}
         for ( int i = 0; i < e->mCats->n_cats; i++ ) {
           e->addAttributes ( e->mCats->field[i], e->mCats->cat[i] );
@@ -461,7 +478,20 @@ void QgsGrassEditDeleteVertex::mouseClick(QgsPoint & point, Qt::ButtonState butt
         int type = e->mProvider->readLine ( e->mPoints, e->mCats, e->mSelectedLine );
         Vect_line_delete_point ( e->mPoints, e->mSelectedPart );
 
-        e->mProvider->rewriteLine ( e->mSelectedLine, type, e->mPoints, e->mCats );
+        if ( e->mPoints->n_points < 2 ) // delete line
+        {
+	    e->mProvider->deleteLine ( e->mSelectedLine );
+
+	    // Check orphan records
+	    for ( int i = 0 ; i < e->mCats->n_cats; i++ ) {
+	      e->checkOrphan ( e->mCats->field[i], e->mCats->cat[i] );
+	    }
+        }
+        else 
+        {
+	    e->mProvider->rewriteLine ( e->mSelectedLine, type, e->mPoints, e->mCats );
+        }
+
         e->updateSymb();
         e->displayUpdated();
 
@@ -634,7 +664,7 @@ void QgsGrassEditDeleteLine::mouseClick(QgsPoint & point, Qt::ButtonState button
 
       if ( e->mSelectedLine == 0 ) 
         e->mSelectedLine = e->mProvider->findLine ( point.x(), point.y(), GV_LINE|GV_BOUNDARY, thresh );
-
+      
       if ( e->mSelectedLine ) { // highlite, propmt
         e->displayElement ( e->mSelectedLine, e->mSymb[QgsGrassEdit::SYMB_HIGHLIGHT], e->mSize );
         e->setCanvasPropmt( QObject::tr("Delete selected / select next"), "", QObject::tr("Release selected") );
@@ -772,6 +802,7 @@ void QgsGrassEditAttributes::mouseClick(QgsPoint & point, Qt::ButtonState button
 
   if ( e->mAttributes ) 
   {
+      e->mAttributes->setLine ( 0 );
       e->mAttributes->clear();
       e->mAttributes->raise();
   }
@@ -783,7 +814,11 @@ void QgsGrassEditAttributes::mouseClick(QgsPoint & point, Qt::ButtonState button
 
     if ( !e->mAttributes ) 
     {
-        e->mAttributes = new QgsGrassAttributes ( e, e->mProvider, e->mSelectedLine, e->mQgisApp );
+      e->mAttributes = new QgsGrassAttributes ( e, e->mProvider, e->mSelectedLine, e->mIface->getMainWindow() );
+    }
+    else
+    {
+      e->mAttributes->setLine ( e->mSelectedLine );
     }
     for ( int i = 0; i < e->mCats->n_cats; i++ ) {
       e->addAttributes ( e->mCats->field[i], e->mCats->cat[i] );

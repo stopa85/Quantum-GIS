@@ -8,16 +8,13 @@
 
 TEMPLATE = subdirs
 SUBDIRS =  delimited_text \
-           grid_maker \
-           copyright_label \
-           north_arrow \
-      	   gps_importer \
            scale_bar \
-           spit
-#SUBDIRS =  copyright_label \
-#           delimited_text \
-#           grid_maker \
-#           north_arrow \
-#           scale_bar \
-#      	    gps_importer \
-#           spit
+           grid_maker \
+           north_arrow \
+           grass \
+           copyright_label \
+           georeferencer \
+           geoprocessing \
+           spit \
+           gps_importer \
+           wfs

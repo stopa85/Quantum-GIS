@@ -20,21 +20,22 @@
 #include <vector>
 #include <cfloat>
 
-#include <qpixmap.h>
-#include <qicon.h>
-#include <qdir.h>
-#include <qstring.h>
-#include <qdatetime.h>
-#include <qmessagebox.h>
-//Added by qt3to4:
 #include <Q3CString>
+#include <QDir>
+#include <QString>
+#include <QDateTime>
+#include <QMessageBox>
+#include <QTextCodec>
 
 #include "qgis.h"
+#include "qgsapplication.h"
 #include "qgsdataprovider.h"
 #include "qgsfeature.h"
+#include "qgsfeatureattribute.h"
 #include "qgsfield.h"
 #include "qgsrect.h"
 #include "qgsfeatureattribute.h"
+#include "qgsspatialrefsys.h"
 
 extern "C" {
 #include <grass/gprojects.h>
@@ -55,7 +56,7 @@ static QString GRASS_DESCRIPTION = "Grass provider"; // XXX verify this
 
 
 
-QgsGrassProvider::QgsGrassProvider(QString const & uri)
+QgsGrassProvider::QgsGrassProvider(QString uri)
     : QgsVectorDataProvider(uri)
 {
 #ifdef QGISDEBUG
@@ -206,7 +207,8 @@ void QgsGrassProvider::update ( void )
     #endif
 
     mValid = false;
-    // TODO check if reopened map is valid
+
+    if ( ! mMaps[mLayers[mLayerId].mapId].valid ) return;
 
     // Getting the total number of features in the layer
     // It may happen that the field disappeares from the map (deleted features, new map without that field)
@@ -273,94 +275,28 @@ QgsGrassProvider::~QgsGrassProvider()
 }
 
 
-QString QgsGrassProvider::storageType()
+QString QgsGrassProvider::storageType() const
 {
   return "GRASS (Geographic Resources Analysis and Support System) file";
 }
 
-
-/**
-* Get the first feature resutling from a select operation
-* @return QgsFeature
-*/
-QgsFeature *QgsGrassProvider::getFirstFeature(bool fetchAttributes)
-{
-    #ifdef QGISDEBUG
-    std::cout << "QgsGrassProvider::getFirstFeature()" << std::endl;
-    #endif
-
-    if ( isEdited() )
-	return 0;
-    
-    if ( mCidxFieldIndex < 0 ) return 0; // No features, no features in this layer
-
-    mNextCidx = 0;
-	
-    return ( getNextFeature(fetchAttributes) );
-}
-
-/**
-* Get the next feature resulting from a select operation
-* @return false if there are no features in the selection set
-*/
-bool QgsGrassProvider::getNextFeature(QgsFeature &feature, bool fetchAttributes)
-{
-    #if QGISDEBUG > 3
-    std::cout << "QgsGrassProvider::getNextFeature()" << std::endl;
-    #endif
-
-    if ( isEdited() )
-	return 0;
-    
-    if ( mCidxFieldIndex < 0 ) return 0; // No features, no features in this layer
-
-    // TODO once clear how to do that 
-    return false;
-}
-
-/**
-* Get the next feature resulting from a select operation
-* Return 0 if there are no features in the selection set
-* @return QgsFeature
-*/
-QgsFeature *QgsGrassProvider::getNextFeature(bool fetchAttributes)
-{
-    #if QGISDEBUG > 3
-    std::cout << "QgsGrassProvider::getNextFeature() mNextCidx = " << mNextCidx 
-    	      << " fetchAttributes = " << fetchAttributes << std::endl;
-    #endif
-    
-    if ( isEdited() )
-	return 0;
-
-    if ( mCidxFieldIndex < 0 ) return 0; // No features, no features in this layer
-
-    std::list<int> attlist;
-
-    if ( fetchAttributes ) {
-	int fc = fieldCount();
-	for ( int i = 0; i < fc; i++ ) {
-	    attlist.push_back(i);
-	}
-    }
-
-    return ( getNextFeature(attlist) );
-}
-
-QgsFeature* QgsGrassProvider::getNextFeature(std::list<int> const& attlist, int featureQueueSize)
+bool QgsGrassProvider::getNextFeature(QgsFeature& feature,
+                                      bool fetchGeometry,
+                                      QgsAttributeList attlist,
+                                      uint featureQueueSize)
 {
     int cat, type, id, idx;
     unsigned char *wkb;
     int wkbsize;
 
     #if QGISDEBUG > 3
-    std::cout << "QgsGrassProvider::getNextFeature( attlist )" << std::endl;
+    std::cout << "QgsGrassProvider::getNextFeature()" << std::endl;
     #endif
 
-    if ( isEdited() )
-	return 0;
+    if ( isEdited() || isFrozen() || !mValid )
+	return false;
     
-    if ( mCidxFieldIndex < 0 ) return 0; // No features, no features in this layer
+    if ( mCidxFieldIndex < 0 ) return false; // No features, no features in this layer
     
     // Get next line/area id
     int found = 0;
@@ -373,12 +309,12 @@ QgsFeature* QgsGrassProvider::getNextFeature(std::list<int> const& attlist, int 
         found = 1;
 	break;
     }
-    if ( !found ) return 0; // No more features
+    if ( !found ) return false; // No more features
     #if QGISDEBUG > 3
     std::cout << "cat = " << cat << " type = " << type << " id = " << id << std::endl;
     #endif
 
-    QgsFeature *f = new QgsFeature(id);
+    feature = QgsFeature(id);
 
     // TODO int may be 64 bits (memcpy)
     if ( type & (GV_POINTS | GV_LINES) ) { /* points or lines */
@@ -392,7 +328,7 @@ QgsFeature* QgsGrassProvider::getNextFeature(std::list<int> const& attlist, int 
 	}	    
 	wkb = new unsigned char[wkbsize];
 	unsigned char *wkbp = wkb;
-	wkbp[0] = (unsigned char) endian();
+	wkbp[0] = (unsigned char) QgsApplication::endian();
 	wkbp += 1;
 
 	/* WKB type */
@@ -416,7 +352,7 @@ QgsFeature* QgsGrassProvider::getNextFeature(std::list<int> const& attlist, int 
 
 	wkbsize = 1+4+4+4+npoints*2*8; // size without islands
 	wkb = new unsigned char[wkbsize];
-	wkb[0] = (unsigned char) endian();
+	wkb[0] = (unsigned char) QgsApplication::endian();
 	int offset = 1;
 
 	/* WKB type */
@@ -457,13 +393,11 @@ QgsFeature* QgsGrassProvider::getNextFeature(std::list<int> const& attlist, int 
 	}
     }
 
-    f->setGeometryAndOwnership(wkb, wkbsize);
+    feature.setGeometryAndOwnership(wkb, wkbsize);
 
-    setFeatureAttributes( mLayerId, cat, f, attlist );  
+    setFeatureAttributes( mLayerId, cat, &feature, attlist );  
     
-    return f;
-
-    return 0;//soon
+    return true;
 }
 
 void QgsGrassProvider::resetSelection( bool sel)
@@ -471,6 +405,7 @@ void QgsGrassProvider::resetSelection( bool sel)
     #ifdef QGISDEBUG
     std::cout << "QgsGrassProvider::resetSelection()" << std::endl;
     #endif
+    if ( !mValid ) return;
     memset ( mSelection, (int) sel, mSelectionSize );
     mNextCidx = 0;
 }
@@ -480,13 +415,13 @@ void QgsGrassProvider::resetSelection( bool sel)
 * with calls to getFirstFeature and getNextFeature.
 * @param mbr QgsRect containing the extent to use in selecting features
 */
-void QgsGrassProvider::select(QgsRect *rect, bool useIntersect)
+void QgsGrassProvider::select(QgsRect rect, bool useIntersect)
 {
     #ifdef QGISDEBUG
     std::cout << "QgsGrassProvider::select() useIntersect = " << useIntersect << std::endl;
     #endif
 
-    if ( isEdited() )
+    if ( isEdited() || isFrozen() || !mValid )
 	return;
 
     // check if outdated and update if necessary
@@ -505,8 +440,8 @@ void QgsGrassProvider::select(QgsRect *rect, bool useIntersect)
     
     if ( !useIntersect ) { // select by bounding boxes only
 	BOUND_BOX box;
-	box.N = rect->yMax(); box.S = rect->yMin(); 
-	box.E = rect->xMax(); box.W = rect->xMin(); 
+	box.N = rect.yMax(); box.S = rect.yMin(); 
+	box.E = rect.xMax(); box.W = rect.xMin(); 
 	box.T = PORT_DOUBLE_MAX; box.B = -PORT_DOUBLE_MAX; 
 	if ( mLayerType == POINT || mLayerType == CENTROID || mLayerType == LINE || mLayerType == BOUNDARY ) {
 	    Vect_select_lines_by_box(mMap, &box, mGrassType, mList);
@@ -519,11 +454,11 @@ void QgsGrassProvider::select(QgsRect *rect, bool useIntersect)
 	
 	Polygon = Vect_new_line_struct();
 
-	Vect_append_point( Polygon, rect->xMin(), rect->yMin(), 0);
-	Vect_append_point( Polygon, rect->xMax(), rect->yMin(), 0);
-	Vect_append_point( Polygon, rect->xMax(), rect->yMax(), 0);
-	Vect_append_point( Polygon, rect->xMin(), rect->yMax(), 0);
-	Vect_append_point( Polygon, rect->xMin(), rect->yMin(), 0);
+	Vect_append_point( Polygon, rect.xMin(), rect.yMin(), 0);
+	Vect_append_point( Polygon, rect.xMax(), rect.yMin(), 0);
+	Vect_append_point( Polygon, rect.xMax(), rect.yMax(), 0);
+	Vect_append_point( Polygon, rect.xMin(), rect.yMax(), 0);
+	Vect_append_point( Polygon, rect.xMin(), rect.yMin(), 0);
 
 	if ( mLayerType == POINT || mLayerType == CENTROID || mLayerType == LINE || mLayerType == BOUNDARY ) {
 	    Vect_select_lines_by_polygon ( mMap, Polygon, 0, NULL, mGrassType, mList);
@@ -547,36 +482,19 @@ void QgsGrassProvider::select(QgsRect *rect, bool useIntersect)
 }
 
 
-/**
-* Identify features within the search radius specified by rect
-* @param rect Bounding rectangle of search radius
-* @return std::vector containing QgsFeature objects that intersect rect
-*/
-std::vector<QgsFeature>& QgsGrassProvider::identify(QgsRect * rect)
-{
-    #ifdef QGISDEBUG
-    std::cout << "QgsGrassProvider::identify()" << std::endl;
-    #endif
 
-    // TODO: does not return vector of features! Should it?
-
-    if ( !isEdited() ) {
-        select(rect, true);
-    }
-}
-
-QgsRect *QgsGrassProvider::extent()
+QgsRect QgsGrassProvider::extent()
 {
     BOUND_BOX box;
     Vect_get_map_box ( mMap, &box );
 
-    return new QgsRect( box.W, box.S, box.E, box.N);
+    return QgsRect( box.W, box.S, box.E, box.N);
 }
 
 /** 
 * Return the feature type
 */
-int QgsGrassProvider::geometryType() const
+QGis::WKBTYPE QgsGrassProvider::geometryType() const
 {
     return mQgisType;
 }
@@ -591,7 +509,7 @@ long QgsGrassProvider::featureCount() const
 /**
 * Return the number of fields
 */
-int QgsGrassProvider::fieldCount() const
+uint QgsGrassProvider::fieldCount() const
 {
     #ifdef QGISDEBUG
     std::cerr << "QgsGrassProvider::fieldCount() return:" << mLayers[mLayerId].fields.size() << std::endl;
@@ -602,7 +520,7 @@ int QgsGrassProvider::fieldCount() const
 /**
 * Return fields
 */
-std::vector<QgsField> const & QgsGrassProvider::fields() const
+const QgsFieldMap & QgsGrassProvider::fields() const
 {
       return mLayers[mLayerId].fields;
 }
@@ -614,7 +532,7 @@ int QgsGrassProvider::keyField()
 
 void QgsGrassProvider::reset()
 {
-    if ( isEdited() )
+    if ( isEdited() || isFrozen() || !mValid )
 	return;
 
     int mapId = mLayers[mLayerId].mapId;
@@ -632,7 +550,7 @@ void QgsGrassProvider::reset()
     mNextCidx = 0;
 }
 
-QString QgsGrassProvider::minValue(int position)
+QString QgsGrassProvider::minValue(uint position)
 {
     if ( position >= fieldCount() ) {
 	std::cerr << "Warning: access requested to invalid position in QgsGrassProvider::minValue()" 
@@ -642,7 +560,7 @@ QString QgsGrassProvider::minValue(int position)
 }
 
  
-QString QgsGrassProvider::maxValue(int position)
+QString QgsGrassProvider::maxValue(uint position)
 {
     if ( position >= fieldCount() ) {
 	std::cerr << "Warning: access requested to invalid position in QgsGrassProvider::maxValue()" 
@@ -757,6 +675,10 @@ void QgsGrassProvider::loadAttributes ( GLAYER &layer )
     std::cerr << "QgsGrassProvider::loadLayerSourcesFromMap" << std::endl;
     #endif
 
+    // TODO: free old attributes
+    
+    if ( !layer.map ) return;
+
     // Get field info
     layer.fieldInfo = Vect_get_field( layer.map, layer.field); // should work also with field = 0
 
@@ -837,8 +759,8 @@ void QgsGrassProvider::loadAttributes ( GLAYER &layer )
 			    ctypeStr = "datetime";
 			    break; 
 		    }
-		    layer.fields.push_back ( QgsField( db_get_column_name(column), ctypeStr, 
-		                     db_get_column_length(column), db_get_column_precision(column) ) );
+		    layer.fields[i] = QgsField( db_get_column_name(column), ctypeStr, 
+		                     db_get_column_length(column), db_get_column_precision(column) );
 		    
 		    if ( G_strcasecmp ( db_get_column_name(column), layer.fieldInfo->key) == 0 ) {
 			layer.keyColumn = i;
@@ -926,7 +848,7 @@ void QgsGrassProvider::loadAttributes ( GLAYER &layer )
     // Add cat if no attribute fields exist (otherwise qgis crashes)
     if ( layer.nColumns == 0 ) {
         layer.keyColumn = 0;
-	layer.fields.push_back ( QgsField( "cat", "integer", 10, 0) );
+	layer.fields[0] = ( QgsField( "cat", "integer", 10, 0) );
 	layer.minmax = new double[1][2];
 	layer.minmax[0][0] = 0; 
 	layer.minmax[0][1] = 0; 
@@ -970,7 +892,7 @@ void QgsGrassProvider::closeLayer( int layerId )
         mLayers[layerId].valid = false;
 
 	// Column names/types
-	mLayers[layerId].fields.resize(0);
+	mLayers[layerId].fields.clear();
 	
 	// Attributes
         #ifdef QGISDEBUG
@@ -1013,6 +935,8 @@ int QgsGrassProvider::openMap(QString gisdbase, QString location, QString mapset
     }
 
     GMAP map;
+    map.valid = false;
+    map.frozen = false;
     map.gisdbase = gisdbase;
     map.location = location;
     map.mapset = mapset;
@@ -1062,12 +986,12 @@ int QgsGrassProvider::openMap(QString gisdbase, QString location, QString mapset
 
     if ( level == 1 )
     {
-        int ret = QMessageBox::question ( 0, "Warning",
+        QMessageBox::StandardButton ret = QMessageBox::question ( 0, "Warning",
                       "GRASS vector map " + mapName + 
                       + " does not have topology. Build topology?",
-                      QMessageBox::Yes,  QMessageBox::No );
+                      QMessageBox::Ok | QMessageBox::Cancel );
 
-        if ( ret == QMessageBox::No ) return -1;
+        if ( ret == QMessageBox::Cancel ) return -1;
     }
 
     // Open vector
@@ -1096,6 +1020,8 @@ int QgsGrassProvider::openMap(QString gisdbase, QString location, QString mapset
     #ifdef QGISDEBUG
     std::cerr << "GRASS map successfully opened" << std::endl;
     #endif
+    
+    map.valid = true;
 
     // Add new map to maps
     mMaps.push_back(map);
@@ -1112,6 +1038,7 @@ void QgsGrassProvider::updateMap ( int mapId )
     /* Close map */
     GMAP *map = &(mMaps[mapId]);
 
+    bool closeMap = map->valid;
     map->valid = false;
     map->version++;
 
@@ -1121,7 +1048,7 @@ void QgsGrassProvider::updateMap ( int mapId )
     // TODO: Is it necessary for close ?
     G__setenv( "MAPSET", (char *) map->mapset.ascii() );
     
-    Vect_close ( map->map );
+    if ( closeMap ) Vect_close ( map->map );
 
     QFileInfo di ( map->gisdbase + "/" + map->location + "/" + map->mapset + "/vector/" + map->mapName );
     map->lastModified = di.lastModified();
@@ -1176,8 +1103,11 @@ void QgsGrassProvider::closeMap( int mapId )
 		                     "you can expect crash soon." );
 	}
 
+	if ( mMaps[mapId].valid )
+	{
+	    Vect_close ( mMaps[mapId].map );
+	}
         mMaps[mapId].valid = false;
-	Vect_close ( mMaps[mapId].map );
     }
 }
 
@@ -1242,19 +1172,19 @@ void QgsGrassProvider::setFeatureAttributes ( int layerId, int cat, QgsFeature *
 	for (int i = 0; i < mLayers[layerId].nColumns; i++) {
 	    if ( att != NULL ) {
 		Q3CString cstr( att->values[i] );
-		feature->addAttribute ( mLayers[layerId].fields[i].name(), mEncoding->toUnicode(cstr) );
+		feature->addAttribute (i, QgsFeatureAttribute( mLayers[layerId].fields[i].name(), mEncoding->toUnicode(cstr) ));
 	    } else { /* it may happen that attributes are missing -> set to empty string */
-		feature->addAttribute ( mLayers[layerId].fields[i].name(), "");
+		feature->addAttribute (i, QgsFeatureAttribute( mLayers[layerId].fields[i].name(), ""));
 	    }
 	}
     } else { 
 	QString tmp;
 	tmp.sprintf("%d", cat );
-	feature->addAttribute ( "cat", tmp);
+	feature->addAttribute (0, QgsFeatureAttribute("cat", tmp));
     }
 }
 
-void QgsGrassProvider::setFeatureAttributes ( int layerId, int cat, QgsFeature *feature, std::list<int> const& attlist)
+void QgsGrassProvider::setFeatureAttributes ( int layerId, int cat, QgsFeature *feature, const QgsAttributeList& attlist)
 {
     #if QGISDEBUG > 3
     std::cerr << "setFeatureAttributes cat = " << cat << std::endl;
@@ -1266,18 +1196,18 @@ void QgsGrassProvider::setFeatureAttributes ( int layerId, int cat, QgsFeature *
 	GATT *att = (GATT *) bsearch ( &key, mLayers[layerId].attributes, mLayers[layerId].nAttributes,
 		                       sizeof(GATT), cmpAtt);
 
-	for (std::list<int>::const_iterator iter=attlist.begin(); iter!=attlist.end();++iter) {
+	for (QgsAttributeList::const_iterator iter=attlist.begin(); iter!=attlist.end();++iter) {
 	    if ( att != NULL ) {
 		Q3CString cstr( att->values[*iter] );
-		feature->addAttribute ( mLayers[layerId].fields[*iter].name(), mEncoding->toUnicode(cstr) );
+		feature->addAttribute (*iter, QgsFeatureAttribute(mLayers[layerId].fields[*iter].name(), mEncoding->toUnicode(cstr) ));
 	    } else { /* it may happen that attributes are missing -> set to empty string */
-		feature->addAttribute ( mLayers[layerId].fields[*iter].name(), "");	
+		feature->addAttribute (*iter, QgsFeatureAttribute(mLayers[layerId].fields[*iter].name(), ""));
 	    } 
 	}
     } else { 
 	QString tmp;
 	tmp.sprintf("%d", cat );
-	feature->addAttribute ( "cat", tmp);
+	feature->addAttribute (0, QgsFeatureAttribute("cat", tmp));
     }
 }
 
@@ -1287,7 +1217,12 @@ struct Map_info *QgsGrassProvider::layerMap ( int layerId )
     return ( mMaps[mLayers[layerId].mapId].map );
 }
 
-QString QgsGrassProvider::getProjectionWKT(void)
+void QgsGrassProvider::setSRS(const QgsSpatialRefSys& theSRS)
+{
+  // XXX is it possible to change SRS?
+}
+
+QgsSpatialRefSys QgsGrassProvider::getSRS()
 {
     QString WKT;
 
@@ -1303,7 +1238,10 @@ QString QgsGrassProvider::getProjectionWKT(void)
 	free ( wkt);
     }
     
-    return WKT;
+    QgsSpatialRefSys srs;
+    srs.createFromWkt(WKT);
+    
+    return srs;
 }
 
 int QgsGrassProvider::grassLayer()
@@ -1373,11 +1311,54 @@ bool QgsGrassProvider::isEdited ( void )
     return (map->update);
 }
 
+bool QgsGrassProvider::isFrozen ( void )
+{
+    #if QGISDEBUG > 3
+    std::cerr << "QgsGrassProvider::isFrozen" << std::endl;
+    #endif
+
+    GMAP *map = &(mMaps[mLayers[mLayerId].mapId]);
+    return (map->frozen);
+}
+
+void QgsGrassProvider::freeze()
+{
+#ifdef QGISDEBUG
+    std::cerr << "QgsGrassProvider::freeze" << std::endl;
+#endif
+
+    if ( !isValid() ) return;
+
+    GMAP *map = &(mMaps[mLayers[mLayerId].mapId]);
+
+    if ( map->frozen ) return;
+    
+    map->frozen = true;
+    Vect_close ( map->map );
+}
+
+void QgsGrassProvider::thaw()
+{
+#ifdef QGISDEBUG
+    std::cerr << "QgsGrassProvider::thaw" << std::endl;
+#endif
+
+    if ( !isValid() ) return;
+    GMAP *map = &(mMaps[mLayers[mLayerId].mapId]);
+
+    if ( !map->frozen ) return;
+
+    if ( reopenMap() ) 
+    {
+        map->frozen = false;
+    }
+}
+
 bool QgsGrassProvider::startEdit ( void )
 {
 #ifdef QGISDEBUG
     std::cerr << "QgsGrassProvider::startEdit" << std::endl;
-    std::cerr << "  uri = " << getDataSourceUri().toLocal8Bit().data() << std::endl;
+    std::cerr << "  uri = " << dataSourceUri().toLocal8Bit().data() << std::endl;
     std::cerr << "  mMaps.size() = " << mMaps.size() << std::endl;
 #endif
 
@@ -1479,11 +1460,26 @@ bool QgsGrassProvider::closeEdit ( bool newMap )
     {
         std::cerr << "mLayers.size() = " << mLayers.size() << std::endl;
         map->update = false;
+        // Map must be set as valid otherwise it is not closed and topo is not written
+	map->valid = true;
         closeLayer( mLayerId );
         return true;
     }
 
     Vect_close ( map->map );
+
+    map->update = false;
+
+    if ( !reopenMap() ) return false;
+
+    map->valid = true;
+
+    return true;
+}
+
+bool QgsGrassProvider::reopenMap()
+{
+    GMAP *map = &(mMaps[mLayers[mLayerId].mapId]);
 
     QFileInfo di ( mGisdbase + "/" + mLocation + "/" + mMapset + "/vector/" + mMapName );
     map->lastModified = di.lastModified();
@@ -1499,7 +1495,7 @@ bool QgsGrassProvider::closeEdit ( bool newMap )
 
     if ( QgsGrass::getError() == QgsGrass::FATAL ) {
 	std::cerr << "Cannot reopen GRASS vector: " << QgsGrass::getErrorMessage().toLocal8Bit().data() << std::endl;
-	return -1;
+	return false;
     }
 
     #ifdef QGISDEBUG
@@ -1514,9 +1510,6 @@ bool QgsGrassProvider::closeEdit ( bool newMap )
             loadLayerSourcesFromMap ( mLayers[i] );
 	}
     }
-
-    map->update = false;
-    map->valid = true;
 
     return true;
 }
@@ -1905,6 +1898,7 @@ std::vector<QgsFeatureAttribute> *QgsGrassProvider::attributes ( int field, int 
     #endif
 
     if ( nRecords < 1 ) {
+	db_close_database_shutdown_driver ( driver );
         std::cerr << "No DB record" << std::endl;
 	return att;
     }
@@ -1914,6 +1908,7 @@ std::vector<QgsFeatureAttribute> *QgsGrassProvider::attributes ( int field, int 
 
     int more;
     if ( db_fetch (&databaseCursor, DB_NEXT, &more) != DB_OK ) {
+	db_close_database_shutdown_driver ( driver );
 	std::cout << "Cannot fetch DB record" << std::endl;
 	return att;
     }
@@ -2352,13 +2347,6 @@ int QgsGrassProvider::cidxGetMaxCat( int idx )
     return ( cat );
 }
     
-
-
-size_t QgsGrassProvider::layerCount() const
-{
-    return 1;                   // XXX how to find how many layers?
-} // QgsGrassProvider::layerCount()
-
 
 
 QString QgsGrassProvider::name() const

@@ -42,23 +42,10 @@
 // Required qgis includes
 // 
 
-#include <qgisapp.h>
+#include <qgisinterface.h>
 #include <qgsmaplayer.h>
 #include <qgsrasterlayer.h>
 #include "plugin.h"
-#include <q3toolbar.h>
-#include <qmenubar.h>
-#include <qmessagebox.h>
-#include <q3popupmenu.h>
-#include <qlineedit.h>
-#include <qaction.h>
-#include <qapplication.h>
-#include <qcursor.h>
-#include <QMenu>
-//
-//non qt includes
-//
-#include <iostream>
 
 //
 //the gui subclass
@@ -73,9 +60,9 @@
 #endif
 
 static const char * const sIdent = "$Id$";
-static const char * const sName = "Georeferencer";
-static const char * const sDescription = "The georeferencer plugin is a tool for adding projection info to rasters";
-static const char * const sPluginVersion = "Version 0.1";
+static const QString sName = QObject::tr("Georeferencer");
+static const QString sDescription = QObject::tr("Adding projection info to rasters");
+static const QString sPluginVersion = QObject::tr("Version 0.1");
 static const QgisPlugin::PLUGINTYPE sPluginType = QgisPlugin::UI;
 
 //////////////////////////////////////////////////////////////////////
@@ -90,9 +77,8 @@ static const QgisPlugin::PLUGINTYPE sPluginType = QgisPlugin::UI;
  * @param theQGisApp - Pointer to the QGIS main window
  * @param theQGisInterface - Pointer to the QGIS interface object
  */
-QgsGeorefPlugin::QgsGeorefPlugin(QgisApp * theQGisApp, QgisIface * theQgisInterface):
+QgsGeorefPlugin::QgsGeorefPlugin(QgisInterface * theQgisInterface):
                  QgisPlugin(sName,sDescription,sPluginVersion,sPluginType),
-                 mQGisApp(theQGisApp), 
                  mQGisIface(theQgisInterface)
 {
 }
@@ -113,12 +99,9 @@ void QgsGeorefPlugin::initGui()
   // Connect the action to the run
   connect(mQActionPointer, SIGNAL(activated()), this, SLOT(run()));
   
-  // add to the plugin menu
-  QMenu *pluginMenu = mQGisIface->getPluginMenu(tr("&Georeferencer"));
-  pluginMenu->addAction(mQActionPointer);
-
-  // Add to the toolbar
+  // Add to the toolbar & menu
   mQGisIface->addToolBarIcon(mQActionPointer);
+  mQGisIface->addPluginMenu(tr("&Georeferencer"), mQActionPointer);
 
 }
 //method defined in interface
@@ -130,16 +113,15 @@ void QgsGeorefPlugin::help()
 // Slot called when the buffer menu item is activated
 void QgsGeorefPlugin::run()
 {
-  QgsGeorefPluginGui *myPluginGui=new QgsGeorefPluginGui(mQGisIface, mQGisApp);
+  QgsGeorefPluginGui *myPluginGui=new QgsGeorefPluginGui(mQGisIface, mQGisIface->getMainWindow());
   myPluginGui->show();
 }
 
 // Unload the plugin by cleaning up the GUI
 void QgsGeorefPlugin::unload()
 {
-  // TODO: make it work in Qt4 way
   // remove the GUI
-  mQGisIface->removePluginMenuItem(tr("&Georeferencer"),mMenuId);
+  mQGisIface->removePluginMenu(tr("&Georeferencer"),mQActionPointer);
   mQGisIface->removeToolBarIcon(mQActionPointer);
   delete mQActionPointer;
 }
@@ -169,9 +151,9 @@ void QgsGeorefPlugin::unload()
  * of the plugin class
  */
 // Class factory to return a new instance of the plugin class
-QGISEXTERN QgisPlugin * classFactory(QgisApp * theQGisAppPointer, QgisIface * theQgisInterfacePointer)
+QGISEXTERN QgisPlugin * classFactory(QgisInterface * theQgisInterfacePointer)
 {
-  return new QgsGeorefPlugin(theQGisAppPointer, theQgisInterfacePointer);
+  return new QgsGeorefPlugin(theQgisInterfacePointer);
 }
 // Return the name of the plugin - note that we do not user class members as
 // the class may not yet be insantiated when this method is called.

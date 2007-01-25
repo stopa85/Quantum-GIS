@@ -19,13 +19,19 @@
 
 #include <cassert>
 #include <iostream>
-#include <qstring.h>
-#include <qapplication.h>
-#include <qmessagebox.h>
-#include <qfileinfo.h>
-#include <q3textbrowser.h>
+
+#include <QString>
+#include <QApplication>
+#include <QMessageBox>
+#include <QFileInfo>
+#include <QTextCodec>
+#include <QTextStream>
+#include <QFile>
+
 #include <sqlite3.h>
+
 #include "qgshelpviewer.h"
+
 QgsHelpViewer::QgsHelpViewer(const QString &contextId, QWidget *parent, 
     Qt::WFlags fl)
 : QDialog(parent, fl)
@@ -49,7 +55,83 @@ void QgsHelpViewer::fileExit()
 {
   QApplication::exit();
 }
+/*
+ * Read the help file and populate the viewer
+ */
 void QgsHelpViewer::loadContext(const QString &contextId)
+{
+  if(contextId != QString::null)
+  {
+    // set up the path to the help file
+    QString helpFilesPath =
+#ifdef Q_OS_MACX
+      // remove bin/qgis_help.app/Contents/MacOS to get to share/qgis
+      qApp->applicationDirPath() + "/../../../../share/qgis" +
+#elif WIN32
+      qApp->applicationDirPath() + "/share/qgis"
+#else
+      QString(PKGDATAPATH) +
+#endif
+      "/resources/context_help/";
+    /* 
+     * determine the locale and create the file name from
+     * the context id
+     */
+    QString lang(QTextCodec::locale());
+    /*
+     * If the language isn't set on the system, assume en_US,
+     * otherwise we get the banner at the top of the help file 
+     * saying it isn't available in "your" language. Some systems
+     * may be installed without the LANG environment being set.
+     */
+    if(lang.length() == 0 || lang == "C")
+    {
+      lang = "en_US";
+    }
+    QString fullHelpPath = helpFilesPath + contextId + "_" + lang;
+    // get the help content and title from the localized file
+    QString helpContents;
+    QFile file(fullHelpPath);
+    // check to see if the localized version exists
+    if(!file.exists())
+    {
+      // change the file name to the en_US version (default)
+      fullHelpPath = helpFilesPath + contextId + "_en_US";
+      file.setFileName(fullHelpPath);
+      // Check for some sort of english locale and if not found, include 
+      // translate this for us message
+      if(!lang.contains("en_"))
+      {
+        helpContents = "<i>This help file is not available in your language."
+         " If you would like to translate it, please contact the QGIS  development team.</i><hr>";
+      }
+    }
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+      helpContents = tr("This help file does not exist for your language")
+        +":<p><b>"
+        + fullHelpPath 
+        + "</b><p>"
+        + tr("If you would like to create it, contact the QGIS development team");
+    }
+    else
+    { 
+      QTextStream in(&file);
+      while (!in.atEnd()) {
+        QString line = in.readLine();
+        helpContents += line;
+      }
+    }
+    file.close();
+
+    // Set the browser text to the help contents
+    txtBrowser->setHtml(helpContents);
+    setCaption(tr("Quantum GIS Help"));
+
+        }
+        }
+
+void QgsHelpViewer::loadContextFromSqlite(const QString &contextId)
 {
   if(contextId != QString::null)
   {
@@ -59,7 +141,7 @@ void QgsHelpViewer::loadContext(const QString &contextId)
       // remove bin/qgis_help.app/Contents/MacOS to get to share/qgis
       qApp->applicationDirPath() + "/../../../../share/qgis" +
 #elif WIN32
-      qApp->applicationDirPath() + "/share/qgis"
+      qApp->applicationDirPath() +
 #else
       QString(PKGDATAPATH) +
 #endif
@@ -72,7 +154,7 @@ void QgsHelpViewer::loadContext(const QString &contextId)
       sqlite3_stmt *ppStmt;
       const char *pzTail;
       // build the sql statement
-      QString sql = "select content,title from tbl_help where context_id = " 
+      QString sql = "select content,title from context_helps where context_id = " 
         + contextId;
       rc = sqlite3_prepare(db, (const char *)sql, sql.length(), &ppStmt, &pzTail);
       if(rc == SQLITE_OK)
@@ -86,7 +168,7 @@ void QgsHelpViewer::loadContext(const QString &contextId)
       }
       else
       {
-        QMessageBox::critical(this, "Error", 
+        QMessageBox::critical(this, tr("Error"), 
             tr("Failed to get the help text from the database") + QString(":\n   ")
             + sqlite3_errmsg(db));  
       }

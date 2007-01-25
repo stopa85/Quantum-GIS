@@ -30,7 +30,7 @@ QgsGeorefPluginGui::QgsGeorefPluginGui() : QgsGeorefPluginGuiBase()
   
 }
 
-QgsGeorefPluginGui::QgsGeorefPluginGui(QgisIface* theQgisInterface,
+QgsGeorefPluginGui::QgsGeorefPluginGui(QgisInterface* theQgisInterface,
                                        QWidget* parent, Qt::WFlags fl)
   : QDialog(parent, fl), mIface(theQgisInterface)
 {
@@ -50,7 +50,7 @@ void QgsGeorefPluginGui::on_pbnClose_clicked()
 
 
 void QgsGeorefPluginGui::on_pbnSelectRaster_clicked() {
-  QSettings settings("QuantumGIS", "qgis");
+  QSettings settings;
   QString dir = settings.readEntry("/Plugin-GeoReferencer/rasterdirectory");
   if (dir.isEmpty())
     dir = ".";
@@ -64,7 +64,15 @@ void QgsGeorefPluginGui::on_pbnSelectRaster_clicked() {
 
 
 void QgsGeorefPluginGui::on_pbnEnterWorldCoords_clicked() {
-  
+
+  // Is there a filename
+  if (leSelectRaster->text().isEmpty())
+  {
+    QMessageBox::critical(this, tr("Error"), 
+			  tr("You need to specify a file to georeference first."));
+
+    return;
+  }
   // do we think that this is a valid raster?
   if (!QgsRasterLayer::isValidRasterFileName(leSelectRaster->text())) {
     QMessageBox::critical(this, tr("Error"), 
@@ -74,7 +82,7 @@ void QgsGeorefPluginGui::on_pbnEnterWorldCoords_clicked() {
   
   // remember the directory
   {
-    QSettings settings("QuantumGIS", "qgis");
+    QSettings settings;
     QFileInfo fileInfo(leSelectRaster->text());
     settings.writeEntry("/Plugin-GeoReferencer/rasterdirectory", 
 			fileInfo.dirPath());
@@ -94,29 +102,16 @@ void QgsGeorefPluginGui::on_pbnEnterWorldCoords_clicked() {
   // check if there already is a world file
   if (!worldfile.isEmpty()) {
     if (QFile::exists(worldfile)) {
-      QMessageBox::critical(this, tr("Error"),
-			    tr("The selected file already seems to have a ")+
-			    tr("world file! If you want to replace it with a ")+
-			    tr("new world file, remove the old one first."));
-      return;
+      QMessageBox::StandardButton r = QMessageBox::question(this, tr("World file exists"),
+                       tr("<p>The selected file already seems to have a ")+
+                       tr("world file! Do you want to replace it with the ")+
+		               tr("new world file?</p>"),
+                       QMessageBox::Ok | QMessageBox::Cancel);
+      if (r == QMessageBox::Cancel)
+        return;
+      else
+        QFile::remove(worldfile);
     }
-  }
-  
-  // XXX This is horrible, but it works and I'm tired / ll
-  {
-    QSettings settings("QuantumGIS", "qgis");
-    QgsProject* prj = QgsProject::instance();
-    mProjBehaviour = settings.readEntry("/Projections/defaultBehaviour");
-    mProjectSRS = prj->readEntry("SpatialRefSys", "/ProjectSRSProj4String");
-    mProjectSRSID = prj->readNumEntry("SpatialRefSys", "/ProjectSRSID");
-    
-    settings.writeEntry("/Projections/defaultBehaviour", "useProject");
-    prj->writeEntry("SpatialRefSys", "/ProjectSRSProj4String", GEOPROJ4);
-    prj->writeEntry("SpatialRefSys", "/ProjectSRSID", int(GEOSRS_ID));
-    
-    settings.writeEntry("/Projections/defaultBehaviour", mProjBehaviour);
-    prj->writeEntry("SpatialRefSys", "/ProjectSRSProj4String", mProjectSRS);
-    prj->writeEntry("SpatialRefSys", "/ProjectSRSID", mProjectSRSID);
   }
   
   QgsPointDialog* dlg = new QgsPointDialog(raster, mIface, this);

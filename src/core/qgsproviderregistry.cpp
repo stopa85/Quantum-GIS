@@ -21,18 +21,15 @@
 
 #include <iostream>
 
-using namespace std;
-
-#include <QMessageBox>
 #include <QString>
 #include <QDir>
 #include <QLibrary>
-#include <QApplication>
 
 
 #include "qgis.h"
 #include "qgsdataprovider.h"
 #include "qgslogger.h"
+#include "qgsmessageoutput.h"
 #include "qgsprovidermetadata.h"
 
 
@@ -90,7 +87,11 @@ QgsProviderRegistry::QgsProviderRegistry(QString pluginPath)
                               "No QGIS data provider plugins found in:");
     msg += "\n" + mLibraryDirectory.path() + "\n\n";
     msg += QObject::tr("No vector layers can be loaded. Check your QGIS installation");
-    QMessageBox::critical(0, QObject::tr("No Data Providers"), msg);
+    
+    QgsMessageOutput* output = QgsMessageOutput::createMessageOutput();
+    output->setTitle(QObject::tr("No Data Providers"));
+    output->setMessage(msg, QgsMessageOutput::MessageText);
+    output->showMessage();
   } 
   else
   {
@@ -114,11 +115,15 @@ QgsProviderRegistry::QgsProviderRegistry(QString pluginPath)
         // get the description and the key for the provider plugin
         isprovider_t *isProvider = (isprovider_t *) myLib->resolve("isProvider");
 
-        if (isProvider)
+	//MH: Added a further test to detect non-provider plugins linked to provider plugins.
+	//Only pure provider plugins have 'type' not defined
+	isprovider_t *hasType = (isprovider_t *) myLib->resolve("type");
+
+        if (!hasType && isProvider)
         {
           // check to see if this is a provider plugin
           if (isProvider())
-          {
+	    {
             // looks like a provider. get the key and description
             description_t *pDesc = (description_t *) myLib->resolve("description");
             providerkey_t *pKey = (providerkey_t *) myLib->resolve("providerKey");
@@ -180,6 +185,10 @@ QgsProviderRegistry::QgsProviderRegistry(QString pluginPath)
 #endif
         }
       }
+      else
+      {
+        QgsDebugMsg("Couldn't load " + fi.filePath());
+      }
 
       //++it;
 
@@ -189,6 +198,10 @@ QgsProviderRegistry::QgsProviderRegistry(QString pluginPath)
 
 } // QgsProviderRegistry ctor
 
+
+QgsProviderRegistry::~QgsProviderRegistry()
+{
+}
 
 
 /** convenience function for finding any existing data providers that match "providerKey"
@@ -299,11 +312,6 @@ QgsDataProvider* QgsProviderRegistry::getProvider( QString const & providerKey,
   // XXX should I check for and possibly delete any pre-existing providers?
   // XXX How often will that scenario occur?
 
-#ifdef QGISDEBUG
-    const char * providerStr = providerKey.ascii(); // debugger probe
-    const char * dataSourceStr = dataSource.ascii(); // ditto
-#endif
-
   // load the plugin
   QString lib = library(providerKey);
 
@@ -361,6 +369,7 @@ QgsDataProvider* QgsProviderRegistry::getProvider( QString const & providerKey,
 #endif
         if (dataProvider->isValid())
         {
+	  delete myLib;
           return dataProvider;
         }
         else
@@ -369,7 +378,7 @@ QgsDataProvider* QgsProviderRegistry::getProvider( QString const & providerKey,
             QgsDebugMsg( "Invalid data provider" );
 
             myLib->unload();
-
+	    delete myLib;
             return 0;
         }
       }
@@ -378,15 +387,15 @@ QgsDataProvider* QgsProviderRegistry::getProvider( QString const & providerKey,
         QgsLogger::warning( "Unable to instantiate the data provider plugin" );
 
         myLib->unload();
-
+	delete myLib;
         return 0;
       }
     }
   }
   else
   {
-    QgsLogger::warning( "Failed to load ../providers/libproviders.so" );
-
+    QgsLogger::warning( "Failed to load " + lib );
+    delete myLib;
     return 0;
   }
   
@@ -406,10 +415,27 @@ QString QgsProviderRegistry::fileVectorFilters() const
 } //  QgsProviderRegistry::fileVectorFilters
 
 
+QStringList QgsProviderRegistry::providerList() const
+{
+  QStringList lst;
+  for (Providers::const_iterator it = mProviders.begin(); it != mProviders.end(); it++)
+  {
+    lst.append(it->first);
+  }
+  return lst;
+}
 
 
+const QgsProviderMetadata* QgsProviderRegistry::providerMetadata(const QString& providerKey) const
+{
+  return findMetadata_( mProviders, providerKey );
+}
+
+
+/*
 QgsDataProvider * 
 QgsProviderRegistry::openVector( QString const & dataSource, QString const & providerKey )
 {
     return getProvider( providerKey, dataSource );
 } // QgsProviderRegistry::openVector
+*/

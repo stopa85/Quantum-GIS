@@ -8,18 +8,16 @@
 #include <gdalwarper.h>
 #include <gdal_frmts.h>
 
+#include <QFile>
+
 #include "qgsimagewarper.h"
-
-
-using namespace std;
-
 
 void QgsImageWarper::warp(const QString& input, const QString& output,
 			  double& xOffset, double& yOffset, 
 			  ResamplingMethod resampling, bool useZeroAsTrans) {
   // Open input file
   GDALAllRegister();
-  GDALDataset* hSrcDS = static_cast<GDALDataset*>(GDALOpen((const char*)input, 
+  GDALDataset* hSrcDS = static_cast<GDALDataset*>(GDALOpen(QFile::encodeName(input).constData(), 
 							   GA_ReadOnly));
   // Setup warp options. 
   GDALWarpOptions *psWarpOptions = GDALCreateWarpOptions();
@@ -58,13 +56,13 @@ void QgsImageWarper::warp(const QString& input, const QString& output,
   tParam.x0 = xOffset;
   tParam.y0 = yOffset;
   psWarpOptions->pTransformerArg = &tParam;
-  
+
   // create the output file
   GDALDriver* driver = static_cast<GDALDriver*>(GDALGetDriverByName("GTiff"));
   char **papszOptions = NULL;
   papszOptions = CSLSetNameValue(papszOptions, "INIT_DEST", "NO_DATA");
   GDALDataset* hDstDS = 
-    driver->Create((const char*)output, newXSize, newYSize, 
+    driver->Create(QFile::encodeName(output).constData(), newXSize, newYSize, 
 		   hSrcDS->GetRasterCount(),
 		   hSrcDS->GetRasterBand(1)->GetRasterDataType(),
 		   papszOptions);
@@ -80,7 +78,6 @@ void QgsImageWarper::warp(const QString& input, const QString& output,
       hDstDS->GetRasterBand(i+1)->SetNoDataValue(0);
     }
   }
-
   psWarpOptions->hDstDS = hDstDS;
 
   // Initialize and execute the warp operation. 
@@ -88,7 +85,6 @@ void QgsImageWarper::warp(const QString& input, const QString& output,
   oOperation.Initialize(psWarpOptions);
   oOperation.ChunkAndWarpImage(0, 0, GDALGetRasterXSize(hDstDS), 
 			       GDALGetRasterYSize(hDstDS));
-
   GDALDestroyWarpOptions(psWarpOptions);
   delete hSrcDS;
   delete hDstDS;

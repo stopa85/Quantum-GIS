@@ -36,7 +36,6 @@
 #include <qpushbutton.h>
 #include <qradiobutton.h>
 #include <q3buttongroup.h>
-#include <qpalette.h>
 #include <qcolordialog.h>
 #include <qspinbox.h>
 #include <qglobal.h>
@@ -45,10 +44,9 @@
 
 #include <qgsrasterlayer.h>
 #include "qgis.h"
-#include "qgisapp.h"
 #include "qgsmaplayer.h"
 #include "qgsvectorlayer.h"
-#include "qgisiface.h"
+#include "qgisinterface.h"
 #include "qgsmapcanvas.h"
 #include "qgsmaptool.h"
 #include "qgsmaptopixel.h"
@@ -144,7 +142,7 @@ class QgsGrassRegionEdit : public QgsMapTool
 
 
 
-QgsGrassRegion::QgsGrassRegion ( QgsGrassPlugin *plugin,  QgisApp *qgisApp, QgisIface *iface,
+QgsGrassRegion::QgsGrassRegion ( QgsGrassPlugin *plugin,  QgisInterface *iface,
         QWidget * parent, Qt::WFlags f ) 
         :QDialog(parent, f), QgsGrassRegionBase ( )
 {
@@ -155,7 +153,6 @@ QgsGrassRegion::QgsGrassRegion ( QgsGrassPlugin *plugin,  QgisApp *qgisApp, Qgis
     setupUi(this);
 
     mPlugin = plugin;
-    mQgisApp = qgisApp;
     mInterface = iface;
     mCanvas = mInterface->getMapCanvas();
     restorePosition();
@@ -223,9 +220,7 @@ QgsGrassRegion::QgsGrassRegion ( QgsGrassPlugin *plugin,  QgisApp *qgisApp, Qgis
 
     // Symbology
     QPen pen = mPlugin->regionPen();
-    QPalette palette = mColorButton->palette();
-    palette.setColor( QColorGroup::Button, pen.color() );
-    mColorButton->setPalette( palette );
+    mColorButton->setColor( pen.color() );
     connect( mColorButton, SIGNAL(clicked()), this, SLOT(changeColor()));
 
     mWidthSpinBox->setValue( pen.width() );
@@ -241,13 +236,13 @@ QgsGrassRegion::QgsGrassRegion ( QgsGrassPlugin *plugin,  QgisApp *qgisApp, Qgis
 void QgsGrassRegion::changeColor ( void ) {
     QPen pen = mPlugin->regionPen();
     QColor color = QColorDialog::getColor ( pen.color(), this );
+    if (color.isValid())
+    {
+      mColorButton->setColor( color );
 
-    QPalette palette = mColorButton->palette();
-    palette.setColor( QColorGroup::Button, pen.color() );
-    mColorButton->setPalette( palette );
-
-    pen.setColor(color);
-    mPlugin->setRegionPen(pen);
+      pen.setColor(color);
+      mPlugin->setRegionPen(pen);
+    }
 }
 
 void QgsGrassRegion::changeWidth ( void ) {
@@ -290,6 +285,7 @@ void QgsGrassRegion::setGuiValues( bool north, bool south, bool east, bool west,
 
 QgsGrassRegion::~QgsGrassRegion ()
 {
+  delete mRegionEdit;
 }
 
 void QgsGrassRegion::northChanged(const QString &str)
@@ -451,7 +447,7 @@ void QgsGrassRegion::postRender(QPainter *painter)
 void QgsGrassRegion::accept()
 {
     // TODO: better repaint region
-    QSettings settings("QuantumGIS", "qgis");
+    QSettings settings;
 
     bool on = settings.readBoolEntry ("/GRASS/region/on", true );
 
@@ -472,20 +468,20 @@ void QgsGrassRegion::accept()
     }
 
     saveWindowLocation();
-    mQgisApp->pan(); // change to pan tool
+    mCanvas->setMapTool(NULL);
     delete this;
 }
 
 void QgsGrassRegion::reject()
 {
     saveWindowLocation();
-    mQgisApp->pan(); // change to pan tool
+    mCanvas->setMapTool(NULL);
     delete this;
 }
 
 void QgsGrassRegion::restorePosition()
 {
-  QSettings settings("QuantumGIS", "qgis");
+  QSettings settings;
   int ww = settings.readNumEntry("/GRASS/windows/region/w", 250);
   int wh = settings.readNumEntry("/GRASS/windows/region/h", 350);
   int wx = settings.readNumEntry("/GRASS/windows/region/x", 100);
@@ -496,7 +492,7 @@ void QgsGrassRegion::restorePosition()
 
 void QgsGrassRegion::saveWindowLocation()
 {
-  QSettings settings("QuantumGIS", "qgis");
+  QSettings settings;
   QPoint p = this->pos();
   QSize s = this->size();
   settings.writeEntry("/GRASS/windows/region/x", p.x());

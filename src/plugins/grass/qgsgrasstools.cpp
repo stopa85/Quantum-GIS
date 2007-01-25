@@ -29,7 +29,6 @@
 #include <qinputdialog.h>
 #include <qsettings.h>
 #include <qpainter.h>
-#include <qpixmap.h>
 #include <qpen.h>
 #include <q3pointarray.h>
 #include <qcursor.h>
@@ -55,6 +54,7 @@
 #include <QHeaderView>
 
 #include "qgis.h"
+#include "qgisinterface.h"
 #include "qgsapplication.h"
 #include "qgsmapcanvas.h"
 #include "qgsmaplayer.h"
@@ -94,7 +94,7 @@ QSize QgsGrassToolsTabWidget::iconSize()
 
 QgsGrassToolsTabWidget::~QgsGrassToolsTabWidget() {}
 
-QgsGrassTools::QgsGrassTools ( QgisApp *qgisApp, QgisIface *iface, 
+QgsGrassTools::QgsGrassTools ( QgisInterface *iface, 
 	                     QWidget * parent, const char * name, Qt::WFlags f )
              :QDialog ( parent )
 {
@@ -105,7 +105,6 @@ QgsGrassTools::QgsGrassTools ( QgisApp *qgisApp, QgisIface *iface,
    setWindowTitle ( "GRASS Tools" );
 //    setupUi(this);
 
-    mQgisApp = qgisApp;
     mIface = iface;
     mCanvas = mIface->getMapCanvas();
 
@@ -118,11 +117,11 @@ QgsGrassTools::QgsGrassTools ( QgisApp *qgisApp, QgisIface *iface,
 
 
     mModulesListView = new Q3ListView();
-    mTabWidget->addTab( mModulesListView, "Modules" );
+    mTabWidget->addTab( mModulesListView, tr("Modules") );
     mModulesListView->addColumn("col1",0);
     
     // Set list view
-    mModulesListView->setColumnText(0,"Modules");
+    mModulesListView->setColumnText(0,tr("Modules"));
     mModulesListView->clear();
     mModulesListView->setSorting(-1);
     mModulesListView->setRootIsDecorated(true);
@@ -136,17 +135,7 @@ QgsGrassTools::QgsGrassTools ( QgisApp *qgisApp, QgisIface *iface,
                 + "/" + QgsGrass::getDefaultMapset();
     setCaption(title);
 
-    // Warning: QgsApplication initialized in main.cpp
-    //          is not valid here (static libraries / linking)
-
-#if defined(WIN32) || defined(Q_OS_MACX)
-    mAppDir = qApp->applicationDirPath();
-#else
-    mAppDir = PREFIX;
-#endif
-
-    //QString conf = QgsApplication::pkgDataPath() + "/grass/config/default.qgc";
-    QString conf = mAppDir + "/share/qgis/grass/config/default.qgc";
+    QString conf = QgsApplication::pkgDataPath() + "/grass/config/default.qgc";
 
     restorePosition();
 
@@ -160,7 +149,7 @@ QgsGrassTools::QgsGrassTools ( QgisApp *qgisApp, QgisIface *iface,
     // Warning: if browser is on the first page modules are 
     // displayed over the browser
     mBrowser = new QgsGrassBrowser ( mIface, this );
-    mTabWidget->addTab( mBrowser, "Browser" );
+    mTabWidget->addTab( mBrowser, tr("Browser") );
 
     connect( mBrowser, SIGNAL(regionChanged()), 
 		         this, SLOT(emitRegionChanged()) );
@@ -178,8 +167,7 @@ void QgsGrassTools::moduleClicked( Q3ListViewItem * item )
     
     if ( name.length() == 0 ) return;  // Section
     
-    //QString path = QgsApplication::pkgDataPath() + "/grass/modules/" + name;
-    QString path = mAppDir + "/share/qgis/grass/modules/" + name;
+    QString path = QgsApplication::pkgDataPath() + "/grass/modules/" + name;
     #ifdef QGISDEBUG
     std::cerr << "path = " << path.ascii() << std::endl;
     #endif
@@ -211,24 +199,27 @@ void QgsGrassTools::moduleClicked( Q3ListViewItem * item )
          // Note: I was not able to run cmd.exe and command.com
          //       with QProcess
 
-         QString msysPath = mAppDir + "/msys/msys.bat";
+         QString msysPath = appDir() + "/msys/bin/rxvt.exe";
+         QString myArguments = "-backspacekey ^H -sl 2500 -fg white -bg black -sr -fn Courier-16 -tn msys -geometry 80x25 -e    /bin/sh --login -i";
          QFile file ( msysPath );
 
          if ( !file.exists() ) 
          {
-	     QMessageBox::warning( 0, "Warning",
-                 "Cannot find MSYS (" + msysPath + ")" );
+           QMessageBox::warning( 0, "Warning",
+               "Cannot find MSYS (" + msysPath + ")" );
          } 
          else
          {
-             QProcess *proc = new QProcess(this);
-             proc->start (msysPath);
-             proc->waitForStarted();
-             if ( proc->state() != QProcess::Running )
-             {
-	         QMessageBox::warning( 0, "Warning",
+           QProcess *proc = new QProcess(this);
+           //allow msys to exist in a path with spaces
+           msysPath =  "\"" + msysPath + "\""  ;
+           proc->start(msysPath + " " +  myArguments);
+           proc->waitForStarted();
+           if ( proc->state() != QProcess::Running )
+           {
+             QMessageBox::warning( 0, "Warning",
                  "Cannot start MSYS (" + msysPath + ")" );
-             }
+           }
          }
          return;
 #else 
@@ -245,7 +236,7 @@ void QgsGrassTools::moduleClicked( Q3ListViewItem * item )
     else
     {
 	m = dynamic_cast<QWidget *> ( new QgsGrassModule ( this, 
-                                      mQgisApp, mIface, path, mTabWidget ) );
+                                      mIface, path, mTabWidget ) );
     }
     
     int height = mTabWidget->iconSize().height();
@@ -358,8 +349,7 @@ void QgsGrassTools::addModules (  Q3ListViewItem *parent, QDomElement &element )
 		QString name = e.attribute("name");
 	        std::cout << "name = " << name.toLocal8Bit().data() << std::endl;
 
-                //QString path = QgsApplication::pkgDataPath() + "/grass/modules/" + name;
-                QString path = mAppDir + "/share/qgis/grass/modules/" + name;
+                QString path = QgsApplication::pkgDataPath() + "/grass/modules/" + name;
                 QString label = QgsGrassModule::label ( path );
 		QPixmap pixmap = QgsGrassModule::pixmap ( path, 25 ); 
 
@@ -399,8 +389,7 @@ QgsGrassTools::~QgsGrassTools()
 
 QString QgsGrassTools::appDir(void)
 {
-    //return QgsApplication::applicationDirPath();
-    return mAppDir;
+    return QgsApplication::applicationDirPath();
 }
 
 void QgsGrassTools::close(void)
@@ -417,7 +406,7 @@ void QgsGrassTools::closeEvent(QCloseEvent *e)
 
 void QgsGrassTools::restorePosition()
 {
-    QSettings settings("QuantumGIS", "qgis");
+    QSettings settings;
     int ww = settings.readNumEntry("/GRASS/windows/tools/w", 250);
     int wh = settings.readNumEntry("/GRASS/windows/tools/h", 300);
     int wx = settings.readNumEntry("/GRASS/windows/tools/x", 100);
@@ -429,7 +418,7 @@ void QgsGrassTools::restorePosition()
 
 void QgsGrassTools::saveWindowLocation()
 {
-    QSettings settings("QuantumGIS", "qgis");
+    QSettings settings;
     QPoint p = this->pos();
     QSize s = this->size();
     settings.writeEntry("/GRASS/windows/tools/x", p.x());

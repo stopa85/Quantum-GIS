@@ -95,7 +95,7 @@ else
     AC_MSG_ERROR([Geos Version 2.x.x is needed, but you have $ac_geos_version!])
   else
     AC_MSG_CHECKING([GEOS_CFLAGS])
-    GEOS_CFLAGS=`$GEOS_CONFIG --cflags`
+    GEOS_CFLAGS=`$GEOS_CONFIG --cflags` 
     AC_MSG_RESULT($GEOS_CFLAGS)
 
     AC_MSG_CHECKING([GEOS_LDADD])
@@ -153,17 +153,21 @@ AC_MSG_RESULT([$QTDIR])
 # TODO: Use sed instead of perl
 QTDIR=`echo $QTDIR | perl -p -e 's/\\\\/\\//g'`
 
-# Check for QT includedir 
-if test -f $QTDIR/include/qt/qglobal.h; then
+# Check for QT includedir
+
+# Test for the Windows version first because if if QTDIR is mounted via
+# smbfs to an actual Windows installation, the /include/Qt is found
+# case-insensitively
+if test -f $QTDIR/include/Qt/qglobal.h -a -f $QTDIR/src/corelib/global/qglobal.h; then
+  # Windows: $QTDIR/include/Qt/qglobal.h includes $QTDIR/src/corelib/global/qglobal.h
+  QTINC=$QTDIR/include
+  QTVERTEST=$QTDIR/src/corelib/global/
+elif test -f $QTDIR/include/qt/qglobal.h; then
   QTINC=$QTDIR/include/qt
   QTVERTEST=$QTDIR/include/qt
 elif test -f $QTDIR/include/qt4/Qt/qglobal.h; then
   QTINC=$QTDIR/include/qt4
   QTVERTEST=$QTDIR/include/qt4/Qt
-elif test -f $QTDIR/include/Qt/qglobal.h -a -f $QTDIR/src/corelib/global/qglobal.h; then
-  # Windows: $QTDIR/include/Qt/qglobal.h includes $QTDIR/src/corelib/global/qglobal.h
-  QTINC=$QTDIR/include
-  QTVERTEST=$QTDIR/src/corelib/global/
 elif test -f $QTDIR/include/Qt/qglobal.h; then
   QTINC=$QTDIR/include
   QTVERTEST=$QTDIR/include/Qt
@@ -179,8 +183,9 @@ fi
 AC_MSG_CHECKING([Qt version in $QTVERTEST])
 QT_VER=`grep 'define.*QT_VERSION_STR\W' $QTVERTEST/qglobal.h | perl -p -e 's/\D//g'`
 case "${QT_VER}" in
-  41*)
-    QT_MAJOR="4"
+  42*)
+    QT_MAJOR="${QT_VER:0:1}"
+    QT_MINOR="${QT_VER:1:1}"
     case "${host}" in
     *-darwin*)
       QT4_3SUPPORTINC=$QTDIR/lib/Qt3Support.framework/Headers
@@ -191,8 +196,13 @@ case "${QT_VER}" in
       QT4_SQLINC=$QTDIR/lib/QtSql.framework/Headers
       QT4_XMLINC=$QTDIR/lib/QtXml.framework/Headers
       QT4_SVGINC=$QTDIR/lib/QtSvg.framework/Headers
-      QT4_TESTINC=$QTDIR/include/QtTest
-      QT4_DESIGNERINC=$QTDIR/include/QtDesigner
+      if test $QT_MINOR -lt "2"; then
+        QT4_TESTINC=$QTDIR/include/QtTest
+        QT4_DESIGNERINC=$QTDIR/include/QtDesigner
+      else
+        QT4_TESTINC=$QTDIR/lib/QtTest.framework/Headers
+        QT4_DESIGNERINC=$QTDIR/lib/QtDesigner.framework/Headers
+      fi
 	  ;;
     *)
       QT4_3SUPPORTINC=$QTINC/Qt3Support
@@ -210,23 +220,10 @@ case "${QT_VER}" in
     QT4_DEFAULTINC=$QTDIR/mkspecs/default
     ;;
   *)
-    AC_MSG_ERROR([*** Qt version 4.1 or higher is required])
+    AC_MSG_ERROR([*** Qt version 4.2 or higher is required])
     ;;
 esac
 AC_MSG_RESULT([$QT_VER ($QT_MAJOR)])
-
-if test $QT_MAJOR = "3" ; then
-  # Check that moc is in path
-  AC_CHECK_PROG(MOC, moc, moc)
-  if test x$MOC = x ; then
-    AC_MSG_ERROR([*** moc must be in path])
-  fi
-  # uic is the Qt user interface compiler
-  AC_CHECK_PROG(UIC, uic, uic)
-  if test x$UIC = x ; then
-    AC_MSG_ERROR([*** uic must be in path])
-  fi
-fi
 
 if test $QT_MAJOR = "4" ; then
   # Hard code things for the moment
@@ -270,9 +267,6 @@ fi
 # manually, we'll let it slide if it isn't present
 ### AC_CHECK_PROG(QEMBED, qembed, qembed)
 # Calculate Qt include path
-if test $QT_MAJOR = "3" ; then
-QT_CXXFLAGS="-I$QTINC"
-fi
 if test $QT_MAJOR = "4" ; then
 QT_CXXFLAGS="-DQT3_SUPPORT -I$QT4_DEFAULTINC -I$QT4_3SUPPORTINC -I$QT4_COREINC -I$QT4_DESIGNERINC -I$QT4_GUIINC -I$QT4_NETWORKINC -I$QT4_OPENGLINC -I$QT4_SQLINC -I$QT4_XMLINC -I$QTINC -I$QT4_SVGINC -I$QT4_TESTINC -I$QT4_DESIGNERINC"
 fi
@@ -335,7 +329,12 @@ case "${host}" in
       QT_IS_MT="yes"
       QT_IS_EMBEDDED="yes"
     elif test "x`ls $QTDIR/lib/QtCore.framework/QtCore 2> /dev/null`" != x ; then
-      QT_LIB="-Xlinker -F$QTDIR/lib -framework Qt3Support -framework QtCore -framework QtGui -framework QtNetwork -framework QtXml -framework QtSvg -L$QTDIR/lib -lQtDesigner -lQtTest"
+      QT_LIB="-Xlinker -F$QTDIR/lib -framework Qt3Support -framework QtCore -framework QtGui -framework QtNetwork -framework QtXml -framework QtSvg"
+      if test $QT_MINOR -lt "2"; then
+        QT_LIB="$QT_LIB -L$QTDIR/lib -lQtDesigner -lQtTest"
+      else
+        QT_LIB="$QT_LIB -framework QtDesigner -framework QtTest"
+      fi
       QT_CXXFLAGS="-DQT3_SUPPORT -I$QT4_DEFAULTINC -I$QT4_3SUPPORTINC -I$QT4_COREINC -I$QT4_GUIINC -I$QT4_NETWORKINC -I$QT4_OPENGLINC -I$QT4_SQLINC -I$QT4_SVGINC -I$QT4_XMLINC -I$QT4_DESIGNERINC -I$QT4_TESTINC -I$QTDIR/include"
       QT_IS_MT="yes"
     fi
@@ -390,7 +389,25 @@ case "${host}" in
     fi
     ;;
 
+  *netbsd*)
+    QT_LIBS="$QT_LIB"
+    if test $QT_IS_STATIC = yes && test $QT_IS_EMBEDDED = no; then
+      QT_LIBS="$QT_LIBS -L$x_libraries -lXext -lX11 -lm -lSM -lICE -ldl -ljpeg -lpthread"
+   else
+      QT_LIBS="$QT_LIBS -lpthread"
+    fi
+    ;;
+
   *freebsd*)
+    QT_LIBS="$QT_LIB"
+    if test $QT_IS_STATIC = yes && test $QT_IS_EMBEDDED = no; then
+      QT_LIBS="$QT_LIBS -L$x_libraries -lXext -lX11 -lm -lSM -lICE -ldl -ljpeg -lpthread"
+   else
+      QT_LIBS="$QT_LIBS -lpthread"
+    fi
+    ;;
+
+  *netbsd*)
     QT_LIBS="$QT_LIB"
     if test $QT_IS_STATIC = yes && test $QT_IS_EMBEDDED = no; then
       QT_LIBS="$QT_LIBS -L$x_libraries -lXext -lX11 -lm -lSM -lICE -ldl -ljpeg -lpthread"
@@ -434,15 +451,8 @@ case "${host}" in
 
     if test $QT_IS_STATIC = yes ; then
       QT_LIBS="$QT_LIBS $QT_LIB kernel32.lib user32.lib gdi32.lib comdlg32.lib ole32.lib shell32.lib imm32.lib advapi32.lib wsock32.lib winspool.lib winmm.lib netapi32.lib"
-      if test $QT_MAJOR = "3" ; then
-        QT_LIBS="$QT_LIBS qtmain.lib"
-      fi
     else
       QT_LIBS="$QT_LIBS $QT_LIB"        
-      if test $QT_MAJOR = "3" ; then
-        QT_CXXFLAGS="$QT_CXXFLAGS -DQT_DLL"
-        QT_LIBS="$QT_LIBS qtmain.lib qui.lib user32.lib netapi32.lib"
-      fi
     fi
     QASSISTANTCLIENT_LDADD="qassistantclient.lib"
     ;;
@@ -509,7 +519,7 @@ AC_DEFUN([AQ_CHECK_QT4],[
     
     QT_MIN_VER=4.1.0
 
-    PKG_CHECK_MODULES(QT, QtCore QtGui Qt3Support QtNetwork QtXml QtSvg QtTest >= $QT_MIN_VER)
+dnl    PKG_CHECK_MODULES(QT, QtCore QtGui Qt3Support QtNetwork QtXml QtSvg QtTest >= $QT_MIN_VER)
 
     dnl check for Qt binaries needed for compilation: moc,uic,rcc
     dnl (we could also check for moc and uic versions)
@@ -529,7 +539,7 @@ AC_DEFUN([AQ_CHECK_QT4],[
 
     dnl workaround for case when QtTest doesn't report QtTest subdirectory
     dnl in include path (this is not a very nice check)
-    PKG_CHECK_MODULES(QT_TEST, QtTest >= $QT_MIN_VER)
+dnl    PKG_CHECK_MODULES(QT_TEST, QtTest >= $QT_MIN_VER)
     QT_TEST_CFLAGS=`echo $QT_TEST_CFLAGS | sed 's/[ \t]*$//'` # remove trailing spaces
     QTTEST_HAS_SUBDIR=`echo $QT_TEST_CFLAGS | grep '/QtTest' | wc -l`
     if test "$QTTEST_HAS_SUBDIR" -eq "0" ; then
@@ -578,7 +588,6 @@ AC_DEFUN([AQ_CHECK_QT4],[
   dnl Assume for the moment that Qt4 installations will still compile against uic3
   dnl AM_CONDITIONAL([NO_UIC_IMPLEMENTATIONS], [test "$QT_MAJOR" = "4"])
   AM_CONDITIONAL([NO_UIC_IMPLEMENTATIONS], [test "$QT_MAJOR" = "0"])
-  AM_CONDITIONAL([HAVE_QT3], [test "$QT_MAJOR" = "3"])
   AM_CONDITIONAL([HAVE_QT4], [test "$QT_MAJOR" = "4"])
 
   AM_CONDITIONAL([HAVE_QTMAC], [test "$have_qtmac" = "yes"])
@@ -776,7 +785,7 @@ AC_MSG_CHECKING(for python build information)
         python_prefix=/System/Library/Frameworks/Python.framework/*/
       fi
       AC_CHECK_HEADER([$ax_python_bin/Python.h],
-      [[ax_python_header=`locate $python_prefix$ax_python_bin/Python.h | sed -e s,/Python.h,,`]],
+      [[ax_python_header=`locate $python_prefix$ax_python_bin/Python.h | head -1 | sed -e s,/Python.h,,`]],
       ax_python_header=no)
       if test $ax_python_lib != no; then
         if test $ax_python_header != no; then

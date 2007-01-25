@@ -22,23 +22,29 @@ email                : sherman at mrcc.com
 #include <qlineedit.h>
 #include <qcheckbox.h>
 #include <QComboBox>
+#include <QSettings>
 #include <qmessagebox.h>
 #include <qcolor.h>
 #include <qregexp.h>
 #include <qstring.h>
 #include <QWidget>
+#include <QApplication>
+#include "../../src/core/qgscontexthelp.h"
 #include "qgsmapserverexport.h"
-#include "ui_qgsmapserverexportbase.h"
 
 
 // constructor
 QgsMapserverExport::QgsMapserverExport(QWidget * parent, Qt::WFlags fl)
 : QDialog(parent, fl)  
 {
+  setupUi(this);
+  connect(this, SIGNAL(accepted()), this, SLOT(apply()));
 //   initialize python
   initPy();
-
-  setupUi(this);
+  qDebug("Reading setttings");
+  QSettings mySettings;
+  txtMapFilePath->setText(mySettings.value("mapserverExport/lastMapFile","").toString());
+  txtQgisFilePath->setText(mySettings.value("mapserverExport/lastQgsFile","").toString());
 
 }
 
@@ -62,16 +68,16 @@ QString QgsMapserverExport::baseName()
 // Choose the map file to create
 void QgsMapserverExport::on_btnChooseFile_clicked()
 {
-  mapFile = QFileDialog::getSaveFileName(this, "Name for the map file",
-      ".", "MapServer map files (*.map);;All files(*.*)");
+  mapFile = QFileDialog::getSaveFileName(this, tr("Name for the map file"),
+      ".", tr("MapServer map files (*.map);;All files(*.*)","Filter list for selecting files from a dialog box"));
   txtMapFilePath->setText(mapFile);
 
 }
 // Chooose the project file to process
 void QgsMapserverExport::on_btnChooseProjectFile_clicked()
 {
-  qgisProjectFile = QFileDialog::getOpenFileName(this, "Choose the QGIS project file",
-      ".", "QGIS Project Files (*.qgs);;All files (*.*)");
+  qgisProjectFile = QFileDialog::getOpenFileName(this, tr("Choose the QGIS project file"),
+      ".", tr("QGIS Project Files (*.qgs);;All files (*.*)", "Filter list for selecting files from a dialog box"));
   txtQgisFilePath->setText(qgisProjectFile);
 
 }
@@ -84,8 +90,8 @@ void QgsMapserverExport::on_chkExpLayersOnly_clicked(bool isChecked)
     txtMapHeight->setEnabled(!isChecked);
     cmbMapUnits->setEnabled(!isChecked);
     cmbMapImageType->setEnabled(!isChecked);
-    txtMinScale->setEnabled(!isChecked);
-    txtMaxScale->setEnabled(!isChecked);
+    //txtMinScale->setEnabled(!isChecked);
+    //txtMaxScale->setEnabled(!isChecked);
     txtWebTemplate->setEnabled(!isChecked);
     txtWebHeader->setEnabled(!isChecked);
     txtWebFooter->setEnabled(!isChecked);
@@ -94,16 +100,32 @@ void QgsMapserverExport::on_chkExpLayersOnly_clicked(bool isChecked)
     btnChooseTemplateFile->setEnabled(!isChecked);
 }
 
-void QgsMapserverExport::on_buttonOk_clicked()
+void QgsMapserverExport::apply()
 {
+  qDebug("Writing setttings");
+  QSettings mySettings;
+  mySettings.setValue("mapserverExport/lastMapFile",txtMapFilePath->text());
+  mySettings.setValue("mapserverExport/lastQgsFile",txtQgisFilePath->text());
   
   char *cstr;
   PyObject *pstr, *pmod, *pclass, *pinst, *pmeth, *pargs;
   //TODO Need to append the path to the qgis python files using the path to the
   //     Python files in the QGIS install directory
   PyRun_SimpleString("import sys");
-  QString curdir = "/home/gsherman/development/qgis_qt_port/tools/mapserver_export";
-  QString sysCmd = QString("sys.path.append('%1')").arg(curdir);
+  QString prefixPath = QApplication::applicationDirPath();
+  // Setup up path to the python script directory based on platform
+#ifdef Q_WS_MACX
+  QString dataPath = prefixPath + "/../../../../share/qgis";
+#elif WIN32
+  QString dataPath = prefixPath + "/share/qgis";
+#else
+  QString dataPath ( PKGDATAPATH );
+#endif
+  dataPath = dataPath.trimmed();
+  QString scriptDir = dataPath + QDir::separator() + "python";
+  qDebug("Python scripts directory: " + scriptDir.toLocal8Bit());
+  //QString curdir = "/home/gsherman/development/qgis_qt_port/tools/mapserver_export";
+  QString sysCmd = QString("sys.path.append('%1')").arg(scriptDir);
   PyRun_SimpleString(sysCmd.ascii());
 
   // Import the module
@@ -128,10 +150,9 @@ void QgsMapserverExport::on_buttonOk_clicked()
   {
     std::cout << "Initializing all options" << std::endl; 
     pmeth = PyObject_GetAttrString(pinst, "setOptions");
-    pargs = Py_BuildValue("(ssssssssss)", 
+    pargs = Py_BuildValue("(ssssssss)", 
         cmbMapUnits->currentText().ascii(), cmbMapImageType->currentText().ascii(), 
         txtMapName->text().ascii(), txtMapWidth->text().ascii(), txtMapHeight->text().ascii(), 
-        txtMinScale->text().ascii(), txtMaxScale->text().ascii(), 
         txtWebTemplate->text().ascii(), txtWebFooter->text().ascii(),txtWebHeader->text().ascii());
     pstr = PyEval_CallObject(pmeth, pargs);
 
@@ -141,7 +162,7 @@ void QgsMapserverExport::on_buttonOk_clicked()
   }
   // Get the writeMapFile method from the Qgis2Map class
   pmeth = PyObject_GetAttrString(pinst, "writeMapFile");
-  pargs = Py_BuildValue("( )");
+  pargs = Py_BuildValue("()");
   // Execute the writeMapFile method to parse the QGIS project file and create the .map file
   pstr = PyEval_CallObject(pmeth, pargs);
   // Show the return value
@@ -151,6 +172,11 @@ void QgsMapserverExport::on_buttonOk_clicked()
   Py_DECREF(pstr);
 
 }
+void QgsMapserverExport::on_buttonBox_helpRequested()
+{
+ QgsContextHelp::run(context_id); 
+}
+
 /** End of Auto-connected Slots **/
 
 // Write the map file
@@ -158,14 +184,16 @@ bool QgsMapserverExport::write()
 {
 
   //QMessageBox::information(0,"Full Path",fullPath);
-  int okToSave = 0;
+  QMessageBox::StandardButton okToSave = QMessageBox::Ok;
   // Check for file and prompt for overwrite if it exists
   if (QFile::exists(txtMapFilePath->text()))
   {
-    okToSave = QMessageBox::warning(0, "Overwrite File?", txtMapFilePath->text() +
-        " exists. \nDo you want to overwrite it?", "Yes", "No");
+    okToSave = QMessageBox::warning(0, tr("Overwrite File?"), txtMapFilePath->text() +
+        tr(" exists. \nDo you want to overwrite it?",
+           "a filename is prepended to this text, and appears in a dialog box"),
+           QMessageBox::Ok | QMessageBox::Cancel);
   }
-  if (okToSave == 0)
+  if (okToSave == QMessageBox::Ok)
   {
     // write the project information to the selected file
     writeMapFile();
@@ -184,6 +212,7 @@ void QgsMapserverExport::setFileName(QString fn)
 
 QString QgsMapserverExport::fullPathName()
 {
+  return QString(); // return something to allow compilation
   //return fullPath;
 }
 

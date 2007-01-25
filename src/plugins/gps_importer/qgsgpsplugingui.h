@@ -5,7 +5,7 @@
     begin                : Jan 21, 2004
     copyright            : (C) 2004 by Tim Sutton
     email                : tim@linfiniti.com
-/***************************************************************************
+ ***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -56,6 +56,7 @@ public slots:
   
   void on_pbnCancel_clicked();
   void on_pbnOK_clicked();
+  void on_pbnHelp_clicked();
 
 private:
   
@@ -85,6 +86,7 @@ private:
   std::map<QString, QgsGPSDevice*>& mDevices;
   QString mBabelFilter;
   QString mImpFormat;
+  static const int context_id = 995980174;
 };
 
 #endif

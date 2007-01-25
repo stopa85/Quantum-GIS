@@ -45,13 +45,12 @@
 //QGIS Includes
 //
 #include <qgisplugin.h>
-#include <qgisapp.h>
+class QgisInterface;
 
 //
 //QT Includes
 //
-#include <qwidget.h>
-#include <Q3ToolBar>
+#include <QWidget>
 
 /**
 * \class Plugin
@@ -69,12 +68,11 @@ class QgsGeorefPlugin:public QObject, public QgisPlugin
   //////////////////////////////////////////////////////////////////////
 
   /** 
-  * Constructor for a plugin. The QgisApp and QgisIface pointers are passed by 
+  * Constructor for a plugin. The QgisInterface pointer is passed by 
   * QGIS when it attempts to instantiate the plugin.
-  * @param Pointer to the QgisApp object
-  * @param Pointer to the QgisIface object. 
+  * @param Pointer to the QgisInterface object. 
    */
-  QgsGeorefPlugin(QgisApp * , QgisIface * );
+  QgsGeorefPlugin(QgisInterface * );
   //! Destructor
   virtual ~ QgsGeorefPlugin();
 
@@ -103,14 +101,8 @@ private:
   ////////////////////////////////////////////////////////////////////
   
   int mPluginType;
-  //! Id of the plugin's menu. Used for unloading
-  int mMenuId;
-  //! Pointer to our toolbar
-  Q3ToolBar *mToolBarPointer;
-  //! Pionter to QGIS main application object
-  QgisApp *mQGisApp;
   //! Pointer to the QGIS interface object
-  QgisIface *mQGisIface;
+  QgisInterface *mQGisIface;
   //!pointer to the qaction for this plugin
   QAction * mQActionPointer;
   ////////////////////////////////////////////////////////////////////

@@ -19,7 +19,7 @@ email                : morb at ozemail dot com dot au
 
 #include <vector>
 
-#include <qstring.h>
+class QString;
 
 
  /**
@@ -32,7 +32,7 @@ email                : morb at ozemail dot com dot au
   * @author Brendan Morley
   */
 
-class QgsGeometryVertexIndex {
+class CORE_EXPORT QgsGeometryVertexIndex {
 
   public:
   
@@ -50,10 +50,15 @@ class QgsGeometryVertexIndex {
     
     /** Pushes an int onto the last (rightmost) element of the index */
     void push_back(int& i);
-    
+
     /** Gets the last (rightmost) element of the index */
-    int back();
-    
+    int back() const;
+
+    /** Gets the i'th element of the index.
+        i=0 refers to the "innermost" line-string or linear-ring.
+     */
+    int get_at(int i) const;
+
     /** Resets the index */
     void clear();
 

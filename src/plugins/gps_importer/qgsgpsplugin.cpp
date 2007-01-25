@@ -19,7 +19,7 @@
 
 // includes
 
-#include "qgisapp.h"
+#include "qgisinterface.h"
 #include "qgisgui.h"
 #include "qgsmaplayerregistry.h"
 #include "qgsmaplayer.h"
@@ -29,21 +29,13 @@
 #include "qgsgpsplugin.h"
 
 
-#include <qeventloop.h>
 #include <QFileDialog>
-#include <q3toolbar.h>
-#include <qmenubar.h>
-#include <qmessagebox.h>
-#include <q3popupmenu.h>
-#include <qlineedit.h>
-#include <qaction.h>
-#include <qapplication.h>
-#include <qcursor.h>
-#include <q3process.h>
-#include <q3progressdialog.h>
-#include <qsettings.h>
-#include <qstringlist.h>
-#include <qglobal.h>
+#include <QMessageBox>
+#include <QAction>
+#include <Q3Process>
+#include <Q3ProgressDialog>
+#include <QSettings>
+#include <QStringList>
 
 //non qt includes
 #include <cassert>
@@ -65,10 +57,10 @@
 
 static const char * const ident_ = 
   "$Id$";
-static const char * const name_ = "GPS Tools";
-static const char * const description_ = 
-  "Tools for loading and importing GPS data.";
-static const char * const version_ = "Version 0.1";
+static const QString name_ = QObject::tr("GPS Tools");
+static const QString description_ = 
+  QObject::tr("Tools for loading and importing GPS data");
+static const QString version_ = QObject::tr("Version 0.1");
 static const QgisPlugin::PLUGINTYPE type_ = QgisPlugin::UI;
 
 
@@ -78,9 +70,8 @@ static const QgisPlugin::PLUGINTYPE type_ = QgisPlugin::UI;
  * @param qgis Pointer to the QGIS main window
  * @param _qI Pointer to the QGIS interface object
  */
-QgsGPSPlugin::QgsGPSPlugin(QgisApp * theQGisApp, QgisIface * theQgisInterFace):
+QgsGPSPlugin::QgsGPSPlugin(QgisInterface * theQgisInterFace):
   QgisPlugin(name_,description_,version_,type_),
-  mMainWindowPointer(theQGisApp), 
   mQGisInterface(theQgisInterFace)
 {
   setupBabel();
@@ -103,18 +94,18 @@ QgsGPSPlugin::~QgsGPSPlugin()
  */
 void QgsGPSPlugin::initGui()
 {
-  QMenu *pluginMenu = mQGisInterface->getPluginMenu(tr("&Gps"));
-  mMenuIdGPS = pluginMenu->insertItem(QIcon(icon),tr("&Gps Tools"), this, SLOT(run()));
-  mMenuIdGPX = pluginMenu->insertItem(QIcon(icon),tr("&Create new GPX layer"), this, SLOT(createGPX()));
-
-  pluginMenu->setWhatsThis(mMenuIdGPX, tr("Creates a new GPX layer and displays it on the map canvas"));
-
   // add an action to the toolbar
-  mQActionPointer = new QAction(QIcon(icon), tr("Gps Tools"), this);
+  mQActionPointer = new QAction(QIcon(icon), tr("&Gps Tools"), this);
+  mCreateGPXAction = new QAction(QIcon(icon), tr("&Create new GPX layer"), this);
 
   mQActionPointer->setWhatsThis(tr("Creates a new GPX layer and displays it on the map canvas"));
+  mCreateGPXAction->setWhatsThis(tr("Creates a new GPX layer and displays it on the map canvas"));
   connect(mQActionPointer, SIGNAL(activated()), this, SLOT(run()));
+  connect(mCreateGPXAction, SIGNAL(activated()), this, SLOT(createGPX()));
+
   mQGisInterface->addToolBarIcon(mQActionPointer);
+  mQGisInterface->addPluginMenu(tr("&Gps"), mQActionPointer);
+  mQGisInterface->addPluginMenu(tr("&Gps"), mCreateGPXAction);
 }
 
 //method defined in interface
@@ -129,8 +120,9 @@ void QgsGPSPlugin::run()
   // find all GPX layers
   std::vector<QgsVectorLayer*> gpxLayers;
   std::map<QString, QgsMapLayer*>::const_iterator iter;
-  for (iter = mQGisInterface->getLayerRegistry()->mapLayers().begin();
-       iter != mQGisInterface->getLayerRegistry()->mapLayers().end(); ++iter) {
+  QgsMapLayerRegistry* registry = QgsMapLayerRegistry::instance();
+  for (iter =  registry->mapLayers().begin();
+       iter != registry->mapLayers().end(); ++iter) {
     if (iter->second->type() == QgsMapLayer::VECTOR) {
       QgsVectorLayer* vLayer = dynamic_cast<QgsVectorLayer*>(iter->second);
       if (vLayer->providerType() == "gpx")
@@ -139,11 +131,9 @@ void QgsGPSPlugin::run()
   }
   
   QgsGPSPluginGui *myPluginGui = 
-    new QgsGPSPluginGui(mImporters, mDevices, gpxLayers, mMainWindowPointer, 
+    new QgsGPSPluginGui(mImporters, mDevices, gpxLayers, mQGisInterface->getMainWindow(),
 			QgisGui::ModalDialogFlags);
   //listen for when the layer has been made so we can draw it
-  connect(myPluginGui, SIGNAL(drawRasterLayer(QString)), 
-	  this, SLOT(drawRasterLayer(QString)));
   connect(myPluginGui, SIGNAL(drawVectorLayer(QString,QString,QString)), 
 	  this, SLOT(drawVectorLayer(QString,QString,QString)));
   connect(myPluginGui, SIGNAL(loadGPXFile(QString, bool, bool, bool)), 
@@ -166,7 +156,7 @@ void QgsGPSPlugin::run()
 
 void QgsGPSPlugin::createGPX() {
   QString fileName = 
-    QFileDialog::getSaveFileName(mMainWindowPointer,
+    QFileDialog::getSaveFileName(mQGisInterface->getMainWindow(),
                  tr("Save new GPX file as..."), "." , tr("GPS eXchange file (*.gpx)"));
   if (!fileName.isEmpty()) {
     QFileInfo fileInfo(fileName);
@@ -202,8 +192,8 @@ void QgsGPSPlugin::drawVectorLayer(QString thePathNameQString,
 void QgsGPSPlugin::unload()
 {
   // remove the GUI
-  mQGisInterface->removePluginMenuItem(tr("&Gps"),mMenuIdGPS);
-  mQGisInterface->removePluginMenuItem(tr("&Gps"),mMenuIdGPX);
+  mQGisInterface->removePluginMenu(tr("&Gps"),mQActionPointer);
+  mQGisInterface->removePluginMenu(tr("&Gps"),mCreateGPXAction);
   mQGisInterface->removeToolBarIcon(mQActionPointer);
   delete mQActionPointer;
 }
@@ -269,11 +259,8 @@ void QgsGPSPlugin::importGPSFile(QString inputFilename, QgsBabelFormat* importer
 				 NULL, 0, true);
   progressDialog.show();
   for (int i = 0; babelProcess.isRunning(); ++i) {
-#if QT_VERSION < 0x040000
-    QApplication::eventLoop()->processEvents(0);
-#else
     QCoreApplication::processEvents();
-#endif
+
     progressDialog.setProgress(i/64);
     if (progressDialog.wasCanceled())
       return;
@@ -346,11 +333,8 @@ void QgsGPSPlugin::downloadFromGPS(QString device, QString port,
 				 NULL, 0, true);
   progressDialog.show();
   for (int i = 0; babelProcess.isRunning(); ++i) {
-#if QT_VERSION < 0x040000
-    QApplication::eventLoop()->processEvents(0);
-#else
     QCoreApplication::processEvents();
-#endif
+
     progressDialog.setProgress(i/64);
     if (progressDialog.wasCanceled())
       return;
@@ -388,7 +372,7 @@ void QgsGPSPlugin::downloadFromGPS(QString device, QString port,
 void QgsGPSPlugin::uploadToGPS(QgsVectorLayer* gpxLayer, QString device,
 			       QString port) {
   
-  const QString& source(gpxLayer->getDataProvider()->getDataSourceUri());
+  const QString& source(gpxLayer->getDataProvider()->dataSourceUri());
   
   // what kind of data does the user want to upload?
   QString typeArg, features;
@@ -431,11 +415,8 @@ void QgsGPSPlugin::uploadToGPS(QgsVectorLayer* gpxLayer, QString device,
 				 NULL, 0, true);
   progressDialog.show();
   for (int i = 0; babelProcess.isRunning(); ++i) {
-#if QT_VERSION < 0x040000
-    QApplication::eventLoop()->processEvents(0);
-#else
     QCoreApplication::processEvents();
-#endif
+
     progressDialog.setProgress(i/64);
     if (progressDialog.wasCanceled())
       return;
@@ -573,10 +554,9 @@ void QgsGPSPlugin::setupBabel() {
  * of the plugin class
  */
 // Class factory to return a new instance of the plugin class
-QGISEXTERN QgisPlugin * classFactory(QgisApp * theQGisAppPointer, 
-				     QgisIface * theQgisInterfacePointer)
+QGISEXTERN QgisPlugin * classFactory(QgisInterface * theQgisInterfacePointer)
 {
-  return new QgsGPSPlugin(theQGisAppPointer, theQgisInterfacePointer);
+  return new QgsGPSPlugin(theQgisInterfacePointer);
 }
 
 // Return the name of the plugin - note that we do not user class members as

@@ -21,8 +21,7 @@
 #include "qgisplugin.h"
 
 class QgsRenderer;
-class QgsVectorLayer;
-class QgsRendererDialog;
+class QDialog;
 class QString;
 
 /**Interface class for renderer plugins. This kind of plugins is of plugin type QgisPlugin::RENDERER
@@ -33,11 +32,8 @@ class QgsRendererPlugin: public QgisPlugin
  public:
   QgsRendererPlugin(const QString& name, const QString& description, const QString& version): QgisPlugin(name, description, version, QgisPlugin::RENDERER) {}
   virtual ~QgsRendererPlugin() {}
-  /**Creates and returns a new concrete dialog for the renerer type. Don't forget to delete the object after use*/
-  virtual QgsRendererDialog* rendererDialog(QgsVectorLayer* vlayer) = 0;
-  /**Creates and returns a new concrete renderer. Don't forget to delete the object after use*/
+  virtual QDialog* rendererDialog() = 0;
   virtual QgsRenderer* renderer() = 0;
-  virtual QString rendererName() const = 0;
 };
 
 #endif

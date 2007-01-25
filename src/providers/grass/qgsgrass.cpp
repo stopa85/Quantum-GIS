@@ -27,6 +27,7 @@
 #include "qsettings.h"
 #include <QMessageBox>
 #include <QCoreApplication>
+#include <QProcess>
 
 #include "qgsapplication.h"
 #include "qgsgrass.h"
@@ -49,7 +50,7 @@ void QgsGrass::init( void )
 
     if ( initialized ) return;
 
-    QSettings settings("QuantumGIS", "qgis");
+    QSettings settings;
 
     // Is it active mode ?
     if ( getenv ("GISRC") ) {
@@ -80,7 +81,6 @@ void QgsGrass::init( void )
   // or when set explicitly by the user.
   // This value should always take precedence.
   QString gisBase = getenv("GISBASE");
-  std::cerr << "gisBase = " << gisBase.toLocal8Bit().data() << std::endl;
 #ifdef QGISDEBUG
   qDebug( "%s:%d GRASS gisBase from GISBASE env var is: %s", __FILE__, __LINE__, (const char*)gisBase );
 #endif
@@ -114,21 +114,38 @@ void QgsGrass::init( void )
   }
 
   bool userGisbase = false;
-  while ( !isValidGrassBaseDir(gisBase) ) {
-    // Keep asking user for GISBASE until we get a valid one
-    //QMessageBox::warning( 0, "Warning", "QGIS can't find your GRASS installation,\nGRASS data "
-    //    "cannot be used.\nPlease select your GISBASE.\nGISBASE is full path to the\n"
-    //    "directory where GRASS is installed." );
+  bool valid = false;
+  while ( !(valid = isValidGrassBaseDir(gisBase)) ) {
+    
+    // ask user if he wants to specify GISBASE
+    QMessageBox::StandardButton res = QMessageBox::warning(0, QObject::tr("GRASS plugin"),
+                    QObject::tr("QGIS couldn't find your GRASS installation.\n"
+                    "Would you like to specify path (GISBASE) to your GRASS installation?"),
+                 QMessageBox::Ok | QMessageBox::Cancel);
+    
+    if (res != QMessageBox::Ok)
+    {
+      userGisbase = false;
+      break;
+    }
+    
     // XXX Need to subclass this and add explantory message above to left side
     userGisbase = true;
     gisBase = QFileDialog::getExistingDirectory(
-	0, "Choose GISBASE ...", gisBase);
+	0, QObject::tr("Choose GRASS installation path (GISBASE)"), gisBase);
     if (gisBase == QString::null)
     {
       // User pressed cancel. No GRASS for you!
       userGisbase = false;
       break;
     }
+  }
+  
+  if (!valid)
+  {
+    // warn user
+    QMessageBox::information(0, QObject::tr("GRASS plugin"),
+                             QObject::tr("GRASS data won't be available if GISBASE is not specified."));
   }
 
   if ( userGisbase )
@@ -181,6 +198,50 @@ void QgsGrass::init( void )
     strcpy ( pathEnvChar, const_cast<char *>(path.ascii()) );
     putenv( pathEnvChar );
 
+    // Set GRASS_PAGER if not set, it is necessary for some 
+    // modules printing to terminal, e.g. g.list
+    // We use 'cat' because 'more' is not present in MSYS (Win)
+    // and it doesn't work well in built in shell (Unix/Mac) 
+    // and 'less' is not user friendly (for example user must press
+    // 'q' to quit which is definitely difficult for normal user)
+    // Also scroling can be don in scrollable window in both 
+    // MSYS terminal and built in shell.
+    if ( !getenv ("GRASS_PAGER") ) 
+    {
+	QString pager;
+	QStringList pagers;
+	//pagers << "more" << "less" << "cat"; // se notes above
+	pagers << "cat";
+	    
+	for ( int i = 0; i < pagers.size(); i++ ) 
+	{
+	    int state;
+
+	    QProcess p;
+	    p.start ( pagers.at(i) );
+	    p.waitForStarted();
+            state = p.state();
+            p.write("\004"); // Ctrl-D
+            p.closeWriteChannel();
+            p.waitForFinished(1000);
+	    p.kill();
+
+	    if ( state == QProcess::Running )
+	    {
+	        pager = pagers.at(i);
+		break;
+	    }
+	}
+
+	if ( pager.length() > 0 )
+	{
+	    pager.prepend ( "GRASS_PAGER=" );
+	    char *pagerEnvChar = new char[pager.length()+1];
+	    strcpy ( pagerEnvChar, const_cast<char *>(pager.ascii()) );
+	    putenv( pagerEnvChar );
+	}
+    }
+
     initialized = 1;
 }
 
@@ -189,17 +250,28 @@ void QgsGrass::init( void )
  */
 bool QgsGrass::isValidGrassBaseDir(QString const gisBase)
 {
+#ifdef QGISDEBUG
+  std::cerr << "isValidGrassBaseDir()" << std::endl;
+#endif
   if ( gisBase.isEmpty() )
   {
     return FALSE;
   }
-
-  QFileInfo gbi ( gisBase + "/etc/element_list" );
-  if ( gbi.exists() ) {
-    return TRUE;
-  } else {
-    return FALSE;
-  }
+ 
+  /* TODO: G_is_gisbase() was added to GRASS 6.1 06-05-24,
+           enable its use after some period (others do update) */ 
+  /*
+  if ( QgsGrass::versionMajor() > 6 || QgsGrass::versionMinor() > 0 ) 
+  {
+      if ( G_is_gisbase( gisBase.toLocal8Bit().constData() ) ) return TRUE;
+  } 
+  else
+  {
+  */
+      QFileInfo gbi ( gisBase + "/etc/element_list" );
+      if ( gbi.exists() ) return TRUE;
+  //}
+  return FALSE;
 }
 
 bool QgsGrass::activeMode( void )
@@ -567,8 +639,36 @@ QStringList QgsGrass::mapsets ( QString locationPath )
 QStringList QgsGrass::vectors ( QString gisbase, QString locationName,
 	                         QString mapsetName)
 {
+    std::cerr << "QgsGrass::vectors()" << std::endl;
+
     if ( gisbase.isEmpty() || locationName.isEmpty() || mapsetName.isEmpty() )
 	return QStringList();
+
+    /* TODO: G_list() was added to GRASS 6.1 06-05-24,
+             enable its use after some period (others do update) */ 
+    /*
+    if ( QgsGrass::versionMajor() > 6 || QgsGrass::versionMinor() > 0 ) 
+    {
+	QStringList list;
+
+	char **glist = G_list( G_ELEMENT_VECTOR, 
+			      gisbase.toLocal8Bit().constData(), 
+			      locationName.toLocal8Bit().constData(), 
+			      mapsetName.toLocal8Bit().constData() );
+
+	int i = 0;
+
+	while ( glist[i] )
+	{
+	    list.append( QString(glist[i]) );
+	    i++;
+	}
+
+	G_free_list ( glist );
+
+	return list;
+    } 
+    */
 
     return QgsGrass::vectors ( gisbase + "/" + locationName + "/" + mapsetName );
 }
@@ -603,9 +703,38 @@ QStringList QgsGrass::vectors ( QString mapsetPath )
 QStringList QgsGrass::rasters ( QString gisbase, QString locationName,
 	                         QString mapsetName)
 {
+    std::cerr << "QgsGrass::rasters()" << std::endl;
+
     if ( gisbase.isEmpty() || locationName.isEmpty() || mapsetName.isEmpty() )
 	return QStringList();
 
+
+    /* TODO: G_list() was added to GRASS 6.1 06-05-24,
+             enable its use after some period (others do update) */ 
+    /*
+    if ( QgsGrass::versionMajor() > 6 || QgsGrass::versionMinor() > 0 ) 
+    {
+	QStringList list;
+
+	char **glist = G_list( G_ELEMENT_RASTER, 
+			      gisbase.toLocal8Bit().constData(), 
+			      locationName.toLocal8Bit().constData(), 
+			      mapsetName.toLocal8Bit().constData() );
+
+	int i = 0;
+
+	while ( glist[i] )
+	{
+	    list.append( QString(glist[i]) );
+	    i++;
+	}
+
+	G_free_list ( glist );
+
+	return list;
+    } 
+    */
+	
     return QgsGrass::rasters ( gisbase + "/" + locationName + "/" + mapsetName );
 }
 
@@ -859,4 +988,22 @@ int QgsGrass::versionMinor()
     return QString(GRASS_VERSION_MINOR).toInt();
 }
 
+bool QgsGrass::isMapset ( QString path )
+{
+    /* TODO: G_is_mapset() was added to GRASS 6.1 06-05-24,
+             enable its use after some period (others do update) */
+    /*
+    if ( QgsGrass::versionMajor() > 6 || QgsGrass::versionMinor() > 0 )
+    {
+        if ( G_is_mapset( path.toLocal8Bit().constData() ) ) return true;
+    }
+    else
+    {
+    */
+        QString windf = path + "/WIND";
+        if ( QFile::exists ( windf ) ) return true;
+    //}
+
+    return false;
+}
 

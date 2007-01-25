@@ -39,6 +39,7 @@
 #include <QScrollBar>
 
 #include "qgis.h"
+#include "qgisinterface.h"
 #include "qgsapplication.h"
 #include "qgsrasterlayer.h"
 
@@ -53,9 +54,9 @@ extern "C" {
 #include "qgsgrassselect.h"
 #include "qgsgrassutils.h"
 
-QgsGrassBrowser::QgsGrassBrowser ( QgisIface *iface, 
+QgsGrassBrowser::QgsGrassBrowser ( QgisInterface *iface, 
 	 QWidget * parent, Qt::WFlags f )
-             :mIface(iface), QMainWindow(parent, Qt::WType_Dialog)
+     : QMainWindow(parent, Qt::WType_Dialog), mIface(iface)
 {
     #ifdef QGISDEBUG
     std::cerr << "QgsGrassBrowser()" << std::endl;
@@ -285,9 +286,9 @@ void QgsGrassBrowser::copyMap()
         {
             QString output ( process.readAllStandardOutput () );
             QString error ( process.readAllStandardError () );
-            QMessageBox::warning( 0, "Warning", "Cannot copy map "
+            QMessageBox::warning( 0, tr("Warning"), tr("Cannot copy map ")
                        + map + "@" + mapset 
-                       + "<br>command: " + module + " " + args.join(" ")
+                       + tr("<br>command: ") + module + " " + args.join(" ")
                        + "<br>" + formatMessage(output)
                        + "<br>" + formatMessage(error) ); 
         }
@@ -351,9 +352,9 @@ void QgsGrassBrowser::renameMap()
         {
             QString output ( process.readAllStandardOutput () );
             QString error ( process.readAllStandardError () );
-            QMessageBox::warning( 0, "Warning", "Cannot rename map "
+            QMessageBox::warning( 0, tr("Warning"), tr("Cannot rename map ")
                        + map  
-                       + "<br>command: " + module + " " + args.join(" ")
+                       + tr("<br>command: ") + module + " " + args.join(" ")
                        + "<br>" + formatMessage(output)
                        + "<br>" + formatMessage(error) ); 
         }
@@ -389,11 +390,11 @@ void QgsGrassBrowser::deleteMap()
             continue; // should not happen
         }
          
-        int ret = QMessageBox::question ( 0, "Warning",
-              "Delete map <b>" + map + "</b>",
-              QMessageBox::Yes,  QMessageBox::No );
+        QMessageBox::StandardButton ret = QMessageBox::question ( 0, tr("Warning"),
+              tr("Delete map <b>") + map + "</b>",
+              QMessageBox::Ok | QMessageBox::Cancel );
 
-        if ( ret == QMessageBox::No ) continue;
+        if ( ret == QMessageBox::Cancel ) continue;
 
         QString module = "g.remove";
 #ifdef WIN32
@@ -406,9 +407,9 @@ void QgsGrassBrowser::deleteMap()
         {
             QString output ( process.readAllStandardOutput () );
             QString error ( process.readAllStandardError () );
-            QMessageBox::warning( 0, "Warning", "Cannot delete map "
+            QMessageBox::warning( 0, tr("Warning"), tr("Cannot delete map ")
                        + map  
-                       + "<br>command: " + module + " " + args.join(" ")
+                       + tr("<br>command: ") + module + " " + args.join(" ")
                        + "<br>" + formatMessage(output)
                        + "<br>" + formatMessage(error) ); 
         }
@@ -450,8 +451,8 @@ void QgsGrassBrowser::writeRegion(struct Cell_head *window )
 
     if ( G_put_window ( window ) == -1 )
     { 
-	QMessageBox::warning( 0, "Warning", 
-		 "Cannot write new region" ); 
+	QMessageBox::warning( 0, tr("Warning"), 
+		 tr("Cannot write new region") ); 
         return;
     }
     emit regionChanged();

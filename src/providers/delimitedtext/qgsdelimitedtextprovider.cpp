@@ -21,24 +21,26 @@
 #include <cfloat>
 #include <iostream>
 
-#include <qfile.h>
-#include <qdatastream.h>
-#include <qtextstream.h>
-#include <qstringlist.h>
-#include <qmessagebox.h>
-#include <qsettings.h>
-#include <qregexp.h>
-#include <q3url.h>
-#include <qglobal.h>
+#include <QtGlobal>
+#include <QFile>
+#include <QDataStream>
+#include <QTextStream>
+#include <QStringList>
+#include <QMessageBox>
+#include <QSettings>
+#include <QRegExp>
+#include <QUrl>
 
-#include <ogrsf_frmts.h>
 
+#include "qgsapplication.h"
 #include "qgsdataprovider.h"
-#include "qgsencodingfiledialog.h"
 #include "qgsfeature.h"
+#include "qgsfeatureattribute.h"
 #include "qgsfield.h"
+#include "qgsmessageoutput.h"
 #include "qgsrect.h"
-
+#include "qgsspatialrefsys.h"
+#include "qgis.h"
 
 #ifdef WIN32
 #define QGISEXTERN extern "C" __declspec( dllexport )
@@ -52,8 +54,9 @@ static const QString TEXT_PROVIDER_DESCRIPTION = "Delimited text data provider";
 
 
 
-QgsDelimitedTextProvider::QgsDelimitedTextProvider(QString const &uri)
+QgsDelimitedTextProvider::QgsDelimitedTextProvider(QString uri)
     : QgsVectorDataProvider(uri), 
+      mShowInvalidLines(true),
       mMinMaxCacheDirty(true)
 {
   // Get the file name and mDelimiter out of the uri
@@ -72,10 +75,10 @@ QgsDelimitedTextProvider::QgsDelimitedTextProvider(QString const &uri)
   temp = parameters.grep("yField=");
   mYField = temp.size()? temp[0].mid(temp[0].find("=") + 1) : "";
   // Decode the parts of the uri. Good if someone entered '=' as a delimiter, for instance.
-  Q3Url::decode(mFileName);
-  Q3Url::decode(mDelimiter);
-  Q3Url::decode(mXField);
-  Q3Url::decode(mYField);
+  mFileName  = QUrl::fromPercentEncoding(mFileName.toUtf8());
+  mDelimiter = QUrl::fromPercentEncoding(mDelimiter.toUtf8());
+  mXField    = QUrl::fromPercentEncoding(mXField.toUtf8());
+  mYField    = QUrl::fromPercentEncoding(mYField.toUtf8());
 #ifdef QGISDEBUG
   std::cerr << "Data source uri is " << (const char *)uri.toLocal8Bit().data() << std::endl;
   std::cerr << "Delimited text file is: " << (const char *)mFileName.toLocal8Bit().data() << std::endl;
@@ -83,8 +86,13 @@ QgsDelimitedTextProvider::QgsDelimitedTextProvider(QString const &uri)
   std::cerr << "xField is: " << (const char *)mXField.toLocal8Bit().data() << std::endl;
   std::cerr << "yField is: " << (const char *)mYField.toLocal8Bit().data() << std::endl;
 #endif
+  
+  // if delimiter contains some special characters, convert them
+  // (we no longer use delimiter as regexp as it introduces problems with special characters)
+  mDelimiter.replace("\\t", "\t"); // replace "\t" with a real tabulator
+  
   // Set the selection rectangle to null
-  mSelectionRectangle = 0;
+  mSelectionRectangle = QgsRect();
   // assume the layer is invalid until proven otherwise
   mValid = false;
   if (!mFileName.isEmpty() && !mDelimiter.isEmpty() && !mXField.isEmpty() &&
@@ -99,19 +107,20 @@ QgsDelimitedTextProvider::QgsDelimitedTextProvider(QString const &uri)
       mFile = new QFile(mFileName);
       if (mFile->open(QIODevice::ReadOnly))
       {
-        QTextStream stream(mFile);
+        mStream = new QTextStream(mFile);
         QString line;
         mNumberFeatures = 0;
         int xyCount = 0;
         int lineNumber = 0;
         // set the initial extent
-        mExtent = new QgsRect();
+        mExtent = QgsRect();
         //commented out by Tim for now - setMinimal needs to be merged in from 0.7 branch
         //mExtent->setMinimal(); // This defeats normalization
-        while (!stream.atEnd())
+        bool firstPoint = true;
+        while (!mStream->atEnd())
         {
           lineNumber++;
-          line = stream.readLine(); // line of text excluding '\n', default local 8 bit encoding.
+          line = mStream->readLine(); // line of text excluding '\n', default local 8 bit encoding.
           if (mNumberFeatures++ == 0)
           {
             // Get the fields from the header row and store them in the 
@@ -121,11 +130,10 @@ QgsDelimitedTextProvider::QgsDelimitedTextProvider(QString const &uri)
               cerr << "Attempting to split the input line: " << (const char *)line.toLocal8Bit().data() <<
               " using delimiter " << (const char *)mDelimiter.toLocal8Bit().data() << std::endl;
 #endif
-            QStringList fieldList =
-              QStringList::split(QRegExp(mDelimiter), line, true);
+            QStringList fieldList = QStringList::split(mDelimiter, line, true);
 #ifdef QGISDEBUG
-            std::cerr << "Split line into " << fieldList.
-              size() << " parts" << std::endl;
+            std::cerr << "Split line into " 
+                      << fieldList.size() << " parts" << std::endl;
 #endif
             // We don't know anything about a text based field other
             // than its name. All fields are assumed to be text
@@ -136,7 +144,7 @@ QgsDelimitedTextProvider::QgsDelimitedTextProvider(QString const &uri)
               QString field = *it;
               if (field.length() > 0)
               {
-                attributeFields.push_back(QgsField(*it, "Text"));
+                attributeFields[fieldPos] = QgsField(*it, "Text");
                 fieldPositions[*it] = fieldPos++;
                 // check to see if this field matches either the x or y field 
                 if (mXField == *it)
@@ -171,7 +179,7 @@ QgsDelimitedTextProvider::QgsDelimitedTextProvider(QString const &uri)
             //  std::cout << line << std::endl; 
             // split the line on the delimiter
             QStringList parts =
-              QStringList::split(QRegExp(mDelimiter), line, true);
+              QStringList::split(mDelimiter, line, true);
             //if(parts.size() == attributeFields.size())
             //{
             //  // we can populate attributes if required
@@ -194,23 +202,32 @@ QgsDelimitedTextProvider::QgsDelimitedTextProvider(QString const &uri)
             bool yOk = true;
             double x = sX.toDouble(&xOk);
             double y = sY.toDouble(&yOk);
+
             if (xOk && yOk)
             {
-              if (x > mExtent->xMax())
+              if (!firstPoint)
               {
-                mExtent->setXmax(x);
+                if (x > mExtent.xMax())
+                {
+                  mExtent.setXmax(x);
+                }
+                if (x < mExtent.xMin())
+                {
+                  mExtent.setXmin(x);
+                }
+                if (y > mExtent.yMax())
+                {
+                  mExtent.setYmax(y);
+                }
+                if (y < mExtent.yMin())
+                {
+                  mExtent.setYmin(y);
+                }
               }
-              if (x < mExtent->xMin())
-              {
-                mExtent->setXmin(x);
-              }
-              if (y > mExtent->yMax())
-              {
-                mExtent->setYmax(y);
-              }
-              if (y < mExtent->yMin())
-              {
-                mExtent->setYmin(y);
+              else
+              { // Extent for the first point is just the first point
+                mExtent.set(x,y,x,y);
+                firstPoint = false;
               }
             }
           }
@@ -223,7 +240,7 @@ QgsDelimitedTextProvider::QgsDelimitedTextProvider(QString const &uri)
 #ifdef QGISDEBUG
           std::cerr << "Data store is valid" << std::endl;
           std::cerr << "Number of features " << mNumberFeatures << std::endl;
-          std::cerr << "Extents " << (const char *)mExtent->stringRep().toLocal8Bit().data() << std::endl;
+          std::cerr << "Extents " << (const char *)mExtent.stringRep().toLocal8Bit().data() << std::endl;
 #endif
           mValid = true;
         }
@@ -248,7 +265,7 @@ QgsDelimitedTextProvider::QgsDelimitedTextProvider(QString const &uri)
     else
       // file does not exist
       std::
-        cerr << "Data source " << (const char *)getDataSourceUri().toLocal8Bit().data() << " could not be opened" <<
+        cerr << "Data source " << (const char *)dataSourceUri().toLocal8Bit().data() << " could not be opened" <<
         std::endl;
 
   }
@@ -264,7 +281,8 @@ QgsDelimitedTextProvider::~QgsDelimitedTextProvider()
 {
   mFile->close();
   delete mFile;
-  for (int i = 0; i < fieldCount(); i++)
+  delete mStream;
+  for (uint i = 0; i < fieldCount(); i++)
   {
     delete mMinMaxCache[i];
   }
@@ -272,37 +290,18 @@ QgsDelimitedTextProvider::~QgsDelimitedTextProvider()
 }
 
 
-QString QgsDelimitedTextProvider::storageType()
+QString QgsDelimitedTextProvider::storageType() const
 {
   return "Delimited text file";
 }
 
 
 /**
- * Get the first feature resutling from a select operation
- * @return QgsFeature
- */
-QgsFeature * QgsDelimitedTextProvider::getFirstFeature(bool fetchAttributes)
-{
-    QgsFeature *f = new QgsFeature;
-
-    reset();                    // reset back to first feature
-
-    if ( getNextFeature_( *f, fetchAttributes ) )
-    {
-        return f;
-    }
-
-    delete f;
-
-    return 0x0;
-} // QgsDelimitedTextProvider::getFirstFeature(bool fetchAttributes)
-
-/**
 
   insure double value is properly translated into locate endian-ness
 
 */
+/*
 static
 double
 translateDouble_( double d )
@@ -328,25 +327,20 @@ translateDouble_( double d )
     return to.fpval;
 
 } // translateDouble_
-
+*/
 
 bool
 QgsDelimitedTextProvider::getNextFeature_( QgsFeature & feature, 
-                                           bool getAttributes,
-                                           std::list<int> const * desiredAttributes )
+                                           QgsAttributeList desiredAttributes )
 {
     // before we do anything else, assume that there's something wrong with
     // the feature
     feature.setValid( false );
-
-    QTextStream textStream( mFile );
-
-    if ( ! textStream.atEnd() )
+    while ( ! mStream->atEnd() )
     {
-      QString line = textStream.readLine(); // Default local 8 bit encoding
-
+      QString line = mStream->readLine(); // Default local 8 bit encoding
         // lex the tokens from the current data line
-        QStringList tokens = QStringList::split(QRegExp(mDelimiter), line, true);
+        QStringList tokens = QStringList::split(mDelimiter, line, true);
 
         bool xOk = false;
         bool yOk = false;
@@ -357,166 +351,108 @@ QgsDelimitedTextProvider::getNextFeature_( QgsFeature & feature,
         double x = tokens[xFieldPos].toDouble( &xOk );
         double y = tokens[yFieldPos].toDouble( &yOk );
 
-        if ( xOk && yOk )
+        if (! (xOk && yOk))
         {
-            // if the user has selected an area, constrain iterator to
-            // features that are within that area
-            if ( mSelectionRectangle && ! boundsCheck(x,y) )
-            {
-                bool foundFeature = false;
+          // Accumulate any lines that weren't ok, to report on them
+          // later, and look at the next line in the file, but only if
+          // we need to.
+          if (mShowInvalidLines)
+            mInvalidLines << line;
 
-                while ( ! textStream.atEnd() && 
-                        (xOk && yOk) )
-                {
-                    if ( boundsCheck(x,y) )
-                    {
-                        foundFeature = true;
-                        break;
-                    }
+          continue;
+        }
 
-                    ++mFid;     // since we're skipping to next feature,
-                                // increment ID
+        // Give every valid line in the file an id, even if it's not
+        // in the current extent or bounds.
+        ++mFid;             // increment to next feature ID
 
-                    line = textStream.readLine();
+        if (! boundsCheck(x,y))
+          continue;
 
-                    tokens = QStringList::split(QRegExp(mDelimiter), line, true);
-
-                    x = tokens[xFieldPos].toDouble( &xOk );
-                    y = tokens[yFieldPos].toDouble( &yOk );
-                }
-
-                // there were no other features from the current one forward
-                // that were within the selection region
-                if ( ! foundFeature )
-                {
-                    return false;
-                }
-            }
-
-            // at this point, one way or another, the current feature values
-            // are valid
+        // at this point, one way or another, the current feature values
+        // are valid
            feature.setValid( true );
-
-           ++mFid;             // increment to next feature ID
 
            feature.setFeatureId( mFid );
 
-           unsigned char * geometry = new unsigned char[sizeof(wkbPoint)];
            QByteArray  buffer;
-           buffer.setRawData( (const char*)geometry, sizeof(wkbPoint) ); // buffer
-                                                                         // points
-                                                                         // to
-                                                                         // geometry
-
-#if QT_VERSION < 0x040000
-           QDataStream s( buffer, QIODevice::WriteOnly ); // open on buffers's data
-#else
            QDataStream s( &buffer, QIODevice::WriteOnly ); // open on buffers's data
-#endif
 
-           switch ( endian() )
+           switch ( QgsApplication::endian() )
            {
-               case QgsDataProvider::NDR :
+               case QgsApplication::NDR :
                    // we're on a little-endian platform, so tell the data
                    // stream to use that
                    s.setByteOrder( QDataStream::LittleEndian );
                    s << (Q_UINT8)1; // 1 is for little-endian
                    break;
-               case QgsDataProvider::XDR :
+               case QgsApplication::XDR :
                    // don't change byte order since QDataStream is big endian by default
                    s << (Q_UINT8)0; // 0 is for big-endian
                    break;
                default :
                    qDebug( "%s:%d unknown endian", __FILE__, __LINE__ );
-                   delete [] geometry;
+                   //delete [] geometry;
                    return false;
            }
 
-           s << (Q_UINT32)1; // 1 is for WKBPoint
+           s << (Q_UINT32)QGis::WKBPoint;
            s << x;
            s << y;
 
+           unsigned char* geometry = new unsigned char[buffer.size()];
+           memcpy(geometry, buffer.data(), buffer.size());
 
            feature.setGeometryAndOwnership( geometry, sizeof(wkbPoint) );
 
-           // ensure that the buffer doesn't delete the data on us
-           buffer.resetRawData( (const char*)geometry, sizeof(wkbPoint) );
-
-           if ( getAttributes && ! desiredAttributes )
+           if ( desiredAttributes.size() > 0 )
            {
-               for (int fi = 0; fi < attributeFields.size(); fi++)
-               {
-                   feature.addAttribute(attributeFields[fi].name(), tokens[fi]);
-               }
-           }
-           // regardless of whether getAttributes is true or not, if the
-           // programmer went through the trouble of passing in such a list of
-           // attribute fields, then obviously they want them
-           else if ( desiredAttributes )
-           {
-               for ( std::list<int>::const_iterator i = desiredAttributes->begin();
-                     i != desiredAttributes->end();
+               for ( QgsAttributeList::const_iterator i = desiredAttributes.begin();
+                     i != desiredAttributes.end();
                      ++i )
                {
-                   feature.addAttribute(attributeFields[*i].name(), tokens[*i]);
+                   feature.addAttribute(*i, QgsFeatureAttribute(attributeFields[*i].name(), tokens[*i]));
                }
            }
-
+           
+           // We have a good line, so return
            return true;
 
-        } // if able to get x and y coordinates
-
     } // ! textStream EOF
+
+    // End of the file. If there are any lines that couldn't be
+    // loaded, display them now.
+
+    if (mShowInvalidLines && !mInvalidLines.isEmpty())
+    {
+      mShowInvalidLines = false;
+      QgsMessageOutput* output = QgsMessageOutput::createMessageOutput();
+      output->setTitle(tr("Error"));
+      output->setMessage(tr("Note: the following lines were not loaded because Qgis was "
+                            "unable to determine values for the x and y coordinates:\n"),
+                         QgsMessageOutput::MessageText);
+      
+      for (int i = 0; i < mInvalidLines.size(); ++i)
+        output->appendMessage(mInvalidLines.at(i));
+      
+      output->showMessage();
+
+      // We no longer need these lines.
+      mInvalidLines.empty();
+    }
 
     return false;
 
 } // getNextFeature_( QgsFeature & feature )
 
 
-
-/**
-  Get the next feature resulting from a select operation
-  Return 0 if there are no features in the selection set
- * @return false if unable to get the next feature
- */
-bool QgsDelimitedTextProvider::getNextFeature(QgsFeature & feature,
-                                              bool fetchAttributes)
+bool QgsDelimitedTextProvider::getNextFeature(QgsFeature& feature,
+                              bool fetchGeometry,
+                              QgsAttributeList fetchAttributes,
+                              uint featureQueueSize)
 {
-    return getNextFeature_( feature, fetchAttributes );
-} // QgsDelimitedTextProvider::getNextFeature
-
-
-
-QgsFeature * QgsDelimitedTextProvider::getNextFeature(bool fetchAttributes)
-{
-    QgsFeature * f = new QgsFeature;
-
-    if ( getNextFeature( *f, fetchAttributes ) )
-    {
-        return f;
-    }
-    
-    delete f;
-
-    return 0x0;
-} // QgsDelimitedTextProvider::getNextFeature(bool fetchAttributes)
-
-
-
-QgsFeature * QgsDelimitedTextProvider::getNextFeature(std::list<int> const & desiredAttributes, int featureQueueSize)
-{
-    QgsFeature * f = new QgsFeature;
-
-    if ( getNextFeature_( *f, true, &desiredAttributes ) )
-    {
-        return f;
-    }
-    
-    delete f;
-
-    return 0x0;
-
-} // QgsDelimitedTextProvider::getNextFeature(std::list < int >&attlist)
+  return getNextFeature_(feature, fetchAttributes);
+}
 
 
 
@@ -526,69 +462,33 @@ QgsFeature * QgsDelimitedTextProvider::getNextFeature(std::list<int> const & des
  * with calls to getFirstFeature and getNextFeature.
  * @param mbr QgsRect containing the extent to use in selecting features
  */
-void QgsDelimitedTextProvider::select(QgsRect * rect, bool useIntersect)
+void QgsDelimitedTextProvider::select(QgsRect rect, bool useIntersect)
 {
 
   // Setting a spatial filter doesn't make much sense since we have to
   // compare each point against the rectangle.
   // We store the rect and use it in getNextFeature to determine if the
   // feature falls in the selection area
-  mSelectionRectangle = new QgsRect((*rect));
-  // Select implies an upcoming feature read so we reset the data source
   reset();
-  // Reset the feature id to 0
-  mFid = 0;
-
+  mSelectionRectangle = rect;
 }
 
 
-/**
- * Identify features within the search radius specified by rect
- * @param rect Bounding rectangle of search radius
- * @return std::vector containing QgsFeature objects that intersect rect
- */
-std::vector < QgsFeature > &QgsDelimitedTextProvider::identify(QgsRect * rect)
-{
-  // reset the data source since we need to be able to read through
-  // all features
-  reset();
-  std::cerr << "Attempting to identify features falling within " << (const char *)rect->
-    stringRep().toLocal8Bit().data() << std::endl;
-  // select the features
-  select(rect);
-#ifdef WIN32
-  //TODO fix this later for win32
-  std::vector < QgsFeature > feat;
-  return feat;
-#endif
-
-}
-
-/*
-   unsigned char * QgsDelimitedTextProvider::getGeometryPointer(OGRFeature *fet){
-   unsigned char *gPtr=0;
-// get the wkb representation
-
-//geom->exportToWkb((OGRwkbByteOrder) endian(), gPtr);
-return gPtr;
-
-}
-*/
 
 
 // Return the extent of the layer
-QgsRect *QgsDelimitedTextProvider::extent()
+QgsRect QgsDelimitedTextProvider::extent()
 {
-  return new QgsRect(mExtent->xMin(), mExtent->yMin(), mExtent->xMax(),
-                     mExtent->yMax());
+  return QgsRect(mExtent.xMin(), mExtent.yMin(), mExtent.xMax(),
+                     mExtent.yMax());
 }
 
 /** 
  * Return the feature type
  */
-int QgsDelimitedTextProvider::geometryType() const
+QGis::WKBTYPE QgsDelimitedTextProvider::geometryType() const
 {
-  return 1;                     // WKBPoint
+  return QGis::WKBPoint;
 }
 
 /** 
@@ -602,47 +502,30 @@ long QgsDelimitedTextProvider::featureCount() const
 /**
  * Return the number of fields
  */
-int QgsDelimitedTextProvider::fieldCount() const
+uint QgsDelimitedTextProvider::fieldCount() const
 {
   return attributeFields.size();
 }
 
-/**
- * Fetch attributes for a selected feature
- */
-void QgsDelimitedTextProvider::getFeatureAttributes(int key, QgsFeature * f)
-{
-  //for (int i = 0; i < ogrFet->GetFieldCount(); i++) {
 
-  //  // add the feature attributes to the tree
-  //  OGRFieldDefn *fldDef = ogrFet->GetFieldDefnRef(i);
-  //  QString fld = fldDef->GetNameRef();
-  //  //    OGRFieldType fldType = fldDef->GetType();
-  //  QString val;
-
-  //  val = ogrFet->GetFieldAsString(i);
-  //  f->addAttribute(fld, val);
-  //}
-}
-
-std::vector<QgsField> const & QgsDelimitedTextProvider::fields() const
+const QgsFieldMap & QgsDelimitedTextProvider::fields() const
 {
   return attributeFields;
 }
 
 void QgsDelimitedTextProvider::reset()
 {
-  // Reset the file pointer to BOF
-  mFile->reset();
   // Reset feature id to 0
   mFid = 0;
   // Skip ahead one line since first record is always assumed to be
   // the header record
-  QTextStream stream(mFile);
-  stream.readLine();
+  mStream->seek(0);
+  mStream->readLine();
+  //reset any spatial filters
+  mSelectionRectangle = mExtent;
 }
 
-QString QgsDelimitedTextProvider::minValue(int position)
+QString QgsDelimitedTextProvider::minValue(uint position)
 {
   if (position >= fieldCount())
   {
@@ -658,7 +541,7 @@ QString QgsDelimitedTextProvider::minValue(int position)
 }
 
 
-QString QgsDelimitedTextProvider::maxValue(int position)
+QString QgsDelimitedTextProvider::maxValue(uint position)
 {
   if (position >= fieldCount())
   {
@@ -675,7 +558,7 @@ QString QgsDelimitedTextProvider::maxValue(int position)
 
 void QgsDelimitedTextProvider::fillMinMaxCash()
 {
-  for (int i = 0; i < fieldCount(); i++)
+  for (uint i = 0; i < fieldCount(); i++)
   {
     mMinMaxCache[i][0] = DBL_MAX;
     mMinMaxCache[i][1] = -DBL_MAX;
@@ -687,7 +570,7 @@ void QgsDelimitedTextProvider::fillMinMaxCash()
   getNextFeature(f, true);
   do
   {
-    for (int i = 0; i < fieldCount(); i++)
+    for (uint i = 0; i < fieldCount(); i++)
     {
       double value = (f.attributeMap())[i].fieldValue().toDouble();
       if (value < mMinMaxCache[i][0])
@@ -705,9 +588,6 @@ void QgsDelimitedTextProvider::fillMinMaxCash()
   mMinMaxCacheDirty = false;
 }
 
-//TODO - add sanity check for shape file layers, to include cheking to
-//       see if the .shp, .dbf, .shx files are all present and the layer
-//       actually has features
 bool QgsDelimitedTextProvider::isValid()
 {
   return mValid;
@@ -718,10 +598,12 @@ bool QgsDelimitedTextProvider::isValid()
  */
 bool QgsDelimitedTextProvider::boundsCheck(double x, double y)
 {
-  bool inBounds = (((x < mSelectionRectangle->xMax()) &&
-                    (x > mSelectionRectangle->xMin())) &&
-                   ((y < mSelectionRectangle->yMax()) &&
-                    (y > mSelectionRectangle->yMin())));
+  bool inBounds(true);
+  if (!mSelectionRectangle.isEmpty())
+    inBounds = (((x <= mSelectionRectangle.xMax()) &&
+                 (x >= mSelectionRectangle.xMin())) &&
+                ((y <= mSelectionRectangle.yMax()) &&
+                 (y >= mSelectionRectangle.yMin())));
   // QString hit = inBounds?"true":"false";
 
   // std::cerr << "Checking if " << x << ", " << y << " is in " << 
@@ -731,214 +613,8 @@ bool QgsDelimitedTextProvider::boundsCheck(double x, double y)
 
 int QgsDelimitedTextProvider::capabilities() const
 {
-    return QgsVectorDataProvider::SaveAsShapefile;
+    return 0;
 }
-
-
-bool QgsDelimitedTextProvider::saveAsShapefile()
-{
-  // save the layer as a shapefile
-  QString driverName = "ESRI Shapefile";
-  OGRSFDriver *poDriver;
-  OGRRegisterAll();
-  poDriver =
-    OGRSFDriverRegistrar::GetRegistrar()->
-    GetDriverByName((const char *)driverName.toLocal8Bit().data());
-  bool returnValue = true;
-  if (poDriver != NULL)
-  {
-    // get a name for the shapefile
-    // Get a file to process, starting at the current directory
-    // Set inital dir to last used in delimited text plugin
-    QSettings settings;
-    QString enc;
-    QString shapefileName;
-    QString filter =  QString("Shapefiles (*.shp)");
-    QString dirName = settings.readEntry("/Plugin-DelimitedText/text_path", "./");
-
-    QgsEncodingFileDialog* openFileDialog = new QgsEncodingFileDialog(0,
-                                                                      tr("Save layer as..."),
-                                                                      dirName,
-                                                                      filter,
-                                                                      QString("UTF-8"));
-
-    // allow for selection of more than one file
-    openFileDialog->setMode(QFileDialog::AnyFile);
-
-
-    if (openFileDialog->exec() == QDialog::Accepted)
-    {
-        shapefileName = openFileDialog->selectedFile();
-        enc = openFileDialog->encoding();
-    }
-    else
-    {
-      return returnValue;
-    }
-
-    if (!shapefileName.isNull())
-    {
-      // add the extension if not present
-      if (shapefileName.find(".shp") == -1)
-      {
-        shapefileName += ".shp";
-      }
-      OGRDataSource *poDS;
-      // create the data source
-      poDS = poDriver->CreateDataSource((const char *) shapefileName, NULL);
-      if (poDS != NULL)
-      {
-        QTextCodec* saveCodec = QTextCodec::codecForName(enc.toLocal8Bit().data());
-        if(!saveCodec)
-        {
-#ifdef QGISDEBUG
-          qWarning("error finding QTextCodec in QgsDelimitedTextProvider::saveAsShapefile()");
-#endif
-          saveCodec = QTextCodec::codecForLocale();
-        }
- 
-        std::cerr << "created datasource" << std::endl;
-        // datasource created, now create the output layer, use utf8() for now.
-        OGRLayer *poLayer;
-        poLayer =
-           poDS->CreateLayer((const char *) (shapefileName.
-                             left(shapefileName.find(".shp"))).utf8(), NULL,
-                              static_cast < OGRwkbGeometryType > (1), NULL);
-        if (poLayer != NULL)
-        {
-          std::cerr << "created layer" << std::endl;
-          // calculate the field lengths
-          int *lengths = getFieldLengths();
-          // create the fields
-          std::cerr << "creating " << attributeFields.
-            size() << " fields" << std::endl;
-          for (int i = 0; i < attributeFields.size(); i++)
-          {
-            // check the field length - if > 10 we need to truncate it
-            QgsField attrField = attributeFields[i];
-            if (attrField.name().length() > 10)
-            {
-              attrField = attrField.name().left(10);
-            }
-            // all fields are created as string (for now)
-            OGRFieldDefn fld(saveCodec->fromUnicode(attrField.name()), OFTString);
-            // set the length for the field -- but we don't know what it is...
-            fld.SetWidth(lengths[i]);
-            // create the field
-            std::cerr << "creating field " << (const char *)attrField.
-              name().toLocal8Bit().data() << " width length " << lengths[i] << std::endl;
-            if (poLayer->CreateField(&fld) != OGRERR_NONE)
-            {
-              QMessageBox::warning(0, "Error",
-                                   "Error creating field " + attrField.name());
-            }
-          }
-          // read the delimited text file and create the features
-          std::cerr << "Done creating fields" << std::endl;
-          // read the line
-          reset();
-          QTextStream stream(mFile);
-          QString line;
-          while (!stream.atEnd())
-          {
-            line = stream.readLine(); // line of text excluding '\n'
-            std::cerr << (const char *)line.toLocal8Bit().data() << std::endl;
-            // split the line
-            QStringList parts =
-              QStringList::split(QRegExp(mDelimiter), line, true);
-            std::cerr << "Split line into " << parts.size() << std::endl;
-
-            // create the feature
-            OGRFeature *poFeature;
-
-            poFeature = new OGRFeature(poLayer->GetLayerDefn());
-
-            // iterate over the parts and set the fields
-            std::cerr << "Setting the field values" << std::endl;
-            // set limit - we will ignore extra fields on the line
-            int limit = attributeFields.size();
-
-            if (parts.size() < limit)
-            {
-
-              // this is bad - not enough values where supplied on the line
-              // TODO We should inform the user about this...
-            }
-            else
-            {
-
-              for (int i = 0; i < limit; i++)
-              {
-                if (parts[i] != QString::null)
-                {
-                  std::cerr << "Setting " << i << " " << (const char *)attributeFields[i].
-                    name().toLocal8Bit().data() << " to " << (const char *)parts[i].toLocal8Bit().data() << std::endl;
-                  poFeature->SetField(saveCodec->fromUnicode(attributeFields[i].name()).data(),
-                                      saveCodec->fromUnicode(parts[i]).data());
-
-                }
-                else
-                {
-                  poFeature->SetField(saveCodec->fromUnicode(attributeFields[i].name()).data(), "");
-                }
-              }
-              std::cerr << "Field values set" << std::endl;
-              // create the point
-              OGRPoint *poPoint = new OGRPoint();
-              QString sX = parts[fieldPositions[mXField]];
-              QString sY = parts[fieldPositions[mYField]];
-              poPoint->setX(sX.toDouble());
-              poPoint->setY(sY.toDouble());
-              std::cerr << "Setting geometry" << std::endl;
-
-              poFeature->SetGeometryDirectly(poPoint);
-              if (poLayer->CreateFeature(poFeature) != OGRERR_NONE)
-              {
-                std::cerr << "Failed to create feature in shapefile" << std::
-                  endl;
-              }
-              else
-              {
-                std::cerr << "Added feature" << std::endl;
-              }
-
-              delete poFeature;
-            }
-          }
-          delete poDS;
-        }
-        else
-        {
-          QMessageBox::warning(0, "Error", "Layer creation failed");
-        }
-
-      }
-      else
-      {
-        QMessageBox::warning(0, "Error creating shapefile",
-                             "The shapefile could not be created (" +
-                             shapefileName + ")");
-      }
-
-    }
-    //std::cerr << "Saving to " << shapefileName << std::endl; 
-  }
-  else
-  {
-    QMessageBox::warning(0, "Driver not found",
-                         driverName + " driver is not available");
-    returnValue = false;
-  }
-  return returnValue;
-}
-
-
-
-size_t QgsDelimitedTextProvider::layerCount() const
-{
-    return 1;                   // XXX How to calculate the layers?
-} // QgsOgrProvider::layerCount()
-
 
 
 int *QgsDelimitedTextProvider::getFieldLengths()
@@ -958,13 +634,12 @@ int *QgsDelimitedTextProvider::getFieldLengths()
   {
     reset();
     // read the line
-    QTextStream stream(mFile);
     QString line;
-    while (!stream.atEnd())
+    while (!mStream->atEnd())
     {
-      line = stream.readLine(); // line of text excluding '\n'
+      line = mStream->readLine(); // line of text excluding '\n'
       // split the line
-      QStringList parts = QStringList::split(QRegExp(mDelimiter), line, true);
+      QStringList parts = QStringList::split(mDelimiter, line, true);
       // iterate over the parts and update the max value
       for (int i = 0; i < parts.size(); i++)
       {
@@ -983,6 +658,16 @@ int *QgsDelimitedTextProvider::getFieldLengths()
   return lengths;
 }
 
+void QgsDelimitedTextProvider::setSRS(const QgsSpatialRefSys& theSRS)
+{
+  // TODO: make provider projection-aware
+}
+  
+QgsSpatialRefSys QgsDelimitedTextProvider::getSRS()
+{
+  // TODO: make provider projection-aware
+  return QgsSpatialRefSys(); // return default SRS
+}
 
 
 

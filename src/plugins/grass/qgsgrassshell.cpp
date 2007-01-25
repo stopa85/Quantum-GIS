@@ -24,6 +24,8 @@
 #include <qfontmetrics.h>
 #include <q3progressbar.h>
 
+#include "qgsapplication.h"
+
 #include "qgsgrassshell.h"
 //Added by qt3to4:
 #include <QGridLayout>
@@ -40,7 +42,16 @@ extern "C" {
 #ifdef Q_OS_MACX
 #include <util.h>
 #else
+#ifdef __NetBSD__
+#include <util.h>
+#else
+#ifdef __FreeBSD__
+#include <termios.h>
+#include <libutil.h>
+#else
 #include <pty.h>
+#endif
+#endif
 #endif
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -679,13 +690,13 @@ void QgsGrassShell::printStdout()
 	    {
 		mlen = rxwarning.matchedLength();
 		msg = rxwarning.cap(1);
-		img = mAppDir + "/share/qgis/themes/default/grass/grass_module_warning.png";
+		img = QgsApplication::pkgDataPath() + "/themes/default/grass/grass_module_warning.png";
 	    }
 	    else if ( rxerror.search(mStdoutBuffer) == 0 ) 
 	    {
 		mlen = rxerror.matchedLength();
 		msg = rxerror.cap(1);
-		img = mAppDir + "/share/qgis/themes/default/grass/grass_module_error.png";
+		img = QgsApplication::pkgDataPath() + "/themes/default/grass/grass_module_error.png";
 	    }
 
 	    if ( mlen > 0 ) // found error or warning
@@ -713,10 +724,10 @@ void QgsGrassShell::printStdout()
 		mStdoutBuffer.remove ( 0, mlen );
 		continue;
 	    } 
-	    
+	   
 	    if ( rxend.search(mStdoutBuffer) == 0 ) 
 	    {
-		mlen = rxerror.matchedLength();
+		mlen = rxend.matchedLength();
 		mStdoutBuffer.remove ( 0, mlen );
 		continue;
 	    }

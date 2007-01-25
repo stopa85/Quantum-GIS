@@ -41,7 +41,7 @@ dnl library interfase version number
 dnl change when lib interface changes
 dnl see http://www.gnu.org/software/libtool/manual.html#TOC32
 dnl ---------------------------------------------------------------------------
-INTERFACE_VERSION=0:1:0
+INTERFACE_VERSION=1:0:0
 
 
 AM_INIT_AUTOMAKE(qgis, ${VERSION})
@@ -80,6 +80,10 @@ dnl check lib64 environment
 dnl ---------------------------------------------------------------------------
 AQ_CHECK_LIB64
 
+dnl ---------------------------------------------------------------------------
+dnl svnversion check
+dnl ---------------------------------------------------------------------------
+AC_CHECK_PROG(HAVE_SVNVERSION, [svnversion], [yes], [no])
 
 dnl ---------------------------------------------------------------------------
 dnl Qt check
@@ -112,45 +116,57 @@ AC_ARG_WITH(projdir,
     AC_HELP_STRING([--with-projdir=DIR],
       [ Proj4 installation directory, e.g. '--with-projdir=/usr/local']),
     [
-    AC_MSG_CHECKING([for Proj4 library in $with_projdir])
-      if test -d "$with_projdir/lib"; then
-          LDFLAGS="$LDFLAGS -L$with_projdir/lib"
-    CPPFLAGS="$CPPFLAGS -I$with_projdir/include"
-    AC_MSG_RESULT(["$with_projdir exists"])
-    AC_CHECK_HEADERS(proj_api.h,
-      [PROJ_INC="-I$with_projdir/include"], 
-      [
-      AC_MSG_ERROR([*** Proj4 headers not found.])
-      ])
-    AC_CHECK_LIB(proj,pj_is_latlong, 
-      [
-      have_proj_lib=yes
-      PROJ_LIB="-L$with_projdir/lib -lproj"
-      ],
-      [
-      AC_MSG_ERROR([*** Proj4 library not found.])
-      ])
-    else
-      AC_MSG_ERROR([*** directory $with_projdir does not exist.])
-  fi
-    ],  
-    [
-    AC_CHECK_HEADERS(proj_api.h,[PROJ_INC=""],
-      [
-      AC_MSG_ERROR([*** Proj4 headers not found.])
-      ])
-    ]  
-    AC_CHECK_LIB(proj,pj_is_latlong,
-  [
-  have_proj_lib=yes
-  PROJ_LIB="-lproj"
-  ],
-  [
-  AC_MSG_ERROR([Proj4 is required and was not found.])
-  ])
+      if test x"$with_projlibdir" = "x" ; then
+        AC_MSG_CHECKING([for Proj4 library in $with_projdir/lib])
+        PROJ_LIB="-L$with_projdir/lib -lproj"
+        if test -d "$with_projdir/lib" ; then
+          projlibdir="$with_projdir/lib"
+        fi
+      else
+        AC_MSG_CHECKING([for Proj4 library in $with_projlibdir])
+        PROJ_LIB="-L$with_projlibdir -lproj"
+        if test -d "$with_projlibdir" ; then
+          projlibdir="$with_projlibdir"
+        fi
+      fi
+
+      if test x"$projlibdir" = "x" ; then
+         AC_MSG_ERROR([*** directory $projlibdir does not exist.])
+      else
+        LDFLAGS="$LDFLAGS $PROJ_LIB"
+        CPPFLAGS="$CPPFLAGS -I$with_projdir/include"
+        AC_MSG_RESULT(["$with_projdir exists"])
+
+        AC_CHECK_HEADERS(proj_api.h,
+          [PROJ_INC="-I$with_projdir/include"], 
+           [AC_MSG_ERROR([*** Proj4 headers not found.])])
+
+        AC_CHECK_LIB(proj,pj_is_latlong, 
+            [have_proj_lib=yes],
+            [AC_MSG_ERROR([*** Proj4 library not found.])])
+      fi
+    ],
   
-    
-    )
+    [
+     AC_CHECK_HEADERS(proj_api.h,[PROJ_INC=""],
+       [AC_MSG_ERROR([*** Proj4 headers not found.])])
+    ]
+    AC_CHECK_LIB(proj,pj_is_latlong,
+    [
+     have_proj_lib=yes
+     PROJ_LIB="-lproj"
+    ],
+    [
+     AC_MSG_ERROR([Proj4 is required and was not found.])
+    ])
+ )
+
+dnl A dummy section that's here just to produce some text for the 
+dnl configure --help output. The actual use of projlibdir is in 
+dnl the AC_ARG_WITH(projdir) macro
+
+AC_ARG_WITH(projlibdir,AC_HELP_STRING([--with-projlibdir=DIR],
+    [ Proj4 library directory, optional, use when library is in a different directory to that derived by appending /lib to --with-projdir ]),[],[])
 
 AC_SUBST(PROJ_INC)
 AC_SUBST(PROJ_LIB)
@@ -280,6 +296,16 @@ dnl ---------------------------------------------------------------------------
 AC_PROG_YACC
 AM_PROG_LEX
 
+# test whether they have been really found
+# (by default if not found autoconf will use a stub)
+
+if test x"$LEX" != "xflex" -a x"$LEX" != "xlex" ; then
+  AC_MSG_ERROR("Lex/Flex is not available!")
+fi
+
+if test x"$YACC" != "xbison" -a x"$YACC" != "xyacc" -a x"$YACC" != "xbison -y" ; then
+  AC_MSG_ERROR("Yacc/Bison is not available!")
+fi
 
 dnl ---------------------------------------------------------------------------
 dnl SPIT plugin
@@ -409,6 +435,22 @@ AM_CONDITIONAL([HAVE_GSL], [test "$ac_gsl" = "yes"])
 
 
 dnl ---------------------------------------------------------------------------
+dnl WFS plugin
+dnl ---------------------------------------------------------------------------
+AC_MSG_CHECKING([for WFS])
+
+if test -n "$with_wfs" -a x"$with_wfs" != "xno"; then
+      ac_wfs=yes
+      AC_DEFINE([HAVE_WFS],1,
+	[Define to 1 if wfs plugin/provider is requested])
+	AC_MSG_RESULT([yes])
+else
+	ac_wfs=no
+	AC_MSG_RESULT([no])
+fi
+AM_CONDITIONAL([HAVE_WFS], [test "$ac_wfs" = "yes"])
+
+dnl ---------------------------------------------------------------------------
 dnl Debugging
 dnl ---------------------------------------------------------------------------
 AC_ARG_ENABLE(debug,
@@ -436,6 +478,7 @@ AC_SUBST(DEBUG_QGIS)
 AC_CONFIG_FILES([
   Makefile 
   Makefile.win.rules 
+  create_qm_files.sh
   doc/Makefile
   doc/images/Makefile
   doc/install_guide/Makefile
@@ -461,13 +504,12 @@ AC_CONFIG_FILES([
   images/themes/Makefile
   images/themes/nkids/Makefile
   resources/Makefile
+  resources/context_help/Makefile
   src/Makefile 
-  src/composer/Makefile
+  src/app/Makefile
   src/core/Makefile
-  src/designer/Makefile
   src/helpviewer/Makefile
   src/gui/Makefile
-  src/legend/Makefile
   src/mac/Contents/Makefile
   src/mac/Contents/Resources/Makefile
   src/mac/Makefile
@@ -483,10 +525,10 @@ AC_CONFIG_FILES([
   src/plugins/grass/themes/default/Makefile
   src/plugins/grass/themes/Makefile
   src/plugins/grid_maker/Makefile
-  src/plugins/maplayer/Makefile
   src/plugins/north_arrow/Makefile
   src/plugins/scale_bar/Makefile
   src/plugins/spit/Makefile
+  src/plugins/wfs/Makefile
   src/providers/Makefile 
   src/providers/delimitedtext/Makefile
   src/providers/gpx/Makefile
@@ -494,19 +536,13 @@ AC_CONFIG_FILES([
   src/providers/ogr/Makefile
   src/providers/postgres/Makefile
   src/providers/wms/Makefile
-  src/raster/Makefile
+  src/providers/wfs/Makefile
   src/ui/Makefile
-  src/widgets/Makefile
-  src/widgets/projectionselector/Makefile
   tools/Makefile
   tools/mapserver_export/Makefile
   tools/qgis_config/Makefile
-  tests/Makefile
-  tests/src/Makefile
-  tests/src/core/Makefile
-  tests/src/gui/Makefile
-  tests/src/raster/Makefile
   qgis.spec
+	src/plugins/navigation/Makefile
 ])
 
 AC_OUTPUT
@@ -522,13 +558,17 @@ echo "PostgreSQL    : $ac_postgresql $postgresql_version_string"
 echo "GRASS         : $ac_grass"
 echo "SPIT          : $ac_spit"
 echo "Georeferencer : $ac_gsl"
+echo "WFS           : $ac_wfs"
 echo "GPS/GPX       : $have_expat_lib"
 echo "PROJ4         : $have_proj_lib"
 echo "SQLITE3       : $have_sqlite3_lib"
 echo "Python        : $ac_use_python"
 echo ""
+echo "CPPFLAGS      : $CPPFLAGS"
+echo "CXXFLAGS      : $CXXFLAGS"
+echo ""
 echo "Debug         : $ac_debug"
-echo "Plugin dir    : ${libdir}/$PACKAGE"
+echo "Plugin dir    : ${prefix}/lib/$PACKAGE"
 echo ""
 if test "$have_qtmac" = "yes"; then
   echo "The binary will be installed in $prefix"

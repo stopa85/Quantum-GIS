@@ -32,7 +32,7 @@ class QString;
  * QgsRect is used to store a rectangle when double values are required. 
  * Examples are storing a layer extent or the current view extent of a map
  */
-class QgsRect
+class CORE_EXPORT QgsRect
 {
  public:
     //! Constructor
@@ -111,6 +111,10 @@ class QgsRect
     
     /** updates rectangle to include passed argument */
     void unionRect(const QgsRect& rect);
+
+    /** Returns true if the rectangle has finite boundaries. Will
+        return false if any of the rectangle boundaries are NaN or Inf. */
+    bool isFinite() const;
  
 protected:
 

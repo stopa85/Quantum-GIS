@@ -21,9 +21,13 @@
 #define QGSNORTHARROWPLUGIN
 
 #include "../qgisplugin.h"
-#include "qgisapp.h"
 
+#include <QObject>
+#include <QStringList>
+class QgisInterface;
+class QAction;
 class QToolBar;
+class QPainter;
 /**
 * \class Plugin
 * \brief North Arrow plugin for QGIS
@@ -33,12 +37,11 @@ class QgsNorthArrowPlugin:public QObject, public QgisPlugin
 {
   Q_OBJECT public:
       /**
-       * Constructor for a plugin. The QgisApp and QgisIface pointers are passed by
+       * Constructor for a plugin. The QgisInterface pointer is passed by
        * QGIS when it attempts to instantiate the plugin.
-       * @param qgis Pointer to the QgisApp object
-       * @param qI Pointer to the QgisIface object.
+       * @param qI Pointer to the QgisInterface object.
        */
-    QgsNorthArrowPlugin(QgisApp * , QgisIface * );
+    QgsNorthArrowPlugin( QgisInterface * );
   //! Destructor
   virtual ~QgsNorthArrowPlugin();
   public slots:
@@ -59,7 +62,7 @@ class QgsNorthArrowPlugin:public QObject, public QgisPlugin
   //! show the help document
   void help();
   //! set north arrow placement
-  void setPlacement(QString);
+  void setPlacement(int);
   //! enable or disable north arrow
   void setEnabled(bool);
   //! enable or disable the automatic setting of the arrow direction
@@ -83,16 +86,13 @@ class QgsNorthArrowPlugin:public QObject, public QgisPlugin
   bool mEnable;
   //! enable or disable the automatic setting of the arrow direction
   bool mAutomatic;
-  // The placement string
-  QString mPlacement;
-  //! Id of the plugin's menu. Used for unloading
-  int menuId;
+  // The placement index and translated text
+  int mPlacementIndex;
+  QStringList mPlacementLabels;
   //! Pointer to our toolbar
   QToolBar *toolBarPointer;
-  //! Pionter to QGIS main application object
-  QgisApp *qgisMainWindowPointer;
   //! Pointer to the QGIS interface object
-  QgisIface *qGisInterface;
+  QgisInterface *qGisInterface;
   //! Pointer to the QAction object used in the menu and toolbar
   QAction *myQActionPointer;
 };

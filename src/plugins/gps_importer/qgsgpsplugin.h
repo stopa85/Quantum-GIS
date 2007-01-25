@@ -21,11 +21,11 @@
 #define QGSGPSPLUGIN_H
 #include "qgsbabelformat.h"
 #include "qgsgpsdevice.h"
-#include "../qgisplugin.h"
-#include <qwidget.h>
-#include <qgisapp.h>
+#include "qgisplugin.h"
 
+class QgisInterface;
 class QgsVectorLayer;
+class QAction;
 
 /** A plugin with various GPS tools.
 */
@@ -33,12 +33,11 @@ class QgsGPSPlugin:public QObject, public QgisPlugin
 {
   Q_OBJECT
 public:
-  /** Constructor for a plugin. The QgisApp and QgisIface pointers 
-      are passed by QGIS when it attempts to instantiate the plugin.
-      @param qgis Pointer to the QgisApp object
-      @param qI Pointer to the QgisIface object. 
+  /** Constructor for a plugin. The QgisInterface pointer
+      is passed by QGIS when it attempts to instantiate the plugin.
+      @param qI Pointer to the QgisInterface object. 
   */
-  QgsGPSPlugin(QgisApp * , QgisIface * );
+  QgsGPSPlugin(QgisInterface * );
 
   //! Destructor
   virtual ~QgsGPSPlugin();
@@ -80,15 +79,12 @@ private:
   //! Initializes all variables needed to run GPSBabel.
   void setupBabel();
 
-  //! Id of the plugin's menu. Used for unloading
-  int mMenuIdGPS, mMenuIdGPX;
-  //! Pointer to our menu
-  QgisApp *mMainWindowPointer;
   //! Pointer to the QGIS interface object
-  QgisIface *mQGisInterface;
+  QgisInterface *mQGisInterface;
   //! Pointer to the QAction object used in the menu and toolbar
   QAction *mQActionPointer;
-  
+  //! Pointer to the QAction used for creating a new GPX layer
+  QAction *mCreateGPXAction;
   //! The path to the GPSBabel program
   QString mBabelPath;
   //! Importers for external GPS data file formats

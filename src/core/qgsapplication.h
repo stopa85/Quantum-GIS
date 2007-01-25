@@ -18,7 +18,7 @@
 
 #include <QApplication>
 
-class QgsApplication: public QApplication
+class CORE_EXPORT QgsApplication: public QApplication
 {
   public:
     QgsApplication(int & argc, char ** argv, bool GUIenabled);
@@ -30,11 +30,17 @@ class QgsApplication: public QApplication
     //! Returns the path to the authors file.
     static const QString authorsFilePath();
 
+    //! Returns the path to the sponsors file.
+    static const QString sponsorsFilePath();
+
     //! Returns the path to the developer image directory.
     static const QString developerPath();
 
     //! Returns the path to the help application.
     static const QString helpAppPath();
+
+    //! Returns the path to the mapserver export application.
+    static const QString msexportAppPath();
 
     //! Returns the path to the translation directory.
     static const QString i18nPath();
@@ -50,6 +56,9 @@ class QgsApplication: public QApplication
 
     //! Returns the path to the splash screen image directory.
     static const QString splashPath();
+    
+    //! Returns the path to the icons image directory.
+    static const QString iconsPath();
 
     //! Returns the path to the srs.db file.
     static const QString srsDbFilePath();
@@ -68,6 +77,32 @@ class QgsApplication: public QApplication
 
     //! Returns the path to the current theme directory.
     static const QString& themePath() { return mThemePath; }
+    
+    //! Alters prefix path - used by 3rd party apps
+    static void setPrefixPath(const QString& thePrefixPath, bool useDefaultPaths = FALSE);
+    
+    //! Alters plugin path - used by 3rd party apps
+    static void setPluginPath(const QString& thePluginPath);
+
+    //! Alters pkg data path - used by 3rd party apps
+    static void setPkgDataPath(const QString& thePkgDataPath);
+    
+    //! loads providers
+    static void initQgis();
+
+    //! deletes provider registry and map layer registry
+    static void exitQgis();
+    
+    /** constants for endian-ness */
+    typedef enum ENDIAN
+    {
+      XDR = 0,  // network, or big-endian, byte order
+      NDR = 1   // little-endian byte order
+    }
+    endian_t;
+    
+    //! Returns whether this machine uses big or little endian
+    static endian_t endian();
 
   private:
     static QString mPrefixPath;

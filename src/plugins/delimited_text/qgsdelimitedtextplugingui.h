@@ -15,7 +15,7 @@
 
 #include "ui_qgsdelimitedtextpluginguibase.h"
 
-class QgisIface;
+class QgisInterface;
 
 /**
  * \class QgsDelimitedTextPluginGui
@@ -25,7 +25,7 @@ class QgsDelimitedTextPluginGui : public QDialog, private Ui::QgsDelimitedTextPl
   Q_OBJECT
   public:
     QgsDelimitedTextPluginGui();
-    QgsDelimitedTextPluginGui( QgisIface * _qI, QWidget* parent = 0, Qt::WFlags fl = 0 );
+    QgsDelimitedTextPluginGui( QgisInterface * _qI, QWidget* parent = 0, Qt::WFlags fl = 0 );
     ~QgsDelimitedTextPluginGui();
     public slots:
     void on_pbnOK_clicked();
@@ -38,8 +38,8 @@ class QgsDelimitedTextPluginGui : public QDialog, private Ui::QgsDelimitedTextPl
     void help();
 
   private:
-    QgisIface * qI;
-    static const int context_id = -1033030847;
+    QgisInterface * qI;
+    static const int context_id = 1033030847;
 signals:
     void drawRasterLayer(QString);
     void drawVectorLayer(QString,QString,QString);

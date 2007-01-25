@@ -1,17 +1,22 @@
 
 #include "qgis.h"
-
+#ifndef QGSSVNVERSION
+#include "qgssvnversion.h"
+#endif
 // Version constants
 //
 
 // Version string
 const char* QGis::qgisVersion = VERSION;
+
+// SVN version
+const char* QGis::qgisSvnVersion = QGSSVNVERSION;
   
 // Version number used for comparing versions using the "Check QGIS Version" function
-const int QGis::qgisVersionInt =800;
+const int QGis::qgisVersionInt =900;
   
 // Release name
-const char* QGis::qgisReleaseName = "Titan - Preview 1";
+const char* QGis::qgisReleaseName = "Grumpy - UNSTABLE";
 
 const char* QGis::qgisVectorGeometryType[] =
 {
@@ -32,5 +37,5 @@ const char* QGis::qgisFeatureTypes[] =
   "WKBMultiPolygon"
 };
 
-const int QGis::DEFAULT_IDENTIFY_RADIUS=5;
+const double QGis::DEFAULT_IDENTIFY_RADIUS=0.5;
 

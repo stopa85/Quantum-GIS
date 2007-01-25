@@ -22,21 +22,12 @@ email                : tim@linfiniti.com
 
 // includes
 
-#include "qgisapp.h"
+#include "qgisinterface.h"
 #include "qgisgui.h"
 #include "qgsmaplayer.h"
 #include "plugin.h"
 
-
-#include <q3toolbar.h>
-#include <qmenubar.h>
-#include <qmessagebox.h>
-#include <q3popupmenu.h>
-#include <qlineedit.h>
-#include <qaction.h>
-#include <qapplication.h>
-#include <qcursor.h>
-#include <qglobal.h>
+#include <QAction>
 
 //non qt includes
 #include <iostream>
@@ -56,9 +47,9 @@ email                : tim@linfiniti.com
 
 static const char * const ident_ = "$Id$";
 
-static const char * const name_ = "Graticule Creator";
-static const char * const description_ = "A graticule building plugin.";
-static const char * const version_ = "Version 0.1";
+static const QString name_ = QObject::tr("Graticule Creator");
+static const QString description_ = QObject::tr("Builds a graticule");
+static const QString version_ = QObject::tr("Version 0.1");
 static const QgisPlugin::PLUGINTYPE type_ = QgisPlugin::UI;
 /**
  * Constructor for the plugin. The plugin is passed a pointer to the main app
@@ -66,10 +57,8 @@ static const QgisPlugin::PLUGINTYPE type_ = QgisPlugin::UI;
  * @param qgis Pointer to the QGIS main window
  * @param _qI Pointer to the QGIS interface object
  */
-QgsGridMakerPlugin::QgsGridMakerPlugin(QgisApp * theQGisApp, 
-				       QgisIface * theQgisInterFace):
+QgsGridMakerPlugin::QgsGridMakerPlugin(QgisInterface * theQgisInterFace):
           QgisPlugin(name_,description_,version_,type_),
-          qgisMainWindowPointer(theQGisApp), 
           qGisInterface(theQgisInterFace)
 {
 }
@@ -107,23 +96,15 @@ int QgsGridMakerPlugin::type()
  */
 void QgsGridMakerPlugin::initGui()
 {
-  QMenu *pluginMenu = qGisInterface->getPluginMenu(tr("&Graticules"));
-  menuId = pluginMenu->insertItem(QIcon(icon),tr("&GraticuleMaker"), this, SLOT(run()));
-
-  pluginMenu->setWhatsThis(menuId, tr("Creates a graticule (grid) and stores the result as a shapefile"));
-
   // Create the action for tool
-#if QT_VERSION < 0x040000
-  myQActionPointer = new QAction(tr("Graticule Creator"), QIcon(icon), "&Wmi",0, this, "run");
-#else
-  myQActionPointer = new QAction(QIcon(icon), tr("Graticule Creator"), this);
-#endif
+  myQActionPointer = new QAction(QIcon(icon), tr("&Graticule Creator"), this);
   myQActionPointer->setWhatsThis(tr("Creates a graticule (grid) and stores the result as a shapefile"));
   // Connect the action to the run
   connect(myQActionPointer, SIGNAL(activated()), this, SLOT(run()));
 
   // Add the icon to the toolbar
   qGisInterface->addToolBarIcon(myQActionPointer);
+  qGisInterface->addPluginMenu(tr("&Graticules"), myQActionPointer);
 
 }
 //method defined in interface
@@ -135,7 +116,7 @@ void QgsGridMakerPlugin::help()
 // Slot called when the buffer menu item is activated
 void QgsGridMakerPlugin::run()
 {
-  QgsGridMakerPluginGui *myPluginGui=new QgsGridMakerPluginGui(qgisMainWindowPointer, QgisGui::ModalDialogFlags);
+  QgsGridMakerPluginGui *myPluginGui=new QgsGridMakerPluginGui(qGisInterface->getMainWindow(), QgisGui::ModalDialogFlags);
   //listen for when the layer has been made so we can draw it
   connect(myPluginGui, SIGNAL(drawRasterLayer(QString)), this, SLOT(drawRasterLayer(QString)));
   connect(myPluginGui, SIGNAL(drawVectorLayer(QString,QString,QString)), this, SLOT(drawVectorLayer(QString,QString,QString)));
@@ -158,7 +139,7 @@ void QgsGridMakerPlugin::drawVectorLayer(QString thePathNameQString, QString the
 void QgsGridMakerPlugin::unload()
 {
   // remove the GUI
-  qGisInterface->removePluginMenuItem(tr("&Graticules"),menuId);
+  qGisInterface->removePluginMenu(tr("&Graticules"),myQActionPointer);
   qGisInterface->removeToolBarIcon(myQActionPointer);
   delete myQActionPointer;
 }
@@ -168,9 +149,9 @@ void QgsGridMakerPlugin::unload()
  * of the plugin class
  */
 // Class factory to return a new instance of the plugin class
-QGISEXTERN QgisPlugin * classFactory(QgisApp * theQGisAppPointer, QgisIface * theQgisInterfacePointer)
+QGISEXTERN QgisPlugin * classFactory(QgisInterface * theQgisInterfacePointer)
 {
-  return new QgsGridMakerPlugin(theQGisAppPointer, theQgisInterfacePointer);
+  return new QgsGridMakerPlugin(theQgisInterfacePointer);
 }
 
 // Return the name of the plugin - note that we do not user class members as

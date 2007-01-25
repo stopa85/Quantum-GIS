@@ -1,6 +1,4 @@
-#include <qlineedit.h>
-#include <qvalidator.h>
-
+#include <QValidator>
 #include <mapcoordsdialog.h>
 
 
@@ -28,4 +26,9 @@ void MapCoordsDialog::on_buttonOk_clicked() {
   QgsPoint mapCoords(leXCoord->text().toDouble(), leYCoord->text().toDouble());
   emit pointAdded(mPixelCoords, mapCoords);
   accept();
+}
+
+void MapCoordsDialog::on_buttonCancel_clicked()
+{
+  reject();
 }

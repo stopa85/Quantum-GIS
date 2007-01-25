@@ -14,25 +14,25 @@
 
 #include <vector>
 
-#include <qcursor.h>
+#include <QDialog>
+#include <QString>
 
 #include <qgsmapcanvas.h>
-
-#include "qgsrasterlayer.h"
+#include <qgsrasterlayer.h>
 
 #include <ui_qgspointdialogbase.h>
-#include <QDialog>
 
 class QAction;
 class QActionGroup;
 class QgsGeorefDataPoint;
-class QgisIface;
+class QgisInterface;
+class QgsMapTool;
 
 class QgsPointDialog : public QDialog, private Ui::QgsPointDialogBase
 {
 Q_OBJECT
 public:
-  QgsPointDialog(QString layerPath, QgisIface* theQgisInterface,
+  QgsPointDialog(QString layerPath, QgisInterface* theQgisInterface,
                  QWidget* parent = 0, Qt::WFlags fl = 0);
   ~QgsPointDialog();
 
@@ -47,6 +47,7 @@ public slots:
   void on_pbnGenerateAndLoad_clicked();
   void on_pbnSelectWorldFile_clicked();
   void on_pbnSelectModifiedRaster_clicked();
+  void on_cmbTransformType_currentIndexChanged(const QString&);
   void zoomIn();
   void zoomOut();
   void zoomToLayer();
@@ -59,6 +60,8 @@ private:
 
   bool generateWorldFile();
   QString guessWorldFileName(const QString& raster);
+
+  void enableModifiedRasterControls(bool state);
   
   QActionGroup* mMapToolGroup;
   QAction* mActionZoomIn;
@@ -71,10 +74,16 @@ private:
   QgsMapCanvas* mCanvas;
   QgsRasterLayer* mLayer;
   
+  QgsMapTool* mToolZoomIn;
+  QgsMapTool* mToolZoomOut;
+  QgsMapTool* mToolPan;
+  QgsMapTool* mToolAddPoint;
+  QgsMapTool* mToolDeletePoint;
+  
 //  std::vector<QgsPoint> mPixelCoords, mMapCoords;
 //  std::vector<QString> mAcetateIDs;
   std::vector<QgsGeorefDataPoint*> mPoints;
-  QgisIface* mIface;
+  QgisInterface* mIface;
 };
 
 #endif

@@ -20,9 +20,14 @@
 #ifndef QGSCOPYRIGHTLABELPLUGIN
 #define QGSCOPYRIGHTLABELPLUGIN
 #include "../qgisplugin.h"
-#include "qgisapp.h"
 
+#include <QColor>
+#include <QFont>
+#include <QObject>
+class QAction;
 class QPainter;
+
+class QgisInterface;
 
 /**
 * \class Plugin
@@ -33,12 +38,11 @@ class QgsCopyrightLabelPlugin:public QObject, public QgisPlugin
 {
   Q_OBJECT public:
       /**
-       * Constructor for a plugin. The QgisApp and QgisIface pointers are passed by
+       * Constructor for a plugin. The QgisInterface pointer is passed by
        * QGIS when it attempts to instantiate the plugin.
-       * @param qgis Pointer to the QgisApp object
-       * @param qI Pointer to the QgisIface object.
+       * @param qI Pointer to the QgisInterface object.
        */
-      QgsCopyrightLabelPlugin(QgisApp * , QgisIface * );
+      QgsCopyrightLabelPlugin(QgisInterface * );
   //! Destructor
   virtual ~ QgsCopyrightLabelPlugin();
   void writeEntry(QString theScope, QString theProperty, QVariant theValue);
@@ -63,7 +67,7 @@ class QgsCopyrightLabelPlugin:public QObject, public QgisPlugin
   //! change the copyright font colour
   void setColor(QColor);
   //! set copyright label placement
-  void setPlacement(QString);
+  void setPlacement(int);
   //! set copyright label enabled
   void setEnable(bool);
 
@@ -76,18 +80,15 @@ class QgsCopyrightLabelPlugin:public QObject, public QgisPlugin
   QString mLabelQString;
   //! This is the colour for the copyright label
   QColor mLabelQColor;
-  //! Placement of the copyright label
-  QString mPlacement;
+  //! Placement of the copyright label - index and translated label names
+  int mPlacementIndex;
+  QStringList mPlacementLabels;
   //! Copyright label enabled
   bool mEnable;
 
   int pluginType;
-  //! Id of the plugin's menu. Used for unloading
-  int menuId;
-  //! Pionter to QGIS main application object
-  QgisApp *qgisMainWindowPointer;
   //! Pointer to the QGIS interface object
-  QgisIface *qGisInterface;
+  QgisInterface *qGisInterface;
   //! Pointer to the QAction object used in the menu and toolbar
   QAction *myQActionPointer;
 };

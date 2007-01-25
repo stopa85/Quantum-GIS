@@ -16,7 +16,7 @@
 #include "qgsdelimitedtextplugingui.h"
 #include "qgscontexthelp.h"
 
-#include "qgisiface.h"
+#include "qgisinterface.h"
 
 #include <QFileDialog>
 #include <QFile>
@@ -33,13 +33,13 @@ QgsDelimitedTextPluginGui::QgsDelimitedTextPluginGui() : QDialog()
 
 }
 
-QgsDelimitedTextPluginGui::QgsDelimitedTextPluginGui(QgisIface * _qI, QWidget * parent, Qt::WFlags fl) 
+QgsDelimitedTextPluginGui::QgsDelimitedTextPluginGui(QgisInterface * _qI, QWidget * parent, Qt::WFlags fl) 
 : QDialog(parent, fl), qI(_qI)
 {
   setupUi(this);
   // at startup, fetch the last used delimiter and directory from
   // settings
-  QSettings settings("QuantumGIS", "qgis");
+  QSettings settings;
   QString key = "/Plugin-DelimitedText";
   txtDelimiter->setText(settings.readEntry(key + "/delimiter"));
 
@@ -70,12 +70,12 @@ void QgsDelimitedTextPluginGui::on_pbnOK_clicked()
       .arg(txtDelimiter->text())
       .arg(cmbXField->currentText())
       .arg(cmbYField->currentText());
-    std::cerr << "Adding layer using " << uri.toLocal8Bit().data() << std::endl; 
+
     // add the layer to the map
     emit drawVectorLayer(uri,txtLayerName->text(),"delimitedtext");
     // store the settings
 
-    QSettings settings("QuantumGIS", "qgis");
+    QSettings settings;
     QString key = "/Plugin-DelimitedText";
     settings.writeEntry(key + "/delimiter", txtDelimiter->text());
     QFileInfo fi(txtFilePath->text());
@@ -110,8 +110,12 @@ void QgsDelimitedTextPluginGui::updateFieldLists()
         std::cerr << "Attempting to split the input line: " << line.toLocal8Bit().data() <<
           " using delimiter " << txtDelimiter->text().toLocal8Bit().data() << std::endl;
 #endif
-
-        QStringList fieldList = QStringList::split(QRegExp(txtDelimiter->text()), line);
+        QString delimiter = txtDelimiter->text();
+        
+        // convert \t to tabulator
+        delimiter.replace("\\t", "\t");
+        
+        QStringList fieldList = QStringList::split(delimiter, line);
 
 #ifdef QGISDEBUG
         std::cerr << "Split line into " << fieldList.size() << " parts" << std::endl; 
@@ -126,7 +130,26 @@ void QgsDelimitedTextPluginGui::updateFieldLists()
             cmbXField->insertItem(*it);
             cmbYField->insertItem(*it);
           }
-        }           
+        }  
+        // Have a go at setting the selected items in the X and Y
+        // combo boxes to something sensible.
+        int indexX = cmbXField->findText("lon", Qt::MatchContains);
+        int indexY = cmbXField->findText("lat", Qt::MatchContains);
+        if (indexX != -1 && indexY != -1)
+        {
+          cmbXField->setCurrentIndex(indexX);
+          cmbYField->setCurrentIndex(indexY);
+        }
+        else
+        {
+          indexX = cmbXField->findText("x", Qt::MatchContains);
+          indexY = cmbXField->findText("y", Qt::MatchContains);
+          if (indexX != -1 && indexY != -1)
+          {
+            cmbXField->setCurrentIndex(indexX);
+            cmbYField->setCurrentIndex(indexY);
+          }
+        }
         // enable the buttons
         enableButtons();
       }
@@ -150,6 +173,9 @@ void QgsDelimitedTextPluginGui::updateFieldLists()
       }
       // close the file
       file->close();
+      // put a default layer name in the text entry
+      QFileInfo finfo(txtFilePath->text());
+      txtLayerName->setText(finfo.completeBaseName());
     }
 
   }
@@ -159,13 +185,13 @@ void QgsDelimitedTextPluginGui::getOpenFileName()
 {
   // Get a file to process, starting at the current directory
   // Set inital dir to last used
-  QSettings settings("QuantumGIS", "qgis");
+  QSettings settings;
 
   QString s = QFileDialog::getOpenFileName(
       this,
       tr("Choose a delimited text file to open"),
       settings.readEntry("/Plugin-DelimitedText/text_path","./"),
-      "Text files (*.txt)");
+      "Text files (*.txt *.csv);; All files (* *.*)");
 
   // set path
   txtFilePath->setText(s);

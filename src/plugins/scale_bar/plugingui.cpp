@@ -36,19 +36,18 @@ QSpinBox * QgsScaleBarPluginGui::getSpinSize()
 void QgsScaleBarPluginGui::on_pbnOK_clicked()
 {
   hide();
-  emit changePlacement(cboPlacement->currentText());
+  emit changePlacement(cboPlacement->currentIndex());
   emit changePreferredSize(spnSize->value());
   emit changeSnapping(chkSnapping->isChecked());
   emit changeEnabled(chkEnable->isChecked());
-  emit changeStyle(cboStyle->currentText());
-  emit changeColour(pbnChangeColour->palette().color(QPalette::Button));
+  emit changeStyle(cboStyle->currentItem());
+  emit changeColour(pbnChangeColour->color());
   emit refreshCanvas();
   done(1);
 } 
 void QgsScaleBarPluginGui::on_pbnChangeColour_clicked()
 {
-  QColor colour = QColorDialog::getColor(
-		   pbnChangeColour->palette().color(QPalette::Button), this);
+  QColor colour = QColorDialog::getColor(pbnChangeColour->color(), this);
   
   if (colour.isValid())
     setColour(colour);
@@ -58,9 +57,15 @@ void QgsScaleBarPluginGui::on_pbnCancel_clicked()
  close(1);
 }
 
-void QgsScaleBarPluginGui::setPlacement(QString thePlacementQString)
+void QgsScaleBarPluginGui::setPlacementLabels(QStringList& labels)
 {
-  cboPlacement->setCurrentText(tr(thePlacementQString));
+  cboPlacement->clear();
+  cboPlacement->addItems(labels);
+}
+
+void QgsScaleBarPluginGui::setPlacement(int placementIndex)
+{
+  cboPlacement->setCurrentIndex(placementIndex);
 }
 
 void QgsScaleBarPluginGui::setPreferredSize(int thePreferredSize)
@@ -77,29 +82,18 @@ void QgsScaleBarPluginGui::setEnabled(bool theBool)
   chkEnable->setChecked(theBool);
 }
 
-void QgsScaleBarPluginGui::setStyle(QString theStyleQString)
+void QgsScaleBarPluginGui::setStyleLabels(QStringList& labels)
 {
-  if ((tr(theStyleQString))=="Tick Down")
-  {
-    cboStyle->setCurrentItem(0);
-  }
-  else if ((tr(theStyleQString))=="Tick Up")
-  {
-    cboStyle->setCurrentItem(1);
-  }
-  else if ((tr(theStyleQString))=="Box")
-  {
-    cboStyle->setCurrentItem(2);
-  }
-  else if ((tr(theStyleQString))=="Bar")
-  {
-    cboStyle->setCurrentItem(3);
-  }
+  cboStyle->clear();
+  cboStyle->addItems(labels);
+}
+
+void QgsScaleBarPluginGui::setStyle(int styleIndex)
+{
+  cboStyle->setCurrentItem(styleIndex);
 }
 
 void QgsScaleBarPluginGui::setColour(QColor theQColor)
 {
-  QPalette palette;
-  palette.setColor(QPalette::Button, theQColor);
-  pbnChangeColour->setPalette(palette);
+  pbnChangeColour->setColor(theQColor);
 }

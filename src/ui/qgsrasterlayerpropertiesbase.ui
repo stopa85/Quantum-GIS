@@ -1,15 +1,12 @@
 <ui version="4.0" >
- <author></author>
- <comment></comment>
- <exportmacro></exportmacro>
  <class>QgsRasterLayerPropertiesBase</class>
  <widget class="QDialog" name="QgsRasterLayerPropertiesBase" >
   <property name="geometry" >
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>466</width>
-    <height>487</height>
+    <width>564</width>
+    <height>522</height>
    </rect>
   </property>
   <property name="windowTitle" >
@@ -21,6 +18,9 @@
   <property name="sizeGripEnabled" >
    <bool>true</bool>
   </property>
+  <property name="modal" >
+   <bool>true</bool>
+  </property>
   <layout class="QGridLayout" >
    <property name="margin" >
     <number>9</number>
@@ -29,8 +29,11 @@
     <number>6</number>
    </property>
    <item row="0" column="0" >
-    <widget class="QTabWidget" name="tabSymbology" >
-     <widget class="QWidget" name="tab" >
+    <widget class="QTabWidget" name="tabBar" >
+     <property name="currentIndex" >
+      <number>0</number>
+     </property>
+     <widget class="QWidget" name="tabPageSymbology" >
       <attribute name="title" >
        <string>Symbology</string>
       </attribute>
@@ -120,12 +123,6 @@
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
-            <property name="minimumSize" >
-             <size>
-              <width>0</width>
-              <height>20</height>
-             </size>
-            </property>
             <property name="maximum" >
              <number>255</number>
             </property>
@@ -172,7 +169,7 @@
              </sizepolicy>
             </property>
             <property name="text" >
-             <string>&lt;html>&lt;head>&lt;meta name="qrichtext" content="1" />&lt;/head>&lt;body style="font-size:10pt;font-family:Arial">
+             <string>&lt;html>&lt;head>&lt;meta name="qrichtext" content="1" />&lt;/head>&lt;body style="font-size:9pt;font-family:Sans Serif">
 &lt;p style="margin-top:14px" dir="ltr">&lt;span style="font-weight:600">Notes&lt;/span>&lt;/p>
 &lt;/body>&lt;/html>
 </string>
@@ -197,59 +194,16 @@
           <property name="spacing" >
            <number>6</number>
           </property>
-          <item row="4" column="1" >
-           <spacer>
-            <property name="orientation" >
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" >
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="4" column="0" >
-           <spacer>
-            <property name="orientation" >
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" >
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
           <item row="3" column="1" >
            <widget class="QComboBox" name="cboBlue" />
-          </item>
-          <item row="3" column="0" >
-           <widget class="QLabel" name="textLabel2_3" >
-            <property name="text" >
-             <string>&lt;b>&lt;font color="#0000ff">Blue&lt;/font>&lt;/b></string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0" >
-           <widget class="QLabel" name="textLabel2_2" >
-            <property name="text" >
-             <string>&lt;b>&lt;font color="#00ff00">Green&lt;/font>&lt;/b></string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1" >
-           <widget class="QComboBox" name="cboGreen" />
           </item>
           <item row="1" column="1" >
            <widget class="QComboBox" name="cboRed" />
           </item>
-          <item row="1" column="0" >
-           <widget class="QLabel" name="textLabel2" >
+          <item row="0" column="0" >
+           <widget class="QLabel" name="textLabel2_4" >
             <property name="text" >
-             <string>&lt;b>&lt;font color="#ff0000">Red&lt;/font>&lt;/b></string>
+             <string>Color</string>
             </property>
            </widget>
           </item>
@@ -260,12 +214,74 @@
             </property>
            </widget>
           </item>
-          <item row="0" column="0" >
-           <widget class="QLabel" name="textLabel2_4" >
+          <item row="5" column="1" >
+           <spacer>
+            <property name="orientation" >
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" >
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="2" column="1" >
+           <widget class="QComboBox" name="cboGreen" />
+          </item>
+          <item row="2" column="0" >
+           <widget class="QLabel" name="textLabel2_2" >
             <property name="text" >
-             <string>Color</string>
+             <string>&lt;b>&lt;font color="#00ff00">Green&lt;/font>&lt;/b></string>
+            </property>
+            <property name="buddy" >
+             <cstring>cboGreen</cstring>
             </property>
            </widget>
+          </item>
+          <item row="1" column="0" >
+           <widget class="QLabel" name="textLabel2" >
+            <property name="text" >
+             <string>&lt;b>&lt;font color="#ff0000">Red&lt;/font>&lt;/b></string>
+            </property>
+            <property name="buddy" >
+             <cstring>cboRed</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0" >
+           <spacer>
+            <property name="orientation" >
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" >
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="3" column="0" >
+           <widget class="QLabel" name="textLabel2_3" >
+            <property name="text" >
+             <string>&lt;b>&lt;font color="#0000ff">Blue&lt;/font>&lt;/b></string>
+            </property>
+            <property name="buddy" >
+             <cstring>cboBlue</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0" >
+           <widget class="QLabel" name="label" >
+            <property name="text" >
+             <string>Transparent</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1" >
+           <widget class="QComboBox" name="cboTransparent" />
           </item>
          </layout>
         </widget>
@@ -316,12 +332,18 @@
             <property name="text" >
              <string>Color Map</string>
             </property>
+            <property name="buddy" >
+             <cstring>cboColorMap</cstring>
+            </property>
            </widget>
           </item>
           <item row="1" column="0" >
            <widget class="QLabel" name="textLabel2_6_2" >
             <property name="text" >
              <string>Std Deviations</string>
+            </property>
+            <property name="buddy" >
+             <cstring>cboStdDev</cstring>
             </property>
            </widget>
           </item>
@@ -336,6 +358,9 @@
             <property name="text" >
              <string>Gray</string>
             </property>
+            <property name="buddy" >
+             <cstring>cboGray</cstring>
+            </property>
            </widget>
           </item>
          </layout>
@@ -343,7 +368,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tab" >
+     <widget class="QWidget" name="tabPageGeneral" >
       <attribute name="title" >
        <string>General</string>
       </attribute>
@@ -366,6 +391,9 @@
           <widget class="Q3GroupBox" name="groupBox10" >
            <property name="title" >
             <string>Thumbnail</string>
+           </property>
+           <property name="orientation" >
+            <enum>Qt::Vertical</enum>
            </property>
            <layout class="QGridLayout" >
             <property name="margin" >
@@ -414,6 +442,9 @@
            <property name="title" >
             <string>Legend:</string>
            </property>
+           <property name="orientation" >
+            <enum>Qt::Vertical</enum>
+           </property>
            <layout class="QGridLayout" >
             <property name="margin" >
              <number>0</number>
@@ -460,6 +491,9 @@
           <widget class="Q3GroupBox" name="groupBox8" >
            <property name="title" >
             <string>Palette:</string>
+           </property>
+           <property name="orientation" >
+            <enum>Qt::Vertical</enum>
            </property>
            <layout class="QGridLayout" >
             <property name="margin" >
@@ -510,6 +544,9 @@
          <property name="text" >
           <string>Display Name:</string>
          </property>
+         <property name="buddy" >
+          <cstring>leDisplayName</cstring>
+         </property>
         </widget>
        </item>
        <item row="0" column="1" colspan="2" >
@@ -526,6 +563,9 @@
         <widget class="QLabel" name="lblLayerSource" >
          <property name="text" >
           <string>Layer Source:</string>
+         </property>
+         <property name="buddy" >
+          <cstring>leLayerSource</cstring>
          </property>
         </widget>
        </item>
@@ -584,12 +624,6 @@
           </property>
           <item row="0" column="3" >
            <widget class="QSpinBox" name="spinMaximumScale" >
-            <property name="minimumSize" >
-             <size>
-              <width>0</width>
-              <height>20</height>
-             </size>
-            </property>
             <property name="toolTip" >
              <string>Maximum scale at which this layer will be displayed. </string>
             </property>
@@ -606,16 +640,13 @@
             <property name="text" >
              <string>Maximum 1:</string>
             </property>
+            <property name="buddy" >
+             <cstring>spinMaximumScale</cstring>
+            </property>
            </widget>
           </item>
           <item row="0" column="1" >
            <widget class="QSpinBox" name="spinMinimumScale" >
-            <property name="minimumSize" >
-             <size>
-              <width>0</width>
-              <height>12</height>
-             </size>
-            </property>
             <property name="toolTip" >
              <string>Minimum scale at which this layer will be displayed. </string>
             </property>
@@ -631,6 +662,9 @@
            <widget class="QLabel" name="textLabel1_3" >
             <property name="text" >
              <string>Minimum 1:</string>
+            </property>
+            <property name="buddy" >
+             <cstring>spinMinimumScale</cstring>
             </property>
            </widget>
           </item>
@@ -651,12 +685,6 @@
           </property>
           <item row="0" column="1" >
            <widget class="QPushButton" name="pbnChangeSpatialRefSys" >
-            <property name="minimumSize" >
-             <size>
-              <width>0</width>
-              <height>12</height>
-             </size>
-            </property>
             <property name="text" >
              <string>Change</string>
             </property>
@@ -664,12 +692,6 @@
           </item>
           <item row="0" column="0" >
            <widget class="QLineEdit" name="leSpatialRefSys" >
-            <property name="minimumSize" >
-             <size>
-              <width>0</width>
-              <height>20</height>
-             </size>
-            </property>
             <property name="readOnly" >
              <bool>true</bool>
             </property>
@@ -680,7 +702,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tabMetadata" >
+     <widget class="QWidget" name="tabPageMetadata" >
       <attribute name="title" >
        <string>Metadata</string>
       </attribute>
@@ -696,7 +718,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="TabPage" >
+     <widget class="QWidget" name="tabPagePyramids" >
       <attribute name="title" >
        <string>Pyramids</string>
       </attribute>
@@ -746,8 +768,8 @@
           </sizepolicy>
          </property>
          <property name="text" >
-          <string>&lt;html>&lt;head>&lt;meta name="qrichtext" content="1" />&lt;/head>&lt;body style="font-size:10pt;font-family:Arial">
-&lt;p style="margin-top:18px" dir="ltr">&lt;span style="font-size:17pt;font-weight:600">Description&lt;/span>&lt;/p>
+          <string>&lt;html>&lt;head>&lt;meta name="qrichtext" content="1" />&lt;/head>&lt;body style="font-size:9pt;font-family:Sans Serif">
+&lt;p style="margin-top:18px" dir="ltr">&lt;span style="font-size:15pt;font-weight:600">Description&lt;/span>&lt;/p>
 &lt;p dir="ltr">Large resolution raster layers can slow navigation in QGIS. By creating lower resolution copies of the data (pyramids) performance can be considerably improved as QGIS selects the most suitable resolution to use depending on the level of zoom. You must have write access in the directory where the original data is stored to build pyramids. &lt;/p>
 &lt;p dir="ltr">&lt;span style="color:#ff0000">Please note that building pyramids may alter the original data file and once created they cannot be removed.&lt;/span>&lt;/p>
 &lt;p dir="ltr">&lt;span style="color:#ff0000">Please note that building pyramids could corrupt your image - always make a backup of your data first!&lt;/span>&lt;/p>
@@ -788,6 +810,9 @@
            <property name="text" >
             <string>Resampling Method</string>
            </property>
+           <property name="buddy" >
+            <cstring>cboResamplingMethod</cstring>
+           </property>
           </widget>
          </item>
          <item>
@@ -800,11 +825,6 @@
            <item>
             <property name="text" >
              <string>Nearest Neighbour</string>
-            </property>
-           </item>
-           <item>
-            <property name="text" >
-             <string>Average Magphase</string>
             </property>
            </item>
           </widget>
@@ -820,7 +840,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="TabPage" >
+     <widget class="QWidget" name="tabPageHistogram" >
       <attribute name="title" >
        <string>Histogram</string>
       </attribute>
@@ -970,126 +990,69 @@
     </widget>
    </item>
    <item row="1" column="0" >
-    <layout class="QHBoxLayout" >
-     <property name="margin" >
-      <number>0</number>
+    <widget class="QDialogButtonBox" name="buttonBox" >
+     <property name="orientation" >
+      <enum>Qt::Horizontal</enum>
      </property>
-     <property name="spacing" >
-      <number>6</number>
+     <property name="standardButtons" >
+      <set>QDialogButtonBox::Apply|QDialogButtonBox::Cancel|QDialogButtonBox::Help|QDialogButtonBox::NoButton|QDialogButtonBox::Ok</set>
      </property>
-     <item>
-      <widget class="QPushButton" name="buttonHelp" >
-       <property name="enabled" >
-        <bool>false</bool>
-       </property>
-       <property name="text" >
-        <string>&amp;Help</string>
-       </property>
-       <property name="shortcut" >
-        <string>F1</string>
-       </property>
-       <property name="autoDefault" >
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <spacer>
-       <property name="orientation" >
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeType" >
-        <enum>QSizePolicy::Expanding</enum>
-       </property>
-       <property name="sizeHint" >
-        <size>
-         <width>280</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item>
-      <widget class="QPushButton" name="buttonApply" >
-       <property name="text" >
-        <string>&amp;Apply</string>
-       </property>
-       <property name="shortcut" >
-        <string>Alt+A</string>
-       </property>
-       <property name="autoDefault" >
-        <bool>true</bool>
-       </property>
-       <property name="default" >
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="buttonOk" >
-       <property name="text" >
-        <string>&amp;OK</string>
-       </property>
-       <property name="shortcut" >
-        <string/>
-       </property>
-       <property name="autoDefault" >
-        <bool>true</bool>
-       </property>
-       <property name="default" >
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="buttonCancel" >
-       <property name="text" >
-        <string>&amp;Cancel</string>
-       </property>
-       <property name="shortcut" >
-        <string/>
-       </property>
-       <property name="autoDefault" >
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-    </layout>
+    </widget>
    </item>
   </layout>
  </widget>
  <layoutdefault spacing="6" margin="11" />
- <pixmapfunction></pixmapfunction>
  <customwidgets>
   <customwidget>
-   <class>Q3GroupBox</class>
-   <extends></extends>
-   <header>Qt3Support/Q3GroupBox</header>
-   <container>1</container>
-   <pixmap></pixmap>
-  </customwidget>
-  <customwidget>
    <class>Q3TextEdit</class>
-   <extends></extends>
+   <extends>Q3Frame</extends>
    <header>q3textedit.h</header>
-   <container>0</container>
-   <pixmap></pixmap>
   </customwidget>
   <customwidget>
    <class>Q3TextBrowser</class>
-   <extends>QWidget</extends>
-   <header>q3textbrowser.h</header>
+   <extends>Q3TextEdit</extends>
+   <header>Qt3Support/Q3TextBrowser</header>
+  </customwidget>
+  <customwidget>
+   <class>Q3GroupBox</class>
+   <extends>QGroupBox</extends>
+   <header>Qt3Support/Q3GroupBox</header>
    <container>1</container>
-   <pixmap></pixmap>
   </customwidget>
   <customwidget>
    <class>Q3ListBox</class>
-   <extends></extends>
-   <header>q3listbox.h</header>
-   <container>0</container>
-   <pixmap></pixmap>
+   <extends>Q3Frame</extends>
+   <header>Qt3Support/Q3ListBox</header>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>tabBar</tabstop>
+  <tabstop>rbtnThreeBand</tabstop>
+  <tabstop>rbtnSingleBand</tabstop>
+  <tabstop>cboxInvertColorMap</tabstop>
+  <tabstop>sliderTransparency</tabstop>
+  <tabstop>cboRed</tabstop>
+  <tabstop>cboGreen</tabstop>
+  <tabstop>cboBlue</tabstop>
+  <tabstop>cboGray</tabstop>
+  <tabstop>cboStdDev</tabstop>
+  <tabstop>cboColorMap</tabstop>
+  <tabstop>leDisplayName</tabstop>
+  <tabstop>leLayerSource</tabstop>
+  <tabstop>cboxShowDebugInfo</tabstop>
+  <tabstop>spinMinimumScale</tabstop>
+  <tabstop>spinMaximumScale</tabstop>
+  <tabstop>leSpatialRefSys</tabstop>
+  <tabstop>pbnChangeSpatialRefSys</tabstop>
+  <tabstop>cboResamplingMethod</tabstop>
+  <tabstop>buttonBuildPyramids</tabstop>
+  <tabstop>radHistTypeBar</tabstop>
+  <tabstop>radHistTypeLine</tabstop>
+  <tabstop>spinHistBinCount</tabstop>
+  <tabstop>chkHistIgnoreOutOfRange</tabstop>
+  <tabstop>chkHistAllowApproximation</tabstop>
+  <tabstop>pbnHistRefresh</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

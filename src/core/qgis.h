@@ -32,7 +32,7 @@
 
 #include <qevent.h>
 
-class QGis
+class CORE_EXPORT QGis
 { 
 public:
   // Version constants
@@ -43,6 +43,8 @@ public:
   static const int qgisVersionInt;
   // Release name
   static const char* qgisReleaseName;
+  // The subversion version
+  static const char* qgisSvnVersion;
 
   // Enumerations
   //
@@ -57,7 +59,13 @@ public:
     WKBMultiPoint,
     WKBMultiLineString,
     WKBMultiPolygon,
-    WKBUnknown
+    WKBUnknown,
+    WKBPoint25D = 0x80000001,
+    WKBLineString25D,
+    WKBPolygon25D,
+    WKBMultiPoint25D,
+    WKBMultiLineString25D,
+    WKBMultiPolygon25D
   };
   enum VectorType
   {
@@ -92,7 +100,7 @@ public:
     ProviderCountCalcEvent
   };
   
-  static const int DEFAULT_IDENTIFY_RADIUS;
+  static const double DEFAULT_IDENTIFY_RADIUS;
 };
   /** WKT string that represents a geographic coord sys */
   const  QString GEOWKT =
@@ -108,7 +116,7 @@ public:
       "  AXIS[\"Long\",EAST], "
       "  AUTHORITY[\"EPSG\",4326]]";
   /** PROJ4 string that represents a geographic coord sys */
-  const QString GEOPROJ4 = "+proj=longlat +ellps=WGS84 +no_defs";
+  const QString GEOPROJ4 = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs";
   /** Magic number for a geographic coord sys in POSTGIS SRID */
   const long GEOSRID = 4326;
   /** Magic number for a geographic coord sys in QGIS srs.db tbl_srs.srs_id */

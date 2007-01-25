@@ -21,7 +21,7 @@
 // QGIS Specific includes
 //
 
-#include <qgisapp.h>
+#include <qgisinterface.h>
 #include <qgisgui.h>
 #include <qgsmaplayer.h>
 #include <qgsrasterlayer.h>
@@ -53,9 +53,9 @@
 #endif
 
 static const char * const sIdent = "$Id$";
-static const char * const sName = "[menuitemname]";
-static const char * const sDescription = "[plugindescription]";
-static const char * const sPluginVersion = "Version 0.1";
+static const QString sName = QObject::tr("[menuitemname]");
+static const QString sDescription = QObject::tr("[plugindescription]");
+static const QString sPluginVersion = QObject::tr("Version 0.1");
 static const QgisPlugin::PLUGINTYPE sPluginType = QgisPlugin::UI;
 
 //////////////////////////////////////////////////////////////////////
@@ -65,15 +65,12 @@ static const QgisPlugin::PLUGINTYPE sPluginType = QgisPlugin::UI;
 //////////////////////////////////////////////////////////////////////
 
 /**
- * Constructor for the plugin. The plugin is passed a pointer to the main app
- * and an interface object that provides access to exposed functions in QGIS.
- * @param theQGisApp - Pointer to the QGIS main window
+ * Constructor for the plugin. The plugin is passed a pointer 
+ * an interface object that provides access to exposed functions in QGIS.
  * @param theQGisInterface - Pointer to the QGIS interface object
  */
-[pluginname]::[pluginname](QgisApp * theQGisApp, 
-				       QgisIface * theQgisInterface):
+[pluginname]::[pluginname](QgisInterface * theQgisInterface):
                  QgisPlugin(sName,sDescription,sPluginVersion,sPluginType),
-                 mQGisApp(theQGisApp), 
                  mQGisIface(theQgisInterface)
 {
 }
@@ -89,22 +86,19 @@ static const QgisPlugin::PLUGINTYPE sPluginType = QgisPlugin::UI;
  */
 void [pluginname]::initGui()
 {
-  // we create a single menu entry for this plugin - though you can easily add more here if you need to
-  QMenu *pluginMenu = mQGisIface->getPluginMenu("&[menuname]");
-  //set the icon from the resource file
-  mMenuId = pluginMenu->insertItem(QIcon(":/[pluginlcasename]/[pluginlcasename].png"),"&[menuitemname]", this, SLOT(run()));
-  //create a tooltip for the menu entry 
-  pluginMenu->setWhatsThis(mMenuId, tr("Replace this with a short description of the what the plugin does"));
 
   // Create the action for tool
   mQActionPointer = new QAction(QIcon(":/[pluginlcasename]/[pluginlcasename].png"),"[menuitemname]", this);
+  // Set the what's this text
+  mQActionPointer->setWhatsThis(tr("Replace this with a short description of the what the plugin does"));
   // Connect the action to the run
   connect(mQActionPointer, SIGNAL(activated()), this, SLOT(run()));
   // Add the toolbar
-  mToolBarPointer = new QToolBar((QMainWindow *) mQGisApp, "[menuname]");
+  mToolBarPointer = new QToolBar(mQGisIface->getMainWindow(), "[menuname]");
   mToolBarPointer->setLabel("[menuitemname]");
-  // Add the to the toolbar
+  // Add the icon to the toolbar
   mQGisIface->addToolBarIcon(mQActionPointer);
+  mQGisIface->addPluginMenu("&[menuname]", mQActionPointer);
 
 }
 //method defined in interface
@@ -119,7 +113,7 @@ void [pluginname]::help()
 // not be enough
 void [pluginname]::run()
 {
-  [pluginname]Gui *myPluginGui=new [pluginname]Gui(mQGisApp, QgisGui::ModalDialogFlags);
+  [pluginname]Gui *myPluginGui=new [pluginname]Gui(mQGisIface->getMainWindow(), QgisGui::ModalDialogFlags);
   //listen for when the layer has been made so we can draw it
   connect(myPluginGui, SIGNAL(drawRasterLayer(QString)), this, SLOT(drawRasterLayer(QString)));
   connect(myPluginGui, SIGNAL(drawVectorLayer(QString,QString,QString)), this, SLOT(drawVectorLayer(QString,QString,QString)));
@@ -130,7 +124,7 @@ void [pluginname]::run()
 void [pluginname]::unload()
 {
   // remove the GUI
-  mQGisIface->removePluginMenuItem("&[menuname]",mMenuId);
+  mQGisIface->removePluginMenu("&[menuname]",mQActionPointer);
   mQGisIface->removeToolBarIcon(mQActionPointer);
   delete mQActionPointer;
 }
@@ -180,9 +174,9 @@ void [pluginname]::drawVectorLayer(QString thePathNameQString, QString theBaseNa
  * of the plugin class
  */
 // Class factory to return a new instance of the plugin class
-QGISEXTERN QgisPlugin * classFactory(QgisApp * theQGisAppPointer, QgisIface * theQgisInterfacePointer)
+QGISEXTERN QgisPlugin * classFactory(QgisInterface * theQgisInterfacePointer)
 {
-  return new [pluginname](theQGisAppPointer, theQgisInterfacePointer);
+  return new [pluginname](theQgisInterfacePointer);
 }
 // Return the name of the plugin - note that we do not user class members as
 // the class may not yet be insantiated when this method is called.

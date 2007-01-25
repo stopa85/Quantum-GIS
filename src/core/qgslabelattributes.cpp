@@ -16,12 +16,12 @@
 /* $Id$ */
 #include <iostream>
 
-#include <qapplication.h>
-#include <qstring.h>
-#include <qfont.h>
-#include <qcolor.h>
-#include <qpen.h>
-#include <qbrush.h>
+#include <QApplication>
+#include <QString>
+#include <QFont>
+#include <QColor>
+#include <QPen>
+#include <QBrush>
 
 #include "qgslabelattributes.h"
 
@@ -55,7 +55,7 @@ QgsLabelAttributes::QgsLabelAttributes( bool def )
 {
 
     if ( def ) { // set defaults
-	setText ( "Label" );
+	setText (QObject::tr("Label"));
 
 	mFont = QApplication::font();
 	mFamilyIsSet = true;
@@ -71,7 +71,7 @@ QgsLabelAttributes::QgsLabelAttributes( bool def )
 	setAlignment ( Qt::AlignCenter );
 	setColor ( QColor(0,0,0) );
 
-	setBufferSize ( 0, PointUnits );
+	setBufferSize ( 1, PointUnits );
 	setBufferColor ( QColor(255,255,255) );
 	setBufferStyle ( Qt::NoBrush );
 	
@@ -316,7 +316,7 @@ bool QgsLabelAttributes::bufferColorIsSet ( void ) const
     return mColorIsSet;
 }
 
-const QColor & QgsLabelAttributes::bufferColor ( void ) const
+QColor QgsLabelAttributes::bufferColor ( void ) const
 {
     return mBufferBrush.color();
 }
@@ -350,7 +350,7 @@ bool QgsLabelAttributes::borderColorIsSet ( void ) const
     return mBorderColorIsSet;
 }
 
-const QColor & QgsLabelAttributes::borderColor ( void ) const
+QColor QgsLabelAttributes::borderColor ( void ) const
 {
     return mBorderPen.color();
 }

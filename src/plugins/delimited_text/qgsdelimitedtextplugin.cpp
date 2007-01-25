@@ -22,7 +22,7 @@ Functions:
 
 // includes
 
-#include "qgisapp.h"
+#include "qgisinterface.h"
 #include "qgisgui.h"
 #include "qgsmaplayer.h"
 #include "qgsdelimitedtextplugin.h"
@@ -46,20 +46,21 @@ Functions:
 #define QGISEXTERN extern "C"
 #endif
 
-static const char *pluginVersion = "Version 0.2";
+static const QString pluginVersion = QObject::tr("Version 0.2");
+static const QString description_ = QObject::tr("Loads and displays delimited text files containing x,y coordinates");
 /**
  * Constructor for the plugin. The plugin is passed a pointer to the main app
  * and an interface object that provides access to exposed functions in QGIS.
  * @param qgis Pointer to the QGIS main window
  * @param _qI Pointer to the QGIS interface object
  */
-  QgsDelimitedTextPlugin::QgsDelimitedTextPlugin(QgisApp * theQGisApp, QgisIface * theQgisInterFace):
-qgisMainWindowPointer(theQGisApp), qGisInterface(theQgisInterFace)
+  QgsDelimitedTextPlugin::QgsDelimitedTextPlugin(QgisInterface * theQgisInterFace)
+  : qGisInterface(theQgisInterFace)
 {
   /** Initialize the plugin and set the required attributes */
-  pluginNameQString = "DelimitedTextLayer";
-  pluginVersionQString = "Version 0.1";
-  pluginDescriptionQString = "This plugin provides support for delimited text files containing x,y coordinates";
+  pluginNameQString = tr("DelimitedTextLayer");
+  pluginVersionQString = pluginVersion;
+  pluginDescriptionQString = description_;
 
 }
 
@@ -101,15 +102,8 @@ void QgsDelimitedTextPlugin::help()
  */
 void QgsDelimitedTextPlugin::initGui()
 {
-  QMenu *pluginMenu = qGisInterface->getPluginMenu(tr("&Delimited text"));
-  menuId = pluginMenu->insertItem(QIcon(icon),tr("&Add Delimited Text Layer"), this, SLOT(run()));
-
-  pluginMenu->setWhatsThis(menuId, tr("Add a delimited text file as a map layer. ")+
-      tr("The file must have a header row containing the field names. ")+
-      tr("X and Y fields are required and must contain coordinates in decimal units."));
-
   // Create the action for tool
-  myQActionPointer = new QAction(QIcon(icon), tr("Add Delimited Text Layer"), this);
+  myQActionPointer = new QAction(QIcon(icon), tr("&Add Delimited Text Layer"), this);
 
   myQActionPointer->setWhatsThis(tr("Add a delimited text file as a map layer. ")+
       tr("The file must have a header row containing the field names. ")+
@@ -118,6 +112,7 @@ void QgsDelimitedTextPlugin::initGui()
   connect(myQActionPointer, SIGNAL(activated()), this, SLOT(run()));
   // Add the icon to the toolbar
   qGisInterface->addToolBarIcon(myQActionPointer);
+  qGisInterface->addPluginMenu(tr("&Delimited text"), myQActionPointer);
 
 }
 
@@ -125,12 +120,9 @@ void QgsDelimitedTextPlugin::initGui()
 void QgsDelimitedTextPlugin::run()
 {
   QgsDelimitedTextPluginGui *myQgsDelimitedTextPluginGui=
-    new QgsDelimitedTextPluginGui(qGisInterface, qgisMainWindowPointer,
-        QgisGui::ModalDialogFlags);
+    new QgsDelimitedTextPluginGui(qGisInterface,
+             qGisInterface->getMainWindow(), QgisGui::ModalDialogFlags);
   //listen for when the layer has been made so we can draw it
-  connect(myQgsDelimitedTextPluginGui, 
-      SIGNAL(drawRasterLayer(QString)), 
-      this, SLOT(drawRasterLayer(QString)));
   connect(myQgsDelimitedTextPluginGui, 
       SIGNAL(drawVectorLayer(QString,QString,QString)),
       this, SLOT(drawVectorLayer(QString,QString,QString)));
@@ -143,9 +135,6 @@ void QgsDelimitedTextPlugin::run()
 void QgsDelimitedTextPlugin::drawVectorLayer(QString thePathNameQString, 
     QString theBaseNameQString, QString theProviderQString)
 {
-  std::cerr << "Calling addVectorLayer with:" 
-    << thePathNameQString.toLocal8Bit().data() << ", " << theBaseNameQString.toLocal8Bit().data()
-    << ", " << theProviderQString.toLocal8Bit().data() << std::endl; 
   qGisInterface->addVectorLayer( thePathNameQString, 
       theBaseNameQString, theProviderQString);
 }
@@ -154,7 +143,7 @@ void QgsDelimitedTextPlugin::drawVectorLayer(QString thePathNameQString,
 void QgsDelimitedTextPlugin::unload()
 {
   // remove the GUI
-  qGisInterface->removePluginMenuItem(tr("&Delimited text"),menuId);
+  qGisInterface->removePluginMenu(tr("&Delimited text"),myQActionPointer);
   qGisInterface->removeToolBarIcon(myQActionPointer); 
   delete myQActionPointer;
 }
@@ -164,23 +153,22 @@ void QgsDelimitedTextPlugin::unload()
  * of the plugin class
  */
 // Class factory to return a new instance of the plugin class
-QGISEXTERN QgisPlugin * classFactory(QgisApp * theQGisAppPointer, 
-    QgisIface * theQgisInterfacePointer)
+QGISEXTERN QgisPlugin * classFactory(QgisInterface * theQgisInterfacePointer)
 {
-  return new QgsDelimitedTextPlugin(theQGisAppPointer, theQgisInterfacePointer);
+  return new QgsDelimitedTextPlugin(theQgisInterfacePointer);
 }
 
 // Return the name of the plugin - note that we do not user class members as
 // the class may not yet be insantiated when this method is called.
 QGISEXTERN QString name()
 {
-  return QString("Add Delimited Text Layer");
+  return QString(QObject::tr("Add Delimited Text Layer"));
 }
 
 // Return the description
 QGISEXTERN QString description()
 {
-  return QString("This plugin provides support for delimited text files containing x,y coordinates");
+  return description_;
 }
 
 // Return the type (either UI or MapLayer plugin)

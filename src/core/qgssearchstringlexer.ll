@@ -20,19 +20,28 @@
 %option noyywrap
 %option case-insensitive
 
+ // ensure that lexer will be 8-bit (and not just 7-bit)
+%option 8bit
+
 %{
   
 #include <stdlib.h>  // atof()
   
 #include "qgssearchtreenode.h"
-#include "qgssearchstringparser.h"
+#include "qgssearchstringparser.hpp"
+
+// if not defined, searches for isatty()
+// which doesn't in MSVC compiler
+#define YY_NEVER_INTERACTIVE 1
 
 %}
 
 white       [ \t\r\n]+
 
-col_first    [A-Za-z_]
-col_next     [A-Za-z0-9_]
+non_ascii    [\x80-\xFF]
+
+col_first    [A-Za-z_]|{non_ascii}
+col_next     [A-Za-z0-9_]|{non_ascii}
 column_ref  {col_first}{col_next}*
 
 dig     [0-9]

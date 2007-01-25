@@ -19,11 +19,7 @@
  
 %{
 #include <qglobal.h>
-#if QT_VERSION < 0x040000
-#include <qptrlist.h>
-#else
 #include <QList>
-#endif
 #include "qgssearchtreenode.h"
 
 /** returns parsed tree, otherwise returns NULL and sets parserErrorMsg
@@ -44,11 +40,7 @@ QString gParserErrorMsg;
 void yyerror(const char* msg);
 
 //! temporary list for nodes without parent (if parsing fails these nodes are removed)
-#if QT_VERSION < 0x040000
-QPtrList<QgsSearchTreeNode> gTmpNodes;
-#else
 QList<QgsSearchTreeNode*> gTmpNodes;
-#endif
 void joinTmpNodes(QgsSearchTreeNode* parent, QgsSearchTreeNode* left, QgsSearchTreeNode* right);
 void addToTmpNodes(QgsSearchTreeNode* node);
 
@@ -106,7 +98,7 @@ search_cond:
     | search_cond AND search_cond { $$ = new QgsSearchTreeNode(QgsSearchTreeNode::opAND, $1, $3); joinTmpNodes($$,$1,$3); }
     | NOT search_cond             { $$ = new QgsSearchTreeNode(QgsSearchTreeNode::opNOT, $2,  0); joinTmpNodes($$,$2, 0); }
     | '(' search_cond ')'         { $$ = $2; }
-    | predicate;
+    | predicate
     ;
 
     // more predicates to come
@@ -127,19 +119,15 @@ scalar_exp:
     | '+' scalar_exp %prec UMINUS { $$ = $2; }
     | '-' scalar_exp %prec UMINUS { $$ = $2; if ($$->type() == QgsSearchTreeNode::tNumber) $$->setNumber(- $$->number()); }
     | NUMBER                      { $$ = new QgsSearchTreeNode($1);        addToTmpNodes($$); }
-    | STRING                      { $$ = new QgsSearchTreeNode(yytext, 0); addToTmpNodes($$); }
-    | COLUMN_REF                  { $$ = new QgsSearchTreeNode(yytext, 1); addToTmpNodes($$); }
+    | STRING                      { $$ = new QgsSearchTreeNode(QString::fromUtf8(yytext), 0); addToTmpNodes($$); }
+    | COLUMN_REF                  { $$ = new QgsSearchTreeNode(QString::fromUtf8(yytext), 1); addToTmpNodes($$); }
     ;
 
 %%
 
 void addToTmpNodes(QgsSearchTreeNode* node)
 {
-#if QT_VERSION < 0x040000
   gTmpNodes.append(node);
-#else
-  gTmpNodes.append(node);
-#endif
 }
 
 
@@ -149,29 +137,17 @@ void joinTmpNodes(QgsSearchTreeNode* parent, QgsSearchTreeNode* left, QgsSearchT
 
   if (left)
   {
-#if QT_VERSION < 0x040000
-    res = gTmpNodes.removeRef(left);
-#else
     res = gTmpNodes.removeAll(left);
-#endif
     Q_ASSERT(res);
   }
 
   if (right)
   {
-#if QT_VERSION < 0x040000
-    res = gTmpNodes.removeRef(right);
-#else
     res = gTmpNodes.removeAll(right);
-#endif
     Q_ASSERT(res);
   }
 
-#if QT_VERSION < 0x040000
   gTmpNodes.append(parent);
-#else
-  gTmpNodes.append(parent);
-#endif
 }
 
 // returns parsed tree, otherwise returns NULL and sets parserErrorMsg
@@ -180,30 +156,21 @@ QgsSearchTreeNode* parseSearchString(const QString& str, QString& parserErrorMsg
   // list should be empty when starting
   Q_ASSERT(gTmpNodes.count() == 0);
 
-  set_input_buffer((const char*)str);
+  set_input_buffer(str.toUtf8().constData());
   int res = yyparse();
  
   // list should be empty when parsing was OK
   if (res == 0) // success?
   {
     Q_ASSERT(gTmpNodes.count() == 1);
-#if QT_VERSION < 0x040000
-    return gTmpNodes.take(0);
-#else
     return gTmpNodes.takeFirst();
-#endif
   }
   else // error?
   {
     parserErrorMsg = gParserErrorMsg;
     // remove nodes without parents - to prevent memory leaks
-#if QT_VERSION < 0x040000
-    while (gTmpNodes.first())
-      delete gTmpNodes.take();
-#else
     while (gTmpNodes.size() > 0)
       delete gTmpNodes.takeFirst();
-#endif
     return NULL;
   }
 }

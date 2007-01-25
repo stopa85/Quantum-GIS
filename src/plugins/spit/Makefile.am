@@ -13,7 +13,10 @@
 plugindir = ${pkglibdir}
 
 plugin_LTLIBRARIES = spitplugin.la
+
+if MINGW_FALSE
 bin_PROGRAMS = spit
+endif
 
 
 %.moc.cpp: %.h
@@ -32,7 +35,7 @@ spit_MOC = qgsspit.moc.cpp \
 
 spit_RES = spit.qrc.cpp
 
-spit_QRC = spit.qrc
+#spit_QRC = spit.qrc
 
 spitplugin_la_MOC = $(spit_MOC) qgsspitplugin.moc.cpp
 
@@ -49,6 +52,7 @@ common_sources =  qgsspit.cpp \
 	qgsdbfbase.h \
 	qgsconnectiondialog.cpp \
 	qgsconnectiondialog.h \
+	qgspgutil.cpp \
 	qgsshapefile.cpp \
 	qgsshapefile.h \
 	qgseditreservedwordsdialog.h \
@@ -61,7 +65,7 @@ spitplugin_la_SOURCES =  $(common_sources) \
 	qgsspitplugin.cpp \
 	qgsspitplugin.h
 
-spit_SOURCES = ../../gui/qgsmessageviewer.cpp ../../gui/qgspgutil.cpp $(common_sources) main.cpp $(SPIT_UIC) $(spit_MOC)
+spit_SOURCES = $(common_sources) main.cpp $(SPIT_UIC) $(spit_MOC)
 
 nodist_spitplugin_la_SOURCES = $(spitplugin_la_MOC)
 
@@ -74,14 +78,14 @@ nodist_spitplugin_la_SOURCES = $(spitplugin_la_MOC)
 BUILT_SOURCES = $(spit_MOC) $(spit_UI) $(spitplugin_la_MOC)
 
 
-spitplugin_la_LIBADD = $(QT_LDADD)  $(PG_LIB) $(GDAL_LDADD) ../../core/libqgis_core.la
+spitplugin_la_LIBADD = $(QT_LDADD)  $(PG_LIB) $(GDAL_LDADD) ../../core/libqgis_core.la ../../gui/libqgis_gui.la
 spitplugin_la_LDFLAGS = -avoid-version -module
-spitplugin_la_CXXFLAGS = $(CXXFLAGS) $(EXTRA_CXXFLAGS) $(GDAL_CFLAGS) $(QT_CXXFLAGS) $(PG_INC) $(GEOS_CFLAGS) -I../../gui -I../../ui -I../../core
+spitplugin_la_CXXFLAGS = $(CXXFLAGS) $(EXTRA_CXXFLAGS) $(GEOS_CFLAGS) $(GDAL_CFLAGS) $(QT_CXXFLAGS) $(PG_INC) -I../../gui -I../../ui -I../../core
 
 
-spit_LDADD = $(QT_LDADD)  $(PG_LIB) $(GDAL_LDADD)
+spit_LDADD = $(QT_LDADD)  $(PG_LIB) $(GDAL_LDADD) ../../core/libqgis_core.la ../../gui/libqgis_gui.la
 #spit_LDFLAGS = -avoid-version -module
-spit_CXXFLAGS = $(CXXFLAGS) $(EXTRA_CXXFLAGS) $(GDAL_CFLAGS) $(QT_CXXFLAGS) $(PG_INC)  -I../../gui -I../../ui -I../../core
+spit_CXXFLAGS = $(CXXFLAGS) $(EXTRA_CXXFLAGS) $(GDAL_CFLAGS) $(QT_CXXFLAGS) $(PG_INC)  -I../../gui -I../../ui -I../../core/include
 
 CLEANFILES = $(BUILT_SOURCES)
 

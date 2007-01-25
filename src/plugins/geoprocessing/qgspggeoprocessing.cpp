@@ -23,7 +23,7 @@ email                : sherman at mrcc.com
 // includes
 #include <iostream>
 #include <vector>
-#include "qgisapp.h"
+#include "qgisinterface.h"
 #include "qgsmaplayer.h"
 #include "qgsvectorlayer.h"
 #include "qgsvectordataprovider.h"
@@ -32,6 +32,7 @@ email                : sherman at mrcc.com
 #include <QMessageBox>
 #include <QAction>
 #include <QApplication>
+#include <QMenu>
 
 #include "qgsdlgpgbuffer.h"
 #include "qgspggeoprocessing.h"
@@ -55,9 +56,10 @@ static const QgisPlugin::PLUGINTYPE type_ = QgisPlugin::UI;
  * @param qgis Pointer to the QGIS main window
  * @parma _qI Pointer to the QGIS interface object
  */
-QgsPgGeoprocessing::QgsPgGeoprocessing(QgisApp * qgis, QgisIface * _qI)
-    : qgisMainWindow(qgis), qI(_qI), 
-      QgisPlugin( name_, description_, version_, type_ )
+QgsPgGeoprocessing::QgsPgGeoprocessing(QgisInterface * _qI)
+  : QgisPlugin( name_, description_, version_, type_ ),
+    qgisMainWindow(_qI->getMainWindow()),
+    qI(_qI)
 {
 }
 
@@ -72,14 +74,8 @@ QgsPgGeoprocessing::~QgsPgGeoprocessing()
  */
 void QgsPgGeoprocessing::initGui()
 {
-  QMenu *pluginMenu = qI->getPluginMenu(tr("&Geoprocessing"));
-  menuId = pluginMenu->insertItem(QIcon(icon_buffer),tr("&Buffer Features"), this, SLOT(buffer()));
-
-  pluginMenu->setWhatsThis(menuId, tr("Create a buffer for a PostgreSQL layer. " +
-      tr("A new layer is created in the database with the buffered features.")));
-
   // Create the action for tool
-  bufferAction = new QAction(QIcon(icon_buffer), tr("Buffer features"), this);
+  bufferAction = new QAction(QIcon(icon_buffer), tr("&Buffer features"), this);
   bufferAction->setWhatsThis(tr("Create a buffer for a PostgreSQL layer. " +
       tr("A new layer is created in the database with the buffered features.")));
   // Connect the action to the buffer slot
@@ -87,6 +83,7 @@ void QgsPgGeoprocessing::initGui()
 
   // Add the icon to the toolbar
   qI->addToolBarIcon(bufferAction);
+  qI->addPluginMenu(tr("&Geoprocessing"), bufferAction);
 
 }
 
@@ -142,11 +139,11 @@ void QgsPgGeoprocessing::buffer()
         bb->setBufferLayerName(tableName.mid(tableName.find(".") + 1) + "_buffer");
         // set the fields on the dialog box drop-down
         QgsVectorDataProvider *dp = dynamic_cast<QgsVectorDataProvider *>(lyr->getDataProvider());
-        std::vector < QgsField > flds = dp->fields();
-        for (int i = 0; i < flds.size(); i++) {
+        QgsFieldMap flds = dp->fields();
+        for (QgsFieldMap::iterator it = flds.begin(); it != flds.end(); ++it) {
           // check the field type -- if its int we can use it
-          if (flds[i].type().find("int") > -1) {
-            bb->addFieldItem(flds[i].name());
+          if (it->type().find("int") > -1) {
+            bb->addFieldItem(it->name());
           }
         }
         // connect to the database
@@ -214,7 +211,7 @@ void QgsPgGeoprocessing::buffer()
             }
             // first create the new table
 
-            sql = QString("create table %1.%2 (%3 %4)")
+            sql = QString("create table %1.%2 (%3 %4 PRIMARY KEY)")
               .arg(bb->schema())
               .arg(bb->bufferLayerName())
               .arg(objId)
@@ -225,6 +222,7 @@ void QgsPgGeoprocessing::buffer()
             result = PQexec(conn, (const char *) sql);
 #ifdef QGISDEBUG
             std::cerr << "Status from create table is " << PQresultStatus(result) << std::endl;
+            std::cerr << "Error message is " << PQresStatus(PQresultStatus(result)) << std::endl;
 #endif
             if (PQresultStatus(result) == PGRES_COMMAND_OK) {
               PQclear(result);
@@ -242,16 +240,22 @@ void QgsPgGeoprocessing::buffer()
 #endif
               PGresult *geoCol = PQexec(conn, (const char *) sql);
 
-            if (PQresultStatus(geoCol) == PGRES_COMMAND_OK) {
+            if (PQresultStatus(geoCol) == PGRES_TUPLES_OK) {
               PQclear(geoCol);
+              /* The constraint naming convention has changed in PostGIS
+               * from $2 to enforce_geotype_shape. This change means the
+               * buffer plugin will fail for older version of PostGIS.
+               */
               // drop the check constraint based on geometry type
-              sql = QString("alter table %1.%2 drop constraint \"$2\"")
+              sql = QString("alter table %1.%2 drop constraint \"enforce_geotype_shape\"")
                 .arg(bb->schema())
                 .arg(bb->bufferLayerName());
 #ifdef QGISDEBUG
               std::cerr << sql.toLocal8Bit().data() << std::endl;
 #endif
               result = PQexec(conn, (const char *) sql);
+              if(PQresultStatus(result) == PGRES_COMMAND_OK)
+              {
               PQclear(result);
               // check pg version and formulate insert query accordingly
               result = PQexec(conn,"select version()");
@@ -330,9 +334,21 @@ void QgsPgGeoprocessing::buffer()
                  "postgres"); 
 
               }
+              }
+              else
+              {
+#ifdef QGISDEBUG
+            std::cerr << "Status from drop constraint is " << PQresultStatus(result) << std::endl;
+            std::cerr << "Error message is " << PQresStatus(PQresultStatus(result)) << std::endl;
+#endif
+              }
             }
             else
             {
+#ifdef QGISDEBUG
+            std::cerr << "Status from add geometry column is " << PQresultStatus(geoCol) << std::endl;
+            std::cerr << "Error message is " << PQresStatus(PQresultStatus(geoCol)) << std::endl;
+#endif
               QMessageBox::critical(0, tr("Unable to add geometry column"),
                   QString(tr("Unable to add geometry column to the output table ") +
                       QString("%1-%2").arg(bb->bufferLayerName()).arg(PQerrorMessage(conn))));
@@ -416,7 +432,7 @@ bool QgsPgGeoprocessing::hasPROJ(PGconn *connection){
 void QgsPgGeoprocessing::unload()
 {
   // remove the GUI
-  qI->removePluginMenuItem(tr("&Geoprocessing"),menuId);
+  qI->removePluginMenu(tr("&Geoprocessing"),bufferAction);
   qI->removeToolBarIcon(bufferAction);
   delete bufferAction;
 }
@@ -426,9 +442,9 @@ void QgsPgGeoprocessing::unload()
  * of the plugin class
  */
 // Class factory to return a new instance of the plugin class
-extern "C" QgisPlugin * classFactory(QgisApp * qgis, QgisIface * qI)
+extern "C" QgisPlugin * classFactory(QgisInterface * qI)
 {
-  return new QgsPgGeoprocessing(qgis, qI);
+  return new QgsPgGeoprocessing(qI);
 }
 
 // Return the name of the plugin
