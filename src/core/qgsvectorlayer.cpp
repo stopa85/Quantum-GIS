@@ -61,6 +61,7 @@
 #include "qgslabel.h"
 #include "qgslogger.h"
 #include "qgsmaptopixel.h"
+#include "qgsoverlayobjectpositionmanager.h"
 #include "qgspoint.h"
 #include "qgsproviderregistry.h"
 #include "qgsrect.h"
@@ -68,6 +69,7 @@
 #include "qgsspatialrefsys.h"
 #include "qgsvectordataprovider.h"
 #include "qgsvectorfilewriter.h"
+#include "qgsvectoroverlay.h"
 
 #ifdef Q_WS_X11
 #include "qgsclipper.h"
@@ -95,7 +97,8 @@ QgsVectorLayer::QgsVectorLayer(QString vectorLayerPath,
   mModified(false),
   mRenderer(0),
   mLabel(0),
-  mLabelOn(false)
+  mLabelOn(false),
+  mOverlayManager(0)
 {
   mActions = new QgsAttributeAction;
   
@@ -143,8 +146,8 @@ QgsVectorLayer::~QgsVectorLayer()
 
   // Destroy any cached geometries and clear the references to them
   deleteCachedGeometries();
-
   delete mActions;
+  delete mOverlayManager;
 }
 
 QString QgsVectorLayer::storageType() const
@@ -841,6 +844,20 @@ void QgsVectorLayer::drawVertexMarker(int x, int y, QPainter& p)
   int m = (size-1)/2;
   p.drawLine(x-m, y+m, x+m, y-m);
   p.drawLine(x-m, y-m, x+m, y+m);
+}
+
+void QgsVectorLayer::drawOverlays(QPainter * p, const QgsRect & viewExtent, const QgsMapToPixel * cXf, \
+const QgsCoordinateTransform* ct)
+{
+  if(mOverlayManager)
+    {
+      mOverlayManager->findOptimalObjectPositions(viewExtent, cXf, ct);
+    }
+
+  for(std::list<QgsVectorOverlay*>::const_iterator it = mOverlays.begin(); it != mOverlays.end(); ++it)
+    {
+      (*it)->drawOverlayObjects(p, viewExtent, cXf, ct);
+    }
 }
 
 void QgsVectorLayer::select(int number, bool emitSignal)

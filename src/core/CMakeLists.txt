@@ -29,6 +29,7 @@ qgsmaprender.cpp
 qgsmaptopixel.cpp
 qgsmessageoutput.cpp
 qgsoverlayobject.cpp
+qgsoverlayobjectpositionmanager.cpp
 qgspoint.cpp
 qgsproject.cpp
 qgsprojectproperty.cpp
