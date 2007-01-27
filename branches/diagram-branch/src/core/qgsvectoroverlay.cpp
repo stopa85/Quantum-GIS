@@ -19,7 +19,7 @@
 
 QgsVectorOverlay::QgsVectorOverlay()
 {
-
+  
 }
 
 QgsVectorOverlay::~QgsVectorOverlay()

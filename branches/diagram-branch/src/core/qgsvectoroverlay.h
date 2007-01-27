@@ -21,6 +21,7 @@
 #include <list>
 #include <map>
 #include "qgsoverlayobject.h"
+#include "qgsvectorlayer.h"
 
 class QPainter;
 class QgsCoordinateTransform;
@@ -34,16 +35,17 @@ class QgsVectorOverlay
  public:
   QgsVectorOverlay();
   virtual ~QgsVectorOverlay();
-  void setAttributes(const std::list<int>& att){mAttributes = att;}
-  virtual void createOverlayObjects() = 0;
+  void setAttributes(const QgsAttributeList& att){mAttributes = att;}
+  virtual void createOverlayObjects(const QgsRect& viewExtent) = 0;
   /**Draws the overlay objects*/
-  virtual void drawOverlayObjects(QPainter * p, QgsRect& viewExtent, QgsMapToPixel * cXf, QgsCoordinateTransform* ct) = 0;
+  virtual void drawOverlayObjects(QPainter * p, const QgsRect& viewExtent, const QgsMapToPixel * cXf, \
+const QgsCoordinateTransform* ct) const = 0;
 
  protected:
   /**The corresponding vector layer*/
   QgsVectorLayer* mVectorLayer;
   /**The attribute indexes needed by the overlay*/
-  std::list<int> mAttributes;
+  QgsAttributeList mAttributes;
   /**The positional information about the overlay objects*/
   std::multimap<int, QgsOverlayObject> mOverlayObjects;
 };
