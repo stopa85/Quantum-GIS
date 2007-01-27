@@ -38,6 +38,8 @@ public:
  QString library(QString pluginKey);
  //! Retrieve the metadata for a plugin by name
  QgsPluginMetadata * pluginMetadata(QString name);
+ //returns the metadata of all plugins
+ std::list<QgsPluginMetadata*> pluginData();
  //! Retrieve a pointer to a loaded plugin by name
  QgisPlugin * plugin(QString name);
  //! Return whether the plugin is pythonic

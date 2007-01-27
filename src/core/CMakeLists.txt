@@ -28,6 +28,7 @@ qgsmaplayerregistry.cpp
 qgsmaprender.cpp
 qgsmaptopixel.cpp
 qgsmessageoutput.cpp
+qgsoverlayobject.cpp
 qgspoint.cpp
 qgsproject.cpp
 qgsprojectproperty.cpp
@@ -45,6 +46,7 @@ qgsspatialrefsys.cpp
 qgsvectordataprovider.cpp
 qgsvectorfilewriter.cpp
 qgsvectorlayer.cpp
+qgsvectoroverlay.cpp
 
 raster/qgscolortable.cpp
 raster/qgsrasterlayer.cpp

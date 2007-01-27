@@ -18,6 +18,7 @@
  /* $Id$ */
 
 #include "qgsvectorlayerproperties.h"
+#include "qgspluginregistry.h"
 #include "qgsattributeactiondialog.h"
 #include "qgscontinuouscolordialog.h"
 #include "qgscoordinatetransform.h"
@@ -29,6 +30,7 @@
 #include "qgsuniquevaluedialog.h"
 #include "qgsvectordataprovider.h"
 #include "qgsvectorlayer.h"
+#include "qgsvectoroverlayplugin.h"
 #include "qgscontexthelp.h"
 #ifdef HAVE_POSTGRESQL
 #include "qgspgquerybuilder.h"
@@ -82,6 +84,13 @@ QgsVectorLayerProperties::QgsVectorLayerProperties(QgsVectorLayer * lyr,
   leSpatialRefSys->setCursorPosition(0);
   
   connect(sliderTransparency, SIGNAL(valueChanged(int)), this, SLOT(sliderTransparency_valueChanged(int)));
+
+  //for each overlay plugin create a new tag
+  std::list<QgsVectorOverlayPlugin*> overlayplugins = overlayPlugins();
+  for(std::list<QgsVectorOverlayPlugin*>::const_iterator it = overlayplugins.begin(); it != overlayplugins.end(); ++it)
+    {
+      tabWidget->addTab((*it)->dialog(lyr), (*it)->name());
+    }
 
 } // QgsVectorLayerProperties ctor
 
@@ -577,4 +586,31 @@ void QgsVectorLayerProperties::on_pbnChangeSpatialRefSys_clicked()
 
     leSpatialRefSys->setText(layer->srs().proj4String());
     leSpatialRefSys->setCursorPosition(0);
+}
+
+std::list<QgsVectorOverlayPlugin*> QgsVectorLayerProperties::overlayPlugins() const
+{
+  std::list<QgsVectorOverlayPlugin*> pluginList;
+
+  QgisPlugin* thePlugin = 0;
+  QgsVectorOverlayPlugin* theOverlayPlugin = 0;
+
+  std::list<QgsPluginMetadata*> pluginData = QgsPluginRegistry::instance()->pluginData();
+  for(std::list<QgsPluginMetadata*>::iterator it = pluginData.begin(); it != pluginData.end(); ++it)
+    {
+      if(*it)
+	{
+	  thePlugin = (*it)->plugin();
+	  if(thePlugin && thePlugin->type() == QgisPlugin::VECTOR_OVERLAY)
+	    {
+	      theOverlayPlugin = dynamic_cast<QgsVectorOverlayPlugin*>(thePlugin);
+	      if(theOverlayPlugin)
+		{
+		  pluginList.push_back(theOverlayPlugin);
+		}
+	    }
+	}
+    }
+
+  return pluginList;
 }
