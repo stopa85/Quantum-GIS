@@ -51,7 +51,8 @@ class QgisPlugin
     {
       UI = 1,                     /* user interface plug-in */
       MAPLAYER,                    /* map layer plug-in */
-      RENDERER                     /*a plugin for a new renderer class*/
+      RENDERER,                     /*a plugin for a new renderer class*/
+      VECTOR_OVERLAY                /*a plugin for an overlay type*/
     };
 
 

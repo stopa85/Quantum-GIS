@@ -56,6 +56,16 @@ QgsPluginMetadata *QgsPluginRegistry::pluginMetadata(QString name)
   return plugins[name];
 }
 
+std::list<QgsPluginMetadata*> QgsPluginRegistry::pluginData()
+{
+  std::list<QgsPluginMetadata*> metadata;
+  for(std::map<QString,QgsPluginMetadata*>::iterator it = plugins.begin(); it != plugins.end(); ++it)
+    {
+      metadata.push_back(it->second);
+    }
+  return metadata;
+}
+
 QgisPlugin *QgsPluginRegistry::plugin(QString name)
 {
   QgsPluginMetadata *pmd = plugins[name];
