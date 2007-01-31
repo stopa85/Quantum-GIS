@@ -31,6 +31,7 @@
 #include "qgsvectordataprovider.h"
 #include "qgsvectorlayer.h"
 #include "qgsvectoroverlayplugin.h"
+#include "qgsvectoroverlaydialog.h"
 #include "qgscontexthelp.h"
 #ifdef HAVE_POSTGRESQL
 #include "qgspgquerybuilder.h"
@@ -89,7 +90,9 @@ QgsVectorLayerProperties::QgsVectorLayerProperties(QgsVectorLayer * lyr,
   std::list<QgsVectorOverlayPlugin*> overlayplugins = overlayPlugins();
   for(std::list<QgsVectorOverlayPlugin*>::const_iterator it = overlayplugins.begin(); it != overlayplugins.end(); ++it)
     {
-      tabWidget->addTab((*it)->dialog(lyr), (*it)->name());
+      QgsVectorOverlayDialog* d = (*it)->dialog(lyr);
+      tabWidget->addTab(d, (*it)->name());
+      mOverlayDialogs.push_back(d);
     }
 
 } // QgsVectorLayerProperties ctor
@@ -264,7 +267,6 @@ void QgsVectorLayerProperties::apply()
   // Set up sql subset query if applicable
   //
 #ifdef HAVE_POSTGRESQL
-  QgsVectorDataProvider *dp = dynamic_cast<QgsVectorDataProvider *>(layer->getDataProvider());
   //see if we are dealing with a pg layer here
   if(layer->providerType() == "postgres")
   {
@@ -313,6 +315,13 @@ void QgsVectorLayerProperties::apply()
   {
       udialog->apply();
   }
+
+  //apply overlay dialogs
+  for(std::list<QgsVectorOverlayDialog*>::iterator it = mOverlayDialogs.begin(); it != mOverlayDialogs.end(); ++it)
+    {
+      (*it)->apply();
+    }
+
   layer->setTransparency(static_cast < unsigned int >(255 - sliderTransparency->value()));
   
   // update symbology

@@ -148,6 +148,12 @@ QgsVectorLayer::~QgsVectorLayer()
   deleteCachedGeometries();
   delete mActions;
   delete mOverlayManager;
+  
+  //free memory of overlay layers
+  for(std::list<QgsVectorOverlay*>::iterator it = mOverlays.begin(); it != mOverlays.end(); ++it)
+    {
+      delete *it;
+    }
 }
 
 QString QgsVectorLayer::storageType() const
@@ -849,6 +855,11 @@ void QgsVectorLayer::drawVertexMarker(int x, int y, QPainter& p)
 void QgsVectorLayer::drawOverlays(QPainter * p, const QgsRect & viewExtent, const QgsMapToPixel * cXf, \
 const QgsCoordinateTransform* ct)
 {
+  for(std::list<QgsVectorOverlay*>::const_iterator it = mOverlays.begin(); it != mOverlays.end(); ++it)
+    {
+      (*it)->createOverlayObjects(viewExtent);
+    }
+  
   if(mOverlayManager)
     {
       mOverlayManager->findOptimalObjectPositions(viewExtent, cXf, ct);
@@ -857,6 +868,34 @@ const QgsCoordinateTransform* ct)
   for(std::list<QgsVectorOverlay*>::const_iterator it = mOverlays.begin(); it != mOverlays.end(); ++it)
     {
       (*it)->drawOverlayObjects(p, viewExtent, cXf, ct);
+    }
+}
+
+void QgsVectorLayer::addOverlay(QgsVectorOverlay* ovl)
+{
+  //does an overlay layer with the same type already exist? If yes, remove
+  for(std::list<QgsVectorOverlay*>::iterator it = mOverlays.begin(); it != mOverlays.end(); ++it)
+    {
+      if((*it)->name() == ovl->name())
+	{
+	  delete *it;
+	  mOverlays.erase(it);
+	  break;
+	}
+    }
+  mOverlays.push_back(ovl);
+}
+ 
+void QgsVectorLayer::removeOverlay(const QString& overlayName)
+{
+  for(std::list<QgsVectorOverlay*>::iterator it = mOverlays.begin(); it != mOverlays.end(); ++it)
+    {
+      if((*it)->name() == overlayName)
+	{
+	  delete *it;
+	  mOverlays.erase(it);
+	  return;
+	}
     }
 }
 

@@ -403,6 +403,12 @@ public:
   /** Stop editing and discard the edits */
   bool rollBack();
 
+  /**Adds an overlay. All other overlays of the same type will be removed. The class 
+taks ownership of the object*/
+  void addOverlay(QgsVectorOverlay* ovl);
+  /**Removes overlays of the specified type*/
+  void removeOverlay(const QString& overlayName);
+
 public slots:
 
   void triggerRepaint();

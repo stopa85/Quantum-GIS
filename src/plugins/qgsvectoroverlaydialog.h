@@ -1,6 +1,6 @@
 /***************************************************************************
-                         qgsoverlayobject.cpp  -  description
-                         ------------------------------
+                         qgsvectoroverlaydialog.h  -  description
+                         ------------------------
     begin                : January 2007
     copyright            : (C) 2007 by Marco Hugentobler
     email                : marco dot hugentobler at karto dot baug dot ethz dot ch
@@ -15,25 +15,22 @@
  *                                                                         *
  ***************************************************************************/
 
-#include "qgsoverlayobject.h"
+#ifndef QGSVECTOROVERLAYDIALOG_H
+#define QGSVECTOROVERLAYDIALOG_H
 
-QgsOverlayObject::QgsOverlayObject(int height, int width, const QgsPoint* p, bool fixed, unsigned char* wkb, int geometryNr): mHeight(height), mWidth(width), mFixed(fixed), mWKB(wkb), mGeometryNr(geometryNr)
+#include <QDialog>
+
+class QgsVectorLayer;
+
+/**An interface for dialogs provided by vector overlay plugins. This is that the vector layer properties dialog can call 'apply' for all overlay layers*/
+class QgsVectorOverlayDialog: public QDialog
 {
-  if(p)
-    {
-      mPosition = *p;
-    }
-}
+ public:
+  QgsVectorOverlayDialog(QgsVectorLayer* vl): QDialog(), mVectorLayer(vl){}
+    ~QgsVectorOverlayDialog(){}
+  virtual void apply() const = 0;
+ protected:
+  QgsVectorLayer* mVectorLayer;
+};
 
-QgsOverlayObject::~QgsOverlayObject()
-{
-  delete mWKB;
-}
-
-void QgsOverlayObject::setWkb(unsigned char* wkb)
-{
-  delete mWKB;
-  mWKB = wkb;
-}
-
-
+#endif
