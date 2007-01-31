@@ -28,6 +28,7 @@ class QgsAttributeActionDialog;
 class QgsLabelDialog;
 class QgsVectorLayer;
 class QgsVectorOverlayPlugin;
+class QgsVectorOverlayDialog;
 
 
 class QgsVectorLayerProperties : public QDialog, private Ui::QgsVectorLayerPropertiesBase{
@@ -84,6 +85,8 @@ class QgsVectorLayerProperties : public QDialog, private Ui::QgsVectorLayerPrope
   //QPixmap bufferPixmap;
   static const int context_id = 94000531;
 
+  /**List of dialogs for overlay layers*/
+  std::list<QgsVectorOverlayDialog*> mOverlayDialogs;
   std::list<QgsVectorOverlayPlugin*> overlayPlugins() const;
 };
 

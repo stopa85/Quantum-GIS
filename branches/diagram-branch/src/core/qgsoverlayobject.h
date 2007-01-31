@@ -27,7 +27,7 @@ the size of the bounding box (in screen corrdinages) and the position of the mid
 class QgsOverlayObject
 {
  public:
-  QgsOverlayObject(int height = 0, int width = 0, QgsPoint* p = 0, bool fixed = false, QgsFeature* feature = 0, int geometryNr = 0);
+  QgsOverlayObject(int height = 0, int width = 0, const QgsPoint* p = 0, bool fixed = false, unsigned char* wkb = 0, int geometryNr = 0);
   ~QgsOverlayObject();
 
   //getters
@@ -35,14 +35,15 @@ class QgsOverlayObject
   int width() const {return mWidth;}
   const QgsPoint& position() const {return mPosition;}
   bool fixed() const {return mFixed;}
-  const QgsFeature* feature() const {return mFeature;}
+  const unsigned char* wkb() const {return mWKB;}
   
   //setters
   void setHeight(int height){mHeight = height;}
   void setWidth(int width){mWidth = width;}
   void setFixed(bool f){mFixed = f;}
   void setPosition(const QgsPoint& p){mPosition = p;}
-  void setFeature(QgsFeature* f){mFeature = f;}
+  /**Sets the geometry of this feature. The class takes ownership and deletes it if necessary*/
+  void setWkb(unsigned char* wkb);
   void setGeometryNr(int nr){mGeometryNr = nr;}
 
  private:
@@ -54,8 +55,8 @@ class QgsOverlayObject
   QgsPoint mPosition;
   /**Flag if the position of the object may be changed*/
   bool mFixed;
-  /**Pointer to the corresponding feature*/
-  QgsFeature* mFeature;
+  /**Pointer to the corresponding feature geometry*/
+  unsigned char* mWKB;
   /**For multipoint/multiline/multipolygon: geometry number*/
   int mGeometryNr;
 };

@@ -7,6 +7,7 @@ SET(QGIS_CORE_SRCS
 qgis.cpp
 qgsapplication.cpp
 qgsattributeaction.cpp
+qgscentralpointpositionmanager.cpp
 qgsclipper.cpp
 qgscontexthelp.cpp
 qgscoordinatetransform.cpp
