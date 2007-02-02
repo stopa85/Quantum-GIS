@@ -46,23 +46,41 @@ class QgsRasterLayerProperties : public QDialog, private Ui::QgsRasterLayerPrope
     public slots:
         /** \brief Applies the settings made in the dialog without closing the box */
         void apply();
-        /** \brief slot executed when the transparency level changes. */ 
-        void sliderTransparency_valueChanged( int );
+        /** \brief slot executed when user presses "Add Values From Display" button on the transparency page */
+        void on_pbnAddValuesFromDisplay_clicked();
+        /** \brief slot executed when user presses "Add Values Manually" button on the transparency page */
+        void on_pbnAddValuesManually_clicked();
+        /** Help button */
+        void on_buttonBox_helpRequested();
+        /** Override the SRS specified when the layer was loaded */
+        void on_pbnChangeSpatialRefSys_clicked();
+        /** \brief slow executed when user wishes to reset noNoDataValue and transparencyTable to default value */
+        void on_pbnDefaultValues_clicked();
+        /** \brief slot executed when user wishes to export transparency values */
+        void on_pbnExportTransparentPixelValues_clicked();
+        /** \brief slot executed when user wishes to refresh raster histogram */
+        void on_pbnHistRefresh_clicked();
+        /** \brief slow executed when user wishes to import transparency values */
+        void on_pbnImportTransparentPixelValues_clicked();
+        /** \brief slot executed when user presses "Remove Selected Row" button on the transparency page */
+        void on_pbnRemoveSelectedRow_clicked();
         /** \brief slot executed when the max red level changes. */
         void on_rbtnSingleBand_toggled( bool );
         /** \brief slot executed when the three band radio button is pressed. */
         void on_rbtnThreeBand_toggled( bool );
         /** \brief this slot asks the rasterlayer to construct pyramids */
         void on_buttonBuildPyramids_clicked();
-        /** \brief slot executed when user wishes to refresh raster histogram */
-        void on_pbnHistRefresh_clicked();
-        /** Override the SRS specified when the layer was loaded */
-        void on_pbnChangeSpatialRefSys_clicked();
-        /** Help button */
-        void on_buttonBox_helpRequested();
-        
-  signals:
-    
+        /** \brief this slot clears min max values from gui */
+        void sboxStdDevSingleBand_valueChanged(double);
+        /** \brief this slot clears min max values from gui */
+        void sboxStdDevThreeBand_valueChanged(double);
+        /** \brief slot executed when the transparency level changes. */ 
+        void sliderTransparency_valueChanged( int );
+        /** \brief this slow sets StdDev switch box to 0.00 when user enters min max values */
+        void userDefinedMinMax_textEdited(QString);
+
+    signals:
+
         /** emitted when changes to layer were saved to update legend */
         void refreshLegend(QString layerID);
 
@@ -87,6 +105,11 @@ class QgsRasterLayerProperties : public QDialog, private Ui::QgsRasterLayerPrope
 
         /** Id for context help */
         static const int context_id = 394441851;
+
+        bool validUserDefinedMinMax();
+
+        //Short circuit signal loop between min max field and stdDev spin box
+        bool ignoreSpinBoxEvent;
 };
 
 #endif
