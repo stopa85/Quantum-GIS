@@ -217,10 +217,23 @@ class CORE_EXPORT QgsRasterLayer : public QgsMapLayer
 {
     Q_OBJECT
 public:
+
+    //
+    // Structs to hold transparent pixel vlaues
+    //
+    struct TransparentColorPixel
+    {
+      double red;
+      double green;
+      double blue;
+    };
+
+    QList<struct TransparentColorPixel> transparentColorPixelList;
+    QList<double> transparentGrayPixelList;
+
     //
     // Static methods:
     //
-        
     static void buildSupportedRasterFileFilter(QString & fileFilters);
     static bool isSupportedRasterDriver(QString const &driverName);
 
@@ -231,7 +244,6 @@ public:
     //
     // Non Static methods:
     //
-        
     /** \brief This is the constructor for the RasterLayer class.
      *
      * The main tasks carried out by the constructor are:
@@ -334,6 +346,15 @@ public:
     /** \brief  Mutator that allows the  NO_DATA entry for this raster to be overridden. */
     void setNoDataValue(double theNoDataDouble) { noDataValueDouble=theNoDataDouble; return;};
 
+    /** \brief Simple reset function that set the noDataValue back to the value stored in the first raster band */
+    void resetNoDataValue()
+    {
+      noDataValueDouble = -9999;
+      if(gdalDataset != NULL && gdalDataset->GetRasterCount() > 0)
+      {
+        noDataValueDouble = gdalDataset->GetRasterBand(1)->GetNoDataValue();
+      }
+    }
     //
     // Accessor and mutator for invertHistogramFlag
     //
@@ -460,7 +481,6 @@ public:
      * that falls outside the clipping range.*/
     void setMinRedDouble(double theDouble)
     {
-        userDefinedColorMinMax = true;
         minRedDouble=theDouble;
     };
     /** \brief Accessor for maximum clipping range for red.
@@ -479,7 +499,6 @@ public:
      * that falls outside the clipping range.*/
     void setMaxRedDouble(double theDouble)
     {
-        userDefinedColorMinMax = true;
         maxRedDouble=theDouble;
     };
     // 
@@ -501,7 +520,6 @@ public:
      * that falls outside the clipping range.*/
     void setMinGreenDouble(double theDouble)
     {
-        userDefinedColorMinMax = true;
         minGreenDouble=theDouble;
     };
     /** \brief Accessor for maximum clipping range for green.
@@ -520,7 +538,6 @@ public:
      * that falls outside the clipping range.*/
     void setMaxGreenDouble(double theDouble)
     {
-        userDefinedColorMinMax = true;
         maxGreenDouble=theDouble;
     };
     // 
@@ -543,7 +560,6 @@ public:
      * that falls outside the clipping range.*/
     void setMinBlueDouble(double theDouble)
     {
-        userDefinedColorMinMax = true;
         minBlueDouble=theDouble;
     };
     /** \brief Accessor for maximum clipping range for blue.
@@ -562,7 +578,6 @@ public:
      * that falls outside the clipping range.*/
     void setMaxBlueDouble(double theDouble)
     {
-        userDefinedColorMinMax = true;
         maxBlueDouble=theDouble;
     };
     // 
@@ -584,7 +599,6 @@ public:
      * that falls outside the clipping range.*/
     void setMinGrayDouble(double theDouble)
     {
-        userDefinedGrayMinMax = true;
         minGrayDouble=theDouble;
     };
     /** \brief Accessor for maximum clipping range for gray.
@@ -603,7 +617,6 @@ public:
      * that falls outside the clipping range.*/
     void setMaxGrayDouble(double theDouble)
     {
-        userDefinedGrayMinMax = true;
         maxGrayDouble=theDouble;
     };
     //
@@ -682,9 +695,6 @@ public:
      * NOTE: May be deprecated in the future! Use alternate implementation above rather.
      * */
     void setDrawingStyle(QString  const & theDrawingStyleQString);
-
-
-
 
     /** \brief This enumerator describes the type of raster layer.  */
     enum RASTER_LAYER_TYPE
@@ -783,6 +793,59 @@ public:
      *  \retval 0 if not using the data provider model (i.e. directly using GDAL)
      */
     const QgsRasterDataProvider* getDataProvider() const;
+
+     /** \brief Mutator for userDefinedColorMinMax */
+    void setUserDefinedColorMinMax(bool theBool)
+    {
+      userDefinedColorMinMax = theBool;
+    } 
+
+    /** \brief Accessor for userDefinedMinMax.  */
+    bool getUserDefinedColorMinMax()
+    {
+      return userDefinedColorMinMax;
+    }
+
+    /** \brief Mutator for userDefinedColorMinMax */
+    void setUserDefinedGrayMinMax(bool theBool)
+    {
+      userDefinedGrayMinMax = theBool;
+    } 
+
+    /** \brief Accessor for userDefinedMinMax.  */
+    bool getUserDefinedGrayMinMax()
+    {
+      return userDefinedGrayMinMax;
+    }
+
+    //
+    // Accessor and mutator for transparency tables.
+    //
+    /** \brief Mutator for transparentColorPixelList */
+    QList<struct TransparentColorPixel> getTransparentColorPixelList()
+    {
+      return transparentColorPixelList;
+    }
+    /** \brief Accessor for transparentColorPixelList */
+    void setTransparentColorPixelList(QList<struct TransparentColorPixel> newList)
+    {
+      transparentColorPixelList = newList;
+    }
+    /** \brief Mutator for transparentGrayPixelList */
+    QList<double> getTransparentGrayPixelList()
+    {
+      return transparentGrayPixelList;
+    }
+    /** \brief Accessor for transparentGrayPixelList */
+    void setTransparentGrayPixelList(QList<double> newList)
+    {
+      transparentGrayPixelList = newList;
+    }
+
+    /** \brief Helper function that returns the maximum possible value for a GDAL data type */
+    double getMaximumPossibleValue(GDALDataType);
+    /** \brief Helper function that returns the minimum possible value for a GDAL data type */
+    double getMinimumPossibleValue(GDALDataType);
 
 public slots:    
     /**
