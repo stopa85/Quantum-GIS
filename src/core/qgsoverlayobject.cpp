@@ -17,12 +17,20 @@
 
 #include "qgsoverlayobject.h"
 
-QgsOverlayObject::QgsOverlayObject(int height, int width, const QgsPoint* p, bool fixed, unsigned char* wkb, int geometryNr): mHeight(height), mWidth(width), mFixed(fixed), mWKB(wkb), mGeometryNr(geometryNr)
+QgsOverlayObject::QgsOverlayObject(int height, int width, const QgsPoint* p, bool fixed, unsigned char* wkb, \
+int wkbSize, int geometryNr): mHeight(height), mWidth(width), mFixed(fixed), \
+mWKB(wkb), mWKBSize(wkbSize), mGeometryNr(geometryNr)
 {
   if(p)
     {
       mPosition = *p;
     }
+}
+
+QgsOverlayObject::QgsOverlayObject(const QgsOverlayObject& other): mHeight(other.height()), mWidth(other.width()), mFixed(other.fixed()), mWKBSize(other.wkbSize()), mGeometryNr(other.geometryNr())
+{
+  mWKB = new unsigned char[other.wkbSize()];
+  memcpy(mWKB, other.wkb(), other.wkbSize());
 }
 
 QgsOverlayObject::~QgsOverlayObject()
@@ -34,6 +42,20 @@ void QgsOverlayObject::setWkb(unsigned char* wkb)
 {
   delete mWKB;
   mWKB = wkb;
+}
+
+QgsOverlayObject& QgsOverlayObject::operator=(const QgsOverlayObject& other)
+{
+  mHeight = other.height();
+  mWidth = other.width();
+  mFixed = other.fixed();
+  mWKBSize = other.wkbSize();
+  mGeometryNr = other.geometryNr();
+  
+  mWKB = new unsigned char[other.wkbSize()];
+  memcpy(mWKB, other.wkb(), other.wkbSize());
+
+  return *this;
 }
 
 

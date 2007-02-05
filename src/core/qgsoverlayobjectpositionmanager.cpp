@@ -1,6 +1,6 @@
 /***************************************************************************
-                         qgsvectoroverlay.h  -  description
-                         ------------------
+                         qgsoverlayobjectpositionmanager.cpp -  description
+                         -----------------------------------
     begin                : January 2007
     copyright            : (C) 2007 by Marco Hugentobler
     email                : marco dot hugentobler at karto dot baug dot ethz dot ch
@@ -15,17 +15,21 @@
  *                                                                         *
  ***************************************************************************/
 
-#include "qgsvectoroverlay.h"
+#include "qgsoverlayobjectpositionmanager.h"
 
-QgsVectorOverlay::QgsVectorOverlay(QgsVectorLayer* vl): mVectorLayer(vl)
+QgsOverlayObjectPositionManager::QgsOverlayObjectPositionManager(QgsVectorLayer* vl): mVectorLayer(vl)
 {
-  
+
 }
 
-QgsVectorOverlay::~QgsVectorOverlay()
+QgsOverlayObjectPositionManager::QgsOverlayObjectPositionManager()
 {
-  for(std::multimap<int, QgsOverlayObject*>::iterator it = mOverlayObjects.begin(); it != mOverlayObjects.end(); ++it)
-    {
-      delete it->second;
-    }
+
 }
+
+QgsOverlayObjectPositionManager::~QgsOverlayObjectPositionManager()
+{
+
+}
+
+
