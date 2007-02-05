@@ -480,8 +480,7 @@ private:                       // Private methods
   /** Draws a vertex symbol at (screen) coordinates x, y. (Useful to assist vertex editing.) */
   void drawVertexMarker(int x, int y, QPainter& p);
   /**Draws the overlay layers*/
-  void drawOverlays(QPainter * p, const QgsRect & viewExtent, const QgsMapToPixel * cXf, \
-const QgsCoordinateTransform* ct);
+  void drawOverlays(QPainter * p, const QgsRect & viewExtent, QgsMapToPixel * cXf, QgsCoordinateTransform* ct);
 
 
 private:                       // Private attributes

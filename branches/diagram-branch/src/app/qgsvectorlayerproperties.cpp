@@ -86,12 +86,15 @@ QgsVectorLayerProperties::QgsVectorLayerProperties(QgsVectorLayer * lyr,
   
   connect(sliderTransparency, SIGNAL(valueChanged(int)), this, SLOT(sliderTransparency_valueChanged(int)));
 
+
   //for each overlay plugin create a new tag
+  int position;
   std::list<QgsVectorOverlayPlugin*> overlayplugins = overlayPlugins();
   for(std::list<QgsVectorOverlayPlugin*>::const_iterator it = overlayplugins.begin(); it != overlayplugins.end(); ++it)
     {
       QgsVectorOverlayDialog* d = (*it)->dialog(lyr);
-      tabWidget->addTab(d, (*it)->name());
+      position = tabWidget->addTab(d, (*it)->name());
+      tabWidget->setCurrentIndex(position); //ugly, but otherwise the properties dialog is a mess
       mOverlayDialogs.push_back(d);
     }
 

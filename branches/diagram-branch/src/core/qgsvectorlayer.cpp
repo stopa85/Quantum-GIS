@@ -52,6 +52,7 @@
 
 #include "qgis.h" //for globals
 #include "qgsapplication.h"
+#include "qgscentralpointpositionmanager.h"
 #include "qgscoordinatetransform.h"
 #include "qgsfeature.h"
 #include "qgsfeatureattribute.h"
@@ -123,7 +124,9 @@ QgsVectorLayer::QgsVectorLayer(QString vectorLayerPath,
     // TODO: load this setting somewhere else [MD]
     //QSettings settings;
     //mUpdateThreshold = settings.readNumEntry("Map/updateThreshold", 1000);
-    
+   
+    //place overlay objects on the center point
+    mOverlayManager = new QgsCentralPointPositionManager(this);
   }
 } // QgsVectorLayer ctor
 
@@ -820,6 +823,7 @@ void QgsVectorLayer::draw(QPainter * p,
   {
     QgsLogger::warning("QgsRenderer is null in QgsVectorLayer::draw()");
   }
+  drawOverlays(p, viewExtent, theMapToPixelTransform, ct);
 }
 
 void QgsVectorLayer::cacheGeometries() 
@@ -852,8 +856,8 @@ void QgsVectorLayer::drawVertexMarker(int x, int y, QPainter& p)
   p.drawLine(x-m, y-m, x+m, y+m);
 }
 
-void QgsVectorLayer::drawOverlays(QPainter * p, const QgsRect & viewExtent, const QgsMapToPixel * cXf, \
-const QgsCoordinateTransform* ct)
+void QgsVectorLayer::drawOverlays(QPainter * p, const QgsRect & viewExtent, QgsMapToPixel * cXf, \
+QgsCoordinateTransform* ct)
 {
   for(std::list<QgsVectorOverlay*>::const_iterator it = mOverlays.begin(); it != mOverlays.end(); ++it)
     {
@@ -862,6 +866,7 @@ const QgsCoordinateTransform* ct)
   
   if(mOverlayManager)
     {
+      mOverlayManager->setOverlays(mOverlays);
       mOverlayManager->findOptimalObjectPositions(viewExtent, cXf, ct);
     }
 
@@ -873,16 +878,7 @@ const QgsCoordinateTransform* ct)
 
 void QgsVectorLayer::addOverlay(QgsVectorOverlay* ovl)
 {
-  //does an overlay layer with the same type already exist? If yes, remove
-  for(std::list<QgsVectorOverlay*>::iterator it = mOverlays.begin(); it != mOverlays.end(); ++it)
-    {
-      if((*it)->name() == ovl->name())
-	{
-	  delete *it;
-	  mOverlays.erase(it);
-	  break;
-	}
-    }
+  removeOverlay(ovl->name()); //remove already existing overlays with the same type
   mOverlays.push_back(ovl);
 }
  
