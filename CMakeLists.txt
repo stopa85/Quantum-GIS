@@ -25,11 +25,17 @@ SET (PLUGINS_ALSO_BINARIES FALSE)
 
 
 # try to configure and build GRASS plugin by default
-SET (WITH_GRASS TRE CACHE BOOL "Determines whether GRASS plugin should be built")
+SET (WITH_GRASS TRUE CACHE BOOL "Determines whether GRASS plugin should be built")
 SET (GRASS_PREFIX "" CACHE PATH "Path to GRASS base directory")
 
 # try to configure and build python bindings by default
 SET (WITH_BINDINGS TRUE CACHE BOOL "Determines whether python bindings should be built")
+
+# By default bindings will be installed only to QGIS directory
+# Someone might want to install it to python site-packages directory
+# as otherwise user has to use PYTHONPATH environemnt variable to add
+# QGIS bindings to package search path
+SET (BINDINGS_GLOBAL_INSTALL FALSE CACHE BOOL "Install bindings to global python directory? (might need root)")
 
 
 #############################################################
@@ -122,6 +128,8 @@ IF (WIN32)
   SET (QGIS_BIN_DIR    ${CMAKE_INSTALL_PREFIX})
   SET (QGIS_DATA_DIR   ${CMAKE_INSTALL_PREFIX})
   SET (QGIS_PLUGIN_DIR ${CMAKE_INSTALL_PREFIX}/plugins)
+  SET (QGIS_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/include)
+  SET (QGIS_SOURCE_DIR ${CMAKE_SOURCE_DIR})
 
 ELSE (WIN32)
 
@@ -137,6 +145,7 @@ ELSE (WIN32)
   SET (QGIS_DATA_DIR   ${CMAKE_INSTALL_PREFIX}/share/qgis)
   SET (QGIS_PLUGIN_DIR ${CMAKE_INSTALL_PREFIX}/lib/qgis)
   SET(QGIS_INCLUDE_DIR "${CMAKE_INSTALL_PREFIX}/include/qgis")
+  SET (QGIS_SOURCE_DIR ${CMAKE_SOURCE_DIR})
 
 
   IF (UNIX AND NOT APPLE)
@@ -179,13 +188,13 @@ INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR})
 IF (WIN32)
   
   # TODO: create qgssvnversion.h properly
-  ADD_CUSTOM_TARGET(svnversion echo "#define QGSSVNVERSION \"svn\"" > qgssvnversion.h
+  ADD_CUSTOM_TARGET(svnversion ALL echo \\"#define QGSSVNVERSION \\\"svn_rev_unavailable\\\" \\" > qgssvnversion.h
       WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 
 ELSE (WIN32)
 
   ADD_CUSTOM_TARGET(svnversion ALL
-  QGSSVNDEF='\#define QGSSVNVERSION \"'`svnversion .`'\"' &&
+  QGSSVNDEF='\#define QGSSVNVERSION \"'`svnversion ${QGIS_SOURCE_DIR}`'\"' &&
   if [ \"`grep QGSSVNVERSION qgssvnversion.h 2>/dev/null`\" != \"$$QGSSVNDEF\" ]; then 
   echo $$QGSSVNDEF > qgssvnversion.h  \; fi 
   WORKING_DIRECTORY ${CMAKE_BINARY_DIR})

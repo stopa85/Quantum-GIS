@@ -142,7 +142,7 @@ void QgsWFSProvider::reset()
 #if GEOS_VERSION_MAJOR < 3
   mSelectedFeatures = mSpatialIndex.query(&e);
 #else
-#warning *** FIXME: Need to revise use of mSelectedFeatures for GEOS 3.0.0
+  mSelectedFeatures = new std::vector<void*>;
   mSpatialIndex.query(&e, *mSelectedFeatures);
 #endif
   if(mSelectedFeatures)
@@ -242,7 +242,7 @@ void QgsWFSProvider::select(QgsRect mbr, bool useIntersect)
 #if GEOS_VERSION_MAJOR < 3
   mSelectedFeatures = mSpatialIndex.query(&filter);
 #else
-#warning *** FIXME: Need to revise use of mSelectedFeatures for GEOS 3.0.0
+  mSelectedFeatures = new std::vector<void*>;
   mSpatialIndex.query(&filter, *mSelectedFeatures);
 #endif
   mFeatureIterator = mSelectedFeatures->begin();
@@ -301,6 +301,8 @@ int QgsWFSProvider::describeFeatureType(const QString& uri, QString& geometryAtt
       return describeFeatureTypePOST(uri, geometryAttribute, fields);
     case QgsWFSProvider::SOAP:
       return describeFeatureTypeSOAP(uri, geometryAttribute, fields);
+    case QgsWFSProvider::FILE:
+      return describeFeatureTypeFile(uri, geometryAttribute, fields);
     }
   return 1;
 }
@@ -534,7 +536,7 @@ int QgsWFSProvider::readAttributesFromSchema(QDomDocument& schemaDoc, QString& g
       
       //find <complexType name=complexTypeType
       QDomNodeList complexTypeNodeList = schemaElement.elementsByTagNameNS("http://www.w3.org/2001/XMLSchema", "complexType");
-      for(int i = 0; i < complexTypeNodeList.length(); ++i)
+      for(uint i = 0; i < complexTypeNodeList.length(); ++i)
 	{
 	  if(complexTypeNodeList.at(i).toElement().attribute("name") == complexTypeType)
 	    {
@@ -556,7 +558,7 @@ int QgsWFSProvider::readAttributesFromSchema(QDomDocument& schemaDoc, QString& g
       return 5;
     }
 
-  for(int i = 0; i < attributeNodeList.length(); ++i)
+  for(uint i = 0; i < attributeNodeList.length(); ++i)
     {
       QDomElement attributeElement = attributeNodeList.at(i).toElement();
       //attribute name

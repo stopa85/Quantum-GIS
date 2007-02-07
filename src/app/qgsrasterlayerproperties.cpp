@@ -1671,7 +1671,13 @@ void QgsRasterLayerProperties::on_rbtnSingleBand_toggled(bool b)
 {
   if(b)
   {
-    stackedStretchParameters->setCurrentIndex(1);
+    //--- enable and disable appropriate controls
+    // TODO do the same for clip limit controls
+    cboRed->setEnabled(false);
+    cboGreen->setEnabled(false);
+    cboBlue->setEnabled(false);
+    cboGray->setEnabled(true);
+    //----
     tableTransparency->clear();
     tableTransparency->setColumnCount(1);
     tableTransparency->setHorizontalHeaderItem(0, new QTableWidgetItem(tr("Gray")));
@@ -1687,7 +1693,13 @@ void QgsRasterLayerProperties::on_rbtnThreeBand_toggled(bool b)
 {
   if(b)
   {
-    stackedStretchParameters->setCurrentIndex(0);
+    //--- enable and disable appropriate controls
+    // TODO do the same for clip limit controls
+    cboRed->setEnabled(true);
+    cboGreen->setEnabled(true);
+    cboBlue->setEnabled(true);
+    cboGray->setEnabled(false);
+    //----
     tableTransparency->clear();
     tableTransparency->setColumnCount(3);
     tableTransparency->setHorizontalHeaderItem(0, new QTableWidgetItem(tr("Red")));

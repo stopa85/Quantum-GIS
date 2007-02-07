@@ -33,13 +33,18 @@ QgsDelimitedTextPluginGui::QgsDelimitedTextPluginGui(QgisInterface * _qI, QWidge
   setupUi(this);
   pbnOK = buttonBox->button(QDialogButtonBox::Ok);
   pbnParse = buttonBox->addButton(tr("Parse"), QDialogButtonBox::ActionRole);
-  connect(pbnParse, SIGNAL(clicked()), this, SLOT(on_pbnParse_clicked()));
+  connect(pbnParse, SIGNAL(clicked()), this, SLOT(pbnParse_clicked()));
+  connect(txtFilePath, SIGNAL(textChanged(const QString&)), this, SLOT(pbnParse_clicked()));
   enableButtons();
   // at startup, fetch the last used delimiter and directory from
   // settings
   QSettings settings;
   QString key = "/Plugin-DelimitedText";
   txtDelimiter->setText(settings.readEntry(key + "/delimiter"));
+
+  teInstructions->setHtml(tr("<h1>Description</h1>"
+"<p>Select a delimited text file containing x and y coordinates that you would like to use as a point layer and this plugin will do the job for you!</p>"
+"<p>Use the layer name box to specify the legend name for the new layer. Use the delimiter box to specify what delimeter is used in your file (e.g. space, comma or tab). After choosing a delimiter, press the parse button an select the columns containing the x and y values for the layer.</p>"));
 
 }  
 QgsDelimitedTextPluginGui::~QgsDelimitedTextPluginGui()
@@ -54,7 +59,7 @@ void QgsDelimitedTextPluginGui::on_btnBrowseForFile_clicked()
 {
   getOpenFileName();
 }
-void QgsDelimitedTextPluginGui::on_pbnParse_clicked()
+void QgsDelimitedTextPluginGui::pbnParse_clicked()
 {
   updateFieldLists();
 }
