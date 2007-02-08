@@ -1,9 +1,9 @@
 /***************************************************************************
   qgsrasterlayerproperties.cpp  -  description
   -------------------
-begin                : 1/1/2004
-copyright            : (C) 2004 Tim Sutton
-email                : tim@linfiniti.com
+      begin                : 1/1/2004
+      copyright            : (C) 2004 Tim Sutton
+      email                : tim@linfiniti.com
  ***************************************************************************/
 
 /***************************************************************************
@@ -37,12 +37,12 @@ email                : tim@linfiniti.com
 #include <iostream>
 
 const char * const ident = 
-  "$Id$";
+"$Id$";
 
 
 QgsRasterLayerProperties::QgsRasterLayerProperties(QgsMapLayer *lyr, QWidget *parent, Qt::WFlags fl)
-: QDialog(parent, fl), 
-  rasterLayer( dynamic_cast<QgsRasterLayer*>(lyr) )
+  : QDialog(parent, fl), 
+rasterLayer( dynamic_cast<QgsRasterLayer*>(lyr) )
 {
   ignoreSpinBoxEvent = false; //Short circuit signal loop between min max field and stdDev spin box
 
@@ -99,7 +99,7 @@ QgsRasterLayerProperties::QgsRasterLayerProperties(QgsMapLayer *lyr, QWidget *pa
   //
 
   if (rasterLayer->getRasterLayerType()
-          == QgsRasterLayer::PALETTE) //paletted layers have hard coded color entries
+      == QgsRasterLayer::PALETTE) //paletted layers have hard coded color entries
   {
     cboRed->insertItem("Red");
     cboGreen->insertItem("Red");
@@ -140,8 +140,8 @@ QgsRasterLayerProperties::QgsRasterLayerProperties(QgsMapLayer *lyr, QWidget *pa
     std::cout << "Looping though " << myBandCountInt << " image layers to get their names " << std::endl;
 #endif
     for (int myIteratorInt = 1;
-            myIteratorInt <= myBandCountInt;
-            ++myIteratorInt)
+        myIteratorInt <= myBandCountInt;
+        ++myIteratorInt)
     {
       //find out the name of this band
       QString myRasterBandNameQString = rasterLayer->getRasterBandName(myIteratorInt) ;
@@ -195,16 +195,16 @@ QgsRasterLayerProperties::QgsRasterLayerProperties(QgsMapLayer *lyr, QWidget *pa
 
     //select all histogram layers list items by default
     for (int myIteratorInt = 1;
-          myIteratorInt <= myBandCountInt;
-          ++myIteratorInt)
+        myIteratorInt <= myBandCountInt;
+        ++myIteratorInt)
     {
       Q3ListBoxItem *myItem = lstHistogramLabels->item( myIteratorInt-1 );
       lstHistogramLabels->setSelected( myItem,true);
     }
 
     for (QStringList::Iterator myIterator = myBandNameQStringList.begin(); 
-            myIterator != myBandNameQStringList.end(); 
-            ++myIterator)
+        myIterator != myBandNameQStringList.end(); 
+        ++myIterator)
     {
       QString myQString = *myIterator;
 #ifdef QGISDEBUG
@@ -235,22 +235,22 @@ QgsRasterLayerProperties::QgsRasterLayerProperties(QgsMapLayer *lyr, QWidget *pa
   {
     QgsRasterLayer::RasterPyramidList myPyramidList = rasterLayer->buildRasterPyramidList();
     QgsRasterLayer::RasterPyramidList::iterator myRasterPyramidIterator;
-  
+
     for ( myRasterPyramidIterator=myPyramidList.begin();
-            myRasterPyramidIterator != myPyramidList.end();
-            ++myRasterPyramidIterator )
+        myRasterPyramidIterator != myPyramidList.end();
+        ++myRasterPyramidIterator )
     {
       if ((*myRasterPyramidIterator).existsFlag==true)
       {
         lbxPyramidResolutions->insertItem(myPyramidPixmap,
-                QString::number((*myRasterPyramidIterator).xDimInt) + QString(" x ") + 
-                QString::number((*myRasterPyramidIterator).yDimInt)); 
+            QString::number((*myRasterPyramidIterator).xDimInt) + QString(" x ") + 
+            QString::number((*myRasterPyramidIterator).yDimInt)); 
       }
       else
       {
         lbxPyramidResolutions->insertItem(myNoPyramidPixmap,
-                QString::number((*myRasterPyramidIterator).xDimInt) + QString(" x ") + 
-                QString::number((*myRasterPyramidIterator).yDimInt)); 
+            QString::number((*myRasterPyramidIterator).xDimInt) + QString(" x ") + 
+            QString::number((*myRasterPyramidIterator).yDimInt)); 
       }
     }
   }
@@ -331,7 +331,7 @@ void QgsRasterLayerProperties::apply()
 #ifdef QGISDEBUG
 
         std::cout << "Combo value : " << cboGray->currentText().toLocal8Bit().data() << " GrayBand Mapping : " << rasterLayer->
-            getGrayBandName().toLocal8Bit().data() << std::endl;
+          getGrayBandName().toLocal8Bit().data() << std::endl;
 #endif
 
         rasterLayer->setDrawingStyle(QgsRasterLayer::PALETTED_SINGLE_BAND_GRAY);
@@ -355,7 +355,7 @@ void QgsRasterLayerProperties::apply()
 #ifdef QGISDEBUG
         std::cout << "Setting Raster Drawing Style to :: MULTI_BAND_SINGLE_BAND_GRAY" << std::endl;
         std::cout << "Combo value : " << cboGray->currentText().toLocal8Bit().data() << " GrayBand Mapping : " << rasterLayer->
-            getGrayBandName().toLocal8Bit().data() << std::endl;
+          getGrayBandName().toLocal8Bit().data() << std::endl;
 #endif
 
         rasterLayer->setDrawingStyle(QgsRasterLayer::MULTI_BAND_SINGLE_BAND_GRAY);
@@ -511,8 +511,8 @@ void QgsRasterLayerProperties::apply()
         }
         else 
         {
-        myTransparentPixel.red = 0.0;
-        tableTransparency->item(myListRunner, 0)->setText("0.0");
+          myTransparentPixel.red = 0.0;
+          tableTransparency->item(myListRunner, 0)->setText("0.0");
         }
       }
 
@@ -531,8 +531,8 @@ void QgsRasterLayerProperties::apply()
         }
         else 
         {
-         myTransparentPixel.green = 0.0;
-         tableTransparency->item(myListRunner, 1)->setText("0.0");
+          myTransparentPixel.green = 0.0;
+          tableTransparency->item(myListRunner, 1)->setText("0.0");
         }
       }
 
@@ -551,8 +551,8 @@ void QgsRasterLayerProperties::apply()
         }
         else 
         {
-         myTransparentPixel.blue = 0.0;
-         tableTransparency->item(myListRunner, 2)->setText("0.0");
+          myTransparentPixel.blue = 0.0;
+          tableTransparency->item(myListRunner, 2)->setText("0.0");
         }
       }
       myTransparentColorPixelList.append(myTransparentPixel);
@@ -592,7 +592,7 @@ void QgsRasterLayerProperties::apply()
     rasterLayer->setTransparentGrayPixelList(myTransparentGrayPixelList);
   }
 
-  
+
 
   /*
    * General Tab
@@ -676,78 +676,78 @@ void QgsRasterLayerProperties::sync()
   //decide whether user can change rgb settings
   switch (rasterLayer->getDrawingStyle())
   {
-      case QgsRasterLayer::SINGLE_BAND_GRAY:
-          rbtnThreeBand->setEnabled(false);
-          rbtnSingleBand->setEnabled(true);
-          rbtnSingleBand->toggle();
-          break;
-      case QgsRasterLayer::SINGLE_BAND_PSEUDO_COLOR:
-          rbtnThreeBand->setEnabled(false);
-          rbtnSingleBand->setEnabled(true);
-          rbtnSingleBand->toggle();
-          break;
-      case QgsRasterLayer::PALETTED_SINGLE_BAND_GRAY:
-          rbtnThreeBand->setEnabled(true);
-          rbtnSingleBand->setEnabled(true);
-          rbtnSingleBand->toggle();
-          break;
-      case QgsRasterLayer::PALETTED_SINGLE_BAND_PSEUDO_COLOR:
-          rbtnThreeBand->setEnabled(true);
-          rbtnSingleBand->setEnabled(true);
-          rbtnSingleBand->toggle();
-          break;
-      case QgsRasterLayer::PALETTED_MULTI_BAND_COLOR:
-          rbtnThreeBand->setEnabled(true);
-          rbtnSingleBand->setEnabled(true);
-          rbtnThreeBand->toggle();
-          break;
-      case QgsRasterLayer::MULTI_BAND_SINGLE_BAND_GRAY:
-          rbtnThreeBand->setEnabled(true);
-          rbtnSingleBand->setEnabled(true);
-          rbtnSingleBand->toggle();
-          break;
-      case QgsRasterLayer::MULTI_BAND_SINGLE_BAND_PSEUDO_COLOR:
-          rbtnThreeBand->setEnabled(true);
-          rbtnSingleBand->setEnabled(true);
-          rbtnSingleBand->toggle();
-          break;
-      case QgsRasterLayer::MULTI_BAND_COLOR:
-          rbtnThreeBand->setEnabled(true);
-          rbtnSingleBand->setEnabled(true);
-          rbtnThreeBand->toggle();
-          break;
-      default:
-          break;
+    case QgsRasterLayer::SINGLE_BAND_GRAY:
+      rbtnThreeBand->setEnabled(false);
+      rbtnSingleBand->setEnabled(true);
+      rbtnSingleBand->toggle();
+      break;
+    case QgsRasterLayer::SINGLE_BAND_PSEUDO_COLOR:
+      rbtnThreeBand->setEnabled(false);
+      rbtnSingleBand->setEnabled(true);
+      rbtnSingleBand->toggle();
+      break;
+    case QgsRasterLayer::PALETTED_SINGLE_BAND_GRAY:
+      rbtnThreeBand->setEnabled(true);
+      rbtnSingleBand->setEnabled(true);
+      rbtnSingleBand->toggle();
+      break;
+    case QgsRasterLayer::PALETTED_SINGLE_BAND_PSEUDO_COLOR:
+      rbtnThreeBand->setEnabled(true);
+      rbtnSingleBand->setEnabled(true);
+      rbtnSingleBand->toggle();
+      break;
+    case QgsRasterLayer::PALETTED_MULTI_BAND_COLOR:
+      rbtnThreeBand->setEnabled(true);
+      rbtnSingleBand->setEnabled(true);
+      rbtnThreeBand->toggle();
+      break;
+    case QgsRasterLayer::MULTI_BAND_SINGLE_BAND_GRAY:
+      rbtnThreeBand->setEnabled(true);
+      rbtnSingleBand->setEnabled(true);
+      rbtnSingleBand->toggle();
+      break;
+    case QgsRasterLayer::MULTI_BAND_SINGLE_BAND_PSEUDO_COLOR:
+      rbtnThreeBand->setEnabled(true);
+      rbtnSingleBand->setEnabled(true);
+      rbtnSingleBand->toggle();
+      break;
+    case QgsRasterLayer::MULTI_BAND_COLOR:
+      rbtnThreeBand->setEnabled(true);
+      rbtnSingleBand->setEnabled(true);
+      rbtnThreeBand->toggle();
+      break;
+    default:
+      break;
   }
 
   if (rasterLayer->getRasterLayerType() == QgsRasterLayer::MULTIBAND)
   {
     //multiband images can also be rendered as single band (using only one of the bands)
     txtSymologyNotes->
-        setText(tr
-                ("<h3>Multiband Image Notes</h3><p>This is a multiband image. You can choose to render it as grayscale or color (RGB). For color images, you can associate bands to colors arbitarily. For example, if you have a seven band landsat image, you may choose to render it as:</p><ul><li>Visible Blue (0.45 to 0.52 microns) - not mapped</li><li>Visible Green (0.52 to 0.60 microns) - not mapped</li></li>Visible Red (0.63 to 0.69 microns) - mapped to red in image</li><li>Near Infrared (0.76 to 0.90 microns) - mapped to green in image</li><li>Mid Infrared (1.55 to 1.75 microns) - not mapped</li><li>Thermal Infrared (10.4 to 12.5 microns) - not mapped</li><li>Mid Infrared (2.08 to 2.35 microns) - mapped to blue in image</li></ul>"));
+      setText(tr
+          ("<h3>Multiband Image Notes</h3><p>This is a multiband image. You can choose to render it as grayscale or color (RGB). For color images, you can associate bands to colors arbitarily. For example, if you have a seven band landsat image, you may choose to render it as:</p><ul><li>Visible Blue (0.45 to 0.52 microns) - not mapped</li><li>Visible Green (0.52 to 0.60 microns) - not mapped</li></li>Visible Red (0.63 to 0.69 microns) - mapped to red in image</li><li>Near Infrared (0.76 to 0.90 microns) - mapped to green in image</li><li>Mid Infrared (1.55 to 1.75 microns) - not mapped</li><li>Thermal Infrared (10.4 to 12.5 microns) - not mapped</li><li>Mid Infrared (2.08 to 2.35 microns) - mapped to blue in image</li></ul>"));
   }
   else if (rasterLayer->getRasterLayerType() == QgsRasterLayer::PALETTE)
   {
     //paletted images (e.g. tif) can only be rendered as three band rgb images
     txtSymologyNotes->
-        setText(tr
-                ("<h3>Paletted Image Notes</h3> <p>This image uses a fixed color palette. You can remap these colors in different combinations e.g.</p><ul><li>Red - blue in image</li><li>Green - blue in image</li><li>Blue - green in image</li></ul>"));
+      setText(tr
+          ("<h3>Paletted Image Notes</h3> <p>This image uses a fixed color palette. You can remap these colors in different combinations e.g.</p><ul><li>Red - blue in image</li><li>Green - blue in image</li><li>Blue - green in image</li></ul>"));
   }
   else                        //only grayscale settings allowed
   {
     //grayscale images can only be rendered as singleband
     txtSymologyNotes->
-        setText(tr
-                ("<h3>Grayscale Image Notes</h3> <p>You can remap these grayscale colors to a pseudocolor image using an automatically generated color ramp.</p>"));
+      setText(tr
+          ("<h3>Grayscale Image Notes</h3> <p>You can remap these grayscale colors to a pseudocolor image using an automatically generated color ramp.</p>"));
   }
 
   //
   // Populate the various controls on the form
   //
   if (rasterLayer->getDrawingStyle() == QgsRasterLayer::SINGLE_BAND_PSEUDO_COLOR ||
-          rasterLayer->getDrawingStyle() == QgsRasterLayer::PALETTED_SINGLE_BAND_PSEUDO_COLOR ||
-          rasterLayer->getDrawingStyle() == QgsRasterLayer::MULTI_BAND_SINGLE_BAND_PSEUDO_COLOR)
+      rasterLayer->getDrawingStyle() == QgsRasterLayer::PALETTED_SINGLE_BAND_PSEUDO_COLOR ||
+      rasterLayer->getDrawingStyle() == QgsRasterLayer::MULTI_BAND_SINGLE_BAND_PSEUDO_COLOR)
   {
     if(rasterLayer->getColorRampingType()==QgsRasterLayer::BLUE_GREEN_RED)
     {
@@ -961,7 +961,7 @@ bool QgsRasterLayerProperties::validUserDefinedMinMax()
       }
     }
   }
-  
+
   return false;
 }
 
@@ -996,7 +996,7 @@ void QgsRasterLayerProperties::on_buttonBuildPyramids_clicked()
   //
   // Ask raster layer to build the pyramids
   //
-  
+
   // let the user know we're going to possibly be taking a while
   QApplication::setOverrideCursor(Qt::WaitCursor);
   QString res = rasterLayer->buildPyramids(myPyramidList,cboResamplingMethod->currentText());
@@ -1006,21 +1006,21 @@ void QgsRasterLayerProperties::on_buttonBuildPyramids_clicked()
     if (res == "ERROR_WRITE_ACCESS")
     {
       QMessageBox::warning(this, tr("Write access denied"),
-                           tr("Write access denied. Adjust the file permissions and try again.\n\n") );
+          tr("Write access denied. Adjust the file permissions and try again.\n\n") );
     }
     else if (res == "ERROR_WRITE_FORMAT")
     {
       QMessageBox::warning(this, tr("Building pyramids failed."),
-                           tr("The file was not writeable. Some formats can not be written to, only read. You can also try to check the permissions and then try again.") );
+          tr("The file was not writeable. Some formats can not be written to, only read. You can also try to check the permissions and then try again.") );
     }
     else if (res == "FAILED_NOT_SUPPORTED")
     {
       QMessageBox::warning(this, tr("Building pyramids failed."),
-                           tr("Building pyramid overviews is not supported on this type of raster.") );
+          tr("Building pyramid overviews is not supported on this type of raster.") );
     }
   }
 
-  
+
   //
   // repopulate the pyramids list
   //
@@ -1031,20 +1031,20 @@ void QgsRasterLayerProperties::on_buttonBuildPyramids_clicked()
 
   QgsRasterLayer::RasterPyramidList::iterator myRasterPyramidIterator;
   for ( myRasterPyramidIterator=myPyramidList.begin();
-          myRasterPyramidIterator != myPyramidList.end();
-          ++myRasterPyramidIterator )
+      myRasterPyramidIterator != myPyramidList.end();
+      ++myRasterPyramidIterator )
   {
     if ((*myRasterPyramidIterator).existsFlag==true)
     {
       lbxPyramidResolutions->insertItem(myPyramidPixmap,
-              QString::number((*myRasterPyramidIterator).xDimInt) + QString(" x ") + 
-              QString::number((*myRasterPyramidIterator).yDimInt)); 
+          QString::number((*myRasterPyramidIterator).xDimInt) + QString(" x ") + 
+          QString::number((*myRasterPyramidIterator).yDimInt)); 
     }
     else
     {
       lbxPyramidResolutions->insertItem(myNoPyramidPixmap,
-              QString::number((*myRasterPyramidIterator).xDimInt) + QString(" x ") + 
-              QString::number((*myRasterPyramidIterator).yDimInt)); 
+          QString::number((*myRasterPyramidIterator).xDimInt) + QString(" x ") + 
+          QString::number((*myRasterPyramidIterator).yDimInt)); 
     }
   }
   //update the legend pixmap
@@ -1075,20 +1075,20 @@ void QgsRasterLayerProperties::on_pbnAddValuesManually_clicked()
 void QgsRasterLayerProperties::on_pbnChangeSpatialRefSys_clicked()
 {
 
-    QgsLayerProjectionSelector * mySelector = new QgsLayerProjectionSelector(this);
-    mySelector->setSelectedSRSID(rasterLayer->srs().srsid());
-    if(mySelector->exec())
-    {
-      QgsSpatialRefSys srs(mySelector->getCurrentSRSID(), QgsSpatialRefSys::QGIS_SRSID);
-      rasterLayer->setSrs(srs);
-    }
-    else
-    {
-      QApplication::restoreOverrideCursor();
-    }
-    delete mySelector;
+  QgsLayerProjectionSelector * mySelector = new QgsLayerProjectionSelector(this);
+  mySelector->setSelectedSRSID(rasterLayer->srs().srsid());
+  if(mySelector->exec())
+  {
+    QgsSpatialRefSys srs(mySelector->getCurrentSRSID(), QgsSpatialRefSys::QGIS_SRSID);
+    rasterLayer->setSrs(srs);
+  }
+  else
+  {
+    QApplication::restoreOverrideCursor();
+  }
+  delete mySelector;
 
-    leSpatialRefSys->setText(rasterLayer->srs().proj4String());
+  leSpatialRefSys->setText(rasterLayer->srs().proj4String());
 }
 
 void QgsRasterLayerProperties::on_pbnDefaultValues_clicked()
@@ -1124,28 +1124,28 @@ void QgsRasterLayerProperties::on_pbnExportTransparentPixelValues_clicked()
     if(!myFilename.endsWith(".txt", Qt::CaseInsensitive))
     {
       myFilename = myFilename + ".txt";
-   }
+    }
 
-   QFile myOutputFile(myFilename);
-   if (myOutputFile.open(QFile::WriteOnly))
-   {
-     QTextStream myOutputStream(&myOutputFile);
-     myOutputStream << "# " << tr("QGIS Generated Transparent Pixel Value Export File") << "\n";
-     if(rbtnThreeBand->isChecked())
+    QFile myOutputFile(myFilename);
+    if (myOutputFile.open(QFile::WriteOnly))
+    {
+      QTextStream myOutputStream(&myOutputFile);
+      myOutputStream << "# " << tr("QGIS Generated Transparent Pixel Value Export File") << "\n";
+      if(rbtnThreeBand->isChecked())
       {
-       myOutputStream << "#\n#\n# " << tr("Red") << "\t" << tr("Green") << "\t" << tr("Blue");
-       for(int myTableRunner = 0; myTableRunner < tableTransparency->rowCount(); myTableRunner++)
-       {
-         myOutputStream << "\n" << tableTransparency->item(myTableRunner, 0)->text() << "\t" << tableTransparency->item(myTableRunner, 1)->text() << "\t" << tableTransparency->item(myTableRunner, 2)->text();
-       }
-     }
-     else
-     {
-       myOutputStream << "#\n#\n# " << tr("Gray");
-       for(int myTableRunner = 0; myTableRunner < tableTransparency->rowCount(); myTableRunner++)
-       {
-         myOutputStream << "\n" << tableTransparency->item(myTableRunner, 0)->text();
-       }
+        myOutputStream << "#\n#\n# " << tr("Red") << "\t" << tr("Green") << "\t" << tr("Blue");
+        for(int myTableRunner = 0; myTableRunner < tableTransparency->rowCount(); myTableRunner++)
+        {
+          myOutputStream << "\n" << tableTransparency->item(myTableRunner, 0)->text() << "\t" << tableTransparency->item(myTableRunner, 1)->text() << "\t" << tableTransparency->item(myTableRunner, 2)->text();
+        }
+      }
+      else
+      {
+        myOutputStream << "#\n#\n# " << tr("Gray");
+        for(int myTableRunner = 0; myTableRunner < tableTransparency->rowCount(); myTableRunner++)
+        {
+          myOutputStream << "\n" << tableTransparency->item(myTableRunner, 0)->text();
+        }
       }
     }
     else
@@ -1166,8 +1166,8 @@ void QgsRasterLayerProperties::on_pbnHistRefresh_clicked()
   // if needed
   int mySelectionCount=0;
   for (int myIteratorInt = 1;
-          myIteratorInt <= myBandCountInt;
-          ++myIteratorInt)
+      myIteratorInt <= myBandCountInt;
+      ++myIteratorInt)
   {
     QgsRasterBandStats myRasterBandStats = rasterLayer->getRasterBandStats(myIteratorInt);
     Q3ListBoxItem *myItem = lstHistogramLabels->item( myIteratorInt-1 );
@@ -1220,8 +1220,8 @@ void QgsRasterLayerProperties::on_pbnHistRefresh_clicked()
   int myXAxisMin=0;
   int myXAxisMax=0;
   for (int myIteratorInt = 1;
-          myIteratorInt <= myBandCountInt;
-          ++myIteratorInt)
+      myIteratorInt <= myBandCountInt;
+      ++myIteratorInt)
   {
     QgsRasterBandStats myRasterBandStats = rasterLayer->getRasterBandStats(myIteratorInt);
     //calculate the x axis min max
@@ -1324,7 +1324,7 @@ void QgsRasterLayerProperties::on_pbnHistRefresh_clicked()
   //now draw actual graphs
   //
   if (rasterLayer->getRasterLayerType()
-          == QgsRasterLayer::PALETTE) //paletted layers have hard coded color entries
+      == QgsRasterLayer::PALETTE) //paletted layers have hard coded color entries
   {
     QPolygon myPointArray(myLastBinWithData);
     QgsColorTable *myColorTable=rasterLayer->colorTable(1);
@@ -1349,39 +1349,39 @@ void QgsRasterLayerProperties::on_pbnHistRefresh_clicked()
       {  
         myY=static_cast<int>(((double)myBinValue/(double)myYAxisMax)*myGraphImageHeight);
       }
-      
+
       //see wehter to draw something each loop or to save up drawing for after iteration
       if (myGraphType==BAR_CHART)
       {
-	//determin which color to draw the bar
-	int c1, c2, c3;
-	// Take middle of the interval for color
-	// TODO: this is not precise
-	double myInterval = (myXAxisMax - myXAxisMin) / myLastBinWithData;
-	double myMiddle = myXAxisMin + myBin * myInterval + myInterval/2;
+        //determin which color to draw the bar
+        int c1, c2, c3;
+        // Take middle of the interval for color
+        // TODO: this is not precise
+        double myInterval = (myXAxisMax - myXAxisMin) / myLastBinWithData;
+        double myMiddle = myXAxisMin + myBin * myInterval + myInterval/2;
 
 #ifdef QGISDEBUG
-	std::cout << "myMiddle = " << myMiddle << std::endl;
+        std::cout << "myMiddle = " << myMiddle << std::endl;
 #endif
-	
-	bool found = myColorTable->color ( myMiddle, &c1, &c2, &c3 );
-	if ( !found ) {
-	    std::cout << "Color not found" << std::endl;
-	    c1 = c2 = c3 = 180; // grey
-	}
-	  
+
+        bool found = myColorTable->color ( myMiddle, &c1, &c2, &c3 );
+        if ( !found ) {
+          std::cout << "Color not found" << std::endl;
+          c1 = c2 = c3 = 180; // grey
+        }
+
 #ifdef QGISDEBUG
-	std::cout << "c1 = " << c1 << " c2 = " << c2 << " c3 = " << c3 << std::endl;
+        std::cout << "c1 = " << c1 << " c2 = " << c2 << " c3 = " << c3 << std::endl;
 #endif
-	  
+
         //draw the bar
         //QBrush myBrush(QColor(c1,c2,c3));
-	myPainter.setBrush(QColor(c1,c2,c3));
+        myPainter.setBrush(QColor(c1,c2,c3));
         myPainter.setPen(QColor(c1,c2,c3));
 #ifdef QGISDEBUG
         std::cout << "myX = " << myX << " myY = " << myY << std::endl;
         std::cout << "rect: " << myX+myYGutterWidth << ", " << myImageHeight-(myY+myXGutterHeight)
-	          << ", " << myBarWidth << ", " << myY << std::endl;
+          << ", " << myBarWidth << ", " << myY << std::endl;
 #endif
         myPainter.drawRect(myX+myYGutterWidth,myImageHeight-(myY+myXGutterHeight),myBarWidth,myY);
       }
@@ -1400,8 +1400,8 @@ void QgsRasterLayerProperties::on_pbnHistRefresh_clicked()
   {
 
     for (int myIteratorInt = 1;
-            myIteratorInt <= myBandCountInt;
-            ++myIteratorInt)
+        myIteratorInt <= myBandCountInt;
+        ++myIteratorInt)
     {
       QgsRasterBandStats myRasterBandStats = rasterLayer->getRasterBandStats(myIteratorInt);
       Q3ListBoxItem *myItem = lstHistogramLabels->item( myIteratorInt-1 );
