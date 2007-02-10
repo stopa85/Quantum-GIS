@@ -1545,11 +1545,11 @@ void QgsRasterLayerProperties::on_pbnHistRefresh_clicked()
   myPainter.setPen( Qt::gray );
   for (int i=0;i<myXDivisions;++i)
   {
-    QPolygonF myPolygon(4);
-    myPolygon << QPointF((i*myXDivisions)+myYGutterWidth , myImageHeight-myXGutterHeight);
-    myPolygon << QPointF((i*myXDivisions)+myYGutterWidth , myImageHeight-(myXGutterHeight-5));
-    myPolygon << QPointF((i*myXDivisions)+myYGutterWidth , myImageHeight-myXGutterHeight);
-    myPolygon << QPointF(((i+1)*myXDivisions)+myYGutterWidth , myImageHeight-myXGutterHeight);
+    QPolygon myPolygon;
+    myPolygon << QPoint((i*myXDivisions)+myYGutterWidth , myImageHeight-myXGutterHeight);
+    myPolygon << QPoint((i*myXDivisions)+myYGutterWidth , myImageHeight-(myXGutterHeight-5));
+    myPolygon << QPoint((i*myXDivisions)+myYGutterWidth , myImageHeight-myXGutterHeight);
+    myPolygon << QPoint(((i+1)*myXDivisions)+myYGutterWidth , myImageHeight-myXGutterHeight);
     myPainter.drawPolyline(myPolygon);
   }
   //
@@ -1560,12 +1560,12 @@ void QgsRasterLayerProperties::on_pbnHistRefresh_clicked()
   for (int i=myYDivisions;i>0;--i)
   {
 
-    QPolygonF myPolygon(4);
+    QPolygon myPolygon;
     int myYOrigin = myImageHeight-myXGutterHeight;
-    myPolygon << QPointF(myYGutterWidth,myYOrigin-(i*myYDivisions ));
-    myPolygon << QPointF(myYGutterWidth-5,myYOrigin-(i*myYDivisions ));
-    myPolygon << QPointF(myYGutterWidth,myYOrigin-(i*myYDivisions ));
-    myPolygon << QPointF(myYGutterWidth,myYOrigin-((i-1)*myYDivisions ));
+    myPolygon << QPoint(myYGutterWidth,myYOrigin-(i*myYDivisions ));
+    myPolygon << QPoint(myYGutterWidth-5,myYOrigin-(i*myYDivisions ));
+    myPolygon << QPoint(myYGutterWidth,myYOrigin-(i*myYDivisions ));
+    myPolygon << QPoint(myYGutterWidth,myYOrigin-((i-1)*myYDivisions ));
     myPainter.drawPolyline(myPolygon);
   }
 
