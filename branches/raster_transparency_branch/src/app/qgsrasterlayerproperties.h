@@ -110,6 +110,14 @@ class QgsRasterLayerProperties : public QDialog, private Ui::QgsRasterLayerPrope
 
         //Short circuit signal loop between min max field and stdDev spin box
         bool ignoreSpinBoxEvent;
+
+        //@TODO we should move these gradient generators somewhere more generic
+        //so they can be used generically throughut the app
+        QLinearGradient QgsRasterLayerProperties::greenGradient();
+        QLinearGradient QgsRasterLayerProperties::redGradient();
+        QLinearGradient QgsRasterLayerProperties::blueGradient();
+        QLinearGradient QgsRasterLayerProperties::grayGradient();
+        QLinearGradient QgsRasterLayerProperties::highlightGradient();
 };
 
 #endif

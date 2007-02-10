@@ -33,7 +33,10 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QPainter>
-#include <QPolygon>
+#include <QLinearGradient>
+#include <QPainterPath>
+#include <QPolygonF>
+
 #include <iostream>
 
 const char * const ident = 
@@ -1287,7 +1290,8 @@ void QgsRasterLayerProperties::on_pbnHistRefresh_clicked()
   // in order to make things work in Qt4, doesn't break things in Qt3.
   //QPainter myPainter(&myPixmap, this);
   QPainter myPainter(&myPixmap);
-
+  //anti alias lines in the graph
+  myPainter.setRenderHint(QPainter::Antialiasing);
   //determine labels sizes and draw them
   QFont myQFont("arial", 8, QFont::Normal);
   QFontMetrics myFontMetrics( myQFont );
@@ -1313,7 +1317,7 @@ void QgsRasterLayerProperties::on_pbnHistRefresh_clicked()
   // Now calculate the graph drawable area after the axis labels have been taken
   // into account
   //
-  int myGraphImageWidth =myImageWidth-myYGutterWidth; 
+  int myGraphImageWidth = myImageWidth-myYGutterWidth; 
   int myGraphImageHeight = myImageHeight-myXGutterHeight; 
 
   //find out how wide to draw bars when in bar chart mode
@@ -1326,7 +1330,7 @@ void QgsRasterLayerProperties::on_pbnHistRefresh_clicked()
   if (rasterLayer->getRasterLayerType()
       == QgsRasterLayer::PALETTE) //paletted layers have hard coded color entries
   {
-    QPolygon myPointArray(myLastBinWithData);
+    QPolygonF myPolygon;
     QgsColorTable *myColorTable=rasterLayer->colorTable(1);
 #ifdef QGISDEBUG
     std::cout << "Making paletted image histogram....computing band stats" << std::endl;
@@ -1387,13 +1391,27 @@ void QgsRasterLayerProperties::on_pbnHistRefresh_clicked()
       }
       //store this point in our line too
       myY = myGraphImageHeight - myY;
-      myPointArray.setPoint(myBin, myX+myYGutterWidth, myY-myXGutterHeight);
+      myPolygon << QPointF( myX+myYGutterWidth, myY-myXGutterHeight);
     }
     //draw a line on the graph along the bar peaks; 
     if (myGraphType==LINE_CHART)
     {
+      //close of the point array so it makes a nice polygon
+      //bottom right point
+      myPolygon << QPointF( 
+          myImageWidth-myYGutterWidth, 
+          myImageHeight-myXGutterHeight);
+      //bottom left point
+      myPolygon << QPointF( 
+          myYGutterWidth, 
+          myImageHeight-myXGutterHeight);
       myPainter.setPen( Qt::black );
-      myPainter.drawPolyline(myPointArray);
+      //set a gradient fill for the path
+      QLinearGradient myGradient = greenGradient();
+      myPainter.setBrush(myGradient);
+      QPainterPath myPath;
+      myPath.addPolygon(myPolygon);
+      myPainter.drawPath(myPath);
     }
   }
   else
@@ -1408,7 +1426,7 @@ void QgsRasterLayerProperties::on_pbnHistRefresh_clicked()
       if ( myItem->isSelected() )
       {
 
-        QPolygon myPointArray(myLastBinWithData);
+        QPolygonF myPolygon;
         for (int myBin = 0; myBin <myLastBinWithData; myBin++)
         {
           double myBinValue = myRasterBandStats.histogramVector->at(myBin);
@@ -1473,7 +1491,7 @@ void QgsRasterLayerProperties::on_pbnHistRefresh_clicked()
           else //line graph
           {
             myY = myGraphImageHeight - myY;
-            myPointArray.setPoint(myBin, myX+myYGutterWidth, myY);
+            myPolygon << QPointF(myX+myYGutterWidth, myY);
           }
         }
         if (myGraphType==LINE_CHART)
@@ -1514,7 +1532,7 @@ void QgsRasterLayerProperties::on_pbnHistRefresh_clicked()
           {
             myPainter.setPen( Qt::gray );
           }
-          myPainter.drawPolyline(myPointArray);
+          myPainter.drawPolyline(myPolygon);
         }
       }
     }
@@ -1527,12 +1545,12 @@ void QgsRasterLayerProperties::on_pbnHistRefresh_clicked()
   myPainter.setPen( Qt::gray );
   for (int i=0;i<myXDivisions;++i)
   {
-    QPolygon myPointArray(4);
-    myPointArray.setPoint(0,(i*myXDivisions)+myYGutterWidth , myImageHeight-myXGutterHeight);
-    myPointArray.setPoint(1,(i*myXDivisions)+myYGutterWidth , myImageHeight-(myXGutterHeight-5));
-    myPointArray.setPoint(2,(i*myXDivisions)+myYGutterWidth , myImageHeight-myXGutterHeight);
-    myPointArray.setPoint(3,((i+1)*myXDivisions)+myYGutterWidth , myImageHeight-myXGutterHeight);
-    myPainter.drawPolyline(myPointArray);
+    QPolygonF myPolygon(4);
+    myPolygon << QPointF((i*myXDivisions)+myYGutterWidth , myImageHeight-myXGutterHeight);
+    myPolygon << QPointF((i*myXDivisions)+myYGutterWidth , myImageHeight-(myXGutterHeight-5));
+    myPolygon << QPointF((i*myXDivisions)+myYGutterWidth , myImageHeight-myXGutterHeight);
+    myPolygon << QPointF(((i+1)*myXDivisions)+myYGutterWidth , myImageHeight-myXGutterHeight);
+    myPainter.drawPolyline(myPolygon);
   }
   //
   // Now draw interval markers on the y axis
@@ -1542,13 +1560,13 @@ void QgsRasterLayerProperties::on_pbnHistRefresh_clicked()
   for (int i=myYDivisions;i>0;--i)
   {
 
-    QPolygon myPointArray(4);
+    QPolygonF myPolygon(4);
     int myYOrigin = myImageHeight-myXGutterHeight;
-    myPointArray.setPoint(0,myYGutterWidth,myYOrigin-(i*myYDivisions ));
-    myPointArray.setPoint(1,myYGutterWidth-5,myYOrigin-(i*myYDivisions ));
-    myPointArray.setPoint(2,myYGutterWidth,myYOrigin-(i*myYDivisions ));
-    myPointArray.setPoint(3,myYGutterWidth,myYOrigin-((i-1)*myYDivisions ));
-    myPainter.drawPolyline(myPointArray);
+    myPolygon << QPointF(myYGutterWidth,myYOrigin-(i*myYDivisions ));
+    myPolygon << QPointF(myYGutterWidth-5,myYOrigin-(i*myYDivisions ));
+    myPolygon << QPointF(myYGutterWidth,myYOrigin-(i*myYDivisions ));
+    myPolygon << QPointF(myYGutterWidth,myYOrigin-((i-1)*myYDivisions ));
+    myPainter.drawPolyline(myPolygon);
   }
 
   //now draw the axis labels onto the graph
@@ -1764,4 +1782,53 @@ void QgsRasterLayerProperties::userDefinedMinMax_textEdited(QString theString)
   }
 }
 
-
+QLinearGradient QgsRasterLayerProperties::redGradient()
+{
+  //define a gradient
+  ///@TODO change this to actual polygon dims
+  QLinearGradient myGradient = QLinearGradient(this->width()/2,0,this->width()/2,this->height());
+  myGradient.setColorAt(0.0,QColor(242, 14, 25));
+  myGradient.setColorAt(0.5,QColor(175, 29, 37));
+  myGradient.setColorAt(1.0,QColor(114, 17, 22));
+  return myGradient;
+}
+QLinearGradient QgsRasterLayerProperties::greenGradient()
+{
+  //define a gradient 
+  ///@TODO change this to actual polygon dims
+  QLinearGradient myGradient = QLinearGradient(this->width()/2,0,this->width()/2,this->height());
+  myGradient.setColorAt(0.0,QColor(48, 168, 5));
+  myGradient.setColorAt(0.5,QColor(36, 122, 4));
+  myGradient.setColorAt(1.0,QColor(21, 71, 2));
+  return myGradient;
+}
+QLinearGradient QgsRasterLayerProperties::blueGradient()
+{
+  //define a gradient 
+  ///@TODO change this to actual polygon dims
+  QLinearGradient myGradient = QLinearGradient(this->width()/2,0,this->width()/2,this->height());
+  myGradient.setColorAt(0.0,QColor(30, 0, 96));
+  myGradient.setColorAt(0.5,QColor(0, 72, 128));
+  myGradient.setColorAt(1.0,QColor(0, 223, 196));
+  return myGradient;
+}
+QLinearGradient QgsRasterLayerProperties::grayGradient()
+{
+  //define a gradient 
+  ///@TODO change this to actual polygon dims
+  QLinearGradient myGradient = QLinearGradient(this->width()/2,0,this->width()/2,this->height());
+  myGradient.setColorAt(0.0,QColor(5, 5, 5));
+  myGradient.setColorAt(0.5,QColor(122, 122, 122));
+  myGradient.setColorAt(1.0,QColor(220, 220, 220));
+  return myGradient;
+}
+QLinearGradient QgsRasterLayerProperties::highlightGradient()
+{
+  //define another gradient for the highlight
+  ///@TODO change this to actual polygon dims
+  QLinearGradient myGradient = QLinearGradient(this->width()/2,0,this->width()/2,this->height());
+  myGradient.setColorAt(1.0,QColor(255, 255, 255, 50));
+  myGradient.setColorAt(0.5,QColor(255, 255, 255, 100));
+  myGradient.setColorAt(0.0,QColor(255, 255, 255, 150));
+  return myGradient;
+}
