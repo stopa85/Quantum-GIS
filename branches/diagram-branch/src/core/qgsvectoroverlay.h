@@ -54,6 +54,13 @@ need to manipulate these objects directly*/
   /**The positional information about the overlay objects*/
   std::multimap<int, QgsOverlayObject*> mOverlayObjects;
   //todo: have a std::multimap<int, QgsOverlayObject> mFixedObjects
+  virtual int getOverlayObjectSize(int& width, int& height, double value, const QgsFeature& f) const = 0;
+  //wkb helper methods
+  /**Splits the WKB of multitypes into several single types. The calling method takes ownership of the created buffers. In case of single types, the wkb buffer is just copied*/
+  int splitWkb(std::list<unsigned char*>& wkbGeometries, std::list<int> wkbSizes, QgsFeature& f) const;
+  int splitWkbMultiPolygon(std::list<unsigned char*>& wkbGeometries, std::list<int> wkbSizes, QgsFeature& f) const;
+  int splitWkbMultiLine(std::list<unsigned char*>& wkbGeometries, std::list<int> wkbSizes, QgsFeature& f) const;
+  int splitWkbMultiPoint(std::list<unsigned char*>& wkbGeometries, std::list<int> wkbSizes, QgsFeature& f) const;
 };
 
 #endif
