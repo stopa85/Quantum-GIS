@@ -1399,7 +1399,7 @@ void QgsRasterLayerProperties::on_pbnHistRefresh_clicked()
       //close of the point array so it makes a nice polygon
       //bottom right point
       myPolygon << QPointF( 
-          myImageWidth-myYGutterWidth, 
+          myImageWidth, 
           myImageHeight-myXGutterHeight);
       //bottom left point
       myPolygon << QPointF( 
