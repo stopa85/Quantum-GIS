@@ -1224,6 +1224,7 @@ void QgsRasterLayerProperties::on_pbnHistRefresh_clicked()
   double myYAxisMin=0;
   int myXAxisMin=0;
   int myXAxisMax=0;
+  bool myFirstItemFlag=true;
   for (int myIteratorInt = 1;
       myIteratorInt <= myBandCountInt;
       ++myIteratorInt)
@@ -1259,7 +1260,7 @@ void QgsRasterLayerProperties::on_pbnHistRefresh_clicked()
 #ifdef QGISDEBUG
         std::cout << "Testing if " << myBinValue << " is less than " << myYAxisMin  << "or greater then " <<myYAxisMax  <<  std::endl;
 #endif
-        if ( myBin==0)
+        if ( myBin==0 && myFirstItemFlag)
         {
           myYAxisMin = myBinValue;
           myYAxisMax = myBinValue;
@@ -1274,6 +1275,7 @@ void QgsRasterLayerProperties::on_pbnHistRefresh_clicked()
           myYAxisMin = myBinValue;
         }
       }
+      myFirstItemFlag=false;
     }
   }
 #ifdef QGISDEBUG
