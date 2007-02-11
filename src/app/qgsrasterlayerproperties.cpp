@@ -1714,10 +1714,20 @@ void QgsRasterLayerProperties::on_rbtnSingleBand_toggled(bool b)
   {
     //--- enable and disable appropriate controls
     // TODO do the same for clip limit controls
-    cboRed->setEnabled(false);
-    cboGreen->setEnabled(false);
-    cboBlue->setEnabled(false);
-    cboGray->setEnabled(true);
+    cboRed->hide();
+    cboGreen->hide();
+    cboBlue->hide();
+    leRedMin->hide();
+    leRedMax->hide();
+    leGreenMin->hide();
+    leGreenMax->hide();
+    leBlueMin->hide();
+    leBlueMax->hide();
+    sboxStdDevThreeBand->hide();
+    lbRGBStdDevs->hide();
+    lblGrayStdDevs->show();
+    sboxStdDevSingleBand->show();
+    cboGray->show();
     //----
     tableTransparency->clear();
     tableTransparency->setColumnCount(1);
@@ -1736,10 +1746,20 @@ void QgsRasterLayerProperties::on_rbtnThreeBand_toggled(bool b)
   {
     //--- enable and disable appropriate controls
     // TODO do the same for clip limit controls
-    cboRed->setEnabled(true);
-    cboGreen->setEnabled(true);
-    cboBlue->setEnabled(true);
-    cboGray->setEnabled(false);
+    cboRed->show();
+    cboGreen->show();
+    cboBlue->show();
+    leRedMin->show();
+    leRedMax->show();
+    leGreenMin->show();
+    leGreenMax->show();
+    leBlueMin->show();
+    leBlueMax->show();
+    sboxStdDevThreeBand->show();
+    lbRGBStdDevs->show();
+    lblGrayStdDevs->hide();
+    sboxStdDevSingleBand->hide();
+    cboGray->hide();
     //----
     tableTransparency->clear();
     tableTransparency->setColumnCount(3);
