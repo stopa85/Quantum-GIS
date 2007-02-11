@@ -1,5 +1,5 @@
 
-PROJECT(qgis)
+PROJECT(qgis.0.9.raster)
 
 # TODO:
 # - install includes for libs
@@ -179,6 +179,7 @@ ENDIF (WIN32)
 # create qgsconfig.h
 
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/qgsconfig.h.in ${CMAKE_BINARY_DIR}/qgsconfig.h)
+INSTALL(FILES ${CMAKE_BINARY_DIR}/qgsconfig.h DESTINATION ${QGIS_INCLUDE_DIR})
 
 INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR})
 

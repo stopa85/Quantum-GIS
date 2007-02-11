@@ -225,3 +225,9 @@ IF (APPLE)
 ELSE (APPLE)
   INSTALL(TARGETS qgis RUNTIME DESTINATION ${QGIS_BIN_DIR})
 ENDIF (APPLE)
+
+
+########## Install headers for developers to use against qgis libs
+#commented out since app classes dont go into any lib there is little point
+#INSTALL(FILES ${CMAKE_BINARY_DIR}/src/ui/ui_qgsmeasurebase.h DESTINATION ${QGIS_INCLUDE_DIR})
+#INSTALL(FILES ${QGIS_APP_MOC_HDRS} DESTINATION ${QGIS_INCLUDE_DIR})
