@@ -118,6 +118,8 @@ class QgsRasterLayerProperties : public QDialog, private Ui::QgsRasterLayerPrope
         QLinearGradient QgsRasterLayerProperties::blueGradient();
         QLinearGradient QgsRasterLayerProperties::grayGradient();
         QLinearGradient QgsRasterLayerProperties::highlightGradient();
+        qreal mGradientHeight;
+        qreal mGradientWidth;
 };
 
 #endif
