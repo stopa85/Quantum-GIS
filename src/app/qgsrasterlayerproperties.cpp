@@ -191,6 +191,8 @@ rasterLayer( dynamic_cast<QgsRasterLayer*>(lyr) )
         myPixmap.fill( Qt::gray );
       }
       lstHistogramLabels->insertItem(myPixmap,myRasterBandNameQString);
+      mGradientHeight = pixHistogram->height() / 2;
+      mGradientWidth = pixHistogram->width() /2;
       //keep a list of band names for later use
       //! @note band names should not be translated!
       myBandNameQStringList.append(myRasterBandNameQString);
@@ -1829,7 +1831,7 @@ QLinearGradient QgsRasterLayerProperties::redGradient()
 {
   //define a gradient
   ///@TODO change this to actual polygon dims
-  QLinearGradient myGradient = QLinearGradient(this->width()/2,0,this->width()/2,this->height());
+  QLinearGradient myGradient = QLinearGradient(mGradientWidth,0,mGradientWidth,mGradientHeight);
   myGradient.setColorAt(0.0,QColor(242, 14, 25));
   myGradient.setColorAt(0.5,QColor(175, 29, 37));
   myGradient.setColorAt(1.0,QColor(114, 17, 22));
@@ -1839,7 +1841,7 @@ QLinearGradient QgsRasterLayerProperties::greenGradient()
 {
   //define a gradient 
   ///@TODO change this to actual polygon dims
-  QLinearGradient myGradient = QLinearGradient(this->width()/2,0,this->width()/2,this->height());
+  QLinearGradient myGradient = QLinearGradient(mGradientWidth,0,mGradientWidth,mGradientHeight);
   myGradient.setColorAt(0.0,QColor(48, 168, 5));
   myGradient.setColorAt(0.5,QColor(36, 122, 4));
   myGradient.setColorAt(1.0,QColor(21, 71, 2));
@@ -1849,7 +1851,7 @@ QLinearGradient QgsRasterLayerProperties::blueGradient()
 {
   //define a gradient 
   ///@TODO change this to actual polygon dims
-  QLinearGradient myGradient = QLinearGradient(this->width()/2,0,this->width()/2,this->height());
+  QLinearGradient myGradient = QLinearGradient(mGradientWidth,0,mGradientWidth,mGradientHeight);
   myGradient.setColorAt(0.0,QColor(30, 0, 96));
   myGradient.setColorAt(0.5,QColor(0, 72, 128));
   myGradient.setColorAt(1.0,QColor(0, 223, 196));
@@ -1859,7 +1861,7 @@ QLinearGradient QgsRasterLayerProperties::grayGradient()
 {
   //define a gradient 
   ///@TODO change this to actual polygon dims
-  QLinearGradient myGradient = QLinearGradient(this->width()/2,0,this->width()/2,this->height());
+  QLinearGradient myGradient = QLinearGradient(mGradientWidth,0,mGradientWidth,mGradientHeight);
   myGradient.setColorAt(0.0,QColor(5, 5, 5));
   myGradient.setColorAt(0.5,QColor(122, 122, 122));
   myGradient.setColorAt(1.0,QColor(220, 220, 220));
@@ -1869,7 +1871,7 @@ QLinearGradient QgsRasterLayerProperties::highlightGradient()
 {
   //define another gradient for the highlight
   ///@TODO change this to actual polygon dims
-  QLinearGradient myGradient = QLinearGradient(this->width()/2,0,this->width()/2,this->height());
+  QLinearGradient myGradient = QLinearGradient(mGradientWidth,0,mGradientWidth,mGradientHeight);
   myGradient.setColorAt(1.0,QColor(255, 255, 255, 50));
   myGradient.setColorAt(0.5,QColor(255, 255, 255, 100));
   myGradient.setColorAt(0.0,QColor(255, 255, 255, 150));
