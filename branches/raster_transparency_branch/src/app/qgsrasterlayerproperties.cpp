@@ -1496,43 +1496,66 @@ void QgsRasterLayerProperties::on_pbnHistRefresh_clicked()
         }
         if (myGraphType==LINE_CHART)
         {
+          QLinearGradient myGradient;
           if (myBandCountInt==1) //draw single band images with black
           {
             myPainter.setPen( Qt::black );
+            myGradient = grayGradient();
           }
           else if (myIteratorInt==1)
           {
             myPainter.setPen( Qt::red );
+            myGradient = redGradient();
           }
           else if (myIteratorInt==2)
           {
             myPainter.setPen( Qt::green );
+            myGradient = greenGradient();
           }
           else if (myIteratorInt==3)
           {
             myPainter.setPen( Qt::blue );
+            myGradient = blueGradient();
           }
           else if (myIteratorInt==4)
           {
             myPainter.setPen( Qt::magenta );
+            myGradient = grayGradient();
           }
           else if (myIteratorInt==5)
           {
             myPainter.setPen( Qt::darkRed );
+            myGradient = grayGradient();
           }
           else if (myIteratorInt==6)
           {
             myPainter.setPen( Qt::darkGreen );
+            myGradient = grayGradient();
           }
           else if (myIteratorInt==7)
           {
             myPainter.setPen( Qt::darkBlue );
+            myGradient = grayGradient();
           }
           else
           {
             myPainter.setPen( Qt::gray );
+            myGradient = grayGradient();
           }
-          myPainter.drawPolyline(myPolygon);
+          //close of the point array so it makes a nice polygon
+          //bottom right point
+          myPolygon << QPointF( 
+              myImageWidth, 
+              myImageHeight-myXGutterHeight);
+          //bottom left point
+          myPolygon << QPointF( 
+              myYGutterWidth, 
+              myImageHeight-myXGutterHeight);
+          myPainter.setPen( Qt::black );
+          myPainter.setBrush(myGradient);
+          QPainterPath myPath;
+          myPath.addPolygon(myPolygon);
+          myPainter.drawPath(myPath);
         }
       }
     }
