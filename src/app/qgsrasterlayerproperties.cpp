@@ -1838,7 +1838,7 @@ void QgsRasterLayerProperties::on_pbnImportTransparentPixelValues_clicked()
 void QgsRasterLayerProperties::on_pbnRemoveSelectedRow_clicked() 
 {
   if(1 < tableTransparency->rowCount())
-  {
+  { 
     tableTransparency->removeRow(tableTransparency->currentRow());
   }
 }
@@ -2050,9 +2050,9 @@ QLinearGradient QgsRasterLayerProperties::redGradient()
   //define a gradient
   ///@TODO change this to actual polygon dims
   QLinearGradient myGradient = QLinearGradient(mGradientWidth,0,mGradientWidth,mGradientHeight);
-  myGradient.setColorAt(0.0,QColor(242, 14, 25));
-  myGradient.setColorAt(0.5,QColor(175, 29, 37));
-  myGradient.setColorAt(1.0,QColor(114, 17, 22));
+  myGradient.setColorAt(0.0,QColor(242, 14, 25, 190));
+  myGradient.setColorAt(0.5,QColor(175, 29, 37, 190));
+  myGradient.setColorAt(1.0,QColor(114, 17, 22, 190));
   return myGradient;
 }
 QLinearGradient QgsRasterLayerProperties::greenGradient()
@@ -2060,9 +2060,9 @@ QLinearGradient QgsRasterLayerProperties::greenGradient()
   //define a gradient 
   ///@TODO change this to actual polygon dims
   QLinearGradient myGradient = QLinearGradient(mGradientWidth,0,mGradientWidth,mGradientHeight);
-  myGradient.setColorAt(0.0,QColor(48, 168, 5));
-  myGradient.setColorAt(0.5,QColor(36, 122, 4));
-  myGradient.setColorAt(1.0,QColor(21, 71, 2));
+  myGradient.setColorAt(0.0,QColor(48, 168, 5, 190));
+  myGradient.setColorAt(0.8,QColor(36, 122, 4, 190));
+  myGradient.setColorAt(1.0,QColor(21, 71, 2, 190));
   return myGradient;
 }
 QLinearGradient QgsRasterLayerProperties::blueGradient()
@@ -2070,9 +2070,9 @@ QLinearGradient QgsRasterLayerProperties::blueGradient()
   //define a gradient 
   ///@TODO change this to actual polygon dims
   QLinearGradient myGradient = QLinearGradient(mGradientWidth,0,mGradientWidth,mGradientHeight);
-  myGradient.setColorAt(0.0,QColor(30, 0, 96));
-  myGradient.setColorAt(0.5,QColor(0, 72, 128));
-  myGradient.setColorAt(1.0,QColor(0, 223, 196));
+  myGradient.setColorAt(0.0,QColor(30, 0, 106, 190));
+  myGradient.setColorAt(0.2,QColor(30, 72, 128, 190));
+  myGradient.setColorAt(1.0,QColor(30, 223, 196, 190));
   return myGradient;
 }
 QLinearGradient QgsRasterLayerProperties::grayGradient()
@@ -2080,9 +2080,9 @@ QLinearGradient QgsRasterLayerProperties::grayGradient()
   //define a gradient 
   ///@TODO change this to actual polygon dims
   QLinearGradient myGradient = QLinearGradient(mGradientWidth,0,mGradientWidth,mGradientHeight);
-  myGradient.setColorAt(0.0,QColor(5, 5, 5));
-  myGradient.setColorAt(0.5,QColor(122, 122, 122));
-  myGradient.setColorAt(1.0,QColor(220, 220, 220));
+  myGradient.setColorAt(0.0,QColor(5, 5, 5, 190));
+  myGradient.setColorAt(0.8,QColor(122, 122, 122, 190));
+  myGradient.setColorAt(1.0,QColor(220, 220, 220, 190));
   return myGradient;
 }
 QLinearGradient QgsRasterLayerProperties::highlightGradient()
