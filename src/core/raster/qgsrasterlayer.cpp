@@ -509,13 +509,13 @@ bool QgsRasterLayer::readFile( QString const & fileName )
   // Determin the nodatavalue
   //
   noDataValueDouble = gdalDataset->GetRasterBand(1)->GetNoDataValue();
-  TransparentColorPixel myTransparentPixel;
+  TransparentThreeValuePixel myTransparentPixel;
   myTransparentPixel.red = noDataValueDouble;
   myTransparentPixel.green = noDataValueDouble;
   myTransparentPixel.blue = noDataValueDouble;
-  transparentColorPixelList.append(myTransparentPixel);
+  transparentThreeValuePixelList.append(myTransparentPixel);
 
-  transparentGrayPixelList.append(noDataValueDouble);
+  transparentSingleValuePixelList.append(noDataValueDouble);
 
   //initialise the raster band stats vector
   for (int i = 1; i <= gdalDataset->GetRasterCount(); i++)
@@ -1358,9 +1358,7 @@ void QgsRasterLayer::drawSingleBandGray(QPainter * theQPainter, QgsRasterViewPor
 
   //double myRangeDouble = myRasterBandStats.rangeDouble;
   QgsRasterBandStats myGrayBandStats;
-  /*
-   * If stDevsToPlotDouble is set it will override any user defined Min Max values
-   */
+
   if(QgsRasterLayer::NO_STRETCH != getColorScalingAlgorithm() && !userDefinedGrayMinMax)
   {
     myGrayBandStats = getRasterBandStats(theBandNoInt);
@@ -1411,16 +1409,15 @@ void QgsRasterLayer::drawSingleBandGray(QPainter * theQPainter, QgsRasterViewPor
       // of myGrayValDouble against itself. 
       if ( myGrayValueDouble == noDataValueDouble || myGrayValueDouble != myGrayValueDouble)
       {
-        //Is this really necessary?
-        myQImage.setPixel(myRowInt, myColumnInt, qRgba(255,255,255,0 ));
+        myQImage.setPixel(myRowInt, myColumnInt, qRgba(255,255,255,0 )); //Is this really necessary?
         continue;
       }
 
       // Check values in transparencyTable
       bool myPixelValueMatch = false;
-      for(int myListRunner = 0; myListRunner < transparentGrayPixelList.count(); myListRunner++)
+      for(int myListRunner = 0; myListRunner < transparentSingleValuePixelList.count(); myListRunner++)
       {
-        double myTransparentPixel = transparentGrayPixelList[myListRunner];
+        double myTransparentPixel = transparentSingleValuePixelList[myListRunner];
         if(myTransparentPixel== myGrayValueDouble || myGrayValueDouble != myGrayValueDouble)
         {
           myPixelValueMatch = true;
@@ -1429,8 +1426,7 @@ void QgsRasterLayer::drawSingleBandGray(QPainter * theQPainter, QgsRasterViewPor
       }
       if(myPixelValueMatch)
       {
-        //Is this really necessary?
-        myQImage.setPixel(myRowInt, myColumnInt, qRgba(255,255,255,0 ));
+        myQImage.setPixel(myRowInt, myColumnInt, qRgba(255,255,255,0 )); //Is this really necessary?
         continue;
       }
 
@@ -1588,6 +1584,22 @@ void QgsRasterLayer::drawSingleBandPseudoColor(QPainter * theQPainter,
           myColumnInt * theRasterViewPort->drawableAreaXDimInt + myRowInt );
 
       if ( myValDouble == noDataValueDouble || myValDouble != myValDouble ) continue;
+
+      // Check values in transparencyTable
+      bool myPixelValueMatch = false;
+      for(int myListRunner = 0; myListRunner < transparentSingleValuePixelList.count(); myListRunner++)
+      {
+        double myTransparentPixel = transparentSingleValuePixelList[myListRunner];
+        if(myTransparentPixel == myValDouble || myValDouble != myValDouble)
+        {
+          myPixelValueMatch = true;
+          continue;
+        }
+      }
+      if(myPixelValueMatch)
+      {
+        continue;
+      }
 
       //double check that myInt >= min and <= max
       //this is relevant if we are plotting within stddevs
@@ -1765,6 +1777,22 @@ void QgsRasterLayer::drawPalettedSingleBandColor(QPainter * theQPainter, QgsRast
 
       if ( myValDouble == noDataValueDouble || myValDouble != myValDouble ) continue; // NULL
 
+      // Check values in transparencyTable
+      bool myPixelValueMatch = false;
+      for(int myListRunner = 0; myListRunner < transparentSingleValuePixelList.count(); myListRunner++)
+      {
+        double myTransparentPixel = transparentSingleValuePixelList[myListRunner];
+        if(myTransparentPixel == myValDouble || myValDouble != myValDouble)
+        {
+          myPixelValueMatch = true;
+          continue;
+        }
+      }
+      if(myPixelValueMatch)
+      {
+        continue;
+      }
+
       int c1, c2, c3;
       bool found = myColorTable->color ( myValDouble, &c1, &c2, &c3 );
       if ( !found ) continue;
@@ -1854,6 +1882,22 @@ void QgsRasterLayer::drawPalettedSingleBandGray(QPainter * theQPainter, QgsRaste
           myColumnInt * theRasterViewPort->drawableAreaXDimInt + myRowInt );
 
       if ( myValDouble == noDataValueDouble || myValDouble != myValDouble ) continue; // NULL
+
+      // Check values in transparencyTable
+      bool myPixelValueMatch = false;
+      for(int myListRunner = 0; myListRunner < transparentSingleValuePixelList.count(); myListRunner++)
+      {
+        double myTransparentPixel = transparentSingleValuePixelList[myListRunner];
+        if(myTransparentPixel == myValDouble || myValDouble != myValDouble)
+        {
+          myPixelValueMatch = true;
+          continue;
+        }
+      }
+      if(myPixelValueMatch)
+      {
+        continue;
+      }
 
       int c1, c2, c3;
       bool found = myColorTable->color ( myValDouble, &c1, &c2, &c3 );
@@ -1995,6 +2039,22 @@ void QgsRasterLayer::drawPalettedSingleBandPseudoColor(QPainter * theQPainter, Q
           myColumnInt * theRasterViewPort->drawableAreaXDimInt + myRowInt );
 
       if ( myValDouble == noDataValueDouble || myValDouble != myValDouble ) continue; // NULL
+
+      // Check values in transparencyTable
+      bool myPixelValueMatch = false;
+      for(int myListRunner = 0; myListRunner < transparentSingleValuePixelList.count(); myListRunner++)
+      {
+        double myTransparentPixel = transparentSingleValuePixelList[myListRunner];
+        if(myTransparentPixel == myValDouble || myValDouble != myValDouble)
+        {
+          myPixelValueMatch = true;
+          continue;
+        }
+      }
+      if(myPixelValueMatch)
+      {
+        continue;
+      }
 
       int c1, c2, c3;
       bool found = myColorTable->color ( myValDouble, &c1, &c2, &c3 );
@@ -2195,6 +2255,22 @@ void QgsRasterLayer::drawPalettedMultiBandColor(QPainter * theQPainter, QgsRaste
 
       if ( myValDouble == noDataValueDouble || myValDouble != myValDouble ) continue; // NULL
 
+      // Check values in transparencyTable
+      bool myPixelValueMatch = false;
+      for(int myListRunner = 0; myListRunner < transparentSingleValuePixelList.count(); myListRunner++)
+      {
+        double myTransparentPixel = transparentSingleValuePixelList[myListRunner];
+        if(myTransparentPixel == myValDouble || myValDouble != myValDouble)
+        {
+          myPixelValueMatch = true;
+          continue;
+        }
+      }
+      if(myPixelValueMatch)
+      {
+        continue;
+      }
+
       int c1, c2, c3;
       bool found = myColorTable->color ( myValDouble, &c1, &c2, &c3 );
       if ( !found ) continue;
@@ -2342,12 +2418,7 @@ void QgsRasterLayer::drawMultiBandColor(QPainter * theQPainter, QgsRasterViewPor
   /*
    * If a stetch is requested and there are no user defined Min Max values
    * we need to get these values from the bands themselves.
-   * If stDevsToPlotDouble is set it will override any user defined Min Max values
    *
-   * NOTE: If the user only set minRedDouble this next block would be skipped 
-   * and all the other variables could have garbage (they are not initialized in the constructor) 
-   * This may want to be updated so that each Min Max is check to be sure it was set and if one is missing
-   * the get the QgsRasterBandStats for that band.
    */
   if(QgsRasterLayer::NO_STRETCH != getColorScalingAlgorithm() && !userDefinedColorMinMax)
   {
@@ -2452,9 +2523,9 @@ void QgsRasterLayer::drawMultiBandColor(QPainter * theQPainter, QgsRasterViewPor
 
       // Check values in transparencyTable
       bool myPixelValueMatch = false;
-      for(int myListRunner = 0; myListRunner < transparentColorPixelList.count(); myListRunner++)
+      for(int myListRunner = 0; myListRunner < transparentThreeValuePixelList.count(); myListRunner++)
       {
-        TransparentColorPixel myTransparentPixel = transparentColorPixelList[myListRunner];
+        TransparentThreeValuePixel myTransparentPixel = transparentThreeValuePixelList[myListRunner];
         if(myTransparentPixel.red == myRedValueDouble || myRedValueDouble != myRedValueDouble)
         {
           if(myTransparentPixel.green == myGreenValueDouble || myGreenValueDouble != myGreenValueDouble)
