@@ -221,15 +221,15 @@ public:
     //
     // Structs to hold transparent pixel vlaues
     //
-    struct TransparentColorPixel
+    struct TransparentThreeValuePixel
     {
       double red;
       double green;
       double blue;
     };
 
-    QList<struct TransparentColorPixel> transparentColorPixelList;
-    QList<double> transparentGrayPixelList;
+    QList<struct TransparentThreeValuePixel> transparentThreeValuePixelList;
+    QList<double> transparentSingleValuePixelList;
 
     //
     // Static methods:
@@ -821,25 +821,25 @@ public:
     //
     // Accessor and mutator for transparency tables.
     //
-    /** \brief Mutator for transparentColorPixelList */
-    QList<struct TransparentColorPixel> getTransparentColorPixelList()
+    /** \brief Mutator for transparentThreeValuePixelList */
+    QList<struct TransparentThreeValuePixel> getTransparentThreeValuePixelList()
     {
-      return transparentColorPixelList;
+      return transparentThreeValuePixelList;
     }
-    /** \brief Accessor for transparentColorPixelList */
-    void setTransparentColorPixelList(QList<struct TransparentColorPixel> newList)
+    /** \brief Accessor for transparentThreeValuePixelList */
+    void setTransparentThreeValuePixelList(QList<struct TransparentThreeValuePixel> newList)
     {
-      transparentColorPixelList = newList;
+      transparentThreeValuePixelList = newList;
     }
-    /** \brief Mutator for transparentGrayPixelList */
-    QList<double> getTransparentGrayPixelList()
+    /** \brief Mutator for transparentSingleValuePixelList */
+    QList<double> getTransparentSingleValuePixelList()
     {
-      return transparentGrayPixelList;
+      return transparentSingleValuePixelList;
     }
-    /** \brief Accessor for transparentGrayPixelList */
-    void setTransparentGrayPixelList(QList<double> newList)
+    /** \brief Accessor for transparentSingleValuePixelList */
+    void setTransparentSingleValuePixelList(QList<double> newList)
     {
-      transparentGrayPixelList = newList;
+      transparentSingleValuePixelList = newList;
     }
 
     /** \brief Helper function that returns the maximum possible value for a GDAL data type */

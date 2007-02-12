@@ -46,6 +46,8 @@ class QgsRasterLayerProperties : public QDialog, private Ui::QgsRasterLayerPrope
     public slots:
         /** \brief Applies the settings made in the dialog without closing the box */
         void apply();
+        /** \brief this slot asks the rasterlayer to construct pyramids */
+        void on_buttonBuildPyramids_clicked();
         /** \brief slot executed when user presses "Add Values From Display" button on the transparency page */
         void on_pbnAddValuesFromDisplay_clicked();
         /** \brief slot executed when user presses "Add Values Manually" button on the transparency page */
@@ -54,7 +56,7 @@ class QgsRasterLayerProperties : public QDialog, private Ui::QgsRasterLayerPrope
         void on_buttonBox_helpRequested();
         /** Override the SRS specified when the layer was loaded */
         void on_pbnChangeSpatialRefSys_clicked();
-        /** \brief slow executed when user wishes to reset noNoDataValue and transparencyTable to default value */
+        /** \brief slot executed when user wishes to reset noNoDataValue and transparencyTable to default value */
         void on_pbnDefaultValues_clicked();
         /** \brief slot executed when user wishes to export transparency values */
         void on_pbnExportTransparentPixelValues_clicked();
@@ -64,19 +66,25 @@ class QgsRasterLayerProperties : public QDialog, private Ui::QgsRasterLayerPrope
         void on_pbnImportTransparentPixelValues_clicked();
         /** \brief slot executed when user presses "Remove Selected Row" button on the transparency page */
         void on_pbnRemoveSelectedRow_clicked();
-        /** \brief slot executed when the max red level changes. */
+        /** \brief slot executed when the single band radio button is pressed. */
         void on_rbtnSingleBand_toggled( bool );
+        /** \brief slot executed when the single band min max radio button is pressed. */
+        void on_rbtnSingleBandMinMax_toggled( bool );
+        /** \brief slot executed when the single band standard deviation radio button is pressed. */
+        void on_rbtnSingleBandStdDev_toggled( bool );
         /** \brief slot executed when the three band radio button is pressed. */
         void on_rbtnThreeBand_toggled( bool );
-        /** \brief this slot asks the rasterlayer to construct pyramids */
-        void on_buttonBuildPyramids_clicked();
+        /** \brief slot executed when the three band min max radio button is pressed. */
+        void on_rbtnThreeBandMinMax_toggled( bool );
+        /** \brief slot executed when the three band standard deviation radio button is pressed. */
+        void on_rbtnThreeBandStdDev_toggled( bool );
         /** \brief this slot clears min max values from gui */
-        void sboxStdDevSingleBand_valueChanged(double);
+        void sboxSingleBandStdDev_valueChanged(double);
         /** \brief this slot clears min max values from gui */
-        void sboxStdDevThreeBand_valueChanged(double);
+        void sboxThreeBandStdDev_valueChanged(double);
         /** \brief slot executed when the transparency level changes. */ 
         void sliderTransparency_valueChanged( int );
-        /** \brief this slow sets StdDev switch box to 0.00 when user enters min max values */
+        /** \brief this slot sets StdDev switch box to 0.00 when user enters min max values */
         void userDefinedMinMax_textEdited(QString);
 
     signals:
@@ -106,6 +114,10 @@ class QgsRasterLayerProperties : public QDialog, private Ui::QgsRasterLayerPrope
         /** Id for context help */
         static const int context_id = 394441851;
 
+        /** \brief Clear the current transparency table and populate the table with the correct types for current drawing mode and data type*/
+        void populateTransparencyTable();
+
+        /** \brief Verify values in custom min max line edits */
         bool validUserDefinedMinMax();
 
         //Short circuit signal loop between min max field and stdDev spin box
