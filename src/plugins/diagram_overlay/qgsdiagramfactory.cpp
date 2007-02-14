@@ -1,0 +1,136 @@
+#include "qgsdiagramfactory.h"
+#include "qgsdiagramitem.h"
+#include "qgsfeature.h"
+#include "qgsfeatureattribute.h"
+#include <QImage>
+#include <QPainter>
+
+QgsDiagramFactory::QgsDiagramFactory()
+{
+
+}
+
+QgsDiagramFactory::~QgsDiagramFactory()
+{
+  
+}
+
+QImage* QgsDiagramFactory::createDiagram(int width, int height, const QgsFeature& f) const
+{
+  //todo: possibility to create a custom diagram
+  //return createDiagramKDChart(width, height, f); 
+
+  std::list<double> dataValues;
+  QgsAttributeMap featureAttributes = f.attributeMap();
+  QgsAttributeList::const_iterator list_iter;
+ 
+  for(list_iter = mAttributes.constBegin(); list_iter != mAttributes.constEnd(); ++list_iter)
+    {
+      QgsAttributeMap::const_iterator iter = featureAttributes.find(*list_iter);
+      if(iter != featureAttributes.constEnd())
+	{
+	  dataValues.push_back(iter.value().fieldValue().toDouble());
+	}
+    }
+  if(mDiagramType == "Pie")
+    {
+      return createPieChart(height, dataValues);
+    }
+  else if(mDiagramType == "Bar")
+    {
+      return createBarChart(height, dataValues);
+    }
+  else
+    {
+      return 0;
+    }
+}
+
+QImage* QgsDiagramFactory::createPieChart(int height, const std::list<double>& dataValues) const
+{
+  //create transparent QImage
+  QImage* diagramImage = new QImage(QSize(height, height), QImage::Format_ARGB32_Premultiplied);
+  diagramImage->fill(0); //transparent background
+  QPainter p(diagramImage);
+  p.setRenderHint(QPainter::Antialiasing);
+  p.setPen(Qt::NoPen);
+
+  //calculate sum of data values
+  double sum = 0;
+  for(std::list<double>::const_iterator it = dataValues.begin(); it != dataValues.end(); ++it)
+    {
+      sum += *it;
+    }
+
+  //draw pies
+  std::list<double>::const_iterator double_it;
+  std::list<QColor>::const_iterator color_it;
+  int totalAngle = 0;
+  int currentAngle;
+
+  for(double_it = dataValues.begin(), color_it = mColorSeries.begin(); double_it != dataValues.end(); ++double_it, ++color_it)
+    {
+      currentAngle = (int)((*double_it)/sum*360*16);
+      p.setBrush(QBrush(*color_it));
+      p.drawPie(0, 0, height, height, totalAngle, currentAngle);
+      totalAngle += currentAngle;
+    }
+  
+  return diagramImage;
+}
+
+QImage* QgsDiagramFactory::createBarChart(int height, const std::list<double>& dataValues) const
+{
+  int barWidth = 20; //hardcoded width for one bar
+  int width = barWidth*dataValues.size();
+  QImage* diagramImage = new QImage(QSize(width, height), QImage::Format_ARGB32_Premultiplied);
+  diagramImage->fill(0); //transparent background
+  QPainter p(diagramImage);
+  p.setRenderHint(QPainter::Antialiasing);
+  p.setPen(Qt::NoPen);
+
+  //calculate sum of data values
+  double sum = 0;
+  for(std::list<double>::const_iterator it = dataValues.begin(); it != dataValues.end(); ++it)
+    {
+      sum += *it;
+    }
+
+  //find max value
+  double maxValue = -std::numeric_limits<double>::max();
+  for(std::list<double>::const_iterator it = dataValues.begin(); it != dataValues.end(); ++it)
+    {
+      if (*it > maxValue)
+	{
+	  maxValue = *it;
+	}
+    }
+
+  //draw bars
+  std::list<double>::const_iterator double_it;
+  std::list<QColor>::const_iterator color_it;
+  int currentBarHeight;
+  int barCounter = 0;
+
+  for(double_it = dataValues.begin(), color_it = mColorSeries.begin(); double_it != dataValues.end(); ++double_it, ++color_it)
+    {
+      currentBarHeight = (*double_it)/maxValue*height;
+      p.setBrush(QBrush(*color_it));
+      p.drawRect(QRect(barCounter * barWidth, height - currentBarHeight, barWidth, currentBarHeight));
+      ++barCounter;
+    }
+
+  return diagramImage;
+}
+
+void QgsDiagramFactory::supportedWellKnownNames(std::list<QString>& names)
+{
+  names.clear();
+  names.push_back("Pie");
+  names.push_back("Bar");
+  names.push_back("Line");
+}
+
+
+
+
