@@ -81,6 +81,11 @@ QImage* QgsDiagramFactory::createPieChart(int height, const std::list<double>& d
 
 QImage* QgsDiagramFactory::createBarChart(int height, const std::list<double>& dataValues) const
 {
+  if(height > 2000) //prevent crashes because of to high rectangles 
+    {
+      return 0;
+    }
+
   int barWidth = 20; //hardcoded width for one bar
   int width = barWidth*dataValues.size();
   QImage* diagramImage = new QImage(QSize(width, height), QImage::Format_ARGB32_Premultiplied);
