@@ -37,6 +37,8 @@ class QgsDiagramRendererWidget: public QWidget
   @param attributes list of all attribute indices involved in diagram generation
   @param color color series for the attributes*/
   virtual QgsDiagramRenderer* createRenderer(const QString& type, int classAttr, const QgsAttributeList& attributes, const std::list<QColor>& colors) const = 0;
+  /**Applies the settings of an existing renderer*/
+  virtual void applySettings(const QgsDiagramRenderer* renderer) = 0;
   /**Possibility to adapt the dialog to a new field*/
   virtual void changeClassificationField(int newField){}
   

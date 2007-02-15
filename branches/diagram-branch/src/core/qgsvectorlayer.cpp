@@ -895,6 +895,18 @@ void QgsVectorLayer::removeOverlay(const QString& overlayName)
     }
 }
 
+const QgsVectorOverlay* QgsVectorLayer::findOverlay(const QString& name) const
+{
+  for(std::list<QgsVectorOverlay*>::const_iterator it = mOverlays.begin(); it != mOverlays.end(); ++it)
+    {
+      if((*it)->name() == name)
+	{
+	  return *it;
+	}
+    }
+  return 0;
+}
+
 void QgsVectorLayer::select(int number, bool emitSignal)
 {
   mSelectedFeatureIds.insert(number);

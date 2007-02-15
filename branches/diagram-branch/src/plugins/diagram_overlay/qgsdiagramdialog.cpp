@@ -34,6 +34,19 @@ QgsDiagramDialog::QgsDiagramDialog(QgsVectorLayer* vl): QgsVectorOverlayDialog(v
   QObject::connect(mClassificationComboBox, SIGNAL(currentIndexChanged(const QString&)), this, SLOT(changeClassificationAttribute(const QString&)));
   QObject::connect(mAttributesTreeWidget, SIGNAL(itemDoubleClicked( QTreeWidgetItem*, int)), this, SLOT(handleItemDoubleClick(QTreeWidgetItem*, int)));
 
+  mDiagramTypeComboBox->insertItem(0, "Bar");
+  mDiagramTypeComboBox->insertItem(0, "Pie");
+
+  QStringList headerLabels;
+  headerLabels << "Attribute";
+  headerLabels << "Color";
+  mAttributesTreeWidget->setHeaderLabels(headerLabels);
+
+  if(!mVectorLayer)
+    {
+      return;
+    }
+
   //insert attributes into combo box
   QgsVectorDataProvider *provider;
   if ((provider = dynamic_cast<QgsVectorDataProvider *>(mVectorLayer->getDataProvider())))
@@ -49,16 +62,14 @@ QgsDiagramDialog::QgsDiagramDialog(QgsVectorLayer* vl): QgsVectorOverlayDialog(v
         }
     } 
 
-  //insert classification types:
-  mClassificationTypeComboBox->insertItem(0, "linearly scaled");
+  mClassificationTypeComboBox->insertItem(0, "linearly scaling");
 
-  mDiagramTypeComboBox->insertItem(0, "Bar");
-  mDiagramTypeComboBox->insertItem(0, "Pie");
-
-  QStringList headerLabels;
-  headerLabels << "Attribute";
-  headerLabels << "Color";
-  mAttributesTreeWidget->setHeaderLabels(headerLabels);
+  //if mVectorLayer already has a diagram overlay, apply its settings to this dialog
+  const QgsVectorOverlay* previousOverlay = mVectorLayer->findOverlay("diagram");
+  if(previousOverlay)
+    {
+      restoreSettings(previousOverlay);
+    }
 }
 
 QgsDiagramDialog::QgsDiagramDialog(): QgsVectorOverlayDialog(0)
@@ -103,7 +114,7 @@ void QgsDiagramDialog::removeAttribute()
 
 void QgsDiagramDialog::changeClassificationType(const QString& newType)
 {
-  if(newType == "linearly scaled")
+  if(newType == "linearly scaling")
     {
       QWidget* currentWidget = mWidgetStackRenderers->currentWidget();
       if(currentWidget)
@@ -140,16 +151,6 @@ void QgsDiagramDialog::apply() const
   int topLevelItemCount = mAttributesTreeWidget->topLevelItemCount();
   QTreeWidgetItem* currentItem;
   int currentAttribute;
-
-  if(mDisplayDiagramsCheckBox->checkState() == Qt::Unchecked)
-    {
-      //remove any diagram overlays from the vector layer
-      if(mVectorLayer)
-	{
-	  mVectorLayer->removeOverlay("diagram");
-	}
-      return;
-    }
   
   int classificationField = indexFromAttributeName(mClassificationComboBox->currentText());
   
@@ -188,6 +189,16 @@ void QgsDiagramDialog::apply() const
   diagramOverlay->setDiagramRenderer(renderer);
   diagramOverlay->setAttributes(attList);
   
+  //display flag
+  if(mDisplayDiagramsCheckBox->checkState() == Qt::Checked)
+    {
+      diagramOverlay->setDisplayFlag(true);
+    }
+  if(mDisplayDiagramsCheckBox->checkState() == Qt::Unchecked)
+    {
+      diagramOverlay->setDisplayFlag(false);
+    }
+  
   //add the new overlay to the vector layer
   mVectorLayer->addOverlay(diagramOverlay);
 }
@@ -210,6 +221,22 @@ int QgsDiagramDialog::indexFromAttributeName(const QString& name) const
   return notFound;
 }
 
+QString QgsDiagramDialog::attributeNameFromIndex(int index) const
+{
+  QgsVectorDataProvider *provider;
+  int notFound = -1;
+  if ((provider = dynamic_cast<QgsVectorDataProvider *>(mVectorLayer->getDataProvider())))
+    {
+      const QgsFieldMap & fields = provider->fields();
+      QgsFieldMap::const_iterator it = fields.find(index);
+      if(it != fields.constEnd())
+	{
+	  return it.value().name();
+	}
+    }
+  return "";
+}
+
 void QgsDiagramDialog::handleItemDoubleClick(QTreeWidgetItem * item, int column)
 {
   if(column == 1) //change color
@@ -218,6 +245,60 @@ void QgsDiagramDialog::handleItemDoubleClick(QTreeWidgetItem * item, int column)
       if(newColor.isValid())
 	{
 	  item->setBackground(1, QBrush(newColor));
+	}
+    }
+}
+
+void QgsDiagramDialog::restoreSettings(const QgsVectorOverlay* overlay)
+{
+  const QgsDiagramOverlay* previousDiagramOverlay = dynamic_cast<const QgsDiagramOverlay*>(overlay);
+  if(overlay)
+    {
+      //set check state according to QgsDiagramOverlay
+      if(previousDiagramOverlay->displayFlag())
+	{
+	  mDisplayDiagramsCheckBox->setCheckState(Qt::Checked);
+	}
+      else
+	{
+	  mDisplayDiagramsCheckBox->setCheckState(Qt::Unchecked);
+	}
+      const QgsDiagramRenderer* previousDiagramRenderer = previousDiagramOverlay->diagramRenderer();
+      if(previousDiagramRenderer)
+	{
+	  //well known diagram name
+	  mDiagramTypeComboBox->setCurrentIndex(mDiagramTypeComboBox->findText(previousDiagramRenderer->wellKnownName()));
+	  //insert attribute names and colors into mAttributesTreeWidget
+	  std::list<QColor> colorList = previousDiagramRenderer->colors();
+	  QgsAttributeList attributeList = previousDiagramRenderer->attributes();
+	  
+	  std::list<QColor>::const_iterator colorIt = colorList.begin();
+	  QgsAttributeList::const_iterator attributeIt = attributeList.constBegin();
+	  
+	  for(;colorIt != colorList.end(); ++colorIt, ++attributeIt)
+	    {
+	      QTreeWidgetItem* newItem = new QTreeWidgetItem(mAttributesTreeWidget);
+	      newItem->setText(0, attributeNameFromIndex(*attributeIt));
+	      newItem->setBackground(1, QBrush(*colorIt));
+	      mAttributesTreeWidget->addTopLevelItem(newItem);		 
+	    }
+
+	  //classification attribute
+	  QString classFieldName = attributeNameFromIndex(previousDiagramRenderer->classificationField());
+	  mClassificationComboBox->setCurrentIndex(mClassificationComboBox->findText(classFieldName));
+
+	  //classification type (specific for renderer subclass)
+	  mClassificationTypeComboBox->setCurrentIndex(mClassificationTypeComboBox->findText(previousDiagramRenderer->rendererName()));
+
+	  //apply the renderer settings to the renderer specific dialog
+	  if(mWidgetStackRenderers->count() > 0)
+	    {
+	      QgsDiagramRendererWidget* rendererWidget = dynamic_cast<QgsDiagramRendererWidget*>(mWidgetStackRenderers->currentWidget());
+	      if(rendererWidget)
+		{
+		  rendererWidget->applySettings(previousDiagramRenderer);
+		}
+	    }
 	}
     }
 }

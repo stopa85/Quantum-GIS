@@ -408,6 +408,9 @@ taks ownership of the object*/
   void addOverlay(QgsVectorOverlay* ovl);
   /**Removes overlays of the specified type*/
   void removeOverlay(const QString& overlayName);
+  /**Finds the overlay object for a given name (e.g. "diagram"). Returns 0 if no overlay object
+   with this name exists*/
+  const QgsVectorOverlay* findOverlay(const QString& name) const;
 
 public slots:
 
