@@ -30,15 +30,22 @@ class QgsDiagramOverlay: public QgsVectorOverlay
   ~QgsDiagramOverlay();
   void createOverlayObjects(const QgsRect& viewExtent);
   void drawOverlayObjects(QPainter * p, const QgsRect& viewExtent, QgsMapToPixel * cXf, QgsCoordinateTransform* ct) const;
+
+  //setters and getters
   QString name() const{return "diagram";}
   void setDiagramRenderer(QgsDiagramRenderer* r);
+  const QgsDiagramRenderer* diagramRenderer() const {return mDiagramRenderer;}
+  void setDisplayFlag(bool display=true){mDisplayFlag = display;}
+  bool displayFlag() const {return mDisplayFlag;}
   
 protected:
-	int getOverlayObjectSize(int& width, int& height, double value, const QgsFeature& f) const;
+  int getOverlayObjectSize(int& width, int& height, double value, const QgsFeature& f) const;
   
  private:
   /**Does the classification and manages the diagram generation*/
   QgsDiagramRenderer* mDiagramRenderer;
+  /**Flag if the overlay should be displayed or not*/
+  bool mDisplayFlag;
 };
 
 #endif

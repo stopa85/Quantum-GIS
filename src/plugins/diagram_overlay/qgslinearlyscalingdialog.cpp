@@ -47,6 +47,17 @@ QgsDiagramRenderer* QgsLinearlyScalingDialog::createRenderer(const QString& type
   return renderer;
 }
 
+void QgsLinearlyScalingDialog::applySettings(const QgsDiagramRenderer* renderer)
+{
+  const QgsLinearlyScalingDiagramRenderer* linearRenderer = dynamic_cast<const QgsLinearlyScalingDiagramRenderer*>(renderer);
+  if(linearRenderer)
+    {
+      QgsDiagramItem upperItem = linearRenderer->upperItem();
+      mValueLineEdit->setText(QString::number(upperItem.upperBound(), 'f'));
+      mSizeSpinBox->setValue(upperItem.height());
+    }
+}
+
 void QgsLinearlyScalingDialog::insertMaximumAttributeValue()
 {
   //find the maximum value for this attribute

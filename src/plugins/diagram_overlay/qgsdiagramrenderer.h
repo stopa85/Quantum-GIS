@@ -41,9 +41,16 @@ class QgsDiagramRenderer
      @param value the attribute value used for the size calculation
      @return 0 in case of success*/
   virtual int getDiagramSize(int& width, int& height, double& value, const QgsFeature& f) const = 0;
-  void setName(const QString& wkn){mWellKnownName = wkn;}
+  //setters and getters
+  virtual QString rendererName() const = 0;
+  void setWellKnownName(const QString& wkn){mWellKnownName = wkn;}
+  QString wellKnownName() const {return mWellKnownName;}
   void setAttributes(const QgsAttributeList& att){mAttributes = att;}
+  QgsAttributeList attributes() const {return mAttributes;}
   void setColors(const std::list<QColor>& colors){mColors = colors;}
+  std::list<QColor> colors() const {return mColors;}
+  void setClassificationField(int index){mClassificationField = index;}
+  int classificationField() const {return mClassificationField;}
 
  private:
   QgsDiagramRenderer(){} //default constructor is forbidden 
@@ -55,6 +62,8 @@ class QgsDiagramRenderer
   QString mWellKnownName;
   /**The number of attributes in the features*/
   QgsAttributeList mAttributes;
+  /**Index of the classification attribute*/
+  int mClassificationField;
   /**The color series. The positions correspond to the entries the attribute list*/
   std::list<QColor> mColors;
 };

@@ -34,18 +34,16 @@ class QgsLinearlyScalingDiagramRenderer: public QgsDiagramRenderer
   int getDiagramSize(int& width, int& height, double& value, const QgsFeature& f) const;
   /**Sets value, height and width of lower bound*/
   void setLowerItem(const QgsDiagramItem& item){mLowerItem = item;}
+  QgsDiagramItem lowerItem() const {return mLowerItem;}
   /**Sets value, height and width of upper bound*/
   void setUpperItem(const QgsDiagramItem& item){mUpperItem = item;}
-  /**Sets the index of the classification field*/
-  void setClassificationField(int index){mClassificationField = index;}
-
+  QgsDiagramItem upperItem() const {return mUpperItem;}
+  QString rendererName() const {return "linearly scaling";}
  private:
   /**Value, height, width of lower bound*/
   QgsDiagramItem mLowerItem;
   /**Value, height, width of upper bound*/
   QgsDiagramItem mUpperItem;
-  /**Index of the classification attribute*/
-  int mClassificationField;
   QgsLinearlyScalingDiagramRenderer(); //default constructor is forbidden
 };
 

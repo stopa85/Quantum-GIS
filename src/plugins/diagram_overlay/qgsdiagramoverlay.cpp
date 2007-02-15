@@ -24,7 +24,7 @@
 #include "qgsvectordataprovider.h"
 #include <QPainter>
 
-QgsDiagramOverlay::QgsDiagramOverlay(QgsVectorLayer* vl): QgsVectorOverlay(vl), mDiagramRenderer(0)
+QgsDiagramOverlay::QgsDiagramOverlay(QgsVectorLayer* vl): QgsVectorOverlay(vl), mDiagramRenderer(0), mDisplayFlag(true)
 {
 
 }
@@ -100,6 +100,10 @@ void QgsDiagramOverlay::createOverlayObjects(const QgsRect& viewExtent)
 
 void QgsDiagramOverlay::drawOverlayObjects(QPainter * p, const QgsRect& viewExtent, QgsMapToPixel * cXf, QgsCoordinateTransform* ct) const
 {
+  if(!mDisplayFlag)
+    {
+      return;
+    }
   if(mVectorLayer && mDiagramRenderer)
     {
       QgsVectorDataProvider* theProvider = mVectorLayer->getDataProvider();
