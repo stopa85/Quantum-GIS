@@ -509,13 +509,17 @@ bool QgsRasterLayer::readFile( QString const & fileName )
   // Determin the nodatavalue
   //
   noDataValueDouble = gdalDataset->GetRasterBand(1)->GetNoDataValue();
-  TransparentThreeValuePixel myTransparentPixel;
-  myTransparentPixel.red = noDataValueDouble;
-  myTransparentPixel.green = noDataValueDouble;
-  myTransparentPixel.blue = noDataValueDouble;
-  transparentThreeValuePixelList.append(myTransparentPixel);
+  TransparentThreeValuePixel myTransparentThreeValuePixel;
+  myTransparentThreeValuePixel.red = noDataValueDouble;
+  myTransparentThreeValuePixel.green = noDataValueDouble;
+  myTransparentThreeValuePixel.blue = noDataValueDouble;
+  myTransparentThreeValuePixel.percentTransparent = 100.0;
+  transparentThreeValuePixelList.append(myTransparentThreeValuePixel);
 
-  transparentSingleValuePixelList.append(noDataValueDouble);
+  TransparentSingleValuePixel myTransparentSingleValuePixel;
+  myTransparentSingleValuePixel.pixelValue = noDataValueDouble;
+  myTransparentSingleValuePixel.percentTransparent = 100.0;
+  transparentSingleValuePixelList.append(myTransparentSingleValuePixel);
 
   //initialise the raster band stats vector
   for (int i = 1; i <= gdalDataset->GetRasterCount(); i++)
@@ -1414,19 +1418,19 @@ void QgsRasterLayer::drawSingleBandGray(QPainter * theQPainter, QgsRasterViewPor
       }
 
       // Check values in transparencyTable
-      bool myPixelValueMatch = false;
+      bool myTransparentPixelFound = false;
+      TransparentSingleValuePixel myTransparentPixel;
       for(int myListRunner = 0; myListRunner < transparentSingleValuePixelList.count(); myListRunner++)
       {
-        double myTransparentPixel = transparentSingleValuePixelList[myListRunner];
-        if(myTransparentPixel== myGrayValueDouble || myGrayValueDouble != myGrayValueDouble)
+        myTransparentPixel = transparentSingleValuePixelList[myListRunner];
+        if(myTransparentPixel.pixelValue == myGrayValueDouble || myGrayValueDouble != myGrayValueDouble)
         {
-          myPixelValueMatch = true;
-          continue;
+          myTransparentPixelFound = true;
+          break;
         }
       }
-      if(myPixelValueMatch)
+      if(myTransparentPixelFound && 0.0 >= ((float)mTransparencyLevel * (1.0 - (myTransparentPixel.percentTransparent/100.0))))
       {
-        myQImage.setPixel(myRowInt, myColumnInt, qRgba(255,255,255,0 )); //Is this really necessary?
         continue;
       }
 
@@ -1470,7 +1474,16 @@ void QgsRasterLayer::drawSingleBandGray(QPainter * theQPainter, QgsRasterViewPor
       {
         myGrayValInt = 255 - myGrayValInt;
       }
-      myQImage.setPixel(myRowInt, myColumnInt, qRgba(myGrayValInt, myGrayValInt, myGrayValInt, mTransparencyLevel));
+
+      if(myTransparentPixelFound)
+      {
+        int myNewTransparency = (int) ((float)mTransparencyLevel * (1.0 - (myTransparentPixel.percentTransparent/100.0)));
+        myQImage.setPixel(myRowInt, myColumnInt, qRgba(myGrayValInt, myGrayValInt, myGrayValInt, myNewTransparency));
+      }
+      else
+      {
+        myQImage.setPixel(myRowInt, myColumnInt, qRgba(myGrayValInt, myGrayValInt, myGrayValInt, mTransparencyLevel));
+      }
     }
   }
 
@@ -1586,17 +1599,18 @@ void QgsRasterLayer::drawSingleBandPseudoColor(QPainter * theQPainter,
       if ( myValDouble == noDataValueDouble || myValDouble != myValDouble ) continue;
 
       // Check values in transparencyTable
-      bool myPixelValueMatch = false;
+      bool myTransparentPixelFound = false;
+      TransparentSingleValuePixel myTransparentPixel;
       for(int myListRunner = 0; myListRunner < transparentSingleValuePixelList.count(); myListRunner++)
       {
-        double myTransparentPixel = transparentSingleValuePixelList[myListRunner];
-        if(myTransparentPixel == myValDouble || myValDouble != myValDouble)
+        myTransparentPixel = transparentSingleValuePixelList[myListRunner];
+        if(myTransparentPixel.pixelValue == myValDouble || myValDouble != myValDouble)
         {
-          myPixelValueMatch = true;
-          continue;
+          myTransparentPixelFound = true;
+          break;
         }
       }
-      if(myPixelValueMatch)
+      if(myTransparentPixelFound && 0.0 >= (mTransparencyLevel * ((float)1.0 - (myTransparentPixel.percentTransparent/100.0))))
       {
         continue;
       }
@@ -1700,7 +1714,16 @@ void QgsRasterLayer::drawSingleBandPseudoColor(QPainter * theQPainter,
           }
         }
       }
-      myQImage.setPixel(myRowInt, myColumnInt, qRgba(myRedInt, myGreenInt, myBlueInt, mTransparencyLevel));
+
+      if(myTransparentPixelFound)
+      {
+        int myNewTransparency = (int)((float)mTransparencyLevel * (1.0 - (myTransparentPixel.percentTransparent/100.0)));
+        myQImage.setPixel(myRowInt, myColumnInt, qRgba(myRedInt, myGreenInt, myBlueInt, myNewTransparency));
+      }
+      else
+      {
+        myQImage.setPixel(myRowInt, myColumnInt, qRgba(myRedInt, myGreenInt, myBlueInt, mTransparencyLevel));
+      }
     }                       //end of columnwise loop
   }                           //end of towwise loop
 
@@ -1778,17 +1801,18 @@ void QgsRasterLayer::drawPalettedSingleBandColor(QPainter * theQPainter, QgsRast
       if ( myValDouble == noDataValueDouble || myValDouble != myValDouble ) continue; // NULL
 
       // Check values in transparencyTable
-      bool myPixelValueMatch = false;
+      bool myTransparentPixelFound = false;
+      TransparentSingleValuePixel myTransparentPixel;
       for(int myListRunner = 0; myListRunner < transparentSingleValuePixelList.count(); myListRunner++)
       {
-        double myTransparentPixel = transparentSingleValuePixelList[myListRunner];
-        if(myTransparentPixel == myValDouble || myValDouble != myValDouble)
+        myTransparentPixel = transparentSingleValuePixelList[myListRunner];
+        if(myTransparentPixel.pixelValue == myValDouble || myValDouble != myValDouble)
         {
-          myPixelValueMatch = true;
-          continue;
+          myTransparentPixelFound = true;
+          break;
         }
       }
-      if(myPixelValueMatch)
+      if(myTransparentPixelFound && 0.0 >= ((float)mTransparencyLevel * (1.0 - (myTransparentPixel.percentTransparent/100.0))))
       {
         continue;
       }
@@ -1804,7 +1828,15 @@ void QgsRasterLayer::drawPalettedSingleBandColor(QPainter * theQPainter, QgsRast
         c3 = 255 - c3;
       }
       //set the pixel based on the above color mappings
-      myQImage.setPixel(myRowInt, myColumnInt, qRgba(c1, c2, c3, mTransparencyLevel));
+      if(myTransparentPixelFound)
+      {
+        int myNewTransparency = (int)((float)mTransparencyLevel * (1.0 - (myTransparentPixel.percentTransparent/100.0)));
+        myQImage.setPixel(myRowInt, myColumnInt, qRgba(c1, c2, c3, myNewTransparency));
+      }
+      else
+      {
+        myQImage.setPixel(myRowInt, myColumnInt, qRgba(c1, c2, c3, mTransparencyLevel));
+      }
     }
   }
   //render any inline filters
@@ -1884,17 +1916,18 @@ void QgsRasterLayer::drawPalettedSingleBandGray(QPainter * theQPainter, QgsRaste
       if ( myValDouble == noDataValueDouble || myValDouble != myValDouble ) continue; // NULL
 
       // Check values in transparencyTable
-      bool myPixelValueMatch = false;
+      bool myTransparentPixelFound = false;
+      TransparentSingleValuePixel myTransparentPixel;
       for(int myListRunner = 0; myListRunner < transparentSingleValuePixelList.count(); myListRunner++)
       {
-        double myTransparentPixel = transparentSingleValuePixelList[myListRunner];
-        if(myTransparentPixel == myValDouble || myValDouble != myValDouble)
+        myTransparentPixel = transparentSingleValuePixelList[myListRunner];
+        if(myTransparentPixel.pixelValue == myValDouble || myValDouble != myValDouble)
         {
-          myPixelValueMatch = true;
-          continue;
+          myTransparentPixelFound = true;
+          break;
         }
       }
-      if(myPixelValueMatch)
+      if(myTransparentPixelFound && 0.0 >= ((float)mTransparencyLevel * (1.0 - (myTransparentPixel.percentTransparent/100.0))))
       {
         continue;
       }
@@ -1924,7 +1957,15 @@ void QgsRasterLayer::drawPalettedSingleBandGray(QPainter * theQPainter, QgsRaste
       }
 
       //set the pixel based on the above color mappings
-      myQImage.setPixel(myRowInt, myColumnInt, qRgba(myGrayValueInt, myGrayValueInt, myGrayValueInt, mTransparencyLevel));
+      if(myTransparentPixelFound)
+      {
+        int myNewTransparency = (int)((float)mTransparencyLevel * (1.0 - (myTransparentPixel.percentTransparent/100.0)));
+        myQImage.setPixel(myRowInt, myColumnInt, qRgba(myGrayValueInt, myGrayValueInt, myGrayValueInt, myNewTransparency));
+      }
+      else
+      {
+        myQImage.setPixel(myRowInt, myColumnInt, qRgba(myGrayValueInt, myGrayValueInt, myGrayValueInt, mTransparencyLevel));
+      }
     }
   }
   CPLFree ( myGdalScanData );
@@ -2041,17 +2082,18 @@ void QgsRasterLayer::drawPalettedSingleBandPseudoColor(QPainter * theQPainter, Q
       if ( myValDouble == noDataValueDouble || myValDouble != myValDouble ) continue; // NULL
 
       // Check values in transparencyTable
-      bool myPixelValueMatch = false;
+      bool myTransparentPixelFound = false;
+      TransparentSingleValuePixel myTransparentPixel;
       for(int myListRunner = 0; myListRunner < transparentSingleValuePixelList.count(); myListRunner++)
       {
-        double myTransparentPixel = transparentSingleValuePixelList[myListRunner];
-        if(myTransparentPixel == myValDouble || myValDouble != myValDouble)
+        myTransparentPixel = transparentSingleValuePixelList[myListRunner];
+        if(myTransparentPixel.pixelValue == myValDouble || myValDouble != myValDouble)
         {
-          myPixelValueMatch = true;
-          continue;
+          myTransparentPixelFound = true;
+          break;
         }
       }
-      if(myPixelValueMatch)
+      if(myTransparentPixelFound && 0.0 >= ((float)mTransparencyLevel * (1.0 - (myTransparentPixel.percentTransparent/100.0))))
       {
         continue;
       }
@@ -2179,7 +2221,16 @@ void QgsRasterLayer::drawPalettedSingleBandPseudoColor(QPainter * theQPainter, Q
 
 
       }
-      myQImage.setPixel(myRowInt, myColumnInt, qRgba(myRedInt, myGreenInt, myBlueInt, mTransparencyLevel));
+
+      if(myTransparentPixelFound)
+      {
+        int myNewTransparency = (int)((float)mTransparencyLevel * (1.0 - (myTransparentPixel.percentTransparent/100.0)));
+        myQImage.setPixel(myRowInt, myColumnInt, qRgba(myRedInt, myGreenInt, myBlueInt, myNewTransparency));
+      }
+      else
+      {
+        myQImage.setPixel(myRowInt, myColumnInt, qRgba(myRedInt, myGreenInt, myBlueInt, mTransparencyLevel));
+      }
     }
   }
   CPLFree ( myGdalScanData );
@@ -2256,17 +2307,18 @@ void QgsRasterLayer::drawPalettedMultiBandColor(QPainter * theQPainter, QgsRaste
       if ( myValDouble == noDataValueDouble || myValDouble != myValDouble ) continue; // NULL
 
       // Check values in transparencyTable
-      bool myPixelValueMatch = false;
+      bool myTransparentPixelFound = false;
+      TransparentSingleValuePixel myTransparentPixel;
       for(int myListRunner = 0; myListRunner < transparentSingleValuePixelList.count(); myListRunner++)
       {
-        double myTransparentPixel = transparentSingleValuePixelList[myListRunner];
-        if(myTransparentPixel == myValDouble || myValDouble != myValDouble)
+        myTransparentPixel = transparentSingleValuePixelList[myListRunner];
+        if(myTransparentPixel.pixelValue == myValDouble || myValDouble != myValDouble)
         {
-          myPixelValueMatch = true;
-          continue;
+          myTransparentPixelFound = true;
+          break;
         }
       }
-      if(myPixelValueMatch)
+      if(myTransparentPixelFound && 0.0 >= ((float)mTransparencyLevel * (1.0 - (myTransparentPixel.percentTransparent/100.0)))) 
       {
         continue;
       }
@@ -2310,7 +2362,15 @@ void QgsRasterLayer::drawPalettedMultiBandColor(QPainter * theQPainter, QgsRaste
 
       }
       //set the pixel based on the above color mappings
-      myQImage.setPixel(myRowInt, myColumnInt, qRgba(myRedValueInt, myGreenValueInt, myBlueValueInt, mTransparencyLevel));
+      if(myTransparentPixelFound)
+      {
+        int myNewTransparency = (int) ((float)mTransparencyLevel * (1.0 - (myTransparentPixel.percentTransparent/100.0)));
+        myQImage.setPixel(myRowInt, myColumnInt, qRgba(myRedValueInt, myGreenValueInt, myBlueValueInt, myNewTransparency));
+      }
+      else 
+      {
+        myQImage.setPixel(myRowInt, myColumnInt, qRgba(myRedValueInt, myGreenValueInt, myBlueValueInt, mTransparencyLevel));
+      }
     }
   }
   //render any inline filters
@@ -2522,23 +2582,24 @@ void QgsRasterLayer::drawMultiBandColor(QPainter * theQPainter, QgsRasterViewPor
       }
 
       // Check values in transparencyTable
-      bool myPixelValueMatch = false;
+      bool myTransparentPixelFound = false;
+      TransparentThreeValuePixel myTransparentPixel;
       for(int myListRunner = 0; myListRunner < transparentThreeValuePixelList.count(); myListRunner++)
       {
-        TransparentThreeValuePixel myTransparentPixel = transparentThreeValuePixelList[myListRunner];
+        myTransparentPixel = transparentThreeValuePixelList[myListRunner];
         if(myTransparentPixel.red == myRedValueDouble || myRedValueDouble != myRedValueDouble)
         {
           if(myTransparentPixel.green == myGreenValueDouble || myGreenValueDouble != myGreenValueDouble)
           {
             if(myTransparentPixel.blue == myBlueValueDouble || myBlueValueDouble != myBlueValueDouble)
             {
-              myPixelValueMatch = true;
-              continue;
+              myTransparentPixelFound = true;
+              break;
             }
           }
         }
       }
-      if(myPixelValueMatch)
+      if(myTransparentPixelFound && 0.0 >= ((float)mTransparencyLevel * (1.0 - (myTransparentPixel.percentTransparent/100.0))))
       {
         continue;
       }
@@ -2633,8 +2694,17 @@ void QgsRasterLayer::drawMultiBandColor(QPainter * theQPainter, QgsRasterViewPor
       }
 
       //set the pixel based on the above color mappings
-      myQImage.setPixel ( myRowInt, myColumnInt,
+      if(myTransparentPixelFound)
+      {
+        int myNewTransparency = (int) ((float)mTransparencyLevel * (1.0 - (myTransparentPixel.percentTransparent/100.0)));
+        myQImage.setPixel ( myRowInt, myColumnInt, 
+          qRgba(myRedValueInt, myGreenValueInt, myBlueValueInt, myNewTransparency) );
+      }
+      else 
+      {
+        myQImage.setPixel ( myRowInt, myColumnInt, 
           qRgba(myRedValueInt, myGreenValueInt, myBlueValueInt, mTransparencyLevel) );
+      }
     }
   }
 

@@ -226,10 +226,17 @@ public:
       double red;
       double green;
       double blue;
+      double percentTransparent;
+    };
+
+    struct TransparentSingleValuePixel
+    {
+      double pixelValue;
+      double percentTransparent;
     };
 
     QList<struct TransparentThreeValuePixel> transparentThreeValuePixelList;
-    QList<double> transparentSingleValuePixelList;
+    QList<struct TransparentSingleValuePixel> transparentSingleValuePixelList;
 
     //
     // Static methods:
@@ -832,12 +839,12 @@ public:
       transparentThreeValuePixelList = newList;
     }
     /** \brief Mutator for transparentSingleValuePixelList */
-    QList<double> getTransparentSingleValuePixelList()
+    QList<struct TransparentSingleValuePixel> getTransparentSingleValuePixelList()
     {
       return transparentSingleValuePixelList;
     }
     /** \brief Accessor for transparentSingleValuePixelList */
-    void setTransparentSingleValuePixelList(QList<double> newList)
+    void setTransparentSingleValuePixelList(QList<struct TransparentSingleValuePixel> newList)
     {
       transparentSingleValuePixelList = newList;
     }
