@@ -2410,9 +2410,6 @@ static
   void
 findLayers_( QString const & fileFilters, list<QDomNode> const & layerNodes )
 {
-#ifdef QGISDEBUG
-  const char * fileFiltersC = fileFilters.ascii(); // debugger probe
-#endif
 
   for( list<QDomNode>::const_iterator i = layerNodes.begin();
       i != layerNodes.end();
@@ -2697,7 +2694,7 @@ void QgisApp::fileOpen()
       QMessageBox::critical(this, 
           tr("QGIS Project Read Error"), 
           tr("") + "\n" + e.what() );
-      qDebug( "%s:%d %d bad layers found", __FILE__, __LINE__, e.layers().size() );
+      qDebug( "%s:%d %d bad layers found", __FILE__, __LINE__, static_cast<int>(e.layers().size()) );
 
       // attempt to find the new locations for missing layers
       // XXX vector file hard-coded -- but what if it's raster?
@@ -2756,7 +2753,7 @@ bool QgisApp::addProject(QString projectFile)
   }
   catch ( QgsProjectBadLayerException & e )
   {
-    qDebug( "%s:%d %d bad layers found", __FILE__, __LINE__, e.layers().size() );
+    qDebug( "%s:%d %d bad layers found", __FILE__, __LINE__, static_cast<int>(e.layers().size()) );
 
     if ( QMessageBox::Ok == QMessageBox::critical( this, 
           tr("QGIS Project Read Error"), 
@@ -2833,16 +2830,10 @@ bool QgisApp::fileSave()
     if( "qgs" != fullPath.extension( false ) )
     {
       QString newFilePath = fullPath.filePath() + ".qgs";
-#ifdef QGISDEBUG
-      const char* filePathStr = newFilePath.ascii(); // debugger probe
-#endif
       fullPath.setFile( newFilePath );
     }
 
 
-#ifdef QGISDEBUG
-    const char* filePathStr = fullPath.filePath().ascii(); // debugger probe
-#endif
     QgsProject::instance()->filename( fullPath.filePath() );
   }
 
@@ -2919,9 +2910,6 @@ void QgisApp::fileSaveAs()
   if( "qgs" != fullPath.extension( false ) )
   {
     QString newFilePath = fullPath.filePath() + ".qgs";
-#ifdef QGISDEBUG
-    const char* filePathStr = newFilePath.ascii(); // debugger probe
-#endif
     fullPath.setFile( newFilePath );
   }
 
@@ -4198,6 +4186,7 @@ void QgisApp::openURL(QString url, bool useQgisDocDirectory)
       reinterpret_cast<const UInt8*>(url.utf8().data()), url.length(),
       kCFStringEncodingUTF8, NULL);
   OSStatus status = LSOpenCFURLRef(urlRef, NULL);
+  status = 0; //avoid compiler warning
   CFRelease(urlRef);
 #else
   // find a browser

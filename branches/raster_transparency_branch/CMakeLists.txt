@@ -114,7 +114,7 @@ FIND_PROGRAM(QT_LRELEASE_EXECUTABLE
 #############################################################
 # enable warnings
 
-ADD_DEFINITIONS( -Wall )
+ADD_DEFINITIONS( -Wall -Werror )
 
 IF (CMAKE_BUILD_TYPE MATCHES Debug)
   ADD_DEFINITIONS(-DQGISDEBUG=1)
@@ -221,3 +221,14 @@ INSTALL (FILES AUTHORS SPONSORS
 # manual page... install also on windows?
 INSTALL (FILES qgis.man
          DESTINATION ${CMAKE_INSTALL_PREFIX}/man/man1)
+
+
+#############################################################
+# Uninstall stuff see: http://www.vtk.org/Wiki/CMake_FAQ
+CONFIGURE_FILE(
+  "${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
+  IMMEDIATE @ONLY)
+
+ADD_CUSTOM_TARGET(uninstall
+  "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake")

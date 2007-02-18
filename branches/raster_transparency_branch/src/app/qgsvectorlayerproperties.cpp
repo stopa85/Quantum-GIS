@@ -404,10 +404,6 @@ QString QgsVectorLayerProperties::getMetadata()
   {
       QString vectorTypeString( QGis::qgisVectorGeometryType[layer->vectorType()] );
 
-#ifdef QGISDEBUG
-      const char* vectorTypeProbe = vectorTypeString.ascii(); // debugger probe point
-#endif
-
       myMetadataQString += "<tr><td bgcolor=\"white\">";
       myMetadataQString += tr("Geometry type of the features in this layer : ") + 
           vectorTypeString;
@@ -523,6 +519,9 @@ QString QgsVectorLayerProperties::getMetadata()
   myMetadataQString += "<th bgcolor=\"black\">";
   myMetadataQString += "<font color=\"white\">" + tr("Precision") + "</font>";
   myMetadataQString += "</th>";      
+  myMetadataQString += "<th bgcolor=\"black\">";
+  myMetadataQString += "<font color=\"white\">" + tr("Comment") + "</font>";
+  myMetadataQString += "</th>";      
   myMetadataQString += "<tr>";
  
   //get info for each field by looping through them
@@ -543,6 +542,9 @@ QString QgsVectorLayerProperties::getMetadata()
     myMetadataQString += "</td>";
     myMetadataQString += "<td bgcolor=\"white\">";
     myMetadataQString += QString("%1").arg(myField.precision());
+    myMetadataQString += "</td>";
+    myMetadataQString += "<td bgcolor=\"white\">";
+    myMetadataQString += QString("%1").arg(myField.comment());
     myMetadataQString += "</td></tr>";
   } 
 

@@ -1,3 +1,4 @@
+
 /***************************************************************************
     qgsgrassnewmapset.cpp  - New GRASS mapset wizard
                                -------------------
@@ -61,6 +62,11 @@
 
 // For bug in GPJ_osr_to_grass()
 #include "grass/version.h"
+// Prevents some compiler warnings from the version.h include
+QString temp1(GRASS_VERSION_STRING);
+QString temp2(GRASS_VERSION_MAJOR);
+QString temp3(GRASS_VERSION_MINOR);
+QString temp4(GRASS_VERSION_RELEASE);
 
 bool QgsGrassNewMapset::mRunning = false;
 
@@ -227,7 +233,7 @@ void QgsGrassNewMapset::databaseChanged()
     // database is writable
     bool locationExists = false;
     QDir d ( mDatabaseLineEdit->text() );
-    for ( int i = 0; i < d.count(); i++ ) 
+    for ( unsigned int i = 0; i < d.count(); i++ ) 
     {
 	if ( d[i] == "." || d[i] == ".." ) continue; 
 
@@ -280,7 +286,7 @@ void QgsGrassNewMapset::setLocations ( )
     // Add all subdirs containing PERMANENT/DEFAULT_WIND
     int idx = 0;
     int sel = -1;
-    for ( int i = 0; i < d.count(); i++ ) 
+    for ( unsigned int i = 0; i < d.count(); i++ ) 
     {
 	if ( d[i] == "." || d[i] == ".." ) continue; 
 
@@ -353,7 +359,7 @@ void QgsGrassNewMapset::checkLocation()
         {
 	    QDir d ( mDatabaseLineEdit->text() );
 
-	    for ( int i = 0; i < d.count(); i++ ) 
+	    for ( unsigned int i = 0; i < d.count(); i++ ) 
 	    {
 		if ( d[i] == "." || d[i] == ".." ) continue; 
 		
@@ -1231,7 +1237,7 @@ void QgsGrassNewMapset::setMapsets()
 
     // Add all subdirs containing WIND
     Q3ListViewItem *lvi;
-    for ( int i = 0; i < d.count(); i++ ) 
+    for ( unsigned int i = 0; i < d.count(); i++ ) 
     {
 	if ( d[i] == "." || d[i] == ".." ) continue; 
 
@@ -1271,7 +1277,7 @@ void QgsGrassNewMapset::mapsetChanged()
 	QString locationPath = mDatabaseLineEdit->text() + "/" + mLocationComboBox->currentText();
 	QDir d ( locationPath );
 
-	for ( int i = 0; i < d.count(); i++ ) 
+	for ( unsigned int i = 0; i < d.count(); i++ ) 
 	{
 	    if ( d[i] == "." || d[i] == ".." ) continue; 
 

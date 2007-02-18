@@ -181,6 +181,7 @@ QgsPostgresProvider::QgsPostgresProvider(QString const & uri)
         int fldtyp = PQftype(result, i);
         QString typOid = QString().setNum(fldtyp);
         int fieldModifier = PQfmod(result, i);
+        QString fieldComment = "";
 
         sql = "select typelem from pg_type where typelem = " + typOid + " and typlen = -1";
         //  //--std::cout << sql << std::endl;
@@ -214,7 +215,7 @@ QgsPostgresProvider::QgsPostgresProvider(QString const & uri)
 
         if(fieldName!=geometryColumn)
         {
-          attributeFields.insert(i, QgsField(fieldName, fieldType, fieldSize.toInt(), fieldModifier));
+          attributeFields.insert(i, QgsField(fieldName, fieldType, fieldSize.toInt(), fieldModifier, false, fieldComment));
         }
       }
       PQclear(result);
@@ -1151,44 +1152,48 @@ void QgsPostgresProvider::findColumns(tableCols& cols)
   // This sql is derived from the one that defines the view
   // 'information_schema.view_column_usage' in PostgreSQL, with a few
   // mods to suit our purposes. 
-    QString sql = ""
-	"SELECT DISTINCT "
-	"	nv.nspname AS view_schema, "
-	"	v.relname AS view_name, "
-	"	a.attname AS view_column_name, "
-	"	nt.nspname AS table_schema, "
-	"	t.relname AS table_name, "
-	"	a.attname AS column_name, "
-	"	t.relkind as table_type, "
-	"	typ.typname as column_type "
-	"FROM "
-	"	pg_namespace nv, "
-	"	pg_class v, "
-	"	pg_depend dv,"
-	"	pg_depend dt, "
-	"	pg_class t, "
-	"	pg_namespace nt, "
-	"	pg_attribute a,"
-	"	pg_user u, "
-	"	pg_type typ "
-	"WHERE "
-	"	nv.oid = v.relnamespace AND "
-	"	v.relkind = 'v'::\"char\" AND "
-	"	v.oid = dv.refobjid AND "
-	"	dv.refclassid = 'pg_class'::regclass::oid AND "
-	"	dv.classid = 'pg_rewrite'::regclass::oid AND "
-	"	dv.deptype = 'i'::\"char\" AND "
-	"	dv.objid = dt.objid AND "
-	"	dv.refobjid <> dt.refobjid AND "
-	"	dt.classid = 'pg_rewrite'::regclass::oid AND "
-	"	dt.refclassid = 'pg_class'::regclass::oid AND "
-	"	dt.refobjid = t.oid AND "
-	"	t.relnamespace = nt.oid AND "
-	"	(t.relkind = 'r'::\"char\" OR t.relkind = 'v'::\"char\") AND "
-	"	t.oid = a.attrelid AND "
-	"	dt.refobjsubid = a.attnum AND "
-	"	nv.nspname NOT IN ('pg_catalog', 'information_schema' ) AND "
-	"	a.atttypid = typ.oid";
+  QString sql = ""
+    "SELECT DISTINCT "
+    "	nv.nspname AS view_schema, "
+    "	v.relname AS view_name, "
+    "	a.attname AS view_column_name, "
+    "	nt.nspname AS table_schema, "
+    "	t.relname AS table_name, "
+    "	a.attname AS column_name, "
+    "	t.relkind AS table_type, "
+    "	typ.typname AS column_type, "
+    "   vs.definition AS view_definition "
+    "FROM "
+    "	pg_namespace nv, "
+    "	pg_class v, "
+    "	pg_depend dv,"
+    "	pg_depend dt, "
+    "	pg_class t, "
+    "	pg_namespace nt, "
+    "	pg_attribute a,"
+    "	pg_user u, "
+    "	pg_type typ, "
+    "   pg_views vs "
+    "WHERE "
+    "	nv.oid = v.relnamespace AND "
+    "	v.relkind = 'v'::\"char\" AND "
+    "	v.oid = dv.refobjid AND "
+    "	dv.refclassid = 'pg_class'::regclass::oid AND "
+    "	dv.classid = 'pg_rewrite'::regclass::oid AND "
+    "	dv.deptype = 'i'::\"char\" AND "
+    "	dv.objid = dt.objid AND "
+    "	dv.refobjid <> dt.refobjid AND "
+    "	dt.classid = 'pg_rewrite'::regclass::oid AND "
+    "	dt.refclassid = 'pg_class'::regclass::oid AND "
+    "	dt.refobjid = t.oid AND "
+    "	t.relnamespace = nt.oid AND "
+    "	(t.relkind = 'r'::\"char\" OR t.relkind = 'v'::\"char\") AND "
+    "	t.oid = a.attrelid AND "
+    "	dt.refobjsubid = a.attnum AND "
+    "	nv.nspname NOT IN ('pg_catalog', 'information_schema' ) AND "
+    "	a.atttypid = typ.oid AND "
+    "   nv.nspname = vs.schemaname AND "
+    "   v.relname = vs.viewname";
 
   // A structure to store the results of the above sql.
   typedef std::map<QString, TT> columnRelationsType;
@@ -1201,6 +1206,7 @@ void QgsPostgresProvider::findColumns(tableCols& cols)
 
   PGresult* result = PQexec(connection, (const char*)(sql.utf8()));
   // Store the results of the query for convenient access 
+
   for (int i = 0; i < PQntuples(result); ++i)
   {
     TT temp;
@@ -1212,6 +1218,7 @@ void QgsPostgresProvider::findColumns(tableCols& cols)
     temp.column_name      = PQgetvalue(result, i, 5);
     temp.table_type       = PQgetvalue(result, i, 6);
     temp.column_type      = PQgetvalue(result, i, 7);
+    QString viewDef       = PQgetvalue(result, i, 8);
 
     // BUT, the above SQL doesn't always give the correct value for the view 
     // column name (that's because that information isn't available directly 
@@ -1219,46 +1226,27 @@ void QgsPostgresProvider::findColumns(tableCols& cols)
     // using 'AS'. To fix this we need to look in the view definition and 
     // adjust the view column name if necessary. 
 
-    
-	    QString viewQuery = "SELECT definition FROM pg_views "
-	      "WHERE schemaname = '" + temp.view_schema + "' AND "
-	      "viewname = '" + temp.view_name + "'";
+    // Now pick the view definiton apart, looking for
+    // temp.column_name to the left of an 'AS'.
 
-	    // Maintain a cache of the above SQL.
-	    QString viewDef;
-	    if (!viewDefs.contains(viewQuery))
-	    {
-	      PGresult* r = PQexec(connection, (const char*)(viewQuery.utf8()));
-	      if (PQntuples(r) > 0)
-	        viewDef = PQgetvalue(r, 0, 0);
-	      else
-	        QgsDebugMsg("Failed to get view definition for " + temp.view_schema + "." + temp.view_name);
-	      viewDefs[viewQuery] = viewDef;
-	    }
+    if (!viewDef.isEmpty())
+    {
+      // This regular expression needs more testing. Since the view
+      // definition comes from postgresql and has been 'standardised', we
+      // don't need to deal with everything that the user could put in a view
+      // definition. Does the regexp have to deal with the schema??
 
-	    viewDef = viewDefs.value(viewQuery);
+      QRegExp s(".* \"?" + QRegExp::escape(temp.table_name) +
+                "\"?\\.\"?" + QRegExp::escape(temp.column_name) +
+                "\"? AS \"?(\\w+)\"?,* .*");
+ 
+      QgsDebugMsg(viewDef + "\n" + s.pattern());
 
-	    // Now pick the view definiton apart, looking for
-	    // temp.column_name to the left of an 'AS'.
-
-	    // This regular expression needs more testing. Since the view
-	    // definition comes from postgresql and has been 'standardised', we
-	    // don't need to deal with everything that the user could put in a view
-	    // definition. Does the regexp have to deal with the schema??
-	    if (!viewDef.isEmpty())
-	    {
-	      QRegExp s(".* \"?" + QRegExp::escape(temp.table_name) +
-	                "\"?\\.\"?" + QRegExp::escape(temp.column_name) +
-	                "\"? AS \"?(\\w+)\"?,* .*");
-
-	      QgsDebugMsg(viewQuery + "\n" + viewDef + "\n" + s.pattern());
-
-	      if (s.indexIn(viewDef) != -1)
-	      {
-	        temp.view_column_name = s.cap(1);
-	        //std::cerr<<__FILE__<<__LINE__<<' '<<temp.view_column_name.toLocal8Bit().data()<<'\n';
-	      }
-	    }
+      if (s.indexIn(viewDef) != -1)
+      {
+        temp.view_column_name = s.cap(1);
+      }
+    }
 
     QgsDebugMsg(temp.view_schema + "." 
               + temp.view_name + "." 
