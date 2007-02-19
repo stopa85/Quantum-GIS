@@ -2,6 +2,7 @@
 #include "qgsfeature.h"
 #include "qgsfeatureattribute.h"
 #include <limits>
+#include <QDomElement>
 
 QgsLinearlyScalingDiagramRenderer::QgsLinearlyScalingDiagramRenderer(const QString& name, const QgsAttributeList& att, const std::list<QColor>& c): QgsDiagramRenderer(name, att, c)
 {
@@ -70,4 +71,29 @@ int QgsLinearlyScalingDiagramRenderer::getDiagramSize(int& width, int& height, d
       
     }
   return 0;
+}
+
+bool QgsLinearlyScalingDiagramRenderer::writeXML(QDomNode& overlay_node, QDomDocument& doc) const
+{
+  QDomElement rendererElement = doc.createElement("renderer");
+  rendererElement.setAttribute("type", "linearly_scaling");
+  overlay_node.appendChild(rendererElement);
+
+  //loweritem
+  QDomElement lowerItemElem = doc.createElement("loweritem");
+  lowerItemElem.setAttribute("width", mLowerItem.width());
+  lowerItemElem.setAttribute("height", mLowerItem.height());
+  lowerItemElem.setAttribute("lower_bound", mLowerItem.lowerBound());
+  lowerItemElem.setAttribute("upper_bound", mLowerItem.upperBound());
+  rendererElement.appendChild(lowerItemElem);
+
+  //upperitem
+  QDomElement upperItemElem = doc.createElement("upperitem");
+  upperItemElem.setAttribute("width", mUpperItem.width());
+  upperItemElem.setAttribute("height", mUpperItem.height());
+  upperItemElem.setAttribute("lower_bound", mUpperItem.lowerBound());
+  upperItemElem.setAttribute("upper_bound", mUpperItem.upperBound());
+  rendererElement.appendChild(upperItemElem);
+
+  return true;
 }

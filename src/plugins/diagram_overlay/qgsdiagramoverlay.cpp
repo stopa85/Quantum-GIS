@@ -167,3 +167,47 @@ int QgsDiagramOverlay::getOverlayObjectSize(int& width, int& height, double valu
 	return mDiagramRenderer->getDiagramSize(width, height, value, f);
 }
 
+bool QgsDiagramOverlay::writeXML(QDomNode& layer_node, QDomDocument& doc) const
+{
+  QDomElement overlayElement = doc.createElement("overlay");
+  overlayElement.setAttribute("type", "diagram");
+  layer_node.appendChild(overlayElement);
+
+  if(mDiagramRenderer)
+    {
+      //classification field
+      QDomElement classificationFieldElem = doc.createElement("classificationfield");
+      QDomText classFieldText = doc.createTextNode(QString::number(mDiagramRenderer->classificationField()));
+      classificationFieldElem.appendChild(classFieldText);
+      overlayElement.appendChild(classificationFieldElem);
+      
+      //color tags
+      std::list<QColor> colorList = mDiagramRenderer->colors();
+      for(std::list<QColor>::const_iterator c_it = colorList.begin(); c_it != colorList.end(); ++c_it)
+	{
+	  QDomElement currentColorElem = doc.createElement("color");
+	  currentColorElem.setAttribute("red", QString::number(c_it->red()));
+	  currentColorElem.setAttribute("green", QString::number(c_it->green()));
+	  currentColorElem.setAttribute("blue", QString::number(c_it->blue()));
+	  overlayElement.appendChild(currentColorElem);
+	}
+
+      //attribute tags
+      QgsAttributeList attributeList = mDiagramRenderer->attributes();
+      QgsAttributeList::const_iterator a_it;
+
+      for(a_it = attributeList.constBegin(); a_it != attributeList.constEnd(); ++a_it)
+	{
+	  QDomElement currentAttributeElem = doc.createElement("attribute");
+	  QDomText currentAttributeText = doc.createTextNode(QString::number(*a_it));
+	  currentAttributeElem.appendChild(currentAttributeText);
+	  overlayElement.appendChild(currentAttributeElem);
+	}
+
+      //write settings specific to the particular renderer type
+      mDiagramRenderer->writeXML(overlayElement, doc);
+    }
+
+  return true;
+}
+

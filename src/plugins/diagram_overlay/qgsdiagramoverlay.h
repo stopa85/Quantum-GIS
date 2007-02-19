@@ -37,6 +37,8 @@ class QgsDiagramOverlay: public QgsVectorOverlay
   const QgsDiagramRenderer* diagramRenderer() const {return mDiagramRenderer;}
   void setDisplayFlag(bool display=true){mDisplayFlag = display;}
   bool displayFlag() const {return mDisplayFlag;}
+
+  bool writeXML(QDomNode& layer_node, QDomDocument& doc) const;
   
 protected:
   int getOverlayObjectSize(int& width, int& height, double value, const QgsFeature& f) const;

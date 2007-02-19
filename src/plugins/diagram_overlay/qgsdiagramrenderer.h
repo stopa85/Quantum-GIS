@@ -51,6 +51,8 @@ class QgsDiagramRenderer
   std::list<QColor> colors() const {return mColors;}
   void setClassificationField(int index){mClassificationField = index;}
   int classificationField() const {return mClassificationField;}
+  /**Saves settings to project file. Returns true in case of success*/
+  virtual bool writeXML(QDomNode& overlay_node, QDomDocument& doc) const = 0;
 
  private:
   QgsDiagramRenderer(){} //default constructor is forbidden 

@@ -45,6 +45,8 @@ class QgsVectorOverlay
   /**Gives direct access to the overlay objects. The classes derived from QgsOverlayObjectPositionManager 
 need to manipulate these objects directly*/
   std::multimap<int, QgsOverlayObject*>* overlayObjects(){return &mOverlayObjects;}
+  /**Saves the overlay to xml project file. Returns true in case of success*/
+  virtual bool writeXML(QDomNode& layer_node, QDomDocument& doc) const = 0;
 
  protected:
   /**The corresponding vector layer*/
