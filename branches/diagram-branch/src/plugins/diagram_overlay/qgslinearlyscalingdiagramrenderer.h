@@ -39,6 +39,9 @@ class QgsLinearlyScalingDiagramRenderer: public QgsDiagramRenderer
   void setUpperItem(const QgsDiagramItem& item){mUpperItem = item;}
   QgsDiagramItem upperItem() const {return mUpperItem;}
   QString rendererName() const {return "linearly scaling";}
+
+  bool writeXML(QDomNode& overlay_node, QDomDocument& doc) const;
+
  private:
   /**Value, height, width of lower bound*/
   QgsDiagramItem mLowerItem;

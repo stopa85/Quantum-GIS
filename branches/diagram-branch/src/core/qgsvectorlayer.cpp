@@ -1931,6 +1931,12 @@ bool QgsVectorLayer::setDataProvider( QString const & provider )
 
   }
 
+  //save vector overlays to project file
+  for(std::list<QgsVectorOverlay*>::const_iterator it = mOverlays.begin(); it != mOverlays.end(); ++it)
+    {
+      (*it)->writeXML(layer_node, document);
+    }
+
   return true;
 } // bool QgsVectorLayer::writeXML_
 
