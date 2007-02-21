@@ -83,8 +83,15 @@ QImage* QgsLinearlyScalingDiagramRenderer::getLegendImage(QString& legendString)
   QgsFeature dummyFeature;
 
   double totalHeightDiff = mUpperItem.height() - mLowerItem.height();
-  double totalQuantityDiff = mUpperItem.lowerBound() - mLowerItem.lowerBound();
-  destQuantity = mLowerItem.lowerBound() + totalQuantityDiff * (destHeight - mLowerItem.height())/totalHeightDiff; 
+  if(totalHeightDiff == 0)
+    {
+      destQuantity = mUpperItem.lowerBound();
+    }
+  else
+    {
+      double totalQuantityDiff = mUpperItem.lowerBound() - mLowerItem.lowerBound();
+      destQuantity = mLowerItem.lowerBound() + totalQuantityDiff * (destHeight - mLowerItem.height())/totalHeightDiff;
+    } 
 
   legendString = QString::number(destQuantity, 'f');
 
