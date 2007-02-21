@@ -5,6 +5,7 @@ qgisinterface.cpp
 qgscolorbutton.cpp
 qgscursors.cpp
 qgsencodingfiledialog.cpp
+qgsfiledropedit.cpp
 qgslayerprojectionselector.cpp
 qgsmapcanvas.cpp
 qgsmapcanvasitem.cpp
@@ -31,7 +32,7 @@ qgsprojectionselector.h
 
 QT4_WRAP_CPP(QGIS_GUI_MOC_SRCS ${QGIS_GUI_MOC_HDRS})
 
-INCLUDE_DIRECTORIES(. ../core
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ../core
      ../core/raster ../core/renderer ../core/symbology
      ${SQLITE3_INCLUDE_DIR}
      ${CMAKE_CURRENT_BINARY_DIR}
@@ -65,3 +66,30 @@ TARGET_LINK_LIBRARIES(qgis_gui
 INSTALL(TARGETS qgis_gui
   RUNTIME DESTINATION ${QGIS_BIN_DIR}
   LIBRARY DESTINATION lib)
+
+# for installing headers
+
+SET(QGIS_GUI_HDRS
+qgisgui.h
+qgisinterface.h
+qgscolorbutton.h
+qgscursors.h
+qgsencodingfiledialog.h
+qgsfiledropedit.h
+qgslayerprojectionselector.h
+qgsmapcanvas.h
+qgsmapcanvasitem.h
+qgsmapcanvasmap.h
+qgsmapoverviewcanvas.h
+qgsmaptool.h
+qgsmaptoolpan.h
+qgsmaptoolzoom.h
+qgsmessageviewer.h
+qgsprojectionselector.h
+qgsrubberband.h
+qgsvertexmarker.h
+)
+
+
+INSTALL(CODE "MESSAGE(\"Installing GUI headers...\")")
+INSTALL(FILES ${QGIS_GUI_HDRS} ${QGIS_GUI_MOC_HDRS} DESTINATION ${QGIS_INCLUDE_DIR})

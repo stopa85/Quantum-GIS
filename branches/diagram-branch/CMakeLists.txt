@@ -25,11 +25,17 @@ SET (PLUGINS_ALSO_BINARIES FALSE)
 
 
 # try to configure and build GRASS plugin by default
-SET (WITH_GRASS TRE CACHE BOOL "Determines whether GRASS plugin should be built")
+SET (WITH_GRASS TRUE CACHE BOOL "Determines whether GRASS plugin should be built")
 SET (GRASS_PREFIX "" CACHE PATH "Path to GRASS base directory")
 
 # try to configure and build python bindings by default
 SET (WITH_BINDINGS TRUE CACHE BOOL "Determines whether python bindings should be built")
+
+# By default bindings will be installed only to QGIS directory
+# Someone might want to install it to python site-packages directory
+# as otherwise user has to use PYTHONPATH environemnt variable to add
+# QGIS bindings to package search path
+SET (BINDINGS_GLOBAL_INSTALL FALSE CACHE BOOL "Install bindings to global python directory? (might need root)")
 
 
 #############################################################
@@ -108,7 +114,7 @@ FIND_PROGRAM(QT_LRELEASE_EXECUTABLE
 #############################################################
 # enable warnings
 
-ADD_DEFINITIONS( -Wall )
+ADD_DEFINITIONS( -Wall -Werror )
 
 IF (CMAKE_BUILD_TYPE MATCHES Debug)
   ADD_DEFINITIONS(-DQGISDEBUG=1)
@@ -122,6 +128,8 @@ IF (WIN32)
   SET (QGIS_BIN_DIR    ${CMAKE_INSTALL_PREFIX})
   SET (QGIS_DATA_DIR   ${CMAKE_INSTALL_PREFIX})
   SET (QGIS_PLUGIN_DIR ${CMAKE_INSTALL_PREFIX}/plugins)
+  SET (QGIS_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/include)
+  SET (QGIS_SOURCE_DIR ${CMAKE_SOURCE_DIR})
 
 ELSE (WIN32)
 
@@ -136,6 +144,9 @@ ELSE (WIN32)
   SET (QGIS_BIN_DIR    ${CMAKE_INSTALL_PREFIX}/bin)
   SET (QGIS_DATA_DIR   ${CMAKE_INSTALL_PREFIX}/share/qgis)
   SET (QGIS_PLUGIN_DIR ${CMAKE_INSTALL_PREFIX}/lib/qgis)
+  SET(QGIS_INCLUDE_DIR "${CMAKE_INSTALL_PREFIX}/include/qgis")
+  SET (QGIS_SOURCE_DIR ${CMAKE_SOURCE_DIR})
+
 
   IF (UNIX AND NOT APPLE)
     ADD_DEFINITIONS(-DPREFIX=\\"${CMAKE_INSTALL_PREFIX}\\")
@@ -167,39 +178,29 @@ ENDIF (WIN32)
 #############################################################
 # create qgsconfig.h
 
-CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/qgsconfig.h.in ${CMAKE_SOURCE_DIR}/qgsconfig.h)
+CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/qgsconfig.h.in ${CMAKE_BINARY_DIR}/qgsconfig.h)
+INSTALL(FILES ${CMAKE_BINARY_DIR}/qgsconfig.h DESTINATION ${QGIS_INCLUDE_DIR})
 
-INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR})
+INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR})
 
 #############################################################
 # create qgssvnversion.h
 
-# this is useful variable for developers
-SET (QGIS_NO_SVNVERSION FALSE CACHE BOOL "Set to true if you don't want qgssvnversion.h to be regenerated every make")
+IF (WIN32)
+  
+  # TODO: create qgssvnversion.h properly
+  ADD_CUSTOM_TARGET(svnversion ALL echo \\"#define QGSSVNVERSION \\\"svn_rev_unavailable\\\" \\" > qgssvnversion.h
+      WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 
-IF (QGIS_NO_SVNVERSION)
+ELSE (WIN32)
 
-  ADD_CUSTOM_TARGET(svnversion
-                    echo '\#define QGSSVNVERSION \"\"' > qgssvnversion.h
-                    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-
-ELSE (QGIS_NO_SVNVERSION)
-
-  IF (WIN32)
-    # TODO: create qgssvnversion.h properly
-    ADD_CUSTOM_TARGET(svnversion echo "#define QGSSVNVERSION \"svn\"" > qgssvnversion.h
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-  ELSE (WIN32)
-    ADD_CUSTOM_TARGET(svnversion ALL
-  QGSSVNDEF='\#define QGSSVNVERSION \"'`svnversion .`'\"' &&
+  ADD_CUSTOM_TARGET(svnversion ALL
+  QGSSVNDEF='\#define QGSSVNVERSION \"'`svnversion ${QGIS_SOURCE_DIR}`'\"' &&
   if [ \"`grep QGSSVNVERSION qgssvnversion.h 2>/dev/null`\" != \"$$QGSSVNDEF\" ]; then 
   echo $$QGSSVNDEF > qgssvnversion.h  \; fi 
-  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-  )
+  WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 
 ENDIF (WIN32)
-
-ENDIF (QGIS_NO_SVNVERSION)
 
 #############################################################
 # process subdirs
@@ -220,3 +221,14 @@ INSTALL (FILES AUTHORS SPONSORS
 # manual page... install also on windows?
 INSTALL (FILES qgis.man
          DESTINATION ${CMAKE_INSTALL_PREFIX}/man/man1)
+
+
+#############################################################
+# Uninstall stuff see: http://www.vtk.org/Wiki/CMake_FAQ
+CONFIGURE_FILE(
+  "${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
+  IMMEDIATE @ONLY)
+
+ADD_CUSTOM_TARGET(uninstall
+  "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake")

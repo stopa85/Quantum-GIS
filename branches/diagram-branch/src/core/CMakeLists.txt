@@ -7,8 +7,8 @@ SET(QGIS_CORE_SRCS
 qgis.cpp
 qgsapplication.cpp
 qgsattributeaction.cpp
-qgscentralpointpositionmanager.cpp
 qgsclipper.cpp
+qgscentralpointpositionmanager.cpp
 qgscontexthelp.cpp
 qgscoordinatetransform.cpp
 qgsdatasourceuri.cpp
@@ -55,9 +55,7 @@ raster/qgsrasterlayer.cpp
 
 renderer/qgscontinuouscolorrenderer.cpp
 renderer/qgsgraduatedsymbolrenderer.cpp
-renderer/qgsrangerenderitem.cpp
 renderer/qgsrenderer.cpp
-renderer/qgsrenderitem.cpp
 renderer/qgssinglesymbolrenderer.cpp
 renderer/qgsuniquevaluerenderer.cpp
 
@@ -74,6 +72,11 @@ spatialindex/qgsspatialindex.cpp
 ADD_FLEX_FILES(QGIS_CORE_SRCS qgssearchstringlexer.ll)
 
 ADD_BISON_FILES(QGIS_CORE_SRCS qgssearchstringparser.yy)
+
+# Disable compiler warnings for lex generated sources
+SET_SOURCE_FILES_PROPERTIES(
+                ${CMAKE_BINARY_DIR}/src/core/flex_qgssearchstringlexer.cpp 
+                PROPERTIES COMPILE_FLAGS -w)
 
 SET(QGIS_CORE_MOC_HDRS
 qgscontexthelp.h
@@ -94,7 +97,8 @@ raster/qgsrasterlayer.h
 
 QT4_WRAP_CPP(QGIS_CORE_MOC_SRCS ${QGIS_CORE_MOC_HDRS})
 
-INCLUDE_DIRECTORIES(. raster renderer symbology
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} raster renderer symbology
+  spatialindex/include
   ${QT_QTSVG_INCLUDE_DIR}
   ${PROJ_INCLUDE_DIR}
   ${SQLITE3_INCLUDE_DIR}
@@ -129,8 +133,6 @@ PATH_PREFIX(SPINDEX_SRC spatialindex SpatialIndexImpl.cc)
 PATH_PREFIX(STMAN_SRC storagemanager Buffer.cc DiskStorageManager.cc MemoryStorageManager.cc RandomEvictionsBuffer.cc)
 PATH_PREFIX(RTREE_SRC rtree BulkLoader.cc Index.cc Leaf.cc Node.cc RTree.cc Statistics.cc)
 
-INCLUDE_DIRECTORIES(spatialindex/include)
-
 SET(SPINDEX_SRC ${TOOLS_SRC} ${GEOM_SRC} ${SPINDEX_SRC} ${STMAN_SRC} ${RTREE_SRC})
 
 PATH_PREFIX(INDEX_SRC spatialindex ${SPINDEX_SRC})
@@ -160,3 +162,71 @@ TARGET_LINK_LIBRARIES(qgis_core
 INSTALL(TARGETS qgis_core
   RUNTIME DESTINATION ${QGIS_BIN_DIR}
   LIBRARY DESTINATION lib)
+
+
+# Added by Tim to install headers
+
+SET(QGIS_CORE_HDRS
+qgis.h
+qgsapplication.h
+qgsattributeaction.h
+qgsclipper.h
+qgscontexthelp.h
+qgscoordinatetransform.h
+qgsdatasourceuri.h
+qgsdistancearea.h
+qgsexception.h
+qgsfeature.h
+qgsfeatureattribute.h
+qgsfield.h
+qgsgeometry.h
+qgsgeometryvertexindex.h
+qgshttptransaction.h
+qgslabel.h
+qgslabelattributes.h
+qgsline.h
+qgslogger.h
+qgsmaplayer.h
+qgsmaplayerregistry.h
+qgsmaprender.h
+qgsmaptopixel.h
+qgsmessageoutput.h
+qgspoint.h
+qgsproject.h
+qgsprojectproperty.h
+qgsprovidercountcalcevent.h
+qgsproviderextentcalcevent.h
+qgsprovidermetadata.h
+qgsproviderregistry.h
+qgsrasterdataprovider.h
+qgsrect.h
+qgsrunprocess.h
+qgsscalecalculator.h
+qgssearchstring.h
+qgssearchtreenode.h
+qgsspatialrefsys.h
+qgsvectordataprovider.h
+qgsvectorfilewriter.h
+qgsvectorlayer.h
+
+raster/qgscolortable.h
+raster/qgsrasterlayer.h
+
+renderer/qgscontinuouscolorrenderer.h
+renderer/qgsgraduatedsymbolrenderer.h
+renderer/qgsrenderer.h
+renderer/qgssinglesymbolrenderer.h
+renderer/qgsuniquevaluerenderer.h
+
+symbology/qgslinesymbol.h
+symbology/qgsmarkercatalogue.h
+symbology/qgsmarkersymbol.h
+symbology/qgspolygonsymbol.h
+symbology/qgssymbol.h
+symbology/qgssymbologyutils.h
+
+spatialindex/qgsspatialindex.h
+)
+
+INSTALL(CODE "MESSAGE(\"Installing CORE headers...\")")
+INSTALL(FILES ${QGIS_CORE_HDRS} ${QGIS_CORE_MOC_HDRS} DESTINATION ${QGIS_INCLUDE_DIR})

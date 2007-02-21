@@ -298,7 +298,6 @@ QString QgsDiagramOverlay::attributeNameFromIndex(int index, const QgsVectorLaye
     }
 
   const QgsVectorDataProvider *provider;
-  int notFound = -1;
   if ((provider = dynamic_cast<const QgsVectorDataProvider *>(vl->getDataProvider())))
     {
       const QgsFieldMap & fields = provider->fields();

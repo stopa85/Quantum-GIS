@@ -770,14 +770,14 @@ void QgisApp::createActions()
 #endif
 }
 
-#ifdef HAVE_PYTHON
 void QgisApp::showPythonDialog()
 {
+#ifdef HAVE_PYTHON
   if (mPythonConsole == NULL)
     mPythonConsole = new QgsPythonDialog(mQgisInterface);
   mPythonConsole->show();
-}
 #endif
+}
 
 void QgisApp::createActionGroups()
 {
@@ -1022,6 +1022,7 @@ void QgisApp::createStatusBar()
   mScaleLabel->setMargin(3);
   mScaleLabel->setAlignment(Qt::AlignCenter);
   QWhatsThis::add(mScaleLabel, tr("Displays the current map scale"));
+  QToolTip::add (mScaleLabel, tr("Current map scale"));
   statusBar()->addWidget(mScaleLabel, 0,true);
   //coords status bar widget
   mCoordsLabel = new QLabel(QString(), statusBar());
@@ -1030,6 +1031,7 @@ void QgisApp::createStatusBar()
   mCoordsLabel->setMargin(3);
   mCoordsLabel->setAlignment(Qt::AlignCenter);
   QWhatsThis::add(mCoordsLabel, tr("Shows the map coordinates at the current cursor postion. The display is continuously updated as the mouse is moved."));
+  QToolTip::add (mCoordsLabel, tr("Map coordinates at mouse cursor position"));
   statusBar()->addWidget(mCoordsLabel, 0, true);
   // render suppression status bar widget
   mRenderSuppressionCBox = new QCheckBox(tr("Render"),statusBar());
@@ -2410,9 +2412,6 @@ static
   void
 findLayers_( QString const & fileFilters, list<QDomNode> const & layerNodes )
 {
-#ifdef QGISDEBUG
-  const char * fileFiltersC = fileFilters.ascii(); // debugger probe
-#endif
 
   for( list<QDomNode>::const_iterator i = layerNodes.begin();
       i != layerNodes.end();
@@ -2697,7 +2696,7 @@ void QgisApp::fileOpen()
       QMessageBox::critical(this, 
           tr("QGIS Project Read Error"), 
           tr("") + "\n" + e.what() );
-      qDebug( "%s:%d %d bad layers found", __FILE__, __LINE__, e.layers().size() );
+      qDebug( "%s:%d %d bad layers found", __FILE__, __LINE__, static_cast<int>(e.layers().size()) );
 
       // attempt to find the new locations for missing layers
       // XXX vector file hard-coded -- but what if it's raster?
@@ -2756,7 +2755,7 @@ bool QgisApp::addProject(QString projectFile)
   }
   catch ( QgsProjectBadLayerException & e )
   {
-    qDebug( "%s:%d %d bad layers found", __FILE__, __LINE__, e.layers().size() );
+    qDebug( "%s:%d %d bad layers found", __FILE__, __LINE__, static_cast<int>(e.layers().size()) );
 
     if ( QMessageBox::Ok == QMessageBox::critical( this, 
           tr("QGIS Project Read Error"), 
@@ -2833,16 +2832,10 @@ bool QgisApp::fileSave()
     if( "qgs" != fullPath.extension( false ) )
     {
       QString newFilePath = fullPath.filePath() + ".qgs";
-#ifdef QGISDEBUG
-      const char* filePathStr = newFilePath.ascii(); // debugger probe
-#endif
       fullPath.setFile( newFilePath );
     }
 
 
-#ifdef QGISDEBUG
-    const char* filePathStr = fullPath.filePath().ascii(); // debugger probe
-#endif
     QgsProject::instance()->filename( fullPath.filePath() );
   }
 
@@ -2919,9 +2912,6 @@ void QgisApp::fileSaveAs()
   if( "qgs" != fullPath.extension( false ) )
   {
     QString newFilePath = fullPath.filePath() + ".qgs";
-#ifdef QGISDEBUG
-    const char* filePathStr = newFilePath.ascii(); // debugger probe
-#endif
     fullPath.setFile( newFilePath );
   }
 
@@ -3346,28 +3336,7 @@ void QgisApp::measureArea()
 
 void QgisApp::attributeTable()
 {
-  QgsMapLayer *layer = mMapLegend->currentLayer();
-  if (layer)
-  {
-  
-    QgsVectorLayer* vlayer = dynamic_cast<QgsVectorLayer*>(layer);
-    if (vlayer)
-    {
-      // TODO: revisit and repair [MD]
-      //layer->table(this);
-    }
-    else
-    {
-      QMessageBox::information(this, tr("Not a vector layer"),
-        tr("To open an attribute table, you must select a vector layer in the legend"));
-    }
-
-  }
-  else
-  {
-    QMessageBox::information(this, tr("No Layer Selected"),
-        tr("To open an attribute table, you must select a vector layer in the legend"));
-  }
+  mMapLegend->legendLayerAttributeTable();
 }
 
 void QgisApp::deleteSelected()
@@ -3643,22 +3612,8 @@ void QgisApp::menubar_highlighted( int i )
 // toggle overview status
 void QgisApp::inOverview()
 {
-  // TODO: make working
-  /*
-#ifdef QGISDEBUG
-  std::cout << "QGisApp::inOverview" << std::endl;
-#endif
-
-  QgsMapLayer* layer = mMapLegend->currentLayer();
-  if(layer)
-  {
-    layer->inOverview( ! layer->showInOverviewStatus() );
-    mMapCanvas->updateOverview();
-  }
-  */
-} // QgisApp::inOverview(bool)
-
-
+  mMapLegend->legendLayerShowInOverview();
+}
 
 void QgisApp::removeLayer()
 {
@@ -3675,17 +3630,8 @@ void QgisApp::removeAllLayers()
 
 void QgisApp::zoomToLayerExtent()
 {
-  QgsMapLayer *layer = mMapLegend->currentLayer();
-  if (layer)
-  {
-    QgsRect extent = mMapCanvas->mapRender()->layerExtentToOutputExtent(layer, layer->extent());
-    mMapCanvas->setExtent(extent);
-    mMapCanvas->refresh();
-
-    // notify the project we've made a change
-    QgsProject::instance()->dirty(true);
-  }
-} // QgisApp::zoomToLayerExtent()
+  mMapLegend->legendLayerZoom();
+}
 
 
 void QgisApp::showPluginManager()
@@ -4243,6 +4189,7 @@ void QgisApp::openURL(QString url, bool useQgisDocDirectory)
       reinterpret_cast<const UInt8*>(url.utf8().data()), url.length(),
       kCFStringEncodingUTF8, NULL);
   OSStatus status = LSOpenCFURLRef(urlRef, NULL);
+  status = 0; //avoid compiler warning
   CFRelease(urlRef);
 #else
   // find a browser
