@@ -77,7 +77,7 @@ int QgsLinearlyScalingDiagramRenderer::getDiagramSize(int& width, int& height, d
 QImage* QgsLinearlyScalingDiagramRenderer::getLegendImage(QString& legendString) const
 {
   //find out the quantity necessary for a fixed height
-  int destHeight = 50;
+  int destHeight = (mUpperItem.height() + mLowerItem.height())/2;
   int destWidth;
   double destQuantity;
   QgsFeature dummyFeature;

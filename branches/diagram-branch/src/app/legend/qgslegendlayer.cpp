@@ -292,6 +292,7 @@ void QgsLegendLayer::changeSymbologySettings(const QgsMapLayer* theMapLayer,
     QgsLegendSymbologyItem* theItem = new QgsLegendSymbologyItem(it->second.width(), it->second.height());
     theItem->setText(0, it->first);
     theItem->setIcon(0, QIcon(it->second));
+    theItem->setLegend((QgsLegend*)(treeWidget()));
     insertChild(childposition, theItem);
 
     ++childposition;
