@@ -858,7 +858,7 @@ bool QgsProject::read()
         // Since we could be executing this from the test harness which
         // doesn't *have* layers -- nor a GUI for that matter -- we'll just
         // leave in the whining and boldly stomp on.
-
+	emit readProject(*doc);
         throw QgsProjectBadLayerException( getMapLayersResults.second );
 
 //         return false;
@@ -1011,7 +1011,7 @@ bool QgsProject::write()
 
   dump_(imp_->properties_);
 
-  qDebug("there are %d property scopes", imp_->properties_.count());
+  qDebug("there are %d property scopes", static_cast<int>(imp_->properties_.count()));
 
   if (!imp_->properties_.isEmpty()) // only worry about properties if we
     // actually have any properties

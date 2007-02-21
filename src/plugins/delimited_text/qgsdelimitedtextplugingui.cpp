@@ -27,28 +27,31 @@
 #include <QMessageBox>
 #include <QTextStream>
 
-QgsDelimitedTextPluginGui::QgsDelimitedTextPluginGui() : QDialog()
-{
-  setupUi(this);
-
-}
-
 QgsDelimitedTextPluginGui::QgsDelimitedTextPluginGui(QgisInterface * _qI, QWidget * parent, Qt::WFlags fl) 
 : QDialog(parent, fl), qI(_qI)
 {
   setupUi(this);
+  pbnOK = buttonBox->button(QDialogButtonBox::Ok);
+  pbnParse = buttonBox->addButton(tr("Parse"), QDialogButtonBox::ActionRole);
+  connect(pbnParse, SIGNAL(clicked()), this, SLOT(pbnParse_clicked()));
+  connect(txtFilePath, SIGNAL(textChanged(const QString&)), this, SLOT(pbnParse_clicked()));
+  enableButtons();
   // at startup, fetch the last used delimiter and directory from
   // settings
   QSettings settings;
   QString key = "/Plugin-DelimitedText";
   txtDelimiter->setText(settings.readEntry(key + "/delimiter"));
 
+  teInstructions->setHtml(tr("<h1>Description</h1>"
+"<p>Select a delimited text file containing x and y coordinates that you would like to use as a point layer and this plugin will do the job for you!</p>"
+"<p>Use the layer name box to specify the legend name for the new layer. Use the delimiter box to specify what delimeter is used in your file (e.g. space, comma or tab). After choosing a delimiter, press the parse button an select the columns containing the x and y values for the layer.</p>"));
+
 }  
 QgsDelimitedTextPluginGui::~QgsDelimitedTextPluginGui()
 {
 }
 /** Autoconnected slots **/
-void QgsDelimitedTextPluginGui::on_pbnHelp_clicked()
+void QgsDelimitedTextPluginGui::on_buttonBox_helpRequested()
 {
   QgsContextHelp::run(context_id);
 }
@@ -56,11 +59,11 @@ void QgsDelimitedTextPluginGui::on_btnBrowseForFile_clicked()
 {
   getOpenFileName();
 }
-void QgsDelimitedTextPluginGui::on_pbnParse_clicked()
+void QgsDelimitedTextPluginGui::pbnParse_clicked()
 {
   updateFieldLists();
 }
-void QgsDelimitedTextPluginGui::on_pbnOK_clicked()
+void QgsDelimitedTextPluginGui::on_buttonBox_accepted()
 {
   if(txtLayerName->text().length() > 0)
   {
@@ -80,12 +83,19 @@ void QgsDelimitedTextPluginGui::on_pbnOK_clicked()
     settings.writeEntry(key + "/delimiter", txtDelimiter->text());
     QFileInfo fi(txtFilePath->text());
     settings.writeEntry(key + "/text_path", fi.dirPath());
+
+    accept();
   }
   else
   {
     QMessageBox::warning(this, tr("No layer name"), tr("Please enter a layer name before adding the layer to the map"));
   }
 } 
+
+void QgsDelimitedTextPluginGui::on_buttonBox_rejected()
+{
+  reject();
+}
 
 void QgsDelimitedTextPluginGui::updateFieldLists()
 {

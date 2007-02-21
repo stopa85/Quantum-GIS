@@ -125,6 +125,7 @@ composer/qgscomposerview.h
 composer/qgscomposition.h
 
 legend/qgslegend.h
+legend/qgslegendlayer.h
 legend/qgslegendlayerfile.h
 )
 
@@ -179,7 +180,7 @@ ENDIF (WIN32)
 
 
 INCLUDE_DIRECTORIES(
-     . composer legend
+     ${CMAKE_CURRENT_SOURCE_DIR} composer legend
      ${CMAKE_CURRENT_BINARY_DIR}
      ${CMAKE_CURRENT_BINARY_DIR}/../ui
      ../core
@@ -224,3 +225,9 @@ IF (APPLE)
 ELSE (APPLE)
   INSTALL(TARGETS qgis RUNTIME DESTINATION ${QGIS_BIN_DIR})
 ENDIF (APPLE)
+
+
+########## Install headers for developers to use against qgis libs
+#commented out since app classes dont go into any lib there is little point
+#INSTALL(FILES ${CMAKE_BINARY_DIR}/src/ui/ui_qgsmeasurebase.h DESTINATION ${QGIS_INCLUDE_DIR})
+#INSTALL(FILES ${QGIS_APP_MOC_HDRS} DESTINATION ${QGIS_INCLUDE_DIR})

@@ -118,16 +118,11 @@
  * Added header.
  */
 
-static char rcsid[] = 
-  "$Id$";
-
 #include "shapefile.h"
 
 #include <math.h>
 #include <stdlib.h>
-#ifdef WIN32
 #include <string.h>
-#endif
 typedef unsigned char uchar;
 
 #ifndef FALSE
@@ -636,7 +631,7 @@ static void *DBFReadAttribute(DBFHandle psDBF, int hEntity, int iField,
 /* -------------------------------------------------------------------- */
 /*	Extract the requested field.					*/
 /* -------------------------------------------------------------------- */
-    strncpy( pszStringField, pabyRec+psDBF->panFieldOffset[iField],
+    strncpy( pszStringField, (char*)(pabyRec+psDBF->panFieldOffset[iField]),
 	     psDBF->panFieldSize[iField] );
     pszStringField[psDBF->panFieldSize[iField]] = '\0';
 

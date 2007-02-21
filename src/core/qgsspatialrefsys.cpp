@@ -19,6 +19,7 @@
 #include <ogr_api.h>
 #include <ogr_spatialref.h>
 #include <cpl_error.h>
+#include <cpl_conv.h>
 
 CUSTOM_SRS_VALIDATION QgsSpatialRefSys::mCustomSrsValidation = NULL;
 
@@ -289,6 +290,8 @@ bool QgsSpatialRefSys::createFromWkt(QString theWkt)
   // that we can try to fill in the remaining class members...
   //create from Proj wil set the isValidFalg
   createFromProj4(QString(proj4src));
+  CPLFree(proj4src);
+
   return mIsValidFlag;
   //setMapunits will be called by createfromproj above
 }
@@ -449,7 +452,9 @@ bool QgsSpatialRefSys::isValid() const
   }
   else
   {
-    QgsDebugMsg("The OGRe says it's an invalid SRS with proj4 string: " +  mProj4String);
+    QgsDebugMsg("The OGRe says it's an invalid SRS (OGRErr = "
+                + QString::number(myResult)
+                + ") with proj4 string: " + mProj4String);
     return false;
   }
 }
@@ -515,7 +520,7 @@ bool QgsSpatialRefSys::createFromProj4 (const QString theProj4String)
   }
 //  if (!myRecord.empty())
 // What if descriptions aren't unique?
-  if (NULL)
+  if (false)
   {
     mySrsId=myRecord["srs_id"].toLong();
     QgsDebugMsg("QgsSpatialRefSys::createFromProj4 Projection Description match search for srsid returned srsid: "\
@@ -1012,6 +1017,12 @@ bool QgsSpatialRefSys::equals(QString theProj4CharArray)
   OGRSpatialReference myOgrSpatialRef2;
   OGRErr myInputResult1 = myOgrSpatialRef1.importFromProj4(  myCharArrayPointer1 );
   OGRErr myInputResult2 = myOgrSpatialRef2.importFromProj4(  theProj4CharArray.latin1() );
+
+  // Could do some error reporting here...
+  if (myInputResult1 != OGRERR_NONE)
+    {}
+  if (myInputResult2 != OGRERR_NONE)
+    {}
 
   if (myOgrSpatialRef1.IsGeographic() && myOgrSpatialRef2.IsGeographic())
   {

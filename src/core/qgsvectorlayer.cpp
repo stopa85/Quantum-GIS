@@ -44,7 +44,6 @@
 #include "qgscontinuouscolorrenderer.h"
 #include "qgsgraduatedsymbolrenderer.h"
 #include "qgsrenderer.h"
-#include "qgsrenderitem.h"
 #include "qgssinglesymbolrenderer.h"
 #include "qgsuniquevaluerenderer.h"
 
@@ -274,7 +273,7 @@ void QgsVectorLayer::drawLabels(QPainter * p, QgsRect & viewExtent, QgsMapToPixe
 {
   QgsDebugMsg("Starting draw of labels");
 
-  if ( /*1 == 1 */ mRenderer && mLabelOn)
+  if (mRenderer && mLabelOn)
   {
     QgsAttributeList attributes = mRenderer->classificationAttributes();
 
@@ -299,9 +298,12 @@ void QgsVectorLayer::drawLabels(QPainter * p, QgsRect & viewExtent, QgsMapToPixe
         // don't render labels of deleted features
         if (!mDeletedFeatureIds.contains(fet.featureId()))
         {
-          bool sel = mSelectedFeatureIds.contains(fet.featureId());
-          mLabel->renderLabel ( p, viewExtent, ct, 
+	  if(mRenderer->willRenderFeature(&fet))
+	    {
+	      bool sel = mSelectedFeatureIds.contains(fet.featureId());
+	      mLabel->renderLabel ( p, viewExtent, ct, 
               theMapToPixelTransform, fet, sel, 0, scale);
+	    }
         }
         featureCount++;
       }
@@ -309,9 +311,11 @@ void QgsVectorLayer::drawLabels(QPainter * p, QgsRect & viewExtent, QgsMapToPixe
       // render labels of not-commited features
       for (QgsFeatureList::iterator it = mAddedFeatures.begin(); it != mAddedFeatures.end(); ++it)
       {
-        bool sel = mSelectedFeatureIds.contains((*it).featureId());
-        mLabel->renderLabel ( p, viewExtent, ct,
-            theMapToPixelTransform, *it, sel, 0, scale);
+	if(mRenderer->willRenderFeature(&(*it)))
+	  {
+	    bool sel = mSelectedFeatureIds.contains((*it).featureId());
+	    mLabel->renderLabel ( p, viewExtent, ct, theMapToPixelTransform, *it, sel, 0, scale);
+	  }
       }
     }
     catch (QgsCsException &e)

@@ -12,14 +12,22 @@
 IF(WIN32)
 
   FIND_PATH(GDAL_INCLUDE_DIR gdal.h /usr/local/include /usr/include c:/msys/local/include)
-  FIND_LIBRARY(GDAL_LIBRARY NAMES gdal PATH /usr/local/lib /usr/lib c:/msys/local/lib)
+  FIND_LIBRARY(GDAL_LIBRARY NAMES gdal PATHS /usr/local/lib /usr/lib c:/msys/local/lib)
 
   
 ELSE(WIN32)
   IF(UNIX) 
+
+    # try to use framework on mac
+    IF (APPLE)
+      SET (GDAL_MAC_PATH /Library/Frameworks/GDAL.framework/unix/bin)
+    ENDIF (APPLE)
+
     SET(GDAL_CONFIG_PREFER_PATH "$ENV{GDAL_HOME}/bin" CACHE STRING "preferred path to GDAL (gdal-config)")
     FIND_PROGRAM(GDAL_CONFIG gdal-config
       ${GDAL_CONFIG_PREFER_PATH}
+      ${GDAL_MAC_PATH}
+      /usr/local/bin/
       /usr/bin/
       )
     # MESSAGE("DBG GDAL_CONFIG ${GDAL_CONFIG}")
@@ -65,7 +73,11 @@ ELSE(WIN32)
         STRING(REGEX REPLACE "[-][l]" "" GDAL_LIB_NAME ${GDAL_LIB_NAME_WITH_PREFIX} )
       ENDIF (GDAL_LIB_NAME_WITH_PREFIX)
 
-      SET(GDAL_LIBRARY ${GDAL_LINK_DIRECTORIES}/lib${GDAL_LIB_NAME}.so CACHE STRING INTERNAL)
+      IF (APPLE)
+        SET(GDAL_LIBRARY ${GDAL_LINK_DIRECTORIES}/lib${GDAL_LIB_NAME}.dylib CACHE STRING INTERNAL)
+      ELSEIF (APPLE)
+        SET(GDAL_LIBRARY ${GDAL_LINK_DIRECTORIES}/lib${GDAL_LIB_NAME}.so CACHE STRING INTERNAL)
+      ENDIF (APPLE)
       
     ELSE(GDAL_CONFIG)
       MESSAGE("FindGDAL.cmake: gdal-config not found. Please set it manually. GDAL_CONFIG=${GDAL_CONFIG}")

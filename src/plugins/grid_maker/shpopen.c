@@ -128,15 +128,13 @@
  *
  */
 
-static char rcsid[] = 
-  "$Id$";
-
 #include "shapefile.h"
 
 #include <math.h>
 #include <limits.h>
 #include <assert.h>
 #include <stdlib.h>
+#include <string.h>
 
 typedef unsigned char uchar;
 

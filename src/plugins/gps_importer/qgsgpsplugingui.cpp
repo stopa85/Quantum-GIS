@@ -14,7 +14,7 @@
 #include "qgsmaplayer.h"
 #include "qgsdataprovider.h"
 #include "qgscontexthelp.h"
-#include <qgslogger.h>
+#include "qgslogger.h"
 
 //qt includes
 #include <QFileDialog>
@@ -43,6 +43,8 @@ QgsGPSPluginGui::QgsGPSPluginGui(const BabelMap& importers,
   
   // make sure that the OK button is enabled only when it makes sense to
   // click it
+  pbnOK = buttonBox->button(QDialogButtonBox::Ok);
+  pbnOK->setEnabled(false);
   connect(leGPXFile, SIGNAL(textChanged(const QString&)), 
    this, SLOT(enableRelevantControls()));
   connect(leIMPInput, SIGNAL(textChanged(const QString&)), 
@@ -59,12 +61,16 @@ QgsGPSPluginGui::QgsGPSPluginGui(const BabelMap& importers,
    this, SLOT(enableRelevantControls()));
   connect(tabWidget, SIGNAL(currentChanged(int)), 
    this, SLOT(enableRelevantControls()));
-} 
+
+  // drag and drop filter
+  leGPXFile->setSuffixFilter("gpx");
+}
+
 QgsGPSPluginGui::~QgsGPSPluginGui()
 {
 }
 
-void QgsGPSPluginGui::on_pbnOK_clicked()
+void QgsGPSPluginGui::on_buttonBox_accepted()
 {
   
   // what should we do?
@@ -126,6 +132,7 @@ void QgsGPSPluginGui::on_pbnOK_clicked()
 		     cmbULDevice->currentText(), cmbULPort->currentText());
     break;
   }
+  accept();
 } 
 
 
@@ -136,7 +143,8 @@ void QgsGPSPluginGui::on_pbnDLOutput_clicked()
 				 tr("Choose a filename to save under"),
                  "." , //initial dir
 				 tr("GPS eXchange format (*.gpx)"));
-  leDLOutput->setText(myFileNameQString);
+  if (!myFileNameQString.isEmpty())
+    leDLOutput->setText(myFileNameQString);
 }
 
 
@@ -195,9 +203,9 @@ void QgsGPSPluginGui::enableRelevantControls()
 }
 
 
-void QgsGPSPluginGui::on_pbnCancel_clicked()
+void QgsGPSPluginGui::on_buttonBox_rejected()
 {
- close(1);
+  reject();
 }
 
 
@@ -217,7 +225,8 @@ void QgsGPSPluginGui::on_pbnGPXSelectFile_clicked()
           myFilterString, //filters to select
           &myFileTypeQString); //the pointer to store selected filter
   QgsLogger::debug("Selected filetype filter is : " + myFileTypeQString);
-  leGPXFile->setText(myFileNameQString);
+  if (!myFileNameQString.isEmpty())
+    leGPXFile->setText(myFileNameQString);
 }
 
 
@@ -229,23 +238,26 @@ void QgsGPSPluginGui::on_pbnIMPInput_clicked() {
           ".", //initial dir
           mBabelFilter,
           &myFileType); //the pointer to store selected filter
-  mImpFormat = myFileType.left(myFileType.length() - 6);
-  std::map<QString, QgsBabelFormat*>::const_iterator iter;
-  iter = mImporters.find(mImpFormat);
-  if (iter == mImporters.end()) {
-    QgsLogger::warning("Unknown file format selected: " +
-                       myFileType.left(myFileType.length() - 6));
-  }
-  else {
-    QgsLogger::debug(iter->first + " selected");
-    leIMPInput->setText(myFileName);
-    cmbIMPFeature->clear();
-    if (iter->second->supportsWaypoints())
-      cmbIMPFeature->insertItem("Waypoints");
-    if (iter->second->supportsRoutes())
-      cmbIMPFeature->insertItem("Routes");    
-    if (iter->second->supportsTracks())
-      cmbIMPFeature->insertItem("Tracks");
+  if (!myFileName.isEmpty())
+  {
+    mImpFormat = myFileType.left(myFileType.length() - 6);
+    std::map<QString, QgsBabelFormat*>::const_iterator iter;
+    iter = mImporters.find(mImpFormat);
+    if (iter == mImporters.end()) {
+      QgsLogger::warning("Unknown file format selected: " +
+                         myFileType.left(myFileType.length() - 6));
+    }
+    else {
+      QgsLogger::debug(iter->first + " selected");
+      leIMPInput->setText(myFileName);
+      cmbIMPFeature->clear();
+      if (iter->second->supportsWaypoints())
+        cmbIMPFeature->insertItem("Waypoints");
+      if (iter->second->supportsRoutes())
+        cmbIMPFeature->insertItem("Routes");    
+      if (iter->second->supportsTracks())
+        cmbIMPFeature->insertItem("Tracks");
+    }
   }
 }
 
@@ -256,7 +268,8 @@ void QgsGPSPluginGui::on_pbnIMPOutput_clicked() {
 				 tr("Choose a filename to save under"),
                  ".", //initial dir
 				 tr("GPS eXchange format (*.gpx)"));
-  leIMPOutput->setText(myFileNameQString);
+  if (!myFileNameQString.isEmpty())
+    leIMPOutput->setText(myFileNameQString);
 }
 
 
@@ -356,7 +369,7 @@ void QgsGPSPluginGui::populatePortComboBoxes() {
 
 
 void QgsGPSPluginGui::populateULLayerComboBox() {
-  for (int i = 0; i < mGPXLayers.size(); ++i)
+  for (std::vector<QgsVectorLayer*>::size_type i = 0; i < mGPXLayers.size(); ++i)
     cmbULLayer->insertItem(mGPXLayers[i]->name());
 }
 
@@ -400,7 +413,7 @@ void QgsGPSPluginGui::devicesUpdated() {
 }
 
 
-void QgsGPSPluginGui::on_pbnHelp_clicked()
+void QgsGPSPluginGui::on_buttonBox_helpRequested()
 {
   QgsContextHelp::run(context_id);
 }

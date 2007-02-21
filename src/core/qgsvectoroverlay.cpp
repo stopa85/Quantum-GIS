@@ -41,6 +41,18 @@ int QgsVectorOverlay::splitWkb(std::list<unsigned char*>& wkbGeometries, std::li
   //= mVectorLayer->geometryType();
   switch(wkbType)
     {
+      //todo: handle these cases
+    case QGis::WKBPoint25D:
+    case QGis::WKBLineString25D:
+    case QGis::WKBPolygon25D:
+    case QGis::WKBMultiPoint25D:
+    case QGis::WKBMultiLineString25D:
+    case QGis::WKBMultiPolygon25D:
+    case QGis::WKBUnknown:
+      {
+	return 1;
+      }
+
     case QGis::WKBPoint:
     case QGis::WKBLineString:
     case QGis::WKBPolygon:

@@ -119,7 +119,7 @@ QImage* QgsDiagramFactory::createBarChart(int height, const std::list<double>& d
 
   for(double_it = dataValues.begin(), color_it = mColorSeries.begin(); double_it != dataValues.end(); ++double_it, ++color_it)
     {
-      currentBarHeight = (*double_it)/maxValue*height;
+      currentBarHeight = (int)((*double_it)/maxValue*height);
       p.setBrush(QBrush(*color_it));
       p.drawRect(QRect(barCounter * barWidth, height - currentBarHeight, barWidth, currentBarHeight));
       ++barCounter;
