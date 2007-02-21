@@ -42,12 +42,18 @@ class QgsVectorOverlay
   virtual void drawOverlayObjects(QPainter * p, const QgsRect& viewExtent, QgsMapToPixel * cXf, QgsCoordinateTransform* ct) const = 0;
   /**Returns the name of the overlay layer*/
   virtual QString name() const = 0;
+  
+  /**Saves the overlay to xml project file. Returns true in case of success*/
+  virtual bool writeXML(QDomNode& layer_node, QDomDocument& doc) const = 0;
+  /**Creates images and strings for the use in a legend. The caller takes ownership of the image objects
+   @return 0 in case of success*/
+  virtual int createLegendContent(std::list<std::pair<QString, QImage*> >& content) const = 0;
   /**Gives direct access to the overlay objects. The classes derived from QgsOverlayObjectPositionManager 
 need to manipulate these objects directly*/
   std::multimap<int, QgsOverlayObject*>* overlayObjects(){return &mOverlayObjects;}
-  /**Saves the overlay to xml project file. Returns true in case of success*/
-  virtual bool writeXML(QDomNode& layer_node, QDomDocument& doc) const = 0;
-
+  void setDisplayFlag(bool display=true){mDisplayFlag = display;}
+  bool displayFlag() const {return mDisplayFlag;}
+ 
  protected:
   /**The corresponding vector layer*/
   QgsVectorLayer* mVectorLayer;
@@ -55,7 +61,9 @@ need to manipulate these objects directly*/
   QgsAttributeList mAttributes;
   /**The positional information about the overlay objects*/
   std::multimap<int, QgsOverlayObject*> mOverlayObjects;
-  //todo: have a std::multimap<int, QgsOverlayObject> mFixedObjects
+  /**Flag if the overlay should be displayed or not*/
+  bool mDisplayFlag;
+
   virtual int getOverlayObjectSize(int& width, int& height, double value, const QgsFeature& f) const = 0;
   //wkb helper methods
   /**Splits the WKB of multitypes into several single types. The calling method takes ownership of the created buffers. In case of single types, the wkb buffer is just copied*/

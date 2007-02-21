@@ -45,10 +45,6 @@ class QgsDiagramDialog: public QgsVectorOverlayDialog, private Ui::QgsDiagramDia
 
  private:
   QgsDiagramDialog();
-  /**Helper function that returns the attribute index from an attribute name*/
-  int indexFromAttributeName(const QString& name) const;
-  /**Helper function that returns the attribute name from an attribute index*/
-  QString attributeNameFromIndex(int index) const;
   /**Restores the dialog settings from an already existing overlay*/
   void restoreSettings(const QgsVectorOverlay* overlay);
 };

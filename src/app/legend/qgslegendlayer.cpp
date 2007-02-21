@@ -33,6 +33,7 @@
 #include "qgssymbol.h"
 #include "qgsvectorlayer.h"
 #include "qgsvectordataprovider.h"
+#include "qgsvectoroverlay.h"
 
 #include <iostream>
 #include <QCoreApplication>
@@ -307,9 +308,57 @@ void QgsLegendLayer::vectorLayerSymbology(const QgsVectorLayer* layer)
 {
   SymbologyList itemList;
 
-  //add the new items
-  QString lw, uv, label;
+  //first add the items of the vector overlays
+  std::list<const QgsVectorOverlay*> overlayList;
+  layer->vectorOverlays(overlayList);
+
+  std::list<const QgsVectorOverlay*>::const_iterator overlay_it;
+  std::list<std::pair<QString, QImage*> > overlayLegendContent;
+  std::list<std::pair<QString, QImage*> >::iterator olegend_it;
+
+  for(overlay_it = overlayList.begin(); overlay_it != overlayList.end(); ++overlay_it)
+    {
+      if(!(*overlay_it) || !(*overlay_it)->displayFlag())
+	{
+	  continue;
+	}
+
+      QImage img;
+      (*overlay_it)->createLegendContent(overlayLegendContent);
+      for(olegend_it = overlayLegendContent.begin(); olegend_it != overlayLegendContent.end(); ++olegend_it)
+	{
+	  if(olegend_it->second)
+	    {
+	      img = *(olegend_it->second);
+	    }
+	  QPixmap pix = QPixmap::fromImage(img); // convert to pixmap
+	  itemList.push_back(std::make_pair(olegend_it->first, pix));
+	  delete (olegend_it->second);
+	}
+    }
+
+   //add the renderer specific items
   const QgsRenderer* renderer = layer->renderer();
+  if(!renderer)
+    {
+      return;
+    }
+  
+  //first for the classification field
+  if(renderer->needsAttributes()) //create an item for each classification field (only one for most renderers)
+  {
+    QgsAttributeList classfieldlist = renderer->classificationAttributes();
+    const QgsFieldMap& fields = layer->getDataProvider()->fields();
+    for(QgsAttributeList::iterator it = classfieldlist.begin(); it!=classfieldlist.end(); ++it)
+    {
+      const QgsField& theField = fields[*it];
+      QString classfieldname = theField.name();
+      itemList.push_back(std::make_pair(classfieldname, QPixmap()));
+    }
+  }
+
+  //then for the items of the renderer
+  QString lw, uv, label;
   const std::list<QgsSymbol*> sym = renderer->symbols();
 
   for(std::list<QgsSymbol*>::const_iterator it=sym.begin(); it!=sym.end(); ++it)
@@ -349,18 +398,6 @@ void QgsLegendLayer::vectorLayerSymbology(const QgsVectorLayer* layer)
 
     QPixmap pix = QPixmap::fromImage(img); // convert to pixmap
     itemList.push_back(std::make_pair(values, pix));
-  }
-
-  if(renderer->needsAttributes()) //create an item for each classification field (only one for most renderers)
-  {
-    QgsAttributeList classfieldlist = renderer->classificationAttributes();
-    const QgsFieldMap& fields = layer->getDataProvider()->fields();
-    for(QgsAttributeList::iterator it = classfieldlist.begin(); it!=classfieldlist.end(); ++it)
-    {
-      const QgsField& theField = fields[*it];
-      QString classfieldname = theField.name();
-      itemList.push_front(std::make_pair(classfieldname, QPixmap()));
-    }
   }
 
   changeSymbologySettings(layer, itemList);

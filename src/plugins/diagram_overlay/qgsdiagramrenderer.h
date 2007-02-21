@@ -53,6 +53,11 @@ class QgsDiagramRenderer
   int classificationField() const {return mClassificationField;}
   /**Saves settings to project file. Returns true in case of success*/
   virtual bool writeXML(QDomNode& overlay_node, QDomDocument& doc) const = 0;
+  /**Creates a descriptive image for the legend and a descriptive string, e.g.
+   with a value for which the image size is representative. The calling method
+   takes ownership of the generated image
+   @return 0 in case of error*/
+  virtual QImage* getLegendImage(QString& legendString) const = 0;
 
  private:
   QgsDiagramRenderer(){} //default constructor is forbidden 
@@ -62,7 +67,7 @@ class QgsDiagramRenderer
   QgsDiagramFactory mFactory;
  /**The diagram type*/
   QString mWellKnownName;
-  /**The number of attributes in the features*/
+  /**The attribute numbers needed for classification in the features*/
   QgsAttributeList mAttributes;
   /**Index of the classification attribute*/
   int mClassificationField;

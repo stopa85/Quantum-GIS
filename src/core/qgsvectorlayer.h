@@ -411,6 +411,8 @@ taks ownership of the object*/
   /**Finds the overlay object for a given name (e.g. "diagram"). Returns 0 if no overlay object
    with this name exists*/
   const QgsVectorOverlay* findOverlay(const QString& name) const;
+  /**Adds pointers to the existing overlays to the list*/
+  void vectorOverlays(std::list<const QgsVectorOverlay*>& overlayList) const;
 
 public slots:
 

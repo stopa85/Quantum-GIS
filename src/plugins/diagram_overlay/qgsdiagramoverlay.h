@@ -35,19 +35,21 @@ class QgsDiagramOverlay: public QgsVectorOverlay
   QString name() const{return "diagram";}
   void setDiagramRenderer(QgsDiagramRenderer* r);
   const QgsDiagramRenderer* diagramRenderer() const {return mDiagramRenderer;}
-  void setDisplayFlag(bool display=true){mDisplayFlag = display;}
-  bool displayFlag() const {return mDisplayFlag;}
 
   bool writeXML(QDomNode& layer_node, QDomDocument& doc) const;
-  
+  int createLegendContent(std::list<std::pair<QString, QImage*> >& content) const;
+
+   /**Helper function that returns the attribute index from an attribute name*/
+  static int indexFromAttributeName(const QString& name, const QgsVectorLayer* vl);
+  /**Helper function that returns the attribute name from an attribute index*/
+  static QString attributeNameFromIndex(int index, const QgsVectorLayer* vl);
+
 protected:
   int getOverlayObjectSize(int& width, int& height, double value, const QgsFeature& f) const;
   
  private:
   /**Does the classification and manages the diagram generation*/
   QgsDiagramRenderer* mDiagramRenderer;
-  /**Flag if the overlay should be displayed or not*/
-  bool mDisplayFlag;
 };
 
 #endif
