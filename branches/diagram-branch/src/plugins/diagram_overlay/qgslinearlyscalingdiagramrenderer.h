@@ -41,6 +41,10 @@ class QgsLinearlyScalingDiagramRenderer: public QgsDiagramRenderer
   QString rendererName() const {return "linearly scaling";}
 
   bool writeXML(QDomNode& overlay_node, QDomDocument& doc) const;
+  /**Creates a descriptive image for the legend together with a string describing the attribute 
+     value for which this diagram is valid
+   @return 0 in case of error*/
+  QImage* getLegendImage(QString& legendString) const;
 
  private:
   /**Value, height, width of lower bound*/

@@ -19,12 +19,13 @@
 #include "qgscoordinatetransform.h"
 #include "qgsdiagramrenderer.h"
 #include "qgsfeature.h"
+#include "qgsfield.h"
 #include "qgsgeometry.h"
 #include "qgsmaptopixel.h"
 #include "qgsvectordataprovider.h"
 #include <QPainter>
 
-QgsDiagramOverlay::QgsDiagramOverlay(QgsVectorLayer* vl): QgsVectorOverlay(vl), mDiagramRenderer(0), mDisplayFlag(true)
+QgsDiagramOverlay::QgsDiagramOverlay(QgsVectorLayer* vl): QgsVectorOverlay(vl), mDiagramRenderer(0)
 {
 
 }
@@ -211,3 +212,101 @@ bool QgsDiagramOverlay::writeXML(QDomNode& layer_node, QDomDocument& doc) const
   return true;
 }
 
+int QgsDiagramOverlay::createLegendContent(std::list<std::pair<QString, QImage*> >& content) const
+{
+  //first make sure the list is clean
+  std::list<std::pair<QString, QImage*> >::iterator it;
+  for(it = content.begin(); it != content.end(); ++it)
+    {
+      delete (it->second);
+    }
+  content.clear();
+  
+  if(mDiagramRenderer)
+    {
+      //first item: name of the classification attribute
+      QString classificationName = QgsDiagramOverlay::attributeNameFromIndex(mDiagramRenderer->classificationField(), mVectorLayer);
+      content.push_back(std::make_pair(classificationName, (QImage*)0));
+
+      //then a descriptive symbol (must come from diagram renderer)
+      QString legendSymbolText;
+      QImage* legendSymbolImage = mDiagramRenderer->getLegendImage(legendSymbolText);
+      content.push_back(std::make_pair(legendSymbolText, legendSymbolImage));
+
+      //then color/attribute pairs
+      std::list<QColor> colorList = mDiagramRenderer->colors();
+      std::list<QColor>::const_iterator color_it = colorList.begin();
+      QgsAttributeList attributeList = mDiagramRenderer->attributes();
+      QgsAttributeList::const_iterator att_it = attributeList.begin();
+      QString attributeName;
+      QImage* colorImage;
+      QPainter p;
+
+      for(; att_it != attributeList.constEnd() && color_it != colorList.end(); ++color_it, ++att_it)
+	{
+	  colorImage = new QImage(15, 15, QImage::Format_ARGB32_Premultiplied);
+	  colorImage->fill(QColor(255,255,255,0).rgba());
+	  p.begin(colorImage);
+	  p.setPen(Qt::NoPen);
+	  p.setBrush(*color_it);
+	  p.drawRect(0, 0, 15, 15);
+	  p.end();
+	  attributeName = QgsDiagramOverlay::attributeNameFromIndex(*att_it, mVectorLayer);
+	  content.push_back(std::make_pair(attributeName, colorImage));
+	}
+
+      
+      
+      return 0;
+    }
+  else
+    {
+      return 1;
+    }
+}
+
+int QgsDiagramOverlay::indexFromAttributeName(const QString& name, const QgsVectorLayer* vl)
+{
+  int notFound = -1;
+  
+  if(!vl)
+    {
+      return notFound;
+    }
+
+  const QgsVectorDataProvider *provider;
+
+  if ((provider = dynamic_cast<const QgsVectorDataProvider *>(vl->getDataProvider())))
+    {
+      const QgsFieldMap & fields = provider->fields();
+      for (QgsFieldMap::const_iterator it = fields.begin(); it != fields.end(); ++it)
+        {
+	  if((*it).name() == name)
+	    {
+	      return it.key();
+	    }
+        }
+    }
+  return notFound;
+}
+
+QString QgsDiagramOverlay::attributeNameFromIndex(int index, const QgsVectorLayer* vl)
+{
+  if(!vl)
+    {
+      return "";
+    }
+
+  const QgsVectorDataProvider *provider;
+  int notFound = -1;
+  if ((provider = dynamic_cast<const QgsVectorDataProvider *>(vl->getDataProvider())))
+    {
+      const QgsFieldMap & fields = provider->fields();
+      QgsFieldMap::const_iterator it = fields.find(index);
+      if(it != fields.constEnd())
+	{
+	  return it.value().name();
+	}
+    }
+  return "";
+}

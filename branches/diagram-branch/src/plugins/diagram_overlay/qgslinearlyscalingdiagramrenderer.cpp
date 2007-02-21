@@ -3,6 +3,7 @@
 #include "qgsfeatureattribute.h"
 #include <limits>
 #include <QDomElement>
+#include <QImage>
 
 QgsLinearlyScalingDiagramRenderer::QgsLinearlyScalingDiagramRenderer(const QString& name, const QgsAttributeList& att, const std::list<QColor>& c): QgsDiagramRenderer(name, att, c)
 {
@@ -71,6 +72,37 @@ int QgsLinearlyScalingDiagramRenderer::getDiagramSize(int& width, int& height, d
       
     }
   return 0;
+}
+
+QImage* QgsLinearlyScalingDiagramRenderer::getLegendImage(QString& legendString) const
+{
+  //find out the quantity necessary for a fixed height
+  int destHeight = 50;
+  int destWidth;
+  double destQuantity;
+  QgsFeature dummyFeature;
+
+  double totalHeightDiff = mUpperItem.height() - mLowerItem.height();
+  double totalQuantityDiff = mUpperItem.lowerBound() - mLowerItem.lowerBound();
+  destQuantity = mLowerItem.lowerBound() + totalQuantityDiff * (destHeight - mLowerItem.height())/totalHeightDiff; 
+
+  legendString = QString::number(destQuantity, 'f');
+
+  if(mWellKnownName == "Pie")
+    {
+      destWidth = destHeight;
+      QgsAttributeList::const_iterator att_it; 
+      for(att_it = mAttributes.constBegin(); att_it != mAttributes.constEnd(); ++att_it)
+	{
+	  dummyFeature.addAttribute(*att_it, QgsFeatureAttribute("", "1"));
+	}
+    }
+  else if (mWellKnownName == "Bar")
+    {
+      destWidth = destHeight/3;
+      dummyFeature.addAttribute(mClassificationField, QgsFeatureAttribute("", "1"));
+    }
+  return mFactory.createDiagram(destWidth, destHeight, dummyFeature);
 }
 
 bool QgsLinearlyScalingDiagramRenderer::writeXML(QDomNode& overlay_node, QDomDocument& doc) const

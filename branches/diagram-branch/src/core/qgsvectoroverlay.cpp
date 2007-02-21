@@ -18,7 +18,7 @@
 #include "qgsvectoroverlay.h"
 #include "qgsgeometry.h"
 
-QgsVectorOverlay::QgsVectorOverlay(QgsVectorLayer* vl): mVectorLayer(vl)
+QgsVectorOverlay::QgsVectorOverlay(QgsVectorLayer* vl): mVectorLayer(vl), mDisplayFlag(true)
 {
   
 }

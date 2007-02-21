@@ -130,7 +130,7 @@ void QgsDiagramDialog::changeClassificationType(const QString& newType)
 
 void QgsDiagramDialog::changeClassificationAttribute(const QString& newAttribute)
 {
-  int attributeIndex = indexFromAttributeName(newAttribute);
+  int attributeIndex = QgsDiagramOverlay::indexFromAttributeName(newAttribute, mVectorLayer);
   if(attributeIndex == -1)
     {
       return;
@@ -152,12 +152,12 @@ void QgsDiagramDialog::apply() const
   QTreeWidgetItem* currentItem;
   int currentAttribute;
   
-  int classificationField = indexFromAttributeName(mClassificationComboBox->currentText());
+  int classificationField = QgsDiagramOverlay::indexFromAttributeName(mClassificationComboBox->currentText(), mVectorLayer);
   
   for(int i = 0; i < topLevelItemCount; ++i)
     {
       currentItem = mAttributesTreeWidget->topLevelItem(i);
-      currentAttribute = indexFromAttributeName(currentItem->text(0));
+      currentAttribute = QgsDiagramOverlay::indexFromAttributeName(currentItem->text(0), mVectorLayer);
       if(currentAttribute != -1)
 	{
 	  colorList.push_back(currentItem->background(1).color());
@@ -203,40 +203,6 @@ void QgsDiagramDialog::apply() const
   mVectorLayer->addOverlay(diagramOverlay);
 }
 
-int QgsDiagramDialog::indexFromAttributeName(const QString& name) const
-{
-  QgsVectorDataProvider *provider;
-  int notFound = -1;
-  if ((provider = dynamic_cast<QgsVectorDataProvider *>(mVectorLayer->getDataProvider())))
-    {
-      const QgsFieldMap & fields = provider->fields();
-      for (QgsFieldMap::const_iterator it = fields.begin(); it != fields.end(); ++it)
-        {
-	  if((*it).name() == name)
-	    {
-	      return it.key();
-	    }
-        }
-    }
-  return notFound;
-}
-
-QString QgsDiagramDialog::attributeNameFromIndex(int index) const
-{
-  QgsVectorDataProvider *provider;
-  int notFound = -1;
-  if ((provider = dynamic_cast<QgsVectorDataProvider *>(mVectorLayer->getDataProvider())))
-    {
-      const QgsFieldMap & fields = provider->fields();
-      QgsFieldMap::const_iterator it = fields.find(index);
-      if(it != fields.constEnd())
-	{
-	  return it.value().name();
-	}
-    }
-  return "";
-}
-
 void QgsDiagramDialog::handleItemDoubleClick(QTreeWidgetItem * item, int column)
 {
   if(column == 1) //change color
@@ -278,13 +244,13 @@ void QgsDiagramDialog::restoreSettings(const QgsVectorOverlay* overlay)
 	  for(;colorIt != colorList.end(); ++colorIt, ++attributeIt)
 	    {
 	      QTreeWidgetItem* newItem = new QTreeWidgetItem(mAttributesTreeWidget);
-	      newItem->setText(0, attributeNameFromIndex(*attributeIt));
+	      newItem->setText(0, QgsDiagramOverlay::attributeNameFromIndex(*attributeIt, mVectorLayer));
 	      newItem->setBackground(1, QBrush(*colorIt));
 	      mAttributesTreeWidget->addTopLevelItem(newItem);		 
 	    }
 
 	  //classification attribute
-	  QString classFieldName = attributeNameFromIndex(previousDiagramRenderer->classificationField());
+	  QString classFieldName = QgsDiagramOverlay::attributeNameFromIndex(previousDiagramRenderer->classificationField(), mVectorLayer);
 	  mClassificationComboBox->setCurrentIndex(mClassificationComboBox->findText(classFieldName));
 
 	  //classification type (specific for renderer subclass)
@@ -302,3 +268,5 @@ void QgsDiagramDialog::restoreSettings(const QgsVectorOverlay* overlay)
 	}
     }
 }
+
+
