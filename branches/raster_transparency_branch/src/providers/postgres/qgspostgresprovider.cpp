@@ -169,43 +169,63 @@ QgsPostgresProvider::QgsPostgresProvider(QString const & uri)
       calculateExtents();
       getFeatureCount();
 
+      // Get the relation oid for use in later queries
+      sql = "SELECT oid FROM pg_class WHERE relname = '" + mTableName + "' AND relnamespace = ("
+	  "SELECT oid FROM pg_namespace WHERE nspname = '" + mSchemaName + "')";
+      PGresult *tresult= PQexec(pd, (const char *)(sql.utf8()));
+      QString tableoid = PQgetvalue(tresult, 0, 0);
+      PQclear(tresult);
+
+/* Code to extrac the table description. Needs a way to make is accesssible
+to the rest of qgis...
+
+      // Get the table description
+      sql = "SELECT description FROM pg_description WHERE "
+          "classoid = " + tableoid + " AND objsubid = 0";
+      tresult = PQexec(pd, (const char*) sql.utf8());
+      if (PQntuples(tresult) > 0)
+        mDescription = PQgetvalue(tresult, 0, 0);
+      PQclear(tresult);
+*/
+
       // Populate the field vector for this layer. The field vector contains
       // field name, type, length, and precision (if numeric)
-      sql = "select * from " + mSchemaTableName + " limit 1";
+      sql = "select * from " + mSchemaTableName + " limit 0";
 
-      PGresult* result = PQexec(pd, (const char *) (sql.utf8()));
+      PGresult *result = PQexec(pd, (const char *) (sql.utf8()));
       //--std::cout << "Field: Name, Type, Size, Modifier:" << std::endl;
+
+      // The queries inside this loop could possibly be combined into one
+      // single query - this would make the code run faster.
+
       for (int i = 0; i < PQnfields(result); i++)
       {
         QString fieldName = PQfname(result, i);
         int fldtyp = PQftype(result, i);
         QString typOid = QString().setNum(fldtyp);
         int fieldModifier = PQfmod(result, i);
-        QString fieldComment = "";
+        QString fieldComment("");
 
-        sql = "select typelem from pg_type where typelem = " + typOid + " and typlen = -1";
-        //  //--std::cout << sql << std::endl;
-        PGresult *oidResult = PQexec(pd, (const char *) sql);
-        // get the oid of the "real" type
-        QString poid = PQgetvalue(oidResult, 0, PQfnumber(oidResult, "typelem"));
-        PQclear(oidResult);
+        sql = "SELECT typname, typlen FROM pg_type WHERE "
+            "oid = (SELECT typelem FROM pg_type WHERE "
+            "typelem = " + typOid + " AND typlen = -1)";
 
-        sql = "select typname, typlen from pg_type where oid = " + poid;
-        // //--std::cout << sql << std::endl;
-        oidResult = PQexec(pd, (const char *) sql);
+        PGresult* oidResult = PQexec(pd, (const char *) sql);
         QString fieldType = PQgetvalue(oidResult, 0, 0);
         QString fieldSize = PQgetvalue(oidResult, 0, 1);
         PQclear(oidResult);
 
-        sql = "select oid from pg_class where relname = '" + mTableName + "' and relnamespace = ("
-	  "select oid from pg_namespace where nspname = '" + mSchemaName + "')";
-        PGresult *tresult= PQexec(pd, (const char *)(sql.utf8()));
-        QString tableoid = PQgetvalue(tresult, 0, 0);
+        sql = "SELECT attnum FROM pg_attribute WHERE "
+            "attrelid = " + tableoid + " AND attname = '" + fieldName + "'";
+        PGresult *tresult = PQexec(pd, (const char *)(sql.utf8()));
+        QString attnum = PQgetvalue(tresult, 0, 0);
         PQclear(tresult);
 
-        sql = "select attnum from pg_attribute where attrelid = " + tableoid + " and attname = '" + fieldName + "'";
-        tresult = PQexec(pd, (const char *)(sql.utf8()));
-        QString attnum = PQgetvalue(tresult, 0, 0);
+        sql = "SELECT description FROM pg_description WHERE "
+            "objoid = " + tableoid + " AND objsubid = " + attnum;
+        tresult = PQexec(pd, (const char*)(sql.utf8()));
+        if (PQntuples(tresult) > 0)
+          fieldComment = PQgetvalue(tresult, 0, 0);
         PQclear(tresult);
 
         QgsDebugMsg("Field: " + attnum + " maps to " + QString::number(i) + " " + fieldName + ", " 
@@ -1231,21 +1251,31 @@ void QgsPostgresProvider::findColumns(tableCols& cols)
 
     if (!viewDef.isEmpty())
     {
-      // This regular expression needs more testing. Since the view
-      // definition comes from postgresql and has been 'standardised', we
-      // don't need to deal with everything that the user could put in a view
-      // definition. Does the regexp have to deal with the schema??
+      // Compiling and executing the regexp for each row from the above query
+      // can take quite a while - a database can easily have hundreds of
+      // rows. Working on the premise that we are only doing this to catch the
+      // cases where the view column has been renamed using the AS construct,
+      // we'll check for that first before doing the potentially
+      // time-consuming regular expression.
 
-      QRegExp s(".* \"?" + QRegExp::escape(temp.table_name) +
-                "\"?\\.\"?" + QRegExp::escape(temp.column_name) +
-                "\"? AS \"?(\\w+)\"?,* .*");
+        if (viewDef.contains("AS"))
+        {
+          // This regular expression needs more testing. Since the view
+          // definition comes from postgresql and has been 'standardised', we
+          // don't need to deal with everything that the user could put in a view
+          // definition. Does the regexp have to deal with the schema??
+
+          QRegExp s(".* \"?" + QRegExp::escape(temp.table_name) +
+                    "\"?\\.\"?" + QRegExp::escape(temp.column_name) +
+                    "\"? AS \"?(\\w+)\"?,* .*");
  
-      QgsDebugMsg(viewDef + "\n" + s.pattern());
+          QgsDebugMsg(viewDef + "\n" + s.pattern());
 
-      if (s.indexIn(viewDef) != -1)
-      {
-        temp.view_column_name = s.cap(1);
-      }
+          if (s.indexIn(viewDef) != -1)
+          {
+            temp.view_column_name = s.cap(1);
+          }
+        }
     }
 
     QgsDebugMsg(temp.view_schema + "." 
