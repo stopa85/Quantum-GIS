@@ -189,8 +189,14 @@ INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR})
 IF (WIN32)
   
   # TODO: create qgssvnversion.h properly
-  ADD_CUSTOM_TARGET(svnversion ALL echo \\"#define QGSSVNVERSION \\\"svn_rev_unavailable\\\" \\" > qgssvnversion.h
-      WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+  #ADD_CUSTOM_TARGET(svnversion ALL echo \\"#define QGSSVNVERSION \\\"svn_rev_unavailable\\\" \\" > qgssvnversion.h
+  #    WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+
+  # this should work with both msys and mingw generators
+  SET (SVNVER_H ${CMAKE_BINARY_DIR}/qgssvnversion.h)
+  IF (NOT EXISTS ${SVNVER_H})
+    WRITE_FILE(${SVNVER_H} "#define QGSSVNVERSION \"svn_rev_unavailable\"")
+  ENDIF (NOT EXISTS ${SVNVER_H})
 
 ELSE (WIN32)
 

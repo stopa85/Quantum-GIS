@@ -412,12 +412,14 @@ QString QgsGrass::openMapset ( QString gisdbase, QString location, QString mapse
     // TODO better wait 
     while ( process->isRunning () ) { }
 
+#ifndef WIN32
     int status = process->exitStatus ();
-    delete process;
-
 #ifdef QGISDEBUG
     std::cerr << "status = " << status << std::endl;
 #endif
+#endif
+    delete process;
+
 
 // TODO WIN32 (lock.exe does not work properly?)
 #ifndef WIN32
