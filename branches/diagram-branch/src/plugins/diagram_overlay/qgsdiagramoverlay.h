@@ -36,6 +36,7 @@ class QgsDiagramOverlay: public QgsVectorOverlay
   void setDiagramRenderer(QgsDiagramRenderer* r);
   const QgsDiagramRenderer* diagramRenderer() const {return mDiagramRenderer;}
 
+  bool readXML(const QDomNode& overlayNode);
   bool writeXML(QDomNode& layer_node, QDomDocument& doc) const;
   int createLegendContent(std::list<std::pair<QString, QImage*> >& content) const;
 

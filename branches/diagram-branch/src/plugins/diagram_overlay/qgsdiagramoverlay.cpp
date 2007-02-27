@@ -21,7 +21,9 @@
 #include "qgsfeature.h"
 #include "qgsfield.h"
 #include "qgsgeometry.h"
+#include "qgslinearlyscalingdiagramrenderer.h"
 #include "qgsmaptopixel.h"
+#include "qgsproject.h"
 #include "qgsvectordataprovider.h"
 #include <QPainter>
 
@@ -166,6 +168,72 @@ void QgsDiagramOverlay::drawOverlayObjects(QPainter * p, const QgsRect& viewExte
 int QgsDiagramOverlay::getOverlayObjectSize(int& width, int& height, double value, const QgsFeature& f) const
 {
 	return mDiagramRenderer->getDiagramSize(width, height, value, f);
+}
+
+bool QgsDiagramOverlay::readXML(const QDomNode& overlayNode)
+{
+  QDomElement overlayElem = overlayNode.toElement();
+
+  //create a renderer object
+  QgsDiagramRenderer* theDiagramRenderer = 0;
+  QDomNodeList rendererList = overlayNode.toElement().elementsByTagName("renderer");
+  QDomElement rendererElem;
+
+  QString wellKnownName;
+  QgsAttributeList attributeList;
+  std::list<QColor> colorList;
+  int classificationField;
+
+  //classificationField
+  QDomNodeList classificationFieldList = overlayElem.elementsByTagName("classificationfield");
+  if(classificationFieldList.size() < 1)
+    {
+      return false;
+    }
+  classificationField = classificationFieldList.at(0).toElement().text().toInt();
+
+  //attributes
+  QDomNodeList attributeNodeList = overlayElem.elementsByTagName("attribute");
+  for(int i = 0; i < attributeNodeList.size(); ++i)
+    {
+      attributeList.push_back(attributeNodeList.at(i).toElement().text().toInt());
+    }
+
+  //colors
+  QDomNodeList colorNodeList = overlayElem.elementsByTagName("color");
+  QDomElement currentColorElem;
+  for(int i = 0; i < colorNodeList.size(); ++i)
+    {
+      currentColorElem = colorNodeList.at(i).toElement();
+      //todo: look at attributes red, green, blue
+    }
+
+  if(rendererList.size() < 1)
+    {
+      return false;
+    }
+  rendererElem = rendererList.at(0).toElement();
+
+  QString type = rendererElem.attribute("type");
+  if(type == "linearly_scaling")
+    {
+      theDiagramRenderer = new QgsLinearlyScalingDiagramRenderer(wellKnownName, attributeList, colorList);
+      theDiagramRenderer->setClassificationField(classificationField);
+    }
+  else
+    {
+      return false;
+    }
+  
+  //add classification field, colors, attributes to the renderer
+
+  //call renderer->readXML(rendererNode) to read the renderer specific settings
+  if(theDiagramRenderer)
+    {
+      theDiagramRenderer->readXML(rendererElem);
+      return true;
+    }
+  return false;
 }
 
 bool QgsDiagramOverlay::writeXML(QDomNode& layer_node, QDomDocument& doc) const
