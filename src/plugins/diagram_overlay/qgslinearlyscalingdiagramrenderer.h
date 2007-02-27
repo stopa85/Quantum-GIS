@@ -39,7 +39,7 @@ class QgsLinearlyScalingDiagramRenderer: public QgsDiagramRenderer
   void setUpperItem(const QgsDiagramItem& item){mUpperItem = item;}
   QgsDiagramItem upperItem() const {return mUpperItem;}
   QString rendererName() const {return "linearly scaling";}
-
+  bool readXML(const QDomNode& rendererNode);
   bool writeXML(QDomNode& overlay_node, QDomDocument& doc) const;
   /**Creates a descriptive image for the legend together with a string describing the attribute 
      value for which this diagram is valid

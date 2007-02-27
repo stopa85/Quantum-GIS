@@ -112,6 +112,11 @@ QImage* QgsLinearlyScalingDiagramRenderer::getLegendImage(QString& legendString)
   return mFactory.createDiagram(destWidth, destHeight, dummyFeature);
 }
 
+bool QgsLinearlyScalingDiagramRenderer::readXML(const QDomNode& rendererNode)
+{
+  return true;
+}
+
 bool QgsLinearlyScalingDiagramRenderer::writeXML(QDomNode& overlay_node, QDomDocument& doc) const
 {
   QDomElement rendererElement = doc.createElement("renderer");

@@ -51,6 +51,8 @@ class QgsDiagramRenderer
   std::list<QColor> colors() const {return mColors;}
   void setClassificationField(int index){mClassificationField = index;}
   int classificationField() const {return mClassificationField;}
+  /**Reads the specific renderer settings from project file*/
+  virtual bool readXML(const QDomNode& rendererNode) = 0;
   /**Saves settings to project file. Returns true in case of success*/
   virtual bool writeXML(QDomNode& overlay_node, QDomDocument& doc) const = 0;
   /**Creates a descriptive image for the legend and a descriptive string, e.g.

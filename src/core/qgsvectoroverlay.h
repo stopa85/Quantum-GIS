@@ -43,6 +43,8 @@ class QgsVectorOverlay
   /**Returns the name of the overlay layer*/
   virtual QString name() const = 0;
   
+  /**Restore the settings of the overlay from project file*/
+  virtual bool readXML(const QDomNode& overlayNode) = 0;
   /**Saves the overlay to xml project file. Returns true in case of success*/
   virtual bool writeXML(QDomNode& layer_node, QDomDocument& doc) const = 0;
   /**Creates images and strings for the use in a legend. The caller takes ownership of the image objects

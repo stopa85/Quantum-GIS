@@ -16,6 +16,7 @@ SET (DIAGRAMOVERLAY_SRCS
 SET (DIAGRAMOVERLAY_UIS qgsdiagramdialogbase.ui qgslinearlyscalingdialogbase.ui)
 
 SET (DIAGRAMOVERLAY_MOC_HDRS
+     qgsdiagramoverlayplugin.h
      qgsdiagramdialog.h
      qgslinearlyscalingdialog.h
 )
