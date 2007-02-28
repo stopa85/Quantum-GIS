@@ -35,7 +35,7 @@ static const QString pluginName = "diagram overlay";
 static const QString pluginDescription = "A plugin for placing diagrams on vector layers";
 static const QString pluginVersion = "Version 0.0.1";
 
-QgsDiagramOverlayPlugin::QgsDiagramOverlayPlugin(QgisInterface* iface): QObject(), QgsVectorOverlayPlugin(pluginName, pluginDescription, pluginVersion)
+QgsDiagramOverlayPlugin::QgsDiagramOverlayPlugin(QgisInterface* iface): QObject(), QgsVectorOverlayPlugin(pluginName, pluginDescription, pluginVersion), mInterface(iface)
 {
   if(iface && iface->getMainWindow())
     {
@@ -109,6 +109,12 @@ void QgsDiagramOverlayPlugin::projectRead()
 
 	      //add the overlay to the vector layer
 	      currentVectorLayer->addOverlay(newDiagramOverlay);
+
+	      //notify the legend that the layer legend needs to be changed
+	      if(mInterface)
+		{
+		  mInterface->refreshLayerSymbology(layerId);
+		}
 	    }
 	}
     }

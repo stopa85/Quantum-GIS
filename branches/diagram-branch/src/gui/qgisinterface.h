@@ -74,6 +74,9 @@ class GUI_EXPORT QgisInterface : public QObject
     //! Add a raster layer given a QgsRasterLayer object
     virtual bool addRasterLayer(QgsRasterLayer * theRasterLayer, bool theForceRenderFlag=false)=0;
 
+    //!Refresh legend entry for layer
+    virtual void refreshLayerSymbology(const QString& layerId)=0;
+
     //! Add a project
     virtual bool addProject(QString theProject)=0; 
     //! Start a blank project

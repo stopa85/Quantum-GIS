@@ -39,6 +39,9 @@ class QgsDiagramOverlayPlugin: public QObject, public QgsVectorOverlayPlugin
 
   public slots:
   void projectRead();
+
+ private:
+  QgisInterface* mInterface;
 };
 
 #endif
