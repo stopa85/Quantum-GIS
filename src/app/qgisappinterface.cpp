@@ -68,6 +68,15 @@ bool QgisAppInterface::addRasterLayer(QString rasterLayerPath)
   return qgis->addRasterLayer( QStringList(rasterLayerPath) );
 }
 
+void QgisAppInterface::refreshLayerSymbology(const QString& layerId)
+{
+  QgsLegend* theLegend = qgis->legend();
+  if(theLegend)
+    {
+      theLegend->refreshLayerSymbology(layerId);
+    }
+}
+
 bool QgisAppInterface::addRasterLayer(QgsRasterLayer * theRasterLayer, bool theForceRenderFlag)
 {
   return qgis->addRasterLayer(theRasterLayer, theForceRenderFlag);

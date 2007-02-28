@@ -57,6 +57,9 @@ class QgisAppInterface : public QgisInterface
         //! Add a raster layer given a raster layer obj
         bool addRasterLayer(QgsRasterLayer * theRasterLayer,bool theForceRenderFlag=false);
 
+	//!Refresh legend entry for layer
+	void refreshLayerSymbology(const QString& layerId);
+
         //! Add a project
         bool addProject(QString theProjectName);
         //! Start a new blank project
