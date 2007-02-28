@@ -114,6 +114,72 @@ QImage* QgsLinearlyScalingDiagramRenderer::getLegendImage(QString& legendString)
 
 bool QgsLinearlyScalingDiagramRenderer::readXML(const QDomNode& rendererNode)
 {
+  QDomElement rendererElem = rendererNode.toElement();
+
+  double lowerBound, upperBound;
+  int width, height;
+  bool conversionOk;
+
+  //loweritem
+  QDomNodeList lowerItemList = rendererElem.elementsByTagName("loweritem"); 
+  if(lowerItemList.size() < 1)
+    {
+      return false;
+    }
+
+  QDomElement lowerItemElem = lowerItemList.at(0).toElement();
+  lowerBound = lowerItemElem.attribute("lower_bound").toDouble(&conversionOk);
+  if(!conversionOk)
+    {
+      return false;
+    }
+  upperBound = lowerItemElem.attribute("upper_bound").toDouble(&conversionOk);
+  if(!conversionOk)
+    {
+      return false;
+    }
+  width = lowerItemElem.attribute("width").toInt(&conversionOk);
+  if(!conversionOk)
+    {
+      return false;
+    }
+  height = lowerItemElem.attribute("height").toInt(&conversionOk);
+  if(!conversionOk)
+    {
+      return false;
+    }
+  setLowerItem(QgsDiagramItem(lowerBound, upperBound, height, width));
+
+  //upperitem
+  QDomNodeList upperItemList = rendererElem.elementsByTagName("upperitem");
+  if(upperItemList.size() < 1)
+    {
+      return false;
+    }
+  
+  QDomElement upperItemElem = upperItemList.at(0).toElement();
+  lowerBound = upperItemElem.attribute("lower_bound").toDouble(&conversionOk);
+  if(!conversionOk)
+    {
+      return false;
+    }
+  upperBound = upperItemElem.attribute("upper_bound").toDouble(&conversionOk);
+  if(!conversionOk)
+    {
+      return false;
+    }
+  width = upperItemElem.attribute("width").toInt(&conversionOk);
+  if(!conversionOk)
+    {
+      return false;
+    }
+  height = upperItemElem.attribute("height").toInt(&conversionOk);
+  if(!conversionOk)
+    {
+      return false;
+    }
+  setUpperItem(QgsDiagramItem(lowerBound, upperBound, height, width));
+
   return true;
 }
 

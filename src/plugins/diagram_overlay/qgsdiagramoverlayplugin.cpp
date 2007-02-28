@@ -110,7 +110,8 @@ void QgsDiagramOverlayPlugin::projectRead()
 	      //create an overlay object
 	      newDiagramOverlay = new QgsDiagramOverlay(currentVectorLayer);
 	      newDiagramOverlay->readXML(overlayElem);
-	      
+	      newDiagramOverlay->setDisplayFlag(true);
+
 	      //add the overlay to the vector layer
 	      currentVectorLayer->addOverlay(newDiagramOverlay);
 	    }
