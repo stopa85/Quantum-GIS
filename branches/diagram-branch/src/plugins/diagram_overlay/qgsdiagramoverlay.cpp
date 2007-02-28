@@ -184,6 +184,14 @@ bool QgsDiagramOverlay::readXML(const QDomNode& overlayNode)
   std::list<QColor> colorList;
   int classificationField;
 
+  //wellknownname
+  QDomNodeList wknNodeList = overlayElem.elementsByTagName("wellknownname");
+  if(wknNodeList.size() < 1)
+    {
+      return false;
+    }
+  wellKnownName = wknNodeList.at(0).toElement().text();
+
   //classificationField
   QDomNodeList classificationFieldList = overlayElem.elementsByTagName("classificationfield");
   if(classificationFieldList.size() < 1)
@@ -202,10 +210,15 @@ bool QgsDiagramOverlay::readXML(const QDomNode& overlayNode)
   //colors
   QDomNodeList colorNodeList = overlayElem.elementsByTagName("color");
   QDomElement currentColorElem;
+  int currentRed, currentGreen, currentBlue;
+
   for(int i = 0; i < colorNodeList.size(); ++i)
     {
       currentColorElem = colorNodeList.at(i).toElement();
-      //todo: look at attributes red, green, blue
+      currentRed = currentColorElem.attribute("red").toInt();
+      currentGreen = currentColorElem.attribute("green").toInt();
+      currentBlue = currentColorElem.attribute("blue").toInt();
+      colorList.push_back(QColor(currentRed, currentGreen, currentBlue));
     }
 
   if(rendererList.size() < 1)
@@ -218,19 +231,26 @@ bool QgsDiagramOverlay::readXML(const QDomNode& overlayNode)
   if(type == "linearly_scaling")
     {
       theDiagramRenderer = new QgsLinearlyScalingDiagramRenderer(wellKnownName, attributeList, colorList);
-      theDiagramRenderer->setClassificationField(classificationField);
     }
   else
     {
       return false;
     }
   
-  //add classification field, colors, attributes to the renderer
+  theDiagramRenderer->setClassificationField(classificationField);
 
-  //call renderer->readXML(rendererNode) to read the renderer specific settings
+  //Read renderer specific settings
   if(theDiagramRenderer)
     {
       theDiagramRenderer->readXML(rendererElem);
+      setDiagramRenderer(theDiagramRenderer);
+      
+      //the overlay may need a different attribute list than the renderer
+      if(!attributeList.contains(classificationField))
+	{
+	  attributeList.push_back(classificationField);	
+	}
+      setAttributes(attributeList);
       return true;
     }
   return false;
@@ -244,6 +264,12 @@ bool QgsDiagramOverlay::writeXML(QDomNode& layer_node, QDomDocument& doc) const
 
   if(mDiagramRenderer)
     {
+      //well known name
+      QDomElement wellKnownNameElem = doc.createElement("wellknownname");
+      QDomText wknText = doc.createTextNode(mDiagramRenderer->wellKnownName());
+      wellKnownNameElem.appendChild(wknText);
+      overlayElement.appendChild(wellKnownNameElem);
+
       //classification field
       QDomElement classificationFieldElem = doc.createElement("classificationfield");
       QDomText classFieldText = doc.createTextNode(QString::number(mDiagramRenderer->classificationField()));

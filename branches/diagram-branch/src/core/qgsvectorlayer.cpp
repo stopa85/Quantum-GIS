@@ -123,10 +123,11 @@ QgsVectorLayer::QgsVectorLayer(QString vectorLayerPath,
     // TODO: load this setting somewhere else [MD]
     //QSettings settings;
     //mUpdateThreshold = settings.readNumEntry("Map/updateThreshold", 1000);
-   
-    //place overlay objects on the center point
-    mOverlayManager = new QgsCentralPointPositionManager(this);
   }
+  
+  //place overlay objects on the center point
+    mOverlayManager = new QgsCentralPointPositionManager(this);
+
 } // QgsVectorLayer ctor
 
 
