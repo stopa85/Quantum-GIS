@@ -50,7 +50,6 @@ QgsDiagramOverlayPlugin::~QgsDiagramOverlayPlugin()
 
 void QgsDiagramOverlayPlugin::projectRead()
 {
-  qWarning("QgsDiagramOverlayPlugin, entering projectRead()");
   //for a test, print out the content of the project file
   QString projectFileName = QgsProject::instance()->filename();
 
@@ -90,7 +89,6 @@ void QgsDiagramOverlayPlugin::projectRead()
 	  continue;
 	}
       layerId = idList.at(0).toElement().text();
-      qWarning("layer id is: " + layerId);
 
       //iterate through all overlay elements
       for(int j = 0; j < overlayList.size(); ++j)
@@ -105,12 +103,9 @@ void QgsDiagramOverlayPlugin::projectRead()
 		  continue;
 		}
 
-	      qWarning("diagram overlay found");
-
 	      //create an overlay object
 	      newDiagramOverlay = new QgsDiagramOverlay(currentVectorLayer);
 	      newDiagramOverlay->readXML(overlayElem);
-	      newDiagramOverlay->setDisplayFlag(true);
 
 	      //add the overlay to the vector layer
 	      currentVectorLayer->addOverlay(newDiagramOverlay);

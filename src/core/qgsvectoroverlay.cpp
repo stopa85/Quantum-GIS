@@ -96,7 +96,7 @@ int QgsVectorOverlay::splitWkbMultiPolygon(std::list<unsigned char*>& wkbGeometr
   memcpy(&numberOfPolygons, &(featureWKB[currentPosition]), sizeof(int));
   currentPosition += sizeof(int);
 
-  for(int i = 0; i < numberOfPolygons; ++i)
+  for(int i = 0; i < 1 /*numberOfPolygons*/; ++i)
     {
       startSection = currentPosition;
       currentPosition += (1 + sizeof(int));
@@ -135,7 +135,7 @@ int QgsVectorOverlay::splitWkbMultiLine(std::list<unsigned char*>& wkbGeometries
   	memcpy(&numberOfLines, &(featureWKB[currentPosition]), sizeof(int));
   	currentPosition += sizeof(int);
 	
-	for(int i = 0; i < numberOfLines; ++i)
+	for(int i = 0; i < 1 /*numberOfLines*/; ++i)
 	{
 		currentPosition += (1 + sizeof(int)); //skip endian and type
 		startSection = currentPosition;

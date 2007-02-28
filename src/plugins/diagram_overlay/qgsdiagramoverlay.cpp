@@ -173,6 +173,16 @@ int QgsDiagramOverlay::getOverlayObjectSize(int& width, int& height, double valu
 bool QgsDiagramOverlay::readXML(const QDomNode& overlayNode)
 {
   QDomElement overlayElem = overlayNode.toElement();
+  
+  //set display flag
+  if(overlayElem.attribute("display") == "true")
+    {
+      mDisplayFlag = true;
+    }
+  else
+    {
+      mDisplayFlag = false;
+    }
 
   //create a renderer object
   QgsDiagramRenderer* theDiagramRenderer = 0;
@@ -260,6 +270,15 @@ bool QgsDiagramOverlay::writeXML(QDomNode& layer_node, QDomDocument& doc) const
 {
   QDomElement overlayElement = doc.createElement("overlay");
   overlayElement.setAttribute("type", "diagram");
+  if(mDisplayFlag)
+    {
+      overlayElement.setAttribute("display", "true");
+    }
+  else
+    {
+      overlayElement.setAttribute("display", "false");
+    }
+
   layer_node.appendChild(overlayElement);
 
   if(mDiagramRenderer)

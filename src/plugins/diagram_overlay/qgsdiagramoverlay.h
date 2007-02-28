@@ -40,9 +40,10 @@ class QgsDiagramOverlay: public QgsVectorOverlay
   bool writeXML(QDomNode& layer_node, QDomDocument& doc) const;
   int createLegendContent(std::list<std::pair<QString, QImage*> >& content) const;
 
-   /**Helper function that returns the attribute index from an attribute name*/
+   /**Helper function that returns the attribute index from an attribute name. Returns -1 in case of error*/
   static int indexFromAttributeName(const QString& name, const QgsVectorLayer* vl);
-  /**Helper function that returns the attribute name from an attribute index*/
+  /**Helper function that returns the attribute name from an attribute index. Returns an empty string
+   in case of error.*/
   static QString attributeNameFromIndex(int index, const QgsVectorLayer* vl);
 
 protected:
