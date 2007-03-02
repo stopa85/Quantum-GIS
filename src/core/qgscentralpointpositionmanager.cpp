@@ -55,9 +55,10 @@ void QgsCentralPointPositionManager::findOptimalObjectPositions(const QgsRect& v
 
 int QgsCentralPointPositionManager::findObjectPosition(const unsigned char* wkb, QgsPoint& position) const
 {
-  int type;
+  QGis::WKBTYPE type;
   int currentPosition = 0; //parsing position in the wkb binary
   double currentX, currentY;
+  bool hasZValue = false;
 
   currentPosition += 1;
   memcpy(&type, &(wkb[currentPosition]), sizeof(int));
@@ -65,6 +66,16 @@ int QgsCentralPointPositionManager::findObjectPosition(const unsigned char* wkb,
 
   switch (type)
     {
+      //multigeometries should be already split
+    case QGis::WKBMultiPoint25D:
+    case QGis::WKBMultiPoint:
+    case QGis::WKBMultiLineString25D:
+    case QGis::WKBMultiLineString:
+    case QGis::WKBMultiPolygon25D:
+    case QGis::WKBMultiPolygon:
+      return 1;
+
+    case QGis::WKBPoint25D:
     case QGis::WKBPoint:
       memcpy(&currentX, &(wkb[currentPosition]), sizeof(double));
       currentPosition += sizeof(double);
@@ -73,6 +84,8 @@ int QgsCentralPointPositionManager::findObjectPosition(const unsigned char* wkb,
       position.setY(currentY);
       return 0;
 
+    case QGis::WKBLineString25D:
+      hasZValue = true;
     case QGis::WKBLineString://get the middle point
       {
 	int numberOfPoints;
@@ -88,6 +101,10 @@ int QgsCentralPointPositionManager::findObjectPosition(const unsigned char* wkb,
 	    for(int i = 0; i < midpoint; ++i)
 	      {
 		currentPosition += 2 * sizeof(double);
+		if(hasZValue)
+		  {
+		    currentPosition += sizeof(double);
+		  }
 	      }
 	  }
 	double xPos, yPos;
@@ -98,6 +115,8 @@ int QgsCentralPointPositionManager::findObjectPosition(const unsigned char* wkb,
 	position.setY(yPos);
 	return 0;
       }
+    case QGis::WKBPolygon25D:
+      hasZValue = true;
     case QGis::WKBPolygon: //calculate the centroid of the first ring
       {
 	currentPosition+= sizeof(int); //skip number of rings
@@ -113,6 +132,10 @@ int QgsCentralPointPositionManager::findObjectPosition(const unsigned char* wkb,
 	    currentPosition+= sizeof(double);
 	    memcpy(&(y[i]), &(wkb[currentPosition]), sizeof(double));
 	    currentPosition+= sizeof(double);
+	    if(hasZValue)
+	      {
+		currentPosition += sizeof(double);
+	      }
 	  }
 	double centroidX, centroidY;
 	if(calculatePolygonCentroid(x, y, numberOfPoints, centroidX, centroidY) != 0)
