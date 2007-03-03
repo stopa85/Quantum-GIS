@@ -18,18 +18,21 @@
  /* $Id$ */
 
 #include "qgsvectorlayerproperties.h"
+
 #include "qgsattributeactiondialog.h"
+#include "qgscontexthelp.h"
 #include "qgscontinuouscolordialog.h"
 #include "qgscoordinatetransform.h"
 #include "qgsgraduatedsymboldialog.h"
 #include "qgslabel.h"
 #include "qgslabeldialog.h"
 #include "qgslayerprojectionselector.h"
+#include "qgslogger.h"
 #include "qgssinglesymboldialog.h"
 #include "qgsuniquevaluedialog.h"
 #include "qgsvectordataprovider.h"
 #include "qgsvectorlayer.h"
-#include "qgscontexthelp.h"
+
 #ifdef HAVE_POSTGRESQL
 #include "qgspgquerybuilder.h"
 #include "../providers/postgres/qgspostgresprovider.h"
@@ -72,9 +75,9 @@ QgsVectorLayerProperties::QgsVectorLayerProperties(QgsVectorLayer * lyr,
   if(layer->getDataProvider())//enable spatial index button group if supported by provider
   {
       int capabilities=layer->getDataProvider()->capabilities();
-      if(capabilities&QgsVectorDataProvider::CreateSpatialIndex)
+      if(!(capabilities&QgsVectorDataProvider::CreateSpatialIndex))
       {
-	  indexGroupBox->setEnabled(true);
+	  indexGroupBox->setEnabled(false);
       }
   }
 
@@ -380,6 +383,15 @@ QString QgsVectorLayerProperties::getMetadata()
   myMetadataQString += tr("General:");
   myMetadataQString += "</td></tr>";
 
+  // data comment
+  if (!(layer->dataComment().isEmpty()))
+  {
+    myMetadataQString += "<tr><td bgcolor=\"white\">";
+    myMetadataQString += tr("Layer comment: ") + 
+        layer->dataComment();
+    myMetadataQString += "</td></tr>";
+  }
+
   //storage type
   myMetadataQString += "<tr><td bgcolor=\"white\">";
   myMetadataQString += tr("Storage type of this layer : ") + 
@@ -398,7 +410,7 @@ QString QgsVectorLayerProperties::getMetadata()
 
   if ( vectorType < 0 || vectorType > QGis::Polygon )
   {
-      QgsDebug( "Invalid vector type" );
+      QgsDebugMsg( "Invalid vector type" );
   }
   else
   {
@@ -487,7 +499,7 @@ QString QgsVectorLayerProperties::getMetadata()
   }
   catch(QgsCsException &cse)
   {
-    QgsDebug( cse.what() );
+    QgsDebugMsg( cse.what() );
 
     myMetadataQString += "<tr><td bgcolor=\"white\">";
     myMetadataQString += tr("In project spatial reference system units : ");

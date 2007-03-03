@@ -151,7 +151,7 @@ ENDIF (PYTHON_FOUND)
 QT4_WRAP_CPP(QGIS_APP_MOC_SRCS ${QGIS_APP_MOC_HDRS})
 
 
-IF (WIN32)
+IF (WIN32 AND NOT MSVC)
 
   # Icon for windows
   # Note: can't include .rc directly to source files
@@ -164,13 +164,21 @@ IF (WIN32)
     ENDIF (NOT WINDRES)
   ENDIF (NOT WINDRES)
 
-  ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/qgis_win32.obj
-                     COMMAND ${WINDRES}  -I${CMAKE_CURRENT_SOURCE_DIR}/..
-                                         -i${CMAKE_CURRENT_SOURCE_DIR}/../qgis_win32.rc
-                                         -o ${CMAKE_CURRENT_BINARY_DIR}/qgis_win32.obj)
-  SET(QGIS_APP_SRCS ${QGIS_APP_SRCS} ${CMAKE_CURRENT_BINARY_DIR}/qgis_win32.obj)
 
-ENDIF (WIN32)
+
+  #############################################################
+  # application icon
+  IF( MINGW )
+    # resource compilation for MinGW
+    ADD_CUSTOM_COMMAND( OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/icon.o
+      COMMAND windres.exe -I${CMAKE_CURRENT_SOURCE_DIR} -i${CMAKE_CURRENT_SOURCE_DIR}/qgis_win32.rc 
+      -o ${CMAKE_CURRENT_BINARY_DIR}/icon.o )
+    SET(QGIS_APP_SRCS ${QGIS_APP_SRCS} ${CMAKE_CURRENT_BINARY_DIR}/icon.o)
+  ELSE( MINGW )
+    SET(QGIS_APP_SRCS ${QGIS_APP_SRCS} icon.rc)
+  ENDIF( MINGW )
+
+ENDIF (WIN32 AND NOT MSVC)
 
 # This is the right way to include icon in MSVC but currently
 # it ends with error that qgis_win322.ico is old DIB and it has to be converted

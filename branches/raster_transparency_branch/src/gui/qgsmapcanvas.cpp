@@ -175,8 +175,11 @@ QgsMapRender* QgsMapCanvas::mapRender()
 
 QgsMapLayer* QgsMapCanvas::getZpos(int index)
 {
-  QString layer = mMapRender->layerSet()[index];
-  return QgsMapLayerRegistry::instance()->mapLayer(layer);
+  QStringList& layers = mMapRender->layerSet();
+  if (index >= 0 && index < (int) layers.size())
+    return QgsMapLayerRegistry::instance()->mapLayer(layers[index]);
+  else
+    return NULL;
 }
 
 
@@ -220,7 +223,7 @@ void QgsMapCanvas::setLayerSet(QList<QgsMapCanvasLayer>& layers)
   int i;
   
   // create layer set
-  std::deque<QString> layerSet, layerSetOverview;
+  QStringList layerSet, layerSetOverview;
   
   for (i = 0; i < layers.size(); i++)
   {
@@ -235,7 +238,7 @@ void QgsMapCanvas::setLayerSet(QList<QgsMapCanvasLayer>& layers)
     }
   }
   
-  std::deque<QString>& layerSetOld = mMapRender->layerSet();
+  QStringList& layerSetOld = mMapRender->layerSet();
   
   bool layerSetChanged = (layerSetOld != layerSet);
   
@@ -260,7 +263,7 @@ void QgsMapCanvas::setLayerSet(QList<QgsMapCanvasLayer>& layers)
 
   if (mMapOverview)
   {
-    std::deque<QString>& layerSetOvOld = mMapOverview->layerSet();
+    QStringList& layerSetOvOld = mMapOverview->layerSet();
     if (layerSetOvOld != layerSetOverview)
     {
       mMapOverview->setLayerSet(layerSetOverview);
@@ -428,15 +431,11 @@ void QgsMapCanvas::setExtent(QgsRect const & r)
 void QgsMapCanvas::updateScale()
 {
   double scale = mMapRender->scale();
-  QString myScaleString = tr("Scale ");
-  int thePrecision = 0;
-  if (scale == 0)
-    myScaleString = "";
-  else if (scale >= 1)
-    myScaleString += QString("1: ") + QString::number(scale,'f',thePrecision);
-  else
-    myScaleString += QString::number(1.0/scale, 'f', thePrecision) + QString(": 1");
-  emit scaleChanged(myScaleString);
+
+  if (scale < 1)
+    emit scaleChanged(lround(-1.0/scale));
+  else 
+    emit scaleChanged(lround(scale));
 }
 
 
@@ -1073,3 +1072,13 @@ void QgsMapCanvas::writeProject(QDomDocument & doc)
 
   
 }
+
+void QgsMapCanvas::zoom(double scaleFactor)
+{
+  
+  QgsRect r = mMapRender->extent();
+  r.scale(scaleFactor);
+  setExtent(r);
+  refresh();
+}
+
