@@ -804,28 +804,28 @@ public:
      */
     const QgsRasterDataProvider* getDataProvider() const;
 
-     /** \brief Mutator for userDefinedColorMinMax */
+     /** \brief Mutator for userDefinedThreeBandMinMax */
     void setUserDefinedColorMinMax(bool theBool)
     {
-      userDefinedColorMinMax = theBool;
+      userDefinedThreeBandMinMax = theBool;
     } 
 
     /** \brief Accessor for userDefinedMinMax.  */
     bool getUserDefinedColorMinMax()
     {
-      return userDefinedColorMinMax;
+      return userDefinedThreeBandMinMax;
     }
 
-    /** \brief Mutator for userDefinedColorMinMax */
+    /** \brief Mutator for userDefinedThreeBandMinMax */
     void setUserDefinedGrayMinMax(bool theBool)
     {
-      userDefinedGrayMinMax = theBool;
+      userDefinedSingleBandMinMax = theBool;
     } 
 
     /** \brief Accessor for userDefinedMinMax.  */
     bool getUserDefinedGrayMinMax()
     {
-      return userDefinedGrayMinMax;
+      return userDefinedSingleBandMinMax;
     }
 
     //
@@ -1081,8 +1081,8 @@ private:
     /** \brief Whether this raster has overviews / pyramids or not */
     bool hasPyramidsFlag;
     //Since QgsRasterBandStats deos not set the minRedDouble maxRedDouble etc., it is benificial to know if the user as set these values. Default = false
-    bool userDefinedColorMinMax;
-    bool userDefinedGrayMinMax;
+    bool userDefinedThreeBandMinMax;
+    bool userDefinedSingleBandMinMax;
     /** \brief This list holds a series of RasterPyramid structs
      * which store infomation for each potential pyramid level for this raster.*/
     RasterPyramidList mPyramidList;

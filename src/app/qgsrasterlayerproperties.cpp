@@ -421,6 +421,7 @@ void QgsRasterLayerProperties::sync()
       gboxSingleBand->setEnabled(true);
       gboxSingleBand->setChecked(true);
       rbtnThreeBandMinMax->setEnabled(false);
+      rbtnThreeBandStdDev->setEnabled(false);
       cboxColorScalingAlgorithm->setEnabled(false);
       break;
     case QgsRasterLayer::PALETTED_SINGLE_BAND_PSEUDO_COLOR:
@@ -428,6 +429,7 @@ void QgsRasterLayerProperties::sync()
       gboxSingleBand->setEnabled(true);
       gboxSingleBand->setChecked(true);
       rbtnThreeBandMinMax->setEnabled(false);
+      rbtnThreeBandStdDev->setEnabled(false);
       cboxColorScalingAlgorithm->setEnabled(false);
       break;
     case QgsRasterLayer::PALETTED_MULTI_BAND_COLOR:
@@ -435,6 +437,7 @@ void QgsRasterLayerProperties::sync()
       gboxSingleBand->setEnabled(true);
       gboxThreeBand->setChecked(true);
       rbtnThreeBandMinMax->setEnabled(false);
+      rbtnThreeBandStdDev->setEnabled(false);
       cboxColorScalingAlgorithm->setEnabled(false);
       break;
     case QgsRasterLayer::MULTI_BAND_SINGLE_BAND_GRAY:
@@ -1255,7 +1258,6 @@ void QgsRasterLayerProperties::on_gboxSingleBand_toggled(bool b)
   if(b)
   {
     //--- enable and disable appropriate controls
-    // TODO do the same for clip limit controls
     cboxColorMap->setEnabled(true);
     cboxColorScalingAlgorithm->setEnabled(true);
 
@@ -1304,7 +1306,6 @@ void QgsRasterLayerProperties::on_gboxThreeBand_toggled(bool b)
   if(b)
   {
     //--- enable and disable appropriate controls
-    // TODO do the same for clip limit controls
     cboxColorMap->setEnabled(false);
 
     /*
@@ -1316,7 +1317,9 @@ void QgsRasterLayerProperties::on_gboxThreeBand_toggled(bool b)
        QgsRasterLayer::PALETTED_SINGLE_BAND_PSEUDO_COLOR == rasterLayer->getDrawingStyle() ||
        QgsRasterLayer::PALETTED_MULTI_BAND_COLOR == rasterLayer->getDrawingStyle())
     {
+      cboxColorScalingAlgorithm->setCurrentText(tr("No Stretch"));
       cboxColorScalingAlgorithm->setEnabled(false);
+      sboxThreeBandStdDev->setEnabled(false);
     }
 
     if(gboxSingleBand->isEnabled() && gboxSingleBand->isChecked())
