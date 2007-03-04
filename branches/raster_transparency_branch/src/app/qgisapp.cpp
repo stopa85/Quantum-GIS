@@ -1023,6 +1023,7 @@ void QgisApp::createStatusBar()
   mScaleLabel->setAlignment(Qt::AlignCenter);
 //  QWhatsThis::add(mScaleLabel, tr("Displays the current map scale"));
 //  QToolTip::add (mScaleLabel, tr("Current map scale"));
+  QToolTip::add (mScaleLabel, tr("Current map scale"));
   statusBar()->addWidget(mScaleLabel, 0,true);
   mScaleEdit = new QLineEdit(QString(),statusBar());
   mScaleEdit->setFont(myFont);
