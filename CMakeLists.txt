@@ -1,5 +1,5 @@
 
-PROJECT(qgis.0.9.raster)
+PROJECT(qgis0.9.raster)
 
 # TODO:
 # - install includes for libs
