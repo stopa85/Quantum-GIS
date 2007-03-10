@@ -87,6 +87,15 @@ class QgsRasterLayerProperties : public QDialog, private Ui::QgsRasterLayerPrope
         /** \brief this slot sets StdDev switch box to 0.00 when user enters min max values */
         void userDefinedMinMax_textEdited(QString);
 
+    private slots:
+	/**This slot calculates classification values and colors for the tree widget on the colormap tab*/
+	void on_mClassifyButton_clicked();
+	/**This slot deletes the current class from the tree widget on the colormap tab*/
+	void on_mDeleteEntryButton_clicked();
+	/**Callback for double clicks on the colormap entry widget*/
+	void handleColormapTreeWidgetDoubleClick(QTreeWidgetItem* item, int column);
+	
+
     signals:
 
         /** emitted when changes to layer were saved to update legend */

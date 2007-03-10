@@ -1619,6 +1619,7 @@ void QgsRasterLayer::drawSingleBandPseudoColor(QPainter * theQPainter,
     myClassBreakMin1 = minGrayDouble;
     myAdjustedRasterBandStats.rangeDouble = maxGrayDouble - minGrayDouble;
   }
+
   double myBreakSizeDouble = myAdjustedRasterBandStats.rangeDouble / 3;
   double myClassBreakMax1 = myClassBreakMin1 + myBreakSizeDouble;
   double myClassBreakMin2 = myClassBreakMax1;
@@ -1635,6 +1636,7 @@ void QgsRasterLayer::drawSingleBandPseudoColor(QPainter * theQPainter,
       myRedInt = 255;
       myBlueInt = 255;
       myGreenInt = 255;
+
       double myValDouble = readValue ( myGdalScanData, myDataType,
           myColumnInt * theRasterViewPort->drawableAreaXDimInt + myRowInt );
 
@@ -1658,7 +1660,7 @@ void QgsRasterLayer::drawSingleBandPseudoColor(QPainter * theQPainter,
       }
 
       // Stretch
-      if(QgsRasterLayer::NO_STRETCH != getColorScalingAlgorithm())
+      if(mValueClassification.size() == 0 && QgsRasterLayer::NO_STRETCH != getColorScalingAlgorithm())
       {
         if(QgsRasterLayer::CLIP_TO_MINMAX == getColorScalingAlgorithm() || QgsRasterLayer::STRETCH_AND_CLIP_TO_MINMAX == getColorScalingAlgorithm())
         {
@@ -1683,36 +1685,56 @@ void QgsRasterLayer::drawSingleBandPseudoColor(QPainter * theQPainter,
         }
       }
 
+      //custom color map
+      if(mValueClassification.size() > 0)
+	{
+	  if(mDiscreteClassification)
+	    {
+	      if(getDiscreteColorFromValueClassification(myValDouble, myRedInt, myGreenInt, myBlueInt) != 0)
+		{
+		  continue; //leave pixel transparent if not found in classification
+		}
+	    }
+	  else
+	    {
+	      if(getInterpolatedColorFromValueClassification(myValDouble, myRedInt, myGreenInt, myBlueInt) != 0)
+		{
+		  continue; //leave pixel transparent if not found in classification
+		}
+	    }
+	}
+
+      //if there is no custom color map, use the predefined one
       //NOTE: CLIP_TO_MINMAX and STRETCH_AND_CLIP_TO_MINMAX are the same result in pseudo color
-      if (!invertHistogramFlag)
+      else if (!invertHistogramFlag)
       {
         //check if we are in the first class break
         if ((myValDouble >= myClassBreakMin1) && (myValDouble < myClassBreakMax1))
-        {
-          myRedInt = 0;
-          myBlueInt = 255;
-          myGreenInt = static_cast < int >( ( (255 / myAdjustedRasterBandStats.rangeDouble)
-                * (myValDouble - myClassBreakMin1) ) * 3 );
-          // testing this stuff still ...
-          if (colorRampingType==FREAK_OUT)
-          {
-            myRedInt=255-myGreenInt;
-          }
-        }
+	  {
+	    myRedInt = 0;
+	    myBlueInt = 255;
+	    myGreenInt = static_cast < int >( ( (255 / myAdjustedRasterBandStats.rangeDouble)
+						* (myValDouble - myClassBreakMin1) ) * 3 );
+	    // testing this stuff still ...
+	    if (colorRampingType==FREAK_OUT)
+	      {
+		myRedInt=255-myGreenInt;
+	      }
+	  }
         //check if we are in the second class break
         else if ( (myValDouble >= myClassBreakMin2) && (myValDouble < myClassBreakMax2) )
-        {
-          myRedInt = static_cast < int >( ( (255 / myAdjustedRasterBandStats.rangeDouble)
-                * ((myValDouble - myClassBreakMin2) / 1)) * 3);
-          myBlueInt = static_cast < int >(255 - ( ( (255 / myAdjustedRasterBandStats.rangeDouble)
-                  * ((myValDouble - myClassBreakMin2) / 1)) * 3));
-          myGreenInt = 255;
-          // testing this stuff still ...
-          if (colorRampingType==FREAK_OUT)
-          {
-            myGreenInt=myBlueInt;
-          }
-        }
+	  {
+	    myRedInt = static_cast < int >( ( (255 / myAdjustedRasterBandStats.rangeDouble)
+					      * ((myValDouble - myClassBreakMin2) / 1)) * 3);
+	    myBlueInt = static_cast < int >(255 - ( ( (255 / myAdjustedRasterBandStats.rangeDouble)
+						      * ((myValDouble - myClassBreakMin2) / 1)) * 3));
+	    myGreenInt = 255;
+	    // testing this stuff still ...
+	    if (colorRampingType==FREAK_OUT)
+	      {
+		myGreenInt=myBlueInt;
+	      }
+	  }
         //otherwise we must be in the third classbreak
         else
         {
@@ -1772,52 +1794,52 @@ void QgsRasterLayer::drawSingleBandPseudoColor(QPainter * theQPainter,
           }
         }
       }
-
-        //Check for out of range pixel values
-        if(myRedInt < 0)
+      
+      //Check for out of range pixel values
+      if(myRedInt < 0)
         {
           myRedInt = 0;
         }
-        else if(myRedInt > 255)
+      else if(myRedInt > 255)
         {
           myRedInt = 255;
         }
-
-        if(myGreenInt < 0)
+      
+      if(myGreenInt < 0)
         {
           myGreenInt = 0;
         }
-        else if(myGreenInt > 255)
+      else if(myGreenInt > 255)
         {
           myGreenInt = 255;
         }
-
-        if(myBlueInt < 0)
+      
+      if(myBlueInt < 0)
         {
           myBlueInt = 0;
         }
-        else if(myBlueInt > 255)
+      else if(myBlueInt > 255)
         {
           myBlueInt = 255;
         }
-
+      
       if(myTransparentPixelFound)
-      {
-        int myNewTransparency = (int)((float)mTransparencyLevel * (1.0 - (myTransparentPixel.percentTransparent/100.0)));
-        myQImage.setPixel(myRowInt, myColumnInt, qRgba(myRedInt, myGreenInt, myBlueInt, myNewTransparency));
-      }
+	{
+	  int myNewTransparency = (int)((float)mTransparencyLevel * (1.0 - (myTransparentPixel.percentTransparent/100.0)));
+	  myQImage.setPixel(myRowInt, myColumnInt, qRgba(myRedInt, myGreenInt, myBlueInt, myNewTransparency));
+	}
       else
-      {
-        myQImage.setPixel(myRowInt, myColumnInt, qRgba(myRedInt, myGreenInt, myBlueInt, mTransparencyLevel));
-      }
+	{
+	  myQImage.setPixel(myRowInt, myColumnInt, qRgba(myRedInt, myGreenInt, myBlueInt, mTransparencyLevel));
+	}
     }                       //end of columnwise loop
   }                           //end of towwise loop
-
+  
   CPLFree ( myGdalScanData );
-
+  
   //render any inline filters
   filterLayer(&myQImage);
-
+  
   // Set up the initial offset into the myQImage we want to copy to the map canvas
   // This is useful when the source image pixels are larger than the screen image.
   int paintXoffset = 0;
@@ -5644,6 +5666,70 @@ double QgsRasterLayer::getMinimumPossibleValue(GDALDataType dataType)
   }
 
   return -4294967295.0;
+}
+
+int QgsRasterLayer::getDiscreteColorFromValueClassification(double value, int& red, int& green, int& blue) const
+{
+  std::vector<ValueClassificationItem>::const_iterator it;
+  std::vector<ValueClassificationItem>::const_iterator last_it = mValueClassification.end();
+  double currentValue;
+  for(it = mValueClassification.begin(); it != mValueClassification.end(); ++it)
+    {
+      currentValue = it->value;
+      if(value < currentValue)
+	{
+	  if(last_it != mValueClassification.end())
+	    {
+	      red = last_it->color.red();
+	      green = last_it->color.green();
+	      blue = last_it->color.blue();
+	      return 0;
+	    }
+	  else
+	    {
+	      return -1;
+	    }
+	}
+      last_it = it;
+    }
+
+  return -1; // value not found
+}
+
+int QgsRasterLayer::getInterpolatedColorFromValueClassification(double value, int& red, int& green, int& blue) const
+{
+  std::vector<ValueClassificationItem>::const_iterator it;
+  std::vector<ValueClassificationItem>::const_iterator last_it = mValueClassification.end();
+  double currentValue;
+  double valueDiff; //difference between two consecutive entry values
+  double diff_Value_LastVal; //difference between value and last entry value
+  double diffVal_Value; //difference between this entry value and value
+  
+    for(it = mValueClassification.begin(); it != mValueClassification.end(); ++it)
+      {
+	currentValue = it->value;
+	if(value < currentValue)
+	  {
+	    valueDiff = currentValue - last_it->value;
+	    diff_Value_LastVal = value - last_it->value;
+	    diffVal_Value = currentValue - value;
+
+	    if(last_it != mValueClassification.end())
+	      {
+		red = (int)((it->color.red() * diff_Value_LastVal + last_it->color.red() * diffVal_Value)/valueDiff);
+		green = (int)((it->color.green() * diff_Value_LastVal + last_it->color.green() * diffVal_Value)/valueDiff);
+		blue = (int)((it->color.blue() * diff_Value_LastVal + last_it->color.blue() * diffVal_Value)/valueDiff);
+		return 0;
+	      }
+	    else
+	      {
+		return -1;
+	      }
+	  }
+	last_it = it;
+      }
+  
+  return -1;
 }
 
 // ENDS
