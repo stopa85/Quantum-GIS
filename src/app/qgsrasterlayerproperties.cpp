@@ -36,6 +36,7 @@
 #include <QLinearGradient>
 #include <QPainterPath>
 #include <QPolygonF>
+#include <QColorDialog>
 
 #include <iostream>
 
@@ -80,6 +81,7 @@ rasterLayer( dynamic_cast<QgsRasterLayer*>(lyr) )
   connect(leGreenMax, SIGNAL(textEdited(QString)), this, SLOT(userDefinedMinMax_textEdited(QString)));
   connect(leBlueMin, SIGNAL(textEdited(QString)), this, SLOT(userDefinedMinMax_textEdited(QString)));
   connect(leBlueMax, SIGNAL(textEdited(QString)), this, SLOT(userDefinedMinMax_textEdited(QString)));
+  connect(mColormapTreeWidget, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), this, SLOT(handleColormapTreeWidgetDoubleClick(QTreeWidgetItem*,int)));
 
   // set up the scale based layer visibility stuff....
   chkUseScaleDependentRendering->setChecked(lyr->scaleBasedVisibility());
@@ -116,6 +118,26 @@ rasterLayer( dynamic_cast<QgsRasterLayer*>(lyr) )
   leBlueMin->setEnabled(false);
   lblBlueMax->setEnabled(false);
   leBlueMax->setEnabled(false);
+
+  //setup custom colormap tab
+  if(rasterLayer->getRasterLayerType() == QgsRasterLayer::GRAY_OR_UNDEFINED)
+    {
+      mColorInterpolationComboBox->insertItem(-1, tr("Discrete"));
+      mColorInterpolationComboBox->insertItem(-1, tr("Linearly"));
+      mClassificationModeComboBox->insertItem(-1, tr("Equal interval"));
+      mClassificationModeComboBox->insertItem(-1, tr("Quantiles"));
+
+      QStringList headerLabels;
+      headerLabels << "Value";
+      headerLabels << "Color";
+      headerLabels << "Label";
+      mColormapTreeWidget->setHeaderLabels(headerLabels);
+    }
+  else
+    {
+      //disable Custom colormap tab completely
+      tabBar->setTabEnabled(tabBar->indexOf(tabPageColormap), FALSE);
+    }
 
   //
   // Set up the combo boxes that contain band lists using the qstring list generated above
@@ -1167,6 +1189,40 @@ void QgsRasterLayerProperties::apply()
       }
     }
   }
+
+  //apply colormap tab
+  if(mEnableCustomColormapBox->checkState() == Qt::Checked)
+    {
+      //iterate through mColormapTreeWidget and set colormap info of layer
+      std::vector<QgsRasterLayer::ValueClassificationItem> items;
+
+      int topLevelItemCount = mColormapTreeWidget->topLevelItemCount();
+      QTreeWidgetItem* currentItem;
+
+      for(int i = 0; i < topLevelItemCount; ++i)
+	{
+	  currentItem = mColormapTreeWidget->topLevelItem(i);
+	  if(!currentItem)
+	    {
+	      continue;
+	    }
+	  QgsRasterLayer::ValueClassificationItem newItem;
+	  newItem.value = currentItem->text(0).toDouble();
+	  newItem.color = currentItem->background(1).color();
+	  newItem.label = currentItem->text(2);
+	  items.push_back(newItem);
+	}
+      rasterLayer->setValueClassification(items);
+
+      rasterLayer->setDiscreteClassification(mColorInterpolationComboBox->currentText() == tr("Discrete"));
+    }
+  else
+    {
+      //clear colormap into of raster layer by passing an empty vector
+      std::vector<QgsRasterLayer::ValueClassificationItem> emptyVector;
+      rasterLayer->setValueClassification(emptyVector);
+    }
+
 }//apply
 
 void QgsRasterLayerProperties::on_buttonBox_helpRequested()
@@ -2129,6 +2185,93 @@ void QgsRasterLayerProperties::userDefinedMinMax_textEdited(QString theString)
       sboxSingleBandStdDev->setValue(0.0);
     }
   }
+}
+
+void QgsRasterLayerProperties::on_mClassifyButton_clicked()
+{
+  QgsRasterBandStats myRasterBandStats = rasterLayer->getRasterBandStats(1);
+  int numberOfEntries = mNumberOfEntriesBox->value();
+
+  std::list<double> entryValues;
+  std::list<QColor> entryColors;
+
+  if(mClassificationModeComboBox->currentText() == tr("Equal interval"))
+    {
+      double currentValue = myRasterBandStats.minValDouble;
+      double intervalDiff;
+      if(numberOfEntries > 1)
+	{
+	  //because the highest value is also an entry, there are (numberOfEntries - 1)
+	  //intervals
+	  intervalDiff = (myRasterBandStats.maxValDouble - myRasterBandStats.minValDouble) / \
+	    (numberOfEntries - 1);
+	}
+      else
+	{
+	  intervalDiff = myRasterBandStats.maxValDouble - myRasterBandStats.minValDouble;
+	}
+      
+      for(int i = 0; i < numberOfEntries; ++i)
+	{
+	  entryValues.push_back(currentValue);
+	  currentValue += intervalDiff;
+	}
+    }
+  else if(mClassificationModeComboBox->currentText() == tr("Quantiles"))
+    {
+      //todo
+    }
+
+  //hard code color range from blue -> red for now. Allow choice of ramps in future
+  int colorDiff = 0;
+  if(numberOfEntries != 0)
+    {
+      colorDiff = (int)(255/numberOfEntries);
+    }
+  
+  for(int i = 0; i < numberOfEntries; ++i)
+    {
+      QColor currentColor;
+      currentColor.setRgb(colorDiff*i ,0, 255 - colorDiff * i);
+      entryColors.push_back(currentColor);
+    }
+  
+  mColormapTreeWidget->clear();
+
+  std::list<double>::const_iterator value_it = entryValues.begin();
+  std::list<QColor>::const_iterator color_it = entryColors.begin();
+
+  for(; value_it != entryValues.end(); ++value_it, ++color_it)
+    {
+      QTreeWidgetItem* newItem = new QTreeWidgetItem(mColormapTreeWidget);
+      newItem->setText(0, QString::number(*value_it, 'f'));
+      newItem->setBackground(1, QBrush(*color_it));
+    }
+}
+
+void QgsRasterLayerProperties::on_mDeleteEntryButton_clicked()
+{
+  QTreeWidgetItem* currentItem = mColormapTreeWidget->currentItem();
+  if(currentItem)
+    {
+      delete currentItem;
+    }
+}
+
+void QgsRasterLayerProperties::handleColormapTreeWidgetDoubleClick(QTreeWidgetItem* item, int column)
+{
+  if(item)
+    {
+      if(column == 1)
+	{
+	  //show color dialog
+	  QColor newColor = QColorDialog::getColor();
+	  if(newColor.isValid())
+	    {
+	      item->setBackground(1, QBrush(newColor));
+	    }
+	}
+    }
 }
 
 QLinearGradient QgsRasterLayerProperties::redGradient()

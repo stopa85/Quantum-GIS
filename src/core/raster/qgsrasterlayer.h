@@ -165,6 +165,7 @@ The [type] part of the variable should be the type class of the variable written
 // Includes
 // 
  
+#include <QColor>
 #include <QDateTime>
 #include <QVector>
 #include <QList>
@@ -233,6 +234,17 @@ public:
     {
       double pixelValue;
       double percentTransparent;
+    };
+
+    //An entry for classification based upon value.
+    //Such a classification is typically used for 
+    //single band layers where a pixel value represents
+    //not a color but a quantity, e.g. temperature or elevation
+    struct ValueClassificationItem
+    {
+      QString label;
+      double value;
+      QColor color;
     };
 
     QList<struct TransparentThreeValuePixel> transparentThreeValuePixelList;
@@ -857,6 +869,13 @@ public:
     /** \brief Helper function that returns the minimum possible value for a GDAL data type */
     double getMinimumPossibleValue(GDALDataType);
 
+    /**Set custom colormap classification*/
+    void setValueClassification(const std::vector<ValueClassificationItem>& classification)
+    {mValueClassification = classification;}
+    /**Set disrete colors/ interpolated colors for custom classification*/
+    void setDiscreteClassification(bool discrete)
+    {mDiscreteClassification = discrete;}
+
 public slots:    
     /**
      * Convert this raster to another format
@@ -1029,6 +1048,12 @@ private:
     /** \brief Update the layer if it is outdated */
     bool update ();
 
+    /**Gets the color for a pixel value from the classification vector mValueClassification. Assigns the 
+color of the lower class for every pixel between two class breaks. Returns 0 in case of success*/
+    int getDiscreteColorFromValueClassification(double value, int& red, int& green, int& blue) const;
+    /**Gets the color for a pixel value from the classification vector mValueClassification. Interpolates the color between two class breaks linearly. Returns 0 in case of success*/
+    int getInterpolatedColorFromValueClassification(double value, int& red, int& green, int& blue) const;
+
     //
     // Private member vars
     //
@@ -1086,6 +1111,14 @@ private:
     /** \brief This list holds a series of RasterPyramid structs
      * which store infomation for each potential pyramid level for this raster.*/
     RasterPyramidList mPyramidList;
+
+    /**This vector holds the information for classification based on values. 
+Each item holds a value, a label and a color. The member mDiscreteClassification holds 
+if one color is applied for all values between two class breaks (true) or if the item values are 
+(linearly) interpolated for values between the item values (false)*/
+    std::vector<ValueClassificationItem> mValueClassification;
+    /**This member holds if one color is applied for all values between two class breaks (true) or if the item values are (linearly) interpolated for values between the item values (false)*/
+    bool mDiscreteClassification;
 
 
 /*
