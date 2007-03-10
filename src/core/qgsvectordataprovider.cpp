@@ -217,7 +217,7 @@ int QgsVectorDataProvider::indexFromFieldName(const QString& fieldName) const
 
   for (QgsFieldMap::const_iterator it = theFields.begin(); it != theFields.end(); ++it)
   {
-    if(*it == fieldName)
+    if(it.value().name() == fieldName)
     {
       return counter;
     }
