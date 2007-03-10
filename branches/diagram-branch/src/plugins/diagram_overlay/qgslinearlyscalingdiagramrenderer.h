@@ -26,6 +26,15 @@
 class QgsLinearlyScalingDiagramRenderer: public QgsDiagramRenderer
 {
  public:
+
+  //Describes if the scaling is proportional to line (pie diameter) or area (pie area). Bar charts are always
+  //proportional to line and area because the bar width is constant
+  enum Proportion
+    {
+      LINE,
+      AREA
+    };
+
   QgsLinearlyScalingDiagramRenderer(const QString& name, const QgsAttributeList& att, const std::list<QColor>& c);
   ~QgsLinearlyScalingDiagramRenderer();
   /**Returns an diagram image for a geographic feature. The caller takes ownership of the QImage. Returns 0 in case of error*/
@@ -38,7 +47,11 @@ class QgsLinearlyScalingDiagramRenderer: public QgsDiagramRenderer
   /**Sets value, height and width of upper bound*/
   void setUpperItem(const QgsDiagramItem& item){mUpperItem = item;}
   QgsDiagramItem upperItem() const {return mUpperItem;}
+  void setProportion(QgsLinearlyScalingDiagramRenderer::Proportion p){mProportion = p;}
   QString rendererName() const {return "linearly scaling";}
+  
+
+
   bool readXML(const QDomNode& rendererNode);
   bool writeXML(QDomNode& overlay_node, QDomDocument& doc) const;
   /**Creates a descriptive image for the legend together with a string describing the attribute 
@@ -51,6 +64,9 @@ class QgsLinearlyScalingDiagramRenderer: public QgsDiagramRenderer
   QgsDiagramItem mLowerItem;
   /**Value, height, width of upper bound*/
   QgsDiagramItem mUpperItem;
+  /**Stores if scaling should be proportional to line or area*/
+  QgsLinearlyScalingDiagramRenderer::Proportion mProportion;
+
   QgsLinearlyScalingDiagramRenderer(); //default constructor is forbidden
 };
 

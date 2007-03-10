@@ -86,8 +86,7 @@ QgsVectorLayerProperties::QgsVectorLayerProperties(QgsVectorLayer * lyr,
   
   connect(sliderTransparency, SIGNAL(valueChanged(int)), this, SLOT(sliderTransparency_valueChanged(int)));
 
-
-  //for each overlay plugin create a new tag
+  //for each overlay plugin create a new tab
   int position;
   std::list<QgsVectorOverlayPlugin*> overlayplugins = overlayPlugins();
   for(std::list<QgsVectorOverlayPlugin*>::const_iterator it = overlayplugins.begin(); it != overlayplugins.end(); ++it)

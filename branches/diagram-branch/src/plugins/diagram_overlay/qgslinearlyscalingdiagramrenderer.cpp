@@ -4,8 +4,9 @@
 #include <limits>
 #include <QDomElement>
 #include <QImage>
+#include <cmath>
 
-QgsLinearlyScalingDiagramRenderer::QgsLinearlyScalingDiagramRenderer(const QString& name, const QgsAttributeList& att, const std::list<QColor>& c): QgsDiagramRenderer(name, att, c)
+QgsLinearlyScalingDiagramRenderer::QgsLinearlyScalingDiagramRenderer(const QString& name, const QgsAttributeList& att, const std::list<QColor>& c): QgsDiagramRenderer(name, att, c), mProportion(QgsLinearlyScalingDiagramRenderer::AREA)
 {
   
 }
@@ -45,13 +46,24 @@ int QgsLinearlyScalingDiagramRenderer::getDiagramSize(int& width, int& height, d
   //linearly interpolate height and width according to min/max value
   if(mWellKnownName == "Pie")
     {
-      height = (int)(mLowerItem.height() + (mUpperItem.height() - mLowerItem.height())*scalefactor);
-      width = (int)(mLowerItem.width() + (mUpperItem.width() - mLowerItem.height())*scalefactor);
+      if(mProportion == QgsLinearlyScalingDiagramRenderer::LINE)
+	{
+	  height = (int)(mLowerItem.height() + (mUpperItem.height() - mLowerItem.height())*scalefactor);
+	  width = (int)(mLowerItem.width() + (mUpperItem.width() - mLowerItem.height())*scalefactor);
+	}
+      else if(mProportion == QgsLinearlyScalingDiagramRenderer::AREA)
+	{
+	  double area = mUpperItem.height() * mUpperItem.height() / 4 * M_PI;
+	  double newarea = area * scalefactor;
+	  height = (int)(sqrt(newarea/M_PI) * 2);
+	  width = height;
+	}
     }
-  else if(mWellKnownName == "Bar")
+  else if(mWellKnownName == "Bar") //bar charts are proportional to size and area at the same time
     {
-      //height of the classification attribute
+      int barWidth = 120;
       int heightClassAttr = (int)(mLowerItem.height() + (mUpperItem.height() - mLowerItem.height())*scalefactor);
+
       //find out the highest value of all attributes
       double highestValue = -std::numeric_limits<double>::max();
       double currentValue = 0;
@@ -64,12 +76,9 @@ int QgsLinearlyScalingDiagramRenderer::getDiagramSize(int& width, int& height, d
 	    }
 	}
       height = (int)(heightClassAttr / value * highestValue);
-
-
-      //calculate height for the highest value
-      //width only depends on number of attributes
-      width = featureAttributes.size() * 120;
       
+      //width only depends on number of attributes
+      width = featureAttributes.size() * barWidth;
     }
   return 0;
 }
