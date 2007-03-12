@@ -178,6 +178,15 @@ QString QgsVectorLayer::capabilitiesString() const
   return 0;
 }
 
+QString QgsVectorLayer::dataComment() const
+{
+  if (mDataProvider)
+  {
+    return mDataProvider->dataComment();
+  }
+  return QString();
+}
+
 
 QString QgsVectorLayer::providerType() const
 {
@@ -1789,7 +1798,7 @@ bool QgsVectorLayer::setDataProvider( QString const & provider )
   }
   else
   {
-    QgsDebug( " unable to get data provider" );
+    QgsDebugMsg( " unable to get data provider" );
 
     return false;
   }

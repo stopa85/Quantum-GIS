@@ -175,6 +175,7 @@ QgsOgrProvider::~QgsOgrProvider()
   extent_ = 0;
   delete geometryFactory;
   delete wktReader;
+  delete mSelectionRectangle;
 }
 
 void QgsOgrProvider::setEncoding(const QString& e)
@@ -232,6 +233,41 @@ QString QgsOgrProvider::storageType() const
 }
 
 
+
+bool QgsOgrProvider::getFeatureAtId(int featureId,
+                                    QgsFeature& feature,
+                                    bool fetchGeometry,
+                                    QgsAttributeList fetchAttributes)
+{
+  OGRFeature *fet = ogrLayer->GetFeature(featureId);
+  if (fet == NULL)
+    return false;
+  
+  feature.setFeatureId(fet->GetFID());
+
+  /* fetch geometry */
+  if (fetchGeometry)
+  {
+    OGRGeometry *geom = fet->GetGeometryRef();
+      
+    // get the wkb representation
+    unsigned char *wkb = new unsigned char[geom->WkbSize()];
+    geom->exportToWkb((OGRwkbByteOrder) QgsApplication::endian(), wkb);
+      
+    feature.setGeometryAndOwnership(wkb, geom->WkbSize());
+  }
+
+  /* fetch attributes */
+  for(QgsAttributeList::iterator it = fetchAttributes.begin(); it != fetchAttributes.end(); ++it)
+  {
+    getFeatureAttribute(fet,feature,*it);
+  }
+  
+  return true;
+}
+
+
+
 bool QgsOgrProvider::getNextFeature(QgsFeature& feature,
                                     bool fetchGeometry,
                                     QgsAttributeList fetchAttributes,
@@ -245,90 +281,66 @@ bool QgsOgrProvider::getNextFeature(QgsFeature& feature,
   }
 
   OGRFeature *fet;
+  QgsRect selectionRect;
 
-  // skip features without geometry
   while ((fet = ogrLayer->GetNextFeature()) != NULL)
   {
-    if (fet->GetGeometryRef() != NULL || mFetchFeaturesWithoutGeom)
+    // skip features without geometry
+    if (fet->GetGeometryRef() == NULL && !mFetchFeaturesWithoutGeom)
     {
-      break;
+      delete fet;
+      continue;
     }
-      
-    delete fet;
-  
-    /* TODO: [MD]
-    if (mUseIntersect)
-    {
-      GEOS_GEOM::Geometry *geosGeom = 0;
-      geosGeom = f->geometry()->geosGeometry();
-      assert(geosGeom != 0);
-         
-      char *sWkt = new char[2 * mSelectionRectangle->WkbSize()];
-      mSelectionRectangle->exportToWkt(&sWkt);  
-      GEOS_GEOM::Geometry *geosRect = wktReader->read(sWkt);
-      assert(geosRect != 0);
-      try // geos might throw exception on error 
-      { 
-        if(geosGeom->intersects(geosRect)) 
-        { 
-          returnval=true; 
-        } 
-      } 
-      catch (GEOS_UTIL::TopologyException* e) 
-      { 
-#if GEOS_VERSION_MAJOR < 3
-        QString error = e->toString().c_str();
-#else
-        QString error = e->what();
-#endif
-        QString error = e->toString().c_str(); 
-        QgsLogger::warning("GEOS: " + error);
-      }
-      
-      if (returnval)
-      {
-        QgsDebugMsg("intersection found");
-        delete[] sWkt;
-        delete geosGeom;
-        break;
-      }
-      else
-      {
-        QgsDebugMsg("no intersection found");
-        delete[] sWkt;
-        delete geosGeom;
-        delete f;
-        f=0;
-      }
-    }*/
-  }
-  
-  if (fet)
-  {
-    // get type name
-    OGRFeatureDefn * featureDefinition = fet->GetDefnRef();
-    QString featureTypeName =   
-        featureDefinition ? QString(featureDefinition->GetName()) : QString("");
     
-    feature = QgsFeature(fet->GetFID(), featureTypeName);
+    OGRFeatureDefn * featureDefinition = fet->GetDefnRef();
+    QString featureTypeName = featureDefinition ? QString(featureDefinition->GetName()) : QString("");
+    feature.setFeatureId(fet->GetFID());
+    feature.setTypeName(featureTypeName);
 
+    /* fetch geometry */
     if (fetchGeometry)
     {
       OGRGeometry *geom = fet->GetGeometryRef();
-    
+      
       // get the wkb representation
       unsigned char *wkb = new unsigned char[geom->WkbSize()];
       geom->exportToWkb((OGRwkbByteOrder) QgsApplication::endian(), wkb);
-    
+      
       feature.setGeometryAndOwnership(wkb, geom->WkbSize());
+  
+      if (mUseIntersect)
+      {
+        //precise test for intersection with search rectangle
+        //first make QgsRect from OGRPolygon
+        OGREnvelope env;
+        mSelectionRectangle->getEnvelope(&env);
+        if(env.IsInit()) //if envelope is invalid, skip the precise intersection test
+        {
+          selectionRect.set(env.MinX, env.MinY, env.MaxX, env.MaxY);
+          if(!feature.geometry()->fast_intersects(selectionRect))
+          {
+            delete fet;
+            continue;
+          }
+        }
+        
+      }
     }
 
+    /* fetch attributes */
     for(QgsAttributeList::iterator it = fetchAttributes.begin(); it != fetchAttributes.end(); ++it)
     {
       getFeatureAttribute(fet,feature,*it);
     }
-    delete fet;
+  
+    /* we have a feature, end this cycle */
+    break;
 
+  } /* while */
+   
+  if (fet)
+  {
+    delete fet;
     return true;
   }
   else
@@ -1492,7 +1504,7 @@ QgsSpatialRefSys QgsOgrProvider::getSRS()
   OGRSpatialReference * mySpatialRefSys = ogrLayer->GetSpatialRef();
   if (mySpatialRefSys == NULL)
   {
-    QgsLogger::warning("no spatial reference found"); 
+    QgsDebugMsg("no spatial reference found"); 
   }
   else
   {

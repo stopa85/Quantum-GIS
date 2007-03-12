@@ -63,7 +63,8 @@
 #include <QVBoxLayout>
 #include <QWhatsThis>
 #include <QtGlobal>
-
+#include <QRegExp>
+#include <QRegExpValidator>
 //
 // Mac OS X Includes
 // Must include before GEOS 3 due to unqualified use of 'Point'
@@ -1021,9 +1022,24 @@ void QgisApp::createStatusBar()
   mScaleLabel->setMinimumWidth(10);
   mScaleLabel->setMargin(3);
   mScaleLabel->setAlignment(Qt::AlignCenter);
-  QWhatsThis::add(mScaleLabel, tr("Displays the current map scale"));
-  QToolTip::add (mScaleLabel, tr("Current map scale"));
+  mScaleLabel->setFrameStyle(QFrame::NoFrame);
+  mScaleLabel->setText(tr("Scale "));
   statusBar()->addWidget(mScaleLabel, 0,true);
+
+  mScaleEdit = new QLineEdit(QString(),statusBar());
+  mScaleEdit->setFont(myFont);
+  mScaleEdit->setMinimumWidth(10);
+  mScaleEdit->setMaximumWidth(100);
+  mScaleEdit->setMargin(0);
+  mScaleEdit->setAlignment(Qt::AlignLeft);
+  QRegExp validator("\\d+\\.?\\d*:\\d+\\.?\\d*");
+  mScaleEditValidator = new QRegExpValidator(validator, mScaleEdit);
+  mScaleEdit->setValidator(mScaleEditValidator);
+  QWhatsThis::add(mScaleEdit, tr("Displays the current map scale"));
+  QToolTip::add (mScaleEdit, tr("Current map scale (formatted as x:y)"));
+  statusBar()->addWidget(mScaleEdit, 0,true);
+  connect(mScaleEdit, SIGNAL(editingFinished()), this, SLOT(userScale()));
+
   //coords status bar widget
   mCoordsLabel = new QLabel(QString(), statusBar());
   mCoordsLabel->setMinimumWidth(10);
@@ -1161,8 +1177,8 @@ void QgisApp::setupConnections()
   connect(mMapCanvas->mapRender(), SIGNAL(projectionsEnabled(bool)), this, SLOT(projectionsEnabled(bool)));
   connect(mMapCanvas->mapRender(), SIGNAL(destinationSrsChanged()), this, SLOT(destinationSrsChanged()));
   connect(mMapCanvas, SIGNAL(extentsChanged()),this,SLOT(showExtents()));
-  connect(mMapCanvas, SIGNAL(scaleChanged(QString)), this, SLOT(showScale(QString)));
-  connect(mMapCanvas, SIGNAL(scaleChanged(QString)), this, SLOT(updateMouseCoordinatePrecision()));
+  connect(mMapCanvas, SIGNAL(scaleChanged(double)), this, SLOT(showScale(double)));
+  connect(mMapCanvas, SIGNAL(scaleChanged(double)), this, SLOT(updateMouseCoordinatePrecision()));
 
   connect(mRenderSuppressionCBox, SIGNAL(toggled(bool )), mMapCanvas, SLOT(setRenderFlag(bool)));
 }
@@ -1520,6 +1536,7 @@ void QgisApp::restoreSessionPlugins(QString thePluginDirString)
   }
 
 #ifdef HAVE_PYTHON
+  QString pluginName, description, version;
   
   if (QgsPythonUtils::isEnabled())
   {
@@ -1533,12 +1550,18 @@ void QgisApp::restoreSessionPlugins(QString thePluginDirString)
       QString packageName = pluginDir[i];
       
       // import plugin's package
-      QgsPythonUtils::loadPlugin(packageName);
+      if (!QgsPythonUtils::loadPlugin(packageName))
+        continue;
       
       // get information from the plugin
-      QString pluginName  = QgsPythonUtils::getPluginMetadata(packageName, "name");
-      QString description = QgsPythonUtils::getPluginMetadata(packageName, "description");
-      QString version     = QgsPythonUtils::getPluginMetadata(packageName, "version");
+      // if there are some problems, don't continue with metadata retreival
+      pluginName = QgsPythonUtils::getPluginMetadata(packageName, "name");
+      if (pluginName != "__error__")
+      {
+        description = QgsPythonUtils::getPluginMetadata(packageName, "description");
+        if (description != "__error__")
+          version = QgsPythonUtils::getPluginMetadata(packageName, "version");
+      }
       
       if (pluginName == "__error__" || description == "__error__" || version == "__error__")
       {
@@ -1872,15 +1895,6 @@ bool QgisApp::addLayer(QFileInfo const & vectorFile)
     // Register this layer with the layers registry
     QgsMapLayerRegistry::instance()->addMapLayer(layer);
 
-    // connect up any keypresses to be passed tot he layer (e.g. so esc can stop rendering)
-#ifdef QGISDEBUG
-    std::cout << " Connecting up maplayers keyPressed event to the QgisApp keyPress signal" << std::endl;
-#endif
-    QObject::connect(this,
-        SIGNAL(keyPressed(QKeyEvent *)),
-        layer,
-        SLOT(keyPressed(QKeyEvent* )));
-
   }
   else
   {
@@ -1963,14 +1977,6 @@ bool QgisApp::addLayer(QStringList const &theLayerQStringList, const QString& en
       // Register this layer with the layers registry
       QgsMapLayerRegistry::instance()->addMapLayer(layer);
 
-      // connect up any keypresses to be passed tot he layer (e.g. so esc can stop rendering)
-#ifdef QGISDEBUG
-      std::cout << " Connecting up maplayers keyPressed event to the QgisApp keyPress signal" << std::endl;
-#endif
-      QObject::connect(this,
-          SIGNAL(keyPressed(QKeyEvent *)),
-          layer,
-          SLOT(keyPressed(QKeyEvent* )));
     }
     else
     {
@@ -2062,14 +2068,6 @@ void QgisApp::addDatabaseLayer()
         // register this layer with the central layers registry
         QgsMapLayerRegistry::instance()->addMapLayer(layer);
 
-        // connect up any keypresses to be passed tot he layer (e.g. so esc can stop rendering)
-#ifdef QGISDEBUG
-        std::cout << " Connecting up maplayers keyPressed event to the QgisApp keyPress signal" << std::endl;
-#endif
-        QObject::connect(this,
-            SIGNAL(keyPressed(QKeyEvent *)),
-            layer,
-            SLOT(keyPressed(QKeyEvent* )));
       }
       else
       {
@@ -3549,16 +3547,39 @@ void QgisApp::showMouseCoordinate(QgsPoint & p)
   }
 }
 
-void QgisApp::showScale(QString theScale)
+void QgisApp::showScale(double theScale)
 {
-  mScaleLabel->setText(theScale);
-  // Set minimum necessary width
-  if ( mScaleLabel->width() > mScaleLabel->minimumWidth() )
+  if (theScale >= 1.0)
+    mScaleEdit->setText("1:" + QString::number(theScale, 'f', 0));
+  else if (theScale > 0.0)
+    mScaleEdit->setText(QString::number(1.0/theScale, 'f', 0) + ":1");
+  else
+    mScaleEdit->setText(tr("Invalid scale"));
+
+   // Set minimum necessary width
+  if ( mScaleEdit->width() > mScaleEdit->minimumWidth() )
   {
-    mScaleLabel->setMinimumWidth(mScaleLabel->width());
+    mScaleEdit->setMinimumWidth(mScaleEdit->width());
   }
 }
 
+void QgisApp::userScale()
+{
+  double currentScale = mMapCanvas->getScale();
+
+  QStringList parts = mScaleEdit->text().split(':');
+  if (parts.size() == 2)
+  {
+    bool leftOk, rightOk;
+    double leftSide = parts.at(0).toDouble(&leftOk);
+    double rightSide = parts.at(1).toDouble(&rightOk);
+    if (leftSide > 0.0 && leftOk && rightOk)
+    {
+       double wantedScale = rightSide / leftSide;
+       mMapCanvas->zoom(wantedScale/currentScale);
+    }
+  }
+}
 void QgisApp::testButton()
 {
   /* QgsShapeFileLayer *sfl = new QgsShapeFileLayer("foo");
@@ -4276,15 +4297,6 @@ void QgisApp::addVectorLayer(QString vectorLayerPath, QString baseName, QString 
     // Register this layer with the layers registry
     QgsMapLayerRegistry::instance()->addMapLayer(layer);
 
-    // connect up any keypresses to be passed tot he layer (e.g. so esc can stop rendering)
-#ifdef QGISDEBUG
-    std::cout << " Connecting up maplayers keyPressed event to the QgisApp keyPress signal" << std::endl;
-#endif
-    QObject::connect(this,
-        SIGNAL(keyPressed(QKeyEvent * )),
-        layer,
-        SLOT(keyPressed(QKeyEvent* )));
-
     QgsProject::instance()->dirty(false); // XXX this might be redundant
 
     statusBar()->message(mMapCanvas->extent().stringRep(2));
@@ -4948,14 +4960,6 @@ bool QgisApp::addRasterLayer(QgsRasterLayer * theRasterLayer, bool theForceRedra
         SIGNAL(setStatus(QString)),
         this,
         SLOT(showStatusMessage(QString)));
-    // connect up any keypresses to be passed tot he layer (e.g. so esc can stop rendering)
-#ifdef QGISDEBUG
-    std::cout << " Connecting up maplayers keyPressed event to the QgisApp keyPress signal" << std::endl;
-#endif
-    QObject::connect(this ,
-        SIGNAL(keyPressed(QKeyEvent * )),
-        theRasterLayer,
-        SLOT(keyPressed(QKeyEvent* )));
 
     // add it to the mapcanvas collection
     // no longer necessary since adding to registry automatically adds to canvas
@@ -5099,15 +5103,6 @@ void QgisApp::addRasterLayer(QString const & rasterLayerPath,
         SIGNAL(setStatus(QString)),
         this,
         SLOT(showStatusMessage(QString)));
-
-    // connect up any keypresses to be passed tot he layer (e.g. so esc can stop rendering)
-#ifdef QGISDEBUG
-    std::cout << " Connecting up maplayers keyPressed event to the QgisApp keyPress signal" << std::endl;
-#endif
-    QObject::connect(this,
-        SIGNAL(keyPressed(QKeyEvent * )),
-        layer,
-        SLOT(keyPressed(QKeyEvent* )));
 
     QgsProject::instance()->dirty(false); // XXX this might be redundant
 
