@@ -22,7 +22,6 @@
 
 #include "qgsapplication.h"
 
-
 #include <QMessageBox>
 
 QString QgsPythonUtils::mPluginsPath;
@@ -83,15 +82,24 @@ void QgsPythonUtils::initPython(QgisInterface* interface)
   runString("import traceback"); // for formatting stack traces
   
   // hook that will show information and traceback in message box
-  // TODO: maybe QgsMessageOutput / QgsMessageViewer should be used instead
   runString(
-      "def qgis_except_hook(type, value, tb):\n"
+      "def qgis_except_hook_msg(type, value, tb, msg):\n"
       "  lst = traceback.format_exception(type, value, tb)\n"
-      "  str = 'An error has occured while executing Python code:\\n'\n"
+      "  if msg == None: msg = 'An error has occured while executing Python code:'\n"
+      "  str = '<font color=\"red\">'+msg+'</font><br><br>'\n"
       "  for s in lst:\n"
       "    str += s\n"
-      "  QtGui.QMessageBox.warning(None, 'Python error', str)\n");
-
+      "  str = str.replace('\\n', '<br>')\n"
+      "  str = str.replace('  ', '&nbsp;')\n" // preserve whitespaces for nicer output
+      "  \n"
+      "  msg = QgsMessageOutput.createMessageOutput()\n"
+      "  msg.setTitle('Error')\n"
+      "  msg.setMessage(str, QgsMessageOutput.MessageHtml)\n"
+      "  msg.showMessage()\n");
+  runString(
+      "def qgis_except_hook(type, value, tb):\n"
+      "  qgis_except_hook_msg(type, value, tb, None)\n");
+  
   // hook for python console so all output will be redirected
   // and then shown in console
   runString(
@@ -127,17 +135,31 @@ void QgsPythonUtils::installErrorHook()
 
 void QgsPythonUtils::installConsoleHooks()
 {
-  runString("sys.displayhook = console_display_hook");
+  runString("sys.displayhook = console_display_hook\n");
+  
+  runString(
+    "class MyOutputCatcher:\n"
+    "  def __init__(self):\n"
+    "    self.data = ''\n"
+    "  def write(self, stuff):\n"
+    "    self.data += stuff\n");
+  runString("_old_stdout = sys.stdout\n");
+  runString("sys.stdout = MyOutputCatcher()\n");
+  
 }
 
 void QgsPythonUtils::uninstallConsoleHooks()
 {
   runString("sys.displayhook = sys.__displayhook__");
+  runString("sys.stdout = _old_stdout");
+  
+  // TODO: uninstalling stdout redirection doesn't work
+
   //installErrorHook();
 }
 
 
-bool QgsPythonUtils::runString(QString command)
+bool QgsPythonUtils::runString(const QString& command)
 {
   PyRun_String(command.toLocal8Bit().data(), Py_single_input, mMainDict, mMainDict);
   
@@ -179,14 +201,19 @@ bool QgsPythonUtils::getError(QString& errorClassName, QString& errorText)
 
 QString QgsPythonUtils::getResult()
 {
+  return getVariableFromMain("__result");
+}
+
+QString QgsPythonUtils::getVariableFromMain(QString name)
+{
   PyObject* obj;
   PyObject* obj_str;
   
   QString output;
   
   // get the result
-  obj = PyDict_GetItemString(mMainDict, "__result"); // obj is borrowed reference
-    
+  obj = PyDict_GetItemString(mMainDict, name); // obj is borrowed reference
+  
   if (obj != NULL && obj != Py_None)
   {
     obj_str = PyObject_Str(obj); // obj_str is new reference
@@ -198,9 +225,23 @@ QString QgsPythonUtils::getResult()
   }
     
   // erase result
-  PyDict_SetItemString(mMainDict, "__result", Py_None);
-
+  PyDict_SetItemString(mMainDict, name, Py_None);
+  
   return output;
+}
+
+bool QgsPythonUtils::evalString(const QString& command, QString& result)
+{
+  PyObject* res = PyRun_String(command.toLocal8Bit().data(), Py_eval_input, mMainDict, mMainDict);
+  
+  if (res != NULL && PyString_Check(res))
+  {
+    result = PyString_AsString(res);
+    Py_XDECREF(res);
+    return true;
+  }
+  Py_XDECREF(res);
+  return false;
 }
 
 
@@ -243,19 +284,17 @@ QString QgsPythonUtils::getPluginMetadata(QString pluginName, QString function)
 bool QgsPythonUtils::loadPlugin(QString packageName)
 {
   // load plugin's package and ensure that plugin is reloaded when changed
-  if (!runString("import " + packageName) ||
-      !runString("reload(" + packageName + ")"))
-  {
-    QString className, errorText;
-    getError(className, errorText);
-    QString str = className + ": " + errorText;
-    
-    QMessageBox::warning(0, QObject::tr("Python error"),
-                         QObject::tr("Couldn't load plugin due this error:\n") + str);
-    return false;
-  }
-
-  return true;
+  runString(
+       "try:\n"
+       "  import " + packageName + "\n"
+       "  reload(" + packageName + ")\n"
+       "  __main__.__plugin_result = 'OK'\n"
+       "except:\n"
+       "  qgis_except_hook_msg(sys.exc_type, sys.exc_value, sys.exc_traceback, "
+       "                       'Couldn\\'t load plugin \"" + packageName + "\"')\n"
+       "  __main__.__plugin_result = 'ERROR'\n");
+  
+  return (getVariableFromMain("__plugin_result") == "OK");
 }
 
 

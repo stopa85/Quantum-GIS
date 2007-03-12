@@ -84,6 +84,9 @@ public:
   /** Capabilities for this layer in a friendly format. */
   QString capabilitiesString() const;
 
+  /** Returns a comment for the data in the layer */
+  QString dataComment() const;
+
   /** Set the primary display field to be used in the identify results dialog */
   void setDisplayField(QString fldName=0);
 
@@ -117,12 +120,6 @@ public:
   
   /** Select features found within the search rectangle (in layer's coordinates) */
   void select(QgsRect & rect, bool lock);
-
-  /** Select feature by its ID, optionally emit signal selectionChanged() */
-  void select(int featureId, bool emitSignal = TRUE);
-  
-  /** Clear selection */
-  void removeSelection(bool emitSignal = TRUE);
   
   /** Select not selected features and deselect selected ones */
   void invertSelection();
@@ -415,6 +412,12 @@ taks ownership of the object*/
   void vectorOverlays(std::list<const QgsVectorOverlay*>& overlayList) const;
 
 public slots:
+
+  /** Select feature by its ID, optionally emit signal selectionChanged() */
+  void select(int featureId, bool emitSignal = TRUE);
+  
+  /** Clear selection */
+  void removeSelection(bool emitSignal = TRUE);
 
   void triggerRepaint();
 

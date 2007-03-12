@@ -249,7 +249,7 @@ bool QgsSearchTreeNode::checkAgainst(const QgsAttributeMap& attributes)
       // in what format should they be?
       if (value1.isNumeric() || value2.isNumeric())
       {
-        mError = QObject::tr("Regular expressions on numeric values don't make sense. Use comparison insted.");
+        mError = QObject::tr("Regular expressions on numeric values don't make sense. Use comparison instead.");
         return false;
       }
       
@@ -395,7 +395,7 @@ QgsSearchTreeValue QgsSearchTreeNode::valueAgainst(const QgsAttributeMap& attrib
 }
 
 
-int QgsSearchTreeValue::compare(QgsSearchTreeValue& value1, QgsSearchTreeValue& value2)
+int QgsSearchTreeValue::compare(QgsSearchTreeValue& value1, QgsSearchTreeValue& value2, Qt::CaseSensitivity cs)
 {
   if (value1.isNumeric() || value2.isNumeric())
   {
@@ -424,6 +424,6 @@ int QgsSearchTreeValue::compare(QgsSearchTreeValue& value1, QgsSearchTreeValue& 
   else
   {
     // string comparison
-    return value1.string().compare(value2.string());
+    return value1.string().compare(value2.string(), cs);
   }
 }

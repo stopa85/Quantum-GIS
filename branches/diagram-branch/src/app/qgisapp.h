@@ -23,6 +23,7 @@ class QRect;
 class QStringList;
 class QCursor;
 class QLabel;
+class QLineEdit;
 class QProgressBar;
 class QFileInfo;
 class QSettings;
@@ -33,6 +34,7 @@ class QKeyEvent;
 class QMenu;
 class QPixmap;
 class QSplashScreen;
+class QValidator;
 
 class QgisAppInterface;
 class QgsClipboard;
@@ -174,7 +176,9 @@ public slots:
   //copy the click coord to clipboard and let the user know its there
   void showCapturePointCoordinate(QgsPoint &);
   //! Slot to show current map scale;
-  void showScale(QString theScale);
+  void showScale(double theScale);
+  //! Slot to handle user scale input;
+  void userScale();
   //! Remove a layer from the map and legend
   void removeLayer();
   //! zoom to extent of layer
@@ -540,8 +544,12 @@ private:
   //!The name of the active theme
   QString mThemeName;
 
-  //! Widget that will live on the statusbar to display scale
+  //! Widget that will live on the statusbar to display "scale 1:"
   QLabel * mScaleLabel;
+  //! Widget that will live on the statusbar to display scale value
+  QLineEdit * mScaleEdit;
+  //! The validator for the mScaleEdit
+  QValidator * mScaleEditValidator;
   //! Widget that will live in the statusbar to display coords
   QLabel * mCoordsLabel;
   //! Widget that will live in the statusbar to show progress of operations

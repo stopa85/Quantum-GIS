@@ -573,7 +573,7 @@ void QgsServerSourceSelect::on_lstLayers_selectionChanged()
       QSet<QString> crsFilter = mWmsProvider->supportedCrsForLayers(newSelectedLayers);
 
       gbCRS->setTitle(
-                       QString( tr("Coordinate Reference System (%1 available)") )
+                       QString( tr("Coordinate Reference System (%1 available)", "", crsFilter.count() ) )
                           .arg( crsFilter.count() )
                      );
 
@@ -756,8 +756,7 @@ void QgsServerSourceSelect::showError(QgsWmsProvider * wms)
     tr("provider said") + ":\n" +
     wms->errorString()
   );
-  mv->exec();
-  delete mv;
+  mv->showMessage(true); // Is deleted when closed
 }
 
 void QgsServerSourceSelect::on_cmbConnections_activated(int)

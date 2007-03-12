@@ -9,11 +9,12 @@
 
 %Include qgis.sip
 %Include qgsapplication.sip
-// TODO: %Include qgscolortable.sip
+%Include qgscolortable.sip
 %Include qgscontexthelp.sip
 %Include qgscoordinatetransform.sip
 %Include qgsdataprovider.sip
 %Include qgsdatasourceuri.sip
+%Include qgsdistancearea.sip
 %Include qgsfeature.sip
 %Include qgsfeatureattribute.sip
 %Include qgsfield.sip

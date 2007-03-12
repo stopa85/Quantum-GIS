@@ -37,6 +37,8 @@ SET (WITH_BINDINGS TRUE CACHE BOOL "Determines whether python bindings should be
 # QGIS bindings to package search path
 SET (BINDINGS_GLOBAL_INSTALL FALSE CACHE BOOL "Install bindings to global python directory? (might need root)")
 
+# Compile flag. Make it posible to turn it off.
+SET (PEDANTIC TRUE CACHE BOOL "Determines if we should compile with -Wall -Werror.")
 
 #############################################################
 # check if lexer and parser are not missing
@@ -114,7 +116,9 @@ FIND_PROGRAM(QT_LRELEASE_EXECUTABLE
 #############################################################
 # enable warnings
 
-ADD_DEFINITIONS( -Wall -Werror )
+IF (PEDANTIC)
+  ADD_DEFINITIONS( -Wall -Werror )
+ENDIF (PEDANTIC)
 
 IF (CMAKE_BUILD_TYPE MATCHES Debug)
   ADD_DEFINITIONS(-DQGISDEBUG=1)
@@ -186,21 +190,24 @@ INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR})
 #############################################################
 # create qgssvnversion.h
 
-IF (WIN32)
-  
-  # TODO: create qgssvnversion.h properly
-  ADD_CUSTOM_TARGET(svnversion ALL echo \\"#define QGSSVNVERSION \\\"svn_rev_unavailable\\\" \\" > qgssvnversion.h
-      WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+FIND_FILE(SVN_MARKER entries PATHS ${CMAKE_SOURCE_DIR}/.svn)
 
-ELSE (WIN32)
+IF (NOT SVN_MARKER)
+  SET (SVN_MARKER ${CMAKE_SOURCE_DIR}/CMakeLists.txt)  # Dummy file
+ENDIF (NOT SVN_MARKER)
+  # Add a custom command to drive the svn script whenever the svn entries
+  # file changes.
+  CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/svnscript.cmake.in_cmake
+                ${CMAKE_CURRENT_BINARY_DIR}/svnscript.cmake
+                @ONLY)
 
-  ADD_CUSTOM_TARGET(svnversion ALL
-  QGSSVNDEF='\#define QGSSVNVERSION \"'`svnversion ${QGIS_SOURCE_DIR}`'\"' &&
-  if [ \"`grep QGSSVNVERSION qgssvnversion.h 2>/dev/null`\" != \"$$QGSSVNDEF\" ]; then 
-  echo $$QGSSVNDEF > qgssvnversion.h  \; fi 
-  WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+  ADD_CUSTOM_COMMAND (
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/qgssvnversion.h
+    DEPENDS ${SVN_MARKER}
+    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/svnscript.cmake
+)
 
-ENDIF (WIN32)
+ADD_CUSTOM_TARGET(svnversion ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/qgssvnversion.h)
 
 #############################################################
 # process subdirs

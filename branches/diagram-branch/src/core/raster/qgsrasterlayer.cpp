@@ -1057,10 +1057,10 @@ bool QgsRasterLayer::draw(QPainter * theQPainter,
   myRasterViewPort->topLeftPoint = theQgsMapToPixel->transform(myRasterExtent.xMin(), myRasterExtent.yMax());
   myRasterViewPort->bottomRightPoint = theQgsMapToPixel->transform(myRasterExtent.xMax(), myRasterExtent.yMin());
 
-  myRasterViewPort->drawableAreaXDimInt =
-    abs(static_cast<int> (myRasterViewPort->clippedWidthInt  / theQgsMapToPixel->mapUnitsPerPixel() * adfGeoTransform[1]));
-  myRasterViewPort->drawableAreaYDimInt =
-    abs(static_cast<int> (myRasterViewPort->clippedHeightInt / theQgsMapToPixel->mapUnitsPerPixel() * adfGeoTransform[5]));
+  myRasterViewPort->drawableAreaXDimInt = static_cast<int>
+    (fabs( (myRasterViewPort->clippedWidthInt  / theQgsMapToPixel->mapUnitsPerPixel() * adfGeoTransform[1])) + 0.5);
+  myRasterViewPort->drawableAreaYDimInt = static_cast<int>
+    (fabs( (myRasterViewPort->clippedHeightInt / theQgsMapToPixel->mapUnitsPerPixel() * adfGeoTransform[5])) + 0.5);
 
 #ifdef QGISDEBUG
   QgsLogger::debug("QgsRasterLayer::draw: mapUnitsPerPixel", theQgsMapToPixel->mapUnitsPerPixel(), 1, __FILE__,\
@@ -1121,14 +1121,6 @@ bool QgsRasterLayer::draw(QPainter * theQPainter,
 
   // /\/\/\ - added to handle zoomed-in rasters
 
-  if ((myRasterViewPort->drawableAreaXDimInt) > 4000 &&  (myRasterViewPort->drawableAreaYDimInt > 4000))
-  {
-    // We have scale one raster pixel to more than 4000 screen pixels. What's the point of showing this layer?
-    // Instead, we just stop displaying the layer. Prevents allocating the entire world of memory for showing
-    // The pixel in all its glory.
-    QgsDebugMsg("Too zoomed out! Raster will not display");
-    return TRUE;
-  }
 
   // Provider mode: See if a provider key is specified, and if so use the provider instead
   
@@ -1142,10 +1134,16 @@ bool QgsRasterLayer::draw(QPainter * theQPainter,
 
     QImage* image = 
       dataProvider->draw(
-          myRasterExtent, 
-          myRasterViewPort->drawableAreaXDimInt,
-          myRasterViewPort->drawableAreaYDimInt
-          );
+                         myRasterExtent,
+                         // Below should calculate to the actual pixel size of the
+                         // part of the layer that's visible.
+                         static_cast<int>( fabs( (myRasterViewPort->clippedXMaxDouble -  myRasterViewPort->clippedXMinDouble)
+                                                 / theQgsMapToPixel->mapUnitsPerPixel() * adfGeoTransform[1]) + 1),
+                         static_cast<int>( fabs( (myRasterViewPort->clippedYMaxDouble -  myRasterViewPort->clippedYMinDouble)
+                                                 / theQgsMapToPixel->mapUnitsPerPixel() * adfGeoTransform[5]) + 1)
+//                         myRasterViewPort->drawableAreaXDimInt,
+//                         myRasterViewPort->drawableAreaYDimInt
+                        );
 
     if (!image)
     {
@@ -1195,15 +1193,24 @@ bool QgsRasterLayer::draw(QPainter * theQPainter,
   }
   else
   {
-    // Otherwise use the old-fashioned GDAL direct-drawing style
-    // TODO: Move into its own GDAL provider.
+    if ((myRasterViewPort->drawableAreaXDimInt) > 4000 &&  (myRasterViewPort->drawableAreaYDimInt > 4000))
+    {
+      // We have scaled one raster pixel to more than 4000 screen pixels. What's the point of showing this layer?
+      // Instead, we just stop displaying the layer. Prevents allocating the entire world of memory for showing
+      // very few pixels.
+      // (Alternatively, we have a very big screen > 2000 x 2000)
+      QgsDebugMsg("Too zoomed in! Displaying raster requires too much memory. Raster will not display");
+    } else {
+      // Otherwise use the old-fashioned GDAL direct-drawing style
+      // TODO: Move into its own GDAL provider.
 
-    // \/\/\/ - commented-out to handle zoomed-in rasters
+      // \/\/\/ - commented-out to handle zoomed-in rasters
     //    draw(theQPainter,myRasterViewPort);
-    // /\/\/\ - commented-out to handle zoomed-in rasters
-    // \/\/\/ - added to handle zoomed-in rasters
-    draw(theQPainter, myRasterViewPort, theQgsMapToPixel);
-    // /\/\/\ - added to handle zoomed-in rasters
+      // /\/\/\ - commented-out to handle zoomed-in rasters
+      // \/\/\/ - added to handle zoomed-in rasters
+      draw(theQPainter, myRasterViewPort, theQgsMapToPixel);
+      // /\/\/\ - added to handle zoomed-in rasters
+    }
 
   }
 
@@ -1447,7 +1454,7 @@ void QgsRasterLayer::drawSingleBandGray(QPainter * theQPainter, QgsRasterViewPor
     }
   }
   
-  /* TODO: Should readData be freed here? */
+  CPLFree ( myGdalScanData );
 
   //render any inline filters
   filterLayer(&myQImage);
@@ -1764,7 +1771,7 @@ void QgsRasterLayer::drawPalettedSingleBandColor(QPainter * theQPainter, QgsRast
     }
   }
 
-  /* TODO: Should readData be freed here? */
+  CPLFree(myGdalScanData);
 
   //render any inline filters
   filterLayer(&myQImage);
@@ -5262,5 +5269,17 @@ const unsigned int QgsRasterLayer::getBandCount()
   return rasterStatsVector.size();
 };
 
+double QgsRasterLayer::rasterUnitsPerPixel()
+{
+ 
+  // We return one raster pixel per map unit pixel
+  // One raster pixel can have several raster units...
+
+  // We can only use one of the adfGeoTransform[], so go with the
+   // horisontal one.
+  
+  return fabs(adfGeoTransform[1]);
+}
+ 
 
 // ENDS
