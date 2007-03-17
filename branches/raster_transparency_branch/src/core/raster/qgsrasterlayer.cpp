@@ -374,8 +374,9 @@ QgsRasterLayer::QgsRasterLayer(QString const & path, QString const & baseName)
   showDebugOverlayFlag(false),
   invertHistogramFlag(false),
   stdDevsToPlotDouble(0),
-  dataProvider(0)
-
+    mCustomClassificationEnabled(false),
+    mDiscreteClassification(false),
+    dataProvider(0)
 {
   userDefinedThreeBandMinMax = false; //defaults needed to bypass stretch
   userDefinedSingleBandMinMax = false;
@@ -1686,7 +1687,7 @@ void QgsRasterLayer::drawSingleBandPseudoColor(QPainter * theQPainter,
       }
 
       //custom color map
-      if(mValueClassification.size() > 0)
+      if(mCustomClassificationEnabled)
 	{
 	  if(mDiscreteClassification)
 	    {

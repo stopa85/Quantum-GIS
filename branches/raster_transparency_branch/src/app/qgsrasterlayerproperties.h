@@ -131,6 +131,9 @@ class QgsRasterLayerProperties : public QDialog, private Ui::QgsRasterLayerPrope
         /** \brief Verify values in custom min max line edits */
         bool validUserDefinedMinMax();
 
+	/**Restores the state of the colormap tab*/
+	void syncColormapTab();
+
         //Short circuit signal loop between min max field and stdDev spin box
         bool ignoreSpinBoxEvent;
 
