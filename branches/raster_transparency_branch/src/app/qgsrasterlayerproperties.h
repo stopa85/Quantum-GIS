@@ -94,6 +94,8 @@ class QgsRasterLayerProperties : public QDialog, private Ui::QgsRasterLayerPrope
 	void on_mDeleteEntryButton_clicked();
 	/**Callback for double clicks on the colormap entry widget*/
 	void handleColormapTreeWidgetDoubleClick(QTreeWidgetItem* item, int column);
+	/**Enables/disables the colormap tab bar for raster types GRAY_OR_UNDEFINED*/
+	void handleColormapIndexChanged(const QString& text);
 	
 
     signals:

@@ -132,12 +132,11 @@ rasterLayer( dynamic_cast<QgsRasterLayer*>(lyr) )
       headerLabels << "Color";
       headerLabels << "Label";
       mColormapTreeWidget->setHeaderLabels(headerLabels);
+      connect(cboxColorMap, SIGNAL(currentIndexChanged(const QString&)), this, SLOT(handleColormapIndexChanged(const QString&)));
     }
-  else
-    {
-      //disable Custom colormap tab completely
-      tabBar->setTabEnabled(tabBar->indexOf(tabPageColormap), FALSE);
-    }
+
+  //disable Custom colormap tab completely until pseudocolor is selected (and only for type GRAY_OR_UNDEFINED)
+  tabBar->setTabEnabled(tabBar->indexOf(tabPageColormap), FALSE);
 
   //
   // Set up the combo boxes that contain band lists using the qstring list generated above
@@ -2271,6 +2270,18 @@ void QgsRasterLayerProperties::handleColormapTreeWidgetDoubleClick(QTreeWidgetIt
 	      item->setBackground(1, QBrush(newColor));
 	    }
 	}
+    }
+}
+
+void QgsRasterLayerProperties::handleColormapIndexChanged(const QString& text)
+{
+  if(text == tr("Pseudocolor"))
+    {
+      tabBar->setTabEnabled(tabBar->indexOf(tabPageColormap), TRUE);
+    }
+  else
+    {
+      tabBar->setTabEnabled(tabBar->indexOf(tabPageColormap), FALSE);
     }
 }
 
