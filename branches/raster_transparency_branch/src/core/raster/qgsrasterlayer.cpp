@@ -1396,7 +1396,7 @@ void QgsRasterLayer::drawSingleBandGray(QPainter * theQPainter, QgsRasterViewPor
    * Check for invalid min max value based on GDALDataType.
    * Invalid values can happen if the user uses stdDevs to set min and max
    *
-   * Also if no stretch is defined and data is not 8-bit, the data will still need to be scaled to 255
+   * Also if no stretch is defined and data are not 8-bit, the data will still need to be scaled to 255
    * so the min max values are set to the min max value for the data type
    */
   if(QgsRasterLayer::NO_STRETCH != getColorScalingAlgorithm())
@@ -1587,7 +1587,7 @@ void QgsRasterLayer::drawSingleBandPseudoColor(QPainter * theQPainter,
    * Check for invalid min max value based on GDALDataType.
    * Invalid values can happen if the user uses stdDevs to set min and max
    *
-   * Also if no stretch is defined and data is not 8-bit, the data will still need to be scaled to 255
+   * Also if no stretch is defined and data are not 8-bit, the data will still need to be scaled to 255
    * so the min max values are set to the min max value for the data type
    */
   if(QgsRasterLayer::NO_STRETCH != getColorScalingAlgorithm())
@@ -1617,8 +1617,8 @@ void QgsRasterLayer::drawSingleBandPseudoColor(QPainter * theQPainter,
   }
   else
   {
-    myClassBreakMin1 = minGrayDouble;
-    myAdjustedRasterBandStats.rangeDouble = maxGrayDouble - minGrayDouble;
+    myClassBreakMin1 = getMinimumPossibleValue(myDataType);
+    myAdjustedRasterBandStats.rangeDouble = getMaximumPossibleValue(myDataType) - getMinimumPossibleValue(myDataType);
   }
 
   double myBreakSizeDouble = myAdjustedRasterBandStats.rangeDouble / 3;
@@ -1661,7 +1661,15 @@ void QgsRasterLayer::drawSingleBandPseudoColor(QPainter * theQPainter,
       }
 
       // Stretch
-      if(mValueClassification.size() == 0 && QgsRasterLayer::NO_STRETCH != getColorScalingAlgorithm())
+
+      /*
+       * MARCO: There is a conflict here with the stretching. If you enabled the color map, apply, then disbale the color map
+       * and apply mValueClassification.size() does not reset to 0 so streching will not occur. The custom color map
+       * should also if the layer is being stretched or not if the image is being stretch then the color map could simply
+       * be scaled to 0 - 255 simple linear transformation.....
+       */
+      //if(mValueClassification.size() == 0 && QgsRasterLayer::NO_STRETCH != getColorScalingAlgorithm())
+      if(QgsRasterLayer::NO_STRETCH != getColorScalingAlgorithm())
       {
         if(QgsRasterLayer::CLIP_TO_MINMAX == getColorScalingAlgorithm() || QgsRasterLayer::STRETCH_AND_CLIP_TO_MINMAX == getColorScalingAlgorithm())
         {
@@ -1674,7 +1682,7 @@ void QgsRasterLayer::drawSingleBandPseudoColor(QPainter * theQPainter,
 
           //Check for out of range pixel values
           //NOTE:For pseudo color this check has too move inside the stretch loop becasue pseudo color is a stretch and 
-          // we are don't scaling non 8-bit data at this stage like a regular band stretch
+          // we are not scaling non 8-bit data at this stage like a regular band stretch
           if(myValDouble < 0.0)
           {
             myValDouble = 0.0;
@@ -1706,7 +1714,6 @@ void QgsRasterLayer::drawSingleBandPseudoColor(QPainter * theQPainter,
 	}
 
       //if there is no custom color map, use the predefined one
-      //NOTE: CLIP_TO_MINMAX and STRETCH_AND_CLIP_TO_MINMAX are the same result in pseudo color
       else if (!invertHistogramFlag)
       {
         //check if we are in the first class break
@@ -2668,7 +2675,7 @@ void QgsRasterLayer::drawMultiBandColor(QPainter * theQPainter, QgsRasterViewPor
    * Check for invalid min max value based on GDALDataType.
    * Invalid values can happen if the user uses stdDevs to set min and max
    *
-   * Also if no stretch is defined and data is not 8-bit, the data will still need to be scaled to 255
+   * Also if no stretch is defined and data are not 8-bit, the data will still need to be scaled to 255
    * so the min max values are set to the min max value for the data type
    */
   if(QgsRasterLayer::NO_STRETCH != getColorScalingAlgorithm())
