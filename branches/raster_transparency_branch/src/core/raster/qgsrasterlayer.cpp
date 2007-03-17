@@ -1669,7 +1669,7 @@ void QgsRasterLayer::drawSingleBandPseudoColor(QPainter * theQPainter,
        * be scaled to 0 - 255 simple linear transformation.....
        */
       //if(mValueClassification.size() == 0 && QgsRasterLayer::NO_STRETCH != getColorScalingAlgorithm())
-      if(QgsRasterLayer::NO_STRETCH != getColorScalingAlgorithm())
+      if(!mCustomClassificationEnabled && QgsRasterLayer::NO_STRETCH != getColorScalingAlgorithm())
       {
         if(QgsRasterLayer::CLIP_TO_MINMAX == getColorScalingAlgorithm() || QgsRasterLayer::STRETCH_AND_CLIP_TO_MINMAX == getColorScalingAlgorithm())
         {
