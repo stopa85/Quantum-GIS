@@ -523,6 +523,9 @@ void QgsRasterLayerProperties::sync()
   {
     cboxColorMap->setCurrentText(tr("Grayscale"));
   }
+  
+  //restore colormap tab if the layer has custom classification
+  syncColormapTab();
 
   //set whether the layer histogram should be inverted
   if (rasterLayer->getInvertHistogramFlag())
@@ -677,6 +680,51 @@ if(QgsRasterLayer::PALETTED_COLOR != rasterLayer->getDrawingStyle() &&
   txtbMetadata->setText(rasterLayer->getMetadata());
 
 } // QgsRasterLayerProperties::sync()
+
+void QgsRasterLayerProperties::syncColormapTab()
+{
+  if(!rasterLayer)
+    {
+      return;
+    }
+  
+  //restore the colormap tab if layer has custom symbology
+  std::vector<QgsRasterLayer::ValueClassificationItem> classification = rasterLayer->valueClassification();
+  if(classification.size() > 0)
+    {
+      std::vector<QgsRasterLayer::ValueClassificationItem>::const_iterator it;
+      for(it = classification.begin(); it != classification.end(); ++it)
+	{
+	  //restore state of colormap tab
+	  QTreeWidgetItem* newItem = new QTreeWidgetItem(mColormapTreeWidget);
+	  newItem->setText(0, QString::number(it->value, 'f'));
+	  newItem->setBackground(1, QBrush(it->color));
+	  newItem->setText(2, it->label);
+	}
+    }
+
+  mNumberOfEntriesBox->setValue(classification.size());
+
+  //restore state of 'enable custom colormap' combo box
+  if(rasterLayer->customClassificationEnabled())
+    {
+      mEnableCustomColormapBox->setCheckState(Qt::Checked);
+    }
+  else
+    {
+      mEnableCustomColormapBox->setCheckState(Qt::Unchecked);
+    }
+
+  //restor state of 'color interpolation' combo box
+  if(rasterLayer->discreteClassification())
+    {
+      mColorInterpolationComboBox->setCurrentIndex(mColorInterpolationComboBox->findText(tr("Discrete")));
+    }
+  else
+    {
+      mColorInterpolationComboBox->setCurrentIndex(mColorInterpolationComboBox->findText(tr("Linearly")));
+    }
+}
 
 bool QgsRasterLayerProperties::validUserDefinedMinMax()
 {
@@ -1192,36 +1240,35 @@ void QgsRasterLayerProperties::apply()
   //apply colormap tab
   if(mEnableCustomColormapBox->checkState() == Qt::Checked)
     {
-      //iterate through mColormapTreeWidget and set colormap info of layer
-      std::vector<QgsRasterLayer::ValueClassificationItem> items;
-
-      int topLevelItemCount = mColormapTreeWidget->topLevelItemCount();
-      QTreeWidgetItem* currentItem;
-
-      for(int i = 0; i < topLevelItemCount; ++i)
-	{
-	  currentItem = mColormapTreeWidget->topLevelItem(i);
-	  if(!currentItem)
-	    {
-	      continue;
-	    }
-	  QgsRasterLayer::ValueClassificationItem newItem;
-	  newItem.value = currentItem->text(0).toDouble();
-	  newItem.color = currentItem->background(1).color();
-	  newItem.label = currentItem->text(2);
-	  items.push_back(newItem);
-	}
-      rasterLayer->setValueClassification(items);
-
-      rasterLayer->setDiscreteClassification(mColorInterpolationComboBox->currentText() == tr("Discrete"));
+      rasterLayer->setCustomClassificationEnabled(true);
     }
   else
     {
-      //clear colormap into of raster layer by passing an empty vector
-      std::vector<QgsRasterLayer::ValueClassificationItem> emptyVector;
-      rasterLayer->setValueClassification(emptyVector);
+      rasterLayer->setCustomClassificationEnabled(false);
     }
-
+      
+  //iterate through mColormapTreeWidget and set colormap info of layer
+  std::vector<QgsRasterLayer::ValueClassificationItem> items;
+  
+  int topLevelItemCount = mColormapTreeWidget->topLevelItemCount();
+  QTreeWidgetItem* currentItem;
+  
+  for(int i = 0; i < topLevelItemCount; ++i)
+    {
+      currentItem = mColormapTreeWidget->topLevelItem(i);
+      if(!currentItem)
+	{
+	  continue;
+	}
+      QgsRasterLayer::ValueClassificationItem newItem;
+      newItem.value = currentItem->text(0).toDouble();
+      newItem.color = currentItem->background(1).color();
+      newItem.label = currentItem->text(2);
+      items.push_back(newItem);
+    }
+  rasterLayer->setValueClassification(items);
+  
+  rasterLayer->setDiscreteClassification(mColorInterpolationComboBox->currentText() == tr("Discrete"));
 }//apply
 
 void QgsRasterLayerProperties::on_buttonBox_helpRequested()

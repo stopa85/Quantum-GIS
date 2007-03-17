@@ -869,10 +869,18 @@ public:
     /** \brief Helper function that returns the minimum possible value for a GDAL data type */
     double getMinimumPossibleValue(GDALDataType);
 
+    /**Get state of custom classification flag*/
+    bool customClassificationEnabled() const {return mCustomClassificationEnabled;}
+    /**Set state of custom classification flag*/
+    void setCustomClassificationEnabled(bool enabled){mCustomClassificationEnabled = enabled;}
+    /**Get custom colormap classification*/
+    std::vector<ValueClassificationItem> valueClassification() const {return mValueClassification;}
     /**Set custom colormap classification*/
     void setValueClassification(const std::vector<ValueClassificationItem>& classification)
     {mValueClassification = classification;}
-    /**Set disrete colors/ interpolated colors for custom classification*/
+    /**Get discrete colors/ interpolated colors for custom classification*/
+    bool discreteClassification() const {return mDiscreteClassification;}
+    /**Set discrete colors/ interpolated colors for custom classification*/
     void setDiscreteClassification(bool discrete)
     {mDiscreteClassification = discrete;}
 
@@ -1112,6 +1120,8 @@ color of the lower class for every pixel between two class breaks. Returns 0 in 
      * which store infomation for each potential pyramid level for this raster.*/
     RasterPyramidList mPyramidList;
 
+    /**This flag holds if custom classification is enabled or not*/
+    bool mCustomClassificationEnabled;
     /**This vector holds the information for classification based on values. 
 Each item holds a value, a label and a color. The member mDiscreteClassification holds 
 if one color is applied for all values between two class breaks (true) or if the item values are 
