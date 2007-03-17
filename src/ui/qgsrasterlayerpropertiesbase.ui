@@ -5,8 +5,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>554</width>
-    <height>695</height>
+    <width>568</width>
+    <height>527</height>
    </rect>
   </property>
   <property name="windowTitle" >
@@ -21,14 +21,14 @@
   <property name="modal" >
    <bool>true</bool>
   </property>
-  <layout class="QGridLayout" >
+  <layout class="QVBoxLayout" >
    <property name="margin" >
     <number>9</number>
    </property>
    <property name="spacing" >
     <number>6</number>
    </property>
-   <item row="0" column="0" >
+   <item>
     <widget class="QTabWidget" name="tabBar" >
      <property name="currentIndex" >
       <number>0</number>
@@ -37,17 +37,109 @@
       <attribute name="title" >
        <string>Symbology</string>
       </attribute>
-      <layout class="QVBoxLayout" >
+      <layout class="QGridLayout" >
        <property name="margin" >
         <number>9</number>
        </property>
        <property name="spacing" >
         <number>6</number>
        </property>
-       <item>
-        <widget class="QGroupBox" name="gboxDisplay" >
+       <item row="6" column="0" colspan="3" >
+        <layout class="QHBoxLayout" >
+         <property name="margin" >
+          <number>0</number>
+         </property>
+         <property name="spacing" >
+          <number>6</number>
+         </property>
+         <item>
+          <spacer>
+           <property name="orientation" >
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" >
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QLabel" name="textLabel2_6_3" >
+           <property name="sizePolicy" >
+            <sizepolicy>
+             <hsizetype>1</hsizetype>
+             <vsizetype>0</vsizetype>
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="layoutDirection" >
+            <enum>Qt::LeftToRight</enum>
+           </property>
+           <property name="text" >
+            <string>Color Scaling</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="cboxColorScalingAlgorithm" >
+           <property name="sizePolicy" >
+            <sizepolicy>
+             <hsizetype>7</hsizetype>
+             <vsizetype>0</vsizetype>
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="3" column="0" >
+        <widget class="QSlider" name="sliderTransparency" >
+         <property name="sizePolicy" >
+          <sizepolicy>
+           <hsizetype>3</hsizetype>
+           <vsizetype>3</vsizetype>
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="maximum" >
+          <number>255</number>
+         </property>
+         <property name="orientation" >
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="tickInterval" >
+          <number>25</number>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="2" >
+        <widget class="QComboBox" name="cboxColorMap" >
+         <property name="sizePolicy" >
+          <sizepolicy>
+           <hsizetype>7</hsizetype>
+           <vsizetype>0</vsizetype>
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize" >
+          <size>
+           <width>150</width>
+           <height>0</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0" colspan="3" >
+        <widget class="QGroupBox" name="groupBox_2" >
          <property name="title" >
-          <string>Display</string>
+          <string>Band Selection</string>
          </property>
          <layout class="QGridLayout" >
           <property name="margin" >
@@ -56,631 +148,13 @@
           <property name="spacing" >
            <number>6</number>
           </property>
-          <item row="0" column="0" >
-           <widget class="QLabel" name="textLabel2_4_2" >
-            <property name="text" >
-             <string>Global Transparency:</string>
-            </property>
-            <property name="buddy" >
-             <cstring>sliderTransparency</cstring>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="2" >
-           <spacer>
-            <property name="orientation" >
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeType" >
-             <enum>QSizePolicy::Minimum</enum>
-            </property>
-            <property name="sizeHint" >
-             <size>
-              <width>101</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="5" column="0" colspan="4" >
-           <layout class="QHBoxLayout" >
-            <property name="margin" >
-             <number>0</number>
-            </property>
-            <property name="spacing" >
-             <number>6</number>
-            </property>
-            <item>
-             <spacer>
-              <property name="orientation" >
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeHint" >
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-            <item>
-             <widget class="QLabel" name="textLabel2_6_3" >
-              <property name="sizePolicy" >
-               <sizepolicy>
-                <hsizetype>1</hsizetype>
-                <vsizetype>0</vsizetype>
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="layoutDirection" >
-               <enum>Qt::LeftToRight</enum>
-              </property>
-              <property name="text" >
-               <string>Color Scaling</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QComboBox" name="cboxColorScalingAlgorithm" >
-              <property name="sizePolicy" >
-               <sizepolicy>
-                <hsizetype>7</hsizetype>
-                <vsizetype>0</vsizetype>
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item row="3" column="0" colspan="4" >
-           <widget class="QGroupBox" name="gboxThreeBand" >
-            <property name="title" >
-             <string>Three Band Color</string>
-            </property>
-            <property name="checkable" >
-             <bool>true</bool>
-            </property>
-            <property name="checked" >
-             <bool>false</bool>
-            </property>
-            <layout class="QGridLayout" >
-             <property name="margin" >
-              <number>5</number>
-             </property>
-             <property name="spacing" >
-              <number>5</number>
-             </property>
-             <item row="3" column="5" >
-              <spacer>
-               <property name="orientation" >
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" >
-                <size>
-                 <width>21</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item row="2" column="5" >
-              <spacer>
-               <property name="orientation" >
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" >
-                <size>
-                 <width>21</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item row="1" column="5" >
-              <spacer>
-               <property name="orientation" >
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" >
-                <size>
-                 <width>21</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item row="1" column="6" >
-              <widget class="QLabel" name="lblRedMax" >
-               <property name="sizePolicy" >
-                <sizepolicy>
-                 <hsizetype>5</hsizetype>
-                 <vsizetype>5</vsizetype>
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text" >
-                <string>Max</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="6" >
-              <widget class="QLabel" name="lblGreenMax" >
-               <property name="sizePolicy" >
-                <sizepolicy>
-                 <hsizetype>5</hsizetype>
-                 <vsizetype>5</vsizetype>
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text" >
-                <string>Max</string>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="6" >
-              <widget class="QLabel" name="lblBlueMax" >
-               <property name="sizePolicy" >
-                <sizepolicy>
-                 <hsizetype>5</hsizetype>
-                 <vsizetype>5</vsizetype>
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text" >
-                <string>Max</string>
-               </property>
-              </widget>
-             </item>
-             <item row="4" column="3" colspan="2" >
-              <widget class="QRadioButton" name="rbtnThreeBandStdDev" >
-               <property name="text" >
-                <string>Std Deviation</string>
-               </property>
-              </widget>
-             </item>
-             <item row="4" column="5" colspan="2" >
-              <spacer>
-               <property name="orientation" >
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" >
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item row="3" column="4" >
-              <widget class="QLineEdit" name="leBlueMin" >
-               <property name="sizePolicy" >
-                <sizepolicy>
-                 <hsizetype>1</hsizetype>
-                 <vsizetype>0</vsizetype>
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="maximumSize" >
-                <size>
-                 <width>75</width>
-                 <height>16777215</height>
-                </size>
-               </property>
-               <property name="baseSize" >
-                <size>
-                 <width>0</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="maxLength" >
-                <number>16</number>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="3" >
-              <widget class="QLabel" name="lblBlueMin" >
-               <property name="sizePolicy" >
-                <sizepolicy>
-                 <hsizetype>5</hsizetype>
-                 <vsizetype>5</vsizetype>
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text" >
-                <string>Min</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="4" >
-              <widget class="QLineEdit" name="leGreenMin" >
-               <property name="sizePolicy" >
-                <sizepolicy>
-                 <hsizetype>1</hsizetype>
-                 <vsizetype>0</vsizetype>
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="maximumSize" >
-                <size>
-                 <width>75</width>
-                 <height>16777215</height>
-                </size>
-               </property>
-               <property name="baseSize" >
-                <size>
-                 <width>0</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="maxLength" >
-                <number>16</number>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="3" >
-              <widget class="QLabel" name="lblGreenMin" >
-               <property name="sizePolicy" >
-                <sizepolicy>
-                 <hsizetype>5</hsizetype>
-                 <vsizetype>5</vsizetype>
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text" >
-                <string>Min</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="3" >
-              <widget class="QLabel" name="lblRedMin" >
-               <property name="sizePolicy" >
-                <sizepolicy>
-                 <hsizetype>5</hsizetype>
-                 <vsizetype>5</vsizetype>
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text" >
-                <string>Min</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="4" >
-              <widget class="QLineEdit" name="leRedMin" >
-               <property name="sizePolicy" >
-                <sizepolicy>
-                 <hsizetype>1</hsizetype>
-                 <vsizetype>0</vsizetype>
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="maximumSize" >
-                <size>
-                 <width>75</width>
-                 <height>16777215</height>
-                </size>
-               </property>
-               <property name="baseSize" >
-                <size>
-                 <width>0</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="maxLength" >
-                <number>16</number>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="7" >
-              <widget class="QLineEdit" name="leBlueMax" >
-               <property name="sizePolicy" >
-                <sizepolicy>
-                 <hsizetype>1</hsizetype>
-                 <vsizetype>0</vsizetype>
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="maximumSize" >
-                <size>
-                 <width>75</width>
-                 <height>16777215</height>
-                </size>
-               </property>
-               <property name="baseSize" >
-                <size>
-                 <width>0</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="maxLength" >
-                <number>16</number>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="7" >
-              <widget class="QLineEdit" name="leGreenMax" >
-               <property name="sizePolicy" >
-                <sizepolicy>
-                 <hsizetype>1</hsizetype>
-                 <vsizetype>0</vsizetype>
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="maximumSize" >
-                <size>
-                 <width>75</width>
-                 <height>16777215</height>
-                </size>
-               </property>
-               <property name="baseSize" >
-                <size>
-                 <width>0</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="maxLength" >
-                <number>16</number>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="7" >
-              <widget class="QLineEdit" name="leRedMax" >
-               <property name="sizePolicy" >
-                <sizepolicy>
-                 <hsizetype>1</hsizetype>
-                 <vsizetype>0</vsizetype>
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="maximumSize" >
-                <size>
-                 <width>75</width>
-                 <height>16777215</height>
-                </size>
-               </property>
-               <property name="baseSize" >
-                <size>
-                 <width>0</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="maxLength" >
-                <number>16</number>
-               </property>
-              </widget>
-             </item>
-             <item row="4" column="7" >
-              <widget class="QDoubleSpinBox" name="sboxThreeBandStdDev" >
-               <property name="maximum" >
-                <double>10.000000000000000</double>
-               </property>
-               <property name="singleStep" >
-                <double>0.100000000000000</double>
-               </property>
-               <property name="value" >
-                <double>0.000000000000000</double>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="0" >
-              <widget class="QLabel" name="lblBlue" >
-               <property name="text" >
-                <string>&lt;b>&lt;font color="#0000ff">Blue&lt;/font>&lt;/b></string>
-               </property>
-               <property name="buddy" >
-                <cstring>cboBlue</cstring>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="1" >
-              <widget class="QComboBox" name="cboBlue" >
-               <property name="sizePolicy" >
-                <sizepolicy>
-                 <hsizetype>7</hsizetype>
-                 <vsizetype>0</vsizetype>
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="minimumSize" >
-                <size>
-                 <width>150</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="baseSize" >
-                <size>
-                 <width>100</width>
-                 <height>0</height>
-                </size>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="0" >
-              <widget class="QLabel" name="lblGreen" >
-               <property name="text" >
-                <string>&lt;b>&lt;font color="#00ff00">Green&lt;/font>&lt;/b></string>
-               </property>
-               <property name="buddy" >
-                <cstring>cboGreen</cstring>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="1" >
-              <widget class="QComboBox" name="cboGreen" >
-               <property name="sizePolicy" >
-                <sizepolicy>
-                 <hsizetype>7</hsizetype>
-                 <vsizetype>0</vsizetype>
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="minimumSize" >
-                <size>
-                 <width>150</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="baseSize" >
-                <size>
-                 <width>0</width>
-                 <height>0</height>
-                </size>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="0" >
-              <widget class="QLabel" name="lblRed" >
-               <property name="text" >
-                <string>&lt;b>&lt;font color="#ff0000">Red&lt;/font>&lt;/b></string>
-               </property>
-               <property name="buddy" >
-                <cstring>cboRed</cstring>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="1" >
-              <widget class="QComboBox" name="cboRed" >
-               <property name="sizePolicy" >
-                <sizepolicy>
-                 <hsizetype>7</hsizetype>
-                 <vsizetype>0</vsizetype>
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="minimumSize" >
-                <size>
-                 <width>150</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="baseSize" >
-                <size>
-                 <width>100</width>
-                 <height>0</height>
-                </size>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="1" >
-              <spacer>
-               <property name="orientation" >
-                <enum>Qt::Vertical</enum>
-               </property>
-               <property name="sizeType" >
-                <enum>QSizePolicy::Minimum</enum>
-               </property>
-               <property name="sizeHint" >
-                <size>
-                 <width>20</width>
-                 <height>21</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item row="4" column="1" >
-              <spacer>
-               <property name="orientation" >
-                <enum>Qt::Vertical</enum>
-               </property>
-               <property name="sizeHint" >
-                <size>
-                 <width>20</width>
-                 <height>31</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item row="3" column="2" >
-              <spacer>
-               <property name="orientation" >
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" >
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item row="0" column="3" colspan="5" >
-              <widget class="QRadioButton" name="rbtnThreeBandMinMax" >
-               <property name="text" >
-                <string>Custom Min Max Values:</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-          </item>
           <item row="1" column="3" >
-           <widget class="QComboBox" name="cboxColorMap" >
-            <property name="sizePolicy" >
-             <sizepolicy>
-              <hsizetype>7</hsizetype>
-              <vsizetype>0</vsizetype>
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
+           <widget class="QFrame" name="frameSingleBandValues" >
+            <property name="frameShape" >
+             <enum>QFrame::NoFrame</enum>
             </property>
-            <property name="minimumSize" >
-             <size>
-              <width>150</width>
-              <height>0</height>
-             </size>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="3" >
-           <widget class="QCheckBox" name="cboxInvertColorMap" >
-            <property name="text" >
-             <string>Invert Color Map</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="3" >
-           <widget class="QLabel" name="textLabel2_6_2_2" >
-            <property name="sizePolicy" >
-             <sizepolicy>
-              <hsizetype>5</hsizetype>
-              <vsizetype>5</vsizetype>
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text" >
-             <string>Color Map:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="0" colspan="4" >
-           <widget class="QGroupBox" name="gboxSingleBand" >
-            <property name="title" >
-             <string>Single Band Gray</string>
-            </property>
-            <property name="checkable" >
-             <bool>true</bool>
-            </property>
-            <property name="checked" >
-             <bool>false</bool>
+            <property name="frameShadow" >
+             <enum>QFrame::Plain</enum>
             </property>
             <layout class="QGridLayout" >
              <property name="margin" >
@@ -689,61 +163,7 @@
              <property name="spacing" >
               <number>6</number>
              </property>
-             <item row="1" column="5" >
-              <spacer>
-               <property name="orientation" >
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" >
-                <size>
-                 <width>21</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item row="1" column="6" >
-              <widget class="QLabel" name="lblGrayMax" >
-               <property name="sizePolicy" >
-                <sizepolicy>
-                 <hsizetype>5</hsizetype>
-                 <vsizetype>5</vsizetype>
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text" >
-                <string>Max</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="1" >
-              <spacer>
-               <property name="orientation" >
-                <enum>Qt::Vertical</enum>
-               </property>
-               <property name="sizeHint" >
-                <size>
-                 <width>20</width>
-                 <height>31</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item row="0" column="1" >
-              <spacer>
-               <property name="orientation" >
-                <enum>Qt::Vertical</enum>
-               </property>
-               <property name="sizeHint" >
-                <size>
-                 <width>20</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item row="1" column="4" >
+             <item row="1" column="1" >
               <widget class="QLineEdit" name="leGrayMin" >
                <property name="sizePolicy" >
                 <sizepolicy>
@@ -770,7 +190,7 @@
                </property>
               </widget>
              </item>
-             <item row="1" column="3" >
+             <item row="1" column="0" >
               <widget class="QLabel" name="lblGrayMin" >
                <property name="sizePolicy" >
                 <sizepolicy>
@@ -785,27 +205,7 @@
                </property>
               </widget>
              </item>
-             <item row="2" column="3" colspan="2" >
-              <widget class="QRadioButton" name="rbtnSingleBandStdDev" >
-               <property name="text" >
-                <string>Std Deviation</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="5" colspan="2" >
-              <spacer>
-               <property name="orientation" >
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" >
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item row="2" column="7" >
+             <item row="2" column="4" >
               <widget class="QDoubleSpinBox" name="sboxSingleBandStdDev" >
                <property name="maximum" >
                 <double>10.000000000000000</double>
@@ -818,7 +218,47 @@
                </property>
               </widget>
              </item>
-             <item row="1" column="7" >
+             <item row="2" column="0" colspan="2" >
+              <widget class="QRadioButton" name="rbtnSingleBandStdDev" >
+               <property name="text" >
+                <string>Std Deviation</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="2" colspan="2" >
+              <spacer>
+               <property name="orientation" >
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" >
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item row="0" column="0" colspan="5" >
+              <widget class="QRadioButton" name="rbtnSingleBandMinMax" >
+               <property name="text" >
+                <string>Custom Min Max Values:</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="2" >
+              <spacer>
+               <property name="orientation" >
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" >
+                <size>
+                 <width>21</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item row="1" column="4" >
               <widget class="QLineEdit" name="leGrayMax" >
                <property name="sizePolicy" >
                 <sizepolicy>
@@ -845,7 +285,56 @@
                </property>
               </widget>
              </item>
-             <item row="1" column="1" >
+             <item row="1" column="3" >
+              <widget class="QLabel" name="lblGrayMax" >
+               <property name="sizePolicy" >
+                <sizepolicy>
+                 <hsizetype>5</hsizetype>
+                 <vsizetype>5</vsizetype>
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text" >
+                <string>Max</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item row="1" column="1" colspan="2" >
+           <widget class="QFrame" name="frameSingleBandBands" >
+            <property name="frameShape" >
+             <enum>QFrame::NoFrame</enum>
+            </property>
+            <property name="frameShadow" >
+             <enum>QFrame::Plain</enum>
+            </property>
+            <layout class="QVBoxLayout" >
+             <property name="margin" >
+              <number>9</number>
+             </property>
+             <property name="spacing" >
+              <number>6</number>
+             </property>
+             <item>
+              <spacer>
+               <property name="orientation" >
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeType" >
+                <enum>QSizePolicy::Expanding</enum>
+               </property>
+               <property name="sizeHint" >
+                <size>
+                 <width>20</width>
+                 <height>40</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
               <widget class="QComboBox" name="cboGray" >
                <property name="sizePolicy" >
                 <sizepolicy>
@@ -863,14 +352,129 @@
                </property>
               </widget>
              </item>
-             <item row="0" column="3" colspan="5" >
-              <widget class="QRadioButton" name="rbtnSingleBandMinMax" >
+             <item>
+              <spacer>
+               <property name="orientation" >
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeHint" >
+                <size>
+                 <width>20</width>
+                 <height>40</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item row="0" column="2" colspan="2" >
+           <widget class="QFrame" name="frameThreeBandValues" >
+            <property name="frameShape" >
+             <enum>QFrame::NoFrame</enum>
+            </property>
+            <property name="frameShadow" >
+             <enum>QFrame::Plain</enum>
+            </property>
+            <layout class="QGridLayout" >
+             <property name="margin" >
+              <number>9</number>
+             </property>
+             <property name="spacing" >
+              <number>6</number>
+             </property>
+             <item row="3" column="0" >
+              <widget class="QLabel" name="lblBlueMin" >
+               <property name="sizePolicy" >
+                <sizepolicy>
+                 <hsizetype>5</hsizetype>
+                 <vsizetype>5</vsizetype>
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text" >
+                <string>Min</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="1" >
+              <widget class="QLineEdit" name="leBlueMin" >
+               <property name="sizePolicy" >
+                <sizepolicy>
+                 <hsizetype>1</hsizetype>
+                 <vsizetype>0</vsizetype>
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="maximumSize" >
+                <size>
+                 <width>75</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="baseSize" >
+                <size>
+                 <width>0</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="maxLength" >
+                <number>16</number>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="4" >
+              <widget class="QLineEdit" name="leGreenMax" >
+               <property name="sizePolicy" >
+                <sizepolicy>
+                 <hsizetype>1</hsizetype>
+                 <vsizetype>0</vsizetype>
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="maximumSize" >
+                <size>
+                 <width>75</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="baseSize" >
+                <size>
+                 <width>0</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="maxLength" >
+                <number>16</number>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="0" >
+              <widget class="QLabel" name="lblGreenMin" >
+               <property name="sizePolicy" >
+                <sizepolicy>
+                 <hsizetype>5</hsizetype>
+                 <vsizetype>5</vsizetype>
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text" >
+                <string>Min</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="0" colspan="5" >
+              <widget class="QRadioButton" name="rbtnThreeBandMinMax" >
                <property name="text" >
                 <string>Custom Min Max Values:</string>
                </property>
               </widget>
              </item>
-             <item row="1" column="2" >
+             <item row="4" column="2" colspan="2" >
               <spacer>
                <property name="orientation" >
                 <enum>Qt::Horizontal</enum>
@@ -883,7 +487,461 @@
                </property>
               </spacer>
              </item>
+             <item row="2" column="2" >
+              <spacer>
+               <property name="orientation" >
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" >
+                <size>
+                 <width>21</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item row="1" column="3" >
+              <widget class="QLabel" name="lblRedMax" >
+               <property name="sizePolicy" >
+                <sizepolicy>
+                 <hsizetype>5</hsizetype>
+                 <vsizetype>5</vsizetype>
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text" >
+                <string>Max</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="2" >
+              <spacer>
+               <property name="orientation" >
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" >
+                <size>
+                 <width>21</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item row="3" column="2" >
+              <spacer>
+               <property name="orientation" >
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" >
+                <size>
+                 <width>21</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item row="4" column="0" colspan="2" >
+              <widget class="QRadioButton" name="rbtnThreeBandStdDev" >
+               <property name="text" >
+                <string>Std Deviation</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="3" >
+              <widget class="QLabel" name="lblBlueMax" >
+               <property name="sizePolicy" >
+                <sizepolicy>
+                 <hsizetype>5</hsizetype>
+                 <vsizetype>5</vsizetype>
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text" >
+                <string>Max</string>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="4" >
+              <widget class="QDoubleSpinBox" name="sboxThreeBandStdDev" >
+               <property name="maximum" >
+                <double>10.000000000000000</double>
+               </property>
+               <property name="singleStep" >
+                <double>0.100000000000000</double>
+               </property>
+               <property name="value" >
+                <double>0.000000000000000</double>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="3" >
+              <widget class="QLabel" name="lblGreenMax" >
+               <property name="sizePolicy" >
+                <sizepolicy>
+                 <hsizetype>5</hsizetype>
+                 <vsizetype>5</vsizetype>
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text" >
+                <string>Max</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="1" >
+              <widget class="QLineEdit" name="leGreenMin" >
+               <property name="sizePolicy" >
+                <sizepolicy>
+                 <hsizetype>1</hsizetype>
+                 <vsizetype>0</vsizetype>
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="maximumSize" >
+                <size>
+                 <width>75</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="baseSize" >
+                <size>
+                 <width>0</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="maxLength" >
+                <number>16</number>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1" >
+              <widget class="QLineEdit" name="leRedMin" >
+               <property name="sizePolicy" >
+                <sizepolicy>
+                 <hsizetype>1</hsizetype>
+                 <vsizetype>0</vsizetype>
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="maximumSize" >
+                <size>
+                 <width>75</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="baseSize" >
+                <size>
+                 <width>0</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="maxLength" >
+                <number>16</number>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="4" >
+              <widget class="QLineEdit" name="leBlueMax" >
+               <property name="sizePolicy" >
+                <sizepolicy>
+                 <hsizetype>1</hsizetype>
+                 <vsizetype>0</vsizetype>
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="maximumSize" >
+                <size>
+                 <width>75</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="baseSize" >
+                <size>
+                 <width>0</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="maxLength" >
+                <number>16</number>
+               </property>
+              </widget>
+             </item>
              <item row="1" column="0" >
+              <widget class="QLabel" name="lblRedMin" >
+               <property name="sizePolicy" >
+                <sizepolicy>
+                 <hsizetype>5</hsizetype>
+                 <vsizetype>5</vsizetype>
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text" >
+                <string>Min</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="4" >
+              <widget class="QLineEdit" name="leRedMax" >
+               <property name="sizePolicy" >
+                <sizepolicy>
+                 <hsizetype>1</hsizetype>
+                 <vsizetype>0</vsizetype>
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="maximumSize" >
+                <size>
+                 <width>75</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="baseSize" >
+                <size>
+                 <width>0</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="maxLength" >
+                <number>16</number>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item row="0" column="0" >
+           <widget class="QFrame" name="frameThreeBandLabels" >
+            <property name="frameShape" >
+             <enum>QFrame::NoFrame</enum>
+            </property>
+            <property name="frameShadow" >
+             <enum>QFrame::Plain</enum>
+            </property>
+            <layout class="QVBoxLayout" >
+             <property name="margin" >
+              <number>9</number>
+             </property>
+             <property name="spacing" >
+              <number>6</number>
+             </property>
+             <item>
+              <spacer>
+               <property name="orientation" >
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeType" >
+                <enum>QSizePolicy::Expanding</enum>
+               </property>
+               <property name="sizeHint" >
+                <size>
+                 <width>20</width>
+                 <height>40</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <widget class="QLabel" name="lblRed" >
+               <property name="text" >
+                <string>&lt;b>&lt;font color="#ff0000">Red&lt;/font>&lt;/b></string>
+               </property>
+               <property name="buddy" >
+                <cstring>cboRed</cstring>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="lblGreen" >
+               <property name="text" >
+                <string>&lt;b>&lt;font color="#00ff00">Green&lt;/font>&lt;/b></string>
+               </property>
+               <property name="buddy" >
+                <cstring>cboGreen</cstring>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="lblBlue" >
+               <property name="text" >
+                <string>&lt;b>&lt;font color="#0000ff">Blue&lt;/font>&lt;/b></string>
+               </property>
+               <property name="buddy" >
+                <cstring>cboBlue</cstring>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer>
+               <property name="orientation" >
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeHint" >
+                <size>
+                 <width>20</width>
+                 <height>40</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item row="0" column="1" >
+           <widget class="QFrame" name="frameThreeBandBands" >
+            <property name="frameShape" >
+             <enum>QFrame::NoFrame</enum>
+            </property>
+            <property name="frameShadow" >
+             <enum>QFrame::Plain</enum>
+            </property>
+            <layout class="QVBoxLayout" >
+             <property name="margin" >
+              <number>9</number>
+             </property>
+             <property name="spacing" >
+              <number>6</number>
+             </property>
+             <item>
+              <spacer>
+               <property name="orientation" >
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeType" >
+                <enum>QSizePolicy::Expanding</enum>
+               </property>
+               <property name="sizeHint" >
+                <size>
+                 <width>20</width>
+                 <height>40</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <widget class="QComboBox" name="cboRed" >
+               <property name="sizePolicy" >
+                <sizepolicy>
+                 <hsizetype>7</hsizetype>
+                 <vsizetype>0</vsizetype>
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize" >
+                <size>
+                 <width>150</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="baseSize" >
+                <size>
+                 <width>100</width>
+                 <height>0</height>
+                </size>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QComboBox" name="cboGreen" >
+               <property name="sizePolicy" >
+                <sizepolicy>
+                 <hsizetype>7</hsizetype>
+                 <vsizetype>0</vsizetype>
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize" >
+                <size>
+                 <width>150</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="baseSize" >
+                <size>
+                 <width>0</width>
+                 <height>0</height>
+                </size>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QComboBox" name="cboBlue" >
+               <property name="sizePolicy" >
+                <sizepolicy>
+                 <hsizetype>7</hsizetype>
+                 <vsizetype>0</vsizetype>
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize" >
+                <size>
+                 <width>150</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="baseSize" >
+                <size>
+                 <width>100</width>
+                 <height>0</height>
+                </size>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer>
+               <property name="orientation" >
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeHint" >
+                <size>
+                 <width>20</width>
+                 <height>40</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item row="1" column="0" >
+           <widget class="QFrame" name="frameSingleBandLabels" >
+            <property name="frameShape" >
+             <enum>QFrame::NoFrame</enum>
+            </property>
+            <property name="frameShadow" >
+             <enum>QFrame::Plain</enum>
+            </property>
+            <layout class="QVBoxLayout" >
+             <property name="margin" >
+              <number>9</number>
+             </property>
+             <property name="spacing" >
+              <number>6</number>
+             </property>
+             <item>
+              <spacer>
+               <property name="orientation" >
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeHint" >
+                <size>
+                 <width>20</width>
+                 <height>40</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
               <widget class="QLabel" name="label" >
                <property name="sizePolicy" >
                 <sizepolicy>
@@ -898,15 +956,15 @@
                </property>
               </widget>
              </item>
-             <item row="0" column="0" >
+             <item>
               <spacer>
                <property name="orientation" >
-                <enum>Qt::Horizontal</enum>
+                <enum>Qt::Vertical</enum>
                </property>
                <property name="sizeHint" >
                 <size>
-                 <width>40</width>
-                 <height>20</height>
+                 <width>20</width>
+                 <height>40</height>
                 </size>
                </property>
               </spacer>
@@ -914,90 +972,133 @@
             </layout>
            </widget>
           </item>
-          <item row="1" column="0" >
-           <widget class="QSlider" name="sliderTransparency" >
-            <property name="sizePolicy" >
-             <sizepolicy>
-              <hsizetype>3</hsizetype>
-              <vsizetype>3</vsizetype>
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="maximum" >
-             <number>255</number>
-            </property>
-            <property name="orientation" >
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="tickInterval" >
-             <number>25</number>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0" >
-           <layout class="QHBoxLayout" >
-            <property name="margin" >
-             <number>0</number>
-            </property>
-            <property name="spacing" >
-             <number>6</number>
-            </property>
-            <item>
-             <widget class="QLabel" name="textLabel3" >
-              <property name="text" >
-               <string>None</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLabel" name="lblTransparencyPercent" >
-              <property name="sizePolicy" >
-               <sizepolicy>
-                <hsizetype>0</hsizetype>
-                <vsizetype>5</vsizetype>
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="text" >
-               <string> 00%</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLabel" name="textLabel4" >
-              <property name="text" >
-               <string>&lt;p align="right">Full&lt;/p></string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
          </layout>
         </widget>
        </item>
-       <item>
-        <widget class="Q3TextEdit" name="txtSymologyNotes" >
-         <property name="enabled" >
-          <bool>true</bool>
+       <item row="0" column="0" colspan="2" >
+        <layout class="QHBoxLayout" >
+         <property name="margin" >
+          <number>0</number>
          </property>
+         <property name="spacing" >
+          <number>6</number>
+         </property>
+         <item>
+          <widget class="QRadioButton" name="rbtnThreeBand" >
+           <property name="text" >
+            <string>Three Band Color</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="rbtnSingleBand" >
+           <property name="text" >
+            <string>Single Band Gray</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="4" column="0" >
+        <layout class="QHBoxLayout" >
+         <property name="margin" >
+          <number>0</number>
+         </property>
+         <property name="spacing" >
+          <number>6</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="textLabel3" >
+           <property name="text" >
+            <string>None</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="lblTransparencyPercent" >
+           <property name="sizePolicy" >
+            <sizepolicy>
+             <hsizetype>0</hsizetype>
+             <vsizetype>5</vsizetype>
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text" >
+            <string> 00%</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="textLabel4" >
+           <property name="text" >
+            <string>&lt;p align="right">Full&lt;/p></string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="1" column="0" >
+        <spacer>
+         <property name="orientation" >
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeType" >
+          <enum>QSizePolicy::Minimum</enum>
+         </property>
+         <property name="sizeHint" >
+          <size>
+           <width>20</width>
+           <height>21</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="4" column="1" >
+        <spacer>
+         <property name="orientation" >
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeType" >
+          <enum>QSizePolicy::Minimum</enum>
+         </property>
+         <property name="sizeHint" >
+          <size>
+           <width>101</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="4" column="2" >
+        <widget class="QCheckBox" name="cboxInvertColorMap" >
+         <property name="text" >
+          <string>Invert Color Map</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0" >
+        <widget class="QLabel" name="textLabel2_4_2" >
+         <property name="text" >
+          <string>Global Transparency:</string>
+         </property>
+         <property name="buddy" >
+          <cstring>sliderTransparency</cstring>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="2" >
+        <widget class="QLabel" name="textLabel2_6_2_2" >
          <property name="sizePolicy" >
           <sizepolicy>
-           <hsizetype>7</hsizetype>
-           <vsizetype>1</vsizetype>
+           <hsizetype>5</hsizetype>
+           <vsizetype>5</vsizetype>
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
          <property name="text" >
-          <string>&lt;html>&lt;head>&lt;meta name="qrichtext" content="1" />&lt;/head>&lt;body style="font-size:9pt;font-family:Sans Serif">
-&lt;p style="margin-top:14px" dir="ltr">&lt;span style="font-weight:600">Notes&lt;/span>&lt;/p>
-&lt;/body>&lt;/html>
-</string>
-         </property>
-         <property name="wordWrap" >
-          <enum>Q3TextEdit::WidgetWidth</enum>
+          <string>Color Map:</string>
          </property>
         </widget>
        </item>
@@ -1027,15 +1128,8 @@
          </property>
         </spacer>
        </item>
-       <item row="0" column="0" >
-        <widget class="QLabel" name="lblTransarent" >
-         <property name="text" >
-          <string>Transparent band mapping:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0" >
-        <widget class="QComboBox" name="cboTransparent" >
+       <item row="3" column="0" >
+        <widget class="QComboBox" name="cboxTransparent" >
          <property name="sizePolicy" >
           <sizepolicy>
            <hsizetype>7</hsizetype>
@@ -1052,27 +1146,34 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="2" >
-        <widget class="QLabel" name="textLabel2_4_3" >
+       <item row="2" column="0" >
+        <widget class="QLabel" name="lblTransarent" >
          <property name="text" >
-          <string>No data value:</string>
-         </property>
-         <property name="buddy" >
-          <cstring>sliderTransparency</cstring>
+          <string>Transparent band:</string>
          </property>
         </widget>
        </item>
-       <item row="1" column="2" >
-        <widget class="QLineEdit" name="leNoDataValue" />
+       <item row="1" column="0" >
+        <widget class="QComboBox" name="cboxTranparencyLayer" />
        </item>
-       <item row="2" column="0" colspan="3" >
+       <item row="4" column="0" colspan="3" >
         <widget class="QLabel" name="label_2" >
          <property name="text" >
           <string>Custom Transparency List</string>
          </property>
         </widget>
        </item>
-       <item row="3" column="0" colspan="3" >
+       <item row="0" column="0" >
+        <widget class="QLabel" name="label_3" >
+         <property name="text" >
+          <string>Transparency Layer;</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2" colspan="2" >
+        <widget class="QLineEdit" name="leNoDataValue" />
+       </item>
+       <item row="5" column="0" colspan="3" >
         <widget class="QTableWidget" name="tableTransparency" >
          <property name="verticalScrollBarPolicy" >
           <enum>Qt::ScrollBarAsNeeded</enum>
@@ -1097,7 +1198,7 @@
          </property>
         </widget>
        </item>
-       <item row="3" column="3" >
+       <item row="5" column="3" >
         <layout class="QVBoxLayout" >
          <property name="margin" >
           <number>0</number>
@@ -1200,6 +1301,16 @@
           </widget>
          </item>
         </layout>
+       </item>
+       <item row="0" column="2" >
+        <widget class="QLabel" name="textLabel2_4_3" >
+         <property name="text" >
+          <string>No data value:</string>
+         </property>
+         <property name="buddy" >
+          <cstring>sliderTransparency</cstring>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>
@@ -1988,7 +2099,7 @@
      </widget>
     </widget>
    </item>
-   <item row="1" column="0" >
+   <item>
     <widget class="QDialogButtonBox" name="buttonBox" >
      <property name="orientation" >
       <enum>Qt::Horizontal</enum>
@@ -2008,11 +2119,6 @@
    <header>Qt3Support/Q3TextBrowser</header>
   </customwidget>
   <customwidget>
-   <class>Q3TextEdit</class>
-   <extends>Q3Frame</extends>
-   <header>q3textedit.h</header>
-  </customwidget>
-  <customwidget>
    <class>Q3ListBox</class>
    <extends>Q3Frame</extends>
    <header>q3listbox.h</header>
@@ -2022,6 +2128,11 @@
    <extends>QGroupBox</extends>
    <header>Qt3Support/Q3GroupBox</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>Q3TextEdit</class>
+   <extends>Q3Frame</extends>
+   <header>q3textedit.h</header>
   </customwidget>
  </customwidgets>
  <tabstops>
@@ -2038,7 +2149,6 @@
   <tabstop>leBlueMin</tabstop>
   <tabstop>leBlueMax</tabstop>
   <tabstop>sboxThreeBandStdDev</tabstop>
-  <tabstop>cboxColorScalingAlgorithm</tabstop>
   <tabstop>buttonBox</tabstop>
   <tabstop>leNoDataValue</tabstop>
   <tabstop>tableTransparency</tabstop>
@@ -2061,7 +2171,6 @@
   <tabstop>pbnHistRefresh</tabstop>
   <tabstop>leGrayMin</tabstop>
   <tabstop>cboGray</tabstop>
-  <tabstop>txtSymologyNotes</tabstop>
   <tabstop>lbxPyramidResolutions</tabstop>
   <tabstop>leGrayMax</tabstop>
   <tabstop>cboxColorMap</tabstop>

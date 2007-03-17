@@ -48,10 +48,6 @@ class QgsRasterLayerProperties : public QDialog, private Ui::QgsRasterLayerPrope
         void apply();
         /** \brief this slot asks the rasterlayer to construct pyramids */
         void on_buttonBuildPyramids_clicked();
-        /** \brief slot executed when the three band radio button is pressed. */
-        void on_gboxThreeBand_toggled( bool );
-        /** \brief slot executed when the single band radio button is pressed. */
-        void on_gboxSingleBand_toggled( bool );
         /** \brief slot executed when user presses "Add Values From Display" button on the transparency page */
         void on_pbnAddValuesFromDisplay_clicked();
         /** \brief slot executed when user presses "Add Values Manually" button on the transparency page */
@@ -70,11 +66,15 @@ class QgsRasterLayerProperties : public QDialog, private Ui::QgsRasterLayerPrope
         void on_pbnImportTransparentPixelValues_clicked();
         /** \brief slot executed when user presses "Remove Selected Row" button on the transparency page */
         void on_pbnRemoveSelectedRow_clicked();
+        /** \brief slot executed when the single band radio button is pressed. */
+        void on_rbtnSingleBand_toggled( bool );
         /** \brief slot executed when the single band min max radio button is pressed. */
         void on_rbtnSingleBandMinMax_toggled( bool );
         /** \brief slot executed when the single band standard deviation radio button is pressed. */
         void on_rbtnSingleBandStdDev_toggled( bool );
-        /** \brief slot executed when the three band min max radio button is pressed. */
+        /** \brief slot executed when the three band radio button is pressed. */
+        void on_rbtnThreeBand_toggled( bool ); 
+       /** \brief slot executed when the three band min max radio button is pressed. */
         void on_rbtnThreeBandMinMax_toggled( bool );
         /** \brief slot executed when the three band standard deviation radio button is pressed. */
         void on_rbtnThreeBandStdDev_toggled( bool );
@@ -88,14 +88,14 @@ class QgsRasterLayerProperties : public QDialog, private Ui::QgsRasterLayerPrope
         void userDefinedMinMax_textEdited(QString);
 
     private slots:
+	/**The slot handles necessary interface modifications based when color map selected changes*/
+	void on_cboxColorMap_currentIndexChanged(const QString&);
 	/**This slot calculates classification values and colors for the tree widget on the colormap tab*/
 	void on_mClassifyButton_clicked();
 	/**This slot deletes the current class from the tree widget on the colormap tab*/
 	void on_mDeleteEntryButton_clicked();
 	/**Callback for double clicks on the colormap entry widget*/
 	void handleColormapTreeWidgetDoubleClick(QTreeWidgetItem* item, int column);
-	/**Enables/disables the colormap tab bar for raster types GRAY_OR_UNDEFINED*/
-	void handleColormapIndexChanged(const QString& text);
 	
 
     signals:
