@@ -63,7 +63,8 @@
 #include <QVBoxLayout>
 #include <QWhatsThis>
 #include <QtGlobal>
-
+#include <QRegExp>
+#include <QRegExpValidator>
 //
 // Mac OS X Includes
 // Must include before GEOS 3 due to unqualified use of 'Point'
@@ -1021,18 +1022,22 @@ void QgisApp::createStatusBar()
   mScaleLabel->setMinimumWidth(10);
   mScaleLabel->setMargin(3);
   mScaleLabel->setAlignment(Qt::AlignCenter);
-//  QWhatsThis::add(mScaleLabel, tr("Displays the current map scale"));
-//  QToolTip::add (mScaleLabel, tr("Current map scale"));
+  mScaleLabel->setFrameStyle(QFrame::NoFrame);
+  mScaleLabel->setText(tr("Scale "));
   QToolTip::add (mScaleLabel, tr("Current map scale"));
   statusBar()->addWidget(mScaleLabel, 0,true);
+
   mScaleEdit = new QLineEdit(QString(),statusBar());
   mScaleEdit->setFont(myFont);
   mScaleEdit->setMinimumWidth(10);
   mScaleEdit->setMaximumWidth(100);
   mScaleEdit->setMargin(0);
   mScaleEdit->setAlignment(Qt::AlignLeft);
+  QRegExp validator("\\d+\\.?\\d*:\\d+\\.?\\d*");
+  mScaleEditValidator = new QRegExpValidator(validator, mScaleEdit);
+  mScaleEdit->setValidator(mScaleEditValidator);
   QWhatsThis::add(mScaleEdit, tr("Displays the current map scale"));
-  QToolTip::add (mScaleEdit, tr("Current map scale"));
+  QToolTip::add (mScaleEdit, tr("Current map scale (formatted as x:y)"));
   statusBar()->addWidget(mScaleEdit, 0,true);
   connect(mScaleEdit, SIGNAL(editingFinished()), this, SLOT(userScale()));
 
@@ -1173,8 +1178,8 @@ void QgisApp::setupConnections()
   connect(mMapCanvas->mapRender(), SIGNAL(projectionsEnabled(bool)), this, SLOT(projectionsEnabled(bool)));
   connect(mMapCanvas->mapRender(), SIGNAL(destinationSrsChanged()), this, SLOT(destinationSrsChanged()));
   connect(mMapCanvas, SIGNAL(extentsChanged()),this,SLOT(showExtents()));
-  connect(mMapCanvas, SIGNAL(scaleChanged(long)), this, SLOT(showScale(long)));
-  connect(mMapCanvas, SIGNAL(scaleChanged(long)), this, SLOT(updateMouseCoordinatePrecision()));
+  connect(mMapCanvas, SIGNAL(scaleChanged(double)), this, SLOT(showScale(double)));
+  connect(mMapCanvas, SIGNAL(scaleChanged(double)), this, SLOT(updateMouseCoordinatePrecision()));
 
   connect(mRenderSuppressionCBox, SIGNAL(toggled(bool )), mMapCanvas, SLOT(setRenderFlag(bool)));
 }
@@ -1532,6 +1537,7 @@ void QgisApp::restoreSessionPlugins(QString thePluginDirString)
   }
 
 #ifdef HAVE_PYTHON
+  QString pluginName, description, version;
   
   if (QgsPythonUtils::isEnabled())
   {
@@ -1545,12 +1551,18 @@ void QgisApp::restoreSessionPlugins(QString thePluginDirString)
       QString packageName = pluginDir[i];
       
       // import plugin's package
-      QgsPythonUtils::loadPlugin(packageName);
+      if (!QgsPythonUtils::loadPlugin(packageName))
+        continue;
       
       // get information from the plugin
-      QString pluginName  = QgsPythonUtils::getPluginMetadata(packageName, "name");
-      QString description = QgsPythonUtils::getPluginMetadata(packageName, "description");
-      QString version     = QgsPythonUtils::getPluginMetadata(packageName, "version");
+      // if there are some problems, don't continue with metadata retreival
+      pluginName = QgsPythonUtils::getPluginMetadata(packageName, "name");
+      if (pluginName != "__error__")
+      {
+        description = QgsPythonUtils::getPluginMetadata(packageName, "description");
+        if (description != "__error__")
+          version = QgsPythonUtils::getPluginMetadata(packageName, "version");
+      }
       
       if (pluginName == "__error__" || description == "__error__" || version == "__error__")
       {
@@ -3536,11 +3548,16 @@ void QgisApp::showMouseCoordinate(QgsPoint & p)
   }
 }
 
-void QgisApp::showScale(long theScale)
+void QgisApp::showScale(double theScale)
 {
-  mScaleLabel->setText(tr("Scale 1: "));
-  mScaleEdit->setText(QString::number(theScale));
-  // Set minimum necessary width
+  if (theScale >= 1.0)
+    mScaleEdit->setText("1:" + QString::number(theScale, 'f', 0));
+  else if (theScale > 0.0)
+    mScaleEdit->setText(QString::number(1.0/theScale, 'f', 0) + ":1");
+  else
+    mScaleEdit->setText(tr("Invalid scale"));
+
+   // Set minimum necessary width
   if ( mScaleEdit->width() > mScaleEdit->minimumWidth() )
   {
     mScaleEdit->setMinimumWidth(mScaleEdit->width());
@@ -3549,13 +3566,20 @@ void QgisApp::showScale(long theScale)
 
 void QgisApp::userScale()
 {
-  bool ok;
   double currentScale = mMapCanvas->getScale();
-  double wantedScale = mScaleEdit->text().toDouble(&ok);
 
-  if (ok)
-    mMapCanvas->zoom(wantedScale/currentScale);
-
+  QStringList parts = mScaleEdit->text().split(':');
+  if (parts.size() == 2)
+  {
+    bool leftOk, rightOk;
+    double leftSide = parts.at(0).toDouble(&leftOk);
+    double rightSide = parts.at(1).toDouble(&rightOk);
+    if (leftSide > 0.0 && leftOk && rightOk)
+    {
+       double wantedScale = rightSide / leftSide;
+       mMapCanvas->zoom(wantedScale/currentScale);
+    }
+  }
 }
 void QgisApp::testButton()
 {
