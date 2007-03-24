@@ -231,8 +231,7 @@ rasterLayer( dynamic_cast<QgsRasterLayer*>(lyr) )
       mGradientHeight = pixHistogram->height() / 2;
       mGradientWidth = pixHistogram->width() /2;
       //keep a list of band names for later use
-      //! @note band names should not be translated!
-      myBandNameQStringList.append(myRasterBandNameQString);
+      //! @note band names should not be translated!      myBandNameQStringList.append(myRasterBandNameQString);
     }
 
     //select all histogram layers list items by default
@@ -2305,6 +2304,7 @@ void QgsRasterLayerProperties::on_mClassifyButton_clicked()
       QTreeWidgetItem* newItem = new QTreeWidgetItem(mColormapTreeWidget);
       newItem->setText(0, QString::number(*value_it, 'f'));
       newItem->setBackground(1, QBrush(*color_it));
+      newItem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsEditable | Qt::ItemIsSelectable);
     }
 }
 

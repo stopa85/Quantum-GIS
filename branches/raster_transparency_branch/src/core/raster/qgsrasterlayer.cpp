@@ -3184,7 +3184,7 @@ const QgsRasterBandStats QgsRasterLayer::getRasterBandStats(int theBandNoInt)
   emit drawingProgress(0,0);
 
   // let the user know we're going to possibly be taking a while
-  QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+  //QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 
   GDALDataType myDataType = myGdalBand->GetRasterDataType();
 
@@ -3420,7 +3420,7 @@ const QgsRasterBandStats QgsRasterLayer::getRasterBandStats(int theBandNoInt)
   //add this band to the class stats map
   rasterStatsVector[theBandNoInt - 1] = myRasterBandStats;
   emit drawingProgress(rasterYDimInt, rasterYDimInt); //reset progress
-  QApplication::restoreOverrideCursor(); //restore the cursor
+  //QApplication::restoreOverrideCursor(); //restore the cursor
   QgsDebugMsg("Stats collection completed returning");
   return myRasterBandStats;
 
