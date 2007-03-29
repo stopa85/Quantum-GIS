@@ -348,10 +348,13 @@ int QgsWFSProvider::getFeatureGET(const QString& uri, const QString& geometryAtt
       thematicAttributes.insert(it->name());
     }
   
+  mSourceSRS = new QgsSpatialRefSys();
   QgsWFSData dataReader(uri, &mExtent, mSourceSRS, &dataFeatures, geometryAttribute, thematicAttributes, &mWKBType);
   if(dataReader.getWFSData() != 0)
     {
       qWarning("getWFSData returned with error");
+      mSourceSRS = 0;
+      delete mSourceSRS;
       return 1;
     }
 
@@ -457,7 +460,11 @@ int QgsWFSProvider::describeFeatureTypeFile(const QString& uri, QString& geometr
 {
   //first look in the schema file
   QString noExtension = uri;
-  noExtension.chop(3);
+  int dotPosition = noExtension.indexOf(".", -1);
+  if(dotPosition != -1)
+    {
+      noExtension.chop(noExtension.length() - 1 - dotPosition);
+    }
   QString schemaUri = noExtension.append("xsd");
   QFile schemaFile(schemaUri);
   
