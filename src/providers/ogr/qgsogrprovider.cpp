@@ -492,57 +492,6 @@ void QgsOgrProvider::getFeatureAttribute(OGRFeature * ogrFet, QgsFeature & f, in
 }
 
 
-void QgsOgrProvider::getFeatureAttributes(int key, int &row, QgsFeature &f)
-{
-  if(!valid)
-  {
-      QgsLogger::critical("Read attempt on an invalid shapefile data source");
-      return;
-  }
-
-  OGRFeature* fet;
-
-  if ((fet = ogrLayer->GetFeature(key)) != NULL)
-  {
-    int count = fet->GetFieldCount();
-    for (int i = 0; i < count; i++)
-      getFeatureAttribute(fet, f, i);
-
-    delete fet;
-  }
-}
-
-void QgsOgrProvider::getFeatureGeometry(int key, QgsFeature *f)
-{
-  if(!valid)
-  {
-      QgsLogger::critical("Read attempt on an invalid shapefile data source");
-      return;
-  }
-
-  OGRFeature* fet;
-  OGRGeometry* geom;
-
-  if ((fet = ogrLayer->GetFeature(key)) != NULL)
-  {
-      if ((geom = fet->GetGeometryRef()))
-    {
-      geom = fet->GetGeometryRef();
-      // get the wkb representation
-      unsigned char *feature = new unsigned char[geom->WkbSize()];
-      geom->exportToWkb((OGRwkbByteOrder) QgsApplication::endian(), feature);
-      OGRFeatureDefn * featureDefinition = fet->GetDefnRef();
-      QString featureTypeName = featureDefinition ? 
-                                QString(featureDefinition->GetName()) : 
-                                QString("");
-
-      f->setGeometryAndOwnership(feature, geom->WkbSize());
-
-    }
-    delete fet;
-  }
-}
-
 const QgsFieldMap & QgsOgrProvider::fields() const
 {
   return mAttributeFields;

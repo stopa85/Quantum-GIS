@@ -51,14 +51,6 @@ bool QgsVectorDataProvider::getFeatureAtId(int featureId,
   return 0;
 }
 
-void QgsVectorDataProvider::getFeatureAttributes(int key, int& row, QgsFeature *f)
-{
-}
-
-void QgsVectorDataProvider::getFeatureGeometry(int key, QgsFeature *f)
-{
-}
-
 QString QgsVectorDataProvider::dataComment() const
 {
     return QString();
@@ -244,4 +236,9 @@ QgsAttributeList QgsVectorDataProvider::allAttributesList()
 void QgsVectorDataProvider::setFetchFeaturesWithoutGeom(bool fetch)
 {
   mFetchFeaturesWithoutGeom = fetch;
+}
+
+const QSet<QString>& QgsVectorDataProvider::supportedNativeTypes() const
+{
+  return mSupportedNativeTypes;
 }

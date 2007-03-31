@@ -130,19 +130,6 @@ class CORE_EXPORT QgsVectorDataProvider : public QgsDataProvider
        */
       virtual long featureCount() const = 0;
 
-      /**
-       * Get the attributes associated with a feature
-       * TODO: Get rid of "row" and set up provider-internal caching instead
-       */
-      virtual void getFeatureAttributes(int key, int& row, QgsFeature *f);
-
-      /**
-       * Fetch geometry for a particular feature with id "key",
-       * modifies "f" in-place.
-       *
-       * This function is enabled if capabilities() returns "SelectGeometryAtId".
-       */
-      virtual void getFeatureGeometry(int key, QgsFeature *f);
 
       /**
        * Number of attribute fields for a feature in the layer
@@ -268,7 +255,7 @@ class CORE_EXPORT QgsVectorDataProvider : public QgsDataProvider
       QgsAttributeList allAttributesList();
 
       /**Returns the names of the numerical types*/
-      const QSet<QString>& supportedNativeTypes() const {return mSupportedNativeTypes;}
+      const QSet<QString>& supportedNativeTypes() const;
 
       /**
        * Set whether provider should return also features that don't have

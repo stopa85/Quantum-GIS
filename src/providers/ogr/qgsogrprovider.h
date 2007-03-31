@@ -123,18 +123,6 @@ class QgsOgrProvider : public QgsVectorDataProvider
      */
     virtual long featureCount() const;
 
-    /**
-     * Get the attributes associated with a feature
-     * TODO: Get rid of "row" and set up provider-internal caching instead
-     *       ("row" was only ever used in the PostgreSQL provider context anyway)
-     */
-    virtual void getFeatureAttributes(int key, int& row, QgsFeature &f);
-
-    /**
-     * Fetch geometry for a particular feature with id "key",
-     * modifies "f" in-place.
-     */
-    virtual void getFeatureGeometry(int key, QgsFeature *f);
 
     /** 
      * Get the number of fields in the layer
