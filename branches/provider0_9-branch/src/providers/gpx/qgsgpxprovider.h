@@ -148,8 +148,6 @@ public:
   /** return description */
   virtual QString description() const;
 
-  virtual void setSRS(const QgsSpatialRefSys& theSRS);
-
   virtual QgsSpatialRefSys getSRS();
   
   

@@ -61,9 +61,7 @@ class QgsOgrProvider : public QgsVectorDataProvider
     
     
     virtual QgsSpatialRefSys getSRS();
-    
-    virtual void setSRS(const QgsSpatialRefSys& theSRS);
-    
+   
     
     /**
      *   Returns the permanent storage type for this layer as a friendly name.

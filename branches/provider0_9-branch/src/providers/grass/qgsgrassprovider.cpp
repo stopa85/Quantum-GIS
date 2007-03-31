@@ -1216,10 +1216,6 @@ struct Map_info *QgsGrassProvider::layerMap ( int layerId )
     return ( mMaps[mLayers[layerId].mapId].map );
 }
 
-void QgsGrassProvider::setSRS(const QgsSpatialRefSys& theSRS)
-{
-  // XXX is it possible to change SRS?
-}
 
 QgsSpatialRefSys QgsGrassProvider::getSRS()
 {

@@ -187,8 +187,6 @@ public:
    */
   bool isValid();
 
-  void setSRS(const QgsSpatialRefSys& theSRS);
-
   QgsSpatialRefSys getSRS();
   
   // ----------------------------------- Edit ----------------------------------

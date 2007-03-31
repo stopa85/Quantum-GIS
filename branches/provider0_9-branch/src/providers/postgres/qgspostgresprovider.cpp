@@ -2539,11 +2539,6 @@ void QgsPostgresProvider::showMessageBox(const QString& title,
 }
 
 
-void QgsPostgresProvider::setSRS(const QgsSpatialRefSys& theSRS)
-{
-  // TODO implement [MD]
-}
-
 QgsSpatialRefSys QgsPostgresProvider::getSRS()
 {
   QgsSpatialRefSys srs;

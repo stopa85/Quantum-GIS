@@ -217,11 +217,6 @@ QgsSpatialRefSys QgsWFSProvider::getSRS()
     return QgsSpatialRefSys();
 }
 
-void QgsWFSProvider::setSRS(const QgsSpatialRefSys& theSRS)
-{
-  // do nothing
-}
-
 QgsRect QgsWFSProvider::extent()
 {
   return mExtent;
