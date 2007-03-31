@@ -1106,47 +1106,6 @@ QgsRect QgsVectorLayer::boundingBoxOfSelected()
 }
 
 
-QgsFeature * QgsVectorLayer::getNextFeature(bool fetchAttributes, bool selected) const
-{
-  if ( ! mDataProvider )
-  {
-    QgsLogger::warning(" QgsVectorLayer::getNextFeature() invoked with null mDataProvider");
-    return 0;
-  }
-  
-  // TODO: make an interface like the one in QgsVectorDataProvider
-
-  QgsFeature fet;
-  if ( selected )
-  {
-    while (mDataProvider->getNextFeature(fet)) // TODO:
-    {
-      bool sel = mSelectedFeatureIds.contains(fet.featureId());
-      if ( sel ) return new QgsFeature(fet);
-    }
-    return 0;
-  }
-
-  mDataProvider->getNextFeature(fet);
-  return new QgsFeature(fet);
-} // QgsVectorLayer::getNextFeature
-
-
-
-bool QgsVectorLayer::getNextFeature(QgsFeature &feature, bool fetchAttributes) const
-{
-  if ( ! mDataProvider )
-  {
-    QgsLogger::warning(" QgsVectorLayer::getNextFeature() invoked with null mDataProvider");
-    return false;
-  }
-
-  // TODO: make an interface like the one in QgsVectorDataProvider
-  
-  return mDataProvider->getNextFeature( feature );
-} // QgsVectorLayer::getNextFeature
-
-
 
 long QgsVectorLayer::featureCount() const
 {
@@ -2084,63 +2043,34 @@ QgsFeatureList QgsVectorLayer::selectedFeatures()
   
   QgsFeatureList features;
 
-  // we don't need to cache features ... it just adds unnecessary time
-  // as we don't need to pull *everything* from disk
-
-  // Go through each selected feature ID and determine
-  // its current geometry and attributes
+  QgsAttributeList allAttrs = mDataProvider->allAttributesList();
   
   for (QgsFeatureIds::iterator it = mSelectedFeatureIds.begin(); it != mSelectedFeatureIds.end(); ++it)
   {
     QgsFeature feat;
-
-    // Pull the original version of the feature from disk or memory
-    // as appropriate
-
-    // Check this selected item against the uncommitted added features
+    
     bool selectionIsAddedFeature = FALSE;
 
+    // Check this selected item against the uncommitted added features
     for (QgsFeatureList::iterator iter = mAddedFeatures.begin(); iter != mAddedFeatures.end(); ++iter)
     {
       if ( (*it) == (*iter).featureId() )
       {
         feat = QgsFeature(*iter);
         selectionIsAddedFeature = TRUE;
+        break;
       }
     }
 
+    // if the geometry is not newly added, get it from provider
     if (!selectionIsAddedFeature)
     {
-      // pull committed version from disk
-      feat = *it;
+      mDataProvider->getFeatureAtId(*it, feat, true, allAttrs);
+    }
 
-      int row = 0;  //TODO: Get rid of this, but getFeatureAttributes()
-                    //      needs it for some reason
+    // Transform the feature to the "current" in-memory version
+    features.append(QgsFeature(feat, mChangedAttributes, mChangedGeometries));
 
-      mDataProvider->getFeatureAttributes(*it, row, &feat);
-
-      if (!mChangedGeometries.contains(*it))
-      {
-         // also pull committed geometry from disk as we will
-         // not need to overwrite it later
-
-         if (mDataProvider->capabilities() & QgsVectorDataProvider::SelectGeometryAtId)
-         {
-           mDataProvider->getFeatureGeometry(*it, &feat);
-         }
-         else
-         {
-           // TODO: handle error somehow [MD]
-           //QMessageBox::information(0, tr("Cannot retrieve features"),
-           //     tr("The provider for the current layer cannot retrieve geometry for the selected features.  This version of the provider does not have this capability."));
-         }
-       }
-
-     }
-
-     // Transform the feature to the "current" in-memory version
-
-     features.append(QgsFeature(feat, mChangedAttributes, mChangedGeometries));
   } // for each selected
 
   return features;

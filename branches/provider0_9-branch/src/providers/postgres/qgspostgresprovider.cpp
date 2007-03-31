@@ -646,65 +646,6 @@ void QgsPostgresProvider::getFeatureAttributes(int key, int &row,
 }
 
 
-void QgsPostgresProvider::getFeatureGeometry(int key, QgsFeature& f)
-{
-  if (!valid)
-  {
-    return;
-  }
-
-  QString cursor = QString("declare qgisf binary cursor for "
-                           "select asbinary(\"%1\",'%2') from %3 where \"%4\" = %5")
-                   .arg(geometryColumn)
-                   .arg(endianString())
-                   .arg(mSchemaTableName)
-                   .arg(primaryKey)
-                   .arg(key);
-
-  QgsDebugMsg("using: " + cursor); 
-  
-  if (ready)
-    PQexec(connection, "end work");
-  PQexec(connection, "begin work");
-  ready = true;
-  PQexec(connection, (const char *)(cursor.utf8()));
-
-  QString fetch = "fetch forward 1 from qgisf";
-  PGresult *geomResult = PQexec(connection, (const char *)fetch);
-
-  if (PQntuples(geomResult) == 0)
-  {
-    // Nothing found - therefore nothing to change
-    if (ready)
-      PQexec(connection,"end work");
-    ready = false;
-    PQclear(geomResult);
-    return;
-  }
-
-  int row = 0;
-
-  int returnedLength = PQgetlength(geomResult, row, 0);
-
-  if(returnedLength > 0)
-  {
-      unsigned char *wkbgeom = new unsigned char[returnedLength];
-      memcpy(wkbgeom, PQgetvalue(geomResult, row, 0), returnedLength);
-      f.setGeometryAndOwnership(wkbgeom, returnedLength);
-  }
-  else
-  {
-    //QgsDebugMsg("Couldn't get the feature geometry in binary form");
-  }
-
-  PQclear(geomResult);
-
-  if (ready)
-    PQexec(connection,"end work");
-  ready = false;
-
-}
-
 
 const QgsFieldMap & QgsPostgresProvider::fields() const
 {

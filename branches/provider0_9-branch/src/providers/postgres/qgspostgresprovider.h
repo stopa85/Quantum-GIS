@@ -169,12 +169,6 @@ class QgsPostgresProvider:public QgsVectorDataProvider
     /**Get the attributes with indices contained in attlist*/
     void getFeatureAttributes(int key, int& row, QgsFeature& f, const QgsAttributeList& attlist);
 
-    /**
-     * Fetch geometry for a particular feature with id "key",
-     * modifies "f" in-place.
-     */
-    void getFeatureGeometry(int key, QgsFeature& f);
-
     /**  * Get the name of the primary key for the layer
     */
     QString getPrimaryKey();

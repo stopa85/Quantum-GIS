@@ -170,18 +170,6 @@ public:
   virtual bool writeXML_( QDomNode & layer_node, QDomDocument & doc );
 
 
-  /** Get the next feature resulting from a select operation
-  * @param selected selected feeatures only
-  * @return QgsFeature
-  */
-  virtual QgsFeature * getNextFeature(bool fetchAttributes=false, bool selected=false) const;
-
-  /** Get the next feature using new method
-   * TODO - make this pure virtual once it works and change existing providers
-   *        to use this method of fetching features
-   */
-  virtual bool getNextFeature(QgsFeature &feature, bool fetchAttributes=false) const;
-
   /**
    * Number of features in the layer. This is necessary if features are
    * added/deleted or the layer has been subsetted. If the data provider
