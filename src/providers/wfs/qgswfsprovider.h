@@ -69,7 +69,6 @@ class QgsWFSProvider: public QgsVectorDataProvider
   QString maxValue(uint position);
   
   virtual QgsSpatialRefSys getSRS();
-  virtual void setSRS(const QgsSpatialRefSys& theSRS);
   
   /* Inherited from QgsDataProvider */
   

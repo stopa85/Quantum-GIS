@@ -166,8 +166,6 @@ public:
    */
   bool isValid();
 
-  virtual void setSRS(const QgsSpatialRefSys& theSRS);
-  
   virtual QgsSpatialRefSys getSRS();
 
   /* new functions */

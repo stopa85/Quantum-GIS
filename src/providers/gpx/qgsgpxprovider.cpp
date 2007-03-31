@@ -782,10 +782,6 @@ QString QgsGPXProvider::description() const
     return GPX_DESCRIPTION;
 } // QgsGPXProvider::description()
 
-void QgsGPXProvider::setSRS(const QgsSpatialRefSys& theSRS)
-{
-}
-
 QgsSpatialRefSys QgsGPXProvider::getSRS()
 {
   return QgsSpatialRefSys(); // use default SRS - it's WGS84

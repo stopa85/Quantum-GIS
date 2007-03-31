@@ -153,11 +153,9 @@ QgsOgrProvider::QgsOgrProvider(QString const & uri)
   //    std::cerr << "Creating the wktReader\n";
   wktReader = new GEOS_IO::WKTReader(geometryFactory);
 
-  /* TODO: [MD]
-  mNumericalTypes.push_back("Integer");
-  mNumericalTypes.push_back("Real");
-  mNonNumericalTypes.push_back("String");
-  */
+  mSupportedNativeTypes.insert("Integer");
+  mSupportedNativeTypes.insert("Real");
+  mSupportedNativeTypes.insert("String");
 }
 
 QgsOgrProvider::~QgsOgrProvider()
@@ -1501,12 +1499,4 @@ QgsSpatialRefSys QgsOgrProvider::getSRS()
   }
 
   return srs;
-}
-
-void QgsOgrProvider::setSRS(const QgsSpatialRefSys& theSRS)
-{
-  // TODO: how to change SRS? that one from GetSpatialRef() should not be changed
-  
-  //OGRSpatialReference * mySpatialRefSys = ogrLayer->GetSpatialRef();
-  //mySpatialRefSys->importFromWkt(theSRS.toWkt());
 }

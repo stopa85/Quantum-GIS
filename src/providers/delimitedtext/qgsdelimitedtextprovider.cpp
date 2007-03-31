@@ -671,11 +671,6 @@ int *QgsDelimitedTextProvider::getFieldLengths()
   }
   return lengths;
 }
-
-void QgsDelimitedTextProvider::setSRS(const QgsSpatialRefSys& theSRS)
-{
-  // TODO: make provider projection-aware
-}
   
 QgsSpatialRefSys QgsDelimitedTextProvider::getSRS()
 {
