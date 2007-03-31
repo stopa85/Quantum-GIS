@@ -121,7 +121,6 @@
 #include "qgsrenderer.h"
 #include "qgsserversourceselect.h"
 #include "qgsvectordataprovider.h"
-#include "qgsvectorfilewriter.h"
 #include "qgsvectorlayer.h"
 
 //

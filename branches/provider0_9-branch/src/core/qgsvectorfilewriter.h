@@ -30,54 +30,69 @@
 
 class CORE_EXPORT QgsVectorFileWriter
 {
-    public:
+  public:
       
-      /** Write contents of vector layer to a shapefile */
-      static QString writeVectorLayerAsShapefile(QString path, QString encoding, QgsVectorLayer* layer);
+    enum WriterError
+    {
+      NoError = 0,
+      ErrDriverNotFound,
+      ErrCreateDataSource,
+      ErrCreateLayer
+    };
+
+    /** Write contents of vector layer to a shapefile */
+    static WriterError writeAsShapefile(QgsVectorLayer* layer,
+                                        const QString& shapefileName,
+                                        const QString& encoding);
 
 
-  QgsVectorFileWriter(QString theOutputFileName, QString fileEncoding, QgsVectorLayer * theVectorLayer);
-        QgsVectorFileWriter(QString theOutputFileName, QString fileEncoding, OGRwkbGeometryType theGeometryType);
-        ~QgsVectorFileWriter() ;
-	/**Writes a point to the file*/
-        bool writePoint(QgsPoint * thePoint);
-	/**Writes a line to the file
-	 @param wkb well known binary char array
-	 @param size size of the binary array
-	 @return true in case of success and false else*/
-	bool writeLine(unsigned char* wkb, int size);
-	/**Writes a polygon to the file
-	@param wkb well known binary char array
-	@param size size of the binary array
-	@return true in case of success and false else*/ 
-	bool writePolygon(unsigned char* wkb, int size);
-        //! Add a new field to the output attribute table
-        bool createField(QString theName, OGRFieldType theType, int theWidthInt=0, int thePrecisionInt=0);
-        //! creates the output file etc...
-        bool initialise();
-    private:
-        //! current record number
-        int mCurrentRecInt;    
-        //! file name to be written to 
-        QString mOutputFileName;
-        //! file type to be written to
-        QString mOutputFormat;
-        //! Encodionf for the layer attributes and other properties.
-        QTextCodec *mEncoding;
-        //! Ogr handle to the output datasource
-        OGRDataSourceH mDataSourceHandle;
-        //! Ogr handle to the spatial layer (e.g. .shp) parrt of the datasource
-        OGRLayerH mLayerHandle;
-        //! The geometry type for the output file
-        OGRwkbGeometryType mGeometryType;
-        //! Whether the output gile has been initialised. Some operations require this to be true before they will run
-        bool mInitialisedFlag;
-	enum ENDIAN
-	    {
-		NDR = 1,
-		XDR = 0
-	    };
-	/** Return endian-ness for this layer*/
-	int endian();
+
+    QgsVectorFileWriter(QString theOutputFileName, QString fileEncoding, QgsVectorLayer * theVectorLayer);
+    
+    QgsVectorFileWriter(QString theOutputFileName, QString fileEncoding, OGRwkbGeometryType theGeometryType);
+    
+    ~QgsVectorFileWriter();
+    
+    /**Writes a point to the file*/
+    bool writePoint(QgsPoint * thePoint);
+  
+    /**Writes a line to the file
+       @param wkb well known binary char array
+       @param size size of the binary array
+       @return true in case of success and false else*/
+    bool writeLine(unsigned char* wkb, int size);
+
+    /**Writes a polygon to the file
+       @param wkb well known binary char array
+       @param size size of the binary array
+       @return true in case of success and false else*/ 
+    bool writePolygon(unsigned char* wkb, int size);
+        
+    /** Add a new field to the output attribute table */
+    bool createField(QString theName, OGRFieldType theType, int theWidthInt=0, int thePrecisionInt=0);
+  
+    /** creates the output file etc... */
+    bool initialise();
+    
+  private:
+    
+    //! current record number
+    int mCurrentRecInt;    
+    //! file name to be written to 
+    QString mOutputFileName;
+    //! file type to be written to
+    QString mOutputFormat;
+    //! Encodionf for the layer attributes and other properties.
+    QTextCodec *mEncoding;
+    //! Ogr handle to the output datasource
+    OGRDataSourceH mDataSourceHandle;
+    //! Ogr handle to the spatial layer (e.g. .shp) parrt of the datasource
+    OGRLayerH mLayerHandle;
+    //! The geometry type for the output file
+    OGRwkbGeometryType mGeometryType;
+    //! Whether the output gile has been initialised. Some operations require this to be true before they will run
+    bool mInitialisedFlag;
+
 };
+
 #endif
