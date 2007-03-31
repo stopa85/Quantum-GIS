@@ -348,9 +348,6 @@ public:
   /** Sets whether some features are modified or not */
   void setModified(bool modified = TRUE, bool onlyGeometryWasModified = FALSE);
   
-  /** Save as shapefile */
-  QString saveAsShapefile(QString path, QString encoding);
-
   /** Make layer editable */
   bool startEditing();
   
