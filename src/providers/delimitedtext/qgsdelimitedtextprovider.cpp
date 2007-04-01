@@ -459,43 +459,25 @@ QgsDelimitedTextProvider::getNextFeature_( QgsFeature & feature,
 
 } // getNextFeature_( QgsFeature & feature )
 
-#if 0
-bool QgsDelimitedTextProvider::getNextFeature(QgsFeature& feature,
-                              bool fetchGeometry,
-                              QgsAttributeList fetchAttributes,
-                              uint featureQueueSize)
-{
-  return getNextFeature_(feature, fetchAttributes);
-}
-#endif //0
-
 bool QgsDelimitedTextProvider::getNextFeature(QgsFeature& feature, uint featureQueueSize)
 {
-  return false; //soon...
+  return getNextFeature_(feature, mAttributesToFetch);
 }
-
-#if 0
-/**
- * Select features based on a bounding rectangle. Features can be retrieved
- * with calls to getFirstFeature and getNextFeature.
- * @param mbr QgsRect containing the extent to use in selecting features
- */
-void QgsDelimitedTextProvider::select(QgsRect rect, bool useIntersect)
-{
-
-  // Setting a spatial filter doesn't make much sense since we have to
-  // compare each point against the rectangle.
-  // We store the rect and use it in getNextFeature to determine if the
-  // feature falls in the selection area
-  reset();
-  mSelectionRectangle = rect;
-}
-#endif //0
 
 void QgsDelimitedTextProvider::select(QgsAttributeList fetchAttributes, QgsRect rect, bool fetchGeometry, \
 				      bool useIntersect)
 {
-  //soon...
+  mSelectionRectangle = rect;
+  mAttributesToFetch = fetchAttributes;
+  mFetchGeom = fetchGeometry;
+  if(rect.isEmpty())
+    {
+      mSelectionRectangle = mExtent;
+    }
+  else
+    {
+      mSelectionRectangle = rect;
+    }
 }
 
 
@@ -546,8 +528,6 @@ void QgsDelimitedTextProvider::reset()
   // the header record
   mStream->seek(0);
   mStream->readLine();
-  //reset any spatial filters
-  mSelectionRectangle = mExtent;
 }
 
 QString QgsDelimitedTextProvider::minValue(uint position)
