@@ -47,8 +47,9 @@ QgsWFSProvider::QgsWFSProvider(const QString& uri)
   if(getFeature(uri) == 0)
     {
       mValid = true;
+      
       //set spatial filter to the whole extent
-      select(mExtent, false);
+      //select(mExtent, false); //MH TODO: fix this in provider0_9-branch
     }
   else
     {
@@ -68,7 +69,7 @@ QgsWFSProvider::~QgsWFSProvider()
     }
 }
 
-
+#if 0
 bool QgsWFSProvider::getNextFeature(QgsFeature& feature,
                                     bool fetchGeometry,
                                     QgsAttributeList attlist,
@@ -113,6 +114,14 @@ bool QgsWFSProvider::getNextFeature(QgsFeature& feature,
 	}
     }
 }
+#endif //0
+
+bool QgsWFSProvider::getNextFeature(QgsFeature& feature, uint featureQueueSize)
+{
+  return false; //soon...
+}
+
+
 
 QGis::WKBTYPE QgsWFSProvider::geometryType() const
 {
@@ -184,7 +193,11 @@ void QgsWFSProvider::fillMinMaxCash()
   reset();
   QgsAttributeList allAttr = allAttributesList();
   QgsFeature theFeature;
-  while (getNextFeature(theFeature, true, allAttr))
+
+  select(allAttr, QgsRect(), true);
+  reset();
+
+  while (getNextFeature(theFeature))
     {
       for(i = 0; i < fieldCount; ++i)
 	{
@@ -227,6 +240,7 @@ bool QgsWFSProvider::isValid()
   return mValid;
 }
 
+#if 0
 void QgsWFSProvider::select(QgsRect mbr, bool useIntersect)
 {
   mUseIntersect = useIntersect;
@@ -240,6 +254,13 @@ void QgsWFSProvider::select(QgsRect mbr, bool useIntersect)
   mSpatialIndex.query(&filter, *mSelectedFeatures);
 #endif
   mFeatureIterator = mSelectedFeatures->begin();
+}
+#endif //0
+
+void QgsWFSProvider::select(QgsAttributeList fetchAttributes, QgsRect rect, bool fetchGeometry, \
+			    bool useIntersect)
+{
+  //soon...
 }
 
 int QgsWFSProvider::getFeature(const QString& uri)

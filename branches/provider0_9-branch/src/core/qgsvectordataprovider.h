@@ -73,17 +73,13 @@ class CORE_EXPORT QgsVectorDataProvider : public QgsDataProvider
        */
       virtual QString storageType() const;
 
-      /**
-       * Select features based on a bounding rectangle. Features can be retrieved 
-       * with calls to getFirstFeature and getNextFeature. Request for features 
-       * for use in drawing the map canvas should set useIntersect to false.
-       * @param mbr QgsRect containing the extent to use in selecting features
-       * @param useIntersect If true, use the intersects function to select features
-       * rather than the PostGIS && operator that selects based on bounding box
-       * overlap.
-       *
-       */
-      virtual void select(QgsRect mbr, bool useIntersect = false) = 0;
+      /**Select features based on a bounding rectangle. Features can be retrieved with calls to reset and getNextFeature.
+	 @param fetchAttributes list of attributes which should be fetched
+	 @param rect spatial filter
+	 @param fetchGeometry true if the feature geometry should be fetched
+	 @param useIntersect true if an accurate intersection test should be used, false if a test based on bounding box is sufficient*/
+      virtual void select(QgsAttributeList fetchAttributes = QgsAttributeList(), QgsRect rect = QgsRect(), \
+bool fetchGeometry = true, bool useIntersect = false) = 0;
 
       /**
        * Update the feature count based on current spatial filter. If not
@@ -112,10 +108,7 @@ class CORE_EXPORT QgsVectorDataProvider : public QgsDataProvider
        * @param featureQueueSize  a hint to the provider as to how many features are likely to be retrieved in a batch
        * @return true when there was a feature to fetch, false when end was hit
        */
-      virtual bool getNextFeature(QgsFeature& feature,
-                                  bool fetchGeometry = true,
-                                  QgsAttributeList fetchAttributes = QgsAttributeList(),
-                                  uint featureQueueSize = 1) = 0;
+      virtual bool getNextFeature(QgsFeature& feature, uint featureQueueSize = 1) = 0;
 
       /**
        * Get feature type.
@@ -148,13 +141,7 @@ class CORE_EXPORT QgsVectorDataProvider : public QgsDataProvider
        */
       virtual QString dataComment() const;
 
-      /** 
-       * Reset the layer to clear any spatial filtering or other contstraints that
-       * would prevent the entire record set from being traversed by call to 
-       * getNextFeature(). Some data stores may not require any special action to
-       * reset the layer. In this case, the provider should simply implement an empty
-       * function body.
-       */
+      /**start reading features from previous select operation from begin*/
       virtual void reset() = 0;
 
       /**
@@ -270,6 +257,12 @@ class CORE_EXPORT QgsVectorDataProvider : public QgsDataProvider
 
       /** should provider fetch also features that don't have geometry? */
       bool mFetchFeaturesWithoutGeom;
+
+      /**True if geometry should be added to the features in getNextFeature calls*/
+      bool mFetchGeom;
+
+      /**List of attribute indices to fetch with getNextFeature calls*/
+      QgsAttributeList mAttributesToFetch;
 
       /**The names of the providers native types*/
       QSet<QString> mSupportedNativeTypes;

@@ -473,9 +473,11 @@ void QgsAttributeTable::fillTable(QgsVectorLayer* layer)
     }
 
     //go through the features and fill the values into the table
-    provider->reset();
     QgsAttributeList all = provider->allAttributesList();
-    while (provider->getNextFeature(fet, false, all))
+    provider->select(all, QgsRect(), false);
+    provider->reset();
+    
+    while (provider->getNextFeature(fet))
     {
       if (!deletedFeatures.contains(fet.featureId()))
       {

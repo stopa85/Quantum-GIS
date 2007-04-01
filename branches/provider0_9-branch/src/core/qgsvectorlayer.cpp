@@ -280,15 +280,15 @@ void QgsVectorLayer::drawLabels(QPainter * p, QgsRect & viewExtent, QgsMapToPixe
     int featureCount = 0;
     // select the records in the extent. The provider sets a spatial filter
     // and sets up the selection set for retrieval
+    mDataProvider->select(attributes, viewExtent);
     mDataProvider->reset();
-    mDataProvider->select(viewExtent);
 
     try
     {
       QgsFeature fet;
 
       // main render loop
-      while(mDataProvider->getNextFeature(fet, true, attributes))
+      while(mDataProvider->getNextFeature(fet))
       {
         // don't render labels of deleted features
         if (!mDeletedFeatureIds.contains(fet.featureId()))
@@ -712,19 +712,19 @@ void QgsVectorLayer::draw(QPainter * p,
       // Destroy all cached geometries and clear the references to them
       deleteCachedGeometries();
     }
-
-    mDataProvider->reset();
-    mDataProvider->select(viewExtent);
+ 
     mDataProvider->updateFeatureCount();
     int totalFeatures = mDataProvider->featureCount();
     int featureCount = 0;
     QgsFeature fet;
 
     QgsAttributeList attributes = mRenderer->classificationAttributes();
+    mDataProvider->select(attributes, viewExtent);
+    mDataProvider->reset();
 
     try
     {
-      while (mDataProvider->getNextFeature(fet, true, attributes, mUpdateThreshold))
+      while (mDataProvider->getNextFeature(fet, mUpdateThreshold))
       {
         // XXX Something in our draw event is triggering an additional draw event when resizing [TE 01/26/06]
         // XXX Calling this will begin processing the next draw event causing image havoc and recursion crashes.
@@ -874,7 +874,8 @@ void QgsVectorLayer::select(QgsRect & rect, bool lock)
     removeSelection(FALSE); // don't emit signal
   }
   
-  mDataProvider->select(rect, true);
+  mDataProvider->select(QgsAttributeList(), rect, true, true);
+  mDataProvider->reset();
 
   QgsFeature fet;
 
@@ -2201,8 +2202,8 @@ bool QgsVectorLayer::snapPoint(QgsPoint& point, double tolerance)
 
   QgsRect selectrect(point.x()-tolerance,point.y()-tolerance,point.x()+tolerance,point.y()+tolerance);
 
+  mDataProvider->select(QgsAttributeList(), selectrect);
   mDataProvider->reset();
-  mDataProvider->select(selectrect);
 
   //go to through the features reported by the spatial filter of the provider
   while (mDataProvider->getNextFeature(fet))
@@ -2289,8 +2290,8 @@ bool QgsVectorLayer::snapVertexWithContext(QgsPoint& point, QgsGeometryVertexInd
   QgsRect selectrect(point.x()-tolerance, point.y()-tolerance,
                      point.x()+tolerance, point.y()+tolerance);
 
+  mDataProvider->select(QgsAttributeList(), selectrect);
   mDataProvider->reset();
-  mDataProvider->select(selectrect);
 
   // Go through the committed features
   while (mDataProvider->getNextFeature(feature))
@@ -2424,8 +2425,8 @@ bool QgsVectorLayer::snapSegmentWithContext(QgsPoint& point, QgsGeometryVertexIn
   QgsRect selectrect(point.x()-tolerance, point.y()-tolerance,
                      point.x()+tolerance, point.y()+tolerance);
 
+  mDataProvider->select(QgsAttributeList(), selectrect);
   mDataProvider->reset();
-  mDataProvider->select(selectrect);
 
   // Go through the committed features
   while (mDataProvider->getNextFeature(feature))

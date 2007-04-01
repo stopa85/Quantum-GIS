@@ -51,25 +51,23 @@ public:
    */
   virtual QString storageType() const;
 
-  /**
-   * Select features based on a bounding rectangle. Features can be retrieved 
-   * with calls to getFirstFeature and getNextFeature.
-   * @param mbr QgsRect containing the extent to use in selecting features
-   */
-  virtual void select(QgsRect mbr, bool useIntersect=false);
+  /**Select features based on a bounding rectangle. Features can be retrieved with calls to reset and getNextFeature.
+	 @param fetchAttributes list of attributes which should be fetched
+	 @param rect spatial filter
+	 @param fetchGeometry true if the feature geometry should be fetched
+	 @param useIntersect true if an accurate intersection test should be used, false if a test based on bounding box is sufficient*/
+      void select(QgsAttributeList fetchAttributes = QgsAttributeList(), QgsRect rect = QgsRect(), \
+		  bool fetchGeometry = true, bool useIntersect = false);
 
-  /**
-   * Get the next feature resulting from a select operation.
-   * @param feature feature which will receive data from the provider
-   * @param fetchGeoemtry if true, geometry will be fetched from the provider
-   * @param fetchAttributes a list containing the indexes of the attribute fields to copy
-   * @param featureQueueSize  a hint to the provider as to how many features are likely to be retrieved in a batch
-   * @return true when there was a feature to fetch, false when end was hit
-   */
-  virtual bool getNextFeature(QgsFeature& feature,
-                              bool fetchGeometry = true,
-                              QgsAttributeList fetchAttributes = QgsAttributeList(),
-                              uint featureQueueSize = 1);
+      /**
+       * Get the next feature resulting from a select operation.
+       * @param feature feature which will receive data from the provider
+       * @param fetchGeoemtry if true, geometry will be fetched from the provider
+       * @param fetchAttributes a list containing the indexes of the attribute fields to copy
+       * @param featureQueueSize  a hint to the provider as to how many features are likely to be retrieved in a batch
+       * @return true when there was a feature to fetch, false when end was hit
+       */
+      bool getNextFeature(QgsFeature& feature, uint featureQueueSize = 1);
   
   /**
    * Get feature type.

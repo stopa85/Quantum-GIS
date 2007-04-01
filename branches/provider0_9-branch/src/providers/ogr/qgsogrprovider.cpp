@@ -273,7 +273,7 @@ bool QgsOgrProvider::getFeatureAtId(int featureId,
 }
 
 
-
+#if 0
 bool QgsOgrProvider::getNextFeature(QgsFeature& feature,
                                     bool fetchGeometry,
                                     QgsAttributeList fetchAttributes,
@@ -357,9 +357,15 @@ bool QgsOgrProvider::getNextFeature(QgsFeature& feature,
     return false;
   }
 }
+#endif //0
+
+bool QgsOgrProvider::getNextFeature(QgsFeature& feature, uint featureQueueSize)
+{
+  return false; //soon...
+}
 
 
-
+#if 0
 /**
  * Select features based on a bounding rectangle. Features can be retrieved
  * with calls to getFirstFeature and getNextFeature.
@@ -409,7 +415,13 @@ void QgsOgrProvider::select(QgsRect rect, bool useIntersect)
   }
   OGRGeometryFactory::destroyGeometry(filter);  
 } // QgsOgrProvider::select
+#endif //0
 
+void QgsOgrProvider::select(QgsAttributeList fetchAttributes, QgsRect rect, bool fetchGeometry, \
+			    bool useIntersect)
+{
+  //soon...
+}
 
 
 unsigned char * QgsOgrProvider::getGeometryPointer(OGRFeature *fet)
@@ -550,7 +562,9 @@ void QgsOgrProvider::fillMinMaxCash()
   // TODO: fetch only numeric columns
   QgsFeature f;
   QgsAttributeList all = allAttributesList();
-  while (getNextFeature(f, false, all))
+  select(all, QgsRect(), false);
+
+  while (getNextFeature(f))
   {
     for(uint i = 0; i < fieldCount(); i++)
     {

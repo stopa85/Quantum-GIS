@@ -2906,11 +2906,12 @@ void QgsGrassModuleSelection::updateSelection()
     if ( keyField < 0 ) return;
     
     QString cats;
+    provider->select(allAttributes, QgsRect(), true);
     provider->reset();
     QgsFeature feature;
 
     int i = 0;
-    while ( provider->getNextFeature(feature, true, allAttributes) )
+    while ( provider->getNextFeature(feature) )
     {
       if (!selected.contains(feature.featureId()))
           continue;
