@@ -272,155 +272,133 @@ bool QgsOgrProvider::getFeatureAtId(int featureId,
   return true;
 }
 
-
-#if 0
-bool QgsOgrProvider::getNextFeature(QgsFeature& feature,
-                                    bool fetchGeometry,
-                                    QgsAttributeList fetchAttributes,
-                                    uint featureQueueSize)
-{
-  
-  if (!valid)
-  {
-    QgsLogger::warning("Read attempt on an invalid shapefile data source");
-    return false;
-  }
-
-  OGRFeature *fet;
-  QgsRect selectionRect;
-
-  while ((fet = ogrLayer->GetNextFeature()) != NULL)
-  {
-    // skip features without geometry
-    if (fet->GetGeometryRef() == NULL && !mFetchFeaturesWithoutGeom)
-    {
-      delete fet;
-      continue;
-    }
-    
-    OGRFeatureDefn * featureDefinition = fet->GetDefnRef();
-    QString featureTypeName = featureDefinition ? QString(featureDefinition->GetName()) : QString("");
-    feature.setFeatureId(fet->GetFID());
-    feature.setTypeName(featureTypeName);
-
-    /* fetch geometry */
-    if (fetchGeometry)
-    {
-      OGRGeometry *geom = fet->GetGeometryRef();
-      
-      // get the wkb representation
-      unsigned char *wkb = new unsigned char[geom->WkbSize()];
-      geom->exportToWkb((OGRwkbByteOrder) QgsApplication::endian(), wkb);
-      
-      feature.setGeometryAndOwnership(wkb, geom->WkbSize());
-  
-      if (mUseIntersect)
-      {
-        //precise test for intersection with search rectangle
-        //first make QgsRect from OGRPolygon
-        OGREnvelope env;
-        mSelectionRectangle->getEnvelope(&env);
-        if(env.IsInit()) //if envelope is invalid, skip the precise intersection test
-        {
-          selectionRect.set(env.MinX, env.MinY, env.MaxX, env.MaxY);
-          if(!feature.geometry()->fast_intersects(selectionRect))
-          {
-            delete fet;
-            continue;
-          }
-        }
-        
-      }
-    }
-
-    /* fetch attributes */
-    for(QgsAttributeList::iterator it = fetchAttributes.begin(); it != fetchAttributes.end(); ++it)
-    {
-      getFeatureAttribute(fet,feature,*it);
-    }
-  
-    /* we have a feature, end this cycle */
-    break;
-
-  } /* while */
-   
-  if (fet)
-  {
-    delete fet;
-    return true;
-  }
-  else
-  {
-    QgsDebugMsg("Feature is null");  
-    // probably should reset reading here
-    ogrLayer->ResetReading();
-    return false;
-  }
-}
-#endif //0
-
 bool QgsOgrProvider::getNextFeature(QgsFeature& feature, uint featureQueueSize)
 {
-  return false; //soon...
+  if (!valid)
+    {
+      QgsLogger::warning("Read attempt on an invalid shapefile data source");
+      return false;
+    }
+  
+  OGRFeature *fet;
+  QgsRect selectionRect;
+  
+  while ((fet = ogrLayer->GetNextFeature()) != NULL)
+    {
+      // skip features without geometry
+      if (fet->GetGeometryRef() == NULL && !mFetchFeaturesWithoutGeom)
+	{
+	  delete fet;
+	  continue;
+	}
+      
+      OGRFeatureDefn * featureDefinition = fet->GetDefnRef();
+      QString featureTypeName = featureDefinition ? QString(featureDefinition->GetName()) : QString("");
+      feature.setFeatureId(fet->GetFID());
+      feature.setTypeName(featureTypeName);
+      
+      /* fetch geometry */
+      if (mFetchGeom)
+	{
+	  OGRGeometry *geom = fet->GetGeometryRef();
+	  
+	  // get the wkb representation
+	  unsigned char *wkb = new unsigned char[geom->WkbSize()];
+	  geom->exportToWkb((OGRwkbByteOrder) QgsApplication::endian(), wkb);
+	  
+	  feature.setGeometryAndOwnership(wkb, geom->WkbSize());
+	  
+	  if (mUseIntersect)
+	    {
+	      //precise test for intersection with search rectangle
+	      //first make QgsRect from OGRPolygon
+	      OGREnvelope env;
+	      mSelectionRectangle->getEnvelope(&env);
+	      if(env.IsInit()) //if envelope is invalid, skip the precise intersection test
+		{
+		  selectionRect.set(env.MinX, env.MinY, env.MaxX, env.MaxY);
+		  if(!feature.geometry()->fast_intersects(selectionRect))
+		    {
+		      delete fet;
+		      continue;
+		    }
+		}
+	      
+	    }
+	}
+      
+      /* fetch attributes */
+      for(QgsAttributeList::iterator it = mAttributesToFetch.begin(); it != mAttributesToFetch.end(); ++it)
+	{
+	  getFeatureAttribute(fet,feature,*it);
+	}
+      
+      /* we have a feature, end this cycle */
+      break;
+      
+    } /* while */
+  
+  if (fet)
+    {
+      delete fet;
+      return true;
+    }
+  else
+    {
+      QgsDebugMsg("Feature is null");  
+      // probably should reset reading here
+      ogrLayer->ResetReading();
+      return false;
+    }
 }
-
-
-#if 0
-/**
- * Select features based on a bounding rectangle. Features can be retrieved
- * with calls to getFirstFeature and getNextFeature.
- * @param mbr QgsRect containing the extent to use in selecting features
- * @param useIntersect If true, an intersect test will be used in selecting
- * features. In OGR, this is a two pass affair. The mUseIntersect value is
- * stored. If true, a secondary filter (using GEOS) is applied to each
- * feature in the getNextFeature function.
- */
-void QgsOgrProvider::select(QgsRect rect, bool useIntersect)
-{
-  mUseIntersect = useIntersect;
-  // spatial query to select features
-#ifdef QGISDEBUG
-  QgsLogger::debug<QgsRect>("Selection rectangle is: ", rect, __FILE__, __FUNCTION__, __LINE__, 1);
-#endif
-  OGRGeometry *filter = 0;
-  filter = OGRGeometryFactory::createGeometry(wkbPolygon);
-  QString wktExtent = QString("POLYGON ((%1))").arg(rect.asPolygon());
-  const char *wktText = (const char *)wktExtent;
-
-  if(useIntersect)
-  {
-    // store the selection rectangle for use in filtering features during
-    // an identify and display attributes
-    delete mSelectionRectangle;
-    mSelectionRectangle = new OGRPolygon();
-    mSelectionRectangle->importFromWkt((char **)&wktText);
-  }
-
-  // reset the extent for the ogr filter
-  wktExtent = QString("POLYGON ((%1))").arg(rect.asPolygon());
-  wktText = (const char *)wktExtent;
-
-  OGRErr result = ((OGRPolygon *) filter)->importFromWkt((char **)&wktText);
-  //TODO - detect an error in setting the filter and figure out what to
-  //TODO   about it. If setting the filter fails, all records will be returned
-  if (result == OGRERR_NONE) 
-  {
-    QgsDebugMsg("Setting spatial filter using " + wktExtent);
-    ogrLayer->SetSpatialFilter(filter);
-    //ogrLayer->SetSpatialFilterRect(rect->xMin(), rect->yMin(), rect->xMax(), rect->yMax());
-  }else{
-#ifdef QGISDEBUG    
-    QgsLogger::warning("Setting spatial filter failed!");
-#endif
-  }
-  OGRGeometryFactory::destroyGeometry(filter);  
-} // QgsOgrProvider::select
-#endif //0
 
 void QgsOgrProvider::select(QgsAttributeList fetchAttributes, QgsRect rect, bool fetchGeometry, \
 			    bool useIntersect)
 {
-  //soon...
+  mUseIntersect = useIntersect;
+  mAttributesToFetch = fetchAttributes;
+  mFetchGeom = true;
+
+  // spatial query to select features
+  if(rect.isEmpty())
+    {
+        ogrLayer->SetSpatialFilter(0);
+    }
+  else
+    {
+      OGRGeometry *filter = 0;
+      filter = OGRGeometryFactory::createGeometry(wkbPolygon);
+      QString wktExtent = QString("POLYGON ((%1))").arg(rect.asPolygon());
+      const char *wktText = (const char *)wktExtent;
+      
+      if(useIntersect)
+	{
+	  // store the selection rectangle for use in filtering features during
+	  // an identify and display attributes
+	  delete mSelectionRectangle;
+	  mSelectionRectangle = new OGRPolygon();
+	  mSelectionRectangle->importFromWkt((char **)&wktText);
+	}
+      
+      // reset the extent for the ogr filter
+      wktExtent = QString("POLYGON ((%1))").arg(rect.asPolygon());
+      wktText = (const char *)wktExtent;
+      
+      OGRErr result = ((OGRPolygon *) filter)->importFromWkt((char **)&wktText);
+      //TODO - detect an error in setting the filter and figure out what to
+      //TODO   about it. If setting the filter fails, all records will be returned
+      if (result == OGRERR_NONE) 
+	{
+	  QgsDebugMsg("Setting spatial filter using " + wktExtent);
+	  ogrLayer->SetSpatialFilter(filter);
+	  //ogrLayer->SetSpatialFilterRect(rect->xMin(), rect->yMin(), rect->xMax(), rect->yMax());
+	}else{
+#ifdef QGISDEBUG    
+	QgsLogger::warning("Setting spatial filter failed!");
+#endif
+      }
+      OGRGeometryFactory::destroyGeometry(filter);
+    }  
 }
 
 
@@ -509,14 +487,7 @@ const QgsFieldMap & QgsOgrProvider::fields() const
 
 void QgsOgrProvider::reset()
 {
-  ogrLayer->SetSpatialFilter(0);
   ogrLayer->ResetReading();
-  // Reset the use intersect flag on a provider reset, otherwise only the last
-  // selected feature(s) will be displayed when the attribute table
-  // is opened. 
-  //XXX In a future release, this "feature" can be used to implement
-  // the display of only selected records in the attribute table.
-  mUseIntersect = false;
 }
 
 QString QgsOgrProvider::minValue(uint position)
