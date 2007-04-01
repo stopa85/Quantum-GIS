@@ -80,6 +80,34 @@ QgsGeometry* QgsGeometry::fromWkt(QString wkt)
   return g;
 }
 
+QgsGeometry* QgsGeometry::fromPoint(const QgsPoint& point)
+{
+  GEOS_GEOM::Coordinate coord = GEOS_GEOM::Coordinate(point.x(), point.y());
+  GEOS_GEOM::Geometry* geom = geosGeometryFactory->createPoint(coord);
+  QgsGeometry* g = new QgsGeometry;
+  g->setGeos(geom);
+  return g;
+}
+
+QgsGeometry* QgsGeometry::fromPolyline(const QgsPolyline& polyline)
+{
+  const GEOS_GEOM::CoordinateSequenceFactory* seqFactory = GEOS_GEOM::COORD_SEQ_FACTORY::instance();
+  GEOS_GEOM::CoordinateSequence* seq = seqFactory->create(polyline.count(), 2);
+  
+  QgsPolyline::const_iterator it;
+  int i = 0;
+  for (it = polyline.begin(); it != polyline.end(); ++it)
+  {
+    seq->setAt(GEOS_GEOM::Coordinate(it->x(), it->y()), i++);
+  }
+  
+  GEOS_GEOM::Geometry* geom = geosGeometryFactory->createLineString(seq);
+  QgsGeometry* g = new QgsGeometry;
+  g->setGeos(geom);
+  return g;
+}
+
+
 QgsGeometry & QgsGeometry::operator=( QgsGeometry const & rhs )
 {
   if ( &rhs == this )
@@ -3142,13 +3170,31 @@ bool QgsGeometry::exportGeosToWkb() const
   {
     case GEOS_GEOM::GEOS_POINT:                 // a point
     {
-      // TODO
+      mGeometrySize = 1 +   // sizeof(byte)
+                      4 +   // sizeof(uint32)
+                      2*sizeof(double);
+      mGeometry = new unsigned char[mGeometrySize];
+      
+      // assign byteOrder
+      memcpy(mGeometry, &byteOrder, 1);
+
+      // assign wkbType
+      int wkbType = QGis::WKBPoint;
+      memcpy(mGeometry+1, &wkbType, 4);
+      
+      GEOS_GEOM::Point* pt = static_cast<GEOS_GEOM::Point*>(mGeos);
+      double x = pt->getX();
+      double y = pt->getY();
+      
+      memcpy(mGeometry+5, &x, sizeof(double));
+      memcpy(mGeometry+13, &y, sizeof(double));
+      
       break;
     } // case GEOS_GEOM::GEOS_POINT
 
     case GEOS_GEOM::GEOS_LINESTRING:            // a linestring
     {
-      QgsDebugMsg("Got a geos::GEOS_LINESTRING.");
+      //QgsDebugMsg("Got a geos::GEOS_LINESTRING.");
 
       // TODO
       int numPoints = mGeos->getNumPoints();

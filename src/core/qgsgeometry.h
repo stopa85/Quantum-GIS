@@ -27,10 +27,12 @@ email                : morb at ozemail dot com dot au
 #define GEOS_GEOM geos
 #define GEOS_IO geos
 #define GEOS_UTIL geos
+#define COORD_SEQ_FACTORY DefaultCoordinateSequenceFactory
 #else
 #define GEOS_GEOM geos::geom
 #define GEOS_IO geos::io
 #define GEOS_UTIL geos::util
+#define COORD_SEQ_FACTORY CoordinateArraySequenceFactory
 #endif
 
 #include "qgspoint.h"
@@ -93,6 +95,10 @@ class CORE_EXPORT QgsGeometry {
 
     /** static method that creates geometry from WKT */
     static QgsGeometry* fromWkt(QString wkt);
+    
+    static QgsGeometry* fromPoint(const QgsPoint& point);
+    
+    static QgsGeometry* fromPolyline(const QgsPolyline& polyline);
    
     /** 
        Set the geometry, feeding in the buffer containing OGC Well-Known Binary and the buffer's length.
