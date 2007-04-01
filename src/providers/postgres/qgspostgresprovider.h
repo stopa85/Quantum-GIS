@@ -149,14 +149,6 @@ class QgsPostgresProvider:public QgsVectorDataProvider
     */
     virtual QgsRect extent();
 
-    /**
-     * Get the attributes associated with a feature
-     */
-    virtual void getFeatureAttributes(int key, int& row, QgsFeature& f);
-
-    /**Get the attributes with indices contained in attlist*/
-    void getFeatureAttributes(int key, int& row, QgsFeature& f, const QgsAttributeList& attlist);
-
     /**  * Get the name of the primary key for the layer
     */
     QString getPrimaryKey();
