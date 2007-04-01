@@ -78,10 +78,14 @@ void QgsSearchQueryBuilder::getFieldValues(uint limit)
   
   QgsFeature feat;
   QString value;
-  provider->reset();
+
   QgsAttributeList attrs;
   attrs.append(fieldIndex);
-  while (provider->getNextFeature(feat, false, attrs) &&
+  
+  provider->select(attrs, QgsRect(), false);
+  provider->reset();
+  
+  while (provider->getNextFeature(feat) &&
          (limit == 0 || lstValues->count() != limit))
   {
     const QgsAttributeMap& attributes = feat.attributeMap();
@@ -151,9 +155,12 @@ long QgsSearchQueryBuilder::countRecords(QString searchString)
   QgsFeature feat;
   QgsVectorDataProvider* provider = mLayer->getDataProvider();
   const QgsFieldMap& fields = provider->fields();
-  provider->reset();
   QgsAttributeList allAttributes = provider->allAttributesList();
-  while (provider->getNextFeature(feat, false, allAttributes))
+
+  provider->select(allAttributes, QgsRect(), false);
+  provider->reset();
+
+  while (provider->getNextFeature(feat))
   {
     if (searchTree->checkAgainst(fields, feat.attributeMap()))
     {

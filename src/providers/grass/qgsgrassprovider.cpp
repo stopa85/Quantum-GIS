@@ -278,6 +278,7 @@ QString QgsGrassProvider::storageType() const
   return "GRASS (Geographic Resources Analysis and Support System) file";
 }
 
+#if 0
 bool QgsGrassProvider::getNextFeature(QgsFeature& feature,
                                       bool fetchGeometry,
                                       QgsAttributeList attlist,
@@ -397,6 +398,12 @@ bool QgsGrassProvider::getNextFeature(QgsFeature& feature,
     
     return true;
 }
+#endif //0
+
+bool QgsGrassProvider::getNextFeature(QgsFeature& feature, uint featureQueueSize)
+{
+  return false; //soon...
+}
 
 void QgsGrassProvider::resetSelection( bool sel)
 {
@@ -408,6 +415,7 @@ void QgsGrassProvider::resetSelection( bool sel)
     mNextCidx = 0;
 }
 
+#if 0
 /**
 * Select features based on a bounding rectangle. Features can be retrieved
 * with calls to getFirstFeature and getNextFeature.
@@ -477,6 +485,13 @@ void QgsGrassProvider::select(QgsRect rect, bool useIntersect)
     #ifdef QGISDEBUG
     std::cout << mList->n_values << " features selected" << std::endl;
     #endif
+}
+#endif //0
+
+void QgsGrassProvider::select(QgsAttributeList fetchAttributes, QgsRect rect, bool fetchGeometry, \
+			      bool useIntersect)
+{
+  return; //soon...
 }
 
 

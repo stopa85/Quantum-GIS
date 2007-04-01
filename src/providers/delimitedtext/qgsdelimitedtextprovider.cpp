@@ -459,7 +459,7 @@ QgsDelimitedTextProvider::getNextFeature_( QgsFeature & feature,
 
 } // getNextFeature_( QgsFeature & feature )
 
-
+#if 0
 bool QgsDelimitedTextProvider::getNextFeature(QgsFeature& feature,
                               bool fetchGeometry,
                               QgsAttributeList fetchAttributes,
@@ -467,10 +467,14 @@ bool QgsDelimitedTextProvider::getNextFeature(QgsFeature& feature,
 {
   return getNextFeature_(feature, fetchAttributes);
 }
+#endif //0
 
+bool QgsDelimitedTextProvider::getNextFeature(QgsFeature& feature, uint featureQueueSize)
+{
+  return false; //soon...
+}
 
-
-
+#if 0
 /**
  * Select features based on a bounding rectangle. Features can be retrieved
  * with calls to getFirstFeature and getNextFeature.
@@ -485,6 +489,13 @@ void QgsDelimitedTextProvider::select(QgsRect rect, bool useIntersect)
   // feature falls in the selection area
   reset();
   mSelectionRectangle = rect;
+}
+#endif //0
+
+void QgsDelimitedTextProvider::select(QgsAttributeList fetchAttributes, QgsRect rect, bool fetchGeometry, \
+				      bool useIntersect)
+{
+  //soon...
 }
 
 

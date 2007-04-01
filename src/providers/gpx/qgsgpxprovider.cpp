@@ -139,7 +139,7 @@ int QgsGPXProvider::capabilities() const
          QgsVectorDataProvider::ChangeAttributeValues;
 }
   
-
+#if 0
 bool QgsGPXProvider::getNextFeature(QgsFeature& feature,
                                     bool fetchGeometry,
                                     QgsAttributeList attlist,
@@ -325,8 +325,14 @@ bool QgsGPXProvider::getNextFeature(QgsFeature& feature,
   }
   return result;
 }
+#endif //0
 
+bool QgsGPXProvider::getNextFeature(QgsFeature& feature, uint featureQueueSize)
+{
+  return false; //soon...
+}
 
+#if 0
 /**
  * Select features based on a bounding rectangle. Features can be retrieved
  * with calls to getFirstFeature and getNextFeature.
@@ -342,6 +348,13 @@ void QgsGPXProvider::select(QgsRect rect, bool useIntersect)
   mSelectionRectangle = new QgsRect(rect);
   // Select implies an upcoming feature read so we reset the data source
   reset();
+}
+#endif //0
+
+void QgsGPXProvider::select(QgsAttributeList fetchAttributes, QgsRect rect, bool fetchGeometry, \
+			    bool useIntersect)
+{
+  //soon...
 }
 
 

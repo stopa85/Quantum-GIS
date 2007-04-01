@@ -212,7 +212,8 @@ void QgsMapToolIdentify::identifyVectorLayer(QgsVectorLayer* layer, const QgsPoi
   QgsAttributeList allAttributes = dataProvider->allAttributesList();
   const QgsFieldMap& fields = dataProvider->fields();
   
-  dataProvider->select(r, true);
+  dataProvider->select(allAttributes, r, true, true);
+  dataProvider->reset();
 
   // init distance/area calculator
   QgsDistanceArea calc;
@@ -242,7 +243,7 @@ void QgsMapToolIdentify::identifyVectorLayer(QgsVectorLayer* layer, const QgsPoi
 
     QApplication::setOverrideCursor(Qt::WaitCursor);
 
-    while (dataProvider->getNextFeature(feat, true, allAttributes))
+    while (dataProvider->getNextFeature(feat))
     {
       featureCount++;
 
@@ -318,7 +319,7 @@ void QgsMapToolIdentify::identifyVectorLayer(QgsVectorLayer* layer, const QgsPoi
     
     QApplication::setOverrideCursor(Qt::WaitCursor);
 
-    if (dataProvider->getNextFeature(feat,true,allAttributes))
+    if (dataProvider->getNextFeature(feat))
     {
       // these are the values to populate the dialog with
       // start off with list of committed attribute values
