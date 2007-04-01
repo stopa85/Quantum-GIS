@@ -69,11 +69,7 @@ QgsWFSProvider::~QgsWFSProvider()
     }
 }
 
-#if 0
-bool QgsWFSProvider::getNextFeature(QgsFeature& feature,
-                                    bool fetchGeometry,
-                                    QgsAttributeList attlist,
-                                    uint featureQueueSize)
+bool QgsWFSProvider::getNextFeature(QgsFeature& feature, uint featureQueueSize)
 {
   while(true) //go through the loop until we find a feature in the filter
     {
@@ -82,17 +78,20 @@ bool QgsWFSProvider::getNextFeature(QgsFeature& feature,
 	  return 0;
 	}
 
-      QgsGeometry* geometry = ((QgsFeature*)(*mFeatureIterator))->geometry();
-      unsigned char* geom = geometry->wkbBuffer();
-      int geomSize = geometry->wkbSize();
-      
-      unsigned char* copiedGeom = new unsigned char[geomSize];
-      memcpy(copiedGeom, geom, geomSize);
-      feature.setGeometryAndOwnership(copiedGeom, geomSize);
       feature.setFeatureId(((QgsFeature*)(*mFeatureIterator))->featureId());
+      if(mFetchGeom)
+	{
+	  QgsGeometry* geometry = ((QgsFeature*)(*mFeatureIterator))->geometry();
+	  unsigned char* geom = geometry->wkbBuffer();
+	  int geomSize = geometry->wkbSize();
+      
+	  unsigned char* copiedGeom = new unsigned char[geomSize];
+	  memcpy(copiedGeom, geom, geomSize);
+	  feature.setGeometryAndOwnership(copiedGeom, geomSize);
+	}
       
       const QgsAttributeMap& attributes = ((QgsFeature*)(*mFeatureIterator))->attributeMap();
-      for(QgsAttributeList::const_iterator it = attlist.begin(); it != attlist.end(); ++it)
+      for(QgsAttributeList::const_iterator it = mAttributesToFetch.begin(); it != mAttributesToFetch.end(); ++it)
 	{
 	  feature.addAttribute(*it, attributes[*it]);
 	}
@@ -113,12 +112,6 @@ bool QgsWFSProvider::getNextFeature(QgsFeature& feature,
 	  return true;
 	}
     }
-}
-#endif //0
-
-bool QgsWFSProvider::getNextFeature(QgsFeature& feature, uint featureQueueSize)
-{
-  return false; //soon...
 }
 
 
@@ -145,14 +138,6 @@ const QgsFieldMap & QgsWFSProvider::fields() const
 
 void QgsWFSProvider::reset()
 {
-  GEOS_GEOM::Envelope e(mExtent.xMin(), mExtent.xMax(), mExtent.yMin(), mExtent.yMax());
-  delete mSelectedFeatures;
-#if GEOS_VERSION_MAJOR < 3
-  mSelectedFeatures = mSpatialIndex.query(&e);
-#else
-  mSelectedFeatures = new std::vector<void*>;
-  mSpatialIndex.query(&e, *mSelectedFeatures);
-#endif
   if(mSelectedFeatures)
     {
       mFeatureIterator = mSelectedFeatures->begin();
@@ -240,13 +225,24 @@ bool QgsWFSProvider::isValid()
   return mValid;
 }
 
-#if 0
-void QgsWFSProvider::select(QgsRect mbr, bool useIntersect)
+void QgsWFSProvider::select(QgsAttributeList fetchAttributes, QgsRect rect, bool fetchGeometry, \
+			    bool useIntersect)
 {
   mUseIntersect = useIntersect;
+  mAttributesToFetch = fetchAttributes;
+  mFetchGeom = fetchGeometry;
+
   delete mSelectedFeatures;
-  mSpatialFilter = mbr;
-  GEOS_GEOM::Envelope filter(mbr.xMin(), mbr.xMax(), mbr.yMin(), mbr.yMax());
+  if(rect.isEmpty())
+    {
+      mSpatialFilter = mExtent;
+    }
+  else
+    {
+      mSpatialFilter = rect;
+    }
+
+  GEOS_GEOM::Envelope filter(mSpatialFilter.xMin(), mSpatialFilter.xMax(), mSpatialFilter.yMin(), mSpatialFilter.yMax());
 #if GEOS_VERSION_MAJOR < 3
   mSelectedFeatures = mSpatialIndex.query(&filter);
 #else
@@ -254,13 +250,6 @@ void QgsWFSProvider::select(QgsRect mbr, bool useIntersect)
   mSpatialIndex.query(&filter, *mSelectedFeatures);
 #endif
   mFeatureIterator = mSelectedFeatures->begin();
-}
-#endif //0
-
-void QgsWFSProvider::select(QgsAttributeList fetchAttributes, QgsRect rect, bool fetchGeometry, \
-			    bool useIntersect)
-{
-  //soon...
 }
 
 int QgsWFSProvider::getFeature(const QString& uri)
