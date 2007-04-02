@@ -233,7 +233,8 @@ QgsPostgresProvider::QgsPostgresProvider(QString const & uri)
           QVariant::Type fieldType;
           if (fieldTypeName.find("int") != -1 || fieldTypeName.find("serial") != -1)
             fieldType = QVariant::Int;
-          else if (fieldTypeName == "real" || fieldTypeName == "double precision")
+          else if (fieldTypeName == "real" || fieldTypeName == "double precision" || \
+		   fieldTypeName.find("float") != -1)
             fieldType = QVariant::Double;
           else
             fieldType = QVariant::String;
