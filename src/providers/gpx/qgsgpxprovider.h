@@ -17,7 +17,6 @@
  *                                                                         *
  ***************************************************************************/
 
-#include <map>
 
 #include "qgsvectordataprovider.h"
 #include "gpsdata.h"
@@ -126,8 +125,10 @@ public:
   
   virtual int capabilities() const;
   
-  /**Returns the default value for attribute @c attr for feature @c f. */
-  virtual QString getDefaultValue(const QString& attr, QgsFeature* f);
+  /**
+   * Returns the default value for field specified by @c fieldId
+   */
+  virtual QVariant getDefaultValue(int fieldId);
   
   
   /* Functions inherited from QgsDataProvider */
@@ -169,18 +170,11 @@ public:
 
 private:
   
-  /** Internal function used by the other getNextFeature() functions. */
-  bool getNextFeature(QgsFeature* feature, std::list<int> const & attlist);
-
-  bool mEditable;
   GPSData* data;
   void fillMinMaxCash();
   //! Fields
   QgsFieldMap attributeFields;
   
-  //! Map to store field position by name
-  std::map<QString, int> fieldPositions;
-
   QString mFileName;
 
   enum { WaypointType, RouteType, TrackType } mFeatureType;

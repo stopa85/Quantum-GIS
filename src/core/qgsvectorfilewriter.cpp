@@ -131,7 +131,9 @@ QgsVectorFileWriter::QgsVectorFileWriter(const QString& shapefileName,
     fld.SetPrecision(attrField.precision());
 
     // create the field
-    QgsDebugMsg("creating field " + attrField.name() + " width length " + QString::number(attrField.length()));
+    QgsDebugMsg("creating field " + attrField.name() +
+                " type " + QString(QVariant::typeToName(attrField.type())) +
+                " width length " + QString::number(attrField.length()));
     if (mLayer->CreateField(&fld) != OGRERR_NONE)
     {
       QgsDebugMsg("error creating field " + attrField.name());
@@ -191,6 +193,14 @@ bool QgsVectorFileWriter::addFeature(QgsFeature& feature)
   const QgsAttributeMap& attributes = feature.attributeMap();
   for (it = attributes.begin(); it != attributes.end(); it++)
   {
+    QgsFieldMap::const_iterator fldIt = mFields.find(it.key());
+    if (fldIt == mFields.end())
+    {
+      QgsDebugMsg("ignoring attribute that's not in field map: type=" +
+                  QString(it.value().typeName()) + " value=" + it.value().toString());
+      continue;
+    }
+    
     QString attrName = mFields[it.key()].name();
     QByteArray encAttrName = mCodec->fromUnicode(attrName);
     const QVariant& attrValue = it.value();

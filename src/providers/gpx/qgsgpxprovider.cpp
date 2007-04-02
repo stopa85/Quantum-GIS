@@ -63,7 +63,6 @@ const QString GPX_DESCRIPTION = QObject::tr("GPS eXchange format provider");
 
 QgsGPXProvider::QgsGPXProvider(QString uri) : 
         QgsVectorDataProvider(uri),
-        mEditable(false),
         mMinMaxCacheDirty(true)
 {
   // assume that it won't work
@@ -171,37 +170,35 @@ bool QgsGPXProvider::getNextFeature(QgsFeature& feature, uint featureQueueSize)
 		}
 	      feature.setValid(true);
 	
-	      // add attributes if they are wanted
+        // add attributes if they are wanted
 	      for (iter = mAttributesToFetch.begin(); iter != mAttributesToFetch.end(); ++iter) 
 		{
 		  switch (*iter) 
 		    {
-		    case 0:
-		      feature.addAttribute(0, QVariant(wpt->name));
+        case NameAttr:
+          feature.addAttribute(NameAttr, QVariant(wpt->name));
 		      break;
-		    case 1:
-		      if (wpt->ele == -std::numeric_limits<double>::max())
-			feature.addAttribute(1, QVariant());
-		      else
-			feature.addAttribute(1, QVariant(wpt->ele));
+        case EleAttr:
+		      if (wpt->ele != -std::numeric_limits<double>::max())
+            feature.addAttribute(EleAttr, QVariant(wpt->ele));
 		      break;
-		    case 2:
-		      feature.addAttribute(2, QVariant(wpt->sym));
+		    case SymAttr:
+          feature.addAttribute(SymAttr, QVariant(wpt->sym));
 		      break;
-		    case 3:
-		      feature.addAttribute(3, QVariant(wpt->cmt));
+        case CmtAttr:
+          feature.addAttribute(CmtAttr, QVariant(wpt->cmt));
 		      break;
-		    case 4:
-		      feature.addAttribute(4, QVariant(wpt->desc));
+		    case DscAttr:
+          feature.addAttribute(DscAttr, QVariant(wpt->desc));
 		      break;
-		    case 5:
-		      feature.addAttribute(5, QVariant(wpt->src));
+		    case SrcAttr:
+          feature.addAttribute(SrcAttr, QVariant(wpt->src));
 		      break;
-		    case 6:
-		      feature.addAttribute(6, QVariant(wpt->url));
+		    case URLAttr:
+          feature.addAttribute(URLAttr, QVariant(wpt->url));
 		      break;
-		    case 7:
-		      feature.addAttribute(7, QVariant(wpt->urlname));
+		    case URLNameAttr:
+          feature.addAttribute(URLNameAttr, QVariant(wpt->urlname));
 		      break;
 		    }
 		}
@@ -248,27 +245,33 @@ bool QgsGPXProvider::getNextFeature(QgsFeature& feature, uint featureQueueSize)
 	    
 	    // add attributes if they are wanted
 	    for (iter = mAttributesToFetch.begin(); iter != mAttributesToFetch.end(); ++iter) 
-	      {
-		if (*iter == 0)
-		  feature.addAttribute(0, QVariant(rte->name));
-		else if (*iter == 1) 
-		  {
-		    if (rte->number == std::numeric_limits<int>::max())
-		      feature.addAttribute(1, QVariant());
-		    else
-		      feature.addAttribute(1, QVariant(rte->number));
-		  }
-		else if (*iter == 2)
-		  feature.addAttribute(2, QVariant(rte->cmt));
-		else if (*iter == 3)
-		  feature.addAttribute(3, QVariant(rte->desc));
-		else if (*iter == 4)
-		  feature.addAttribute(4, QVariant(rte->src));
-		else if (*iter == 5)
-		  feature.addAttribute(5, QVariant(rte->url));
-		else if (*iter == 6)
-		  feature.addAttribute(6, QVariant(rte->urlname));
-	      }
+      {
+        switch (*iter)
+        {
+          case NameAttr:
+            feature.addAttribute(NameAttr, QVariant(rte->name));
+            break;
+          case NumAttr:
+            if (rte->number != std::numeric_limits<int>::max())
+              feature.addAttribute(NumAttr, QVariant(rte->number));
+            break;
+          case CmtAttr:
+            feature.addAttribute(CmtAttr, QVariant(rte->cmt));
+            break;
+          case DscAttr:
+            feature.addAttribute(DscAttr, QVariant(rte->desc));
+            break;
+          case SrcAttr:
+            feature.addAttribute(SrcAttr, QVariant(rte->src));
+            break;
+          case URLAttr:
+            feature.addAttribute(URLAttr, QVariant(rte->url));
+            break;
+          case URLNameAttr:
+            feature.addAttribute(URLNameAttr, QVariant(rte->urlname));
+            break;
+        }
+      }
 	    
 	    ++mRteIter;
 	    break;
@@ -315,29 +318,35 @@ bool QgsGPXProvider::getNextFeature(QgsFeature& feature, uint featureQueueSize)
 	    
 	    // add attributes if they are wanted
 	    for (iter = mAttributesToFetch.begin(); iter != mAttributesToFetch.end(); ++iter) 
-	      {
-		if (*iter == 0)
-		  feature.addAttribute(0, QVariant(trk->name));
-	    else if (*iter == 1) 
-	      {
-		if (trk->number == std::numeric_limits<int>::max())
-		  feature.addAttribute(1, QVariant());
-		else
-		  feature.addAttribute(1, QVariant(trk->number));
-	      }
-	    else if (*iter == 2)
-	      feature.addAttribute(2, QVariant(trk->cmt));
-	    else if (*iter == 3)
-	      feature.addAttribute(3, QVariant(trk->desc));
-	    else if (*iter == 4)
-	      feature.addAttribute(4, QVariant(trk->src));
-	    else if (*iter == 5)
-	      feature.addAttribute(5, QVariant(trk->url));
-	    else if (*iter == 6)
-	      feature.addAttribute(6, QVariant(trk->urlname));
-	      }
+      {
+        switch (*iter)
+        {
+          case NameAttr:
+            feature.addAttribute(NameAttr, QVariant(trk->name));
+            break;
+          case NumAttr:
+            if (trk->number != std::numeric_limits<int>::max())
+              feature.addAttribute(NumAttr, QVariant(trk->number));
+            break;
+          case CmtAttr:
+            feature.addAttribute(CmtAttr, QVariant(trk->cmt));
+            break;
+          case DscAttr:
+            feature.addAttribute(DscAttr, QVariant(trk->desc));
+            break;
+          case SrcAttr:
+            feature.addAttribute(SrcAttr, QVariant(trk->src));
+            break;
+          case URLAttr:
+            feature.addAttribute(URLAttr, QVariant(trk->url));
+            break;
+          case URLNameAttr:
+            feature.addAttribute(URLNameAttr, QVariant(trk->urlname));
+            break;
+        }
+      }
 	    
-	    ++mTrkIter;
+      ++mTrkIter;
 	    break;
 	  }
 	}
@@ -459,10 +468,11 @@ void QgsGPXProvider::fillMinMaxCash()
   }
 
   QgsFeature f;
+  select(allAttributesList());
   reset();
 
-  getNextFeature(f, true);
-  do {
+  while (getNextFeature(f))
+  {
     for(uint i=0;i<fieldCount();i++) {
       double value=(f.attributeMap())[i].toDouble();
       if(value<mMinMaxCache[i][0]) {
@@ -472,7 +482,7 @@ void QgsGPXProvider::fillMinMaxCash()
         mMinMaxCache[i][1]=value;  
       }
     }
-  } while(getNextFeature(f, true));
+  }
 
   mMinMaxCacheDirty=false;
 }
@@ -524,13 +534,13 @@ bool QgsGPXProvider::addFeature(QgsFeature& f)
     
     // add waypoint-specific attributes
     for (it = attrs.begin(); it != attrs.end(); ++it) {
-      if (attributeFields[it.key()].name() == attr[EleAttr]) {
+      if (it.key() == EleAttr) {
 	bool eleIsOK;
 	double ele = it->toDouble(&eleIsOK);
 	if (eleIsOK)
 	  wpt.ele = ele;
       }
-      else if (attributeFields[it.key()].name() == attr[SymAttr]) {
+      else if (it.key() == SymAttr) {
 	wpt.sym = it->toString();
       }
     }
@@ -570,7 +580,7 @@ bool QgsGPXProvider::addFeature(QgsFeature& f)
     
     // add route-specific attributes
     for (it = attrs.begin(); it != attrs.end(); ++it) {
-      if (attributeFields[it.key()].name() == attr[NumAttr]) {
+      if (it.key() == NumAttr) {
 	bool numIsOK;
 	long num = it->toInt(&numIsOK);
 	if (numIsOK)
@@ -614,7 +624,7 @@ bool QgsGPXProvider::addFeature(QgsFeature& f)
     
     // add track-specific attributes
     for (it = attrs.begin(); it != attrs.end(); ++it) {
-      if (attributeFields[it.key()].name() == attr[NumAttr]) {
+      if (it.key() == NumAttr) {
 	bool numIsOK;
 	long num = it->toInt(&numIsOK);
 	if (numIsOK)
@@ -632,23 +642,22 @@ bool QgsGPXProvider::addFeature(QgsFeature& f)
   // add common attributes
   if (obj) {
     for (it = attrs.begin(); it != attrs.end(); ++it) {
-      QString fieldName = attributeFields[it.key()].name();
-      if (fieldName == attr[NameAttr]) {
+      if (it.key() == NameAttr) {
 	      obj->name = it->toString();
       }
-      else if (fieldName == attr[CmtAttr]) {
+      else if (it.key() == CmtAttr) {
         obj->cmt = it->toString();
       }
-      else if (fieldName == attr[DscAttr]) {
+      else if (it.key() ==DscAttr) {
         obj->desc = it->toString();
       }
-      else if (fieldName == attr[SrcAttr]) {
+      else if (it.key() == SrcAttr) {
         obj->src = it->toString();
       }
-      else if (fieldName == attr[URLAttr]) {
+      else if (it.key() == URLAttr) {
         obj->url = it->toString();
       }
-      else if (fieldName == attr[URLNameAttr]) {
+      else if (it.key() == URLNameAttr) {
         obj->urlname = it->toString();
       }
     }
@@ -764,11 +773,11 @@ void QgsGPXProvider::changeAttributeValues(GPSObject& obj, const QgsAttributeMap
 }
 
 
-QString QgsGPXProvider::getDefaultValue(const QString& attr, QgsFeature* f)
+QVariant QgsGPXProvider::getDefaultValue(int fieldId)
 {
-  if (attr == "source")
+  if (fieldId == SrcAttr)
     return tr("Digitized in QGIS");
-  return "";
+  return QVariant();
 }
 
 
