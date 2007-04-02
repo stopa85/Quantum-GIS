@@ -19,7 +19,6 @@
 /* $Id$ */
 
 #include <algorithm>
-#include <cfloat>
 #include <iostream>
 #include <limits>
 #include <cmath>
@@ -62,8 +61,7 @@ const QString GPX_DESCRIPTION = QObject::tr("GPS eXchange format provider");
 
 
 QgsGPXProvider::QgsGPXProvider(QString uri) : 
-        QgsVectorDataProvider(uri),
-        mMinMaxCacheDirty(true)
+        QgsVectorDataProvider(uri)
 {
   // assume that it won't work
   mValid = false;
@@ -100,12 +98,6 @@ QgsGPXProvider::QgsGPXProvider(QString uri) :
   // set the selection rectangle to null
   mSelectionRectangle = 0;
   
-  // resize the cache matrix
-  mMinMaxCache=new double*[attributeFields.size()];
-  for(int i=0;i<attributeFields.size();i++) {
-    mMinMaxCache[i]=new double[2];
-  }
-
   // parse the file
   data = GPSData::getData(mFileName);
   if (data == 0) {
@@ -118,10 +110,6 @@ QgsGPXProvider::QgsGPXProvider(QString uri) :
 
 QgsGPXProvider::~QgsGPXProvider()
 {
-  for(uint i=0;i<fieldCount();i++) {
-    delete mMinMaxCache[i];
-  }
-  delete[] mMinMaxCache;
   GPSData::releaseData(mFileName);
 }
 
@@ -432,61 +420,6 @@ void QgsGPXProvider::reset()
   else if (mFeatureType == TrackType)
     mTrkIter = data->tracksBegin();
 }
-
-
-QString QgsGPXProvider::minValue(uint position)
-{
-  if (position >= fieldCount()) {
-    QgsLogger::warning(tr("Warning: access requested to invalid position "
-                       "in QgsGPXProvider::minValue(..)"));
-  }
-  if (mMinMaxCacheDirty) {
-    fillMinMaxCash();
-  }
-  return QString::number(mMinMaxCache[position][0],'f',2);
-}
-
-
-QString QgsGPXProvider::maxValue(uint position)
-{
-  if (position >= fieldCount()) {
-    QgsLogger::warning(tr("Warning: access requested to invalid position "
-                       "in QgsGPXProvider::maxValue(..)"));
-  }
-  if (mMinMaxCacheDirty) {
-    fillMinMaxCash();
-  }
-  return QString::number(mMinMaxCache[position][1],'f',2);
-}
-
-
-void QgsGPXProvider::fillMinMaxCash()
-{
-  for(uint i=0;i<fieldCount();i++) {
-    mMinMaxCache[i][0]=DBL_MAX;
-    mMinMaxCache[i][1]=-DBL_MAX;
-  }
-
-  QgsFeature f;
-  select(allAttributesList());
-  reset();
-
-  while (getNextFeature(f))
-  {
-    for(uint i=0;i<fieldCount();i++) {
-      double value=(f.attributeMap())[i].toDouble();
-      if(value<mMinMaxCache[i][0]) {
-        mMinMaxCache[i][0]=value;  
-      }  
-      if(value>mMinMaxCache[i][1]) {
-        mMinMaxCache[i][1]=value;  
-      }
-    }
-  }
-
-  mMinMaxCacheDirty=false;
-}
-
 
 
 bool QgsGPXProvider::isValid()

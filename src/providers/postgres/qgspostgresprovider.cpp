@@ -1237,9 +1237,10 @@ void QgsPostgresProvider::findColumns(tableCols& cols)
 }
 
 // Returns the minimum value of an attribute
-QString QgsPostgresProvider::minValue(uint position){
+QVariant QgsPostgresProvider::minValue(int index)
+{
   // get the field name 
-  QgsField fld = attributeFields[position];
+  QgsField fld = attributeFields[index];
   QString sql;
   if(sqlWhereClause.isEmpty())
   {
@@ -1252,14 +1253,15 @@ QString QgsPostgresProvider::minValue(uint position){
   PGresult *rmin = PQexec(connection,(const char *)(sql.utf8()));
   QString minValue = PQgetvalue(rmin,0,0);
   PQclear(rmin);
-  return minValue;
+  return minValue.toDouble();
 }
 
 // Returns the maximum value of an attribute
 
-QString QgsPostgresProvider::maxValue(uint position){
+QVariant QgsPostgresProvider::maxValue(int index)
+{
   // get the field name 
-  QgsField fld = attributeFields[position];
+  QgsField fld = attributeFields[index];
   QString sql;
   if(sqlWhereClause.isEmpty())
   {
@@ -1272,7 +1274,7 @@ QString QgsPostgresProvider::maxValue(uint position){
   PGresult *rmax = PQexec(connection,(const char *)(sql.utf8()));
   QString maxValue = PQgetvalue(rmax,0,0);
   PQclear(rmax);
-  return maxValue;
+  return maxValue.toDouble();
 }
 
 

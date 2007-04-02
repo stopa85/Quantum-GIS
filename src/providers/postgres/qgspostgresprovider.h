@@ -170,13 +170,13 @@ class QgsPostgresProvider:public QgsVectorDataProvider
      */
     void reset();
 
-    /**Returns the minimum value of an attribute
-      @param position the number of the attribute*/
-    QString minValue(uint position);
+    /** Returns the minimum value of an attributs
+     *  @param index the index of the attribute */
+    QVariant minValue(int index);
 
-    /**Returns the maximum value of an attribute
-      @param position the number of the attribute*/
-    QString maxValue(uint position);
+    /** Returns the maximum value of an attributs
+     *  @param index the index of the attribute */
+    QVariant maxValue(int index);
 
     /**Returns true if layer is valid
     */

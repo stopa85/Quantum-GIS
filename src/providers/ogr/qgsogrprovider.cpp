@@ -20,7 +20,6 @@ email                : sherman at mrcc.com
 
 
 #include <iostream>
-#include <cfloat>
 #include <cassert>
 
 #include <gdal.h>         // to collect version information
@@ -79,8 +78,7 @@ QgsOgrProvider::QgsOgrProvider(QString const & uri)
    ogrDataSource(0),
    extent_(0),
    ogrLayer(0),
-   ogrDriver(0),
-   minmaxcachedirty(true)
+   ogrDriver(0)
 {
   OGRRegisterAll();
 
@@ -140,12 +138,6 @@ QgsOgrProvider::QgsOgrProvider(QString const & uri)
     valid = false;
   }
 
-  //resize the cache matrix
-  minmaxcache=new double*[fieldCount()];
-  for(uint i=0;i<fieldCount();i++)
-  {
-    minmaxcache[i]=new double[2];
-  }
   // create the geos objects
   geometryFactory = new GEOS_GEOM::GeometryFactory();
   assert(geometryFactory!=0);
@@ -157,12 +149,6 @@ QgsOgrProvider::QgsOgrProvider(QString const & uri)
 
 QgsOgrProvider::~QgsOgrProvider()
 {
-  for(uint i=0;i<fieldCount();i++)
-  {
-    delete[] minmaxcache[i];
-  }
-  delete[] minmaxcache;
-
   OGRDataSource::DestroyDataSource(ogrDataSource);
   ogrDataSource = 0;
   delete extent_;
@@ -486,74 +472,6 @@ void QgsOgrProvider::reset()
   ogrLayer->ResetReading();
 }
 
-QString QgsOgrProvider::minValue(uint position)
-{
-  if(position>=fieldCount())
-  {
-#ifdef QGISDEBUG
-    QgsLogger::warning("Warning: access requested to invalid position in QgsOgrProvider::minValue(..)");
-#endif
-  }
-  if(minmaxcachedirty)
-  {
-    fillMinMaxCash();
-  }
-  return QString::number(minmaxcache[position][0],'f',2);
-}
-
-
-QString QgsOgrProvider::maxValue(uint position)
-{
-  if(position>=fieldCount())
-  {
-#ifdef QGISDEBUG
-    QgsLogger::warning("Warning: access requested to invalid position in QgsOgrProvider::maxValue(..)");
-#endif
-    return "";
-  }
-  if(minmaxcachedirty)
-  {
-    fillMinMaxCash();
-  }
-  return QString::number(minmaxcache[position][1],'f',2);
-}
-
-void QgsOgrProvider::fillMinMaxCash()
-{
-  for(uint i=0;i<fieldCount();i++)
-  {
-    minmaxcache[i][0]=DBL_MAX;
-    minmaxcache[i][1]=-DBL_MAX;
-  }
-
-  // TODO: fetch only numeric columns
-  QgsFeature f;
-  QgsAttributeList all = allAttributesList();
-  select(all, QgsRect(), false);
-
-  while (getNextFeature(f))
-  {
-    for(uint i = 0; i < fieldCount(); i++)
-    {
-      const QVariant& varValue = (f.attributeMap())[i];
-      if (varValue.type() != QVariant::Double && varValue.type() != QVariant::Int)
-        continue;
-
-      double value = varValue.toDouble();
-      if(value<minmaxcache[i][0])
-      {
-        minmaxcache[i][0]=value;  
-      }  
-      if(value>minmaxcache[i][1])
-      {
-        minmaxcache[i][1]=value;  
-      }
-    }
-
-  }
-
-  minmaxcachedirty=false;
-}
 
 //TODO - add sanity check for shape file layers, to include cheking to
 //       see if the .shp, .dbf, .shx files are all present and the layer

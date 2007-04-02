@@ -32,6 +32,7 @@
 #include "qgsdataprovider.h"
 #include "qgsfeature.h"
 #include "qgsfield.h"
+#include "qgslogger.h"
 #include "qgsrect.h"
 #include "qgsspatialrefsys.h"
 
@@ -559,23 +560,25 @@ void QgsGrassProvider::reset()
     mNextCidx = 0;
 }
 
-QString QgsGrassProvider::minValue(uint position)
+QVariant QgsGrassProvider::minValue(int index)
 {
-    if ( position >= fieldCount() ) {
-	std::cerr << "Warning: access requested to invalid position in QgsGrassProvider::minValue()" 
-	          << std::endl;
-    }
-    return QString::number( mLayers[mLayerId].minmax[position][0], 'f', 2 );
+  if (!fields().contains(index))
+  {
+    QgsDebugMsg("Warning: access requested to invalid field index: " + QString::number(index));
+    return QVariant();
+  }
+  return QVariant(mLayers[mLayerId].minmax[index][0]);
 }
 
  
-QString QgsGrassProvider::maxValue(uint position)
+QVariant QgsGrassProvider::maxValue(int index)
 {
-    if ( position >= fieldCount() ) {
-	std::cerr << "Warning: access requested to invalid position in QgsGrassProvider::maxValue()" 
-	          << std::endl;
-    }
-    return QString::number( mLayers[mLayerId].minmax[position][1], 'f', 2 );
+  if (!fields().contains(index))
+  {
+    QgsDebugMsg("Warning: access requested to invalid field index: " + QString::number(index));
+    return QVariant();
+  }
+  return QVariant(mLayers[mLayerId].minmax[index][1]);
 }
 
 bool QgsGrassProvider::isValid(){

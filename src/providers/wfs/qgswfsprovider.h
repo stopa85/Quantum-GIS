@@ -76,8 +76,6 @@ class QgsWFSProvider: public QgsVectorDataProvider
   uint fieldCount() const;
   const QgsFieldMap & fields() const;
   void reset();
-  QString minValue(uint position);
-  QString maxValue(uint position);
   
   virtual QgsSpatialRefSys getSRS();
   
@@ -122,15 +120,10 @@ class QgsWFSProvider: public QgsVectorDataProvider
   mutable QGis::WKBTYPE mWKBType;
   /**Source SRS*/
   QgsSpatialRefSys* mSourceSRS;
-  /**Stores the minimum/maximum values for each attribute
-   The position in the vector is equal to the position of an attribute in the layers attribute vector*/
-  std::vector< std::pair<QString, QString> > mMinMaxCash;
   int mFeatureCount;
   /**Flag if provider is valid*/
   bool mValid;
 
-  /**Goes through all the features and their attributes and populates mMinMaxCash with entries*/
-  void fillMinMaxCash();
   
   /**Collects information about the field types. Is called internally from QgsWFSProvider::getFeature. The method delegates the work to request specific ones and gives back the name of the geometry attribute and the thematic attributes with their types*/
   int describeFeatureType(const QString& uri, QString& geometryAttribute, QgsFieldMap& fields);

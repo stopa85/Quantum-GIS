@@ -104,18 +104,6 @@ public:
    */
   virtual void reset();
 
-  /**
-   * Returns the minimum value of an attribute
-   * @param position the number of the attribute
-   */
-  virtual QString minValue(uint position);
-
-  /**
-   * Returns the maximum value of an attribute
-   * @param position the number of the attribute
-   */
-  virtual QString maxValue(uint position);
-
   /** Returns a bitmask containing the supported capabilities
       Note, some capabilities may change depending on whether
       a spatial filter is active on this provider, so it may
@@ -196,8 +184,6 @@ private:
   */
   bool getNextFeature_( QgsFeature & feature, QgsAttributeList desiredAttributes);
 
-  void fillMinMaxCash();
-
   int *getFieldLengths();
 
   //! Fields
@@ -236,15 +222,6 @@ private:
 
   //! Feature id
   long mFid;
-
-  /**Flag indicating, if the minmaxcache should be renewed (true) or not (false)*/
-  bool mMinMaxCacheDirty;
-
-  /**Matrix storing the minimum and maximum values*/
-  double **mMinMaxCache;
-
-  /**Fills the cash and sets minmaxcachedirty to false*/
-  void mFillMinMaxCash();
 
   struct wkbPoint
   {
