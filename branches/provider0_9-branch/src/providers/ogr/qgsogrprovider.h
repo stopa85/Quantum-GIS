@@ -271,7 +271,5 @@ bool fetchGeometry = true, bool useIntersect = false);
     bool deleteFeature(int id);
     //! The geometry factory
     GEOS_GEOM::GeometryFactory *geometryFactory;
-    //! The well known text reader
-    GEOS_IO::WKTReader *wktReader;
 
 };

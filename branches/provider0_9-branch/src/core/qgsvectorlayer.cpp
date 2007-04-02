@@ -2246,7 +2246,7 @@ bool QgsVectorLayer::snapPoint(QgsPoint& point, double tolerance)
   }
 
   //and also go through the changed geometries, because the spatial filter of the provider did not consider feature changes
-  for(QgsGeometryMap::const_iterator iter = mChangedGeometries.begin(); iter != mChangedGeometries.end(); ++iter)
+  for(QgsGeometryMap::iterator iter = mChangedGeometries.begin(); iter != mChangedGeometries.end(); ++iter)
   {
     vertexFeature = iter.value().closestVertex(point, vindex, rb1, rb2, minsquaredist);
     if(minsquaredist<mindist)

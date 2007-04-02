@@ -98,7 +98,7 @@ bool QgsWFSProvider::getNextFeature(QgsFeature& feature, uint featureQueueSize)
       ++mFeatureIterator;
       if(mUseIntersect)
 	{
-	  if(feature.geometry()->fast_intersects(mSpatialFilter))
+	  if(feature.geometry()->intersects(mSpatialFilter))
 	    {
 	      return true;
 	    }

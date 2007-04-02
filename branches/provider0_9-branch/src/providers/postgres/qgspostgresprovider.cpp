@@ -1767,7 +1767,7 @@ bool QgsPostgresProvider::changeGeometryValues(QgsGeometryMap & geometry_map)
 
   PQexec(connection,"BEGIN");
 
-  for(QgsGeometryMap::const_iterator iter  = geometry_map.begin();
+  for(QgsGeometryMap::iterator iter  = geometry_map.begin();
                                              iter != geometry_map.end();
                                            ++iter)
   {
