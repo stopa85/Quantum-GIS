@@ -278,13 +278,9 @@ QString QgsGrassProvider::storageType() const
   return "GRASS (Geographic Resources Analysis and Support System) file";
 }
 
-#if 0
-bool QgsGrassProvider::getNextFeature(QgsFeature& feature,
-                                      bool fetchGeometry,
-                                      QgsAttributeList attlist,
-                                      uint featureQueueSize)
+bool QgsGrassProvider::getNextFeature(QgsFeature& feature, uint featureQueueSize)
 {
-    int cat, type, id;
+  int cat, type, id;
     unsigned char *wkb;
     int wkbsize;
 
@@ -394,15 +390,9 @@ bool QgsGrassProvider::getNextFeature(QgsFeature& feature,
 
     feature.setGeometryAndOwnership(wkb, wkbsize);
 
-    setFeatureAttributes( mLayerId, cat, &feature, attlist );  
+    setFeatureAttributes( mLayerId, cat, &feature, mAttributesToFetch);  
     
     return true;
-}
-#endif //0
-
-bool QgsGrassProvider::getNextFeature(QgsFeature& feature, uint featureQueueSize)
-{
-  return false; //soon...
 }
 
 void QgsGrassProvider::resetSelection( bool sel)
@@ -415,83 +405,90 @@ void QgsGrassProvider::resetSelection( bool sel)
     mNextCidx = 0;
 }
 
-#if 0
-/**
-* Select features based on a bounding rectangle. Features can be retrieved
-* with calls to getFirstFeature and getNextFeature.
-* @param mbr QgsRect containing the extent to use in selecting features
-*/
-void QgsGrassProvider::select(QgsRect rect, bool useIntersect)
+void QgsGrassProvider::select(QgsAttributeList fetchAttributes, QgsRect rect, bool fetchGeometry, \
+			      bool useIntersect)
 {
-    #ifdef QGISDEBUG
-    std::cout << "QgsGrassProvider::select() useIntersect = " << useIntersect << std::endl;
-    #endif
-
-    if ( isEdited() || isFrozen() || !mValid )
+  mAttributesToFetch = fetchAttributes;
+  mFetchGeom = fetchGeometry;
+  
+  if ( isEdited() || isFrozen() || !mValid )
 	return;
 
     // check if outdated and update if necessary
     int mapId = mLayers[mLayerId].mapId;
-    if ( mapOutdated(mapId) ) {
+    if ( mapOutdated(mapId) ) 
+      {
         updateMap ( mapId );
-    }
-    if ( mMapVersion < mMaps[mapId].version ) {
+      }
+    if ( mMapVersion < mMaps[mapId].version ) 
+      {
         update();
-    }
-    if ( attributesOutdated(mapId) ) {
+      }
+    if ( attributesOutdated(mapId) ) 
+      {
 	loadAttributes (mLayers[mLayerId]);
-    }
+      }
 
+    //no selection rectangle - use all features
+    if(rect.isEmpty())
+      {
+	resetSelection(1);
+	return;
+      }
+
+    //apply selection rectangle
     resetSelection(0);
     
-    if ( !useIntersect ) { // select by bounding boxes only
+    if ( !useIntersect ) 
+      { // select by bounding boxes only
 	BOUND_BOX box;
 	box.N = rect.yMax(); box.S = rect.yMin(); 
 	box.E = rect.xMax(); box.W = rect.xMin(); 
 	box.T = PORT_DOUBLE_MAX; box.B = -PORT_DOUBLE_MAX; 
-	if ( mLayerType == POINT || mLayerType == CENTROID || mLayerType == LINE || mLayerType == BOUNDARY ) {
+	if ( mLayerType == POINT || mLayerType == CENTROID || mLayerType == LINE || mLayerType == BOUNDARY ) 
+	  {
 	    Vect_select_lines_by_box(mMap, &box, mGrassType, mList);
-	} else if ( mLayerType == POLYGON ) {
+	  } 
+	else if ( mLayerType == POLYGON ) 
+	  {
 	    Vect_select_areas_by_box(mMap, &box, mList);
-	}
-
-    } else { // check intersection
+	  }
+	
+      } 
+    else 
+      { // check intersection
 	struct line_pnts *Polygon;
 	
 	Polygon = Vect_new_line_struct();
-
+	
 	Vect_append_point( Polygon, rect.xMin(), rect.yMin(), 0);
 	Vect_append_point( Polygon, rect.xMax(), rect.yMin(), 0);
 	Vect_append_point( Polygon, rect.xMax(), rect.yMax(), 0);
 	Vect_append_point( Polygon, rect.xMin(), rect.yMax(), 0);
 	Vect_append_point( Polygon, rect.xMin(), rect.yMin(), 0);
-
-	if ( mLayerType == POINT || mLayerType == CENTROID || mLayerType == LINE || mLayerType == BOUNDARY ) {
-	    Vect_select_lines_by_polygon ( mMap, Polygon, 0, NULL, mGrassType, mList);
-	} else if ( mLayerType == POLYGON ) {
-	    Vect_select_areas_by_polygon ( mMap, Polygon, 0, NULL, mList);
-	}
-
-	Vect_destroy_line_struct (Polygon);
-    }
-    for ( int i = 0; i < mList->n_values; i++ ) {
-        if ( mList->value[i] <= mSelectionSize ) {
-	    mSelection[mList->value[i]] = 1;
-	} else {
-	    std::cerr << "Selected element out of range" << std::endl;
-	}
-    }
 	
-    #ifdef QGISDEBUG
-    std::cout << mList->n_values << " features selected" << std::endl;
-    #endif
-}
-#endif //0
-
-void QgsGrassProvider::select(QgsAttributeList fetchAttributes, QgsRect rect, bool fetchGeometry, \
-			      bool useIntersect)
-{
-  return; //soon...
+	if ( mLayerType == POINT || mLayerType == CENTROID || mLayerType == LINE || mLayerType == BOUNDARY ) 
+	  {
+	    Vect_select_lines_by_polygon ( mMap, Polygon, 0, NULL, mGrassType, mList);
+	  } 
+	else if ( mLayerType == POLYGON ) 
+	  {
+	    Vect_select_areas_by_polygon ( mMap, Polygon, 0, NULL, mList);
+	  }
+	
+	Vect_destroy_line_struct (Polygon);
+      }
+    for ( int i = 0; i < mList->n_values; i++ ) 
+      {
+        if ( mList->value[i] <= mSelectionSize ) 
+	  {
+	    mSelection[mList->value[i]] = 1;
+	  } 
+	else 
+	  {
+	    std::cerr << "Selected element out of range" << std::endl;
+	  }
+      }	
 }
 
 
@@ -559,7 +556,6 @@ void QgsGrassProvider::reset()
 	loadAttributes (mLayers[mLayerId]);
     }
     
-    resetSelection(1);
     mNextCidx = 0;
 }
 
