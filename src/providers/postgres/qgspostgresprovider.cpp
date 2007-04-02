@@ -396,13 +396,13 @@ bool QgsPostgresProvider::getNextFeature(QgsFeature& feature, uint featureQueueS
       switch (attributeFields[*index_it].type())
 	      {
 	      case QVariant::Int:
-		feature.addAttribute(number, val.toInt());
+		feature.addAttribute(*index_it, val.toInt());
 		break;
 	      case QVariant::Double:
-		feature.addAttribute(number, val.toDouble());
+		feature.addAttribute(*index_it, val.toDouble());
 		break;
 	      case QVariant::String:
-		feature.addAttribute(number, val);
+		feature.addAttribute(*index_it, val);
 		break;
 	      default:
 		assert(0 && "unsupported field type");
