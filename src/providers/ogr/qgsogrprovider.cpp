@@ -149,9 +149,6 @@ QgsOgrProvider::QgsOgrProvider(QString const & uri)
   // create the geos objects
   geometryFactory = new GEOS_GEOM::GeometryFactory();
   assert(geometryFactory!=0);
-  // create the reader
-  //    std::cerr << "Creating the wktReader\n";
-  wktReader = new GEOS_IO::WKTReader(geometryFactory);
 
   mSupportedNativeTypes.insert("Integer");
   mSupportedNativeTypes.insert("Real");
@@ -171,7 +168,6 @@ QgsOgrProvider::~QgsOgrProvider()
   delete extent_;
   extent_ = 0;
   delete geometryFactory;
-  delete wktReader;
   delete mSelectionRectangle;
 }
 
@@ -317,7 +313,7 @@ bool QgsOgrProvider::getNextFeature(QgsFeature& feature, uint featureQueueSize)
 	      if(env.IsInit()) //if envelope is invalid, skip the precise intersection test
 		{
 		  selectionRect.set(env.MinX, env.MinY, env.MaxX, env.MaxY);
-		  if(!feature.geometry()->fast_intersects(selectionRect))
+		  if(!feature.geometry()->intersects(selectionRect))
 		    {
 		      delete fet;
 		      continue;
