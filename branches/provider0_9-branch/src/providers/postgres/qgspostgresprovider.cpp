@@ -389,11 +389,11 @@ bool QgsPostgresProvider::getNextFeature(QgsFeature& feature, uint featureQueueS
 	for(; name_it != mFetchAttributeNames.end(); ++name_it, ++index_it)
 	  {
 	    QString name = *name_it; //just for the debugger
-	    int number = PQfnumber(queryResult,*name_it); //just for the debugger
+	    //int number = PQfnumber(queryResult,*name_it); //just for the debugger
 	    char* attribute = PQgetvalue(queryResult, row, PQfnumber(queryResult,*name_it));
-	    
+
 	    QString val = QString::fromUtf8(attribute);
-	    switch (attributeFields[number].type())
+      switch (attributeFields[*index_it].type())
 	      {
 	      case QVariant::Int:
 		feature.addAttribute(number, val.toInt());
@@ -432,7 +432,7 @@ bool QgsPostgresProvider::getNextFeature(QgsFeature& feature, uint featureQueueS
         
       } // for each row in queue
       
-      QgsDebugMsg("retrieved batch of features.");
+      //QgsDebugMsg("retrieved batch of features.");
             
       PQclear(queryResult);
       
