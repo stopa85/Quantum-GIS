@@ -18,7 +18,6 @@
 
 #include "qgsdelimitedtextprovider.h"
 
-#include <cfloat>
 #include <iostream>
 
 #include <QtGlobal>
@@ -56,8 +55,7 @@ static const QString TEXT_PROVIDER_DESCRIPTION = "Delimited text data provider";
 
 QgsDelimitedTextProvider::QgsDelimitedTextProvider(QString uri)
     : QgsVectorDataProvider(uri), 
-      mShowInvalidLines(true),
-      mMinMaxCacheDirty(true)
+      mShowInvalidLines(true)
 {
   // Get the file name and mDelimiter out of the uri
   mFileName = uri.left(uri.find("?"));
@@ -261,12 +259,6 @@ QgsDelimitedTextProvider::QgsDelimitedTextProvider(QString uri)
       std::cerr << "Done checking validity\n";
 #endif
 
-      //resize the cache matrix
-      mMinMaxCache = new double *[attributeFields.size()];
-      for (int i = 0; i < attributeFields.size(); i++)
-      {
-        mMinMaxCache[i] = new double[2];
-      }
     }
     else
       // file does not exist
@@ -288,11 +280,6 @@ QgsDelimitedTextProvider::~QgsDelimitedTextProvider()
   mFile->close();
   delete mFile;
   delete mStream;
-  for (uint i = 0; i < fieldCount(); i++)
-  {
-    delete mMinMaxCache[i];
-  }
-  delete[]mMinMaxCache;
 }
 
 
@@ -528,69 +515,6 @@ void QgsDelimitedTextProvider::reset()
   // the header record
   mStream->seek(0);
   mStream->readLine();
-}
-
-QString QgsDelimitedTextProvider::minValue(uint position)
-{
-  if (position >= fieldCount())
-  {
-    std::
-      cerr << "Warning: access requested to invalid position " <<
-      "in QgsDelimitedTextProvider::minValue(..)" << std::endl;
-  }
-  if (mMinMaxCacheDirty)
-  {
-    fillMinMaxCash();
-  }
-  return QString::number(mMinMaxCache[position][0], 'f', 2);
-}
-
-
-QString QgsDelimitedTextProvider::maxValue(uint position)
-{
-  if (position >= fieldCount())
-  {
-    std::
-      cerr << "Warning: access requested to invalid position " <<
-      "in QgsDelimitedTextProvider::maxValue(..)" << std::endl;
-  }
-  if (mMinMaxCacheDirty)
-  {
-    fillMinMaxCash();
-  }
-  return QString::number(mMinMaxCache[position][1], 'f', 2);
-}
-
-void QgsDelimitedTextProvider::fillMinMaxCash()
-{
-  for (uint i = 0; i < fieldCount(); i++)
-  {
-    mMinMaxCache[i][0] = DBL_MAX;
-    mMinMaxCache[i][1] = -DBL_MAX;
-  }
-
-  QgsFeature f;
-  reset();
-
-  getNextFeature(f, true);
-  do
-  {
-    for (uint i = 0; i < fieldCount(); i++)
-    {
-      double value = (f.attributeMap())[i].toDouble();
-      if (value < mMinMaxCache[i][0])
-      {
-        mMinMaxCache[i][0] = value;
-      }
-      if (value > mMinMaxCache[i][1])
-      {
-        mMinMaxCache[i][1] = value;
-      }
-    }
-  }
-  while (getNextFeature(f, true));
-
-  mMinMaxCacheDirty = false;
 }
 
 bool QgsDelimitedTextProvider::isValid()

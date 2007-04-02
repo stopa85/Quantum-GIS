@@ -144,69 +144,6 @@ void QgsWFSProvider::reset()
     }
 }
 
-QString QgsWFSProvider::minValue(uint position)
-{
-  if(mMinMaxCash.size() == 0)
-    {
-      fillMinMaxCash();
-    }
-  return mMinMaxCash[position].first;
-}
-
-QString QgsWFSProvider::maxValue(uint position)
-{
-  if(mMinMaxCash.size() == 0)
-    {
-      fillMinMaxCash();
-    }
-  return mMinMaxCash[position].second;
-}
-
-void QgsWFSProvider::fillMinMaxCash()
-{
-  int fieldCount = fields().size();
-  int i;
-  double currentValue;
-  
-  std::vector<std::pair<double, double> > tempMinMax;
-  tempMinMax.resize(fieldCount);
-  for(i = 0; i < fieldCount; ++i)
-    {
-      tempMinMax[i] = std::make_pair(DBL_MAX, -DBL_MAX);
-    }
-
-  reset();
-  QgsAttributeList allAttr = allAttributesList();
-  QgsFeature theFeature;
-
-  select(allAttr, QgsRect(), true);
-  reset();
-
-  while (getNextFeature(theFeature))
-    {
-      for(i = 0; i < fieldCount; ++i)
-	{
-	  currentValue = (theFeature.attributeMap())[i].toDouble();
-	  if(currentValue < tempMinMax[i].first)
-	    {
-	      tempMinMax[i].first = currentValue;
-	    }
-	  if(currentValue > tempMinMax[i].second)
-	    {
-	      tempMinMax[i].second = currentValue;
-	    }
-	}
-    }
-
-  mMinMaxCash.clear();
-  mMinMaxCash.resize(fieldCount);
-  for(i = 0; i < fieldCount; ++i) 
-    {
-      mMinMaxCash[i] = std::make_pair(QString::number(tempMinMax[i].first), QString::number(tempMinMax[i].second));
-    }
-}
-
-
 QgsSpatialRefSys QgsWFSProvider::getSRS()
 {
   if (mSourceSRS)

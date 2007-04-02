@@ -146,15 +146,23 @@ bool fetchGeometry = true, bool useIntersect = false) = 0;
 
       /**
        * Returns the minimum value of an attributs
-       * @param position the number of the attribute
+       * @param index the index of the attribute
+       *
+       * Default implementation walks all numeric attributes and caches minimal
+       * and maximal values. If provider has facilities to retreive minimal
+       * value directly, override this function.
        */
-      virtual QString minValue(uint position) = 0;
+      virtual QVariant minValue(int index);
 
       /**
        * Returns the maximum value of an attributs
-       * @param position the number of the attribute
+       * @param index the index of the attribute
+       *
+       * Default implementation walks all numeric attributes and caches minimal
+       * and maximal values. If provider has facilities to retreive maximal
+       * value directly, override this function.
        */
-      virtual QString maxValue(uint position) = 0;
+      virtual QVariant maxValue(int index);
 
       /**
        * Adds a list of features
@@ -251,6 +259,12 @@ bool fetchGeometry = true, bool useIntersect = false) = 0;
       void setFetchFeaturesWithoutGeom(bool fetch);
 
     protected:
+      
+      void fillMinMaxCache();
+      
+      bool mCacheMinMaxDirty;
+      QMap<int, QVariant> mCacheMinValues, mCacheMaxValues;
+
 
       /** Encoding */
       QTextCodec* mEncoding;

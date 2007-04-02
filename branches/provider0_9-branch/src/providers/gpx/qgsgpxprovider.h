@@ -95,14 +95,6 @@ public:
    */
   virtual void reset();
     
-  /**Returns the minimum value of an attribute
-  @param position the number of the attribute*/
-  virtual QString minValue(uint position);
-  
-  /**Returns the maximum value of an attribute
-  @param position the number of the attribute*/
-  virtual QString maxValue(uint position);
-  
   /**
    * Adds a list of features
    * @return true in case of success and false in case of failure
@@ -171,7 +163,7 @@ public:
 private:
   
   GPSData* data;
-  void fillMinMaxCash();
+  
   //! Fields
   QgsFieldMap attributeFields;
   
@@ -193,12 +185,6 @@ private:
   //! Current track iterator
   GPSData::TrackIterator mTrkIter;
 
-  /**Flag indicating, if the minmaxcache should be renewed (true) or not (false)*/
-  bool mMinMaxCacheDirty;
-  /**Matrix storing the minimum and maximum values*/
-  double** mMinMaxCache;
-  /**Fills the cash and sets minmaxcachedirty to false*/
-  void mFillMinMaxCash();
   struct wkbPoint{
     char byteOrder;
     unsigned wkbType;

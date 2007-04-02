@@ -182,13 +182,13 @@ public:
    */
   void reset();
 
-  /**Returns the minimum value of an attribut
-     @param position the number of the attribute*/
-  QString minValue(uint position);
+  /** Returns the minimum value of an attributs
+   *  @param index the index of the attribute */
+  QVariant minValue(int index);
 
-  /**Returns the maximum value of an attribut
-     @param position the number of the attribute*/
-  QString maxValue(uint position);
+  /** Returns the maximum value of an attributs
+   *  @param index the index of the attribute */
+  QVariant maxValue(int index);
 
   /** Update (reload) non static members (marked !UPDATE!) from the static layer and the map.
    *   This method MUST be called whenever lastUpdate of the map is later then mapLastUpdate 

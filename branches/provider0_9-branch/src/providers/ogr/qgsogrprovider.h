@@ -139,14 +139,6 @@ bool fetchGeometry = true, bool useIntersect = false);
      */
     virtual void reset();
 
-    /**Returns the minimum value of an attribut
-      @param position the number of the attribute*/
-    virtual QString minValue(uint position);
-
-    /**Returns the maximum value of an attribut
-      @param position the number of the attribute*/
-    virtual QString maxValue(uint position);
-
     /**Writes a list of features to the file*/
     virtual bool addFeatures(QgsFeatureList & flist);
 
@@ -257,12 +249,6 @@ bool fetchGeometry = true, bool useIntersect = false);
     int geomType;
     long numberFeatures;
     
-    /**Flag indicating, if the minmaxcache should be renewed (true) or not (false)*/
-    bool minmaxcachedirty;
-    /**Matrix storing the minimum and maximum values*/
-    double **minmaxcache;
-    /**Fills the cash and sets minmaxcachedirty to false*/
-    void fillMinMaxCash();
     //! Selection rectangle 
     OGRPolygon * mSelectionRectangle;
     /**Adds one feature*/
