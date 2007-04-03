@@ -97,6 +97,18 @@ class QgsPostgresProvider:public QgsVectorDataProvider
      */
     virtual bool getNextFeature(QgsFeature& feature);
     
+    /** 
+      * Gets the feature at the given feature ID.
+      * @param featureId id of the feature
+      * @param feature feature which will receive the data
+      * @param fetchGeoemtry if true, geometry will be fetched from the provider
+      * @param fetchAttributes a list containing the indexes of the attribute fields to copy
+      * @return True when feature was found, otherwise false
+      */
+    virtual bool getFeatureAtId(int featureId,
+                                QgsFeature& feature,
+                                bool fetchGeometry = true,
+                                QgsAttributeList fetchAttributes = QgsAttributeList());
 
     
     /** Get the feature type. This corresponds to

@@ -533,6 +533,107 @@ void QgsPostgresProvider::select(QgsAttributeList fetchAttributes,
   mFeatureQueue.empty();
 }
 
+bool QgsPostgresProvider::getFeatureAtId(int featureId,
+                                         QgsFeature& feature,
+                                         bool fetchGeometry,
+                                         QgsAttributeList fetchAttributes)
+{
+
+  std::list<QString> attributeNames;
+  QgsFieldMap fldMap = fields();
+  QgsFieldMap::const_iterator fieldIt;
+  QgsAttributeList::const_iterator it;
+  std::list<QString>::const_iterator namesIt;
+  
+  for (it = fetchAttributes.constBegin(); it != fetchAttributes.constEnd(); ++it)
+  {
+    fieldIt = fldMap.find(*it);
+    if(fieldIt != fldMap.end())
+    {
+      attributeNames.push_back(fieldIt.value().name());
+    }
+  }
+
+  QString sql = "declare qgisfid binary cursor for select \"" + primaryKey + "\"";
+  
+  if(fetchGeometry)
+  {
+    sql += QString(",asbinary(\"%1\",'%2') as qgs_feature_geometry").arg(geometryColumn).arg(endianString()); 
+  }
+  for(namesIt = attributeNames.begin(); namesIt != attributeNames.end(); ++namesIt)
+  {
+    sql += "," + *namesIt + "::text";
+  }
+
+  sql += " " + QString("from %1").arg(mSchemaTableName);
+  
+  sql += " where " + primaryKey + " = " + QString::number(featureId);
+  
+  QgsDebugMsg("Selecting feature using: " + sql);
+  
+  PQexec(connection,"begin work");
+  
+  // execute query
+  PQexec(connection, (const char *)(sql.utf8()));
+  
+  PGresult *res = PQexec(connection, "fetch forward 1 from qgisfid");
+  
+  int rows = PQntuples(res);
+  if (rows == 0)
+  {
+    PQexec(connection, "end work");
+    QgsDebugMsg("feature " + QString::number(featureId) + " not found");
+    return FALSE;
+  }
+      
+   // set ID
+  int oid = *(int *)PQgetvalue(res, 0, PQfnumber(res,"\""+primaryKey+"\""));
+  if (swapEndian)
+    oid = ntohl(oid); // convert oid to opposite endian
+  feature.setFeatureId(oid);
+
+  // fetch attributes
+  it = fetchAttributes.constBegin();
+
+  for(namesIt = attributeNames.begin(); namesIt != attributeNames.end(); ++namesIt, ++it)
+  {
+    QString name = *namesIt; //just for the debugger
+    char* attribute = PQgetvalue(res, 0, PQfnumber(res,*namesIt));
+
+    QString val = QString::fromUtf8(attribute);
+    switch (attributeFields[*it].type())
+    {
+      case QVariant::Int:
+        feature.addAttribute(*it, val.toInt());
+        break;
+      case QVariant::Double:
+        feature.addAttribute(*it, val.toDouble());
+        break;
+      case QVariant::String:
+        feature.addAttribute(*it, val);
+        break;
+      default:
+        assert(0 && "unsupported field type");
+    }
+  }
+        
+	// fetch geometry
+  if (fetchGeometry)
+  {
+    int returnedLength = PQgetlength(res, 0, PQfnumber(res,"qgs_feature_geometry")); 
+    if(returnedLength > 0)
+    {
+      unsigned char *featureGeom = new unsigned char[returnedLength + 1];
+      memset(featureGeom, '\0', returnedLength + 1);
+      memcpy(featureGeom, PQgetvalue(res, 0, PQfnumber(res,"qgs_feature_geometry")), returnedLength); 
+      feature.setGeometryAndOwnership(featureGeom, returnedLength + 1);
+    }
+  }
+  
+  PQexec(connection, "end work");
+
+  return TRUE;
+}
 
 QgsDataSourceURI& QgsPostgresProvider::getURI()
 {
