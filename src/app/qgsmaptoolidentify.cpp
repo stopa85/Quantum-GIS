@@ -221,7 +221,6 @@ void QgsMapToolIdentify::identifyVectorLayer(QgsVectorLayer* layer, const QgsPoi
   const QgsFieldMap& fields = dataProvider->fields();
   
   dataProvider->select(allAttributes, r, true, true);
-  dataProvider->reset();
 
   // init distance/area calculator
   QgsDistanceArea calc;
@@ -398,7 +397,6 @@ void QgsMapToolIdentify::identifyVectorLayer(QgsVectorLayer* layer, const QgsPoi
 				  "identify tool on unsaved features.</p>"));
     }
   }
-  dataProvider->reset();
 }
 
 

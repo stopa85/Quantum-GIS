@@ -474,7 +474,6 @@ void QgsAttributeTable::fillTable(QgsVectorLayer* layer)
     //go through the features and fill the values into the table
     QgsAttributeList all = provider->allAttributesList();
     provider->select(all, QgsRect(), false);
-    provider->reset();
     
     while (provider->getNextFeature(fet))
     {
@@ -492,7 +491,6 @@ void QgsAttributeTable::fillTable(QgsVectorLayer* layer)
       row++;
     }
 
-    provider->reset();
   }
 }
 

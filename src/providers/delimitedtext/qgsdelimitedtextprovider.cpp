@@ -467,6 +467,7 @@ void QgsDelimitedTextProvider::select(QgsAttributeList fetchAttributes,
     {
       mSelectionRectangle = rect;
     }
+  reset();
 }
 
 

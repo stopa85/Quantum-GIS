@@ -83,7 +83,6 @@ void QgsSearchQueryBuilder::getFieldValues(uint limit)
   attrs.append(fieldIndex);
   
   provider->select(attrs, QgsRect(), false);
-  provider->reset();
   
   while (provider->getNextFeature(feat) &&
          (limit == 0 || lstValues->count() != limit))
@@ -102,8 +101,6 @@ void QgsSearchQueryBuilder::getFieldValues(uint limit)
       lstValues->insertItem(value);
     
   }
-  provider->reset();
-  
 }
 
 void QgsSearchQueryBuilder::on_btnSampleValues_clicked()
@@ -158,7 +155,6 @@ long QgsSearchQueryBuilder::countRecords(QString searchString)
   QgsAttributeList allAttributes = provider->allAttributesList();
 
   provider->select(allAttributes, QgsRect(), false);
-  provider->reset();
 
   while (provider->getNextFeature(feat))
   {
@@ -171,7 +167,6 @@ long QgsSearchQueryBuilder::countRecords(QString searchString)
     if (searchTree->hasError())
       break;
   }
-  provider->reset();
 
   QApplication::restoreOverrideCursor();
   
