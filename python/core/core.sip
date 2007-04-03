@@ -42,5 +42,6 @@
 %Include qgsspatialindex.sip
 %Include qgsspatialrefsys.sip
 %Include qgsvectordataprovider.sip
+%Include qgsvectorfilewriter.sip
 %Include qgsvectorlayer.sip
 
