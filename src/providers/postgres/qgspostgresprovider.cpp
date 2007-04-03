@@ -68,6 +68,7 @@ const QString POSTGRES_DESCRIPTION = "PostgreSQL/PostGIS data provider";
 QgsPostgresProvider::QgsPostgresProvider(QString const & uri)
   : QgsVectorDataProvider(uri),
   geomType(QGis::WKBUnknown),
+  mFeatureQueueSize(200),
   gotPostgisVersion(FALSE)
 {
   // assume this is a valid layer until we determine otherwise
@@ -341,7 +342,7 @@ QString QgsPostgresProvider::storageType()
   return "PostgreSQL database with PostGIS extension";
 }
 
-bool QgsPostgresProvider::getNextFeature(QgsFeature& feature, uint featureQueueSize)
+bool QgsPostgresProvider::getNextFeature(QgsFeature& feature)
 {
   if (valid)
   {
@@ -349,14 +350,8 @@ bool QgsPostgresProvider::getNextFeature(QgsFeature& feature, uint featureQueueS
     // Top up our queue if it is empty
     if (mFeatureQueue.empty())
     {
-    
-      if (featureQueueSize < 1)
-      {
-        featureQueueSize = 1;
-      }
-
       QString fetch = QString("fetch forward %1 from qgisf")
-                         .arg(featureQueueSize);
+                         .arg(mFeatureQueueSize);
                          
       queryResult = PQexec(connection, (const char *)fetch);
       
@@ -456,8 +451,10 @@ bool QgsPostgresProvider::getNextFeature(QgsFeature& feature, uint featureQueueS
   return true;
 }
 
-void QgsPostgresProvider::select(QgsAttributeList fetchAttributes, QgsRect rect, bool fetchGeometry, \
-				 bool useIntersect)
+void QgsPostgresProvider::select(QgsAttributeList fetchAttributes,
+                                 QgsRect rect,
+                                 bool fetchGeometry,
+                                 bool useIntersect)
 {
   mFetchGeom = fetchGeometry;
   mAttributesToFetch = fetchAttributes;

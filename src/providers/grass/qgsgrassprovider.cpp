@@ -279,7 +279,7 @@ QString QgsGrassProvider::storageType() const
   return "GRASS (Geographic Resources Analysis and Support System) file";
 }
 
-bool QgsGrassProvider::getNextFeature(QgsFeature& feature, uint featureQueueSize)
+bool QgsGrassProvider::getNextFeature(QgsFeature& feature)
 {
   int cat, type, id;
     unsigned char *wkb;
@@ -406,8 +406,10 @@ void QgsGrassProvider::resetSelection( bool sel)
     mNextCidx = 0;
 }
 
-void QgsGrassProvider::select(QgsAttributeList fetchAttributes, QgsRect rect, bool fetchGeometry, \
-			      bool useIntersect)
+void QgsGrassProvider::select(QgsAttributeList fetchAttributes,
+                              QgsRect rect,
+                              bool fetchGeometry,
+                              bool useIntersect)
 {
   mAttributesToFetch = fetchAttributes;
   mFetchGeom = fetchGeometry;

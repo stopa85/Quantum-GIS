@@ -724,7 +724,7 @@ void QgsVectorLayer::draw(QPainter * p,
 
     try
     {
-      while (mDataProvider->getNextFeature(fet, mUpdateThreshold))
+      while (mDataProvider->getNextFeature(fet))
       {
         // XXX Something in our draw event is triggering an additional draw event when resizing [TE 01/26/06]
         // XXX Calling this will begin processing the next draw event causing image havoc and recursion crashes.
@@ -1147,8 +1147,9 @@ void QgsVectorLayer::updateExtents()
       QgsRect bb;
 
       mLayerExtent.setMinimal();
+      mDataProvider->select();
       mDataProvider->reset();
-      while (mDataProvider->getNextFeature(fet, false))
+      while (mDataProvider->getNextFeature(fet))
       {
         if (!mDeletedFeatureIds.contains(fet.featureId()))
         {
@@ -1807,13 +1808,14 @@ int QgsVectorLayer::findFreeId()
   int fid;
   if(mDataProvider)
   {
+    mDataProvider->select();
     mDataProvider->reset();
     QgsFeature fet;
 
     //TODO: Is there an easier way of doing this other than iteration?
     //TODO: Also, what about race conditions between this code and a competing mapping client?
     //TODO: Maybe push this to the data provider?
-    while (mDataProvider->getNextFeature(fet, false))
+    while (mDataProvider->getNextFeature(fet))
     {
       fid = fet.featureId();
       if(fid>freeid)
