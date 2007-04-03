@@ -52,7 +52,6 @@ bool QgsVectorDataProvider::getFeatureAtId(int featureId,
                                       QgsAttributeList fetchAttributes)
 {
   select(fetchAttributes, QgsRect(), fetchGeometry);
-  reset();
   
   while (getNextFeature(feature))
   {

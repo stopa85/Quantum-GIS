@@ -141,7 +141,6 @@ void QgsUniqueValueDialog::changeClassificationAttribute()
 	QgsSymbol* symbol;
 
 	provider->select(attlist, QgsRect(), false);
-	provider->reset();
 	QgsFeature feat;
 
 	//go through all the features and insert their value into the map and into mClassListWidget

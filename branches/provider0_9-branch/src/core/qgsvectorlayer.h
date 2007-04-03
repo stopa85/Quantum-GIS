@@ -441,8 +441,6 @@ private:                       // Private methods
   /** Goes through all features and finds a free id (e.g. to give it temporarily to a not-commited feature) */
   int findFreeId();
 
-  /**Caches all the (commited) geometries to mCachedGeometries - somewhat out of date as mCachedGeometries should only contain geometries currently visible on the canvas */
-  void cacheGeometries();
   /**Deletes the geometries in mCachedGeometries*/
   void deleteCachedGeometries();
   /** Draws a vertex symbol at (screen) coordinates x, y. (Useful to assist vertex editing.) */

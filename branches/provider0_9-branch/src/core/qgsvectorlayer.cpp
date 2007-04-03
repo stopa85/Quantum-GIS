@@ -281,7 +281,6 @@ void QgsVectorLayer::drawLabels(QPainter * p, QgsRect & viewExtent, QgsMapToPixe
     // select the records in the extent. The provider sets a spatial filter
     // and sets up the selection set for retrieval
     mDataProvider->select(attributes, viewExtent);
-    mDataProvider->reset();
 
     try
     {
@@ -720,7 +719,6 @@ void QgsVectorLayer::draw(QPainter * p,
 
     QgsAttributeList attributes = mRenderer->classificationAttributes();
     mDataProvider->select(attributes, viewExtent);
-    mDataProvider->reset();
 
     try
     {
@@ -824,20 +822,6 @@ void QgsVectorLayer::draw(QPainter * p,
   }
 }
 
-void QgsVectorLayer::cacheGeometries() 
-{ 
-  if(mDataProvider)
-  {
-    QgsFeature f;
-    
-    mDataProvider->reset();
-    
-    while (mDataProvider->getNextFeature(f))
-    {
-      mCachedGeometries.insert(f.featureId(), *f.geometry());
-    }
-  }
-}
 
 void QgsVectorLayer::deleteCachedGeometries()
 {
@@ -875,7 +859,6 @@ void QgsVectorLayer::select(QgsRect & rect, bool lock)
   }
   
   mDataProvider->select(QgsAttributeList(), rect, true, true);
-  mDataProvider->reset();
 
   QgsFeature fet;
 
@@ -912,7 +895,7 @@ void QgsVectorLayer::invertSelection()
   removeSelection(FALSE); // don't emit signal
 
   QgsFeature fet;
-  mDataProvider->reset();
+  mDataProvider->select();
 
   while (mDataProvider->getNextFeature(fet))
   {
@@ -1053,7 +1036,7 @@ QgsRect QgsVectorLayer::boundingBoxOfSelected()
 
   QgsRect r, retval;
   QgsFeature fet;
-  mDataProvider->reset();
+  mDataProvider->select();
 
   retval.setMinimal();
   while (mDataProvider->getNextFeature(fet))
@@ -1148,7 +1131,6 @@ void QgsVectorLayer::updateExtents()
 
       mLayerExtent.setMinimal();
       mDataProvider->select();
-      mDataProvider->reset();
       while (mDataProvider->getNextFeature(fet))
       {
         if (!mDeletedFeatureIds.contains(fet.featureId()))
@@ -1417,10 +1399,6 @@ bool QgsVectorLayer::startEditing()
     return false;
   }
 
-  // No longer need to cache all geometries
-  // instead, mCachedGeometries is refreshed every time the
-  // screen is redrawn.
-  //cacheGeometries();
   mEditable=true;
   return true;
 }
@@ -1809,7 +1787,6 @@ int QgsVectorLayer::findFreeId()
   if(mDataProvider)
   {
     mDataProvider->select();
-    mDataProvider->reset();
     QgsFeature fet;
 
     //TODO: Is there an easier way of doing this other than iteration?
@@ -2205,7 +2182,6 @@ bool QgsVectorLayer::snapPoint(QgsPoint& point, double tolerance)
   QgsRect selectrect(point.x()-tolerance,point.y()-tolerance,point.x()+tolerance,point.y()+tolerance);
 
   mDataProvider->select(QgsAttributeList(), selectrect);
-  mDataProvider->reset();
 
   //go to through the features reported by the spatial filter of the provider
   while (mDataProvider->getNextFeature(fet))
@@ -2293,7 +2269,6 @@ bool QgsVectorLayer::snapVertexWithContext(QgsPoint& point, QgsGeometryVertexInd
                      point.x()+tolerance, point.y()+tolerance);
 
   mDataProvider->select(QgsAttributeList(), selectrect);
-  mDataProvider->reset();
 
   // Go through the committed features
   while (mDataProvider->getNextFeature(feature))
@@ -2428,7 +2403,6 @@ bool QgsVectorLayer::snapSegmentWithContext(QgsPoint& point, QgsGeometryVertexIn
                      point.x()+tolerance, point.y()+tolerance);
 
   mDataProvider->select(QgsAttributeList(), selectrect);
-  mDataProvider->reset();
 
   // Go through the committed features
   while (mDataProvider->getNextFeature(feature))

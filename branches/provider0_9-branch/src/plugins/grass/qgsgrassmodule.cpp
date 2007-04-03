@@ -2907,7 +2907,6 @@ void QgsGrassModuleSelection::updateSelection()
     
     QString cats;
     provider->select(allAttributes, QgsRect(), true);
-    provider->reset();
     QgsFeature feature;
 
     int i = 0;

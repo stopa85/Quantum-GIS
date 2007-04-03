@@ -478,7 +478,6 @@ int QgsGraduatedSymbolDialog::quantilesFromVectorLayer(std::list<double>& result
 	  int index = 0;
 	  
 	  provider->select(attList, QgsRect(), false);
-	  provider->reset();
 	  while(provider->getNextFeature(currentFeature))
 	    {
 	      currentAttributeMap = currentFeature.attributeMap();

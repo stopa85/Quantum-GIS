@@ -279,7 +279,6 @@ QgsVectorFileWriter::WriterError
   QgsFeature fet;
   
   provider->select(allAttr, QgsRect(), true);
-  provider->reset();
 
   // write all features
   while (provider->getNextFeature(fet))

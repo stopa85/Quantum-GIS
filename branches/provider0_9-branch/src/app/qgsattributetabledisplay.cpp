@@ -332,7 +332,6 @@ void QgsAttributeTableDisplay::doSearch(const QString& searchString)
   QgsAttributeList all = provider->allAttributesList();
   
   provider->select(all, QgsRect(), false);
-  provider->reset();
 
   while (provider->getNextFeature(fet))
   {
@@ -345,7 +344,6 @@ void QgsAttributeTableDisplay::doSearch(const QString& searchString)
     if (searchTree->hasError())
       break;
   }
-  provider->reset();
 
   QApplication::restoreOverrideCursor();
 
