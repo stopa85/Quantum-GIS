@@ -117,7 +117,7 @@ class CORE_EXPORT QgsGeometry {
     /** 
        Returns the size of the WKB in wkbBuffer().
     */
-    size_t wkbSize() const;
+    size_t wkbSize();
     
     /** Returns type of wkb (point / linestring / polygon etc.) */
     QGis::WKBTYPE wkbType();

@@ -243,6 +243,18 @@ void QgsFeature::setGeometry(QgsGeometry& geom)
   mOwnsGeometry = TRUE;
 }
 
+void QgsFeature::setGeometry(QgsGeometry* geom)
+{
+  // Destruct the attached geometry only if we still own it, before assigning new one.
+  if ( (mOwnsGeometry) && (mGeometry) )
+  {
+    delete mGeometry;
+    mGeometry = 0;
+  }
+  
+  mGeometry = geom;
+  mOwnsGeometry = TRUE;
+}
 
 /** Set the pointer to the feature geometry
 */
