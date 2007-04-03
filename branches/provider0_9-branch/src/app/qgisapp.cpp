@@ -1914,7 +1914,7 @@ bool QgisApp::addLayer(QFileInfo const & vectorFile)
 
   mMapCanvas->freeze(false);
   // mMapLegend->update(); NOW UPDATED VIA SIGNAL/SLOT
-  qApp->processEvents();       // XXX why does this need to be called manually?
+  //qApp->processEvents();       // XXX why does this need to be called manually?
   
   mMapCanvas->refresh();
 
@@ -1998,7 +1998,7 @@ bool QgisApp::addLayer(QStringList const &theLayerQStringList, const QString& en
   // draw the map
 
   // mMapLegend->update(); NOW UPDATED VIA SIGNAL/SLOTS
-  qApp->processEvents();    // XXX why does this need to be called manually?
+  //qApp->processEvents();    // XXX why does this need to be called manually?
   mMapCanvas->freeze(false);
   mMapCanvas->refresh();
 
@@ -2081,7 +2081,7 @@ void QgisApp::addDatabaseLayer()
   }
 
   delete dbs;
-  qApp->processEvents();
+  //qApp->processEvents();
   mMapCanvas->freeze(false);
   mMapCanvas->refresh();
 
@@ -4305,7 +4305,7 @@ void QgisApp::addVectorLayer(QString vectorLayerPath, QString baseName, QString 
     QMessageBox::critical(this,tr("Layer is not valid"),
         tr("The layer is not a valid layer and can not be added to the map"));
   }
-  qApp->processEvents();
+  //qApp->processEvents();
   mMapCanvas->freeze(false);
   mMapCanvas->refresh();
 
@@ -4338,7 +4338,7 @@ void QgisApp::addMapLayer(QgsMapLayer *theMapLayer)
     QMessageBox::critical(this,tr("Layer is not valid"),
         tr("The layer is not a valid layer and can not be added to the map"));
   }
-  qApp->processEvents();
+  //qApp->processEvents();
   mMapCanvas->freeze(false);
   mMapCanvas->refresh();
 
@@ -4972,7 +4972,7 @@ bool QgisApp::addRasterLayer(QgsRasterLayer * theRasterLayer, bool theForceRedra
 
   if (theForceRedrawFlag)
   {
-    qApp->processEvents();
+    //qApp->processEvents();
     mMapCanvas->freeze(false);
     mMapCanvas->refresh();
   }
@@ -5113,7 +5113,7 @@ void QgisApp::addRasterLayer(QString const & rasterLayerPath,
         tr("The layer is not a valid layer and can not be added to the map"));
   }
 
-  qApp->processEvents();
+  //qApp->processEvents();
   mMapCanvas->freeze(false);
   mMapCanvas->refresh();
 
