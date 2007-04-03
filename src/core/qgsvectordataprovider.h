@@ -98,6 +98,9 @@ class CORE_EXPORT QgsVectorDataProvider : public QgsDataProvider
        * @param fetchGeoemtry if true, geometry will be fetched from the provider
        * @param fetchAttributes a list containing the indexes of the attribute fields to copy
        * @return True when feature was found, otherwise false
+       *
+       * Default implementation traverses all features until it finds the one with correct ID.
+       * In case the provider supports reading the feature directly, override this function.
        */
       virtual bool getFeatureAtId(int featureId,
                                   QgsFeature& feature,

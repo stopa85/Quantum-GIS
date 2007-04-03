@@ -51,7 +51,16 @@ bool QgsVectorDataProvider::getFeatureAtId(int featureId,
                                       bool fetchGeometry,
                                       QgsAttributeList fetchAttributes)
 {
-  return 0;
+  select(fetchAttributes, QgsRect(), fetchGeometry);
+  reset();
+  
+  while (getNextFeature(feature))
+  {
+    if (feature.featureId() == featureId)
+      return TRUE;
+  }
+  
+  return FALSE;
 }
 
 QString QgsVectorDataProvider::dataComment() const
