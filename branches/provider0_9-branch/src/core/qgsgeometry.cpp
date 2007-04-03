@@ -233,8 +233,13 @@ unsigned char * QgsGeometry::wkbBuffer()
   return mGeometry;
 }
     
-size_t QgsGeometry::wkbSize() const
+size_t QgsGeometry::wkbSize()
 {
+  if (mDirtyWkb)
+  {
+    exportGeosToWkb();
+  }
+
   return mGeometrySize;
 }
 
@@ -3107,7 +3112,7 @@ bool QgsGeometry::exportWkbToGeos()
 
 bool QgsGeometry::exportGeosToWkb()
 {
-  QgsDebugMsg("QgsGeometry::exportGeosToWkb: entered.");
+  //QgsDebugMsg("QgsGeometry::exportGeosToWkb: entered.");
   
   if (!mDirtyWkb)
   {
