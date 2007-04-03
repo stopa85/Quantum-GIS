@@ -126,7 +126,7 @@ int QgsGPXProvider::capabilities() const
          QgsVectorDataProvider::ChangeAttributeValues;
 }
 
-bool QgsGPXProvider::getNextFeature(QgsFeature& feature, uint featureQueueSize)
+bool QgsGPXProvider::getNextFeature(QgsFeature& feature)
 {
   bool result = false;
   
@@ -342,8 +342,10 @@ bool QgsGPXProvider::getNextFeature(QgsFeature& feature, uint featureQueueSize)
   return result;
 }
 
-void QgsGPXProvider::select(QgsAttributeList fetchAttributes, QgsRect rect, bool fetchGeometry, \
-			    bool useIntersect)
+void QgsGPXProvider::select(QgsAttributeList fetchAttributes,
+                            QgsRect rect,
+                            bool fetchGeometry,
+                            bool useIntersect)
 {
   if(rect.isEmpty())
     {

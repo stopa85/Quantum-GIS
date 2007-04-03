@@ -446,13 +446,15 @@ QgsDelimitedTextProvider::getNextFeature_( QgsFeature & feature,
 
 } // getNextFeature_( QgsFeature & feature )
 
-bool QgsDelimitedTextProvider::getNextFeature(QgsFeature& feature, uint featureQueueSize)
+bool QgsDelimitedTextProvider::getNextFeature(QgsFeature& feature)
 {
   return getNextFeature_(feature, mAttributesToFetch);
 }
 
-void QgsDelimitedTextProvider::select(QgsAttributeList fetchAttributes, QgsRect rect, bool fetchGeometry, \
-				      bool useIntersect)
+void QgsDelimitedTextProvider::select(QgsAttributeList fetchAttributes,
+                                      QgsRect rect,
+                                      bool fetchGeometry,
+                                      bool useIntersect)
 {
   mSelectionRectangle = rect;
   mAttributesToFetch = fetchAttributes;

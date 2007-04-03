@@ -121,24 +121,29 @@ public:
     */
   QString storageType() const;
 
-#if 0
-  /** This function works only until first edit operation! (category index used) */
-  virtual bool getNextFeature(QgsFeature& feature,
-                              bool fetchGeometry = true,
-                              QgsAttributeList fetchAttributes = QgsAttributeList(),
-                              uint featureQueueSize = 1);
-#endif //0
+  
+  /** Select features based on a bounding rectangle. Features can be retrieved with calls to getNextFeature.
+   *  @param fetchAttributes list of attributes which should be fetched
+   *  @param rect spatial filter
+   *  @param fetchGeometry true if the feature geometry should be fetched
+   *  @param useIntersect true if an accurate intersection test should be used,
+   *                     false if a test based on bounding box is sufficient
+   *
+   * @note This function works only until first edit operation! (category index used)
+   */
+  virtual void select(QgsAttributeList fetchAttributes = QgsAttributeList(),
+                      QgsRect rect = QgsRect(),
+                      bool fetchGeometry = true,
+                      bool useIntersect = false);
 
   /**
    * Get the next feature resulting from a select operation.
    * @param feature feature which will receive data from the provider
-   * @param fetchGeoemtry if true, geometry will be fetched from the provider
-   * @param fetchAttributes a list containing the indexes of the attribute fields to copy
-   * @param featureQueueSize  a hint to the provider as to how many features are likely to be retrieved in a batch
    * @return true when there was a feature to fetch, false when end was hit
    */
-  bool getNextFeature(QgsFeature& feature, uint featureQueueSize = 1);
-	
+  virtual bool getNextFeature(QgsFeature& feature);
+  
+  
   /** 
    * Get the feature type as defined in WKBTYPE (qgis.h). 
    * @return int representing the feature type
@@ -156,14 +161,6 @@ public:
    */
   uint fieldCount() const;
 
-   /**Select features based on a bounding rectangle. Features can be retrieved with calls to reset and getNextFeature.
-	 @param fetchAttributes list of attributes which should be fetched
-	 @param rect spatial filter
-	 @param fetchGeometry true if the feature geometry should be fetched
-	 @param useIntersect true if an accurate intersection test should be used, false if a test based on bounding box is sufficient*/
-  void select(QgsAttributeList fetchAttributes = QgsAttributeList(), QgsRect rect = QgsRect(), \
-	      bool fetchGeometry = true, bool useIntersect = false);
-
 	
   /** Return the extent for this data layer
    */
@@ -177,9 +174,7 @@ public:
   // ! Key (category) field index
   int keyField();
 	 
-  /* Reset the layer - for an OGRLayer, this means clearing the
-   * spatial filter and calling ResetReading
-   */
+  /** Restart reading features from previous select operation */
   void reset();
 
   /** Returns the minimum value of an attributs

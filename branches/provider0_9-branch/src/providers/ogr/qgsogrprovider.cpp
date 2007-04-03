@@ -254,7 +254,7 @@ bool QgsOgrProvider::getFeatureAtId(int featureId,
   return true;
 }
 
-bool QgsOgrProvider::getNextFeature(QgsFeature& feature, uint featureQueueSize)
+bool QgsOgrProvider::getNextFeature(QgsFeature& feature)
 {
   if (!valid)
     {

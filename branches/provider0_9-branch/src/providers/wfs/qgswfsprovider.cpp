@@ -69,7 +69,7 @@ QgsWFSProvider::~QgsWFSProvider()
     }
 }
 
-bool QgsWFSProvider::getNextFeature(QgsFeature& feature, uint featureQueueSize)
+bool QgsWFSProvider::getNextFeature(QgsFeature& feature)
 {
   while(true) //go through the loop until we find a feature in the filter
     {
@@ -162,8 +162,10 @@ bool QgsWFSProvider::isValid()
   return mValid;
 }
 
-void QgsWFSProvider::select(QgsAttributeList fetchAttributes, QgsRect rect, bool fetchGeometry, \
-			    bool useIntersect)
+void QgsWFSProvider::select(QgsAttributeList fetchAttributes,
+                            QgsRect rect,
+                            bool fetchGeometry,
+                            bool useIntersect)
 {
   mUseIntersect = useIntersect;
   mAttributesToFetch = fetchAttributes;
