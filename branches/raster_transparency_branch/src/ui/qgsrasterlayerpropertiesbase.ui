@@ -5,8 +5,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>568</width>
-    <height>527</height>
+    <width>595</width>
+    <height>525</height>
    </rect>
   </property>
   <property name="windowTitle" >
@@ -21,14 +21,14 @@
   <property name="modal" >
    <bool>true</bool>
   </property>
-  <layout class="QVBoxLayout" >
+  <layout class="QGridLayout" >
    <property name="margin" >
     <number>9</number>
    </property>
    <property name="spacing" >
     <number>6</number>
    </property>
-   <item>
+   <item row="0" column="0" >
     <widget class="QTabWidget" name="tabBar" >
      <property name="currentIndex" >
       <number>0</number>
@@ -1325,60 +1325,7 @@
        <property name="spacing" >
         <number>6</number>
        </property>
-       <item row="1" column="4" >
-        <layout class="QHBoxLayout" >
-         <property name="margin" >
-          <number>0</number>
-         </property>
-         <property name="spacing" >
-          <number>6</number>
-         </property>
-         <item>
-          <widget class="QLabel" name="mClassificationModeLabel" >
-           <property name="text" >
-            <string>Classification mode:</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QComboBox" name="mClassificationModeComboBox" />
-         </item>
-        </layout>
-       </item>
-       <item row="0" column="4" >
-        <layout class="QHBoxLayout" >
-         <property name="margin" >
-          <number>0</number>
-         </property>
-         <property name="spacing" >
-          <number>6</number>
-         </property>
-         <item>
-          <widget class="QLabel" name="mColorInterpolationLabel" >
-           <property name="text" >
-            <string>Color interpolation:</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QComboBox" name="mColorInterpolationComboBox" />
-         </item>
-        </layout>
-       </item>
-       <item row="1" column="3" >
-        <spacer>
-         <property name="orientation" >
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" >
-          <size>
-           <width>61</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="0" column="3" >
+       <item row="0" column="2" >
         <spacer>
          <property name="orientation" >
           <enum>Qt::Horizontal</enum>
@@ -1392,6 +1339,19 @@
         </spacer>
        </item>
        <item row="1" column="0" colspan="3" >
+        <spacer>
+         <property name="orientation" >
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" >
+          <size>
+           <width>61</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="0" column="0" colspan="2" >
         <layout class="QHBoxLayout" >
          <property name="margin" >
           <number>0</number>
@@ -1420,14 +1380,34 @@
          </item>
         </layout>
        </item>
-       <item row="0" column="0" colspan="3" >
-        <widget class="QCheckBox" name="mEnableCustomColormapBox" >
+       <item row="2" column="2" colspan="2" >
+        <spacer>
+         <property name="orientation" >
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" >
+          <size>
+           <width>341</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="2" column="1" >
+        <widget class="QPushButton" name="mDeleteEntryButton" >
          <property name="text" >
-          <string>Enable custom colormap</string>
+          <string>Delete entry</string>
          </property>
         </widget>
        </item>
-       <item row="3" column="0" colspan="5" >
+       <item row="2" column="0" >
+        <widget class="QPushButton" name="mClassifyButton" >
+         <property name="text" >
+          <string>Classify</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0" colspan="4" >
         <widget class="QTreeWidget" name="mColormapTreeWidget" >
          <property name="columnCount" >
           <number>3</number>
@@ -1449,32 +1429,45 @@
          </column>
         </widget>
        </item>
-       <item row="2" column="0" >
-        <widget class="QPushButton" name="mClassifyButton" >
-         <property name="text" >
-          <string>Classify</string>
+       <item row="0" column="3" >
+        <layout class="QHBoxLayout" >
+         <property name="margin" >
+          <number>0</number>
          </property>
-        </widget>
+         <property name="spacing" >
+          <number>6</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="mColorInterpolationLabel" >
+           <property name="text" >
+            <string>Color interpolation:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="mColorInterpolationComboBox" />
+         </item>
+        </layout>
        </item>
-       <item row="2" column="1" >
-        <widget class="QPushButton" name="mDeleteEntryButton" >
-         <property name="text" >
-          <string>Delete entry</string>
+       <item row="1" column="3" >
+        <layout class="QHBoxLayout" >
+         <property name="margin" >
+          <number>0</number>
          </property>
-        </widget>
-       </item>
-       <item row="2" column="2" colspan="3" >
-        <spacer>
-         <property name="orientation" >
-          <enum>Qt::Horizontal</enum>
+         <property name="spacing" >
+          <number>6</number>
          </property>
-         <property name="sizeHint" >
-          <size>
-           <width>341</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
+         <item>
+          <widget class="QLabel" name="mClassificationModeLabel" >
+           <property name="text" >
+            <string>Classification mode:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="mClassificationModeComboBox" />
+         </item>
+        </layout>
        </item>
       </layout>
      </widget>
@@ -2099,7 +2092,7 @@
      </widget>
     </widget>
    </item>
-   <item>
+   <item row="1" column="0" >
     <widget class="QDialogButtonBox" name="buttonBox" >
      <property name="orientation" >
       <enum>Qt::Horizontal</enum>
@@ -2114,14 +2107,14 @@
  <layoutdefault spacing="6" margin="11" />
  <customwidgets>
   <customwidget>
+   <class>Q3TextEdit</class>
+   <extends>Q3Frame</extends>
+   <header>q3textedit.h</header>
+  </customwidget>
+  <customwidget>
    <class>Q3TextBrowser</class>
    <extends>Q3TextEdit</extends>
    <header>Qt3Support/Q3TextBrowser</header>
-  </customwidget>
-  <customwidget>
-   <class>Q3ListBox</class>
-   <extends>Q3Frame</extends>
-   <header>q3listbox.h</header>
   </customwidget>
   <customwidget>
    <class>Q3GroupBox</class>
@@ -2130,9 +2123,9 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>Q3TextEdit</class>
+   <class>Q3ListBox</class>
    <extends>Q3Frame</extends>
-   <header>q3textedit.h</header>
+   <header>q3listbox.h</header>
   </customwidget>
  </customwidgets>
  <tabstops>

@@ -92,6 +92,7 @@ rasterLayer( dynamic_cast<QgsRasterLayer*>(lyr) )
   cboxColorMap->insertItem(tr("Grayscale"));
   cboxColorMap->insertItem(tr("Pseudocolor"));
   cboxColorMap->insertItem(tr("Freak Out"));
+  cboxColorMap->insertItem(tr("Custom Colormap"));
 
   //add items to the color stretch combo box
   cboxColorScalingAlgorithm->insertItem(tr("No Stretch"));
@@ -131,7 +132,7 @@ rasterLayer( dynamic_cast<QgsRasterLayer*>(lyr) )
   headerLabels << "Label";
   mColormapTreeWidget->setHeaderLabels(headerLabels);
 
-  //disable Custom colormap tab completely until pseudocolor is selected (and only for type GRAY_OR_UNDEFINED)
+  //disable Custom colormap tab completely until 'Custom Colormap' is selected (and only for type GRAY_OR_UNDEFINED)
   tabBar->setTabEnabled(tabBar->indexOf(tabPageColormap), FALSE);
 
   //
@@ -703,11 +704,7 @@ void QgsRasterLayerProperties::syncColormapTab()
   //restore state of 'enable custom colormap' combo box
   if(rasterLayer->customClassificationEnabled())
     {
-      mEnableCustomColormapBox->setCheckState(Qt::Checked);
-    }
-  else
-    {
-      mEnableCustomColormapBox->setCheckState(Qt::Unchecked);
+      cboxColorMap->setCurrentText(tr("Custom Colormap"));
     }
 
   //restor state of 'color interpolation' combo box
@@ -1233,7 +1230,7 @@ void QgsRasterLayerProperties::apply()
   }
 
   //apply colormap tab
-  if(mEnableCustomColormapBox->checkState() == Qt::Checked)
+  if(cboxColorMap->currentText() == tr("Custom Colormap"))
     {
       rasterLayer->setCustomClassificationEnabled(true);
     }
@@ -1382,13 +1379,21 @@ void QgsRasterLayerProperties::on_pbnChangeSpatialRefSys_clicked()
 
 void QgsRasterLayerProperties::on_cboxColorMap_currentIndexChanged(const QString& text)
 {
-  if(text == tr("Pseudocolor"))
+  if(text == tr("Custom Colormap"))
     {
       tabBar->setTabEnabled(tabBar->indexOf(tabPageColormap), TRUE);
+      rbtnSingleBandMinMax->setEnabled(false);
+      rbtnSingleBandStdDev->setEnabled(false);
+      cboxColorScalingAlgorithm->setEnabled(false);
+      textLabel2_6_3->setEnabled(false);
     }
   else
     {
       tabBar->setTabEnabled(tabBar->indexOf(tabPageColormap), FALSE);
+      rbtnSingleBandMinMax->setEnabled(true);
+      rbtnSingleBandStdDev->setEnabled(true);
+      cboxColorScalingAlgorithm->setEnabled(true);
+      textLabel2_6_3->setEnabled(true);
     }
 }
 
