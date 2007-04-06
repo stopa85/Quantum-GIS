@@ -5014,6 +5014,62 @@ bool QgsRasterLayer::readXML_( QDomNode & layer_node )
   QgsDebugMsg("ReadXml: green band name  " + greenBandNameQString);
   QgsDebugMsg("Drawing style " + getDrawingStyleAsQString());
 
+  
+
+  //restore custom colormap settings
+  QDomNode customColormapEnabledNode = mnl.namedItem("customColorMapEnabled");
+  if(!customColormapEnabledNode.isNull())
+    {
+      if(customColormapEnabledNode.toElement().text() == "true")
+	{
+	  setCustomClassificationEnabled(true);
+	}
+      else
+	{
+	  setCustomClassificationEnabled(false);
+	}
+    }
+
+  QDomNode customColorMapNode = mnl.namedItem("customColorMap");
+  if(!customColorMapNode.isNull())
+    {
+      //interpolation
+      if(customColorMapNode.toElement().attribute("interpolation") == "discrete")
+	{
+	  setDiscreteClassification(true);
+	}
+      else
+	{
+	  setDiscreteClassification(false);
+	}
+
+      //entries
+      std::vector<ValueClassificationItem> newClassification;
+      int currentRed, currentGreen, currentBlue;
+      QString currentLabel;
+      double currentValue;
+      
+      QDomNodeList colorMapEntryList = customColorMapNode.toElement().elementsByTagName("colorMapEntry");
+      for(int i = 0; i < colorMapEntryList.size(); ++i)
+	{
+	  ValueClassificationItem newItem;
+	  QDomElement colorMapEntryElem = colorMapEntryList.at(i).toElement();
+	  if(colorMapEntryElem.isNull())
+	    {
+	      continue;
+	    }
+	  currentRed = colorMapEntryElem.attribute("red").toInt();
+	  currentGreen = colorMapEntryElem.attribute("green").toInt();
+	  currentBlue = colorMapEntryElem.attribute("blue").toInt();
+	  newItem.color = QColor(currentRed, currentGreen, currentBlue);
+	  newItem.label = colorMapEntryElem.attribute("label");
+	  newItem.value = colorMapEntryElem.attribute("value").toDouble();
+	  
+	  newClassification.push_back(newItem);
+	}
+      setValueClassification(newClassification);
+    }
+  
   return true;
 
 } // QgsRasterLayer::readXML_( QDomNode & layer_node )
@@ -5202,9 +5258,48 @@ bool QgsRasterLayer::readXML_( QDomNode & layer_node )
   QDomText    grayBandNameQStringText    = document.createTextNode( getGrayBandName() );
 
   grayBandNameQStringElement.appendChild( grayBandNameQStringText );
-
   rasterPropertiesElement.appendChild( grayBandNameQStringElement );
 
+  //custom colormap settings
+  QDomElement customColormapEnabledElem = document.createElement("customColorMapEnabled");
+  QDomText customColormapEnabledText;
+  if(customClassificationEnabled())
+    {
+      customColormapEnabledText = document.createTextNode("true");
+    }
+  else
+    {
+      customColormapEnabledText = document.createTextNode("false");
+    }
+  customColormapEnabledElem.appendChild(customColormapEnabledText);
+  rasterPropertiesElement.appendChild(customColormapEnabledElem);
+
+  if(mValueClassification.size() > 0)
+    {
+      QDomElement customColormapElem = document.createElement("customColorMap");
+      if(discreteClassification())
+	{
+	  customColormapElem.setAttribute("interpolation", "discrete");
+	}
+      else
+	{
+	  customColormapElem.setAttribute("interpolation", "linear");
+	}
+
+      std::vector<ValueClassificationItem>::iterator it;
+      for(it =  mValueClassification.begin(); it != mValueClassification.end(); ++it)
+	{
+	  QDomElement colormapEntryElem = document.createElement("colorMapEntry");
+	  colormapEntryElem.setAttribute("red", QString::number(it->color.red()));
+	  colormapEntryElem.setAttribute("green", QString::number(it->color.green()));
+	  colormapEntryElem.setAttribute("blue", QString::number(it->color.blue()));
+	  colormapEntryElem.setAttribute("value", QString::number(it->value, 'f'));
+	  colormapEntryElem.setAttribute("label", it->label);
+					 
+	  customColormapElem.appendChild(colormapEntryElem);
+	}
+      rasterPropertiesElement.appendChild(customColormapElem);
+    }
 
   return true;
 } // bool QgsRasterLayer::writeXML_
@@ -5683,7 +5778,7 @@ int QgsRasterLayer::getDiscreteColorFromValueClassification(double value, int& r
   for(it = mValueClassification.begin(); it != mValueClassification.end(); ++it)
     {
       currentValue = it->value;
-      if(value < currentValue)
+      if(value <= currentValue)
 	{
 	  if(last_it != mValueClassification.end())
 	    {
@@ -5691,10 +5786,6 @@ int QgsRasterLayer::getDiscreteColorFromValueClassification(double value, int& r
 	      green = last_it->color.green();
 	      blue = last_it->color.blue();
 	      return 0;
-	    }
-	  else
-	    {
-	      return -1;
 	    }
 	}
       last_it = it;
@@ -5715,7 +5806,7 @@ int QgsRasterLayer::getInterpolatedColorFromValueClassification(double value, in
     for(it = mValueClassification.begin(); it != mValueClassification.end(); ++it)
       {
 	currentValue = it->value;
-	if(value < currentValue)
+	if(value <= currentValue)
 	  {
 	    valueDiff = currentValue - last_it->value;
 	    diff_Value_LastVal = value - last_it->value;
@@ -5727,10 +5818,6 @@ int QgsRasterLayer::getInterpolatedColorFromValueClassification(double value, in
 		green = (int)((it->color.green() * diff_Value_LastVal + last_it->color.green() * diffVal_Value)/valueDiff);
 		blue = (int)((it->color.blue() * diff_Value_LastVal + last_it->color.blue() * diffVal_Value)/valueDiff);
 		return 0;
-	      }
-	    else
-	      {
-		return -1;
 	      }
 	  }
 	last_it = it;
