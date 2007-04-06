@@ -1668,14 +1668,6 @@ void QgsRasterLayer::drawSingleBandPseudoColor(QPainter * theQPainter,
       }
 
       // Stretch
-
-      /*
-       * MARCO: There is a conflict here with the stretching. If you enabled the color map, apply, then disbale the color map
-       * and apply mValueClassification.size() does not reset to 0 so streching will not occur. The custom color map
-       * should also if the layer is being stretched or not if the image is being stretch then the color map could simply
-       * be scaled to 0 - 255 simple linear transformation.....
-       */
-      //if(mValueClassification.size() == 0 && QgsRasterLayer::NO_STRETCH != getColorScalingAlgorithm())
       if(!mCustomClassificationEnabled && QgsRasterLayer::NO_STRETCH != getColorScalingAlgorithm())
       {
         if(QgsRasterLayer::CLIP_TO_MINMAX == getColorScalingAlgorithm() || QgsRasterLayer::STRETCH_AND_CLIP_TO_MINMAX == getColorScalingAlgorithm())
