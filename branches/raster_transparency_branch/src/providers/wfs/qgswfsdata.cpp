@@ -1,5 +1,4 @@
 #include "qgswfsdata.h"
-#include "qgsfeatureattribute.h"
 #include "qgsrect.h"
 #include "qgsspatialrefsys.h"
 #include <QBuffer>
@@ -118,7 +117,6 @@ void QgsWFSData::startElement(const XML_Char* el, const XML_Char** attr)
   else if(elementName == GML_NAMESPACE + NS_SEPARATOR + "featureMember")
     {
       mCurrentFeature = new QgsFeature(mFeatureCount);
-      ++mFeatureCount;
       mAttributeIndex = 0;
       mParseModeStack.push(QgsWFSData::featureMember);
     }
@@ -193,7 +191,7 @@ void QgsWFSData::endElement(const XML_Char* el)
       //qWarning(mAttributeName.toLocal8Bit().data());
       //qWarning(mStringCash.toLocal8Bit().data());
       //mCurrentFeature->addAttribute(mAttributeName, mStringCash);
-      mCurrentFeature->addAttribute(mAttributeIndex, QgsFeatureAttribute(mAttributeName, mStringCash));
+      mCurrentFeature->addAttribute(mAttributeIndex, QVariant(mStringCash));
       ++mAttributeIndex;
     }
   else if(localName == mGeometryAttribute)

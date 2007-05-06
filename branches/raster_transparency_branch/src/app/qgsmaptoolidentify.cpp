@@ -14,21 +14,23 @@
  ***************************************************************************/
 /* $Id$ */
 
+#include "qgsattributedialog.h"
+#include "qgscursors.h"
+#include "qgsdistancearea.h"
+#include "qgsfeature.h"
+#include "qgsfield.h"
+#include "qgsgeometry.h"
+#include "qgslogger.h"
+#include "qgsidentifyresults.h"
+#include "qgsmapcanvas.h"
+#include "qgsmaptopixel.h"
 #include "qgsmessageviewer.h"
 #include "qgsmaptoolidentify.h"
-#include "qgsmapcanvas.h"
+#include "qgsrasterlayer.h"
+#include "qgsrubberband.h"
 #include "qgsspatialrefsys.h"
 #include "qgsvectordataprovider.h"
 #include "qgsvectorlayer.h"
-#include "qgsrasterlayer.h"
-#include "qgsmaptopixel.h"
-#include "qgsidentifyresults.h"
-#include "qgsdistancearea.h"
-#include "qgsfeature.h"
-#include "qgsfeatureattribute.h"
-#include "qgslogger.h"
-#include "qgsattributedialog.h"
-#include "qgscursors.h"
 
 #include <QSettings>
 #include <QMessageBox>
@@ -38,7 +40,7 @@
 QgsMapToolIdentify::QgsMapToolIdentify(QgsMapCanvas* canvas)
   : QgsMapTool(canvas),
     mResults(0),
-    mViewer(0)
+    mRubberBand(0)
 {
   // set cursor
   QPixmap myIdentifyQPixmap = QPixmap((const char **) identify_cursor);
@@ -52,10 +54,7 @@ QgsMapToolIdentify::~QgsMapToolIdentify()
     mResults->done(0);
   }
 
-  if (mViewer)
-  {
-    delete mViewer;
-  }
+  delete mRubberBand;
 }
 
 void QgsMapToolIdentify::canvasMoveEvent(QMouseEvent * e)
@@ -69,6 +68,10 @@ void QgsMapToolIdentify::canvasPressEvent(QMouseEvent * e)
 void QgsMapToolIdentify::canvasReleaseEvent(QMouseEvent * e)
 {
   QgsMapLayer* layer = mCanvas->currentLayer();
+  
+  // delete rubber band if there was any
+  delete mRubberBand;
+  mRubberBand = 0;
 
   // call identify method for selected layer
 
@@ -170,18 +173,12 @@ void QgsMapToolIdentify::identifyRasterWmsLayer(QgsRasterLayer* layer, const Qgs
     return;
   }
 
-  if (!mViewer)
-  {
-    mViewer = new QgsMessageViewer();
-  }
+  QgsMessageViewer* viewer = new QgsMessageViewer();
+  viewer->setCaption( layer->name() );
+  viewer->setMessageAsPlainText( text );
 
-  mViewer->setCaption( layer->name() );
-  mViewer->setMessageAsPlainText( text );
-
-//  mViewer->exec();
-  mViewer->show();
+  viewer->showMessage(); // deletes itself on close
 }
-
 
 void QgsMapToolIdentify::identifyVectorLayer(QgsVectorLayer* layer, const QgsPoint& point)
 {
@@ -210,8 +207,9 @@ void QgsMapToolIdentify::identifyVectorLayer(QgsVectorLayer* layer, const QgsPoi
   QString fieldIndex = layer->displayField();
   QgsVectorDataProvider* dataProvider = layer->getDataProvider();
   QgsAttributeList allAttributes = dataProvider->allAttributesList();
+  const QgsFieldMap& fields = dataProvider->fields();
   
-  dataProvider->select(r, true);
+  dataProvider->select(allAttributes, r, true, true);
 
   // init distance/area calculator
   QgsDistanceArea calc;
@@ -229,6 +227,7 @@ void QgsMapToolIdentify::identifyVectorLayer(QgsVectorLayer* layer, const QgsPoi
       // Be informed when the dialog box is closed so that we can stop using it.
       connect(mResults, SIGNAL(accepted()), this, SLOT(resultsDialogGone()));
       connect(mResults, SIGNAL(rejected()), this, SLOT(resultsDialogGone()));
+      connect(mResults, SIGNAL(selectedFeatureChanged(int)), this, SLOT(highlightFeature(int)));
       // restore the identify window position and show it
       mResults->restorePosition();
     }
@@ -240,24 +239,28 @@ void QgsMapToolIdentify::identifyVectorLayer(QgsVectorLayer* layer, const QgsPoi
     }
 
     QApplication::setOverrideCursor(Qt::WaitCursor);
+    
+    int lastFeatureId = 0;
 
-    while (dataProvider->getNextFeature(feat, true, allAttributes))
+    while (dataProvider->getNextFeature(feat))
     {
       featureCount++;
 
       QTreeWidgetItem* featureNode = mResults->addNode("foo");
+      featureNode->setData(0, Qt::UserRole, QVariant(feat.featureId())); // save feature id
+      lastFeatureId = feat.featureId();
       featureNode->setText(0, fieldIndex);
       const QgsAttributeMap& attr = feat.attributeMap();
       
       for (QgsAttributeMap::const_iterator it = attr.begin(); it != attr.end(); ++it)
       {
-        QgsDebugMsg(it->fieldName() + " == " + fieldIndex);
+        //QgsDebugMsg(it->fieldName() + " == " + fieldIndex);
         
-        if (it->fieldName().lower() == fieldIndex)
+        if (fields[it.key()].name() == fieldIndex)
         {
-          featureNode->setText(1, it->fieldValue());
+          featureNode->setText(1, it->toString());
         }
-        mResults->addAttribute(featureNode, it->fieldName(), it->fieldValue());
+        mResults->addAttribute(featureNode, fields[it.key()].name(), it->toString());
       }
 
       // Calculate derived attributes and insert:
@@ -293,6 +296,7 @@ void QgsMapToolIdentify::identifyVectorLayer(QgsVectorLayer* layer, const QgsPoi
     {
       mResults->showAllAttributes();
       mResults->setTitle(layer->name() + " - " + QObject::tr(" 1 feature found") );
+      highlightFeature(lastFeatureId);
     }
     else if (featureCount == 0)
     {
@@ -317,7 +321,7 @@ void QgsMapToolIdentify::identifyVectorLayer(QgsVectorLayer* layer, const QgsPoi
     
     QApplication::setOverrideCursor(Qt::WaitCursor);
 
-    if (dataProvider->getNextFeature(feat,true,allAttributes))
+    if (dataProvider->getNextFeature(feat))
     {
       // these are the values to populate the dialog with
       // start off with list of committed attribute values
@@ -350,7 +354,7 @@ void QgsMapToolIdentify::identifyVectorLayer(QgsVectorLayer* layer, const QgsPoi
       QApplication::restoreOverrideCursor();
 
       // Show the attribute value editing dialog
-      QgsAttributeDialog ad( old );
+      QgsAttributeDialog ad( dataProvider->fields(), old );
 
       if (ad.exec() == QDialog::Accepted)
       {
@@ -361,15 +365,10 @@ void QgsMapToolIdentify::identifyVectorLayer(QgsVectorLayer* layer, const QgsPoi
           // only apply changed values if they were edited by the user
           if (ad.isDirty(i))
           {
-#ifdef QGISDEBUG
-        std::cout << "QgsMapToolIdentify::identifyVectorLayer: found an changed attribute: "
-          << old[i].fieldName().toLocal8Bit().data()
-          << " = "
-          << ad.value(i).toLocal8Bit().data()
-          << "." << std::endl;
-#endif
+            QgsDebugMsg("found a changed attribute: " + QString::number(i) + " = " + ad.value(i));
+
             QgsAttributeMap& chattr = changedAttributes[ feat.featureId() ];
-            chattr[i] = QgsFeatureAttribute(oldit->fieldName(), ad.value(i));
+            chattr[i] = ad.value(i);
 
             // propagate "dirtyness" to the layer
             layer->setModified();
@@ -387,7 +386,6 @@ void QgsMapToolIdentify::identifyVectorLayer(QgsVectorLayer* layer, const QgsPoi
 				  "identify tool on unsaved features.</p>"));
     }
   }
-  dataProvider->reset();
 }
 
 
@@ -412,10 +410,76 @@ void QgsMapToolIdentify::showError(QgsMapLayer * mapLayer)
 void QgsMapToolIdentify::resultsDialogGone()
 {
   mResults = 0;
+  
+  delete mRubberBand;
+  mRubberBand = 0;
 }
 
 void QgsMapToolIdentify::deactivate()
 {
   if (mResults)
     mResults->done(0); // close the window
+}
+
+void QgsMapToolIdentify::highlightFeature(int featureId)
+{
+  QgsVectorLayer* layer = dynamic_cast<QgsVectorLayer*>(mCanvas->currentLayer());
+  if (!layer)
+    return;
+  
+  delete mRubberBand;
+  mRubberBand = 0;
+
+  QgsVectorDataProvider* provider = layer->getDataProvider();
+  QgsFeature feat;
+  if (!provider->getFeatureAtId(featureId, feat))
+    return;
+  
+  QgsGeometry* g = feat.geometry();
+  
+  // TODO: support multipart geometries
+  if (g->isMultipart())
+    return;
+  
+  switch (g->vectorType())
+  {
+    case QGis::Point:
+    {
+      mRubberBand = new QgsRubberBand(mCanvas, true);
+      QgsPoint pt = g->asPoint();
+      double d = mCanvas->extent().width() * 0.005;
+      mRubberBand->addPoint(QgsPoint(pt.x()-d,pt.y()-d));
+      mRubberBand->addPoint(QgsPoint(pt.x()+d,pt.y()-d));
+      mRubberBand->addPoint(QgsPoint(pt.x()+d,pt.y()+d));
+      mRubberBand->addPoint(QgsPoint(pt.x()-d,pt.y()+d));
+      break;
+    }
+    case QGis::Line:
+    {
+      mRubberBand = new QgsRubberBand(mCanvas);
+      QgsPolyline line = g->asPolyline();
+      for (int i = 0; i < line.count(); i++)
+        mRubberBand->addPoint(line[i]);
+      break;
+    } 
+    case QGis::Polygon:
+    {
+      mRubberBand = new QgsRubberBand(mCanvas,true);
+      QgsPolygon polygon = g->asPolygon();
+      QgsPolyline line = polygon[0];
+      for (int i = 0; i < line.count(); i++)
+        mRubberBand->addPoint(line[i]);
+      break;
+    }
+
+    default:
+      break;
+  }
+
+  if (mRubberBand)
+  {
+    mRubberBand->setWidth(2);
+    mRubberBand->setColor(Qt::red);
+    mRubberBand->show();
+  }
 }

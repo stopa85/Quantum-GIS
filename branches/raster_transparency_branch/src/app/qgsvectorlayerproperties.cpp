@@ -33,6 +33,7 @@
 #include "qgsvectordataprovider.h"
 #include "qgsvectorlayer.h"
 
+#include "qgsconfig.h"
 #ifdef HAVE_POSTGRESQL
 #include "qgspgquerybuilder.h"
 #include "../providers/postgres/qgspostgresprovider.h"
@@ -228,7 +229,7 @@ void QgsVectorLayerProperties::reset( void )
   QObject::connect(legendtypecombobox, SIGNAL(activated(const QString &)), this, SLOT(alterLayerDialog(const QString &)));
 
   // reset fields in label dialog
-  layer->label()->setFields ( layer->fields() );
+  layer->label()->setFields ( layer->getDataProvider()->fields() );
   
   //set the metadata contents
   teMetadata->setText(getMetadata());
@@ -533,8 +534,7 @@ QString QgsVectorLayerProperties::getMetadata()
   myMetadataQString += "</th>";      
   myMetadataQString += "<th bgcolor=\"black\">";
   myMetadataQString += "<font color=\"white\">" + tr("Comment") + "</font>";
-  myMetadataQString += "</th>";      
-  myMetadataQString += "<tr>";
+  myMetadataQString += "</th>";
  
   //get info for each field by looping through them
   QgsVectorDataProvider *myDataProvider = dynamic_cast<QgsVectorDataProvider *>(layer->getDataProvider());
@@ -547,7 +547,7 @@ QString QgsVectorLayerProperties::getMetadata()
     myMetadataQString += myField.name();
     myMetadataQString += "</td>";
     myMetadataQString += "<td bgcolor=\"white\">";
-    myMetadataQString += myField.type();
+    myMetadataQString += myField.typeName();
     myMetadataQString += "</td>";
     myMetadataQString += "<td bgcolor=\"white\">";
     myMetadataQString += QString("%1").arg(myField.length());

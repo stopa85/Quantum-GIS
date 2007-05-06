@@ -14,7 +14,6 @@ qgsdatasourceuri.cpp
 qgsdistancearea.cpp
 qgsexception.cpp
 qgsfeature.cpp
-qgsfeatureattribute.cpp
 qgsfield.cpp
 qgsgeometry.cpp
 qgsgeometryvertexindex.cpp
@@ -55,10 +54,7 @@ renderer/qgsrenderer.cpp
 renderer/qgssinglesymbolrenderer.cpp
 renderer/qgsuniquevaluerenderer.cpp
 
-symbology/qgslinesymbol.cpp
 symbology/qgsmarkercatalogue.cpp
-symbology/qgsmarkersymbol.cpp
-symbology/qgspolygonsymbol.cpp
 symbology/qgssymbol.cpp
 symbology/qgssymbologyutils.cpp
 
@@ -77,7 +73,9 @@ SET_SOURCE_FILES_PROPERTIES(
 SET(QGIS_CORE_MOC_HDRS
 qgscontexthelp.h
 qgscoordinatetransform.h
+qgscsexception.h
 qgsdataprovider.h
+qgsexception.h
 qgshttptransaction.h
 qgsmaplayer.h
 qgsmaplayerregistry.h
@@ -173,7 +171,6 @@ qgsdatasourceuri.h
 qgsdistancearea.h
 qgsexception.h
 qgsfeature.h
-qgsfeatureattribute.h
 qgsfield.h
 qgsgeometry.h
 qgsgeometryvertexindex.h
@@ -214,10 +211,7 @@ renderer/qgsrenderer.h
 renderer/qgssinglesymbolrenderer.h
 renderer/qgsuniquevaluerenderer.h
 
-symbology/qgslinesymbol.h
 symbology/qgsmarkercatalogue.h
-symbology/qgsmarkersymbol.h
-symbology/qgspolygonsymbol.h
 symbology/qgssymbol.h
 symbology/qgssymbologyutils.h
 

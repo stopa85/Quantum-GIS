@@ -25,21 +25,13 @@ QgsAddAttrDialog::QgsAddAttrDialog(QgsVectorDataProvider* provider, QWidget *par
     connect(mOkButton, SIGNAL(clicked()), this, SLOT(accept()));
     connect(mCancelButton, SIGNAL(clicked()), this, SLOT(reject()));
 
-    //fill data types into the combo box
-    /*
-    // TODO: [MD]    
-    const std::list<QString>& numlist=mDataProvider->numericalTypes();
-    const std::list<QString>& anumlist=mDataProvider->nonNumericalTypes();
+    //fill data types into the combo box    
+    const QSet<QString>& typelist=mDataProvider->supportedNativeTypes();
 
-    for(std::list<QString>::const_iterator iter=numlist.begin();iter!=numlist.end();++iter)
-    {
-	mTypeBox->insertItem(*iter);
-    }
-    for(std::list<QString>::const_iterator iter=anumlist.begin();iter!=anumlist.end();++iter)
-    {
-	mTypeBox->insertItem(*iter);
-    }
-    */
+    for(QSet<QString>::const_iterator it = typelist.constBegin(); it != typelist.constEnd(); ++it)
+      {
+	mTypeBox->insertItem(*it);
+      }
 }
 
 QgsAddAttrDialog::QgsAddAttrDialog(const std::list<QString>& typelist, QWidget *parent, Qt::WFlags fl)
