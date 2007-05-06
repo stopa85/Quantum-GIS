@@ -78,7 +78,6 @@
 #include "qgsdataprovider.h"
 #include "qgsfield.h"
 #include "qgsfeature.h"
-#include "qgsfeatureattribute.h"
 
 extern "C" {
 #include <grass/gis.h>
@@ -187,7 +186,7 @@ QStringList QgsGrassModule::execArguments ( QString module )
     return arguments;
 }
 
-QgsGrassModule::QgsGrassModule ( QgsGrassTools *tools, QgisInterface *iface, 
+QgsGrassModule::QgsGrassModule ( QgsGrassTools *tools, QString moduleName, QgisInterface *iface, 
 	                     QString path, QWidget * parent, const char * name, Qt::WFlags f )
              :QgsGrassModuleBase ( ), mSuccess(false)
 {
@@ -196,7 +195,7 @@ QgsGrassModule::QgsGrassModule ( QgsGrassTools *tools, QgisInterface *iface,
     #endif
 
     setupUi(this);
-
+    lblModuleName->setText(tr("Module") + ": " + moduleName);
     mPath = path;
     mTools = tools;
     mIface = iface;
@@ -2328,7 +2327,7 @@ void QgsGrassModuleInput::updateQgisLayers()
 	    mVectorLayerNames.push_back ( grassLayer );
             
             // convert from QgsFieldMap to std::vector<QgsField>
-            QgsFieldMap flds = vector->fields();
+            QgsFieldMap flds = vector->getDataProvider()->fields();
             std::vector<QgsField> fields;
             for (QgsFieldMap::iterator it = flds.begin(); it != flds.end(); ++it)
               fields.push_back(it.value());
@@ -2900,25 +2899,29 @@ void QgsGrassModuleSelection::updateSelection()
     QgsVectorLayer *vector = dynamic_cast<QgsVectorLayer*>(layer);
 	    
     QgsGrassProvider *provider = (QgsGrassProvider *) vector->getDataProvider();
+    QgsAttributeList allAttributes = provider->allAttributesList();
+    const QgsFeatureIds& selected = vector->selectedFeaturesIds();
     int keyField = provider->keyField();
 
     if ( keyField < 0 ) return;
     
     QString cats;
-    provider->reset();
-    QgsFeature* feature;
+    provider->select(allAttributes, QgsRect(), true);
+    QgsFeature feature;
 
     int i = 0;
-    while ( (feature = vector->getNextFeature(true, true)) != NULL )
+    while ( provider->getNextFeature(feature) )
     {
-	QgsAttributeMap attr = feature->attributeMap();
-	if ( attr.size() > keyField )
-	{
-	    if ( i > 0 ) cats.append( "," );
-	    cats.append( attr[keyField].fieldValue() );
-	    i++;
-	}
-        delete feature;
+      if (!selected.contains(feature.featureId()))
+          continue;
+      
+      QgsAttributeMap attr = feature.attributeMap();
+      if ( attr.size() > keyField )
+      {
+          if ( i > 0 ) cats.append( "," );
+          cats.append( attr[keyField].toString() );
+          i++;
+      }
     }
     if ( mVectorLayer != vector ) 
     {

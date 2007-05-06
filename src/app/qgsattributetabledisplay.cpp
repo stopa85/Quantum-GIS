@@ -58,6 +58,10 @@ QgsAttributeTableDisplay::QgsAttributeTableDisplay(QgsVectorLayer* layer, QgisAp
   connect(btnAdvancedSearch, SIGNAL(clicked()), this, SLOT(advancedSearch()));
   connect(btnClose, SIGNAL(clicked()), this, SLOT(close()));
 
+  //disable those buttons until start editing has been pressed and provider supports it
+  mAddAttributeButton->setEnabled(false);
+  mDeleteAttributeButton->setEnabled(false);
+
   btnStopEditing->setEnabled(false);
   int cap=layer->getDataProvider()->capabilities();
   if((cap&QgsVectorDataProvider::ChangeAttributeValues)
@@ -246,7 +250,8 @@ void QgsAttributeTableDisplay::search()
 
   QgsVectorDataProvider* provider = mLayer->getDataProvider();
   int item = mSearchColumns->currentItem();
-  bool numeric = provider->fields()[item].isNumeric();
+  QVariant::Type type = provider->fields()[item].type();
+  bool numeric = (type == QVariant::Int || type == QVariant::Double);
   
   QString str;
   str = mSearchColumns->currentText();
@@ -322,12 +327,15 @@ void QgsAttributeTableDisplay::doSearch(const QString& searchString)
   // or search by traversing table ... which one is quicker?
   QgsFeature fet;
   QgsVectorDataProvider* provider = mLayer->getDataProvider();
-  provider->reset();
   mSearchIds.clear();
+  const QgsFieldMap& fields = provider->fields();
   QgsAttributeList all = provider->allAttributesList();
-  while (provider->getNextFeature(fet, false, all))
+  
+  provider->select(all, QgsRect(), false);
+
+  while (provider->getNextFeature(fet))
   {
-    if (searchTree->checkAgainst(fet.attributeMap()))
+    if (searchTree->checkAgainst(fields, fet.attributeMap()))
     {
       mSearchIds.insert(fet.featureId());
     }
@@ -336,7 +344,6 @@ void QgsAttributeTableDisplay::doSearch(const QString& searchString)
     if (searchTree->hasError())
       break;
   }
-  provider->reset();
 
   QApplication::restoreOverrideCursor();
 

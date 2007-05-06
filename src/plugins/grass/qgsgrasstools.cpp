@@ -56,7 +56,6 @@
 #include "qgsvectorlayer.h"
 #include "qgsdataprovider.h"
 #include "qgsfield.h"
-#include "qgsfeatureattribute.h"
 
 extern "C" {
 #include <grass/gis.h>
@@ -238,7 +237,7 @@ void QgsGrassTools::moduleClicked( QTreeWidgetItem * item, int column )
     }
     else
     {
-	m = dynamic_cast<QWidget *> ( new QgsGrassModule ( this, 
+	m = dynamic_cast<QWidget *> ( new QgsGrassModule ( this, name,
                                       mIface, path, mTabWidget ) );
     }
     

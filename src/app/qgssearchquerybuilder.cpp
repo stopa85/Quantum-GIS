@@ -53,12 +53,12 @@ QgsSearchQueryBuilder::~QgsSearchQueryBuilder()
 
 void QgsSearchQueryBuilder::populateFields()
 {
-  const QgsFieldMap& fields = mLayer->fields();
+  const QgsFieldMap& fields = mLayer->getDataProvider()->fields();
   for (QgsFieldMap::const_iterator it = fields.begin(); it != fields.end(); ++it)
   {
-    QgsField f = it.value();
-    QString fieldName = f.name();
-    mFieldMap[fieldName] = f;
+    QString fieldName = it->name();
+    
+    mFieldMap[fieldName] = it.key();
     lstFields->insertItem(fieldName);
   }
 }
@@ -68,28 +68,27 @@ void QgsSearchQueryBuilder::getFieldValues(uint limit)
   // clear the values list 
   lstValues->clear();
   
+  QgsVectorDataProvider* provider = mLayer->getDataProvider();
+  
   // determine the field type
-  QgsField field = mFieldMap[lstFields->currentText()];
-  QString fieldName = field.name().lower();
-  bool numeric = field.isNumeric();
+  QString fieldName = lstFields->currentText();
+  int fieldIndex = mFieldMap[fieldName];
+  QgsField field = provider->fields()[fieldIndex];
+  bool numeric = (field.type() == QVariant::Int || field.type() == QVariant::Double);
   
   QgsFeature feat;
   QString value;
-  QgsVectorDataProvider* provider = mLayer->getDataProvider();
-  provider->reset();
-  QgsAttributeList allAttributes = provider->allAttributesList();
-  while (provider->getNextFeature(feat, false, allAttributes) &&
+
+  QgsAttributeList attrs;
+  attrs.append(fieldIndex);
+  
+  provider->select(attrs, QgsRect(), false);
+  
+  while (provider->getNextFeature(feat) &&
          (limit == 0 || lstValues->count() != limit))
   {
     const QgsAttributeMap& attributes = feat.attributeMap();
-    for (QgsAttributeMap::const_iterator it = attributes.begin(); it != attributes.end(); it++)
-    {
-      if ( (*it).fieldName().lower() == fieldName)
-      {
-        value = (*it).fieldValue();
-        break;
-      }
-    }
+    value = attributes[fieldIndex].toString();
      
     if (!numeric)
     {
@@ -102,8 +101,6 @@ void QgsSearchQueryBuilder::getFieldValues(uint limit)
       lstValues->insertItem(value);
     
   }
-  provider->reset();
-  
 }
 
 void QgsSearchQueryBuilder::on_btnSampleValues_clicked()
@@ -154,11 +151,14 @@ long QgsSearchQueryBuilder::countRecords(QString searchString)
   int count = 0;
   QgsFeature feat;
   QgsVectorDataProvider* provider = mLayer->getDataProvider();
-  provider->reset();
+  const QgsFieldMap& fields = provider->fields();
   QgsAttributeList allAttributes = provider->allAttributesList();
-  while (provider->getNextFeature(feat, false, allAttributes))
+
+  provider->select(allAttributes, QgsRect(), false);
+
+  while (provider->getNextFeature(feat))
   {
-    if (searchTree->checkAgainst(feat.attributeMap()))
+    if (searchTree->checkAgainst(fields, feat.attributeMap()))
     {
       count++;
     }
@@ -167,7 +167,6 @@ long QgsSearchQueryBuilder::countRecords(QString searchString)
     if (searchTree->hasError())
       break;
   }
-  provider->reset();
 
   QApplication::restoreOverrideCursor();
   

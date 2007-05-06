@@ -32,6 +32,11 @@ QgsPythonDialog::~QgsPythonDialog()
   QgsPythonUtils::uninstallConsoleHooks();
 }
 
+QString QgsPythonDialog::escapeHtml(QString text)
+{
+    return text.replace("<","&lt;").replace(">","&gt;");
+}
+
 void QgsPythonDialog::on_edtCmdLine_returnPressed()
 {
   QString command = edtCmdLine->text();
@@ -43,8 +48,10 @@ void QgsPythonDialog::on_edtCmdLine_returnPressed()
   {
     QgsPythonUtils::evalString("sys.stdout.data", output);
     QgsPythonUtils::runString("sys.stdout.data = ''");
-    
-    output += QgsPythonUtils::getResult();
+    QString result = QgsPythonUtils::getResult();
+    // escape the result so python objects display properly and
+    // we can still use html output to get nicely formatted display
+    output = escapeHtml(output) + escapeHtml(result);
     
     if (!output.isEmpty())
       output += "<br>";
@@ -54,10 +61,10 @@ void QgsPythonDialog::on_edtCmdLine_returnPressed()
     QString className, errorText;
     QgsPythonUtils::getError(className, errorText);
     
-    output = "<font color=\"red\">" + className + ": " + errorText + "</font><br>";
+    output = "<font color=\"red\">" + escapeHtml(className) + ": " + escapeHtml(errorText) + "</font><br>";
   }
-  
-  QString str = "<b><font color=\"green\">>>></font> " + command + "</b><br>" + output;
+   
+  QString str = "<b><font color=\"green\">>>></font> " + escapeHtml(command) + "</b><br>" + output;
   txtHistory->setText(txtHistory->text() + str);
   edtCmdLine->setText("");
   

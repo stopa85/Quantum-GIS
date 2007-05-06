@@ -446,7 +446,7 @@ bool QgsSpatialRefSys::isValid() const
   OGRErr myResult = myOgrSpatialRef.importFromProj4( mySourceCharArrayPointer );
   if (myResult==OGRERR_NONE)
   {
-    QgsDebugMsg("The OGRe says it's a valid SRS with proj4 string: " +  mProj4String);
+    //QgsDebugMsg("The OGRe says it's a valid SRS with proj4 string: " +  mProj4String);
     //srs is valid so nothing more to do...
     return true;
   }
@@ -1063,7 +1063,7 @@ bool QgsSpatialRefSys::equals(QString theProj4CharArray)
   return myMatchFlag;
 }
 
-QString QgsSpatialRefSys::toWkt()
+QString QgsSpatialRefSys::toWkt() const
 {
   OGRSpatialReference myOgrSpatialRef;
   OGRErr myInputResult = myOgrSpatialRef.importFromProj4(mProj4String.latin1());
@@ -1261,7 +1261,7 @@ QString::number(USER_PROJECTION_START_ID));
 int QgsSpatialRefSys::openDb(QString path, sqlite3 **db)
 {
   QgsDebugMsg("QgsSpatialRefSys::openDb path = " + path);
-  int myResult = sqlite3_open(path.toLocal8Bit().data(), db);
+  int myResult = sqlite3_open(path.toUtf8().data(), db);
 
   if(myResult)
   {

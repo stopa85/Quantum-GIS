@@ -31,10 +31,9 @@
 #include "qgsapplication.h"
 #include "qgsdataprovider.h"
 #include "qgsfeature.h"
-#include "qgsfeatureattribute.h"
 #include "qgsfield.h"
+#include "qgslogger.h"
 #include "qgsrect.h"
-#include "qgsfeatureattribute.h"
 #include "qgsspatialrefsys.h"
 
 extern "C" {
@@ -280,12 +279,9 @@ QString QgsGrassProvider::storageType() const
   return "GRASS (Geographic Resources Analysis and Support System) file";
 }
 
-bool QgsGrassProvider::getNextFeature(QgsFeature& feature,
-                                      bool fetchGeometry,
-                                      QgsAttributeList attlist,
-                                      uint featureQueueSize)
+bool QgsGrassProvider::getNextFeature(QgsFeature& feature)
 {
-    int cat, type, id;
+  int cat, type, id;
     unsigned char *wkb;
     int wkbsize;
 
@@ -395,7 +391,7 @@ bool QgsGrassProvider::getNextFeature(QgsFeature& feature,
 
     feature.setGeometryAndOwnership(wkb, wkbsize);
 
-    setFeatureAttributes( mLayerId, cat, &feature, attlist );  
+    setFeatureAttributes( mLayerId, cat, &feature, mAttributesToFetch);  
     
     return true;
 }
@@ -410,75 +406,92 @@ void QgsGrassProvider::resetSelection( bool sel)
     mNextCidx = 0;
 }
 
-/**
-* Select features based on a bounding rectangle. Features can be retrieved
-* with calls to getFirstFeature and getNextFeature.
-* @param mbr QgsRect containing the extent to use in selecting features
-*/
-void QgsGrassProvider::select(QgsRect rect, bool useIntersect)
+void QgsGrassProvider::select(QgsAttributeList fetchAttributes,
+                              QgsRect rect,
+                              bool fetchGeometry,
+                              bool useIntersect)
 {
-    #ifdef QGISDEBUG
-    std::cout << "QgsGrassProvider::select() useIntersect = " << useIntersect << std::endl;
-    #endif
-
-    if ( isEdited() || isFrozen() || !mValid )
+  mAttributesToFetch = fetchAttributes;
+  mFetchGeom = fetchGeometry;
+  
+  if ( isEdited() || isFrozen() || !mValid )
 	return;
 
     // check if outdated and update if necessary
     int mapId = mLayers[mLayerId].mapId;
-    if ( mapOutdated(mapId) ) {
+    if ( mapOutdated(mapId) ) 
+      {
         updateMap ( mapId );
-    }
-    if ( mMapVersion < mMaps[mapId].version ) {
+      }
+    if ( mMapVersion < mMaps[mapId].version ) 
+      {
         update();
-    }
-    if ( attributesOutdated(mapId) ) {
+      }
+    if ( attributesOutdated(mapId) ) 
+      {
 	loadAttributes (mLayers[mLayerId]);
-    }
+      }
 
+    //no selection rectangle - use all features
+    if(rect.isEmpty())
+      {
+	resetSelection(1);
+	return;
+      }
+
+    //apply selection rectangle
     resetSelection(0);
     
-    if ( !useIntersect ) { // select by bounding boxes only
+    if ( !useIntersect ) 
+      { // select by bounding boxes only
 	BOUND_BOX box;
 	box.N = rect.yMax(); box.S = rect.yMin(); 
 	box.E = rect.xMax(); box.W = rect.xMin(); 
 	box.T = PORT_DOUBLE_MAX; box.B = -PORT_DOUBLE_MAX; 
-	if ( mLayerType == POINT || mLayerType == CENTROID || mLayerType == LINE || mLayerType == BOUNDARY ) {
+	if ( mLayerType == POINT || mLayerType == CENTROID || mLayerType == LINE || mLayerType == BOUNDARY ) 
+	  {
 	    Vect_select_lines_by_box(mMap, &box, mGrassType, mList);
-	} else if ( mLayerType == POLYGON ) {
+	  } 
+	else if ( mLayerType == POLYGON ) 
+	  {
 	    Vect_select_areas_by_box(mMap, &box, mList);
-	}
-
-    } else { // check intersection
+	  }
+	
+      } 
+    else 
+      { // check intersection
 	struct line_pnts *Polygon;
 	
 	Polygon = Vect_new_line_struct();
-
+	
 	Vect_append_point( Polygon, rect.xMin(), rect.yMin(), 0);
 	Vect_append_point( Polygon, rect.xMax(), rect.yMin(), 0);
 	Vect_append_point( Polygon, rect.xMax(), rect.yMax(), 0);
 	Vect_append_point( Polygon, rect.xMin(), rect.yMax(), 0);
 	Vect_append_point( Polygon, rect.xMin(), rect.yMin(), 0);
-
-	if ( mLayerType == POINT || mLayerType == CENTROID || mLayerType == LINE || mLayerType == BOUNDARY ) {
-	    Vect_select_lines_by_polygon ( mMap, Polygon, 0, NULL, mGrassType, mList);
-	} else if ( mLayerType == POLYGON ) {
-	    Vect_select_areas_by_polygon ( mMap, Polygon, 0, NULL, mList);
-	}
-
-	Vect_destroy_line_struct (Polygon);
-    }
-    for ( int i = 0; i < mList->n_values; i++ ) {
-        if ( mList->value[i] <= mSelectionSize ) {
-	    mSelection[mList->value[i]] = 1;
-	} else {
-	    std::cerr << "Selected element out of range" << std::endl;
-	}
-    }
 	
-    #ifdef QGISDEBUG
-    std::cout << mList->n_values << " features selected" << std::endl;
-    #endif
+	if ( mLayerType == POINT || mLayerType == CENTROID || mLayerType == LINE || mLayerType == BOUNDARY ) 
+	  {
+	    Vect_select_lines_by_polygon ( mMap, Polygon, 0, NULL, mGrassType, mList);
+	  } 
+	else if ( mLayerType == POLYGON ) 
+	  {
+	    Vect_select_areas_by_polygon ( mMap, Polygon, 0, NULL, mList);
+	  }
+	
+	Vect_destroy_line_struct (Polygon);
+      }
+    for ( int i = 0; i < mList->n_values; i++ ) 
+      {
+        if ( mList->value[i] <= mSelectionSize ) 
+	  {
+	    mSelection[mList->value[i]] = 1;
+	  } 
+	else 
+	  {
+	    std::cerr << "Selected element out of range" << std::endl;
+	  }
+      }	
 }
 
 
@@ -546,27 +559,28 @@ void QgsGrassProvider::reset()
 	loadAttributes (mLayers[mLayerId]);
     }
     
-    resetSelection(1);
     mNextCidx = 0;
 }
 
-QString QgsGrassProvider::minValue(uint position)
+QVariant QgsGrassProvider::minValue(int index)
 {
-    if ( position >= fieldCount() ) {
-	std::cerr << "Warning: access requested to invalid position in QgsGrassProvider::minValue()" 
-	          << std::endl;
-    }
-    return QString::number( mLayers[mLayerId].minmax[position][0], 'f', 2 );
+  if (!fields().contains(index))
+  {
+    QgsDebugMsg("Warning: access requested to invalid field index: " + QString::number(index));
+    return QVariant();
+  }
+  return QVariant(mLayers[mLayerId].minmax[index][0]);
 }
 
  
-QString QgsGrassProvider::maxValue(uint position)
+QVariant QgsGrassProvider::maxValue(int index)
 {
-    if ( position >= fieldCount() ) {
-	std::cerr << "Warning: access requested to invalid position in QgsGrassProvider::maxValue()" 
-	          << std::endl;
-    }
-    return QString::number( mLayers[mLayerId].minmax[position][1], 'f', 2 );
+  if (!fields().contains(index))
+  {
+    QgsDebugMsg("Warning: access requested to invalid field index: " + QString::number(index));
+    return QVariant();
+  }
+  return QVariant(mLayers[mLayerId].minmax[index][1]);
 }
 
 bool QgsGrassProvider::isValid(){
@@ -739,6 +753,7 @@ void QgsGrassProvider::loadAttributes ( GLAYER &layer )
 		    dbColumn *column = db_get_table_column (databaseTable, i);
 
 		    int ctype = db_sqltype_to_Ctype ( db_get_column_sqltype(column) );
+        QVariant::Type qtype;
                     #ifdef QGISDEBUG
 		    std::cerr << "column = " << db_get_column_name(column) 
 			      << " ctype = " << ctype << std::endl;
@@ -748,18 +763,22 @@ void QgsGrassProvider::loadAttributes ( GLAYER &layer )
 		    switch ( ctype ) {
 			case DB_C_TYPE_INT:
 			    ctypeStr = "integer";
+          qtype = QVariant::Int;
 			    break; 
 			case DB_C_TYPE_DOUBLE:
 			    ctypeStr = "double";
+          qtype = QVariant::Double;
 			    break; 
 			case DB_C_TYPE_STRING:
 			    ctypeStr = "string";
+          qtype = QVariant::String;
 			    break; 
 			case DB_C_TYPE_DATETIME:
 			    ctypeStr = "datetime";
+          qtype = QVariant::String;
 			    break; 
 		    }
-		    layer.fields[i] = QgsField( db_get_column_name(column), ctypeStr, 
+		    layer.fields[i] = QgsField( db_get_column_name(column), qtype, ctypeStr,
 		                     db_get_column_length(column), db_get_column_precision(column) );
 		    
 		    if ( G_strcasecmp ( db_get_column_name(column), layer.fieldInfo->key) == 0 ) {
@@ -848,7 +867,7 @@ void QgsGrassProvider::loadAttributes ( GLAYER &layer )
     // Add cat if no attribute fields exist (otherwise qgis crashes)
     if ( layer.nColumns == 0 ) {
         layer.keyColumn = 0;
-	layer.fields[0] = ( QgsField( "cat", "integer", 10, 0) );
+	layer.fields[0] = ( QgsField( "cat", QVariant::Int, "integer") );
 	layer.minmax = new double[1][2];
 	layer.minmax[0][0] = 0; 
 	layer.minmax[0][1] = 0; 
@@ -1172,15 +1191,13 @@ void QgsGrassProvider::setFeatureAttributes ( int layerId, int cat, QgsFeature *
 	for (int i = 0; i < mLayers[layerId].nColumns; i++) {
 	    if ( att != NULL ) {
 		Q3CString cstr( att->values[i] );
-		feature->addAttribute (i, QgsFeatureAttribute( mLayers[layerId].fields[i].name(), mEncoding->toUnicode(cstr) ));
+		feature->addAttribute (i, QVariant(mEncoding->toUnicode(cstr)) );
 	    } else { /* it may happen that attributes are missing -> set to empty string */
-		feature->addAttribute (i, QgsFeatureAttribute( mLayers[layerId].fields[i].name(), ""));
+		feature->addAttribute (i, QVariant());
 	    }
 	}
     } else { 
-	QString tmp;
-	tmp.sprintf("%d", cat );
-	feature->addAttribute (0, QgsFeatureAttribute("cat", tmp));
+	feature->addAttribute (0, QVariant(cat));
     }
 }
 
@@ -1199,15 +1216,13 @@ void QgsGrassProvider::setFeatureAttributes ( int layerId, int cat, QgsFeature *
 	for (QgsAttributeList::const_iterator iter=attlist.begin(); iter!=attlist.end();++iter) {
 	    if ( att != NULL ) {
 		Q3CString cstr( att->values[*iter] );
-		feature->addAttribute (*iter, QgsFeatureAttribute(mLayers[layerId].fields[*iter].name(), mEncoding->toUnicode(cstr) ));
+		feature->addAttribute (*iter, QVariant( mEncoding->toUnicode(cstr) ));
 	    } else { /* it may happen that attributes are missing -> set to empty string */
-		feature->addAttribute (*iter, QgsFeatureAttribute(mLayers[layerId].fields[*iter].name(), ""));
+		feature->addAttribute (*iter, QVariant());
 	    } 
 	}
     } else { 
-	QString tmp;
-	tmp.sprintf("%d", cat );
-	feature->addAttribute (0, QgsFeatureAttribute("cat", tmp));
+	feature->addAttribute (0, QVariant(cat));
     }
 }
 
@@ -1217,10 +1232,6 @@ struct Map_info *QgsGrassProvider::layerMap ( int layerId )
     return ( mMaps[mLayers[layerId].mapId].map );
 }
 
-void QgsGrassProvider::setSRS(const QgsSpatialRefSys& theSRS)
-{
-  // XXX is it possible to change SRS?
-}
 
 QgsSpatialRefSys QgsGrassProvider::getSRS()
 {
@@ -1820,21 +1831,26 @@ std::vector<QgsField> *QgsGrassProvider::columns ( int field )
 
 	int ctype = db_sqltype_to_Ctype( db_get_column_sqltype (column) );
 	QString type;
+  QVariant::Type qtype;
 	switch ( ctype ) {
 	    case DB_C_TYPE_INT:
 		type = "int";
+    qtype = QVariant::Int;
 		break;
 	    case DB_C_TYPE_DOUBLE:
 		type = "double";
+    qtype = QVariant::Double;
 		break;
 	    case DB_C_TYPE_STRING:
 		type = "string";
+    qtype = QVariant::String;
 		break;
 	    case DB_C_TYPE_DATETIME:
 		type = "datetime";
+    qtype = QVariant::String;
 		break;
 	}
-        col->push_back ( QgsField( db_get_column_name (column), type, db_get_column_length(column), 0) );
+        col->push_back ( QgsField( db_get_column_name (column), qtype, type, db_get_column_length(column), 0) );
     }
 	
     db_close_database_shutdown_driver ( driver );
@@ -1842,13 +1858,13 @@ std::vector<QgsField> *QgsGrassProvider::columns ( int field )
     return col;
 }
 
-std::vector<QgsFeatureAttribute> *QgsGrassProvider::attributes ( int field, int cat )
+QgsAttributeMap *QgsGrassProvider::attributes ( int field, int cat )
 {
     #ifdef QGISDEBUG
     std::cerr << "QgsGrassProvider::attributes() field = " << field << " cat = " << cat << std::endl;
     #endif
 
-    std::vector<QgsFeatureAttribute> *att = new std::vector<QgsFeatureAttribute>;
+    QgsAttributeMap *att = new QgsAttributeMap;
 
     struct  field_info *fi = Vect_get_field( mMap, field); // should work also with field = 0
 
@@ -1920,7 +1936,7 @@ std::vector<QgsFeatureAttribute> *QgsGrassProvider::attributes ( int field, int 
 
         QString v = mEncoding->toUnicode(db_get_string(&dbstr));
 	std::cerr << "Value: " << v.toLocal8Bit().data() << std::endl;
-        att->push_back ( QgsFeatureAttribute( db_get_column_name(column), v ) );
+        att->insert(i, QVariant( v ) );
     }
 
     db_close_cursor (&databaseCursor);

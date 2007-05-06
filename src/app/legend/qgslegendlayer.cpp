@@ -215,6 +215,8 @@ void QgsLegendLayer::updateLayerSymbologySettings(const QgsMapLayer* mapLayer)
 	      (*it)->copySymbologySettings(*mapLayer);
 	    }
 	}
+      // source might have changed - e.g. other subset
+      setToolTip(0, mapLayer->publicSource());
     }
 }
 
@@ -313,9 +315,9 @@ void QgsLegendLayer::vectorLayerSymbology(const QgsVectorLayer* layer)
   //add the new items
   QString lw, uv, label;
   const QgsRenderer* renderer = layer->renderer();
-  const std::list<QgsSymbol*> sym = renderer->symbols();
+  const QList<QgsSymbol*> sym = renderer->symbols();
 
-  for(std::list<QgsSymbol*>::const_iterator it=sym.begin(); it!=sym.end(); ++it)
+  for(QList<QgsSymbol*>::const_iterator it=sym.begin(); it!=sym.end(); ++it)
   {
     QImage img;
     if((*it)->type() == QGis::Point)
@@ -510,6 +512,13 @@ void QgsLegendLayer::addToPopupMenu(QMenu& theMenu)
       toggleEditingAction->setChecked(theVectorLayer->isEditable());
     }
   
+    // save as shapefile
+    theMenu.addAction(tr("Save as shapefile..."), this, SLOT(saveAsShapefile()));
+    if (files.size() != 1)
+    {
+      tableAction->setEnabled(false);
+    }
+    
     theMenu.addSeparator();
   }
 	
@@ -578,5 +587,14 @@ void QgsLegendLayer::toggleEditing()
   if (maplayers.size() == 1)
   {
     maplayers.front()->toggleEditing();
+  }
+}
+
+void QgsLegendLayer::saveAsShapefile()
+{
+  std::list<QgsLegendLayerFile*> maplayers = legendLayerFiles();
+  if (maplayers.size() == 1)
+  {
+    maplayers.front()->saveAsShapefile();
   }
 }
