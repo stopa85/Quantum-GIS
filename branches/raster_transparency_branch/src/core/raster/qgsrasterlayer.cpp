@@ -5014,62 +5014,61 @@ bool QgsRasterLayer::readXML_( QDomNode & layer_node )
   QgsDebugMsg("ReadXml: green band name  " + greenBandNameQString);
   QgsDebugMsg("Drawing style " + getDrawingStyleAsQString());
 
-  
+
 
   //restore custom colormap settings
   QDomNode customColormapEnabledNode = mnl.namedItem("customColorMapEnabled");
   if(!customColormapEnabledNode.isNull())
+  {
+    if(customColormapEnabledNode.toElement().text() == "true")
     {
-      if(customColormapEnabledNode.toElement().text() == "true")
-	{
-	  setCustomClassificationEnabled(true);
-	}
-      else
-	{
-	  setCustomClassificationEnabled(false);
-	}
+      setCustomClassificationEnabled(true);
     }
+    else
+    {
+      setCustomClassificationEnabled(false);
+    }
+  }
 
   QDomNode customColorMapNode = mnl.namedItem("customColorMap");
   if(!customColorMapNode.isNull())
+  {
+    //interpolation
+    if(customColorMapNode.toElement().attribute("interpolation") == "discrete")
     {
-      //interpolation
-      if(customColorMapNode.toElement().attribute("interpolation") == "discrete")
-	{
-	  setDiscreteClassification(true);
-	}
-      else
-	{
-	  setDiscreteClassification(false);
-	}
-
-      //entries
-      std::vector<ValueClassificationItem> newClassification;
-      int currentRed, currentGreen, currentBlue;
-      QString currentLabel;
-      double currentValue;
-      
-      QDomNodeList colorMapEntryList = customColorMapNode.toElement().elementsByTagName("colorMapEntry");
-      for(int i = 0; i < colorMapEntryList.size(); ++i)
-	{
-	  ValueClassificationItem newItem;
-	  QDomElement colorMapEntryElem = colorMapEntryList.at(i).toElement();
-	  if(colorMapEntryElem.isNull())
-	    {
-	      continue;
-	    }
-	  currentRed = colorMapEntryElem.attribute("red").toInt();
-	  currentGreen = colorMapEntryElem.attribute("green").toInt();
-	  currentBlue = colorMapEntryElem.attribute("blue").toInt();
-	  newItem.color = QColor(currentRed, currentGreen, currentBlue);
-	  newItem.label = colorMapEntryElem.attribute("label");
-	  newItem.value = colorMapEntryElem.attribute("value").toDouble();
-	  
-	  newClassification.push_back(newItem);
-	}
-      setValueClassification(newClassification);
+      setDiscreteClassification(true);
     }
-  
+    else
+    {
+      setDiscreteClassification(false);
+    }
+
+    //entries
+    std::vector<ValueClassificationItem> newClassification;
+    int currentRed, currentGreen, currentBlue;
+    QString currentLabel;
+
+    QDomNodeList colorMapEntryList = customColorMapNode.toElement().elementsByTagName("colorMapEntry");
+    for(int i = 0; i < colorMapEntryList.size(); ++i)
+    {
+      ValueClassificationItem newItem;
+      QDomElement colorMapEntryElem = colorMapEntryList.at(i).toElement();
+      if(colorMapEntryElem.isNull())
+      {
+        continue;
+      }
+      currentRed = colorMapEntryElem.attribute("red").toInt();
+      currentGreen = colorMapEntryElem.attribute("green").toInt();
+      currentBlue = colorMapEntryElem.attribute("blue").toInt();
+      newItem.color = QColor(currentRed, currentGreen, currentBlue);
+      newItem.label = colorMapEntryElem.attribute("label");
+      newItem.value = colorMapEntryElem.attribute("value").toDouble();
+
+      newClassification.push_back(newItem);
+    }
+    setValueClassification(newClassification);
+  }
+
   return true;
 
 } // QgsRasterLayer::readXML_( QDomNode & layer_node )
