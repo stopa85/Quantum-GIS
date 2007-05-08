@@ -232,7 +232,8 @@ rasterLayer( dynamic_cast<QgsRasterLayer*>(lyr) )
       mGradientHeight = pixHistogram->height() / 2;
       mGradientWidth = pixHistogram->width() /2;
       //keep a list of band names for later use
-      //! @note band names should not be translated!      myBandNameQStringList.append(myRasterBandNameQString);
+      //! @note band names should not be translated!
+      myBandNameQStringList.append(myRasterBandNameQString);
     }
 
     //select all histogram layers list items by default
@@ -260,6 +261,7 @@ rasterLayer( dynamic_cast<QgsRasterLayer*>(lyr) )
       cboBlue->insertItem(myQString);
       cboxTransparent->insertItem(myQString);
     }
+//TODO: Need to handle situations where a band is set to Not Set, currently if you set a band to this it will segfault.
     cboRed->insertItem(tr("Not Set"));
     cboGreen->insertItem(tr("Not Set"));
     cboBlue->insertItem(tr("Not Set"));
