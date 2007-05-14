@@ -25,7 +25,7 @@
 #include "qgsrasterlayer.h"
 #include "qgsrasterpyramid.h"
 #include "qgscontexthelp.h"
-
+#include "qgsmaplayerregistry.h"
 #include <QTableWidgetItem>
 #include <QHeaderView>
 
@@ -259,15 +259,25 @@ rasterLayer( dynamic_cast<QgsRasterLayer*>(lyr) )
       cboRed->insertItem(myQString);
       cboGreen->insertItem(myQString);
       cboBlue->insertItem(myQString);
-      cboxTransparent->insertItem(myQString);
     }
 //TODO: Need to handle situations where a band is set to Not Set, currently if you set a band to this it will segfault.
     cboRed->insertItem(tr("Not Set"));
     cboGreen->insertItem(tr("Not Set"));
     cboBlue->insertItem(tr("Not Set"));
-    cboxTransparent->insertItem(tr("Not Set"));
     if (cboGray->count() != 1)
       cboGray->insertItem(tr("Not Set"));
+  }
+
+  cboxTransparencyBand->insertItem(tr("Not Set"));
+  cboxTransparencyLayer->insertItem(tr("Not Set"));
+  std::map<QString, QgsMapLayer *> myLayers = QgsMapLayerRegistry::instance()->mapLayers();
+  std::map<QString, QgsMapLayer *>::iterator it;
+  for(it = myLayers.begin(); it != myLayers.end(); it++)
+  {
+    if(QgsMapLayer::RASTER == it->second->type())
+    {
+      cboxTransparencyLayer->insertItem(it->second->name());
+    }
   }
 
   QString myThemePath = QgsApplication::themePath();
@@ -600,7 +610,26 @@ if(QgsRasterLayer::PALETTED_COLOR != rasterLayer->getDrawingStyle() &&
   cboGreen->setCurrentText(rasterLayer->getGreenBandName());
   cboBlue->setCurrentText(rasterLayer->getBlueBandName());
   cboGray->setCurrentText(rasterLayer->getGrayBandName());
-  cboxTransparent->setCurrentText(rasterLayer->getTransparentBandName());
+
+  int myIndex = cboxTransparencyLayer->findText(rasterLayer->getTransparentLayerName());
+  if(-1 != myIndex)
+  {
+    cboxTransparencyLayer->setCurrentIndex(myIndex);
+  }
+  else
+  {
+    cboxTransparencyLayer->setCurrentIndex(cboxTransparencyLayer->findText(tr("Not Set")));
+  }
+
+  myIndex = cboxTransparencyBand->findText(rasterLayer->getTransparentBandName());
+  if(-1 != myIndex)
+  {
+    cboxTransparencyBand->setCurrentIndex(myIndex);
+  }
+  else
+  {
+    cboxTransparencyBand->setCurrentIndex(cboxTransparencyBand->findText(tr("Not Set")));
+  }
 
   //set color scaling algorithm
   if(QgsRasterLayer::STRETCH_TO_MINMAX == rasterLayer->getColorScalingAlgorithm())
@@ -900,7 +929,8 @@ void QgsRasterLayerProperties::apply()
   rasterLayer->setGreenBandName(cboGreen->currentText());
   rasterLayer->setBlueBandName(cboBlue->currentText());
   rasterLayer->setGrayBandName(cboGray->currentText());
-  rasterLayer->setTransparentBandName(cboxTransparent->currentText());
+  rasterLayer->setTransparentBandName(cboxTransparencyBand->currentText());
+  rasterLayer->setTransparentLayerName(cboxTransparencyLayer->currentText());
 
   //set the appropriate color ramping type
   if (cboxColorMap->currentText() == tr("Pseudocolor"))
@@ -1397,6 +1427,35 @@ void QgsRasterLayerProperties::on_cboxColorMap_currentIndexChanged(const QString
       cboxColorScalingAlgorithm->setEnabled(true);
       textLabel2_6_3->setEnabled(true);
     }
+}
+
+void QgsRasterLayerProperties::on_cboxTransparencyLayer_currentIndexChanged(const QString& text)
+{
+  if(text == tr("Not Set"))
+  {
+    cboxTransparencyBand->clear();
+    cboxTransparencyBand->insertItem(tr("Not Set"));
+  }
+  else
+  {
+    std::map<QString, QgsMapLayer *> myLayers = QgsMapLayerRegistry::instance()->mapLayers();
+    std::map<QString, QgsMapLayer *>::iterator it;
+    for(it = myLayers.begin(); it != myLayers.end(); it++)
+    {
+      if(text == it->second->name() && QgsMapLayer::RASTER == it->second->type())
+      {
+        QgsRasterLayer* myRasterLayer = (QgsRasterLayer*)it->second;
+        int myBandCount = myRasterLayer->getBandCount();
+        cboxTransparencyBand->clear();
+        cboxTransparencyBand->insertItem(tr("Not Set"));
+        for(int bandRunner = 1; bandRunner <= myBandCount; bandRunner++)
+        {
+          cboxTransparencyBand->insertItem(myRasterLayer->getRasterBandName(bandRunner));
+        }
+        break;
+      }
+    }
+  }
 }
 
 void QgsRasterLayerProperties::on_pbnDefaultValues_clicked()

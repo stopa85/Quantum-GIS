@@ -579,10 +579,15 @@ bool QgsRasterLayer::readFile( QString const & fileName )
     {
       blueBandNameQString = tr("Not Set");  // sensible default
     }
+
+    //Beacuse the transparent band can be set from a different layer defaulting to the fourth
+    //is not a sensible default P.Ersts 2007-05-14
+    /*
     if (gdalDataset->GetRasterCount() > 3)
       transparentBandNameQString = getRasterBandName(4);
     else
-      transparentBandNameQString = tr("Not Set");
+    */
+    transparentBandNameQString = tr("Not Set");
 
     grayBandNameQString = tr("Not Set");  //sensible default
     drawingStyle = MULTI_BAND_COLOR;  //sensible default
