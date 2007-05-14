@@ -90,6 +90,8 @@ class QgsRasterLayerProperties : public QDialog, private Ui::QgsRasterLayerPrope
     private slots:
 	/**The slot handles necessary interface modifications based when color map selected changes*/
 	void on_cboxColorMap_currentIndexChanged(const QString&);
+  /**The slot handles necessary interface modifications based when transparency band selection changes*/
+  void on_cboxTransparencyLayer_currentIndexChanged(const QString&);
 	/**This slot calculates classification values and colors for the tree widget on the colormap tab*/
 	void on_mClassifyButton_clicked();
 	/**This slot deletes the current class from the tree widget on the colormap tab*/

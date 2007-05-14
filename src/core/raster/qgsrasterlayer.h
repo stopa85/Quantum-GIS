@@ -462,6 +462,19 @@ public:
     /** \brief Mutator for transparent band name mapping.  */
     void setTransparentBandName(QString const & theBandNameQString);
     //
+    // Accessor and mutator for transparent band name
+    // 
+    /** \brief  Accessor for transparent band name mapping. */
+    QString getTransparentLayerName()
+    {
+        return transparentLayerNameQString;
+    };
+    /** \brief Mutator for transparent band name mapping.  */
+    void setTransparentLayerName(QString const & theLayerNameQString)
+    {
+      transparentLayerNameQString = theLayerNameQString;
+    }
+    //
     // Accessor and mutator for gray band name
     //
     /** \brief Accessor for gray band name mapping.  */
@@ -1093,6 +1106,8 @@ color of the lower class for every pixel between two class breaks. Returns 0 in 
     QString blueBandNameQString;
     /** \brief The band to be associated with transparency.  */
     QString transparentBandNameQString;
+    /** \brief The Layer to be associated with transparency.  */
+    QString transparentLayerNameQString;
     /** \brief The band to be associated with the grayscale only ouput - usually 1.  */
     QString grayBandNameQString;
     /** \brief Minimum red value - used in scaling procedure.  */
