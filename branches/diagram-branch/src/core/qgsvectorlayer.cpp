@@ -29,6 +29,7 @@
 #include <iostream>
 #include <limits>
 #include <memory>
+#include <set>
 #include <sstream>
 #include <utility>
 
@@ -54,7 +55,6 @@
 #include "qgscentralpointpositionmanager.h"
 #include "qgscoordinatetransform.h"
 #include "qgsfeature.h"
-#include "qgsfeatureattribute.h"
 #include "qgsfield.h"
 #include "qgsgeometry.h"
 #include "qgsgeometryvertexindex.h"
@@ -68,7 +68,6 @@
 #include "qgssinglesymbolrenderer.h"
 #include "qgsspatialrefsys.h"
 #include "qgsvectordataprovider.h"
-#include "qgsvectorfilewriter.h"
 #include "qgsvectoroverlay.h"
 
 #ifdef Q_WS_X11
@@ -295,15 +294,14 @@ void QgsVectorLayer::drawLabels(QPainter * p, QgsRect & viewExtent, QgsMapToPixe
     int featureCount = 0;
     // select the records in the extent. The provider sets a spatial filter
     // and sets up the selection set for retrieval
-    mDataProvider->reset();
-    mDataProvider->select(viewExtent);
+    mDataProvider->select(attributes, viewExtent);
 
     try
     {
       QgsFeature fet;
 
       // main render loop
-      while(mDataProvider->getNextFeature(fet, true, attributes))
+      while(mDataProvider->getNextFeature(fet))
       {
         // don't render labels of deleted features
         if (!mDeletedFeatureIds.contains(fet.featureId()))
@@ -727,19 +725,18 @@ void QgsVectorLayer::draw(QPainter * p,
       // Destroy all cached geometries and clear the references to them
       deleteCachedGeometries();
     }
-
-    mDataProvider->reset();
-    mDataProvider->select(viewExtent);
+ 
     mDataProvider->updateFeatureCount();
     int totalFeatures = mDataProvider->featureCount();
     int featureCount = 0;
     QgsFeature fet;
 
     QgsAttributeList attributes = mRenderer->classificationAttributes();
+    mDataProvider->select(attributes, viewExtent);
 
     try
     {
-      while (mDataProvider->getNextFeature(fet, true, attributes, mUpdateThreshold))
+      while (mDataProvider->getNextFeature(fet))
       {
         // XXX Something in our draw event is triggering an additional draw event when resizing [TE 01/26/06]
         // XXX Calling this will begin processing the next draw event causing image havoc and recursion crashes.
@@ -840,20 +837,6 @@ void QgsVectorLayer::draw(QPainter * p,
   drawOverlays(p, viewExtent, theMapToPixelTransform, ct);
 }
 
-void QgsVectorLayer::cacheGeometries() 
-{ 
-  if(mDataProvider)
-  {
-    QgsFeature f;
-    
-    mDataProvider->reset();
-    
-    while (mDataProvider->getNextFeature(f))
-    {
-      mCachedGeometries.insert(f.featureId(), *f.geometry());
-    }
-  }
-}
 
 void QgsVectorLayer::deleteCachedGeometries()
 {
@@ -950,7 +933,7 @@ void QgsVectorLayer::select(QgsRect & rect, bool lock)
     removeSelection(FALSE); // don't emit signal
   }
   
-  mDataProvider->select(rect, true);
+  mDataProvider->select(QgsAttributeList(), rect, true, true);
 
   QgsFeature fet;
 
@@ -987,7 +970,7 @@ void QgsVectorLayer::invertSelection()
   removeSelection(FALSE); // don't emit signal
 
   QgsFeature fet;
-  mDataProvider->reset();
+  mDataProvider->select();
 
   while (mDataProvider->getNextFeature(fet))
   {
@@ -1128,7 +1111,7 @@ QgsRect QgsVectorLayer::boundingBoxOfSelected()
 
   QgsRect r, retval;
   QgsFeature fet;
-  mDataProvider->reset();
+  mDataProvider->select();
 
   retval.setMinimal();
   while (mDataProvider->getNextFeature(fet))
@@ -1137,7 +1120,7 @@ QgsRect QgsVectorLayer::boundingBoxOfSelected()
     {
       if(fet.geometry())
       {
-        r=fet.boundingBox();
+        r=fet.geometry()->boundingBox();
         retval.combineExtentWith(&r);
       }
     }
@@ -1181,47 +1164,6 @@ QgsRect QgsVectorLayer::boundingBoxOfSelected()
 }
 
 
-QgsFeature * QgsVectorLayer::getNextFeature(bool fetchAttributes, bool selected) const
-{
-  if ( ! mDataProvider )
-  {
-    QgsLogger::warning(" QgsVectorLayer::getNextFeature() invoked with null mDataProvider");
-    return 0;
-  }
-  
-  // TODO: make an interface like the one in QgsVectorDataProvider
-
-  QgsFeature fet;
-  if ( selected )
-  {
-    while (mDataProvider->getNextFeature(fet)) // TODO:
-    {
-      bool sel = mSelectedFeatureIds.contains(fet.featureId());
-      if ( sel ) return new QgsFeature(fet);
-    }
-    return 0;
-  }
-
-  mDataProvider->getNextFeature(fet);
-  return new QgsFeature(fet);
-} // QgsVectorLayer::getNextFeature
-
-
-
-bool QgsVectorLayer::getNextFeature(QgsFeature &feature, bool fetchAttributes) const
-{
-  if ( ! mDataProvider )
-  {
-    QgsLogger::warning(" QgsVectorLayer::getNextFeature() invoked with null mDataProvider");
-    return false;
-  }
-
-  // TODO: make an interface like the one in QgsVectorDataProvider
-  
-  return mDataProvider->getNextFeature( feature );
-} // QgsVectorLayer::getNextFeature
-
-
 
 long QgsVectorLayer::featureCount() const
 {
@@ -1263,14 +1205,14 @@ void QgsVectorLayer::updateExtents()
       QgsRect bb;
 
       mLayerExtent.setMinimal();
-      mDataProvider->reset();
-      while (mDataProvider->getNextFeature(fet, false))
+      mDataProvider->select();
+      while (mDataProvider->getNextFeature(fet))
       {
         if (!mDeletedFeatureIds.contains(fet.featureId()))
         {
           if (fet.geometry())
           {
-            bb = fet.boundingBox();
+            bb = fet.geometry()->boundingBox();
             mLayerExtent.combineExtentWith(&bb);
           }
         }
@@ -1285,7 +1227,7 @@ void QgsVectorLayer::updateExtents()
   // also consider the not commited features
   for(QgsFeatureList::iterator iter = mAddedFeatures.begin(); iter != mAddedFeatures.end(); ++iter)
   {
-    QgsRect bb = (*iter).boundingBox();
+    QgsRect bb = iter->geometry()->boundingBox();
     mLayerExtent.combineExtentWith(&bb);
   }
 
@@ -1324,29 +1266,6 @@ void QgsVectorLayer::setSubsetString(QString subset)
   emit recalculateExtents();
 }
 
-int QgsVectorLayer::fieldCount() const
-{
-  if ( ! mDataProvider )
-  {
-    QgsLogger::warning(" QgsVectorLayer::fieldCount() invoked with null mDataProvider");
-    return 0;
-  }
-
-  return mDataProvider->fieldCount();
-} // QgsVectorLayer::fieldCount
-
-
-const QgsFieldMap & QgsVectorLayer::fields() const
-{
-  if ( ! mDataProvider )
-  {
-    QgsLogger::warning(" QgsVectorLayer::fields() invoked with null mDataProvider");
-    assert(false);
-  }
-
-  return mDataProvider->fields();
-} // QgsVectorLayer::fields()
-
 
 bool QgsVectorLayer::addFeature(QgsFeature& f, bool alsoUpdateExtent)
 {
@@ -1371,18 +1290,6 @@ bool QgsVectorLayer::addFeature(QgsFeature& f, bool alsoUpdateExtent)
     addedIdLowWaterMark--;
 
     QgsDebugMsg("Assigned feature id " + QString::number(addedIdLowWaterMark));
-
-    // Change the fields on the feature to suit the destination
-    // in the paste transformation transfer.
-    // TODO: Could be done more efficiently for large pastes
-    QgsFieldNameMap fields = f.fields();
-
-    QgsDebugMsg("QgsVectorLayer::addFeature: about to traverse fields.");
-    
-    for (QgsFieldNameMap::iterator it = fields.begin(); it != fields.end(); ++it)
-    {
-      QgsDebugMsg("QgsVectorLayer::addFeature: inspecting field '" + *it + "'.");
-    }
 
     // Force a feature ID (to keep other functions in QGIS happy,
     // providers will use their own new feature ID when we commit the new feature)
@@ -1491,12 +1398,6 @@ bool QgsVectorLayer::deleteVertexAt(int atFeatureId,
 }
 
 
-QString QgsVectorLayer::getDefaultValue(const QString& attr,
-    QgsFeature* f)
-{
-  return mDataProvider->getDefaultValue(attr, f);
-}
-
 bool QgsVectorLayer::deleteSelectedFeatures()
 {
   if(!(mDataProvider->capabilities() & QgsVectorDataProvider::DeleteFeatures))
@@ -1544,6 +1445,120 @@ bool QgsVectorLayer::deleteSelectedFeatures()
   return true;
 }
 
+int QgsVectorLayer::addRing(const QList<QgsPoint>& ring)
+{
+  int addRingReturnCode = 0;
+
+  //calculate bounding box of ring
+  double xMin = std::numeric_limits<double>::max();
+  double xMax = -std::numeric_limits<double>::max();
+  double yMin = std::numeric_limits<double>::max();
+  double yMax = -std::numeric_limits<double>::max();
+
+  for(QList<QgsPoint>::const_iterator it = ring.constBegin(); it != ring.constEnd(); ++it)
+    {
+      if(it->x() < xMin)
+	{
+	  xMin = it->x();
+	}
+      if(it->x() > xMax)
+	{
+	  xMax = it->x();
+	}
+      if(it->y() < yMin)
+	{
+	  yMin = it->y();
+	}
+      if(it->y() > yMax)
+	{
+	  yMax = it->y();
+	}
+    }
+
+  QgsRect bBox(xMin, yMin, xMax, yMax);
+  //qWarning("Bounding box of ring is: " + bBox.stringRep());
+
+  std::set<int> idList; //store the ids of the features we already added the ring
+
+  //call addRing for every feature in mChangedFeatures
+  QgsGeometryMap::iterator changedIt;
+  for(changedIt = mChangedGeometries.begin(); changedIt != mChangedGeometries.end(); ++changedIt)
+    {
+      if(changedIt.value().intersects(bBox))
+	{
+	  addRingReturnCode = changedIt.value().addRing(ring);
+	  if(addRingReturnCode == 0) //success. Leave this method
+	    {
+	      setModified(true, true);
+	      return 0;
+	    }
+	  else if(addRingReturnCode > 0 && addRingReturnCode < 5) //pass the error one level up
+	    {
+	      return addRingReturnCode;
+	    }
+	  //else, addRingReturnCode must be 5, so the ring is not contained in this polygon
+	}
+      idList.insert(changedIt.key());
+    }
+ 
+  //call addRing for every feature in mAddedFeatures
+  for(int i = 0; i < mAddedFeatures.size(); ++i)
+    {
+      if(idList.find(mAddedFeatures.at(i).featureId()) == idList.end())
+	{
+	  //if a geometry is not contained in mCachedGeometries, it is not in the view extent and therefore cannot intersect the ring
+	  if(mCachedGeometries.contains(mAddedFeatures.at(i).featureId()))
+	    {
+	      addRingReturnCode = mCachedGeometries[mAddedFeatures.at(i).featureId()].addRing(ring);
+	      if(addRingReturnCode == 0) //success. Leave this method
+		{
+		  mChangedGeometries[mAddedFeatures.at(i).featureId()] = mCachedGeometries[mAddedFeatures.at(i).featureId()];
+		  setModified(true, true);
+		  return 0;
+		}
+	      else if(addRingReturnCode > 0 && addRingReturnCode < 5) //pass the error one level up
+		{
+		  return addRingReturnCode;
+		}
+	      //else, addRingReturnCode must be 5, so the ring is not contained in this polygon
+	    }
+	  idList.insert(mAddedFeatures.at(i).featureId());
+	}
+    }
+  
+  //call addRing for every feature intersecting bounding box
+  mDataProvider->select(QgsAttributeList(), bBox, true, true);
+  QgsFeature currentFeature;
+  QgsGeometry* currentGeometryPtr = 0;
+
+  while(mDataProvider->getNextFeature(currentFeature))
+    {
+      if(idList.find(currentFeature.featureId()) == idList.end())
+	{
+	  currentGeometryPtr = currentFeature.geometry();
+	  if(currentGeometryPtr)
+	    {
+	      QgsGeometry newGeometry(*currentGeometryPtr);
+	      addRingReturnCode = newGeometry.addRing(ring);
+
+	      if(addRingReturnCode == 0)
+		{
+		  //add geometry to mChangedGeometries
+		  mChangedGeometries.insert(currentFeature.featureId(), newGeometry);
+		  setModified(true, true);
+		  return 0;
+		}
+	      else if(addRingReturnCode > 0 && addRingReturnCode < 5) //pass the error one level up
+		{
+		  return addRingReturnCode;
+		}
+	    }
+	}
+    }
+  
+  return 5; //ring not contained in any geometry
+}
+
 QgsLabel * QgsVectorLayer::label()
 {
   return mLabel;
@@ -1573,10 +1588,6 @@ bool QgsVectorLayer::startEditing()
     return false;
   }
 
-  // No longer need to cache all geometries
-  // instead, mCachedGeometries is refreshed every time the
-  // screen is redrawn.
-  //cacheGeometries();
   mEditable=true;
   return true;
 }
@@ -1970,13 +1981,13 @@ int QgsVectorLayer::findFreeId()
   int fid;
   if(mDataProvider)
   {
-    mDataProvider->reset();
+    mDataProvider->select();
     QgsFeature fet;
 
     //TODO: Is there an easier way of doing this other than iteration?
     //TODO: Also, what about race conditions between this code and a competing mapping client?
     //TODO: Maybe push this to the data provider?
-    while (mDataProvider->getNextFeature(fet, false))
+    while (mDataProvider->getNextFeature(fet))
     {
       fid = fet.featureId();
       if(fid>freeid)
@@ -2206,63 +2217,34 @@ QgsFeatureList QgsVectorLayer::selectedFeatures()
   
   QgsFeatureList features;
 
-  // we don't need to cache features ... it just adds unnecessary time
-  // as we don't need to pull *everything* from disk
-
-  // Go through each selected feature ID and determine
-  // its current geometry and attributes
+  QgsAttributeList allAttrs = mDataProvider->allAttributesList();
   
   for (QgsFeatureIds::iterator it = mSelectedFeatureIds.begin(); it != mSelectedFeatureIds.end(); ++it)
   {
     QgsFeature feat;
-
-    // Pull the original version of the feature from disk or memory
-    // as appropriate
-
-    // Check this selected item against the uncommitted added features
+    
     bool selectionIsAddedFeature = FALSE;
 
+    // Check this selected item against the uncommitted added features
     for (QgsFeatureList::iterator iter = mAddedFeatures.begin(); iter != mAddedFeatures.end(); ++iter)
     {
       if ( (*it) == (*iter).featureId() )
       {
         feat = QgsFeature(*iter);
         selectionIsAddedFeature = TRUE;
+        break;
       }
     }
 
+    // if the geometry is not newly added, get it from provider
     if (!selectionIsAddedFeature)
     {
-      // pull committed version from disk
-      feat = *it;
+      mDataProvider->getFeatureAtId(*it, feat, true, allAttrs);
+    }
 
-      int row = 0;  //TODO: Get rid of this, but getFeatureAttributes()
-                    //      needs it for some reason
+    // Transform the feature to the "current" in-memory version
+    features.append(QgsFeature(feat, mChangedAttributes, mChangedGeometries));
 
-      mDataProvider->getFeatureAttributes(*it, row, &feat);
-
-      if (!mChangedGeometries.contains(*it))
-      {
-         // also pull committed geometry from disk as we will
-         // not need to overwrite it later
-
-         if (mDataProvider->capabilities() & QgsVectorDataProvider::SelectGeometryAtId)
-         {
-           mDataProvider->getFeatureGeometry(*it, &feat);
-         }
-         else
-         {
-           // TODO: handle error somehow [MD]
-           //QMessageBox::information(0, tr("Cannot retrieve features"),
-           //     tr("The provider for the current layer cannot retrieve geometry for the selected features.  This version of the provider does not have this capability."));
-         }
-       }
-
-     }
-
-     // Transform the feature to the "current" in-memory version
-
-     features.append(QgsFeature(feat, mChangedAttributes, mChangedGeometries));
   } // for each selected
 
   return features;
@@ -2394,8 +2376,7 @@ bool QgsVectorLayer::snapPoint(QgsPoint& point, double tolerance)
 
   QgsRect selectrect(point.x()-tolerance,point.y()-tolerance,point.x()+tolerance,point.y()+tolerance);
 
-  mDataProvider->reset();
-  mDataProvider->select(selectrect);
+  mDataProvider->select(QgsAttributeList(), selectrect);
 
   //go to through the features reported by the spatial filter of the provider
   while (mDataProvider->getNextFeature(fet))
@@ -2438,7 +2419,7 @@ bool QgsVectorLayer::snapPoint(QgsPoint& point, double tolerance)
   }
 
   //and also go through the changed geometries, because the spatial filter of the provider did not consider feature changes
-  for(QgsGeometryMap::const_iterator iter = mChangedGeometries.begin(); iter != mChangedGeometries.end(); ++iter)
+  for(QgsGeometryMap::iterator iter = mChangedGeometries.begin(); iter != mChangedGeometries.end(); ++iter)
   {
     vertexFeature = iter.value().closestVertex(point, vindex, rb1, rb2, minsquaredist);
     if(minsquaredist<mindist)
@@ -2482,8 +2463,7 @@ bool QgsVectorLayer::snapVertexWithContext(QgsPoint& point, QgsGeometryVertexInd
   QgsRect selectrect(point.x()-tolerance, point.y()-tolerance,
                      point.x()+tolerance, point.y()+tolerance);
 
-  mDataProvider->reset();
-  mDataProvider->select(selectrect);
+  mDataProvider->select(QgsAttributeList(), selectrect);
 
   // Go through the committed features
   while (mDataProvider->getNextFeature(feature))
@@ -2617,8 +2597,7 @@ bool QgsVectorLayer::snapSegmentWithContext(QgsPoint& point, QgsGeometryVertexIn
   QgsRect selectrect(point.x()-tolerance, point.y()-tolerance,
                      point.x()+tolerance, point.y()+tolerance);
 
-  mDataProvider->reset();
-  mDataProvider->select(selectrect);
+  mDataProvider->select(QgsAttributeList(), selectrect);
 
   // Go through the committed features
   while (mDataProvider->getNextFeature(feature))
@@ -2633,7 +2612,7 @@ bool QgsVectorLayer::snapSegmentWithContext(QgsPoint& point, QgsGeometryVertexIn
       // feature->setGeometry( mChangedGeometries[ feature->featureId() ] );
     }
 
-    minDistSegPoint = feature.geometry()->closestSegmentWithContext(origPoint, beforeVertexTemp, testSqrDist);
+    testSqrDist = feature.geometry()->closestSegmentWithContext(origPoint, minDistSegPoint, beforeVertexTemp);
 
     if (
         (testSqrDist < minSqrDist) ||
@@ -2669,7 +2648,7 @@ bool QgsVectorLayer::snapSegmentWithContext(QgsPoint& point, QgsGeometryVertexIn
     }
     else
     {
-      minDistSegPoint = (*iter).geometry()->closestSegmentWithContext(origPoint, beforeVertexTemp, testSqrDist);
+      testSqrDist = (*iter).geometry()->closestSegmentWithContext(origPoint, minDistSegPoint, beforeVertexTemp);
     }
 
     if (
@@ -2694,7 +2673,7 @@ bool QgsVectorLayer::snapSegmentWithContext(QgsPoint& point, QgsGeometryVertexIn
   //and also go through the changed geometries, because the spatial filter of the provider did not consider feature changes
   for(QgsGeometryMap::iterator it = mChangedGeometries.begin(); it != mChangedGeometries.end(); ++it)
   {
-    minDistSegPoint = it.value().closestSegmentWithContext(origPoint, beforeVertexTemp, testSqrDist);
+    testSqrDist = it.value().closestSegmentWithContext(origPoint, minDistSegPoint, beforeVertexTemp);
     if (
         (testSqrDist < minSqrDist) ||
         (
@@ -3040,9 +3019,4 @@ void QgsVectorLayer::setModified(bool modified, bool onlyGeometry)
 {
   mModified = modified;
   emit wasModified(onlyGeometry);
-}
-
-QString QgsVectorLayer::saveAsShapefile(QString path, QString encoding)
-{
-  return QgsVectorFileWriter::writeVectorLayerAsShapefile(path, encoding, this);
 }

@@ -121,7 +121,6 @@
 #include "qgsrenderer.h"
 #include "qgsserversourceselect.h"
 #include "qgsvectordataprovider.h"
-#include "qgsvectorfilewriter.h"
 #include "qgsvectorlayer.h"
 
 //
@@ -145,13 +144,14 @@
 //
 // Map tools
 //
-#include "qgsmaptoolcapture.h"
+#include "qgsmaptooladdfeature.h"
+#include "qgsmaptooladdring.h"
 #include "qgsmaptoolidentify.h"
 #include "qgsmaptoolpan.h"
 #include "qgsmaptoolselect.h"
 #include "qgsmaptoolvertexedit.h"
 #include "qgsmaptoolzoom.h"
-#include "qgsmeasure.h"
+#include "qgsmeasuretool.h"
 
 //
 // Conditional Includes
@@ -749,6 +749,11 @@ void QgisApp::createActions()
   connect(mActionMoveVertex, SIGNAL(triggered()), this, SLOT(moveVertex()));
   mActionMoveVertex->setEnabled(false);
 
+  mActionAddRing = new QAction(QIcon(myIconPath+"/mActionAddRing.png"), tr("Add Ring"), this);
+  mActionAddRing->setStatusTip(tr("Add Ring"));
+  connect(mActionAddRing, SIGNAL(triggered()), this, SLOT(addRing()));
+  mActionAddRing->setEnabled(false);
+
   mActionEditCut = new QAction(QIcon(myIconPath+"/mActionEditCut.png"), tr("Cut Features"), this);
   mActionEditCut->setStatusTip(tr("Cut selected features"));
   connect(mActionEditCut, SIGNAL(triggered()), this, SLOT(editCut()));
@@ -812,6 +817,8 @@ void QgisApp::createActionGroups()
   mMapToolGroup->addAction(mActionDeleteVertex);
   mActionMoveVertex->setCheckable(true);
   mMapToolGroup->addAction(mActionMoveVertex);
+  mActionAddRing->setCheckable(true);
+  mMapToolGroup->addAction(mActionAddRing);
 }
 
 void QgisApp::createMenus()
@@ -966,6 +973,7 @@ void QgisApp::createToolBars()
   mDigitizeToolBar->addAction(mActionAddVertex);
   mDigitizeToolBar->addAction(mActionDeleteVertex);
   mDigitizeToolBar->addAction(mActionMoveVertex);
+  mDigitizeToolBar->addAction(mActionAddRing);
   mDigitizeToolBar->addAction(mActionEditCut);
   mDigitizeToolBar->addAction(mActionEditCopy);
   mDigitizeToolBar->addAction(mActionEditPaste);
@@ -1204,15 +1212,15 @@ void QgisApp::createCanvas()
   mMapTools.mPan->setAction(mActionPan);
   mMapTools.mIdentify = new QgsMapToolIdentify(mMapCanvas);
   mMapTools.mIdentify->setAction(mActionIdentify);
-  mMapTools.mMeasureDist = new QgsMeasure(FALSE /* area */, mMapCanvas);
+  mMapTools.mMeasureDist = new QgsMeasureTool(mMapCanvas, FALSE /* area */);
   mMapTools.mMeasureDist->setAction(mActionMeasure);
-  mMapTools.mMeasureArea = new QgsMeasure(TRUE /* area */, mMapCanvas);
+  mMapTools.mMeasureArea = new QgsMeasureTool(mMapCanvas, TRUE /* area */);
   mMapTools.mMeasureArea->setAction(mActionMeasureArea);
-  mMapTools.mCapturePoint = new QgsMapToolCapture(mMapCanvas, QgsMapToolCapture::CapturePoint);
+  mMapTools.mCapturePoint = new QgsMapToolAddFeature(mMapCanvas, QgsMapToolCapture::CapturePoint);
   mMapTools.mCapturePoint->setAction(mActionCapturePoint);
-  mMapTools.mCaptureLine = new QgsMapToolCapture(mMapCanvas, QgsMapToolCapture::CaptureLine);
+  mMapTools.mCaptureLine = new QgsMapToolAddFeature(mMapCanvas, QgsMapToolCapture::CaptureLine);
   mMapTools.mCaptureLine->setAction(mActionCaptureLine);
-  mMapTools.mCapturePolygon = new QgsMapToolCapture(mMapCanvas, QgsMapToolCapture::CapturePolygon);
+  mMapTools.mCapturePolygon = new QgsMapToolAddFeature(mMapCanvas, QgsMapToolCapture::CapturePolygon);
   mMapTools.mCapturePolygon->setAction(mActionCapturePolygon);
   mMapTools.mSelect = new QgsMapToolSelect(mMapCanvas);
   mMapTools.mSelect->setAction(mActionSelect);
@@ -1222,6 +1230,8 @@ void QgisApp::createCanvas()
   mMapTools.mVertexMove->setAction(mActionMoveVertex);
   mMapTools.mVertexDelete = new QgsMapToolVertexEdit(mMapCanvas, QgsMapToolVertexEdit::DeleteVertex);
   mMapTools.mVertexDelete->setAction(mActionDeleteVertex);
+  mMapTools.mAddRing = new QgsMapToolAddRing(mMapCanvas);
+  //mMapTools.mAddRing->setAction(mActionAddRing);
 }
 
 void QgisApp::createOverview()
@@ -1913,10 +1923,11 @@ bool QgisApp::addLayer(QFileInfo const & vectorFile)
     return false;
   }
 
-  mMapCanvas->freeze(false);
-  // mMapLegend->update(); NOW UPDATED VIA SIGNAL/SLOT
-  qApp->processEvents();       // XXX why does this need to be called manually?
+  // update UI
+  qApp->processEvents();
   
+  // draw the map
+  mMapCanvas->freeze(false);
   mMapCanvas->refresh();
 
 // Let render() do its own cursor management
@@ -1993,13 +2004,10 @@ bool QgisApp::addLayer(QStringList const &theLayerQStringList, const QString& en
 
   }
 
-  //qApp->processEvents();
-  // update legend
-  /*! \todo Need legend scrollview and legenditem classes */
+  // update UI
+  qApp->processEvents();
+  
   // draw the map
-
-  // mMapLegend->update(); NOW UPDATED VIA SIGNAL/SLOTS
-  qApp->processEvents();    // XXX why does this need to be called manually?
   mMapCanvas->freeze(false);
   mMapCanvas->refresh();
 
@@ -2082,7 +2090,11 @@ void QgisApp::addDatabaseLayer()
   }
 
   delete dbs;
+  
+  // update UI
   qApp->processEvents();
+  
+  // draw the map
   mMapCanvas->freeze(false);
   mMapCanvas->refresh();
 
@@ -3416,6 +3428,11 @@ void QgisApp::moveVertex()
   mMapCanvas->setMapTool(mMapTools.mVertexMove);
 }
 
+void QgisApp::addRing()
+{
+  mMapCanvas->setMapTool(mMapTools.mAddRing);
+}
+
 
 void QgisApp::deleteVertex()
 {
@@ -3437,7 +3454,7 @@ void QgisApp::editCut(QgsMapLayer * layerContainingSelection)
     if (selectionVectorLayer != 0)
     {
       QgsFeatureList features = selectionVectorLayer->selectedFeatures();
-      clipboard()->replaceWithCopyOf( features );
+      clipboard()->replaceWithCopyOf( selectionVectorLayer->getDataProvider()->fields(), features );
       selectionVectorLayer->deleteSelectedFeatures();
     }
   }
@@ -3458,7 +3475,7 @@ void QgisApp::editCopy(QgsMapLayer * layerContainingSelection)
     if (selectionVectorLayer != 0)
     {
       QgsFeatureList features = selectionVectorLayer->selectedFeatures();
-      clipboard()->replaceWithCopyOf( features );
+      clipboard()->replaceWithCopyOf( selectionVectorLayer->getDataProvider()->fields(), features );
     }
   }
 }
@@ -4307,7 +4324,11 @@ void QgisApp::addVectorLayer(QString vectorLayerPath, QString baseName, QString 
     QMessageBox::critical(this,tr("Layer is not valid"),
         tr("The layer is not a valid layer and can not be added to the map"));
   }
+  
+  // update UI
   qApp->processEvents();
+  
+  // draw the map
   mMapCanvas->freeze(false);
   mMapCanvas->refresh();
 
@@ -4340,7 +4361,11 @@ void QgisApp::addMapLayer(QgsMapLayer *theMapLayer)
     QMessageBox::critical(this,tr("Layer is not valid"),
         tr("The layer is not a valid layer and can not be added to the map"));
   }
+  
+  // update UI
   qApp->processEvents();
+  
+  // draw the map
   mMapCanvas->freeze(false);
   mMapCanvas->refresh();
 
@@ -4758,6 +4783,7 @@ void QgisApp::activateDeactivateLayerRelatedActions(QgsMapLayer* layer)
 	      mActionCapturePolygon->setEnabled(false);
 	      mActionAddVertex->setEnabled(false);
 	      mActionDeleteVertex->setEnabled(false);
+	      mActionAddRing->setEnabled(false);
 	      if(dprovider->capabilities() & QgsVectorDataProvider::ChangeGeometries)
 		{
 		  mActionMoveVertex->setEnabled(true);
@@ -4776,6 +4802,7 @@ void QgisApp::activateDeactivateLayerRelatedActions(QgsMapLayer* layer)
 		}
 	      mActionCapturePoint->setEnabled(false);
 	      mActionCapturePolygon->setEnabled(false);
+	      mActionAddRing->setEnabled(false);
 	    }
 	  else if(vlayer->vectorType() == QGis::Polygon)
 	    {
@@ -4797,6 +4824,10 @@ void QgisApp::activateDeactivateLayerRelatedActions(QgsMapLayer* layer)
 	      mActionAddVertex->setEnabled(true);
 	      mActionMoveVertex->setEnabled(true);
 	      mActionDeleteVertex->setEnabled(true);
+	      if(vlayer->vectorType() == QGis::Polygon)
+		{
+		  mActionAddRing->setEnabled(true);
+		}
 	    }
 	  else
 	    {
@@ -4818,6 +4849,7 @@ void QgisApp::activateDeactivateLayerRelatedActions(QgsMapLayer* layer)
       mActionCaptureLine->setEnabled(false);
       mActionCapturePolygon->setEnabled(false);
       mActionDeleteSelected->setEnabled(false);
+      mActionAddRing->setEnabled(false);
       mActionAddVertex->setEnabled(false);
       mActionDeleteVertex->setEnabled(false);
       mActionMoveVertex->setEnabled(false);
@@ -4974,7 +5006,9 @@ bool QgisApp::addRasterLayer(QgsRasterLayer * theRasterLayer, bool theForceRedra
 
   if (theForceRedrawFlag)
   {
+    // update UI
     qApp->processEvents();
+    // draw the map
     mMapCanvas->freeze(false);
     mMapCanvas->refresh();
   }
@@ -5115,7 +5149,9 @@ void QgisApp::addRasterLayer(QString const & rasterLayerPath,
         tr("The layer is not a valid layer and can not be added to the map"));
   }
 
+  // update UI
   qApp->processEvents();
+  // draw the map
   mMapCanvas->freeze(false);
   mMapCanvas->refresh();
 

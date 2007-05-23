@@ -45,7 +45,6 @@
 #include "qgsvectorlayer.h"
 #include "qgsdataprovider.h"
 #include "qgsmaptopixel.h"
-#include "qgsfeatureattribute.h"
 
 extern "C" {
 #include <grass/gis.h>
@@ -163,13 +162,13 @@ int QgsGrassAttributes::addTab ( const QString & label )
     tb->setRowReadOnly ( 0, TRUE );
     tb->setRowReadOnly ( 1, TRUE );
     
-    tb->horizontalHeader()->setLabel( 0, "Column" );
-    tb->horizontalHeader()->setLabel( 1, "Value" );
-    tb->horizontalHeader()->setLabel( 2, "Type" );  // Internal use
+    tb->horizontalHeader()->setLabel( 0, tr("Column") );
+    tb->horizontalHeader()->setLabel( 1, tr("Value") );
+    tb->horizontalHeader()->setLabel( 2, tr("Type") );  // Internal use
 
     tb->setLeftMargin(0); // hide row labels
 
-    tb->setText ( 0, 0, "Field" );
+    tb->setText ( 0, 0, tr("Field") );
     tb->setText ( 1, 0, "Cat" );
 
     tabCats->addTab ( tb, label );
@@ -242,7 +241,8 @@ void QgsGrassAttributes::addAttribute ( int tab, const QString &name, const QStr
 
     // I have no rational explanation why fromLocal8Bit is necessary, value should be in unicode
     // because QgsGrassProvider::attributes is using mEncoding->toUnicode() 
-    tb->setText ( row, 1, QString::fromLocal8Bit(value) );
+//    tb->setText ( row, 1, QString::fromLocal8Bit(value) );
+    tb->setText ( row, 1, value );
     tb->setText ( row, 2, type );
 
     resetButtons();
@@ -311,9 +311,9 @@ void QgsGrassAttributes::updateAttributes ( )
 
       if ( !error->isEmpty() ) {
 	  QMessageBox::warning( 0, tr("Warning"), *error );
-	  resultLabel->setText ( "ERROR" );
+	  resultLabel->setText ( tr("ERROR") );
       } else {
-	  resultLabel->setText ( "OK" );
+	  resultLabel->setText ( tr("OK") );
       }
 
       delete error;

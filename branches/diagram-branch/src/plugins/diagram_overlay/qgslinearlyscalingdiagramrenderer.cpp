@@ -1,6 +1,5 @@
 #include "qgslinearlyscalingdiagramrenderer.h"
 #include "qgsfeature.h"
-#include "qgsfeatureattribute.h"
 #include <limits>
 #include <QDomElement>
 #include <QImage>
@@ -40,7 +39,7 @@ int QgsLinearlyScalingDiagramRenderer::getDiagramSize(int& width, int& height, d
       return 0;
     }
   
-  value = iter.value().fieldValue().toDouble();
+  value = iter.value().toDouble();
   double scalefactor = (value - mLowerItem.lowerBound()) / (mUpperItem.lowerBound() - mLowerItem.lowerBound());
 
   //linearly interpolate height and width according to min/max value
@@ -69,7 +68,7 @@ int QgsLinearlyScalingDiagramRenderer::getDiagramSize(int& width, int& height, d
       double currentValue = 0;
       for(QgsAttributeMap::const_iterator iter = featureAttributes.constBegin(); iter != featureAttributes.constEnd(); ++iter)
 	{
-	  currentValue = iter.value().fieldValue().toDouble();
+	  currentValue = iter.value().toDouble();
 	  if(currentValue > highestValue)
 	    {
 	      highestValue = currentValue;
@@ -110,13 +109,13 @@ QImage* QgsLinearlyScalingDiagramRenderer::getLegendImage(QString& legendString)
       QgsAttributeList::const_iterator att_it; 
       for(att_it = mAttributes.constBegin(); att_it != mAttributes.constEnd(); ++att_it)
 	{
-	  dummyFeature.addAttribute(*att_it, QgsFeatureAttribute("", "1"));
+	  dummyFeature.addAttribute(*att_it, QVariant(1));
 	}
     }
   else if (mWellKnownName == "Bar")
     {
       destWidth = destHeight/3;
-      dummyFeature.addAttribute(mClassificationField, QgsFeatureAttribute("", "1"));
+      dummyFeature.addAttribute(mClassificationField, QVariant(1));
     }
   return mFactory.createDiagram(destWidth, destHeight, dummyFeature);
 }

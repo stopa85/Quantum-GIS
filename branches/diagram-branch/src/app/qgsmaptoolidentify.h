@@ -23,9 +23,9 @@
 #include <QObject>
 
 class QgsIdentifyResults;
-class QgsMessageViewer;
 class QgsMapLayer;
 class QgsRasterLayer;
+class QgsRubberBand;
 class QgsVectorLayer;
 
 /**
@@ -36,7 +36,7 @@ class QgsVectorLayer;
   - for vector layers shows feature attributes within search radius
     (allows to edit values when vector layer is in editing mode)
 */
-class QgsMapToolIdentify : public QObject, public QgsMapTool
+class QgsMapToolIdentify : public QgsMapTool
 {
   Q_OBJECT;
 
@@ -57,6 +57,10 @@ class QgsMapToolIdentify : public QObject, public QgsMapTool
     //! called when map tool is being deactivated
     virtual void deactivate();
 
+  public slots:
+    //! creates rubberband on top of the feature to highlight it
+    void highlightFeature(int featureId);
+  
   private:
 
     /**
@@ -90,8 +94,8 @@ class QgsMapToolIdentify : public QObject, public QgsMapTool
     //! Pointer to the identify results dialog for name/value pairs
     QgsIdentifyResults *mResults;
 
-    //! Pointer to the identify results dialog for WMS XML files
-    QgsMessageViewer * mViewer;
+    //! Rubber band for highlighting identified feature
+    QgsRubberBand* mRubberBand;
 
 private slots:
     // Let us know when the QgsIdentifyResults dialog box has been closed

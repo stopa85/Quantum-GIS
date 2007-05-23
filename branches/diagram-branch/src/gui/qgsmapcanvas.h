@@ -48,7 +48,6 @@ class QgsMapLayer;
 class QgsMapLayerInterface;
 class QgsLegend;
 class QgsLegendView;
-class QgsMeasure;
 class QgsRubberBand;
 
 class QgsMapRender;
@@ -275,6 +274,8 @@ signals:
     void setProgress(int,int);
     /** emits current mouse position */
     void xyCoordinates(QgsPoint & p);
+    /** emits current mouse position on right mouse click */
+    void sendXY(QgsPoint & p);
 
     //! Emitted when the scale of the map changes
     void scaleChanged(double);

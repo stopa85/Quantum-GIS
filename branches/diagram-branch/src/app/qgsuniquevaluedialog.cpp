@@ -19,7 +19,6 @@
 #include "qgsuniquevaluedialog.h"
 #include "qgsfeature.h"
 #include "qgsfield.h"
-#include "qgsfeatureattribute.h"
 #include "qgssymbol.h"
 #include "qgsuniquevaluerenderer.h"
 #include "qgsvectordataprovider.h"
@@ -62,9 +61,9 @@ QgsUniqueValueDialog::QgsUniqueValueDialog(QgsVectorLayer* vl): QDialog(), mVect
 	int classattr = *iter;
 	mClassificationComboBox->setCurrentItem(classattr);
 
-	const std::list<QgsSymbol*> list = renderer->symbols();
+	const QList<QgsSymbol*> list = renderer->symbols();
 	//fill the items of the renderer into mValues
-	for(std::list<QgsSymbol*>::const_iterator iter=list.begin();iter!=list.end();++iter)
+	for(QList<QgsSymbol*>::const_iterator iter=list.begin();iter!=list.end();++iter)
 	{
 	    QgsSymbol* symbol=(*iter);
 	    QString symbolvalue=symbol->lowerValue();
@@ -141,15 +140,15 @@ void QgsUniqueValueDialog::changeClassificationAttribute()
 	attlist.append(nr);
 	QgsSymbol* symbol;
 
-	provider->reset();
+	provider->select(attlist, QgsRect(), false);
 	QgsFeature feat;
 
 	//go through all the features and insert their value into the map and into mClassListWidget
 	mClassListWidget->clear();
-	while(provider->getNextFeature(feat, false, attlist))
+	while(provider->getNextFeature(feat))
 	{
-      const QgsAttributeMap& vec = feat.attributeMap();
-	    value=vec[nr].fieldValue();
+      const QgsAttributeMap& attrs = feat.attributeMap();
+	    value = attrs[nr].toString();
 	   
 	    if(mValues.find(value)==mValues.end())
 	    {

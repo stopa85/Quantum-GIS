@@ -518,6 +518,7 @@ QgsPoint QgsMapRender::outputCoordsToLayerCoords(QgsMapLayer* theLayer, QgsPoint
     catch (QgsCsException &cse)
     {
       qDebug( "Transform error caught in %s line %d:\n%s", __FILE__, __LINE__, cse.what());
+      throw cse; //let client classes know there was a transformation error
     }
   }
   else
@@ -539,6 +540,7 @@ QgsRect QgsMapRender::outputCoordsToLayerCoords(QgsMapLayer* theLayer, QgsRect r
     catch (QgsCsException &cse)
     {
       qDebug( "Transform error caught in %s line %d:\n%s", __FILE__, __LINE__, cse.what());
+      throw cse; //let client classes know there was a transformation error
     }
   }
   return rect;
@@ -579,6 +581,31 @@ void QgsMapRender::updateFullExtent()
     }
     it++;
   }
+
+  if (mFullExtent.width() == 0.0 || mFullExtent.height() == 0.0)
+  {
+    // If all of the features are at the one point, buffer the
+    // rectangle a bit. If they are all at zero, do something a bit
+    // more crude.
+
+    if (mFullExtent.xMin() == 0.0 && mFullExtent.xMax() == 0.0 &&
+        mFullExtent.yMin() == 0.0 && mFullExtent.yMax() == 0.0)
+    {
+      mFullExtent.set(-1.0, -1.0, 1.0, 1.0);
+    }
+    else
+    {
+      const double padFactor = 1e-8;
+      double widthPad = mFullExtent.xMin() * padFactor;
+      double heightPad = mFullExtent.yMin() * padFactor;
+      double xmin = mFullExtent.xMin() - widthPad;
+      double xmax = mFullExtent.xMax() + widthPad;
+      double ymin = mFullExtent.yMin() - heightPad;
+      double ymax = mFullExtent.yMax() + heightPad;
+      mFullExtent.set(xmin, ymin, xmax, ymax);
+    }
+  }
+
   QgsDebugMsg("Full extent: " + mFullExtent.stringRep());
 }
 

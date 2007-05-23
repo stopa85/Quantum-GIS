@@ -60,7 +60,7 @@ void QgsDiagramOverlay::createOverlayObjects(const QgsRect& viewExtent)
 	{
 	  //set spatial filter on data provider
 	  theProvider->reset();
-	  theProvider->select(viewExtent);
+	  theProvider->select(mAttributes, viewExtent);
 
 	  QgsFeature currentFeature;
 	  int width, height;
@@ -74,7 +74,7 @@ void QgsDiagramOverlay::createOverlayObjects(const QgsRect& viewExtent)
 
 	  int multifeaturecounter = 0;
 
-	  while(theProvider->getNextFeature(currentFeature, true, mAttributes))
+	  while(theProvider->getNextFeature(currentFeature))
 	    {
 	      //todo: insert more objects for multipart features
 	      if(mDiagramRenderer->getDiagramSize(width, height, value, currentFeature) != 0)
@@ -114,12 +114,12 @@ void QgsDiagramOverlay::drawOverlayObjects(QPainter * p, const QgsRect& viewExte
 	{
 	  //set spatial filter on data provider
 	  theProvider->reset();
-	  theProvider->select(viewExtent);
+	  theProvider->select(mAttributes, viewExtent);
 
 	  QgsFeature currentFeature;
 	  QImage* currentDiagramImage = 0;
 
-	  while(theProvider->getNextFeature(currentFeature, false, mAttributes))
+	  while(theProvider->getNextFeature(currentFeature))
 	    {
 	      //request diagram from renderer
 	      currentDiagramImage = mDiagramRenderer->renderDiagram(currentFeature);

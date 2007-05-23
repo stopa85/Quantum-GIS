@@ -1,7 +1,4 @@
 <ui version="4.0" >
- <author></author>
- <comment></comment>
- <exportmacro></exportmacro>
  <class>QgisAppBase</class>
  <widget class="QMainWindow" name="QgisAppBase" >
   <property name="geometry" >
@@ -16,9 +13,17 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralWidget" >
+   <property name="sizePolicy" >
+    <sizepolicy>
+     <hsizetype>7</hsizetype>
+     <vsizetype>7</vsizetype>
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
    <layout class="QGridLayout" >
     <property name="margin" >
-     <number>8</number>
+     <number>9</number>
     </property>
     <property name="spacing" >
      <number>6</number>
@@ -48,8 +53,8 @@
       <widget class="QSplitter" name="legendOverviewSplit" >
        <property name="sizePolicy" >
         <sizepolicy>
-         <hsizetype>7</hsizetype>
-         <vsizetype>7</vsizetype>
+         <hsizetype>0</hsizetype>
+         <vsizetype>0</vsizetype>
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
@@ -66,8 +71,8 @@
        <widget class="QToolBox" name="toolBox" >
         <property name="font" >
          <font>
-          <family>Arial</family>
-          <pointsize>7</pointsize>
+          <family>Lucida Grande</family>
+          <pointsize>10</pointsize>
           <weight>50</weight>
           <italic>false</italic>
           <bold>false</bold>
@@ -89,8 +94,8 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>363</width>
-           <height>243</height>
+           <width>386</width>
+           <height>244</height>
           </rect>
          </property>
          <attribute name="label" >
@@ -136,7 +141,6 @@
    </layout>
   </widget>
  </widget>
- <pixmapfunction></pixmapfunction>
  <resources/>
  <connections/>
 </ui>
