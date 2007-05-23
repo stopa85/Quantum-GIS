@@ -348,6 +348,10 @@ QString QgsGrass::mGisrc;
 QString QgsGrass::mTmp;
 
 int QgsGrass::error_routine ( char *msg, int fatal) {
+  return error_routine((const char*) msg, fatal);
+}
+
+int QgsGrass::error_routine ( const char *msg, int fatal) {
     std::cerr << "error_routine (fatal = " << fatal << "): " << msg << std::endl;
 
     if ( fatal ) error = FATAL;
@@ -383,12 +387,12 @@ QString QgsGrass::openMapset ( QString gisdbase, QString location, QString mapse
     
     // Check if the mapset is in use
     QString gisBase = getenv("GISBASE");
-    if ( gisBase.isNull() ) return "GISBASE is not set.";
+    if ( gisBase.isNull() ) return QObject::tr("GISBASE is not set.");
      
     QFileInfo fi( mapsetPath+ "/WIND" );
     if ( !fi.exists() )
     {
-        return mapsetPath + " is not a GRASS mapset.";
+        return mapsetPath + QObject::tr(" is not a GRASS mapset.");
     }
     
     QString lock = mapsetPath + "/.gislock";
@@ -406,7 +410,7 @@ QString QgsGrass::openMapset ( QString gisdbase, QString location, QString mapse
 
     if ( !process->start() ) 
     {
-	return "Cannot start " + gisBase + "/etc/lock";
+	return QObject::tr("Cannot start ") + gisBase + "/etc/lock";
     }
     
     // TODO better wait 
@@ -423,7 +427,7 @@ QString QgsGrass::openMapset ( QString gisdbase, QString location, QString mapse
 
 // TODO WIN32 (lock.exe does not work properly?)
 #ifndef WIN32
-    if ( status > 0 ) return "Mapset is already in use.";
+    if ( status > 0 ) return QObject::tr("Mapset is already in use.");
 #endif
 
     // Create temporary directory
@@ -438,13 +442,13 @@ QString QgsGrass::openMapset ( QString gisdbase, QString location, QString mapse
         if ( !dirInfo.isWritable() )
         {
             lockFile.remove();
-	    return "Temporary directory " + mTmp + " exist but is not writable";
+	    return QObject::tr("Temporary directory ") + mTmp + QObject::tr(" exist but is not writable");
         }
     }
     else if ( !dir.mkdir( mTmp ) )
     {
         lockFile.remove();
-	return "Cannot create temporary directory " + mTmp;
+	return QObject::tr("Cannot create temporary directory ") + mTmp;
     }
    
     // Create GISRC file 
@@ -460,7 +464,7 @@ QString QgsGrass::openMapset ( QString gisdbase, QString location, QString mapse
     if ( !out.open( QIODevice::WriteOnly ) ) 
     {
         lockFile.remove();
-	return "Cannot create " + mGisrc; 
+	return QObject::tr("Cannot create ") + mGisrc; 
     }
     QTextStream stream ( &out );
 
@@ -533,7 +537,7 @@ QString QgsGrass::closeMapset ( )
         QFile file ( mMapsetLock );
         if ( !file.remove() )
         {
-	    return "Cannot remove mapset lock: " + mMapsetLock;
+	    return QObject::tr("Cannot remove mapset lock: ") + mMapsetLock;
         }
         mMapsetLock = "";
 
@@ -920,8 +924,8 @@ bool QgsGrass::mapRegion( int type, QString gisbase,
 	if ( G_get_cellhd ( map.toLocal8Bit().data(), 
 		      mapset.toLocal8Bit().data(), window) < 0 )
 	{
-	    QMessageBox::warning( 0, "Warning", 
-		     "Cannot read raster map region" ); 
+	    QMessageBox::warning( 0, QObject::tr("Warning"), 
+		     QObject::tr("Cannot read raster map region" )); 
 	    return false;
 	}
     }
@@ -937,8 +941,8 @@ bool QgsGrass::mapRegion( int type, QString gisbase,
 
 	if ( level < 2 ) 
 	{ 
-	    QMessageBox::warning( 0, "Warning", 
-		     "Cannot read vector map region" ); 
+	    QMessageBox::warning( 0, QObject::tr("Warning"), 
+		     QObject::tr("Cannot read vector map region" ) ); 
 	    return false;
 	}
 
@@ -973,25 +977,42 @@ bool QgsGrass::mapRegion( int type, QString gisbase,
 		  map.toLocal8Bit().data(), 
 		  mapset.toLocal8Bit().data() ) != NULL )
 	{
-	    QMessageBox::warning( 0, "Warning", 
-		     "Cannot read region" ); 
+	    QMessageBox::warning( 0, QObject::tr("Warning"), 
+		     QObject::tr("Cannot read region" )); 
 	    return false;
 	}
     }
     return true;
 }
 
+// GRASS version constants have been changed on 26.4.2007
+// http://freegis.org/cgi-bin/viewcvs.cgi/grass6/include/version.h.in.diff?r1=1.4&r2=1.5
+// The following lines workaround this change
+
 int QgsGrass::versionMajor()
 {
+#ifdef GRASS_VERSION_MAJOR
+    return GRASS_VERSION_MAJOR;
+#else
     return QString(GRASS_VERSION_MAJOR).toInt();
+#endif
 }
 int QgsGrass::versionMinor()
 {
+#ifdef GRASS_VERSION_MINOR
+    return GRASS_VERSION_MINOR;
+#else
     return QString(GRASS_VERSION_MINOR).toInt();
+#endif
 }
 int QgsGrass::versionRelease()
 {
+#ifdef GRASS_VERSION_RELEASE
+    #define QUOTE(x)  #x
+    return QString(QUOTE(GRASS_VERSION_RELEASE)).toInt();
+#else
     return QString(GRASS_VERSION_RELEASE).toInt();
+#endif
 }
 QString QgsGrass::versionString()
 {

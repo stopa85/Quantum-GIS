@@ -1,6 +1,7 @@
        Procedure for setup of a windows build environment for QGIS
                     Tim Sutton and Godofredo Contreras 2006
                     CMake additions Magnus Homann 2007
+                    Python additions Martin Dobias 2007
   With thanks to Tisham Dhar for preparing the initial msys environment
 ---------------------------------------------------------------------------------
 
@@ -10,18 +11,19 @@ under windows (rather than using a cross compiler under linux).
 Note: The process for building under windows is still being sorted out so
       check this document regularly for updates.
 
-Msys:
+MSYS:
 -----
 get this: 
 
-http://qgis.org/uploadfiles/msys/msys.tar.bz2
+http://qgis.org/uploadfiles/msys/msys.tar.gz
 
 and unpack to c:\msys
 
-The file is compressed using bzip2 - you can get a free windows application
+The file is compressed as gzipped tarball - you can get a free windows application
 for creating and decompressing files here:
 
 http://www.7-zip.org/
+
 
 Qt4.2:
 ------
@@ -31,74 +33,142 @@ download and install of mingw) from here:
 
 http://www.trolltech.com/developer/downloads/qt/windows
 
-Edit C:\Qt\4.2.0\bin\qtvars.bat and add the following line (the second is only 
-needed if you like vim in your shell):
+When the installer will ask for MinGW, you don't need to download and install
+it, just point the installer to c:\msys\mingw
+
+When Qt installation is complete:
+
+Edit C:\Qt\4.2.3\bin\qtvars.bat and add the following line:
 
 set PATH=%PATH%;C:\msys\local\bin;c:\msys\local\lib
-set PATH=%PATH%;"c:\Program Files\Vim\vim70\
 
-If you plan to do some debugging, you'll need to complie debug version of Qt:
-C:\Qt\4.2.0\bin\qtvars.bat compile_debug
+If you plan to do some debugging, you'll need to compile debug version of Qt:
+C:\Qt\4.2.3\bin\qtvars.bat compile_debug
+
+
+Python stuff: (optional)
+-------------
+
+Follow this section in case you would like to use Python bindings for QGIS.
+To be able to compile bindings, you need to compile SIP and PyQt4 from sources
+as their installer doesn't include some development files which are necessary.
+
+*) Download and install Python - use Windows installer
+   (It doesn't matter to what folder you'll install it)
+
+   http://python.org/download/
+
+*) Download SIP and PyQt4 sources
+
+   http://www.riverbankcomputing.com/Downloads/sip4/sip-4.6.zip
+   http://www.riverbankcomputing.com/Downloads/PyQt4/GPL/PyQt-win-gpl-4.2.zip
+
+*) Unpack SIP to a temporary directory, open console (cmd.exe) and compile:
+
+   > c:\Qt\4.2.3\bin\qtvars.bat
+   > python configure.py -p win32-g++
+   > make
+   > make install
+   
+*) Unpack PyQt to a temporary directory, open console (cmd.exe) and compile:
+
+   > c:\Qt\4.2.3\bin\qtvars.bat
+   > python configure.py
+   > make
+   > make install
+
+*) You can delete the directories with unpacked SIP and PyQt4 sources
+   after a successfull install, they're not needed anymore.
+
+
+Subversion:
+-----------
+
+In order to check out QGIS sources from the repository, you need Subversion
+client. This installer should work fine:
+
+http://subversion.tigris.org/files/documents/15/36797/svn-1.4.3-setup.exe
+
+
+CMake:
+------
+
+CMake is build system used by Quantum GIS. Download it from here:
+
+http://www.cmake.org/files/v2.4/cmake-2.4.6-win32-x86.exe
 
 
 QGIS:
 -----
-Check out to c:\dev\cpp\qgis:
 
-cd c:\dev\cpp
-svn co https://svn.qgis.org/repos/qgis/trunk/qgis
+*) Start a cmd.exe window ( Start -> Run -> cmd.exe )
+
+*) Create development directory and move into it
+
+   > md c:\dev\cpp
+   > cd c:\dev\cpp
+   
+*) Check out sources from SVN
+
+   > svn co https://svn.qgis.org/repos/qgis/trunk/qgis
 
 Currently you need to put it into that location in case you plan to create
 the NSIS installer because so far it contains hardcoded paths for this location.
 
 
-USING CMAKE :
------------
-
-Instead of shifting around files, you could use CMake. CMake compiles
-raster, compaser, legend, gui and core libraries into one core
-library. So it is not 100% compatible with 'normal' 0.8 Makefiles.
-
-Below are the steps to configure and make the source. The building
-takes plac in a separate directory from the source. If you have built
-the source with 'normal' Makefiels first, please do a make clean (or
-remove and check out everything). Previoussly made intermediate files
-can disturb the CMake process.
+Compiling:
+----------
 
 As a background read http://wiki.qgis.org/qgiswiki/Building_with_CMake
 
-*) Make sure %QTDIR%\bin;c:\msys\local\bin;c:\msys\bin;c;\msys\mingw\bin is in your Path
-
 *) Start a cmd.exe window ( Start -> Run -> cmd.exe ) if you don't have one already.
 
-*) > mkdir build
+*) Add paths to compiler and our MSYS environment:
+   
+   > c:\Qt\4.2.3\bin\qtvars.bat
 
-*) > cd build
+*) Create build directory and set it as current directory:
 
-*) > cmakesetup ..
+   > cd c:\dev\cpp\qgis
+   > md build
+   > cd build
 
-   If asked, you should chose 'MSYS Makefiles' as generator.
+*) Configuration
+
+   > cmakesetup ..
+
+   Click 'Configure' button.
+   When asked, you should choose 'MinGW Makefiles' as generator.
+   
+   There's a problem with MinGW Makefiles on Win2K. If you're compiling on this
+   platform, use 'MSYS Makefiles' generator instead.
 
    All dependencies should be picked up automatically, if you have set
    up the Paths correctly. The only thing you need to change is the
-   installation destination and/or set 'Debug'.
+   installation destination (CMAKE_INSTALL_PREFIX) and/or set 'Debug'.
 
+   When configuration is done, click 'OK' to exit the setup utility.
 
-*) Now, start sh.exe and run 'make.exe install' from within that shell
+*) Compilation and installation
+ 
+   > make
+   > make install
 
-   It should now start compiling. The reason for this is that we use
-   the mingw compiler included in the msys tar, but that compiler is
-   not found from within sh.exe. (MSYS magic). So, if you delete
-   CMakeCache, you have to generate it from cmd.exe.
+*) Run qgis.exe from the directory where it's installed (CMAKE_INSTALL_PREFIX)
 
-   Why not run make from cmd.exe? Because creating 'qgssvnversion.h'
-   requires the 'mv' command...
+   Make sure to copy all .dll:s needed to the same directory as the
+   qgis.exe binary is installed to, if not already done so, otherwise
+   QGIS will complain about missing libraries when started.
+   
+   Other possibility is to run qgis.exe when your path contains
+   c:\msys\local\bin and c:\msys\local\lib directories, so the DLLs
+   will be used from that place.
 
-*) Make sure to copy all .dll:s needed to the same directory as the
-   qgis.exe binary is installed to, if not already done so.
 
 Create the installation package: (optional)
 --------------------------------
+
+[ TO BE UPDATED FOR 0.9 RELEASE ]
 
 Downlad and install NSIS from (http://nsis.sourceforge.net/Main_Page)
 

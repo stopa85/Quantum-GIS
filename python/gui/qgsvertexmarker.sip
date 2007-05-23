@@ -16,13 +16,17 @@ class QgsVertexMarker : QgsMapCanvasItem
       ICON_BOX
     };
 
-    QgsVertexMarker(QgsMapCanvas* mapCanvas);
+    QgsVertexMarker(QgsMapCanvas* mapCanvas /TransferThis/);
     
     void setCenter(const QgsPoint& point);
     
     void setIconType(int iconType);
     
     void setIconSize(int iconSize);
+    
+    void setColor(const QColor& color);
+    
+    void setPenWidth(int width);
     
     void paint(QPainter* p);
     

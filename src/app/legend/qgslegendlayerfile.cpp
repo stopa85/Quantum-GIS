@@ -24,6 +24,7 @@
 #include "qgslegendlayerfile.h"
 #include "qgsmaplayer.h"
 #include "qgsrasterlayer.h"
+#include "qgsvectorfilewriter.h"
 #include "qgsvectorlayer.h"
 #include "qgsvectordataprovider.h"
 
@@ -293,6 +294,16 @@ void QgsLegendLayerFile::closeTable(bool onlyGeometryWasChanged)
 
 void QgsLegendLayerFile::saveAsShapefile()
 {
+  saveAsShapefileGeneral(FALSE);
+}
+
+void QgsLegendLayerFile::saveSelectionAsShapefile()
+{
+  saveAsShapefileGeneral(TRUE);
+}
+
+void QgsLegendLayerFile::saveAsShapefileGeneral(bool saveOnlySelection)
+{
   if (mLyr.layer()->type() != QgsMapLayer::VECTOR)
     return;
 
@@ -309,6 +320,7 @@ void QgsLegendLayerFile::saveAsShapefile()
       dirName,
       filter,
       QString("UTF-8"));
+  openFileDialog->setAcceptMode(QFileDialog::AcceptSave);
 
   // allow for selection of more than one file
   //openFileDialog->setMode(QFileDialog::AnyFile);
@@ -316,8 +328,11 @@ void QgsLegendLayerFile::saveAsShapefile()
   if (openFileDialog->exec() != QDialog::Accepted)
     return;
     
-  QString enc = openFileDialog->encoding();
+  
+  QString encoding = openFileDialog->encoding();
   QString shapefileName = openFileDialog->selectedFile();
+  settings.writeEntry("/UI/lastShapefileDir", QFileInfo(shapefileName).absolutePath());
+  
   
   if (shapefileName.isNull())
     return;
@@ -328,25 +343,31 @@ void QgsLegendLayerFile::saveAsShapefile()
     shapefileName += ".shp";
   }
   
-  QString error = vlayer->saveAsShapefile(shapefileName, enc);
+  QApplication::setOverrideCursor(Qt::waitCursor);
   
-  if (error == "DRIVER_NOT_FOUND")
+  QgsVectorFileWriter::WriterError error;
+  error = QgsVectorFileWriter::writeAsShapefile(vlayer, shapefileName, encoding, saveOnlySelection);
+  
+  QApplication::restoreOverrideCursor();
+  
+  switch (error)
   {
-    QMessageBox::warning(0, tr("Driver not found"), tr("ESRI Shapefile driver is not available"));
-  }
-  else if (error == "ERROR_CREATE_SOURCE")
-  {
-    QMessageBox::warning(0, tr("Error creating shapefile"),
-                         tr("The shapefile could not be created (") +
-                             shapefileName + ")");
-  }
-  else if (error == "ERROR_CREATE_LAYER")
-  {
-    QMessageBox::warning(0, tr("Error"), tr("Layer creation failed"));
-  }
-  else
-  {
-    QMessageBox::information(0, tr("Saving done"), tr("Export to Shapefile has been completed"));
+    case QgsVectorFileWriter::NoError:
+      QMessageBox::information(0, tr("Saving done"), tr("Export to Shapefile has been completed"));
+      break;
+    
+    case QgsVectorFileWriter::ErrDriverNotFound:
+      QMessageBox::warning(0, tr("Driver not found"), tr("ESRI Shapefile driver is not available"));
+      break;
+  
+    case QgsVectorFileWriter::ErrCreateDataSource:
+      QMessageBox::warning(0, tr("Error creating shapefile"),
+                           tr("The shapefile could not be created (") + shapefileName + ")");
+      break;
+    
+    case QgsVectorFileWriter::ErrCreateLayer:
+      QMessageBox::warning(0, tr("Error"), tr("Layer creation failed"));
+      break;
   }
 }
 
@@ -450,9 +471,14 @@ void QgsLegendLayerFile::addToPopupMenu(QMenu& theMenu)
       toggleEditingAction->blockSignals(false);
     }
     
-    // add the save as shapefile menu item
-    // TODO: currently not working
-    //theMenu.addAction(tr("Save as shapefile..."), this, SLOT(saveAsShapefile()));
+    // save as shapefile
+    theMenu.addAction(tr("Save as shapefile..."), this, SLOT(saveAsShapefile()));
+
+    QAction* saveSelectionAction = theMenu.addAction(tr("Save selection as shapefile..."), this, SLOT(saveSelectionAsShapefile()));
+    if (vlayer->selectedFeatureCount() == 0)
+    {
+      saveSelectionAction->setEnabled(false);
+    }
 
     theMenu.addSeparator();
   }

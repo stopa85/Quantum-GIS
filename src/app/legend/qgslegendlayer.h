@@ -90,6 +90,9 @@ public:
     
     void toggleEditing();
     
+    void saveAsShapefile();
+    void saveSelectionAsShapefile();
+    
   protected:
     
     /** Prepare and change symbology for vector layer */

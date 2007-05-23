@@ -55,6 +55,11 @@ double QgsPoint::sqrDist(double x, double y) const
     return (m_x-x)*(m_x-x)+(m_y-y)*(m_y-y);
 }
 
+double QgsPoint::sqrDist(const QgsPoint& other)
+{
+  return sqrDist(other.x(), other.y());
+}
+
 // operators
 bool QgsPoint::operator==(const QgsPoint & other)
 {
@@ -64,7 +69,7 @@ bool QgsPoint::operator==(const QgsPoint & other)
     return false;
 }
 
-bool QgsPoint::operator!=(const QgsPoint & other)
+bool QgsPoint::operator!=(const QgsPoint & other) const
 {
   if ((m_x == other.x()) && (m_y == other.y()))
     return false;

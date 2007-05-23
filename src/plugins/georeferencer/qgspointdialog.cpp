@@ -292,7 +292,8 @@ void QgsPointDialog::on_cmbTransformType_currentIndexChanged(const QString& valu
 bool QgsPointDialog::generateWorldFile()
 {
   QgsPoint origin(0, 0);
-  double pixelSize = 1;
+  double pixelXSize = 1;
+  double pixelYSize = 1;
   double rotation = 0;
   double xOffset = 0.0;
   double yOffset = 0.0;
@@ -312,7 +313,7 @@ bool QgsPointDialog::generateWorldFile()
   {
     if (cmbTransformType->currentText() == tr("Linear"))
     {
-      QgsLeastSquares::linear(mapCoords, pixelCoords, origin, pixelSize);
+      QgsLeastSquares::linear(mapCoords, pixelCoords, origin, pixelXSize, pixelYSize);
     }
     else if (cmbTransformType->currentText() == tr("Helmert"))
     {
@@ -327,7 +328,8 @@ bool QgsPointDialog::generateWorldFile()
       if (res == QMessageBox::Cancel)
 	       return false;
 
-      QgsLeastSquares::helmert(mapCoords, pixelCoords, origin, pixelSize, rotation);
+      QgsLeastSquares::helmert(mapCoords, pixelCoords, origin, pixelXSize, rotation);
+      pixelYSize = pixelXSize;
     }
     else if (cmbTransformType->currentText() == tr("Affine"))
     {
@@ -375,12 +377,12 @@ bool QgsPointDialog::generateWorldFile()
     return false;
   }
   QTextStream stream(&file);
-  stream<<pixelSize<<endl
+  stream<< QString::number(pixelXSize, 'f', 15) <<endl
 	<<0<<endl
 	<<0<<endl
-	<<-pixelSize<<endl
-	<<QString::number(origin.x() - xOffset * pixelSize, 'f')<<endl
-	<<QString::number(origin.y() + yOffset * pixelSize, 'f')<<endl;  
+	<<QString::number(-pixelYSize, 'f', 15) <<endl
+	<<QString::number(origin.x() - xOffset * pixelXSize, 'f', 15)<<endl
+	<<QString::number(origin.y() + yOffset * pixelYSize, 'f', 15)<<endl;  
   // write the data points in case we need them later
   QFile pointFile(mLayer->source() + ".points");
   if (pointFile.open(QIODevice::WriteOnly))
@@ -390,8 +392,8 @@ bool QgsPointDialog::generateWorldFile()
     for (unsigned int i = 0; i < mapCoords.size(); ++i)
     {
       points<<(QString("%1\t%2\t%3\t%4").
-	       arg(QString::number(mapCoords[i].x(), 'f')).
-               arg(QString::number(mapCoords[i].y(), 'f')).
+	       arg(QString::number(mapCoords[i].x(), 'f', 15)).
+               arg(QString::number(mapCoords[i].y(), 'f', 15)).
 	       arg(pixelCoords[i].x()).arg(pixelCoords[i].y()))<<endl;
     }
   }
@@ -441,6 +443,7 @@ void QgsPointDialog::showCoordDialog(QgsPoint& pixelCoords)
   MapCoordsDialog* mcd = new MapCoordsDialog(pixelCoords, this);
   connect(mcd, SIGNAL(pointAdded(const QgsPoint&, const QgsPoint&)),
           this, SLOT(addPoint(const QgsPoint&, const QgsPoint&)));
+  connect(mIface->getMapCanvas(),SIGNAL(sendXY(QgsPoint&)),mcd,SLOT(setXY(QgsPoint&)));
   mcd->show();
 }
 

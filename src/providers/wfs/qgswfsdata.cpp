@@ -1,5 +1,4 @@
 #include "qgswfsdata.h"
-#include "qgsfeatureattribute.h"
 #include "qgsrect.h"
 #include "qgsspatialrefsys.h"
 #include <QBuffer>
@@ -53,15 +52,17 @@ int QgsWFSData::getWFSData()
 
   //separate host from query string
   QUrl requestUrl(mUri);
-  mHttp.setHost(requestUrl.host());
+  int portNr = requestUrl.port();
+  if(portNr != -1)
+    {
+      mHttp.setHost(requestUrl.host(), portNr);
+    }
+  else
+    {
+      mHttp.setHost(requestUrl.host());
+    }
   mHttp.get(mUri);
 
-  //just for a test
-  //QProgressDialog pd;
-  //pd.setWindowModality(Qt::WindowModal);
-  //pd.setMaximum(150000000); //shows busy indocator
-  //QObject::connect(&mHttp, SIGNAL(dataReadProgress(int,int)), &pd, SLOT(setValue(int)));
-  //pd.show();
 
   //loop to read the data
   QByteArray readData;
@@ -106,6 +107,8 @@ void QgsWFSData::startElement(const XML_Char* el, const XML_Char** attr)
     {
       mParseModeStack.push(QgsWFSData::coordinate);
       mStringCash.clear();
+      mCoordinateSeparator = readCsFromAttribute(attr);
+      mTupleSeparator = readTsFromAttribute(attr);
     }
   else if(localName == mGeometryAttribute)
     {
@@ -118,7 +121,6 @@ void QgsWFSData::startElement(const XML_Char* el, const XML_Char** attr)
   else if(elementName == GML_NAMESPACE + NS_SEPARATOR + "featureMember")
     {
       mCurrentFeature = new QgsFeature(mFeatureCount);
-      ++mFeatureCount;
       mAttributeIndex = 0;
       mParseModeStack.push(QgsWFSData::featureMember);
     }
@@ -183,23 +185,27 @@ void QgsWFSData::endElement(const XML_Char* el)
   QString localName = elementName.section(NS_SEPARATOR, 1, 1);
   if(elementName == GML_NAMESPACE + NS_SEPARATOR + "coordinates")
     {
-      //qWarning("Poping coordinate from the stack");
-      mParseModeStack.pop();
+      if(!mParseModeStack.empty())
+	{
+	  mParseModeStack.pop();
+	}
     }
   else if(localName == mAttributeName) 
     {
-      mParseModeStack.pop();
-      //qWarning("adding attribute");
-      //qWarning(mAttributeName.toLocal8Bit().data());
-      //qWarning(mStringCash.toLocal8Bit().data());
-      //mCurrentFeature->addAttribute(mAttributeName, mStringCash);
-      mCurrentFeature->addAttribute(mAttributeIndex, QgsFeatureAttribute(mAttributeName, mStringCash));
+      if(!mParseModeStack.empty())
+	{
+	  mParseModeStack.pop();
+	}
+      
+      mCurrentFeature->addAttribute(mAttributeIndex, QVariant(mStringCash));
       ++mAttributeIndex;
     }
   else if(localName == mGeometryAttribute)
     {
-      //qWarning("Poping geometry from the stack");
-      mParseModeStack.pop();
+      if(!mParseModeStack.empty())
+	{
+	  mParseModeStack.pop();
+	}
     }
   else if(elementName == GML_NAMESPACE + NS_SEPARATOR + "boundedBy" && mParseModeStack.top() == QgsWFSData::boundingBox)
     {
@@ -208,10 +214,11 @@ void QgsWFSData::endElement(const XML_Char* el)
 	{
 	  qWarning("creation of bounding box failed");
 	}
-      //qWarning("bounding box");
-      //qWarning(mExtent->stringRep().toLocal8Bit().data());
-      //qWarning("Removing boundingBox from stack");
-      mParseModeStack.pop();
+      
+      if(!mParseModeStack.empty())
+	{
+	  mParseModeStack.pop();
+	}
     }
   else if(elementName == GML_NAMESPACE + NS_SEPARATOR + "featureMember")
     {
@@ -224,7 +231,7 @@ void QgsWFSData::endElement(const XML_Char* el)
   else if(elementName == GML_NAMESPACE + NS_SEPARATOR + "Point")
     {
       std::list<QgsPoint> pointList;
-      if(pointsFromCoordinateString(pointList, mStringCash) != 0)
+      if(pointsFromCoordinateString(pointList, mStringCash, mCoordinateSeparator, mTupleSeparator) != 0)
 	{
 	  //error
 	}
@@ -261,7 +268,7 @@ void QgsWFSData::endElement(const XML_Char* el)
       //add WKB point to the feature
       
       std::list<QgsPoint> pointList;
-      if(pointsFromCoordinateString(pointList, mStringCash) != 0)
+      if(pointsFromCoordinateString(pointList, mStringCash, mCoordinateSeparator, mTupleSeparator) != 0)
 	{
 	  //error
 	}
@@ -294,7 +301,7 @@ void QgsWFSData::endElement(const XML_Char* el)
   else if(elementName == GML_NAMESPACE + NS_SEPARATOR + "LinearRing")
     {
       std::list<QgsPoint> pointList;
-      if(pointsFromCoordinateString(pointList, mStringCash) != 0)
+      if(pointsFromCoordinateString(pointList, mStringCash, mCoordinateSeparator, mTupleSeparator) != 0)
 	{
 	  //error
 	}
@@ -317,17 +324,26 @@ void QgsWFSData::endElement(const XML_Char* el)
     }
   else if(elementName == GML_NAMESPACE + NS_SEPARATOR + "MultiPoint")
     {
-      mParseModeStack.pop();
+      if(!mParseModeStack.empty())
+	{
+	  mParseModeStack.pop();
+	}
       createMultiPointFromFragments();
     }
   else if(elementName == GML_NAMESPACE + NS_SEPARATOR + "MultiLineString")
     {
-      mParseModeStack.pop();
+      if(!mParseModeStack.empty())
+	{
+	  mParseModeStack.pop();
+	}
       createMultiLineFromFragments();
     }
   else if(elementName == GML_NAMESPACE + NS_SEPARATOR + "MultiPolygon")
     {
-      mParseModeStack.pop();
+      if(!mParseModeStack.empty())
+	{
+	  mParseModeStack.pop();
+	}
       createMultiPolygonFromFragments();
     }
 }
@@ -343,7 +359,6 @@ void QgsWFSData::characters(const XML_Char* chars, int len)
   QgsWFSData::parseMode theParseMode = mParseModeStack.top();
   if(theParseMode == QgsWFSData::attribute || theParseMode == QgsWFSData::coordinate)
   {
-    //mStringCash = QString::fromUtf8(chars, len);
     mStringCash.append(QString::fromUtf8(chars, len));
   } 
 }
@@ -380,6 +395,34 @@ int QgsWFSData::readEpsgFromAttribute(int& epsgNr, const XML_Char** attr) const
   return 2;
 }
 
+QString QgsWFSData::readCsFromAttribute(const XML_Char** attr) const
+{
+  int i = 0;
+  while(attr[i] != NULL)
+    {
+      if(strcmp(attr[i], "cs") == 0)
+	{
+	  return QString(attr[i+1]);
+	}
+      ++i;
+    }
+  return ",";
+}
+
+QString QgsWFSData::readTsFromAttribute(const XML_Char** attr) const
+{
+  int i = 0;
+  while(attr[i] != NULL)
+    {
+      if(strcmp(attr[i], "ts") == 0)
+	{
+	  return QString(attr[i+1]);
+	}
+      ++i;
+    }
+  return " ";
+}
+
 int QgsWFSData::createBBoxFromCoordinateString(QgsRect* bb, const QString& coordString) const
 {
   if(!bb)
@@ -390,7 +433,7 @@ int QgsWFSData::createBBoxFromCoordinateString(QgsRect* bb, const QString& coord
   std::list<QgsPoint> points;
   //qWarning("string is: ");
   //qWarning(coordString.toLocal8Bit().data());
-  if(pointsFromCoordinateString(points, coordString) != 0)
+  if(pointsFromCoordinateString(points, coordString, mCoordinateSeparator, mTupleSeparator) != 0)
     {
       return 2;
     }
@@ -406,10 +449,10 @@ int QgsWFSData::createBBoxFromCoordinateString(QgsRect* bb, const QString& coord
   return 0;
 }
 
-int QgsWFSData::pointsFromCoordinateString(std::list<QgsPoint>& points, const QString& coordString) const
+int QgsWFSData::pointsFromCoordinateString(std::list<QgsPoint>& points, const QString& coordString, const QString& cs, const QString& ts) const
 {
   //tuples are separated by space, x/y by ','
-  QStringList tuples = coordString.split(" ", QString::SkipEmptyParts);
+  QStringList tuples = coordString.split(ts, QString::SkipEmptyParts);
   QStringList tuples_coordinates;
   double x, y;
   bool conversionSuccess;
@@ -417,7 +460,7 @@ int QgsWFSData::pointsFromCoordinateString(std::list<QgsPoint>& points, const QS
   QStringList::const_iterator tupleIterator;
   for(tupleIterator = tuples.constBegin(); tupleIterator != tuples.constEnd(); ++tupleIterator)
     {
-      tuples_coordinates = tupleIterator->split(",", QString::SkipEmptyParts);
+      tuples_coordinates = tupleIterator->split(cs, QString::SkipEmptyParts);
       if(tuples_coordinates.size() < 2)
 	{
 	  continue;
@@ -432,9 +475,6 @@ int QgsWFSData::pointsFromCoordinateString(std::list<QgsPoint>& points, const QS
 	{
 	  continue;
 	}
-      //qWarning("adding point");
-      //qWarning(QString::number(x).toLocal8Bit().data());
-      //qWarning(QString::number(y).toLocal8Bit().data());
       points.push_back(QgsPoint(x, y));
     }
   return 0;

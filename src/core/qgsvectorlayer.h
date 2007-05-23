@@ -172,18 +172,6 @@ public:
   virtual bool writeXML_( QDomNode & layer_node, QDomDocument & doc );
 
 
-  /** Get the next feature resulting from a select operation
-  * @param selected selected feeatures only
-  * @return QgsFeature
-  */
-  virtual QgsFeature * getNextFeature(bool fetchAttributes=false, bool selected=false) const;
-
-  /** Get the next feature using new method
-   * TODO - make this pure virtual once it works and change existing providers
-   *        to use this method of fetching features
-   */
-  virtual bool getNextFeature(QgsFeature &feature, bool fetchAttributes=false) const;
-
   /**
    * Number of features in the layer. This is necessary if features are
    * added/deleted or the layer has been subsetted. If the data provider
@@ -212,16 +200,6 @@ public:
    */
   virtual QString subsetString();
 
-  /**
-   * Number of attribute fields for a feature in the layer
-   */
-  virtual int fieldCount() const;
-
-  /**
-    Return a list of field names for this layer
-   @return vector of field names
-  */
-  virtual const QgsFieldMap & fields() const;
 
   /** Adds a feature
       @param lastFeatureInBatch  If True, will also go to the effort of e.g. updating the extents.
@@ -255,8 +233,10 @@ public:
    */
   bool deleteSelectedFeatures();
 
-  /** Returns the default value for the attribute @c attr for the feature @c f. */
-  QString getDefaultValue(const QString& attr, QgsFeature* f);
+  /**Adds a ring to polygon/multipolygon features
+   @return 0 in case of success, 1 problem with feature type, 2 ring not closed, 3 ring not valid, 4 ring crosses \
+existing rings, 5 no feature found where ring can be inserted*/
+  int addRing(const QList<QgsPoint>& ring);
 
   /** Set labels on */
   void setLabelOn( bool on );
@@ -374,9 +354,6 @@ public:
   /** Sets whether some features are modified or not */
   void setModified(bool modified = TRUE, bool onlyGeometryWasModified = FALSE);
   
-  /** Save as shapefile */
-  QString saveAsShapefile(QString path, QString encoding);
-
   /** Make layer editable */
   bool startEditing();
   
@@ -481,8 +458,6 @@ private:                       // Private methods
   /** Goes through all features and finds a free id (e.g. to give it temporarily to a not-commited feature) */
   int findFreeId();
 
-  /**Caches all the (commited) geometries to mCachedGeometries - somewhat out of date as mCachedGeometries should only contain geometries currently visible on the canvas */
-  void cacheGeometries();
   /**Deletes the geometries in mCachedGeometries*/
   void deleteCachedGeometries();
   /** Draws a vertex symbol at (screen) coordinates x, y. (Useful to assist vertex editing.) */

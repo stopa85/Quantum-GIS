@@ -11,15 +11,16 @@
 %Include qgsapplication.sip
 %Include qgscolortable.sip
 %Include qgscontexthelp.sip
+%Include qgscontinuouscolorrenderer.sip
 %Include qgscoordinatetransform.sip
 %Include qgsdataprovider.sip
 %Include qgsdatasourceuri.sip
 %Include qgsdistancearea.sip
 %Include qgsfeature.sip
-%Include qgsfeatureattribute.sip
 %Include qgsfield.sip
 %Include qgsgeometry.sip
 %Include qgsgeometryvertexindex.sip
+%Include qgsgraduatedsymbolrenderer.sip
 %Include qgslabel.sip
 %Include qgslabelattributes.sip
 %Include qgslogger.sip
@@ -27,6 +28,7 @@
 %Include qgsmaplayerregistry.sip
 %Include qgsmaprender.sip
 %Include qgsmaptopixel.sip
+%Include qgsmarkercatalogue.sip
 %Include qgsmessageoutput.sip
 %Include qgspoint.sip
 %Include qgsproject.sip
@@ -40,8 +42,13 @@
 %Include qgsrect.sip
 %Include qgsrenderer.sip
 %Include qgsscalecalculator.sip
+%Include qgssinglesymbolrenderer.sip
 %Include qgsspatialindex.sip
 %Include qgsspatialrefsys.sip
+%Include qgssymbol.sip
+%Include qgssymbologyutils.sip
+%Include qgsuniquevaluerenderer.sip
 %Include qgsvectordataprovider.sip
+%Include qgsvectorfilewriter.sip
 %Include qgsvectorlayer.sip
 

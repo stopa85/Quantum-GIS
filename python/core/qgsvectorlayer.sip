@@ -19,7 +19,10 @@ public:
 
   /** Capabilities for this layer in a friendly format. */
   QString capabilitiesString() const;
-
+  
+  /** Returns a comment for the data in the layer */
+  QString dataComment() const;
+  
   /** Set the primary display field to be used in the identify results dialog */
   void setDisplayField(QString fldName=0);
 
@@ -53,12 +56,6 @@ public:
   
   /** Select features found within the search rectangle (in layer's coordinates) */
   void select(QgsRect & rect, bool lock);
-
-  /** Select feature by its ID, optionally emit signal selectionChanged() */
-  void select(int featureId, bool emitSignal = TRUE);
-  
-  /** Clear selection */
-  void removeSelection(bool emitSignal = TRUE);
   
   /** Select not selected features and deselect selected ones */
   void invertSelection();
@@ -89,7 +86,7 @@ public:
   const QgsRenderer* renderer() const;
 
   /** Sets the renderer. If a renderer is already present, it is deleted */
-  void setRenderer(QgsRenderer * r);
+  void setRenderer(QgsRenderer * r /Transfer/);
 
   /** Returns point, line or polygon */
   QGis::VectorType vectorType() const;
@@ -110,18 +107,6 @@ public:
    */
   virtual bool writeXML_( QDomNode & layer_node, QDomDocument & doc );
 
-
-  /** Get the next feature resulting from a select operation
-  * @param selected selected feeatures only
-  * @return QgsFeature
-  */
-  virtual QgsFeature * getNextFeature(bool fetchAttributes=false, bool selected=false) const;
-
-  /** Get the next feature using new method
-   * TODO - make this pure virtual once it works and change existing providers
-   *        to use this method of fetching features
-   */
-  virtual bool getNextFeature(QgsFeature &feature, bool fetchAttributes=false) const;
 
   /**
    * Number of features in the layer. This is necessary if features are
@@ -150,17 +135,6 @@ public:
    * @return The subset string or QString::null if not implemented by the provider
    */
   virtual QString subsetString();
-
-  /**
-   * Number of attribute fields for a feature in the layer
-   */
-  virtual int fieldCount() const;
-
-  /**
-    Return a list of field names for this layer
-   @return vector of field names
-  */
-  virtual const QMap<int, QgsField> & fields() const;
 
   /** Adds a feature
       @param lastFeatureInBatch  If True, will also go to the effort of e.g. updating the extents.
@@ -194,8 +168,10 @@ public:
    */
   bool deleteSelectedFeatures();
 
-  /** Returns the default value for the attribute @c attr for the feature @c f. */
-  QString getDefaultValue(const QString& attr, QgsFeature* f);
+  /**Adds a ring to polygon/multipolygon features
+   @return 0 in case of success, 1 problem with feature type, 2 ring not closed, 3 ring not valid, 4 ring crosses \
+existing rings, 5 no feature found where ring can be inserted*/
+  int addRing(const QList<QgsPoint>& ring);
 
   /** Set labels on */
   void setLabelOn( bool on );
@@ -214,7 +190,7 @@ public:
      If there is no point within this tolerance, point is left unchanged.
      @param tolerance   The snapping tolerance
      @return true if the position of point has been changed, and false otherwise */
-  bool snapPoint(QgsPoint& point, double tolerance);
+  bool snapPoint(QgsPoint& point /In, Out/, double tolerance);
 
   /**Snaps a point to the closest vertex if there is one within the snapping tolerance
      @param atVertex          Set to a vertex index of the snapped-to vertex
@@ -228,11 +204,11 @@ public:
      TODO: Handle returning multiple verticies if they are coincident
    */
   bool snapVertexWithContext(QgsPoint& point,
-                             QgsGeometryVertexIndex& atVertex,
-			     int& beforeVertexIndex,
-			     int& afterVertexIndex,
-                             int& snappedFeatureId,
-                             QgsGeometry& snappedGeometry,
+                             QgsGeometryVertexIndex& atVertex /Out/,
+			     int& beforeVertexIndex /Out/,
+			     int& afterVertexIndex /Out/,
+                             int& snappedFeatureId /Out/,
+                             QgsGeometry& snappedGeometry /Out/,
                              double tolerance);
 
   /**Snaps a point to the closest line segment if there is one within the snapping tolerance
@@ -244,10 +220,10 @@ public:
      
      TODO: Handle returning multiple lineFeatures if they are coincident
    */
-  bool snapSegmentWithContext(QgsPoint& point,
-                              QgsGeometryVertexIndex& beforeVertex,
-                              int& snappedFeatureId, 
-                              QgsGeometry& snappedGeometry,
+  bool snapSegmentWithContext(QgsPoint& point /In, Out/,
+                              QgsGeometryVertexIndex& beforeVertex /Out/,
+                              int& snappedFeatureId /Out/, 
+                              QgsGeometry& snappedGeometry /Out/,
                               double tolerance);
 
   /**
@@ -270,7 +246,7 @@ public:
    */
   bool commitAttributeChanges(const QSet<int>& deleted,
                               const QMap<QString, QString>& added,
-                              const QMap<int, QMap<int, QgsFeatureAttribute> >& changed);
+                              const QMap<int, QMap<int, QVariant> >& changed);
 
   /** Draws the layer using coordinate transformation
    *  @return FALSE if an error occurred during drawing
@@ -308,14 +284,11 @@ public:
   QSet<int>& deletedFeatureIds();
  
   /** returns array of features with changed attributes */
-  QMap<int, QMap<int, QgsFeatureAttribute> >& changedAttributes();
+  QMap<int, QMap<int, QVariant> >& changedAttributes();
 
   /** Sets whether some features are modified or not */
   void setModified(bool modified = TRUE, bool onlyGeometryWasModified = FALSE);
   
-  /** Save as shapefile */
-  QString saveAsShapefile(QString path, QString encoding);
-
   /** Make layer editable */
   bool startEditing();
   
@@ -341,6 +314,12 @@ public:
 
 public slots:
 
+  /** Select feature by its ID, optionally emit signal selectionChanged() */
+  void select(int featureId, bool emitSignal = TRUE);
+  
+  /** Clear selection */
+  void removeSelection(bool emitSignal = TRUE);
+
   void triggerRepaint();
 
   /** Update the extents for the layer. This is necessary if features are
@@ -355,9 +334,6 @@ signals:
   
   /** This signal is emitted when modifications has been done on layer */
   void wasModified(bool onlyGeometry);
-
-  /** This signal is emitted when drawing features to tell current progress */
-  void drawingProgress(int current, int total);
 
 private:                       // Private methods
 

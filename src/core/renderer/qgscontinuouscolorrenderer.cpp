@@ -17,7 +17,6 @@
 /* $Id: qgscontinuouscolorrenderer.cpp 5371 2006-04-25 01:52:13Z wonder $ */
 
 #include "qgscontinuouscolorrenderer.h"
-#include "qgsfeatureattribute.h"
 #include "qgsmarkercatalogue.h"
 #include "qgssymbol.h"
 #include "qgssymbologyutils.h"
@@ -80,7 +79,7 @@ void QgsContinuousColorRenderer::renderFeature(QPainter * p, QgsFeature & f, QIm
   {
     //first find out the value for the classification attribute
     const QgsAttributeMap& attrs = f.attributeMap();
-    double fvalue = attrs[mClassificationField].fieldValue().toDouble();
+    double fvalue = attrs[mClassificationField].toDouble();
 
     //double fvalue = vec[mClassificationField].fieldValue().toDouble();
     double minvalue = mMinimumSymbol->lowerValue().toDouble();
@@ -136,7 +135,7 @@ void QgsContinuousColorRenderer::renderFeature(QPainter * p, QgsFeature & f, QIm
       }
       brush.setStyle ( Qt::SolidPattern );
 
-      *img = QgsMarkerCatalogue::instance()->pixmapMarker ( mMinimumSymbol->pointSymbolName(), mMinimumSymbol->pointSize(),
+      *img = QgsMarkerCatalogue::instance()->imageMarker ( mMinimumSymbol->pointSymbolName(), mMinimumSymbol->pointSize(),
           pen, brush);
 
       if ( scalefactor ) *scalefactor = 1;
@@ -256,11 +255,11 @@ bool QgsContinuousColorRenderer::writeXML( QDomNode & layer_node, QDomDocument &
     return returnval;
 }
 
-const std::list<QgsSymbol*> QgsContinuousColorRenderer::symbols() const
+const QList<QgsSymbol*> QgsContinuousColorRenderer::symbols() const
 {
-    std::list<QgsSymbol*> list;
-    list.push_back(mMinimumSymbol);
-    list.push_back(mMaximumSymbol);
+    QList<QgsSymbol*> list;
+    list.append(mMinimumSymbol);
+    list.append(mMaximumSymbol);
     return list;
 }
 

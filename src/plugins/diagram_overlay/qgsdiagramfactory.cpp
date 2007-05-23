@@ -1,7 +1,6 @@
 #include "qgsdiagramfactory.h"
 #include "qgsdiagramitem.h"
 #include "qgsfeature.h"
-#include "qgsfeatureattribute.h"
 #include <QImage>
 #include <QPainter>
 
@@ -29,7 +28,7 @@ QImage* QgsDiagramFactory::createDiagram(int width, int height, const QgsFeature
       QgsAttributeMap::const_iterator iter = featureAttributes.find(*list_iter);
       if(iter != featureAttributes.constEnd())
 	{
-	  dataValues.push_back(iter.value().fieldValue().toDouble());
+	  dataValues.push_back(iter.value().toDouble());
 	}
     }
   if(mDiagramType == "Pie")

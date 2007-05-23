@@ -24,6 +24,8 @@ QgsVertexMarker::QgsVertexMarker(QgsMapCanvas* mapCanvas)
 {
   mIconSize = 10;
   mIconType = ICON_X;
+  mColor = QColor(255,0,0);
+  mPenWidth = 1;
 }
 
 void QgsVertexMarker::setIconType(int type)
@@ -41,15 +43,26 @@ void QgsVertexMarker::setCenter(const QgsPoint& point)
    mCenter = point;
    QPointF pt = toCanvasCoords(mCenter);
    setPos(pt);
-   std::cout << "at " << (int) pt.x() << " " << (int) pt.y() << std::endl;
 }
 
+void QgsVertexMarker::setColor(const QColor& color)
+{
+  mColor = color;
+}
+
+void QgsVertexMarker::setPenWidth(int width)
+{
+  mPenWidth = width;
+}
 
 void QgsVertexMarker::paint(QPainter* p)
 {
   qreal s = (mIconSize - 1) / 2;
 
-  p->setPen(QColor(255,0,0));
+  QPen pen(mColor);
+  pen.setWidth(mPenWidth);
+  p->setPen(pen);
+  
   switch (mIconType)
   {
     case ICON_NONE:
@@ -77,7 +90,7 @@ void QgsVertexMarker::paint(QPainter* p)
 
 QRectF QgsVertexMarker::boundingRect() const
 {
-  qreal s = qreal(mIconSize + QPen(QColor(255,0,0)).width()) / 2.0;
+  qreal s = qreal(mIconSize + mPenWidth) / 2.0;
   return QRectF(-s,-s,2.0*s,2.0*s);
 }
 

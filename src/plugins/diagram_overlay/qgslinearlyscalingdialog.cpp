@@ -66,7 +66,7 @@ void QgsLinearlyScalingDialog::insertMaximumAttributeValue()
       QgsVectorDataProvider *provider = dynamic_cast<QgsVectorDataProvider *>(mVectorLayer->getDataProvider());
       if(provider)
 	{
-	  mValueLineEdit->setText(provider->maxValue(mClassificationField));
+	  mValueLineEdit->setText(provider->maxValue(mClassificationField).toString());
 	}
     }
 }

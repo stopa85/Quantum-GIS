@@ -78,7 +78,6 @@
 #include "qgsdataprovider.h"
 #include "qgsfield.h"
 #include "qgsfeature.h"
-#include "qgsfeatureattribute.h"
 
 extern "C" {
 #include <grass/gis.h>
@@ -187,7 +186,7 @@ QStringList QgsGrassModule::execArguments ( QString module )
     return arguments;
 }
 
-QgsGrassModule::QgsGrassModule ( QgsGrassTools *tools, QgisInterface *iface, 
+QgsGrassModule::QgsGrassModule ( QgsGrassTools *tools, QString moduleName, QgisInterface *iface, 
 	                     QString path, QWidget * parent, const char * name, Qt::WFlags f )
              :QgsGrassModuleBase ( ), mSuccess(false)
 {
@@ -196,7 +195,7 @@ QgsGrassModule::QgsGrassModule ( QgsGrassTools *tools, QgisInterface *iface,
     #endif
 
     setupUi(this);
-
+    lblModuleName->setText(tr("Module") + ": " + moduleName);
     mPath = path;
     mTools = tools;
     mIface = iface;
@@ -211,21 +210,21 @@ QgsGrassModule::QgsGrassModule ( QgsGrassTools *tools, QgisInterface *iface,
     QString mpath = mPath + ".qgm";
     QFile qFile ( mpath );
     if ( !qFile.exists() ) {
-	QMessageBox::warning( 0, "Warning", "The module file (" + mpath + ") not found." );
+	QMessageBox::warning( 0, tr("Warning"), tr("The module file (") + mpath + tr(") not found.") );
 	return;
     }
     if ( ! qFile.open( QIODevice::ReadOnly ) ) {
-	QMessageBox::warning( 0, "Warning", "Cannot open module file (" + mpath + ")" );
+	QMessageBox::warning( 0, tr("Warning"), tr("Cannot open module file (") + mpath + tr(")") );
 	return;
     }
     QDomDocument qDoc ( "qgisgrassmodule" );
     QString err;
     int line, column;
     if ( !qDoc.setContent( &qFile,  &err, &line, &column ) ) {
-	QString errmsg = "Cannot read module file (" + mpath + "):\n" + err + "\nat line "
+	QString errmsg = tr("Cannot read module file (") + mpath + tr("):\n") + err + tr("\nat line ")
 	                 + QString::number(line) + " column " + QString::number(column);
 	std::cerr << errmsg.toLocal8Bit().data() << std::endl;
-	QMessageBox::warning( 0, "Warning", errmsg );
+	QMessageBox::warning( 0, tr("Warning"), errmsg );
 	qFile.close();
 	return;
     }
@@ -251,7 +250,7 @@ QgsGrassModule::QgsGrassModule ( QgsGrassTools *tools, QgisInterface *iface,
     else
     {
         std::cerr << "Module " << xName.ascii() << " not found" << std::endl;
-	QMessageBox::warning( 0, "Warning", "Module " + xName + " not found" );
+	QMessageBox::warning( 0, tr("Warning"), tr("Module ") + xName + tr(" not found") );
         return;
     }
 #else
@@ -294,7 +293,7 @@ QgsGrassModule::QgsGrassModule ( QgsGrassTools *tools, QgisInterface *iface,
     }
     else
     {
-      QMessageBox::warning( 0, "Warning", "Cannot find man page " + manPath );
+      QMessageBox::warning( 0, tr("Warning"), tr("Cannot find man page ") + manPath );
     }
     
     connect ( &mProcess, SIGNAL(readyReadStandardOutput()), this, SLOT(readStdout()));
@@ -365,7 +364,7 @@ QgsGrassModuleStandardOptions::QgsGrassModuleStandardOptions (
 
     if ( arguments.size() == 0 ) 
     {
-	QMessageBox::warning( 0, "Warning", "Cannot find module " 
+	QMessageBox::warning( 0, tr("Warning"), tr("Cannot find module ") 
                                   + mXName );
         return;
     }
@@ -383,7 +382,7 @@ QgsGrassModuleStandardOptions::QgsGrassModuleStandardOptions (
          || (process.exitCode() != 0 && process.exitCode() != 255) )
     {
         std::cerr << "process.exitCode() = " <<  process.exitCode() << std::endl;
-	QMessageBox::warning( 0, "Warning", "Cannot start module " + mXName + "<br>"
+	QMessageBox::warning( 0, tr("Warning"), tr("Cannot start module ") + mXName + "<br>"
 		  + cmd + " " + arguments.join(" ") + "<br>"
                   + QString(process.readAllStandardOutput()) + "<br>"
                   + QString(process.readAllStandardError()) );
@@ -396,12 +395,12 @@ QgsGrassModuleStandardOptions::QgsGrassModuleStandardOptions (
     QString err;
     int line, column;
     if ( !gDoc.setContent( (QByteArray)gDescArray, &err, &line, &column ) ) {
-	QString errmsg = "Cannot read module description (" + mXName + "):\n" + err + "\nat line "
-	                 + QString::number(line) + " column " + QString::number(column);
+	QString errmsg = tr("Cannot read module description (") + mXName + tr("):\n") + err + tr("\nat line ")
+	                 + QString::number(line) + tr(" column ") + QString::number(column);
 	std::cerr << errmsg.toLocal8Bit().data() << std::endl;
 	std::cerr << QString(gDescArray).local8Bit().data() << std::endl;
 	std::cerr << QString(errArray).local8Bit().data() << std::endl;
-	QMessageBox::warning( 0, "Warning", errmsg );
+	QMessageBox::warning( 0, tr("Warning"), errmsg );
 	return;
     }
     QDomElement gDocElem = gDoc.documentElement();
@@ -421,7 +420,7 @@ QgsGrassModuleStandardOptions::QgsGrassModuleStandardOptions (
 
 	    QDomNode gnode = QgsGrassModule::nodeByKey ( gDocElem, key );
 	    if ( gnode.isNull() ) {
-		QMessageBox::warning( 0, "Warning", "Cannot find key " +  key );
+		QMessageBox::warning( 0, tr("Warning"), tr("Cannot find key ") +  key );
 		return;
 	    }
 
@@ -560,7 +559,7 @@ QgsGrassModuleItem *QgsGrassModuleStandardOptions::item ( QString id )
 	}
     }
 
-    QMessageBox::warning( 0, "Warning", "Item with id " + id + " not found" );
+    QMessageBox::warning( 0, tr("Warning"), tr("Item with id ") + id + tr(" not found" ) );
     return 0;
 }
 
@@ -803,7 +802,7 @@ QStringList QgsGrassModuleStandardOptions::checkRegion()
                     QgsGrass::getDefaultLocation(), 
                     QgsGrass::getDefaultMapset(), &currentWindow ) )
     {
-        QMessageBox::warning( 0, "Warning", "Cannot get current region" );
+        QMessageBox::warning( 0, tr("Warning"), tr("Cannot get current region") );
         return list;
     }
 
@@ -837,8 +836,8 @@ QStringList QgsGrassModuleStandardOptions::checkRegion()
                 QgsGrass::getDefaultLocation(), mapset, map,
                 &window ) )
         {
-	    QMessageBox::warning( 0, "Warning", "Cannot check region "
-                                  "of map " + item->currentMap() );
+	    QMessageBox::warning( 0, tr("Warning"), tr("Cannot check region "
+                                  "of map ") + item->currentMap() );
             continue;
         }
 
@@ -863,7 +862,7 @@ bool QgsGrassModuleStandardOptions::inputRegion ( struct Cell_head *window, bool
                     QgsGrass::getDefaultLocation(), 
                     QgsGrass::getDefaultMapset(), window ) )
     {
-        QMessageBox::warning( 0, "Warning", "Cannot get current region" );
+        QMessageBox::warning( 0, tr("Warning"), tr("Cannot get current region" ) );
         return false;
     }
 
@@ -901,8 +900,8 @@ bool QgsGrassModuleStandardOptions::inputRegion ( struct Cell_head *window, bool
                 QgsGrass::getDefaultLocation(), mapset, map,
                 &mapWindow ) )
         {
-	    QMessageBox::warning( 0, "Warning", "Cannot set region "
-                                  "of map " + item->currentMap() );
+	    QMessageBox::warning( 0, tr("Warning"), tr("Cannot set region "
+                                  "of map ") + item->currentMap() );
             return false;
         }
 
@@ -999,21 +998,21 @@ QString QgsGrassModule::label ( QString path )
     path.append ( ".qgm" );
     QFile qFile ( path );
     if ( !qFile.exists() ) {
-	return QString ( "Not available, decription not found (" + path + ")" );
+	return QString ( tr("Not available, decription not found (") + path + tr(")") );
     }
     if ( ! qFile.open( QIODevice::ReadOnly ) ) {
-	return QString ( "Not available, cannot open description (" + path + ")" ) ;
+	return QString ( tr("Not available, cannot open description (") + path + tr(")") ) ;
     }
     QDomDocument qDoc ( "qgisgrassmodule" );
     QString err;
     int line, column;
     if ( !qDoc.setContent( &qFile,  &err, &line, &column ) ) {
-	QString errmsg = "Cannot read module file (" + path + "):\n" + err + "\nat line "
-	                 + QString::number(line) + " column " + QString::number(column);
+	QString errmsg = tr("Cannot read module file (") + path + tr("):\n") + err + tr("\nat line ")
+	                 + QString::number(line) + tr(" column ") + QString::number(column);
 	std::cerr << errmsg.toLocal8Bit().data() << std::endl;
-	QMessageBox::warning( 0, "Warning", errmsg );
+	QMessageBox::warning( 0, tr("Warning"), errmsg );
 	qFile.close();
-	return QString ( "Not available, incorrect description (" + path + ")" );
+	return QString ( tr("Not available, incorrect description (") + path + tr(")") );
     }
     qFile.close();
     QDomElement qDocElem = qDoc.documentElement();
@@ -1165,7 +1164,7 @@ void QgsGrassModule::run()
             {
                 err.append ( readyErrors.at(i) + "<br>" );
             }
-            QMessageBox::warning ( 0, "Warning", err );
+            QMessageBox::warning ( 0, tr("Warning"), err );
             return;
         }
 
@@ -1176,7 +1175,7 @@ void QgsGrassModule::run()
         {
 	    if ( !mOptions->inputRegion ( &tempWindow, false ) )
             {
-		QMessageBox::warning ( 0, "Warning", "Cannot get input region" );
+		QMessageBox::warning ( 0, tr("Warning"), tr("Cannot get input region") );
 		return;
             }
             resetRegion = true;
@@ -1203,8 +1202,8 @@ void QgsGrassModule::run()
                 {
 		    if ( !mOptions->inputRegion ( &tempWindow, true ) )
 		    {
-			QMessageBox::warning ( 0, "Warning", 
-                                     "Cannot get input region" );
+			QMessageBox::warning ( 0, tr("Warning"), 
+                                     tr("Cannot get input region" ) );
 			return;
 		    }
                 }
@@ -1305,7 +1304,7 @@ void QgsGrassModule::run()
 
 	if ( execArguments.size() == 0 ) 
 	{
-	    QMessageBox::warning( 0, "Warning", "Cannot find module " 
+	    QMessageBox::warning( 0, tr("Warning"), tr("Cannot find module ") 
 				      + mXName );
 	    return;
 	}
@@ -1377,7 +1376,7 @@ void QgsGrassModule::run()
         mProcess.waitForStarted();
         if ( mProcess.state() != QProcess::Running )
         {
-            QMessageBox::warning( 0, "Warning", "Cannot start module: " 
+            QMessageBox::warning( 0, tr("Warning"), tr("Cannot start module: ") 
                                   + mProcess.errorString() );
 	    return;
         }
@@ -1396,16 +1395,16 @@ void QgsGrassModule::finished(int exitCode, QProcess::ExitStatus exitStatus )
     std::cerr << "exitCode = " << exitCode << std::endl;
     if ( exitStatus == QProcess::NormalExit ) {
 	if ( exitCode == 0 ) {
-	    mOutputTextBrowser->append( "<B>Successfully finished</B>" );
+	    mOutputTextBrowser->append( tr("<B>Successfully finished</B>") );
 	    mProgressBar->setProgress ( 100, 100 ); 
             mSuccess = true;
             mViewButton->setEnabled(true);
 	    mOptions->thawOutput();
 	} else {
-	    mOutputTextBrowser->append( "<B>Finished with error</B>" );
+	    mOutputTextBrowser->append( tr("<B>Finished with error</B>") );
 	}
     } else {
-	mOutputTextBrowser->append( "<B>Module crashed or killed</B>" );
+	mOutputTextBrowser->append( tr("<B>Module crashed or killed</B>") );
     }
     mRunButton->setText( tr("Run") );
 }
@@ -1943,7 +1942,7 @@ QString QgsGrassModuleOption::ready()
     { 
        if ( mLineEdits.at(0)->text().trimmed().length() == 0 )
        {
-           error.append ( title() + ":&nbsp;missing value" );
+           error.append ( title() + tr(":&nbsp;missing value") );
        }
     }
     return error;
@@ -2031,7 +2030,7 @@ QgsGrassModuleInput::QgsGrassModuleInput ( QgsGrassModule *module,
 
 	    if ( optNode.isNull() ) 
 	    {
-		QMessageBox::warning( 0, "Warning", "Cannot find typeoption " +  opt );
+		QMessageBox::warning( 0, tr("Warning"), tr("Cannot find typeoption ") +  opt );
 	    } 
 	    else 
 	    {
@@ -2040,7 +2039,7 @@ QgsGrassModuleInput::QgsGrassModuleInput ( QgsGrassModule *module,
 		QDomNode valuesNode = optNode.namedItem ( "values" );
 		if ( valuesNode.isNull() ) 
 		{
-		    QMessageBox::warning( 0, "Warning", "Cannot find values for typeoption " +  opt );
+		    QMessageBox::warning( 0, tr("Warning"), tr("Cannot find values for typeoption ") +  opt );
 		}
 		else
 		{
@@ -2101,7 +2100,7 @@ QgsGrassModuleInput::QgsGrassModuleInput ( QgsGrassModule *module,
 
 	    if ( optNode.isNull() ) 
 	    {
-		QMessageBox::warning( 0, "Warning", "Cannot find layeroption " +  opt );
+		QMessageBox::warning( 0, tr("Warning"), tr("Cannot find layeroption ") +  opt );
 	    } 
 	    else 
 	    {
@@ -2118,7 +2117,7 @@ QgsGrassModuleInput::QgsGrassModuleInput ( QgsGrassModule *module,
     } 
     else 
     {
-	QMessageBox::warning( 0, "Warning", "GRASS element " + element + " not supported" );
+	QMessageBox::warning( 0, tr("Warning"), tr("GRASS element ") + element + tr(" not supported") );
     }
 
     if ( qdesc.attribute("update") == "yes" ) {
@@ -2142,7 +2141,7 @@ QgsGrassModuleInput::QgsGrassModuleInput ( QgsGrassModule *module,
         mRegionButton = new QPushButton( 
                     QIcon(iconPath+"grass_set_region.png"), "" );
 
-        mRegionButton->setToolTip ( "Use region of this map" );
+        mRegionButton->setToolTip ( tr("Use region of this map") );
         mRegionButton->setCheckable ( true );
         mRegionButton->setSizePolicy (QSizePolicy::Minimum, 
                                       QSizePolicy:: Preferred );
@@ -2328,7 +2327,7 @@ void QgsGrassModuleInput::updateQgisLayers()
 	    mVectorLayerNames.push_back ( grassLayer );
             
             // convert from QgsFieldMap to std::vector<QgsField>
-            QgsFieldMap flds = vector->fields();
+            QgsFieldMap flds = vector->getDataProvider()->fields();
             std::vector<QgsField> fields;
             for (QgsFieldMap::iterator it = flds.begin(); it != flds.end(); ++it)
               fields.push_back(it.value());
@@ -2491,7 +2490,7 @@ QString QgsGrassModuleInput::ready()
     std::cerr << "count = " << mLayerComboBox->count() << std::endl;
     if ( mLayerComboBox->count() == 0 )
     {
-       error.append ( title() + ":&nbsp;no input" );
+       error.append ( title() + tr(":&nbsp;no input") );
     }
     return error;
 }
@@ -2587,7 +2586,7 @@ QgsGrassModuleGdalInput::QgsGrassModuleGdalInput (
 
 	if ( optNode.isNull() ) 
 	{
-	    QMessageBox::warning( 0, "Warning", "Cannot find layeroption " +  opt );
+	    QMessageBox::warning( 0, tr("Warning"), tr("Cannot find layeroption ") +  opt );
 	} 
 	else 
 	{
@@ -2713,11 +2712,11 @@ QStringList QgsGrassModuleGdalInput::options()
             //  -> layer -> PostGIS -> warning
 	    if  ( mOgrLayers[current].length() > 0 )
 	    {
-	         QMessageBox::warning( 0, "Warning", 
-                       "PostGIS driver in OGR does not support schemas!<br>"
+	         QMessageBox::warning( 0, tr("Warning"), 
+                       tr("PostGIS driver in OGR does not support schemas!<br>"
                        "Only the table name will be used.<br>"
                        "It can result in wrong input if more tables of the same name<br>"
-                       "are present in the database." );
+                       "are present in the database.") );
 	    }
         }
 
@@ -2738,7 +2737,7 @@ QString QgsGrassModuleGdalInput::ready()
     std::cerr << "count = " << mLayerComboBox->count() << std::endl;
     if ( mLayerComboBox->count() == 0 )
     {
-       error.append ( title() + ":&nbsp;no input" );
+       error.append ( title() + tr(":&nbsp;no input" ) );
     }
     return error;
 }
@@ -2760,7 +2759,7 @@ QgsGrassModuleField::QgsGrassModuleField (
     QString tit;
     if ( mDescription.isEmpty() ) 
     {
-	tit = "Attribute field";
+	tit = tr("Attribute field");
     } 
     else 
     {
@@ -2850,7 +2849,7 @@ QgsGrassModuleSelection::QgsGrassModuleSelection (
     QString tit;
     if ( mDescription.isEmpty() ) 
     {
-	tit = "Attribute field";
+	tit = tr("Attribute field");
     } 
     else 
     {
@@ -2900,25 +2899,29 @@ void QgsGrassModuleSelection::updateSelection()
     QgsVectorLayer *vector = dynamic_cast<QgsVectorLayer*>(layer);
 	    
     QgsGrassProvider *provider = (QgsGrassProvider *) vector->getDataProvider();
+    QgsAttributeList allAttributes = provider->allAttributesList();
+    const QgsFeatureIds& selected = vector->selectedFeaturesIds();
     int keyField = provider->keyField();
 
     if ( keyField < 0 ) return;
     
     QString cats;
-    provider->reset();
-    QgsFeature* feature;
+    provider->select(allAttributes, QgsRect(), true);
+    QgsFeature feature;
 
     int i = 0;
-    while ( (feature = vector->getNextFeature(true, true)) != NULL )
+    while ( provider->getNextFeature(feature) )
     {
-	QgsAttributeMap attr = feature->attributeMap();
-	if ( attr.size() > keyField )
-	{
-	    if ( i > 0 ) cats.append( "," );
-	    cats.append( attr[keyField].fieldValue() );
-	    i++;
-	}
-        delete feature;
+      if (!selected.contains(feature.featureId()))
+          continue;
+      
+      QgsAttributeMap attr = feature.attributeMap();
+      if ( attr.size() > keyField )
+      {
+          if ( i > 0 ) cats.append( "," );
+          cats.append( attr[keyField].toString() );
+          i++;
+      }
     }
     if ( mVectorLayer != vector ) 
     {
@@ -2961,7 +2964,7 @@ QgsGrassModuleFile::QgsGrassModuleFile (
     QString tit;
     if ( mDescription.isEmpty() ) 
     {
-	tit = "File";
+	tit = tr("File");
     } 
     else 
     {
@@ -3076,14 +3079,14 @@ QString QgsGrassModuleFile::ready()
 
     if ( path.length() == 0 )
     {
-        error.append ( title() + ":&nbsp;missing value" );
+        error.append ( title() + tr(":&nbsp;missing value") );
         return error;
     }
 
     QFileInfo fi(path);
     if ( !fi.dir().exists() )
     {
-        error.append ( title() + ":&nbsp;directory does not exist" );
+        error.append ( title() + tr(":&nbsp;directory does not exist") );
     }
     
     return error;

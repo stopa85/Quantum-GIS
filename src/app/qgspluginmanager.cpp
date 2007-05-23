@@ -168,12 +168,12 @@ sharedLibExtension = "*.so*";
     void *handle = dlopen(lib.toLocal8Bit().data(), RTLD_LAZY | RTLD_GLOBAL);
     if (!handle)
     {
-      QgsDebugMsg("Error in dlopen: ");
-      QgsDebugMsg(dlerror());
+      qWarning("Error in dlopen: ");
+      qWarning(dlerror());
     }
     else
     {
-      QgsDebugMsg("dlopen suceeded for " + lib);
+      qWarning("dlopen suceeded for " + lib);
       dlclose(handle);
     }
 #endif //#ifndef WIN32 && Q_OS_MACX
@@ -184,7 +184,7 @@ sharedLibExtension = "*.so*";
     bool loaded = myLib->load();
     if (!loaded)
     {
-      QgsDebugMsg("Failed to load: " + myLib->library());
+      qWarning("Failed to load: " + myLib->library());
       delete myLib;
       continue;
     }
