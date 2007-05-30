@@ -420,7 +420,12 @@ unsigned char* QgsVectorLayer::drawLineString(unsigned char* feature,
   //
   QPen myTransparentPen = p->pen(); // store current pen
   QColor myColor = myTransparentPen.color();
-  myColor.setAlpha(mTransparencyLevel);
+  //only set transparency from layer level if renderer does not provide
+  //transparency on class level
+  if(!mRenderer->usesTransparency())
+    {
+      myColor.setAlpha(mTransparencyLevel);
+    }
   myTransparentPen.setColor(myColor);
   p->setPen(myTransparentPen);
   p->drawPolyline(pa);
@@ -644,11 +649,23 @@ std::cerr << i << ": " << ring->first[i]
     //
     QBrush myTransparentBrush = p->brush();
     QColor myColor = brush.color();
-    myColor.setAlpha(mTransparencyLevel);
+    
+    //only set transparency from layer level if renderer does not provide
+    //transparency on class level
+    if(!mRenderer->usesTransparency())
+      {
+	myColor.setAlpha(mTransparencyLevel);
+      }
     myTransparentBrush.setColor(myColor);
     QPen myTransparentPen = p->pen(); // store current pen
     myColor = myTransparentPen.color();
-    myColor.setAlpha(mTransparencyLevel);
+    
+    //only set transparency from layer level if renderer does not provide
+    //transparency on class level
+    if(!mRenderer->usesTransparency())
+      {
+	myColor.setAlpha(mTransparencyLevel);
+      }
     myTransparentPen.setColor(myColor);
     
     p->setBrush(myTransparentBrush);
@@ -1557,6 +1574,55 @@ int QgsVectorLayer::addRing(const QList<QgsPoint>& ring)
     }
   
   return 5; //ring not contained in any geometry
+}
+
+int QgsVectorLayer::addIsland(const QList<QgsPoint>& ring)
+{
+  //number of selected features must be 1
+  
+  if(mSelectedFeatureIds.size() < 1)
+    {
+      QgsDebugMsg("Number of selected features <1");
+      return 4;
+    }
+  else if(mSelectedFeatureIds.size() > 1)
+    {
+      QgsDebugMsg("Number of selected features >1");
+      return 5;
+    }
+
+  int selectedFeatureId = *(mSelectedFeatureIds.constBegin());
+
+  //look if geometry of selected feature already contains geometry changes
+  QgsGeometryMap::iterator changedIt = mChangedGeometries.find(selectedFeatureId);
+  if(changedIt != mChangedGeometries.end())
+    {
+      return changedIt->addIsland(ring);
+    }
+
+  //look if id of selected feature belongs to an added feature
+  for(QgsFeatureList::iterator addedIt = mAddedFeatures.begin(); addedIt != mAddedFeatures.end(); ++addedIt)
+    {
+      if(addedIt->featureId() == selectedFeatureId)
+	{
+	  return addedIt->geometry()->addIsland(ring);
+	}
+    }
+
+  //else, if must be contained in mCachedGeometries
+  QgsGeometryMap::iterator cachedIt = mCachedGeometries.find(selectedFeatureId);
+  if(cachedIt != mCachedGeometries.end())
+    {
+      int errorCode = cachedIt->addIsland(ring);
+      if(errorCode == 0)
+	{
+	  mChangedGeometries.insert(selectedFeatureId, *cachedIt);
+	  setModified(true, true);
+	}
+      return errorCode;
+    }
+
+  return 6; //geometry not found
 }
 
 QgsLabel * QgsVectorLayer::label()
