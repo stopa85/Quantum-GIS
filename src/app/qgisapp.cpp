@@ -145,6 +145,7 @@
 // Map tools
 //
 #include "qgsmaptooladdfeature.h"
+#include "qgsmaptooladdisland.h"
 #include "qgsmaptooladdring.h"
 #include "qgsmaptoolidentify.h"
 #include "qgsmaptoolpan.h"
@@ -701,15 +702,12 @@ void QgisApp::createActions()
   // Digitising Toolbar Items
   //
 
-  mActionStartEditing = new QAction(QIcon(myIconPath+"/mActionStartEditing.png"), 
-                                    tr("Start editing the current layer"), this); 
-  mActionStartEditing->setStatusTip(tr("Start editing the current layer")); 
-  connect(mActionStartEditing, SIGNAL(triggered()), this, SLOT(startEditing()));
-  //
-  mActionStopEditing = new QAction(QIcon(myIconPath+"/mActionStopEditing.png"), 
-                                   tr("Stop editing the current layer"), this);
-  mActionStopEditing->setStatusTip(tr("Stop editing the current layer")); 
-  connect(mActionStopEditing, SIGNAL(triggered()), this, SLOT(stopEditing()));
+  mActionToggleEditing = new QAction(QIcon(myIconPath+"/mActionToggleEditing.png"), 
+                                    tr("Toggle editing"), this);
+  mActionToggleEditing->setStatusTip(tr("Toggles the editing state of the current layer")); 
+  mActionToggleEditing->setCheckable(true);
+  connect(mActionToggleEditing, SIGNAL(triggered()), this, SLOT(toggleEditing()));
+  
   //
   mActionCapturePoint= new QAction(QIcon(myIconPath+"/mActionCapturePoint.png"), tr("Capture Point"), this);
   mActionCapturePoint->setShortcut(tr(".","Capture Points"));
@@ -753,6 +751,11 @@ void QgisApp::createActions()
   mActionAddRing->setStatusTip(tr("Add Ring"));
   connect(mActionAddRing, SIGNAL(triggered()), this, SLOT(addRing()));
   mActionAddRing->setEnabled(false);
+
+  mActionAddIsland = new QAction(QIcon(myIconPath+"/mActionAddIsland.png"), tr("Add Island"), this);
+  mActionAddIsland->setStatusTip(tr("Add Island to multipolygon"));
+  connect(mActionAddIsland, SIGNAL(triggered()), this, SLOT(addIsland()));
+  mActionAddIsland->setEnabled(false);
 
   mActionEditCut = new QAction(QIcon(myIconPath+"/mActionEditCut.png"), tr("Cut Features"), this);
   mActionEditCut->setStatusTip(tr("Cut selected features"));
@@ -819,6 +822,8 @@ void QgisApp::createActionGroups()
   mMapToolGroup->addAction(mActionMoveVertex);
   mActionAddRing->setCheckable(true);
   mMapToolGroup->addAction(mActionAddRing);
+  mActionAddIsland->setCheckable(true);
+  mMapToolGroup->addAction(mActionAddIsland);
 }
 
 void QgisApp::createMenus()
@@ -964,8 +969,7 @@ void QgisApp::createToolBars()
   mDigitizeToolBar = addToolBar(tr("Digitizing"));
   mDigitizeToolBar->setIconSize(QSize(24,24));
   mDigitizeToolBar->setObjectName("Digitizing");
-  mDigitizeToolBar->addAction(mActionStartEditing);
-  mDigitizeToolBar->addAction(mActionStopEditing);
+  mDigitizeToolBar->addAction(mActionToggleEditing);
   mDigitizeToolBar->addAction(mActionCapturePoint);
   mDigitizeToolBar->addAction(mActionCaptureLine);
   mDigitizeToolBar->addAction(mActionCapturePolygon);
@@ -974,6 +978,7 @@ void QgisApp::createToolBars()
   mDigitizeToolBar->addAction(mActionDeleteVertex);
   mDigitizeToolBar->addAction(mActionMoveVertex);
   mDigitizeToolBar->addAction(mActionAddRing);
+  mDigitizeToolBar->addAction(mActionAddIsland);
   mDigitizeToolBar->addAction(mActionEditCut);
   mDigitizeToolBar->addAction(mActionEditCopy);
   mDigitizeToolBar->addAction(mActionEditPaste);
@@ -1231,7 +1236,8 @@ void QgisApp::createCanvas()
   mMapTools.mVertexDelete = new QgsMapToolVertexEdit(mMapCanvas, QgsMapToolVertexEdit::DeleteVertex);
   mMapTools.mVertexDelete->setAction(mActionDeleteVertex);
   mMapTools.mAddRing = new QgsMapToolAddRing(mMapCanvas);
-  //mMapTools.mAddRing->setAction(mActionAddRing);
+  mMapTools.mAddRing->setAction(mActionAddRing);
+  mMapTools.mAddIsland = new QgsMapToolAddIsland(mMapCanvas);
 }
 
 void QgisApp::createOverview()
@@ -1267,6 +1273,10 @@ void QgisApp::createLegend()
   mMapLegend = new QgsLegend(NULL, "theMapLegend");
   mMapLegend->setObjectName("theMapLegend");
   mMapLegend->setMapCanvas(mMapCanvas);
+
+  //add the toggle editing action also to legend such that right click menu and button show the same state
+  mMapLegend->setToggleEditingAction(mActionToggleEditing);
+
   QWhatsThis::add(mMapLegend, tr("Map legend that displays all the layers currently on the map canvas. Click on the check box to turn a layer on or off. Double click on a layer in the legend to customize its appearance and set other properties."));
   QVBoxLayout *myLegendLayout = new QVBoxLayout;
   myLegendLayout->addWidget(mMapLegend);
@@ -2612,6 +2622,7 @@ void QgisApp::newVectorLayer()
     createEmptyDataSourceProc createEmptyDataSource=(createEmptyDataSourceProc)myLib->resolve("createEmptyDataSource");
     if(createEmptyDataSource)
     {
+#if 0
       if(geometrytype == QGis::WKBPoint)
       {
         createEmptyDataSource(filename,fileformat, enc, QGis::WKBPoint, attributes);
@@ -2624,13 +2635,18 @@ void QgisApp::newVectorLayer()
       {
         createEmptyDataSource(filename,fileformat, enc, QGis::WKBPolygon, attributes);
       }
-      else
-      {
-#ifdef QGISDEBUG
-        qWarning("QgisApp.cpp: geometry type not recognised");
 #endif
-        return;
-      }
+      if(geometrytype != QGis::WKBUnknown)
+	{
+	  createEmptyDataSource(filename,fileformat, enc, geometrytype, attributes);
+	}
+      else
+	{
+#ifdef QGISDEBUG
+	  qWarning("QgisApp.cpp: geometry type not recognised");
+#endif
+	  return;
+	}
     }
     else
     {
@@ -3433,6 +3449,11 @@ void QgisApp::addRing()
   mMapCanvas->setMapTool(mMapTools.mAddRing);
 }
 
+void QgisApp::addIsland()
+{
+  mMapCanvas->setMapTool(mMapTools.mAddIsland);
+}
+
 
 void QgisApp::deleteVertex()
 {
@@ -3520,38 +3541,17 @@ void QgisApp::refreshMapCanvas()
   mMapCanvas->refresh();
 }
 
-void QgisApp::startEditing()
+void QgisApp::toggleEditing()
 {
-  QgsMapLayer* theLayer = mMapLegend->currentLayer();
-  if(!theLayer)
+  QgsLegendLayerFile* currentLayerFile = mMapLegend->currentLayerFile();
+  if(currentLayerFile)
     {
-      return;
+      currentLayerFile->toggleEditing();
     }
-  //only vectorlayers can be edited
-  QgsVectorLayer* theVectorLayer = dynamic_cast<QgsVectorLayer*>(theLayer);
-  if(!theVectorLayer)
+  else
     {
-      return;
+      mActionToggleEditing->setChecked(false);
     }
-  // TODO: make it work [MD]
-  //theVectorLayer->startEditing();
-}
-  
-void QgisApp::stopEditing()
-{
-  QgsMapLayer* theLayer = mMapLegend->currentLayer();
-  if(!theLayer)
-    {
-      return;
-    }
-  //only vectorlayers can be edited
-  QgsVectorLayer* theVectorLayer = dynamic_cast<QgsVectorLayer*>(theLayer);
-  if(!theVectorLayer)
-    {
-      return;
-    }
-  // TODO: make it work [MD]
-  //theVectorLayer->stopEditing();
 }
 
 void QgisApp::showMouseCoordinate(QgsPoint & p)
@@ -4745,14 +4745,13 @@ void QgisApp::activateDeactivateLayerRelatedActions(QgsMapLayer* layer)
 	  //start editing/stop editing
 	  if(dprovider->capabilities() & QgsVectorDataProvider::AddFeatures)
 	    {
-	      mActionStartEditing->setEnabled(true);
-	      mActionStopEditing->setEnabled(true);
+	      mActionToggleEditing->setEnabled(true);
+	      mActionToggleEditing->setChecked(vlayer->isEditable());
 	      mActionEditPaste->setEnabled(true);
 	    }
 	  else
 	    {
-	      mActionStartEditing->setEnabled(false);
-	      mActionStopEditing->setEnabled(false);
+	      mActionToggleEditing->setEnabled(false);
 	      mActionEditPaste->setEnabled(false);
 	    }
 
@@ -4784,6 +4783,7 @@ void QgisApp::activateDeactivateLayerRelatedActions(QgsMapLayer* layer)
 	      mActionAddVertex->setEnabled(false);
 	      mActionDeleteVertex->setEnabled(false);
 	      mActionAddRing->setEnabled(false);
+	      mActionAddIsland->setEnabled(false);
 	      if(dprovider->capabilities() & QgsVectorDataProvider::ChangeGeometries)
 		{
 		  mActionMoveVertex->setEnabled(true);
@@ -4803,6 +4803,7 @@ void QgisApp::activateDeactivateLayerRelatedActions(QgsMapLayer* layer)
 	      mActionCapturePoint->setEnabled(false);
 	      mActionCapturePolygon->setEnabled(false);
 	      mActionAddRing->setEnabled(false);
+	      mActionAddIsland->setEnabled(false);
 	    }
 	  else if(vlayer->vectorType() == QGis::Polygon)
 	    {
@@ -4827,6 +4828,9 @@ void QgisApp::activateDeactivateLayerRelatedActions(QgsMapLayer* layer)
 	      if(vlayer->vectorType() == QGis::Polygon)
 		{
 		  mActionAddRing->setEnabled(true);
+		  //some polygon layers contain also multipolygon features. 
+		  //Therefore, the test for multipolygon is done in QgsGeometry
+		  mActionAddIsland->setEnabled(true);
 		}
 	    }
 	  else
@@ -4843,13 +4847,13 @@ void QgisApp::activateDeactivateLayerRelatedActions(QgsMapLayer* layer)
     {
       mActionSelect->setEnabled(false);
       mActionOpenTable->setEnabled(false);
-      mActionStartEditing->setEnabled(false);
-      mActionStopEditing->setEnabled(false);
+      mActionToggleEditing->setEnabled(false);
       mActionCapturePoint->setEnabled(false);
       mActionCaptureLine->setEnabled(false);
       mActionCapturePolygon->setEnabled(false);
       mActionDeleteSelected->setEnabled(false);
       mActionAddRing->setEnabled(false);
+      mActionAddIsland->setEnabled(false);
       mActionAddVertex->setEnabled(false);
       mActionDeleteVertex->setEnabled(false);
       mActionMoveVertex->setEnabled(false);

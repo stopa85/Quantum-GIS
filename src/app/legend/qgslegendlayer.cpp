@@ -497,7 +497,7 @@ QPixmap QgsLegendLayer::getOriginalPixmap() const
 }
 
 
-void QgsLegendLayer::addToPopupMenu(QMenu& theMenu)
+void QgsLegendLayer::addToPopupMenu(QMenu& theMenu, QAction* toggleEditingAction)
 {
   QString iconsPath = QgsApplication::themePath();
   std::list<QgsLegendLayerFile*> files = legendLayerFiles();
@@ -536,8 +536,10 @@ void QgsLegendLayer::addToPopupMenu(QMenu& theMenu)
     }
     
     // allow editing
-    QAction* toggleEditingAction = theMenu.addAction(tr("&Allow editing"), this, SLOT(toggleEditing()));
-    toggleEditingAction->setCheckable(true);
+    if(toggleEditingAction)
+      {
+	theMenu.addAction(toggleEditingAction);
+      }
     
     QgsVectorLayer* theVectorLayer = dynamic_cast<QgsVectorLayer*>(firstLayer);
   
@@ -623,15 +625,6 @@ void QgsLegendLayer::table()
   else if (maplayers.size() == 1)
   {
     maplayers.front()->table();
-  }
-}
-
-void QgsLegendLayer::toggleEditing()
-{
-  std::list<QgsLegendLayerFile*> maplayers = legendLayerFiles();
-  if (maplayers.size() == 1)
-  {
-    maplayers.front()->toggleEditing();
   }
 }
 
