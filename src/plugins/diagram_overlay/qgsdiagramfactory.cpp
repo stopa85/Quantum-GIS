@@ -49,7 +49,7 @@ QImage* QgsDiagramFactory::createPieChart(int height, const std::list<double>& d
 {
   //create transparent QImage
   QImage* diagramImage = new QImage(QSize(height, height), QImage::Format_ARGB32_Premultiplied);
-  diagramImage->fill(0); //transparent background
+  diagramImage->fill(qRgba(0, 0, 0, 0)); //transparent background
   QPainter p(diagramImage);
   p.setRenderHint(QPainter::Antialiasing);
   p.setPen(Qt::NoPen);
