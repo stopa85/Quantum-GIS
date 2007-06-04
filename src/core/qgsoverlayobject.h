@@ -24,7 +24,7 @@ class QgsFeature;
 /**A class that holds information about the position of an overlay object, such as
 the size of the bounding box (in screen corrdinages) and the position of the midpoint 
 (in world coordinates). It also contains a pointer to the vector feature it belongs to*/
-class QgsOverlayObject
+class CORE_EXPORT QgsOverlayObject
 {
  public:
   QgsOverlayObject(int height = 0, int width = 0, const QgsPoint* p = 0, bool fixed = false, unsigned char* wkb = 0, int wkbSize = 0, int geometryNr = 0);

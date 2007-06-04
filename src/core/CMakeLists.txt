@@ -188,6 +188,7 @@ qgsmaplayerregistry.h
 qgsmaprender.h
 qgsmaptopixel.h
 qgsmessageoutput.h
+qgsoverlayobject.h
 qgspoint.h
 qgsproject.h
 qgsprojectproperty.h
@@ -205,6 +206,7 @@ qgsspatialrefsys.h
 qgsvectordataprovider.h
 qgsvectorfilewriter.h
 qgsvectorlayer.h
+qgsvectoroverlay.h
 
 raster/qgscolortable.h
 raster/qgsrasterlayer.h
