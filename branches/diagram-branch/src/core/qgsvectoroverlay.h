@@ -31,7 +31,7 @@ class QgsRect;
 class QgsVectorLayer;
 
 /**Base class for vector layer overlays (e.g. Diagrams, labels, etc.). For each object, the position of the bounding box is stored. The creation and drawing of the object contents is done by subclasses*/
-class QgsVectorOverlay
+class CORE_EXPORT QgsVectorOverlay
 {
  public:
   QgsVectorOverlay(QgsVectorLayer* vl);
