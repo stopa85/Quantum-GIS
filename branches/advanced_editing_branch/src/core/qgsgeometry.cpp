@@ -2311,8 +2311,18 @@ int QgsGeometry::addRing(const QList<QgsPoint>& ring)
       newSequence->add(GEOS_GEOM::Coordinate(it->x(),it->y()));
     }
   
+ 
   //create new ring
-  GEOS_GEOM::LinearRing* newRing = geosGeometryFactory->createLinearRing(newSequence);
+  GEOS_GEOM::LinearRing* newRing = 0;
+  try
+    {
+      newRing = geosGeometryFactory->createLinearRing(newSequence);
+    }
+  catch(GEOS_GEOM::IllegalArgumentException* e)
+    {
+      delete newSequence;
+      return 3;
+    }
   std::vector<GEOS_GEOM::Geometry*> dummyVector;
 
   //create polygon from new ring because there is a problem with geos operations and linear rings
@@ -2443,8 +2453,28 @@ int QgsGeometry::addRing(const QList<QgsPoint>& ring)
 
 int QgsGeometry::addIsland(const QList<QgsPoint>& ring)
 {
+  //Ring needs to have at least three points and must be closed
+  if(ring.size() < 4)
+    {
+      return 2;
+    }
+
+  //ring must be closed
+  if(ring.first() != ring.last())
+    {
+      return 2;
+    }
+
+  if(wkbType() == QGis::WKBPolygon || wkbType() == QGis::WKBPolygon25D)
+    {
+      if(!convertToMultiType())
+	{
+	  return 1;
+	}
+    }
+
   //bail out if wkbtype is not multipolygon
-  if(wkbType() != QGis::WKBMultiPolygon)
+  if(wkbType() != QGis::WKBMultiPolygon && wkbType() != QGis::WKBMultiPolygon25D)
     {
       return 1;
     }
@@ -2470,8 +2500,19 @@ int QgsGeometry::addIsland(const QList<QgsPoint>& ring)
     {
       newSequence->add(GEOS_GEOM::Coordinate(it->x(),it->y()));
     }
+  
   //then linear ring
-  GEOS_GEOM::LinearRing* newRing = geosGeometryFactory->createLinearRing(newSequence);
+  GEOS_GEOM::LinearRing* newRing = 0;
+  try
+    {
+      newRing = geosGeometryFactory->createLinearRing(newSequence);
+    }
+  catch(GEOS_GEOM::IllegalArgumentException* e)
+    {
+      delete newSequence;
+      return 2;
+    }
+
   //finally the polygon
   std::vector<GEOS_GEOM::Geometry*> dummyVector;
   GEOS_GEOM::Polygon* newPolygon = geosGeometryFactory->createPolygon(*newRing, dummyVector);
@@ -3797,6 +3838,76 @@ double QgsGeometry::distanceSquaredPointToSegment(const QgsPoint& point,
       ( yn - point.y() ) * ( yn - point.y() )
       );
 
+}
+
+bool QgsGeometry::convertToMultiType()
+{
+  if(!mGeometry)
+    {
+      return false;
+    }
+
+  QGis::WKBTYPE geomType = wkbType();
+  
+  if(geomType == QGis::WKBMultiPoint || geomType == QGis::WKBMultiPoint25D || \
+     geomType == QGis::WKBMultiLineString || geomType == QGis::WKBMultiLineString25D || \
+     geomType == QGis::WKBMultiPolygon || geomType == QGis::WKBMultiPolygon25D || geomType == QGis::WKBUnknown)
+    {
+      return false; //no need to convert
+    }
+
+  int newGeomSize = mGeometrySize + 1 + 2 * sizeof(int); //endian: 1, multitype: sizeof(int), number of geometries: sizeof(int) 
+  unsigned char* newGeometry = new unsigned char[newGeomSize];
+
+  int currentWkbPosition = 0;
+  //copy endian
+  char byteOrder = QgsApplication::endian();
+  memcpy(&newGeometry[currentWkbPosition], &byteOrder, 1);
+  currentWkbPosition += 1;
+
+  //copy wkbtype
+  //todo
+  QGis::WKBTYPE newMultiType;
+  switch(geomType)
+    {
+    case QGis::WKBPoint:
+      newMultiType = QGis::WKBMultiPoint;
+      break;
+    case QGis::WKBPoint25D:
+      newMultiType = QGis::WKBMultiPoint25D;
+      break;
+    case QGis::WKBLineString:
+      newMultiType = QGis::WKBMultiLineString;
+      break;
+    case QGis::WKBLineString25D:
+      newMultiType = QGis::WKBMultiLineString25D;
+      break;
+    case QGis::WKBPolygon:
+      newMultiType = QGis::WKBMultiPolygon;
+      break;
+    case QGis::WKBPolygon25D:
+      newMultiType = QGis::WKBMultiPolygon25D;
+      break;
+    default:
+      delete newGeometry;
+      return false;
+    }
+  memcpy(&newGeometry[currentWkbPosition], &newMultiType, sizeof(int));
+  currentWkbPosition += sizeof(int);
+
+  //copy number of geometries
+  int nGeometries = 1;
+  memcpy(&newGeometry[currentWkbPosition], &nGeometries, sizeof(int));
+  currentWkbPosition += sizeof(int);
+
+  //copy the existing single geometry
+  memcpy(&newGeometry[currentWkbPosition], mGeometry, mGeometrySize);
+
+  delete mGeometry;
+  mGeometry = newGeometry;
+  mGeometrySize = newGeomSize;
+  mDirtyGeos = true;
+  return true;
 }
 
 QgsPoint QgsGeometry::asPoint(unsigned char*& ptr, bool hasZValue)
