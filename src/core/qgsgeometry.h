@@ -359,6 +359,11 @@ not disjoint with existing polygons of the feature*/
                             const GEOS_GEOM::CoordinateSequence*  old_sequence,
                                   GEOS_GEOM::CoordinateSequence** new_sequence);
 
+    /**Converts single type geometry into multitype geometry
+     e.g. a polygon into a multipolygon geometry with one polygon
+    @return true in case of success and false else*/
+    bool convertToMultiType();
+
     /** return point from wkb */
     QgsPoint asPoint(unsigned char*& ptr, bool hasZValue);
     
