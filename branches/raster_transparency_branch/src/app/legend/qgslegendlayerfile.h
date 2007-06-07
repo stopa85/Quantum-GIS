@@ -64,7 +64,7 @@ public:
     bool isInOverview();
     
     /** called to add appropriate menu items to legend's popup menu */
-    void addToPopupMenu(QMenu& theMenu);
+    void addToPopupMenu(QMenu& theMenu, QAction* toggleEditingAction);
     
   public slots:
     
@@ -83,6 +83,9 @@ public:
     /**Save as shapefile*/
     void saveAsShapefile();
     
+    /**Save selection as shapefile*/
+    void saveSelectionAsShapefile();
+    
     /**Toggle editing for layer*/
     void toggleEditing();
     
@@ -93,6 +96,9 @@ public:
     void layerNameChanged();
     
  protected:
+
+    /**Save as shapefile (called from saveAsShapefile and saveSelectionAsShapefile)*/
+    void saveAsShapefileGeneral(bool saveOnlySelection);
 
     /** layer identified by its layer id */
     QgsMapCanvasLayer mLyr;

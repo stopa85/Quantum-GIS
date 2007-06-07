@@ -1,6 +1,6 @@
 
 /**Abstract base class for renderers. A renderer holds all the information necessary to draw the contents of a vector layer to a map canvas. The vector layer then passes each feature to paint to the renderer*/
-class QgsRenderer /Abstract/
+class QgsRenderer
 {
 %TypeHeaderCode
 #include <qgsrenderer.h>
@@ -27,7 +27,7 @@ class QgsRenderer /Abstract/
     /** Returns true, if attribute values are used by the renderer and false otherwise*/
     virtual bool needsAttributes() const=0;
     /**Returns a list with indexes of classification attributes*/
-    QList<int> classificationAttributes() const=0;
+    virtual QList<int> classificationAttributes() const=0;
     /**Returns the renderers name*/
     virtual QString name() const=0;    
     /**Return symbology items*/
@@ -38,6 +38,9 @@ class QgsRenderer /Abstract/
     static void setSelectionColor(QColor color);
     /**Returns true if this renderer returns a pixmap in the render method (e.g. for point data or diagrams)*/
     virtual bool containsPixmap() const;
+    /**Returns true if this renderer uses its own transparency settings, e.g. differentiated by classification.
+     This is a hint for QgsVectorLayer to not use the transparency setting on layer level in this cases*/
+    virtual bool usesTransparency() const;
    
 };
 

@@ -29,6 +29,7 @@
 #include <iostream>
 #include <limits>
 #include <memory>
+#include <set>
 #include <sstream>
 #include <utility>
 
@@ -406,7 +407,12 @@ unsigned char* QgsVectorLayer::drawLineString(unsigned char* feature,
   //
   QPen myTransparentPen = p->pen(); // store current pen
   QColor myColor = myTransparentPen.color();
-  myColor.setAlpha(mTransparencyLevel);
+  //only set transparency from layer level if renderer does not provide
+  //transparency on class level
+  if(!mRenderer->usesTransparency())
+    {
+      myColor.setAlpha(mTransparencyLevel);
+    }
   myTransparentPen.setColor(myColor);
   p->setPen(myTransparentPen);
   p->drawPolyline(pa);
@@ -630,11 +636,23 @@ std::cerr << i << ": " << ring->first[i]
     //
     QBrush myTransparentBrush = p->brush();
     QColor myColor = brush.color();
-    myColor.setAlpha(mTransparencyLevel);
+    
+    //only set transparency from layer level if renderer does not provide
+    //transparency on class level
+    if(!mRenderer->usesTransparency())
+      {
+	myColor.setAlpha(mTransparencyLevel);
+      }
     myTransparentBrush.setColor(myColor);
     QPen myTransparentPen = p->pen(); // store current pen
     myColor = myTransparentPen.color();
-    myColor.setAlpha(mTransparencyLevel);
+    
+    //only set transparency from layer level if renderer does not provide
+    //transparency on class level
+    if(!mRenderer->usesTransparency())
+      {
+	myColor.setAlpha(mTransparencyLevel);
+      }
     myTransparentPen.setColor(myColor);
     
     p->setBrush(myTransparentBrush);
@@ -1368,6 +1386,169 @@ bool QgsVectorLayer::deleteSelectedFeatures()
   }
 
   return true;
+}
+
+int QgsVectorLayer::addRing(const QList<QgsPoint>& ring)
+{
+  int addRingReturnCode = 0;
+
+  //calculate bounding box of ring
+  double xMin = std::numeric_limits<double>::max();
+  double xMax = -std::numeric_limits<double>::max();
+  double yMin = std::numeric_limits<double>::max();
+  double yMax = -std::numeric_limits<double>::max();
+
+  for(QList<QgsPoint>::const_iterator it = ring.constBegin(); it != ring.constEnd(); ++it)
+    {
+      if(it->x() < xMin)
+	{
+	  xMin = it->x();
+	}
+      if(it->x() > xMax)
+	{
+	  xMax = it->x();
+	}
+      if(it->y() < yMin)
+	{
+	  yMin = it->y();
+	}
+      if(it->y() > yMax)
+	{
+	  yMax = it->y();
+	}
+    }
+
+  QgsRect bBox(xMin, yMin, xMax, yMax);
+  //qWarning("Bounding box of ring is: " + bBox.stringRep());
+
+  std::set<int> idList; //store the ids of the features we already added the ring
+
+  //call addRing for every feature in mChangedFeatures
+  QgsGeometryMap::iterator changedIt;
+  for(changedIt = mChangedGeometries.begin(); changedIt != mChangedGeometries.end(); ++changedIt)
+    {
+      if(changedIt.value().intersects(bBox))
+	{
+	  addRingReturnCode = changedIt.value().addRing(ring);
+	  if(addRingReturnCode == 0) //success. Leave this method
+	    {
+	      setModified(true, true);
+	      return 0;
+	    }
+	  else if(addRingReturnCode > 0 && addRingReturnCode < 5) //pass the error one level up
+	    {
+	      return addRingReturnCode;
+	    }
+	  //else, addRingReturnCode must be 5, so the ring is not contained in this polygon
+	}
+      idList.insert(changedIt.key());
+    }
+ 
+  //call addRing for every feature in mAddedFeatures
+  for(int i = 0; i < mAddedFeatures.size(); ++i)
+    {
+      if(idList.find(mAddedFeatures.at(i).featureId()) == idList.end())
+	{
+	  //if a geometry is not contained in mCachedGeometries, it is not in the view extent and therefore cannot intersect the ring
+	  if(mCachedGeometries.contains(mAddedFeatures.at(i).featureId()))
+	    {
+	      addRingReturnCode = mCachedGeometries[mAddedFeatures.at(i).featureId()].addRing(ring);
+	      if(addRingReturnCode == 0) //success. Leave this method
+		{
+		  mChangedGeometries[mAddedFeatures.at(i).featureId()] = mCachedGeometries[mAddedFeatures.at(i).featureId()];
+		  setModified(true, true);
+		  return 0;
+		}
+	      else if(addRingReturnCode > 0 && addRingReturnCode < 5) //pass the error one level up
+		{
+		  return addRingReturnCode;
+		}
+	      //else, addRingReturnCode must be 5, so the ring is not contained in this polygon
+	    }
+	  idList.insert(mAddedFeatures.at(i).featureId());
+	}
+    }
+  
+  //call addRing for every feature intersecting bounding box
+  mDataProvider->select(QgsAttributeList(), bBox, true, true);
+  QgsFeature currentFeature;
+  QgsGeometry* currentGeometryPtr = 0;
+
+  while(mDataProvider->getNextFeature(currentFeature))
+    {
+      if(idList.find(currentFeature.featureId()) == idList.end())
+	{
+	  currentGeometryPtr = currentFeature.geometry();
+	  if(currentGeometryPtr)
+	    {
+	      QgsGeometry newGeometry(*currentGeometryPtr);
+	      addRingReturnCode = newGeometry.addRing(ring);
+
+	      if(addRingReturnCode == 0)
+		{
+		  //add geometry to mChangedGeometries
+		  mChangedGeometries.insert(currentFeature.featureId(), newGeometry);
+		  setModified(true, true);
+		  return 0;
+		}
+	      else if(addRingReturnCode > 0 && addRingReturnCode < 5) //pass the error one level up
+		{
+		  return addRingReturnCode;
+		}
+	    }
+	}
+    }
+  
+  return 5; //ring not contained in any geometry
+}
+
+int QgsVectorLayer::addIsland(const QList<QgsPoint>& ring)
+{
+  //number of selected features must be 1
+  
+  if(mSelectedFeatureIds.size() < 1)
+    {
+      QgsDebugMsg("Number of selected features <1");
+      return 4;
+    }
+  else if(mSelectedFeatureIds.size() > 1)
+    {
+      QgsDebugMsg("Number of selected features >1");
+      return 5;
+    }
+
+  int selectedFeatureId = *(mSelectedFeatureIds.constBegin());
+
+  //look if geometry of selected feature already contains geometry changes
+  QgsGeometryMap::iterator changedIt = mChangedGeometries.find(selectedFeatureId);
+  if(changedIt != mChangedGeometries.end())
+    {
+      return changedIt->addIsland(ring);
+    }
+
+  //look if id of selected feature belongs to an added feature
+  for(QgsFeatureList::iterator addedIt = mAddedFeatures.begin(); addedIt != mAddedFeatures.end(); ++addedIt)
+    {
+      if(addedIt->featureId() == selectedFeatureId)
+	{
+	  return addedIt->geometry()->addIsland(ring);
+	}
+    }
+
+  //else, if must be contained in mCachedGeometries
+  QgsGeometryMap::iterator cachedIt = mCachedGeometries.find(selectedFeatureId);
+  if(cachedIt != mCachedGeometries.end())
+    {
+      int errorCode = cachedIt->addIsland(ring);
+      if(errorCode == 0)
+	{
+	  mChangedGeometries.insert(selectedFeatureId, *cachedIt);
+	  setModified(true, true);
+	}
+      return errorCode;
+    }
+
+  return 6; //geometry not found
 }
 
 QgsLabel * QgsVectorLayer::label()
