@@ -294,6 +294,16 @@ void QgsLegendLayerFile::closeTable(bool onlyGeometryWasChanged)
 
 void QgsLegendLayerFile::saveAsShapefile()
 {
+  saveAsShapefileGeneral(FALSE);
+}
+
+void QgsLegendLayerFile::saveSelectionAsShapefile()
+{
+  saveAsShapefileGeneral(TRUE);
+}
+
+void QgsLegendLayerFile::saveAsShapefileGeneral(bool saveOnlySelection)
+{
   if (mLyr.layer()->type() != QgsMapLayer::VECTOR)
     return;
 
@@ -333,8 +343,12 @@ void QgsLegendLayerFile::saveAsShapefile()
     shapefileName += ".shp";
   }
   
+  QApplication::setOverrideCursor(Qt::waitCursor);
+  
   QgsVectorFileWriter::WriterError error;
-  error = QgsVectorFileWriter::writeAsShapefile(vlayer, shapefileName, encoding);
+  error = QgsVectorFileWriter::writeAsShapefile(vlayer, shapefileName, encoding, saveOnlySelection);
+  
+  QApplication::restoreOverrideCursor();
   
   switch (error)
   {
@@ -367,37 +381,49 @@ void QgsLegendLayerFile::toggleEditing()
   {
     vlayer->startEditing();
     if(!(vlayer->getDataProvider()->capabilities() & QgsVectorDataProvider::AddFeatures))
-    {
-      QMessageBox::information(0,tr("Start editing failed"),
-                               tr("Provider cannot be opened for editing"));
-    }
+      {
+	QMessageBox::information(0,tr("Start editing failed"),
+				 tr("Provider cannot be opened for editing"));
+      }
+    else
+      {
+	vlayer->triggerRepaint();
+      }
   }
   else
   {
-    // commit or roll back?
-    QMessageBox::StandardButton commit = QMessageBox::information(0,tr("Stop editing"),
-                                          tr("Do you want to save the changes?"),
-                                          QMessageBox::Save | QMessageBox::Discard);  
+    if(vlayer->isModified())
+      {
 
-    if(commit==QMessageBox::Save)
-    {
-      if(!vlayer->commitChanges())
-      {
-        QMessageBox::information(0,tr("Error"),tr("Could not commit changes"));
-      
-        // Leave the in-memory editing state alone,
-        // to give the user a chance to enter different values
-        // and try the commit again later
+	// commit or roll back?
+	QMessageBox::StandardButton commit = QMessageBox::information(0,tr("Stop editing"),
+								      tr("Do you want to save the changes?"),
+								      QMessageBox::Save | QMessageBox::Discard);  
+	
+	if(commit==QMessageBox::Save)
+	  {
+	    if(!vlayer->commitChanges())
+	      {
+		QMessageBox::information(0,tr("Error"),tr("Could not commit changes"));
+		
+		// Leave the in-memory editing state alone,
+		// to give the user a chance to enter different values
+		// and try the commit again later
+	      }
+	  }
+	else if(commit==QMessageBox::Discard)
+	  {
+	    if(!vlayer->rollBack())
+	      {
+		QMessageBox::information(0,tr("Error"),
+					 tr("Problems during roll back"));
+	      }
+	  }
       }
-    }
-    else if(commit==QMessageBox::Discard)
-    {
-      if(!vlayer->rollBack())
+    else //layer not modified
       {
-        QMessageBox::information(0,tr("Error"),
-                                 tr("Problems during roll back"));
+	vlayer->rollBack();
       }
-    }
     vlayer->triggerRepaint();
     
   }
@@ -416,7 +442,7 @@ void QgsLegendLayerFile::layerNameChanged()
 }
 
 
-void QgsLegendLayerFile::addToPopupMenu(QMenu& theMenu)
+void QgsLegendLayerFile::addToPopupMenu(QMenu& theMenu, QAction* toggleEditingAction)
 {
   QgsMapLayer* lyr = layer();
   QString iconsPath = QgsApplication::themePath();
@@ -450,15 +476,20 @@ void QgsLegendLayerFile::addToPopupMenu(QMenu& theMenu)
     if ((cap & QgsVectorDataProvider::AddFeatures)
         ||(cap & QgsVectorDataProvider::DeleteFeatures))
     {
-      QAction* toggleEditingAction = theMenu.addAction(tr("Allow Editing"), this, SLOT(toggleEditing()));
-      toggleEditingAction->setCheckable(true);
-      toggleEditingAction->blockSignals(true);
-      toggleEditingAction->setChecked(vlayer->isEditable());
-      toggleEditingAction->blockSignals(false);
+      if(toggleEditingAction)
+	{
+	  theMenu.addAction(toggleEditingAction);
+	}
     }
     
     // save as shapefile
     theMenu.addAction(tr("Save as shapefile..."), this, SLOT(saveAsShapefile()));
+
+    QAction* saveSelectionAction = theMenu.addAction(tr("Save selection as shapefile..."), this, SLOT(saveSelectionAsShapefile()));
+    if (vlayer->selectedFeatureCount() == 0)
+    {
+      saveSelectionAction->setEnabled(false);
+    }
 
     theMenu.addSeparator();
   }

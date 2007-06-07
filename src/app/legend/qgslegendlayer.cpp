@@ -459,7 +459,7 @@ QPixmap QgsLegendLayer::getOriginalPixmap() const
 }
 
 
-void QgsLegendLayer::addToPopupMenu(QMenu& theMenu)
+void QgsLegendLayer::addToPopupMenu(QMenu& theMenu, QAction* toggleEditingAction)
 {
   QString iconsPath = QgsApplication::themePath();
   std::list<QgsLegendLayerFile*> files = legendLayerFiles();
@@ -498,8 +498,10 @@ void QgsLegendLayer::addToPopupMenu(QMenu& theMenu)
     }
     
     // allow editing
-    QAction* toggleEditingAction = theMenu.addAction(tr("&Allow editing"), this, SLOT(toggleEditing()));
-    toggleEditingAction->setCheckable(true);
+    if(toggleEditingAction)
+      {
+	theMenu.addAction(toggleEditingAction);
+      }
     
     QgsVectorLayer* theVectorLayer = dynamic_cast<QgsVectorLayer*>(firstLayer);
   
@@ -513,10 +515,17 @@ void QgsLegendLayer::addToPopupMenu(QMenu& theMenu)
     }
   
     // save as shapefile
-    theMenu.addAction(tr("Save as shapefile..."), this, SLOT(saveAsShapefile()));
+    QAction* saveShpAction = theMenu.addAction(tr("Save as shapefile..."), this, SLOT(saveAsShapefile()));
     if (files.size() != 1)
     {
-      tableAction->setEnabled(false);
+      saveShpAction->setEnabled(false);
+    }
+    
+    // save selection as shapefile
+    QAction* saveSelectionAction = theMenu.addAction(tr("Save selection as shapefile..."), this, SLOT(saveSelectionAsShapefile()));
+    if (files.size() != 1 || theVectorLayer->selectedFeatureCount() == 0)
+    {
+      saveSelectionAction->setEnabled(false);
     }
     
     theMenu.addSeparator();
@@ -581,20 +590,20 @@ void QgsLegendLayer::table()
   }
 }
 
-void QgsLegendLayer::toggleEditing()
-{
-  std::list<QgsLegendLayerFile*> maplayers = legendLayerFiles();
-  if (maplayers.size() == 1)
-  {
-    maplayers.front()->toggleEditing();
-  }
-}
-
 void QgsLegendLayer::saveAsShapefile()
 {
   std::list<QgsLegendLayerFile*> maplayers = legendLayerFiles();
   if (maplayers.size() == 1)
   {
     maplayers.front()->saveAsShapefile();
+  }
+}
+
+void QgsLegendLayer::saveSelectionAsShapefile()
+{
+  std::list<QgsLegendLayerFile*> maplayers = legendLayerFiles();
+  if (maplayers.size() == 1)
+  {
+    maplayers.front()->saveSelectionAsShapefile();
   }
 }

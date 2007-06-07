@@ -40,6 +40,9 @@ SET (BINDINGS_GLOBAL_INSTALL FALSE CACHE BOOL "Install bindings to global python
 # Compile flag. Make it posible to turn it off.
 SET (PEDANTIC TRUE CACHE BOOL "Determines if we should compile with -Wall -Werror.")
 
+# whether unit tests should be build
+SET (ENABLE_TESTS FALSE CACHE BOOL "Build unit tests?")
+
 # hide this variable because building of python bindings might fail
 # if set to other directory than expected
 MARK_AS_ADVANCED(LIBRARY_OUTPUT_PATH)
@@ -102,6 +105,10 @@ SET( QT_USE_QT3SUPPORT TRUE )
 SET( QT_USE_QTXML      TRUE )
 SET( QT_USE_QTNETWORK  TRUE )
 SET( QT_USE_QTSVG      TRUE )
+IF (ENABLE_TESTS)
+  SET( QT_USE_QTTEST  TRUE )
+  ENABLE_TESTING()
+ENDIF (ENABLE_TESTS)
 # TODO: should not be needed, report it to CMake devs
 IF (APPLE AND QT_USE_QT3SUPPORT)
   SET( QT_USE_QTSQL    TRUE )
@@ -222,6 +229,9 @@ IF (HAVE_PYTHON)
   SUBDIRS (python)
 ENDIF (HAVE_PYTHON)
 
+IF (ENABLE_TESTS)
+  SUBDIRS(tests)
+ENDIF (ENABLE_TESTS)
 
 #############################################################
 # install stuff
@@ -243,3 +253,34 @@ CONFIGURE_FILE(
 
 ADD_CUSTOM_TARGET(uninstall
   "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake")
+
+#############################################################
+# Enable packaging
+
+INCLUDE(InstallRequiredSystemLibraries)
+
+SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Quantum GIS")
+SET(CPACK_PACKAGE_VENDOR "Tim Sutton")
+SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README")
+SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
+SET(CPACK_PACKAGE_VERSION_MAJOR "0")
+SET(CPACK_PACKAGE_VERSION_MINOR "9")
+SET(CPACK_PACKAGE_VERSION_PATCH "pre")
+SET(CPACK_PACKAGE_INSTALL_DIRECTORY "CMake ${CMake_VERSION_MAJOR}.${CMake_VERSION_MINOR}")
+IF(WIN32 AND NOT UNIX)
+  # There is a bug in NSI that does not handle full unix paths properly. Make
+  # sure there is at least one set of four (4) backlasshes.
+  SET(CPACK_PACKAGE_ICON "${CMake_SOURCE_DIR}/win_build\\\\sidebar.bmp")
+  SET(CPACK_NSIS_INSTALLED_ICON_NAME "\\\\qgis.exe")
+  SET(CPACK_NSIS_DISPLAY_NAME "${CPACK_PACKAGE_INSTALL_DIRECTORY} Quantum GIS")
+  SET(CPACK_NSIS_HELP_LINK "http:\\\\\\\\qgis.org")
+  SET(CPACK_NSIS_URL_INFO_ABOUT "http:\\\\\\\\qgis.org")
+  SET(CPACK_NSIS_CONTACT "tim@linfiniti.com")
+  SET(CPACK_NSIS_MODIFY_PATH ON)
+ELSE(WIN32 AND NOT UNIX)
+  #SET(CPACK_STRIP_FILES "Quantum GIS")
+  #SET(CPACK_SOURCE_STRIP_FILES "")
+ENDIF(WIN32 AND NOT UNIX)
+SET(CPACK_PACKAGE_EXECUTABLES "qgis" "QGIS")
+INCLUDE(CPack)
+

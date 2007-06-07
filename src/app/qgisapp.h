@@ -293,6 +293,10 @@ public slots:
   void moveVertex();
   //! activates the delete vertex tool
   void deleteVertex();
+  //! activates the add ring tool
+  void addRing();
+  //! activates the add island tool
+  void addIsland();
 
   //! activates the selection tool
   void select();
@@ -300,11 +304,8 @@ public slots:
   void refreshMapCanvas();
   //! returns pointer to map legend
   QgsLegend *legend() { return mMapLegend; }
-  //! enables the editing mode of the current layer
-  void startEditing();
-  //! disables the editing mode of the current layer
-  void stopEditing();
-  
+  //! starts/stops editing mode of the current layer
+  void toggleEditing();
 
   /** Activates or deactivates actions depending on the current maplayer type.
   Is called from the legend when the current legend item has changed*/
@@ -475,8 +476,7 @@ private:
   QAction *mActionQgisHomePage;
   QAction *mActionHelpAbout;
   QAction *mArawAction;
-  QAction *mActionStartEditing;
-  QAction *mActionStopEditing;
+  QAction *mActionToggleEditing;
   QAction *mActionCapturePoint;
   QAction *mActionCaptureLine;
   QAction *mActionCapturePolygon;
@@ -484,6 +484,8 @@ private:
   QAction *mActionAddVertex;
   QAction *mActionDeleteVertex;
   QAction *mActionMoveVertex;
+  QAction *mActionAddRing;
+  QAction *mActionAddIsland;
   QAction *mActionEditCut;
   QAction *mActionEditCopy;
   QAction *mActionEditPaste;
@@ -539,6 +541,8 @@ private:
       QgsMapTool* mVertexAdd;
       QgsMapTool* mVertexMove;
       QgsMapTool* mVertexDelete;
+      QgsMapTool* mAddRing;
+      QgsMapTool* mAddIsland;
   } mMapTools;
   
   //!The name of the active theme

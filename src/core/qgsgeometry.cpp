@@ -19,14 +19,14 @@ email                : morb at ozemail dot com dot au
 
 #include "qgis.h"
 #include "qgsgeometry.h"
+#include "qgsapplication.h"
 #include "qgsgeometryvertexindex.h"
 #include "qgslogger.h"
 #include "qgspoint.h"
 #include "qgsrect.h"
 
-
 // Set up static GEOS geometry factory
-GEOS_GEOM::GeometryFactory* QgsGeometry::geosGeometryFactory = new GEOS_GEOM::GeometryFactory();
+static GEOS_GEOM::GeometryFactory* geosGeometryFactory = new GEOS_GEOM::GeometryFactory();
 
 
 QgsGeometry::QgsGeometry()
@@ -59,7 +59,23 @@ mDirtyGeos( rhs.mDirtyGeos )
   // deep-copy the GEOS Geometry if appropriate
   if (rhs.mGeos)
   {  
-    mGeos = rhs.mGeos->clone();
+    if(rhs.mGeos->getGeometryTypeId() == GEOS_GEOM::GEOS_MULTIPOLYGON)//MH:problems with cloning for multipolygons in geos 2
+      {
+	GEOS_GEOM::MultiPolygon* multiPoly = dynamic_cast<GEOS_GEOM::MultiPolygon*>(rhs.mGeos);
+	if(multiPoly)
+	  {
+	    std::vector<GEOS_GEOM::Geometry*> polygonVector;
+	    for(GEOS_SIZE_T i = 0; i < multiPoly->getNumGeometries(); ++i)
+	      {
+		polygonVector.push_back((GEOS_GEOM::Geometry*)(multiPoly->getGeometryN(i)));
+	      }
+	    mGeos = geosGeometryFactory->createMultiPolygon(polygonVector);
+	  }
+      }
+    else
+      {
+	mGeos = rhs.mGeos->clone();
+      }
   }
   else
   {
@@ -104,24 +120,47 @@ QgsGeometry* QgsGeometry::fromPolyline(const QgsPolyline& polyline)
   return g;
 }
 
-QgsGeometry* QgsGeometry::fromPolygon(const QgsPolygon& polygon)
+static GEOS_GEOM::LinearRing* _createGeosLinearRing(const QgsPolyline& ring)
 {
-  const GEOS_GEOM::CoordinateSequenceFactory* seqFactory = GEOS_GEOM::COORD_SEQ_FACTORY::instance();  
-  const QgsPolyline& ring0 = polygon[0];
+  // LinearRing in GEOS must have the first point the same as the last one
+  bool needRepeatLastPnt = (ring[0] != ring[ring.count()-1]);
 
-  // outer ring
-  GEOS_GEOM::CoordinateSequence* seq = seqFactory->create(ring0.count(), 2);
+  const GEOS_GEOM::CoordinateSequenceFactory* seqFactory = GEOS_GEOM::COORD_SEQ_FACTORY::instance();
+
+  GEOS_GEOM::CoordinateSequence* seq = seqFactory->create(ring.count() + (needRepeatLastPnt ? 1 : 0), 2);
   QgsPolyline::const_iterator it;
   int i = 0;
-  for (it = ring0.begin(); it != ring0.end(); ++it)
+  for (it = ring.begin(); it != ring.end(); ++it)
   {
     seq->setAt(GEOS_GEOM::Coordinate(it->x(), it->y()), i++);
   }
+  
+  // add the first point to close the ring if needed
+  if (needRepeatLastPnt)
+    seq->setAt(GEOS_GEOM::Coordinate(ring[0].x(), ring[0].y()), ring.count());
+  
   // ring takes ownership of the sequence
-  GEOS_GEOM::LinearRing* outerRing = geosGeometryFactory->createLinearRing(seq);
+  GEOS_GEOM::LinearRing* linRing = geosGeometryFactory->createLinearRing(seq);
+  
+  return linRing;
+}
 
-  std::vector<GEOS_GEOM::Geometry*>* holes = new std::vector<GEOS_GEOM::Geometry*>;
-  // TODO: holes
+QgsGeometry* QgsGeometry::fromPolygon(const QgsPolygon& polygon)
+{
+  if (polygon.count() == 0)
+    return NULL;
+  
+  const QgsPolyline& ring0 = polygon[0];
+  
+  // outer ring
+  GEOS_GEOM::LinearRing* outerRing = _createGeosLinearRing(ring0);
+  
+  // holes
+  std::vector<GEOS_GEOM::Geometry*>* holes = new std::vector<GEOS_GEOM::Geometry*> (polygon.count()-1);
+  for (int i = 1; i < polygon.count(); i++)
+  {
+    (*holes)[i-1] = _createGeosLinearRing(polygon[i]);
+  }
 
   // new geometry takes ownership of outerRing and vector of holes
   GEOS_GEOM::Geometry* geom = geosGeometryFactory->createPolygon(outerRing, holes);
@@ -165,7 +204,23 @@ QgsGeometry & QgsGeometry::operator=( QgsGeometry const & rhs )
   // deep-copy the GEOS Geometry if appropriate
   if (rhs.mGeos)
   {  
-    mGeos = rhs.mGeos->clone();
+    if(rhs.mGeos->getGeometryTypeId() == GEOS_GEOM::GEOS_MULTIPOLYGON)//MH:problems with cloning for multipolygons in geos 2
+      {
+	GEOS_GEOM::MultiPolygon* multiPoly = dynamic_cast<GEOS_GEOM::MultiPolygon*>(rhs.mGeos);
+	if(multiPoly)
+	  {
+	    std::vector<GEOS_GEOM::Geometry*> polygonVector;
+	    for(GEOS_SIZE_T i = 0; i < multiPoly->getNumGeometries(); ++i)
+	      {
+		polygonVector.push_back((GEOS_GEOM::Geometry*)(multiPoly->getGeometryN(i)));
+	      }
+	    mGeos = geosGeometryFactory->createMultiPolygon(polygonVector);
+	  }
+      }
+    else
+      {
+	mGeos = rhs.mGeos->clone();
+      }
   }
   else
   {
@@ -1978,7 +2033,7 @@ double QgsGeometry::closestVertexWithContext(const QgsPoint& point,
   GEOS_GEOM::CoordinateSequence* sequence = mGeos->getCoordinates();
   if(sequence)
   {
-    for(int i = 0; i < (int) sequence->getSize(); ++i)
+    for(GEOS_SIZE_T i = 0; i < sequence->getSize(); ++i)
     {
       double testDist = point.sqrDist(sequence->getAt(i).x, sequence->getAt(i).y);
       if(testDist < sqrDist)
@@ -2218,6 +2273,268 @@ double QgsGeometry::closestSegmentWithContext(const QgsPoint& point,
   return sqrDist;
 }                 
 
+int QgsGeometry::addRing(const QList<QgsPoint>& ring)
+{
+  //bail out if this geometry is not polygon/multipolygon
+  if(vectorType() != QGis::Polygon)
+    {
+      return 1;
+    }
+
+  //test for invalid geometries
+  if(ring.size() < 4)
+    {
+      return 3;
+    }
+
+  //ring must be closed
+  if(ring.first() != ring.last())
+    {
+      return 2;
+    }
+  
+  //create geos geometry from wkb if not already there
+  if(!mGeos || mDirtyGeos)
+    {
+      exportWkbToGeos();
+    }
+  
+  //Fill GEOS Polygons of the feature into list
+  std::list<GEOS_GEOM::Polygon*> polygonList; //list of polygon pointers (only one for polygon geometries)
+  GEOS_GEOM::Polygon* thisPolygon = 0;
+  GEOS_GEOM::MultiPolygon* thisMultiPolygon = 0;
+
+  if(this->wkbType() == QGis::WKBPolygon)
+    {
+      thisPolygon = dynamic_cast<GEOS_GEOM::Polygon*>(mGeos);
+      if(!thisPolygon)
+	{
+	  return 1;
+	}
+      polygonList.push_back(thisPolygon);
+    }
+  else if(this->wkbType() == QGis::WKBMultiPolygon)
+    {
+      thisMultiPolygon = dynamic_cast<GEOS_GEOM::MultiPolygon*>(mGeos);
+      if(!thisMultiPolygon)
+	{
+	  return 1;
+	}
+      int numPolys = thisMultiPolygon->getNumGeometries();
+      for(int i = 0; i < numPolys; ++i)
+	{
+	  polygonList.push_back((GEOS_GEOM::Polygon*)(thisMultiPolygon->getGeometryN(i)));
+	}
+    }
+
+  //create new ring
+  GEOS_GEOM::DefaultCoordinateSequence* newSequence=new GEOS_GEOM::DefaultCoordinateSequence();
+  for(QList<QgsPoint>::const_iterator it = ring.begin(); it != ring.end(); ++it)
+    {
+      newSequence->add(GEOS_GEOM::Coordinate(it->x(),it->y()));
+    }
+  
+  //create new ring
+  GEOS_GEOM::LinearRing* newRing = geosGeometryFactory->createLinearRing(newSequence);
+  std::vector<GEOS_GEOM::Geometry*> dummyVector;
+
+  //create polygon from new ring because there is a problem with geos operations and linear rings
+  GEOS_GEOM::Polygon* newRingPolygon = geosGeometryFactory->createPolygon(*newRing, dummyVector);
+  if(!newRing || !newRingPolygon || !newRing->isValid() || !newRingPolygon->isValid())
+    {
+      QgsDebugMsg("ring is not valid");
+      delete newRing;
+      delete newRingPolygon;
+      return 3;
+    }
+  
+  GEOS_GEOM::LinearRing* outerRing = 0; //outer ring of already existing feature
+  std::vector<GEOS_GEOM::Geometry*>* inner = 0; //vector of inner rings. The existing rings and the new one will be added
+  int numberOfPolyContainingRing = 0; //for multipolygons: store index of the polygon where the ring is
+  bool foundPoly = false; //set to true as soon we found a polygon containing the ring
+
+  for(std::list<GEOS_GEOM::Polygon*>::const_iterator it = polygonList.begin(); it != polygonList.end(); ++it)
+    {
+      /***********inner rings*****************************************/
+      //consider already existing rings
+      inner=new std::vector<GEOS_GEOM::Geometry*>();
+      int numExistingRings = (*it)->getNumInteriorRing();
+      inner->resize(numExistingRings + 1);
+      for(int i = 0; i < numExistingRings; ++i)
+	{
+	  GEOS_GEOM::LinearRing* existingRing = geosGeometryFactory->createLinearRing((*it)->getInteriorRingN(i)->getCoordinates());
+	  //create polygon from new ring because there is a problem with geos operations and linear rings
+	  GEOS_GEOM::Polygon* existingRingPolygon = geosGeometryFactory->createPolygon(*existingRing, dummyVector);
+	 
+      //check, if the new ring intersects the existing one and bail out if yes
+	  //if(existingRing->disjoint(newRing))
+	  if(!existingRingPolygon->disjoint(newRingPolygon)) //does only work with polygons, not linear rings
+	    {
+	      QgsDebugMsg("new ring not disjoint with existing ring");
+	      //delete objects wich are no longer needed
+	      delete existingRing;
+	      delete existingRingPolygon;
+	      for(std::vector<GEOS_GEOM::Geometry*>::iterator it = inner->begin(); it != inner->end(); ++it)
+		{
+		  delete *it;
+		}
+	      delete inner;
+	      delete newRing;
+	      delete newRingPolygon;
+	      return 4; //error: ring not disjoint with existing rings
+	    }
+	  (*inner)[i] = existingRing;
+	  delete existingRingPolygon; //delete since this polygon has only be created for disjoint() test
+	}
+      
+      //also add new ring to the vector
+      if(newRing)
+	{
+	  (*inner)[numExistingRings] = newRing;
+	}
+
+      /*****************outer ring****************/
+      outerRing = geosGeometryFactory->createLinearRing((*it)->getExteriorRing()->getCoordinates());
+      //create polygon from new ring because there is a problem with geos operations and linear rings
+      GEOS_GEOM::Polygon* outerRingPolygon = geosGeometryFactory->createPolygon(*outerRing, dummyVector);
+
+      //check if the new ring is within the outer shell of the polygon and bail out if not
+      //if(newRing->within(outerRing))
+      if(newRingPolygon->within(outerRingPolygon)) //does only work for polygons, not linear rings
+	{
+	  QgsDebugMsg("new ring within outer ring");
+	  foundPoly = true;
+	  delete outerRingPolygon;
+	  break; //ring is in geometry and does not intersect existing rings -> proceed with adding ring to feature
+	}
+
+      //we need to search in other polygons...
+      for(std::vector<GEOS_GEOM::Geometry*>::iterator it = inner->begin(); it != inner->end(); ++it)
+      {
+	if( (*it) != newRing) //we need newRing for later polygons
+	  {
+	    delete *it;
+	  }
+      }
+      delete inner;
+      delete outerRing;
+      delete outerRingPolygon;
+      
+      ++numberOfPolyContainingRing;
+    }
+
+  delete newRingPolygon;
+ 
+  if(foundPoly)
+    {
+      GEOS_GEOM::Polygon* newPolygon = geosGeometryFactory->createPolygon(outerRing,inner);
+      if(this->wkbType() == QGis::WKBPolygon)
+	{
+	  delete mGeos;
+	  mGeos = newPolygon;
+	}
+      else if(this->wkbType() == QGis::WKBMultiPolygon)
+	{
+	  //remember in which polygon the ring is and replace only this polygon
+	  std::vector<GEOS_GEOM::Geometry*>* polygons = new std::vector<GEOS_GEOM::Geometry*>();
+	  int numPolys = thisMultiPolygon->getNumGeometries();
+	    for(int i = 0; i < numPolys; ++i)
+	      {
+		if(i == numberOfPolyContainingRing)
+		  {
+		    polygons->push_back(newPolygon);
+		  }
+		else
+		  {
+		    GEOS_GEOM::Polygon* p = (GEOS_GEOM::Polygon*)(thisMultiPolygon->getGeometryN(i)->clone());
+		    polygons->push_back(p);
+		  }
+	      }
+	  delete mGeos;
+	  mGeos = geosGeometryFactory->createMultiPolygon(polygons);
+	}
+      mDirtyWkb = true;
+      mDirtyGeos = false;
+      return 0;
+    }
+  else
+    {
+      delete newRing;
+      return 5;
+    }
+}
+
+int QgsGeometry::addIsland(const QList<QgsPoint>& ring)
+{
+  //bail out if wkbtype is not multipolygon
+  if(wkbType() != QGis::WKBMultiPolygon)
+    {
+      return 1;
+    }
+
+  //create geos geometry from wkb if not already there
+  if(!mGeos || mDirtyGeos)
+    {
+      exportWkbToGeos();
+    }
+
+  //this multipolygon
+  GEOS_GEOM::MultiPolygon* thisMultiPolygon = dynamic_cast<GEOS_GEOM::MultiPolygon*>(mGeos);
+  if(!thisMultiPolygon)
+    {
+      return 1;
+    }
+
+  //create new polygon from ring
+
+  //coordinate sequence first
+  GEOS_GEOM::DefaultCoordinateSequence* newSequence=new GEOS_GEOM::DefaultCoordinateSequence();
+  for(QList<QgsPoint>::const_iterator it = ring.begin(); it != ring.end(); ++it)
+    {
+      newSequence->add(GEOS_GEOM::Coordinate(it->x(),it->y()));
+    }
+  //then linear ring
+  GEOS_GEOM::LinearRing* newRing = geosGeometryFactory->createLinearRing(newSequence);
+  //finally the polygon
+  std::vector<GEOS_GEOM::Geometry*> dummyVector;
+  GEOS_GEOM::Polygon* newPolygon = geosGeometryFactory->createPolygon(*newRing, dummyVector);
+  delete newRing;
+
+  if(!newPolygon || !newPolygon->isValid())
+    {
+      delete newPolygon;
+      return 2;
+    }
+
+  //create new multipolygon
+  std::vector<GEOS_GEOM::Geometry*>* newMultiPolygonVector = new std::vector<GEOS_GEOM::Geometry*>();
+  for(GEOS_SIZE_T i = 0; i < thisMultiPolygon->getNumGeometries(); ++i)
+    {
+      const GEOS_GEOM::Geometry* polygonN = thisMultiPolygon->getGeometryN(i);
+      
+      //bail out if new polygon is not disjoint with existing ones
+      if(!polygonN->disjoint(newPolygon))
+	{
+	  delete newPolygon;
+	  for(std::vector<GEOS_GEOM::Geometry*>::iterator it =newMultiPolygonVector->begin(); it != newMultiPolygonVector->end(); ++it)
+	    {
+	      delete *it;
+	    }
+	  delete newMultiPolygonVector;
+	  return 3;
+	}
+      newMultiPolygonVector->push_back(polygonN->clone());
+    }
+  newMultiPolygonVector->push_back(newPolygon);
+  GEOS_GEOM::MultiPolygon* newMultiPolygon = geosGeometryFactory->createMultiPolygon(newMultiPolygonVector);
+  
+  delete mGeos;
+  mGeos = newMultiPolygon;
+
+  mDirtyWkb = true;
+  mDirtyGeos = false;
+  return 0;
+}
 
 QgsRect QgsGeometry::boundingBox()
 {
@@ -3122,7 +3439,7 @@ bool QgsGeometry::exportGeosToWkb()
   }
 
   // set up byteOrder
-  char byteOrder = 1;   // TODO
+  char byteOrder = QgsApplication::endian();
 
   switch (mGeos->getGeometryTypeId())
   {
@@ -3231,7 +3548,7 @@ bool QgsGeometry::exportGeosToWkb()
             geometrySize += sizeof(int);
             geometrySize += theRing->getNumPoints()*2*sizeof(double);
           }
-          for(int i = 0; i < (int) thePolygon->getNumInteriorRing(); ++i)
+          for(GEOS_SIZE_T i = 0; i < thePolygon->getNumInteriorRing(); ++i)
           {
             geometrySize += sizeof(int); //number of points in ring
             theRing = thePolygon->getInteriorRingN(i);
@@ -3242,13 +3559,13 @@ bool QgsGeometry::exportGeosToWkb()
           }
 
           mGeometry = new unsigned char[geometrySize];
+	  mGeometrySize = geometrySize;
 
           //then fill the geometry itself into the wkb
           int position = 0;
           // assign byteOrder
           memcpy(mGeometry, &byteOrder, 1);
           position += 1;
-          //endian flag must be added by QgsVectorLayer
           int wkbtype=QGis::WKBPolygon;
           memcpy(&mGeometry[position],&wkbtype, sizeof(int));
           position += sizeof(int);
@@ -3265,7 +3582,7 @@ bool QgsGeometry::exportGeosToWkb()
             position += sizeof(int);
             const GEOS_GEOM::CoordinateSequence* ringSequence = theRing->getCoordinatesRO();
             //for(int j = 0; j < nPointsInRing; ++j)
-            for(int j = 0; j < (int) ringSequence->getSize(); ++j)
+            for(GEOS_SIZE_T j = 0; j < ringSequence->getSize(); ++j)
             {
               //x = theRing->getPointN(j)->getX();
               x = ringSequence->getAt(j).x;
@@ -3279,20 +3596,21 @@ bool QgsGeometry::exportGeosToWkb()
           }
 
           //interior rings after
-          for(int i = 0; i < (int) thePolygon->getNumInteriorRing(); ++i)
+          for(GEOS_SIZE_T i = 0; i < thePolygon->getNumInteriorRing(); ++i)
           {
             theRing = thePolygon->getInteriorRingN(i);
             if(theRing)
             {
-              nPointsInRing = theRing->getNumPoints();
+	      const GEOS_GEOM::CoordinateSequence* ringSequence = theRing->getCoordinatesRO();
+              nPointsInRing = ringSequence->getSize();
               memcpy(&mGeometry[position], &nPointsInRing, sizeof(int));
               position += sizeof(int);
               for(int j = 0; j < nPointsInRing; ++j)
               {
-                x = theRing->getPointN(j)->getX();
+		x = ringSequence->getAt(j).x;
                 memcpy(&mGeometry[position], &x, sizeof(double));
                 position += sizeof(double);
-                y = theRing->getPointN(j)->getY();
+		y = ringSequence->getAt(j).y;
                 memcpy(&mGeometry[position], &y, sizeof(double));
                 position += sizeof(double);
               }
@@ -3322,8 +3640,101 @@ bool QgsGeometry::exportGeosToWkb()
 
     case GEOS_GEOM::GEOS_MULTIPOLYGON:          // a collection of polygons
       {
-        // TODO
-        break;
+	GEOS_GEOM::MultiPolygon* theMultiPolygon = dynamic_cast<GEOS_GEOM::MultiPolygon*>(mGeos);
+	if(!theMultiPolygon)
+	  {
+	    return false;
+	  }
+
+	//first determine size of geometry
+        int geometrySize = 1 + (2 * sizeof(int)); //endian, type, number of polygons
+	for(GEOS_SIZE_T i = 0; i < theMultiPolygon->getNumGeometries(); ++i)
+	  {
+	    GEOS_GEOM::Polygon* thePoly = (GEOS_GEOM::Polygon*)(theMultiPolygon->getGeometryN(i));
+	    geometrySize += (1 + (2 * sizeof(int))); //endian, type, number of rings
+	    //exterior ring
+	    geometrySize += sizeof(int); //number of points in exterior ring
+	    const GEOS_GEOM::LineString* exRing = thePoly->getExteriorRing();
+	    geometrySize += (2*sizeof(double)*exRing->getNumPoints());
+
+	    const GEOS_GEOM::LineString* intRing = 0;
+	    for(GEOS_SIZE_T j = 0; j < thePoly->getNumInteriorRing(); ++j)
+	      {
+		geometrySize += sizeof(int); //number of points in ring
+		intRing = thePoly->getInteriorRingN(j);
+		geometrySize += 2*sizeof(double)*intRing->getNumPoints();
+	      }
+	  }
+
+	mGeometry = new unsigned char[geometrySize];
+	mGeometrySize = geometrySize;
+	int wkbPosition = 0; //current position in the byte array
+        
+	memcpy(mGeometry, &byteOrder, 1);
+	wkbPosition += 1;
+	int wkbtype=QGis::WKBMultiPolygon;
+	memcpy(&mGeometry[wkbPosition],&wkbtype, sizeof(int));
+	wkbPosition += sizeof(int);
+	int numPolygons = theMultiPolygon->getNumGeometries();
+	memcpy(&mGeometry[wkbPosition], &numPolygons, sizeof(int));
+	wkbPosition += sizeof(int);
+
+	//loop over polygons
+	for(GEOS_SIZE_T i = 0; i < theMultiPolygon->getNumGeometries(); ++i)
+	  {
+	    GEOS_GEOM::Polygon* thePoly = (GEOS_GEOM::Polygon*)(theMultiPolygon->getGeometryN(i));
+	    memcpy(&mGeometry[wkbPosition], &byteOrder, 1);
+	    wkbPosition += 1;
+	    int polygonType = QGis::WKBPolygon;
+	    memcpy(&mGeometry[wkbPosition], &polygonType, sizeof(int));
+	    wkbPosition += sizeof(int);
+	    int numRings = thePoly->getNumInteriorRing() + 1;
+	    memcpy(&mGeometry[wkbPosition], &numRings, sizeof(int));
+	    wkbPosition += sizeof(int);
+
+	    //exterior ring
+	    const GEOS_GEOM::LineString* theRing = thePoly->getExteriorRing();
+	    int nPointsInRing = theRing->getNumPoints();
+	    memcpy(&mGeometry[wkbPosition], &nPointsInRing, sizeof(int));
+	    wkbPosition += sizeof(int);
+	    const GEOS_GEOM::CoordinateSequence* ringCoordinates = theRing->getCoordinatesRO();
+	    
+	    double x, y;
+	    GEOS_GEOM::Coordinate coord;
+	    for(int k = 0; k < nPointsInRing; ++k)
+	      {
+		coord = ringCoordinates->getAt(k);
+		x = coord.x;
+		y = coord.y;
+		memcpy(&mGeometry[wkbPosition], &x, sizeof(double));
+		wkbPosition += sizeof(double);
+		memcpy(&mGeometry[wkbPosition], &y, sizeof(double));
+		wkbPosition += sizeof(double);
+	      }
+	    
+	    //interior rings
+	    for(GEOS_SIZE_T j = 0; j < thePoly->getNumInteriorRing(); ++j)
+	      {
+		theRing = thePoly->getInteriorRingN(j);
+		nPointsInRing = theRing->getNumPoints();
+		memcpy(&mGeometry[wkbPosition], &nPointsInRing, sizeof(int));
+		wkbPosition += sizeof(int);
+		ringCoordinates = theRing->getCoordinatesRO();
+
+		for(int k = 0; k < nPointsInRing; ++k)
+		  {
+		    coord = ringCoordinates->getAt(k);
+		    x = coord.x;
+		    y = coord.y;
+		    memcpy(&mGeometry[wkbPosition], &x, sizeof(double));
+		    wkbPosition += sizeof(double);
+		    memcpy(&mGeometry[wkbPosition], &y, sizeof(double));
+		    wkbPosition += sizeof(double);
+		  }
+	      }
+	  }
+	mDirtyWkb = FALSE;
+	return true;	
       } // case GEOS_GEOM::GEOS_MULTIPOLYGON
 
     case GEOS_GEOM::GEOS_GEOMETRYCOLLECTION:    // a collection of heterogeneus geometries
