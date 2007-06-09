@@ -40,6 +40,7 @@ qgsrunprocess.cpp
 qgsscalecalculator.cpp
 qgssearchstring.cpp
 qgssearchtreenode.cpp
+qgssnapper.cpp
 qgsspatialrefsys.cpp
 qgsvectordataprovider.cpp
 qgsvectorfilewriter.cpp
@@ -197,6 +198,7 @@ qgsrunprocess.h
 qgsscalecalculator.h
 qgssearchstring.h
 qgssearchtreenode.h
+qgssnapper.h
 qgsspatialrefsys.h
 qgsvectordataprovider.h
 qgsvectorfilewriter.h
