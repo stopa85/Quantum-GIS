@@ -21,7 +21,6 @@
 #include "qgspoint.h"
 #include <QList>
 
-class QgsGeometry;
 class QgsMapRender;
 class QgsVectorLayer;
 
@@ -36,8 +35,8 @@ struct QgsSnappingResult
   QgsPoint beforeVertex;
   /**The layer coordinates of the vertex after snappedVertex*/
   QgsPoint afterVertex;
-  /**A pointer to the snapped geometry*/
-  QgsGeometry* snappedAtGeometry;
+  /**Index of the snapped geometry*/
+  int snappedAtGeometry;
 };
 
 
@@ -72,11 +71,16 @@ class QgsSnapper
   ~QgsSnapper();
   /**Does the snapping operation
    @param startPoint the start point for snapping (in pixel coordinates)
-  @param snappingResult the list where the results are inserted
+  @param snappingResult the list where the results are inserted (everything in map coordinate system)
   @return 0 in case of success*/
   int snapPoint(const QgsPoint& startPoint, QList<QgsSnappingResult>& snappingResult);
 
-  //todo: setters and getters
+  //setters
+  void setLayersToSnap(const QList<QgsVectorLayer*>& layerList);
+  void setTolerances(const QList<double>& toleranceList);
+  void setSnapToList(const QList<QgsSnapper::SNAP_TO>& snapToList);
+  void setSnapMode(QgsSnapper::SNAP_MODE snapMode);
+
  private:
   /**Don't use the default constructor*/
   QgsSnapper();

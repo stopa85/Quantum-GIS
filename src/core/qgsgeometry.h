@@ -146,8 +146,8 @@ class CORE_EXPORT QgsGeometry {
     double distance(QgsGeometry& geom);
 
     /**
-       Returns the vertex closest to the given point 
-       (and also vertex index, squared distance and indexes of the vertices before/after)
+       Returns the vertex closest to the given point, the corresponding vertex index, squared distance snap point / target pointand \
+and the indices of the vertices before/after. The vertices before/after are -1 if not present
     */
     QgsPoint closestVertex(const QgsPoint& point, QgsGeometryVertexIndex& atVertex, int& beforeVertex, int& afterVertex, double& sqrDist);
 

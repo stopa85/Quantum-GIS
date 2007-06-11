@@ -2422,7 +2422,6 @@ bool QgsVectorLayer::snapPoint(QgsPoint& point, double tolerance)
   return true;
 }
 
-
 bool QgsVectorLayer::snapVertexWithContext(QgsPoint& point, QgsGeometryVertexIndex& atVertex,
                                            int& beforeVertexIndex, int& afterVertexIndex,
                                            int& snappedFeatureId, QgsGeometry& snappedGeometry,
@@ -2557,6 +2556,108 @@ bool QgsVectorLayer::snapVertexWithContext(QgsPoint& point, QgsGeometryVertexInd
   }
 
   return true;
+}
+
+int QgsVectorLayer::snapVertexWithContext(const QgsPoint& startPoint, double snappingTolerance, QMultiMap<double, QgsSnappingResult>& snappingResults)
+{
+
+  if (snappingTolerance<=0 || !mDataProvider)
+  {
+    return 1;
+  }
+
+  QgsRect searchRect(startPoint.x()-snappingTolerance, startPoint.y()-snappingTolerance, \
+		     startPoint.x()+snappingTolerance, startPoint.y()+snappingTolerance);
+
+  //go through the changed geometries and store the ids of already examined features
+  QSet<int> alreadyExaminedGeometries;
+  
+  //new snapping result
+  QgsSnappingResult snappingResult;
+  QgsGeometryVertexIndex atVertex;
+  int beforeVertex, afterVertex;
+  QgsGeometryVertexIndex beforeVertexIndex, afterVertexIndex;
+  double sqrDistance;
+  QgsPoint snappedPoint;
+  double sqrSnappingTolerance = snappingTolerance * snappingTolerance;
+
+  QgsGeometryMap::iterator changedIt;
+  for(changedIt = mChangedGeometries.begin(); changedIt != mChangedGeometries.end(); ++changedIt)
+    {
+      alreadyExaminedGeometries.insert(changedIt.key());
+      snappedPoint = changedIt->closestVertex(startPoint, atVertex, beforeVertex, afterVertex, sqrDistance);
+      if(sqrDistance < sqrSnappingTolerance)
+	{
+	  //add snapping result
+	  snappingResult.snappedVertex = snappedPoint;
+	  snappingResult.snappedVertexNr = atVertex.back();
+	  beforeVertexIndex.clear(); beforeVertexIndex.push_back(beforeVertex);
+	  snappingResult.beforeVertex = changedIt->vertexAt(beforeVertexIndex);
+	  afterVertexIndex.clear(); afterVertexIndex.push_back(afterVertex);
+	  snappingResult.afterVertex = changedIt->vertexAt(afterVertexIndex);
+	  snappingResult.snappedAtGeometry = changedIt.key();
+	  snappingResults.insert(sqrt(sqrDistance), snappingResult);
+	}
+    }
+
+  //go through the new features
+  QgsFeatureList::iterator addedIt;
+  QgsGeometry* currentGeometry = 0;
+
+  for(addedIt = mAddedFeatures.begin(); addedIt != mAddedFeatures.end(); ++addedIt)
+    {
+      int featureId = addedIt->featureId();
+      if(!alreadyExaminedGeometries.contains(featureId))
+	{
+	  currentGeometry = addedIt->geometry();
+	  if(currentGeometry)
+	    {
+	      snappedPoint = currentGeometry->closestVertex(startPoint, atVertex, beforeVertex, afterVertex, sqrDistance);
+	      if(sqrDistance < sqrSnappingTolerance)
+		{
+		  //add snapping result
+		  snappingResult.snappedVertex = snappedPoint;
+		  snappingResult.snappedVertexNr = atVertex.back();
+		  beforeVertexIndex.clear(); beforeVertexIndex.push_back(beforeVertex);
+		  snappingResult.beforeVertex = currentGeometry->vertexAt(beforeVertexIndex);
+		  afterVertexIndex.clear(); afterVertexIndex.push_back(afterVertex);
+		  snappingResult.afterVertex = currentGeometry->vertexAt(afterVertexIndex);
+		  snappingResult.snappedAtGeometry = addedIt->featureId();
+		  snappingResults.insert(sqrt(sqrDistance), snappingResult);
+		}
+	    }
+	}
+    }
+
+  //go through the commited features
+  QgsFeature feature;
+  mDataProvider->select(QgsAttributeList(), searchRect);
+  while (mDataProvider->getNextFeature(feature))
+  {
+    int featureId = feature.featureId();
+    if(!alreadyExaminedGeometries.contains(featureId))
+      {
+	currentGeometry = feature.geometry();
+	if(currentGeometry)
+	  {
+	    snappedPoint = currentGeometry->closestVertex(startPoint, atVertex, beforeVertex, afterVertex, sqrDistance);
+	   
+	   if(sqrDistance < sqrSnappingTolerance)
+	     { 
+	       snappingResult.snappedVertex = snappedPoint;
+	       snappingResult.snappedVertexNr = atVertex.back();
+	       beforeVertexIndex.clear(); beforeVertexIndex.push_back(beforeVertex);
+	       snappingResult.beforeVertex = currentGeometry->vertexAt(beforeVertexIndex);
+	       afterVertexIndex.clear(); afterVertexIndex.push_back(afterVertex);
+	       snappingResult.afterVertex = currentGeometry->vertexAt(afterVertexIndex);
+	       snappingResult.snappedAtGeometry = feature.featureId();
+	       snappingResults.insert(sqrt(sqrDistance), snappingResult);
+	     }
+	  }
+      }
+  }
+  
+  return 0;
 }
 
 

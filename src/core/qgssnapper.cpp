@@ -16,6 +16,11 @@
  ***************************************************************************/
 
 #include "qgssnapper.h"
+#include "qgsmaprender.h"
+#include "qgsmaptopixel.h"
+#include "qgsvectorlayer.h"
+#include <QMultiMap>
+#include <cmath>
 
 
 QgsSnapper::QgsSnapper(QgsMapRender* mapRender): mMapRender(mapRender)
@@ -37,14 +42,114 @@ int QgsSnapper::snapPoint(const QgsPoint& startPoint, QList<QgsSnappingResult>& 
 {
   snappingResult.clear();
 
-  QList<QgsVectorLayer*>::const_iterator layerIt;
-  for(layerIt = mLayersToSnap.constBegin(); layerIt != mLayersToSnap.constEnd(); ++layerIt)
+  //list must have the same length
+  if(!(mLayersToSnap.size() == mSnappingTolerances.size() && mLayersToSnap.size() == mSnapToList.size()))
     {
-      //transform point into layer coordinates
+      return 1;
+    }
+
+  QList<QgsVectorLayer*>::iterator layerIt = mLayersToSnap.begin();
+  QList<double>::const_iterator  toleranceIt = mSnappingTolerances.constBegin();
+  QList<QgsSnapper::SNAP_TO>::const_iterator snapToIt = mSnapToList.constBegin();
+
+  QMultiMap<double, QgsSnappingResult> snappingResultList;//all snapping results
+  QMultiMap<double, QgsSnappingResult> currentResultList; //snapping results of examined layer
+
+  //start point in (output) map coordinates
+  QgsPoint mapCoordPoint = mMapRender->coordXForm()->toMapCoordinates((int)(startPoint.x()), (int)(startPoint.y())); 
+  QgsPoint layerCoordPoint; //start point in layer coordinates
+  QgsSnappingResult newResult;
+
+
+  for(; layerIt != mLayersToSnap.end(); ++layerIt, ++toleranceIt, ++snapToIt)
+    {
+      //transform point from map coordinates to layer coordinates
+      layerCoordPoint = mMapRender->outputCoordsToLayerCoords(*layerIt, mapCoordPoint);
+      
       //do snap according to given snap mode and tolerance for the layer
-      //transform start point and snap point into map coordinates to find out distance
-      //depending on the snap_mode: store snap results or not
+      if(*snapToIt == SNAP_TO_VERTEX)
+	{
+	  if(mSnapMode == QgsSnapper::ONE_RESULT_BY_SEGMENT)
+	    {
+	      //todo: snap to segment first and to vertex after
+	    }
+	  else
+	    {
+	      if( (*layerIt)->snapVertexWithContext(startPoint, *toleranceIt, currentResultList) != 0)
+		{
+		  //error
+		}
+	    }
+	}
+      else //snap to segment
+	{
+	  //todo
+	}
+
+      //transform each result from layer crs to map crs (including distance)
+      QMultiMap<double, QgsSnappingResult>::iterator currentResultIt;
+      for(currentResultIt = currentResultList.begin(); currentResultIt != currentResultList.end(); ++currentResultIt)
+	{
+	  //for each snapping result: transform start point, snap point and other points into map coordinates to find out distance
+	  //store results in snapping result list
+	  newResult.snappedVertex = mMapRender->layerCoordsToOutputCoords(*layerIt, currentResultIt.value().snappedVertex);
+	  newResult.beforeVertex = mMapRender->layerCoordsToOutputCoords(*layerIt, currentResultIt.value().beforeVertex);
+	  newResult.afterVertex = mMapRender->layerCoordsToOutputCoords(*layerIt, currentResultIt.value().afterVertex);
+	  newResult.snappedVertexNr = currentResultIt.value().snappedVertexNr;
+	  newResult.snappedAtGeometry = currentResultIt.value().snappedAtGeometry;
+	  snappingResultList.insert(sqrt(newResult.snappedVertex.sqrDist(mapCoordPoint)), newResult);
+	}
     }
   
-  return 1; //soon
+  //evaluate results according to snap mode
+  QMultiMap<double, QgsSnappingResult>::iterator evalIt =  snappingResultList.begin();
+  if(evalIt == snappingResultList.end())
+    {
+      return 0;
+    }
+
+  if(mSnapMode == QgsSnapper::ONE_RESULT || mSnapMode == QgsSnapper::ONE_RESULT_BY_SEGMENT)
+    {
+      //return only closest result
+      snappingResult.push_back(evalIt.value());
+    }
+  else if(mSnapMode == QgsSnapper::SEVERAL_RESULTS_SAME_POSITION)
+    {
+      
+      double minDistance = evalIt.key();
+      QList<QgsSnappingResult> values = snappingResultList.values(minDistance);
+      for (int i = 0; i < values.size(); ++i)
+	{
+	  snappingResult.push_back(values.at(i));
+	}
+    }
+  else //take all results
+    {
+      for(;evalIt != snappingResultList.end(); ++evalIt)
+	{
+	  snappingResult.push_back(evalIt.value());
+	}
+    }
+
+  return 0;
+}
+
+void QgsSnapper::setLayersToSnap(const QList<QgsVectorLayer*>& layerList)
+{
+  mLayersToSnap = layerList;
+}
+
+void QgsSnapper::setTolerances(const QList<double>& toleranceList)
+{
+  mSnappingTolerances = toleranceList;
+}
+
+void QgsSnapper::setSnapToList(const QList<QgsSnapper::SNAP_TO>& snapToList)
+{
+  mSnapToList = snapToList;
+}
+
+void QgsSnapper::setSnapMode(QgsSnapper::SNAP_MODE snapMode)
+{
+  mSnapMode = snapMode;
 }
