@@ -26,6 +26,7 @@
 #include "qgis.h"
 #include "qgsmaplayer.h"
 #include "qgsfeature.h"
+#include "qgssnapper.h"
 
 class QPainter;
 class QImage;
@@ -273,6 +274,7 @@ existing rings, 5 no feature found where ring can be inserted*/
      
      TODO: Handle returning multiple verticies if they are coincident
    */
+
   bool snapVertexWithContext(QgsPoint& point,
                              QgsGeometryVertexIndex& atVertex,
 			     int& beforeVertexIndex,
@@ -280,6 +282,13 @@ existing rings, 5 no feature found where ring can be inserted*/
                              int& snappedFeatureId,
                              QgsGeometry& snappedGeometry,
                              double tolerance);
+
+  /**Snaps to vertices within given tolerance
+   @param startPoint point to snap (in layer coordinates)
+  @param snappingTolerance distance tolerance for snapping
+  @param snappingResults snapping results. Key is the distance between startPoint and snapping target
+  @return 0 in case of success*/
+  int snapVertexWithContext(const QgsPoint& startPoint, double snappingTolerance, QMultiMap<double, QgsSnappingResult>& snappingResults);
 
   /**Snaps a point to the closest line segment if there is one within the snapping tolerance
      @param beforeVertex      Set to a value where the snapped-to segment is before this vertex index
