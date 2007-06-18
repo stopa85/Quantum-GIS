@@ -991,21 +991,21 @@ bool QgsRasterLayer::draw(QPainter * theQPainter,
   // calculate raster pixel offsets from origin to clipped rect
   // we're only interested in positive offsets where the origin of the raster
   // is northwest of the origin of the view
-  myRasterViewPort->rectXOffset = (theViewExtent.xMin() - mLayerExtent.xMin()) / fabs(mGeoTransform[1]);
-  myRasterViewPort->rectYOffset = (mLayerExtent.yMax() - theViewExtent.yMax()) / fabs(mGeoTransform[5]);
+  myRasterViewPort->rectXOffsetFloat = (theViewExtent.xMin() - mLayerExtent.xMin()) / fabs(mGeoTransform[1]);
+  myRasterViewPort->rectYOffsetFloat = (mLayerExtent.yMax() - theViewExtent.yMax()) / fabs(mGeoTransform[5]);
 
-  if (myRasterViewPort->rectXOffset < 0 )
+  if (myRasterViewPort->rectXOffsetFloat < 0 )
   {
-    myRasterViewPort->rectXOffset = 0;
+    myRasterViewPort->rectXOffsetFloat = 0;
   }
 
-  if (myRasterViewPort->rectYOffset < 0 )
+  if (myRasterViewPort->rectYOffsetFloat < 0 )
   {
-    myRasterViewPort->rectYOffset = 0;
+    myRasterViewPort->rectYOffsetFloat = 0;
   }
 
-  myRasterViewPort->rectXOffset = static_cast < int >(myRasterViewPort->rectXOffset);
-  myRasterViewPort->rectYOffset = static_cast < int >(myRasterViewPort->rectYOffset);
+  myRasterViewPort->rectXOffset = static_cast < int >(myRasterViewPort->rectXOffsetFloat);
+  myRasterViewPort->rectYOffset = static_cast < int >(myRasterViewPort->rectYOffsetFloat);
 
 #ifdef QGISDEBUG
   QgsLogger::debug("QgsRasterLayer::draw(4 arguments): mGeoTransform[0] = ", mGeoTransform[0], 1, __FILE__,\
@@ -1078,11 +1078,11 @@ bool QgsRasterLayer::draw(QPainter * theQPainter,
 
   QgsLogger::debug("QgsRasterLayer::draw: rectXOffset", myRasterViewPort->rectXOffset, 1, __FILE__,\
       __FUNCTION__, __LINE__);
-  QgsLogger::debug("QgsRasterLayer::draw: rectXOffset", myRasterViewPort->rectXOffset, 1, __FILE__,\
+  QgsLogger::debug("QgsRasterLayer::draw: rectXOffsetFloat", myRasterViewPort->rectXOffsetFloat, 1, __FILE__,\
       __FUNCTION__, __LINE__);
   QgsLogger::debug("QgsRasterLayer::draw: rectYOffset", myRasterViewPort->rectYOffset, 1, __FILE__,\
       __FUNCTION__, __LINE__);
-  QgsLogger::debug("QgsRasterLayer::draw: rectYOffset", myRasterViewPort->rectYOffset, 1, __FILE__,\
+  QgsLogger::debug("QgsRasterLayer::draw: rectYOffsetFloat", myRasterViewPort->rectYOffsetFloat, 1, __FILE__,\
       __FUNCTION__, __LINE__);
 
   QgsLogger::debug("QgsRasterLayer::draw: myRasterExtent.xMin()", myRasterExtent.xMin(), 1, __FILE__, __FUNCTION__,\
@@ -1517,14 +1517,14 @@ void QgsRasterLayer::drawSingleBandGray(QPainter * theQPainter, QgsRasterViewPor
   if (theQgsMapToPixel)
   {
     paintXoffset = static_cast<int>( 
-        (theRasterViewPort->rectXOffset - 
+        (theRasterViewPort->rectXOffsetFloat - 
          theRasterViewPort->rectXOffset)
         / theQgsMapToPixel->mapUnitsPerPixel() 
         * fabs(mGeoTransform[1])
         ); 
 
     paintYoffset = static_cast<int>( 
-        (theRasterViewPort->rectYOffset - 
+        (theRasterViewPort->rectYOffsetFloat - 
          theRasterViewPort->rectYOffset)
         / theQgsMapToPixel->mapUnitsPerPixel() 
         * fabs(mGeoTransform[5])
@@ -1853,14 +1853,14 @@ void QgsRasterLayer::drawSingleBandPseudoColor(QPainter * theQPainter,
   if (theQgsMapToPixel)
   {
     paintXoffset = static_cast<int>( 
-        (theRasterViewPort->rectXOffset - 
+        (theRasterViewPort->rectXOffsetFloat - 
          theRasterViewPort->rectXOffset)
         / theQgsMapToPixel->mapUnitsPerPixel() 
         * fabs(mGeoTransform[1])
         ); 
 
     paintYoffset = static_cast<int>( 
-        (theRasterViewPort->rectYOffset - 
+        (theRasterViewPort->rectYOffsetFloat - 
          theRasterViewPort->rectYOffset)
         / theQgsMapToPixel->mapUnitsPerPixel() 
         * fabs(mGeoTransform[5])
@@ -1973,14 +1973,14 @@ void QgsRasterLayer::drawPalettedSingleBandColor(QPainter * theQPainter, QgsRast
   if (theQgsMapToPixel)
   {
     paintXoffset = static_cast<int>( 
-        (theRasterViewPort->rectXOffset - 
+        (theRasterViewPort->rectXOffsetFloat - 
          theRasterViewPort->rectXOffset)
         / theQgsMapToPixel->mapUnitsPerPixel() 
         * fabs(mGeoTransform[1])
         ); 
 
     paintYoffset = static_cast<int>( 
-        (theRasterViewPort->rectYOffset - 
+        (theRasterViewPort->rectYOffsetFloat - 
          theRasterViewPort->rectYOffset)
         / theQgsMapToPixel->mapUnitsPerPixel() 
         * fabs(mGeoTransform[5])
@@ -2111,14 +2111,14 @@ void QgsRasterLayer::drawPalettedSingleBandGray(QPainter * theQPainter, QgsRaste
   if (theQgsMapToPixel)
   {
     paintXoffset = static_cast<int>( 
-        (theRasterViewPort->rectXOffset - 
+        (theRasterViewPort->rectXOffsetFloat - 
          theRasterViewPort->rectXOffset)
         / theQgsMapToPixel->mapUnitsPerPixel() 
         * fabs(mGeoTransform[1])
         ); 
 
     paintYoffset = static_cast<int>( 
-        (theRasterViewPort->rectYOffset - 
+        (theRasterViewPort->rectYOffsetFloat - 
          theRasterViewPort->rectYOffset)
         / theQgsMapToPixel->mapUnitsPerPixel() 
         * fabs(mGeoTransform[5])
@@ -2383,14 +2383,14 @@ void QgsRasterLayer::drawPalettedSingleBandPseudoColor(QPainter * theQPainter, Q
   if (theQgsMapToPixel)
   {
     paintXoffset = static_cast<int>( 
-        (theRasterViewPort->rectXOffset - 
+        (theRasterViewPort->rectXOffsetFloat - 
          theRasterViewPort->rectXOffset)
         / theQgsMapToPixel->mapUnitsPerPixel() 
         * fabs(mGeoTransform[1])
         ); 
 
     paintYoffset = static_cast<int>( 
-        (theRasterViewPort->rectYOffset - 
+        (theRasterViewPort->rectYOffsetFloat - 
          theRasterViewPort->rectYOffset)
         / theQgsMapToPixel->mapUnitsPerPixel() 
         * fabs(mGeoTransform[5])
@@ -2528,14 +2528,14 @@ void QgsRasterLayer::drawPalettedMultiBandColor(QPainter * theQPainter, QgsRaste
   if (theQgsMapToPixel)
   {
     paintXoffset = static_cast<int>( 
-        (theRasterViewPort->rectXOffset - 
+        (theRasterViewPort->rectXOffsetFloat - 
          theRasterViewPort->rectXOffset)
         / theQgsMapToPixel->mapUnitsPerPixel() 
         * fabs(mGeoTransform[1])
         ); 
 
     paintYoffset = static_cast<int>( 
-        (theRasterViewPort->rectYOffset - 
+        (theRasterViewPort->rectYOffsetFloat - 
          theRasterViewPort->rectYOffset)
         / theQgsMapToPixel->mapUnitsPerPixel() 
         * fabs(mGeoTransform[5])
@@ -2900,14 +2900,14 @@ void QgsRasterLayer::drawMultiBandColor(QPainter * theQPainter, QgsRasterViewPor
   if (theQgsMapToPixel)
   {
     paintXoffset = static_cast<int>( 
-        (theRasterViewPort->rectXOffset - 
+        (theRasterViewPort->rectXOffsetFloat - 
          theRasterViewPort->rectXOffset)
         / theQgsMapToPixel->mapUnitsPerPixel() 
         * fabs(mGeoTransform[1])
         ); 
 
     paintYoffset = static_cast<int>( 
-        (theRasterViewPort->rectYOffset - 
+        (theRasterViewPort->rectYOffsetFloat - 
          theRasterViewPort->rectYOffset)
         / theQgsMapToPixel->mapUnitsPerPixel() 
         * fabs(mGeoTransform[5])
