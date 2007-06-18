@@ -116,47 +116,6 @@
  *  methods.
  */
  
-/*
- * 
- * PROGRAMMERS NOTES:
- * 
- * 
- Please observe the following variable naming guidelines when editing this class:
-----------------
-In my opinion, clarity of code is more important than brevity, so variables should be given clear, 
-unambiguous names. Variables names should be written in mixed case, with a lowercase first letter. 
-Each variable name should include a scope resolution indicator and a type indicator, in the form:
-
-[scope]+[name]+[type]
-
-Where scope resolution indicators are:
-
-- global vars and class members : [none]
-- variables passed as parameters to a function/method: the
-- variables declared locally in a method or function: my
-
-For example:
-
-class FooClass {
-  int fooInt;  //class var has no prefix
-
-  public void FooClass::fooMethod (int theBarInt)  //function parameter prefixed by 'the'
-  {
-    fooInt=1;
-    int myLocalInt=0; //function members prefixed by 'my'
-    myLocalInt=fooInt+theBarInt;
-  }
-}
-
-Using this scope resolution naming scheme makes the origin of each variable unambiguous and the 
-code easy to read (especially by people who did not write it!).
-
-The [name] part of the variable should be short and descriptive, usually a noun.
-
-The [type] part of the variable should be the type class of the variable written out in full.
-
-*/ 
- 
  
 #ifndef QGSRASTERLAYER_H
 #define QGSRASTERLAYER_H
@@ -283,10 +242,10 @@ public:
     /** \brief The destuctor.  */
     ~QgsRasterLayer();
 
-    /** \brief  A vector containing one RasterBandStats struct per raster band in this raster layer.
+    /** \brief  A list containing one RasterBandStats struct per raster band in this raster layer.
      * Note that while very RasterBandStats element will have the name and number of its associated
      * band populated, any additional stats are calculated on a need to know basis.*/
-    typedef QVector<QgsRasterBandStats> RasterStatsVector;
+    typedef QList<QgsRasterBandStats> RasterStatsList;
 
 
     /** \brief  A list containing one RasterPyramid struct per 
@@ -301,7 +260,7 @@ public:
 
     /** \brief This typedef is used when the showProgress function is passed to gdal as a function
     pointer. */
-    //  typedef  int (QgsRasterLayer::*showTextProgress)( double theProgressDouble,
+    //  typedef  int (QgsRasterLayer::*showTextProgress)( double theProgress,
     //                                      const char *theMessageCharArray,
     //                                      void *theData);
 
@@ -354,54 +313,54 @@ public:
     // Accessors for image height and width
     //
     /** \brief Accessor that returns the width of the (unclipped) raster  */
-    const int getRasterXDim() {return rasterXDimInt;};
+    const int getRasterXDim() {return mRasterXDim;};
 
     /** \brief Accessor that returns the height of the (unclipped) raster  */
-    const int getRasterYDim() {return rasterYDimInt;};
+    const int getRasterYDim() {return mRasterYDim;};
 
     //
     // Accessor and mutator for no data double
     //
     /** \brief  Accessor that returns the NO_DATA entry for this raster. */
-    const double getNoDataValue() {return noDataValueDouble;}
+    const double getNoDataValue() {return mNoDataValue;}
 
     /** \brief  Mutator that allows the  NO_DATA entry for this raster to be overridden. */
-    void setNoDataValue(double theNoDataDouble) { noDataValueDouble=theNoDataDouble; return;};
+    void setNoDataValue(double theNoData) { mNoDataValue=theNoData; return;};
 
     /** \brief Simple reset function that set the noDataValue back to the value stored in the first raster band */
     void resetNoDataValue()
     {
-      noDataValueDouble = -9999;
-      if(gdalDataset != NULL && gdalDataset->GetRasterCount() > 0)
+      mNoDataValue = -9999;
+      if(mGdalDataset != NULL && mGdalDataset->GetRasterCount() > 0)
       {
-        noDataValueDouble = gdalDataset->GetRasterBand(1)->GetNoDataValue();
+        mNoDataValue = mGdalDataset->GetRasterBand(1)->GetNoDataValue();
       }
     }
     //
-    // Accessor and mutator for invertHistogramFlag
+    // Accessor and mutator for mInvertPixelsFlag
     //
     /** \brief Accessor to find out whether the histogram should be inverted.   */
     bool getInvertHistogramFlag()
     {
-        return invertHistogramFlag;
+        return mInvertPixelsFlag;
     }
     /** \brief Mutator to alter the state of the invert histogram flag.  */
     void setInvertHistogramFlag(bool theFlag)
     {
-        invertHistogramFlag=theFlag;
+        mInvertPixelsFlag=theFlag;
     }
     //
-    // Accessor and mutator for stdDevsToPlotDouble
+    // Accessor and mutator for mStandardDeviations
     //
     /** \brief Accessor to find out how many standard deviations are being plotted.  */
     double getStdDevsToPlot()
     {
-        return stdDevsToPlotDouble;
+        return mStandardDeviations;
     };
     /** \brief Mutator to alter the number of standard deviations that should be plotted.  */
-    void setStdDevsToPlot(double theDouble)
+    void setStdDevsToPlot(double the)
     {
-        stdDevsToPlotDouble = theDouble;
+        mStandardDeviations = the;
     };
     /** \brief Get the number of bands in this layer  */
     const unsigned int getBandCount();
@@ -427,7 +386,7 @@ public:
     /** \brief Accessor for red band name (allows alternate mappings e.g. map blue as red colour). */
     QString getRedBandName()
     {
-        return redBandNameQString;
+        return mRedBandName;
     };
     /** \brief Mutator for red band name (allows alternate mappings e.g. map blue as red colour). */
     void setRedBandName(QString const & theBandNameQString);
@@ -437,7 +396,7 @@ public:
     /** \brief Accessor for green band name mapping.  */
     QString getGreenBandName()
     {
-        return greenBandNameQString;
+        return mGreenBandName;
     };
     /** \brief Mutator for green band name mapping.  */
     void setGreenBandName(QString const & theBandNameQString);
@@ -447,7 +406,7 @@ public:
     /** \brief  Accessor for blue band name mapping. */
     QString getBlueBandName()
     {
-        return blueBandNameQString;
+        return mBlueBandName;
     };
     /** \brief Mutator for blue band name mapping.  */
     void setBlueBandName(QString const & theBandNameQString);
@@ -457,7 +416,7 @@ public:
     /** \brief  Accessor for transparent band name mapping. */
     QString getTransparentBandName()
     {
-        return transparentBandNameQString;
+        return mTransparencyBandName;
     };
     /** \brief Mutator for transparent band name mapping.  */
     void setTransparentBandName(QString const & theBandNameQString);
@@ -467,12 +426,12 @@ public:
     /** \brief  Accessor for transparent band name mapping. */
     QString getTransparentLayerName()
     {
-        return transparentLayerNameQString;
+        return mTransparentLayerName;
     };
     /** \brief Mutator for transparent band name mapping.  */
     void setTransparentLayerName(QString const & theLayerNameQString)
     {
-      transparentLayerNameQString = theLayerNameQString;
+      mTransparentLayerName = theLayerNameQString;
     }
     //
     // Accessor and mutator for gray band name
@@ -480,22 +439,22 @@ public:
     /** \brief Accessor for gray band name mapping.  */
     QString getGrayBandName()
     {
-        return grayBandNameQString;
+        return mGrayBandName;
     };
     /** \brief Mutator for gray band name mapping.  */
     void setGrayBandName(QString const & theBandNameQString);
     // 
-    // Accessor and mutator for showDebugOverlayFlag
+    // Accessor and mutator for mDebugOverlayFlag
     // 
     /** \brief Accessor for a flag that determines whether to show some debug info on the image.  */
     bool getShowDebugOverlayFlag()
     {
-        return showDebugOverlayFlag;
+        return mDebugOverlayFlag;
     };
     /** \brief Mutator for a flag that determines whether to show some debug info on the image.  */
     void setShowDebugOverlayFlag(bool theFlag)
     {
-        showDebugOverlayFlag=theFlag;
+        mDebugOverlayFlag=theFlag;
     };
     // 
     // Accessor and mutator for min and max red
@@ -505,36 +464,36 @@ public:
      * The clipping range can have different interpretations - it can either be used to perform
      * a histogram stretch between the minimum and maximum clipping values, or to exclude data
      * that falls outside the clipping range.*/
-    double getMinRedDouble()
+    double getMinRed()
     {
-        return minRedDouble;
+        return mRedMinimum;
     };
     /** \brief Mutator for minimum clipping range for red.
      *
      * The clipping range can have different interpretations - it can either be used to perform
      * a histogram stretch between the minimum and maximum clipping values, or to exclude data
      * that falls outside the clipping range.*/
-    void setMinRedDouble(double theDouble)
+    void setMinRed(double the)
     {
-        minRedDouble=theDouble;
+        mRedMinimum=the;
     };
     /** \brief Accessor for maximum clipping range for red.
      *
      * The clipping range can have different interpretations - it can either be used to perform
      * a histogram stretch between the minimum and maximum clipping values, or to exclude data
      * that falls outside the clipping range.*/
-    double getMaxRedDouble()
+    double getMaxRed()
     {
-        return maxRedDouble;
+        return mRedMaximum;
     };
     /** \brief Mutator for maximum clipping range for red.
      *
      * The clipping range can have different interpretations - it can either be used to perform
      * a histogram stretch between the minimum and maximum clipping values, or to exclude data
      * that falls outside the clipping range.*/
-    void setMaxRedDouble(double theDouble)
+    void setMaxRed(double the)
     {
-        maxRedDouble=theDouble;
+        mRedMaximum=the;
     };
     // 
     // Accessor and mutator for min and max green
@@ -544,36 +503,36 @@ public:
      * The clipping range can have different interpretations - it can either be used to perform
      * a histogram stretch between the minimum and maximum clipping values, or to exclude data
      * that falls outside the clipping range.*/
-    double getMinGreenDouble()
+    double getMinGreen()
     {
-        return minGreenDouble;
+        return mGreenMinimum;
     };
     /** \brief Mutator for minimum clipping range for green.
      *
      * The clipping range can have different interpretations - it can either be used to perform
      * a histogram stretch between the minimum and maximum clipping values, or to exclude data
      * that falls outside the clipping range.*/
-    void setMinGreenDouble(double theDouble)
+    void setMinGreen(double the)
     {
-        minGreenDouble=theDouble;
+        mGreenMinimum=the;
     };
     /** \brief Accessor for maximum clipping range for green.
      *
      * The clipping range can have different interpretations - it can either be used to perform
      * a histogram stretch between the minimum and maximum clipping values, or to exclude data
      * that falls outside the clipping range.*/
-    double getMaxGreenDouble()
+    double getMaxGreen()
     {
-        return maxGreenDouble;
+        return mGreenMaximum;
     };
     /** \brief Mutator for maximum clipping range for green.
      *
      * The clipping range can have different interpretations - it can either be used to perform
      * a histogram stretch between the minimum and maximum clipping values, or to exclude data
      * that falls outside the clipping range.*/
-    void setMaxGreenDouble(double theDouble)
+    void setMaxGreen(double the)
     {
-        maxGreenDouble=theDouble;
+        mGreenMaximum=the;
     };
     // 
     // Accessor and mutator for min and max blue
@@ -584,36 +543,36 @@ public:
      * a histogram stretch between the minimum and maximum clipping values, or to exclude data
      * that falls outside the clipping range.*/
     /** \brief   */
-    double getMinBlueDouble()
+    double getMinBlue()
     {
-        return minBlueDouble;
+        return mBlueMinimum;
     };
     /** \brief Mutator for minimum clipping range for blue.
      *
      * The clipping range can have different interpretations - it can either be used to perform
      * a histogram stretch between the minimum and maximum clipping values, or to exclude data
      * that falls outside the clipping range.*/
-    void setMinBlueDouble(double theDouble)
+    void setMinBlue(double the)
     {
-        minBlueDouble=theDouble;
+        mBlueMinimum=the;
     };
     /** \brief Accessor for maximum clipping range for blue.
      *
      * The clipping range can have different interpretations - it can either be used to perform
      * a histogram stretch between the minimum and maximum clipping values, or to exclude data
      * that falls outside the clipping range.*/
-    double getMaxBlueDouble()
+    double getMaxBlue()
     {
-        return maxBlueDouble;
+        return mBlueMaximum;
     };
     /** \brief Mutator for maximum clipping range for blue.
      *
      * The clipping range can have different interpretations - it can either be used to perform
      * a histogram stretch between the minimum and maximum clipping values, or to exclude data
      * that falls outside the clipping range.*/
-    void setMaxBlueDouble(double theDouble)
+    void setMaxBlue(double the)
     {
-        maxBlueDouble=theDouble;
+        mBlueMaximum=the;
     };
     // 
     // Accessor and mutator for min and max gray
@@ -623,36 +582,36 @@ public:
      * The clipping range can have different interpretations - it can either be used to perform
      * a histogram stretch between the minimum and maximum clipping values, or to exclude data
      * that falls outside the clipping range.*/
-    double getMinGrayDouble()
+    double getMinGray()
     {
-        return minGrayDouble;
+        return mGrayMinimum;
     };
     /** \brief Mutator for minimum clipping range for gray.
      *
      * The clipping range can have different interpretations - it can either be used to perform
      * a histogram stretch between the minimum and maximum clipping values, or to exclude data
      * that falls outside the clipping range.*/
-    void setMinGrayDouble(double theDouble)
+    void setMinGray(double the)
     {
-        minGrayDouble=theDouble;
+        mGrayMinimum=the;
     };
     /** \brief Accessor for maximum clipping range for gray.
      *
      * The clipping range can have different interpretations - it can either be used to perform
      * a histogram stretch between the minimum and maximum clipping values, or to exclude data
      * that falls outside the clipping range.*/
-    double getMaxGrayDouble()
+    double getMaxGray()
     {
-        return maxGrayDouble;
+        return mGrayMaximum;
     };
     /** \brief Mutator for maximum clipping range for gray.
      *
      * The clipping range can have different interpretations - it can either be used to perform
      * a histogram stretch between the minimum and maximum clipping values, or to exclude data
      * that falls outside the clipping range.*/
-    void setMaxGrayDouble(double theDouble)
+    void setMaxGray(double the)
     {
-        maxGrayDouble=theDouble;
+        mGrayMaximum=the;
     };
     //
     /** \brief This enumerator describes the types of histogram scaling algorithms that can be used.  */
@@ -734,9 +693,9 @@ public:
     /** \brief This enumerator describes the type of raster layer.  */
     enum RASTER_LAYER_TYPE
     {
-        GRAY_OR_UNDEFINED,
-	PALETTE,
-	MULTIBAND    
+      GRAY_OR_UNDEFINED,
+      PALETTE,
+      MULTIBAND    
     } rasterLayerType;
     //
     //accessor and for raster layer type (READ ONLY)
@@ -829,28 +788,28 @@ public:
      */
     const QgsRasterDataProvider* getDataProvider() const;
 
-     /** \brief Mutator for userDefinedThreeBandMinMax */
+     /** \brief Mutator for mUserDefinedRGBMinMaxFlag */
     void setUserDefinedColorMinMax(bool theBool)
     {
-      userDefinedThreeBandMinMax = theBool;
+      mUserDefinedRGBMinMaxFlag = theBool;
     } 
 
     /** \brief Accessor for userDefinedMinMax.  */
     bool getUserDefinedColorMinMax()
     {
-      return userDefinedThreeBandMinMax;
+      return mUserDefinedRGBMinMaxFlag;
     }
 
-    /** \brief Mutator for userDefinedThreeBandMinMax */
+    /** \brief Mutator for mUserDefinedRGBMinMaxFlag */
     void setUserDefinedGrayMinMax(bool theBool)
     {
-      userDefinedSingleBandMinMax = theBool;
+      mUserDefinedGrayMinMaxFlag = theBool;
     } 
 
     /** \brief Accessor for userDefinedMinMax.  */
     bool getUserDefinedGrayMinMax()
     {
-      return userDefinedSingleBandMinMax;
+      return mUserDefinedGrayMinMaxFlag;
     }
 
     //
@@ -918,7 +877,7 @@ public slots:
     /** \brief Used at the moment by the above function but hopefully will later
     be useable by any operation that needs to notify the user of its progress. */
 /*
-    int showTextProgress( double theProgressDouble,
+    int showTextProgress( double theProgress,
                           const char *theMessageCharArray,
                           void *theData);    
 */
@@ -1079,62 +1038,62 @@ color of the lower class for every pixel between two class breaks. Returns 0 in 
     // Private member vars
     //
     /** \brief  Raster width. */
-    int rasterXDimInt;
+    int mRasterXDim;
     /** \brief  Raster Height. */
-    int rasterYDimInt;
+    int mRasterYDim;
     /** \brief Cell value representing no data. e.g. -9999  */
-    double noDataValueDouble;
+    double mNoDataValue;
     /** \brief Flag to indicate whether debug infor overlay should be rendered onto the raster.  */
-    bool showDebugOverlayFlag;
+    bool mDebugOverlayFlag;
     /** \brief Pointer to the gdaldataset.  */
-    GDALDataset * gdalDataset;
-    /** \brief Values for mapping pixel to world coordinates.  */
-    double adfGeoTransform[6];
-    /** \brief Flag indicating whether the histogram should be inverted or not.  */
-    bool invertHistogramFlag;
+    GDALDataset * mGdalDataset;
+    /** \brief Values for mapping pixel to world coordinates. Contents of
+     * this array are the same as the gdal adfGeoTransform */
+    double mGeoTransform[6];
+    /** \brief Flag indicating whether the colour of pixels should be inverted or not.  */
+    bool mInvertPixelsFlag;
     /** \brief Number of stddev to plot (0) to ignore. Not applicable to all layer types.  */
-    double stdDevsToPlotDouble;
+    double mStandardDeviations;
     /** \brief A collection of stats - one for each band in the layer.
      * The typedef for this is defined above before class declaration
      */
-    RasterStatsVector rasterStatsVector;
+    RasterStatsList mRasterStatsList;
     /** \brief The band to be associated with the color red - usually 1.  */
-    QString redBandNameQString;
+    QString mRedBandName;
     /** \brief The band to be associated with the color green - usually 2.  */
-    QString greenBandNameQString;
+    QString mGreenBandName;
     /** \brief The band to be associated with the color blue - usually 3.  */
-    QString blueBandNameQString;
+    QString mBlueBandName;
     /** \brief The band to be associated with transparency.  */
-    QString transparentBandNameQString;
+    QString mTransparencyBandName;
     /** \brief The Layer to be associated with transparency.  */
-    QString transparentLayerNameQString;
+    QString mTransparentLayerName;
     /** \brief The band to be associated with the grayscale only ouput - usually 1.  */
-    QString grayBandNameQString;
+    QString mGrayBandName;
     /** \brief Minimum red value - used in scaling procedure.  */
-    double minRedDouble;
+    double mRedMinimum;
     /** \brief Maximum red value - used in scaling procedure.  */
-    double maxRedDouble;
+    double mRedMaximum;
     /** \brief Minimum green value - used in scaling procedure.  */
-    double minGreenDouble;
+    double mGreenMinimum;
     /** \brief Maximum green value - used in scaling procedure.  */
-    double maxGreenDouble;
+    double mGreenMaximum;
     /** \brief Minimum blue value - used in scaling procedure.  */
-    double minBlueDouble;
+    double mBlueMinimum;
     /** \brief Maximum blue value - used in scaling procedure.  */
-    double maxBlueDouble;
+    double mBlueMaximum;
     /** \brief Minimum gray value - used in scaling procedure.  */
-    double minGrayDouble;
+    double mGrayMinimum;
     /** \brief Maximum gray value - used in scaling procedure.  */
-    double maxGrayDouble;
+    double mGrayMaximum;
     /** \brief Whether this raster has overviews / pyramids or not */
     bool hasPyramidsFlag;
-    //Since QgsRasterBandStats deos not set the minRedDouble maxRedDouble etc., it is benificial to know if the user as set these values. Default = false
-    bool userDefinedThreeBandMinMax;
-    bool userDefinedSingleBandMinMax;
+    //Since QgsRasterBandStats deos not set the mRedMinimum mRedMaximum etc., it is benificial to know if the user as set these values. Default = false
+    bool mUserDefinedRGBMinMaxFlag;
+    bool mUserDefinedGrayMinMaxFlag;
     /** \brief This list holds a series of RasterPyramid structs
      * which store infomation for each potential pyramid level for this raster.*/
     RasterPyramidList mPyramidList;
-
     /**This flag holds if custom classification is enabled or not*/
     bool mCustomClassificationEnabled;
     /**This vector holds the information for classification based on values. 
@@ -1208,10 +1167,10 @@ private:
   QString mProviderKey;
   
   //! pointer for loading the provider library
-  QLibrary *myLib;
+  QLibrary *mLib;
 
   //! Pointer to data provider derived from the abstract base class QgsDataProvider
-  QgsRasterDataProvider *dataProvider;
+  QgsRasterDataProvider *mDataProvder;
 
   /**Flag indicating wheter the layer is in editing mode or not*/
   bool mEditable;

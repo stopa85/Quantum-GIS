@@ -304,14 +304,14 @@ rasterLayer( dynamic_cast<QgsRasterLayer*>(lyr) )
       if ((*myRasterPyramidIterator).existsFlag==true)
       {
         lbxPyramidResolutions->insertItem(myPyramidPixmap,
-            QString::number((*myRasterPyramidIterator).xDimInt) + QString(" x ") + 
-            QString::number((*myRasterPyramidIterator).yDimInt)); 
+            QString::number((*myRasterPyramidIterator).xDim) + QString(" x ") + 
+            QString::number((*myRasterPyramidIterator).yDim)); 
       }
       else
       {
         lbxPyramidResolutions->insertItem(myNoPyramidPixmap,
-            QString::number((*myRasterPyramidIterator).xDimInt) + QString(" x ") + 
-            QString::number((*myRasterPyramidIterator).yDimInt)); 
+            QString::number((*myRasterPyramidIterator).xDim) + QString(" x ") + 
+            QString::number((*myRasterPyramidIterator).yDim)); 
       }
     }
   }
@@ -571,12 +571,12 @@ if(QgsRasterLayer::PALETTED_COLOR != rasterLayer->getDrawingStyle() &&
        QgsRasterLayer::PALETTED_SINGLE_BAND_PSEUDO_COLOR != rasterLayer->getDrawingStyle() &&
        QgsRasterLayer::PALETTED_MULTI_BAND_COLOR != rasterLayer->getDrawingStyle())
     {
-      leRedMin->setText(QString::number(rasterLayer->getMinRedDouble()));
-      leRedMax->setText(QString::number(rasterLayer->getMaxRedDouble()));
-      leGreenMin->setText(QString::number(rasterLayer->getMinGreenDouble()));
-      leGreenMax->setText(QString::number(rasterLayer->getMaxGreenDouble()));
-      leBlueMin->setText(QString::number(rasterLayer->getMinBlueDouble()));
-      leBlueMax->setText(QString::number(rasterLayer->getMaxBlueDouble()));
+      leRedMin->setText(QString::number(rasterLayer->getMinRed()));
+      leRedMax->setText(QString::number(rasterLayer->getMaxRed()));
+      leGreenMin->setText(QString::number(rasterLayer->getMinGreen()));
+      leGreenMax->setText(QString::number(rasterLayer->getMaxGreen()));
+      leBlueMin->setText(QString::number(rasterLayer->getMinBlue()));
+      leBlueMax->setText(QString::number(rasterLayer->getMaxBlue()));
     }
   }
   else
@@ -599,8 +599,8 @@ if(QgsRasterLayer::PALETTED_COLOR != rasterLayer->getDrawingStyle() &&
        QgsRasterLayer::PALETTED_SINGLE_BAND_PSEUDO_COLOR != rasterLayer->getDrawingStyle() &&
        QgsRasterLayer::PALETTED_MULTI_BAND_COLOR != rasterLayer->getDrawingStyle())
     {
-      leGrayMin->setText(QString::number(rasterLayer->getMinGrayDouble()));
-      leGrayMax->setText(QString::number(rasterLayer->getMaxGrayDouble()));
+      leGrayMin->setText(QString::number(rasterLayer->getMinGray()));
+      leGrayMax->setText(QString::number(rasterLayer->getMaxGray()));
     }
 
   }
@@ -948,12 +948,12 @@ void QgsRasterLayerProperties::apply()
     //Set min max based on user defined values if all are set and stdDev is 0.0
     if(rbtnThreeBandMinMax->isEnabled() && rbtnThreeBandMinMax->isChecked() && validUserDefinedMinMax())
     {
-      rasterLayer->setMinRedDouble(leRedMin->text().toDouble());
-      rasterLayer->setMaxRedDouble(leRedMax->text().toDouble());
-      rasterLayer->setMinGreenDouble(leGreenMin->text().toDouble());
-      rasterLayer->setMaxGreenDouble(leGreenMax->text().toDouble());
-      rasterLayer->setMinBlueDouble(leBlueMin->text().toDouble());
-      rasterLayer->setMaxBlueDouble(leBlueMax->text().toDouble());
+      rasterLayer->setMinRed(leRedMin->text().toDouble());
+      rasterLayer->setMaxRed(leRedMax->text().toDouble());
+      rasterLayer->setMinGreen(leGreenMin->text().toDouble());
+      rasterLayer->setMaxGreen(leGreenMax->text().toDouble());
+      rasterLayer->setMinBlue(leBlueMin->text().toDouble());
+      rasterLayer->setMaxBlue(leBlueMax->text().toDouble());
       rasterLayer->setStdDevsToPlot(0.0);
       rasterLayer->setUserDefinedColorMinMax(true);
     }
@@ -973,8 +973,8 @@ void QgsRasterLayerProperties::apply()
     //Set min max based on user defined values if all are set and stdDev is 0.0
     if(rbtnSingleBandMinMax->isEnabled() && rbtnSingleBandMinMax->isChecked() && validUserDefinedMinMax())
     {
-      rasterLayer->setMinGrayDouble(leGrayMin->text().toDouble());
-      rasterLayer->setMaxGrayDouble(leGrayMax->text().toDouble());
+      rasterLayer->setMinGray(leGrayMin->text().toDouble());
+      rasterLayer->setMaxGray(leGrayMax->text().toDouble());
       rasterLayer->setStdDevsToPlot(0.0);
       rasterLayer->setUserDefinedGrayMinMax(true);
     }
@@ -1026,8 +1026,8 @@ void QgsRasterLayerProperties::apply()
   //Walk through each row in table and test value. If not valid set to 0.0 and continue building transparency list
   if(rbtnThreeBand->isChecked() && QgsRasterLayer::MULTI_BAND_COLOR == rasterLayer->getDrawingStyle())
   {
-    double myTransparentValueDouble;
-    double myPercentTransparentDouble;
+    double myTransparentValue;
+    double myPercentTransparent;
     QgsRasterLayer::TransparentThreeValuePixel myTransparentPixel;
     QList<QgsRasterLayer::TransparentThreeValuePixel> myTransparentThreeValuePixelList;
     for(int myListRunner = 0; myListRunner < tableTransparency->rowCount(); myListRunner++)
@@ -1040,10 +1040,10 @@ void QgsRasterLayerProperties::apply()
       }
       else 
       {
-        myTransparentValueDouble = tableTransparency->item(myListRunner, 0)->text().toDouble(&myDoubleOk);
+        myTransparentValue = tableTransparency->item(myListRunner, 0)->text().toDouble(&myDoubleOk);
         if(myDoubleOk)
         {
-          myTransparentPixel.red = myTransparentValueDouble;
+          myTransparentPixel.red = myTransparentValue;
         }
         else 
         {
@@ -1060,10 +1060,10 @@ void QgsRasterLayerProperties::apply()
       }
       else 
       {
-        myTransparentValueDouble = tableTransparency->item(myListRunner, 1)->text().toDouble(&myDoubleOk);
+        myTransparentValue = tableTransparency->item(myListRunner, 1)->text().toDouble(&myDoubleOk);
         if(myDoubleOk)
         {
-          myTransparentPixel.green = myTransparentValueDouble;
+          myTransparentPixel.green = myTransparentValue;
         }
         else 
         {
@@ -1080,10 +1080,10 @@ void QgsRasterLayerProperties::apply()
       }
       else 
       {
-        myTransparentValueDouble = tableTransparency->item(myListRunner, 2)->text().toDouble(&myDoubleOk);
+        myTransparentValue = tableTransparency->item(myListRunner, 2)->text().toDouble(&myDoubleOk);
         if(myDoubleOk)
         {
-          myTransparentPixel.blue = myTransparentValueDouble;
+          myTransparentPixel.blue = myTransparentValue;
         }
         else 
         {
@@ -1101,15 +1101,15 @@ void QgsRasterLayerProperties::apply()
       else 
       {
         QString myNumberFormatter;
-        myPercentTransparentDouble = tableTransparency->item(myListRunner, 3)->text().toDouble(&myDoubleOk);
+        myPercentTransparent = tableTransparency->item(myListRunner, 3)->text().toDouble(&myDoubleOk);
         if(myDoubleOk)
         {
-          if(myPercentTransparentDouble > 100.0)
+          if(myPercentTransparent > 100.0)
             myTransparentPixel.percentTransparent = 100.0;
-          else if(myPercentTransparentDouble < 0.0)
+          else if(myPercentTransparent < 0.0)
             myTransparentPixel.percentTransparent = 0.0;
           else
-            myTransparentPixel.percentTransparent = myPercentTransparentDouble;
+            myTransparentPixel.percentTransparent = myPercentTransparent;
 
           tableTransparency->item(myListRunner, 3)->setText(myNumberFormatter.sprintf("%.2f",myTransparentPixel.percentTransparent));
         }
@@ -1127,8 +1127,8 @@ void QgsRasterLayerProperties::apply()
   }
   else
   {
-    double myTransparentValueDouble;
-    double myPercentTransparentDouble;
+    double myTransparentValue;
+    double myPercentTransparent;
     QgsRasterLayer::TransparentSingleValuePixel myTransparentPixel;
     QList<struct QgsRasterLayer::TransparentSingleValuePixel> myTransparentSingleValuePixelList;
     for(int myListRunner = 0; myListRunner < tableTransparency->rowCount(); myListRunner++)
@@ -1141,10 +1141,10 @@ void QgsRasterLayerProperties::apply()
       }
       else 
       {
-        myTransparentValueDouble = tableTransparency->item(myListRunner, 0)->text().toDouble(&myDoubleOk);
+        myTransparentValue = tableTransparency->item(myListRunner, 0)->text().toDouble(&myDoubleOk);
         if(myDoubleOk)
         {
-          myTransparentPixel.pixelValue = myTransparentValueDouble;
+          myTransparentPixel.pixelValue = myTransparentValue;
         }
         else 
         {
@@ -1162,15 +1162,15 @@ void QgsRasterLayerProperties::apply()
       else 
       {
         QString myNumberFormatter;
-        myPercentTransparentDouble = tableTransparency->item(myListRunner, 1)->text().toDouble(&myDoubleOk);
+        myPercentTransparent = tableTransparency->item(myListRunner, 1)->text().toDouble(&myDoubleOk);
         if(myDoubleOk)
         {
-          if(myPercentTransparentDouble > 100.0)
+          if(myPercentTransparent > 100.0)
             myTransparentPixel.percentTransparent = 100.0;
-          else if(myPercentTransparentDouble < 0.0)
+          else if(myPercentTransparent < 0.0)
             myTransparentPixel.percentTransparent = 0.0;
           else
-            myTransparentPixel.percentTransparent = myPercentTransparentDouble;
+            myTransparentPixel.percentTransparent = myPercentTransparent;
 
           tableTransparency->item(myListRunner, 1)->setText(myNumberFormatter.sprintf("%.2f",myTransparentPixel.percentTransparent));
         }
@@ -1238,12 +1238,12 @@ void QgsRasterLayerProperties::apply()
 
      if(rbtnThreeBandMinMax->isEnabled())
       {
-        leRedMin->setText(QString::number(rasterLayer->getMinRedDouble()));
-        leRedMax->setText(QString::number(rasterLayer->getMaxRedDouble()));
-        leGreenMin->setText(QString::number(rasterLayer->getMinGreenDouble()));
-        leGreenMax->setText(QString::number(rasterLayer->getMaxGreenDouble()));
-        leBlueMin->setText(QString::number(rasterLayer->getMinBlueDouble()));
-        leBlueMax->setText(QString::number(rasterLayer->getMaxBlueDouble()));
+        leRedMin->setText(QString::number(rasterLayer->getMinRed()));
+        leRedMax->setText(QString::number(rasterLayer->getMaxRed()));
+        leGreenMin->setText(QString::number(rasterLayer->getMinGreen()));
+        leGreenMax->setText(QString::number(rasterLayer->getMaxGreen()));
+        leBlueMin->setText(QString::number(rasterLayer->getMinBlue()));
+        leBlueMax->setText(QString::number(rasterLayer->getMaxBlue()));
       }
     }
     else
@@ -1255,8 +1255,8 @@ void QgsRasterLayerProperties::apply()
 
       if(rbtnSingleBandMinMax->isEnabled())
       {
-        leGrayMin->setText(QString::number(rasterLayer->getMinGrayDouble()));
-        leGrayMax->setText(QString::number(rasterLayer->getMaxGrayDouble()));
+        leGrayMin->setText(QString::number(rasterLayer->getMinGray()));
+        leGrayMax->setText(QString::number(rasterLayer->getMaxGray()));
       }
     }
   }
@@ -1361,14 +1361,14 @@ void QgsRasterLayerProperties::on_buttonBuildPyramids_clicked()
     if ((*myRasterPyramidIterator).existsFlag==true)
     {
       lbxPyramidResolutions->insertItem(myPyramidPixmap,
-          QString::number((*myRasterPyramidIterator).xDimInt) + QString(" x ") + 
-          QString::number((*myRasterPyramidIterator).yDimInt)); 
+          QString::number((*myRasterPyramidIterator).xDim) + QString(" x ") + 
+          QString::number((*myRasterPyramidIterator).yDim)); 
     }
     else
     {
       lbxPyramidResolutions->insertItem(myNoPyramidPixmap,
-          QString::number((*myRasterPyramidIterator).xDimInt) + QString(" x ") + 
-          QString::number((*myRasterPyramidIterator).yDimInt)); 
+          QString::number((*myRasterPyramidIterator).xDim) + QString(" x ") + 
+          QString::number((*myRasterPyramidIterator).yDim)); 
     }
   }
   //update the legend pixmap
@@ -1636,13 +1636,13 @@ void QgsRasterLayerProperties::on_pbnHistRefresh_clicked()
   {
     QgsRasterBandStats myRasterBandStats = rasterLayer->getRasterBandStats(myIteratorInt);
     //calculate the x axis min max
-    if (myRasterBandStats.minValDouble < myXAxisMin || myIteratorInt==1)
+    if (myRasterBandStats.minVal < myXAxisMin || myIteratorInt==1)
     {
-      myXAxisMin=static_cast < unsigned int >(myRasterBandStats.minValDouble);
+      myXAxisMin=static_cast < unsigned int >(myRasterBandStats.minVal);
     }
-    if (myRasterBandStats.maxValDouble < myXAxisMax || myIteratorInt==1)
+    if (myRasterBandStats.maxVal < myXAxisMax || myIteratorInt==1)
     {
-      myXAxisMax=static_cast < unsigned int >(myRasterBandStats.maxValDouble);
+      myXAxisMax=static_cast < unsigned int >(myRasterBandStats.maxVal);
     }
     Q3ListBoxItem *myItem = lstHistogramLabels->item( myIteratorInt-1 );
     if ( myItem->isSelected() )
@@ -2134,8 +2134,8 @@ void QgsRasterLayerProperties::on_rbtnSingleBand_toggled(bool b)
     {
       sboxSingleBandStdDev->setValue(0.0);
       rbtnSingleBandMinMax->setChecked(true);
-      leGrayMin->setText(QString::number(rasterLayer->getMinGrayDouble()));
-      leGrayMax->setText(QString::number(rasterLayer->getMaxGrayDouble()));
+      leGrayMin->setText(QString::number(rasterLayer->getMinGray()));
+      leGrayMax->setText(QString::number(rasterLayer->getMaxGray()));
     }
     else
     {
@@ -2208,12 +2208,12 @@ void QgsRasterLayerProperties::on_rbtnThreeBand_toggled(bool b)
     {
       sboxThreeBandStdDev->setValue(0.0);
       rbtnThreeBandMinMax->setChecked(true);
-      leRedMin->setText(QString::number(rasterLayer->getMinRedDouble()));
-      leRedMax->setText(QString::number(rasterLayer->getMaxRedDouble()));
-      leGreenMin->setText(QString::number(rasterLayer->getMinGreenDouble()));
-      leGreenMax->setText(QString::number(rasterLayer->getMaxGreenDouble()));
-      leBlueMin->setText(QString::number(rasterLayer->getMinBlueDouble()));
-      leBlueMax->setText(QString::number(rasterLayer->getMaxBlueDouble()));
+      leRedMin->setText(QString::number(rasterLayer->getMinRed()));
+      leRedMax->setText(QString::number(rasterLayer->getMaxRed()));
+      leGreenMin->setText(QString::number(rasterLayer->getMinGreen()));
+      leGreenMax->setText(QString::number(rasterLayer->getMaxGreen()));
+      leBlueMin->setText(QString::number(rasterLayer->getMinBlue()));
+      leBlueMax->setText(QString::number(rasterLayer->getMaxBlue()));
     }
     else
     {
@@ -2321,18 +2321,18 @@ void QgsRasterLayerProperties::on_mClassifyButton_clicked()
 
   if(mClassificationModeComboBox->currentText() == tr("Equal interval"))
     {
-      double currentValue = myRasterBandStats.minValDouble;
+      double currentValue = myRasterBandStats.minVal;
       double intervalDiff;
       if(numberOfEntries > 1)
 	{
 	  //because the highest value is also an entry, there are (numberOfEntries - 1)
 	  //intervals
-	  intervalDiff = (myRasterBandStats.maxValDouble - myRasterBandStats.minValDouble) / \
+	  intervalDiff = (myRasterBandStats.maxVal - myRasterBandStats.minVal) / \
 	    (numberOfEntries - 1);
 	}
       else
 	{
-	  intervalDiff = myRasterBandStats.maxValDouble - myRasterBandStats.minValDouble;
+	  intervalDiff = myRasterBandStats.maxVal - myRasterBandStats.minVal;
 	}
       
       for(int i = 0; i < numberOfEntries; ++i)
