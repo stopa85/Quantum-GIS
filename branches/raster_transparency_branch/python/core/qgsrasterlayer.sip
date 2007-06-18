@@ -68,7 +68,7 @@ public:
 
     /** \brief This typedef is used when the showProgress function is passed to gdal as a function
     pointer. */
-    //  typedef  int (QgsRasterLayer::*showTextProgress)( double theProgressDouble,
+    //  typedef  int (QgsRasterLayer::*showTextProgress)( double theProgress,
     //                                      const char *theMessageCharArray,
     //                                      void *theData);
 
@@ -131,7 +131,7 @@ public:
     const double getNoDataValue();
 
     /** \brief  Mutator that allows the  NO_DATA entry for this raster to be overridden. */
-    void setNoDataValue(double theNoDataDouble);
+    void setNoDataValue(double theNoData);
 
     //
     // Accessor and mutator for invertHistogramFlag
@@ -141,18 +141,18 @@ public:
     /** \brief Mutator to alter the state of the invert histogram flag.  */
     void setInvertHistogramFlag(bool theFlag);
     //
-    // Accessor and mutator for stdDevsToPlotDouble
+    // Accessor and mutator for stdDevsToPlot
     //
     /** \brief Accessor to find out how many standard deviations are being plotted.  */
     double getStdDevsToPlot();
     /** \brief Mutator to alter the number of standard deviations that should be plotted.  */
-    void setStdDevsToPlot(double theDouble);
+    void setStdDevsToPlot(double the);
     /** \brief Get the number of bands in this layer  */
     const unsigned int getBandCount();
     /** \brief Get RasterBandStats for a band given its number (read only)  */
     const  QgsRasterBandStats getRasterBandStats(int);
     /** \brief  Check whether a given band number has stats associated with it */
-    const bool hasStats(int theBandNoInt);
+    const bool hasStats(int theBandNo);
     /** \brief Overloaded method that also returns stats for a band, but uses the band colour name
     *    Note this approach is not recommeneded because it is possible for two gdal raster
     *    bands to have the same name!
@@ -163,7 +163,7 @@ public:
     *   If no matching band is found zero will be returned! */
     const  int getRasterBandNumber (const QString & theBandNameQString);
     /** \brief Get the name of a band given its number.  */
-    const  QString getRasterBandName(int theBandNoInt);
+    const  QString getRasterBandName(int theBandNo);
     /** \brief Find out whether a given band exists.    */
     bool hasBand(const QString &  theBandName);
     /** \brief Call any inline image manipulation filters */
@@ -208,25 +208,25 @@ public:
      * The clipping range can have different interpretations - it can either be used to perform
      * a histogram stretch between the minimum and maximum clipping values, or to exclude data
      * that falls outside the clipping range.*/
-    double getMinRedDouble();
+    double getMinRed();
     /** \brief Mutator for minimum clipping range for red.
      *
      * The clipping range can have different interpretations - it can either be used to perform
      * a histogram stretch between the minimum and maximum clipping values, or to exclude data
      * that falls outside the clipping range.*/
-    void setMinRedDouble(double theDouble);
+    void setMinRed(double the);
     /** \brief Accessor for maximum clipping range for red.
      *
      * The clipping range can have different interpretations - it can either be used to perform
      * a histogram stretch between the minimum and maximum clipping values, or to exclude data
      * that falls outside the clipping range.*/
-    double getMaxRedDouble();
+    double getMaxRed();
     /** \brief Mutator for maximum clipping range for red.
      *
      * The clipping range can have different interpretations - it can either be used to perform
      * a histogram stretch between the minimum and maximum clipping values, or to exclude data
      * that falls outside the clipping range.*/
-    void setMaxRedDouble(double theDouble);
+    void setMaxRed(double theDouble);
     // 
     // Accessor and mutator for min and max green
     // 
@@ -235,25 +235,25 @@ public:
      * The clipping range can have different interpretations - it can either be used to perform
      * a histogram stretch between the minimum and maximum clipping values, or to exclude data
      * that falls outside the clipping range.*/
-    double getMinGreenDouble();
+    double getMinGreen();
     /** \brief Mutator for minimum clipping range for green.
      *
      * The clipping range can have different interpretations - it can either be used to perform
      * a histogram stretch between the minimum and maximum clipping values, or to exclude data
      * that falls outside the clipping range.*/
-    void setMinGreenDouble(double theDouble);
+    void setMinGreen(double theDouble);
     /** \brief Accessor for maximum clipping range for green.
      *
      * The clipping range can have different interpretations - it can either be used to perform
      * a histogram stretch between the minimum and maximum clipping values, or to exclude data
      * that falls outside the clipping range.*/
-    double getMaxGreenDouble();
+    double getMaxGreen();
     /** \brief Mutator for maximum clipping range for green.
      *
      * The clipping range can have different interpretations - it can either be used to perform
      * a histogram stretch between the minimum and maximum clipping values, or to exclude data
      * that falls outside the clipping range.*/
-    void setMaxGreenDouble(double theDouble);
+    void setMaxGreen(double theDouble);
     // 
     // Accessor and mutator for min and max blue
     // 
@@ -263,25 +263,25 @@ public:
      * a histogram stretch between the minimum and maximum clipping values, or to exclude data
      * that falls outside the clipping range.*/
     /** \brief   */
-    double getMinBlueDouble();
+    double getMinBlue();
     /** \brief Mutator for minimum clipping range for blue.
      *
      * The clipping range can have different interpretations - it can either be used to perform
      * a histogram stretch between the minimum and maximum clipping values, or to exclude data
      * that falls outside the clipping range.*/
-    void setMinBlueDouble(double theDouble);
+    void setMinBlue(double theDouble);
     /** \brief Accessor for maximum clipping range for blue.
      *
      * The clipping range can have different interpretations - it can either be used to perform
      * a histogram stretch between the minimum and maximum clipping values, or to exclude data
      * that falls outside the clipping range.*/
-    double getMaxBlueDouble();
+    double getMaxBlue();
     /** \brief Mutator for maximum clipping range for blue.
      *
      * The clipping range can have different interpretations - it can either be used to perform
      * a histogram stretch between the minimum and maximum clipping values, or to exclude data
      * that falls outside the clipping range.*/
-    void setMaxBlueDouble(double theDouble);
+    void setMaxBlue(double theDouble);
     // 
     // Accessor and mutator for min and max gray
     // 
@@ -290,25 +290,25 @@ public:
      * The clipping range can have different interpretations - it can either be used to perform
      * a histogram stretch between the minimum and maximum clipping values, or to exclude data
      * that falls outside the clipping range.*/
-    double getMinGrayDouble();
+    double getMinGray();
     /** \brief Mutator for minimum clipping range for gray.
      *
      * The clipping range can have different interpretations - it can either be used to perform
      * a histogram stretch between the minimum and maximum clipping values, or to exclude data
      * that falls outside the clipping range.*/
-    void setMinGrayDouble(double theDouble);
+    void setMinGray(double theDouble);
     /** \brief Accessor for maximum clipping range for gray.
      *
      * The clipping range can have different interpretations - it can either be used to perform
      * a histogram stretch between the minimum and maximum clipping values, or to exclude data
      * that falls outside the clipping range.*/
-    double getMaxGrayDouble();
+    double getMaxGray();
     /** \brief Mutator for maximum clipping range for gray.
      *
      * The clipping range can have different interpretations - it can either be used to perform
      * a histogram stretch between the minimum and maximum clipping values, or to exclude data
      * that falls outside the clipping range.*/
-    void setMaxGrayDouble(double theDouble);
+    void setMaxGray(double theDouble);
     //
     /** \brief This enumerator describes the types of histogram scaling algorithms that can be used.  */
     enum COLOR_SCALING_ALGORITHM
@@ -405,7 +405,7 @@ public:
     QPixmap getLegendQPixmap(bool); 
     
     /** \brief Use this method when you want an annotated legend suitable for print output etc. 
-     * @param int theLabelCountInt Number of vertical labels to display (defaults to 3)
+     * @param int theLabelCount Number of vertical labels to display (defaults to 3)
      * */
     QPixmap getDetailedLegendQPixmap(int theLabelCount);
     
@@ -457,7 +457,7 @@ public:
     /**
      * If an operation returns 0 (e.g. draw()), this function
      * returns the text of the error associated with the failure.
-     * Interactive users of this provider can then, for example,
+     * eractive users of this provider can then, for example,
      * call a QMessageBox to display the contents.
      */
     QString errorCaptionString();
@@ -465,7 +465,7 @@ public:
     /**
      * If an operation returns 0 (e.g. draw()), this function
      * returns the text of the error associated with the failure.
-     * Interactive users of this provider can then, for example,
+     * eractive users of this provider can then, for example,
      * call a QMessageBox to display the contents.
      */
     QString errorString();
@@ -503,19 +503,19 @@ public slots:
     /** \brief Used at the moment by the above function but hopefully will later
     be useable by any operation that needs to notify the user of its progress. */
 /*
-    int showTextProgress( double theProgressDouble,
+    int showTextProgress( double theProgress,
                           const char *theMessageCharArray,
                           void *theData);    
 */
 
   /** Populate the histogram vector for a given layer
-  * @param theBandNoInt - which band to compute the histogram for
-  * @param theBinCountInt - how many 'bins' to categorise the data into
+  * @param theBandNo - which band to compute the histogram for
+  * @param theBinCount - how many 'bins' to categorise the data into
   * @param theIgnoreOutOfRangeFlag - whether to ignore values that are out of range (default=true)
   * @param theThoroughBandScanFlag - whether to visit each cell when computing the histogram (default=false)
   */
-  void populateHistogram(int theBandNoInt, 
-                         int theBinCountInt=256,
+  void populateHistogram(int theBandNo, 
+                         int theBinCount=256,
                          bool theIgnoreOutOfRangeFlag=true,
                          bool theThoroughBandScanFlag=false);
 
@@ -524,7 +524,7 @@ public slots:
      *  \return pointer to color table
      */
     // TODO: not working
-    //QgsColorTable *colorTable ( int theBandNoInt );
+    //QgsColorTable *colorTable ( int theBandNo );
  protected:
 
     /** reads vector layer specific state from project file DOM node.
