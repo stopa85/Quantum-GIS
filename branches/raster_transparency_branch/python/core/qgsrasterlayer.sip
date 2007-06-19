@@ -1,6 +1,4 @@
 
-  
-  
 /*! \class QgsRasterLayer
  *  \brief This class provides qgis with the ability to render raster datasets
  *  onto the mapcanvas..
@@ -380,7 +378,18 @@ public:
     void setDrawingStyle(const QString & theDrawingStyleQString);
 
 
+    /** \brief A structure for mapping colors to values (with a text label) */
+    struct ValueClassificationItem
+    {
+      QString label;
+      double value;
+      QColor color;
+    };
 
+    /** \brief set the custom color ramp */
+    void setValueClassification(QList<QgsRasterLayer::ValueClassificationItem> & classification);
+    /** \brief enable custom color ramp mode */
+    void setCustomClassificationEnabled(bool enabled);
 
     /** \brief This enumerator describes the type of raster layer.  */
     enum RASTER_LAYER_TYPE

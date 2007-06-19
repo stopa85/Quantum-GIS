@@ -46,6 +46,7 @@ email                : tim at linfiniti.com
 #include <QFrame>
 #include <QImage>
 #include <QLabel>
+#include <QList>
 #include <QMatrix>
 #include <QMessageBox>
 #include <QLibrary>
@@ -5042,7 +5043,7 @@ bool QgsRasterLayer::readXML_( QDomNode & layer_node )
     }
 
     //entries
-    std::vector<ValueClassificationItem> newClassification;
+    QList<ValueClassificationItem> newClassification;
     int currentRed, currentGreen, currentBlue;
     QString currentLabel;
 
@@ -5283,7 +5284,7 @@ bool QgsRasterLayer::readXML_( QDomNode & layer_node )
 	  customColormapElem.setAttribute("interpolation", "linear");
 	}
 
-      std::vector<ValueClassificationItem>::iterator it;
+      QList<ValueClassificationItem>::iterator it;
       for(it =  mValueClassification.begin(); it != mValueClassification.end(); ++it)
 	{
 	  QDomElement colormapEntryElem = document.createElement("colorMapEntry");
@@ -5769,8 +5770,8 @@ double QgsRasterLayer::getMinimumPossibleValue(GDALDataType dataType)
 
 int QgsRasterLayer::getDiscreteColorFromValueClassification(double value, int& red, int& green, int& blue) const
 {
-  std::vector<ValueClassificationItem>::const_iterator it;
-  std::vector<ValueClassificationItem>::const_iterator last_it = mValueClassification.end();
+  QList<ValueClassificationItem>::const_iterator it;
+  QList<ValueClassificationItem>::const_iterator last_it = mValueClassification.end();
   double currentValue;
   for(it = mValueClassification.begin(); it != mValueClassification.end(); ++it)
     {
@@ -5793,8 +5794,8 @@ int QgsRasterLayer::getDiscreteColorFromValueClassification(double value, int& r
 
 int QgsRasterLayer::getInterpolatedColorFromValueClassification(double value, int& red, int& green, int& blue) const
 {
-  std::vector<ValueClassificationItem>::const_iterator it;
-  std::vector<ValueClassificationItem>::const_iterator last_it = mValueClassification.end();
+  QList<ValueClassificationItem>::const_iterator it;
+  QList<ValueClassificationItem>::const_iterator last_it = mValueClassification.end();
   double currentValue;
   double valueDiff; //difference between two consecutive entry values
   double diff_Value_LastVal; //difference between value and last entry value
@@ -5805,12 +5806,12 @@ int QgsRasterLayer::getInterpolatedColorFromValueClassification(double value, in
 	currentValue = it->value;
 	if(value <= currentValue)
 	  {
-	    valueDiff = currentValue - last_it->value;
-	    diff_Value_LastVal = value - last_it->value;
-	    diffVal_Value = currentValue - value;
-
 	    if(last_it != mValueClassification.end())
 	      {
+		valueDiff = currentValue - last_it->value;
+		diff_Value_LastVal = value - last_it->value;
+		diffVal_Value = currentValue - value;
+
 		red = (int)((it->color.red() * diff_Value_LastVal + last_it->color.red() * diffVal_Value)/valueDiff);
 		green = (int)((it->color.green() * diff_Value_LastVal + last_it->color.green() * diffVal_Value)/valueDiff);
 		blue = (int)((it->color.blue() * diff_Value_LastVal + last_it->color.blue() * diffVal_Value)/valueDiff);

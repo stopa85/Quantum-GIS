@@ -37,6 +37,8 @@
 #include <QPainterPath>
 #include <QPolygonF>
 #include <QColorDialog>
+#include <QList>
+
 
 #include <iostream>
 
@@ -716,10 +718,10 @@ void QgsRasterLayerProperties::syncColormapTab()
     }
   
   //restore the colormap tab if layer has custom symbology
-  std::vector<QgsRasterLayer::ValueClassificationItem> classification = rasterLayer->valueClassification();
+  QList<QgsRasterLayer::ValueClassificationItem> classification = rasterLayer->valueClassification();
   if(classification.size() > 0)
     {
-      std::vector<QgsRasterLayer::ValueClassificationItem>::const_iterator it;
+      QList<QgsRasterLayer::ValueClassificationItem>::const_iterator it;
       for(it = classification.begin(); it != classification.end(); ++it)
 	{
 	  //restore state of colormap tab
@@ -1272,7 +1274,7 @@ void QgsRasterLayerProperties::apply()
     }
       
   //iterate through mColormapTreeWidget and set colormap info of layer
-  std::vector<QgsRasterLayer::ValueClassificationItem> items;
+  QList<QgsRasterLayer::ValueClassificationItem> items;
   
   int topLevelItemCount = mColormapTreeWidget->topLevelItemCount();
   QTreeWidgetItem* currentItem;
