@@ -846,9 +846,9 @@ public:
     /**Set state of custom classification flag*/
     void setCustomClassificationEnabled(bool enabled){mCustomClassificationEnabled = enabled;}
     /**Get custom colormap classification*/
-    std::vector<ValueClassificationItem> valueClassification() const {return mValueClassification;}
+    QList<ValueClassificationItem> valueClassification() const {return mValueClassification;}
     /**Set custom colormap classification*/
-    void setValueClassification(const std::vector<ValueClassificationItem>& classification)
+    void setValueClassification(const QList<ValueClassificationItem>& classification)
     {mValueClassification = classification;}
     /**Get discrete colors/ interpolated colors for custom classification*/
     bool discreteClassification() const {return mDiscreteClassification;}
@@ -1100,7 +1100,7 @@ color of the lower class for every pixel between two class breaks. Returns 0 in 
 Each item holds a value, a label and a color. The member mDiscreteClassification holds 
 if one color is applied for all values between two class breaks (true) or if the item values are 
 (linearly) interpolated for values between the item values (false)*/
-    std::vector<ValueClassificationItem> mValueClassification;
+    QList<ValueClassificationItem> mValueClassification;
     /**This member holds if one color is applied for all values between two class breaks (true) or if the item values are (linearly) interpolated for values between the item values (false)*/
     bool mDiscreteClassification;
 
