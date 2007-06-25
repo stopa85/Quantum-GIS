@@ -37,9 +37,11 @@ QgsMapToolCapture::QgsMapToolCapture(QgsMapCanvas* canvas, enum CaptureTool tool
   : QgsMapTool(canvas), mTool(tool), mRubberBand(0)
 {
   mCapturing = FALSE;
-  
+
   QPixmap mySelectQPixmap = QPixmap((const char **) capture_point_cursor);
   mCursor = QCursor(mySelectQPixmap, 8, 8);
+
+  mSnapper.setMapCanvas(canvas);
 }
 
 QgsMapToolCapture::~QgsMapToolCapture()
@@ -50,20 +52,14 @@ QgsMapToolCapture::~QgsMapToolCapture()
 
 void QgsMapToolCapture::canvasMoveEvent(QMouseEvent * e)
 {
-
   if (mCapturing)
   {
-    // show the rubber-band from the last click
-    QgsVectorLayer *vlayer = dynamic_cast <QgsVectorLayer*>(mCanvas->currentLayer());
-    double tolerance  = QgsProject::instance()->readDoubleEntry("Digitizing","/Tolerance",0);
     QgsPoint mapPoint;
-    QgsPoint layerPoint = toLayerCoords(vlayer, e->pos());
-    vlayer->snapPoint(layerPoint, tolerance); //show snapping during dragging
-    //now we need to know the map coordinates of the snapped point for the rubber band
-    mapPoint = toMapCoords(vlayer, layerPoint);
-    mRubberBand->movePoint(mapPoint); //does only work if coordinate reprojection is not enabled
+    if(mSnapper.snapToBackgroundLayers(e->pos(), mapPoint) == 0)
+      {
+	mRubberBand->movePoint(mapPoint);
+      }
   }
-
 } // mouseMoveEvent
 
 
@@ -104,25 +100,23 @@ int QgsMapToolCapture::addVertex(const QPoint& p)
       mRubberBand->setWidth(project->readNumEntry("Digitizing", "/LineWidth", 1));
       mRubberBand->show();
     }
-      
-  QgsPoint mapPoint;
+
   QgsPoint digitisedPoint;
   try
     {
-      digitisedPoint = toLayerCoords(vlayer, p); //todo: handle coordinate transform exception
+      digitisedPoint = toLayerCoords(vlayer, p);
     }
   catch(QgsCsException &cse)
     {
-      return 2; //cannot reproject point to layer coordinate system
+      return 2;
     }
 
-  //snap point
-  double tolerance  = QgsProject::instance()->readDoubleEntry("Digitizing","/Tolerance",0);
-  vlayer->snapPoint(digitisedPoint, tolerance);
-  mapPoint = toMapCoords(vlayer, digitisedPoint);
-  
-  mCaptureList.push_back(digitisedPoint);
-  mRubberBand->addPoint(mapPoint);
+  QgsPoint mapPoint;
+  if(mSnapper.snapToBackgroundLayers(p, mapPoint) == 0)
+    {
+      mRubberBand->addPoint(mapPoint);
+      mCaptureList.push_back(digitisedPoint);      
+    }
 
   return 0;
 }

@@ -38,7 +38,7 @@ QgsSnapper::~QgsSnapper()
   
 }
 
-int QgsSnapper::snapPoint(const QgsPoint& startPoint, QList<QgsSnappingResult>& snappingResult)
+int QgsSnapper::snapPoint(const QPoint& startPoint, QList<QgsSnappingResult>& snappingResult)
 {
   snappingResult.clear();
 
@@ -56,7 +56,7 @@ int QgsSnapper::snapPoint(const QgsPoint& startPoint, QList<QgsSnappingResult>& 
   QMultiMap<double, QgsSnappingResult> currentResultList; //snapping results of examined layer
 
   //start point in (output) map coordinates
-  QgsPoint mapCoordPoint = mMapRender->coordXForm()->toMapCoordinates((int)(startPoint.x()), (int)(startPoint.y())); 
+  QgsPoint mapCoordPoint = mMapRender->coordXForm()->toMapCoordinates(startPoint.x(), startPoint.y()); 
   QgsPoint layerCoordPoint; //start point in layer coordinates
   QgsSnappingResult newResult;
 
@@ -75,7 +75,7 @@ int QgsSnapper::snapPoint(const QgsPoint& startPoint, QList<QgsSnappingResult>& 
 	    }
 	  else
 	    {
-	      if( (*layerIt)->snapVertexWithContext(startPoint, *toleranceIt, currentResultList) != 0)
+	      if( (*layerIt)->snapVertexWithContext(layerCoordPoint, *toleranceIt, currentResultList) != 0)
 		{
 		  //error
 		}
@@ -83,7 +83,10 @@ int QgsSnapper::snapPoint(const QgsPoint& startPoint, QList<QgsSnappingResult>& 
 	}
       else //snap to segment
 	{
-	  //todo
+	  if( (*layerIt)->snapSegmentWithContext(layerCoordPoint, *toleranceIt, currentResultList) != 0)
+		{
+		  //error
+		}
 	}
 
       //transform each result from layer crs to map crs (including distance)
