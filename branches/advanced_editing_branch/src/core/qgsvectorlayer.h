@@ -305,6 +305,13 @@ existing rings, 5 no feature found where ring can be inserted*/
                               QgsGeometry& snappedGeometry,
                               double tolerance);
 
+  /**Snaps to segment within given tolerance
+     @param startPoint point to snap (in layer coordinates)
+     @param snappingTolerance distance tolerance for snapping
+     @param snappingResults snapping results. Key is the distance between startPoint and snapping target
+     @return 0 in case of success*/
+  int snapSegmentWithContext(const QgsPoint& startPoint, double snappingTolerance, QMultiMap<double, QgsSnappingResult>& snappingResults);
+
   /**
     Commits edited attributes. Depending on the feature id,
     the changes are written to not commited features or redirected to

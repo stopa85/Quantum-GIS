@@ -79,9 +79,6 @@ void QgsMapToolAddFeature::canvasReleaseEvent(QMouseEvent * e)
       return;
     }
   
-  
-  double tolerance  = QgsProject::instance()->readDoubleEntry("Digitizing","/Tolerance",0);
-  
   // POINT CAPTURING
   if (mTool == CapturePoint)
     {
@@ -92,7 +89,25 @@ void QgsMapToolAddFeature::canvasReleaseEvent(QMouseEvent * e)
 				   QObject::tr("Cannot apply the 'capture point' tool on this vector layer"));
 	  return;
 	}
-      QgsPoint idPoint = toMapCoords(e->pos());
+
+      
+      QgsPoint idPoint; //point in map coordinates
+      if(mSnapper.snapToBackgroundLayers(e->pos(), idPoint) != 0)
+	{
+	  return;
+	}
+
+      QgsPoint savePoint; //point in layer coordinates
+      try
+	{
+	  savePoint = toLayerCoords(vlayer, idPoint);
+	}
+      catch(QgsCsException &cse)
+	{
+	  QMessageBox::information(0, QObject::tr("Coordinate transform error"), \
+				   QObject::tr("Cannot transform the point to the layers coordinate system"));
+	  return;
+	}
       
       // emit signal - QgisApp can catch it and save point position to clipboard
       // FIXME: is this still actual or something old that's not used anymore?
@@ -104,20 +119,6 @@ void QgsMapToolAddFeature::canvasReleaseEvent(QMouseEvent * e)
       if(provider->capabilities() & QgsVectorDataProvider::AddFeatures)
 	{
 	  QgsFeature* f = new QgsFeature(0,"WKBPoint");
-	  // project to layer's SRS
-	  QgsPoint savePoint;
-	  try
-	    {
-	      savePoint = toLayerCoords(vlayer, idPoint);
-	    }
-	  catch(QgsCsException &cse)
-	    {
-	      QMessageBox::information(0, QObject::tr("Coordinate transform error"), \
-				   QObject::tr("Cannot transform the point to the layers coordinate system"));
-	      return;
-	    }
-	  // snap point to points within the vector layer snapping tolerance
-	  vlayer->snapPoint(savePoint, tolerance);
 	  
 	  int size;
 	  char end=QgsApplication::endian();

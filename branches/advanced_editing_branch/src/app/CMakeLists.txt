@@ -51,6 +51,7 @@ qgsrasterlayerproperties.cpp
 qgssearchquerybuilder.cpp
 qgsserversourceselect.cpp
 qgssinglesymboldialog.cpp
+qgssnappingdialog.cpp
 qgsuniquevaluedialog.cpp
 qgsvectorlayerproperties.cpp
 
@@ -116,6 +117,7 @@ qgsrasterlayerproperties.h
 qgssearchquerybuilder.h
 qgsserversourceselect.h
 qgssinglesymboldialog.h
+qgssnappingdialog.h
 qgsuniquevaluedialog.h
 qgsvectorlayerproperties.h
 

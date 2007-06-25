@@ -139,6 +139,15 @@ QgsOptions::QgsOptions(QWidget *parent, Qt::WFlags fl) :
   spinZoomFactor->setValue(settings.value("/qgis/zoom_factor", 2).toDouble());
 
   cbxSplitterRedraw->setChecked(settings.value("/qgis/splitterRedraw", QVariant(true)).toBool());
+
+  //set elements in digitizing tab
+  mLineWidthSpinBox->setValue(settings.value("/qgis/digitizing/line_width", 1).toInt());
+  QColor digitizingColor;
+  myRed = settings.value("/qgis/digitizing/line_color_red", 255).toInt();
+  myGreen = settings.value("/qgis/digitizing/line_color_green", 0).toInt();
+  myBlue = settings.value("/qgis/digitizing/line_color_blue", 0).toInt();
+  mLineColourToolButton->setColor(QColor(myRed, myGreen, myBlue));
+  mDefaultSnappingToleranceTextEdit->setText(settings.value("/qgis/digitizing/default_snapping_tolerance", 0).toString());
 }
 
 //! Destructor
@@ -168,6 +177,15 @@ void QgsOptions::on_pbnMeasureColour_clicked()
   if (color.isValid())
   {
     pbnMeasureColour->setColor(color);
+  }
+}
+
+void QgsOptions::on_mLineColourToolButton_clicked()
+{
+  QColor color = QColorDialog::getColor(mLineColourToolButton->color(), this);
+  if (color.isValid())
+  {
+    mLineColourToolButton->setColor(color);
   }
 }
 
@@ -244,7 +262,15 @@ void QgsOptions::saveOptions()
   settings.writeEntry("/qgis/wheel_action", cmbWheelAction->currentIndex());
   settings.writeEntry("/qgis/zoom_factor", spinZoomFactor->value());
 
-  settings.setValue("/qgis/splitterRedraw", cbxSplitterRedraw->isChecked());  
+  settings.setValue("/qgis/splitterRedraw", cbxSplitterRedraw->isChecked());
+
+  //digitizing
+  settings.setValue("/qgis/digitizing/line_width", mLineWidthSpinBox->value());
+  QColor digitizingColor = mLineColourToolButton->color();
+  settings.setValue("/qgis/digitizing/line_color_red", digitizingColor.red());
+  settings.setValue("/qgis/digitizing/line_color_green", digitizingColor.green());
+  settings.setValue("/qgis/digitizing/line_color_blue", digitizingColor.blue());
+  settings.setValue("/qgis/digitizing/default_snapping_tolerance", mDefaultSnappingToleranceTextEdit->text().toDouble());
 }
 
 

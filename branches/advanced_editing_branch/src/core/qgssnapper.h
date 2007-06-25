@@ -23,6 +23,7 @@
 
 class QgsMapRender;
 class QgsVectorLayer;
+class QPoint;
 
 /**Describes the result of a snapping operation*/
 struct QgsSnappingResult
@@ -54,7 +55,7 @@ class QgsSnapper
   
   enum SNAP_MODE
     {
-      /**Only one snapping result is returnd*/
+      /**Only one snapping result is retured*/
       ONE_RESULT,
       /**One result, determined by first snap to segment and then snap to closest vertex of segment.
        This is usefull if only one polygon vertex of a border has to be shifted and it should be
@@ -73,7 +74,7 @@ class QgsSnapper
    @param startPoint the start point for snapping (in pixel coordinates)
   @param snappingResult the list where the results are inserted (everything in map coordinate system)
   @return 0 in case of success*/
-  int snapPoint(const QgsPoint& startPoint, QList<QgsSnappingResult>& snappingResult);
+  int snapPoint(const QPoint& startPoint, QList<QgsSnappingResult>& snappingResult);
 
   //setters
   void setLayersToSnap(const QList<QgsVectorLayer*>& layerList);
