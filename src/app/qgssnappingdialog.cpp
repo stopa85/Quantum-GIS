@@ -55,7 +55,7 @@ QgsSnappingDialog::QgsSnappingDialog(QgsMapCanvas* canvas, const QMap<QString, L
 		  newItem = new QTreeWidgetItem(mLayerTreeWidget);
 		  newItem->setText(0, currentLayer->name());
 		  mLayerIds << currentLayer->getLayerID(); //store also the layer id
-		  newItem->setFlags(Qt::ItemIsUserCheckable);
+		  newItem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsUserCheckable);
 		  newItem->setCheckState(0, Qt::Unchecked);
 
 		  //snap to vertex/ snap to segment
@@ -86,7 +86,7 @@ QgsSnappingDialog::QgsSnappingDialog(QgsMapCanvas* canvas, const QMap<QString, L
 		      snapToComboBox->setCurrentIndex(index);
 		      if(settingIt.value().checked)
 			{
-			  newItem->setCheckState(1, Qt::Checked);
+			  newItem->setCheckState(0, Qt::Checked);
 			}
 		    }
 		  else //insert the default values

@@ -5,7 +5,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>718</width>
+    <width>726</width>
     <height>579</height>
    </rect>
   </property>
@@ -22,6 +22,12 @@
    <bool>true</bool>
   </property>
   <layout class="QGridLayout" >
+   <property name="margin" >
+    <number>11</number>
+   </property>
+   <property name="spacing" >
+    <number>6</number>
+   </property>
    <item row="0" column="0" >
     <widget class="QTabWidget" name="tabWidget" >
      <property name="currentIndex" >
@@ -32,28 +38,22 @@
        <string>General</string>
       </attribute>
       <layout class="QGridLayout" >
+       <property name="margin" >
+        <number>11</number>
+       </property>
+       <property name="spacing" >
+        <number>6</number>
+       </property>
        <item row="0" column="0" >
         <widget class="QGroupBox" name="titleBox" >
          <property name="title" >
           <string>Project Title</string>
          </property>
          <layout class="QGridLayout" >
-          <property name="leftMargin" >
-           <number>8</number>
+          <property name="margin" >
+           <number>11</number>
           </property>
-          <property name="topMargin" >
-           <number>8</number>
-          </property>
-          <property name="rightMargin" >
-           <number>8</number>
-          </property>
-          <property name="bottomMargin" >
-           <number>8</number>
-          </property>
-          <property name="horizontalSpacing" >
-           <number>6</number>
-          </property>
-          <property name="verticalSpacing" >
+          <property name="spacing" >
            <number>6</number>
           </property>
           <item row="0" column="0" >
@@ -75,20 +75,11 @@
           <string>Map Units</string>
          </property>
          <layout class="QHBoxLayout" >
+          <property name="margin" >
+           <number>11</number>
+          </property>
           <property name="spacing" >
            <number>6</number>
-          </property>
-          <property name="leftMargin" >
-           <number>9</number>
-          </property>
-          <property name="topMargin" >
-           <number>9</number>
-          </property>
-          <property name="rightMargin" >
-           <number>9</number>
-          </property>
-          <property name="bottomMargin" >
-           <number>9</number>
           </property>
           <item>
            <widget class="QRadioButton" name="radMeters" >
@@ -136,20 +127,11 @@
           <string>Precision</string>
          </property>
          <layout class="QHBoxLayout" >
+          <property name="margin" >
+           <number>11</number>
+          </property>
           <property name="spacing" >
            <number>6</number>
-          </property>
-          <property name="leftMargin" >
-           <number>9</number>
-          </property>
-          <property name="topMargin" >
-           <number>9</number>
-          </property>
-          <property name="rightMargin" >
-           <number>9</number>
-          </property>
-          <property name="bottomMargin" >
-           <number>9</number>
           </property>
           <item>
            <widget class="QRadioButton" name="radAutomatic" >
@@ -193,7 +175,9 @@
           <item>
            <widget class="QLabel" name="textLabel3" >
             <property name="sizePolicy" >
-             <sizepolicy vsizetype="Fixed" hsizetype="Minimum" >
+             <sizepolicy>
+              <hsizetype>0</hsizetype>
+              <vsizetype>0</vsizetype>
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
@@ -225,8 +209,20 @@
           <string>Digitizing</string>
          </property>
          <layout class="QGridLayout" >
+          <property name="margin" >
+           <number>11</number>
+          </property>
+          <property name="spacing" >
+           <number>6</number>
+          </property>
           <item row="0" column="0" >
            <layout class="QHBoxLayout" >
+            <property name="margin" >
+             <number>11</number>
+            </property>
+            <property name="spacing" >
+             <number>6</number>
+            </property>
             <item>
              <widget class="QCheckBox" name="mEnableTopologicalEditingCheckBox" >
               <property name="text" >
@@ -265,20 +261,11 @@
           <string>Map Appearance</string>
          </property>
          <layout class="QHBoxLayout" >
+          <property name="margin" >
+           <number>11</number>
+          </property>
           <property name="spacing" >
            <number>6</number>
-          </property>
-          <property name="leftMargin" >
-           <number>9</number>
-          </property>
-          <property name="topMargin" >
-           <number>9</number>
-          </property>
-          <property name="rightMargin" >
-           <number>9</number>
-          </property>
-          <property name="bottomMargin" >
-           <number>9</number>
           </property>
           <item>
            <widget class="QLabel" name="textLabel1" >
@@ -378,22 +365,10 @@
        <string>Projection</string>
       </attribute>
       <layout class="QGridLayout" >
-       <property name="leftMargin" >
-        <number>9</number>
+       <property name="margin" >
+        <number>11</number>
        </property>
-       <property name="topMargin" >
-        <number>9</number>
-       </property>
-       <property name="rightMargin" >
-        <number>9</number>
-       </property>
-       <property name="bottomMargin" >
-        <number>9</number>
-       </property>
-       <property name="horizontalSpacing" >
-        <number>6</number>
-       </property>
-       <property name="verticalSpacing" >
+       <property name="spacing" >
         <number>6</number>
        </property>
        <item row="0" column="0" >

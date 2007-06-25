@@ -2735,13 +2735,16 @@ int QgsVectorLayer::snapSegmentWithContext(const QgsPoint& startPoint, double sn
 	if(currentGeometry)
 	  {
 	    sqrDist = currentGeometry->closestSegmentWithContext(startPoint, snappedPoint, vIndex);
-	    //add to snapping results
-	    snappingResult.snappedVertex = snappedPoint;
-	    snappingResult.snappedVertexNr = -1;
-	    snappingResult.beforeVertex = QgsPoint(0, 0); //no information about this
-	    snappingResult.afterVertex = QgsPoint(0, 0);
-	    snappingResult.snappedAtGeometry = feature.featureId();
-	    snappingResults.insert(sqrt(sqrDist), snappingResult);
+	    if(sqrDist < sqrSnappingTolerance)
+	      {
+		//add to snapping results
+		snappingResult.snappedVertex = snappedPoint;
+		snappingResult.snappedVertexNr = -1;
+		snappingResult.beforeVertex = QgsPoint(0, 0); //no information about this
+		snappingResult.afterVertex = QgsPoint(0, 0);
+		snappingResult.snappedAtGeometry = feature.featureId();
+		snappingResults.insert(sqrt(sqrDist), snappingResult);
+	      }
 	  }
       }
   }
