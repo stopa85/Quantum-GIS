@@ -112,10 +112,20 @@ int QgsMapToolCapture::addVertex(const QPoint& p)
     }
 
   QgsPoint mapPoint;
+  QgsPoint layerPoint;
+
   if(mSnapper.snapToBackgroundLayers(p, mapPoint) == 0)
     {
+      try
+	{
+	  layerPoint = toLayerCoords(vlayer, mapPoint); //transform snapped point back to layer crs
+	}
+      catch(QgsCsException &cse)
+	{
+	  return 2;
+	}
       mRubberBand->addPoint(mapPoint);
-      mCaptureList.push_back(digitisedPoint);      
+      mCaptureList.push_back(layerPoint); 
     }
 
   return 0;

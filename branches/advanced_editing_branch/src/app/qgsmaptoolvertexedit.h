@@ -17,6 +17,7 @@
 #ifndef QGSMAPTOOLVERTEXEDIT_H
 #define QGSMAPTOOLVERTEXEDIT_H
 
+#include "qgsmapcanvassnapper.h"
 #include "qgsmaptool.h"
 #include "qgsgeometry.h"
 #include "qgsgeometryvertexindex.h"
@@ -115,6 +116,7 @@ class QgsMapToolVertexEdit : public QgsMapTool
     
     QgsVertexMarker* mCross;
 
+    QgsMapCanvasSnapper mSnapper;
 };
 
 #endif

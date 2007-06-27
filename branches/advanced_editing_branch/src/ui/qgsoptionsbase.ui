@@ -5,8 +5,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>824</width>
-    <height>480</height>
+    <width>852</width>
+    <height>510</height>
    </rect>
   </property>
   <property name="windowTitle" >
@@ -23,7 +23,7 @@
   </property>
   <layout class="QGridLayout" >
    <property name="margin" >
-    <number>11</number>
+    <number>9</number>
    </property>
    <property name="spacing" >
     <number>6</number>
@@ -655,134 +655,130 @@ p, li { white-space: pre-wrap; }
       <attribute name="title" >
        <string>Digitizing</string>
       </attribute>
-      <widget class="QGroupBox" name="mRubberBandGroupBox" >
-       <property name="geometry" >
-        <rect>
-         <x>10</x>
-         <y>10</y>
-         <width>771</width>
-         <height>80</height>
-        </rect>
+      <layout class="QGridLayout" >
+       <property name="margin" >
+        <number>9</number>
        </property>
-       <property name="title" >
-        <string>Rubberband</string>
+       <property name="spacing" >
+        <number>6</number>
        </property>
-       <widget class="QWidget" name="layoutWidget" >
-        <property name="geometry" >
-         <rect>
-          <x>10</x>
-          <y>30</y>
-          <width>421</width>
-          <height>33</height>
-         </rect>
-        </property>
-        <layout class="QHBoxLayout" >
-         <property name="margin" >
-          <number>11</number>
+       <item row="0" column="0" >
+        <widget class="QGroupBox" name="mRubberBandGroupBox" >
+         <property name="title" >
+          <string>Rubberband</string>
          </property>
-         <property name="spacing" >
-          <number>6</number>
+         <widget class="QWidget" name="layoutWidget" >
+          <property name="geometry" >
+           <rect>
+            <x>10</x>
+            <y>30</y>
+            <width>421</width>
+            <height>57</height>
+           </rect>
+          </property>
+          <layout class="QHBoxLayout" >
+           <property name="margin" >
+            <number>11</number>
+           </property>
+           <property name="spacing" >
+            <number>6</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="mLineWidthTextLabel" >
+             <property name="text" >
+              <string>Line Width:</string>
+             </property>
+             <property name="buddy" >
+              <cstring>mLineWidthSpinBox</cstring>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSpinBox" name="mLineWidthSpinBox" >
+             <property name="toolTip" >
+              <string>Line width in pixels</string>
+             </property>
+             <property name="minimum" >
+              <number>1</number>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="mLineColourTextLabel" >
+             <property name="text" >
+              <string>Line Colour:</string>
+             </property>
+             <property name="buddy" >
+              <cstring>mLineColourToolButton</cstring>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QgsColorButton" name="mLineColourToolButton" >
+             <property name="minimumSize" >
+              <size>
+               <width>100</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="text" >
+              <string/>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </widget>
+       </item>
+       <item row="1" column="0" >
+        <widget class="QGroupBox" name="mSnappingGroupBox" >
+         <property name="title" >
+          <string>Snapping</string>
          </property>
-         <item>
-          <widget class="QLabel" name="mLineWidthTextLabel" >
-           <property name="text" >
-            <string>Line Width:</string>
+         <widget class="QWidget" name="layoutWidget" >
+          <property name="geometry" >
+           <rect>
+            <x>10</x>
+            <y>30</y>
+            <width>540</width>
+            <height>58</height>
+           </rect>
+          </property>
+          <layout class="QHBoxLayout" >
+           <property name="margin" >
+            <number>11</number>
            </property>
-           <property name="buddy" >
-            <cstring>mLineWidthSpinBox</cstring>
+           <property name="spacing" >
+            <number>6</number>
            </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSpinBox" name="mLineWidthSpinBox" >
-           <property name="toolTip" >
-            <string>Line width in pixels</string>
-           </property>
-           <property name="minimum" >
-            <number>1</number>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="mLineColourTextLabel" >
-           <property name="text" >
-            <string>Line Colour:</string>
-           </property>
-           <property name="buddy" >
-            <cstring>mLineColourToolButton</cstring>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QgsColorButton" name="mLineColourToolButton" >
-           <property name="minimumSize" >
-            <size>
-             <width>100</width>
-             <height>0</height>
-            </size>
-           </property>
-           <property name="text" >
-            <string/>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </widget>
-      <widget class="QGroupBox" name="mSnappingGroupBox" >
-       <property name="geometry" >
-        <rect>
-         <x>10</x>
-         <y>100</y>
-         <width>771</width>
-         <height>80</height>
-        </rect>
-       </property>
-       <property name="title" >
-        <string>Snapping</string>
-       </property>
-       <widget class="QWidget" name="layoutWidget" >
-        <property name="geometry" >
-         <rect>
-          <x>10</x>
-          <y>30</y>
-          <width>540</width>
-          <height>34</height>
-         </rect>
-        </property>
-        <layout class="QHBoxLayout" >
-         <property name="margin" >
-          <number>11</number>
-         </property>
-         <property name="spacing" >
-          <number>6</number>
-         </property>
-         <item>
-          <widget class="QLabel" name="mDefaultSnappingToleranceTextLabel" >
-           <property name="text" >
-            <string>Default Snapping Tolerance (in map units):</string>
-           </property>
-           <property name="buddy" >
-            <cstring>mDefaultSnappingToleranceTextEdit</cstring>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLineEdit" name="mDefaultSnappingToleranceTextEdit" >
-           <property name="maximumSize" >
-            <size>
-             <width>120</width>
-             <height>32767</height>
-            </size>
-           </property>
-           <property name="toolTip" >
-            <string>Snapping tolerance in map units</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </widget>
+           <item>
+            <widget class="QLabel" name="mDefaultSnappingToleranceTextLabel" >
+             <property name="text" >
+              <string>Default Snapping Tolerance (in map units):</string>
+             </property>
+             <property name="buddy" >
+              <cstring>mDefaultSnappingToleranceTextEdit</cstring>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="mDefaultSnappingToleranceTextEdit" >
+             <property name="maximumSize" >
+              <size>
+               <width>120</width>
+               <height>32767</height>
+              </size>
+             </property>
+             <property name="toolTip" >
+              <string>Snapping tolerance in map units</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </widget>
+       </item>
+      </layout>
      </widget>
      <widget class="QWidget" name="tabProjection" >
       <attribute name="title" >

@@ -35,6 +35,7 @@ QgsMapToolVertexEdit::QgsMapToolVertexEdit(QgsMapCanvas* canvas, enum Tool tool)
   // TODO - select a real cursor
   QPixmap mySelectQPixmap = QPixmap((const char **) capture_point_cursor);
   mCursor = QCursor(mySelectQPixmap, 8, 8);
+  mSnapper.setMapCanvas(canvas);
 }
 
 QgsMapToolVertexEdit::~QgsMapToolVertexEdit()
