@@ -43,7 +43,7 @@ class QgsMapCanvasSnapper
      and QgsSnapper::ONE_RESULT_BY_SEGMENT if not.
      @param p start point of the snap (in pixel coordinates)
      @param results list to which the results are appended*/
-  int snapToVertexCurrentLayer(const QgsPoint& p, QList<QgsSnappingResult>& results);
+  int snapToVertexCurrentLayer(const QPoint& p, QList<QgsSnappingResult>& results);
   /**Snaps to the background layers. This method is usefull to align the features of the 
      edited layers to those of other layers (as described in the project properties). 
      Uses snap mode QgsSnapper::ONE_RESULT. Therefore, only the
