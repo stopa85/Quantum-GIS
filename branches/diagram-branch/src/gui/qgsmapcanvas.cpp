@@ -263,12 +263,17 @@ void QgsMapCanvas::setLayerSet(QList<QgsMapCanvasLayer>& layers)
 
   if (mMapOverview)
   {
+    mMapOverview->updateFullExtent(fullExtent());
+    
     QStringList& layerSetOvOld = mMapOverview->layerSet();
     if (layerSetOvOld != layerSetOverview)
     {
       mMapOverview->setLayerSet(layerSetOverview);
-      updateOverview();
     }
+    
+    // refresh overview maplayers even if layer set is the same
+    // because full extent might have changed
+    updateOverview();
   }
   
   if (layerSetChanged)
@@ -404,8 +409,7 @@ void QgsMapCanvas::updateFullExtent()
   mMapRender->updateFullExtent();
   if (mMapOverview)
   {
-    mMapOverview->updateFullExtent();
-    mMapOverview->reflectChangedExtent();
+    mMapOverview->updateFullExtent(fullExtent());
     updateOverview();
   }
   refresh();
@@ -414,6 +418,11 @@ void QgsMapCanvas::updateFullExtent()
 
 void QgsMapCanvas::setExtent(QgsRect const & r)
 {
+  if (r.isEmpty())
+  {
+    QgsDebugMsg("Setting empty extent!");
+  }
+  
   QgsRect current = extent();
   mMapRender->setExtent(r);
   emit extentsChanged();
@@ -636,13 +645,6 @@ void QgsMapCanvas::mousePressEvent(QMouseEvent * e)
   mCanvasProperties->mouseButtonDown = true;
   mCanvasProperties->rubberStartPoint = e->pos();
 
-  if (e->button() ==  Qt::RightButton )
-  {
-    QPoint xy = e->pos();
-    QgsPoint coord = getCoordinateTransform()->toMapCoordinates(xy);
-    emit sendXY(coord);
-  }
-        
 } // mousePressEvent
 
 

@@ -2,7 +2,7 @@
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "Quantum GIS"
-!define PRODUCT_VERSION_NUMBER "0.9"
+!define PRODUCT_VERSION_NUMBER "0.9.0preview1"
 !define PRODUCT_VERSION_NAME "Grumpy"
 !define PRODUCT_VERSION "${PRODUCT_VERSION_NUMBER} ${PRODUCT_VERSION_NAME}"
 !define PRODUCT_PUBLISHER "qgis.org"
@@ -111,6 +111,7 @@ Section "Quantum GIS Application" SEC01
 ;------- qgis Related
   File "C:\Program Files\qgis${PRODUCT_VERSION_NUMBER}\*.dll"
   File "C:\Program Files\qgis${PRODUCT_VERSION_NUMBER}\*.exe"
+  File "C:\Program Files\qgis${PRODUCT_VERSION_NUMBER}\libz.dll.1.2.3"
 ;------- proj and gdal Related
   File "C:\Program Files\qgis${PRODUCT_VERSION_NUMBER}\*.csv"
 ;subdirs
