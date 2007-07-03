@@ -52,7 +52,7 @@ QgsMapToolCapture::~QgsMapToolCapture()
 
 void QgsMapToolCapture::canvasMoveEvent(QMouseEvent * e)
 {
-  if (mCapturing)
+  if (mRubberBand && mCapturing)
   {
     QgsPoint mapPoint;
     if(mSnapper.snapToBackgroundLayers(e->pos(), mapPoint) == 0)
@@ -77,6 +77,7 @@ void QgsMapToolCapture::deactivate()
 {
   delete mRubberBand;
   mRubberBand = 0;
+  mCaptureList.clear();
 }
 
 int QgsMapToolCapture::addVertex(const QPoint& p)

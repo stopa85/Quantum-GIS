@@ -1251,7 +1251,7 @@ bool QgsVectorLayer::addFeature(QgsFeature& f, bool alsoUpdateExtent)
 }
 
 
-bool QgsVectorLayer::insertVertexBefore(double x, double y, int atFeatureId, QgsGeometryVertexIndex beforeVertex)
+bool QgsVectorLayer::insertVertexBefore(double x, double y, int atFeatureId, int beforeVertex)
 {
   if (!mEditable)
   {
@@ -1281,12 +1281,11 @@ bool QgsVectorLayer::insertVertexBefore(double x, double y, int atFeatureId, Qgs
 }
 
 
-bool QgsVectorLayer::moveVertexAt(double x, double y, int atFeatureId,
-    QgsGeometryVertexIndex atVertex)
+bool QgsVectorLayer::moveVertexAt(double x, double y, int atFeatureId, int atVertex)
 {
   if (!mEditable)
   {
-    return false;
+    return false; 
   }
   
   if (mDataProvider)
@@ -1311,8 +1310,7 @@ bool QgsVectorLayer::moveVertexAt(double x, double y, int atFeatureId,
 }
 
 
-bool QgsVectorLayer::deleteVertexAt(int atFeatureId,
-    QgsGeometryVertexIndex atVertex)
+bool QgsVectorLayer::deleteVertexAt(int atFeatureId, int atVertex)
 {
   if (!mEditable)
   {
@@ -2356,7 +2354,7 @@ bool QgsVectorLayer::snapPoint(QgsPoint& point, double tolerance)
   double mindisty=point.y();
   QgsFeature fet;
   QgsPoint vertexFeature;//the closest vertex of a feature
-  QgsGeometryVertexIndex vindex;
+  int vindex;
   double minsquaredist;
   int rb1, rb2; //rubberband indexes (not used in this method)
 
@@ -2422,145 +2420,9 @@ bool QgsVectorLayer::snapPoint(QgsPoint& point, double tolerance)
   return true;
 }
 
-bool QgsVectorLayer::snapVertexWithContext(QgsPoint& point, QgsGeometryVertexIndex& atVertex,
-                                           int& beforeVertexIndex, int& afterVertexIndex,
-                                           int& snappedFeatureId, QgsGeometry& snappedGeometry,
-                                           double tolerance)
+int QgsVectorLayer::snapWithContext(const QgsPoint& startPoint, double snappingTolerance, QMultiMap<double, QgsSnappingResult>& snappingResults, \
+		      QgsSnapper::SNAP_TO snap_to)
 {
-  bool vertexFound = false; //flag to check if a meaningful result can be returned
-  QgsGeometryVertexIndex atVertexTemp;
-  int beforeVertexIndexTemp, afterVertexIndexTemp;
-
-  QgsPoint origPoint = point;
-
-  // Sanity checking
-  if (tolerance<=0 || !mDataProvider)
-  {
-    return false;
-  }
-
-  QgsFeature feature;
-  QgsPoint minDistSegPoint;  // the closest point
-  double testSqrDist;        // the squared distance between 'point' and 'snappedFeature'
-
-  double minSqrDist  = tolerance*tolerance; //current minimum distance
-
-  QgsRect selectrect(point.x()-tolerance, point.y()-tolerance,
-                     point.x()+tolerance, point.y()+tolerance);
-
-  mDataProvider->select(QgsAttributeList(), selectrect);
-
-  // Go through the committed features
-  while (mDataProvider->getNextFeature(feature))
-  {
-    if (mChangedGeometries.contains(feature.featureId()))
-    {
-      // ignore for this loop, let the loop below over mChangedGeometries
-      // detect the changed geometry instead
-      continue;
-
-      // // substitute the modified geometry for the committed version
-      // feature->setGeometry(mChangedGeometries[feature->featureId()]);
-    }
-
-    minDistSegPoint = feature.geometry()->closestVertex(origPoint, atVertexTemp, beforeVertexIndexTemp, afterVertexIndexTemp, testSqrDist);
-    if (
-        (testSqrDist < minSqrDist) ||
-        (
-         // this test will "choose" the polygon that the origPoint is in:
-         (testSqrDist == minSqrDist) && 
-         (feature.geometry()->contains(&origPoint))
-        )
-       )
-    {
-      point = minDistSegPoint;
-      minSqrDist = testSqrDist;
-
-      atVertex          = atVertexTemp;
-      beforeVertexIndex = beforeVertexIndexTemp;
-      afterVertexIndex = afterVertexIndexTemp;
-      snappedFeatureId  = feature.featureId();
-      snappedGeometry   = *(feature.geometry());
-      vertexFound = true;
-      return true;
-    }
-  }
-
-
-  // Also go through the new features
-  for (QgsFeatureList::iterator iter = mAddedFeatures.begin(); iter != mAddedFeatures.end(); ++iter)
-  {
-    if (mChangedGeometries.contains((*iter).featureId()))
-    {
-      // ignore for this loop, let the loop below over mChangedGeometries
-      // detect the changed geometry instead
-      continue;
-      // //use the modified geometry
-      // minDistSegPoint = mChangedGeometries[(*iter)->featureId()].closestVertex(origPoint, atVertexTemp, beforeVertexIndexTemp, afterVertexIndexTemp, testSqrDist);
-    }
-    else
-    {
-    	minDistSegPoint = (*iter).geometry()->closestVertex(origPoint, atVertexTemp, beforeVertexIndexTemp, afterVertexIndexTemp, testSqrDist);
-    }
-    if (
-        (testSqrDist < minSqrDist) ||
-        (
-         // this test will "choose" the polygon that the origPoint is in:
-         (testSqrDist == minSqrDist) && 
-         ((*iter).geometry()->contains(&origPoint))
-        )
-       )
-    {
-      point = minDistSegPoint;
-      minSqrDist = testSqrDist;
-
-      atVertex      = atVertexTemp;
-      beforeVertexIndex = beforeVertexIndexTemp;
-      afterVertexIndex = afterVertexIndexTemp;
-      snappedFeatureId  =   iter->featureId();
-      snappedGeometry   = *(iter->geometry());
-      vertexFound = true;
-      return true;
-    }
-  }
-
-  //and also go through the changed geometries, because the spatial filter of the provider did not consider feature changes
-  for(QgsGeometryMap::iterator it = mChangedGeometries.begin(); it != mChangedGeometries.end(); ++it)
-  {
-    minDistSegPoint = it.value().closestVertex(origPoint, atVertexTemp, beforeVertexIndexTemp, afterVertexIndexTemp, testSqrDist);
-    if (
-        (testSqrDist < minSqrDist) ||
-        (
-           // this test will "choose" the polygon that the origPoint is in:
-        (testSqrDist == minSqrDist) && 
-        (it.value().contains(&origPoint))
-        )
-       )
-    {
-      point = minDistSegPoint;
-      minSqrDist = testSqrDist;
-      atVertex      = atVertexTemp;
-      beforeVertexIndex = beforeVertexIndexTemp;
-      afterVertexIndex = afterVertexIndexTemp;
-      snappedFeatureId  = it.key();
-      snappedGeometry   = it.value();
-      vertexFound = true;
-    }
-  }
-
-  if(!vertexFound)
-  {
-    beforeVertexIndex = -1;
-    afterVertexIndex = -1;
-    return false;
-  }
-
-  return true;
-}
-
-int QgsVectorLayer::snapVertexWithContext(const QgsPoint& startPoint, double snappingTolerance, QMultiMap<double, QgsSnappingResult>& snappingResults)
-{
-
   if (snappingTolerance<=0 || !mDataProvider)
   {
     return 1;
@@ -2568,42 +2430,23 @@ int QgsVectorLayer::snapVertexWithContext(const QgsPoint& startPoint, double sna
 
   QgsRect searchRect(startPoint.x()-snappingTolerance, startPoint.y()-snappingTolerance, \
 		     startPoint.x()+snappingTolerance, startPoint.y()+snappingTolerance);
-
+  
   //go through the changed geometries and store the ids of already examined features
   QSet<int> alreadyExaminedGeometries;
-  
-  //new snapping result
-  QgsSnappingResult snappingResult;
-  QgsGeometryVertexIndex atVertex;
-  int beforeVertex, afterVertex;
-  QgsGeometryVertexIndex beforeVertexIndex, afterVertexIndex;
-  double sqrDistance;
-  QgsPoint snappedPoint;
+
   double sqrSnappingTolerance = snappingTolerance * snappingTolerance;
 
   QgsGeometryMap::iterator changedIt;
   for(changedIt = mChangedGeometries.begin(); changedIt != mChangedGeometries.end(); ++changedIt)
     {
       alreadyExaminedGeometries.insert(changedIt.key());
-      snappedPoint = changedIt->closestVertex(startPoint, atVertex, beforeVertex, afterVertex, sqrDistance);
-      if(sqrDistance < sqrSnappingTolerance)
-	{
-	  //add snapping result
-	  snappingResult.snappedVertex = snappedPoint;
-	  snappingResult.snappedVertexNr = atVertex.back();
-	  beforeVertexIndex.clear(); beforeVertexIndex.push_back(beforeVertex);
-	  snappingResult.beforeVertex = changedIt->vertexAt(beforeVertexIndex);
-	  afterVertexIndex.clear(); afterVertexIndex.push_back(afterVertex);
-	  snappingResult.afterVertex = changedIt->vertexAt(afterVertexIndex);
-	  snappingResult.snappedAtGeometry = changedIt.key();
-	  snappingResults.insert(sqrt(sqrDistance), snappingResult);
-	}
+      snapToGeometry(startPoint, changedIt.key(), &(*changedIt), sqrSnappingTolerance, snappingResults, snap_to);
     }
 
   //go through the new features
   QgsFeatureList::iterator addedIt;
   QgsGeometry* currentGeometry = 0;
-
+  
   for(addedIt = mAddedFeatures.begin(); addedIt != mAddedFeatures.end(); ++addedIt)
     {
       int featureId = addedIt->featureId();
@@ -2612,24 +2455,12 @@ int QgsVectorLayer::snapVertexWithContext(const QgsPoint& startPoint, double sna
 	  currentGeometry = addedIt->geometry();
 	  if(currentGeometry)
 	    {
-	      snappedPoint = currentGeometry->closestVertex(startPoint, atVertex, beforeVertex, afterVertex, sqrDistance);
-	      if(sqrDistance < sqrSnappingTolerance)
-		{
-		  //add snapping result
-		  snappingResult.snappedVertex = snappedPoint;
-		  snappingResult.snappedVertexNr = atVertex.back();
-		  beforeVertexIndex.clear(); beforeVertexIndex.push_back(beforeVertex);
-		  snappingResult.beforeVertex = currentGeometry->vertexAt(beforeVertexIndex);
-		  afterVertexIndex.clear(); afterVertexIndex.push_back(afterVertex);
-		  snappingResult.afterVertex = currentGeometry->vertexAt(afterVertexIndex);
-		  snappingResult.snappedAtGeometry = addedIt->featureId();
-		  snappingResults.insert(sqrt(sqrDistance), snappingResult);
-		}
+	      snapToGeometry(startPoint, featureId, currentGeometry, sqrSnappingTolerance, snappingResults, snap_to);
 	    }
 	}
     }
 
-  //go through the commited features
+   //go through the commited features
   QgsFeature feature;
   mDataProvider->select(QgsAttributeList(), searchRect);
   while (mDataProvider->getNextFeature(feature))
@@ -2640,240 +2471,71 @@ int QgsVectorLayer::snapVertexWithContext(const QgsPoint& startPoint, double sna
 	currentGeometry = feature.geometry();
 	if(currentGeometry)
 	  {
-	    snappedPoint = currentGeometry->closestVertex(startPoint, atVertex, beforeVertex, afterVertex, sqrDistance);
-	   
-	   if(sqrDistance < sqrSnappingTolerance)
-	     { 
-	       snappingResult.snappedVertex = snappedPoint;
-	       snappingResult.snappedVertexNr = atVertex.back();
-	       beforeVertexIndex.clear(); beforeVertexIndex.push_back(beforeVertex);
-	       snappingResult.beforeVertex = currentGeometry->vertexAt(beforeVertexIndex);
-	       afterVertexIndex.clear(); afterVertexIndex.push_back(afterVertex);
-	       snappingResult.afterVertex = currentGeometry->vertexAt(afterVertexIndex);
-	       snappingResult.snappedAtGeometry = feature.featureId();
-	       snappingResults.insert(sqrt(sqrDistance), snappingResult);
-	     }
+	    snapToGeometry(startPoint, featureId, currentGeometry, sqrSnappingTolerance, snappingResults, snap_to);
 	  }
       }
   }
-  
+
   return 0;
+	    
 }
 
-int QgsVectorLayer::snapSegmentWithContext(const QgsPoint& startPoint, double snappingTolerance, QMultiMap<double, QgsSnappingResult>& snappingResults)
+void QgsVectorLayer::snapToGeometry(const QgsPoint& startPoint, int featureId, QgsGeometry* geom, double sqrSnappingTolerance, \
+				    QMultiMap<double, QgsSnappingResult>& snappingResults, QgsSnapper::SNAP_TO snap_to) const
 {
-  if (snappingTolerance<=0 || !mDataProvider)
-  {
-    return 1;
-  }
-
-  QgsRect searchRect(startPoint.x()-snappingTolerance, startPoint.y()-snappingTolerance, \
-		     startPoint.x()+snappingTolerance, startPoint.y()+snappingTolerance);
-  
-  //go through the changed geometries and store the ids of already examined features
-  QSet<int> alreadyExaminedGeometries;
-
-  QgsPoint snappedPoint;
-  QgsGeometryVertexIndex vIndex;
-  double sqrDist;
-  QgsSnappingResult snappingResult;
-  double sqrSnappingTolerance = snappingTolerance * snappingTolerance;
-
-  QgsGeometryMap::iterator changedIt;
-  for(changedIt = mChangedGeometries.begin(); changedIt != mChangedGeometries.end(); ++changedIt)
+  if(!geom)
     {
-      alreadyExaminedGeometries.insert(changedIt.key());
-      sqrDist = changedIt->closestSegmentWithContext(startPoint, snappedPoint, vIndex);
-      if(sqrDist < sqrSnappingTolerance)
+      return;
+    }
+
+  int atVertex, beforeVertex, afterVertex;
+  double sqrDist;
+  QgsPoint snappedPoint;
+  QgsSnappingResult snappingResult;
+
+  if(snap_to == QgsSnapper::SNAP_TO_VERTEX)
+    {
+      snappedPoint = geom->closestVertex(startPoint, atVertex, beforeVertex, afterVertex, sqrDist);
+    }
+  else //snap to segment
+    {
+      if(vectorType() != QGis::Point) //cannot snap to segment for points/multipoints
 	{
-	  //add to snapping results
+	  sqrDist = geom->closestSegmentWithContext(startPoint, snappedPoint, afterVertex);
+	}
+      else
+	{
+	  return;
+	}
+    }
+  
+  if(sqrDist < sqrSnappingTolerance)
+    {
+      //add snapping result
+      if(snap_to == QgsSnapper::SNAP_TO_VERTEX)
+	{
+	  snappingResult.snappedVertex = snappedPoint;
+	  snappingResult.snappedVertexNr = atVertex;
+	  snappingResult.beforeVertex = geom->vertexAt(beforeVertex);
+	  snappingResult.beforeVertexNr = beforeVertex;
+	  snappingResult.afterVertex = geom->vertexAt(afterVertex);
+	  snappingResult.afterVertexNr = afterVertex;
+	  snappingResult.snappedAtGeometry = featureId;
+	  snappingResults.insert(sqrt(sqrDist), snappingResult);
+	}
+      else //segment
+	{
 	  snappingResult.snappedVertex = snappedPoint;
 	  snappingResult.snappedVertexNr = -1;
-	  snappingResult.beforeVertex = QgsPoint(0, 0); //no information about this
-	  snappingResult.afterVertex = QgsPoint(0, 0);
-	  snappingResult.snappedAtGeometry = changedIt.key();
+	  snappingResult.beforeVertexNr = afterVertex - 1;
+	  snappingResult.afterVertexNr = afterVertex;
+	  snappingResult.snappedAtGeometry = featureId;
+	  snappingResult.beforeVertex = geom->vertexAt(afterVertex - 1);
+	  snappingResult.afterVertex = geom->vertexAt(afterVertex);
 	  snappingResults.insert(sqrt(sqrDist), snappingResult);
 	}
     }
-
-  //go through the new features
-  QgsFeatureList::iterator addedIt;
-  QgsGeometry* currentGeometry = 0;
-
-  for(addedIt = mAddedFeatures.begin(); addedIt != mAddedFeatures.end(); ++addedIt)
-    {
-      int featureId = addedIt->featureId();
-      if(!alreadyExaminedGeometries.contains(featureId))
-	{
-	  currentGeometry = addedIt->geometry();
-	  if(currentGeometry)
-	    {
-	      sqrDist = currentGeometry->closestSegmentWithContext(startPoint, snappedPoint, vIndex);
-	      if(sqrDist < sqrSnappingTolerance)
-		{
-		  //add to snapping results
-		  snappingResult.snappedVertex = snappedPoint;
-		  snappingResult.snappedVertexNr = -1;
-		  snappingResult.beforeVertex = QgsPoint(0, 0); //no information about this
-		  snappingResult.afterVertex = QgsPoint(0, 0);
-		  snappingResult.snappedAtGeometry = addedIt->featureId();
-		  snappingResults.insert(sqrt(sqrDist), snappingResult);
-		}
-	    }
-	}
-    }
-  
-  //go through the commited features
-  QgsFeature feature;
-  mDataProvider->select(QgsAttributeList(), searchRect);
-  while (mDataProvider->getNextFeature(feature))
-  {
-    int featureId = feature.featureId();
-    if(!alreadyExaminedGeometries.contains(featureId))
-      {
-	currentGeometry = feature.geometry();
-	if(currentGeometry)
-	  {
-	    sqrDist = currentGeometry->closestSegmentWithContext(startPoint, snappedPoint, vIndex);
-	    if(sqrDist < sqrSnappingTolerance)
-	      {
-		//add to snapping results
-		snappingResult.snappedVertex = snappedPoint;
-		snappingResult.snappedVertexNr = -1;
-		snappingResult.beforeVertex = QgsPoint(0, 0); //no information about this
-		snappingResult.afterVertex = QgsPoint(0, 0);
-		snappingResult.snappedAtGeometry = feature.featureId();
-		snappingResults.insert(sqrt(sqrDist), snappingResult);
-	      }
-	  }
-      }
-  }
-
-  return 0;
 }
-
-
-bool QgsVectorLayer::snapSegmentWithContext(QgsPoint& point, QgsGeometryVertexIndex& beforeVertex,
-                                            int& snappedFeatureId, QgsGeometry& snappedGeometry,
-                                            double tolerance)
-{
-  bool segmentFound = false; //flag to check if a reasonable result can be returned
-  QgsGeometryVertexIndex beforeVertexTemp;
-
-  QgsPoint origPoint = point;
-
-  // Sanity checking
-  if (tolerance<=0 || !mDataProvider)
-  {
-    return false;
-  }
-
-  QgsFeature feature;
-  QgsPoint minDistSegPoint;  // the closest point on the segment
-  double testSqrDist;        // the squared distance between 'point' and 'snappedFeature'
-  double minSqrDist  = tolerance*tolerance; //current minimum distance
-
-  QgsRect selectrect(point.x()-tolerance, point.y()-tolerance,
-                     point.x()+tolerance, point.y()+tolerance);
-
-  mDataProvider->select(QgsAttributeList(), selectrect);
-
-  // Go through the committed features
-  while (mDataProvider->getNextFeature(feature))
-  {
-    if (mChangedGeometries.contains(feature.featureId()))
-    {
-      // ignore for this loop, let the loop below over mChangedGeometries
-      // detect the changed geometry instead
-      continue;
-
-      // // substitute the modified geometry for the committed version
-      // feature->setGeometry( mChangedGeometries[ feature->featureId() ] );
-    }
-
-    testSqrDist = feature.geometry()->closestSegmentWithContext(origPoint, minDistSegPoint, beforeVertexTemp);
-
-    if (
-        (testSqrDist < minSqrDist) ||
-        (
-         // this test will "choose" the polygon that the origPoint is in:
-         (testSqrDist == minSqrDist) && 
-         (feature.geometry()->contains(&origPoint))
-        )
-       )
-    {
-      point = minDistSegPoint;
-      minSqrDist = testSqrDist;
-
-      beforeVertex      = beforeVertexTemp;
-      snappedFeatureId  = feature.featureId();
-      snappedGeometry   = *(feature.geometry());
-      segmentFound = true;
-    }
-    
-  }
-
-  // Also go through the new features
-  for (QgsFeatureList::iterator iter = mAddedFeatures.begin(); iter != mAddedFeatures.end(); ++iter)
-  {
-    if(mChangedGeometries.contains((*iter).featureId()))
-    {
-      // ignore for this loop, let the loop below over mChangedGeometries
-      // detect the changed geometry instead
-      continue;
-
-      // //use the modified geometry
-      // minDistSegPoint = mChangedGeometries[(*iter)->featureId()].closestSegmentWithContext(origPoint, beforeVertexTemp, testSqrDist);
-    }
-    else
-    {
-      testSqrDist = (*iter).geometry()->closestSegmentWithContext(origPoint, minDistSegPoint, beforeVertexTemp);
-    }
-
-    if (
-        (testSqrDist < minSqrDist) ||
-        (
-         // this test will "choose" the polygon that the origPoint is in:
-         (testSqrDist == minSqrDist) && 
-         ((*iter).geometry()->contains(&origPoint))
-        )
-       )
-    {
-      point = minDistSegPoint;
-      minSqrDist = testSqrDist;
-
-      beforeVertex      = beforeVertexTemp;
-      snappedFeatureId  =   (*iter).featureId();
-      snappedGeometry   = *((*iter).geometry());
-      segmentFound = true;
-    }
-  }
-
-  //and also go through the changed geometries, because the spatial filter of the provider did not consider feature changes
-  for(QgsGeometryMap::iterator it = mChangedGeometries.begin(); it != mChangedGeometries.end(); ++it)
-  {
-    testSqrDist = it.value().closestSegmentWithContext(origPoint, minDistSegPoint, beforeVertexTemp);
-    if (
-        (testSqrDist < minSqrDist) ||
-        (
-           // this test will "choose" the polygon that the origPoint is in:
-        (testSqrDist == minSqrDist) && 
-        (it.value().contains(&origPoint))
-        )
-       )
-    {
-      point = minDistSegPoint;
-      minSqrDist = testSqrDist;
-      beforeVertex      = beforeVertexTemp;
-      snappedFeatureId  = it.key();
-      snappedGeometry   = it.value();
-      segmentFound = true;
-    }
-  }
-
-  return segmentFound; 
-}
-
 
 void QgsVectorLayer::drawFeature(QPainter* p,
                                  QgsFeature& fet,

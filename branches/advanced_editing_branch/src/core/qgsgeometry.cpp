@@ -361,7 +361,7 @@ void QgsGeometry::setGeos(GEOS_GEOM::Geometry* geos)
   mDirtyGeos  = FALSE;
 }
 
-QgsPoint QgsGeometry::closestVertex(const QgsPoint& point, QgsGeometryVertexIndex& atVertex, int& beforeVertex, int& afterVertex, double& sqrDist)
+QgsPoint QgsGeometry::closestVertex(const QgsPoint& point, int& atVertex, int& beforeVertex, int& afterVertex, double& sqrDist)
 {
   // TODO: implement with GEOS
   if(mDirtyWkb)
@@ -630,13 +630,12 @@ QgsPoint QgsGeometry::closestVertex(const QgsPoint& point, QgsGeometryVertexInde
       break;
   }
   sqrDist = actdist;
-  atVertex.clear();
-  atVertex.push_back(vertexnr);
+  atVertex = vertexnr;
   return QgsPoint(x,y);    
 }
 
 
-void QgsGeometry::adjacentVerticies(const QgsGeometryVertexIndex& atVertex, int& beforeVertex, int& afterVertex)
+void QgsGeometry::adjacentVerticies(int atVertex, int& beforeVertex, int& afterVertex)
 {
   // TODO: implement with GEOS
   if(mDirtyWkb)
@@ -673,7 +672,7 @@ void QgsGeometry::adjacentVerticies(const QgsGeometryVertexIndex& atVertex, int&
         unsigned char* ptr = mGeometry+5;
         int* npoints = (int*) ptr;
 
-        const int index = atVertex.back();
+        const int index = atVertex;
 
         // assign the rubber band indices
 
@@ -720,7 +719,7 @@ void QgsGeometry::adjacentVerticies(const QgsGeometryVertexIndex& atVertex, int&
             {
               ptr += sizeof(double);
             }
-            if (vertexcounter == atVertex.back())
+            if (vertexcounter == atVertex)
             { 
               if(index1 == 0)
               {
@@ -775,7 +774,7 @@ void QgsGeometry::adjacentVerticies(const QgsGeometryVertexIndex& atVertex, int&
               ptr += sizeof(double);
             }
 
-            if (vertexcounter == atVertex.back())
+            if (vertexcounter == atVertex)
             {
               // Found the vertex of the linestring we were looking for.
               if(index1 == 0)
@@ -829,7 +828,7 @@ void QgsGeometry::adjacentVerticies(const QgsGeometryVertexIndex& atVertex, int&
               {
                 ptr += sizeof(double);
               }
-              if (vertexcounter == atVertex.back())
+              if (vertexcounter == atVertex)
               {
                 // Found the vertex of the linear-ring of the polygon we were looking for.
                 // assign the rubber band indices
@@ -906,9 +905,9 @@ bool QgsGeometry::insertVertexBefore(double x, double y,
   return inserted;
 }
 
-bool QgsGeometry::moveVertexAt(double x, double y, QgsGeometryVertexIndex atVertex)
+bool QgsGeometry::moveVertexAt(double x, double y, int atVertex)
 {
-  int vertexnr = atVertex.back();
+  int vertexnr = atVertex;
 
   // TODO: implement with GEOS
   if(mDirtyWkb)
@@ -1155,9 +1154,9 @@ bool QgsGeometry::moveVertexAt(double x, double y, QgsGeometryVertexIndex atVert
   }
 }
 
-bool QgsGeometry::deleteVertexAt(QgsGeometryVertexIndex atVertex)
+bool QgsGeometry::deleteVertexAt(int atVertex)
 {
-  int vertexnr = atVertex.back();
+  int vertexnr = atVertex;
   bool success = false;
 
   // TODO: implement with GEOS
@@ -1478,9 +1477,9 @@ bool QgsGeometry::deleteVertexAt(QgsGeometryVertexIndex atVertex)
   }
 }
 
-bool QgsGeometry::insertVertexBefore(double x, double y, QgsGeometryVertexIndex beforeVertex)
+bool QgsGeometry::insertVertexBefore(double x, double y, int beforeVertex)
 {
-  int vertexnr = beforeVertex.back();
+  int vertexnr = beforeVertex;
   bool success = false;
 
   // TODO: implement with GEOS
@@ -1782,7 +1781,7 @@ bool QgsGeometry::insertVertexBefore(double x, double y, QgsGeometryVertexIndex 
   }
 }
 
-QgsPoint QgsGeometry::vertexAt(const QgsGeometryVertexIndex& atVertex)
+QgsPoint QgsGeometry::vertexAt(int atVertex)
 {
   double x,y;
 
@@ -1791,7 +1790,7 @@ QgsPoint QgsGeometry::vertexAt(const QgsGeometryVertexIndex& atVertex)
     GEOS_GEOM::CoordinateSequence* cs = mGeos->getCoordinates();
     if(cs)
     {
-      const GEOS_GEOM::Coordinate& coord = cs->getAt(atVertex.back());
+      const GEOS_GEOM::Coordinate& coord = cs->getAt(atVertex);
       x = coord.x;
       y = coord.y;
       delete cs;
@@ -1810,7 +1809,7 @@ QgsPoint QgsGeometry::vertexAt(const QgsGeometryVertexIndex& atVertex)
       case QGis::WKBPoint25D:
       case QGis::WKBPoint:
         {
-          if(atVertex.back() == 0)
+          if(atVertex == 0)
           {
             ptr = mGeometry+1+sizeof(int);
             memcpy(&x, ptr, sizeof(double));
@@ -1833,7 +1832,7 @@ QgsPoint QgsGeometry::vertexAt(const QgsGeometryVertexIndex& atVertex)
           nPoints = (int *) ptr;
 
           // return error if underflow
-          if (0 > atVertex.back() || *nPoints <= atVertex.back())
+          if (0 > atVertex || *nPoints <= atVertex)
           {
             return QgsPoint(0,0);
           }
@@ -1841,11 +1840,11 @@ QgsPoint QgsGeometry::vertexAt(const QgsGeometryVertexIndex& atVertex)
           // copy the vertex coordinates 
           if(hasZValue)
           {
-            ptr = mGeometry + 9 + (atVertex.back() * 3*sizeof(double));
+            ptr = mGeometry + 9 + (atVertex * 3*sizeof(double));
           }
           else
           {
-            ptr = mGeometry + 9 + (atVertex.back() * 2*sizeof(double));
+            ptr = mGeometry + 9 + (atVertex * 2*sizeof(double));
           }
           memcpy(&x, ptr, sizeof(double));
           ptr += sizeof(double);
@@ -1868,7 +1867,7 @@ QgsPoint QgsGeometry::vertexAt(const QgsGeometryVertexIndex& atVertex)
             ptr += sizeof(int);
             for(int pointnr = 0; pointnr < *nPoints; ++pointnr)
             {
-              if(pointindex == atVertex.back())
+              if(pointindex == atVertex)
               {
                 memcpy(&x, ptr, sizeof(double));
                 ptr += sizeof(double);
@@ -1891,17 +1890,17 @@ QgsPoint QgsGeometry::vertexAt(const QgsGeometryVertexIndex& atVertex)
         {
           ptr = mGeometry+1+sizeof(int);
           int* nPoints = (int*)ptr;
-          if(atVertex.back() < 0 || atVertex.back() >= *nPoints)
+          if(atVertex < 0 || atVertex >= *nPoints)
           {
             return QgsPoint(0,0);
           }
           if(hasZValue)
           {
-            ptr += atVertex.back()*(3*sizeof(double)+1+sizeof(int));
+            ptr += atVertex*(3*sizeof(double)+1+sizeof(int));
           }
           else
           {
-            ptr += atVertex.back()*(2*sizeof(double)+1+sizeof(int));
+            ptr += atVertex*(2*sizeof(double)+1+sizeof(int));
           }
           ptr += 1+sizeof(int);
           memcpy(&x, ptr, sizeof(double));
@@ -1925,7 +1924,7 @@ QgsPoint QgsGeometry::vertexAt(const QgsGeometryVertexIndex& atVertex)
             ptr += sizeof(int);
             for(int pointnr = 0; pointnr < *nPoints; ++pointnr)
             {
-              if(pointindex == atVertex.back())
+              if(pointindex == atVertex)
               {
                 memcpy(&x, ptr, sizeof(double));
                 ptr += sizeof(double);
@@ -1963,7 +1962,7 @@ QgsPoint QgsGeometry::vertexAt(const QgsGeometryVertexIndex& atVertex)
               ptr += sizeof(int);
               for(int pointnr = 0; pointnr < *nPoints; ++pointnr)
               {
-                if(pointindex == atVertex.back())
+                if(pointindex == atVertex)
                 {
                   memcpy(&x, ptr, sizeof(double));
                   ptr += sizeof(double);
@@ -1995,8 +1994,7 @@ QgsPoint QgsGeometry::vertexAt(const QgsGeometryVertexIndex& atVertex)
 }
 
 
-double QgsGeometry::sqrDistToVertexAt(QgsPoint& point,
-    QgsGeometryVertexIndex& atVertex)
+double QgsGeometry::sqrDistToVertexAt(QgsPoint& point, int atVertex)
 {
   QgsPoint pnt = vertexAt(atVertex);
   if (pnt != QgsPoint(0,0))
@@ -2013,11 +2011,9 @@ double QgsGeometry::sqrDistToVertexAt(QgsPoint& point,
 }
 
 
-double QgsGeometry::closestVertexWithContext(const QgsPoint& point,
-    QgsGeometryVertexIndex& atVertex)
+double QgsGeometry::closestVertexWithContext(const QgsPoint& point, int& atVertex)
 {
   // Initialise some stuff
-  atVertex.clear();
   double sqrDist = std::numeric_limits<double>::max();
   int closestVertexIndex = 0;
 
@@ -2043,7 +2039,7 @@ double QgsGeometry::closestVertexWithContext(const QgsPoint& point,
       }
     }
   }
-  atVertex.push_back(closestVertexIndex);
+  atVertex = closestVertexIndex;
 
   return sqrDist;
 }
@@ -2051,7 +2047,7 @@ double QgsGeometry::closestVertexWithContext(const QgsPoint& point,
 
 double QgsGeometry::closestSegmentWithContext(const QgsPoint& point,
     QgsPoint& minDistPoint,
-    QgsGeometryVertexIndex& beforeVertex)
+    int& beforeVertex)
 {
   QgsPoint distPoint;
 
@@ -2063,7 +2059,6 @@ double QgsGeometry::closestSegmentWithContext(const QgsPoint& point,
   int closestSegmentIndex = 0;
 
   // Initialise some stuff
-  beforeVertex.clear();
   double sqrDist = std::numeric_limits<double>::max();
 
   // TODO: implement with GEOS
@@ -2123,7 +2118,7 @@ double QgsGeometry::closestSegmentWithContext(const QgsPoint& point,
             ptr += sizeof(double);
           }
         }
-        beforeVertex.push_back(closestSegmentIndex);
+        beforeVertex = closestSegmentIndex;
         break;
       }
     case QGis::WKBMultiLineString25D:
@@ -2166,7 +2161,7 @@ double QgsGeometry::closestSegmentWithContext(const QgsPoint& point,
             ++pointindex;
           }
         }
-        beforeVertex.push_back(closestSegmentIndex);
+        beforeVertex = closestSegmentIndex;
         break;
       }
     case QGis::WKBPolygon25D:
@@ -2208,7 +2203,7 @@ double QgsGeometry::closestSegmentWithContext(const QgsPoint& point,
             ++index;
           }
         }
-        beforeVertex.push_back(closestSegmentIndex);
+        beforeVertex = closestSegmentIndex;
         break;
       }
     case QGis::WKBMultiPolygon25D:
@@ -2257,7 +2252,7 @@ double QgsGeometry::closestSegmentWithContext(const QgsPoint& point,
             }
           }
         }
-        beforeVertex.push_back(closestSegmentIndex);
+        beforeVertex = closestSegmentIndex;
         break;
       }
     case QGis::WKBUnknown:

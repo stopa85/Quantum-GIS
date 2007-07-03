@@ -242,8 +242,7 @@ class QgsGeometry
        Returns the vertex closest to the given point 
        (and also vertex index, squared distance and indexes of the vertices before/after)
     */
-    QgsPoint closestVertex(const QgsPoint& point, QgsGeometryVertexIndex& atVertex, int& beforeVertex, int& afterVertex, double& sqrDist);
-
+    QgsPoint closestVertex(const QgsPoint& point, int& atVertex, int& beforeVertex, int& afterVertex, double& sqrDist);
 
     /**
        Returns the indexes of the vertices before and after the given vertex index.
@@ -257,8 +256,7 @@ class QgsGeometry
           account the first vertex is equal to the last vertex (and will
           skip equal vertex positions).
     */
-    void adjacentVerticies(const QgsGeometryVertexIndex& atVertex, int& beforeVertex, int& afterVertex);
-
+	void adjacentVerticies(int atVertex, int& beforeVertex, int& afterVertex);
 
     /** Insert a new vertex before the given vertex index,
      *  ring and item (first number is index 0)
@@ -271,7 +269,7 @@ class QgsGeometry
      *  these error conditions.  (Or maybe we add another method to this
      *  object to help make the distinction?)
      */
-    bool insertVertexBefore(double x, double y, QgsGeometryVertexIndex beforeVertex);
+	bool insertVertexBefore(double x, double y, int beforeVertex);
 
     /** Moves the vertex at the given position number,
      *  ring and item (first number is index 0)
@@ -279,9 +277,9 @@ class QgsGeometry
      *  Returns FALSE if atVertex does not correspond to a valid vertex
      *  on this geometry 
      */
-    bool moveVertexAt(double x, double y, QgsGeometryVertexIndex atVertex);
-
-    /** Deletes the vertex at the given position number,
+	bool moveVertexAt(double x, double y, int atVertex);
+    
+	/** Deletes the vertex at the given position number,
      *  ring and item (first number is index 0)
      *  Returns FALSE if atVertex does not correspond to a valid vertex
      *  on this geometry (including if this geometry is a Point),
@@ -291,7 +289,7 @@ class QgsGeometry
      *  these error conditions.  (Or maybe we add another method to this
      *  object to help make the distinction?)
      */
-    bool deleteVertexAt(QgsGeometryVertexIndex atVertex);
+	bool deleteVertexAt(int atVertex);
 
     /**
         Returns the squared cartesian distance between the given point
@@ -307,7 +305,7 @@ class QgsGeometry
      *  @param atVertex index of the vertex
      *  @return Coordinates of the vertex or QgsPoint(0,0) on error
      */
-    QgsPoint vertexAt(const QgsGeometryVertexIndex& atVertex);
+    QgsPoint vertexAt(int atVertex);
 
     /**
      * Searches for the the closest vertex in this geometry to the given point.
@@ -315,8 +313,16 @@ class QgsGeometry
      * @param atVertex Receives index of the closest vertex
      * @return The squared cartesian distance is also returned in sqrDist, negative number on error
      */
-    double closestVertexWithContext(const QgsPoint& point,
-                                    QgsGeometryVertexIndex& atVertex /Out/);
+	double sqrDistToVertexAt(QgsPoint& point, int atVertex);
+
+	
+	/**
+     * Searches for the the closest vertex in this geometry to the given point.
+     * @param point Specifiest the point for search
+     * @param atVertex Receives index of the closest vertex
+     * @return The squared cartesian distance is also returned in sqrDist, negative number on error
+     */
+    double closestVertexWithContext(const QgsPoint& point, int& atVertex);
 
     /**
      * Searches for the closest segment of geometry to the given point
@@ -325,9 +331,7 @@ class QgsGeometry
      * @param beforeVertex Receives index of the vertex before the closest segment
      * @return The squared cartesian distance is also returned in sqrDist, negative number on error
      */
-    double closestSegmentWithContext(const QgsPoint& point,
-                                     QgsPoint& minDistPoint /Out/,
-                                     QgsGeometryVertexIndex& beforeVertex /Out/);
+    double closestSegmentWithContext(const QgsPoint& point, QgsPoint& minDistPoint, int& beforeVertex);
 
     /**Returns the bounding box of this feature*/
     QgsRect boundingBox();

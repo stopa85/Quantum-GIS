@@ -149,7 +149,7 @@ class CORE_EXPORT QgsGeometry {
        Returns the vertex closest to the given point, the corresponding vertex index, squared distance snap point / target pointand \
 and the indices of the vertices before/after. The vertices before/after are -1 if not present
     */
-    QgsPoint closestVertex(const QgsPoint& point, QgsGeometryVertexIndex& atVertex, int& beforeVertex, int& afterVertex, double& sqrDist);
+    QgsPoint closestVertex(const QgsPoint& point, int& atVertex, int& beforeVertex, int& afterVertex, double& sqrDist);
 
 
     /**
@@ -164,7 +164,7 @@ and the indices of the vertices before/after. The vertices before/after are -1 i
           account the first vertex is equal to the last vertex (and will
           skip equal vertex positions).
     */
-    void adjacentVerticies(const QgsGeometryVertexIndex& atVertex, int& beforeVertex, int& afterVertex);
+    void adjacentVerticies(int atVertex, int& beforeVertex, int& afterVertex);
 
 
     /** Insert a new vertex before the given vertex index,
@@ -178,18 +178,18 @@ and the indices of the vertices before/after. The vertices before/after are -1 i
      *  these error conditions.  (Or maybe we add another method to this
      *  object to help make the distinction?)
      */
-    bool insertVertexBefore(double x, double y, QgsGeometryVertexIndex beforeVertex);
+    bool insertVertexBefore(double x, double y, int beforeVertex);
 
-    /** Moves the vertex at the given position number,
-     *  ring and item (first number is index 0)
+    /** Moves the vertex at the given position number
+     *  and item (first number is index 0)
      *  to the given coordinates.
      *  Returns FALSE if atVertex does not correspond to a valid vertex
      *  on this geometry
      */
-    bool moveVertexAt(double x, double y, QgsGeometryVertexIndex atVertex);
+    bool moveVertexAt(double x, double y, int atVertex);
 
-    /** Deletes the vertex at the given position number,
-     *  ring and item (first number is index 0)
+    /** Deletes the vertex at the given position number and item 
+     *  (first number is index 0)
      *  Returns FALSE if atVertex does not correspond to a valid vertex
      *  on this geometry (including if this geometry is a Point),
      *  or if the number of remaining verticies in the linestring
@@ -198,14 +198,14 @@ and the indices of the vertices before/after. The vertices before/after are -1 i
      *  these error conditions.  (Or maybe we add another method to this
      *  object to help make the distinction?)
      */
-    bool deleteVertexAt(QgsGeometryVertexIndex atVertex);
+    bool deleteVertexAt(int atVertex);
 
     /**
      *  Returns coordinates of a vertex.
      *  @param atVertex index of the vertex
      *  @return Coordinates of the vertex or QgsPoint(0,0) on error
      */
-    QgsPoint vertexAt(const QgsGeometryVertexIndex& atVertex);
+    QgsPoint vertexAt(int atVertex);
 
     /**
         Returns the squared cartesian distance between the given point
@@ -213,8 +213,7 @@ and the indices of the vertices before/after. The vertices before/after are -1 i
         ring and item (first number is index 0))
 
      */
-    double sqrDistToVertexAt(QgsPoint& point,
-                             QgsGeometryVertexIndex& atVertex);
+    double sqrDistToVertexAt(QgsPoint& point, int atVertex);
 
     /**
      * Searches for the the closest vertex in this geometry to the given point.
@@ -222,19 +221,17 @@ and the indices of the vertices before/after. The vertices before/after are -1 i
      * @param atVertex Receives index of the closest vertex
      * @return The squared cartesian distance is also returned in sqrDist, negative number on error
      */
-    double closestVertexWithContext(const QgsPoint& point,
-                                    QgsGeometryVertexIndex& atVertex);
+    double closestVertexWithContext(const QgsPoint& point, int& atVertex);
 
     /**
      * Searches for the closest segment of geometry to the given point
      * @param point Specifies the point for search
      * @param minDistPoint Receives the nearest point on the segment
-     * @param beforeVertex Receives index of the vertex before the closest segment
+     * @param beforeVertex Receives index of the vertex before the closest segment. The vertex 
+     * after the closest segment is always beforeVertex + 1
      * @return The squared cartesian distance is also returned in sqrDist, negative number on error
      */
-    double closestSegmentWithContext(const QgsPoint& point,
-                                     QgsPoint& minDistPoint,
-                                     QgsGeometryVertexIndex& beforeVertex);
+    double closestSegmentWithContext(const QgsPoint& point, QgsPoint& minDistPoint, int& beforeVertex);
 
     /**Adds a new ring to this geometry. This makes only sense for polygon and multipolygons.
      @return 0 in case of success (ring added), 1 problem with geometry type, 2 ring not closed, \
