@@ -211,21 +211,17 @@ public:
    *  in the given ring, item (first number is index 0), and feature
    *  Not meaningful for Point geometries
    */
-  bool insertVertexBefore(double x, double y, int atFeatureId,
-                          QgsGeometryVertexIndex beforeVertex);
+  bool insertVertexBefore(double x, double y, int atFeatureId, int beforeVertex);
 
   /** Moves the vertex at the given position number,
    *  ring and item (first number is index 0), and feature
    *  to the given coordinates
    */
-  bool moveVertexAt(double x, double y, int atFeatureId,
-                    QgsGeometryVertexIndex atVertex);
+  bool moveVertexAt(double x, double y, int atFeatureId, int atVertex);
 
-  /** Deletes the vertex at the given position number,
-   *  ring and item (first number is index 0), and feature
+  /** Deletes a vertex from a feature
    */
-  bool deleteVertexAt(int atFeatureId,
-                      QgsGeometryVertexIndex atVertex);
+  bool deleteVertexAt(int atFeatureId, int atVertex);
 
   /** Deletes the selected features
    *  @return true in case of success and false otherwise
@@ -263,54 +259,15 @@ existing rings, 5 no feature found where ring can be inserted*/
      @return true if the position of point has been changed, and false otherwise */
   bool snapPoint(QgsPoint& point, double tolerance);
 
-  /**Snaps a point to the closest vertex if there is one within the snapping tolerance
-     @param atVertex          Set to a vertex index of the snapped-to vertex
-     @param beforeVertexIndex Returns the index of the vertex before atVertex (for rubber band purposes). -1 if no vertex is before
-     @param afterVertexIndex  Returns the index of the vertex after atVertex (for rubber band purposes). -1 if no vertex is after
-     @param snappedFeatureId  Set to the feature ID that where the snapped-to vertex belongs to.
-     @param snappedGeometry   Set to the geometry that the snapped-to vertex belongs to.
-     @param tolerance         The snapping tolerance
-     @return true if the position of the points have been changed, and false otherwise (or not implemented by the provider) 
-     
-     TODO: Handle returning multiple verticies if they are coincident
-   */
-
-  bool snapVertexWithContext(QgsPoint& point,
-                             QgsGeometryVertexIndex& atVertex,
-			     int& beforeVertexIndex,
-			     int& afterVertexIndex,
-                             int& snappedFeatureId,
-                             QgsGeometry& snappedGeometry,
-                             double tolerance);
-
-  /**Snaps to vertices within given tolerance
-   @param startPoint point to snap (in layer coordinates)
-  @param snappingTolerance distance tolerance for snapping
-  @param snappingResults snapping results. Key is the distance between startPoint and snapping target
-  @return 0 in case of success*/
-  int snapVertexWithContext(const QgsPoint& startPoint, double snappingTolerance, QMultiMap<double, QgsSnappingResult>& snappingResults);
-
-  /**Snaps a point to the closest line segment if there is one within the snapping tolerance
-     @param beforeVertex      Set to a value where the snapped-to segment is before this vertex index
-     @param snappedFeatureId  Set to the feature ID that where the snapped-to segment belongs to.
-     @param snappedGeometry   Set to the geometry that the snapped-to segment belongs to.
-     @param tolerance         The snapping tolerance
-     @return true if the position of the points have been changed, and false otherwise (or not implemented by the provider) 
-     
-     TODO: Handle returning multiple lineFeatures if they are coincident
-   */
-  bool snapSegmentWithContext(QgsPoint& point,
-                              QgsGeometryVertexIndex& beforeVertex,
-                              int& snappedFeatureId, 
-                              QgsGeometry& snappedGeometry,
-                              double tolerance);
-
-  /**Snaps to segment within given tolerance
+  /**Snaps to segment or vertex within given tolerance
      @param startPoint point to snap (in layer coordinates)
      @param snappingTolerance distance tolerance for snapping
      @param snappingResults snapping results. Key is the distance between startPoint and snapping target
-     @return 0 in case of success*/
-  int snapSegmentWithContext(const QgsPoint& startPoint, double snappingTolerance, QMultiMap<double, QgsSnappingResult>& snappingResults);
+     @param snap_to to segment / to vertex
+     @return 0 in case of success
+  */
+  int snapWithContext(const QgsPoint& startPoint, double snappingTolerance, QMultiMap<double, QgsSnappingResult>& snappingResults, \
+		      QgsSnapper::SNAP_TO snap_to);
 
   /**
     Commits edited attributes. Depending on the feature id,
@@ -472,6 +429,16 @@ private:                       // Private methods
   void deleteCachedGeometries();
   /** Draws a vertex symbol at (screen) coordinates x, y. (Useful to assist vertex editing.) */
   void drawVertexMarker(int x, int y, QPainter& p);
+
+  /**Snaps to a geometry and adds the result to the multimap if it is within the snapping result
+   @param startPoint start point of the snap
+   @param geom geometry to snap
+   @param sqrSnappingTolerance squared search tolerance of the snap
+   @param snappingResult list to which the result is appended
+   @param snap_to snap to vertex or to segment
+  */
+  void snapToGeometry(const QgsPoint& startPoint, int featureId, QgsGeometry* geom, double sqrSnappingTolerance, \
+		      QMultiMap<double, QgsSnappingResult>& snappingResults, QgsSnapper::SNAP_TO snap_to) const;
 
 
 private:                       // Private attributes

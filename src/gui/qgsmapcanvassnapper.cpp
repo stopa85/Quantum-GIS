@@ -57,7 +57,7 @@ void QgsMapCanvasSnapper::setMapCanvas(QgsMapCanvas* canvas)
     }
 }
 
-int QgsMapCanvasSnapper::snapToVertexCurrentLayer(const QPoint& p, QList<QgsSnappingResult>& results)
+int QgsMapCanvasSnapper::snapToCurrentLayer(const QPoint& p, QList<QgsSnappingResult>& results, QgsSnapper::SNAP_TO snap_to)
 {
   results.clear();
   
@@ -68,7 +68,7 @@ int QgsMapCanvasSnapper::snapToVertexCurrentLayer(const QPoint& p, QList<QgsSnap
       int topologicalEditing = QgsProject::instance()->readNumEntry("Digitizing", "/TopologicalEditing", 0);
       if(topologicalEditing == 0)
 	{
-	  mSnapper->setSnapMode(QgsSnapper::ONE_RESULT_BY_SEGMENT);
+	  mSnapper->setSnapMode(QgsSnapper::ONE_RESULT);
 	}
       else
 	{
@@ -92,7 +92,7 @@ int QgsMapCanvasSnapper::snapToVertexCurrentLayer(const QPoint& p, QList<QgsSnap
       QList<QgsSnapper::SNAP_TO> snapToList;
 
       layerList.push_back(vlayer);
-      snapToList.push_back(QgsSnapper::SNAP_TO_VERTEX);
+      snapToList.push_back(snap_to);
       toleranceList.push_back(100); //todo: new kind of tolerance for this?
 
       mSnapper->setLayersToSnap(layerList);

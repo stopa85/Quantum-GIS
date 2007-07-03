@@ -147,7 +147,10 @@
 #include "qgsmaptooladdfeature.h"
 #include "qgsmaptooladdisland.h"
 #include "qgsmaptooladdring.h"
+#include "qgsmaptooladdvertex.h"
+#include "qgsmaptooldeletevertex.h"
 #include "qgsmaptoolidentify.h"
+#include "qgsmaptoolmovevertex.h"
 #include "qgsmaptoolpan.h"
 #include "qgsmaptoolselect.h"
 #include "qgsmaptoolvertexedit.h"
@@ -1237,11 +1240,11 @@ void QgisApp::createCanvas()
   mMapTools.mCapturePolygon->setAction(mActionCapturePolygon);
   mMapTools.mSelect = new QgsMapToolSelect(mMapCanvas);
   mMapTools.mSelect->setAction(mActionSelect);
-  mMapTools.mVertexAdd = new QgsMapToolVertexEdit(mMapCanvas, QgsMapToolVertexEdit::AddVertex);
+  mMapTools.mVertexAdd = new QgsMapToolAddVertex(mMapCanvas);
   mMapTools.mVertexAdd->setAction(mActionAddVertex);
-  mMapTools.mVertexMove = new QgsMapToolVertexEdit(mMapCanvas, QgsMapToolVertexEdit::MoveVertex);
+  mMapTools.mVertexMove = new QgsMapToolMoveVertex(mMapCanvas);
   mMapTools.mVertexMove->setAction(mActionMoveVertex);
-  mMapTools.mVertexDelete = new QgsMapToolVertexEdit(mMapCanvas, QgsMapToolVertexEdit::DeleteVertex);
+  mMapTools.mVertexDelete = new QgsMapToolDeleteVertex(mMapCanvas);
   mMapTools.mVertexDelete->setAction(mActionDeleteVertex);
   mMapTools.mAddRing = new QgsMapToolAddRing(mMapCanvas);
   mMapTools.mAddRing->setAction(mActionAddRing);

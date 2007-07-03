@@ -65,41 +65,21 @@ int QgsSnapper::snapPoint(const QPoint& startPoint, QList<QgsSnappingResult>& sn
     {
       //transform point from map coordinates to layer coordinates
       layerCoordPoint = mMapRender->outputCoordsToLayerCoords(*layerIt, mapCoordPoint);
-      
-      //do snap according to given snap mode and tolerance for the layer
-      if(*snapToIt == SNAP_TO_VERTEX)
+      if( (*layerIt)->snapWithContext(layerCoordPoint, *toleranceIt, currentResultList, *snapToIt) != 0)
 	{
-	  if(mSnapMode == QgsSnapper::ONE_RESULT_BY_SEGMENT)
-	    {
-	      //todo: snap to segment first and to vertex after
-	    }
-	  else
-	    {
-	      if( (*layerIt)->snapVertexWithContext(layerCoordPoint, *toleranceIt, currentResultList) != 0)
-		{
-		  //error
-		}
-	    }
+	  //error
 	}
-      else //snap to segment
-	{
-	  if( (*layerIt)->snapSegmentWithContext(layerCoordPoint, *toleranceIt, currentResultList) != 0)
-		{
-		  //error
-		}
-	}
-
+  
       //transform each result from layer crs to map crs (including distance)
       QMultiMap<double, QgsSnappingResult>::iterator currentResultIt;
       for(currentResultIt = currentResultList.begin(); currentResultIt != currentResultList.end(); ++currentResultIt)
 	{
 	  //for each snapping result: transform start point, snap point and other points into map coordinates to find out distance
 	  //store results in snapping result list
+	  newResult = currentResultIt.value();
 	  newResult.snappedVertex = mMapRender->layerCoordsToOutputCoords(*layerIt, currentResultIt.value().snappedVertex);
 	  newResult.beforeVertex = mMapRender->layerCoordsToOutputCoords(*layerIt, currentResultIt.value().beforeVertex);
 	  newResult.afterVertex = mMapRender->layerCoordsToOutputCoords(*layerIt, currentResultIt.value().afterVertex);
-	  newResult.snappedVertexNr = currentResultIt.value().snappedVertexNr;
-	  newResult.snappedAtGeometry = currentResultIt.value().snappedAtGeometry;
 	  snappingResultList.insert(sqrt(newResult.snappedVertex.sqrDist(mapCoordPoint)), newResult);
 	}
     }
@@ -111,7 +91,7 @@ int QgsSnapper::snapPoint(const QPoint& startPoint, QList<QgsSnappingResult>& sn
       return 0;
     }
 
-  if(mSnapMode == QgsSnapper::ONE_RESULT || mSnapMode == QgsSnapper::ONE_RESULT_BY_SEGMENT)
+  if(mSnapMode == QgsSnapper::ONE_RESULT)
     {
       //return only closest result
       snappingResult.push_back(evalIt.value());

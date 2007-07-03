@@ -29,8 +29,11 @@ qgsludialog.cpp
 qgsmaptooladdfeature.cpp
 qgsmaptooladdisland.cpp
 qgsmaptooladdring.cpp
+qgsmaptooladdvertex.cpp
 qgsmaptoolcapture.cpp
+qgsmaptooldeletevertex.cpp
 qgsmaptoolidentify.cpp
+qgsmaptoolmovevertex.cpp
 qgsmaptoolselect.cpp
 qgsmaptoolvertexedit.cpp
 qgsmarkerdialog.cpp

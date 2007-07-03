@@ -20,6 +20,7 @@
 
 #include "qgspoint.h"
 #include <QList>
+#include <QMultiMap>
 
 class QgsMapRender;
 class QgsVectorLayer;
@@ -30,12 +31,19 @@ struct QgsSnappingResult
 {
   /**The layer coordinates of the snapping result*/
   QgsPoint snappedVertex;
-  /**The vertex index of snappedVertex*/
+  /**The vertex index of snappedVertex 
+   or -1 if no such vertex number (e.g. snap to segment)*/
   int snappedVertexNr;
   /**The layer coordinates of the vertex before snappedVertex*/
   QgsPoint beforeVertex;
+  /**The index of the vertex before snappedVertex
+   or -1 if no such vertex*/
+  int beforeVertexNr;
   /**The layer coordinates of the vertex after snappedVertex*/
   QgsPoint afterVertex;
+  /**The index of the vertex after snappedVertex
+   or -1 if no such vertex*/
+  int afterVertexNr;
   /**Index of the snapped geometry*/
   int snappedAtGeometry;
 };
@@ -57,10 +65,6 @@ class QgsSnapper
     {
       /**Only one snapping result is retured*/
       ONE_RESULT,
-      /**One result, determined by first snap to segment and then snap to closest vertex of segment.
-       This is usefull if only one polygon vertex of a border has to be shifted and it should be
-      the polygon that is closer to the cursor*/
-      ONE_RESULT_BY_SEGMENT,
       /**Several snapping results which have the same position are returned. This is usefull for topological
        editing*/
       SEVERAL_RESULTS_SAME_POSITION,
