@@ -79,10 +79,6 @@ void QgsMapToolMoveVertex::canvasPressEvent(QMouseEvent * e)
   QList<QgsSnappingResult>::iterator it = mRecentSnappingResults.begin();
   for(; it != mRecentSnappingResults.end(); ++it)
     {
-      qWarning("new snapping result");
-      qWarning("snapped at geometry: " + QString::number(it->snappedAtGeometry));
-      qWarning("snapped at vertex: " + QString::number(it->snappedVertexNr));
-
       QgsRubberBand* rb = createRubberBand();
       if(it->beforeVertexNr == -1 && it->afterVertexNr == -1) //usually point layers
 	{

@@ -103,7 +103,7 @@ QgsSnappingDialog::QgsSnappingDialog(QgsMapCanvas* canvas, const QMap<QString, L
 	    }
 	}
       mLayerTreeWidget->resizeColumnToContents(0);
-      mLayerTreeWidget->setColumnWidth(1, 300);
+      mLayerTreeWidget->setColumnWidth(1, 300);  //hardcoded for now
       mLayerTreeWidget->resizeColumnToContents(2);
     }
 }
