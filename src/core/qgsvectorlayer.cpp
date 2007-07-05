@@ -2529,7 +2529,6 @@ void QgsVectorLayer::snapToGeometry(const QgsPoint& startPoint, int featureId, Q
   if(snap_to == QgsSnapper::SNAP_TO_VERTEX && sqrDistVertexSnap < sqrSnappingTolerance)
     {
       snappingResults.insert(sqrt(sqrDistVertexSnap), snappingResultVertex);
-      qWarning("Snapping to point: " + QString::number(snappingResultVertex.snappedVertex.x()) + "//" + QString::number(snappingResultVertex.snappedVertex.y()));
     }
   else if(snap_to == QgsSnapper::SNAP_TO_SEGMENT && sqrDistSegmentSnap < sqrSnappingTolerance && vectorType() != QGis::Point)
     {
