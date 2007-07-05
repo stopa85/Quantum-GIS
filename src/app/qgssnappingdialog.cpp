@@ -62,6 +62,7 @@ QgsSnappingDialog::QgsSnappingDialog(QgsMapCanvas* canvas, const QMap<QString, L
 		  QComboBox* snapToComboBox = new QComboBox(mLayerTreeWidget);
 		  snapToComboBox->insertItem(0, tr("to vertex"));
 		  snapToComboBox->insertItem(1, tr("to segment"));
+		  snapToComboBox->insertItem(2, tr("to vertex and segment"));
 		  mLayerTreeWidget->setItemWidget(newItem, 1, snapToComboBox);
 
 		  //snapping tolerance
@@ -75,13 +76,17 @@ QgsSnappingDialog::QgsSnappingDialog(QgsMapCanvas* canvas, const QMap<QString, L
 		    {
 		      snappingToleranceEdit->setText(QString::number(settingIt.value().tolerance));
 		      int index;
-		      if(settingIt.value().snapTo == 1)//to segment
+		      if(settingIt.value().snapTo == 0)//to segment
+			{
+			  index = snapToComboBox->findText(tr("to vertex"));
+			}
+		      else if(settingIt.value().snapTo == 1) //to vertex
 			{
 			  index = snapToComboBox->findText(tr("to segment"));
 			}
-		      else //to vertex (0 and default)
+		      else //to vertex and segment
 			{
-			  index = snapToComboBox->findText(tr("to vertex"));
+			  index = snapToComboBox->findText(tr("to vertex and segment"));
 			}
 		      snapToComboBox->setCurrentIndex(index);
 		      if(settingIt.value().checked)
@@ -97,6 +102,9 @@ QgsSnappingDialog::QgsSnappingDialog(QgsMapCanvas* canvas, const QMap<QString, L
 		}
 	    }
 	}
+      mLayerTreeWidget->resizeColumnToContents(0);
+      mLayerTreeWidget->setColumnWidth(1, 300);
+      mLayerTreeWidget->resizeColumnToContents(2);
     }
 }
 
@@ -136,13 +144,17 @@ void QgsSnappingDialog::layerSettings(QMap<QString, LayerEntry>& settings) const
       layerId = mLayerIds.at(i);
       checked = (currentItem->checkState(0) == Qt::Checked);
       snapToItemText = ((QComboBox*)(mLayerTreeWidget->itemWidget(currentItem, 1)))->currentText();
-      if(snapToItemText == tr("to segment"))
+      if(snapToItemText == tr("to vertex"))
+	{
+	  snapTo = 0;
+	}
+      else if(snapToItemText == tr("to segment"))
 	{
 	  snapTo = 1;
 	}
-      else
+      else //to vertex and segment
 	{
-	  snapTo = 0;
+	  snapTo = 2;
 	}
       tolerance = ((QLineEdit*)(mLayerTreeWidget->itemWidget(currentItem, 2)))->text().toDouble();
       LayerEntry newEntry;

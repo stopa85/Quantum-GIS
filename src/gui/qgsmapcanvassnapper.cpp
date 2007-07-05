@@ -165,13 +165,17 @@ int QgsMapCanvasSnapper::snapToBackgroundLayers(const QPoint& p, QgsPoint& resul
 	  toleranceDoubleList.push_back(tolIt->toDouble());
 
 	  //segment or vertex
-	  if( (*snapIt) == "to_segment" )
+	  if( (*snapIt) == "to_vertex" )
+	    {
+	      snapTo.push_back(QgsSnapper::SNAP_TO_VERTEX);
+	    }
+	  else if( (*snapIt) == "to_segment")
 	    {
 	      snapTo.push_back(QgsSnapper::SNAP_TO_SEGMENT);
 	    }
-	  else
+	  else //to vertex and segment
 	    {
-	      snapTo.push_back(QgsSnapper::SNAP_TO_VERTEX);
+	      snapTo.push_back(QgsSnapper::SNAP_TO_VERTEX_AND_SEGMENT);
 	    }
 	  
 	}

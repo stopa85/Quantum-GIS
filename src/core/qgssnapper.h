@@ -54,11 +54,13 @@ struct QgsSnappingResult
 class QgsSnapper
 {
  public:
-  /**Snap to vertex or snap to segment*/
+  /**Snap to vertex, to segment or both*/
   enum SNAP_TO
     {
       SNAP_TO_VERTEX,
-      SNAP_TO_SEGMENT
+      SNAP_TO_SEGMENT,
+      //snap to vertex and also to segment if no vertex is within the search tolerance
+      SNAP_TO_VERTEX_AND_SEGMENT
     };
   
   enum SNAP_MODE
