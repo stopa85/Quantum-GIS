@@ -25,7 +25,7 @@ class QgsMapCanvas;
 struct LayerEntry
 {
   bool checked;
-  int snapTo; //0 = to vertex, 1 = to segment
+  int snapTo; //0 = to vertex, 1 = to segment, 2 = to vertex and to segment
   QString layerName;
   double tolerance;
 };

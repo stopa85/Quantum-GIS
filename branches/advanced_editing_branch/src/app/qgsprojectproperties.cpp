@@ -134,13 +134,17 @@ QgsProjectProperties::QgsProjectProperties(QgsMapCanvas* mapCanvas, QWidget *par
 	    {
 	      newEntry.checked = false;
 	    }
-	  if( (*snapToIter) == "to_segment")
+	  if( (*snapToIter) == "to_vertex")
+	    {
+	      newEntry.snapTo = 0;
+	    }
+	  else if( (*snapToIter) == "to_segment")
 	    {
 	      newEntry.snapTo = 1;
 	    }
-	  else
+	  else //to vertex and segment
 	    {
-	      newEntry.snapTo = 0;
+	      newEntry.snapTo = 2;
 	    }
 	  newEntry.tolerance = tolIter->toDouble();
 	  mSnappingLayerSettings.insert(*idIter, newEntry);
@@ -300,13 +304,17 @@ void QgsProjectProperties::apply()
 	{
 	  enabledList << "disabled";
 	}
-      if(layerEntryIt->snapTo == 1)
+      if(layerEntryIt->snapTo == 0)
+	{
+	  snapToList << "to_vertex";
+	}
+      else if(layerEntryIt->snapTo == 1)
 	{
 	  snapToList << "to_segment";
 	}
-      else
+      else //to vertex and segment
 	{
-	  snapToList << "to_vertex";
+	  snapToList << "to_vertex_and_segment";
 	}
     }
   QgsProject::instance()->writeEntry("Digitizing", "/LayerSnappingList", layerIdList);

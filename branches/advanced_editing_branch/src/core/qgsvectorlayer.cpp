@@ -2489,50 +2489,61 @@ void QgsVectorLayer::snapToGeometry(const QgsPoint& startPoint, int featureId, Q
     }
 
   int atVertex, beforeVertex, afterVertex;
-  double sqrDist;
+  double sqrDistVertexSnap, sqrDistSegmentSnap;
   QgsPoint snappedPoint;
-  QgsSnappingResult snappingResult;
+  QgsSnappingResult snappingResultVertex;
+  QgsSnappingResult snappingResultSegment;
 
-  if(snap_to == QgsSnapper::SNAP_TO_VERTEX)
+  if(snap_to == QgsSnapper::SNAP_TO_VERTEX || snap_to == QgsSnapper::SNAP_TO_VERTEX_AND_SEGMENT)
     {
-      snappedPoint = geom->closestVertex(startPoint, atVertex, beforeVertex, afterVertex, sqrDist);
+      snappedPoint = geom->closestVertex(startPoint, atVertex, beforeVertex, afterVertex, sqrDistVertexSnap);
+      if(sqrDistVertexSnap < sqrSnappingTolerance)
+	{
+	  snappingResultVertex.snappedVertex = snappedPoint;
+	  snappingResultVertex.snappedVertexNr = atVertex;
+	  snappingResultVertex.beforeVertex = geom->vertexAt(beforeVertex);
+	  snappingResultVertex.beforeVertexNr = beforeVertex;
+	  snappingResultVertex.afterVertex = geom->vertexAt(afterVertex);
+	  snappingResultVertex.afterVertexNr = afterVertex;
+	  snappingResultVertex.snappedAtGeometry = featureId;
+	}
     }
-  else //snap to segment
+  if(snap_to == QgsSnapper::SNAP_TO_SEGMENT || snap_to == QgsSnapper::SNAP_TO_VERTEX_AND_SEGMENT) //snap to segment
     {
       if(vectorType() != QGis::Point) //cannot snap to segment for points/multipoints
 	{
-	  sqrDist = geom->closestSegmentWithContext(startPoint, snappedPoint, afterVertex);
-	}
-      else
-	{
-	  return;
+	  sqrDistSegmentSnap = geom->closestSegmentWithContext(startPoint, snappedPoint, afterVertex);
+	  if(sqrDistSegmentSnap < sqrSnappingTolerance)
+	    {
+	      snappingResultSegment.snappedVertex = snappedPoint;
+	      snappingResultSegment.snappedVertexNr = -1;
+	      snappingResultSegment.beforeVertexNr = afterVertex - 1;
+	      snappingResultSegment.afterVertexNr = afterVertex;
+	      snappingResultSegment.snappedAtGeometry = featureId;
+	      snappingResultSegment.beforeVertex = geom->vertexAt(afterVertex - 1);
+	      snappingResultSegment.afterVertex = geom->vertexAt(afterVertex);
+	    }
 	}
     }
   
-  if(sqrDist < sqrSnappingTolerance)
+  if(snap_to == QgsSnapper::SNAP_TO_VERTEX && sqrDistVertexSnap < sqrSnappingTolerance)
     {
-      //add snapping result
-      if(snap_to == QgsSnapper::SNAP_TO_VERTEX)
+      snappingResults.insert(sqrt(sqrDistVertexSnap), snappingResultVertex);
+      qWarning("Snapping to point: " + QString::number(snappingResultVertex.snappedVertex.x()) + "//" + QString::number(snappingResultVertex.snappedVertex.y()));
+    }
+  else if(snap_to == QgsSnapper::SNAP_TO_SEGMENT && sqrDistSegmentSnap < sqrSnappingTolerance && vectorType() != QGis::Point)
+    {
+      snappingResults.insert(sqrt(sqrDistSegmentSnap), snappingResultSegment);
+    }
+  else if(snap_to == QgsSnapper::SNAP_TO_VERTEX_AND_SEGMENT) //to vertex and segment
+    {
+      if(sqrDistVertexSnap < sqrSnappingTolerance)
 	{
-	  snappingResult.snappedVertex = snappedPoint;
-	  snappingResult.snappedVertexNr = atVertex;
-	  snappingResult.beforeVertex = geom->vertexAt(beforeVertex);
-	  snappingResult.beforeVertexNr = beforeVertex;
-	  snappingResult.afterVertex = geom->vertexAt(afterVertex);
-	  snappingResult.afterVertexNr = afterVertex;
-	  snappingResult.snappedAtGeometry = featureId;
-	  snappingResults.insert(sqrt(sqrDist), snappingResult);
+	  snappingResults.insert(sqrt(sqrDistVertexSnap), snappingResultVertex);
 	}
-      else //segment
+      else if(sqrDistSegmentSnap < sqrSnappingTolerance && vectorType() != QGis::Point)
 	{
-	  snappingResult.snappedVertex = snappedPoint;
-	  snappingResult.snappedVertexNr = -1;
-	  snappingResult.beforeVertexNr = afterVertex - 1;
-	  snappingResult.afterVertexNr = afterVertex;
-	  snappingResult.snappedAtGeometry = featureId;
-	  snappingResult.beforeVertex = geom->vertexAt(afterVertex - 1);
-	  snappingResult.afterVertex = geom->vertexAt(afterVertex);
-	  snappingResults.insert(sqrt(sqrDist), snappingResult);
+	  snappingResults.insert(sqrt(sqrDistSegmentSnap), snappingResultSegment);
 	}
     }
 }
