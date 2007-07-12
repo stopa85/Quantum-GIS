@@ -32,15 +32,19 @@ class QgsSnapper;
 class QgsMapCanvasSnapper
 {
  public:
+  /**Constructor
+   @param canvas the map canvas to snap to*/
   QgsMapCanvasSnapper(QgsMapCanvas* canvas);
 
   QgsMapCanvasSnapper();
   
   ~QgsMapCanvasSnapper();
 
-  /**Does a snap to select a vertex of the current layer. Uses snap mode 
+  /**Does a snap to the current layer. Uses snap mode 
      QgsSnapper::SEVERAL_RESULTS_SAME_POSITION if topological editing is enabled 
-     and QgsSnapper::ONE_RESULT_BY_SEGMENT if not.
+     and QgsSnapper::ONE_RESULT_BY_SEGMENT if not. As this method is usually used to 
+     find vertices/segments for editing operations, it uses the search radius for vertex 
+     editing from the qgis options.
      @param p start point of the snap (in pixel coordinates)
      @param results list to which the results are appended
      @param snap_to snap to vertex or to segment*/

@@ -28,7 +28,7 @@ class QgsMapToolMoveVertex: public QgsMapToolVertexEdit
 {
  public:
   QgsMapToolMoveVertex(QgsMapCanvas* canvas);
-  ~QgsMapToolMoveVertex();
+  virtual ~QgsMapToolMoveVertex();
 
   void canvasMoveEvent(QMouseEvent * e);
 

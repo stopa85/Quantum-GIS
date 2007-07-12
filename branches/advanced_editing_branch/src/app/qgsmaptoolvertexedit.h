@@ -38,6 +38,8 @@ class QgsMapToolVertexEdit: public QgsMapToolEdit
 
  protected:
 
+  /**Snapping results that are collected during the mouse press event 
+   (search for vertices/segments to manipulate)*/
   QList<QgsSnappingResult> mRecentSnappingResults;
 
   /**Creates a rubber band with the color/line width from

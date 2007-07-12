@@ -29,7 +29,7 @@ class QPoint;
 /**Describes the result of a snapping operation*/
 struct CORE_EXPORT QgsSnappingResult
 {
-  /**The layer coordinates of the snapping result*/
+  /**The coordinates of the snapping result*/
   QgsPoint snappedVertex;
   /**The vertex index of snappedVertex 
    or -1 if no such vertex number (e.g. snap to segment)*/

@@ -56,7 +56,6 @@ int QgsMapToolEdit::insertSegmentVerticesForSnap(const QList<QgsSnappingResult>&
 	  //segment snap?
 	  if(it->snappedVertexNr == -1) //segment snap
 	    {
-	      //todo: conversion from map coordinates to layer coordinates
 	      layerPoint = toLayerCoords(editedLayer, it->snappedVertex);
 	      if(!editedLayer->insertVertexBefore(layerPoint.x(), layerPoint.y(), it->snappedAtGeometry, it->afterVertexNr))
 		{
