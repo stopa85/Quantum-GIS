@@ -34,12 +34,12 @@ void QgsMapToolAddVertex::canvasMoveEvent(QMouseEvent * e)
 {
   if(mRubberBand)
     {
-      QgsPoint posMapCoord;
-      if(mSnapper.snapToBackgroundLayers(e->pos(), posMapCoord) != 0)
+      QList<QgsSnappingResult> snapResults;
+      if(mSnapper.snapToBackgroundLayers(e->pos(), snapResults) == 0)
 	{
-	  return; //error, bail out
+	  QgsPoint posMapCoord = snapPointFromResults(snapResults, e->pos());
+	  mRubberBand->movePoint(1, posMapCoord);
 	}
-      mRubberBand->movePoint(1, posMapCoord);
     }
 }
 
@@ -79,17 +79,20 @@ void QgsMapToolAddVertex::canvasReleaseEvent(QMouseEvent * e)
       //snap point to background layers
       QgsPoint snappedPointMapCoord;
       QgsPoint snappedPointLayerCoord;
-      if(mSnapper.snapToBackgroundLayers(e->pos(), snappedPointMapCoord) != 0)
+      QList<QgsSnappingResult> snapResults;
+      
+      if(mSnapper.snapToBackgroundLayers(e->pos(), snapResults) == 0)
 	{
-	  //error
-	}
-      snappedPointLayerCoord = toLayerCoords(vlayer, snappedPointMapCoord);
-
-      //and change the feature points
-      QList<QgsSnappingResult>::iterator sr_it = mRecentSnappingResults.begin();
-      for(; sr_it != mRecentSnappingResults.end(); ++sr_it)
-	{
-	  vlayer->insertVertexBefore(snappedPointLayerCoord.x(), snappedPointLayerCoord.y(), sr_it->snappedAtGeometry, sr_it->afterVertexNr);
+	  snappedPointMapCoord = snapPointFromResults(snapResults, e->pos());
+	  snappedPointLayerCoord = toLayerCoords(vlayer, snappedPointMapCoord);
+	  insertSegmentVerticesForSnap(snapResults, vlayer);
+    
+	  //and change the feature points
+	  QList<QgsSnappingResult>::iterator sr_it = mRecentSnappingResults.begin();
+	  for(; sr_it != mRecentSnappingResults.end(); ++sr_it)
+	    {
+	      vlayer->insertVertexBefore(snappedPointLayerCoord.x(), snappedPointLayerCoord.y(), sr_it->snappedAtGeometry, sr_it->afterVertexNr);
+	    }
 	}
     }
 

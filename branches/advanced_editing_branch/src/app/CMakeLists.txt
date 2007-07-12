@@ -32,6 +32,7 @@ qgsmaptooladdring.cpp
 qgsmaptooladdvertex.cpp
 qgsmaptoolcapture.cpp
 qgsmaptooldeletevertex.cpp
+qgsmaptooledit.cpp
 qgsmaptoolidentify.cpp
 qgsmaptoolmovevertex.cpp
 qgsmaptoolselect.cpp

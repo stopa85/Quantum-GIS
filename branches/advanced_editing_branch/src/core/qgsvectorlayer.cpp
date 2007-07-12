@@ -2506,6 +2506,7 @@ void QgsVectorLayer::snapToGeometry(const QgsPoint& startPoint, int featureId, Q
 	  snappingResultVertex.afterVertex = geom->vertexAt(afterVertex);
 	  snappingResultVertex.afterVertexNr = afterVertex;
 	  snappingResultVertex.snappedAtGeometry = featureId;
+	  snappingResultVertex.layer = this;
 	}
     }
   if(snap_to == QgsSnapper::SNAP_TO_SEGMENT || snap_to == QgsSnapper::SNAP_TO_VERTEX_AND_SEGMENT) //snap to segment
@@ -2522,6 +2523,7 @@ void QgsVectorLayer::snapToGeometry(const QgsPoint& startPoint, int featureId, Q
 	      snappingResultSegment.snappedAtGeometry = featureId;
 	      snappingResultSegment.beforeVertex = geom->vertexAt(afterVertex - 1);
 	      snappingResultSegment.afterVertex = geom->vertexAt(afterVertex);
+	      snappingResultSegment.layer = this;
 	    }
 	}
     }

@@ -92,21 +92,22 @@ void QgsMapToolAddFeature::canvasReleaseEvent(QMouseEvent * e)
 
       
       QgsPoint idPoint; //point in map coordinates
-      if(mSnapper.snapToBackgroundLayers(e->pos(), idPoint) != 0)
-	{
-	  return;
-	}
-
+      QList<QgsSnappingResult> snapResults;
       QgsPoint savePoint; //point in layer coordinates
-      try
+      
+	if(mSnapper.snapToBackgroundLayers(e->pos(), snapResults) != 0)
 	{
-	  savePoint = toLayerCoords(vlayer, idPoint);
-	}
-      catch(QgsCsException &cse)
-	{
-	  QMessageBox::information(0, QObject::tr("Coordinate transform error"), \
-				   QObject::tr("Cannot transform the point to the layers coordinate system"));
-	  return;
+	  QgsPoint savePoint = snapPointFromResults(snapResults, e->pos());
+	  try
+	    {
+	      savePoint = toLayerCoords(vlayer, idPoint);
+	    }
+	  catch(QgsCsException &cse)
+	    {
+	      QMessageBox::information(0, QObject::tr("Coordinate transform error"), \
+				       QObject::tr("Cannot transform the point to the layers coordinate system"));
+	      return;
+	    }
 	}
       
       // emit signal - QgisApp can catch it and save point position to clipboard

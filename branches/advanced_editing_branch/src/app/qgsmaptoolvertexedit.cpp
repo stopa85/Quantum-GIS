@@ -29,7 +29,7 @@
 #include <QPixmap>
 #include <QSettings>
 
-QgsMapToolVertexEdit::QgsMapToolVertexEdit(QgsMapCanvas* canvas): QgsMapTool(canvas)
+QgsMapToolVertexEdit::QgsMapToolVertexEdit(QgsMapCanvas* canvas): QgsMapToolEdit(canvas)
 {
   mSnapper.setMapCanvas(canvas);
 }

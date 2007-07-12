@@ -147,7 +147,8 @@ QgsOptions::QgsOptions(QWidget *parent, Qt::WFlags fl) :
   myGreen = settings.value("/qgis/digitizing/line_color_green", 0).toInt();
   myBlue = settings.value("/qgis/digitizing/line_color_blue", 0).toInt();
   mLineColourToolButton->setColor(QColor(myRed, myGreen, myBlue));
-  mDefaultSnappingToleranceTextEdit->setText(settings.value("/qgis/digitizing/default_snapping_tolerance", 0).toString());
+  mDefaultSnappingToleranceSpinBox->setValue(settings.value("/qgis/digitizing/default_snapping_tolerance", 0).toInt());
+  mSearchRadiusVertexEditSpinBox->setValue(settings.value("/qgis/digitizing/search_radius_vertex_edit", 10).toInt());
 }
 
 //! Destructor
@@ -270,7 +271,8 @@ void QgsOptions::saveOptions()
   settings.setValue("/qgis/digitizing/line_color_red", digitizingColor.red());
   settings.setValue("/qgis/digitizing/line_color_green", digitizingColor.green());
   settings.setValue("/qgis/digitizing/line_color_blue", digitizingColor.blue());
-  settings.setValue("/qgis/digitizing/default_snapping_tolerance", mDefaultSnappingToleranceTextEdit->text().toDouble());
+  settings.setValue("/qgis/digitizing/default_snapping_tolerance", mDefaultSnappingToleranceSpinBox->value());
+  settings.setValue("/qgis/digitizing/search_radius_vertex_edit", mSearchRadiusVertexEditSpinBox->value());
 }
 
 

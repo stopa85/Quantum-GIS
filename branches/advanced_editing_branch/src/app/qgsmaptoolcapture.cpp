@@ -34,7 +34,7 @@
 
 
 QgsMapToolCapture::QgsMapToolCapture(QgsMapCanvas* canvas, enum CaptureTool tool)
-  : QgsMapTool(canvas), mTool(tool), mRubberBand(0)
+  : QgsMapToolEdit(canvas), mTool(tool), mRubberBand(0)
 {
   mCapturing = FALSE;
 
@@ -55,8 +55,10 @@ void QgsMapToolCapture::canvasMoveEvent(QMouseEvent * e)
   if (mRubberBand && mCapturing)
   {
     QgsPoint mapPoint;
-    if(mSnapper.snapToBackgroundLayers(e->pos(), mapPoint) == 0)
+    QList<QgsSnappingResult> snapResults;
+    if(mSnapper.snapToBackgroundLayers(e->pos(), snapResults) == 0)
       {
+	mapPoint = snapPointFromResults(snapResults, e->pos());
 	mRubberBand->movePoint(mapPoint);
       }
   }
@@ -115,8 +117,10 @@ int QgsMapToolCapture::addVertex(const QPoint& p)
   QgsPoint mapPoint;
   QgsPoint layerPoint;
 
-  if(mSnapper.snapToBackgroundLayers(p, mapPoint) == 0)
+  QList<QgsSnappingResult> snapResults;
+  if(mSnapper.snapToBackgroundLayers(p, snapResults) == 0)
     {
+      mapPoint = snapPointFromResults(snapResults, p);
       try
 	{
 	  layerPoint = toLayerCoords(vlayer, mapPoint); //transform snapped point back to layer crs
@@ -127,6 +131,8 @@ int QgsMapToolCapture::addVertex(const QPoint& p)
 	}
       mRubberBand->addPoint(mapPoint);
       mCaptureList.push_back(layerPoint); 
+      //insert also vertices for adjacent features if topological editing is enabled
+      insertSegmentVerticesForSnap(snapResults, vlayer); 
     }
 
   return 0;

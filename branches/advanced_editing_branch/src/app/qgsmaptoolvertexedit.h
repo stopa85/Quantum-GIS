@@ -18,7 +18,7 @@
 #define QGSMAPTOOLVERTEXEDIT_H
 
 #include "qgsmapcanvassnapper.h"
-#include "qgsmaptool.h"
+#include "qgsmaptooledit.h"
 #include "qgsgeometry.h"
 #include "qgsgeometryvertexindex.h"
 
@@ -28,7 +28,7 @@ class QgsVertexMarker;
 /**Base class for vertex manipulation tools. 
  Inherited by QgsMapToolMoveVertex, QgsMapToolAddVertex, 
 QgsMapToolDeleteVertex*/
-class QgsMapToolVertexEdit: public QgsMapTool
+class QgsMapToolVertexEdit: public QgsMapToolEdit
 {
  public:
 
@@ -37,8 +37,6 @@ class QgsMapToolVertexEdit: public QgsMapTool
   virtual ~QgsMapToolVertexEdit();
 
  protected:
-  
-  QgsMapCanvasSnapper mSnapper;
 
   QList<QgsSnappingResult> mRecentSnappingResults;
 
