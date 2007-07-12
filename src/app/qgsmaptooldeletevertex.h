@@ -21,12 +21,13 @@
 #include "qgsmaptoolvertexedit.h"
 
 class QgsVertexMarker;
+/**Map tool to delete vertices from line/polygon features*/
 
 class QgsMapToolDeleteVertex: public QgsMapToolVertexEdit
 {
  public:
   QgsMapToolDeleteVertex(QgsMapCanvas* canvas);
-  ~QgsMapToolDeleteVertex();
+  virtual ~QgsMapToolDeleteVertex();
 
   void canvasMoveEvent(QMouseEvent * e);
 
