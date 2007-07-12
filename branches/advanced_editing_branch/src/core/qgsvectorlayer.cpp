@@ -56,7 +56,6 @@
 #include "qgsfeature.h"
 #include "qgsfield.h"
 #include "qgsgeometry.h"
-#include "qgsgeometryvertexindex.h"
 #include "qgslabel.h"
 #include "qgslogger.h"
 #include "qgsmaptopixel.h"

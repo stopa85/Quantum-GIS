@@ -16,7 +16,6 @@ qgsexception.cpp
 qgsfeature.cpp
 qgsfield.cpp
 qgsgeometry.cpp
-qgsgeometryvertexindex.cpp
 qgshttptransaction.cpp
 qgslabel.cpp
 qgslabelattributes.cpp
@@ -178,7 +177,6 @@ qgsexception.h
 qgsfeature.h
 qgsfield.h
 qgsgeometry.h
-qgsgeometryvertexindex.h
 qgshttptransaction.h
 qgslabel.h
 qgslabelattributes.h
