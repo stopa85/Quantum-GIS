@@ -52,7 +52,7 @@ class QgsMapCanvasSnapper
      @param p start point of the snap (in pixel coordinates)
      @param result snapped point
      @return 0 in case of success*/
-  int snapToBackgroundLayers(const QPoint& p, QgsPoint& result);
+  int snapToBackgroundLayers(const QPoint& p, QList<QgsSnappingResult>& results);
 
   void setMapCanvas(QgsMapCanvas* canvas);
 

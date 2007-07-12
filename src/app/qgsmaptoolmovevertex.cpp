@@ -48,11 +48,12 @@ void QgsMapToolMoveVertex::canvasMoveEvent(QMouseEvent * e)
   QList<int>::iterator mp_it = mRubberBandMovingPoints.begin();
   QList<QgsRubberBand*>::iterator rb_it = mRubberBands.begin();
 
-  QgsPoint posMapCoord;
-  if(mSnapper.snapToBackgroundLayers(e->pos(), posMapCoord) != 0)
-    {
-      return; //error, bail out
-    }
+  QList<QgsSnappingResult> snapResults;
+  if(mSnapper.snapToBackgroundLayers(e->pos(), snapResults) != 0)
+  {
+    return; //error, bail out
+  }
+  QgsPoint posMapCoord = snapPointFromResults(snapResults, e->pos());
 
   for(; sr_it != mRecentSnappingResults.end(); ++sr_it, ++mp_it, ++rb_it)
     {
@@ -124,10 +125,18 @@ void QgsMapToolMoveVertex::canvasReleaseEvent(QMouseEvent * e)
       //snap point to background layers
       QgsPoint snappedPointMapCoord;
       QgsPoint snappedPointLayerCoord;
-      if(mSnapper.snapToBackgroundLayers(e->pos(), snappedPointMapCoord) != 0)
-	{
+      QList<QgsSnappingResult> snapResults;
+
+      if(mSnapper.snapToBackgroundLayers(e->pos(), snapResults) != 0)
+      {
 	  //error
-	}
+      }
+      //add segment points in case of topological editing
+      insertSegmentVerticesForSnap(snapResults, vlayer);
+      //and get target point of snap
+      snappedPointMapCoord = snapPointFromResults(snapResults, e->pos());
+      
+
       snappedPointLayerCoord = toLayerCoords(vlayer, snappedPointMapCoord);
 
       //and change the feature points

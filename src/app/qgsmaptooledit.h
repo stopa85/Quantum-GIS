@@ -1,0 +1,46 @@
+/***************************************************************************
+    qgsmaptooledit.h  -  base class for editing map tools
+    ---------------------
+    begin                : Juli 2007
+    copyright            : (C) 2007 by Marco Hugentobler
+    email                : marco dot hugentobler at karto dot baug dot ethz dot ch
+ ***************************************************************************
+ *                                                                         *
+ *   This program is free software; you can redistribute it and/or modify  *
+ *   it under the terms of the GNU General Public License as published by  *
+ *   the Free Software Foundation; either version 2 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *                                                                         *
+ ***************************************************************************/
+/* $Id$ */
+
+#ifndef QGSMAPTOOLEDIT_H
+#define QGSMAPTOOLEDIT_H
+
+#include "qgsmaptool.h"
+#include "qgsmapcanvassnapper.h"
+
+/**Base class for map tools that edit vector geometry*/
+class QgsMapToolEdit: public QgsMapTool
+{
+ public:
+  QgsMapToolEdit(QgsMapCanvas* canvas);
+  ~QgsMapToolEdit();
+  
+ protected:
+  QgsMapCanvasSnapper mSnapper;
+
+  /**Inserts vertices to the snapped segments of the editing layer.
+   This is usefull for topological editing and if snap to segment is enabled
+   @param snapResults results collected from the snapping operation
+   @param editedLayer pointer to the editing layer
+   @return 0 in case of success*/
+  int insertSegmentVerticesForSnap(const QList<QgsSnappingResult>& snapResults, QgsVectorLayer* editedLayer);
+
+  /**Extracts a single snapping point from a set of snapping results. 
+   If the list is empty, the screen coordinates are transformed into map coordinates
+  @return the snapped point in map coordinates*/
+  QgsPoint snapPointFromResults(const QList<QgsSnappingResult>& snapResults, const QPoint& screenCoords);   
+};
+
+#endif

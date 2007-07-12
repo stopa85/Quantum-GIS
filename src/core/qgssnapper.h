@@ -27,7 +27,7 @@ class QgsVectorLayer;
 class QPoint;
 
 /**Describes the result of a snapping operation*/
-struct QgsSnappingResult
+struct CORE_EXPORT QgsSnappingResult
 {
   /**The layer coordinates of the snapping result*/
   QgsPoint snappedVertex;
@@ -46,12 +46,14 @@ struct QgsSnappingResult
   int afterVertexNr;
   /**Index of the snapped geometry*/
   int snappedAtGeometry;
+  /**Layer where the snap occured*/
+  const QgsVectorLayer* layer;
 };
 
 
 
 /**A class that allows advanced snapping operations on a set of vector layers*/
-class QgsSnapper
+class CORE_EXPORT QgsSnapper
 {
  public:
   /**Snap to vertex, to segment or both*/
