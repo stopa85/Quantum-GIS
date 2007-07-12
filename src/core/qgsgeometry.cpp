@@ -20,7 +20,6 @@ email                : morb at ozemail dot com dot au
 #include "qgis.h"
 #include "qgsgeometry.h"
 #include "qgsapplication.h"
-#include "qgsgeometryvertexindex.h"
 #include "qgslogger.h"
 #include "qgspoint.h"
 #include "qgsrect.h"

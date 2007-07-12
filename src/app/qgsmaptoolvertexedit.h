@@ -20,7 +20,6 @@
 #include "qgsmapcanvassnapper.h"
 #include "qgsmaptooledit.h"
 #include "qgsgeometry.h"
-#include "qgsgeometryvertexindex.h"
 
 class QgsRubberBand;
 class QgsVertexMarker;
