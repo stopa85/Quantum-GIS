@@ -29,7 +29,7 @@ class QgsSnapper;
  current project and configures a QgsSnapper to perform the snapping.
  Snapping can be done to the active layer  (usefull for selecting a vertex to manipulate) 
  or to background layers*/
-class QgsMapCanvasSnapper
+class GUI_EXPORT QgsMapCanvasSnapper
 {
  public:
   /**Constructor
