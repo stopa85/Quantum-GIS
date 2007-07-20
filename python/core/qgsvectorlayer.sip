@@ -217,7 +217,7 @@ existing rings, 5 no feature found where ring can be inserted*/
     \todo Need to indicate at which stage the failed commit occurred,
           for better cleanup and recovery from the error.
 
-    \param deleted  Set of attribute names (i.e. columns) to delete
+    \param deleted  Set of attribute indices (i.e. columns) to delete
     \param added    Map (name, type) of attribute names (i.e. columns) to add
     \param changed  Map (feature ID, Map (attribute name, new value) )
                       of attribute values to change

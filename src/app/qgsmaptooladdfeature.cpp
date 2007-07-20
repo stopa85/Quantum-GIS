@@ -121,10 +121,10 @@ void QgsMapToolAddFeature::canvasReleaseEvent(QMouseEvent * e)
 	{
 	  QgsFeature* f = new QgsFeature(0,"WKBPoint");
 	  
-	  int size;
+	  int size = 0;
 	  char end=QgsApplication::endian();
-	  unsigned char *wkb;
-	  int wkbtype;
+	  unsigned char *wkb = NULL;
+	  int wkbtype = 0;
 	  double x = savePoint.x();
 	  double y = savePoint.y();
 	  

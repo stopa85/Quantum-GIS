@@ -2833,59 +2833,51 @@ bool QgsVectorLayer::commitAttributeChanges(const QgsAttributeIds& deleted,
                             const QgsChangedAttributesMap& changed)
 {
   bool returnvalue=true;
-
-  if(mDataProvider)
-  {
-    if(mDataProvider->capabilities()&QgsVectorDataProvider::DeleteAttributes)
+  if(mDataProvider->capabilities()&QgsVectorDataProvider::DeleteAttributes)
     {
       //delete attributes in all not commited features
       for (QgsFeatureList::iterator iter = mAddedFeatures.begin(); iter != mAddedFeatures.end(); ++iter)
-      {
-        for (QgsAttributeIds::const_iterator it = deleted.begin(); it != deleted.end(); ++it)
-        {
-          (*iter).deleteAttribute(*it);
-        }
-      }
-
+	{
+	  for (QgsAttributeIds::const_iterator it = deleted.begin(); it != deleted.end(); ++it)
+	    {
+	      (*iter).deleteAttribute(*it);
+	    }
+	}
+      
       //and then in the provider
       if(!mDataProvider->deleteAttributes(deleted))
-      {
-        returnvalue=false;
-      }
+	{
+	  returnvalue=false;
+	}
     }
-
-    if(mDataProvider->capabilities()&QgsVectorDataProvider::AddAttributes)
+  
+  if(mDataProvider->capabilities()&QgsVectorDataProvider::AddAttributes)
     {
       //add attributes in all not commited features
       // TODO: is it necessary? [MD]
       /*for (QgsFeatureList::iterator iter = mAddedFeatures.begin(); iter != mAddedFeatures.end(); ++iter)
-      {
+	{
         for (QgsNewAttributesMap::const_iterator it = added.begin(); it != added.end(); ++it)
         {
-          (*iter).addAttribute(, QgsFeatureAttribute(it.key(), ""));
+	(*iter).addAttribute(, QgsFeatureAttribute(it.key(), ""));
         }
-    }*/
+	}*/
       
       //and then in the provider
       if(!mDataProvider->addAttributes(added))
-      {
-        returnvalue=false;
-      }
+	{
+	  returnvalue=false;
+	}
     }
-
-    if(mDataProvider->capabilities()&QgsVectorDataProvider::ChangeAttributeValues)
+  
+  if(mDataProvider->capabilities()&QgsVectorDataProvider::ChangeAttributeValues)
     {
       //and then those of the commited ones
       if(!mDataProvider->changeAttributeValues(changed))
-      {
-        returnvalue=false;
-      }
+	{
+	  returnvalue=false;
+	}
     }
-  }
-  else
-  {
-    returnvalue=false;
-  }
   return returnvalue;
 }
 
