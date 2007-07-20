@@ -18,7 +18,6 @@
 #include "qgsmapcanvas.h"
 #include "qgsmaprender.h"
 #include "qgsvertexmarker.h"
-#include "qgsrubberband.h"
 #include "qgsvectorlayer.h"
 #include "qgsvectordataprovider.h"
 #include "qgsmaptopixel.h"
@@ -27,26 +26,13 @@
 #include <QCursor>
 #include <QMessageBox>
 #include <QPixmap>
-#include <QSettings>
 
 QgsMapToolVertexEdit::QgsMapToolVertexEdit(QgsMapCanvas* canvas): QgsMapToolEdit(canvas)
 {
-  mSnapper.setMapCanvas(canvas);
+
 }
   
 QgsMapToolVertexEdit::~QgsMapToolVertexEdit()
 {
 
-}
-
-QgsRubberBand* QgsMapToolVertexEdit::createRubberBand()
-{
-  QSettings settings;
-  QgsRubberBand* rb = new QgsRubberBand(mCanvas, FALSE);
-  QColor color( settings.value("/qgis/digitizing/line_color_red", 255).toInt(),
-		settings.value("/qgis/digitizing/line_color_green", 0).toInt(),
-		settings.value("/qgis/digitizing/line_color_blue", 0).toInt());
-  rb->setColor(color);
-  rb->setWidth(settings.value("/qgis/digitizing/line_width", 1).toInt());
-  return rb;
 }

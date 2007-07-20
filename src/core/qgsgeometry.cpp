@@ -2571,6 +2571,132 @@ int QgsGeometry::addIsland(const QList<QgsPoint>& ring)
   return 0;
 }
 
+int QgsGeometry::translate(double dx, double dy)
+{
+  if(mDirtyWkb)
+  {
+    exportGeosToWkb();
+  }
+
+  if (!mGeometry)
+  {
+    QgsDebugMsg("WKB geometry not available!");
+    return 1;
+  }
+
+  QGis::WKBTYPE wkbType;
+  memcpy(&wkbType, &(mGeometry[1]), sizeof(int));
+  bool hasZValue = false;
+  int wkbPosition = 5;
+
+  switch (wkbType)
+  {
+    case QGis::WKBPoint25D:
+    case QGis::WKBPoint:
+      {
+	translateVertex(wkbPosition, dx, dy, hasZValue);
+      }
+      break;
+
+    case QGis::WKBLineString25D:
+      hasZValue = true;
+    case QGis::WKBLineString:
+      {
+        int* npoints=(int*)(&mGeometry[wkbPosition]);
+        wkbPosition+=sizeof(int);
+        for(int index=0;index<*npoints;++index)
+        {
+	  translateVertex(wkbPosition, dx, dy, hasZValue);
+        }
+        break;
+      }
+
+    case QGis::WKBPolygon25D:
+      hasZValue = true;
+    case QGis::WKBPolygon:
+      {
+        int* nrings = (int*)(&(mGeometry[wkbPosition]));
+	wkbPosition += sizeof(int);
+        int* npoints;
+
+        for(int index=0;index<*nrings;++index)
+        {
+          npoints=(int*)(&(mGeometry[wkbPosition]));
+          wkbPosition+=sizeof(int);
+          for(int index2=0;index2<*npoints;++index2)
+          {
+	    translateVertex(wkbPosition, dx, dy, hasZValue);
+          }
+        }
+        break; 
+      }
+
+  case QGis::WKBMultiPoint25D:
+    hasZValue = true;
+  case QGis::WKBMultiPoint:
+    {
+        int* npoints=(int*)(&(mGeometry[wkbPosition]));
+        wkbPosition+=sizeof(int);
+        for(int index=0;index<*npoints;++index)
+	  {
+	    wkbPosition += (sizeof(int) + 1);
+	    translateVertex(wkbPosition, dx, dy, hasZValue);
+	  }
+	break;
+    }
+
+  case QGis::WKBMultiLineString25D:
+    hasZValue = true;
+  case QGis::WKBMultiLineString:
+    {
+      int* nlines=(int*)(&(mGeometry[wkbPosition]));
+      int* npoints = 0;
+      wkbPosition+=sizeof(int);
+      for(int index=0;index<*nlines;++index)
+        {
+          wkbPosition += (sizeof(int) + 1);
+	  npoints = (int*)(&(mGeometry[wkbPosition]));
+	  wkbPosition += sizeof(int);
+	  for(int index2 = 0; index2 < *npoints; ++index2)
+	    {
+	      translateVertex(wkbPosition, dx, dy, hasZValue);
+	    }
+	}
+      break;
+    }
+
+  case QGis::WKBMultiPolygon25D:
+    hasZValue = true;
+  case QGis::WKBMultiPolygon:
+      {
+        int* npolys=(int*)(&(mGeometry[wkbPosition]));
+        int* nrings;
+        int* npoints;
+        wkbPosition+=sizeof(int);
+        for(int index=0;index<*npolys;++index)
+        {
+          wkbPosition += (1 + sizeof(int)); //skip endian and polygon type
+          nrings=(int*)(&(mGeometry[wkbPosition]));
+          wkbPosition+=sizeof(int);
+          for(int index2=0;index2<*nrings;++index2)
+          {
+            npoints=(int*)(&(mGeometry[wkbPosition]));
+            wkbPosition+=sizeof(int);
+            for(int index3=0;index3<*npoints;++index3)
+            { 
+	      translateVertex(wkbPosition, dx, dy, hasZValue);
+	    }
+	  }
+	}
+      }
+
+      default:
+	break;
+      }
+  mDirtyGeos = true;
+  return 0;   
+}
+
 QgsRect QgsGeometry::boundingBox()
 {
   double xmin =  std::numeric_limits<double>::max();
@@ -3925,6 +4051,28 @@ bool QgsGeometry::convertToMultiType()
   mGeometrySize = newGeomSize;
   mDirtyGeos = true;
   return true;
+}
+
+void QgsGeometry::translateVertex(int& wkbPosition, double dx, double dy, bool hasZValue)
+{
+  double x, y, translated_x, translated_y;
+
+  //x-coordinate
+  x = *((double *) (&(mGeometry[wkbPosition])));
+  translated_x = x + dx;
+  memcpy(&(mGeometry[wkbPosition]), &translated_x, sizeof(double)); 
+  wkbPosition += sizeof(double);
+  
+  //y-coordinate
+  y = *((double *) (&(mGeometry[wkbPosition])));
+  translated_y = y + dy;
+  memcpy(&(mGeometry[wkbPosition]), &translated_y, sizeof(double));
+  wkbPosition += sizeof(double);
+
+  if(hasZValue)
+    {
+      wkbPosition += sizeof(double);
+    }
 }
 
 QgsPoint QgsGeometry::asPoint(unsigned char*& ptr, bool hasZValue)

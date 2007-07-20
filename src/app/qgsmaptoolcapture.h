@@ -84,6 +84,9 @@ class QgsMapToolCapture : public QgsMapToolEdit
      @return 0 in case of success, 1 if current layer is not a vector layer, 2 if coordinate transformation failed*/
     int addVertex(const QPoint& p);
 
+    /**Removes the last vertex from mRubberBand and mCaptureList*/
+    void undo();
+
 };
 
 #endif

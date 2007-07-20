@@ -20,9 +20,13 @@
 #include "qgsmaptool.h"
 #include "qgsmapcanvassnapper.h"
 
+class QgsRubberBand;
+class QKeyEvent;
+
 /**Base class for map tools that edit vector geometry*/
 class QgsMapToolEdit: public QgsMapTool
 {
+  Q_OBJECT
  public:
   QgsMapToolEdit(QgsMapCanvas* canvas);
   virtual ~QgsMapToolEdit();
@@ -44,7 +48,22 @@ class QgsMapToolEdit: public QgsMapTool
      snapping results. If the list is empty, the screen coordinates are transformed into map coordinates and returned
      @param snapResults results collected from the snapping operation.
      @return the snapped point in map coordinates*/
-  QgsPoint snapPointFromResults(const QList<QgsSnappingResult>& snapResults, const QPoint& screenCoords);   
+  QgsPoint snapPointFromResults(const QList<QgsSnappingResult>& snapResults, const QPoint& screenCoords); 
+
+  /**Creates a rubber band with the color/line width from
+   the QGIS settings. The caller takes ownership of the 
+  returned object*/
+  QgsRubberBand* createRubberBand(bool isPolygon = false);
+
+  /**Returns the current vector layer of the map canvas or 0*/
+  QgsVectorLayer* currentVectorLayer();
+
+  /**Default implementation does nothing*/
+  virtual void undo(){}
+
+  public slots:
+  /**Connected with keyPressed signal from QgsMapCanvas*/
+  void keyPress(QKeyEvent* e);
 };
 
 #endif

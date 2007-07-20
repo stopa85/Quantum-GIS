@@ -16,11 +16,19 @@
 
 #include "qgsmaptooledit.h"
 #include "qgsproject.h"
+#include "qgsmapcanvas.h"
+#include "qgsrubberband.h"
 #include "qgsvectorlayer.h"
+#include <QKeyEvent>
+#include <QSettings>
 
 QgsMapToolEdit::QgsMapToolEdit(QgsMapCanvas* canvas): QgsMapTool(canvas)
 {
   mSnapper.setMapCanvas(canvas);
+  if(canvas)
+    {
+      connect(mCanvas, SIGNAL(keyPressed(QKeyEvent*)), this, SLOT(keyPress(QKeyEvent*)));
+    }
 }
 
 
@@ -77,5 +85,42 @@ QgsPoint QgsMapToolEdit::snapPointFromResults(const QList<QgsSnappingResult>& sn
   else
     {
       return snapResults.constBegin()->snappedVertex;
+    }
+}
+
+QgsRubberBand* QgsMapToolEdit::createRubberBand(bool isPolygon)
+{
+  QSettings settings;
+  QgsRubberBand* rb = new QgsRubberBand(mCanvas, isPolygon);
+  QColor color( settings.value("/qgis/digitizing/line_color_red", 255).toInt(),
+		settings.value("/qgis/digitizing/line_color_green", 0).toInt(),
+		settings.value("/qgis/digitizing/line_color_blue", 0).toInt());
+  rb->setColor(color);
+  rb->setWidth(settings.value("/qgis/digitizing/line_width", 1).toInt());
+  rb->show();
+  return rb;
+}
+
+QgsVectorLayer* QgsMapToolEdit::currentVectorLayer()
+{
+  QgsMapLayer* currentLayer = mCanvas->currentLayer();
+  if(!currentLayer)
+    {
+      return 0;
+    }
+
+  QgsVectorLayer* vlayer = dynamic_cast<QgsVectorLayer*>(currentLayer);
+  if(!vlayer)
+    {
+      return 0;
+    }
+  return vlayer;
+}
+
+void QgsMapToolEdit::keyPress(QKeyEvent* e)
+{
+  if(e->key() == Qt::Key_Backspace)
+    {
+      undo();
     }
 }
