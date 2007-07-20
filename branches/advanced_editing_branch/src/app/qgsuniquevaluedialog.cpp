@@ -24,7 +24,6 @@
 #include "qgsvectordataprovider.h"
 #include "qgsvectorlayer.h"
 
-
 QgsUniqueValueDialog::QgsUniqueValueDialog(QgsVectorLayer* vl): QDialog(), mVectorLayer(vl), sydialog(vl)
 {
     setupUi(this);
@@ -69,6 +68,7 @@ QgsUniqueValueDialog::QgsUniqueValueDialog(QgsVectorLayer* vl): QDialog(), mVect
 	    QString symbolvalue=symbol->lowerValue();
 	    QgsSymbol* sym=new QgsSymbol(mVectorLayer->vectorType(), symbol->lowerValue(), symbol->upperValue(), symbol->label());
 	    sym->setPen(symbol->pen());
+        sym->setCustomTexture(symbol->customTexture());
 	    sym->setBrush(symbol->brush());
 	    sym->setNamedPointSymbol(symbol->pointSymbolName());
 	    sym->setPointSize(symbol->pointSize());
@@ -112,6 +112,7 @@ void QgsUniqueValueDialog::apply()
 	QgsSymbol* symbol=it->second;
 	QgsSymbol* newsymbol=new QgsSymbol(mVectorLayer->vectorType(), symbol->lowerValue(), symbol->upperValue(), symbol->label());
 	newsymbol->setPen(symbol->pen());
+    newsymbol->setCustomTexture(symbol->customTexture());
 	newsymbol->setBrush(symbol->brush());
 	newsymbol->setNamedPointSymbol(symbol->pointSymbolName());
 	newsymbol->setPointSize(symbol->pointSize());
@@ -124,72 +125,79 @@ void QgsUniqueValueDialog::apply()
 
 void QgsUniqueValueDialog::changeClassificationAttribute()
 {
-  int nr = mClassificationComboBox->currentIndex();
-    //delete old entries
-    for(std::map<QString,QgsSymbol*>::iterator it=mValues.begin();it!=mValues.end();++it)
+  QString attributeName = mClassificationComboBox->currentText();
+
+  //delete old entries
+  for(std::map<QString,QgsSymbol*>::iterator it=mValues.begin();it!=mValues.end();++it)
     {
-	delete it->second;
+      delete it->second;
     }
-    mValues.clear();
-    
-    QgsVectorDataProvider *provider = dynamic_cast<QgsVectorDataProvider *>(mVectorLayer->getDataProvider());
-    if (provider)
+  mValues.clear();
+  
+  QgsVectorDataProvider *provider = dynamic_cast<QgsVectorDataProvider *>(mVectorLayer->getDataProvider());
+  if (provider)
     {
-	QString value;
-	QgsAttributeList attlist;
-	attlist.append(nr);
-	QgsSymbol* symbol;
-
-	provider->select(attlist, QgsRect(), false);
-	QgsFeature feat;
-
-	//go through all the features and insert their value into the map and into mClassListWidget
-	mClassListWidget->clear();
-	while(provider->getNextFeature(feat))
+      QString value;
+      QgsAttributeList attlist;
+     
+      QgsSymbol* symbol;
+      int nr = provider->indexFromFieldName(attributeName);
+      if(nr == -1)
 	{
-      const QgsAttributeMap& attrs = feat.attributeMap();
-	    value = attrs[nr].toString();
-	   
-	    if(mValues.find(value)==mValues.end())
+	  return;
+	}
+      attlist.append(nr);	
+      
+      provider->select(attlist, QgsRect(), false);
+      QgsFeature feat;
+      
+      //go through all the features and insert their value into the map and into mClassListWidget
+      mClassListWidget->clear();
+      while(provider->getNextFeature(feat))
+	{
+	  const QgsAttributeMap& attrs = feat.attributeMap();
+	  value = attrs[nr].toString();
+	  
+	  if(mValues.find(value)==mValues.end())
 	    {
-		symbol=new QgsSymbol(mVectorLayer->vectorType(), value);
-		mValues.insert(std::make_pair(value,symbol));
+	      symbol=new QgsSymbol(mVectorLayer->vectorType(), value);
+	      mValues.insert(std::make_pair(value,symbol));
 	    }
 	}
-
-	//set symbology for all QgsSiSyDialogs
-	QColor thecolor;
-
-	for(std::map<QString,QgsSymbol*>::iterator it=mValues.begin();it!=mValues.end();++it)
+      
+      //set symbology for all QgsSiSyDialogs
+      QColor thecolor;
+      
+      for(std::map<QString,QgsSymbol*>::iterator it=mValues.begin();it!=mValues.end();++it)
 	{
-	    //insert a random color
-	    int red = 1 + (int) (255.0 * rand() / (RAND_MAX + 1.0));
-	    int green = 1 + (int) (255.0 * rand() / (RAND_MAX + 1.0));
-	    int blue = 1 + (int) (255.0 * rand() / (RAND_MAX + 1.0));
-	    thecolor.setRgb(red, green, blue);
-	    mClassListWidget->addItem(it->first);
-	    QgsSymbol* sym=it->second;
-	    QPen pen;
-	    QBrush brush;
-	    if(mVectorLayer->vectorType() == QGis::Line)
+	  //insert a random color
+	  int red = 1 + (int) (255.0 * rand() / (RAND_MAX + 1.0));
+	  int green = 1 + (int) (255.0 * rand() / (RAND_MAX + 1.0));
+	  int blue = 1 + (int) (255.0 * rand() / (RAND_MAX + 1.0));
+	  thecolor.setRgb(red, green, blue);
+	  mClassListWidget->addItem(it->first);
+	  QgsSymbol* sym=it->second;
+	  QPen pen;
+	  QBrush brush;
+	  if(mVectorLayer->vectorType() == QGis::Line)
 	    {
-		pen.setColor(thecolor);
-		pen.setStyle(Qt::SolidLine);
-		pen.setWidth(1);
+	      pen.setColor(thecolor);
+	      pen.setStyle(Qt::SolidLine);
+	      pen.setWidth(1);
 	    }
-	    else
+	  else
 	    {
-		brush.setColor(thecolor);
-		brush.setStyle(Qt::SolidPattern);
-		pen.setColor(Qt::black);
-		pen.setStyle(Qt::SolidLine);
-		pen.setWidth(1);
+	      brush.setColor(thecolor);
+	      brush.setStyle(Qt::SolidPattern);
+	      pen.setColor(Qt::black);
+	      pen.setStyle(Qt::SolidLine);
+	      pen.setWidth(1);
 	    }
-	    sym->setPen(pen);
-	    sym->setBrush(brush);
+	  sym->setPen(pen);
+	  sym->setBrush(brush);
 	}
     }
-    mClassListWidget->setCurrentRow(0);
+  mClassListWidget->setCurrentRow(0);
 }
 
 void QgsUniqueValueDialog::changeCurrentValue()
@@ -203,7 +211,7 @@ void QgsUniqueValueDialog::changeCurrentValue()
 	if(it!=mValues.end())
 	  {
 	    sydialog.set( it->second);
-	    sydialog.setLabel(it->second->label());
+ 	    sydialog.setLabel(it->second->label());
 	  }
 	else
 	  {
@@ -227,7 +235,7 @@ void QgsUniqueValueDialog::deleteCurrentClass()
   delete (mClassListWidget->takeItem(currentIndex));
   qWarning("numRows: ");
   qWarning(QString::number(mClassListWidget->count()));
-  //
+
   if(mClassListWidget->count() < (currentIndex + 1))
     {
       qWarning("selecting numRows - 1");

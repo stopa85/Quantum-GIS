@@ -241,8 +241,8 @@ QgsProject * QgsProject::theProject_;
  {
      QgsPropertyKey * currentProperty = &rootProperty;
 
-     QgsProperty * nextProperty;   // link to next property down hiearchy
-     QgsPropertyKey * previousQgsPropertyKey; // link to previous property up hiearchy
+     QgsProperty * nextProperty = NULL;   // link to next property down hiearchy
+     QgsPropertyKey * previousQgsPropertyKey = NULL; // link to previous property up hiearchy
 
      QStringList keySequence = makeKeyTokens_( scope, key );
 
@@ -679,7 +679,7 @@ static std::pair< bool, std::list<QDomNode> > _getMapLayers(QDomDocument const &
 
         QgsDebugMsg("Layer type is " + type);
 
-        QgsMapLayer *mapLayer;
+        QgsMapLayer *mapLayer = NULL;
         
         if (type == "vector")
         {
@@ -748,7 +748,7 @@ bool QgsProject::read()
         imp_->file.close();     // even though we got an error, let's make
                                 // sure it's closed anyway
 
-        throw QgsIOException("Unable to open " + imp_->file.name());
+        throw QgsIOException( QObject::tr("Unable to open ") + imp_->file.name());
 
         return false;           // XXX raise exception? Ok now superfluous
                                 // XXX because of exception.
