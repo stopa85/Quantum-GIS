@@ -1208,6 +1208,57 @@ void QgsVectorLayer::setSubsetString(QString subset)
   emit recalculateExtents();
 }
 
+QgsGeometry* QgsVectorLayer::geometryInRectangle(const QgsRect& searchRect, int& featureId)
+{
+  QSet<int> alreadyExamined;
+
+  //first search all changed geometries
+  QgsGeometryMap::iterator changedIt;
+  for(changedIt = mChangedGeometries.begin(); changedIt != mChangedGeometries.end(); ++changedIt)
+    {
+      alreadyExamined.insert(changedIt.key());
+      if(changedIt->intersects(searchRect))
+	{
+	  featureId = changedIt.key();
+	  return new QgsGeometry(changedIt.value());
+	}
+    }
+
+  //then the added features
+  for (QgsFeatureList::iterator iter = mAddedFeatures.begin(); iter != mAddedFeatures.end(); ++iter)
+    {
+      if(alreadyExamined.contains(iter->featureId()))
+	{
+	  continue;
+	}
+      
+      if(iter->geometry() && iter->geometry()->intersects(searchRect))
+	{
+	  featureId = iter->featureId();
+	  return new QgsGeometry(*iter->geometry());
+	}
+    }
+
+  //look in the normal features of the provider
+  if(mDataProvider)
+    {
+      mDataProvider->select(QgsAttributeList(), searchRect, true, true);
+      
+      QgsFeature f;
+      while(getDataProvider() && getDataProvider()->getNextFeature(f))
+	{
+	  if(mChangedGeometries.contains(f.featureId()))
+	    {
+	      continue;
+	    }
+	  
+	  featureId = f.featureId();
+	  return new QgsGeometry(*(f.geometry()));
+	}
+    }
+  return 0;
+}
+
 
 bool QgsVectorLayer::addFeature(QgsFeature& f, bool alsoUpdateExtent)
 {
@@ -1546,6 +1597,39 @@ int QgsVectorLayer::addIsland(const QList<QgsPoint>& ring)
     }
 
   return 6; //geometry not found
+}
+
+int QgsVectorLayer::translateFeature(int featureId, double dx, double dy)
+{
+  //look if geometry of selected feature already contains geometry changes
+  QgsGeometryMap::iterator changedIt = mChangedGeometries.find(featureId);
+  if(changedIt != mChangedGeometries.end())
+    {
+      return changedIt->translate(dx, dy);
+    }
+  
+  //look if id of selected feature belongs to an added feature
+  for(QgsFeatureList::iterator addedIt = mAddedFeatures.begin(); addedIt != mAddedFeatures.end(); ++addedIt)
+    {
+      if(addedIt->featureId() == featureId)
+	{
+	  return addedIt->geometry()->translate(dx, dy);
+	}
+    }
+
+  //else, if must be contained in mCachedGeometries
+  QgsGeometryMap::iterator cachedIt = mCachedGeometries.find(featureId);
+  if(cachedIt != mCachedGeometries.end())
+    {
+      int errorCode = cachedIt->translate(dx, dy);
+      if(errorCode == 0)
+	{
+	  mChangedGeometries.insert(featureId, *cachedIt);
+	  setModified(true, true);
+	}
+	return errorCode;
+    }
+  return 1; //geometry not found
 }
 
 QgsLabel * QgsVectorLayer::label()

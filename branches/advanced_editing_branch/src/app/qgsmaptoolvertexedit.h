@@ -21,9 +21,6 @@
 #include "qgsmaptooledit.h"
 #include "qgsgeometry.h"
 
-class QgsRubberBand;
-class QgsVertexMarker;
-
 /**Base class for vertex manipulation tools. 
  Inherited by QgsMapToolMoveVertex, QgsMapToolAddVertex, 
 QgsMapToolDeleteVertex*/
@@ -40,11 +37,6 @@ class QgsMapToolVertexEdit: public QgsMapToolEdit
   /**Snapping results that are collected during the mouse press event 
    (search for vertices/segments to manipulate)*/
   QList<QgsSnappingResult> mRecentSnappingResults;
-
-  /**Creates a rubber band with the color/line width from
-   the QGIS settings. The caller takes ownership of the 
-  returned object*/
-  QgsRubberBand* createRubberBand();
 };
 
 #endif

@@ -242,7 +242,7 @@ class QgsGeometry
        Returns the vertex closest to the given point 
        (and also vertex index, squared distance and indexes of the vertices before/after)
     */
-    QgsPoint closestVertex(const QgsPoint& point, int& atVertex Out/, int& beforeVertex Out/, int& afterVertex Out/, double& sqrDist);
+    QgsPoint closestVertex(const QgsPoint& point, int& atVertex /Out/, int& beforeVertex /Out/, int& afterVertex /Out/, double& sqrDist /Out/);
 
     /**
        Returns the indexes of the vertices before and after the given vertex index.
@@ -256,7 +256,7 @@ class QgsGeometry
           account the first vertex is equal to the last vertex (and will
           skip equal vertex positions).
     */
-	void adjacentVerticies(int atVertex, int& beforeVertex Out/, int& afterVertex Out/);
+    void adjacentVerticies(int atVertex, int& beforeVertex /Out/, int& afterVertex /Out/);
 
     /** Insert a new vertex before the given vertex index,
      *  ring and item (first number is index 0)
@@ -301,7 +301,7 @@ class QgsGeometry
     /**
         Returns the squared cartesian distance between the given point
         to the given vertex index*/
-	double sqrDistToVertexAt(QgsPoint& point /In, int atVertex);
+	//double sqrDistToVertexAt(QgsPoint& point /In, int atVertex);
 
 	
 	/**
@@ -310,7 +310,7 @@ class QgsGeometry
      * @param atVertex Receives index of the closest vertex
      * @return The squared cartesian distance is also returned in sqrDist, negative number on error
      */
-    double closestVertexWithContext(const QgsPoint& point /In, int& atVertex Out/);
+    double closestVertexWithContext(const QgsPoint& point, int& atVertex /Out/);
 
     /**
      * Searches for the closest segment of geometry to the given point
@@ -319,7 +319,7 @@ class QgsGeometry
      * @param beforeVertex Receives index of the vertex before the closest segment
      * @return The squared cartesian distance is also returned in sqrDist, negative number on error
      */
-    double closestSegmentWithContext(const QgsPoint& point /In, QgsPoint& minDistPoint Out/, int& beforeVertex Out/);
+    double closestSegmentWithContext(const QgsPoint& point, QgsPoint& minDistPoint /Out/, int& beforeVertex /Out/);
 
     /**Returns the bounding box of this feature*/
     QgsRect boundingBox();

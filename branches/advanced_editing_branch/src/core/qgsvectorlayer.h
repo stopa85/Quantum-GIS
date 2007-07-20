@@ -22,6 +22,7 @@
 #include <QMap>
 #include <QSet>
 #include <QList>
+#include <QPair>
 
 #include "qgis.h"
 #include "qgsmaplayer.h"
@@ -199,10 +200,17 @@ public:
    */
   virtual QString subsetString();
 
+  /**Returns the first geometry found in the search rectangle. Includes searching through the changed geometries
+     and added features. This function is mainly usefull for map tools that search for a geometry to manipulate
+     @param searchRect selection rectangle.
+     @param featureId id of the feature the geometry belongs to
+     @return pointer to the geometry or 0 if no geometry found. The calling function takes ownership of the geometry*/
+  QgsGeometry* geometryInRectangle(const QgsRect& searchRect, int& featureId);
+
 
   /** Adds a feature
       @param lastFeatureInBatch  If True, will also go to the effort of e.g. updating the extents.
-      @return                    Irue in case of success and False in case of error
+      @return                    True in case of success and False in case of error
    */
   bool addFeature(QgsFeature& f, bool alsoUpdateExtent = TRUE);
   
@@ -238,6 +246,13 @@ existing rings, 5 no feature found where ring can be inserted*/
 3if new polygon ring not disjoint with existing rings, 4 if no feature was selected, 5 if several features are selected, \
 6 if selected geometry not found*/
   int addIsland(const QList<QgsPoint>& ring);
+
+  /**Translates feature by dx, dy
+     @param featureId id of the feature to translate
+     @param dx translation of x-coordinate
+     @param dy translation of y-coordinate
+     @return 0 in case of success*/
+  int translateFeature(int featureId, double dx, double dy);
 
 
   /** Set labels on */

@@ -243,6 +243,10 @@ and the indices of the vertices before/after. The vertices before/after are -1 i
 not disjoint with existing polygons of the feature*/
     int addIsland(const QList<QgsPoint>& ring);
 
+    /**Translate this geometry by dx, dy
+     @return 0 in case of success*/
+    int translate(double dx, double dy);
+
     /**Returns the bounding box of this feature*/
     QgsRect boundingBox();
 
@@ -356,12 +360,20 @@ not disjoint with existing polygons of the feature*/
     @return true in case of success and false else*/
     bool convertToMultiType();
 
+    /**Translates a single vertex by dx and dy.
+     @param ptr pointer to the wkb fragment containing the vertex
+    @param wkbPosition position in wkb array. Is increased automatically by the function 
+    @param dx translation of x-coordinate
+    @param dy translation of y-coordinate
+    @param hasZValue 25D type?*/
+    void translateVertex(int& wkbPosition, double dx, double dy, bool hasZValue);
+
     /** return point from wkb */
     QgsPoint asPoint(unsigned char*& ptr, bool hasZValue);
     
     /** return polyline from wkb */
     QgsPolyline asPolyline(unsigned char*& ptr, bool hasZValue);
-    
+
     /** return polygon from wkb */
     QgsPolygon asPolygon(unsigned char*& ptr, bool hasZValue);
 

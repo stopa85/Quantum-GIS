@@ -34,6 +34,7 @@ qgsmaptoolcapture.cpp
 qgsmaptooldeletevertex.cpp
 qgsmaptooledit.cpp
 qgsmaptoolidentify.cpp
+qgsmaptoolmovefeature.cpp
 qgsmaptoolmovevertex.cpp
 qgsmaptoolselect.cpp
 qgsmaptoolvertexedit.cpp
@@ -107,6 +108,7 @@ qgslinestyledialog.h
 qgslinestylewidget.h
 qgsludialog.h
 qgsmaplayerinterface.h
+qgsmaptooledit.h
 qgsmaptoolidentify.h
 qgsmarkerdialog.h
 qgsmeasuredialog.h

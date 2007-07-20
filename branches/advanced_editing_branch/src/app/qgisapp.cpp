@@ -150,6 +150,7 @@
 #include "qgsmaptooladdvertex.h"
 #include "qgsmaptooldeletevertex.h"
 #include "qgsmaptoolidentify.h"
+#include "qgsmaptoolmovefeature.h"
 #include "qgsmaptoolmovevertex.h"
 #include "qgsmaptoolpan.h"
 #include "qgsmaptoolselect.h"
@@ -413,10 +414,13 @@ QgisApp::~QgisApp()
   delete mMapTools.mCapturePoint;
   delete mMapTools.mCaptureLine;
   delete mMapTools.mCapturePolygon;
+  delete mMapTools.mMoveFeature;
   delete mMapTools.mSelect;
   delete mMapTools.mVertexAdd;
   delete mMapTools.mVertexMove;
   delete mMapTools.mVertexDelete;
+  delete mMapTools.mAddRing;
+  delete mMapTools.mAddIsland;
 
 #ifdef HAVE_PYTHON
   delete mPythonConsole;
@@ -735,6 +739,11 @@ void QgisApp::createActions()
   connect(mActionDeleteSelected, SIGNAL(triggered()), this, SLOT(deleteSelected()));
   mActionDeleteSelected->setEnabled(false);
   //
+  mActionMoveFeature = new QAction(QIcon(myIconPath+"/mActionMoveFeature.png"), tr("Move Feature"), this);
+  mActionMoveFeature->setStatusTip(tr("Move Feature"));
+  connect(mActionMoveFeature, SIGNAL(triggered()), this, SLOT(moveFeature()));
+  mActionMoveFeature->setEnabled(true);
+  //
   mActionAddVertex = new QAction(QIcon(myIconPath+"/mActionAddVertex.png"), tr("Add Vertex"), this);
   mActionAddVertex->setStatusTip(tr("Add Vertex"));
   connect(mActionAddVertex, SIGNAL(triggered()), this, SLOT(addVertex()));
@@ -816,6 +825,8 @@ void QgisApp::createActionGroups()
   mMapToolGroup->addAction(mActionCapturePoint);
   mActionCapturePolygon->setCheckable(true);
   mMapToolGroup->addAction(mActionCapturePolygon);
+  mActionMoveFeature->setCheckable(true);
+  mMapToolGroup->addAction(mActionMoveFeature);
   mMapToolGroup->addAction(mActionDeleteSelected);
   mActionAddVertex->setCheckable(true);
   mMapToolGroup->addAction(mActionAddVertex);
@@ -974,6 +985,7 @@ void QgisApp::createToolBars()
   mDigitizeToolBar->addAction(mActionCapturePoint);
   mDigitizeToolBar->addAction(mActionCaptureLine);
   mDigitizeToolBar->addAction(mActionCapturePolygon);
+  mDigitizeToolBar->addAction(mActionMoveFeature);
   mDigitizeToolBar->addAction(mActionDeleteSelected);
   mDigitizeToolBar->addAction(mActionAddVertex);
   mDigitizeToolBar->addAction(mActionDeleteVertex);
@@ -1238,6 +1250,8 @@ void QgisApp::createCanvas()
   mMapTools.mCaptureLine->setAction(mActionCaptureLine);
   mMapTools.mCapturePolygon = new QgsMapToolAddFeature(mMapCanvas, QgsMapToolCapture::CapturePolygon);
   mMapTools.mCapturePolygon->setAction(mActionCapturePolygon);
+  mMapTools.mMoveFeature = new QgsMapToolMoveFeature(mMapCanvas);
+  mMapTools.mMoveFeature->setAction(mActionMoveFeature);
   mMapTools.mSelect = new QgsMapToolSelect(mMapCanvas);
   mMapTools.mSelect->setAction(mActionSelect);
   mMapTools.mVertexAdd = new QgsMapToolAddVertex(mMapCanvas);
@@ -3417,6 +3431,11 @@ void QgisApp::deleteSelected()
 
   // notify the project we've made a change
   QgsProject::instance()->dirty(true);
+}
+
+void QgisApp::moveFeature()
+{
+  mMapCanvas->setMapTool(mMapTools.mMoveFeature);
 }
 
 void QgisApp::capturePoint()

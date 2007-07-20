@@ -93,15 +93,7 @@ int QgsMapToolCapture::addVertex(const QPoint& p)
 
   if (!mRubberBand)
     {
-      mRubberBand = new QgsRubberBand(mCanvas, mTool == CapturePolygon);
-      QgsProject* project = QgsProject::instance();
-      QColor color(
-		   project->readNumEntry("Digitizing", "/LineColorRedPart", 255),
-		   project->readNumEntry("Digitizing", "/LineColorGreenPart", 0),
-		   project->readNumEntry("Digitizing", "/LineColorBluePart", 0));
-      mRubberBand->setColor(color);
-      mRubberBand->setWidth(project->readNumEntry("Digitizing", "/LineWidth", 1));
-      mRubberBand->show();
+      mRubberBand = createRubberBand(mTool == CapturePolygon);
     }
 
   QgsPoint digitisedPoint;
@@ -136,4 +128,15 @@ int QgsMapToolCapture::addVertex(const QPoint& p)
     }
 
   return 0;
+}
+
+void QgsMapToolCapture::undo()
+{
+  //todo: a more sophisticated undo-behaviour is needed...
+  if(mRubberBand)
+    {
+      //mRubberBand->pop_back();
+      mCaptureList.pop_back();
+      mCanvas->refresh();
+    }
 }

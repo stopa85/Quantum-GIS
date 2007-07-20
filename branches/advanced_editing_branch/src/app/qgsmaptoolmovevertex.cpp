@@ -88,21 +88,21 @@ void QgsMapToolMoveVertex::canvasPressEvent(QMouseEvent * e)
 	}
       else if(it->beforeVertexNr == -1)
 	{
-	  rb->addPoint(it->snappedVertex, true);
-	  rb->addPoint(it->afterVertex, false);
+	  rb->addPoint(it->snappedVertex, false);
+	  rb->addPoint(it->afterVertex, true);
 	  mRubberBandMovingPoints.push_back(0);
 	}
       else if(it->afterVertexNr == -1)
 	{
-	  rb->addPoint(it->snappedVertex, true);
-	  rb->addPoint(it->beforeVertex, false);
+	  rb->addPoint(it->snappedVertex, false);
+	  rb->addPoint(it->beforeVertex, true);
 	  mRubberBandMovingPoints.push_back(0);
 	}
       else
 	{
 	  rb->addPoint(it->beforeVertex, false);
-	  rb->addPoint(it->snappedVertex, true);
-	  rb->addPoint(it->afterVertex, false);
+	  rb->addPoint(it->snappedVertex, false);
+	  rb->addPoint(it->afterVertex, true);
 	  mRubberBandMovingPoints.push_back(1);
 	}
       mRubberBands.push_back(rb);
