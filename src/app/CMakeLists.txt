@@ -108,7 +108,6 @@ qgslinestyledialog.h
 qgslinestylewidget.h
 qgsludialog.h
 qgsmaplayerinterface.h
-qgsmaptooledit.h
 qgsmaptoolidentify.h
 qgsmarkerdialog.h
 qgsmeasuredialog.h

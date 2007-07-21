@@ -97,6 +97,22 @@ void QgsRubberBand::addPoint(const QgsPoint & p, bool do_update /* = true */, in
     }
 }
 
+void QgsRubberBand::removeLastPoint(int geometryIndex)
+{
+  if(mPoints.size() < (geometryIndex + 1))
+    {
+      return;
+    }
+
+  if(mPoints[geometryIndex].size() > 0)
+    {
+      mPoints[geometryIndex].pop_back();
+    }
+
+  updateRect();
+  update();
+}
+
 /*!
   Update the line between the last added point and the mouse position.
 */
@@ -329,4 +345,19 @@ void QgsRubberBand::setTranslationOffset(double dx, double dy)
   mTranslationOffsetX = dx;
   mTranslationOffsetY = dy;
   updateRect();
+}
+
+int QgsRubberBand::numberOfVertices() const
+{
+  int count = 0;
+  QList<QList<QgsPoint> >::const_iterator it = mPoints.constBegin();
+  for(;it != mPoints.constEnd(); ++it)
+    {
+      QList<QgsPoint>::const_iterator iter = it->constBegin();
+      for(;iter != it->constEnd(); ++iter)
+	{
+	  ++count;
+	}
+    }
+  return count;
 }
