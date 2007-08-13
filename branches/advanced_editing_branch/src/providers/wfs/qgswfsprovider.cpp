@@ -751,15 +751,26 @@ int QgsWFSProvider::getFeaturesFromGML2(const QDomElement& wfsCollectionElement,
       layerNameElem = currentFeatureMemberElem.firstChild().toElement();
       //the children are the attributes
       currentAttributeChild = layerNameElem.firstChild();
+      int attr = 0;
+      bool numeric = false;
+
       while(!currentAttributeChild.isNull())
 	{
-          int attr = 0;
 	  currentAttributeElement = currentAttributeChild.toElement();
+	  
 	  if(currentAttributeElement.localName() != "boundedBy")
 	    {
+	      currentAttributeElement.text().toDouble(&numeric);
 	      if((currentAttributeElement.localName()) != geometryAttribute) //a normal attribute
 		{
-		  f->addAttribute(attr++, QVariant(currentAttributeElement.text()));
+		  if(numeric)
+		    {
+		      f->addAttribute(attr++, QVariant(currentAttributeElement.text().toDouble()));
+		    }
+		  else
+		    {
+		      f->addAttribute(attr++, QVariant(currentAttributeElement.text()));
+		    }
 		}
 	      else //a geometry attribute
 		{

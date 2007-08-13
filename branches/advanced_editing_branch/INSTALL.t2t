@@ -1,5 +1,3 @@
-Compiling QGIS From Source
-Tim Sutton 2007
 %!encoding: iso-8859-1
 
 
@@ -91,6 +89,16 @@ the windows system preferences.
 
 If you plan to do some debugging, you'll need to compile debug version of Qt:
 C:\Qt\4.3.0\bin\qtvars.bat compile_debug
+
+Note: there is a problem when compiling debug version of Qt 4.3, the script ends with
+this message  "mingw32-make: *** No rule to make target `debug'.  Stop.". To 
+compile the debug version you have to go out of src directory and execute the
+following command:
+
+``` 
+c:\Qt\4.3.0 make 
+```
+
 
 == Flex and Bison ==
 
@@ -570,7 +578,7 @@ make install
 
 == Building QGIS with Qt4.x ==
 
-***Requires:*** Ubuntu Edgy
+***Requires:*** Ubuntu Edgy / Debian derived distro
 
 These notes are for if you want to build QGIS from source. One of the major
 aims here is to show how this can be done using binary packages for ***all***
@@ -606,7 +614,7 @@ sudo apt-get update
 == Install Qt4 ==
 
 ``` 
-sudo apt-get install libqt4-core libqt4-debug libqt4-debug-dev \
+sudo apt-get install libqt4-core libqt4-debug  \
 libqt4-dev libqt4-gui libqt4-qt3support libqt4-sql lsb-qt4 qt4-designer \
 qt4-dev-tools qt4-doc qt4-qtconfig uim-qt gcc libapt-pkg-perl resolvconf
 ```
@@ -651,11 +659,16 @@ above commands to select the Qt4 version of the relevant applications.
 
 ``` 
 sudo apt-get install gdal-bin libgdal1-dev libgeos-dev proj libtool \
-libgdal-doc libhdf4g-dev libhdf4g-run autoconf2.13 automake1.9 python-dev \
-swig libgsl0-dev g++ libjasper-1.701-dev libtiff4-dev  subversion gsl-bin \
-libsqlite3-dev sqlite3 ccache make libpq-dev flex bison firefox 
+libgdal-doc libhdf4g-dev libhdf4g-run python-dev python-qt4-dev sip4 \
+swig libgsl0-dev g++ libjasper-1.701-dev libtiff4-dev subversion gsl-bin \
+libsqlite3-dev sqlite3 ccache make libpq-dev flex bison
 ```
 
+/!\ Debian users should use libgdal-dev above rather
+
+/!\ ***Note:*** For python language bindings SIP >= 4.5 and PyQt4 >= 4.1 is required! Some stable GNU/Linux
+distributions (e.g. Debian or SuSE) only provide SIP < 4.5 and PyQt4 < 4.1. To include support for python 
+language bindings you need to build and install those packages from source.
 
 == GRASS Specific Steps ==
 
@@ -667,6 +680,8 @@ Now you can install grass from dapper:
 ```
 sudo apt-get install grass libgrass-dev libgdal1-grass 
 ```
+
+/!\ You may need to explicitly state your grass version e.g. libgdal1-1.3.2-grass
 
 == Setup ccache (Optional) ==
 
@@ -740,15 +755,35 @@ development version. I suggest you do something similar:
 mkdir -p ${HOME}/apps 
 ```
 
-The script will carry on to build QGIS - it may take a little while to go
-and have a cup of your favourite beverage while you wait...
+Now we create a build directory and run ccmake:
+
+```
+cd qgis
+mkdir build
+ccmake ..
+```
+
+When you run ccmake (note the .. is required!), a menu will appear where 
+you can configure various aspects of the build. If you do not have root
+access or do not want to overwrite existing QGIS installs (by your
+packagemanager for example), set the CMAKE_BUILD_PREFIX to somewhere you
+have write access to (I usually use /home/timlinux/apps). Now press
+'c' to configure, 'e' to dismiss any error messages that may appear.
+and 'g' to generate the make files. Note that sometimes 'c' needs to 
+be pressed several times before the 'g' option becomes available.
+After the 'g' generation is complete, press 'q' to exit the ccmake 
+interactive dialog.
+
+Now on with the build:
+
+```
+make
+make install
+```
+
+It may take a little while to build depending on your platform.
 
 == Running QGIS ==
-
-Once the compile is complete it should pop up a page in firefox with unit
-test results. At the time of writing the unit tests are just stubs - we
-still need to create the test implementations - so dont worry to much about
-their output at the moment.
 
 Now you can try to run QGIS:
 
@@ -867,12 +902,24 @@ g++ -s gdal_contour.o -o gdal_contour.exe -L/usr/local/lib -lpng -lz -lgdal
 g++ -s gdaltindex.o -o gdaltindex.exe -L/usr/local/lib -lpng -lz -lgdal
 g++ -s gdal_rasterize.o -o gdal_rasterize.exe -L/usr/local/lib -lpng -lz -lgdal
 install gdalinfo.exe gdal_translate.exe gdaladdo.exe gdalwarp.exe gdal_contour.exe gdaltindex.exe gdal_rasterize.exe /usr/local/bin
+
 ```
 
 Finally, manually edit ``gdal-config`` in ``c:\msys\local\bin`` to replace the static library reference with -lgdal:
 ```
 CONFIG_LIBS="-L/usr/local/lib -lpng -lz -lgdal"
 ```
+GDAL build procedure can be greatly simplified to use libtool with a libtool line patch:
+configure gdal as below:
+./configure --with-ngpython --with-xerces=/local/ --with-jasper=/local/ --with-grass=/local/grass-6.3.cvs/ --with-pg=/local/pgsql/bin/pg_config.exe 
+
+Then fix libtool with:
+mv libtool libtool.orig
+cat libtool.orig | sed 's/max_cmd_len=8192/max_cmd_len=32768/g' > libtool
+
+Libtool on windows assumes a line length limit of 8192 for some reason and tries to page the linking and fails miserably. This is a work around.
+
+Make and make install should be hassle free after this.
 
 === GRASS ===
 
