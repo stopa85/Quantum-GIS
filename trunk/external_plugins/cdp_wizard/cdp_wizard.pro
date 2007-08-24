@@ -18,10 +18,12 @@ wind32:{
                CONFIG += qt dll thread
                DLLDESTDIR= ..\..\qgis_win32\win_build\lib\qgis
 }
+macx: INCLUDEPATH += /Library/Frameworks/GDAL.framework/Headers/
+macx: LIBS += -L/Library/Frameworks/GDAL.framework/unix/lib
 unix:LIBS += -lgdal
 
 # Input
-INTERFACES += cdpwizardbase.ui
+FORMS += cdpwizardbase.ui
 HEADERS += cdpwizard.h \
            cdpwizardbase.ui.h \
            climatedataprocessor.h \

@@ -36,7 +36,7 @@ email                : t.sutton@reading.ac.uk
 #ifdef WIN32
 #include "cdpwizardbase.h"
 #else
-#include "cdpwizardbase.uic.h"
+#include "cdpwizardbase.h"
 #endif
 
 //other libs
