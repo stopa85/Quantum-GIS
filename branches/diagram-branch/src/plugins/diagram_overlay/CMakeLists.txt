@@ -3,7 +3,7 @@
 
 SET (DIAGRAMOVERLAY_SRCS
      qgsdiagramdialog.cpp
-     qgsdiagramfactory.cpp
+     qgswkndiagramfactory.cpp
      qgsdiagramitem.cpp
      qgsdiagramoverlay.cpp
      qgsdiagramoverlayplugin.cpp

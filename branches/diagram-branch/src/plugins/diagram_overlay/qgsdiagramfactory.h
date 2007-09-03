@@ -1,7 +1,7 @@
 /***************************************************************************
                          qgsdiagramfactory.h  -  description
                          -------------------
-    begin                : January 2007
+    begin                : September 2007
     copyright            : (C) 2007 by Marco Hugentobler
     email                : marco dot hugentobler at karto dot baug dot ethz dot ch
  ***************************************************************************/
@@ -15,48 +15,18 @@
  *                                                                         *
  ***************************************************************************/
 
-
 #ifndef QGSDIAGRAMFACTORY_H
 #define QGSDIAGRAMFACTORY_H
 
-#include <list>
-#include <QColor>
-#include <QString>
-#include "qgsvectorlayer.h" //for QgsAttributeList
-
-class QImage;
-class QgsDiagramItem;
 class QgsFeature;
+class QImage;
 
-/**A class that renders diagrams for map overlay*/
+/**Interface for classes that create diagrams*/
 class QgsDiagramFactory
 {
  public:
-  QgsDiagramFactory();
-  ~QgsDiagramFactory();
-  /**Creates a diagram for a feature and a given (classification) item. The calling method takes ownership of the generated image*/
-  QImage* createDiagram(int width, int height, const QgsFeature& f) const;
-
-  void setDiagramType(const QString& name)
-  {mDiagramType = name;}
-  void setAttributes(const QgsAttributeList& att){mAttributes = att;}
-  void setColorSeries(const std::list<QColor>& c)
-  {mColorSeries = c;}
-
-  /**Returns the supported well known names in a list*/
-  static void supportedWellKnownNames(std::list<QString>& names);
-
- private:
-  QgsAttributeList mAttributes;
-  /**Well known diagram name (e.g. pie, bar, line)*/
-  QString mDiagramType;
-  /***/
-  QString mCustomDiagramString;
-  /**Diagram colors*/
-  std::list<QColor> mColorSeries;
-
-  QImage* createPieChart(int height, const std::list<double>& dataValues) const;
-  QImage* createBarChart(int height, const std::list<double>& dataValues) const;
+  virtual QImage* createDiagram(int width, int height, const QgsFeature& f) const = 0;
+  virtual ~QgsDiagramFactory(){}
 };
 
 #endif

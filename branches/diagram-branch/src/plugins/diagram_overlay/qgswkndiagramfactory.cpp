@@ -1,20 +1,39 @@
-#include "qgsdiagramfactory.h"
+/***************************************************************************
+                         qgswkndiagramfactory.cpp  -  description
+                         ------------------------
+    begin                : January 2007
+    copyright            : (C) 2007 by Marco Hugentobler
+    email                : marco dot hugentobler at karto dot baug dot ethz dot ch
+ ***************************************************************************/
+
+/***************************************************************************
+ *                                                                         *
+ *   This program is free software; you can redistribute it and/or modify  *
+ *   it under the terms of the GNU General Public License as published by  *
+ *   the Free Software Foundation; either version 2 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *                                                                         *
+ ***************************************************************************/
+
+
+
+#include "qgswkndiagramfactory.h"
 #include "qgsdiagramitem.h"
 #include "qgsfeature.h"
 #include <QImage>
 #include <QPainter>
 
-QgsDiagramFactory::QgsDiagramFactory()
+QgsWKNDiagramFactory::QgsWKNDiagramFactory()
 {
 
 }
 
-QgsDiagramFactory::~QgsDiagramFactory()
+QgsWKNDiagramFactory::~QgsWKNDiagramFactory()
 {
   
 }
 
-QImage* QgsDiagramFactory::createDiagram(int width, int height, const QgsFeature& f) const
+QImage* QgsWKNDiagramFactory::createDiagram(int width, int height, const QgsFeature& f) const
 {
   //todo: possibility to create a custom diagram
   //return createDiagramKDChart(width, height, f); 
@@ -45,7 +64,7 @@ QImage* QgsDiagramFactory::createDiagram(int width, int height, const QgsFeature
     }
 }
 
-QImage* QgsDiagramFactory::createPieChart(int height, const std::list<double>& dataValues) const
+QImage* QgsWKNDiagramFactory::createPieChart(int height, const std::list<double>& dataValues) const
 {
   //create transparent QImage
   QImage* diagramImage = new QImage(QSize(height, height), QImage::Format_ARGB32_Premultiplied);
@@ -78,7 +97,7 @@ QImage* QgsDiagramFactory::createPieChart(int height, const std::list<double>& d
   return diagramImage;
 }
 
-QImage* QgsDiagramFactory::createBarChart(int height, const std::list<double>& dataValues) const
+QImage* QgsWKNDiagramFactory::createBarChart(int height, const std::list<double>& dataValues) const
 {
   if(height > 2000) //prevent crashes because of to high rectangles 
     {
@@ -127,7 +146,7 @@ QImage* QgsDiagramFactory::createBarChart(int height, const std::list<double>& d
   return diagramImage;
 }
 
-void QgsDiagramFactory::supportedWellKnownNames(std::list<QString>& names)
+void QgsWKNDiagramFactory::supportedWellKnownNames(std::list<QString>& names)
 {
   names.clear();
   names.push_back("Pie");
