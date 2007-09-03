@@ -21,7 +21,7 @@
 
 #include <list>
 #include <QColor>
-#include "qgsdiagramfactory.h"
+#include "qgswkndiagramfactory.h"
 #include "qgsvectorlayer.h" //for QgsAttributeList
 
 class QgsFeature;
@@ -66,7 +66,7 @@ class QgsDiagramRenderer
 
  protected:
   /**The object to generate the diagrams*/
-  QgsDiagramFactory mFactory;
+  QgsWKNDiagramFactory mFactory;
  /**The diagram type*/
   QString mWellKnownName;
   /**The attribute numbers needed for classification in the features*/
