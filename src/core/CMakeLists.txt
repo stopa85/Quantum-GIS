@@ -77,9 +77,7 @@ SET_SOURCE_FILES_PROPERTIES(
 SET(QGIS_CORE_MOC_HDRS
 qgscontexthelp.h
 qgscoordinatetransform.h
-qgscsexception.h
 qgsdataprovider.h
-qgsexception.h
 qgshttptransaction.h
 qgsmaplayer.h
 qgsmaplayerregistry.h
@@ -91,9 +89,6 @@ qgsrunprocess.h
 qgsvectorlayer.h
 
 raster/qgsrasterlayer.h
-raster/qgscolortable.h
-raster/qgsrasterpyramid.h
-raster/qgsrasterbandstats.h
 raster/qgsrasterviewport.h
 )
 
@@ -153,13 +148,26 @@ IF (WIN32)
 ENDIF (WIN32)
 
 TARGET_LINK_LIBRARIES(qgis_core
-  ${QT_LIBRARIES} ${QT_QTSVG_LIBRARY}
+  ${QT_QTCORE_LIBRARY} 
+  ${QT_QTGUI_LIBRARY} 
+  ${QT_QTXML_LIBRARY} 
+  #${QT_QTSQL_LIBRARY} 
+  ${QT_QTSVG_LIBRARY} 
+  ${QT_QTNETWORK_LIBRARY} 
+  ${QT_QTMAIN_LIBRARY} 
+  ${QT_QT3SUPPORT_LIBRARY} 
   ${PROJ_LIBRARY}
   ${SQLITE3_LIBRARY}
   ${GEOS_LIBRARY}
   ${GDAL_LIBRARY}
   ${PLATFORM_LIBRARIES}
 )
+#work aroud for the fact that qt3 support on mac is linked ot qsql
+IF (APPLE)
+  TARGET_LINK_LIBRARIES(qgis_core
+    ${QT_QTSQL_LIBRARY} 
+    )
+ENDIF (APPLE)
 
 INSTALL(TARGETS qgis_core
   RUNTIME DESTINATION ${QGIS_BIN_DIR}
@@ -213,6 +221,7 @@ qgsvectorlayer.h
 qgsvectoroverlay.h
 
 raster/qgscolortable.h
+raster/qgsrasterbandstats.h
 raster/qgsrasterlayer.h
 
 renderer/qgscontinuouscolorrenderer.h

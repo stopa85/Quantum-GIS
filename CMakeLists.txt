@@ -1,5 +1,5 @@
 
-PROJECT(qgis0.9.0preview1)
+PROJECT(qgis0.9.0)
 
 # TODO:
 # - install includes for libs
@@ -38,7 +38,7 @@ SET (WITH_BINDINGS TRUE CACHE BOOL "Determines whether python bindings should be
 SET (BINDINGS_GLOBAL_INSTALL FALSE CACHE BOOL "Install bindings to global python directory? (might need root)")
 
 # Compile flag. Make it posible to turn it off.
-SET (PEDANTIC TRUE CACHE BOOL "Determines if we should compile with -Wall -Werror.")
+SET (PEDANTIC FALSE CACHE BOOL "Determines if we should compile with -Wall -Werror.")
 
 # whether unit tests should be build
 SET (ENABLE_TESTS FALSE CACHE BOOL "Build unit tests?")
@@ -193,7 +193,7 @@ ENDIF (WIN32)
 #############################################################
 # create qgsconfig.h
 
-CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/qgsconfig.h.in ${CMAKE_BINARY_DIR}/qgsconfig.h)
+CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/cmake_templates/qgsconfig.h.in ${CMAKE_BINARY_DIR}/qgsconfig.h)
 INSTALL(FILES ${CMAKE_BINARY_DIR}/qgsconfig.h DESTINATION ${QGIS_INCLUDE_DIR})
 
 INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR})
@@ -208,7 +208,7 @@ IF (NOT SVN_MARKER)
 ENDIF (NOT SVN_MARKER)
   # Add a custom command to drive the svn script whenever the svn entries
   # file changes.
-  CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/svnscript.cmake.in_cmake
+  CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/cmake_templates/svnscript.cmake.in_cmake
                 ${CMAKE_CURRENT_BINARY_DIR}/svnscript.cmake
                 @ONLY)
 
@@ -247,7 +247,7 @@ INSTALL (FILES qgis.man
 #############################################################
 # Uninstall stuff see: http://www.vtk.org/Wiki/CMake_FAQ
 CONFIGURE_FILE(
-  "${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"
+  "${CMAKE_CURRENT_SOURCE_DIR}/cmake_templates/cmake_uninstall.cmake.in"
   "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
   IMMEDIATE @ONLY)
 
@@ -265,7 +265,7 @@ SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README")
 SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
 SET(CPACK_PACKAGE_VERSION_MAJOR "0")
 SET(CPACK_PACKAGE_VERSION_MINOR "9")
-SET(CPACK_PACKAGE_VERSION_PATCH "pre")
+SET(CPACK_PACKAGE_VERSION_PATCH "0")
 SET(CPACK_PACKAGE_INSTALL_DIRECTORY "CMake ${CMake_VERSION_MAJOR}.${CMake_VERSION_MINOR}")
 IF(WIN32 AND NOT UNIX)
   # There is a bug in NSI that does not handle full unix paths properly. Make

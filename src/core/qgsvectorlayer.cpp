@@ -1205,23 +1205,25 @@ long QgsVectorLayer::updateFeatureCount() const
 
 void QgsVectorLayer::updateExtents()
 {
+  mLayerExtent.setMinimal();
+  
   if(mDataProvider)
   {
     if(mDeletedFeatureIds.isEmpty())
     {
       // get the extent of the layer from the provider
-      QgsRect r = mDataProvider->extent();
-      mLayerExtent.setXmin(r.xMin());
-      mLayerExtent.setYmin(r.yMin());
-      mLayerExtent.setXmax(r.xMax());
-      mLayerExtent.setYmax(r.yMax());
+      // but only when there are some features already
+      if (mDataProvider->featureCount() != 0)
+      {
+        QgsRect r = mDataProvider->extent();
+        mLayerExtent.combineExtentWith(&r);
+      }
     }
     else
     {
       QgsFeature fet;
       QgsRect bb;
 
-      mLayerExtent.setMinimal();
       mDataProvider->select();
       while (mDataProvider->getNextFeature(fet))
       {
@@ -1246,6 +1248,12 @@ void QgsVectorLayer::updateExtents()
   {
     QgsRect bb = iter->geometry()->boundingBox();
     mLayerExtent.combineExtentWith(&bb);
+  }
+  
+  if (mLayerExtent.xMin() > mLayerExtent.xMax() && mLayerExtent.yMin() > mLayerExtent.yMax())
+  {
+    // special case when there are no features in provider nor any added
+    mLayerExtent = QgsRect(); // use rectangle with zero coordinates
   }
 
   // Send this (hopefully) up the chain to the map canvas
@@ -1275,12 +1283,6 @@ void QgsVectorLayer::setSubsetString(QString subset)
   mDataSource = mDataProvider->dataSourceUri();
   updateExtents();
   
-  //trigger a recalculate extents request to any attached canvases
-  QgsDebugMsg("Subset query changed, emitting recalculateExtents() signal");
-  
-  // emit the signal  to inform any listeners that the extent of this
-  // layer has changed
-  emit recalculateExtents();
 }
 
 
@@ -2963,59 +2965,51 @@ bool QgsVectorLayer::commitAttributeChanges(const QgsAttributeIds& deleted,
                             const QgsChangedAttributesMap& changed)
 {
   bool returnvalue=true;
-
-  if(mDataProvider)
-  {
-    if(mDataProvider->capabilities()&QgsVectorDataProvider::DeleteAttributes)
+  if(mDataProvider->capabilities()&QgsVectorDataProvider::DeleteAttributes)
     {
       //delete attributes in all not commited features
       for (QgsFeatureList::iterator iter = mAddedFeatures.begin(); iter != mAddedFeatures.end(); ++iter)
-      {
-        for (QgsAttributeIds::const_iterator it = deleted.begin(); it != deleted.end(); ++it)
-        {
-          (*iter).deleteAttribute(*it);
-        }
-      }
-
+	{
+	  for (QgsAttributeIds::const_iterator it = deleted.begin(); it != deleted.end(); ++it)
+	    {
+	      (*iter).deleteAttribute(*it);
+	    }
+	}
+      
       //and then in the provider
       if(!mDataProvider->deleteAttributes(deleted))
-      {
-        returnvalue=false;
-      }
+	{
+	  returnvalue=false;
+	}
     }
-
-    if(mDataProvider->capabilities()&QgsVectorDataProvider::AddAttributes)
+  
+  if(mDataProvider->capabilities()&QgsVectorDataProvider::AddAttributes)
     {
       //add attributes in all not commited features
       // TODO: is it necessary? [MD]
       /*for (QgsFeatureList::iterator iter = mAddedFeatures.begin(); iter != mAddedFeatures.end(); ++iter)
-      {
+	{
         for (QgsNewAttributesMap::const_iterator it = added.begin(); it != added.end(); ++it)
         {
-          (*iter).addAttribute(, QgsFeatureAttribute(it.key(), ""));
+	(*iter).addAttribute(, QgsFeatureAttribute(it.key(), ""));
         }
-    }*/
+	}*/
       
       //and then in the provider
       if(!mDataProvider->addAttributes(added))
-      {
-        returnvalue=false;
-      }
+	{
+	  returnvalue=false;
+	}
     }
-
-    if(mDataProvider->capabilities()&QgsVectorDataProvider::ChangeAttributeValues)
+  
+  if(mDataProvider->capabilities()&QgsVectorDataProvider::ChangeAttributeValues)
     {
       //and then those of the commited ones
       if(!mDataProvider->changeAttributeValues(changed))
-      {
-        returnvalue=false;
-      }
+	{
+	  returnvalue=false;
+	}
     }
-  }
-  else
-  {
-    returnvalue=false;
-  }
   return returnvalue;
 }
 

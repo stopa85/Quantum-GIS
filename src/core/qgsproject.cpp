@@ -241,8 +241,8 @@ QgsProject * QgsProject::theProject_;
  {
      QgsPropertyKey * currentProperty = &rootProperty;
 
-     QgsProperty * nextProperty;   // link to next property down hiearchy
-     QgsPropertyKey * previousQgsPropertyKey; // link to previous property up hiearchy
+     QgsProperty * nextProperty = NULL;   // link to next property down hiearchy
+     QgsPropertyKey * previousQgsPropertyKey = NULL; // link to previous property up hiearchy
 
      QStringList keySequence = makeKeyTokens_( scope, key );
 
@@ -679,7 +679,7 @@ static std::pair< bool, std::list<QDomNode> > _getMapLayers(QDomDocument const &
 
         QgsDebugMsg("Layer type is " + type);
 
-        QgsMapLayer *mapLayer;
+        QgsMapLayer *mapLayer = NULL;
         
         if (type == "vector")
         {
@@ -792,7 +792,7 @@ bool QgsProject::read()
     // now get any properties
     _getProperties(*doc, imp_->properties_);
 
-    QgsDebugMsg(QString(imp_->properties_.count()) + " properties read");
+    QgsDebugMsg(QString::number(imp_->properties_.count()) + " properties read");
 
     dump_(imp_->properties_);
 
@@ -852,7 +852,7 @@ bool QgsProject::read()
 
         if ( ! getMapLayersResults.second.empty() )
         {
-          QgsDebugMsg("there are " + QString(getMapLayersResults.second.size()) + " broken layers");
+          QgsDebugMsg("there are " + QString::number(getMapLayersResults.second.size()) + " broken layers");
         }
 
         // Since we could be executing this from the test harness which
