@@ -1441,35 +1441,17 @@ bool QgsVectorLayer::deleteSelectedFeatures()
 int QgsVectorLayer::addRing(const QList<QgsPoint>& ring)
 {
   int addRingReturnCode = 0;
+  double xMin, yMin, xMax, yMax;
+  QgsRect bBox;
 
-  //calculate bounding box of ring
-  double xMin = std::numeric_limits<double>::max();
-  double xMax = -std::numeric_limits<double>::max();
-  double yMin = std::numeric_limits<double>::max();
-  double yMax = -std::numeric_limits<double>::max();
-
-  for(QList<QgsPoint>::const_iterator it = ring.constBegin(); it != ring.constEnd(); ++it)
+  if(boundingBoxFromPointList(ring, xMin, yMin, xMax, yMax) == 0)
     {
-      if(it->x() < xMin)
-	{
-	  xMin = it->x();
-	}
-      if(it->x() > xMax)
-	{
-	  xMax = it->x();
-	}
-      if(it->y() < yMin)
-	{
-	  yMin = it->y();
-	}
-      if(it->y() > yMax)
-	{
-	  yMax = it->y();
-	}
+      bBox.setXmin(xMin); bBox.setYmin(yMin); bBox.setXmax(xMax); bBox.setYmax(yMax);
     }
-
-  QgsRect bBox(xMin, yMin, xMax, yMax);
-  //qWarning("Bounding box of ring is: " + bBox.stringRep());
+  else
+    {
+      return 3; //ring not valid 
+    }
 
   std::set<int> idList; //store the ids of the features we already added the ring
 
@@ -1632,6 +1614,103 @@ int QgsVectorLayer::translateFeature(int featureId, double dx, double dy)
 	return errorCode;
     }
   return 1; //geometry not found
+}
+
+int QgsVectorLayer::splitFeatures(const QList<QgsPoint>& splitLine)
+{
+  QgsGeometry* newGeometry = 0;
+  QgsFeatureList newFeatures; //store all the newly created features
+  double xMin, yMin, xMax, yMax;
+  QgsRect bBox; //bounding box of the split line
+
+  if(boundingBoxFromPointList(splitLine, xMin, yMin, xMax, yMax) == 0)
+    {
+      bBox.setXmin(xMin); bBox.setYmin(yMin); bBox.setXmax(xMax); bBox.setYmax(yMax);
+    }
+  else
+    {
+      return 1;
+    }
+
+  //find out the features contained in the bounding box of the line  
+  std::set<int> idList; //store the ids of the features we already examined
+
+  //first examine the changed features
+  QgsGeometryMap::iterator changedIt;
+  for(changedIt = mChangedGeometries.begin(); changedIt != mChangedGeometries.end(); ++changedIt)
+    {
+      if(changedIt.value().intersects(bBox))
+	{
+	  if(changedIt->splitGeometry(splitLine, &newGeometry) == 0)
+	    {
+	      //insert new feature
+	      QgsFeature newFeature;
+	      newFeature.setGeometry(newGeometry);
+	      //how do we copy the attributes of the features here?
+	      newFeatures.append(newFeature);
+	      setModified(true, true);
+	    }
+	}
+      idList.insert(changedIt.key());
+    }
+
+  //then added features
+  //call addRing for every feature in mAddedFeatures
+  for(int i = 0; i < mAddedFeatures.size(); ++i)
+    {
+      if(idList.find(mAddedFeatures.at(i).featureId()) == idList.end())
+	{
+	  //if a geometry is not contained in mCachedGeometries, it is not in the view extent and therefore cannot intersect the ring
+	  if(mCachedGeometries.contains(mAddedFeatures.at(i).featureId()))
+	    {
+	      if(mCachedGeometries[mAddedFeatures.at(i).featureId()].splitGeometry(splitLine, &newGeometry) == 0)
+		{
+		  mChangedGeometries[mAddedFeatures.at(i).featureId()] = mCachedGeometries[mAddedFeatures.at(i).featureId()];
+		  //and also insert new feature
+		  QgsFeature newFeature;
+		  newFeature.setGeometry(newGeometry);
+		  newFeature.setAttributeMap(mAddedFeatures.at(i).attributeMap()); //copy the attributes?
+		  newFeatures.append(newFeature);		  
+		  setModified(true, true);
+		}
+	    }
+	  idList.insert(mAddedFeatures.at(i).featureId());
+	}
+    }
+
+  //finally the ordinary features
+  
+  //call splitGeometry for every feature intersecting bounding box
+  mDataProvider->select(QgsAttributeList(), bBox, true, true);
+  QgsFeature currentFeature;
+  QgsGeometry* currentGeometryPtr = 0;
+
+  while(mDataProvider->getNextFeature(currentFeature))
+    {
+      if(idList.find(currentFeature.featureId()) == idList.end())
+	{
+	  currentGeometryPtr = currentFeature.geometry();
+	    if(currentGeometryPtr)
+	    {
+	      QgsGeometry changedGeometry(*currentGeometryPtr);
+	      if(changedGeometry.splitGeometry(splitLine, &newGeometry) == 0)
+		{
+		  //change existing geometry
+		  mChangedGeometries.insert(currentFeature.featureId(), changedGeometry);
+		  //and insert new feature
+		  QgsFeature newFeature;
+		  newFeature.setGeometry(newGeometry);
+		  newFeature.setAttributeMap(currentFeature.attributeMap());
+		  newFeatures.append(newFeature);
+		  setModified(true, true);
+		}
+	    }
+	}
+    }
+
+  //now add the new features to this vectorlayer
+  addFeatures(newFeatures, false);
+  return 0;
 }
 
 QgsLabel * QgsVectorLayer::label()
@@ -2632,6 +2711,41 @@ void QgsVectorLayer::snapToGeometry(const QgsPoint& startPoint, int featureId, Q
 	  snappingResults.insert(sqrt(sqrDistSegmentSnap), snappingResultSegment);
 	}
     }
+}
+
+int QgsVectorLayer::boundingBoxFromPointList(const QList<QgsPoint>& list, double& xmin, double& ymin, double& xmax, double& ymax) const
+{
+  if(list.size() < 1)
+    {
+      return 1;
+    }
+
+  xmin = std::numeric_limits<double>::max();
+  xmax = -std::numeric_limits<double>::max();
+  ymin = std::numeric_limits<double>::max();
+  ymax = -std::numeric_limits<double>::max();
+
+  for(QList<QgsPoint>::const_iterator it = list.constBegin(); it != list.constEnd(); ++it)
+    {
+      if(it->x() < xmin)
+	{
+	  xmin = it->x();
+	}
+      if(it->x() > xmax)
+	{
+	  xmax = it->x();
+	}
+      if(it->y() < ymin)
+	{
+	  ymin = it->y();
+	}
+      if(it->y() > ymax)
+	{
+	  ymax = it->y();
+	}
+    }
+
+  return 0;
 }
 
 void QgsVectorLayer::drawFeature(QPainter* p,
