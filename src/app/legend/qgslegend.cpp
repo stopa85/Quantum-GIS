@@ -981,6 +981,8 @@ bool QgsLegend::readXML(QDomNode& legendnode)
 		  //remove the whole legendlayer if this is the only legendlayerfile
 		  if(childelem.previousSibling().isNull() && childelem.nextSibling().isNull())
 		    {
+		      collapsed.remove(lastLayer);
+		      expanded.remove(lastLayer);
 		      delete lastLayer;
 		    }
 		}
@@ -1352,6 +1354,22 @@ void QgsLegend::updateMapCanvasLayerSet()
 void QgsLegend::updateOverview()
 {
   mMapCanvas->updateOverview();
+}
+
+void QgsLegend::setOverviewAllLayers(bool inOverview)
+{
+  QTreeWidgetItem* theItem = firstItem();
+  while(theItem)
+    {
+      QgsLegendLayerFile* llf = dynamic_cast<QgsLegendLayerFile*>(theItem);
+      if(llf)
+	{
+	  llf->setInOverview(inOverview);
+	}
+      theItem = nextItem(theItem);
+    }
+  updateMapCanvasLayerSet();
+  updateOverview();
 }
 
 std::deque<QString> QgsLegend::layerIDs()

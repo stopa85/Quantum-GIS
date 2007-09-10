@@ -964,10 +964,6 @@ void QgsGrassEdit::closeEdit(void)
   std::cerr << "QgsGrassEdit::close()" << std::endl;
 #endif
 
-  // grass edit tool would become invalid
-  // ...delete it, it will notify map canvas
-  delete mCanvas->mapTool();
-
   // Disconnect signals
   // Warning: it seems that slots (postRender) can be called even 
   //          after disconnect (is it a queue?) 
@@ -1198,8 +1194,9 @@ void QgsGrassEdit::snap (  QgsPoint & point, double startX, double startY )
   if ( startDist <= thresh ) startIn = true;
 
   // Nearest node
-  double nodeX, nodeY;     
-  double nodeDist;
+  double nodeX = 0;
+  double  nodeY = 0;     
+  double nodeDist = 0;
   bool nodeIn = false;
   int node = mProvider->findNode ( x, y, thresh );
 

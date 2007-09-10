@@ -706,7 +706,9 @@ if(QgsRasterLayer::PALETTED_COLOR != rasterLayer->getDrawingStyle() &&
    * Metadata Tab
    */
   //populate the metadata tab's text browser widget with gdal metadata info
-  txtbMetadata->setText(rasterLayer->getMetadata());
+  QString myStyle = QgsApplication::reportStyleSheet();
+  txtbMetadata->setHtml(rasterLayer->getMetadata());
+  txtbMetadata->document()->setDefaultStyleSheet(myStyle);
 
 } // QgsRasterLayerProperties::sync()
 
@@ -1378,7 +1380,9 @@ void QgsRasterLayerProperties::on_buttonBuildPyramids_clicked()
   pixmapLegend->setScaledContents(true);
   pixmapLegend->repaint(false);
   //populate the metadata tab's text browser widget with gdal metadata info
-  txtbMetadata->setText(rasterLayer->getMetadata());
+  QString myStyle = QgsApplication::reportStyleSheet();
+  txtbMetadata->setHtml(rasterLayer->getMetadata());
+  txtbMetadata->document()->setDefaultStyleSheet(myStyle);
 }
 
 void QgsRasterLayerProperties::on_pbnAddValuesFromDisplay_clicked()

@@ -130,10 +130,11 @@ class QgsAttributeTable:public Q3Table
       and the value the attribute type*/
     QgsNewAttributesMap mAddedAttributes;
     /**Set containing the attribute names of deleted attributes*/
-    QgsFeatureIds mDeletedAttributes;
+    QSet<QString> mDeletedAttributes;
     /**Nested map containing the changed attribute values. The int is the feature id, 
       the first QString the attribute name and the second QString the new value*/
-    QgsChangedAttributesMap mChangedValues;
+    QMap<int, QMap<QString, QString> > mChangedValues;
+
     /**Stors the numbers of the last selected rows. This is used to check for selection changes before emit repaintRequested()*/
     std::set<int> mLastSelectedRows;
 
@@ -154,11 +155,6 @@ class QgsAttributeTable:public Q3Table
     /**This function compares the current selection and the selection of the last repaint. Returns true if there are differences in the selection.
      Also, mLastSelectedRows is updated*/
     bool checkSelectionChanges();
-    
-    /** returns column index for field index or -1 on invalid field index */
-    int colIndexFromFieldIndex(int fieldId);
-    /** returns field index for a column or -1 when on invalid column */
-    int fieldIndexFromColIndex(int colIndex);
 
 signals:
 

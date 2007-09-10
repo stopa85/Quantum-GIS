@@ -42,7 +42,6 @@ QgsGraduatedSymbolDialog::QgsGraduatedSymbolDialog(QgsVectorLayer * layer): QDia
     if (provider)
     {
 	const QgsFieldMap & fields = provider->fields();
-	int fieldnumber = 0;
 	QString str;
 	
 	for (QgsFieldMap::const_iterator it = fields.begin(); 
@@ -52,11 +51,9 @@ QgsGraduatedSymbolDialog::QgsGraduatedSymbolDialog(QgsVectorLayer * layer): QDia
 	    QVariant::Type type = (*it).type();
 	    if (type == QVariant::Int || type == QVariant::Double)
             {
-		str = (*it).name();
-		classificationComboBox->insertItem(str);
-		mFieldMap.insert(std::make_pair(str, fieldnumber));
+	      classificationComboBox->insertItem(it->name());
+	      mFieldMap.insert(std::make_pair(it->name(), it.key()));
             }
-	    fieldnumber++;
         }
     } 
     else
@@ -96,6 +93,7 @@ QgsGraduatedSymbolDialog::QgsGraduatedSymbolDialog(QgsVectorLayer * layer): QDia
 		QString classbreak=(*it)->lowerValue()+" - "+(*it)->upperValue();
 		QgsSymbol* sym=new QgsSymbol(mVectorLayer->vectorType(), (*it)->lowerValue(), (*it)->upperValue(), (*it)->label());
 		sym->setPen((*it)->pen());
+		sym->setCustomTexture((*it)->customTexture());
 		sym->setBrush((*it)->brush());
 		sym->setNamedPointSymbol((*it)->pointSymbolName());
 		sym->setPointSize((*it)->pointSize());
@@ -185,6 +183,7 @@ void QgsGraduatedSymbolDialog::apply()
 	  if (mVectorLayer->vectorType() != QGis::Line)
             {
 	      sy->setFillColor(it->second->brush().color());
+	      sy->setCustomTexture(it->second->customTexture());//necessary?
 	      sy->setFillStyle(it->second->brush().style());
             }
 	  
@@ -230,7 +229,8 @@ void QgsGraduatedSymbolDialog::adjustClassification()
     mClassListWidget->clear();
     QGis::VectorType m_type = mVectorLayer->vectorType();
     QgsVectorDataProvider *provider = dynamic_cast<QgsVectorDataProvider *>(mVectorLayer->getDataProvider());
-    double minimum, maximum;
+    double minimum = 0;
+    double maximum = 0;
     
     //delete all previous entries
     for(std::map<QString, QgsSymbol*>::iterator it=mEntries.begin();it!=mEntries.end();++it)
