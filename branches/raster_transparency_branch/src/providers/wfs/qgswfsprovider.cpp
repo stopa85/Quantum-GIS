@@ -60,7 +60,6 @@ QgsWFSProvider::QgsWFSProvider(const QString& uri)
 QgsWFSProvider::~QgsWFSProvider()
 {
   delete mSelectedFeatures;
-  delete mSourceSRS;
   for(std::list<std::pair<GEOS_GEOM::Envelope*, QgsFeature*> >::iterator it = mEnvelopesAndFeatures.begin();\
       it != mEnvelopesAndFeatures.end(); ++it)
     {
@@ -104,7 +103,7 @@ bool QgsWFSProvider::getNextFeature(QgsFeature& feature)
 	    }
 	  else
 	    {
-	      return false;
+	      continue; //go for the next feature
 	    }
 	}
       else
@@ -146,10 +145,7 @@ void QgsWFSProvider::reset()
 
 QgsSpatialRefSys QgsWFSProvider::getSRS()
 {
-  if (mSourceSRS)
-    return *mSourceSRS;
-  else
-    return QgsSpatialRefSys();
+  return mSourceSRS;
 }
 
 QgsRect QgsWFSProvider::extent()
@@ -291,13 +287,10 @@ int QgsWFSProvider::getFeatureGET(const QString& uri, const QString& geometryAtt
       thematicAttributes.insert(it->name());
     }
   
-  mSourceSRS = new QgsSpatialRefSys();
-  QgsWFSData dataReader(uri, &mExtent, mSourceSRS, &dataFeatures, geometryAttribute, thematicAttributes, &mWKBType);
+  QgsWFSData dataReader(uri, &mExtent, &mSourceSRS, &dataFeatures, geometryAttribute, thematicAttributes, &mWKBType);
   if(dataReader.getWFSData() != 0)
     {
       qWarning("getWFSData returned with error");
-      mSourceSRS = 0;
-      delete mSourceSRS;
       return 1;
     }
 
@@ -403,11 +396,7 @@ int QgsWFSProvider::describeFeatureTypeFile(const QString& uri, QString& geometr
 {
   //first look in the schema file
   QString noExtension = uri;
-  int dotPosition = noExtension.indexOf(".", -1);
-  if(dotPosition != -1)
-    {
-      noExtension.chop(noExtension.length() - 1 - dotPosition);
-    }
+  noExtension.chop(3);
   QString schemaUri = noExtension.append("xsd");
   QFile schemaFile(schemaUri);
   
@@ -730,12 +719,9 @@ int QgsWFSProvider::setSRSFromGML2(const QDomElement& wfsCollectionElement)
 	}
     }
 
-  mSourceSRS = new QgsSpatialRefSys();
-  if(!mSourceSRS->createFromEpsg(epsgId))
+  if(!mSourceSRS.createFromEpsg(epsgId))
     {
       QgsDebugMsg("Error, creation of QgsSpatialRefSys failed");
-      delete mSourceSRS;
-      mSourceSRS = 0;
       return 6;
     }
   return 0;
@@ -765,15 +751,26 @@ int QgsWFSProvider::getFeaturesFromGML2(const QDomElement& wfsCollectionElement,
       layerNameElem = currentFeatureMemberElem.firstChild().toElement();
       //the children are the attributes
       currentAttributeChild = layerNameElem.firstChild();
+      int attr = 0;
+      bool numeric = false;
+
       while(!currentAttributeChild.isNull())
 	{
-          int attr = 0;
 	  currentAttributeElement = currentAttributeChild.toElement();
+	  
 	  if(currentAttributeElement.localName() != "boundedBy")
 	    {
+	      currentAttributeElement.text().toDouble(&numeric);
 	      if((currentAttributeElement.localName()) != geometryAttribute) //a normal attribute
 		{
-		  f->addAttribute(attr++, QVariant(currentAttributeElement.text()));
+		  if(numeric)
+		    {
+		      f->addAttribute(attr++, QVariant(currentAttributeElement.text().toDouble()));
+		    }
+		  else
+		    {
+		      f->addAttribute(attr++, QVariant(currentAttributeElement.text()));
+		    }
 		}
 	      else //a geometry attribute
 		{

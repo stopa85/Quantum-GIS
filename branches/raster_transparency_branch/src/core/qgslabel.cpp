@@ -204,7 +204,8 @@ void QgsLabel::renderLabel( QPainter * painter, QgsRect &viewExtent,
     QFontMetrics fm ( font );
     int width = fm.width ( text );
     int height = fm.height();
-    int dx, dy;
+    int dx = 0;
+    int dy = 0;
 
     value = fieldValue ( Alignment, feature );
     if ( value.isEmpty() )
@@ -636,6 +637,15 @@ unsigned char* QgsLabel::labelPoint ( QgsPoint& point, unsigned char* geom)
     return nextFeature;
 }
 
+static int _elementFieldIndex(QDomElement& el)
+{
+	QString str = el.attribute("field","");
+	if (str == "")
+		return -1;
+	else
+		return str.toInt();
+}
+
 void QgsLabel::readXML( const QDomNode& node )
 {
     QgsDebugMsg(" called for layer label properties, got node " + node.nodeName());
@@ -657,7 +667,7 @@ void QgsLabel::readXML( const QDomNode& node )
     {
         el = scratchNode.toElement();
         mLabelAttributes->setText ( el.attribute("text","") );
-        setLabelField ( Text, el.attribute("field","").toInt() );
+        setLabelField ( Text, _elementFieldIndex(el) );
     }
 
     /* Family */
@@ -671,7 +681,7 @@ void QgsLabel::readXML( const QDomNode& node )
     {
         el = scratchNode.toElement();
         mLabelAttributes->setFamily ( el.attribute("name","") );
-        setLabelField ( Family, el.attribute("field","").toInt() );
+        setLabelField ( Family, _elementFieldIndex(el) );
     }
 
     /* Size */
@@ -686,7 +696,7 @@ void QgsLabel::readXML( const QDomNode& node )
         el = scratchNode.toElement();
         type = QgsLabelAttributes::unitsCode( el.attribute("units","") );
         mLabelAttributes->setSize ( el.attribute("value", "0.0").toDouble(), type );
-        setLabelField ( Size, el.attribute("field","").toInt() );
+        setLabelField ( Size, _elementFieldIndex(el) );
     }
 
     /* Bold */
@@ -700,7 +710,7 @@ void QgsLabel::readXML( const QDomNode& node )
     {
         el = scratchNode.toElement();
         mLabelAttributes->setBold ( (bool)el.attribute("on","0").toInt() );
-        setLabelField ( Bold, el.attribute("field","").toInt() );
+        setLabelField ( Bold, _elementFieldIndex(el) );
     }
 
     /* Italic */
@@ -714,7 +724,7 @@ void QgsLabel::readXML( const QDomNode& node )
     {
         el = scratchNode.toElement();
         mLabelAttributes->setItalic ( (bool)el.attribute("on","0").toInt() );
-        setLabelField ( Italic, el.attribute("field","").toInt() );
+        setLabelField ( Italic, _elementFieldIndex(el) );
     }
 
     /* Underline */
@@ -728,7 +738,7 @@ void QgsLabel::readXML( const QDomNode& node )
     {
         el = scratchNode.toElement();
         mLabelAttributes->setUnderline ( (bool)el.attribute("on","0").toInt() );
-        setLabelField ( Underline, el.attribute("field","").toInt() );
+        setLabelField ( Underline, _elementFieldIndex(el) );
     }
 
     /* Color */
@@ -748,7 +758,7 @@ void QgsLabel::readXML( const QDomNode& node )
 
         mLabelAttributes->setColor( QColor(red, green, blue) );
 
-        setLabelField ( Color, el.attribute("field","").toInt() );
+        setLabelField ( Color, _elementFieldIndex(el) );
     }
 
     /* X */
@@ -761,7 +771,7 @@ void QgsLabel::readXML( const QDomNode& node )
     else
     {
         el = scratchNode.toElement();
-        setLabelField ( XCoordinate, el.attribute("field","").toInt() );
+        setLabelField ( XCoordinate, _elementFieldIndex(el) );
     }
 
     /* Y */
@@ -774,7 +784,7 @@ void QgsLabel::readXML( const QDomNode& node )
     else
     {
         el = scratchNode.toElement();
-        setLabelField ( YCoordinate, el.attribute("field","").toInt() );
+        setLabelField ( YCoordinate, _elementFieldIndex(el) );
     }
 
 
@@ -811,7 +821,7 @@ void QgsLabel::readXML( const QDomNode& node )
     {
         el = scratchNode.toElement();
         mLabelAttributes->setAngle ( el.attribute("value","0.0").toDouble() );
-        setLabelField ( Angle, el.attribute("field","0").toInt() );
+        setLabelField ( Angle, _elementFieldIndex(el) );
     }
 
     /* Alignment */
@@ -825,7 +835,7 @@ void QgsLabel::readXML( const QDomNode& node )
     {
         el = scratchNode.toElement();
         mLabelAttributes->setAlignment ( QgsLabelAttributes::alignmentCode(el.attribute("value","")) );
-        setLabelField ( Alignment, el.attribute("field","").toInt() );
+        setLabelField ( Alignment, _elementFieldIndex(el) );
     }
 
 
@@ -845,7 +855,7 @@ void QgsLabel::readXML( const QDomNode& node )
         blue = el.attribute("blue","0").toInt();
 
         mLabelAttributes->setBufferColor( QColor(red, green, blue) );
-        setLabelField ( BufferColor, el.attribute("field","").toInt() );
+        setLabelField ( BufferColor, _elementFieldIndex(el) );
     }
 
     scratchNode = node.namedItem("buffersize");
@@ -860,7 +870,7 @@ void QgsLabel::readXML( const QDomNode& node )
 
         type = QgsLabelAttributes::unitsCode( el.attribute("units","") );
         mLabelAttributes->setBufferSize ( el.attribute("value","0.0").toDouble(), type );
-        setLabelField ( BufferSize, el.attribute("field","").toInt() );
+        setLabelField ( BufferSize, _elementFieldIndex(el) );
     }
 
     scratchNode = node.namedItem("bufferenabled");
@@ -874,7 +884,7 @@ void QgsLabel::readXML( const QDomNode& node )
         el = scratchNode.toElement();
 
         mLabelAttributes->setBufferEnabled ( (bool)el.attribute("on","0").toInt() );
-        setLabelField ( BufferEnabled, el.attribute("field","").toInt() );
+        setLabelField ( BufferEnabled, _elementFieldIndex(el) );
     }
 
 } // QgsLabel::readXML()

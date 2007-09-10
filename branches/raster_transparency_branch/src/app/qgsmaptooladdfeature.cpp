@@ -119,10 +119,10 @@ void QgsMapToolAddFeature::canvasReleaseEvent(QMouseEvent * e)
 	  // snap point to points within the vector layer snapping tolerance
 	  vlayer->snapPoint(savePoint, tolerance);
 	  
-	  int size;
+	  int size = 0;
 	  char end=QgsApplication::endian();
-	  unsigned char *wkb;
-	  int wkbtype;
+	  unsigned char *wkb = NULL;
+	  int wkbtype = 0;
 	  double x = savePoint.x();
 	  double y = savePoint.y();
 	  
@@ -223,6 +223,13 @@ void QgsMapToolAddFeature::canvasReleaseEvent(QMouseEvent * e)
 	  delete mRubberBand;
 	  mRubberBand = NULL;
 	  
+	  //bail out if there are not at least two vertices
+	  if(mCaptureList.size() < 2)
+	    {
+	      mCaptureList.clear();
+	      return;
+	    }
+
 	  //create QgsFeature with wkb representation
 	  QgsFeature* f = new QgsFeature(0,"WKBLineString");
 	  unsigned char* wkb;

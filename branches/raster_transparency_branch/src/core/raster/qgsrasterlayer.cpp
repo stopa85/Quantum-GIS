@@ -377,7 +377,7 @@ QgsRasterLayer::QgsRasterLayer(QString const & path, QString const & baseName)
   mStandardDeviations(0),
     mCustomClassificationEnabled(false),
     mDiscreteClassification(false),
-    mDataProvder(0)
+    mDataProvider(0)
 {
   mUserDefinedRGBMinMaxFlag = false; //defaults needed to bypass stretch
   mUserDefinedGrayMinMaxFlag = false;
@@ -577,7 +577,7 @@ bool QgsRasterLayer::readFile( QString const & fileName )
     //Beacuse the transparent band can be set from a different layer defaulting to the fourth
     //is not a sensible default P.Ersts 2007-05-14
     /*
-    if (gdalDataset->GetRasterCount() > 3)
+    if (mGdalDataset->GetRasterCount() > 3)
       mTransparencyBandName = getRasterBandName(4);
     else
     */
@@ -1142,7 +1142,7 @@ bool QgsRasterLayer::draw(QPainter * theQPainter,
     emit setStatus(QString("Retrieving using ")+mProviderKey);
 
     QImage* image = 
-      mDataProvder->draw(
+      mDataProvider->draw(
                          myRasterExtent,
                          // Below should calculate to the actual pixel size of the
                          // part of the layer that's visible.
@@ -1157,14 +1157,14 @@ bool QgsRasterLayer::draw(QPainter * theQPainter,
     if (!image)
     {
       // An error occurred.
-      mErrorCaption = mDataProvder->errorCaptionString();
-      mError        = mDataProvder->errorString();
+      mErrorCaption = mDataProvider->errorCaptionString();
+      mError        = mDataProvider->errorString();
 
       delete myRasterViewPort;
       return FALSE;
     }
 
-    QgsDebugMsg("QgsRasterLayer::draw: Done mDataProvder->draw.");
+    QgsDebugMsg("QgsRasterLayer::draw: Done mDataProvider->draw.");
     QgsDebugMsg("QgsRasterLayer::draw: image stats: ");
 #ifdef QGISDEBUG
     QgsLogger::debug("depth", image->depth(), __FILE__, __FUNCTION__, __LINE__, 1);
@@ -2240,7 +2240,7 @@ void QgsRasterLayer::drawPalettedSingleBandPseudoColor(QPainter * theQPainter, Q
       bool found = myColorTable->color ( myVal, &c1, &c2, &c3 );
       if ( !found ) continue;
 
-      int my;
+      int my = 0;
 
       //check for alternate color mappings
       if (theColorQString == mRedBandName)
@@ -2609,9 +2609,9 @@ void QgsRasterLayer::drawMultiBandColor(QPainter * theQPainter, QgsRasterViewPor
   }
 
   bool haveTransparencyBand(false);
-  GDALRasterBand *myGdalTransparentBand;
-  GDALDataType myTransparentType;
-  void *myGdalTransparentData;
+  GDALRasterBand *myGdalTransparentBand = NULL;
+  GDALDataType myTransparentType = GDT_Byte; //default to prevent uninitialised var warnings
+  void *myGdalTransparentData = NULL;
 
   if (mTransparencyBandName != tr("Not Set"))
   {
@@ -2734,13 +2734,9 @@ void QgsRasterLayer::drawMultiBandColor(QPainter * theQPainter, QgsRasterViewPor
           continue;
       }
 
-      // TODO: check all channels ?
-      if ( myRedValue == mNoDataValue || myRedValue != myRedValue)
+      // TODO: make this into a function 
+      if((myRedValue == mNoDataValue || myRedValue != myRedValue) || (myGreenValue == mNoDataValue || myGreenValue != myGreenValue) || (myBlueValue == mNoDataValue || myBlueValue != myBlueValue))
       {
-#ifdef QGISDEBUG
-        //	QgsLogger::debug("myRedValue", myRedValue, __FILE__, __FUNCTION__, __LINE__, 1);
-        //	QgsLogger::debug("mNoDataValue", mNoDataValue, __FILE__, __FUNCTION__, __LINE__, 1);
-#endif
         continue;
       }
 
@@ -4100,9 +4096,9 @@ QPixmap QgsRasterLayer::getDetailedLegendQPixmap(int theLabelCount=3)
 QStringList QgsRasterLayer::subLayers() const
 {
 
-  if (mDataProvder)
+  if (mDataProvider)
   {
-    return mDataProvder->subLayers();
+    return mDataProvider->subLayers();
   }
   else
   {
@@ -4118,10 +4114,10 @@ void QgsRasterLayer::setLayerOrder(QStringList const & layers)
 {
   QgsDebugMsg("QgsRasterLayer::setLayerOrder: Entered.");
 
-  if (mDataProvder)
+  if (mDataProvider)
   {
-    QgsDebugMsg("QgsRasterLayer::setLayerOrder: About to mDataProvder->setLayerOrder(layers).");
-    mDataProvder->setLayerOrder(layers);
+    QgsDebugMsg("QgsRasterLayer::setLayerOrder: About to mDataProvider->setLayerOrder(layers).");
+    mDataProvider->setLayerOrder(layers);
   }
 
 }
@@ -4131,10 +4127,10 @@ void QgsRasterLayer::setLayerOrder(QStringList const & layers)
 void QgsRasterLayer::setSubLayerVisibility(QString const &  name, bool vis)
 {
 
-  if (mDataProvder)
+  if (mDataProvider)
   {
-    QgsDebugMsg("QgsRasterLayer::setSubLayerVisibility: About to mDataProvder->setSubLayerVisibility(name, vis).");
-    mDataProvder->setSubLayerVisibility(name, vis);
+    QgsDebugMsg("QgsRasterLayer::setSubLayerVisibility: About to mDataProvider->setSubLayerVisibility(name, vis).");
+    mDataProvider->setSubLayerVisibility(name, vis);
   }
 
 }
@@ -4201,12 +4197,12 @@ cStringList2Q_( char ** stringList )
 
 QString QgsRasterLayer::getMetadata()
 {
-  QString myMetadataQString = "<html><body>";
-  myMetadataQString += "<table width=\"100%\">";
-  myMetadataQString += "<tr><td bgcolor=\"gray\">";
+  QString myMetadataQString ;
+  myMetadataQString += "<table class=\"wide\">";
+  myMetadataQString += "<tr><td class=\"glossy\">";
   myMetadataQString += tr("Driver:");
   myMetadataQString += "</td></tr>";
-  myMetadataQString += "<tr><td bgcolor=\"white\">";
+  myMetadataQString += "<tr><td>";
   if (mProviderKey.isEmpty())
   {
     myMetadataQString += QString(mGdalDataset->GetDriver()->GetDescription());
@@ -4215,24 +4211,24 @@ QString QgsRasterLayer::getMetadata()
   }
   else
   {
-    myMetadataQString += mDataProvder->description();
+    myMetadataQString += mDataProvider->description();
   }
   myMetadataQString += "</td></tr>";
 
   if (!mProviderKey.isEmpty())
   {
     // Insert provider-specific (e.g. WMS-specific) metadata
-    myMetadataQString += mDataProvder->getMetadata();
+    myMetadataQString += mDataProvider->getMetadata();
   }
   else
   {
 
     // my added code (MColetti)
 
-    myMetadataQString += "<tr><td bgcolor=\"gray\">";
+    myMetadataQString += "<tr><td class=\"glossy\">";
     myMetadataQString += tr("Dataset Description");
     myMetadataQString += "</td></tr>";
-    myMetadataQString += "<tr><td bgcolor=\"white\">";
+    myMetadataQString += "<tr><td>";
     myMetadataQString += QFile::decodeName(mGdalDataset->GetDescription());
     myMetadataQString += "</td></tr>";
 
@@ -4279,10 +4275,10 @@ QString QgsRasterLayer::getMetadata()
 
     // end my added code
 
-    myMetadataQString += "<tr><td bgcolor=\"gray\">";
+    myMetadataQString += "<tr><td class=\"glossy\">";
     myMetadataQString += tr("Dimensions:");
     myMetadataQString += "</td></tr>";
-    myMetadataQString += "<tr><td bgcolor=\"white\">";
+    myMetadataQString += "<tr><td>";
     myMetadataQString += tr("X: ") + QString::number(mGdalDataset->GetRasterXSize()) +
       tr(" Y: ") + QString::number(mGdalDataset->GetRasterYSize()) + tr(" Bands: ") + QString::number(mGdalDataset->GetRasterCount());
     myMetadataQString += "</td></tr>";
@@ -4290,18 +4286,18 @@ QString QgsRasterLayer::getMetadata()
     //just use the first band
     GDALRasterBand *myGdalBand = mGdalDataset->GetRasterBand(1);
 
-    myMetadataQString += "<tr><td bgcolor=\"gray\">";
+    myMetadataQString += "<tr><td class=\"glossy\">";
     myMetadataQString += tr("No Data Value");
     myMetadataQString += "</td></tr>";
-    myMetadataQString += "<tr><td bgcolor=\"white\">";
+    myMetadataQString += "<tr><td>";
     myMetadataQString += QString::number(mNoDataValue);
     myMetadataQString += "</td></tr>";
 
     myMetadataQString += "</td></tr>";
-    myMetadataQString += "<tr><td bgcolor=\"gray\">";
+    myMetadataQString += "<tr><td class=\"glossy\">";
     myMetadataQString += tr("Data Type:");
     myMetadataQString += "</td></tr>";
-    myMetadataQString += "<tr><td bgcolor=\"white\">";
+    myMetadataQString += "<tr><td>";
     switch (myGdalBand->GetRasterDataType())
     {
       case GDT_Byte:
@@ -4326,10 +4322,10 @@ QString QgsRasterLayer::getMetadata()
         myMetadataQString += tr("GDT_Float64 - Sixty four bit floating point ");
         break;
       case GDT_CInt16:
-        myMetadataQString += tr("GDT_CInt16 - Complex 16 ");
+        myMetadataQString += tr("GDT_CInt16 - Complex Int16 ");
         break;
       case GDT_CInt32:
-        myMetadataQString += tr("GDT_CInt32 - Complex 32 ");
+        myMetadataQString += tr("GDT_CInt32 - Complex Int32 ");
         break;
       case GDT_CFloat32:
         myMetadataQString += tr("GDT_CFloat32 - Complex Float32 ");
@@ -4342,20 +4338,20 @@ QString QgsRasterLayer::getMetadata()
     }
     myMetadataQString += "</td></tr>";
 
-    myMetadataQString += "<tr><td bgcolor=\"gray\">";
+    myMetadataQString += "<tr><td class=\"glossy\">";
     myMetadataQString += tr("Pyramid overviews:");
     myMetadataQString += "</td></tr>";
-    myMetadataQString += "<tr><td bgcolor=\"white\">";
+    myMetadataQString += "<tr><td>";
 
     if( GDALGetOverviewCount(myGdalBand) > 0 )
     {
-      int myOverviewCount;
-      for( myOverviewCount = 0;
-          myOverviewCount < GDALGetOverviewCount(myGdalBand);
-          ++myOverviewCount )
+      int myOverviewInt;
+      for( myOverviewInt = 0;
+          myOverviewInt < GDALGetOverviewCount(myGdalBand);
+          myOverviewInt++ )
       {
         GDALRasterBandH myOverview;
-        myOverview = GDALGetOverview( myGdalBand, myOverviewCount );
+        myOverview = GDALGetOverview( myGdalBand, myOverviewInt );
         myMetadataQString += "<p>X : " + QString::number(GDALGetRasterBandXSize( myOverview ));
         myMetadataQString += ",Y " + QString::number(GDALGetRasterBandYSize( myOverview ) ) + "</p>";
       }
@@ -4363,20 +4359,20 @@ QString QgsRasterLayer::getMetadata()
     myMetadataQString += "</td></tr>";
   }  // if (mProviderKey.isEmpty())
 
-  myMetadataQString += "<tr><td bgcolor=\"gray\">";
+  myMetadataQString += "<tr><td class=\"glossy\">";
   myMetadataQString += tr("Layer Spatial Reference System: ");
   myMetadataQString += "</td></tr>";
-  myMetadataQString += "<tr><td bgcolor=\"white\">";
+  myMetadataQString += "<tr><td>";
   myMetadataQString += mSRS->proj4String();
   myMetadataQString += "</td></tr>";
 
   // output coordinate system
   // TODO: this is not related to layer, to be removed? [MD]
   /*  
-      myMetadataQString += "<tr><td bgcolor=\"gray\">";
+      myMetadataQString += "<tr><td class=\"glossy\">";
       myMetadataQString += tr("Project Spatial Reference System: ");
       myMetadataQString += "</td></tr>";
-      myMetadataQString += "<tr><td bgcolor=\"white\">";
+      myMetadataQString += "<tr><td>";
       myMetadataQString +=  mCoordinateTransform->destSRS().proj4String();
       myMetadataQString += "</td></tr>";
       */
@@ -4391,19 +4387,19 @@ QString QgsRasterLayer::getMetadata()
     }
     else
     {
-      myMetadataQString += "<tr><td bgcolor=\"gray\">";
+      myMetadataQString += "<tr><td class=\"glossy\">";
       myMetadataQString += tr("Origin:");
       myMetadataQString += "</td></tr>";
-      myMetadataQString += "<tr><td bgcolor=\"white\">";
+      myMetadataQString += "<tr><td>";
       myMetadataQString += QString::number(mGeoTransform[0]);
       myMetadataQString += ",";
       myMetadataQString += QString::number(mGeoTransform[3]);
       myMetadataQString += "</td></tr>";
 
-      myMetadataQString += "<tr><td bgcolor=\"gray\">";
+      myMetadataQString += "<tr><td class=\"glossy\">";
       myMetadataQString += tr("Pixel Size:");
       myMetadataQString += "</td></tr>";
-      myMetadataQString += "<tr><td bgcolor=\"white\">";
+      myMetadataQString += "<tr><td>";
       myMetadataQString += QString::number(mGeoTransform[1]);
       myMetadataQString += ",";
       myMetadataQString += QString::number(mGeoTransform[5]);
@@ -4413,48 +4409,45 @@ QString QgsRasterLayer::getMetadata()
     //
     // Add the stats for each band to the output table
     //
-    myMetadataQString += "<tr><td bgcolor=\"gray\">";
-    myMetadataQString += tr("Band Statistics (if gathered):");
-    myMetadataQString += "</td></tr>";
-    myMetadataQString += "<tr><td bgcolor=\"white\">";
+    myMetadataQString += "<tr><td>";
 
     // Start a nested table in this trow
-    myMetadataQString += "<table width=\"100%\">";
-    myMetadataQString += "<tr><th bgcolor=\"black\">";
-    myMetadataQString += "<font color=\"white\">" + tr("Property") + "</font>";
-    myMetadataQString += "</th>";
-    myMetadataQString += "<th bgcolor=\"black\">";
-    myMetadataQString += "<font color=\"white\">" + tr("Value") + "</font>";
+    myMetadataQString += "<table class=\"wide\">";
+    myMetadataQString += "<tr><td class=\"glossy\">";
+    myMetadataQString += tr("Property") ;
+    myMetadataQString += "</td>";
+    myMetadataQString += "<td class=\"glossy\">";
+    myMetadataQString += tr("Value");
     myMetadataQString += "</th><tr>";
 
-    int myBandCount = getBandCount();
-    for (int myIterator = 1; myIterator <= myBandCount; ++myIterator)
+    int myBandCountInt = getBandCount();
+    for (int myIteratorInt = 1; myIteratorInt <= myBandCountInt; ++myIteratorInt)
     {
-      QgsDebugMsg("Raster properties : checking if band " + QString::number(myIterator) + " has stats? ");
+      QgsDebugMsg("Raster properties : checking if band " + QString::number(myIteratorInt) + " has stats? ");
       //band name
-      myMetadataQString += "<tr><td bgcolor=\"gray\">";
+      myMetadataQString += "<tr><td class=\"cellHeader\">";
       myMetadataQString += tr("Band");
       myMetadataQString += "</td>";
-      myMetadataQString += "<td bgcolor=\"gray\">";
-      myMetadataQString += getRasterBandName(myIterator);
+      myMetadataQString += "<td class=\"cellHeader\">";
+      myMetadataQString += getRasterBandName(myIteratorInt);
       myMetadataQString += "</td></tr>";
       //band number
-      myMetadataQString += "<tr><td bgcolor=\"white\">";
+      myMetadataQString += "<tr><td>";
       myMetadataQString += tr("Band No");
       myMetadataQString += "</td>";
-      myMetadataQString += "<td bgcolor=\"white\">";
-      myMetadataQString += QString::number(myIterator);
+      myMetadataQString += "<td>";
+      myMetadataQString += QString::number(myIteratorInt);
       myMetadataQString += "</td></tr>";
 
       //check if full stats for this layer have already been collected
-      if (!hasStats(myIterator))  //not collected
+      if (!hasStats(myIteratorInt))  //not collected
       {
         QgsDebugMsg(".....no");
 
-        myMetadataQString += "<tr><td bgcolor=\"white\">";
+        myMetadataQString += "<tr><td>";
         myMetadataQString += tr("No Stats");
         myMetadataQString += "</td>";
-        myMetadataQString += "<td bgcolor=\"white\">";
+        myMetadataQString += "<td>";
         myMetadataQString += tr("No stats collected yet");
         myMetadataQString += "</td></tr>";
       }
@@ -4462,68 +4455,68 @@ QString QgsRasterLayer::getMetadata()
       {
         QgsDebugMsg(".....yes");
 
-        QgsRasterBandStats myRasterBandStats = getRasterBandStats(myIterator);
+        QgsRasterBandStats myRasterBandStats = getRasterBandStats(myIteratorInt);
         //Min Val
-        myMetadataQString += "<tr><td bgcolor=\"white\">";
+        myMetadataQString += "<tr><td>";
         myMetadataQString += tr("Min Val");
         myMetadataQString += "</td>";
-        myMetadataQString += "<td bgcolor=\"white\">";
+        myMetadataQString += "<td>";
         myMetadataQString += QString::number(myRasterBandStats.minVal, 'f',10);
         myMetadataQString += "</td></tr>";
 
         // Max Val
-        myMetadataQString += "<tr><td bgcolor=\"white\">";
+        myMetadataQString += "<tr><td>";
         myMetadataQString += tr("Max Val");
         myMetadataQString += "</td>";
-        myMetadataQString += "<td bgcolor=\"white\">";
+        myMetadataQString += "<td>";
         myMetadataQString += QString::number(myRasterBandStats.maxVal, 'f',10);
         myMetadataQString += "</td></tr>";
 
         // Range
-        myMetadataQString += "<tr><td bgcolor=\"white\">";
+        myMetadataQString += "<tr><td>";
         myMetadataQString += tr("Range");
         myMetadataQString += "</td>";
-        myMetadataQString += "<td bgcolor=\"white\">";
+        myMetadataQString += "<td>";
         myMetadataQString += QString::number(myRasterBandStats.range, 'f',10);
         myMetadataQString += "</td></tr>";
 
         // Mean
-        myMetadataQString += "<tr><td bgcolor=\"white\">";
+        myMetadataQString += "<tr><td>";
         myMetadataQString += tr("Mean");
         myMetadataQString += "</td>";
-        myMetadataQString += "<td bgcolor=\"white\">";
+        myMetadataQString += "<td>";
         myMetadataQString += QString::number(myRasterBandStats.mean, 'f',10);
         myMetadataQString += "</td></tr>";
 
         //sum of squares
-        myMetadataQString += "<tr><td bgcolor=\"white\">";
+        myMetadataQString += "<tr><td>";
         myMetadataQString += tr("Sum of squares");
         myMetadataQString += "</td>";
-        myMetadataQString += "<td bgcolor=\"white\">";
+        myMetadataQString += "<td>";
         myMetadataQString += QString::number(myRasterBandStats.sumSqrDev, 'f',10);
         myMetadataQString += "</td></tr>";
 
         //standard deviation
-        myMetadataQString += "<tr><td bgcolor=\"white\">";
+        myMetadataQString += "<tr><td>";
         myMetadataQString += tr("Standard Deviation");
         myMetadataQString += "</td>";
-        myMetadataQString += "<td bgcolor=\"white\">";
+        myMetadataQString += "<td>";
         myMetadataQString += QString::number(myRasterBandStats.stdDev, 'f',10);
         myMetadataQString += "</td></tr>";
 
         //sum of all cells
-        myMetadataQString += "<tr><td bgcolor=\"white\">";
+        myMetadataQString += "<tr><td>";
         myMetadataQString += tr("Sum of all cells");
         myMetadataQString += "</td>";
-        myMetadataQString += "<td bgcolor=\"white\">";
+        myMetadataQString += "<td>";
         myMetadataQString += QString::number(myRasterBandStats.sum, 'f',10);
         myMetadataQString += "</td></tr>";
 
         //number of cells
-        myMetadataQString += "<tr><td bgcolor=\"white\">";
+        myMetadataQString += "<tr><td>";
         myMetadataQString += tr("Cell Count");
         myMetadataQString += "</td>";
-        myMetadataQString += "<td bgcolor=\"white\">";
+        myMetadataQString += "<td>";
         myMetadataQString += QString::number(myRasterBandStats.elementCount);
         myMetadataQString += "</td></tr>";
       }
@@ -4537,7 +4530,6 @@ QString QgsRasterLayer::getMetadata()
   //
 
   myMetadataQString += "</table>";
-  myMetadataQString += "</body></html>";
   return myMetadataQString;
 }
 
@@ -5103,7 +5095,7 @@ bool QgsRasterLayer::readXML_( QDomNode & layer_node )
   if (!mProviderKey.isEmpty())
   {
     QStringList sl = subLayers();
-    QStringList sls = mDataProvder->subLayerStyles();
+    QStringList sls = mDataProvider->subLayerStyles();
 
     QStringList::const_iterator layerStyle = sls.begin();
 
@@ -5142,35 +5134,35 @@ bool QgsRasterLayer::readXML_( QDomNode & layer_node )
     // <rasterproperties><wmsFormat>
     QDomElement formatElement = document.createElement("wmsFormat");
     QDomText formatText =
-      document.createTextNode(mDataProvder->imageEncoding());
+      document.createTextNode(mDataProvider->imageEncoding());
     formatElement.appendChild(formatText);
     rasterPropertiesElement.appendChild(formatElement);
 
     // <rasterproperties><wmsProxyHost>
     QDomElement proxyHostElement = document.createElement("wmsProxyHost");
     QDomText proxyHostText =
-      document.createTextNode(mDataProvder->proxyHost());
+      document.createTextNode(mDataProvider->proxyHost());
     proxyHostElement.appendChild(proxyHostText);
     rasterPropertiesElement.appendChild(proxyHostElement);
 
     // <rasterproperties><wmsProxyPort>
     QDomElement proxyPortElement = document.createElement("wmsProxyPort");
     QDomText proxyPortText =
-      document.createTextNode( QString::number(mDataProvder->proxyPort()) );
+      document.createTextNode( QString::number(mDataProvider->proxyPort()) );
     proxyPortElement.appendChild(proxyPortText);
     rasterPropertiesElement.appendChild(proxyPortElement);
 
     // <rasterproperties><wmsProxyUser>
     QDomElement proxyUserElement = document.createElement("wmsProxyUser");
     QDomText proxyUserText =
-      document.createTextNode(mDataProvder->proxyUser());
+      document.createTextNode(mDataProvider->proxyUser());
     proxyUserElement.appendChild(proxyUserText);
     rasterPropertiesElement.appendChild(proxyUserElement);
 
     // <rasterproperties><wmsProxyPass>
     QDomElement proxyPassElement = document.createElement("wmsProxyPass");
     QDomText proxyPassText =
-      document.createTextNode(mDataProvder->proxyPass());
+      document.createTextNode(mDataProvider->proxyPass());
     proxyPassElement.appendChild(proxyPassText);
     rasterPropertiesElement.appendChild(proxyPassElement);
   }
@@ -5376,7 +5368,7 @@ QString QgsRasterLayer::identifyAsText(const QgsPoint& point)
     return QString();
   }
 
-  return (mDataProvder->identifyAsText(point));
+  return (mDataProvider->identifyAsText(point));
 }
 
 void QgsRasterLayer::populateHistogram(int theBandNo, int theBinCount,bool theIgnoreOutOfRangeFlag,bool theHistogramEstimatedFlag)
@@ -5454,7 +5446,7 @@ QgsRasterLayer::QgsRasterLayer(int dummy,
   mInvertPixelsFlag(false),
   mStandardDeviations(0),
   mProviderKey(providerKey),
-  mDataProvder(0),
+  mDataProvider(0),
   mEditable(false),
 mModified(false)
 
@@ -5494,7 +5486,7 @@ mModified(false)
 
   // Do a passthrough for the status bar text
   connect(
-      mDataProvder, SIGNAL(setStatus        (QString)),
+      mDataProvider, SIGNAL(setStatus        (QString)),
       this,           SLOT(showStatusMessage(QString))
       );
   QgsDebugMsg("QgsRasterLayer::QgsRasterLayer(4 arguments): exiting.");
@@ -5564,31 +5556,31 @@ void QgsRasterLayer::setDataProvider( QString const & provider,
     // determine otherwise
     if (classFactory)
     {
-      QgsDebugMsg("QgsRasterLayer::setDataProvider: Getting pointer to a mDataProvder object from the library");
+      QgsDebugMsg("QgsRasterLayer::setDataProvider: Getting pointer to a mDataProvider object from the library");
       //XXX - This was a dynamic cast but that kills the Windows
       //      version big-time with an abnormal termination error
-      //      mDataProvder = (QgsRasterDataProvider*)(classFactory((const
+      //      mDataProvider = (QgsRasterDataProvider*)(classFactory((const
       //                                              char*)(dataSource.utf8())));
 
       // Copied from qgsproviderregistry in preference to the above.
-      mDataProvder = (QgsRasterDataProvider*)(*classFactory)(&mDataSource);
+      mDataProvider = (QgsRasterDataProvider*)(*classFactory)(&mDataSource);
 
-      if (mDataProvder)
+      if (mDataProvider)
       {
         QgsDebugMsg("QgsRasterLayer::setDataProvider: Instantiated the data provider plugin" +\
             QString(" with layer list of ") + layers.join(", ") + " and style list of " + styles.join(", ")+\
             " and format of " + format +  " and CRS of " + crs);
-        if (mDataProvder->isValid())
+        if (mDataProvider->isValid())
         {
           mValid = true;
 
-          mDataProvder->addLayers(layers, styles);
-          mDataProvder->setImageEncoding(format);
-          mDataProvder->setImageCrs(crs);
-          mDataProvder->setProxy(proxyHost, proxyPort, proxyUser, proxyPass);
+          mDataProvider->addLayers(layers, styles);
+          mDataProvider->setImageEncoding(format);
+          mDataProvider->setImageCrs(crs);
+          mDataProvider->setProxy(proxyHost, proxyPort, proxyUser, proxyPass);
 
           // get the extent
-          QgsRect mbr = mDataProvder->extent();
+          QgsRect mbr = mDataProvider->extent();
 
           // show the extent
           QString s = mbr.stringRep();
@@ -5633,7 +5625,7 @@ bool QgsRasterLayer::setProxy(QString const & host,
     QString const & user,
     QString const & pass)
 {
-  if (!mDataProvder)
+  if (!mDataProvider)
   {
     return FALSE;
   }
@@ -5645,7 +5637,7 @@ bool QgsRasterLayer::setProxy(QString const & host,
     std::cout << "  QgsRasterLayer::setProxy: user = " << user.toLocal8Bit().data() << "." << std::endl;
     std::cout << "  QgsRasterLayer::setProxy: pass = " << pass.toLocal8Bit().data() << "." << std::endl;
 #endif
-    return mDataProvder->setProxy(host, port, user, pass);
+    return mDataProvider->setProxy(host, port, user, pass);
   }
 }
 
@@ -5702,12 +5694,12 @@ QString QgsRasterLayer::errorString()
 
 QgsRasterDataProvider* QgsRasterLayer::getDataProvider()
 {
-  return mDataProvder;
+  return mDataProvider;
 }
 
 const QgsRasterDataProvider* QgsRasterLayer::getDataProvider() const
 {
-  return mDataProvder;
+  return mDataProvider;
 }
 
 const unsigned int QgsRasterLayer::getBandCount()
