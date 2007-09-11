@@ -75,7 +75,18 @@ void QgsMapToolSplitFeatures::canvasReleaseEvent(QMouseEvent * e)
       delete mRubberBand;
       mRubberBand = 0;
 
-      vlayer->splitFeatures(mCaptureList);
+      //bring up dialog if a split was not possible (polygon) or only done once (line)
+      int returnCode = vlayer->splitFeatures(mCaptureList);
+      if(returnCode == 1)
+	{
+	  //several intersections but only one split (most likely line)
+	  QMessageBox::warning(0, tr("Intersection problem"), tr("One or more geometries are intersected several times by the split lines. Those geometries are only split once."));
+	}
+      else if(returnCode == 2)
+	{
+	  //too complex intersection (most likely several polygon intersections)
+	  QMessageBox::warning(0, tr("Intersection problem"), tr("One or more geometries cannot be split because the intersection is too complex. Note that polygon splits can only be done with one intersection"));
+	}
       
       mCaptureList.clear();
       mCanvas->refresh();
