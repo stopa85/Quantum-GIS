@@ -1622,6 +1622,8 @@ int QgsVectorLayer::splitFeatures(const QList<QgsPoint>& splitLine)
   QgsFeatureList newFeatures; //store all the newly created features
   double xMin, yMin, xMax, yMax;
   QgsRect bBox; //bounding box of the split line
+  int returnCode = 0;
+  int splitFunctionReturn; //return code of QgsGeometry::splitGeometry
 
   if(boundingBoxFromPointList(splitLine, xMin, yMin, xMax, yMax) == 0)
     {
@@ -1629,7 +1631,7 @@ int QgsVectorLayer::splitFeatures(const QList<QgsPoint>& splitLine)
     }
   else
     {
-      return 1;
+      return -1;
     }
 
   //find out the features contained in the bounding box of the line  
@@ -1641,7 +1643,8 @@ int QgsVectorLayer::splitFeatures(const QList<QgsPoint>& splitLine)
     {
       if(changedIt.value().intersects(bBox))
 	{
-	  if(changedIt->splitGeometry(splitLine, &newGeometry) == 0)
+	  splitFunctionReturn = changedIt->splitGeometry(splitLine, &newGeometry);
+	  if(splitFunctionReturn < 2)
 	    {
 	      //insert new feature
 	      QgsFeature newFeature;
@@ -1649,6 +1652,10 @@ int QgsVectorLayer::splitFeatures(const QList<QgsPoint>& splitLine)
 	      //how do we copy the attributes of the features here?
 	      newFeatures.append(newFeature);
 	      setModified(true, true);
+	    }
+	  if(splitFunctionReturn > 0 && splitFunctionReturn < 3)
+	    {
+	      returnCode = splitFunctionReturn;
 	    }
 	}
       idList.insert(changedIt.key());
@@ -1663,15 +1670,20 @@ int QgsVectorLayer::splitFeatures(const QList<QgsPoint>& splitLine)
 	  //if a geometry is not contained in mCachedGeometries, it is not in the view extent and therefore cannot intersect the ring
 	  if(mCachedGeometries.contains(mAddedFeatures.at(i).featureId()))
 	    {
-	      if(mCachedGeometries[mAddedFeatures.at(i).featureId()].splitGeometry(splitLine, &newGeometry) == 0)
+	      splitFunctionReturn = mCachedGeometries[mAddedFeatures.at(i).featureId()].splitGeometry(splitLine, &newGeometry);
+	      if(splitFunctionReturn < 2)
 		{
 		  mChangedGeometries[mAddedFeatures.at(i).featureId()] = mCachedGeometries[mAddedFeatures.at(i).featureId()];
 		  //and also insert new feature
 		  QgsFeature newFeature;
 		  newFeature.setGeometry(newGeometry);
-		  newFeature.setAttributeMap(mAddedFeatures.at(i).attributeMap()); //copy the attributes?
+		  newFeature.setAttributeMap(mAddedFeatures.at(i).attributeMap()); //copy the attributes
 		  newFeatures.append(newFeature);		  
 		  setModified(true, true);
+		}
+	      if(splitFunctionReturn > 0 && splitFunctionReturn < 3)
+		{
+		  returnCode = splitFunctionReturn;
 		}
 	    }
 	  idList.insert(mAddedFeatures.at(i).featureId());
@@ -1681,7 +1693,7 @@ int QgsVectorLayer::splitFeatures(const QList<QgsPoint>& splitLine)
   //finally the ordinary features
   
   //call splitGeometry for every feature intersecting bounding box
-  mDataProvider->select(QgsAttributeList(), bBox, true, true);
+  mDataProvider->select(mDataProvider->allAttributesList(), bBox, true, true);
   QgsFeature currentFeature;
   QgsGeometry* currentGeometryPtr = 0;
 
@@ -1693,7 +1705,8 @@ int QgsVectorLayer::splitFeatures(const QList<QgsPoint>& splitLine)
 	    if(currentGeometryPtr)
 	    {
 	      QgsGeometry changedGeometry(*currentGeometryPtr);
-	      if(changedGeometry.splitGeometry(splitLine, &newGeometry) == 0)
+	      splitFunctionReturn = changedGeometry.splitGeometry(splitLine, &newGeometry);
+	      if(splitFunctionReturn < 2)
 		{
 		  //change existing geometry
 		  mChangedGeometries.insert(currentFeature.featureId(), changedGeometry);
@@ -1704,13 +1717,17 @@ int QgsVectorLayer::splitFeatures(const QList<QgsPoint>& splitLine)
 		  newFeatures.append(newFeature);
 		  setModified(true, true);
 		}
+	      if(splitFunctionReturn > 0 && splitFunctionReturn < 3)
+		{
+		  returnCode = splitFunctionReturn;
+		}
 	    }
 	}
     }
 
   //now add the new features to this vectorlayer
   addFeatures(newFeatures, false);
-  return 0;
+  return returnCode;
 }
 
 QgsLabel * QgsVectorLayer::label()

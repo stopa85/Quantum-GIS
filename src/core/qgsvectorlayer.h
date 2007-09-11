@@ -256,7 +256,8 @@ existing rings, 5 no feature found where ring can be inserted*/
 
   /**Splits features cut by the given line
      @param splitLine line that splits the layer features
-     @return 0 in case of success*/
+     @return 0 in case of success, 1 if several intersections but only 1 split done, \
+  2 if intersection too complex to be handled, else other error*/
   int splitFeatures(const QList<QgsPoint>& splitLine);
 
 

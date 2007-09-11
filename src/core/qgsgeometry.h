@@ -105,8 +105,12 @@ class CORE_EXPORT QgsGeometry {
     static QgsGeometry* fromPoint(const QgsPoint& point);
     /** construct geometry from a polyline */
     static QgsGeometry* fromPolyline(const QgsPolyline& polyline);
+    /** construct geometry from a multipolyline*/
+    static QgsGeometry* fromMultiPolyline(const QgsMultiPolyline& multiline);
     /** construct geometry from a polygon */
     static QgsGeometry* fromPolygon(const QgsPolygon& polygon);
+    /** construct geometry from a multipolygon */
+    static QgsGeometry* fromMultiPolygon(const QgsMultiPolygon& multipoly);
     /** construct geometry from a rectangle */
     static QgsGeometry* fromRect(const QgsRect& rect);
    
@@ -252,9 +256,9 @@ not disjoint with existing polygons of the feature*/
     @param splitLine the line that splits the geometry
     @param newGeometry OUT: new geometry or 0 if none
     @return 0 in case of success, which means the geometry has been split in two parts, \
-    1 if this geometry is point/multipoint, 2 if splitline has less than 2 points, \
-    3 if geos conversion failed, 4 if splitline invalid or not simple, 5 if no split \
-    has been done and 6 if geometry type not (yet) supported for splitting.*/
+    1 if line intersects multiple times but only one split could be done, \ 
+    2 if intersection too complicated to proceed (several polygon intersections), \				\
+    else other error*/
     int splitGeometry(const QList<QgsPoint>& splitLine, QgsGeometry** newGeometry);
 
     /**Returns the bounding box of this feature*/
@@ -383,21 +387,24 @@ not disjoint with existing polygons of the feature*/
     /**Splits line/multiline geometries
      @splitLine the line that splits the feature
      @newGeometry new geometry if splitting was successful
-     @return 0 in case of success, 1 if splitLine is 0, 2 if no intersection found, \
-    3 if vertex or segment of intersection not found, 4 if problem during line splitting.*/
+     @return 0 in case of success, 1: splitLine intersects several times but only one split \
+    can be done, else other errors*/
     int splitLinearGeometry(GEOS_GEOM::LineString* splitLine, QgsGeometry** newGeometry);
     /**Splits polygon/multipolygon geometries
-       @return 0 in case of success*/
+       @return 0 in case of success, 1 no split because of too complicated intersection, \
+    else other errors*/
     int splitPolygonGeometry(GEOS_GEOM::LineString* splitLine, QgsGeometry** newGeometry);
     /**Finds the vertices next to point where the line is split. If it is split at a vertex, beforeVertex 
      and afterVertex are the same*/
     int findVerticesNextToSplit(const QgsPoint& splitPoint, int& beforeVertex, int& afterVertex);
     /**Splits this geometry into two lines*/
     int splitThisLine(const QgsPoint& splitPoint, int beforeVertex, int afterVertex, QgsGeometry** newGeometry);
-    int splitThisMultiline(const QgsPoint& splitPoint, int beforeVertex, int afterVertex, QgsGeometry** newGeomety);
+    /**Splits this geometry into two multilines*/
+    int splitThisMultiline(const QgsPoint& splitPoint, int beforeVertex, int afterVertex, QgsGeometry** newGeometry);
     /**Splits this geometry into two polygons*/
     int splitThisPolygon(const GEOS_GEOM::CoordinateSequence* splitLine, int beforeVertex1, int afterVertex1, \
 			 int beforeVertex2, int afterVertex2, QgsGeometry** newGeometry);
+    /**Splits this geometry into two multipolygons*/
     int splitThisMultiPolygon(const GEOS_GEOM::CoordinateSequence* splitLine, int beforeVertex1, int afterVertex1, \
 			 int beforeVertex2, int afterVertex2, QgsGeometry** newGeometry);
     /**splits a QgsPolyline object. Used by 'splitThisLine' and 'splitThisMultiLine'*/
