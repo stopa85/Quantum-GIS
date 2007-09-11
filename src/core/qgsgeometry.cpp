@@ -58,7 +58,6 @@ mDirtyGeos( rhs.mDirtyGeos )
   // deep-copy the GEOS Geometry if appropriate
   if (rhs.mGeos)
   {  
-    qWarning(rhs.mGeos->getGeometryType().c_str());
     if(rhs.mGeos->getGeometryTypeId() == GEOS_GEOM::GEOS_MULTIPOLYGON)//MH:problems with cloning for multipolygons in geos 2
       {
 	GEOS_GEOM::MultiPolygon* multiPoly = dynamic_cast<GEOS_GEOM::MultiPolygon*>(rhs.mGeos);
@@ -4426,8 +4425,6 @@ int QgsGeometry::splitPolygonGeometry(GEOS_GEOM::LineString* splitLine, QgsGeome
       return 4;
     }
 
-  //debug: print out the geometry type
-  qWarning(intersect_result->getGeometryType().c_str());
   if(intersect_result->getGeometryTypeId() != GEOS_GEOM::GEOS_LINESTRING)
     {
       return 1; //probably multilinestring, but it cannot be handled because split would be too complex
@@ -4560,7 +4557,7 @@ int QgsGeometry::findVerticesNextToSplit(const QgsPoint& splitPoint, int& before
 	    int i;
 	    for(i = 0; i < (multiLineIt->size() - 1); ++i)
 	      {
-		if(splitPoint.onSegment(multiLineIt->at(i), multiLineIt->at(i + 1)))
+		if(splitPoint.onSegment(multiLineIt->at(i), multiLineIt->at(i + 1)) == 2)
 		  {
 		    beforeVertex = vertexCounter + i; afterVertex = vertexCounter + i + 1;
 		    return 0;
@@ -4581,7 +4578,7 @@ int QgsGeometry::findVerticesNextToSplit(const QgsPoint& splitPoint, int& before
 	    int i;
 	    for(i = 0; i < (polyIter->size() - 1); ++i)
 	      {
-		if(splitPoint.onSegment(polyIter->at(i), polyIter->at(i+1)))
+		if(splitPoint.onSegment(polyIter->at(i), polyIter->at(i+1)) == 2)
 		  {
 		    beforeVertex = vertexCounter + i; afterVertex = vertexCounter + i + 1;
 		    return 0;
@@ -4605,7 +4602,7 @@ int QgsGeometry::findVerticesNextToSplit(const QgsPoint& splitPoint, int& before
 		int j;
 		for(j = 0; j < (currentLine.size() - 1); ++j)
 		  {
-		    if(splitPoint.onSegment(currentLine.at(j), currentLine.at(j+1)))
+		    if(splitPoint.onSegment(currentLine.at(j), currentLine.at(j+1)) == 2)
 		      {
 			beforeVertex = vertexCounter + j; afterVertex = vertexCounter + j + 1;
 			return 0;
