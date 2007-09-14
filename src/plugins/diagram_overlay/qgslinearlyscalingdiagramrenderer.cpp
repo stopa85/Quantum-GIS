@@ -148,30 +148,18 @@ bool QgsLinearlyScalingDiagramRenderer::readXML(const QDomNode& rendererNode)
 
 bool QgsLinearlyScalingDiagramRenderer::writeXML(QDomNode& overlay_node, QDomDocument& doc) const
 {
-  #if 0
   QDomElement rendererElement = doc.createElement("renderer");
   rendererElement.setAttribute("type", "linearly_scaling");
   overlay_node.appendChild(rendererElement);
 
-  //loweritem
-  QDomElement lowerItemElem = doc.createElement("loweritem");
-  lowerItemElem.setAttribute("width", mLowerItem.width());
-  lowerItemElem.setAttribute("height", mLowerItem.height());
-  lowerItemElem.setAttribute("lower_bound", mLowerItem.lowerBound());
-  lowerItemElem.setAttribute("upper_bound", mLowerItem.upperBound());
-  rendererElement.appendChild(lowerItemElem);
-
-  //upperitem
-  QDomElement upperItemElem = doc.createElement("upperitem");
-  upperItemElem.setAttribute("width", mUpperItem.width());
-  upperItemElem.setAttribute("height", mUpperItem.height());
-  upperItemElem.setAttribute("lower_bound", mUpperItem.lowerBound());
-  upperItemElem.setAttribute("upper_bound", mUpperItem.upperBound());
-  rendererElement.appendChild(upperItemElem);
-
+  QList<QgsDiagramItem>::const_iterator item_it = mItems.constBegin();
+  for(; item_it != mItems.constEnd(); ++item_it)
+    {
+      QDomElement itemElement = doc.createElement("diagramitem");
+      itemElement.setAttribute("size", item_it->size);
+      itemElement.setAttribute("value", item_it->value);
+    }
   return true;
-#endif //0
-  return false;
 }
 
 int QgsLinearlyScalingDiagramRenderer::calculateDiagramSize(const QgsFeature& f, int& size) const
