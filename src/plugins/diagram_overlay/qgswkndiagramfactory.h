@@ -37,28 +37,47 @@ class QgsWKNDiagramFactory: public QgsDiagramFactory
   QgsWKNDiagramFactory();
   ~QgsWKNDiagramFactory();
   /**Creates a diagram for a feature and a given (classification) item. The calling method takes ownership of the generated image*/
-  QImage* createDiagram(int width, int height, const QgsFeature& f) const;
+  QImage* createDiagram(int size, const QgsFeature& f) const;
+  int createLegendContent(int size, double value, QMap<QString, QImage*>& items) const{return 1;} //soon
+  int getDiagramDimensions(int size, const QgsFeature& f, int& width, int& height) const;
+  QgsDiagramFactory::SizeType sizeType() const;
 
-  void setDiagramType(const QString& name)
-  {mDiagramType = name;}
+  //setters and getters for diagram type
+  QString diagramType() const {return mDiagramType;}
+  void setDiagramType(const QString& name){mDiagramType = name;}
+  //setters and getters for attributes
+  QgsAttributeList attributes() const {return mAttributes;}
   void setAttributes(const QgsAttributeList& att){mAttributes = att;}
-  void setColorSeries(const std::list<QColor>& c)
-  {mColorSeries = c;}
-
+  //setters and getters for color series
+  std::list<QColor> colors() const {return mColorSeries;}
+  void setColorSeries(const std::list<QColor>& c){mColorSeries = c;}
+  //setters and getters for scaling attribute
+  int scalingAttribute() const {return mScalingAttribute;}
+  void setScalingAttribute(int att){mScalingAttribute = att;}
+  
   /**Returns the supported well known names in a list*/
   static void supportedWellKnownNames(std::list<QString>& names);
 
  private:
+  /**Index of the attribute that is used for determining size*/
+  int mScalingAttribute;
+  /**Names */
   QgsAttributeList mAttributes;
   /**Well known diagram name (e.g. pie, bar, line)*/
   QString mDiagramType;
-  /***/
-  QString mCustomDiagramString;
   /**Diagram colors*/
   std::list<QColor> mColorSeries;
+  int mBarWidth; //width of one bar (default 20 pixel)
 
-  QImage* createPieChart(int height, const std::list<double>& dataValues) const;
-  QImage* createBarChart(int height, const std::list<double>& dataValues) const;
+  QImage* createPieChart(int size, const QgsAttributeMap& dataValues) const;
+  QImage* createBarChart(int size, const QgsAttributeMap& dataValues) const;
+  /**Calculates the maximum height of the bar chart (based on size for the 
+   scaling attribute)*/
+  int getHeightBarChart(int size, const QgsAttributeMap& featureAttributes) const;
+  /**Calculates the value to pixel ratio for the bar chart (based on the size \
+   of the scaling attribute)
+  @return the ratio or -1 in case of error*/
+  double pixelValueRatioBarChart(int size, const QgsAttributeMap& featureAttributes) const;
 };
 
 #endif

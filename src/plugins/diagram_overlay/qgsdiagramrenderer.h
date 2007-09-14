@@ -15,23 +15,30 @@
  *                                                                         *
  ***************************************************************************/
 
-
 #ifndef QGSDIAGRAMRENDERER_H
 #define QGSDIAGRAMRENDERER_H
 
-#include <list>
-#include <QColor>
-#include "qgswkndiagramfactory.h"
-#include "qgsvectorlayer.h" //for QgsAttributeList
+#include <QMap>
+#include <QString>
 
+class QgsDiagramFactory;
 class QgsFeature;
+class QDomDocument;
+class QDomNode;
 class QImage;
+
+//structure that describes a renderer entry
+struct QgsDiagramItem
+{
+  double value;
+  int size;
+};
 
 /**An interface class for diagram renderer. The main method is 'renderDiagram', which returns the diagram image for a GIS feature. The renderer has a set of classification attributes, a set of colors for these attributes and a diagram type*/
 class QgsDiagramRenderer
 {
  public:
-  QgsDiagramRenderer(const QString& name, const QgsAttributeList& att, const std::list<QColor>& c);
+  QgsDiagramRenderer(int classificationAttribute);
   virtual ~QgsDiagramRenderer();
   /**Returns a diagram image for a feature.*/
   virtual QImage* renderDiagram(const QgsFeature& f) const = 0;
@@ -40,41 +47,32 @@ class QgsDiagramRenderer
      @param height the height of the diagram
      @param value the attribute value used for the size calculation
      @return 0 in case of success*/
-  virtual int getDiagramSize(int& width, int& height, double& value, const QgsFeature& f) const = 0;
+  virtual int getDiagramSize(int& width, int& height, const QgsFeature& f) const = 0;
   //setters and getters
   virtual QString rendererName() const = 0;
-  void setWellKnownName(const QString& wkn){mWellKnownName = wkn;}
-  QString wellKnownName() const {return mWellKnownName;}
-  void setAttributes(const QgsAttributeList& att){mAttributes = att;}
-  QgsAttributeList attributes() const {return mAttributes;}
-  void setColors(const std::list<QColor>& colors){mColors = colors;}
-  std::list<QColor> colors() const {return mColors;}
-  void setClassificationField(int index){mClassificationField = index;}
-  int classificationField() const {return mClassificationField;}
+  QgsDiagramFactory* factory() const {return mFactory;}
+  /**Set a (properly configured) factory class. Takes ownership of the factory object*/
+  void setFactory(QgsDiagramFactory* f){mFactory = f;}
+  void setClassificationAttribute(int attrNr){mClassificationAttribute = attrNr;}
   /**Reads the specific renderer settings from project file*/
   virtual bool readXML(const QDomNode& rendererNode) = 0;
   /**Saves settings to project file. Returns true in case of success*/
   virtual bool writeXML(QDomNode& overlay_node, QDomDocument& doc) const = 0;
-  /**Creates a descriptive image for the legend and a descriptive string, e.g.
-   with a value for which the image size is representative. The calling method
-   takes ownership of the generated image
-   @return 0 in case of error*/
-  virtual QImage* getLegendImage(QString& legendString) const = 0;
+  /**Creates pairs of strings / images for use in the legend
+   @return 0 in case of success*/
+  virtual int createLegendContent(QMap<QString, QImage*> items) const = 0; 
 
  private:
-  QgsDiagramRenderer(){} //default constructor is forbidden 
+  QgsDiagramRenderer();
 
  protected:
   /**The object to generate the diagrams*/
-  QgsWKNDiagramFactory mFactory;
- /**The diagram type*/
-  QString mWellKnownName;
-  /**The attribute numbers needed for classification in the features*/
-  QgsAttributeList mAttributes;
-  /**Index of the classification attribute*/
-  int mClassificationField;
-  /**The color series. The positions correspond to the entries the attribute list*/
-  std::list<QColor> mColors;
+  QgsDiagramFactory* mFactory;
+  /**Attribute for the size of the diagram*/
+  int mClassificationAttribute;
+  /**Searches the value of the classification attribute
+   @return 0 in case of success*/
+  int classificationValue(const QgsFeature& f, double& value) const;
 };
 
 #endif

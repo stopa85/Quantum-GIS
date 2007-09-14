@@ -23,7 +23,7 @@
 #include <QImage>
 #include <QPainter>
 
-QgsWKNDiagramFactory::QgsWKNDiagramFactory()
+QgsWKNDiagramFactory::QgsWKNDiagramFactory(): mBarWidth(20)
 {
 
 }
@@ -33,30 +33,17 @@ QgsWKNDiagramFactory::~QgsWKNDiagramFactory()
   
 }
 
-QImage* QgsWKNDiagramFactory::createDiagram(int width, int height, const QgsFeature& f) const
+QImage* QgsWKNDiagramFactory::createDiagram(int size, const QgsFeature& f) const
 {
-  //todo: possibility to create a custom diagram
-  //return createDiagramKDChart(width, height, f); 
-
-  std::list<double> dataValues;
   QgsAttributeMap featureAttributes = f.attributeMap();
-  QgsAttributeList::const_iterator list_iter;
- 
-  for(list_iter = mAttributes.constBegin(); list_iter != mAttributes.constEnd(); ++list_iter)
-    {
-      QgsAttributeMap::const_iterator iter = featureAttributes.find(*list_iter);
-      if(iter != featureAttributes.constEnd())
-	{
-	  dataValues.push_back(iter.value().toDouble());
-	}
-    }
+  
   if(mDiagramType == "Pie")
     {
-      return createPieChart(height, dataValues);
+      return createPieChart(size, featureAttributes);
     }
   else if(mDiagramType == "Bar")
     {
-      return createBarChart(height, dataValues);
+      return createBarChart(size, featureAttributes);
     }
   else
     {
@@ -64,10 +51,27 @@ QImage* QgsWKNDiagramFactory::createDiagram(int width, int height, const QgsFeat
     }
 }
 
-QImage* QgsWKNDiagramFactory::createPieChart(int height, const std::list<double>& dataValues) const
+int QgsWKNDiagramFactory::getDiagramDimensions(int size, const QgsFeature& f, int& width, int& height) const
+{
+  if(mDiagramType == "Pie") //for pie charts, the size is the pie diameter
+    {
+      width = size;
+      height = size;
+    }
+  else if(mDiagramType == "Bar")
+    {
+      //witdh
+      width = mBarWidth * mAttributes.size(); 
+      height = getHeightBarChart(size, f.attributeMap());
+    }
+  
+  return 0;
+}
+
+QImage* QgsWKNDiagramFactory::createPieChart(int size, const QgsAttributeMap& dataValues) const
 {
   //create transparent QImage
-  QImage* diagramImage = new QImage(QSize(height, height), QImage::Format_ARGB32_Premultiplied);
+  QImage* diagramImage = new QImage(QSize(size, size), QImage::Format_ARGB32_Premultiplied);
   diagramImage->fill(qRgba(0, 0, 0, 0)); //transparent background
   QPainter p(diagramImage);
   p.setRenderHint(QPainter::Antialiasing);
@@ -75,72 +79,75 @@ QImage* QgsWKNDiagramFactory::createPieChart(int height, const std::list<double>
 
   //calculate sum of data values
   double sum = 0;
-  for(std::list<double>::const_iterator it = dataValues.begin(); it != dataValues.end(); ++it)
+  QgsAttributeMap::const_iterator value_it;
+  QgsAttributeList::const_iterator it = mAttributes.constBegin();
+  for(; it != mAttributes.end(); ++it)
     {
-      sum += *it;
+      value_it = dataValues.find(*it);
+      if(value_it != dataValues.constEnd())
+	{
+	  sum += value_it->toDouble();
+	}
     }
 
   //draw pies
-  std::list<double>::const_iterator double_it;
+  QgsAttributeMap::const_iterator double_it;
   std::list<QColor>::const_iterator color_it;
   int totalAngle = 0;
   int currentAngle;
 
-  for(double_it = dataValues.begin(), color_it = mColorSeries.begin(); double_it != dataValues.end(); ++double_it, ++color_it)
+  for(double_it = dataValues.constBegin(), color_it = mColorSeries.begin(); double_it != dataValues.constEnd(); ++double_it, ++color_it)
     {
-      currentAngle = (int)((*double_it)/sum*360*16);
+      currentAngle = (int)((double_it->toDouble())/sum*360*16);
       p.setBrush(QBrush(*color_it));
-      p.drawPie(0, 0, height, height, totalAngle, currentAngle);
+      p.drawPie(0, 0, size, size, totalAngle, currentAngle);
       totalAngle += currentAngle;
     }
   
   return diagramImage;
 }
 
-QImage* QgsWKNDiagramFactory::createBarChart(int height, const std::list<double>& dataValues) const
+QImage* QgsWKNDiagramFactory::createBarChart(int height, const QgsAttributeMap& dataValues) const
 {
-  if(height > 2000) //prevent crashes because of to high rectangles 
-    {
-      return 0;
-    }
+  //for barcharts, the specified height is valid for the classification attribute
+  //the heights of the other bars are calculated with the same height/value ratio
+  //the bar widths are fixed
+  //int barWidth = 20;
+  //int diagramWidth = barWidth * mAttributes.size();
 
-  int barWidth = 20; //hardcoded width for one bar
-  int width = barWidth*dataValues.size();
-  QImage* diagramImage = new QImage(QSize(width, height), QImage::Format_ARGB32_Premultiplied);
+  int w = mBarWidth * mAttributes.size();
+  int h = getHeightBarChart(height, dataValues);
+    
+  QImage* diagramImage = new QImage(QSize(w, h), QImage::Format_ARGB32_Premultiplied);
   diagramImage->fill(0); //transparent background
+
+  //calculate value/pixel ratio
+  double pixelValueRatio = pixelValueRatioBarChart(height, dataValues);
+
+  //draw the bars itself
+  double currentValue;
+  int currentBarHeight;
+
+  QgsAttributeList::const_iterator it = mAttributes.constBegin();
+  std::list<QColor>::const_iterator color_it = mColorSeries.begin();
+  QgsAttributeMap::const_iterator att_it;
+  int barCounter = 0;
+  
   QPainter p(diagramImage);
   p.setRenderHint(QPainter::Antialiasing);
   p.setPen(Qt::NoPen);
 
-  //calculate sum of data values
-  double sum = 0;
-  for(std::list<double>::const_iterator it = dataValues.begin(); it != dataValues.end(); ++it)
+  for(; it != mAttributes.constEnd() && color_it != mColorSeries.end(); ++it, ++color_it)
     {
-      sum += *it;
-    }
-
-  //find max value
-  double maxValue = -std::numeric_limits<double>::max();
-  for(std::list<double>::const_iterator it = dataValues.begin(); it != dataValues.end(); ++it)
-    {
-      if (*it > maxValue)
+      att_it = dataValues.find(*it);
+      if(att_it != dataValues.constEnd())
 	{
-	  maxValue = *it;
+	  currentValue = att_it->toDouble();
+	  currentBarHeight = (int)(currentValue * pixelValueRatio);
+	  p.setBrush(QBrush(*color_it));
+	  p.drawRect(QRect(barCounter * mBarWidth, h - currentBarHeight, mBarWidth, currentBarHeight));
+	  ++barCounter;
 	}
-    }
-
-  //draw bars
-  std::list<double>::const_iterator double_it;
-  std::list<QColor>::const_iterator color_it;
-  int currentBarHeight;
-  int barCounter = 0;
-
-  for(double_it = dataValues.begin(), color_it = mColorSeries.begin(); double_it != dataValues.end(); ++double_it, ++color_it)
-    {
-      currentBarHeight = (int)((*double_it)/maxValue*height);
-      p.setBrush(QBrush(*color_it));
-      p.drawRect(QRect(barCounter * barWidth, height - currentBarHeight, barWidth, currentBarHeight));
-      ++barCounter;
     }
 
   return diagramImage;
@@ -151,9 +158,61 @@ void QgsWKNDiagramFactory::supportedWellKnownNames(std::list<QString>& names)
   names.clear();
   names.push_back("Pie");
   names.push_back("Bar");
-  names.push_back("Line");
+}
+
+int QgsWKNDiagramFactory::getHeightBarChart(int size, const QgsAttributeMap& featureAttributes) const
+{     
+      //calculate value/pixel ratio
+      double pixelValueRatio = pixelValueRatioBarChart(size, featureAttributes); 
+
+      //find maximum attribute value
+      double maximumAttValue = -std::numeric_limits<double>::max();
+      double currentValue;
+
+      QgsAttributeList::const_iterator att_it = mAttributes.constBegin();
+      QgsAttributeMap::const_iterator it;
+
+      for(; att_it != mAttributes.constEnd(); ++att_it)
+	{
+	  it = featureAttributes.find(*att_it);
+	  if(it != featureAttributes.constEnd())
+	    {
+	      currentValue = it->toDouble();
+	      if(currentValue > maximumAttValue)
+		{
+		  maximumAttValue = currentValue;
+		}
+	    }
+	}
+      
+      //and calculate height of image based on the maximum attribute value
+      int height = (int)(maximumAttValue * pixelValueRatio);
+      return height;
 }
 
 
+double QgsWKNDiagramFactory::pixelValueRatioBarChart(int size, const QgsAttributeMap& featureAttributes) const
+{
+  //find value for scaling attribute
+  QgsAttributeMap::const_iterator it = featureAttributes.find(mScalingAttribute);
+  if(it == featureAttributes.constEnd())
+    {
+      return 1; //error, scaling attribute not contained in feature attributes
+    }
+  double scalingValue = it->toDouble();
+  
+  //calculate value/pixel ratio
+  return (size / scalingValue);
+}
 
-
+QgsDiagramFactory::SizeType QgsWKNDiagramFactory::sizeType() const
+{
+  if(mDiagramType == "Pie")
+    {
+      return QgsDiagramFactory::DIAMETER;
+    }
+  else
+    {
+      return QgsDiagramFactory::HEIGHT;
+    }
+}

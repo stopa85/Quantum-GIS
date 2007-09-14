@@ -18,6 +18,7 @@
 #include "qgslinearlyscalingdialog.h"
 #include "qgslinearlyscalingdiagramrenderer.h"
 #include "qgsvectordataprovider.h"
+#include "qgswkndiagramfactory.h"
 
 QgsLinearlyScalingDialog::QgsLinearlyScalingDialog(QgsVectorLayer* vl): QgsDiagramRendererWidget(vl)
 {
@@ -32,19 +33,26 @@ QgsLinearlyScalingDialog::~QgsLinearlyScalingDialog()
 
 QgsDiagramRenderer* QgsLinearlyScalingDialog::createRenderer(const QString& type, int classAttr, const QgsAttributeList& attributes, const std::list<QColor>& colors) const
 {
-  QgsLinearlyScalingDiagramRenderer* renderer = new QgsLinearlyScalingDiagramRenderer(type, attributes, colors);
-  renderer->setClassificationField(classAttr);
+  //create a linearly scaling renderer
+  QgsLinearlyScalingDiagramRenderer* renderer = new QgsLinearlyScalingDiagramRenderer(classAttr);
+  //and items of renderer
+  QList<QgsDiagramItem> itemList;
+  QgsDiagramItem firstItem; firstItem.value = 0; firstItem.size = 0;
+  QgsDiagramItem secondItem; 
+  secondItem.value = mValueLineEdit->text().toDouble();
+  secondItem.size = mSizeSpinBox->value();
+  itemList.push_back(firstItem);
+  itemList.push_back(secondItem);
+  renderer->setDiagramItems(itemList);
+  
+  QgsWKNDiagramFactory* f = new QgsWKNDiagramFactory();
+   f->setDiagramType(type);
+   f->setAttributes(attributes);
+   f->setColorSeries(colors);
+   f->setScalingAttribute(classAttr);
+   renderer->setFactory(f);
 
-  double theValue = mValueLineEdit->text().toDouble();
-  int size = mSizeSpinBox->value();
-
-  QgsDiagramItem lowerItem(0, 0, 0, 0);
-  QgsDiagramItem upperItem(theValue, theValue, size, size);
-
-  renderer->setLowerItem(lowerItem);
-  renderer->setUpperItem(upperItem);
-
-  return renderer;
+   return renderer;
 }
 
 void QgsLinearlyScalingDialog::applySettings(const QgsDiagramRenderer* renderer)
@@ -52,9 +60,10 @@ void QgsLinearlyScalingDialog::applySettings(const QgsDiagramRenderer* renderer)
   const QgsLinearlyScalingDiagramRenderer* linearRenderer = dynamic_cast<const QgsLinearlyScalingDiagramRenderer*>(renderer);
   if(linearRenderer)
     {
-      QgsDiagramItem upperItem = linearRenderer->upperItem();
-      mValueLineEdit->setText(QString::number(upperItem.upperBound(), 'f'));
-      mSizeSpinBox->setValue(upperItem.height());
+      QList<QgsDiagramItem> itemList = linearRenderer->diagramItems();
+      QgsDiagramItem theItem = itemList.at(1); //take the upper item
+      mValueLineEdit->setText(QString::number(theItem.value, 'f'));
+      mSizeSpinBox->setValue(theItem.size);
     }
 }
 

@@ -1,18 +1,31 @@
 #include "qgsdiagramrenderer.h"
-#include "qgsfield.h"
-#include "qgsvectordataprovider.h"
-#include <QImage>
+#include "qgsdiagramfactory.h"
+#include "qgsfeature.h"
 
-QgsDiagramRenderer::QgsDiagramRenderer(const QString& name, const QgsAttributeList& att, const std::list<QColor>& c): mWellKnownName(name), mAttributes(att), mColors(c)
+QgsDiagramRenderer::QgsDiagramRenderer(int classificationAttribute): mClassificationAttribute(classificationAttribute)
 {
-  mFactory.setDiagramType(name);
-  mFactory.setAttributes(att);
-  mFactory.setColorSeries(c);
 }
 
 QgsDiagramRenderer::~QgsDiagramRenderer()
 {
-  
+  delete mFactory;
+}
+
+QgsDiagramRenderer::QgsDiagramRenderer()
+{
 }
 
 
+int QgsDiagramRenderer::classificationValue(const QgsFeature& f, double& value) const
+{
+  //find out attribute value of the feature
+  QgsAttributeMap featureAttributes = f.attributeMap();
+  QgsAttributeMap::const_iterator iter = featureAttributes.find(mClassificationAttribute);
+  if(iter == featureAttributes.constEnd())
+    {
+      return 1;
+    }
+
+  value = iter.value().toDouble();
+  return 0;
+}

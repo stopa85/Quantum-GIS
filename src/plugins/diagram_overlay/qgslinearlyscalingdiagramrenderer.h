@@ -19,7 +19,7 @@
 #define QGSLINEARLYSCALINGDIAGRAMRENDERER_H
 
 #include "qgsdiagramrenderer.h"
-#include "qgsdiagramitem.h"
+
 
 /**This renderer scales the size of the diagram linearly between minimum/ maximum values of an attribute*/
 
@@ -35,18 +35,16 @@ class QgsLinearlyScalingDiagramRenderer: public QgsDiagramRenderer
       AREA
     };
 
-  QgsLinearlyScalingDiagramRenderer(const QString& name, const QgsAttributeList& att, const std::list<QColor>& c);
+  QgsLinearlyScalingDiagramRenderer(int classificationAttribute);
   ~QgsLinearlyScalingDiagramRenderer();
   /**Returns an diagram image for a geographic feature. The caller takes ownership of the QImage. Returns 0 in case of error*/
   QImage* renderDiagram(const QgsFeature& f) const;
   /**Returns only the diagram size for a feature*/
-  int getDiagramSize(int& width, int& height, double& value, const QgsFeature& f) const;
-  /**Sets value, height and width of lower bound*/
-  void setLowerItem(const QgsDiagramItem& item){mLowerItem = item;}
-  QgsDiagramItem lowerItem() const {return mLowerItem;}
-  /**Sets value, height and width of upper bound*/
-  void setUpperItem(const QgsDiagramItem& item){mUpperItem = item;}
-  QgsDiagramItem upperItem() const {return mUpperItem;}
+  int getDiagramSize(int& width, int& height, const QgsFeature& f) const;
+  /**Sets the items for interpolation. The values of the items must be in ascending order*/
+  void setDiagramItems(const QList<QgsDiagramItem>& items) {mItems = items;}
+  /**Returns the interpolation items*/
+  QList<QgsDiagramItem> diagramItems() const {return mItems;}
   void setProportion(QgsLinearlyScalingDiagramRenderer::Proportion p){mProportion = p;}
   QString rendererName() const {return "linearly scaling";}
   
@@ -54,18 +52,24 @@ class QgsLinearlyScalingDiagramRenderer: public QgsDiagramRenderer
 
   bool readXML(const QDomNode& rendererNode);
   bool writeXML(QDomNode& overlay_node, QDomDocument& doc) const;
-  /**Creates a descriptive image for the legend together with a string describing the attribute 
-     value for which this diagram is valid
-   @return 0 in case of error*/
-  QImage* getLegendImage(QString& legendString) const;
+  
+  int createLegendContent(QMap<QString, QImage*> items) const;
 
- private:
-  /**Value, height, width of lower bound*/
-  QgsDiagramItem mLowerItem;
-  /**Value, height, width of upper bound*/
-  QgsDiagramItem mUpperItem;
+ protected:
+  /**Interpolation points for size*/
+  QList<QgsDiagramItem> mItems;
+
   /**Stores if scaling should be proportional to line or area*/
   QgsLinearlyScalingDiagramRenderer::Proportion mProportion;
+
+  /**Gets diagram size
+   @return 0 in case of success*/
+  int calculateDiagramSize(const QgsFeature& f, int& size) const;
+  /**Does linear interpolation*/
+  int interpolateSize(double value, double lowerValue, double upperValue, int lowerSize, \
+		      int upperSize) const;
+
+ private:
 
   QgsLinearlyScalingDiagramRenderer(); //default constructor is forbidden
 };
