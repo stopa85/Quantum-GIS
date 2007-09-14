@@ -268,7 +268,6 @@ bool QgsDiagramOverlay::readXML(const QDomNode& overlayNode)
 
 bool QgsDiagramOverlay::writeXML(QDomNode& layer_node, QDomDocument& doc) const
 {
-#if 0
   QDomElement overlayElement = doc.createElement("overlay");
   overlayElement.setAttribute("type", "diagram");
   if(mDisplayFlag)
@@ -281,7 +280,13 @@ bool QgsDiagramOverlay::writeXML(QDomNode& layer_node, QDomDocument& doc) const
     }
 
   layer_node.appendChild(overlayElement);
-
+  if(mDiagramRenderer)
+    {
+      mDiagramRenderer->writeXML(overlayElement, doc);
+      //todo: also write xml of diagram factory
+    }
+  return true;
+#if 0
   if(mDiagramRenderer)
     {
       QgsLinearlyScalingDiagramRenderer* linearRenderer = dynamic_cast<QgsLinearlyScalingDiagramRenderer*>(mDiagramRenderer)
@@ -328,7 +333,6 @@ bool QgsDiagramOverlay::writeXML(QDomNode& layer_node, QDomDocument& doc) const
     }
   return true;
 #endif //0
-  return false;
 }
 
 int QgsDiagramOverlay::createLegendContent(std::list<std::pair<QString, QImage*> >& content) const

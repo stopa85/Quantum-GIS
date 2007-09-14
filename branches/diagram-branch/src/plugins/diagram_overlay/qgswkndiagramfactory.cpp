@@ -18,7 +18,6 @@
 
 
 #include "qgswkndiagramfactory.h"
-#include "qgsdiagramitem.h"
 #include "qgsfeature.h"
 #include <QImage>
 #include <QPainter>
