@@ -22,6 +22,7 @@
 #include "qgslinearlyscalingdialog.h"
 #include "qgslinearlyscalingdiagramrenderer.h"
 #include "qgsvectordataprovider.h"
+#include "qgswkndiagramfactory.h"
 #include <QColorDialog>
 
 
@@ -229,44 +230,50 @@ void QgsDiagramDialog::restoreSettings(const QgsVectorOverlay* overlay)
 	{
 	  mDisplayDiagramsCheckBox->setCheckState(Qt::Unchecked);
 	}
-      const QgsDiagramRenderer* previousDiagramRenderer = previousDiagramOverlay->diagramRenderer();
-      if(previousDiagramRenderer)
+      const QgsLinearlyScalingDiagramRenderer* previousDiagramRenderer = dynamic_cast<const QgsLinearlyScalingDiagramRenderer*>(previousDiagramOverlay->diagramRenderer());
+     
+      if(previousDiagramRenderer && previousDiagramRenderer->factory())
 	{
-	  //well known diagram name
-	  mDiagramTypeComboBox->setCurrentIndex(mDiagramTypeComboBox->findText(previousDiagramRenderer->wellKnownName()));
-	  //insert attribute names and colors into mAttributesTreeWidget
-	  std::list<QColor> colorList = previousDiagramRenderer->colors();
-	  QgsAttributeList attributeList = previousDiagramRenderer->attributes();
-	  
-	  std::list<QColor>::const_iterator colorIt = colorList.begin();
-	  QgsAttributeList::const_iterator attributeIt = attributeList.constBegin();
-	  
-	  for(;colorIt != colorList.end(); ++colorIt, ++attributeIt)
+	  QgsWKNDiagramFactory* theFactory = dynamic_cast<QgsWKNDiagramFactory*>(previousDiagramRenderer->factory());
+	  if(theFactory)
 	    {
-	      QTreeWidgetItem* newItem = new QTreeWidgetItem(mAttributesTreeWidget);
-	      newItem->setText(0, QgsDiagramOverlay::attributeNameFromIndex(*attributeIt, mVectorLayer));
-	      newItem->setBackground(1, QBrush(*colorIt));
-	      mAttributesTreeWidget->addTopLevelItem(newItem);		 
-	    }
-
-	  //classification attribute
-	  QString classFieldName = QgsDiagramOverlay::attributeNameFromIndex(previousDiagramRenderer->classificationField(), mVectorLayer);
-	  mClassificationComboBox->setCurrentIndex(mClassificationComboBox->findText(classFieldName));
-
-	  //classification type (specific for renderer subclass)
-	  mClassificationTypeComboBox->setCurrentIndex(mClassificationTypeComboBox->findText(previousDiagramRenderer->rendererName()));
-
-	  //apply the renderer settings to the renderer specific dialog
-	  if(mWidgetStackRenderers->count() > 0)
-	    {
-	      QgsDiagramRendererWidget* rendererWidget = dynamic_cast<QgsDiagramRendererWidget*>(mWidgetStackRenderers->currentWidget());
-	      if(rendererWidget)
+	      //well known diagram name
+	      mDiagramTypeComboBox->setCurrentIndex(mDiagramTypeComboBox->findText(theFactory->diagramType()));
+	      //insert attribute names and colors into mAttributesTreeWidget
+	      std::list<QColor> colorList = theFactory->colors();
+	      QgsAttributeList attributeList = theFactory->attributes();
+	      
+	      std::list<QColor>::const_iterator colorIt = colorList.begin();
+	      QgsAttributeList::const_iterator attributeIt = attributeList.constBegin();
+	      
+	      for(;colorIt != colorList.end(); ++colorIt, ++attributeIt)
 		{
-		  rendererWidget->applySettings(previousDiagramRenderer);
+		  QTreeWidgetItem* newItem = new QTreeWidgetItem(mAttributesTreeWidget);
+		  newItem->setText(0, QgsDiagramOverlay::attributeNameFromIndex(*attributeIt, mVectorLayer));
+		  newItem->setBackground(1, QBrush(*colorIt));
+		  mAttributesTreeWidget->addTopLevelItem(newItem);		 
+		}
+	      
+	      //classification attribute
+	      QString classFieldName = QgsDiagramOverlay::attributeNameFromIndex(theFactory->scalingAttribute(), mVectorLayer);
+	      mClassificationComboBox->setCurrentIndex(mClassificationComboBox->findText(classFieldName));
+	      
+	      //classification type (specific for renderer subclass)
+	      mClassificationTypeComboBox->setCurrentIndex(mClassificationTypeComboBox->findText(previousDiagramRenderer->rendererName()));
+	      
+	      //apply the renderer settings to the renderer specific dialog
+	      if(mWidgetStackRenderers->count() > 0)
+		{
+		  QgsDiagramRendererWidget* rendererWidget = dynamic_cast<QgsDiagramRendererWidget*>(mWidgetStackRenderers->currentWidget());
+		  if(rendererWidget)
+		    {
+		      rendererWidget->applySettings(previousDiagramRenderer);
+		    }
 		}
 	    }
 	}
     }
 }
+
 
 

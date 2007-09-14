@@ -1,11 +1,12 @@
 #include "qgslinearlyscalingdiagramrenderer.h"
+#include "qgsdiagramfactory.h"
 #include "qgsfeature.h"
 #include <limits>
 #include <QDomElement>
 #include <QImage>
 #include <cmath>
 
-QgsLinearlyScalingDiagramRenderer::QgsLinearlyScalingDiagramRenderer(const QString& name, const QgsAttributeList& att, const std::list<QColor>& c): QgsDiagramRenderer(name, att, c), mProportion(QgsLinearlyScalingDiagramRenderer::AREA)
+QgsLinearlyScalingDiagramRenderer::QgsLinearlyScalingDiagramRenderer(int classificationAttribute): QgsDiagramRenderer(classificationAttribute), mProportion(QgsLinearlyScalingDiagramRenderer::AREA)
 {
   
 }
@@ -16,112 +17,64 @@ QgsLinearlyScalingDiagramRenderer::~QgsLinearlyScalingDiagramRenderer()
 }
 
 QImage* QgsLinearlyScalingDiagramRenderer::renderDiagram(const QgsFeature& f) const
-{ 
-  double theValue;
-  int width, height;
-  if(getDiagramSize(width, height, theValue, f))
+{
+  if(!mFactory || mItems.size() < 1)
     {
       return 0;
     }
-  else
+
+  int size;
+  if(calculateDiagramSize(f, size) != 0)
     {
-      return mFactory.createDiagram(width, height, f);
+      return 0;
     }
+ 
+  return mFactory->createDiagram(size, f);
 }
 
-int QgsLinearlyScalingDiagramRenderer::getDiagramSize(int& width, int& height, double& value, const QgsFeature& f) const
+int QgsLinearlyScalingDiagramRenderer::getDiagramSize(int& width, int& height, const QgsFeature& f) const
 {
-  //find out attribute value of the feature
-  QgsAttributeMap featureAttributes = f.attributeMap();
-  QgsAttributeMap::const_iterator iter = featureAttributes.find(mClassificationField);
-  if(iter == featureAttributes.constEnd())
+  //first find out classification value
+  if(!mFactory || mItems.size() < 1)
     {
-      return 0;
+      return 1;
     }
-  
-  value = iter.value().toDouble();
-  double scalefactor = (value - mLowerItem.lowerBound()) / (mUpperItem.lowerBound() - mLowerItem.lowerBound());
 
-  //linearly interpolate height and width according to min/max value
-  if(mWellKnownName == "Pie")
+  int size;
+  if(calculateDiagramSize(f, size) != 0)
     {
-      if(mProportion == QgsLinearlyScalingDiagramRenderer::LINE)
-	{
-	  height = (int)(mLowerItem.height() + (mUpperItem.height() - mLowerItem.height())*scalefactor);
-	  width = (int)(mLowerItem.width() + (mUpperItem.width() - mLowerItem.height())*scalefactor);
-	}
-      else if(mProportion == QgsLinearlyScalingDiagramRenderer::AREA)
-	{
-	  double area = mUpperItem.height() * mUpperItem.height() / 4 * M_PI;
-	  double newarea = area * scalefactor;
-	  height = (int)(sqrt(newarea/M_PI) * 2);
-	  width = height;
-	}
+      return 2;
     }
-  else if(mWellKnownName == "Bar") //bar charts are proportional to size and area at the same time
+ 
+  if(mFactory->getDiagramDimensions(size, f, width, height) != 0)
     {
-      int barWidth = 120;
-      int heightClassAttr = (int)(mLowerItem.height() + (mUpperItem.height() - mLowerItem.height())*scalefactor);
-
-      //find out the highest value of all attributes
-      double highestValue = -std::numeric_limits<double>::max();
-      double currentValue = 0;
-      for(QgsAttributeMap::const_iterator iter = featureAttributes.constBegin(); iter != featureAttributes.constEnd(); ++iter)
-	{
-	  currentValue = iter.value().toDouble();
-	  if(currentValue > highestValue)
-	    {
-	      highestValue = currentValue;
-	    }
-	}
-      height = (int)(heightClassAttr / value * highestValue);
-      
-      //width only depends on number of attributes
-      width = featureAttributes.size() * barWidth;
+      return 3;
     }
   return 0;
 }
 
-QImage* QgsLinearlyScalingDiagramRenderer::getLegendImage(QString& legendString) const
+int QgsLinearlyScalingDiagramRenderer::createLegendContent(QMap<QString, QImage*> items) const
 {
-  //find out the quantity necessary for a fixed height
-  int destHeight = (mUpperItem.height() + mLowerItem.height())/2;
-  int destWidth;
-  double destQuantity;
-  QgsFeature dummyFeature;
-
-  double totalHeightDiff = mUpperItem.height() - mLowerItem.height();
-  if(totalHeightDiff == 0)
+  if(!mFactory || mItems.size() < 1)
     {
-      destQuantity = mUpperItem.lowerBound();
+      return 1;
     }
-  else
-    {
-      double totalQuantityDiff = mUpperItem.lowerBound() - mLowerItem.lowerBound();
-      destQuantity = mLowerItem.lowerBound() + totalQuantityDiff * (destHeight - mLowerItem.height())/totalHeightDiff;
-    } 
 
-  legendString = QString::number(destQuantity, 'f');
+  //determine a size and value for the legend, use the middle item for this
+  int element = (int)(mItems.size()/2);
+  double value = mItems.at(element).value;
+  int size = mItems.at(element).size;
 
-  if(mWellKnownName == "Pie")
+  if(mFactory->createLegendContent(size, value, items) != 0)
     {
-      destWidth = destHeight;
-      QgsAttributeList::const_iterator att_it; 
-      for(att_it = mAttributes.constBegin(); att_it != mAttributes.constEnd(); ++att_it)
-	{
-	  dummyFeature.addAttribute(*att_it, QVariant(1));
-	}
+      return 2;
     }
-  else if (mWellKnownName == "Bar")
-    {
-      destWidth = destHeight/3;
-      dummyFeature.addAttribute(mClassificationField, QVariant(1));
-    }
-  return mFactory.createDiagram(destWidth, destHeight, dummyFeature);
+  return 0;
 }
 
 bool QgsLinearlyScalingDiagramRenderer::readXML(const QDomNode& rendererNode)
 {
+#if 0
   QDomElement rendererElem = rendererNode.toElement();
 
   double lowerBound, upperBound;
@@ -189,10 +142,13 @@ bool QgsLinearlyScalingDiagramRenderer::readXML(const QDomNode& rendererNode)
   setUpperItem(QgsDiagramItem(lowerBound, upperBound, height, width));
 
   return true;
+#endif //0
+  return false;
 }
 
 bool QgsLinearlyScalingDiagramRenderer::writeXML(QDomNode& overlay_node, QDomDocument& doc) const
 {
+  #if 0
   QDomElement rendererElement = doc.createElement("renderer");
   rendererElement.setAttribute("type", "linearly_scaling");
   overlay_node.appendChild(rendererElement);
@@ -214,4 +170,84 @@ bool QgsLinearlyScalingDiagramRenderer::writeXML(QDomNode& overlay_node, QDomDoc
   rendererElement.appendChild(upperItemElem);
 
   return true;
+#endif //0
+  return false;
+}
+
+int QgsLinearlyScalingDiagramRenderer::calculateDiagramSize(const QgsFeature& f, int& size) const
+{
+  //find out value for classificationAttribute
+  double value;
+  if(classificationValue(f, value) != 0)
+    {
+      return 1;
+    }
+
+  //find out size
+  bool sizeAssigned = false;
+
+  QList<QgsDiagramItem>::const_iterator current_it = mItems.constBegin();
+  QList<QgsDiagramItem>::const_iterator last_it = mItems.constEnd();
+  
+  for(; current_it != mItems.constEnd(); ++current_it)
+    {
+      if(value < current_it->value)
+	{
+	  if(last_it == mItems.constEnd()) //values below classifications receive first items size
+	    {
+	      size = current_it->size;
+	    }
+	  else
+	    {
+	      size = interpolateSize(value, last_it->value, current_it->value, \
+				     last_it->size, current_it->size);
+	    }
+	  sizeAssigned = true;
+	  break;
+	}
+      last_it = current_it;
+    }
+
+  if(!sizeAssigned)//values above classification receive last items size
+    {
+      size = last_it->size;
+    }
+
+  return 0;
+}
+
+int QgsLinearlyScalingDiagramRenderer::interpolateSize(double value, double lowerValue, double upperValue, \
+						       int lowerSize, int upperSize) const
+{
+  if(value <= lowerValue)
+    {
+      return lowerSize;
+    }
+  else if(value >= upperValue)
+    {
+      return upperSize;
+    }
+
+  QgsDiagramFactory::SizeType t;
+  if(mFactory)
+    {
+      t = mFactory->sizeType();
+    }
+
+  if(!mFactory || t == QgsDiagramFactory::HEIGHT)
+    {
+      //do one dimensional linear interpolation
+      return (int)(((value - lowerValue) * upperSize + (upperValue - value) * lowerSize) / (upperValue - lowerValue));
+    }
+  else if(t == QgsDiagramFactory::DIAMETER)
+    {
+      double lowerArea = (lowerSize/2)*(lowerSize/2)*M_PI;
+      double upperArea = (upperSize/2)*(upperSize/2)*M_PI;
+      double valueArea = ((value - lowerValue) * upperArea + (upperValue - value) * lowerArea)/(upperValue - lowerValue);
+      return (int)(2*sqrt(valueArea/M_PI));
+    }
+  else
+    {
+      return 0; //unknown type...
+    }
 }

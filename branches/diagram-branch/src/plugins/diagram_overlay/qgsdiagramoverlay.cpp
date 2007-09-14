@@ -64,7 +64,6 @@ void QgsDiagramOverlay::createOverlayObjects(const QgsRect& viewExtent)
 
 	  QgsFeature currentFeature;
 	  int width, height;
-	  double value;
 
 	  std::list<unsigned char*> wkbBuffers;
 	  std::list<int> wkbSizes;
@@ -77,7 +76,7 @@ void QgsDiagramOverlay::createOverlayObjects(const QgsRect& viewExtent)
 	  while(theProvider->getNextFeature(currentFeature))
 	    {
 	      //todo: insert more objects for multipart features
-	      if(mDiagramRenderer->getDiagramSize(width, height, value, currentFeature) != 0)
+	      if(mDiagramRenderer->getDiagramSize(width, height, currentFeature) != 0)
 		{
 		  //error
 		}
@@ -98,7 +97,6 @@ void QgsDiagramOverlay::createOverlayObjects(const QgsRect& viewExtent)
 	    }
 	}
     }
-  
 }
 
 void QgsDiagramOverlay::drawOverlayObjects(QPainter * p, const QgsRect& viewExtent, QgsMapToPixel * cXf, QgsCoordinateTransform* ct) const
@@ -167,11 +165,12 @@ void QgsDiagramOverlay::drawOverlayObjects(QPainter * p, const QgsRect& viewExte
 
 int QgsDiagramOverlay::getOverlayObjectSize(int& width, int& height, double value, const QgsFeature& f) const
 {
-	return mDiagramRenderer->getDiagramSize(width, height, value, f);
+	return mDiagramRenderer->getDiagramSize(width, height, f);
 }
 
 bool QgsDiagramOverlay::readXML(const QDomNode& overlayNode)
 {
+#if 0
   QDomElement overlayElem = overlayNode.toElement();
   
   //set display flag
@@ -263,11 +262,13 @@ bool QgsDiagramOverlay::readXML(const QDomNode& overlayNode)
       setAttributes(attributeList);
       return true;
     }
+#endif //0
   return false;
 }
 
 bool QgsDiagramOverlay::writeXML(QDomNode& layer_node, QDomDocument& doc) const
 {
+#if 0
   QDomElement overlayElement = doc.createElement("overlay");
   overlayElement.setAttribute("type", "diagram");
   if(mDisplayFlag)
@@ -283,50 +284,56 @@ bool QgsDiagramOverlay::writeXML(QDomNode& layer_node, QDomDocument& doc) const
 
   if(mDiagramRenderer)
     {
-      //well known name
-      QDomElement wellKnownNameElem = doc.createElement("wellknownname");
-      QDomText wknText = doc.createTextNode(mDiagramRenderer->wellKnownName());
-      wellKnownNameElem.appendChild(wknText);
-      overlayElement.appendChild(wellKnownNameElem);
-
-      //classification field
-      QDomElement classificationFieldElem = doc.createElement("classificationfield");
-      QDomText classFieldText = doc.createTextNode(QString::number(mDiagramRenderer->classificationField()));
-      classificationFieldElem.appendChild(classFieldText);
-      overlayElement.appendChild(classificationFieldElem);
-      
-      //color tags
-      std::list<QColor> colorList = mDiagramRenderer->colors();
-      for(std::list<QColor>::const_iterator c_it = colorList.begin(); c_it != colorList.end(); ++c_it)
-	{
-	  QDomElement currentColorElem = doc.createElement("color");
-	  currentColorElem.setAttribute("red", QString::number(c_it->red()));
-	  currentColorElem.setAttribute("green", QString::number(c_it->green()));
-	  currentColorElem.setAttribute("blue", QString::number(c_it->blue()));
-	  overlayElement.appendChild(currentColorElem);
-	}
-
-      //attribute tags
-      QgsAttributeList attributeList = mDiagramRenderer->attributes();
-      QgsAttributeList::const_iterator a_it;
-
-      for(a_it = attributeList.constBegin(); a_it != attributeList.constEnd(); ++a_it)
-	{
-	  QDomElement currentAttributeElem = doc.createElement("attribute");
-	  QDomText currentAttributeText = doc.createTextNode(QString::number(*a_it));
-	  currentAttributeElem.appendChild(currentAttributeText);
-	  overlayElement.appendChild(currentAttributeElem);
-	}
-
+      QgsLinearlyScalingDiagramRenderer* linearRenderer = dynamic_cast<QgsLinearlyScalingDiagramRenderer*>(mDiagramRenderer)
+	if(linearRenderer)
+	  {
+	    QgsWKNDiagramFactory* theFactory = (QgsWKNDiagramFactory*)(linearRenderer->factory());
+	    //well known name
+	    QDomElement wellKnownNameElem = doc.createElement("wellknownname");
+	    QDomText wknText = doc.createTextNode(theFactory->wellKnownName());
+	    wellKnownNameElem.appendChild(wknText);
+	    overlayElement.appendChild(wellKnownNameElem);
+	    
+	    //classification field
+	    QDomElement classificationFieldElem = doc.createElement("classificationfield");
+	    QDomText classFieldText = doc.createTextNode(QString::number(theFactory->scalingAttribute()));
+	    classificationFieldElem.appendChild(classFieldText);
+	    overlayElement.appendChild(classificationFieldElem);
+	    
+	    //color tags
+	    std::list<QColor> colorList = theFactory->colors();
+	    for(std::list<QColor>::const_iterator c_it = colorList.begin(); c_it != colorList.end(); ++c_it)
+	      {
+		QDomElement currentColorElem = doc.createElement("color");
+		currentColorElem.setAttribute("red", QString::number(c_it->red()));
+		currentColorElem.setAttribute("green", QString::number(c_it->green()));
+		currentColorElem.setAttribute("blue", QString::number(c_it->blue()));
+		overlayElement.appendChild(currentColorElem);
+	      }
+	    
+	    //attribute tags
+	    QgsAttributeList attributeList = theFactory->attributes();
+	    QgsAttributeList::const_iterator a_it;
+	    
+	    for(a_it = attributeList.constBegin(); a_it != attributeList.constEnd(); ++a_it)
+	      {
+		QDomElement currentAttributeElem = doc.createElement("attribute");
+		QDomText currentAttributeText = doc.createTextNode(QString::number(*a_it));
+		currentAttributeElem.appendChild(currentAttributeText);
+		overlayElement.appendChild(currentAttributeElem);
+	      }
+	  }
       //write settings specific to the particular renderer type
       mDiagramRenderer->writeXML(overlayElement, doc);
     }
-
   return true;
+#endif //0
+  return false;
 }
 
 int QgsDiagramOverlay::createLegendContent(std::list<std::pair<QString, QImage*> >& content) const
 {
+#if 0
   //first make sure the list is clean
   std::list<std::pair<QString, QImage*> >::iterator it;
   for(it = content.begin(); it != content.end(); ++it)
@@ -376,6 +383,8 @@ int QgsDiagramOverlay::createLegendContent(std::list<std::pair<QString, QImage*>
     {
       return 1;
     }
+#endif //0
+  return 1; //todo: adapt to new design
 }
 
 int QgsDiagramOverlay::indexFromAttributeName(const QString& name, const QgsVectorLayer* vl)
