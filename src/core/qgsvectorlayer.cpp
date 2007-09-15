@@ -1631,7 +1631,12 @@ int QgsVectorLayer::splitFeatures(const QList<QgsPoint>& splitLine)
     }
   else
     {
-      return -1;
+      return 3;
+    }
+  
+  if(bBox.isEmpty())
+    {
+      return 4;
     }
 
   //find out the features contained in the bounding box of the line  
