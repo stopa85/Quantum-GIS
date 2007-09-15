@@ -85,7 +85,7 @@ void QgsMapToolSplitFeatures::canvasReleaseEvent(QMouseEvent * e)
       else if(returnCode == 2)
 	{
 	  //too complex intersection (most likely several polygon intersections)
-	  QMessageBox::warning(0, tr("Intersection problem"), tr("One or more geometries cannot be split because the intersection is too complex. Note that polygon splits can only be done with one intersection"));
+	  QMessageBox::warning(0, tr("Intersection problem"), tr("One or more geometries cannot be split because the intersection is too complex. Note that polygon splits can only be done if the split line intersects the polygon once. Also inner polygon rings cannot be split"));
 	}
       
       mCaptureList.clear();
