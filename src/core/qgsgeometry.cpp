@@ -4458,22 +4458,25 @@ int QgsGeometry::splitPolygonGeometry(GEOS_GEOM::LineString* splitLine, QgsGeome
       return 8;
     }
 
+  int splitReturn; //return value of split functions
   //try to split polygon
   if(wkbType() == QGis::WKBPolygon || wkbType() == QGis::WKBPolygon25D)
     { 
-      if(splitThisPolygon(intersect_sequence, beforeVertex1, afterVertex1, \
-			 beforeVertex2, afterVertex2, newGeometry) == 0)
+      splitReturn = splitThisPolygon(intersect_sequence, beforeVertex1, afterVertex1, \
+				     beforeVertex2, afterVertex2, newGeometry);
+      if(splitReturn < 2)
 	{
-	  return 0;
+	  return splitReturn;
 	}
     }
   else if(wkbType() == QGis::WKBMultiPolygon || wkbType() == QGis::WKBMultiPolygon25D)
     {
-      if(splitThisMultiPolygon(intersect_sequence, beforeVertex1, afterVertex1, \
-			 beforeVertex2, afterVertex2, newGeometry) == 0)
-	{
-	  return 0;
-	}
+      splitReturn = splitThisMultiPolygon(intersect_sequence, beforeVertex1, afterVertex1, \
+					  beforeVertex2, afterVertex2, newGeometry);
+      if(splitReturn < 2)
+      {
+	return splitReturn;
+      }
     }
   
   //no split done
@@ -4767,18 +4770,23 @@ int beforeVertex2, int afterVertex2, QgsGeometry** newGeometry)
 {
   if(!splitLine)
     {
-      return 1;
+      return 2;
     }
 
   QgsPolygon thisPolygon = asPolygon();
   QgsPolygon* changedPolygon;
   QgsPolygon* newPolygon;
 
-  if(splitQgsPolygon(splitLine, beforeVertex1, afterVertex1, beforeVertex2, afterVertex2, \
-		     &thisPolygon, &changedPolygon, &newPolygon) != 0)
+  int splitReturn = splitQgsPolygon(splitLine, beforeVertex1, afterVertex1, beforeVertex2, afterVertex2, \
+				    &thisPolygon, &changedPolygon, &newPolygon);
+  if(splitReturn != 0)
     {
       (*newGeometry) = 0;
-      return 2;
+      if(splitReturn == 1) //split line intersects inner ring
+	{
+	  return 1;
+	}
+      return 3;
     }
 
   (*newGeometry) = QgsGeometry::fromPolygon(*newPolygon);
@@ -4788,7 +4796,7 @@ int beforeVertex2, int afterVertex2, QgsGeometry** newGeometry)
   delete changedPolygon;
   if(!changedGeometry)
     {
-      return 3;
+      return 4;
     }
   
   operator=(*changedGeometry);
@@ -4801,7 +4809,7 @@ int QgsGeometry::splitThisMultiPolygon(const GEOS_GEOM::CoordinateSequence* spli
 {
   if(!splitLine)
     {
-      return 1;
+      return 2;
     }
 
   QgsMultiPolygon thisMultiPolygon = asMultiPolygon();
@@ -4814,6 +4822,7 @@ int QgsGeometry::splitThisMultiPolygon(const GEOS_GEOM::CoordinateSequence* spli
   //this is to map the vertex numbers of the multipolygon
   //to those of the individual polygons
   int vertexDiff = 0;
+  int splitReturn = 0; //return value from splitQgsPolygon function
 
   //take the first intersecting polygon
   for(int i = 0; i < thisMultiPolygon.size(); ++i)
@@ -4828,14 +4837,19 @@ int QgsGeometry::splitThisMultiPolygon(const GEOS_GEOM::CoordinateSequence* spli
       //we only test afterVertex1, since all vertex indexes should be on the same ring anyway
       if(beforeVertex1 >= vertexDiff && beforeVertex1 <= (vertexDiff + polyVertexCount))
 	{
-	  if(splitQgsPolygon(splitLine, beforeVertex1 - vertexDiff, 
-			     afterVertex1 - vertexDiff, 
-			     beforeVertex2 - vertexDiff, 
-			     afterVertex2 - vertexDiff,	\
-			     &(thisMultiPolygon[i]), &changedPolygon, &newPolygon) == 0)
+	  splitReturn = splitQgsPolygon(splitLine, beforeVertex1 - vertexDiff, \
+					afterVertex1 - vertexDiff, \
+					beforeVertex2 - vertexDiff, \
+					afterVertex2 - vertexDiff, \
+					&(thisMultiPolygon[i]), &changedPolygon, &newPolygon);
+	  if(splitReturn == 0)
 	    {
 	      intersectingPoly = i;
 	      break;
+	    }
+	  else if(splitReturn == 1) //split line intersects inner ring
+	    {
+	      return 1;
 	    }
 	}
       vertexDiff += polyVertexCount;
@@ -4843,7 +4857,7 @@ int QgsGeometry::splitThisMultiPolygon(const GEOS_GEOM::CoordinateSequence* spli
 
   if(intersectingPoly == -1)
     {
-      return 2;
+      return 3;
     }
 
   QgsMultiPolygon changedMultiPoly;
@@ -4871,7 +4885,8 @@ int QgsGeometry::splitThisMultiPolygon(const GEOS_GEOM::CoordinateSequence* spli
   QgsGeometry* changedGeometry = QgsGeometry::fromMultiPolygon(changedMultiPoly);
   if(!changedGeometry)
     {
-      return 3;
+      delete (*newGeometry);
+      return 4;
     }
   
   operator=(*changedGeometry);
@@ -4883,6 +4898,16 @@ int QgsGeometry::splitQgsPolygon(const GEOS_GEOM::CoordinateSequence* splitLine,
 				 int afterVertex2, const QgsPolygon* origPoly, QgsPolygon** changedPoly, QgsPolygon** newPoly) const
 {
   if(!splitLine || !origPoly)
+    {
+      return 2;
+    }
+
+  //beforeVertex1, afterVertex1, beforeVertex2 and afterVertex2 must be on the first ring,
+  //otherwise, a split is not possible
+
+  int firstRingSize = origPoly->at(0).size();
+  if(!(beforeVertex1 < firstRingSize && afterVertex1 < firstRingSize && beforeVertex2 < firstRingSize \
+       && afterVertex2 < firstRingSize))
     {
       return 1;
     }
