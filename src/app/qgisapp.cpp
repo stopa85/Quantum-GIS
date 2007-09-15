@@ -1483,39 +1483,33 @@ QString watsNew = "<html><body>" + tr("Version") + " ";
 watsNew += QGis::qgisVersion;
 watsNew += "<h3>" + tr("New features") + "</h3>";
 watsNew += "<ul><li>"
-+ tr("WMS support")
++ tr("Python bindings - This is the major focus of this release "
+    "it is now possible to create plugins using python. It is also "
+    "possible to create GIS enabled applications written in python " 
+    "that use the QGIS libraries."
+    )
++ "</li>"
 + "<li>"
-+ tr("Improved vector and attribute editing")
++ tr("Removed automake build system - QGIS now needs CMake for compilation.")
++ "</li>"
 + "<li>"
-+ tr("Map Composer for creating map layouts")
++ tr("Many new GRASS tools added (with thanks to http://faunalia.it/)")
++ "</li>"
 + "<li>"
-+ tr("Improved measure tools with area measuring")
++ tr("Map Composer updates")
++ "</li>"
 + "<li>"
-+ tr("Attribute searching")
++ tr("Crash fix for 2.5D shapefiles")
++ "</li>"
 + "<li>"
-+ tr("New legend structure")
++ tr("The QGIS libraries have been refactored and better organised.")
++ "</li>"
 + "<li>"
-+ tr("Refactoring of API to allow the use of QGIS libraries in mapping applications")
-+ "<li>"
-+ tr("Improved MapServer export tool")
-+ "<li>"
-+ tr("Map canvas background color is customizable")
-+ "<li>"
-+ tr("Vector layer transparency")
-+ "<li>"
-+ tr("Antialiasing for vector layers")
-+ "<li>"
-+ tr("GRASS support in all platforms")
-+ "<li>"
-+ tr("Enhanced GRASS support and toolbox commands")
-+ "<li>"
-+ tr("Enhanced vector editing, including copy/paste, snapping and vertex editing")
-+ "<li>"
-+ tr("Shapefile/OGR layer editing")
-+ "<li>"
-+ tr("Option to only look in the geometry_columns table when searching for PostGIS layers")
-+ "<li>"
-+ tr("Many user interface improvements")
++ tr("Improvements to the GeoReferencer")
++ "</li>"
+//+ "<li>"
+//+ tr("")
+//+ "</li>"
 + "</ul></body></html>";
 
 
@@ -2390,7 +2384,7 @@ findMissingFile_( QString const & fileFilters, QDomNode & layerNode )
 
   QStringList selectedFiles;
   QString     enc;
-  QString     title( QObject::trUtf8("Open an OGR Supported Layer") );
+  QString     title( QObject::tr("Where is '") + originalDataSource.fileName() + "'? (" + QObject::tr("original location: ") + originalDataSource.absoluteFilePath() + ")");
 
   openFilesRememberingFilter_(memoryQualifier,
       myFileFilters, 
@@ -3254,40 +3248,26 @@ void QgisApp::saveMapAsImage(QString theImageFileNameQString, QPixmap * theQPixm
 //reimplements method from base (gui) class
 void QgisApp::addAllToOverview()
 {
-  // TODO: move to legend
-  /*
-  std::map<QString, QgsMapLayer *> myMapLayers = QgsMapLayerRegistry::instance()->mapLayers();
-  std::map<QString, QgsMapLayer *>::iterator myMapIterator;
-  for ( myMapIterator = myMapLayers.begin(); myMapIterator != myMapLayers.end(); ++myMapIterator )
-  {
-    QgsMapLayer * myMapLayer = myMapIterator->second;
-    myMapLayer->inOverview(true); // won't do anything if already in overview
-  }
-  mMapCanvas->updateOverview();
-  
+  if(mMapLegend)
+    {
+      mMapLegend->setOverviewAllLayers(true);
+    }
+ 
   // notify the project we've made a change
   QgsProject::instance()->dirty(true);
-  */
 }
 
 //reimplements method from base (gui) class
 void QgisApp::removeAllFromOverview()
 {
-  // TODO: move to legend
-  /*
-  std::map<QString, QgsMapLayer *> myMapLayers = QgsMapLayerRegistry::instance()->mapLayers();
-  std::map<QString, QgsMapLayer *>::iterator myMapIterator;
-  for ( myMapIterator = myMapLayers.begin(); myMapIterator != myMapLayers.end(); ++myMapIterator )
-  {
-    QgsMapLayer * myMapLayer = myMapIterator->second;
-    myMapLayer->inOverview(false);
-  }
-  mMapCanvas->updateOverview();
-  
+  if(mMapLegend)
+    {
+      mMapLegend->setOverviewAllLayers(false);
+    }
+ 
   // notify the project we've made a change
   QgsProject::instance()->dirty(true);
-  */
-} // QgisApp::removeAllFromOverview()
+}
 
 
 //reimplements method from base (gui) class
