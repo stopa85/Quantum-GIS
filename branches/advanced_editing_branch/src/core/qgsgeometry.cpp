@@ -4945,7 +4945,7 @@ int QgsGeometry::splitQgsPolygon(const GEOS_GEOM::CoordinateSequence* splitLine,
     }
 
   //add all the vertices from afterVertex2 to beforeVertex1
-  if(beforeVertex1 > afterVertex2)
+  if(beforeVertex1 >= afterVertex2)
     {
       for(int i = (afterVertex2 + 1); i <= beforeVertex1; ++i)
 	{
@@ -4973,6 +4973,12 @@ int QgsGeometry::splitQgsPolygon(const GEOS_GEOM::CoordinateSequence* splitLine,
       newPolyline.append(QgsPoint(currentCoord.x, currentCoord.y));
     } 
 
+  if(newPolyline.size() < 4)
+    {
+      delete (*newPoly);
+      return 3; //invalid new polygon
+    }
+
   (*newPoly)->append(newPolyline);
 
   //then change the existing geometry
@@ -4984,41 +4990,53 @@ int QgsGeometry::splitQgsPolygon(const GEOS_GEOM::CoordinateSequence* splitLine,
       currentCoord = splitLine->getAt(i);
       changedPolyline.append(QgsPoint(currentCoord.x, currentCoord.y));
     }
-
-  if(!splitAtVertex2)
+  
+  //if before and after vertices are the same, the changed poly can be closed right now
+  if (beforeVertex1 != beforeVertex2 || afterVertex1 != afterVertex2) 
     {
-      changedPolyline.append(firstRing.at(beforeVertex2));
-    }
-
-  //add all the vertices from beforeVertex2 to AfterVertex1 (in inverse order)
-  if(afterVertex1 < beforeVertex2)
-    {
-      for(int i = (beforeVertex2 - 1); i >= afterVertex1; --i)
+      //else, we have to add the remaining vertices between afterVertex1 to beforeVertex2
+      if(!splitAtVertex2)
 	{
-	  changedPolyline.append(firstRing.at(i));
+	  changedPolyline.append(firstRing.at(beforeVertex2));
+	}
+      
+      //add all the vertices from beforeVertex2 to AfterVertex1 (in inverse order)
+      if(afterVertex1 < beforeVertex2)
+	{
+	  for(int i = (beforeVertex2 - 1); i >= afterVertex1; --i)
+	    {
+	      changedPolyline.append(firstRing.at(i));
+	    }
+	}
+      else
+	{
+	  //add vertices from beforeVertex2 to start of polygon
+	  for(int i = (beforeVertex2 - 1); i >= 0; --i)
+	    {
+	      changedPolyline.append(firstRing.at(i));
+	    }
+	  
+	  //add vertices from end of polygon to AfterVertex1
+	  for(int i = (firstRing.size() - 1); i >= afterVertex1; --i)
+	    {
+	      changedPolyline.append(firstRing.at(i));
+	    }
 	}
     }
-  else
-    {
-      //add vertices from beforeVertex2 to start of polygon
-      for(int i = (beforeVertex2 - 1); i >= 0; --i)
-	{
-	  changedPolyline.append(firstRing.at(i));
-	}
-
-      //add vertices from end of polygon to AfterVertex1
-      for(int i = (firstRing.size() - 1); i >= afterVertex1; --i)
-	{
-	  changedPolyline.append(firstRing.at(i));
-	}
-    }
-
+      
   if(!splitAtVertex1)
     {
       currentCoord = splitLine->getAt(0);
       changedPolyline.append(QgsPoint(currentCoord.x, currentCoord.y));
     }
-
+  
+  if(changedPolyline.size() < 4)
+    {
+      delete (*newPoly);
+      delete (*changedPoly);
+      return 4;
+    }
+  
   (*changedPoly)->append(changedPolyline);
 
   //existing rings need to be assigned either to newPoly or to changedPoly
