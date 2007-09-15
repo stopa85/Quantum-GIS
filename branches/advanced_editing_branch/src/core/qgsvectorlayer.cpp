@@ -1649,7 +1649,14 @@ int QgsVectorLayer::splitFeatures(const QList<QgsPoint>& splitLine)
 	      //insert new feature
 	      QgsFeature newFeature;
 	      newFeature.setGeometry(newGeometry);
-	      //how do we copy the attributes of the features here?
+
+	      //query attributes from provider
+	      QgsFeature origFeature;
+	      if(mDataProvider->getFeatureAtId(changedIt.key(), origFeature, false, mDataProvider->allAttributesList()))
+		{
+		  newFeature.setAttributeMap(origFeature.attributeMap());
+		}
+
 	      newFeatures.append(newFeature);
 	      setModified(true, true);
 	    }
