@@ -34,12 +34,15 @@ QgsLinearlyScalingDialog::~QgsLinearlyScalingDialog()
 QgsDiagramRenderer* QgsLinearlyScalingDialog::createRenderer(const QString& type, int classAttr, const QgsAttributeList& attributes, const std::list<QColor>& colors) const
 {
   //create a linearly scaling renderer
-  QgsLinearlyScalingDiagramRenderer* renderer = new QgsLinearlyScalingDiagramRenderer(classAttr);
+  QList<int> attributesList;
+  attributesList.push_back(classAttr);
+  QgsLinearlyScalingDiagramRenderer* renderer = new QgsLinearlyScalingDiagramRenderer(attributesList);
+  
   //and items of renderer
   QList<QgsDiagramItem> itemList;
-  QgsDiagramItem firstItem; firstItem.value = 0; firstItem.size = 0;
+  QgsDiagramItem firstItem; firstItem.value = QVariant(0.0); firstItem.size = 0;
   QgsDiagramItem secondItem; 
-  secondItem.value = mValueLineEdit->text().toDouble();
+  secondItem.value = QVariant(mValueLineEdit->text().toDouble());
   secondItem.size = mSizeSpinBox->value();
   itemList.push_back(firstItem);
   itemList.push_back(secondItem);
@@ -62,7 +65,7 @@ void QgsLinearlyScalingDialog::applySettings(const QgsDiagramRenderer* renderer)
     {
       QList<QgsDiagramItem> itemList = linearRenderer->diagramItems();
       QgsDiagramItem theItem = itemList.at(1); //take the upper item
-      mValueLineEdit->setText(QString::number(theItem.value, 'f'));
+      mValueLineEdit->setText(theItem.value.toString());
       mSizeSpinBox->setValue(theItem.size);
     }
 }

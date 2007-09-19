@@ -19,6 +19,8 @@
 
 #include "qgswkndiagramfactory.h"
 #include "qgsfeature.h"
+#include <QDomDocument>
+#include <QDomElement>
 #include <QImage>
 #include <QPainter>
 
@@ -214,4 +216,43 @@ QgsDiagramFactory::SizeType QgsWKNDiagramFactory::sizeType() const
     {
       return QgsDiagramFactory::HEIGHT;
     }
+}
+
+bool QgsWKNDiagramFactory::writeXML(QDomNode& overlay_node, QDomDocument& doc) const
+{
+  QDomElement overlayElement = overlay_node.toElement();
+
+  //well known name
+  QDomElement wellKnownNameElem = doc.createElement("wellknownname");
+  QDomText wknText = doc.createTextNode(mDiagramType);
+  wellKnownNameElem.appendChild(wknText);
+  overlayElement.appendChild(wellKnownNameElem);
+	    
+  //classification field
+  QDomElement classificationFieldElem = doc.createElement("classificationfield");
+  QDomText classFieldText = doc.createTextNode(QString::number(scalingAttribute()));
+  classificationFieldElem.appendChild(classFieldText);
+  overlayElement.appendChild(classificationFieldElem);
+	    
+  //color tags
+  for(std::list<QColor>::const_iterator c_it = mColorSeries.begin(); c_it != mColorSeries.end(); ++c_it)
+    {
+      QDomElement currentColorElem = doc.createElement("color");
+      currentColorElem.setAttribute("red", QString::number(c_it->red()));
+      currentColorElem.setAttribute("green", QString::number(c_it->green()));
+      currentColorElem.setAttribute("blue", QString::number(c_it->blue()));
+      overlayElement.appendChild(currentColorElem);
+    }
+  
+  //attribute tags
+  QgsAttributeList::const_iterator a_it;
+  
+  for(a_it = mAttributes.constBegin(); a_it != mAttributes.constEnd(); ++a_it)
+    {
+      QDomElement currentAttributeElem = doc.createElement("attribute");
+      QDomText currentAttributeText = doc.createTextNode(QString::number(*a_it));
+      currentAttributeElem.appendChild(currentAttributeText);
+      overlayElement.appendChild(currentAttributeElem);
+    }
+  return true;
 }

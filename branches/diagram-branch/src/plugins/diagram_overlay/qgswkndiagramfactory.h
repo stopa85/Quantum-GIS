@@ -38,8 +38,10 @@ class QgsWKNDiagramFactory: public QgsDiagramFactory
   ~QgsWKNDiagramFactory();
   /**Creates a diagram for a feature and a given (classification) item. The calling method takes ownership of the generated image*/
   QImage* createDiagram(int size, const QgsFeature& f) const;
-  int createLegendContent(int size, double value, QMap<QString, QImage*>& items) const{return 1;} //soon
+  int createLegendContent(int size, QString value, QMap<QString, QImage*>& items) const{return 1;} //soon
   int getDiagramDimensions(int size, const QgsFeature& f, int& width, int& height) const;
+  bool writeXML(QDomNode& overlay_node, QDomDocument& doc) const;
+
   QgsDiagramFactory::SizeType sizeType() const;
 
   //setters and getters for diagram type

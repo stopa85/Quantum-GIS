@@ -18,8 +18,9 @@
 #ifndef QGSDIAGRAMRENDERER_H
 #define QGSDIAGRAMRENDERER_H
 
+#include <QList>
 #include <QMap>
-#include <QString>
+#include <QVariant>
 
 class QgsDiagramFactory;
 class QgsFeature;
@@ -30,7 +31,7 @@ class QImage;
 //structure that describes a renderer entry
 struct QgsDiagramItem
 {
-  double value;
+  QVariant value;
   int size;
 };
 
@@ -38,7 +39,7 @@ struct QgsDiagramItem
 class QgsDiagramRenderer
 {
  public:
-  QgsDiagramRenderer(int classificationAttribute);
+  QgsDiagramRenderer(const QList<int>& classificationAttributes);
   virtual ~QgsDiagramRenderer();
   /**Returns a diagram image for a feature.*/
   virtual QImage* renderDiagram(const QgsFeature& f) const = 0;
@@ -53,7 +54,7 @@ class QgsDiagramRenderer
   QgsDiagramFactory* factory() const {return mFactory;}
   /**Set a (properly configured) factory class. Takes ownership of the factory object*/
   void setFactory(QgsDiagramFactory* f){mFactory = f;}
-  void setClassificationAttribute(int attrNr){mClassificationAttribute = attrNr;}
+  void addClassificationAttribute(int attrNr);
   /**Reads the specific renderer settings from project file*/
   virtual bool readXML(const QDomNode& rendererNode) = 0;
   /**Saves settings to project file. Returns true in case of success*/
@@ -68,11 +69,12 @@ class QgsDiagramRenderer
  protected:
   /**The object to generate the diagrams*/
   QgsDiagramFactory* mFactory;
-  /**Attribute for the size of the diagram*/
-  int mClassificationAttribute;
+  /**Attributes for determining the size of the diagram.
+   If there are several attributes, their sum is used.*/
+  QList<int> mClassificationAttributes;
   /**Searches the value of the classification attribute
    @return 0 in case of success*/
-  int classificationValue(const QgsFeature& f, double& value) const;
+  int classificationValue(const QgsFeature& f, QVariant& value) const;
 };
 
 #endif

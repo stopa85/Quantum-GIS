@@ -22,6 +22,8 @@
 #include <QString>
 
 class QgsFeature;
+class QDomDocument;
+class QDomNode;
 class QImage;
 
 /**Interface for classes that create diagrams*/
@@ -46,7 +48,7 @@ class QgsDiagramFactory
   @param value diagram value that should be represented in the legend
   @param items generated items
   @return 0 in case of success*/
-  virtual int createLegendContent(int size, double value, QMap<QString, QImage*>& items) const = 0; 
+  virtual int createLegendContent(int size, QString value, QMap<QString, QImage*>& items) const = 0; 
   /**Gets the width and height of the diagram image for a feature. This depends on \
    the diagram type and is not necessary equal with the size.
   @param size diagram size calculated by diagram renderer
@@ -54,6 +56,7 @@ class QgsDiagramFactory
   @param width out: the width of the diagram image
   @param height out: the height of the diagram image*/
   virtual int getDiagramDimensions(int size, const QgsFeature& f, int& width, int& height) const = 0;
+  virtual bool writeXML(QDomNode& overlay_node, QDomDocument& doc) const = 0;
   virtual ~QgsDiagramFactory(){}
   /**Default is one dimensional scaling*/
   virtual QgsDiagramFactory::SizeType sizeType() const {return QgsDiagramFactory::HEIGHT;}
