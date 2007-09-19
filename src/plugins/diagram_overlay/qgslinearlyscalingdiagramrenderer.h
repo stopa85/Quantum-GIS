@@ -19,7 +19,7 @@
 #define QGSLINEARLYSCALINGDIAGRAMRENDERER_H
 
 #include "qgsdiagramrenderer.h"
-
+#include <QString>
 
 /**This renderer scales the size of the diagram linearly between minimum/ maximum values of an attribute*/
 
@@ -27,15 +27,14 @@ class QgsLinearlyScalingDiagramRenderer: public QgsDiagramRenderer
 {
  public:
 
-  //Describes if the scaling is proportional to line (pie diameter) or area (pie area). Bar charts are always
-  //proportional to line and area because the bar width is constant
-  enum Proportion
+  //describes the type of interpolation
+  enum InterpolationType
     {
-      LINE,
-      AREA
+      DISCRETE,
+      LINEAR
     };
 
-  QgsLinearlyScalingDiagramRenderer(int classificationAttribute);
+  QgsLinearlyScalingDiagramRenderer(const QList<int> classificationAttributes);
   ~QgsLinearlyScalingDiagramRenderer();
   /**Returns an diagram image for a geographic feature. The caller takes ownership of the QImage. Returns 0 in case of error*/
   QImage* renderDiagram(const QgsFeature& f) const;
@@ -43,12 +42,11 @@ class QgsLinearlyScalingDiagramRenderer: public QgsDiagramRenderer
   int getDiagramSize(int& width, int& height, const QgsFeature& f) const;
   /**Sets the items for interpolation. The values of the items must be in ascending order*/
   void setDiagramItems(const QList<QgsDiagramItem>& items) {mItems = items;}
+  void setInterpolationType(InterpolationType t){mInterpolationType = t;}
   /**Returns the interpolation items*/
   QList<QgsDiagramItem> diagramItems() const {return mItems;}
-  void setProportion(QgsLinearlyScalingDiagramRenderer::Proportion p){mProportion = p;}
   QString rendererName() const {return "linearly scaling";}
   
-
 
   bool readXML(const QDomNode& rendererNode);
   bool writeXML(QDomNode& overlay_node, QDomDocument& doc) const;
@@ -56,16 +54,15 @@ class QgsLinearlyScalingDiagramRenderer: public QgsDiagramRenderer
   int createLegendContent(QMap<QString, QImage*> items) const;
 
  protected:
+  /**Describes the type of interpolation (linear by default)*/
+  InterpolationType mInterpolationType;
   /**Interpolation points for size*/
   QList<QgsDiagramItem> mItems;
-
-  /**Stores if scaling should be proportional to line or area*/
-  QgsLinearlyScalingDiagramRenderer::Proportion mProportion;
 
   /**Gets diagram size
    @return 0 in case of success*/
   int calculateDiagramSize(const QgsFeature& f, int& size) const;
-  /**Does linear interpolation*/
+  /**Does (linear or discrete) interpolation*/
   int interpolateSize(double value, double lowerValue, double upperValue, int lowerSize, \
 		      int upperSize) const;
 
