@@ -74,76 +74,28 @@ int QgsLinearlyScalingDiagramRenderer::createLegendContent(QMap<QString, QImage*
 
 bool QgsLinearlyScalingDiagramRenderer::readXML(const QDomNode& rendererNode)
 {
-#if 0
   QDomElement rendererElem = rendererNode.toElement();
 
-  double lowerBound, upperBound;
-  int width, height;
+  //items
+  QList<QgsDiagramItem> itemList;
   bool conversionOk;
 
-  //loweritem
-  QDomNodeList lowerItemList = rendererElem.elementsByTagName("loweritem"); 
-  if(lowerItemList.size() < 1)
+  QDomNodeList itemNodeList = rendererElem.elementsByTagName("diagramitem"); 
+  for(int i = 0; i < itemNodeList.size(); ++i)
     {
-      return false;
+      QgsDiagramItem currentItem;
+      QVariant currentValue;
+      currentItem.size = itemNodeList.at(i).toElement().attribute("size").toInt();
+      currentValue = QVariant(itemNodeList.at(i).toElement().attribute("value").toDouble(&conversionOk));
+      if(!conversionOk) //string data?
+	{
+	  currentValue = QVariant(itemNodeList.at(i).toElement().attribute("value"));
+	}
+      currentItem.value = currentValue;
+      itemList.push_back(currentItem);
     }
-
-  QDomElement lowerItemElem = lowerItemList.at(0).toElement();
-  lowerBound = lowerItemElem.attribute("lower_bound").toDouble(&conversionOk);
-  if(!conversionOk)
-    {
-      return false;
-    }
-  upperBound = lowerItemElem.attribute("upper_bound").toDouble(&conversionOk);
-  if(!conversionOk)
-    {
-      return false;
-    }
-  width = lowerItemElem.attribute("width").toInt(&conversionOk);
-  if(!conversionOk)
-    {
-      return false;
-    }
-  height = lowerItemElem.attribute("height").toInt(&conversionOk);
-  if(!conversionOk)
-    {
-      return false;
-    }
-  setLowerItem(QgsDiagramItem(lowerBound, upperBound, height, width));
-
-  //upperitem
-  QDomNodeList upperItemList = rendererElem.elementsByTagName("upperitem");
-  if(upperItemList.size() < 1)
-    {
-      return false;
-    }
-  
-  QDomElement upperItemElem = upperItemList.at(0).toElement();
-  lowerBound = upperItemElem.attribute("lower_bound").toDouble(&conversionOk);
-  if(!conversionOk)
-    {
-      return false;
-    }
-  upperBound = upperItemElem.attribute("upper_bound").toDouble(&conversionOk);
-  if(!conversionOk)
-    {
-      return false;
-    }
-  width = upperItemElem.attribute("width").toInt(&conversionOk);
-  if(!conversionOk)
-    {
-      return false;
-    }
-  height = upperItemElem.attribute("height").toInt(&conversionOk);
-  if(!conversionOk)
-    {
-      return false;
-    }
-  setUpperItem(QgsDiagramItem(lowerBound, upperBound, height, width));
-
+  setDiagramItems(itemList);
   return true;
-#endif //0
-  return false;
 }
 
 bool QgsLinearlyScalingDiagramRenderer::writeXML(QDomNode& overlay_node, QDomDocument& doc) const
@@ -198,6 +150,8 @@ int QgsLinearlyScalingDiagramRenderer::calculateDiagramSize(const QgsFeature& f,
     {
       for(; current_it != mItems.constEnd(); ++current_it)
 	{
+	  qWarning("value: " + QString::number(value.toDouble()));
+	  qWarning("current_it->value: " + QString::number(current_it->value.toDouble()));
 	  if(value.toDouble() < current_it->value.toDouble())
 	    {
 	      if(last_it == mItems.constEnd()) //values below classifications receive first items size

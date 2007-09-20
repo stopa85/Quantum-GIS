@@ -52,7 +52,9 @@ QgsDiagramRenderer* QgsLinearlyScalingDialog::createRenderer(const QString& type
    f->setDiagramType(type);
    f->setAttributes(attributes);
    f->setColorSeries(colors);
-   f->setScalingAttribute(classAttr);
+   QList<int> classAttrList;
+   classAttrList.push_back(classAttr);
+   f->setScalingAttributes(classAttrList);
    renderer->setFactory(f);
 
    return renderer;

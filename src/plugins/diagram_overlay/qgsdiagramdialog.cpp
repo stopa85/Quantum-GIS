@@ -255,7 +255,7 @@ void QgsDiagramDialog::restoreSettings(const QgsVectorOverlay* overlay)
 		}
 	      
 	      //classification attribute
-	      QString classFieldName = QgsDiagramOverlay::attributeNameFromIndex(theFactory->scalingAttribute(), mVectorLayer);
+	      QString classFieldName = QgsDiagramOverlay::attributeNameFromIndex(theFactory->scalingAttributes().first(), mVectorLayer);
 	      mClassificationComboBox->setCurrentIndex(mClassificationComboBox->findText(classFieldName));
 	      
 	      //classification type (specific for renderer subclass)

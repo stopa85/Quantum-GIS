@@ -195,12 +195,18 @@ int QgsWKNDiagramFactory::getHeightBarChart(int size, const QgsAttributeMap& fea
 double QgsWKNDiagramFactory::pixelValueRatioBarChart(int size, const QgsAttributeMap& featureAttributes) const
 {
   //find value for scaling attribute
-  QgsAttributeMap::const_iterator it = featureAttributes.find(mScalingAttribute);
-  if(it == featureAttributes.constEnd())
+  QList<int>::const_iterator scaling_it = mScalingAttributes.constBegin();
+  double scalingValue = 0;
+
+  for(; scaling_it != mScalingAttributes.constEnd(); ++scaling_it)
     {
-      return 1; //error, scaling attribute not contained in feature attributes
+      QgsAttributeMap::const_iterator it = featureAttributes.find(*scaling_it);
+      if(it == featureAttributes.constEnd())
+	{
+	  continue; //error, scaling attribute not contained in feature attributes
+	}
+      scalingValue += (it->toDouble());
     }
-  double scalingValue = it->toDouble();
   
   //calculate value/pixel ratio
   return (size / scalingValue);
@@ -228,11 +234,15 @@ bool QgsWKNDiagramFactory::writeXML(QDomNode& overlay_node, QDomDocument& doc) c
   wellKnownNameElem.appendChild(wknText);
   overlayElement.appendChild(wellKnownNameElem);
 	    
-  //classification field
-  QDomElement classificationFieldElem = doc.createElement("classificationfield");
-  QDomText classFieldText = doc.createTextNode(QString::number(scalingAttribute()));
-  classificationFieldElem.appendChild(classFieldText);
-  overlayElement.appendChild(classificationFieldElem);
+  //classification fields
+  QList<int>::const_iterator scaling_it = mScalingAttributes.constBegin();
+  for(; scaling_it != mScalingAttributes.constEnd(); ++scaling_it)
+    {
+      QDomElement classificationFieldElem = doc.createElement("classificationfield");
+      QDomText classFieldText = doc.createTextNode(QString::number(*scaling_it));
+      classificationFieldElem.appendChild(classFieldText);
+      overlayElement.appendChild(classificationFieldElem);
+    }
 	    
   //color tags
   for(std::list<QColor>::const_iterator c_it = mColorSeries.begin(); c_it != mColorSeries.end(); ++c_it)
