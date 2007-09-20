@@ -18,6 +18,7 @@
 #include "qgsdiagramoverlay.h"
 #include "qgscoordinatetransform.h"
 #include "qgsdiagramfactory.h"
+#include "qgswkndiagramfactory.h"
 #include "qgsdiagramrenderer.h"
 #include "qgsfeature.h"
 #include "qgsfield.h"
@@ -171,7 +172,6 @@ int QgsDiagramOverlay::getOverlayObjectSize(int& width, int& height, double valu
 
 bool QgsDiagramOverlay::readXML(const QDomNode& overlayNode)
 {
-#if 0
   QDomElement overlayElem = overlayNode.toElement();
   
   //set display flag
@@ -192,7 +192,7 @@ bool QgsDiagramOverlay::readXML(const QDomNode& overlayNode)
   QString wellKnownName;
   QgsAttributeList attributeList;
   std::list<QColor> colorList;
-  int classificationField;
+  QList<int> classAttrList;
 
   //wellknownname
   QDomNodeList wknNodeList = overlayElem.elementsByTagName("wellknownname");
@@ -204,11 +204,10 @@ bool QgsDiagramOverlay::readXML(const QDomNode& overlayNode)
 
   //classificationField
   QDomNodeList classificationFieldList = overlayElem.elementsByTagName("classificationfield");
-  if(classificationFieldList.size() < 1)
+  for(int i = 0; i < classificationFieldList.size(); ++i)
     {
-      return false;
+      classAttrList.push_back(classificationFieldList.at(i).toElement().text().toInt());
     }
-  classificationField = classificationFieldList.at(0).toElement().text().toInt();
 
   //attributes
   QDomNodeList attributeNodeList = overlayElem.elementsByTagName("attribute");
@@ -240,14 +239,18 @@ bool QgsDiagramOverlay::readXML(const QDomNode& overlayNode)
   QString type = rendererElem.attribute("type");
   if(type == "linearly_scaling")
     {
-      theDiagramRenderer = new QgsLinearlyScalingDiagramRenderer(wellKnownName, attributeList, colorList);
+      theDiagramRenderer = new QgsLinearlyScalingDiagramRenderer(classAttrList);
+      QgsWKNDiagramFactory* wknFactory = new QgsWKNDiagramFactory();
+      wknFactory->setAttributes(attributeList);
+      wknFactory->setColorSeries(colorList);
+      wknFactory->setScalingAttributes(classAttrList);
+      wknFactory->setDiagramType(wellKnownName);
+      theDiagramRenderer->setFactory(wknFactory);
     }
   else
     {
       return false;
     }
-  
-  theDiagramRenderer->setClassificationField(classificationField);
 
   //Read renderer specific settings
   if(theDiagramRenderer)
@@ -256,14 +259,17 @@ bool QgsDiagramOverlay::readXML(const QDomNode& overlayNode)
       setDiagramRenderer(theDiagramRenderer);
       
       //the overlay may need a different attribute list than the renderer
-      if(!attributeList.contains(classificationField))
+      QList<int>::const_iterator it = classAttrList.constBegin();
+      for(; it != classAttrList.constEnd(); ++it)
 	{
-	  attributeList.push_back(classificationField);	
+	  if(!attributeList.contains(*it))
+	    {
+	      attributeList.push_back(*it);
+	    }
 	}
       setAttributes(attributeList);
       return true;
     }
-#endif //0
   return false;
 }
 
@@ -385,10 +391,10 @@ QString QgsDiagramOverlay::attributeNameFromIndex(int index, const QgsVectorLaye
   if ((provider = dynamic_cast<const QgsVectorDataProvider *>(vl->getDataProvider())))
     {
       const QgsFieldMap & fields = provider->fields();
-      QgsFieldMap::const_iterator it = fields.find(index);
-      if(it != fields.constEnd())
+      QgsFieldMap::const_iterator field_iter = fields.find(index);
+      if(field_iter != fields.constEnd())
 	{
-	  return it.value().name();
+	  return field_iter->name();
 	}
     }
   return "";

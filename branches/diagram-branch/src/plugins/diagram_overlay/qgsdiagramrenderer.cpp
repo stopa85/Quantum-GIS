@@ -44,7 +44,7 @@ int QgsDiagramRenderer::classificationValue(const QgsFeature& f, QVariant& value
       double totalValue = 0;
 
       QList<int>::const_iterator list_it = mClassificationAttributes.constBegin();
-      for(; list_it != mClassificationAttributes.end(); ++list_it)
+      for(; list_it != mClassificationAttributes.constEnd(); ++list_it)
 	{
 	  QgsAttributeMap::const_iterator iter = featureAttributes.find(*list_it);
 	  if(iter == featureAttributes.constEnd())

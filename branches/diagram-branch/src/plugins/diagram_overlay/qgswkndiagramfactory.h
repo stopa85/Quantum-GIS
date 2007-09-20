@@ -54,15 +54,16 @@ class QgsWKNDiagramFactory: public QgsDiagramFactory
   std::list<QColor> colors() const {return mColorSeries;}
   void setColorSeries(const std::list<QColor>& c){mColorSeries = c;}
   //setters and getters for scaling attribute
-  int scalingAttribute() const {return mScalingAttribute;}
-  void setScalingAttribute(int att){mScalingAttribute = att;}
+  QList<int> scalingAttributes() const {return mScalingAttributes;}
+  void setScalingAttributes(const QList<int>& att){mScalingAttributes = att;}
   
   /**Returns the supported well known names in a list*/
   static void supportedWellKnownNames(std::list<QString>& names);
 
  private:
-  /**Index of the attribute that is used for determining size*/
-  int mScalingAttribute;
+  /**List of scaling attribute indexes (the values are summed up to 
+     receive the scaling value)*/
+  QList<int> mScalingAttributes;
   /**Names */
   QgsAttributeList mAttributes;
   /**Well known diagram name (e.g. pie, bar, line)*/
