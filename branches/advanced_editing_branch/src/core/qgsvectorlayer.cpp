@@ -874,29 +874,17 @@ void QgsVectorLayer::select(QgsRect & rect, bool lock)
   {
     removeSelection(FALSE); // don't emit signal
   }
-  
-  mDataProvider->select(QgsAttributeList(), rect, true, true);
 
-  QgsFeature fet;
+  //select all the elements
+  QList<QgsFeature> selectedList;
+  featuresInRectangle(rect, selectedList, true, false);  //should finally be false, false
 
-  while (mDataProvider->getNextFeature(fet))
-  {
-    // don't select deleted features
-    if (!mDeletedFeatureIds.contains(fet.featureId()))
+  QList<QgsFeature>::const_iterator select_it = selectedList.constBegin();
+  for(; select_it != selectedList.constEnd(); ++select_it)
     {
-      select(fet.featureId(), FALSE); // don't emit signal
+      select(select_it->featureId());
     }
-  }
-
-  // also test the not commited features
-  for(QgsFeatureList::iterator it = mAddedFeatures.begin(); it != mAddedFeatures.end(); ++it)
-  {
-    if((*it).geometry()->intersects(rect))
-    {
-      select((*it).featureId(), FALSE); // don't emit signal
-    }
-  }
-
+								
   emit selectionChanged();
 }
 
@@ -1210,19 +1198,43 @@ void QgsVectorLayer::setSubsetString(QString subset)
   
 }
 
-QgsGeometry* QgsVectorLayer::geometryInRectangle(const QgsRect& searchRect, int& featureId)
+int QgsVectorLayer::featuresInRectangle(const QgsRect& searchRect, QList<QgsFeature>& features, bool fetchGeometries, bool fetchAttributes)
 {
-  QSet<int> alreadyExamined;
+  if(!mDataProvider)
+    {
+      return 1;
+    }
 
+  QSet<int> alreadyExamined;
+  QgsGeometry* currentGeomPointer = 0;
+  
   //first search all changed geometries
   QgsGeometryMap::iterator changedIt;
   for(changedIt = mChangedGeometries.begin(); changedIt != mChangedGeometries.end(); ++changedIt)
     {
       alreadyExamined.insert(changedIt.key());
+
+      if(mDeletedFeatureIds.contains(changedIt.key()))
+	{
+	  continue;
+	}
+
       if(changedIt->intersects(searchRect))
 	{
-	  featureId = changedIt.key();
-	  return new QgsGeometry(changedIt.value());
+	  QgsFeature newFeature(changedIt.key());
+	  if(fetchGeometries)
+	    {
+	      currentGeomPointer = new QgsGeometry(changedIt.value());
+	      newFeature.setGeometry(currentGeomPointer);
+	    }
+	  if(fetchAttributes)
+	    {
+	      QgsFeature tmpFeature;
+	      mDataProvider->getFeatureAtId(changedIt.key(), tmpFeature, false, mDataProvider->allAttributesList());
+	      newFeature.setAttributeMap(tmpFeature.attributeMap());
+	      
+	    }
+	  features.push_back(newFeature);
 	}
     }
 
@@ -1236,31 +1248,121 @@ QgsGeometry* QgsVectorLayer::geometryInRectangle(const QgsRect& searchRect, int&
       
       if(iter->geometry() && iter->geometry()->intersects(searchRect))
 	{
-	  featureId = iter->featureId();
-	  return new QgsGeometry(*iter->geometry());
+	  QgsFeature newFeature(iter->featureId());
+	  if(fetchGeometries)
+	    {
+	      currentGeomPointer = new QgsGeometry(*iter->geometry());
+	      newFeature.setGeometry(currentGeomPointer);
+	    }
+	  if(fetchAttributes)
+	    {
+	      newFeature.setAttributeMap(iter->attributeMap());
+	      
+	    }
+	  features.push_back(newFeature);
 	}
     }
 
   //look in the normal features of the provider
   if(mDataProvider)
     {
-      mDataProvider->select(QgsAttributeList(), searchRect, true, true);
-      
-      QgsFeature f;
-      while(getDataProvider() && getDataProvider()->getNextFeature(f))
+      mDataProvider->select(mDataProvider->allAttributesList(), searchRect, fetchGeometries, true);
+    }
+  else
+    {
+      mDataProvider->select(QgsAttributeList(), searchRect, fetchGeometries, true);
+    }
+  
+  QgsFeature f;
+  while(getDataProvider() && getDataProvider()->getNextFeature(f))
+    {
+      if(mChangedGeometries.contains(f.featureId()) || mDeletedFeatureIds.contains(f.featureId()))
 	{
-	  if(mChangedGeometries.contains(f.featureId()))
-	    {
-	      continue;
-	    }
-	  
-	  featureId = f.featureId();
-	  return new QgsGeometry(*(f.geometry()));
+	  continue;
 	}
+      
+      QgsFeature newFeature(f.featureId());
+      if(fetchGeometries)
+	{
+	  currentGeomPointer = new QgsGeometry(*(f.geometry()));
+	  newFeature.setGeometry(currentGeomPointer);
+	}
+      if(fetchAttributes)
+	{
+	      newFeature.setAttributeMap(f.attributeMap());
+	}
+      features.push_back(newFeature);
     }
   return 0;
 }
 
+int QgsVectorLayer::getFeatureAtId(int featureId, QgsFeature& f, bool fetchGeometries, bool fetchAttributes)
+{
+  if(!mDataProvider)
+    {
+      return 1;
+    }
+
+  if(mDeletedFeatureIds.contains(featureId))
+    {
+      return 2;
+    }
+
+  //changed geometries
+
+  QgsGeometryMap::iterator changedIt;
+  changedIt = mChangedGeometries.find(featureId);
+  if(changedIt != mChangedGeometries.end())
+    {
+      f.setFeatureId(changedIt.key());
+      if(fetchGeometries)
+	{
+	  f.setGeometry(new QgsGeometry(changedIt.value()));
+	}
+      if(fetchAttributes)
+	{
+	  QgsFeature tmpFeature;
+	  mDataProvider->getFeatureAtId(changedIt.key(), tmpFeature, false, mDataProvider->allAttributesList());
+	  f.setAttributeMap(tmpFeature.attributeMap());
+	}
+      return 0;
+    }
+  
+  //added features
+  for(QgsFeatureList::iterator iter = mAddedFeatures.begin(); iter != mAddedFeatures.end(); ++iter)
+    {
+      if(iter->featureId() == featureId)
+	{
+	  f.setFeatureId(iter->featureId());
+	  if(fetchGeometries)
+	    {
+	      f.setGeometry(*(iter->geometry()));
+	    }
+	  if(fetchAttributes)
+	    {
+	      f.setAttributeMap(iter->attributeMap());
+	    }
+	  return 0;
+	}
+    }
+
+  //permanent features
+  if(fetchAttributes)
+    {
+      if(mDataProvider->getFeatureAtId(featureId, f, fetchGeometries, mDataProvider->allAttributesList()))
+	{
+	  return 0;
+	}
+    }
+  else
+    {
+      if(mDataProvider->getFeatureAtId(featureId, f, fetchGeometries, QgsAttributeList()))
+	{
+	  return 0;
+	}
+    }
+  return 3; 
+}
 
 bool QgsVectorLayer::addFeature(QgsFeature& f, bool alsoUpdateExtent)
 {
@@ -1440,7 +1542,7 @@ bool QgsVectorLayer::deleteSelectedFeatures()
 
 int QgsVectorLayer::addRing(const QList<QgsPoint>& ring)
 {
-  int addRingReturnCode = 0;
+  int addRingReturnCode = 5; //default: return code for 'ring not inserted'
   double xMin, yMin, xMax, yMax;
   QgsRect bBox;
 
@@ -1453,85 +1555,22 @@ int QgsVectorLayer::addRing(const QList<QgsPoint>& ring)
       return 3; //ring not valid 
     }
 
-  std::set<int> idList; //store the ids of the features we already added the ring
+  QList<QgsFeature> featureList;
+  featuresInRectangle(bBox, featureList, true, false);
+  QList<QgsFeature>::iterator f_it = featureList.begin();
 
-  //call addRing for every feature in mChangedFeatures
-  QgsGeometryMap::iterator changedIt;
-  for(changedIt = mChangedGeometries.begin(); changedIt != mChangedGeometries.end(); ++changedIt)
+  for(; f_it != featureList.end(); ++f_it)
     {
-      if(changedIt.value().intersects(bBox))
+      addRingReturnCode = f_it->geometry()->addRing(ring);
+      if(addRingReturnCode == 0)
 	{
-	  addRingReturnCode = changedIt.value().addRing(ring);
-	  if(addRingReturnCode == 0) //success. Leave this method
-	    {
-	      setModified(true, true);
-	      return 0;
-	    }
-	  else if(addRingReturnCode > 0 && addRingReturnCode < 5) //pass the error one level up
-	    {
-	      return addRingReturnCode;
-	    }
-	  //else, addRingReturnCode must be 5, so the ring is not contained in this polygon
-	}
-      idList.insert(changedIt.key());
-    }
- 
-  //call addRing for every feature in mAddedFeatures
-  for(int i = 0; i < mAddedFeatures.size(); ++i)
-    {
-      if(idList.find(mAddedFeatures.at(i).featureId()) == idList.end())
-	{
-	  //if a geometry is not contained in mCachedGeometries, it is not in the view extent and therefore cannot intersect the ring
-	  if(mCachedGeometries.contains(mAddedFeatures.at(i).featureId()))
-	    {
-	      addRingReturnCode = mCachedGeometries[mAddedFeatures.at(i).featureId()].addRing(ring);
-	      if(addRingReturnCode == 0) //success. Leave this method
-		{
-		  mChangedGeometries[mAddedFeatures.at(i).featureId()] = mCachedGeometries[mAddedFeatures.at(i).featureId()];
-		  setModified(true, true);
-		  return 0;
-		}
-	      else if(addRingReturnCode > 0 && addRingReturnCode < 5) //pass the error one level up
-		{
-		  return addRingReturnCode;
-		}
-	      //else, addRingReturnCode must be 5, so the ring is not contained in this polygon
-	    }
-	  idList.insert(mAddedFeatures.at(i).featureId());
+	  mChangedGeometries.insert(f_it->featureId(), *(f_it->geometry()));
+	  setModified(true, true);
+	  break;
 	}
     }
-  
-  //call addRing for every feature intersecting bounding box
-  mDataProvider->select(QgsAttributeList(), bBox, true, true);
-  QgsFeature currentFeature;
-  QgsGeometry* currentGeometryPtr = 0;
 
-  while(mDataProvider->getNextFeature(currentFeature))
-    {
-      if(idList.find(currentFeature.featureId()) == idList.end())
-	{
-	  currentGeometryPtr = currentFeature.geometry();
-	  if(currentGeometryPtr)
-	    {
-	      QgsGeometry newGeometry(*currentGeometryPtr);
-	      addRingReturnCode = newGeometry.addRing(ring);
-
-	      if(addRingReturnCode == 0)
-		{
-		  //add geometry to mChangedGeometries
-		  mChangedGeometries.insert(currentFeature.featureId(), newGeometry);
-		  setModified(true, true);
-		  return 0;
-		}
-	      else if(addRingReturnCode > 0 && addRingReturnCode < 5) //pass the error one level up
-		{
-		  return addRingReturnCode;
-		}
-	    }
-	}
-    }
-  
-  return 5; //ring not contained in any geometry
+  return addRingReturnCode;
 }
 
 int QgsVectorLayer::addIsland(const QList<QgsPoint>& ring)
@@ -1639,6 +1678,36 @@ int QgsVectorLayer::splitFeatures(const QList<QgsPoint>& splitLine)
       return 4;
     }
 
+  QList<QgsFeature> featureList;
+  featuresInRectangle(bBox, featureList);
+  QList<QgsFeature>::iterator select_it = featureList.begin();
+
+  for(; select_it != featureList.end(); ++select_it)
+    {
+      splitFunctionReturn = select_it->geometry()->splitGeometry(splitLine, &newGeometry);
+      if(splitFunctionReturn < 2)
+	{
+	  //change this geometry
+	  mChangedGeometries.insert(select_it->featureId(), *(select_it->geometry()));
+	  //insert new feature
+	  QgsFeature newFeature;
+	  newFeature.setGeometry(newGeometry);
+	  newFeature.setAttributeMap(select_it->attributeMap());
+	  newFeatures.append(newFeature);
+	  setModified(true, true);
+	}
+      if(splitFunctionReturn > 0 && splitFunctionReturn < 3)
+	{
+	  returnCode = splitFunctionReturn;
+	}
+    }
+
+  //now add the new features to this vectorlayer
+  addFeatures(newFeatures, false);
+  
+  return returnCode;
+
+#if 0
   //find out the features contained in the bounding box of the line  
   std::set<int> idList; //store the ids of the features we already examined
 
@@ -1740,6 +1809,7 @@ int QgsVectorLayer::splitFeatures(const QList<QgsPoint>& splitLine)
   //now add the new features to this vectorlayer
   addFeatures(newFeatures, false);
   return returnCode;
+#endif //0
 }
 
 QgsLabel * QgsVectorLayer::label()

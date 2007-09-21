@@ -200,13 +200,13 @@ public:
    */
   virtual QString subsetString();
 
-  /**Returns the first geometry found in the search rectangle. Includes searching through the changed geometries
-     and added features. This function is mainly usefull for map tools that search for a geometry to manipulate
-     @param searchRect selection rectangle.
-     @param featureId id of the feature the geometry belongs to
-     @return pointer to the geometry or 0 if no geometry found. The calling function takes ownership of the geometry*/
-  QgsGeometry* geometryInRectangle(const QgsRect& searchRect, int& featureId);
+  /**Returns the features contained in the rectangle. Considers the changed, added, deleted and permanent features
+   @return 0 in case of success*/
+  int featuresInRectangle(const QgsRect& searchRect, QList<QgsFeature>& features, bool fetchGeometries = true, bool fetchAttributes = true);
 
+  /**Gets the feature at the given feature id. Considers the changed, added, deleted and permanent features
+   @return 0 in case of success*/
+  int getFeatureAtId(int featureId, QgsFeature& f, bool fetchGeometries = true, bool fetchAttributes = true);
 
   /** Adds a feature
       @param lastFeatureInBatch  If True, will also go to the effort of e.g. updating the extents.
