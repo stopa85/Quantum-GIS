@@ -75,18 +75,15 @@ void QgsMapToolMoveFeature::canvasPressEvent(QMouseEvent * e)
   QgsRect selectRect(layerCoords.x()-searchRadius, layerCoords.y()-searchRadius, \
 		     layerCoords.x()+searchRadius, layerCoords.y()+searchRadius);
 
-  QgsGeometry* theGeom = 0;
-  int featureId;
+  QList<QgsFeature> featureList;
+  vlayer->featuresInRectangle(selectRect, featureList, true, false);    
   
-  theGeom = vlayer->geometryInRectangle(selectRect, featureId);    
-  
-  if(theGeom)
+  if(featureList.size() > 0)
     {
       mStartPointMapCoords = toMapCoords(e->pos());
-      mMovedFeature = featureId;
-  
+      mMovedFeature = featureList.first().featureId();
       mRubberBand = createRubberBand();
-      mRubberBand->setToGeometry(theGeom, *vlayer);
+      mRubberBand->setToGeometry(featureList.first().geometry(), *vlayer);
       mRubberBand->setColor(Qt::red);
       mRubberBand->setWidth(2);
       mRubberBand->show();
