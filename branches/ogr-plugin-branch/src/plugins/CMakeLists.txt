@@ -17,5 +17,8 @@ IF (GRASS_FOUND)
   SUBDIRS (grass)
 ENDIF (GRASS_FOUND)
 
+SUBDIRS (ogr)
+
+
 INSTALL(FILES qgisplugin.h qgsrendererplugin.h DESTINATION ${QGIS_INCLUDE_DIR})
 
