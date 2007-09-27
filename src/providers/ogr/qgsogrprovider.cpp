@@ -80,6 +80,10 @@ QgsOgrProvider::QgsOgrProvider(QString const & uri)
    ogrLayer(0),
    ogrDriver(0)
 {
+               
+  QString connString;
+  QString connTable;
+  QString connType;             
   OGRRegisterAll();
 
   // set the selection rectangle pointer to 0
@@ -87,19 +91,93 @@ QgsOgrProvider::QgsOgrProvider(QString const & uri)
   // make connection to the data source
 
   QgsDebugMsg("Data source uri is " + uri);
-
-  // try to open for update, but disable error messages to avoid a
-  // message if the file is read only, because we cope with that
-  // ourselves.
+  
+  connString=uri;
+  
+  //mysql
+  if (uri.contains("type=MySQL",FALSE)>0)
+    {
+     //split uri to create an uri according to ogr mysql driver 
+     connType="MySQL";
+     QStringList paramList;
+     
+     paramList=paramList.split(",",uri);                                     
+     //generate connection string and table
+     connString = "MySQL:";
+     connTable = paramList.at(5);
+     connTable=connTable.section('=', 1, 1 ); 
+     
+     QString host = paramList.at(1);
+     host=host.section('=', 1, 1 );
+     
+     QString database = paramList.at(2);
+     database=database.section('=', 1, 1 ); 
+          
+     connString= connString + database+","+
+                 "host="+host+","+
+                 paramList.at(3)+","+
+                 paramList.at(4);
+     #ifdef QGISDEBUG
+       std::cout << "OGR Provider Connection params: " << uri.toLocal8Bit().data() << std::endl;
+       std::cout << "OGR Provider param list: " << std::endl;
+       for ( QStringList::Iterator it = paramList.begin(); it != paramList.end(); ++it ) {
+        std::cout << (*it).toLocal8Bit().data() << std::endl;
+       }
+       std::cout << "OGR Provider connection string: " <<connString.toLocal8Bit().data()<< std::endl;
+       
+     #endif
+     
+    }
+    //postgres
+   if (uri.contains("type=PostgreSQL",FALSE)>0)
+    {
+     //split uri to create an uri according to ogr mysql driver 
+     connType="PostgreSQL";
+     QStringList paramList;
+     
+     paramList=paramList.split(",",uri);                                     
+     //generate connection string and table
+     connString = "PG:";
+     connTable = paramList.at(5);
+     connTable=connTable.section('=', 1, 1 ); 
+     
+     QString host = paramList.at(1);
+     host=host.section('=', 1, 1 );
+     
+     QString database = paramList.at(2);
+     database=database.section('=', 1, 1 ); 
+          
+     connString= connString + "host="+host+
+                 " dbname="+database+" "+
+                 paramList.at(3)+" "+
+                 paramList.at(4);
+     #ifdef QGISDEBUG
+       std::cout << "OGR Provider Connection params: " << uri.toLocal8Bit().data() << std::endl;
+       std::cout << "OGR Provider param list: " << std::endl;
+       for ( QStringList::Iterator it = paramList.begin(); it != paramList.end(); ++it ) {
+        std::cout << (*it).toLocal8Bit().data() << std::endl;
+       }
+       std::cout << "OGR Provider connection string: " <<connString.toLocal8Bit().data()<< std::endl;
+       
+     #endif
+     
+    } 
+     
+ 
+   // try to open for update, but disable error messages to avoid a
+   // message if the file is read only, because we cope with that
+   // ourselves.    
   CPLPushErrorHandler(&CPLQuietErrorHandler);
-  ogrDataSource = OGRSFDriverRegistrar::Open(QFile::encodeName(uri).constData(), TRUE, &ogrDriver);
+  ogrDataSource = OGRSFDriverRegistrar::Open(QFile::encodeName(connString).constData(), TRUE, &ogrDriver);
   CPLPopErrorHandler();
 
   if(ogrDataSource == NULL)
   {
-    // try to open read-only
-    ogrDataSource = OGRSFDriverRegistrar::Open(QFile::encodeName(uri).constData(), FALSE, &ogrDriver);
-
+    //try to open read-only               
+     #ifdef QGISDEBUG
+       std::cout << "OGR Provider: failed to open as read and write " << std::endl;
+    #endif
+    ogrDataSource = OGRSFDriverRegistrar::Open(QFile::encodeName(connString).constData(), FALSE, &ogrDriver);
     //TODO Need to set a flag or something to indicate that the layer
     //TODO is in read-only mode, otherwise edit ops will fail
     // TODO: capabilities() should now reflect this; need to test.
@@ -112,8 +190,17 @@ QgsOgrProvider::QgsOgrProvider(QString const & uri)
     valid = true;
 
     ogrDriverName = ogrDriver->GetName();
+    
+    if ((connType=="MySQL")||(connType=="PostgreSQL"))
+      {
+       ogrLayer = ogrDataSource->GetLayerByName(connTable);                                        
+      }
+    else
+      {
+       ogrLayer = ogrDataSource->GetLayer(0);                    
+      }  
 
-    ogrLayer = ogrDataSource->GetLayer(0);
+    
 
     // get the extent_ (envelope) of the layer
 
