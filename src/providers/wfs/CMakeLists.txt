@@ -11,7 +11,9 @@ SET (WFS_MOC_HDRS
 IF (PEDANTIC)
   MESSAGE("providers/wfs : -Werror removed for qgswfsprovider.cpp for now - please get rid of any compiler warnings!")
 ENDIF (PEDANTIC)
-SET_SOURCE_FILES_PROPERTIES(qgswfsprovider.cpp PROPERTIES COMPILE_FLAGS -Wno-error )
+IF(NOT MSVC)
+  SET_SOURCE_FILES_PROPERTIES(qgswfsprovider.cpp PROPERTIES COMPILE_FLAGS -Wno-error )
+ENDIF(NOT MSVC)
 ########################################################
 # Build
 
@@ -27,7 +29,8 @@ INCLUDE_DIRECTORIES (
 ADD_LIBRARY (wfsprovider MODULE ${WFS_SRCS} ${WFS_MOC_SRCS})
 
 TARGET_LINK_LIBRARIES (wfsprovider
-  ${QT_LIBRARIES}
+  ${QT_QTCORE_LIBRARY} 
+  ${QT_QTXML_LIBRARY} 
   ${GEOS_LIBRARY}
   ${EXPAT_LIBRARY}
   qgis_core

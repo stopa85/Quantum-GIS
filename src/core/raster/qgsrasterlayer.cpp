@@ -1,5 +1,5 @@
 /* **************************************************************************
-   qgsrasterlayer.cpp -  description
+					   qgsrasterlayer.cpp -  description
    -------------------
 begin                : Sat Jun 22 2002
 copyright            : (C) 2003 by Tim Sutton, Steve Halasz and Gary E.Sherman
@@ -1418,6 +1418,7 @@ void QgsRasterLayer::drawSingleBandGray(QPainter * theQPainter, QgsRasterViewPor
     mGrayMaximum = getMaximumPossibleValue(myDataType);
   }
 
+  QgsDebugMsg("Starting main render loop");
   // print each point in myGdalScanData with equal parts R, G ,B o make it show as gray
   for (int myColumn = 0; myColumn < theRasterViewPort->drawableAreaYDim; ++myColumn)
   {
@@ -1507,6 +1508,7 @@ void QgsRasterLayer::drawSingleBandGray(QPainter * theQPainter, QgsRasterViewPor
   
   CPLFree ( myGdalScanData );
 
+  QgsDebugMsg("Render done, preparing to copy to canvas");
   //render any inline filters
   filterLayer(&myQImage);
 

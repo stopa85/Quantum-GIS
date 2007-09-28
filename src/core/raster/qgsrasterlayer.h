@@ -156,7 +156,7 @@ class QgsRect;
 class QgsRasterBandStats;
 class QgsRasterPyramid;
 class QgsRasterLayerProperties;
-class QgsRasterViewPort;
+struct QgsRasterViewPort;
 class QImage;
 class QPixmap;
 
