@@ -1706,110 +1706,36 @@ int QgsVectorLayer::splitFeatures(const QList<QgsPoint>& splitLine)
   addFeatures(newFeatures, false);
   
   return returnCode;
+}
 
-#if 0
-  //find out the features contained in the bounding box of the line  
-  std::set<int> idList; //store the ids of the features we already examined
-
-  //first examine the changed features
-  QgsGeometryMap::iterator changedIt;
-  for(changedIt = mChangedGeometries.begin(); changedIt != mChangedGeometries.end(); ++changedIt)
+int QgsVectorLayer::removePolygonIntersections(QgsGeometry* geom)
+{
+  //first test if geom really has type polygon or multipolygon
+  if(geom->vectorType() != QGis::Polygon)
     {
-      if(changedIt.value().intersects(bBox))
-	{
-	  splitFunctionReturn = changedIt->splitGeometry(splitLine, &newGeometry);
-	  if(splitFunctionReturn < 2)
-	    {
-	      //insert new feature
-	      QgsFeature newFeature;
-	      newFeature.setGeometry(newGeometry);
-
-	      //query attributes from provider
-	      QgsFeature origFeature;
-	      if(mDataProvider->getFeatureAtId(changedIt.key(), origFeature, false, mDataProvider->allAttributesList()))
-		{
-		  newFeature.setAttributeMap(origFeature.attributeMap());
-		}
-
-	      newFeatures.append(newFeature);
-	      setModified(true, true);
-	    }
-	  if(splitFunctionReturn > 0 && splitFunctionReturn < 3)
-	    {
-	      returnCode = splitFunctionReturn;
-	    }
-	}
-      idList.insert(changedIt.key());
+      return 1;
     }
 
-  //then added features
-  //call addRing for every feature in mAddedFeatures
-  for(int i = 0; i < mAddedFeatures.size(); ++i)
-    {
-      if(idList.find(mAddedFeatures.at(i).featureId()) == idList.end())
-	{
-	  //if a geometry is not contained in mCachedGeometries, it is not in the view extent and therefore cannot intersect the ring
-	  if(mCachedGeometries.contains(mAddedFeatures.at(i).featureId()))
-	    {
-	      splitFunctionReturn = mCachedGeometries[mAddedFeatures.at(i).featureId()].splitGeometry(splitLine, &newGeometry);
-	      if(splitFunctionReturn < 2)
-		{
-		  mChangedGeometries[mAddedFeatures.at(i).featureId()] = mCachedGeometries[mAddedFeatures.at(i).featureId()];
-		  //and also insert new feature
-		  QgsFeature newFeature;
-		  newFeature.setGeometry(newGeometry);
-		  newFeature.setAttributeMap(mAddedFeatures.at(i).attributeMap()); //copy the attributes
-		  newFeatures.append(newFeature);		  
-		  setModified(true, true);
-		}
-	      if(splitFunctionReturn > 0 && splitFunctionReturn < 3)
-		{
-		  returnCode = splitFunctionReturn;
-		}
-	    }
-	  idList.insert(mAddedFeatures.at(i).featureId());
-	}
-    }
+  //get bounding box of geom
+  QgsRect geomBBox = geom->boundingBox();
 
-  //finally the ordinary features
+  //get list of features that intersect this bounding box
+  QList<QgsFeature> featureList;
+  featuresInRectangle(geomBBox, featureList);
   
-  //call splitGeometry for every feature intersecting bounding box
-  mDataProvider->select(mDataProvider->allAttributesList(), bBox, true, true);
-  QgsFeature currentFeature;
-  QgsGeometry* currentGeometryPtr = 0;
+  QList<QgsFeature>::iterator it = featureList.begin();
+  QgsGeometry* currentGeom;
 
-  while(mDataProvider->getNextFeature(currentFeature))
+  for(; it != featureList.end(); ++it)
     {
-      if(idList.find(currentFeature.featureId()) == idList.end())
+      //call geometry->difference for each feature
+      currentGeom = it->geometry();
+      if(currentGeom)
 	{
-	  currentGeometryPtr = currentFeature.geometry();
-	    if(currentGeometryPtr)
-	    {
-	      QgsGeometry changedGeometry(*currentGeometryPtr);
-	      splitFunctionReturn = changedGeometry.splitGeometry(splitLine, &newGeometry);
-	      if(splitFunctionReturn < 2)
-		{
-		  //change existing geometry
-		  mChangedGeometries.insert(currentFeature.featureId(), changedGeometry);
-		  //and insert new feature
-		  QgsFeature newFeature;
-		  newFeature.setGeometry(newGeometry);
-		  newFeature.setAttributeMap(currentFeature.attributeMap());
-		  newFeatures.append(newFeature);
-		  setModified(true, true);
-		}
-	      if(splitFunctionReturn > 0 && splitFunctionReturn < 3)
-		{
-		  returnCode = splitFunctionReturn;
-		}
-	    }
+	  geom->difference(it->geometry());
 	}
     }
-
-  //now add the new features to this vectorlayer
-  addFeatures(newFeatures, false);
-  return returnCode;
-#endif //0
+  return 0;
 }
 
 QgsLabel * QgsVectorLayer::label()

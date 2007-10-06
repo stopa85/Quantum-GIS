@@ -260,6 +260,9 @@ existing rings, 5 no feature found where ring can be inserted*/
   2 if intersection too complex to be handled, else other error*/
   int splitFeatures(const QList<QgsPoint>& splitLine);
 
+  /**Changes the specified geometry such that it has no intersections with other \
+     polygon (or multipolygon) geometries in this vector layer*/
+  int removePolygonIntersections(QgsGeometry* geom);
 
   /** Set labels on */
   void setLabelOn( bool on );
