@@ -261,6 +261,11 @@ not disjoint with existing polygons of the feature*/
     else other error*/
     int splitGeometry(const QList<QgsPoint>& splitLine, QgsGeometry** newGeometry);
 
+    /**Changes this geometry such that it does not intersect the other geometry
+       @param other geometry that should not be intersect
+       @return 0 in case of success*/
+    int difference(QgsGeometry* other);
+
     /**Returns the bounding box of this feature*/
     QgsRect boundingBox();
 

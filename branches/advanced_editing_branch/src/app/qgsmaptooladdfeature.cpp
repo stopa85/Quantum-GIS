@@ -311,6 +311,7 @@ void QgsMapToolAddFeature::canvasReleaseEvent(QMouseEvent * e)
 		  QMessageBox::critical(0, QObject::tr("Error"), QObject::tr("Cannot add feature. Unknown WKB type"));
 		  return; //unknown wkbtype
 		}
+	      f->setGeometryAndOwnership(&wkb[0],size);
 	    }
 	  else // polygon
 	    {
@@ -403,8 +404,14 @@ void QgsMapToolAddFeature::canvasReleaseEvent(QMouseEvent * e)
 		  QMessageBox::critical(0, QObject::tr("Error"), QObject::tr("Cannot add feature. Unknown WKB type"));
 		  return; //unknown wkbtype
 		}
+	      f->setGeometryAndOwnership(&wkb[0],size);
+	      //is automatic polygon intersection removal activated?
+	      int avoidPolygonIntersections = QgsProject::instance()->readNumEntry("Digitizing", "/AvoidPolygonIntersections", 0);
+	      if(avoidPolygonIntersections != 0)
+		{
+		  vlayer->removePolygonIntersections(f->geometry());
+		}
 	    }
-	  f->setGeometryAndOwnership(&wkb[0],size);
 	  
 	  // add the fields to the QgsFeature
 	  const QgsFieldMap fields = provider->fields();

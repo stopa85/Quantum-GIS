@@ -2863,6 +2863,44 @@ int QgsGeometry::splitGeometry(const QList<QgsPoint>& splitLine, QgsGeometry** n
   return returnCode;
 }
 
+int QgsGeometry::difference(QgsGeometry* other)
+{
+  //make sure geos geometry is up to date
+  if(!mGeos || mDirtyGeos)
+    {
+      exportWkbToGeos();
+    }
+
+  if(!mGeos)
+    {
+      return 1;
+    }
+
+  //convert other geometry to geos
+  if(!other->mGeos || other->mDirtyGeos)
+    {
+      other->exportWkbToGeos();
+    }
+  
+  if(!other->mGeos)
+    {
+      return 2;
+    }
+
+  //make geometry::difference
+  mGeos = mGeos->difference(other->mGeos);
+  //todo: catch exceptions
+  if(!mGeos)
+    {
+      mDirtyGeos = true;
+      return 3;
+    }
+
+  //set wkb dirty to true
+  mDirtyWkb = true;
+  return 0;
+}
+
 QgsRect QgsGeometry::boundingBox()
 {
   double xmin =  std::numeric_limits<double>::max();
