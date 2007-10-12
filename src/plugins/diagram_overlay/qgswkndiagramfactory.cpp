@@ -80,11 +80,14 @@ QImage* QgsWKNDiagramFactory::createPieChart(int size, const QgsAttributeMap& da
 
   //calculate sum of data values
   double sum = 0;
+  QList<double> valueList; //cash the values to use them in drawing later
+
   QgsAttributeMap::const_iterator value_it;
   QgsAttributeList::const_iterator it = mAttributes.constBegin();
   for(; it != mAttributes.end(); ++it)
     {
       value_it = dataValues.find(*it);
+      valueList.push_back(value_it->toDouble());
       if(value_it != dataValues.constEnd())
 	{
 	  sum += value_it->toDouble();
@@ -92,14 +95,15 @@ QImage* QgsWKNDiagramFactory::createPieChart(int size, const QgsAttributeMap& da
     }
 
   //draw pies
-  QgsAttributeMap::const_iterator double_it;
-  std::list<QColor>::const_iterator color_it;
+  std::list<QColor>::const_iterator color_it = mColorSeries.begin();
+  QList<double>::const_iterator valueList_it = valueList.constBegin();
+
   int totalAngle = 0;
   int currentAngle;
 
-  for(double_it = dataValues.constBegin(), color_it = mColorSeries.begin(); double_it != dataValues.constEnd(); ++double_it, ++color_it)
+  for(; (color_it != mColorSeries.end() && valueList_it != valueList.constEnd()); ++color_it, ++valueList_it)
     {
-      currentAngle = (int)((double_it->toDouble())/sum*360*16);
+      currentAngle = (int)((*valueList_it)/sum*360*16);
       p.setBrush(QBrush(*color_it));
       p.drawPie(0, 0, size, size, totalAngle, currentAngle);
       totalAngle += currentAngle;

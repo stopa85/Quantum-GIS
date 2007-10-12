@@ -150,8 +150,6 @@ int QgsLinearlyScalingDiagramRenderer::calculateDiagramSize(const QgsFeature& f,
     {
       for(; current_it != mItems.constEnd(); ++current_it)
 	{
-	  qWarning("value: " + QString::number(value.toDouble()));
-	  qWarning("current_it->value: " + QString::number(current_it->value.toDouble()));
 	  if(value.toDouble() < current_it->value.toDouble())
 	    {
 	      if(last_it == mItems.constEnd()) //values below classifications receive first items size
