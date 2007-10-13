@@ -1710,6 +1710,8 @@ int QgsVectorLayer::splitFeatures(const QList<QgsPoint>& splitLine)
 
 int QgsVectorLayer::removePolygonIntersections(QgsGeometry* geom)
 {
+  int returnValue = 0;
+
   //first test if geom really has type polygon or multipolygon
   if(geom->vectorType() != QGis::Polygon)
     {
@@ -1732,10 +1734,13 @@ int QgsVectorLayer::removePolygonIntersections(QgsGeometry* geom)
       currentGeom = it->geometry();
       if(currentGeom)
 	{
-	  geom->difference(it->geometry());
+	  if(geom->difference(it->geometry()) != 0)
+	    {
+	      returnValue = 2;
+	    }
 	}
     }
-  return 0;
+  return returnValue;
 }
 
 QgsLabel * QgsVectorLayer::label()
@@ -2613,60 +2618,27 @@ int QgsVectorLayer::snapWithContext(const QgsPoint& startPoint, double snappingT
 		      QgsSnapper::SNAP_TO snap_to)
 {
   if (snappingTolerance<=0 || !mDataProvider)
-  {
-    return 1;
-  }
-
+    {
+      return 1;
+    }
+  
+  QList<QgsFeature> featureList;
   QgsRect searchRect(startPoint.x()-snappingTolerance, startPoint.y()-snappingTolerance, \
 		     startPoint.x()+snappingTolerance, startPoint.y()+snappingTolerance);
-  
-  //go through the changed geometries and store the ids of already examined features
-  QSet<int> alreadyExaminedGeometries;
-
   double sqrSnappingTolerance = snappingTolerance * snappingTolerance;
 
-  QgsGeometryMap::iterator changedIt;
-  for(changedIt = mChangedGeometries.begin(); changedIt != mChangedGeometries.end(); ++changedIt)
+  if(featuresInRectangle(searchRect, featureList, true, false) != 0)
     {
-      alreadyExaminedGeometries.insert(changedIt.key());
-      snapToGeometry(startPoint, changedIt.key(), &(*changedIt), sqrSnappingTolerance, snappingResults, snap_to);
+      return 2;
     }
 
-  //go through the new features
-  QgsFeatureList::iterator addedIt;
-  QgsGeometry* currentGeometry = 0;
-  
-  for(addedIt = mAddedFeatures.begin(); addedIt != mAddedFeatures.end(); ++addedIt)
+  QList<QgsFeature>::iterator feature_it = featureList.begin();
+  for(; feature_it != featureList.end(); ++feature_it)
     {
-      int featureId = addedIt->featureId();
-      if(!alreadyExaminedGeometries.contains(featureId))
-	{
-	  currentGeometry = addedIt->geometry();
-	  if(currentGeometry)
-	    {
-	      snapToGeometry(startPoint, featureId, currentGeometry, sqrSnappingTolerance, snappingResults, snap_to);
-	    }
-	}
+      snapToGeometry(startPoint, feature_it->featureId(), feature_it->geometry(), sqrSnappingTolerance, snappingResults, snap_to);
     }
 
-   //go through the commited features
-  QgsFeature feature;
-  mDataProvider->select(QgsAttributeList(), searchRect);
-  while (mDataProvider->getNextFeature(feature))
-  {
-    int featureId = feature.featureId();
-    if(!alreadyExaminedGeometries.contains(featureId))
-      {
-	currentGeometry = feature.geometry();
-	if(currentGeometry)
-	  {
-	    snapToGeometry(startPoint, featureId, currentGeometry, sqrSnappingTolerance, snappingResults, snap_to);
-	  }
-      }
-  }
-
-  return 0;
-	    
+  return 0;	    
 }
 
 void QgsVectorLayer::snapToGeometry(const QgsPoint& startPoint, int featureId, QgsGeometry* geom, double sqrSnappingTolerance, \

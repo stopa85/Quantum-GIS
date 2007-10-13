@@ -409,7 +409,10 @@ void QgsMapToolAddFeature::canvasReleaseEvent(QMouseEvent * e)
 	      int avoidPolygonIntersections = QgsProject::instance()->readNumEntry("Digitizing", "/AvoidPolygonIntersections", 0);
 	      if(avoidPolygonIntersections != 0)
 		{
-		  vlayer->removePolygonIntersections(f->geometry());
+		  if(vlayer->removePolygonIntersections(f->geometry()) != 0)
+		    {
+		      QMessageBox::critical(0, QObject::tr("Error"), QObject::tr("Could not remove polygon intersection"));
+		    }
 		}
 	    }
 	  

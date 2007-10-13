@@ -2876,6 +2876,16 @@ int QgsGeometry::difference(QgsGeometry* other)
       return 1;
     }
 
+  if(!mGeos->isValid())
+    {
+      return 2;
+    }
+
+  if(!mGeos->isSimple())
+    {
+      return 3;
+    }
+
   //convert other geometry to geos
   if(!other->mGeos || other->mDirtyGeos)
     {
@@ -2884,16 +2894,23 @@ int QgsGeometry::difference(QgsGeometry* other)
   
   if(!other->mGeos)
     {
-      return 2;
+      return 4;
     }
 
   //make geometry::difference
-  mGeos = mGeos->difference(other->mGeos);
-  //todo: catch exceptions
+  try
+    {
+      mGeos = mGeos->difference(other->mGeos);
+    }
+  catch(GEOS_UTIL::GEOSException& e)
+    {
+      return 5;
+    }
+  
   if(!mGeos)
     {
       mDirtyGeos = true;
-      return 3;
+      return 6;
     }
 
   //set wkb dirty to true
