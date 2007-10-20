@@ -1708,7 +1708,7 @@ int QgsVectorLayer::splitFeatures(const QList<QgsPoint>& splitLine)
   return returnCode;
 }
 
-int QgsVectorLayer::removePolygonIntersections(QgsGeometry* geom)
+int QgsVectorLayer::removePolygonIntersections(QgsGeometry* geom, bool topological)
 {
   int returnValue = 0;
 
@@ -1727,6 +1727,7 @@ int QgsVectorLayer::removePolygonIntersections(QgsGeometry* geom)
   
   QList<QgsFeature>::iterator it = featureList.begin();
   QgsGeometry* currentGeom;
+  QList< QPair<QgsPoint, int> > topologicalPoints;
 
   for(; it != featureList.end(); ++it)
     {
@@ -1734,9 +1735,18 @@ int QgsVectorLayer::removePolygonIntersections(QgsGeometry* geom)
       currentGeom = it->geometry();
       if(currentGeom)
 	{
-	  if(geom->difference(it->geometry()) != 0)
+	  if(geom->difference(it->geometry(), topologicalPoints) != 0)
 	    {
 	      returnValue = 2;
+	    }
+	  if(topological)
+	    {
+	      //insert topological points into the feature
+	      QList< QPair<QgsPoint, int> >::const_iterator p_it = topologicalPoints.constBegin();
+	      for(; p_it != topologicalPoints.constEnd(); ++p_it)
+		{
+		  insertVertexBefore(p_it->first.x(), p_it->first.y(), it->featureId(), p_it->second);
+		} 
 	    }
 	}
     }

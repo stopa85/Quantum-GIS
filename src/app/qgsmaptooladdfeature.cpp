@@ -407,9 +407,11 @@ void QgsMapToolAddFeature::canvasReleaseEvent(QMouseEvent * e)
 	      f->setGeometryAndOwnership(&wkb[0],size);
 	      //is automatic polygon intersection removal activated?
 	      int avoidPolygonIntersections = QgsProject::instance()->readNumEntry("Digitizing", "/AvoidPolygonIntersections", 0);
+	      int topologicalEditing = QgsProject::instance()->readNumEntry("Digitizing", "/TopologicalEditing", 0);
+
 	      if(avoidPolygonIntersections != 0)
 		{
-		  if(vlayer->removePolygonIntersections(f->geometry()) != 0)
+		  if(vlayer->removePolygonIntersections(f->geometry(), topologicalEditing) != 0)
 		    {
 		      QMessageBox::critical(0, QObject::tr("Error"), QObject::tr("Could not remove polygon intersection"));
 		    }

@@ -2863,7 +2863,7 @@ int QgsGeometry::splitGeometry(const QList<QgsPoint>& splitLine, QgsGeometry** n
   return returnCode;
 }
 
-int QgsGeometry::difference(QgsGeometry* other)
+int QgsGeometry::difference(QgsGeometry* other, QList< QPair<QgsPoint, int> >& topologicalPoints)
 {
   //make sure geos geometry is up to date
   if(!mGeos || mDirtyGeos)
@@ -2897,10 +2897,68 @@ int QgsGeometry::difference(QgsGeometry* other)
       return 4;
     }
 
+  topologicalPoints.clear();
+
   //make geometry::difference
   try
     {
-      mGeos = mGeos->difference(other->mGeos);
+      if(mGeos->intersects(other->mGeos))
+	{
+	  mGeos = mGeos->difference(other->mGeos);
+
+#if 0 //does not work yet
+	  //find out the topological points for the other geometry
+	  //get exterior ring
+	  GEOS_GEOM::Geometry* thisBoundary = mGeos->getBoundary();
+	  GEOS_GEOM::Geometry* otherBoundary = other->mGeos->getBoundary();
+
+	  if(thisBoundary && otherBoundary)
+	    {
+	      GEOS_GEOM::Geometry* intersectGeom = thisBoundary->intersection(otherBoundary);
+	      //qWarning(intersectGeom->getGeometryType().c_str());
+	      if(intersectGeom)
+		{
+		      GEOS_GEOM::GeometryCollection* mlsGeom = dynamic_cast<GEOS_GEOM::GeometryCollection*>(intersectGeom);
+		      if(mlsGeom)
+			{
+			  const GEOS_GEOM::Geometry* currentGeometry = 0;
+			  
+			  //iterate through every linestring and try to insert start- and endpoint into other geometry
+			  for(int i = 0; i < mlsGeom->getNumGeometries(); ++i)
+			    {
+			      currentGeometry = mlsGeom->getGeometryN(i);
+			      if(currentGeometry)
+				{
+				  //todo: try to insert start and endpoints
+				  GEOS_GEOM::CoordinateSequence* coords = currentGeometry->getCoordinates();
+				  if(coords)
+				    {
+				      QgsPoint startPoint(coords->getAt(0).x, coords->getAt(0).y);
+				      //qWarning(startPoint.stringRep());
+				      //todo: test, if vertex already there
+				      QgsPoint minDistPoint;
+				      int beforeVertex;
+				      other->closestSegmentWithContext(startPoint, minDistPoint, beforeVertex);
+				      topologicalPoints.push_back(qMakePair(startPoint, beforeVertex));
+				      
+				      QgsPoint endPoint(coords->getAt(coords->getSize()-1).x, coords->getAt(coords->getSize()-1).y);
+				      //qWarning(endPoint.stringRep());
+				      //todo: test if vertex is already there
+				      other->closestSegmentWithContext(endPoint, minDistPoint, beforeVertex);
+				      topologicalPoints.push_back(qMakePair(endPoint, beforeVertex));
+				    }
+				  delete coords;
+				}
+			    }
+			}
+		}
+	    }
+#endif //0
+	}
+      else
+	{
+	  return 0; //nothing to do
+	}
     }
   catch(GEOS_UTIL::GEOSException& e)
     {
