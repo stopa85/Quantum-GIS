@@ -261,8 +261,12 @@ existing rings, 5 no feature found where ring can be inserted*/
   int splitFeatures(const QList<QgsPoint>& splitLine);
 
   /**Changes the specified geometry such that it has no intersections with other \
-     polygon (or multipolygon) geometries in this vector layer*/
-  int removePolygonIntersections(QgsGeometry* geom);
+     polygon (or multipolygon) geometries in this vector layer
+  @param geom geometry to modify
+  @param topological if true intersection points are also inserted to other geometries \
+  to keep topology
+  @return 0 in case of success*/
+  int removePolygonIntersections(QgsGeometry* geom, bool topological = false);
 
   /** Set labels on */
   void setLabelOn( bool on );
