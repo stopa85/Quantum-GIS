@@ -404,6 +404,11 @@ not disjoint with existing polygons of the feature*/
     /**Finds the vertices next to point where the line is split. If it is split at a vertex, beforeVertex 
      and afterVertex are the same*/
     int findVerticesNextToSplit(const QgsPoint& splitPoint, int& beforeVertex, int& afterVertex);
+    /**Test if a point is a geometry vertex
+       @param p point to test
+       @param vertexNr vertex number (if point is a vertex)
+       @return true if p is vertex of this geometry*/
+    bool vertexContainedInGeometry(const QgsPoint& p, int& vertexNr);
     /**Splits this geometry into two lines*/
     int splitThisLine(const QgsPoint& splitPoint, int beforeVertex, int afterVertex, QgsGeometry** newGeometry);
     /**Splits this geometry into two multilines*/

@@ -2904,56 +2904,54 @@ int QgsGeometry::difference(QgsGeometry* other, QList< QPair<QgsPoint, int> >& t
     {
       if(mGeos->intersects(other->mGeos))
 	{
-	  mGeos = mGeos->difference(other->mGeos);
-
-#if 0 //does not work yet
 	  //find out the topological points for the other geometry
 	  //get exterior ring
 	  GEOS_GEOM::Geometry* thisBoundary = mGeos->getBoundary();
 	  GEOS_GEOM::Geometry* otherBoundary = other->mGeos->getBoundary();
-
+	  
 	  if(thisBoundary && otherBoundary)
 	    {
 	      GEOS_GEOM::Geometry* intersectGeom = thisBoundary->intersection(otherBoundary);
-	      //qWarning(intersectGeom->getGeometryType().c_str());
 	      if(intersectGeom)
 		{
-		      GEOS_GEOM::GeometryCollection* mlsGeom = dynamic_cast<GEOS_GEOM::GeometryCollection*>(intersectGeom);
-		      if(mlsGeom)
+		  //intersection is usually multipoint
+		  GEOS_GEOM::GeometryCollection* mlsGeom = dynamic_cast<GEOS_GEOM::GeometryCollection*>(intersectGeom);
+		  if(mlsGeom)
+		    {
+		      const GEOS_GEOM::Geometry* currentGeometry = 0;
+		      
+		      //iterate through every linestring and try to insert start- and endpoint into other geometry
+		      for(int i = 0; i < mlsGeom->getNumGeometries(); ++i)
 			{
-			  const GEOS_GEOM::Geometry* currentGeometry = 0;
-			  
-			  //iterate through every linestring and try to insert start- and endpoint into other geometry
-			  for(int i = 0; i < mlsGeom->getNumGeometries(); ++i)
+			  currentGeometry = mlsGeom->getGeometryN(i);
+			  qWarning("type of current geometry");
+			  qWarning(currentGeometry->getGeometryType().c_str());
+			  if(currentGeometry)
 			    {
-			      currentGeometry = mlsGeom->getGeometryN(i);
-			      if(currentGeometry)
+			      //try to insert point
+			      GEOS_GEOM::CoordinateSequence* coords = currentGeometry->getCoordinates();
+			      if(coords)
 				{
-				  //todo: try to insert start and endpoints
-				  GEOS_GEOM::CoordinateSequence* coords = currentGeometry->getCoordinates();
-				  if(coords)
+				  QgsPoint startPoint(coords->getAt(0).x, coords->getAt(0).y); 
+				  //Is vertex already there?
+				  int vertexNr;
+				  if(!vertexContainedInGeometry(startPoint, vertexNr))
 				    {
-				      QgsPoint startPoint(coords->getAt(0).x, coords->getAt(0).y);
-				      //qWarning(startPoint.stringRep());
-				      //todo: test, if vertex already there
+				      qWarning("Inserting vertex for topological correctness");
 				      QgsPoint minDistPoint;
 				      int beforeVertex;
 				      other->closestSegmentWithContext(startPoint, minDistPoint, beforeVertex);
 				      topologicalPoints.push_back(qMakePair(startPoint, beforeVertex));
-				      
-				      QgsPoint endPoint(coords->getAt(coords->getSize()-1).x, coords->getAt(coords->getSize()-1).y);
-				      //qWarning(endPoint.stringRep());
-				      //todo: test if vertex is already there
-				      other->closestSegmentWithContext(endPoint, minDistPoint, beforeVertex);
-				      topologicalPoints.push_back(qMakePair(endPoint, beforeVertex));
 				    }
-				  delete coords;
 				}
+			      delete coords;
 			    }
 			}
+		    }
 		}
+	      
 	    }
-#endif //0
+	  mGeos = mGeos->difference(other->mGeos);
 	}
       else
 	{
@@ -4617,27 +4615,12 @@ int QgsGeometry::findVerticesNextToSplit(const QgsPoint& splitPoint, int& before
     }
 
   //first test all the vertices for equality with splitPoint
-  GEOS_GEOM::CoordinateSequence* vertexSequence = mGeos->getCoordinates();
-  if(!vertexSequence)
+  int equalVertexNr;
+  if(vertexContainedInGeometry(splitPoint, equalVertexNr))
     {
-      return 3;
-    }
-
-  int seqSize = vertexSequence->getSize();
-  double treshold = 0.0000000000001;
-  GEOS_GEOM::Coordinate currentCoord;
-  QgsPoint testPoint;
-
-  for(int i = 0; i < seqSize; ++i)
-    {
-      currentCoord = vertexSequence->getAt(i);
-      testPoint.setX(currentCoord.x); testPoint.setY(currentCoord.y);
-      if(testPoint.sqrDist(splitPoint) < treshold)
-	{
-	  //vertices are considered to be equal
-	  beforeVertex = i; afterVertex = i;
-	  return 0;
-	}
+      beforeVertex = equalVertexNr;
+      afterVertex = equalVertexNr;
+      return 0;
     }
 
   //no vertex equal to splitPoint, now we need to test the segments
@@ -4737,6 +4720,44 @@ int QgsGeometry::findVerticesNextToSplit(const QgsPoint& splitPoint, int& before
     }
 
   return 3; //point not on segment
+}
+
+bool QgsGeometry::vertexContainedInGeometry(const QgsPoint& p, int& vertexNr)
+{
+  if(!mGeos || mDirtyGeos)
+    {
+      exportWkbToGeos();
+    }
+
+  if(!mGeos)
+    {
+      return false;
+    }
+
+  //first test all the vertices for equality with splitPoint
+  GEOS_GEOM::CoordinateSequence* vertexSequence = mGeos->getCoordinates();
+  if(!vertexSequence)
+    {
+      return false;
+    }
+
+  int seqSize = vertexSequence->getSize();
+  double treshold = 0.0000000000001;
+  GEOS_GEOM::Coordinate currentCoord;
+  QgsPoint testPoint;
+
+  for(int i = 0; i < seqSize; ++i)
+    {
+      currentCoord = vertexSequence->getAt(i);
+      testPoint.setX(currentCoord.x); testPoint.setY(currentCoord.y);
+      if(testPoint.sqrDist(p) < treshold)
+	{
+	  //vertex is considered to be equal
+	  vertexNr = i;
+	  return true;
+	}
+    }
+  return false;
 }
 
 int QgsGeometry::splitThisLine(const QgsPoint& splitPoint, int beforeVertex, int afterVertex, QgsGeometry** newGeometry)
