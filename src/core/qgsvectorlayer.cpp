@@ -1727,7 +1727,7 @@ int QgsVectorLayer::removePolygonIntersections(QgsGeometry* geom, bool topologic
   
   QList<QgsFeature>::iterator it = featureList.begin();
   QgsGeometry* currentGeom;
-  QList< QPair<QgsPoint, int> > topologicalPoints;
+  QMap<int, QgsPoint> topologicalPoints;
 
   for(; it != featureList.end(); ++it)
     {
@@ -1739,14 +1739,16 @@ int QgsVectorLayer::removePolygonIntersections(QgsGeometry* geom, bool topologic
 	    {
 	      returnValue = 2;
 	    }
-	  if(topological)
+	  if(topological && topologicalPoints.size() > 0)
 	    {
-	      //insert topological points into the feature
-	      QList< QPair<QgsPoint, int> >::const_iterator p_it = topologicalPoints.constBegin();
-	      for(; p_it != topologicalPoints.constEnd(); ++p_it)
+	      //insert topological points into the feature (must be in reverse order!)
+	      QMapIterator<int, QgsPoint>points_it(topologicalPoints);
+	      points_it.toBack();
+	      while(points_it.hasPrevious())
 		{
-		  insertVertexBefore(p_it->first.x(), p_it->first.y(), it->featureId(), p_it->second);
-		} 
+		  points_it.previous();
+		  insertVertexBefore(points_it.value().x(), points_it.value().y(), it->featureId(), points_it.key());
+		}
 	    }
 	}
     }
