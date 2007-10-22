@@ -197,7 +197,7 @@ INCLUDE_DIRECTORIES(
      ${CMAKE_CURRENT_BINARY_DIR}
      ${CMAKE_CURRENT_BINARY_DIR}/../ui
      ../core
-     ../core/raster ../core/renderer ../core/symbology
+     ../core/raster ../core/renderer ../core/symbology ../core/dbutilities
      ../gui
      ../plugins
   ${PROJ_INCLUDE_DIR}
