@@ -149,10 +149,11 @@ http://python.org/download/
 
 === Download SIP and PyQt4 sources ===
 
-http://www.riverbankcomputing.com/Downloads/sip4/sip-4.6.zip
-http://www.riverbankcomputing.com/Downloads/PyQt4/GPL/PyQt-win-gpl-4.2.zip
+http://www.riverbankcomputing.com/Downloads/sip4/
+http://www.riverbankcomputing.com/Downloads/PyQt4/GPL/
 
-Extract each of the above zip files in a temporary directory.
+Extract each of the above zip files in a temporary directory. Make sure
+to get versions that match your current Qt installed version.
    
 === Compile SIP ===
 
@@ -379,7 +380,8 @@ tar xvfz gsl-1.8.tar.gz
 cd gsl-1.8 
 ./configure --prefix=/usr/local 
 make
-sudo make install cd ..  
+sudo make install
+cd ..  
 ```
 
 === Additional Dependencies : Expat ===
@@ -404,14 +406,14 @@ cd ..
 Retrieve the python bindings toolkit SIP from
 
 ``` 
-curl -O http://www.riverbankcomputing.com/Downloads/sip4/sip-4.5.2.tar.gz
+http://www.riverbankcomputing.com/Downloads/sip4/
 ```
 
 Then extract and build it to a prefix of /usr/local:
 
 ``` 
-tar xvfz sip-4.5.2.tar.gz 
-cd sip-4.5.2 
+tar xvfz sip-<version number>.tar.gz 
+cd sip-<version number>
 python configure.py 
 make 
 sudo make install 
@@ -420,17 +422,31 @@ cd ..
 
 === Additional Dependencies : PyQt ===
 
+Make sure you have the latest python fom 
+
+```
+http://www.python.org/download/mac/
+```
+
+If you encounter problems compiling PyQt using the instructions 
+below you can also try adding python from your frameworks dir
+explicitly to your path e.g.
+
+```
+export PATH=/Library/Frameworks/Python.framework/Versions/Current/bin:$PATH$
+```
+
 Retrieve the python bindings toolkit for Qt from
 
 ``` 
-curl -O http://www.riverbankcomputing.com/Downloads/PyQt4/GPL/PyQt-mac-gpl-4.1.1.tar.gz
+http://www.riverbankcomputing.com/Downloads/PyQt4/GPL/
 ```
 
 Then extract and build it to a prefix of /usr/local:
 
 ``` 
-tar xvfz PyQt-mac-gpl-4.1.1.tar.gz 
-cd PyQt-mac-gpl-4.1.1 
+tar xvfz PyQt-mac<version number here>
+cd PyQt-mac<version number here>
 python configure.py 
 yes 
 make 
@@ -562,13 +578,17 @@ I suggest you press 'p' to accept the key permanently.
 == Configure the build ==
 
 CMake supports out of source build so we will create a 'build' dir for the
-build process
+build process . By convention I build my software into a dir called 'apps'
+in my home directory. If you have the correct permissions you may want to 
+build straight into your /Applications folder (although personally I dont 
+really recommend this). The instructions below assume you are building into 
+a pre-existing ${HOME}/apps directory ...
 
 ``` 
 cd qgis 
 mkdir build 
 cd build 
-cmake -D CMAKE_INSTALL_PREFIX=$HOME/apps/ -D CMAKE_BUILD_TYPE=Release..
+cmake -D CMAKE_INSTALL_PREFIX=$HOME/apps/ -D CMAKE_BUILD_TYPE=Release ..
 ```
 
 To use a specific GRASS version, You can optionally use the following 
@@ -576,7 +596,7 @@ cmake invocation (with modifications to suite your system (thanks William
 Kyngesburye for this hint):
 
 ```
-cmake -D CMAKE_INSTALL_PREFIX=$HOME/apps/ \
+cmake -D CMAKE_INSTALL_PREFIX=${HOME}/apps/ \
       -D GRASS_INCLUDE_DIR=/Applications/GRASS-6.3.app/Contents/Resources/include \
       -D GRASS_PREFIX=/Applications/GRASS-6.3.app/Contents/Resources \
       -D CMAKE_BUILD_TYPE=Release \
@@ -693,7 +713,7 @@ sudo apt-get install gdal-bin libgdal1-dev libgeos-dev proj libtool \
 libgdal-doc libhdf4g-dev libhdf4g-run python-dev \
 swig libgsl0-dev g++ libjasper-1.701-dev libtiff4-dev subversion gsl-bin \
 libsqlite3-dev sqlite3 ccache make libpq-dev flex bison cmake txt2tags \
-python-qt4 python-qt4-dev python-sip4 sip4
+python-qt4 python-qt4-dev python-sip4 sip4 python-sip4-dev
 ```
 
 /!\ Debian users should use libgdal-dev above rather
