@@ -26,44 +26,41 @@ extern "C"
 {
 #include <libpq-fe.h>
 }
-QgsNewConnection::QgsNewConnection(QWidget *parent, const QString& connName, Qt::WFlags fl)
+QgsNewConnection::QgsNewConnection(QWidget *parent, const QgsConnection* conn, Qt::WFlags fl)
 : QDialog(parent, fl)
 {
   setupUi(this);
-  if (!connName.isEmpty())
+  if (conn!=NULL)
     {
-      // populate the dialog with the information stored for the connection
-      // populate the fields with the stored setting parameters
-      QSettings settings;
-
-      QString key = "/PostgreSQL/connections/" + connName;
-      txtHost->setText(settings.readEntry(key + "/host"));
-      txtDatabase->setText(settings.readEntry(key + "/database"));
-      QString port = settings.readEntry(key + "/port");
+      qDebug("QgsNewConnection::QgsNewConnection : host "+conn->host);
+      txtHost->setText(conn->host);
+      txtDatabase->setText(conn->database);
+      /*QString port = settings.readEntry(key + "/port");
       if(port.length() ==0){
       	port = "5432";
-      }
-      txtPort->setText(port);
-      txtUsername->setText(settings.readEntry(key + "/username"));
-      Qt::CheckState s = Qt::Checked;
-      if ( ! settings.readBoolEntry(key + "/publicOnly", false))
-	s = Qt::Unchecked;
-      cb_publicSchemaOnly->setCheckState(s);
-      s = Qt::Checked;
-      if ( ! settings.readBoolEntry(key + "/geometrycolumnsOnly", false))
-	s = Qt::Unchecked;
-      cb_geometryColumnsOnly->setCheckState(s);
-      // Ensure that cb_plublicSchemaOnly is set correctly
-      on_cb_geometryColumnsOnly_clicked();
+      }*/
+      txtPort->setText(conn->port);
+      txtUsername->setText(conn->user);
+      if (conn->publicOnly)
+         cb_publicSchemaOnly->setCheckState(Qt::Checked);
+      else   
+         cb_publicSchemaOnly->setCheckState(Qt::Unchecked);
+      
+      if (conn->geometryColumnsOnly)
+         cb_geometryColumnsOnly->setCheckState(Qt::Checked);
+      else   
+         cb_geometryColumnsOnly->setCheckState(Qt::Unchecked);
+            
 
-      if (settings.readEntry(key + "/save") == "true")
-        {
-          txtPassword->setText(settings.readEntry(key + "/password"));
-          chkStorePassword->setChecked(true);
-        }
-      txtName->setText(connName);
+      txtName->setText(conn->name);
+      qDebug("QgsNewConnection::QgsNewConnection : type "+conn->type);
+      cmbType->setCurrentText(conn->type);
+      
+     
     }
+  
 }
+
 /** Autoconnected SLOTS **/
 void QgsNewConnection::on_btnOk_clicked()
 {
@@ -93,79 +90,64 @@ void QgsNewConnection::on_cb_geometryColumnsOnly_clicked()
 
 QgsNewConnection::~QgsNewConnection()
 {
+  //delete connManager;                                   
 }
 void QgsNewConnection::testConnection()
 {
   // following line uses Qt SQL plugin - currently not used
   // QSqlDatabase *testCon = QSqlDatabase::addDatabase("QPSQL7","testconnection");
-
-  // Need to escape the password to allow for single quotes and backslashes
-  QString password = txtPassword->text();
-  password.replace('\\', "\\\\");
-  password.replace('\'', "\\'");
-
-  QString connInfo =
-    "host=" + txtHost->text() + 
-    " dbname=" + txtDatabase->text() + 
-    " port=" + txtPort->text() +
-    " user=" + txtUsername->text() + 
-    " password='" + password + "'";
-  PGconn *pd = PQconnectdb(connInfo.toLocal8Bit().data());
-//  std::cout << pd->ErrorMessage();
-  if (PQstatus(pd) == CONNECTION_OK)
+  QgsConnectionManager* connMan=new QgsConnectionManager;
+  QgsConnection conn;
+  
+  conn.type=cmbType->currentText();
+  conn.name=txtName->text();
+  conn.host=txtHost->text();
+  conn.database=txtDatabase->text();
+  conn.port=txtPort->text();
+  conn.user=txtUsername->text();
+  conn.password=txtPassword->text();
+  conn.geometryColumnsOnly=cb_geometryColumnsOnly->isChecked();
+  conn.publicOnly=cb_publicSchemaOnly->isChecked();
+  conn.selected=txtName->text();
+  conn.save=chkStorePassword->isChecked();
+  
+  qDebug("QgsNewConnection::testConnection: before connect");
+  
+  if (connMan->connect(cmbType->currentText(),conn))
     {
       // Database successfully opened; we can now issue SQL commands.
       QMessageBox::information(this, tr("Test connection"), tr("Connection to %1 was successful").arg(txtDatabase->text()));
-  } else
+    } else
     {
-      QMessageBox::information(this, tr("Test connection"), tr("Connection failed - Check settings and try again.\n\nExtended error information:\n") + QString(PQerrorMessage(pd)) );
+      QMessageBox::information(this, tr("Test connection"), tr("Connection failed - Check settings and try again.\n\nExtended error information:\n") +connMan->getError());
     }
-  // free pg connection resources
-  PQfinish(pd);
-
-
+ qDebug("QgsNewConnection::testConnection: after connect");
+ delete connMan;
 }
 
 void QgsNewConnection::saveConnection()
 {
-  QSettings settings; 
-  QString baseKey = "/PostgreSQL/connections/";
-  settings.writeEntry(baseKey + "selected", txtName->text());
-  baseKey += txtName->text();
-  settings.writeEntry(baseKey + "/host", txtHost->text());
-  settings.writeEntry(baseKey + "/database", txtDatabase->text());
-  settings.writeEntry(baseKey + "/port", txtPort->text());
-  settings.writeEntry(baseKey + "/username", txtUsername->text());
-  settings.writeEntry(baseKey + "/password", txtPassword->text());
-  settings.writeEntry(baseKey + "/publicOnly", cb_publicSchemaOnly->isChecked());
-  settings.writeEntry(baseKey + "/geometryColumnsOnly", cb_geometryColumnsOnly->isChecked());
-  if (chkStorePassword->isChecked())
-    {
-      settings.writeEntry(baseKey + "/save", "true");
-  } else
-    {
-      settings.writeEntry(baseKey + "/save", "false");
-    }
+  QgsConnection conn;   
+  
+  conn.type=cmbType->currentText();
+  conn.name=txtName->text();
+  conn.host=txtHost->text();
+  conn.database=txtDatabase->text();
+  conn.port=txtPort->text();
+  conn.user=txtUsername->text();
+  conn.password=txtPassword->text();
+  
+  conn.geometryColumnsOnly=cb_geometryColumnsOnly->isChecked();
+  conn.publicOnly=cb_publicSchemaOnly->isChecked();
+  conn.selected=txtName->text();
+  conn.save=chkStorePassword->isChecked();
+  
+  connManager.saveConnection(conn);
+ 
   accept();
 }
+
 void QgsNewConnection::helpInfo()
 {
   QgsContextHelp::run(context_id);
 }
-/* void QgsNewConnection::saveConnection()
-{
-	QSettings settings;
-	QString baseKey = "/PostgreSQL/connections/";
-	baseKey += txtName->text();
-	settings.writeEntry(baseKey + "/host", txtHost->text());
-	settings.writeEntry(baseKey + "/database", txtDatabase->text());
-
-	settings.writeEntry(baseKey + "/username", txtUsername->text());
-	if (chkStorePassword->isChecked()) {
-		settings.writeEntry(baseKey + "/password", txtPassword->text());
-	} else{
-        settings.writeEntry(baseKey + "/password", "");
-    }
-
-  accept();
-} */
