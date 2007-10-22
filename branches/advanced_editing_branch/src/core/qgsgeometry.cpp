@@ -2863,7 +2863,7 @@ int QgsGeometry::splitGeometry(const QList<QgsPoint>& splitLine, QgsGeometry** n
   return returnCode;
 }
 
-int QgsGeometry::difference(QgsGeometry* other, QList< QPair<QgsPoint, int> >& topologicalPoints)
+int QgsGeometry::difference(QgsGeometry* other, QMap<int, QgsPoint>& topologicalPoints)
 {
   //make sure geos geometry is up to date
   if(!mGeos || mDirtyGeos)
@@ -2937,11 +2937,10 @@ int QgsGeometry::difference(QgsGeometry* other, QList< QPair<QgsPoint, int> >& t
 				  int vertexNr;
 				  if(!vertexContainedInGeometry(startPoint, vertexNr))
 				    {
-				      qWarning("Inserting vertex for topological correctness");
 				      QgsPoint minDistPoint;
 				      int beforeVertex;
 				      other->closestSegmentWithContext(startPoint, minDistPoint, beforeVertex);
-				      topologicalPoints.push_back(qMakePair(startPoint, beforeVertex));
+				      topologicalPoints.insert(beforeVertex, startPoint);
 				    }
 				}
 			      delete coords;
