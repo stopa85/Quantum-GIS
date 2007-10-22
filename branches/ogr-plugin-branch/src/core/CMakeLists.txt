@@ -59,6 +59,13 @@ symbology/qgssymbol.cpp
 symbology/qgssymbologyutils.cpp
 
 spatialindex/qgsspatialindex.cpp
+
+dbutilities/qgsconnectionmanager.cpp
+dbutilities/qgsurimanager.cpp
+dbutilities/qgsdatabaseconnectionbase.cpp
+dbutilities/qgsogrdatabaseconnection.cpp
+dbutilities/qgspostgresdatabaseconnection.cpp
+dbutilities/qgsgeomcolumntypethread.cpp
 )
 
 ADD_FLEX_FILES(QGIS_CORE_SRCS qgssearchstringlexer.ll)
@@ -86,6 +93,13 @@ qgsvectorlayer.h
 
 raster/qgsrasterlayer.h
 raster/qgsrasterviewport.h
+
+dbutilities/qgsconnectionmanager.h
+dbutilities/qgsurimanager.h
+dbutilities/qgsdatabaseconnectionbase.h
+dbutilities/qgsogrdatabaseconnection.h
+dbutilities/qgspostgresdatabaseconnection.h
+dbutilities/qgsgeomcolumntypethread.h
 )
 
 QT4_WRAP_CPP(QGIS_CORE_MOC_SRCS ${QGIS_CORE_MOC_HDRS})
@@ -157,6 +171,7 @@ TARGET_LINK_LIBRARIES(qgis_core
   ${GEOS_LIBRARY}
   ${GDAL_LIBRARY}
   ${PLATFORM_LIBRARIES}
+  ${POSTGRES_LIBRARY}
 )
 #work aroud for the fact that qt3 support on mac is linked ot qsql
 IF (APPLE)
