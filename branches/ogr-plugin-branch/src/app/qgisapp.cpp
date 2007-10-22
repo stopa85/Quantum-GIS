@@ -504,9 +504,9 @@ void QgisApp::createActions()
   mActionAddRasterLayer->setStatusTip(tr("Add a Raster Layer"));
   connect(mActionAddRasterLayer, SIGNAL(triggered()), this, SLOT(addRasterLayer()));
   //
-  mActionAddLayer= new QAction(QIcon(myIconPath+"/mActionAddLayer.png"), tr("Add a PostGIS Layer..."), this);
-  mActionAddLayer->setShortcut(tr("D","Add a PostGIS Layer"));
-  mActionAddLayer->setStatusTip(tr("Add a PostGIS Layer"));
+  mActionAddLayer= new QAction(QIcon(myIconPath+"/mActionAddLayer.png"), tr("Add a Spatial Database Layer..."), this);
+  mActionAddLayer->setShortcut(tr("D","Add a Spatial Database Layer"));
+  mActionAddLayer->setStatusTip(tr("Add a Spatial Database Layer"));
 //#ifdef HAVE_POSTGRESQL
 //  std::cout << "HAVE_POSTGRESQL is defined" << std::endl; 
 //  assert(0);
@@ -2073,6 +2073,9 @@ void QgisApp::addDatabaseLayer()
     QStringList tables = dbs->selectedTables();
 
     QString connInfo = dbs->connInfo();
+    QString connType = dbs->getConnectionType();
+    
+    qDebug("addDatabase :"+connInfo);
     // for each selected table, connect to the database, parse the WKT geometry,
     // and build a cavnasitem for it
     // readWKB(connInfo,tables);
@@ -2082,7 +2085,13 @@ void QgisApp::addDatabaseLayer()
 
       // create the layer
       //qWarning("creating layer");
-      QgsVectorLayer *layer = new QgsVectorLayer(connInfo + " table=" + *it, *it, "postgres");
+      QgsVectorLayer *layer;
+      //create the vector according to connection type
+      if (connType.contains("Ogr",FALSE)>0)
+         layer = new QgsVectorLayer(connInfo+ "table="+*it, *it, "ogr");
+      else
+         layer = new QgsVectorLayer(connInfo + " table=" + *it, *it, "postgres");
+
       if (layer->isValid())
       {
         // register this layer with the central layers registry
