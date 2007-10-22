@@ -54,6 +54,7 @@ email                : sherman at mrcc.com
 #include "qgslogger.h"
 #include "qgsspatialrefsys.h"
 #include "qgis.h"
+#include "../../core/dbutilities/qgsurimanager.h"
 
 
 #ifdef WIN32
@@ -80,88 +81,25 @@ QgsOgrProvider::QgsOgrProvider(QString const & uri)
    ogrLayer(0),
    ogrDriver(0)
 {
-               
+  QgsURIManager *uriMan;             
   QString connString;
   QString connTable;
-  QString connType;             
   OGRRegisterAll();
-
+  
+  uriMan=new QgsURIManager(uri);
+  connString=uriMan->getURI();
+  connTable=uriMan->getLayer();
+  
+  QgsDebugMsg("Connection string "+connString+" table "+connTable);
+    
+  delete uriMan;
   // set the selection rectangle pointer to 0
   mSelectionRectangle = 0;
   // make connection to the data source
 
   QgsDebugMsg("Data source uri is " + uri);
   
-  connString=uri;
   
-  //mysql
-  if (uri.contains("type=MySQL",FALSE)>0)
-    {
-     //split uri to create an uri according to ogr mysql driver 
-     connType="MySQL";
-     QStringList paramList;
-     
-     paramList=paramList.split(",",uri);                                     
-     //generate connection string and table
-     connString = "MySQL:";
-     connTable = paramList.at(5);
-     connTable=connTable.section('=', 1, 1 ); 
-     
-     QString host = paramList.at(1);
-     host=host.section('=', 1, 1 );
-     
-     QString database = paramList.at(2);
-     database=database.section('=', 1, 1 ); 
-          
-     connString= connString + database+","+
-                 "host="+host+","+
-                 paramList.at(3)+","+
-                 paramList.at(4);
-     #ifdef QGISDEBUG
-       std::cout << "OGR Provider Connection params: " << uri.toLocal8Bit().data() << std::endl;
-       std::cout << "OGR Provider param list: " << std::endl;
-       for ( QStringList::Iterator it = paramList.begin(); it != paramList.end(); ++it ) {
-        std::cout << (*it).toLocal8Bit().data() << std::endl;
-       }
-       std::cout << "OGR Provider connection string: " <<connString.toLocal8Bit().data()<< std::endl;
-       
-     #endif
-     
-    }
-    //postgres
-   if (uri.contains("type=PostgreSQL",FALSE)>0)
-    {
-     //split uri to create an uri according to ogr mysql driver 
-     connType="PostgreSQL";
-     QStringList paramList;
-     
-     paramList=paramList.split(",",uri);                                     
-     //generate connection string and table
-     connString = "PG:";
-     connTable = paramList.at(5);
-     connTable=connTable.section('=', 1, 1 ); 
-     
-     QString host = paramList.at(1);
-     host=host.section('=', 1, 1 );
-     
-     QString database = paramList.at(2);
-     database=database.section('=', 1, 1 ); 
-          
-     connString= connString + "host="+host+
-                 " dbname="+database+" "+
-                 paramList.at(3)+" "+
-                 paramList.at(4);
-     #ifdef QGISDEBUG
-       std::cout << "OGR Provider Connection params: " << uri.toLocal8Bit().data() << std::endl;
-       std::cout << "OGR Provider param list: " << std::endl;
-       for ( QStringList::Iterator it = paramList.begin(); it != paramList.end(); ++it ) {
-        std::cout << (*it).toLocal8Bit().data() << std::endl;
-       }
-       std::cout << "OGR Provider connection string: " <<connString.toLocal8Bit().data()<< std::endl;
-       
-     #endif
-     
-    } 
      
  
    // try to open for update, but disable error messages to avoid a
@@ -191,7 +129,7 @@ QgsOgrProvider::QgsOgrProvider(QString const & uri)
 
     ogrDriverName = ogrDriver->GetName();
     
-    if ((connType=="MySQL")||(connType=="PostgreSQL"))
+    if (connTable!="")
       {
        ogrLayer = ogrDataSource->GetLayerByName(connTable);                                        
       }
