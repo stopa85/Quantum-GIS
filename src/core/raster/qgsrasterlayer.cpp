@@ -381,7 +381,7 @@ QgsRasterLayer::QgsRasterLayer(QString const & path, QString const & baseName)
 {
   mUserDefinedRGBMinMaxFlag = false; //defaults needed to bypass stretch
   mUserDefinedGrayMinMaxFlag = false;
-  setColorScalingAlgorithm(QgsRasterLayer::NO_STRETCH); //defaults needed to bypass stretch
+  setContrastEnhancementAlgorithm(QgsContrastEnhancement::NO_STRETCH); //defaults needed to bypass stretch
 
   // Initialise the affine transform matrix
   mGeoTransform[0] =  0;
@@ -1382,7 +1382,7 @@ void QgsRasterLayer::drawSingleBandGray(QPainter * theQPainter, QgsRasterViewPor
   //double myRange = myRasterBandStats.range;
   QgsRasterBandStats myGrayBandStats;
 
-  if(QgsRasterLayer::NO_STRETCH != getColorScalingAlgorithm() && !mUserDefinedGrayMinMaxFlag)
+  if(QgsContrastEnhancement::NO_STRETCH != getContrastEnhancementAlgorithm() && !mUserDefinedGrayMinMaxFlag)
   {
     myGrayBandStats = getRasterBandStats(theBandNo);
 
@@ -1405,7 +1405,7 @@ void QgsRasterLayer::drawSingleBandGray(QPainter * theQPainter, QgsRasterViewPor
    * Also if no stretch is defined and data are not 8-bit, the data will still need to be scaled to 255
    * so the min max values are set to the min max value for the data type
    */
-  if(QgsRasterLayer::NO_STRETCH != getColorScalingAlgorithm())
+  if(QgsContrastEnhancement::NO_STRETCH != getContrastEnhancementAlgorithm())
   {
     if(mGrayMinimum < getMinimumPossibleValue(myDataType))
       mGrayMinimum = getMinimumPossibleValue(myDataType);
@@ -1454,14 +1454,14 @@ void QgsRasterLayer::drawSingleBandGray(QPainter * theQPainter, QgsRasterViewPor
       }
 
       // Stretch
-      if(QgsRasterLayer::NO_STRETCH != getColorScalingAlgorithm())
+      if(QgsContrastEnhancement::NO_STRETCH != getContrastEnhancementAlgorithm())
       {
-        if(QgsRasterLayer::CLIP_TO_MINMAX == getColorScalingAlgorithm() || QgsRasterLayer::STRETCH_AND_CLIP_TO_MINMAX == getColorScalingAlgorithm())
+        if(QgsContrastEnhancement::CLIP_TO_MINMAX == getContrastEnhancementAlgorithm() || QgsContrastEnhancement::STRETCH_AND_CLIP_TO_MINMAX == getContrastEnhancementAlgorithm())
         {
           if(myGrayValue < mGrayMinimum || myGrayValue > mGrayMaximum) continue;
         }
 
-        if(QgsRasterLayer::STRETCH_TO_MINMAX == getColorScalingAlgorithm() || QgsRasterLayer::STRETCH_AND_CLIP_TO_MINMAX == getColorScalingAlgorithm())
+        if(QgsContrastEnhancement::STRETCH_TO_MINMAX == getContrastEnhancementAlgorithm() || QgsContrastEnhancement::STRETCH_AND_CLIP_TO_MINMAX == getContrastEnhancementAlgorithm())
         {
           myGrayValue = ((myGrayValue - mGrayMinimum)/(mGrayMaximum - mGrayMinimum))*255;
         }
@@ -1482,7 +1482,7 @@ void QgsRasterLayer::drawSingleBandGray(QPainter * theQPainter, QgsRasterViewPor
       }
 
        // If there is no stretch but data type is other than 8-bit the data will need to be scaled
-      if(QgsRasterLayer::NO_STRETCH == getColorScalingAlgorithm() && GDT_Byte != myDataType)
+      if(QgsContrastEnhancement::NO_STRETCH == getContrastEnhancementAlgorithm() && GDT_Byte != myDataType)
       {
         myGrayValue = ((myGrayValue)/(getMaximumPossibleValue(myDataType) - getMinimumPossibleValue(myDataType)))*255;
       }
@@ -1574,7 +1574,7 @@ void QgsRasterLayer::drawSingleBandPseudoColor(QPainter * theQPainter,
   myQImage.fill(qRgba(255,255,255,0 )); // fill transparent
 
   QgsRasterBandStats myAdjustedRasterBandStats;
-  if(QgsRasterLayer::NO_STRETCH != getColorScalingAlgorithm() && !mUserDefinedGrayMinMaxFlag)
+  if(QgsContrastEnhancement::NO_STRETCH != getContrastEnhancementAlgorithm() && !mUserDefinedGrayMinMaxFlag)
   {
     //calculate the adjusted matrix stats - which come into effect if the user has chosen
     myAdjustedRasterBandStats = getRasterBandStats(theBandNo);
@@ -1598,7 +1598,7 @@ void QgsRasterLayer::drawSingleBandPseudoColor(QPainter * theQPainter,
    * Also if no stretch is defined and data are not 8-bit, the data will still need to be scaled to 255
    * so the min max values are set to the min max value for the data type
    */
-  if(QgsRasterLayer::NO_STRETCH != getColorScalingAlgorithm())
+  if(QgsContrastEnhancement::NO_STRETCH != getContrastEnhancementAlgorithm())
   {
     if(mGrayMinimum < getMinimumPossibleValue(myDataType))
       mGrayMinimum = getMinimumPossibleValue(myDataType);
@@ -1618,7 +1618,7 @@ void QgsRasterLayer::drawSingleBandPseudoColor(QPainter * theQPainter,
   //set up the three class breaks for pseudocolour mapping
   //double myBreakSize = myAdjustedRasterBandStats.range / 3;
   double myClassBreakMin1;
-  if(QgsRasterLayer::STRETCH_TO_MINMAX == getColorScalingAlgorithm() || QgsRasterLayer::STRETCH_AND_CLIP_TO_MINMAX == getColorScalingAlgorithm())
+  if(QgsContrastEnhancement::STRETCH_TO_MINMAX == getContrastEnhancementAlgorithm() || QgsContrastEnhancement::STRETCH_AND_CLIP_TO_MINMAX == getContrastEnhancementAlgorithm())
   {
     myAdjustedRasterBandStats.range = 255.0;
     myClassBreakMin1 = 0.0;
@@ -1669,14 +1669,14 @@ void QgsRasterLayer::drawSingleBandPseudoColor(QPainter * theQPainter,
       }
 
       // Stretch
-      if(!mCustomClassificationEnabled && QgsRasterLayer::NO_STRETCH != getColorScalingAlgorithm())
+      if(!mCustomClassificationEnabled && QgsContrastEnhancement::NO_STRETCH != getContrastEnhancementAlgorithm())
       {
-        if(QgsRasterLayer::CLIP_TO_MINMAX == getColorScalingAlgorithm() || QgsRasterLayer::STRETCH_AND_CLIP_TO_MINMAX == getColorScalingAlgorithm())
+        if(QgsContrastEnhancement::CLIP_TO_MINMAX == getContrastEnhancementAlgorithm() || QgsContrastEnhancement::STRETCH_AND_CLIP_TO_MINMAX == getContrastEnhancementAlgorithm())
         {
           if(myVal < mGrayMinimum || myVal > mGrayMaximum) continue;
         }
 
-        if(QgsRasterLayer::STRETCH_TO_MINMAX == getColorScalingAlgorithm() || QgsRasterLayer::STRETCH_AND_CLIP_TO_MINMAX == getColorScalingAlgorithm())
+        if(QgsContrastEnhancement::STRETCH_TO_MINMAX == getContrastEnhancementAlgorithm() || QgsContrastEnhancement::STRETCH_AND_CLIP_TO_MINMAX == getContrastEnhancementAlgorithm())
         {
           myVal = ((myVal - mGrayMinimum)/(mGrayMaximum - mGrayMinimum))*255;
 
@@ -2645,7 +2645,7 @@ void QgsRasterLayer::drawMultiBandColor(QPainter * theQPainter, QgsRasterViewPor
    * we need to get these values from the bands themselves.
    *
    */
-  if(QgsRasterLayer::NO_STRETCH != getColorScalingAlgorithm() && !mUserDefinedRGBMinMaxFlag)
+  if(QgsContrastEnhancement::NO_STRETCH != getContrastEnhancementAlgorithm() && !mUserDefinedRGBMinMaxFlag)
   {
     myRedBandStats = getRasterBandStats(myRedBandNo);
     myGreenBandStats = getRasterBandStats(myGreenBandNo);
@@ -2678,7 +2678,7 @@ void QgsRasterLayer::drawMultiBandColor(QPainter * theQPainter, QgsRasterViewPor
    * Also if no stretch is defined and data are not 8-bit, the data will still need to be scaled to 255
    * so the min max values are set to the min max value for the data type
    */
-  if(QgsRasterLayer::NO_STRETCH != getColorScalingAlgorithm())
+  if(QgsContrastEnhancement::NO_STRETCH != getContrastEnhancementAlgorithm())
   {
     if(mRedMinimum < getMinimumPossibleValue(myRedType))
     {
@@ -2768,20 +2768,20 @@ void QgsRasterLayer::drawMultiBandColor(QPainter * theQPainter, QgsRasterViewPor
        * Stretch RBG values based on selected color scaling algoritm
        * NOTE: NO_STRETCH enum will help eliminte the need to call QgsRasterBandStats when an image is initially loaded
        */
-      if(QgsRasterLayer::NO_STRETCH != getColorScalingAlgorithm())
+      if(QgsContrastEnhancement::NO_STRETCH != getContrastEnhancementAlgorithm())
       {
         /*
          * Currently if any one band is outside of min max range for the band the pixel is discarded,
          * this can easily be updated so that all band have to be ouside of the min max range
          */
-        if(QgsRasterLayer::CLIP_TO_MINMAX == getColorScalingAlgorithm() || QgsRasterLayer::STRETCH_AND_CLIP_TO_MINMAX == getColorScalingAlgorithm())
+        if(QgsContrastEnhancement::CLIP_TO_MINMAX == getContrastEnhancementAlgorithm() || QgsContrastEnhancement::STRETCH_AND_CLIP_TO_MINMAX == getContrastEnhancementAlgorithm())
         {
           if(myRedValue < mRedMinimum || myRedValue > mRedMaximum) continue;
           if(myGreenValue < mRedMinimum || myGreenValue > mRedMaximum) continue;
           if(myBlueValue < mBlueMinimum || myBlueValue > mBlueMaximum) continue;
         }
 
-        if(QgsRasterLayer::STRETCH_TO_MINMAX == getColorScalingAlgorithm() || QgsRasterLayer::STRETCH_AND_CLIP_TO_MINMAX == getColorScalingAlgorithm())
+        if(QgsContrastEnhancement::STRETCH_TO_MINMAX == getContrastEnhancementAlgorithm() || QgsContrastEnhancement::STRETCH_AND_CLIP_TO_MINMAX == getContrastEnhancementAlgorithm())
         {
           myRedValue = ((myRedValue - mRedMinimum)/(mRedMaximum - mRedMinimum))*255;
           myGreenValue = ((myGreenValue - mGreenMinimum)/(mGreenMaximum - mGreenMinimum))*255;
@@ -2834,17 +2834,17 @@ void QgsRasterLayer::drawMultiBandColor(QPainter * theQPainter, QgsRasterViewPor
       }
 
       // If there is no stretch but data type is other than 8-bit the data will need to be scaled
-      if(QgsRasterLayer::NO_STRETCH == getColorScalingAlgorithm() && GDT_Byte != myRedType)
+      if(QgsContrastEnhancement::NO_STRETCH == getContrastEnhancementAlgorithm() && GDT_Byte != myRedType)
       {
         myRedValue = ((myRedValue)/(getMaximumPossibleValue(myRedType) - getMinimumPossibleValue(myRedType)))*255;
       }
 
-      if(QgsRasterLayer::NO_STRETCH == getColorScalingAlgorithm() && GDT_Byte != myGreenType)
+      if(QgsContrastEnhancement::NO_STRETCH == getContrastEnhancementAlgorithm() && GDT_Byte != myGreenType)
       {
         myGreenValue = ((myGreenValue)/(getMaximumPossibleValue(myGreenType) - getMinimumPossibleValue(myGreenType)))*255;
       }
 
-      if(QgsRasterLayer::NO_STRETCH == getColorScalingAlgorithm() && GDT_Byte != myBlueType)
+      if(QgsContrastEnhancement::NO_STRETCH == getContrastEnhancementAlgorithm() && GDT_Byte != myBlueType)
       {
         myBlueValue = ((myBlueValue)/(getMaximumPossibleValue(myBlueType) - getMinimumPossibleValue(myBlueType)))*255;
       }

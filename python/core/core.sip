@@ -12,6 +12,7 @@
 %Include qgscolortable.sip
 %Include qgscontexthelp.sip
 %Include qgscontinuouscolorrenderer.sip
+%Include qgscontrastenhancement.sip
 %Include qgscoordinatetransform.sip
 %Include qgsdataprovider.sip
 %Include qgsdatasourceuri.sip

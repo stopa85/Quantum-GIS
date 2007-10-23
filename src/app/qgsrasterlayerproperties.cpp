@@ -26,6 +26,8 @@
 #include "qgsrasterpyramid.h"
 #include "qgscontexthelp.h"
 #include "qgsmaplayerregistry.h"
+#include "qgscontrastenhancement.h"
+
 #include <QTableWidgetItem>
 #include <QHeaderView>
 
@@ -97,10 +99,10 @@ rasterLayer( dynamic_cast<QgsRasterLayer*>(lyr) )
   cboxColorMap->insertItem(tr("Custom Colormap"));
 
   //add items to the color stretch combo box
-  cboxColorScalingAlgorithm->insertItem(tr("No Stretch"));
-  cboxColorScalingAlgorithm->insertItem(tr("Stretch To MinMax"));
-  cboxColorScalingAlgorithm->insertItem(tr("Stretch And Clip To MinMax"));
-  cboxColorScalingAlgorithm->insertItem(tr("Clip To MinMax"));
+  cboxContrastEnhancementAlgorithm->insertItem(tr("No Stretch"));
+  cboxContrastEnhancementAlgorithm->insertItem(tr("Stretch To MinMax"));
+  cboxContrastEnhancementAlgorithm->insertItem(tr("Stretch And Clip To MinMax"));
+  cboxContrastEnhancementAlgorithm->insertItem(tr("Clip To MinMax"));
 
   //set initial states of all Min Max and StdDev fields and labels to disabled
   sboxThreeBandStdDev->setEnabled(false);
@@ -453,7 +455,7 @@ void QgsRasterLayerProperties::sync()
       rbtnSingleBand->setChecked(true);
       rbtnThreeBandMinMax->setEnabled(false);
       rbtnThreeBandStdDev->setEnabled(false);
-      cboxColorScalingAlgorithm->setEnabled(false);
+      cboxContrastEnhancementAlgorithm->setEnabled(false);
       break;
     case QgsRasterLayer::PALETTED_SINGLE_BAND_PSEUDO_COLOR:
       rbtnThreeBand->setEnabled(true);
@@ -461,7 +463,7 @@ void QgsRasterLayerProperties::sync()
       rbtnSingleBand->setChecked(true);
       rbtnThreeBandMinMax->setEnabled(false);
       rbtnThreeBandStdDev->setEnabled(false);
-      cboxColorScalingAlgorithm->setEnabled(false);
+      cboxContrastEnhancementAlgorithm->setEnabled(false);
       break;
     case QgsRasterLayer::PALETTED_MULTI_BAND_COLOR:
       rbtnThreeBand->setEnabled(true);
@@ -469,7 +471,7 @@ void QgsRasterLayerProperties::sync()
       rbtnThreeBand->setChecked(true);
       rbtnThreeBandMinMax->setEnabled(false);
       rbtnThreeBandStdDev->setEnabled(false);
-      cboxColorScalingAlgorithm->setEnabled(false);
+      cboxContrastEnhancementAlgorithm->setEnabled(false);
       break;
     case QgsRasterLayer::MULTI_BAND_SINGLE_BAND_GRAY:
       rbtnThreeBand->setEnabled(true);
@@ -634,21 +636,21 @@ if(QgsRasterLayer::PALETTED_COLOR != rasterLayer->getDrawingStyle() &&
   }
 
   //set color scaling algorithm
-  if(QgsRasterLayer::STRETCH_TO_MINMAX == rasterLayer->getColorScalingAlgorithm())
+  if(QgsContrastEnhancement::STRETCH_TO_MINMAX == rasterLayer->getContrastEnhancementAlgorithm())
   {
-    cboxColorScalingAlgorithm->setCurrentText(tr("Stretch To MinMax"));
+    cboxContrastEnhancementAlgorithm->setCurrentText(tr("Stretch To MinMax"));
   }
-  else if(QgsRasterLayer::STRETCH_AND_CLIP_TO_MINMAX == rasterLayer->getColorScalingAlgorithm())
+  else if(QgsContrastEnhancement::STRETCH_AND_CLIP_TO_MINMAX == rasterLayer->getContrastEnhancementAlgorithm())
   {
-    cboxColorScalingAlgorithm->setCurrentText(tr("Stretch And Clip To MinMax"));
+    cboxContrastEnhancementAlgorithm->setCurrentText(tr("Stretch And Clip To MinMax"));
   }
-  else if(QgsRasterLayer::CLIP_TO_MINMAX == rasterLayer->getColorScalingAlgorithm())
+  else if(QgsContrastEnhancement::CLIP_TO_MINMAX == rasterLayer->getContrastEnhancementAlgorithm())
   {
-    cboxColorScalingAlgorithm->setCurrentText(tr("Clip To MinMax"));
+    cboxContrastEnhancementAlgorithm->setCurrentText(tr("Clip To MinMax"));
   }
   else
   {
-    cboxColorScalingAlgorithm->setCurrentText(tr("No Scaling"));
+    cboxContrastEnhancementAlgorithm->setCurrentText(tr("No Scaling"));
   }
 
   /*
@@ -995,21 +997,21 @@ void QgsRasterLayerProperties::apply()
   }
 
   //set the color scaling algorithm
-  if(cboxColorScalingAlgorithm->currentText() == tr("Stretch To MinMax"))
+  if(cboxContrastEnhancementAlgorithm->currentText() == tr("Stretch To MinMax"))
   {
-    rasterLayer->setColorScalingAlgorithm(QgsRasterLayer::STRETCH_TO_MINMAX);
+    rasterLayer->setContrastEnhancementAlgorithm(QgsContrastEnhancement::STRETCH_TO_MINMAX);
   }
-  else if(cboxColorScalingAlgorithm->currentText() == tr("Stretch And Clip To MinMax"))
+  else if(cboxContrastEnhancementAlgorithm->currentText() == tr("Stretch And Clip To MinMax"))
   {
-    rasterLayer->setColorScalingAlgorithm(QgsRasterLayer::STRETCH_AND_CLIP_TO_MINMAX);
+    rasterLayer->setContrastEnhancementAlgorithm(QgsContrastEnhancement::STRETCH_AND_CLIP_TO_MINMAX);
   }
-  else if(cboxColorScalingAlgorithm->currentText() == tr("Clip To MinMax"))
+  else if(cboxContrastEnhancementAlgorithm->currentText() == tr("Clip To MinMax"))
   {
-    rasterLayer->setColorScalingAlgorithm(QgsRasterLayer::CLIP_TO_MINMAX);
+    rasterLayer->setContrastEnhancementAlgorithm(QgsContrastEnhancement::CLIP_TO_MINMAX);
   }
   else
   {
-    rasterLayer->setColorScalingAlgorithm(QgsRasterLayer::NO_STRETCH);
+    rasterLayer->setContrastEnhancementAlgorithm(QgsContrastEnhancement::NO_STRETCH);
   }
 
   /*
@@ -1228,7 +1230,7 @@ void QgsRasterLayerProperties::apply()
   rasterLayer->triggerRepaint();
 
   //Becuase Min Max values can be set during the redraw if a strech is requested we need to resync after apply
-  if(QgsRasterLayer::NO_STRETCH != rasterLayer->getColorScalingAlgorithm())
+  if(QgsContrastEnhancement::NO_STRETCH != rasterLayer->getContrastEnhancementAlgorithm())
   {
     //sync();
 
@@ -1422,7 +1424,7 @@ void QgsRasterLayerProperties::on_cboxColorMap_currentIndexChanged(const QString
       tabBar->setTabEnabled(tabBar->indexOf(tabPageColormap), TRUE);
       rbtnSingleBandMinMax->setEnabled(false);
       rbtnSingleBandStdDev->setEnabled(false);
-      cboxColorScalingAlgorithm->setEnabled(false);
+      cboxContrastEnhancementAlgorithm->setEnabled(false);
       textLabel2_6_3->setEnabled(false);
     }
   else
@@ -1430,7 +1432,7 @@ void QgsRasterLayerProperties::on_cboxColorMap_currentIndexChanged(const QString
       tabBar->setTabEnabled(tabBar->indexOf(tabPageColormap), FALSE);
       rbtnSingleBandMinMax->setEnabled(true);
       rbtnSingleBandStdDev->setEnabled(true);
-      cboxColorScalingAlgorithm->setEnabled(true);
+      cboxContrastEnhancementAlgorithm->setEnabled(true);
       textLabel2_6_3->setEnabled(true);
     }
 }
@@ -2122,7 +2124,7 @@ void QgsRasterLayerProperties::on_rbtnSingleBand_toggled(bool b)
     //--- enable and disable appropriate controls
     rbtnThreeBand->setChecked(false); 
     cboxColorMap->setEnabled(true);
-    cboxColorScalingAlgorithm->setEnabled(true);
+    cboxContrastEnhancementAlgorithm->setEnabled(true);
 
     if(cboxColorMap->currentText() == tr("Pseudocolor"))
     {
@@ -2205,8 +2207,8 @@ void QgsRasterLayerProperties::on_rbtnThreeBand_toggled(bool b)
        QgsRasterLayer::PALETTED_SINGLE_BAND_PSEUDO_COLOR == rasterLayer->getDrawingStyle() ||
        QgsRasterLayer::PALETTED_MULTI_BAND_COLOR == rasterLayer->getDrawingStyle())
     {
-      cboxColorScalingAlgorithm->setCurrentText(tr("No Stretch"));
-      cboxColorScalingAlgorithm->setEnabled(false);
+      cboxContrastEnhancementAlgorithm->setCurrentText(tr("No Stretch"));
+      cboxContrastEnhancementAlgorithm->setEnabled(false);
       sboxThreeBandStdDev->setEnabled(false);
     }
 

@@ -132,6 +132,7 @@
 
 #include "qgspoint.h"
 #include "qgsmaplayer.h"
+#include "qgscontrastenhancement.h"
 
 /*
  * 
@@ -613,27 +614,20 @@ public:
     {
         mGrayMaximum=the;
     };
-    //
-    /** \brief This enumerator describes the types of histogram scaling algorithms that can be used.  */
-    enum COLOR_SCALING_ALGORITHM
-    {
-        NO_STRETCH, //this should be the default color scaling algorithm, will allow for the display of images without calling QgsRasterBandStats unless needed
-        STRETCH_TO_MINMAX, //linear histogram stretch
-        STRETCH_AND_CLIP_TO_MINMAX,
-        CLIP_TO_MINMAX
-    } colorScalingAlgorithm;
+
     //
     // Accessor and mutator for the color scaling algorithm
     //
-    /** \brief Accessor for colour scaling algorithm. */
-    COLOR_SCALING_ALGORITHM getColorScalingAlgorithm()
+    QgsContrastEnhancement::CONTRAST_ENHANCEMENT_ALGORITHM mContrastEnhancementAlgorithm;
+    /** \brief Accessor for contrast enhancement algorithm. */
+    QgsContrastEnhancement::CONTRAST_ENHANCEMENT_ALGORITHM getContrastEnhancementAlgorithm()
     {
-        return colorScalingAlgorithm;
+        return mContrastEnhancementAlgorithm;
     };
-    /** \brief Mutator for color scaling algorithm. */
-    void setColorScalingAlgorithm(COLOR_SCALING_ALGORITHM theAlgorithm)
+    /** \brief Mutator for contrast enhancement algorithm. */
+    void setContrastEnhancementAlgorithm(QgsContrastEnhancement::CONTRAST_ENHANCEMENT_ALGORITHM theAlgorithm)
     {
-        colorScalingAlgorithm=theAlgorithm;
+        mContrastEnhancementAlgorithm = theAlgorithm;
     };
     
     /** \brief This enumerator describes the types of histogram colour ramping that can be used.  */

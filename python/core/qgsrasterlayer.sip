@@ -9,6 +9,7 @@ class QgsRasterLayer : QgsMapLayer
 %TypeHeaderCode
 #include <qgsrasterpyramid.h>
 #include <qgsrasterlayer.h>
+#include <qgscontrastenhancement.h>
 %End
 
 public:
@@ -308,22 +309,15 @@ public:
      * that falls outside the clipping range.*/
     void setMaxGray(double theDouble);
     //
-    /** \brief This enumerator describes the types of histogram scaling algorithms that can be used.  */
-    enum COLOR_SCALING_ALGORITHM
-    {
-        STRETCH_TO_MINMAX, //linear histogram stretch
-        STRETCH_AND_CLIP_TO_MINMAX,
-        CLIP_TO_MINMAX
-    };
     
-    COLOR_SCALING_ALGORITHM colorScalingAlgorithm;
+    QgsContrastEnhancement::CONTRAST_ENHANCEMENT_ALGORITHM mContrastEnhancementAlgorithm;
     //
     // Accessor and mutator for the color scaling algorithm
     //
     /** \brief Accessor for colour scaling algorithm. */
-    COLOR_SCALING_ALGORITHM getColorScalingAlgorithm();
+    QgsContrastEnhancement::CONTRAST_ENHANCEMENT_ALGORITHM getContrastEnhancementAlgorithm();
     /** \brief Mutator for color scaling algorithm. */
-    void setColorScalingAlgorithm(COLOR_SCALING_ALGORITHM theAlgorithm);
+    void setContrastEnhancementAlgorithm(QgsContrastEnhancement::CONTRAST_ENHANCEMENT_ALGORITHM theAlgorithm);
     
     /** \brief This enumerator describes the types of histogram colour ramping that can be used.  */
     enum COLOR_RAMPING_TYPE

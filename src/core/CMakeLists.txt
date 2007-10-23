@@ -47,6 +47,7 @@ qgsvectorlayer.cpp
 
 raster/qgscolortable.cpp
 raster/qgsrasterlayer.cpp
+raster/qgscontrastenhancement.cpp
 
 renderer/qgscontinuouscolorrenderer.cpp
 renderer/qgsgraduatedsymbolrenderer.cpp
@@ -86,6 +87,7 @@ qgsvectorlayer.h
 
 raster/qgsrasterlayer.h
 raster/qgsrasterviewport.h
+
 )
 
 QT4_WRAP_CPP(QGIS_CORE_MOC_SRCS ${QGIS_CORE_MOC_HDRS})
