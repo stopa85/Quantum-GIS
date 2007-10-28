@@ -18,24 +18,79 @@ class originally created circa 2004 by T.Sutton, Gary E.Sherman, Steve Halasz
  *                                                                         *
  ***************************************************************************/
  
- #ifndef QGSCONTRASTENHANCEMENT_H
- #define QGSCONTRASTENHANCEMENT_H
+#ifndef QGSCONTRASTENHANCEMENT_H
+#define QGSCONTRASTENHANCEMENT_H
  
- class CORE_EXPORT QgsContrastEnhancement {
+#include <gdal_priv.h>
+
+class CORE_EXPORT QgsContrastEnhancement {
  
- public:
+public:
  
-    QgsContrastEnhancement();
- 
-    /** \brief This enumerator describes the types of contrast enhancement algorithms that can be used.  */
-    enum CONTRAST_ENHANCEMENT_ALGORITHM
-    {
-        NO_STRETCH, //this should be the default color scaling algorithm, will allow for the display of images without calling QgsRasterBandStats unless needed
-        STRETCH_TO_MINMAX, //linear histogram stretch
-        STRETCH_AND_CLIP_TO_MINMAX,
-        CLIP_TO_MINMAX
-    } mContrastEnhancement;
+  QgsContrastEnhancement(GDALDataType theDatatype=GDT_Byte);
+  ~QgsContrastEnhancement();
     
- };
+  /** \brief This enumerator describes the types of contrast enhancement algorithms that can be used.  */
+  enum CONTRAST_ENHANCEMENT_ALGORITHM
+  {
+    NO_STRETCH, //this should be the default color scaling algorithm
+    STRETCH_TO_MINMAX, //linear histogram stretch
+    STRETCH_AND_CLIP_TO_MINMAX,
+    CLIP_TO_MINMAX
+  };
+    
+  /*
+   *
+   * Static methods
+   *
+   */
+  /** \brief Helper function that returns the maximum possible value for a GDAL data type */
+  static double getMaximumPossibleValue(GDALDataType);
+  /** \brief Helper function that returns the minimum possible value for a GDAL data type */
+  static double getMinimumPossibleValue(GDALDataType);
+ 
+  /*
+   *
+   * Non-Static Inline methods
+   *
+   */
+  /** \brief Return the maximum value for the contrast enhancement range. */
+  double getMaximumValue() { return mMaximumValue; }
+     
+  /** \brief Return the minimum value for the contrast enhancement range. */
+  double getMinimumValue() { return mMinimumValue; }
+  
+  CONTRAST_ENHANCEMENT_ALGORITHM getContrastEnhancementAlgorithm() { return mContrastEnhancementAlgorithm; }
+  
+  /*
+   *
+   * Non-Static methods
+   *
+   */  
+  /** \brief Return true if pixel is in stretable range, false if pixel is outside of range (i.e., clipped) */
+  bool isValueInDisplyableRange(double);
+  void setContrastEnhancementAlgorithm(CONTRAST_ENHANCEMENT_ALGORITHM);
+  /** \brief Set the maximum value for the contrast enhancement range. */
+  void setMaximumValue(double, bool generateTable=true);
+  /** \brief Return the minimum value for the contrast enhancement range. */
+  void setMinimumValue(double, bool generateTable=true);
+  /** \brief Apply the contrast enhancement to a value. Return values are 0 - 254, -1 means the pixel was clipped and should not be displayed */
+  int stretch(double);
+  
+private:
+  CONTRAST_ENHANCEMENT_ALGORITHM mContrastEnhancementAlgorithm;
+  GDALDataType mGDALDataType;
+  double mGDALDataTypeRange;
+  
+  double mMinimumValue;
+  double mMaximumValue;
+  double mMinimumMaximumRange;
+    
+  double mLookupTableOffset;
+  int *mLookupTable;
+    
+  bool generateLookupTable();
+  int calculateContrastEnhancementValue(double);
+};
  
 #endif
