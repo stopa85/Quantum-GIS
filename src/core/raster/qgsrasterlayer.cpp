@@ -516,7 +516,7 @@ bool QgsRasterLayer::readFile( QString const & fileName )
   myTransparentSingleValuePixel.percentTransparent = 100.0;
   transparentSingleValuePixelList.append(myTransparentSingleValuePixel);
 
-  //initialise the raster band stats vector
+  //initialise the raster band stats and contrast enhancement vector
   for (int i = 1; i <= mGdalDataset->GetRasterCount(); i++)
   {
     GDALRasterBand *myGdalBand = mGdalDataset->GetRasterBand(i);
@@ -531,9 +531,12 @@ bool QgsRasterLayer::readFile( QString const & fileName )
     readColorTable ( myGdalBand, &(myRasterBandStats.colorTable) );
 
     mRasterStatsList.push_back(myRasterBandStats);
+    
+    //Build a new contrast enhancement for the band and store in list
+    QgsContrastEnhancement myContrastEnhancement(myGdalBand->GetRasterDataType());
+    mContrastEnhancementList.append(myContrastEnhancement);
   }
-
-
+  
   //decide what type of layer this is...
   //note that multiband images can have one or more 'undefindd' bands,
   //so we must do this check first!
@@ -1407,15 +1410,15 @@ void QgsRasterLayer::drawSingleBandGray(QPainter * theQPainter, QgsRasterViewPor
    */
   if(QgsContrastEnhancement::NO_STRETCH != getContrastEnhancementAlgorithm())
   {
-    if(mGrayMinimum < getMinimumPossibleValue(myDataType))
-      mGrayMinimum = getMinimumPossibleValue(myDataType);
-    if(getMaximumPossibleValue(myDataType) < mGrayMaximum)
-      mGrayMaximum = getMaximumPossibleValue(myDataType);
+    if(mGrayMinimum < QgsContrastEnhancement::getMinimumPossibleValue(myDataType))
+      mGrayMinimum = QgsContrastEnhancement::getMinimumPossibleValue(myDataType);
+    if(QgsContrastEnhancement::getMaximumPossibleValue(myDataType) < mGrayMaximum)
+      mGrayMaximum = QgsContrastEnhancement::getMaximumPossibleValue(myDataType);
   }
   else //always get so that min max is set correctly for display
   {
-    mGrayMinimum = getMinimumPossibleValue(myDataType);
-    mGrayMaximum = getMaximumPossibleValue(myDataType);
+    mGrayMinimum = QgsContrastEnhancement::getMinimumPossibleValue(myDataType);
+    mGrayMaximum = QgsContrastEnhancement::getMaximumPossibleValue(myDataType);
   }
 
   QgsDebugMsg("Starting main render loop");
@@ -1467,7 +1470,7 @@ void QgsRasterLayer::drawSingleBandGray(QPainter * theQPainter, QgsRasterViewPor
         }
         else if(GDT_Byte != myDataType)  //CLIP_TO_MINMAX if data > 8-bit we need to scale it anyway
         {
-          myGrayValue = ((myGrayValue)/(getMaximumPossibleValue(myDataType) - getMinimumPossibleValue(myDataType)))*255;
+          myGrayValue = ((myGrayValue)/(QgsContrastEnhancement::getMaximumPossibleValue(myDataType) - QgsContrastEnhancement::getMinimumPossibleValue(myDataType)))*255;
         }
 
         //Check for out of range pixel values
@@ -1484,7 +1487,7 @@ void QgsRasterLayer::drawSingleBandGray(QPainter * theQPainter, QgsRasterViewPor
        // If there is no stretch but data type is other than 8-bit the data will need to be scaled
       if(QgsContrastEnhancement::NO_STRETCH == getContrastEnhancementAlgorithm() && GDT_Byte != myDataType)
       {
-        myGrayValue = ((myGrayValue)/(getMaximumPossibleValue(myDataType) - getMinimumPossibleValue(myDataType)))*255;
+        myGrayValue = ((myGrayValue)/(QgsContrastEnhancement::getMaximumPossibleValue(myDataType) - QgsContrastEnhancement::getMinimumPossibleValue(myDataType)))*255;
       }
 
       int myGrayVal = static_cast < int > ( myGrayValue);
@@ -1600,15 +1603,15 @@ void QgsRasterLayer::drawSingleBandPseudoColor(QPainter * theQPainter,
    */
   if(QgsContrastEnhancement::NO_STRETCH != getContrastEnhancementAlgorithm())
   {
-    if(mGrayMinimum < getMinimumPossibleValue(myDataType))
-      mGrayMinimum = getMinimumPossibleValue(myDataType);
-    if(getMaximumPossibleValue(myDataType) < mGrayMaximum)
-      mGrayMaximum = getMaximumPossibleValue(myDataType);
+    if(mGrayMinimum < QgsContrastEnhancement::getMinimumPossibleValue(myDataType))
+      mGrayMinimum = QgsContrastEnhancement::getMinimumPossibleValue(myDataType);
+    if(QgsContrastEnhancement::getMaximumPossibleValue(myDataType) < mGrayMaximum)
+      mGrayMaximum = QgsContrastEnhancement::getMaximumPossibleValue(myDataType);
   }
   else //always get so that min max is set correctly for display
   {
-    mGrayMinimum = getMinimumPossibleValue(myDataType);
-    mGrayMaximum = getMaximumPossibleValue(myDataType);
+    mGrayMinimum = QgsContrastEnhancement::getMinimumPossibleValue(myDataType);
+    mGrayMaximum = QgsContrastEnhancement::getMaximumPossibleValue(myDataType);
   }
 
   int myRed = 0;
@@ -1625,8 +1628,8 @@ void QgsRasterLayer::drawSingleBandPseudoColor(QPainter * theQPainter,
   }
   else
   {
-    myClassBreakMin1 = getMinimumPossibleValue(myDataType);
-    myAdjustedRasterBandStats.range = getMaximumPossibleValue(myDataType) - getMinimumPossibleValue(myDataType);
+    myClassBreakMin1 = QgsContrastEnhancement::getMinimumPossibleValue(myDataType);
+    myAdjustedRasterBandStats.range = QgsContrastEnhancement::getMaximumPossibleValue(myDataType) - QgsContrastEnhancement::getMinimumPossibleValue(myDataType);
   }
 
   double myBreakSize = myAdjustedRasterBandStats.range / 3;
@@ -2680,41 +2683,41 @@ void QgsRasterLayer::drawMultiBandColor(QPainter * theQPainter, QgsRasterViewPor
    */
   if(QgsContrastEnhancement::NO_STRETCH != getContrastEnhancementAlgorithm())
   {
-    if(mRedMinimum < getMinimumPossibleValue(myRedType))
+    if(mRedMinimum < QgsContrastEnhancement::getMinimumPossibleValue(myRedType))
     {
-      mRedMinimum = getMinimumPossibleValue(myRedType);
+      mRedMinimum = QgsContrastEnhancement::getMinimumPossibleValue(myRedType);
     }
-    if(getMaximumPossibleValue(myRedType) < mRedMaximum)
+    if(QgsContrastEnhancement::getMaximumPossibleValue(myRedType) < mRedMaximum)
     {
-      mRedMaximum = getMaximumPossibleValue(myRedType);
-    }
-
-    if(mGreenMinimum < getMinimumPossibleValue(myGreenType))
-    {
-      mGreenMinimum = getMinimumPossibleValue(myGreenType);
-    }
-    if(getMaximumPossibleValue(myGreenType) < mGreenMaximum)
-    {
-      mGreenMaximum = getMaximumPossibleValue(myGreenType);
+      mRedMaximum = QgsContrastEnhancement::getMaximumPossibleValue(myRedType);
     }
 
-    if(mBlueMinimum < getMinimumPossibleValue(myBlueType))
+    if(mGreenMinimum < QgsContrastEnhancement::getMinimumPossibleValue(myGreenType))
     {
-      mBlueMinimum = getMinimumPossibleValue(myBlueType);
+      mGreenMinimum = QgsContrastEnhancement::getMinimumPossibleValue(myGreenType);
     }
-    if(getMaximumPossibleValue(myBlueType) < mBlueMaximum)
+    if(QgsContrastEnhancement::getMaximumPossibleValue(myGreenType) < mGreenMaximum)
     {
-      mBlueMaximum = getMaximumPossibleValue(myBlueType);
+      mGreenMaximum = QgsContrastEnhancement::getMaximumPossibleValue(myGreenType);
+    }
+
+    if(mBlueMinimum < QgsContrastEnhancement::getMinimumPossibleValue(myBlueType))
+    {
+      mBlueMinimum = QgsContrastEnhancement::getMinimumPossibleValue(myBlueType);
+    }
+    if(QgsContrastEnhancement::getMaximumPossibleValue(myBlueType) < mBlueMaximum)
+    {
+      mBlueMaximum = QgsContrastEnhancement::getMaximumPossibleValue(myBlueType);
     }
   }
   else //always get so that min max is set correctly for display
   {
-    mRedMinimum = getMinimumPossibleValue(myRedType);
-    mRedMaximum = getMaximumPossibleValue(myRedType);
-    mGreenMinimum = getMinimumPossibleValue(myGreenType);
-    mGreenMaximum = getMaximumPossibleValue(myGreenType);
-    mBlueMinimum = getMinimumPossibleValue(myBlueType);
-    mBlueMaximum = getMaximumPossibleValue(myBlueType);
+    mRedMinimum = QgsContrastEnhancement::getMinimumPossibleValue(myRedType);
+    mRedMaximum = QgsContrastEnhancement::getMaximumPossibleValue(myRedType);
+    mGreenMinimum = QgsContrastEnhancement::getMinimumPossibleValue(myGreenType);
+    mGreenMaximum = QgsContrastEnhancement::getMaximumPossibleValue(myGreenType);
+    mBlueMinimum = QgsContrastEnhancement::getMinimumPossibleValue(myBlueType);
+    mBlueMaximum = QgsContrastEnhancement::getMaximumPossibleValue(myBlueType);
   }
 
   //Read and display pixels
@@ -2791,16 +2794,16 @@ void QgsRasterLayer::drawMultiBandColor(QPainter * theQPainter, QgsRasterViewPor
         {
           if(GDT_Byte != myRedType) //CLIP_TO_MINMAX if data > 8-bit we need to scale it anyway
           {
-            myRedValue = ((myRedValue)/(getMaximumPossibleValue(myRedType) - getMinimumPossibleValue(myRedType)))*255;
+            myRedValue = ((myRedValue)/(QgsContrastEnhancement::getMaximumPossibleValue(myRedType) - QgsContrastEnhancement::getMinimumPossibleValue(myRedType)))*255;
           }
 
           if(GDT_Byte != myGreenType) //CLIP_TO_MINMAX if data > 8-bit we need to scale it anyway
           {
-            myGreenValue = ((myGreenValue)/(getMaximumPossibleValue(myGreenType) - getMinimumPossibleValue(myGreenType)))*255;
+            myGreenValue = ((myGreenValue)/(QgsContrastEnhancement::getMaximumPossibleValue(myGreenType) - QgsContrastEnhancement::getMinimumPossibleValue(myGreenType)))*255;
           }
           if(GDT_Byte != myBlueType) //CLIP_TO_MINMAX if data > 8-bit we need to scale it anyway
           {
-            myBlueValue = ((myBlueValue)/(getMaximumPossibleValue(myBlueType) - getMinimumPossibleValue(myBlueType)))*255;
+            myBlueValue = ((myBlueValue)/(QgsContrastEnhancement::getMaximumPossibleValue(myBlueType) - QgsContrastEnhancement::getMinimumPossibleValue(myBlueType)))*255;
           }
         }
 
@@ -2836,17 +2839,17 @@ void QgsRasterLayer::drawMultiBandColor(QPainter * theQPainter, QgsRasterViewPor
       // If there is no stretch but data type is other than 8-bit the data will need to be scaled
       if(QgsContrastEnhancement::NO_STRETCH == getContrastEnhancementAlgorithm() && GDT_Byte != myRedType)
       {
-        myRedValue = ((myRedValue)/(getMaximumPossibleValue(myRedType) - getMinimumPossibleValue(myRedType)))*255;
+        myRedValue = ((myRedValue)/(QgsContrastEnhancement::getMaximumPossibleValue(myRedType) - QgsContrastEnhancement::getMinimumPossibleValue(myRedType)))*255;
       }
 
       if(QgsContrastEnhancement::NO_STRETCH == getContrastEnhancementAlgorithm() && GDT_Byte != myGreenType)
       {
-        myGreenValue = ((myGreenValue)/(getMaximumPossibleValue(myGreenType) - getMinimumPossibleValue(myGreenType)))*255;
+        myGreenValue = ((myGreenValue)/(QgsContrastEnhancement::getMaximumPossibleValue(myGreenType) - QgsContrastEnhancement::getMinimumPossibleValue(myGreenType)))*255;
       }
 
       if(QgsContrastEnhancement::NO_STRETCH == getContrastEnhancementAlgorithm() && GDT_Byte != myBlueType)
       {
-        myBlueValue = ((myBlueValue)/(getMaximumPossibleValue(myBlueType) - getMinimumPossibleValue(myBlueType)))*255;
+        myBlueValue = ((myBlueValue)/(QgsContrastEnhancement::getMaximumPossibleValue(myBlueType) - QgsContrastEnhancement::getMinimumPossibleValue(myBlueType)))*255;
       }
 
       int myRedValueInt   = static_cast < int > ( myRedValue );
@@ -5718,48 +5721,6 @@ double QgsRasterLayer::rasterUnitsPerPixel()
 // horisontal one.
 
 return fabs(mGeoTransform[1]);
-}
-
-
-//Helper function becase GDALRasterBand::GetMaximum() would crash with .img files
-double QgsRasterLayer::getMaximumPossibleValue(GDALDataType dataType) 
-{
-  if(GDT_Byte == dataType)
-  {
-    return 255.0;
-  }
-  else if(GDT_UInt16 == dataType)
-  {
-    return 65535.0;
-  }
-  else if(GDT_Int16 == dataType || GDT_CInt16 == dataType)
-  {
-    return 32767.0;
-  }
-  else if(GDT_Int32 == dataType || GDT_CInt32 == dataType)
-  {
-    return 2147483647.0;
-  }
-
-  return 4294967295.0;
-}
-//Helper function becase GDALRasterBand::GetMinimum() would crash with .img files
-double QgsRasterLayer::getMinimumPossibleValue(GDALDataType dataType) 
-{
-  if(GDT_Byte == dataType || GDT_UInt16 == dataType || GDT_UInt32 == dataType)
-  {
-    return 0.0;
-  }
-  else if(GDT_Int16 == dataType || GDT_CInt16 == dataType)
-  {
-    return -32768.0;
-  }
-  else if(GDT_Int32 == dataType || GDT_CInt32 == dataType)
-  {
-    return -2147483648.0;
-  }
-
-  return -4294967295.0;
 }
 
 int QgsRasterLayer::getDiscreteColorFromValueClassification(double value, int& red, int& green, int& blue) const

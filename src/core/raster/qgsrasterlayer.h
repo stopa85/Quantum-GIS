@@ -214,11 +214,11 @@ public:
     // Static methods:
     //
     static void buildSupportedRasterFileFilter(QString & fileFilters);
-    static bool isSupportedRasterDriver(QString const &driverName);
+    static bool isSupportedRasterDriver(const QString & driverName);
 
     /** This helper checks to see whether the filename appears to be a valid
        raster file name */
-    static bool isValidRasterFileName(QString const & theFileNameQString);
+    static bool isValidRasterFileName(const QString & theFileNameQString);
 
     //
     // Non Static methods:
@@ -237,8 +237,8 @@ public:
      *
      * -
      * */
-    QgsRasterLayer(QString const & path = QString::null, 
-                   QString const &  baseName = QString::null);
+    QgsRasterLayer(const QString & path = QString::null, 
+                   const QString &  baseName = QString::null);
 
     /** \brief The destuctor.  */
     ~QgsRasterLayer();
@@ -249,7 +249,7 @@ public:
     typedef QList<QgsRasterBandStats> RasterStatsList;
 
 
-    /** \brief  A list containing one RasterPyramid struct per 
+    /** \brief  A list containing one RasterPyramid struct per raster band in this raster layer.
      * POTENTIAL pyramid layer. How this works is we divide the height
      * and width of the raster by an incrementing number. As soon as the result
      * of the division is <=256 we stop allowing RasterPyramid stracuts
@@ -258,6 +258,9 @@ public:
      * in the raster layer, and if so mark the exists flag as true. */
       
     typedef QList<QgsRasterPyramid> RasterPyramidList;
+    
+    /** \brief A list containing on ContrastEnhancement object per raster band in this raster layer. */
+    typedef QList<QgsContrastEnhancement> ContrastEnhancementList;
 
     /** \brief This typedef is used when the showProgress function is passed to gdal as a function
     pointer. */
@@ -269,7 +272,7 @@ public:
      *
      * \param point[in]  a coordinate in the CRS of this layer.
      */
-    void identify(const QgsPoint& point, std::map<QString,QString>& results);
+    void identify(const QgsPoint & point, std::map<QString,QString>& results);
 
     /** \brief Identify arbitrary details from the WMS server found on the point position
      *
@@ -280,7 +283,7 @@ public:
      * \note  The arbitraryness of the returned document is enforced by WMS standards
      *        up to at least v1.3.0
      */
-    QString identifyAsText(const QgsPoint& point);
+    QString identifyAsText(const QgsPoint & point);
 
     /** \brief Query gdal to find out the WKT projection string for this layer. This implements the virtual method of the same name defined in QgsMapLayer*/
     QString getProjectionWKT();
@@ -373,15 +376,15 @@ public:
     *    Note this approach is not recommeneded because it is possible for two gdal raster
     *    bands to have the same name!
     */
-    const  QgsRasterBandStats getRasterBandStats(QString const &);
+    const  QgsRasterBandStats getRasterBandStats(const QString &);
     /** \brief Get the number of a band given its name. Note this will be the rewritten name set 
     *   up in the constructor, and will not necessarily be the same as the name retrieved directly from gdal!
     *   If no matching band is found zero will be returned! */
-    const  int getRasterBandNumber (QString const & theBandNameQString);
+    const  int getRasterBandNumber (const QString & theBandNameQString);
     /** \brief Get the name of a band given its number.  */
     const  QString getRasterBandName(int theBandNoInt);
     /** \brief Find out whether a given band exists.    */
-    bool hasBand(QString const &  theBandName);
+    bool hasBand(const QString &  theBandName);
     /** \brief Call any inline image manipulation filters */
     void filterLayer(QImage * theQImage);
     /** \brief Accessor for red band name (allows alternate mappings e.g. map blue as red colour). */
@@ -390,7 +393,7 @@ public:
         return mRedBandName;
     };
     /** \brief Mutator for red band name (allows alternate mappings e.g. map blue as red colour). */
-    void setRedBandName(QString const & theBandNameQString);
+    void setRedBandName(const QString & theBandNameQString);
     // 
     // Accessor and mutator for green band name
     // 
@@ -400,7 +403,7 @@ public:
         return mGreenBandName;
     };
     /** \brief Mutator for green band name mapping.  */
-    void setGreenBandName(QString const & theBandNameQString);
+    void setGreenBandName(const QString & theBandNameQString);
     //
     // Accessor and mutator for blue band name
     // 
@@ -410,7 +413,7 @@ public:
         return mBlueBandName;
     };
     /** \brief Mutator for blue band name mapping.  */
-    void setBlueBandName(QString const & theBandNameQString);
+    void setBlueBandName(const QString & theBandNameQString);
     //
     // Accessor and mutator for transparent band name
     // 
@@ -420,7 +423,7 @@ public:
         return mTransparencyBandName;
     };
     /** \brief Mutator for transparent band name mapping.  */
-    void setTransparentBandName(QString const & theBandNameQString);
+    void setTransparentBandName(const QString & theBandNameQString);
     //
     // Accessor and mutator for transparent band name
     // 
@@ -430,7 +433,7 @@ public:
         return mTransparentLayerName;
     };
     /** \brief Mutator for transparent band name mapping.  */
-    void setTransparentLayerName(QString const & theLayerNameQString)
+    void setTransparentLayerName(const QString & theLayerNameQString)
     {
       mTransparentLayerName = theLayerNameQString;
     }
@@ -443,7 +446,7 @@ public:
         return mGrayBandName;
     };
     /** \brief Mutator for gray band name mapping.  */
-    void setGrayBandName(QString const & theBandNameQString);
+    void setGrayBandName(const QString & theBandNameQString);
     // 
     // Accessor and mutator for mDebugOverlayFlag
     // 
@@ -457,6 +460,17 @@ public:
     {
         mDebugOverlayFlag=theFlag;
     };
+    
+    
+    // Accessor and mutator for min max values 
+    // TODO: Add wrapper for bandnames
+    // TODO: remove all getMin*Color* functions
+    double getMinimumValue(int theBand) { if(theBand <= getBandCount()) { mContrastEnhancementList[theBand - 1].getMinimumValue(); } }
+    void setMinimumValue(int theBand, double theValue) { if(theBand <= getBandCount()) { mContrastEnhancementList[theBand - 1].setMinimumValue(theValue); } }
+    
+    double getMaximumValue(int theBand) { if(theBand <= getBandCount()) { mContrastEnhancementList[theBand - 1].getMaximumValue(); } }
+    void setMaximumValue(int theBand, double theValue) { if(theBand <= getBandCount()) { mContrastEnhancementList[theBand - 1].setMaximumValue(theValue); } }
+    
     // 
     // Accessor and mutator for min and max red
     // 
@@ -616,7 +630,7 @@ public:
     };
 
     //
-    // Accessor and mutator for the color scaling algorithm
+    // Accessor and mutator for the contrast enhancement algorithm
     //
     QgsContrastEnhancement::CONTRAST_ENHANCEMENT_ALGORITHM mContrastEnhancementAlgorithm;
     /** \brief Accessor for contrast enhancement algorithm. */
@@ -676,13 +690,13 @@ public:
      * */
     QString getDrawingStyleAsQString();
     /** \brief Mutator for drawing style.  */
-    void setDrawingStyle(DRAWING_STYLE const &  theDrawingStyle) {drawingStyle=theDrawingStyle;};
+    void setDrawingStyle(const DRAWING_STYLE &  theDrawingStyle) {drawingStyle=theDrawingStyle;};
     /** \brief Overloaded version of the above function for convenience when restoring from xml.
      *
      * Implementaed mainly for serialisation / deserialisation of settings to xml.
      * NOTE: May be deprecated in the future! Use alternate implementation above rather.
      * */
-    void setDrawingStyle(QString  const & theDrawingStyleQString);
+    void setDrawingStyle(const QString & theDrawingStyleQString);
 
     /** \brief This enumerator describes the type of raster layer.  */
     enum RASTER_LAYER_TYPE
@@ -723,12 +737,12 @@ public:
      * (Useful for providers that manage their own layers, such as WMS)
      *
      */
-    virtual void setLayerOrder(QStringList const & layers);
+    virtual void setLayerOrder(const QStringList & layers);
     
     /**
      * Set the visibility of the given sublayer name
      */
-    virtual void setSubLayerVisibility(QString const & name, bool vis);
+    virtual void setSubLayerVisibility(const QString & name, bool vis);
 
     /** \brief Emit a signal asking for a repaint. (inherited from maplayer) */
     void triggerRepaint();
@@ -747,7 +761,7 @@ public:
     bool isEditable() const;
     
     /** Return time stamp for given file name */
-    static QDateTime lastModified ( QString const &  name );
+    static QDateTime lastModified ( const QString &  name );
 
     /**Copies the symbology settings from another layer. Returns true in case of success*/
     bool copySymbologySettings(const QgsMapLayer& other) {
@@ -837,11 +851,6 @@ public:
       transparentSingleValuePixelList = newList;
     }
 
-    /** \brief Helper function that returns the maximum possible value for a GDAL data type */
-    double getMaximumPossibleValue(GDALDataType);
-    /** \brief Helper function that returns the minimum possible value for a GDAL data type */
-    double getMinimumPossibleValue(GDALDataType);
-
     /**Get state of custom classification flag*/
     bool customClassificationEnabled() const {return mCustomClassificationEnabled;}
     /**Set state of custom classification flag*/
@@ -873,8 +882,8 @@ public slots:
     * it will default to nearest neighbor resampling.
     * \return null string on success, otherwise a string specifying error
     */
-    QString buildPyramids(RasterPyramidList const &, 
-                          QString const &  theResamplingMethod="NEAREST");
+    QString buildPyramids(const RasterPyramidList &, 
+                          const QString &  theResamplingMethod="NEAREST");
     /** \brief Used at the moment by the above function but hopefully will later
     be useable by any operation that needs to notify the user of its progress. */
 /*
@@ -961,14 +970,14 @@ private:
                                     QgsRasterViewPort * theRasterViewPort,
                                     QgsMapToPixel * theQgsMapToPixel,
                                     int theBandNoInt,
-                                    QString const &  theColorQString);
+                                    const QString &  theColorQString);
 
     /** \brief Drawing routine for paletted image, rendered as a single band image in pseudocolor.  */
     void drawPalettedSingleBandPseudoColor(QPainter * theQPainter,
                                            QgsRasterViewPort * theRasterViewPort,
                                            QgsMapToPixel * theQgsMapToPixel,
                                            int theBandNoInt,
-                                           QString const &  theColorQString);
+                                           const QString &  theColorQString);
 
     /** \brief Drawing routine for paletted multiband image.  */
     void drawPalettedMultiBandColor(QPainter * theQPainter,
@@ -1021,7 +1030,7 @@ private:
        
        Called from ctor if a raster image given there
      */
-    bool readFile( QString const & fileName );
+    bool readFile( const QString & fileName );
     
     /** \brief Close data set and release related data */
     void closeDataset ();
@@ -1059,6 +1068,8 @@ color of the lower class for every pixel between two class breaks. Returns 0 in 
      * The typedef for this is defined above before class declaration
      */
     RasterStatsList mRasterStatsList;
+    /** \brief List containging the contrast enhancements for each band */
+    ContrastEnhancementList mContrastEnhancementList;
     /** \brief The band to be associated with the color red - usually 1.  */
     QString mRedBandName;
     /** \brief The band to be associated with the color green - usually 2.  */
@@ -1119,27 +1130,27 @@ public:
   // TODO Rename into a general constructor when the old raster interface is retired
   // \param  dummy  is just there to distinguish this function signature from the old non-provider one.
   QgsRasterLayer(int dummy, 
-                 QString const & baseName = QString(),
-                 QString const & path = QString(),
-                 QString const & providerLib = QString(),
-                 QStringList const & layers = QStringList(),
-                 QStringList const & styles = QStringList(),
-                 QString const & format = QString(),
-                 QString const & crs = QString(),
-                 QString const & proxyHost = QString(),
+                 const QString & baseName = QString(),
+                 const QString & path = QString(),
+                 const QString & providerLib = QString(),
+                 const QStringList & layers = QStringList(),
+                 const QStringList & styles = QStringList(),
+                 const QString & format = QString(),
+                 const QString & crs = QString(),
+                 const QString & proxyHost = QString(),
                  int proxyPort = 80,
-                 QString const & proxyUser = QString(),
-                 QString const & proxyPass = QString());
+                 const QString & proxyUser = QString(),
+                 const QString & proxyPass = QString());
 
-  void setDataProvider( QString const & provider,
-                        QStringList const & layers,
-                        QStringList const & styles,
-                        QString const & format,
-                        QString const & crs,
-                        QString const & proxyHost,
+  void setDataProvider( const QString & provider,
+                        const QStringList & layers,
+                        const QStringList & styles,
+                        const QString & format,
+                        const QString & crs,
+                        const QString & proxyHost,
                         int proxyPort,
-                        QString const & proxyUser,
-                        QString const & proxyPass );
+                        const QString & proxyUser,
+                        const QString & proxyPass );
 
   //! Does this layer use a provider for setting/retrieving data?
   bool usesProvider();
@@ -1149,21 +1160,21 @@ public:
    *
    * \retval TRUE if proxy setting is successful (if indeed it is supported)
    */
-  bool setProxy(QString const & host = 0,
+  bool setProxy(const QString & host = 0,
                             int port = 80,
-                QString const & user = 0,
-                QString const & pass = 0);
+                const QString & user = 0,
+                const QString & pass = 0);
 
   //! Which provider is being used for this Raster Layer?
   QString providerKey();
 
 public slots:
 
-  void showStatusMessage(QString const & theMessage);
+  void showStatusMessage(const QString & theMessage);
 
 
 private:
-
+  
   //! Data provider key
   QString mProviderKey;
   
