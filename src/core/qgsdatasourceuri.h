@@ -40,11 +40,15 @@ public:
   //! constructor which parses input URI
   QgsDataSourceURI(QString uri);
    
+  //! default destructor 
+  ~QgsDataSourceURI();
+ 
   //! All in a single string
   QString text() const;
   
   //! Set all connection related members at once
-  void setConnection(const QString& aHost,
+  void setConnection(const QString& aType,
+                     const QString& aHost,
                      const QString& aPort,
                      const QString& aDatabase,
                      const QString& aUsername,
@@ -55,9 +59,12 @@ public:
                      const QString& aTable,
                      const QString& aGeometryColumn,
                      const QString& aSql = QString());
-  
+                     
+  //! Returns a ogr database URI based on type
+  QString getURI();
   /* data */
-
+  //! connection type
+  QString type;
   //! host name
   QString host;
   //! database name
