@@ -18,6 +18,7 @@ email                : sherman at mrcc.com
 
 #include "qgsrect.h"
 #include "qgsvectordataprovider.h"
+#include "qgsdatasourceuri.h"
 
 #include <geos.h>
 #if GEOS_VERSION_MAJOR < 3
@@ -183,8 +184,6 @@ class QgsOgrProvider : public QgsVectorDataProvider
     /**Returns true if this is a valid shapefile
     */
     bool isValid();
-
-
   protected:
     /** loads fields from input file to member attributeFields */
     void loadFields();
@@ -227,6 +226,9 @@ class QgsOgrProvider : public QgsVectorDataProvider
     unsigned char *getGeometryPointer(OGRFeature * fet);
     
     QgsFieldMap mAttributeFields;
+    
+    //! Data source URI for this layer
+    QgsDataSourceURI *mUri;
 
     OGRDataSource *ogrDataSource;
     OGREnvelope *extent_;
