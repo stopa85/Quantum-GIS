@@ -265,15 +265,15 @@ void QgsDbSourceSelect::addTables()
     if (lstTables->isItemSelected(lstTables->item(i, 0)))
     {
       QString table;                                               
-      if(type.contains("Ogr",FALSE)>0)
-       table = lstTables->item(i,1)->text(); 
-      else 
-       {                                              
+      //if(type.contains("Ogr",FALSE)>0)
+      // table = lstTables->item(i,1)->text(); 
+      //else 
+      // {                                              
          table = lstTables->item(i,1)->text() + " sql=";
          QTableWidgetItem* sqlItem = lstTables->item(i,2);
          if (sqlItem)
           table += sqlItem->text();
-       }   
+      // }   
       m_selectedTables += table;
     }
   }
@@ -312,6 +312,13 @@ void QgsDbSourceSelect::on_btnConnect_clicked()
       // Database successfully opened; we can now issue SQL commands.
       // create the pixmaps for the layer types if we haven't already
       // done so.
+      m_connInfo="type="+conn.type
+                +" host="+conn.host
+                +" dbname="+conn.database
+                +" port="+conn.port
+                +" user="+conn.user
+                +" password='"+conn.password+"'"; 
+                
      if (mLayerIcons.count() == 0)
        {
          QString myThemePath = QgsApplication::themePath();
@@ -409,7 +416,7 @@ QStringList QgsDbSourceSelect::selectedTables()
 
 void QgsDbSourceSelect::setSql(QTableWidgetItem *item)
 {
-  int row = lstTables->row(item);
+/*  int row = lstTables->row(item);
   QString tableText = lstTables->item(row, 1)->text();
 
   QTableWidgetItem* sqlItem = lstTables->item(row, 2);
@@ -417,7 +424,7 @@ void QgsDbSourceSelect::setSql(QTableWidgetItem *item)
   if (sqlItem)
     sqlText = sqlItem->text();
   // Parse out the table name
-  QString table = tableText.left(tableText.find("("));
+  QString table = tableText.left(tableText.find("(")); */
   /*assert(pd != 0);
   // create a query builder object
   QgsPgQueryBuilder * pgb = new QgsPgQueryBuilder(table, pd, this);
@@ -492,17 +499,8 @@ void QgsDbSourceSelect::setConnectionListPosition()
   }
 }
 
-QString QgsDbSourceSelect::getConnectionType()
-{
-  QgsConnection conn=mConnMan->getConnectionDetails(cmbType->currentText(),cmbConnections->currentText());      
-  return conn.type;  
-}
 
 QString QgsDbSourceSelect::connInfo()
 {
-  QgsConnection conn=mConnMan->getConnectionDetails(cmbType->currentText(),cmbConnections->currentText());            
-  QgsURIManager* uriMan=new QgsURIManager(conn);
-  QString uri=uriMan->getParamsString(); 
-  delete uriMan;
-  return uri;
+  return m_connInfo;
 }
