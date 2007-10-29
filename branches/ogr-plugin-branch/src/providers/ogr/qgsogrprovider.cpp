@@ -54,7 +54,6 @@ email                : sherman at mrcc.com
 #include "qgslogger.h"
 #include "qgsspatialrefsys.h"
 #include "qgis.h"
-#include "../../core/dbutilities/qgsurimanager.h"
 
 
 #ifdef WIN32
@@ -81,18 +80,39 @@ QgsOgrProvider::QgsOgrProvider(QString const & uri)
    ogrLayer(0),
    ogrDriver(0)
 {
-  QgsURIManager *uriMan;             
+               
+  
   QString connString;
   QString connTable;
   OGRRegisterAll();
   
-  uriMan=new QgsURIManager(uri);
-  connString=uriMan->getURI();
-  connTable=uriMan->getLayer();
+
+  QgsDebugMsg("Ogr Layer Creation");
+  QgsDebugMsg("URI: " + uri);
   
+  //check if it is database layer(uri starts with type=) or file layer
+  if(uri.startsWith("type=Ogr"))
+    {
+      //process uri
+      mUri =new QgsDataSourceURI(uri);                          
+      connString=mUri->getURI();
+      connTable=mUri->table;
+      //take out the quotes from table name
+      connTable=connTable.replace("\"","");
+      qDebug(mUri->text());
+    }  
+  else
+    {
+      //bypass uri, it is a file layer  
+      //necessary to avoid memory access error
+      mUri =NULL;
+      connString=uri;
+      connTable="";                                
+    }
+      
+
   QgsDebugMsg("Connection string "+connString+" table "+connTable);
     
-  delete uriMan;
   // set the selection rectangle pointer to 0
   mSelectionRectangle = 0;
   // make connection to the data source
@@ -112,7 +132,7 @@ QgsOgrProvider::QgsOgrProvider(QString const & uri)
   if(ogrDataSource == NULL)
   {
     //try to open read-only               
-     #ifdef QGISDEBUG
+    #ifdef QGISDEBUG
        std::cout << "OGR Provider: failed to open as read and write " << std::endl;
     #endif
     ogrDataSource = OGRSFDriverRegistrar::Open(QFile::encodeName(connString).constData(), FALSE, &ogrDriver);
@@ -138,24 +158,28 @@ QgsOgrProvider::QgsOgrProvider(QString const & uri)
        ogrLayer = ogrDataSource->GetLayer(0);                    
       }  
 
-    
-
-    // get the extent_ (envelope) of the layer
-
-    QgsDebugMsg("Starting get extent\n");
-
-    extent_ = new OGREnvelope();
-    ogrLayer->GetExtent(extent_);
-
-    QgsDebugMsg("Finished get extent\n");
-
-    // getting the total number of features in the layer
-    numberFeatures = ogrLayer->GetFeatureCount();   
-    // check the validity of the layer
-
-    QgsDebugMsg("checking validity\n");
-    loadFields();
-    QgsDebugMsg("Done checking validity\n");
+    if (ogrLayer!=NULL)
+      {      
+        // get the extent_ (envelope) of the layer
+        QgsDebugMsg("Starting get extent\n");
+        extent_ = new OGREnvelope();
+        ogrLayer->GetExtent(extent_);
+        QgsDebugMsg("Finished get extent\n");
+        // getting the total number of features in the layer
+        numberFeatures = ogrLayer->GetFeatureCount();   
+        // check the validity of the layer
+        QgsDebugMsg("checking validity\n");
+        loadFields();
+        QgsDebugMsg("Done checking validity\n");
+      }
+    else
+      {
+         QgsLogger::critical("Layer is invalid");
+         const char *er = CPLGetLastErrorMsg();
+         QgsLogger::critical(er);
+         valid = false;                 
+      }
+                            
   } else {
     QgsLogger::critical("Data source is invalid");
     const char *er = CPLGetLastErrorMsg();
@@ -176,6 +200,7 @@ QgsOgrProvider::~QgsOgrProvider()
 {
   OGRDataSource::DestroyDataSource(ogrDataSource);
   ogrDataSource = 0;
+  delete mUri;
   delete extent_;
   extent_ = 0;
   delete geometryFactory;
