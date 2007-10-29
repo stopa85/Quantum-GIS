@@ -74,9 +74,6 @@ class QgsDbSourceSelect : public QDialog, private Ui::QgsDbSourceSelectBase
     // Store the selected database
     void dbChanged();
     
-    QString getConnectionType();
-    
-
     public slots:
     /*! Connects to the database using the stored connection parameters. 
     * Once connected, available layers are displayed.
