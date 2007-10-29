@@ -30,7 +30,7 @@ QgsDataSourceURI::QgsDataSourceURI()
 QgsDataSourceURI::QgsDataSourceURI(QString uri)
 {
   // URI looks like this:
-  //  host=192.168.1.5 dbname=test port=5342 user=gsherman password=xxx table=tablename
+  //  type=PostgreSQL host=192.168.1.5 dbname=test port=5342 user=gsherman password=xxx table=tablename
   // (optionally at the end there might be: sql=..... )
   
   // TODO: improve parsing
@@ -63,8 +63,9 @@ QgsDataSourceURI::QgsDataSourceURI(QString uri)
   int tableStart = uriModified.find("table=");
   
   // set table name
+  qDebug("urimodified : "+uriModified);
   table = uriModified.mid(tableStart + 6, sqlStart - tableStart -6);
-
+  qDebug("table : "+table); 
   // set sql where clause
   if(sqlStart > -1)
   { 
@@ -79,13 +80,16 @@ QgsDataSourceURI::QgsDataSourceURI(QString uri)
 
   // Pick up some stuff from the uriModified: basically two bits of text 
   // inside double quote marks, separated by a . 
-  QRegExp reg("\"(.+)\"\\.\"(.+)\".+\\((.+)\\)");
-  reg.indexIn(table); 
-  QStringList stuff = reg.capturedTexts(); 
-
-  schema = stuff[1]; 
-  table = stuff[2]; 
-  geometryColumn = stuff[3]; 
+  //do this only if schema was specified
+  if (table.contains("\".\""))
+   {
+     QRegExp reg("\"(.+)\"\\.\"(.+)\".+\\((.+)\\)");
+     reg.indexIn(table); 
+     QStringList stuff = reg.capturedTexts(); 
+     schema = stuff[1]; 
+     table = stuff[2]; 
+     geometryColumn = stuff[3]; 
+   } 
 
   // set connection info
   connInfo = uriModified.left(uriModified.find("table="));
@@ -95,25 +99,32 @@ QgsDataSourceURI::QgsDataSourceURI(QString uri)
   QStringList parm = QStringList::split("=", conParts[0]);
   if(parm.size() == 2)
   {
-    host = parm[1];
+    type = parm[1];
   }
   parm = QStringList::split("=", conParts[1]);
   if(parm.size() == 2)
   {
-    database = parm[1];
+    host = parm[1];
   }
   parm = QStringList::split("=", conParts[2]);
+  if(parm.size() == 2)
+  {
+    database = parm[1];
+  }
+  parm = QStringList::split("=", conParts[3]);
   if(parm.size() == 2)
   {
     port = parm[1];
   }
 
-  parm = QStringList::split("=", conParts[3]);
+  parm = QStringList::split("=", conParts[4]);
   if(parm.size() == 2)
   {
     username = parm[1];
   }
   
+  //rewrite connInfo to take out type parameter
+  connInfo=conParts[1]+" "+conParts[2]+" "+conParts[3]+" "+conParts[4];
   // The password can have '=' and ' ' characters in it, so we can't 
   // use the split on '=' and ' ' technique - use indexOf() 
   // instead. 
@@ -138,12 +149,19 @@ QgsDataSourceURI::QgsDataSourceURI(QString uri)
     // The -1 is to remove the trailing ' character 
     password = pass.left(n); 
   } 
+ qDebug("QgsDataSourceURI::QgsDataSourceURI :"+text()); 
+}
+
+
+QgsDataSourceURI::~QgsDataSourceURI()
+{
 }
 
 
 QString QgsDataSourceURI::text() const
 {
-  return QString("host=" + host + 
+  return QString("type=" + type + 
+      " host=" + host + 
       " dbname=" + database + 
       " port=" + port + 
       " user=" + username + 
@@ -153,12 +171,14 @@ QString QgsDataSourceURI::text() const
       " sql=" + sql);
 }
 
-void QgsDataSourceURI::setConnection(const QString& aHost,
+void QgsDataSourceURI::setConnection(const QString& aType,
+                                     const QString& aHost,
                                      const QString& aPort,
                                      const QString& aDatabase,
                                      const QString& aUsername,
                                      const QString& aPassword)
 {
+  type = aType;                                   
   host = aHost;
   database = aDatabase;
   port = aPort;
@@ -175,4 +195,34 @@ void QgsDataSourceURI::setDataSource(const QString& aSchema,
   table = aTable;
   geometryColumn = aGeometryColumn;
   sql = aSql;
+}
+
+QString QgsDataSourceURI::getURI()
+{
+  QString connString="";
+                                 
+   if (type=="OgrMySQL")
+     { 
+      connString="MySQL:"+database+","+
+                 "host="+host+","+
+                 "user="+username+","+
+                 "password="+password;
+     }
+   else if (type=="OgrPostgreSQL")
+     {
+      connString="PG:dbname="+database+" "+
+                 "host="+host+" "+
+                 "user="+username+" "+
+                 "password="+password;
+     }      
+   else if (type=="OgrOracle")
+     {
+      connString="OCI:"+username+"/"+
+                 password+"@"+
+                 host+"/"+
+                 database;
+     }           
+   qDebug("QgsDataSourceURI::getURI "+type);  
+   qDebug("QgsDataSourceURI::getURI "+connString);
+   return connString;               
 }
