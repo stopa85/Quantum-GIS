@@ -2073,9 +2073,9 @@ void QgisApp::addDatabaseLayer()
     QStringList tables = dbs->selectedTables();
 
     QString connInfo = dbs->connInfo();
-    QString connType = dbs->getConnectionType();
+    //QString connType = dbs->getConnectionType();
     
-    qDebug("addDatabase :"+connInfo);
+    //qDebug("addDatabase :"+connInfo);
     // for each selected table, connect to the database, parse the WKT geometry,
     // and build a cavnasitem for it
     // readWKB(connInfo,tables);
@@ -2087,8 +2087,12 @@ void QgisApp::addDatabaseLayer()
       //qWarning("creating layer");
       QgsVectorLayer *layer;
       //create the vector according to connection type
-      if (connType.contains("Ogr",FALSE)>0)
-         layer = new QgsVectorLayer(connInfo+ "table="+*it, *it, "ogr");
+      if (connInfo.contains("type=Ogr",FALSE)>0)
+       {
+         //take out sql= from layername to show                                  
+         QStringList list=it->split(" ");                                  
+         layer = new QgsVectorLayer(connInfo+ " table="+*it, list[0], "ogr");
+       }  
       else
          layer = new QgsVectorLayer(connInfo + " table=" + *it, *it, "postgres");
 
