@@ -123,8 +123,7 @@ QgsDataSourceURI::QgsDataSourceURI(QString uri)
     username = parm[1];
   }
   
-  //rewrite connInfo to take out type parameter
-  connInfo=conParts[1]+" "+conParts[2]+" "+conParts[3]+" "+conParts[4];
+  
   // The password can have '=' and ' ' characters in it, so we can't 
   // use the split on '=' and ' ' technique - use indexOf() 
   // instead. 
@@ -149,6 +148,9 @@ QgsDataSourceURI::QgsDataSourceURI(QString uri)
     // The -1 is to remove the trailing ' character 
     password = pass.left(n); 
   } 
+  
+  //rewrite connInfo to take out type parameter
+  connInfo=conParts[1]+" "+conParts[2]+" "+conParts[3]+" "+conParts[4]; 
  qDebug("QgsDataSourceURI::QgsDataSourceURI :"+text()); 
 }
 
