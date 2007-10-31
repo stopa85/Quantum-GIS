@@ -1448,8 +1448,8 @@ bool QgsGeometry::deleteVertexAt(int atVertex)
               }
               if(pointnr == (*nPoints)-1)
               {
-                memcpy(newBufferPtr-(*nPoints-2)*2*sizeof(double), ptr-2*sizeof(double), sizeof(double));
-                memcpy(newBufferPtr-(*nPoints-2)*2*sizeof(double)+sizeof(double), ptr-sizeof(double), sizeof(double));
+                memcpy(newBufferPtr-(*nPoints-1)*2*sizeof(double), ptr-2*sizeof(double), sizeof(double));
+                memcpy(newBufferPtr-(*nPoints-1)*2*sizeof(double)+sizeof(double), ptr-sizeof(double), sizeof(double));
               }
               success = true;
             }
@@ -1525,8 +1525,8 @@ bool QgsGeometry::deleteVertexAt(int atVertex)
                 }
                 if(pointnr == (*nPoints)-1)
                 {
-                  memcpy(newBufferPtr-(*nPoints-2)*2*sizeof(double), ptr-2*sizeof(double), sizeof(double));
-                  memcpy(newBufferPtr-(*nPoints-2)*2*sizeof(double)+sizeof(double), ptr-sizeof(double), sizeof(double));
+                  memcpy(newBufferPtr-(*nPoints-1)*2*sizeof(double), ptr-2*sizeof(double), sizeof(double));
+                  memcpy(newBufferPtr-(*nPoints-1)*2*sizeof(double)+sizeof(double), ptr-sizeof(double), sizeof(double));
                 }
                 success = true;
               }
