@@ -1727,7 +1727,7 @@ int QgsVectorLayer::removePolygonIntersections(QgsGeometry* geom, bool topologic
   
   QList<QgsFeature>::iterator it = featureList.begin();
   QgsGeometry* currentGeom;
-  QMap<int, QgsPoint> topologicalPoints;
+  QMultiMap<int, QgsPoint> topologicalPoints;
 
   for(; it != featureList.end(); ++it)
     {

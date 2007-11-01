@@ -17,7 +17,7 @@ email                : morb at ozemail dot com dot au
 #ifndef QGSGEOMETRY_H
 #define QGSGEOMETRY_H
 
-#include <QMap>
+#include <QMultiMap>
 #include <QString>
 #include <QVector>
 
@@ -266,7 +266,7 @@ not disjoint with existing polygons of the feature*/
        @param other geometry that should not be intersect
        @param topologicalPoints points to insert into the other geometry, int is before vertex
        @return 0 in case of success*/
-    int difference(QgsGeometry* other, QMap<int, QgsPoint>& topologicalPoints);
+    int difference(QgsGeometry* other, QMultiMap<int, QgsPoint>& topologicalPoints);
 
     /**Returns the bounding box of this feature*/
     QgsRect boundingBox();
