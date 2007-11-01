@@ -5059,6 +5059,24 @@ int QgsGeometry::splitQgsPolygon(const GEOS_GEOM::CoordinateSequence* splitLine,
     }
 
   QgsPolyline firstRing = origPoly->at(0); //splits for inner rings cannot be handled
+
+  //find out, if start point or end point of split line is closer to afterVertex2
+  GEOS_GEOM::Coordinate startPoint = splitLine->getAt(0);
+  double startDist = QgsPoint(startPoint.x, startPoint.y).sqrDist(firstRing.at(afterVertex2));
+  GEOS_GEOM::Coordinate endPoint = splitLine->getAt(splitLine->getSize()-1);
+  double endDist = QgsPoint(endPoint.x, endPoint.y).sqrDist(firstRing.at(afterVertex2));
+  
+  bool startPointCloserToAfterVertex2;
+  if(startDist < endDist)
+    {
+      startPointCloserToAfterVertex2 = true;
+    }
+  else
+    {
+      startPointCloserToAfterVertex2 = false;
+    }
+
+ 
   
   //First create the new polygon
   (*newPoly) = new QgsPolygon();
@@ -5071,39 +5089,42 @@ int QgsGeometry::splitQgsPolygon(const GEOS_GEOM::CoordinateSequence* splitLine,
       newPolyline.append(QgsPoint(currentCoord.x, currentCoord.y));
     }
 
-  if(!splitAtVertex2)
+  if(afterVertex1 != afterVertex2 || !startPointCloserToAfterVertex2) //protection in case both intersections on same line segment 
     {
-      //add afterVertex2
-      newPolyline.append(firstRing.at(afterVertex2));
-    }
-
-  //add all the vertices from afterVertex2 to beforeVertex1
-  if(beforeVertex1 >= afterVertex2)
-    {
-      for(int i = (afterVertex2 + 1); i <= beforeVertex1; ++i)
+      if(!splitAtVertex2)
 	{
-	  newPolyline.append(firstRing.at(i));
+	  //add afterVertex2
+	  newPolyline.append(firstRing.at(afterVertex2));
 	}
-    }
-  else
-    {
-      //add vertices from afterVertex2 until end of polygon
-      for(int i = (afterVertex2 + 1); i < firstRing.size(); ++i)
+      
+      //add all the vertices from afterVertex2 to beforeVertex1
+      if(beforeVertex1 >= afterVertex2)
 	{
-	  newPolyline.append(firstRing.at(i));
+	  for(int i = (afterVertex2 + 1); i <= beforeVertex1; ++i)
+	    {
+	      newPolyline.append(firstRing.at(i));
+	    }
 	}
-      //add vertices from begin of polygon to beforeVertex1
-      for(int i = 0; i <= beforeVertex1; ++i)
+      else
 	{
-	  newPolyline.append(firstRing.at(i));
+	  //add vertices from afterVertex2 until end of polygon
+	  for(int i = (afterVertex2 + 1); i < firstRing.size(); ++i)
+	    {
+	      newPolyline.append(firstRing.at(i));
+	    }
+	  //add vertices from begin of polygon to beforeVertex1
+	  for(int i = 0; i <= beforeVertex1; ++i)
+	    {
+	      newPolyline.append(firstRing.at(i));
+	    }
 	}
-    }
-
-  //add new split point
-  if(!splitAtVertex1)
-    {
-      currentCoord = splitLine->getAt(0);
-      newPolyline.append(QgsPoint(currentCoord.x, currentCoord.y));
+      
+      //add new split point
+      if(!splitAtVertex1)
+	{
+	  currentCoord = splitLine->getAt(0);
+	  newPolyline.append(QgsPoint(currentCoord.x, currentCoord.y));
+	}
     } 
 
   if(newPolyline.size() < 4)
@@ -5124,8 +5145,7 @@ int QgsGeometry::splitQgsPolygon(const GEOS_GEOM::CoordinateSequence* splitLine,
       changedPolyline.append(QgsPoint(currentCoord.x, currentCoord.y));
     }
   
-  //if before and after vertices are the same, the changed poly can be closed right now
-  if (beforeVertex1 != beforeVertex2 || afterVertex1 != afterVertex2) 
+  if (beforeVertex1 != beforeVertex2 || startPointCloserToAfterVertex2) //protection in case both intersections on same line segment 
     {
       //else, we have to add the remaining vertices between afterVertex1 to beforeVertex2
       if(!splitAtVertex2)
@@ -5155,12 +5175,12 @@ int QgsGeometry::splitQgsPolygon(const GEOS_GEOM::CoordinateSequence* splitLine,
 	      changedPolyline.append(firstRing.at(i));
 	    }
 	}
-    }
       
-  if(!splitAtVertex1)
-    {
-      currentCoord = splitLine->getAt(0);
-      changedPolyline.append(QgsPoint(currentCoord.x, currentCoord.y));
+      if(!splitAtVertex1)
+	{
+	  currentCoord = splitLine->getAt(0);
+	  changedPolyline.append(QgsPoint(currentCoord.x, currentCoord.y));
+	}
     }
   
   if(changedPolyline.size() < 4)
