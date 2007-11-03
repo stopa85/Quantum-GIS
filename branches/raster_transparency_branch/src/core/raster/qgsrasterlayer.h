@@ -465,12 +465,17 @@ public:
     // Accessor and mutator for min max values 
     // TODO: Add wrapper for bandnames
     // TODO: remove all getMin*Color* functions
-    double getMinimumValue(int theBand) { if(theBand <= getBandCount()) { mContrastEnhancementList[theBand - 1].getMinimumValue(); } }
-    void setMinimumValue(int theBand, double theValue) { if(theBand <= getBandCount()) { mContrastEnhancementList[theBand - 1].setMinimumValue(theValue); } }
+    double getMinimumValue(int theBand) { if(0 < theBand && theBand <= getBandCount()) { return mContrastEnhancementList[theBand - 1].getMinimumValue(); } }
+    double getMinimumValue(QString theBand) { return getMinimumValue(getRasterBandNumber(theBand)); }
+    void setMinimumValue(int theBand, double theValue, bool theGenerateLookupTableFlag=true) { if(0 < theBand && theBand <= getBandCount()) { mContrastEnhancementList[theBand - 1].setMinimumValue(theValue, theGenerateLookupTableFlag); } }
+    void setMinimumValue(QString theBand, double theValue, bool theGenerateLookupTableFlag=true) { setMinimumValue(getRasterBandNumber(theBand),theValue, theGenerateLookupTableFlag); }
     
-    double getMaximumValue(int theBand) { if(theBand <= getBandCount()) { mContrastEnhancementList[theBand - 1].getMaximumValue(); } }
-    void setMaximumValue(int theBand, double theValue) { if(theBand <= getBandCount()) { mContrastEnhancementList[theBand - 1].setMaximumValue(theValue); } }
+    double getMaximumValue(int theBand) { if(0 < theBand && theBand <= getBandCount()) { return mContrastEnhancementList[theBand - 1].getMaximumValue(); } }
+    double getMaximumValue(QString theBand) { return getMaximumValue(getRasterBandNumber(theBand)); }
+    void setMaximumValue(int theBand, double theValue, bool theGenerateLookupTableFlag=true) { if(0 < theBand && theBand <= getBandCount()) { mContrastEnhancementList[theBand - 1].setMaximumValue(theValue, theGenerateLookupTableFlag); } }
+    void setMaximumValue(QString theBand, double theValue, bool theGenerateLookupTableFlag=true) { setMaximumValue(getRasterBandNumber(theBand),theValue, theGenerateLookupTableFlag); }
     
+    QgsContrastEnhancement* getContrastEnhancement(int theBand) { return &mContrastEnhancementList[theBand - 1]; }
     // 
     // Accessor and mutator for min and max red
     // 
@@ -639,8 +644,15 @@ public:
         return mContrastEnhancementAlgorithm;
     };
     /** \brief Mutator for contrast enhancement algorithm. */
-    void setContrastEnhancementAlgorithm(QgsContrastEnhancement::CONTRAST_ENHANCEMENT_ALGORITHM theAlgorithm)
+    void setContrastEnhancementAlgorithm(QgsContrastEnhancement::CONTRAST_ENHANCEMENT_ALGORITHM theAlgorithm, bool theGenerateLookupTableFlag=true)
     {
+        QList<QgsContrastEnhancement>::iterator myIterator = mContrastEnhancementList.begin();
+        while(myIterator !=  mContrastEnhancementList.end())
+        {
+          (*myIterator).setContrastEnhancementAlgorithm(theAlgorithm, theGenerateLookupTableFlag);
+          ++myIterator;
+        }
+
         mContrastEnhancementAlgorithm = theAlgorithm;
     };
     
