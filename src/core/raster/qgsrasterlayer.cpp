@@ -55,8 +55,6 @@ email                : tim at linfiniti.com
 #include <QRegExp>
 #include <QSlider>
 
-
-
 // workaround for MSVC compiler which already has defined macro max
 // that interferes with calling std::numeric_limits<int>::max
 #ifdef _MSC_VER
@@ -533,7 +531,7 @@ bool QgsRasterLayer::readFile( QString const & fileName )
     mRasterStatsList.push_back(myRasterBandStats);
     
     //Build a new contrast enhancement for the band and store in list
-    QgsContrastEnhancement myContrastEnhancement(myGdalBand->GetRasterDataType());
+    QgsContrastEnhancement myContrastEnhancement((QgsContrastEnhancement::QgsRasterDataType)myGdalBand->GetRasterDataType());
     mContrastEnhancementList.append(myContrastEnhancement);
   }
   
@@ -1363,12 +1361,11 @@ void QgsRasterLayer::draw (QPainter * theQPainter,
 }                               //end of draw method
 
 
-void QgsRasterLayer::drawSingleBandGray(QPainter * theQPainter, QgsRasterViewPort * theRasterViewPort,                                                                             QgsMapToPixel * theQgsMapToPixel, int theBandNo)
+void QgsRasterLayer::drawSingleBandGray(QPainter * theQPainter, QgsRasterViewPort * theRasterViewPort, QgsMapToPixel * theQgsMapToPixel, int theBandNo)
 {
   QgsDebugMsg("QgsRasterLayer::drawSingleBandGray called for layer " + QString::number(theBandNo));
-  //QgsRasterBandStats myRasterBandStats = getRasterBandStats(theBandNo);
   GDALRasterBand *myGdalBand = mGdalDataset->GetRasterBand(theBandNo);
-  GDALDataType myDataType = myGdalBand->GetRasterDataType();
+  QgsContrastEnhancement::QgsRasterDataType myDataType = (QgsContrastEnhancement::QgsRasterDataType)myGdalBand->GetRasterDataType();
   void *myGdalScanData = readData ( myGdalBand, theRasterViewPort );
 
   /* Check for out of memory error */
@@ -1378,47 +1375,16 @@ void QgsRasterLayer::drawSingleBandGray(QPainter * theQPainter, QgsRasterViewPor
   }
 
   QImage myQImage = QImage(theRasterViewPort->drawableAreaXDim, theRasterViewPort->drawableAreaYDim, 32);
-  //myQImage.fill(0);
   myQImage.setAlphaBuffer(true);
   myQImage.fill(qRgba(255,255,255,0 )); // fill transparent
 
-  //double myRange = myRasterBandStats.range;
   QgsRasterBandStats myGrayBandStats;
 
-  if(QgsContrastEnhancement::NO_STRETCH != getContrastEnhancementAlgorithm() && !mUserDefinedGrayMinMaxFlag)
+  if(QgsContrastEnhancement::NO_STRETCH != getContrastEnhancementAlgorithm() && !mUserDefinedGrayMinMaxFlag && mStandardDeviations > 0)
   {
     myGrayBandStats = getRasterBandStats(theBandNo);
-
-    if(mStandardDeviations > 0)
-    {
-      mGrayMinimum = myGrayBandStats.mean - (mStandardDeviations * myGrayBandStats.stdDev);
-      mGrayMaximum = myGrayBandStats.mean + (mStandardDeviations * myGrayBandStats.stdDev);
-    }
-    else 
-    {
-      mGrayMinimum = myGrayBandStats.minVal;
-      mGrayMaximum = myGrayBandStats.maxVal;
-    }
-  }
-
-  /*
-   * Check for invalid min max value based on GDALDataType.
-   * Invalid values can happen if the user uses stdDevs to set min and max
-   *
-   * Also if no stretch is defined and data are not 8-bit, the data will still need to be scaled to 255
-   * so the min max values are set to the min max value for the data type
-   */
-  if(QgsContrastEnhancement::NO_STRETCH != getContrastEnhancementAlgorithm())
-  {
-    if(mGrayMinimum < QgsContrastEnhancement::getMinimumPossibleValue(myDataType))
-      mGrayMinimum = QgsContrastEnhancement::getMinimumPossibleValue(myDataType);
-    if(QgsContrastEnhancement::getMaximumPossibleValue(myDataType) < mGrayMaximum)
-      mGrayMaximum = QgsContrastEnhancement::getMaximumPossibleValue(myDataType);
-  }
-  else //always get so that min max is set correctly for display
-  {
-    mGrayMinimum = QgsContrastEnhancement::getMinimumPossibleValue(myDataType);
-    mGrayMaximum = QgsContrastEnhancement::getMaximumPossibleValue(myDataType);
+    setMaximumValue(theBandNo, myGrayBandStats.mean + (mStandardDeviations * myGrayBandStats.stdDev));
+    setMinimumValue(theBandNo, myGrayBandStats.mean - (mStandardDeviations * myGrayBandStats.stdDev));
   }
 
   QgsDebugMsg("Starting main render loop");
@@ -1427,7 +1393,7 @@ void QgsRasterLayer::drawSingleBandGray(QPainter * theQPainter, QgsRasterViewPor
   {
     for (int myRow = 0; myRow < theRasterViewPort->drawableAreaXDim; ++myRow)
     {
-      double myGrayValue = readValue ( myGdalScanData, myDataType,
+      double myGrayValue = readValue ( myGdalScanData, (GDALDataType)myDataType,
           myColumn * theRasterViewPort->drawableAreaXDim + myRow );
 
       // If mNoDataValue is 'nan', the comparison
@@ -1435,6 +1401,11 @@ void QgsRasterLayer::drawSingleBandGray(QPainter * theQPainter, QgsRasterViewPor
       // returns false, by design), hence the slightly odd comparison
       // of myGrayVal against itself. 
       if ( myGrayValue == mNoDataValue || myGrayValue != myGrayValue)
+      {
+        continue;
+      }
+
+      if(!getContrastEnhancement(theBandNo)->isValueInDisplayableRange(myGrayValue))
       {
         continue;
       }
@@ -1456,41 +1427,7 @@ void QgsRasterLayer::drawSingleBandGray(QPainter * theQPainter, QgsRasterViewPor
         continue;
       }
 
-      // Stretch
-      if(QgsContrastEnhancement::NO_STRETCH != getContrastEnhancementAlgorithm())
-      {
-        if(QgsContrastEnhancement::CLIP_TO_MINMAX == getContrastEnhancementAlgorithm() || QgsContrastEnhancement::STRETCH_AND_CLIP_TO_MINMAX == getContrastEnhancementAlgorithm())
-        {
-          if(myGrayValue < mGrayMinimum || myGrayValue > mGrayMaximum) continue;
-        }
-
-        if(QgsContrastEnhancement::STRETCH_TO_MINMAX == getContrastEnhancementAlgorithm() || QgsContrastEnhancement::STRETCH_AND_CLIP_TO_MINMAX == getContrastEnhancementAlgorithm())
-        {
-          myGrayValue = ((myGrayValue - mGrayMinimum)/(mGrayMaximum - mGrayMinimum))*255;
-        }
-        else if(GDT_Byte != myDataType)  //CLIP_TO_MINMAX if data > 8-bit we need to scale it anyway
-        {
-          myGrayValue = ((myGrayValue)/(QgsContrastEnhancement::getMaximumPossibleValue(myDataType) - QgsContrastEnhancement::getMinimumPossibleValue(myDataType)))*255;
-        }
-
-        //Check for out of range pixel values
-        if(myGrayValue < 0.0)
-        {
-          myGrayValue = 0.0;
-        }
-        else if(myGrayValue > 255.0)
-        {
-          myGrayValue = 255.0;
-        }
-      }
-
-       // If there is no stretch but data type is other than 8-bit the data will need to be scaled
-      if(QgsContrastEnhancement::NO_STRETCH == getContrastEnhancementAlgorithm() && GDT_Byte != myDataType)
-      {
-        myGrayValue = ((myGrayValue)/(QgsContrastEnhancement::getMaximumPossibleValue(myDataType) - QgsContrastEnhancement::getMinimumPossibleValue(myDataType)))*255;
-      }
-
-      int myGrayVal = static_cast < int > ( myGrayValue);
+      int myGrayVal = getContrastEnhancement(theBandNo)->stretch(myGrayValue);
 
       if (mInvertPixelsFlag)
       {
@@ -1562,7 +1499,7 @@ void QgsRasterLayer::drawSingleBandPseudoColor(QPainter * theQPainter,
   QgsDebugMsg("QgsRasterLayer::drawSingleBandPseudoColor called");
 
   GDALRasterBand *myGdalBand = mGdalDataset->GetRasterBand(theBandNo);
-  GDALDataType myDataType = myGdalBand->GetRasterDataType();
+  QgsContrastEnhancement::QgsRasterDataType myDataType = (QgsContrastEnhancement::QgsRasterDataType)myGdalBand->GetRasterDataType();
   void *myGdalScanData = readData ( myGdalBand, theRasterViewPort );
 
   /* Check for out of memory error */
@@ -1649,7 +1586,7 @@ void QgsRasterLayer::drawSingleBandPseudoColor(QPainter * theQPainter,
       myBlue = 255;
       myGreen = 255;
 
-      double myVal = readValue ( myGdalScanData, myDataType,
+      double myVal = readValue ( myGdalScanData, (GDALDataType)myDataType,
           myColumn * theRasterViewPort->drawableAreaXDim + myRow );
 
       if ( myVal == mNoDataValue || myVal != myVal ) continue;
@@ -1901,7 +1838,7 @@ void QgsRasterLayer::drawPalettedSingleBandColor(QPainter * theQPainter, QgsRast
   QgsDebugMsg("QgsRasterLayer::drawPalettedSingleBandColor called");
 
   GDALRasterBand *myGdalBand = mGdalDataset->GetRasterBand(theBandNo);
-  GDALDataType myDataType = myGdalBand->GetRasterDataType();
+  QgsContrastEnhancement::QgsRasterDataType myDataType = (QgsContrastEnhancement::QgsRasterDataType)myGdalBand->GetRasterDataType();
   void *myGdalScanData = readData ( myGdalBand, theRasterViewPort );
 
   /* Check for out of memory error */
@@ -1921,7 +1858,7 @@ void QgsRasterLayer::drawPalettedSingleBandColor(QPainter * theQPainter, QgsRast
   {
     for (int myRow = 0; myRow < theRasterViewPort->drawableAreaXDim; ++myRow)
     {
-      double myVal = readValue ( myGdalScanData, myDataType,
+      double myVal = readValue ( myGdalScanData, (GDALDataType)myDataType,
           myColumn * theRasterViewPort->drawableAreaXDim + myRow );
 
       if ( myVal == mNoDataValue || myVal != myVal ) continue; // NULL
@@ -2026,7 +1963,7 @@ void QgsRasterLayer::drawPalettedSingleBandGray(QPainter * theQPainter, QgsRaste
 
   QgsRasterBandStats myRasterBandStats = getRasterBandStats(theBandNo);
   GDALRasterBand *myGdalBand = mGdalDataset->GetRasterBand(theBandNo);
-  GDALDataType myDataType = myGdalBand->GetRasterDataType();
+  QgsContrastEnhancement::QgsRasterDataType myDataType = (QgsContrastEnhancement::QgsRasterDataType)myGdalBand->GetRasterDataType();
   void *myGdalScanData = readData ( myGdalBand, theRasterViewPort );
 
   /* Check for out of memory error */
@@ -2046,7 +1983,7 @@ void QgsRasterLayer::drawPalettedSingleBandGray(QPainter * theQPainter, QgsRaste
   {
     for (int myRow = 0; myRow < theRasterViewPort->drawableAreaXDim; ++myRow)
     {
-      double myVal = readValue ( myGdalScanData, myDataType,
+      double myVal = readValue ( myGdalScanData, (GDALDataType)myDataType,
           myColumn * theRasterViewPort->drawableAreaXDim + myRow );
 
       if ( myVal == mNoDataValue || myVal != myVal ) continue; // NULL
@@ -2162,7 +2099,7 @@ void QgsRasterLayer::drawPalettedSingleBandPseudoColor(QPainter * theQPainter, Q
   QgsDebugMsg("QgsRasterLayer::drawPalettedSingleBandPseudoColor called");
   QgsRasterBandStats myRasterBandStats = getRasterBandStats(theBandNo);
   GDALRasterBand *myGdalBand = mGdalDataset->GetRasterBand(theBandNo);
-  GDALDataType myDataType = myGdalBand->GetRasterDataType();
+  QgsContrastEnhancement::QgsRasterDataType myDataType = (QgsContrastEnhancement::QgsRasterDataType)myGdalBand->GetRasterDataType();
   void *myGdalScanData = readData ( myGdalBand, theRasterViewPort );
 
   /* Check for out of memory error */
@@ -2219,7 +2156,7 @@ void QgsRasterLayer::drawPalettedSingleBandPseudoColor(QPainter * theQPainter, Q
   {
     for (int myRow = 0; myRow < theRasterViewPort->drawableAreaXDim; ++myRow)
     {
-      double myVal = readValue ( myGdalScanData, myDataType,
+      double myVal = readValue ( myGdalScanData, (GDALDataType)myDataType,
           myColumn * theRasterViewPort->drawableAreaXDim + myRow );
 
       if ( myVal == mNoDataValue || myVal != myVal ) continue; // NULL
@@ -2431,7 +2368,7 @@ void QgsRasterLayer::drawPalettedMultiBandColor(QPainter * theQPainter, QgsRaste
   QgsDebugMsg("QgsRasterLayer::drawPalettedMultiBandColor called");
 
   GDALRasterBand *myGdalBand = mGdalDataset->GetRasterBand(theBandNo);
-  GDALDataType myDataType = myGdalBand->GetRasterDataType();
+  QgsContrastEnhancement::QgsRasterDataType myDataType = (QgsContrastEnhancement::QgsRasterDataType)myGdalBand->GetRasterDataType();
   void *myGdalScanData = readData ( myGdalBand, theRasterViewPort );
 
   /* Check for out of memory error */
@@ -2451,7 +2388,7 @@ void QgsRasterLayer::drawPalettedMultiBandColor(QPainter * theQPainter, QgsRaste
   {
     for (int myRow = 0; myRow < theRasterViewPort->drawableAreaXDim; ++myRow)
     {
-      double myVal = readValue ( myGdalScanData, myDataType,
+      double myVal = readValue ( myGdalScanData, (GDALDataType)myDataType,
           myColumn * theRasterViewPort->drawableAreaXDim + myRow );
 
       if ( myVal == mNoDataValue || myVal != myVal ) continue; // NULL
@@ -2595,9 +2532,9 @@ void QgsRasterLayer::drawMultiBandColor(QPainter * theQPainter, QgsRasterViewPor
   GDALRasterBand *myGdalGreenBand = mGdalDataset->GetRasterBand(myGreenBandNo);
   GDALRasterBand *myGdalBlueBand = mGdalDataset->GetRasterBand(myBlueBandNo);
 
-  GDALDataType myRedType = myGdalRedBand->GetRasterDataType();
-  GDALDataType myGreenType = myGdalGreenBand->GetRasterDataType();
-  GDALDataType myBlueType = myGdalBlueBand->GetRasterDataType();
+  QgsContrastEnhancement::QgsRasterDataType myRedType = (QgsContrastEnhancement::QgsRasterDataType)myGdalRedBand->GetRasterDataType();
+  QgsContrastEnhancement::QgsRasterDataType myGreenType = (QgsContrastEnhancement::QgsRasterDataType)myGdalGreenBand->GetRasterDataType();
+  QgsContrastEnhancement::QgsRasterDataType myBlueType = (QgsContrastEnhancement::QgsRasterDataType)myGdalBlueBand->GetRasterDataType();
 
   void *myGdalRedData = readData ( myGdalRedBand, theRasterViewPort );
   void *myGdalGreenData = readData ( myGdalGreenBand, theRasterViewPort );
@@ -2725,11 +2662,11 @@ void QgsRasterLayer::drawMultiBandColor(QPainter * theQPainter, QgsRasterViewPor
   {
     for (int myRow = 0; myRow < theRasterViewPort->drawableAreaXDim; ++myRow)
     {
-      double myRedValue   = readValue ( myGdalRedData, myRedType,
+      double myRedValue   = readValue ( myGdalRedData, (GDALDataType)myRedType,
           myColumn * theRasterViewPort->drawableAreaXDim + myRow );
-      double myGreenValue = readValue ( myGdalGreenData, myGreenType,
+      double myGreenValue = readValue ( myGdalGreenData, (GDALDataType)myGreenType,
           myColumn * theRasterViewPort->drawableAreaXDim + myRow );
-      double myBlueValue  = readValue ( myGdalBlueData, myBlueType,
+      double myBlueValue  = readValue ( myGdalBlueData, (GDALDataType)myBlueType,
           myColumn * theRasterViewPort->drawableAreaXDim + myRow );
       if (haveTransparencyBand)
       {
@@ -2792,16 +2729,16 @@ void QgsRasterLayer::drawMultiBandColor(QPainter * theQPainter, QgsRasterViewPor
         }
         else
         {
-          if(GDT_Byte != myRedType) //CLIP_TO_MINMAX if data > 8-bit we need to scale it anyway
+          if(GDT_Byte != (GDALDataType)myRedType) //CLIP_TO_MINMAX if data > 8-bit we need to scale it anyway
           {
             myRedValue = ((myRedValue)/(QgsContrastEnhancement::getMaximumPossibleValue(myRedType) - QgsContrastEnhancement::getMinimumPossibleValue(myRedType)))*255;
           }
 
-          if(GDT_Byte != myGreenType) //CLIP_TO_MINMAX if data > 8-bit we need to scale it anyway
+          if(GDT_Byte != (GDALDataType)myGreenType) //CLIP_TO_MINMAX if data > 8-bit we need to scale it anyway
           {
             myGreenValue = ((myGreenValue)/(QgsContrastEnhancement::getMaximumPossibleValue(myGreenType) - QgsContrastEnhancement::getMinimumPossibleValue(myGreenType)))*255;
           }
-          if(GDT_Byte != myBlueType) //CLIP_TO_MINMAX if data > 8-bit we need to scale it anyway
+          if(GDT_Byte != (GDALDataType)myBlueType) //CLIP_TO_MINMAX if data > 8-bit we need to scale it anyway
           {
             myBlueValue = ((myBlueValue)/(QgsContrastEnhancement::getMaximumPossibleValue(myBlueType) - QgsContrastEnhancement::getMinimumPossibleValue(myBlueType)))*255;
           }
@@ -2837,17 +2774,17 @@ void QgsRasterLayer::drawMultiBandColor(QPainter * theQPainter, QgsRasterViewPor
       }
 
       // If there is no stretch but data type is other than 8-bit the data will need to be scaled
-      if(QgsContrastEnhancement::NO_STRETCH == getContrastEnhancementAlgorithm() && GDT_Byte != myRedType)
+      if(QgsContrastEnhancement::NO_STRETCH == getContrastEnhancementAlgorithm() && GDT_Byte != (GDALDataType)myRedType)
       {
         myRedValue = ((myRedValue)/(QgsContrastEnhancement::getMaximumPossibleValue(myRedType) - QgsContrastEnhancement::getMinimumPossibleValue(myRedType)))*255;
       }
 
-      if(QgsContrastEnhancement::NO_STRETCH == getContrastEnhancementAlgorithm() && GDT_Byte != myGreenType)
+      if(QgsContrastEnhancement::NO_STRETCH == getContrastEnhancementAlgorithm() && GDT_Byte != (GDALDataType)myGreenType)
       {
         myGreenValue = ((myGreenValue)/(QgsContrastEnhancement::getMaximumPossibleValue(myGreenType) - QgsContrastEnhancement::getMinimumPossibleValue(myGreenType)))*255;
       }
 
-      if(QgsContrastEnhancement::NO_STRETCH == getContrastEnhancementAlgorithm() && GDT_Byte != myBlueType)
+      if(QgsContrastEnhancement::NO_STRETCH == getContrastEnhancementAlgorithm() && GDT_Byte != (GDALDataType)myBlueType)
       {
         myBlueValue = ((myBlueValue)/(QgsContrastEnhancement::getMaximumPossibleValue(myBlueType) - QgsContrastEnhancement::getMinimumPossibleValue(myBlueType)))*255;
       }
@@ -3178,7 +3115,7 @@ const QgsRasterBandStats QgsRasterLayer::getRasterBandStats(int theBandNo)
   // let the user know we're going to possibly be taking a while
   //QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 
-  GDALDataType myDataType = myGdalBand->GetRasterDataType();
+ GDALDataType myDataType = myGdalBand->GetRasterDataType();
 
   int  myNXBlocks, myNYBlocks, myXBlockSize, myYBlockSize;
   myGdalBand->GetBlockSize( &myXBlockSize, &myYBlockSize );
@@ -3305,7 +3242,7 @@ const QgsRasterBandStats QgsRasterLayer::getRasterBandStats(int theBandNo)
               myRasterBandStats.maxVal = my;
             }
             //only increment the running total if it is not a nodata value
-            if (my != mNoDataValue || my != my)
+            if (my != mNoDataValue && my == my)
             {
               myRasterBandStats.sum += my;
               ++myRasterBandStats.elementCount;

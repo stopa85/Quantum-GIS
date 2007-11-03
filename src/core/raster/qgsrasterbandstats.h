@@ -27,6 +27,8 @@
 #include <QString>
 #include <QVector>
 
+#include <limits>
+
 #include "qgscolortable.h"
 /** \brief The RasterBandStats struct is a container for statistics about a single
  * raster band.
@@ -34,6 +36,23 @@
 class CORE_EXPORT QgsRasterBandStats
 {
   public:
+    //This constructor was added because values were being used un initalized 
+    //TODO: This should not be in the header file.
+    QgsRasterBandStats() {
+      bandName = "";
+      statsGatheredFlag = false;
+      minVal = std::numeric_limits<double>::max();
+      maxVal = std::numeric_limits<double>::min();
+      range = 0.0;
+      mean = 0.0;
+      sumSqrDev = 0.0;
+      stdDev = 0.0;
+      sum = 0.0;
+      elementCount = 0;
+      histogramEstimatedFlag = false;
+      histogramOutOfRangeFlag = false;
+    }
+  
     /** \brief The name of the band that these stats belong to. */
     QString bandName;
     /** \brief The gdal band number (starts at 1)*/
