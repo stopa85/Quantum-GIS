@@ -2424,7 +2424,7 @@ int QgsGeometry::addRing(const QList<QgsPoint>& ring)
     {
       newRing = geosGeometryFactory->createLinearRing(newSequence);
     }
-  catch(GEOS_GEOM::IllegalArgumentException* e)
+  catch(GEOS_UTIL::IllegalArgumentException* e)
     {
       delete newSequence;
       delete e;
@@ -2614,7 +2614,7 @@ int QgsGeometry::addIsland(const QList<QgsPoint>& ring)
     {
       newRing = geosGeometryFactory->createLinearRing(newSequence);
     }
-  catch(GEOS_GEOM::IllegalArgumentException* e)
+  catch(GEOS_UTIL::IllegalArgumentException* e)
     {
       delete e;
       delete newSequence;
