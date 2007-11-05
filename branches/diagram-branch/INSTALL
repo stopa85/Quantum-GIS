@@ -1,3 +1,4 @@
+%!encoding: iso-8859-1
 
 
 ------------------------------------------------------------------------
@@ -64,8 +65,7 @@
       6.2.8. EXPAT
       6.2.9. POSTGRES
     6.3. Cleanup
-  7. Further help and information
-  8. Authors and Acknowledgments
+  7. Authors and Acknowledgments
 
 
 ------------------------------------------------------------------------
@@ -73,6 +73,32 @@
 
   1. Introduction
   ===============
+
+This document is the original installation guide of the described software 
+Quantum GIS. The software and hardware descriptions named in this 
+document are in most cases registered trademarks and are therefore subject 
+to the legal requirements. Quantum GIS is subject to the GNU General Public 
+License. Find more information on the Quantum GIS Homepage:
+http://www.qgis.org
+
+The details, that are given in this document have been written and verified 
+to the best of knowledge and responsibility of the editors. Nevertheless, 
+mistakes concerning the content are possible. Therefore, all data are not 
+liable to any duties or guarantees. The editors and publishers do not take 
+any responsibility or liability for failures and their consequences. You are 
+always welcome for indicating possible mistakes.
+
+You can download this document as part of the Quantum GIS 'User and 
+Installation Guide' in HTML and PDF format via http://www.qgis.org. A current 
+version is also available at the wiki, see:
+http://wiki.qgis.org/qgiswiki/BuildingFromSource 
+
+Translations of this document can also be downloaded at the documentation area 
+of the Quantum GIS project at http://www.qgis.org. More information is 
+available via http://wiki.qgis.org/qgiswiki/DocumentationWritersCorner. 
+
+Please visit http://qgis.org for information on joining our mailing lists 
+and getting involved in the project further.
 
 /!\ *Note to document writers:* Please use this document as the central
 place for describing build procefures. Please do not remove this notice. 
@@ -189,10 +215,11 @@ http://python.org/download/
 		3.4.2. Download SIP and PyQt4 sources
 		=====================================
 
-http://www.riverbankcomputing.com/Downloads/sip4/sip-4.6.zip
-http://www.riverbankcomputing.com/Downloads/PyQt4/GPL/PyQt-win-gpl-4.2.zip
+http://www.riverbankcomputing.com/Downloads/sip4/
+http://www.riverbankcomputing.com/Downloads/PyQt4/GPL/
 
-Extract each of the above zip files in a temporary directory.
+Extract each of the above zip files in a temporary directory. Make sure
+to get versions that match your current Qt installed version.
 
 
 		3.4.3. Compile SIP
@@ -369,14 +396,16 @@ XCODE after the ~941mb download is complete.
 	4.2. Install Qt4 from .dmg
 	==========================
 
+You need a minimum of Qt4.2. I suggest getting the latest (at time of writing).
 
-  ftp://ftp.trolltech.com/qt/source/qt-mac-opensource-4.2.3.dmg 
+
+  ftp://ftp.trolltech.com/qt/source/qt-mac-opensource-4.3.2.dmg
 
 
 If you want debug libs, Qt also provide a dmg with these:
 
 
-  ftp://ftp.trolltech.com/qt/source/qt-mac-opensource-4.2.3-debug-libs.dmg
+  ftp://ftp.trolltech.com/qt/source/qt-mac-opensource-4.3.2-debug-libs.dmg
 
 
 I am going to proceed using only release libs at this stage as the download for
@@ -396,7 +425,7 @@ QT_EDITION_UNKNOWN to QT_EDITION_OPENSOURCE
 Second change the default mkspec symlink so that it points to macx-g++:
 
 
-  cd /usr/local/Qt4.2/mkspecs/ sudo rm default sudo ln -sf macx-g++ default
+  cd /usr/local/Qt4.3/mkspecs/ sudo rm default sudo ln -sf macx-g++ default
 
 
 
@@ -439,7 +468,8 @@ Then extract it and build it to a prefix of /usr/local:
   cd gsl-1.8 
   ./configure --prefix=/usr/local 
   make
-  sudo make install cd ..  
+  sudo make install
+  cd ..  
 
 
 
@@ -468,14 +498,14 @@ Get the expat sources:
 Retrieve the python bindings toolkit SIP from
 
 
-  curl -O http://www.riverbankcomputing.com/Downloads/sip4/sip-4.5.2.tar.gz
+  http://www.riverbankcomputing.com/Downloads/sip4/
 
 
 Then extract and build it to a prefix of /usr/local:
 
 
-  tar xvfz sip-4.5.2.tar.gz 
-  cd sip-4.5.2 
+  tar xvfz sip-<version number>.tar.gz 
+  cd sip-<version number>
   python configure.py 
   make 
   sudo make install 
@@ -486,17 +516,31 @@ Then extract and build it to a prefix of /usr/local:
 		4.3.4. Additional Dependencies : PyQt
 		=====================================
 
+Make sure you have the latest python fom 
+
+
+  http://www.python.org/download/mac/
+
+
+If you encounter problems compiling PyQt using the instructions 
+below you can also try adding python from your frameworks dir
+explicitly to your path e.g.
+
+
+  export PATH=/Library/Frameworks/Python.framework/Versions/Current/bin:$PATH$
+
+
 Retrieve the python bindings toolkit for Qt from
 
 
-  curl -O http://www.riverbankcomputing.com/Downloads/PyQt4/GPL/PyQt-mac-gpl-4.1.1.tar.gz
+  http://www.riverbankcomputing.com/Downloads/PyQt4/GPL/
 
 
 Then extract and build it to a prefix of /usr/local:
 
 
-  tar xvfz PyQt-mac-gpl-4.1.1.tar.gz 
-  cd PyQt-mac-gpl-4.1.1 
+  tar xvfz PyQt-mac<version number here>
+  cd PyQt-mac<version number here>
   python configure.py 
   yes 
   make 
@@ -612,6 +656,12 @@ For svn 0.8 branch
   svn co https://svn.qgis.org/repos/qgis/branches/Release-0_8_0 qgis0.8
 
 
+For svn 0.9 branch
+
+
+  svn co https://svn.qgis.org/repos/qgis/branches/Release-0_9_0 qgis0.9
+
+
 The first time you check out QGIS sources you will probably get a message like
 this:
 
@@ -633,13 +683,17 @@ I suggest you press 'p' to accept the key permanently.
 	========================
 
 CMake supports out of source build so we will create a 'build' dir for the
-build process
+build process . By convention I build my software into a dir called 'apps'
+in my home directory. If you have the correct permissions you may want to 
+build straight into your /Applications folder (although personally I dont 
+really recommend this). The instructions below assume you are building into 
+a pre-existing ${HOME}/apps directory ...
 
 
   cd qgis 
   mkdir build 
   cd build 
-  cmake -D CMAKE_INSTALL_PREFIX=$HOME/apps/ -D CMAKE_BUILD_TYPE=Release..
+  cmake -D CMAKE_INSTALL_PREFIX=$HOME/apps/ -D CMAKE_BUILD_TYPE=Release ..
 
 
 To use a specific GRASS version, You can optionally use the following 
@@ -647,7 +701,7 @@ cmake invocation (with modifications to suite your system (thanks William
 Kyngesburye for this hint):
 
 
-  cmake -D CMAKE_INSTALL_PREFIX=$HOME/apps/ \
+  cmake -D CMAKE_INSTALL_PREFIX=${HOME}/apps/ \
         -D GRASS_INCLUDE_DIR=/Applications/GRASS-6.3.app/Contents/Resources/include \
         -D GRASS_PREFIX=/Applications/GRASS-6.3.app/Contents/Resources \
         -D CMAKE_BUILD_TYPE=Release \
@@ -775,7 +829,7 @@ above commands to select the Qt4 version of the relevant applications.
   libgdal-doc libhdf4g-dev libhdf4g-run python-dev \
   swig libgsl0-dev g++ libjasper-1.701-dev libtiff4-dev subversion gsl-bin \
   libsqlite3-dev sqlite3 ccache make libpq-dev flex bison cmake txt2tags \
-  python-qt4 python-qt4-dev python-sip4 sip4
+  python-qt4 python-qt4-dev python-sip4 sip4 python-sip4-dev
 
 
 /!\ Debian users should use libgdal-dev above rather
@@ -1219,14 +1273,7 @@ We're done with preparation of MSYS environment. Now you can delete all stuff in
 of space and it's not necessary at all.
 
 
-  7. Further help and information
-  ===============================
-
-    Please visit http://qgis.org for information on joining our mailing lists
-    and getting involved in the project further.
-
-
-  8. Authors and Acknowledgments
+  7. Authors and Acknowledgments
   ==============================
 
 The follwing people have contributed to this document:

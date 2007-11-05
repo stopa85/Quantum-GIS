@@ -1206,7 +1206,7 @@ void QgisApp::setupConnections()
 void QgisApp::createCanvas()
 {
   // "theMapCanvas" used to find this canonical instance later
-  mMapCanvas = new QgsMapCanvas(NULL, "theMapCanvas" );
+  mMapCanvas = new QgsMapCanvas(this, "theMapCanvas" );
   QWhatsThis::add(mMapCanvas, tr("Map canvas. This is where raster and vector layers are displayed when added to the map"));
   
   mMapCanvas->setMinimumWidth(10);
@@ -1563,14 +1563,13 @@ void QgisApp::restoreSessionPlugins(QString thePluginDirString)
   if (QgsPythonUtils::isEnabled())
   {
   
-    // check for python plugins
-    QDir pluginDir(QgsPythonUtils::pluginsPath(), "*",
-                  QDir::Name | QDir::IgnoreCase, QDir::Dirs | QDir::NoDotAndDotDot);
-  
-    for (uint i = 0; i < pluginDir.count(); i++)
+    // check for python plugins system-wide
+    QStringList pluginList = QgsPythonUtils::pluginList();
+
+    for (int i = 0; i < pluginList.size(); i++)
     {
-      QString packageName = pluginDir[i];
-      
+      QString packageName = pluginList[i];
+   
       // import plugin's package
       if (!QgsPythonUtils::loadPlugin(packageName))
         continue;
@@ -1596,7 +1595,6 @@ void QgisApp::restoreSessionPlugins(QString thePluginDirString)
         loadPythonPlugin(packageName, pluginName);
       }
     }
-  
   }
 #endif
 }
@@ -3022,6 +3020,7 @@ void QgisApp::openProject(const QString & fileName)
     }
     catch ( QgsIOException & io_exception )
     {
+      UNUSED(io_exception);
       QMessageBox::critical( this, 
           tr("QGIS: Unable to load project"), 
           tr("Unable to load project ") + fileName );

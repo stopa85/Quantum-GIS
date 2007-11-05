@@ -11,9 +11,23 @@
 
 IF(WIN32)
 
-  FIND_PATH(GDAL_INCLUDE_DIR gdal.h /usr/local/include /usr/include c:/msys/local/include)
-  FIND_LIBRARY(GDAL_LIBRARY NAMES gdal PATHS /usr/local/lib /usr/lib c:/msys/local/lib)
+  IF (MINGW)
+    FIND_PATH(GDAL_INCLUDE_DIR gdal.h /usr/local/include /usr/include c:/msys/local/include)
+    FIND_LIBRARY(GDAL_LIBRARY NAMES gdal PATHS /usr/local/lib /usr/lib c:/msys/local/lib)
+  ENDIF (MINGW)
 
+  IF (MSVC)
+    SET (
+       GDAL_INCLUDE_DIR 
+       "$ENV{LIB_DIR}/include/gdal"
+       CACHE STRING INTERNAL
+       )
+    SET (
+       GDAL_LIBRARY 
+       "$ENV{LIB_DIR}/lib/gdal.lib";odbc32;odbccp32 
+       CACHE STRING INTERNAL)
+  ENDIF (MSVC)
+  
   
 ELSE(WIN32)
   IF(UNIX) 

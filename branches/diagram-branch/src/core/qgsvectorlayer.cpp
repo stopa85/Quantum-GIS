@@ -91,6 +91,7 @@ QgsVectorLayer::QgsVectorLayer(QString vectorLayerPath,
     QString providerKey)
 : QgsMapLayer(VECTOR, baseName, vectorLayerPath),
   mUpdateThreshold(0),       // XXX better default value?
+  mDataProvider(NULL),
   mProviderKey(providerKey),
   mEditable(false),
   mModified(false),
@@ -328,6 +329,7 @@ void QgsVectorLayer::drawLabels(QPainter * p, QgsRect & viewExtent, QgsMapToPixe
     }
     catch (QgsCsException &e)
     {
+      UNUSED(e);
       QgsLogger::critical("Error projecting label locations, caught in " + QString(__FILE__) + ", line " +QString(__LINE__));
     }
 
