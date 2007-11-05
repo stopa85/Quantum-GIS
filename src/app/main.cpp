@@ -42,8 +42,10 @@
 #ifdef WIN32
  // Open files in binary mode
  #include <fcntl.h> /*  _O_BINARY */
+ #ifdef MSVC
  #undef _fmode
- int _fmode = _O_BINARY;
+  int _fmode = _O_BINARY;
+ #endif
  #ifndef _MSC_VER
   // Only do this if we are not building on windows with msvc.
   // Recommended method for doing this with msvc is with a call to _set_fmode
@@ -227,8 +229,10 @@ int main(int argc, char *argv[])
     _set_fmode(_O_BINARY);
  #endif 
 
+#ifndef _MSC_VER
   // Set up the custom qWarning/qDebug custom handler
   qInstallMsgHandler( myMessageOutput );
+#endif
 
   /////////////////////////////////////////////////////////////////
   // Command line options 'behaviour' flag setup
@@ -453,7 +457,7 @@ int main(int argc, char *argv[])
   }
   else
   {
-#ifdef Q_OS_MACX
+#if defined(Q_OS_MACX) && QT_VERSION < 0x040300
     //on mac automasking as done below does not work (as of qt 4.2.1)
     //so we do it the old way see bug #387
     qDebug("setting mask for mac");

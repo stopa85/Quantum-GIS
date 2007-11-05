@@ -124,6 +124,7 @@ QgsFeature & QgsFeature::operator=( QgsFeature const & rhs )
   mTypeName = rhs.mTypeName;
 
   // copy embedded geometry
+  delete mGeometry;
   if ( rhs.mGeometry )
   {
     mGeometry = new QgsGeometry( *(rhs.mGeometry) );
@@ -168,6 +169,11 @@ int QgsFeature::featureId() const
 const QgsAttributeMap& QgsFeature::attributeMap() const
 {
   return mAttributes;
+}
+
+void QgsFeature::setAttributeMap(const QgsAttributeMap& attributeMap)
+{
+  mAttributes = attributeMap;
 }
 
 /**

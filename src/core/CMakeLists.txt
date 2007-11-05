@@ -145,6 +145,10 @@ ADD_DEPENDENCIES(qgis_core svnversion)
 # because of htonl
 IF (WIN32)
   SET(PLATFORM_LIBRARIES wsock32)
+  IF (MSVC)
+    #needed for linking to gdal which needs odbc
+    SET(PLATFORM_LIBRARIES ${PLATFORM_LIBRARIES} odbc32 odbccp32)
+  ENDIF (MSVC)
 ENDIF (WIN32)
 
 TARGET_LINK_LIBRARIES(qgis_core
@@ -171,7 +175,8 @@ ENDIF (APPLE)
 
 INSTALL(TARGETS qgis_core
   RUNTIME DESTINATION ${QGIS_BIN_DIR}
-  LIBRARY DESTINATION lib)
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib)
 
 
 # Added by Tim to install headers
@@ -185,6 +190,7 @@ qgscontexthelp.h
 qgscoordinatetransform.h
 qgsdatasourceuri.h
 qgsdistancearea.h
+qgscsexception.h
 qgsexception.h
 qgsfeature.h
 qgsfield.h
