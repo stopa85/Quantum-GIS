@@ -357,27 +357,20 @@ int QgsDiagramOverlay::createLegendContent(std::list<std::pair<QString, QImage*>
 
 int QgsDiagramOverlay::indexFromAttributeName(const QString& name, const QgsVectorLayer* vl)
 {
-  int notFound = -1;
+  int error = -1;
   
   if(!vl)
     {
-      return notFound;
+      return error;
     }
 
   const QgsVectorDataProvider *provider;
 
   if ((provider = dynamic_cast<const QgsVectorDataProvider *>(vl->getDataProvider())))
     {
-      const QgsFieldMap & fields = provider->fields();
-      for (QgsFieldMap::const_iterator it = fields.begin(); it != fields.end(); ++it)
-        {
-	  if((*it).name() == name)
-	    {
-	      return it.key();
-	    }
-        }
+      return provider->indexFromFieldName(name);
     }
-  return notFound;
+  return error;
 }
 
 QString QgsDiagramOverlay::attributeNameFromIndex(int index, const QgsVectorLayer* vl)
