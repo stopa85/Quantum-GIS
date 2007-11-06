@@ -264,140 +264,23 @@ public:
     void setShowDebugOverlayFlag(bool theFlag);
     
     // Accessor and mutator for min max values 
-    // TODO: Add wrapper for bandnames
-    // TODO: remove all getMin*Color* functions
-    double getMinimumValue(int theBand);
+    double getMinimumValue(unsigned int theBand);
+
+    double getMinimumValue(QString theBand);
+
+    void setMinimumValue(unsigned int theBand, double theValue);
+
+    void setMinimumValue(QString theBand, double theValue, bool theGenerateLookupTableFlag=true);
     
-    void setMinimumValue(int theBand, double theValue);
+    double getMaximumValue(unsigned int theBand);
+
+    double getMaximumValue(QString theBand);
     
-    double getMaximumValue(int theBand);
-    
-    void setMaximumValue(int theBand, double theValue);
-    
-    // 
-    // Accessor and mutator for min and max red
-    // 
-    /** \brief Accessor for minimum clipping range for red.
-     *
-     * The clipping range can have different interpretations - it can either be used to perform
-     * a histogram stretch between the minimum and maximum clipping values, or to exclude data
-     * that falls outside the clipping range.*/
-    double getMinRed();
-    
-    /** \brief Mutator for minimum clipping range for red.
-     *
-     * The clipping range can have different interpretations - it can either be used to perform
-     * a histogram stretch between the minimum and maximum clipping values, or to exclude data
-     * that falls outside the clipping range.*/
-    void setMinRed(double the);
-    
-    /** \brief Accessor for maximum clipping range for red.
-     *
-     * The clipping range can have different interpretations - it can either be used to perform
-     * a histogram stretch between the minimum and maximum clipping values, or to exclude data
-     * that falls outside the clipping range.*/
-    double getMaxRed();
-    
-    /** \brief Mutator for maximum clipping range for red.
-     *
-     * The clipping range can have different interpretations - it can either be used to perform
-     * a histogram stretch between the minimum and maximum clipping values, or to exclude data
-     * that falls outside the clipping range.*/
-    void setMaxRed(double the);
-    
-    // 
-    // Accessor and mutator for min and max green
-    // 
-    /** \brief Accessor for minimum clipping range for green.
-     *
-     * The clipping range can have different interpretations - it can either be used to perform
-     * a histogram stretch between the minimum and maximum clipping values, or to exclude data
-     * that falls outside the clipping range.*/
-    double getMinGreen();
-    
-    /** \brief Mutator for minimum clipping range for green.
-     *
-     * The clipping range can have different interpretations - it can either be used to perform
-     * a histogram stretch between the minimum and maximum clipping values, or to exclude data
-     * that falls outside the clipping range.*/
-    void setMinGreen(double the);
-    
-    /** \brief Accessor for maximum clipping range for green.
-     *
-     * The clipping range can have different interpretations - it can either be used to perform
-     * a histogram stretch between the minimum and maximum clipping values, or to exclude data
-     * that falls outside the clipping range.*/
-    double getMaxGreen();
-    
-    /** \brief Mutator for maximum clipping range for green.
-     *
-     * The clipping range can have different interpretations - it can either be used to perform
-     * a histogram stretch between the minimum and maximum clipping values, or to exclude data
-     * that falls outside the clipping range.*/
-    void setMaxGreen(double the);
-    
-    // 
-    // Accessor and mutator for min and max blue
-    // 
-    /** \brief Accessor for minimum clipping range for blue.
-     *
-     * The clipping range can have different interpretations - it can either be used to perform
-     * a histogram stretch between the minimum and maximum clipping values, or to exclude data
-     * that falls outside the clipping range.*/
-    /** \brief   */
-    double getMinBlue();
-    
-    /** \brief Mutator for minimum clipping range for blue.
-     *
-     * The clipping range can have different interpretations - it can either be used to perform
-     * a histogram stretch between the minimum and maximum clipping values, or to exclude data
-     * that falls outside the clipping range.*/
-    void setMinBlue(double the);
-    
-    /** \brief Accessor for maximum clipping range for blue.
-     *
-     * The clipping range can have different interpretations - it can either be used to perform
-     * a histogram stretch between the minimum and maximum clipping values, or to exclude data
-     * that falls outside the clipping range.*/
-    double getMaxBlue();
-    
-    /** \brief Mutator for maximum clipping range for blue.
-     *
-     * The clipping range can have different interpretations - it can either be used to perform
-     * a histogram stretch between the minimum and maximum clipping values, or to exclude data
-     * that falls outside the clipping range.*/
-    void setMaxBlue(double the);
-    
-    // 
-    // Accessor and mutator for min and max gray
-    // 
-    /** \brief Accessor for minimum clipping range for gray.
-     *
-     * The clipping range can have different interpretations - it can either be used to perform
-     * a histogram stretch between the minimum and maximum clipping values, or to exclude data
-     * that falls outside the clipping range.*/
-    double getMinGray();
-    
-    /** \brief Mutator for minimum clipping range for gray.
-     *
-     * The clipping range can have different interpretations - it can either be used to perform
-     * a histogram stretch between the minimum and maximum clipping values, or to exclude data
-     * that falls outside the clipping range.*/
-    void setMinGray(double the);
-    
-    /** \brief Accessor for maximum clipping range for gray.
-     *
-     * The clipping range can have different interpretations - it can either be used to perform
-     * a histogram stretch between the minimum and maximum clipping values, or to exclude data
-     * that falls outside the clipping range.*/
-    double getMaxGray();
-    
-    /** \brief Mutator for maximum clipping range for gray.
-     *
-     * The clipping range can have different interpretations - it can either be used to perform
-     * a histogram stretch between the minimum and maximum clipping values, or to exclude data
-     * that falls outside the clipping range.*/
-    void setMaxGray(double the);
+    void setMaximumValue(unsigned int theBand, double theValue);
+
+    void setMaximumValue(QString theBand, double theValue, bool theGenerateLookupTableFlag=true);
+
+    QgsContrastEnhancement* getContrastEnhancement(unsigned int theBand);
 
     //
     // Accessor and mutator for the contrast enhancement algorithm

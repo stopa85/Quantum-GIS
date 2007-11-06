@@ -38,7 +38,13 @@ public:
     CLIP_TO_MINMAX
   };
     
-  /*! These are exactly the same as GDAL pixel data types */
+  /** These are exactly the same as GDAL pixel data types
+   ** This was added so that the python bindings could be built, 
+   ** which initially was a problem because GDALDataType was passed
+   ** around as an argument to numerous method, including the constructor.
+   **
+   ** It seems like there should be a better way to do this...
+   */
   typedef enum QgsRasterDataType {
     QGS_Unknown = 0,
     /*! Eight bit unsigned integer */           QGS_Byte = 1,
@@ -97,19 +103,30 @@ public:
   int stretch(double);
   
 private:
+  /** \brief Current contrast enhancement algorithm */
   CONTRAST_ENHANCEMENT_ALGORITHM mContrastEnhancementAlgorithm;
+  /** \brief Data type of the band */
   QgsRasterDataType mQgsRasterDataType;
+  /** \brief Maximum range of values for a given data type */
   double mQgsRasterDataTypeRange;
+  /** \brief Flag indicating if the lookup table needs to be regenerated */
   bool mEnhancementDirty;
 
+  /** \brief User defineable minimum value for the band, used for stretching */
   double mMinimumValue;
+  /** \brief user defineable maximum value for the band, used for stretching */
   double mMaximumValue;
+  /** \brief Minimum maximum range for the band, used for stretching */
   double mMinimumMaximumRange;
 
+  /** \brief Scalar so that values can be used as array indicies */
   double mLookupTableOffset;
+  /** \brief Pointer to the lookup table */
   int *mLookupTable;
 
+  /** \brief Method to generate a new lookup table */
   bool generateLookupTable();
+  /** \brief Method to calculate the actual stretched value(s) */
   int calculateContrastEnhancementValue(double);
 };
  

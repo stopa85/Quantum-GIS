@@ -1271,13 +1271,13 @@ void QgsRasterLayerProperties::apply()
 
   //apply colormap tab
   if(cboxColorMap->currentText() == tr("Custom Colormap"))
-    {
-      rasterLayer->setCustomClassificationEnabled(true);
-    }
+  {
+    rasterLayer->setCustomClassificationEnabled(true);
+  }
   else
-    {
-      rasterLayer->setCustomClassificationEnabled(false);
-    }
+  {
+    rasterLayer->setCustomClassificationEnabled(false);
+  }
       
   //iterate through mColormapTreeWidget and set colormap info of layer
   QList<QgsRasterLayer::ValueClassificationItem> items;

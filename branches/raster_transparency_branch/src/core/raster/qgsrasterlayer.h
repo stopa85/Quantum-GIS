@@ -362,9 +362,9 @@ public:
         return mStandardDeviations;
     };
     /** \brief Mutator to alter the number of standard deviations that should be plotted.  */
-    void setStdDevsToPlot(double the)
+    void setStdDevsToPlot(double theStdDevsToPlot)
     {
-        mStandardDeviations = the;
+        mStandardDeviations = theStdDevsToPlot;
     };
     /** \brief Get the number of bands in this layer  */
     const unsigned int getBandCount();
@@ -462,177 +462,68 @@ public:
     };
     
     
-    // Accessor and mutator for min max values 
-    // TODO: Add wrapper for bandnames
-    // TODO: remove all getMin*Color* functions
-    double getMinimumValue(int theBand) { if(0 < theBand && theBand <= getBandCount()) { return mContrastEnhancementList[theBand - 1].getMinimumValue(); } }
-    double getMinimumValue(QString theBand) { return getMinimumValue(getRasterBandNumber(theBand)); }
-    void setMinimumValue(int theBand, double theValue, bool theGenerateLookupTableFlag=true) { if(0 < theBand && theBand <= getBandCount()) { mContrastEnhancementList[theBand - 1].setMinimumValue(theValue, theGenerateLookupTableFlag); } }
-    void setMinimumValue(QString theBand, double theValue, bool theGenerateLookupTableFlag=true) { setMinimumValue(getRasterBandNumber(theBand),theValue, theGenerateLookupTableFlag); }
+    // Accessor and mutator for minimum maximum values 
+    //TODO: Move these out of the header file...
+    double getMinimumValue(unsigned int theBand) 
+    { 
+      if(0 < theBand && theBand <= getBandCount()) 
+      { 
+        return mContrastEnhancementList[theBand - 1].getMinimumValue(); 
+      }
+      
+      return 0.0;
+    }
     
-    double getMaximumValue(int theBand) { if(0 < theBand && theBand <= getBandCount()) { return mContrastEnhancementList[theBand - 1].getMaximumValue(); } }
-    double getMaximumValue(QString theBand) { return getMaximumValue(getRasterBandNumber(theBand)); }
-    void setMaximumValue(int theBand, double theValue, bool theGenerateLookupTableFlag=true) { if(0 < theBand && theBand <= getBandCount()) { mContrastEnhancementList[theBand - 1].setMaximumValue(theValue, theGenerateLookupTableFlag); } }
-    void setMaximumValue(QString theBand, double theValue, bool theGenerateLookupTableFlag=true) { setMaximumValue(getRasterBandNumber(theBand),theValue, theGenerateLookupTableFlag); }
+    double getMinimumValue(QString theBand)
+    { 
+      return getMinimumValue(getRasterBandNumber(theBand));
+    }
     
-    QgsContrastEnhancement* getContrastEnhancement(int theBand) { return &mContrastEnhancementList[theBand - 1]; }
-    // 
-    // Accessor and mutator for min and max red
-    // 
-    /** \brief Accessor for minimum clipping range for red.
-     *
-     * The clipping range can have different interpretations - it can either be used to perform
-     * a histogram stretch between the minimum and maximum clipping values, or to exclude data
-     * that falls outside the clipping range.*/
-    double getMinRed()
+    void setMinimumValue(unsigned int theBand, double theValue, bool theGenerateLookupTableFlag=true)
+    { 
+      if(0 < theBand && theBand <= getBandCount())
+      { 
+        mContrastEnhancementList[theBand - 1].setMinimumValue(theValue, theGenerateLookupTableFlag);
+      } 
+    }
+    
+    void setMinimumValue(QString theBand, double theValue, bool theGenerateLookupTableFlag=true)
+    { 
+      setMinimumValue(getRasterBandNumber(theBand),theValue, theGenerateLookupTableFlag);
+    }
+    
+    double getMaximumValue(unsigned int theBand)
     {
-        return mRedMinimum;
-    };
-    /** \brief Mutator for minimum clipping range for red.
-     *
-     * The clipping range can have different interpretations - it can either be used to perform
-     * a histogram stretch between the minimum and maximum clipping values, or to exclude data
-     * that falls outside the clipping range.*/
-    void setMinRed(double the)
-    {
-        mRedMinimum=the;
-    };
-    /** \brief Accessor for maximum clipping range for red.
-     *
-     * The clipping range can have different interpretations - it can either be used to perform
-     * a histogram stretch between the minimum and maximum clipping values, or to exclude data
-     * that falls outside the clipping range.*/
-    double getMaxRed()
-    {
-        return mRedMaximum;
-    };
-    /** \brief Mutator for maximum clipping range for red.
-     *
-     * The clipping range can have different interpretations - it can either be used to perform
-     * a histogram stretch between the minimum and maximum clipping values, or to exclude data
-     * that falls outside the clipping range.*/
-    void setMaxRed(double the)
-    {
-        mRedMaximum=the;
-    };
-    // 
-    // Accessor and mutator for min and max green
-    // 
-    /** \brief Accessor for minimum clipping range for green.
-     *
-     * The clipping range can have different interpretations - it can either be used to perform
-     * a histogram stretch between the minimum and maximum clipping values, or to exclude data
-     * that falls outside the clipping range.*/
-    double getMinGreen()
-    {
-        return mGreenMinimum;
-    };
-    /** \brief Mutator for minimum clipping range for green.
-     *
-     * The clipping range can have different interpretations - it can either be used to perform
-     * a histogram stretch between the minimum and maximum clipping values, or to exclude data
-     * that falls outside the clipping range.*/
-    void setMinGreen(double the)
-    {
-        mGreenMinimum=the;
-    };
-    /** \brief Accessor for maximum clipping range for green.
-     *
-     * The clipping range can have different interpretations - it can either be used to perform
-     * a histogram stretch between the minimum and maximum clipping values, or to exclude data
-     * that falls outside the clipping range.*/
-    double getMaxGreen()
-    {
-        return mGreenMaximum;
-    };
-    /** \brief Mutator for maximum clipping range for green.
-     *
-     * The clipping range can have different interpretations - it can either be used to perform
-     * a histogram stretch between the minimum and maximum clipping values, or to exclude data
-     * that falls outside the clipping range.*/
-    void setMaxGreen(double the)
-    {
-        mGreenMaximum=the;
-    };
-    // 
-    // Accessor and mutator for min and max blue
-    // 
-    /** \brief Accessor for minimum clipping range for blue.
-     *
-     * The clipping range can have different interpretations - it can either be used to perform
-     * a histogram stretch between the minimum and maximum clipping values, or to exclude data
-     * that falls outside the clipping range.*/
-    /** \brief   */
-    double getMinBlue()
-    {
-        return mBlueMinimum;
-    };
-    /** \brief Mutator for minimum clipping range for blue.
-     *
-     * The clipping range can have different interpretations - it can either be used to perform
-     * a histogram stretch between the minimum and maximum clipping values, or to exclude data
-     * that falls outside the clipping range.*/
-    void setMinBlue(double the)
-    {
-        mBlueMinimum=the;
-    };
-    /** \brief Accessor for maximum clipping range for blue.
-     *
-     * The clipping range can have different interpretations - it can either be used to perform
-     * a histogram stretch between the minimum and maximum clipping values, or to exclude data
-     * that falls outside the clipping range.*/
-    double getMaxBlue()
-    {
-        return mBlueMaximum;
-    };
-    /** \brief Mutator for maximum clipping range for blue.
-     *
-     * The clipping range can have different interpretations - it can either be used to perform
-     * a histogram stretch between the minimum and maximum clipping values, or to exclude data
-     * that falls outside the clipping range.*/
-    void setMaxBlue(double the)
-    {
-        mBlueMaximum=the;
-    };
-    // 
-    // Accessor and mutator for min and max gray
-    // 
-    /** \brief Accessor for minimum clipping range for gray.
-     *
-     * The clipping range can have different interpretations - it can either be used to perform
-     * a histogram stretch between the minimum and maximum clipping values, or to exclude data
-     * that falls outside the clipping range.*/
-    double getMinGray()
-    {
-        return mGrayMinimum;
-    };
-    /** \brief Mutator for minimum clipping range for gray.
-     *
-     * The clipping range can have different interpretations - it can either be used to perform
-     * a histogram stretch between the minimum and maximum clipping values, or to exclude data
-     * that falls outside the clipping range.*/
-    void setMinGray(double the)
-    {
-        mGrayMinimum=the;
-    };
-    /** \brief Accessor for maximum clipping range for gray.
-     *
-     * The clipping range can have different interpretations - it can either be used to perform
-     * a histogram stretch between the minimum and maximum clipping values, or to exclude data
-     * that falls outside the clipping range.*/
-    double getMaxGray()
-    {
-        return mGrayMaximum;
-    };
-    /** \brief Mutator for maximum clipping range for gray.
-     *
-     * The clipping range can have different interpretations - it can either be used to perform
-     * a histogram stretch between the minimum and maximum clipping values, or to exclude data
-     * that falls outside the clipping range.*/
-    void setMaxGray(double the)
-    {
-        mGrayMaximum=the;
-    };
+      if(0 < theBand && theBand <= getBandCount())
+      { 
+        return mContrastEnhancementList[theBand - 1].getMaximumValue();
+      } 
+      
+      return 0.0;
+    }
+    
+    double getMaximumValue(QString theBand)
+    { 
+      return getMaximumValue(getRasterBandNumber(theBand)); 
+    }
+    
+    void setMaximumValue(unsigned int theBand, double theValue, bool theGenerateLookupTableFlag=true)
+    { 
+      if(0 < theBand && theBand <= getBandCount()) 
+      { 
+        mContrastEnhancementList[theBand - 1].setMaximumValue(theValue, theGenerateLookupTableFlag); 
+      } 
+    }
+    
+    void setMaximumValue(QString theBand, double theValue, bool theGenerateLookupTableFlag=true) 
+    { 
+      setMaximumValue(getRasterBandNumber(theBand),theValue, theGenerateLookupTableFlag);
+    }
+    
+    QgsContrastEnhancement* getContrastEnhancement(unsigned int theBand)
+    { 
+      return &mContrastEnhancementList[theBand - 1]; 
+    }
 
     //
     // Accessor and mutator for the contrast enhancement algorithm
@@ -785,7 +676,11 @@ public:
       return false;
     } //todo
 
-    bool isSymbologyCompatible(const QgsMapLayer& other) const {return false;} //todo
+    bool isSymbologyCompatible(const QgsMapLayer& other) const 
+    {
+      other.type(); //just added to reduce the compiler warnings about unused variables, remove when actually implemented
+      return false;
+    } //todo
 
     /**
      * If an operation returns 0 (e.g. draw()), this function
