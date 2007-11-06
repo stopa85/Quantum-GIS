@@ -581,12 +581,21 @@ if(QgsRasterLayer::PALETTED_COLOR != rasterLayer->getDrawingStyle() &&
        QgsRasterLayer::PALETTED_SINGLE_BAND_PSEUDO_COLOR != rasterLayer->getDrawingStyle() &&
        QgsRasterLayer::PALETTED_MULTI_BAND_COLOR != rasterLayer->getDrawingStyle())
     {
-      leRedMin->setText(QString::number(rasterLayer->getMinimumValue(rasterLayer->getRedBandName())));
-      leRedMax->setText(QString::number(rasterLayer->getMaximumValue(rasterLayer->getRedBandName())));
-      leGreenMin->setText(QString::number(rasterLayer->getMinimumValue(rasterLayer->getGreenBandName())));
-      leGreenMax->setText(QString::number(rasterLayer->getMaximumValue(rasterLayer->getGreenBandName())));
-      leBlueMin->setText(QString::number(rasterLayer->getMinimumValue(rasterLayer->getBlueBandName())));
-      leBlueMax->setText(QString::number(rasterLayer->getMaximumValue(rasterLayer->getBlueBandName())));
+      if(rasterLayer->getRedBandName() != tr("Not Set"))
+      {
+        leRedMin->setText(QString::number(rasterLayer->getMinimumValue(rasterLayer->getRedBandName())));
+        leRedMax->setText(QString::number(rasterLayer->getMaximumValue(rasterLayer->getRedBandName())));
+      }
+      if(rasterLayer->getGreenBandName() != tr("Not Set"))
+      {
+        leGreenMin->setText(QString::number(rasterLayer->getMinimumValue(rasterLayer->getGreenBandName())));
+        leGreenMax->setText(QString::number(rasterLayer->getMaximumValue(rasterLayer->getGreenBandName())));
+      }
+      if(rasterLayer->getBlueBandName() != tr("Not Set"))
+      {
+        leBlueMin->setText(QString::number(rasterLayer->getMinimumValue(rasterLayer->getBlueBandName())));
+        leBlueMax->setText(QString::number(rasterLayer->getMaximumValue(rasterLayer->getBlueBandName())));
+      }
     }
   }
   else
@@ -609,8 +618,11 @@ if(QgsRasterLayer::PALETTED_COLOR != rasterLayer->getDrawingStyle() &&
        QgsRasterLayer::PALETTED_SINGLE_BAND_PSEUDO_COLOR != rasterLayer->getDrawingStyle() &&
        QgsRasterLayer::PALETTED_MULTI_BAND_COLOR != rasterLayer->getDrawingStyle())
     {
-      leGrayMin->setText(QString::number(rasterLayer->getMinimumValue(rasterLayer->getGrayBandName())));
-      leGrayMax->setText(QString::number(rasterLayer->getMaximumValue(rasterLayer->getGrayBandName())));
+      if(rasterLayer->getGrayBandName() != tr("Not Set"))
+      {
+        leGrayMin->setText(QString::number(rasterLayer->getMinimumValue(rasterLayer->getGrayBandName())));
+        leGrayMax->setText(QString::number(rasterLayer->getMaximumValue(rasterLayer->getGrayBandName())));
+      }
     }
 
   }
@@ -975,12 +987,21 @@ void QgsRasterLayerProperties::apply()
     //Set min max based on user defined values if all are set and stdDev is 0.0
     if(rbtnThreeBandMinMax->isEnabled() && rbtnThreeBandMinMax->isChecked() && validUserDefinedMinMax())
     {
-      rasterLayer->setMinimumValue(cboRed->currentText(), leRedMin->text().toDouble(), false);
-      rasterLayer->setMaximumValue(cboRed->currentText(), leRedMax->text().toDouble());
-      rasterLayer->setMinimumValue(cboGreen->currentText(), leGreenMin->text().toDouble(), false);
-      rasterLayer->setMaximumValue(cboGreen->currentText(), leGreenMax->text().toDouble());
-      rasterLayer->setMinimumValue(cboBlue->currentText(), leBlueMin->text().toDouble(), false);
-      rasterLayer->setMaximumValue(cboBlue->currentText(), leBlueMax->text().toDouble());
+      if(rasterLayer->getRedBandName() != tr("Not Set"))
+      {
+        rasterLayer->setMinimumValue(cboRed->currentText(), leRedMin->text().toDouble(), false);
+        rasterLayer->setMaximumValue(cboRed->currentText(), leRedMax->text().toDouble());
+      }
+      if(rasterLayer->getGreenBandName() != tr("Not Set"))
+      {
+        rasterLayer->setMinimumValue(cboGreen->currentText(), leGreenMin->text().toDouble(), false);
+        rasterLayer->setMaximumValue(cboGreen->currentText(), leGreenMax->text().toDouble());
+      }
+      if(rasterLayer->getBlueBandName() != tr("Not Set"))
+      {
+        rasterLayer->setMinimumValue(cboBlue->currentText(), leBlueMin->text().toDouble(), false);
+        rasterLayer->setMaximumValue(cboBlue->currentText(), leBlueMax->text().toDouble());
+      }
       rasterLayer->setStdDevsToPlot(0.0);
       rasterLayer->setUserDefinedColorMinMax(true);
     }
@@ -1000,8 +1021,11 @@ void QgsRasterLayerProperties::apply()
     //Set min max based on user defined values if all are set and stdDev is 0.0
     if(rbtnSingleBandMinMax->isEnabled() && rbtnSingleBandMinMax->isChecked() && validUserDefinedMinMax())
     {
-      rasterLayer->setMinimumValue(cboGray->currentText(), leGrayMin->text().toDouble(), false);
-      rasterLayer->setMaximumValue(cboGray->currentText(), leGrayMax->text().toDouble());
+      if(rasterLayer->getGrayBandName() != tr("Not Set"))
+      {
+        rasterLayer->setMinimumValue(cboGray->currentText(), leGrayMin->text().toDouble(), false);
+        rasterLayer->setMaximumValue(cboGray->currentText(), leGrayMax->text().toDouble());
+      }
       rasterLayer->setStdDevsToPlot(0.0);
       rasterLayer->setUserDefinedGrayMinMax(true);
     }
@@ -1244,14 +1268,23 @@ void QgsRasterLayerProperties::apply()
         sboxThreeBandStdDev->setValue(rasterLayer->getStdDevsToPlot());
       }
 
-     if(rbtnThreeBandMinMax->isEnabled())
+      if(rbtnThreeBandMinMax->isEnabled())
       {
-      leRedMin->setText(QString::number(rasterLayer->getMinimumValue(cboRed->currentText())));
-      leRedMax->setText(QString::number(rasterLayer->getMaximumValue(cboRed->currentText())));
-      leGreenMin->setText(QString::number(rasterLayer->getMinimumValue(cboGreen->currentText())));
-      leGreenMax->setText(QString::number(rasterLayer->getMaximumValue(cboGreen->currentText())));
-      leBlueMin->setText(QString::number(rasterLayer->getMinimumValue(cboBlue->currentText())));
-      leBlueMax->setText(QString::number(rasterLayer->getMaximumValue(cboBlue->currentText())));
+        if(rasterLayer->getRedBandName() != tr("Not Set"))
+        {
+          leRedMin->setText(QString::number(rasterLayer->getMinimumValue(rasterLayer->getRedBandName())));
+          leRedMax->setText(QString::number(rasterLayer->getMaximumValue(rasterLayer->getRedBandName())));
+        } 
+        if(rasterLayer->getGreenBandName() != tr("Not Set"))
+        {
+          leGreenMin->setText(QString::number(rasterLayer->getMinimumValue(rasterLayer->getGreenBandName())));
+          leGreenMax->setText(QString::number(rasterLayer->getMaximumValue(rasterLayer->getGreenBandName())));
+        }
+        if(rasterLayer->getBlueBandName() != tr("Not Set"))
+        {
+          leBlueMin->setText(QString::number(rasterLayer->getMinimumValue(rasterLayer->getBlueBandName())));
+          leBlueMax->setText(QString::number(rasterLayer->getMaximumValue(rasterLayer->getBlueBandName())));
+        }
       }
     }
     else
@@ -1263,8 +1296,11 @@ void QgsRasterLayerProperties::apply()
 
       if(rbtnSingleBandMinMax->isEnabled())
       {
-        leGrayMin->setText(QString::number(rasterLayer->getMinimumValue(cboGray->currentText())));
-        leGrayMax->setText(QString::number(rasterLayer->getMaximumValue(cboGray->currentText())));
+        if(rasterLayer->getGrayBandName() != tr("Not Set"))
+        {
+          leGrayMin->setText(QString::number(rasterLayer->getMinimumValue(rasterLayer->getGrayBandName())));
+          leGrayMax->setText(QString::number(rasterLayer->getMaximumValue(rasterLayer->getGrayBandName())));
+        }
       }
     }
   }

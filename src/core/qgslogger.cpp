@@ -47,7 +47,11 @@ void QgsLogger::debug(const QString& msg, int debuglevel, const char* file, cons
 	}
       else
 	{
+#ifndef _MSC_VER
 	  qDebug("%s: %d: (%s) %s", file, line, function, msg.toLocal8Bit().data());
+#else
+	  qDebug("%s(%d) : (%s) %s", file, line, function, msg.toLocal8Bit().data());
+#endif
 	}
     }
 }
@@ -80,7 +84,11 @@ void QgsLogger::debug(const QString& var, int val, int debuglevel, const char* f
 	}
       else
 	{
+#ifdef _MSC_VER
+	  qDebug("%s(%d): (%s), %s: %d", file, line, function, var.toLocal8Bit().data(), val);
+#else
 	  qDebug("%s: %d: (%s), %s: %d", file, line, function, var.toLocal8Bit().data(), val);
+#endif
 	}
     }
 }
@@ -113,7 +121,11 @@ void QgsLogger::debug(const QString& var, double val, int debuglevel, const char
 	}
       else
 	{
+#ifdef _MSC_VER
+	  qDebug("%s(%d): (%s), %s: %f", file, line, function, var.toLocal8Bit().data(), val);
+#else
 	  qDebug("%s: %d: (%s), %s: %f", file, line, function, var.toLocal8Bit().data(), val);
+#endif
 	}
     }
 }

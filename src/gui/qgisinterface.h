@@ -113,6 +113,9 @@ class GUI_EXPORT QgisInterface : public QObject
     /** Return a pointer to the toolbox (where additional pages can be inserted) */
     virtual QToolBox* getToolBox()=0;
 
+    /** refresh the legend of a layer */
+    virtual void refreshLegend(QgsMapLayer *l)=0;
+
   signals:
     /** Emited whenever current (selected) layer changes.
      *  The pointer to layer can be null if no layer is selected
@@ -120,5 +123,18 @@ class GUI_EXPORT QgisInterface : public QObject
     void currentLayerChanged ( QgsMapLayer * layer );
 
 };
+
+// FIXME: also in core/qgis.h
+#ifndef QGISEXTERN
+#ifdef WIN32
+#  define QGISEXTERN extern "C" __declspec( dllexport )
+#  ifdef _MSC_VER
+// do not warn about C bindings returing QString
+#    pragma warning(disable:4190)
+#  endif
+#else
+#  define QGISEXTERN extern "C"
+#endif
+#endif
 
 #endif //#ifndef QGISINTERFACE_H

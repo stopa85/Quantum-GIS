@@ -489,7 +489,11 @@ public:
     
     void setMinimumValue(QString theBand, double theValue, bool theGenerateLookupTableFlag=true)
     { 
-      setMinimumValue(getRasterBandNumber(theBand),theValue, theGenerateLookupTableFlag);
+      if(theBand != tr("Not Set"))
+      {
+        setMinimumValue(getRasterBandNumber(theBand),theValue, theGenerateLookupTableFlag);
+      }
+      
     }
     
     double getMaximumValue(unsigned int theBand)
@@ -504,7 +508,10 @@ public:
     
     double getMaximumValue(QString theBand)
     { 
-      return getMaximumValue(getRasterBandNumber(theBand)); 
+      if(theBand != tr("Not Set"))
+      {
+        return getMaximumValue(getRasterBandNumber(theBand)); 
+      }
     }
     
     void setMaximumValue(unsigned int theBand, double theValue, bool theGenerateLookupTableFlag=true)
@@ -517,7 +524,10 @@ public:
     
     void setMaximumValue(QString theBand, double theValue, bool theGenerateLookupTableFlag=true) 
     { 
-      setMaximumValue(getRasterBandNumber(theBand),theValue, theGenerateLookupTableFlag);
+      if(theBand != tr("Not Set"))
+      {
+        setMaximumValue(getRasterBandNumber(theBand),theValue, theGenerateLookupTableFlag);
+      }
     }
     
     QgsContrastEnhancement* getContrastEnhancement(unsigned int theBand)
