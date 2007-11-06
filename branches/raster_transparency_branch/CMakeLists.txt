@@ -1,5 +1,5 @@
 
-PROJECT(qgis0.9.0)
+PROJECT(qgis0.9.1)
 
 # TODO:
 # - install includes for libs
@@ -152,6 +152,9 @@ IF (WIN32)
     # Turn on defines for non standard maths stuff
     ADD_DEFINITIONS(-D_USE_MATH_DEFINES)
 
+    # Turn off deprecation warnings
+    ADD_DEFINITIONS(-D_CRT_SECURE_NO_WARNINGS)
+    ADD_DEFINITIONS(-D_CRT_NONSTDC_NO_WARNINGS)
     # Some file access stuff not defined in native win32
     # environment
     ADD_DEFINITIONS(-DF_OK=0)
@@ -279,7 +282,7 @@ SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README")
 SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
 SET(CPACK_PACKAGE_VERSION_MAJOR "0")
 SET(CPACK_PACKAGE_VERSION_MINOR "9")
-SET(CPACK_PACKAGE_VERSION_PATCH "0")
+SET(CPACK_PACKAGE_VERSION_PATCH "1")
 SET(CPACK_PACKAGE_INSTALL_DIRECTORY "CMake ${CMake_VERSION_MAJOR}.${CMake_VERSION_MINOR}")
 IF(WIN32 AND NOT UNIX)
   # There is a bug in NSI that does not handle full unix paths properly. Make
