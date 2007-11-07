@@ -200,7 +200,8 @@ QString QgsURIManager::getParamsString()
           break;
           }         
      case PostgreSQL:{
-          connParams="host=" + mServer
+          connParams=QString("type=PostgreSQL")
+                    +" host=" + mServer
                     +" dbname=" + mDatabase
                     +" port=" + mPort
                     +" user=" + mUser
