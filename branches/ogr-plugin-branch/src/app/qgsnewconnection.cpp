@@ -30,6 +30,10 @@ QgsNewConnection::QgsNewConnection(QWidget *parent, const QgsConnection* conn, Q
 : QDialog(parent, fl)
 {
   setupUi(this);
+  //set the type of connection
+  QString type=connManager.getSelectedType();
+  cmbType->setCurrentIndex(cmbType->findText(type)); 
+  
   if (conn!=NULL)
     {
       qDebug("QgsNewConnection::QgsNewConnection : host "+conn->host);
@@ -143,7 +147,8 @@ void QgsNewConnection::saveConnection()
   conn.save=chkStorePassword->isChecked();
   
   connManager.saveConnection(conn);
- 
+  connManager.setSelectedType(conn.type);
+  connManager.setSelected(conn.type,conn.name);                       
   accept();
 }
 
