@@ -41,7 +41,9 @@ class CORE_EXPORT QgsConnectionManager
         QgsDatabaseConnectionBase* getConnection();  
     	bool connect(QString type, QgsConnection conn);
         void setSelected(QString type, QString name);
+        void setSelectedType(QString type);
         QString getSelected(QString type);
+        QString getSelectedType();
     	QString getError();
 };
 
