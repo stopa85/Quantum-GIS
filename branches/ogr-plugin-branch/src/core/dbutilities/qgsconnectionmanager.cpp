@@ -248,6 +248,16 @@ void QgsConnectionManager::setSelected(QString type, QString name)
      }         
     settings.writeEntry(baseKey+"selected",name);  
  }
+ 
+void QgsConnectionManager::setSelectedType(QString type)
+ {  
+    QSettings settings;
+    QString baseKey;
+    
+    baseKey="/Database/SelectedConnectionType/";                                      
+    settings.writeEntry(baseKey+"selected",type);  
+ }
+  
 QString QgsConnectionManager::getSelected(QString type)
  {
     QSettings settings;
@@ -268,6 +278,16 @@ QString QgsConnectionManager::getSelected(QString type)
     else if (type=="OgrOracle")
      {
        result=settings.readEntry("/ogr/Oracle/connections/selected");                                         
-     }         
+     }    
+    qDebug("Selected connection from type "+type+" "+result);      
+    return result;
+ }
+
+QString QgsConnectionManager::getSelectedType()
+ {  
+    QSettings settings;
+    QString result;
+    
+    result=settings.readEntry("/Database/SelectedConnectionType/selected");                                      
     return result;
  }
