@@ -120,10 +120,10 @@ double QgsContrastEnhancement::getMinimumPossibleValue(QgsRasterDataType theData
       return std::numeric_limits<int>::min();
       break;
     case QGS_Float32:
-      return std::numeric_limits<float>::min();
+      return std::numeric_limits<float>::max() * -1.0;
       break;
     case QGS_Float64:
-    return std::numeric_limits<double>::min();
+    return std::numeric_limits<double>::max() * -1.0;
       break;
     case QGS_CInt16:
     return std::numeric_limits<short>::min();
@@ -132,14 +132,14 @@ double QgsContrastEnhancement::getMinimumPossibleValue(QgsRasterDataType theData
     return std::numeric_limits<int>::min();
       break;
     case QGS_CFloat32:
-    return std::numeric_limits<float>::min();
+    return std::numeric_limits<float>::max() * -1.0;
       break;
     case QGS_CFloat64:
-    return std::numeric_limits<double>::min();
+    return std::numeric_limits<double>::max() * -1.0;
       break;
   }
 
-  return std::numeric_limits<double>::min();
+  return std::numeric_limits<double>::max() * -1.0;
 }
 
 /*
