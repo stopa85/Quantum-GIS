@@ -45,7 +45,13 @@ QgsDbSourceSelect::QgsDbSourceSelect(QgisApp *app, Qt::WFlags fl)
   
   connect(cmbType,SIGNAL(currentIndexChanged(QString)),this,SLOT(populateConnectionList(QString)));
   btnAdd->setEnabled(false);
-  populateConnectionList("PostgreSQL");
+  //create connection manager
+  mConnMan=new QgsConnectionManager;
+  
+  //get last connection type used
+  QString conType=mConnMan->getSelectedType();
+  populateConnectionList(conType);
+  setConnectionListPosition();
   //loadConnections("PostgreSQL");
   // connect the double-click signal to the addSingleLayer slot in the parent
 
@@ -118,8 +124,7 @@ QgsDbSourceSelect::QgsDbSourceSelect(QgisApp *app, Qt::WFlags fl)
   lstTables->setHorizontalHeaderLabels(mColumnLabels);
   lstTables->verticalHeader()->hide();
   
-  //create connection manager
-  mConnMan=new QgsConnectionManager;
+  
 }
 /** Autoconnected SLOTS **/
 // Slot for adding a new connection
@@ -216,16 +221,14 @@ QgsDbSourceSelect::~QgsDbSourceSelect()
 }
 void QgsDbSourceSelect::populateConnectionList(QString type)
 {
-   
   qDebug("QgsDbSourceSelect::populateConnectionList : type "+type);   
   
   QStringList connlist=mConnMan->getConnections(type);
   cmbConnections->clear();
   //add the results to combo
   for (int i = 0; i < connlist.size(); ++i)
-          cmbConnections->addItem(connlist.at(i));
-          
-   
+     cmbConnections->addItem(connlist.at(i));
+  cmbType->setCurrentIndex(cmbType->findText(type)); 
 }
 void QgsDbSourceSelect::addNewConnection()
 {
@@ -466,12 +469,14 @@ void QgsDbSourceSelect::showHelp()
 void QgsDbSourceSelect::dbChanged()
 {
   // Remember which database was selected.
+  mConnMan->setSelectedType(cmbType->currentText());
   mConnMan->setSelected(cmbType->currentText(),cmbConnections->currentText());
+  qDebug("Saving last connection position");
 }
 
 void QgsDbSourceSelect::setConnectionListPosition()
 {
-
+  qDebug("Setting connection list position"); 
   QString toSelect = mConnMan->getSelected(cmbType->currentText());
   // Does toSelect exist in cmbConnections?
   bool set = false;
