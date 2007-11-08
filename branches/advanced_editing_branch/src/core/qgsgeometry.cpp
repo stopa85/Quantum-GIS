@@ -4539,7 +4539,16 @@ int QgsGeometry::splitPolygonGeometry(GEOS_GEOM::LineString* splitLine, QgsGeome
       return 3;
     }
 
-  GEOS_GEOM::Geometry* intersect_result = mGeos->intersection(splitLine);
+  GEOS_GEOM::Geometry* intersect_result = 0;
+  try
+    {
+      intersect_result = mGeos->intersection(splitLine);
+    }
+  catch(GEOS_UTIL::GEOSException* e)
+    {
+      return 4;
+    }
+
   if(!intersect_result)
     {
       *newGeometry = 0;
@@ -5124,7 +5133,7 @@ int QgsGeometry::splitQgsPolygon(const GEOS_GEOM::CoordinateSequence* splitLine,
 	      newPolyline.append(firstRing.at(i));
 	    }
 	  //add vertices from begin of polygon to beforeVertex1
-	  for(int i = 0; i <= beforeVertex1; ++i)
+	  for(int i = 1; i <= beforeVertex1; ++i)
 	    {
 	      newPolyline.append(firstRing.at(i));
 	    }
@@ -5165,7 +5174,7 @@ int QgsGeometry::splitQgsPolygon(const GEOS_GEOM::CoordinateSequence* splitLine,
 	}
       
       //add all the vertices from beforeVertex2 to AfterVertex1 (in inverse order)
-      if(afterVertex1 < beforeVertex2)
+      if(afterVertex1 <= beforeVertex2)
 	{
 	  for(int i = (beforeVertex2 - 1); i >= afterVertex1; --i)
 	    {
