@@ -2169,12 +2169,10 @@ void QgsRasterLayerProperties::on_rbtnSingleBand_toggled(bool b)
       tabBar->setTabEnabled(tabBar->indexOf(tabPageColormap), true);
     }
 
-    frameThreeBandLabels->setEnabled(false);
-    frameThreeBandBands->setEnabled(false);
-    frameThreeBandValues->setEnabled(false);
-    frameSingleBandLabels->setEnabled(true);
-    frameSingleBandBands->setEnabled(true);
-    frameSingleBandValues->setEnabled(true);
+    grpRgbBands->setEnabled(false);
+    grpRgbScaling->setEnabled(false);
+    grpGrayBand->setEnabled(true);
+    grpGrayScaling->setEnabled(true);
 
     if(rasterLayer->getUserDefinedGrayMinMax())
     {
@@ -2229,12 +2227,10 @@ void QgsRasterLayerProperties::on_rbtnThreeBand_toggled(bool b)
     cboxColorMap->setEnabled(false);
     tabBar->setTabEnabled(tabBar->indexOf(tabPageColormap), false);
 
-    frameThreeBandLabels->setEnabled(true);
-    frameThreeBandBands->setEnabled(true);
-    frameThreeBandValues->setEnabled(true);
-    frameSingleBandLabels->setEnabled(false);
-    frameSingleBandBands->setEnabled(false);
-    frameSingleBandValues->setEnabled(false);
+    grpRgbBands->setEnabled(true);
+    grpRgbScaling->setEnabled(true);
+    grpGrayBand->setEnabled(false);
+    grpGrayScaling->setEnabled(false);
 
     /*
      *This may seem strange at first, but the single bands need to be include here for switching 
