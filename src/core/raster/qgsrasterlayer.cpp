@@ -135,7 +135,7 @@ void QgsRasterLayer::buildSupportedRasterFileFilter(QString & theFileFiltersStri
 
   QStringList metadataTokens;   // essentially the metadata string delimited by '='
 
-  QString catchallFilter;       // for Any file(*.*), but also for those
+  QStringList catchallFilter;   // for Any file(*.*), but also for those
   // drivers with no specific file filter
 
   GDALDriver *jp2Driver = NULL; // first JPEG2000 driver found
@@ -268,7 +268,7 @@ void QgsRasterLayer::buildSupportedRasterFileFilter(QString & theFileFiltersStri
       }
       else
       {
-        catchallFilter += QString(myGdalDriver->GetDescription()) + " ";
+        catchallFilter << QString(myGdalDriver->GetDescription());
       }
     }
 
@@ -277,7 +277,7 @@ void QgsRasterLayer::buildSupportedRasterFileFilter(QString & theFileFiltersStri
   }                           // each loaded GDAL driver
 
   // can't forget the default case
-  theFileFiltersString += catchallFilter + tr("and all other files") + " (*)";
+  theFileFiltersString += catchallFilter.join(", ") + " " + tr("and all other files") + " (*)";
   QgsDebugMsg("Raster filter list built: " + theFileFiltersString);
 }                               // buildSupportedRasterFileFilter_()
 
@@ -1340,16 +1340,19 @@ void QgsRasterLayer::draw (QPainter * theQPainter,
         break;
       }
       //a layer containing 2 or more bands, mapped to the three RGBcolors.
-      //In the case of a multiband with only two bands, one band will have to be mapped to more than one color
+      //In the case of a multiband with only two bands, 
+      //one band will have to be mapped to more than one color
     case MULTI_BAND_COLOR:
-      if(mRedBandName == tr("Not Set") || mGreenBandName == tr("Not Set") || mBlueBandName == tr("Not Set"))
+      if(mRedBandName == tr("Not Set") || 
+         mGreenBandName == tr("Not Set") || 
+         mBlueBandName == tr("Not Set"))
       {
         break;
       }
       else
       {
         drawMultiBandColor(theQPainter, theRasterViewPort,
-          theQgsMapToPixel);
+            theQgsMapToPixel);
       }
       break;
 
