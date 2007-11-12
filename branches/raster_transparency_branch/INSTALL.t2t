@@ -55,9 +55,11 @@ place for describing build procefures. Please do not remove this notice.
 /!\ ***Note:*** This is a 'cut and paste' tutorial - in most cases you can
 simply copy the commands listed in codeblocks that look like this:
 
-``` somecommand to be pasted ```
+```
+somecommand to be pasted 
+```
 
-= General Build Note =
+= General Build Notes = 
 
 At version 0.8.1 QGIS no longer uses the autotools for building. QGIS, like a
 number of major projects (eg. KDE 4.0), now uses cmake for building from
@@ -66,6 +68,33 @@ of cmake and provides some clues to build QGIS.
 
 For complete information, see the wiki at:
    http://wiki.qgis.org/qgiswiki/Building_with_CMake
+
+== An overview of the dependencies required for building ==
+
+'''Required build deps:'''
+ * CMake >= 2.4.3
+ * Flex, Bison
+
+'''Required runtime deps:'''
+ * Qt >= 4.2.0
+ * Proj >= ? (known to work with 4.4.x)
+ * GEOS >= 2.2 (3.0 is supported, maybe 2.1.x works too)
+ * Sqlite3 >= ? (probably 3.0.0)
+ * GDAL/OGR >= ? (1.2.x should work)
+
+'''Optional dependencies:'''
+ * for GRASS plugin - GRASS >= 6.0.0
+ * for georeferencer - GSL >= ? (works with 1.8)
+ * for postgis support and SPIT plugin - PostgreSQL >= ?
+ * for gps plugin - expat >= ? (1.95 is OK)
+ * for mapserver export and PyQGIS - Python >= ? (probably 2.3)
+ * for PyQGIS - SIP >= 4.5, PyQt >= 4.1
+
+'''Recommended runtime deps:'''
+ * for gps plugin - gpsbabel
+
+
+
 
 = Building under windows using msys =
 
@@ -76,18 +105,13 @@ zip archive that contains just about all dependencies.
 
 Get this: 
 
-http://qgis.org/uploadfiles/msys/msys.tar.gz
+http://qgis.org/uploadfiles/msys/msys.zip
 
 and unpack to c:\msys
 
 
-/!\ The file above is compressed as gzipped tarball - you can get a free
-windows application for creating and decompressing files here:
-
-http://www.7-zip.org/
-
 If you wish to prepare your msys environment yourself rather than using 
-our pre-made one, detailed instructions are provdided elsewhere in this
+our pre-made one, detailed instructions are provided elsewhere in this
 document.
 
 == Qt4.3 ==
@@ -709,9 +733,9 @@ above commands to select the Qt4 version of the relevant applications.
 == Install additional software dependencies required by QGIS ==
 
 ``` 
-sudo apt-get install gdal-bin libgdal1-dev libgeos-dev proj libtool \
+sudo apt-get install gdal-bin libgdal1-dev libgeos-dev proj \
 libgdal-doc libhdf4g-dev libhdf4g-run python-dev \
-swig libgsl0-dev g++ libjasper-1.701-dev libtiff4-dev subversion gsl-bin \
+libgsl0-dev g++ libjasper-1.701-dev libtiff4-dev subversion \
 libsqlite3-dev sqlite3 ccache make libpq-dev flex bison cmake txt2tags \
 python-qt4 python-qt4-dev python-sip4 sip4 python-sip4-dev
 ```
@@ -1104,6 +1128,11 @@ of space and it's not necessary at all.
 
 = Building with MS Visual Studio =
 
+
+/!\ This section describes a process where you build all dependencies yourself. See the section
+after this for a simpler procedure where we have all the dependencies you need pre-packaged
+and we focus just on getting Visual Studio Express set up and building QGIS.
+
 Note that this does not currently include GRASS or Python plugins.
 
 == Setup Visual Studio ==
@@ -1268,6 +1297,45 @@ Build the ALL_BUILD project. This will build all the QGIS binaries along with al
  
  You will also either need to add all the dependency dlls to the QGIS install directory or add their respective directories to your PATH.
  
+= Building under Windows using MSVC Express =
+
+/!\ Note: Building under MSVC is still a work in progress. In particular the
+following dont work yet: python, grass, postgis connections.
+
+/!\ This section of the document is in draft form and is not ready to be used
+yet.
+
+== System preparation ==
+
+I started with a clean XP install with Service Pack 2 and all patches applied.
+I have already compiled all the dependencies you need for gdal, expat etc,
+so this tutorial wont cover compiling those from source too. Since compiling 
+these dependencies was a somewhat painful task I hope my precompiled libs 
+will be adequate. If not I suggest you consult the individual projects for
+specific build documentation and support. Lets go over the process in a nutshell 
+before we begin:
+
+ * Install XP (I used a Parallels virtual machine)
+ * Install Visual Studio Express 2005 sp1
+ * Install the Microsoft Platform SDK
+ * Install command line subversion client
+ * Install library dependencies bundle
+ * Install Qt 4.3.2
+ * Check out QGIS sources
+ * Compile QGIS
+ * Create setup.exe installer for QGIS
+
+
+== Install Visual Studio Express 2005 ==
+
+Get this Visual Studio Express 2005 sp1 for C++ here:
+
+
+http://msdn2.microsoft.com/en-us/express/aa975050.aspx
+
+The above page is confusing as it has lots of other stuff on it - just scroll 
+down until you find a link labelled "Download Visual C++ 2005 Express SP1 »"
+
 
 = Authors and Acknowledgments =
 

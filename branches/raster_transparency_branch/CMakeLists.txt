@@ -1,5 +1,5 @@
 
-PROJECT(qgis0.9.1)
+PROJECT(qgis0.9.1-raster)
 
 # TODO:
 # - install includes for libs
@@ -139,13 +139,19 @@ ENDIF (CMAKE_BUILD_TYPE MATCHES Debug)
 # platform specific stuff
 
 IF (WIN32)
-
-  SET (QGIS_BIN_DIR    ${CMAKE_INSTALL_PREFIX})
-  SET (QGIS_DATA_DIR   ${CMAKE_INSTALL_PREFIX})
-  SET (QGIS_PLUGIN_DIR ${CMAKE_INSTALL_PREFIX}/plugins)
-  SET (QGIS_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/include)
   SET (QGIS_SOURCE_DIR ${CMAKE_SOURCE_DIR})
-  IF(MSVC)
+  IF(NOT MSVC)
+    SET (QGIS_BIN_DIR    ${CMAKE_INSTALL_PREFIX})
+    SET (QGIS_DATA_DIR   ${CMAKE_INSTALL_PREFIX})
+    SET (QGIS_PLUGIN_DIR ${CMAKE_INSTALL_PREFIX}/plugins)
+    SET (QGIS_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/include)
+  ELSE (NOT MSVC)
+    # FIXME:
+    # . just deals with leading / where these macros are used.
+    SET (QGIS_BIN_DIR    	.)
+    SET (QGIS_DATA_DIR   	.)
+    SET (QGIS_PLUGIN_DIR	plugins)
+    SET (QGIS_INCLUDE_DIR	include)
     #tell msvc compiler to use main instead of winmain as the
     #application entry point
     SET(QT_USE_QTMAIN TRUE) 
@@ -161,8 +167,12 @@ IF (WIN32)
     ADD_DEFINITIONS(-DX_OK=1)
     ADD_DEFINITIONS(-DW_OK=2)
     ADD_DEFINITIONS(-DR_OK=4)
-  ENDIF(MSVC)
+    
+    # ADD_DEFINITIONS(-DQGISDEBUG)
 
+    FILE(GLOB files "${CMAKE_SOURCE_DIR}/win_build/vcdeps/*.*")
+    INSTALL(FILES ${files} DESTINATION .)
+  ENDIF(NOT MSVC)
 ELSE (WIN32)
 
   IF (APPLE)
@@ -283,17 +293,19 @@ SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
 SET(CPACK_PACKAGE_VERSION_MAJOR "0")
 SET(CPACK_PACKAGE_VERSION_MINOR "9")
 SET(CPACK_PACKAGE_VERSION_PATCH "1")
-SET(CPACK_PACKAGE_INSTALL_DIRECTORY "CMake ${CMake_VERSION_MAJOR}.${CMake_VERSION_MINOR}")
+SET(CPACK_PACKAGE_INSTALL_DIRECTORY "Quantum GIS ${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}")
 IF(WIN32 AND NOT UNIX)
   # There is a bug in NSI that does not handle full unix paths properly. Make
   # sure there is at least one set of four (4) backlasshes.
-  SET(CPACK_PACKAGE_ICON "${CMake_SOURCE_DIR}/win_build\\\\sidebar.bmp")
+  SET(CPACK_PACKAGE_ICON "${CMAKE_SOURCE_DIR}/win_build\\\\sidebar.bmp")
   SET(CPACK_NSIS_INSTALLED_ICON_NAME "\\\\qgis.exe")
   SET(CPACK_NSIS_DISPLAY_NAME "${CPACK_PACKAGE_INSTALL_DIRECTORY} Quantum GIS")
   SET(CPACK_NSIS_HELP_LINK "http:\\\\\\\\qgis.org")
   SET(CPACK_NSIS_URL_INFO_ABOUT "http:\\\\\\\\qgis.org")
   SET(CPACK_NSIS_CONTACT "tim@linfiniti.com")
   SET(CPACK_NSIS_MODIFY_PATH ON)
+
+#  SET(CPACK_NSIS_EXTRA_INSTALL_COMMANDS "  !include \\\"${CMAKE_SOURCE_DIR}\\\\win_build\\\\extra.nsh\\\"")
 ELSE(WIN32 AND NOT UNIX)
   #SET(CPACK_STRIP_FILES "Quantum GIS")
   #SET(CPACK_SOURCE_STRIP_FILES "")
