@@ -337,7 +337,12 @@ public:
       mNoDataValue = -9999;
       if(mGdalDataset != NULL && mGdalDataset->GetRasterCount() > 0)
       {
-        mNoDataValue = mGdalDataset->GetRasterBand(1)->GetNoDataValue();
+        int isValid = false;
+        double myValue = mGdalDataset->GetRasterBand(1)->GetNoDataValue(&isValid);
+        if(isValid)
+        {
+          mNoDataValue = myValue;
+        }
       }
     }
     //
@@ -512,6 +517,8 @@ public:
       {
         return getMaximumValue(getRasterBandNumber(theBand)); 
       }
+      
+      return 0.0;
     }
     
     void setMaximumValue(unsigned int theBand, double theValue, bool theGenerateLookupTableFlag=true)

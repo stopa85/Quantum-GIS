@@ -500,7 +500,13 @@ bool QgsRasterLayer::readFile( QString const & fileName )
   //
   // Determin the nodatavalue
   //
-  mNoDataValue = mGdalDataset->GetRasterBand(1)->GetNoDataValue();
+  mNoDataValue = -9999; //Standard default?
+  int isValid = false;
+  double myNoDataValue = mGdalDataset->GetRasterBand(1)->GetNoDataValue(&isValid);
+  if(isValid)
+  {
+    mNoDataValue = myNoDataValue;
+  }
   TransparentThreeValuePixel myTransparentThreeValuePixel;
   myTransparentThreeValuePixel.red = mNoDataValue;
   myTransparentThreeValuePixel.green = mNoDataValue;
