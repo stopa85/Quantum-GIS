@@ -39,6 +39,8 @@ QgsNewConnection::QgsNewConnection(QWidget *parent, const QgsConnection* conn, Q
       qDebug("QgsNewConnection::QgsNewConnection : host "+conn->host);
       txtHost->setText(conn->host);
       txtDatabase->setText(conn->database);
+      if (conn->save)
+        txtPassword->setText(conn->password);
       /*QString port = settings.readEntry(key + "/port");
       if(port.length() ==0){
       	port = "5432";
@@ -55,7 +57,10 @@ QgsNewConnection::QgsNewConnection(QWidget *parent, const QgsConnection* conn, Q
       else   
          cb_geometryColumnsOnly->setCheckState(Qt::Unchecked);
             
-
+      if (conn->save)
+         chkStorePassword->setCheckState(Qt::Checked);
+      else   
+         chkStorePassword->setCheckState(Qt::Unchecked);
       txtName->setText(conn->name);
       qDebug("QgsNewConnection::QgsNewConnection : type "+conn->type);
       cmbType->setCurrentText(conn->type);
@@ -139,7 +144,10 @@ void QgsNewConnection::saveConnection()
   conn.database=txtDatabase->text();
   conn.port=txtPort->text();
   conn.user=txtUsername->text();
-  conn.password=txtPassword->text();
+  if (chkStorePassword->isChecked())
+    conn.password=txtPassword->text();
+  else
+    conn.password="";  
   
   conn.geometryColumnsOnly=cb_geometryColumnsOnly->isChecked();
   conn.publicOnly=cb_publicSchemaOnly->isChecked();
