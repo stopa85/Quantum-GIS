@@ -162,6 +162,11 @@ void QgsDbSourceSelect::on_btnHelp_clicked()
 }
 /** End Autoconnected SLOTS **/
 
+//remember what type is selected
+void QgsDbSourceSelect::on_cmbType_activated(int)
+{
+  dbChanged();
+}
 // Remember which database is selected
 void QgsDbSourceSelect::on_cmbConnections_activated(int)
 {
