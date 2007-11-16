@@ -1708,7 +1708,7 @@ int QgsVectorLayer::splitFeatures(const QList<QgsPoint>& splitLine)
   return returnCode;
 }
 
-int QgsVectorLayer::removePolygonIntersections(QgsGeometry* geom, bool topological)
+int QgsVectorLayer::removePolygonIntersections(QgsGeometry* geom)
 {
   int returnValue = 0;
 
@@ -1727,7 +1727,6 @@ int QgsVectorLayer::removePolygonIntersections(QgsGeometry* geom, bool topologic
   
   QList<QgsFeature>::iterator it = featureList.begin();
   QgsGeometry* currentGeom;
-  QMultiMap<int, QgsPoint> topologicalPoints;
 
   for(; it != featureList.end(); ++it)
     {
@@ -1735,20 +1734,9 @@ int QgsVectorLayer::removePolygonIntersections(QgsGeometry* geom, bool topologic
       currentGeom = it->geometry();
       if(currentGeom)
 	{
-	  if(geom->difference(it->geometry(), topologicalPoints) != 0)
+	  if(geom->difference(it->geometry()) != 0)
 	    {
 	      returnValue = 2;
-	    }
-	  if(topological && topologicalPoints.size() > 0)
-	    {
-	      //insert topological points into the feature (must be in reverse order!)
-	      QMapIterator<int, QgsPoint>points_it(topologicalPoints);
-	      points_it.toBack();
-	      while(points_it.hasPrevious())
-		{
-		  points_it.previous();
-		  insertVertexBefore(points_it.value().x(), points_it.value().y(), it->featureId(), points_it.key());
-		}
 	    }
 	}
     }
@@ -2551,78 +2539,22 @@ bool QgsVectorLayer::isSymbologyCompatible(const QgsMapLayer& other) const
 
 bool QgsVectorLayer::snapPoint(QgsPoint& point, double tolerance)
 {
-  if(tolerance<=0||!mDataProvider)
-  {
-    return false;
-  }
-  double mindist=tolerance*tolerance;//current minimum distance
-  double mindistx=point.x();
-  double mindisty=point.y();
-  QgsFeature fet;
-  QgsPoint vertexFeature;//the closest vertex of a feature
-  int vindex;
-  double minsquaredist;
-  int rb1, rb2; //rubberband indexes (not used in this method)
-
-  QgsRect selectrect(point.x()-tolerance,point.y()-tolerance,point.x()+tolerance,point.y()+tolerance);
-
-  mDataProvider->select(QgsAttributeList(), selectrect);
-
-  //go to through the features reported by the spatial filter of the provider
-  while (mDataProvider->getNextFeature(fet))
-  {
-    // if geometry has been changed, use the new geometry
-    if(mChangedGeometries.contains(fet.featureId()))
+  QMultiMap<double, QgsSnappingResult> snapResults;
+  int result = snapWithContext(point, tolerance, snapResults, QgsSnapper::SNAP_TO_VERTEX);
+  
+  if(result != 0)
     {
-      vertexFeature = mChangedGeometries[fet.featureId()].closestVertex(point, vindex, rb1, rb2, minsquaredist);
+      return false;
     }
-    else
-    {
-      vertexFeature = fet.geometry()->closestVertex(point, vindex, rb1, rb2, minsquaredist);
-    }
-    if(minsquaredist<mindist)
-    {
-      mindistx=vertexFeature.x();
-      mindisty=vertexFeature.y();
-      mindist=minsquaredist;
-    }
-  }
 
-  //also go through the not commited features
-  for(QgsFeatureList::iterator iter = mAddedFeatures.begin(); iter!=mAddedFeatures.end(); ++iter)
-  {
-    if (mChangedGeometries.contains((*iter).featureId()))
+  if(snapResults.size() < 1)
     {
-      // use the changed geometry
-      vertexFeature = mChangedGeometries[(*iter).featureId()].closestVertex(point, vindex, rb1, rb2, minsquaredist);
+      return false;
     }
-    else
-    {
-      vertexFeature = (*iter).geometry()->closestVertex(point, vindex, rb1, rb2, minsquaredist);
-    }
-    if(minsquaredist<mindist)
-    {
-      mindistx=vertexFeature.x();
-      mindisty=vertexFeature.y();
-      mindist=minsquaredist;
-    }
-  }
 
-  //and also go through the changed geometries, because the spatial filter of the provider did not consider feature changes
-  for(QgsGeometryMap::iterator iter = mChangedGeometries.begin(); iter != mChangedGeometries.end(); ++iter)
-  {
-    vertexFeature = iter.value().closestVertex(point, vindex, rb1, rb2, minsquaredist);
-    if(minsquaredist<mindist)
-    {
-      mindistx=vertexFeature.x();
-      mindisty=vertexFeature.y();
-      mindist=minsquaredist;
-    }
-  }
-
-  point.setX(mindistx);
-  point.setY(mindisty);
-
+  QMultiMap<double, QgsSnappingResult>::const_iterator snap_it = snapResults.constBegin();
+  point.setX(snap_it.value().snappedVertex.x());
+  point.setY(snap_it.value().snappedVertex.y());
   return true;
 }
 
@@ -2687,6 +2619,7 @@ void QgsVectorLayer::snapToGeometry(const QgsPoint& startPoint, int featureId, Q
       if(vectorType() != QGis::Point) //cannot snap to segment for points/multipoints
 	{
 	  sqrDistSegmentSnap = geom->closestSegmentWithContext(startPoint, snappedPoint, afterVertex);
+
 	  if(sqrDistSegmentSnap < sqrSnappingTolerance)
 	    {
 	      snappingResultSegment.snappedVertex = snappedPoint;

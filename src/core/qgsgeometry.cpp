@@ -2865,7 +2865,7 @@ int QgsGeometry::splitGeometry(const QList<QgsPoint>& splitLine, QgsGeometry** n
   return returnCode;
 }
 
-int QgsGeometry::difference(QgsGeometry* other, QMultiMap<int, QgsPoint>& topologicalPoints)
+int QgsGeometry::difference(QgsGeometry* other)
 {
   //make sure geos geometry is up to date
   if(!mGeos || mDirtyGeos)
@@ -2899,60 +2899,11 @@ int QgsGeometry::difference(QgsGeometry* other, QMultiMap<int, QgsPoint>& topolo
       return 4;
     }
 
-  topologicalPoints.clear();
-
   //make geometry::difference
   try
     {
       if(mGeos->intersects(other->mGeos))
 	{
-	  //find out the topological points for the other geometry
-	  //get exterior ring
-	  GEOS_GEOM::Geometry* thisBoundary = mGeos->getBoundary();
-	  GEOS_GEOM::Geometry* otherBoundary = other->mGeos->getBoundary();
-	  
-	  if(thisBoundary && otherBoundary)
-	    {
-	      GEOS_GEOM::Geometry* intersectGeom = thisBoundary->intersection(otherBoundary);
-	      if(intersectGeom)
-		{
-		  //intersection is usually multipoint
-		  GEOS_GEOM::GeometryCollection* mlsGeom = dynamic_cast<GEOS_GEOM::GeometryCollection*>(intersectGeom);
-		  if(mlsGeom)
-		    {
-		      const GEOS_GEOM::Geometry* currentGeometry = 0;
-		      
-		      //iterate through every linestring and try to insert start- and endpoint into other geometry
-		      //for some strange reason, the invers iteration works much better in case the polygon intersection is on the same segment
-		      for(int i = mlsGeom->getNumGeometries() - 1; i >=0; --i)
-			{
-			  currentGeometry = mlsGeom->getGeometryN(i);
-			  qWarning("type of current geometry");
-			  qWarning(currentGeometry->getGeometryType().c_str());
-			  if(currentGeometry)
-			    {
-			      //try to insert point
-			      GEOS_GEOM::CoordinateSequence* coords = currentGeometry->getCoordinates();
-			      if(coords)
-				{
-				  QgsPoint startPoint(coords->getAt(0).x, coords->getAt(0).y); 
-				  //Is vertex already there?
-				  int vertexNr;
-				  if(!vertexContainedInGeometry(startPoint, vertexNr))
-				    {
-				      QgsPoint minDistPoint;
-				      int beforeVertex;
-				      other->closestSegmentWithContext(startPoint, minDistPoint, beforeVertex);
-				      topologicalPoints.insert(beforeVertex, startPoint);
-				    }
-				}
-			      delete coords;
-			    }
-			}
-		    }
-		}
-	      
-	    }
 	  mGeos = mGeos->difference(other->mGeos);
 	}
       else
@@ -4264,6 +4215,32 @@ double QgsGeometry::distanceSquaredPointToSegment(const QgsPoint& point,
     QgsPoint& minDistPoint)
 {
 
+  double nx, ny; //normal vector
+
+  nx = *y2 - *y1;
+  ny = -(*x2 - *x1);
+
+  double t;
+  t = (point.x() * ny - point.y() * nx - *x1 * ny + *y1 * nx) / ((*x2 - *x1) * ny - (*y2 - *y1) * nx);
+
+  if (t < 0.0)
+    { 
+      minDistPoint.setX(*x1); 
+      minDistPoint.setY(*y1);
+    }
+  else if (t > 1.0)
+    {
+      minDistPoint.setX(*x2); 
+      minDistPoint.setY(*y2);
+    }
+  else
+    { 
+      minDistPoint.setX(*x1 + t * ( *x2 - *x1 ));
+      minDistPoint.setY(*y1 + t * ( *y2 - *y1 )); 
+    }
+
+  return (minDistPoint.sqrDist(point));
+#if 0
   double d;
 
   // Proportion along segment (0 to 1) the perpendicular of the point falls upon
@@ -4326,7 +4303,7 @@ double QgsGeometry::distanceSquaredPointToSegment(const QgsPoint& point,
       ( xn - point.x() ) * ( xn - point.x() ) + 
       ( yn - point.y() ) * ( yn - point.y() )
       );
-
+#endif //0
 }
 
 bool QgsGeometry::convertToMultiType()
