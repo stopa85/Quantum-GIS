@@ -53,12 +53,6 @@
 #include "plugingui.h"
 
 
-#ifdef WIN32
-#define QGISEXTERN extern "C" __declspec( dllexport )
-#else
-#define QGISEXTERN extern "C"
-#endif
-
 static const char * const sIdent = "$Id$";
 static const QString sName = QObject::tr("Georeferencer");
 static const QString sDescription = QObject::tr("Adding projection info to rasters");
@@ -78,7 +72,7 @@ static const QgisPlugin::PLUGINTYPE sPluginType = QgisPlugin::UI;
  * @param theQGisInterface - Pointer to the QGIS interface object
  */
 QgsGeorefPlugin::QgsGeorefPlugin(QgisInterface * theQgisInterface):
-                 QgisPlugin(sName,sDescription,sPluginVersion,sPluginType),
+                 QgisPlugin(sName,sDescription,sPluginVersion,sPluginType), 
                  mQGisIface(theQgisInterface)
 {
 }
@@ -113,8 +107,9 @@ void QgsGeorefPlugin::help()
 // Slot called when the buffer menu item is activated
 void QgsGeorefPlugin::run()
 {
-  QgsGeorefPluginGui *myPluginGui=new QgsGeorefPluginGui(mQGisIface, mQGisIface->getMainWindow());
+  QgsGeorefPluginGui *myPluginGui=new QgsGeorefPluginGui(mQGisIface, QgsGeorefPluginGui::findMainWindow());
   myPluginGui->show();
+  myPluginGui->setFocus();
 }
 
 // Unload the plugin by cleaning up the GUI

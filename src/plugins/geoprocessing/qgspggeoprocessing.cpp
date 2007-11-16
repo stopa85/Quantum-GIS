@@ -42,7 +42,7 @@ email                : sherman at mrcc.com
 
 static const char * const ident_ = "$Id$";
 
-static const QString name_ = QObject::tr("PostgresSQL Geoprocessing");
+static const QString name_ = QObject::tr("PostgreSQL Geoprocessing");
 static const QString description_ = QObject::tr("Geoprocessing functions for working with PostgreSQL/PostGIS layers");
 static const QString version_ = QObject::tr("Version 0.1");
 static const QgisPlugin::PLUGINTYPE type_ = QgisPlugin::UI;
@@ -440,37 +440,37 @@ void QgsPgGeoprocessing::unload()
  * of the plugin class
  */
 // Class factory to return a new instance of the plugin class
-extern "C" QgisPlugin * classFactory(QgisInterface * qI)
+QGISEXTERN QgisPlugin * classFactory(QgisInterface * qI)
 {
   return new QgsPgGeoprocessing(qI);
 }
 
 // Return the name of the plugin
-extern "C" QString name()
+QGISEXTERN QString name()
 {
     return name_;
 }
 
 // Return the description
-extern "C" QString description()
+QGISEXTERN QString description()
 {
     return description_;
 }
 
 // Return the type (either UI or MapLayer plugin)
-extern "C" int type()
+QGISEXTERN int type()
 {
     return type_;
 }
 
 // Return the version number for the plugin
-extern "C" QString version()
+QGISEXTERN QString version()
 {
   return version_;
 }
 
 // Delete ourself
-extern "C" void unload(QgisPlugin * p)
+QGISEXTERN void unload(QgisPlugin * p)
 {
   delete p;
 }

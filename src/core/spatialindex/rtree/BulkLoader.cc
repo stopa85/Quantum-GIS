@@ -30,6 +30,14 @@
 
 #include "BulkLoader.h"
 
+#ifdef _MSC_VER
+// tell MSVC not to complain about exception declarations
+#pragma warning(disable:4290)
+#define UNUSED(symbol) symbol
+#else
+#define UNUSED(symbol)
+#endif
+
 using namespace SpatialIndex::RTree;
 
 BulkLoadSource::BulkLoadSource(
@@ -179,6 +187,7 @@ IData* BulkLoader::TmpFile::getNext()
 	}
 	catch (Tools::EndOfStreamException& e)
 	{
+		UNUSED(e);
 		m_pNext = 0;
 	}
 	catch (...)
@@ -220,11 +229,17 @@ void BulkLoader::TmpFile::rewind()
 	}
 	catch (Tools::EndOfStreamException& e)
 	{
+		UNUSED(e);
 	}
 }
 
 void BulkLoader::bulkLoadUsingSTR(
+#ifdef _MSC_VER
+	// MSVC seems to find RTree* pTree ambiguous
+	SpatialIndex::RTree::RTree* pTree,
+#else
 	RTree* pTree,
+#endif//_MSC_VER
 	IDataStream& stream,
 	unsigned long bindex,
 	unsigned long bleaf,
@@ -277,7 +292,12 @@ void BulkLoader::bulkLoadUsingSTR(
 }
 
 void BulkLoader::createLevel(
+#ifdef _MSC_VER
+	// MSVC seems to find RTree* pTree ambiguous
+	SpatialIndex::RTree::RTree* pTree,
+#else
 	RTree* pTree,
+#endif//_MSC_VER
 	Tools::IObjectStream& stream,
 	unsigned long dimension,
 	unsigned long k,
@@ -340,7 +360,12 @@ void BulkLoader::createLevel(
 	}
 }
 
+#ifdef _MSC_VER
+// MSVC seems to find RTree* pTree ambiguous
+Node* BulkLoader::createNode(SpatialIndex::RTree::RTree* pTree, std::vector<Tools::SmartPointer<IData> >& e, unsigned long level)
+#else
 Node* BulkLoader::createNode(RTree* pTree, std::vector<Tools::SmartPointer<IData> >& e, unsigned long level)
+#endif//_MSC_VER
 {
 	Node* n;
 

@@ -24,7 +24,7 @@
 #include <QFont>
 #include <QMessageBox>
 #include <QPixmap>
-#include <QPixmap>
+#include <QLocale>
 #include <QSettings>
 #include <QSplashScreen>
 #include <QString>
@@ -42,8 +42,17 @@
 #ifdef WIN32
  // Open files in binary mode
  #include <fcntl.h> /*  _O_BINARY */
+ #ifdef MSVC
  #undef _fmode
- int _fmode = _O_BINARY;
+  int _fmode = _O_BINARY;
+ #endif
+ #ifndef _MSC_VER
+  // Only do this if we are not building on windows with msvc.
+  // Recommended method for doing this with msvc is with a call to _set_fmode
+  // which is the first thing we do in main().
+  #undef _fmode
+  int _fmode = _O_BINARY;
+ #endif//_MSC_VER
 #else
  #include <getopt.h>
 #endif
@@ -216,9 +225,14 @@ void myMessageOutput( QtMsgType type, const char *msg )
 
 int main(int argc, char *argv[])
 {
+ #ifdef _MSC_VER
+    _set_fmode(_O_BINARY);
+ #endif 
 
+#ifndef _MSC_VER
   // Set up the custom qWarning/qDebug custom handler
   qInstallMsgHandler( myMessageOutput );
+#endif
 
   /////////////////////////////////////////////////////////////////
   // Command line options 'behaviour' flag setup
@@ -244,7 +258,7 @@ int main(int argc, char *argv[])
 
   // This behaviour will allow you to force the use of a translation file
   // which is useful for testing
-  QString myTranslationCode="";
+  QString myTranslationCode;
 
 #ifndef WIN32
   if ( !bundleclicked(argc, argv) )
@@ -381,7 +395,7 @@ int main(int argc, char *argv[])
 #endif
 
 #ifdef Q_WS_WIN
-  //for windows lets use plastique syle!
+  //for windows lets use plastique style!
   QApplication::setStyle(new QPlastiqueStyle);
 #endif
 
@@ -404,15 +418,49 @@ int main(int argc, char *argv[])
   // a.setFont(QFont("helvetica", 11));
 
   QString i18nPath = QgsApplication::i18nPath();
-  if (myTranslationCode.isEmpty())
+
+
+  /* Translation file for QGIS.
+   */
+  QSettings mySettings;
+  QString mySystemLocale = QLocale::languageToString(QLocale::system().language());
+  QString myUserLocale = mySettings.value("locale/userLocale", "").toString();
+  bool myLocaleOverrideFlag = mySettings.value("locale/overrideFlag",false).toBool();
+  QString myLocale;
+  //
+  // Priority of translation is:
+  //  - command line
+  //  - user secified in options dialog (with group checked on)
+  //  - system locale
+  //
+  //  When specifying from the command line it will change the user
+  //  specified user locale
+  //
+  if (!myTranslationCode.isNull() && !myTranslationCode.isEmpty())
   {
-    myTranslationCode = QTextCodec::locale();
+    mySettings.setValue("locale/userLocale", myTranslationCode);
   }
+  else
+  {
+    if (!myLocaleOverrideFlag || myUserLocale.isEmpty())
+    {
+      myTranslationCode = QTextCodec::locale();
+    }
+    else
+    {
+      myTranslationCode = myUserLocale;
+    }
+  }
+
 #ifdef QGISDEBUG
   std::cout << "Setting translation to "
     << i18nPath.toLocal8Bit().data() << "/qgis_" << myTranslationCode.toLocal8Bit().data() << std::endl;
 #endif
-
+  QTranslator qgistor(0);
+  if (qgistor.load(QString("qgis_") + myTranslationCode, i18nPath))
+  {
+    a.installTranslator(&qgistor);
+  }
   /* Translation file for Qt.
    * The strings from the QMenuBar context section are used by Qt/Mac to shift
    * the About, Preferences and Quit items to the Mac Application menu.
@@ -424,29 +472,19 @@ int main(int argc, char *argv[])
     a.installTranslator(&qttor);
   }
 
-  /* Translation file for QGIS.
-   */
-  QTranslator qgistor(0);
-  if (qgistor.load(QString("qgis_") + myTranslationCode, i18nPath))
-  {
-    a.installTranslator(&qgistor);
-  }
-
   //set up splash screen 
   QString mySplashPath(QgsApplication::splashPath());
   QPixmap myPixmap(mySplashPath+QString("splash.png"));
   QSplashScreen *mypSplash = new QSplashScreen(myPixmap);
-  QSettings mySettings;
   if (mySettings.value("/qgis/hideSplash").toBool())
   {
     //splash screen hidden
   }
   else
   {
-#ifdef Q_OS_MACX
+#if defined(Q_OS_MACX) && QT_VERSION < 0x040300
     //on mac automasking as done below does not work (as of qt 4.2.1)
     //so we do it the old way see bug #387
-    qDebug("setting mask for mac");
     QPixmap myMaskPixmap(mySplashPath+QString("splash_mask.png"), 0, Qt::ThresholdDither | Qt::ThresholdAlphaDither | Qt::AvoidDither ); 
     mypSplash->setMask( myMaskPixmap.createHeuristicMask() ); 
 #else

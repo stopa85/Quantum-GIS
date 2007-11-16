@@ -1,5 +1,5 @@
 /* **************************************************************************
-   qgsrasterlayer.cpp -  description
+					   qgsrasterlayer.cpp -  description
    -------------------
 begin                : Sat Jun 22 2002
 copyright            : (C) 2003 by Tim Sutton, Steve Halasz and Gary E.Sherman
@@ -59,8 +59,8 @@ email                : tim at linfiniti.com
 // workaround for MSVC compiler which already has defined macro max
 // that interferes with calling std::numeric_limits<int>::max
 #ifdef _MSC_VER
-# ifdef max(x,y)
-#  undef max(x,y)
+# ifdef max
+#  undef max
 # endif
 #endif
 
@@ -136,7 +136,7 @@ void QgsRasterLayer::buildSupportedRasterFileFilter(QString & theFileFiltersStri
 
   QStringList metadataTokens;   // essentially the metadata string delimited by '='
 
-  QString catchallFilter;       // for Any file(*.*), but also for those
+  QStringList catchallFilter;   // for Any file(*.*), but also for those
   // drivers with no specific file filter
 
   GDALDriver *jp2Driver = NULL; // first JPEG2000 driver found
@@ -269,7 +269,7 @@ void QgsRasterLayer::buildSupportedRasterFileFilter(QString & theFileFiltersStri
       }
       else
       {
-        catchallFilter += QString(myGdalDriver->GetDescription()) + " ";
+        catchallFilter << QString(myGdalDriver->GetDescription());
       }
     }
 
@@ -278,7 +278,7 @@ void QgsRasterLayer::buildSupportedRasterFileFilter(QString & theFileFiltersStri
   }                           // each loaded GDAL driver
 
   // can't forget the default case
-  theFileFiltersString += catchallFilter + tr("and all other files") + " (*)";
+  theFileFiltersString += catchallFilter.join(", ") + " " + tr("and all other files") + " (*)";
   QgsDebugMsg("Raster filter list built: " + theFileFiltersString);
 }                               // buildSupportedRasterFileFilter_()
 
@@ -374,8 +374,7 @@ QgsRasterLayer::QgsRasterLayer(QString const & path, QString const & baseName)
   showDebugOverlayFlag(false),
   invertHistogramFlag(false),
   stdDevsToPlotDouble(0),
-dataProvider(0)
-
+  dataProvider(0)
 {
   userDefinedColorMinMax = false; //defaults needed to bypass stretch
   userDefinedGrayMinMax = false;
@@ -1331,10 +1330,20 @@ void QgsRasterLayer::draw (QPainter * theQPainter,
         break;
       }
       //a layer containing 2 or more bands, mapped to the three RGBcolors.
-      //In the case of a multiband with only two bands, one band will have to be mapped to more than one color
+      //In the case of a multiband with only two bands, 
+      //one band will have to be mapped to more than one color
     case MULTI_BAND_COLOR:
-      drawMultiBandColor(theQPainter, theRasterViewPort,
-          theQgsMapToPixel);
+      if(redBandNameQString == tr("Not Set") || 
+         greenBandNameQString == tr("Not Set") || 
+         blueBandNameQString == tr("Not Set"))
+      {
+        break;
+      }
+      else
+      {
+        drawMultiBandColor(theQPainter, theRasterViewPort,
+            theQgsMapToPixel);
+      }
       break;
 
     default:
@@ -1408,6 +1417,7 @@ void QgsRasterLayer::drawSingleBandGray(QPainter * theQPainter, QgsRasterViewPor
       maxGrayDouble = 255.0;
   }
 
+  QgsDebugMsg("Starting main render loop");
   // print each point in myGdalScanData with equal parts R, G ,B o make it show as gray
   for (int myColumnInt = 0; myColumnInt < theRasterViewPort->drawableAreaYDimInt; ++myColumnInt)
   {
@@ -1456,6 +1466,7 @@ void QgsRasterLayer::drawSingleBandGray(QPainter * theQPainter, QgsRasterViewPor
   
   CPLFree ( myGdalScanData );
 
+  QgsDebugMsg("Render done, preparing to copy to canvas");
   //render any inline filters
   filterLayer(&myQImage);
 
@@ -4242,6 +4253,10 @@ QString QgsRasterLayer::buildPyramids(RasterPyramidList const & theRasterPyramid
       {
 
         //build the pyramid and show progress to console
+        //NOTE this (magphase) is disabled in teh gui since it tends
+        //to create corrupted images. The images can be repaired
+        //by running one of the other resampling strategies below.
+        //see ticket #284
         if(theResamplingMethod==tr("Average Magphase"))
         {
           myError = gdalDataset->BuildOverviews( "MODE", 1, myOverviewLevelsIntArray, 0, NULL,

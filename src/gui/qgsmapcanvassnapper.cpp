@@ -58,7 +58,7 @@ void QgsMapCanvasSnapper::setMapCanvas(QgsMapCanvas* canvas)
     }
 }
 
-int QgsMapCanvasSnapper::snapToCurrentLayer(const QPoint& p, QList<QgsSnappingResult>& results, QgsSnapper::SNAP_TO snap_to, double snappingTol)
+int QgsMapCanvasSnapper::snapToCurrentLayer(const QPoint& p, QList<QgsSnappingResult>& results, QgsSnapper::SNAP_TO snap_to)
 {
   results.clear();
   
@@ -97,16 +97,8 @@ int QgsMapCanvasSnapper::snapToCurrentLayer(const QPoint& p, QList<QgsSnappingRe
 
       QSettings settings;
 
-      if(snappingTol < 0)
-	{
-	  //use search tolerance for vertex editing
-	  toleranceList.push_back(settings.value("/qgis/digitizing/search_radius_vertex_edit", 50).toDouble());
-	}
-      else
-	{
-	  toleranceList.push_back(snappingTol);
-	}
-      
+      //use search tolerance for vertex editing
+      toleranceList.push_back(settings.value("/qgis/digitizing/search_radius_vertex_edit", 50).toDouble());
 
       mSnapper->setLayersToSnap(layerList);
       mSnapper->setTolerances(toleranceList);
