@@ -54,6 +54,7 @@ email                : tim at linfiniti.com
 #include <QPixmap>
 #include <QRegExp>
 #include <QSlider>
+#include <QMessageBox>
 
 // workaround for MSVC compiler which already has defined macro max
 // that interferes with calling std::numeric_limits<int>::max
@@ -476,20 +477,96 @@ bool QgsRasterLayer::readFile( QString const & fileName )
   getMetadata();
 
   // Use the affine transform to get geo coordinates for
-  // the corners of the raster
-  double myXMax = mGeoTransform[0] +
-    mGdalDataset->GetRasterXSize() * mGeoTransform[1] +
-    mGdalDataset->GetRasterYSize() * mGeoTransform[2];
-  double myYMin = mGeoTransform[3] +
-    mGdalDataset->GetRasterXSize() * mGeoTransform[4] +
-    mGdalDataset->GetRasterYSize() * mGeoTransform[5];
+  // the corners of the raster and compute bounds from the
+  // four corners.
+  double myXMin, myXMax, myYMin, myYMax;
 
+  // UL
+  myXMin = myXMax = mGeoTransform[0];
+  myYMin = myYMax = mGeoTransform[3];
+
+  // UR 
+  myXMin = MIN(myXMin, 
+               mGeoTransform[0] + 
+               mGeoTransform[1] * mGdalDataset->GetRasterXSize() +
+               mGeoTransform[2] * 0 );
+  myXMax = MAX(myXMax, 
+               mGeoTransform[0] + 
+               mGeoTransform[1] * mGdalDataset->GetRasterXSize() +
+               mGeoTransform[2] * 0 );
+  myYMin = MIN(myYMin, 
+               mGeoTransform[3] + 
+               mGeoTransform[4] * mGdalDataset->GetRasterXSize() +
+               mGeoTransform[5] * 0 );
+  myYMax = MAX(myYMax, 
+               mGeoTransform[3] + 
+               mGeoTransform[4] * mGdalDataset->GetRasterXSize() +
+               mGeoTransform[5] * 0 );
+               
+  // LR
+  myXMin = MIN(myXMin, 
+               mGeoTransform[0] + 
+               mGeoTransform[1] * mGdalDataset->GetRasterXSize() +
+               mGeoTransform[2] * mGdalDataset->GetRasterYSize() );
+  myXMax = MAX(myXMax, 
+               mGeoTransform[0] + 
+               mGeoTransform[1] * mGdalDataset->GetRasterXSize() +
+               mGeoTransform[2] * mGdalDataset->GetRasterYSize() );
+  myYMin = MIN(myYMin, 
+               mGeoTransform[3] + 
+               mGeoTransform[4] * mGdalDataset->GetRasterXSize() +
+               mGeoTransform[5] * mGdalDataset->GetRasterYSize() );
+  myYMax = MAX(myYMax, 
+               mGeoTransform[3] + 
+               mGeoTransform[4] * mGdalDataset->GetRasterXSize() +
+               mGeoTransform[5] * mGdalDataset->GetRasterYSize() );
+               
+  // LL
+  myXMin = MIN(myXMin, 
+               mGeoTransform[0] + 
+               mGeoTransform[1] * 0 +
+               mGeoTransform[2] * mGdalDataset->GetRasterYSize() );
+  myXMax = MAX(myXMax, 
+               mGeoTransform[0] + 
+               mGeoTransform[1] * 0 +
+               mGeoTransform[2] * mGdalDataset->GetRasterYSize() );
+  myYMin = MIN(myYMin, 
+               mGeoTransform[3] + 
+               mGeoTransform[4] * 0 +
+               mGeoTransform[5] * mGdalDataset->GetRasterYSize() );
+  myYMax = MAX(myYMax, 
+               mGeoTransform[3] + 
+               mGeoTransform[4] * 0 +
+               mGeoTransform[5] * mGdalDataset->GetRasterYSize() );
+               
   mLayerExtent.setXmax(myXMax);
-  // The affine transform reduces to these values at the
-  // top-left corner of the raster
-  mLayerExtent.setXmin(mGeoTransform[0]);
-  mLayerExtent.setYmax(mGeoTransform[3]);
+  mLayerExtent.setXmin(myXMin);
+  mLayerExtent.setYmax(myYMax);
   mLayerExtent.setYmin(myYMin);
+
+  // If the image is not a normal "north up, unrotated" image, 
+  // we warn the user that the raster will not be displayed with
+  // the correct orientation though it will be displayed in the 
+  // correct region of the map.  Eventually (see #813) we hope to
+  // rework the QgsRasterLayer to support rotated, sheared and 
+  // upsidedown rasters better. 
+  
+  if( mGeoTransform[2] != 0.0 || mGeoTransform[4] != 0.0 
+      || mGeoTransform[1] < 0.0 || mGeoTransform[5] > 0.0 )
+  {
+      QMessageBox::warning(
+          0, tr("Warning"), 
+          tr("Raster is rotated, sheared or upside down.  Currently rotated,\n"
+             "sheared or upside rasters are not shown with proper orientation\n"
+             "but they are displayed in approximately the right region of the map.") );
+
+      mGeoTransform[0] = myXMin;
+      mGeoTransform[1] = (myXMax - myXMin) / mGdalDataset->GetRasterXSize();
+      mGeoTransform[2] = 0.0;
+      mGeoTransform[3] = myYMax;
+      mGeoTransform[4] = 0.0;
+      mGeoTransform[5] = (myYMin - myYMax) / mGdalDataset->GetRasterYSize();
+  }
 
   //
   // Set up the x and y dimensions of this raster layer
