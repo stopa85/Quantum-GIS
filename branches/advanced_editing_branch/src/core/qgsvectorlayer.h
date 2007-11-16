@@ -263,10 +263,8 @@ existing rings, 5 no feature found where ring can be inserted*/
   /**Changes the specified geometry such that it has no intersections with other \
      polygon (or multipolygon) geometries in this vector layer
   @param geom geometry to modify
-  @param topological if true intersection points are also inserted to other geometries \
-  to keep topology
   @return 0 in case of success*/
-  int removePolygonIntersections(QgsGeometry* geom, bool topological = false);
+  int removePolygonIntersections(QgsGeometry* geom);
 
   /** Set labels on */
   void setLabelOn( bool on );
@@ -284,7 +282,7 @@ existing rings, 5 no feature found where ring can be inserted*/
      @param point       The point which is set to the position of a vertex if there is one within the snapping tolerance.
      If there is no point within this tolerance, point is left unchanged.
      @param tolerance   The snapping tolerance
-     @return true if the position of point has been changed, and false otherwise */
+     @return true if point has been snapped, false if no vertex within search tolerance*/
   bool snapPoint(QgsPoint& point, double tolerance);
 
   /**Snaps to segment or vertex within given tolerance

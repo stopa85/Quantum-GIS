@@ -19,6 +19,7 @@
 #include "qgsattributedialog.h"
 #include "qgscsexception.h"
 #include "qgsfield.h"
+#include "qgsgeometry.h"
 #include "qgsmapcanvas.h"
 #include "qgsproject.h"
 #include "qgsrubberband.h"
@@ -407,11 +408,10 @@ void QgsMapToolAddFeature::canvasReleaseEvent(QMouseEvent * e)
 	      f->setGeometryAndOwnership(&wkb[0],size);
 	      //is automatic polygon intersection removal activated?
 	      int avoidPolygonIntersections = QgsProject::instance()->readNumEntry("Digitizing", "/AvoidPolygonIntersections", 0);
-	      int topologicalEditing = QgsProject::instance()->readNumEntry("Digitizing", "/TopologicalEditing", 0);
 
 	      if(avoidPolygonIntersections != 0)
 		{
-		  if(vlayer->removePolygonIntersections(f->geometry(), topologicalEditing) != 0)
+		  if(vlayer->removePolygonIntersections(f->geometry()) != 0)
 		    {
 		      QMessageBox::critical(0, QObject::tr("Error"), QObject::tr("Could not remove polygon intersection"));
 		    }
@@ -427,6 +427,12 @@ void QgsMapToolAddFeature::canvasReleaseEvent(QMouseEvent * e)
 	  
 	  if (QgsAttributeDialog::queryAttributes(fields, *f))
 	    {
+	      //add points to other features to keep topology up-to-date
+	      int topologicalEditing = QgsProject::instance()->readNumEntry("Digitizing", "/TopologicalEditing", 0);
+	      if(topologicalEditing)
+		{
+		  addTopologicalPoints(mCaptureList);
+		}
 	      vlayer->addFeature(*f);
 	    }
 	  delete f;

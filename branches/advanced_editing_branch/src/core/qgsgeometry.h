@@ -264,9 +264,8 @@ not disjoint with existing polygons of the feature*/
 
     /**Changes this geometry such that it does not intersect the other geometry
        @param other geometry that should not be intersect
-       @param topologicalPoints points to insert into the other geometry, int is before vertex
        @return 0 in case of success*/
-    int difference(QgsGeometry* other, QMultiMap<int, QgsPoint>& topologicalPoints);
+    int difference(QgsGeometry* other);
 
     /**Returns the bounding box of this feature*/
     QgsRect boundingBox();
