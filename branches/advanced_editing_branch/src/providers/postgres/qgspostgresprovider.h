@@ -328,6 +328,7 @@ class QgsPostgresProvider:public QgsVectorDataProvider
 
   private:
 
+    bool mFirstFetch; //true if fetch forward is called the first time after select
     std::vector < QgsFeature > features;
     QgsFieldMap attributeFields;
     QString mDataComment;
@@ -546,6 +547,18 @@ class QgsPostgresProvider:public QgsVectorDataProvider
      */
     void customEvent ( QCustomEvent * e );
 
+private:
+    struct Conn {
+	Conn(PGconn *connection) : ref(1), conn(connection) {}
+
+	int ref;
+    	PGconn *conn;
+    };
+
+    PGconn *connectDb(const char *conninfo);
+    void disconnectDb();
+
+    static QMap<QString, Conn *> connections;
 };
 
 #endif

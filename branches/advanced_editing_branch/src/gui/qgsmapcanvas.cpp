@@ -827,6 +827,7 @@ void QgsMapCanvas::unsetMapTool(QgsMapTool* tool)
   {
     mMapTool->deactivate();
     mMapTool = NULL;
+    setCursor(Qt::ArrowCursor);
   }
 
   if (mLastNonZoomMapTool && mLastNonZoomMapTool == tool)
@@ -1041,8 +1042,9 @@ void QgsMapCanvas::showError(QgsMapLayer * mapLayer)
     mapLayer->errorString()
   );
   mv->exec();
-  delete mv;
-
+  //MH
+  //QgsMessageViewer automatically sets delete on close flag
+  //so deleting mv would lead to a segfault
 }
 
 QPoint QgsMapCanvas::mouseLastXY()

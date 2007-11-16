@@ -55,12 +55,6 @@
 #include "qgspostgisbox3d.h"
 #include "qgslogger.h"
 
-#ifdef WIN32
-#define QGISEXTERN extern "C" __declspec( dllexport )
-#else
-#define QGISEXTERN extern "C"
-#endif
-
 const QString POSTGRES_KEY = "postgres";
 const QString POSTGRES_DESCRIPTION = "PostgreSQL/PostGIS data provider";
 
@@ -68,7 +62,7 @@ const QString POSTGRES_DESCRIPTION = "PostgreSQL/PostGIS data provider";
 QgsPostgresProvider::QgsPostgresProvider(QString const & uri)
   : QgsVectorDataProvider(uri),
   geomType(QGis::WKBUnknown),
-  mFeatureQueueSize(200),
+    mFeatureQueueSize(200),
   gotPostgisVersion(FALSE)
 {
   // assume this is a valid layer until we determine otherwise
@@ -97,7 +91,6 @@ QgsPostgresProvider::QgsPostgresProvider(QString const & uri)
   else
     mSchemaTableName = "\"" + mTableName + "\"";
 
-
   QgsDebugMsg("Table name is " + mTableName);
   QgsDebugMsg("SQL is " + sqlWhereClause);
   QgsDebugMsg("Connection info is " + mUri.connInfo);
@@ -110,29 +103,10 @@ QgsPostgresProvider::QgsPostgresProvider(QString const & uri)
   //pLog.open((const char *)logFile);
   //QgsDebugMsg("Opened log file for " + mTableName);
   
-  PGconn *pd = PQconnectdb((const char *) mUri.connInfo);
-  // check the connection status
-  if (PQstatus(pd) != CONNECTION_OK)
-  {
-    QgsDebugMsg("Connection to database failed");
-    valid = false;
-    return;
-  }
-  
-  // store the connection for future use
-  connection = pd;
-
-  //set client encoding to unicode because QString uses UTF-8 anyway
-  QgsDebugMsg("setting client encoding to UNICODE");
-  
-  int errcode=PQsetClientEncoding(connection, "UNICODE");
-  
-  if(errcode==0) {
-    QgsDebugMsg("encoding successfully set");
-  } else if(errcode==-1) {
-      QgsDebugMsg("error in setting encoding");
-  } else {
-      QgsDebugMsg("undefined return value from encoding setting");
+  connection = connectDb( (const char *)mUri.connInfo );
+  if( connection==NULL ) {
+  	valid = false;
+	return;
   }
 
   QgsDebugMsg("Checking for select permission on the relation\n");
@@ -140,7 +114,7 @@ QgsPostgresProvider::QgsPostgresProvider(QString const & uri)
   // Check that we can read from the table (i.e., we have
   // select permission).
   QString sql = "select * from " + mSchemaTableName + " limit 1";
-  PGresult* testAccess = PQexec(pd, (const char*)(sql.utf8()));
+  PGresult* testAccess = PQexec(connection, (const char*)(sql.utf8()));
   if (PQresultStatus(testAccess) != PGRES_TUPLES_OK)
   {
     showMessageBox(tr("Unable to access relation"),
@@ -150,24 +124,10 @@ QgsPostgresProvider::QgsPostgresProvider(QString const & uri)
         "SQL: " + sql);
     PQclear(testAccess);
     valid = false;
-    PQfinish(connection);
+    disconnectDb();
     return;
   }
   PQclear(testAccess);
-
-  /* Check to see if we have GEOS support and if not, warn the user about
-      the problems they will see :) */
-  QgsDebugMsg("Checking for GEOS support");
-
-  if(!hasGEOS(pd))
-  {
-    showMessageBox(tr("No GEOS Support!"),
-        tr("Your PostGIS installation has no GEOS support.\n"
-    "Feature selection and identification will not "
-    "work properly.\nPlease install PostGIS with " 
-    "GEOS support (http://geos.refractions.net)"));
-  }
-  //--std::cout << "Connection to the database was successful\n";
 
   if (!getGeometryDetails()) // gets srid and geometry type
   {
@@ -176,7 +136,7 @@ QgsPostgresProvider::QgsPostgresProvider(QString const & uri)
     valid = false;
     
     QgsDebugMsg("Invalid Postgres layer");
-    PQfinish(connection);
+    disconnectDb();
     return;
   }
   
@@ -187,14 +147,14 @@ QgsPostgresProvider::QgsPostgresProvider(QString const & uri)
   // Get the relation oid for use in later queries
   sql = "SELECT oid FROM pg_class WHERE relname = '" + mTableName + "' AND relnamespace = ("
 "SELECT oid FROM pg_namespace WHERE nspname = '" + mSchemaName + "')";
-  PGresult *tresult= PQexec(pd, (const char *)(sql.utf8()));
+  PGresult *tresult= PQexec(connection, (const char *)(sql.utf8()));
   QString tableoid = PQgetvalue(tresult, 0, 0);
   PQclear(tresult);
 
   // Get the table description
   sql = "SELECT description FROM pg_description WHERE "
       "objoid = " + tableoid + " AND objsubid = 0";
-  tresult = PQexec(pd, (const char*) sql.utf8());
+  tresult = PQexec(connection, (const char*) sql.utf8());
   if (PQntuples(tresult) > 0)
     mDataComment = PQgetvalue(tresult, 0, 0);
   PQclear(tresult);
@@ -203,7 +163,7 @@ QgsPostgresProvider::QgsPostgresProvider(QString const & uri)
   // field name, type, length, and precision (if numeric)
   sql = "select * from " + mSchemaTableName + " limit 0";
 
-  PGresult *result = PQexec(pd, (const char *) (sql.utf8()));
+  PGresult *result = PQexec(connection, (const char *) (sql.utf8()));
   //--std::cout << "Field: Name, Type, Size, Modifier:" << std::endl;
 
   // The queries inside this loop could possibly be combined into one
@@ -221,20 +181,20 @@ QgsPostgresProvider::QgsPostgresProvider(QString const & uri)
         "oid = (SELECT typelem FROM pg_type WHERE "
         "typelem = " + typOid + " AND typlen = -1)";
 
-    PGresult* oidResult = PQexec(pd, (const char *) sql);
+    PGresult* oidResult = PQexec(connection, (const char *) sql);
     QString fieldTypeName = PQgetvalue(oidResult, 0, 0);
     QString fieldSize = PQgetvalue(oidResult, 0, 1);
     PQclear(oidResult);
 
     sql = "SELECT attnum FROM pg_attribute WHERE "
         "attrelid = " + tableoid + " AND attname = '" + fieldName + "'";
-    PGresult *tresult = PQexec(pd, (const char *)(sql.utf8()));
+    PGresult *tresult = PQexec(connection, (const char *)(sql.utf8()));
     QString attnum = PQgetvalue(tresult, 0, 0);
     PQclear(tresult);
 
     sql = "SELECT description FROM pg_description WHERE "
         "objoid = " + tableoid + " AND objsubid = " + attnum;
-    tresult = PQexec(pd, (const char*)(sql.utf8()));
+    tresult = PQexec(connection, (const char*)(sql.utf8()));
     if (PQntuples(tresult) > 0)
       fieldComment = PQgetvalue(tresult, 0, 0);
     PQclear(tresult);
@@ -306,7 +266,7 @@ QgsPostgresProvider::QgsPostgresProvider(QString const & uri)
 
   // Close the database connection if the layer isn't going to be loaded.
   if (!valid)
-    PQfinish(connection);
+    disconnectDb();
 }
 
 QgsPostgresProvider::~QgsPostgresProvider()
@@ -329,11 +289,91 @@ QgsPostgresProvider::~QgsPostgresProvider()
   QApplication::sendPostedEvents(this, QGis::ProviderExtentCalcEvent);
   QApplication::sendPostedEvents(this, QGis::ProviderCountCalcEvent);
 #endif
-  PQfinish(connection);
+
+  disconnectDb();
 
   QgsDebugMsg("deconstructing.");
 
   //pLog.flush();
+}
+
+PGconn *QgsPostgresProvider::connectDb(const char *conninfo)
+{
+	if( connections.contains(conninfo) ) 
+	  {
+		QgsDebugMsg(QString("Using cached connection for ") + conninfo);
+		connections[conninfo]->ref++;
+		return connections[conninfo]->conn;
+	  }
+	
+	QgsDebugMsg(QString("New postgres connection for ") + conninfo);
+	
+	PGconn *pd = PQconnectdb(conninfo);
+	// check the connection status
+	if (PQstatus(pd) != CONNECTION_OK) 
+	  {
+	    QgsDebugMsg("Connection to database failed");
+	    return NULL;
+	  }
+
+	//set client encoding to unicode because QString uses UTF-8 anyway
+	QgsDebugMsg("setting client encoding to UNICODE");
+	
+	int errcode=PQsetClientEncoding(pd, "UNICODE");
+	
+	if(errcode==0) 
+	  {
+	    QgsDebugMsg("encoding successfully set");
+	  } 
+	else if(errcode==-1) 
+	  {
+	    QgsDebugMsg("error in setting encoding");
+	  } 
+	else 
+	  {
+	    QgsDebugMsg("undefined return value from encoding setting");
+	  }
+
+	/* Check to see if we have GEOS support and if not, warn the user about
+	   the problems they will see :) */
+	QgsDebugMsg("Checking for GEOS support");
+
+	if(!hasGEOS(pd))
+	  {
+		showMessageBox(tr("No GEOS Support!"),
+				tr("Your PostGIS installation has no GEOS support.\n"
+					"Feature selection and identification will not "
+					"work properly.\nPlease install PostGIS with " 
+					"GEOS support (http://geos.refractions.net)"));
+	  }
+	//--std::cout << "Connection to the database was successful\n";
+	
+	Conn *conn = new Conn(pd);
+	connections.insert( conninfo, conn );
+	
+	return pd;
+}
+
+void QgsPostgresProvider::disconnectDb()
+{
+	QMapIterator <QString, Conn *> i(connections);
+	while( i.hasNext() ) 
+	  {
+		i.next();
+
+		if( i.value()->conn == connection )
+			break;
+	  }
+
+	assert( i.value()->conn==connection );
+	assert( i.value()->ref>0 );
+
+	if( --i.value()->ref==0 ) 
+	  {
+		PQfinish( i.value()->conn );
+		delete (i.value());
+		connections.remove( i.key() );
+	  }
 }
 
 QString QgsPostgresProvider::storageType()
@@ -351,9 +391,18 @@ bool QgsPostgresProvider::getNextFeature(QgsFeature& feature)
     {
       QString fetch = QString("fetch forward %1 from qgisf")
                          .arg(mFeatureQueueSize);
-                         
-      queryResult = PQexec(connection, (const char *)fetch);
-      
+
+      if(mFirstFetch)
+	{
+	  if(PQsendQuery(connection, (const char *)fetch) == 0) //fetch features in asynchronously
+	    {
+	      qWarning("PQsendQuery failed (1)");
+	    }
+	}
+      mFirstFetch = false;
+      queryResult = PQgetResult(connection);
+      PQgetResult(connection); //just to get the 0 pointer...  
+ 
       int rows = PQntuples(queryResult);
 
       if (rows == 0)
@@ -369,7 +418,6 @@ bool QgsPostgresProvider::getNextFeature(QgsFeature& feature)
       for (int row = 0; row < rows; row++)
       {
         int oid = *(int *)PQgetvalue(queryResult, row, PQfnumber(queryResult,"\""+primaryKey+"\""));
-        //  QgsDebugMsg("Primary key type is " + QString::number(primaryKeyType)); 
 	
         if (swapEndian)
 	  oid = ntohl(oid); // convert oid to opposite endian
@@ -383,12 +431,18 @@ bool QgsPostgresProvider::getNextFeature(QgsFeature& feature)
 
 	for(; name_it != mFetchAttributeNames.end(); ++name_it, ++index_it)
 	  {
-	    QString name = *name_it; //just for the debugger
-	    //int number = PQfnumber(queryResult,*name_it); //just for the debugger
-	    char* attribute = PQgetvalue(queryResult, row, PQfnumber(queryResult,*name_it));
+	    QString val;
+	    if( (*name_it) == primaryKey)
+	      {
+		val = QString::number(oid);
+	      }
+	    else
+	      {
+		char* attribute = PQgetvalue(queryResult, row, PQfnumber(queryResult,*name_it));
+		val = QString::fromUtf8(attribute);
+	      }
 
-	    QString val = QString::fromUtf8(attribute);
-      switch (attributeFields[*index_it].type())
+	    switch (attributeFields[*index_it].type())
 	      {
 	      case QVariant::Int:
 		feature.addAttribute(*index_it, val.toInt());
@@ -417,35 +471,41 @@ bool QgsPostgresProvider::getNextFeature(QgsFeature& feature)
           }
           else
           {
-            //QgsDebugMsg("Couldn't get the feature geometry in binary form");
+            QgsDebugMsg("Couldn't get the feature geometry in binary form");
           }
-        }
-
-        //QgsDebugMsg(" pushing " + QString::number(f->featureId()); 
+        } 
   
-        mFeatureQueue.push(feature);
+	//don't copy the geometry. Just pass a pointer instead
+	mFeatureQueue.push(QgsFeature());
+	mFeatureQueue.back().setGeometry(feature.geometryAndOwnership());
+	mFeatureQueue.back().setFeatureId(feature.featureId());
+	mFeatureQueue.back().setAttributeMap(feature.attributeMap());
         
       } // for each row in queue
-      
-      //QgsDebugMsg("retrieved batch of features.");
             
       PQclear(queryResult);
+
+      if(PQsendQuery(connection, (const char *)fetch) == 0) //already fetch the next couple of features asynchronously
+	{
+	  qWarning("PQsendQuery failed (2)");
+	}
       
     } // if new queue is required
     
     // Now return the next feature from the queue
-    
-    feature = mFeatureQueue.front();
+    //don't copy the geometry. Just pass a pointer instead
+    feature.setGeometry(mFeatureQueue.front().geometryAndOwnership());
+    feature.setFeatureId(mFeatureQueue.front().featureId());
+    feature.setAttributeMap(mFeatureQueue.front().attributeMap());
+   
     mFeatureQueue.pop();
     
   }
   else 
   {
-    //QgsDebugMsg("Read attempt on an invalid postgresql data source");
+    QgsDebugMsg("Read attempt on an invalid postgresql data source");
     return false;
   }
-  
-  //QgsDebugMsg("returning feature " + QString::number(feat.featureId())); 
 
   return true;
 }
@@ -479,7 +539,10 @@ void QgsPostgresProvider::select(QgsAttributeList fetchAttributes,
     }
   for(std::list<QString>::const_iterator it = mFetchAttributeNames.begin(); it != mFetchAttributeNames.end(); ++it)
     {
-      declare += "," + *it + "::text";
+      if( (*it) != primaryKey) //no need to fetch primary key again
+	{
+	  declare += "," + *it + "::text";
+	}
     }
 
   declare += " ";
@@ -538,6 +601,7 @@ void QgsPostgresProvider::select(QgsAttributeList fetchAttributes,
   PQexec(connection, (const char *)(declare.utf8()));
   
   mFeatureQueue.empty();
+  mFirstFetch = true;
 }
 
 bool QgsPostgresProvider::getFeatureAtId(int featureId,
@@ -569,7 +633,10 @@ bool QgsPostgresProvider::getFeatureAtId(int featureId,
   }
   for(namesIt = attributeNames.begin(); namesIt != attributeNames.end(); ++namesIt)
   {
-    sql += "," + *namesIt + "::text";
+    if( (*namesIt) != primaryKey) //no need to fetch primary key again
+      {
+	sql += "," + *namesIt + "::text";
+      }
   }
 
   sql += " " + QString("from %1").arg(mSchemaTableName);
@@ -604,10 +671,17 @@ bool QgsPostgresProvider::getFeatureAtId(int featureId,
 
   for(namesIt = attributeNames.begin(); namesIt != attributeNames.end(); ++namesIt, ++it)
   {
-    QString name = *namesIt; //just for the debugger
-    char* attribute = PQgetvalue(res, 0, PQfnumber(res,*namesIt));
+    QString val;
+    if( (*namesIt) == primaryKey)
+      {
+	val = QString::number(oid);
+      }
+    else
+      {
+	char* attribute = PQgetvalue(res, 0, PQfnumber(res,*namesIt));
+	val = QString::fromUtf8(attribute);
+      }
 
-    QString val = QString::fromUtf8(attribute);
     switch (attributeFields[*it].type())
     {
       case QVariant::Int:
@@ -2609,3 +2683,4 @@ QGISEXTERN bool isProvider(){
   return true;
 }
 
+QMap<QString, QgsPostgresProvider::Conn *> QgsPostgresProvider::connections;

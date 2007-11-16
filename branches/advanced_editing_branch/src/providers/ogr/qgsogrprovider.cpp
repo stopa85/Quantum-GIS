@@ -53,14 +53,6 @@ email                : sherman at mrcc.com
 #include "qgsgeometry.h"
 #include "qgslogger.h"
 #include "qgsspatialrefsys.h"
-#include "qgis.h"
-
-
-#ifdef WIN32
-#define QGISEXTERN extern "C" __declspec( dllexport )
-#else
-#define QGISEXTERN extern "C"
-#endif
 
 static const QString TEXT_PROVIDER_KEY = "ogr";
 static const QString TEXT_PROVIDER_DESCRIPTION = 
@@ -637,6 +629,10 @@ bool QgsOgrProvider::addFeature(QgsFeature& f)
   for(QgsAttributeMap::iterator it = attrs.begin(); it != attrs.end(); ++it)
   {
     int targetAttributeId = it.key();
+    
+    // don't try to set field from attribute map if it's not present in layer
+    if (targetAttributeId >= fdef->GetFieldCount())
+      continue;
 
     //if(!s.isEmpty())
     // continue;

@@ -998,7 +998,7 @@ QString QgsGrassModule::label ( QString path )
     path.append ( ".qgm" );
     QFile qFile ( path );
     if ( !qFile.exists() ) {
-	return QString ( tr("Not available, decription not found (") + path + tr(")") );
+	return QString ( tr("Not available, description not found (") + path + tr(")") );
     }
     if ( ! qFile.open( QIODevice::ReadOnly ) ) {
 	return QString ( tr("Not available, cannot open description (") + path + tr(")") ) ;
@@ -1185,7 +1185,7 @@ void QgsGrassModule::run()
 	    QStringList outsideRegion = mOptions->checkRegion();
 	    if ( outsideRegion.size() > 0 )
 	    {
-	      QMessageBox::QMessageBox questionBox( QMessageBox::Question, "Warning", 
+	      QMessageBox questionBox( QMessageBox::Question, "Warning", 
 	        "Input " + outsideRegion.join(",") + " outside current region!",  
 	        QMessageBox::Ok | QMessageBox::Cancel );
 	      QPushButton *resetButton = NULL;
@@ -2810,7 +2810,7 @@ void QgsGrassModuleField::updateFields()
 
     for ( unsigned int i = 0; i < fields.size(); i++ )
     {
-	if ( mType.contains ( fields[i].type() ) )
+	if ( mType.contains ( fields[i].typeName() ) )
 	{
             mFieldComboBox->insertItem( fields[i].name() );
 	    if ( fields[i].name() == current )

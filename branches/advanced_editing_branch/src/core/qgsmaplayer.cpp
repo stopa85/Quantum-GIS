@@ -41,13 +41,13 @@ QgsMapLayer::QgsMapLayer(int type,
         mLayerType(type)
 
 {
-    QgsDebugMsg("QgsMapLayer::QgsMapLayer - lyrname is '" + lyrname);
+    QgsDebugMsg("QgsMapLayer::QgsMapLayer - lyrname is '" + lyrname + "'");
     
     mSRS = new QgsSpatialRefSys();
 
     // Set the display name = internal name
     mLayerName = capitaliseLayerName(lyrname);
-    QgsDebugMsg("QgsMapLayer::QgsMapLayer - layerName is '" + mLayerName);
+    QgsDebugMsg("QgsMapLayer::QgsMapLayer - layerName is '" + mLayerName + "'");
 
     // Generate the unique ID of this layer
     QDateTime dt = QDateTime::currentDateTime();
@@ -87,7 +87,7 @@ QString QgsMapLayer::getLayerID() const
 /** Write property of QString layerName. */
 void QgsMapLayer::setLayerName(const QString & _newVal)
 {
-  QgsDebugMsg("QgsMapLayer::setLayerName: new name is '" + _newVal);
+  QgsDebugMsg("QgsMapLayer::setLayerName: new name is '" + _newVal + "'");
   mLayerName = capitaliseLayerName(_newVal);
   emit layerNameChanged();
 }
@@ -95,7 +95,7 @@ void QgsMapLayer::setLayerName(const QString & _newVal)
 /** Read property of QString layerName. */
 QString const & QgsMapLayer::name() const
 {
-  QgsDebugMsg("QgsMapLayer::name: returning name '" + mLayerName);
+  QgsDebugMsg("QgsMapLayer::name: returning name '" + mLayerName + "'");
   return mLayerName;
 }
 
@@ -142,10 +142,12 @@ bool QgsMapLayer::readXML( QDomNode & layer_node )
     QDomElement mne = mnl.toElement();
     mDataSource = mne.text();
 
-    // Set a SRS (any will do) so that we don't ask the user.
-    // We will overwrite whatever GDAL etc picks up anway
+    // Set the SRS so that we don't ask the user.
+    // Make it the saved SRS to have WMS layer projected correctly.
+    // We will still overwrite whatever GDAL etc picks up anyway
     // further down this function.
-    mSRS->createFromSrsId(GEOSRS_ID);
+    QDomNode srsNode = layer_node.namedItem("srs");
+    mSRS->readXML(srsNode);
 
     // now let the children grab what they need from the DOM node.
     if (!readXML_( layer_node ))
@@ -186,8 +188,8 @@ bool QgsMapLayer::readXML( QDomNode & layer_node )
     mne = mnl.toElement();
     setLayerName( mne.text() );
 
-    //read srs
-    QDomNode srsNode = layer_node.namedItem("srs");
+    // overwrite srs
+    // FIXME: is this necessary?
     mSRS->readXML(srsNode);
     
     //read transparency level

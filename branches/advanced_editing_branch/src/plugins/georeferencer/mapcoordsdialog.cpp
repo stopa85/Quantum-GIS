@@ -1,3 +1,17 @@
+/***************************************************************************
+     mapcoordsdialog.cpp
+     --------------------------------------
+    Date                 : 2005
+    Copyright            : (C) 2005 by Lars Luthman
+    Email                : larsl at users dot sourceforge dot net
+ ***************************************************************************
+ *                                                                         *
+ *   This program is free software; you can redistribute it and/or modify  *
+ *   it under the terms of the GNU General Public License as published by  *
+ *   the Free Software Foundation; either version 2 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *                                                                         *
+ ***************************************************************************/
 
 #include <QValidator>
 #include <mapcoordsdialog.h>
@@ -21,7 +35,8 @@ MapCoordsDialog::MapCoordsDialog(const QgsPoint& pixelCoords, QgsMapCanvas* qgis
 
   mToolEmitPoint = new QgsMapToolEmitPoint(qgisCanvas);
   mToolEmitPoint->setButton(btnPointFromCanvas);
-  connect(mToolEmitPoint, SIGNAL(gotPoint(QgsPoint&,Qt::MouseButton)), this, SLOT(setXY(QgsPoint&)));
+  connect((QgsMapToolEmitPoint*)mToolEmitPoint, SIGNAL(gotPoint(QgsPoint&,Qt::MouseButton)),
+          this, SLOT(setXY(QgsPoint&)));
 
   connect(leXCoord, SIGNAL(textChanged(const QString&)), this, SLOT(updateOK()));
   connect(leYCoord, SIGNAL(textChanged(const QString&)), this, SLOT(updateOK()));
@@ -66,3 +81,4 @@ void MapCoordsDialog::on_btnPointFromCanvas_clicked()
   mPrevMapTool = mQgisCanvas->mapTool();
   mQgisCanvas->setMapTool(mToolEmitPoint);
 }
+

@@ -79,8 +79,6 @@ void QgsMapToolCapture::renderComplete()
 
 void QgsMapToolCapture::deactivate()
 {
-  delete mRubberBand;
-  mRubberBand = 0;
   mCaptureList.clear();
 }
 
@@ -105,7 +103,8 @@ int QgsMapToolCapture::addVertex(const QPoint& p)
     }
   catch(QgsCsException &cse)
     {
-      return 2;
+      UNUSED(cse); // unused
+      return 2; //cannot reproject point to layer coordinate system
     }
 
   QgsPoint mapPoint;
