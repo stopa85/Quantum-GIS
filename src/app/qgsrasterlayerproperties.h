@@ -44,6 +44,7 @@ class QgsRasterLayerProperties : public QDialog, private Ui::QgsRasterLayerPrope
         void sync();
 
     public slots:
+    //TODO: Verify that these all need to be public
         /** \brief Applies the settings made in the dialog without closing the box */
         void apply();
         /** \brief this slot asks the rasterlayer to construct pyramids */
@@ -88,16 +89,24 @@ class QgsRasterLayerProperties : public QDialog, private Ui::QgsRasterLayerPrope
         void userDefinedMinMax_textEdited(QString);
 
     private slots:
-	/**The slot handles necessary interface modifications based when color map selected changes*/
-	void on_cboxColorMap_currentIndexChanged(const QString&);
-  /**The slot handles necessary interface modifications based when transparency band selection changes*/
-  void on_cboxTransparencyLayer_currentIndexChanged(const QString&);
-	/**This slot calculates classification values and colors for the tree widget on the colormap tab*/
-	void on_mClassifyButton_clicked();
-	/**This slot deletes the current class from the tree widget on the colormap tab*/
-	void on_mDeleteEntryButton_clicked();
-	/**Callback for double clicks on the colormap entry widget*/
-	void handleColormapTreeWidgetDoubleClick(QTreeWidgetItem* item, int column);
+      /** This slow handles necessary interface modifiations (i.e., loading min max values) */
+      void on_cboBlue_currentIndexChanged(const QString&);
+      /** This slow handles necessary interface modifiations (i.e., loading min max values) */
+      void on_cboGray_currentIndexChanged(const QString&);
+      /** This slow handles necessary interface modifiations (i.e., loading min max values) */
+      void on_cboGreen_currentIndexChanged(const QString&);
+      /** This slow handles necessary interface modifiations (i.e., loading min max values) */
+      void on_cboRed_currentIndexChanged(const QString&); 
+      /**The slot handles necessary interface modifications based when color map selected changes*/
+      void on_cboxColorMap_currentIndexChanged(const QString&);
+      /**The slot handles necessary interface modifications based when transparency band selection changes*/
+      void on_cboxTransparencyLayer_currentIndexChanged(const QString&);
+	    /**This slot calculates classification values and colors for the tree widget on the colormap tab*/
+	    void on_mClassifyButton_clicked();
+	    /**This slot deletes the current class from the tree widget on the colormap tab*/
+	    void on_mDeleteEntryButton_clicked();
+	    /**Callback for double clicks on the colormap entry widget*/
+	    void handleColormapTreeWidgetDoubleClick(QTreeWidgetItem* item, int column);
 	
 
     signals:
