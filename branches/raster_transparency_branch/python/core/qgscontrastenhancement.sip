@@ -14,7 +14,8 @@ public:
     NO_STRETCH, //this should be the default color scaling algorithm
     STRETCH_TO_MINMAX, //linear histogram stretch
     STRETCH_AND_CLIP_TO_MINMAX,
-    CLIP_TO_MINMAX
+    CLIP_TO_MINMAX,
+    USER_DEFINED
   };
     
   /*! These are exactly the same as GDAL pixel data types */
@@ -67,12 +68,13 @@ public:
    */  
   /** \brief Return true if pixel is in stretable range, false if pixel is outside of range (i.e., clipped) */
   bool isValueInDisplayableRange(double);
-  void setContrastEnhancementAlgorithm(CONTRAST_ENHANCEMENT_ALGORITHM, bool generatreTable=true);
+  void setContrastEnhancementAlgorithm(CONTRAST_ENHANCEMENT_ALGORITHM, bool generateTable=true);
   /** \brief Set the maximum value for the contrast enhancement range. */
   void setMaximumValue(double, bool generateTable=true);
   /** \brief Return the minimum value for the contrast enhancement range. */
   void setMinimumValue(double, bool generateTable=true);
+  bool setCustomEnhancementFunction(SIP_PYOBJECT, generateTable=true);
   /** \brief Apply the contrast enhancement to a value. Return values are 0 - 254, -1 means the pixel was clipped and should not be displayed */
   int stretch(double);    
-   
+
 };

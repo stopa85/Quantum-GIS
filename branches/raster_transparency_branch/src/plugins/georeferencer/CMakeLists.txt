@@ -52,12 +52,14 @@ INCLUDE_DIRECTORIES(
      ..
      ${GSL_INCLUDE_DIR}
      ${GDAL_INCLUDE_DIR}
+     ${PYTHON_INCLUDE_PATH}
 )
 
 TARGET_LINK_LIBRARIES(georefplugin
   qgis_core
   qgis_gui
   ${GSL_LIBRARIES}
+  ${PYTHON_LIBRARIES}
 )
 
 

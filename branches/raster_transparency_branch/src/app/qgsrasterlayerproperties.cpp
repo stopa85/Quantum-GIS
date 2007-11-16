@@ -1425,6 +1425,42 @@ void QgsRasterLayerProperties::on_buttonBuildPyramids_clicked()
   txtbMetadata->document()->setDefaultStyleSheet(myStyle);
 }
 
+void QgsRasterLayerProperties::on_cboBlue_currentIndexChanged(const QString& theText)
+{
+  if(tr("Not Set") != theText)
+  {
+    leBlueMin->setText(QString::number(rasterLayer->getMinimumValue(theText)));
+    leBlueMax->setText(QString::number(rasterLayer->getMaximumValue(theText)));
+  }
+}
+
+void QgsRasterLayerProperties::on_cboGray_currentIndexChanged(const QString& theText)
+{
+  if(tr("Not Set") != theText)
+  {
+    leGrayMin->setText(QString::number(rasterLayer->getMinimumValue(theText)));
+    leGrayMax->setText(QString::number(rasterLayer->getMaximumValue(theText)));
+  }
+}
+
+void QgsRasterLayerProperties::on_cboGreen_currentIndexChanged(const QString& theText)
+{
+  if(tr("Not Set") != theText)
+  {
+    leGreenMin->setText(QString::number(rasterLayer->getMinimumValue(theText)));
+    leGreenMax->setText(QString::number(rasterLayer->getMaximumValue(theText)));
+  }
+}
+
+void QgsRasterLayerProperties::on_cboRed_currentIndexChanged(const QString& theText)
+{
+  if(tr("Not Set") != theText)
+  {
+    leRedMin->setText(QString::number(rasterLayer->getMinimumValue(theText)));
+    leRedMax->setText(QString::number(rasterLayer->getMaximumValue(theText)));
+  }
+}
+
 void QgsRasterLayerProperties::on_pbnAddValuesFromDisplay_clicked()
 {
   QMessageBox::warning(this, "Function Not Available", "This functionality will be added soon");

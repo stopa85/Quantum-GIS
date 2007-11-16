@@ -96,6 +96,7 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} raster renderer symbology
   spatialindex/include
   ${QT_QTSVG_INCLUDE_DIR}
   ${PROJ_INCLUDE_DIR}
+  ${PYTHON_INCLUDE_PATH}
   ${SQLITE3_INCLUDE_DIR}
   ${GEOS_INCLUDE_DIR}
   ${GDAL_INCLUDE_DIR}
@@ -163,6 +164,7 @@ TARGET_LINK_LIBRARIES(qgis_core
   ${GEOS_LIBRARY}
   ${GDAL_LIBRARY}
   ${PLATFORM_LIBRARIES}
+  ${PYTHON_LIBRARIES}
 )
 #work aroud for the fact that qt3 support on mac is linked ot qsql
 IF (APPLE)
