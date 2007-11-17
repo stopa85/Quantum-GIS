@@ -2847,7 +2847,7 @@ const QgsRasterBandStats QgsRasterLayer::getRasterBandStats(QString const & theB
 //if no matching band is found zero will be returned!
 const int QgsRasterLayer::getRasterBandNumber(QString const &  theBandNameQString)
 {
-  for (int myIterator = 0; myIterator <= mRasterStatsList.size(); ++myIterator)
+  for (int myIterator = 0; myIterator < mRasterStatsList.size(); ++myIterator)
   {
     //find out the name of this band
     QgsRasterBandStats myRasterBandStats = mRasterStatsList[myIterator];
