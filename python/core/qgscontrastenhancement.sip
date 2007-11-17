@@ -73,7 +73,6 @@ public:
   void setMaximumValue(double, bool generateTable=true);
   /** \brief Return the minimum value for the contrast enhancement range. */
   void setMinimumValue(double, bool generateTable=true);
-  bool setCustomEnhancementFunction(SIP_PYOBJECT, generateTable=true);
   /** \brief Apply the contrast enhancement to a value. Return values are 0 - 254, -1 means the pixel was clipped and should not be displayed */
   int stretch(double);    
 

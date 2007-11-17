@@ -30,11 +30,6 @@ QgsContrastEnhancement::QgsContrastEnhancement(QgsRasterDataType theDataType)
   mContrastEnhancementAlgorithm = NO_STRETCH;
   mQgsRasterDataType = theDataType;
   
-  mPythonCallbackFunction = NULL;
-  mCCallbackFunction = NULL;
-  mPythonCallback = false;
-  mCCallback = false;
-  
   mMinimumValue = getMinimumPossibleValue(mQgsRasterDataType);
   mMaximumValue = getMaximumPossibleValue(mQgsRasterDataType);
   mMinimumMaximumRange = mMaximumValue - mMinimumValue;
@@ -230,27 +225,7 @@ int QgsContrastEnhancement::calculateContrastEnhancementValue(double theValue)
     }
     case USER_DEFINED:
     {
-      if(mPythonCallback)
-      {
-        PyObject* result;
-        PyObject* args;
-  
-        args = Py_BuildValue("(d)", theValue);
-        result = PyEval_CallObject(mPythonCallbackFunction, args);
-        Py_DECREF(args);
-        
-        if(result == NULL)
-          return 0;
-        else 
-          return PyInt_AsLong(result);
-      }
-      else if(mCCallback)
-      {
-        return mCCallbackFunction(theValue);
-      }
-      else
-        return 0;
-      break;
+      return 0;
     }
     default:
       return 0;
@@ -372,53 +347,6 @@ void QgsContrastEnhancement::setMinimumValue(double theValue, bool generateTable
   {
     generateLookupTable();
   }
-}
-
-bool QgsContrastEnhancement::setCustomEnhancementFunction(int(*theFunction)(double x), bool generateTable)
-{
-  mCCallbackFunction = theFunction;
-  if(NULL != theFunction)
-  {
-    mCCallback = true;
-    mEnhancementDirty = true;
-    
-    if(generateTable)
-    {
-      generateLookupTable();
-    }    
-    
-    return true;
-  }
-  
-  return false;
-}
-
-bool QgsContrastEnhancement::setCustomEnhancementFunction(PyObject* theFunction, bool generateTable)
-{
-  PyObject *myFunction = NULL;
-  if(PyArg_ParseTuple(theFunction, "O", &myFunction))
-  {
-    if(!PyCallable_Check(myFunction))
-    {
-      PyErr_SetString(PyExc_TypeError, "expected a callable");
-      return false;
-    }
-    Py_XINCREF(myFunction);
-    Py_XDECREF(mPythonCallbackFunction);
-    mPythonCallbackFunction = myFunction;
-
-    mPythonCallback = true;
-    mEnhancementDirty = true;
-    
-    if(generateTable)
-    {
-      generateLookupTable();
-    }
-    
-    return true;
-  }
-  
-  return false;
 }
 
 /**

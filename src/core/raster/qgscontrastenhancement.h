@@ -22,8 +22,6 @@ class originally created circa 2004 by T.Sutton, Gary E.Sherman, Steve Halasz
 #define QGSCONTRASTENHANCEMENT_H
  
 #include <gdal_priv.h>
-#include <Python.h>
-
 #include <limits>
 
 class CORE_EXPORT QgsContrastEnhancement {
@@ -101,11 +99,6 @@ public:
   void setMaximumValue(double, bool generateTable=true);
   /** \brief Return the minimum value for the contrast enhancement range. */
   void setMinimumValue(double, bool generateTable=true);
-  /** \brief Set the point to the python function that will generate new contrast enhancement values */
-  //TODO: FIX This is not fully functional yet, will still causes segfault.
-  bool setCustomEnhancementFunction(PyObject*, bool generateTable=true);
-  /** \brief Set the point to the C\C++ function that will generate new contrast enhancement values */
-  bool setCustomEnhancementFunction(int(*)(double), bool generateTable=true);
   /** \brief Apply the contrast enhancement to a value. Return values are 0 - 254, -1 means the pixel was clipped and should not be displayed */
   int stretch(double);
   
@@ -118,14 +111,6 @@ private:
   double mQgsRasterDataTypeRange;
   /** \brief Flag indicating if the lookup table needs to be regenerated */
   bool mEnhancementDirty;
-  /** \brief Pointer to a python function for userdefined contrast enhancement algorithm */
-  PyObject* mPythonCallbackFunction;
-  /** \brief Boolean flag to indicate if the python call back function has been set */
-  bool mPythonCallback;
-  /** \brief Pointer to a C\C++ function for userdefined contrast enhancement algorithm */
-  int(*mCCallbackFunction)(double);
-  /** \brief Boolean flag to indicate if the C\C++ call back function has been set */
-  bool mCCallback;
 
   /** \brief User defineable minimum value for the band, used for stretching */
   double mMinimumValue;
