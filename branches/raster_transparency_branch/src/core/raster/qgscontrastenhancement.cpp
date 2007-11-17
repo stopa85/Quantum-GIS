@@ -19,23 +19,27 @@ class originally created circa 2004 by T.Sutton, Gary E.Sherman, Steve Halasz
  ***************************************************************************/
  
 #include "qgscontrastenhancement.h"
- 
-#include <iostream>
- 
+#include "qgscontrastenhancementfunction.h"
+#include "qgslinearminmaxenhancement.h"
+#include "qgslinearminmaxenhancementwithclip.h"
+#include "qgscliptominmaxenhancement.h"
+
 QgsContrastEnhancement::QgsContrastEnhancement(QgsRasterDataType theDataType)
 {
 
   mLookupTable = NULL;
+  mContrastEnhancementFunction = NULL;
   mEnhancementDirty = false;
   mContrastEnhancementAlgorithm = NO_STRETCH;
   mQgsRasterDataType = theDataType;
   
   mMinimumValue = getMinimumPossibleValue(mQgsRasterDataType);
   mMaximumValue = getMaximumPossibleValue(mQgsRasterDataType);
-  mMinimumMaximumRange = mMaximumValue - mMinimumValue;
   mQgsRasterDataTypeRange = mMaximumValue - mMinimumValue;
   
   mLookupTableOffset = mMinimumValue * -1;
+  
+  mContrastEnhancementFunction = new QgsContrastEnhancementFunction(mQgsRasterDataType, mMinimumValue, mMaximumValue);
   
   //If the data type is larger than 16-bit do not generate a lookup table
   if(mQgsRasterDataTypeRange <= 65535.0)
@@ -149,88 +153,6 @@ double QgsContrastEnhancement::getMinimumPossibleValue(QgsRasterDataType theData
  *
  */
  
-/**
-  This method calcualted the new value for a pixel based on the contrast
-  enhancement algorithm. These case statements could be abstracted more
-  so then a USER_DEFINED algorithm could be added and only a pointer to 
-  the enhancement algorthm would be needed.
-  
-  @param theValue The pixel value to enhance
-*/
-int QgsContrastEnhancement::calculateContrastEnhancementValue(double theValue)
-{
-  switch(mContrastEnhancementAlgorithm)
-  {
-    case NO_STRETCH:
-    {
-      if(mQgsRasterDataType == QGS_Byte)
-      {
-        return static_cast<int>(theValue);
-      }
-      else
-      {
-        return static_cast<int>((((theValue - getMinimumPossibleValue(mQgsRasterDataType))/(getMaximumPossibleValue(mQgsRasterDataType) - getMinimumPossibleValue(mQgsRasterDataType)))*255.0));
-      }
-      break;
-    }
-    case STRETCH_TO_MINMAX:
-    {
-      int myStretchedValue = static_cast<int>(((theValue - mMinimumValue)/(mMinimumMaximumRange))*255.0);
-      if(myStretchedValue < getMinimumPossibleValue(mQgsRasterDataType))
-      {
-        return 0;
-      }
-      else if(myStretchedValue > getMaximumPossibleValue(mQgsRasterDataType))
-      {
-        return static_cast<int>(getMaximumPossibleValue(mQgsRasterDataType));
-      }
-      return myStretchedValue; 
-      break;
-    }    
-    case CLIP_TO_MINMAX:
-    {
-      if((theValue - mLookupTableOffset) < mMinimumValue || (theValue - mLookupTableOffset) > mMaximumValue)
-      {
-        return -1;
-      }
-      
-      if(mQgsRasterDataType == QGS_Byte)
-      {
-        return static_cast<int>(theValue);
-      }
-      else
-      {
-        return static_cast<int>((((theValue - getMinimumPossibleValue(mQgsRasterDataType))/(getMaximumPossibleValue(mQgsRasterDataType) - getMinimumPossibleValue(mQgsRasterDataType)))*255.0));
-      }
-      break;
-    }
-    case STRETCH_AND_CLIP_TO_MINMAX:
-    {
-      if((theValue - mLookupTableOffset) < mMinimumValue || (theValue - mLookupTableOffset) > mMaximumValue)
-      {
-        return -1;
-      }
-
-      int myStretchedValue = static_cast<int>(((theValue - mMinimumValue)/(mMinimumMaximumRange))*255.0);
-      if(myStretchedValue < getMinimumPossibleValue(mQgsRasterDataType))
-      {
-        return 0;
-      }
-      else if(myStretchedValue > getMaximumPossibleValue(mQgsRasterDataType))
-      {
-        return static_cast<int>(getMaximumPossibleValue(mQgsRasterDataType));
-      }
-      return myStretchedValue; 
-      break;
-    }
-    case USER_DEFINED:
-    {
-      return 0;
-    }
-    default:
-      return 0;
-  }
-}
 
 /**
     Generate a new lookup table
@@ -239,13 +161,14 @@ bool QgsContrastEnhancement::generateLookupTable()
 {
   mEnhancementDirty = false;
 
+  if(NULL == mContrastEnhancementFunction) { return false; }
   if(NO_STRETCH == mContrastEnhancementAlgorithm) { return false; }
   if(QGS_Byte != mQgsRasterDataType && QGS_UInt16 != mQgsRasterDataType && QGS_Int16 != mQgsRasterDataType) { return false; }
   if(!mLookupTable) { return false; }
 
   for(int myIterator = 0; myIterator < mQgsRasterDataTypeRange; myIterator++)
   {
-    mLookupTable[myIterator] = calculateContrastEnhancementValue((double)myIterator - mLookupTableOffset);
+    mLookupTable[myIterator] = mContrastEnhancementFunction->enhanceValue((double)myIterator - mLookupTableOffset);
   }
 
   return true;
@@ -259,22 +182,12 @@ bool QgsContrastEnhancement::generateLookupTable()
 bool QgsContrastEnhancement::isValueInDisplayableRange(double theValue)
 {
 
-  //If the contrast enancement has clipping, compare the provided value to the mininimum and maximum values set for the band
-  if(CLIP_TO_MINMAX == mContrastEnhancementAlgorithm || STRETCH_AND_CLIP_TO_MINMAX == mContrastEnhancementAlgorithm)
+  if(NULL != mContrastEnhancementFunction)
   {
-    if(theValue < mMinimumValue || theValue > mMaximumValue)
-    {
-      return false;
-    }
+    return mContrastEnhancementFunction->isValueInDisplayableRange(theValue);
   }
 
-  //Also check to see if the provided value is with the range for the data type
-  if(theValue < getMinimumPossibleValue(mQgsRasterDataType) || theValue > getMaximumPossibleValue(mQgsRasterDataType))
-  {
-    return false;
-  }
-
-  return true;
+  return false;
 }
 
 /**
@@ -285,15 +198,46 @@ bool QgsContrastEnhancement::isValueInDisplayableRange(double theValue)
 */
 void QgsContrastEnhancement::setContrastEnhancementAlgorithm(CONTRAST_ENHANCEMENT_ALGORITHM theAlgorithm, bool generateTable)
 {
-  if(generateTable && theAlgorithm != mContrastEnhancementAlgorithm )
+  if(theAlgorithm != mContrastEnhancementAlgorithm )
   {
-    mContrastEnhancementAlgorithm = theAlgorithm;
-    generateLookupTable();
-  }
-  else if(theAlgorithm != mContrastEnhancementAlgorithm)
-  {
+    switch(theAlgorithm)
+    {
+      case STRETCH_TO_MINMAX :
+        mContrastEnhancementFunction = new QgsLinearMinMaxEnhancement(mQgsRasterDataType, mMinimumValue, mMaximumValue);
+        break;
+      case STRETCH_AND_CLIP_TO_MINMAX :
+        mContrastEnhancementFunction = new QgsLinearMinMaxEnhancementWithClip(mQgsRasterDataType, mMinimumValue, mMaximumValue);
+        break;
+      case CLIP_TO_MINMAX :
+        mContrastEnhancementFunction = new QgsClipToMinMaxEnhancement(mQgsRasterDataType, mMinimumValue, mMaximumValue);
+        break;
+      default:
+        mContrastEnhancementFunction = new QgsContrastEnhancementFunction(mQgsRasterDataType, mMinimumValue, mMaximumValue);
+        break;
+    }
+    
     mEnhancementDirty = true;
     mContrastEnhancementAlgorithm = theAlgorithm;
+    
+    if(generateTable)
+    {
+      generateLookupTable();
+    }
+  }
+}
+
+/**
+    A public function that allows the user to set their own custom contrast enhancement function. 
+    
+    @param theFunction The new contrast enhancement function
+*/
+void QgsContrastEnhancement::setContrastEnhancementFunction(QgsContrastEnhancementFunction* theFunction)
+{
+  if(NULL != theFunction)
+  {
+    mContrastEnhancementFunction = theFunction;
+    mContrastEnhancementAlgorithm = USER_DEFINED;
+    generateLookupTable();
   }
 }
 
@@ -314,8 +258,12 @@ void QgsContrastEnhancement::setMaximumValue(double theValue, bool generateTable
     mMaximumValue = theValue; 
   }
 
+  if(NULL != mContrastEnhancementFunction)
+  {
+    mContrastEnhancementFunction->setMaximumValue(theValue);
+  }
+
   mEnhancementDirty = true;
-  mMinimumMaximumRange = mMaximumValue - mMinimumValue;
 
   if(generateTable)
   {
@@ -340,8 +288,12 @@ void QgsContrastEnhancement::setMinimumValue(double theValue, bool generateTable
     mMinimumValue = theValue; 
   }
 
+  if(NULL != mContrastEnhancementFunction)
+  {
+    mContrastEnhancementFunction->setMinimumValue(theValue);
+  }
+
   mEnhancementDirty = true;
-  mMinimumMaximumRange = mMaximumValue - mMinimumValue;
 
   if(generateTable)
   {
@@ -370,6 +322,6 @@ int QgsContrastEnhancement::stretch(double theValue)
     // Even if the contrast enhancement algorithms is set to NO_STRETCH
     // The input values will still have to be scaled for all data types
     // greater than 1 byte.
-    return calculateContrastEnhancementValue(theValue);
+    return mContrastEnhancementFunction->enhanceValue(theValue);
   }
 }
