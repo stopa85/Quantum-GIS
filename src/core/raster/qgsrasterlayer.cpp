@@ -114,7 +114,8 @@ static const char *const mSupportedRasterFormats[] =
 void QgsRasterLayer::buildSupportedRasterFileFilter(QString & theFileFiltersString)
 {
   // first get the GDAL driver manager
-  GDALAllRegister();
+  registerGdalDrivers();
+
   GDALDriverManager *myGdalDriverManager = GetGDALDriverManager();
 
   if (!myGdalDriverManager)
@@ -282,6 +283,15 @@ void QgsRasterLayer::buildSupportedRasterFileFilter(QString & theFileFiltersStri
   QgsDebugMsg("Raster filter list built: " + theFileFiltersString);
 }                               // buildSupportedRasterFileFilter_()
 
+/**
+ ensures that GDAL drivers are registered, but only once.
+*/
+
+void QgsRasterLayer::registerGdalDrivers()
+{
+    if( GDALGetDriverCount() == 0 )
+        GDALAllRegister();
+}
 
 /**
   returns true if the given raster driver name is one currently
@@ -322,7 +332,7 @@ bool QgsRasterLayer::isValidRasterFileName(QString const & theFileNameQString)
 {
 
   GDALDatasetH myDataset;
-  GDALAllRegister();
+  registerGdalDrivers();
 
   //open the file using gdal making sure we have handled locale properly
   myDataset = GDALOpen( QFile::encodeName(theFileNameQString).constData(), GA_ReadOnly );
@@ -418,7 +428,7 @@ QgsRasterLayer::~QgsRasterLayer()
 
 bool QgsRasterLayer::readFile( QString const & fileName )
 {
-  GDALAllRegister();
+  registerGdalDrivers();
 
   //open the dataset making sure we handle char encoding of locale properly
   mGdalDataset = (GDALDataset *) GDALOpen(QFile::encodeName(fileName).constData(), GA_ReadOnly);
@@ -4419,7 +4429,8 @@ QString QgsRasterLayer::buildPyramids(RasterPyramidList const & theRasterPyramid
     return "ERROR_WRITE_ACCESS";
   }
 
-  GDALAllRegister();
+  registerGdalDrivers();
+
   //close the gdal dataset and reopen it in read / write mode
   delete mGdalDataset;
   mGdalDataset = (GDALDataset *) GDALOpen(QFile::encodeName(mDataSource).constData(), GA_Update);
