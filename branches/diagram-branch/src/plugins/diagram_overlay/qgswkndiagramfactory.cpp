@@ -84,7 +84,7 @@ QImage* QgsWKNDiagramFactory::createPieChart(int size, const QgsAttributeMap& da
 
   QgsAttributeMap::const_iterator value_it;
   QgsAttributeList::const_iterator it = mAttributes.constBegin();
-  for(; it != mAttributes.end(); ++it)
+  for(; it != mAttributes.constEnd(); ++it)
     {
       value_it = dataValues.find(*it);
       valueList.push_back(value_it->toDouble());
@@ -112,7 +112,7 @@ QImage* QgsWKNDiagramFactory::createPieChart(int size, const QgsAttributeMap& da
   return diagramImage;
 }
 
-QImage* QgsWKNDiagramFactory::createBarChart(int height, const QgsAttributeMap& dataValues) const
+QImage* QgsWKNDiagramFactory::createBarChart(int size, const QgsAttributeMap& dataValues) const
 {
   //for barcharts, the specified height is valid for the classification attribute
   //the heights of the other bars are calculated with the same height/value ratio
@@ -121,13 +121,13 @@ QImage* QgsWKNDiagramFactory::createBarChart(int height, const QgsAttributeMap& 
   //int diagramWidth = barWidth * mAttributes.size();
 
   int w = mBarWidth * mAttributes.size();
-  int h = getHeightBarChart(height, dataValues);
+  int h = getHeightBarChart(size, dataValues);
     
   QImage* diagramImage = new QImage(QSize(w, h), QImage::Format_ARGB32_Premultiplied);
   diagramImage->fill(0); //transparent background
 
   //calculate value/pixel ratio
-  double pixelValueRatio = pixelValueRatioBarChart(height, dataValues);
+  double pixelValueRatio = pixelValueRatioBarChart(size, dataValues);
 
   //draw the bars itself
   double currentValue;
