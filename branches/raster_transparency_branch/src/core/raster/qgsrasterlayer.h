@@ -981,6 +981,8 @@ color of the lower class for every pixel between two class breaks. Returns 0 in 
     /** \brief Flag to indicate whether debug infor overlay should be rendered onto the raster.  */
     bool mDebugOverlayFlag;
     /** \brief Pointer to the gdaldataset.  */
+    GDALDataset * mGdalBaseDataset;
+    /** \brief Pointer to the gdaldataset (possibly warped vrt).  */
     GDALDataset * mGdalDataset;
     /** \brief Values for mapping pixel to world coordinates. Contents of
      * this array are the same as the gdal adfGeoTransform */
