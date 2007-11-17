@@ -978,7 +978,7 @@ void QgsRasterLayerProperties::apply()
   }
   else
   {
-    rasterLayer->setContrastEnhancementAlgorithm(QgsContrastEnhancement::NO_STRETCH);
+    rasterLayer->setContrastEnhancementAlgorithm(QgsContrastEnhancement::NO_STRETCH, false);
   }
   
   //set the std deviations to be plotted and check for user defined Min Max values

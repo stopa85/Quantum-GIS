@@ -48,6 +48,10 @@ qgsvectorlayer.cpp
 raster/qgscolortable.cpp
 raster/qgsrasterlayer.cpp
 raster/qgscontrastenhancement.cpp
+raster/qgscontrastenhancementfunction.cpp
+raster/qgslinearminmaxenhancement.cpp
+raster/qgslinearminmaxenhancementwithclip.cpp
+raster/qgscliptominmaxenhancement.cpp
 
 renderer/qgscontinuouscolorrenderer.cpp
 renderer/qgsgraduatedsymbolrenderer.cpp

@@ -17,12 +17,14 @@ class originally created circa 2004 by T.Sutton, Gary E.Sherman, Steve Halasz
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
- 
+
 #ifndef QGSCONTRASTENHANCEMENT_H
 #define QGSCONTRASTENHANCEMENT_H
- 
+
 #include <gdal_priv.h>
 #include <limits>
+
+class QgsContrastEnhancementFunction;
 
 class CORE_EXPORT QgsContrastEnhancement {
  
@@ -94,7 +96,10 @@ public:
    */  
   /** \brief Return true if pixel is in stretable range, false if pixel is outside of range (i.e., clipped) */
   bool isValueInDisplayableRange(double);
+  /** \brief Set the contrast enhancement algorithm */
   void setContrastEnhancementAlgorithm(CONTRAST_ENHANCEMENT_ALGORITHM, bool generateTable=true);
+  /** \brief A public method that allows the user to set their own custom contrast enhancment function */
+  void setContrastEnhancementFunction(QgsContrastEnhancementFunction*);
   /** \brief Set the maximum value for the contrast enhancement range. */
   void setMaximumValue(double, bool generateTable=true);
   /** \brief Return the minimum value for the contrast enhancement range. */
@@ -111,13 +116,13 @@ private:
   double mQgsRasterDataTypeRange;
   /** \brief Flag indicating if the lookup table needs to be regenerated */
   bool mEnhancementDirty;
+  
+  QgsContrastEnhancementFunction* mContrastEnhancementFunction;
 
   /** \brief User defineable minimum value for the band, used for stretching */
   double mMinimumValue;
   /** \brief user defineable maximum value for the band, used for stretching */
   double mMaximumValue;
-  /** \brief Minimum maximum range for the band, used for stretching */
-  double mMinimumMaximumRange;
 
   /** \brief Scalar so that values can be used as array indicies */
   double mLookupTableOffset;
