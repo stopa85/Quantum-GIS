@@ -39,7 +39,8 @@ struct QgsDiagramItem
 Subclasses need to implement the method calculate diagram size.*/
 class QgsDiagramRenderer
 {
-  
+ public:
+
   //describes the type of interpolation between the items
   enum InterpolationType
     {
@@ -49,7 +50,6 @@ class QgsDiagramRenderer
       CONSTANT //constant value is used (the value of the first item)
     };
 
- public:
   QgsDiagramRenderer(const QList<int>& classificationAttributes);
   virtual ~QgsDiagramRenderer();
   /**Returns a diagram image for a feature.*/
@@ -76,6 +76,7 @@ class QgsDiagramRenderer
   void setDiagramItems(const QList<QgsDiagramItem>& items) {mItems = items;}
   /**Returns the interpolation items*/
   QList<QgsDiagramItem> diagramItems() const {return mItems;}
+  void setInterpolationType(InterpolationType t){mInterpolationType = t;}
 
  private:
   QgsDiagramRenderer();
