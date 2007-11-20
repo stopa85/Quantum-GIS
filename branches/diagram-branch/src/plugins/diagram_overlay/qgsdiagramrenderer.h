@@ -35,33 +35,47 @@ struct QgsDiagramItem
   int size;
 };
 
-/**An interface class for diagram renderer. The main method is 'renderDiagram', which returns the diagram image for a GIS feature. The renderer has a set of classification attributes, a set of colors for these attributes and a diagram type*/
+/**An interface class for diagram renderer. The main method is 'renderDiagram', which returns the diagram image for a GIS feature. The renderer has a set of classification attributes and a reference to a diagram factory object, which is responsible for creating the specific diagram type.
+Subclasses need to implement the method calculate diagram size.*/
 class QgsDiagramRenderer
 {
+  
+  //describes the type of interpolation between the items
+  enum InterpolationType
+    {
+      DISCRETE, //lower item is used
+      LINEAR, //linear interpolation between items containing the value
+      ATTRIBUTE, //only attribute value is considered
+      CONSTANT //constant value is used (the value of the first item)
+    };
+
  public:
   QgsDiagramRenderer(const QList<int>& classificationAttributes);
   virtual ~QgsDiagramRenderer();
   /**Returns a diagram image for a feature.*/
-  virtual QImage* renderDiagram(const QgsFeature& f) const = 0;
+  virtual QImage* renderDiagram(const QgsFeature& f) const;
   /**Returns only the size of the diagram.
      @param width the width of the diagram
      @param height the height of the diagram
-     @param value the attribute value used for the size calculation
+     @param f feature that is associated with the diagram
      @return 0 in case of success*/
-  virtual int getDiagramSize(int& width, int& height, const QgsFeature& f) const = 0;
+  virtual int getDiagramDimensions(int& width, int& height, const QgsFeature& f) const;
   //setters and getters
-  virtual QString rendererName() const = 0;
   QgsDiagramFactory* factory() const {return mFactory;}
   /**Set a (properly configured) factory class. Takes ownership of the factory object*/
   void setFactory(QgsDiagramFactory* f){mFactory = f;}
   void addClassificationAttribute(int attrNr);
   /**Reads the specific renderer settings from project file*/
-  virtual bool readXML(const QDomNode& rendererNode) = 0;
+  virtual bool readXML(const QDomNode& rendererNode);
   /**Saves settings to project file. Returns true in case of success*/
-  virtual bool writeXML(QDomNode& overlay_node, QDomDocument& doc) const = 0;
+  virtual bool writeXML(QDomNode& overlay_node, QDomDocument& doc) const;
   /**Creates pairs of strings / images for use in the legend
    @return 0 in case of success*/
-  virtual int createLegendContent(QMap<QString, QImage*> items) const = 0; 
+  virtual int createLegendContent(QMap<QString, QImage*> items) const;
+  /**Sets the items for interpolation. The values of the items must be in ascending order*/
+  void setDiagramItems(const QList<QgsDiagramItem>& items) {mItems = items;}
+  /**Returns the interpolation items*/
+  QList<QgsDiagramItem> diagramItems() const {return mItems;}
 
  private:
   QgsDiagramRenderer();
@@ -72,9 +86,21 @@ class QgsDiagramRenderer
   /**Attributes for determining the size of the diagram.
    If there are several attributes, their sum is used.*/
   QList<int> mClassificationAttributes;
-  /**Searches the value of the classification attribute
+  /**Value/size pairs for determination of the diagram size*/
+  QList<QgsDiagramItem> mItems;
+  /**Describes the type of interpolation (linear by default)*/
+  InterpolationType mInterpolationType;
+
+  /**Searches the value of the classification attribute(s). Considers that there 
+     may be several attributes in case of numeric values (sum).
    @return 0 in case of success*/
   int classificationValue(const QgsFeature& f, QVariant& value) const;
+  /**Gets diagram size
+   @return 0 in case of success*/
+  virtual int calculateDiagramSize(const QgsFeature& f, int& size) const;
+  /**Does (linear or discrete) interpolation*/
+  int interpolateSize(double value, double lowerValue, double upperValue, int lowerSize, \
+		      int upperSize) const;
 };
 
 #endif

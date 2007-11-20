@@ -16,7 +16,7 @@
  ***************************************************************************/
 
 #include "qgslinearlyscalingdialog.h"
-#include "qgslinearlyscalingdiagramrenderer.h"
+#include "qgsdiagramrenderer.h"
 #include "qgsvectordataprovider.h"
 #include "qgswkndiagramfactory.h"
 
@@ -36,7 +36,7 @@ QgsDiagramRenderer* QgsLinearlyScalingDialog::createRenderer(const QString& type
   //create a linearly scaling renderer
   QList<int> attributesList;
   attributesList.push_back(classAttr);
-  QgsLinearlyScalingDiagramRenderer* renderer = new QgsLinearlyScalingDiagramRenderer(attributesList);
+  QgsDiagramRenderer* renderer = new QgsDiagramRenderer(attributesList);
   
   //and items of renderer
   QList<QgsDiagramItem> itemList;
@@ -62,7 +62,7 @@ QgsDiagramRenderer* QgsLinearlyScalingDialog::createRenderer(const QString& type
 
 void QgsLinearlyScalingDialog::applySettings(const QgsDiagramRenderer* renderer)
 {
-  const QgsLinearlyScalingDiagramRenderer* linearRenderer = dynamic_cast<const QgsLinearlyScalingDiagramRenderer*>(renderer);
+  const QgsDiagramRenderer* linearRenderer = dynamic_cast<const QgsDiagramRenderer*>(renderer);
   if(linearRenderer)
     {
       QList<QgsDiagramItem> itemList = linearRenderer->diagramItems();
