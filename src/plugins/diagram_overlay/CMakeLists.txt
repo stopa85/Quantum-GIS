@@ -8,7 +8,6 @@ SET (DIAGRAMOVERLAY_SRCS
      qgsdiagramoverlayplugin.cpp
      qgsdiagramrenderer.cpp
      qgsdiagramrendererwidget.cpp
-     qgslinearlyscalingdiagramrenderer.cpp
      qgslinearlyscalingdialog.cpp
 )
 

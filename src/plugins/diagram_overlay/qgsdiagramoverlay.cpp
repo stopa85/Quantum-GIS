@@ -23,7 +23,6 @@
 #include "qgsfeature.h"
 #include "qgsfield.h"
 #include "qgsgeometry.h"
-#include "qgslinearlyscalingdiagramrenderer.h"
 #include "qgsmaptopixel.h"
 #include "qgsproject.h"
 #include "qgsvectordataprovider.h"
@@ -78,7 +77,7 @@ void QgsDiagramOverlay::createOverlayObjects(const QgsRect& viewExtent)
 	  while(theProvider->getNextFeature(currentFeature))
 	    {
 	      //todo: insert more objects for multipart features
-	      if(mDiagramRenderer->getDiagramSize(width, height, currentFeature) != 0)
+	      if(mDiagramRenderer->getDiagramDimensions(width, height, currentFeature) != 0)
 		{
 		  //error
 		}
@@ -167,7 +166,7 @@ void QgsDiagramOverlay::drawOverlayObjects(QPainter * p, const QgsRect& viewExte
 
 int QgsDiagramOverlay::getOverlayObjectSize(int& width, int& height, double value, const QgsFeature& f) const
 {
-	return mDiagramRenderer->getDiagramSize(width, height, f);
+  return mDiagramRenderer->getDiagramDimensions(width, height, f);
 }
 
 bool QgsDiagramOverlay::readXML(const QDomNode& overlayNode)
@@ -239,7 +238,7 @@ bool QgsDiagramOverlay::readXML(const QDomNode& overlayNode)
   QString type = rendererElem.attribute("type");
   if(type == "linearly_scaling")
     {
-      theDiagramRenderer = new QgsLinearlyScalingDiagramRenderer(classAttrList);
+      theDiagramRenderer = new QgsDiagramRenderer(classAttrList);
       QgsWKNDiagramFactory* wknFactory = new QgsWKNDiagramFactory();
       wknFactory->setAttributes(attributeList);
       wknFactory->setColorSeries(colorList);
@@ -247,7 +246,7 @@ bool QgsDiagramOverlay::readXML(const QDomNode& overlayNode)
       wknFactory->setDiagramType(wellKnownName);
       theDiagramRenderer->setFactory(wknFactory);
     }
-  else
+  else //todo: add support for other renderer types
     {
       return false;
     }

@@ -20,7 +20,6 @@
 #include "qgsdiagramoverlay.h"
 #include "qgsfield.h"
 #include "qgslinearlyscalingdialog.h"
-#include "qgslinearlyscalingdiagramrenderer.h"
 #include "qgsvectordataprovider.h"
 #include "qgswkndiagramfactory.h"
 #include <QColorDialog>
@@ -230,7 +229,7 @@ void QgsDiagramDialog::restoreSettings(const QgsVectorOverlay* overlay)
 	{
 	  mDisplayDiagramsCheckBox->setCheckState(Qt::Unchecked);
 	}
-      const QgsLinearlyScalingDiagramRenderer* previousDiagramRenderer = dynamic_cast<const QgsLinearlyScalingDiagramRenderer*>(previousDiagramOverlay->diagramRenderer());
+      const QgsDiagramRenderer* previousDiagramRenderer = dynamic_cast<const QgsDiagramRenderer*>(previousDiagramOverlay->diagramRenderer());
      
       if(previousDiagramRenderer && previousDiagramRenderer->factory())
 	{
@@ -259,7 +258,7 @@ void QgsDiagramDialog::restoreSettings(const QgsVectorOverlay* overlay)
 	      mClassificationComboBox->setCurrentIndex(mClassificationComboBox->findText(classFieldName));
 	      
 	      //classification type (specific for renderer subclass)
-	      mClassificationTypeComboBox->setCurrentIndex(mClassificationTypeComboBox->findText(previousDiagramRenderer->rendererName()));
+	      mClassificationTypeComboBox->setCurrentIndex(mClassificationTypeComboBox->findText("linearly scaling"));
 	      
 	      //apply the renderer settings to the renderer specific dialog
 	      if(mWidgetStackRenderers->count() > 0)
