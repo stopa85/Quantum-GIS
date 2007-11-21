@@ -110,22 +110,22 @@ bool QgsDiagramRenderer::readXML(const QDomNode& rendererNode)
   QList<QgsDiagramItem> itemList;
   bool conversionOk;
 
-  QString interpolationName = rendererNode.toElement().attribute("interpolation");
-  if(interpolationName == "discrete")
+  QString interpretationName = rendererNode.toElement().attribute("item_interpretation");
+  if(interpretationName == "discrete")
     {
-      mInterpolationType = QgsDiagramRenderer::DISCRETE;
+      mItemInterpretation = QgsDiagramRenderer::DISCRETE;
     }
-  else if(interpolationName == "linear")
+  else if(interpretationName == "linear")
     {
-      mInterpolationType = QgsDiagramRenderer::LINEAR;
+      mItemInterpretation = QgsDiagramRenderer::LINEAR;
     }
-  else if(interpolationName == "attribute")
+  else if(interpretationName == "attribute")
     {
-      mInterpolationType = QgsDiagramRenderer::ATTRIBUTE;
+      mItemInterpretation = QgsDiagramRenderer::ATTRIBUTE;
     }
-  else if(interpolationName == "constant")
+  else if(interpretationName == "constant")
     {
-      mInterpolationType = QgsDiagramRenderer::CONSTANT;
+      mItemInterpretation = QgsDiagramRenderer::CONSTANT;
     }
 
   QDomNodeList itemNodeList = rendererElem.elementsByTagName("diagramitem"); 
@@ -151,24 +151,24 @@ bool QgsDiagramRenderer::writeXML(QDomNode& overlay_node, QDomDocument& doc) con
   QDomElement rendererElement = doc.createElement("renderer");
 
   //write interpolation to xml file
-  QString interpolationName;
-  if(mInterpolationType == QgsDiagramRenderer::DISCRETE)
+  QString interpretationName;
+  if(mItemInterpretation == QgsDiagramRenderer::DISCRETE)
     {
-      interpolationName = "discrete";
+      interpretationName = "discrete";
     }
-  else if(mInterpolationType == QgsDiagramRenderer::LINEAR)
+  else if(mItemInterpretation == QgsDiagramRenderer::LINEAR)
     {
-      interpolationName = "linear";
+      interpretationName = "linear";
     }
-  else if(mInterpolationType == QgsDiagramRenderer::ATTRIBUTE)
+  else if(mItemInterpretation == QgsDiagramRenderer::ATTRIBUTE)
     {
-      interpolationName = "attribute";
+      interpretationName = "attribute";
     }
-  else if(mInterpolationType == QgsDiagramRenderer::CONSTANT)
+  else if(mItemInterpretation == QgsDiagramRenderer::CONSTANT)
     {
-      interpolationName = "constant";
+      interpretationName = "constant";
     }
-  rendererElement.setAttribute("interpolation", interpolationName);
+  rendererElement.setAttribute("item_interpretation", interpretationName);
 
   QList<QgsDiagramItem>::const_iterator item_it = mItems.constBegin();
   for(; item_it != mItems.constEnd(); ++item_it)
@@ -211,6 +211,23 @@ int QgsDiagramRenderer::calculateDiagramSize(const QgsFeature& f, int& size) con
       return 1;
     }
 
+  if(mItemInterpretation == ATTRIBUTE)
+    {
+      size = value.toInt();
+      return 0;
+    }
+
+  if(mItems.size() < 1)
+    {
+      return 2;
+    }
+
+  if(mItemInterpretation == CONSTANT)
+    {
+      size = mItems.constBegin()->size;
+      return 0; 
+    }
+
   //find out size
   bool sizeAssigned = false;
 
@@ -229,7 +246,7 @@ int QgsDiagramRenderer::calculateDiagramSize(const QgsFeature& f, int& size) con
 	}
       if(!sizeAssigned)
 	{
-	  return 2;
+	  return 3;
 	}
     }
   else //numerical types
@@ -266,7 +283,7 @@ int QgsDiagramRenderer::calculateDiagramSize(const QgsFeature& f, int& size) con
 int QgsDiagramRenderer::interpolateSize(double value, double lowerValue, double upperValue, \
 						       int lowerSize, int upperSize) const
 {
-  switch(mInterpolationType)
+  switch(mItemInterpretation)
     {
     case DISCRETE:
       return lowerSize;
@@ -302,6 +319,8 @@ int QgsDiagramRenderer::interpolateSize(double value, double lowerValue, double 
 	    return (int)(2*sqrt(valueArea/M_PI));
 	  }
       }
+    default:
+      return 1;
     }
   return 0; //something went wrong if we arrive here
 }
