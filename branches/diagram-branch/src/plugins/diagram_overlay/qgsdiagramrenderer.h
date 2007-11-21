@@ -41,13 +41,13 @@ class QgsDiagramRenderer
 {
  public:
 
-  //describes the type of interpolation between the items
-  enum InterpolationType
+  //describes how the items are interpreted for diagram size calculation
+  enum ItemInterpretation
     {
-      DISCRETE, //lower item is used
+      DISCRETE, //lower item is used if item falls between lower and upper item
       LINEAR, //linear interpolation between items containing the value
-      ATTRIBUTE, //only attribute value is considered
-      CONSTANT //constant value is used (the value of the first item)
+      ATTRIBUTE, //only attribute values are considered
+      CONSTANT //constant value is used (the size of the first item)
     };
 
   QgsDiagramRenderer(const QList<int>& classificationAttributes);
@@ -76,7 +76,7 @@ class QgsDiagramRenderer
   void setDiagramItems(const QList<QgsDiagramItem>& items) {mItems = items;}
   /**Returns the interpolation items*/
   QList<QgsDiagramItem> diagramItems() const {return mItems;}
-  void setInterpolationType(InterpolationType t){mInterpolationType = t;}
+  void setItemInterpretation(ItemInterpretation i){mItemInterpretation = i;}
 
  private:
   QgsDiagramRenderer();
@@ -90,7 +90,7 @@ class QgsDiagramRenderer
   /**Value/size pairs for determination of the diagram size*/
   QList<QgsDiagramItem> mItems;
   /**Describes the type of interpolation (linear by default)*/
-  InterpolationType mInterpolationType;
+  ItemInterpretation mItemInterpretation;
 
   /**Searches the value of the classification attribute(s). Considers that there 
      may be several attributes in case of numeric values (sum).
