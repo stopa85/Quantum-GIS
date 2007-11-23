@@ -74,7 +74,8 @@ QImage* QgsWKNDiagramFactory::createPieChart(int size, const QgsAttributeMap& da
   //create transparent QImage
   QImage* diagramImage = new QImage(QSize(size, size), QImage::Format_ARGB32_Premultiplied);
   diagramImage->fill(qRgba(0, 0, 0, 0)); //transparent background
-  QPainter p(diagramImage);
+  QPainter p;
+  p.begin(diagramImage);
   p.setRenderHint(QPainter::Antialiasing);
   p.setPen(Qt::NoPen);
 
@@ -94,6 +95,13 @@ QImage* QgsWKNDiagramFactory::createPieChart(int size, const QgsAttributeMap& da
 	}
     }
 
+  if(sum - 0.0 < 0.000000000000001)
+    {
+      p.end();
+      delete diagramImage;
+      return 0;
+    }
+
   //draw pies
   std::list<QColor>::const_iterator color_it = mColorSeries.begin();
   QList<double>::const_iterator valueList_it = valueList.constBegin();
@@ -108,6 +116,7 @@ QImage* QgsWKNDiagramFactory::createPieChart(int size, const QgsAttributeMap& da
       p.drawPie(0, 0, size, size, totalAngle, currentAngle);
       totalAngle += currentAngle;
     }
+  p.end();
   
   return diagramImage;
 }
