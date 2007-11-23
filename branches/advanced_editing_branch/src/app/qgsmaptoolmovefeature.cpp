@@ -24,7 +24,7 @@
 #include <QMessageBox>
 #include <QMouseEvent>
 #include <QSettings>
-
+#include <limits>
 QgsMapToolMoveFeature::QgsMapToolMoveFeature(QgsMapCanvas* canvas): QgsMapToolEdit(canvas), mRubberBand(0)
 {
   
