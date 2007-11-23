@@ -19,7 +19,13 @@ QgsDiagramRenderer::QgsDiagramRenderer()
 
 QImage* QgsDiagramRenderer::renderDiagram(const QgsFeature& f) const
 {
-  if(!mFactory || mItems.size() < 1)
+  if(!mFactory)
+    {
+      return 0;
+    }
+
+  //only scaling according to attributes does not need any items
+  if(mItemInterpretation != QgsDiagramRenderer::ATTRIBUTE && mItems.size() < 1)
     {
       return 0;
     }
