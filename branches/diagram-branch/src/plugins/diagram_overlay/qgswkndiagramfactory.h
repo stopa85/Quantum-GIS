@@ -64,7 +64,7 @@ class QgsWKNDiagramFactory: public QgsDiagramFactory
   /**List of scaling attribute indexes (the values are summed up to 
      receive the scaling value)*/
   QList<int> mScalingAttributes;
-  /**Names */
+  /**Indices of attributes for coloring*/
   QgsAttributeList mAttributes;
   /**Well known diagram name (e.g. pie, bar, line)*/
   QString mDiagramType;
