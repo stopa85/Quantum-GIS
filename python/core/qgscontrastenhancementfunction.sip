@@ -8,6 +8,7 @@ class QgsContrastEnhancementFunction
 
   public:
     QgsContrastEnhancementFunction(QgsContrastEnhancement::QgsRasterDataType, double, double);
+    virtual ~QgsContrastEnhancementFunction();
     
     /** \brief Mustator for the maximum value */
     void setMaximumValue(double);    

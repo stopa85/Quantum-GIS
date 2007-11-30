@@ -12,6 +12,53 @@
     </message>
   </context>
   <context>
+    <name>Dialog</name>
+    <message>
+      <source>QGIS Plugin Installer</source>
+      <translation>QGIS Plugin Installierer</translation>
+    </message>
+    <message>
+      <source>Retrieve the list of available plugins, select one and install it</source>
+      <translation>Durchsuche die Liste vorhandener Plugins, selektiere eines und installiere es</translation>
+    </message>
+    <message>
+      <source>Name of plugin to install</source>
+      <translation>Name des zu installierenden Plugins</translation>
+    </message>
+    <message>
+      <source>Get List</source>
+      <translation>Hole Liste</translation>
+    </message>
+    <message>
+      <source>Done</source>
+      <translation type="unfinished" >Fertig</translation>
+    </message>
+    <message>
+      <source>Install Plugin</source>
+      <translation>Installiere das Plugin</translation>
+    </message>
+    <message>
+      <source>The plugin will be installed to ~/.qgis/python/plugins</source>
+      <translation>Das Plugin wird unter ~/.qgis/python/plugins installiert</translation>
+    </message>
+    <message>
+      <source>Name</source>
+      <translation type="unfinished" >Name</translation>
+    </message>
+    <message>
+      <source>Version</source>
+      <translation type="unfinished" >Version</translation>
+    </message>
+    <message>
+      <source>Description</source>
+      <translation type="unfinished" >Beschreibung</translation>
+    </message>
+    <message>
+      <source>Author</source>
+      <translation>Autor</translation>
+    </message>
+  </context>
+  <context>
     <name>MapCoordsDialogBase</name>
     <message>
       <source>Enter map coordinates</source>
@@ -55,11 +102,11 @@
     </message>
     <message>
       <source>No vector layers can be loaded. Check your QGIS installation</source>
-      <translation>Es können keine Vektorebenen geladen werden. Bitte QGIS Installation überprüfen</translation>
+      <translation>Es können keine Vektorlayer geladen werden. Bitte QGIS Installation überprüfen</translation>
     </message>
     <message>
       <source>No data provider plugins are available. No vector layers can be loaded</source>
-      <translation>Keine Datenlieferanten Plugins verfügbar. Es können keine Vektorebenen geladen werden</translation>
+      <translation>Keine Datenlieferanten-Plugins verfügbar. Es können keine Vektorlayer geladen werden</translation>
     </message>
     <message>
       <source>QGis files (*.qgs)</source>
@@ -87,11 +134,11 @@
     </message>
     <message>
       <source>Division by zero.</source>
-      <translation>Geteilt durch zero.</translation>
+      <translation>Division durch Null.</translation>
     </message>
     <message>
       <source>No active layer</source>
-      <translation>Keine aktive Ebene</translation>
+      <translation>Keine aktiven Layer</translation>
     </message>
     <message>
       <source>Band</source>
@@ -111,11 +158,11 @@
     </message>
     <message>
       <source>No features found</source>
-      <translation>Keine Eigenschaften gefunden</translation>
+      <translation>Keine Objekte gefunden</translation>
     </message>
     <message>
       <source>No features were found in the active layer at the point you clicked</source>
-      <translation>Keine Eigenschaften in der aktiven Ebene am gewählten Punkt gefunden</translation>
+      <translation>Keine Objekte im aktiven Layer am gewählten Punkt gefunden</translation>
     </message>
     <message>
       <source>Could not identify objects on</source>
@@ -179,7 +226,7 @@
     </message>
     <message>
       <source>New location</source>
-      <translation>Neuer Ort</translation>
+      <translation>Neue Location</translation>
     </message>
     <message>
       <source>Release selected</source>
@@ -212,10 +259,6 @@
     <message>
       <source>Area</source>
       <translation>Fläche</translation>
-    </message>
-    <message>
-      <source>Could not snap segment. Have you set the tolerance in Settings > Project Properties > General?</source>
-      <translation>Konnte das Segment nicht schnappen. Haben Sie die Schnappdistanz unter Einstellungen -> Projekteigenschaften -> Allgemein eingestellt?</translation>
     </message>
     <message>
       <source>Could not snap vertex. Have you set the tolerance in Settings > Project Properties > General?</source>
@@ -284,7 +327,7 @@ Would you like to specify path (GISBASE) to your GRASS installation?</source>
     </message>
     <message>
       <source>Draws copyright information</source>
-      <translation>Zeigt Copyright Informationen</translation>
+      <translation>Zeichnet Urhebersrechtsinformationen</translation>
     </message>
     <message>
       <source>Version 0.1</source>
@@ -300,7 +343,7 @@ Would you like to specify path (GISBASE) to your GRASS installation?</source>
     </message>
     <message>
       <source>Add Delimited Text Layer</source>
-      <translation>Lade kommaseparierte (CSV) Textebene</translation>
+      <translation>Lade Layer aus Textdatei</translation>
     </message>
     <message>
       <source>Georeferencer</source>
@@ -324,7 +367,7 @@ Would you like to specify path (GISBASE) to your GRASS installation?</source>
     </message>
     <message>
       <source>GRASS layer</source>
-      <translation>GRASS-Ebene</translation>
+      <translation>GRASS-Vektorlayer</translation>
     </message>
     <message>
       <source>Graticule Creator</source>
@@ -372,7 +415,7 @@ Would you like to specify path (GISBASE) to your GRASS installation?</source>
     </message>
     <message>
       <source>Adds WFS layers to the QGIS canvas</source>
-      <translation>Fügt eine WFS-Ebene zur Kartendarstellung hinzu.</translation>
+      <translation>Fügt einen WFS-Layer zur Kartendarstellung hinzu.</translation>
     </message>
     <message>
       <source>Version 0.0001</source>
@@ -380,31 +423,31 @@ Would you like to specify path (GISBASE) to your GRASS installation?</source>
     </message>
     <message>
       <source>Not a vector layer</source>
-      <translation type="unfinished" >Kein Vektorlayer</translation>
+      <translation>Keine Vektorlayer</translation>
     </message>
     <message>
       <source>The current layer is not a vector layer</source>
-      <translation type="unfinished" >Der aktuelle Layer ist kein Vektorlayer.</translation>
+      <translation>Der aktuelle Layer ist kein Vektorlayer</translation>
     </message>
     <message>
       <source>Layer cannot be added to</source>
-      <translation type="unfinished" >Die Ebene kann nicht hinzugefügt werden zu</translation>
+      <translation>Der Layer kann nicht hinzugefügt werden zu</translation>
     </message>
     <message>
       <source>The data provider for this layer does not support the addition of features.</source>
-      <translation type="unfinished" >Der Datenprovider dieser Ebene unterstützt das Hinzufügen von neuen Objekten nicht.</translation>
+      <translation>Der Datenlieferant dieses Layers unterstützt das Hinzufügen von neuen Objekten nicht.</translation>
     </message>
     <message>
       <source>Layer not editable</source>
-      <translation type="unfinished" >Die Ebene kann nicht editiert werden</translation>
+      <translation>Der Layer kann nicht bearbeitet werden</translation>
     </message>
     <message>
       <source>Cannot edit the vector layer. To make it editable, go to the file item of the layer, right click and check 'Allow Editing'.</source>
-      <translation type="unfinished" >Vektorlayer kann nicht editiert werden. Um ihn editierbar zu machen, klicken Sie bitte mit der rechten Maustaste auf den Dateieintrag des Layers und haken 'Editieren erlauben' ab.</translation>
+      <translation>Der Vektorlayer kann nicht geändert werden. Um ihn zu bearbeiten, klicken Sie bitte erst mit der rechten Maustaste auf den Dateieintrag des Layers und dann auf 'Bearbeitungsstatus umschalten'.</translation>
     </message>
     <message>
       <source>To select features, you must choose a vector layer by clicking on its name in the legend</source>
-      <translation type="unfinished" >Um Features zu selektieren, müssen Sie eine Vektorlayer durch anklicken in der Legende wählen.</translation>
+      <translation>Um Objekte zu selektieren, müssen Sie einen Vektorlayer durch anklicken in der Legende auswählen.</translation>
     </message>
     <message>
       <source>Python error</source>
@@ -434,11 +477,11 @@ Die Python-Unterstützung wird abgeschaltet.</translation>
     </message>
     <message>
       <source> due an error when calling its classFactory() method</source>
-      <translation type="unfinished" > konnte durch eine Fehler beim Aufruf dessen classFactory()-Methode nicht geladen werden.</translation>
+      <translation> konnte durch einen Fehler beim Aufruf dessen classFactory()-Methode nicht laden</translation>
     </message>
     <message>
       <source> due an error when calling its initGui() method</source>
-      <translation type="unfinished" > konnte durch einen Fehler beim Aufruf dessen initGui()-Methode nicht geladen werden.</translation>
+      <translation> konnte durch einen Fehler beim Aufruf dessen initGui()-Methode nicht laden.</translation>
     </message>
     <message>
       <source>Error while unloading plugin </source>
@@ -450,15 +493,15 @@ Die Python-Unterstützung wird abgeschaltet.</translation>
     </message>
     <message>
       <source>Adding features to 2.5D shapetypes is not supported yet</source>
-      <translation type="unfinished" >Das Hinzufügen von 2.5D Shapetypen wird zur Zeit nicht unterstützt</translation>
+      <translation>Das Hinzufügen von 2.5D Shape Informationen wird zur Zeit nicht unterstützt</translation>
     </message>
     <message>
       <source>Wrong editing tool</source>
-      <translation type="unfinished" >Falsches Editierwerkzeug</translation>
+      <translation type="unfinished" >Falsches Bearbeitungswerkzeug</translation>
     </message>
     <message>
       <source>Cannot apply the 'capture point' tool on this vector layer</source>
-      <translation type="unfinished" >Das 'Punkt digitalisieren'-Werkzeug kann nicht auf diesen Vektorlayer angewendet werde.</translation>
+      <translation>Das 'Punkt digitalisieren'-Werkzeug kann nicht auf diesen Vektorlayer angewendet werden</translation>
     </message>
     <message>
       <source>Coordinate transform error</source>
@@ -466,15 +509,15 @@ Die Python-Unterstützung wird abgeschaltet.</translation>
     </message>
     <message>
       <source>Cannot transform the point to the layers coordinate system</source>
-      <translation type="unfinished" >Konnte den Punkt nicht auf das Koordinatensystem des Layers transformieren.</translation>
+      <translation>Konnte den Punkt nicht auf das Koordinatensystem des Layers transformieren.</translation>
     </message>
     <message>
       <source>Cannot apply the 'capture line' tool on this vector layer</source>
-      <translation type="unfinished" >Das 'Linie digitalisieren'-Werkzeug kann nicht auf diesen Vektorlayer angewendet werde.</translation>
+      <translation>Das 'Linie digitalisieren'-Werkzeug kann nicht auf diesen Vektorlayer angewendet werden</translation>
     </message>
     <message>
       <source>Cannot apply the 'capture polygon' tool on this vector layer</source>
-      <translation type="unfinished" >Das 'Polygon digitalisieren'-Werkzeug kann nicht auf diesen Vektorlayer angewendet werde.</translation>
+      <translation>Das 'Polygon digitalisieren'-Werkzeug kann nicht auf diesen Vektorlayer angewendet werden.</translation>
     </message>
     <message>
       <source>Error</source>
@@ -482,15 +525,15 @@ Die Python-Unterstützung wird abgeschaltet.</translation>
     </message>
     <message>
       <source>Cannot add feature. Unknown WKB type</source>
-      <translation type="unfinished" >Konnte Feature nicht hinzufügen. Unbekannter WKB-Typ</translation>
+      <translation type="unfinished" >Konnte Objekt nicht hinzufügen. Unbekannter WKB-Typ</translation>
     </message>
     <message>
       <source>Error, could not add island</source>
-      <translation type="unfinished" >Fehler beim Hinzufügen der Insel</translation>
+      <translation>Fehler beim Hinzufügen des Insel-Polygons</translation>
     </message>
     <message>
       <source>A problem with geometry type occured</source>
-      <translation type="unfinished" >Es ist ein Problem mit dem Geometrietyp aufgetreten.</translation>
+      <translation>Es ist ein Problem mit dem Geometrietyp aufgetreten</translation>
     </message>
     <message>
       <source>The inserted Ring is not closed</source>
@@ -506,7 +549,7 @@ Die Python-Unterstützung wird abgeschaltet.</translation>
     </message>
     <message>
       <source>The inserted Ring is not contained in a feature</source>
-      <translation type="unfinished" >Der eingefügte Ring befindet sich nicht innerhalb des Features.</translation>
+      <translation type="unfinished" >Der eingefügte Ring befindet sich nicht innerhalb des Objekts.</translation>
     </message>
     <message>
       <source>An unknown error occured</source>
@@ -522,11 +565,11 @@ Die Python-Unterstützung wird abgeschaltet.</translation>
     </message>
     <message>
       <source>Data provider of the current layer doesn't allow changing geometries</source>
-      <translation type="unfinished" >Der Dataprovider des aktuellen Layers erlaubt keine Geometrieänderungen</translation>
+      <translation>Der Datenlieferant des geladenen Layers erlaubt keine Geometrieänderungen</translation>
     </message>
     <message>
       <source>Cannot edit the vector layer. Use 'Start editing' in the legend item menu</source>
-      <translation type="unfinished" >Der Layer kann nicht editiert werden. Benutzen Sie 'Editieren umschalten' im Legendenmenü des Layers</translation>
+      <translation>Der Layer kann nicht geändert werden. Benutzen Sie 'Bearbeitungsstatus umschalten' im Legendenmenü des Layers</translation>
     </message>
     <message>
       <source> km2</source>
@@ -638,19 +681,19 @@ Die Python-Unterstützung wird abgeschaltet.</translation>
     </message>
     <message>
       <source>PostgreSQL Geoprocessing</source>
-      <translation type="unfinished" >PostgreSQL-Geoverarbeitung</translation>
+      <translation>PostgreSQL-Geodatenverarbeitung</translation>
     </message>
     <message>
       <source>Geoprocessing functions for working with PostgreSQL/PostGIS layers</source>
-      <translation type="unfinished" >Geoverarbeitungsfunktionen für PostgreSQL-/PostGIS-Layer</translation>
+      <translation>Geodatenverarbeitungsfunktionen für PostgreSQL-/PostGIS-Layer</translation>
     </message>
     <message>
       <source>Location: </source>
-      <translation type="unfinished" >Ort: </translation>
+      <translation>Location: </translation>
     </message>
     <message>
       <source>&lt;br>Mapset: </source>
-      <translation type="unfinished" >&lt;br>Kartensatz: </translation>
+      <translation>&lt;br>Mapset: </translation>
     </message>
     <message>
       <source>&lt;b>Raster&lt;/b></source>
@@ -738,7 +781,7 @@ Die Python-Unterstützung wird abgeschaltet.</translation>
     </message>
     <message>
       <source>Centroids</source>
-      <translation type="unfinished" >Schwerpunkte</translation>
+      <translation>Zentroide</translation>
     </message>
     <message>
       <source>Faces</source>
@@ -778,11 +821,11 @@ Die Python-Unterstützung wird abgeschaltet.</translation>
     </message>
     <message>
       <source>&lt;b>Layer&lt;/b></source>
-      <translation type="unfinished" >&lt;b>Layer&lt;/b></translation>
+      <translation>&lt;b>Layer&lt;/b></translation>
     </message>
     <message>
       <source>Features</source>
-      <translation type="unfinished" >Features</translation>
+      <translation>Objekte</translation>
     </message>
     <message>
       <source>Driver</source>
@@ -806,7 +849,7 @@ Die Python-Unterstützung wird abgeschaltet.</translation>
     </message>
     <message>
       <source> is not a GRASS mapset.</source>
-      <translation type="unfinished" > ist kein GRASS-Kartensatz.</translation>
+      <translation> ist keine GRASS-Mapset.</translation>
     </message>
     <message>
       <source>Cannot start </source>
@@ -814,7 +857,7 @@ Die Python-Unterstützung wird abgeschaltet.</translation>
     </message>
     <message>
       <source>Mapset is already in use.</source>
-      <translation type="unfinished" >Kartensatz wirde bereits benutzt.</translation>
+      <translation>Mapset wird bereits benutzt.</translation>
     </message>
     <message>
       <source>Temporary directory </source>
@@ -826,7 +869,7 @@ Die Python-Unterstützung wird abgeschaltet.</translation>
     </message>
     <message>
       <source>Cannot create temporary directory </source>
-      <translation type="unfinished" >Fehler beim Anlegen des temporäres Verzeichnis </translation>
+      <translation>Fehler beim Anlegen des temporären Verzeichnisses </translation>
     </message>
     <message>
       <source>Cannot create </source>
@@ -834,7 +877,7 @@ Die Python-Unterstützung wird abgeschaltet.</translation>
     </message>
     <message>
       <source>Cannot remove mapset lock: </source>
-      <translation type="unfinished" >Kann Kartensatzsperre nicht entfernen: </translation>
+      <translation>Kann Mapsetsperre nicht entfernen: </translation>
     </message>
     <message>
       <source>Warning</source>
@@ -842,15 +885,15 @@ Die Python-Unterstützung wird abgeschaltet.</translation>
     </message>
     <message>
       <source>Cannot read raster map region</source>
-      <translation type="unfinished" >Konnte Rasterkartenregion nicht lesen</translation>
+      <translation>Konnte 'region' der Rasterkarte nicht lesen</translation>
     </message>
     <message>
       <source>Cannot read vector map region</source>
-      <translation type="unfinished" >Konnte Vektorkartenregion nicht lesen</translation>
+      <translation>Konnte 'region der Vektorkarte nicht lesen</translation>
     </message>
     <message>
       <source>Cannot read region</source>
-      <translation type="unfinished" >Konnte Region nicht lesen</translation>
+      <translation>Konnte 'region' nicht lesen</translation>
     </message>
     <message>
       <source>Where is '</source>
@@ -858,23 +901,21 @@ Die Python-Unterstützung wird abgeschaltet.</translation>
     </message>
     <message>
       <source>original location: </source>
-      <translation type="unfinished" >Originalort: </translation>
+      <translation>Original-Location: </translation>
     </message>
     <message>
       <source>To identify features, you must choose an active layer by clicking on its name in the legend</source>
-      <translation type="unfinished" >Um Features zu identifizieren müssen Sie einen Layer in der Legende selektieren</translation>
+      <translation>Um Objekte zu identifizieren müssen Sie einen Layer in der Legende auswählen</translation>
     </message>
     <message>
       <source>Location: </source>
-      <comment>
-Metadata in GRASS Browser</comment>
-      <translation type="unfinished" >Ort: </translation>
+      <comment>Metadata in GRASS Browser</comment>
+      <translation>Location: </translation>
     </message>
     <message>
       <source>&lt;br>Mapset: </source>
-      <comment>
-Metadata in GRASS Browser</comment>
-      <translation type="unfinished" >&lt;br>Kartensatz: </translation>
+      <comment>Metadata in GRASS Browser</comment>
+      <translation>&lt;br>Mapset: </translation>
     </message>
   </context>
   <context>
@@ -913,15 +954,15 @@ Metadata in GRASS Browser</comment>
     </message>
     <message>
       <source>No Layer Selected</source>
-      <translation>Keine Ebene gewählt</translation>
+      <translation>Keinen Layer ausgewählt</translation>
     </message>
     <message>
       <source>No MapLayer Plugins</source>
-      <translation>Keine Kartenebenen Plugins</translation>
+      <translation>Keine Kartenlayer-Plugins</translation>
     </message>
     <message>
       <source>No MapLayer plugins in ../plugins/maplayer</source>
-      <translation>Keine Kartenebenen Plugins in ../plugins/maplayer</translation>
+      <translation>Keine Kartenlayer-Plugins in ../plugins/maplayer</translation>
     </message>
     <message>
       <source>No Plugins</source>
@@ -1001,11 +1042,11 @@ Metadata in GRASS Browser</comment>
     </message>
     <message>
       <source>Invalid Layer</source>
-      <translation>Ungültige Ebene</translation>
+      <translation>Ungültiger Layer</translation>
     </message>
     <message>
       <source>%1 is an invalid layer and cannot be loaded.</source>
-      <translation>%1 ist eine ungültige Ebene und kann nicht geladen werden.</translation>
+      <translation>%1 ist ein ungültiger Layer und kann nicht geladen werden.</translation>
     </message>
     <message>
       <source>Error Loading Plugin</source>
@@ -1037,15 +1078,15 @@ Metadata in GRASS Browser</comment>
     </message>
     <message>
       <source>No Vector Layer Selected</source>
-      <translation>Es wurde keine Vektorebene selektiert</translation>
+      <translation>Es wurde kein Vektorlayer selektiert</translation>
     </message>
     <message>
       <source>Deleting features only works on vector layers</source>
-      <translation>Löschen von Objekten ist nur in Vektorebenen möglich</translation>
+      <translation>Löschen von Objekten ist nur in Vektorlayern möglich</translation>
     </message>
     <message>
       <source>To delete features, you must select a vector layer in the legend</source>
-      <translation>Um Objekte zu löschen, muss eine Vektorebene in der Legende selektiert werden</translation>
+      <translation>Um Objekte zu löschen, muss ein Vektorlayer in der Legende selektiert werden</translation>
     </message>
     <message>
       <source>Quantum GIS is licensed under the GNU General Public License</source>
@@ -1057,15 +1098,15 @@ Metadata in GRASS Browser</comment>
     </message>
     <message>
       <source>Map legend that displays all the layers currently on the map canvas. Click on the check box to turn a layer on or off. Double click on a layer in the legend to customize its appearance and set other properties.</source>
-      <translation>Die Legende, welche alle Ebenen auf der Karte enthält. Klicke auf die Checkbox, um eine Ebene anzustellen oder auszuschalten. Mit einem Doppelklick in der Legende kann die Erscheinung und sonstige Eigenschaften einer Ebene gesetzt werden.</translation>
+      <translation>Legende, die alle im Kartenfester angezeigten Layer enthält. Bitte auf die Checkbox klicken, um einen Layer an- oder auszuschalten. Mit einem Doppelklick in der Legende kann die Erscheinung und sonstige Eigenschaften eines Layers festgelegt werden.</translation>
     </message>
     <message>
       <source>Map overview canvas. This canvas can be used to display a locator map that shows the current extent of the map canvas. The current extent is shown as a red rectangle. Any layer on the map can be added to the overview canvas.</source>
-      <translation>Übersichtsfenster. Dieses Fenster kann benutzt werden um die momentane Ausdehnung des Kartenfensters darzustellen. Der momentane Ausschnitt ist als rotes Rechteck dargestellt. Jede Ebene in der Karte kann zum Übersichtsfenster hinzugefügt werden.</translation>
+      <translation>Übersichtsfenster. Dieses Fenster kann benutzt werden um die momentane Ausdehnung des Kartenfensters darzustellen. Der momentane Ausschnitt ist als rotes Rechteck dargestellt. Jeder Layer in der Karte kann zum Übersichtsfenster hinzugefügt werden.</translation>
     </message>
     <message>
       <source>Map canvas. This is where raster and vector layers are displayed when added to the map</source>
-      <translation>Kartenfenster. Dies ist der Ort wo Raster- und Vektorebenen dargestellt werden sobald sie hinzugefügt werden</translation>
+      <translation>Kartenfenster. Dies ist der Bereich, in dem Raster- und Vektorlayer dargestellt werden, sobald sie hinzugefügt wurden</translation>
     </message>
     <message>
       <source>&amp;Plugins</source>
@@ -1085,11 +1126,11 @@ Metadata in GRASS Browser</comment>
     </message>
     <message>
       <source>When checked, the map layers are rendered in response to map navigation commands and other events. When not checked, no rendering is done. This allows you to add a large number of layers and symbolize them before rendering.</source>
-      <translation>Wenn angewählt werden die Kartenebenen, abhängig von der Bedienung der Navigationsinstrumente, gezeichnet. Wenn die Checkbox leer ist, werden die Ebenen nicht gezeichnet. Dies erlaubt es, eine grosse Anzahl Ebenen hinzuzufügen und das Aussehen der Ebenen vor dem Zeichnen zu setzen.</translation>
+      <translation>Wenn angewählt, werden die Kartenlayer abhängig von der Bedienung der Navigationsinstrumente, gezeichnet. Anderenfalls werden die Layer nicht gezeichnet. Dies erlaubt es, eine grosse Layeranzahl hinzuzufügen und das Aussehen der Layer vor dem Zeichnen zu setzen.</translation>
     </message>
     <message>
       <source>Choose a QGIS project file</source>
-      <translation>Eine QGIS Projektdatei wählen</translation>
+      <translation>Eine QGIS-Projektdatei wählen</translation>
     </message>
     <message>
       <source>Unable to save project</source>
@@ -1105,7 +1146,7 @@ Metadata in GRASS Browser</comment>
     </message>
     <message>
       <source>This icon shows whether on the fly projection is enabled or not. Click the icon to bring up the project properties dialog to alter this behaviour.</source>
-      <translation>Dieses Icon zeigt an, ob Projektion zur Laufzeit eingeschaltet ist. Ein Klick auf das Icon zeigt den Projekteigenschaften Dialog, in welchem dieses Verhalten geändert werden kann.</translation>
+      <translation>Dieses Icon zeigt an, ob Projektion zur Laufzeit eingeschaltet ist. Ein Klick darauf öffnet den Projekteigenschaften-Dialog, in dem dieses Verhalten geändert werden kann.</translation>
     </message>
     <message>
       <source>Projection status - Click to open projection dialog</source>
@@ -1113,19 +1154,19 @@ Metadata in GRASS Browser</comment>
     </message>
     <message>
       <source>Open an OGR Supported Vector Layer</source>
-      <translation>Öffnen einer OGR Vektordatenebene</translation>
+      <translation>Öffnen eines OGR-Vektorlayers</translation>
     </message>
     <message>
       <source>QGIS Project Read Error</source>
-      <translation>Fehler beim Lesen des QGIS Projektes</translation>
+      <translation>Fehler beim Lesen des QGIS-Projektes</translation>
     </message>
     <message>
       <source>Try to find missing layers?</source>
-      <translation>Versuch, fehlende Ebenen zu finden?</translation>
+      <translation>Versuchen, fehlende Layer zu finden?</translation>
     </message>
     <message>
       <source>Open a GDAL Supported Raster Data Source</source>
-      <translation>Öffnen einer GDAL Rasterdatenquelle</translation>
+      <translation>Öffnen einer GDAL-Rasterdatenquelle</translation>
     </message>
     <message>
       <source>Save As</source>
@@ -1133,7 +1174,7 @@ Metadata in GRASS Browser</comment>
     </message>
     <message>
       <source>Choose a QGIS project file to open</source>
-      <translation>QGIS Projektdatei zum öffnen wählen</translation>
+      <translation>QGIS-Projektdatei zum Öffnen wählen</translation>
     </message>
     <message>
       <source>Saved project to:</source>
@@ -1141,7 +1182,7 @@ Metadata in GRASS Browser</comment>
     </message>
     <message>
       <source>QGIS Browser Selection</source>
-      <translation>QGIS Browserauswahl</translation>
+      <translation>QGIS-Browserauswahl</translation>
     </message>
     <message>
       <source>Enter the name of a web browser to use (eg. konqueror).
@@ -1151,7 +1192,7 @@ Metadata in GRASS Browser</comment>
     <message>
       <source>Enter the full path if the browser is not in your PATH.
 </source>
-      <translation>Geben sie den vollen Namen ein, wenn der Browser nicht im PAT ist.</translation>
+      <translation>Geben Sie den vollen Namen ein, wenn der Browser nicht im PATH ist.</translation>
     </message>
     <message>
       <source>Reading settings</source>
@@ -1287,7 +1328,7 @@ Metadata in GRASS Browser</comment>
     </message>
     <message>
       <source>Add a Vector Layer...</source>
-      <translation>Füge eine Vektorebene hinzu...</translation>
+      <translation>Vektorlayer hinzufügen...</translation>
     </message>
     <message>
       <source>V</source>
@@ -1296,11 +1337,11 @@ Metadata in GRASS Browser</comment>
     </message>
     <message>
       <source>Add a Vector Layer</source>
-      <translation>Vektorebene hinzufügen</translation>
+      <translation>Vektorlayer hinzufügen</translation>
     </message>
     <message>
       <source>Add a Raster Layer...</source>
-      <translation>Füge eine Rasterebene hinzu...</translation>
+      <translation>Rasterlayer hinzufügen...</translation>
     </message>
     <message>
       <source>R</source>
@@ -1309,11 +1350,11 @@ Metadata in GRASS Browser</comment>
     </message>
     <message>
       <source>Add a Raster Layer</source>
-      <translation>Rasterebene hinzufügen</translation>
+      <translation>Rasterlayer hinzufügen</translation>
     </message>
     <message>
       <source>Add a PostGIS Layer...</source>
-      <translation>Füge eine PostGIS-Ebene hinzu...</translation>
+      <translation>PostGIS-Layer hinzufügen...</translation>
     </message>
     <message>
       <source>D</source>
@@ -1322,11 +1363,11 @@ Metadata in GRASS Browser</comment>
     </message>
     <message>
       <source>Add a PostGIS Layer</source>
-      <translation>PostGIS Ebene hinzufügen</translation>
+      <translation>PostGIS-Layer hinzufügen</translation>
     </message>
     <message>
       <source>New Vector Layer...</source>
-      <translation>Neue Vektorebene...</translation>
+      <translation>Neuer Vektorlayer...</translation>
     </message>
     <message>
       <source>N</source>
@@ -1335,11 +1376,11 @@ Metadata in GRASS Browser</comment>
     </message>
     <message>
       <source>Create a New Vector Layer</source>
-      <translation>Erzeuge eine neue Vektorebene</translation>
+      <translation>Erzeuge einen neuen Vektorlayer</translation>
     </message>
     <message>
       <source>Remove Layer</source>
-      <translation>Ebene löschen</translation>
+      <translation>Layer löschen</translation>
     </message>
     <message>
       <source>Ctrl+D</source>
@@ -1348,7 +1389,7 @@ Metadata in GRASS Browser</comment>
     </message>
     <message>
       <source>Remove a Layer</source>
-      <translation>Lösche eine Ebene</translation>
+      <translation>Lösche einen Layer</translation>
     </message>
     <message>
       <source>Add All To Overview</source>
@@ -1361,7 +1402,7 @@ Metadata in GRASS Browser</comment>
     </message>
     <message>
       <source>Show all layers in the overview map</source>
-      <translation>Zeige alle Ebenen in der Übersichtskarte</translation>
+      <translation>Zeige alle Layer in der Übersichtskarte</translation>
     </message>
     <message>
       <source>Remove All From Overview</source>
@@ -1374,11 +1415,11 @@ Metadata in GRASS Browser</comment>
     </message>
     <message>
       <source>Remove all layers from overview map</source>
-      <translation>Entferne alle Ebnene aus der Übersichtskarte</translation>
+      <translation>Alle Ebnene aus der Übersichtskarte entfernen</translation>
     </message>
     <message>
       <source>Show All Layers</source>
-      <translation>Alle Ebenen anzeigen</translation>
+      <translation>Alle Layer anzeigen</translation>
     </message>
     <message>
       <source>S</source>
@@ -1387,11 +1428,11 @@ Metadata in GRASS Browser</comment>
     </message>
     <message>
       <source>Show all layers</source>
-      <translation>Zeige alle Ebenen</translation>
+      <translation>Alle Layer zeigen</translation>
     </message>
     <message>
       <source>Hide All Layers</source>
-      <translation>Alle Ebenen ausblenden</translation>
+      <translation>Alle Layer ausblenden</translation>
     </message>
     <message>
       <source>H</source>
@@ -1400,11 +1441,11 @@ Metadata in GRASS Browser</comment>
     </message>
     <message>
       <source>Hide all layers</source>
-      <translation>Verstecke alle Ebenen</translation>
+      <translation>Alle Layer ausblenden</translation>
     </message>
     <message>
       <source>Project Properties...</source>
-      <translation>Projekt Einstellungen...</translation>
+      <translation>Projekteinstellungen...</translation>
     </message>
     <message>
       <source>P</source>
@@ -1413,7 +1454,7 @@ Metadata in GRASS Browser</comment>
     </message>
     <message>
       <source>Set project properties</source>
-      <translation>Setze Projekteigenschaften</translation>
+      <translation>Projekteigenschaften setzen</translation>
     </message>
     <message>
       <source>Options...</source>
@@ -1421,7 +1462,7 @@ Metadata in GRASS Browser</comment>
     </message>
     <message>
       <source>Change various QGIS options</source>
-      <translation>Verändere unterschiedliche QGIS-Einstellungen.</translation>
+      <translation>Verschiedene QGIS-Einstellungen ändern</translation>
     </message>
     <message>
       <source>Custom Projection...</source>
@@ -1442,11 +1483,11 @@ Metadata in GRASS Browser</comment>
     </message>
     <message>
       <source>Help Documentation</source>
-      <translation>Hilfe-Dokumentation</translation>
+      <translation>Hilfe</translation>
     </message>
     <message>
       <source>Qgis Home Page</source>
-      <translation>QGIS Heimatseite</translation>
+      <translation>QGIS-Homepage</translation>
     </message>
     <message>
       <source>Ctrl+H</source>
@@ -1455,7 +1496,7 @@ Metadata in GRASS Browser</comment>
     </message>
     <message>
       <source>QGIS Home Page</source>
-      <translation>QGIS Homepage</translation>
+      <translation>QGIS-Homepage</translation>
     </message>
     <message>
       <source>About</source>
@@ -1467,11 +1508,11 @@ Metadata in GRASS Browser</comment>
     </message>
     <message>
       <source>Check Qgis Version</source>
-      <translation>Überprüfe die QGIS Version</translation>
+      <translation>QGIS Version überprüfen</translation>
     </message>
     <message>
       <source>Check if your QGIS version is up to date (requires internet access)</source>
-      <translation>Überprüfe, ob Ihre QGIS-Version aktuell ist (benötigt Internetzugang)</translation>
+      <translation>Aktualität Ihre QGIS-Version überprüfen (erfordert Internetzugang)</translation>
     </message>
     <message>
       <source>Refresh</source>
@@ -1548,15 +1589,15 @@ Metadata in GRASS Browser</comment>
     </message>
     <message>
       <source>Zoom To Layer</source>
-      <translation>Auf die Ebene zoomen</translation>
+      <translation>Auf den Layer zoomen</translation>
     </message>
     <message>
       <source>Zoom to Layer</source>
-      <translation>Auf die Ebene zoomen</translation>
+      <translation>Auf den Layer zoomen</translation>
     </message>
     <message>
       <source>Identify Features</source>
-      <translation>Abfragen</translation>
+      <translation>Objekte abfragen</translation>
     </message>
     <message>
       <source>I</source>
@@ -1565,7 +1606,7 @@ Metadata in GRASS Browser</comment>
     </message>
     <message>
       <source>Click on features to identify them</source>
-      <translation>Klicken Sie auf ein Objekt und fragen Sie Informationen ab</translation>
+      <translation>Klicken Sie auf ein Objekt, um Informationen dazu zuerhalten</translation>
     </message>
     <message>
       <source>Select Features</source>
@@ -1573,11 +1614,11 @@ Metadata in GRASS Browser</comment>
     </message>
     <message>
       <source>Open Table</source>
-      <translation>Öffne Attributtabelle</translation>
+      <translation>Attributtabelle öffnen</translation>
     </message>
     <message>
       <source>Measure Line </source>
-      <translation>Messe Linie</translation>
+      <translation>Linie messen</translation>
     </message>
     <message>
       <source>Ctrl+M</source>
@@ -1586,11 +1627,11 @@ Metadata in GRASS Browser</comment>
     </message>
     <message>
       <source>Measure a Line</source>
-      <translation>Messe eine Linie</translation>
+      <translation>Linie messen</translation>
     </message>
     <message>
       <source>Measure Area</source>
-      <translation>Messe eine Fläche</translation>
+      <translation>Fläche messen</translation>
     </message>
     <message>
       <source>Ctrl+J</source>
@@ -1599,11 +1640,11 @@ Metadata in GRASS Browser</comment>
     </message>
     <message>
       <source>Measure an Area</source>
-      <translation>Messe eine Fläche</translation>
+      <translation>Fläche messen</translation>
     </message>
     <message>
       <source>Show Bookmarks</source>
-      <translation>Zeige Lesezeichen</translation>
+      <translation>Lesezeichen anzeigen</translation>
     </message>
     <message>
       <source>B</source>
@@ -1625,7 +1666,7 @@ Metadata in GRASS Browser</comment>
     </message>
     <message>
       <source>Add WMS Layer...</source>
-      <translation>WMS Ebene hinzufügen...</translation>
+      <translation>WMS-Layer hinzufügen...</translation>
     </message>
     <message>
       <source>W</source>
@@ -1634,7 +1675,7 @@ Metadata in GRASS Browser</comment>
     </message>
     <message>
       <source>Add Web Mapping Server Layer</source>
-      <translation>WMS Ebene hinzufügen</translation>
+      <translation>WMS-Layer hinzufügen</translation>
     </message>
     <message>
       <source>In Overview</source>
@@ -1647,7 +1688,7 @@ Metadata in GRASS Browser</comment>
     </message>
     <message>
       <source>Add current layer to overview map</source>
-      <translation>Aktuelle Ebene zur Übersicht hinzufügen</translation>
+      <translation>Aktuellen Layer zur Übersicht hinzufügen</translation>
     </message>
     <message>
       <source>Plugin Manager...</source>
@@ -1681,7 +1722,7 @@ Metadata in GRASS Browser</comment>
     </message>
     <message>
       <source>Capture Lines</source>
-      <translation>Fange Linien</translation>
+      <translation>Linien digitalisieren</translation>
     </message>
     <message>
       <source>Capture Polygon</source>
@@ -1694,7 +1735,7 @@ Metadata in GRASS Browser</comment>
     </message>
     <message>
       <source>Capture Polygons</source>
-      <translation>Fange Polygone</translation>
+      <translation>Polygon digitialisieren</translation>
     </message>
     <message>
       <source>Delete Selected</source>
@@ -1702,15 +1743,15 @@ Metadata in GRASS Browser</comment>
     </message>
     <message>
       <source>Add Vertex</source>
-      <translation>Knotenpunkt hinzufügen</translation>
+      <translation>Knickpunkt hinzufügen</translation>
     </message>
     <message>
       <source>Delete Vertex</source>
-      <translation>Knotenpunkt löschen</translation>
+      <translation>Knickpunkt löschen</translation>
     </message>
     <message>
       <source>Move Vertex</source>
-      <translation>Verschiebe Knotenpunkte</translation>
+      <translation>Knickpunkt verschieben</translation>
     </message>
     <message>
       <source>&amp;File</source>
@@ -1718,7 +1759,7 @@ Metadata in GRASS Browser</comment>
     </message>
     <message>
       <source>&amp;Open Recent Projects</source>
-      <translation>Öffne aktuelle Pr&amp;ojekte</translation>
+      <translation>Aktuelle Pr&amp;ojekte öffnen</translation>
     </message>
     <message>
       <source>&amp;View</source>
@@ -1726,7 +1767,7 @@ Metadata in GRASS Browser</comment>
     </message>
     <message>
       <source>&amp;Layer</source>
-      <translation>&amp;Ebene</translation>
+      <translation>&amp;Layer</translation>
     </message>
     <message>
       <source>&amp;Settings</source>
@@ -1742,7 +1783,7 @@ Metadata in GRASS Browser</comment>
     </message>
     <message>
       <source>Manage Layers</source>
-      <translation>Ebenen koordinieren</translation>
+      <translation>Layer koordinieren</translation>
     </message>
     <message>
       <source>Help</source>
@@ -1778,7 +1819,7 @@ Metadata in GRASS Browser</comment>
     </message>
     <message>
       <source>Unable to save project </source>
-      <translation>Kann das Projekt nicht speichern</translation>
+      <translation>Kann das Projekt nicht speichern </translation>
     </message>
     <message>
       <source>Choose a filename to save the QGIS project file as</source>
@@ -1798,15 +1839,15 @@ Metadata in GRASS Browser</comment>
     </message>
     <message>
       <source>You can change this option later by selecting Options from the Settings menu (Help Browser tab).</source>
-      <translation>Sie können diese Option später ändern, indem Sie Optionen aus dem Einstellungen Menü wählen. (Hilfe-Broweser-Reiter).</translation>
+      <translation>Sie können diese Option später ändern, indem Sie Optionen aus dem Einstellungen Menü wählen. (Hilfe-Browser-Reiter).</translation>
     </message>
     <message>
       <source>Layer is not valid</source>
-      <translation>Ebene ist ungültig</translation>
+      <translation>Layer ist ungültig</translation>
     </message>
     <message>
       <source>The layer is not a valid layer and can not be added to the map</source>
-      <translation>Die Ebene ist keine gültige Ebene und kann daher nicht zur Karte hinzugefügt werden.</translation>
+      <translation>Der Layer ist ungültig und kann daher nicht zur Kartenfenster hinzugefügt werden.</translation>
     </message>
     <message>
       <source>Save?</source>
@@ -1814,7 +1855,7 @@ Metadata in GRASS Browser</comment>
     </message>
     <message>
       <source>Clipboard contents set to: </source>
-      <translation>Inhalt der Zwischenablage setzen auf: </translation>
+      <translation>Inhalt der Zwischenablage gesetzt auf: </translation>
     </message>
     <message>
       <source> is not a valid or recognized raster data source</source>
@@ -1826,7 +1867,7 @@ Metadata in GRASS Browser</comment>
     </message>
     <message>
       <source>Unsupported Data Source</source>
-      <translation>Unbekanntes Datenformat</translation>
+      <translation>Nicht unterstütztes Datenformat</translation>
     </message>
     <message>
       <source>Enter a name for the new bookmark:</source>
@@ -1842,27 +1883,27 @@ Metadata in GRASS Browser</comment>
     </message>
     <message>
       <source>Cut Features</source>
-      <translation>Schneide selektierte Objekte aus</translation>
+      <translation>Selektierte Objekte ausschneiden</translation>
     </message>
     <message>
       <source>Cut selected features</source>
-      <translation>Schneide selektierte Objekte aus</translation>
+      <translation>Selektierte Objekte ausschneiden</translation>
     </message>
     <message>
       <source>Copy Features</source>
-      <translation>Kopiere Objekte</translation>
+      <translation>Objekte kopieren</translation>
     </message>
     <message>
       <source>Copy selected features</source>
-      <translation>Kopiere selektierte Objekte</translation>
+      <translation>Selektierte Objekte kopieren</translation>
     </message>
     <message>
       <source>Paste Features</source>
-      <translation>Füge Objekte ein</translation>
+      <translation>Objekte einfügen</translation>
     </message>
     <message>
       <source>Paste selected features</source>
-      <translation>Füge selektierte Objekte ein</translation>
+      <translation>Selektierte Objekte einfügen</translation>
     </message>
     <message>
       <source>Ctrl+?</source>
@@ -1871,11 +1912,11 @@ Metadata in GRASS Browser</comment>
     </message>
     <message>
       <source>Show most toolbars</source>
-      <translation>Alle Werkzeugleisten anzeigen</translation>
+      <translation>Die meisten Werkzeugleisten anzeigen</translation>
     </message>
     <message>
       <source>Hide most toolbars</source>
-      <translation>Alle Werkzeugleisten verstecken</translation>
+      <translation>Die meisten Werkzeugleisten ausblenden</translation>
     </message>
     <message>
       <source>
@@ -1897,19 +1938,7 @@ Kompiliert gegen QT Version </translation>
     </message>
     <message>
       <source>Unable to communicate with QGIS Version server</source>
-      <translation>Kann nicht mit dem QGIS Server kommunizieren.</translation>
-    </message>
-    <message>
-      <source>T</source>
-      <comment>
-Show most toolbars</comment>
-      <translation type="unfinished" >Die meisten Werkzeugleisten anzeigen</translation>
-    </message>
-    <message>
-      <source>Ctrl+T</source>
-      <comment>
-Hide most toolbars</comment>
-      <translation type="unfinished" >Ctrl+T</translation>
+      <translation>Kann nicht mit dem QGIS-Server kommunizieren.</translation>
     </message>
     <message>
       <source>Checking provider plugins</source>
@@ -1937,19 +1966,19 @@ Hide most toolbars</comment>
     </message>
     <message>
       <source>Layer not editable</source>
-      <translation type="unfinished" >Die Ebene kann nicht editiert werden</translation>
+      <translation>Der Layer kann nicht bearbeitet werden</translation>
     </message>
     <message>
       <source>The current layer is not editable. Choose 'Start editing' in the digitizing toolbar.</source>
-      <translation type="unfinished" >Die aktuelle Ebene ist nicht editierbar. Bitte wählen sie 'Digitalisierung starten' aus der Digitalisiertoolbarleiste.</translation>
+      <translation>Der aktuelle Layer kann nicht bearbeitet werden. Bitte wählen Sie 'Bearbeitungsstatus umschalten' aus der Digitalisierwerkzeugleiste.</translation>
     </message>
     <message>
       <source>Toggle editing</source>
-      <translation type="unfinished" >Editierstatus umschalten</translation>
+      <translation type="unfinished" >Bearbeitungsstatus umschalten</translation>
     </message>
     <message>
       <source>Toggles the editing state of the current layer</source>
-      <translation type="unfinished" >Editierstatus des aktuellen Layers umschalten</translation>
+      <translation>Bearbeitungsstatus des aktuellen Layers umschalten</translation>
     </message>
     <message>
       <source>Add Ring</source>
@@ -1957,7 +1986,7 @@ Hide most toolbars</comment>
     </message>
     <message>
       <source>Add Island</source>
-      <translation type="unfinished" >Insel hinzufügen</translation>
+      <translation>Insel hinzufügen</translation>
     </message>
     <message>
       <source>Add Island to multipolygon</source>
@@ -1973,7 +2002,7 @@ Hide most toolbars</comment>
     </message>
     <message>
       <source>Current map scale (formatted as x:y)</source>
-      <translation type="unfinished" >Aktueller Kartenmaßstab (formatiert als x:y)</translation>
+      <translation type="unfinished" >Aktueller Kartenmaßstab (x:y formatiert)</translation>
     </message>
     <message>
       <source>Map coordinates at mouse cursor position</source>
@@ -1989,11 +2018,11 @@ Hide most toolbars</comment>
     </message>
     <message>
       <source>Python bindings - This is the major focus of this release it is now possible to create plugins using python. It is also possible to create GIS enabled applications written in python that use the QGIS libraries.</source>
-      <translation type="unfinished" >Python-Bindings - Hauptfocus dieses Releases ist die neue Möglichkeit Plugins mit Python zu schreiben.  Es ist auch möglich mit den QGIS-Bibliothen GIS-Applikationen in Python zu schreiben.</translation>
+      <translation>Python-Bindings - Hauptfokus dieses Releases ist die neue Möglichkeit Plugins mit Python zu schreiben.  Es ist auch möglich mit den QGIS-Bibliotheken neue GIS-Applikationen in Python zu entwickeln.</translation>
     </message>
     <message>
       <source>Removed automake build system - QGIS now needs CMake for compilation.</source>
-      <translation type="unfinished" >Automake-Buildsystem entfernt - QGIS erfordert nun CMake zur Kompilation.</translation>
+      <translation>Automake-Buildsystem entfernt - QGIS benutzt nun CMake zur Kompilation.</translation>
     </message>
     <message>
       <source>Many new GRASS tools added (with thanks to http://faunalia.it/)</source>
@@ -2001,7 +2030,7 @@ Hide most toolbars</comment>
     </message>
     <message>
       <source>Map Composer updates</source>
-      <translation type="unfinished" >Updates für den Map-Composer</translation>
+      <translation type="unfinished" >Updates für die Druckaufbereitung</translation>
     </message>
     <message>
       <source>Crash fix for 2.5D shapefiles</source>
@@ -2009,7 +2038,7 @@ Hide most toolbars</comment>
     </message>
     <message>
       <source>The QGIS libraries have been refactored and better organised.</source>
-      <translation type="unfinished" >Die QGIS-Bibliotheken wurden refaktoriert und besser organisiert.</translation>
+      <translation>Die QGIS-Bibliotheken wurden überarbeitet und besser organisiert.</translation>
     </message>
     <message>
       <source>Improvements to the GeoReferencer</source>
@@ -2026,6 +2055,18 @@ Hide most toolbars</comment>
     <message>
       <source></source>
       <translation type="unfinished" />
+    </message>
+    <message>
+      <source>T</source>
+      <comment>
+Show most toolbars</comment>
+      <translation type="unfinished" >Die meisten Werkzeugleisten anzeigen</translation>
+    </message>
+    <message>
+      <source>Ctrl+T</source>
+      <comment>
+Hide most toolbars</comment>
+      <translation type="unfinished" >Ctrl+T</translation>
     </message>
   </context>
   <context>
@@ -2075,11 +2116,11 @@ Hide most toolbars</comment>
     </message>
     <message>
       <source>Subscribe to the QGIS-User mailing list</source>
-      <translation>Die QGIS-User-Mailingliste abonnieren.</translation>
+      <translation>QGIS-User-Mailingliste abonnieren.</translation>
     </message>
     <message>
       <source>Providers</source>
-      <translation>Datenprovider</translation>
+      <translation>Datenlieferant</translation>
     </message>
     <message>
       <source>Developers</source>
@@ -2087,7 +2128,7 @@ Hide most toolbars</comment>
     </message>
     <message>
       <source>&lt;h2>QGIS Developers&lt;/h2></source>
-      <translation>&lt;h2>QGIS Entwickler&lt;/h2></translation>
+      <translation>&lt;h2>QGIS-Entwickler&lt;/h2></translation>
     </message>
     <message>
       <source>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>
@@ -2106,7 +2147,7 @@ p, li { white-space: pre-wrap; }
     <name>QgsAddAttrDialogBase</name>
     <message>
       <source>Add Attribute</source>
-      <translation>Füge Attribut hinzu</translation>
+      <translation>Attribut hinzufügen</translation>
     </message>
     <message>
       <source>Name:</source>
@@ -2154,7 +2195,7 @@ File dialog window title</comment>
     </message>
     <message>
       <source>This list contains all actions that have been defined for the current layer. Add actions by entering the details in the controls below and then pressing the Insert action button. Actions can be edited here by double clicking on the item.</source>
-      <translation>Diese Liste beinhaltet alle Aktionen, welche für die aktive Ebene definiert wurden. Füge Aktionen hinzu durch Eingabe der Details in den untenstehenden Kontrollelementen und drücke dann den Knopf mit der Aufschrift 'Füge Aktion hinzu'. Aktionen können durch Doppelklick auf das entsprechende Item editiert werden.</translation>
+      <translation>Diese Liste beinhaltet alle Aktionen, die für aktive Layer definiert wurden. Fügen Sie durch Eingabe von Details in den untenstehenden Kontrollelementen Aktionen hinzu und drücken Sie dann den Knopf mit der Aufschrift 'Aktion hinzufügen'. Aktionen können durch Doppelklick auf das entsprechende Element bearbeitet werden.</translation>
     </message>
     <message>
       <source>Move up</source>
@@ -2186,11 +2227,11 @@ File dialog window title</comment>
     </message>
     <message>
       <source>Enter the name of an action here. The name should be unique (qgis will make it unique if necessary).</source>
-      <translation>Gib den Namen der Aktion hier ein. Der Name sollte eindeutig sein (qgis macht ihn eindeutig, falls notwendig). </translation>
+      <translation>Bitte Namen der Aktion eingeben. Der Name sollte eindeutig sein (qgis macht ihn eindeutig, falls notwendig). </translation>
     </message>
     <message>
       <source>Enter the action name here</source>
-      <translation>Gib den Namen der Aktion hier ein</translation>
+      <translation>Namen der Aktion hier eingeben</translation>
     </message>
     <message>
       <source>Action:</source>
@@ -2198,7 +2239,7 @@ File dialog window title</comment>
     </message>
     <message>
       <source>Enter the action command here</source>
-      <translation>Gib das Kommando für die Aktion hier ein</translation>
+      <translation>Kommando für die Aktion hier eingeben</translation>
     </message>
     <message>
       <source>Browse</source>
@@ -2210,11 +2251,11 @@ File dialog window title</comment>
     </message>
     <message>
       <source>Insert action</source>
-      <translation>Füge Aktion hinzu</translation>
+      <translation>Aktion hinzufügen</translation>
     </message>
     <message>
       <source>Inserts the action into the list above</source>
-      <translation>Füge die Aktion in die obenstehende Liste ein</translation>
+      <translation>Aktion in die obenstehende Liste einfügen</translation>
     </message>
     <message>
       <source>Update action</source>
@@ -2226,7 +2267,7 @@ File dialog window title</comment>
     </message>
     <message>
       <source>Insert field</source>
-      <translation>Füge Attribut ein</translation>
+      <translation>Attribut einfügen</translation>
     </message>
     <message>
       <source>Inserts the selected field into the action, prepended with a %</source>
@@ -2234,23 +2275,23 @@ File dialog window title</comment>
     </message>
     <message>
       <source>The valid attribute names for this layer</source>
-      <translation>Die gültigen Attributnamen für diese Ebene</translation>
+      <translation>Die gültigen Attributnamen für diesen Layer</translation>
     </message>
     <message>
       <source>Capture output</source>
-      <translation>Resultate aufnehmen</translation>
+      <translation>Ausgaben aufzeichnen</translation>
     </message>
     <message>
       <source>Captures any output from the action</source>
-      <translation>Resultate der Aktion aufnehmen</translation>
+      <translation>Ausgaben der Aktion aufzeichnen</translation>
     </message>
     <message>
       <source>Captures the standard output or error generated by the action and displays it in a dialog box</source>
-      <translation>Nimmt den Standardoutput oder -error, welcher durch die Aktion generiert wurde, auf und zeigt ihn in einer Dialogbox an</translation>
+      <translation>Nimmt Ausgaben ader Aktion auf Standardausgabe- oder -fehlerkanal auf und zeigt ihn in einem Dialog an</translation>
     </message>
     <message>
       <source>Enter the action here. This can be any program, script or command that is available on your system. When the action is invoked any set of characters that start with a % and then have the name of a field will be replaced by the value of that field. The special characters %% will be replaced by the value of the field that was selected. Double quote marks group text into single arguments to the program, script or command. Double quotes will be ignored if preceeded by a backslash</source>
-      <translation type="unfinished" >Geben Sie hier die Aktion ein. Die kann ein jedes Programm, Skript oder Kommando sein, dass in Ihrem System verfügbar ist.  Wenn die Aktion ausgeführt wird jeder durch % eingeleiteter Feldname durch den Feldwert ersetzt.  Die besondere Zeichenfolge %% wird durch den Wert des gewählten Felds ersetzt.  Mit Anführungszeichen können mehrere Wörter zu einem Argument der Aktion zusammengefaßt werden. Für mit Backslash (\) eingeleitete Anführungszeichen gilt dies nicht.</translation>
+      <translation type="unfinished" >Geben Sie hier die Aktion ein. Dies kann jedes Programm, Skript oder Kommando sein, dass in Ihrem System verfügbar ist.  Wenn die Aktion ausgeführt wird jeder durch % eingeleiteter Feldname durch den Feldwert ersetzt.  Die besondere Zeichenfolge %% wird durch den Wert des gewählten Felds ersetzt.  Mit Anführungszeichen können mehrere Wörter zu einem Argument der Aktion zusammengefaßt werden. Für mit Backslash (\) eingeleitete Anführungszeichen gilt dies nicht.</translation>
     </message>
   </context>
   <context>
@@ -2295,7 +2336,7 @@ File dialog window title</comment>
     </message>
     <message>
       <source>Start editing</source>
-      <translation>Editieren starten</translation>
+      <translation>Bearbeitun&amp;g starten</translation>
     </message>
     <message>
       <source>&amp;Close</source>
@@ -2335,11 +2376,11 @@ File dialog window title</comment>
     </message>
     <message>
       <source>Copy selected rows to clipboard (Ctrl+C)</source>
-      <translation>Kopiere die selektieren Reihen in die Zwischenablage (Crtl+C).</translation>
+      <translation>Selektieren Zeilen in die Zwischenablage kopieren (Ctrl+C).</translation>
     </message>
     <message>
       <source>Copies the selected rows to the clipboard</source>
-      <translation>Kopiert die selektierten Reihen in die Zwischenablage.</translation>
+      <translation>Kopiert die selektierten Zeilen in die Zwischenablage.</translation>
     </message>
     <message>
       <source>Ctrl+C</source>
@@ -2347,7 +2388,7 @@ File dialog window title</comment>
     </message>
     <message>
       <source>Stop editin&amp;g</source>
-      <translation>Bearbeitun&amp;g stoppen</translation>
+      <translation>Bearbeitun&amp;g beenden</translation>
     </message>
     <message>
       <source>Alt+G</source>
@@ -2385,6 +2426,18 @@ File dialog window title</comment>
       <source>Delete column</source>
       <translation>Lösche Attributspalte</translation>
     </message>
+    <message>
+      <source>Zoom map to the selected rows (Ctrl-F)</source>
+      <translation>Zoome Karte zum ausgewählten Spalteneintrag (Ctrl-F)</translation>
+    </message>
+    <message>
+      <source>Zoom map to the selected rows</source>
+      <translation>Zoome Karte zu den ausgewählten Spalteneinträgen</translation>
+    </message>
+    <message>
+      <source>Ctrl+F</source>
+      <translation type="unfinished" >Ctrl+F</translation>
+    </message>
   </context>
   <context>
     <name>QgsAttributeTableDisplay</name>
@@ -2402,7 +2455,7 @@ File dialog window title</comment>
     </message>
     <message>
       <source>Search string parsing error</source>
-      <translation>Fehler im Suchstring.</translation>
+      <translation>Fehler im Suchbegriff.</translation>
     </message>
     <message>
       <source>Search results</source>
@@ -2410,7 +2463,7 @@ File dialog window title</comment>
     </message>
     <message>
       <source>You've supplied an empty search string.</source>
-      <translation>Sie haben einen leeren Suchstring eingegeben.</translation>
+      <translation>Sie haben einen leeren Suchbegriff eingegeben.</translation>
     </message>
     <message>
       <source>Error during search</source>
@@ -2426,7 +2479,7 @@ File dialog window title</comment>
     </message>
     <message>
       <source>Stop editing</source>
-      <translation>Editieren beenden</translation>
+      <translation>Bearbeitung beenden</translation>
     </message>
     <message>
       <source>Do you want to save the changes?</source>
@@ -2442,7 +2495,7 @@ File dialog window title</comment>
     </message>
     <message>
       <source>The attribute could not be inserted. The name already exists in the table.</source>
-      <translation type="unfinished" >Das Attribut konnte nicht eingefügt werden. Der Name ist bereits vorhanden.</translation>
+      <translation type="unfinished" >Das Attribut konnte nicht eingefügt werden, da der Name bereits vorhanden ist.</translation>
     </message>
   </context>
   <context>
@@ -2453,11 +2506,11 @@ File dialog window title</comment>
     </message>
     <message>
       <source>Are you sure you want to delete the </source>
-      <translation>Sind Sie sicher, dass sie die löschen wollen </translation>
+      <translation>Sind Sie sicher, dass Sie das Lesezeichen </translation>
     </message>
     <message>
       <source> bookmark?</source>
-      <translation>Soll das Lesezeichen wirklich gelöscht werden?</translation>
+      <translation> löschen wollen?</translation>
     </message>
     <message>
       <source>Error deleting bookmark</source>
@@ -2470,7 +2523,7 @@ File dialog window title</comment>
     <message>
       <source> bookmark from the database. The database said:
 </source>
-      <translation> Lesezeichens aus der Datenbank ist fehlgeschlagen. Die Datenbank sagte:</translation>
+      <translation> Lesezeichens aus der Datenbank schlug fehl. Die Datenbank meldete:</translation>
     </message>
   </context>
   <context>
@@ -2528,11 +2581,11 @@ File dialog window title</comment>
     <name>QgsComposer</name>
     <message>
       <source>Choose a filename to save the map image as</source>
-      <translation>Einen Dateinamen zum Speichern des Kartebildes wählen</translation>
+      <translation>Einen Dateinamen zum Speichern des Kartenbildes wählen</translation>
     </message>
     <message>
       <source>Choose a filename to save the map as</source>
-      <translation>Einen Dateinahmen zum Speichern der Karte wählen</translation>
+      <translation>Einen Dateinamen zum Speichern der Karte wählen</translation>
     </message>
     <message>
       <source> for read/write</source>
@@ -2548,15 +2601,15 @@ File dialog window title</comment>
     </message>
     <message>
       <source>Cannot overwrite BoundingBox</source>
-      <translation>Kann die BoundingBox nicht überschreiben</translation>
+      <translation>Kann die Umgrenzung nicht überschreiben</translation>
     </message>
     <message>
       <source>Cannot find BoundingBox</source>
-      <translation>Kann die BoundingBox nicht finden.</translation>
+      <translation>Kann die Umgrenzung nicht finden.</translation>
     </message>
     <message>
       <source>Cannot overwrite translate</source>
-      <translation>Kann das Format nicht überschreiben.</translation>
+      <translation>Kann Übersetzung nicht überschreiben.</translation>
     </message>
     <message>
       <source>Cannot find translate</source>
@@ -2564,7 +2617,7 @@ File dialog window title</comment>
     </message>
     <message>
       <source>File IO Error</source>
-      <translation>Datei Fehler</translation>
+      <translation>Dateifehler</translation>
     </message>
     <message>
       <source>Paper does not match</source>
@@ -2572,7 +2625,7 @@ File dialog window title</comment>
     </message>
     <message>
       <source>The selected paper size does not match the composition size</source>
-      <translation>Die ausgewählte Papiergröße passt nicht mit der Auswahl zusammen.</translation>
+      <translation>Die ausgewählte Papiergröße passt nicht zur Auswahl.</translation>
     </message>
     <message>
       <source>Big image</source>
@@ -2592,7 +2645,7 @@ File dialog window title</comment>
     </message>
     <message>
       <source>QGIS - print composer</source>
-      <translation>QGIS - Print composer</translation>
+      <translation>QGIS - Druckzusammenstellung</translation>
     </message>
     <message>
       <source>Map 1</source>
@@ -2608,19 +2661,19 @@ File dialog window title</comment>
     </message>
     <message>
       <source>SVG warning</source>
-      <translation>SVG Warnung</translation>
+      <translation>SVG-Warnung</translation>
     </message>
     <message>
       <source>Don't show this message again</source>
-      <translation>Dies Nachricht nicht mehr anzeigen.</translation>
+      <translation>Diese Nachricht nicht mehr anzeigen.</translation>
     </message>
     <message>
       <source>&lt;p>The SVG export function in Qgis has several problems due to bugs and deficiencies in the Qt4 svg code. Of note, text does not appear in the SVG file and there are problems with the map bounding box clipping other items such as the legend or scale bar.&lt;/p>If you require a vector-based output file from Qgis it is suggested that you try printing to PostScript if the SVG output is not satisfactory.&lt;/p></source>
-      <translation>&lt;p>Die SVG Exportfunktion in Qgis hat derzeit einige Probleme die im QT4 SVG code liegen. Zu bemerken sei, dass derzeit der Text nicht in der SVG-Datei erscheint. Ferner bestehen Probleme mit der Bounding Box und daran angrenzenden Objekten wie Legende oer Maßstabsbalken.&lt;/p>Falls ein vektorbasiertes Layout benötigt wird, versuchen Sie, in PostScript zu drucken, falls das SVG-Ergebnis nicht zufriedenstellend ist.&lt;/p></translation>
+      <translation>&lt;p>Die SVG-Exportfunktion in Qgis hat derzeit einige Probleme die im Qt4-SVG-Code liegen. Es ist zu bemerken, dass derzeit kein Text in der SVG-Datei erscheint. Ferner bestehen Probleme mit der Abgrenzung der Karte von daran angrenzenden Objekten wie Legende oer Maßstabsbalken.&lt;/p>Falls Sie ein vektorbasiertes Layout benötigen, empfehlen wird in PostScript zu drucken, falls die SVG-Ausgabe nicht zufriedenstellend ist.&lt;/p></translation>
     </message>
     <message>
       <source>SVG Format</source>
-      <translation>SVG Format</translation>
+      <translation>SVG-Format</translation>
     </message>
   </context>
   <context>
@@ -2643,7 +2696,7 @@ File dialog window title</comment>
     </message>
     <message>
       <source>Save Template &amp;As...</source>
-      <translation>Speichere Schablone &amp;als... </translation>
+      <translation>Schablone speichern &amp;als... </translation>
     </message>
     <message>
       <source>&amp;Print...</source>
@@ -2663,7 +2716,7 @@ File dialog window title</comment>
     </message>
     <message>
       <source>Select/Move item</source>
-      <translation>Selektiere/Verschiebe Eintrag</translation>
+      <translation>Eintrag selektieren/verschieben</translation>
     </message>
     <message>
       <source>Export as image</source>
@@ -2675,7 +2728,7 @@ File dialog window title</comment>
     </message>
     <message>
       <source>Add new scalebar</source>
-      <translation>Füge neuen Massstab hinzu</translation>
+      <translation>Neuen Massstab hinzufügen</translation>
     </message>
     <message>
       <source>Refresh view</source>
@@ -2775,10 +2828,6 @@ File dialog window title</comment>
       <translation>Höhe</translation>
     </message>
     <message>
-      <source>Scale</source>
-      <translation>Massstab</translation>
-    </message>
-    <message>
       <source>Set Extent</source>
       <translation>Ausdehnung setzen</translation>
     </message>
@@ -2814,6 +2863,10 @@ File dialog window title</comment>
       <source>1:</source>
       <translation type="unfinished" >1:</translation>
     </message>
+    <message>
+      <source>Scale:</source>
+      <translation>Massstab:</translation>
+    </message>
   </context>
   <context>
     <name>QgsComposerPicture</name>
@@ -2841,14 +2894,6 @@ File dialog window title</comment>
       <translation>Bild-Optionen</translation>
     </message>
     <message>
-      <source>Picture</source>
-      <translation>Bild</translation>
-    </message>
-    <message>
-      <source>...</source>
-      <translation>...</translation>
-    </message>
-    <message>
       <source>Frame</source>
       <translation>Rahmen</translation>
     </message>
@@ -2863,6 +2908,10 @@ File dialog window title</comment>
     <message>
       <source>Height</source>
       <translation>Höhe</translation>
+    </message>
+    <message>
+      <source>Browse</source>
+      <translation type="unfinished" >Durchsuchen</translation>
     </message>
   </context>
   <context>
@@ -2904,7 +2953,7 @@ File dialog window title</comment>
     <name>QgsComposerVectorLegend</name>
     <message>
       <source>Layers</source>
-      <translation>Ebenen</translation>
+      <translation>Layer</translation>
     </message>
     <message>
       <source>Group</source>
@@ -2912,7 +2961,7 @@ File dialog window title</comment>
     </message>
     <message>
       <source>Combine selected layers</source>
-      <translation>Kombiniere die ausgewählten Ebenen.</translation>
+      <translation>Kombiniere die ausgewählten Layer.</translation>
     </message>
     <message>
       <source>Cache</source>
@@ -3240,11 +3289,11 @@ File dialog window title</comment>
     </message>
     <message>
       <source>&amp;Copyright Label</source>
-      <translation>&amp;Copyright Label</translation>
+      <translation>&amp;Urhebersrechtshinweis</translation>
     </message>
     <message>
       <source>Creates a copyright label that is displayed on the map canvas.</source>
-      <translation>Erzeugt ein Copyright-Schild auf dem Kartenbild.</translation>
+      <translation>Erzeugt einen Urheberrechtshinweis auf dem Kartenbild.</translation>
     </message>
     <message>
       <source>&amp;Decorations</source>
@@ -3255,7 +3304,7 @@ File dialog window title</comment>
     <name>QgsCopyrightLabelPluginGuiBase</name>
     <message>
       <source>Copyright Label Plugin</source>
-      <translation>Copyright Beschriftungs Plugin</translation>
+      <translation>Urhebersrechtsnachweis-Plugin</translation>
     </message>
     <message>
       <source>Placement</source>
@@ -3291,33 +3340,37 @@ File dialog window title</comment>
     </message>
     <message>
       <source>Enable Copyright Label</source>
-      <translation>Copyrightbeschriftung aktivieren</translation>
+      <translation>Urheberrechtshinweis aktivieren</translation>
+    </message>
+    <message>
+      <source>Color</source>
+      <translation type="unfinished" >Farbe</translation>
     </message>
     <message>
       <source>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>
 p, li { white-space: pre-wrap; }
-&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Sans Serif'; font-size:9pt;&quot;>&lt;span style=&quot; font-size:12pt;&quot;>Description&lt;/span>&lt;/p>
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Sans Serif'; font-size:9pt;&quot;>&lt;/p>
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Sans Serif'; font-size:9pt;&quot;>Enter your copyright label below. This plugin supports basic html markup tags for formatting the label. For example:&lt;/p>
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Sans Serif'; font-size:9pt;&quot;>&lt;span style=&quot; font-weight:600;&quot;>&amp;lt;B&amp;gt; Bold text &amp;lt;/B&amp;gt; &lt;/span>&lt;/p>
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Sans Serif'; font-size:9pt; font-weight:600;&quot;>&lt;span style=&quot; font-weight:400; font-style:italic;&quot;>&amp;lt;I&amp;gt; Italics &amp;lt;/I&amp;gt;&lt;/span>&lt;/p>
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Sans Serif'; font-size:9pt; font-style:italic;&quot;>&lt;span style=&quot; font-style:normal;&quot;>(note: &amp;amp;copy; gives a copyright symbol)&lt;/span>&lt;/p>&lt;/body>&lt;/html></source>
+&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:12pt;&quot;>Description&lt;/span>&lt;/p>
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;/p>
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>Enter your copyright label below. This plugin supports basic html markup tags for formatting the label. For example:&lt;/p>
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-weight:600;&quot;>&amp;lt;B&amp;gt; Bold text &amp;lt;/B&amp;gt; &lt;/span>&lt;/p>
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-weight:600;&quot;>&lt;span style=&quot; font-weight:400; font-style:italic;&quot;>&amp;lt;I&amp;gt; Italics &amp;lt;/I&amp;gt;&lt;/span>&lt;/p>
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-style:italic;&quot;>&lt;span style=&quot; font-style:normal;&quot;>(note: &amp;amp;copy; gives a copyright symbol)&lt;/span>&lt;/p>&lt;/body>&lt;/html></source>
       <translation>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>
 p, li { white-space: pre-wrap; }
-&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Sans Serif'; font-size:9pt;&quot;>&lt;span style=&quot; font-size:12pt;&quot;>Beschreibung&lt;/span>&lt;/p>
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Sans Serif'; font-size:9pt;&quot;>&lt;/p>
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Sans Serif'; font-size:9pt;&quot;>Geben Sie Ihr Copyright-Label unten ein. Dieses Plugin untrestützt einfache HTML-Befehler zur Formatierung der Label. Zum Bespiel:&lt;/p>
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Sans Serif'; font-size:9pt;&quot;>&lt;span style=&quot; font-weight:600;&quot;>&amp;lt;B&amp;gt; Fetter Text &amp;lt;/B&amp;gt; &lt;/span>&lt;/p>
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Sans Serif'; font-size:9pt; font-weight:600;&quot;>&lt;span style=&quot; font-weight:400; font-style:italic;&quot;>&amp;lt;I&amp;gt; Kursiver Text &amp;lt;/I&amp;gt;&lt;/span>&lt;/p>
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Sans Serif'; font-size:9pt; font-style:italic;&quot;>&lt;span style=&quot; font-style:normal;&quot;>(Beachte: &amp;amp;copy; erzeugt ein Copyrightsymbol)&lt;/span>&lt;/p>&lt;/body>&lt;/html></translation>
+&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:12pt;&quot;>Beschreibung&lt;/span>&lt;/p>
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;/p>
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>Fügen Sie unten einen Urheberrechtshinweis hinzu. Dieses Plugin unterstützt Standard-HTML 'Markup Tags' für die Formatierung. Zum Beispiel:&lt;/p>
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-weight:600;&quot;>&amp;lt;B&amp;gt; Fettgedruckter Text &amp;lt;/B&amp;gt; &lt;/span>&lt;/p>
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-weight:600;&quot;>&lt;span style=&quot; font-weight:400; font-style:italic;&quot;>&amp;lt;I&amp;gt; Kursivschrift &amp;lt;/I&amp;gt;&lt;/span>&lt;/p>
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-style:italic;&quot;>&lt;span style=&quot; font-style:normal;&quot;>(Bemerkung: &amp;amp;copy; stellt ein Copyright Symbol dar)&lt;/span>&lt;/p>&lt;/body>&lt;/html></translation>
     </message>
     <message>
       <source>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>
 p, li { white-space: pre-wrap; }
-&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Sans Serif'; font-size:9pt;&quot;>&lt;span style=&quot; font-size:14pt;&quot;>© QGIS 2006&lt;/span>&lt;/p>&lt;/body>&lt;/html></source>
+&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:14pt;&quot;>© QGIS 2006&lt;/span>&lt;/p>&lt;/body>&lt;/html></source>
       <translation type="unfinished" />
     </message>
   </context>
@@ -3476,22 +3529,22 @@ p, li { white-space: pre-wrap; }
       <translation type="unfinished" >&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>
 p, li { white-space: pre-wrap; }
 &lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Arial'; font-size:10pt;&quot;>Benutzen Sie Textfelder unten, um die Ihre Projektionsdefinition zu testen, die Sie gerade anlegen. Geben Sie eine Koordinate ein zu der Sie sowohl die geographische als auch das projizierte Ergebnis kennen (z.B. indem Sie es von einer Karte ablesen. Drücken Sie dann dann auf 'Berechnen', um zu überprüfen, ob die Projektionsdefinition korrekt ist.&lt;/p>&lt;/body>&lt;/html></translation>
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Arial'; font-size:10pt;&quot;>Benutzen Sie die Textfelder unten, um die Projektionsdefinition zu testen, die Sie gerade anlegen. Geben Sie eine Koordinate ein zu der Sie sowohl die geographische als auch das projizierte Ergebnis kennen (z.B. indem Sie sie von einer Karte ablesen). Drücken Sie dann dann auf 'Berechnen', um zu überprüfen, ob die Projektionsdefinition korrekt ist.&lt;/p>&lt;/body>&lt;/html></translation>
     </message>
   </context>
   <context>
     <name>QgsDbSourceSelect</name>
     <message>
       <source>Are you sure you want to remove the </source>
-      <translation>Sind Sie sicher das Sie die Verbindung und</translation>
+      <translation>Sind Sie sicher das Sie die Verbindung und </translation>
     </message>
     <message>
       <source> connection and all associated settings?</source>
-      <translation>alle damit verbunden Einstellungen löschen wollen?</translation>
+      <translation> alle damit verbunden Einstellungen löschen wollen?</translation>
     </message>
     <message>
       <source>Confirm Delete</source>
-      <translation>Löschen Bestätigen</translation>
+      <translation>Löschen bestätigen</translation>
     </message>
     <message>
       <source>Select Table</source>
@@ -3499,11 +3552,11 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
       <source>You must select a table in order to add a Layer.</source>
-      <translation>Es muß eine Tabelle gewählt werden um eine Ebene hinzuzufügen.</translation>
+      <translation>Es muß eine Tabelle gewählt werden, um einen Layer hinzuzufügen.</translation>
     </message>
     <message>
       <source>Password for </source>
-      <translation>Passwort für</translation>
+      <translation>Passwort für </translation>
     </message>
     <message>
       <source>Please enter your password:</source>
@@ -3512,21 +3565,6 @@ p, li { white-space: pre-wrap; }
     <message>
       <source>Connection failed</source>
       <translation>Verbindungsfehler</translation>
-    </message>
-    <message>
-      <source>Access to relation </source>
-      <translation>Zugriff zur Relation</translation>
-    </message>
-    <message>
-      <source> using sql;
-</source>
-      <translation>mit sql</translation>
-    </message>
-    <message>
-      <source>
-has failed. The database said:
-</source>
-      <translation>fehlgeschlagen. Die Datenbank sagt:</translation>
     </message>
     <message>
       <source>Type</source>
@@ -3542,54 +3580,58 @@ has failed. The database said:
     </message>
     <message>
       <source>Point layer</source>
-      <translation>Punktebene</translation>
+      <translation>Punktlayer</translation>
     </message>
     <message>
       <source>Multi-point layer</source>
-      <translation>Multi-Punkt Ebene</translation>
+      <translation>Multi-Punkt-Layer</translation>
     </message>
     <message>
       <source>Linestring layer</source>
-      <translation>Linienebene</translation>
+      <translation>Linienlayer</translation>
     </message>
     <message>
       <source>Multi-linestring layer</source>
-      <translation>Multi-Linienebene</translation>
+      <translation>Multi-Linienlayer</translation>
     </message>
     <message>
       <source>Polygon layer</source>
-      <translation>Polygonebene</translation>
+      <translation>Polygonlayer</translation>
     </message>
     <message>
       <source>Multi-polygon layer</source>
-      <translation>Multi-Polygonebene</translation>
+      <translation>Multi-Polygonlayer</translation>
     </message>
     <message>
       <source>Mixed geometry layer</source>
-      <translation>Gemischte Geometrieebene</translation>
+      <translation>Gemischter Geometrielayer</translation>
     </message>
     <message>
       <source>Geometry collection layer</source>
-      <translation>Geometriekollektionsebene</translation>
+      <translation>Geometriekollektionslayer</translation>
     </message>
     <message>
       <source>Waiting for layer type</source>
-      <translation>Warte auf den Ebenentyp</translation>
+      <translation>Warte auf den Layertyp</translation>
     </message>
     <message>
       <source>Unknown layer type</source>
-      <translation>Unbekannter Ebenentyp</translation>
+      <translation>Unbekannter Layertyp</translation>
     </message>
     <message>
       <source>Connection to %1 on %2 failed. Either the database is down or your settings are incorrect.%3Check your username and password and try again.%4The database said:%5%6</source>
-      <translation>Verbindung zu %1 auf %2 ist fehlgeschlagen. Entweder die Datenbank ist abgeschaltet oder Ihre Einstellungen sind falsch. %3 Bitte überprüfen Sie den Benutzernamen und das Passwort und probieren Sie es noch einmal. %4 Die Datenbank sagt folgendes:%5%6.</translation>
+      <translation>Verbindung zu %1 auf %2 ist fehlgeschlagen. Entweder ist die Datenbank abgeschaltet oder Ihre Einstellungen sind falsch. %3 Bitte überprüfen Sie den Benutzernamen und das Passwort und probieren Sie es noch einmal. %4 Die Datenbank meldete folgendes:%5%6.</translation>
+    </message>
+    <message>
+      <source>double click to open PostgreSQL query builder</source>
+      <translation>Doppelklick, um den PostgreSQL Query Builder zu öffnen</translation>
     </message>
   </context>
   <context>
     <name>QgsDbSourceSelectBase</name>
     <message>
       <source>Add PostGIS Table(s)</source>
-      <translation>PostGIS Tabelle(n) hinzufügen</translation>
+      <translation>PostGIS-Tabelle(n) hinzufügen</translation>
     </message>
     <message>
       <source>Add</source>
@@ -3625,7 +3667,7 @@ has failed. The database said:
     </message>
     <message>
       <source>PostgreSQL Connections</source>
-      <translation>PostgreSQL Verbindungen</translation>
+      <translation>PostgreSQL-Verbindungen</translation>
     </message>
     <message>
       <source>Tables:</source>
@@ -3667,19 +3709,19 @@ has failed. The database said:
     <name>QgsDelimitedTextPlugin</name>
     <message>
       <source>&amp;Add Delimited Text Layer</source>
-      <translation>Hinzufügen einer getrennten Textdatei</translation>
+      <translation>Getrennten Textdatei hinzufügen</translation>
     </message>
     <message>
       <source>Add a delimited text file as a map layer. </source>
-      <translation>Füge eine getrennte Textdatei als Ebene der Karte hinzu.</translation>
+      <translation>Eine Textdatei dem Kartenfenster als Layer hinzufügen.</translation>
     </message>
     <message>
       <source>The file must have a header row containing the field names. </source>
-      <translation>Die Datei muss eine Kopfspalte mit Spaltennamen enthalten.</translation>
+      <translation>Die Datei muss eine Kopfzeile mit Spaltennamen enthalten.</translation>
     </message>
     <message>
       <source>X and Y fields are required and must contain coordinates in decimal units.</source>
-      <translation>X und Y-Spalten sind unbedingt erforderlich und müssen Koordinaten in dezimalen Einheiten haben.</translation>
+      <translation>X- und Y-Spalten mit dezimalen Koordinaten sind unbedingt erforderlich</translation>
     </message>
     <message>
       <source>&amp;Delimited text</source>
@@ -3687,18 +3729,18 @@ has failed. The database said:
     </message>
     <message>
       <source>DelimitedTextLayer</source>
-      <translation>CSV-Text-Ebene</translation>
+      <translation>Layer aus Textdatei</translation>
     </message>
   </context>
   <context>
     <name>QgsDelimitedTextPluginGui</name>
     <message>
       <source>No layer name</source>
-      <translation>Kein Ebenenname</translation>
+      <translation>Kein Layername</translation>
     </message>
     <message>
       <source>Please enter a layer name before adding the layer to the map</source>
-      <translation>Es muss ein Ebenenname eingegeben werden bevor die Ebene zur Karte hinzugefügt wird</translation>
+      <translation>Bitte geben Sie einen Layernamen ein, bevor Sie den Layer zum Kartenfenster hinzufügen</translation>
     </message>
     <message>
       <source>No delimiter</source>
@@ -3710,34 +3752,34 @@ has failed. The database said:
     </message>
     <message>
       <source>Choose a delimited text file to open</source>
-      <translation>Wähle eine Textdatei zum Öffnen</translation>
+      <translation>Textdatei zum Öffnen wählen</translation>
     </message>
     <message>
       <source>Parse</source>
-      <translation type="unfinished" >Verarbeiten</translation>
+      <translation>Analysieren</translation>
     </message>
     <message>
-      <source>&lt;h1>Description&lt;/h1>&lt;p>Select a delimited text file containing x and y coordinates that you would like to use as a point layer and this plugin will do the job for you!&lt;/p>&lt;p>Use the layer name box to specify the legend name for the new layer. Use the delimiter box to specify what delimeter is used in your file (e.g. space, comma or tab). After choosing a delimiter, press the parse button and select the columns containing the x and y values for the layer.&lt;/p></source>
-      <translation type="unfinished" />
+      <source>&lt;h1>Description&lt;/h1>&lt;p>Select a delimited text file containing x and y coordinates that you would like to use as a point layer and this plugin will do the job for you!&lt;/p>&lt;p>Use the layer name box to specify the legend name for the new layer. Use the delimiter box to specify what delimeter is used in your file (e.g. space, comma, tab or a regular expression in Perl style). After choosing a delimiter, press the parse button and select the columns containing the x and y values for the layer.&lt;/p></source>
+      <translation>&lt;h1>Beschreibung&lt;/h1>&lt;p>Wählen Sie eine Textdatei aus, die X- und Y-Koordinaten enthält, die Sie als Punktlayer visualisieren möchten und dieses Plugin erledigt diesen Job für Sie!&lt;/p>&lt;p>Geben Sie im Trennzeichenfeld ein, welches Trennzeichen in der Tabelle verwendet wird (z.B. Leerzeichen, Komma, Tabulator oder einen regulären Ausdruck im Perl-Stil). Dann geben Sie einen Layernamen an, der in der Legende angezeigt werden soll. Nun klicken Sie auf 'Analysieren' und wählen dann die Spalten, die die X- und Y-Koordinaten enthalten.&lt;/p></translation>
     </message>
   </context>
   <context>
     <name>QgsDelimitedTextPluginGuiBase</name>
     <message>
       <source>Create a Layer from a Delimited Text File</source>
-      <translation>Erstelle eine Ebene aus einer Textdatendatei</translation>
+      <translation>Textdatei aus Layer erzeugen</translation>
     </message>
     <message>
       <source>&lt;p align=&quot;right&quot;>X field&lt;/p></source>
-      <translation>&lt;p align=&quot;right&quot;>X Feld&lt;/p></translation>
+      <translation>&lt;p align=&quot;right&quot;>X-Feld&lt;/p></translation>
     </message>
     <message>
       <source>Name of the field containing x values</source>
-      <translation>Benenne das Feld welches die x Werte enthält</translation>
+      <translation>Nennen Sie das Feld, das die X-Werte enthält</translation>
     </message>
     <message>
       <source>Name of the field containing x values. Choose a field from the list. The list is generated by parsing the header row of the delimited text file.</source>
-      <translation>Benenne das Feld welches die x Werte enthält. Wähle ein Feld aus der Liste. Diese wird durch verarbeiten der Kopfzeile der Textdatendatei erzeugt.</translation>
+      <translation>Nennen Sie das Feld, das die X-Werte enthält. Wähle ein Feld aus der Liste, die aus der Kopfzeile der Textdatei erzeugt wurde.</translation>
     </message>
     <message>
       <source>&lt;p align=&quot;right&quot;>Y field&lt;/p></source>
@@ -3745,23 +3787,23 @@ has failed. The database said:
     </message>
     <message>
       <source>Name of the field containing y values</source>
-      <translation>Benenne das Feld welches die y Werte enthält</translation>
+      <translation>Nennen Sie das Feld, das die y-Werte enthält</translation>
     </message>
     <message>
       <source>Name of the field containing y values. Choose a field from the list. The list is generated by parsing the header row of the delimited text file.</source>
-      <translation>Benenne das Feld welches die y Werte enthält. Wähle ein Feld aus der Liste. Diese wird durch verarbeiten der Kopfzeile der Textdatendatei erzeugt.</translation>
+      <translation>Nennen Sie das Feld, das die y-Werte enthält. Wähle ein Feld aus der Liste, die aus der Kopfzeile der Textdatei erzeugt wurde.</translation>
     </message>
     <message>
       <source>Layer name</source>
-      <translation>Ebenenname</translation>
+      <translation>Layername</translation>
     </message>
     <message>
       <source>Name to display in the map legend</source>
-      <translation>Name der in der Kartenlegende angezeigt wird</translation>
+      <translation>Name, der in der Kartenlegende angezeigt wird</translation>
     </message>
     <message>
       <source>Name displayed in the map legend</source>
-      <translation>Name welche in der Kartenlegende dargestellt wird</translation>
+      <translation>Name, der in der Kartenlegende angezeigt wird</translation>
     </message>
     <message>
       <source>Delimiter</source>
@@ -3769,35 +3811,35 @@ has failed. The database said:
     </message>
     <message>
       <source>Delimiter to use when splitting fields in the text file. The delimiter can be more than one character.</source>
-      <translation>Trennzeichen das zum aufspalten der Felder in der Textdatei verwendet wird. Das Trennzeichen kann mehr als ein Zeichen sein.</translation>
+      <translation>Trennzeichen, das zum Aufspalten der Felder in der Textdatei verwendet wird. Das Trennzeichen kann mehr als ein Zeichen sein.</translation>
     </message>
     <message>
       <source>Delimiter to use when splitting fields in the delimited text file. The delimiter can be 1 or more characters in length.</source>
-      <translation>Trennzeichen das zum aufspalten der Felder in der Textdatendatei verwendet wird. Das Trennzeichen kann 1 oder mehrere Zeichen lang sein.</translation>
+      <translation>Trennzeichen, das zum Aufspalten der Felder in der Textdatei verwendet wird. Das Trennzeichen kann ein oder mehrere Zeichen lang sein.</translation>
     </message>
     <message>
       <source>Delimited Text Layer</source>
-      <translation>Textdatenebene</translation>
+      <translation>Layer aus Textdatei</translation>
     </message>
     <message>
       <source>Delimited text file</source>
-      <translation>Textdatendatei</translation>
+      <translation>Textdatei</translation>
     </message>
     <message>
       <source>Full path to the delimited text file</source>
-      <translation>Vollständiger Pfad zur Textdatendatei</translation>
+      <translation>Vollständiger Pfad zur Textdatei</translation>
     </message>
     <message>
       <source>Full path to the delimited text file. In order to properly parse the fields in the file, the delimiter must be defined prior to entering the file name. Use the Browse button to the right of this field to choose the input file.</source>
-      <translation>Vollständiger Pfad zur Textdatendatei. Um die Felder in der Datei ordentlich verarbeiten zu können, muß das Trennzeichen vor der Eingabe des Dateinamens definiert sein. Zum Wählen der Eingabedatei den Durchsuchen- Knopf rechts des Feldes verwenden.</translation>
+      <translation>Vollständiger Pfad zur Textdatei. Um die Felder in der Datei ordentlich verarbeiten zu können, muß das Trennzeichen vor der Eingabe des Dateinamens definiert sein. Zum Wählen der Eingabedatei den Durchsuchen- Knopf rechts des Feldes verwenden.</translation>
     </message>
     <message>
       <source>Browse to find the delimited text file to be processed</source>
-      <translation>Durchsuchen zum Finden der zuverarbeitenden Textdatendatei</translation>
+      <translation>Durchsuchen zum Finden der zuverarbeitenden Textdatei</translation>
     </message>
     <message>
       <source>Use this button to browse to the location of the delimited text file. This button will not be enabled until a delimiter has been entered in the &lt;i>Delimiter&lt;/i> box. Once a file is chosen, the X and Y field drop-down boxes will be populated with the fields from the delimited text file.</source>
-      <translation>Verwende diesen Knopf zum Durchsuchen nach dem Ort der Textdatendatei. Dieser Knopf ist nicht aktiv bis ein Trennzeichen in der &lt;i>Trennzeichen&lt;/i> Box eingegeben wurde. Wenn die Datei erst einmal gewählt wurde, werden die X und Y Feld Dropdownboxen mit den Feldern aus der Textdatendatei gefüllt.</translation>
+      <translation>Verwende diesen Knopf zum Durchsuchen nach dem Ort der Textdatei. Dieser Knopf ist nicht aktiv bis ein Trennzeichen in der &lt;i>Trennzeichen&lt;/i> Box eingegeben wurde. Wenn die Datei erst einmal gewählt wurde, werden die X- und Y-Feld Dropdownboxen mit den Feldern aus der Textdatei gefüllt.</translation>
     </message>
     <message>
       <source>Sample text</source>
@@ -3805,7 +3847,7 @@ has failed. The database said:
     </message>
     <message>
       <source>Browse...</source>
-      <translation type="unfinished" >Durchsuchen...</translation>
+      <translation>Suchen...</translation>
     </message>
     <message>
       <source>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>
@@ -3813,6 +3855,22 @@ p, li { white-space: pre-wrap; }
 &lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;/p>&lt;/body>&lt;/html></source>
       <translation type="unfinished" />
+    </message>
+    <message>
+      <source>The delimiter is taken as is</source>
+      <translation>Das Trennzeichen wurde wie vorhanden verwendet</translation>
+    </message>
+    <message>
+      <source>Plain characters</source>
+      <translation>Klartext</translation>
+    </message>
+    <message>
+      <source>The delimiter is a regular expression</source>
+      <translation>Dast Trennzeichen ist ein regulärer Ausdruck</translation>
+    </message>
+    <message>
+      <source>Regular expression</source>
+      <translation>Regulärer Ausdruck</translation>
     </message>
   </context>
   <context>
@@ -3839,7 +3897,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
       <source>Table name for the buffered layer:</source>
-      <translation>Tabellenname für die gepufferte Ebene:</translation>
+      <translation>Tabellenname für den gepufferten Layer:</translation>
     </message>
     <message>
       <source>Create unique object id</source>
@@ -3859,7 +3917,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
       <source>Unique field to use as feature id:</source>
-      <translation>Eindeutiges Feld zur Verwendung als Eigenschafts ID:</translation>
+      <translation>Eindeutiges Feld zur Verwendung als Objekt-ID:</translation>
     </message>
     <message>
       <source>Schema:</source>
@@ -3867,11 +3925,11 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
       <source>Add the buffered layer to the map?</source>
-      <translation>Die gepufferte Ebene zur Karte hinzufügen?</translation>
+      <translation>Den gepufferten Layer zur Karte hinzufügen?</translation>
     </message>
     <message>
       <source>&lt;h2>Buffer the features in layer: &lt;/h2></source>
-      <translation>&lt;h2>Gepufferte Eigenschaften in der Ebene: &lt;/h2></translation>
+      <translation>&lt;h2>Objekte im Layer puffern: &lt;/h2></translation>
     </message>
     <message>
       <source>Parameters</source>
@@ -3973,7 +4031,7 @@ p, li { white-space: pre-wrap; }
     <name>QgsGPSDeviceDialogBase</name>
     <message>
       <source>GPS Device Editor</source>
-      <translation>GPS Geräteeditor</translation>
+      <translation>GPS-Geräteeditor</translation>
     </message>
     <message>
       <source>Device name:</source>
@@ -4064,11 +4122,11 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
       <source>&amp;Create new GPX layer</source>
-      <translation>Erstelle neue GPX-Ebene</translation>
+      <translation>Erstelle neuen GPX-Layer</translation>
     </message>
     <message>
       <source>Creates a new GPX layer and displays it on the map canvas</source>
-      <translation>Erzeugt eine neue GPX-Ebene und zeichnet sie in die Kartendarstellung.</translation>
+      <translation>Erzeugt einen neuen GPX-Layer und zeichnet ihn in das Kartenfenster.</translation>
     </message>
     <message>
       <source>&amp;Gps</source>
@@ -4249,7 +4307,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
       <source>Layer name:</source>
-      <translation>Ebenenname:</translation>
+      <translation>Layername:</translation>
     </message>
     <message>
       <source>Download from GPS</source>
@@ -4277,7 +4335,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
       <source>Data layer:</source>
-      <translation>Datenebene:</translation>
+      <translation>Datenlayer:</translation>
     </message>
     <message>
       <source>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>
@@ -4285,15 +4343,15 @@ p, li { white-space: pre-wrap; }
 &lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Arial'; font-size:12pt;&quot;>&lt;span style=&quot; font-size:10pt;&quot;>GPX is the &lt;/span>&lt;a href=&quot;http://www.topografix.com/gpx.asp&quot;>&lt;span style=&quot; font-size:10pt; text-decoration: underline; color:#0000ff;&quot;>GPS eXchange file format&lt;/span>&lt;/a>&lt;span style=&quot; font-size:10pt;&quot;>, which is used to store information about waypoints, routes, and tracks.&lt;/span>&lt;/p>
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Arial'; font-size:10pt;&quot;>Select a GPX file and then select the feature types that you want to load.&lt;/p>&lt;/body>&lt;/html></source>
-      <translation type="unfinished" >&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>
+      <translation>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>
 p, li { white-space: pre-wrap; }
 &lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Arial'; font-size:12pt;&quot;>&lt;span style=&quot; font-size:10pt;&quot;>GPX is the &lt;/span>&lt;a href=&quot;http://www.topografix.com/gpx.asp&quot;>&lt;span style=&quot; font-size:10pt; text-decoration: underline; color:#0000ff;&quot;>GPS eXchange Dateiformat&lt;/span>&lt;/a>&lt;span style=&quot; font-size:10pt;&quot;>, das benutzt wird um Waypoints, Routen und Wege zu speichern.&lt;/span>&lt;/p>
-&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Arial'; font-size:10pt;&quot;>Wählen Sie eine GPX-Datei und selektieren Sie den Featuretyp, den Sie laden möchten.&lt;/p>&lt;/body>&lt;/html></translation>
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Arial'; font-size:10pt;&quot;>Wählen Sie eine GPX-Datei und selektieren Sie den Objekttyp, den Sie laden möchten.&lt;/p>&lt;/body>&lt;/html></translation>
     </message>
     <message>
       <source>Browse...</source>
-      <translation type="unfinished" >Durchsuchen...</translation>
+      <translation>Suchen...</translation>
     </message>
     <message>
       <source>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>
@@ -4317,11 +4375,11 @@ p, li { white-space: pre-wrap; }
 &lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Arial'; font-size:12pt;&quot;>&lt;span style=&quot; font-size:10pt;&quot;>This tool will help you download data from a GPS device. Choose your GPS device, the port it is connected to, the feature type you want to download, a name for your new layer, and the GPX file where you want to store the data. If your device isn't listed, or if you want to change some settings, you can also edit the devices.&lt;/span>&lt;/p>
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Arial'; font-size:10pt;&quot;>This tool uses the program GPSBabel (&lt;a href=&quot;http://gpsbabel.sf.net&quot;>&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;>http://gpsbabel.sf.net&lt;/span>&lt;/a>) to transfer the data. If you don't have GPSBabel installed where QGIS can find it, this tool will not work.&lt;/p>&lt;/body>&lt;/html></source>
-      <translation type="unfinished" >&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>
+      <translation>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>
 p, li { white-space: pre-wrap; }
 &lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>
-&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Arial'; font-size:12pt;&quot;>&lt;span style=&quot; font-size:10pt;&quot;>Diese Werkzeug hilft Ihnen beim Herunterladen von Daten aus Ihrem GPS-Gerät. Wählen Sie Ihr GPS-Gerät, die Schnittstelle mit der es verbunden ist, den Featuretyp, den Sie herunterladen möchten, den Namen Ihres neuen Layers und die GPX-Datei in der die Daten gespeichert werden soll. Wenn Ihr Gerät nicht aufgeführt ist oder Sie Einstellungen ändern möchten, können Sie auch die Geräte editieren.&lt;/span>&lt;/p>
-&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Arial'; font-size:10pt;&quot;>Diese Werkzeug nutzt das Programm GPSBabel (&lt;a href=&quot;http://gpsbabel.sf.net&quot;>&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;>http://gpsbabel.sf.net&lt;/span>&lt;/a>) um die Daten zu �bertragen. Wenn Sie GPSBabel nicht so installiert haben, da� QGIS nicht finden kann, funktioniert diese Werkzeug nicht.&lt;/p>&lt;/body>&lt;/html></translation>
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Arial'; font-size:12pt;&quot;>&lt;span style=&quot; font-size:10pt;&quot;>Diese Werkzeug hilft Ihnen beim Herunterladen von Daten aus Ihrem GPS-Gerät. Wählen Sie Ihr GPS-Gerät, die Schnittstelle mit der es verbunden ist, den Featuretyp, den Sie herunterladen möchten, den Namen Ihres neuen Layers und die GPX-Datei in der die Daten gespeichert werden soll. Wenn Ihr Gerät nicht aufgeführt ist oder Sie Einstellungen ändern möchten, können Sie die Geräte auch bearbeiten.&lt;/span>&lt;/p>
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Arial'; font-size:10pt;&quot;>Diese Werkzeug nutzt das Programm GPSBabel (&lt;a href=&quot;http://gpsbabel.sf.net&quot;>&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;>http://gpsbabel.sf.net&lt;/span>&lt;/a>) um die Daten zu übertragen. Wenn Sie GPSBabel nicht so installiert haben, dass QGIS es finden kann, funktioniert dieses Werkzeug nicht.&lt;/p>&lt;/body>&lt;/html></translation>
     </message>
     <message>
       <source>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>
@@ -4332,7 +4390,7 @@ p, li { white-space: pre-wrap; }
       <translation type="unfinished" >&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>
 p, li { white-space: pre-wrap; }
 &lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>
-&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Arial'; font-size:12pt;&quot;>&lt;span style=&quot; font-size:10pt;&quot;>Diese Werkzeug unterstützt Sie beim Hochladen eines GPX-Layers auf Ihr GPS-Gerät. Wählen Sie den Layer, den Sie hochladen möchten, das Gerät auf das Sie Hochladen möchten und die Schnittstelle an die es angeschlossen ist. Wenn Ihr Gerät nicht aufgeführt ist oder Sie Einstellungen ändern wollen, können Sie die Geräte auch editieren.&lt;/span>&lt;/p>
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Arial'; font-size:12pt;&quot;>&lt;span style=&quot; font-size:10pt;&quot;>Diese Werkzeug unterstützt Sie beim Hochladen eines GPX-Layers auf Ihr GPS-Gerät. Wählen Sie den Layer, den Sie hochladen möchten, das Gerät auf das Sie Hochladen möchten und die Schnittstelle an die es angeschlossen ist. Wenn Ihr Gerät nicht aufgeführt ist oder Sie Einstellungen ändern wollen, können Sie die Geräte auch bearbeiten.&lt;/span>&lt;/p>
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Arial'; font-size:10pt;&quot;>Diese Werkzeug benutzt das Programm GPSBabel (&lt;a href=&quot;http://gpsbabel.sf.net&quot;>&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;>http://gpsbabel.sf.net&lt;/span>&lt;/a>) um Daten zu transferieren. Wenn GPSBabel nicht so installiert ist, dass QGIS es finden kann, funktioniert dieses Werkzeug nicht.&lt;/p>&lt;/body>&lt;/html></translation>
     </message>
   </context>
@@ -4382,7 +4440,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
       <source>New Vector Layer</source>
-      <translation>Neue Vektorebene</translation>
+      <translation>Neuer Vektorlayer</translation>
     </message>
     <message>
       <source>Attributes:</source>
@@ -4497,6 +4555,21 @@ p, li { white-space: pre-wrap; }
     </message>
   </context>
   <context>
+    <name>QgsGraduatedSymbolDialog</name>
+    <message>
+      <source>Equal Interval</source>
+      <translation>Gleiches Intervall</translation>
+    </message>
+    <message>
+      <source>Quantiles</source>
+      <translation>Quantile</translation>
+    </message>
+    <message>
+      <source>Empty</source>
+      <translation>Leer</translation>
+    </message>
+  </context>
+  <context>
     <name>QgsGraduatedSymbolDialogBase</name>
     <message>
       <source>graduated Symbol</source>
@@ -4542,16 +4615,16 @@ p, li { white-space: pre-wrap; }
       <translation type="unfinished" >Typ</translation>
     </message>
     <message>
-      <source>Field</source>
-      <translation type="unfinished" >Feld</translation>
-    </message>
-    <message>
       <source>ERROR</source>
       <translation type="unfinished" >FEHLER</translation>
     </message>
     <message>
       <source>OK</source>
       <translation type="unfinished" >OK</translation>
+    </message>
+    <message>
+      <source>Layer</source>
+      <translation type="unfinished" >Layer</translation>
     </message>
   </context>
   <context>
@@ -4582,7 +4655,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
       <source>Add new category using settings in GRASS Edit toolbox</source>
-      <translation>Füge eine neue Kategorie hinzu mit den Einstellungen in der 'GRASS Digitalisieren' Toolbox</translation>
+      <translation>Eine neue Kategorie mit den Einstellungen der 'GRASS Digitalisieren'-Werkzeugkiste hinzufügen</translation>
     </message>
     <message>
       <source>Delete</source>
@@ -4601,19 +4674,19 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
       <source>Add selected map to canvas</source>
-      <translation>Füge ausgewählte Ebene der Karte hinzu</translation>
+      <translation>Ausgewählten Layer dem Kartenfenster hinzufügen</translation>
     </message>
     <message>
       <source>Copy selected map</source>
-      <translation>Kopiere die ausgewählte Karte</translation>
+      <translation>Gewählte Karte kopieren</translation>
     </message>
     <message>
       <source>Rename selected map</source>
-      <translation>Benenne die ausgewählte Karte um</translation>
+      <translation>Gewählte Karte umbenennen</translation>
     </message>
     <message>
       <source>Delete selected map</source>
-      <translation>Lösche die ausgewählte Karte</translation>
+      <translation>Gewählte Karte löschen</translation>
     </message>
     <message>
       <source>Set current region to selected map</source>
@@ -4696,7 +4769,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
       <source>Add vertex</source>
-      <translation>Füge Vertex hinzu</translation>
+      <translation>Vertex hinzufügen</translation>
     </message>
     <message>
       <source>Move element</source>
@@ -4780,35 +4853,63 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
       <source>Boundary (no area)</source>
-      <translation type="unfinished" >Grenze (keine Fläche)</translation>
+      <translation>Grenzlinie (keine Fläche)</translation>
     </message>
     <message>
       <source>Boundary (1 area)</source>
-      <translation type="unfinished" >Grenze (eine Fläche)</translation>
+      <translation>Grenzlinie (eine Fläche)</translation>
     </message>
     <message>
       <source>Boundary (2 areas)</source>
-      <translation type="unfinished" >Grenze (zwei Flächen)</translation>
+      <translation>Grenzlinie (zwei Flächen)</translation>
     </message>
     <message>
       <source>Centroid (in area)</source>
-      <translation type="unfinished" >Schwerpunkt (innerhalb der Fläche)</translation>
+      <translation>Zentroid (innerhalb der Fläche)</translation>
     </message>
     <message>
       <source>Centroid (outside area)</source>
-      <translation type="unfinished" >Schwerpunkt (außerhalb der Fläche)</translation>
+      <translation>Zentroid (außerhalb der Fläche)</translation>
     </message>
     <message>
       <source>Centroid (duplicate in area)</source>
-      <translation type="unfinished" >Schwerpunkt (Duplikat in der Fläche)</translation>
+      <translation>Zentroid (Duplikat in der Fläche)</translation>
     </message>
     <message>
       <source>Node (1 line)</source>
-      <translation type="unfinished" >Knoten (1 Linie)</translation>
+      <translation>Knotenpunkt (1 Linie)</translation>
     </message>
     <message>
       <source>Node (2 lines)</source>
-      <translation type="unfinished" >Knoten (2 Linien)</translation>
+      <translation>Knotenpunkt (2 Linien)</translation>
+    </message>
+    <message>
+      <source>Column</source>
+      <translation type="unfinished" >Spalte</translation>
+    </message>
+    <message>
+      <source>Type</source>
+      <translation type="unfinished" >Typ</translation>
+    </message>
+    <message>
+      <source>Length</source>
+      <translation type="unfinished" >Länge</translation>
+    </message>
+    <message>
+      <source>Next not used</source>
+      <translation>Nächst folgender Kategoriewert</translation>
+    </message>
+    <message>
+      <source>Manual entry</source>
+      <translation type="unfinished" >Manueller Eintrag</translation>
+    </message>
+    <message>
+      <source>No category</source>
+      <translation type="unfinished" >Keine Kategorie</translation>
+    </message>
+    <message>
+      <source>Right: </source>
+      <translation type="unfinished" >Rechts: </translation>
     </message>
     <message>
       <source>Disp</source>
@@ -4834,34 +4935,6 @@ Column title</comment>
 Column title</comment>
       <translation type="unfinished" >Index</translation>
     </message>
-    <message>
-      <source>Column</source>
-      <translation type="unfinished" >Spalte</translation>
-    </message>
-    <message>
-      <source>Type</source>
-      <translation type="unfinished" >Typ</translation>
-    </message>
-    <message>
-      <source>Length</source>
-      <translation type="unfinished" >Länge</translation>
-    </message>
-    <message>
-      <source>Next not used</source>
-      <translation type="unfinished" >Folgende nicht genutzt</translation>
-    </message>
-    <message>
-      <source>Manual entry</source>
-      <translation type="unfinished" >Manueller Eintrag</translation>
-    </message>
-    <message>
-      <source>No category</source>
-      <translation type="unfinished" >Keine Kategorie</translation>
-    </message>
-    <message>
-      <source>Right: </source>
-      <translation type="unfinished" >Rechts: </translation>
-    </message>
   </context>
   <context>
     <name>QgsGrassEditBase</name>
@@ -4876,10 +4949,6 @@ Column title</comment>
     <message>
       <source>Mode</source>
       <translation>Modus</translation>
-    </message>
-    <message>
-      <source>Field (layer)</source>
-      <translation>Attribut (Ebene)</translation>
     </message>
     <message>
       <source>Settings</source>
@@ -4916,6 +4985,10 @@ Column title</comment>
     <message>
       <source>Marker size</source>
       <translation>Markergröße</translation>
+    </message>
+    <message>
+      <source>Layer</source>
+      <translation type="unfinished" >Layer</translation>
     </message>
   </context>
   <context>
@@ -5109,7 +5182,7 @@ Column title</comment>
     </message>
     <message>
       <source>Natural log of x</source>
-      <translation>Naturlicher Log von x </translation>
+      <translation>Natürlicher Log von x </translation>
     </message>
     <message>
       <source>Log of x base b</source>
@@ -5153,7 +5226,7 @@ Column title</comment>
     </message>
     <message>
       <source>Current row of moving window (Starts with 1)</source>
-      <translation>Aktuelle Reihe des Moving windows (startet bei 1)</translation>
+      <translation>Aktuelle Zeile des Moving windows (startet bei 1)</translation>
     </message>
     <message>
       <source>Sine of x (x is in degrees)</source>
@@ -5196,7 +5269,7 @@ Column title</comment>
     </message>
     <message>
       <source>No GRASS raster maps currently in QGIS</source>
-      <translation>Derzeit sind keine GRASS Rasterkarten in QGIS geladen.</translation>
+      <translation>Derzeit sind keine GRASS-Rasterkarten in QGIS geladen.</translation>
     </message>
     <message>
       <source>Cannot create 'mapcalc' directory in current mapset.</source>
@@ -5352,11 +5425,11 @@ bei Zeile </translation>
     </message>
     <message>
       <source>Cannot get input region</source>
-      <translation type="unfinished" >Konnten Eingaberegion nicht holen</translation>
+      <translation>Konnte Eingabe-'region' nicht finden</translation>
     </message>
     <message>
       <source>Use Input Region</source>
-      <translation type="unfinished" >Eingaberegion benutzen</translation>
+      <translation>Eingabe-'region' benutzen</translation>
     </message>
     <message>
       <source>Cannot find module </source>
@@ -5399,7 +5472,7 @@ bei Zeile </translation>
     </message>
     <message>
       <source>Run</source>
-      <translation>Los</translation>
+      <translation>Starten</translation>
     </message>
     <message>
       <source>Close</source>
@@ -5407,7 +5480,7 @@ bei Zeile </translation>
     </message>
     <message>
       <source>View output</source>
-      <translation>Ergebnis ansehen</translation>
+      <translation>Ergebnis visualisieren</translation>
     </message>
     <message>
       <source>TextLabel</source>
@@ -5483,7 +5556,7 @@ bei Zeile </translation>
     </message>
     <message>
       <source>Use region of this map</source>
-      <translation type="unfinished" >Kartenregion benutzen</translation>
+      <translation>Karten-'region' benutzen</translation>
     </message>
     <message>
       <source>:&amp;nbsp;no input</source>
@@ -5552,15 +5625,15 @@ bei Zeile </translation>
     </message>
     <message>
       <source>Cannot get current region</source>
-      <translation type="unfinished" >Kann die aktuelle Region nicht ermitteln.</translation>
+      <translation>Kann die aktuelle 'region' nicht ermitteln.</translation>
     </message>
     <message>
       <source>Cannot check region of map </source>
-      <translation type="unfinished" >Kann die Region der Karte nicht überprüfen</translation>
+      <translation>Kann die 'region' der Karte nicht überprüfen</translation>
     </message>
     <message>
       <source>Cannot set region of map </source>
-      <translation type="unfinished" >Kann Kartenregion nicht setzen: </translation>
+      <translation>Kann Karten-'region' nicht setzen: </translation>
     </message>
   </context>
   <context>
@@ -5571,7 +5644,7 @@ bei Zeile </translation>
     </message>
     <message>
       <source>GRASS location</source>
-      <translation type="unfinished" >GRASS-Ort</translation>
+      <translation>GRASS-Location</translation>
     </message>
     <message>
       <source>Projection</source>
@@ -5579,15 +5652,15 @@ bei Zeile </translation>
     </message>
     <message>
       <source>Default GRASS Region</source>
-      <translation type="unfinished" >Voreingestellte GRASS-Region</translation>
+      <translation>Voreingestellte GRASS-'region'</translation>
     </message>
     <message>
       <source>Mapset</source>
-      <translation type="unfinished" >Kartenset</translation>
+      <translation>Mapset</translation>
     </message>
     <message>
       <source>Create New Mapset</source>
-      <translation type="unfinished" >Neuen Kartensatz erzeugen</translation>
+      <translation>Neues Mapset erzeugen</translation>
     </message>
     <message>
       <source>Tree</source>
@@ -5603,19 +5676,19 @@ bei Zeile </translation>
     </message>
     <message>
       <source>Location 2</source>
-      <translation type="unfinished" >2. Ort</translation>
+      <translation>2. Location</translation>
     </message>
     <message>
       <source>User's mapset</source>
-      <translation type="unfinished" >Benutzerkartensatz</translation>
+      <translation>Benutzer Mapset</translation>
     </message>
     <message>
       <source>System mapset</source>
-      <translation type="unfinished" >Systemkartensatz</translation>
+      <translation>System Mapset</translation>
     </message>
     <message>
       <source>Location 1</source>
-      <translation type="unfinished" >1. Ort</translation>
+      <translation>1. Location</translation>
     </message>
     <message>
       <source>Owner</source>
@@ -5635,15 +5708,15 @@ bei Zeile </translation>
     </message>
     <message>
       <source>Enter location name!</source>
-      <translation type="unfinished" >Ortsnamen angeben</translation>
+      <translation>Location-Name angeben</translation>
     </message>
     <message>
       <source>The location exists!</source>
-      <translation type="unfinished" >Der Ort existiert</translation>
+      <translation>Die Location existiert!</translation>
     </message>
     <message>
       <source>Selected projection is not supported by GRASS!</source>
-      <translation type="unfinished" >Ausgewählte Projektion nicht von GRASS unterstützt!</translation>
+      <translation>Ausgewählte Projektion wird nicht von GRASS unterstützt!</translation>
     </message>
     <message>
       <source>Warning</source>
@@ -5655,7 +5728,7 @@ bei Zeile </translation>
     </message>
     <message>
       <source>Cannot reproject previously set region, default region set.</source>
-      <translation type="unfinished" >Kann Region nicht reprojezieren. Voreingestellte Projektion gesetzt.</translation>
+      <translation>Kann Region nicht reprojizieren. Voreingestellte Projektion gesetzt.</translation>
     </message>
     <message>
       <source>North must be greater than south</source>
@@ -5667,7 +5740,7 @@ bei Zeile </translation>
     </message>
     <message>
       <source>Regions file (</source>
-      <translation type="unfinished" >Bereichsdatei (</translation>
+      <translation>Region-Datei (</translation>
     </message>
     <message>
       <source>) not found.</source>
@@ -5675,15 +5748,15 @@ bei Zeile </translation>
     </message>
     <message>
       <source>Cannot open locations file (</source>
-      <translation type="unfinished" >Kann </translation>
+      <translation>Kann Location-Datei  nicht öffnen (</translation>
     </message>
     <message>
       <source>)</source>
-      <translation type="unfinished" >)</translation>
+      <translation>)</translation>
     </message>
     <message>
       <source>Cannot read locations file (</source>
-      <translation type="unfinished" >Kann Ortsdatei nicht lesen (</translation>
+      <translation>Kann Location-Datei nicht lesen (</translation>
     </message>
     <message>
       <source>):
@@ -5707,19 +5780,19 @@ bei Zeile </translation>
     </message>
     <message>
       <source>Cannot reproject selected region.</source>
-      <translation type="unfinished" >Kann ausgewählte Region nicht reprojezieren.</translation>
+      <translation>Kann ausgewählte 'region' nicht reprojizieren.</translation>
     </message>
     <message>
       <source>Cannot reproject region</source>
-      <translation type="unfinished" >Kann Region nicht reprojezieren.</translation>
+      <translation>Kann 'region' nicht reprojizieren.</translation>
     </message>
     <message>
       <source>Enter mapset name.</source>
-      <translation type="unfinished" >Kartensatz eingeben</translation>
+      <translation>Mapset angeben</translation>
     </message>
     <message>
       <source>The mapset already exists</source>
-      <translation type="unfinished" >Der Kartensatz existiert bereits</translation>
+      <translation>Die Mapset existiert bereits</translation>
     </message>
     <message>
       <source>Database: </source>
@@ -5727,27 +5800,27 @@ bei Zeile </translation>
     </message>
     <message>
       <source>Location: </source>
-      <translation type="unfinished" >Ort: </translation>
+      <translation>Location: </translation>
     </message>
     <message>
       <source>Mapset: </source>
-      <translation type="unfinished" >Kartensatz: </translation>
+      <translation>Mapset: </translation>
     </message>
     <message>
       <source>Create location</source>
-      <translation type="unfinished" >Ort anlegen</translation>
+      <translation>Location anlegen</translation>
     </message>
     <message>
       <source>Cannot create new location: </source>
-      <translation type="unfinished" >Kann neuen Ort nicht anlegen: </translation>
+      <translation>Kann neue Location nicht anlegen: </translation>
     </message>
     <message>
       <source>Create mapset</source>
-      <translation type="unfinished" >Kartensatz anlegen</translation>
+      <translation>Mapset anlegen</translation>
     </message>
     <message>
       <source>Cannot create new mapset directory</source>
-      <translation type="unfinished" >Kann Kartensatz verzeichnis nicht anlegen</translation>
+      <translation>Kann Mapset-Verzeichnis nicht anlegen</translation>
     </message>
     <message>
       <source>Cannot open DEFAULT_WIND</source>
@@ -5759,15 +5832,15 @@ bei Zeile </translation>
     </message>
     <message>
       <source>New mapset</source>
-      <translation type="unfinished" >Neues Mapset</translation>
+      <translation>Neue Location/Mapset</translation>
     </message>
     <message>
       <source>New mapset successfully created, but cannot be opened: </source>
-      <translation type="unfinished" >Kartensatz erfolgreich erzeugt, aber konnte nicht geöffnet werden: </translation>
+      <translation>Mapset erfolgreich angelegt, konnte aber nicht geöffnet werden: </translation>
     </message>
     <message>
       <source>New mapset successfully created and set as current working mapset.</source>
-      <translation type="unfinished" >Kartensatz erfolgreich erzeugt und als aktueller Arbeitssatz eingestellt.</translation>
+      <translation>Mapset erfolgreich erzeugt und als aktuelle Arbeitsumgebung eingestellt.</translation>
     </message>
   </context>
   <context>
@@ -5838,7 +5911,7 @@ bei Zeile </translation>
     </message>
     <message>
       <source>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;/head>&lt;body style=&quot; white-space: pre-wrap; font-family:Sans Serif; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>The GRASS region defines a workspace for raster modules. The default region is valid for one location. It is possible to set a different region in each mapset. &lt;/p>&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>It is possible to change the default location region later.&lt;/p>&lt;/body>&lt;/html></source>
-      <translation>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;/head>&lt;body style=&quot; white-space: pre-wrap; font-family:Sans Serif; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>Die GRASS Region definiert eine BoundingBox für GRASS Rastermodule. Die Standard-Region (default region) gilt für jeweils eine Location. Es ist möglich, unterschiedliche Regionen für jedes Mapset zu setzen.&lt;/p>&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>Die Standard Region für die Location kann jederzeit später verändert werden.&lt;/p>&lt;/body>&lt;/html></translation>
+      <translation>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;/head>&lt;body style=&quot; white-space: pre-wrap; font-family:Sans Serif; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>Die GRASS Region definiert eine BoundingBox für GRASS-Rastermodule. Die Standard-Region (default region) gilt für jeweils eine Location. Es ist möglich, unterschiedliche Regionen für jedes Mapset zu setzen.&lt;/p>&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>Die Standard Region für die Location kann später jederzeit verändert werden.&lt;/p>&lt;/body>&lt;/html></translation>
     </message>
     <message>
       <source>Set current QGIS extent</source>
@@ -5850,7 +5923,7 @@ bei Zeile </translation>
     </message>
     <message>
       <source>Region Error</source>
-      <translation>Region Fehler</translation>
+      <translation>Region-Fehler</translation>
     </message>
     <message>
       <source>S</source>
@@ -5905,7 +5978,7 @@ bei Zeile </translation>
     </message>
     <message>
       <source>Open mapset</source>
-      <translation>Öffne Mapset</translation>
+      <translation>Mapset öffnen</translation>
     </message>
     <message>
       <source>New mapset</source>
@@ -5917,47 +5990,47 @@ bei Zeile </translation>
     </message>
     <message>
       <source>Add GRASS vector layer</source>
-      <translation>Füge GRASS Vektorebene hinzu</translation>
+      <translation>GRASS-Vektorlayer hinzufügen</translation>
     </message>
     <message>
       <source>Add GRASS raster layer</source>
-      <translation>Füge GRASS Rasterebene hinzu</translation>
+      <translation>GRASS-Rasterlayer hinzufügen</translation>
     </message>
     <message>
       <source>Open GRASS tools</source>
-      <translation>Öffne GRASS Toolbox</translation>
+      <translation>GRASS-Werkzeugkiste öffnen</translation>
     </message>
     <message>
       <source>Display Current Grass Region</source>
-      <translation>Stelle aktuelle GRASS-Region dar</translation>
+      <translation>Aktuelle GRASS-Region darstellen</translation>
     </message>
     <message>
       <source>Edit Current Grass Region</source>
-      <translation>Bearbeite aktuelle GRASS Region</translation>
+      <translation>Aktuelle GRASS-Region bearbeiten</translation>
     </message>
     <message>
       <source>Edit Grass Vector layer</source>
-      <translation>Bearbeite GRASS Vektorebene</translation>
+      <translation>GRASS-Vektorlayer bearbeiten</translation>
     </message>
     <message>
       <source>Adds a GRASS vector layer to the map canvas</source>
-      <translation>Fügt eine GRASS Vektorebene zum Kartenbild hinzu</translation>
+      <translation>Fügt dem Kartenfenster einen GRASS-Vektorlayer hinzu</translation>
     </message>
     <message>
       <source>Adds a GRASS raster layer to the map canvas</source>
-      <translation>Fügt eine GRASS Rasterebene zum Kartenbild hinzu</translation>
+      <translation>Fügt dem Kartenfenster einen GRASS-Rasterlayer hinzu</translation>
     </message>
     <message>
       <source>Displays the current GRASS region as a rectangle on the map canvas</source>
-      <translation>Zeichnet die aktuelle GRASS Region als Rechteck über die Karte</translation>
+      <translation>Zeigt die aktuelle GRASS-Region als Rechteck auf dem Kartebild an</translation>
     </message>
     <message>
       <source>Edit the current GRASS region</source>
-      <translation>Die aktuelle GRASS Region bearbeiten.</translation>
+      <translation>Aktuelle GRASS-Region bearbeiten.</translation>
     </message>
     <message>
       <source>Edit the currently selected GRASS vector layer.</source>
-      <translation>Die selektierte GRASS Vektorebene bearbeiten.</translation>
+      <translation>Gewählten GRASS-Vektorlayer bearbeiten.</translation>
     </message>
     <message>
       <source>GrassVector</source>
@@ -5969,11 +6042,11 @@ bei Zeile </translation>
     </message>
     <message>
       <source>GRASS layer</source>
-      <translation>GRASS layer</translation>
+      <translation>GRASS-Layer</translation>
     </message>
     <message>
       <source>Create new Grass Vector</source>
-      <translation type="unfinished" >Neue GRASS Vektorebene anlegen</translation>
+      <translation>Neuen GRASS-Vektorlayer anlegen</translation>
     </message>
     <message>
       <source>Warning</source>
@@ -5981,7 +6054,7 @@ bei Zeile </translation>
     </message>
     <message>
       <source>GRASS Edit is already running.</source>
-      <translation type="unfinished" >GRASS-Edit läuft bereits.</translation>
+      <translation type="unfinished" >GRASS-Digitalisierung läuft bereits.</translation>
     </message>
     <message>
       <source>New vector name</source>
@@ -5993,11 +6066,11 @@ bei Zeile </translation>
     </message>
     <message>
       <source>New vector created but cannot be opened by data provider.</source>
-      <translation type="unfinished" >Neuerzeugter Vektor konnte nicht durch Dataprovider geöffnet werden.</translation>
+      <translation type="unfinished" >Neuer Vektor konnte nicht durch Datenlieferant geöffnet werden.</translation>
     </message>
     <message>
       <source>Cannot start editing.</source>
-      <translation type="unfinished" >Konnte Editieren nicht starten.</translation>
+      <translation type="unfinished" >Konnte Digialisierung nicht beginnen.</translation>
     </message>
     <message>
       <source>GISDBASE, LOCATION_NAME or MAPSET is not set, cannot display current region.</source>
@@ -6009,23 +6082,23 @@ bei Zeile </translation>
     </message>
     <message>
       <source>Cannot open the mapset. </source>
-      <translation type="unfinished" >Kann Kartensatz nicht öffnen: </translation>
+      <translation>Kann Mapset nicht öffnen: </translation>
     </message>
     <message>
       <source>Cannot close mapset. </source>
-      <translation type="unfinished" >Kann Kartensatz nicht schließen. </translation>
+      <translation>Kann Mapset nicht schließen. </translation>
     </message>
     <message>
       <source>Cannot close current mapset. </source>
-      <translation type="unfinished" >Kann aktuellen Kartensatz nicht schließen. </translation>
+      <translation>Kann aktuellen Mapset nicht schließen. </translation>
     </message>
     <message>
       <source>Cannot open GRASS mapset. </source>
-      <translation type="unfinished" >Kann GRASS-Kartensatz nicht öffnen.</translation>
+      <translation>Kann GRASS-Mapset nicht öffnen.</translation>
     </message>
     <message>
       <source>Could not add raster layer: </source>
-      <translation>Konnte Rasterebene nicht hinzufügen</translation>
+      <translation>Konnte Rasterlayer nicht hinzufügen</translation>
     </message>
   </context>
   <context>
@@ -6051,7 +6124,7 @@ bei Zeile </translation>
     <name>QgsGrassRegionBase</name>
     <message>
       <source>GRASS Region Settings</source>
-      <translation>GRASS Region Einstellungen</translation>
+      <translation>GRASS-Regioneinstellungen</translation>
     </message>
     <message>
       <source>N</source>
@@ -6071,7 +6144,7 @@ bei Zeile </translation>
     </message>
     <message>
       <source>N-S Res</source>
-      <translation>N-S Res</translation>
+      <translation>N-S Aufl.</translation>
     </message>
     <message>
       <source>Rows</source>
@@ -6083,7 +6156,7 @@ bei Zeile </translation>
     </message>
     <message>
       <source>E-W Res</source>
-      <translation>E-W Res</translation>
+      <translation>E-W Aufl.</translation>
     </message>
     <message>
       <source>Color</source>
@@ -6106,11 +6179,11 @@ bei Zeile </translation>
     <name>QgsGrassSelect</name>
     <message>
       <source>Select GRASS Vector Layer</source>
-      <translation>Wählen Sie eine GRASS Ebene</translation>
+      <translation>Wählen Sie einen GRASS-Vektorlayer</translation>
     </message>
     <message>
       <source>Select GRASS Raster Layer</source>
-      <translation>Wählen Sie eine GRASS Raster-Ebene</translation>
+      <translation>Wählen Sie einen GRASS-Rasterlayer</translation>
     </message>
     <message>
       <source>Select GRASS mapcalc schema</source>
@@ -6165,7 +6238,7 @@ bei Zeile </translation>
     </message>
     <message>
       <source>Location</source>
-      <translation>Ort</translation>
+      <translation>Location</translation>
     </message>
     <message>
       <source>Browse</source>
@@ -6181,7 +6254,7 @@ bei Zeile </translation>
     </message>
     <message>
       <source>Layer</source>
-      <translation>Ebene</translation>
+      <translation>Layer</translation>
     </message>
     <message>
       <source>OK</source>
@@ -6189,11 +6262,11 @@ bei Zeile </translation>
     </message>
     <message>
       <source>Select or type map name (wildcards '*' and '?' accepted for rasters)</source>
-      <translation>Wähle oder schreibe Kartenname (Wildcards '*' und '?' werden für Raster akzeptiert)</translation>
+      <translation>Kartenname (Wildcards '*' und '?' werden für Raster akzeptiert) wählen oder eingeben</translation>
     </message>
     <message>
       <source>Add GRASS Layer</source>
-      <translation>GRASS-Ebene hinzufügen</translation>
+      <translation>GRASS-Layer hinzufügen</translation>
     </message>
     <message>
       <source>Cancel</source>
@@ -6205,6 +6278,10 @@ bei Zeile </translation>
     <message>
       <source>GRASS Shell</source>
       <translation>GRASS Kommandozeile</translation>
+    </message>
+    <message>
+      <source>Close</source>
+      <translation>Schliessen</translation>
     </message>
   </context>
   <context>
@@ -6315,7 +6392,7 @@ bei Zeile </translation>
     </message>
     <message>
       <source>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;/head>&lt;body style=&quot; white-space: pre-wrap; font-family:Sans Serif; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:Arial; font-size:11pt;&quot;>&lt;span style=&quot; font-size:10pt;&quot;>This plugin will help you to build a graticule shapefile that you can use as an overlay within your qgis map viewer.&lt;/span>&lt;/p>&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:Arial; font-size:10pt;&quot;>Please enter all units in decimal degrees&lt;/p>&lt;/body>&lt;/html></source>
-      <translation>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;/head>&lt;body style=&quot; white-space: pre-wrap; font-family:Sans Serif; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:Arial; font-size:11pt;&quot;>&lt;span style=&quot; font-size:10pt;&quot;>Dieses Plugin hilft Ihnen beim Erstellen eines Kartengitters, welches als Shapefile gespeichert und dann als Ebene über die Karte gelegt werden kann.&lt;/span>&lt;/p>&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:Arial; font-size:10pt;&quot;>Bitte geben Sie alle Einheiten in dezimalen Gradangaben ein.&lt;/p>&lt;/body>&lt;/html></translation>
+      <translation>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;/head>&lt;body style=&quot; white-space: pre-wrap; font-family:Sans Serif; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:Arial; font-size:11pt;&quot;>&lt;span style=&quot; font-size:10pt;&quot;>Dieses Plugin hilft Ihnen beim Erstellen eines Kartengitters, welches als Shapefile gespeichert und dann als Vektorlayer über die Karte gelegt werden kann.&lt;/span>&lt;/p>&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:Arial; font-size:10pt;&quot;>Bitte geben Sie alle Einheiten in dezimalen Gradangaben ein.&lt;/p>&lt;/body>&lt;/html></translation>
     </message>
     <message>
       <source>Type</source>
@@ -6455,7 +6532,7 @@ bei Zeile </translation>
     </message>
     <message>
       <source>Feature</source>
-      <translation>Eigenschaften</translation>
+      <translation>Objekt</translation>
     </message>
     <message>
       <source>Value</source>
@@ -6466,7 +6543,7 @@ bei Zeile </translation>
     <name>QgsIdentifyResultsBase</name>
     <message>
       <source>Identify Results</source>
-      <translation>Identifiziere Ergebnisse</translation>
+      <translation>Identifikationsergebnis</translation>
     </message>
     <message>
       <source>Help</source>
@@ -6520,7 +6597,7 @@ bei Zeile </translation>
     </message>
     <message>
       <source>Default label:</source>
-      <translation>Defualt Label:</translation>
+      <translation>Beschriftungsvorgabe:</translation>
     </message>
     <message>
       <source>Preview:</source>
@@ -6703,19 +6780,19 @@ bei Zeile </translation>
       <translation>Quelle</translation>
     </message>
     <message>
-      <source>°</source>
-      <translation type="unfinished" >°</translation>
-    </message>
-    <message>
       <source>Size Units:</source>
       <translation type="unfinished" >Einheit der Größe:</translation>
+    </message>
+    <message>
+      <source>°</source>
+      <translation>°</translation>
     </message>
   </context>
   <context>
     <name>QgsLayerProjectionSelectorBase</name>
     <message>
       <source>Layer Projection Selector</source>
-      <translation>Projektionsselektion für Ebene</translation>
+      <translation>Projektionsselektion für Layer</translation>
     </message>
     <message>
       <source>OK</source>
@@ -6723,7 +6800,7 @@ bei Zeile </translation>
     </message>
     <message>
       <source>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;/head>&lt;body style=&quot; white-space: pre-wrap; font-family:Sans Serif; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;>Define this layer's projection:&lt;/span>&lt;/p>&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;/p>&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>This layer appears to have no projection specification. By default, this layer will now have its projection set to that of the project, but you may override this by selecting a different projection below.&lt;/p>&lt;/body>&lt;/html></source>
-      <translation>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;/head>&lt;body style=&quot; white-space: pre-wrap; font-family:Sans Serif; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;>Geben Sie die Projektion dieser Ebene an:&lt;/span>&lt;/p>&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;/p>&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>Diese Ebene schein keine Projektionsinformationen zu haben. Standardmäßig wird die Projektion des Projekts dieser Ebene zugewiesen. Sie können aber auch eine andere Projektion unten auswählen.&lt;/p>&lt;/body>&lt;/html></translation>
+      <translation>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;/head>&lt;body style=&quot; white-space: pre-wrap; font-family:Sans Serif; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;>Geben Sie die Projektion dieses Layers an:&lt;/span>&lt;/p>&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;/p>&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>Dieser Layer scheint keine Projektionsinformationen zu haben. Standardmäßig wird die Projektion des Projekts diesem Layer zugewiesen. Sie können aber auch eine andere Projektion unten auswählen.&lt;/p>&lt;/body>&lt;/html></translation>
     </message>
   </context>
   <context>
@@ -6762,7 +6839,7 @@ bei Zeile </translation>
     </message>
     <message>
       <source>No Layer Selected</source>
-      <translation type="unfinished" >Keine Ebene gewählt</translation>
+      <translation>Keinen Layer ausgewählt</translation>
     </message>
     <message>
       <source>To open an attribute table, you must select a vector layer in the legend</source>
@@ -6773,7 +6850,7 @@ bei Zeile </translation>
     <name>QgsLegendLayer</name>
     <message>
       <source>&amp;Zoom to layer extent</source>
-      <translation type="unfinished" >Auf die Ebenenausdehnung &amp;zoomen.</translation>
+      <translation>Auf die Layerausdehnung &amp;zoomen.</translation>
     </message>
     <message>
       <source>&amp;Zoom to best scale (100%)</source>
@@ -6809,7 +6886,7 @@ bei Zeile </translation>
     </message>
     <message>
       <source>This item contains more layer files. Displaying more layers in table is not supported.</source>
-      <translation type="unfinished" >Dieser Eintrag enthält weitere Layerdateien. Die Anzeige von mehrern Layer in einer Tabelle wird nicht unterstützt.</translation>
+      <translation type="unfinished" >Dieser Eintrag enthält weitere Layerdateien. Die Anzeige von mehreren Layer in einer Tabelle wird nicht unterstützt.</translation>
     </message>
   </context>
   <context>
@@ -6820,7 +6897,7 @@ bei Zeile </translation>
     </message>
     <message>
       <source>Save layer as...</source>
-      <translation type="unfinished" >Ebene speichern als...</translation>
+      <translation>Layer speichern als...</translation>
     </message>
     <message>
       <source>Start editing failed</source>
@@ -6888,7 +6965,7 @@ bei Zeile </translation>
     </message>
     <message>
       <source>&amp;Zoom to layer extent</source>
-      <translation type="unfinished" >Auf die Ebenenausdehnung &amp;zoomen.</translation>
+      <translation>Auf die Layerausdehnung &amp;zoomen.</translation>
     </message>
     <message>
       <source>&amp;Show in overview</source>
@@ -6976,11 +7053,40 @@ bei Zeile </translation>
     <name>QgsMapToolIdentify</name>
     <message>
       <source>No features found</source>
-      <translation>Keine Eigenschaften gefunden</translation>
+      <translation>Keine Objekte gefunden</translation>
     </message>
     <message>
       <source>&lt;p>No features were found within the search radius. Note that it is currently not possible to use the identify tool on unsaved features.&lt;/p></source>
-      <translation>&lt;p>Keine Werte wurden innerhalb des Suchradius gefunden. Beachten Sie, dass das Benutzen des Identifiziertools nicht auf noch nicht abgespeicherten Werten funktioniert.&lt;/p></translation>
+      <translation>&lt;p>Es wurden keine Objekte innerhalb des Suchradius gefunden. Beachten Sie, dass das Identifizierwerkzeug nicht mit noch nicht abgespeicherten Objekten funktioniert.&lt;/p></translation>
+    </message>
+    <message>
+      <source>(clicked coordinate)</source>
+      <translation>(Angeklickte Koordinate)</translation>
+    </message>
+    <message>
+      <source>WMS identify result for %1
+%2</source>
+      <translation>WMS-Abfrageergebnis für %1
+%2</translation>
+    </message>
+  </context>
+  <context>
+    <name>QgsMapToolVertexEdit</name>
+    <message>
+      <source>Snap tolerance</source>
+      <translation>Snappingtoleranz</translation>
+    </message>
+    <message>
+      <source>Don't show this message again</source>
+      <translation type="unfinished" >Diese Nachricht nicht mehr anzeigen.</translation>
+    </message>
+    <message>
+      <source>Could not snap segment.</source>
+      <translation>Konnte Segment nicht schnappen.</translation>
+    </message>
+    <message>
+      <source>Have you set the tolerance in Settings > Project Properties > General?</source>
+      <translation>Haben Sie die Snappingtoleranz in Einstellungen > Projekteinstellungen > Allgemein eingestellt?</translation>
     </message>
   </context>
   <context>
@@ -6990,20 +7096,8 @@ bei Zeile </translation>
       <translation type="unfinished" >Name des Mapfile</translation>
     </message>
     <message>
-      <source>MapServer map files (*.map);;All files(*.*)</source>
-      <comment>
-Filter list for selecting files from a dialog box</comment>
-      <translation type="unfinished" >MapServer Mapfiles (*.map);;Alle Dateien (*.*)</translation>
-    </message>
-    <message>
       <source>Choose the QGIS project file</source>
       <translation type="unfinished" >QGIS-Projektdatei wählen</translation>
-    </message>
-    <message>
-      <source>QGIS Project Files (*.qgs);;All files (*.*)</source>
-      <comment>
-Filter list for selecting files from a dialog box</comment>
-      <translation type="unfinished" >QGIS-Projektdatei (*.qgs);;Alle Dateien (*.*)</translation>
     </message>
     <message>
       <source>Overwrite File?</source>
@@ -7012,15 +7106,26 @@ Filter list for selecting files from a dialog box</comment>
     <message>
       <source> exists. 
 Do you want to overwrite it?</source>
-      <comment>
-a filename is prepended to this text, and appears in a dialog box</comment>
-      <translation type="unfinished" > vorhanden.
+      <translation type="unfinished" > existiert.
 Wollen Sie sie überschreiben?</translation>
+    </message>
+    <message>
+      <source>MapServer map files (*.map);;All files (*.*)</source>
+      <comment>Filter list for selecting files from a dialog box</comment>
+      <translation type="unfinished" />
+    </message>
+    <message>
+      <source>QGIS Project Files (*.qgs);;All files (*.*)</source>
+      <comment>
+Filter list for selecting files from a dialog box</comment>
+      <translation type="unfinished" >QGIS-Projektdatei (*.qgs);;Alle Dateien (*.*)</translation>
     </message>
     <message>
       <source> exists. 
 Do you want to overwrite it?</source>
-      <translation type="unfinished" > existiert.
+      <comment>
+a filename is prepended to this text, and appears in a dialog box</comment>
+      <translation type="unfinished" > vorhanden.
 Wollen Sie sie überschreiben?</translation>
     </message>
   </context>
@@ -7036,7 +7141,7 @@ Wollen Sie sie überschreiben?</translation>
     </message>
     <message>
       <source>Export LAYER information only</source>
-      <translation>Nur LAYER Informationen exportieren</translation>
+      <translation>Nur die Layer-Informationen exportieren</translation>
     </message>
     <message>
       <source>Map</source>
@@ -7108,7 +7213,7 @@ Wollen Sie sie überschreiben?</translation>
     </message>
     <message>
       <source>userdefined</source>
-      <translation>benutzerspezifiziert</translation>
+      <translation>benutzerdefiniert</translation>
     </message>
     <message>
       <source>wbmp</source>
@@ -7116,15 +7221,15 @@ Wollen Sie sie überschreiben?</translation>
     </message>
     <message>
       <source>MinScale</source>
-      <translation>Minimales Ausmaß</translation>
+      <translation>Minimalmassstab</translation>
     </message>
     <message>
       <source>MaxScale</source>
-      <translation>Maximales Ausmaß</translation>
+      <translation>Maximalmassstab</translation>
     </message>
     <message>
       <source>Prefix attached to map, scalebar and legend GIF filenames created using this MapFile. It should be kept short.</source>
-      <translation>Präfix wird an die Karten-, Scalebar- und Legenden-GIF-Dateinamen angehängt beim erzeugen dieser Kartendatei. Es sollte kurz gehalten werden.</translation>
+      <translation>Präfix, der Name der GIF-Dateien für Karten, Maßstabsleiste und Legende, die mit diesem Mapfile erzeugt wurden.  Es sollte kurz gehalten werden.</translation>
     </message>
     <message>
       <source>Web Interface Definition</source>
@@ -7164,27 +7269,27 @@ Wollen Sie sie überschreiben?</translation>
     </message>
     <message>
       <source>Name for the map file to be created from the QGIS project file</source>
-      <translation>Name des Mapfiles, welches aus dem QGIS-Projekt erzeugt werden soll.</translation>
+      <translation>Name des Mapfiles, das aus dem QGIS-Projekt erzeugt werden soll.</translation>
     </message>
     <message>
       <source>If checked, only the layer information will be processed</source>
-      <translation>Wenn ausgewählt, werden nur die Ebeneninformationen prozessiert.</translation>
+      <translation>Wenn ausgewählt, werden nur die Layerinformationen verarbeitet.</translation>
     </message>
     <message>
       <source>Path to the MapServer template file</source>
-      <translation>Pfad zum MapServer Template</translation>
+      <translation>Pfad zur MapServer-Vorlage</translation>
     </message>
     <message>
       <source>Prefix attached to map, scalebar and legend GIF filenames created using this MapFile</source>
-      <translation>Prefix, der dem Kartebild-, der Legenden- und der Maßstabsgrafik mitgegeben werden soll.</translation>
+      <translation>Präfix, der Namen der GIF-Dateien für Karte, Massstabsleisten und Legenden, die mit diesem Mapfile erzeugt werden.</translation>
     </message>
     <message>
       <source>Full path to the QGIS project file to export to MapServer map format</source>
-      <translation>Kompletter Pfad zur QGIS-Projekt-Datei, die in das MapServer Map-Format exportiert werden soll.</translation>
+      <translation>Kompletter Pfad zur QGIS-Projekt-Datei, die im MapServer Map-Format exportiert werden soll.</translation>
     </message>
     <message>
       <source>QGIS project file</source>
-      <translation>QGIS Projekt-Datei</translation>
+      <translation>QGIS-Projektdatei</translation>
     </message>
     <message>
       <source>Browse...</source>
@@ -7199,7 +7304,7 @@ Wollen Sie sie überschreiben?</translation>
     <name>QgsMarkerDialogBase</name>
     <message>
       <source>Choose a marker symbol</source>
-      <translation>Wähle Markersymbol</translation>
+      <translation>Wähle ein Markersymbol</translation>
     </message>
     <message>
       <source>Directory</source>
@@ -7268,18 +7373,18 @@ Wollen Sie sie überschreiben?</translation>
     <name>QgsMeasureTool</name>
     <message>
       <source>Incorrect measure results</source>
-      <translation type="unfinished" >Falsche Mess-Ergebnisse</translation>
+      <translation type="unfinished" >Falsche Messergebnisse</translation>
     </message>
     <message>
-      <source>&lt;p>This map is defined with a geographic coordinate system (latitude/longitude) but the map extents suggest that it is actually a projected coordinate system (e.g., Mercator). If so, the results from line or area measurements will be incorrect.&lt;/p>&lt;p>To fix this, explicitly set an appropriate map coordinate system using the &lt;tt>Settings:Project Properties&lt;/tt> menu.</source>
-      <translation type="unfinished" >&lt;p>Diese Karte ist in einem geographischen Koordinatensystem (Lat/Long) definiert, aber die Kartenausdehnung schlägt ein projiziertes Koordinatensystem (z.B. Mercator) vor. Falls dies so ist, werden Ihre Messergebnisse (Länge und Fläche) fehlerhaft sein.&lt;/p>&lt;p>Um dies zu korrigieren, wählen Sie bitte das richtige Koordinatensysten für die zugrunde liegenden Daten aus dem Menü &lt;tt>Einstellungen: Projekt-Einstellungen&lt;/tt> aus.</translation>
+      <source>&lt;p>This map is defined with a geographic coordinate system (latitude/longitude) but the map extents suggests that it is actually a projected coordinate system (e.g., Mercator). If so, the results from line or area measurements will be incorrect.&lt;/p>&lt;p>To fix this, explicitly set an appropriate map coordinate system using the &lt;tt>Settings:Project Properties&lt;/tt> menu.</source>
+      <translation>&lt;p>Diese Karte ist mit einem geographischen Koordinatensystem definiert (latitude/longitude) aber die Kartenausdehnung zeigt, dass es tatsächlich eine projiziertes Koordinatensystem ist (z.B.: Mercator). Wenn das stimmt, sind die Ergebnisse der Strecken oder Flächenmessung falsch.&lt;/p>&lt;p>Um richtig messen zu können, definieren Sie bitte ein entsprechendes Koordinatensystem in dem Menü &lt;tt>Einstellungen:Projekteinstellungen&lt;/tt>.</translation>
     </message>
   </context>
   <context>
     <name>QgsMessageViewer</name>
     <message>
       <source>QGIS Message</source>
-      <translation>QGIS Nachricht</translation>
+      <translation>QGIS-Nachricht</translation>
     </message>
     <message>
       <source>Close</source>
@@ -7287,7 +7392,7 @@ Wollen Sie sie überschreiben?</translation>
     </message>
     <message>
       <source>Don't show this message again</source>
-      <translation>Dies Nachricht nicht mehr anzeigen.</translation>
+      <translation>Diese Nachricht nicht mehr anzeigen.</translation>
     </message>
   </context>
   <context>
@@ -7298,13 +7403,13 @@ Wollen Sie sie überschreiben?</translation>
     </message>
     <message>
       <source>Unable to access the </source>
-      <translation>Fehler beim Zugriff auf die</translation>
+      <translation>Fehler beim Zugriff auf die </translation>
     </message>
     <message>
       <source> relation.
 The error message from the database was:
 </source>
-      <translation>Relation. Die Fehlermeldung der Datenbank war:</translation>
+      <translation> Relation. Die Fehlermeldung der Datenbank war:</translation>
     </message>
     <message>
       <source>No GEOS Support!</source>
@@ -7314,13 +7419,13 @@ The error message from the database was:
       <source>Your PostGIS installation has no GEOS support.
 Feature selection and identification will not work properly.
 Please install PostGIS with GEOS support (http://geos.refractions.net)</source>
-      <translation>Diese PostGISinstallation hat keine GEOS unterstützung.
-Objektselektion und -identifizierung kann nicht sauber funktionieren.
-Bitte PostGIS mit GEOSunterstützung installieren (http://geos.refractions.net)</translation>
+      <translation>Diese PostGIS-Installation hat keine GEOS-Unterstützung.
+Objektselektion und -identifizierung kann nicht richtig funktionieren.
+Bitte PostGIS mit GEOS-Unterstützung installieren (http://geos.refractions.net)</translation>
     </message>
     <message>
       <source>Save layer as...</source>
-      <translation>Ebene speichern als...</translation>
+      <translation>Layer speichern als...</translation>
     </message>
     <message>
       <source>Error</source>
@@ -7362,7 +7467,7 @@ Bitte PostGIS mit GEOSunterstützung installieren (http://geos.refractions.net)<
 
 Extended error information:
 </source>
-      <translation>Verbindung fehlgeschlagen - Überprüfe die Einstellungen und versuche es erneut.
+      <translation>Verbindung fehlgeschlagen - Bitte Einstellungen überprüfen und erneut versuchen.
 
 Ausführliche Fehlerinformation:</translation>
     </message>
@@ -7375,7 +7480,7 @@ Ausführliche Fehlerinformation:</translation>
     <name>QgsNewConnectionBase</name>
     <message>
       <source>Create a New PostGIS connection</source>
-      <translation>Neue PostGIS Verbindung erzeugen</translation>
+      <translation>Neue PostGIS-Verbindung erzeugen</translation>
     </message>
     <message>
       <source>OK</source>
@@ -7419,11 +7524,11 @@ Ausführliche Fehlerinformation:</translation>
     </message>
     <message>
       <source>Test Connect</source>
-      <translation>Teste Verbindung</translation>
+      <translation>Verbindung testen</translation>
     </message>
     <message>
       <source>Save Password</source>
-      <translation>Speichere Passwort</translation>
+      <translation>Passwort speichern</translation>
     </message>
     <message>
       <source>F1</source>
@@ -7439,7 +7544,7 @@ Ausführliche Fehlerinformation:</translation>
     </message>
     <message>
       <source>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;/head>&lt;body style=&quot; white-space: pre-wrap; font-family:Sans Serif; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:12pt;&quot;>Restrict the displayed tables to those that are in the geometry_columns table&lt;/p>&lt;/body>&lt;/html></source>
-      <translation>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;/head>&lt;body style=&quot; white-space: pre-wrap; font-family:Sans Serif; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:12pt;&quot;>Beschränkt die Darstellung der Tabellen nur auf die Tabellen in geometry_tables.&lt;/p>&lt;/body>&lt;/html></translation>
+      <translation>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;/head>&lt;body style=&quot; white-space: pre-wrap; font-family:Sans Serif; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:12pt;&quot;>Beschränkt die Darstellung der Tabellen auf die in geometry_tables.&lt;/p>&lt;/body>&lt;/html></translation>
     </message>
     <message>
       <source>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;/head>&lt;body style=&quot; white-space: pre-wrap; font-family:Sans Serif; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:12pt;&quot;>Restricts the displayed tables to those that are in the geometry_columns table. This can speed up the initial display of spatial tables.&lt;/p>&lt;/body>&lt;/html></source>
@@ -7466,7 +7571,7 @@ Ausführliche Fehlerinformation:</translation>
     <name>QgsNewHttpConnectionBase</name>
     <message>
       <source>Create a New WMS connection</source>
-      <translation>Erzeuge eine neue WMS-Verbindung</translation>
+      <translation>Neue WMS-Verbindung erzeugen</translation>
     </message>
     <message>
       <source>Connection Information</source>
@@ -7657,7 +7762,7 @@ Ausführliche Fehlerinformation:</translation>
     <name>QgsOptionsBase</name>
     <message>
       <source>QGIS Options</source>
-      <translation>QGIS Optionen</translation>
+      <translation>QGIS-Optionen</translation>
     </message>
     <message>
       <source>epiphany</source>
@@ -7681,11 +7786,11 @@ Ausführliche Fehlerinformation:</translation>
     </message>
     <message>
       <source>Search Radius for Identifying Features</source>
-      <translation>Suchradius für die Identifizierung von Objekten</translation>
+      <translation>Suchradius für die Objektidentifizierung</translation>
     </message>
     <message>
       <source>Hide splash screen at startup</source>
-      <translation>Verstecke Splashscreen beim Start</translation>
+      <translation>Splashscreen beim Start nicht anzeigen</translation>
     </message>
     <message>
       <source>&amp;Appearance</source>
@@ -7709,7 +7814,7 @@ Ausführliche Fehlerinformation:</translation>
     </message>
     <message>
       <source>Open help documents with</source>
-      <translation>Öffne Hilfedokumentation mit</translation>
+      <translation>Hilfedokumentation öffnen mit</translation>
     </message>
     <message>
       <source>&amp;Rendering</source>
@@ -7717,7 +7822,7 @@ Ausführliche Fehlerinformation:</translation>
     </message>
     <message>
       <source>Update display after reading</source>
-      <translation>Anzeige nach dem Lesen erneuern</translation>
+      <translation>Anzeige nach dem Lesen aktualisieren</translation>
     </message>
     <message>
       <source>Map display will be updated (drawn) after this many features have been read from the data source</source>
@@ -7741,7 +7846,7 @@ Ausführliche Fehlerinformation:</translation>
     </message>
     <message>
       <source>Select Global Default ...</source>
-      <translation>Globaler Standard selektieren ...</translation>
+      <translation>Globale Voreinstellung selektieren ...</translation>
     </message>
     <message>
       <source>Prompt for projection.</source>
@@ -7749,7 +7854,7 @@ Ausführliche Fehlerinformation:</translation>
     </message>
     <message>
       <source>Project wide default projection will be used.</source>
-      <translation>Standardprojektion des Projektes wird benutzt.</translation>
+      <translation>Projektweite Voreinstellung wird benutzt.</translation>
     </message>
     <message>
       <source>firefox</source>
@@ -7765,7 +7870,7 @@ Ausführliche Fehlerinformation:</translation>
     </message>
     <message>
       <source>Default Map Appearance (Overridden by project properties)</source>
-      <translation>Standard Kartendarstellung (durch Projekteinstellungen überschrieben).</translation>
+      <translation>Voreingestellte Kartendarstellung (durch Projekteinstellungen überschrieben).</translation>
     </message>
     <message>
       <source>Background Color:</source>
@@ -7781,19 +7886,19 @@ Ausführliche Fehlerinformation:</translation>
     </message>
     <message>
       <source>Capitalise layer name</source>
-      <translation>Setzte Ebenennamen in Kapitälchen.</translation>
+      <translation>Setzte Layernamen in Kapitälchen.</translation>
     </message>
     <message>
       <source>Make lines appear less jagged at the expense of some drawing performance</source>
-      <translation>Zeichne die Linien weniger gezackt auf Kosten der Zeichengeschwindigkeit.</translation>
+      <translation>Linien auf Kosten der Zeichengeschwindigkeit weniger gezackt zeichnen.</translation>
     </message>
     <message>
       <source>By default new la&amp;yers added to the map should be displayed</source>
-      <translation>Standardmäßig werden alle neuen Ebenen in der Karte angezeigt.</translation>
+      <translation>Standardmäßig werden alle neuen Layer im Kartenfenster angezeigt.</translation>
     </message>
     <message>
       <source>&amp;Update during drawing</source>
-      <translation>Aktualisiere während des Zeichnens.</translation>
+      <translation>Während des Zeichnens aktualisieren.</translation>
     </message>
     <message>
       <source>Measure tool</source>
@@ -7813,11 +7918,11 @@ Ausführliche Fehlerinformation:</translation>
     </message>
     <message>
       <source>When layer is loaded that has no projection information</source>
-      <translation>Wenn eine Ebene ohne Projektionsinformationen geladen wird</translation>
+      <translation>Wenn ein Layer ohne Projektionsinformationen geladen wird</translation>
     </message>
     <message>
       <source>Global default projection displa&amp;yed below will be used.</source>
-      <translation>wird die unten aufgeführte globale Standardprojektion benutzt.</translation>
+      <translation>wird die unten aufgeführte global voreingestellte Projektion benutzt.</translation>
     </message>
     <message>
       <source>&lt;b>Note:&lt;/b> The browser must be in your PATH or you can specify the full path above</source>
@@ -7833,7 +7938,7 @@ Ausführliche Fehlerinformation:</translation>
     </message>
     <message>
       <source>Fix problems with incorrectly filled polygons</source>
-      <translation>Behebe Problem mit falsch gefüllten Polygonen.</translation>
+      <translation>Problem mit falsch gefüllten Polygonen beheben.</translation>
     </message>
     <message>
       <source>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>
@@ -7853,7 +7958,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
       <source>Continuously redraw the map when dragging the legend/map divider</source>
-      <translation>Kontinuierliches Zeichnen der Karte, wenn der Teiler zwischen Legende und Karte verschoben wird.</translation>
+      <translation>Karte kontinuierlich neuzeichnen, wenn der Teiler zwischen Legende und Karte verschoben wird.</translation>
     </message>
     <message>
       <source>&amp;Map tools</source>
@@ -7893,7 +7998,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
       <source>Ask to save project changes when required</source>
-      <translation type="unfinished" >Nachfrage zum Speichern des Projekts falls nötig</translation>
+      <translation type="unfinished" >Falls nötig zum Speichern des Projekts nachfragen</translation>
     </message>
     <message>
       <source>Rubberband color:</source>
@@ -7928,11 +8033,11 @@ p, li { white-space: pre-wrap; }
     <name>QgsPasteTransformationsBase</name>
     <message>
       <source>Paste Transformations</source>
-      <translation>Füge Transformationen ein</translation>
+      <translation>Transformationen einfügen</translation>
     </message>
     <message>
       <source>&lt;b>Note: This function is not useful yet!&lt;/b></source>
-      <translation>&lt;b>Bemerkung: Diese Funktion ist noch nicht  nützlich!&lt;/b></translation>
+      <translation>&lt;b>Bemerkung: Diese Funktion ist noch nicht nützlich!&lt;/b></translation>
     </message>
     <message>
       <source>Source</source>
@@ -7986,7 +8091,7 @@ p, li { white-space: pre-wrap; }
     <name>QgsPgGeoprocessing</name>
     <message>
       <source>Buffer features in layer %1</source>
-      <translation>Puffereigenschaften in Ebene %1</translation>
+      <translation>Puffer Objekte in Layer %1</translation>
     </message>
     <message>
       <source>Error connecting to the database</source>
@@ -7998,11 +8103,11 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
       <source>A new layer is created in the database with the buffered features.</source>
-      <translation>Eine neue Ebene ist in der Datenbank erstellt wurden, die die gepufferten Objekte enthält.</translation>
+      <translation>Ein neuer Layer ist in der Datenbank erstellt wurden, der die gepufferten Objekte enthält.</translation>
     </message>
     <message>
       <source>&amp;Geoprocessing</source>
-      <translation>&amp;Geoprozessierung</translation>
+      <translation>&amp;Geodatenverarbeitung</translation>
     </message>
     <message>
       <source>Unable to add geometry column</source>
@@ -8010,7 +8115,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
       <source>Unable to add geometry column to the output table </source>
-      <translation>Konnte die Geometriespalte nicht zur Ausgabetabelle hinzufügen.</translation>
+      <translation>Geometriespalte konnte nicht zur Ausgabetabelle hinzufügen: </translation>
     </message>
     <message>
       <source>Unable to create table</source>
@@ -8029,25 +8134,25 @@ p, li { white-space: pre-wrap; }
       <translation>Pufferfunktion benötigt GEOS-Unterstützung in PostGIS.</translation>
     </message>
     <message>
-      <source>Not a PostgreSQL/PosGIS Layer</source>
-      <translation>Keine PostgreSQL/PostGIS Ebene</translation>
-    </message>
-    <message>
-      <source> is not a PostgreSQL/PosGIS layer.
+      <source> is not a PostgreSQL/PostGIS layer.
 </source>
-      <translation> ist keine PostgreSQL/PostGIS Ebene.</translation>
+      <translation> ist keine PostgreSQL/PostGIS-Layer.</translation>
     </message>
     <message>
-      <source>Geoprocessing functions are only available for PostgreSQL/PosGIS Layers</source>
-      <translation>Geoprozessing-Funktionen sind nur für PostgreSQL/PostGIS-Ebenen vorgesehen.</translation>
+      <source>Geoprocessing functions are only available for PostgreSQL/PostGIS Layers</source>
+      <translation>Geodatenverarbeitungsfunktionen sind nur für PostgreSQL/PostGIS-Layer vorgesehen.</translation>
     </message>
     <message>
       <source>No Active Layer</source>
-      <translation>Keine aktive Ebene</translation>
+      <translation>Kein aktiver Layer</translation>
     </message>
     <message>
       <source>You must select a layer in the legend to buffer</source>
-      <translation>Selektieren Sie eine Ebene in der Legende, die gepuffert werden soll.</translation>
+      <translation>Selektieren Sie einen Layer in der Legende, der gepuffert werden soll.</translation>
+    </message>
+    <message>
+      <source>Not a PostgreSQL/PostGIS Layer</source>
+      <translation>Kein PostgreSQL/PostGIS Layer</translation>
     </message>
   </context>
   <context>
@@ -8078,11 +8183,11 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
       <source>The where clause returned </source>
-      <translation>Die where clause gab zurück</translation>
+      <translation>Die WHERE-Klausel gab </translation>
     </message>
     <message>
       <source> rows.</source>
-      <translation>Reihen.</translation>
+      <translation> Zeilen zurück.</translation>
     </message>
     <message>
       <source>Query Failed</source>
@@ -8098,7 +8203,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
       <source>The query you specified results in zero records being returned. Valid PostgreSQL layers must have at least one feature.</source>
-      <translation>Die Abfrage ergab keine Einträge. Gültige PostgreSQL Ebenen müssen mindestens ein Objekt haben.</translation>
+      <translation>Die Abfrage ergab keine Einträge. Gültige PostgreSQL-Layer müssen mindestens ein Objekt enthalten.</translation>
     </message>
     <message>
       <source>&lt;p>Failed to get sample of field values using SQL:&lt;/p>&lt;p></source>
@@ -8227,23 +8332,19 @@ p, li { white-space: pre-wrap; }
   <context>
     <name>QgsPluginManager</name>
     <message>
-      <source>Choose a directory</source>
-      <translation>Verzeichnis wählen</translation>
-    </message>
-    <message>
       <source>No Plugins</source>
       <translation>Keine Plugins</translation>
     </message>
     <message>
       <source>No QGIS plugins found in </source>
-      <translation>Keine QGIS Plugins gefunden in</translation>
+      <translation>Keine QGIS-Plugins gefunden in </translation>
     </message>
   </context>
   <context>
     <name>QgsPluginManagerBase</name>
     <message>
       <source>QGIS Plugin Manger</source>
-      <translation>QGIS Pluginmanager</translation>
+      <translation>QGIS-Pluginmanager</translation>
     </message>
     <message>
       <source>Name</source>
@@ -8262,12 +8363,8 @@ p, li { white-space: pre-wrap; }
       <translation>Pluginverzeichnis</translation>
     </message>
     <message>
-      <source>...</source>
-      <translation>...</translation>
-    </message>
-    <message>
       <source>To load a plugin, click the checkbox next to the plugin and click Ok</source>
-      <translation>Um ein Plugin zu laden, auf die Checkbox neben dem Plugin und dann OK klicken</translation>
+      <translation>Um ein Plugin zu laden, das Häkchen daneben setzen und dann auf OK klicken</translation>
     </message>
     <message>
       <source>Version</source>
@@ -8326,11 +8423,11 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
       <source>Zoom To Layer</source>
-      <translation>Auf die Ebene zoomen</translation>
+      <translation>Auf den Layer zoomen</translation>
     </message>
     <message>
       <source>Zoom to Layer</source>
-      <translation>Auf die Ebene zoomen</translation>
+      <translation>Auf den Layer zoomen</translation>
     </message>
     <message>
       <source>Pan Map</source>
@@ -8373,18 +8470,12 @@ p, li { white-space: pre-wrap; }
       <translation>Bitte einen Namen für das World-File eingeben.</translation>
     </message>
     <message>
-      <source>-modified</source>
-      <comment>
-Georeferencer:QgsPointDialog.cpp - used to modify a user given filename</comment>
-      <translation type="unfinished" >-modifiziert</translation>
-    </message>
-    <message>
       <source>Warning</source>
       <translation>Warnung</translation>
     </message>
     <message>
-      <source>&lt;p>A Helmert transform requires modifications in the raster layer.&lt;/p>&lt;p>The modifed raster will be saved in a new file and a world file will be generated for this new file instead.&lt;/p>&lt;p>Are you sure that this is what you want?&lt;/p></source>
-      <translation>&lt;p>Eine Helmert-Transform wird den Rasterlayer modifizieren.&lt;/p>&lt;p>Die veränderte Rasterdatei wird in einer neuen Datei mit einem dazu passeneden Worldfile gespeichert.&lt;/p>&lt;p>Sind Sie sicher, dass sie das wollen?&lt;/p></translation>
+      <source>&lt;p>A Helmert transform requires modifications in the raster layer.&lt;/p>&lt;p>The modified raster will be saved in a new file and a world file will be generated for this new file instead.&lt;/p>&lt;p>Are you sure that this is what you want?&lt;/p></source>
+      <translation>&lt;p>Eine Helmert-Transformation ändert den Rasterlayer.&lt;/p>&lt;p>Stattdessen wird die veränderte Rasterdatei in einer neuen Datei mit einem dazu passenden Worldfile gespeichert.&lt;/p>&lt;p>Sind Sie sicher, dass Sie das wollen?&lt;/p></translation>
     </message>
     <message>
       <source>Affine</source>
@@ -8417,6 +8508,12 @@ Georeferencer:QgsPointDialog.cpp - used to modify a user given filename</comment
     <message>
       <source>Currently all modified files will be written in TIFF format.</source>
       <translation>Derzeit werden alle modifizierten Dateien im TIFF-Format geschrieben.</translation>
+    </message>
+    <message>
+      <source>-modified</source>
+      <comment>
+Georeferencer:QgsPointDialog.cpp - used to modify a user given filename</comment>
+      <translation type="unfinished" >-modifiziert</translation>
     </message>
   </context>
   <context>
@@ -8471,7 +8568,7 @@ Georeferencer:QgsPointDialog.cpp - used to modify a user given filename</comment
     </message>
     <message>
       <source>Create and load layer</source>
-      <translation>Erstellen und Ebene laden</translation>
+      <translation>Erstellen und Layer laden</translation>
     </message>
   </context>
   <context>
@@ -8623,7 +8720,7 @@ Alternativ kann die oid-Spalte von PostgresSQL benutzt werden.</translation>
     </message>
     <message>
       <source>, which Qgis does not currently support.</source>
-      <translation>, welche QGIS derzeit nicht unterstützt.</translation>
+      <translation>, den QGIS derzeit nicht unterstützt.</translation>
     </message>
     <message>
       <source>. The database communication log was:
@@ -8641,7 +8738,7 @@ Alternativ kann die oid-Spalte von PostgresSQL benutzt werden.</translation>
     <message>
       <source>initially appeared suitable but does not contain unique data, so is not suitable.
 </source>
-      <translation>anfänglich schien die Ebene geeignet, allerdings enthält sie keine eindeutigen Daten, insofern nicht geeignet.</translation>
+      <translation>anfänglich schien der Layer geeignet, allerdings enthält er keine eindeutigen Daten, insofern nicht geeignet.</translation>
     </message>
     <message>
       <source>INSERT error</source>
@@ -8724,11 +8821,11 @@ Alternativ kann die oid-Spalte von PostgresSQL benutzt werden.</translation>
     </message>
     <message>
       <source>The number of decimal places that are used when displaying the mouse position is automatically set to be enough so that moving the mouse by one pixel gives a change in the position display</source>
-      <translation>Die Anzahl Dezimalstellen, welche beim Anzeigen der Mausposition gebraucht werden, wird automatisch so gesetzt, dass eine Mausbewegung um einen Pixel zu einer Änderung in der Positionsanzeige führt</translation>
+      <translation>Die Anzahl Dezimalstellen, die beim Anzeigen der Mausposition benutzt werden, wird automatisch so gesetzt, dass eine Mausbewegung um einen Pixel zu einer Änderung in der Positionsanzeige führt</translation>
     </message>
     <message>
       <source>Manual</source>
-      <translation>Manuell</translation>
+      <translation>Hilfe</translation>
     </message>
     <message>
       <source>Sets the number of decimal places to use for the mouse position display</source>
@@ -8788,7 +8885,7 @@ Alternativ kann die oid-Spalte von PostgresSQL benutzt werden.</translation>
     </message>
     <message>
       <source>Snapping Tolerance (in map units):</source>
-      <translation type="unfinished" >Fangtoleranz (in Karteneinheiten):</translation>
+      <translation>Snappingtoleranz (in Karteneinheiten):</translation>
     </message>
   </context>
   <context>
@@ -9039,7 +9136,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
       <source>Layer Spatial Reference System: </source>
-      <translation>Referenzsystem der Ebene:</translation>
+      <translation>Referenzsystem des Layers:</translation>
     </message>
     <message>
       <source>out of extent</source>
@@ -9098,15 +9195,15 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
       <source>Columns: </source>
-      <translation>Spalten:</translation>
+      <translation>Spalten: </translation>
     </message>
     <message>
       <source>Rows: </source>
-      <translation>Reihen:</translation>
+      <translation>Zeilen: </translation>
     </message>
     <message>
       <source>No-Data Value: </source>
-      <translation>NODATA-Wert:</translation>
+      <translation>NODATA-Wert: </translation>
     </message>
     <message>
       <source>n/a</source>
@@ -9140,7 +9237,7 @@ p, li { white-space: pre-wrap; }
     <name>QgsRasterLayerPropertiesBase</name>
     <message>
       <source>Raster Layer Properties</source>
-      <translation>Rasterebeneneigenschaften</translation>
+      <translation>Rasterlayereigenschaften</translation>
     </message>
     <message>
       <source>General</source>
@@ -9148,7 +9245,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
       <source>Layer Source:</source>
-      <translation>Ebenenquelle:</translation>
+      <translation>Layerquelle:</translation>
     </message>
     <message>
       <source>Display Name:</source>
@@ -9268,7 +9365,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
       <source>Maximum scale at which this layer will be displayed. </source>
-      <translation>Maximum Massstab, bei welchem diese Ebene angezeigt wird.</translation>
+      <translation>Maximum Massstab, bei dem dieser Layer angezeigt wird.</translation>
     </message>
     <message>
       <source>Minimum 1:</source>
@@ -9276,7 +9373,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
       <source>Minimum scale at which this layer will be displayed. </source>
-      <translation>Minimum Massstab, bei welchem diese Ebene angezeigt wird.</translation>
+      <translation>Minimum Massstab, bei dem dieser Layer angezeigt wird.</translation>
     </message>
     <message>
       <source>Histogram</source>
@@ -9344,7 +9441,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
       <source>Transparent</source>
-      <translation type="unfinished" >Transparent</translation>
+      <translation>Transparenz</translation>
     </message>
     <message>
       <source>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;/head>&lt;body style=&quot;font-size:10pt;font-family:Sans Serif&quot;>
@@ -9468,7 +9565,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
       <source>Creates a scale bar that is displayed on the map canvas</source>
-      <translation>Erzeugt eine Maßstabsleiste, welche im Kartenbild angezeigt wird.</translation>
+      <translation>Erzeugt eine Maßstabsleiste, die im Kartenbild angezeigt wird.</translation>
     </message>
     <message>
       <source>&amp;Decorations</source>
@@ -9572,6 +9669,10 @@ p, li { white-space: pre-wrap; }
       <source>The query you specified results in zero records being returned.</source>
       <translation>Die definierte Abfrage gibt keine Treffer zurück.</translation>
     </message>
+    <message>
+      <source>Search query builder</source>
+      <translation>Suche Query Builder</translation>
+    </message>
   </context>
   <context>
     <name>QgsServerSourceSelect</name>
@@ -9625,14 +9726,14 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
       <source>There are no available coordinate reference system for the set of layers you've selected.</source>
-      <translation>Es existieren keine Koordinatensystem für die ausgewählten Ebenen.</translation>
+      <translation>Es existiert kein Koordinatensystem für den ausgewählten Layer.</translation>
     </message>
   </context>
   <context>
     <name>QgsServerSourceSelectBase</name>
     <message>
       <source>Add Layer(s) from a Server</source>
-      <translation>Füge Layer von einem Server hinzu.</translation>
+      <translation>Layer von einem Server hinzufügen.</translation>
     </message>
     <message>
       <source>C&amp;lose</source>
@@ -9656,7 +9757,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
       <source>Layers</source>
-      <translation>Ebenen</translation>
+      <translation>Layer</translation>
     </message>
     <message>
       <source>ID</source>
@@ -9720,7 +9821,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
       <source>Add default servers</source>
-      <translation>Füge Standard-Server hinzu</translation>
+      <translation>Standard-Server ergänzen</translation>
     </message>
   </context>
   <context>
@@ -9788,7 +9889,7 @@ is appended to a truncated SQL statement</comment>
     </message>
     <message>
       <source>Browse:</source>
-      <translation type="unfinished" >Durchsuchen:</translation>
+      <translation type="unfinished" >Andere...</translation>
     </message>
   </context>
   <context>
@@ -9807,7 +9908,7 @@ is appended to a truncated SQL statement</comment>
     </message>
     <message>
       <source> - Edit Column Names</source>
-      <translation>- Kolonnennamen editieren</translation>
+      <translation>- Spaltennamen bearbeiten</translation>
     </message>
     <message>
       <source>The following Shapefile(s) could not be loaded:
@@ -9837,7 +9938,7 @@ is appended to a truncated SQL statement</comment>
     </message>
     <message>
       <source>[Edit ...] - edit the currently selected connection</source>
-      <translation>[Bearbeiten ...] - die momentan selektierte Vervindung editieren</translation>
+      <translation>[Bearbeiten ...] - die momentan selektierte Verbindung bearbeiten</translation>
     </message>
     <message>
       <source>[Remove] - remove the currently selected connection</source>
@@ -9845,7 +9946,7 @@ is appended to a truncated SQL statement</comment>
     </message>
     <message>
       <source>-you need to select a connection that works (connects properly) in order to import files</source>
-      <translation>- es muss eine Verbindung ausgewählt werden, welche funktioniert (sauber verbindet) um Dateien zu importieren</translation>
+      <translation>- es muss eine Verbindung ausgewählt werden, die funktioniert (richtig verbindet) um Dateien zu importieren</translation>
     </message>
     <message>
       <source>-when changing connections Global Schema also changes accordingly</source>
@@ -9942,7 +10043,7 @@ is appended to a truncated SQL statement</comment>
     </message>
     <message>
       <source>The following fields are duplicates:</source>
-      <translation>Die folgenden Spalten sind dupliziert:</translation>
+      <translation>Die folgenden Spalten kommen doppelt vor:</translation>
     </message>
     <message>
       <source>Import Shapefiles - Relation Exists</source>
@@ -9958,11 +10059,11 @@ is appended to a truncated SQL statement</comment>
     </message>
     <message>
       <source>] relation for its data,</source>
-      <translation>] für ihre Daten brauchen,</translation>
+      <translation>], die bereits vorhanden ist</translation>
     </message>
     <message>
       <source>which already exists and possibly contains data.</source>
-      <translation>, welche bereits existiert und ev. Daten enthält.</translation>
+      <translation>und evtl. Daten enthält, für ihre Daten benutzen.</translation>
     </message>
     <message>
       <source>To avoid data loss change the &quot;DB Relation Name&quot;</source>
@@ -9970,19 +10071,19 @@ is appended to a truncated SQL statement</comment>
     </message>
     <message>
       <source>for this Shapefile in the main dialog file list.</source>
-      <translation>der &quot;DB Relation Name&quot; geändert werden.</translation>
+      <translation>der &quot;DB-Relationsname&quot; geändert werden.</translation>
     </message>
     <message>
       <source>Do you want to overwrite the [</source>
-      <translation>Soll die [</translation>
+      <translation>Soll die Relation [</translation>
     </message>
     <message>
       <source>] relation?</source>
-      <translation>] Relation überschrieben werden?</translation>
+      <translation>] überschrieben werden?</translation>
     </message>
     <message>
       <source>Use the table below to edit column names. Make sure that none of the columns are named using a PostgreSQL reserved word</source>
-      <translation>Die Tabelle unten können die Spaltennamen editiert werden. Es sollte sichergestellt sein, dass keine der Spalte ein in PostgreSQL reserviertes Wort verwendet</translation>
+      <translation>In der Tabelle unten können die Spaltennamen bearbeitet werden. Stellen Sie sicher, dass keine Spalte wie ein in PostgreSQL reserviertes Wort benannt ist.</translation>
     </message>
     <message>
       <source>File Name</source>
@@ -9990,15 +10091,15 @@ is appended to a truncated SQL statement</comment>
     </message>
     <message>
       <source>Feature Class</source>
-      <translation>Eigenschaftenklasse</translation>
+      <translation>Objektklasse</translation>
     </message>
     <message>
       <source>Features</source>
-      <translation>Eigenschaften</translation>
+      <translation>Objekte</translation>
     </message>
     <message>
       <source>DB Relation Name</source>
-      <translation>DB Relationsname</translation>
+      <translation>DB-Relationsname</translation>
     </message>
     <message>
       <source>Schema</source>
@@ -10010,7 +10111,7 @@ is appended to a truncated SQL statement</comment>
     </message>
     <message>
       <source>Add Shapefiles</source>
-      <translation>Füge Shapefiles hinzu</translation>
+      <translation>Shapedateien hinzufügen</translation>
     </message>
     <message>
       <source>Shapefiles (*.shp);;All files (*.*)</source>
@@ -10022,7 +10123,7 @@ is appended to a truncated SQL statement</comment>
     </message>
     <message>
       <source>&lt;p>The chosen database does not have PostGIS installed, but this is required for storage of spatial data.&lt;/p></source>
-      <translation>&lt;p>Die gewählte Datenbank hat kein PostGIS installiert. PostGIS wird jedoch zum Speichern von räumlichen Daten benötigt.&lt;/p></translation>
+      <translation>&lt;p>In der gewählte Datenbank ist PostGIS nicht installiert. PostGIS wird jedoch zum Speichern von räumlichen Daten benötigt.&lt;/p></translation>
     </message>
     <message>
       <source>Checking to see if </source>
@@ -10034,7 +10135,7 @@ is appended to a truncated SQL statement</comment>
     </message>
     <message>
       <source>&lt;/p>&lt;p>The database said:</source>
-      <translation>&lt;/p>&lt;p>Die Datenbank sagt:</translation>
+      <translation>&lt;/p>&lt;p>Die Datenbank meldete:</translation>
     </message>
   </context>
   <context>
@@ -10045,7 +10146,7 @@ is appended to a truncated SQL statement</comment>
     </message>
     <message>
       <source>PostgreSQL Connections</source>
-      <translation>PostgreSQL Verbindungen</translation>
+      <translation>PostgreSQL-Verbindungen</translation>
     </message>
     <message>
       <source>Remove</source>
@@ -10081,31 +10182,31 @@ is appended to a truncated SQL statement</comment>
     </message>
     <message>
       <source>Add a shapefile to the list of files to be imported</source>
-      <translation>Füge Shapefile der Liste der zu importierenden Dateien hinzu</translation>
+      <translation>Der Liste der zu importierenden Dateien eine Shapedatei hinzufügen</translation>
     </message>
     <message>
       <source>Remove the selected shapefile from the import list</source>
-      <translation>Ausgewähltes Shapefile von der Importliste entfernen</translation>
+      <translation>Gewähltes Shapefile aus der Importliste entfernen</translation>
     </message>
     <message>
       <source>Remove all the shapefiles from the import list</source>
-      <translation>Alle Shapefiles von der Importliste entfernen</translation>
+      <translation>Alle Shapefiles aus der Importliste entfernen</translation>
     </message>
     <message>
       <source>Use Default SRID</source>
-      <translation>Verwende Standard SRID</translation>
+      <translation>Verwende Standard-SRID</translation>
     </message>
     <message>
       <source>Set the SRID to the default value</source>
-      <translation>Setze SRID auf den Standardwert</translation>
+      <translation>SRID auf den Standardwert setzen</translation>
     </message>
     <message>
       <source>Use Default Geometry Column Name</source>
-      <translation>Verwende Standard Geometriespaltenname</translation>
+      <translation> Standard-Geometriespaltenname verwenden</translation>
     </message>
     <message>
       <source>Set the geometry column name to the default value</source>
-      <translation>Setze den Geometriespaltenname auf den Standardwert</translation>
+      <translation>Geometriespaltenname auf den Standardwert setzen</translation>
     </message>
     <message>
       <source>New</source>
@@ -10113,11 +10214,11 @@ is appended to a truncated SQL statement</comment>
     </message>
     <message>
       <source>Create a new PostGIS connection</source>
-      <translation>Erzeuge neue PostGIS Verbindung</translation>
+      <translation>Neue PostGIS Verbindung erstellen</translation>
     </message>
     <message>
       <source>Remove the current PostGIS connection</source>
-      <translation>Entferne aktuelle PostGIS Verbindung</translation>
+      <translation>Aktuelle PostGIS Verbindung entfernen</translation>
     </message>
     <message>
       <source>Connect</source>
@@ -10129,18 +10230,18 @@ is appended to a truncated SQL statement</comment>
     </message>
     <message>
       <source>Edit the current PostGIS connection</source>
-      <translation>Bearbeite aktuelle PostGIS Verbindung</translation>
+      <translation>Aktuelle PostGIS-Verbindung bearbeiten</translation>
     </message>
   </context>
   <context>
     <name>QgsSpitPlugin</name>
     <message>
       <source>&amp;Import Shapefiles to PostgreSQL</source>
-      <translation>&amp;Importiere Shapefiles in PostgreSQL</translation>
+      <translation>Shapefiles in PostgreSQL &amp;importieren</translation>
     </message>
     <message>
       <source>Import shapefiles into a PostGIS-enabled PostgreSQL database. The schema and field names can be customized on import</source>
-      <translation>Importiert Spapefiles in eine PostgreSQL-Datenbank mit PostGIS-Aufsazt. Das Schema und die Feldnamen können während des Imports eingestellt werden.</translation>
+      <translation>Importiert Shapefiles in eine PostgreSQL-Datenbank mit PostGIS-Aufsatz. Schema und die Feldnamen des Imports sind einstellbar.</translation>
     </message>
     <message>
       <source>&amp;Spit</source>
@@ -10170,35 +10271,35 @@ is appended to a truncated SQL statement</comment>
     <name>QgsVectorLayer</name>
     <message>
       <source>Could not commit the added features.</source>
-      <translation>Konnte die hinzugefügten Objekte nicht übernehmen.</translation>
+      <translation>Hinzugefügte Objekte konnten nicht übernommen werden.</translation>
     </message>
     <message>
       <source>No other types of changes will be committed at this time.</source>
-      <translation>Keine anderen Änderungen werden zu dieser Zeit übermittelt.</translation>
+      <translation>Es werden keine anderen Änderungen übernommen.</translation>
     </message>
     <message>
       <source>Could not commit the changed attributes.</source>
-      <translation>Konnte die Änderungen an den Attributen nicht übermitteln.</translation>
+      <translation>Die geänderten Attribute konnte nicht übernommen werden.</translation>
     </message>
     <message>
       <source>However, the added features were committed OK.</source>
-      <translation>Wieauchimmer, die hinzugefügten Objekte wurden korrekt übermittelt.</translation>
+      <translation>Die hinzugefügten Objekte wurden allerdings richtig übernommen.</translation>
     </message>
     <message>
       <source>Could not commit the changed geometries.</source>
-      <translation>Konnte die Ändernungen der Geometrien nicht übermitteln.</translation>
+      <translation>Die geänderten Geometrien konnten nicht übernommen werden.</translation>
     </message>
     <message>
       <source>However, the changed attributes were committed OK.</source>
-      <translation>Wieauchimmer, die Änderungen der Attribute wurden korrekt übermittelt.</translation>
+      <translation>Die geänderten Attribute wurden jedoch richtig übernommen.</translation>
     </message>
     <message>
       <source>Could not commit the deleted features.</source>
-      <translation>Konnte die gelöschten Objekte nicht übermitteln.</translation>
+      <translation>Die gelöschten Objekte konnte nicht übernommen werden.</translation>
     </message>
     <message>
       <source>However, the changed geometries were committed OK.</source>
-      <translation>Wieauchimmer, die geänderten Geometrien wurden korrekt übermittelt.</translation>
+      <translation>Die geänderten Geometrien wurden jedoch korrekt übernommen.</translation>
     </message>
   </context>
   <context>
@@ -10221,15 +10322,15 @@ is appended to a truncated SQL statement</comment>
     </message>
     <message>
       <source>Unique Value</source>
-      <translation>Individueller Wert</translation>
+      <translation>Eindeutiger Wert</translation>
     </message>
     <message>
       <source>This button opens the PostgreSQL query builder and allows you to create a subset of features to display on the map canvas rather than displaying all features in the layer</source>
-      <translation>Dieser Knopf öffnet den PostgreSQL Abfragengenerator und ermöglicht es, anstelle aller Objekte eine Untermenge der Objekte auf dem Kartenfenster darzustellen</translation>
+      <translation>Dieser Knopf öffnet den PostgreSQL-Query-Builder und ermöglicht, statt aller Objekte, eine Untermenge der Objekte auf dem Kartenfenster darzustellen</translation>
     </message>
     <message>
       <source>The query used to limit the features in the layer is shown here. This is currently only supported for PostgreSQL layers. To enter or modify the query, click on the Query Builder button</source>
-      <translation>Die Abfrage, um die Anzahl Objekte zu limitieren, wird hier angezeigt. Dies wird im Moment nur von PostgreSQL Ebenen unterstützt. Klicke auf den 'Query Builder' Knopf um eine Abfrage einzugeben oder zu modifizieren</translation>
+      <translation>Die Abfrage zur Begrenzung der Anzahl der Objekte wird hier angezeigt. Dies wird im Moment nur bei PostgreSQL-Layern unterstützt. Klicken Sie auf auf 'Query Builder', um eine Abfrage einzugeben oder zu ändern</translation>
     </message>
     <message>
       <source>Spatial Index</source>
@@ -10249,23 +10350,23 @@ is appended to a truncated SQL statement</comment>
     </message>
     <message>
       <source>Storage type of this layer : </source>
-      <translation>Datenspeicher dieser Ebene: </translation>
+      <translation>Datenspeicher dieses Layers: </translation>
     </message>
     <message>
       <source>Source for this layer : </source>
-      <translation>Quelle dieser Ebene: </translation>
+      <translation>Quelle dieses Layers: </translation>
     </message>
     <message>
       <source>Geometry type of the features in this layer : </source>
-      <translation>Geometrietyp der Objekte in dieser Ebene:</translation>
+      <translation>Geometrietyp der Objekte dieses Layers: </translation>
     </message>
     <message>
       <source>The number of features in this layer : </source>
-      <translation>Die Anzahl Objekte in dieser Ebene:</translation>
+      <translation>Anzahl der Objekte dieses Layers: </translation>
     </message>
     <message>
       <source>Editing capabilities of this layer : </source>
-      <translation>Editierfähigkeit dieser Ebene: </translation>
+      <translation>Bearbeitungsfähigkeit dieses Layers: </translation>
     </message>
     <message>
       <source>Extents:</source>
@@ -10273,7 +10374,7 @@ is appended to a truncated SQL statement</comment>
     </message>
     <message>
       <source>In layer spatial reference system units : </source>
-      <translation>In Einheiten des Referenzsystems dieser Ebene:</translation>
+      <translation>In Einheiten des Referenzsystems dieses Layers: </translation>
     </message>
     <message>
       <source>xMin,yMin </source>
@@ -10285,11 +10386,11 @@ is appended to a truncated SQL statement</comment>
     </message>
     <message>
       <source>In project spatial reference system units : </source>
-      <translation>In Einheiten des Projektreferenzsystems:</translation>
+      <translation>In Einheiten des Projektreferenzsystems: </translation>
     </message>
     <message>
       <source>Layer Spatial Reference System:</source>
-      <translation>Räumliches Referenzsystem der Ebene:</translation>
+      <translation>Räumliches Referenzsystem des Layers:</translation>
     </message>
     <message>
       <source>Attribute field info:</source>
@@ -10313,7 +10414,7 @@ is appended to a truncated SQL statement</comment>
     </message>
     <message>
       <source>Layer comment: </source>
-      <translation type="unfinished" >Layerkommentar: </translation>
+      <translation>Layerkommentar: </translation>
     </message>
     <message>
       <source>Comment</source>
@@ -10324,7 +10425,7 @@ is appended to a truncated SQL statement</comment>
     <name>QgsVectorLayerPropertiesBase</name>
     <message>
       <source>Layer Properties</source>
-      <translation>Ebeneneigenschaften</translation>
+      <translation>Layereigenschaften</translation>
     </message>
     <message>
       <source>Legend type:</source>
@@ -10344,7 +10445,7 @@ is appended to a truncated SQL statement</comment>
     </message>
     <message>
       <source>Use scale dependent rendering</source>
-      <translation>Benutze massstabsabhängiges Zeichnen</translation>
+      <translation>Massstabsabhängig zeichnen</translation>
     </message>
     <message>
       <source>Maximum 1:</source>
@@ -10356,11 +10457,11 @@ is appended to a truncated SQL statement</comment>
     </message>
     <message>
       <source>Minimum scale at which this layer will be displayed. </source>
-      <translation>Minimum Massstab, bei welchem diese Ebene angezeigt wird.</translation>
+      <translation>Minimalmassstab, ab dem dieser Layer angezeigt wird.</translation>
     </message>
     <message>
       <source>Maximum scale at which this layer will be displayed. </source>
-      <translation>Maximum Massstab, bei welchem diese Ebene angezeigt wird.</translation>
+      <translation>Maximalmassstab, bis zu dem dieser Layer angezeigt wird.</translation>
     </message>
     <message>
       <source>Display name</source>
@@ -10368,7 +10469,7 @@ is appended to a truncated SQL statement</comment>
     </message>
     <message>
       <source>Use this control to set which field is placed at the top level of the Identify Results dialog box.</source>
-      <translation>Benutze diese Kontrollelemente, um das Attribut auszuwählen, welches zuoberst in der 'Identifiziere Resultat' Dialogbox steht.</translation>
+      <translation>Benutze diese Kontrollelemente, um das Attribut festzulegen, das zuoberst im  'Identifizierungsergebnis'-Dialog steht.</translation>
     </message>
     <message>
       <source>Spatial Reference System</source>
@@ -10380,11 +10481,11 @@ is appended to a truncated SQL statement</comment>
     </message>
     <message>
       <source>Display field for the Identify Results dialog box</source>
-      <translation>Anzeigeattribut für die 'Identifiziere Resultat' Dialogbox</translation>
+      <translation>Anzeigeattribut für den 'Identifizierungsergebnis'-Dialog</translation>
     </message>
     <message>
       <source>This sets the display field for the Identify Results dialog box</source>
-      <translation>Dies setzt das Anzeigeattribut für die 'Identifiziere Resultat' Dialogbox</translation>
+      <translation>Dies setzt das Anzeigeattribut für den 'Identifizierungsergebnis'-Dialog</translation>
     </message>
     <message>
       <source>Display field</source>
@@ -10466,22 +10567,33 @@ is appended to a truncated SQL statement</comment>
     <name>QgsWFSPlugin</name>
     <message>
       <source>&amp;Add WFS layer</source>
-      <translation>&amp;WFS Layer hinzufügen</translation>
+      <translation>&amp;WFS-Layer hinzufügen</translation>
+    </message>
+  </context>
+  <context>
+    <name>QgsWFSProvider</name>
+    <message>
+      <source>unknown</source>
+      <translation>unbekannt</translation>
+    </message>
+    <message>
+      <source>received %1 bytes from %2</source>
+      <translation>%1 von %2 Bytes empfangen</translation>
     </message>
   </context>
   <context>
     <name>QgsWFSSourceSelect</name>
     <message>
       <source>Are you sure you want to remove the </source>
-      <translation>Sind Sie sicher, dass Sie alle </translation>
+      <translation>Sind Sie sicher, dass Sie die </translation>
     </message>
     <message>
       <source> connection and all associated settings?</source>
-      <translation> Verbindungen und die damit verbundenen Einstellungen löschen wollen?</translation>
+      <translation> Verbindung und alle damit verbundenen Einstellungen löschen wollen?</translation>
     </message>
     <message>
       <source>Confirm Delete</source>
-      <translation>Löschen Bestätigen</translation>
+      <translation>Löschen bestätigen</translation>
     </message>
   </context>
   <context>
@@ -10504,7 +10616,7 @@ is appended to a truncated SQL statement</comment>
     </message>
     <message>
       <source>Change ...</source>
-      <translation>Verändere ...</translation>
+      <translation>Ändern ...</translation>
     </message>
     <message>
       <source>Server Connections</source>
@@ -10543,51 +10655,51 @@ is appended to a truncated SQL statement</comment>
     </message>
     <message>
       <source>WMS Service Exception</source>
-      <translation>WMS Service Ausnahme</translation>
+      <translation>WMS-Service-Ausnahme</translation>
     </message>
     <message>
       <source>DOM Exception</source>
-      <translation>DOM Ausnahme</translation>
+      <translation>DOM-Ausnahme</translation>
     </message>
     <message>
       <source>Could not get WMS capabilities: %1 at line %2 column %3</source>
-      <translation>Konnte die WMS Capabilities nicht bekommen: %1 bei Linie %2, Spalte %3</translation>
+      <translation>Konnte die WMS-Capabilities nicht erfragen: %1 bei Linie %2, Spalte %3</translation>
     </message>
     <message>
       <source>This is probably due to an incorrect WMS Server URL.</source>
-      <translation>Dies kommt wahrscheinlich durch eine falsche WMS-Server URL zustande.</translation>
+      <translation>Dies kommt wahrscheinlich durch eine falsche WMS-Server-URL zustande.</translation>
     </message>
     <message>
       <source>Could not get WMS capabilities in the expected format (DTD): no %1 or %2 found</source>
-      <translation>Konnte die WMS Capabilities nicht im erwarteten Format (DTD) erhalten: kein %1 oder %2 gefunden.</translation>
+      <translation>Konnte die WMS-Capabilities nicht im erwarteten Format (DTD) erhalten: %1 oder %2 gefunden.</translation>
     </message>
     <message>
       <source>Could not get WMS Service Exception at %1: %2 at line %3 column %4</source>
-      <translation>Konnte die WMS Service Ausnahme bei %1 nicht interpretieren: %2 bei Linie %3, Spalte %4</translation>
+      <translation>Konnte die WMS-Service-Ausnahme bei %1 nicht interpretieren: %2 bei Linie %3, Spalte %4</translation>
     </message>
     <message>
       <source>Request contains a Format not offered by the server.</source>
-      <translation>Die Anfrage enthält ein Format, welches nicht vom Server unterstützt wird.</translation>
+      <translation>Die Anfrage enthält ein Format, das nicht vom Server unterstützt wird.</translation>
     </message>
     <message>
       <source>Request contains a CRS not offered by the server for one or more of the Layers in the request.</source>
-      <translation>Die Anfrage enthält ein Koordinatensystem (CRS), welches nicht vom Server für die angeforderten Layer angeboten wird.</translation>
+      <translation>Die Anfrage enthält ein Koordinatensystem (CRS), das für die angeforderten Layer nicht vom Server angeboten wird.</translation>
     </message>
     <message>
       <source>Request contains a SRS not offered by the server for one or more of the Layers in the request.</source>
-      <translation>Anfrage enthält SRS, das nicht vom Server angeboten wird.</translation>
+      <translation>Anfrage enthält ein SRS, das nicht vom Server angeboten wird.</translation>
     </message>
     <message>
       <source>GetMap request is for a Layer not offered by the server, or GetFeatureInfo request is for a Layer not shown on the map.</source>
-      <translation>GetMap Anfrage ist für eine Ebene, die nicht vom Server angeboten wird, oder GetFeatureInfo wurde für eine Ebene angefordert, die nicht in der Karte angezeigt wird.</translation>
+      <translation>GetMap-Anfrage ist für einen Layer, der nicht vom Server angeboten wird, oder GetFeatureInfo wurde für einen Layer angefordert, der nicht im Kartenfenster angezeigt wird.</translation>
     </message>
     <message>
       <source>Request is for a Layer in a Style not offered by the server.</source>
-      <translation>Anfrage ist für eine Ebene in einem Style, der nicht vom Server angeboten wird.</translation>
+      <translation>Anfrage ist für einen Layer in einem Style, der nicht vom Server angeboten wird.</translation>
     </message>
     <message>
       <source>GetFeatureInfo request is applied to a Layer which is not declared queryable.</source>
-      <translation>GetFeatureInfo wurde auf eine Ebene angewendet, die als nicht abfragbar definiert ist.</translation>
+      <translation>GetFeatureInfo wurde auf einen Layer angewendet, der als nicht abfragbar definiert ist.</translation>
     </message>
     <message>
       <source>GetFeatureInfo request contains invalid X or Y value.</source>
@@ -10671,11 +10783,11 @@ is appended to a truncated SQL statement</comment>
     </message>
     <message>
       <source>Layer Count</source>
-      <translation>Anzahl der Ebenen</translation>
+      <translation>Anzahl der Layer</translation>
     </message>
     <message>
       <source>Layer Properties: </source>
-      <translation>Ebeneneigenschaften: </translation>
+      <translation>Layereigenschaften: </translation>
     </message>
     <message>
       <source>Selected</source>

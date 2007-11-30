@@ -13,6 +13,7 @@
 #include "qgscontexthelp.h"
 
 //qt includes
+#include <QColorDialog>
 
 //standard includes
 
@@ -36,7 +37,7 @@ void QgsCopyrightLabelPluginGui::on_buttonBox_accepted()
   //close the dialog
   emit changeFont(txtCopyrightText->currentFont());
   emit changeLabel(txtCopyrightText->text());
-  emit changeColor(txtCopyrightText->color());
+  emit changeColor(pbnColorChooser->color());
   emit changePlacement(cboPlacement->currentIndex());
   emit enableCopyrightLabel(cboxEnabled->isChecked());
 
@@ -51,6 +52,19 @@ void QgsCopyrightLabelPluginGui::on_buttonBox_rejected()
 void QgsCopyrightLabelPluginGui::on_buttonBox_helpRequested()
 {
   QgsContextHelp::run(context_id);
+}
+
+void QgsCopyrightLabelPluginGui::on_pbnColorChooser_clicked()
+{
+  QColor c = QColorDialog::getColor();
+  if (c.isValid())
+  {
+    pbnColorChooser->setColor(c);
+    QTextCursor cursor = txtCopyrightText->textCursor();
+    txtCopyrightText->selectAll();
+    txtCopyrightText->setTextColor(c);
+    txtCopyrightText->setTextCursor(cursor);
+  }
 }
 
 void QgsCopyrightLabelPluginGui::setEnabled(bool theBool)
@@ -72,4 +86,13 @@ void QgsCopyrightLabelPluginGui::setPlacementLabels(QStringList& labels)
 void QgsCopyrightLabelPluginGui::setPlacement(int placementIndex)
 {
   cboPlacement->setCurrentIndex(placementIndex);
+}
+
+void QgsCopyrightLabelPluginGui::setColor(QColor color)
+{
+  pbnColorChooser->setColor(color);
+  QTextCursor cursor = txtCopyrightText->textCursor();
+  txtCopyrightText->selectAll();
+  txtCopyrightText->setTextColor(color);
+  txtCopyrightText->setTextCursor(cursor);
 }

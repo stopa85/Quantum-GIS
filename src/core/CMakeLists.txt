@@ -90,7 +90,6 @@ qgsrunprocess.h
 qgsvectorlayer.h
 
 raster/qgsrasterlayer.h
-raster/qgsrasterviewport.h
 
 )
 
@@ -177,8 +176,8 @@ ENDIF (APPLE)
 
 INSTALL(TARGETS qgis_core
   RUNTIME DESTINATION ${QGIS_BIN_DIR}
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib)
+  LIBRARY DESTINATION ${QGIS_LIB_DIR}
+  ARCHIVE DESTINATION ${QGIS_LIB_DIR})
 
 
 # Added by Tim to install headers

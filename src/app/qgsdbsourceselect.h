@@ -42,12 +42,12 @@ class QgisApp;
  * \brief Dialog to create connections and add tables from PostgresQL.
  *
  * This dialog allows the user to define and save connection information
- * for PostGIS enabled PostgresQL databases. The user can then connect and add 
+ * for PostGIS enabled PostgreSQL databases. The user can then connect and add 
  * tables from the database to the map canvas.
  */
 class QgsDbSourceSelect : public QDialog, private Ui::QgsDbSourceSelectBase 
 {
-  Q_OBJECT
+ Q_OBJECT
  public:
 
     //! Constructor
@@ -76,7 +76,7 @@ class QgsDbSourceSelect : public QDialog, private Ui::QgsDbSourceSelectBase
     // geometry type of a column
     static QString makeGeomQuery(QString schema, QString table, QString column);
 
-    public slots:
+ public slots:
     /*! Connects to the database using the stored connection parameters. 
     * Once connected, available layers are displayed.
     */
@@ -92,6 +92,12 @@ class QgsDbSourceSelect : public QDialog, private Ui::QgsDbSourceSelectBase
       void setLayerType(QString schema, QString table, QString column,
                         QString type);
  private:
+    enum columns {
+	dbssType=0,
+	dbssDetail,
+	dbssSql,
+	dbssColumns,
+    };
 
     typedef std::pair<QString, QString> geomPair;
     typedef std::list<geomPair > geomCol;
@@ -100,14 +106,22 @@ class QgsDbSourceSelect : public QDialog, private Ui::QgsDbSourceSelectBase
 			       geomCol& details, 
                                bool searchGeometryColumnsOnly,
                                bool searchPublicOnly);
+
+    // queue another query for the thread
+    void addSearchGeometryColumn(const QString &schema, const QString &table, const QString &column);
+
     // Set the position of the database connection list to the last
     // used one. 
     void setConnectionListPosition();
     // Show the context help for the dialog
     void showHelp();
+    // initialize row
+    void initRow(int row); 
+    // update the row
+    void updateRow(int row, QString detail, QString type);
     // Combine the schema, table and column data into a single string
     // useful for display to the user
-    QString fullDescription(QString schema, QString table, QString column);
+    QString fullDescription(QString schema, QString table, QString column, QString type);
     // The column labels
     QStringList mColumnLabels;
     // Our thread for doing long running queries
@@ -116,6 +130,10 @@ class QgsDbSourceSelect : public QDialog, private Ui::QgsDbSourceSelectBase
     QStringList m_selectedTables;
     // Storage for the range of layer type icons
     QMap<QString, QPair<QString, QIcon> > mLayerIcons;
+#if 0
+    // minlength of layer type combobox
+    int mCbMinLength;
+#endif
     //! Pointer to the qgis application mainwindow
     QgisApp *qgisApp;
     PGconn *pd;
@@ -135,7 +153,7 @@ class QgsGeomColumnTypeThread : public QThread
  public:
 
   void setConnInfo(QString s);
-  void setGeometryColumn(QString schema, QString table, QString column);
+  void addGeometryColumn(QString schema, QString table, QString column);
 
   // These functions get the layer types and pass that information out
   // by emitting the setLayerType() signal. The getLayerTypes()
@@ -145,12 +163,17 @@ class QgsGeomColumnTypeThread : public QThread
   virtual void run() { getLayerTypes(); }
   void getLayerTypes();
 
-  signals:
+ signals:
   void setLayerType(QString schema, QString table, QString column,
                     QString type);
 
+ public slots:
+  void stop();
+
+
  private:
   QString mConnInfo;
+  bool mStopped;
   std::vector<QString> schemas, tables, columns;
 };
 

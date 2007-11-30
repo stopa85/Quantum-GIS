@@ -62,12 +62,17 @@ QgsLegendLayerFile::QgsLegendLayerFile(QTreeWidgetItem * theLegendItem, QString 
   setCheckState(0, Qt::Checked);
   setText(0, theString);
 
-  // get notifications of changed selection - used to update attribute table
-  connect(mLyr.layer(), SIGNAL(selectionChanged()), this, SLOT(selectionChanged()));
-
-  // get notifications of modified layer - used to close table as it's out of sync
-  connect(mLyr.layer(), SIGNAL(wasModified(bool)), this, SLOT(closeTable(bool)));
-  
+  // Add check if vector layer when connecting to selectionChanged slot
+  // Ticket #811 - racicot
+  QgsMapLayer *currentLayer = mLyr.layer();
+  QgsVectorLayer *isVectLyr = dynamic_cast < QgsVectorLayer * >(currentLayer);
+  if (isVectLyr)
+  {
+    // get notifications of changed selection - used to update attribute table
+    connect(mLyr.layer(), SIGNAL(selectionChanged()), this, SLOT(selectionChanged()));
+    // get notifications of modified layer - used to close table as it's out of sync
+    connect(mLyr.layer(), SIGNAL(wasModified(bool)), this, SLOT(closeTable(bool)));
+  }  
   connect(mLyr.layer(), SIGNAL(layerNameChanged()), this, SLOT(layerNameChanged()));
 }
 
@@ -238,9 +243,23 @@ void QgsLegendLayerFile::table()
   {
     // display the attribute table
     QApplication::setOverrideCursor(Qt::waitCursor);
+
     // TODO: pointer to QgisApp should be passed instead of NULL
     // but we don't have pointer to it. [MD]
-    mTableDisplay = new QgsAttributeTableDisplay(vlayer, NULL);
+    // but be can get it using this ugly hack. [jef]
+    // TODO: do this cleanly
+    QgisApp *app = NULL;
+    QList<QWidget *> list = QApplication::topLevelWidgets();
+
+    int i;
+    for(i=0; i<list.size(); i++)
+      if( list[i]->windowTitle().startsWith("Quantum GIS") )
+      {
+        app=reinterpret_cast<QgisApp*>(list[i]);
+	break;
+      }
+
+    mTableDisplay = new QgsAttributeTableDisplay(vlayer, app);
     mTableDisplay->table()->fillTable(vlayer);
     mTableDisplay->table()->setSorting(true);
 
@@ -343,6 +362,16 @@ void QgsLegendLayerFile::saveAsShapefileGeneral(bool saveOnlySelection)
     shapefileName += ".shp";
   }
   
+  // overwrite the file - user will already have been prompted
+  // to verify they want to overwrite by the file dialog above
+  if (QFile::exists(shapefileName))
+  {
+      if (!QgsVectorFileWriter::deleteShapeFile(shapefileName))
+      {
+        return;
+      }
+  }
+  // ok if the file existed it should be deleted now so we can continue...
   QApplication::setOverrideCursor(Qt::waitCursor);
   
   QgsVectorFileWriter::WriterError error;
