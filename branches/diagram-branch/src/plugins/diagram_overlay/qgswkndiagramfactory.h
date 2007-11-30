@@ -19,8 +19,9 @@
 #ifndef QGSWKNDIAGRAMFACTORY_H
 #define QGSWKNDIAGRAMFACTORY_H
 
-#include <list>
-#include <QColor>
+#include <QBrush>
+#include <QList>
+#include <QPen>
 #include <QString>
 #include "qgsdiagramfactory.h"
 #include "qgsvectorlayer.h" //for QgsAttributeList
@@ -36,12 +37,17 @@ class QgsWKNDiagramFactory: public QgsDiagramFactory
  public:
   QgsWKNDiagramFactory();
   ~QgsWKNDiagramFactory();
-  /**Creates a diagram for a feature and a given (classification) item. The calling method takes ownership of the generated image*/
+  /**Creates a diagram for a feature and a given size (that is usually determined by QgsDiagramRenderer. The calling method takes ownership of the generated image*/
   QImage* createDiagram(int size, const QgsFeature& f) const;
+  /**Creates items to show in the legend*/
   int createLegendContent(int size, QString value, QMap<QString, QImage*>& items) const{return 1;} //soon
+  /**Gets the diagram width and height for a given size. Considers different width, height values and the maximum width of the drawing pen.
+   */
   int getDiagramDimensions(int size, const QgsFeature& f, int& width, int& height) const;
+  /**Writes properties to an xml document*/
   bool writeXML(QDomNode& overlay_node, QDomDocument& doc) const;
-
+  /**Returns the property described by the size (e.g. diameter or height). This can be important to
+   know if e.g. size has to be calculated proportional to pie area*/
   QgsDiagramFactory::SizeType sizeType() const;
 
   //setters and getters for diagram type
@@ -50,9 +56,12 @@ class QgsWKNDiagramFactory: public QgsDiagramFactory
   //setters and getters for attributes
   QgsAttributeList attributes() const {return mAttributes;}
   void setAttributes(const QgsAttributeList& att){mAttributes = att;}
-  //setters and getters for color series
-  std::list<QColor> colors() const {return mColorSeries;}
-  void setColorSeries(const std::list<QColor>& c){mColorSeries = c;}
+  //setters and getters for pens and brushes
+  QList<QBrush> brushes() const {return mBrushSeries;}
+  void setBrushes(const QList<QBrush>& b);
+  void setPens(const QList<QPen>& p);
+  QList<QPen> pens() const {return mPenSeries;}
+
   //setters and getters for scaling attribute
   QList<int> scalingAttributes() const {return mScalingAttributes;}
   void setScalingAttributes(const QList<int>& att){mScalingAttributes = att;}
@@ -68,11 +77,18 @@ class QgsWKNDiagramFactory: public QgsDiagramFactory
   QgsAttributeList mAttributes;
   /**Well known diagram name (e.g. pie, bar, line)*/
   QString mDiagramType;
-  /**Diagram colors*/
-  std::list<QColor> mColorSeries;
-  int mBarWidth; //width of one bar (default 20 pixel)
+  /**Diagram brushes*/
+  QList<QBrush> mBrushSeries;
+  /**Diagram pens*/
+  QList<QPen> mPenSeries;
+  /**width of one bar (default 20 pixel)*/
+  int mBarWidth;
+  /**Maximum line width. Needs to be considered for the size of the generated image*/
+  int mMaximumPenWidth;
 
+  /**Creates a pie image. The calling method takes ownership of the image*/
   QImage* createPieChart(int size, const QgsAttributeMap& dataValues) const;
+  /**Creates a bar image. The calling method takes ownership of the image*/
   QImage* createBarChart(int size, const QgsAttributeMap& dataValues) const;
   /**Calculates the maximum height of the bar chart (based on size for the 
    scaling attribute)*/

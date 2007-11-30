@@ -24,7 +24,7 @@
 #include <QImage>
 #include <QPainter>
 
-QgsWKNDiagramFactory::QgsWKNDiagramFactory(): mBarWidth(20)
+QgsWKNDiagramFactory::QgsWKNDiagramFactory(): mBarWidth(20), mMaximumPenWidth(0)
 {
 
 }
@@ -56,14 +56,14 @@ int QgsWKNDiagramFactory::getDiagramDimensions(int size, const QgsFeature& f, in
 {
   if(mDiagramType == "Pie") //for pie charts, the size is the pie diameter
     {
-      width = size;
-      height = size;
+      width = size + 2 * mMaximumPenWidth;
+      height = size + 2 * mMaximumPenWidth;
     }
   else if(mDiagramType == "Bar")
     {
       //witdh
-      width = mBarWidth * mAttributes.size(); 
-      height = getHeightBarChart(size, f.attributeMap());
+      width = mBarWidth * mAttributes.size() + 2 * mMaximumPenWidth; 
+      height = getHeightBarChart(size, f.attributeMap()) + 2 * mMaximumPenWidth;
     }
   
   return 0;
@@ -72,7 +72,7 @@ int QgsWKNDiagramFactory::getDiagramDimensions(int size, const QgsFeature& f, in
 QImage* QgsWKNDiagramFactory::createPieChart(int size, const QgsAttributeMap& dataValues) const
 {
   //create transparent QImage
-  QImage* diagramImage = new QImage(QSize(size, size), QImage::Format_ARGB32_Premultiplied);
+  QImage* diagramImage = new QImage(QSize(size + 2 * mMaximumPenWidth, size + 2 * mMaximumPenWidth), QImage::Format_ARGB32_Premultiplied);
   diagramImage->fill(qRgba(0, 0, 0, 0)); //transparent background
   QPainter p;
   p.begin(diagramImage);
@@ -103,17 +103,23 @@ QImage* QgsWKNDiagramFactory::createPieChart(int size, const QgsAttributeMap& da
     }
 
   //draw pies
-  std::list<QColor>::const_iterator color_it = mColorSeries.begin();
+  //std::list<QColor>::const_iterator color_it = mColorSeries.begin();
+  QList<QBrush>::const_iterator brush_it = mBrushSeries.constBegin();
+  QList<QPen>::const_iterator pen_it = mPenSeries.constBegin();
   QList<double>::const_iterator valueList_it = valueList.constBegin();
 
   int totalAngle = 0;
   int currentAngle;
 
-  for(; (color_it != mColorSeries.end() && valueList_it != valueList.constEnd()); ++color_it, ++valueList_it)
+  for(; (brush_it != mBrushSeries.constEnd() && valueList_it != valueList.constEnd()); ++brush_it, ++pen_it, ++valueList_it)
     {
+      if(pen_it != mPenSeries.end())
+	{
+	  p.setPen(*pen_it);
+	}
       currentAngle = (int)((*valueList_it)/sum*360*16);
-      p.setBrush(QBrush(*color_it));
-      p.drawPie(0, 0, size, size, totalAngle, currentAngle);
+      p.setBrush(*brush_it);
+      p.drawPie(mMaximumPenWidth, mMaximumPenWidth, size, size, totalAngle, currentAngle);
       totalAngle += currentAngle;
     }
   p.end();
@@ -143,7 +149,8 @@ QImage* QgsWKNDiagramFactory::createBarChart(int size, const QgsAttributeMap& da
   int currentBarHeight;
 
   QgsAttributeList::const_iterator it = mAttributes.constBegin();
-  std::list<QColor>::const_iterator color_it = mColorSeries.begin();
+  QList<QBrush>::const_iterator brush_it = mBrushSeries.constBegin();
+  QList<QPen>::const_iterator pen_it = mPenSeries.constBegin();
   QgsAttributeMap::const_iterator att_it;
   int barCounter = 0;
   
@@ -151,15 +158,19 @@ QImage* QgsWKNDiagramFactory::createBarChart(int size, const QgsAttributeMap& da
   p.setRenderHint(QPainter::Antialiasing);
   p.setPen(Qt::NoPen);
 
-  for(; it != mAttributes.constEnd() && color_it != mColorSeries.end(); ++it, ++color_it)
+  for(; it != mAttributes.constEnd() && brush_it != mBrushSeries.constEnd(); ++it, ++brush_it, ++pen_it)
     {
       att_it = dataValues.find(*it);
       if(att_it != dataValues.constEnd())
 	{
+	  if(pen_it != mPenSeries.end())
+	    {
+	      p.setPen(*pen_it);
+	    }
 	  currentValue = att_it->toDouble();
 	  currentBarHeight = (int)(currentValue * pixelValueRatio);
-	  p.setBrush(QBrush(*color_it));
-	  p.drawRect(QRect(barCounter * mBarWidth, h - currentBarHeight, mBarWidth, currentBarHeight));
+	  p.setBrush(*brush_it);
+	  p.drawRect(QRect(barCounter * mBarWidth + mMaximumPenWidth, h - currentBarHeight + mMaximumPenWidth, mBarWidth, currentBarHeight));
 	  ++barCounter;
 	}
     }
@@ -257,14 +268,24 @@ bool QgsWKNDiagramFactory::writeXML(QDomNode& overlay_node, QDomDocument& doc) c
       overlayElement.appendChild(classificationFieldElem);
     }
 	    
-  //color tags
-  for(std::list<QColor>::const_iterator c_it = mColorSeries.begin(); c_it != mColorSeries.end(); ++c_it)
+  //brush tags
+  for(QList<QBrush>::const_iterator b_it = mBrushSeries.constBegin(); b_it != mBrushSeries.end(); ++b_it)
     {
-      QDomElement currentColorElem = doc.createElement("color");
-      currentColorElem.setAttribute("red", QString::number(c_it->red()));
-      currentColorElem.setAttribute("green", QString::number(c_it->green()));
-      currentColorElem.setAttribute("blue", QString::number(c_it->blue()));
-      overlayElement.appendChild(currentColorElem);
+      QDomElement currentBrushElem = doc.createElement("brush");
+      currentBrushElem.setAttribute("red", QString::number(b_it->color().red()));
+      currentBrushElem.setAttribute("green", QString::number(b_it->color().green()));
+      currentBrushElem.setAttribute("blue", QString::number(b_it->color().blue()));
+      overlayElement.appendChild(currentBrushElem);
+    }
+
+  //pen tags
+  for(QList<QPen>::const_iterator p_it = mPenSeries.constBegin(); p_it != mPenSeries.end(); ++p_it)
+    {
+      QDomElement currentPenElem = doc.createElement("pen");
+      currentPenElem.setAttribute("red", QString::number(p_it->color().red()));
+      currentPenElem.setAttribute("green", QString::number(p_it->color().green()));
+      currentPenElem.setAttribute("blue", QString::number(p_it->color().blue()));
+      currentPenElem.setAttribute("width", QString::number(p_it->width()));
     }
   
   //attribute tags
@@ -278,4 +299,31 @@ bool QgsWKNDiagramFactory::writeXML(QDomNode& overlay_node, QDomDocument& doc) c
       overlayElement.appendChild(currentAttributeElem);
     }
   return true;
+}
+
+void QgsWKNDiagramFactory::setBrushes(const QList<QBrush>& b)
+{
+  mBrushSeries = b;
+}
+  
+void QgsWKNDiagramFactory::setPens(const QList<QPen>& p)
+{
+  mPenSeries = p;
+
+  //recalculate mMaximumPenWidth
+  mMaximumPenWidth = 0;
+  int currentPenWidth;
+
+  QList<QPen>::const_iterator p_it = p.constBegin();
+  for(; p_it != p.constEnd(); ++p_it)
+    {
+      if(p_it->style() != Qt::NoPen)
+	{
+	  currentPenWidth = p_it->width();
+	  if(currentPenWidth > mMaximumPenWidth)
+	    {
+	      mMaximumPenWidth = currentPenWidth;
+	    }
+	}
+    }
 }
