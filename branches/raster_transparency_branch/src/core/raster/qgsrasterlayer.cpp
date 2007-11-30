@@ -3121,6 +3121,7 @@ const QgsRasterBandStats QgsRasterLayer::getRasterBandStats(int theBandNo)
             myFirstIterationFlag = false;
             myRasterBandStats.minVal = my;
             myRasterBandStats.maxVal = my;
+            ++myRasterBandStats.elementCount;
           }               //end of true part for first iteration check
           else
           {

@@ -21,11 +21,12 @@ email                : ersts@amnh.org
 
 #include "qgscontrastenhancement.h"
 
-class CORE_EXPORT QgsContrastEnhancementFunction 
+class CORE_EXPORT QgsContrastEnhancementFunction
 {
 
   public:
     QgsContrastEnhancementFunction(QgsContrastEnhancement::QgsRasterDataType, double, double);
+    virtual ~QgsContrastEnhancementFunction() {}
     
     /** \brief Mustator for the maximum value */
     void setMaximumValue(double);    

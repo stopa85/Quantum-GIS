@@ -1616,8 +1616,7 @@ bool QgsVectorLayer::readXML_( QDomNode & layer_node )
     // if the provider string isn't empty, then we successfully
     // got the stored provider
   }
-  else if ((mDataSource.find("host=") > -1) &&
-      (mDataSource.find("dbname=") > -1))
+  else if ( mDataSource.contains("dbname=") )
   {
     mProviderKey = "postgres";
   }
@@ -1912,6 +1911,14 @@ bool QgsVectorLayer::setDataProvider( QString const & provider )
 
   if ( myLabel )
   {
+    QString fieldname = myLabel->labelField(QgsLabel::Text);
+    if(fieldname!="") {
+      dField  = document.createElement( "labelfield" );
+      dFieldText = document.createTextNode( fieldname ); 
+      dField.appendChild( dFieldText );
+      layer_node.appendChild( dField );
+    }
+
     std::stringstream labelXML;
 
     myLabel->writeXML(labelXML);

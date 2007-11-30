@@ -69,13 +69,6 @@ QgsPluginManager::~QgsPluginManager()
 {
 }
 
-void QgsPluginManager::on_btnBrowse_clicked()
-{
-  QString s = QFileDialog::getExistingDirectory(this, tr("Choose a directory"));
-  txtPluginDir->setText(s);
-  getPluginDescriptions();
-}
-
 
 void QgsPluginManager::getPythonPluginDescriptions()
 {
@@ -90,8 +83,9 @@ void QgsPluginManager::getPythonPluginDescriptions()
   {
     QString packageName = pluginList[i];
 
-    // import plugin's package
-    QgsPythonUtils::loadPlugin(packageName);
+    // import plugin's package - skip loading it if an error occured
+    if (!QgsPythonUtils::loadPlugin(packageName))
+      continue;
     
     // get information from the plugin
     QString pluginName  = QgsPythonUtils::getPluginMetadata(packageName, "name");
