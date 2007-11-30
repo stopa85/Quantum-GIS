@@ -33,6 +33,16 @@ QgsLinearlyScalingDialog::~QgsLinearlyScalingDialog()
 
 QgsDiagramRenderer* QgsLinearlyScalingDialog::createRenderer(const QString& type, int classAttr, const QgsAttributeList& attributes, const std::list<QColor>& colors) const
 {
+  //convert color list to brush list
+  QList<QBrush> brushList;
+  QList<QPen> penList;
+
+  for(std::list<QColor>::const_iterator color_it = colors.begin(); color_it != colors.end(); ++color_it)
+    {
+      brushList.push_back(QBrush(*color_it));
+      penList.push_back(QPen(Qt::NoPen));
+    }
+
   //create a linearly scaling renderer
   QList<int> attributesList;
   attributesList.push_back(classAttr);
@@ -51,7 +61,8 @@ QgsDiagramRenderer* QgsLinearlyScalingDialog::createRenderer(const QString& type
   QgsWKNDiagramFactory* f = new QgsWKNDiagramFactory();
    f->setDiagramType(type);
    f->setAttributes(attributes);
-   f->setColorSeries(colors);
+   f->setBrushes(brushList);
+   f->setPens(penList);
    QList<int> classAttrList;
    classAttrList.push_back(classAttr);
    f->setScalingAttributes(classAttrList);

@@ -190,7 +190,8 @@ bool QgsDiagramOverlay::readXML(const QDomNode& overlayNode)
 
   QString wellKnownName;
   QgsAttributeList attributeList;
-  std::list<QColor> colorList;
+  QList<QBrush> brushList;
+  QList<QPen> penList;
   QList<int> classAttrList;
 
   //wellknownname
@@ -215,19 +216,37 @@ bool QgsDiagramOverlay::readXML(const QDomNode& overlayNode)
       attributeList.push_back(attributeNodeList.at(i).toElement().text().toInt());
     }
 
-  //colors
-  QDomNodeList colorNodeList = overlayElem.elementsByTagName("color");
-  QDomElement currentColorElem;
+  //brushes
+  QDomNodeList brushNodeList = overlayElem.elementsByTagName("brush");
+  QDomElement currentBrushElem;
   int currentRed, currentGreen, currentBlue;
 
-  for(int i = 0; i < colorNodeList.size(); ++i)
+  for(int i = 0; i < brushNodeList.size(); ++i)
     {
-      currentColorElem = colorNodeList.at(i).toElement();
-      currentRed = currentColorElem.attribute("red").toInt();
-      currentGreen = currentColorElem.attribute("green").toInt();
-      currentBlue = currentColorElem.attribute("blue").toInt();
-      colorList.push_back(QColor(currentRed, currentGreen, currentBlue));
+      currentBrushElem = brushNodeList.at(i).toElement();
+      currentRed = currentBrushElem.attribute("red").toInt();
+      currentGreen = currentBrushElem.attribute("green").toInt();
+      currentBlue = currentBrushElem.attribute("blue").toInt();
+      brushList.push_back(QBrush(QColor(currentRed, currentGreen, currentBlue)));
     }
+
+  //pens
+  int currentWidth;
+  QDomNodeList penNodeList = overlayElem.elementsByTagName("pen");
+  QDomElement currentPenElem;
+  QPen currentPen;
+
+  for(int i = 0; i < penNodeList.size(); ++i)
+    {
+      currentPenElem = penNodeList.at(i).toElement();
+      currentRed = currentPenElem.attribute("red").toInt();
+      currentGreen = currentPenElem.attribute("green").toInt();
+      currentBlue = currentPenElem.attribute("blue").toInt();
+      currentWidth = currentPenElem.attribute("width").toInt();
+      currentPen.setColor(QColor(currentRed, currentGreen, currentBlue));
+      currentPen.setWidth(currentWidth);
+      penList.push_back(currentPen);
+    }  
 
   if(rendererList.size() < 1)
     {
@@ -235,21 +254,22 @@ bool QgsDiagramOverlay::readXML(const QDomNode& overlayNode)
     }
   rendererElem = rendererList.at(0).toElement();
 
-  QString type = rendererElem.attribute("type");
-  if(type == "linearly_scaling")
-    {
+  //QString type = rendererElem.attribute("type");
+  //if(type == "linearly_scaling")
+  //{
       theDiagramRenderer = new QgsDiagramRenderer(classAttrList);
       QgsWKNDiagramFactory* wknFactory = new QgsWKNDiagramFactory();
       wknFactory->setAttributes(attributeList);
-      wknFactory->setColorSeries(colorList);
+      wknFactory->setBrushes(brushList);
+      wknFactory->setPens(penList);
       wknFactory->setScalingAttributes(classAttrList);
       wknFactory->setDiagramType(wellKnownName);
       theDiagramRenderer->setFactory(wknFactory);
-    }
-  else //todo: add support for other renderer types
-    {
-      return false;
-    }
+      //}
+      //else //todo: add support for other renderer types
+      //{
+      //return false;
+      //}
 
   //Read renderer specific settings
   if(theDiagramRenderer)
