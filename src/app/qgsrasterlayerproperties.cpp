@@ -2477,6 +2477,31 @@ void QgsRasterLayerProperties::handleColormapTreeWidgetDoubleClick(QTreeWidgetIt
     }
 }
 
+void QgsRasterLayerProperties::on_pbtnLoadMinMax_clicked()
+{
+  QgsRasterBandStats myRasterBandStats;
+  if(rbtnThreeBand->isChecked())
+  {
+    rbtnThreeBandMinMax->setChecked(true);
+    myRasterBandStats = rasterLayer->getRasterBandStats(rasterLayer->getRasterBandNumber(cboRed->currentText()));
+    leRedMin->setText(QString::number(myRasterBandStats.minVal));
+    leRedMax->setText(QString::number(myRasterBandStats.maxVal));
+    myRasterBandStats = rasterLayer->getRasterBandStats(rasterLayer->getRasterBandNumber(cboGreen->currentText()));
+    leGreenMin->setText(QString::number(myRasterBandStats.minVal));
+    leGreenMax->setText(QString::number(myRasterBandStats.maxVal));
+    myRasterBandStats = rasterLayer->getRasterBandStats(rasterLayer->getRasterBandNumber(cboBlue->currentText()));
+    leBlueMin->setText(QString::number(myRasterBandStats.minVal));
+    leBlueMax->setText(QString::number(myRasterBandStats.maxVal));
+  }
+  else
+  {
+    rbtnSingleBandMinMax->setChecked(true);
+    myRasterBandStats = rasterLayer->getRasterBandStats(rasterLayer->getRasterBandNumber(cboGray->currentText()));
+    leGrayMin->setText(QString::number(myRasterBandStats.minVal));
+    leGrayMax->setText(QString::number(myRasterBandStats.maxVal));
+  }
+}
+
 QLinearGradient QgsRasterLayerProperties::redGradient()
 {
   //define a gradient
