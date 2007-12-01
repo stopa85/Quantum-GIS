@@ -45,13 +45,14 @@ qgsvectordataprovider.cpp
 qgsvectorfilewriter.cpp
 qgsvectorlayer.cpp
 
+raster/qgscliptominmaxenhancement.cpp
 raster/qgscolortable.cpp
-raster/qgsrasterlayer.cpp
 raster/qgscontrastenhancement.cpp
 raster/qgscontrastenhancementfunction.cpp
 raster/qgslinearminmaxenhancement.cpp
 raster/qgslinearminmaxenhancementwithclip.cpp
-raster/qgscliptominmaxenhancement.cpp
+raster/qgsrasterlayer.cpp
+raster/qgsrastertransparency.cpp
 
 renderer/qgscontinuouscolorrenderer.cpp
 renderer/qgsgraduatedsymbolrenderer.cpp

@@ -27,6 +27,7 @@
 #include "qgscontexthelp.h"
 #include "qgsmaplayerregistry.h"
 #include "qgscontrastenhancement.h"
+#include "qgsrastertransparency.h"
 
 #include <QTableWidgetItem>
 #include <QHeaderView>
@@ -365,7 +366,7 @@ void QgsRasterLayerProperties::populateTransparencyTable()
     tableTransparency->setHorizontalHeaderItem(3, new QTableWidgetItem(tr("Percent Transparent")));
 
     //populate three band transparency list
-    QList<QgsRasterLayer::TransparentThreeValuePixel> myTransparentThreeValuePixelList = rasterLayer->getTransparentThreeValuePixelList();
+    QList<QgsRasterTransparency::TransparentThreeValuePixel> myTransparentThreeValuePixelList = rasterLayer->getRasterTransparency()->getTransparentThreeValuePixelList();
     for(int myListRunner = 0; myListRunner < myTransparentThreeValuePixelList.count(); myListRunner++)
     {
       tableTransparency->insertRow(myListRunner);
@@ -404,7 +405,7 @@ void QgsRasterLayerProperties::populateTransparencyTable()
     tableTransparency->setHorizontalHeaderItem(1, new QTableWidgetItem(tr("Percent Transparent")));
 
     //populate gray transparency list
-    QList<struct QgsRasterLayer::TransparentSingleValuePixel> myTransparentSingleValuePixelList = rasterLayer->getTransparentSingleValuePixelList();
+    QList<QgsRasterTransparency::TransparentSingleValuePixel> myTransparentSingleValuePixelList = rasterLayer->getRasterTransparency()->getTransparentSingleValuePixelList();
     for(int myListRunner = 0; myListRunner < myTransparentSingleValuePixelList.count(); myListRunner++)
     {
       tableTransparency->insertRow(myListRunner);
@@ -455,6 +456,7 @@ void QgsRasterLayerProperties::sync()
       rbtnSingleBand->setChecked(true);
       rbtnThreeBandMinMax->setEnabled(false);
       rbtnThreeBandStdDev->setEnabled(false);
+      pbtnLoadMinMax->setEnabled(false);
       cboxContrastEnhancementAlgorithm->setEnabled(false);
       break;
     case QgsRasterLayer::PALETTED_SINGLE_BAND_PSEUDO_COLOR:
@@ -463,6 +465,7 @@ void QgsRasterLayerProperties::sync()
       rbtnSingleBand->setChecked(true);
       rbtnThreeBandMinMax->setEnabled(false);
       rbtnThreeBandStdDev->setEnabled(false);
+      pbtnLoadMinMax->setEnabled(false);
       cboxContrastEnhancementAlgorithm->setEnabled(false);
       break;
     case QgsRasterLayer::PALETTED_MULTI_BAND_COLOR:
@@ -471,6 +474,7 @@ void QgsRasterLayerProperties::sync()
       rbtnThreeBand->setChecked(true);
       rbtnThreeBandMinMax->setEnabled(false);
       rbtnThreeBandStdDev->setEnabled(false);
+      pbtnLoadMinMax->setEnabled(false);
       cboxContrastEnhancementAlgorithm->setEnabled(false);
       break;
     case QgsRasterLayer::MULTI_BAND_SINGLE_BAND_GRAY:
@@ -1061,8 +1065,8 @@ void QgsRasterLayerProperties::apply()
   {
     double myTransparentValue;
     double myPercentTransparent;
-    QgsRasterLayer::TransparentThreeValuePixel myTransparentPixel;
-    QList<QgsRasterLayer::TransparentThreeValuePixel> myTransparentThreeValuePixelList;
+    QgsRasterTransparency::TransparentThreeValuePixel myTransparentPixel;
+    QList<QgsRasterTransparency::TransparentThreeValuePixel> myTransparentThreeValuePixelList;
     for(int myListRunner = 0; myListRunner < tableTransparency->rowCount(); myListRunner++)
     {
       if(!tableTransparency->item(myListRunner, 0))
@@ -1156,14 +1160,14 @@ void QgsRasterLayerProperties::apply()
       myTransparentThreeValuePixelList.append(myTransparentPixel);
     }
 
-    rasterLayer->setTransparentThreeValuePixelList(myTransparentThreeValuePixelList);
+    rasterLayer->getRasterTransparency()->setTransparentThreeValuePixelList(myTransparentThreeValuePixelList);
   }
   else
   {
     double myTransparentValue;
     double myPercentTransparent;
-    QgsRasterLayer::TransparentSingleValuePixel myTransparentPixel;
-    QList<struct QgsRasterLayer::TransparentSingleValuePixel> myTransparentSingleValuePixelList;
+    QgsRasterTransparency::TransparentSingleValuePixel myTransparentPixel;
+    QList<QgsRasterTransparency::TransparentSingleValuePixel> myTransparentSingleValuePixelList;
     for(int myListRunner = 0; myListRunner < tableTransparency->rowCount(); myListRunner++)
     {
       if(!tableTransparency->item(myListRunner, 0))
@@ -1217,7 +1221,7 @@ void QgsRasterLayerProperties::apply()
       myTransparentSingleValuePixelList.append(myTransparentPixel);
     }
 
-    rasterLayer->setTransparentSingleValuePixelList(myTransparentSingleValuePixelList);
+    rasterLayer->getRasterTransparency()->setTransparentSingleValuePixelList(myTransparentSingleValuePixelList);
   }
 
   /*
