@@ -203,41 +203,16 @@
          </layout>
         </widget>
        </item>
-       <item rowspan="2" row="1" column="1" >
+       <item row="1" column="1" >
         <widget class="QGroupBox" name="groupBox_5" >
          <property name="title" >
           <string>Color Map</string>
          </property>
-         <layout class="QGridLayout" >
-          <property name="leftMargin" >
-           <number>9</number>
-          </property>
-          <property name="topMargin" >
-           <number>9</number>
-          </property>
-          <property name="rightMargin" >
-           <number>9</number>
-          </property>
-          <property name="bottomMargin" >
-           <number>9</number>
-          </property>
-          <property name="horizontalSpacing" >
-           <number>6</number>
-          </property>
-          <property name="verticalSpacing" >
-           <number>6</number>
-          </property>
-          <item row="1" column="0" >
-           <widget class="QCheckBox" name="cboxInvertColorMap" >
-            <property name="text" >
-             <string>Invert Color Map</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0" >
+         <layout class="QVBoxLayout" >
+          <item>
            <widget class="QComboBox" name="cboxColorMap" >
             <property name="sizePolicy" >
-             <sizepolicy vsizetype="Expanding" hsizetype="Expanding" >
+             <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
@@ -250,10 +225,17 @@
             </property>
            </widget>
           </item>
+          <item>
+           <widget class="QCheckBox" name="cboxInvertColorMap" >
+            <property name="text" >
+             <string>Invert Color Map</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>
-       <item rowspan="3" row="2" column="0" >
+       <item rowspan="2" row="2" column="0" >
         <widget class="QGroupBox" name="grpRgbBands" >
          <property name="title" >
           <string>RGB Mode Band Selection</string>
@@ -376,7 +358,7 @@
          </layout>
         </widget>
        </item>
-       <item row="3" column="1" >
+       <item row="2" column="1" >
         <widget class="QGroupBox" name="grpGrayBand" >
          <property name="title" >
           <string>Grayscale Band Selection</string>
@@ -432,7 +414,7 @@
          </layout>
         </widget>
        </item>
-       <item rowspan="2" row="4" column="1" >
+       <item rowspan="2" row="3" column="1" >
         <widget class="QGroupBox" name="grpGrayScaling" >
          <property name="title" >
           <string>Grayscale Band Scaling</string>
@@ -588,7 +570,7 @@
          </layout>
         </widget>
        </item>
-       <item rowspan="4" row="5" column="0" >
+       <item rowspan="4" row="4" column="0" >
         <widget class="QGroupBox" name="grpRgbScaling" >
          <property name="title" >
           <string>RGB Scaling</string>
@@ -940,20 +922,20 @@ p, li { white-space: pre-wrap; }
          </layout>
         </widget>
        </item>
-       <item row="6" column="1" >
+       <item row="5" column="1" >
         <spacer>
          <property name="orientation" >
           <enum>Qt::Vertical</enum>
          </property>
          <property name="sizeHint" >
           <size>
-           <width>295</width>
-           <height>71</height>
+           <width>333</width>
+           <height>41</height>
           </size>
          </property>
         </spacer>
        </item>
-       <item row="7" column="1" >
+       <item row="6" column="1" >
         <layout class="QHBoxLayout" >
          <property name="spacing" >
           <number>6</number>
@@ -968,7 +950,7 @@ p, li { white-space: pre-wrap; }
           <number>11</number>
          </property>
          <property name="bottomMargin" >
-          <number>11</number>
+          <number>0</number>
          </property>
          <item>
           <spacer>
@@ -992,7 +974,7 @@ p, li { white-space: pre-wrap; }
          </item>
         </layout>
        </item>
-       <item row="8" column="1" >
+       <item row="7" column="1" >
         <layout class="QHBoxLayout" >
          <property name="spacing" >
           <number>6</number>

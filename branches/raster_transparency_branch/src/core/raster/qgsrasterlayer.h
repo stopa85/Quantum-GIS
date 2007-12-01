@@ -133,6 +133,7 @@
 #include "qgspoint.h"
 #include "qgsmaplayer.h"
 #include "qgscontrastenhancement.h"
+#include "qgsrastertransparency.h"
 
 /*
  * 
@@ -179,23 +180,6 @@ class CORE_EXPORT QgsRasterLayer : public QgsMapLayer
     Q_OBJECT
 public:
 
-    //
-    // Structs to hold transparent pixel vlaues
-    //
-    struct TransparentThreeValuePixel
-    {
-      double red;
-      double green;
-      double blue;
-      double percentTransparent;
-    };
-
-    struct TransparentSingleValuePixel
-    {
-      double pixelValue;
-      double percentTransparent;
-    };
-
     //An entry for classification based upon value.
     //Such a classification is typically used for 
     //single band layers where a pixel value represents
@@ -206,9 +190,6 @@ public:
       double value;
       QColor color;
     };
-
-    QList<struct TransparentThreeValuePixel> transparentThreeValuePixelList;
-    QList<struct TransparentSingleValuePixel> transparentSingleValuePixelList;
 
     //
     // Static methods:
@@ -420,6 +401,13 @@ public:
     };
     /** \brief Mutator for blue band name mapping.  */
     void setBlueBandName(const QString & theBandNameQString);
+    
+     //
+    // Accessor raster transparency object
+    //
+    /** \brief Returns a pointer to the transparency object */
+    QgsRasterTransparency* getRasterTransparency() { return &mRasterTransparency; }    
+    
     //
     // Accessor and mutator for transparent band name
     // 
@@ -443,6 +431,7 @@ public:
     {
       mTransparentLayerName = theLayerNameQString;
     }
+    
     //
     // Accessor and mutator for gray band name
     //
@@ -466,7 +455,6 @@ public:
     {
         mDebugOverlayFlag=theFlag;
     };
-    
     
     // Accessor and mutator for minimum maximum values 
     //TODO: Move these out of the header file...
@@ -752,30 +740,6 @@ public:
       return mUserDefinedGrayMinMaxFlag;
     }
 
-    //
-    // Accessor and mutator for transparency tables.
-    //
-    /** \brief Mutator for transparentThreeValuePixelList */
-    QList<struct TransparentThreeValuePixel> getTransparentThreeValuePixelList()
-    {
-      return transparentThreeValuePixelList;
-    }
-    /** \brief Accessor for transparentThreeValuePixelList */
-    void setTransparentThreeValuePixelList(QList<struct TransparentThreeValuePixel> newList)
-    {
-      transparentThreeValuePixelList = newList;
-    }
-    /** \brief Mutator for transparentSingleValuePixelList */
-    QList<struct TransparentSingleValuePixel> getTransparentSingleValuePixelList()
-    {
-      return transparentSingleValuePixelList;
-    }
-    /** \brief Accessor for transparentSingleValuePixelList */
-    void setTransparentSingleValuePixelList(QList<struct TransparentSingleValuePixel> newList)
-    {
-      transparentSingleValuePixelList = newList;
-    }
-
     /**Get state of custom classification flag*/
     bool customClassificationEnabled() const {return mCustomClassificationEnabled;}
     /**Set state of custom classification flag*/
@@ -1003,6 +967,8 @@ color of the lower class for every pixel between two class breaks. Returns 0 in 
     QString mGreenBandName;
     /** \brief The band to be associated with the color blue - usually 3.  */
     QString mBlueBandName;
+    /** \brief The transparency container */
+    QgsRasterTransparency mRasterTransparency;
     /** \brief The band to be associated with transparency.  */
     QString mTransparencyBandName;
     /** \brief The Layer to be associated with transparency.  */

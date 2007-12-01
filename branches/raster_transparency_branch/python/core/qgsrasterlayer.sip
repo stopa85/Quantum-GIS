@@ -9,26 +9,10 @@ class QgsRasterLayer : QgsMapLayer
 #include <qgsrasterpyramid.h>
 #include <qgsrasterlayer.h>
 #include <qgscontrastenhancement.h>
+#include <qgsrastertransparency.h>
 %End
 
 public:
-
-    //
-    // Structs to hold transparent pixel vlaues
-    //
-    struct TransparentThreeValuePixel
-    {
-      double red;
-      double green;
-      double blue;
-      double percentTransparent;
-    };
-
-    struct TransparentSingleValuePixel
-    {
-      double pixelValue;
-      double percentTransparent;
-    };
 
     //An entry for classification based upon value.
     //Such a classification is typically used for 
@@ -40,10 +24,6 @@ public:
       double value;
       QColor color;
     };
-
-    QList<QgsRasterLayer::TransparentThreeValuePixel> transparentThreeValuePixelList;
-    
-    QList<QgsRasterLayer::TransparentSingleValuePixel> transparentSingleValuePixelList;
 
     //
     // Static methods:
@@ -229,6 +209,12 @@ public:
     
     /** \brief Mutator for blue band name mapping.  */
     void setBlueBandName(const QString & theBandNameQString);
+    
+    //
+    // Accessor transparency container.
+    //
+    QgsRasterTransparency* getRasterTransparency();
+    
     //
     // Accessor and mutator for transparent band name
     // 
@@ -457,21 +443,6 @@ public:
 
     /** \brief Accessor for userDefinedMinMax.  */
     bool getUserDefinedGrayMinMax();
-
-    //
-    // Accessor and mutator for transparency tables.
-    //
-    /** \brief Mutator for transparentThreeValuePixelList */
-    QList<QgsRasterLayer::TransparentThreeValuePixel> getTransparentThreeValuePixelList();
-    
-    /** \brief Accessor for transparentThreeValuePixelList */
-    void setTransparentThreeValuePixelList(QList<QgsRasterLayer::TransparentThreeValuePixel> newList);
-    
-    /** \brief Mutator for transparentSingleValuePixelList */
-    QList<QgsRasterLayer::TransparentSingleValuePixel> getTransparentSingleValuePixelList();
-    
-    /** \brief Accessor for transparentSingleValuePixelList */
-    //void setTransparentSingleValuePixelList(QList<struct TransparentSingleValuePixel> newList);
 
     /**Get state of custom classification flag*/
     bool customClassificationEnabled() const;
