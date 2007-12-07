@@ -23,6 +23,7 @@
 #include <QList>
 #include <QPen>
 #include <QString>
+#include "qgsdiagramcategory.h"
 #include "qgsdiagramfactory.h"
 #include "qgsvectorlayer.h" //for QgsAttributeList
 
@@ -53,14 +54,10 @@ class QgsWKNDiagramFactory: public QgsDiagramFactory
   //setters and getters for diagram type
   QString diagramType() const {return mDiagramType;}
   void setDiagramType(const QString& name){mDiagramType = name;}
-  //setters and getters for attributes
-  QgsAttributeList attributes() const {return mAttributes;}
-  void setAttributes(const QgsAttributeList& att){mAttributes = att;}
-  //setters and getters for pens and brushes
-  QList<QBrush> brushes() const {return mBrushSeries;}
-  void setBrushes(const QList<QBrush>& b);
-  void setPens(const QList<QPen>& p);
-  QList<QPen> pens() const {return mPenSeries;}
+  
+  QList<QgsDiagramCategory> categories() const {return mCategories;}
+  /**Adds a new category (attribute together with symbolisation)*/
+  void addCategory(QgsDiagramCategory c);
 
   //setters and getters for scaling attribute
   QList<int> scalingAttributes() const {return mScalingAttributes;}
@@ -73,14 +70,10 @@ class QgsWKNDiagramFactory: public QgsDiagramFactory
   /**List of scaling attribute indexes (the values are summed up to 
      receive the scaling value)*/
   QList<int> mScalingAttributes;
-  /**Indices of attributes for coloring*/
-  QgsAttributeList mAttributes;
   /**Well known diagram name (e.g. pie, bar, line)*/
   QString mDiagramType;
-  /**Diagram brushes*/
-  QList<QBrush> mBrushSeries;
-  /**Diagram pens*/
-  QList<QPen> mPenSeries;
+  /**List of attributes that are represented as slices, pillars, etc.*/
+  QList<QgsDiagramCategory> mCategories;
   /**width of one bar (default 20 pixel)*/
   int mBarWidth;
   /**Maximum line width. Needs to be considered for the size of the generated image*/

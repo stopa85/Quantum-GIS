@@ -25,6 +25,7 @@
 #include "qgsgeometry.h"
 #include "qgsmaptopixel.h"
 #include "qgsproject.h"
+#include "qgssymbologyutils.h"
 #include "qgsvectordataprovider.h"
 #include <QPainter>
 
@@ -209,44 +210,53 @@ bool QgsDiagramOverlay::readXML(const QDomNode& overlayNode)
       classAttrList.push_back(classificationFieldList.at(i).toElement().text().toInt());
     }
 
-  //attributes
-  QDomNodeList attributeNodeList = overlayElem.elementsByTagName("attribute");
-  for(int i = 0; i < attributeNodeList.size(); ++i)
+  theDiagramRenderer = new QgsDiagramRenderer(classAttrList);
+  QgsWKNDiagramFactory* wknFactory = new QgsWKNDiagramFactory();
+  wknFactory->setScalingAttributes(classAttrList);
+  wknFactory->setDiagramType(wellKnownName);
+
+  
+  int red, green, blue;
+  QDomElement categoryElem, penElem, brushElem;
+  QDomNodeList categoryList = overlayElem.elementsByTagName("category");
+
+  for(int i = 0; i < categoryList.size(); ++i)
     {
-      attributeList.push_back(attributeNodeList.at(i).toElement().text().toInt());
+      categoryElem = categoryList.at(i).toElement();
+      
+      QgsDiagramCategory newCategory;
+      newCategory.setPropertyIndex(categoryElem.attribute("attribute").toInt());
+      attributeList.push_back(categoryElem.attribute("attribute").toInt());
+      newCategory.setGap(categoryElem.attribute("gap").toInt());
+
+      //pen element
+      penElem = categoryElem.namedItem("pen").toElement();
+      if(!penElem.isNull())
+	{
+	  QPen currentPen;
+	  red = penElem.attribute("red").toInt();
+	  green = penElem.attribute("green").toInt();
+	  blue = penElem.attribute("blue").toInt();
+	  currentPen.setColor(QColor(red, green, blue));
+	  currentPen.setStyle(QgsSymbologyUtils::qString2PenStyle(penElem.attribute("style")));
+	  newCategory.setPen(currentPen);
+	}
+
+      //brush element
+      brushElem = categoryElem.namedItem("brush").toElement();
+      if(!brushElem.isNull())
+	{
+	  QBrush currentBrush;
+	  red = brushElem.attribute("red").toInt();
+	  green = brushElem.attribute("green").toInt();
+	  blue = brushElem.attribute("blue").toInt();
+	  currentBrush.setColor(QColor(red, green, blue));
+	  currentBrush.setStyle(QgsSymbologyUtils::qString2BrushStyle(brushElem.attribute("style")));
+	  newCategory.setBrush(currentBrush);
+	}
+
+      wknFactory->addCategory(newCategory);
     }
-
-  //brushes
-  QDomNodeList brushNodeList = overlayElem.elementsByTagName("brush");
-  QDomElement currentBrushElem;
-  int currentRed, currentGreen, currentBlue;
-
-  for(int i = 0; i < brushNodeList.size(); ++i)
-    {
-      currentBrushElem = brushNodeList.at(i).toElement();
-      currentRed = currentBrushElem.attribute("red").toInt();
-      currentGreen = currentBrushElem.attribute("green").toInt();
-      currentBlue = currentBrushElem.attribute("blue").toInt();
-      brushList.push_back(QBrush(QColor(currentRed, currentGreen, currentBlue)));
-    }
-
-  //pens
-  int currentWidth;
-  QDomNodeList penNodeList = overlayElem.elementsByTagName("pen");
-  QDomElement currentPenElem;
-  QPen currentPen;
-
-  for(int i = 0; i < penNodeList.size(); ++i)
-    {
-      currentPenElem = penNodeList.at(i).toElement();
-      currentRed = currentPenElem.attribute("red").toInt();
-      currentGreen = currentPenElem.attribute("green").toInt();
-      currentBlue = currentPenElem.attribute("blue").toInt();
-      currentWidth = currentPenElem.attribute("width").toInt();
-      currentPen.setColor(QColor(currentRed, currentGreen, currentBlue));
-      currentPen.setWidth(currentWidth);
-      penList.push_back(currentPen);
-    }  
 
   if(rendererList.size() < 1)
     {
@@ -254,22 +264,7 @@ bool QgsDiagramOverlay::readXML(const QDomNode& overlayNode)
     }
   rendererElem = rendererList.at(0).toElement();
 
-  //QString type = rendererElem.attribute("type");
-  //if(type == "linearly_scaling")
-  //{
-      theDiagramRenderer = new QgsDiagramRenderer(classAttrList);
-      QgsWKNDiagramFactory* wknFactory = new QgsWKNDiagramFactory();
-      wknFactory->setAttributes(attributeList);
-      wknFactory->setBrushes(brushList);
-      wknFactory->setPens(penList);
-      wknFactory->setScalingAttributes(classAttrList);
-      wknFactory->setDiagramType(wellKnownName);
-      theDiagramRenderer->setFactory(wknFactory);
-      //}
-      //else //todo: add support for other renderer types
-      //{
-      //return false;
-      //}
+  theDiagramRenderer->setFactory(wknFactory);
 
   //Read renderer specific settings
   if(theDiagramRenderer)
