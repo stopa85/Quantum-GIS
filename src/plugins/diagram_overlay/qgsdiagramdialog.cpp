@@ -239,17 +239,14 @@ void QgsDiagramDialog::restoreSettings(const QgsVectorOverlay* overlay)
 	      //well known diagram name
 	      mDiagramTypeComboBox->setCurrentIndex(mDiagramTypeComboBox->findText(theFactory->diagramType()));
 	      //insert attribute names and colors into mAttributesTreeWidget
-	      QList<QBrush> brushList = theFactory->brushes();
-	      QgsAttributeList attributeList = theFactory->attributes();
+	      QList<QgsDiagramCategory> categoryList = theFactory->categories();    
+	      QList<QgsDiagramCategory>::const_iterator c_it = categoryList.constBegin();
 	      
-	      QList<QBrush>::const_iterator brushIt = brushList.constBegin();
-	      QgsAttributeList::const_iterator attributeIt = attributeList.constBegin();
-	      
-	      for(;brushIt != brushList.constEnd(); ++brushIt, ++attributeIt)
+	      for(; c_it != categoryList.constEnd(); ++c_it)
 		{
 		  QTreeWidgetItem* newItem = new QTreeWidgetItem(mAttributesTreeWidget);
-		  newItem->setText(0, QgsDiagramOverlay::attributeNameFromIndex(*attributeIt, mVectorLayer));
-		  newItem->setBackground(1, *brushIt);
+		  newItem->setText(0, QgsDiagramOverlay::attributeNameFromIndex(c_it->propertyIndex(), mVectorLayer));
+		  newItem->setBackground(1, c_it->brush());
 		  mAttributesTreeWidget->addTopLevelItem(newItem);		 
 		}
 	      
