@@ -294,4 +294,11 @@ bool QgsWKNDiagramFactory::writeXML(QDomNode& overlay_node, QDomDocument& doc) c
 void QgsWKNDiagramFactory::addCategory(QgsDiagramCategory c)
 {
   mCategories.push_back(c);
+  
+  //update the maximum pen width if necessary (for proper diagram scaling)
+  int currentPenWidth = c.pen().width();
+  if(mMaximumPenWidth < currentPenWidth)
+    {
+      mMaximumPenWidth = currentPenWidth;
+    }
 }
