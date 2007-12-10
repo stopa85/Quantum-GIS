@@ -85,7 +85,8 @@ typedef QgsDataProvider * create_it(const QString* uri);
 
 QgsVectorLayer::QgsVectorLayer(QString vectorLayerPath,
     QString baseName,
-    QString providerKey)
+    QString providerKey,
+    bool loadDefaultStyleFlag )
 : QgsMapLayer(VECTOR, baseName, vectorLayerPath),
   mUpdateThreshold(0),       // XXX better default value?
   mDataProvider(NULL),
@@ -105,12 +106,29 @@ QgsVectorLayer::QgsVectorLayer(QString vectorLayerPath,
   }
   if(mValid)
   {
-    setCoordinateSystem();
-    
-    // add single symbol renderer as default
-    QgsSingleSymbolRenderer *renderer = new QgsSingleSymbolRenderer(vectorType());
-    setRenderer(renderer);
-
+    // check if there is a default style / propertysheet defined
+    // for this layer and if so apply it
+    //
+    //
+    if ( loadDefaultStyleFlag )
+    {
+      bool defaultLoadedFlag = false;
+      loadDefaultStyle( defaultLoadedFlag );
+      if ( !defaultLoadedFlag )
+      {
+        setCoordinateSystem();
+        // add single symbol renderer as default
+        QgsSingleSymbolRenderer *renderer = new QgsSingleSymbolRenderer(vectorType());
+        setRenderer(renderer);
+      }
+    }
+    else  // Otherwise use some very basic defaults
+    {
+      setCoordinateSystem();
+      // add single symbol renderer as default
+      QgsSingleSymbolRenderer *renderer = new QgsSingleSymbolRenderer(vectorType());
+      setRenderer(renderer);
+    }
     // Get the update threshold from user settings. We
     // do this only on construction to avoid the penality of
     // fetching this each time the layer is drawn. If the user
@@ -119,7 +137,7 @@ QgsVectorLayer::QgsVectorLayer(QString vectorLayerPath,
     // TODO: load this setting somewhere else [MD]
     //QSettings settings;
     //mUpdateThreshold = settings.readNumEntry("Map/updateThreshold", 1000);
-    
+
   }
 } // QgsVectorLayer ctor
 

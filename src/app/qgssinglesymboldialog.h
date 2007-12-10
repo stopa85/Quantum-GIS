@@ -58,18 +58,20 @@ public slots:
     void apply( QgsSymbol *sy);
     /**emits the signal settingsChanged()*/
     void resendSettingsChanged();
+    /**changes the texture selection button to enabled or
+     * disabled depending if the texture entry in the combo 
+     */
+    void fillStyleChanged( int theIndex );
 
 protected slots:
     void selectOutlineColor();
     void selectFillColor();
-	void selectTextureImage();
-
+    void selectTextureImage();
+    void symbolChanged ( QListWidgetItem * current, QListWidgetItem * previous );
 private:
     /** Default constructor is private, do not use this */
     QgsSingleSymbolDialog();
-
-    /** vector of marker names for combo items */
-    std::vector<QString> mMarkers;
+    QString mTexturePath;
 
 signals:
     void settingsChanged();
