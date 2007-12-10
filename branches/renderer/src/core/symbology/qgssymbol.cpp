@@ -90,7 +90,7 @@ QgsSymbol::QgsSymbol(const QgsSymbol& s)
     mType = s.mType;
     mPen = s.mPen;
     mBrush = s.mBrush;
-	mTextureFilePath = s.mTextureFilePath;
+    mTextureFilePath = s.mTextureFilePath;
     mPointSymbolName = s.mPointSymbolName;
     mPointSize = s.mPointSize;
     mPointSymbolImage = s.mPointSymbolImage;

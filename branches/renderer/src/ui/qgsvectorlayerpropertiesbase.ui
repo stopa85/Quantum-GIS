@@ -5,7 +5,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>469</width>
+    <width>508</width>
     <height>600</height>
    </rect>
   </property>
@@ -26,21 +26,11 @@
   </property>
   <layout class="QGridLayout" >
    <property name="margin" >
-    <number>9</number>
+    <number>11</number>
    </property>
    <property name="spacing" >
     <number>6</number>
    </property>
-   <item row="1" column="0" >
-    <widget class="QDialogButtonBox" name="buttonBox" >
-     <property name="orientation" >
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="standardButtons" >
-      <set>QDialogButtonBox::Apply|QDialogButtonBox::Cancel|QDialogButtonBox::Help|QDialogButtonBox::NoButton|QDialogButtonBox::Ok</set>
-     </property>
-    </widget>
-   </item>
    <item row="0" column="0" >
     <widget class="QTabWidget" name="tabWidget" >
      <property name="tabShape" >
@@ -55,7 +45,7 @@
       </attribute>
       <layout class="QGridLayout" >
        <property name="margin" >
-        <number>9</number>
+        <number>11</number>
        </property>
        <property name="spacing" >
         <number>6</number>
@@ -64,8 +54,8 @@
         <widget class="QStackedWidget" name="widgetStackRenderers" >
          <property name="sizePolicy" >
           <sizepolicy>
-           <hsizetype>7</hsizetype>
-           <vsizetype>7</vsizetype>
+           <hsizetype>0</hsizetype>
+           <vsizetype>0</vsizetype>
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
@@ -137,7 +127,7 @@
       </attribute>
       <layout class="QGridLayout" >
        <property name="margin" >
-        <number>9</number>
+        <number>11</number>
        </property>
        <property name="spacing" >
         <number>6</number>
@@ -188,7 +178,7 @@
          </property>
          <layout class="QGridLayout" >
           <property name="margin" >
-           <number>8</number>
+           <number>11</number>
           </property>
           <property name="spacing" >
            <number>6</number>
@@ -249,7 +239,7 @@
          </property>
          <layout class="QGridLayout" >
           <property name="margin" >
-           <number>8</number>
+           <number>11</number>
           </property>
           <property name="spacing" >
            <number>6</number>
@@ -297,7 +287,7 @@
          </property>
          <layout class="QGridLayout" >
           <property name="margin" >
-           <number>8</number>
+           <number>11</number>
           </property>
           <property name="spacing" >
            <number>6</number>
@@ -326,7 +316,7 @@
          </property>
          <layout class="QGridLayout" >
           <property name="margin" >
-           <number>9</number>
+           <number>11</number>
           </property>
           <property name="spacing" >
            <number>6</number>
@@ -378,7 +368,7 @@
       </attribute>
       <layout class="QGridLayout" >
        <property name="margin" >
-        <number>9</number>
+        <number>11</number>
        </property>
        <property name="spacing" >
         <number>6</number>
@@ -398,7 +388,7 @@
       </attribute>
       <layout class="QGridLayout" >
        <property name="margin" >
-        <number>9</number>
+        <number>11</number>
        </property>
        <property name="spacing" >
         <number>6</number>
@@ -407,8 +397,8 @@
         <widget class="QFrame" name="labelOptionsFrame" >
          <property name="sizePolicy" >
           <sizepolicy>
-           <hsizetype>7</hsizetype>
-           <vsizetype>7</vsizetype>
+           <hsizetype>0</hsizetype>
+           <vsizetype>0</vsizetype>
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
@@ -425,7 +415,7 @@
         <widget class="QCheckBox" name="labelCheckBox" >
          <property name="sizePolicy" >
           <sizepolicy>
-           <hsizetype>7</hsizetype>
+           <hsizetype>0</hsizetype>
            <vsizetype>0</vsizetype>
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
@@ -444,7 +434,7 @@
       </attribute>
       <layout class="QGridLayout" >
        <property name="margin" >
-        <number>9</number>
+        <number>11</number>
        </property>
        <property name="spacing" >
         <number>6</number>
@@ -453,8 +443,8 @@
         <widget class="QFrame" name="actionOptionsFrame" >
          <property name="sizePolicy" >
           <sizepolicy>
-           <hsizetype>7</hsizetype>
-           <vsizetype>7</vsizetype>
+           <hsizetype>0</hsizetype>
+           <vsizetype>0</vsizetype>
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
@@ -469,6 +459,54 @@
        </item>
       </layout>
      </widget>
+    </widget>
+   </item>
+   <item row="1" column="0" >
+    <layout class="QHBoxLayout" >
+     <property name="margin" >
+      <number>11</number>
+     </property>
+     <property name="spacing" >
+      <number>6</number>
+     </property>
+     <item>
+      <widget class="QPushButton" name="pbnLoadDefaultStyle" >
+       <property name="text" >
+        <string>Restore Default Style</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pbnSaveDefaultStyle" >
+       <property name="text" >
+        <string>Save As Default</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pbnLoadStyle" >
+       <property name="text" >
+        <string>Load Style ...</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pbnSaveStyleAs" >
+       <property name="text" >
+        <string>Save Style ...</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="2" column="0" >
+    <widget class="QDialogButtonBox" name="buttonBox" >
+     <property name="orientation" >
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons" >
+      <set>QDialogButtonBox::Apply|QDialogButtonBox::Cancel|QDialogButtonBox::Help|QDialogButtonBox::NoButton|QDialogButtonBox::Ok</set>
+     </property>
     </widget>
    </item>
   </layout>
