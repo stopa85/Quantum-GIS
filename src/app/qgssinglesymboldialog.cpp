@@ -19,9 +19,11 @@
 #include "qgssinglesymboldialog.h"
 #include "qgsmarkercatalogue.h"
 #include "qgssinglesymbolrenderer.h"
+#include "qgsfield.h"
 #include "qgssymbol.h"
 #include "qgssymbologyutils.h"
 #include "qgsvectorlayer.h"
+#include "qgsvectordataprovider.h"
 
 #include <QColorDialog>
 #include <QPainter>
@@ -83,6 +85,32 @@ QgsSingleSymbolDialog::QgsSingleSymbolDialog(QgsVectorLayer * layer): QDialog(),
     ++myCounter;
   }
 
+    // Find out the numerical fields of mVectorLayer, and populate the ComboBox
+    QgsVectorDataProvider *provider = mVectorLayer->getDataProvider();
+    if (provider)
+    {
+      const QgsFieldMap & fields = provider->fields();
+      QString str;
+      
+      mAngleClassificationComboBox->insertItem("<none>");
+      mFieldMap.insert(std::make_pair("<none>", -1));
+      for (QgsFieldMap::const_iterator it = fields.begin(); 
+           it != fields.end(); 
+           ++it)
+      {
+        QVariant::Type type = (*it).type();
+        if (type == QVariant::Int || type == QVariant::Double)
+        {
+          mAngleClassificationComboBox->insertItem(it->name());
+          mFieldMap.insert(std::make_pair(it->name(), it.key()));
+        }
+      }
+    } 
+    else
+    {
+      qWarning("Warning, data provider is null in QgsSingleSymbolDialog::QgsSingleSymbolDialog(...)");
+      return;
+    }
   //
   //set outline / line style
   //
@@ -121,6 +149,19 @@ QgsSingleSymbolDialog::QgsSingleSymbolDialog(QgsVectorLayer * layer): QDialog(),
     {
       // Set from the existing renderer
       set ( renderer->symbol() );
+      //display the classification field
+      mAngleClassificationComboBox->setCurrentText("<none>"); // Will be overwritten if there aer any fields
+      QString angleclassfield="";
+      for(std::map<QString,int>::iterator it=mFieldMap.begin();it!=mFieldMap.end();++it)
+      {
+        if(it->second==renderer->angleClassificationField())
+        {
+          angleclassfield=it->first;
+          break;
+        }
+      }
+      mAngleClassificationComboBox->setCurrentText(angleclassfield);
+
     }
     else
     {
@@ -259,7 +300,13 @@ void QgsSingleSymbolDialog::apply()
 
     QgsSingleSymbolRenderer *renderer = new QgsSingleSymbolRenderer(mVectorLayer->vectorType());
     renderer->addSymbol(sy);
-    mVectorLayer->setRenderer(renderer);
+    renderer->setAngleClassificationField(-1);
+    std::map<QString,int>::iterator iter=mFieldMap.find(mAngleClassificationComboBox->currentText());
+    if(iter!=mFieldMap.end())
+    {
+      renderer->setAngleClassificationField(iter->second);
+    }
+   mVectorLayer->setRenderer(renderer);
 }
 
 void QgsSingleSymbolDialog::set ( const QgsSymbol *sy ) 

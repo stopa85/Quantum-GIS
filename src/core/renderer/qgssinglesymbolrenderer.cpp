@@ -89,10 +89,33 @@ void QgsSingleSymbolRenderer::renderFeature(QPainter * p, QgsFeature & f, QImage
 {
 	// Point 
 	if ( img && mVectorType == QGis::Point) {
-	    *img = mSymbol->getPointSymbolAsImage(  widthScale, 
+          *img = mSymbol->getPointSymbolAsImage(  widthScale, 
 					 selected, mSelectionColor );
+          // If rotation field is non-negative, use it to rotate.
+          if (mAngleClassificationField >= 0)
+          {
+            //first find out the value for the classification attribute
+            const QgsAttributeMap& attrs = f.attributeMap();
+            double angle = attrs[mAngleClassificationField].toDouble();
+            int intangle = attrs[mAngleClassificationField].toInt();
+            QMatrix rotationMatrix;
+
+#ifdef QGISDEBUG
+            QgsLogger::debug("Rendering attribute size ", attrs.size(), 1, __FILE__, __FUNCTION__, __LINE__);
+            QgsLogger::debug("Rendering feature field ", mAngleClassificationField, 1, __FILE__, __FUNCTION__, __LINE__);
+            QgsLogger::debug("Rendering feature angle ", angle, 1, __FILE__, __FUNCTION__, __LINE__);
+            QgsLogger::debug("Rendering feature angle ", intangle, 1, __FILE__, __FUNCTION__, __LINE__);
+#endif
+
+            rotationMatrix = rotationMatrix.rotate(angle);
+
+            *img = img->transformed(rotationMatrix, Qt::SmoothTransformation);
+          }
 	    
-	    if ( scalefactor ) *scalefactor = 1;
+          if ( scalefactor )
+          {
+            *scalefactor = 1;
+          }
 	} 
 
         // Line, polygon
@@ -124,6 +147,11 @@ void QgsSingleSymbolRenderer::readXML(const QDomNode& rnode, QgsVectorLayer& vl)
     mVectorType = vl.vectorType();
     QgsSymbol* sy = new QgsSymbol(mVectorType);
 
+    QDomNode classnode = rnode.namedItem("angleclassificationfield");
+    int angleClassificationfield = classnode.toElement().text().toInt();
+   
+    this->setAngleClassificationField(angleClassificationfield);
+
     QDomNode synode = rnode.namedItem("symbol");
     
     if ( synode.isNull() )
@@ -146,6 +174,12 @@ bool QgsSingleSymbolRenderer::writeXML( QDomNode & layer_node, QDomDocument & do
   bool returnval=false;
   QDomElement singlesymbol=document.createElement("singlesymbol");
   layer_node.appendChild(singlesymbol);
+
+  QDomElement angleclassificationfield=document.createElement("angleclassificationfield");
+  QDomText angleclassificationfieldtxt=document.createTextNode(QString::number(mAngleClassificationField));
+  angleclassificationfield.appendChild(angleclassificationfieldtxt);
+  singlesymbol.appendChild(angleclassificationfield);
+
   if(mSymbol)
   {
     returnval=mSymbol->writeXML(singlesymbol,document);
@@ -156,7 +190,9 @@ bool QgsSingleSymbolRenderer::writeXML( QDomNode & layer_node, QDomDocument & do
 
 QgsAttributeList QgsSingleSymbolRenderer::classificationAttributes() const
 {
-  return QgsAttributeList(); // return an empty list
+  QgsAttributeList list;
+  list.append(mAngleClassificationField);
+  return list;
 }
 
 QString QgsSingleSymbolRenderer::name() const

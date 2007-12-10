@@ -55,9 +55,17 @@ class CORE_EXPORT QgsSingleSymbolRenderer: public QgsRenderer
     const QList<QgsSymbol*> symbols() const;
     /**Returns a deep copy of this renderer*/
     QgsRenderer* clone() const;
+    /**Returns the number of the angle classification field*/
+    int angleClassificationField() const;
+    /**Sets the number of the angle classicifation field
+    \param field the number of the field to classify for angle*/
+    void setAngleClassificationField(int field);
+
  protected:
     /**Object containing symbology information*/
     QgsSymbol* mSymbol;
+    /**Index of the classification field (it must be a numerical field)*/
+    int mAngleClassificationField;
 };
 
 inline const QgsSymbol* QgsSingleSymbolRenderer::symbol() const
@@ -65,9 +73,18 @@ inline const QgsSymbol* QgsSingleSymbolRenderer::symbol() const
     return mSymbol;
 }
 
+inline int QgsSingleSymbolRenderer::angleClassificationField() const
+{
+    return mAngleClassificationField;
+}
+
+inline void QgsSingleSymbolRenderer::setAngleClassificationField(int field)
+{
+    mAngleClassificationField=field;
+}
 inline bool QgsSingleSymbolRenderer::needsAttributes() const
 {
-  return false;
+  return true;
 }
 
 #endif
