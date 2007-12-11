@@ -54,21 +54,25 @@ QgsSingleSymbolRenderer::QgsSingleSymbolRenderer(QGis::VectorType type)
     }
     sy->setLineWidth(1);
     mSymbol=sy;
+
+    mAngleClassificationField = -1; // Default is no field for rotation
 }
 
 QgsSingleSymbolRenderer::QgsSingleSymbolRenderer(const QgsSingleSymbolRenderer& other)
 {
     mVectorType = other.mVectorType;
     mSymbol = new QgsSymbol(*other.mSymbol);
+    mAngleClassificationField = other.angleClassificationField();
 }
 
 QgsSingleSymbolRenderer& QgsSingleSymbolRenderer::operator=(const QgsSingleSymbolRenderer& other)
 {
     if(this!=&other)
     {
-        mVectorType = other.mVectorType;
-        delete mSymbol;
-        mSymbol = new QgsSymbol(*other.mSymbol);
+      mVectorType = other.mVectorType;
+      delete mSymbol;
+      mSymbol = new QgsSymbol(*other.mSymbol);
+      mAngleClassificationField = other.angleClassificationField();
     }
     return *this;
 }
@@ -148,9 +152,13 @@ void QgsSingleSymbolRenderer::readXML(const QDomNode& rnode, QgsVectorLayer& vl)
     QgsSymbol* sy = new QgsSymbol(mVectorType);
 
     QDomNode classnode = rnode.namedItem("angleclassificationfield");
-    int angleClassificationfield = classnode.toElement().text().toInt();
-   
-    this->setAngleClassificationField(angleClassificationfield);
+
+    if ( !classnode.isNull() )
+    {
+      int angleClassificationfield = classnode.toElement().text().toInt();
+      QgsDebugMsg("Found anglefield: " + QString::number(angleClassificationfield));
+      this->setAngleClassificationField(angleClassificationfield);
+    }
 
     QDomNode synode = rnode.namedItem("symbol");
     
@@ -191,7 +199,10 @@ bool QgsSingleSymbolRenderer::writeXML( QDomNode & layer_node, QDomDocument & do
 QgsAttributeList QgsSingleSymbolRenderer::classificationAttributes() const
 {
   QgsAttributeList list;
-  list.append(mAngleClassificationField);
+  if ( mAngleClassificationField >= 0 )
+  {
+    list.append(mAngleClassificationField);
+  }
   return list;
 }
 

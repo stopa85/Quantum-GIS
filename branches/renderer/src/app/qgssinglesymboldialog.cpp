@@ -31,6 +31,7 @@
 #include <QFileDialog>
 #include <QListWidgetItem>
 
+#define DO_NOT_USE_STR "<off>"
 
 QgsSingleSymbolDialog::QgsSingleSymbolDialog(): QDialog(), mVectorLayer(0)
 {
@@ -92,8 +93,8 @@ QgsSingleSymbolDialog::QgsSingleSymbolDialog(QgsVectorLayer * layer): QDialog(),
       const QgsFieldMap & fields = provider->fields();
       QString str;
       
-      mAngleClassificationComboBox->insertItem("<none>");
-      mFieldMap.insert(std::make_pair("<none>", -1));
+      mAngleClassificationComboBox->insertItem(DO_NOT_USE_STR);
+      mFieldMap.insert(std::make_pair(DO_NOT_USE_STR, -1));
       for (QgsFieldMap::const_iterator it = fields.begin(); 
            it != fields.end(); 
            ++it)
@@ -150,7 +151,7 @@ QgsSingleSymbolDialog::QgsSingleSymbolDialog(QgsVectorLayer * layer): QDialog(),
       // Set from the existing renderer
       set ( renderer->symbol() );
       //display the classification field
-      mAngleClassificationComboBox->setCurrentText("<none>"); // Will be overwritten if there aer any fields
+      mAngleClassificationComboBox->setCurrentText(DO_NOT_USE_STR); // Will be overwritten if there aer any fields
       QString angleclassfield="";
       for(std::map<QString,int>::iterator it=mFieldMap.begin();it!=mFieldMap.end();++it)
       {
