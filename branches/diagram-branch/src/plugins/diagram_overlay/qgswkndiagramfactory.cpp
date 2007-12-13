@@ -64,8 +64,14 @@ int QgsWKNDiagramFactory::getDiagramDimensions(int size, const QgsFeature& f, in
   else if(mDiagramType == "Bar")
     {
       //witdh
-      width = mBarWidth * mCategories.size() + 2 * mMaximumPenWidth + 2 * mMaximumGap; 
       height = getHeightBarChart(size, f.attributeMap()) + 2 * mMaximumPenWidth;
+      width = mBarWidth * mCategories.size() + 2 * mMaximumPenWidth;
+      //consider the gaps
+      QList<QgsDiagramCategory>::const_iterator c_it = mCategories.constBegin();
+      for(; c_it != mCategories.constEnd(); ++c_it)
+	{
+	  width += (2 * c_it->gap());
+	}
     }
   
   return 0;
@@ -141,12 +147,17 @@ QImage* QgsWKNDiagramFactory::createBarChart(int size, const QgsAttributeMap& da
 {
   //for barcharts, the specified height is valid for the classification attribute
   //the heights of the other bars are calculated with the same height/value ratio
-  //the bar widths are fixed
-  //int barWidth = 20;
+  //the bar widths are fixed (20 at the moment)
   //int diagramWidth = barWidth * mAttributes.size();
 
-  int w = mBarWidth * mCategories.size() + 2 * mMaximumPenWidth;
   int h = getHeightBarChart(size, dataValues) + 2 * mMaximumPenWidth;
+  int w = mBarWidth * mCategories.size() + 2 * mMaximumPenWidth;
+  //consider the gaps todo: take this information from method getDiagramDimensions()
+  QList<QgsDiagramCategory>::const_iterator c_it = mCategories.constBegin();
+  for(; c_it != mCategories.constEnd(); ++c_it)
+    {
+      w += (2 * c_it->gap());
+    }
     
   QImage* diagramImage = new QImage(QSize(w, h), QImage::Format_ARGB32_Premultiplied);
   diagramImage->fill(0); //transparent background
@@ -161,7 +172,7 @@ QImage* QgsWKNDiagramFactory::createBarChart(int size, const QgsAttributeMap& da
   QgsAttributeMap::const_iterator att_it;
   QList<QgsDiagramCategory>::const_iterator category_it = mCategories.constBegin();
   
-  int barCounter = 0;
+  int currentWidth = mMaximumPenWidth;
   
   QPainter p(diagramImage);
   p.setRenderHint(QPainter::Antialiasing);
@@ -171,12 +182,14 @@ QImage* QgsWKNDiagramFactory::createBarChart(int size, const QgsAttributeMap& da
       att_it = dataValues.find(category_it->propertyIndex());
       if(att_it != dataValues.constEnd())
 	{
+	  currentWidth += category_it->gap(); //first gap
 	  p.setPen(category_it->pen());
 	  currentValue = att_it->toDouble();
 	  currentBarHeight = (int)(currentValue * pixelValueRatio);
 	  p.setBrush(category_it->brush());
-	  p.drawRect(QRect(barCounter * mBarWidth + mMaximumPenWidth, h - currentBarHeight + mMaximumPenWidth, mBarWidth, currentBarHeight));
-	  ++barCounter;
+	  p.drawRect(QRect(currentWidth, h - currentBarHeight + mMaximumPenWidth, mBarWidth, currentBarHeight));
+	  currentWidth += category_it->gap(); //second gap
+	  currentWidth += mBarWidth; //go for the next bar...
 	}
     }
 
