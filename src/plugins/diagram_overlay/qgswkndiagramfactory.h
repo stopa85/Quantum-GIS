@@ -78,6 +78,8 @@ class QgsWKNDiagramFactory: public QgsDiagramFactory
   int mBarWidth;
   /**Maximum line width. Needs to be considered for the size of the generated image*/
   int mMaximumPenWidth;
+  /**Maximum Gap. Needs to be considered for the size of the generated image*/
+  int mMaximumGap;
 
   /**Creates a pie image. The calling method takes ownership of the image*/
   QImage* createPieChart(int size, const QgsAttributeMap& dataValues) const;
@@ -90,6 +92,13 @@ class QgsWKNDiagramFactory: public QgsDiagramFactory
    of the scaling attribute)
   @return the ratio or -1 in case of error*/
   double pixelValueRatioBarChart(int size, const QgsAttributeMap& featureAttributes) const;
+  /**Calculates the x- and y-offsets for pie gaps
+     @param gap the gap (in pixels)
+     @param angle azimut of pie slice (mean azimut of both pie angles), 0 - 5760 (degrees * 16) with 0 in 3 o'clock position and counterclockwise direction
+     @param xOffset out offset (in pixel) for x-direction
+     @param yOffset out offset (in pixel) for y-direction
+  @return 0 in case of success*/
+  int gapOffsetsForPieSlice(int gap, int angle, int& xOffset, int& yOffset) const;
 };
 
 #endif
