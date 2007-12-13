@@ -24,10 +24,11 @@
 #include <QDomElement>
 #include <QImage>
 #include <QPainter>
+#include <cmath>
 
-QgsWKNDiagramFactory::QgsWKNDiagramFactory(): mBarWidth(20), mMaximumPenWidth(0)
+QgsWKNDiagramFactory::QgsWKNDiagramFactory(): mBarWidth(20), mMaximumPenWidth(0),mMaximumGap(0)
 {
-
+  
 }
 
 QgsWKNDiagramFactory::~QgsWKNDiagramFactory()
@@ -57,13 +58,13 @@ int QgsWKNDiagramFactory::getDiagramDimensions(int size, const QgsFeature& f, in
 {
   if(mDiagramType == "Pie") //for pie charts, the size is the pie diameter
     {
-      width = size + 2 * mMaximumPenWidth;
-      height = size + 2 * mMaximumPenWidth;
+      width = size + 2 * mMaximumPenWidth + 2 * mMaximumGap;
+      height = size + 2 * mMaximumPenWidth + 2 * mMaximumGap;
     }
   else if(mDiagramType == "Bar")
     {
       //witdh
-      width = mBarWidth * mCategories.size() + 2 * mMaximumPenWidth; 
+      width = mBarWidth * mCategories.size() + 2 * mMaximumPenWidth + 2 * mMaximumGap; 
       height = getHeightBarChart(size, f.attributeMap()) + 2 * mMaximumPenWidth;
     }
   
@@ -73,7 +74,7 @@ int QgsWKNDiagramFactory::getDiagramDimensions(int size, const QgsFeature& f, in
 QImage* QgsWKNDiagramFactory::createPieChart(int size, const QgsAttributeMap& dataValues) const
 {
   //create transparent QImage
-  QImage* diagramImage = new QImage(QSize(size + 2 * mMaximumPenWidth, size + 2 * mMaximumPenWidth), QImage::Format_ARGB32_Premultiplied);
+  QImage* diagramImage = new QImage(QSize(size + 2 * mMaximumPenWidth + 2 * mMaximumGap, size + 2 * mMaximumPenWidth + 2 * mMaximumGap), QImage::Format_ARGB32_Premultiplied);
   diagramImage->fill(qRgba(0, 0, 0, 0)); //transparent background
   QPainter p;
   p.begin(diagramImage);
@@ -106,7 +107,9 @@ QImage* QgsWKNDiagramFactory::createPieChart(int size, const QgsAttributeMap& da
   //draw pies
 
   int totalAngle = 0;
-  int currentAngle;
+  int currentAngle, currentGap;
+  int xGapOffset = 0;
+  int yGapOffset = 0;
 
   QList<QgsDiagramCategory>::const_iterator category_it = mCategories.constBegin();
   QList<double>::const_iterator valueList_it = valueList.constBegin();
@@ -116,7 +119,17 @@ QImage* QgsWKNDiagramFactory::createPieChart(int size, const QgsAttributeMap& da
       p.setPen(category_it->pen());
       currentAngle = (int)((*valueList_it)/sum*360*16);
       p.setBrush(category_it->brush());
-      p.drawPie(mMaximumPenWidth, mMaximumPenWidth, size, size, totalAngle, currentAngle);
+
+      xGapOffset = 0;
+      yGapOffset = 0;
+      currentGap = category_it->gap();
+      if(currentGap != 0)
+	{
+	  //qt angles are degrees*16 
+	  gapOffsetsForPieSlice(currentGap, totalAngle + currentAngle/2, xGapOffset, yGapOffset);
+	}
+
+      p.drawPie(mMaximumPenWidth + mMaximumGap + xGapOffset, mMaximumPenWidth + mMaximumGap - yGapOffset, size, size, totalAngle, currentAngle);
       totalAngle += currentAngle;
     }
   p.end();
@@ -297,8 +310,34 @@ void QgsWKNDiagramFactory::addCategory(QgsDiagramCategory c)
   
   //update the maximum pen width if necessary (for proper diagram scaling)
   int currentPenWidth = c.pen().width();
+  int currentGap = c.gap();
+
   if(mMaximumPenWidth < currentPenWidth)
     {
       mMaximumPenWidth = currentPenWidth;
     }
+  
+  if(currentGap > mMaximumGap)
+    {
+      mMaximumGap = currentGap;
+    }
+}
+
+int QgsWKNDiagramFactory::gapOffsetsForPieSlice(int gap, int angle, int& xOffset, int& yOffset) const
+{
+  double rad = angle/2880.0*M_PI;
+  xOffset = (int)(cos(rad) * gap);
+  yOffset = (int)(sin(rad) * gap);
+  
+  //remember the 0 degree position is 3 o'clock (and in 1/16 degrees)
+  if(angle > 2880)
+    {
+      yOffset = -yOffset;
+    }
+
+  if(angle > 1440 && angle < 4320)
+    {
+      xOffset = -xOffset;
+    }
+  return 0;
 }
