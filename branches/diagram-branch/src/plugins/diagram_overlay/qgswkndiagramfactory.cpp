@@ -342,15 +342,5 @@ int QgsWKNDiagramFactory::gapOffsetsForPieSlice(int gap, int angle, int& xOffset
   xOffset = (int)(cos(rad) * gap);
   yOffset = (int)(sin(rad) * gap);
   
-  //remember the 0 degree position is 3 o'clock (and in 1/16 degrees)
-  if(angle > 2880)
-    {
-      yOffset = -yOffset;
-    }
-
-  if(angle > 1440 && angle < 4320)
-    {
-      xOffset = -xOffset;
-    }
   return 0;
 }
