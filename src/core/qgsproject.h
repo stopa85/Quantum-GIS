@@ -253,6 +253,8 @@ public:
     */
     void dumpProperties() const;
 
+    void handleOlderProjectVersion(QString oldVersion);
+
   signals:
     
     //! emitted when project is being read
@@ -260,6 +262,9 @@ public:
     
     //! emitted when project is being written
     void writeProject(QDomDocument &);
+
+    //! emitted when an old project file is read.
+    void warnOlderProjectVersion(QString);
 
 private:
 

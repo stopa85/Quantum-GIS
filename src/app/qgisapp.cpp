@@ -1175,6 +1175,9 @@ void QgisApp::setTheme(QString theThemeName)
 
 void QgisApp::setupConnections()
 {
+
+  QSettings settings;
+
   // connect the "cleanup" slot
   connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(saveWindowState()));
   //connect the legend, mapcanvas and overview canvas to the registry
@@ -1202,6 +1205,11 @@ void QgisApp::setupConnections()
   connect(mMapCanvas, SIGNAL(scaleChanged(double)), this, SLOT(updateMouseCoordinatePrecision()));
 
   connect(mRenderSuppressionCBox, SIGNAL(toggled(bool )), mMapCanvas, SLOT(setRenderFlag(bool)));
+
+  // Connect warning dialog from project reading
+  connect(QgsProject::instance(), SIGNAL(warnOlderProjectVersion(QString)),
+          this, SLOT(warnOlderProjectVersion(QString)));
+
 }
 void QgisApp::createCanvas()
 {
@@ -2655,11 +2663,17 @@ void QgisApp::fileOpen()
 
     delete openFileDialog;
 
+    QgsDebugMsg(QString("*********opening******* ") + fullPath);
+
+
     // clear out any stuff from previous project
     removeAllLayers();
 
     QgsProject::instance()->filename( fullPath );
 
+
+    QgsDebugMsg(QString("Connecting signal from ") + QString::number((long)QgsProject::instance()));
+    
     try 
     {
       if ( QgsProject::instance()->read() )
@@ -5195,4 +5209,38 @@ void QgisApp::setToolbarVisibility(bool visibility)
   mAttributesToolBar->setVisible(visibility);
   mPluginToolBar->setVisible(visibility);
   mHelpToolBar->setVisible(visibility);
+}
+
+// Slot that gets called when the project file was saved with an older
+// version of QGIS
+
+void QgisApp::warnOlderProjectVersion(QString oldVersion)
+{
+  QSettings settings;
+
+  if ( settings.value("/qgis/warnOldProjectVersion", QVariant(true)).toBool() )
+  {
+    QMessageBox::warning(NULL, tr("Project file is older"),
+                         tr("<p>This project file was saved by an older version "
+                            "of QGIS. When saving this project file, "
+                            "QGIS will update it to the latest version, "
+                            "possibly rendering it useless for older versions of QGIS."
+                            "<p>Even though QGIS developers try to maintain backwards "
+                            "compatibility, some of the information from the old project "
+                            "file might be lost. To improve the quality of QGIS, we appreciate "
+                            "if you file a bug report at "
+                            "<a href=http://svn.qgis.org/trac/wiki>http://svn.qgis.org/trac/wiki</a> "
+                            "Be sure to include the old project file, and state the version of "
+                            "QGIS you used to discover the error."
+                            "<p>To remove this warning when opening an older project file, "
+                            "check the box 'Warn me when opening a project file saved with an "
+                            "older verision of QGIS' "
+                            "in the <tt>Settings:Options:General</tt> menu. "
+                            "<p>Version of the project file: %1<br>"
+                            "Current version of QGIS: %2")
+                         .arg(oldVersion)
+                         .arg(QGis::qgisVersion));
+    
+  }  
+  return;
 }
