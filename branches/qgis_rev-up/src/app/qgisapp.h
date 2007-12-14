@@ -368,6 +368,9 @@ public slots:
    */
   void editPaste(QgsMapLayer * destinationLayer = 0);
 
+  //! Shows a warning when an old project file is read.
+  void warnOlderProjectVersion(QString);
+
 
 signals:
   /** emitted when a key is pressed and we want non widget sublasses to be able

@@ -839,6 +839,7 @@ bool QgsProject::read()
                          "version of qgis (saved in " + fileVersion +
                          ", loaded in " + QGis::qgisVersion +
                          "). Problems may occur.");
+      handleOlderProjectVersion(fileVersion);
     }
 
     // get the map layers
@@ -1306,3 +1307,14 @@ void QgsProject::dumpProperties() const
 {
     dump_(imp_->properties_);
 } // QgsProject::dumpProperties
+
+
+void QgsProject::handleOlderProjectVersion(QString oldVersion)
+{
+
+  //! Shows a warning when an old project file is read.
+  emit warnOlderProjectVersion(oldVersion);
+  QgsDebugMsg(QString("Emitting warnOlderProjectVersion(oldVersion) from ") + QString::number((long)QgsProject::instance()));
+
+  return;
+}
