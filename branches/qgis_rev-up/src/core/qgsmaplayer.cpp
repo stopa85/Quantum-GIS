@@ -149,6 +149,9 @@ bool QgsMapLayer::readXML( QDomNode & layer_node )
     QDomNode srsNode = layer_node.namedItem("srs");
     mSRS->readXML(srsNode);
 
+    QgsDebugMsg(QString("Layer SRS is: "));
+    mSRS->debugPrint();
+
     // now let the children grab what they need from the DOM node.
     if (!readXML_( layer_node ))
     {
