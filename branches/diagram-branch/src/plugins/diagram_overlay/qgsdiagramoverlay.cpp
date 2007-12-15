@@ -18,7 +18,8 @@
 #include "qgsdiagramoverlay.h"
 #include "qgscoordinatetransform.h"
 #include "qgsdiagramfactory.h"
-#include "qgswkndiagramfactory.h"
+#include "qgsbardiagramfactory.h"
+#include "qgspiediagramfactory.h"
 #include "qgsdiagramrenderer.h"
 #include "qgsfeature.h"
 #include "qgsfield.h"
@@ -201,7 +202,20 @@ bool QgsDiagramOverlay::readXML(const QDomNode& overlayNode)
     {
       return false;
     }
-  wellKnownName = wknNodeList.at(0).toElement().text();
+  wellKnownName = wknNodeList.at(0).toElement().text(); 
+  QgsWKNDiagramFactory* wknFactory = 0;
+  if(wellKnownName == "Pie")
+    {
+      wknFactory = new QgsPieDiagramFactory();
+    }
+  else if(wellKnownName == "Bar")
+    {
+      wknFactory = new QgsBarDiagramFactory();
+    }
+  else
+    {
+      return false; //unknown type
+    }
 
   //classificationField
   QDomNodeList classificationFieldList = overlayElem.elementsByTagName("classificationfield");
@@ -211,7 +225,6 @@ bool QgsDiagramOverlay::readXML(const QDomNode& overlayNode)
     }
 
   theDiagramRenderer = new QgsDiagramRenderer(classAttrList);
-  QgsWKNDiagramFactory* wknFactory = new QgsWKNDiagramFactory();
   wknFactory->setScalingAttributes(classAttrList);
   wknFactory->setDiagramType(wellKnownName);
 
