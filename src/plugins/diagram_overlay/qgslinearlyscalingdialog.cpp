@@ -18,7 +18,8 @@
 #include "qgslinearlyscalingdialog.h"
 #include "qgsdiagramrenderer.h"
 #include "qgsvectordataprovider.h"
-#include "qgswkndiagramfactory.h"
+#include "qgsbardiagramfactory.h"
+#include "qgspiediagramfactory.h"
 
 QgsLinearlyScalingDialog::QgsLinearlyScalingDialog(QgsVectorLayer* vl): QgsDiagramRendererWidget(vl)
 {
@@ -58,7 +59,19 @@ QgsDiagramRenderer* QgsLinearlyScalingDialog::createRenderer(const QString& type
   itemList.push_back(secondItem);
   renderer->setDiagramItems(itemList);
   
-  QgsWKNDiagramFactory* f = new QgsWKNDiagramFactory();
+  QgsWKNDiagramFactory* f = 0;//new QgsWKNDiagramFactory();
+  if(type == "Bar")
+    {
+      f = new QgsBarDiagramFactory();
+    }
+  else if(type == "Pie")
+    {
+      f = new QgsPieDiagramFactory();
+    }
+  else
+    {
+      return 0; //unknown diagram type
+    }
   f->setDiagramType(type);
    
   std::list<QColor>::const_iterator c_it = colors.begin();

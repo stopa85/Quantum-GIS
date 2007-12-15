@@ -5,6 +5,8 @@ SET (DIAGRAMOVERLAY_SRCS
      qgsdiagramdialog.cpp
      qgsdiagramcategory.cpp
      qgswkndiagramfactory.cpp
+     qgsbardiagramfactory.cpp
+     qgspiediagramfactory.cpp
      qgssvgdiagramfactory.cpp
      qgsdiagramoverlay.cpp
      qgsdiagramoverlayplugin.cpp
