@@ -30,6 +30,7 @@ qgsmessageoutput.cpp
 qgspoint.cpp
 qgsproject.cpp
 qgsprojectfile.cpp
+qgsprojectversion.cpp
 qgsprojectproperty.cpp
 qgsprovidercountcalcevent.cpp
 qgsproviderextentcalcevent.cpp

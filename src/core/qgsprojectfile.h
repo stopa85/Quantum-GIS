@@ -29,38 +29,7 @@
 #include <QString>
 #include <QDomDocument>
 #include <vector>
-
-class QgsProjectFileVersion
-{
-
- public:
-
-  QgsProjectFileVersion() {} 
-  QgsProjectFileVersion(int major, int minor, int sub)
-    {
-      mMajor = major;
-      mMinor = minor;
-      mSub   = sub;
-    }
-
-  ~QgsProjectFileVersion() {} 
-
-  int major() { return mMajor;};
-  int minor() { return mMinor;};
-  int sub()   { return mSub;};
-
-  bool operator==(const QgsProjectFileVersion &other)
-    {
-      return ((mMajor == other.mMajor) &&
-              (mMinor == other.mMinor) &&
-              (mSub == other.mSub));
-    } 
-
- private:
-  int mMajor;
-  int mMinor;
-  int mSub;
-};
+#include "qgsprojectversion.h"
 
 class QgsProjectFile 
 {
@@ -74,27 +43,32 @@ class QgsProjectFile
    * @param version Version number
    */
   QgsProjectFile(QDomDocument & domDocument,
-                 QgsProjectFileVersion version)
+                 QgsProjectVersion version)
     {
       mDom = domDocument;
       mCurrentVersion = version;
     }
 
 
-  bool revup(QgsProjectFileVersion version);
+  bool updateRevision(QgsProjectVersion version);
+
+  /*! Prints the contents via QgsDebugMsg()
+   */
+  void dump();
+
 
  private:
 
   typedef struct {
-    QgsProjectFileVersion from;
-    QgsProjectFileVersion to;
+    QgsProjectVersion from;
+    QgsProjectVersion to;
     void (QgsProjectFile::* transformFunc)();
   } transform;
 
   static transform transformers[];;
 
   QDomDocument mDom;
-  QgsProjectFileVersion mCurrentVersion;
+  QgsProjectVersion mCurrentVersion;
 
   // Transformer functions below. Declare functions here,
   // define them in qgsprojectfile.cpp and add them
