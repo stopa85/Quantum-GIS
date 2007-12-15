@@ -18,10 +18,12 @@
 
 
 #include "qgsprojectfile.h"
+#include "qgsprojectversion.h"
+#include "qgslogger.h"
 #include <QTextStream>
 #include <QDomDocument>
 
-typedef QgsProjectFileVersion PFV;
+typedef QgsProjectVersion PFV;
 
 
 QgsProjectFile::transform QgsProjectFile::transformers[] = {
@@ -30,7 +32,7 @@ QgsProjectFile::transform QgsProjectFile::transformers[] = {
   {PFV(0,9,1), PFV(0,9,2), &QgsProjectFile::transformNull}
 };
 
-bool QgsProjectFile::revup(QgsProjectFileVersion newVersion)
+bool QgsProjectFile::updateRevision(QgsProjectVersion newVersion)
 {
   bool returnValue = false;
 
@@ -50,8 +52,23 @@ bool QgsProjectFile::revup(QgsProjectFileVersion newVersion)
   return returnValue;
 };
 
+void QgsProjectFile::dump()
+{
+  QgsDebugMsg(QString("Current project file version is %1.%2.%3")
+              .arg(mCurrentVersion.major())
+              .arg(mCurrentVersion.minor())
+              .arg(mCurrentVersion.sub()));
+  QgsDebugMsg(QString("\n") + mDom.toString(2));
+              
+}
+
+/*
+ *  Transformers below!
+ */
+
 void QgsProjectFile::transform081to090()
 {
+  QgsDebugMsg("entering");
   if ( ! mDom.isNull() )
   {
   }
@@ -61,9 +78,11 @@ void QgsProjectFile::transform081to090()
 
 void QgsProjectFile::transform090to091()
 {
+  QgsDebugMsg("entering");
   if ( ! mDom.isNull() )
   {
   }
   return;
 
 };
+

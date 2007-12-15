@@ -23,6 +23,7 @@
 #define QGSPROJECT_H
 
 #include <memory>
+#include "qgsprojectversion.h"
 #include <QObject>
 
 //#include <QDomDocument>
@@ -252,8 +253,6 @@ public:
                 and redundantly prints sub-keys.
     */
     void dumpProperties() const;
-
-    void handleOlderProjectVersion(QString oldVersion);
 
   signals:
     
