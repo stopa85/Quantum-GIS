@@ -129,7 +129,7 @@
 #include <QVector>
 #include <QList>
 
-
+#include "qgis.h"
 #include "qgspoint.h"
 #include "qgsmaplayer.h"
 #include "qgscontrastenhancement.h"
@@ -682,9 +682,9 @@ public:
       return false;
     } //todo
 
-    bool isSymbologyCompatible(const QgsMapLayer& other) const 
+    bool isSymbologyCompatible(const QgsMapLayer& other) const
     {
-      other.type(); //just added to reduce the compiler warnings about unused variables, remove when actually implemented
+      UNUSED(other);
       return false;
     } //todo
 
