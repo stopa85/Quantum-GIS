@@ -136,7 +136,6 @@
 #include <cmath>
 #include <functional>
 #include <iomanip>
-#include <iostream>
 #include <list>
 #include <memory>
 #include <vector>
@@ -1314,10 +1313,8 @@ bool QgisApp::createDB()
 
     if (!isDbFileCopied)
     {
-#ifdef QGISDEBUG
-      std::cout << "[ERROR] Can not make qgis.db private copy" << std::endl;
+      QgsDebugMsg("[ERROR] Can not make qgis.db private copy");
       return FALSE;
-#endif
     }
   }
   return TRUE;
@@ -1382,40 +1379,25 @@ void QgisApp::saveWindowState()
   // store window and toolbar positions
   QSettings settings;
   // store the toolbar/dock widget settings using Qt4 settings API
-  settings.setValue("/Geometry/state", this->saveState());
+  settings.setValue("/UI/state", this->saveState());
 
   // store window geometry
-  QPoint p = this->pos();
-  QSize s = this->size();
-  settings.writeEntry("/Geometry/maximized", this->isMaximized());
-  settings.writeEntry("/Geometry/x", p.x());
-  settings.writeEntry("/Geometry/y", p.y());
-  settings.writeEntry("/Geometry/w", s.width());
-  settings.writeEntry("/Geometry/h", s.height());
-  settings.setValue("/Geometry/canvasSplitterState", canvasLegendSplit->saveState());
-  settings.setValue("/Geometry/legendSplitterState", legendOverviewSplit->saveState());
+  settings.setValue("/UI/geometry", saveGeometry());
+  settings.setValue("/UI/canvasSplitterState", canvasLegendSplit->saveState());
+  settings.setValue("/UI/legendSplitterState", legendOverviewSplit->saveState());
 }
 
 void QgisApp::restoreWindowState()
 {
   // restore the toolbar and dock widgets postions using Qt4 settings API
   QSettings settings;
-  QVariant vstate = settings.value("/Geometry/state");
+  QVariant vstate = settings.value("/UI/state");
   this->restoreState(vstate.toByteArray());
 
   // restore window geometry
-  QDesktopWidget *d = QApplication::desktop();
-  int dw = d->width();          // returns desktop width
-  int dh = d->height();         // returns desktop height
-  int w = settings.readNumEntry("/Geometry/w", 600);
-  int h = settings.readNumEntry("/Geometry/h", 400);
-  int x = settings.readNumEntry("/Geometry/x", (dw - 600) / 2);
-  int y = settings.readNumEntry("/Geometry/y", (dh - 400) / 2);
-  resize(w, h);
-  move(x, y);
-
-  canvasLegendSplit->restoreState(settings.value("/Geometry/canvasSplitterState").toByteArray());
-  legendOverviewSplit->restoreState(settings.value("/Geometry/legendSplitterState").toByteArray());
+  restoreGeometry(settings.value("/UI/geometry").toByteArray());
+  canvasLegendSplit->restoreState(settings.value("/UI/canvasSplitterState").toByteArray());
+  legendOverviewSplit->restoreState(settings.value("/UI/legendSplitterState").toByteArray());
 }
 ///////////// END OF GUI SETUP ROUTINES ///////////////
 
@@ -1479,6 +1461,9 @@ watsNew += "<ul><li>"
 + "</li>"
 + "<li>"
 + tr("Improvements to the GeoReferencer")
++ "</li>"
++ "<li>"
++ tr("Added locale options to options dialog.")
 + "</li>"
 //+ "<li>"
 //+ tr("")
@@ -1672,10 +1657,7 @@ static void buildSupportedVectorFileFilter_(QString & fileFilters)
   // theoreticaly we can open those files because there exists a
   // driver for them, the user will have to use the "All Files" to
   // open datasets with no explicitly defined file name extension.
-#ifdef QGISDEBUG
-
-  std::cerr << "Driver count: " << driverRegistrar->GetDriverCount() << std::endl;
-#endif
+  QgsDebugMsg("Driver count: " + QString::number(driverRegistrar->GetDriverCount()));
 
   for (int i = 0; i < driverRegistrar->GetDriverCount(); ++i)
   {
@@ -1753,7 +1735,7 @@ static void buildSupportedVectorFileFilter_(QString & fileFilters)
     {
       // NOP, we don't know anything about the current driver
       // with regards to a proper file filter string
-      qDebug( "%s:%d unknown driver %s", __FILE__, __LINE__, (const char *)driverName.toLocal8Bit().data() );
+      QgsDebugMsg("unknown driver " + driverName );
     }
 
   }                           // each loaded GDAL driver
@@ -1816,9 +1798,7 @@ static void openFilesRememberingFilter_(QString const &filterName,
 
   QString lastUsedEncoding = settings.readEntry("/UI/encoding");
 
-#ifdef QGISDEBUG
-  std::cerr << "Opening file dialog with filters: " << filters.toLocal8Bit().data() << std::endl;
-#endif
+  QgsDebugMsg("Opening file dialog with filters: " + filters);
 
   QgsEncodingFileDialog* openFileDialog = new QgsEncodingFileDialog(0,
       title, lastUsedDir, filters, lastUsedEncoding);
@@ -1841,9 +1821,8 @@ static void openFilesRememberingFilter_(QString const &filterName,
     QString myFirstFileName = selectedFiles.first();
     QFileInfo myFI(myFirstFileName);
     QString myPath = myFI.dirPath();
-#ifdef QGISDEBUG
-    qDebug("Writing last used dir: " + myPath);
-#endif
+
+    QgsDebugMsg("Writing last used dir: " + myPath);
 
     settings.writeEntry("/UI/" + filterName, openFileDialog->selectedFilter());
     settings.writeEntry("/UI/" + filterName + "Dir", myPath);
@@ -1865,9 +1844,7 @@ void QgisApp::addLayer()
   mMapCanvas->freeze();
 
   QStringList selectedFiles;
-#ifdef QGISDEBUG
-  std::cerr << "Vector file filters: " << mVectorFileFilter.toLocal8Bit().data() << std::endl;
-#endif
+  QgsDebugMsg("Vector file filters: " + mVectorFileFilter);
 
   QString enc;
   QString title = tr("Open an OGR Supported Vector Layer");
@@ -2092,7 +2069,7 @@ void QgisApp::addDatabaseLayer()
       }
       else
       {
-        std::cerr << (*it).toLocal8Bit().data() << " is an invalid layer - not loaded" << std::endl;
+        QgsDebugMsg( (*it) + " is an invalid layer - not loaded");
         QMessageBox::critical(this, tr("Invalid Layer"), tr("%1 is an invalid layer and cannot be loaded.").arg(*it));
         delete layer;
       }
@@ -2124,11 +2101,7 @@ void QgisApp::addDatabaseLayer()
 void QgisApp::addWmsLayer()
 {
   // Fudge for now
-
-#ifdef QGISDEBUG
-  std::cout << "QgisApp::addWmsLayer: about to addRasterLayer" << std::endl;
-#endif
-
+  QgsDebugMsg("about to addRasterLayer");
 
   QgsServerSourceSelect *wmss = new QgsServerSourceSelect(this);
 
@@ -2172,25 +2145,25 @@ dataType_( QDomNode & layerNode )
 
   if ( QString::null == type )
   {
-    qDebug( "%s:%d cannot find ``type'' attribute", __FILE__, __LINE__ );
+    QgsDebugMsg("cannot find ``type'' attribute");
 
     return IS_BOGUS;
   }
 
   if ( "raster" == type )
   {
-    qDebug( "%s:%d is a raster", __FILE__, __LINE__ );
+    QgsDebugMsg("is a raster");
 
     return IS_RASTER;
   }
   else if ( "vector" == type )
   {
-    qDebug( "%s:%d is a vector", __FILE__, __LINE__ );
+    QgsDebugMsg("is a vector");
 
     return IS_VECTOR;
   }
 
-  qDebug( "%s:%d is unknown type %s", __FILE__, __LINE__, (const char *)type.toLocal8Bit().data() );
+  QgsDebugMsg("is unknown type " + type);
 
   return IS_BOGUS;
 } // dataType_( QDomNode & layerNode )
@@ -2211,7 +2184,7 @@ dataSource_( QDomNode & layerNode )
 
   if ( dataSourceNode.isNull() )
   {
-    qDebug( "%s:%d cannot find datasource node", __FILE__, __LINE__ );
+    QgsDebugMsg("cannot find datasource node");
 
     return QString::null;
   }
@@ -2253,9 +2226,8 @@ providerType_( QDomNode & layerNode )
       {
         QString dataSource = dataSource_( layerNode );
 
-#ifdef QGISDEBUG
-        qDebug( "%s:%d datasource is %s", __FILE__, __LINE__, (const char *)dataSource.toLocal8Bit().data() );
-#endif
+        QgsDebugMsg("datasource is " + dataSource);
+
         if ( dataSource.contains("host=") )
         {
           return IS_URL;
@@ -2277,7 +2249,7 @@ providerType_( QDomNode & layerNode )
       return IS_FILE;
 
     default:
-      qDebug( "%s:%d unknown ``type'' attribute", __FILE__, __LINE__ );
+      QgsDebugMsg("unknown ``type'' attribute");
   }
 
   return IS_UNKNOWN;
@@ -2296,20 +2268,11 @@ setDataSource_( QDomNode & layerNode, QString const & dataSource )
   QDomElement dataSourceElement = dataSourceNode.toElement();
   QDomText dataSourceText = dataSourceElement.firstChild().toText();
 
-
-#ifdef QGISDEBUG
-  QString originalDataSource = dataSourceText.data();
-
-  qDebug( "%s:%d datasource changed from %s", __FILE__, __LINE__, (const char *)originalDataSource.toLocal8Bit().data() );
-#endif
+  QgsDebugMsg("datasource changed from " + dataSourceText.data() );
 
   dataSourceText.setData( dataSource );
 
-#ifdef QGISDEBUG
-  QString newDataSource = dataSourceText.data();
-
-  qDebug( "%s:%d to %s", __FILE__, __LINE__, (const char *)newDataSource.toLocal8Bit().data() );
-#endif
+  QgsDebugMsg("to " + dataSourceText.data() );
 } // setDataSource_
 
 
@@ -2346,7 +2309,7 @@ findMissingFile_( QString const & fileFilters, QDomNode & layerNode )
         break;
       }
     default:
-      qDebug( "%s:%d unable to determine data type", __FILE__, __LINE__ );
+      QgsDebugMsg("unable to determine data type");
       return;
   }
 
@@ -2376,7 +2339,7 @@ findMissingFile_( QString const & fileFilters, QDomNode & layerNode )
     setDataSource_( layerNode, selectedFiles.first() );
     if ( ! QgsProject::instance()->read( layerNode ) )
     {
-      qDebug( "%s:%d unable to re-read layer", __FILE__, __LINE__ );
+      QgsDebugMsg("unable to re-read layer");
     }
   }
 
@@ -2407,20 +2370,20 @@ findLayer_( QString const & fileFilters, QDomNode const & constLayerNode )
   switch ( providerType_(layerNode) )
   {
     case IS_FILE:
-      qDebug( "%s:%d layer is file based", __FILE__, __LINE__ );
+      QgsDebugMsg("layer is file based");
       findMissingFile_( fileFilters, layerNode );
       break;
 
     case IS_DATABASE:
-      qDebug( "%s:%d layer is database based", __FILE__, __LINE__ );
+      QgsDebugMsg("layer is database based");
       break;
 
     case IS_URL:
-      qDebug( "%s:%d layer is URL based", __FILE__, __LINE__ );
+      QgsDebugMsg("layer is URL based");
       break;
 
     case IS_UNKNOWN:
-      qDebug( "%s:%d layer has an unkown type", __FILE__, __LINE__ );
+      QgsDebugMsg("layer has an unkown type");
       break;
   }
 
@@ -2478,9 +2441,7 @@ void QgisApp::fileNew(bool thePromptToSaveFlag)
     }
   }
   
-#ifdef QGISDEBUG
-    std::cout << "erasing project" << std::endl;
-#endif
+  QgsDebugMsg("erasing project");
   
   mMapCanvas->freeze(true);
   QgsMapLayerRegistry::instance()->removeAllMapLayers();
@@ -2519,9 +2480,7 @@ void QgisApp::fileNew(bool thePromptToSaveFlag)
 
   setTitleBarText_( *this );
     
-#ifdef QGISDEBUG
-  std::cout << "emiting new project signal" << std::endl ;
-#endif
+  QgsDebugMsg("emiting new project signal");
 
   //note by Tim: I did some casual egrepping and this signal doesnt actually
   //seem to be connected to anything....why is it here? Just for future needs?
@@ -2564,21 +2523,18 @@ void QgisApp::newVectorLayer()
   // persistant state
 
   QString lastUsedFilter = settings.readEntry("/UI/lastVectorFileFilter",
-      QString::null,
-      &haveLastUsedFilter);
+    QString::null,
+    &haveLastUsedFilter);
 
   QString lastUsedDir = settings.readEntry("/UI/lastVectorFileFilterDir",
-      ".");
+    ".");
 
   QString lastUsedEncoding = settings.readEntry("/UI/encoding");
 
-#ifdef QGISDEBUG
-
-  std::cerr << "Saving vector file dialog without filters: " << std::endl;
-#endif
+  QgsDebugMsg("Saving vector file dialog without filters: ");
 
   QgsEncodingFileDialog* openFileDialog = new QgsEncodingFileDialog(this,
-      tr("Save As"), lastUsedDir, "", lastUsedEncoding);
+    tr("Save As"), lastUsedDir, "", lastUsedEncoding);
 
   // allow for selection of more than one file
   openFileDialog->setMode(QFileDialog::AnyFile);
@@ -2620,11 +2576,10 @@ void QgisApp::newVectorLayer()
   bool loaded = myLib->load();
   if (loaded)
   {
-#ifdef QGISDEBUG
-    qWarning("ogr provider loaded");
-#endif
+    QgsDebugMsg("ogr provider loaded");
+
     typedef bool (*createEmptyDataSourceProc)(const QString&, const QString&, const QString&, QGis::WKBTYPE, \
-        const std::list<std::pair<QString, QString> >&);
+      const std::list<std::pair<QString, QString> >&);
     createEmptyDataSourceProc createEmptyDataSource=(createEmptyDataSourceProc)myLib->resolve("createEmptyDataSource");
     if(createEmptyDataSource)
     {
@@ -2643,22 +2598,18 @@ void QgisApp::newVectorLayer()
       }
 #endif
       if(geometrytype != QGis::WKBUnknown)
-	{
-	  createEmptyDataSource(filename,fileformat, enc, geometrytype, attributes);
-	}
+      {
+        createEmptyDataSource(filename,fileformat, enc, geometrytype, attributes);
+      }
       else
-	{
-#ifdef QGISDEBUG
-	  qWarning("QgisApp.cpp: geometry type not recognised");
-#endif
-	  return;
-	}
+      {
+        QgsDebugMsg("geometry type not recognised");
+        return;
+      }
     }
     else
     {
-#ifdef QGISDEBUG
-      qWarning("Resolving newEmptyDataSource(...) failed");;
-#endif
+      QgsDebugMsg("Resolving newEmptyDataSource(...) failed");
     }
   }
 
@@ -2728,7 +2679,7 @@ void QgisApp::fileOpen()
       QMessageBox::critical(this, 
           tr("QGIS Project Read Error"), 
           tr("") + "\n" + QString::fromLocal8Bit( e.what() ) );
-      qDebug( "%s:%d %d bad layers found", __FILE__, __LINE__, static_cast<int>(e.layers().size()) );
+      QgsDebugMsg( QString("%1 bad layers found").arg(e.layers().size()) );
 
       // attempt to find the new locations for missing layers
       // XXX vector file hard-coded -- but what if it's raster?
@@ -2739,7 +2690,7 @@ void QgisApp::fileOpen()
       QMessageBox::critical(this, 
           tr("QGIS Project Read Error"), 
           tr("") + "\n" + QString::fromLocal8Bit( e.what() ) );
-      qDebug( "%s:%d BAD LAYERS FOUND", __FILE__, __LINE__ );
+      QgsDebugMsg("BAD LAYERS FOUND");
     }
   }
 
@@ -2768,7 +2719,7 @@ bool QgisApp::addProject(QString projectFile)
       int  myBlueInt = QgsProject::instance()->readNumEntry("Gui","/CanvasColorBluePart",255);
       QColor myColor = QColor(myRedInt,myGreenInt,myBlueInt);
       mMapCanvas->setCanvasColor(myColor); //this is fill colour before rendering starts
-      qDebug("Canvas background color restored...");
+      QgsDebugMsg("Canvas background color restored...");
 
       emit projectRead(); // let plug-ins know that we've read in a new
       // project so that they can check any project
@@ -2787,7 +2738,7 @@ bool QgisApp::addProject(QString projectFile)
   }
   catch ( QgsProjectBadLayerException & e )
   {
-    qDebug( "%s:%d %d bad layers found", __FILE__, __LINE__, static_cast<int>(e.layers().size()) );
+    QgsDebugMsg( QString("%1 bad layers found").arg( e.layers().size() ) );
 
     if ( QMessageBox::Ok == QMessageBox::critical( this, 
           tr("QGIS Project Read Error"), 
@@ -2795,7 +2746,7 @@ bool QgisApp::addProject(QString projectFile)
           tr("Try to find missing layers?"),
           QMessageBox::Ok | QMessageBox::Cancel ) )
     {
-      qDebug( "%s:%d want to find missing layers is true", __FILE__, __LINE__ );
+      QgsDebugMsg("want to find missing layers is true");
 
       // attempt to find the new locations for missing layers
       // XXX vector file hard-coded -- but what if it's raster?
@@ -2805,7 +2756,7 @@ bool QgisApp::addProject(QString projectFile)
   }
   catch ( std::exception & e )
   {
-    qDebug( "%s:%d BAD LAYERS FOUND", __FILE__, __LINE__ );
+    QgsDebugMsg("BAD LAYERS FOUND");
 
     QMessageBox::critical( this, 
         tr("Unable to open project"), QString::fromLocal8Bit( e.what() ) );
@@ -3016,9 +2967,7 @@ void QgisApp::openProject(const QString & fileName)
     {
       if ( ! addProject(fileName) )
       {
-#ifdef QGISDEBUG
-        std::cerr << "unable to load project " << fileName.toLocal8Bit().data() << "\n";
-#endif
+        QgsDebugMsg("unable to load project " + fileName);
       }
       else
       {
@@ -3056,7 +3005,7 @@ bool QgisApp::openLayer(const QString & fileName)
   if (!ok)
   {
     // we have no idea what this file is...
-    std::cout << "Unable to load " << fileName.toLocal8Bit().data() << std::endl;
+    QgsDebugMsg("Unable to load " + fileName);
   }
 
   return ok;
@@ -3077,10 +3026,9 @@ QMessageBox::information( this, tr(myHeading),tr(myMessage) );
 QPrinter myQPrinter;
 if(myQPrinter.setup(this))
 {
-#ifdef QGISDEBUG
-std::cout << ".............................." << std::endl;
-std::cout << "...........Printing..........." << std::endl;
-std::cout << ".............................." << std::endl;
+  QgsDebugMsg("..............................");
+  QgsDebugMsg("...........Printing...........");
+  QgsDebugMsg("..............................");
 #endif
 // Ithought we could just do this:
 //mMapCanvas->render(&myQPrinter);
@@ -3139,13 +3087,12 @@ void QgisApp::saveMapAsImage()
     myFilterMap[myFilter] = myFormat;
   }
 #ifdef QGISDEBUG
-  std::cout << "Available Filters Map: " << std::endl;
+  QgsDebugMsg("Available Filters Map: ");
   FilterMap::Iterator myIterator;
   for ( myIterator = myFilterMap.begin(); myIterator != myFilterMap.end(); ++myIterator )
   {
-    std::cout << myIterator.key().toLocal8Bit().data() << "  :  " << myIterator.data().toLocal8Bit().data() << std::endl;
+    QgsDebugMsg( myIterator.key() + "  :  " + myIterator.data());
   }
-
 #endif
 
   //create a file dialog using the the filter list generated above
@@ -3175,11 +3122,8 @@ void QgisApp::saveMapAsImage()
   }
 
   QString myFilterString = myQFileDialog->selectedFilter()+";;";
-#ifdef QGISDEBUG
-
-  std::cout << "Selected filter: " << myFilterString.toLocal8Bit().data() << std::endl;
-  std::cout << "Image type to be passed to mapcanvas: " << (myFilterMap[myFilterString]).toLocal8Bit().data() << std::endl;
-#endif
+  QgsDebugMsg("Selected filter: " + myFilterString);
+  QgsDebugMsg("Image type to be passed to mapcanvas: " + myFilterMap[myFilterString]);
 
   // Add the file type suffix to the filename if required
   if (!myOutputFileNameQString.endsWith(myFilterMap[myFilterString]))
@@ -3248,9 +3192,7 @@ void QgisApp::removeAllFromOverview()
 //reimplements method from base (gui) class
 void QgisApp::hideAllLayers()
 {
-#ifdef QGISDEBUG
-  std::cout << "hiding all layers!" << std::endl;
-#endif
+  QgsDebugMsg("hiding all layers!");
 
   legend()->selectAll(false);
 }
@@ -3259,9 +3201,7 @@ void QgisApp::hideAllLayers()
 // reimplements method from base (gui) class
 void QgisApp::showAllLayers()
 {
-#ifdef QGISDEBUG
-  std::cout << "Showing all layers!" << std::endl;
-#endif
+  QgsDebugMsg("Showing all layers!");
 
   legend()->selectAll(true);
 }
@@ -3536,9 +3476,7 @@ void QgisApp::pasteTransformations()
 
 void QgisApp::refreshMapCanvas()
 {
-#ifdef QGISDEBUG
-  std::cout << "QgisApp:refreshMapCanvas" << std::endl;
-#endif
+  QgsDebugMsg("called.");
 
   mMapCanvas->refresh();
 }
@@ -3549,6 +3487,7 @@ void QgisApp::toggleEditing()
   if(currentLayerFile)
     {
       currentLayerFile->toggleEditing();
+      activateDeactivateLayerRelatedActions( mMapLegend->currentLayer() );
     }
   else
     {
@@ -3744,21 +3683,16 @@ void QgisApp::loadPlugin(QString name, QString description, QString theFullPathN
   else
   {
     QLibrary *myLib = new QLibrary(theFullPathName);
-#ifdef QGISDEBUG
 
-    std::cerr << "Library name is " << myLib->library().toLocal8Bit().data() << std::endl;
-#endif
+    QgsDebugMsg("Library name is " + myLib->library());
 
     bool loaded = myLib->load();
     if (loaded)
     {
-#ifdef QGISDEBUG
-      std::cerr << "Loaded test plugin library" << std::endl;
-      std::cerr << "Attempting to resolve the classFactory function" << std::endl;
-#endif
+      QgsDebugMsg("Loaded test plugin library");
+      QgsDebugMsg("Attempting to resolve the classFactory function");
 
       type_t *pType = (type_t *) myLib->resolve("type");
-
 
       switch (pType())
       {
@@ -3788,9 +3722,7 @@ void QgisApp::loadPlugin(QString name, QString description, QString theFullPathN
             }
             else
             {
-              //#ifdef QGISDEBUG
-              std::cerr << "Unable to find the class factory for " << theFullPathName.toLocal8Bit().data() << std::endl;
-              //#endif
+              QgsDebugMsg("Unable to find the class factory for " + theFullPathName);
             }
 
           }
@@ -3821,30 +3753,24 @@ void QgisApp::loadPlugin(QString name, QString description, QString theFullPathN
             }
             else
             {
-              //#ifdef QGISDEBUG
-              std::cerr << "Unable to find the class factory for " << theFullPathName.toLocal8Bit().data() << std::endl;
-              //#endif
+              QgsDebugMsg("Unable to find the class factory for " + theFullPathName);
             }
           }
           break;
         default:
           // type is unknown
-          //#ifdef QGISDEBUG
-          std::cerr << "Plugin " << theFullPathName.toLocal8Bit().data() << " did not return a valid type and cannot be loaded" << std::endl;
-          //#endif
+          QgsDebugMsg("Plugin " + theFullPathName + " did not return a valid type and cannot be loaded");
           break;
       }
 
       /*  }else{
-          std::cout << "Unable to find the class factory for " << mFullPathName << std::endl;
+          QgsDebugMsg("Unable to find the class factory for " + mFullPathName);
           } */
 
   }
   else
   {
-    //#ifdef QGISDEBUG
-    std::cerr << "Failed to load " << theFullPathName.toLocal8Bit().data() << "\n";
-    //#endif
+    QgsDebugMsg("Failed to load " + theFullPathName);
   }
   delete myLib;
 }
@@ -3861,81 +3787,60 @@ void QgisApp::testMapLayerPlugins()
   else
   {
     for (unsigned i = 0; i < mlpDir.count(); i++)
-    {
-#ifdef QGISDEBUG
-      std::cout << "Getting information for plugin: " << mlpDir[i].toLocal8Bit().data() << std::endl;
-      std::cout << "Attempting to load the plugin using dlopen\n";
-#endif
+    {      
+      QgsDebugMsg("Getting information for plugin: " + mlpDir[i]);
+      QgsDebugMsg("Attempting to load the plugin using dlopen");
+
       //          void *handle = dlopen("../plugins/maplayer/" + mlpDir[i], RTLD_LAZY);
       void *handle = dlopen(("../plugins/maplayer/" + mlpDir[i]).toLocal8Bit().data(), RTLD_LAZY | RTLD_GLOBAL );
       if (!handle)
       {
-#ifdef QGISDEBUG
-        std::cout << "Error in dlopen: " << dlerror() << std::endl;
-#endif
-
+        QgsDebugMsg( QString("Error in dlopen: %1").arg( dlerror() ));
       }
       else
       {
-#ifdef QGISDEBUG
-        std::cout << "dlopen suceeded" << std::endl;
-#endif
-
+        QgsDebugMsg("dlopen succeeded");
         dlclose(handle);
       }
 
       QLibrary *myLib = new QLibrary("../plugins/maplayer/" + mlpDir[i]);
-#ifdef QGISDEBUG
-
-      std::cout << "Library name is " << myLib->library().toLocal8Bit().data() << std::endl;
-#endif
+      QgsDebugMsg("Library name is " + myLib->library());
 
       bool loaded = myLib->load();
       if (loaded)
       {
-#ifdef QGISDEBUG
-        std::cout << "Loaded test plugin library" << std::endl;
-        std::cout << "Attempting to resolve the classFactory function" << std::endl;
-#endif
+        QgsDebugMsg("Loaded test plugin library");
+        QgsDebugMsg("Attempting to resolve the classFactory function");
 
         create_it *cf = (create_it *) myLib->resolve("classFactory");
 
         if (cf)
         {
-#ifdef QGISDEBUG
-          std::cout << "Getting pointer to a MapLayerInterface object from the library\n";
-#endif
+          QgsDebugMsg("Getting pointer to a MapLayerInterface object from the library");
 
           QgsMapLayerInterface *pl = cf();
           if (pl)
           {
-#ifdef QGISDEBUG
-            std::cout << "Instantiated the maplayer test plugin\n";
-#endif
+            QgsDebugMsg("Instantiated the maplayer test plugin");
+
             // set the main window pointer for the plugin
             pl->setQgisMainWindow(this);
-#ifdef QGISDEBUG
+
             //the call to getInt is deprecated and this line should be removed
-            //std::cout << "getInt returned " << pl->getInt() << " from map layer plugin\n";
-#endif
+            //QgsDebugMsg("getInt returned " + QString::number(pl->getInt()) + " from map layer plugin");
+
             // set up the gui
             pl->initGui();
           }
           else
           {
-#ifdef QGISDEBUG
-            std::cout << "Unable to instantiate the maplayer test plugin\n";
-#endif
-
+            QgsDebugMsg("Unable to instantiate the maplayer test plugin");
           }
         }
       }
       else
       {
-#ifdef QGISDEBUG
-        std::cout << "Failed to load " << mlpDir[i].toLocal8Bit().data() << "\n";
-#endif
-
+        QgsDebugMsg("Failed to load " + mlpDir[i]);
       }
     }
   }
@@ -3962,20 +3867,14 @@ void QgisApp::testPluginFunctions()
 
       for (unsigned i = 0; i < pluginDir.count(); i++)
       {
-#ifdef QGISDEBUG
-        std::cout << "Getting information for plugin: " << pluginDir[i].toLocal8Bit().data() << std::endl;
-#endif
+        QgsDebugMsg("Getting information for plugin: " + pluginDir[i]);
 
         QLibrary *myLib = new QLibrary("../plugins/" + pluginDir[i]); //"/home/gsherman/development/qgis/plugins/" + pluginDir[i]);
-#ifdef QGISDEBUG
 
-        std::cout << "Library name is " << myLib->library().toLocal8Bit().data() << std::endl;
-#endif
+        QgsDebugMsg("Library name is " + myLib->library());
         //QLibrary myLib("../plugins/" + pluginDir[i]);
-#ifdef QGISDEBUG
+        QgsDebugMsg("Attempting to load ../plugins/" + pluginDir[i]);
 
-        std::cout << "Attempting to load ../plugins/" << pluginDir[i].toLocal8Bit().data() << std::endl;
-#endif
         /*  void *handle = dlopen("/home/gsherman/development/qgis/plugins/" + pluginDir[i], RTLD_LAZY);
             if (!handle) {
             std::cout << "Error in dlopen: " <<  dlerror() << std::endl;
@@ -3989,45 +3888,36 @@ void QgisApp::testPluginFunctions()
         bool loaded = myLib->load();
         if (loaded)
         {
-#ifdef QGISDEBUG
-          std::cout << "Loaded test plugin library" << std::endl;
-          std::cout << "Getting the name of the plugin" << std::endl;
-#endif
+          QgsDebugMsg("Loaded test plugin library");
+          QgsDebugMsg("Getting the name of the plugin");
 
           name_t *pName = (name_t *) myLib->resolve("name");
           if (pName)
           {
             QMessageBox::information(this, tr("Name"), tr("Plugin %1 is named %2").arg(pluginDir[i]).arg(pName()));
           }
-#ifdef QGISDEBUG
-          std::cout << "Attempting to resolve the classFactory function" << std::endl;
-#endif
+          QgsDebugMsg("Attempting to resolve the classFactory function");
 
           create_t *cf = (create_t *) myLib->resolve("classFactory");
 
           if (cf)
           {
-#ifdef QGISDEBUG
-            std::cout << "Getting pointer to a QgisPlugin object from the library\n";
-#endif
+            QgsDebugMsg("Getting pointer to a QgisPlugin object from the library");
 
             QgisPlugin *pl = cf(mQgisInterface);
-#ifdef QGISDEBUG
 
-            std::cout << "Displaying name, version, and description\n";
-            std::cout << "Plugin name: " << pl->name().toLocal8Bit().data() << std::endl;
-            std::cout << "Plugin version: " << pl->version().toLocal8Bit().data() << std::endl;
-            std::cout << "Plugin description: " << pl->description().toLocal8Bit().data() << std::endl;
-#endif
+            QgsDebugMsg("Displaying name, version, and description");
+            QgsDebugMsg("Plugin name: " + pl->name());
+            QgsDebugMsg("Plugin version: " + pl->version());
+            QgsDebugMsg("Plugin description: " + pl->description());
 
             QMessageBox::information(this, tr("Plugin Information"), tr("QGis loaded the following plugin:") +
                 tr("Name: %1").arg(pl->name()) + "\n" + tr("Version: %1").arg(pl->version()) + "\n" +
                 tr("Description: %1").arg(pl->description()));
             // unload the plugin (delete it)
-#ifdef QGISDEBUG
 
-            std::cout << "Attempting to resolve the unload function" << std::endl;
-#endif
+            QgsDebugMsg("Attempting to resolve the unload function");
+
             /*
                unload_t *ul = (unload_t *) myLib.resolve("unload");
                if (ul) {
@@ -4043,11 +3933,7 @@ void QgisApp::testPluginFunctions()
         {
           QMessageBox::warning(this, tr("Unable to Load Plugin"),
               tr("QGIS was unable to load the plugin from: %1").arg(pluginDir[i]));
-#ifdef QGISDEBUG
-
-          std::cout << "Unable to load library" << std::endl;
-#endif
-
+          QgsDebugMsg("Unable to load library");
         }
       }
     }
@@ -4301,12 +4187,9 @@ void QgisApp::addVectorLayer(QString vectorLayerPath, QString baseName, QString 
      The caller is responsible for cobbling together the needed information to
      open the layer
      */
-#ifdef QGISDEBUG
-
-  std::cout << "Creating new vector layer using " <<
-    vectorLayerPath.toLocal8Bit().data() << " with baseName of " << baseName.toLocal8Bit().data() <<
-    " and providerKey of " << providerKey.toLocal8Bit().data() << std::endl;
-#endif
+  QgsDebugMsg( "Creating new vector layer using " + vectorLayerPath
+             + " with baseName of " + baseName
+             + " and providerKey of " + providerKey);
 
   layer = new QgsVectorLayer(vectorLayerPath, baseName, providerKey);
 
@@ -4389,29 +4272,9 @@ bool QgisApp::saveDirty()
   QMessageBox::StandardButton answer(QMessageBox::Discard);
   mMapCanvas->freeze(true);
 
-#ifdef QGISDEBUG
-
-  std::cout << "Layer count is " << mMapCanvas->layerCount() << std::endl;
-  std::cout << "Project is ";
-  if ( QgsProject::instance()->dirty() )
-  {
-    std::cout << "dirty" << std::endl;
-  }
-  else
-  {
-    std::cout << "not dirty" << std::endl;
-  }
-
-  std::cout << "Map canvas is ";
-  if (mMapCanvas->isDirty())
-  {
-    std::cout << "dirty" << std::endl;
-  }
-  else
-  {
-    std::cout << "not dirty" << std::endl;
-  }
-#endif
+  QgsDebugMsg(QString("Layer count is %1").arg(mMapCanvas->layerCount()));
+  QgsDebugMsg(QString("Project is %1dirty").arg( QgsProject::instance()->dirty() ? "" : "not "));
+  QgsDebugMsg(QString("Map canvas is %1dirty").arg(mMapCanvas->isDirty() ? "" : "not "));
 
   QSettings settings;
   bool askThem = settings.value("qgis/askToSaveProjectChanges", true).toBool();
@@ -4586,9 +4449,7 @@ void QgisApp::projectionsEnabled(bool theFlag)
 // slot to update the progress bar in the status bar
 void QgisApp::showProgress(int theProgress, int theTotalSteps)
 {
-#ifdef QGISDEBUG
-  std::cout << "showProgress called with " << theProgress << "/" << theTotalSteps << std::endl;
-#endif
+  QgsDebugMsg( QString("%1/%2").arg(theProgress).arg(theTotalSteps) );
 
   if (theProgress==theTotalSteps)
   {
@@ -4648,9 +4509,7 @@ void QgisApp::updateMouseCoordinatePrecision()
 
 void QgisApp::showStatusMessage(QString theMessage)
 {
-#ifdef QGISDEBUG
-  //  std::cout << "QgisApp::showStatusMessage: entered with '" << theMessage << "'." << std::endl;
-#endif
+  //QgsDebugMsg("message '" + theMessage + "'.");
 
   statusBar()->message(theMessage);
 }
@@ -4726,166 +4585,164 @@ QgsClipboard * QgisApp::clipboard()
 void QgisApp::activateDeactivateLayerRelatedActions(QgsMapLayer* layer)
 {
   if(!layer)
-    {
-      return;
-    }
+  {
+    return;
+  }
 
   /***********Vector layers****************/
   if(layer->type() == QgsMapLayer::VECTOR)
+  {
+    mActionSelect->setEnabled(true);
+    mActionOpenTable->setEnabled(true);
+    mActionIdentify->setEnabled(true);
+    mActionEditCopy->setEnabled(true);
+
+    const QgsVectorLayer* vlayer = dynamic_cast<const QgsVectorLayer*>(layer);
+    const QgsVectorDataProvider* dprovider = vlayer->getDataProvider();
+
+    if (dprovider)
     {
-      mActionSelect->setEnabled(true);
-      mActionOpenTable->setEnabled(true);
-      mActionIdentify->setEnabled(true);
-      mActionEditCopy->setEnabled(true);
-
-      const QgsVectorLayer* vlayer = dynamic_cast<const QgsVectorLayer*>(layer);
-      const QgsVectorDataProvider* dprovider = vlayer->getDataProvider();
-
-      if (dprovider)
-	{
-	  //start editing/stop editing
-	  if(dprovider->capabilities() & QgsVectorDataProvider::AddFeatures)
-	    {
-	      mActionToggleEditing->setEnabled(true);
-	      mActionToggleEditing->setChecked(vlayer->isEditable());
-	      mActionEditPaste->setEnabled(true);
-	    }
-	  else
-	    {
-	      mActionToggleEditing->setEnabled(false);
-	      mActionEditPaste->setEnabled(false);
-	    }
-
-	  //does provider allow deleting of features?
-	  if(dprovider->capabilities() & QgsVectorDataProvider::DeleteFeatures)
-	    {
-	      mActionDeleteSelected->setEnabled(true);
-	      mActionEditCut->setEnabled(true);
-	    }
-	  else
-	    {
-	      mActionDeleteSelected->setEnabled(false);
-	      mActionEditCut->setEnabled(false);
-	    }
-
-
-	  if(vlayer->vectorType() == QGis::Point)
-	    {
-	      if(dprovider->capabilities() & QgsVectorDataProvider::AddFeatures)
-		{
-		  mActionCapturePoint->setEnabled(true);
-		}
-	      else
-		{
-		  mActionCapturePoint->setEnabled(false);
-		}
-	      mActionCaptureLine->setEnabled(false);
-	      mActionCapturePolygon->setEnabled(false);
-	      mActionAddVertex->setEnabled(false);
-	      mActionDeleteVertex->setEnabled(false);
-	      mActionAddRing->setEnabled(false);
-	      mActionAddIsland->setEnabled(false);
-	      if(dprovider->capabilities() & QgsVectorDataProvider::ChangeGeometries)
-		{
-		  mActionMoveVertex->setEnabled(true);
-		}
-	      return;
-	    }
-	  else if(vlayer->vectorType() == QGis::Line)
-	    {
-	      if(dprovider->capabilities() & QgsVectorDataProvider::AddFeatures)
-		{
-		  mActionCaptureLine->setEnabled(true);
-		}
-	      else
-		{
-		  mActionCaptureLine->setEnabled(false);
-		}
-	      mActionCapturePoint->setEnabled(false);
-	      mActionCapturePolygon->setEnabled(false);
-	      mActionAddRing->setEnabled(false);
-	      mActionAddIsland->setEnabled(false);
-	    }
-	  else if(vlayer->vectorType() == QGis::Polygon)
-	    {
-	      if(dprovider->capabilities() & QgsVectorDataProvider::AddFeatures)
-		{
-		  mActionCapturePolygon->setEnabled(true);
-		}
-	      else
-		{
-		  mActionCapturePolygon->setEnabled(false);
-		}
-	      mActionCapturePoint->setEnabled(false);
-	      mActionCaptureLine->setEnabled(false);
-	    }
-
-	  //are add/delete/move vertex supported?
-	  if(dprovider->capabilities() & QgsVectorDataProvider::ChangeGeometries)
-	    {
-	      mActionAddVertex->setEnabled(true);
-	      mActionMoveVertex->setEnabled(true);
-	      mActionDeleteVertex->setEnabled(true);
-	      if(vlayer->vectorType() == QGis::Polygon)
-		{
-		  mActionAddRing->setEnabled(true);
-		  //some polygon layers contain also multipolygon features. 
-		  //Therefore, the test for multipolygon is done in QgsGeometry
-		  mActionAddIsland->setEnabled(true);
-		}
-	    }
-	  else
-	    {
-	      mActionAddVertex->setEnabled(false);
-	      mActionMoveVertex->setEnabled(false);
-	      mActionDeleteVertex->setEnabled(false);
-	    }
-	  return;
-	}
-    }
-  /*************Raster layers*************/
-  else if(layer->type() == QgsMapLayer::RASTER)
-    {
-      mActionSelect->setEnabled(false);
-      mActionOpenTable->setEnabled(false);
-      mActionToggleEditing->setEnabled(false);
-      mActionCapturePoint->setEnabled(false);
-      mActionCaptureLine->setEnabled(false);
-      mActionCapturePolygon->setEnabled(false);
-      mActionDeleteSelected->setEnabled(false);
-      mActionAddRing->setEnabled(false);
-      mActionAddIsland->setEnabled(false);
-      mActionAddVertex->setEnabled(false);
-      mActionDeleteVertex->setEnabled(false);
-      mActionMoveVertex->setEnabled(false);
-      mActionEditCopy->setEnabled(false);
-      mActionEditCut->setEnabled(false);
-      mActionEditPaste->setEnabled(false);
-
-      const QgsRasterLayer* vlayer = dynamic_cast<const QgsRasterLayer*> (layer);
-      const QgsRasterDataProvider* dprovider = vlayer->getDataProvider();
-      if (dprovider)
+      //start editing/stop editing
+      if(dprovider->capabilities() & QgsVectorDataProvider::AddFeatures)
       {
-        // does provider allow the identify map tool?
-        if (dprovider->capabilities() & QgsRasterDataProvider::Identify)
+        mActionToggleEditing->setEnabled(true);
+        mActionToggleEditing->setChecked(vlayer->isEditable());
+        mActionEditPaste->setEnabled(vlayer->isEditable());
+      }
+      else
+      {
+        mActionToggleEditing->setEnabled(false);
+        mActionEditPaste->setEnabled(false);
+      }
+
+      //does provider allow deleting of features?
+      if(vlayer->isEditable() && dprovider->capabilities() & QgsVectorDataProvider::DeleteFeatures)
+      {
+        mActionDeleteSelected->setEnabled(true);
+        mActionEditCut->setEnabled(true);
+      }
+      else
+      {
+        mActionDeleteSelected->setEnabled(false);
+        mActionEditCut->setEnabled(false);
+      }
+
+
+      if(vlayer->vectorType() == QGis::Point)
+      {
+        if(vlayer->isEditable() && dprovider->capabilities() & QgsVectorDataProvider::AddFeatures)
         {
-          mActionIdentify->setEnabled(TRUE);
+          mActionCapturePoint->setEnabled(true);
         }
         else
         {
-          mActionIdentify->setEnabled(FALSE);
+          mActionCapturePoint->setEnabled(false);
+        }
+        mActionCaptureLine->setEnabled(false);
+        mActionCapturePolygon->setEnabled(false);
+        mActionAddVertex->setEnabled(false);
+        mActionDeleteVertex->setEnabled(false);
+        mActionAddRing->setEnabled(false);
+        mActionAddIsland->setEnabled(false);
+        if(vlayer->isEditable() && dprovider->capabilities() & QgsVectorDataProvider::ChangeGeometries)
+        {
+          mActionMoveVertex->setEnabled(true);
+        }
+        return;
+      }
+      else if(vlayer->vectorType() == QGis::Line)
+      {
+        if(vlayer->isEditable() && dprovider->capabilities() & QgsVectorDataProvider::AddFeatures)
+        {
+          mActionCaptureLine->setEnabled(true);
+        }
+        else
+        {
+          mActionCaptureLine->setEnabled(false);
+        }
+        mActionCapturePoint->setEnabled(false);
+        mActionCapturePolygon->setEnabled(false);
+        mActionAddRing->setEnabled(false);
+        mActionAddIsland->setEnabled(false);
+      }
+      else if(vlayer->vectorType() == QGis::Polygon)
+      {
+        if(vlayer->isEditable() && dprovider->capabilities() & QgsVectorDataProvider::AddFeatures)
+        {
+          mActionCapturePolygon->setEnabled(true);
+        }
+        else
+        {
+          mActionCapturePolygon->setEnabled(false);
+        }
+        mActionCapturePoint->setEnabled(false);
+        mActionCaptureLine->setEnabled(false);
+      }
+
+      //are add/delete/move vertex supported?
+      if(vlayer->isEditable() && dprovider->capabilities() & QgsVectorDataProvider::ChangeGeometries)
+      {
+        mActionAddVertex->setEnabled(true);
+        mActionMoveVertex->setEnabled(true);
+        mActionDeleteVertex->setEnabled(true);
+        if(vlayer->vectorType() == QGis::Polygon)
+        {
+          mActionAddRing->setEnabled(true);
+          //some polygon layers contain also multipolygon features. 
+          //Therefore, the test for multipolygon is done in QgsGeometry
+          mActionAddIsland->setEnabled(true);
         }
       }
+      else
+      {
+        mActionAddVertex->setEnabled(false);
+        mActionMoveVertex->setEnabled(false);
+        mActionDeleteVertex->setEnabled(false);
+      }
+      return;
     }
+  }
+  /*************Raster layers*************/
+  else if(layer->type() == QgsMapLayer::RASTER)
+  {
+    mActionSelect->setEnabled(false);
+    mActionOpenTable->setEnabled(false);
+    mActionToggleEditing->setEnabled(false);
+    mActionCapturePoint->setEnabled(false);
+    mActionCaptureLine->setEnabled(false);
+    mActionCapturePolygon->setEnabled(false);
+    mActionDeleteSelected->setEnabled(false);
+    mActionAddRing->setEnabled(false);
+    mActionAddIsland->setEnabled(false);
+    mActionAddVertex->setEnabled(false);
+    mActionDeleteVertex->setEnabled(false);
+    mActionMoveVertex->setEnabled(false);
+    mActionEditCopy->setEnabled(false);
+    mActionEditCut->setEnabled(false);
+    mActionEditPaste->setEnabled(false);
+
+    const QgsRasterLayer* vlayer = dynamic_cast<const QgsRasterLayer*> (layer);
+    const QgsRasterDataProvider* dprovider = vlayer->getDataProvider();
+    if (dprovider)
+    {
+      // does provider allow the identify map tool?
+      if (dprovider->capabilities() & QgsRasterDataProvider::Identify)
+      {
+        mActionIdentify->setEnabled(TRUE);
+      }
+      else
+      {
+        mActionIdentify->setEnabled(FALSE);
+      }
+    }
+  }
 }
 
 
 //copy the click coord to clipboard and let the user know its there
 void QgisApp::showCapturePointCoordinate(QgsPoint & theQgsPoint)
 {
-#ifdef QGISDEBUG
-  std::cout << "Capture point (clicked on map) at position " << theQgsPoint.stringRep(2).toLocal8Bit().data() << std::endl;
-#endif
+  QgsDebugMsg("Capture point (clicked on map) at position " + theQgsPoint.stringRep(2));
 
   QClipboard *myClipboard = QApplication::clipboard();
   //if we are on x11 system put text into selection ready for middle button pasting
@@ -5092,10 +4949,7 @@ void QgisApp::addRasterLayer(QString const & rasterLayerPath,
     QString const & proxyUser,
     QString const & proxyPassword)
 {
-
-#ifdef QGISDEBUG
-  std::cout << "QgisApp::addRasterLayer: about to get library for " << providerKey.toLocal8Bit().data() << std::endl;
-#endif
+  QgsDebugMsg("about to get library for " + providerKey);
 
   mMapCanvas->freeze();
 
@@ -5108,24 +4962,19 @@ void QgisApp::addRasterLayer(QString const & rasterLayerPath,
      The caller is responsible for cobbling together the needed information to
      open the layer
      */
-#ifdef QGISDEBUG
-
-  std::cout << "QgisApp::addRasterLayer: Creating new raster layer using " <<
-    rasterLayerPath.toLocal8Bit().data() << " with baseName of " << baseName.toLocal8Bit().data() <<
-    " and layer list of " << layers.join(", ").toLocal8Bit().data() <<
-    " and style list of " << styles.join(", ").toLocal8Bit().data() <<
-    " and format of " << format.toLocal8Bit().data() <<
-    " and providerKey of " << providerKey.toLocal8Bit().data() <<
-    " and CRS of " << crs.toLocal8Bit().data() << std::endl;
-#endif
+  QgsDebugMsg( "Creating new raster layer using " + rasterLayerPath
+             + " with baseName of " + baseName
+             + " and layer list of " + layers.join(", ")
+             + " and style list of " + styles.join(", ")
+             + " and format of " + format
+             + " and providerKey of " + providerKey
+             + " and CRS of " + crs );
 
   // TODO: Remove the 0 when the raster layer becomes a full provider gateway.
   layer = new QgsRasterLayer(0, rasterLayerPath, baseName, providerKey, layers, styles, format, crs,
 			     proxyHost, proxyPort, proxyUser, proxyPassword);
 
-#ifdef QGISDEBUG
-  std::cout << "QgisApp::addRasterLayer: Constructed new layer." << std::endl;
-#endif
+  QgsDebugMsg("Constructed new layer.");
 
   if( layer && layer->isValid() )
   {
@@ -5293,6 +5142,7 @@ void QgisApp::showBookmarks()
   {
     bookmarks = new QgsBookmarks(this, Qt::WindowMinMaxButtonsHint);
   }
+  bookmarks->restorePosition();
   bookmarks->show();
   bookmarks->raise();
   bookmarks->setActiveWindow();

@@ -370,7 +370,11 @@ class QgsPostgresProvider:public QgsVectorDataProvider
      */
     QString mSchemaName;
     /**
-     * SQL statement used to limit the features retreived
+     * Name of the current schema
+     */
+    QString mCurrentSchema;
+    /**
+     * SQL statement used to limit the features retrieved
      */
     QString sqlWhereClause;
     /**

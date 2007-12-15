@@ -126,6 +126,20 @@ const QString POSTGRES_DESCRIPTION = "PostgreSQL/PostGIS data provider";
   }
   PQclear(testAccess);
 
+  PGresult *schema = PQexec(connection, "SELECT current_schema()");
+  if (PQresultStatus(schema) == PGRES_TUPLES_OK)
+  {
+    mCurrentSchema = PQgetvalue(schema, 0, 0);
+    if(mCurrentSchema==mSchemaName) {
+      mUri.clearSchema();
+      setDataSourceUri( mUri.uri() );
+    }
+  }
+  PQclear(schema);
+
+  if(mSchemaName=="")
+    mSchemaName=mCurrentSchema;
+
   if (!getGeometryDetails()) // gets srid and geometry type
   {
     // the table is not a geometry table
@@ -2214,7 +2228,7 @@ void QgsPostgresProvider::setSubsetString(QString theSQL)
   mUri.setSql(theSQL);
   // Update yet another copy of the uri. Why are there 3 copies of the
   // uri? Perhaps this needs some rationalisation.....
-  setDataSourceUri(mUri.connInfo());
+  setDataSourceUri(mUri.uri());
 
   // need to recalculate the number of features...
   getFeatureCount();
@@ -2504,7 +2518,7 @@ bool QgsPostgresProvider::getGeometryDetails()
 
   PGresult *result = executeDbCommand(connection, sql);
 
-  QgsDebugMsg("geometry column query returned " + QString(PQntuples(result)));
+  QgsDebugMsg("geometry column query returned " + QString::number(PQntuples(result)));
   QgsDebugMsg("column number of srid is " + QString::number(PQfnumber(result, "srid")));
 
   if (PQntuples(result) > 0)
