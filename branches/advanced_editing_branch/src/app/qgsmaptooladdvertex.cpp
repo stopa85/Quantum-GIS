@@ -54,6 +54,8 @@ void QgsMapToolAddVertex::canvasPressEvent(QMouseEvent * e)
       //error
     }
 
+  
+
   if(mRecentSnappingResults.size() > 0)
     {
       mRubberBand = createRubberBand();
@@ -62,6 +64,10 @@ void QgsMapToolAddVertex::canvasPressEvent(QMouseEvent * e)
       mRubberBand->addPoint(firstResult.beforeVertex, false);
       mRubberBand->addPoint(firstResult.snappedVertex, false);
       mRubberBand->addPoint(firstResult.afterVertex, true);
+    }
+  else
+    {
+      displaySnapToleranceWarning();
     }
 }
 

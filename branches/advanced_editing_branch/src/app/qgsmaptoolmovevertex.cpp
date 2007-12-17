@@ -75,6 +75,12 @@ void QgsMapToolMoveVertex::canvasPressEvent(QMouseEvent * e)
     {
       //error
     }
+
+  if(mRecentSnappingResults.size() < 1)
+    {
+      displaySnapToleranceWarning();
+      return;
+    }
   
   //create rubber band lists and index lists of moving points
   QList<QgsSnappingResult>::iterator it = mRecentSnappingResults.begin();
