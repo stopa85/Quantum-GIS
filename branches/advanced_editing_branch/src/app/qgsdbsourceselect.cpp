@@ -20,10 +20,12 @@ email                : sherman at mrcc.com
 #include "qgsdbsourceselect.h"
 
 #include "qgisapp.h"
+#include "qgslogger.h"
 #include "qgsapplication.h"
 #include "qgscontexthelp.h"
 #include "qgsnewconnection.h"
 #include "qgspgquerybuilder.h"
+#include "qgsdatasourceuri.h"
 
 #include <QInputDialog>
 #include <QMessageBox>
@@ -105,8 +107,8 @@ QgsDbSourceSelect::QgsDbSourceSelect(QgisApp *app, Qt::WFlags fl)
 
   // Do some things that couldn't be done in designer
   lstTables->horizontalHeader()->setStretchLastSection(true);
-  // Set the column count to 3 for the type, name, and sql
-  lstTables->setColumnCount(3);
+  // Set the column count
+  lstTables->setColumnCount(dbssColumns);
   mColumnLabels += tr("Type"); 
   mColumnLabels += tr("Name"); 
   mColumnLabels += tr("Sql");
@@ -159,53 +161,48 @@ void QgsDbSourceSelect::setLayerType(QString schema,
                                      QString table, QString column,
                                      QString type)
 {
-#ifdef QGISDEBUG
-  std::cerr << "Received layer type of " << type.toLocal8Bit().data()
-            << " for " 
-            << (schema+'.'+table+'.'+column).toLocal8Bit().data() 
-            << '\n';
-#endif
+  QgsDebugMsg("Received layer type of " + type + " for " + schema + '.' + table + '.' + column);
 
   // Find the right row in the table by searching for the text that
   // was put into the Name column.
-  QString full_desc = fullDescription(schema, table, column);
+  QString full_desc = fullDescription(schema, table, column, "WAITING");
 
-  QList<QTableWidgetItem*> ii = lstTables->findItems(full_desc,
-                                                     Qt::MatchExactly);
+  QList<QTableWidgetItem*> ii = lstTables->findItems(full_desc, Qt::MatchExactly);
 
   if (ii.count() > 0)
   {
-    int row = lstTables->row(ii.at(0)); // just use the first one
-    QTableWidgetItem* iconItem = lstTables->item(row, 0);
+    int row = lstTables->row(ii.at(0));
 
-    // Get the icon and tooltip text 
-    const QIcon* p;
-    QString toolTipText;
-    if (mLayerIcons.contains(type))
+    if(type!="")
     {
-      p = &(mLayerIcons.value(type).second);
-      toolTipText = mLayerIcons.value(type).first;
+      QStringList types = type.split(",");
+      updateRow(row, fullDescription(schema, table, column, "AS " + types[0]), types[0]);
+
+      for(int i=1; i<types.size(); i++) {
+        lstTables->insertRow(row+1);
+        initRow(row+1);
+        updateRow(row+1, fullDescription(schema, table, column, "AS " + types[i]), types[i]);
+      }
+
+      lstTables->resizeColumnsToContents();
     }
     else
     {
-      qDebug(("Unknown geometry type of '" + type + "'.").toLocal8Bit().data());
-      p = &(mLayerIcons.value("UNKNOWN").second);
-      toolTipText = mLayerIcons.value("UNKNOWN").first;
+      lstTables->removeRow(row);
     }
-
-    iconItem->setIcon(*p);
-    iconItem->setToolTip(toolTipText);
   }
 }
 
 QString QgsDbSourceSelect::makeGeomQuery(QString schema, 
                                                 QString table, QString column)
 {
-  QString query = "select GeometryType(\"" + column + "\") from ";
-  if (schema.length() > 0)
-    query += "\"" + schema + "\".";
-  query += "\"" + table + "\" where \"" + column + "\" is not null limit 1";
-  return query;
+  return QString("select distinct "
+		  "case"
+		  " when geometrytype(%1) IN ('POINT','MULTIPOINT') THEN 'POINT'"
+		  " when geometrytype(%1) IN ('LINESTRING','MULTILINESTRING') THEN 'LINESTRING'"
+		  " when geometrytype(%1) IN ('POLYGON','MULTIPOLYGON') THEN 'POLYGON'"
+		  " end "
+		  "from \"%2\".\"%3\"").arg(column).arg(schema).arg(table);
 }
 
 QgsDbSourceSelect::~QgsDbSourceSelect()
@@ -227,7 +224,6 @@ void QgsDbSourceSelect::populateConnectionList()
 }
 void QgsDbSourceSelect::addNewConnection()
 {
-
   QgsNewConnection *nc = new QgsNewConnection(this);
 
   if (nc->exec())
@@ -273,69 +269,123 @@ void QgsDbSourceSelect::addTables()
 {
   //store the table info
 
-  for (int i = 0; i < lstTables->rowCount(); ++i)
+  for (int i=0; i<lstTables->rowCount(); i++)
   {
-    if (lstTables->isItemSelected(lstTables->item(i, 0)))
+    if ( lstTables->isItemSelected(lstTables->item(i, dbssDetail)) )
     {
-      QString table = lstTables->item(i,1)->text() + " sql=";
-      QTableWidgetItem* sqlItem = lstTables->item(i,2);
-      if (sqlItem)
-        table += sqlItem->text();
-      m_selectedTables += table;
+      QString table = lstTables->item(i,dbssDetail)->text();
+      QString query;
+
+      bool applyFilter = table.contains(") AS ");
+      if( applyFilter ) {
+        int i = table.find("(");
+        int j = table.find(")");
+        QString column = table.mid(i+1,j-i-1);
+	QString type = table.mid(j+5);
+	query += table.left(j+1) + " sql=";
+	
+        if( type=="POINT" ) {
+          query += QString("GeometryType(\"%1\") IN ('POINT','MULTIPOINT')").arg(column);
+        } else if(type=="LINESTRING") {
+          query += QString("GeometryType(\"%1\") IN ('LINESTRING','MULTILINESTRING')").arg(column);
+        } else if(type=="POLYGON") {
+          query += QString("GeometryType(\"%1\") IN ('POLYGON','MULTIPOLYGON')").arg(column);
+        } else {
+          continue;
+        }
+      }
+      else
+      {
+	query += table + " sql=";
+      }
+
+      QTableWidgetItem *sqlItem = lstTables->item(i, dbssSql);
+      if (sqlItem && sqlItem->text()!="" )
+      {
+        if(applyFilter)
+          query += QString(" AND (%1)").arg( sqlItem->text() );
+        else
+          query += sqlItem->text();
+      }
+
+      m_selectedTables += query;
     }
   }
 
   // BEGIN CHANGES ECOS
-  if (m_selectedTables.empty() == true)
+  if ( m_selectedTables.empty() )
     QMessageBox::information(this, tr("Select Table"), tr("You must select a table in order to add a Layer."));
   else
     accept();
   // END CHANGES ECOS
 }
 
+void QgsDbSourceSelect::initRow(int row)
+{
+  QTableWidgetItem *iconItem = new QTableWidgetItem();
+  lstTables->setItem(row, dbssType, iconItem);
+
+  QTableWidgetItem *textItem = new QTableWidgetItem();
+  textItem->setToolTip( tr("double click to open PostgreSQL query builder") );
+  lstTables->setItem(row, dbssDetail, textItem);
+}
+
+void QgsDbSourceSelect::updateRow(int row, QString detail, QString type)
+{
+  if (!mLayerIcons.contains(type))
+    type="UNKNOWN";
+
+  QTableWidgetItem *iconItem = lstTables->item(row, dbssType);
+  iconItem->setIcon( mLayerIcons.value(type).second );
+  iconItem->setToolTip( mLayerIcons.value(type).first );
+
+  lstTables->item(row, dbssDetail)->setText( detail );
+}
+
 void QgsDbSourceSelect::on_btnConnect_clicked()
 {
+  if(mColumnTypeThread)
+  {
+    mColumnTypeThread->stop();
+    mColumnTypeThread=0;
+  }
   // populate the table list
   QSettings settings;
 
-  QString key = "/PostgreSQL/connections/" + cmbConnections->currentText();
-  QString connString = "host=";
-  QString host = settings.readEntry(key + "/host");
-  connString += host;
-  connString += " dbname=";
-  QString database = settings.readEntry(key + "/database");
-  connString += database + " port=";
-  QString port = settings.readEntry(key + "/port");
-  if(port.length() == 0){
-    port = "5432";
-  }
-  connString += port + " user=";
-  QString username = settings.readEntry(key + "/username");
-  connString += username;
-  QString password = settings.readEntry(key + "/password");
-  bool searchPublicOnly = settings.readBoolEntry(key + "/publicOnly");
-  bool searchGeometryColumnsOnly = settings.readBoolEntry(key + "/geometryColumnsOnly");
   bool makeConnection = true;
+  QString key = "/PostgreSQL/connections/" + cmbConnections->currentText();
+
+  QString database = settings.readEntry(key + "/database");
+  QString username = settings.readEntry(key + "/username");
+  QString password = settings.readEntry(key + "/password");
+
   if (password == QString::null)
   {
     // get password from user 
     makeConnection = false;
-    QString password = QInputDialog::getText(tr("Password for ") + database + "@" + host,
+    QString password = QInputDialog::getText(tr("Password for ") + username,
         tr("Please enter your password:"),
         QLineEdit::Password, QString::null, &makeConnection, this);
     // allow null password entry in case its valid for the database
   }
 
+  QgsDataSourceURI uri;
+  uri.setConnection( settings.readEntry(key + "/host"),
+		     settings.readEntry(key + "/port"),
+		     database,
+		     settings.readEntry(key + "/username"),
+		     password );
+
+  bool searchPublicOnly = settings.readBoolEntry(key + "/publicOnly");
+  bool searchGeometryColumnsOnly = settings.readBoolEntry(key + "/geometryColumnsOnly");
+
   // Need to escape the password to allow for single quotes and backslashes
-  password.replace('\\', "\\\\");
-  password.replace('\'', "\\'");
-  connString += " password='" + password + "'";
-#ifdef QGISDEBUG
-  std::cout << "Connection info: " << connString.toLocal8Bit().data() << std::endl;
-#endif
+
+  QgsDebugMsg("Connection info: " + uri.connInfo());
+
   if (makeConnection)
   {
-    m_connInfo = connString;  //host + " " + database + " " + username + " " + password;
+    m_connInfo = uri.connInfo();
     //qDebug(m_connInfo);
     // Tidy up an existing connection if one exists.
     if (pd != 0)
@@ -351,39 +401,39 @@ void QgsDbSourceSelect::on_btnConnect_clicked()
       {
         QString myThemePath = QgsApplication::themePath();
         mLayerIcons.insert("POINT",
-                           qMakePair(tr("Point layer"), 
-                            QIcon(myThemePath+"/mIconPointLayer.png")));
+            qMakePair(tr("Point layer"), 
+              QIcon(myThemePath+"/mIconPointLayer.png")));
         mLayerIcons.insert("MULTIPOINT", 
-                           qMakePair(tr("Multi-point layer"), 
-                            mLayerIcons.value("POINT").second));
+            qMakePair(tr("Multi-point layer"), 
+              mLayerIcons.value("POINT").second));
 
         mLayerIcons.insert("LINESTRING",
-                           qMakePair(tr("Linestring layer"), 
-                            QIcon(myThemePath+"/mIconLineLayer.png")));
+            qMakePair(tr("Linestring layer"), 
+              QIcon(myThemePath+"/mIconLineLayer.png")));
         mLayerIcons.insert("MULTILINESTRING",
-                           qMakePair(tr("Multi-linestring layer"), 
-                            mLayerIcons.value("LINESTRING").second));
+            qMakePair(tr("Multi-linestring layer"), 
+              mLayerIcons.value("LINESTRING").second));
 
         mLayerIcons.insert("POLYGON",
-                           qMakePair(tr("Polygon layer"), 
-                            QIcon(myThemePath+"/mIconPolygonLayer.png")));
+            qMakePair(tr("Polygon layer"), 
+              QIcon(myThemePath+"/mIconPolygonLayer.png")));
         mLayerIcons.insert("MULTIPOLYGON",
-                           qMakePair(tr("Multi-polygon layer"),
-                            mLayerIcons.value("POLYGON").second));
+            qMakePair(tr("Multi-polygon layer"),
+              mLayerIcons.value("POLYGON").second));
 
         mLayerIcons.insert("GEOMETRY",
-                           qMakePair(tr("Mixed geometry layer"), 
-                            QIcon(myThemePath+"/mIconGeometryLayer.png")));
+            qMakePair(tr("Mixed geometry layer"), 
+              QIcon(myThemePath+"/mIconGeometryLayer.png")));
         mLayerIcons.insert("GEOMETRYCOLLECTION",
-                           qMakePair(tr("Geometry collection layer"), 
-                            mLayerIcons.value("GEOMETRY").second));
+            qMakePair(tr("Geometry collection layer"), 
+              mLayerIcons.value("GEOMETRY").second));
 
         mLayerIcons.insert("WAITING",
-                           qMakePair(tr("Waiting for layer type"), 
-                            QIcon(myThemePath+"/mIconWaitingForLayerType.png")));
+            qMakePair(tr("Waiting for layer type"), 
+              QIcon(myThemePath+"/mIconWaitingForLayerType.png")));
         mLayerIcons.insert("UNKNOWN",
-                           qMakePair(tr("Unknown layer type"), 
-                            QIcon(myThemePath+"/mIconUnknownLayerType.png")));
+            qMakePair(tr("Unknown layer type"), 
+              QIcon(myThemePath+"/mIconUnknownLayerType.png")));
       }
       //qDebug("Connection succeeded");
       // tell the DB that we want text encoded in UTF8
@@ -405,32 +455,12 @@ void QgsDbSourceSelect::on_btnConnect_clicked()
         geomCol::const_iterator iter = details.begin();
         for (; iter != details.end(); ++iter)
         {
-          QString toolTipText;
-          const QIcon* p;
+          QString type = iter->second;
+          int row = lstTables->rowCount();
+          lstTables->setRowCount(row+1);
 
-          if (mLayerIcons.contains(iter->second))
-          {
-            p = &(mLayerIcons.value(iter->second).second);
-            toolTipText = mLayerIcons.value(iter->second).first;
-          }
-          else
-          {
-	    qDebug(("Unknown geometry type of '" + iter->second + "'.").toLocal8Bit().data());
-            p = &(mLayerIcons.value("UNKNOWN").second);
-            toolTipText = mLayerIcons.value("UNKNOWN").first;
-          }
-
-          if (p != 0)
-          {
-            QTableWidgetItem *iconItem = new QTableWidgetItem();
-            iconItem->setIcon(*p);
-            iconItem->setToolTip(toolTipText);
-            QTableWidgetItem *textItem = new QTableWidgetItem(iter->first);
-            int row = lstTables->rowCount();
-            lstTables->setRowCount(row+1);
-            lstTables->setItem(row, 0, iconItem);
-            lstTables->setItem(row, 1, textItem);
-          }
+          initRow(row);
+          updateRow(row, iter->first, type);
         }
 
         // And tidy up the columns & rows
@@ -441,19 +471,13 @@ void QgsDbSourceSelect::on_btnConnect_clicked()
         // may take a long time to return
         if (mColumnTypeThread != NULL)
         {
-            connect(mColumnTypeThread, 
-                    SIGNAL(setLayerType(QString,QString,QString,QString)),
-                    this, 
-                    SLOT(setLayerType(QString,QString,QString,QString)));
-            // Do it in a thread. Does not yet cope correctly with the
-            // layer selection dialog box closing before the thread
-            // completes, nor the qgis process ending before the
-            // thread completes, nor does the thread know to stop working
-            // when the user chooses a layer.
-            //mColumnTypeThread->start();
+           connect(mColumnTypeThread, SIGNAL(setLayerType(QString,QString,QString,QString)),
+                   this, SLOT(setLayerType(QString,QString,QString,QString)));
+	   connect(this, SIGNAL(finished()),
+	           mColumnTypeThread, SLOT(stop()) );
 
-            // do it in this process for the moment. 
-            mColumnTypeThread->getLayerTypes();
+            // Do it in a thread.
+            mColumnTypeThread->start();
         }
       }
       else
@@ -465,7 +489,8 @@ void QgsDbSourceSelect::on_btnConnect_clicked()
       if (cmbConnections->count() > 0)
         btnAdd->setEnabled(true);
       // END CHANGES ECOS
-    } else
+    }
+    else
     {
       QMessageBox::warning(this, tr("Connection failed"),
           tr
@@ -487,9 +512,9 @@ QString QgsDbSourceSelect::connInfo()
 void QgsDbSourceSelect::setSql(QTableWidgetItem *item)
 {
   int row = lstTables->row(item);
-  QString tableText = lstTables->item(row, 1)->text();
+  QString tableText = lstTables->item(row, dbssDetail)->text();
 
-  QTableWidgetItem* sqlItem = lstTables->item(row, 2);
+  QTableWidgetItem* sqlItem = lstTables->item(row, dbssSql);
   QString sqlText;
   if (sqlItem)
     sqlText = sqlItem->text();
@@ -511,16 +536,23 @@ void QgsDbSourceSelect::setSql(QTableWidgetItem *item)
     if (!sqlItem)
     {
       sqlItem = new QTableWidgetItem();
-      lstTables->setItem(row, 2, sqlItem);
+      lstTables->setItem(row, dbssSql, sqlItem);
     }
     sqlItem->setText(pgb->sql());
-    // Ensure that the current row remains selected
-    lstTables->setItemSelected(lstTables->item(row,0), true);
-    lstTables->setItemSelected(lstTables->item(row,1), true);
-    lstTables->setItemSelected(lstTables->item(row,2), true);
   }
   // delete the query builder object
   delete pgb;
+}
+
+void QgsDbSourceSelect::addSearchGeometryColumn(const QString &schema, const QString &table, const QString &column)
+{
+  // store the column details and do the query in a thread
+  if (mColumnTypeThread == NULL)
+  {
+    mColumnTypeThread = new QgsGeomColumnTypeThread();
+    mColumnTypeThread->setConnInfo(m_connInfo);
+  }
+  mColumnTypeThread->addGeometryColumn(schema, table, column);
 }
 
 bool QgsDbSourceSelect::getGeometryColumnInfo(PGconn *pg, 
@@ -528,6 +560,8 @@ bool QgsDbSourceSelect::getGeometryColumnInfo(PGconn *pg,
                                               bool searchPublicOnly)
 {
   bool ok = false;
+
+  QApplication::setOverrideCursor(Qt::waitCursor);
 
   QString sql = "select * from geometry_columns";
   // where f_table_schema ='" + settings.readEntry(key + "/database") + "'";
@@ -557,29 +591,24 @@ bool QgsDbSourceSelect::getGeometryColumnInfo(PGconn *pg,
       PGresult* exists = PQexec(pg, sql.toLocal8Bit().data());
       if (PQntuples(exists) == 1)
       {
-        QString v = "";
-
-        if (schemaName.length() > 0)
-        {
-          v += '"';
-          v += schemaName;
-          v += "\".";
-        }
-
-        v += '"';
-        v += tableName;
-        v += "\" (";
-        v += PQgetvalue(result, idx, PQfnumber(result, "f_geometry_column"));
-        v += ")";
-
+        QString column = PQgetvalue(result, idx, PQfnumber(result, "f_geometry_column"));
         QString type = PQgetvalue(result, idx, PQfnumber(result, "type"));
-        details.push_back(geomPair(v, type));
+        
+	QString as = "";
+	if(type=="GEOMETRY" && !searchGeometryColumnsOnly) {
+	  addSearchGeometryColumn(schemaName, tableName,  column);
+	  as=type="WAITING";
+	}
+
+	details.push_back(geomPair(fullDescription(schemaName, tableName, column, as), type));
       }
       PQclear(exists);
     }
     ok = true;
   }
   PQclear(result);
+
+  QApplication::restoreOverrideCursor();
 
   if (searchGeometryColumnsOnly)
     return ok;
@@ -617,36 +646,8 @@ bool QgsDbSourceSelect::getGeometryColumnInfo(PGconn *pg,
     QString column = PQgetvalue(result, i, 2); // attname
     QString relkind = PQgetvalue(result, i, 3); // relation kind
 
-    QString full_desc = fullDescription(schema, table, column);
-
-    QString type = "UNKNOWN";
-    if (relkind == "r")
-    {
-      QString query = makeGeomQuery(schema, table, column);
-      PGresult* gresult = PQexec(pg, query.toLocal8Bit().data());
-      if (PQresultStatus(gresult) != PGRES_TUPLES_OK)
-        {
-          QString myError = (tr("Access to relation ") + table + tr(" using sql;\n") + query +
-                             tr("\nhas failed. The database said:\n"));
-          qDebug(myError + QString(PQresultErrorMessage(gresult)));
-        }
-      else if (PQntuples(gresult) > 0)
-        type = PQgetvalue(gresult, 0, 0); // GeometryType
-      PQclear(gresult);
-    }
-    else // view
-    {
-      // store the column details and do the query in a thread
-      if (mColumnTypeThread == NULL)
-      {
-        mColumnTypeThread = new QgsGeomColumnTypeThread();
-        mColumnTypeThread->setConnInfo(m_connInfo);
-      }
-      mColumnTypeThread->setGeometryColumn(schema, table, column);
-      type = "WAITING";
-    }
-
-    details.push_back(geomPair(full_desc, type));
+    addSearchGeometryColumn(schema, table, column);
+    details.push_back(geomPair(fullDescription(schema, table, column, "WAITING"), "WAITING"));
   }
   ok = true;
 
@@ -663,12 +664,12 @@ void QgsDbSourceSelect::showHelp()
   QgsContextHelp::run(context_id);
 }
 QString QgsDbSourceSelect::fullDescription(QString schema, QString table, 
-                                           QString column)
+					   QString column, QString type)
 {
   QString full_desc = "";
   if (schema.length() > 0)
     full_desc = '"' + schema + "\".\"";
-  full_desc += table + "\" (" + column + ")";
+  full_desc += table + "\" (" + column + ") " + type;
   return full_desc;
 }
 void QgsDbSourceSelect::dbChanged()
@@ -715,30 +716,49 @@ void QgsGeomColumnTypeThread::setConnInfo(QString s)
   mConnInfo = s;
 }
 
-void QgsGeomColumnTypeThread::setGeometryColumn(QString schema, QString table, QString column)
+void QgsGeomColumnTypeThread::addGeometryColumn(QString schema, QString table, QString column)
 {
   schemas.push_back(schema);
   tables.push_back(table);
   columns.push_back(column);
 }
 
+void QgsGeomColumnTypeThread::stop()
+{
+  mStopped=true;
+}
+
 void QgsGeomColumnTypeThread::getLayerTypes()
 {
+  mStopped=false;
+
   PGconn *pd = PQconnectdb(mConnInfo.toLocal8Bit().data());
   if (PQstatus(pd) == CONNECTION_OK)
   {
     PQsetClientEncoding(pd, "UNICODE");
 
-    for (uint i = 0; i < schemas.size(); ++i)
+    for (uint i = 0; i<schemas.size(); i++)
     {
       QString query = QgsDbSourceSelect::makeGeomQuery(schemas[i],
                                                        tables[i],
                                                        columns[i]);
       PGresult* gresult = PQexec(pd, query.toLocal8Bit().data());
       QString type;
-      if (PQresultStatus(gresult) == PGRES_TUPLES_OK)
-        type = PQgetvalue(gresult, 0, 0);
+      if (PQresultStatus(gresult) == PGRES_TUPLES_OK) {
+	QStringList types;
+
+	for(int j=0; j<PQntuples(gresult); j++) {
+		QString type = PQgetvalue(gresult, j, 0);
+		if(type!="")
+		  types += type;
+	}
+
+	type = types.join(",");
+      }
       PQclear(gresult);
+
+      if(mStopped)
+        break;
 
       // Now tell the layer list dialog box...
       emit setLayerType(schemas[i], tables[i], columns[i], type);

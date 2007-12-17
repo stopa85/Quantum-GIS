@@ -29,8 +29,11 @@ email                : sherman at mrcc.com
 #include <qstring.h>
 #include <QWidget>
 #include <QApplication>
-#include "../../src/core/qgscontexthelp.h"
 #include "qgsmapserverexport.h"
+
+// from CORE library
+#include "qgsapplication.h"
+#include "qgscontexthelp.h"
 
 
 // constructor
@@ -71,7 +74,7 @@ QString QgsMapserverExport::baseName()
 void QgsMapserverExport::on_btnChooseFile_clicked()
 {
   mapFile = QFileDialog::getSaveFileName(this, tr("Name for the map file"),
-      ".", tr("MapServer map files (*.map);;All files(*.*)","Filter list for selecting files from a dialog box"));
+      ".", tr("MapServer map files (*.map);;All files (*.*)","Filter list for selecting files from a dialog box"));
   txtMapFilePath->setText(mapFile);
 
 }
@@ -114,17 +117,9 @@ void QgsMapserverExport::apply()
   //TODO Need to append the path to the qgis python files using the path to the
   //     Python files in the QGIS install directory
   PyRun_SimpleString("import sys");
-  QString prefixPath = QApplication::applicationDirPath();
-  // Setup up path to the python script directory based on platform
-#ifdef Q_WS_MACX
-  QString dataPath = prefixPath + "/../../../../share/qgis";
-#elif WIN32
-  QString dataPath = prefixPath + "/share/qgis";
-#else
-  QString dataPath ( PKGDATAPATH );
-#endif
-  dataPath = dataPath.trimmed();
-  QString scriptDir = dataPath + QDir::separator() + "python";
+
+  // Setup up path to the python script directory
+  QString scriptDir = QgsApplication::pkgDataPath() + QDir::separator() + "python";
   qDebug("Python scripts directory: " + scriptDir.toLocal8Bit());
   //QString curdir = "/home/gsherman/development/qgis_qt_port/tools/mapserver_export";
   QString sysCmd = QString("sys.path.append('%1')").arg(scriptDir);
@@ -133,6 +128,10 @@ void QgsMapserverExport::apply()
   // Import the module
   std::cout << "Importing module" << std::endl; 
   pmod = PyImport_ImportModule("ms_export");
+  if(!pmod) {
+	  QMessageBox::warning(this, "Map Export Error", "ms_export python module not found");
+	  return;
+  }
 
   std::cout << "Getting Qgis2Map constructor as python obj" << std::endl; 
   pclass = PyObject_GetAttrString(pmod, "Qgis2Map");
@@ -167,12 +166,17 @@ void QgsMapserverExport::apply()
   pargs = Py_BuildValue("()");
   // Execute the writeMapFile method to parse the QGIS project file and create the .map file
   pstr = PyEval_CallObject(pmeth, pargs);
-  // Show the return value
-  PyArg_Parse(pstr, "s", &cstr);
-  std::cout << cstr << std::endl;  
+  if(pstr) {
+    // Show the return value
+    PyArg_Parse(pstr, "s", &cstr);
+    std::cout << "Result: " << std::endl  << cstr << std::endl;
 
-  Py_DECREF(pstr);
-
+    // Show the results to the user
+    QMessageBox::information(this, "Results of Export", QString(cstr));
+    Py_DECREF(pstr);
+  } else {
+    QMessageBox::warning(this, "Mapfile Export Error", "method call failed");
+  }
 }
 void QgsMapserverExport::on_buttonBox_helpRequested()
 {
