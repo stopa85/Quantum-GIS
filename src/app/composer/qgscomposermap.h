@@ -25,7 +25,8 @@
 
 class QgsComposition;
 class QgsMapCanvas;
-class QgsMapToPixel;
+//class QgsMapToPixel;
+class QSize;
 class QDomNode;
 class QDomDocument;
 class QPainter;
@@ -72,7 +73,8 @@ public:
     bool readXML( QDomNode & node );
      
     /** \brief Draw to paint device */
-    void draw(QPainter *painter, QgsRect &extent, QgsMapToPixel *transform);
+    void draw(QPainter *painter, QgsRect &extent, QSize &size);
+
 
     /** \brief Reimplementation of QCanvasItem::paint - draw on canvas */
     void paint (QPainter* painter, const QStyleOptionGraphicsItem* itemStyle, QWidget* pWidget);

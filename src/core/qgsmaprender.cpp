@@ -137,7 +137,7 @@ void QgsMapRender::adjustExtentToSize()
                / static_cast<double>(myHeight);
   double muppX = static_cast<double>(mExtent.width())  
                / static_cast<double>(myWidth);
-  mMupp = muppY > muppX ? muppY : muppX;
+  mMupp = muppY > muppX ? muppY : muppX; //find the larger of the two mupp values
 
   // calculate the actual extent of the mapCanvas
   double dxmin, dxmax, dymin, dymax, whitespace;
