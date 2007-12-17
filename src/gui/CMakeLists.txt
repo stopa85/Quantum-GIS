@@ -28,6 +28,7 @@ qgsencodingfiledialog.h
 qgslayerprojectionselector.h
 qgsmapcanvas.h
 qgsmapoverviewcanvas.h
+qgsmessageviewer.h
 qgsmaptoolemitpoint.h
 qgsprojectionselector.h
 )
@@ -81,8 +82,8 @@ ENDIF (APPLE)
 
 INSTALL(TARGETS qgis_gui
   RUNTIME DESTINATION ${QGIS_BIN_DIR}
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib)
+  LIBRARY DESTINATION ${QGIS_LIB_DIR}
+  ARCHIVE DESTINATION ${QGIS_LIB_DIR})
 
 # for installing headers
 

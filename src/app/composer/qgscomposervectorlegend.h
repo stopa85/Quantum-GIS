@@ -138,7 +138,7 @@ public slots:
     void on_mFontButton_clicked ( void );
 
     // Title changed
-    void on_mTitleLineEdit_returnPressed ( void );
+    void on_mTitleLineEdit_editingFinished ( void );
     
     // Called by GUI if preview style was changed
     void on_mPreviewModeComboBox_activated ( int i );
@@ -185,10 +185,10 @@ private:
     // Pen
     QPen  mPen;
 
-    int mMargin;
-    int mSymbolHeight;
-    int mSymbolWidth;
-    int mSymbolSpace;
+    double mMargin;
+    double mSymbolHeight;
+    double mSymbolWidth;
+    double mSymbolSpace;
 
     // Cache used in composer preview
     // NOTE:  QCanvasView is slow with bigger images but the spped does not decrease with image size.

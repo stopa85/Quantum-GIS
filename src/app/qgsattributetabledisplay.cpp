@@ -36,6 +36,7 @@
 #include <QMessageBox>
 #include <QIcon>
 #include <QPixmap>
+#include <QSettings>
 #include <QToolButton>
 
 QgsAttributeTableDisplay::QgsAttributeTableDisplay(QgsVectorLayer* layer, QgisApp * qgisApp)
@@ -44,11 +45,13 @@ QgsAttributeTableDisplay::QgsAttributeTableDisplay(QgsVectorLayer* layer, QgisAp
   mQgisApp(qgisApp)
 {
   setupUi(this);
+  restorePosition();
   setTheme();
   connect(mRemoveSelectionButton, SIGNAL(clicked()), this, SLOT(removeSelection()));
   connect(mSelectedToTopButton, SIGNAL(clicked()), this, SLOT(selectedToTop()));
   connect(mInvertSelectionButton, SIGNAL(clicked()), this, SLOT(invertSelection()));
   connect(mCopySelectedRowsButton, SIGNAL(clicked()), this, SLOT(copySelectedRowsToClipboard()));
+  connect(mZoomMapToSelectedRowsButton, SIGNAL(clicked()), this, SLOT(zoomMapToSelectedRows()));
   connect(mAddAttributeButton, SIGNAL(clicked()), this, SLOT(addAttribute()));
   connect(mDeleteAttributeButton, SIGNAL(clicked()), this, SLOT(deleteAttributes()));
   connect(btnStartEditing, SIGNAL(clicked()), this, SLOT(startEditing()));
@@ -108,6 +111,7 @@ void QgsAttributeTableDisplay::setTheme()
   mSelectedToTopButton->setPixmap(QPixmap(myIconPath+"/mActionSelectedToTop.png"));
   mInvertSelectionButton->setPixmap(QPixmap(myIconPath+"/mActionInvertSelection.png"));
   mCopySelectedRowsButton->setPixmap(QPixmap(myIconPath+"/mActionCopySelected.png"));
+  mZoomMapToSelectedRowsButton->setPixmap(QPixmap(myIconPath+"/mActionZoomToSelected.png"));
   mAddAttributeButton->setPixmap(QPixmap(myIconPath+"/mActionNewAttribute.png"));
   mDeleteAttributeButton->setPixmap(QPixmap(myIconPath+"/mActionDeleteAttribute.png"));
 }
@@ -243,6 +247,11 @@ void QgsAttributeTableDisplay::copySelectedRowsToClipboard()
   mQgisApp->editCopy(mLayer);
 }
 
+void QgsAttributeTableDisplay::zoomMapToSelectedRows()
+{
+  mQgisApp->zoomToSelected();
+}
+
 void QgsAttributeTableDisplay::search()
 {
   // if selected field is numeric, numeric comparison will be used
@@ -367,10 +376,23 @@ void QgsAttributeTableDisplay::doSearch(const QString& searchString)
 
 void QgsAttributeTableDisplay::closeEvent(QCloseEvent* ev)
 {
+  saveWindowLocation();
   ev->ignore();
   emit deleted();
   delete this;
 }
+
+void QgsAttributeTableDisplay::restorePosition()
+{
+  QSettings settings;
+  restoreGeometry(settings.value("/Windows/AttributeTable/geometry").toByteArray());
+}
+
+void QgsAttributeTableDisplay::saveWindowLocation()
+{
+  QSettings settings;
+  settings.setValue("/Windows/AttributeTable/geometry", saveGeometry());
+} 
 
 void QgsAttributeTableDisplay::on_btnHelp_clicked()
 {

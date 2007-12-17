@@ -10,14 +10,14 @@
    </rect>
   </property>
   <property name="windowTitle" >
-   <string>QGIS Plugin Manger</string>
+   <string>QGIS Plugin Manager</string>
   </property>
   <property name="modal" >
    <bool>true</bool>
   </property>
   <layout class="QGridLayout" >
    <property name="margin" >
-    <number>10</number>
+    <number>11</number>
    </property>
    <property name="spacing" >
     <number>6</number>
@@ -25,7 +25,7 @@
    <item row="0" column="0" >
     <layout class="QHBoxLayout" >
      <property name="margin" >
-      <number>0</number>
+      <number>11</number>
      </property>
      <property name="spacing" >
       <number>6</number>
@@ -41,18 +41,12 @@
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="txtPluginDir" />
-     </item>
-     <item>
-      <widget class="QPushButton" name="btnBrowse" >
-       <property name="maximumSize" >
-        <size>
-         <width>60</width>
-         <height>32767</height>
-        </size>
+      <widget class="QLineEdit" name="txtPluginDir" >
+       <property name="windowModality" >
+        <enum>Qt::NonModal</enum>
        </property>
-       <property name="text" >
-        <string>...</string>
+       <property name="readOnly" >
+        <bool>true</bool>
        </property>
       </widget>
      </item>
@@ -103,7 +97,7 @@
    <item row="3" column="0" >
     <layout class="QHBoxLayout" >
      <property name="margin" >
-      <number>0</number>
+      <number>11</number>
      </property>
      <property name="spacing" >
       <number>6</number>
