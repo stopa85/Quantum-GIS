@@ -21,7 +21,6 @@
 class QgsFeature;
 class QgsVectorLayer;
 class QPainter;
-class QImage;
 class QDomNode;
 class QDomDocument;
 class QColor;
@@ -29,6 +28,7 @@ class QColor;
 #include "qgis.h"
 
 class QgsSymbol;
+class QgsSymbolRenderer;
 
 typedef QList<int> QgsAttributeList;
 
@@ -57,7 +57,7 @@ class CORE_EXPORT QgsRenderer
      @param f a pointer to the feature to be rendered
      @param pic pointer to an image (used for point symbols)
      @param scalefactor pointer to the scale factor for the marker image*/
-    virtual void renderFeature(QPainter* p, QgsFeature& f,QImage* pic, double* scalefactor, bool selected, double widthScale = 1.)=0;
+    virtual void renderFeature(QPainter* p, QgsFeature& f,QgsSymbolRenderer* symRenderer, double* scalefactor, bool selected, double widthScale = 1.)=0;
     /**Reads the renderer configuration from an XML file
      @param rnode the DOM node to read 
      @param vl the vector layer which will be associated with the renderer*/

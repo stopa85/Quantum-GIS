@@ -90,15 +90,15 @@ bool QgsGraduatedSymbolRenderer::willRenderFeature(QgsFeature *f)
   return (symbolForFeature(f) != 0);
 }
 
-void QgsGraduatedSymbolRenderer::renderFeature(QPainter * p, QgsFeature & f, QImage* img, 
+void QgsGraduatedSymbolRenderer::renderFeature(QPainter * p, QgsFeature & f, QgsSymbolRenderer* symRenderer, 
 	double* scalefactor, bool selected, double widthScale)
 {
   QgsSymbol* theSymbol = symbolForFeature(&f);
   if(!theSymbol)
     {
-      if ( img && mVectorType == QGis::Point )
+      if (mVectorType == QGis::Point )
 	{
-	  img->fill(0);
+	  //img->fill(0);TODO:revisit*/
 	}
       else if ( mVectorType != QGis::Point )
 	{
@@ -110,9 +110,9 @@ void QgsGraduatedSymbolRenderer::renderFeature(QPainter * p, QgsFeature & f, QIm
 
   //set the qpen and qpainter to the right values
   // Point 
-  if ( img && mVectorType == QGis::Point ) 
+  if ( mVectorType == QGis::Point ) 
     {
-      *img = theSymbol->getPointSymbolAsImage(  widthScale, selected, mSelectionColor );
+//      *img = theSymbol->getPointSymbolAsImage(  widthScale, selected, mSelectionColor );TODO:revisit*/
       if ( scalefactor ) 
 	{
 	  *scalefactor = 1;

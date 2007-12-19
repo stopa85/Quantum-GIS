@@ -67,6 +67,8 @@
 #include "qgsspatialrefsys.h"
 #include "qgsvectordataprovider.h"
 
+#include "qgssymbolrenderer.h"
+
 #ifdef Q_WS_X11
 #include "qgsclipper.h"
 #endif
@@ -793,10 +795,13 @@ void QgsVectorLayer::draw(QPainter * p,
           sel = FALSE;
         }
 
-        mRenderer->renderFeature(p, fet, &marker, &markerScaleFactor, sel, widthScale );
+QgsSymbolRenderer* symbolRenderer;
+
+
+        mRenderer->renderFeature(p, fet, symbolRenderer, &markerScaleFactor, sel, widthScale );
 
         double scale = markerScaleFactor * symbolScale;
-        drawFeature(p,fet,theMapToPixelTransform,ct, &marker, scale, drawingToEditingCanvas);
+        drawFeature(p,fet,theMapToPixelTransform,ct, symbolRenderer, scale, drawingToEditingCanvas);
 
         ++featureCount;
       }
@@ -808,8 +813,8 @@ void QgsVectorLayer::draw(QPainter * p,
         for(; it != mAddedFeatures.end(); ++it)
         {
           bool sel = mSelectedFeatureIds.contains((*it).featureId());
-          mRenderer->renderFeature(p, *it, &marker, &markerScaleFactor, 
-              sel, widthScale);
+/*          mRenderer->renderFeature(p, *it, &marker, &markerScaleFactor, 
+              sel, widthScale); TODO:revisit*/
           double scale = markerScaleFactor * symbolScale;
     
           if (mChangedGeometries.contains((*it).featureId()))
@@ -970,7 +975,6 @@ void QgsVectorLayer::setProviderEncoding(const QString& encoding)
     mDataProvider->setEncoding(encoding);
   }
 }
-
 
 const QgsRenderer* QgsVectorLayer::renderer() const
 {
@@ -1685,7 +1689,7 @@ bool QgsVectorLayer::readXML_( QDomNode & layer_node )
     renderer = new QgsSingleSymbolRenderer(vectorType());
     renderer->readXML(singlenode, *this);
   }
-  else if (!graduatednode.isNull())
+/*  else if (!graduatednode.isNull())
   {
     renderer = new QgsGraduatedSymbolRenderer(vectorType());
     renderer->readXML(graduatednode, *this);
@@ -1699,7 +1703,7 @@ bool QgsVectorLayer::readXML_( QDomNode & layer_node )
   {
     renderer = new QgsUniqueValueRenderer(vectorType());
     renderer->readXML(uniquevaluenode, *this);
-  }
+  }*/
 
   // Test if labeling is on or off
   QDomElement element = labelnode.toElement();
@@ -2841,7 +2845,154 @@ void QgsVectorLayer::drawFeature(QPainter* p,
   }
 }
 
+void QgsVectorLayer::drawFeature(QPainter* p,
+                                 QgsFeature& fet,
+                                 QgsMapToPixel * theMapToPixelTransform,
+                                 QgsCoordinateTransform* ct,
+                                 QgsSymbolRenderer * symRenderer,
+                                 double markerScaleFactor,
+                                 bool drawingToEditingCanvas)
+{
+  // Only have variables, etc outside the switch() statement that are
+  // used in all cases of the statement (otherwise they may get
+  // executed, but never used, in a bit of code where performance is
+  // critical).
 
+#if defined(Q_WS_X11)
+  bool needToTrim = false;
+#endif
+
+  QgsGeometry* geom = fet.geometry();
+  unsigned char* feature = geom->wkbBuffer();
+
+  QGis::WKBTYPE wkbType = geom->wkbType();
+
+#ifdef QGISDEBUG
+  //std::cout <<"Entering drawFeature()" << std::endl;
+#endif
+
+  switch (wkbType)
+  {
+    case QGis::WKBPoint:
+    case QGis::WKBPoint25D:
+      {
+        double x = *((double *) (feature + 5));
+        double y = *((double *) (feature + 5 + sizeof(double)));
+
+#ifdef QGISDEBUG 
+        //  std::cout <<"...WKBPoint (" << x << ", " << y << ")" <<std::endl;
+#endif
+
+        transformPoint(x, y, theMapToPixelTransform, ct);
+        //QPointF pt(x - (marker->width()/2),  y - (marker->height()/2));
+//        QPointF pt(x/markerScaleFactor - (marker->width()/2),  y/markerScaleFactor - (marker->height()/2));
+
+        p->save();
+        p->scale(markerScaleFactor,markerScaleFactor);
+        //p->drawImage(pt, *marker);
+        symRenderer->render(p);
+        p->restore();
+
+        break;
+      }
+    case QGis::WKBMultiPoint:
+    case QGis::WKBMultiPoint25D:
+      {
+        unsigned char *ptr = feature + 5;
+        unsigned int nPoints = *((int*)ptr);
+        ptr += 4;
+
+        p->save();
+        p->scale(markerScaleFactor, markerScaleFactor);
+
+        for (register unsigned int i = 0; i < nPoints; ++i)
+        {
+          ptr += 5;
+          double x = *((double *) ptr);
+          ptr += sizeof(double);
+          double y = *((double *) ptr);
+          ptr += sizeof(double);
+          
+          if (wkbType == QGis::WKBMultiPoint25D) // ignore Z value
+            ptr += sizeof(double);
+
+#ifdef QGISDEBUG 
+          std::cout <<"...WKBMultiPoint (" << x << ", " << y << ")" <<std::endl;
+#endif
+
+          transformPoint(x, y, theMapToPixelTransform, ct);
+          //QPointF pt(x - (marker->width()/2),  y - (marker->height()/2));
+//          QPointF pt(x/markerScaleFactor - (marker->width()/2),  y/markerScaleFactor - (marker->height()/2));
+#if defined(Q_WS_X11)
+          // Work around a +/- 32768 limitation on coordinates in X11
+          if (std::abs(x) > QgsClipper::maxX ||
+              std::abs(y) > QgsClipper::maxY)
+            needToTrim = true;
+          else
+#endif
+
+        symRenderer->render(p);
+        }
+        p->restore();
+
+        break;
+      }
+    case QGis::WKBLineString:
+    case QGis::WKBLineString25D:
+      {
+        drawLineString(feature,
+                       p,
+                       theMapToPixelTransform,
+                       ct,
+                       drawingToEditingCanvas);
+        break;
+      }
+    case QGis::WKBMultiLineString:
+    case QGis::WKBMultiLineString25D:
+    {
+        unsigned char* ptr = feature + 5;
+        unsigned int numLineStrings = *((int*)ptr);
+        ptr = feature + 9;
+        
+        for (register unsigned int jdx = 0; jdx < numLineStrings; jdx++)
+        {
+          ptr = drawLineString(ptr,
+                               p,
+                               theMapToPixelTransform,
+                               ct,
+                               drawingToEditingCanvas);
+        }
+        break;
+      }
+    case QGis::WKBPolygon:
+    case QGis::WKBPolygon25D:
+    {
+        drawPolygon(feature,
+                    p,
+                    theMapToPixelTransform,
+                    ct,
+                    drawingToEditingCanvas);
+        break;
+      }
+    case QGis::WKBMultiPolygon:
+    case QGis::WKBMultiPolygon25D:
+    {
+        unsigned char *ptr = feature + 5;
+        unsigned int numPolygons = *((int*)ptr);
+        ptr = feature + 9;
+        for (register unsigned int kdx = 0; kdx < numPolygons; kdx++)
+          ptr = drawPolygon(ptr,
+                            p,
+                            theMapToPixelTransform, 
+                            ct,
+                            drawingToEditingCanvas);
+        break;
+      }
+    default:
+      QgsDebugMsg("UNKNOWN WKBTYPE ENCOUNTERED");
+      break;
+  }
+}
 
 void QgsVectorLayer::setCoordinateSystem()
 {

@@ -84,40 +84,41 @@ void QgsSingleSymbolRenderer::addSymbol(QgsSymbol* sy)
     mSymbol=sy;
 }
 
-void QgsSingleSymbolRenderer::renderFeature(QPainter * p, QgsFeature & f, QImage* img, 
-	         double* scalefactor, bool selected, double widthScale)
+void QgsSingleSymbolRenderer::renderFeature(QPainter * p, QgsFeature & f, QgsSymbolRenderer* renderer, 
+           double* scalefactor, bool selected, double widthScale)
 {
-	// Point 
-	if ( img && mVectorType == QGis::Point) {
-	    *img = mSymbol->getPointSymbolAsImage(  widthScale, 
-					 selected, mSelectionColor );
-	    
-	    if ( scalefactor ) *scalefactor = 1;
-	} 
+  // Point 
+  if ( mVectorType == QGis::Point) {
+      renderer = mSymbol->symbolRenderer();
+      
+      if ( scalefactor ) *scalefactor = 1;
+  } 
 
         // Line, polygon
- 	if ( mVectorType != QGis::Point )
-	{
-	    if( !selected ) 
-	    {
-		QPen pen=mSymbol->pen();
-		pen.setWidthF ( widthScale * pen.width() );
-		p->setPen(pen);
-		p->setBrush(mSymbol->brush());
-	    }
-	    else
-	    {
-		QPen pen=mSymbol->pen();
-		pen.setWidthF ( widthScale * pen.width() );
-                if (mVectorType == QGis::Line)
-                  pen.setColor(mSelectionColor);
-		QBrush brush=mSymbol->brush();
-		brush.setColor(mSelectionColor);
-		p->setPen(pen);
-		p->setBrush(brush);
-	    }
-	}
+  if ( mVectorType != QGis::Point )
+  {
+    if( !selected ) 
+    {
+      QPen pen=mSymbol->pen();
+      pen.setWidthF ( widthScale * pen.width() );
+      p->setPen(pen);
+      p->setBrush(mSymbol->brush());
+    }
+    else
+    {
+      QPen pen=mSymbol->pen();
+      pen.setWidthF ( widthScale * pen.width() );
+      if (mVectorType == QGis::Line){
+        pen.setColor(mSelectionColor);
+      }
+      QBrush brush=mSymbol->brush();
+      brush.setColor(mSelectionColor);
+      p->setPen(pen);
+      p->setBrush(brush);
+    }
+  }
 }
+
 
 void QgsSingleSymbolRenderer::readXML(const QDomNode& rnode, QgsVectorLayer& vl)
 {

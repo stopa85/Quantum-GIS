@@ -45,6 +45,7 @@ class QgsVectorDataProvider;
 class QgsGeometry;
 class QgsRect;
 class QgsFeature;
+class QgsSymbolRenderer;
 
 //typedef QList<QgsField>   QgsFieldList;
 typedef QList<QgsFeature> QgsFeatureList;
@@ -421,6 +422,14 @@ private:                       // Private methods
                    QgsMapToPixel * cXf,
                    QgsCoordinateTransform* ct,
                    QImage* marker,
+                   double markerScaleFactor,
+                   bool drawingToEditingCanvas);
+                   
+   void drawFeature(QPainter* p,
+                   QgsFeature& fet,
+                   QgsMapToPixel * cXf,
+                   QgsCoordinateTransform* ct,
+                   QgsSymbolRenderer* symRenderer,
                    double markerScaleFactor,
                    bool drawingToEditingCanvas);
 

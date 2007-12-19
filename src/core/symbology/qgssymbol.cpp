@@ -23,6 +23,8 @@
 #include "qgssymbologyutils.h"
 #include "qgsmarkercatalogue.h"
 
+#include "qgsbasicsymbolrenderer.h"
+
 #include <QPainter>
 #include <QDomNode>
 #include <QDomDocument>
@@ -41,7 +43,9 @@ QgsSymbol::QgsSymbol(QGis::VectorType t, QString lvalue, QString uvalue, QString
       mWidthScale(1.0),
       mCacheUpToDate( false ),
       mCacheUpToDate2( false )
-{}
+{
+    mPointRenderer = new QgsBasicSymbolRenderer();
+}
 
 
 QgsSymbol::QgsSymbol(QGis::VectorType t, QString lvalue, QString uvalue, QString label, QColor c) : 
@@ -57,7 +61,9 @@ QgsSymbol::QgsSymbol(QGis::VectorType t, QString lvalue, QString uvalue, QString
       mWidthScale(1.0),
       mCacheUpToDate( false ),
       mCacheUpToDate2( false )
-{}
+{
+    mPointRenderer = new QgsBasicSymbolRenderer();
+}
 
 QgsSymbol::QgsSymbol()
     : mPointSymbolName( "hard:circle" ),
@@ -66,7 +72,9 @@ QgsSymbol::QgsSymbol()
       mWidthScale(1.0),
       mCacheUpToDate( false ),
       mCacheUpToDate2( false )
-{}
+{
+    mPointRenderer = new QgsBasicSymbolRenderer();
+}
 
 
 QgsSymbol::QgsSymbol(QColor c)
@@ -78,7 +86,9 @@ QgsSymbol::QgsSymbol(QColor c)
       mWidthScale(1.0),
       mCacheUpToDate( false ),
       mCacheUpToDate2( false )
-{}
+{
+    mPointRenderer = new QgsBasicSymbolRenderer();
+}
 
 QgsSymbol::QgsSymbol(const QgsSymbol& s)
 {
@@ -107,7 +117,9 @@ QgsSymbol::QgsSymbol(const QgsSymbol& s)
 
 QgsSymbol::~QgsSymbol()
 {
-
+  if(mPointRenderer){
+    delete mPointRenderer;
+  }
 }
 
 
@@ -238,6 +250,11 @@ QImage QgsSymbol::getPointSymbolAsImage(  double widthScale,
 	}
         
  return mPointSymbolImage;
+}
+
+QgsSymbolRenderer* QgsSymbol::symbolRenderer()
+{
+  return(mPointRenderer);
 }
 
 void QgsSymbol::cache(  QColor selectionColor )
