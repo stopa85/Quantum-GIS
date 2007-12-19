@@ -68,9 +68,86 @@ void QgsProjectFile::dump()
 
 void QgsProjectFile::transform081to090()
 {
-  QgsDebugMsg("entering");
+  QgsDebugMsg("Entering...");
   if ( ! mDom.isNull() )
   {
+    // Start with inserting a mapcanvas element and populate it
+
+    QDomElement mapCanvas; // A null element.
+
+    QDomNodeList qgisList = mDom.elementsByTagName("qgis");
+    if (qgisList.count())
+    {
+      QgsDebugMsg("Populating new mapcanvas");
+
+      // there should only be one, so zeroth element ok
+      QDomNode qgis = qgisList.item(0);  
+      
+      // Create a mapcanvas
+      mapCanvas = mDom.createElement("mapcanvas");
+      // Append mapcanvas to parent 'qgis'.
+      qgis.appendChild(mapCanvas);
+      // Re-parent units
+      mapCanvas.appendChild(qgis.namedItem("units"));
+      // Re-parent extent
+      mapCanvas.appendChild(qgis.namedItem("extent"));
+
+      // See if we can find if projection is on.
+      
+      QDomNode properties = qgis.namedItem("properties");
+      QDomNode spatial = properties.namedItem("SpatialRefSys");
+      QDomNode projectionsEnabled = spatial.namedItem("ProjectionsEnabled"); 
+      // Type is 'int', and '1' if on.
+      QDomElement projection = mDom.createElement("projection");
+      QgsDebugMsg(projectionsEnabled.toText().data());
+      if (projectionsEnabled.toText().data() == QString("1") )
+      {
+        QgsDebugMsg("Projection is turned on!");
+        projection.appendChild(mDom.createTextNode("1"));
+      }
+      else
+      {
+        QgsDebugMsg("Projection is turned off!");
+        projection.appendChild(mDom.createTextNode("0"));
+      }
+      mapCanvas.appendChild(projection);
+
+    }
+
+
+    // Transforming coordinate-transforms
+    // Create a list of all map layers
+    QDomNodeList mapLayers = mDom.elementsByTagName("maplayer");
+    bool doneDestination = false;
+    for (int i = 0; i < mapLayers.count(); i++)
+    {
+      QDomNode mapLayer = mapLayers.item(i);
+      // Find the coordinatetransform
+      QDomNode coordinateTransform = mapLayer.namedItem("coordinatetransform");
+      // Find the sourcesrs
+      QDomNode sourceSRS = coordinateTransform.namedItem("sourcesrs");
+      // Rename to srs
+      sourceSRS.toElement().setTagName("srs");
+      // Re-parent to maplayer
+      mapLayer.appendChild(sourceSRS);
+      // Re-move coordinatetransform
+      // Take the destination SRS of the first layer and use for mapcanvas projection
+      if (! doneDestination)
+      {
+        // Use destination SRS from the last layer
+        QDomNode destinationSRS = coordinateTransform.namedItem("destinationsrs");
+        // Re-parent the destination SRS to the mapcanvas
+        // If mapcanvas wasn't set, nothing will happen.
+        mapCanvas.appendChild(destinationSRS);
+        // Only do this once
+        doneDestination = true;
+      }
+      mapLayer.removeChild(coordinateTransform);
+      //QDomNode id = mapLayer.namedItem("id");
+      //QgsDebugMsg(QString("Found maplayer ") + id.toElement().text());
+      
+    }
+
   }
   return;
 
