@@ -98,56 +98,57 @@ bool QgsUniqueValueRenderer::willRenderFeature(QgsFeature *f)
   return (symbolForFeature(f) != 0);
 }
     
-void QgsUniqueValueRenderer::renderFeature(QPainter* p, QgsFeature& f,QImage* img, 
+void QgsUniqueValueRenderer::renderFeature(QPainter* p, QgsFeature& f, QgsSymbolRenderer* symRenderer, 
 	double* scalefactor, bool selected, double widthScale)
 {
   QgsSymbol* symbol = symbolForFeature(&f);
   if(!symbol) //no matching symbol
     {
-      if ( img && mVectorType == QGis::Point )
-	{
-	  img->fill(0);
-	}
+      if (mVectorType == QGis::Point )
+    	{
+    	  //img->fill(0);TODO:revisit*/
+    	}
       else if ( mVectorType != QGis::Point )
-	{
-	  p->setPen(Qt::NoPen);
-	  p->setBrush(Qt::NoBrush);
-	}
+    	{
+    	  p->setPen(Qt::NoPen);
+    	  p->setBrush(Qt::NoBrush);
+    	}
       return;
     }
   
   // Point 
-  if ( img && mVectorType == QGis::Point ) 
+  if ( mVectorType == QGis::Point ) 
     {
-      *img = symbol->getPointSymbolAsImage(  widthScale, selected, mSelectionColor );
+      //*img = symbol->getPointSymbolAsImage(  widthScale, selected, mSelectionColor );TODO:revisit*/
       if ( scalefactor ) 
-	{
-	  *scalefactor = 1;
-	}
+    	{
+    	  *scalefactor = 1;
+    	}
     } 
   
   // Line, polygon
   else if ( mVectorType != QGis::Point )
     {
       if( !selected ) 
-	{
-	  QPen pen=symbol->pen();
-	  pen.setWidthF ( widthScale * pen.width() );
-	  p->setPen(pen);
-	  p->setBrush(symbol->brush());
-	}
+    	{
+    	  QPen pen=symbol->pen();
+    	  pen.setWidthF ( widthScale * pen.width() );
+    	  p->setPen(pen);
+    	  p->setBrush(symbol->brush());
+    	}
       else
-	{
-	  QPen pen=symbol->pen();
-	  pen.setWidthF ( widthScale * pen.width() );
-	  pen.setColor(mSelectionColor);
-	  QBrush brush=symbol->brush();
-		brush.setColor(mSelectionColor);
-		p->setPen(pen);
-		p->setBrush(brush);
-	}
+    	{
+    	  QPen pen=symbol->pen();
+    	  pen.setWidthF ( widthScale * pen.width() );
+    	  pen.setColor(mSelectionColor);
+    	  QBrush brush=symbol->brush();
+    		brush.setColor(mSelectionColor);
+    		p->setPen(pen);
+    		p->setBrush(brush);
+    	}
     }
 }
+
 
 QgsSymbol* QgsUniqueValueRenderer::symbolForFeature(const QgsFeature* f)
 {

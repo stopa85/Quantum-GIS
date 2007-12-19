@@ -24,6 +24,8 @@
 #include <QPen>
 #include <QImage>
 
+#include "qgssymbolrenderer.h"
+
 class QDomNode;
 class QDomDocument;
 
@@ -99,6 +101,8 @@ class CORE_EXPORT QgsSymbol{
       */
     virtual QImage getPointSymbolAsImage( double widthScale = 1., 
 	               bool selected = false, QColor selectionColor = Qt::yellow );
+                 
+    virtual QgsSymbolRenderer* symbolRenderer(void);
 
     /**Writes the contents of the symbol to a configuration file
      @ return true in case of success*/
@@ -166,6 +170,8 @@ class CORE_EXPORT QgsSymbol{
     /* Selection color used in cache */
     QColor mSelectionColor;
     QColor mSelectionColor2;
+
+    QgsSymbolRenderer* mPointRenderer;
 };
 
 inline void QgsSymbol::setBrush(QBrush b)

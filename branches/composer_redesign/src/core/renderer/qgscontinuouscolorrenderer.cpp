@@ -72,7 +72,7 @@ void QgsContinuousColorRenderer::setMaximumSymbol(QgsSymbol* sy)
   mMaximumSymbol = sy;
 }
 
-void QgsContinuousColorRenderer::renderFeature(QPainter * p, QgsFeature & f, QImage* img, 
+void QgsContinuousColorRenderer::renderFeature(QPainter * p, QgsFeature & f, QgsSymbolRenderer* symRenderer, 
 	double* scalefactor, bool selected, double widthScale)
 {
   if ((mMinimumSymbol && mMaximumSymbol))
@@ -114,7 +114,7 @@ void QgsContinuousColorRenderer::renderFeature(QPainter * p, QgsFeature & f, QIm
       blue = int (mincolor.blue());
     }
 
-    if ( mVectorType == QGis::Point && img) {
+    if ( mVectorType == QGis::Point) {
       // TODO we must get always new marker -> slow, but continuous color for points 
       // probably is not used frequently
 
@@ -134,10 +134,10 @@ void QgsContinuousColorRenderer::renderFeature(QPainter * p, QgsFeature & f, QIm
         brush.setColor ( QColor(red, green, blue) );
       }
       brush.setStyle ( Qt::SolidPattern );
-
+/*
       *img = QgsMarkerCatalogue::instance()->imageMarker ( mMinimumSymbol->pointSymbolName(), mMinimumSymbol->pointSize(),
           pen, brush);
-
+TODO:revisit*/
       if ( scalefactor ) *scalefactor = 1;
     } 
     else if ( mVectorType == QGis::Line )
