@@ -14,7 +14,7 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
- /* $Id: qgsprojectfile.cpp 6942 2007-05-13 13:40:35Z mhugent $ */
+ /* $Id: $ */
 
 
 #include "qgsprojectfile.h"
@@ -54,12 +54,14 @@ bool QgsProjectFile::updateRevision(QgsProjectVersion newVersion)
 
 void QgsProjectFile::dump()
 {
-  QgsDebugMsg(QString("Current project file version is %1.%2.%3")
+  QgsDebugMsg(QString("Current project file version is %1.%2.%3\n")
               .arg(mCurrentVersion.major())
               .arg(mCurrentVersion.minor())
               .arg(mCurrentVersion.sub()));
-  QgsDebugMsg(QString("\n") + mDom.toString(2));
-              
+#ifdef QGISDEBUG
+  // Using QgsDebugMsg() didn't print the entire mDom...
+  std::cout << mDom.toString(2).toLatin1().constData();
+#endif
 }
 
 /*
@@ -75,14 +77,12 @@ void QgsProjectFile::transform081to090()
 
     QDomElement mapCanvas; // A null element.
 
-    QDomNodeList qgisList = mDom.elementsByTagName("qgis");
-    if (qgisList.count())
+    // there should only be one <qgis>
+    QDomNode qgis = mDom.firstChildElement("qgis");
+    if ( ! qgis.isNull() )
     {
       QgsDebugMsg("Populating new mapcanvas");
 
-      // there should only be one, so zeroth element ok
-      QDomNode qgis = qgisList.item(0);  
-      
       // Create a mapcanvas
       mapCanvas = mDom.createElement("mapcanvas");
       // Append mapcanvas to parent 'qgis'.
@@ -94,22 +94,16 @@ void QgsProjectFile::transform081to090()
 
       // See if we can find if projection is on.
       
-      QDomNode properties = qgis.namedItem("properties");
-      QDomNode spatial = properties.namedItem("SpatialRefSys");
-      QDomNode projectionsEnabled = spatial.namedItem("ProjectionsEnabled"); 
+      QDomElement properties = qgis.firstChildElement("properties");
+      QDomElement spatial = properties.firstChildElement("SpatialRefSys");
+      QDomElement projectionsEnabled = spatial.firstChildElement("ProjectionsEnabled"); 
       // Type is 'int', and '1' if on.
-      QDomElement projection = mDom.createElement("projection");
-      QgsDebugMsg(projectionsEnabled.toText().data());
-      if (projectionsEnabled.toText().data() == QString("1") )
-      {
-        QgsDebugMsg("Projection is turned on!");
-        projection.appendChild(mDom.createTextNode("1"));
-      }
-      else
-      {
-        QgsDebugMsg("Projection is turned off!");
-        projection.appendChild(mDom.createTextNode("0"));
-      }
+      // Create an element
+      QDomElement projection = mDom.createElement("projections");
+      QgsDebugMsg(QString("Projection flag: ") + projectionsEnabled.text());
+      // Set flag from ProjectionsEnabled
+      projection.appendChild(mDom.createTextNode(projectionsEnabled.text()));
+      // Set new element as child of <mapcanvas>
       mapCanvas.appendChild(projection);
 
     }
@@ -148,6 +142,33 @@ void QgsProjectFile::transform081to090()
       
     }
 
+    // Set the flag 'visible' to match the status of 'checked'
+    QDomNodeList legendLayerFiles = mDom.elementsByTagName("legendlayerfile");
+    QgsDebugMsg(QString("Legend layer file entrie: ") + QString::number(legendLayerFiles.count())); 
+    for (int i = 0; i < mapLayers.count(); i++)
+    {
+      // Get one maplayer element from list
+      QDomElement mapLayer = mapLayers.item(i).toElement();
+      // Find it's id.
+      QString id = mapLayer.firstChildElement("id").text();
+      QgsDebugMsg(QString("Handling layer " + id));
+      // Now, look it up in legend
+      for (int j = 0; j < legendLayerFiles.count(); j++)
+      {
+        QDomElement legendLayerFile = legendLayerFiles.item(j).toElement();
+        if (id == legendLayerFile.attribute("layerid") )
+        {
+          // Found a the legend layer that matches the maplayer
+          QgsDebugMsg("Found matching id");
+
+          // Set visible flag from maplayer to legendlayer
+          legendLayerFile.setAttribute("visible", mapLayer.attribute("visible"));
+
+          // Set overview flag from maplayer to legendlayer
+          legendLayerFile.setAttribute("inOverview", mapLayer.attribute("showInOverviewFlag"));
+        }
+      }
+    }
   }
   return;
 
