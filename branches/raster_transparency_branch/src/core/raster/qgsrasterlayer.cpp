@@ -1457,7 +1457,7 @@ void QgsRasterLayer::drawSingleBandGray(QPainter * theQPainter, QgsRasterViewPor
         continue;
       }
 
-      myAlphaValue = mRasterTransparency.getAlphaValue(myGrayValue);
+      myAlphaValue = mRasterTransparency.getAlphaValue(myGrayValue, mTransparencyLevel);
       if(0 == myAlphaValue)
       {
         continue;
@@ -1598,7 +1598,7 @@ void QgsRasterLayer::drawSingleBandPseudoColor(QPainter * theQPainter,
         continue;
       }
 
-      myAlphaValue = mRasterTransparency.getAlphaValue(myPixelValue);
+      myAlphaValue = mRasterTransparency.getAlphaValue(myPixelValue, mTransparencyLevel);
       if(0 == myAlphaValue)
       {
         continue;
@@ -1820,7 +1820,7 @@ void QgsRasterLayer::drawPalettedSingleBandColor(QPainter * theQPainter, QgsRast
         continue;
       }
 
-      myAlphaValue = mRasterTransparency.getAlphaValue(myPixelValue);
+      myAlphaValue = mRasterTransparency.getAlphaValue(myPixelValue, mTransparencyLevel);
       if(0 == myAlphaValue)
       {
         continue;
@@ -1937,7 +1937,7 @@ void QgsRasterLayer::drawPalettedSingleBandGray(QPainter * theQPainter, QgsRaste
         continue;
       }
 
-      myAlphaValue = mRasterTransparency.getAlphaValue(myPixelValue);
+      myAlphaValue = mRasterTransparency.getAlphaValue(myPixelValue, mTransparencyLevel);
       if(0 == myAlphaValue)
       {
         continue;
@@ -2104,7 +2104,7 @@ void QgsRasterLayer::drawPalettedSingleBandPseudoColor(QPainter * theQPainter, Q
         continue;
       }
 
-      myAlphaValue = mRasterTransparency.getAlphaValue(myPixelValue);
+      myAlphaValue = mRasterTransparency.getAlphaValue(myPixelValue, mTransparencyLevel);
       if(0 == myAlphaValue)
       {
         continue;
@@ -2334,7 +2334,7 @@ void QgsRasterLayer::drawPalettedMultiBandColor(QPainter * theQPainter, QgsRaste
         continue;
       }
 
-      myAlphaValue = mRasterTransparency.getAlphaValue(myPixelValue);
+      myAlphaValue = mRasterTransparency.getAlphaValue(myPixelValue, mTransparencyLevel);
       if(0 == myAlphaValue)
       {
         continue;
@@ -2553,7 +2553,7 @@ void QgsRasterLayer::drawMultiBandColor(QPainter * theQPainter, QgsRasterViewPor
         continue;
       }
 
-      myAlphaValue = mRasterTransparency.getAlphaValue(myRedValue, myGreenValue, myBlueValue);
+      myAlphaValue = mRasterTransparency.getAlphaValue(myRedValue, myGreenValue, myBlueValue, mTransparencyLevel);
       if(0 == myAlphaValue)
       {
         continue;
