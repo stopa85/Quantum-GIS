@@ -60,12 +60,18 @@ class CORE_EXPORT QgsSingleSymbolRenderer: public QgsRenderer
     /**Sets the number of the angle classicifation field
     \param field the number of the field to classify for angle*/
     void setAngleClassificationField(int field);
+    /**Returns the number of the scale classification field*/
+    int scaleClassificationField() const;
+    /**Sets the number of the scale classicifation field
+    \param field the number of the field to classify for scale*/
+    void setScaleClassificationField(int field);
 
  protected:
     /**Object containing symbology information*/
     QgsSymbol* mSymbol;
     /**Index of the classification field (it must be a numerical field)*/
     int mAngleClassificationField;
+    int mScaleClassificationField;
 };
 
 inline const QgsSymbol* QgsSingleSymbolRenderer::symbol() const
@@ -82,6 +88,17 @@ inline void QgsSingleSymbolRenderer::setAngleClassificationField(int field)
 {
     mAngleClassificationField=field;
 }
+
+inline int QgsSingleSymbolRenderer::scaleClassificationField() const
+{
+    return mScaleClassificationField;
+}
+
+inline void QgsSingleSymbolRenderer::setScaleClassificationField(int field)
+{
+    mScaleClassificationField=field;
+}
+
 inline bool QgsSingleSymbolRenderer::needsAttributes() const
 {
   return true;

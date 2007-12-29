@@ -366,8 +366,28 @@
         </property>
        </widget>
       </item>
+      <item row="2" column="0" >
+       <widget class="QLabel" name="textLabel9" >
+        <property name="text" >
+         <string>Area scale field</string>
+        </property>
+        <property name="buddy" >
+         <cstring>mScaleClassificationComboBox</cstring>
+        </property>
+       </widget>
+      </item>
       <item row="1" column="1" >
        <widget class="QComboBox" name="mAngleClassificationComboBox" >
+        <property name="minimumSize" >
+         <size>
+          <width>0</width>
+          <height>20</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1" >
+       <widget class="QComboBox" name="mScaleClassificationComboBox" >
         <property name="minimumSize" >
          <size>
           <width>0</width>
