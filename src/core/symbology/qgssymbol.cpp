@@ -20,6 +20,7 @@
 #include <iostream>
 
 #include "qgssymbol.h"
+#include "qgslogger.h"
 #include "qgssymbologyutils.h"
 #include "qgsmarkercatalogue.h"
 
@@ -221,24 +222,46 @@ QImage QgsSymbol::getPolygonSymbolAsImage()
 QImage QgsSymbol::getPointSymbolAsImage(  double widthScale,
                bool selected, QColor selectionColor )
 {
-
-	if ( !mCacheUpToDate 
-	     || ( selected && mSelectionColor != selectionColor ) )
-	{
-	    if ( selected ) {
-	        cache(  selectionColor );
-	    } else {
-	        cache(  mSelectionColor );
-	    }
-	}
-
-	if ( selected )
+  QgsDebugMsg(QString("widthScale = %1").arg(widthScale));
+  if ( !mCacheUpToDate 
+       || ( selected && mSelectionColor != selectionColor ) )
   {
-	    return mPointSymbolImageSelected;
-	}
-        
- return mPointSymbolImage;
+    if ( selected ) {
+      cache(  selectionColor );
+    } else {
+      cache(  mSelectionColor );
+    }
+  }
+  
+  if ( selected )
+  {
+    if ( widthScale == 1.0 )
+    {
+      return mPointSymbolImageSelected;
+    }
+    else
+    {
+      QPen pen = mPen;
+      pen.setColor ( selectionColor ); 
+      QBrush brush = mBrush;
+      return QgsMarkerCatalogue::instance()->imageMarker ( mPointSymbolName, mPointSize * widthScale,
+                                                           pen, mBrush );
+    }
+  }
+  else 
+  {
+    if ( widthScale == 1.0 )
+    {
+      return mPointSymbolImage;
+    }
+    else 
+    {
+      return QgsMarkerCatalogue::instance()->imageMarker ( mPointSymbolName, mPointSize * widthScale,
+                                                           mPen, mBrush );
+    }
+  }
 }
+
 
 void QgsSymbol::cache(  QColor selectionColor )
 {
