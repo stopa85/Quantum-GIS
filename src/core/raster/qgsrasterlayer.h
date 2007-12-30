@@ -134,6 +134,7 @@
 #include "qgsmaplayer.h"
 #include "qgscontrastenhancement.h"
 #include "qgsrastertransparency.h"
+#include "qgsrastershader.h"
 
 /*
  * 
@@ -299,10 +300,10 @@ public:
     // Accessors for image height and width
     //
     /** \brief Accessor that returns the width of the (unclipped) raster  */
-    const int getRasterXDim() {return mRasterXDim;};
+    const int getRasterXDim() {return mRasterXDim;}
 
     /** \brief Accessor that returns the height of the (unclipped) raster  */
-    const int getRasterYDim() {return mRasterYDim;};
+    const int getRasterYDim() {return mRasterYDim;}
 
     //
     // Accessor and mutator for no data double
@@ -311,7 +312,7 @@ public:
     const double getNoDataValue() {return mNoDataValue;}
 
     /** \brief  Mutator that allows the  NO_DATA entry for this raster to be overridden. */
-    void setNoDataValue(double theNoData) { mNoDataValue=theNoData; return;};
+    void setNoDataValue(double theNoData) { mNoDataValue=theNoData; mValidNoDataValue=true; return;}
 
     /** \brief Simple reset function that set the noDataValue back to the value stored in the first raster band */
     void resetNoDataValue()
@@ -319,11 +320,16 @@ public:
       mNoDataValue = -9999;
       if(mGdalDataset != NULL && mGdalDataset->GetRasterCount() > 0)
       {
-        int isValid = false;
-        double myValue = mGdalDataset->GetRasterBand(1)->GetNoDataValue(&isValid);
-        if(isValid)
+        int myRequestValid;
+        double myValue = mGdalDataset->GetRasterBand(1)->GetNoDataValue(&myRequestValid);
+        if(0 != myRequestValid)
         {
           mNoDataValue = myValue;
+          mValidNoDataValue = true;
+        }
+        else
+        {
+          mValidNoDataValue = false;
         }
       }
     }
@@ -347,12 +353,12 @@ public:
     double getStdDevsToPlot()
     {
         return mStandardDeviations;
-    };
+    }
     /** \brief Mutator to alter the number of standard deviations that should be plotted.  */
     void setStdDevsToPlot(double theStdDevsToPlot)
     {
         mStandardDeviations = theStdDevsToPlot;
-    };
+    }
     /** \brief Get the number of bands in this layer  */
     const unsigned int getBandCount();
     /** \brief Get RasterBandStats for a band given its number (read only)  */
@@ -378,7 +384,7 @@ public:
     QString getRedBandName()
     {
         return mRedBandName;
-    };
+    }
     /** \brief Mutator for red band name (allows alternate mappings e.g. map blue as red colour). */
     void setRedBandName(const QString & theBandNameQString);
     // 
@@ -388,7 +394,7 @@ public:
     QString getGreenBandName()
     {
         return mGreenBandName;
-    };
+    }
     /** \brief Mutator for green band name mapping.  */
     void setGreenBandName(const QString & theBandNameQString);
     //
@@ -398,7 +404,7 @@ public:
     QString getBlueBandName()
     {
         return mBlueBandName;
-    };
+    }
     /** \brief Mutator for blue band name mapping.  */
     void setBlueBandName(const QString & theBandNameQString);
     
@@ -415,7 +421,7 @@ public:
     QString getTransparentBandName()
     {
         return mTransparencyBandName;
-    };
+    }
     /** \brief Mutator for transparent band name mapping.  */
     void setTransparentBandName(const QString & theBandNameQString);
     //
@@ -425,7 +431,7 @@ public:
     QString getTransparentLayerName()
     {
         return mTransparentLayerName;
-    };
+    }
     /** \brief Mutator for transparent band name mapping.  */
     void setTransparentLayerName(const QString & theLayerNameQString)
     {
@@ -439,7 +445,7 @@ public:
     QString getGrayBandName()
     {
         return mGrayBandName;
-    };
+    }
     /** \brief Mutator for gray band name mapping.  */
     void setGrayBandName(const QString & theBandNameQString);
     // 
@@ -449,12 +455,12 @@ public:
     bool getShowDebugOverlayFlag()
     {
         return mDebugOverlayFlag;
-    };
+    }
     /** \brief Mutator for a flag that determines whether to show some debug info on the image.  */
     void setShowDebugOverlayFlag(bool theFlag)
     {
         mDebugOverlayFlag=theFlag;
-    };
+    }
     
     // Accessor and mutator for minimum maximum values 
     //TODO: Move these out of the header file...
@@ -539,7 +545,7 @@ public:
     QgsContrastEnhancement::CONTRAST_ENHANCEMENT_ALGORITHM getContrastEnhancementAlgorithm()
     {
         return mContrastEnhancementAlgorithm;
-    };
+    }
     /** \brief Mutator for contrast enhancement algorithm. */
     void setContrastEnhancementAlgorithm(QgsContrastEnhancement::CONTRAST_ENHANCEMENT_ALGORITHM theAlgorithm, bool theGenerateLookupTableFlag=true)
     {
@@ -551,28 +557,27 @@ public:
         }
 
         mContrastEnhancementAlgorithm = theAlgorithm;
-    };
+    }
     
     /** \brief This enumerator describes the types of histogram colour ramping that can be used.  */
     enum COLOR_RAMPING_TYPE
     {
-        BLUE_GREEN_RED, 
-        FREAK_OUT //it will scare your granny!
-    } colorRampingType;
+        PSEUDO_COLOR, 
+        FREAK_OUT, //it will scare your granny!
+        COLOR_RAMP,
+        USER_DEFINED
+    };
     //
     // Accessor and mutator for the color ramping type
     //
     /** \brief Accessor for colour ramping type. */
     COLOR_RAMPING_TYPE getColorRampingType()
     {
-        return colorRampingType;
-    };
+        return mColorRampingType;
+    }
     /** \brief Mutator for color scaling algorithm. */
-    void setColorRampingType(COLOR_RAMPING_TYPE theRamping)
-    {
-        colorRampingType=theRamping;
-    };
-    
+    void setColorRampingType(COLOR_RAMPING_TYPE theRamping);
+        
     /** \brief This enumerator describes the different kinds of drawing we can do.  */
     enum DRAWING_STYLE
     {
@@ -591,7 +596,7 @@ public:
     // Accessor and mutator for drawing style.
     //
     /** \brief Accessor for drawing style.  */
-    DRAWING_STYLE getDrawingStyle() {return drawingStyle;};
+    DRAWING_STYLE getDrawingStyle() {return drawingStyle;}
     /** \brief Returns a string representation of drawing style.
      *
      * Implementaed mainly for serialisation / deserialisation of settings to xml.
@@ -599,7 +604,7 @@ public:
      * */
     QString getDrawingStyleAsQString();
     /** \brief Mutator for drawing style.  */
-    void setDrawingStyle(const DRAWING_STYLE &  theDrawingStyle) {drawingStyle=theDrawingStyle;};
+    void setDrawingStyle(const DRAWING_STYLE &  theDrawingStyle) {drawingStyle=theDrawingStyle;}
     /** \brief Overloaded version of the above function for convenience when restoring from xml.
      *
      * Implementaed mainly for serialisation / deserialisation of settings to xml.
@@ -618,9 +623,9 @@ public:
     //accessor and for raster layer type (READ ONLY)
     //
     /** \brief  Accessor for raster layer type (which is a read only property) */
-    RASTER_LAYER_TYPE getRasterLayerType() { return rasterLayerType; };
+    RASTER_LAYER_TYPE getRasterLayerType() { return rasterLayerType; }
     /** \brief Accessor for hasPyramidsFlag (READ ONLY) */
-    bool getHasPyramidsFlag() {return hasPyramidsFlag;};
+    bool getHasPyramidsFlag() {return hasPyramidsFlag;}
      
     /** \brief Get a legend image for this layer.  */
     QPixmap getLegendQPixmap();
@@ -684,7 +689,11 @@ public:
 
     bool isSymbologyCompatible(const QgsMapLayer& other) const
     {
-      UNUSED(other);
+      //preventwarnings
+      if (other.type() < 0) 
+      {
+        return false;
+      }
       return false;
     } //todo
 
@@ -717,13 +726,13 @@ public:
     const QgsRasterDataProvider* getDataProvider() const;
 
      /** \brief Mutator for mUserDefinedRGBMinMaxFlag */
-    void setUserDefinedColorMinMax(bool theBool)
+    void setUserDefinedRGBMinMax(bool theBool)
     {
       mUserDefinedRGBMinMaxFlag = theBool;
     } 
 
     /** \brief Accessor for userDefinedMinMax.  */
-    bool getUserDefinedColorMinMax()
+    bool getUserDefinedRGBMinMax()
     {
       return mUserDefinedRGBMinMaxFlag;
     }
@@ -895,6 +904,10 @@ private:
                             QgsRasterViewPort * theRasterViewPort,
                             QgsMapToPixel * theQgsMapToPixel);
 
+    /** \brief Places the rendered image onto the canvas */
+    void paintImageToCanvas(QPainter* theQPainter, QgsRasterViewPort * theRasterViewPort,
+                            QgsMapToPixel * theQgsMapToPixel, QImage* theImage);
+
     /** \brief Read color table from GDAL raster band */
     void readColorTable ( GDALRasterBand *gdalBand, QgsColorTable *theColorTable );
 
@@ -942,6 +955,8 @@ color of the lower class for every pixel between two class breaks. Returns 0 in 
     int mRasterYDim;
     /** \brief Cell value representing no data. e.g. -9999  */
     double mNoDataValue;
+    /** \brief Flag indicating if the nodatavalue is valid*/
+    bool mValidNoDataValue;
     /** \brief Flag to indicate whether debug infor overlay should be rendered onto the raster.  */
     bool mDebugOverlayFlag;
     /** \brief Pointer to the gdaldataset.  */
@@ -961,6 +976,9 @@ color of the lower class for every pixel between two class breaks. Returns 0 in 
     RasterStatsList mRasterStatsList;
     /** \brief List containging the contrast enhancements for each band */
     ContrastEnhancementList mContrastEnhancementList;
+    COLOR_RAMPING_TYPE mColorRampingType;
+    /** \brief The raster shader for the layer */
+    QgsRasterShader* mRasterShader;
     /** \brief The band to be associated with the color red - usually 1.  */
     QString mRedBandName;
     /** \brief The band to be associated with the color green - usually 2.  */
@@ -975,26 +993,11 @@ color of the lower class for every pixel between two class breaks. Returns 0 in 
     QString mTransparentLayerName;
     /** \brief The band to be associated with the grayscale only ouput - usually 1.  */
     QString mGrayBandName;
-    /** \brief Minimum red value - used in scaling procedure.  */
-    double mRedMinimum;
-    /** \brief Maximum red value - used in scaling procedure.  */
-    double mRedMaximum;
-    /** \brief Minimum green value - used in scaling procedure.  */
-    double mGreenMinimum;
-    /** \brief Maximum green value - used in scaling procedure.  */
-    double mGreenMaximum;
-    /** \brief Minimum blue value - used in scaling procedure.  */
-    double mBlueMinimum;
-    /** \brief Maximum blue value - used in scaling procedure.  */
-    double mBlueMaximum;
-    /** \brief Minimum gray value - used in scaling procedure.  */
-    double mGrayMinimum;
-    /** \brief Maximum gray value - used in scaling procedure.  */
-    double mGrayMaximum;
     /** \brief Whether this raster has overviews / pyramids or not */
     bool hasPyramidsFlag;
-    //Since QgsRasterBandStats deos not set the mRedMinimum mRedMaximum etc., it is benificial to know if the user as set these values. Default = false
+    /** \brief Flag to indicate if the user entered custom min max values */
     bool mUserDefinedRGBMinMaxFlag;
+    /** \brief Flag to indicate if the user entered custom min max values */
     bool mUserDefinedGrayMinMaxFlag;
     /** \brief This list holds a series of RasterPyramid structs
      * which store infomation for each potential pyramid level for this raster.*/

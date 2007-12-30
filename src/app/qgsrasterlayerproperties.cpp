@@ -69,10 +69,7 @@ rasterLayer( dynamic_cast<QgsRasterLayer*>(lyr) )
   }
 
   setupUi(this);
-  connect(buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
-  connect(buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
   connect(buttonBox->button(QDialogButtonBox::Apply), SIGNAL(clicked()), this, SLOT(apply()));
-  connect(this, SIGNAL(accepted()), this, SLOT(apply()));
   connect(sliderTransparency, SIGNAL(valueChanged(int)), this, SLOT(sliderTransparency_valueChanged(int)));
 
   //clear either stdDev or min max entries depending which is changed
@@ -525,7 +522,7 @@ void QgsRasterLayerProperties::sync()
       rasterLayer->getDrawingStyle() == QgsRasterLayer::PALETTED_SINGLE_BAND_PSEUDO_COLOR ||
       rasterLayer->getDrawingStyle() == QgsRasterLayer::MULTI_BAND_SINGLE_BAND_PSEUDO_COLOR)
   {
-    if(rasterLayer->getColorRampingType()==QgsRasterLayer::BLUE_GREEN_RED)
+    if(rasterLayer->getColorRampingType()==QgsRasterLayer::PSEUDO_COLOR)
     {
       cboxColorMap->setCurrentText(tr("Pseudocolor"));
     }
@@ -567,7 +564,7 @@ void QgsRasterLayerProperties::sync()
   //set the stdDevs and min max values
   if(rbtnThreeBand->isChecked())
   {
-    if(rasterLayer->getUserDefinedColorMinMax())
+    if(rasterLayer->getUserDefinedRGBMinMax())
     {
       sboxThreeBandStdDev->setValue(0.0);
       rbtnThreeBandStdDev->setChecked(false);
@@ -957,7 +954,7 @@ void QgsRasterLayerProperties::apply()
   //set the appropriate color ramping type
   if (cboxColorMap->currentText() == tr("Pseudocolor"))
   {
-    rasterLayer->setColorRampingType(QgsRasterLayer::BLUE_GREEN_RED);  
+    rasterLayer->setColorRampingType(QgsRasterLayer::PSEUDO_COLOR);  
   }
   else if (cboxColorMap->currentText() == tr("Freak Out"))
   {
@@ -1007,17 +1004,17 @@ void QgsRasterLayerProperties::apply()
         rasterLayer->setMaximumValue(cboBlue->currentText(), leBlueMax->text().toDouble());
       }
       rasterLayer->setStdDevsToPlot(0.0);
-      rasterLayer->setUserDefinedColorMinMax(true);
+      rasterLayer->setUserDefinedRGBMinMax(true);
     }
     else if(rbtnThreeBandStdDev->isEnabled() && rbtnThreeBandStdDev->isChecked())
     {
       rasterLayer->setStdDevsToPlot(sboxThreeBandStdDev->value());
-      rasterLayer->setUserDefinedColorMinMax(false);
+      rasterLayer->setUserDefinedRGBMinMax(false);
     }
     else
     {
       rasterLayer->setStdDevsToPlot(0.0);
-      rasterLayer->setUserDefinedColorMinMax(false);
+      rasterLayer->setUserDefinedRGBMinMax(false);
     }
   }
   else
@@ -2286,7 +2283,7 @@ void QgsRasterLayerProperties::on_rbtnThreeBand_toggled(bool b)
       sboxThreeBandStdDev->setEnabled(false);
     }
 
-    if(rasterLayer->getUserDefinedColorMinMax())
+    if(rasterLayer->getUserDefinedRGBMinMax())
     {
       sboxThreeBandStdDev->setValue(0.0);
       rbtnThreeBandMinMax->setChecked(true);

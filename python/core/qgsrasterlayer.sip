@@ -282,11 +282,12 @@ public:
     /** \brief This enumerator describes the types of histogram colour ramping that can be used.  */
     enum COLOR_RAMPING_TYPE
     {
-        BLUE_GREEN_RED, 
-        FREAK_OUT //it will scare your granny!
+        PSEUDO_COLOR, 
+        FREAK_OUT, //it will scare your granny!
+        COLOR_RAMP,
+        USER_DEFINED
     };
     
-    COLOR_RAMPING_TYPE colorRampingType;
     //
     // Accessor and mutator for the color ramping type
     //
@@ -433,10 +434,10 @@ public:
     // TODO: const QgsRasterDataProvider* getDataProvider() const;
 
      /** \brief Mutator for mUserDefinedRGBMinMaxFlag */
-    void setUserDefinedColorMinMax(bool theBool);
+    void setUserDefinedRGBMinMax(bool theBool);
 
     /** \brief Accessor for userDefinedMinMax.  */
-    bool getUserDefinedColorMinMax();
+    bool getUserDefinedRGBMinMax();
 
     /** \brief Mutator for mUserDefinedRGBMinMaxFlag */
     void setUserDefinedGrayMinMax(bool theBool);

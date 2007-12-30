@@ -30,6 +30,8 @@ email                : tim at linfiniti.com
 #include "qgsspatialrefsys.h"
 #include "gdalwarper.h"
 
+#include "qgspseudocolorshader.h"
+#include "qgsfreakoutshader.h"
 
 #include <cstdio>
 #include <cmath>
@@ -390,6 +392,8 @@ QgsRasterLayer::QgsRasterLayer(QString const & path, QString const & baseName)
   mUserDefinedRGBMinMaxFlag = false; //defaults needed to bypass stretch
   mUserDefinedGrayMinMaxFlag = false;
   setContrastEnhancementAlgorithm(QgsContrastEnhancement::NO_STRETCH); //defaults needed to bypass stretch
+
+  mRasterShader = new QgsRasterShader();
 
   // Initialise the affine transform matrix
   mGeoTransform[0] =  0;
@@ -1440,7 +1444,7 @@ void QgsRasterLayer::drawSingleBandGray(QPainter * theQPainter, QgsRasterViewPor
   {
     for (int myRow = 0; myRow < theRasterViewPort->drawableAreaXDim; ++myRow)
     {
-      myGrayValue = readValue ( myGdalScanData, (GDALDataType)myDataType,
+      myGrayValue = readValue ( myGdalScanData, myDataType,
           myColumn * theRasterViewPort->drawableAreaXDim + myRow );
 
       // If mNoDataValue is 'nan', the comparison
@@ -1482,41 +1486,7 @@ void QgsRasterLayer::drawSingleBandGray(QPainter * theQPainter, QgsRasterViewPor
   //render any inline filters
   filterLayer(&myQImage);
 
-  // Set up the initial offset into the myQImage we want to copy to the map canvas
-  // This is useful when the source image pixels are larger than the screen image.
-  int paintXoffset = 0;
-  int paintYoffset = 0;
-
-  if (theQgsMapToPixel)
-  {
-    paintXoffset = static_cast<int>( 
-        (theRasterViewPort->rectXOffsetFloat - 
-         theRasterViewPort->rectXOffset)
-        / theQgsMapToPixel->mapUnitsPerPixel() 
-        * fabs(mGeoTransform[1])
-        ); 
-
-    paintYoffset = static_cast<int>( 
-        (theRasterViewPort->rectYOffsetFloat - 
-         theRasterViewPort->rectYOffset)
-        / theQgsMapToPixel->mapUnitsPerPixel() 
-        * fabs(mGeoTransform[5])
-        );
-  }
-
-  QgsDebugMsg("QgsRasterLayer::drawSingleBandGray: painting image to canvas from "\
-      + QString::number(paintXoffset) + ", " + QString::number(paintYoffset)\
-      + " to "\
-      + QString::number(static_cast<int>(theRasterViewPort->topLeftPoint.x() + 0.5))\
-      + ", "\
-      + QString::number(static_cast<int>(theRasterViewPort->topLeftPoint.y() + 0.5))\
-      + ".");
-
-  theQPainter->drawImage(static_cast<int>(theRasterViewPort->topLeftPoint.x() + 0.5),
-      static_cast<int>(theRasterViewPort->topLeftPoint.y() + 0.5),
-      myQImage,
-      paintXoffset,
-      paintYoffset);
+  paintImageToCanvas(theQPainter, theRasterViewPort, theQgsMapToPixel, &myQImage);
 
 } // QgsRasterLayer::drawSingleBandGray
 
@@ -1543,42 +1513,32 @@ void QgsRasterLayer::drawSingleBandPseudoColor(QPainter * theQPainter,
   myQImage.setAlphaBuffer(true);
   myQImage.fill(qRgba(255,255,255,0 )); // fill transparent
 
-  //calculate the adjusted matrix stats - which come into effect if the user has chosen
-  QgsRasterBandStats myAdjustedRasterBandStats = getRasterBandStats(theBandNoInt);
-
-  int myRedValue = 0;
-  int myGreenValue = 0;
-  int myBlueValue = 0;
-
-  //to histogram stretch to a given number of std deviations
-  //see if we are using histogram stretch using stddev and plot only within the selected
-  //number of deviations if we are
-  if (mStandardDeviations > 0)
+  if (NULL == mRasterShader)
   {
-    //work out how far on either side of the mean we should include data
-    float myTotalDeviation = mStandardDeviations * myAdjustedRasterBandStats.stdDev;
-    //adjust min and max accordingly
-    //only change min if it is less than mean  -  (n  x  deviations)
-    if (mNoDataValue < (myAdjustedRasterBandStats.mean - myTotalDeviation))
-    {
-      mNoDataValue = (myAdjustedRasterBandStats.mean - myTotalDeviation);
-    }
-    //only change max if it is greater than mean  +  (n  x  deviations)
-    if (myAdjustedRasterBandStats.maxVal > (myAdjustedRasterBandStats.mean + myTotalDeviation))
-    {
-      myAdjustedRasterBandStats.maxVal = (myAdjustedRasterBandStats.mean + myTotalDeviation);
-    }
-    //update the range
-    myAdjustedRasterBandStats.range = myAdjustedRasterBandStats.maxVal - mNoDataValue;
+    return;
   }
 
-  //set up the three class breaks for pseudocolour mapping
-  double myBreakSize = myAdjustedRasterBandStats.range / 3;
-  double myClassBreakMin1 = myRasterBandStats.minVal;
-  double myClassBreakMax1 = myClassBreakMin1 + myBreakSize;
-  double myClassBreakMin2 = myClassBreakMax1;
-  double myClassBreakMax2 = myClassBreakMin2 + myBreakSize;
-  double myClassBreakMin3 = myClassBreakMax2;
+  double myMinimumValue = 0.0;
+  double myMaximumValue = 0.0;
+  //Use standard deviations if set, otherwise, use min max of band
+  if (mStandardDeviations > 0)
+  {
+    myMinimumValue = (myRasterBandStats.mean - (mStandardDeviations * myRasterBandStats.stdDev));
+    myMaximumValue = (myRasterBandStats.mean + (mStandardDeviations * myRasterBandStats.stdDev));
+  }
+  else
+  {
+    myMinimumValue = myRasterBandStats.minVal;
+    myMaximumValue = myRasterBandStats.maxVal;
+  }
+
+  mRasterShader->setMinimumValue(myMinimumValue);
+  mRasterShader->setMaximumValue(myMaximumValue);
+  
+
+  int myRedValue = 255;
+  int myGreenValue = 255;
+  int myBlueValue = 255;
 
   double myPixelValue = 0.0;
   int myAlphaValue = 0;
@@ -1586,10 +1546,6 @@ void QgsRasterLayer::drawSingleBandPseudoColor(QPainter * theQPainter,
   {
     for (int myRow = 0; myRow < theRasterViewPort->drawableAreaXDim; ++myRow)
     {
-      //hardcoding to white to start with
-      myRedValue = 255;
-      myBlueValue = 255;
-      myGreenValue = 255;
       myPixelValue = readValue ( myGdalScanData, (GDALDataType)myDataType,
           myColumn * theRasterViewPort->drawableAreaXDim + myRow );
 
@@ -1603,18 +1559,7 @@ void QgsRasterLayer::drawSingleBandPseudoColor(QPainter * theQPainter,
       {
         continue;
       }
-
-      //double check that myInt >= min and <= max
-      //this is relevant if we are plotting within stddevs
-      if ( myPixelValue < myAdjustedRasterBandStats.minVal )
-      {
-        myPixelValue = myAdjustedRasterBandStats.minVal;
-      }
-      if ( myPixelValue > myAdjustedRasterBandStats.maxVal)
-      {
-        myPixelValue = myAdjustedRasterBandStats.maxVal;
-      }
-
+      
       //custom color map
       if(mCustomClassificationEnabled)
       {
@@ -1633,97 +1578,21 @@ void QgsRasterLayer::drawSingleBandPseudoColor(QPainter * theQPainter,
           }
         }
       }
-      //if there is no custom color map, use the predefined one
-      else if(!mInvertPixelsFlag)
+      else
       {
-        //check if we are in the first class break
-        if ((myPixelValue >= myClassBreakMin1) && (myPixelValue < myClassBreakMax1))
-        {
-          myRedValue = 0;
-          myBlueValue = 255;
-          myGreenValue = static_cast < int >( ( (255 / myAdjustedRasterBandStats.range)
-                * (myPixelValue - myClassBreakMin1) ) * 3 );
-          // testing this stuff still ...
-          if (colorRampingType==FREAK_OUT)
-          {
-            myRedValue=255-myGreenValue;
-          }
-        }
-        //check if we are in the second class break
-        else if ( (myPixelValue >= myClassBreakMin2) && (myPixelValue < myClassBreakMax2) )
-        {
-          myRedValue = static_cast < int >( ( (255 / myAdjustedRasterBandStats.range)
-                * ((myPixelValue - myClassBreakMin2) / 1)) * 3);
-          myBlueValue = static_cast < int >(255 - ( ( (255 / myAdjustedRasterBandStats.range)
-                  * ((myPixelValue - myClassBreakMin2) / 1)) * 3));
-          myGreenValue = 255;
-          // testing this stuff still ...
-          if (colorRampingType==FREAK_OUT)
-          {
-            myGreenValue=myBlueValue;
-          }
-        }
-        //otherwise we must be in the third classbreak
-        else
-        {
-          myRedValue = 255;
-          myBlueValue = 0;
-          myGreenValue = static_cast < int >(255 - ( ( (255 / myAdjustedRasterBandStats.range) *
-                  ((myPixelValue - myClassBreakMin3) / 1) * 3)));
-          // testing this stuff still ...
-          if (colorRampingType==FREAK_OUT)
-          {
-            myRedValue=myGreenValue;
-            myGreenValue=255-myGreenValue;
-          }
-        }
+        mRasterShader->generateShadedValue(myPixelValue, &myRedValue, &myGreenValue, &myBlueValue);
       }
-      else            //invert histogram toggle is on
+
+      if (mInvertPixelsFlag)
       {
-        //check if we are in the first class break
-        if ((myPixelValue >= myClassBreakMin1) && (myPixelValue < myClassBreakMax1))
-        {
-          myRedValue = 255;
-          myBlueValue = 0;
-          myGreenValue = static_cast < int >( ( (255 / myAdjustedRasterBandStats.range)
-                * ((myPixelValue - myClassBreakMin1) / 1) * 3));
-          // testing this stuff still ...
-          if (colorRampingType==FREAK_OUT)
-          {
-            myRedValue=255-myGreenValue;
-          }
-        }
-        //check if we are in the second class break
-        else if ((myPixelValue >= myClassBreakMin2) && (myPixelValue < myClassBreakMax2))
-        {
-          myRedValue = static_cast < int >(255 - ( ( (255 / myAdjustedRasterBandStats.range)
-                  * ((myPixelValue - myClassBreakMin2) / 1)) * 3));
-          myBlueValue = static_cast < int >( ( (255 / myAdjustedRasterBandStats.range)
-                * ((myPixelValue - myClassBreakMin2) / 1)) * 3);
-          myGreenValue = 255;
-          // testing this stuff still ...
-          if (colorRampingType==FREAK_OUT)
-          {
-            myGreenValue=myBlueValue;
-          }
-        }
-        //otherwise we must be in the third classbreak
-        else
-        {
-          myRedValue = 0;
-          myBlueValue = 255;
-          myGreenValue = static_cast < int >(255 - ( ( (255 / myAdjustedRasterBandStats.range)
-                  * (myPixelValue - myClassBreakMin3)) * 3));
-          // testing this stuff still ...
-          if (colorRampingType==FREAK_OUT)
-          {
-            myRedValue=myGreenValue;
-            myGreenValue=255-myGreenValue;
-          }
-        }
+        //Invert flag, flip blue and read
+        myQImage.setPixel(myRow, myColumn, qRgba(myBlueValue, myGreenValue, myRedValue, myAlphaValue));
       }
-      
-      myQImage.setPixel(myRow, myColumn, qRgba(myRedValue, myGreenValue, myBlueValue, myAlphaValue));
+      else
+      {
+        //Normal
+        myQImage.setPixel(myRow, myColumn, qRgba(myRedValue, myGreenValue, myBlueValue, myAlphaValue));
+      }
     }                       //end of columnwise loop
   }                           //end of rowwise loop
 
@@ -1732,42 +1601,7 @@ void QgsRasterLayer::drawSingleBandPseudoColor(QPainter * theQPainter,
   //render any inline filters
   filterLayer(&myQImage);
 
-  // Set up the initial offset into the myQImage we want to copy to the map canvas
-  // This is useful when the source image pixels are larger than the screen image.
-  int paintXoffset = 0;
-  int paintYoffset = 0;
-
-  if (theQgsMapToPixel)
-  {
-    paintXoffset = static_cast<int>( 
-        (theRasterViewPort->rectXOffsetFloat - 
-         theRasterViewPort->rectXOffset)
-        / theQgsMapToPixel->mapUnitsPerPixel() 
-        * fabs(mGeoTransform[1])
-        ); 
-
-    paintYoffset = static_cast<int>( 
-        (theRasterViewPort->rectYOffsetFloat - 
-         theRasterViewPort->rectYOffset)
-        / theQgsMapToPixel->mapUnitsPerPixel() 
-        * fabs(mGeoTransform[5])
-        ); 
-  }                                   
-
-  QgsDebugMsg("QgsRasterLayer - painting image to canvas from "\
-      + QString::number(paintXoffset) + ", " + QString::number(paintYoffset)\
-      + " to "\
-      + QString::number(static_cast<int>(theRasterViewPort->topLeftPoint.x() + 0.5))\
-      + QString::number(static_cast<int>(theRasterViewPort->topLeftPoint.y() + 0.5))\
-      + ".");
-
-  //part of the experimental transparency support
-  theQPainter->drawImage(static_cast<int>(theRasterViewPort->topLeftPoint.x() + 0.5),
-      static_cast<int>(theRasterViewPort->topLeftPoint.y() + 0.5),
-      myQImage,
-      paintXoffset,
-      paintYoffset);
-
+  paintImageToCanvas(theQPainter, theRasterViewPort, theQgsMapToPixel, &myQImage);
 }
 
 /**
@@ -1844,43 +1678,7 @@ void QgsRasterLayer::drawPalettedSingleBandColor(QPainter * theQPainter, QgsRast
   //render any inline filters
   filterLayer(&myQImage);
 
-  // Set up the initial offset into the myQImage we want to copy to the map canvas
-  // This is useful when the source image pixels are larger than the screen image.
-  int paintXoffset = 0;
-  int paintYoffset = 0;
-
-  if (theQgsMapToPixel)
-  {
-    paintXoffset = static_cast<int>( 
-        (theRasterViewPort->rectXOffsetFloat - 
-         theRasterViewPort->rectXOffset)
-        / theQgsMapToPixel->mapUnitsPerPixel() 
-        * fabs(mGeoTransform[1])
-        ); 
-
-    paintYoffset = static_cast<int>( 
-        (theRasterViewPort->rectYOffsetFloat - 
-         theRasterViewPort->rectYOffset)
-        / theQgsMapToPixel->mapUnitsPerPixel() 
-        * fabs(mGeoTransform[5])
-        ); 
-  }                                   
-
-  QgsDebugMsg("QgsRasterLayer - painting image to canvas from "\
-      + QString::number(paintXoffset) + ", " + QString::number(paintYoffset)\
-      + " to "\
-      + QString::number(static_cast<int>(theRasterViewPort->topLeftPoint.x() + 0.5))\
-      + QString::number(static_cast<int>(theRasterViewPort->topLeftPoint.y() + 0.5))\
-      + ".");
-
-  //part of the experimental transparency support
-  theQPainter->drawImage(static_cast<int>(theRasterViewPort->topLeftPoint.x() + 0.5),
-      static_cast<int>(theRasterViewPort->topLeftPoint.y() + 0.5),
-      myQImage,
-      paintXoffset,
-      paintYoffset);
-
-  CPLFree(myGdalScanData);
+  paintImageToCanvas(theQPainter, theRasterViewPort, theQgsMapToPixel, &myQImage);
 }
 
 
@@ -1914,20 +1712,35 @@ void QgsRasterLayer::drawPalettedSingleBandGray(QPainter * theQPainter, QgsRaste
   myQImage.setAlphaBuffer(true);
   myQImage.fill(qRgba(255,255,255,0 )); // fill transparent
  
-  double myPixelValue = 0.0;
-  int myGrayValue = 0;
-  int myRedValue = 0;
-  int myGreenValue = 0;
-  int myBlueValue = 0;
   bool found = false;
+  double myPixelValue = 0.0;
+  int myRedLUTValue = 0;
+  int myGreenLUTValue = 0;
+  int myBlueLUTValue = 0;
   int myAlphaValue = 0;
+  
+  //Set a pointer to the LUT color channel
+  int* myGrayValue;
+  if (theColorQString == mRedBandName)
+  {
+    myGrayValue = &myRedLUTValue;
+  }
+  else if (theColorQString == mGreenBandName)
+  {
+    myGrayValue = &myGreenLUTValue;
+  }
+  else
+  {
+    myGrayValue = &myBlueLUTValue;
+  }  
+  
   for (int myColumn = 0; myColumn < theRasterViewPort->drawableAreaYDim; ++myColumn)
   {
     for (int myRow = 0; myRow < theRasterViewPort->drawableAreaXDim; ++myRow)
     {
-      myRedValue = 0;
-      myGreenValue = 0;
-      myBlueValue = 0;
+      myRedLUTValue = 0;
+      myGreenLUTValue = 0;
+      myBlueLUTValue = 0;
       found = false;
       myPixelValue = readValue ( myGdalScanData, (GDALDataType)myDataType,
           myColumn * theRasterViewPort->drawableAreaXDim + myRow );
@@ -1943,30 +1756,15 @@ void QgsRasterLayer::drawPalettedSingleBandGray(QPainter * theQPainter, QgsRaste
         continue;
       }
 
-      found = myColorTable->color ( myPixelValue, &myRedValue, &myGreenValue, &myBlueValue );
+      found = myColorTable->color ( myPixelValue, &myRedLUTValue, &myGreenLUTValue, &myBlueLUTValue );
       if ( !found ) continue;
-
-      myGrayValue = 0; //color 1 int
-
-      if (theColorQString == mRedBandName)
-      {
-        myGrayValue = myRedValue;
-      }
-      else if (theColorQString == mGreenBandName)
-      {
-        myGrayValue = myGreenValue;
-      }
-      else if (theColorQString == mBlueBandName)
-      {
-        myGrayValue = myBlueValue;
-      }
 
       if (mInvertPixelsFlag)
       {
-        myGrayValue = 255 - myGrayValue;
+        *myGrayValue = 255 - *myGrayValue;
       }
 
-      myQImage.setPixel(myRow, myColumn, qRgba(myGrayValue, myGrayValue, myGrayValue, myAlphaValue));
+      myQImage.setPixel(myRow, myColumn, qRgba(*myGrayValue, *myGrayValue, *myGrayValue, myAlphaValue));
     }
   }
   CPLFree ( myGdalScanData );
@@ -1974,42 +1772,7 @@ void QgsRasterLayer::drawPalettedSingleBandGray(QPainter * theQPainter, QgsRaste
   //render any inline filters
   filterLayer(&myQImage);
 
-  // Set up the initial offset into the myQImage we want to copy to the map canvas
-  // This is useful when the source image pixels are larger than the screen image.
-  int paintXoffset = 0;
-  int paintYoffset = 0;
-
-  if (theQgsMapToPixel)
-  {
-    paintXoffset = static_cast<int>( 
-        (theRasterViewPort->rectXOffsetFloat - 
-         theRasterViewPort->rectXOffset)
-        / theQgsMapToPixel->mapUnitsPerPixel() 
-        * fabs(mGeoTransform[1])
-        ); 
-
-    paintYoffset = static_cast<int>( 
-        (theRasterViewPort->rectYOffsetFloat - 
-         theRasterViewPort->rectYOffset)
-        / theQgsMapToPixel->mapUnitsPerPixel() 
-        * fabs(mGeoTransform[5])
-        ); 
-  }                                   
-
-  QgsDebugMsg("QgsRasterLayer - painting image to canvas from "\
-      + QString::number(paintXoffset) + ", " + QString::number(paintYoffset)\
-      + " to "\
-      + QString::number(static_cast<int>(theRasterViewPort->topLeftPoint.x() + 0.5))\
-      + QString::number(static_cast<int>(theRasterViewPort->topLeftPoint.y() + 0.5))\
-      + ".");
-
-  //part of the experimental transparency support
-  theQPainter->drawImage(static_cast<int>(theRasterViewPort->topLeftPoint.x() + 0.5),
-      static_cast<int>(theRasterViewPort->topLeftPoint.y() + 0.5),
-      myQImage,
-      paintXoffset,
-      paintYoffset);
-
+  paintImageToCanvas(theQPainter, theRasterViewPort, theQgsMapToPixel, &myQImage);
 }
 
 
@@ -2036,63 +1799,62 @@ void QgsRasterLayer::drawPalettedSingleBandPseudoColor(QPainter * theQPainter, Q
     return;
   }
 
-  QgsColorTable *myColorTable = &(myRasterBandStats.colorTable);
-
   QImage myQImage = QImage(theRasterViewPort->drawableAreaXDim, theRasterViewPort->drawableAreaYDim, 32);
   myQImage.setAlphaBuffer(true);
   myQImage.fill(qRgba(255,255,255,0 )); // fill transparent
 
-  //calculate the adjusted matrix stats - which come into affect if the user has chosen
-  QgsRasterBandStats myAdjustedRasterBandStats = getRasterBandStats(theBandNo);
+  if (NULL == mRasterShader)
+  {
+    return;
+  }
 
-  //to histogram stretch to a given number of std deviations
-  //see if we are using histogram stretch using stddev and plot only within the selected number of deviations if we are
+  double myMinimumValue = 0.0;
+  double myMaximumValue = 0.0;
+  //Use standard deviations if set, otherwise, use min max of band
   if (mStandardDeviations > 0)
   {
-    //work out how far on either side of the mean we should include data
-    float myTotalDeviation = mStandardDeviations * myAdjustedRasterBandStats.stdDev;
-    //printf("myTotalDeviation: %i\n" , myTotalDeviation );
-    //adjust min and max accordingly
-    //only change min if it is less than mean  -  (n  x  deviations)
-    if (mNoDataValue < (myAdjustedRasterBandStats.mean - myTotalDeviation))
-    {
-      mNoDataValue = (myAdjustedRasterBandStats.mean - myTotalDeviation);
-    }
-    //only change max if it is greater than mean  +  (n  x  deviations)
-    if (myAdjustedRasterBandStats.maxVal > (myAdjustedRasterBandStats.mean + myTotalDeviation))
-    {
-      myAdjustedRasterBandStats.maxVal = (myAdjustedRasterBandStats.mean + myTotalDeviation);
-    }
-    //update the range
-    myAdjustedRasterBandStats.range = myAdjustedRasterBandStats.maxVal - mNoDataValue;
+    myMinimumValue = (myRasterBandStats.mean - (mStandardDeviations * myRasterBandStats.stdDev));
+    myMaximumValue = (myRasterBandStats.mean + (mStandardDeviations * myRasterBandStats.stdDev));
   }
-  //set up the three class breaks for pseudocolour mapping
-  double myBreakSize = myAdjustedRasterBandStats.range / 3;
-  double myClassBreakMin1 = myRasterBandStats.minVal;
-  double myClassBreakMax1 = myClassBreakMin1 + myBreakSize;
-  double myClassBreakMin2 = myClassBreakMax1;
-  double myClassBreakMax2 = myClassBreakMin2 + myBreakSize;
-  double myClassBreakMin3 = myClassBreakMax2;
+  else
+  {
+    myMinimumValue = myRasterBandStats.minVal;
+    myMaximumValue = myRasterBandStats.maxVal;
+  }
 
-  double myPixelValue = 0.0;
+  mRasterShader->setMinimumValue(myMinimumValue);
+  mRasterShader->setMaximumValue(myMaximumValue);
+
+  QgsColorTable *myColorTable = &(myRasterBandStats.colorTable);
   int myRedLUTValue = 0;
   int myGreenLUTValue = 0;
   int myBlueLUTValue;
-  int myGrayValue = 0;
   
+  double myPixelValue = 0.0;
   int myRedValue = 0;
   int myGreenValue = 0;
   int myBlueValue = 0;
   int myAlphaValue = 0;
+  
+  //Set a pointer to the LUT color channel
+  int* myGrayValue;
+  if (theColorQString == mRedBandName)
+  {
+    myGrayValue = &myRedLUTValue;
+  }
+  else if (theColorQString == mGreenBandName)
+  {
+    myGrayValue = &myGreenLUTValue;
+  }
+  else
+  {
+    myGrayValue = &myBlueLUTValue;
+  } 
+  
   for (int myColumn = 0; myColumn < theRasterViewPort->drawableAreaYDim; ++myColumn)
   {
     for (int myRow = 0; myRow < theRasterViewPort->drawableAreaXDim; ++myRow)
     {
-      myRedLUTValue = 0;
-      myGreenLUTValue = 0;
-      myBlueLUTValue;
-      myGrayValue = 0;
-  
       myRedValue = 0;
       myGreenValue = 0;
       myBlueValue = 0;
@@ -2113,127 +1875,20 @@ void QgsRasterLayer::drawPalettedSingleBandPseudoColor(QPainter * theQPainter, Q
       bool found = myColorTable->color ( myPixelValue, &myRedLUTValue, &myGreenLUTValue, &myBlueLUTValue );
       if ( !found ) continue;
 
-      myGrayValue = 0;
-
-      //check for alternate color mappings
-      if (theColorQString == mRedBandName)
-      {
-        myGrayValue = myRedLUTValue;
-      }
-      else if (theColorQString == mGreenBandName)
-      {
-        myGrayValue = myGreenLUTValue;
-      }
-      else if (theColorQString == mBlueBandName)
-      {
-        myGrayValue = myBlueLUTValue;
-      }
-      //dont draw this point if it is no data !
-      //double check that my >= min and <= max
-      //this is relevant if we are plotting within stddevs
-
-      if ( myGrayValue < myAdjustedRasterBandStats.minVal )
-      {
-        myGrayValue = static_cast < int >(myAdjustedRasterBandStats.minVal);
-      }
-      else if ( myGrayValue > myAdjustedRasterBandStats.maxVal )
-      {
-        myGrayValue = static_cast < int >(myAdjustedRasterBandStats.maxVal);
-      }
-
-      if (!mInvertPixelsFlag)
-      {
-        //check if we are in the first class break
-        if ((myGrayValue >= myClassBreakMin1) && (myGrayValue < myClassBreakMax1))
-        {
-          myRedValue = 0;
-          myBlueValue = 255;
-          myGreenValue = static_cast < int >(((255 / myAdjustedRasterBandStats.range)
-                * (myGrayValue - myClassBreakMin1)) * 3);
-          // testing this stuff still ...
-          if (colorRampingType==FREAK_OUT)
-          {
-            myRedValue=255-myGreenValue;
-          }
-        }
-        //check if we are in the second class break
-        else if ((myGrayValue >= myClassBreakMin2) && (myGrayValue < myClassBreakMax2))
-        {
-          myRedValue = static_cast < int >(((255 / myAdjustedRasterBandStats.range)
-                * ((myGrayValue - myClassBreakMin2) / 1)) * 3);
-          myBlueValue = static_cast < int >(255 - (((255 / myAdjustedRasterBandStats.range)
-                  * ((myGrayValue - myClassBreakMin2) / 1)) * 3));
-          myGreenValue = 255;
-          // testing this stuff still ...
-          if (colorRampingType==FREAK_OUT)
-          {
-            myGreenValue=myBlueValue;
-          }
-        }
-        //otherwise we must be in the third classbreak
-        else
-        {
-          myRedValue = 255;
-          myBlueValue = 0;
-          myGreenValue = static_cast < int >(255 - (((255 / myAdjustedRasterBandStats.range)
-                  * ((myGrayValue - myClassBreakMin3) / 1) * 3)));
-          // testing this stuff still ...
-          if (colorRampingType==FREAK_OUT)
-          {
-            myRedValue=myGreenValue;
-            myGreenValue=255-myGreenValue;
-          }
-        }
-      }
-      else            //invert histogram toggle is on
-      {
-        //check if we are in the first class break
-        if ((myGrayValue >= myClassBreakMin1) && (myGrayValue < myClassBreakMax1))
-        {
-          myRedValue = 255;
-          myBlueValue = 0;
-          myGreenValue =
-            static_cast < int >(((255 / myAdjustedRasterBandStats.range) * ((myGrayValue - myClassBreakMin1) / 1) * 3));
-          // testing this stuff still ...
-          if (colorRampingType==FREAK_OUT)
-          {
-            myRedValue=255-myGreenValue;
-          }
-        }
-        //check if we are in the second class break
-        else if ((myGrayValue >= myClassBreakMin2) && (myGrayValue < myClassBreakMax2))
-        {
-          myRedValue =
-            static_cast <
-            int >(255 - (((255 / myAdjustedRasterBandStats.range) * ((myGrayValue - myClassBreakMin2) / 1)) * 3));
-          myBlueValue =
-            static_cast < int >(((255 / myAdjustedRasterBandStats.range) * ((myGrayValue - myClassBreakMin2) / 1)) * 3);
-          myGreenValue = 255;
-          // testing this stuff still ...
-          if (colorRampingType==FREAK_OUT)
-          {
-            myGreenValue=myBlueValue;
-          }
-        }
-        //otherwise we must be in the third classbreak
-        else
-        {
-          myRedValue = 0;
-          myBlueValue = 255;
-          myGreenValue =
-            static_cast < int >(255 - (((255 / myAdjustedRasterBandStats.range) * (myGrayValue - myClassBreakMin3)) * 3));
-          // testing this stuff still ...
-          if (colorRampingType==FREAK_OUT)
-          {
-            myRedValue=255-myGreenValue;
-            myGreenValue=myGreenValue;
-          }
-        }
 
 
-      }
+      mRasterShader->generateShadedValue((double)*myGrayValue, &myRedValue, &myGreenValue, &myBlueValue);
 
-      myQImage.setPixel(myRow, myColumn, qRgba(myRedValue, myGreenValue, myBlueValue, myAlphaValue));
+      if (mInvertPixelsFlag)
+      {
+        //Invert flag, flip blue and read
+        myQImage.setPixel(myRow, myColumn, qRgba(myBlueValue, myGreenValue, myRedValue, myAlphaValue));
+      }
+      else
+      {
+        //Normal
+        myQImage.setPixel(myRow, myColumn, qRgba(myRedValue, myGreenValue, myBlueValue, myAlphaValue));
+      }
     }
   }
   CPLFree ( myGdalScanData );
@@ -2241,42 +1896,7 @@ void QgsRasterLayer::drawPalettedSingleBandPseudoColor(QPainter * theQPainter, Q
   //render any inline filters
   filterLayer(&myQImage);
 
-  // Set up the initial offset into the myQImage we want to copy to the map canvas
-  // This is useful when the source image pixels are larger than the screen image.
-  int paintXoffset = 0;
-  int paintYoffset = 0;
-
-  if (theQgsMapToPixel)
-  {
-    paintXoffset = static_cast<int>( 
-        (theRasterViewPort->rectXOffsetFloat - 
-         theRasterViewPort->rectXOffset)
-        / theQgsMapToPixel->mapUnitsPerPixel() 
-        * fabs(mGeoTransform[1])
-        ); 
-
-    paintYoffset = static_cast<int>( 
-        (theRasterViewPort->rectYOffsetFloat - 
-         theRasterViewPort->rectYOffset)
-        / theQgsMapToPixel->mapUnitsPerPixel() 
-        * fabs(mGeoTransform[5])
-        ); 
-  }                                   
-
-  QgsDebugMsg("QgsRasterLayer - painting image to canvas from "\
-      + QString::number(paintXoffset) + ", " + QString::number(paintYoffset)\
-      + " to "\
-      + QString::number(static_cast<int>(theRasterViewPort->topLeftPoint.x() + 0.5))\
-      + QString::number(static_cast<int>(theRasterViewPort->topLeftPoint.y() + 0.5))\
-      + ".");
-
-  //part of the experimental transparency support
-  theQPainter->drawImage(static_cast<int>(theRasterViewPort->topLeftPoint.x() + 0.5),
-      static_cast<int>(theRasterViewPort->topLeftPoint.y() + 0.5),
-      myQImage,
-      paintXoffset,
-      paintYoffset);
-
+  paintImageToCanvas(theQPainter, theRasterViewPort, theQgsMapToPixel, &myQImage);
 }
 
 /**
@@ -2377,47 +1997,13 @@ void QgsRasterLayer::drawPalettedMultiBandColor(QPainter * theQPainter, QgsRaste
       myQImage.setPixel(myRow, myColumn, qRgba(myRedValue, myGreenValue, myBlueValue, myAlphaValue));
     }
   }
+  
+  CPLFree(myGdalScanData);
+  
   //render any inline filters
   filterLayer(&myQImage);
 
-  // Set up the initial offset into the myQImage we want to copy to the map canvas
-  // This is useful when the source image pixels are larger than the screen image.
-  int paintXoffset = 0;
-  int paintYoffset = 0;
-
-  if (theQgsMapToPixel)
-  {
-    paintXoffset = static_cast<int>( 
-        (theRasterViewPort->rectXOffsetFloat - 
-         theRasterViewPort->rectXOffset)
-        / theQgsMapToPixel->mapUnitsPerPixel() 
-        * fabs(mGeoTransform[1])
-        ); 
-
-    paintYoffset = static_cast<int>( 
-        (theRasterViewPort->rectYOffsetFloat - 
-         theRasterViewPort->rectYOffset)
-        / theQgsMapToPixel->mapUnitsPerPixel() 
-        * fabs(mGeoTransform[5])
-        ); 
-  }                                   
-
-  QgsDebugMsg("QgsRasterLayer::drawSingleBandGray: painting image to canvas from "\
-      + QString::number(paintXoffset) + ", " + QString::number(paintYoffset)\
-      + " to "\
-      + QString::number(static_cast<int>(theRasterViewPort->topLeftPoint.x() + 0.5))\
-      + ", "\
-      + QString::number(static_cast<int>(theRasterViewPort->topLeftPoint.y() + 0.5))\
-      + ".");
-
-  //part of the experimental transparency support
-  theQPainter->drawImage(static_cast<int>(theRasterViewPort->topLeftPoint.x() + 0.5),
-      static_cast<int>(theRasterViewPort->topLeftPoint.y() + 0.5),
-      myQImage,
-      paintXoffset,
-      paintYoffset);
-
-  CPLFree(myGdalScanData);
+  paintImageToCanvas(theQPainter, theRasterViewPort, theQgsMapToPixel, &myQImage);
 }
 
 
@@ -2467,28 +2053,6 @@ void QgsRasterLayer::drawMultiBandColor(QPainter * theQPainter, QgsRasterViewPor
     return;
   }
 
-  bool haveTransparencyBand(false);
-  GDALRasterBand *myGdalTransparentBand = NULL;
-  GDALDataType myTransparentType = GDT_Byte; //default to prevent uninitialised var warnings
-  void *myGdalTransparentData = NULL;
-
-  if (mTransparencyBandName != tr("Not Set"))
-  {
-    haveTransparencyBand = true;
-    int myTransparentBandNo = getRasterBandNumber(mTransparencyBandName); 
-    myGdalTransparentBand = mGdalDataset->GetRasterBand(myTransparentBandNo);
-    myTransparentType = myGdalTransparentBand->GetRasterDataType();
-    myGdalTransparentData = readData ( myGdalTransparentBand, theRasterViewPort );
-    if (myGdalTransparentData == NULL)
-    {
-      // Safe to free NULL-pointer */
-      VSIFree(myGdalRedData);
-      VSIFree(myGdalGreenData);
-      VSIFree(myGdalBlueData);
-      return;
-    }
-  }
-
   QImage myQImage = QImage(theRasterViewPort->drawableAreaXDim, theRasterViewPort->drawableAreaYDim, 32);
   myQImage.setAlphaBuffer(true);
   myQImage.fill(qRgba(255,255,255,0 )); // fill transparent
@@ -2534,15 +2098,7 @@ void QgsRasterLayer::drawMultiBandColor(QPainter * theQPainter, QgsRasterViewPor
           myColumn * theRasterViewPort->drawableAreaXDim + myRow );
       myBlueValue  = readValue ( myGdalBlueData, (GDALDataType)myBlueType,
           myColumn * theRasterViewPort->drawableAreaXDim + myRow );
-      if (haveTransparencyBand)
-      {
-        double myTransparentValue  = readValue ( myGdalTransparentData, myTransparentType,
-            myColumn * theRasterViewPort->drawableAreaXDim + myRow );
-        if (myTransparentValue == 0.0)
-          continue;
-      }
 
-      // TODO: make this into a function 
       if((myRedValue == mNoDataValue || myRedValue != myRedValue) || (myGreenValue == mNoDataValue || myGreenValue != myGreenValue) || (myBlueValue == mNoDataValue || myBlueValue != myBlueValue))
       {
         continue;
@@ -2573,7 +2129,11 @@ void QgsRasterLayer::drawMultiBandColor(QPainter * theQPainter, QgsRasterViewPor
       myQImage.setPixel( myRow, myColumn, qRgba(myStretchedRedValue, myStretchedGreenValue, myStretchedBlueValue, myAlphaValue));
     }
   }
-
+  //free the scanline memory
+  CPLFree(myGdalRedData);
+  CPLFree(myGdalGreenData);
+  CPLFree(myGdalBlueData);
+    
   //render any inline filters
   filterLayer(&myQImage);
 
@@ -2588,44 +2148,7 @@ void QgsRasterLayer::drawMultiBandColor(QPainter * theQPainter, QgsRasterViewPor
   }
 #endif
 
-  // \/\/\/ - added to handle zoomed-in rasters
-
-  // Set up the initial offset into the myQImage we want to copy to the map canvas
-  // This is useful when the source image pixels are larger than the screen image.
-  int paintXoffset = 0;
-  int paintYoffset = 0;
-
-  if (theQgsMapToPixel)
-  {
-    paintXoffset = static_cast<int>( 
-        (theRasterViewPort->rectXOffsetFloat - 
-         theRasterViewPort->rectXOffset)
-        / theQgsMapToPixel->mapUnitsPerPixel() 
-        * fabs(mGeoTransform[1])
-        ); 
-
-    paintYoffset = static_cast<int>( 
-        (theRasterViewPort->rectYOffsetFloat - 
-         theRasterViewPort->rectYOffset)
-        / theQgsMapToPixel->mapUnitsPerPixel() 
-        * fabs(mGeoTransform[5])
-        ); 
-  }
-
-  QgsDebugMsg("QgsRasterLayer::drawSingleBandGray: painting image to canvas from source NW"\
-      + QString::number(paintXoffset) + ", " + QString::number(paintYoffset)\
-      + " to "\
-      + QString::number(static_cast<int>(theRasterViewPort->topLeftPoint.x() + 0.5))\
-      + ", "\
-      + QString::number(static_cast<int>(theRasterViewPort->topLeftPoint.y() + 0.5))\
-      + ".");
-
-  //part of the experimental transparency support
-  theQPainter->drawImage(static_cast<int>(theRasterViewPort->topLeftPoint.x() + 0.5),
-      static_cast<int>(theRasterViewPort->topLeftPoint.y() + 0.5),
-      myQImage,
-      paintXoffset,
-      paintYoffset);
+  paintImageToCanvas(theQPainter, theRasterViewPort, theQgsMapToPixel, &myQImage);
 
 #ifdef QGISDEBUG
   QgsDebugMsg("QgsRasterLayer::drawMultiBandColor: theQPainter->drawImage.");
@@ -2634,13 +2157,6 @@ void QgsRasterLayer::drawMultiBandColor(QPainter * theQPainter, QgsRasterViewPor
     pm->save("/tmp/qgis-rasterlayer-drawmultibandcolor-test-b.png", "PNG");
   }
 #endif
-
-  //free the scanline memory
-  CPLFree(myGdalRedData);
-  CPLFree(myGdalGreenData);
-  CPLFree(myGdalBlueData);
-  if (haveTransparencyBand)
-    CPLFree(myGdalTransparentData);
 }
 
 
@@ -3392,7 +2908,7 @@ QPixmap QgsRasterLayer::getLegendQPixmap(bool theWithNameFlag)
             int myBlue = 255;
             int myGreen = static_cast < int >(((255 / myRangeSize) * (my - myClassBreakMin1)) * 3);
             // testing this stuff still ...
-            if (colorRampingType==FREAK_OUT)
+            if (mColorRampingType==FREAK_OUT)
             {
               myRed=255-myGreen;
             }
@@ -3405,7 +2921,7 @@ QPixmap QgsRasterLayer::getLegendQPixmap(bool theWithNameFlag)
             int myBlue = static_cast < int >(255 - (((255 / myRangeSize) * ((my - myClassBreakMin2) / 1)) * 3));
             int myGreen = 255;
             // testing this stuff still ...
-            if (colorRampingType==FREAK_OUT)
+            if (mColorRampingType==FREAK_OUT)
             {
               myGreen=myBlue;
             }
@@ -3418,7 +2934,7 @@ QPixmap QgsRasterLayer::getLegendQPixmap(bool theWithNameFlag)
             int myBlue = 0;
             int myGreen = static_cast < int >(255 - (((255 / myRangeSize) * ((my - myClassBreakMin3) / 1) * 3)));
             // testing this stuff still ...
-            if (colorRampingType==FREAK_OUT)
+            if (mColorRampingType==FREAK_OUT)
             {
               myRed=myGreen;
               myGreen=255-myGreen;
@@ -3435,7 +2951,7 @@ QPixmap QgsRasterLayer::getLegendQPixmap(bool theWithNameFlag)
             int myBlue = 0;
             int myGreen = static_cast < int >(((255 / myRangeSize) * ((my - myClassBreakMin1) / 1) * 3));
             // testing this stuff still ...
-            if (colorRampingType==FREAK_OUT)
+            if (mColorRampingType==FREAK_OUT)
             {
               myRed=255-myGreen;
             }
@@ -3448,7 +2964,7 @@ QPixmap QgsRasterLayer::getLegendQPixmap(bool theWithNameFlag)
             int myBlue = static_cast < int >(((255 / myRangeSize) * ((my - myClassBreakMin2) / 1)) * 3);
             int myGreen = 255;
             // testing this stuff still ...
-            if (colorRampingType==FREAK_OUT)
+            if (mColorRampingType==FREAK_OUT)
             {
               myGreen=myBlue;
             }
@@ -3461,7 +2977,7 @@ QPixmap QgsRasterLayer::getLegendQPixmap(bool theWithNameFlag)
             int myBlue = 255;
             int myGreen = static_cast < int >(255 - (((255 / myRangeSize) * (my - myClassBreakMin3)) * 3));
             // testing this stuff still ...
-            if (colorRampingType==FREAK_OUT)
+            if (mColorRampingType==FREAK_OUT)
             {
               myRed=255-myGreen;
             }
@@ -3646,7 +3162,7 @@ QPixmap QgsRasterLayer::getDetailedLegendQPixmap(int theLabelCount=3)
             int myBlue = 255;
             int myGreen = static_cast < int >(((255 / myRangeSize) * (my - myClassBreakMin1)) * 3);
             // testing this stuff still ...
-            if (colorRampingType==FREAK_OUT)
+            if (mColorRampingType==FREAK_OUT)
             {
               myRed=255-myGreen;
             }
@@ -3659,7 +3175,7 @@ QPixmap QgsRasterLayer::getDetailedLegendQPixmap(int theLabelCount=3)
             int myBlue = static_cast < int >(255 - (((255 / myRangeSize) * ((my - myClassBreakMin2) / 1)) * 3));
             int myGreen = 255;
             // testing this stuff still ...
-            if (colorRampingType==FREAK_OUT)
+            if (mColorRampingType==FREAK_OUT)
             {
               myGreen=myBlue;
             }
@@ -3672,7 +3188,7 @@ QPixmap QgsRasterLayer::getDetailedLegendQPixmap(int theLabelCount=3)
             int myBlue = 0;
             int myGreen = static_cast < int >(255 - (((255 / myRangeSize) * ((my - myClassBreakMin3) / 1) * 3)));
             // testing this stuff still ...
-            if (colorRampingType==FREAK_OUT)
+            if (mColorRampingType==FREAK_OUT)
             {
               myRed=myGreen;
               myGreen=255-myGreen;
@@ -3689,7 +3205,7 @@ QPixmap QgsRasterLayer::getDetailedLegendQPixmap(int theLabelCount=3)
             int myBlue = 0;
             int myGreen = static_cast < int >(((255 / myRangeSize) * ((my - myClassBreakMin1) / 1) * 3));
             // testing this stuff still ...
-            if (colorRampingType==FREAK_OUT)
+            if (mColorRampingType==FREAK_OUT)
             {
               myRed=255-myGreen;
             }
@@ -3702,7 +3218,7 @@ QPixmap QgsRasterLayer::getDetailedLegendQPixmap(int theLabelCount=3)
             int myBlue = static_cast < int >(((255 / myRangeSize) * ((my - myClassBreakMin2) / 1)) * 3);
             int myGreen = 255;
             // testing this stuff still ...
-            if (colorRampingType==FREAK_OUT)
+            if (mColorRampingType==FREAK_OUT)
             {
               myGreen=myBlue;
             }
@@ -3715,7 +3231,7 @@ QPixmap QgsRasterLayer::getDetailedLegendQPixmap(int theLabelCount=3)
             int myBlue = 255;
             int myGreen = static_cast < int >(255 - (((255 / myRangeSize) * (my - myClassBreakMin3)) * 3));
             // testing this stuff still ...
-            if (colorRampingType==FREAK_OUT)
+            if (mColorRampingType==FREAK_OUT)
             {
               myRed=255-myGreen;
             }
@@ -5168,6 +4684,8 @@ mModified(false)
       layers.join(", ") +  " and style list of "+ styles.join(", ") + " and format of " +\
       format +  " and CRS of " + crs);
 
+  mRasterShader = new QgsRasterShader();
+  
   // Initialise the affine transform matrix
   mGeoTransform[0] =  0;
   mGeoTransform[1] =  1;
@@ -5487,4 +5005,67 @@ int QgsRasterLayer::getInterpolatedColorFromValueClassification(double value, in
   return -1;
 }
 
-// ENDS
+void QgsRasterLayer::setColorRampingType(COLOR_RAMPING_TYPE theRamping)
+{
+  if(mColorRampingType != theRamping)
+  {
+    if(0 == mRasterShader)
+    {
+      mRasterShader = new QgsRasterShader();
+    }
+        
+    mColorRampingType=theRamping;
+        
+    switch(theRamping)
+    {
+      case PSEUDO_COLOR:
+        mRasterShader->setRasterShaderFunction(new QgsPseudoColorShader());
+        break;
+      case FREAK_OUT:
+        mRasterShader->setRasterShaderFunction(new QgsFreakOutShader());
+        break;
+      default:
+        mRasterShader->setRasterShaderFunction(new QgsRasterShaderFunction());
+        break;
+    }
+  }
+}
+
+void QgsRasterLayer::paintImageToCanvas(QPainter* theQPainter, QgsRasterViewPort * theRasterViewPort, QgsMapToPixel * theQgsMapToPixel, QImage* theImage)
+{
+  // Set up the initial offset into the myQImage we want to copy to the map canvas
+  // This is useful when the source image pixels are larger than the screen image.
+  int paintXoffset = 0;
+  int paintYoffset = 0;
+
+  if (theQgsMapToPixel)
+  {
+    paintXoffset = static_cast<int>( 
+        (theRasterViewPort->rectXOffsetFloat - 
+         theRasterViewPort->rectXOffset)
+        / theQgsMapToPixel->mapUnitsPerPixel() 
+        * fabs(mGeoTransform[1])
+        ); 
+
+    paintYoffset = static_cast<int>( 
+        (theRasterViewPort->rectYOffsetFloat - 
+         theRasterViewPort->rectYOffset)
+        / theQgsMapToPixel->mapUnitsPerPixel() 
+        * fabs(mGeoTransform[5])
+        );
+  }
+
+  QgsDebugMsg("QgsRasterLayer::drawSingleBandGray: painting image to canvas from "\
+      + QString::number(paintXoffset) + ", " + QString::number(paintYoffset)\
+      + " to "\
+      + QString::number(static_cast<int>(theRasterViewPort->topLeftPoint.x() + 0.5))\
+      + ", "\
+      + QString::number(static_cast<int>(theRasterViewPort->topLeftPoint.y() + 0.5))\
+      + ".");
+
+  theQPainter->drawImage(static_cast<int>(theRasterViewPort->topLeftPoint.x() + 0.5),
+      static_cast<int>(theRasterViewPort->topLeftPoint.y() + 0.5),
+      *theImage,
+      paintXoffset,
+      paintYoffset);
+}
