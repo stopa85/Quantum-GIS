@@ -126,7 +126,16 @@ QgsGeometry* QgsGeometry::fromPolyline(const QgsPolyline& polyline)
   }
 
   // new geometry takes ownership of the sequence
-  GEOS_GEOM::Geometry* geom = geosGeometryFactory->createLineString(seq);
+  GEOS_GEOM::Geometry* geom = 0;
+  try
+    {
+      geom = geosGeometryFactory->createLineString(seq);
+    }
+  catch(GEOS_UTIL::IllegalArgumentException* e)
+    {
+      delete e; delete seq;
+      return 0;
+    }
   QgsGeometry* g = new QgsGeometry;
   g->setGeos(geom);
   return g;
@@ -146,11 +155,28 @@ QgsGeometry* QgsGeometry::fromMultiPolyline(const QgsMultiPolyline& multiline)
 	{
 	  seq->setAt(GEOS_GEOM::Coordinate(currentLine.at(j).x(), currentLine.at(j).y()), j);
 	}
-      currentLineString = geosGeometryFactory->createLineString(seq);
+      try
+	{
+	  currentLineString = geosGeometryFactory->createLineString(seq);
+	}
+      catch(GEOS_UTIL::IllegalArgumentException* e)
+	{
+	  delete lineVector; delete seq; delete e;
+	  return 0;
+	}
       (*lineVector)[i] = currentLineString;
     }
   
-  GEOS_GEOM::Geometry* geom = geosGeometryFactory->createMultiLineString(lineVector);
+  GEOS_GEOM::Geometry* geom = 0;
+  try
+    {
+      geom = geosGeometryFactory->createMultiLineString(lineVector);
+    }
+  catch(GEOS_UTIL::IllegalArgumentException* e)
+    {
+      delete lineVector; delete e;
+      return 0;
+    }
   QgsGeometry* g = new QgsGeometry;
   g->setGeos(geom);
   return g; 
