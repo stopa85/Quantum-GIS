@@ -3,7 +3,6 @@ class QgsContrastEnhancement
 {
 %TypeHeaderCode
 #include <qgscontrastenhancement.h>
-#include <gdal.h>
 %End
 
 public:

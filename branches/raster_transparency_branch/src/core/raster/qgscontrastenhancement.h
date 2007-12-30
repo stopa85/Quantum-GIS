@@ -21,7 +21,6 @@ class originally created circa 2004 by T.Sutton, Gary E.Sherman, Steve Halasz
 #ifndef QGSCONTRASTENHANCEMENT_H
 #define QGSCONTRASTENHANCEMENT_H
 
-#include <gdal_priv.h>
 #include <limits>
 
 class QgsContrastEnhancementFunction;
@@ -111,9 +110,9 @@ private:
   /** \brief Current contrast enhancement algorithm */
   CONTRAST_ENHANCEMENT_ALGORITHM mContrastEnhancementAlgorithm;
   /** \brief Data type of the band */
-  QgsRasterDataType mQgsRasterDataType;
+  QgsRasterDataType mRasterDataType;
   /** \brief Maximum range of values for a given data type */
-  double mQgsRasterDataTypeRange;
+  double mRasterDataTypeRange;
   /** \brief Flag indicating if the lookup table needs to be regenerated */
   bool mEnhancementDirty;
   
