@@ -17,6 +17,7 @@
 
 #include "qgsmaptoolmovevertex.h"
 #include "qgsmapcanvas.h"
+#include "qgsproject.h"
 #include "qgsrubberband.h"
 #include "qgsvectorlayer.h"
 
@@ -141,7 +142,12 @@ void QgsMapToolMoveVertex::canvasReleaseEvent(QMouseEvent * e)
 	  //error
       }
       //add segment points in case of topological editing
-      insertSegmentVerticesForSnap(snapResults, vlayer);
+      int topologicalEditing = QgsProject::instance()->readNumEntry("Digitizing", "/TopologicalEditing", 0);
+      if(topologicalEditing)
+	{
+	  insertSegmentVerticesForSnap(snapResults, vlayer);
+	}
+
       //and get target point of snap
       snappedPointMapCoord = snapPointFromResults(snapResults, e->pos());
       

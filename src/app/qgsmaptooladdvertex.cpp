@@ -17,6 +17,7 @@
 
 #include "qgsmaptooladdvertex.h"
 #include "qgsmapcanvas.h"
+#include "qgsproject.h"
 #include "qgsrubberband.h"
 #include "qgsvectorlayer.h"
 
@@ -91,7 +92,12 @@ void QgsMapToolAddVertex::canvasReleaseEvent(QMouseEvent * e)
 	{
 	  snappedPointMapCoord = snapPointFromResults(snapResults, e->pos());
 	  snappedPointLayerCoord = toLayerCoords(vlayer, snappedPointMapCoord);
-	  insertSegmentVerticesForSnap(snapResults, vlayer);
+
+	  int topologicalEditing = QgsProject::instance()->readNumEntry("Digitizing", "/TopologicalEditing", 0);
+	  if(topologicalEditing)
+	    {
+	      insertSegmentVerticesForSnap(snapResults, vlayer);
+	    }
     
 	  //and change the feature points
 	  QList<QgsSnappingResult>::iterator sr_it = mRecentSnappingResults.begin();
