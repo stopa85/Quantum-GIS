@@ -145,6 +145,9 @@ int QgsMapToolEdit::addTopologicalPoints(const QgsPoint& p, QgsVectorLayer* vl)
     }
 
   QMultiMap<double, QgsSnappingResult> snapResults; //results from the snapper object
+  //we also need to snap to vertex to make sure the vertex does not already exist in this geometry
+  QMultiMap<double, QgsSnappingResult> vertexSnapResults;
+
   QList<QgsSnappingResult> filteredSnapResults; //we filter out the results that are on existing vertices
 
   const double threshold = 0.00000001;
@@ -155,17 +158,30 @@ int QgsMapToolEdit::addTopologicalPoints(const QgsPoint& p, QgsVectorLayer* vl)
     }
  
   QMultiMap<double, QgsSnappingResult>::const_iterator snap_it = snapResults.constBegin();
+  QMultiMap<double, QgsSnappingResult>::const_iterator vertex_snap_it;
 
   for(; snap_it != snapResults.constEnd(); ++snap_it)
     { 
-      //check if there is already an existing vertex at the position of p
-      QgsPoint vertexPoint(p);
-      if(vl->snapPoint(vertexPoint, threshold))
+      //test if p is already a vertex of this geometry. If yes, don't insert it
+      bool vertexAlreadyExists = false;
+      if(vl->snapWithContext(p, threshold, vertexSnapResults, QgsSnapper::SNAP_TO_VERTEX) != 0)
 	{
 	  continue;
 	}
 
-      filteredSnapResults.push_back(*snap_it);
+      vertex_snap_it = vertexSnapResults.constBegin();
+      for(; vertex_snap_it != vertexSnapResults.constEnd(); ++vertex_snap_it)
+	{
+	  if(snap_it.value().snappedAtGeometry == vertex_snap_it.value().snappedAtGeometry)
+	    {
+	      vertexAlreadyExists = true; 
+	    }
+	}
+      
+      if(!vertexAlreadyExists)
+	{
+	  filteredSnapResults.push_back(*snap_it);
+	}
     }
   insertSegmentVerticesForSnap(filteredSnapResults, vl);
   return 0;
