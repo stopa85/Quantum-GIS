@@ -43,32 +43,16 @@ int QgsMapToolEdit::insertSegmentVerticesForSnap(const QList<QgsSnappingResult>&
       return 1;
     }
 
-  //can only add segment vertices for other features if topological editing is enabled
-  //topological editing on?
-  int topologicalEditing = QgsProject::instance()->readNumEntry("Digitizing", "/TopologicalEditing", 0);
-  if(topologicalEditing == 0)
+  //transform snaping coordinates to layer crs first
+  QList<QgsSnappingResult> transformedSnapResults = snapResults;
+  QList<QgsSnappingResult>::iterator it = transformedSnapResults.begin();
+  for(; it != transformedSnapResults.constEnd(); ++it)
     {
-      return 2;
+      QgsPoint layerPoint = toLayerCoords(editedLayer, it->snappedVertex);
+      it->snappedVertex = layerPoint;
     }
 
-  QList<QgsSnappingResult>::const_iterator it = snapResults.constBegin();
-  for(; it != snapResults.constEnd(); ++it)
-    {
-      //snap to edited layer?
-      if(it->layer == editedLayer)
-	{
-	  if(it->snappedVertexNr == -1) //segment snap
-	    {
-	      layerPoint = toLayerCoords(editedLayer, it->snappedVertex);
-	      if(!editedLayer->insertVertexBefore(layerPoint.x(), layerPoint.y(), it->snappedAtGeometry, it->afterVertexNr))
-		{
-		  returnval = 3;
-		}
-	    }
-	}
-    }
-
-  return returnval;
+  return editedLayer->insertSegmentVerticesForSnap(transformedSnapResults);
 }
 
 QgsPoint QgsMapToolEdit::snapPointFromResults(const QList<QgsSnappingResult>& snapResults, const QPoint& screenCoords)
@@ -131,58 +115,9 @@ int QgsMapToolEdit::addTopologicalPoints(const QList<QgsPoint>& geom)
   QList<QgsPoint>::const_iterator list_it = geom.constBegin();
   for(; list_it != geom.constEnd(); ++list_it)
     {
-      addTopologicalPoints(*list_it, vlayer);
+      vlayer->addTopologicalPoints(*list_it);
     }
-  
   return 0;
 }
 
-int QgsMapToolEdit::addTopologicalPoints(const QgsPoint& p, QgsVectorLayer* vl)
-{
-  if(!vl)
-    {
-      return 1;
-    }
 
-  QMultiMap<double, QgsSnappingResult> snapResults; //results from the snapper object
-  //we also need to snap to vertex to make sure the vertex does not already exist in this geometry
-  QMultiMap<double, QgsSnappingResult> vertexSnapResults;
-
-  QList<QgsSnappingResult> filteredSnapResults; //we filter out the results that are on existing vertices
-
-  const double threshold = 0.00000001;
-
-  if(vl->snapWithContext(p, threshold, snapResults, QgsSnapper::SNAP_TO_SEGMENT) != 0)
-    {
-      return 2;
-    }
- 
-  QMultiMap<double, QgsSnappingResult>::const_iterator snap_it = snapResults.constBegin();
-  QMultiMap<double, QgsSnappingResult>::const_iterator vertex_snap_it;
-
-  for(; snap_it != snapResults.constEnd(); ++snap_it)
-    { 
-      //test if p is already a vertex of this geometry. If yes, don't insert it
-      bool vertexAlreadyExists = false;
-      if(vl->snapWithContext(p, threshold, vertexSnapResults, QgsSnapper::SNAP_TO_VERTEX) != 0)
-	{
-	  continue;
-	}
-
-      vertex_snap_it = vertexSnapResults.constBegin();
-      for(; vertex_snap_it != vertexSnapResults.constEnd(); ++vertex_snap_it)
-	{
-	  if(snap_it.value().snappedAtGeometry == vertex_snap_it.value().snappedAtGeometry)
-	    {
-	      vertexAlreadyExists = true; 
-	    }
-	}
-      
-      if(!vertexAlreadyExists)
-	{
-	  filteredSnapResults.push_back(*snap_it);
-	}
-    }
-  insertSegmentVerticesForSnap(filteredSnapResults, vl);
-  return 0;
-}
