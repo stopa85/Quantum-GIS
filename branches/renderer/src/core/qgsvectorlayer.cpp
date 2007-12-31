@@ -741,9 +741,12 @@ void QgsVectorLayer::draw(QPainter * p,
     QPen pen;
     /*Pointer to a marker image*/
     QImage marker;
-    /*Scale factor of the marker image*/
-    double markerScaleFactor=1.;
 
+    /* Scale factor of the marker image*/
+    /* We set this to the symbolScale, and if it is NOT changed, */
+    /* we don't have to do another scaling here */
+    double markerScaleFactor =  symbolScale;
+    
     if(mEditable)
     {
       // Destroy all cached geometries and clear the references to them
@@ -811,9 +814,13 @@ void QgsVectorLayer::draw(QPainter * p,
           sel = FALSE;
         }
 
+	QgsDebugMsg(QString("markerScale before renderFeature(): %1").arg(markerScaleFactor));
+	// markerScalerFactore reflects the wanted scaling of the marker
         mRenderer->renderFeature(p, fet, &marker, &markerScaleFactor, sel, widthScale );
+	// markerScalerFactore now reflects the actual scaling of the marker that the render performed.
+	QgsDebugMsg(QString("markerScale after renderFeature(): %1").arg(markerScaleFactor));
 
-        double scale = markerScaleFactor * symbolScale;
+        double scale = symbolScale / markerScaleFactor;
         drawFeature(p,fet,theMapToPixelTransform,ct, &marker, scale, drawingToEditingCanvas);
 
         ++featureCount;
@@ -826,9 +833,14 @@ void QgsVectorLayer::draw(QPainter * p,
         for(; it != mAddedFeatures.end(); ++it)
         {
           bool sel = mSelectedFeatureIds.contains((*it).featureId());
+	  QgsDebugMsg(QString("markerScale before renderFeature(): %1").arg(markerScaleFactor));
+	  // markerScalerFactore reflects the wanted scaling of the marker
           mRenderer->renderFeature(p, *it, &marker, &markerScaleFactor, 
               sel, widthScale);
-          double scale = markerScaleFactor * symbolScale;
+	  // markerScalerFactore now reflects the actual scaling of the marker that the render performed.
+	  QgsDebugMsg(QString("markerScale after renderFeature(): %1").arg(markerScaleFactor));
+
+          double scale = symbolScale / markerScaleFactor;
     
           if (mChangedGeometries.contains((*it).featureId()))
           {
@@ -2748,6 +2760,8 @@ void QgsVectorLayer::drawFeature(QPainter* p,
 #ifdef QGISDEBUG 
         //  std::cout <<"...WKBPoint (" << x << ", " << y << ")" <<std::endl;
 #endif
+
+	QgsDebugMsg(QString("markerScaleFactor = %1").arg(markerScaleFactor));
 
         transformPoint(x, y, theMapToPixelTransform, ct);
         //QPointF pt(x - (marker->width()/2),  y - (marker->height()/2));
