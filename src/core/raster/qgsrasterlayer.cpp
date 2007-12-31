@@ -539,15 +539,20 @@ bool QgsRasterLayer::readFile( QString const & fileName )
   // Determin the nodatavalue
   //
   mNoDataValue = -9999; //Standard default?
+  mValidNoDataValue = false;
   int isValid = false;
   double myNoDataValue = mGdalDataset->GetRasterBand(1)->GetNoDataValue(&isValid);
   if(isValid)
   {
     mNoDataValue = myNoDataValue;
+    mValidNoDataValue = true;
   }
 
-  mRasterTransparency.initializeTransparentPixelList(mNoDataValue, mNoDataValue, mNoDataValue);
-  mRasterTransparency.initializeTransparentPixelList(mNoDataValue);
+  if(mValidNoDataValue)
+  {
+    mRasterTransparency.initializeTransparentPixelList(mNoDataValue, mNoDataValue, mNoDataValue);
+    mRasterTransparency.initializeTransparentPixelList(mNoDataValue);
+  }
 
   //initialise the raster band stats and contrast enhancement vector
   for (int i = 1; i <= mGdalDataset->GetRasterCount(); i++)
@@ -1451,7 +1456,7 @@ void QgsRasterLayer::drawSingleBandGray(QPainter * theQPainter, QgsRasterViewPor
       // against myGrayVal will always fail ( nan==nan always
       // returns false, by design), hence the slightly odd comparison
       // of myGrayVal against itself. 
-      if ( myGrayValue == mNoDataValue || myGrayValue != myGrayValue)
+      if (mValidNoDataValue && (myGrayValue == mNoDataValue || myGrayValue != myGrayValue))
       {
         continue;
       }
@@ -1549,7 +1554,7 @@ void QgsRasterLayer::drawSingleBandPseudoColor(QPainter * theQPainter,
       myPixelValue = readValue ( myGdalScanData, (GDALDataType)myDataType,
           myColumn * theRasterViewPort->drawableAreaXDim + myRow );
 
-      if ( myPixelValue == mNoDataValue || myPixelValue != myPixelValue )
+      if ( mValidNoDataValue && (myPixelValue == mNoDataValue || myPixelValue != myPixelValue ))
       {
         continue;
       }
@@ -1649,7 +1654,7 @@ void QgsRasterLayer::drawPalettedSingleBandColor(QPainter * theQPainter, QgsRast
       myPixelValue = readValue ( myGdalScanData, (GDALDataType)myDataType,
           myColumn * theRasterViewPort->drawableAreaXDim + myRow );
 
-      if ( myPixelValue == mNoDataValue || myPixelValue != myPixelValue )
+      if ( mValidNoDataValue && (myPixelValue == mNoDataValue || myPixelValue != myPixelValue ))
       {
         continue;
       }
@@ -1745,7 +1750,7 @@ void QgsRasterLayer::drawPalettedSingleBandGray(QPainter * theQPainter, QgsRaste
       myPixelValue = readValue ( myGdalScanData, (GDALDataType)myDataType,
           myColumn * theRasterViewPort->drawableAreaXDim + myRow );
 
-      if ( myPixelValue == mNoDataValue || myPixelValue != myPixelValue )
+      if ( mValidNoDataValue && (myPixelValue == mNoDataValue || myPixelValue != myPixelValue ))
       {
         continue;
       }
@@ -1861,7 +1866,7 @@ void QgsRasterLayer::drawPalettedSingleBandPseudoColor(QPainter * theQPainter, Q
       myPixelValue = readValue ( myGdalScanData, (GDALDataType)myDataType,
           myColumn * theRasterViewPort->drawableAreaXDim + myRow );
 
-      if ( myPixelValue == mNoDataValue || myPixelValue != myPixelValue )
+      if ( mValidNoDataValue && (myPixelValue == mNoDataValue || myPixelValue != myPixelValue ))
       {
         continue;
       }
@@ -1949,7 +1954,7 @@ void QgsRasterLayer::drawPalettedMultiBandColor(QPainter * theQPainter, QgsRaste
       myPixelValue = readValue ( myGdalScanData, (GDALDataType)myDataType,
           myColumn * theRasterViewPort->drawableAreaXDim + myRow );
 
-      if ( myPixelValue == mNoDataValue || myPixelValue != myPixelValue )
+      if ( mValidNoDataValue && (myPixelValue == mNoDataValue || myPixelValue != myPixelValue ))
       {
         continue;
       }
@@ -2099,7 +2104,7 @@ void QgsRasterLayer::drawMultiBandColor(QPainter * theQPainter, QgsRasterViewPor
       myBlueValue  = readValue ( myGdalBlueData, (GDALDataType)myBlueType,
           myColumn * theRasterViewPort->drawableAreaXDim + myRow );
 
-      if((myRedValue == mNoDataValue || myRedValue != myRedValue) || (myGreenValue == mNoDataValue || myGreenValue != myGreenValue) || (myBlueValue == mNoDataValue || myBlueValue != myBlueValue))
+      if(mValidNoDataValue && ((myRedValue == mNoDataValue || myRedValue != myRedValue) || (myGreenValue == mNoDataValue || myGreenValue != myGreenValue) || (myBlueValue == mNoDataValue || myBlueValue != myBlueValue)))
       {
         continue;
       }
@@ -2307,6 +2312,7 @@ Calculates:
 That this is a cpu intensive and slow task!
 
 */
+//TODO: This method needs some cleaning up PJE 2007-12-30
 const QgsRasterBandStats QgsRasterLayer::getRasterBandStats(int theBandNo)
 {
   // check if we have received a valid band number
@@ -2491,7 +2497,7 @@ const QgsRasterBandStats QgsRasterLayer::getRasterBandStats(int theBandNo)
         {
           double my = readValue ( myData, myDataType, iX + iY * myXBlockSize );
 
-          if ( fabs(my - mNoDataValue) < myPrecision ||
+          if ( fabs(my) < myPrecision ||
               my < GDALminimum || my != my)
           {
             continue; // NULL
@@ -2518,7 +2524,7 @@ const QgsRasterBandStats QgsRasterLayer::getRasterBandStats(int theBandNo)
               myRasterBandStats.maxVal = my;
             }
             //only increment the running total if it is not a nodata value
-            if (my != mNoDataValue && my == my)
+            if (mValidNoDataValue && my != mNoDataValue && my == my)
             {
               myRasterBandStats.sum += my;
               ++myRasterBandStats.elementCount;
@@ -2565,7 +2571,7 @@ const QgsRasterBandStats QgsRasterLayer::getRasterBandStats(int theBandNo)
         {
           double my = readValue ( myData, myDataType, iX + iY * myXBlockSize );
 
-          if ( fabs(my - mNoDataValue) < myPrecision ||
+          if ( fabs(my) < myPrecision ||
               my < GDALminimum || my != my)
           {
             continue; // NULL
@@ -2610,6 +2616,7 @@ const QgsRasterBandStats QgsRasterLayer::getRasterBandStats(int theBandNo)
 
 #ifdef QGISDEBUG
   QgsLogger::debug("************ STATS **************", 1, __FILE__, __FUNCTION__, __LINE__);
+  QgsLogger::debug("VALID NODATA", mValidNoDataValue, 1, __FILE__, __FUNCTION__, __LINE__);
   QgsLogger::debug("NULL", mNoDataValue, 1, __FILE__, __FUNCTION__, __LINE__);
   QgsLogger::debug("MIN", myRasterBandStats.minVal, 1, __FILE__, __FUNCTION__, __LINE__);
   QgsLogger::debug("MAX", myRasterBandStats.maxVal, 1, __FILE__, __FUNCTION__, __LINE__);
@@ -3508,7 +3515,14 @@ QString QgsRasterLayer::getMetadata()
     myMetadataQString += tr("No Data Value");
     myMetadataQString += "</td></tr>";
     myMetadataQString += "<tr><td>";
-    myMetadataQString += QString::number(mNoDataValue);
+    if(mValidNoDataValue)
+    {
+      myMetadataQString += QString::number(mNoDataValue);
+    }
+    else
+    {
+      myMetadataQString += "*" + tr("NoDataValue not set") + "*";
+    }
     myMetadataQString += "</td></tr>";
 
     myMetadataQString += "</td></tr>";
@@ -4572,7 +4586,7 @@ void QgsRasterLayer::identify(const QgsPoint& point, std::map<QString,QString>& 
 #endif
       QString v;
 
-      if ( mNoDataValue == value || value != value )
+      if ( mValidNoDataValue && (mNoDataValue == value || value != value ))
       {
         v = tr("null (no data)");
       }

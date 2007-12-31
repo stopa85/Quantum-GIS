@@ -308,10 +308,13 @@ public:
     //
     // Accessor and mutator for no data double
     //
-    /** \brief  Accessor that returns the NO_DATA entry for this raster. */
-    const double getNoDataValue() {return mNoDataValue;}
+    /** \brief Is the NoDataValue Valid */
+    bool isNoDataValueValid() {return mValidNoDataValue;}
+    
+    /** \brief Accessor that returns the NO_DATA entry for this raster. */
+    const double getNoDataValue(bool* isValid=0) { if(isValid) { *isValid = mValidNoDataValue;} return mNoDataValue;}
 
-    /** \brief  Mutator that allows the  NO_DATA entry for this raster to be overridden. */
+    /** \brief Mutator that allows the  NO_DATA entry for this raster to be overridden. */
     void setNoDataValue(double theNoData) { mNoDataValue=theNoData; mValidNoDataValue=true; return;}
 
     /** \brief Simple reset function that set the noDataValue back to the value stored in the first raster band */

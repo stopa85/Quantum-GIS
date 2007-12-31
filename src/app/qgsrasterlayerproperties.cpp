@@ -670,10 +670,14 @@ if(QgsRasterLayer::PALETTED_COLOR != rasterLayer->getDrawingStyle() &&
    * Transparent Pixel Tab
    */
   //add current NoDataValue to NoDataValue line edit 
-  QString myNumberFormatter;
-  leNoDataValue->setText(myNumberFormatter.sprintf("%.2f",rasterLayer->getNoDataValue()));
-
-  //Transparency Table filled in toggle event
+  if(rasterLayer->isNoDataValueValid())
+  {
+    leNoDataValue->setText(QString::number(rasterLayer->getNoDataValue()));
+  }
+  else
+  {
+    leNoDataValue->setText("");
+  }
 
   /*
    * General Tab
@@ -692,7 +696,14 @@ if(QgsRasterLayer::PALETTED_COLOR != rasterLayer->getDrawingStyle() &&
   {
     lblColumns->setText(tr("Columns: ") + QString::number(rasterLayer->getRasterXDim()));
     lblRows->setText(tr("Rows: ") + QString::number(rasterLayer->getRasterYDim()));
-    lblNoData->setText(tr("No-Data Value: ") + QString::number(rasterLayer->getNoDataValue()));
+    if(rasterLayer->isNoDataValueValid())
+    {
+      lblNoData->setText(tr("No-Data Value: ") + QString::number(rasterLayer->getNoDataValue()));
+    }
+    else
+    {
+      lblNoData->setText(tr("No-Data Value: Not Set"));
+    }
   }
   else if (rasterLayerIsWms)
   {
@@ -1045,16 +1056,30 @@ void QgsRasterLayerProperties::apply()
   /*
    * Transparent Pixel Tab
    */
-  //set NoDataValue
-  bool myDoubleOk;
-  double myNoDataValue = leNoDataValue->text().toDouble(&myDoubleOk);
-  if(myDoubleOk)
-  {
-    rasterLayer->setNoDataValue(myNoDataValue);
-  }
-  else
+  //If reset NoDataValue is checked do this first, will ignore what ever is in the LineEdit
+  if(chkboxResetNoDataValue->isChecked())
   {
     rasterLayer->resetNoDataValue();
+    if(rasterLayer->isNoDataValueValid())
+    {
+      leNoDataValue->setText(QString::number(rasterLayer->getNoDataValue()));
+    }
+    else
+    {
+      leNoDataValue->setText("");
+    }
+    chkboxResetNoDataValue->setChecked(false);
+  } 
+   
+  //set NoDataValue
+  bool myDoubleOk = false;
+  if("" != leNoDataValue->text())
+  {
+    double myNoDataValue = leNoDataValue->text().toDouble(&myDoubleOk);
+    if(myDoubleOk)
+    {
+      rasterLayer->setNoDataValue(myNoDataValue);
+    }
   }
 
   //Walk through each row in table and test value. If not valid set to 0.0 and continue building transparency list
@@ -1543,38 +1568,28 @@ void QgsRasterLayerProperties::on_cboxTransparencyLayer_currentIndexChanged(cons
 
 void QgsRasterLayerProperties::on_pbnDefaultValues_clicked()
 {
-  rasterLayer->resetNoDataValue();
 
   QString myNumberFormatter;
   if(rbtnThreeBand->isChecked() && QgsRasterLayer::PALETTED_COLOR != rasterLayer->getDrawingStyle() && 
                                    QgsRasterLayer::PALETTED_MULTI_BAND_COLOR != rasterLayer->getDrawingStyle())
   {
-    //Clear existsing three transparency list
-    for(int myTableRunner = tableTransparency->rowCount() - 1; myTableRunner > 0; myTableRunner--)
-    {
-      tableTransparency->removeRow(myTableRunner);
-    }
-
     tableTransparency->clear();
     tableTransparency->setColumnCount(4);
     tableTransparency->setHorizontalHeaderItem(0, new QTableWidgetItem(tr("Red")));
     tableTransparency->setHorizontalHeaderItem(1, new QTableWidgetItem(tr("Green")));
     tableTransparency->setHorizontalHeaderItem(2, new QTableWidgetItem(tr("Blue")));
     tableTransparency->setHorizontalHeaderItem(3, new QTableWidgetItem(tr("Percent Transparent")));
-
-    tableTransparency->setItem(0, 0, new QTableWidgetItem(myNumberFormatter.sprintf("%.2f",rasterLayer->getNoDataValue())));
-    tableTransparency->setItem(0, 1, new QTableWidgetItem(myNumberFormatter.sprintf("%.2f",rasterLayer->getNoDataValue())));
-    tableTransparency->setItem(0, 2, new QTableWidgetItem(myNumberFormatter.sprintf("%.2f",rasterLayer->getNoDataValue())));
-    tableTransparency->setItem(0, 3, new QTableWidgetItem("100.0"));
+    if(rasterLayer->isNoDataValueValid())
+    {
+      tableTransparency->insertRow(tableTransparency->rowCount());
+      tableTransparency->setItem(0, 0, new QTableWidgetItem(myNumberFormatter.sprintf("%.2f",rasterLayer->getNoDataValue())));
+      tableTransparency->setItem(0, 1, new QTableWidgetItem(myNumberFormatter.sprintf("%.2f",rasterLayer->getNoDataValue())));
+      tableTransparency->setItem(0, 2, new QTableWidgetItem(myNumberFormatter.sprintf("%.2f",rasterLayer->getNoDataValue())));
+      tableTransparency->setItem(0, 3, new QTableWidgetItem("100.0"));
+    }
   }
   else
   {
-    //Clear existing single band gransparency list
-    for(int myTableRunner = tableTransparency->rowCount() - 1; myTableRunner > 0; myTableRunner--)
-    {
-      tableTransparency->removeRow(myTableRunner);
-    }
-
     tableTransparency->clear();
     tableTransparency->setColumnCount(2);
     if(QgsRasterLayer::PALETTED_COLOR != rasterLayer->getDrawingStyle() && 
@@ -1590,12 +1605,14 @@ void QgsRasterLayerProperties::on_pbnDefaultValues_clicked()
     }
     tableTransparency->setHorizontalHeaderItem(1, new QTableWidgetItem(tr("Percent Transparent")));
 
-    tableTransparency->setItem(0, 0, new QTableWidgetItem(myNumberFormatter.sprintf("%.2f",rasterLayer->getNoDataValue())));
-    tableTransparency->setItem(0, 1, new QTableWidgetItem("100.0"));
+    if(rasterLayer->isNoDataValueValid())
+    {
+      tableTransparency->insertRow(tableTransparency->rowCount());
+      tableTransparency->setItem(0, 0, new QTableWidgetItem(myNumberFormatter.sprintf("%.2f",rasterLayer->getNoDataValue())));
+      tableTransparency->setItem(0, 1, new QTableWidgetItem("100.0"));
+    }
 
   }
-
-  leNoDataValue->setText(myNumberFormatter.sprintf("%.2f",rasterLayer->getNoDataValue()));
 }
 
 void QgsRasterLayerProperties::on_pbnExportTransparentPixelValues_clicked()
@@ -2186,7 +2203,7 @@ void QgsRasterLayerProperties::on_pbnImportTransparentPixelValues_clicked()
 
 void QgsRasterLayerProperties::on_pbnRemoveSelectedRow_clicked() 
 {
-  if(1 < tableTransparency->rowCount())
+  if(0 < tableTransparency->rowCount())
   { 
     tableTransparency->removeRow(tableTransparency->currentRow());
   }

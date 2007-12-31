@@ -141,8 +141,11 @@ public:
     //
     // Accessor and mutator for no data double
     //
+    /** \brief Is the NoDataValue Valid */
+    bool isNoDataValueValid() {return mValidNoDataValue;}
+    
     /** \brief  Accessor that returns the NO_DATA entry for this raster. */
-    const double getNoDataValue();
+    const double getNoDataValue(bool* isValid);
 
     /** \brief  Mutator that allows the  NO_DATA entry for this raster to be overridden. */
     void setNoDataValue(double theNoData);
