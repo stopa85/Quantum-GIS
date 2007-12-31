@@ -542,12 +542,12 @@ bool QgsRasterLayer::readFile( QString const & fileName )
   mValidNoDataValue = false;
   int isValid = false;
   double myNoDataValue = mGdalDataset->GetRasterBand(1)->GetNoDataValue(&isValid);
-  if(isValid)
+  if(0 != isValid)
   {
     mNoDataValue = myNoDataValue;
     mValidNoDataValue = true;
   }
-
+  
   if(mValidNoDataValue)
   {
     mRasterTransparency.initializeTransparentPixelList(mNoDataValue, mNoDataValue, mNoDataValue);
@@ -1551,14 +1551,14 @@ void QgsRasterLayer::drawSingleBandPseudoColor(QPainter * theQPainter,
   {
     for (int myRow = 0; myRow < theRasterViewPort->drawableAreaXDim; ++myRow)
     {
-      myPixelValue = readValue ( myGdalScanData, (GDALDataType)myDataType,
+      myPixelValue = readValue ( myGdalScanData, myDataType,
           myColumn * theRasterViewPort->drawableAreaXDim + myRow );
 
       if ( mValidNoDataValue && (myPixelValue == mNoDataValue || myPixelValue != myPixelValue ))
       {
         continue;
       }
-
+      
       myAlphaValue = mRasterTransparency.getAlphaValue(myPixelValue, mTransparencyLevel);
       if(0 == myAlphaValue)
       {
@@ -2455,14 +2455,14 @@ const QgsRasterBandStats QgsRasterLayer::getRasterBandStats(int theBandNo)
   double GDALrange[2];          // calculated min/max, as opposed to the
   // dataset provided
 
-  GDALComputeRasterMinMax( myGdalBand, 0, GDALrange );
 
+  GDALComputeRasterMinMax( myGdalBand, 1, GDALrange );
 #ifdef QGISDEBUG
   QgsLogger::debug("approximate computed GDALminium:", GDALrange[0], __FILE__, __FUNCTION__, __LINE__, 1);
   QgsLogger::debug("approximate computed GDALmaximum:", GDALrange[1], __FILE__, __FUNCTION__, __LINE__, 1);
 #endif
 
-  GDALComputeRasterMinMax( myGdalBand, 1, GDALrange );
+  GDALComputeRasterMinMax( myGdalBand, 0, GDALrange );
 
 #ifdef QGISDEBUG
   QgsLogger::debug("exactly computed GDALminium:", GDALrange[0]);
@@ -2498,7 +2498,7 @@ const QgsRasterBandStats QgsRasterLayer::getRasterBandStats(int theBandNo)
           double my = readValue ( myData, myDataType, iX + iY * myXBlockSize );
 
           if ( fabs(my) < myPrecision ||
-              my < GDALminimum || my != my)
+              my == mNoDataValue || my != my)
           {
             continue; // NULL
           }
@@ -2572,7 +2572,7 @@ const QgsRasterBandStats QgsRasterLayer::getRasterBandStats(int theBandNo)
           double my = readValue ( myData, myDataType, iX + iY * myXBlockSize );
 
           if ( fabs(my) < myPrecision ||
-              my < GDALminimum || my != my)
+              my == mNoDataValue || my != my)
           {
             continue; // NULL
           }
