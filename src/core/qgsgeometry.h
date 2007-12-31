@@ -255,12 +255,12 @@ not disjoint with existing polygons of the feature*/
     /**Splits this geometry according to a given line. Note that the geometry is only splitted once. If there are several intersections 
      between geometry and splitLine, only the first one is considered.
     @param splitLine the line that splits the geometry
-    @param newGeometry OUT: new geometry or 0 if none
+    @param newGeometrys OUT: list of new geometries that have been created with the split
     @return 0 in case of success, which means the geometry has been split in two parts, \
     1 if line intersects multiple times but only one split could be done, \ 
     2 if intersection too complicated to proceed (several polygon intersections), \				\
     else other error*/
-    int splitGeometry(const QList<QgsPoint>& splitLine, QgsGeometry** newGeometry);
+    int splitGeometry(const QList<QgsPoint>& splitLine, QList<QgsGeometry*>& newGeometries);
 
     /**Changes this geometry such that it does not intersect the other geometry
        @param other geometry that should not be intersect

@@ -2852,9 +2852,8 @@ int QgsGeometry::translate(double dx, double dy)
   return 0;   
 }
 
-int QgsGeometry::splitGeometry(const QList<QgsPoint>& splitLine, QgsGeometry** newGeometry)
+int QgsGeometry::splitGeometry(const QList<QgsPoint>& splitLine, QList<QgsGeometry*>& newGeometries)
 {
-  QgsDebugMsg("In QgsGeometry::splitGeometry");
   int returnCode = 0;
 
   //return if this type is point/multipoint
@@ -2879,6 +2878,8 @@ int QgsGeometry::splitGeometry(const QList<QgsPoint>& splitLine, QgsGeometry** n
       return 2;
     }
 
+  newGeometries.clear();
+
   GEOS_GEOM::DefaultCoordinateSequence* splitLineCoords = new GEOS_GEOM::DefaultCoordinateSequence();
   QList<QgsPoint>::const_iterator lineIt;
   for(lineIt = splitLine.constBegin(); lineIt != splitLine.constEnd(); ++lineIt)
@@ -2901,16 +2902,19 @@ int QgsGeometry::splitGeometry(const QList<QgsPoint>& splitLine, QgsGeometry** n
   //for line/multiline: call splitLinearGeometry
   if(vectorType() == QGis::Line)
     {
-      returnCode = splitLinearGeometry(splitLineGeos, newGeometry);
+      QgsGeometry* newGeometry = 0;
+      returnCode = splitLinearGeometry(splitLineGeos, &newGeometry);
       delete splitLineGeos;
       if(returnCode > 1)//return codes 0 and 1 match the return code of this function
 	{
 	  returnCode = 5;
 	}
+      newGeometries.push_back(newGeometry);
     }
   else if(vectorType() == QGis::Polygon)
     {
-      returnCode = splitPolygonGeometry(splitLineGeos, newGeometry);
+      QgsGeometry* newGeometry = 0;
+      returnCode = splitPolygonGeometry(splitLineGeos, &newGeometry);
       delete splitLineGeos;
       if(returnCode == 1) //too complicated spit is return code 2 of this function
 	{
@@ -2920,6 +2924,7 @@ int QgsGeometry::splitGeometry(const QList<QgsPoint>& splitLine, QgsGeometry** n
 	{
 	  returnCode = 5;
 	}
+      newGeometries.push_back(newGeometry);
     }
   else
     {

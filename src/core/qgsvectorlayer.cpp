@@ -1686,12 +1686,16 @@ int QgsVectorLayer::splitFeatures(const QList<QgsPoint>& splitLine, bool topolog
 
   for(; select_it != featureList.end(); ++select_it)
     {
-      splitFunctionReturn = select_it->geometry()->splitGeometry(splitLine, &newGeometry);
+      QList<QgsGeometry*> newGeometries;
+      QgsGeometry* newGeometry = 0;
+      splitFunctionReturn = select_it->geometry()->splitGeometry(splitLine, newGeometries);
       if(splitFunctionReturn < 2)
 	{
 	  //change this geometry
 	  mChangedGeometries.insert(select_it->featureId(), *(select_it->geometry()));
+	  
 	  //insert new feature
+	  newGeometry = newGeometries.at(0);
 	  QgsFeature newFeature;
 	  newFeature.setGeometry(newGeometry);
 	  newFeature.setAttributeMap(select_it->attributeMap());
