@@ -219,10 +219,9 @@ QImage QgsSymbol::getPolygonSymbolAsImage()
    return img; //this is ok because of qts sharing mechanism 
 }
 
-QImage QgsSymbol::getPointSymbolAsImage(  double widthScale,
+QImage QgsSymbol::getCachedPointSymbolAsImage(  double widthScale,
                bool selected, QColor selectionColor )
 {
-  QgsDebugMsg(QString("widthScale = %1").arg(widthScale));
   if ( !mCacheUpToDate 
        || ( selected && mSelectionColor != selectionColor ) )
   {
@@ -235,30 +234,36 @@ QImage QgsSymbol::getPointSymbolAsImage(  double widthScale,
   
   if ( selected )
   {
-    if ( widthScale == 1.0 )
-    {
-      return mPointSymbolImageSelected;
-    }
-    else
-    {
-      QPen pen = mPen;
-      pen.setColor ( selectionColor ); 
-      QBrush brush = mBrush;
-      return QgsMarkerCatalogue::instance()->imageMarker ( mPointSymbolName, mPointSize * widthScale,
-                                                           pen, mBrush );
-    }
+    return mPointSymbolImageSelected;
   }
   else 
   {
-    if ( widthScale == 1.0 )
-    {
-      return mPointSymbolImage;
-    }
-    else 
-    {
-      return QgsMarkerCatalogue::instance()->imageMarker ( mPointSymbolName, mPointSize * widthScale,
-                                                           mPen, mBrush );
-    }
+    return mPointSymbolImage;
+  }
+}
+
+QImage QgsSymbol::getPointSymbolAsImage(  double widthScale,
+               bool selected, QColor selectionColor, double scale )
+{
+  QgsDebugMsg(QString("Symbol total scale = %1").arg(scale));
+  if ( 1.0 == scale )
+  {
+    // If scale is 1.0, use cached image.
+    return getCachedPointSymbolAsImage( widthScale, selected, selectionColor );
+  }
+  
+  if ( selected )
+  {
+    QPen pen = mPen;
+    pen.setColor ( selectionColor ); 
+    QBrush brush = mBrush;
+    return QgsMarkerCatalogue::instance()->imageMarker ( mPointSymbolName, (int)(mPointSize * scale),
+							 pen, mBrush );
+  }
+  else 
+  {
+    return QgsMarkerCatalogue::instance()->imageMarker ( mPointSymbolName, (int)(mPointSize * scale),
+							 mPen, mBrush );
   }
 }
 

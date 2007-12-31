@@ -95,10 +95,19 @@ class CORE_EXPORT QgsSymbol{
     //! Get a little icon for the legend
     virtual QImage getPolygonSymbolAsImage();
     
-    /** Get QImage representation of point symbol with current settings
-      */
-    virtual QImage getPointSymbolAsImage( double widthScale = 1., 
+    /* Get QImage representation of point symbol with current settings,
+     * possibly cached
+     */
+    virtual QImage getCachedPointSymbolAsImage( double widthScale = 1., 
 	               bool selected = false, QColor selectionColor = Qt::yellow );
+
+    /* Get QImage representation of point symbol with current settings
+     * and scaled (can be slow when scale != 1.0)
+     */
+    virtual QImage getPointSymbolAsImage( double widthScale = 1., 
+					  bool selected = false,
+					  QColor selectionColor = Qt::yellow,
+					  double scale = 1.0);
 
     /**Writes the contents of the symbol to a configuration file
      @ return true in case of success*/
