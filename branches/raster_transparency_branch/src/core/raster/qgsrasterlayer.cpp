@@ -2496,9 +2496,9 @@ const QgsRasterBandStats QgsRasterLayer::getRasterBandStats(int theBandNo)
         for( int iX = 0; iX < nXValid; iX++ )
         {
           double my = readValue ( myData, myDataType, iX + iY * myXBlockSize );
-
-          if ( fabs(my) < myPrecision ||
-              my == mNoDataValue || my != my)
+          
+          //if ( mValidNoDataValue && (fabs(my - mNoDataValue) < myPrecision || my == mNoDataValue || my != my))
+          if ( mValidNoDataValue && (my == mNoDataValue || my != my))
           {
             continue; // NULL
           }
@@ -2571,8 +2571,8 @@ const QgsRasterBandStats QgsRasterLayer::getRasterBandStats(int theBandNo)
         {
           double my = readValue ( myData, myDataType, iX + iY * myXBlockSize );
 
-          if ( fabs(my) < myPrecision ||
-              my == mNoDataValue || my != my)
+          //if ( mValidNoDataValue && (fabs(my - mNoDataValue) < myPrecision || my == mNoDataValue || my != my))
+          if ( mValidNoDataValue && (my == mNoDataValue || my != my))
           {
             continue; // NULL
           }
