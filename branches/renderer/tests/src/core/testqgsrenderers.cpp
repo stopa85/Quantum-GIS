@@ -94,25 +94,25 @@ void TestQgsRenderers::initTestCase()
 void TestQgsRenderers::singleSymbol()
 {
   QVERIFY ( setQml("points_single_symbol.qml") );
-  QVERIFY ( hashCheck("replacethiswithexpectedhashstring"));
+  QVERIFY ( hashCheck("singlehash"));
 }
 
 void TestQgsRenderers::uniqueValue()
 {
   QVERIFY ( setQml("points_uniquevalue_symbol.qml") );
-  QVERIFY ( hashCheck("replacethiswithexpectedhashstring"));
+  QVERIFY ( hashCheck("uniquehash"));
 }
 
 void TestQgsRenderers::graduatedSymbol()
 {
   QVERIFY ( setQml("points_graduated_symbol.qml") );
-  QVERIFY ( hashCheck("replacethiswithexpectedhashstring"));
+  QVERIFY ( hashCheck("graduatedhash"));
 }
 
 void TestQgsRenderers::continuousSymbol()
 {
   QVERIFY ( setQml("points_continuous_symbol.qml") );
-  QVERIFY ( hashCheck("replacethiswithexpectedhashstring"));
+  QVERIFY ( hashCheck("continuoushash"));
 }
 //
 // Private helper functions not called directly by CTest
@@ -154,6 +154,7 @@ bool TestQgsRenderers::hashCheck(QString theExpectedHash)
   QBuffer myBuffer(&myBytes);
   myBuffer.open(QIODevice::WriteOnly);
   myPixmap.save(&myBuffer, "PNG"); // writes pixmap into bytes in PNG format 
+  myPixmap.save ("/tmp/" + theExpectedHash + ".png");
   QByteArray myHash = QCryptographicHash::hash ( myBytes, QCryptographicHash::Sha1);
   QString myHashString = myHash;
   if ( theExpectedHash == myHashString )
