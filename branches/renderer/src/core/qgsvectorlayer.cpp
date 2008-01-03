@@ -814,11 +814,11 @@ void QgsVectorLayer::draw(QPainter * p,
           sel = FALSE;
         }
 
-	QgsDebugMsg(QString("markerScale before renderFeature(): %1").arg(markerScaleFactor));
+	//QgsDebugMsg(QString("markerScale before renderFeature(): %1").arg(markerScaleFactor));
 	// markerScalerFactore reflects the wanted scaling of the marker
         mRenderer->renderFeature(p, fet, &marker, &markerScaleFactor, sel, widthScale );
 	// markerScalerFactore now reflects the actual scaling of the marker that the render performed.
-	QgsDebugMsg(QString("markerScale after renderFeature(): %1").arg(markerScaleFactor));
+	//QgsDebugMsg(QString("markerScale after renderFeature(): %1").arg(markerScaleFactor));
 
         double scale = symbolScale / markerScaleFactor;
         drawFeature(p,fet,theMapToPixelTransform,ct, &marker, scale, drawingToEditingCanvas);
