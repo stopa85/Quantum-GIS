@@ -30,6 +30,7 @@
 #include <qgsvectorlayer.h> 
 #include <qgsapplication.h>
 #include <qgsproviderregistry.h>
+#include <qgsmaplayerregistry.h>
 
 /** \ingroup UnitTests
  * This is a unit test for the different renderers for vector layers.
@@ -79,6 +80,8 @@ void TestQgsRenderers::initTestCase()
   QFileInfo myMapFileInfo ( myFileName );
   mpLayer = new QgsVectorLayer ( myMapFileInfo.filePath(),
             myMapFileInfo.completeBaseName(), "ogr" );
+  // Register the layer with the registry
+  QgsMapLayerRegistry::instance()->addMapLayer(mpLayer);
   //
   // We only need maprender instead of mapcanvas
   // since maprender does not require a qui
@@ -88,7 +91,6 @@ void TestQgsRenderers::initTestCase()
   QStringList myLayers;
   myLayers << mpLayer->getLayerID();
   mpMapRenderer->setLayerSet(myLayers);
-  mpMapRenderer->setExtent(mpMapRenderer->fullExtent());
 }
 
 void TestQgsRenderers::singleSymbol()
@@ -144,6 +146,7 @@ bool TestQgsRenderers::hashCheck(QString theExpectedHash)
   QPainter myPainter;
   myPainter.begin( &myPixmap );
   mpMapRenderer->setOutputSize( QSize ( 800,800 ),72 ); 
+  mpMapRenderer->setExtent(mpLayer->extent());
   mpMapRenderer->render( &myPainter );
   myPainter.end();
   //
