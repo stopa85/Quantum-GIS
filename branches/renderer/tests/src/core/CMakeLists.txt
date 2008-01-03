@@ -109,6 +109,18 @@ ADD_DEPENDENCIES(qgis_maplayertest qgis_maplayertestmoc)
 TARGET_LINK_LIBRARIES(qgis_maplayertest ${QT_LIBRARIES} qgis_core)
 INSTALL(TARGETS qgis_maplayertest RUNTIME DESTINATION ${QGIS_BIN_DIR})
 ADD_TEST(qgis_maplayertest ${QGIS_BIN_DIR}/qgis_maplayertest)
+#
+# Qgs Renderers test (qsinglesymbol renderer etc)
+#
+SET(qgis_rendererstest_SRCS testqgsrenderers.cpp)
+SET(qgis_rendererstest_MOC_CPPS testqgsrenderers.cpp)
+QT4_WRAP_CPP(qgis_rendererstest_MOC_SRCS ${qgis_rendererstest_MOC_CPPS})
+ADD_CUSTOM_TARGET(qgis_rendererstestmoc ALL DEPENDS ${qgis_rendererstest_MOC_SRCS})
+ADD_EXECUTABLE(qgis_rendererstest ${qgis_rendererstest_SRCS})
+ADD_DEPENDENCIES(qgis_rendererstest qgis_rendererstestmoc)
+TARGET_LINK_LIBRARIES(qgis_rendererstest ${QT_LIBRARIES} qgis_core)
+INSTALL(TARGETS qgis_rendererstest RUNTIME DESTINATION ${QGIS_BIN_DIR})
+ADD_TEST(qgis_rendererstest ${QGIS_BIN_DIR}/qgis_rendererstest)
 
 
 
