@@ -39,15 +39,17 @@ public:
   /** \brief Return the minimum value for the raster shader */
   double getMinimumValue() { return mMinimumValue; }
   
+  QgsRasterShaderFunction* getRasterShaderFunction() { return mRasterShaderFunction; }
+  
   /*
    *
    * Non-Static methods
    *
    */  
   /** \brief generates and new RGB value based on one input value */
-  void generateShadedValue(double, int*, int*, int*);
+  bool generateShadedValue(double, int*, int*, int*);
   /** \brief generates and new RGB value based on original RGB value */
-  void generateShadedValue(double, double, double, int*, int*, int*);
+  bool generateShadedValue(double, double, double, int*, int*, int*);
   /** \brief A public method that allows the user to set their own shader function */
   void setRasterShaderFunction(QgsRasterShaderFunction*);
   /** \brief Set the maximum value */

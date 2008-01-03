@@ -32,6 +32,7 @@ email                : tim at linfiniti.com
 
 #include "qgspseudocolorshader.h"
 #include "qgsfreakoutshader.h"
+#include "qgscolorrampshader.h"
 
 #include <cstdio>
 #include <cmath>
@@ -385,9 +386,7 @@ QgsRasterLayer::QgsRasterLayer(QString const & path, QString const & baseName)
   mDebugOverlayFlag(false),
   mInvertPixelsFlag(false),
   mStandardDeviations(0),
-    mCustomClassificationEnabled(false),
-    mDiscreteClassification(false),
-    mDataProvider(0)
+  mDataProvider(0)
 {
   mUserDefinedRGBMinMaxFlag = false; //defaults needed to bypass stretch
   mUserDefinedGrayMinMaxFlag = false;
@@ -1565,27 +1564,9 @@ void QgsRasterLayer::drawSingleBandPseudoColor(QPainter * theQPainter,
         continue;
       }
       
-      //custom color map
-      if(mCustomClassificationEnabled)
+      if(!mRasterShader->generateShadedValue(myPixelValue, &myRedValue, &myGreenValue, &myBlueValue))
       {
-        if(mDiscreteClassification)
-        {
-          if(getDiscreteColorFromValueClassification(myPixelValue, myRedValue, myGreenValue, myBlueValue) != 0)
-          {
-            continue; //leave pixel transparent if not found in classification
-          }
-        }
-        else
-        {
-          if(getInterpolatedColorFromValueClassification(myPixelValue, myRedValue, myGreenValue, myBlueValue) != 0)
-          {
-            continue; //leave pixel transparent if not found in classification
-          }
-        }
-      }
-      else
-      {
-        mRasterShader->generateShadedValue(myPixelValue, &myRedValue, &myGreenValue, &myBlueValue);
+        continue;
       }
 
       if (mInvertPixelsFlag)
@@ -1881,8 +1862,10 @@ void QgsRasterLayer::drawPalettedSingleBandPseudoColor(QPainter * theQPainter, Q
       if ( !found ) continue;
 
 
-
-      mRasterShader->generateShadedValue((double)*myGrayValue, &myRedValue, &myGreenValue, &myBlueValue);
+      if(!mRasterShader->generateShadedValue((double)*myGrayValue, &myRedValue, &myGreenValue, &myBlueValue))
+      {
+        continue;
+      }
 
       if (mInvertPixelsFlag)
       {
@@ -2915,7 +2898,7 @@ QPixmap QgsRasterLayer::getLegendQPixmap(bool theWithNameFlag)
             int myBlue = 255;
             int myGreen = static_cast < int >(((255 / myRangeSize) * (my - myClassBreakMin1)) * 3);
             // testing this stuff still ...
-            if (mColorRampingType==FREAK_OUT)
+            if (mColorShadingAlgorithm==FREAK_OUT)
             {
               myRed=255-myGreen;
             }
@@ -2928,7 +2911,7 @@ QPixmap QgsRasterLayer::getLegendQPixmap(bool theWithNameFlag)
             int myBlue = static_cast < int >(255 - (((255 / myRangeSize) * ((my - myClassBreakMin2) / 1)) * 3));
             int myGreen = 255;
             // testing this stuff still ...
-            if (mColorRampingType==FREAK_OUT)
+            if (mColorShadingAlgorithm==FREAK_OUT)
             {
               myGreen=myBlue;
             }
@@ -2941,7 +2924,7 @@ QPixmap QgsRasterLayer::getLegendQPixmap(bool theWithNameFlag)
             int myBlue = 0;
             int myGreen = static_cast < int >(255 - (((255 / myRangeSize) * ((my - myClassBreakMin3) / 1) * 3)));
             // testing this stuff still ...
-            if (mColorRampingType==FREAK_OUT)
+            if (mColorShadingAlgorithm==FREAK_OUT)
             {
               myRed=myGreen;
               myGreen=255-myGreen;
@@ -2958,7 +2941,7 @@ QPixmap QgsRasterLayer::getLegendQPixmap(bool theWithNameFlag)
             int myBlue = 0;
             int myGreen = static_cast < int >(((255 / myRangeSize) * ((my - myClassBreakMin1) / 1) * 3));
             // testing this stuff still ...
-            if (mColorRampingType==FREAK_OUT)
+            if (mColorShadingAlgorithm==FREAK_OUT)
             {
               myRed=255-myGreen;
             }
@@ -2971,7 +2954,7 @@ QPixmap QgsRasterLayer::getLegendQPixmap(bool theWithNameFlag)
             int myBlue = static_cast < int >(((255 / myRangeSize) * ((my - myClassBreakMin2) / 1)) * 3);
             int myGreen = 255;
             // testing this stuff still ...
-            if (mColorRampingType==FREAK_OUT)
+            if (mColorShadingAlgorithm==FREAK_OUT)
             {
               myGreen=myBlue;
             }
@@ -2984,7 +2967,7 @@ QPixmap QgsRasterLayer::getLegendQPixmap(bool theWithNameFlag)
             int myBlue = 255;
             int myGreen = static_cast < int >(255 - (((255 / myRangeSize) * (my - myClassBreakMin3)) * 3));
             // testing this stuff still ...
-            if (mColorRampingType==FREAK_OUT)
+            if (mColorShadingAlgorithm==FREAK_OUT)
             {
               myRed=255-myGreen;
             }
@@ -3169,7 +3152,7 @@ QPixmap QgsRasterLayer::getDetailedLegendQPixmap(int theLabelCount=3)
             int myBlue = 255;
             int myGreen = static_cast < int >(((255 / myRangeSize) * (my - myClassBreakMin1)) * 3);
             // testing this stuff still ...
-            if (mColorRampingType==FREAK_OUT)
+            if (mColorShadingAlgorithm==FREAK_OUT)
             {
               myRed=255-myGreen;
             }
@@ -3182,7 +3165,7 @@ QPixmap QgsRasterLayer::getDetailedLegendQPixmap(int theLabelCount=3)
             int myBlue = static_cast < int >(255 - (((255 / myRangeSize) * ((my - myClassBreakMin2) / 1)) * 3));
             int myGreen = 255;
             // testing this stuff still ...
-            if (mColorRampingType==FREAK_OUT)
+            if (mColorShadingAlgorithm==FREAK_OUT)
             {
               myGreen=myBlue;
             }
@@ -3195,7 +3178,7 @@ QPixmap QgsRasterLayer::getDetailedLegendQPixmap(int theLabelCount=3)
             int myBlue = 0;
             int myGreen = static_cast < int >(255 - (((255 / myRangeSize) * ((my - myClassBreakMin3) / 1) * 3)));
             // testing this stuff still ...
-            if (mColorRampingType==FREAK_OUT)
+            if (mColorShadingAlgorithm==FREAK_OUT)
             {
               myRed=myGreen;
               myGreen=255-myGreen;
@@ -3212,7 +3195,7 @@ QPixmap QgsRasterLayer::getDetailedLegendQPixmap(int theLabelCount=3)
             int myBlue = 0;
             int myGreen = static_cast < int >(((255 / myRangeSize) * ((my - myClassBreakMin1) / 1) * 3));
             // testing this stuff still ...
-            if (mColorRampingType==FREAK_OUT)
+            if (mColorShadingAlgorithm==FREAK_OUT)
             {
               myRed=255-myGreen;
             }
@@ -3225,7 +3208,7 @@ QPixmap QgsRasterLayer::getDetailedLegendQPixmap(int theLabelCount=3)
             int myBlue = static_cast < int >(((255 / myRangeSize) * ((my - myClassBreakMin2) / 1)) * 3);
             int myGreen = 255;
             // testing this stuff still ...
-            if (mColorRampingType==FREAK_OUT)
+            if (mColorShadingAlgorithm==FREAK_OUT)
             {
               myGreen=myBlue;
             }
@@ -3238,7 +3221,7 @@ QPixmap QgsRasterLayer::getDetailedLegendQPixmap(int theLabelCount=3)
             int myBlue = 255;
             int myGreen = static_cast < int >(255 - (((255 / myRangeSize) * (my - myClassBreakMin3)) * 3));
             // testing this stuff still ...
-            if (mColorRampingType==FREAK_OUT)
+            if (mColorShadingAlgorithm==FREAK_OUT)
             {
               myRed=255-myGreen;
             }
@@ -4249,7 +4232,7 @@ bool QgsRasterLayer::readXML_( QDomNode & layer_node )
   QgsDebugMsg("Drawing style " + getDrawingStyleAsQString());
 
 
-
+/*
   //restore custom colormap settings
   QDomNode customColormapEnabledNode = mnl.namedItem("customColorMapEnabled");
   if(!customColormapEnabledNode.isNull())
@@ -4302,6 +4285,7 @@ bool QgsRasterLayer::readXML_( QDomNode & layer_node )
     }
     setValueClassification(newClassification);
   }
+*/
 
   return true;
 
@@ -4493,7 +4477,7 @@ bool QgsRasterLayer::readXML_( QDomNode & layer_node )
   mGrayBandNameElement.appendChild( mGrayBandNameText );
   rasterPropertiesElement.appendChild( mGrayBandNameElement );
 
-  //custom colormap settings
+/*  //custom colormap settings
   QDomElement customColormapEnabledElem = document.createElement("customColorMapEnabled");
   QDomText customColormapEnabledText;
   if(customClassificationEnabled())
@@ -4533,6 +4517,7 @@ bool QgsRasterLayer::readXML_( QDomNode & layer_node )
 	}
       rasterPropertiesElement.appendChild(customColormapElem);
     }
+*/
 
   return true;
 } // bool QgsRasterLayer::writeXML_
@@ -4963,80 +4948,27 @@ double QgsRasterLayer::rasterUnitsPerPixel()
 return fabs(mGeoTransform[1]);
 }
 
-int QgsRasterLayer::getDiscreteColorFromValueClassification(double value, int& red, int& green, int& blue) const
+void QgsRasterLayer::setColorShadingAlgorithm(COLOR_SHADING_ALGORITHM theShadingAlgorithm)
 {
-  QList<ValueClassificationItem>::const_iterator it;
-  QList<ValueClassificationItem>::const_iterator last_it = mValueClassification.end();
-  double currentValue;
-  for(it = mValueClassification.begin(); it != mValueClassification.end(); ++it)
-    {
-      currentValue = it->value;
-      if(value <= currentValue)
-	{
-	  if(last_it != mValueClassification.end())
-	    {
-	      red = last_it->color.red();
-	      green = last_it->color.green();
-	      blue = last_it->color.blue();
-	      return 0;
-	    }
-	}
-      last_it = it;
-    }
-
-  return -1; // value not found
-}
-
-int QgsRasterLayer::getInterpolatedColorFromValueClassification(double value, int& red, int& green, int& blue) const
-{
-  QList<ValueClassificationItem>::const_iterator it;
-  QList<ValueClassificationItem>::const_iterator last_it = mValueClassification.end();
-  double currentValue;
-  double valueDiff; //difference between two consecutive entry values
-  double diff_Value_LastVal; //difference between value and last entry value
-  double diffVal_Value; //difference between this entry value and value
-  
-    for(it = mValueClassification.begin(); it != mValueClassification.end(); ++it)
-      {
-	currentValue = it->value;
-	if(value <= currentValue)
-	  {
-	    if(last_it != mValueClassification.end())
-	      {
-		valueDiff = currentValue - last_it->value;
-		diff_Value_LastVal = value - last_it->value;
-		diffVal_Value = currentValue - value;
-
-		red = (int)((it->color.red() * diff_Value_LastVal + last_it->color.red() * diffVal_Value)/valueDiff);
-		green = (int)((it->color.green() * diff_Value_LastVal + last_it->color.green() * diffVal_Value)/valueDiff);
-		blue = (int)((it->color.blue() * diff_Value_LastVal + last_it->color.blue() * diffVal_Value)/valueDiff);
-		return 0;
-	      }
-	  }
-	last_it = it;
-      }
-  
-  return -1;
-}
-
-void QgsRasterLayer::setColorRampingType(COLOR_RAMPING_TYPE theRamping)
-{
-  if(mColorRampingType != theRamping)
+  if(mColorShadingAlgorithm != theShadingAlgorithm)
   {
     if(0 == mRasterShader)
     {
       mRasterShader = new QgsRasterShader();
     }
         
-    mColorRampingType=theRamping;
+    mColorShadingAlgorithm=theShadingAlgorithm;
         
-    switch(theRamping)
+    switch(theShadingAlgorithm)
     {
       case PSEUDO_COLOR:
         mRasterShader->setRasterShaderFunction(new QgsPseudoColorShader());
         break;
       case FREAK_OUT:
         mRasterShader->setRasterShaderFunction(new QgsFreakOutShader());
+        break;
+      case COLOR_RAMP:
+        mRasterShader->setRasterShaderFunction(new QgsColorRampShader());
         break;
       default:
         mRasterShader->setRasterShaderFunction(new QgsRasterShaderFunction());

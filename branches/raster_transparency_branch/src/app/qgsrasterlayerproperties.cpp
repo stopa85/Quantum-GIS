@@ -15,7 +15,7 @@
  *                                                                         *
  ***************************************************************************/
 
-
+#include "qgslogger.h"
 #include "qgsapplication.h"
 #include "qgscoordinatetransform.h"
 #include "qgsrasterlayerproperties.h"
@@ -28,6 +28,7 @@
 #include "qgsmaplayerregistry.h"
 #include "qgscontrastenhancement.h"
 #include "qgsrastertransparency.h"
+#include "qgscolorrampshader.h"
 
 #include <QTableWidgetItem>
 #include <QHeaderView>
@@ -123,10 +124,10 @@ rasterLayer( dynamic_cast<QgsRasterLayer*>(lyr) )
   leBlueMax->setEnabled(false);
 
   //setup custom colormap tab
-  mColorInterpolationComboBox->insertItem(-1, tr("Discrete"));
-  mColorInterpolationComboBox->insertItem(-1, tr("Linearly"));
-  mClassificationModeComboBox->insertItem(-1, tr("Equal interval"));
-  mClassificationModeComboBox->insertItem(-1, tr("Quantiles"));
+  cboxColorInterpolation->insertItem(-1, tr("Discrete"));
+  cboxColorInterpolation->insertItem(-1, tr("Linearly"));
+  cboxClassificationMode->insertItem(-1, tr("Equal interval"));
+  cboxClassificationMode->insertItem(-1, tr("Quantiles"));
 
   QStringList headerLabels;
   headerLabels << "Value";
@@ -429,8 +430,14 @@ void QgsRasterLayerProperties::populateTransparencyTable()
 */
 void QgsRasterLayerProperties::sync()
 {
+#ifdef QGISDEBUG
+      QgsDebugMsg("QgsRasterLayerProperties::sync called");
+#endif
   cboxShowDebugInfo->hide();
 
+#ifdef QGISDEBUG
+      QgsDebugMsg("QgsRasterLayerProperties::sync populate symbology tab");
+#endif
   /*
    * Symbology Tab
    */
@@ -522,7 +529,7 @@ void QgsRasterLayerProperties::sync()
       rasterLayer->getDrawingStyle() == QgsRasterLayer::PALETTED_SINGLE_BAND_PSEUDO_COLOR ||
       rasterLayer->getDrawingStyle() == QgsRasterLayer::MULTI_BAND_SINGLE_BAND_PSEUDO_COLOR)
   {
-    if(rasterLayer->getColorRampingType()==QgsRasterLayer::PSEUDO_COLOR)
+    if(rasterLayer->getColorShadingAlgorithm()==QgsRasterLayer::PSEUDO_COLOR)
     {
       cboxColorMap->setCurrentText(tr("Pseudocolor"));
     }
@@ -537,9 +544,6 @@ void QgsRasterLayerProperties::sync()
     cboxColorMap->setCurrentText(tr("Grayscale"));
   }
   
-  //restore colormap tab if the layer has custom classification
-  syncColormapTab();
-
   //set whether the layer histogram should be inverted
   if (rasterLayer->getInvertHistogramFlag())
   {
@@ -628,6 +632,30 @@ if(QgsRasterLayer::PALETTED_COLOR != rasterLayer->getDrawingStyle() &&
 
   }
 
+  //set color scaling algorithm
+  if(QgsContrastEnhancement::STRETCH_TO_MINMAX == rasterLayer->getContrastEnhancementAlgorithm())
+  {
+    cboxContrastEnhancementAlgorithm->setCurrentText(tr("Stretch To MinMax"));
+  }
+  else if(QgsContrastEnhancement::STRETCH_AND_CLIP_TO_MINMAX == rasterLayer->getContrastEnhancementAlgorithm())
+  {
+    cboxContrastEnhancementAlgorithm->setCurrentText(tr("Stretch And Clip To MinMax"));
+  }
+  else if(QgsContrastEnhancement::CLIP_TO_MINMAX == rasterLayer->getContrastEnhancementAlgorithm())
+  {
+    cboxContrastEnhancementAlgorithm->setCurrentText(tr("Clip To MinMax"));
+  }
+  else
+  {
+    cboxContrastEnhancementAlgorithm->setCurrentText(tr("No Scaling"));
+  }
+
+#ifdef QGISDEBUG
+      QgsDebugMsg("QgsRasterLayerProperties::sync populate transparency tab");
+#endif
+  /*
+   * Transparent Pixel Tab
+   */
   int myIndex = cboxTransparencyLayer->findText(rasterLayer->getTransparentLayerName());
   if(-1 != myIndex)
   {
@@ -647,28 +675,6 @@ if(QgsRasterLayer::PALETTED_COLOR != rasterLayer->getDrawingStyle() &&
   {
     cboxTransparencyBand->setCurrentIndex(cboxTransparencyBand->findText(tr("Not Set")));
   }
-
-  //set color scaling algorithm
-  if(QgsContrastEnhancement::STRETCH_TO_MINMAX == rasterLayer->getContrastEnhancementAlgorithm())
-  {
-    cboxContrastEnhancementAlgorithm->setCurrentText(tr("Stretch To MinMax"));
-  }
-  else if(QgsContrastEnhancement::STRETCH_AND_CLIP_TO_MINMAX == rasterLayer->getContrastEnhancementAlgorithm())
-  {
-    cboxContrastEnhancementAlgorithm->setCurrentText(tr("Stretch And Clip To MinMax"));
-  }
-  else if(QgsContrastEnhancement::CLIP_TO_MINMAX == rasterLayer->getContrastEnhancementAlgorithm())
-  {
-    cboxContrastEnhancementAlgorithm->setCurrentText(tr("Clip To MinMax"));
-  }
-  else
-  {
-    cboxContrastEnhancementAlgorithm->setCurrentText(tr("No Scaling"));
-  }
-
-  /*
-   * Transparent Pixel Tab
-   */
   //add current NoDataValue to NoDataValue line edit 
   if(rasterLayer->isNoDataValueValid())
   {
@@ -678,7 +684,13 @@ if(QgsRasterLayer::PALETTED_COLOR != rasterLayer->getDrawingStyle() &&
   {
     leNoDataValue->setText("");
   }
+  
+  //restore colormap tab if the layer has custom classification
+  syncColormapTab();
 
+#ifdef QGISDEBUG
+      QgsDebugMsg("QgsRasterLayerProperties::sync populate general tab");
+#endif
   /*
    * General Tab
    */
@@ -728,6 +740,9 @@ if(QgsRasterLayer::PALETTED_COLOR != rasterLayer->getDrawingStyle() &&
   pixmapPalette->setScaledContents(true);
   pixmapPalette->repaint(false);
 
+#ifdef QGISDEBUG
+      QgsDebugMsg("QgsRasterLayerProperties::sync populate metadata tab");
+#endif
   /*
    * Metadata Tab
    */
@@ -740,42 +755,54 @@ if(QgsRasterLayer::PALETTED_COLOR != rasterLayer->getDrawingStyle() &&
 
 void QgsRasterLayerProperties::syncColormapTab()
 {
+#ifdef QGISDEBUG
+      QgsDebugMsg("QgsRasterLayerProperties::sync populate color ramp tab");
+#endif
   if(!rasterLayer)
-    {
-      return;
-    }
+  {
+    return;
+  }
   
+  if(QgsRasterLayer::COLOR_RAMP != rasterLayer->getColorShadingAlgorithm())
+  {
+    return;
+  }
+  
+  QgsColorRampShader* myRasterShaderFunction =  (QgsColorRampShader*)rasterLayer->getRasterShader()->getRasterShaderFunction();
+  if(!myRasterShaderFunction)
+  {
+    return;
+  }
   //restore the colormap tab if layer has custom symbology
-  QList<QgsRasterLayer::ValueClassificationItem> classification = rasterLayer->valueClassification();
-  if(classification.size() > 0)
+  QList<QgsColorRampShader::ColorRampItem> myColorRampList = myRasterShaderFunction->getColorRampItemList();
+  if(myColorRampList.size() > 0)
+  {
+    QList<QgsColorRampShader::ColorRampItem>::const_iterator it;
+    for(it = myColorRampList.begin(); it != myColorRampList.end(); ++it)
     {
-      QList<QgsRasterLayer::ValueClassificationItem>::const_iterator it;
-      for(it = classification.begin(); it != classification.end(); ++it)
-	{
-	  //restore state of colormap tab
-	  QTreeWidgetItem* newItem = new QTreeWidgetItem(mColormapTreeWidget);
-	  newItem->setText(0, QString::number(it->value, 'f'));
-	  newItem->setBackground(1, QBrush(it->color));
-	  newItem->setText(2, it->label);
-	}
-    }
+	    //restore state of colormap tab
+	    QTreeWidgetItem* newItem = new QTreeWidgetItem(mColormapTreeWidget);
+	    newItem->setText(0, QString::number(it->value, 'f'));
+	    newItem->setBackground(1, QBrush(it->color));
+	    newItem->setText(2, it->label);
+	  }
+  }
 
-  mNumberOfEntriesBox->setValue(classification.size());
+  sboxNumberOfEntries->setValue(myColorRampList.size());
 
   //restore state of 'enable custom colormap' combo box
-  if(rasterLayer->customClassificationEnabled())
+  if(QgsRasterLayer::COLOR_RAMP == rasterLayer->getColorShadingAlgorithm())
     {
       cboxColorMap->setCurrentText(tr("Custom Colormap"));
-    }
-
-  //restor state of 'color interpolation' combo box
-  if(rasterLayer->discreteClassification())
-    {
-      mColorInterpolationComboBox->setCurrentIndex(mColorInterpolationComboBox->findText(tr("Discrete")));
-    }
-  else
-    {
-      mColorInterpolationComboBox->setCurrentIndex(mColorInterpolationComboBox->findText(tr("Linearly")));
+      //restor state of 'color interpolation' combo box
+      if(QgsColorRampShader::DISCRETE == ((QgsColorRampShader*)rasterLayer->getRasterShader()->getRasterShaderFunction())->getColorRampType())
+      {
+        cboxColorInterpolation->setCurrentIndex(cboxColorInterpolation->findText(tr("Discrete")));
+      }
+      else
+      {
+        cboxColorInterpolation->setCurrentIndex(cboxColorInterpolation->findText(tr("Linearly")));
+      }
     }
 }
 
@@ -835,6 +862,9 @@ bool QgsRasterLayerProperties::validUserDefinedMinMax()
  */
 void QgsRasterLayerProperties::apply()
 {
+#ifdef QGISDEBUG
+      QgsDebugMsg("QgsRasterLayerProperties::apply processing symbology tab");
+#endif
   /*
    * Symbology Tab
    */
@@ -962,14 +992,18 @@ void QgsRasterLayerProperties::apply()
   rasterLayer->setTransparentBandName(cboxTransparencyBand->currentText());
   rasterLayer->setTransparentLayerName(cboxTransparencyLayer->currentText());
 
-  //set the appropriate color ramping type
+  //set the appropriate color shading type
   if (cboxColorMap->currentText() == tr("Pseudocolor"))
   {
-    rasterLayer->setColorRampingType(QgsRasterLayer::PSEUDO_COLOR);  
+    rasterLayer->setColorShadingAlgorithm(QgsRasterLayer::PSEUDO_COLOR);  
   }
   else if (cboxColorMap->currentText() == tr("Freak Out"))
   {
-    rasterLayer->setColorRampingType(QgsRasterLayer::FREAK_OUT);  
+    rasterLayer->setColorShadingAlgorithm(QgsRasterLayer::FREAK_OUT);  
+  }
+  else if (cboxColorMap->currentText() == tr("Custom Colormap"))
+  {
+    rasterLayer->setColorShadingAlgorithm(QgsRasterLayer::COLOR_RAMP);
   }
 
   //set the color scaling algorithm
@@ -1053,6 +1087,9 @@ void QgsRasterLayerProperties::apply()
     }
   }
 
+#ifdef QGISDEBUG
+      QgsDebugMsg("QgsRasterLayerProperties::apply processing transparency tab");
+#endif
   /*
    * Transparent Pixel Tab
    */
@@ -1245,7 +1282,55 @@ void QgsRasterLayerProperties::apply()
 
     rasterLayer->getRasterTransparency()->setTransparentSingleValuePixelList(myTransparentSingleValuePixelList);
   }
-
+  
+#ifdef QGISDEBUG
+      QgsDebugMsg("QgsRasterLayerProperties::apply processing Colormap tab");
+#endif
+  /*
+   * ColorMap Tab
+   */
+  if(QgsRasterLayer::COLOR_RAMP == rasterLayer->getColorShadingAlgorithm())
+  {
+    QgsColorRampShader* myRasterShaderFunction =  (QgsColorRampShader*)rasterLayer->getRasterShader()->getRasterShaderFunction();
+    if(myRasterShaderFunction)
+    {
+      //iterate through mColormapTreeWidget and set colormap info of layer
+      QList<QgsColorRampShader::ColorRampItem> mColorRampItems;
+  
+      int myTopLevelItemCount = mColormapTreeWidget->topLevelItemCount();
+      QTreeWidgetItem* myCurrentItem;
+  
+      for(int i = 0; i < myTopLevelItemCount; ++i)
+      {
+        myCurrentItem = mColormapTreeWidget->topLevelItem(i);
+        if(!myCurrentItem)
+        {
+          continue;
+        }
+        QgsColorRampShader::ColorRampItem myNewColorRampItem;
+        myNewColorRampItem.value = myCurrentItem->text(0).toDouble();
+        myNewColorRampItem.color = myCurrentItem->background(1).color();
+        myNewColorRampItem.label = myCurrentItem->text(2);
+        mColorRampItems.push_back(myNewColorRampItem);
+      }
+      myRasterShaderFunction->setColorRampItemList(mColorRampItems);
+  
+      if(cboxColorInterpolation->currentText() == tr("Discrete"))
+      {
+        myRasterShaderFunction->setColorRampType(QgsColorRampShader::DISCRETE);
+      }
+    }
+    else
+    {
+      #ifdef QGISDEBUG
+        QgsDebugMsg("QgsRasterLayerProperties::apply color ramp was NOT set because RasterShaderFunction was NULL");
+      #endif
+    }
+  }
+  
+#ifdef QGISDEBUG
+      QgsDebugMsg("QgsRasterLayerProperties::apply processing general tab");
+#endif
   /*
    * General Tab
    */
@@ -1331,38 +1416,6 @@ void QgsRasterLayerProperties::apply()
     }
   }
 
-  //apply colormap tab
-  if(cboxColorMap->currentText() == tr("Custom Colormap"))
-  {
-    rasterLayer->setCustomClassificationEnabled(true);
-  }
-  else
-  {
-    rasterLayer->setCustomClassificationEnabled(false);
-  }
-      
-  //iterate through mColormapTreeWidget and set colormap info of layer
-  QList<QgsRasterLayer::ValueClassificationItem> items;
-  
-  int topLevelItemCount = mColormapTreeWidget->topLevelItemCount();
-  QTreeWidgetItem* currentItem;
-  
-  for(int i = 0; i < topLevelItemCount; ++i)
-    {
-      currentItem = mColormapTreeWidget->topLevelItem(i);
-      if(!currentItem)
-	{
-	  continue;
-	}
-      QgsRasterLayer::ValueClassificationItem newItem;
-      newItem.value = currentItem->text(0).toDouble();
-      newItem.color = currentItem->background(1).color();
-      newItem.label = currentItem->text(2);
-      items.push_back(newItem);
-    }
-  rasterLayer->setValueClassification(items);
-  
-  rasterLayer->setDiscreteClassification(mColorInterpolationComboBox->currentText() == tr("Discrete"));
 }//apply
 
 void QgsRasterLayerProperties::on_buttonBox_helpRequested()
@@ -2410,12 +2463,12 @@ void QgsRasterLayerProperties::userDefinedMinMax_textEdited(QString theString)
 void QgsRasterLayerProperties::on_mClassifyButton_clicked()
 {
   QgsRasterBandStats myRasterBandStats = rasterLayer->getRasterBandStats(1);
-  int numberOfEntries = mNumberOfEntriesBox->value();
+  int numberOfEntries = sboxNumberOfEntries->value();
 
   std::list<double> entryValues;
   std::list<QColor> entryColors;
 
-  if(mClassificationModeComboBox->currentText() == tr("Equal interval"))
+  if(cboxClassificationMode->currentText() == tr("Equal interval"))
     {
       double currentValue = myRasterBandStats.minVal;
       double intervalDiff;
@@ -2437,7 +2490,7 @@ void QgsRasterLayerProperties::on_mClassifyButton_clicked()
 	  currentValue += intervalDiff;
 	}
     }
-  else if(mClassificationModeComboBox->currentText() == tr("Quantiles"))
+  else if(cboxClassificationMode->currentText() == tr("Quantiles"))
     {
       //todo
     }

@@ -28,7 +28,7 @@ QgsPseudoColorShader::QgsPseudoColorShader(double theMinimumValue, double theMax
 }
 
 
-void QgsPseudoColorShader::generateShadedValue(double theValue, int* theReturnRedValue, int* theReturnGreenValue, int* theReturnBlueValue)
+bool QgsPseudoColorShader::generateShadedValue(double theValue, int* theReturnRedValue, int* theReturnGreenValue, int* theReturnBlueValue)
 {
   double myPixelValue = theValue;
   
@@ -64,13 +64,17 @@ void QgsPseudoColorShader::generateShadedValue(double theValue, int* theReturnRe
     *theReturnGreenValue = static_cast < int >(255 - ( ( (255 / mMinimumMaximumRange) * ((myPixelValue - mClassBreakMin3) / 1) * 3)));
     *theReturnBlueValue = 0;
   }
+  
+  return true;
 }
 
-void QgsPseudoColorShader::generateShadedValue(double theRedValue, double theGreenValue, double theBlueValue, int* theReturnRedValue, int* theReturnGreenValue, int* theReturnBlueValue)
+bool QgsPseudoColorShader::generateShadedValue(double theRedValue, double theGreenValue, double theBlueValue, int* theReturnRedValue, int* theReturnGreenValue, int* theReturnBlueValue)
 {
   *theReturnRedValue = 0;
   *theReturnGreenValue = 0;
   *theReturnBlueValue = 0;
+  
+  return false;
 }
 
 void QgsPseudoColorShader::setClassBreaks()

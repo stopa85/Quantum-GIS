@@ -28,7 +28,7 @@ QgsFreakOutShader::QgsFreakOutShader(double theMinimumValue, double theMaximumVa
 }
 
 
-void QgsFreakOutShader::generateShadedValue(double theValue, int* theReturnRedValue, int* theReturnGreenValue, int* theReturnBlueValue)
+bool QgsFreakOutShader::generateShadedValue(double theValue, int* theReturnRedValue, int* theReturnGreenValue, int* theReturnBlueValue)
 {
   double myPixelValue = theValue;
   
@@ -71,13 +71,17 @@ void QgsFreakOutShader::generateShadedValue(double theValue, int* theReturnRedVa
     *theReturnRedValue = *theReturnGreenValue;
     *theReturnGreenValue = 255 - *theReturnGreenValue;
   }
+  
+  return true;
 }
 
-void QgsFreakOutShader::generateShadedValue(double theRedValue, double theGreenValue, double theBlueValue, int* theReturnRedValue, int* theReturnGreenValue, int* theReturnBlueValue)
+bool QgsFreakOutShader::generateShadedValue(double theRedValue, double theGreenValue, double theBlueValue, int* theReturnRedValue, int* theReturnGreenValue, int* theReturnBlueValue)
 {
   *theReturnRedValue = 0;
   *theReturnGreenValue = 0;
   *theReturnBlueValue = 0;
+  
+  return false;
 }
 
 void QgsFreakOutShader::setClassBreaks()

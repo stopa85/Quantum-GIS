@@ -1344,7 +1344,7 @@ p, li { white-space: pre-wrap; }
           </widget>
          </item>
          <item>
-          <widget class="QSpinBox" name="mNumberOfEntriesBox" >
+          <widget class="QSpinBox" name="sboxNumberOfEntries" >
            <property name="sizePolicy" >
             <sizepolicy vsizetype="Fixed" hsizetype="Fixed" >
              <horstretch>0</horstretch>
@@ -1429,7 +1429,7 @@ p, li { white-space: pre-wrap; }
           </widget>
          </item>
          <item>
-          <widget class="QComboBox" name="mColorInterpolationComboBox" />
+          <widget class="QComboBox" name="cboxColorInterpolation" />
          </item>
         </layout>
        </item>
@@ -1458,7 +1458,7 @@ p, li { white-space: pre-wrap; }
           </widget>
          </item>
          <item>
-          <widget class="QComboBox" name="mClassificationModeComboBox" />
+          <widget class="QComboBox" name="cboxClassificationMode" />
          </item>
         </layout>
        </item>

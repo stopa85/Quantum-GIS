@@ -181,17 +181,6 @@ class CORE_EXPORT QgsRasterLayer : public QgsMapLayer
     Q_OBJECT
 public:
 
-    //An entry for classification based upon value.
-    //Such a classification is typically used for 
-    //single band layers where a pixel value represents
-    //not a color but a quantity, e.g. temperature or elevation
-    struct ValueClassificationItem
-    {
-      QString label;
-      double value;
-      QColor color;
-    };
-
     //
     // Static methods:
     //
@@ -562,8 +551,8 @@ public:
         mContrastEnhancementAlgorithm = theAlgorithm;
     }
     
-    /** \brief This enumerator describes the types of histogram colour ramping that can be used.  */
-    enum COLOR_RAMPING_TYPE
+    /** \brief This enumerator describes the types of shading that can be used.  */
+    enum COLOR_SHADING_ALGORITHM
     {
         PSEUDO_COLOR, 
         FREAK_OUT, //it will scare your granny!
@@ -571,15 +560,22 @@ public:
         USER_DEFINED
     };
     //
-    // Accessor and mutator for the color ramping type
+    // Accessor and mutator for the color shader algorithm
     //
-    /** \brief Accessor for colour ramping type. */
-    COLOR_RAMPING_TYPE getColorRampingType()
+    /** \brief Accessor for colour shader algorithm. */
+    COLOR_SHADING_ALGORITHM getColorShadingAlgorithm()
     {
-        return mColorRampingType;
+        return mColorShadingAlgorithm;
     }
-    /** \brief Mutator for color scaling algorithm. */
-    void setColorRampingType(COLOR_RAMPING_TYPE theRamping);
+    /** \brief Mutator for color shader algorithm. */
+    void setColorShadingAlgorithm(COLOR_SHADING_ALGORITHM theShaderAlgorithm);
+    
+    /** \brief Accessor for raster shader */
+    QgsRasterShader* getRasterShader()
+    {
+      return mRasterShader;
+    }
+    
         
     /** \brief This enumerator describes the different kinds of drawing we can do.  */
     enum DRAWING_STYLE
@@ -751,21 +747,6 @@ public:
     {
       return mUserDefinedGrayMinMaxFlag;
     }
-
-    /**Get state of custom classification flag*/
-    bool customClassificationEnabled() const {return mCustomClassificationEnabled;}
-    /**Set state of custom classification flag*/
-    void setCustomClassificationEnabled(bool enabled){mCustomClassificationEnabled = enabled;}
-    /**Get custom colormap classification*/
-    QList<ValueClassificationItem> valueClassification() const {return mValueClassification;}
-    /**Set custom colormap classification*/
-    void setValueClassification(const QList<ValueClassificationItem>& classification)
-    {mValueClassification = classification;}
-    /**Get discrete colors/ interpolated colors for custom classification*/
-    bool discreteClassification() const {return mDiscreteClassification;}
-    /**Set discrete colors/ interpolated colors for custom classification*/
-    void setDiscreteClassification(bool discrete)
-    {mDiscreteClassification = discrete;}
 
 public slots:    
     /**
@@ -943,12 +924,6 @@ private:
     /** \brief Update the layer if it is outdated */
     bool update ();
 
-    /**Gets the color for a pixel value from the classification vector mValueClassification. Assigns the 
-color of the lower class for every pixel between two class breaks. Returns 0 in case of success*/
-    int getDiscreteColorFromValueClassification(double value, int& red, int& green, int& blue) const;
-    /**Gets the color for a pixel value from the classification vector mValueClassification. Interpolates the color between two class breaks linearly. Returns 0 in case of success*/
-    int getInterpolatedColorFromValueClassification(double value, int& red, int& green, int& blue) const;
-
     //
     // Private member vars
     //
@@ -979,7 +954,7 @@ color of the lower class for every pixel between two class breaks. Returns 0 in 
     RasterStatsList mRasterStatsList;
     /** \brief List containging the contrast enhancements for each band */
     ContrastEnhancementList mContrastEnhancementList;
-    COLOR_RAMPING_TYPE mColorRampingType;
+    COLOR_SHADING_ALGORITHM mColorShadingAlgorithm;
     /** \brief The raster shader for the layer */
     QgsRasterShader* mRasterShader;
     /** \brief The band to be associated with the color red - usually 1.  */
@@ -1005,16 +980,6 @@ color of the lower class for every pixel between two class breaks. Returns 0 in 
     /** \brief This list holds a series of RasterPyramid structs
      * which store infomation for each potential pyramid level for this raster.*/
     RasterPyramidList mPyramidList;
-    /**This flag holds if custom classification is enabled or not*/
-    bool mCustomClassificationEnabled;
-    /**This vector holds the information for classification based on values. 
-Each item holds a value, a label and a color. The member mDiscreteClassification holds 
-if one color is applied for all values between two class breaks (true) or if the item values are 
-(linearly) interpolated for values between the item values (false)*/
-    QList<ValueClassificationItem> mValueClassification;
-    /**This member holds if one color is applied for all values between two class breaks (true) or if the item values are (linearly) interpolated for values between the item values (false)*/
-    bool mDiscreteClassification;
-
 
 /*
  * 
