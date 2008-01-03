@@ -37,13 +37,16 @@ QgsRasterShader::QgsRasterShader(double theMinimumValue, double theMaximumValue)
   @param theReturnRedValue  The red component of the new RGB value
   @param theReturnGreenValue  The green component of the new RGB value
   @param theReturnBlueValue  The blue component of the new RGB value
+  @return True if the return values are valid otherwise false
 */
-void QgsRasterShader::generateShadedValue(double theValue, int* theReturnRedValue, int* theReturnGreenValue, int* theReturnBlueValue)
+bool QgsRasterShader::generateShadedValue(double theValue, int* theReturnRedValue, int* theReturnGreenValue, int* theReturnBlueValue)
 {
   if(0 != mRasterShaderFunction)
   {
-    mRasterShaderFunction->generateShadedValue(theValue, theReturnRedValue, theReturnGreenValue, theReturnBlueValue);
+    return mRasterShaderFunction->generateShadedValue(theValue, theReturnRedValue, theReturnGreenValue, theReturnBlueValue);
   }
+  
+  return false;
 }
 /** 
   Generates and new RGB value based on an original RGB value
@@ -55,13 +58,16 @@ void QgsRasterShader::generateShadedValue(double theValue, int* theReturnRedValu
   @param theReturnRedValue  The red component of the new RGB value
   @param theReturnGreenValue  The green component of the new RGB value
   @param theReturnBlueValue  The blue component of the new RGB value
+  @return True if the return values are valid otherwise false
 */
-void QgsRasterShader::generateShadedValue(double theRedValue, double theGreenValue, double theBlueValue, int* theReturnRedValue, int* theReturnGreenValue, int* theReturnBlueValue)
+bool QgsRasterShader::generateShadedValue(double theRedValue, double theGreenValue, double theBlueValue, int* theReturnRedValue, int* theReturnGreenValue, int* theReturnBlueValue)
 {
   if(0 != mRasterShaderFunction)
   {
-    mRasterShaderFunction->generateShadedValue(theRedValue, theGreenValue, theBlueValue, theReturnRedValue, theReturnGreenValue, theReturnBlueValue);
+    return mRasterShaderFunction->generateShadedValue(theRedValue, theGreenValue, theBlueValue, theReturnRedValue, theReturnGreenValue, theReturnBlueValue);
   }
+  
+  return false;
 }
 
 /**

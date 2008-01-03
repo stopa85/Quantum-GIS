@@ -10,27 +10,18 @@ class QgsRasterLayer : QgsMapLayer
 #include <qgsrasterlayer.h>
 #include <qgscontrastenhancement.h>
 #include <qgsrastertransparency.h>
+#include <qgsrastershader.h>
 %End
 
 public:
-
-    //An entry for classification based upon value.
-    //Such a classification is typically used for 
-    //single band layers where a pixel value represents
-    //not a color but a quantity, e.g. temperature or elevation
-    struct ValueClassificationItem
-    {
-      QString label;
-      double value;
-      QColor color;
-    };
 
     //
     // Static methods:
     //
     static void buildSupportedRasterFileFilter(QString & fileFilters);
     static bool isSupportedRasterDriver(const QString & driverName);
-
+    static void registerGdalDrivers();
+    
     /** This helper checks to see whether the filename appears to be a valid
        raster file name */
     static bool isValidRasterFileName(const QString & theFileNameQString);
@@ -145,7 +136,7 @@ public:
     bool isNoDataValueValid();
     
     /** \brief  Accessor that returns the NO_DATA entry for this raster. */
-    const double getNoDataValue(bool* isValid);
+    const double getNoDataValue(bool* isValid=0);
 
     /** \brief  Mutator that allows the  NO_DATA entry for this raster to be overridden. */
     void setNoDataValue(double theNoData);
@@ -282,23 +273,25 @@ public:
     /** \brief Mutator for contrast enhancement algorithm. */
     void setContrastEnhancementAlgorithm(QgsContrastEnhancement::CONTRAST_ENHANCEMENT_ALGORITHM theAlgorithm);
     
-    /** \brief This enumerator describes the types of histogram colour ramping that can be used.  */
-    enum COLOR_RAMPING_TYPE
+    /** \brief This enumerator describes the types of shading that can be used.  */
+    enum COLOR_SHADING_ALGORITHM
     {
         PSEUDO_COLOR, 
         FREAK_OUT, //it will scare your granny!
         COLOR_RAMP,
         USER_DEFINED
     };
-    
     //
-    // Accessor and mutator for the color ramping type
+    // Accessor and mutator for the color shader algorithm
     //
-    /** \brief Accessor for colour ramping type. */
-    COLOR_RAMPING_TYPE getColorRampingType();
+    /** \brief Accessor for colour shader algorithm. */
+    COLOR_SHADING_ALGORITHM getColorShadingAlgorithm();
+
+    /** \brief Mutator for color shader algorithm. */
+    void setColorShadingAlgorithm(COLOR_SHADING_ALGORITHM theShaderAlgorithm);
     
-    /** \brief Mutator for color scaling algorithm. */
-    void setColorRampingType(COLOR_RAMPING_TYPE theRamping);
+    /** \brief Accessor for raster shader */
+    QgsRasterShader* getRasterShader();
     
     /** \brief This enumerator describes the different kinds of drawing we can do.  */
     enum DRAWING_STYLE
@@ -447,19 +440,6 @@ public:
 
     /** \brief Accessor for userDefinedMinMax.  */
     bool getUserDefinedGrayMinMax();
-
-    /**Get state of custom classification flag*/
-    bool customClassificationEnabled() const;
-    /**Set state of custom classification flag*/
-    void setCustomClassificationEnabled(bool enabled);
-    /**Get custom colormap classification*/
-    QList<QgsRasterLayer::ValueClassificationItem> valueClassification() const;
-    /**Set custom colormap classification*/
-    void setValueClassification(const QList<QgsRasterLayer::ValueClassificationItem> & classification);
-    /**Get discrete colors/ interpolated colors for custom classification*/
-    bool discreteClassification() const;
-    /**Set discrete colors/ interpolated colors for custom classification*/
-    void setDiscreteClassification(bool discrete);
 
 public slots:    
     /**

@@ -46,6 +46,7 @@ qgsvectorfilewriter.cpp
 qgsvectorlayer.cpp
 
 raster/qgscliptominmaxenhancement.cpp
+raster/qgscolorrampshader.cpp
 raster/qgscolortable.cpp
 raster/qgscontrastenhancement.cpp
 raster/qgscontrastenhancementfunction.cpp
@@ -230,6 +231,7 @@ qgsvectorfilewriter.h
 qgsvectorlayer.h
 
 raster/qgscliptominmaxenhancement.h
+raster/qgscolorrampshader.h
 raster/qgscolortable.h
 raster/qgscontrastenhancement.h
 raster/qgscontrastenhancementfunction.h

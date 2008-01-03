@@ -40,6 +40,7 @@
 %Include qgsrasterdataprovider.sip
 %Include qgsrasterlayer.sip
 %Include qgsrasterpyramid.sip
+%Include qgsrastershader.sip
 %Include qgsrastershaderfunction.sip
 %Include qgsrastertransparency.sip
 %Include qgsrasterviewport.sip

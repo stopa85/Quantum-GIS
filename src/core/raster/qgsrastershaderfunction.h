@@ -27,9 +27,9 @@ public:
   virtual ~QgsRasterShaderFunction() {}
    
   /** \brief generates and new RGB value based on one input value */
-  virtual void generateShadedValue(double, int*, int*, int*);
+  virtual bool generateShadedValue(double, int*, int*, int*);
   /** \brief generates and new RGB value based on original RGB value */
-  virtual void generateShadedValue(double, double, double, int*, int*, int*);
+  virtual bool generateShadedValue(double, double, double, int*, int*, int*);
   
   /** \brief Set the maximum value */
   virtual void setMaximumValue(double);

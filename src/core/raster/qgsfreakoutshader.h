@@ -28,8 +28,8 @@ class CORE_EXPORT QgsFreakOutShader : public QgsRasterShaderFunction {
 public:
   QgsFreakOutShader(double theMinimumValue=0.0, double theMaximumValue=255.0);
   
-  void generateShadedValue(double, int*, int*, int*);
-  void generateShadedValue(double, double, double, int*, int*, int*);
+  bool generateShadedValue(double, int*, int*, int*);
+  bool generateShadedValue(double, double, double, int*, int*, int*);
   /** \brief Set the maximum value */
   void setMaximumValue(double);
   /** \brief Return the minimum value */
