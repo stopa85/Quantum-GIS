@@ -190,13 +190,15 @@ void QgsSingleSymbolRenderer::updateSymbolAttributes()
   // Timing is not so important.
 
   mSymbolAttributes.clear();
-  if ( mSymbol->rotationClassificationField() >= 0 )
+  int rotationField = mSymbol->rotationClassificationField();
+  if ( rotationField >= 0 && !(mSymbolAttributes.contains(rotationField)) )
   {
-    mSymbolAttributes.append(mSymbol->rotationClassificationField());
+    mSymbolAttributes.append(rotationField);
   }
-  if ( mSymbol->scaleClassificationField() >= 0 )
+  int scaleField = mSymbol->scaleClassificationField(); 
+  if ( scaleField >= 0 && !(mSymbolAttributes.contains(scaleField)) )
   {
-    mSymbolAttributes.append(mSymbol->scaleClassificationField());
+    mSymbolAttributes.append(scaleField);
   }
 }
 
