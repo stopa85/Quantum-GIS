@@ -55,14 +55,14 @@ QgsSingleSymbolRenderer::QgsSingleSymbolRenderer(QGis::VectorType type)
     }
     sy->setLineWidth(1);
     mSymbol=sy;
-    updateClassificationAttributes();
+    updateSymbolAttributes();
 }
 
 QgsSingleSymbolRenderer::QgsSingleSymbolRenderer(const QgsSingleSymbolRenderer& other)
 {
     mVectorType = other.mVectorType;
     mSymbol = new QgsSymbol(*other.mSymbol);
-    updateClassificationAttributes();
+    updateSymbolAttributes();
 }
 
 QgsSingleSymbolRenderer& QgsSingleSymbolRenderer::operator=(const QgsSingleSymbolRenderer& other)
@@ -73,7 +73,7 @@ QgsSingleSymbolRenderer& QgsSingleSymbolRenderer::operator=(const QgsSingleSymbo
       delete mSymbol;
       mSymbol = new QgsSymbol(*other.mSymbol);
     }
-    updateClassificationAttributes();
+    updateSymbolAttributes();
     return *this;
 }
 
@@ -86,7 +86,7 @@ void QgsSingleSymbolRenderer::addSymbol(QgsSymbol* sy)
 {
     delete mSymbol;
     mSymbol=sy;
-    updateClassificationAttributes();
+    updateSymbolAttributes();
 }
 
 void QgsSingleSymbolRenderer::renderFeature(QPainter * p, QgsFeature & f, QImage* img, 
@@ -158,7 +158,7 @@ void QgsSingleSymbolRenderer::readXML(const QDomNode& rnode, QgsVectorLayer& vl)
     {
         sy->readXML ( synode );
     }
-    updateClassificationAttributes();
+    updateSymbolAttributes();
 
     //create a renderer and add it to the vector layer
     this->addSymbol(sy);
@@ -181,22 +181,22 @@ bool QgsSingleSymbolRenderer::writeXML( QDomNode & layer_node, QDomDocument & do
 
 QgsAttributeList QgsSingleSymbolRenderer::classificationAttributes() const
 {
-  return mClassificationAttributes;
+  return mSymbolAttributes;
 }
 
-void QgsSingleSymbolRenderer::updateClassificationAttributes()
+void QgsSingleSymbolRenderer::updateSymbolAttributes()
 {
   // This function is only called after changing field specifier in the GUI.
   // Timing is not so important.
 
-  mClassificationAttributes.clear();
+  mSymbolAttributes.clear();
   if ( mSymbol->rotationClassificationField() >= 0 )
   {
-    mClassificationAttributes.append(mSymbol->rotationClassificationField());
+    mSymbolAttributes.append(mSymbol->rotationClassificationField());
   }
   if ( mSymbol->scaleClassificationField() >= 0 )
   {
-    mClassificationAttributes.append(mSymbol->scaleClassificationField());
+    mSymbolAttributes.append(mSymbol->scaleClassificationField());
   }
 }
 
