@@ -41,7 +41,9 @@ QgsSymbol::QgsSymbol(QGis::VectorType t, QString lvalue, QString uvalue, QString
       mPointSymbolImage(1,1, QImage::Format_ARGB32_Premultiplied),
       mWidthScale(1.0),
       mCacheUpToDate( false ),
-      mCacheUpToDate2( false )
+      mCacheUpToDate2( false ),
+      mRotationClassificationField(-1),
+      mScaleClassificationField(-1)
 {}
 
 
@@ -57,7 +59,9 @@ QgsSymbol::QgsSymbol(QGis::VectorType t, QString lvalue, QString uvalue, QString
       mPointSymbolImage(1,1, QImage::Format_ARGB32_Premultiplied),
       mWidthScale(1.0),
       mCacheUpToDate( false ),
-      mCacheUpToDate2( false )
+      mCacheUpToDate2( false ),
+      mRotationClassificationField(-1),
+      mScaleClassificationField(-1)
 {}
 
 QgsSymbol::QgsSymbol()
@@ -66,7 +70,9 @@ QgsSymbol::QgsSymbol()
       mPointSymbolImage(1,1, QImage::Format_ARGB32_Premultiplied),
       mWidthScale(1.0),
       mCacheUpToDate( false ),
-      mCacheUpToDate2( false )
+      mCacheUpToDate2( false ),
+      mRotationClassificationField(-1),
+      mScaleClassificationField(-1)
 {}
 
 
@@ -78,7 +84,9 @@ QgsSymbol::QgsSymbol(QColor c)
       mPointSymbolImage(1,1, QImage::Format_ARGB32_Premultiplied),
       mWidthScale(1.0),
       mCacheUpToDate( false ),
-      mCacheUpToDate2( false )
+      mCacheUpToDate2( false ),
+      mRotationClassificationField(-1),
+      mScaleClassificationField(-1)
 {}
 
 QgsSymbol::QgsSymbol(const QgsSymbol& s)
@@ -103,6 +111,8 @@ QgsSymbol::QgsSymbol(const QgsSymbol& s)
     mCacheUpToDate2 = s.mCacheUpToDate2;
     mSelectionColor = s.mSelectionColor;
     mSelectionColor2 = s.mSelectionColor2;
+    mRotationClassificationField = s.mRotationClassificationField;
+    mScaleClassificationField = s.mScaleClassificationField;
   }
 }
 
@@ -243,28 +253,35 @@ QImage QgsSymbol::getCachedPointSymbolAsImage(  double widthScale,
 }
 
 QImage QgsSymbol::getPointSymbolAsImage(  double widthScale,
-               bool selected, QColor selectionColor, double scale )
+               bool selected, QColor selectionColor, double scale, double rotation )
 {
-  QgsDebugMsg(QString("Symbol total scale = %1").arg(scale));
-  if ( 1.0 == scale )
+  QgsDebugMsg(QString("Symbol scale = %1, and rotation = %2").arg(scale).arg(rotation));
+  if ( 1.0 == scale && 0 == rotation )
   {
-    // If scale is 1.0, use cached image.
+    // If scale is 1.0 and rotation 0.0, use cached image.
     return getCachedPointSymbolAsImage( widthScale, selected, selectionColor );
   }
-  
+
+  QImage preRotateImage;
+
   if ( selected )
   {
     QPen pen = mPen;
     pen.setColor ( selectionColor ); 
     QBrush brush = mBrush;
-    return QgsMarkerCatalogue::instance()->imageMarker ( mPointSymbolName, (int)(mPointSize * scale),
-							 pen, mBrush );
+    preRotateImage = QgsMarkerCatalogue::instance()->imageMarker ( mPointSymbolName, (int)(mPointSize * scale),
+                                                                   pen, mBrush );
   }
   else 
   {
-    return QgsMarkerCatalogue::instance()->imageMarker ( mPointSymbolName, (int)(mPointSize * scale),
-							 mPen, mBrush );
+    preRotateImage = QgsMarkerCatalogue::instance()->imageMarker ( mPointSymbolName, (int)(mPointSize * scale),
+                                                                   mPen, mBrush );
   }
+
+  QMatrix rotationMatrix;
+  rotationMatrix = rotationMatrix.rotate(rotation);
+
+  return preRotateImage.transformed(rotationMatrix, Qt::SmoothTransformation);
 }
 
 
@@ -344,6 +361,17 @@ bool QgsSymbol::writeXML( QDomNode & item, QDomDocument & document ) const
     symbol.appendChild(pointsize);
     pointsize.appendChild(pointsizetxt);
 
+    QDomElement rotationclassificationfield=document.createElement("rotationclassificationfield");
+    QDomText rotationclassificationfieldtxt=document.createTextNode(QString::number(mRotationClassificationField));
+    rotationclassificationfield.appendChild(rotationclassificationfieldtxt);
+    symbol.appendChild(rotationclassificationfield);
+
+    QDomElement scaleclassificationfield=document.createElement("scaleclassificationfield");
+    QDomText scaleclassificationfieldtxt=document.createTextNode(QString::number(mScaleClassificationField));
+    scaleclassificationfield.appendChild(scaleclassificationfieldtxt);
+    symbol.appendChild(scaleclassificationfield);
+
+
     QDomElement outlinecolor=document.createElement("outlinecolor");
     outlinecolor.setAttribute("red",QString::number(mPen.color().red()));
     outlinecolor.setAttribute("green",QString::number(mPen.color().green()));
@@ -419,6 +447,24 @@ bool QgsSymbol::readXML( QDomNode & synode )
         setPointSize( psizeelement.text().toInt() );
     }
 
+    mRotationClassificationField = -1;
+    mScaleClassificationField = -1;
+
+    QDomNode classnode = synode.namedItem("rotationclassificationfield");
+    if ( !classnode.isNull() )
+    {
+      mRotationClassificationField = classnode.toElement().text().toInt();
+      QgsDebugMsg("Found rotationfield: " + QString::number(rotationClassificationField()));
+    }
+
+    classnode = synode.namedItem("scaleclassificationfield");
+    if ( !classnode.isNull() )
+    {
+      mScaleClassificationField = classnode.toElement().text().toInt();
+      QgsDebugMsg("Found scalefield: " + QString::number(scaleClassificationField()));
+    }
+
+
     QDomNode outlcnode = synode.namedItem("outlinecolor");
     QDomElement oulcelement = outlcnode.toElement();
     int red = oulcelement.attribute("red").toInt();
@@ -452,3 +498,24 @@ bool QgsSymbol::readXML( QDomNode & synode )
 
     return true;
 }
+
+int QgsSymbol::rotationClassificationField() const
+{
+    return mRotationClassificationField;
+}
+
+void QgsSymbol::setRotationClassificationField(int field)
+{
+    mRotationClassificationField = field;
+}
+
+int QgsSymbol::scaleClassificationField() const
+{
+    return mScaleClassificationField;
+}
+
+void QgsSymbol::setScaleClassificationField(int field)
+{
+    mScaleClassificationField = field;
+}
+

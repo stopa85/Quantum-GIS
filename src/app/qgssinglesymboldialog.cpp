@@ -94,7 +94,7 @@ QgsSingleSymbolDialog::QgsSingleSymbolDialog(QgsVectorLayer * layer): QDialog(),
       const QgsFieldMap & fields = provider->fields();
       QString str;
       
-      mAngleClassificationComboBox->insertItem(DO_NOT_USE_STR);
+      mRotationClassificationComboBox->insertItem(DO_NOT_USE_STR);
       mScaleClassificationComboBox->insertItem(DO_NOT_USE_STR);
       mFieldMap.insert(std::make_pair(DO_NOT_USE_STR, -1));
       for (QgsFieldMap::const_iterator it = fields.begin(); 
@@ -104,7 +104,7 @@ QgsSingleSymbolDialog::QgsSingleSymbolDialog(QgsVectorLayer * layer): QDialog(),
         QVariant::Type type = (*it).type();
         if (type == QVariant::Int || type == QVariant::Double)
         {
-          mAngleClassificationComboBox->insertItem(it->name());
+          mRotationClassificationComboBox->insertItem(it->name());
           mScaleClassificationComboBox->insertItem(it->name());
           mFieldMap.insert(std::make_pair(it->name(), it.key()));
         }
@@ -152,36 +152,13 @@ QgsSingleSymbolDialog::QgsSingleSymbolDialog(QgsVectorLayer * layer): QDialog(),
     if (renderer)
     {
       // Set from the existing renderer
-      set ( renderer->symbol() );
-      //display the classification fields
-
-      //mAngleClassificationComboBox->setCurrentText(DO_NOT_USE_STR); // Will be overwritten if there are any fields
-      //mScaleClassificationComboBox->setCurrentText(DO_NOT_USE_STR); // Will be overwritten if there are any fields
-
-      QString angleclassfield = DO_NOT_USE_STR;
-      QString scaleclassfield = DO_NOT_USE_STR;
-      for(std::map<QString,int>::iterator it=mFieldMap.begin();it!=mFieldMap.end();++it)
-      {
-        if(it->second==renderer->angleClassificationField())
-        {
-          angleclassfield=it->first;
-          QgsDebugMsg(QString("Found angle field " + angleclassfield));
-        }
-        if(it->second==renderer->scaleClassificationField())
-        {
-          scaleclassfield=it->first;
-          QgsDebugMsg(QString("Found scale field " + scaleclassfield));
-        }
-      }
-      mAngleClassificationComboBox->setCurrentText(angleclassfield);
-      mScaleClassificationComboBox->setCurrentText(scaleclassfield);
-
+      set ( renderer->symbols().first() );
     }
     else
     {
       // Take values from an example instance
       QgsSingleSymbolRenderer exampleRenderer = QgsSingleSymbolRenderer( mVectorLayer->vectorType() );
-      set ( exampleRenderer.symbol() );
+      set ( exampleRenderer.symbols().first() );
     }
 
     if (mVectorLayer && mVectorLayer->vectorType() == QGis::Line)
@@ -283,6 +260,21 @@ void QgsSingleSymbolDialog::apply( QgsSymbol *sy )
       sy->setNamedPointSymbol( lstSymbols->currentItem()->data(Qt::UserRole).toString() ) ;
     }
     sy->setPointSize ( mPointSizeSpinBox->value() );
+
+    sy->setRotationClassificationField(-1);
+    sy->setScaleClassificationField(-1);
+
+    std::map<QString,int>::iterator iter=mFieldMap.find(mRotationClassificationComboBox->currentText());
+    if(iter!=mFieldMap.end())
+    {
+      sy->setRotationClassificationField(iter->second);
+    }
+
+    iter = mFieldMap.find(mScaleClassificationComboBox->currentText());
+    if(iter!=mFieldMap.end())
+    {
+      sy->setScaleClassificationField(iter->second);
+    }
     
     //
     // Apply the line style
@@ -314,22 +306,8 @@ void QgsSingleSymbolDialog::apply()
   
   QgsSingleSymbolRenderer *renderer = new QgsSingleSymbolRenderer(mVectorLayer->vectorType());
   renderer->addSymbol(sy);
+  renderer->updateClassificationAttributes();
 
-  renderer->setAngleClassificationField(-1);
-  renderer->setScaleClassificationField(-1);
-
-
-  std::map<QString,int>::iterator iter=mFieldMap.find(mAngleClassificationComboBox->currentText());
-  if(iter!=mFieldMap.end())
-  {
-    renderer->setAngleClassificationField(iter->second);
-  }
-
-  iter = mFieldMap.find(mScaleClassificationComboBox->currentText());
-  if(iter!=mFieldMap.end())
-  {
-    renderer->setScaleClassificationField(iter->second);
-  }
   mVectorLayer->setRenderer(renderer);
 }
 
@@ -351,6 +329,25 @@ void QgsSingleSymbolDialog::set ( const QgsSymbol *sy )
     }
   }
   mPointSizeSpinBox->setValue ( sy->pointSize() );
+
+  QString rotationclassfield = DO_NOT_USE_STR;
+  QString scaleclassfield = DO_NOT_USE_STR;
+  for(std::map<QString,int>::iterator it=mFieldMap.begin();it!=mFieldMap.end();++it)
+  {
+    if(it->second == sy->rotationClassificationField())
+    {
+      rotationclassfield=it->first;
+      QgsDebugMsg(QString("Found rotation field " + rotationclassfield));
+    }
+    if(it->second == sy->scaleClassificationField())
+    {
+      scaleclassfield=it->first;
+      QgsDebugMsg(QString("Found scale field " + scaleclassfield));
+    }
+  }
+  mRotationClassificationComboBox->setCurrentText(rotationclassfield);
+  mScaleClassificationComboBox->setCurrentText(scaleclassfield);
+
 
   outlinewidthspinbox->setValue(sy->pen().width());
 

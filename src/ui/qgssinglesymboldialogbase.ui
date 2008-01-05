@@ -359,10 +359,10 @@
       <item row="1" column="0" >
        <widget class="QLabel" name="textLabel1_3" >
         <property name="text" >
-         <string>Angle field</string>
+         <string>Rotation field</string>
         </property>
         <property name="buddy" >
-         <cstring>mAngleClassificationComboBox</cstring>
+         <cstring>mRotationClassificationComboBox</cstring>
         </property>
        </widget>
       </item>
@@ -377,7 +377,7 @@
        </widget>
       </item>
       <item row="1" column="1" >
-       <widget class="QComboBox" name="mAngleClassificationComboBox" >
+       <widget class="QComboBox" name="mRotationClassificationComboBox" >
         <property name="minimumSize" >
          <size>
           <width>0</width>
@@ -455,7 +455,7 @@
  <tabstops>
   <tabstop>mLabelEdit</tabstop>
   <tabstop>lstSymbols</tabstop>
-  <tabstop>mAngleClassificationComboBox</tabstop>
+  <tabstop>mRotationClassificationComboBox</tabstop>
   <tabstop>mPointSizeSpinBox</tabstop>
   <tabstop>cboOutlineStyle</tabstop>
   <tabstop>btnOutlineColor</tabstop>
