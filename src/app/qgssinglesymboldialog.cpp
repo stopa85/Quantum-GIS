@@ -190,6 +190,10 @@ QgsSingleSymbolDialog::QgsSingleSymbolDialog(QgsVectorLayer * layer): QDialog(),
   connect (lstSymbols,SIGNAL(currentItemChanged ( QListWidgetItem * , QListWidgetItem * )),
         this, SLOT (symbolChanged (QListWidgetItem * , QListWidgetItem * )));
   connect(mPointSizeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(resendSettingsChanged()));
+  connect(mRotationClassificationComboBox, SIGNAL(currentIndexChanged(const QString &)),
+          this, SLOT(resendSettingsChanged()));
+  connect(mScaleClassificationComboBox, SIGNAL(currentIndexChanged(const QString &)),
+          this, SLOT(resendSettingsChanged()));
   connect(cboOutlineStyle, SIGNAL(
         currentIndexChanged ( const QString & )), this, SLOT(resendSettingsChanged()));
   connect(cboFillStyle, SIGNAL(
