@@ -306,7 +306,7 @@ void QgsSingleSymbolDialog::apply()
   
   QgsSingleSymbolRenderer *renderer = new QgsSingleSymbolRenderer(mVectorLayer->vectorType());
   renderer->addSymbol(sy);
-  renderer->updateClassificationAttributes();
+  renderer->updateSymbolAttributes();
 
   mVectorLayer->setRenderer(renderer);
 }

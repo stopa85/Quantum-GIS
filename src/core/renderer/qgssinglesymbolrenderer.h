@@ -45,11 +45,11 @@ class CORE_EXPORT QgsSingleSymbolRenderer: public QgsRenderer
     /**Writes the contents of the renderer to a configuration file
      @ return true in case of success*/
     virtual bool writeXML( QDomNode & layer_node, QDomDocument & document ) const;
-    /**Returns false, no attributes neede for single symbol*/
+    /**Returns true, attributes needed for single symbol*/
     bool needsAttributes() const;
-    /**Returns an empty list, since no classification attributes are used*/
+    /**Returns a list of all needed attributes*/
     QgsAttributeList classificationAttributes() const;
-    void updateClassificationAttributes();
+    void updateSymbolAttributes();
     /**Returns the renderers name*/
     virtual QString name() const;
     /**Returns a list containing mSymbol*/
@@ -60,7 +60,7 @@ class CORE_EXPORT QgsSingleSymbolRenderer: public QgsRenderer
     /**Object containing symbology information*/
     QgsSymbol* mSymbol;
     /**Cached copy of all underlying symbols required attribute fields*/
-    QgsAttributeList mClassificationAttributes;
+    QgsAttributeList mSymbolAttributes;
 };
 
 inline const QgsSymbol* QgsSingleSymbolRenderer::symbol() const
