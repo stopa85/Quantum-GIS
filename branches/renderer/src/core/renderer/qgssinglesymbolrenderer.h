@@ -49,54 +49,23 @@ class CORE_EXPORT QgsSingleSymbolRenderer: public QgsRenderer
     bool needsAttributes() const;
     /**Returns an empty list, since no classification attributes are used*/
     QgsAttributeList classificationAttributes() const;
+    void updateClassificationAttributes();
     /**Returns the renderers name*/
     virtual QString name() const;
     /**Returns a list containing mSymbol*/
     const QList<QgsSymbol*> symbols() const;
     /**Returns a deep copy of this renderer*/
     QgsRenderer* clone() const;
-    /**Returns the number of the angle classification field*/
-    int angleClassificationField() const;
-    /**Sets the number of the angle classicifation field
-    \param field the number of the field to classify for angle*/
-    void setAngleClassificationField(int field);
-    /**Returns the number of the scale classification field*/
-    int scaleClassificationField() const;
-    /**Sets the number of the scale classicifation field
-    \param field the number of the field to classify for scale*/
-    void setScaleClassificationField(int field);
-
  protected:
     /**Object containing symbology information*/
     QgsSymbol* mSymbol;
-    /**Index of the classification field (it must be a numerical field)*/
-    int mAngleClassificationField;
-    int mScaleClassificationField;
+    /**Cached copy of all underlying symbols required attribute fields*/
+    QgsAttributeList mClassificationAttributes;
 };
 
 inline const QgsSymbol* QgsSingleSymbolRenderer::symbol() const
 {
     return mSymbol;
-}
-
-inline int QgsSingleSymbolRenderer::angleClassificationField() const
-{
-    return mAngleClassificationField;
-}
-
-inline void QgsSingleSymbolRenderer::setAngleClassificationField(int field)
-{
-    mAngleClassificationField=field;
-}
-
-inline int QgsSingleSymbolRenderer::scaleClassificationField() const
-{
-    return mScaleClassificationField;
-}
-
-inline void QgsSingleSymbolRenderer::setScaleClassificationField(int field)
-{
-    mScaleClassificationField=field;
 }
 
 inline bool QgsSingleSymbolRenderer::needsAttributes() const

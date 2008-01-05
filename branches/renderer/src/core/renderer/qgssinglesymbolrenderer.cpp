@@ -55,17 +55,14 @@ QgsSingleSymbolRenderer::QgsSingleSymbolRenderer(QGis::VectorType type)
     }
     sy->setLineWidth(1);
     mSymbol=sy;
-
-    mAngleClassificationField = -1; // Default is no field for rotation
-    mScaleClassificationField = -1; // Default is no field for scale
+    updateClassificationAttributes();
 }
 
 QgsSingleSymbolRenderer::QgsSingleSymbolRenderer(const QgsSingleSymbolRenderer& other)
 {
     mVectorType = other.mVectorType;
     mSymbol = new QgsSymbol(*other.mSymbol);
-    mAngleClassificationField = other.angleClassificationField();
-    mScaleClassificationField = other.scaleClassificationField();
+    updateClassificationAttributes();
 }
 
 QgsSingleSymbolRenderer& QgsSingleSymbolRenderer::operator=(const QgsSingleSymbolRenderer& other)
@@ -75,9 +72,8 @@ QgsSingleSymbolRenderer& QgsSingleSymbolRenderer::operator=(const QgsSingleSymbo
       mVectorType = other.mVectorType;
       delete mSymbol;
       mSymbol = new QgsSymbol(*other.mSymbol);
-      mAngleClassificationField = other.angleClassificationField();
-      mScaleClassificationField = other.scaleClassificationField();
     }
+    updateClassificationAttributes();
     return *this;
 }
 
@@ -90,6 +86,7 @@ void QgsSingleSymbolRenderer::addSymbol(QgsSymbol* sy)
 {
     delete mSymbol;
     mSymbol=sy;
+    updateClassificationAttributes();
 }
 
 void QgsSingleSymbolRenderer::renderFeature(QPainter * p, QgsFeature & f, QImage* img, 
@@ -100,40 +97,24 @@ void QgsSingleSymbolRenderer::renderFeature(QPainter * p, QgsFeature & f, QImage
 
     // If scale field is non-negative, use it to scale.
     double fieldScale = 1.0;
-    if (mScaleClassificationField >= 0)
+    double rotation = 0.0;
+
+    if ( mSymbol->scaleClassificationField() >= 0)
     {
       //first find out the value for the scale classification attribute
       const QgsAttributeMap& attrs = f.attributeMap();
-      fieldScale = sqrt(fabs(attrs[mScaleClassificationField].toDouble()));
+      fieldScale = sqrt(fabs(attrs[mSymbol->scaleClassificationField()].toDouble()));
       QgsDebugMsg(QString("Feature has field scale factor %1").arg(fieldScale));
     }
-    *img = mSymbol->getPointSymbolAsImage(  widthScale, 
-					    selected, mSelectionColor, *scalefactor * fieldScale );
-    // If rotation field is non-negative, use it to rotate.
-    if (mAngleClassificationField >= 0)
+    if ( mSymbol->rotationClassificationField() >= 0 )
     {
-      //first find out the value for the angle classification attribute
       const QgsAttributeMap& attrs = f.attributeMap();
-      double angle = attrs[mAngleClassificationField].toDouble();
-      int intangle = attrs[mAngleClassificationField].toInt();
-      QMatrix rotationMatrix;
-
-#ifdef QGISDEBUG
-      QgsLogger::debug("Rendering attribute size ", attrs.size(), 1, __FILE__, __FUNCTION__, __LINE__);
-      QgsLogger::debug("Rendering feature field ", mAngleClassificationField, 1, __FILE__, __FUNCTION__, __LINE__);
-      QgsLogger::debug("Rendering feature angle ", angle, 1, __FILE__, __FUNCTION__, __LINE__);
-      QgsLogger::debug("Rendering feature angle ", intangle, 1, __FILE__, __FUNCTION__, __LINE__);
-#endif
-
-      rotationMatrix = rotationMatrix.rotate(angle);
-
-      *img = img->transformed(rotationMatrix, Qt::SmoothTransformation);
+      rotation = attrs[mSymbol->rotationClassificationField()].toDouble();
+      QgsDebugMsg(QString("Feature has rotation factor %1").arg(rotation));
     }
-    // We return image in the same scale as set by caller, we mustn't reset it.
-    //if ( scalefactor )
-    //{ 
-    //  *scalefactor = 1.0 / *scalefactor;
-    //}
+
+    *img = mSymbol->getPointSymbolAsImage( widthScale, selected, mSelectionColor,
+                                            *scalefactor * fieldScale, rotation);
   }
 
 
@@ -166,27 +147,6 @@ void QgsSingleSymbolRenderer::readXML(const QDomNode& rnode, QgsVectorLayer& vl)
     mVectorType = vl.vectorType();
     QgsSymbol* sy = new QgsSymbol(mVectorType);
 
-    QDomNode classnode = rnode.namedItem("angleclassificationfield");
-
-    int angleClassificationfield = -1;
-    int scaleClassificationfield = -1;
-
-    if ( !classnode.isNull() )
-    {
-      angleClassificationfield = classnode.toElement().text().toInt();
-      QgsDebugMsg("Found anglefield: " + QString::number(angleClassificationfield));
-    }
-
-    classnode = rnode.namedItem("scaleclassificationfield");
-    if ( !classnode.isNull() )
-    {
-      scaleClassificationfield = classnode.toElement().text().toInt();
-      QgsDebugMsg("Found scalefield: " + QString::number(scaleClassificationfield));
-    }
-
-    setScaleClassificationField(scaleClassificationfield);
-    setAngleClassificationField(angleClassificationfield);
-
     QDomNode synode = rnode.namedItem("symbol");
     
     if ( synode.isNull() )
@@ -198,6 +158,7 @@ void QgsSingleSymbolRenderer::readXML(const QDomNode& rnode, QgsVectorLayer& vl)
     {
         sy->readXML ( synode );
     }
+    updateClassificationAttributes();
 
     //create a renderer and add it to the vector layer
     this->addSymbol(sy);
@@ -210,16 +171,6 @@ bool QgsSingleSymbolRenderer::writeXML( QDomNode & layer_node, QDomDocument & do
   QDomElement singlesymbol=document.createElement("singlesymbol");
   layer_node.appendChild(singlesymbol);
 
-  QDomElement angleclassificationfield=document.createElement("angleclassificationfield");
-  QDomText angleclassificationfieldtxt=document.createTextNode(QString::number(mAngleClassificationField));
-  angleclassificationfield.appendChild(angleclassificationfieldtxt);
-  singlesymbol.appendChild(angleclassificationfield);
-
-  QDomElement scaleclassificationfield=document.createElement("scaleclassificationfield");
-  QDomText scaleclassificationfieldtxt=document.createTextNode(QString::number(mScaleClassificationField));
-  scaleclassificationfield.appendChild(scaleclassificationfieldtxt);
-  singlesymbol.appendChild(scaleclassificationfield);
-
   if(mSymbol)
   {
     returnval=mSymbol->writeXML(singlesymbol,document);
@@ -230,16 +181,23 @@ bool QgsSingleSymbolRenderer::writeXML( QDomNode & layer_node, QDomDocument & do
 
 QgsAttributeList QgsSingleSymbolRenderer::classificationAttributes() const
 {
-  QgsAttributeList list;
-  if ( mAngleClassificationField >= 0 )
+  return mClassificationAttributes;
+}
+
+void QgsSingleSymbolRenderer::updateClassificationAttributes()
+{
+  // This function is only called after changing field specifier in the GUI.
+  // Timing is not so important.
+
+  mClassificationAttributes.clear();
+  if ( mSymbol->rotationClassificationField() >= 0 )
   {
-    list.append(mAngleClassificationField);
+    mClassificationAttributes.append(mSymbol->rotationClassificationField());
   }
-  if ( mScaleClassificationField >= 0 )
+  if ( mSymbol->scaleClassificationField() >= 0 )
   {
-    list.append(mScaleClassificationField);
+    mClassificationAttributes.append(mSymbol->scaleClassificationField());
   }
-  return list;
 }
 
 QString QgsSingleSymbolRenderer::name() const
