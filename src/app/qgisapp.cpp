@@ -1175,9 +1175,6 @@ void QgisApp::setTheme(QString theThemeName)
 
 void QgisApp::setupConnections()
 {
-
-  QSettings settings;
-
   // connect the "cleanup" slot
   connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(saveWindowState()));
   //connect the legend, mapcanvas and overview canvas to the registry
@@ -2663,17 +2660,11 @@ void QgisApp::fileOpen()
 
     delete openFileDialog;
 
-    QgsDebugMsg(QString("*********opening******* ") + fullPath);
-
-
     // clear out any stuff from previous project
     removeAllLayers();
 
     QgsProject::instance()->filename( fullPath );
 
-
-    QgsDebugMsg(QString("Connecting signal from ") + QString::number((long)QgsProject::instance()));
-    
     try 
     {
       if ( QgsProject::instance()->read() )
