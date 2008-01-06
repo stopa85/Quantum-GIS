@@ -1178,6 +1178,7 @@ bool QgsSpatialRefSys::readXML( QDomNode & theNode )
 {
   QgsDebugMsg("Reading Spatial Ref Sys from xml ------------------------!");
   QDomNode srsNode  = theNode.namedItem( "spatialrefsys" );
+
   if ( ! srsNode.isNull() )
   {
      QDomNode myNode = srsNode.namedItem("proj4");

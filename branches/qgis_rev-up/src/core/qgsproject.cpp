@@ -1307,4 +1307,3 @@ void QgsProject::dumpProperties() const
 {
     dump_(imp_->properties_);
 } // QgsProject::dumpProperties
-
