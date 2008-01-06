@@ -1845,6 +1845,10 @@ static void openFilesRememberingFilter_(QString const &filterName,
   */
 void QgisApp::addLayer()
 {
+  if(mMapCanvas && mMapCanvas->isDrawing())
+    {
+      return;
+    }
   mMapCanvas->freeze();
 
   QStringList selectedFiles;
@@ -2034,6 +2038,11 @@ void QgisApp::addDatabaseLayer(){}
 #else
 void QgisApp::addDatabaseLayer()
 {
+  if(mMapCanvas && mMapCanvas->isDrawing())
+    {
+      return;
+    }
+
   // only supports postgis layers at present
 
   // show the postgis dialog
@@ -2104,6 +2113,10 @@ void QgisApp::addDatabaseLayer()
 
 void QgisApp::addWmsLayer()
 {
+  if(mMapCanvas && mMapCanvas->isDrawing())
+    {
+      return;
+    }
   // Fudge for now
   QgsDebugMsg("about to addRasterLayer");
 
@@ -2419,6 +2432,11 @@ findLayers_( QString const & fileFilters, list<QDomNode> const & layerNodes )
 
 void QgisApp::fileExit()
 {
+  if(mMapCanvas && mMapCanvas->isDrawing())
+    {
+      return;
+    }
+  
   if (saveDirty())
   {
     removeAllLayers();
@@ -2437,6 +2455,11 @@ void QgisApp::fileNew()
 //as file new but accepts flags to indicate whether we should prompt to save
 void QgisApp::fileNew(bool thePromptToSaveFlag)
 { 
+  if(mMapCanvas && mMapCanvas->isDrawing())
+    {
+      return;
+    }
+
   if (thePromptToSaveFlag)
   {
     if (!saveDirty())
@@ -2503,6 +2526,11 @@ void QgisApp::fileNew(bool thePromptToSaveFlag)
 
 void QgisApp::newVectorLayer()
 {
+
+  if(mMapCanvas && mMapCanvas->isDrawing())
+    {
+      return;
+    }
 
   QGis::WKBTYPE geometrytype;
   QString fileformat;
@@ -2626,6 +2654,11 @@ void QgisApp::newVectorLayer()
 
 void QgisApp::fileOpen()
 {
+  if(mMapCanvas && mMapCanvas->isDrawing())
+    {
+      return;
+    }
+
   // possibly save any pending work before opening a new project
   if (saveDirty())
   {
@@ -2779,6 +2812,11 @@ bool QgisApp::addProject(QString projectFile)
 
 bool QgisApp::fileSave()
 {
+  if(mMapCanvas && mMapCanvas->isDrawing())
+    {
+      return false;
+    }
+
   // if we don't have a filename, then obviously we need to get one; note
   // that the project file name is reset to null in fileNew()
   QFileInfo fullPath;
@@ -2860,6 +2898,11 @@ bool QgisApp::fileSave()
 
 void QgisApp::fileSaveAs()
 {
+  if(mMapCanvas && mMapCanvas->isDrawing())
+    {
+      return;
+    }
+
   // Retrieve last used project dir from persistent settings
   QSettings settings;
   QString lastUsedDir = settings.readEntry("/UI/lastProjectDir", ".");
@@ -3055,6 +3098,10 @@ myQPainter.end();
 
 void QgisApp::filePrint()
 {
+  if(mMapCanvas && mMapCanvas->isDrawing())
+    {
+      return;
+    }
   mComposer->open();
 }
 
@@ -4071,6 +4118,11 @@ void QgisApp::socketReadyRead()
 }
 void QgisApp::options()
 {
+  if(mMapCanvas && mMapCanvas->isDrawing())
+    {
+      return;
+    }
+
   QgsOptions *optionsDialog = new QgsOptions(this);
   if(optionsDialog->exec())
   {
@@ -4180,6 +4232,11 @@ QgsMapLayer *QgisApp::activeLayer()
   */
 void QgisApp::addVectorLayer(QString vectorLayerPath, QString baseName, QString providerKey)
 {
+  if(mMapCanvas && mMapCanvas->isDrawing())
+    {
+      return;
+    }
+
   mMapCanvas->freeze();
 
 // Let render() do its own cursor management
@@ -4528,6 +4585,11 @@ void QgisApp::projectPropertiesProjections()
 
 void QgisApp::projectProperties()
 {
+  if(mMapCanvas && mMapCanvas->isDrawing())
+    {
+      return;
+    }
+
   /* Display the property sheet for the Project */
   // set wait cursor since construction of the project properties
   // dialog results in the construction of the spatial reference
@@ -4798,6 +4860,11 @@ void QgisApp::showCapturePointCoordinate(QgsPoint & theQgsPoint)
 //create a raster layer object and delegate to addRasterLayer(QgsRasterLayer *)
 void QgisApp::addRasterLayer()
 {
+  if(mMapCanvas && mMapCanvas->isDrawing())
+    {
+      return;
+    }
+  
   //mMapCanvas->freeze(true);
 
   QString fileFilters;
@@ -4827,6 +4894,10 @@ void QgisApp::addRasterLayer()
 //
 bool QgisApp::addRasterLayer(QgsRasterLayer * theRasterLayer, bool theForceRedrawFlag)
 {
+  if(mMapCanvas && mMapCanvas->isDrawing())
+    {
+      return false;
+    }
 
   Q_CHECK_PTR( theRasterLayer );
 
@@ -4887,6 +4958,11 @@ bool QgisApp::addRasterLayer(QgsRasterLayer * theRasterLayer, bool theForceRedra
 
 bool QgisApp::addRasterLayer(QFileInfo const & rasterFile, bool guiWarning)
 {
+  if(mMapCanvas && mMapCanvas->isDrawing())
+    {
+      return false;
+    }
+
   // let the user know we're going to possibly be taking a while
   QApplication::setOverrideCursor(Qt::WaitCursor);
 
@@ -4954,6 +5030,11 @@ void QgisApp::addRasterLayer(QString const & rasterLayerPath,
     QString const & proxyPassword)
 {
   QgsDebugMsg("about to get library for " + providerKey);
+
+  if(mMapCanvas && mMapCanvas->isDrawing())
+    {
+      return;
+    }
 
   mMapCanvas->freeze();
 
@@ -5023,6 +5104,11 @@ void QgisApp::addRasterLayer(QString const & rasterLayerPath,
 //create a raster layer object and delegate to addRasterLayer(QgsRasterLayer *)
 bool QgisApp::addRasterLayer(QStringList const &theFileNameQStringList, bool guiWarning)
 {
+  if(mMapCanvas && mMapCanvas->isDrawing())
+    {
+      return false;
+    }
+
   if (theFileNameQStringList.empty())
   {
     // no files selected so bail out, but
@@ -5131,6 +5217,11 @@ std::cout << mMapCanvas->extent() << std::endl;
 */
 void QgisApp::customProjection()
 {
+  if(mMapCanvas && mMapCanvas->isDrawing())
+    {
+      return;
+    }
+
   // Create an instance of the Custom Projection Designer modeless dialog.
   // Autodelete the dialog when closing since a pointer is not retained.
   QgsCustomProjectionDialog * myDialog = new QgsCustomProjectionDialog(this,

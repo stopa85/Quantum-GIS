@@ -926,7 +926,15 @@ void QgsComposer::restoreWindowState()
 {
   QSettings settings;
   restoreGeometry(settings.value("/Composer/geometry").toByteArray());
-  mSplitter->restoreState(settings.value("/Composer/splitterState").toByteArray());
+  QVariant splitterState = settings.value("/Composer/splitterState");
+  if (splitterState != QVariant::QVariant())
+    mSplitter->restoreState(settings.value("/Composer/splitterState").toByteArray());
+  else
+  {
+    QList<int> defaultSize;
+    defaultSize << 300 << 100; // page display 300 pixels, details pane 100 pixels
+    mSplitter->setSizes(defaultSize);
+  }
 }
 
 void QgsComposer::on_helpPButton_clicked()
