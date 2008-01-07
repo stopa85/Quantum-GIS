@@ -23,11 +23,14 @@
 #include "qgslogger.h"
 #include "qgssymbologyutils.h"
 #include "qgsmarkercatalogue.h"
+#include "qgsapplication.h"
 
 #include <QPainter>
 #include <QDomNode>
 #include <QDomDocument>
 #include <QImage>
+#include <QDir>
+#include <QFileInfo>
 //#include <QString>
 //do we have to include qstring?
 
@@ -183,6 +186,32 @@ void QgsSymbol::setCustomTexture( QString path )
 
 void QgsSymbol::setNamedPointSymbol(QString name)
 {
+    // do some sanity checking for svgs...
+    QString myTempName = name;
+    myTempName.replace("svg:","");
+    QFile myFile(myTempName);
+    if (!myFile.exists())
+    {
+      //see if we can resolve the problem...
+      //by using the qgis svg dir from this local machine
+      //one day when user specified svg are allowed we need 
+      //to adjust this logic probably...
+      QString svgPath = QgsApplication::svgPath();
+      QFileInfo myInfo(myTempName);
+      QString myFileName = myInfo.fileName(); // foo.svg
+      QString myLowestDir = myInfo.dir().dirName();
+      QString myLocalPath = svgPath + QDir::separator() +
+	      myLowestDir + QDir::separator() +
+	      myFileName;
+      if (QFile(myFileName).exists())
+      {
+	      name=myFileName;
+      }
+      else
+      {
+	//couldnt find the file, no happy ending :-(
+      }
+    }
     mPointSymbolName = name;
     mCacheUpToDate = mCacheUpToDate2 = false;
 }
