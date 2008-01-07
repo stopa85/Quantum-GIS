@@ -125,3 +125,23 @@ int QgsBarDiagramFactory::getHeightBarChart(int size, const QgsAttributeMap& fea
       int height = (int)(maximumAttValue * pixelValueRatio);
       return height;
 }
+
+double QgsBarDiagramFactory::pixelValueRatioBarChart(int size, const QgsAttributeMap& featureAttributes) const
+{
+ //find value for scaling attribute
+  QList<int>::const_iterator scaling_it = mScalingAttributes.constBegin();
+  double scalingValue = 0;
+
+  for(; scaling_it != mScalingAttributes.constEnd(); ++scaling_it)
+    {
+      QgsAttributeMap::const_iterator it = featureAttributes.find(*scaling_it);
+      if(it == featureAttributes.constEnd())
+	{
+	  continue; //error, scaling attribute not contained in feature attributes
+	}
+      scalingValue += (it->toDouble());
+    }
+  
+  //calculate value/pixel ratio
+  return (size / scalingValue); 
+}
