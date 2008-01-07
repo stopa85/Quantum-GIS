@@ -186,34 +186,40 @@ void QgsSymbol::setCustomTexture( QString path )
 
 void QgsSymbol::setNamedPointSymbol(QString name)
 {
-    // do some sanity checking for svgs...
-    QString myTempName = name;
-    myTempName.replace("svg:","");
-    QFile myFile(myTempName);
-    if (!myFile.exists())
+  // do some sanity checking for svgs...
+  QString myTempName = name;
+  myTempName.replace("svg:","");
+  QFile myFile(myTempName);
+  if (!myFile.exists())
+  {
+    QgsDebugMsg("\n\n\n *** Svg Symbol not found on fs ***")
+    QgsDebugMsg("Name: " + name);
+    //see if we can resolve the problem...
+    //by using the qgis svg dir from this local machine
+    //one day when user specified svg are allowed we need 
+    //to adjust this logic probably...
+    QString svgPath = QgsApplication::svgPath();
+    QgsDebugMsg( "SvgPath: " + svgPath);
+    QFileInfo myInfo(myTempName);
+    QString myFileName = myInfo.fileName(); // foo.svg
+    QString myLowestDir = myInfo.dir().dirName();
+    QString myLocalPath = svgPath + QDir::separator() +
+      myLowestDir + QDir::separator() +
+      myFileName;
+    QgsDebugMsg("Alternative svg path: " + myLocalPath);
+    if (QFile(myLocalPath).exists())
     {
-      //see if we can resolve the problem...
-      //by using the qgis svg dir from this local machine
-      //one day when user specified svg are allowed we need 
-      //to adjust this logic probably...
-      QString svgPath = QgsApplication::svgPath();
-      QFileInfo myInfo(myTempName);
-      QString myFileName = myInfo.fileName(); // foo.svg
-      QString myLowestDir = myInfo.dir().dirName();
-      QString myLocalPath = svgPath + QDir::separator() +
-	      myLowestDir + QDir::separator() +
-	      myFileName;
-      if (QFile(myFileName).exists())
-      {
-	      name=myFileName;
-      }
-      else
-      {
-	//couldnt find the file, no happy ending :-(
-      }
+      name="svg:"+myLocalPath;
+      QgsDebugMsg("Svg found in alternative path"); 
     }
-    mPointSymbolName = name;
-    mCacheUpToDate = mCacheUpToDate2 = false;
+    else
+    {
+      //couldnt find the file, no happy ending :-(
+      QgsDebugMsg("Computed alternate path but no svg there either");
+    }
+  }
+  mPointSymbolName = name;
+  mCacheUpToDate = mCacheUpToDate2 = false;
 }
 
 QString QgsSymbol::pointSymbolName() const
