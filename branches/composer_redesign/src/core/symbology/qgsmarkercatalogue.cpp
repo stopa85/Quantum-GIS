@@ -40,7 +40,7 @@ QgsMarkerCatalogue::QgsMarkerCatalogue()
 
   // Hardcoded markers
   mList.append ( "hard:circle" );
-  mList.append ( "hard:rectangle" );
+  mList.append ( "hard:square" );
   mList.append ( "hard:diamond" );
   mList.append ( "hard:cross" );
   mList.append ( "hard:cross2" );
@@ -209,7 +209,7 @@ void QgsMarkerCatalogue::hardMarker (QPainter * thepPainter, QString name, int s
   {
     thepPainter->drawEllipse(0, 0, size, size);
   } 
-  else if ( name == "rectangle" ) 
+  else if ( name == "square" ) 
   {
     size = (int) (2*floor(sqrt(area)/2.) + 1);
     thepPainter->drawRect(0, 0, size, size);

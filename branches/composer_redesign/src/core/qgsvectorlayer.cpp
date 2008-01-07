@@ -724,7 +724,7 @@ void QgsVectorLayer::draw(QPainter * p,
 
     QPen pen;
     /*Pointer to a marker image*/
-    QImage marker;
+//    QImage marker;
     /*Scale factor of the marker image*/
     double markerScaleFactor=1.;
 
@@ -795,11 +795,12 @@ void QgsVectorLayer::draw(QPainter * p,
           sel = FALSE;
         }
 
-QgsSymbolRenderer* symbolRenderer;
+        QgsSymbolRenderer* symbolRenderer;
+        double mupp = theMapToPixelTransform->mapUnitsPerPixel();
+        mRenderer->renderFeature(p, fet, symbolRenderer, &markerScaleFactor, sel, mupp );
 
-
-        mRenderer->renderFeature(p, fet, symbolRenderer, &markerScaleFactor, sel, widthScale );
-
+        //symbolScale is passed as a parameter, markerScaleFactor is set above by renderFeature()
+        //symbolScale is always 1 when rendered with QgsMapRender, becuase QgsMapRender doesn't set it
         double scale = markerScaleFactor * symbolScale;
         drawFeature(p,fet,theMapToPixelTransform,ct, symbolRenderer, scale, drawingToEditingCanvas);
 
@@ -824,7 +825,7 @@ QgsSymbolRenderer* symbolRenderer;
           
           // give a deep copy of the geometry to mCachedGeometry because it will be erased at each redraw
           mCachedGeometries.insert((*it).featureId(), QgsGeometry(*((*it).geometry())) );
-          drawFeature(p,*it,theMapToPixelTransform,ct, &marker,scale, drawingToEditingCanvas);
+//          drawFeature(p,*it,theMapToPixelTransform,ct, &marker,scale, drawingToEditingCanvas);
         }
       }
 
@@ -2880,7 +2881,7 @@ void QgsVectorLayer::drawFeature(QPainter* p,
         double y = *((double *) (feature + 5 + sizeof(double)));
 
 #ifdef QGISDEBUG 
-        //  std::cout <<"...WKBPoint (" << x << ", " << y << ")" <<std::endl;
+        std::cout <<"...WKBPoint (" << x << ", " << y << ")" <<std::endl;
 #endif
 
         transformPoint(x, y, theMapToPixelTransform, ct);
@@ -2888,8 +2889,9 @@ void QgsVectorLayer::drawFeature(QPainter* p,
 //        QPointF pt(x/markerScaleFactor - (marker->width()/2),  y/markerScaleFactor - (marker->height()/2));
 
         p->save();
+        //Translate before scaling, or else we won't get the expected transform!
+        p->translate(x, y);
         p->scale(markerScaleFactor,markerScaleFactor);
-        //p->drawImage(pt, *marker);
         symRenderer->render(p);
         p->restore();
 

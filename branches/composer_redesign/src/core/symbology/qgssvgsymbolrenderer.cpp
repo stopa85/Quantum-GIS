@@ -1,8 +1,8 @@
 /***************************************************************************
-    qgssymbolrenderer.h  -  Class which handles rendering of basic point
-                            symbols, such as circles and diamonds.
+    qgssymbolrenderer.h  -  Class which handles rendering of svg point
+                            symbols.
                              -------------------
-    begin                : Tue Dec 18 2007
+    begin                : Tue Dec 27 2007
     copyright            : (C) 2007 Steven Bell
     email                : botsnlinux at gmail.com
  ***************************************************************************/
@@ -15,30 +15,25 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
-/* $Id$ */
+/* $Id: $ */
 
-#ifndef QGSBASICSYMBOLRENDERER_H
-#define QGSBASICSYMBOLRENDERER_H
+#include "qgssvgsymbolrenderer.h"
 
-#include "qgssymbolrenderer.h"
-class QString;
+#include <QPainter>
+#include <QString>
 
-class QgsBasicSymbolRenderer : public QgsSymbolRenderer
+QgsSvgSymbolRenderer::QgsSvgSymbolRenderer(QString file)
 {
-public:
-  typedef enum {CIRCLE, SQUARE, DIAMOND, CROSS, CROSS_2, TRIANGLE, STAR} SymbolShape;
+  mSvgRenderer.load(file);
+}
 
-  QgsBasicSymbolRenderer();
-  QgsBasicSymbolRenderer(QString shape);
-  QgsBasicSymbolRenderer(SymbolShape shape);
+void QgsSvgSymbolRenderer::setFileName(QString file)
+{
+  mSvgRenderer.load(file);
+}
 
-  void render(QPainter*); //implements pure virtual function from QgsSymbolRenderer
-
-  void setShape(SymbolShape shape);
-  void setShape(QString shape);
-  SymbolShape shape(void);
-  
-private:
-  SymbolShape mShape;
-};
-#endif /*QGSBASICSYMBOLRENDERER_H*/
+void QgsSvgSymbolRenderer::render(QPainter* p)
+{
+  QRectF renderArea(-.5, -.5, 1, 1);
+  mSvgRenderer.render(p, renderArea);
+}

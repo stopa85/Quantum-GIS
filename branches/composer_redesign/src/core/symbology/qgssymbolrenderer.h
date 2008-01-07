@@ -15,7 +15,7 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
-/* $Id: $ */
+/* $Id$ */
 #ifndef QGSSYMBOLRENDERER_H
 #define QGSSYMBOLRENDERER_H
 
@@ -24,10 +24,18 @@
 class QgsSymbolRenderer
 {
 public:
+    QgsSymbolRenderer();
+    virtual ~QgsSymbolRenderer();
+
     //appropriate stuff to set up the renderer?
     //That might all be in the implementation classes.
 
-    virtual void render(QPainter*) = 0;
+    virtual void render(QPainter*);
+    void setSize(float size);
+    float size(void);
+    
+protected:
+    float mSize;
 
 };//END class QgsSymbolRenderer
 #endif /*QGSSYMBOLRENDERER_H*/

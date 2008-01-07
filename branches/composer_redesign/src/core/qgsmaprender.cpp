@@ -27,6 +27,8 @@
 #include "qgsdistancearea.h"
 //#include "qgsspatialrefsys.h"
 
+#include "qgsvectorlayer.h"
+
 #include <QDomDocument>
 #include <QDomNode>
 #include <QPainter>
@@ -192,7 +194,7 @@ void QgsMapRender::adjustExtentToSize()
 void QgsMapRender::render(QPainter* painter)
 {
   QgsDebugMsg("========== Rendering ==========");
-
+  
   if (mExtent.isEmpty())
   {
     QgsLogger::debug("empty extent... not rendering");
@@ -265,9 +267,17 @@ void QgsMapRender::render(QPainter* painter)
       {
         ct = NULL;
       }
-      
-      if (!ml->draw(painter, r1, mCoordXForm, ct, !mOverview))
-        emit drawError(ml);
+/* Hack to scale symbols as we zoom in and out
+      if(ml->type() == QgsMapLayer::VECTOR)
+      {
+        QgsVectorLayer* vl = static_cast<QgsVectorLayer*>(ml);
+        vl->draw(painter, r1, mCoordXForm, ct, !mOverview, 1., 30./mMupp);
+      }
+      else //raster layer
+      {*/
+        if (!ml->draw(painter, r1, mCoordXForm, ct, !mOverview))
+          emit drawError(ml);
+//      }
       
       if (split)
       {

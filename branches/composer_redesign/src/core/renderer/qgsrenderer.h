@@ -55,9 +55,9 @@ class CORE_EXPORT QgsRenderer
     /**A vector layer passes features to a renderer object to change the brush and pen of the qpainter
      @param p the painter storing brush and pen
      @param f a pointer to the feature to be rendered
-     @param pic pointer to an image (used for point symbols)
+     @param symRenderer pointer to a QgsSymbolRenderer
      @param scalefactor pointer to the scale factor for the marker image*/
-    virtual void renderFeature(QPainter* p, QgsFeature& f,QgsSymbolRenderer* symRenderer, double* scalefactor, bool selected, double widthScale = 1.)=0;
+    virtual void renderFeature(QPainter* p, QgsFeature& f,QgsSymbolRenderer*& symRenderer, double* scalefactor, bool selected, double widthScale = 1.)=0;
     /**Reads the renderer configuration from an XML file
      @param rnode the DOM node to read 
      @param vl the vector layer which will be associated with the renderer*/
