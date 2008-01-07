@@ -47,6 +47,7 @@
 %Include qgsspatialrefsys.sip
 %Include qgssymbol.sip
 %Include qgssymbologyutils.sip
+%Include qgssymbolrenderer.sip
 %Include qgsuniquevaluerenderer.sip
 %Include qgsvectordataprovider.sip
 %Include qgsvectorfilewriter.sip

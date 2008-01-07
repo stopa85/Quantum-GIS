@@ -90,7 +90,7 @@ bool QgsGraduatedSymbolRenderer::willRenderFeature(QgsFeature *f)
   return (symbolForFeature(f) != 0);
 }
 
-void QgsGraduatedSymbolRenderer::renderFeature(QPainter * p, QgsFeature & f, QgsSymbolRenderer* symRenderer, 
+void QgsGraduatedSymbolRenderer::renderFeature(QPainter * p, QgsFeature & f, QgsSymbolRenderer*& symRenderer, 
 	double* scalefactor, bool selected, double widthScale)
 {
   QgsSymbol* theSymbol = symbolForFeature(&f);

@@ -57,6 +57,9 @@ renderer/qgsuniquevaluerenderer.cpp
 symbology/qgsmarkercatalogue.cpp
 symbology/qgssymbol.cpp
 symbology/qgssymbologyutils.cpp
+symbology/qgssymbolrenderer.cpp
+symbology/qgsbasicsymbolrenderer.cpp
+symbology/qgssvgsymbolrenderer.cpp
 
 spatialindex/qgsspatialindex.cpp
 )

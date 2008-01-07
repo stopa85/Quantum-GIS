@@ -34,6 +34,8 @@ class QDomDocument;
 class CORE_EXPORT QgsSymbol{
 
  public:
+     typedef enum {PIXELS, PAPER_UNITS, MAP_UNITS} SymbolScaleType;
+  
     /**Constructor*/
     QgsSymbol(QGis::VectorType t, QString lvalue="", QString uvalue="", QString label="");
     /**Constructor*/
@@ -85,9 +87,15 @@ class CORE_EXPORT QgsSymbol{
     /**Get point symbol*/
     virtual QString pointSymbolName() const;
     /**Set size*/
-    virtual void setPointSize(int s);
+    virtual void setPointSize(int s); //TODO: Change to floating-point
     /**Get size*/
-    virtual int pointSize() const;
+    virtual int pointSize() const; //TODO: Change to floating-point
+    
+    /** Set scale type **/
+    virtual void setScaleType(SymbolScaleType type);
+    /** Get scale type **/
+    virtual SymbolScaleType scaleType() const;
+    
     //! Destructor
     virtual ~QgsSymbol();
 
@@ -124,11 +132,13 @@ class CORE_EXPORT QgsSymbol{
 
     QPen mPen;
     QBrush mBrush;
-	QString mTextureFilePath;
+    QString mTextureFilePath;
     /* Point symbol name */
     QString mPointSymbolName;
     /* Point size */
-    int mPointSize; 
+    int mPointSize; //Change to floating-point!
+    
+
 
     /* TODO Because for printing we always need a symbol without oversampling but with line width scale, 
      *      we keep also separate picture with line width scale */
@@ -150,6 +160,8 @@ class CORE_EXPORT QgsSymbol{
 
     /* Current line width scale used by mPointSymbolVectorImage */
     double mWidthScale;
+    
+    SymbolScaleType mScaleType;
     
     /* Point symbol cache but with line width scale mWidthScale */
     QImage mPointSymbolImage2;
@@ -222,6 +234,16 @@ inline void QgsSymbol::setLabel(QString label)
 inline QString QgsSymbol::label() const
 {
     return mLabel;
+}
+
+inline QgsSymbol::SymbolScaleType QgsSymbol::scaleType(void) const
+{
+  return mScaleType;
+}
+
+inline void QgsSymbol::setScaleType(SymbolScaleType type)
+{
+  mScaleType = type;
 }
 
 #endif // QGSSYMBOL_H

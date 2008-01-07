@@ -98,7 +98,7 @@ bool QgsUniqueValueRenderer::willRenderFeature(QgsFeature *f)
   return (symbolForFeature(f) != 0);
 }
     
-void QgsUniqueValueRenderer::renderFeature(QPainter* p, QgsFeature& f, QgsSymbolRenderer* symRenderer, 
+void QgsUniqueValueRenderer::renderFeature(QPainter* p, QgsFeature& f, QgsSymbolRenderer*& symRenderer, 
 	double* scalefactor, bool selected, double widthScale)
 {
   QgsSymbol* symbol = symbolForFeature(&f);

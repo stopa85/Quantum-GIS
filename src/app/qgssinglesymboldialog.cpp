@@ -74,6 +74,13 @@ QgsSingleSymbolDialog::QgsSingleSymbolDialog(QgsVectorLayer * layer): QDialog(),
       }
     }
 
+
+    //Add options
+    mScaleTypeSelect->addItem("Pixels");
+//    mScaleTypeSelect->addItem("Paper mm"); //not supported yet
+    mScaleTypeSelect->addItem("Map units");
+    //TODO: add xmm at 1:xxx option with appropriate calculations
+
     //
     //set outline / line style
     //
@@ -225,6 +232,25 @@ void QgsSingleSymbolDialog::apply( QgsSymbol *sy )
     //query the values of the widgets and set the symbology of the vector layer
     sy->setFillColor(btnFillColor->color());
     sy->setLineWidth(outlinewidthspinbox->value());
+    
+    /*This is probably not the right way to do this.  If we add a new entry
+     * to the drop-down box, it can mess up all of these "magic numbers".
+     * Using the displayed strings seems a no-go as well, becuase those need to
+     * be translated.
+     */
+    switch(mScaleTypeSelect->currentIndex())
+    {
+      case 0:
+        sy->setScaleType(QgsSymbol::PIXELS);
+        break;
+      case 1:
+        sy->setScaleType(QgsSymbol::MAP_UNITS);
+        break;
+      default:
+        sy->setScaleType(QgsSymbol::PIXELS);
+        break;      
+    }
+    
     sy->setColor(btnOutlineColor->color());
 
     //
@@ -357,6 +383,15 @@ void QgsSingleSymbolDialog::set ( const QgsSymbol *sy )
 	//set line width 1 as minimum to avoid confusion between line width 0 and no pen line style
 	// ... but, drawLine is not correct with width > 0 -> until solved set to 0
 	outlinewidthspinbox->setMinValue(0);
+  
+  if(sy->scaleType() == QgsSymbol::MAP_UNITS)
+  {
+    mScaleTypeSelect->setCurrentIndex(1);
+  }
+  else
+  {
+    mScaleTypeSelect->setCurrentIndex(0); //this is probably the default - do we need to bother?
+  }
 
     btnFillColor->setColor( sy->brush().color() );
 

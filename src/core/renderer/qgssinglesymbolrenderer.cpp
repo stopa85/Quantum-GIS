@@ -26,7 +26,6 @@
 #include "qgsvectorlayer.h"
 
 #include <QDomNode>
-#include <QImage>
 #include <QPainter>
 #include <QString>
 
@@ -84,39 +83,84 @@ void QgsSingleSymbolRenderer::addSymbol(QgsSymbol* sy)
     mSymbol=sy;
 }
 
-void QgsSingleSymbolRenderer::renderFeature(QPainter * p, QgsFeature & f, QgsSymbolRenderer* renderer, 
-           double* scalefactor, bool selected, double widthScale)
+void QgsSingleSymbolRenderer::renderFeature(QPainter * p, QgsFeature & f, QgsSymbolRenderer*& renderer, 
+           double* scalefactor, bool selected, double mupp)//was double widthScale
 {
+  /*
+  if(scalefactor)
+  {
+    //for constant pixel size
+    *scalefactor = (double)mSymbol->pointSize();
+    
+    //for constant map unit size
+    *scalefactor = (double)mSymbol->pointSize() / mupp;
+    
+    //for constant paper size - currently the same as a constant pixel size
+    *scalefactor = (double)mSymbol->pointSize();
+     
+    //for constant paper size per map unit - e.g, 1mm at 1:15000
+    //we can calculate the equivalent map unit size from this (1mm * 15000)
+    *scalefactor = (double)mSymbol->pointSize() / mupp;
+    
+  }*/
+  
+//  mSymbol->mScaleType = QgsSymbol::PIXELS;
+  
   // Point 
   if ( mVectorType == QGis::Point) {
-      renderer = mSymbol->symbolRenderer();
-      
-      if ( scalefactor ) *scalefactor = 1;
-  } 
+    QPen pen=mSymbol->pen();
+    pen.setWidthF(pen.width() / mSymbol->pointSize());
+    if(selected){
+      pen.setColor(mSelectionColor);
+    }
+    p->setPen(pen);
+    p->setBrush(mSymbol->brush());
 
-        // Line, polygon
-  if ( mVectorType != QGis::Point )
+    //other setting-up?
+    //if symbol is SVG:
+    //set an empty/clear brush
+    //if selected, set pen color to mSelectionColor
+    //otherwise, set pen to clear/none
+
+    renderer = mSymbol->symbolRenderer();
+    
+    if ( scalefactor )
+    {
+      if(mSymbol->scaleType() == QgsSymbol::PIXELS){
+        *scalefactor = (double)mSymbol->pointSize();
+      }
+      else{
+        *scalefactor = (double)mSymbol->pointSize()/mupp;        
+      }
+    }
+  } 
+  else // Vector layer is a line or polygon layer
   {
     if( !selected ) 
     {
       QPen pen=mSymbol->pen();
-      pen.setWidthF ( widthScale * pen.width() );
+      //why no line width scaling?
       p->setPen(pen);
       p->setBrush(mSymbol->brush());
     }
     else
     {
       QPen pen=mSymbol->pen();
-      pen.setWidthF ( widthScale * pen.width() );
+//      pen.setWidthF ( widthScale * pen.width() );
       if (mVectorType == QGis::Line){
         pen.setColor(mSelectionColor);
       }
-      QBrush brush=mSymbol->brush();
-      brush.setColor(mSelectionColor);
+      else //polygon layer
+      {
+        //Lines don't use the brush, so only set it if this is a polygon layer
+        QBrush brush=mSymbol->brush();
+        brush.setColor(mSelectionColor);
+        p->setBrush(brush);
+//        std::cout << "polygon layer - setting brush!" << std::endl;
+      }
       p->setPen(pen);
-      p->setBrush(brush);
-    }
-  }
+    }//END else(!selected)
+  }//END else(mVectorType == QGis::Point)
 }
 
 

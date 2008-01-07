@@ -72,7 +72,7 @@ void QgsContinuousColorRenderer::setMaximumSymbol(QgsSymbol* sy)
   mMaximumSymbol = sy;
 }
 
-void QgsContinuousColorRenderer::renderFeature(QPainter * p, QgsFeature & f, QgsSymbolRenderer* symRenderer, 
+void QgsContinuousColorRenderer::renderFeature(QPainter * p, QgsFeature & f, QgsSymbolRenderer*& symRenderer, 
 	double* scalefactor, bool selected, double widthScale)
 {
   if ((mMinimumSymbol && mMaximumSymbol))

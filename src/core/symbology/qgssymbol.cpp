@@ -24,13 +24,12 @@
 #include "qgsmarkercatalogue.h"
 
 #include "qgsbasicsymbolrenderer.h"
+#include "qgssvgsymbolrenderer.h"
 
 #include <QPainter>
 #include <QDomNode>
 #include <QDomDocument>
 #include <QImage>
-//#include <QString>
-//do we have to include qstring?
 
 QgsSymbol::QgsSymbol(QGis::VectorType t, QString lvalue, QString uvalue, QString label) : 
       mLowerValue(lvalue),
@@ -113,6 +112,7 @@ QgsSymbol::QgsSymbol(const QgsSymbol& s)
     mSelectionColor = s.mSelectionColor;
     mSelectionColor2 = s.mSelectionColor2;
   }
+  //deep-copy mPointRenderer
 }
 
 QgsSymbol::~QgsSymbol()
@@ -186,6 +186,26 @@ void QgsSymbol::setNamedPointSymbol(QString name)
 {
     mPointSymbolName = name;
     mCacheUpToDate = mCacheUpToDate2 = false;
+
+    //TODO: This would probably be slightly more efficient if we modified the existing
+    // symbol renderer rather than making a new one.
+    if(mPointRenderer){
+      delete mPointRenderer;
+    } 
+    
+    if(mPointSymbolName.left(5) == "hard:")
+    {
+      mPointRenderer = new QgsBasicSymbolRenderer(mPointSymbolName.mid(5));
+    }
+    else if(mPointSymbolName.left(4) == "svg:")
+    {
+      mPointRenderer = new QgsSvgSymbolRenderer(mPointSymbolName.mid(4));
+    }
+    else{ //don't know what this is, so just make a basic circle one
+      mPointRenderer = new QgsBasicSymbolRenderer("circle");
+    }
+    
+    
 }
 
 QString QgsSymbol::pointSymbolName() const
@@ -195,10 +215,10 @@ QString QgsSymbol::pointSymbolName() const
 
 void QgsSymbol::setPointSize(int s)
 {
-    if ( s < 3 )  
-	mPointSize = 3;
-    else 
-    	mPointSize = s;
+  if ( s < 3 )  
+    mPointSize = 3;
+  else 
+  	mPointSize = s;
 
     mCacheUpToDate = mCacheUpToDate2 = false;
 }
@@ -248,12 +268,13 @@ QImage QgsSymbol::getPointSymbolAsImage(  double widthScale,
   {
 	    return mPointSymbolImageSelected;
 	}
-        
+
  return mPointSymbolImage;
 }
 
 QgsSymbolRenderer* QgsSymbol::symbolRenderer()
 {
+  mPointRenderer->setSize(mPointSize);
   return(mPointRenderer);
 }
 

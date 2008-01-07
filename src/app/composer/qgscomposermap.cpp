@@ -174,14 +174,6 @@ void QgsComposerMap::cache ( void )
       
     mCachePixmap.resize( w, h );
 
-//somthing about this transform isn't really what we want...
-/*Ideally, the cache pixmap wouldn't behave the same as the map canvas.
-* zooming in should make the lines become thicker, and symbols larger, rather than just
-* redrawing them to be n pixels wide.
-* We also want to make sure that changing the composition's resolution has the desired effect 
-* on both the cache, screen render, and print.
-*/
-
     #ifdef QGISDEBUG
       std::cout << "transform = " << transform.showParameters().toLocal8Bit().data() << std::endl;
     #endif
@@ -190,7 +182,16 @@ void QgsComposerMap::cache ( void )
 
     QPainter p(&mCachePixmap);
     
-    QSize pixmapSize(w, h);
+    //Pretend that we are painting on a pixmap the same width and height as the map is
+    //in QGraphicsScene coordinates.  This will make sure that lines and symbols are rendered
+    //with a consistent width.
+    //Should we use a QSizeF instead?
+    QSize pixmapSize((int)QGraphicsRectItem::rect().width(), (int)QGraphicsRectItem::rect().height());
+
+    //Because we're actually painting on a different size pixmap, we have to scale the painter
+    //so the rendered map will fill the whole image.
+    float pixmapScale = (float)w / QGraphicsRectItem::rect().width();
+    p.scale(pixmapScale, pixmapScale);
 
     draw( &p, mCacheExtent, pixmapSize);
     p.end();

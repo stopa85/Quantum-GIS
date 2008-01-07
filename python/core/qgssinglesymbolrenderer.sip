@@ -14,7 +14,7 @@ class QgsSingleSymbolRenderer : QgsRenderer
     /*Returns a pointer to mSymbol*/
     const QgsSymbol* symbol() const;
     /**Renders an OGRFeature*/
-    void renderFeature(QPainter* p, QgsFeature& f, QImage* img, double* scalefactor, bool selected, double widthScale = 1);
+    void renderFeature(QPainter* p, QgsFeature& f, QgsSymbolRenderer*& symRenderer, double* scalefactor, bool selected, double widthScale = 1);
     /**Reads the renderer configuration from an XML file
      @param rnode the DOM node to read 
      @param vl the vector layer which will be associated with the renderer*/
