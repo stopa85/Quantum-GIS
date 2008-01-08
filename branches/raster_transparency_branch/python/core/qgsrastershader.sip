@@ -8,7 +8,7 @@ class QgsRasterShader
 
 public:
   QgsRasterShader(double theMinimumValue=0.0, double theMaximumValue=255.0);
-    
+  ~QgsRasterShader();
   /*
    *
    * Non-Static Inline methods

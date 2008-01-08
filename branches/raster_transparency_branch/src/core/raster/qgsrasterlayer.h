@@ -135,6 +135,7 @@
 #include "qgscontrastenhancement.h"
 #include "qgsrastertransparency.h"
 #include "qgsrastershader.h"
+#include "qgsrastershaderfunction.h"
 
 /*
  * 
@@ -304,7 +305,7 @@ public:
     const double getNoDataValue(bool* isValid=0) { if(isValid) { *isValid = mValidNoDataValue;} return mNoDataValue;}
 
     /** \brief Mutator that allows the  NO_DATA entry for this raster to be overridden. */
-    void setNoDataValue(double theNoData) { mNoDataValue=theNoData; mValidNoDataValue=true; return;}
+    void setNoDataValue(double theNoData);
 
     /** \brief Simple reset function that set the noDataValue back to the value stored in the first raster band */
     void resetNoDataValue()
@@ -316,11 +317,11 @@ public:
         double myValue = mGdalDataset->GetRasterBand(1)->GetNoDataValue(&myRequestValid);
         if(0 != myRequestValid)
         {
-          mNoDataValue = myValue;
-          mValidNoDataValue = true;
+          setNoDataValue(myValue);
         }
         else
         {
+          setNoDataValue(myValue);
           mValidNoDataValue = false;
         }
       }
@@ -532,7 +533,7 @@ public:
     //
     // Accessor and mutator for the contrast enhancement algorithm
     //
-    QgsContrastEnhancement::CONTRAST_ENHANCEMENT_ALGORITHM mContrastEnhancementAlgorithm;
+
     /** \brief Accessor for contrast enhancement algorithm. */
     QgsContrastEnhancement::CONTRAST_ENHANCEMENT_ALGORITHM getContrastEnhancementAlgorithm()
     {
@@ -541,14 +542,30 @@ public:
     /** \brief Mutator for contrast enhancement algorithm. */
     void setContrastEnhancementAlgorithm(QgsContrastEnhancement::CONTRAST_ENHANCEMENT_ALGORITHM theAlgorithm, bool theGenerateLookupTableFlag=true)
     {
+      QList<QgsContrastEnhancement>::iterator myIterator = mContrastEnhancementList.begin();
+      while(myIterator !=  mContrastEnhancementList.end())
+      {
+        (*myIterator).setContrastEnhancementAlgorithm(theAlgorithm, theGenerateLookupTableFlag);
+        ++myIterator;
+      }
+      mContrastEnhancementAlgorithm = theAlgorithm;
+    }
+    
+    //
+    // Mutator for the contrast enhancement function
+    //
+    /** \brief Mutator for contrast enhancement function. */
+    void setContrastEnhancementFunction(QgsContrastEnhancementFunction* theFunction)
+    {
+      if(theFunction)
+      {
         QList<QgsContrastEnhancement>::iterator myIterator = mContrastEnhancementList.begin();
         while(myIterator !=  mContrastEnhancementList.end())
         {
-          (*myIterator).setContrastEnhancementAlgorithm(theAlgorithm, theGenerateLookupTableFlag);
+          (*myIterator).setContrastEnhancementFunction(theFunction);
           ++myIterator;
         }
-
-        mContrastEnhancementAlgorithm = theAlgorithm;
+      }
     }
     
     /** \brief This enumerator describes the types of shading that can be used.  */
@@ -563,17 +580,33 @@ public:
     // Accessor and mutator for the color shader algorithm
     //
     /** \brief Accessor for colour shader algorithm. */
-    COLOR_SHADING_ALGORITHM getColorShadingAlgorithm()
+    QgsRasterLayer::COLOR_SHADING_ALGORITHM getColorShadingAlgorithm()
     {
         return mColorShadingAlgorithm;
     }
     /** \brief Mutator for color shader algorithm. */
-    void setColorShadingAlgorithm(COLOR_SHADING_ALGORITHM theShaderAlgorithm);
+    void setColorShadingAlgorithm(QgsRasterLayer::COLOR_SHADING_ALGORITHM theShaderAlgorithm);
     
     /** \brief Accessor for raster shader */
     QgsRasterShader* getRasterShader()
     {
       return mRasterShader;
+    }
+    
+    /** \brief Set the raster shader function to a user defined function */
+    void setRasterShaderFunction(QgsRasterShaderFunction* theFunction)
+    {
+      if(theFunction)
+      {
+        mRasterShader->setRasterShaderFunction(theFunction);
+        mColorShadingAlgorithm = QgsRasterLayer::USER_DEFINED;
+      }
+      else
+      {
+        //If NULL as passed in, set a default shader function to prevent segfaults
+        mRasterShader->setRasterShaderFunction(new QgsRasterShaderFunction());
+        mColorShadingAlgorithm = QgsRasterLayer::USER_DEFINED;
+      }
     }
     
         
@@ -954,6 +987,9 @@ private:
     RasterStatsList mRasterStatsList;
     /** \brief List containging the contrast enhancements for each band */
     ContrastEnhancementList mContrastEnhancementList;
+    /** \brief The contrast enhancement algorithm being used */
+    QgsContrastEnhancement::CONTRAST_ENHANCEMENT_ALGORITHM mContrastEnhancementAlgorithm;
+    /** \brief The raster shading algorithm being used */
     COLOR_SHADING_ALGORITHM mColorShadingAlgorithm;
     /** \brief The raster shader for the layer */
     QgsRasterShader* mRasterShader;
