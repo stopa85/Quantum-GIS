@@ -37,6 +37,7 @@
 #include <QPainter>
 #include <QPainterPath>
 #include <QPolygonF>
+#include <QSettings> //for update threshold
 #include <QString>
 
 #include "qgsvectorlayer.h"
@@ -137,7 +138,6 @@ QgsVectorLayer::QgsVectorLayer(QString vectorLayerPath,
     // TODO: load this setting somewhere else [MD]
     //QSettings settings;
     //mUpdateThreshold = settings.readNumEntry("Map/updateThreshold", 1000);
-
   }
 } // QgsVectorLayer ctor
 
@@ -715,6 +715,9 @@ bool QgsVectorLayer::draw(QPainter * p,
                           QgsCoordinateTransform* ct,
                           bool drawingToEditingCanvas)
 {
+  //set update threshold before each draw to make sure the current setting is picked up
+  QSettings settings;
+  mUpdateThreshold = settings.readNumEntry("Map/updateThreshold", 0);
   draw ( p, viewExtent, theMapToPixelTransform, ct, drawingToEditingCanvas, 1., 1.);
 
   return TRUE; // Assume success always
@@ -771,11 +774,16 @@ void QgsVectorLayer::draw(QPainter * p,
         //if (mDrawingCancelled) return;
         // If update threshold is greater than 0, check to see if
         // the threshold has been exceeded
+
         if(mUpdateThreshold > 0)
         {
           // signal progress in drawing
           if(0 == featureCount % mUpdateThreshold)
-            emit drawingProgress(featureCount, totalFeatures);
+	    {
+	      emit screenUpdateRequested();
+	      emit drawingProgress(featureCount, totalFeatures);
+	      qApp->processEvents();
+	    }
         }
 
         if (mEditable)
