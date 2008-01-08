@@ -70,7 +70,10 @@ rasterLayer( dynamic_cast<QgsRasterLayer*>(lyr) )
   }
 
   setupUi(this);
+  connect(buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
+  connect(this, SIGNAL(accepted()), this, SLOT(apply()));
   connect(buttonBox->button(QDialogButtonBox::Apply), SIGNAL(clicked()), this, SLOT(apply()));
+
   connect(sliderTransparency, SIGNAL(valueChanged(int)), this, SLOT(sliderTransparency_valueChanged(int)));
 
   //clear either stdDev or min max entries depending which is changed
@@ -533,11 +536,19 @@ void QgsRasterLayerProperties::sync()
     {
       cboxColorMap->setCurrentText(tr("Pseudocolor"));
     }
+    else if(rasterLayer->getColorShadingAlgorithm()==QgsRasterLayer::USER_DEFINED)
+    {
+      cboxColorMap->setCurrentText(tr("User Defined"));
+    }
     else
     {
       cboxColorMap->setCurrentText(tr("Freak Out"));
     }
 
+  }
+  else if(rasterLayer->getColorShadingAlgorithm()==QgsRasterLayer::USER_DEFINED)
+  {
+    cboxColorMap->setCurrentText(tr("User Defined"));
   }
   else
   {
@@ -644,6 +655,10 @@ if(QgsRasterLayer::PALETTED_COLOR != rasterLayer->getDrawingStyle() &&
   else if(QgsContrastEnhancement::CLIP_TO_MINMAX == rasterLayer->getContrastEnhancementAlgorithm())
   {
     cboxContrastEnhancementAlgorithm->setCurrentText(tr("Clip To MinMax"));
+  }
+  else if(QgsContrastEnhancement::USER_DEFINED == rasterLayer->getContrastEnhancementAlgorithm())
+  {
+    cboxContrastEnhancementAlgorithm->setCurrentText(tr("User Defined"));
   }
   else
   {
@@ -993,6 +1008,7 @@ void QgsRasterLayerProperties::apply()
   rasterLayer->setTransparentLayerName(cboxTransparencyLayer->currentText());
 
   //set the appropriate color shading type
+  //If USER_DEFINED do nothing, user defined can only be set programatically
   if (cboxColorMap->currentText() == tr("Pseudocolor"))
   {
     rasterLayer->setColorShadingAlgorithm(QgsRasterLayer::PSEUDO_COLOR);  
@@ -1021,6 +1037,10 @@ void QgsRasterLayerProperties::apply()
   else if(cboxContrastEnhancementAlgorithm->currentText() == tr("Clip To MinMax"))
   {
     rasterLayer->setContrastEnhancementAlgorithm(QgsContrastEnhancement::CLIP_TO_MINMAX, false);
+  }
+  else if(QgsContrastEnhancement::USER_DEFINED == rasterLayer->getContrastEnhancementAlgorithm())
+  {
+    //do nothing
   }
   else
   {
@@ -1414,6 +1434,19 @@ void QgsRasterLayerProperties::apply()
         }
       }
     }
+  }
+
+  //GUI Cleanup
+  //Once the user has applied the changes, user defined function will not longer be a valid option so it should be
+  //removed from the list
+  if(-1 != cboxColorMap->findText(tr("User Defined")) && tr("User Defined") != cboxColorMap->currentText())
+  {
+    cboxColorMap->removeItem(cboxColorMap->findText(tr("User Defined")));
+  }
+  
+  if(-1 != cboxContrastEnhancementAlgorithm->findText(tr("User Defined")) && tr("User Defined") != cboxContrastEnhancementAlgorithm->currentText())
+  {
+    cboxContrastEnhancementAlgorithm->removeItem(cboxContrastEnhancementAlgorithm->findText(tr("User Defined")));
   }
 
 }//apply

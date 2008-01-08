@@ -265,13 +265,17 @@ public:
     //
     // Accessor and mutator for the contrast enhancement algorithm
     //
-    QgsContrastEnhancement::CONTRAST_ENHANCEMENT_ALGORITHM mContrastEnhancementAlgorithm;
-    
     /** \brief Accessor for contrast enhancement algorithm. */
     QgsContrastEnhancement::CONTRAST_ENHANCEMENT_ALGORITHM getContrastEnhancementAlgorithm();
     
     /** \brief Mutator for contrast enhancement algorithm. */
     void setContrastEnhancementAlgorithm(QgsContrastEnhancement::CONTRAST_ENHANCEMENT_ALGORITHM theAlgorithm);
+    
+    //
+    // Mutator for the contrast enhancement function
+    //
+    /** \brief Mutator for contrast enhancement function. */
+    void setContrastEnhancementFunction(QgsContrastEnhancementFunction* theFunction);
     
     /** \brief This enumerator describes the types of shading that can be used.  */
     enum COLOR_SHADING_ALGORITHM
@@ -292,6 +296,9 @@ public:
     
     /** \brief Accessor for raster shader */
     QgsRasterShader* getRasterShader();
+    
+    /** \brief Set the raster shader function to a user defined function */
+    void setRasterShaderFunction(QgsRasterShaderFunction* theFunction);
     
     /** \brief This enumerator describes the different kinds of drawing we can do.  */
     enum DRAWING_STYLE

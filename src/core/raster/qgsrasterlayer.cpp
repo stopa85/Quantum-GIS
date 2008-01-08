@@ -541,7 +541,7 @@ bool QgsRasterLayer::readFile( QString const & fileName )
   mValidNoDataValue = false;
   int isValid = false;
   double myNoDataValue = mGdalDataset->GetRasterBand(1)->GetNoDataValue(&isValid);
-  if(0 != isValid)
+  if(isValid)
   {
     mNoDataValue = myNoDataValue;
     mValidNoDataValue = true;
@@ -636,9 +636,6 @@ bool QgsRasterLayer::readFile( QString const & fileName )
     drawingStyle = SINGLE_BAND_GRAY;  //sensible default
     mGrayBandName = getRasterBandName(1); // usually gdal will return gray or undefined  
   }
-
-
-
 
   //mark the layer as valid
   mValid=TRUE;
@@ -2296,6 +2293,7 @@ That this is a cpu intensive and slow task!
 
 */
 //TODO: This method needs some cleaning up PJE 2007-12-30
+//TODO: Values that are only used in debug should be totally wrapped in debug ifdefs 
 const QgsRasterBandStats QgsRasterLayer::getRasterBandStats(int theBandNo)
 {
   // check if we have received a valid band number
@@ -2435,6 +2433,9 @@ const QgsRasterBandStats QgsRasterLayer::getRasterBandStats(int theBandNo)
   QgsLogger::debug("GDALnodata: ", GDALnodata, __FILE__, __FUNCTION__, __LINE__);
 #endif
 
+//PJE 2008-01-07 - GDALrange is never used so it seems a waste to make the function calls. They
+//are only for degbug the whole block should be wrapped in a ifdef
+
   double GDALrange[2];          // calculated min/max, as opposed to the
   // dataset provided
 
@@ -2451,6 +2452,7 @@ const QgsRasterBandStats QgsRasterLayer::getRasterBandStats(int theBandNo)
   QgsLogger::debug("exactly computed GDALminium:", GDALrange[0]);
   QgsLogger::debug("exactly computed GDALmaximum:", GDALrange[1]);
 #endif
+
 
   for( int iYBlock = 0; iYBlock < myNYBlocks; iYBlock++ )
   {
@@ -2506,12 +2508,9 @@ const QgsRasterBandStats QgsRasterLayer::getRasterBandStats(int theBandNo)
             {
               myRasterBandStats.maxVal = my;
             }
-            //only increment the running total if it is not a nodata value
-            if (mValidNoDataValue && my != mNoDataValue && my == my)
-            {
-              myRasterBandStats.sum += my;
-              ++myRasterBandStats.elementCount;
-            }
+            
+            myRasterBandStats.sum += my;
+            ++myRasterBandStats.elementCount;
           }               //end of false part for first iteration check
         }
       }
@@ -4970,9 +4969,28 @@ void QgsRasterLayer::setColorShadingAlgorithm(COLOR_SHADING_ALGORITHM theShading
       case COLOR_RAMP:
         mRasterShader->setRasterShaderFunction(new QgsColorRampShader());
         break;
+      case USER_DEFINED:
+        //do nothing
+        break;
       default:
         mRasterShader->setRasterShaderFunction(new QgsRasterShaderFunction());
         break;
+    }
+  }
+}
+
+void QgsRasterLayer::setNoDataValue(double theNoDataValue) 
+{ 
+  if(theNoDataValue != mNoDataValue)
+  {
+    mNoDataValue=theNoDataValue; 
+    mValidNoDataValue=true; 
+    //Basically set the raster stats as invalid 
+    QList<QgsRasterBandStats>::iterator myIterator = mRasterStatsList.begin();
+    while(myIterator !=  mRasterStatsList.end())
+    {
+      (*myIterator).statsGatheredFlag = false;
+      ++myIterator;
     }
   }
 }

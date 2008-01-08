@@ -211,6 +211,9 @@ void QgsContrastEnhancement::setContrastEnhancementAlgorithm(CONTRAST_ENHANCEMEN
       case CLIP_TO_MINMAX :
         mContrastEnhancementFunction = new QgsClipToMinMaxEnhancement(mRasterDataType, mMinimumValue, mMaximumValue);
         break;
+      case USER_DEFINED :
+        //Do nothing
+        break;
       default:
         mContrastEnhancementFunction = new QgsContrastEnhancementFunction(mRasterDataType, mMinimumValue, mMaximumValue);
         break;
