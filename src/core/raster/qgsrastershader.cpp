@@ -30,6 +30,10 @@ QgsRasterShader::QgsRasterShader(double theMinimumValue, double theMaximumValue)
   mRasterShaderFunction = new QgsRasterShaderFunction(mMinimumValue, mMaximumValue);
 }
 
+QgsRasterShader::~QgsRasterShader()
+{
+}
+
 /** 
   Generates and new RGB value based on one input value
   
