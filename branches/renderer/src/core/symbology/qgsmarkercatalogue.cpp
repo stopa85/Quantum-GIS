@@ -34,7 +34,7 @@ email                : blazek@itc.it
 #include "qgsmarkercatalogue.h"
 #include "qgslogger.h"
 
-#define IMAGEDEBUG
+//#define IMAGEDEBUG
 
 QgsMarkerCatalogue *QgsMarkerCatalogue::mMarkerCatalogue = 0;
 
