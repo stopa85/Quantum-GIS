@@ -146,9 +146,14 @@
 #include "qgsmaptooladdfeature.h"
 #include "qgsmaptooladdisland.h"
 #include "qgsmaptooladdring.h"
+#include "qgsmaptooladdvertex.h"
+#include "qgsmaptooldeletevertex.h"
 #include "qgsmaptoolidentify.h"
+#include "qgsmaptoolmovefeature.h"
+#include "qgsmaptoolmovevertex.h"
 #include "qgsmaptoolpan.h"
 #include "qgsmaptoolselect.h"
+#include "qgsmaptoolsplitfeatures.h"
 #include "qgsmaptoolvertexedit.h"
 #include "qgsmaptoolzoom.h"
 #include "qgsmeasuretool.h"
@@ -409,10 +414,14 @@ QgisApp::~QgisApp()
   delete mMapTools.mCapturePoint;
   delete mMapTools.mCaptureLine;
   delete mMapTools.mCapturePolygon;
+  delete mMapTools.mMoveFeature;
+  delete mMapTools.mSplitFeatures;
   delete mMapTools.mSelect;
   delete mMapTools.mVertexAdd;
   delete mMapTools.mVertexMove;
   delete mMapTools.mVertexDelete;
+  delete mMapTools.mAddRing;
+  delete mMapTools.mAddIsland;
 
 #ifdef HAVE_PYTHON
   delete mPythonConsole;
@@ -731,6 +740,16 @@ void QgisApp::createActions()
   connect(mActionDeleteSelected, SIGNAL(triggered()), this, SLOT(deleteSelected()));
   mActionDeleteSelected->setEnabled(false);
   //
+  mActionMoveFeature = new QAction(QIcon(myIconPath+"/mActionMoveFeature.png"), tr("Move Feature"), this);
+  mActionMoveFeature->setStatusTip(tr("Move Feature"));
+  connect(mActionMoveFeature, SIGNAL(triggered()), this, SLOT(moveFeature()));
+  mActionMoveFeature->setEnabled(true);
+  //
+  mActionSplitFeatures = new QAction(QIcon(myIconPath+"/mActionSplitFeatures.png"), tr("Split Features"), this);
+  mActionSplitFeatures->setStatusTip(tr("Split Features"));
+  connect(mActionSplitFeatures, SIGNAL(triggered()), this, SLOT(splitFeatures()));
+  mActionSplitFeatures->setEnabled(true);
+  //
   mActionAddVertex = new QAction(QIcon(myIconPath+"/mActionAddVertex.png"), tr("Add Vertex"), this);
   mActionAddVertex->setStatusTip(tr("Add Vertex"));
   connect(mActionAddVertex, SIGNAL(triggered()), this, SLOT(addVertex()));
@@ -812,6 +831,10 @@ void QgisApp::createActionGroups()
   mMapToolGroup->addAction(mActionCapturePoint);
   mActionCapturePolygon->setCheckable(true);
   mMapToolGroup->addAction(mActionCapturePolygon);
+  mActionMoveFeature->setCheckable(true);
+  mMapToolGroup->addAction(mActionMoveFeature);
+  mActionSplitFeatures->setCheckable(true);
+  mMapToolGroup->addAction(mActionSplitFeatures);
   mMapToolGroup->addAction(mActionDeleteSelected);
   mActionAddVertex->setCheckable(true);
   mMapToolGroup->addAction(mActionAddVertex);
@@ -971,6 +994,8 @@ void QgisApp::createToolBars()
   mDigitizeToolBar->addAction(mActionCapturePoint);
   mDigitizeToolBar->addAction(mActionCaptureLine);
   mDigitizeToolBar->addAction(mActionCapturePolygon);
+  mDigitizeToolBar->addAction(mActionMoveFeature);
+  mDigitizeToolBar->addAction(mActionSplitFeatures);
   mDigitizeToolBar->addAction(mActionDeleteSelected);
   mDigitizeToolBar->addAction(mActionAddVertex);
   mDigitizeToolBar->addAction(mActionDeleteVertex);
@@ -1240,13 +1265,17 @@ void QgisApp::createCanvas()
   mMapTools.mCaptureLine->setAction(mActionCaptureLine);
   mMapTools.mCapturePolygon = new QgsMapToolAddFeature(mMapCanvas, QgsMapToolCapture::CapturePolygon);
   mMapTools.mCapturePolygon->setAction(mActionCapturePolygon);
+  mMapTools.mMoveFeature = new QgsMapToolMoveFeature(mMapCanvas);
+  mMapTools.mMoveFeature->setAction(mActionMoveFeature);
+  mMapTools.mSplitFeatures = new QgsMapToolSplitFeatures(mMapCanvas);
+  mMapTools.mSplitFeatures->setAction(mActionSplitFeatures);
   mMapTools.mSelect = new QgsMapToolSelect(mMapCanvas);
   mMapTools.mSelect->setAction(mActionSelect);
-  mMapTools.mVertexAdd = new QgsMapToolVertexEdit(mMapCanvas, QgsMapToolVertexEdit::AddVertex);
+  mMapTools.mVertexAdd = new QgsMapToolAddVertex(mMapCanvas);
   mMapTools.mVertexAdd->setAction(mActionAddVertex);
-  mMapTools.mVertexMove = new QgsMapToolVertexEdit(mMapCanvas, QgsMapToolVertexEdit::MoveVertex);
+  mMapTools.mVertexMove = new QgsMapToolMoveVertex(mMapCanvas);
   mMapTools.mVertexMove->setAction(mActionMoveVertex);
-  mMapTools.mVertexDelete = new QgsMapToolVertexEdit(mMapCanvas, QgsMapToolVertexEdit::DeleteVertex);
+  mMapTools.mVertexDelete = new QgsMapToolDeleteVertex(mMapCanvas);
   mMapTools.mVertexDelete->setAction(mActionDeleteVertex);
   mMapTools.mAddRing = new QgsMapToolAddRing(mMapCanvas);
   mMapTools.mAddRing->setAction(mActionAddRing);
@@ -3401,8 +3430,23 @@ void QgisApp::deleteSelected()
   QgsProject::instance()->dirty(true);
 }
 
+void QgisApp::moveFeature()
+{
+  mMapCanvas->setMapTool(mMapTools.mMoveFeature);
+}
+
+void QgisApp::splitFeatures()
+{
+  mMapCanvas->setMapTool(mMapTools.mSplitFeatures);
+}
+
 void QgisApp::capturePoint()
 {
+  if(mMapCanvas && mMapCanvas->isDrawing())
+    {
+      return;
+    }
+  
   // set current map tool to select
   mMapCanvas->setMapTool(mMapTools.mCapturePoint);
   
@@ -3412,11 +3456,20 @@ void QgisApp::capturePoint()
 
 void QgisApp::captureLine()
 {
+  if(mMapCanvas && mMapCanvas->isDrawing())
+    {
+      return;
+    }
+  
   mMapCanvas->setMapTool(mMapTools.mCaptureLine);
 }
 
 void QgisApp::capturePolygon()
 {
+  if(mMapCanvas && mMapCanvas->isDrawing())
+    {
+      return;
+    }
   mMapCanvas->setMapTool(mMapTools.mCapturePolygon);
 }
 
@@ -3428,34 +3481,59 @@ void QgisApp::select()
 
 void QgisApp::addVertex()
 {
+  if(mMapCanvas && mMapCanvas->isDrawing())
+    {
+      return;
+    }
   mMapCanvas->setMapTool(mMapTools.mVertexAdd);
   
 }
 
 void QgisApp::moveVertex()
 {
+  if(mMapCanvas && mMapCanvas->isDrawing())
+    {
+      return;
+    }
   mMapCanvas->setMapTool(mMapTools.mVertexMove);
 }
 
 void QgisApp::addRing()
 {
+ if(mMapCanvas && mMapCanvas->isDrawing())
+    {
+      return;
+    } 
   mMapCanvas->setMapTool(mMapTools.mAddRing);
 }
 
 void QgisApp::addIsland()
 {
+  if(mMapCanvas && mMapCanvas->isDrawing())
+    {
+      return;
+    }
   mMapCanvas->setMapTool(mMapTools.mAddIsland);
 }
 
 
 void QgisApp::deleteVertex()
 {
+  if(mMapCanvas && mMapCanvas->isDrawing())
+    {
+      return;
+    }
   mMapCanvas->setMapTool(mMapTools.mVertexDelete);
 }
 
 
 void QgisApp::editCut(QgsMapLayer * layerContainingSelection)
 {
+  if(mMapCanvas && mMapCanvas->isDrawing())
+    {
+      return;
+    }
+
   QgsMapLayer * selectionLayer = (layerContainingSelection != 0) ?
                                  (layerContainingSelection) :
                                  (activeLayer());
@@ -3477,6 +3555,11 @@ void QgisApp::editCut(QgsMapLayer * layerContainingSelection)
 
 void QgisApp::editCopy(QgsMapLayer * layerContainingSelection)
 {
+  if(mMapCanvas && mMapCanvas->isDrawing())
+    {
+      return;
+    }
+
   QgsMapLayer * selectionLayer = (layerContainingSelection != 0) ?
                                  (layerContainingSelection) :
                                  (activeLayer());
@@ -3497,6 +3580,11 @@ void QgisApp::editCopy(QgsMapLayer * layerContainingSelection)
 
 void QgisApp::editPaste(QgsMapLayer * destinationLayer)
 {
+  if(mMapCanvas && mMapCanvas->isDrawing())
+    {
+      return;
+    }
+
   QgsMapLayer * pasteLayer = (destinationLayer != 0) ?
                              (destinationLayer) :
                              (activeLayer());
@@ -3534,6 +3622,12 @@ void QgisApp::refreshMapCanvas()
 
 void QgisApp::toggleEditing()
 {
+  if(mMapCanvas && mMapCanvas->isDrawing())
+    {
+      mActionToggleEditing->setChecked(!mActionToggleEditing->isChecked());
+      return;
+    }
+
   QgsLegendLayerFile* currentLayerFile = mMapLegend->currentLayerFile();
   if(currentLayerFile)
     {
@@ -3667,6 +3761,7 @@ void QgisApp::zoomToLayerExtent()
 void QgisApp::showPluginManager()
 {
   QgsPluginManager *pm = new QgsPluginManager(this);
+  pm->resizeColumnsToContents(); 
   if (pm->exec())
   {
     // load selected plugins

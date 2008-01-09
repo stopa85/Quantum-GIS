@@ -19,6 +19,7 @@
 #include "qgsattributedialog.h"
 #include "qgscsexception.h"
 #include "qgsfield.h"
+#include "qgsgeometry.h"
 #include "qgsmapcanvas.h"
 #include "qgsproject.h"
 #include "qgsrubberband.h"
@@ -79,9 +80,6 @@ void QgsMapToolAddFeature::canvasReleaseEvent(QMouseEvent * e)
       return;
     }
   
-  
-  double tolerance  = QgsProject::instance()->readDoubleEntry("Digitizing","/Tolerance",0);
-  
   // POINT CAPTURING
   if (mTool == CapturePoint)
     {
@@ -92,7 +90,27 @@ void QgsMapToolAddFeature::canvasReleaseEvent(QMouseEvent * e)
 				   QObject::tr("Cannot apply the 'capture point' tool on this vector layer"));
 	  return;
 	}
-      QgsPoint idPoint = toMapCoords(e->pos());
+
+      
+      QgsPoint idPoint; //point in map coordinates
+      QList<QgsSnappingResult> snapResults;
+      QgsPoint savePoint; //point in layer coordinates
+      
+	if(mSnapper.snapToBackgroundLayers(e->pos(), snapResults) != 0)
+	{
+	  QgsPoint savePoint = snapPointFromResults(snapResults, e->pos());
+	  try
+	    {
+	      savePoint = toLayerCoords(vlayer, idPoint);
+	    }
+	  catch(QgsCsException &cse)
+	    {
+	      UNUSED(cse);
+	      QMessageBox::information(0, QObject::tr("Coordinate transform error"), \
+				       QObject::tr("Cannot transform the point to the layers coordinate system"));
+	      return;
+	    }
+	}
       
       // emit signal - QgisApp can catch it and save point position to clipboard
       // FIXME: is this still actual or something old that's not used anymore?
@@ -104,21 +122,6 @@ void QgsMapToolAddFeature::canvasReleaseEvent(QMouseEvent * e)
       if(provider->capabilities() & QgsVectorDataProvider::AddFeatures)
 	{
 	  QgsFeature* f = new QgsFeature(0,"WKBPoint");
-	  // project to layer's SRS
-	  QgsPoint savePoint;
-	  try
-	    {
-	      savePoint = toLayerCoords(vlayer, idPoint);
-	    }
-	  catch(QgsCsException &cse)
-	    {
-	      UNUSED(cse);
-	      QMessageBox::information(0, QObject::tr("Coordinate transform error"), \
-				   QObject::tr("Cannot transform the point to the layers coordinate system"));
-	      return;
-	    }
-	  // snap point to points within the vector layer snapping tolerance
-	  vlayer->snapPoint(savePoint, tolerance);
 	  
 	  int size = 0;
 	  char end=QgsApplication::endian();
@@ -223,9 +226,16 @@ void QgsMapToolAddFeature::canvasReleaseEvent(QMouseEvent * e)
 	  
 	  delete mRubberBand;
 	  mRubberBand = NULL;
+
+	  //lines: bail out if there are not at least two vertices
+	  if(mTool == CaptureLine && mCaptureList.size() < 2)
+	    {
+	      mCaptureList.clear();
+	      return;
+	    }
 	  
-	  //bail out if there are not at least two vertices
-	  if(mCaptureList.size() < 2)
+	  //polygons: bail out if there are not at least two vertices
+	  if(mTool == CapturePolygon && mCaptureList.size() < 3)
 	    {
 	      mCaptureList.clear();
 	      return;
@@ -303,6 +313,7 @@ void QgsMapToolAddFeature::canvasReleaseEvent(QMouseEvent * e)
 		  QMessageBox::critical(0, QObject::tr("Error"), QObject::tr("Cannot add feature. Unknown WKB type"));
 		  return; //unknown wkbtype
 		}
+	      f->setGeometryAndOwnership(&wkb[0],size);
 	    }
 	  else // polygon
 	    {
@@ -395,8 +406,18 @@ void QgsMapToolAddFeature::canvasReleaseEvent(QMouseEvent * e)
 		  QMessageBox::critical(0, QObject::tr("Error"), QObject::tr("Cannot add feature. Unknown WKB type"));
 		  return; //unknown wkbtype
 		}
+	      f->setGeometryAndOwnership(&wkb[0],size);
+	      //is automatic polygon intersection removal activated?
+	      int avoidPolygonIntersections = QgsProject::instance()->readNumEntry("Digitizing", "/AvoidPolygonIntersections", 0);
+
+	      if(avoidPolygonIntersections != 0)
+		{
+		  if(vlayer->removePolygonIntersections(f->geometry()) != 0)
+		    {
+		      QMessageBox::critical(0, QObject::tr("Error"), QObject::tr("Could not remove polygon intersection"));
+		    }
+		}
 	    }
-	  f->setGeometryAndOwnership(&wkb[0],size);
 	  
 	  // add the fields to the QgsFeature
 	  const QgsFieldMap fields = provider->fields();
@@ -407,7 +428,15 @@ void QgsMapToolAddFeature::canvasReleaseEvent(QMouseEvent * e)
 	  
 	  if (QgsAttributeDialog::queryAttributes(fields, *f))
 	    {
-	      vlayer->addFeature(*f);
+	      if(vlayer->addFeature(*f))
+		{
+		  //add points to other features to keep topology up-to-date
+		  int topologicalEditing = QgsProject::instance()->readNumEntry("Digitizing", "/TopologicalEditing", 0);
+		  if(topologicalEditing)
+		    {
+		      addTopologicalPoints(mCaptureList);
+		    }
+		}
 	    }
 	  delete f;
 	  

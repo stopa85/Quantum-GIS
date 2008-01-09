@@ -16,7 +16,6 @@ qgsexception.cpp
 qgsfeature.cpp
 qgsfield.cpp
 qgsgeometry.cpp
-qgsgeometryvertexindex.cpp
 qgshttptransaction.cpp
 qgslabel.cpp
 qgslabelattributes.cpp
@@ -42,6 +41,7 @@ qgsrunprocess.cpp
 qgsscalecalculator.cpp
 qgssearchstring.cpp
 qgssearchtreenode.cpp
+qgssnapper.cpp
 qgsspatialrefsys.cpp
 qgsvectordataprovider.cpp
 qgsvectorfilewriter.cpp
@@ -192,7 +192,6 @@ qgsexception.h
 qgsfeature.h
 qgsfield.h
 qgsgeometry.h
-qgsgeometryvertexindex.h
 qgshttptransaction.h
 qgslabel.h
 qgslabelattributes.h
@@ -217,6 +216,7 @@ qgsrunprocess.h
 qgsscalecalculator.h
 qgssearchstring.h
 qgssearchtreenode.h
+qgssnapper.h
 qgsspatialrefsys.h
 qgsvectordataprovider.h
 qgsvectorfilewriter.h
