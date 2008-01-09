@@ -21,11 +21,12 @@
 #include "qgslogger.h"
 #include "qgsprojectversion.h"
 
-QgsProjectVersion::QgsProjectVersion(int major, int minor, int sub)
+QgsProjectVersion::QgsProjectVersion(int major, int minor, int sub, QString name)
 {
   mMajor = major;
   mMinor = minor;
   mSub   = sub;
+  mName  = name;
 }
 
 QgsProjectVersion::QgsProjectVersion(QString string)
@@ -37,8 +38,9 @@ QgsProjectVersion::QgsProjectVersion(QString string)
   mMajor = fileVersionParts.at(0).toInt();
   mMinor = fileVersionParts.at(1).toInt();
   mSub   = fileVersionParts.at(2).toInt();
+  mName  = string.section('-', 1);
 
-  QgsDebugMsg(QString("Version is set to %1.%2.%3\n").arg(mMajor).arg(mMinor).arg(mSub));
+  QgsDebugMsg(QString("Version is set to ") + text());
   
 }
 
@@ -68,3 +70,15 @@ bool QgsProjectVersion::operator>(const QgsProjectVersion &other)
            ((mMajor == other.mMajor) && (mMinor > other.mMinor)) ||
            ((mMajor == other.mMajor) && (mMinor == other.mMinor) && (mSub > other.mSub)));
 }; 
+
+QString QgsProjectVersion::text()
+{
+  if (mName.isNull())
+  {
+    return QString("%1.%2.%3").arg(mMajor).arg(mMinor).arg(mSub);
+  }
+  else
+  {
+    return QString("%1.%2.%3-%4").arg(mMajor).arg(mMinor).arg(mSub).arg(mName);
+  }
+}
