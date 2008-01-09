@@ -1441,6 +1441,7 @@ void QgsRasterLayer::drawSingleBandGray(QPainter * theQPainter, QgsRasterViewPor
   double myGrayValue = 0.0;
   int myGrayVal = 0;
   int myAlphaValue = 0;
+  QgsContrastEnhancement* myContrastEnhancement = getContrastEnhancement(theBandNo);
   for (int myColumn = 0; myColumn < theRasterViewPort->drawableAreaYDim; ++myColumn)
   {
     for (int myRow = 0; myRow < theRasterViewPort->drawableAreaXDim; ++myRow)
@@ -1457,7 +1458,7 @@ void QgsRasterLayer::drawSingleBandGray(QPainter * theQPainter, QgsRasterViewPor
         continue;
       }
 
-      if(!getContrastEnhancement(theBandNo)->isValueInDisplayableRange(myGrayValue))
+      if(!myContrastEnhancement->isValueInDisplayableRange(myGrayValue))
       {
         continue;
       }
@@ -1469,7 +1470,7 @@ void QgsRasterLayer::drawSingleBandGray(QPainter * theQPainter, QgsRasterViewPor
       }
       
 
-      myGrayVal = getContrastEnhancement(theBandNo)->stretch(myGrayValue);
+      myGrayVal = myContrastEnhancement->stretch(myGrayValue);
 
       if (mInvertPixelsFlag)
       {
@@ -2073,6 +2074,9 @@ void QgsRasterLayer::drawMultiBandColor(QPainter * theQPainter, QgsRasterViewPor
   int myStretchedGreenValue = 0;
   int myStretchedBlueValue  = 0;
   int myAlphaValue = 0;
+  QgsContrastEnhancement* myRedContrastEnhancement = getContrastEnhancement(myRedBandNo);
+  QgsContrastEnhancement* myGreenContrastEnhancement = getContrastEnhancement(myGreenBandNo);
+  QgsContrastEnhancement* myBlueContrastEnhancement = getContrastEnhancement(myBlueBandNo);
   for (int myColumn = 0; myColumn < theRasterViewPort->drawableAreaYDim; ++myColumn)
   {
     for (int myRow = 0; myRow < theRasterViewPort->drawableAreaXDim; ++myRow)
@@ -2089,7 +2093,7 @@ void QgsRasterLayer::drawMultiBandColor(QPainter * theQPainter, QgsRasterViewPor
         continue;
       }
 
-      if(!getContrastEnhancement(myRedBandNo)->isValueInDisplayableRange(myRedValue) || !getContrastEnhancement(myGreenBandNo)->isValueInDisplayableRange(myGreenValue) || !getContrastEnhancement(myBlueBandNo)->isValueInDisplayableRange(myBlueValue))
+      if(!myRedContrastEnhancement->isValueInDisplayableRange(myRedValue) || !myGreenContrastEnhancement->isValueInDisplayableRange(myGreenValue) || !myBlueContrastEnhancement->isValueInDisplayableRange(myBlueValue))
       {
         continue;
       }
@@ -2100,9 +2104,9 @@ void QgsRasterLayer::drawMultiBandColor(QPainter * theQPainter, QgsRasterViewPor
         continue;
       }
       
-      myStretchedRedValue = getContrastEnhancement(myRedBandNo)->stretch(myRedValue);
-      myStretchedGreenValue = getContrastEnhancement(myGreenBandNo)->stretch(myGreenValue);
-      myStretchedBlueValue = getContrastEnhancement(myBlueBandNo)->stretch(myBlueValue);
+      myStretchedRedValue = myRedContrastEnhancement->stretch(myRedValue);
+      myStretchedGreenValue = myGreenContrastEnhancement->stretch(myGreenValue);
+      myStretchedBlueValue = myBlueContrastEnhancement->stretch(myBlueValue);
 
       if (mInvertPixelsFlag)
       {
@@ -2395,6 +2399,9 @@ const QgsRasterBandStats QgsRasterLayer::getRasterBandStats(int theBandNo)
   // a certain range -- in this case twenty times the smallest value that
   // doubles can take for the current system.  (Yes, 20 was arbitrary.)
   double myPrecision = std::numeric_limits<double>::epsilon() * 20;
+  
+  //ifdefs below to remove compiler warning about unused vars
+#ifdef QGISDEBUG
   int success;
   double GDALminimum = myGdalBand->GetMinimum( &success );
 
@@ -2403,57 +2410,40 @@ const QgsRasterBandStats QgsRasterLayer::getRasterBandStats(int theBandNo)
     QgsDebugMsg("myGdalBand->GetMinimum() failed");
   }
 
-//ifdefs below to remove compiler warning about unused vars
-#ifdef QGISDEBUG
   double GDALmaximum = myGdalBand->GetMaximum( &success );
-#else
-  myGdalBand->GetMaximum( &success );
-#endif
   
   if ( ! success )
   {
     QgsDebugMsg("myGdalBand->GetMaximum() failed");
   }
 
-//ifdefs below to remove compiler warning about unused vars
-#ifdef QGISDEBUG
   double GDALnodata = myGdalBand->GetNoDataValue( &success );
-#else
-  myGdalBand->GetNoDataValue( &success );
-#endif
   
   if ( ! success )
   {
     QgsDebugMsg("myGdalBand->GetNoDataValue() failed");
   }
 
-#ifdef QGISDEBUG
   QgsLogger::debug("GDALminium: ", GDALminimum, __FILE__, __FUNCTION__, __LINE__);
   QgsLogger::debug("GDALmaximum: ", GDALmaximum, __FILE__, __FUNCTION__, __LINE__);
   QgsLogger::debug("GDALnodata: ", GDALnodata, __FILE__, __FUNCTION__, __LINE__);
-#endif
-
-//PJE 2008-01-07 - GDALrange is never used so it seems a waste to make the function calls. They
-//are only for degbug the whole block should be wrapped in a ifdef
 
   double GDALrange[2];          // calculated min/max, as opposed to the
   // dataset provided
-
-
+  
   GDALComputeRasterMinMax( myGdalBand, 1, GDALrange );
-#ifdef QGISDEBUG
   QgsLogger::debug("approximate computed GDALminium:", GDALrange[0], __FILE__, __FUNCTION__, __LINE__, 1);
   QgsLogger::debug("approximate computed GDALmaximum:", GDALrange[1], __FILE__, __FUNCTION__, __LINE__, 1);
-#endif
 
   GDALComputeRasterMinMax( myGdalBand, 0, GDALrange );
-
-#ifdef QGISDEBUG
   QgsLogger::debug("exactly computed GDALminium:", GDALrange[0]);
   QgsLogger::debug("exactly computed GDALmaximum:", GDALrange[1]);
+  
+  QgsDebugMsg("starting manual stat computation");
 #endif
 
-
+  int myGdalBandXSize = myGdalBand->GetXSize();
+  int myGdalBandYSize = myGdalBand->GetYSize();
   for( int iYBlock = 0; iYBlock < myNYBlocks; iYBlock++ )
   {
     emit drawingProgress ( iYBlock, myNYBlocks * 2 );
@@ -2465,13 +2455,13 @@ const QgsRasterBandStats QgsRasterLayer::getRasterBandStats(int theBandNo)
 
       // Compute the portion of the block that is valid
       // for partial edge blocks.
-      if( (iXBlock+1) * myXBlockSize > myGdalBand->GetXSize() )
-        nXValid = myGdalBand->GetXSize() - iXBlock * myXBlockSize;
+      if( (iXBlock+1) * myXBlockSize > myGdalBandXSize )
+        nXValid = myGdalBandXSize - iXBlock * myXBlockSize;
       else
         nXValid = myXBlockSize;
 
-      if( (iYBlock+1) * myYBlockSize > myGdalBand->GetYSize() )
-        nYValid = myGdalBand->GetYSize() - iYBlock * myYBlockSize;
+      if( (iYBlock+1) * myYBlockSize > myGdalBandYSize )
+        nYValid = myGdalBandYSize - iYBlock * myYBlockSize;
       else
         nYValid = myYBlockSize;
 
@@ -2536,13 +2526,13 @@ const QgsRasterBandStats QgsRasterLayer::getRasterBandStats(int theBandNo)
 
       // Compute the portion of the block that is valid
       // for partial edge blocks.
-      if( (iXBlock+1) * myXBlockSize > myGdalBand->GetXSize() )
-        nXValid = myGdalBand->GetXSize() - iXBlock * myXBlockSize;
+      if( (iXBlock+1) * myXBlockSize > myGdalBandXSize )
+        nXValid = myGdalBandXSize - iXBlock * myXBlockSize;
       else
         nXValid = myXBlockSize;
 
-      if( (iYBlock+1) * myYBlockSize > myGdalBand->GetYSize() )
-        nYValid = myGdalBand->GetYSize() - iYBlock * myYBlockSize;
+      if( (iYBlock+1) * myYBlockSize > myGdalBandYSize )
+        nYValid = myGdalBandYSize - iYBlock * myYBlockSize;
       else
         nYValid = myYBlockSize;
 

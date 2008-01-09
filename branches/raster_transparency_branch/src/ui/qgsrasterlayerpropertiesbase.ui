@@ -968,7 +968,7 @@ p, li { white-space: pre-wrap; }
          <item>
           <widget class="QPushButton" name="pbtnLoadMinMax" >
            <property name="text" >
-            <string>Load Min Max Values From Band</string>
+            <string>Load Min Max Values From Band(s)</string>
            </property>
           </widget>
          </item>
@@ -1005,7 +1005,7 @@ p, li { white-space: pre-wrap; }
           </spacer>
          </item>
          <item>
-          <widget class="QLabel" name="textLabel2_6_3" >
+          <widget class="QLabel" name="labelColorScaling" >
            <property name="sizePolicy" >
             <sizepolicy vsizetype="Fixed" hsizetype="Fixed" >
              <horstretch>0</horstretch>

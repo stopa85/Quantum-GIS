@@ -1603,29 +1603,53 @@ void QgsRasterLayerProperties::on_pbnChangeSpatialRefSys_clicked()
   leSpatialRefSys->setText(rasterLayer->srs().proj4String());
 }
 
-void QgsRasterLayerProperties::on_cboxColorMap_currentIndexChanged(const QString& text)
+void QgsRasterLayerProperties::on_cboxColorMap_currentIndexChanged(const QString& theText)
 {
-  if(text == tr("Custom Colormap"))
-    {
-      tabBar->setTabEnabled(tabBar->indexOf(tabPageColormap), TRUE);
-      rbtnSingleBandMinMax->setEnabled(false);
-      rbtnSingleBandStdDev->setEnabled(false);
-      cboxContrastEnhancementAlgorithm->setEnabled(false);
-      textLabel2_6_3->setEnabled(false);
-    }
+  if(theText == tr("Pseudocolor") || theText == tr("Freak Out"))
+  {
+    tabBar->setTabEnabled(tabBar->indexOf(tabPageColormap), FALSE);
+    rbtnSingleBandMinMax->setEnabled(false);
+    rbtnSingleBandStdDev->setEnabled(true);
+    sboxSingleBandStdDev->setEnabled(true);
+    pbtnLoadMinMax->setEnabled(false);
+    cboxContrastEnhancementAlgorithm->setEnabled(false);
+    labelColorScaling->setEnabled(false);
+  }
+  else if(theText == tr("Custom Colormap"))
+  {
+    tabBar->setTabEnabled(tabBar->indexOf(tabPageColormap), TRUE);
+    rbtnSingleBandMinMax->setEnabled(false);
+    rbtnSingleBandStdDev->setEnabled(false);
+    sboxSingleBandStdDev->setEnabled(false);
+    pbtnLoadMinMax->setEnabled(false);
+    cboxContrastEnhancementAlgorithm->setEnabled(false);
+    labelColorScaling->setEnabled(false);
+  }
+  else if(theText == tr("User Defined"))
+  {
+    tabBar->setTabEnabled(tabBar->indexOf(tabPageColormap), FALSE);
+    rbtnSingleBandMinMax->setEnabled(true);
+    rbtnSingleBandStdDev->setEnabled(true);
+    sboxSingleBandStdDev->setEnabled(true);
+    pbtnLoadMinMax->setEnabled(true);
+    cboxContrastEnhancementAlgorithm->setEnabled(false);
+    labelColorScaling->setEnabled(false);
+  }
   else
-    {
-      tabBar->setTabEnabled(tabBar->indexOf(tabPageColormap), FALSE);
-      rbtnSingleBandMinMax->setEnabled(true);
-      rbtnSingleBandStdDev->setEnabled(true);
-      cboxContrastEnhancementAlgorithm->setEnabled(true);
-      textLabel2_6_3->setEnabled(true);
-    }
+  {
+    tabBar->setTabEnabled(tabBar->indexOf(tabPageColormap), FALSE);
+    rbtnSingleBandMinMax->setEnabled(true);
+    rbtnSingleBandStdDev->setEnabled(true);
+    sboxSingleBandStdDev->setEnabled(true);
+    pbtnLoadMinMax->setEnabled(true);
+    cboxContrastEnhancementAlgorithm->setEnabled(true);
+    labelColorScaling->setEnabled(true);
+  }
 }
 
-void QgsRasterLayerProperties::on_cboxTransparencyLayer_currentIndexChanged(const QString& text)
+void QgsRasterLayerProperties::on_cboxTransparencyLayer_currentIndexChanged(const QString& theText)
 {
-  if(text == tr("Not Set"))
+  if(theText == tr("Not Set"))
   {
     cboxTransparencyBand->clear();
     cboxTransparencyBand->insertItem(tr("Not Set"));
@@ -1636,7 +1660,7 @@ void QgsRasterLayerProperties::on_cboxTransparencyLayer_currentIndexChanged(cons
     std::map<QString, QgsMapLayer *>::iterator it;
     for(it = myLayers.begin(); it != myLayers.end(); it++)
     {
-      if(text == it->second->name() && QgsMapLayer::RASTER == it->second->type())
+      if(theText == it->second->name() && QgsMapLayer::RASTER == it->second->type())
       {
         QgsRasterLayer* myRasterLayer = (QgsRasterLayer*)it->second;
         int myBandCount = myRasterLayer->getBandCount();
