@@ -40,7 +40,7 @@ QgsSymbol::QgsSymbol(QGis::VectorType t, QString lvalue, QString uvalue, QString
       mLabel(label),
       mType(t),
       mPointSymbolName( "hard:circle" ),
-      mPointSize( 6 ),
+      mPointSize( 11 ),
       mPointSymbolImage(1,1, QImage::Format_ARGB32_Premultiplied),
       mWidthScale(1.0),
       mCacheUpToDate( false ),
