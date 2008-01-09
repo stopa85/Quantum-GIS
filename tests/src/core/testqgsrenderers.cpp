@@ -14,6 +14,7 @@
  ***************************************************************************/
 #include <QtTest>
 #include <QObject>
+#include <QCryptographicHash>
 #include <QString>
 #include <QPainter>
 #include <QPixmap>
