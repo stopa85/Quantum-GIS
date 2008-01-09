@@ -646,8 +646,13 @@ void QgsMapCanvas::keyPressEvent(QKeyEvent * e)
 
       default:
         // Pass it on
+	if(mMapTool)
+	  {
+	    mMapTool->keyPressEvent(e);
+	  }
         e->ignore();
         
+	
         QgsDebugMsg("Ignoring key: " + QString::number(e->key()));
 
     }
@@ -941,6 +946,10 @@ void QgsMapCanvas::setCanvasColor(const QColor & theColor)
   mScene->setBackgroundBrush(bgBrush);
 } // setbgColor
 
+QColor QgsMapCanvas::canvasColor() const
+{
+  return mScene->backgroundBrush().color();
+}
 
 int QgsMapCanvas::layerCount() const
 {
