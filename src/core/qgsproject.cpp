@@ -30,7 +30,7 @@
 #include "qgsexception.h"
 #include "qgsprojectproperty.h"
 #include "qgslogger.h"
-#include "qgsprojectfile.h"
+#include "qgsprojectfiletransform.h"
 #include "qgsprojectversion.h"
 
 #include <QApplication>
@@ -808,7 +808,7 @@ bool QgsProject::read()
                          ", loaded in " + QGis::qgisVersion +
                          "). Problems may occur.");
 
-      QgsProjectFile projectFile(*doc, fileVersion);
+      QgsProjectFileTransform projectFile(*doc, fileVersion);
 
       //! Shows a warning when an old project file is read.
       emit warnOlderProjectVersion(fileVersionString);

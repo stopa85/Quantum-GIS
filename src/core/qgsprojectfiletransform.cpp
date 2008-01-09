@@ -1,5 +1,5 @@
 /***************************************************************************
-                          qgsprojectfile.cpp  -  description
+                          qgsprojectfiletransform.cpp  -  description
                              -------------------
     begin                : Sun 15 dec 2007
     copyright            : (C) 2007 by Magnus Homann
@@ -17,7 +17,7 @@
  /* $Id: $ */
 
 
-#include "qgsprojectfile.h"
+#include "qgsprojectfiletransform.h"
 #include "qgsprojectversion.h"
 #include "qgslogger.h"
 #include <QTextStream>
@@ -26,13 +26,13 @@
 typedef QgsProjectVersion PFV;
 
 
-QgsProjectFile::transform QgsProjectFile::transformers[] = {
-  {PFV(0,8,1), PFV(0,9,0), &QgsProjectFile::transform081to090},
-  {PFV(0,9,0), PFV(0,9,1), &QgsProjectFile::transform090to091},
-  {PFV(0,9,1), PFV(0,9,2), &QgsProjectFile::transformNull}
+QgsProjectFileTransform::transform QgsProjectFileTransform::transformers[] = {
+  {PFV(0,8,1), PFV(0,9,0), &QgsProjectFileTransform::transform081to090},
+  {PFV(0,9,0), PFV(0,9,1), &QgsProjectFileTransform::transform090to091},
+  {PFV(0,9,1), PFV(0,9,2), &QgsProjectFileTransform::transformNull}
 };
 
-bool QgsProjectFile::updateRevision(QgsProjectVersion newVersion)
+bool QgsProjectFileTransform::updateRevision(QgsProjectVersion newVersion)
 {
   bool returnValue = false;
 
@@ -52,7 +52,7 @@ bool QgsProjectFile::updateRevision(QgsProjectVersion newVersion)
   return returnValue;
 };
 
-void QgsProjectFile::dump()
+void QgsProjectFileTransform::dump()
 {
   QgsDebugMsg(QString("Current project file version is %1.%2.%3\n")
               .arg(mCurrentVersion.major())
@@ -68,7 +68,7 @@ void QgsProjectFile::dump()
  *  Transformers below!
  */
 
-void QgsProjectFile::transform081to090()
+void QgsProjectFileTransform::transform081to090()
 {
   QgsDebugMsg("Entering...");
   if ( ! mDom.isNull() )
@@ -174,7 +174,7 @@ void QgsProjectFile::transform081to090()
 
 };
 
-void QgsProjectFile::transform090to091()
+void QgsProjectFileTransform::transform090to091()
 {
   QgsDebugMsg("entering");
   if ( ! mDom.isNull() )

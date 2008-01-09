@@ -1,5 +1,5 @@
 /***************************************************************************
-                          qgsprojectfile.h  -  description
+                          qgsprojectfiletransform.h  -  description
                              -------------------
     begin                : Sun 15 dec 2007
     copyright            : (C) 2007 by Magnus Homann
@@ -23,26 +23,26 @@
 
 /* $Id: $ */
 
-#ifndef QGSPROJECTFILE_H
-#define QGSPROJECTFILE_H
+#ifndef QGSPROJECTFILETRANSFORM_H
+#define QGSPROJECTFILETRANSFORM_H
 
 #include <QString>
 #include <QDomDocument>
 #include <vector>
 #include "qgsprojectversion.h"
 
-class QgsProjectFile 
+class QgsProjectFileTransform 
 {
  public:
   //Default constructor
-  //QgsProjectFile() {}
-  ~QgsProjectFile() {}
+  //QgsProjectfiletransform() {}
+  ~QgsProjectFileTransform() {}
     
   /*! Create an instance from a DOM and a supplied version
    * @param domDocument The DOM document to use as content
    * @param version Version number
    */
-  QgsProjectFile(QDomDocument & domDocument,
+  QgsProjectFileTransform(QDomDocument & domDocument,
                  QgsProjectVersion version)
     {
       mDom = domDocument;
@@ -62,7 +62,7 @@ class QgsProjectFile
   typedef struct {
     QgsProjectVersion from;
     QgsProjectVersion to;
-    void (QgsProjectFile::* transformFunc)();
+    void (QgsProjectFileTransform::* transformFunc)();
   } transform;
 
   static transform transformers[];;
@@ -71,7 +71,7 @@ class QgsProjectFile
   QgsProjectVersion mCurrentVersion;
 
   // Transformer functions below. Declare functions here,
-  // define them in qgsprojectfile.cpp and add them
+  // define them in qgsprojectfiletransform.cpp and add them
   // to the transformArray with proper version number
   void transformNull() {}; // Do absolutely nothing
   void transform081to090();
@@ -79,5 +79,5 @@ class QgsProjectFile
 };
 
 
-#endif //QGSPROJECTFILE_H
+#endif //QGSPROJECTFILETRANSFORM_H
 
