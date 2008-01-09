@@ -26,7 +26,7 @@
   </property>
   <layout class="QGridLayout" >
    <property name="margin" >
-    <number>11</number>
+    <number>9</number>
    </property>
    <property name="spacing" >
     <number>6</number>
@@ -45,38 +45,31 @@
       </attribute>
       <layout class="QGridLayout" >
        <property name="margin" >
-        <number>11</number>
+        <number>9</number>
        </property>
        <property name="spacing" >
         <number>6</number>
        </property>
-       <item row="2" column="0" colspan="2" >
-        <widget class="QStackedWidget" name="widgetStackRenderers" >
-         <property name="sizePolicy" >
-          <sizepolicy>
-           <hsizetype>0</hsizetype>
-           <vsizetype>0</vsizetype>
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
+       <item row="1" column="1" >
+        <widget class="QSlider" name="sliderTransparency" >
+         <property name="maximum" >
+          <number>255</number>
          </property>
-         <widget class="QWidget" name="page" />
-         <widget class="QWidget" name="page_2" />
+         <property name="value" >
+          <number>0</number>
+         </property>
+         <property name="orientation" >
+          <enum>Qt::Horizontal</enum>
+         </property>
         </widget>
        </item>
-       <item row="0" column="1" >
-        <widget class="QComboBox" name="legendtypecombobox" >
-         <property name="minimumSize" >
-          <size>
-           <width>270</width>
-           <height>24</height>
-          </size>
+       <item row="1" column="0" >
+        <widget class="QLabel" name="lblTransparencyPercent" >
+         <property name="text" >
+          <string>Transparency:</string>
          </property>
-         <property name="maximumSize" >
-          <size>
-           <width>32767</width>
-           <height>22</height>
-          </size>
+         <property name="buddy" >
+          <cstring>sliderTransparency</cstring>
          </property>
         </widget>
        </item>
@@ -96,27 +89,37 @@
          </property>
         </widget>
        </item>
-       <item row="1" column="0" >
-        <widget class="QLabel" name="lblTransparencyPercent" >
-         <property name="text" >
-          <string>Transparency:</string>
+       <item row="0" column="1" >
+        <widget class="QComboBox" name="legendtypecombobox" >
+         <property name="minimumSize" >
+          <size>
+           <width>270</width>
+           <height>24</height>
+          </size>
          </property>
-         <property name="buddy" >
-          <cstring>sliderTransparency</cstring>
+         <property name="maximumSize" >
+          <size>
+           <width>32767</width>
+           <height>22</height>
+          </size>
          </property>
         </widget>
        </item>
-       <item row="1" column="1" >
-        <widget class="QSlider" name="sliderTransparency" >
-         <property name="maximum" >
-          <number>255</number>
+       <item row="2" column="0" colspan="2" >
+        <widget class="QStackedWidget" name="widgetStackRenderers" >
+         <property name="sizePolicy" >
+          <sizepolicy>
+           <hsizetype>7</hsizetype>
+           <vsizetype>7</vsizetype>
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
          </property>
-         <property name="value" >
-          <number>0</number>
+         <property name="currentIndex" >
+          <number>1</number>
          </property>
-         <property name="orientation" >
-          <enum>Qt::Horizontal</enum>
-         </property>
+         <widget class="QWidget" name="page" />
+         <widget class="QWidget" name="page_2" />
         </widget>
        </item>
       </layout>
@@ -388,17 +391,32 @@
       </attribute>
       <layout class="QGridLayout" >
        <property name="margin" >
-        <number>11</number>
+        <number>9</number>
        </property>
        <property name="spacing" >
         <number>6</number>
        </property>
+       <item row="0" column="0" >
+        <widget class="QCheckBox" name="labelCheckBox" >
+         <property name="sizePolicy" >
+          <sizepolicy>
+           <hsizetype>7</hsizetype>
+           <vsizetype>0</vsizetype>
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text" >
+          <string>Display labels</string>
+         </property>
+        </widget>
+       </item>
        <item row="1" column="0" >
         <widget class="QFrame" name="labelOptionsFrame" >
          <property name="sizePolicy" >
           <sizepolicy>
-           <hsizetype>0</hsizetype>
-           <vsizetype>0</vsizetype>
+           <hsizetype>7</hsizetype>
+           <vsizetype>7</vsizetype>
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
@@ -408,21 +426,6 @@
          </property>
          <property name="frameShadow" >
           <enum>QFrame::Plain</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="0" >
-        <widget class="QCheckBox" name="labelCheckBox" >
-         <property name="sizePolicy" >
-          <sizepolicy>
-           <hsizetype>0</hsizetype>
-           <vsizetype>0</vsizetype>
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text" >
-          <string>Display labels</string>
          </property>
         </widget>
        </item>
@@ -464,10 +467,10 @@
    <item row="1" column="0" >
     <layout class="QHBoxLayout" >
      <property name="margin" >
-      <number>11</number>
+      <number>1</number>
      </property>
      <property name="spacing" >
-      <number>6</number>
+      <number>3</number>
      </property>
      <item>
       <widget class="QPushButton" name="pbnLoadDefaultStyle" >
@@ -499,7 +502,7 @@
      </item>
     </layout>
    </item>
-   <item row="2" column="0" >
+   <item row="3" column="0" >
     <widget class="QDialogButtonBox" name="buttonBox" >
      <property name="orientation" >
       <enum>Qt::Horizontal</enum>
