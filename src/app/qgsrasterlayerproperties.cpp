@@ -126,6 +126,8 @@ rasterLayer( dynamic_cast<QgsRasterLayer*>(lyr) )
   lblBlueMax->setEnabled(false);
   leBlueMax->setEnabled(false);
 
+  pbtnLoadMinMax->setEnabled(true);
+  
   //setup custom colormap tab
   cboxColorInterpolation->insertItem(-1, tr("Discrete"));
   cboxColorInterpolation->insertItem(-1, tr("Linearly"));
@@ -528,23 +530,20 @@ void QgsRasterLayerProperties::sync()
   //
   // Populate the various controls on the form
   //
-  if (rasterLayer->getDrawingStyle() == QgsRasterLayer::SINGLE_BAND_PSEUDO_COLOR ||
-      rasterLayer->getDrawingStyle() == QgsRasterLayer::PALETTED_SINGLE_BAND_PSEUDO_COLOR ||
-      rasterLayer->getDrawingStyle() == QgsRasterLayer::MULTI_BAND_SINGLE_BAND_PSEUDO_COLOR)
+#ifdef QGISDEBUG
+      QgsDebugMsg("QgsRasterLayerProperties::sync colorShadingAlgorithm = " + QString::number(rasterLayer->getColorShadingAlgorithm()));
+#endif  
+  if(rasterLayer->getColorShadingAlgorithm()==QgsRasterLayer::PSEUDO_COLOR)
   {
-    if(rasterLayer->getColorShadingAlgorithm()==QgsRasterLayer::PSEUDO_COLOR)
-    {
-      cboxColorMap->setCurrentText(tr("Pseudocolor"));
-    }
-    else if(rasterLayer->getColorShadingAlgorithm()==QgsRasterLayer::USER_DEFINED)
-    {
-      cboxColorMap->setCurrentText(tr("User Defined"));
-    }
-    else
-    {
-      cboxColorMap->setCurrentText(tr("Freak Out"));
-    }
-
+    cboxColorMap->setCurrentText(tr("Pseudocolor"));
+  }
+  else if(rasterLayer->getColorShadingAlgorithm()==QgsRasterLayer::FREAK_OUT)
+  {
+    cboxColorMap->setCurrentText(tr("Freak Out"));
+  }
+  else if(rasterLayer->getColorShadingAlgorithm()==QgsRasterLayer::COLOR_RAMP)
+  {
+    cboxColorMap->setCurrentText(tr("Custom Colormap"));
   }
   else if(rasterLayer->getColorShadingAlgorithm()==QgsRasterLayer::USER_DEFINED)
   {
@@ -1309,7 +1308,7 @@ void QgsRasterLayerProperties::apply()
   /*
    * ColorMap Tab
    */
-  if(QgsRasterLayer::COLOR_RAMP == rasterLayer->getColorShadingAlgorithm())
+  if(cboxColorMap->currentText() == tr("Custom Colormap"))
   {
     QgsColorRampShader* myRasterShaderFunction =  (QgsColorRampShader*)rasterLayer->getRasterShader()->getRasterShaderFunction();
     if(myRasterShaderFunction)
@@ -1338,6 +1337,10 @@ void QgsRasterLayerProperties::apply()
       if(cboxColorInterpolation->currentText() == tr("Discrete"))
       {
         myRasterShaderFunction->setColorRampType(QgsColorRampShader::DISCRETE);
+      }
+      else
+      {
+        myRasterShaderFunction->setColorRampType(QgsColorRampShader::INTERPOLATED);
       }
     }
     else
@@ -1613,7 +1616,7 @@ void QgsRasterLayerProperties::on_cboxColorMap_currentIndexChanged(const QString
     sboxSingleBandStdDev->setEnabled(true);
     pbtnLoadMinMax->setEnabled(false);
     cboxContrastEnhancementAlgorithm->setEnabled(false);
-    labelColorScaling->setEnabled(false);
+    labelContrastEnhancement->setEnabled(false);
   }
   else if(theText == tr("Custom Colormap"))
   {
@@ -1623,7 +1626,7 @@ void QgsRasterLayerProperties::on_cboxColorMap_currentIndexChanged(const QString
     sboxSingleBandStdDev->setEnabled(false);
     pbtnLoadMinMax->setEnabled(false);
     cboxContrastEnhancementAlgorithm->setEnabled(false);
-    labelColorScaling->setEnabled(false);
+    labelContrastEnhancement->setEnabled(false);
   }
   else if(theText == tr("User Defined"))
   {
@@ -1633,7 +1636,7 @@ void QgsRasterLayerProperties::on_cboxColorMap_currentIndexChanged(const QString
     sboxSingleBandStdDev->setEnabled(true);
     pbtnLoadMinMax->setEnabled(true);
     cboxContrastEnhancementAlgorithm->setEnabled(false);
-    labelColorScaling->setEnabled(false);
+    labelContrastEnhancement->setEnabled(false);
   }
   else
   {
@@ -1643,7 +1646,7 @@ void QgsRasterLayerProperties::on_cboxColorMap_currentIndexChanged(const QString
     sboxSingleBandStdDev->setEnabled(true);
     pbtnLoadMinMax->setEnabled(true);
     cboxContrastEnhancementAlgorithm->setEnabled(true);
-    labelColorScaling->setEnabled(true);
+    labelContrastEnhancement->setEnabled(true);
   }
 }
 
@@ -2326,11 +2329,23 @@ void QgsRasterLayerProperties::on_rbtnSingleBand_toggled(bool b)
     //--- enable and disable appropriate controls
     rbtnThreeBand->setChecked(false); 
     cboxColorMap->setEnabled(true);
-    cboxContrastEnhancementAlgorithm->setEnabled(true);
 
     if(cboxColorMap->currentText() == tr("Pseudocolor"))
     {
       tabBar->setTabEnabled(tabBar->indexOf(tabPageColormap), true);
+    }
+    
+    if(cboxColorMap->currentText() == tr("Pseudocolor") ||cboxColorMap->currentText() == tr("Color Ramp") || cboxColorMap->currentText() == tr("Freak Out"))
+    {
+      pbtnLoadMinMax->setEnabled(false);
+      labelContrastEnhancement->setEnabled(false);
+      cboxContrastEnhancementAlgorithm->setEnabled(false);
+    }
+    else
+    {
+      pbtnLoadMinMax->setEnabled(true);
+      labelContrastEnhancement->setEnabled(true);
+      cboxContrastEnhancementAlgorithm->setEnabled(true);
     }
 
     grpRgbBands->setEnabled(false);
@@ -2395,6 +2410,10 @@ void QgsRasterLayerProperties::on_rbtnThreeBand_toggled(bool b)
     grpRgbScaling->setEnabled(true);
     grpGrayBand->setEnabled(false);
     grpGrayScaling->setEnabled(false);
+    
+    pbtnLoadMinMax->setEnabled(true);
+    labelContrastEnhancement->setEnabled(true);
+    cboxContrastEnhancementAlgorithm->setEnabled(true);
 
     /*
      *This may seem strange at first, but the single bands need to be include here for switching 
