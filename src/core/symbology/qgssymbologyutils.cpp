@@ -774,7 +774,7 @@ QString QgsSymbologyUtils::brushStyle2QString(Qt::BrushStyle brushstyle)
   } 
   else if (brushstyle == Qt::TexturePattern)
   {
-    return "CustomPattern";
+    return "TexturePattern";
   } 
   else                        //return a null string
   {
@@ -845,7 +845,7 @@ Qt::BrushStyle QgsSymbologyUtils::qString2BrushStyle(QString brushString)
   {
     return Qt::DiagCrossPattern;
   } 
-  else if (brushString == "CustomPattern")
+  else if (brushString == "TexturePattern")
   {
     return Qt::TexturePattern;
   } 
@@ -1025,7 +1025,7 @@ const char *QgsSymbologyUtils::brushStyle2Char(Qt::BrushStyle brushstyle)
     return "DiagCrossPattern";
   } else if (brushstyle == Qt::TexturePattern)
   {
-    return "CustomPattern";
+    return "TexturePattern";
   } else                        //return an empty char*
   {
     return " ";
@@ -1203,7 +1203,7 @@ Qt::BrushStyle QgsSymbologyUtils::char2BrushStyle(const char *c)
   } else if (strcmp(c, "DiagCrossPattern") == 0)
   {
     return Qt::DiagCrossPattern;
-  } else if (strcmp(c, "CustomPattern") == 0)
+  } else if (strcmp(c, "TexturePattern") == 0)
   {
     return Qt::TexturePattern;
   } else if (strcmp(c, "NoBrush") == 0)
