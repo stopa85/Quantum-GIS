@@ -57,7 +57,6 @@
 #include "qgsfeature.h"
 #include "qgsfield.h"
 #include "qgsgeometry.h"
-#include "qgsgeometryvertexindex.h"
 #include "qgslabel.h"
 #include "qgslogger.h"
 #include "qgsmaptopixel.h"
@@ -915,30 +914,18 @@ void QgsVectorLayer::select(QgsRect & rect, bool lock)
   {
     removeSelection(FALSE); // don't emit signal
   }
-  
-  mDataProvider->select(QgsAttributeList(), rect, true, true);
 
-  QgsFeature fet;
+  //select all the elements
+  QList<QgsFeature> selectedList;
+  featuresInRectangle(rect, selectedList, true, false);  //should finally be false, false
 
-  while (mDataProvider->getNextFeature(fet))
-  {
-    // don't select deleted features
-    if (!mDeletedFeatureIds.contains(fet.featureId()))
+  QList<QgsFeature>::const_iterator select_it = selectedList.constBegin();
+  for(; select_it != selectedList.constEnd(); ++select_it)
     {
-      select(fet.featureId(), FALSE); // don't emit signal
+      select(select_it->featureId(), false); // don't emit signal (not to redraw it everytime)
     }
-  }
-
-  // also test the not commited features
-  for(QgsFeatureList::iterator it = mAddedFeatures.begin(); it != mAddedFeatures.end(); ++it)
-  {
-    if((*it).geometry()->intersects(rect))
-    {
-      select((*it).featureId(), FALSE); // don't emit signal
-    }
-  }
-
-  emit selectionChanged();
+								
+  emit selectionChanged(); // now emit signal to redraw layer
 }
 
 void QgsVectorLayer::invertSelection()
@@ -1251,6 +1238,171 @@ void QgsVectorLayer::setSubsetString(QString subset)
   
 }
 
+int QgsVectorLayer::featuresInRectangle(const QgsRect& searchRect, QList<QgsFeature>& features, bool fetchGeometries, bool fetchAttributes)
+{
+  if(!mDataProvider)
+    {
+      return 1;
+    }
+
+  QSet<int> alreadyExamined;
+  QgsGeometry* currentGeomPointer = 0;
+  
+  //first search all changed geometries
+  QgsGeometryMap::iterator changedIt;
+  for(changedIt = mChangedGeometries.begin(); changedIt != mChangedGeometries.end(); ++changedIt)
+    {
+      alreadyExamined.insert(changedIt.key());
+
+      if(mDeletedFeatureIds.contains(changedIt.key()))
+	{
+	  continue;
+	}
+
+      if(changedIt->intersects(searchRect))
+	{
+	  QgsFeature newFeature(changedIt.key());
+	  if(fetchGeometries)
+	    {
+	      currentGeomPointer = new QgsGeometry(changedIt.value());
+	      newFeature.setGeometry(currentGeomPointer);
+	    }
+	  if(fetchAttributes)
+	    {
+	      QgsFeature tmpFeature;
+	      mDataProvider->getFeatureAtId(changedIt.key(), tmpFeature, false, mDataProvider->allAttributesList());
+	      newFeature.setAttributeMap(tmpFeature.attributeMap());
+	      
+	    }
+	  features.push_back(newFeature);
+	}
+    }
+
+  //then the added features
+  for (QgsFeatureList::iterator iter = mAddedFeatures.begin(); iter != mAddedFeatures.end(); ++iter)
+    {
+      if(alreadyExamined.contains(iter->featureId()))
+	{
+	  continue;
+	}
+      
+      if(iter->geometry() && iter->geometry()->intersects(searchRect))
+	{
+	  QgsFeature newFeature(iter->featureId());
+	  if(fetchGeometries)
+	    {
+	      currentGeomPointer = new QgsGeometry(*iter->geometry());
+	      newFeature.setGeometry(currentGeomPointer);
+	    }
+	  if(fetchAttributes)
+	    {
+	      newFeature.setAttributeMap(iter->attributeMap());
+	      
+	    }
+	  features.push_back(newFeature);
+	}
+    }
+
+  //look in the normal features of the provider
+  if(mDataProvider)
+    {
+      mDataProvider->select(mDataProvider->allAttributesList(), searchRect, fetchGeometries, true);
+    }
+  else
+    {
+      mDataProvider->select(QgsAttributeList(), searchRect, fetchGeometries, true);
+    }
+  
+  QgsFeature f;
+  while(getDataProvider() && getDataProvider()->getNextFeature(f))
+    {
+      if(mChangedGeometries.contains(f.featureId()) || mDeletedFeatureIds.contains(f.featureId()))
+	{
+	  continue;
+	}
+      
+      QgsFeature newFeature(f.featureId());
+      if(fetchGeometries)
+	{
+	  currentGeomPointer = new QgsGeometry(*(f.geometry()));
+	  newFeature.setGeometry(currentGeomPointer);
+	}
+      if(fetchAttributes)
+	{
+	      newFeature.setAttributeMap(f.attributeMap());
+	}
+      features.push_back(newFeature);
+    }
+  return 0;
+}
+
+int QgsVectorLayer::getFeatureAtId(int featureId, QgsFeature& f, bool fetchGeometries, bool fetchAttributes)
+{
+  if(!mDataProvider)
+    {
+      return 1;
+    }
+
+  if(mDeletedFeatureIds.contains(featureId))
+    {
+      return 2;
+    }
+
+  //changed geometries
+
+  QgsGeometryMap::iterator changedIt;
+  changedIt = mChangedGeometries.find(featureId);
+  if(changedIt != mChangedGeometries.end())
+    {
+      f.setFeatureId(changedIt.key());
+      if(fetchGeometries)
+	{
+	  f.setGeometry(new QgsGeometry(changedIt.value()));
+	}
+      if(fetchAttributes)
+	{
+	  QgsFeature tmpFeature;
+	  mDataProvider->getFeatureAtId(changedIt.key(), tmpFeature, false, mDataProvider->allAttributesList());
+	  f.setAttributeMap(tmpFeature.attributeMap());
+	}
+      return 0;
+    }
+  
+  //added features
+  for(QgsFeatureList::iterator iter = mAddedFeatures.begin(); iter != mAddedFeatures.end(); ++iter)
+    {
+      if(iter->featureId() == featureId)
+	{
+	  f.setFeatureId(iter->featureId());
+	  if(fetchGeometries)
+	    {
+	      f.setGeometry(*(iter->geometry()));
+	    }
+	  if(fetchAttributes)
+	    {
+	      f.setAttributeMap(iter->attributeMap());
+	    }
+	  return 0;
+	}
+    }
+
+  //permanent features
+  if(fetchAttributes)
+    {
+      if(mDataProvider->getFeatureAtId(featureId, f, fetchGeometries, mDataProvider->allAttributesList()))
+	{
+	  return 0;
+	}
+    }
+  else
+    {
+      if(mDataProvider->getFeatureAtId(featureId, f, fetchGeometries, QgsAttributeList()))
+	{
+	  return 0;
+	}
+    }
+  return 3; 
+}
 
 bool QgsVectorLayer::addFeature(QgsFeature& f, bool alsoUpdateExtent)
 {
@@ -1293,7 +1445,7 @@ bool QgsVectorLayer::addFeature(QgsFeature& f, bool alsoUpdateExtent)
 }
 
 
-bool QgsVectorLayer::insertVertexBefore(double x, double y, int atFeatureId, QgsGeometryVertexIndex beforeVertex)
+bool QgsVectorLayer::insertVertexBefore(double x, double y, int atFeatureId, int beforeVertex)
 {
   if (!mEditable)
   {
@@ -1323,12 +1475,11 @@ bool QgsVectorLayer::insertVertexBefore(double x, double y, int atFeatureId, Qgs
 }
 
 
-bool QgsVectorLayer::moveVertexAt(double x, double y, int atFeatureId,
-    QgsGeometryVertexIndex atVertex)
+bool QgsVectorLayer::moveVertexAt(double x, double y, int atFeatureId, int atVertex)
 {
   if (!mEditable)
   {
-    return false;
+    return false; 
   }
   
   if (mDataProvider)
@@ -1353,8 +1504,7 @@ bool QgsVectorLayer::moveVertexAt(double x, double y, int atFeatureId,
 }
 
 
-bool QgsVectorLayer::deleteVertexAt(int atFeatureId,
-    QgsGeometryVertexIndex atVertex)
+bool QgsVectorLayer::deleteVertexAt(int atFeatureId, int atVertex)
 {
   if (!mEditable)
   {
@@ -1432,116 +1582,35 @@ bool QgsVectorLayer::deleteSelectedFeatures()
 
 int QgsVectorLayer::addRing(const QList<QgsPoint>& ring)
 {
-  int addRingReturnCode = 0;
+  int addRingReturnCode = 5; //default: return code for 'ring not inserted'
+  double xMin, yMin, xMax, yMax;
+  QgsRect bBox;
 
-  //calculate bounding box of ring
-  double xMin = std::numeric_limits<double>::max();
-  double xMax = -std::numeric_limits<double>::max();
-  double yMin = std::numeric_limits<double>::max();
-  double yMax = -std::numeric_limits<double>::max();
-
-  for(QList<QgsPoint>::const_iterator it = ring.constBegin(); it != ring.constEnd(); ++it)
+  if(boundingBoxFromPointList(ring, xMin, yMin, xMax, yMax) == 0)
     {
-      if(it->x() < xMin)
+      bBox.setXmin(xMin); bBox.setYmin(yMin); bBox.setXmax(xMax); bBox.setYmax(yMax);
+    }
+  else
+    {
+      return 3; //ring not valid 
+    }
+
+  QList<QgsFeature> featureList;
+  featuresInRectangle(bBox, featureList, true, false);
+  QList<QgsFeature>::iterator f_it = featureList.begin();
+
+  for(; f_it != featureList.end(); ++f_it)
+    {
+      addRingReturnCode = f_it->geometry()->addRing(ring);
+      if(addRingReturnCode == 0)
 	{
-	  xMin = it->x();
-	}
-      if(it->x() > xMax)
-	{
-	  xMax = it->x();
-	}
-      if(it->y() < yMin)
-	{
-	  yMin = it->y();
-	}
-      if(it->y() > yMax)
-	{
-	  yMax = it->y();
+	  mChangedGeometries.insert(f_it->featureId(), *(f_it->geometry()));
+	  setModified(true, true);
+	  break;
 	}
     }
 
-  QgsRect bBox(xMin, yMin, xMax, yMax);
-  //qWarning("Bounding box of ring is: " + bBox.stringRep());
-
-  std::set<int> idList; //store the ids of the features we already added the ring
-
-  //call addRing for every feature in mChangedFeatures
-  QgsGeometryMap::iterator changedIt;
-  for(changedIt = mChangedGeometries.begin(); changedIt != mChangedGeometries.end(); ++changedIt)
-    {
-      if(changedIt.value().intersects(bBox))
-	{
-	  addRingReturnCode = changedIt.value().addRing(ring);
-	  if(addRingReturnCode == 0) //success. Leave this method
-	    {
-	      setModified(true, true);
-	      return 0;
-	    }
-	  else if(addRingReturnCode > 0 && addRingReturnCode < 5) //pass the error one level up
-	    {
-	      return addRingReturnCode;
-	    }
-	  //else, addRingReturnCode must be 5, so the ring is not contained in this polygon
-	}
-      idList.insert(changedIt.key());
-    }
- 
-  //call addRing for every feature in mAddedFeatures
-  for(int i = 0; i < mAddedFeatures.size(); ++i)
-    {
-      if(idList.find(mAddedFeatures.at(i).featureId()) == idList.end())
-	{
-	  //if a geometry is not contained in mCachedGeometries, it is not in the view extent and therefore cannot intersect the ring
-	  if(mCachedGeometries.contains(mAddedFeatures.at(i).featureId()))
-	    {
-	      addRingReturnCode = mCachedGeometries[mAddedFeatures.at(i).featureId()].addRing(ring);
-	      if(addRingReturnCode == 0) //success. Leave this method
-		{
-		  mChangedGeometries[mAddedFeatures.at(i).featureId()] = mCachedGeometries[mAddedFeatures.at(i).featureId()];
-		  setModified(true, true);
-		  return 0;
-		}
-	      else if(addRingReturnCode > 0 && addRingReturnCode < 5) //pass the error one level up
-		{
-		  return addRingReturnCode;
-		}
-	      //else, addRingReturnCode must be 5, so the ring is not contained in this polygon
-	    }
-	  idList.insert(mAddedFeatures.at(i).featureId());
-	}
-    }
-  
-  //call addRing for every feature intersecting bounding box
-  mDataProvider->select(QgsAttributeList(), bBox, true, true);
-  QgsFeature currentFeature;
-  QgsGeometry* currentGeometryPtr = 0;
-
-  while(mDataProvider->getNextFeature(currentFeature))
-    {
-      if(idList.find(currentFeature.featureId()) == idList.end())
-	{
-	  currentGeometryPtr = currentFeature.geometry();
-	  if(currentGeometryPtr)
-	    {
-	      QgsGeometry newGeometry(*currentGeometryPtr);
-	      addRingReturnCode = newGeometry.addRing(ring);
-
-	      if(addRingReturnCode == 0)
-		{
-		  //add geometry to mChangedGeometries
-		  mChangedGeometries.insert(currentFeature.featureId(), newGeometry);
-		  setModified(true, true);
-		  return 0;
-		}
-	      else if(addRingReturnCode > 0 && addRingReturnCode < 5) //pass the error one level up
-		{
-		  return addRingReturnCode;
-		}
-	    }
-	}
-    }
-  
-  return 5; //ring not contained in any geometry
+  return addRingReturnCode;
 }
 
 int QgsVectorLayer::addIsland(const QList<QgsPoint>& ring)
@@ -1591,6 +1660,285 @@ int QgsVectorLayer::addIsland(const QList<QgsPoint>& ring)
     }
 
   return 6; //geometry not found
+}
+
+int QgsVectorLayer::translateFeature(int featureId, double dx, double dy)
+{
+  //look if geometry of selected feature already contains geometry changes
+  QgsGeometryMap::iterator changedIt = mChangedGeometries.find(featureId);
+  if(changedIt != mChangedGeometries.end())
+    {
+      return changedIt->translate(dx, dy);
+    }
+  
+  //look if id of selected feature belongs to an added feature
+  for(QgsFeatureList::iterator addedIt = mAddedFeatures.begin(); addedIt != mAddedFeatures.end(); ++addedIt)
+    {
+      if(addedIt->featureId() == featureId)
+	{
+	  return addedIt->geometry()->translate(dx, dy);
+	}
+    }
+
+  //else, if must be contained in mCachedGeometries
+  QgsGeometryMap::iterator cachedIt = mCachedGeometries.find(featureId);
+  if(cachedIt != mCachedGeometries.end())
+    {
+      int errorCode = cachedIt->translate(dx, dy);
+      if(errorCode == 0)
+	{
+	  mChangedGeometries.insert(featureId, *cachedIt);
+	  setModified(true, true);
+	}
+	return errorCode;
+    }
+  return 1; //geometry not found
+}
+
+int QgsVectorLayer::splitFeatures(const QList<QgsPoint>& splitLine, bool topologicalEditing)
+{
+  QgsGeometry* newGeometry = 0;
+  QgsFeatureList newFeatures; //store all the newly created features
+  double xMin, yMin, xMax, yMax;
+  QgsRect bBox; //bounding box of the split line
+  int returnCode = 0;
+  int splitFunctionReturn; //return code of QgsGeometry::splitGeometry
+
+  if(boundingBoxFromPointList(splitLine, xMin, yMin, xMax, yMax) == 0)
+    {
+      bBox.setXmin(xMin); bBox.setYmin(yMin); bBox.setXmax(xMax); bBox.setYmax(yMax);
+    }
+  else
+    {
+      return 3;
+    }
+  
+  if(bBox.isEmpty())
+    {
+      return 4;
+    }
+
+  QList<QgsFeature> featureList;
+  featuresInRectangle(bBox, featureList);
+  QList<QgsFeature>::iterator select_it = featureList.begin();
+
+  for(; select_it != featureList.end(); ++select_it)
+    {
+      QList<QgsGeometry*> newGeometries;
+      QgsGeometry* newGeometry = 0;
+      splitFunctionReturn = select_it->geometry()->splitGeometry(splitLine, newGeometries);
+      if(splitFunctionReturn < 2)
+	{
+	  //change this geometry
+	  mChangedGeometries.insert(select_it->featureId(), *(select_it->geometry()));
+	  
+	  //insert new feature
+	  newGeometry = newGeometries.at(0);
+	  QgsFeature newFeature;
+	  newFeature.setGeometry(newGeometry);
+	  newFeature.setAttributeMap(select_it->attributeMap());
+	  newFeatures.append(newFeature);
+	  setModified(true, true);
+
+	  //add topological points if necessary
+	  if(topologicalEditing)
+	    {
+	      addTopologicalPoints(select_it->geometry());
+	      addTopologicalPoints(newGeometry);
+	    }
+	}
+      if(splitFunctionReturn > 0 && splitFunctionReturn < 3)
+	{
+	  returnCode = splitFunctionReturn;
+	}
+    }
+
+  //now add the new features to this vectorlayer
+  addFeatures(newFeatures, false);
+  
+  return returnCode;
+}
+
+int QgsVectorLayer::removePolygonIntersections(QgsGeometry* geom)
+{
+  int returnValue = 0;
+
+  //first test if geom really has type polygon or multipolygon
+  if(geom->vectorType() != QGis::Polygon)
+    {
+      return 1;
+    }
+
+  //get bounding box of geom
+  QgsRect geomBBox = geom->boundingBox();
+
+  //get list of features that intersect this bounding box
+  QList<QgsFeature> featureList;
+  featuresInRectangle(geomBBox, featureList);
+  
+  QList<QgsFeature>::iterator it = featureList.begin();
+  QgsGeometry* currentGeom;
+
+  for(; it != featureList.end(); ++it)
+    {
+      //call geometry->difference for each feature
+      currentGeom = it->geometry();
+      if(currentGeom)
+	{
+	  if(geom->difference(it->geometry()) != 0)
+	    {
+	      returnValue = 2;
+	    }
+	}
+    }
+  return returnValue;
+}
+
+int QgsVectorLayer::addTopologicalPoints(QgsGeometry* geom)
+{
+  if(!geom)
+    {
+      return 1;
+    }
+
+  int returnVal = 0;
+
+  QGis::WKBTYPE wkbType = geom->wkbType();
+  
+  switch(wkbType)
+    {
+      //line
+    case QGis::WKBLineString25D:
+    case QGis::WKBLineString:
+      {
+	QgsPolyline theLine = geom->asPolyline();
+	QgsPolyline::const_iterator line_it = theLine.constBegin();
+	for(; line_it != theLine.constEnd(); ++line_it)
+	  {
+	    if(addTopologicalPoints(*line_it) != 0)
+	      {
+		returnVal = 2;
+	      }
+	  }
+	break;
+      }
+
+      //multiline
+    case QGis::WKBMultiLineString25D:
+    case QGis::WKBMultiLineString:
+      {
+	QgsMultiPolyline theMultiLine = geom->asMultiPolyline();
+	QgsPolyline currentPolyline;
+
+	for(int i = 0; i < theMultiLine.size(); ++i)
+	  {
+	    QgsPolyline::const_iterator line_it = currentPolyline.constBegin();
+	    for(; line_it != currentPolyline.constEnd(); ++line_it)
+	      {
+		if(addTopologicalPoints(*line_it) != 0)
+		  {
+		    returnVal = 2;
+		  }
+	      }
+	  }
+	break;
+      }
+ 
+      //polygon
+    case QGis::WKBPolygon25D:
+    case QGis::WKBPolygon:
+      {
+	QgsPolygon thePolygon = geom->asPolygon();
+	QgsPolyline currentRing;
+	
+	for(int i = 0; i < thePolygon.size(); ++i)
+	  {
+	    currentRing = thePolygon.at(i);
+	    QgsPolyline::const_iterator line_it = currentRing.constBegin();
+	    for(; line_it != currentRing.constEnd(); ++line_it)
+	      {
+		if(addTopologicalPoints(*line_it) != 0)
+		  {
+		    returnVal = 2;
+		  }
+	      }
+	  }
+	break;
+      }
+
+      //multipolygon
+    case QGis::WKBMultiPolygon25D:
+    case QGis::WKBMultiPolygon:
+      {
+	QgsMultiPolygon theMultiPolygon = geom->asMultiPolygon();
+	QgsPolygon currentPolygon;
+	QgsPolyline currentRing;
+	
+	for(int i = 0; i < theMultiPolygon.size(); ++i)
+	  {
+	    currentPolygon = theMultiPolygon.at(i);
+	    for(int j = 0; j < currentPolygon.size(); ++j)
+	      {
+		currentRing = currentPolygon.at(j);
+		QgsPolyline::const_iterator line_it = currentRing.constBegin();
+		for(; line_it != currentRing.constEnd(); ++line_it)
+		  {
+		    if(addTopologicalPoints(*line_it) != 0)
+		      {
+			returnVal = 2;
+		      }
+		  }
+	      }
+	  }
+	break;
+      }
+    }
+  return returnVal;
+}
+
+int QgsVectorLayer::addTopologicalPoints(const QgsPoint& p)
+{
+  QMultiMap<double, QgsSnappingResult> snapResults; //results from the snapper object
+  //we also need to snap to vertex to make sure the vertex does not already exist in this geometry
+  QMultiMap<double, QgsSnappingResult> vertexSnapResults;
+
+  QList<QgsSnappingResult> filteredSnapResults; //we filter out the results that are on existing vertices
+
+  const double threshold = 0.00000001;
+
+  if(snapWithContext(p, threshold, snapResults, QgsSnapper::SNAP_TO_SEGMENT) != 0)
+    {
+      return 2;
+    }
+
+  QMultiMap<double, QgsSnappingResult>::const_iterator snap_it = snapResults.constBegin();
+  QMultiMap<double, QgsSnappingResult>::const_iterator vertex_snap_it;
+
+  for(; snap_it != snapResults.constEnd(); ++snap_it)
+    { 
+      //test if p is already a vertex of this geometry. If yes, don't insert it
+      bool vertexAlreadyExists = false;
+      if(snapWithContext(p, threshold, vertexSnapResults, QgsSnapper::SNAP_TO_VERTEX) != 0)
+	{
+	  continue;
+	}
+
+      vertex_snap_it = vertexSnapResults.constBegin();
+      for(; vertex_snap_it != vertexSnapResults.constEnd(); ++vertex_snap_it)
+	{
+	  if(snap_it.value().snappedAtGeometry == vertex_snap_it.value().snappedAtGeometry)
+	    {
+	      vertexAlreadyExists = true; 
+	    }
+	}
+      
+      if(!vertexAlreadyExists)
+	{
+	  filteredSnapResults.push_back(*snap_it);
+	}
+    }
+  insertSegmentVerticesForSnap(filteredSnapResults);
+  return 0;
 }
 
 QgsLabel * QgsVectorLayer::label()
@@ -2396,340 +2744,178 @@ bool QgsVectorLayer::isSymbologyCompatible(const QgsMapLayer& other) const
 
 bool QgsVectorLayer::snapPoint(QgsPoint& point, double tolerance)
 {
-  if(tolerance<=0||!mDataProvider)
-  {
-    return false;
-  }
-  double mindist=tolerance*tolerance;//current minimum distance
-  double mindistx=point.x();
-  double mindisty=point.y();
-  QgsFeature fet;
-  QgsPoint vertexFeature;//the closest vertex of a feature
-  QgsGeometryVertexIndex vindex;
-  double minsquaredist;
-  int rb1, rb2; //rubberband indexes (not used in this method)
-
-  QgsRect selectrect(point.x()-tolerance,point.y()-tolerance,point.x()+tolerance,point.y()+tolerance);
-
-  mDataProvider->select(QgsAttributeList(), selectrect);
-
-  //go to through the features reported by the spatial filter of the provider
-  while (mDataProvider->getNextFeature(fet))
-  {
-    // if geometry has been changed, use the new geometry
-    if(mChangedGeometries.contains(fet.featureId()))
+  QMultiMap<double, QgsSnappingResult> snapResults;
+  int result = snapWithContext(point, tolerance, snapResults, QgsSnapper::SNAP_TO_VERTEX);
+  
+  if(result != 0)
     {
-      vertexFeature = mChangedGeometries[fet.featureId()].closestVertex(point, vindex, rb1, rb2, minsquaredist);
+      return false;
     }
-    else
-    {
-      vertexFeature = fet.geometry()->closestVertex(point, vindex, rb1, rb2, minsquaredist);
-    }
-    if(minsquaredist<mindist)
-    {
-      mindistx=vertexFeature.x();
-      mindisty=vertexFeature.y();
-      mindist=minsquaredist;
-    }
-  }
 
-  //also go through the not commited features
-  for(QgsFeatureList::iterator iter = mAddedFeatures.begin(); iter!=mAddedFeatures.end(); ++iter)
-  {
-    if (mChangedGeometries.contains((*iter).featureId()))
+  if(snapResults.size() < 1)
     {
-      // use the changed geometry
-      vertexFeature = mChangedGeometries[(*iter).featureId()].closestVertex(point, vindex, rb1, rb2, minsquaredist);
+      return false;
     }
-    else
-    {
-      vertexFeature = (*iter).geometry()->closestVertex(point, vindex, rb1, rb2, minsquaredist);
-    }
-    if(minsquaredist<mindist)
-    {
-      mindistx=vertexFeature.x();
-      mindisty=vertexFeature.y();
-      mindist=minsquaredist;
-    }
-  }
 
-  //and also go through the changed geometries, because the spatial filter of the provider did not consider feature changes
-  for(QgsGeometryMap::iterator iter = mChangedGeometries.begin(); iter != mChangedGeometries.end(); ++iter)
-  {
-    vertexFeature = iter.value().closestVertex(point, vindex, rb1, rb2, minsquaredist);
-    if(minsquaredist<mindist)
-    {
-      mindistx=vertexFeature.x();
-      mindisty=vertexFeature.y();
-      mindist=minsquaredist;
-    }
-  }
-
-  point.setX(mindistx);
-  point.setY(mindisty);
-
+  QMultiMap<double, QgsSnappingResult>::const_iterator snap_it = snapResults.constBegin();
+  point.setX(snap_it.value().snappedVertex.x());
+  point.setY(snap_it.value().snappedVertex.y());
   return true;
 }
 
 
-bool QgsVectorLayer::snapVertexWithContext(QgsPoint& point, QgsGeometryVertexIndex& atVertex,
-                                           int& beforeVertexIndex, int& afterVertexIndex,
-                                           int& snappedFeatureId, QgsGeometry& snappedGeometry,
-                                           double tolerance)
+int QgsVectorLayer::snapWithContext(const QgsPoint& startPoint, double snappingTolerance, QMultiMap<double, QgsSnappingResult>& snappingResults, \
+		      QgsSnapper::SNAP_TO snap_to)
 {
-  bool vertexFound = false; //flag to check if a meaningful result can be returned
-  QgsGeometryVertexIndex atVertexTemp;
-  int beforeVertexIndexTemp, afterVertexIndexTemp;
-
-  QgsPoint origPoint = point;
-
-  // Sanity checking
-  if (tolerance<=0 || !mDataProvider)
-  {
-    return false;
-  }
-
-  QgsFeature feature;
-  QgsPoint minDistSegPoint;  // the closest point
-  double testSqrDist;        // the squared distance between 'point' and 'snappedFeature'
-
-  double minSqrDist  = tolerance*tolerance; //current minimum distance
-
-  QgsRect selectrect(point.x()-tolerance, point.y()-tolerance,
-                     point.x()+tolerance, point.y()+tolerance);
-
-  mDataProvider->select(QgsAttributeList(), selectrect);
-
-  // Go through the committed features
-  while (mDataProvider->getNextFeature(feature))
-  {
-    if (mChangedGeometries.contains(feature.featureId()))
+  if (snappingTolerance<=0 || !mDataProvider)
     {
-      // ignore for this loop, let the loop below over mChangedGeometries
-      // detect the changed geometry instead
-      continue;
+      return 1;
+    }
+  
+  QList<QgsFeature> featureList;
+  QgsRect searchRect(startPoint.x()-snappingTolerance, startPoint.y()-snappingTolerance, \
+		     startPoint.x()+snappingTolerance, startPoint.y()+snappingTolerance);
+  double sqrSnappingTolerance = snappingTolerance * snappingTolerance;
 
-      // // substitute the modified geometry for the committed version
-      // feature->setGeometry(mChangedGeometries[feature->featureId()]);
+  if(featuresInRectangle(searchRect, featureList, true, false) != 0)
+    {
+      return 2;
     }
 
-    minDistSegPoint = feature.geometry()->closestVertex(origPoint, atVertexTemp, beforeVertexIndexTemp, afterVertexIndexTemp, testSqrDist);
-    if (
-        (testSqrDist < minSqrDist) ||
-        (
-         // this test will "choose" the polygon that the origPoint is in:
-         (testSqrDist == minSqrDist) && 
-         (feature.geometry()->contains(&origPoint))
-        )
-       )
+  QList<QgsFeature>::iterator feature_it = featureList.begin();
+  for(; feature_it != featureList.end(); ++feature_it)
     {
-      point = minDistSegPoint;
-      minSqrDist = testSqrDist;
-
-      atVertex          = atVertexTemp;
-      beforeVertexIndex = beforeVertexIndexTemp;
-      afterVertexIndex = afterVertexIndexTemp;
-      snappedFeatureId  = feature.featureId();
-      snappedGeometry   = *(feature.geometry());
-      vertexFound = true;
-      return true;
+      snapToGeometry(startPoint, feature_it->featureId(), feature_it->geometry(), sqrSnappingTolerance, snappingResults, snap_to);
     }
-  }
 
-
-  // Also go through the new features
-  for (QgsFeatureList::iterator iter = mAddedFeatures.begin(); iter != mAddedFeatures.end(); ++iter)
-  {
-    if (mChangedGeometries.contains((*iter).featureId()))
-    {
-      // ignore for this loop, let the loop below over mChangedGeometries
-      // detect the changed geometry instead
-      continue;
-      // //use the modified geometry
-      // minDistSegPoint = mChangedGeometries[(*iter)->featureId()].closestVertex(origPoint, atVertexTemp, beforeVertexIndexTemp, afterVertexIndexTemp, testSqrDist);
-    }
-    else
-    {
-    	minDistSegPoint = (*iter).geometry()->closestVertex(origPoint, atVertexTemp, beforeVertexIndexTemp, afterVertexIndexTemp, testSqrDist);
-    }
-    if (
-        (testSqrDist < minSqrDist) ||
-        (
-         // this test will "choose" the polygon that the origPoint is in:
-         (testSqrDist == minSqrDist) && 
-         ((*iter).geometry()->contains(&origPoint))
-        )
-       )
-    {
-      point = minDistSegPoint;
-      minSqrDist = testSqrDist;
-
-      atVertex      = atVertexTemp;
-      beforeVertexIndex = beforeVertexIndexTemp;
-      afterVertexIndex = afterVertexIndexTemp;
-      snappedFeatureId  =   iter->featureId();
-      snappedGeometry   = *(iter->geometry());
-      vertexFound = true;
-      return true;
-    }
-  }
-
-  //and also go through the changed geometries, because the spatial filter of the provider did not consider feature changes
-  for(QgsGeometryMap::iterator it = mChangedGeometries.begin(); it != mChangedGeometries.end(); ++it)
-  {
-    minDistSegPoint = it.value().closestVertex(origPoint, atVertexTemp, beforeVertexIndexTemp, afterVertexIndexTemp, testSqrDist);
-    if (
-        (testSqrDist < minSqrDist) ||
-        (
-           // this test will "choose" the polygon that the origPoint is in:
-        (testSqrDist == minSqrDist) && 
-        (it.value().contains(&origPoint))
-        )
-       )
-    {
-      point = minDistSegPoint;
-      minSqrDist = testSqrDist;
-      atVertex      = atVertexTemp;
-      beforeVertexIndex = beforeVertexIndexTemp;
-      afterVertexIndex = afterVertexIndexTemp;
-      snappedFeatureId  = it.key();
-      snappedGeometry   = it.value();
-      vertexFound = true;
-    }
-  }
-
-  if(!vertexFound)
-  {
-    beforeVertexIndex = -1;
-    afterVertexIndex = -1;
-    return false;
-  }
-
-  return true;
+  return 0;	    
 }
 
-
-bool QgsVectorLayer::snapSegmentWithContext(QgsPoint& point, QgsGeometryVertexIndex& beforeVertex,
-                                            int& snappedFeatureId, QgsGeometry& snappedGeometry,
-                                            double tolerance)
+void QgsVectorLayer::snapToGeometry(const QgsPoint& startPoint, int featureId, QgsGeometry* geom, double sqrSnappingTolerance, \
+				    QMultiMap<double, QgsSnappingResult>& snappingResults, QgsSnapper::SNAP_TO snap_to) const
 {
-  bool segmentFound = false; //flag to check if a reasonable result can be returned
-  QgsGeometryVertexIndex beforeVertexTemp;
-
-  QgsPoint origPoint = point;
-
-  // Sanity checking
-  if (tolerance<=0 || !mDataProvider)
-  {
-    return false;
-  }
-
-  QgsFeature feature;
-  QgsPoint minDistSegPoint;  // the closest point on the segment
-  double testSqrDist;        // the squared distance between 'point' and 'snappedFeature'
-  double minSqrDist  = tolerance*tolerance; //current minimum distance
-
-  QgsRect selectrect(point.x()-tolerance, point.y()-tolerance,
-                     point.x()+tolerance, point.y()+tolerance);
-
-  mDataProvider->select(QgsAttributeList(), selectrect);
-
-  // Go through the committed features
-  while (mDataProvider->getNextFeature(feature))
-  {
-    if (mChangedGeometries.contains(feature.featureId()))
+  if(!geom)
     {
-      // ignore for this loop, let the loop below over mChangedGeometries
-      // detect the changed geometry instead
-      continue;
-
-      // // substitute the modified geometry for the committed version
-      // feature->setGeometry( mChangedGeometries[ feature->featureId() ] );
+      return;
     }
 
-    testSqrDist = feature.geometry()->closestSegmentWithContext(origPoint, minDistSegPoint, beforeVertexTemp);
+  int atVertex, beforeVertex, afterVertex;
+  double sqrDistVertexSnap, sqrDistSegmentSnap;
+  QgsPoint snappedPoint;
+  QgsSnappingResult snappingResultVertex;
+  QgsSnappingResult snappingResultSegment;
 
-    if (
-        (testSqrDist < minSqrDist) ||
-        (
-         // this test will "choose" the polygon that the origPoint is in:
-         (testSqrDist == minSqrDist) && 
-         (feature.geometry()->contains(&origPoint))
-        )
-       )
+  if(snap_to == QgsSnapper::SNAP_TO_VERTEX || snap_to == QgsSnapper::SNAP_TO_VERTEX_AND_SEGMENT)
     {
-      point = minDistSegPoint;
-      minSqrDist = testSqrDist;
-
-      beforeVertex      = beforeVertexTemp;
-      snappedFeatureId  = feature.featureId();
-      snappedGeometry   = *(feature.geometry());
-      segmentFound = true;
+      snappedPoint = geom->closestVertex(startPoint, atVertex, beforeVertex, afterVertex, sqrDistVertexSnap);
+      if(sqrDistVertexSnap < sqrSnappingTolerance)
+	{
+	  snappingResultVertex.snappedVertex = snappedPoint;
+	  snappingResultVertex.snappedVertexNr = atVertex;
+	  snappingResultVertex.beforeVertex = geom->vertexAt(beforeVertex);
+	  snappingResultVertex.beforeVertexNr = beforeVertex;
+	  snappingResultVertex.afterVertex = geom->vertexAt(afterVertex);
+	  snappingResultVertex.afterVertexNr = afterVertex;
+	  snappingResultVertex.snappedAtGeometry = featureId;
+	  snappingResultVertex.layer = this;
+	}
     }
-    
-  }
-
-  // Also go through the new features
-  for (QgsFeatureList::iterator iter = mAddedFeatures.begin(); iter != mAddedFeatures.end(); ++iter)
-  {
-    if(mChangedGeometries.contains((*iter).featureId()))
+  if(snap_to == QgsSnapper::SNAP_TO_SEGMENT || snap_to == QgsSnapper::SNAP_TO_VERTEX_AND_SEGMENT) //snap to segment
     {
-      // ignore for this loop, let the loop below over mChangedGeometries
-      // detect the changed geometry instead
-      continue;
+      if(vectorType() != QGis::Point) //cannot snap to segment for points/multipoints
+	{
+	  sqrDistSegmentSnap = geom->closestSegmentWithContext(startPoint, snappedPoint, afterVertex);
 
-      // //use the modified geometry
-      // minDistSegPoint = mChangedGeometries[(*iter)->featureId()].closestSegmentWithContext(origPoint, beforeVertexTemp, testSqrDist);
+	  if(sqrDistSegmentSnap < sqrSnappingTolerance)
+	    {
+	      snappingResultSegment.snappedVertex = snappedPoint;
+	      snappingResultSegment.snappedVertexNr = -1;
+	      snappingResultSegment.beforeVertexNr = afterVertex - 1;
+	      snappingResultSegment.afterVertexNr = afterVertex;
+	      snappingResultSegment.snappedAtGeometry = featureId;
+	      snappingResultSegment.beforeVertex = geom->vertexAt(afterVertex - 1);
+	      snappingResultSegment.afterVertex = geom->vertexAt(afterVertex);
+	      snappingResultSegment.layer = this;
+	    }
+	}
     }
-    else
+  
+  if(snap_to == QgsSnapper::SNAP_TO_VERTEX && sqrDistVertexSnap < sqrSnappingTolerance)
     {
-      testSqrDist = (*iter).geometry()->closestSegmentWithContext(origPoint, minDistSegPoint, beforeVertexTemp);
+      snappingResults.insert(sqrt(sqrDistVertexSnap), snappingResultVertex);
     }
-
-    if (
-        (testSqrDist < minSqrDist) ||
-        (
-         // this test will "choose" the polygon that the origPoint is in:
-         (testSqrDist == minSqrDist) && 
-         ((*iter).geometry()->contains(&origPoint))
-        )
-       )
+  else if(snap_to == QgsSnapper::SNAP_TO_SEGMENT && sqrDistSegmentSnap < sqrSnappingTolerance && vectorType() != QGis::Point)
     {
-      point = minDistSegPoint;
-      minSqrDist = testSqrDist;
-
-      beforeVertex      = beforeVertexTemp;
-      snappedFeatureId  =   (*iter).featureId();
-      snappedGeometry   = *((*iter).geometry());
-      segmentFound = true;
+      snappingResults.insert(sqrt(sqrDistSegmentSnap), snappingResultSegment);
     }
-  }
-
-  //and also go through the changed geometries, because the spatial filter of the provider did not consider feature changes
-  for(QgsGeometryMap::iterator it = mChangedGeometries.begin(); it != mChangedGeometries.end(); ++it)
-  {
-    testSqrDist = it.value().closestSegmentWithContext(origPoint, minDistSegPoint, beforeVertexTemp);
-    if (
-        (testSqrDist < minSqrDist) ||
-        (
-           // this test will "choose" the polygon that the origPoint is in:
-        (testSqrDist == minSqrDist) && 
-        (it.value().contains(&origPoint))
-        )
-       )
+  else if(snap_to == QgsSnapper::SNAP_TO_VERTEX_AND_SEGMENT) //to vertex and segment
     {
-      point = minDistSegPoint;
-      minSqrDist = testSqrDist;
-      beforeVertex      = beforeVertexTemp;
-      snappedFeatureId  = it.key();
-      snappedGeometry   = it.value();
-      segmentFound = true;
+      if(sqrDistVertexSnap < sqrSnappingTolerance)
+	{
+	  snappingResults.insert(sqrt(sqrDistVertexSnap), snappingResultVertex);
+	}
+      else if(sqrDistSegmentSnap < sqrSnappingTolerance && vectorType() != QGis::Point)
+	{
+	  snappingResults.insert(sqrt(sqrDistSegmentSnap), snappingResultSegment);
+	}
     }
-  }
-
-  return segmentFound; 
 }
 
+int QgsVectorLayer::insertSegmentVerticesForSnap(const QList<QgsSnappingResult>& snapResults)
+{
+  int returnval = 0;
+  QgsPoint layerPoint;
+  
+  QList<QgsSnappingResult>::const_iterator it = snapResults.constBegin();
+  for(; it != snapResults.constEnd(); ++it)
+    {
+      if(it->snappedVertexNr == -1) //segment snap
+	{
+	  layerPoint = it->snappedVertex;
+	  if(!insertVertexBefore(layerPoint.x(), layerPoint.y(), it->snappedAtGeometry, it->afterVertexNr))
+	    {
+	      returnval = 3;
+	    }
+	}
+    }
+  return returnval; 
+}
+
+int QgsVectorLayer::boundingBoxFromPointList(const QList<QgsPoint>& list, double& xmin, double& ymin, double& xmax, double& ymax) const
+
+{
+  if(list.size() < 1)
+    {
+      return 1;
+    }
+
+  xmin = std::numeric_limits<double>::max();
+  xmax = -std::numeric_limits<double>::max();
+  ymin = std::numeric_limits<double>::max();
+  ymax = -std::numeric_limits<double>::max();
+
+  for(QList<QgsPoint>::const_iterator it = list.constBegin(); it != list.constEnd(); ++it)
+    {
+      if(it->x() < xmin)
+	{
+	  xmin = it->x();
+	}
+      if(it->x() > xmax)
+	{
+	  xmax = it->x();
+	}
+      if(it->y() < ymin)
+	{
+	  ymin = it->y();
+	}
+      if(it->y() > ymax)
+	{
+	  ymax = it->y();
+	}
+    }
+
+  return 0;
+}
 
 void QgsVectorLayer::drawFeature(QPainter* p,
                                  QgsFeature& fet,

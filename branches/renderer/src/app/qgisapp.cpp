@@ -146,9 +146,14 @@
 #include "qgsmaptooladdfeature.h"
 #include "qgsmaptooladdisland.h"
 #include "qgsmaptooladdring.h"
+#include "qgsmaptooladdvertex.h"
+#include "qgsmaptooldeletevertex.h"
 #include "qgsmaptoolidentify.h"
+#include "qgsmaptoolmovefeature.h"
+#include "qgsmaptoolmovevertex.h"
 #include "qgsmaptoolpan.h"
 #include "qgsmaptoolselect.h"
+#include "qgsmaptoolsplitfeatures.h"
 #include "qgsmaptoolvertexedit.h"
 #include "qgsmaptoolzoom.h"
 #include "qgsmeasuretool.h"
@@ -409,10 +414,14 @@ QgisApp::~QgisApp()
   delete mMapTools.mCapturePoint;
   delete mMapTools.mCaptureLine;
   delete mMapTools.mCapturePolygon;
+  delete mMapTools.mMoveFeature;
+  delete mMapTools.mSplitFeatures;
   delete mMapTools.mSelect;
   delete mMapTools.mVertexAdd;
   delete mMapTools.mVertexMove;
   delete mMapTools.mVertexDelete;
+  delete mMapTools.mAddRing;
+  delete mMapTools.mAddIsland;
 
 #ifdef HAVE_PYTHON
   delete mPythonConsole;
@@ -481,10 +490,13 @@ void QgisApp::createActions()
   mActionSaveMapAsImage->setStatusTip(tr("Save map as image"));
   connect(mActionSaveMapAsImage, SIGNAL(triggered()), this, SLOT(saveMapAsImage()));
   //
-  mActionExportMapServer= new QAction(QIcon(myIconPath+"/mActionExportMapServer.png"), tr("Export to MapServer Map..."), this);
+ // TODO: Remove the mActionExportMapServer related code once the mapserver export plugin
+ // is complete and tested.
+ /* mActionExportMapServer= new QAction(QIcon(myIconPath+"/mActionExportMapServer.png"), tr("Export to MapServer Map..."), this);
   mActionExportMapServer->setShortcut(tr("M","Export as MapServer .map file"));
   mActionExportMapServer->setStatusTip(tr("Export as MapServer .map file"));
   connect(mActionExportMapServer, SIGNAL(triggered()), this, SLOT(exportMapServer()));
+  */
   //
   mActionFileExit= new QAction(QIcon(myIconPath+"/mActionFileExit.png"), tr("Exit"), this);
   mActionFileExit->setShortcut(tr("Ctrl+Q","Exit QGIS"));
@@ -731,6 +743,16 @@ void QgisApp::createActions()
   connect(mActionDeleteSelected, SIGNAL(triggered()), this, SLOT(deleteSelected()));
   mActionDeleteSelected->setEnabled(false);
   //
+  mActionMoveFeature = new QAction(QIcon(myIconPath+"/mActionMoveFeature.png"), tr("Move Feature"), this);
+  mActionMoveFeature->setStatusTip(tr("Move Feature"));
+  connect(mActionMoveFeature, SIGNAL(triggered()), this, SLOT(moveFeature()));
+  mActionMoveFeature->setEnabled(true);
+  //
+  mActionSplitFeatures = new QAction(QIcon(myIconPath+"/mActionSplitFeatures.png"), tr("Split Features"), this);
+  mActionSplitFeatures->setStatusTip(tr("Split Features"));
+  connect(mActionSplitFeatures, SIGNAL(triggered()), this, SLOT(splitFeatures()));
+  mActionSplitFeatures->setEnabled(true);
+  //
   mActionAddVertex = new QAction(QIcon(myIconPath+"/mActionAddVertex.png"), tr("Add Vertex"), this);
   mActionAddVertex->setStatusTip(tr("Add Vertex"));
   connect(mActionAddVertex, SIGNAL(triggered()), this, SLOT(addVertex()));
@@ -812,6 +834,10 @@ void QgisApp::createActionGroups()
   mMapToolGroup->addAction(mActionCapturePoint);
   mActionCapturePolygon->setCheckable(true);
   mMapToolGroup->addAction(mActionCapturePolygon);
+  mActionMoveFeature->setCheckable(true);
+  mMapToolGroup->addAction(mActionMoveFeature);
+  mActionSplitFeatures->setCheckable(true);
+  mMapToolGroup->addAction(mActionSplitFeatures);
   mMapToolGroup->addAction(mActionDeleteSelected);
   mActionAddVertex->setCheckable(true);
   mMapToolGroup->addAction(mActionAddVertex);
@@ -843,7 +869,10 @@ void QgisApp::createMenus()
   mFileMenu->addAction(mActionFileSaveAs);
   mFileMenu->addAction(mActionSaveMapAsImage);
   mFileMenu->addSeparator();
+  // TODO: remove the addAction once the mapserver export plugin is complete and tested
+  /*
   mFileMenu->addAction(mActionExportMapServer);
+  */
   mFileMenu->addAction(mActionFilePrint);
   mFileMenu->addSeparator();
   mFileMenu->addAction(mActionFileExit);
@@ -971,6 +1000,8 @@ void QgisApp::createToolBars()
   mDigitizeToolBar->addAction(mActionCapturePoint);
   mDigitizeToolBar->addAction(mActionCaptureLine);
   mDigitizeToolBar->addAction(mActionCapturePolygon);
+  mDigitizeToolBar->addAction(mActionMoveFeature);
+  mDigitizeToolBar->addAction(mActionSplitFeatures);
   mDigitizeToolBar->addAction(mActionDeleteSelected);
   mDigitizeToolBar->addAction(mActionAddVertex);
   mDigitizeToolBar->addAction(mActionDeleteVertex);
@@ -1132,7 +1163,10 @@ void QgisApp::setTheme(QString theThemeName)
   mActionFileOpen->setIconSet(QIcon(QPixmap(myIconPath + "/mActionFileOpen.png")));
   mActionFilePrint->setIconSet(QIcon(QPixmap(myIconPath + "/mActionFilePrint.png")));
   mActionSaveMapAsImage->setIconSet(QIcon(QPixmap(myIconPath + "/mActionSaveMapAsImage.png")));
+  // TODO: Remove the mActionExportMapServer related code once the mapserver export plugin 
+  /*
   mActionExportMapServer->setIconSet(QIcon(QPixmap(myIconPath + "/mActionExportMapServer.png")));
+  */
   mActionFileExit->setIconSet(QIcon(QPixmap(myIconPath + "/mActionFileExit.png")));
   mActionAddNonDbLayer->setIconSet(QIcon(QPixmap(myIconPath + "/mActionAddNonDbLayer.png")));
   mActionAddRasterLayer->setIconSet(QIcon(QPixmap(myIconPath + "/mActionAddRasterLayer.png")));
@@ -1202,6 +1236,11 @@ void QgisApp::setupConnections()
   connect(mMapCanvas, SIGNAL(scaleChanged(double)), this, SLOT(updateMouseCoordinatePrecision()));
 
   connect(mRenderSuppressionCBox, SIGNAL(toggled(bool )), mMapCanvas, SLOT(setRenderFlag(bool)));
+
+  // Connect warning dialog from project reading
+  connect(QgsProject::instance(), SIGNAL(warnOlderProjectVersion(QString)),
+          this, SLOT(warnOlderProjectVersion(QString)));
+
 }
 void QgisApp::createCanvas()
 {
@@ -1235,13 +1274,17 @@ void QgisApp::createCanvas()
   mMapTools.mCaptureLine->setAction(mActionCaptureLine);
   mMapTools.mCapturePolygon = new QgsMapToolAddFeature(mMapCanvas, QgsMapToolCapture::CapturePolygon);
   mMapTools.mCapturePolygon->setAction(mActionCapturePolygon);
+  mMapTools.mMoveFeature = new QgsMapToolMoveFeature(mMapCanvas);
+  mMapTools.mMoveFeature->setAction(mActionMoveFeature);
+  mMapTools.mSplitFeatures = new QgsMapToolSplitFeatures(mMapCanvas);
+  mMapTools.mSplitFeatures->setAction(mActionSplitFeatures);
   mMapTools.mSelect = new QgsMapToolSelect(mMapCanvas);
   mMapTools.mSelect->setAction(mActionSelect);
-  mMapTools.mVertexAdd = new QgsMapToolVertexEdit(mMapCanvas, QgsMapToolVertexEdit::AddVertex);
+  mMapTools.mVertexAdd = new QgsMapToolAddVertex(mMapCanvas);
   mMapTools.mVertexAdd->setAction(mActionAddVertex);
-  mMapTools.mVertexMove = new QgsMapToolVertexEdit(mMapCanvas, QgsMapToolVertexEdit::MoveVertex);
+  mMapTools.mVertexMove = new QgsMapToolMoveVertex(mMapCanvas);
   mMapTools.mVertexMove->setAction(mActionMoveVertex);
-  mMapTools.mVertexDelete = new QgsMapToolVertexEdit(mMapCanvas, QgsMapToolVertexEdit::DeleteVertex);
+  mMapTools.mVertexDelete = new QgsMapToolDeleteVertex(mMapCanvas);
   mMapTools.mVertexDelete->setAction(mActionDeleteVertex);
   mMapTools.mAddRing = new QgsMapToolAddRing(mMapCanvas);
   mMapTools.mAddRing->setAction(mActionAddRing);
@@ -3252,6 +3295,8 @@ void QgisApp::showAllLayers()
   legend()->selectAll(true);
 }
 
+// TODO: remove the method once the mapserver export plugin is complete and tested
+/*
 void QgisApp::exportMapServer()
 {
   // check to see if there are any layers to export
@@ -3280,6 +3325,7 @@ void QgisApp::exportMapServer()
   //      tr("No layers to export. You must add at least one layer to the map in order to export the view."));
   //}
 }
+*/
 
 
 
@@ -3394,6 +3440,16 @@ void QgisApp::deleteSelected()
 
   // notify the project we've made a change
   QgsProject::instance()->dirty(true);
+}
+
+void QgisApp::moveFeature()
+{
+  mMapCanvas->setMapTool(mMapTools.mMoveFeature);
+}
+
+void QgisApp::splitFeatures()
+{
+  mMapCanvas->setMapTool(mMapTools.mSplitFeatures);
 }
 
 void QgisApp::capturePoint()
@@ -5342,4 +5398,38 @@ void QgisApp::setToolbarVisibility(bool visibility)
   mAttributesToolBar->setVisible(visibility);
   mPluginToolBar->setVisible(visibility);
   mHelpToolBar->setVisible(visibility);
+}
+
+// Slot that gets called when the project file was saved with an older
+// version of QGIS
+
+void QgisApp::warnOlderProjectVersion(QString oldVersion)
+{
+  QSettings settings;
+
+  if ( settings.value("/qgis/warnOldProjectVersion", QVariant(true)).toBool() )
+  {
+    QMessageBox::warning(NULL, tr("Project file is older"),
+                         tr("<p>This project file was saved by an older version "
+                            "of QGIS. When saving this project file, "
+                            "QGIS will update it to the latest version, "
+                            "possibly rendering it useless for older versions of QGIS."
+                            "<p>Even though QGIS developers try to maintain backwards "
+                            "compatibility, some of the information from the old project "
+                            "file might be lost. To improve the quality of QGIS, we appreciate "
+                            "if you file a bug report at "
+                            "<a href=http://svn.qgis.org/trac/wiki>http://svn.qgis.org/trac/wiki</a> "
+                            "Be sure to include the old project file, and state the version of "
+                            "QGIS you used to discover the error."
+                            "<p>To remove this warning when opening an older project file, "
+                            "check the box 'Warn me when opening a project file saved with an "
+                            "older verision of QGIS' "
+                            "in the <tt>Settings:Options:General</tt> menu. "
+                            "<p>Version of the project file: %1<br>"
+                            "Current version of QGIS: %2")
+                         .arg(oldVersion)
+                         .arg(QGis::qgisVersion));
+    
+  }  
+  return;
 }

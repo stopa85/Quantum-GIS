@@ -136,6 +136,7 @@ QgsOptions::QgsOptions(QWidget *parent, Qt::WFlags fl) :
   capitaliseCheckBox->setChecked(settings.value("qgis/capitaliseLayerName", QVariant(false)).toBool());
 
   chbAskToSaveProjectChanges->setChecked(settings.value("qgis/askToSaveProjectChanges", QVariant(true)).toBool());
+  chbWarnOldProjectVersion->setChecked(settings.value("/qgis/warnOldProjectVersion", QVariant(true)).toBool());
   
   cmbWheelAction->setCurrentIndex(settings.value("/qgis/wheel_action", 0).toInt());
   spinZoomFactor->setValue(settings.value("/qgis/zoom_factor", 2).toDouble());
@@ -156,6 +157,16 @@ QgsOptions::QgsOptions(QWidget *parent, Qt::WFlags fl) :
   }
   bool myLocaleOverrideFlag = settings.value("locale/overrideFlag",false).toBool();
   grpLocale->setChecked(myLocaleOverrideFlag);
+
+  //set elements in digitizing tab
+  mLineWidthSpinBox->setValue(settings.value("/qgis/digitizing/line_width", 1).toInt());
+  QColor digitizingColor;
+  myRed = settings.value("/qgis/digitizing/line_color_red", 255).toInt();
+  myGreen = settings.value("/qgis/digitizing/line_color_green", 0).toInt();
+  myBlue = settings.value("/qgis/digitizing/line_color_blue", 0).toInt();
+  mLineColourToolButton->setColor(QColor(myRed, myGreen, myBlue));
+  mDefaultSnappingToleranceSpinBox->setValue(settings.value("/qgis/digitizing/default_snapping_tolerance", 0).toInt());
+  mSearchRadiusVertexEditSpinBox->setValue(settings.value("/qgis/digitizing/search_radius_vertex_edit", 10).toInt());
 }
 
 //! Destructor
@@ -188,6 +199,15 @@ void QgsOptions::on_pbnMeasureColour_clicked()
   }
 }
 
+void QgsOptions::on_mLineColourToolButton_clicked()
+{
+  QColor color = QColorDialog::getColor(mLineColourToolButton->color(), this);
+  if (color.isValid())
+  {
+    mLineColourToolButton->setColor(color);
+  }
+}
+
 void QgsOptions::themeChanged(const QString &newThemeName)
 {
   // Slot to change the theme as user scrolls through the choices
@@ -211,6 +231,7 @@ void QgsOptions::saveOptions()
   settings.writeEntry("/qgis/use_qimage_to_render", !(chkUseQPixmap->isChecked()));
   settings.setValue("qgis/capitaliseLayerName", capitaliseCheckBox->isChecked());
   settings.setValue("qgis/askToSaveProjectChanges", chbAskToSaveProjectChanges->isChecked());
+  settings.setValue("qgis/warnOldProjectVersion", chbWarnOldProjectVersion->isChecked());
 
   if(cmbTheme->currentText().length() == 0)
   {
@@ -261,7 +282,16 @@ void QgsOptions::saveOptions()
   settings.writeEntry("/qgis/wheel_action", cmbWheelAction->currentIndex());
   settings.writeEntry("/qgis/zoom_factor", spinZoomFactor->value());
 
-  settings.setValue("/qgis/splitterRedraw", cbxSplitterRedraw->isChecked());  
+  settings.setValue("/qgis/splitterRedraw", cbxSplitterRedraw->isChecked());
+
+  //digitizing
+  settings.setValue("/qgis/digitizing/line_width", mLineWidthSpinBox->value());
+  QColor digitizingColor = mLineColourToolButton->color();
+  settings.setValue("/qgis/digitizing/line_color_red", digitizingColor.red());
+  settings.setValue("/qgis/digitizing/line_color_green", digitizingColor.green());
+  settings.setValue("/qgis/digitizing/line_color_blue", digitizingColor.blue());
+  settings.setValue("/qgis/digitizing/default_snapping_tolerance", mDefaultSnappingToleranceSpinBox->value());
+  settings.setValue("/qgis/digitizing/search_radius_vertex_edit", mSearchRadiusVertexEditSpinBox->value());
   //
   // Locale settings 
   //
