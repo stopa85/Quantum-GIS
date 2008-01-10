@@ -1,9 +1,9 @@
 /***************************************************************************
-  testqgsapplication.cpp
-  --------------------------------------
+     testqgsapplication.cpp
+     --------------------------------------
 Date                 : Sun Sep 16 12:22:49 AKDT 2007
-Copyright            : (C) 2007 by Gary E. Sherman
-Email                : sherman at mrcc dot com
+Copyright            : (C) 2007 by Tim Sutton
+Email                : tim at linfiniti.com
  ***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -46,7 +46,10 @@ void TestQgsApplication::getPaths()
 {
   // init QGIS's paths - true means that all path will be inited from prefix
   QgsApplication::setPrefixPath(getQgisPath(), TRUE);
-
+#ifdef Q_OS_LINUX
+  QgsApplication::setPkgDataPath(getQgisPath() + "/../share/qgis");
+  QgsApplication::setPluginPath(getQgisPath() + "/../lib/qgis");
+#endif
   std::cout << "Prefix  PATH: " << QgsApplication::prefixPath().toLocal8Bit().data() << std::endl;
   std::cout << "Plugin  PATH: " << QgsApplication::pluginPath().toLocal8Bit().data() << std::endl;
   std::cout << "PkgData PATH: " << QgsApplication::pkgDataPath().toLocal8Bit().data() << std::endl;
@@ -57,6 +60,10 @@ void TestQgsApplication::getPaths()
 void TestQgsApplication::checkTheme()
 {
   QgsApplication::setPrefixPath(getQgisPath(), TRUE);
+#ifdef Q_OS_LINUX
+  QgsApplication::setPkgDataPath(getQgisPath() + "/../share/qgis");
+  QgsApplication::setPluginPath(getQgisPath() + "/../lib/qgis");
+#endif
   std::cout << "Prefix  PATH: " << QgsApplication::prefixPath().toLocal8Bit().data() << std::endl;
   std::cout << "Plugin  PATH: " << QgsApplication::pluginPath().toLocal8Bit().data() << std::endl;
   std::cout << "PkgData PATH: " << QgsApplication::pkgDataPath().toLocal8Bit().data() << std::endl;
