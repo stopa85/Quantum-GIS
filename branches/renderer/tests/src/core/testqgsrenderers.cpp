@@ -24,6 +24,7 @@
 #include <QApplication>
 #include <QFileInfo>
 #include <QDir>
+#include <QDesktopServices>
 
 #include <iostream>
 //qgis includes...
@@ -44,7 +45,7 @@ class TestQgsRenderers: public QObject
     void initTestCase();// will be called before the first testfunction is executed.
     void cleanupTestCase(){};// will be called after the last testfunction was executed.
     void init(){};// will be called before each testfunction is executed.
-    void cleanup(){};// will be called after every testfunction.
+    void cleanup();// will be called after every testfunction.
 
     void singleSymbol();
     void uniqueValue();
@@ -58,6 +59,7 @@ class TestQgsRenderers: public QObject
     QgsMapLayer * mpLinesLayer;
     QgsMapLayer * mpPolysLayer;
     QString mTestDataDir;
+    QString mReport;
 };
 
 void TestQgsRenderers::initTestCase()
@@ -122,27 +124,44 @@ void TestQgsRenderers::initTestCase()
   myLayers << mpLinesLayer->getLayerID();
   mpMapRenderer->setLayerSet(myLayers);
 }
+void TestQgsRenderers::cleanup()
+{
+  QString myReportFile = QDir::tempPath() + QDir::separator() + "renderertest.html";
+  QFile myFile ( myReportFile);
+  if ( myFile.open ( QIODevice::WriteOnly ) )
+  {
+    QTextStream myQTextStream ( &myFile );
+    myQTextStream << mReport;
+    myFile.close();
+    QDesktopServices::openUrl(myReportFile);
+  }
+  
+}
 
 void TestQgsRenderers::singleSymbol()
 {
+  mReport+= "<h1>Single symbol renderer test</h1>\n";
   QVERIFY ( setQml("single") );
   QVERIFY ( imageCheck("single"));
 }
 
 void TestQgsRenderers::uniqueValue()
 {
+  mReport+= "<h1>Unique value symbol renderer test</h1>\n";
   QVERIFY ( setQml("uniquevalue") );
   QVERIFY ( imageCheck("uniquevalue"));
 }
 
 void TestQgsRenderers::graduatedSymbol()
 {
+  mReport+= "<h1>Graduated symbol renderer test</h1>\n";
   QVERIFY ( setQml("graduated") );
   QVERIFY ( imageCheck("graduated"));
 }
 
 void TestQgsRenderers::continuousSymbol()
 {
+  mReport+= "<h1>Continuous symbol renderer test</h1>\n";
   QVERIFY ( setQml("continuous") );
   QVERIFY ( imageCheck("continuous"));
 }
@@ -206,6 +225,11 @@ bool TestQgsRenderers::imageCheck(QString theTestType)
   // Load the expected result pixmap
   //
   QPixmap myExpectedPixmap (mTestDataDir + "expected_" + theTestType + ".png");
+  mReport+= "<table><tr><td><img src=\"" +
+    QDir::tempPath() + QDir::separator() + theTestType + ".png" +
+    "\"></td>\n<td><img src=\"" +
+    mTestDataDir + "expected_" + theTestType + ".png" +
+    "\"></td></tr></table>\n";
   //
   // Now load the renderered image and the expected image
   // each into a byte array, and then iterate through them
