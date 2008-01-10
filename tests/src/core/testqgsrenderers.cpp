@@ -50,10 +50,12 @@ class TestQgsRenderers: public QObject
     void graduatedSymbol();
     void continuousSymbol();
   private:
-    bool setQml (QString theFileName);
+    bool setQml (QString theType); //uniquevalue / continuous / single
     bool hashCheck(QString theExpectedHash);
     QgsMapRender * mpMapRenderer;
-    QgsMapLayer * mpLayer;
+    QgsMapLayer * mpPointsLayer;
+    QgsMapLayer * mpLinesLayer;
+    QgsMapLayer * mpPolysLayer;
 };
 
 void TestQgsRenderers::initTestCase()
@@ -75,14 +77,36 @@ void TestQgsRenderers::initTestCase()
   std::cout << "PkgData PATH: " << QgsApplication::pkgDataPath().toLocal8Bit().data() << std::endl;
   std::cout << "User DB PATH: " << QgsApplication::qgisUserDbFilePath().toLocal8Bit().data() << std::endl;
 
-  //create a map layer that will be used in all tests...
-  QString myFileName (TEST_DATA_DIR); //defined in CmakeLists.txt
-  myFileName = myFileName + QDir::separator() + "points.shp";
-  QFileInfo myMapFileInfo ( myFileName );
-  mpLayer = new QgsVectorLayer ( myMapFileInfo.filePath(),
-            myMapFileInfo.completeBaseName(), "ogr" );
+  //
+  //create a point layer that will be used in all tests...
+  //
+  QString myDataDir (TEST_DATA_DIR); //defined in CmakeLists.txt
+  QString myPointsFileName = myDataDir + QDir::separator() + "points.shp";
+  QFileInfo myPointFileInfo ( myPointsFileName );
+  mpPointsLayer = new QgsVectorLayer ( myPointFileInfo.filePath(),
+            myPointFileInfo.completeBaseName(), "ogr" );
   // Register the layer with the registry
-  QgsMapLayerRegistry::instance()->addMapLayer(mpLayer);
+  QgsMapLayerRegistry::instance()->addMapLayer(mpPointsLayer);
+
+  //
+  //create a poly layer that will be used in all tests...
+  //
+  QString myPolysFileName = myDataDir + QDir::separator() + "polys.shp";
+  QFileInfo myPolyFileInfo ( myPolysFileName );
+  mpPolysLayer = new QgsVectorLayer ( myPolyFileInfo.filePath(),
+            myPolyFileInfo.completeBaseName(), "ogr" );
+  // Register the layer with the registry
+  QgsMapLayerRegistry::instance()->addMapLayer(mpPolysLayer);
+  
+  //
+  // Create a line layer that will be used in all tests...
+  //
+  QString myLinesFileName = myDataDir + QDir::separator() + "lines.shp";
+  QFileInfo myLineFileInfo ( myLinesFileName );
+  mpLinesLayer = new QgsVectorLayer ( myLineFileInfo.filePath(),
+            myLineFileInfo.completeBaseName(), "ogr" );
+  // Register the layer with the registry
+  QgsMapLayerRegistry::instance()->addMapLayer(mpLinesLayer);
   //
   // We only need maprender instead of mapcanvas
   // since maprender does not require a qui
@@ -90,64 +114,86 @@ void TestQgsRenderers::initTestCase()
   //
   mpMapRenderer = new QgsMapRender();
   QStringList myLayers;
-  myLayers << mpLayer->getLayerID();
+  myLayers << mpPointsLayer->getLayerID();
+  myLayers << mpPolysLayer->getLayerID();
+  myLayers << mpLinesLayer->getLayerID();
   mpMapRenderer->setLayerSet(myLayers);
 }
 
 void TestQgsRenderers::singleSymbol()
 {
-  QVERIFY ( setQml("points_single_symbol.qml") );
-  QVERIFY ( hashCheck("singlehash"));
+  QVERIFY ( setQml("single") );
+  QVERIFY ( hashCheck("single"));
 }
 
 void TestQgsRenderers::uniqueValue()
 {
-  QVERIFY ( setQml("points_uniquevalue_symbol.qml") );
-  QVERIFY ( hashCheck("uniquehash"));
+  QVERIFY ( setQml("uniquevalue") );
+  QVERIFY ( hashCheck("uniquevalue"));
 }
 
 void TestQgsRenderers::graduatedSymbol()
 {
-  QVERIFY ( setQml("points_graduated_symbol.qml") );
-  QVERIFY ( hashCheck("graduatedhash"));
+  QVERIFY ( setQml("graduated") );
+  QVERIFY ( hashCheck("graduated"));
 }
 
 void TestQgsRenderers::continuousSymbol()
 {
-  QVERIFY ( setQml("points_continuous_symbol.qml") );
-  QVERIFY ( hashCheck("continuoushash"));
+  QVERIFY ( setQml("continuous") );
+  QVERIFY ( hashCheck("continuous"));
 }
 //
 // Private helper functions not called directly by CTest
 //
 
-bool TestQgsRenderers::setQml (QString theFileName)
+bool TestQgsRenderers::setQml (QString theType)
 {
   //load a qml style and apply to our layer
   //the style will correspond to the renderer
   //type we are testing
-  if (! mpLayer->isValid() )
+  if (! mpPointsLayer->isValid() )
   {
     return false;
   }
-  QString myFileName (TEST_DATA_DIR); //defined in CmakeLists.txt
-  myFileName = myFileName + QDir::separator() + theFileName ;
+  QString myTestDir (TEST_DATA_DIR); //defined in CmakeLists.txt
+  QString myFileName = myTestDir + QDir::separator() + "points_" + theType + "_symbol.qml";
   bool myStyleFlag=false;
-  mpLayer->loadNamedStyle ( myFileName , myStyleFlag );
+  mpPointsLayer->loadNamedStyle ( myFileName , myStyleFlag );
+  if (!myStyleFlag)
+  {
+    return false;
+  }
+  else
+  {
+    myStyleFlag=false; //ready for next test
+  }
+  myFileName = myTestDir + QDir::separator() + "polys_" + theType + "_symbol.qml";
+  mpPolysLayer->loadNamedStyle ( myFileName , myStyleFlag );
+  if (!myStyleFlag)
+  {
+    return false;
+  }
+  else
+  {
+    myStyleFlag=false; //ready for next test
+  }
+  myFileName = myTestDir + QDir::separator() + "lines_" + theType + "_symbol.qml";
+  mpLinesLayer->loadNamedStyle ( myFileName , myStyleFlag );
   return myStyleFlag;
 }
 
 bool TestQgsRenderers::hashCheck(QString theExpectedHash)
 {
   //
-  // Now render our layer onto a pixmap 
+  // Now render our layers onto a pixmap 
   //
   QPixmap myPixmap( 800,800 );
   myPixmap.fill ( QColor ( "#98dbf9" ) );
   QPainter myPainter;
   myPainter.begin( &myPixmap );
   mpMapRenderer->setOutputSize( QSize ( 800,800 ),72 ); 
-  mpMapRenderer->setExtent(mpLayer->extent());
+  mpMapRenderer->setExtent(mpPointsLayer->extent());
   mpMapRenderer->render( &myPainter );
   myPainter.end();
   //
