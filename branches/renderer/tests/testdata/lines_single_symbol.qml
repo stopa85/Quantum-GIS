@@ -1,9 +1,9 @@
 <!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
 <qgis version="0.9.2-Ganymede" >
-  <maplayer minScale="1" maxScale="1e+08" scaleBasedVisibilityFlag="0" geometry="Polygon" type="vector" >
-    <id>polys20080110101725465</id>
-    <datasource>/Users/timlinux/dev/cpp/qgis_qml/tests/testdata/polys.shp</datasource>
-    <layername>polys</layername>
+  <maplayer minScale="1" maxScale="1e+08" scaleBasedVisibilityFlag="0" geometry="Line" type="vector" >
+    <id>lines20080110101725388</id>
+    <datasource>/Users/timlinux/dev/cpp/qgis_qml/tests/testdata/lines.shp</datasource>
+    <layername>lines</layername>
     <srs>
       <spatialrefsys>
         <proj4>+proj=longlat +ellps=WGS84 +no_defs</proj4>
@@ -13,49 +13,32 @@
         <description>Unknown datum based upon the GEM 10C ellipsoid</description>
         <projectionacronym>longlat</projectionacronym>
         <ellipsoidacronym>WGS84</ellipsoidacronym>
-        <geographicflag>false</geographicflag>
+        <geographicflag>true</geographicflag>
       </spatialrefsys>
     </srs>
-    <transparencyLevelInt>227</transparencyLevelInt>
+    <transparencyLevelInt>255</transparencyLevelInt>
     <provider>ogr</provider>
     <encoding>System</encoding>
-    <classificationattribute>Name</classificationattribute>
     <displayfield>Name</displayfield>
     <label>0</label>
     <attributeactions/>
-    <uniquevalue>
-      <classificationfield>0</classificationfield>
+    <singlesymbol>
       <symbol>
-        <lowervalue>Dam</lowervalue>
+        <lowervalue></lowervalue>
         <uppervalue></uppervalue>
-        <label>Dam</label>
+        <label></label>
         <pointsymbol>hard:circle</pointsymbol>
         <pointsize>11</pointsize>
         <rotationclassificationfield>-1</rotationclassificationfield>
         <scaleclassificationfield>-1</scaleclassificationfield>
-        <outlinecolor red="159" blue="159" green="159" />
-        <outlinestyle>SolidLine</outlinestyle>
+        <outlinecolor red="98" blue="109" green="111" />
+        <outlinestyle>DashLine</outlinestyle>
         <outlinewidth>2</outlinewidth>
-        <fillcolor red="27" blue="212" green="54" />
-        <fillpattern>Dense4Pattern</fillpattern>
+        <fillcolor red="0" blue="0" green="0" />
+        <fillpattern>NoBrush</fillpattern>
         <texturepath></texturepath>
       </symbol>
-      <symbol>
-        <lowervalue>Lake</lowervalue>
-        <uppervalue></uppervalue>
-        <label>Lake</label>
-        <pointsymbol>hard:circle</pointsymbol>
-        <pointsize>11</pointsize>
-        <rotationclassificationfield>-1</rotationclassificationfield>
-        <scaleclassificationfield>-1</scaleclassificationfield>
-        <outlinecolor red="144" blue="144" green="144" />
-        <outlinestyle>SolidLine</outlinestyle>
-        <outlinewidth>1</outlinewidth>
-        <fillcolor red="110" blue="217" green="194" />
-        <fillpattern>SolidPattern</fillpattern>
-        <texturepath></texturepath>
-      </symbol>
-    </uniquevalue>
+    </singlesymbol>
     <labelattributes>
       <label field="" text="Label" />
       <family field="" name="Lucida Grande" />
