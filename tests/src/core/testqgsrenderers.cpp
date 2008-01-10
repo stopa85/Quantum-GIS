@@ -14,17 +14,18 @@
  ***************************************************************************/
 #include <QtTest>
 #include <QObject>
-#include <QCryptographicHash>
 #include <QString>
 #include <QPainter>
 #include <QPixmap>
+#include <QByteArray>
+#include <QBuffer>
 #include <QStringList>
 #include <QObject>
-#include <iostream>
 #include <QApplication>
 #include <QFileInfo>
 #include <QDir>
 
+#include <iostream>
 //qgis includes...
 #include <qgsmaprender.h> 
 #include <qgsmaplayer.h> 
@@ -50,12 +51,13 @@ class TestQgsRenderers: public QObject
     void graduatedSymbol();
     void continuousSymbol();
   private:
-    bool setQml (QString theType); //uniquevalue / continuous / single
-    bool hashCheck(QString theExpectedHash);
+    bool setQml (QString theType); //uniquevalue / continuous / single / 
+    bool imageCheck(QString theType); //as above
     QgsMapRender * mpMapRenderer;
     QgsMapLayer * mpPointsLayer;
     QgsMapLayer * mpLinesLayer;
     QgsMapLayer * mpPolysLayer;
+    QString mTestDataDir;
 };
 
 void TestQgsRenderers::initTestCase()
@@ -81,7 +83,8 @@ void TestQgsRenderers::initTestCase()
   //create a point layer that will be used in all tests...
   //
   QString myDataDir (TEST_DATA_DIR); //defined in CmakeLists.txt
-  QString myPointsFileName = myDataDir + QDir::separator() + "points.shp";
+  mTestDataDir = myDataDir + QDir::separator();
+  QString myPointsFileName = mTestDataDir + "points.shp";
   QFileInfo myPointFileInfo ( myPointsFileName );
   mpPointsLayer = new QgsVectorLayer ( myPointFileInfo.filePath(),
             myPointFileInfo.completeBaseName(), "ogr" );
@@ -91,7 +94,7 @@ void TestQgsRenderers::initTestCase()
   //
   //create a poly layer that will be used in all tests...
   //
-  QString myPolysFileName = myDataDir + QDir::separator() + "polys.shp";
+  QString myPolysFileName = mTestDataDir + "polys.shp";
   QFileInfo myPolyFileInfo ( myPolysFileName );
   mpPolysLayer = new QgsVectorLayer ( myPolyFileInfo.filePath(),
             myPolyFileInfo.completeBaseName(), "ogr" );
@@ -101,7 +104,7 @@ void TestQgsRenderers::initTestCase()
   //
   // Create a line layer that will be used in all tests...
   //
-  QString myLinesFileName = myDataDir + QDir::separator() + "lines.shp";
+  QString myLinesFileName = mTestDataDir + "lines.shp";
   QFileInfo myLineFileInfo ( myLinesFileName );
   mpLinesLayer = new QgsVectorLayer ( myLineFileInfo.filePath(),
             myLineFileInfo.completeBaseName(), "ogr" );
@@ -123,25 +126,25 @@ void TestQgsRenderers::initTestCase()
 void TestQgsRenderers::singleSymbol()
 {
   QVERIFY ( setQml("single") );
-  QVERIFY ( hashCheck("single"));
+  QVERIFY ( imageCheck("single"));
 }
 
 void TestQgsRenderers::uniqueValue()
 {
   QVERIFY ( setQml("uniquevalue") );
-  QVERIFY ( hashCheck("uniquevalue"));
+  QVERIFY ( imageCheck("uniquevalue"));
 }
 
 void TestQgsRenderers::graduatedSymbol()
 {
   QVERIFY ( setQml("graduated") );
-  QVERIFY ( hashCheck("graduated"));
+  QVERIFY ( imageCheck("graduated"));
 }
 
 void TestQgsRenderers::continuousSymbol()
 {
   QVERIFY ( setQml("continuous") );
-  QVERIFY ( hashCheck("continuous"));
+  QVERIFY ( imageCheck("continuous"));
 }
 //
 // Private helper functions not called directly by CTest
@@ -156,8 +159,7 @@ bool TestQgsRenderers::setQml (QString theType)
   {
     return false;
   }
-  QString myTestDir (TEST_DATA_DIR); //defined in CmakeLists.txt
-  QString myFileName = myTestDir + QDir::separator() + "points_" + theType + "_symbol.qml";
+  QString myFileName = mTestDataDir + "points_" + theType + "_symbol.qml";
   bool myStyleFlag=false;
   mpPointsLayer->loadNamedStyle ( myFileName , myStyleFlag );
   if (!myStyleFlag)
@@ -168,7 +170,7 @@ bool TestQgsRenderers::setQml (QString theType)
   {
     myStyleFlag=false; //ready for next test
   }
-  myFileName = myTestDir + QDir::separator() + "polys_" + theType + "_symbol.qml";
+  myFileName = mTestDataDir + "polys_" + theType + "_symbol.qml";
   mpPolysLayer->loadNamedStyle ( myFileName , myStyleFlag );
   if (!myStyleFlag)
   {
@@ -178,36 +180,65 @@ bool TestQgsRenderers::setQml (QString theType)
   {
     myStyleFlag=false; //ready for next test
   }
-  myFileName = myTestDir + QDir::separator() + "lines_" + theType + "_symbol.qml";
+  myFileName = mTestDataDir + "lines_" + theType + "_symbol.qml";
   mpLinesLayer->loadNamedStyle ( myFileName , myStyleFlag );
   return myStyleFlag;
 }
 
-bool TestQgsRenderers::hashCheck(QString theExpectedHash)
+bool TestQgsRenderers::imageCheck(QString theTestType)
 {
   //
   // Now render our layers onto a pixmap 
   //
   QPixmap myPixmap( 800,800 );
   myPixmap.fill ( QColor ( "#98dbf9" ) );
-  QPainter myPainter;
-  myPainter.begin( &myPixmap );
+  QPainter myPainter( &myPixmap );
   mpMapRenderer->setOutputSize( QSize ( 800,800 ),72 ); 
   mpMapRenderer->setExtent(mpPointsLayer->extent());
   mpMapRenderer->render( &myPainter );
   myPainter.end();
   //
-  // Then get the checksum for the pixmap
-  // and see if it is what was expected...
+  // Save the pixmap to disk so the user can make a 
+  // visual assessment if needed
   //
-  QByteArray myBytes;
-  QBuffer myBuffer(&myBytes);
-  myBuffer.open(QIODevice::WriteOnly);
-  myPixmap.save(&myBuffer, "PNG"); // writes pixmap into bytes in PNG format 
-  myPixmap.save ("/tmp/" + theExpectedHash + ".png");
-  QByteArray myHash = QCryptographicHash::hash ( myBytes, QCryptographicHash::Sha1);
-  QString myHashString = myHash;
-  if ( theExpectedHash == myHashString )
+  myPixmap.save ("/tmp/" + theTestType + ".png");
+  //
+  // Load the expected result pixmap
+  //
+  QPixmap myExpectedPixmap (mTestDataDir + "expected_" + theTestType + ".png");
+  //
+  // Now load the renderered image and the expected image
+  // each into a byte array, and then iterate through them
+  // counting how many dissimilar pixel values there are
+  //
+  QByteArray myResultBytes;
+  QBuffer myResultBuffer(&myResultBytes);
+  myResultBuffer.open(QIODevice::WriteOnly);
+  myPixmap.save(&myResultBuffer, "PNG"); // writes pixmap into bytes in PNG format 
+
+  QByteArray myExpectedBytes;
+  QBuffer myExpectedBuffer(&myExpectedBytes);
+  myExpectedBuffer.open(QIODevice::WriteOnly);
+  myExpectedPixmap.save(&myExpectedBuffer, "PNG"); // writes pixmap into bytes in PNG format 
+
+  if (myExpectedBytes.size() != myResultBytes.size())
+  {
+    qDebug ("Test image and result image for " + theTestType + " are different - FAILING!");
+    return false;
+  }
+  int myMismatchCount = 0;
+  for (int i = 0; i < myExpectedBytes.size(); ++i) 
+  {
+    if (myExpectedBytes.at(i) != myResultBytes.at(i))
+    {
+      ++myMismatchCount;
+    }
+  }
+  qDebug (QString::number(myMismatchCount).toLocal8Bit() + "/" +
+          QString::number(myExpectedBytes.size()).toLocal8Bit() + 
+    " bytes mismatched");; 
+
+  if ( myMismatchCount==0 )
   {
     return true;
   }
