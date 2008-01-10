@@ -201,7 +201,7 @@ bool TestQgsRenderers::imageCheck(QString theTestType)
   // Save the pixmap to disk so the user can make a 
   // visual assessment if needed
   //
-  myPixmap.save ("/tmp/" + theTestType + ".png");
+  myPixmap.save (QDir::tempPath() + QDir::separator() + theTestType + ".png");
   //
   // Load the expected result pixmap
   //
