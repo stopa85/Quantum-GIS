@@ -2,7 +2,7 @@
 <qgis version="0.9.2-Ganymede" >
   <maplayer minScale="1" maxScale="1e+08" scaleBasedVisibilityFlag="0" geometry="Point" type="vector" >
     <id>points20080109122431720</id>
-    <datasource>/tmp/points.shp</datasource>
+    <datasource>/Users/timlinux/dev/cpp/qgis_qml/tests/testdata/points.shp</datasource>
     <layername>points</layername>
     <srs>
       <spatialrefsys>
@@ -13,7 +13,7 @@
         <description>WGS 84</description>
         <projectionacronym>longlat</projectionacronym>
         <ellipsoidacronym>WGS84</ellipsoidacronym>
-        <geographicflag>true</geographicflag>
+        <geographicflag>false</geographicflag>
       </spatialrefsys>
     </srs>
     <transparencyLevelInt>255</transparencyLevelInt>
@@ -47,7 +47,7 @@
         <uppervalue></uppervalue>
         <label></label>
         <pointsymbol>svg:/Users/timlinux/apps/qgis0.9.2-renderer.app/Contents/MacOS/share/qgis/svg/gpsicons/plane_orange.svg</pointsymbol>
-        <pointsize>11</pointsize>
+        <pointsize>18</pointsize>
         <rotationclassificationfield>1</rotationclassificationfield>
         <scaleclassificationfield>2</scaleclassificationfield>
         <outlinecolor red="0" blue="0" green="0" />

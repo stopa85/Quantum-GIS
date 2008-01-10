@@ -1,9 +1,9 @@
 <!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
 <qgis version="0.9.2-Ganymede" >
-  <maplayer minScale="1" maxScale="1e+08" scaleBasedVisibilityFlag="0" geometry="Polygon" type="vector" >
-    <id>polys20080110101725465</id>
-    <datasource>/Users/timlinux/dev/cpp/qgis_qml/tests/testdata/polys.shp</datasource>
-    <layername>polys</layername>
+  <maplayer minScale="1" maxScale="1e+08" scaleBasedVisibilityFlag="0" geometry="Line" type="vector" >
+    <id>lines20080110101725388</id>
+    <datasource>/Users/timlinux/dev/cpp/qgis_qml/tests/testdata/lines.shp</datasource>
+    <layername>lines</layername>
     <srs>
       <spatialrefsys>
         <proj4>+proj=longlat +ellps=WGS84 +no_defs</proj4>
@@ -13,49 +13,64 @@
         <description>Unknown datum based upon the GEM 10C ellipsoid</description>
         <projectionacronym>longlat</projectionacronym>
         <ellipsoidacronym>WGS84</ellipsoidacronym>
-        <geographicflag>false</geographicflag>
+        <geographicflag>true</geographicflag>
       </spatialrefsys>
     </srs>
-    <transparencyLevelInt>227</transparencyLevelInt>
+    <transparencyLevelInt>255</transparencyLevelInt>
     <provider>ogr</provider>
     <encoding>System</encoding>
-    <classificationattribute>Name</classificationattribute>
+    <classificationattribute>Value</classificationattribute>
     <displayfield>Name</displayfield>
     <label>0</label>
     <attributeactions/>
-    <uniquevalue>
-      <classificationfield>0</classificationfield>
+    <graduatedsymbol>
+      <classificationfield>1</classificationfield>
       <symbol>
-        <lowervalue>Dam</lowervalue>
-        <uppervalue></uppervalue>
-        <label>Dam</label>
+        <lowervalue>0.999</lowervalue>
+        <uppervalue>1.333</uppervalue>
+        <label>Important</label>
         <pointsymbol>hard:circle</pointsymbol>
         <pointsize>11</pointsize>
         <rotationclassificationfield>-1</rotationclassificationfield>
         <scaleclassificationfield>-1</scaleclassificationfield>
-        <outlinecolor red="159" blue="159" green="159" />
-        <outlinestyle>SolidLine</outlinestyle>
-        <outlinewidth>2</outlinewidth>
-        <fillcolor red="27" blue="212" green="54" />
-        <fillpattern>Dense4Pattern</fillpattern>
+        <outlinecolor red="107" blue="111" green="98" />
+        <outlinestyle>DashLine</outlinestyle>
+        <outlinewidth>5</outlinewidth>
+        <fillcolor red="0" blue="0" green="0" />
+        <fillpattern>NoBrush</fillpattern>
         <texturepath></texturepath>
       </symbol>
       <symbol>
-        <lowervalue>Lake</lowervalue>
-        <uppervalue></uppervalue>
-        <label>Lake</label>
+        <lowervalue>1.333</lowervalue>
+        <uppervalue>1.667</uppervalue>
+        <label>Secondary</label>
         <pointsymbol>hard:circle</pointsymbol>
         <pointsize>11</pointsize>
         <rotationclassificationfield>-1</rotationclassificationfield>
         <scaleclassificationfield>-1</scaleclassificationfield>
-        <outlinecolor red="144" blue="144" green="144" />
+        <outlinecolor red="134" blue="99" green="120" />
         <outlinestyle>SolidLine</outlinestyle>
+        <outlinewidth>3</outlinewidth>
+        <fillcolor red="0" blue="0" green="0" />
+        <fillpattern>NoBrush</fillpattern>
+        <texturepath></texturepath>
+      </symbol>
+      <symbol>
+        <lowervalue>1.667</lowervalue>
+        <uppervalue>2.001</uppervalue>
+        <label>Marginal</label>
+        <pointsymbol>hard:circle</pointsymbol>
+        <pointsize>11</pointsize>
+        <rotationclassificationfield>-1</rotationclassificationfield>
+        <scaleclassificationfield>-1</scaleclassificationfield>
+        <outlinecolor red="124" blue="143" green="171" />
+        <outlinestyle>DashDotDotLine</outlinestyle>
         <outlinewidth>1</outlinewidth>
-        <fillcolor red="110" blue="217" green="194" />
-        <fillpattern>SolidPattern</fillpattern>
+        <fillcolor red="0" blue="0" green="0" />
+        <fillpattern>NoBrush</fillpattern>
         <texturepath></texturepath>
       </symbol>
-    </uniquevalue>
+    </graduatedsymbol>
     <labelattributes>
       <label field="" text="Label" />
       <family field="" name="Lucida Grande" />
