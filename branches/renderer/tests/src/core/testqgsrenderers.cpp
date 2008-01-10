@@ -43,9 +43,9 @@ class TestQgsRenderers: public QObject
   Q_OBJECT;
   private slots:
     void initTestCase();// will be called before the first testfunction is executed.
-    void cleanupTestCase(){};// will be called after the last testfunction was executed.
+    void cleanupTestCase();// will be called after the last testfunction was executed.
     void init(){};// will be called before each testfunction is executed.
-    void cleanup();// will be called after every testfunction.
+    void cleanup(){};// will be called after every testfunction.
 
     void singleSymbol();
     void uniqueValue();
@@ -124,7 +124,7 @@ void TestQgsRenderers::initTestCase()
   myLayers << mpLinesLayer->getLayerID();
   mpMapRenderer->setLayerSet(myLayers);
 }
-void TestQgsRenderers::cleanup()
+void TestQgsRenderers::cleanupTestCase()
 {
   QString myReportFile = QDir::tempPath() + QDir::separator() + "renderertest.html";
   QFile myFile ( myReportFile);
@@ -133,7 +133,7 @@ void TestQgsRenderers::cleanup()
     QTextStream myQTextStream ( &myFile );
     myQTextStream << mReport;
     myFile.close();
-    QDesktopServices::openUrl(myReportFile);
+    QDesktopServices::openUrl("file://"+myReportFile);
   }
   
 }
@@ -225,7 +225,9 @@ bool TestQgsRenderers::imageCheck(QString theTestType)
   // Load the expected result pixmap
   //
   QPixmap myExpectedPixmap (mTestDataDir + "expected_" + theTestType + ".png");
-  mReport+= "<table><tr><td><img src=\"" +
+  mReport+= "<table>"
+    "<tr><td>Test Result:</td><td>Expected Result:</td></tr>\n"
+    "<tr><td><img src=\"" +
     QDir::tempPath() + QDir::separator() + theTestType + ".png" +
     "\"></td>\n<td><img src=\"" +
     mTestDataDir + "expected_" + theTestType + ".png" +
