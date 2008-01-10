@@ -268,8 +268,14 @@ public:
     /** \brief Accessor for contrast enhancement algorithm. */
     QgsContrastEnhancement::CONTRAST_ENHANCEMENT_ALGORITHM getContrastEnhancementAlgorithm();
     
+    /** \brief Accessor for contrast enhancement algorithm. */
+    QString getContrastEnhancementAlgorithmAsQString();
+    
     /** \brief Mutator for contrast enhancement algorithm. */
     void setContrastEnhancementAlgorithm(QgsContrastEnhancement::CONTRAST_ENHANCEMENT_ALGORITHM theAlgorithm);
+    
+    /** \brief Mutator for contrast enhancement algorithm. */
+    void setContrastEnhancementAlgorithm(QString theAlgorithm, bool theGenerateLookupTableFlag=true);
     
     //
     // Mutator for the contrast enhancement function
@@ -291,8 +297,14 @@ public:
     /** \brief Accessor for colour shader algorithm. */
     COLOR_SHADING_ALGORITHM getColorShadingAlgorithm();
 
+    /** \brief Accessor for colour shader algorithm. */
+    QSstring getColorShadingAlgorithmAsQString();
+    
     /** \brief Mutator for color shader algorithm. */
     void setColorShadingAlgorithm(COLOR_SHADING_ALGORITHM theShaderAlgorithm);
+    
+    /** \brief Mutator for color shader algorithm. */
+    void setColorShadingAlgorithm(QString theShaderAlgorithm);
     
     /** \brief Accessor for raster shader */
     QgsRasterShader* getRasterShader();

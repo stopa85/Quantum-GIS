@@ -1005,7 +1005,7 @@ p, li { white-space: pre-wrap; }
           </spacer>
          </item>
          <item>
-          <widget class="QLabel" name="labelColorScaling" >
+          <widget class="QLabel" name="labelContrastEnhancement" >
            <property name="sizePolicy" >
             <sizepolicy vsizetype="Fixed" hsizetype="Fixed" >
              <horstretch>0</horstretch>
@@ -1016,7 +1016,7 @@ p, li { white-space: pre-wrap; }
             <enum>Qt::LeftToRight</enum>
            </property>
            <property name="text" >
-            <string>Color Scaling</string>
+            <string>Contrast Enhancement</string>
            </property>
           </widget>
          </item>
