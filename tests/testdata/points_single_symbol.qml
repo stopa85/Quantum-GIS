@@ -1,42 +1,40 @@
 <!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
 <qgis version="0.9.2-Ganymede" >
-  <maplayer minScale="1" maxScale="1e+08" scaleBasedVisibilityFlag="0" geometry="Point" type="vector" >
-    <id>points20080109122431720</id>
-    <datasource>/tmp/points.shp</datasource>
+  <maplayer minScale="0" maxScale="1e+08" scaleBasedVisibilityFlag="0" geometry="Point" type="vector" >
+    <id>points20080103150949100</id>
+    <datasource>/Users/timlinux/dev/cpp/qgis_qml/tests/testdata/points.shp</datasource>
     <layername>points</layername>
     <srs>
       <spatialrefsys>
-        <proj4>+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs</proj4>
-        <srsid>2585</srsid>
-        <srid>4326</srid>
-        <epsg>4326</epsg>
-        <description>WGS 84</description>
+        <proj4>+proj=longlat +ellps=WGS84 +no_defs</proj4>
+        <srsid>1449</srsid>
+        <srid>4031</srid>
+        <epsg>4031</epsg>
+        <description>Unknown datum based upon the GEM 10C ellipsoid</description>
         <projectionacronym>longlat</projectionacronym>
         <ellipsoidacronym>WGS84</ellipsoidacronym>
-        <geographicflag>true</geographicflag>
+        <geographicflag>false</geographicflag>
       </spatialrefsys>
     </srs>
     <transparencyLevelInt>255</transparencyLevelInt>
     <provider>ogr</provider>
     <encoding>System</encoding>
-    <classificationattribute>Heading</classificationattribute>
-    <classificationattribute>Importance</classificationattribute>
-    <displayfield>Class</displayfield>
+    <displayfield>Name</displayfield>
     <label>0</label>
     <attributeactions/>
     <singlesymbol>
+      <angleclassificationfield>-1</angleclassificationfield>
+      <scaleclassificationfield>-1</scaleclassificationfield>
       <symbol>
         <lowervalue></lowervalue>
         <uppervalue></uppervalue>
         <label></label>
-        <pointsymbol>hard:triangle</pointsymbol>
-        <pointsize>11</pointsize>
-        <rotationclassificationfield>1</rotationclassificationfield>
-        <scaleclassificationfield>2</scaleclassificationfield>
+        <pointsymbol>hard:circle</pointsymbol>
+        <pointsize>6</pointsize>
         <outlinecolor red="0" blue="0" green="0" />
         <outlinestyle>SolidLine</outlinestyle>
         <outlinewidth>1</outlinewidth>
-        <fillcolor red="185" blue="167" green="193" />
+        <fillcolor red="1" blue="193" green="34" />
         <fillpattern>SolidPattern</fillpattern>
         <texturepath></texturepath>
       </symbol>

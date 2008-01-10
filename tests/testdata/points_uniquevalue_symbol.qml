@@ -2,7 +2,7 @@
 <qgis version="0.9.2-Ganymede" >
   <maplayer minScale="1" maxScale="1e+08" scaleBasedVisibilityFlag="0" geometry="Point" type="vector" >
     <id>points20080103150949100</id>
-    <datasource>/tmp/points.shp</datasource>
+    <datasource>/Users/timlinux/dev/cpp/qgis_qml/tests/testdata/points.shp</datasource>
     <layername>points</layername>
     <srs>
       <spatialrefsys>
@@ -13,62 +13,80 @@
         <description>Unknown datum based upon the GEM 10C ellipsoid</description>
         <projectionacronym>longlat</projectionacronym>
         <ellipsoidacronym>WGS84</ellipsoidacronym>
-        <geographicflag>false</geographicflag>
+        <geographicflag>true</geographicflag>
       </spatialrefsys>
     </srs>
     <transparencyLevelInt>255</transparencyLevelInt>
     <provider>ogr</provider>
     <encoding>System</encoding>
-    <classificationattribute>Heading</classificationattribute>
-    <classificationattribute>Importance</classificationattribute>
-    <classificationattribute>Class</classificationattribute>
-    <displayfield>Class</displayfield>
+    <classificationattribute>Name</classificationattribute>
+    <displayfield>Name</displayfield>
     <label>0</label>
     <attributeactions/>
     <uniquevalue>
       <classificationfield>0</classificationfield>
       <symbol>
-        <lowervalue>B52</lowervalue>
+        <lowervalue>bar</lowervalue>
         <uppervalue></uppervalue>
         <label></label>
-        <pointsymbol>svg:/Users/timlinux/apps/qgis0.9.2-renderer.app/Contents/MacOS/share/qgis/svg/gpsicons/plane.svg</pointsymbol>
-        <pointsize>11</pointsize>
-        <rotationclassificationfield>1</rotationclassificationfield>
-        <scaleclassificationfield>2</scaleclassificationfield>
+        <pointsymbol>svg:/Users/timlinux/apps/qgis0.9.2-renderer.app/Contents/MacOS/share/qgis/svg/biology/Deciduous.svg</pointsymbol>
+        <pointsize>20</pointsize>
         <outlinecolor red="0" blue="0" green="0" />
         <outlinestyle>SolidLine</outlinestyle>
         <outlinewidth>1</outlinewidth>
-        <fillcolor red="229" blue="16" green="232" />
+        <fillcolor red="12" blue="174" green="174" />
         <fillpattern>SolidPattern</fillpattern>
         <texturepath></texturepath>
       </symbol>
       <symbol>
-        <lowervalue>Biplane</lowervalue>
+        <lowervalue>foo</lowervalue>
         <uppervalue></uppervalue>
         <label></label>
-        <pointsymbol>hard:rectangle</pointsymbol>
-        <pointsize>11</pointsize>
-        <rotationclassificationfield>-1</rotationclassificationfield>
-        <scaleclassificationfield>2</scaleclassificationfield>
-        <outlinecolor red="0" blue="0" green="0" />
-        <outlinestyle>DashLine</outlinestyle>
-        <outlinewidth>1</outlinewidth>
-        <fillcolor red="231" blue="132" green="129" />
-        <fillpattern>CrossPattern</fillpattern>
-        <texturepath></texturepath>
-      </symbol>
-      <symbol>
-        <lowervalue>Jet</lowervalue>
-        <uppervalue></uppervalue>
-        <label></label>
-        <pointsymbol>hard:triangle</pointsymbol>
-        <pointsize>11</pointsize>
-        <rotationclassificationfield>1</rotationclassificationfield>
-        <scaleclassificationfield>2</scaleclassificationfield>
+        <pointsymbol>svg:/Users/timlinux/apps/qgis0.9.2-renderer.app/Contents/MacOS/share/qgis/svg/gpsicons/anchor.svg</pointsymbol>
+        <pointsize>20</pointsize>
         <outlinecolor red="0" blue="0" green="0" />
         <outlinestyle>SolidLine</outlinestyle>
         <outlinewidth>1</outlinewidth>
-        <fillcolor red="82" blue="126" green="252" />
+        <fillcolor red="239" blue="133" green="98" />
+        <fillpattern>SolidPattern</fillpattern>
+        <texturepath></texturepath>
+      </symbol>
+      <symbol>
+        <lowervalue>grey</lowervalue>
+        <uppervalue></uppervalue>
+        <label></label>
+        <pointsymbol>svg:/Users/timlinux/apps/qgis0.9.2-renderer.app/Contents/MacOS/share/qgis/svg/gpsicons/parachute.svg</pointsymbol>
+        <pointsize>20</pointsize>
+        <outlinecolor red="0" blue="0" green="0" />
+        <outlinestyle>SolidLine</outlinestyle>
+        <outlinewidth>1</outlinewidth>
+        <fillcolor red="212" blue="14" green="9" />
+        <fillpattern>SolidPattern</fillpattern>
+        <texturepath></texturepath>
+      </symbol>
+      <symbol>
+        <lowervalue>red</lowervalue>
+        <uppervalue></uppervalue>
+        <label></label>
+        <pointsymbol>svg:/Users/timlinux/apps/qgis0.9.2-renderer.app/Contents/MacOS/share/qgis/svg/gpsicons/deer.svg</pointsymbol>
+        <pointsize>20</pointsize>
+        <outlinecolor red="0" blue="0" green="0" />
+        <outlinestyle>SolidLine</outlinestyle>
+        <outlinewidth>1</outlinewidth>
+        <fillcolor red="136" blue="2" green="172" />
+        <fillpattern>SolidPattern</fillpattern>
+        <texturepath></texturepath>
+      </symbol>
+      <symbol>
+        <lowervalue>yellow</lowervalue>
+        <uppervalue></uppervalue>
+        <label></label>
+        <pointsymbol>svg:/Users/timlinux/apps/qgis0.9.2-renderer.app/Contents/MacOS/share/qgis/svg/gpsicons/conveneince.svg</pointsymbol>
+        <pointsize>20</pointsize>
+        <outlinecolor red="0" blue="0" green="0" />
+        <outlinestyle>SolidLine</outlinestyle>
+        <outlinewidth>1</outlinewidth>
+        <fillcolor red="98" blue="107" green="18" />
         <fillpattern>SolidPattern</fillpattern>
         <texturepath></texturepath>
       </symbol>
