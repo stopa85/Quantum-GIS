@@ -17,16 +17,17 @@
 #ifndef QGSMAPTOOLCAPTURE_H
 #define QGSMAPTOOLCAPTURE_H
 
-#include "qgsmaptool.h"
+#include "qgsmapcanvassnapper.h"
+#include "qgsmaptooledit.h"
 #include "qgspoint.h"
 
-
+class QgsGeometry;
 class QgsRubberBand;
 
 #include <QPoint>
 #include <QList>
 
-class QgsMapToolCapture : public QgsMapTool
+class QgsMapToolCapture : public QgsMapToolEdit
 {
   public:
   
@@ -50,7 +51,9 @@ class QgsMapToolCapture : public QgsMapTool
     virtual void canvasPressEvent(QMouseEvent * e);
   
     //! Overridden mouse release event
-    virtual void canvasReleaseEvent(QMouseEvent * e)=0;    
+    virtual void canvasReleaseEvent(QMouseEvent * e)=0;   
+
+    virtual void keyPressEvent(QKeyEvent* e);
     
     //! Resize rubber band
     virtual void renderComplete();
@@ -76,12 +79,15 @@ class QgsMapToolCapture : public QgsMapTool
     /** rubber band for polylines and polygons */
     QgsRubberBand* mRubberBand;
 
-    /** List to store the points of digitised lines and polygons */
+    /** List to store the points of digitised lines and polygons (in layer coordinates)*/
     QList<QgsPoint> mCaptureList;
 
     /**Adds a point to the rubber band (in map coordinates) and to the capture list (in layer coordinates)
      @return 0 in case of success, 1 if current layer is not a vector layer, 2 if coordinate transformation failed*/
     int addVertex(const QPoint& p);
+
+    /**Removes the last vertex from mRubberBand and mCaptureList*/
+    void undo();
 
 };
 

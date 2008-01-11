@@ -18,3 +18,4 @@ ENDIF (GRASS_FOUND)
 
 INSTALL(FILES qgisplugin.h qgsrendererplugin.h DESTINATION ${QGIS_INCLUDE_DIR})
 
+SUBDIRS (quick_print)
