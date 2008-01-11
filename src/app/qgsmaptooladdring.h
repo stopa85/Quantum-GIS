@@ -21,6 +21,6 @@ class QgsMapToolAddRing: public QgsMapToolCapture
 {
  public:
   QgsMapToolAddRing(QgsMapCanvas* canvas);
-  ~QgsMapToolAddRing();
+  virtual ~QgsMapToolAddRing();
   void canvasReleaseEvent(QMouseEvent * e);
 };

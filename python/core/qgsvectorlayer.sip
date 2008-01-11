@@ -130,6 +130,14 @@ public:
    */
   virtual QString subsetString();
 
+/**Returns the features contained in the rectangle. Considers the changed, added, deleted and permanent features
+   @return 0 in case of success*/
+  int featuresInRectangle(const QgsRect& searchRect, QList<QgsFeature>& features, bool fetchGeometries = true, bool fetchAttributes = true);	
+
+/**Gets the feature at the given feature id. Considers the changed, added, deleted and permanent features
+   @return 0 in case of success*/
+  int getFeatureAtId(int featureId, QgsFeature& f, bool fetchGeometries = true, bool fetchAttributes = true);	
+
   /** Adds a feature
       @param lastFeatureInBatch  If True, will also go to the effort of e.g. updating the extents.
       @return                    Irue in case of success and False in case of error
@@ -141,21 +149,18 @@ public:
    *  in the given ring, item (first number is index 0), and feature
    *  Not meaningful for Point geometries
    */
-  bool insertVertexBefore(double x, double y, int atFeatureId,
-                          QgsGeometryVertexIndex beforeVertex);
+  bool insertVertexBefore(double x, double y, int atFeatureId, int beforeVertex);
 
   /** Moves the vertex at the given position number,
    *  ring and item (first number is index 0), and feature
    *  to the given coordinates
    */
-  bool moveVertexAt(double x, double y, int atFeatureId,
-                    QgsGeometryVertexIndex atVertex);
+  bool moveVertexAt(double x, double y, int atFeatureId, int atVertex);
 
   /** Deletes the vertex at the given position number,
    *  ring and item (first number is index 0), and feature
    */
-  bool deleteVertexAt(int atFeatureId,
-                      QgsGeometryVertexIndex atVertex);
+  bool deleteVertexAt(int atFeatureId, int atVertex);
 
   /** Deletes the selected features
    *  @return true in case of success and false otherwise
@@ -172,6 +177,47 @@ existing rings, 5 no feature found where ring can be inserted*/
 3 if new polygon ring not disjoint with existing rings, 4 if no feature was selected, 5 if several features are selected, \
 6 if selected geometry not found*/
   int addIsland(const QList<QgsPoint>& ring);
+
+ /**Translates feature by dx, dy
+     @param featureId id of the feature to translate
+     @param dx translation of x-coordinate
+     @param dy translation of y-coordinate
+     @return 0 in case of success*/
+  int translateFeature(int featureId, double dx, double dy);
+
+/**Splits features cut by the given line
+     @param splitLine line that splits the layer features
+     @param topologicalEditing true if topological editing is enabled
+     @return 0 in case of success, 1 if several intersections but only 1 split done, \
+  2 if intersection too complex to be handled, else other error*/
+  int splitFeatures(const QList<QgsPoint>& splitLine, bool topologicalEditing = false);
+
+/**Changes the specified geometry such that it has no intersections with other \
+     polygon (or multipolygon) geometries in this vector layer
+  @param geom geometry to modify
+  @return 0 in case of success*/
+  int removePolygonIntersections(QgsGeometry* geom);
+
+/**Adds topological points for every vertex of the 
+   geometry
+  @param geom the geometry where each vertex is added to segments of other features
+  Note: geom is not going to be modified by the function
+  @return 0 in case of success*/
+  int addTopologicalPoints(QgsGeometry* geom);
+		
+/**Adds a vertex to segments which intersect point p but don't 
+   already have a vertex there. If a feature already has a vertex at position p, 
+   no additional vertex is inserted. This method is usefull for topological 
+  editing.
+  @param p position of the vertex
+  @return 0 in case of success*/
+  int addTopologicalPoints(const QgsPoint& p);
+
+ /**Inserts vertices to the snapped segments.
+   This is usefull for topological editing if snap to segment is enabled.
+   @param snapResults results collected from the snapping operation
+   @return 0 in case of success*/
+  int insertSegmentVerticesForSnap(const QList<QgsSnappingResult>& snapResults);	
 
   /** Set labels on */
   void setLabelOn( bool on );
@@ -190,41 +236,18 @@ existing rings, 5 no feature found where ring can be inserted*/
      If there is no point within this tolerance, point is left unchanged.
      @param tolerance   The snapping tolerance
      @return true if the position of point has been changed, and false otherwise */
-  bool snapPoint(QgsPoint& point /In, Out/, double tolerance);
+  bool snapPoint(QgsPoint& point, double tolerance);
 
-  /**Snaps a point to the closest vertex if there is one within the snapping tolerance
-     @param atVertex          Set to a vertex index of the snapped-to vertex
-     @param beforeVertexIndex Returns the index of the vertex before atVertex (for rubber band purposes). -1 if no vertex is before
-     @param afterVertexIndex  Returns the index of the vertex after atVertex (for rubber band purposes). -1 if no vertex is after
-     @param snappedFeatureId  Set to the feature ID that where the snapped-to vertex belongs to.
-     @param snappedGeometry   Set to the geometry that the snapped-to vertex belongs to.
-     @param tolerance         The snapping tolerance
-     @return true if the position of the points have been changed, and false otherwise (or not implemented by the provider) 
-     
-     TODO: Handle returning multiple verticies if they are coincident
-   */
-  bool snapVertexWithContext(QgsPoint& point,
-                             QgsGeometryVertexIndex& atVertex /Out/,
-			     int& beforeVertexIndex /Out/,
-			     int& afterVertexIndex /Out/,
-                             int& snappedFeatureId /Out/,
-                             QgsGeometry& snappedGeometry /Out/,
-                             double tolerance);
-
-  /**Snaps a point to the closest line segment if there is one within the snapping tolerance
-     @param beforeVertex      Set to a value where the snapped-to segment is before this vertex index
-     @param snappedFeatureId  Set to the feature ID that where the snapped-to segment belongs to.
-     @param snappedGeometry   Set to the geometry that the snapped-to segment belongs to.
-     @param tolerance         The snapping tolerance
-     @return true if the position of the points have been changed, and false otherwise (or not implemented by the provider) 
-     
-     TODO: Handle returning multiple lineFeatures if they are coincident
-   */
-  bool snapSegmentWithContext(QgsPoint& point /In, Out/,
-                              QgsGeometryVertexIndex& beforeVertex /Out/,
-                              int& snappedFeatureId /Out/, 
-                              QgsGeometry& snappedGeometry /Out/,
-                              double tolerance);
+/**Snaps to segment or vertex within given tolerance
+     @param startPoint point to snap (in layer coordinates)
+     @param snappingTolerance distance tolerance for snapping
+     @param snappingResults snapping results. Key is the distance between startPoint and snapping target
+     @param snap_to to segment / to vertex
+     @return 0 in case of success
+  */
+  // TODO: wrap QMultiMap
+  //int snapWithContext(const QgsPoint& startPoint, double snappingTolerance, QMultiMap<double, QgsSnappingResult>& snappingResults,
+	//      QgsSnapper::SNAP_TO snap_to);
 
   /**
     Commits edited attributes. Depending on the feature id,

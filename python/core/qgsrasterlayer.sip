@@ -446,7 +446,8 @@ public:
      *
      *  \retval 0 if not using the data provider model (i.e. directly using GDAL)
      */
-    // TODO: const QgsRasterDataProvider* getDataProvider() const;
+    // PyQGIS: commented out, has the same signature as the function above
+    // const QgsRasterDataProvider* getDataProvider() const;
 
      /** \brief Mutator for mUserDefinedRGBMinMaxFlag */
     void setUserDefinedRGBMinMax(bool theBool);

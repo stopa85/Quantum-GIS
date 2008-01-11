@@ -10,6 +10,7 @@ qgslayerprojectionselector.cpp
 qgsmapcanvas.cpp
 qgsmapcanvasitem.cpp
 qgsmapcanvasmap.cpp
+qgsmapcanvassnapper.cpp
 qgsmapoverviewcanvas.cpp
 qgsmaptool.cpp
 qgsmaptoolemitpoint.cpp
@@ -39,6 +40,7 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ../core
      ${SQLITE3_INCLUDE_DIR}
      ${CMAKE_CURRENT_BINARY_DIR}
      ${CMAKE_CURRENT_BINARY_DIR}/../ui
+     ${GEOS_INCLUDE_DIR}
 )
 
 IF (WIN32)
@@ -96,6 +98,7 @@ qgslayerprojectionselector.h
 qgsmapcanvas.h
 qgsmapcanvasitem.h
 qgsmapcanvasmap.h
+qgsmapcanvassnapper.h
 qgsmapoverviewcanvas.h
 qgsmaptool.h
 qgsmaptoolemitpoint.h

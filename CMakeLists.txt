@@ -1,4 +1,3 @@
-
 PROJECT(qgis0.9.1-raster)
 
 # TODO:

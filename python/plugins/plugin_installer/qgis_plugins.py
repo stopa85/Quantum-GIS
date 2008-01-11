@@ -86,6 +86,15 @@ class unzip:
             if name.endswith('/'):
                 dirs.append(name)
 
+        if len(dirs) == 0:
+          # this means there is no top level directory in the
+          # zip file. We'll assume the first entry contains the
+          # directory and use it
+          entry = zf.namelist()[0]
+          dir = entry.split('/')[0]
+          dir += '/'
+          dirs.append(dir)
+
         dirs.sort()
         return dirs
 
@@ -122,6 +131,10 @@ def install_plugin(plugin, plugindir, repos):
         except:
             return (False, "Failed to download file to %s" % outfile)
             return
+
+        # make sure that the parent directory exists
+        if not os.path.exists(plugindir):
+            os.makedirs(plugindir)
 
         print "Extracting to plugin directory (%s)" % plugindir
         try:
