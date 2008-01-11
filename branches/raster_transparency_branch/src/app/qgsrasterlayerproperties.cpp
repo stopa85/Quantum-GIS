@@ -447,6 +447,9 @@ void QgsRasterLayerProperties::sync()
    * Symbology Tab
    */
   //decide whether user can change rgb settings
+#ifdef QGISDEBUG
+      QgsDebugMsg("QgsRasterLayerProperties::sync DrawingStyle = " + QString::number(rasterLayer->getDrawingStyle()));
+#endif
   switch (rasterLayer->getDrawingStyle())
   {
     case QgsRasterLayer::SINGLE_BAND_GRAY:
@@ -532,22 +535,27 @@ void QgsRasterLayerProperties::sync()
   //
 #ifdef QGISDEBUG
       QgsDebugMsg("QgsRasterLayerProperties::sync colorShadingAlgorithm = " + QString::number(rasterLayer->getColorShadingAlgorithm()));
-#endif  
-  if(rasterLayer->getColorShadingAlgorithm()==QgsRasterLayer::PSEUDO_COLOR)
-  {
-    cboxColorMap->setCurrentText(tr("Pseudocolor"));
-  }
-  else if(rasterLayer->getColorShadingAlgorithm()==QgsRasterLayer::FREAK_OUT)
-  {
-    cboxColorMap->setCurrentText(tr("Freak Out"));
-  }
-  else if(rasterLayer->getColorShadingAlgorithm()==QgsRasterLayer::COLOR_RAMP)
-  {
-    cboxColorMap->setCurrentText(tr("Custom Colormap"));
-  }
-  else if(rasterLayer->getColorShadingAlgorithm()==QgsRasterLayer::USER_DEFINED)
-  {
-    cboxColorMap->setCurrentText(tr("User Defined"));
+#endif
+  if (rasterLayer->getDrawingStyle() == QgsRasterLayer::SINGLE_BAND_PSEUDO_COLOR || 
+      rasterLayer->getDrawingStyle() == QgsRasterLayer::PALETTED_SINGLE_BAND_PSEUDO_COLOR || 
+      rasterLayer->getDrawingStyle() == QgsRasterLayer::MULTI_BAND_SINGLE_BAND_PSEUDO_COLOR) 
+  {   
+    if(rasterLayer->getColorShadingAlgorithm()==QgsRasterLayer::PSEUDO_COLOR)
+    {
+      cboxColorMap->setCurrentText(tr("Pseudocolor"));
+    }
+    else if(rasterLayer->getColorShadingAlgorithm()==QgsRasterLayer::FREAK_OUT)
+    {
+      cboxColorMap->setCurrentText(tr("Freak Out"));
+    }
+    else if(rasterLayer->getColorShadingAlgorithm()==QgsRasterLayer::COLOR_RAMP)
+    {
+      cboxColorMap->setCurrentText(tr("Custom Colormap"));
+    }
+    else if(rasterLayer->getColorShadingAlgorithm()==QgsRasterLayer::USER_DEFINED)
+    {
+      cboxColorMap->setCurrentText(tr("User Defined"));
+    }
   }
   else
   {
@@ -700,7 +708,10 @@ if(QgsRasterLayer::PALETTED_COLOR != rasterLayer->getDrawingStyle() &&
   }
   
   //restore colormap tab if the layer has custom classification
-  syncColormapTab();
+  if(cboxColorMap->currentText() == tr("Custom Colormap"))
+  {
+    syncColormapTab();
+  }
 
 #ifdef QGISDEBUG
       QgsDebugMsg("QgsRasterLayerProperties::sync populate general tab");
@@ -804,20 +815,16 @@ void QgsRasterLayerProperties::syncColormapTab()
 
   sboxNumberOfEntries->setValue(myColorRampList.size());
 
-  //restore state of 'enable custom colormap' combo box
-  if(QgsRasterLayer::COLOR_RAMP == rasterLayer->getColorShadingAlgorithm())
-    {
-      cboxColorMap->setCurrentText(tr("Custom Colormap"));
-      //restor state of 'color interpolation' combo box
-      if(QgsColorRampShader::DISCRETE == ((QgsColorRampShader*)rasterLayer->getRasterShader()->getRasterShaderFunction())->getColorRampType())
-      {
-        cboxColorInterpolation->setCurrentIndex(cboxColorInterpolation->findText(tr("Discrete")));
-      }
-      else
-      {
-        cboxColorInterpolation->setCurrentIndex(cboxColorInterpolation->findText(tr("Linearly")));
-      }
-    }
+  //restor state of 'color interpolation' combo box
+  if(QgsColorRampShader::DISCRETE == myRasterShaderFunction->getColorRampType())
+  {
+    cboxColorInterpolation->setCurrentIndex(cboxColorInterpolation->findText(tr("Discrete")));
+  }
+  else
+  {
+    cboxColorInterpolation->setCurrentIndex(cboxColorInterpolation->findText(tr("Linearly")));
+  }
+
 }
 
 bool QgsRasterLayerProperties::validUserDefinedMinMax()

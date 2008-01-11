@@ -298,7 +298,7 @@ public:
     COLOR_SHADING_ALGORITHM getColorShadingAlgorithm();
 
     /** \brief Accessor for colour shader algorithm. */
-    QSstring getColorShadingAlgorithmAsQString();
+    QString getColorShadingAlgorithmAsQString();
     
     /** \brief Mutator for color shader algorithm. */
     void setColorShadingAlgorithm(COLOR_SHADING_ALGORITHM theShaderAlgorithm);
