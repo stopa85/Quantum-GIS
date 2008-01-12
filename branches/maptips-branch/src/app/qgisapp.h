@@ -43,6 +43,7 @@ class QgsHelpViewer;
 class QgsLegend;
 class QgsMapCanvas;
 class QgsMapLayer;
+class QgsMapTip;
 class QgsMapTool;
 class QgsPoint;
 class QgsProviderRegistry;
@@ -57,6 +58,7 @@ class QgsRect;
 #include <QAbstractSocket>
 
 #include "qgsconfig.h"
+#include <qgspoint.h>
 
 /*! \class QgisApp
  * \brief Main window for the Qgis application
@@ -450,6 +452,7 @@ private:
   void createOverview();
   void createCanvas();
   bool createDB();
+  void createMapTips();
   //toolbars ----------------------------------------
   QToolBar *mFileToolBar;
   QToolBar *mLayerToolBar;
@@ -638,6 +641,18 @@ private:
     */
   QString mRasterFileFilter;
 
+  /** Timer for map tips
+   */
+  QTimer *mpMapTipsTimer;
+
+  /** Point of last mouse position in map coordinates (used with MapTips)
+   */
+  QgsPoint mLastMapPosition;
+
+  /* Maptip object
+   */
+  QgsMapTip *  mpMaptip;
+  
 #ifdef HAVE_PYTHON
   QgsPythonDialog* mPythonConsole;
 #endif
