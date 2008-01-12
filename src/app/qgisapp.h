@@ -381,6 +381,12 @@ public slots:
   //! Shows a warning when an old project file is read.
   void warnOlderProjectVersion(QString);
 
+  //! Toggle map tips on/off
+  void toggleMapTips();
+
+  //! Show the map tip
+  void showMapTip();
+
 signals:
   /** emitted when a key is pressed and we want non widget sublasses to be able
     to pick up on this (e.g. maplayer) */
@@ -512,6 +518,7 @@ private:
   QAction *mActionZoomLast;
   QAction *mActionZoomToLayer;
   QAction *mActionIdentify;
+  QAction *mActionMapTips;
   QAction *mActionSelect;
   QAction *mActionOpenTable;
   QAction *mActionMeasure;
@@ -652,6 +659,9 @@ private:
   /* Maptip object
    */
   QgsMapTip *  mpMaptip;
+  
+  // Flag to indicate if maptips are on or off
+  bool mMapTipsVisible;
   
 #ifdef HAVE_PYTHON
   QgsPythonDialog* mPythonConsole;
