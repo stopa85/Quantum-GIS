@@ -20,6 +20,7 @@ qgsmessageviewer.cpp
 qgsprojectionselector.cpp
 qgsrubberband.cpp
 qgsvertexmarker.cpp
+qgsmaptip.cpp
 )
 
 SET(QGIS_GUI_MOC_HDRS
