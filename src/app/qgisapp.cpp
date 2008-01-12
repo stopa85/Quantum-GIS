@@ -65,6 +65,7 @@
 #include <QtGlobal>
 #include <QRegExp>
 #include <QRegExpValidator>
+#include <QTimer>
 //
 // Mac OS X Includes
 // Must include before GEOS 3 due to unqualified use of 'Point'
@@ -106,12 +107,14 @@
 #include "qgsmaplayerregistry.h"
 #include "qgsmapoverviewcanvas.h"
 #include "qgsmaprender.h"
+#include "qgsmaptip.h"
 #include "qgsmessageviewer.h"
 #include "qgsoptions.h"
 #include "qgspastetransformations.h"
 #include "qgspluginitem.h"
 #include "qgspluginmanager.h"
 #include "qgspluginregistry.h"
+#include "qgspoint.h"
 #include "qgsproject.h"
 #include "qgsprojectproperties.h"
 #include "qgsproviderregistry.h"
@@ -324,6 +327,7 @@ static void customSrsValidation_(QgsSpatialRefSys* srs)
   createCanvas();
   createOverview();
   createLegend();
+  createMapTips();
 
   mComposer = new QgsComposer(this); // Map composer
   mInternalClipboard = new QgsClipboard; // create clipboard
@@ -1361,6 +1365,18 @@ bool QgisApp::createDB()
     }
   }
   return TRUE;
+}
+
+void QgisApp::createMapTips()
+{
+  // Set up the timer for maptips. The timer is reset everytime the mouse is moved
+  mpMapTipsTimer = new QTimer ( mMapCanvas );
+  // connect the timer to the maptips slot
+  connect ( mpMapTipsTimer, SIGNAL ( timeout() ), this, SLOT ( showMapTip() ) );
+  // set the interval to 0.850 seconds - timer will be started next time the mouse moves
+  mpMapTipsTimer->setInterval ( 850 );
+  // Create the maptips object
+  mpMaptip = new QgsMapTip ();
 }
 
 // Update file menu with the current list of recently accessed projects
@@ -3661,7 +3677,21 @@ void QgisApp::showMouseCoordinate(QgsPoint & p)
   {
     mCoordsLabel->setMinimumWidth(mCoordsLabel->width());
   }
+  
+  // store the point, we need it for when the maptips timer fires
+  mLastMapPosition = p;
+
+  // we use this slot to control the timer for maptips since it is fired each time
+  // the mouse moves.
+  if ( mMapCanvas->underMouse() )
+  {
+    // Clear the maptip (this is done conditionally)
+    mpMaptip->clear ( mMapCanvas );
+    // don't start the timer if the mouse is not over the map canvas
+    mpMapTipsTimer->start();
 }
+}
+
 
 void QgisApp::showScale(double theScale)
 {

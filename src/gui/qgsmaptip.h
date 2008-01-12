@@ -20,6 +20,7 @@ class QgsMapCanvas;
 class QPoint;
 class QString;
 
+
 /** \ingroup gui
  * A maptip is a class to display a tip on a map canvas
  * when a mouse is hovered over a feature.
