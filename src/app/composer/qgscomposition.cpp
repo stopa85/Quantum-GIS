@@ -48,11 +48,11 @@ QgsCompositionPaper::~QgsCompositionPaper ( )
 QgsComposition::QgsComposition( QgsComposer *c, int id ) 
 {
   setupUi(this);
-  connect(mPaperWidthLineEdit, SIGNAL(returnPressed()), this, SLOT(paperSizeChanged()));
-  connect(mPaperHeightLineEdit, SIGNAL(returnPressed()), this, SLOT(paperSizeChanged()));
+  connect(mPaperWidthLineEdit, SIGNAL(editingFinished()), this, SLOT(paperSizeChanged()));
+  connect(mPaperHeightLineEdit, SIGNAL(editingFinished()), this, SLOT(paperSizeChanged()));
   connect(mPaperOrientationComboBox, SIGNAL(activated(int)), this, SLOT(paperSizeChanged()));
   connect(mPaperSizeComboBox, SIGNAL(activated(int)), this, SLOT(paperSizeChanged()));
-  connect(mResolutionLineEdit, SIGNAL(returnPressed()), this, SLOT(resolutionChanged()));
+  connect(mResolutionLineEdit, SIGNAL(editingFinished()), this, SLOT(resolutionChanged()));
 
 #ifdef QGISDEBUG
   std::cerr << "QgsComposition::QgsComposition()" << std::endl;
@@ -751,7 +751,7 @@ void QgsComposition::setTool ( Tool tool )
     if ( mNewCanvasItem ) delete mNewCanvasItem;
 
     // Create new object outside the visible area
-    QgsComposerLabel *lab = new QgsComposerLabel ( this, mNextItemId++, -1000, -1000, tr("Label"), (int) (mPaperHeight/40));
+    QgsComposerLabel *lab = new QgsComposerLabel ( this, mNextItemId++, -1000, -1000, tr("Label"), (int) (mPaperHeight/20));
 
     mNewCanvasItem = dynamic_cast <QGraphicsItem *> (lab);
     mComposer->showItemOptions ( lab->options() );

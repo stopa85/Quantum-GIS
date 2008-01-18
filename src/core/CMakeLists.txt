@@ -12,12 +12,13 @@ qgsclipper.cpp
 qgscontexthelp.cpp
 qgscoordinatetransform.cpp
 qgsdatasourceuri.cpp
+qgsdbfilterproxymodel.cpp
+qgsdbtablemodel.cpp
 qgsdistancearea.cpp
 qgsexception.cpp
 qgsfeature.cpp
 qgsfield.cpp
 qgsgeometry.cpp
-qgsgeometryvertexindex.cpp
 qgshttptransaction.cpp
 qgsoverlayobjectpositionmanager.cpp
 qgslabel.cpp
@@ -32,6 +33,8 @@ qgsmessageoutput.cpp
 qgsoverlayobject.cpp
 qgspoint.cpp
 qgsproject.cpp
+qgsprojectfiletransform.cpp
+qgsprojectversion.cpp
 qgsprojectproperty.cpp
 qgsprovidercountcalcevent.cpp
 qgsproviderextentcalcevent.cpp
@@ -43,14 +46,26 @@ qgsrunprocess.cpp
 qgsscalecalculator.cpp
 qgssearchstring.cpp
 qgssearchtreenode.cpp
+qgssnapper.cpp
 qgsspatialrefsys.cpp
 qgsvectordataprovider.cpp
 qgsvectorfilewriter.cpp
 qgsvectorlayer.cpp
 qgsvectoroverlay.cpp
 
+raster/qgscliptominmaxenhancement.cpp
+raster/qgscolorrampshader.cpp
 raster/qgscolortable.cpp
+raster/qgscontrastenhancement.cpp
+raster/qgscontrastenhancementfunction.cpp
+raster/qgsfreakoutshader.cpp
+raster/qgslinearminmaxenhancement.cpp
+raster/qgslinearminmaxenhancementwithclip.cpp
+raster/qgspseudocolorshader.cpp
 raster/qgsrasterlayer.cpp
+raster/qgsrastertransparency.cpp
+raster/qgsrastershader.cpp
+raster/qgsrastershaderfunction.cpp
 
 renderer/qgscontinuouscolorrenderer.cpp
 renderer/qgsgraduatedsymbolrenderer.cpp
@@ -89,7 +104,6 @@ qgsrunprocess.h
 qgsvectorlayer.h
 
 raster/qgsrasterlayer.h
-raster/qgsrasterviewport.h
 )
 
 QT4_WRAP_CPP(QGIS_CORE_MOC_SRCS ${QGIS_CORE_MOC_HDRS})
@@ -175,8 +189,8 @@ ENDIF (APPLE)
 
 INSTALL(TARGETS qgis_core
   RUNTIME DESTINATION ${QGIS_BIN_DIR}
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib)
+  LIBRARY DESTINATION ${QGIS_LIB_DIR}
+  ARCHIVE DESTINATION ${QGIS_LIB_DIR})
 
 
 # Added by Tim to install headers
@@ -195,7 +209,6 @@ qgsexception.h
 qgsfeature.h
 qgsfield.h
 qgsgeometry.h
-qgsgeometryvertexindex.h
 qgshttptransaction.h
 qgslabel.h
 qgslabelattributes.h
@@ -209,6 +222,7 @@ qgsmessageoutput.h
 qgsoverlayobject.h
 qgspoint.h
 qgsproject.h
+qgsprojectfiletransform.h
 qgsprojectproperty.h
 qgsprovidercountcalcevent.h
 qgsproviderextentcalcevent.h
@@ -220,15 +234,27 @@ qgsrunprocess.h
 qgsscalecalculator.h
 qgssearchstring.h
 qgssearchtreenode.h
+qgssnapper.h
 qgsspatialrefsys.h
 qgsvectordataprovider.h
 qgsvectorfilewriter.h
 qgsvectorlayer.h
 qgsvectoroverlay.h
 
+raster/qgscliptominmaxenhancement.h
+raster/qgscolorrampshader.h
 raster/qgscolortable.h
+raster/qgscontrastenhancement.h
+raster/qgscontrastenhancementfunction.h
+raster/qgsfreakoutshader.h
+raster/qgslinearminmaxenhancement.h
+raster/qgslinearminmaxenhancementwithclip.h
+raster/qgspseudocolorshader.h
 raster/qgsrasterbandstats.h
 raster/qgsrasterlayer.h
+raster/qgsrastertransparency.h
+raster/qgsrastershader.h
+raster/qgsrastershaderfunction.h
 
 renderer/qgscontinuouscolorrenderer.h
 renderer/qgsgraduatedsymbolrenderer.h

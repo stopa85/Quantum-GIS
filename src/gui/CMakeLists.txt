@@ -10,6 +10,7 @@ qgslayerprojectionselector.cpp
 qgsmapcanvas.cpp
 qgsmapcanvasitem.cpp
 qgsmapcanvasmap.cpp
+qgsmapcanvassnapper.cpp
 qgsmapoverviewcanvas.cpp
 qgsmaptool.cpp
 qgsmaptoolemitpoint.cpp
@@ -27,6 +28,7 @@ qgsencodingfiledialog.h
 qgslayerprojectionselector.h
 qgsmapcanvas.h
 qgsmapoverviewcanvas.h
+qgsmessageviewer.h
 qgsmaptoolemitpoint.h
 qgsprojectionselector.h
 )
@@ -38,6 +40,7 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ../core
      ${SQLITE3_INCLUDE_DIR}
      ${CMAKE_CURRENT_BINARY_DIR}
      ${CMAKE_CURRENT_BINARY_DIR}/../ui
+     ${GEOS_INCLUDE_DIR}
 )
 
 IF (WIN32)
@@ -79,8 +82,8 @@ ENDIF (APPLE)
 
 INSTALL(TARGETS qgis_gui
   RUNTIME DESTINATION ${QGIS_BIN_DIR}
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib)
+  LIBRARY DESTINATION ${QGIS_LIB_DIR}
+  ARCHIVE DESTINATION ${QGIS_LIB_DIR})
 
 # for installing headers
 
@@ -95,6 +98,7 @@ qgslayerprojectionselector.h
 qgsmapcanvas.h
 qgsmapcanvasitem.h
 qgsmapcanvasmap.h
+qgsmapcanvassnapper.h
 qgsmapoverviewcanvas.h
 qgsmaptool.h
 qgsmaptoolemitpoint.h

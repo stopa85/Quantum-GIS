@@ -180,7 +180,7 @@ class QgsPostgresProvider:public QgsVectorDataProvider
     QString dataComment() const;
 
     /** Reset the layer - for a PostgreSQL layer, this means clearing the PQresult
-     * pointer and setting it to 0
+     * pointer, setting it to 0 and reloading the field list
      */
     void reset();
 
@@ -327,6 +327,9 @@ class QgsPostgresProvider:public QgsVectorDataProvider
     void repaintRequested();
 
   private:
+    /** Load the field list
+    */
+    void loadFields();
 
     bool mFirstFetch; //true if fetch forward is called the first time after select
     std::vector < QgsFeature > features;
@@ -367,7 +370,11 @@ class QgsPostgresProvider:public QgsVectorDataProvider
      */
     QString mSchemaName;
     /**
-     * SQL statement used to limit the features retreived
+     * Name of the current schema
+     */
+    QString mCurrentSchema;
+    /**
+     * SQL statement used to limit the features retrieved
      */
     QString sqlWhereClause;
     /**

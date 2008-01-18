@@ -44,8 +44,6 @@
 #include <QSizeGrip>
 #include <iostream>
 
-#include <Q3ValueList>
-
 QgsComposer::QgsComposer( QgisApp *qgis): QMainWindow()
 {
   setupUi(this);
@@ -130,9 +128,15 @@ void QgsComposer::open ( void )
   if ( mFirstTime ) {
     mComposition->createDefault();
     mFirstTime = false;
+    show();
+    zoomFull(); // zoomFull() does not work properly until we have called show()
   }
 
-  show();
+  else{
+    show(); //make sure the window is displayed - with a saved project, it's possible to not have already called show()
+            //is that a bug?
+    raise(); //bring the composer window to the front
+  }
 }
 
 void QgsComposer::removeWidgetChildren ( QWidget *w )
@@ -772,9 +776,10 @@ void QgsComposer::on_mActionExportAsSVG_activated(void)
 // QT 4 QPicture does not support export to SVG, so we're still using Q3Picture.
 // When QGIS moves to Qt 4.3, we can use QSvgGenerator instead.
 
+  QString myQSettingsLabel = "/UI/displaySVGWarning";
   QSettings myQSettings;
 
-  bool displaySVGWarning = myQSettings.value("/UI/displaySVGWarning", true).toBool();
+  bool displaySVGWarning = myQSettings.value(myQSettingsLabel, true).toBool();
 
   if (displaySVGWarning)
   {
@@ -783,6 +788,7 @@ void QgsComposer::on_mActionExportAsSVG_activated(void)
     m->setCheckBoxText(tr("Don't show this message again"));
     m->setCheckBoxState(Qt::Unchecked);
     m->setCheckBoxVisible(true);
+    m->setCheckBoxQSettingsLabel(myQSettingsLabel);
     m->setMessageAsHtml(tr("<p>The SVG export function in Qgis has several "
                            "problems due to bugs and deficiencies in the "
                            "Qt4 svg code. Of note, text does not "
@@ -795,17 +801,6 @@ void QgsComposer::on_mActionExportAsSVG_activated(void)
                            "satisfactory."
                            "</p>"));
     m->exec();
-
-    if (m->checkBoxState() == Qt::Checked)
-    {
-      myQSettings.setValue("/UI/displaySVGWarning", false); //turn off the warning next time
-    }
-    else
-    {
-      myQSettings.setValue("/UI/displaySVGWarning", true);
-    }
-    //delete m; // this causes a segfault
-
   }
   QString myLastUsedFile = myQSettings.readEntry("/UI/lastSaveAsSvgFile","qgis.svg");
   QFileInfo file(myLastUsedFile);
@@ -922,58 +917,24 @@ void QgsComposer::resizeEvent ( QResizeEvent *e )
 
 void QgsComposer::saveWindowState()
 {
-#ifdef QGISDEBUG
-  std::cout << "QgsComposer::saveWindowState" << std::endl;
-#endif
-
   QSettings settings;
-
-  QPoint p = this->pos();
-  QSize s = this->size();
-
-  settings.writeEntry("/Composer/geometry/x", p.x());
-  settings.writeEntry("/Composer/geometry/y", p.y());
-  settings.writeEntry("/Composer/geometry/w", s.width());
-  settings.writeEntry("/Composer/geometry/h", s.height());
-
-  Q3ValueList<int> list = mSplitter->sizes();
-  Q3ValueList<int>::Iterator it = list.begin();
-  settings.writeEntry("/Composer/geometry/wiev", (int)(*it) );
-  it++;
-  settings.writeEntry("/Composer/geometry/options", (int)(*it) );
-
-if(this->isMaximized()){
-	std::cout << "maximized!" << std::endl;
-}
+  settings.setValue("/Composer/geometry", saveGeometry());
+  settings.setValue("/Composer/splitterState", mSplitter->saveState());
 }
 
 void QgsComposer::restoreWindowState()
 {
-
   QSettings settings;
-
-  QDesktopWidget *d = QApplication::desktop();
-  int dw = d->width();
-  int dh = d->height();
-  int w = settings.readNumEntry("/Composer/geometry/w", 600);
-  int h = settings.readNumEntry("/Composer/geometry/h", 400);
-  int x = settings.readNumEntry("/Composer/geometry/x", (dw - 600) / 2);
-  int y = settings.readNumEntry("/Composer/geometry/y", (dh - 400) / 2);
-  resize(w, h);
-  move(x, y);
-
-//We also need to save the maximized state
-
-//std::cout << "x: " << x << "y: " << y << "w: " << w << "h: " << h << std::endl;
-
-  // This doesn't work
-  Q3ValueList<int> list;
-  w = settings.readNumEntry("/Composer/geometry/view", 300);
-  list.push_back( w );
-  w = settings.readNumEntry("/Composer/geometry/options", 300);
-  list.push_back( w );
-  mSplitter->setSizes ( list );
-
+  restoreGeometry(settings.value("/Composer/geometry").toByteArray());
+  QVariant splitterState = settings.value("/Composer/splitterState");
+  if (splitterState != QVariant::QVariant())
+    mSplitter->restoreState(settings.value("/Composer/splitterState").toByteArray());
+  else
+  {
+    QList<int> defaultSize;
+    defaultSize << 300 << 100; // page display 300 pixels, details pane 100 pixels
+    mSplitter->setSizes(defaultSize);
+  }
 }
 
 void QgsComposer::on_helpPButton_clicked()

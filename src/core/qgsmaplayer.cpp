@@ -22,6 +22,14 @@
 #include <QDomNode>
 #include <QFileInfo>
 #include <QSettings> // TODO: get rid of it [MD]
+#include <QDir>
+#include <QFile>
+#include <QFileInfo>
+#include <QDomDocument>
+#include <QDomElement>
+#include <QDomImplementation>
+#include <QTextStream>
+
 
 #include "qgslogger.h"
 #include "qgsmaptopixel.h"
@@ -41,13 +49,13 @@ QgsMapLayer::QgsMapLayer(int type,
         mLayerType(type)
 
 {
-    QgsDebugMsg("QgsMapLayer::QgsMapLayer - lyrname is '" + lyrname);
+    QgsDebugMsg("QgsMapLayer::QgsMapLayer - lyrname is '" + lyrname + "'");
     
     mSRS = new QgsSpatialRefSys();
 
     // Set the display name = internal name
     mLayerName = capitaliseLayerName(lyrname);
-    QgsDebugMsg("QgsMapLayer::QgsMapLayer - layerName is '" + mLayerName);
+    QgsDebugMsg("QgsMapLayer::QgsMapLayer - layerName is '" + mLayerName + "'");
 
     // Generate the unique ID of this layer
     QDateTime dt = QDateTime::currentDateTime();
@@ -87,7 +95,7 @@ QString QgsMapLayer::getLayerID() const
 /** Write property of QString layerName. */
 void QgsMapLayer::setLayerName(const QString & _newVal)
 {
-  QgsDebugMsg("QgsMapLayer::setLayerName: new name is '" + _newVal);
+  QgsDebugMsg("QgsMapLayer::setLayerName: new name is '" + _newVal + "'");
   mLayerName = capitaliseLayerName(_newVal);
   emit layerNameChanged();
 }
@@ -95,7 +103,7 @@ void QgsMapLayer::setLayerName(const QString & _newVal)
 /** Read property of QString layerName. */
 QString const & QgsMapLayer::name() const
 {
-  QgsDebugMsg("QgsMapLayer::name: returning name '" + mLayerName);
+  QgsDebugMsg("QgsMapLayer::name: returning name '" + mLayerName + "'");
   return mLayerName;
 }
 
@@ -142,10 +150,12 @@ bool QgsMapLayer::readXML( QDomNode & layer_node )
     QDomElement mne = mnl.toElement();
     mDataSource = mne.text();
 
-    // Set a SRS (any will do) so that we don't ask the user.
-    // We will overwrite whatever GDAL etc picks up anway
+    // Set the SRS so that we don't ask the user.
+    // Make it the saved SRS to have WMS layer projected correctly.
+    // We will still overwrite whatever GDAL etc picks up anyway
     // further down this function.
-    mSRS->createFromSrsId(GEOSRS_ID);
+    QDomNode srsNode = layer_node.namedItem("srs");
+    mSRS->readXML(srsNode);
 
     // now let the children grab what they need from the DOM node.
     if (!readXML_( layer_node ))
@@ -186,8 +196,8 @@ bool QgsMapLayer::readXML( QDomNode & layer_node )
     mne = mnl.toElement();
     setLayerName( mne.text() );
 
-    //read srs
-    QDomNode srsNode = layer_node.namedItem("srs");
+    // overwrite srs
+    // FIXME: is this necessary?
     mSRS->readXML(srsNode);
     
     //read transparency level
@@ -396,4 +406,136 @@ QString QgsMapLayer::capitaliseLayerName(const QString name)
     layerName = layerName.left(1).upper() + layerName.mid(1);
 
   return layerName;
+}
+
+QString QgsMapLayer::loadDefaultStyle ( bool & theResultFlag )
+{
+
+  QString myURI = publicSource();
+  QFileInfo myFileInfo ( myURI );
+  //get the file name for our .qml style file
+  QString myFileName = myFileInfo.path() + QDir::separator() + 
+    myFileInfo.completeBaseName () + ".qml";
+  return loadNamedStyle ( myFileName, theResultFlag );
+}
+QString QgsMapLayer::loadNamedStyle ( const QString theURI , bool & theResultFlag )
+{
+  theResultFlag = false;
+  //first check if its a file - we will add support for
+  //database etc uris later
+  QFileInfo myFileInfo ( theURI );
+  if ( !myFileInfo.isFile() )
+  {
+     return QObject::tr( "Currently only filebased datasets are supported" );
+  }
+  QFile myFile ( theURI );
+  if ( myFile.open(QFile::ReadOnly ) )
+  {
+    QDomDocument myDocument ( "qgis" );
+    // location of problem associated with errorMsg
+    int line, column;
+    QString myErrorMessage;
+    if ( !myDocument.setContent ( &myFile, &myErrorMessage, &line, &column ) )
+    {
+      myFile.close();
+      return myErrorMessage + " at line " + QString::number( line ) +
+          " column " + QString::number( column );
+    }
+    else //dom parsed in ok
+    {
+      myFile.close();
+
+      // now get the layer node out and pass it over to the layer
+      // to deserialise...
+      QDomElement myRoot = myDocument.firstChildElement("qgis");
+      if (myRoot.isNull())
+      {
+        myErrorMessage = "Error: qgis element could not be found in " + theURI;
+        return myErrorMessage;
+      }
+
+      QDomElement myLayer = myRoot.firstChildElement("maplayer");
+      if (myLayer.isNull())
+      {
+        myErrorMessage = "Error: maplayer element could not be found in " + theURI;
+        return myErrorMessage;
+      }
+      
+      //
+      // we need to ensure the data source matches the layers
+      // current datasource not the one specified in the qml
+      //
+      QDomElement myDataSource = myLayer.firstChildElement("datasource");
+      if (myDataSource.isNull())
+      {
+        myErrorMessage = "Error: datasource element could not be found in " + theURI;
+        return myErrorMessage;
+      }
+      QDomElement myNewDataSource = myDocument.createElement( "datasource" );
+      QDomText myDataSourceText = myDocument.createTextNode( source() );
+      myNewDataSource.appendChild( myDataSourceText );
+      myLayer.replaceChild( myNewDataSource ,
+          myLayer.firstChildElement("datasource") );
+
+      //
+      // Now go on to parse the xml (QDomElement inherits QDomNode
+      // so we can just pass along the element to readXML)
+      //
+      theResultFlag = readXML ( myLayer );
+
+      return QObject::tr( "Loaded default style file from " ) + theURI;
+    }
+  }
+}
+QString QgsMapLayer::saveDefaultStyle ( bool & theResultFlag )
+{
+
+  QString myURI = publicSource();
+  QFileInfo myFileInfo ( myURI );
+  //get the file name for our .qml style file
+  QString myFileName = myFileInfo.path() + QDir::separator() + 
+    myFileInfo.completeBaseName () + ".qml";
+  return saveNamedStyle ( myFileName, theResultFlag );
+}
+QString QgsMapLayer::saveNamedStyle ( const QString theURI , bool & theResultFlag )
+{
+
+  QFileInfo myFileInfo ( theURI );
+  //now check if we can write to the dir where the layer
+  //exists...
+  QFileInfo myDirInfo ( myFileInfo.path() ); //excludes filename
+  if ( !myDirInfo.isWritable() )
+  {
+    return QObject::tr( "The directory containing your dataset needs to be writeable!" );
+  }
+  //now construct the file name for our .qml style file
+  QString myFileName = myFileInfo.path() + QDir::separator() + 
+                       myFileInfo.completeBaseName () + ".qml";
+
+  QDomImplementation DOMImplementation;
+  QDomDocumentType documentType =
+      DOMImplementation.createDocumentType(
+          "qgis", "http://mrcc.com/qgis.dtd","SYSTEM" );
+  QDomDocument myDocument ( documentType );
+  QDomElement myRootNode = myDocument.createElement( "qgis" );
+  myRootNode.setAttribute( "version", QString("%1").arg( QGis::qgisVersion ) );
+  myDocument.appendChild( myRootNode );
+  writeXML( myRootNode, myDocument );
+
+
+  QFile myFile ( myFileName );
+  if ( myFile.open(QFile::WriteOnly | QFile::Truncate ) )
+  {
+    QTextStream myFileStream( &myFile );
+    // save as utf-8 with 2 spaces for indents
+    myDocument.save( myFileStream, 2 );  
+    myFile.close();
+    return QObject::tr( "Created default style file as " ) + myFileName;
+  }
+  else
+  {
+    return QObject::tr( "ERROR: Failed to created default style file as " ) + myFileName + 
+      tr( " Check file permissions and retry." );
+  }
+
 }

@@ -62,9 +62,9 @@ QgsGraduatedSymbolDialog::QgsGraduatedSymbolDialog(QgsVectorLayer * layer): QDia
 	return;
     }
 
-    modeComboBox->insertItem("Equal Interval");
-    modeComboBox->insertItem("Quantiles");
-    modeComboBox->insertItem("Empty");
+    modeComboBox->insertItem(tr("Equal Interval"));
+    modeComboBox->insertItem(tr("Quantiles"));
+    modeComboBox->insertItem(tr("Empty"));
     
     //restore the correct settings
     const QgsGraduatedSymbolRenderer* renderer = dynamic_cast < const QgsGraduatedSymbolRenderer * >(layer->renderer());
@@ -89,16 +89,18 @@ QgsGraduatedSymbolDialog::QgsGraduatedSymbolDialog(QgsVectorLayer * layer): QDia
 	//fill the items of the renderer into mValues
 	for(QList<QgsSymbol*>::iterator it=list.begin();it!=list.end();++it)
 	{
-	    //todo: make an assignment operator and a copy constructor for QgsSymbol
-		QString classbreak=(*it)->lowerValue()+" - "+(*it)->upperValue();
-		QgsSymbol* sym=new QgsSymbol(mVectorLayer->vectorType(), (*it)->lowerValue(), (*it)->upperValue(), (*it)->label());
-		sym->setPen((*it)->pen());
-		sym->setCustomTexture((*it)->customTexture());
-		sym->setBrush((*it)->brush());
-		sym->setNamedPointSymbol((*it)->pointSymbolName());
-		sym->setPointSize((*it)->pointSize());
-		mEntries.insert(std::make_pair(classbreak,sym));
-		mClassListWidget->addItem(classbreak);
+          //todo: make an assignment operator and a copy constructor for QgsSymbol
+          QString classbreak=(*it)->lowerValue()+" - "+(*it)->upperValue();
+          QgsSymbol* sym=new QgsSymbol(mVectorLayer->vectorType(), (*it)->lowerValue(), (*it)->upperValue(), (*it)->label());
+          sym->setPen((*it)->pen());
+          sym->setCustomTexture((*it)->customTexture());
+          sym->setBrush((*it)->brush());
+          sym->setNamedPointSymbol((*it)->pointSymbolName());
+          sym->setPointSize((*it)->pointSize());
+          sym->setScaleClassificationField((*it)->scaleClassificationField());
+          sym->setRotationClassificationField((*it)->rotationClassificationField());
+          mEntries.insert(std::make_pair(classbreak,sym));
+          mClassListWidget->addItem(classbreak);
 	}
 	
     }
@@ -177,6 +179,8 @@ void QgsGraduatedSymbolDialog::apply()
 	    {
 	      sy->setNamedPointSymbol(it->second->pointSymbolName());
 	      sy->setPointSize(it->second->pointSize());
+              sy->setScaleClassificationField(it->second->scaleClassificationField());
+              sy->setRotationClassificationField(it->second->rotationClassificationField());
 	      
 	    }
 	  
@@ -215,6 +219,7 @@ void QgsGraduatedSymbolDialog::apply()
 	      delete sy;
 	    }
         }
+        renderer->updateSymbolAttributes();
 	
 	std::map<QString,int>::iterator iter=mFieldMap.find(classificationComboBox->currentText());
 	if(iter!=mFieldMap.end())
@@ -254,7 +259,7 @@ void QgsGraduatedSymbolDialog::adjustClassification()
 
     if (provider)
     {
-	if (modeComboBox->currentText() == "Equal Interval")
+	if (modeComboBox->currentText() == tr("Equal Interval"))
 	{
 	    minimum = provider->minValue(field).toDouble();
 	    maximum = provider->maxValue(field).toDouble();
@@ -296,7 +301,7 @@ void QgsGraduatedSymbolDialog::adjustClassification()
       }
 
     QString listBoxText;
-    if(modeComboBox->currentText() == "Quantiles")
+    if(modeComboBox->currentText() == tr("Quantiles"))
       {
 	//test: insert the values into mClassListWidget
 	std::list<double> quantileBorders;
@@ -319,7 +324,7 @@ void QgsGraduatedSymbolDialog::adjustClassification()
 	    last_it = it;
 	  }
       }
-    else if(modeComboBox->currentText() == "Equal Interval")
+    else if(modeComboBox->currentText() == tr("Equal Interval"))
       {
 	std::list<QgsSymbol*>::const_iterator symbol_it = symbolList.begin();
 	for(int i=0;i<numberofclassesspinbox->value();++i)
@@ -343,7 +348,7 @@ void QgsGraduatedSymbolDialog::adjustClassification()
 	    ++symbol_it;
 	  }
       }
-    else if(modeComboBox->currentText() == "Empty")
+    else if(modeComboBox->currentText() == tr("Empty"))
       {
 	std::list<QgsSymbol*>::const_iterator symbol_it = symbolList.begin();
 	for(int i=0;i<numberofclassesspinbox->value();++i)

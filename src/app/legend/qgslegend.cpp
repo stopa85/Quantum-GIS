@@ -124,6 +124,11 @@ void QgsLegend::removeAll()
 
 void QgsLegend::selectAll(bool select)
 {
+  if(!mMapCanvas || mMapCanvas->isDrawing())
+    {
+      return;
+    }
+
   QTreeWidgetItem* theItem = firstItem();
 
   while (theItem)
@@ -140,6 +145,11 @@ void QgsLegend::selectAll(bool select)
 
 void QgsLegend::removeLayer(QString layer_key)
 {
+  if(!mMapCanvas || mMapCanvas->isDrawing())
+    {
+      return;
+    }
+
   QTreeWidgetItem* theItem = firstItem();
 #ifdef QGISDEBUG
   qWarning("in QgsLegend::removeLayer");
@@ -371,19 +381,23 @@ void QgsLegend::mouseReleaseEvent(QMouseEvent * e)
 
 void QgsLegend::mouseDoubleClickEvent(QMouseEvent* e)
 {
+  if(!mMapCanvas || mMapCanvas->isDrawing())
+    {
+      return;
+    }
   legendLayerShowProperties();
 }
 
 void QgsLegend::handleRightClickEvent(QTreeWidgetItem* item, const QPoint& position)
 {
+  if(!mMapCanvas || mMapCanvas->isDrawing())
+    {
+      return;
+    }
+
   QMenu theMenu;
 
   QString iconsPath = QgsApplication::themePath();
-
-  if(mMapCanvas->isDrawing())
-  {
-    return;
-  }
 
   QgsLegendItem* li = dynamic_cast<QgsLegendItem*>(item);
   if (li)
@@ -446,6 +460,11 @@ int QgsLegend::getItemPos(QTreeWidgetItem* item)
 
 void QgsLegend::addLayer( QgsMapLayer * layer )
 {
+  if(!mMapCanvas || mMapCanvas->isDrawing())
+    {
+      return;
+    }
+
   QgsLegendLayer * llayer = new QgsLegendLayer(layer->name());//generate entry for mStateOfCheckBoxes below
     QgsLegendLayerFileGroup * llfgroup = new QgsLegendLayerFileGroup(llayer,QString("Files"));
     QgsLegendLayerFile * llfile = new QgsLegendLayerFile(llfgroup, QgsLegendLayerFile::nameFromLayer(layer), layer);
@@ -535,6 +554,11 @@ QgsMapLayer* QgsLegend::currentLayer()
 
 void QgsLegend::legendGroupRemove()
 {
+  if(!mMapCanvas || mMapCanvas->isDrawing())
+    {
+      return;
+    }
+
     QgsLegendGroup* lg = dynamic_cast<QgsLegendGroup*>(currentItem());
     if(lg)
     {
@@ -553,6 +577,11 @@ void QgsLegend::legendGroupRemove()
 
 void QgsLegend::legendLayerRemove()
 {
+  if(!mMapCanvas || mMapCanvas->isDrawing())
+    {
+      return;
+    }
+
     //if the current item is a legend layer: remove all layers of the current legendLayer
    QgsLegendLayer* ll = dynamic_cast<QgsLegendLayer*>(currentItem());
    if(ll)
@@ -572,14 +601,12 @@ void QgsLegend::legendLayerRemove()
 	 //remove the layer
 	 if(*it)
 	   {
+	     //the map layer registry emits a signal an this will remove the legend layer
+	     //from the legend and from memory by calling QgsLegend::removeLayer(QString layer key)
 	     QgsMapLayerRegistry::instance()->removeMapLayer((*it)->getLayerID());
 	   }
        }
      
-     if(maplayers.size()>0)
-       {
-	 mMapCanvas->refresh();
-       }
      removeItem(ll);
      delete ll;
      adjustIconSize();
@@ -604,6 +631,11 @@ void QgsLegend::legendLayerRemove()
 
 void QgsLegend::legendLayerShowProperties()
 {
+  if(!mMapCanvas || mMapCanvas->isDrawing())
+    {
+      return;
+    }
+
   QgsLegendItem* li = dynamic_cast<QgsLegendItem*>(currentItem());
   QgsLegendLayerFile* llf = 0;
 
@@ -650,7 +682,7 @@ void QgsLegend::legendLayerShowProperties()
     else
     {
       rlp = new QgsRasterLayerProperties(ml);
-      connect(rlp, SIGNAL(refreshLegend(QString)), this, SLOT(refreshLayerSymbology(QString)));
+      connect(rlp, SIGNAL(refreshLegend(QString,bool)), this, SLOT(refreshLayerSymbology(QString,bool)));
     }
     rlp->exec();
     delete rlp; // delete since dialog cannot be reused without updating code
@@ -667,7 +699,7 @@ void QgsLegend::legendLayerShowProperties()
     else
     {
       vlp = new QgsVectorLayerProperties(vlayer);
-      connect(vlp, SIGNAL(refreshLegend(QString)), this, SLOT(refreshLayerSymbology(QString)));
+      connect(vlp, SIGNAL(refreshLegend(QString,bool)), this, SLOT(refreshLayerSymbology(QString,bool)));
     }
     vlp->exec();
     delete vlp; // delete since dialog cannot be reused without updating code
@@ -679,6 +711,11 @@ void QgsLegend::legendLayerShowProperties()
 
 void QgsLegend::legendLayerShowInOverview()
 {
+  if(!mMapCanvas || mMapCanvas->isDrawing())
+    {
+      return;
+    }
+
   QgsLegendItem* li = dynamic_cast<QgsLegendItem*>(currentItem());
   if(!li)
     return;
@@ -857,19 +894,18 @@ bool QgsLegend::writeXML( QDomNode & legendnode, QDomDocument & document )
 		llf = dynamic_cast<QgsLegendLayerFile*>(item);
 		if(llf)
 		  {
-        QgsMapLayer* layer = llf->layer();
+		    QgsMapLayer* layer = llf->layer();
         
-        // layer id
+		    // layer id
 		    legendlayerfilenode.setAttribute("layerid", layer->getLayerID());
 		    layerfilegroupnode.appendChild(legendlayerfilenode);
 		  
-        // visible flag
-        legendlayerfilenode.setAttribute( "visible", llf->isVisible());
+		    // visible flag
+		    legendlayerfilenode.setAttribute( "visible", llf->isVisible());
 
-        // show in overview flag
-        legendlayerfilenode.setAttribute( "inOverview", llf->isInOverview());
-    
-    }
+		    // show in overview flag
+		    legendlayerfilenode.setAttribute( "inOverview", llf->isInOverview());
+		  }
 		break;
 
 		default: //do nothing for the leaf nodes
@@ -952,7 +988,7 @@ bool QgsLegend::readXML(QDomNode& legendnode)
 	      
 	      //set the checkbox of the legend layer to the right state
 	      blockSignals(true);
-	      QString checked = childelem.attribute("checked");
+	      QString checked = childelem.attribute("checked", "Qt::Checked"); // Default is to show
 	      if(checked == "Qt::Checked")
 		{
 		  theLayer->setCheckState(0, Qt::Checked);
@@ -979,12 +1015,13 @@ bool QgsLegend::readXML(QDomNode& legendnode)
 	      std::map<QString, QgsMapLayer*>::const_iterator iter = mapLayers.find(childelem.attribute("layerid"));
 	      if(iter == mapLayers.end()) //the layer cannot be found (e.g. the file has been moved)
 		{
-		  //remove the whole legendlayer if this is the only legendlayerfile
+		  // remove the whole legendlayer if this is the only legendlayerfile
 		  if(childelem.previousSibling().isNull() && childelem.nextSibling().isNull())
 		    {
 		      collapsed.remove(lastLayer);
 		      expanded.remove(lastLayer);
 		      delete lastLayer;
+		      lastLayer=0;
 		    }
 		}
 	      else if(lastLayerFileGroup)
@@ -992,11 +1029,11 @@ bool QgsLegend::readXML(QDomNode& legendnode)
 		  QgsMapLayer* theMapLayer = iter->second;
 		  QgsLegendLayerFile* theLegendLayerFile = new QgsLegendLayerFile(lastLayerFileGroup, QgsLegendLayerFile::nameFromLayer(theMapLayer), theMapLayer);
 
-      // load layer's visibility and 'show in overview' flag
-      theLegendLayerFile->setVisible(atoi(childelem.attribute("visible")));
-      theLegendLayerFile->setInOverview(atoi(childelem.attribute("inOverview")));
+		  // load layer's visibility and 'show in overview' flag
+		  theLegendLayerFile->setVisible(atoi(childelem.attribute("visible", "1"))); //Default is visible
+		  theLegendLayerFile->setInOverview(atoi(childelem.attribute("inOverview")));
 		  
-      //set the check state
+		  // set the check state
 		  blockSignals(true);
 		  if(theLegendLayerFile->isVisible())
 		    {
@@ -1016,8 +1053,8 @@ bool QgsLegend::readXML(QDomNode& legendnode)
 		    static_cast<QgsLegendLayer*>(theLegendLayerFile->parent()->parent())->setLayerTypeIcon();
 		  }
     
-      theLegendLayerFile->updateLegendItem();
-      refreshLayerSymbology(theMapLayer->getLayerID());
+		  theLegendLayerFile->updateLegendItem();
+		  refreshLayerSymbology(theMapLayer->getLayerID());
 		}
 	    }
 	  else if(childelem.tagName()=="filegroup")
@@ -1192,7 +1229,11 @@ QTreeWidgetItem* QgsLegend::firstItem()
 QTreeWidgetItem* QgsLegend::nextItem(QTreeWidgetItem* item)
 {
   QgsLegendItem* litem = dynamic_cast<QgsLegendItem*>(item);
-  if(litem->childCount() > 0)
+  if(!litem)
+    {
+      return 0;
+    }
+  else if(litem->childCount() > 0)
     {
       return litem->child(0);
     }
@@ -1401,7 +1442,7 @@ std::deque<QString> QgsLegend::layerIDs()
 }
 
 
-void QgsLegend::refreshLayerSymbology(QString key)
+void QgsLegend::refreshLayerSymbology(QString key, bool expandItem)
 {
   QgsLegendLayer* theLegendLayer = findLegendLayer(key);
   if(!theLegendLayer)
@@ -1417,7 +1458,10 @@ void QgsLegend::refreshLayerSymbology(QString key)
   //restore the current item again
   setCurrentItem(theCurrentItem);
   adjustIconSize();
-  setItemExpanded(theLegendLayer, true);//make sure the symbology items are visible
+  if (expandItem)
+    {
+      setItemExpanded(theLegendLayer, true);//make sure the symbology items are visible
+    }
 }
 
 
@@ -1578,6 +1622,7 @@ void QgsLegend::handleItemChange(QTreeWidgetItem* item, int row)
     //set all the child layer files to the new check state
     subfiles = ll->legendLayerFiles();
     bool renderFlagState = mMapCanvas->renderFlag();
+    mMapCanvas->freeze(true);
     mMapCanvas->setRenderFlag(false);
     for(std::list<QgsLegendLayerFile*>::iterator iter = subfiles.begin(); iter != subfiles.end(); ++iter)
 		{
@@ -1598,7 +1643,10 @@ void QgsLegend::handleItemChange(QTreeWidgetItem* item, int row)
     // If it was on, turn it back on, otherwise leave it
     // off, as turning it on causes a refresh.
     if (renderFlagState)
-      mMapCanvas->setRenderFlag(true);
+      {
+	mMapCanvas->setRenderFlag(true);
+      }
+    mMapCanvas->freeze(false);
     //update check state of the legend group
     mStateOfCheckBoxes[item] = item->checkState(0);
   }
@@ -1745,6 +1793,10 @@ void QgsLegend::legendLayerZoomNative()
 
 void QgsLegend::legendLayerAttributeTable()
 {
+  if(!mMapCanvas || mMapCanvas->isDrawing())
+    {
+      return;
+    }
 
   // try whether it's a legend layer
   QgsLegendLayer* ll = dynamic_cast<QgsLegendLayer*>(currentItem());

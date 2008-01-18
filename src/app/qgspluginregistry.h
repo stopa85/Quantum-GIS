@@ -21,6 +21,8 @@
 #define QGSPLUGINREGISTRY_H
 #include <map>
 #include "qgspluginmetadata.h"
+#include <list>
+
 class QgsPluginMetadata;
 class QgisPlugin;
 class QString;

@@ -26,6 +26,8 @@
 #include <QFileDialog>
 #include <QSettings>
 #include <QColorDialog>
+#include <QLocale>
+#include <QTextCodec>
 
 #include <cassert>
 #include <iostream>
@@ -134,11 +136,37 @@ QgsOptions::QgsOptions(QWidget *parent, Qt::WFlags fl) :
   capitaliseCheckBox->setChecked(settings.value("qgis/capitaliseLayerName", QVariant(false)).toBool());
 
   chbAskToSaveProjectChanges->setChecked(settings.value("qgis/askToSaveProjectChanges", QVariant(true)).toBool());
+  chbWarnOldProjectVersion->setChecked(settings.value("/qgis/warnOldProjectVersion", QVariant(true)).toBool());
   
   cmbWheelAction->setCurrentIndex(settings.value("/qgis/wheel_action", 0).toInt());
   spinZoomFactor->setValue(settings.value("/qgis/zoom_factor", 2).toDouble());
 
   cbxSplitterRedraw->setChecked(settings.value("/qgis/splitterRedraw", QVariant(true)).toBool());
+
+  //
+  // Locale settings 
+  //
+  QString mySystemLocale = QTextCodec::locale();
+  lblSystemLocale->setText(tr("Detected active locale on your system: ") + mySystemLocale);
+  QString myUserLocale = settings.value("locale/userLocale", "").toString();
+  QStringList myI18nList = i18nList();
+  cboLocale->addItems(myI18nList);
+  if (myI18nList.contains(myUserLocale))
+  {
+    cboLocale->setCurrentText(myUserLocale);
+  }
+  bool myLocaleOverrideFlag = settings.value("locale/overrideFlag",false).toBool();
+  grpLocale->setChecked(myLocaleOverrideFlag);
+
+  //set elements in digitizing tab
+  mLineWidthSpinBox->setValue(settings.value("/qgis/digitizing/line_width", 1).toInt());
+  QColor digitizingColor;
+  myRed = settings.value("/qgis/digitizing/line_color_red", 255).toInt();
+  myGreen = settings.value("/qgis/digitizing/line_color_green", 0).toInt();
+  myBlue = settings.value("/qgis/digitizing/line_color_blue", 0).toInt();
+  mLineColourToolButton->setColor(QColor(myRed, myGreen, myBlue));
+  mDefaultSnappingToleranceSpinBox->setValue(settings.value("/qgis/digitizing/default_snapping_tolerance", 0).toInt());
+  mSearchRadiusVertexEditSpinBox->setValue(settings.value("/qgis/digitizing/search_radius_vertex_edit", 10).toInt());
 }
 
 //! Destructor
@@ -171,6 +199,15 @@ void QgsOptions::on_pbnMeasureColour_clicked()
   }
 }
 
+void QgsOptions::on_mLineColourToolButton_clicked()
+{
+  QColor color = QColorDialog::getColor(mLineColourToolButton->color(), this);
+  if (color.isValid())
+  {
+    mLineColourToolButton->setColor(color);
+  }
+}
+
 void QgsOptions::themeChanged(const QString &newThemeName)
 {
   // Slot to change the theme as user scrolls through the choices
@@ -194,6 +231,7 @@ void QgsOptions::saveOptions()
   settings.writeEntry("/qgis/use_qimage_to_render", !(chkUseQPixmap->isChecked()));
   settings.setValue("qgis/capitaliseLayerName", capitaliseCheckBox->isChecked());
   settings.setValue("qgis/askToSaveProjectChanges", chbAskToSaveProjectChanges->isChecked());
+  settings.setValue("qgis/warnOldProjectVersion", chbWarnOldProjectVersion->isChecked());
 
   if(cmbTheme->currentText().length() == 0)
   {
@@ -244,7 +282,21 @@ void QgsOptions::saveOptions()
   settings.writeEntry("/qgis/wheel_action", cmbWheelAction->currentIndex());
   settings.writeEntry("/qgis/zoom_factor", spinZoomFactor->value());
 
-  settings.setValue("/qgis/splitterRedraw", cbxSplitterRedraw->isChecked());  
+  settings.setValue("/qgis/splitterRedraw", cbxSplitterRedraw->isChecked());
+
+  //digitizing
+  settings.setValue("/qgis/digitizing/line_width", mLineWidthSpinBox->value());
+  QColor digitizingColor = mLineColourToolButton->color();
+  settings.setValue("/qgis/digitizing/line_color_red", digitizingColor.red());
+  settings.setValue("/qgis/digitizing/line_color_green", digitizingColor.green());
+  settings.setValue("/qgis/digitizing/line_color_blue", digitizingColor.blue());
+  settings.setValue("/qgis/digitizing/default_snapping_tolerance", mDefaultSnappingToleranceSpinBox->value());
+  settings.setValue("/qgis/digitizing/search_radius_vertex_edit", mSearchRadiusVertexEditSpinBox->value());
+  //
+  // Locale settings 
+  //
+  settings.setValue("locale/userLocale", cboLocale->currentText());
+  settings.setValue("locale/overrideFlag", grpLocale->isChecked());
 }
 
 
@@ -424,4 +476,20 @@ QString QgsOptions::getEllipsoidName(QString theEllipsoidAcronym)
   sqlite3_close(myDatabase);
   return myName;
 
+}
+
+QStringList QgsOptions::i18nList()
+{
+  QStringList myList;
+  myList << "en_US"; //there is no qm file for this so we add it manually
+  QString myI18nPath = QgsApplication::i18nPath();
+  QDir myDir(myI18nPath,"*.qm");
+  QStringList myFileList = myDir.entryList();
+  QStringListIterator myIterator(myFileList);
+  while (myIterator.hasNext()) 
+  {
+    QString myFileName = myIterator.next();
+    myList << myFileName.replace("qgis_","").replace(".qm","");
+  }
+  return myList;
 }

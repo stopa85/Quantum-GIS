@@ -126,11 +126,13 @@ public:
   const int PROJ_PREFIX_LEN = 6;
   /** The length of teh string "+ellps=" */
   const int ELLPS_PREFIX_LEN = 7;
+  /** The length of teh string "+lat_1=" */
+  const int LAT_PREFIX_LEN = 7;
   /** Magick number that determins whether a projection srsid is a system (srs.db)
    *  or user (~/.qgis.qgis.db) defined projection. */
   const int USER_PROJECTION_START_ID=100000;
 
-#ifdef WIN32
+#ifdef _MSC_VER
 // fake use to make unused variable warnings go away in Visual C++
 #define UNUSED(symbol) symbol
 #else

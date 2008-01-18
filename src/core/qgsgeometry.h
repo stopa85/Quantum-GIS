@@ -17,6 +17,7 @@ email                : morb at ozemail dot com dot au
 #ifndef QGSGEOMETRY_H
 #define QGSGEOMETRY_H
 
+#include <QMultiMap>
 #include <QString>
 #include <QVector>
 
@@ -105,8 +106,12 @@ class CORE_EXPORT QgsGeometry {
     static QgsGeometry* fromPoint(const QgsPoint& point);
     /** construct geometry from a polyline */
     static QgsGeometry* fromPolyline(const QgsPolyline& polyline);
+    /** construct geometry from a multipolyline*/
+    static QgsGeometry* fromMultiPolyline(const QgsMultiPolyline& multiline);
     /** construct geometry from a polygon */
     static QgsGeometry* fromPolygon(const QgsPolygon& polygon);
+    /** construct geometry from a multipolygon */
+    static QgsGeometry* fromMultiPolygon(const QgsMultiPolygon& multipoly);
     /** construct geometry from a rectangle */
     static QgsGeometry* fromRect(const QgsRect& rect);
    
@@ -146,10 +151,10 @@ class CORE_EXPORT QgsGeometry {
     double distance(QgsGeometry& geom);
 
     /**
-       Returns the vertex closest to the given point 
-       (and also vertex index, squared distance and indexes of the vertices before/after)
+       Returns the vertex closest to the given point, the corresponding vertex index, squared distance snap point / target pointand \
+and the indices of the vertices before/after. The vertices before/after are -1 if not present
     */
-    QgsPoint closestVertex(const QgsPoint& point, QgsGeometryVertexIndex& atVertex, int& beforeVertex, int& afterVertex, double& sqrDist);
+    QgsPoint closestVertex(const QgsPoint& point, int& atVertex, int& beforeVertex, int& afterVertex, double& sqrDist);
 
 
     /**
@@ -164,7 +169,7 @@ class CORE_EXPORT QgsGeometry {
           account the first vertex is equal to the last vertex (and will
           skip equal vertex positions).
     */
-    void adjacentVerticies(const QgsGeometryVertexIndex& atVertex, int& beforeVertex, int& afterVertex);
+    void adjacentVerticies(int atVertex, int& beforeVertex, int& afterVertex);
 
 
     /** Insert a new vertex before the given vertex index,
@@ -178,18 +183,18 @@ class CORE_EXPORT QgsGeometry {
      *  these error conditions.  (Or maybe we add another method to this
      *  object to help make the distinction?)
      */
-    bool insertVertexBefore(double x, double y, QgsGeometryVertexIndex beforeVertex);
+    bool insertVertexBefore(double x, double y, int beforeVertex);
 
-    /** Moves the vertex at the given position number,
-     *  ring and item (first number is index 0)
+    /** Moves the vertex at the given position number
+     *  and item (first number is index 0)
      *  to the given coordinates.
      *  Returns FALSE if atVertex does not correspond to a valid vertex
      *  on this geometry
      */
-    bool moveVertexAt(double x, double y, QgsGeometryVertexIndex atVertex);
+    bool moveVertexAt(double x, double y, int atVertex);
 
-    /** Deletes the vertex at the given position number,
-     *  ring and item (first number is index 0)
+    /** Deletes the vertex at the given position number and item 
+     *  (first number is index 0)
      *  Returns FALSE if atVertex does not correspond to a valid vertex
      *  on this geometry (including if this geometry is a Point),
      *  or if the number of remaining verticies in the linestring
@@ -198,14 +203,14 @@ class CORE_EXPORT QgsGeometry {
      *  these error conditions.  (Or maybe we add another method to this
      *  object to help make the distinction?)
      */
-    bool deleteVertexAt(QgsGeometryVertexIndex atVertex);
+    bool deleteVertexAt(int atVertex);
 
     /**
      *  Returns coordinates of a vertex.
      *  @param atVertex index of the vertex
      *  @return Coordinates of the vertex or QgsPoint(0,0) on error
      */
-    QgsPoint vertexAt(const QgsGeometryVertexIndex& atVertex);
+    QgsPoint vertexAt(int atVertex);
 
     /**
         Returns the squared cartesian distance between the given point
@@ -213,8 +218,7 @@ class CORE_EXPORT QgsGeometry {
         ring and item (first number is index 0))
 
      */
-    double sqrDistToVertexAt(QgsPoint& point,
-                             QgsGeometryVertexIndex& atVertex);
+    double sqrDistToVertexAt(QgsPoint& point, int atVertex);
 
     /**
      * Searches for the the closest vertex in this geometry to the given point.
@@ -222,19 +226,17 @@ class CORE_EXPORT QgsGeometry {
      * @param atVertex Receives index of the closest vertex
      * @return The squared cartesian distance is also returned in sqrDist, negative number on error
      */
-    double closestVertexWithContext(const QgsPoint& point,
-                                    QgsGeometryVertexIndex& atVertex);
+    double closestVertexWithContext(const QgsPoint& point, int& atVertex);
 
     /**
      * Searches for the closest segment of geometry to the given point
      * @param point Specifies the point for search
      * @param minDistPoint Receives the nearest point on the segment
-     * @param beforeVertex Receives index of the vertex before the closest segment
+     * @param beforeVertex Receives index of the vertex before the closest segment. The vertex 
+     * after the closest segment is always beforeVertex + 1
      * @return The squared cartesian distance is also returned in sqrDist, negative number on error
      */
-    double closestSegmentWithContext(const QgsPoint& point,
-                                     QgsPoint& minDistPoint,
-                                     QgsGeometryVertexIndex& beforeVertex);
+    double closestSegmentWithContext(const QgsPoint& point, QgsPoint& minDistPoint, int& beforeVertex);
 
     /**Adds a new ring to this geometry. This makes only sense for polygon and multipolygons.
      @return 0 in case of success (ring added), 1 problem with geometry type, 2 ring not closed, \
@@ -245,6 +247,25 @@ class CORE_EXPORT QgsGeometry {
      @return 0 in case of success, 1 if not a multipolygon, 2 if ring is not a valid geometry, 3 if new polygon ring \
 not disjoint with existing polygons of the feature*/
     int addIsland(const QList<QgsPoint>& ring);
+
+    /**Translate this geometry by dx, dy
+     @return 0 in case of success*/
+    int translate(double dx, double dy);
+
+    /**Splits this geometry according to a given line. Note that the geometry is only splitted once. If there are several intersections 
+     between geometry and splitLine, only the first one is considered.
+    @param splitLine the line that splits the geometry
+    @param newGeometrys OUT: list of new geometries that have been created with the split
+    @return 0 in case of success, which means the geometry has been split in two parts, \
+    1 if line intersects multiple times but only one split could be done, \ 
+    2 if intersection too complicated to proceed (several polygon intersections), \				\
+    else other error*/
+    int splitGeometry(const QList<QgsPoint>& splitLine, QList<QgsGeometry*>& newGeometries);
+
+    /**Changes this geometry such that it does not intersect the other geometry
+       @param other geometry that should not be intersect
+       @return 0 in case of success*/
+    int difference(QgsGeometry* other);
 
     /**Returns the bounding box of this feature*/
     QgsRect boundingBox();
@@ -354,12 +375,69 @@ not disjoint with existing polygons of the feature*/
                             const GEOS_GEOM::CoordinateSequence*  old_sequence,
                                   GEOS_GEOM::CoordinateSequence** new_sequence);
 
+    /**Converts single type geometry into multitype geometry
+     e.g. a polygon into a multipolygon geometry with one polygon
+    @return true in case of success and false else*/
+    bool convertToMultiType();
+
+    /**Translates a single vertex by dx and dy.
+     @param ptr pointer to the wkb fragment containing the vertex
+    @param wkbPosition position in wkb array. Is increased automatically by the function 
+    @param dx translation of x-coordinate
+    @param dy translation of y-coordinate
+    @param hasZValue 25D type?*/
+    void translateVertex(int& wkbPosition, double dx, double dy, bool hasZValue);
+
+    //helper functions for geometry splitting
+
+    /**Splits line/multiline geometries
+     @splitLine the line that splits the feature
+     @newGeometry new geometry if splitting was successful
+     @return 0 in case of success, 1: splitLine intersects several times but only one split \
+    can be done, else other errors*/
+    int splitLinearGeometry(GEOS_GEOM::LineString* splitLine, QgsGeometry** newGeometry);
+    /**Splits polygon/multipolygon geometries
+       @return 0 in case of success, 1 no split because of too complicated intersection, \
+       else other errors*/
+    int splitPolygonGeometry(GEOS_GEOM::LineString* splitLine, QgsGeometry** newGeometry);
+    /**Finds the vertices next to point where the line is split. If it is split at a vertex, beforeVertex 
+     and afterVertex are the same*/
+    int findVerticesNextToSplit(const QgsPoint& splitPoint, int& beforeVertex, int& afterVertex);
+    /**Test if a point is a geometry vertex
+       @param p point to test
+       @param vertexNr vertex number (if point is a vertex)
+       @return true if p is vertex of this geometry*/
+    bool vertexContainedInGeometry(const QgsPoint& p, int& vertexNr);
+    /**Splits this geometry into two lines*/
+    int splitThisLine(const QgsPoint& splitPoint, int beforeVertex, int afterVertex, QgsGeometry** newGeometry);
+    /**Splits this geometry into two multilines*/
+    int splitThisMultiline(const QgsPoint& splitPoint, int beforeVertex, int afterVertex, QgsGeometry** newGeometry);
+    /**Splits this geometry into two polygons
+     @return 0 in case of success, 1 error because split intersects inner ring, else other error*/
+    int splitThisPolygon(const GEOS_GEOM::CoordinateSequence* splitLine, int beforeVertex1, int afterVertex1, \
+			 int beforeVertex2, int afterVertex2, QgsGeometry** newGeometry);
+    /**Splits this geometry into two multipolygons
+     @return 0 in case of success, 1 error because split intersects inner ring, else other error*/
+    int splitThisMultiPolygon(const GEOS_GEOM::CoordinateSequence* splitLine, int beforeVertex1, int afterVertex1, \
+			 int beforeVertex2, int afterVertex2, QgsGeometry** newGeometry);
+    /**splits a QgsPolyline object. Used by 'splitThisLine' and 'splitThisMultiLine'*/
+    int splitQgsPolyline(const QgsPoint& splitPoint, int beforeVertex, int afterVertex, const QgsPolyline* origLine, QgsPolyline** changedLine, QgsPolyline** newLine) const;
+    /**split a QgsPolygon object. Used by 'splitThisPolygon' and 'splitThisMultiPolygon'
+     @return 0 in case of success, 1 error because split intersects inner ring, else other error*/
+    int splitQgsPolygon(const GEOS_GEOM::CoordinateSequence* splitLine, int beforeVertex1, int afterVertex1, \
+			int beforeVertex2, int afterVertex2, const QgsPolygon* origPoly, QgsPolygon** changedPoly, QgsPolygon** newPoly) const;
+
+    /**Converts a polyline (that represents a polygon boundary or a ring) to geos polygon.
+       The caller function takes ownership of the created object.
+     @return the converted polygon or 0 in case of error*/
+    GEOS_GEOM::Polygon* polylineToGeosPolygon(const QgsPolyline& line) const;
+
     /** return point from wkb */
     QgsPoint asPoint(unsigned char*& ptr, bool hasZValue);
     
     /** return polyline from wkb */
     QgsPolyline asPolyline(unsigned char*& ptr, bool hasZValue);
-    
+
     /** return polygon from wkb */
     QgsPolygon asPolygon(unsigned char*& ptr, bool hasZValue);
 

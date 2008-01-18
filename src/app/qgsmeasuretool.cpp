@@ -23,6 +23,7 @@
 
 #include "qgsmeasuredialog.h"
 #include "qgsmeasuretool.h"
+#include "qgscursors.h"
 
 #include <QMessageBox>
 #include <QSettings>
@@ -34,7 +35,8 @@ QgsMeasureTool::QgsMeasureTool(QgsMapCanvas* canvas, bool measureArea)
   
   mRubberBand = new QgsRubberBand(canvas, mMeasureArea);
 
-  mCanvas->setCursor(Qt::CrossCursor);
+  QPixmap myCrossHairQPixmap = QPixmap((const char **) cross_hair_cursor);
+  mCursor = QCursor(myCrossHairQPixmap, 8, 8);
 
   mRightMouseClicked = false;
   
@@ -71,7 +73,7 @@ void QgsMeasureTool::activate()
     QMessageBox::warning(NULL, tr("Incorrect measure results"),
         tr("<p>This map is defined with a geographic coordinate system "
            "(latitude/longitude) "
-           "but the map extents suggest that it is actually a projected "
+           "but the map extents suggests that it is actually a projected "
            "coordinate system (e.g., Mercator). "
            "If so, the results from line or area measurements will be "
            "incorrect.</p>"

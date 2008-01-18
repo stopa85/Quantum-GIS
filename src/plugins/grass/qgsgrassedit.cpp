@@ -537,8 +537,6 @@ void QgsGrassEdit::init()
 
   // TODO: how to get keyboard events from canvas (shortcuts)
 
-  newPoint();
-
   restorePosition();
 
   mValid = true; 
@@ -796,23 +794,13 @@ void QgsGrassEdit::markerSizeChanged()
 void QgsGrassEdit::restorePosition()
 {
   QSettings settings;
-  int ww = settings.readNumEntry("/GRASS/windows/edit/w", 420);
-  int wh = settings.readNumEntry("/GRASS/windows/edit/h", 150);
-  int wx = settings.readNumEntry("/GRASS/windows/edit/x", 100);
-  int wy = settings.readNumEntry("/GRASS/windows/edit/y", 100);
-  resize(ww,wh);
-  move(wx,wy);
+  restoreGeometry(settings.value("/GRASS/windows/edit/geometry").toByteArray());
 }
 
 void QgsGrassEdit::saveWindowLocation()
 {
   QSettings settings;
-  QPoint p = this->pos();
-  QSize s = this->size();
-  settings.writeEntry("/GRASS/windows/edit/x", p.x());
-  settings.writeEntry("/GRASS/windows/edit/y", p.y());
-  settings.writeEntry("/GRASS/windows/edit/w", s.width());
-  settings.writeEntry("/GRASS/windows/edit/h", s.height());
+  settings.setValue("/GRASS/windows/edit/geometry", saveGeometry());
 } 
 
 void QgsGrassEdit::updateSymb ( void )
@@ -1600,6 +1588,10 @@ void QgsGrassEdit::displayElement ( int line, const QPen & pen, int size, QPaint
 #ifdef QGISDEBUG
   std::cerr << "QgsGrassEdit::displayElement() line = " << line << std::endl;
 #endif
+  
+  // is it a valid line?
+  if (line == 0)
+    return;
 
   if ( !mSymbDisplay[mLineSymb[line]] ) return;
 
