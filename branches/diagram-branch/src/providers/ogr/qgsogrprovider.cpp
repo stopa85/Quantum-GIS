@@ -17,7 +17,7 @@ email                : sherman at mrcc.com
 /* $Id$ */
 
 #include "qgsogrprovider.h"
-
+#include "qgslogger.h"
 
 #include <iostream>
 #include <cassert>
@@ -94,7 +94,7 @@ QgsOgrProvider::QgsOgrProvider(QString const & uri)
 
     //TODO Need to set a flag or something to indicate that the layer
     //TODO is in read-only mode, otherwise edit ops will fail
-    // TODO: capabilities() should now reflect this; need to test.
+    //TODO: capabilities() should now reflect this; need to test.
   }
   if (ogrDataSource != NULL) {
 
@@ -287,7 +287,8 @@ bool QgsOgrProvider::getNextFeature(QgsFeature& feature)
 	      //precise test for intersection with search rectangle
 	      //first make QgsRect from OGRPolygon
 	      OGREnvelope env;
-	      mSelectionRectangle->getEnvelope(&env);
+        if(mSelectionRectangle)
+	        mSelectionRectangle->getEnvelope(&env);
 	      if(env.IsInit()) //if envelope is invalid, skip the precise intersection test
 		{
 		  selectionRect.set(env.MinX, env.MinY, env.MaxX, env.MaxY);
@@ -366,11 +367,11 @@ void QgsOgrProvider::select(QgsAttributeList fetchAttributes, QgsRect rect, bool
 	  QgsDebugMsg("Setting spatial filter using " + wktExtent);
 	  ogrLayer->SetSpatialFilter(filter);
 	  //ogrLayer->SetSpatialFilterRect(rect->xMin(), rect->yMin(), rect->xMax(), rect->yMax());
-	}else{
-#ifdef QGISDEBUG    
-	QgsLogger::warning("Setting spatial filter failed!");
-#endif
-      }
+	}
+      else
+	{
+	  QgsDebugMsg("Setting spatial filter failed!");
+	}
       OGRGeometryFactory::destroyGeometry(filter);
     }  
 }
@@ -629,6 +630,10 @@ bool QgsOgrProvider::addFeature(QgsFeature& f)
   for(QgsAttributeMap::iterator it = attrs.begin(); it != attrs.end(); ++it)
   {
     int targetAttributeId = it.key();
+    
+    // don't try to set field from attribute map if it's not present in layer
+    if (targetAttributeId >= fdef->GetFieldCount())
+      continue;
 
     //if(!s.isEmpty())
     // continue;
@@ -643,11 +648,10 @@ bool QgsOgrProvider::addFeature(QgsFeature& f)
     }
     else if(fdef->GetFieldDefn(targetAttributeId)->GetType()==OFTString)
     {
-#ifdef QGISDEBUG
-        std::cerr << "Writing string attribute " << targetAttributeId
-	                << " with " << it->toString().toLocal8Bit().data()
-                  << ", encoding " << mEncoding->name().data() << std::endl;
-#endif
+      QgsDebugMsg( QString("Writing string attribute %1 with %2, encoding %3")
+	           .arg( targetAttributeId )
+		   .arg( it->toString() )
+		   .arg( mEncoding->name().data() ) );
       feature->SetField(targetAttributeId,mEncoding->fromUnicode(it->toString()).constData());
     }
     else
@@ -901,7 +905,6 @@ int QgsOgrProvider::capabilities() const
     }
     ability |= QgsVectorDataProvider::SelectGeometryAtId;
 
-
     if (ogrLayer->TestCapability("SequentialWrite"))
     // TRUE if the CreateFeature() method works for this layer.
     {
@@ -967,6 +970,12 @@ int QgsOgrProvider::capabilities() const
       ability |= QgsVectorDataProvider::CreateSpatialIndex;
     }
 
+    // OGR doesn't handle shapefiles without attributes, ie. missing DBFs well, fixes #803
+    if( ogrDriverName.startsWith("ESRI") && mAttributeFields.size()==0 )
+    {
+      QgsDebugMsg("OGR doesn't handle shapefile without attributes well, ie. missing DBFs");
+      ability &= ~(AddFeatures|DeleteFeatures|ChangeAttributeValues|AddAttributes|DeleteAttributes);
+    }
   }
 
   return ability;
@@ -1061,9 +1070,7 @@ QGISEXTERN QString fileVectorFilters()
     // theoreticaly we can open those files because there exists a
     // driver for them, the user will have to use the "All Files" to
     // open datasets with no explicitly defined file name extension.
-#ifdef QGISDEBUG
-    QgsLogger::debug("Driver count: ", driverRegistrar->GetDriverCount(), 1, __FILE__, __FUNCTION__, __LINE__);
-#endif
+    QgsDebugMsg( QString("Driver count: %1").arg( driverRegistrar->GetDriverCount() ) );
 
     for (int i = 0; i < driverRegistrar->GetDriverCount(); ++i)
     {
@@ -1181,9 +1188,6 @@ QGISEXTERN QString fileVectorFilters()
 
     myFileFilters += "All files (*.*)";
 
-#ifdef QGISDEBUG
-    //qDebug() << myFileFilters;
-#endif
     return myFileFilters;
 
 } // fileVectorFilters() const
@@ -1349,9 +1353,7 @@ QGISEXTERN bool createEmptyDataSource(const QString& uri,
 
     OGRDataSource::DestroyDataSource(dataSource);
 
-#ifdef QGISDEBUG
-    QgsLogger::debug("GDAL Version number", GDAL_VERSION_NUM, 1, __FILE__, __FUNCTION__, __LINE__);
-#endif
+    QgsDebugMsg( QString("GDAL Version number %1").arg( GDAL_VERSION_NUM ) );
 #if GDAL_VERSION_NUM >= 1310
     if(reference)
     {

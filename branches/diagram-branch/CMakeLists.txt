@@ -1,5 +1,4 @@
-
-PROJECT(qgis0.9.1)
+PROJECT(qgis0.9.1-raster)
 
 # TODO:
 # - install includes for libs
@@ -139,13 +138,13 @@ ENDIF (CMAKE_BUILD_TYPE MATCHES Debug)
 # platform specific stuff
 
 IF (WIN32)
-
-  SET (QGIS_BIN_DIR    ${CMAKE_INSTALL_PREFIX})
-  SET (QGIS_DATA_DIR   ${CMAKE_INSTALL_PREFIX})
-  SET (QGIS_PLUGIN_DIR ${CMAKE_INSTALL_PREFIX}/plugins)
-  SET (QGIS_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/include)
-  SET (QGIS_SOURCE_DIR ${CMAKE_SOURCE_DIR})
-  IF(MSVC)
+  SET (DEFAULT_BIN_SUBDIR     .)
+  SET (DEFAULT_LIB_SUBDIR     .)
+  SET (DEFAULT_DATA_SUBDIR    .)
+  SET (DEFAULT_PLUGIN_SUBDIR  plugins)
+  SET (DEFAULT_INCLUDE_SUBDIR	include)
+  
+  IF (MSVC)
     #tell msvc compiler to use main instead of winmain as the
     #application entry point
     SET(QT_USE_QTMAIN TRUE) 
@@ -161,8 +160,10 @@ IF (WIN32)
     ADD_DEFINITIONS(-DX_OK=1)
     ADD_DEFINITIONS(-DW_OK=2)
     ADD_DEFINITIONS(-DR_OK=4)
+    
+    FILE(GLOB files "${CMAKE_SOURCE_DIR}/win_build/vcdeps/*.*")
+    INSTALL(FILES ${files} DESTINATION .)
   ENDIF(MSVC)
-
 ELSE (WIN32)
 
   IF (APPLE)
@@ -173,17 +174,14 @@ ELSE (WIN32)
   ENDIF (APPLE)
 
   # common for MAC and UNIX
-  SET (QGIS_BIN_DIR    ${CMAKE_INSTALL_PREFIX}/bin)
-  SET (QGIS_DATA_DIR   ${CMAKE_INSTALL_PREFIX}/share/qgis)
-  SET (QGIS_PLUGIN_DIR ${CMAKE_INSTALL_PREFIX}/lib/qgis)
-  SET(QGIS_INCLUDE_DIR "${CMAKE_INSTALL_PREFIX}/include/qgis")
-  SET (QGIS_SOURCE_DIR ${CMAKE_SOURCE_DIR})
-
+  SET (DEFAULT_BIN_SUBDIR     bin)
+  SET (DEFAULT_LIB_SUBDIR     lib)
+  SET (DEFAULT_DATA_SUBDIR    share/qgis)
+  SET (DEFAULT_PLUGIN_SUBDIR  lib/qgis)
+  SET (DEFAULT_INCLUDE_SUBDIR include/qgis)
 
   IF (UNIX AND NOT APPLE)
     ADD_DEFINITIONS(-DPREFIX=\\"${CMAKE_INSTALL_PREFIX}\\")
-    ADD_DEFINITIONS(-DPLUGINPATH=\\"${QGIS_PLUGIN_DIR}\\")
-    ADD_DEFINITIONS(-DPKGDATAPATH=\\"${QGIS_DATA_DIR}\\")
   ENDIF (UNIX AND NOT APPLE)
 
 ENDIF (WIN32)
@@ -206,6 +204,35 @@ ELSE (WIN32)
   ADD_DEFINITIONS(-DGUI_EXPORT=)
 ENDIF (WIN32)
 
+#############################################################
+# user-changeable settings which can be used to customize
+# layout of QGIS installation
+# (default values are platform-specific)
+
+SET (QGIS_BIN_SUBDIR     ${DEFAULT_BIN_SUBDIR}     CACHE STRING "Subdirectory where executables will be installed")
+SET (QGIS_LIB_SUBDIR     ${DEFAULT_LIB_SUBDIR}     CACHE STRING "Subdirectory where libraries will be installed")
+SET (QGIS_DATA_SUBDIR    ${DEFAULT_DATA_SUBDIR}    CACHE STRING "Subdirectory where QGIS data will be installed")
+SET (QGIS_PLUGIN_SUBDIR  ${DEFAULT_PLUGIN_SUBDIR}  CACHE STRING "Subdirectory where plugins will be installed")
+SET (QGIS_INCLUDE_SUBDIR ${DEFAULT_INCLUDE_SUBDIR} CACHE STRING "Subdirectory where header files will be installed")
+
+# mark *_SUBDIR variables as advanced as this is not something
+# that an average user would use
+MARK_AS_ADVANCED (QGIS_BIN_SUBDIR QGIS_LIB_SUBDIR QGIS_DATA_SUBDIR QGIS_PLUGIN_SUBDIR QGIS_INCLUDE_SUBDIR)
+
+# full paths for the installation
+SET (QGIS_BIN_DIR     ${CMAKE_INSTALL_PREFIX}/${QGIS_BIN_SUBDIR})
+SET (QGIS_LIB_DIR     ${CMAKE_INSTALL_PREFIX}/${QGIS_LIB_SUBDIR})
+SET (QGIS_DATA_DIR    ${CMAKE_INSTALL_PREFIX}/${QGIS_DATA_SUBDIR})
+SET (QGIS_PLUGIN_DIR  ${CMAKE_INSTALL_PREFIX}/${QGIS_PLUGIN_SUBDIR})
+SET (QGIS_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/${QGIS_INCLUDE_SUBDIR})
+
+# manual page - makes sense only on unix systems
+IF (UNIX)
+  SET (DEFAULT_MANUAL_SUBDIR  man)
+  SET (QGIS_MANUAL_SUBDIR  ${DEFAULT_MANUAL_SUBDIR}  CACHE STRING "Subdirectory where manual files will be installed")
+  MARK_AS_ADVANCED (QGIS_MANUAL_SUBDIR)
+  SET (QGIS_MANUAL_DIR  ${CMAKE_INSTALL_PREFIX}/${QGIS_MANUAL_SUBDIR})
+ENDIF (UNIX)
 
 #############################################################
 # create qgsconfig.h
@@ -247,18 +274,24 @@ IF (HAVE_PYTHON)
 ENDIF (HAVE_PYTHON)
 
 IF (ENABLE_TESTS)
+  #create a variable to specify where our test data is
+  #so that unit tests can use TEST_DATA_DIR to locate
+  #the test data. See CMakeLists in test dirs for more info
+  SET (TEST_DATA_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tests/testdata")
   SUBDIRS(tests)
 ENDIF (ENABLE_TESTS)
 
 #############################################################
 # install stuff
 
-INSTALL (FILES AUTHORS SPONSORS
+INSTALL (FILES AUTHORS SPONSORS INSTALL CODING
          DESTINATION ${QGIS_DATA_DIR}/doc)
 
-# manual page... install also on windows?
-INSTALL (FILES qgis.man
-         DESTINATION ${CMAKE_INSTALL_PREFIX}/man/man1)
+# manual page - makes sense only on unix systems
+IF (UNIX)
+  INSTALL (FILES qgis.man
+           DESTINATION ${QGIS_MANUAL_DIR}/man1)
+ENDIF (UNIX)
 
 
 #############################################################
@@ -283,17 +316,19 @@ SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
 SET(CPACK_PACKAGE_VERSION_MAJOR "0")
 SET(CPACK_PACKAGE_VERSION_MINOR "9")
 SET(CPACK_PACKAGE_VERSION_PATCH "1")
-SET(CPACK_PACKAGE_INSTALL_DIRECTORY "CMake ${CMake_VERSION_MAJOR}.${CMake_VERSION_MINOR}")
+SET(CPACK_PACKAGE_INSTALL_DIRECTORY "Quantum GIS ${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}")
 IF(WIN32 AND NOT UNIX)
   # There is a bug in NSI that does not handle full unix paths properly. Make
   # sure there is at least one set of four (4) backlasshes.
-  SET(CPACK_PACKAGE_ICON "${CMake_SOURCE_DIR}/win_build\\\\sidebar.bmp")
+  SET(CPACK_PACKAGE_ICON "${CMAKE_SOURCE_DIR}/win_build\\\\sidebar.bmp")
   SET(CPACK_NSIS_INSTALLED_ICON_NAME "\\\\qgis.exe")
   SET(CPACK_NSIS_DISPLAY_NAME "${CPACK_PACKAGE_INSTALL_DIRECTORY} Quantum GIS")
   SET(CPACK_NSIS_HELP_LINK "http:\\\\\\\\qgis.org")
   SET(CPACK_NSIS_URL_INFO_ABOUT "http:\\\\\\\\qgis.org")
   SET(CPACK_NSIS_CONTACT "tim@linfiniti.com")
   SET(CPACK_NSIS_MODIFY_PATH ON)
+
+#  SET(CPACK_NSIS_EXTRA_INSTALL_COMMANDS "  !include \\\"${CMAKE_SOURCE_DIR}\\\\win_build\\\\extra.nsh\\\"")
 ELSE(WIN32 AND NOT UNIX)
   #SET(CPACK_STRIP_FILES "Quantum GIS")
   #SET(CPACK_SOURCE_STRIP_FILES "")

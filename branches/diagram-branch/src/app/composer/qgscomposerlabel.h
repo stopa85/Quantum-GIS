@@ -68,7 +68,6 @@ public:
     /** \brief Reimplementation of QGraphicsItem::paint() - draw on canvas */
     void paint ( QPainter*, const QStyleOptionGraphicsItem*, QWidget* );
 
-//    void drawShape(QPainter&, const QStyleOptionGraphicsItem*, QWidget*);
     QPolygonF areaPoints() const;
     
     /** \brief Set values in GUI to current values */
@@ -78,7 +77,7 @@ public slots:
     // Open font dialog
     void on_mFontButton_clicked();
 
-    void on_mTextLineEdit_returnPressed();
+    void on_mTextEdit_textChanged();
 
     // Box settings changed
     void on_mBoxCheckBox_clicked();
@@ -102,13 +101,14 @@ private:
     int mMargin;
 
     // Current bounding box
-    QRect mBoundingRect; 
+    // Not used - would it be more effecient if paint() updated the bounding box, and boundingRect returned this?
+    //QRect mBoundingRect; 
 
     // Draw box around the label
     bool mBox;
 
     // Box buffer
-    int mBoxBuffer;
+    double mBoxBuffer;
 };
 
 #endif

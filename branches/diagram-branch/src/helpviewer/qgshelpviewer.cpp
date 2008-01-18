@@ -24,6 +24,7 @@
 #include <QApplication>
 #include <QMessageBox>
 #include <QFileInfo>
+#include <QSettings>
 #include <QTextCodec>
 #include <QTextStream>
 #include <QFile>
@@ -32,11 +33,14 @@
 
 #include "qgshelpviewer.h"
 
+#include "qgsapplication.h"
+
 QgsHelpViewer::QgsHelpViewer(const QString &contextId, QWidget *parent, 
     Qt::WFlags fl)
 : QDialog(parent, fl)
 {
   setupUi(this);
+  restorePosition();
   loadContext(contextId);
 }
 QgsHelpViewer::~QgsHelpViewer()
@@ -48,13 +52,45 @@ void QgsHelpViewer::setContext(const QString &contextId)
   setWindowState(windowState() & ~Qt::WindowMinimized);
 #endif
   raise();
-  setActiveWindow();
+  activateWindow();
   loadContext(contextId);
 }
 void QgsHelpViewer::fileExit()
 {
   QApplication::exit();
 }
+
+/*
+ * Window geometry is saved during move and resize events rather then when
+ * the window is closed because HelpViewer is a subprocess which could be
+ * closed by the parent process invoking QProcess::terminate(). When this
+ * happens, the HelpViewer process receives the signal WM_CLOSE on Windows
+ * and SIGTERM on Mac and Unix. There is no way to catch these using Qt;
+ * OS specific code must be written. To avoid OS specific code, the window
+ * geometry is saved as it changes.
+ */
+void QgsHelpViewer::moveEvent(QMoveEvent *event)
+{
+  saveWindowLocation();
+}
+
+void QgsHelpViewer::resizeEvent(QResizeEvent *event)
+{
+  saveWindowLocation();
+}
+
+void QgsHelpViewer::restorePosition()
+{
+  QSettings settings;
+  restoreGeometry(settings.value("/HelpViewer/geometry").toByteArray());
+}
+
+void QgsHelpViewer::saveWindowLocation()
+{
+  QSettings settings;
+  settings.setValue("/HelpViewer/geometry", saveGeometry());
+} 
+
 /*
  * Read the help file and populate the viewer
  */
@@ -63,16 +99,7 @@ void QgsHelpViewer::loadContext(const QString &contextId)
   if(contextId != QString::null)
   {
     // set up the path to the help file
-    QString helpFilesPath =
-#ifdef Q_OS_MACX
-      // remove bin/qgis_help.app/Contents/MacOS to get to share/qgis
-      qApp->applicationDirPath() + "/../../../../share/qgis" +
-#elif WIN32
-      qApp->applicationDirPath() + "/share/qgis"
-#else
-      QString(PKGDATAPATH) +
-#endif
-      "/resources/context_help/";
+    QString helpFilesPath = QgsApplication::pkgDataPath() + "/resources/context_help/";
     /* 
      * determine the locale and create the file name from
      * the context id
@@ -137,16 +164,7 @@ void QgsHelpViewer::loadContextFromSqlite(const QString &contextId)
   if(contextId != QString::null)
   {
     // connect to the database
-    QString helpDbPath =
-#ifdef Q_OS_MACX
-      // remove bin/qgis_help.app/Contents/MacOS to get to share/qgis
-      qApp->applicationDirPath() + "/../../../../share/qgis" +
-#elif WIN32
-      qApp->applicationDirPath() +
-#else
-      QString(PKGDATAPATH) +
-#endif
-      "/resources/qgis_help.db";
+    QString helpDbPath = QgsApplication::pkgDataPath() + "/resources/qgis_help.db";
     int rc = connectDb(helpDbPath);
     // get the help content and title from the database
 

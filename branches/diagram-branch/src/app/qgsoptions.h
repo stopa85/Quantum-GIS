@@ -77,6 +77,12 @@ class QgsOptions :public QDialog, private Ui::QgsOptionsBase
    * Slot to select the default map selection colour
    */
   void on_pbnCanvasColor_clicked();
+
+  /*!
+   * Slot to select the colour of the digitizing rubber band
+   */
+  void on_mLineColourToolButton_clicked();
+
   protected:
     //! Populates combo box with ellipsoids
     void getEllipsoidList();
@@ -85,6 +91,9 @@ class QgsOptions :public QDialog, private Ui::QgsOptionsBase
     QString getEllipsoidName(QString theEllipsoidAcronym);
 
   private:
+    //
+    QStringList i18nList();
+
     //! Pointer to our parent
     QWidget *qparent;
 

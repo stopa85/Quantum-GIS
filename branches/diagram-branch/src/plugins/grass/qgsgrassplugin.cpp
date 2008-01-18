@@ -414,6 +414,10 @@ void QgsGrassPlugin::addRaster()
 
     //qGisInterface->addRasterLayer( uri );
     QgsRasterLayer *layer = new QgsRasterLayer( uri, sel->map );
+    if( !layer->isValid() ) {
+      // let the user know something went wrong - addRasterLayer cleans up
+      QMessageBox::warning( 0, tr("Warning"), tr("Could not add raster layer: " ) + uri);
+    }
     qGisInterface->addRasterLayer(layer);
 
     mCanvas->refresh(); 
@@ -826,38 +830,38 @@ void QgsGrassPlugin::unload()
  * of the plugin class
  */
 // Class factory to return a new instance of the plugin class
-extern "C" QgisPlugin * classFactory(QgisInterface * theQgisInterfacePointer)
+QGISEXTERN QgisPlugin * classFactory(QgisInterface * theQgisInterfacePointer)
 {
   return new QgsGrassPlugin(theQgisInterfacePointer);
 }
 
 // Return the name of the plugin - note that we do not user class members as
 // the class may not yet be insantiated when this method is called.
-extern "C" QString name()
+QGISEXTERN QString name()
 {
   return QObject::tr("GRASS");
 }
 
 // Return the description
-extern "C" QString description()
+QGISEXTERN QString description()
 {
   return QObject::tr("GRASS layer");
 }
 
 // Return the type (either UI or MapLayer plugin)
-extern "C" int type()
+QGISEXTERN int type()
 {
   return QgisPlugin::UI;
 }
 
 // Return the version number for the plugin
-extern "C" QString version()
+QGISEXTERN QString version()
 {
   return pluginVersion;
 }
 
 // Delete ourself
-extern "C" void unload(QgisPlugin * thePluginPointer)
+QGISEXTERN void unload(QgisPlugin * thePluginPointer)
 {
   delete thePluginPointer;
 }

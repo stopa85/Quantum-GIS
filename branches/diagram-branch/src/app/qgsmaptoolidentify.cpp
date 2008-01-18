@@ -67,6 +67,11 @@ void QgsMapToolIdentify::canvasPressEvent(QMouseEvent * e)
 
 void QgsMapToolIdentify::canvasReleaseEvent(QMouseEvent * e)
 {
+  if(!mCanvas || mCanvas->isDrawing())
+    {
+      return;
+    }
+
   QgsMapLayer* layer = mCanvas->currentLayer();
   
   // delete rubber band if there was any
@@ -153,6 +158,8 @@ void QgsMapToolIdentify::identifyRasterLayer(QgsRasterLayer* layer, const QgsPoi
     mResults->addAttribute(it->first, it->second);
   }
 
+  mResults->addAttribute( tr("(clicked coordinate)"), point.stringRep() );
+
   mResults->showAllAttributes();
   mResults->show();
 }
@@ -212,11 +219,145 @@ void QgsMapToolIdentify::identifyRasterWmsLayer(QgsRasterLayer* layer, const Qgs
 
   QgsMessageViewer* viewer = new QgsMessageViewer();
   viewer->setCaption( layer->name() );
-  viewer->setMessageAsPlainText( text );
+  viewer->setMessageAsPlainText( QString(tr("WMS identify result for %1\n%2")).arg(point.stringRep()).arg(text) );
 
   viewer->showMessage(); // deletes itself on close
 }
 
+void QgsMapToolIdentify::identifyVectorLayer(QgsVectorLayer* layer, const QgsPoint& point)
+{
+  if (!layer)
+    return;
+  
+  // load identify radius from settings
+  QSettings settings;
+  double identifyValue = settings.value("/Map/identifyRadius", QGis::DEFAULT_IDENTIFY_RADIUS).toDouble();
+  QString ellipsoid = settings.readEntry("/qgis/measure/ellipsoid", "WGS84");
+
+  // create the search rectangle
+  double searchRadius = mCanvas->extent().width() * (identifyValue/100.0);
+    
+  QgsRect r;
+  r.setXmin(point.x() - searchRadius);
+  r.setXmax(point.x() + searchRadius);
+  r.setYmin(point.y() - searchRadius);
+  r.setYmax(point.y() + searchRadius);
+  
+  r = toLayerCoords(layer, r);
+
+  int featureCount = 0;
+  //QgsFeature feat;
+  QgsAttributeAction& actions = *layer->actions();
+  QString fieldIndex = layer->displayField();
+  QgsVectorDataProvider* dataProvider = layer->getDataProvider();
+  const QgsFieldMap& fields = dataProvider->fields();
+
+  // init distance/area calculator
+  QgsDistanceArea calc;
+  calc.setProjectionsEnabled(mCanvas->projectionsEnabled()); // project?
+  calc.setEllipsoid(ellipsoid);
+  calc.setSourceSRS(layer->srs().srsid());
+  
+  // display features falling within the search radius
+  if(!mResults)
+    {
+      mResults = new QgsIdentifyResults(actions, mCanvas->window());
+      mResults->setAttribute(Qt::WA_DeleteOnClose);
+      // Be informed when the dialog box is closed so that we can stop using it.
+      connect(mResults, SIGNAL(accepted()), this, SLOT(resultsDialogGone()));
+      connect(mResults, SIGNAL(rejected()), this, SLOT(resultsDialogGone()));
+      connect(mResults, SIGNAL(selectedFeatureChanged(int)), this, SLOT(highlightFeature(int)));
+      // restore the identify window position and show it
+      mResults->restorePosition();
+    }
+  else
+    {
+      mResults->raise();
+      mResults->clear();
+      mResults->setActions(actions);
+    }
+  
+  QApplication::setOverrideCursor(Qt::WaitCursor);
+  
+  int lastFeatureId = 0;
+  
+  QList<QgsFeature> featureList;
+  layer->featuresInRectangle(r, featureList, true, true);
+  QList<QgsFeature>::iterator f_it = featureList.begin();
+    
+  for(; f_it != featureList.end(); ++f_it)
+      {
+	featureCount++;
+	
+	QTreeWidgetItem* featureNode = mResults->addNode("foo");
+	featureNode->setData(0, Qt::UserRole, QVariant(f_it->featureId())); // save feature id
+	lastFeatureId = f_it->featureId();
+	featureNode->setText(0, fieldIndex);
+	const QgsAttributeMap& attr = f_it->attributeMap();
+	
+	for (QgsAttributeMap::const_iterator it = attr.begin(); it != attr.end(); ++it)
+	  {
+	    //QgsDebugMsg(it->fieldName() + " == " + fieldIndex);
+	    
+	    if (fields[it.key()].name() == fieldIndex)
+	      {
+		featureNode->setText(1, it->toString());
+	      }
+	    mResults->addAttribute(featureNode, fields[it.key()].name(), it->toString());
+	  }
+	
+	// Calculate derived attributes and insert:
+	// measure distance or area depending on geometry type
+	if (layer->vectorType() == QGis::Line)
+	  {
+	    double dist = calc.measure(f_it->geometry());
+	    QString str = calc.textUnit(dist, 3, mCanvas->mapUnits(), false);
+	    mResults->addDerivedAttribute(featureNode, QObject::tr("Length"), str);
+	  }
+	else if (layer->vectorType() == QGis::Polygon)
+	  {
+	    double area = calc.measure(f_it->geometry());
+	    QString str = calc.textUnit(area, 3, mCanvas->mapUnits(), true);
+	    mResults->addDerivedAttribute(featureNode, QObject::tr("Area"), str);
+	  }
+	
+	// Add actions 
+	QgsAttributeAction::aIter iter = actions.begin();
+	for (register int i = 0; iter != actions.end(); ++iter, ++i)
+	  {
+	    mResults->addAction( featureNode, i, QObject::tr("action"), iter->name() );
+	  }
+	
+      }
+    
+    QgsDebugMsg("Feature count on identify: " + QString::number(featureCount));
+    
+    //also test the not commited features //todo: eliminate copy past code
+    
+    mResults->setTitle(layer->name() + " - " + QString::number(featureCount) + QObject::tr(" features found"));
+    if (featureCount == 1) 
+      {
+	mResults->showAllAttributes();
+	mResults->setTitle(layer->name() + " - " + QObject::tr(" 1 feature found") );
+	highlightFeature(lastFeatureId);
+      }
+    else if (featureCount == 0)
+      {
+	mResults->setTitle(layer->name() + " - " + QObject::tr("No features found") );
+	mResults->setMessage ( QObject::tr("No features found"), QObject::tr("No features were found in the active layer at the point you clicked") );
+      }
+    else
+      {
+	QString title = layer->name();
+	title += QString( tr("- %1 features found","Identify results window title",featureCount) ).arg(featureCount);
+	mResults->setTitle(title);    
+      }
+    QApplication::restoreOverrideCursor();
+    
+    mResults->show();
+}
+
+#if 0 //MH: old state of the function
 void QgsMapToolIdentify::identifyVectorLayer(QgsVectorLayer* layer, const QgsPoint& point)
 {
   if (!layer)
@@ -278,6 +419,9 @@ void QgsMapToolIdentify::identifyVectorLayer(QgsVectorLayer* layer, const QgsPoi
     QApplication::setOverrideCursor(Qt::WaitCursor);
     
     int lastFeatureId = 0;
+
+    QTreeWidgetItem *click = mResults->addNode(tr("(clicked coordinate)"));
+    click->setText(1, point.stringRep());
 
     while (dataProvider->getNextFeature(feat))
     {
@@ -424,6 +568,7 @@ void QgsMapToolIdentify::identifyVectorLayer(QgsVectorLayer* layer, const QgsPoi
     }
   }
 }
+#endif 
 
 
 void QgsMapToolIdentify::showError(QgsMapLayer * mapLayer)
@@ -456,6 +601,7 @@ void QgsMapToolIdentify::deactivate()
 {
   if (mResults)
     mResults->done(0); // close the window
+  QgsMapTool::deactivate();
 }
 
 void QgsMapToolIdentify::highlightFeature(int featureId)
@@ -467,54 +613,22 @@ void QgsMapToolIdentify::highlightFeature(int featureId)
   delete mRubberBand;
   mRubberBand = 0;
 
-  QgsVectorDataProvider* provider = layer->getDataProvider();
   QgsFeature feat;
-  if (!provider->getFeatureAtId(featureId, feat))
-    return;
-  
-  QgsGeometry* g = feat.geometry();
-  
-  // TODO: support multipart geometries
-  if (g->isMultipart())
-    return;
-  
-  switch (g->vectorType())
-  {
-    case QGis::Point:
+  if(layer->getFeatureAtId(featureId, feat, true, false) != 0)
     {
-      mRubberBand = new QgsRubberBand(mCanvas, true);
-      QgsPoint pt = g->asPoint();
-      double d = mCanvas->extent().width() * 0.005;
-      mRubberBand->addPoint(QgsPoint(pt.x()-d,pt.y()-d));
-      mRubberBand->addPoint(QgsPoint(pt.x()+d,pt.y()-d));
-      mRubberBand->addPoint(QgsPoint(pt.x()+d,pt.y()+d));
-      mRubberBand->addPoint(QgsPoint(pt.x()-d,pt.y()+d));
-      break;
-    }
-    case QGis::Line:
-    {
-      mRubberBand = new QgsRubberBand(mCanvas);
-      QgsPolyline line = g->asPolyline();
-      for (int i = 0; i < line.count(); i++)
-        mRubberBand->addPoint(line[i]);
-      break;
-    } 
-    case QGis::Polygon:
-    {
-      mRubberBand = new QgsRubberBand(mCanvas,true);
-      QgsPolygon polygon = g->asPolygon();
-      QgsPolyline line = polygon[0];
-      for (int i = 0; i < line.count(); i++)
-        mRubberBand->addPoint(line[i]);
-      break;
+      return;
     }
 
-    default:
-      break;
-  }
-
+  if(!feat.geometry())
+    {
+      return;
+    }
+      
+  mRubberBand = new QgsRubberBand(mCanvas, feat.geometry()->vectorType() == QGis::Polygon);
+  
   if (mRubberBand)
   {
+    mRubberBand->setToGeometry(feat.geometry(), *layer);
     mRubberBand->setWidth(2);
     mRubberBand->setColor(Qt::red);
     mRubberBand->show();

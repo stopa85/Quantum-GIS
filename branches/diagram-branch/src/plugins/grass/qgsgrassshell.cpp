@@ -81,11 +81,12 @@ extern "C" {
 }
 
 QgsGrassShell::QgsGrassShell ( QgsGrassTools *tools, 
-    QWidget * parent, const char * name  ):
+    QTabWidget * parent, const char * name  ):
 QDialog(parent), QgsGrassShellBase(), mTools(tools)
 {
   mValid = false;
   mSkipLines = 2;
+  mTabWidget = parent;
 
 #ifdef WIN32
   QMessageBox::warning( 0, "Warning", 
@@ -99,12 +100,17 @@ QDialog(parent), QgsGrassShellBase(), mTools(tools)
   mText = new QgsGrassShellText( this, mTextFrame);
   layout->addWidget ( mText, 0 , 0 );
   mText->show();
+  
+  connect(mCloseButton, SIGNAL(clicked()), this, SLOT(closeShell()));
 
   mFont = QFont ( "Courier", 10 );
 
   mAppDir = mTools->appDir();
 
+#ifndef Q_WS_MAC
+  // Qt4.3.2/Mac Q3TextEdit readOnly property causes keys to be processed as keyboard actions
   mText->setReadOnly(TRUE);
+#endif
   //mText->setFocusPolicy ( QWidget::NoFocus ); // To get key press directly
 
 #ifndef HAVE_OPENPTY
@@ -177,7 +183,10 @@ QDialog(parent), QgsGrassShellBase(), mTools(tools)
 #endif
 
     // TODO close all opened file descriptors - close(0)???
+#ifndef Q_OS_DARWIN
+    // Makes child process unusable on Mac
     close ( mFdMaster );
+#endif
 
     //close ( fdSlave ); // -> freeze  
 
@@ -938,6 +947,17 @@ void QgsGrassShell::resizeTerminal()
 void QgsGrassShell::readStderr()
 {
 }
+
+void QgsGrassShell::closeShell()
+{
+#ifdef QGISDEBUG
+  std::cerr << "QgsGrassShell::closeShell()" << std::endl;
+#endif
+  
+  mTabWidget->removePage (this );
+  delete this;
+}
+
 
 QgsGrassShellText::QgsGrassShellText ( QgsGrassShell *gs, 
     QWidget * parent, const char *name )

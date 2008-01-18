@@ -19,10 +19,16 @@
 #ifndef QGSPLUGINMANAGER_H
 #define QGSPLUGINMANAGER_H
 #include <vector>
+#include <QTableView>
+#include <QStandardItemModel>
+#include <QStandardItem>
+#include <QHeaderView>
 #include "ui_qgspluginmanagerbase.h"
 #include "qgisgui.h"
 
 class QgsPluginItem;
+class QTableView;
+
 /*!
  * \brief Plugin manager for loading/unloading plugins
 @author Gary Sherman
@@ -43,18 +49,23 @@ class QgsPluginManager : public QDialog, private Ui::QgsPluginManagerBase
     void unload();
     //! Gets the selected plugins
     std::vector<QgsPluginItem> getSelectedPlugins();
-    public slots:
+    //! Set lstPlugins table GUI
+    void setTable();
+    //! Resize columns to contents
+    void resizeColumnsToContents();
+    //! Sort model by column ascending
+    void sortModel(int );
+  public slots:
     //! Load selected plugins and close the dialog
     void on_btnOk_clicked();
     //! Select all plugins by setting their checkbox on
     void on_btnSelectAll_clicked();
     //! Clear all selections by clearing the plugins checkbox
     void on_btnClearAll_clicked();
-    //! Browse to a location (directory) containing QGIS plugins
-    void on_btnBrowse_clicked();
     //! Close the dialog
     void on_btnClose_clicked();
-
+  private:
+    QStandardItemModel *modelPlugins;
 };
 
 #endif

@@ -9,15 +9,18 @@
     <height>368</height>
    </rect>
   </property>
+  <property name="mouseTracking" >
+   <bool>false</bool>
+  </property>
   <property name="windowTitle" >
-   <string>QGIS Plugin Manger</string>
+   <string>QGIS Plugin Manager</string>
   </property>
   <property name="modal" >
    <bool>true</bool>
   </property>
   <layout class="QGridLayout" >
    <property name="margin" >
-    <number>10</number>
+    <number>11</number>
    </property>
    <property name="spacing" >
     <number>6</number>
@@ -25,7 +28,7 @@
    <item row="0" column="0" >
     <layout class="QHBoxLayout" >
      <property name="margin" >
-      <number>0</number>
+      <number>11</number>
      </property>
      <property name="spacing" >
       <number>6</number>
@@ -41,57 +44,16 @@
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="txtPluginDir" />
-     </item>
-     <item>
-      <widget class="QPushButton" name="btnBrowse" >
-       <property name="maximumSize" >
-        <size>
-         <width>60</width>
-         <height>32767</height>
-        </size>
+      <widget class="QLineEdit" name="txtPluginDir" >
+       <property name="windowModality" >
+        <enum>Qt::NonModal</enum>
        </property>
-       <property name="text" >
-        <string>...</string>
+       <property name="readOnly" >
+        <bool>true</bool>
        </property>
       </widget>
      </item>
     </layout>
-   </item>
-   <item row="2" column="0" >
-    <widget class="Q3ListView" name="lstPlugins" >
-     <property name="font" >
-      <font>
-       <family>Arial</family>
-       <pointsize>10</pointsize>
-       <weight>50</weight>
-       <italic>false</italic>
-       <bold>false</bold>
-       <underline>false</underline>
-       <strikeout>false</strikeout>
-      </font>
-     </property>
-     <column>
-      <property name="text" >
-       <string>Name</string>
-      </property>
-     </column>
-     <column>
-      <property name="text" >
-       <string>Version</string>
-      </property>
-     </column>
-     <column>
-      <property name="text" >
-       <string>Description</string>
-      </property>
-     </column>
-     <column>
-      <property name="text" >
-       <string>Library Name</string>
-      </property>
-     </column>
-    </widget>
    </item>
    <item row="1" column="0" >
     <widget class="QLabel" name="textLabel1_2" >
@@ -100,10 +62,10 @@
      </property>
     </widget>
    </item>
-   <item row="3" column="0" >
+   <item row="4" column="0" >
     <layout class="QHBoxLayout" >
      <property name="margin" >
-      <number>0</number>
+      <number>11</number>
      </property>
      <property name="spacing" >
       <number>6</number>
@@ -182,17 +144,20 @@
      </item>
     </layout>
    </item>
+   <item row="2" column="0" >
+    <widget class="QTableView" name="lstPlugins" >
+     <property name="alternatingRowColors" >
+      <bool>true</bool>
+     </property>
+     <property name="sortingEnabled" >
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
  <layoutdefault spacing="6" margin="11" />
  <pixmapfunction>qPixmapFromMimeSource</pixmapfunction>
- <customwidgets>
-  <customwidget>
-   <class>Q3ListView</class>
-   <extends>Q3Frame</extends>
-   <header>q3listview.h</header>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>

@@ -22,7 +22,6 @@
 #include <QApplication>
 #include <QFileDialog>
 #include <QLineEdit>
-#include <Q3ListView>
 #include <QMessageBox>
 #include <QLibrary>
 #include <QSettings>
@@ -60,6 +59,7 @@ QgsPluginManager::QgsPluginManager(QWidget * parent, Qt::WFlags fl)
      QString libDir = baseDir + "/lib"; */
 
   txtPluginDir->setText(pr->libraryDirectory().path());
+  setTable();
   getPluginDescriptions();
   getPythonPluginDescriptions();
 }
@@ -69,13 +69,35 @@ QgsPluginManager::~QgsPluginManager()
 {
 }
 
-void QgsPluginManager::on_btnBrowse_clicked()
+void QgsPluginManager::setTable()
 {
-  QString s = QFileDialog::getExistingDirectory(this, tr("Choose a directory"));
-  txtPluginDir->setText(s);
-  getPluginDescriptions();
+  lstPlugins->setAlternatingRowColors(true);
+  modelPlugins= new QStandardItemModel(0,4);
+  modelPlugins->setHorizontalHeaderItem(0,new QStandardItem(tr("Name")));
+  modelPlugins->setHorizontalHeaderItem(1,new QStandardItem(tr("Version")));
+  modelPlugins->setHorizontalHeaderItem(2,new QStandardItem(tr("Description")));
+  modelPlugins->setHorizontalHeaderItem(3,new QStandardItem(tr("Library name")));
+  
+  lstPlugins->setModel(modelPlugins);
+  // No vertical headers
+  lstPlugins->verticalHeader()->hide();
+  lstPlugins->setSelectionBehavior(QAbstractItemView::SelectRows);
+  lstPlugins->setFocus();
 }
 
+void QgsPluginManager::resizeColumnsToContents()
+{
+  // Resize columns to contents.
+  lstPlugins->resizeColumnsToContents();
+  QgsDebugMsg("QgsPluginManager::resizeColumnsToContents\n");
+}
+
+void QgsPluginManager::sortModel(int column)
+{
+  // Sort column ascending.
+  modelPlugins->sort(column);
+  QgsDebugMsg("QgsPluginManager::sortModel\n");
+}
 
 void QgsPluginManager::getPythonPluginDescriptions()
 {
@@ -90,8 +112,9 @@ void QgsPluginManager::getPythonPluginDescriptions()
   {
     QString packageName = pluginList[i];
 
-    // import plugin's package
-    QgsPythonUtils::loadPlugin(packageName);
+    // import plugin's package - skip loading it if an error occured
+    if (!QgsPythonUtils::loadPlugin(packageName))
+      continue;
     
     // get information from the plugin
     QString pluginName  = QgsPythonUtils::getPluginMetadata(packageName, "name");
@@ -100,16 +123,23 @@ void QgsPluginManager::getPythonPluginDescriptions()
     
     if (pluginName == "???" || description == "???" || version == "???")
       continue;
-    
-    // add to the list box
-    Q3CheckListItem *pl = new Q3CheckListItem(lstPlugins, pluginName, Q3CheckListItem::CheckBox);
-    pl->setText(1, version);
-    pl->setText(2, description);
-    pl->setText(3, "python:" + packageName);
-  
+
+    //create the items
+    QStandardItem *myName=new QStandardItem(pluginName);
+    QStandardItem *myVersion=new QStandardItem(version);
+    QStandardItem *myDesc=new QStandardItem(description);
+    QStandardItem *myDir=new QStandardItem("python:" + packageName);
+    // myName have a checkbox
+    myName->setCheckable(true);
+    //read only
+    myName->setEditable(false);
+    myVersion->setEditable(false);
+    myDesc->setEditable(false);
+    myDir->setEditable(false);
+
     // check to see if the plugin is loaded and set the checkbox accordingly
     QgsPluginRegistry *pRegistry = QgsPluginRegistry::instance();
-    
+
     QString libName = pRegistry->library(pluginName);
     if (libName.length() == 0 || !pRegistry->isPythonPlugin(pluginName))
     {
@@ -121,9 +151,13 @@ void QgsPluginManager::getPythonPluginDescriptions()
       if (libName == packageName)
       {
         // set the checkbox
-        pl->setOn(true);
+        myName->setCheckState(Qt::Checked);
       }
     }
+    // Add items to model
+    QList<QStandardItem *> myItems;
+    myItems << myName << myVersion << myDesc << myDir;
+    modelPlugins->appendRow(myItems);
   }
 #endif
 }
@@ -229,10 +263,18 @@ sharedLibExtension = "*.so*";
       continue;
     }
 
-    Q3CheckListItem *pl = new Q3CheckListItem(lstPlugins, pName(), Q3CheckListItem::CheckBox); //, pDesc(), pluginDir[i])
-    pl->setText(1, pVersion());
-    pl->setText(2, pDesc());
-    pl->setText(3, pluginDir[i]);
+    //create the items
+    QStandardItem *myName=new QStandardItem(pName());
+    QStandardItem *myVersion=new QStandardItem(pVersion());
+    QStandardItem *myDesc=new QStandardItem(pDesc());
+    QStandardItem *myDir=new QStandardItem(pluginDir[i]);
+    // myName have a checkbox
+    myName->setCheckable(true);
+    //read only
+    myName->setEditable(false);
+    myVersion->setEditable(false);
+    myDesc->setEditable(false);
+    myDir->setEditable(false);
 
     QgsDebugMsg("Getting an instance of the QgsPluginRegistry");
 
@@ -251,14 +293,17 @@ sharedLibExtension = "*.so*";
       if (libName == myLib->library())
       {
         // set the checkbox
-        pl->setOn(true);
+        myName->setCheckState(Qt::Checked);
       }
     }
+    // Add items to model
+    QList<QStandardItem *> myItems;
+    myItems << myName << myVersion << myDesc << myDir;
+    modelPlugins->appendRow(myItems);
 
     delete myLib;
   }
 }
-
 
 void QgsPluginManager::on_btnOk_clicked()
 {
@@ -272,59 +317,56 @@ void QgsPluginManager::unload()
 #ifdef QGISDEBUG
   std::cout << "Checking for plugins to unload" << std::endl;
 #endif
-  Q3CheckListItem *lvi = (Q3CheckListItem *) lstPlugins->firstChild();
-  while (lvi != 0)
+  for (int row=0;row < modelPlugins->rowCount();row++)
+  {
+    // FPV - I want to use index. You can do evrething with item.
+    QModelIndex myIndex=modelPlugins->index(row,0);
+    if (modelPlugins->data(myIndex,Qt::CheckStateRole).toInt() == 0)
     {
-      if (!lvi->isOn())
-        {
-          // its off -- see if it is loaded and if so, unload it
-          QgsPluginRegistry *pRegistry = QgsPluginRegistry::instance();
+      // its off -- see if it is loaded and if so, unload it
+      QgsPluginRegistry *pRegistry = QgsPluginRegistry::instance();
 #ifdef QGISDEBUG
-          std::cout << "Checking to see if " << lvi->text(0).toLocal8Bit().data() << " is loaded" << std::endl;
+      std::cout << "Checking to see if " << modelPlugins->data(myIndex).toString().toLocal8Bit().data() << " is loaded" << std::endl;
 #endif
-          
-          QString pluginName = lvi->text(0);
-
-          if (pRegistry->isPythonPlugin(pluginName))
-          {
+      QString pluginName = modelPlugins->data(myIndex).toString();
+      if (pRegistry->isPythonPlugin(pluginName))
+      {
 #ifdef HAVE_PYTHON
-            QString packageName = pRegistry->library(pluginName);
-            QgsPythonUtils::unloadPlugin(packageName);
-
-            //disable it to the qsettings file
-            settings.writeEntry("/PythonPlugins/" + packageName, false);
+        QString packageName = pRegistry->library(pluginName);
+        QgsPythonUtils::unloadPlugin(packageName);
+          //disable it to the qsettings file
+        settings.setValue("/PythonPlugins/" + packageName, false);
 #endif
-          }
-          else // C++ plugin
-          {
-            QgisPlugin *plugin = pRegistry->plugin(pluginName);
-            if (plugin)
-            {
-              plugin->unload();
-            }
-            //disable it to the qsettings file [ts]
-            settings.writeEntry("/Plugins/" + pluginName, false);
-          }
-
-          // remove the plugin from the registry
-          pRegistry->removePlugin(pluginName);
+      }
+      else // C++ plugin
+      {
+        QgisPlugin *plugin = pRegistry->plugin(pluginName);
+        if (plugin)
+        {
+          plugin->unload();
         }
-      lvi = (Q3CheckListItem *) lvi->nextSibling();
+        //disable it to the qsettings file [ts]
+        settings.setValue("/Plugins/" + pluginName, false);
+      }
+      // remove the plugin from the registry
+      pRegistry->removePlugin(pluginName);
     }
+  }
 }
 
 std::vector < QgsPluginItem > QgsPluginManager::getSelectedPlugins()
 {
   std::vector < QgsPluginItem > pis;
-  Q3CheckListItem *lvi = (Q3CheckListItem *) lstPlugins->firstChild();
-  while (lvi != 0)
+  // FPV - I want to use item here. You can do everything with index if you want.
+  for (int row=0;row < modelPlugins->rowCount();row++)
   {
-    if (lvi->isOn())
+    QStandardItem *myItem=modelPlugins->item(row,0);
+    if (modelPlugins->item(row,0)->checkState() == Qt::Checked)
     {
-      QString pluginName = lvi->text(0);
+      QString pluginName = modelPlugins->item(row,0)->text();
       bool pythonic = false;
-      
-      QString library = lvi->text(3);
+
+      QString library = modelPlugins->item(row,3)->text();
       if (library.left(7) == "python:")
       {
         library = library.mid(7);
@@ -334,10 +376,9 @@ std::vector < QgsPluginItem > QgsPluginManager::getSelectedPlugins()
       {
         library = txtPluginDir->text() + "/" + library;
       }
-      
-      pis.push_back(QgsPluginItem(pluginName, lvi->text(2), library, 0, pythonic));
+      pis.push_back(QgsPluginItem(pluginName, modelPlugins->item(row,2)->text(), library, 0, pythonic));
     }
-    lvi = (Q3CheckListItem *) lvi->nextSibling();
+
   }
   return pis;
 }
@@ -345,23 +386,20 @@ std::vector < QgsPluginItem > QgsPluginManager::getSelectedPlugins()
 void QgsPluginManager::on_btnSelectAll_clicked()
 {
   // select all plugins
-  Q3CheckListItem *child = dynamic_cast<Q3CheckListItem *>(lstPlugins->firstChild());
-  while(child)
+  for (int row=0;row < modelPlugins->rowCount();row++)
   {
-    child->setOn(true);
-    child = dynamic_cast<Q3CheckListItem *>(child->nextSibling());
+    QStandardItem *myItem=modelPlugins->item(row,0);
+    myItem->setCheckState(Qt::Checked);
   }
-
 }
 
 void QgsPluginManager::on_btnClearAll_clicked()
 {
-  // clear all selection checkboxes 
-  Q3CheckListItem *child = dynamic_cast<Q3CheckListItem *>(lstPlugins->firstChild());
-  while(child)
+  // clear all selection checkboxes
+  for (int row=0;row < modelPlugins->rowCount();row++)
   {
-    child->setOn(false);
-    child = dynamic_cast<Q3CheckListItem *>(child->nextSibling());
+    QStandardItem *myItem=modelPlugins->item(row,0);
+    myItem->setCheckState(Qt::Unchecked);
   }
 }
 

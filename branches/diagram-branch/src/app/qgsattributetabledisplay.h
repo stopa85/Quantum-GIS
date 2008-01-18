@@ -67,6 +67,7 @@ class QgsAttributeTableDisplay:public QDialog, private Ui::QgsAttributeTableBase
     void invertSelection();
     void removeSelection();
     void copySelectedRowsToClipboard();
+    void zoomMapToSelectedRows();
     void search();
     void advancedSearch();
     void searchShowResultsChanged(int item);
@@ -77,7 +78,10 @@ class QgsAttributeTableDisplay:public QDialog, private Ui::QgsAttributeTableBase
   private:
     /** Set the icon theme for this dialog */
     void setTheme();
-    
+
+    void restorePosition();
+    void saveWindowLocation();
+
     QString mSearchString;
 
     static const int context_id = 831088384;
