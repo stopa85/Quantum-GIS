@@ -461,13 +461,22 @@ void QgisApp::dropEvent(QDropEvent *event)
     // so we test for length to make sure we have something
     if( mUrl.path().length() > 0)
     {
-      QgsDebugMsg("Adding " + mUrl.path() + " to the map canvas");
-      addLayer(mUrl.path());
+      // check to see if we are opening a project file
+      QFileInfo fi(mUrl.path());
+      if( fi.completeSuffix() == "qgs" )
+      {
+        QgsDebugMsg("Opening project " + mUrl.path());
+        openProject(mUrl.path());
+      }
+      else
+      {
+        QgsDebugMsg("Adding " + mUrl.path() + " to the map canvas");
+        openLayer(mUrl.path());
+      }
     }
   }
   event->acceptProposedAction();
 }
-
 
 // restore any application settings stored in QSettings
 void QgisApp::readSettings()
