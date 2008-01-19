@@ -401,6 +401,10 @@ static void customSrsValidation_(QgsSpatialRefSys* srs)
   mSplash->showMessage(tr("QGIS Ready!"), Qt::AlignHCenter | Qt::AlignBottom);
 
   mMapTipsVisible = false;
+
+  // setup drag drop 
+  setAcceptDrops(true);
+
   qApp->processEvents();
 } // QgisApp ctor
 
@@ -436,6 +440,34 @@ QgisApp::~QgisApp()
   // delete map layer registry and provider registry
   QgsApplication::exitQgis();
 }
+
+void QgisApp::dragEnterEvent(QDragEnterEvent *event)
+{
+  if (event->mimeData()->hasUrls())
+  {
+    event->acceptProposedAction();
+  }
+}
+
+void QgisApp::dropEvent(QDropEvent *event)
+{
+  // get the file list
+  QList<QUrl>::iterator i;
+  QList<QUrl>urls = event->mimeData()->urls();
+  for (i = urls.begin(); i != urls.end(); i++)
+  {
+    QUrl mUrl = *i;
+    // seems that some drag and drop operations include an empty url
+    // so we test for length to make sure we have something
+    if( mUrl.path().length() > 0)
+    {
+      QgsDebugMsg("Adding " + mUrl.path() + " to the map canvas");
+      addLayer(mUrl.path());
+    }
+  }
+  event->acceptProposedAction();
+}
+
 
 // restore any application settings stored in QSettings
 void QgisApp::readSettings()
