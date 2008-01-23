@@ -65,6 +65,7 @@
 #include <QtGlobal>
 #include <QRegExp>
 #include <QRegExpValidator>
+#include <QTimer>
 //
 // Mac OS X Includes
 // Must include before GEOS 3 due to unqualified use of 'Point'
@@ -106,12 +107,14 @@
 #include "qgsmaplayerregistry.h"
 #include "qgsmapoverviewcanvas.h"
 #include "qgsmaprender.h"
+#include "qgsmaptip.h"
 #include "qgsmessageviewer.h"
 #include "qgsoptions.h"
 #include "qgspastetransformations.h"
 #include "qgspluginitem.h"
 #include "qgspluginmanager.h"
 #include "qgspluginregistry.h"
+#include "qgspoint.h"
 #include "qgsproject.h"
 #include "qgsprojectproperties.h"
 #include "qgsproviderregistry.h"
@@ -324,6 +327,7 @@ static void customSrsValidation_(QgsSpatialRefSys* srs)
   createCanvas();
   createOverview();
   createLegend();
+  createMapTips();
 
   mComposer = new QgsComposer(this); // Map composer
   mInternalClipboard = new QgsClipboard; // create clipboard
@@ -395,6 +399,8 @@ static void customSrsValidation_(QgsSpatialRefSys* srs)
   restoreWindowState();
   
   mSplash->showMessage(tr("QGIS Ready!"), Qt::AlignHCenter | Qt::AlignBottom);
+
+  mMapTipsVisible = false;
   qApp->processEvents();
 } // QgisApp ctor
 
@@ -792,6 +798,12 @@ void QgisApp::createActions()
   mActionEditPaste->setStatusTip(tr("Paste selected features"));
   connect(mActionEditPaste, SIGNAL(triggered()), this, SLOT(editPaste()));
   mActionEditPaste->setEnabled(false);
+
+  // maptips
+  mActionMapTips = new QAction(QIcon(myIconPath+"/mActionMapTips.png"), tr("Map Tips"), this);
+  mActionMapTips->setStatusTip(tr("Show information about a feature when the mouse is hovered over it"));
+  connect ( mActionMapTips, SIGNAL ( triggered() ), this, SLOT ( toggleMapTips() ) );
+  mActionMapTips->setCheckable(true);
   
 #ifdef HAVE_PYTHON  
   mActionShowPythonDialog = new QAction(tr("Python console"), this);
@@ -951,6 +963,8 @@ void QgisApp::createMenus()
 
 void QgisApp::createToolBars()
 {
+  QSize myIconSize ( 24,24 );
+  //QSize myIconSize ( 32,32 ); //large icons
   // Note: we need to set each object name to ensure that
   // qmainwindow::saveState and qmainwindow::restoreState
   // work properly
@@ -958,7 +972,7 @@ void QgisApp::createToolBars()
   //
   // File Toolbar
   mFileToolBar = addToolBar(tr("File"));
-  mFileToolBar->setIconSize(QSize(24,24));
+  mFileToolBar->setIconSize(myIconSize);
   mFileToolBar->setObjectName("FileToolBar");
   mFileToolBar->addAction(mActionFileNew);
   mFileToolBar->addAction(mActionFileNew);
@@ -969,7 +983,7 @@ void QgisApp::createToolBars()
   //
   // Layer Toolbar
   mLayerToolBar = addToolBar(tr("Manage Layers"));
-  mLayerToolBar->setIconSize(QSize(24,24));
+  mLayerToolBar->setIconSize(myIconSize);
   mLayerToolBar->setObjectName("LayerToolBar");
   mLayerToolBar->addAction(mActionAddNonDbLayer);
   mLayerToolBar->addAction(mActionAddRasterLayer);
@@ -987,14 +1001,14 @@ void QgisApp::createToolBars()
   //
   // Help Toolbar
   mHelpToolBar = addToolBar(tr("Help"));
-  mHelpToolBar->setIconSize(QSize(24,24));
+  mHelpToolBar->setIconSize(myIconSize);
   mHelpToolBar->setObjectName("Help");
   mHelpToolBar->addAction(mActionHelpContents);
   mHelpToolBar->addAction(QWhatsThis::createAction());
   //
   // Digitizing Toolbar
   mDigitizeToolBar = addToolBar(tr("Digitizing"));
-  mDigitizeToolBar->setIconSize(QSize(24,24));
+  mDigitizeToolBar->setIconSize(myIconSize);
   mDigitizeToolBar->setObjectName("Digitizing");
   mDigitizeToolBar->addAction(mActionToggleEditing);
   mDigitizeToolBar->addAction(mActionCapturePoint);
@@ -1014,7 +1028,7 @@ void QgisApp::createToolBars()
   //
   // Map Navigation Toolbar
   mMapNavToolBar = addToolBar(tr("Map Navigation"));
-  mMapNavToolBar->setIconSize(QSize(24,24));
+  mMapNavToolBar->setIconSize(myIconSize);
   mMapNavToolBar->setObjectName("Map Navigation");
   mMapNavToolBar->addAction(mActionPan);
   mMapNavToolBar->addAction(mActionZoomIn);
@@ -1027,19 +1041,20 @@ void QgisApp::createToolBars()
   //
   // Attributes Toolbar
   mAttributesToolBar = addToolBar(tr("Attributes"));
-  mAttributesToolBar->setIconSize(QSize(24,24));
+  mAttributesToolBar->setIconSize(myIconSize);
   mAttributesToolBar->setObjectName("Attributes");
   mAttributesToolBar->addAction(mActionIdentify);
   mAttributesToolBar->addAction(mActionSelect);
   mAttributesToolBar->addAction(mActionOpenTable);
   mAttributesToolBar->addAction(mActionMeasure);
   mAttributesToolBar->addAction(mActionMeasureArea);
+  mAttributesToolBar->addAction(mActionMapTips);
   mAttributesToolBar->addAction(mActionShowBookmarks);
   mAttributesToolBar->addAction(mActionNewBookmark);
   //
   // Plugins Toolbar
   mPluginToolBar = addToolBar(tr("Plugins"));
-  mPluginToolBar->setIconSize(QSize(24,24));
+  mPluginToolBar->setIconSize(myIconSize);
   mPluginToolBar->setObjectName("Plugins");
 
   //Add the menu for toolbar visibility here
@@ -1361,6 +1376,18 @@ bool QgisApp::createDB()
     }
   }
   return TRUE;
+}
+
+void QgisApp::createMapTips()
+{
+  // Set up the timer for maptips. The timer is reset everytime the mouse is moved
+  mpMapTipsTimer = new QTimer ( mMapCanvas );
+  // connect the timer to the maptips slot
+  connect ( mpMapTipsTimer, SIGNAL ( timeout() ), this, SLOT ( showMapTip() ) );
+  // set the interval to 0.850 seconds - timer will be started next time the mouse moves
+  mpMapTipsTimer->setInterval ( 850 );
+  // Create the maptips object
+  mpMaptip = new QgsMapTip ();
 }
 
 // Update file menu with the current list of recently accessed projects
@@ -3400,6 +3427,7 @@ void QgisApp::attributeTable()
   mMapLegend->legendLayerAttributeTable();
 }
 
+
 void QgisApp::deleteSelected()
 {
   QgsMapLayer *layer = mMapLegend->currentLayer();
@@ -3633,6 +3661,16 @@ void QgisApp::refreshMapCanvas()
   mMapCanvas->refresh();
 }
 
+void QgisApp::toggleMapTips()
+{
+  mMapTipsVisible = !mMapTipsVisible;
+  // if off, stop the timer
+  if ( !mMapTipsVisible )
+  {
+    mpMapTipsTimer->stop();
+  }
+}
+
 void QgisApp::toggleEditing()
 {
   if(mMapCanvas && mMapCanvas->isDrawing())
@@ -3661,7 +3699,25 @@ void QgisApp::showMouseCoordinate(QgsPoint & p)
   {
     mCoordsLabel->setMinimumWidth(mCoordsLabel->width());
   }
+
+  if ( mMapTipsVisible )
+  {
+    // store the point, we need it for when the maptips timer fires
+    mLastMapPosition = p;
+
+    // we use this slot to control the timer for maptips since it is fired each time
+    // the mouse moves.
+    if ( mMapCanvas->underMouse() )
+    {
+      // Clear the maptip (this is done conditionally)
+      mpMaptip->clear ( mMapCanvas );
+      // don't start the timer if the mouse is not over the map canvas
+      mpMapTipsTimer->start();
+      QgsDebugMsg("Started maptips timer");
+    }
+  }
 }
+
 
 void QgisApp::showScale(double theScale)
 {
@@ -4684,6 +4740,50 @@ void QgisApp::showStatusMessage(QString theMessage)
   statusBar()->message(theMessage);
 }
 
+void QgisApp::showMapTip()
+
+{
+  /* Show the maptip using tooltip */
+  // Stop the timer while we look for a maptip
+  mpMapTipsTimer->stop();
+
+  // Only show tooltip if the mouse is over the canvas
+  if ( mMapCanvas->underMouse() )
+  {
+    QPoint myPointerPos = mMapCanvas->mouseLastXY();
+
+    // Following is debug stuff
+    QgsDebugMsg ( "Mouse IS over canvas" );
+    QgsDebugMsg ( "Maptips timer fired:" );
+    QgsDebugMsg ( mLastMapPosition.stringRep() );
+    QgsDebugMsg ( "Pixel coordinates of mouse position:" );
+    QgsDebugMsg ( QString::number ( myPointerPos.x() ) + "," + QString::number ( myPointerPos.y() ) );
+    // end debug stuff
+
+    //  Make sure there is an active layer before proceeding
+
+    QgsMapLayer* mypLayer = mMapCanvas->currentLayer();
+    if ( mypLayer )
+    {
+      QgsDebugMsg("Current layer for maptip display is: " + mypLayer->source());
+      // only process vector layers
+      if ( mypLayer->type() == QgsMapLayer::VECTOR )
+      {
+
+
+        // Show the maptip if the maptips button is depressed
+        if(mMapTipsVisible)
+        {
+          mpMaptip->showMapTip ( mypLayer, mLastMapPosition, myPointerPos, mMapCanvas );
+        }
+      }
+    }
+    else
+    {
+      QgsDebugMsg ( "Maptips require an active layer" );
+    }
+  }
+}
 void QgisApp::projectPropertiesProjections()
 {
   // Driver to display the project props dialog and switch to the
@@ -4822,6 +4922,7 @@ void QgisApp::activateDeactivateLayerRelatedActions(QgsMapLayer* layer)
         if(vlayer->isEditable() && dprovider->capabilities() & QgsVectorDataProvider::ChangeGeometries)
         {
           mActionMoveVertex->setEnabled(true);
+          mActionMoveFeature->setEnabled(true);
         }
         return;
       }
@@ -4860,6 +4961,7 @@ void QgisApp::activateDeactivateLayerRelatedActions(QgsMapLayer* layer)
         mActionAddVertex->setEnabled(true);
         mActionMoveVertex->setEnabled(true);
         mActionDeleteVertex->setEnabled(true);
+        mActionMoveFeature->setEnabled(true);
         if(vlayer->vectorType() == QGis::Polygon)
         {
           mActionAddRing->setEnabled(true);
@@ -4873,6 +4975,7 @@ void QgisApp::activateDeactivateLayerRelatedActions(QgsMapLayer* layer)
         mActionAddVertex->setEnabled(false);
         mActionMoveVertex->setEnabled(false);
         mActionDeleteVertex->setEnabled(false);
+        mActionMoveFeature->setEnabled(false);
       }
       return;
     }
@@ -4892,6 +4995,7 @@ void QgisApp::activateDeactivateLayerRelatedActions(QgsMapLayer* layer)
     mActionAddVertex->setEnabled(false);
     mActionDeleteVertex->setEnabled(false);
     mActionMoveVertex->setEnabled(false);
+    mActionMoveFeature->setEnabled(false);
     mActionEditCopy->setEnabled(false);
     mActionEditCut->setEnabled(false);
     mActionEditPaste->setEnabled(false);
@@ -5412,25 +5516,25 @@ void QgisApp::warnOlderProjectVersion(QString oldVersion)
   if ( settings.value("/qgis/warnOldProjectVersion", QVariant(true)).toBool() )
   {
     QMessageBox::warning(NULL, tr("Project file is older"),
-                         tr("<p>This project file was saved by an older version "
-                            "of QGIS. When saving this project file, "
-                            "QGIS will update it to the latest version, "
-                            "possibly rendering it useless for older versions of QGIS."
-                            "<p>Even though QGIS developers try to maintain backwards "
-                            "compatibility, some of the information from the old project "
-                            "file might be lost. To improve the quality of QGIS, we appreciate "
-                            "if you file a bug report at "
-                            "<a href=http://svn.qgis.org/trac/wiki>http://svn.qgis.org/trac/wiki</a> "
-                            "Be sure to include the old project file, and state the version of "
-                            "QGIS you used to discover the error."
-                            "<p>To remove this warning when opening an older project file, "
-                            "check the box 'Warn me when opening a project file saved with an "
-                            "older verision of QGIS' "
-                            "in the <tt>Settings:Options:General</tt> menu. "
-                            "<p>Version of the project file: %1<br>"
-                            "Current version of QGIS: %2")
+                         (tr("<p>This project file was saved by an older version of QGIS.") +
+                          tr(" When saving this project file, QGIS will update it to the latest version, "
+                             "possibly rendering it useless for older versions of QGIS.") +
+                          tr("<p>Even though QGIS developers try to maintain backwards "
+                             "compatibility, some of the information from the old project "
+                             "file might be lost.") +
+                          tr(" To improve the quality of QGIS, we appreciate "
+                             "if you file a bug report at %3.") +
+                          tr(" Be sure to include the old project file, and state the version of "
+                             "QGIS you used to discover the error.") +
+                          tr("<p>To remove this warning when opening an older project file, "
+                             "uncheck the box '%5' in the %4 menu.") +
+                          tr("<p>Version of the project file: %1<br>Current version of QGIS: %2"))
                          .arg(oldVersion)
-                         .arg(QGis::qgisVersion));
+                         .arg(QGis::qgisVersion)
+                         .arg("<a href=https://svn.qgis.org/trac/wiki>http://svn.qgis.org/trac/wiki</a> ")
+                         .arg(tr("<tt>Settings:Options:General</tt>", "Menu path to setting options"))
+                         .arg(tr("Warn me when opening a project file saved with an older version of QGIS"))
+      );
     
   }  
   return;

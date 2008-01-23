@@ -27,9 +27,10 @@ typedef QgsProjectVersion PFV;
 
 
 QgsProjectFileTransform::transform QgsProjectFileTransform::transformers[] = {
+  {PFV(0,8,0), PFV(0,8,1), &QgsProjectFileTransform::transformNull},
   {PFV(0,8,1), PFV(0,9,0), &QgsProjectFileTransform::transform081to090},
-  {PFV(0,9,0), PFV(0,9,1), &QgsProjectFileTransform::transform090to091},
-  {PFV(0,9,1), PFV(0,9,2), &QgsProjectFileTransform::transformNull}
+  {PFV(0,9,0), PFV(0,9,1), &QgsProjectFileTransform::transformNull},
+  {PFV(0,9,1), PFV(0,9,2), &QgsProjectFileTransform::transform091to092}
 };
 
 bool QgsProjectFileTransform::updateRevision(QgsProjectVersion newVersion)
@@ -174,11 +175,60 @@ void QgsProjectFileTransform::transform081to090()
 
 };
 
-void QgsProjectFileTransform::transform090to091()
+void QgsProjectFileTransform::transform091to092()
 {
   QgsDebugMsg("entering");
   if ( ! mDom.isNull() )
   {
+    // Insert transforms here!
+    QDomNodeList rasterPropertyList = mDom.elementsByTagName("rasterproperties");
+    QgsDebugMsg(QString("Raster properties file entries: ") + QString::number(rasterPropertyList.count())); 
+    for (int i = 0; i < rasterPropertyList.count(); i++)
+    {
+      // Get one rasterproperty element from list, and rename the sub-properties.
+      QDomNode rasterProperty = rasterPropertyList.item(i);
+      // rasterProperty.namedItem("").toElement().setTagName("");
+      
+      rasterProperty.namedItem("stdDevsToPlotDouble").toElement().setTagName("mStandardDeviations");
+
+      rasterProperty.namedItem("invertHistogramFlag").toElement().setTagName("mInvertPixelsFlag");
+      rasterProperty.namedItem("showDebugOverLayFlag").toElement().setTagName("mDebugOverLayFlag");
+
+      rasterProperty.namedItem("redBandNameQString").toElement().setTagName("mRedBandName");
+      rasterProperty.namedItem("blueBandNameQString").toElement().setTagName("mBlueBandName");
+      rasterProperty.namedItem("greenBandNameQString").toElement().setTagName("mGreenBandName");
+      rasterProperty.namedItem("grayBandNameQString").toElement().setTagName("mGrayBandName");
+    }
+
+    // Changing symbol size for hard: symbols
+    QDomNodeList symbolPropertyList = mDom.elementsByTagName("symbol");
+    for (int i = 0; i < symbolPropertyList.count(); i++)
+    {
+      // Get the <poinmtsymbol> to check for 'hard:' for each <symbol>
+      QDomNode symbolProperty = symbolPropertyList.item(i);
+      
+      QDomElement pointSymbol = symbolProperty.firstChildElement("pointsymbol");
+      if ( pointSymbol.text().startsWith("hard:") )
+      {
+        // Get pointsize and line width
+        int lineWidth = symbolProperty.firstChildElement("outlinewidth").text().toInt();
+        int pointSize = symbolProperty.firstChildElement("pointsize").text().toInt();
+        // Just a precaution, checking for 0
+        if (pointSize != 0)
+        {
+          // int r = (s-2*lw)/2-1 --> 2r = (s-2*lw)-2 --> 2r+2 = s-2*lw
+          // --> 2r+2+2*lw = s
+          // where '2r' is the old size.
+          pointSize = pointSize+2+2*lineWidth;
+          QgsDebugMsg(QString("Setting point size to %1").arg(pointSize));
+          QDomElement newPointSizeProperty=mDom.createElement("pointsize");
+          QDomText newPointSizeTxt=mDom.createTextNode( QString::number(pointSize) );
+          newPointSizeProperty.appendChild(newPointSizeTxt);
+          symbolProperty.replaceChild(newPointSizeProperty, pointSymbol);
+        }
+      } 
+    }
+
   }
   return;
 

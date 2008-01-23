@@ -2,7 +2,7 @@
 <qgis version="0.9.2-Ganymede" >
   <maplayer minScale="1" maxScale="1e+08" scaleBasedVisibilityFlag="0" geometry="Point" type="vector" >
     <id>points20080103150949100</id>
-    <datasource>/Users/timlinux/dev/cpp/qgis_qml/tests/testdata/points.shp</datasource>
+    <datasource>/Users/tim/dev/cpp/qgis/tests/testdata/points.shp</datasource>
     <layername>points</layername>
     <srs>
       <spatialrefsys>
@@ -19,23 +19,25 @@
     <transparencyLevelInt>255</transparencyLevelInt>
     <provider>ogr</provider>
     <encoding>System</encoding>
-    <classificationattribute>Value</classificationattribute>
-    <displayfield>Name</displayfield>
+    <classificationattribute>Importance</classificationattribute>
+    <displayfield>Class</displayfield>
     <label>0</label>
     <attributeactions/>
     <continuoussymbol>
-      <classificationfield>1</classificationfield>
+      <classificationfield>2</classificationfield>
       <polygonoutline>1</polygonoutline>
       <lowestsymbol>
         <symbol>
-          <lowervalue>12.000000</lowervalue>
+          <lowervalue>1.000000</lowervalue>
           <uppervalue></uppervalue>
           <label></label>
           <pointsymbol>hard:circle</pointsymbol>
-          <pointsize>6</pointsize>
-          <outlinecolor red="255" blue="204" green="216" />
+          <pointsize>10</pointsize>
+          <rotationclassificationfield>-1</rotationclassificationfield>
+          <scaleclassificationfield>-1</scaleclassificationfield>
+          <outlinecolor red="216" blue="30" green="210" />
           <outlinestyle>SolidLine</outlinestyle>
-          <outlinewidth>2</outlinewidth>
+          <outlinewidth>1</outlinewidth>
           <fillcolor red="0" blue="0" green="0" />
           <fillpattern>NoBrush</fillpattern>
           <texturepath></texturepath>
@@ -43,14 +45,16 @@
       </lowestsymbol>
       <highestsymbol>
         <symbol>
-          <lowervalue>233.000000</lowervalue>
+          <lowervalue>20.000000</lowervalue>
           <uppervalue></uppervalue>
           <label></label>
           <pointsymbol>hard:circle</pointsymbol>
-          <pointsize>6</pointsize>
-          <outlinecolor red="196" blue="0" green="56" />
+          <pointsize>10</pointsize>
+          <rotationclassificationfield>-1</rotationclassificationfield>
+          <scaleclassificationfield>-1</scaleclassificationfield>
+          <outlinecolor red="46" blue="206" green="43" />
           <outlinestyle>SolidLine</outlinestyle>
-          <outlinewidth>2</outlinewidth>
+          <outlinewidth>1</outlinewidth>
           <fillcolor red="0" blue="0" green="0" />
           <fillpattern>NoBrush</fillpattern>
           <texturepath></texturepath>

@@ -41,8 +41,12 @@ class QgsGeometry
     static QgsGeometry* fromPoint(const QgsPoint& point) /Factory/;
     /** construct geometry from a polyline */
     static QgsGeometry* fromPolyline(const QgsPolyline& polyline) /Factory/;
+    /** construct geometry from a multipolyline*/
+    static QgsGeometry* fromMultiPolyline(const QgsMultiPolyline& multiline) /Factory/;
     /** construct geometry from a polygon */
     static QgsGeometry* fromPolygon(const QgsPolygon& polygon) /Factory/;
+    /** construct geometry from a multipolygon */
+    static QgsGeometry* fromMultiPolygon(const QgsMultiPolygon& multipoly) /Factory/;
     /** construct geometry from a rectangle */
     static QgsGeometry* fromRect(const QgsRect& rect) /Factory/;
         
@@ -195,7 +199,7 @@ not disjoint with existing polygons of the feature*/
  /**Changes this geometry such that it does not intersect the other geometry
        @param other geometry that should not be intersect
        @return 0 in case of success*/
-    int difference(QgsGeometry* other);	
+    int makeDifference(QgsGeometry* other);	
 
     /**Returns the bounding box of this feature*/
     QgsRect boundingBox();
@@ -208,6 +212,25 @@ not disjoint with existing polygons of the feature*/
     /** Test for containment of a point (uses GEOS) */
     bool contains(QgsPoint* p);
 
+    /** Returns a buffer region around this geometry having the given width and with a specified number
+        of segments used to approximate curves */
+    QgsGeometry* buffer(double distance, int segments) /Factory/;
+
+    /** Returns the smallest convex polygon that contains all the points in the geometry. */
+    QgsGeometry* convexHull() /Factory/;
+    
+    /** Returns a geometry representing the points shared by this geometry and other. */
+    QgsGeometry* intersection(QgsGeometry* geometry) /Factory/;
+    
+    /** Returns a geometry representing all the points in this geometry and other. */
+    QgsGeometry* Union(QgsGeometry* geometry) /Factory/;
+    
+    /** Returns a geometry representing the points making up this geometry that do not make up other. */
+    QgsGeometry* difference(QgsGeometry* geometry) /Factory/;
+    
+    /** Returns a Geometry representing the points making up this Geometry that do not make up other. */
+    QgsGeometry* symDifference(QgsGeometry* geometry) /Factory/;
+    
     /**Creates a geos geometry from this features geometry. Note, that the returned object needs to be deleted*/
     // TODO: unsupported class... would be possible to use PyGEOS?
     //geos::Geometry* geosGeometry() const;
