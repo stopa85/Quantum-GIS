@@ -16,6 +16,8 @@ SET(QGIS_APP_SRCS
   qgsclipboard.cpp
   qgscontinuouscolordialog.cpp
   qgscustomprojectiondialog.cpp
+  qgsdbfilterproxymodel.cpp
+  qgsdbtablemodel.cpp
   qgsdelattrdialog.cpp
   qgsfillstylewidget.cpp
   qgsgeomtypedialog.cpp
@@ -217,7 +219,12 @@ ENDIF (PYTHON_FOUND)
 #############
 
 IF (WIN32)
-  ADD_EXECUTABLE(qgis WIN32 ${QGIS_APP_SRCS} ${QGIS_APP_MOC_SRCS})
+  # 'WIN32' removes console, which is Bad when debugging
+  IF (CMAKE_BUILD_TYPE MATCHES Debug)
+    ADD_EXECUTABLE(qgis ${QGIS_APP_SRCS} ${QGIS_APP_MOC_SRCS})
+  ELSE (CMAKE_BUILD_TYPE MATCHES Debug)
+    ADD_EXECUTABLE(qgis WIN32 ${QGIS_APP_SRCS} ${QGIS_APP_MOC_SRCS})
+  ENDIF (CMAKE_BUILD_TYPE MATCHES Debug)
 ELSE (WIN32)
   ADD_EXECUTABLE(qgis ${QGIS_APP_SRCS} ${QGIS_APP_MOC_SRCS})
 ENDIF (WIN32)

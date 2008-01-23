@@ -27,15 +27,23 @@ email                : morb at ozemail dot com dot au
 #if GEOS_VERSION_MAJOR < 3
 #define GEOS_GEOM geos
 #define GEOS_IO geos
+#define GEOS_LINEMERGE geos
+#define GEOS_POLYGONIZE geos
 #define GEOS_UTIL geos
 #define GEOS_SIZE_T int
 #define COORD_SEQ_FACTORY DefaultCoordinateSequenceFactory
+#include "geos/opPolygonize.h"
+#include "geos/opLinemerge.h"
 #else
 #define GEOS_GEOM geos::geom
 #define GEOS_IO geos::io
+#define GEOS_LINEMERGE geos::operation::linemerge
+#define GEOS_POLYGONIZE geos::operation::polygonize
 #define GEOS_UTIL geos::util
 #define GEOS_SIZE_T size_t
 #define COORD_SEQ_FACTORY CoordinateArraySequenceFactory
+#include "geos/operation/polygonize/Polygonizer.h"
+#include "geos/operation/linemerge/LineMerger.h"
 #endif
 
 #include "qgspoint.h"
@@ -256,16 +264,13 @@ not disjoint with existing polygons of the feature*/
      between geometry and splitLine, only the first one is considered.
     @param splitLine the line that splits the geometry
     @param newGeometrys OUT: list of new geometries that have been created with the split
-    @return 0 in case of success, which means the geometry has been split in two parts, \
-    1 if line intersects multiple times but only one split could be done, \ 
-    2 if intersection too complicated to proceed (several polygon intersections), \				\
-    else other error*/
+    @return 0 in case of success, 1 if geometry has not been split, error else*/
     int splitGeometry(const QList<QgsPoint>& splitLine, QList<QgsGeometry*>& newGeometries);
 
     /**Changes this geometry such that it does not intersect the other geometry
        @param other geometry that should not be intersect
        @return 0 in case of success*/
-    int difference(QgsGeometry* other);
+    int makeDifference(QgsGeometry* other);
 
     /**Returns the bounding box of this feature*/
     QgsRect boundingBox();
@@ -277,6 +282,25 @@ not disjoint with existing polygons of the feature*/
 
     /** Test for containment of a point (uses GEOS) */
     bool contains(QgsPoint* p);
+
+    /** Returns a buffer region around this geometry having the given width and with a specified number
+        of segments used to approximate curves */
+    QgsGeometry* buffer(double distance, int segments);
+    
+    /** Returns the smallest convex polygon that contains all the points in the geometry. */
+    QgsGeometry* convexHull();
+    
+    /** Returns a geometry representing the points shared by this geometry and other. */
+    QgsGeometry* intersection(QgsGeometry* geometry);
+    
+    /** Returns a geometry representing all the points in this geometry and other. */
+    QgsGeometry* Union(QgsGeometry* geometry);
+    
+    /** Returns a geometry representing the points making up this geometry that do not make up other. */
+    QgsGeometry* difference(QgsGeometry* geometry);
+    
+    /** Returns a Geometry representing the points making up this Geometry that do not make up other. */
+    QgsGeometry* symDifference(QgsGeometry* geometry);
 
     /** Exports the geometry to mWkt
         @return true in case of success and false else
@@ -393,44 +417,19 @@ not disjoint with existing polygons of the feature*/
     /**Splits line/multiline geometries
      @splitLine the line that splits the feature
      @newGeometry new geometry if splitting was successful
-     @return 0 in case of success, 1: splitLine intersects several times but only one split \
-    can be done, else other errors*/
-    int splitLinearGeometry(GEOS_GEOM::LineString* splitLine, QgsGeometry** newGeometry);
+     @return 0 in case of success, 1 if geometry has not been split, error else*/
+    int splitLinearGeometry(GEOS_GEOM::LineString* splitLine, QList<QgsGeometry*>& newGeometries);
     /**Splits polygon/multipolygon geometries
-       @return 0 in case of success, 1 no split because of too complicated intersection, \
-       else other errors*/
-    int splitPolygonGeometry(GEOS_GEOM::LineString* splitLine, QgsGeometry** newGeometry);
+       @return 0 in case of success, 1 if geometry has not been split, error else*/
+    int splitPolygonGeometry(GEOS_GEOM::LineString* splitLine, QList<QgsGeometry*>& newGeometries);
     /**Finds the vertices next to point where the line is split. If it is split at a vertex, beforeVertex 
      and afterVertex are the same*/
-    int findVerticesNextToSplit(const QgsPoint& splitPoint, int& beforeVertex, int& afterVertex);
-    /**Test if a point is a geometry vertex
-       @param p point to test
-       @param vertexNr vertex number (if point is a vertex)
-       @return true if p is vertex of this geometry*/
-    bool vertexContainedInGeometry(const QgsPoint& p, int& vertexNr);
-    /**Splits this geometry into two lines*/
-    int splitThisLine(const QgsPoint& splitPoint, int beforeVertex, int afterVertex, QgsGeometry** newGeometry);
-    /**Splits this geometry into two multilines*/
-    int splitThisMultiline(const QgsPoint& splitPoint, int beforeVertex, int afterVertex, QgsGeometry** newGeometry);
-    /**Splits this geometry into two polygons
-     @return 0 in case of success, 1 error because split intersects inner ring, else other error*/
-    int splitThisPolygon(const GEOS_GEOM::CoordinateSequence* splitLine, int beforeVertex1, int afterVertex1, \
-			 int beforeVertex2, int afterVertex2, QgsGeometry** newGeometry);
-    /**Splits this geometry into two multipolygons
-     @return 0 in case of success, 1 error because split intersects inner ring, else other error*/
-    int splitThisMultiPolygon(const GEOS_GEOM::CoordinateSequence* splitLine, int beforeVertex1, int afterVertex1, \
-			 int beforeVertex2, int afterVertex2, QgsGeometry** newGeometry);
-    /**splits a QgsPolyline object. Used by 'splitThisLine' and 'splitThisMultiLine'*/
-    int splitQgsPolyline(const QgsPoint& splitPoint, int beforeVertex, int afterVertex, const QgsPolyline* origLine, QgsPolyline** changedLine, QgsPolyline** newLine) const;
-    /**split a QgsPolygon object. Used by 'splitThisPolygon' and 'splitThisMultiPolygon'
-     @return 0 in case of success, 1 error because split intersects inner ring, else other error*/
-    int splitQgsPolygon(const GEOS_GEOM::CoordinateSequence* splitLine, int beforeVertex1, int afterVertex1, \
-			int beforeVertex2, int afterVertex2, const QgsPolygon* origPoly, QgsPolygon** changedPoly, QgsPolygon** newPoly) const;
 
-    /**Converts a polyline (that represents a polygon boundary or a ring) to geos polygon.
-       The caller function takes ownership of the created object.
-     @return the converted polygon or 0 in case of error*/
-    GEOS_GEOM::Polygon* polylineToGeosPolygon(const QgsPolyline& line) const;
+    /**Nodes together a split line and a (multi-) polygon geometry in a multilinestring
+     @return the noded multiline geometry or 0 in case of error. The calling function takes ownership of the node geometry*/
+    GEOS_GEOM::Geometry* nodeGeometries(const GEOS_GEOM::LineString* splitLine, const GEOS_GEOM::Geometry* poly) const;
+
+    int mergeGeometriesMultiTypeSplit(QList<GEOS_GEOM::Geometry*>& splitResult);
 
     /** return point from wkb */
     QgsPoint asPoint(unsigned char*& ptr, bool hasZValue);

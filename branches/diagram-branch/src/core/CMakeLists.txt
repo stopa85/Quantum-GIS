@@ -12,8 +12,6 @@ qgsclipper.cpp
 qgscontexthelp.cpp
 qgscoordinatetransform.cpp
 qgsdatasourceuri.cpp
-qgsdbfilterproxymodel.cpp
-qgsdbtablemodel.cpp
 qgsdistancearea.cpp
 qgsexception.cpp
 qgsfeature.cpp
@@ -99,6 +97,7 @@ qgsmaplayerregistry.h
 qgsmaprender.h
 qgsmessageoutput.h
 qgsproject.h
+qgsprojectversion.h
 qgsrasterdataprovider.h
 qgsrunprocess.h
 qgsvectorlayer.h
@@ -244,6 +243,7 @@ qgsvectoroverlay.h
 raster/qgscliptominmaxenhancement.h
 raster/qgscolorrampshader.h
 raster/qgscolortable.h
+raster/qgscolorrampshader.h
 raster/qgscontrastenhancement.h
 raster/qgscontrastenhancementfunction.h
 raster/qgsfreakoutshader.h

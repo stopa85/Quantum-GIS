@@ -48,6 +48,14 @@ QgsAbout::~QgsAbout()
 
 void QgsAbout::init()
 {
+
+  // Set up text in dialog.
+  QString format("<p align=center>%1</p><p align=center><a href=%2>%3</a></p>");
+  QString sentence1 = tr("Quantum GIS is licensed under the GNU General Public License");
+  QString link("http://www.gnu.org/licenses");
+  lblUrls->setHtml(format.arg(sentence1).arg(link).arg(link));
+  QgsDebugMsg(format.arg(sentence1).arg(link).arg(link));
+
   // set the 60x60 icon pixmap
   QPixmap icon(QgsApplication::iconsPath() + "qgis-icon-60x60.png");
   qgisIcon->setPixmap(icon);
@@ -61,9 +69,8 @@ void QgsAbout::init()
 #endif
   if ( file.open( QIODevice::ReadOnly ) ) {
     QTextStream stream( &file );
-#ifdef Q_OS_DARWIN
+    // Always use UTF-8
     stream.setCodec("UTF-8");
-#endif
     QString line;
 #ifdef QGISDEBUG 
     int i = 1; 
@@ -118,6 +125,8 @@ void QgsAbout::init()
         + "</th><th>" + tr("Name") + "</th><th>" + tr("Website") + "</th></tr>";
       QString website;
       QTextStream sponsorStream( &sponsorFile );
+      // Always use UTF-8
+      sponsorStream.setCodec("UTF-8");
       QString sline;
       int count = 0;
       while ( !sponsorStream.atEnd() ) 
