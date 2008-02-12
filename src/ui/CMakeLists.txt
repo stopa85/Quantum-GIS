@@ -33,6 +33,7 @@ SET(QGIS_UIS
   qgsmessageviewer.ui
   qgsnewconnectionbase.ui
   qgsnewhttpconnectionbase.ui
+  qgsnewogrgenericconnectionbase.ui
   qgsoptionsbase.ui
   qgspastetransformationsbase.ui
   qgspatterndialogbase.ui
