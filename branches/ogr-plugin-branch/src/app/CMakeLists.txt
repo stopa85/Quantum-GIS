@@ -37,6 +37,7 @@ qgsmarkerdialog.cpp
 qgsmeasuredialog.cpp
 qgsmeasuretool.cpp
 qgsnewhttpconnection.cpp
+qgsnewogrgenericconnection.cpp
 qgsnumericsortlistviewitem.cpp
 qgsoptions.cpp
 qgspastetransformations.cpp
@@ -63,6 +64,12 @@ composer/qgscomposerscalebar.cpp
 composer/qgscomposervectorlegend.cpp
 composer/qgscomposerview.cpp
 composer/qgscomposition.cpp
+
+dbutilities/qgsconnectionregistry.cpp
+dbutilities/qgsdatabaseconnection.cpp
+dbutilities/qgsgeomcolumntypethread.cpp
+dbutilities/qgsogrdatabaseconnection.cpp
+dbutilities/qgspostgresdatabaseconnection.cpp
 
 legend/qgslegendgroup.cpp
 legend/qgslegend.cpp
@@ -106,6 +113,7 @@ qgsmaptoolidentify.h
 qgsmarkerdialog.h
 qgsmeasuredialog.h
 qgsnewhttpconnection.h
+qgsnewogrgenericconnection.h
 qgsoptions.h
 qgspastetransformations.h
 qgspatterndialog.h
@@ -193,7 +201,7 @@ ENDIF (WIN32 AND NOT MSVC)
 
 
 INCLUDE_DIRECTORIES(
-     ${CMAKE_CURRENT_SOURCE_DIR} composer legend
+     ${CMAKE_CURRENT_SOURCE_DIR} composer legend dbutilities
      ${CMAKE_CURRENT_BINARY_DIR}
      ${CMAKE_CURRENT_BINARY_DIR}/../ui
      ../core
