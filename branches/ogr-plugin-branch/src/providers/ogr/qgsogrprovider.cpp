@@ -95,11 +95,11 @@ QgsOgrProvider::QgsOgrProvider(QString const & uri)
     {
       //process uri
       mUri =new QgsDataSourceURI(uri);                          
-      connString=mUri->getURI();
-      connTable=mUri->table;
+      connString=mUri->uri();
+      connTable=mUri->table();
       //take out the quotes from table name
       connTable=connTable.replace("\"","");
-      qDebug(mUri->text());
+      qDebug(mUri->connInfo());
     }  
   else
     {

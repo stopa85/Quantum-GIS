@@ -39,13 +39,16 @@ public:
    
   //! constructor which parses input URI
   QgsDataSourceURI(QString uri);
-   
-  //! default destructor 
-  ~QgsDataSourceURI();
- 
-  //! All in a single string
-  QString text() const;
-  
+
+  //! return connection part of URI
+  QString connInfo() const;
+
+  //! return complete uri
+  QString uri() const;
+
+  //! quoted table name
+  QString quotedTablename() const;
+
   //! Set all connection related members at once
   void setConnection(const QString& aType,
                      const QString& aHost,
@@ -59,34 +62,41 @@ public:
                      const QString& aTable,
                      const QString& aGeometryColumn,
                      const QString& aSql = QString());
-                     
-  //! Returns a ogr database URI based on type
-  QString getURI();
+
+  QString username() const;
+  QString schema() const;
+  QString table() const;
+  QString sql() const;
+  QString geometryColumn() const;
+
+  void clearSchema();
+  void setSql(QString sql);
+
+private:
+  void skipBlanks(const QString &uri, int &i);
+  QString getValue(const QString &uri, int &i);
+
   /* data */
   //! connection type
-  QString type;
+  QString mType;
   //! host name
-  QString host;
+  QString mHost;
   //! database name
-  QString database;
+  QString mDatabase;
   //! port the database server listens on
-  QString port;
+  QString mPort;
   //! schema
-  QString schema;
+  QString mSchema;
   //! spatial table
-  QString table;
+  QString mTable;
   //! geometry column
-  QString geometryColumn;
+  QString mGeometryColumn;
   //! SQL where clause used to limit features returned from the layer
-  QString sql;
+  QString mSql;
   //! username 
-  QString username;
+  QString mUsername;
   //! password
-  QString password;
-  
-  //! whole connection info (host, db, port, name, pass)
-  QString connInfo;
-
+  QString mPassword;
 };
 
 #endif //QGSDATASOURCEURI_H
