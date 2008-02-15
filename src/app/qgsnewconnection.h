@@ -19,8 +19,13 @@
 #define QGSNEWCONNECTION_H
 #include "ui_qgsnewconnectionbase.h"
 #include "qgisgui.h"
-//fred
-#include "qgsconnectionmanager.h"
+
+#include "qgsconnectionparameters.h"
+#include "qgsconnectionregistry.h"
+#include "qgsdatabaseconnection.h"
+#include "qgsogrdatabaseconnection.h"
+#include "qgspostgresdatabaseconnection.h"
+
 /*! \class QgsNewConnection
  * \brief Dialog to allow the user to configure and save connection
  * information for a PostgresQl database
@@ -30,7 +35,7 @@ class QgsNewConnection : public QDialog, private Ui::QgsNewConnectionBase
   Q_OBJECT
   public:
     //! Constructor
-    QgsNewConnection(QWidget *parent = 0, const QgsConnection* conn=0, Qt::WFlags fl = QgisGui::ModalDialogFlags);
+    QgsNewConnection(QWidget *parent = 0, const QgsConnectionParameters* conn=0, Qt::WFlags fl = QgisGui::ModalDialogFlags);
     //! Destructor
     ~QgsNewConnection();
     //! Tests the connection using the parameters supplied
@@ -47,7 +52,7 @@ class QgsNewConnection : public QDialog, private Ui::QgsNewConnectionBase
     void on_cb_geometryColumnsOnly_clicked();
   private:
     //fred      
-    QgsConnectionManager connManager;      
+    QgsConnectionRegistry* mConnReg;
     static const int context_id = 929865718;
 };
 

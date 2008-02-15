@@ -26,12 +26,14 @@ extern "C"
 {
 #include <libpq-fe.h>
 }
-QgsNewConnection::QgsNewConnection(QWidget *parent, const QgsConnection* conn, Qt::WFlags fl)
+QgsNewConnection::QgsNewConnection(QWidget *parent, const QgsConnectionParameters* conn, Qt::WFlags fl)
 : QDialog(parent, fl)
 {
   setupUi(this);
+  //create member objects
+  mConnReg=new QgsConnectionRegistry;
   //set the type of connection
-  QString type=connManager.getSelectedType();
+  QString type=mConnReg->selectedType();
   cmbType->setCurrentIndex(cmbType->findText(type)); 
   
   if (conn!=NULL)
@@ -41,10 +43,7 @@ QgsNewConnection::QgsNewConnection(QWidget *parent, const QgsConnection* conn, Q
       txtDatabase->setText(conn->database);
       if (conn->save)
         txtPassword->setText(conn->password);
-      /*QString port = settings.readEntry(key + "/port");
-      if(port.length() ==0){
-      	port = "5432";
-      }*/
+      
       txtPort->setText(conn->port);
       txtUsername->setText(conn->user);
       if (conn->publicOnly)
@@ -62,10 +61,7 @@ QgsNewConnection::QgsNewConnection(QWidget *parent, const QgsConnection* conn, Q
       else   
          chkStorePassword->setCheckState(Qt::Unchecked);
       txtName->setText(conn->name);
-      qDebug("QgsNewConnection::QgsNewConnection : type "+conn->type);
       cmbType->setCurrentText(conn->type);
-      
-     
     }
   
 }
@@ -99,45 +95,48 @@ void QgsNewConnection::on_cb_geometryColumnsOnly_clicked()
 
 QgsNewConnection::~QgsNewConnection()
 {
-  //delete connManager;                                   
+  delete mConnReg;                                   
 }
 void QgsNewConnection::testConnection()
 {
-  // following line uses Qt SQL plugin - currently not used
-  // QSqlDatabase *testCon = QSqlDatabase::addDatabase("QPSQL7","testconnection");
-  QgsConnectionManager* connMan=new QgsConnectionManager;
-  QgsConnection conn;
+     
+  QgsDatabaseConnection* connection=NULL;   
+  QgsConnectionParameters connPar;
   
-  conn.type=cmbType->currentText();
-  conn.name=txtName->text();
-  conn.host=txtHost->text();
-  conn.database=txtDatabase->text();
-  conn.port=txtPort->text();
-  conn.user=txtUsername->text();
-  conn.password=txtPassword->text();
-  conn.geometryColumnsOnly=cb_geometryColumnsOnly->isChecked();
-  conn.publicOnly=cb_publicSchemaOnly->isChecked();
-  conn.selected=txtName->text();
-  conn.save=chkStorePassword->isChecked();
+  connPar.type=cmbType->currentText();
+  connPar.name=txtName->text();
+  connPar.host=txtHost->text();
+  connPar.database=txtDatabase->text();
+  connPar.port=txtPort->text();
+  connPar.user=txtUsername->text();
+  connPar.password=txtPassword->text();
+  connPar.geometryColumnsOnly=cb_geometryColumnsOnly->isChecked();
+  connPar.publicOnly=cb_publicSchemaOnly->isChecked();
+  connPar.selected=txtName->text();
+  connPar.save=chkStorePassword->isChecked();
   
-  qDebug("QgsNewConnection::testConnection: before connect");
-  
-  if (connMan->connect(cmbType->currentText(),conn))
+  if (connPar.type.startsWith("Ogr"))
     {
-      // Database successfully opened; we can now issue SQL commands.
-      QMessageBox::information(this, tr("Test connection"), tr("Connection to %1 was successful").arg(txtDatabase->text()));
+      connection=new QgsOgrDatabaseConnection(&connPar);
+    }
+  else
+    {
+      connection=new QgsPostgresDatabaseConnection(&connPar);               
+    }    
+  if (connection->connect())
+    {
+      QMessageBox::information(this, tr("Test connection"), tr("Connection to %1 was successful").arg(txtName->text()));
     } else
     {
-      QMessageBox::information(this, tr("Test connection"), tr("Connection failed - Check settings and try again.\n\nExtended error information:\n") +connMan->getError());
+      QMessageBox::information(this, tr("Test connection"), tr("Connection failed - Check settings and try again.\n\nExtended error information:\n") +connection->error());
     }
- qDebug("QgsNewConnection::testConnection: after connect");
- delete connMan;
+ delete connection;   
+  
 }
 
 void QgsNewConnection::saveConnection()
 {
-  QgsConnection conn;   
-  
+  QgsConnectionParameters conn;   
   conn.type=cmbType->currentText();
   conn.name=txtName->text();
   conn.host=txtHost->text();
@@ -154,9 +153,9 @@ void QgsNewConnection::saveConnection()
   conn.selected=txtName->text();
   conn.save=chkStorePassword->isChecked();
   
-  connManager.saveConnection(conn);
-  connManager.setSelectedType(conn.type);
-  connManager.setSelected(conn.type,conn.name);                       
+  mConnReg->saveConnection(conn);
+  mConnReg->setSelectedType(conn.type);
+  mConnReg->setSelected(conn.type,conn.name);                       
   accept();
 }
 
