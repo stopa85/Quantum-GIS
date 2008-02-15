@@ -70,7 +70,8 @@ bool QgsOgrDatabaseConnection::connect(){
   else
    {
      uri=this->uri();            
-   } 
+   }
+  qDebug("inche uri:"+uri);  
   //clean all previous errors
   CPLErrorReset(); 
   // Register all OGR-drivers

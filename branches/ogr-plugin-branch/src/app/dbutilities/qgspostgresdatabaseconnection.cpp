@@ -54,7 +54,7 @@ bool QgsPostgresDatabaseConnection::connect(){
     " port=" + mConnectionParameters->port +
     " user=" + mConnectionParameters->user + 
     " password='" + pass + "'";
-  PGconn *pd = PQconnectdb(connInfo.toLocal8Bit().data());
+  pd = PQconnectdb(connInfo.toLocal8Bit().data());
   //  std::cout << pd->ErrorMessage();
   if (PQstatus(pd) == CONNECTION_OK)
     {
@@ -70,7 +70,6 @@ bool QgsPostgresDatabaseConnection::connect(){
       result=false;
     }
   
-   
   return result;     
 }
 

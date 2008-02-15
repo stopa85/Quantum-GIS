@@ -250,11 +250,38 @@ QString QgsDataSourceURI::connInfo() const
 
 QString QgsDataSourceURI::uri() const
 { 
-  return connInfo()
+  QString connString="";
+                                 
+  if (mType=="OgrMySQL")
+     { 
+      connString="MySQL:"+mDatabase+","+
+                 "host="+mHost+","+
+                 "user="+mUsername+","+
+                 "password="+mPassword;
+     }
+  else if (mType=="OgrPostgreSQL")
+     {
+      connString="PG:dbname="+mDatabase+" "+
+                 "host="+mHost+" "+
+                 "user="+mUsername+" "+
+                 "password="+mPassword;
+     }      
+  else if (mType=="OgrOracle")
+     {
+      connString="OCI:"+mUsername+"/"+
+                 mPassword+"@"+
+                 mHost+"/"+
+                 mDatabase;
+     }           
+  else
+     {
+        connString=connInfo()
        + QString(" table=%1 (%2) sql=%3")
                 .arg( quotedTablename() )
                 .arg( mGeometryColumn )
-                .arg( mSql );
+                .arg( mSql );         
+     }
+  return connString;                         
 }
 
 QString QgsDataSourceURI::quotedTablename() const

@@ -18,8 +18,12 @@
 #ifndef QGSDBSOURCESELECT_H
 #define QGSDBSOURCESELECT_H
 #include "ui_qgsdbsourceselectbase.h"
+#include "qgsconnectionregistry.h"
+#include "qgsdatabaseconnection.h"
 #include "qgisgui.h"
-#include "qgsconnectionmanager.h"
+#include "qgsdbfilterproxymodel.h"
+#include "qgsdbtablemodel.h"
+
 extern "C"
 {
 #include <libpq-fe.h>
@@ -43,12 +47,12 @@ class QgisApp;
  * \brief Dialog to create connections and add tables from PostgresQL.
  *
  * This dialog allows the user to define and save connection information
- * for PostGIS enabled PostgresQL databases. The user can then connect and add 
+ * for PostGIS enabled PostgreSQL databases. The user can then connect and add 
  * tables from the database to the map canvas.
  */
 class QgsDbSourceSelect : public QDialog, private Ui::QgsDbSourceSelectBase 
 {
-  Q_OBJECT
+ Q_OBJECT
  public:
 
     //! Constructor
@@ -61,20 +65,20 @@ class QgsDbSourceSelect : public QDialog, private Ui::QgsDbSourceSelectBase
     void editConnection();
     //! Deletes the selected connection
     void deleteConnection();
-   
+     
     //! Determines the tables the user selected and closes the dialog
     void addTables();
     //! String list containing the selected tables
     QStringList selectedTables();
     //! Connection info (database, host, user, password)
     QString connInfo();
-    QStringList m_selectedTables;
-    //! Return the name of the selected encoding (e.g. UTf-8, ISO-8559-1, etc/)
-    QString encoding();
     // Store the selected database
     void dbChanged();
-    
-    public slots:
+    // Utility function to construct the query for finding out the
+    // geometry type of a column
+    static QString makeGeomQuery(QString schema, QString table, QString column);
+
+ public slots:
     /*! Connects to the database using the stored connection parameters. 
     * Once connected, available layers are displayed.
     */
@@ -83,17 +87,26 @@ class QgsDbSourceSelect : public QDialog, private Ui::QgsDbSourceSelectBase
       void on_btnNew_clicked();
       void on_btnEdit_clicked();
       void on_btnDelete_clicked();
-      void on_lstTables_itemDoubleClicked(QTableWidgetItem *);
-      void setSql(QTableWidgetItem *);
+      void on_mSearchOptionsButton_clicked();
+      void on_mSearchTableEdit_textChanged(const QString & text);
+      void on_mSearchColumnComboBox_currentIndexChanged(const QString & text);
+      void on_mSearchModeComboBox_currentIndexChanged(const QString & text);
+      void setSql(const QModelIndex& index);
       void on_btnHelp_clicked();
-      void on_cmbType_activated(int);
       void on_cmbConnections_activated(int);
       void setLayerType(QString schema, QString table, QString column,
                         QString type);
+      //!Sets a new regular expression to the model
+      void setSearchExpression(const QString& regexp);
       //! Populate the connection list combo box
-      void populateConnectionList(QString type);                  
-                    
+      void populateConnectionList(QString type);
  private:
+    enum columns {
+	dbssType=0,
+	dbssDetail,
+	dbssSql,
+	dbssColumns,
+    };
 
     typedef std::pair<QString, QString> geomPair;
     typedef std::list<geomPair > geomCol;
@@ -102,32 +115,39 @@ class QgsDbSourceSelect : public QDialog, private Ui::QgsDbSourceSelectBase
 			       geomCol& details, 
                                bool searchGeometryColumnsOnly,
                                bool searchPublicOnly);
-                               
-   
+
+    /**Inserts information about the spatial tables into mTableModel*/
+    bool getTableInfo(PGconn *pg, bool searchGeometryColumnsOnly, bool searchPublicOnly);
+
+    // queue another query for the thread
+    void addSearchGeometryColumn(const QString &schema, const QString &table, const QString &column);
+
     // Set the position of the database connection list to the last
     // used one. 
     void setConnectionListPosition();
     // Show the context help for the dialog
     void showHelp();
-    
+    // Combine the schema, table and column data into a single string
+    // useful for display to the user
+    QString fullDescription(QString schema, QString table, QString column, QString type);
     // The column labels
     QStringList mColumnLabels;
     // Our thread for doing long running queries
     QgsGeomColumnTypeThread* mColumnTypeThread;
     QString m_connInfo;
-    //QStringList m_selectedTables;
+    QStringList m_selectedTables;
     // Storage for the range of layer type icons
     QMap<QString, QPair<QString, QIcon> > mLayerIcons;
     //! Pointer to the qgis application mainwindow
     QgisApp *qgisApp;
     PGconn *pd;
-    
-    QgsConnectionManager* mConnMan;
-    QgsConnection mConn;
+    QgsConnectionRegistry* mConnectionRegistry;
     static const int context_id = 939347163;
+    //! Model that acts as datasource for mTableTreeWidget
+    QgsDbTableModel mTableModel;
+    QgsDbFilterProxyModel mProxyModel;
+    QgsDatabaseConnection* mDatabaseConnection;
 };
-
-
 
 
 #endif // QGSDBSOURCESELECT_H
