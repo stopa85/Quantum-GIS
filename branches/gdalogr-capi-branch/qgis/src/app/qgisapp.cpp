@@ -129,7 +129,7 @@
 //
 // Gdal/Ogr includes
 //
-#include <ogrsf_frmts.h>
+#include <ogr_api.h>
 
 //
 // Other includes
@@ -1701,20 +1701,10 @@ static void buildSupportedVectorFileFilter_(QString & fileFilters)
     return;
   }
 
-  // first get the GDAL driver manager
-
-  OGRSFDriverRegistrar *driverRegistrar = OGRSFDriverRegistrar::GetRegistrar();
-
-  if (!driverRegistrar)
-  {
-    QMessageBox::warning(this,tr("OGR Driver Manager"),tr("unable to get OGRDriverManager"));
-    return;                 // XXX good place to throw exception if we
-  }                           // XXX decide to do exceptions
-
   // then iterate through all of the supported drivers, adding the
   // corresponding file filter
 
-  OGRSFDriver *driver;          // current driver
+  OGRSFDriverH driver;          // current driver
 
   QString driverName;           // current driver name
 
@@ -1726,9 +1716,9 @@ static void buildSupportedVectorFileFilter_(QString & fileFilters)
   // open datasets with no explicitly defined file name extension.
   QgsDebugMsg("Driver count: " + QString::number(driverRegistrar->GetDriverCount()));
 
-  for (int i = 0; i < driverRegistrar->GetDriverCount(); ++i)
+  for (int i = 0; i < OGRGetDriverCount(); ++i)
   {
-    driver = driverRegistrar->GetDriver(i);
+    driver = OGRGetDriver(i);
 
     Q_CHECK_PTR(driver);
 
@@ -1738,9 +1728,7 @@ static void buildSupportedVectorFileFilter_(QString & fileFilters)
       continue;
     }
 
-    driverName = driver->GetName();
-
-
+    driverName = OGR_Dr_GetName(driver);
 
     if (driverName.startsWith("ESRI"))
     {
