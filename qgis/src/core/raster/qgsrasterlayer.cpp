@@ -171,7 +171,7 @@ void QgsRasterLayer::buildSupportedRasterFileFilter(QString & theFileFiltersStri
     if (!isSupportedRasterDriver(myGdalDriverDescription))
     {
       // not supported, therefore skip
-      QgsDebugMsg("skipping unsupported driver " + QString(myGdalDriver->GetDescription()));
+      QgsDebugMsg("skipping unsupported driver " + QString(GDALGetDescription(myGdalDriver)));
       continue;
     }
     // std::cerr << "got driver string " << myGdalDriver->GetDescription() << "\n";
@@ -2493,21 +2493,21 @@ const QgsRasterBandStats QgsRasterLayer::getRasterBandStats(int theBandNo)
   //ifdefs below to remove compiler warning about unused vars
 #ifdef QGISDEBUG
   int success;
-  double GDALminimum = myGdalBand->GetMinimum( &success );
+  double GDALminimum = GDALGetRasterMinimum( myGdalBand, &success );
 
   if ( ! success )
   {
     QgsDebugMsg("myGdalBand->GetMinimum() failed");
   }
 
-  double GDALmaximum = myGdalBand->GetMaximum( &success );
+  double GDALmaximum = GDALGetRasterMaximum( myGdalBand, &success );
   
   if ( ! success )
   {
     QgsDebugMsg("myGdalBand->GetMaximum() failed");
   }
 
-  double GDALnodata = myGdalBand->GetNoDataValue( &success );
+  double GDALnodata = GDALGetRasterNoDataValue( myGdalBand, &success );
   
   if ( ! success )
   {
