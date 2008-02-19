@@ -1148,7 +1148,7 @@ bool QgsSpatialRefSys::equals(QString theProj4CharArray)
 
 QString QgsSpatialRefSys::toWkt() const
 {
-  OGRSpatialReferenceH myOgrSpatialRef;
+  OGRSpatialReferenceH myOgrSpatialRef = OSRNewSpatialReference(NULL);
   OGRErr myInputResult = OSRImportFromProj4(myOgrSpatialRef,mProj4String.latin1());
   
   QString myWkt;
