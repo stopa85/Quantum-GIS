@@ -472,6 +472,12 @@ bool QgsRasterLayer::readFile( QString const & fileName )
       mGdalDataset = 
           GDALAutoCreateWarpedVRT( mGdalBaseDataset, NULL, NULL, 
                                    GRA_NearestNeighbour, 0.2, NULL );
+      if( mGdalDataset == NULL )
+      {
+          QgsLogger::warning("Warped VRT Creation failed.");
+          mGdalDataset = mGdalBaseDataset;
+          GDALReferenceDataset( mGdalDataset );
+      }
   }
   else
   {
