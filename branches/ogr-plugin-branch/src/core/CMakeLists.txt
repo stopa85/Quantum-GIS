@@ -60,12 +60,6 @@ symbology/qgssymbologyutils.cpp
 
 spatialindex/qgsspatialindex.cpp
 
-dbutilities/qgsconnectionmanager.cpp
-dbutilities/qgsurimanager.cpp
-dbutilities/qgsdatabaseconnectionbase.cpp
-dbutilities/qgsogrdatabaseconnection.cpp
-dbutilities/qgspostgresdatabaseconnection.cpp
-dbutilities/qgsgeomcolumntypethread.cpp
 )
 
 ADD_FLEX_FILES(QGIS_CORE_SRCS qgssearchstringlexer.ll)
@@ -94,12 +88,6 @@ qgsvectorlayer.h
 raster/qgsrasterlayer.h
 raster/qgsrasterviewport.h
 
-dbutilities/qgsconnectionmanager.h
-dbutilities/qgsurimanager.h
-dbutilities/qgsdatabaseconnectionbase.h
-dbutilities/qgsogrdatabaseconnection.h
-dbutilities/qgspostgresdatabaseconnection.h
-dbutilities/qgsgeomcolumntypethread.h
 )
 
 QT4_WRAP_CPP(QGIS_CORE_MOC_SRCS ${QGIS_CORE_MOC_HDRS})
