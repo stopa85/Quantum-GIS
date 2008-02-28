@@ -243,7 +243,7 @@ bool QgsVectorFileWriter::addFeature(QgsFeature& feature)
     }
     
     // set geometry (ownership is not passed to OGR)
-    OGR_F_SetGeometryDirectly(poFeature,mGeom);
+    OGR_F_SetGeometry(poFeature,mGeom);
   }
     
   // put the created feature to layer
