@@ -42,7 +42,6 @@ QgsPostgresDatabaseConnection::~QgsPostgresDatabaseConnection(){
 
 bool QgsPostgresDatabaseConnection::connect(){
   // Need to escape the password to allow for single quotes and backslashes
-  qDebug("QgsPostgresDatabaseConnection::connect");
   bool result=false;
   QString pass = mConnectionParameters->password;
   pass.replace('\\', "\\\\");
@@ -185,10 +184,118 @@ bool QgsPostgresDatabaseConnection::geometryColumnInformation(PGconn* pg, Geomet
 }
 }
 
+QList<QgsGeometryColumnDescription *> QgsPostgresDatabaseConnection::geometryTables(){
+  return(geometryTables(mConnectionParameters->geometryColumnsOnly,mConnectionParameters->publicOnly));                                  
+}                                    
 
-GeometryColumns QgsPostgresDatabaseConnection::geometryTables(bool searchGeometryColumnsOnly, bool searchPublicSchemaOnly){
-  GeometryColumns details;          
-  if(geometryColumnInformation(pd,details, searchGeometryColumnsOnly, searchPublicSchemaOnly))	
+
+QList<QgsGeometryColumnDescription *> QgsPostgresDatabaseConnection::geometryTables(bool searchGeometryColumnsOnly, bool searchPublicSchemaOnly){
+  qDebug("uno");                                  
+  QList<QgsGeometryColumnDescription *> details;  
+  
+  //*********************************************************
+  //bool ok = false;
+  
+  QString sql = "select * from geometry_columns";
+  sql += " order by f_table_schema,f_table_name";
+
+  PGresult *result = PQexec(pd, sql.toLocal8Bit().data());
+  if (result)
+  {
+    for (int idx = 0; idx < PQntuples(result); idx++)
+    {
+      // Be a bit paranoid and check that the table actually
+      // exists. This is not done as a subquery in the query above
+      // because I can't get it to work correctly when there are tables
+      // with capital letters in the name.
+
+      // Take care to deal with tables with the same name but in different schema.
+      QString tableName = PQgetvalue(result, idx, PQfnumber(result, "f_table_name"));
+      QString schemaName = PQgetvalue(result, idx, PQfnumber(result, "f_table_schema"));
+      sql = "select oid from pg_class where relname = '" + tableName + "'";
+      if (schemaName.length() > 0)
+	    sql +=" and relnamespace = (select oid from pg_namespace where nspname = '" +
+	  schemaName + "')";
+
+      PGresult* exists = PQexec(pd, sql.toLocal8Bit().data());
+      if (PQntuples(exists) == 1)
+      {
+        QString column = PQgetvalue(result, idx, PQfnumber(result, "f_geometry_column"));
+        QString type = PQgetvalue(result, idx, PQfnumber(result, "type"));
+	    QString as = "";
+	    if(type=="GEOMETRY" && !searchGeometryColumnsOnly) 
+	     {
+           //agregar a las busquedas                 
+	       //addSearchGeometryColumn(schemaName, tableName,  column);
+	       as=type="WAITING";
+	     }
+        //geometryColumn.setType(type);
+        //geometryColumn.setSchema(schemaName);
+        //geometryColumn.setTable(tableName);
+        //geometryColumn.setColumn(column);
+        details.append(new QgsGeometryColumnDescription(type,schemaName,tableName,column));
+        
+	    //mTableModel.addTableEntry(type, schemaName, tableName, column, "");
+      }
+      PQclear(exists);
+    }
+    //ok = true;
+  }
+  PQclear(result);
+
+  //search for geometry columns in tables that are not in the geometry_columns metatable
+  
+
+  if (searchGeometryColumnsOnly)
+    {
+      return details;
+    }
+
+   // Now have a look for geometry columns that aren't in the
+  // geometry_columns table. This code is specific to postgresql,
+  // but an equivalent query should be possible in other
+  // databases.
+  sql = "select pg_class.relname, pg_namespace.nspname, pg_attribute.attname, "
+    "pg_class.relkind from "
+    "pg_attribute, pg_class, pg_type, pg_namespace where pg_type.typname = 'geometry' and "
+    "pg_attribute.atttypid = pg_type.oid and pg_attribute.attrelid = pg_class.oid ";
+
+  if (searchPublicSchemaOnly)
+    sql += "and pg_namespace.nspname = 'public' ";
+
+  sql += "and cast(pg_class.relname as character varying) not in "
+    "(select f_table_name from geometry_columns) "
+    "and pg_namespace.oid = pg_class.relnamespace "
+    "and pg_class.relkind in ('v', 'r')"; // only from views and relations (tables)
+  
+  result = PQexec(pd, sql.toLocal8Bit().data());
+
+  for (int i = 0; i < PQntuples(result); i++)
+  {
+    // Have the column name, schema name and the table name. The concept of a
+    // catalog doesn't exist in postgresql so we ignore that, but we
+    // do need to get the geometry type.
+
+    // Make the assumption that the geometry type for the first
+    // row is the same as for all other rows. 
+
+    QString table  = PQgetvalue(result, i, 0); // relname
+    QString schema = PQgetvalue(result, i, 1); // nspname
+    QString column = PQgetvalue(result, i, 2); // attname
+    QString relkind = PQgetvalue(result, i, 3); // relation kind
+
+    //addSearchGeometryColumn(schema, table, column);
+    //details.push_back(geomPair(fullDescription(schema, table, column, "WAITING"), "WAITING"));
+    //mTableModel.addTableEntry("Waiting", schema, table, column, "");
+    details.append(new QgsGeometryColumnDescription("Waiting",schema,table,column));
+  }
+  //ok = true;
+
+  PQclear(result);
+  //return ok;*/
+  //*********************************************************
+          
+ /* if(geometryColumnInformation(pd,details, searchGeometryColumnsOnly, searchPublicSchemaOnly))	
       {
        //check the thread
       }
@@ -196,7 +303,8 @@ GeometryColumns QgsPostgresDatabaseConnection::geometryTables(bool searchGeometr
     {
       qDebug("Unable to get list of spatially enabled tables from the database");
       qDebug(PQerrorMessage(pd));
-    }                  
+    }*/                  
+  //qDebug("dos");  
   return  details;
 }
 
@@ -206,11 +314,41 @@ QString QgsPostgresDatabaseConnection::tableGeometry(QString tableName){
 	return  NULL;
 }
 
+QString QgsPostgresDatabaseConnection::tableGeometryFromData(QString schema, QString tableName, QString column){
+    qDebug("QgsPostgresDatabaseConnection::tableGeometryFromData");     
+    
+  QString query=QString("select distinct "
+		  "case"
+		  " when geometrytype(%1) IN ('POINT','MULTIPOINT') THEN 'POINT'"
+		  " when geometrytype(%1) IN ('LINESTRING','MULTILINESTRING') THEN 'LINESTRING'"
+		  " when geometrytype(%1) IN ('POLYGON','MULTIPOLYGON') THEN 'POLYGON'"
+		  " end "
+		  "from \"%2\".\"%3\"").arg(column).arg(schema).arg(tableName);  
+  
+  QString type;	  
+  QStringList types;
+  qDebug(query); 
+  if (PQstatus(pd) == CONNECTION_OK)
+    {
+      qDebug("Connection ok");              
+      PGresult* gresult = PQexec(pd, query.toLocal8Bit().data());
+      if (PQresultStatus(gresult) == PGRES_TUPLES_OK) {
+        qDebug("Tuples ok");                                        
+     	for(int j=0; j<PQntuples(gresult); j++) {
+  		   QString type = PQgetvalue(gresult, j, 0);
+  		   if(type!="")
+  		     types += type;
+ 	     }
+       }
+      type = types.join(",");
+      PQclear(gresult);
+    } 
+  
 
-QString QgsPostgresDatabaseConnection::makeGeometryQuery(QString schema, QString table, QString column){
-
-	return  NULL;
+  return type;    
 }
+
+
 
 //******************************************
 

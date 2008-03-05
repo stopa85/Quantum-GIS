@@ -67,7 +67,7 @@ QString QgsDatabaseConnection::error(){
 /**
  * Returns a list of geometry tables available in the database.
  */
-GeometryColumns QgsDatabaseConnection::geometryTables(bool searchGeometryColumnsOnly, bool searchPublicSchemaOnly){
+QList<QgsGeometryColumnDescription *> QgsDatabaseConnection::geometryTables(){
 }
 
 
@@ -75,6 +75,12 @@ GeometryColumns QgsDatabaseConnection::geometryTables(bool searchGeometryColumns
  * Returns the geometry of a given table
  */
 QString QgsDatabaseConnection::tableGeometry(QString tableName){
+}
+
+/**
+ * Returns the geometry of a column from data
+ */
+QString QgsDatabaseConnection::tableGeometryFromData(QString schema,QString tableName,QString column){
 }
 
 /**

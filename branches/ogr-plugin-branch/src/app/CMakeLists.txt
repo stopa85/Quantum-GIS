@@ -72,6 +72,7 @@ dbutilities/qgsdatabaseconnection.cpp
 dbutilities/qgsgeomcolumntypethread.cpp
 dbutilities/qgsogrdatabaseconnection.cpp
 dbutilities/qgspostgresdatabaseconnection.cpp
+dbutilities/qgsgeometrycolumndescription.cpp
 
 legend/qgslegendgroup.cpp
 legend/qgslegend.cpp
@@ -137,6 +138,8 @@ composer/qgscomposerscalebar.h
 composer/qgscomposervectorlegend.h
 composer/qgscomposerview.h
 composer/qgscomposition.h
+
+dbutilities/qgsgeomcolumntypethread.h
 
 legend/qgslegend.h
 legend/qgslegendlayer.h

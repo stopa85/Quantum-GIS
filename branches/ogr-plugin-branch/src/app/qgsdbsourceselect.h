@@ -23,6 +23,7 @@
 #include "qgisgui.h"
 #include "qgsdbfilterproxymodel.h"
 #include "qgsdbtablemodel.h"
+#include "qgsgeometrycolumndescription.h"
 
 extern "C"
 {
