@@ -26,6 +26,7 @@ email                : sherman at mrcc.com
 #include "qstring.h"
 #include <vector>
 
+#include "qgsdatabaseconnection.h"
 extern "C"
 {
 #include <libpq-fe.h>
@@ -42,7 +43,8 @@ class QgsGeomColumnTypeThread : public QThread
  public:
 
   void setConnInfo(QString s);
-  void setGeometryColumn(QString schema, QString table, QString column);
+  void setDatabaseConnection(QgsDatabaseConnection *databaseConnection);
+  void addGeometryColumn(QString schema, QString table, QString column);
 
   // These functions get the layer types and pass that information out
   // by emitting the setLayerType() signal. The getLayerTypes()
@@ -53,14 +55,15 @@ class QgsGeomColumnTypeThread : public QThread
   void getLayerTypes();
 
   signals:
-  void setLayerType(QString schema, QString table, QString column,
+         void setLayerType(QString schema, QString table, QString column,
                     QString type);
+  public slots:
+         void stop();                  
 
  private:
   QString mConnInfo;
+  QgsDatabaseConnection *mDatabaseConnection;
+  bool mStopped;
   std::vector<QString> schemas, tables, columns;
-  QString makeGeomQuery(QString schema, 
-                        QString table, QString column);
 };
-
 #endif

@@ -245,7 +245,6 @@ void QgsDbSourceSelect::populateConnectionList(QString type)
   }
   
   setConnectionListPosition();*/
-  qDebug("solo para checar");
   QStringList connlist=mConnectionRegistry->connectionParametersList(type);
   cmbConnections->clear();
   //add the results to combo
@@ -312,7 +311,9 @@ void QgsDbSourceSelect::editConnection()
 
 void QgsDbSourceSelect::deleteConnection()
 {
-  QSettings settings;
+  mConnectionRegistry->removeConnectionParameters(cmbType->currentText(),cmbConnections->currentText());   
+  populateConnectionList(cmbType->currentText());
+  /*QSettings settings;
   QString key = "/Postgresql/connections/" + cmbConnections->currentText();
   QString msg =
     tr("Are you sure you want to remove the ") + cmbConnections->currentText() + tr(" connection and all associated settings?");
@@ -331,7 +332,7 @@ void QgsDbSourceSelect::deleteConnection()
     //}
     cmbConnections->removeItem(cmbConnections->currentItem());  // populateConnectionList();
     setConnectionListPosition();
-  }
+  }*/
 }
 void QgsDbSourceSelect::addTables()
 {
@@ -431,6 +432,12 @@ void QgsDbSourceSelect::addTables()
 
 void QgsDbSourceSelect::on_btnConnect_clicked()
 {
+  if(mColumnTypeThread)
+  {
+    mColumnTypeThread->stop();
+    mColumnTypeThread=0;
+  }
+   
   disconnect();   
   QModelIndex rootItemIndex = mTableModel.indexFromItem(mTableModel.invisibleRootItem());
   mTableModel.removeRows(0, mTableModel.rowCount(rootItemIndex), rootItemIndex);   
@@ -477,7 +484,48 @@ void QgsDbSourceSelect::on_btnConnect_clicked()
       }  
     if (mDatabaseConnection->connect())  
       {
-        //load geometry tables to view                                 
+        //load geometry tables to view 
+        QList<QgsGeometryColumnDescription *> columns;
+        
+        columns=mDatabaseConnection->geometryTables();
+        
+        QListIterator<QgsGeometryColumnDescription *> it(columns); 
+        
+        // store the column details and do the query in a thread
+        if (mColumnTypeThread == NULL)
+         {
+           mColumnTypeThread = new QgsGeomColumnTypeThread();
+           mColumnTypeThread->setDatabaseConnection(mDatabaseConnection);
+         }
+         
+        while( it.hasNext()) {
+            QgsGeometryColumnDescription* geomcol = it.next();
+            mTableModel.addTableEntry(geomcol->type(),geomcol->schema(),geomcol->table(),geomcol->column(), "");
+            if (geomcol->type()=="Waiting")
+              {
+                 qDebug("adding to thread"); 
+  
+                 //mColumnTypeThread->addGeometryColumn(schema, table, column);                         
+                 mColumnTypeThread->addGeometryColumn(geomcol->schema(),geomcol->table(),geomcol->column());                          
+              }
+         }
+          
+        //clean the list
+        while (!columns.isEmpty())
+           delete columns.takeFirst();
+        
+        // Start the thread that gets the geometry type for relations that
+        // may take a long time to return
+        if (mColumnTypeThread != NULL)
+        {
+           connect(mColumnTypeThread, SIGNAL(setLayerType(QString,QString,QString,QString)),
+                   this, SLOT(setLayerType(QString,QString,QString,QString)));
+	       connect(this, SIGNAL(finished()),
+	           mColumnTypeThread, SLOT(stop()) );
+
+            // Do it in a thread.
+            mColumnTypeThread->start();
+        }                               
         //qDebug("Unable to get list of spatially enabled tables from the database");
         //qDebug(PQerrorMessage(pd));
       }
@@ -681,12 +729,12 @@ void QgsDbSourceSelect::setSql(const QModelIndex& index)
 void QgsDbSourceSelect::addSearchGeometryColumn(const QString &schema, const QString &table, const QString &column)
 {
   // store the column details and do the query in a thread
- /* if (mColumnTypeThread == NULL)
+  if (mColumnTypeThread == NULL)
   {
     mColumnTypeThread = new QgsGeomColumnTypeThread();
     mColumnTypeThread->setConnInfo(m_connInfo);
   }
-  mColumnTypeThread->addGeometryColumn(schema, table, column);*/
+  mColumnTypeThread->addGeometryColumn(schema, table, column);
 }
 
 bool QgsDbSourceSelect::getTableInfo(PGconn *pg, bool searchGeometryColumnsOnly, bool searchPublicOnly)

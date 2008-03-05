@@ -36,8 +36,9 @@ public:
 	~QgsOgrDatabaseConnection();
 	bool connect();
 	QString baseKey();
-	QStringList geometryTables();
+	QList<QgsGeometryColumnDescription *> geometryTables();
 	QString tableGeometry(QString tableName);
+
 	void disconnect();
 	void isConnected();
 	

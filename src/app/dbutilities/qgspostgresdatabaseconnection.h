@@ -25,6 +25,7 @@
 #include "qgsconnectionparameters.h"
 #include "qgsdatabaseconnection.h"
 #include "qstringlist.h"
+#include "qgsgeometrycolumndescription.h"
 
 
 
@@ -51,8 +52,10 @@ public:
 	~QgsPostgresDatabaseConnection();
 	bool connect();
 	QString baseKey();
-	GeometryColumns geometryTables(bool searchGeometryColumnsOnly, bool searchPublicSchemaOnly);
+	QList<QgsGeometryColumnDescription *> geometryTables();
+	QList<QgsGeometryColumnDescription *> geometryTables(bool searchGeometryColumnsOnly, bool searchPublicSchemaOnly);
 	QString tableGeometry(QString tableName);
+	QString tableGeometryFromData(QString schema, QString tableName, QString column);
 
 private:
 	QgsGeomColumnTypeThread* mColumnTypeThread;
@@ -60,7 +63,6 @@ private:
 	QString fullDescription(QString schema, QString table, QString column);
 //	bool geometryTableInformation(PGconn* pg, GeometryColumns& details, bool searchGeometryColumnsOnly, bool searchPublicOnly);
 	bool geometryColumnInformation(PGconn *pg,GeometryColumns& details, bool searchGeometryColumnsOnly, bool searchPublicOnly);
-	static QString makeGeometryQuery(QString schema, QString table, QString column);
 	
 	PGconn *pd;
 

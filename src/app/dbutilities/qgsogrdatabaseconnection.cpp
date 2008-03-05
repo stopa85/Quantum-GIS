@@ -102,7 +102,7 @@ QString QgsOgrDatabaseConnection::baseKey(){
 /**
  * Returns the geometry tables of OGR database
  */
-QStringList QgsOgrDatabaseConnection::geometryTables(){
+QList<QgsGeometryColumnDescription *> QgsOgrDatabaseConnection::geometryTables(){
 
 	//return  NULL;
 }

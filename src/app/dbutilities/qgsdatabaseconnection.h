@@ -21,6 +21,7 @@
 
 #include "qstringlist.h"
 #include "qgsconnectionparameters.h"
+#include "qgsgeometrycolumndescription.h"
 
 typedef std::pair<QString, QString> GeometryPair;
 typedef std::list<GeometryPair > GeometryColumns;
@@ -39,8 +40,10 @@ public:
 	virtual bool connect();
 	QString baseKey();
 	QString error();
-	virtual GeometryColumns geometryTables(bool searchGeometryColumnsOnly, bool searchPublicSchemaOnly);
+	//virtual QList<QgsGeometryColumnDescription> geometryTables(bool searchGeometryColumnsOnly, bool searchPublicSchemaOnly);
+	virtual QList<QgsGeometryColumnDescription *> geometryTables();
 	virtual QString tableGeometry(QString tableName);
+	virtual QString tableGeometryFromData(QString schema, QString tableName, QString column);
 	void setError(QString error);
 	void setUri(QString uri);
 	QString uri();
