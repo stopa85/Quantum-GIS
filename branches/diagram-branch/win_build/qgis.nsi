@@ -2,7 +2,7 @@
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "Quantum GIS"
-!define PRODUCT_VERSION_NUMBER "0.9.2"
+!define PRODUCT_VERSION_NUMBER "0.9.2rc1"
 !define PRODUCT_VERSION_NAME "Ganymede"
 !define PRODUCT_VERSION "${PRODUCT_VERSION_NUMBER} ${PRODUCT_VERSION_NAME}"
 !define PRODUCT_PUBLISHER "qgis.org"
@@ -154,6 +154,8 @@ Section "Development headers" SEC02
 SectionEnd
 
 Section "Python Extension" SEC03
+;this section is mandatory
+ SectionIn RO
  !insertmacro CHECK_PYTHON
  SetOutPath "$INSTDIR"
  File /r "C:\Program Files\qgis${PRODUCT_VERSION_NUMBER}\python"

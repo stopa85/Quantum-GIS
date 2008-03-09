@@ -113,7 +113,7 @@ void QgsDiagramOverlayPlugin::projectRead()
 	      //notify the legend that the layer legend needs to be changed
 	      if(mInterface)
 		{
-		  mInterface->refreshLayerSymbology(layerId);
+		  mInterface->refreshLegend(currentVectorLayer);
 		}
 	    }
 	}

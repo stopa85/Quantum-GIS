@@ -46,7 +46,7 @@
 #include <QString>
 #include <QSettings>
 #include <QSvgRenderer>
-#include <QPrinter>
+#include <QLinearGradient>
 
 //other includes
 #include <cmath>
@@ -57,6 +57,7 @@
 
 QgsQuickPrint::QgsQuickPrint()
 {
+  mPageSize = QPrinter::A4;
 }
 
 QgsQuickPrint::~QgsQuickPrint()
@@ -106,6 +107,10 @@ void QgsQuickPrint::setMapBackgroundColor(QColor theColor)
 {
   mMapBackgroundColour = theColor;
 }
+void QgsQuickPrint::setPageSize (QPrinter::PageSize theSize)
+{
+  mPageSize = theSize;
+}
 
 void QgsQuickPrint::printMap()
 {
@@ -123,18 +128,21 @@ void QgsQuickPrint::printMap()
     mOutputFileName += ".pdf";
   }
 
-  QPrinter myPrinter ( QPrinter::HighResolution ); //1200dpi for ps ( & pdf I think )
-  myPrinter.setPageSize ( QPrinter::Letter );
-  //myPrinter.setPageSize ( QPrinter::A4 );
+  // Initialising the printer this way lets us find out what
+  // the screen resolution is which we store and then 
+  // reset the resolution of the printer after that...
+  QPrinter myPrinter ( QPrinter::ScreenResolution ); 
+  int myScreenResolutionDpi = myPrinter.resolution(); //try to get programmatically
   //
   // Try to force the printer resolution to 300dpi
   // to get past platform specific defaults in printer
   // resolution...
   //
   int myPrintResolutionDpi = 300;
-  int myScreenResolutionDpi = 72; //try to get programmatically
   myPrinter.setResolution( myPrintResolutionDpi );
   myPrinter.setOutputFormat ( QPrinter::PdfFormat );
+  qDebug( "Printing to page size"  +  pageSizeToString(mPageSize).toLocal8Bit());
+  myPrinter.setPageSize ( mPageSize );
   myPrinter.setOutputFileName ( mOutputFileName );
   myPrinter.setOrientation ( QPrinter::Landscape );
   myPrinter.setDocName ( "quickprint Report" );
@@ -214,14 +222,24 @@ void QgsQuickPrint::printMap()
   int myLegendHeightPercent = 65;
   int myLogoWidthPercent = 23;
   int myLogoHeightPercent = 17;
-  int mySymbolScalingAmount = myPrintResolutionDpi / myScreenResolutionDpi; 
+  //
+  // Remember the size and dpi of the maprender
+  // so we can restore it properly
+  //
+  int myOriginalDpi = mpMapRender->outputDpi();
+  QSize myOriginalSize = mpMapRender->outputSize();
+  int mySymbolScalingAmount = myPrintResolutionDpi / myOriginalDpi; 
 
   //define the font sizes and family
   int myMapTitleFontSize = 24;
   int myMapDateFontSize = 16;
   int myMapNameFontSize = 32;
   int myLegendFontSize = 12;
-#ifdef WIN32 //this sucks...
+#ifdef Q_OS_LINUX//this sucks...
+  myLegendFontSize -= 2;
+#endif
+
+#ifdef WIN32 //this sucks too...
    myMapTitleFontSize /= 2;
    myMapDateFontSize /= 2;
    myMapNameFontSize /= 2;
@@ -325,17 +343,13 @@ void QgsQuickPrint::printMap()
   myMapPixmap.fill ( mMapBackgroundColour );
   QPainter myMapPainter;
   myMapPainter.begin( &myMapPixmap );
+  // Now resize for print
   mpMapRender->setOutputSize( 
       QSize ( myMapDimensionX, myMapDimensionY ), myPrinter.resolution() ); 
   scalePointSymbols(mySymbolScalingAmount, ScaleUp);
   scaleTextLabels(mySymbolScalingAmount, ScaleUp);
   mpMapRender->render( &myMapPainter );
-  //maprender has no accessor for output size so 
-  //we couldnt store the size before starting the print render
-  //so that it can be restored properly so what follows here is a
-  //best guess approach
-  mpMapRender->setOutputSize( 
-      QSize ( mpMapRender->width(), mpMapRender->height() ), myScreenResolutionDpi ); 
+
   myMapPainter.end();
   //draw the map pixmap onto our pdf print device
   myOriginX = myPrinter.pageRect().left() + myHorizontalSpacing; 
@@ -380,7 +394,9 @@ void QgsQuickPrint::printMap()
   myPrintPainter.setFont( myLegendFont );
   QStringList myLayerSet = mpMapRender->layerSet();
   QStringListIterator myLayerIterator ( myLayerSet );
-  while ( myLayerIterator.hasNext() )
+  //second clause below is to prevent legend spilling out the bottom
+  while ( myLayerIterator.hasNext() && 
+      myLegendYPos < myLegendDimensionY )
   {
     QString myLayerId = myLayerIterator.next();
     QgsMapLayer * mypLayer = 
@@ -452,11 +468,20 @@ void QgsQuickPrint::printMap()
           QStringList myWrappedLayerNameList = wordWrap(myLayerName, 
                                     myLegendFontMetrics, 
                                     myLegendDimensionX - myIconWidth);
+          // Check the wrapped layer name wont overrun the space we have
+          // for the legend ...
+          int myLabelHeight = myLegendFontHeight * 
+                  myWrappedLayerNameList.count(); 
+          if (myLegendYPos + myLabelHeight > myLegendDimensionY )
+          {
+            continue;
+          }
+
           //
           // Loop through wrapped legend label lines
           //
           QStringListIterator myLineWrapIterator(myWrappedLayerNameList);
-          while (myLineWrapIterator.hasNext())
+          while (myLineWrapIterator.hasNext()) 
           {
             QString myLine = myLineWrapIterator.next();
             myLegendXPos = myIconWidth;
@@ -469,10 +494,10 @@ void QgsQuickPrint::printMap()
             myLegendYPos += myLegendVerticalSpacer + myLegendFontHeight;
           }
           //
-          // Lop through the class breaks
+          // Loop through the class breaks
           //
           QListIterator<QgsSymbol *> myIterator ( mySymbolList );
-          while ( myIterator.hasNext() )
+          while ( myIterator.hasNext() && myLegendYPos < myLegendDimensionY)
           {
             QgsSymbol * mypSymbol = myIterator.next();
             myPrintPainter.setPen( mypSymbol->pen() );
@@ -494,7 +519,8 @@ void QgsQuickPrint::printMap()
             }
             else //polygon
             {
-              myPrintPainter.drawRect( myLegendXPos, myLegendYPos, myIconWidth, myIconWidth );
+              myPrintPainter.drawRect( 
+                  myLegendXPos, myLegendYPos, myIconWidth, myIconWidth );
             }
             //
             // Now work out the class break label
@@ -525,7 +551,7 @@ void QgsQuickPrint::printMap()
 
             QStringList myWrappedLayerNameList = wordWrap(myLabel, 
                 myLegendFontMetrics, 
-                myLegendDimensionX - myIconWidth);
+                myLegendDimensionX - myLegendXPos);
             //
             // Loop through wrapped legend label lines
             //
@@ -609,19 +635,27 @@ void QgsQuickPrint::printMap()
   // Draw the north arrow
   //
   myOriginX += myHorizontalSpacing + myLogoXDim;
+  // use half the available space for the n.arrow
+  // and the rest for the scale bar (see below)
   QPixmap myNorthArrow ( myLogoYDim/2, myLogoYDim/2 );
   myNorthArrow.fill ( Qt::white );
   QPainter myNorthPainter ( &myNorthArrow );
   QSvgRenderer mySvgRenderer ( mNorthArrowFile );
   mySvgRenderer.render ( &myNorthPainter );
-  myPrintPainter.drawPixmap( myOriginX + ((myLogoXDim/2)-(myLogoYDim/2)) ,
+  myPrintPainter.drawPixmap( myOriginX + ((myLogoXDim/2)) ,
       myOriginY , 
       myNorthArrow); 
 
   //
   // Draw the scale bar
   //
+  myOriginY += myLogoYDim/2 + myVerticalSpacing;
+  myPrintPainter.setViewport(myOriginX,
+      myOriginY, 
+      myOriginalViewport.width(),
+      myOriginalViewport.height());
   renderPrintScaleBar(&myPrintPainter, mpMapRender, myLogoXDim);
+  myPrintPainter.setViewport(myOriginalViewport); 
 
   //
   // Finish up
@@ -640,6 +674,10 @@ void QgsQuickPrint::printMap()
      mProgressDialog.setWindowModality ( Qt::WindowModal );
      mProgressDialog.setAutoClose ( true );
      */
+  //
+  // Restore the map render to its former glory
+  //
+  mpMapRender->setOutputSize( myOriginalSize, myOriginalDpi); 
 } 
 
 void QgsQuickPrint::scaleTextLabels( int theScaleFactor, SymbolScalingType theDirection)
@@ -754,19 +792,15 @@ void QgsQuickPrint::renderPrintScaleBar(QPainter * thepPainter,
     int theMaximumWidth)
 {
   //hard coding some options for now
-  int myStyleIndex = 1; //tick up
   bool mySnappingFlag = true;
   QColor mColour = Qt::black;
-  int myPlacementIndex = 3; //br
   // Hard coded sizes
-  int myMajorTickSize=20;
-  int myTextOffsetX=30;
-  int myTextOffsetY=30;
-  int myXMargin=260;
-  int myYMargin=180;
-  int myCanvasWidth = thepMapRender->width();
-  int myPreferredSize = theMaximumWidth;
-  double myActualSize=myPreferredSize;
+  int myTextOffsetX=0;
+  int myTextOffsetY=5;
+  int myXMargin=20;
+  int myYMargin=20;
+  int myPreferredSize = theMaximumWidth - (myXMargin *2);
+  double myActualSize = 0;
   int myBufferSize=1; //softcode this later
   QColor myBackColor = Qt::white; //used for text
   QColor myForeColor = Qt::black; //used for text
@@ -778,23 +812,15 @@ void QgsQuickPrint::renderPrintScaleBar(QPainter * thepPainter,
   //projections) and that just confuses the rest of the code in this
   //function, so force to a positive number.
   double myMuppDouble = std::abs(thepMapRender->mupp());
-
+  // 
   // Exit if the canvas width is 0 or layercount is 0 or QGIS will freeze
   int myLayerCount=thepMapRender->layerSet().count();
   if (!myLayerCount || !myMuppDouble) return;
 
-
   //Calculate size of scale bar for preferred number of map units
-  double myScaleBarWidth = myPreferredSize / myMuppDouble;
-
-  //If scale bar is very small reset to 1/4 of the canvas wide
-  if (myScaleBarWidth < 30)
-  {
-    myScaleBarWidth = myCanvasWidth / 4; // pixels
-    myActualSize = myScaleBarWidth * myMuppDouble; // map units
-  };
-
+  double myScaleBarWidth = myPreferredSize;
   myActualSize = myScaleBarWidth * myMuppDouble;
+
 
   // Work out the exponent for the number - e.g, 1234 will give 3,
   // and .001234 will give -3
@@ -882,34 +908,14 @@ void QgsQuickPrint::renderPrintScaleBar(QPainter * thepPainter,
   QString myScaleBarMaxLabel=QString::number(myActualSize);
 
   //Calculate total width of scale bar and label
-  double myTotalScaleBarWidth = myScaleBarWidth + myFontWidth;
+  //we divide by 2 because the max scale label
+  //will be centered over the endpoint of the scale bar
+  double myTotalScaleBarWidth = myScaleBarWidth + (myFontWidth/2);
 
-  //determine the origin of scale bar depending on placement selected
-  int myOriginX=myXMargin;
+  //determine the origin of scale bar (bottom right)
+  //for x origin set things up so the scalebar is centered
+  int myOriginX=(theMaximumWidth - myTotalScaleBarWidth)/2;
   int myOriginY=myYMargin;
-  switch (myPlacementIndex)
-  {
-    case 0: // Bottom Left
-      myOriginX = myXMargin;
-      myOriginY = thepPainter->device()->height() - myYMargin + myTextOffsetY;
-      break;
-    case 1: // Top Left
-      myOriginX = myXMargin;
-      myOriginY = myYMargin;
-      break;
-    case 2: // Top Right
-      myOriginX = thepPainter->device()->width() - ((int) myTotalScaleBarWidth) - myXMargin;
-      myOriginY = myXMargin;
-      break;
-    case 3: // Bottom Right
-      myOriginX = thepPainter->device()->width() - 
-        ((int) myTotalScaleBarWidth) - 
-        (myXMargin * 2);
-      myOriginY = thepPainter->device()->height() - myYMargin;
-      break;
-    default:
-      QgsDebugMsg( "Unable to determine where to put scale bar so defaulting to top left");
-  }
 
   //Set pen to draw with
   QPen myForegroundPen( mColour, 2 );
@@ -918,120 +924,25 @@ void QgsQuickPrint::renderPrintScaleBar(QPainter * thepPainter,
   //Cast myScaleBarWidth to int for drawing
   int myScaleBarWidthInt = (int) myScaleBarWidth;
 
-  //Create array of vertices for scale bar depending on style
-  switch (myStyleIndex)
-  {
-    case 0: // Tick Down
-      {
-        QPolygon myTickDownArray(4);
-        //draw a buffer first so bar shows up on dark images
-        thepPainter->setPen( myBackgroundPen );
-        myTickDownArray.putPoints(0,4,
-            myOriginX                    , (myOriginY + myMajorTickSize) ,
-            myOriginX                    ,  myOriginY                    ,
-            (myScaleBarWidthInt + myOriginX),  myOriginY                    ,
-            (myScaleBarWidthInt + myOriginX), (myOriginY + myMajorTickSize)
-            );
-        thepPainter->drawPolyline(myTickDownArray);
-        //now draw the bar itself in user selected color
-        thepPainter->setPen( myForegroundPen );
-        myTickDownArray.putPoints(0,4,
-            myOriginX                    , (myOriginY + myMajorTickSize) ,
-            myOriginX                    ,  myOriginY                    ,
-            (myScaleBarWidthInt + myOriginX),  myOriginY                    ,
-            (myScaleBarWidthInt + myOriginX), (myOriginY + myMajorTickSize)
-            );
-        thepPainter->drawPolyline(myTickDownArray);
-        break;
-      }
-    case 1: // tick up
-      {
-        QPolygon myTickUpArray(4);
-        //draw a buffer first so bar shows up on dark images
-        thepPainter->setPen( myBackgroundPen );
-        myTickUpArray.putPoints(0,4,
-            myOriginX                    ,  myOriginY                    ,
-            myOriginX                    ,  myOriginY + myMajorTickSize  ,
-            (myScaleBarWidthInt + myOriginX),  myOriginY + myMajorTickSize  ,
-            (myScaleBarWidthInt + myOriginX),  myOriginY
-            );
-        thepPainter->drawPolyline(myTickUpArray);
-        //now draw the bar itself in user selected color
-        thepPainter->setPen( myForegroundPen );
-        myTickUpArray.putPoints(0,4,
-            myOriginX                    ,  myOriginY                    ,
-            myOriginX                    ,  myOriginY + myMajorTickSize  ,
-            (myScaleBarWidthInt + myOriginX),  myOriginY + myMajorTickSize  ,
-            (myScaleBarWidthInt + myOriginX),  myOriginY
-            );
-        thepPainter->drawPolyline(myTickUpArray);
-        break;
-      }
-    case 2: // Bar
-      {
-        QPolygon myBarArray(2);
-        //draw a buffer first so bar shows up on dark images
-        thepPainter->setPen( myBackgroundPen );
-        myBarArray.putPoints(0,2,
-            myOriginX,  
-            (myOriginY + (myMajorTickSize/2)),
-            (myScaleBarWidthInt + myOriginX),  (myOriginY + (myMajorTickSize/2))
-            );
-        thepPainter->drawPolyline(myBarArray);
-        //now draw the bar itself in user selected color
-        thepPainter->setPen( myForegroundPen );
-        myBarArray.putPoints(0,2,
-            myOriginX ,  (myOriginY + (myMajorTickSize/2)),
-            (myScaleBarWidthInt + myOriginX),  (myOriginY + (myMajorTickSize/2))
-            );
-        thepPainter->drawPolyline(myBarArray);
-        break;
-      }
-    case 3: // box
-      {
-        // Want square corners for a box
-        myBackgroundPen.setJoinStyle( Qt::MiterJoin );
-        myForegroundPen.setJoinStyle( Qt::MiterJoin );
-        QPolygon myBoxArray(5);
-        //draw a buffer first so bar shows up on dark images
-        thepPainter->setPen( myBackgroundPen );
-        myBoxArray.putPoints(0,5,
-            myOriginX                    ,  myOriginY,
-            (myScaleBarWidthInt + myOriginX),  myOriginY,
-            (myScaleBarWidthInt + myOriginX), (myOriginY+myMajorTickSize),
-            myOriginX                    , (myOriginY+myMajorTickSize),
-            myOriginX                    ,  myOriginY
-            );
-        thepPainter->drawPolyline(myBoxArray);
-        //now draw the bar itself in user selected color
-        thepPainter->setPen( myForegroundPen );
-        thepPainter->setBrush( QBrush( mColour, Qt::SolidPattern) );
-        int midPointX = myScaleBarWidthInt/2 + myOriginX; 
-        myBoxArray.putPoints(0,5,
-            myOriginX                    ,  myOriginY,
-            midPointX,  myOriginY,
-            midPointX, (myOriginY+myMajorTickSize),
-            myOriginX                    , (myOriginY+myMajorTickSize),
-            myOriginX                    ,  myOriginY
-            );
-        thepPainter->drawPolygon(myBoxArray);
-
-        thepPainter->setBrush( Qt::NoBrush );
-        myBoxArray.putPoints(0,5,
-            midPointX                    ,  myOriginY,
-            (myScaleBarWidthInt + myOriginX),  myOriginY,
-            (myScaleBarWidthInt + myOriginX), (myOriginY+myMajorTickSize),
-            midPointX                    , (myOriginY+myMajorTickSize),
-            midPointX                    ,  myOriginY
-            );
-        thepPainter->drawPolygon(myBoxArray);
-        break;
-      }
-    default:
-      std::cerr << "Unknown style\n";
-  }
-
-  //Do actual drawing of scale bar
+  //now draw the bar itself in user selected color
+  thepPainter->setPen( myForegroundPen );
+  //make a glossygradient for the background
+  QGradientStops myStops;
+  myStops << QGradientStop(0.0,QColor("#616161"));
+  myStops << QGradientStop(0.5,QColor("#505050"));
+  myStops << QGradientStop(0.6,QColor("#434343"));
+  myStops << QGradientStop(1.0,QColor("#656565"));
+  //draw again with the brush in the revers direction to complete teh glossiness
+  QLinearGradient myReverseGlossyBrush(
+                  QPointF(myOriginX,myOriginY +  myFontHeight*3), 
+                  QPointF(myOriginX,myOriginY));
+  thepPainter->setBrush(myReverseGlossyBrush);
+  thepPainter->drawRect( 
+      myOriginX, 
+      myOriginY, 
+      myOriginX + myScaleBarWidthInt,  
+      myOriginY + myFontHeight
+      );
 
   //
   //Do drawing of scale bar text
@@ -1041,7 +952,6 @@ void QgsQuickPrint::renderPrintScaleBar(QPainter * thepPainter,
   //Draw the minimum label buffer
   thepPainter->setPen( myBackColor );
   myFontWidth = myFontMetrics.width( "0" );
-  myFontHeight = myFontMetrics.height();
 
   for (int i = 0-myBufferSize; i <= myBufferSize; i++)
   {
@@ -1091,14 +1001,13 @@ void QgsQuickPrint::renderPrintScaleBar(QPainter * thepPainter,
   //
   thepPainter->setPen( myBackColor );
   myFontWidth = myFontMetrics.width( myScaleBarUnitLabel );
-  myFontHeight = myFontMetrics.height();
   //first the buffer
   for (int i = 0-myBufferSize; i <= myBufferSize; i++)
   {
     for (int j = 0-myBufferSize; j <= myBufferSize; j++)
     {
       thepPainter->drawText( i + (myOriginX+myScaleBarWidthInt+myTextOffsetX),
-          j + (myOriginY+myMajorTickSize) + myTextOffsetY,
+          j + myOriginY + myFontHeight + (myFontHeight*2.5) + myTextOffsetY,
           myScaleBarUnitLabel);
     }
   }
@@ -1106,7 +1015,7 @@ void QgsQuickPrint::renderPrintScaleBar(QPainter * thepPainter,
   thepPainter->setPen( myForeColor );
   thepPainter->drawText(
       myOriginX + myScaleBarWidthInt + myTextOffsetX,
-      myOriginY + myMajorTickSize + myTextOffsetY,
+      myOriginY + myFontHeight + (myFontHeight*2.5) +  myTextOffsetY,
       myScaleBarUnitLabel
       );
 }
@@ -1152,4 +1061,77 @@ QStringList QgsQuickPrint::wordWrap(QString theString,
   return myList;
 
 }
+QString QgsQuickPrint::pageSizeToString(QPrinter::PageSize theSize)
+{
+  if (theSize==QPrinter::A0) return "QPrinter::A0";
+  if (theSize==QPrinter::A1) return "QPrinter::A1";
+  if (theSize==QPrinter::A2) return "QPrinter::A2";
+  if (theSize==QPrinter::A3) return "QPrinter::A3";
+  if (theSize==QPrinter::A4) return "QPrinter::A4";
+  if (theSize==QPrinter::A5) return "QPrinter::A5";
+  if (theSize==QPrinter::A6) return "QPrinter::A6";
+  if (theSize==QPrinter::A7) return "QPrinter::A7";
+  if (theSize==QPrinter::A8) return "QPrinter::A8";
+  if (theSize==QPrinter::A9) return "QPrinter::A9";
+  if (theSize==QPrinter::B0) return "QPrinter::B0";
+  if (theSize==QPrinter::B1) return "QPrinter::B1";
+  if (theSize==QPrinter::B10) return "QPrinter::B10";
+  if (theSize==QPrinter::B2) return "QPrinter::B2";
+  if (theSize==QPrinter::B3) return "QPrinter::B3";
+  if (theSize==QPrinter::B4) return "QPrinter::B4";
+  if (theSize==QPrinter::B5) return "QPrinter::B5";
+  if (theSize==QPrinter::B6) return "QPrinter::B6";
+  if (theSize==QPrinter::B7) return "QPrinter::B7";
+  if (theSize==QPrinter::B8) return "QPrinter::B8";
+  if (theSize==QPrinter::B9) return "QPrinter::B9";
+  if (theSize==QPrinter::C5E) return "QPrinter::C5E";
+  if (theSize==QPrinter::Comm10E) return "QPrinter::Comm10E";
+  if (theSize==QPrinter::DLE) return "QPrinter::DLE";
+  if (theSize==QPrinter::Executive) return "QPrinter::Executive";
+  if (theSize==QPrinter::Folio) return "QPrinter::Folio";
+  if (theSize==QPrinter::Ledger) return "QPrinter::Ledger";
+  if (theSize==QPrinter::Legal) return "QPrinter::Legal";
+  if (theSize==QPrinter::Letter) return "QPrinter::Letter";
+  //falback
+  return "QPrinter::A4";
+
+}
+
+QPrinter::PageSize QgsQuickPrint::stringToPageSize(QString theSize)
+{
+  if (theSize=="QPrinter::A0") return QPrinter::A0;
+  if (theSize=="QPrinter::A1") return QPrinter::A1;
+  if (theSize=="QPrinter::A2") return QPrinter::A2;
+  if (theSize=="QPrinter::A3") return QPrinter::A3;
+  if (theSize=="QPrinter::A4") return QPrinter::A4;
+  if (theSize=="QPrinter::A5") return QPrinter::A5;
+  if (theSize=="QPrinter::A6") return QPrinter::A6;
+  if (theSize=="QPrinter::A7") return QPrinter::A7;
+  if (theSize=="QPrinter::A8") return QPrinter::A8;
+  if (theSize=="QPrinter::A9") return QPrinter::A9;
+  if (theSize=="QPrinter::B0") return QPrinter::B0;
+  if (theSize=="QPrinter::B1") return QPrinter::B1;
+  if (theSize=="QPrinter::B10") return QPrinter::B10;
+  if (theSize=="QPrinter::B2") return QPrinter::B2;
+  if (theSize=="QPrinter::B3") return QPrinter::B3;
+  if (theSize=="QPrinter::B4") return QPrinter::B4;
+  if (theSize=="QPrinter::B5") return QPrinter::B5;
+  if (theSize=="QPrinter::B6") return QPrinter::B6;
+  if (theSize=="QPrinter::B7") return QPrinter::B7;
+  if (theSize=="QPrinter::B8") return QPrinter::B8;
+  if (theSize=="QPrinter::B9") return QPrinter::B9;
+  if (theSize=="QPrinter::C5E") return QPrinter::C5E;
+  if (theSize=="QPrinter::Comm10E") return QPrinter::Comm10E;
+  if (theSize=="QPrinter::DLE") return QPrinter::DLE;
+  if (theSize=="QPrinter::Executive") return QPrinter::Executive;
+  if (theSize=="QPrinter::Folio") return QPrinter::Folio;
+  if (theSize=="QPrinter::Ledger") return QPrinter::Ledger;
+  if (theSize=="QPrinter::Legal") return QPrinter::Legal;
+  if (theSize=="QPrinter::Letter") return QPrinter::Letter;
+  //falback
+  return QPrinter::A4;
+
+}
+
+
 

@@ -31,6 +31,7 @@
 #include <QClipboard>
 #include <QColor>
 #include <QCursor>
+#include <QDesktopServices>
 #include <QDesktopWidget>
 #include <QDialog>
 #include <QDir>
@@ -401,6 +402,12 @@ static void customSrsValidation_(QgsSpatialRefSys* srs)
   mSplash->showMessage(tr("QGIS Ready!"), Qt::AlignHCenter | Qt::AlignBottom);
 
   mMapTipsVisible = false;
+
+  // setup drag drop 
+  setAcceptDrops(true);
+
+  mFullScreenMode = false;
+  showNormal();
   qApp->processEvents();
 } // QgisApp ctor
 
@@ -436,6 +443,43 @@ QgisApp::~QgisApp()
   // delete map layer registry and provider registry
   QgsApplication::exitQgis();
 }
+
+void QgisApp::dragEnterEvent(QDragEnterEvent *event)
+{
+  if (event->mimeData()->hasUrls())
+  {
+    event->acceptProposedAction();
+  }
+}
+
+void QgisApp::dropEvent(QDropEvent *event)
+{
+  // get the file list
+  QList<QUrl>::iterator i;
+  QList<QUrl>urls = event->mimeData()->urls();
+  for (i = urls.begin(); i != urls.end(); i++)
+  {
+    QUrl mUrl = *i;
+    // seems that some drag and drop operations include an empty url
+    // so we test for length to make sure we have something
+    if( mUrl.path().length() > 0)
+    {
+      // check to see if we are opening a project file
+      QFileInfo fi(mUrl.path());
+      if( fi.completeSuffix() == "qgs" )
+      {
+        QgsDebugMsg("Opening project " + mUrl.path());
+      }
+      else
+      {
+        QgsDebugMsg("Adding " + mUrl.path() + " to the map canvas");
+        openLayer(mUrl.path());
+      }
+    }
+  }
+  event->acceptProposedAction();
+}
+
 
 // restore any application settings stored in QSettings
 void QgisApp::readSettings()
@@ -514,7 +558,7 @@ void QgisApp::createActions()
   mActionAddNonDbLayer= new QAction(QIcon(myIconPath+"/mActionAddNonDbLayer.png"), tr("Add a Vector Layer..."), this);
   mActionAddNonDbLayer->setShortcut(tr("V","Add a Vector Layer"));
   mActionAddNonDbLayer->setStatusTip(tr("Add a Vector Layer"));
-  connect(mActionAddNonDbLayer, SIGNAL(triggered()), this, SLOT(addLayer()));
+  connect(mActionAddNonDbLayer, SIGNAL(triggered()), this, SLOT(addVectorLayer()));
   //
   mActionAddRasterLayer= new QAction(QIcon(myIconPath+"/mActionAddRasterLayer.png"), tr("Add a Raster Layer..."), this);
   mActionAddRasterLayer->setShortcut(tr("R","Add a Raster Layer"));
@@ -552,6 +596,12 @@ void QgisApp::createActions()
   mActionRemoveAllFromOverview->setShortcut(tr("-","Remove all layers from overview map"));
   mActionRemoveAllFromOverview->setStatusTip(tr("Remove all layers from overview map"));
   connect(mActionRemoveAllFromOverview, SIGNAL(triggered()), this, SLOT(removeAllFromOverview()));
+  //
+  mActionToggleFullScreen = new QAction(QIcon(myIconPath+"/mActionToggleFullScreen.png"), tr("Toggle full screen mode"), this);
+  mActionToggleFullScreen->setShortcut(tr("Ctrl-F","Toggle fullscreen mode"));
+  mActionToggleFullScreen->setStatusTip(tr("Toggle fullscreen mode"));
+  connect(mActionToggleFullScreen, SIGNAL(triggered()), this, SLOT(toggleFullScreen()));
+
   //
   mActionShowAllLayers= new QAction(QIcon(myIconPath+"/mActionShowAllLayers.png"), tr("Show All Layers"), this);
   mActionShowAllLayers->setShortcut(tr("S","Show all layers"));
@@ -897,6 +947,7 @@ void QgisApp::createMenus()
   mViewMenu->addAction(mActionZoomToLayer);
   mViewMenu->addAction(mActionZoomLast);
   mViewMenu->addAction(mActionDraw);
+  mViewMenu->addAction(mActionToggleFullScreen);
   mViewMenu->addSeparator();
   mViewMenu->addAction(mActionShowBookmarks);
   mViewMenu->addAction(mActionNewBookmark);
@@ -994,8 +1045,6 @@ void QgisApp::createToolBars()
   mLayerToolBar->addAction(mActionNewVectorLayer);
   mLayerToolBar->addAction(mActionRemoveLayer);
   mLayerToolBar->addAction(mActionInOverview);
-  mLayerToolBar->addAction(mActionAddAllToOverview);
-  mLayerToolBar->addAction(mActionRemoveAllFromOverview);
   mLayerToolBar->addAction(mActionShowAllLayers);
   mLayerToolBar->addAction(mActionHideAllLayers);
   //
@@ -1014,14 +1063,14 @@ void QgisApp::createToolBars()
   mDigitizeToolBar->addAction(mActionCapturePoint);
   mDigitizeToolBar->addAction(mActionCaptureLine);
   mDigitizeToolBar->addAction(mActionCapturePolygon);
+  mDigitizeToolBar->addAction(mActionAddRing);
+  mDigitizeToolBar->addAction(mActionAddIsland);
   mDigitizeToolBar->addAction(mActionMoveFeature);
   mDigitizeToolBar->addAction(mActionSplitFeatures);
   mDigitizeToolBar->addAction(mActionDeleteSelected);
   mDigitizeToolBar->addAction(mActionAddVertex);
   mDigitizeToolBar->addAction(mActionDeleteVertex);
   mDigitizeToolBar->addAction(mActionMoveVertex);
-  mDigitizeToolBar->addAction(mActionAddRing);
-  mDigitizeToolBar->addAction(mActionAddIsland);
   mDigitizeToolBar->addAction(mActionEditCut);
   mDigitizeToolBar->addAction(mActionEditCopy);
   mDigitizeToolBar->addAction(mActionEditPaste);
@@ -1484,69 +1533,59 @@ void QgisApp::about()
      versionString += ")";
 #ifdef HAVE_POSTGRESQL
 
-versionString += tr(" with PostgreSQL support");
+     versionString += tr(" with PostgreSQL support");
 #else
 
-versionString += tr(" (no PostgreSQL support)");
+     versionString += tr(" (no PostgreSQL support)");
 #endif
- versionString += tr("\nCompiled against Qt ") + QT_VERSION_STR
-   + tr(", running against Qt ") + qVersion();
+     versionString += tr("\nCompiled against Qt ") + QT_VERSION_STR
+       + tr(", running against Qt ") + qVersion();
 
 #ifdef WIN32
-  // special version stuff for windows (if required)
-  //  versionString += "\nThis is a Windows preview release - not for production use";
+     // special version stuff for windows (if required)
+     //  versionString += "\nThis is a Windows preview release - not for production use";
 #endif
 
-abt->setVersion(versionString);
-QString urls = "<p align=\"center\">" +
-tr("Quantum GIS is licensed under the GNU General Public License") +
-"</p><p align=\"center\">" +
-tr("http://www.gnu.org/licenses") +
-"</p>";
-abt->setURLs(urls);
-QString watsNew = "<html><body>" + tr("Version") + " ";
-watsNew += QGis::qgisVersion;
-watsNew += "<h3>" + tr("New features") + "</h3>";
-watsNew += "<ul><li>"
-+ tr("Python bindings - This is the major focus of this release "
-    "it is now possible to create plugins using python. It is also "
-    "possible to create GIS enabled applications written in python " 
-    "that use the QGIS libraries."
-    )
-+ "</li>"
-+ "<li>"
-+ tr("Removed automake build system - QGIS now needs CMake for compilation.")
-+ "</li>"
-+ "<li>"
-+ tr("Many new GRASS tools added (with thanks to http://faunalia.it/)")
-+ "</li>"
-+ "<li>"
-+ tr("Map Composer updates")
-+ "</li>"
-+ "<li>"
-+ tr("Crash fix for 2.5D shapefiles")
-+ "</li>"
-+ "<li>"
-+ tr("The QGIS libraries have been refactored and better organised.")
-+ "</li>"
-+ "<li>"
-+ tr("Improvements to the GeoReferencer")
-+ "</li>"
-+ "<li>"
-+ tr("Added locale options to options dialog.")
-+ "</li>"
+     abt->setVersion(versionString);
+     QString urls = "<p align=\"center\">" +
+       tr("Quantum GIS is licensed under the GNU General Public License") +
+       "</p><p align=\"center\">" +
+       tr("http://www.gnu.org/licenses") +
+       "</p>";
+     abt->setURLs(urls);
+     QString whatsNew = "<html><body>" + tr("Version") + " ";
+     whatsNew += QGis::qgisVersion;
+     whatsNew += "<h3>" + tr("New features") + "</h3>" +
+       tr("This release candidate includes over 40 bug fixes and enchancements "
+           "over the QGIS 0.9.1 release. In addition we have added "
+           "the following new features:");
+     whatsNew += "<ul><li>"
+       + tr("Imrovements to digitising capabilities.")
+       + "</li>"
+       + "<li>"
+       + tr("Supporting default and defined styles (.qml) files for file based "
+           "vector layers. With styles you can save the symbolisation "
+           "and other settings associated with a vector layer and they "
+           "will be loaded whenever you load that layer.")
+       + "</li>"
+       + "<li>"
+       + tr("Improved support for transparency and contrast stretching "
+           "in raster layers. Support for color ramps in raster layers. "
+           "Support for non-north up rasters. Many other raster "
+           "improvements 'under the hood'.")
+       + "</li>"
 //+ "<li>"
-//+ tr("")
+//+ tr("X")
 //+ "</li>"
-+ "</ul></body></html>";
+       + "</ul></body></html>";
 
 
-abt->setWhatsNew(watsNew);
+     abt->setWhatsNew(whatsNew);
 
-  // add the available plugins to the list
-  QString providerInfo = "<b>" + tr("Available Data Provider Plugins") + "</b><br>";
-  abt->setPluginInfo(providerInfo + QgsProviderRegistry::instance()->pluginList(true));
-  QApplication::restoreOverrideCursor();
+     // add the available plugins to the list
+     QString providerInfo = "<b>" + tr("Available Data Provider Plugins") + "</b><br>";
+     abt->setPluginInfo(providerInfo + QgsProviderRegistry::instance()->pluginList(true));
+     QApplication::restoreOverrideCursor();
   }
   abt->show();
   abt->raise();
@@ -1676,7 +1715,7 @@ static QString createFileFilter_(QString const &longName, QString const &glob)
 
 /**
   Builds the list of file filter strings to later be used by
-  QgisApp::addLayer()
+  QgisApp::addVectorLayer()
 
   We query OGR for a list of supported vector formats; we then build a list
   of file filter strings from that list.  We return a string that contains
@@ -1905,11 +1944,8 @@ static void openFilesRememberingFilter_(QString const &filterName,
 
 /**
   This method prompts the user for a list of vector filenames with a dialog.
-
-  @todo XXX I'd really like to return false, but can't because this
-  XXX is for a slot that was defined void; need to fix.
   */
-void QgisApp::addLayer()
+void QgisApp::addVectorLayer()
 {
   if(mMapCanvas && mMapCanvas->isDrawing())
     {
@@ -1932,96 +1968,16 @@ void QgisApp::addLayer()
     return;
   }
 
-  addLayer(selectedFiles, enc);
-} // QgisApp::addLayer()
-
-
-
-
-bool QgisApp::addLayer(QFileInfo const & vectorFile)
-{
-  // let the user know we're going to possibly be taking a while
-// Let render() do its own cursor management
-//  QApplication::setOverrideCursor(Qt::WaitCursor);
-
-  mMapCanvas->freeze();         // XXX why do we do this?
-
-  // create the layer
-  QgsDebugMsg("completeBaseName is: " + vectorFile.completeBaseName());
-
-  QgsVectorLayer *layer = new QgsVectorLayer(vectorFile.filePath(),
-      vectorFile.completeBaseName(),
-      "ogr");
-  Q_CHECK_PTR( layer );
-
-  if ( ! layer )
-  {
-    mMapCanvas->freeze(false);
-    QApplication::restoreOverrideCursor();
-
-    // XXX insert meaningful whine to the user here
-    return false;
-  }
-
-  if (layer->isValid())
-  {
-    // Register this layer with the layers registry
-    QgsMapLayerRegistry::instance()->addMapLayer(layer);
-
-  }
-  else
-  {
-    QString msg = vectorFile.completeBaseName() + " ";
-    msg += tr("is not a valid or recognized data source");
-    QMessageBox::critical(this, tr("Invalid Data Source"), msg);
-
-    // since the layer is bad, stomp on it
-    delete layer;
-
-    mMapCanvas->freeze(false);
-
-// Let render() do its own cursor management
-//    QApplication::restoreOverrideCursor();
-
-    return false;
-  }
-
-  // update UI
-  qApp->processEvents();
+  addVectorLayers(selectedFiles, enc);
+}
   
-  // draw the map
-  mMapCanvas->freeze(false);
-  mMapCanvas->refresh();
 
-// Let render() do its own cursor management
-//  QApplication::restoreOverrideCursor();
-
-  statusBar()->message(mMapCanvas->extent().stringRep(2));
-
-  return true;
-
-} // QgisApp::addLayer()
-
-
-
-
-
-/** \brief overloaded vesion of the above method that takes a list of
- * filenames instead of prompting user with a dialog.
-
- XXX yah know, this could be changed to just iteratively call the above
-
-*/
-bool QgisApp::addLayer(QStringList const &theLayerQStringList, const QString& enc)
+bool QgisApp::addVectorLayers(QStringList const & theLayerQStringList, const QString& enc)
 {
-  mMapCanvas->freeze();
-
-// Let render() do its own cursor management
-//  QApplication::setOverrideCursor(Qt::WaitCursor);
 
   for ( QStringList::ConstIterator it = theLayerQStringList.begin();
-      it != theLayerQStringList.end();
-      ++it )
+        it != theLayerQStringList.end();
+        ++it )
   {
     QFileInfo fi(*it);
     QString base = fi.completeBaseName();
@@ -2079,10 +2035,8 @@ bool QgisApp::addLayer(QStringList const &theLayerQStringList, const QString& en
 
   statusBar()->message(mMapCanvas->extent().stringRep(2));
 
-
   return true;
-
-} // QgisApp::addLayer()
+} // QgisApp::addVectorLayer()
 
 
 
@@ -2187,8 +2141,6 @@ void QgisApp::addWmsLayer()
   QgsDebugMsg("about to addRasterLayer");
 
   QgsServerSourceSelect *wmss = new QgsServerSourceSelect(this);
-
-  mMapCanvas->freeze();
 
   if (wmss->exec())
   {
@@ -2712,10 +2664,9 @@ void QgisApp::newVectorLayer()
   }
 
   //then add the layer to the view
-  QStringList filelist;
-  filelist.append(filename);
-  addLayer(filelist, enc);
-  return;
+  QStringList filenames;
+  filenames.append(filename);
+  addVectorLayers(filenames, enc);
 }
 
 void QgisApp::fileOpen()
@@ -2760,6 +2711,7 @@ void QgisApp::fileOpen()
     delete openFileDialog;
 
     // clear out any stuff from previous project
+    mMapCanvas->freeze(true);
     removeAllLayers();
 
     QgsProject::instance()->filename( fullPath );
@@ -2795,6 +2747,9 @@ void QgisApp::fileOpen()
           tr("") + "\n" + QString::fromLocal8Bit( e.what() ) );
       QgsDebugMsg("BAD LAYERS FOUND");
     }
+
+    mMapCanvas->freeze(false);
+    mMapCanvas->refresh();
   }
 
 } // QgisApp::fileOpen
@@ -3107,12 +3062,12 @@ bool QgisApp::openLayer(const QString & fileName)
 {
   QFileInfo fileInfo(fileName);
   // try to load it as raster
-  bool ok = false;
+  QgsMapLayer* ok = NULL;
   CPLPushErrorHandler(CPLQuietErrorHandler); 
   if (QgsRasterLayer::isValidRasterFileName(fileName))
-    ok = addRasterLayer(fileInfo, false);
+    ok = addRasterLayer(fileName, false);
   else // nope - try to load it as a shape/ogr
-    ok = addLayer(fileInfo);
+    ok = addVectorLayer(fileName, fileName, "ogr");
   CPLPopErrorHandler();
 
   if (!ok)
@@ -3305,6 +3260,19 @@ void QgisApp::removeAllFromOverview()
   QgsProject::instance()->dirty(true);
 }
 
+void QgisApp::toggleFullScreen()
+{
+  if (true == mFullScreenMode)
+  {
+    showNormal();
+    mFullScreenMode = false;
+  }
+  else
+  {
+    showFullScreen();
+    mFullScreenMode = true;
+  }
+}
 
 //reimplements method from base (gui) class
 void QgisApp::hideAllLayers()
@@ -3754,10 +3722,6 @@ void QgisApp::userScale()
 }
 void QgisApp::testButton()
 {
-  /* QgsShapeFileLayer *sfl = new QgsShapeFileLayer("foo");
-     mMapCanvas->addLayer(sfl); */
-  //      delete sfl;
-
 }
 
 void QgisApp::menubar_highlighted( int i )
@@ -4338,47 +4302,7 @@ void QgisApp::openURL(QString url, bool useQgisDocDirectory)
   status = 0; //avoid compiler warning
   CFRelease(urlRef);
 #else
-  // find a browser
-  QSettings settings;
-  QString browser = settings.readEntry("/qgis/browser");
-  if (browser.length() == 0)
-  {
-    // ask user for browser and use it
-    bool ok;
-    QString myHeading = tr("QGIS Browser Selection");
-    QString myMessage = tr("Enter the name of a web browser to use (eg. konqueror).\n");
-    myMessage += tr("Enter the full path if the browser is not in your PATH.\n");
-    myMessage += tr("You can change this option later by selecting Options from the Settings menu (Help Browser tab).");
-    QString text = QInputDialog::getText(myHeading,
-        myMessage,
-        QLineEdit::Normal,
-        QString::null, &ok, this);
-    if (ok && !text.isEmpty())
-    {
-      // user entered something and pressed OK
-      browser = text;
-      // save the setting
-      settings.writeEntry("/qgis/browser", browser);
-    }
-    else
-    {
-      browser = "";
-    }
-
-  }
-  if (browser.length() > 0)
-  {
-    // find the installed location of the help files
-    // open index.html using browser
-    //XXX for debug on win32      QMessageBox::information(this,"Help opening...", browser + " - " + url);
-    QProcess *helpProcess = new QProcess(this);
-    QStringList myArgs;
-    myArgs << url;
-    helpProcess->start(browser,myArgs);
-  }
-  /*  mHelpViewer = new QgsHelpViewer(this,"helpviewer",false);
-      mHelpViewer->showContent(QgsApplication::prefixPath() +"/share/doc","index.html");
-      mHelpViewer->show(); */
+  QDesktopServices::openUrl(url);
 #endif
 }
 
@@ -4395,11 +4319,11 @@ QgsMapLayer *QgisApp::activeLayer()
   parameter is used in the Map Legend so it should be formed in a meaningful
   way.
   */
-void QgisApp::addVectorLayer(QString vectorLayerPath, QString baseName, QString providerKey)
+QgsVectorLayer* QgisApp::addVectorLayer(QString vectorLayerPath, QString baseName, QString providerKey)
 {
   if(mMapCanvas && mMapCanvas->isDrawing())
     {
-      return;
+      return NULL;
     }
 
   mMapCanvas->freeze();
@@ -4424,8 +4348,6 @@ void QgisApp::addVectorLayer(QString vectorLayerPath, QString baseName, QString 
     // Register this layer with the layers registry
     QgsMapLayerRegistry::instance()->addMapLayer(layer);
 
-    QgsProject::instance()->dirty(false); // XXX this might be redundant
-
     statusBar()->message(mMapCanvas->extent().stringRep(2));
 
   }
@@ -4433,6 +4355,10 @@ void QgisApp::addVectorLayer(QString vectorLayerPath, QString baseName, QString 
   {
     QMessageBox::critical(this,tr("Layer is not valid"),
         tr("The layer is not a valid layer and can not be added to the map"));
+    
+    delete layer;
+    mMapCanvas->freeze(false);
+    return NULL;
   }
   
   // update UI
@@ -4444,6 +4370,8 @@ void QgisApp::addVectorLayer(QString vectorLayerPath, QString baseName, QString 
 
 // Let render() do its own cursor management
 //  QApplication::restoreOverrideCursor();
+  
+  return layer;
 
 } // QgisApp::addVectorLayer
 
@@ -4908,10 +4836,12 @@ void QgisApp::activateDeactivateLayerRelatedActions(QgsMapLayer* layer)
         if(vlayer->isEditable() && dprovider->capabilities() & QgsVectorDataProvider::AddFeatures)
         {
           mActionCapturePoint->setEnabled(true);
+	  mActionMoveFeature->setEnabled(true);
         }
         else
         {
           mActionCapturePoint->setEnabled(false);
+	  mActionMoveFeature->setEnabled(false);
         }
         mActionCaptureLine->setEnabled(false);
         mActionCapturePolygon->setEnabled(false);
@@ -4919,6 +4849,7 @@ void QgisApp::activateDeactivateLayerRelatedActions(QgsMapLayer* layer)
         mActionDeleteVertex->setEnabled(false);
         mActionAddRing->setEnabled(false);
         mActionAddIsland->setEnabled(false);
+	mActionSplitFeatures->setEnabled(false);
         if(vlayer->isEditable() && dprovider->capabilities() & QgsVectorDataProvider::ChangeGeometries)
         {
           mActionMoveVertex->setEnabled(true);
@@ -4931,10 +4862,14 @@ void QgisApp::activateDeactivateLayerRelatedActions(QgsMapLayer* layer)
         if(vlayer->isEditable() && dprovider->capabilities() & QgsVectorDataProvider::AddFeatures)
         {
           mActionCaptureLine->setEnabled(true);
+	  mActionSplitFeatures->setEnabled(true);
+	  mActionMoveFeature->setEnabled(true);
         }
         else
         {
           mActionCaptureLine->setEnabled(false);
+	  mActionSplitFeatures->setEnabled(false);
+	  mActionMoveFeature->setEnabled(false);
         }
         mActionCapturePoint->setEnabled(false);
         mActionCapturePolygon->setEnabled(false);
@@ -4946,10 +4881,18 @@ void QgisApp::activateDeactivateLayerRelatedActions(QgsMapLayer* layer)
         if(vlayer->isEditable() && dprovider->capabilities() & QgsVectorDataProvider::AddFeatures)
         {
           mActionCapturePolygon->setEnabled(true);
+	  mActionAddRing->setEnabled(true);
+	  mActionAddIsland->setEnabled(true);
+	  mActionSplitFeatures->setEnabled(true);
+	  mActionMoveFeature->setEnabled(true);
         }
         else
         {
           mActionCapturePolygon->setEnabled(false);
+	  mActionAddRing->setEnabled(false);
+	  mActionAddIsland->setEnabled(false);
+	  mActionSplitFeatures->setEnabled(false);
+	  mActionMoveFeature->setEnabled(false);
         }
         mActionCapturePoint->setEnabled(false);
         mActionCaptureLine->setEnabled(false);
@@ -5068,9 +5011,7 @@ void QgisApp::showCapturePointCoordinate(QgsPoint & theQgsPoint)
 /////////////////////////////////////////////////////////////////
 
 
-/** @todo XXX I'd *really* like to return, ya know, _false_.
-*/
-//create a raster layer object and delegate to addRasterLayer(QgsRasterLayer *)
+// this is a slot for action from GUI to add raster layer
 void QgisApp::addRasterLayer()
 {
   if(mMapCanvas && mMapCanvas->isDrawing())
@@ -5078,8 +5019,6 @@ void QgisApp::addRasterLayer()
       return;
     }
   
-  //mMapCanvas->freeze(true);
-
   QString fileFilters;
 
   QStringList selectedFiles;
@@ -5094,9 +5033,8 @@ void QgisApp::addRasterLayer()
     return;
   }
 
-  addRasterLayer(selectedFiles);
-  mMapCanvas->freeze(false);
-  mMapCanvas->refresh();
+  addRasterLayers(selectedFiles);
+
 }// QgisApp::addRasterLayer()
 
 //
@@ -5105,7 +5043,7 @@ void QgisApp::addRasterLayer()
 // of the calling method to manage things such as the frozen state of the mapcanvas and
 // using waitcursors etc. - this method wont and SHOULDNT do it
 //
-bool QgisApp::addRasterLayer(QgsRasterLayer * theRasterLayer, bool theForceRedrawFlag)
+bool QgisApp::addRasterLayer(QgsRasterLayer * theRasterLayer)
 {
   if(mMapCanvas && mMapCanvas->isDrawing())
     {
@@ -5121,70 +5059,48 @@ bool QgisApp::addRasterLayer(QgsRasterLayer * theRasterLayer, bool theForceRedra
     return false;
   }
 
-  if (theRasterLayer->isValid())
-  {
-    // register this layer with the central layers registry
-    QgsMapLayerRegistry::instance()->addMapLayer(theRasterLayer);
-    // XXX doesn't the mMapCanvas->addLayer() do this?
-    // XXX now it does
-    //     QObject::connect(theRasterLayer,
-    //             SIGNAL(repaintRequested()),
-    //             mMapCanvas,
-    //             SLOT(refresh()));
-
-    // connect up any request the raster may make to update the app progress
-    QObject::connect(theRasterLayer,
-        SIGNAL(drawingProgress(int,int)),
-        this,
-        SLOT(showProgress(int,int)));
-    // connect up any request the raster may make to update the statusbar message
-    QObject::connect(theRasterLayer,
-        SIGNAL(setStatus(QString)),
-        this,
-        SLOT(showStatusMessage(QString)));
-
-    // add it to the mapcanvas collection
-    // no longer necessary since adding to registry automatically adds to canvas
-    // mMapCanvas->addLayer(theRasterLayer);
-
-  }
-  else
+  if (!theRasterLayer->isValid())
   {
     delete theRasterLayer;
     return false;
   }
+  
+  // register this layer with the central layers registry
+  QgsMapLayerRegistry::instance()->addMapLayer(theRasterLayer);
 
-  if (theForceRedrawFlag)
-  {
-    // update UI
-    qApp->processEvents();
-    // draw the map
-    mMapCanvas->freeze(false);
-    mMapCanvas->refresh();
-  }
+  // connect up any request the raster may make to update the app progress
+  QObject::connect(theRasterLayer,
+      SIGNAL(drawingProgress(int,int)),
+      this,
+      SLOT(showProgress(int,int)));
+  // connect up any request the raster may make to update the statusbar message
+  QObject::connect(theRasterLayer,
+      SIGNAL(setStatus(QString)),
+      this,
+      SLOT(showStatusMessage(QString)));
+
   return true;
-
 }
 
 
 //create a raster layer object and delegate to addRasterLayer(QgsRasterLayer *)
 
-bool QgisApp::addRasterLayer(QFileInfo const & rasterFile, bool guiWarning)
+QgsRasterLayer* QgisApp::addRasterLayer(QString const & rasterFile, QString const & baseName, bool guiWarning)
 {
   if(mMapCanvas && mMapCanvas->isDrawing())
     {
-      return false;
+      return NULL;
     }
 
   // let the user know we're going to possibly be taking a while
   QApplication::setOverrideCursor(Qt::WaitCursor);
 
   mMapCanvas->freeze(true);
-
+  
   // XXX ya know QgsRasterLayer can snip out the basename on its own;
   // XXX why do we have to pass it in for it?
   QgsRasterLayer *layer =
-    new QgsRasterLayer(rasterFile.filePath(), rasterFile.completeBaseName());
+    new QgsRasterLayer(rasterFile, baseName); // fi.completeBaseName());
 
   if (!addRasterLayer(layer))
   {
@@ -5197,12 +5113,12 @@ bool QgisApp::addRasterLayer(QFileInfo const & rasterFile, bool guiWarning)
     if(guiWarning)
     {
       // don't show the gui warning (probably because we are loading from command line)
-      QString msg(rasterFile.completeBaseName()
+      QString msg(rasterFile
           + tr(" is not a valid or recognized raster data source"));
       QMessageBox::critical(this, tr("Invalid Data Source"), msg);
     }
     delete layer;
-    return false;
+    return NULL;
   }
   else
   {
@@ -5213,7 +5129,9 @@ bool QgisApp::addRasterLayer(QFileInfo const & rasterFile, bool guiWarning)
 // Let render() do its own cursor management
 //    QApplication::restoreOverrideCursor();
 
-    return true;
+    mMapCanvas->refresh();
+
+    return layer;
   }
 
 } // QgisApp::addRasterLayer
@@ -5276,22 +5194,8 @@ void QgisApp::addRasterLayer(QString const & rasterLayerPath,
 
   if( layer && layer->isValid() )
   {
-    // Register this layer with the layers registry
-    QgsMapLayerRegistry::instance()->addMapLayer(layer);
-
-    // connect up any request the raster may make to update the app progress
-    QObject::connect(layer,
-        SIGNAL(drawingProgress(int,int)),
-        this,
-        SLOT(showProgress(int,int)));
-    // connect up any request the raster may make to update the statusbar message
-    QObject::connect(layer,
-        SIGNAL(setStatus(QString)),
-        this,
-        SLOT(showStatusMessage(QString)));
-
-    QgsProject::instance()->dirty(false); // XXX this might be redundant
-
+    addRasterLayer(layer);
+    
     statusBar()->message(mMapCanvas->extent().stringRep(2));
 
   }
@@ -5315,7 +5219,7 @@ void QgisApp::addRasterLayer(QString const & rasterLayerPath,
 
 
 //create a raster layer object and delegate to addRasterLayer(QgsRasterLayer *)
-bool QgisApp::addRasterLayer(QStringList const &theFileNameQStringList, bool guiWarning)
+bool QgisApp::addRasterLayers(QStringList const &theFileNameQStringList, bool guiWarning)
 {
   if(mMapCanvas && mMapCanvas->isDrawing())
     {
@@ -5385,6 +5289,7 @@ bool QgisApp::addRasterLayer(QStringList const &theFileNameQStringList, bool gui
 
   statusBar()->message(mMapCanvas->extent().stringRep(2));
   mMapCanvas->freeze(false);
+  mMapCanvas->refresh();
 
 // Let render() do its own cursor management
 //  QApplication::restoreOverrideCursor();

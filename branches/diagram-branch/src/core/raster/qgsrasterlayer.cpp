@@ -380,7 +380,10 @@ bool QgsRasterLayer::isValidRasterFileName(QString const & theFileNameQString)
 // Non Static methods now....
 //
 /////////////////////////////////////////////////////////
-QgsRasterLayer::QgsRasterLayer(QString const & path, QString const & baseName)
+QgsRasterLayer::QgsRasterLayer(
+    QString const & path, 
+    QString const & baseName, 
+    bool loadDefaultStyleFlag)
   : QgsMapLayer(RASTER, baseName, path),
   // XXX where is this? popMenu(0), //popMenu is the contextmenu obtained by right clicking on the legend
   mRasterXDim( std::numeric_limits<int>::max() ),
@@ -394,6 +397,16 @@ QgsRasterLayer::QgsRasterLayer(QString const & path, QString const & baseName)
   mUserDefinedGrayMinMaxFlag = false;
 
   mRasterShader = new QgsRasterShader();
+
+  if ( loadDefaultStyleFlag )
+  {
+    bool defaultLoadedFlag = false;
+    loadDefaultStyle( defaultLoadedFlag );
+    if ( defaultLoadedFlag )
+    {
+      return;
+    }
+  }
 
   // Initialise the affine transform matrix
   mGeoTransform[0] =  0;

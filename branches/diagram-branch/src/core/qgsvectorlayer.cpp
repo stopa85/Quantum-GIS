@@ -903,11 +903,9 @@ void QgsVectorLayer::deleteCachedGeometries()
 
 void QgsVectorLayer::drawVertexMarker(int x, int y, QPainter& p)
 {
-  //todo: let the user configure the size and appearance of the marker 
-  int size = 15;
-  int m = (size-1)/2;
-  p.drawLine(x-m, y+m, x+m, y-m);
-  p.drawLine(x-m, y-m, x+m, y+m);
+  p.setPen(QColor(50, 100, 120, 200));
+  p.setBrush(QColor(200, 200, 210, 120));
+  p.drawEllipse(QRectF(x - 7, y - 7, 14, 14));
 }
 
 void QgsVectorLayer::drawOverlays(QPainter * p, const QgsRect & viewExtent, QgsMapToPixel * cXf, \
@@ -1779,24 +1777,46 @@ int QgsVectorLayer::splitFeatures(const QList<QgsPoint>& splitLine, bool topolog
   int returnCode = 0;
   int splitFunctionReturn; //return code of QgsGeometry::splitGeometry
 
-  if(boundingBoxFromPointList(splitLine, xMin, yMin, xMax, yMax) == 0)
+  QgsFeatureList featureList;
+  const QgsFeatureIds selectedIds = selectedFeaturesIds();
+  
+  if(selectedIds.size() > 0)//consider only the selected features if there is a selection
     {
-      bBox.setXmin(xMin); bBox.setYmin(yMin); bBox.setXmax(xMax); bBox.setYmax(yMax);
+      featureList = selectedFeatures();
     }
-  else
+  else //else consider all the feature that intersect the bounding box of the split line
     {
-      return 1;
+      if(boundingBoxFromPointList(splitLine, xMin, yMin, xMax, yMax) == 0)
+	{
+	  bBox.setXmin(xMin); bBox.setYmin(yMin); bBox.setXmax(xMax); bBox.setYmax(yMax);
+	}
+      else
+	{
+	  return 1;
+	}
+      
+      if(bBox.isEmpty())
+	{
+	  //if the bbox is a line, try to make a square out of it
+	  if(!bBox.width() > 0.0 && bBox.height() > 0)
+	    {
+	      bBox.setXmin(bBox.xMin() - bBox.height()/2);
+	      bBox.setXmax(bBox.xMax() + bBox.height()/2);
+	    }
+	  else if(!bBox.height() > 0.0 && bBox.width() > 0)
+	    {
+	      bBox.setYmin(bBox.yMin() - bBox.width()/2);
+	      bBox.setYmax(bBox.yMax() + bBox.width()/2);
+	    }
+	  else
+	    {
+	      return 2;
+	    }
+	}
+      featuresInRectangle(bBox, featureList);
     }
   
-  if(bBox.isEmpty())
-    {
-      return 2;
-    }
-
-  QList<QgsFeature> featureList;
-  featuresInRectangle(bBox, featureList);
-  QList<QgsFeature>::iterator select_it = featureList.begin();
-
+  QgsFeatureList::iterator select_it = featureList.begin();
   for(; select_it != featureList.end(); ++select_it)
     {
       QList<QgsGeometry*> newGeometries;
@@ -2899,12 +2919,20 @@ void QgsVectorLayer::snapToGeometry(const QgsPoint& startPoint, int featureId, Q
 	{
 	  snappingResultVertex.snappedVertex = snappedPoint;
 	  snappingResultVertex.snappedVertexNr = atVertex;
-	  snappingResultVertex.beforeVertex = geom->vertexAt(beforeVertex);
 	  snappingResultVertex.beforeVertexNr = beforeVertex;
-	  snappingResultVertex.afterVertex = geom->vertexAt(afterVertex);
+	  if(beforeVertex != -1) //make sure the vertex is valid
+	    {
+	      snappingResultVertex.beforeVertex = geom->vertexAt(beforeVertex);
+	    }
 	  snappingResultVertex.afterVertexNr = afterVertex;
+	  if(afterVertex != -1) //make sure the vertex is valid
+	    {
+	      snappingResultVertex.afterVertex = geom->vertexAt(afterVertex);
+	    }
 	  snappingResultVertex.snappedAtGeometry = featureId;
 	  snappingResultVertex.layer = this;
+	  snappingResults.insert(sqrt(sqrDistVertexSnap), snappingResultVertex);
+	  return;
 	}
     }
   if(snap_to == QgsSnapper::SNAP_TO_SEGMENT || snap_to == QgsSnapper::SNAP_TO_VERTEX_AND_SEGMENT) //snap to segment
@@ -2923,29 +2951,11 @@ void QgsVectorLayer::snapToGeometry(const QgsPoint& startPoint, int featureId, Q
 	      snappingResultSegment.beforeVertex = geom->vertexAt(afterVertex - 1);
 	      snappingResultSegment.afterVertex = geom->vertexAt(afterVertex);
 	      snappingResultSegment.layer = this;
+	      snappingResults.insert(sqrt(sqrDistSegmentSnap), snappingResultSegment);
 	    }
 	}
     }
   
-  if(snap_to == QgsSnapper::SNAP_TO_VERTEX && sqrDistVertexSnap < sqrSnappingTolerance)
-    {
-      snappingResults.insert(sqrt(sqrDistVertexSnap), snappingResultVertex);
-    }
-  else if(snap_to == QgsSnapper::SNAP_TO_SEGMENT && sqrDistSegmentSnap < sqrSnappingTolerance && vectorType() != QGis::Point)
-    {
-      snappingResults.insert(sqrt(sqrDistSegmentSnap), snappingResultSegment);
-    }
-  else if(snap_to == QgsSnapper::SNAP_TO_VERTEX_AND_SEGMENT) //to vertex and segment
-    {
-      if(sqrDistVertexSnap < sqrSnappingTolerance)
-	{
-	  snappingResults.insert(sqrt(sqrDistVertexSnap), snappingResultVertex);
-	}
-      else if(sqrDistSegmentSnap < sqrSnappingTolerance && vectorType() != QGis::Point)
-	{
-	  snappingResults.insert(sqrt(sqrDistSegmentSnap), snappingResultSegment);
-	}
-    }
 }
 
 int QgsVectorLayer::insertSegmentVerticesForSnap(const QList<QgsSnappingResult>& snapResults)

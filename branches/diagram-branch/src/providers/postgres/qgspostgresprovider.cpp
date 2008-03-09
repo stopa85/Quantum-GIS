@@ -57,7 +57,7 @@
 
 const QString POSTGRES_KEY = "postgres";
 const QString POSTGRES_DESCRIPTION = "PostgreSQL/PostGIS data provider";
-
+int QgsPostgresProvider::providerIds = 0;
 
   QgsPostgresProvider::QgsPostgresProvider(QString const & uri)
 : QgsVectorDataProvider(uri),
@@ -65,6 +65,9 @@ const QString POSTGRES_DESCRIPTION = "PostgreSQL/PostGIS data provider";
   mFeatureQueueSize(200),
   gotPostgisVersion(FALSE)
 {
+
+  providerId = QString("%1").arg(providerIds++);
+
   // assume this is a valid layer until we determine otherwise
   valid = true;
   /* OPEN LOG FILE */
@@ -330,7 +333,7 @@ bool QgsPostgresProvider::getNextFeature(QgsFeature& feature)
     // Top up our queue if it is empty
     if (mFeatureQueue.empty())
     {
-      QString fetch = QString("fetch forward %1 from qgisf")
+      QString fetch = QString("fetch forward %1 from qgisf" + providerId)
         .arg(mFeatureQueueSize);
 
       if(mFirstFetch)
@@ -362,9 +365,10 @@ bool QgsPostgresProvider::getNextFeature(QgsFeature& feature)
 
         if (swapEndian)
           oid = ntohl(oid); // convert oid to opposite endian
-
+ 
+	mFeatureQueue.push(QgsFeature());
         // set ID
-        feature.setFeatureId(oid);
+        mFeatureQueue.back().setFeatureId(oid);
 
         // fetch attributes
         std::list<QString>::const_iterator name_it = mFetchAttributeNames.begin();
@@ -379,20 +383,20 @@ bool QgsPostgresProvider::getNextFeature(QgsFeature& feature)
           }
           else
           {
-            char* attribute = PQgetvalue(queryResult, row, PQfnumber(queryResult,*name_it));
+            char* attribute = PQgetvalue(queryResult, row, PQfnumber(queryResult,"\""+*name_it+"\""));
             val = QString::fromUtf8(attribute);
           }
 
           switch (attributeFields[*index_it].type())
           {
             case QVariant::Int:
-              feature.addAttribute(*index_it, val.toInt());
+              mFeatureQueue.back().addAttribute(*index_it, val.toInt());
               break;
             case QVariant::Double:
-              feature.addAttribute(*index_it, val.toDouble());
+              mFeatureQueue.back().addAttribute(*index_it, val.toDouble());
               break;
             case QVariant::String:
-              feature.addAttribute(*index_it, val);
+              mFeatureQueue.back().addAttribute(*index_it, val);
               break;
             default:
               assert(0 && "unsupported field type");
@@ -408,20 +412,14 @@ bool QgsPostgresProvider::getNextFeature(QgsFeature& feature)
             unsigned char *featureGeom = new unsigned char[returnedLength + 1];
             memset(featureGeom, '\0', returnedLength + 1);
             memcpy(featureGeom, PQgetvalue(queryResult, row, PQfnumber(queryResult,"qgs_feature_geometry")), returnedLength); 
-            feature.setGeometryAndOwnership(featureGeom, returnedLength + 1);
+            mFeatureQueue.back().setGeometryAndOwnership(featureGeom, returnedLength + 1);
           }
           else
           {
+	    mFeatureQueue.back().setGeometryAndOwnership(0, 0);
             QgsDebugMsg("Couldn't get the feature geometry in binary form");
           }
         } 
-
-        //don't copy the geometry. Just pass a pointer instead
-        mFeatureQueue.push(QgsFeature());
-        mFeatureQueue.back().setGeometry(feature.geometryAndOwnership());
-        mFeatureQueue.back().setFeatureId(feature.featureId());
-        mFeatureQueue.back().setAttributeMap(feature.attributeMap());
-
       } // for each row in queue
 
       PQclear(queryResult);
@@ -434,8 +432,15 @@ bool QgsPostgresProvider::getNextFeature(QgsFeature& feature)
     } // if new queue is required
 
     // Now return the next feature from the queue
-    //don't copy the geometry. Just pass a pointer instead
-    feature.setGeometry(mFeatureQueue.front().geometryAndOwnership());
+    if(mFetchGeom)
+      {
+	QgsGeometry* featureGeom = mFeatureQueue.front().geometryAndOwnership();
+	feature.setGeometry(featureGeom);
+      }
+    else
+      {
+	feature.setGeometryAndOwnership(0, 0);
+      }
     feature.setFeatureId(mFeatureQueue.front().featureId());
     feature.setAttributeMap(mFeatureQueue.front().attributeMap());
 
@@ -472,7 +477,7 @@ void QgsPostgresProvider::select(QgsAttributeList fetchAttributes,
     }
   }
 
-  QString declare = "declare qgisf binary cursor for select \"" + primaryKey + "\"";
+  QString declare = "declare qgisf" + providerId + " binary cursor for select \"" + primaryKey + "\"";
 
   if(fetchGeometry)
   {
@@ -541,7 +546,10 @@ void QgsPostgresProvider::select(QgsAttributeList fetchAttributes,
   ready = true;
   PQexec(connection, (const char *)(declare.utf8()));
 
-  mFeatureQueue.empty();
+  while(!mFeatureQueue.empty())
+    {
+      mFeatureQueue.pop();
+    }
   mFirstFetch = true;
 }
 
@@ -566,7 +574,7 @@ bool QgsPostgresProvider::getFeatureAtId(int featureId,
     }
   }
 
-  QString sql = "declare qgisfid binary cursor for select \"" + primaryKey + "\"";
+  QString sql = "declare qgisfid" + providerId + " binary cursor for select \"" + primaryKey + "\"";
 
   if(fetchGeometry)
   {
@@ -591,7 +599,7 @@ bool QgsPostgresProvider::getFeatureAtId(int featureId,
   // execute query
   PQexec(connection, (const char *)(sql.utf8()));
 
-  PGresult *res = PQexec(connection, "fetch forward 1 from qgisfid");
+  PGresult *res = PQexec(connection, "fetch forward 1 from qgisfid" + providerId);
 
   int rows = PQntuples(res);
   if (rows == 0)
@@ -712,7 +720,7 @@ QString QgsPostgresProvider::dataComment() const
 
 void QgsPostgresProvider::reset()
 {
-  QString move = "move 0 in qgisf"; //move cursor to first record
+  QString move = "move 0 in qgisf" + providerId; //move cursor to first record
   PQexec(connection, (const char *)(move.utf8()));
   mFeatureQueue.empty();
   loadFields();
@@ -1964,7 +1972,7 @@ bool QgsPostgresProvider::addAttributes(const QgsNewAttributesMap & name)
   PQexec(connection,"BEGIN");
   for(QgsNewAttributesMap::const_iterator iter=name.begin();iter!=name.end();++iter)
   {
-    QString sql="ALTER TABLE "+mSchemaTableName+" ADD COLUMN "+iter.key()+" "+iter.value();
+    QString sql="ALTER TABLE "+mSchemaTableName+" ADD COLUMN \""+iter.key()+"\" "+iter.value();
 
     QgsDebugMsg(sql);
 
@@ -1998,7 +2006,7 @@ bool QgsPostgresProvider::deleteAttributes(const QgsAttributeIds& ids)
       continue;
     }
     QString column = field_it->name();
-    QString sql="ALTER TABLE "+mSchemaTableName+" DROP COLUMN "+column;
+    QString sql="ALTER TABLE "+mSchemaTableName+" DROP COLUMN \""+column+"\"";
 
     //send sql statement and do error handling
     PGresult* result=PQexec(connection, (const char *)(sql.utf8()));
@@ -2042,7 +2050,7 @@ bool QgsPostgresProvider::changeAttributeValues(const QgsChangedAttributesMap & 
       // escape quotes
       val.replace("'", "''");
 
-      QString sql="UPDATE "+mSchemaTableName+" SET "+fieldName+"='"+val+"' WHERE \"" +primaryKey+"\"="+QString::number(fid);
+      QString sql="UPDATE "+mSchemaTableName+" SET \""+fieldName+"\"='"+val+"' WHERE \"" +primaryKey+"\"="+QString::number(fid);
       QgsDebugMsg(sql);
 
       // s end sql statement and do error handling

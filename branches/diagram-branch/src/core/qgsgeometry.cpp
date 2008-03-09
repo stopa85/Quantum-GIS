@@ -16,17 +16,47 @@ email                : morb at ozemail dot com dot au
 
 #include <limits>
 
-
 #include "qgis.h"
 #include "qgsgeometry.h"
 #include "qgsapplication.h"
 #include "qgslogger.h"
 #include "qgspoint.h"
 #include "qgsrect.h"
-//#include "geos/operation/polygonize/Polygonizer.h"
-//todo: adapt to geos3
-#include "geos/opPolygonize.h"
-#include "geos/opLinemerge.h"
+
+#if GEOS_VERSION_MAJOR < 3
+#include <geos/io.h>
+#include <geos/opLinemerge.h>
+#include <geos/opPolygonize.h>
+#include <geos/util.h>
+#define GEOS_IO geos
+#define GEOS_LINEMERGE geos
+#define GEOS_POLYGONIZE geos
+#define GEOS_UTIL geos
+#define GEOS_SIZE_T int
+#define COORD_SEQ_FACTORY DefaultCoordinateSequenceFactory
+#define GEOS_EXCEPTION GEOS_UTIL::GEOSException* 
+#else
+#include <geos/geom/CoordinateArraySequence.h>
+#include <geos/geom/CoordinateArraySequenceFactory.h>
+#include <geos/geom/LineString.h>
+#include <geos/geom/LinearRing.h>
+#include <geos/geom/MultiLineString.h>
+#include <geos/geom/MultiPoint.h>
+#include <geos/geom/MultiPolygon.h>
+#include <geos/geom/Point.h>
+#include <geos/geom/Polygon.h>
+#include <geos/io/WKTReader.h>
+#include <geos/operation/linemerge/LineMerger.h>
+#include <geos/operation/polygonize/Polygonizer.h>
+#include <geos/util/IllegalArgumentException.h>
+#define GEOS_IO geos::io
+#define GEOS_LINEMERGE geos::operation::linemerge
+#define GEOS_POLYGONIZE geos::operation::polygonize
+#define GEOS_UTIL geos::util
+#define GEOS_SIZE_T size_t
+#define COORD_SEQ_FACTORY CoordinateArraySequenceFactory
+#define GEOS_EXCEPTION GEOS_UTIL::GEOSException&
+#endif
 
 // Set up static GEOS geometry factory
 static GEOS_GEOM::GeometryFactory* geosGeometryFactory = new GEOS_GEOM::GeometryFactory();
@@ -116,10 +146,53 @@ QgsGeometry* QgsGeometry::fromPoint(const QgsPoint& point)
     {
       geom = geosGeometryFactory->createPoint(coord);
     }
-  catch(GEOS_UTIL::GEOSException* e)
+  catch(GEOS_EXCEPTION e)
     {
-      delete e; return 0;
+#if GEOS_VERSION_MAJOR < 3
+      delete e;
+#endif
+      return 0;
     }
+  QgsGeometry* g = new QgsGeometry;
+  g->setGeos(geom);
+  return g;
+}
+
+QgsGeometry* QgsGeometry::fromMultiPoint(const QgsMultiPoint& multipoint)
+{
+  std::vector<GEOS_GEOM::Geometry*>* pointVector = new std::vector<GEOS_GEOM::Geometry*>(multipoint.size());
+  GEOS_GEOM::Coordinate currentCoord;
+
+  for(int i = 0; i < multipoint.size(); ++i)
+    {
+      currentCoord.x = multipoint.at(i).x();
+      currentCoord.y = multipoint.at(i).y(); 
+      try
+	{ 
+	  (*pointVector)[i] = geosGeometryFactory->createPoint(currentCoord);
+	}
+      catch(GEOS_EXCEPTION e)
+	{
+#if GEOS_VERSION_MAJOR < 3
+	  delete e;
+#endif 
+	  delete pointVector; return 0;
+	}
+    }
+
+  GEOS_GEOM::Geometry* geom = 0;
+  try
+    {
+      geom = geosGeometryFactory->createMultiPoint(pointVector);
+    }
+  catch(GEOS_EXCEPTION e)
+    {
+#if GEOS_VERSION_MAJOR < 3
+      delete e;
+#endif
+      return 0;
+    }
+
   QgsGeometry* g = new QgsGeometry;
   g->setGeos(geom);
   return g;
@@ -143,9 +216,12 @@ QgsGeometry* QgsGeometry::fromPolyline(const QgsPolyline& polyline)
     {
       geom = geosGeometryFactory->createLineString(seq);
     }
-  catch(GEOS_UTIL::GEOSException* e)
+  catch(GEOS_EXCEPTION e)
     {
-      delete e; delete seq;
+#if GEOS_VERSION_MAJOR < 3
+      delete e;
+#endif
+      delete seq;
       return 0;
     }
   QgsGeometry* g = new QgsGeometry;
@@ -171,9 +247,12 @@ QgsGeometry* QgsGeometry::fromMultiPolyline(const QgsMultiPolyline& multiline)
 	{
 	  currentLineString = geosGeometryFactory->createLineString(seq);
 	}
-      catch(GEOS_UTIL::GEOSException* e)
+      catch(GEOS_EXCEPTION e)
 	{
-	  delete lineVector; delete seq; delete e;
+#if GEOS_VERSION_MAJOR < 3
+	  delete e;
+#endif
+	  delete lineVector; delete seq;
 	  return 0;
 	}
       (*lineVector)[i] = currentLineString;
@@ -184,9 +263,12 @@ QgsGeometry* QgsGeometry::fromMultiPolyline(const QgsMultiPolyline& multiline)
     {
       geom = geosGeometryFactory->createMultiLineString(lineVector);
     }
-  catch(GEOS_UTIL::GEOSException* e)
+  catch(GEOS_EXCEPTION e)
     {
-      delete e; return 0;
+#if GEOS_VERSION_MAJOR < 3
+      delete e;
+#endif
+      return 0;
     }
   QgsGeometry* g = new QgsGeometry;
   g->setGeos(geom);
@@ -218,9 +300,12 @@ static GEOS_GEOM::LinearRing* _createGeosLinearRing(const QgsPolyline& ring)
     {
       linRing = geosGeometryFactory->createLinearRing(seq);
     }
-  catch(GEOS_UTIL::GEOSException* e)
+  catch(GEOS_EXCEPTION e)
     {
-      delete e; return 0;
+#if GEOS_VERSION_MAJOR < 3
+      delete e;
+#endif
+      return 0;
     }
   
   return linRing;
@@ -249,9 +334,12 @@ QgsGeometry* QgsGeometry::fromPolygon(const QgsPolygon& polygon)
     {
       geom = geosGeometryFactory->createPolygon(outerRing, holes);
     }
-  catch(GEOS_UTIL::GEOSException* e)
+  catch(GEOS_EXCEPTION e)
     {
-      delete e; return 0;
+#if GEOS_VERSION_MAJOR < 3
+      delete e;
+#endif
+      return 0;
     }
   QgsGeometry* g = new QgsGeometry;
   g->setGeos(geom);
@@ -282,9 +370,12 @@ QgsGeometry* QgsGeometry::fromMultiPolygon(const QgsMultiPolygon& multipoly)
 	{
 	  currentPolygon = geosGeometryFactory->createPolygon(currentOuterRing, currentHoles);
 	}
-      catch(GEOS_UTIL::GEOSException* e)
+      catch(GEOS_EXCEPTION e)
 	{
-	  delete e; delete polygons; return 0;
+#if GEOS_VERSION_MAJOR < 3
+	  delete e;
+#endif
+	  delete polygons; return 0;
 	}
       (*polygons)[i] = currentPolygon;
     }
@@ -294,9 +385,12 @@ QgsGeometry* QgsGeometry::fromMultiPolygon(const QgsMultiPolygon& multipoly)
     {
       geom = geosGeometryFactory->createMultiPolygon(polygons);
     }
-  catch(GEOS_UTIL::GEOSException* e)
+  catch(GEOS_EXCEPTION e)
     {
-      delete e; return 0;
+#if GEOS_VERSION_MAJOR < 3
+      delete e;
+#endif
+      return 0;
     }
   QgsGeometry* g = new QgsGeometry;
   g->setGeos(geom);
@@ -2491,10 +2585,12 @@ int QgsGeometry::addRing(const QList<QgsPoint>& ring)
     {
       newRing = geosGeometryFactory->createLinearRing(newSequence);
     }
-  catch(GEOS_UTIL::IllegalArgumentException* e)
+  catch(GEOS_EXCEPTION e)
     {
-      delete newSequence;
+#if GEOS_VERSION_MAJOR < 3
       delete e;
+#endif
+      delete newSequence;
       return 3;
     }
   std::vector<GEOS_GEOM::Geometry*> dummyVector;
@@ -2681,9 +2777,11 @@ int QgsGeometry::addIsland(const QList<QgsPoint>& ring)
     {
       newRing = geosGeometryFactory->createLinearRing(newSequence);
     }
-  catch(GEOS_UTIL::IllegalArgumentException* e)
+  catch(GEOS_EXCEPTION e)
     {
+#if GEOS_VERSION_MAJOR < 3
       delete e;
+#endif
       delete newSequence;
       return 2;
     }
@@ -2920,9 +3018,12 @@ int QgsGeometry::splitGeometry(const QList<QgsPoint>& splitLine, QList<QgsGeomet
 	  return 1;
 	}
     }
-  catch(GEOS_UTIL::GEOSException* e)
+  catch(GEOS_EXCEPTION e)
     {
-      delete e; return 2;
+#if GEOS_VERSION_MAJOR < 3
+      delete e;
+#endif
+      return 2;
     }
   return returnCode;
 }
@@ -2973,9 +3074,11 @@ int QgsGeometry::makeDifference(QgsGeometry* other)
 	  return 0; //nothing to do
 	}
     }
-  catch(GEOS_UTIL::GEOSException* e)
+  catch(GEOS_EXCEPTION e)
     {
+#if GEOS_VERSION_MAJOR < 3
       delete e;
+#endif
       return 5;
     }
   
@@ -3293,10 +3396,11 @@ bool QgsGeometry::intersects(QgsGeometry* geometry)
 
      return mGeos->intersects(geometry->mGeos);
   }
-  catch (GEOS_UTIL::GEOSException &e)
+  catch (GEOS_EXCEPTION e)
   {
 #if GEOS_VERSION_MAJOR < 3
-    QString error = e.toString().c_str();
+    QString error = e->toString().c_str();
+    delete e;
 #else
     QString error = e.what();
 #endif
@@ -3865,9 +3969,11 @@ bool QgsGeometry::exportWkbToGeos()
 	return FALSE;
       }
   }
-  catch(GEOS_UTIL::GEOSException* e)
+  catch(GEOS_EXCEPTION e)
     {
+#if GEOS_VERSION_MAJOR < 3
       delete e;
+#endif
       return FALSE;
     }
   return TRUE;
@@ -4088,8 +4194,56 @@ bool QgsGeometry::exportGeosToWkb()
 
     case GEOS_GEOM::GEOS_MULTIPOINT:            // a collection of points
       {
-        // TODO
-        break;
+	GEOS_GEOM::MultiPoint* theMultiPoint = dynamic_cast<GEOS_GEOM::MultiPoint*>(mGeos);
+	if(!theMultiPoint)
+	  {
+	    return false;
+	  }
+	
+	//find out size of geometry
+	int geometrySize = 1 + 2 * sizeof(int);
+	for(GEOS_SIZE_T i = 0; i < theMultiPoint->getNumGeometries(); ++i)
+	  {
+	    geometrySize += (1 + 2 * sizeof(int) + 2 * sizeof(double));
+	  }
+
+	mGeometry = new unsigned char[geometrySize];
+	mGeometrySize = geometrySize;
+	int wkbPosition = 0; //current position in the byte array
+	
+	memcpy(mGeometry, &byteOrder, 1);
+	wkbPosition += 1;
+	int wkbtype=QGis::WKBMultiPoint;
+	memcpy(&mGeometry[wkbPosition],&wkbtype, sizeof(int));
+	wkbPosition += sizeof(int);
+	int numPoints = theMultiPoint->getNumGeometries();
+	memcpy(&mGeometry[wkbPosition], &numPoints, sizeof(int));
+	wkbPosition += sizeof(int);
+
+	int pointType = QGis::WKBPoint;
+	double x, y;
+	GEOS_GEOM::Point* currentPoint = 0;
+
+	for(GEOS_SIZE_T i = 0; i < theMultiPoint->getNumGeometries(); ++i)
+	  {
+	    //copy endian and point type
+	    memcpy(&mGeometry[wkbPosition], &byteOrder, 1); 
+	    wkbPosition += 1;
+	    memcpy(&mGeometry[wkbPosition], &pointType, sizeof(int));
+	    wkbPosition += sizeof(int);
+
+	    currentPoint = (GEOS_GEOM::Point*)(theMultiPoint->getGeometryN(i));
+	    //x
+	    x = currentPoint->getX();
+	    memcpy(&mGeometry[wkbPosition], &x, sizeof(double));
+	    wkbPosition += sizeof(double);
+	    //y
+	    y = currentPoint->getY();
+	    memcpy(&mGeometry[wkbPosition], &y, sizeof(double));
+	    wkbPosition += sizeof(double);
+	  }
+	mDirtyWkb = FALSE;
+	return true;
       } // case GEOS_GEOM::GEOS_MULTIPOINT
 
     case GEOS_GEOM::GEOS_MULTILINESTRING:       // a collection of linestrings
@@ -4499,10 +4653,14 @@ int QgsGeometry::splitLinearGeometry(GEOS_GEOM::LineString* splitLine, QList<Qgs
   QList<GEOS_GEOM::Geometry*> testedGeometries;
   GEOS_GEOM::Geometry* intersectGeom = 0;
 
+  //hardcoded thresholds
+  double bufferDistance = 0.000000001;
+  double intersectThreshold =  0.0000001;
+
   for(unsigned int i = 0; i < mergedLineStrings->size(); ++i)
     {
-      intersectGeom = mGeos->intersection((*mergedLineStrings)[i]);
-      if(intersectGeom->getLength() > 0.00000001)
+      intersectGeom = mGeos->intersection((*mergedLineStrings)[i]->buffer(bufferDistance));
+      if(intersectGeom->getLength() > intersectThreshold)
 	{
 	  testedGeometries.push_back((*mergedLineStrings)[i]);
 	}
@@ -4583,10 +4741,16 @@ int QgsGeometry::splitPolygonGeometry(GEOS_GEOM::LineString* splitLine, QList<Qg
   //include in result if yes
   QList<GEOS_GEOM::Geometry*> testedGeometries;
   GEOS_GEOM::Geometry* intersectGeometry = 0;
+  
+  //ratio intersect geometry / geometry. This should be close to 1
+  //if the polygon belongs to the input geometry
+  
+  double areaRatio = 0.0;
   for(unsigned int i = 0; i < polygons->size(); ++i)
     {
       intersectGeometry = mGeos->intersection((*polygons)[i]);
-      if(intersectGeometry->getArea() > 0.00000000001)
+      areaRatio = intersectGeometry->getArea() / (*polygons)[i]->getArea();
+      if(areaRatio > 0.99 && areaRatio < 1.01)
 	{
 	  testedGeometries.push_back((*polygons)[i]);
 	}
@@ -4924,7 +5088,13 @@ double QgsGeometry::distance(QgsGeometry& geom)
 QgsGeometry* QgsGeometry::buffer(double distance, int segments)
 {
   if (mGeos == NULL)
-    exportWkbToGeos();
+    {
+      exportWkbToGeos();
+    }
+  if(!mGeos)
+    {
+      return 0;
+    }
   GEOS_GEOM::Geometry* geos = mGeos->buffer(distance, segments);
   QgsGeometry* g = new QgsGeometry;
   g->setGeos(geos);
@@ -4934,7 +5104,13 @@ QgsGeometry* QgsGeometry::buffer(double distance, int segments)
 QgsGeometry* QgsGeometry::convexHull()
 {
   if (mGeos == NULL)
-    exportWkbToGeos();
+    {
+      exportWkbToGeos();
+    }
+  if(!mGeos)
+    {
+      return 0;
+    }
   GEOS_GEOM::Geometry* geos = mGeos->convexHull();
   QgsGeometry* g = new QgsGeometry;
   g->setGeos(geos);
@@ -4944,11 +5120,21 @@ QgsGeometry* QgsGeometry::convexHull()
 QgsGeometry* QgsGeometry::intersection(QgsGeometry* geometry)
 {
   if (geometry == NULL)
-    return NULL;
+    {
+      return NULL;
+    }
   if (mGeos == NULL)
-    exportWkbToGeos();
+    {
+      exportWkbToGeos();
+    }
   if (geometry->mGeos == NULL)
-    geometry->exportWkbToGeos();
+    {
+      geometry->exportWkbToGeos();
+    }
+  if(!mGeos || !geometry->mGeos)
+    {
+      return 0;
+    }
   GEOS_GEOM::Geometry* geos = mGeos->intersection(geometry->mGeos);
   QgsGeometry* g = new QgsGeometry;
   g->setGeos(geos);
@@ -4958,12 +5144,34 @@ QgsGeometry* QgsGeometry::intersection(QgsGeometry* geometry)
 QgsGeometry* QgsGeometry::Union(QgsGeometry* geometry)
 {
   if (geometry == NULL)
-    return NULL;
+    {
+      return NULL;
+    }
   if (mGeos == NULL)
-    exportWkbToGeos();
+    {
+      exportWkbToGeos();
+    }
   if (geometry->mGeos == NULL)
-    geometry->exportWkbToGeos();
-  GEOS_GEOM::Geometry* geos = mGeos->Union(geometry->mGeos);
+    {
+      geometry->exportWkbToGeos();
+    }
+  if(!mGeos || !geometry->mGeos)
+    {
+      return 0;
+    }
+  GEOS_GEOM::Geometry* geos = 0;
+  try
+    {
+      geos = mGeos->Union(geometry->mGeos);
+    }
+  catch(GEOS_EXCEPTION e)
+    {
+#if GEOS_VERSION_MAJOR < 3
+      delete e;
+#endif
+      //return this geometry if union not possible
+      return new QgsGeometry(*this);
+    }
   QgsGeometry* g = new QgsGeometry;
   g->setGeos(geos);
   return g;
@@ -4972,11 +5180,21 @@ QgsGeometry* QgsGeometry::Union(QgsGeometry* geometry)
 QgsGeometry* QgsGeometry::difference(QgsGeometry* geometry)
 {
   if (geometry == NULL)
-    return NULL;
+    {
+      return NULL;
+    }
   if (mGeos == NULL)
-    exportWkbToGeos();
+    {
+      exportWkbToGeos();
+    }
   if (geometry->mGeos == NULL)
-    geometry->exportWkbToGeos();
+    {
+      geometry->exportWkbToGeos();
+    }
+  if(!mGeos || !geometry->mGeos)
+    {
+      return 0;
+    }
   GEOS_GEOM::Geometry* geos = mGeos->difference(geometry->mGeos);
   QgsGeometry* g = new QgsGeometry;
   g->setGeos(geos);
@@ -4986,11 +5204,21 @@ QgsGeometry* QgsGeometry::difference(QgsGeometry* geometry)
 QgsGeometry* QgsGeometry::symDifference(QgsGeometry* geometry)
 {
   if (geometry == NULL)
-    return NULL;
+    {
+      return NULL;
+    }
   if (mGeos == NULL)
-    exportWkbToGeos();
+    {
+      exportWkbToGeos();
+    }
   if (geometry->mGeos == NULL)
-    geometry->exportWkbToGeos();
+    {
+      geometry->exportWkbToGeos();
+    }
+  if(!mGeos || !geometry->mGeos)
+    {
+      return 0;
+    }
   GEOS_GEOM::Geometry* geos = mGeos->symDifference(geometry->mGeos);
   QgsGeometry* g = new QgsGeometry;
   g->setGeos(geos);
