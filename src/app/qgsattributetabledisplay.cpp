@@ -82,11 +82,11 @@ QgsAttributeTableDisplay::QgsAttributeTableDisplay(QgsVectorLayer* layer, QgisAp
   QgsVectorDataProvider* provider = mLayer->getDataProvider();
   if (provider)
   {
-    const QgsFieldMap& fields = provider->fields();
-    int fieldcount = provider->fieldCount();
-    for (int h = 0; h < fieldcount; h++)
+    const QgsFieldMap& xfields = provider->fields();
+    QgsFieldMap::const_iterator fldIt;
+    for (fldIt = xfields.constBegin(); fldIt != xfields.constEnd(); ++fldIt)
     {
-      mSearchColumns->insertItem(fields[h].name());
+      mSearchColumns->insertItem(fldIt->name());
     }
   }
   
@@ -192,7 +192,7 @@ void QgsAttributeTableDisplay::stopEditing()
     //commit or roll back?
     QMessageBox::StandardButton commit=QMessageBox::information(this,tr("Stop editing"),
                                         tr("Do you want to save the changes?"),
-                                        QMessageBox::Save | QMessageBox::Discard);
+                                        QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
     if(commit==QMessageBox::Save)
     {
       if(!table()->commitChanges(mLayer))
@@ -200,10 +200,14 @@ void QgsAttributeTableDisplay::stopEditing()
         QMessageBox::information(this,tr("Error"),tr("Could not commit changes"));
       }
     }
-    else
+    else if(commit == QMessageBox::Discard)
     {
       table()->rollBack(mLayer);
     }
+    else //cancel
+      {
+	return;
+      }
   }
   btnStartEditing->setEnabled(true);
   btnStopEditing->setEnabled(false);

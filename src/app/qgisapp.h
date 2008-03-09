@@ -50,6 +50,7 @@ class QgsProviderRegistry;
 class QgsPythonDialog;
 class QgsRasterLayer;
 class QgsRect;
+class QgsVectorLayer;
 
 #include <map>
 
@@ -72,36 +73,23 @@ class QgisApp : public QMainWindow, public Ui::QgisAppBase
   //! Destructor
   ~QgisApp();
   /**
-   * Add a vector layer to the canvas
+   * Add a vector layer to the canvas, returns pointer to it
    */
-  void addVectorLayer(QString vectorLayerPath, QString baseName, QString providerKey);
+  QgsVectorLayer* addVectorLayer(QString vectorLayerPath, QString baseName, QString providerKey);
+  
   /** \brief overloaded vesion of the privat addLayer method that takes a list of
    * filenames instead of prompting user with a dialog.
    @param enc encoding type for the layer 
    @returns true if successfully added layer
-   @note
-   This should be deprecated because it's possible to have a
-   heterogeneous set of files; i.e., a mix of raster and vector.
-   It's much better to try to just open one file at a time.
    */
-  bool addLayer(QStringList const & theLayerQStringList, const QString& enc);
+  bool addVectorLayers(QStringList const & theLayerQStringList, const QString& enc);
 
-  /** open a vector layer for the given file
-    @returns false if unable to open a raster layer for rasterFile
-    @note
-    This is essentially a simplified version of the above
-    */
-  bool addLayer(QFileInfo const & vectorFile);
   /** overloaded vesion of the private addRasterLayer()
     Method that takes a list of filenames instead of prompting
     user with a dialog.
     @returns true if successfully added layer(s)
-    @note
-    This should be deprecated because it's possible to have a
-    heterogeneous set of files; i.e., a mix of raster and vector.
-    It's much better to try to just open one file at a time.
     */
-  bool addRasterLayer(QStringList const & theLayerQStringList, bool guiWarning=true);
+  bool addRasterLayers(QStringList const & theLayerQStringList, bool guiWarning=true);
 
   /** Open a raster layer using the Raster Data Provider.
    *  Note this is included to support WMS layers only at this stage,
@@ -124,9 +112,11 @@ class QgisApp : public QMainWindow, public Ui::QgisAppBase
     @note
     This is essentially a simplified version of the above
     */
-  bool addRasterLayer(QFileInfo const & rasterFile, bool guiWarning=true);
+  QgsRasterLayer* addRasterLayer(QString const & rasterFile, QString const & baseName, bool guiWarning=true);
+
   /** Add a 'pre-made' map layer to the project */
   void addMapLayer(QgsMapLayer *theMapLayer);
+  
   /** Set the extents of the map canvas */
   void setExtent(QgsRect theRect);
   //! Remove all layers from the map and legend - reimplements same method from qgisappbase
@@ -154,6 +144,10 @@ class QgisApp : public QMainWindow, public Ui::QgisAppBase
   void setupToolbarPopups(QString themeName);
   //! Returns a pointer to the internal clipboard
   QgsClipboard * clipboard();
+
+  void dragEnterEvent(QDragEnterEvent *);
+
+  void dropEvent(QDropEvent *);
 
 //private slots:
 public slots:
@@ -330,7 +324,7 @@ public slots:
   void destinationSrsChanged();
   //    void debugHook();
   //! Add a vector layer to the map
-  void addLayer();
+  void addVectorLayer();
   //! Exit Qgis
   void fileExit();
   //! Add a WMS layer to the map
@@ -387,6 +381,8 @@ public slots:
   //! Show the map tip
   void showMapTip();
 
+  //! Toggle full screen mode
+  void toggleFullScreen();
 signals:
   /** emitted when a key is pressed and we want non widget sublasses to be able
     to pick up on this (e.g. maplayer) */
@@ -414,10 +410,9 @@ signals:
 
 private:
   /** Add a raster layer to the map (passed in as a ptr). 
-   * It won't force a refresh unless you explicitly
-   * use the force redraw flag.
+   * It won't force a refresh.
    */
-  bool addRasterLayer(QgsRasterLayer * theRasterLayer, bool theForceRedrawFlag=false);
+  bool addRasterLayer(QgsRasterLayer * theRasterLayer);
   //@todo We should move these next two into vector layer class
   /** This helper checks to see whether the filename appears to be a valid vector file name */
   bool isValidVectorFileName (QString theFileNameQString);
@@ -531,6 +526,7 @@ private:
   QAction *mActionDraw;
   QAction *mActionShowAllToolbars;
   QAction *mActionHideAllToolbars;
+  QAction *mActionToggleFullScreen;
 #ifdef HAVE_PYTHON
   QAction *mActionShowPythonDialog;
 #endif
@@ -663,6 +659,8 @@ private:
   // Flag to indicate if maptips are on or off
   bool mMapTipsVisible;
   
+  //!flag to indicat wehter we are in fullscreen mode or not
+  bool mFullScreenMode;
 #ifdef HAVE_PYTHON
   QgsPythonDialog* mPythonConsole;
 #endif
