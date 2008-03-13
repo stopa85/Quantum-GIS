@@ -77,6 +77,7 @@ class QgsDiagramRenderer
   /**Returns the interpolation items*/
   QList<QgsDiagramItem> diagramItems() const {return mItems;}
   void setItemInterpretation(ItemInterpretation i){mItemInterpretation = i;}
+  QgsDiagramRenderer::ItemInterpretation itemInterpretation() const {return mItemInterpretation;}
 
  private:
   QgsDiagramRenderer();
