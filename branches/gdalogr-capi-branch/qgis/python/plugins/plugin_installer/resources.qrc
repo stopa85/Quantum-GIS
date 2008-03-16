@@ -1,5 +1,0 @@
-<RCC>
-    <qresource prefix="/plugins/installer" >
-        <file>icon.xpm</file>
-    </qresource>
-</RCC>

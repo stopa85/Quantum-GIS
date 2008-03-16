@@ -1,5 +1,0 @@
-<RCC>
-    <qresource prefix="/ogr/" >
-        <file>ogr.png</file>
-    </qresource>
-</RCC>
