@@ -183,13 +183,13 @@ void QgsComposerMap::draw ( QPainter *painter, QgsRect &extent, QgsMapToPixel *t
               
         painter->save();
         painter->scale( 1./multip, 1./multip);
-        layer->draw( painter, extent, &trans, ct, FALSE);
+        //layer->draw( painter, extent, &trans, ct, FALSE);
               
         painter->restore();
       } 
       else 
       {
-        layer->draw( painter, extent, transform, ct, FALSE);
+        //layer->draw( painter, extent, transform, ct, FALSE);
       }
     }
     

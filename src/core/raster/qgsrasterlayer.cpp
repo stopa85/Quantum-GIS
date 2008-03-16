@@ -1000,14 +1000,9 @@ QPixmap QgsRasterLayer::getPaletteAsPixmap()
   }
 }
 
-
-
-bool QgsRasterLayer::draw(QPainter * theQPainter,
-    QgsRect & theViewExtent,
-    QgsMapToPixel * theQgsMapToPixel,
-    QgsCoordinateTransform*,
-    bool drawingToEditingCanvas)
+bool QgsRasterLayer::draw(QPainter* painter, const QgsRenderContext& renderContext)
 {
+#if 0 //todo: adapt to render context
   QgsDebugMsg("QgsRasterLayer::draw(4 arguments): entered.");
 
   //Dont waste time drawing if transparency is at 0 (completely transparent)
@@ -1283,6 +1278,7 @@ bool QgsRasterLayer::draw(QPainter * theQPainter,
 
   delete myRasterViewPort;
   QgsDebugMsg("QgsRasterLayer::draw: exiting.");
+#endif //0
 
   return TRUE;
 

@@ -32,7 +32,6 @@
 
 
 #include "qgslogger.h"
-#include "qgsmaptopixel.h"
 #include "qgsrect.h"
 #include "qgssymbol.h"
 #include "qgsmaplayer.h"
@@ -127,14 +126,12 @@ const QgsRect QgsMapLayer::extent()
     return mLayerExtent;
 }
 
-
-bool QgsMapLayer::draw(QPainter *, QgsRect &, QgsMapToPixel *, QgsCoordinateTransform *, bool)
+bool QgsMapLayer::draw(QPainter* painter, const QgsRenderContext& renderContext)
 {
-    //  std::cout << "In QgsMapLayer::draw" << std::endl;
-    return false;
+  return false;
 }
 
-void QgsMapLayer::drawLabels(QPainter *, QgsRect &, QgsMapToPixel *, QgsCoordinateTransform *)
+void QgsMapLayer::drawLabels(QPainter* painter, const QgsRenderContext& renderContext)
 {
     //  std::cout << "In QgsMapLayer::draw" << std::endl;
 }

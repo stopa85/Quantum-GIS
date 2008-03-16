@@ -32,9 +32,9 @@ class QgsRenderContext
   //getters
   const QgsCoordinateTransform* coordTransform() const {return mCoordTransform;}
 
-  const QgsRect* extent() const {return &mExtent;}
+  const QgsRect& extent() const {return mExtent;}
 
-  const QgsMapToPixel* mapToPixel() const {return &mMapToPixel;}
+  const QgsMapToPixel& mapToPixel() const {return mMapToPixel;}
 
   double scaleFactor() const {return mScaleFactor;}
   

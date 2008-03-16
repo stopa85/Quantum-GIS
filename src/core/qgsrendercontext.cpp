@@ -18,7 +18,7 @@
 
 #include "qgsrendercontext.h"
 
-QgsRenderContext::QgsRenderContext(): mCoordTransform(0), mDrawEditingInformation(false), mForceVectorOutput(true), mRenderingStopped(false)
+QgsRenderContext::QgsRenderContext(): mCoordTransform(0), mDrawEditingInformation(false), mForceVectorOutput(true), mRenderingStopped(false), mScaleFactor(1.0)
 {
 
 }

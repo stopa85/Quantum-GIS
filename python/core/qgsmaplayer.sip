@@ -56,13 +56,9 @@ public:
     const QString & name() const;
 
     /** Render the layer, to be overridden in child classes
-     * @param painter Painter that to be used for rendered output
-     * @param rect Extent of the layer to be drawn
-     * @param mtp Transformation class
-     * @return FALSE if an error occurred during drawing
      */
-    virtual bool draw(QPainter* painter, QgsRect& rect, QgsMapToPixel* mtp, QgsCoordinateTransform* ct, bool);
-    
+    virtual bool draw(QPainter* painter, const QgsRenderContext& renderContext);    
+
     /** Draw labels
      * @TODO to be removed: used only in vector layers
      */

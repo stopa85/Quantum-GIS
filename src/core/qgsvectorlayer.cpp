@@ -63,6 +63,7 @@
 #include "qgspoint.h"
 #include "qgsproviderregistry.h"
 #include "qgsrect.h"
+#include "qgsrendercontext.h"
 #include "qgssinglesymbolrenderer.h"
 #include "qgsspatialrefsys.h"
 #include "qgsvectordataprovider.h"
@@ -275,9 +276,12 @@ void QgsVectorLayer::setDisplayField(QString fldName)
   }
 }
 
-void QgsVectorLayer::drawLabels(QPainter * p, QgsRect & viewExtent, QgsMapToPixel * theMapToPixelTransform, QgsCoordinateTransform* ct)
+//void QgsVectorLayer::drawLabels(QPainter * p, QgsRect & viewExtent, QgsMapToPixel * theMapToPixelTransform, QgsCoordinateTransform* ct)
+void QgsVectorLayer::drawLabels(QPainter* painter, const QgsRenderContext& renderContext)
 {
+#if 0 //todo: adapt to render context
   drawLabels(p, viewExtent, theMapToPixelTransform, ct, 1.);
+#endif //0
 }
 
 // NOTE this is a temporary method added by Tim to prevent label clipping
@@ -351,8 +355,8 @@ void QgsVectorLayer::drawLabels(QPainter * p, QgsRect & viewExtent, QgsMapToPixe
 
 unsigned char* QgsVectorLayer::drawLineString(unsigned char* feature, 
     QPainter* p,
-    QgsMapToPixel* mtp,
-    QgsCoordinateTransform* ct,
+    const QgsMapToPixel* mtp,
+    const QgsCoordinateTransform* ct,
     bool drawingToEditingCanvas)
 {
   unsigned char *ptr = feature + 5;
@@ -458,8 +462,8 @@ unsigned char* QgsVectorLayer::drawLineString(unsigned char* feature,
 
 unsigned char* QgsVectorLayer::drawPolygon(unsigned char* feature, 
     QPainter* p, 
-    QgsMapToPixel* mtp, 
-    QgsCoordinateTransform* ct,
+    const QgsMapToPixel* mtp, 
+    const QgsCoordinateTransform* ct,
     bool drawingToEditingCanvas)
 {
   typedef std::pair<std::vector<double>, std::vector<double> > ringType;
@@ -707,25 +711,22 @@ std::cerr << i << ": " << ring->first[i]
   return ptr;
 }
 
-
-bool QgsVectorLayer::draw(QPainter * p,
-                          QgsRect & viewExtent,
-                          QgsMapToPixel * theMapToPixelTransform,
-                          QgsCoordinateTransform* ct,
-                          bool drawingToEditingCanvas)
+bool QgsVectorLayer::draw(QPainter* painter, const QgsRenderContext& renderContext)
 {
   //set update threshold before each draw to make sure the current setting is picked up
   QSettings settings;
   mUpdateThreshold = settings.readNumEntry("Map/updateThreshold", 0);
-  draw ( p, viewExtent, theMapToPixelTransform, ct, drawingToEditingCanvas, 1., 1.);
-
+  //draw ( p, viewExtent, theMapToPixelTransform, ct, drawingToEditingCanvas, 1., 1.);
+  
+  draw(painter, renderContext.extent(), &(renderContext.mapToPixel()), renderContext.coordTransform(), \
+       renderContext.drawEditingInformation(), renderContext.scaleFactor(), renderContext.scaleFactor());
   return TRUE; // Assume success always
 }
 
 void QgsVectorLayer::draw(QPainter * p,
-                          QgsRect & viewExtent,
-                          QgsMapToPixel * theMapToPixelTransform,
-                          QgsCoordinateTransform* ct,
+                          const QgsRect& viewExtent,
+                          const QgsMapToPixel * theMapToPixelTransform,
+                          const QgsCoordinateTransform* ct,
                           bool drawingToEditingCanvas,
                           double widthScale,
                           double symbolScale)
@@ -2935,8 +2936,8 @@ int QgsVectorLayer::boundingBoxFromPointList(const QList<QgsPoint>& list, double
 
 void QgsVectorLayer::drawFeature(QPainter* p,
                                  QgsFeature& fet,
-                                 QgsMapToPixel * theMapToPixelTransform,
-                                 QgsCoordinateTransform* ct,
+                                 const QgsMapToPixel* theMapToPixelTransform,
+                                 const QgsCoordinateTransform* ct,
                                  QImage * marker,
                                  double markerScaleFactor,
                                  bool drawingToEditingCanvas)
@@ -3187,8 +3188,8 @@ bool QgsVectorLayer::commitAttributeChanges(const QgsAttributeIds& deleted,
 // Convenience function to transform the given point
 inline void QgsVectorLayer::transformPoint(double& x, 
     double& y, 
-    QgsMapToPixel* mtp,
-    QgsCoordinateTransform* ct)
+    const QgsMapToPixel* mtp,
+    const QgsCoordinateTransform* ct)
 {
   // transform the point
   if (ct)
@@ -3204,7 +3205,7 @@ inline void QgsVectorLayer::transformPoint(double& x,
 
 inline void QgsVectorLayer::transformPoints(
     std::vector<double>& x, std::vector<double>& y, std::vector<double>& z,
-    QgsMapToPixel* mtp, QgsCoordinateTransform* ct)
+    const QgsMapToPixel* mtp, const QgsCoordinateTransform* ct)
 {
   // transform the point
   if (ct)

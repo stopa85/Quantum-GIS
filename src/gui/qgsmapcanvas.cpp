@@ -213,7 +213,7 @@ bool QgsMapCanvas::isDrawing()
 
 // return the current coordinate transform based on the extents and
 // device size
-QgsMapToPixel * QgsMapCanvas::getCoordinateTransform()
+const QgsMapToPixel * QgsMapCanvas::getCoordinateTransform()
 {
   return mMapRender->coordXForm();
 }
