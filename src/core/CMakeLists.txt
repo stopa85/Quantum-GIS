@@ -37,6 +37,7 @@ qgsprovidermetadata.cpp
 qgsproviderregistry.cpp
 qgsrasterdataprovider.cpp
 qgsrect.cpp
+qgsrendercontext.cpp
 qgsrunprocess.cpp
 qgsscalecalculator.cpp
 qgssearchstring.cpp
