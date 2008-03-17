@@ -65,6 +65,7 @@ class QgsDiagramRenderer
   /**Set a (properly configured) factory class. Takes ownership of the factory object*/
   void setFactory(QgsDiagramFactory* f){mFactory = f;}
   void addClassificationAttribute(int attrNr);
+  QList<int> classificationAttributes() const {return mClassificationAttributes;}
   /**Reads the specific renderer settings from project file*/
   virtual bool readXML(const QDomNode& rendererNode);
   /**Saves settings to project file. Returns true in case of success*/
