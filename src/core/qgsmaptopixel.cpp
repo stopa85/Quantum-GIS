@@ -59,7 +59,7 @@ void QgsMapToPixel::setMapUnitsPerPixel(double mupp)
   mMapUnitsPerPixel = mupp;
 }
 
-double QgsMapToPixel::mapUnitsPerPixel()
+double QgsMapToPixel::mapUnitsPerPixel() const
 {
   return mMapUnitsPerPixel;
 }

@@ -337,7 +337,7 @@ existing rings, 5 no feature found where ring can be inserted*/
   /** Draws the layer
    *  @return FALSE if an error occurred during drawing
    */
-  bool draw(QPainter* painter, const QgsRenderContext& renderContext);
+  bool draw(QgsRenderContext& renderContext);
 
   /** Draws the layer labels using coordinate transformation */
   void drawLabels(QPainter* painter, const QgsRenderContext& renderContext);

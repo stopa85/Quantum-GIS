@@ -27,6 +27,7 @@ email                : tim at linfiniti.com
 #include "qgsrasterpyramid.h"
 #include "qgsrasterviewport.h"
 #include "qgsrect.h"
+#include "qgsrendercontext.h"
 #include "qgsspatialrefsys.h"
 
 #include "gdalwarper.h"
@@ -1000,9 +1001,8 @@ QPixmap QgsRasterLayer::getPaletteAsPixmap()
   }
 }
 
-bool QgsRasterLayer::draw(QPainter* painter, const QgsRenderContext& renderContext)
+bool QgsRasterLayer::draw(QgsRenderContext& renderContext)
 {
-#if 0 //todo: adapt to render context
   QgsDebugMsg("QgsRasterLayer::draw(4 arguments): entered.");
 
   //Dont waste time drawing if transparency is at 0 (completely transparent)
@@ -1015,6 +1015,15 @@ bool QgsRasterLayer::draw(QPainter* painter, const QgsRenderContext& renderConte
   {
     return FALSE;
   }    
+
+  const QgsMapToPixel& theQgsMapToPixel = renderContext.mapToPixel();
+  const QgsRect& theViewExtent = renderContext.extent();
+  QPainter* theQPainter = renderContext.painter();
+
+  if(!theQPainter)
+    {
+      return false;
+    }
 
   // clip raster extent to view extent
   QgsRect myRasterExtent = theViewExtent.intersect(&mLayerExtent);
@@ -1118,14 +1127,14 @@ bool QgsRasterLayer::draw(QPainter* painter, const QgsRenderContext& renderConte
   }
 
   // get dimensions of clipped raster image in device coordinate space (this is the size of the viewport)
-  myRasterViewPort->topLeftPoint = theQgsMapToPixel->transform(myRasterExtent.xMin(), myRasterExtent.yMax());
-  myRasterViewPort->bottomRightPoint = theQgsMapToPixel->transform(myRasterExtent.xMax(), myRasterExtent.yMin());
+  myRasterViewPort->topLeftPoint = theQgsMapToPixel.transform(myRasterExtent.xMin(), myRasterExtent.yMax());
+  myRasterViewPort->bottomRightPoint = theQgsMapToPixel.transform(myRasterExtent.xMax(), myRasterExtent.yMin());
 
-  myRasterViewPort->drawableAreaXDim = static_cast<int> (fabs( (myRasterViewPort->clippedWidth / theQgsMapToPixel->mapUnitsPerPixel() * mGeoTransform[1])) + 0.5);
-  myRasterViewPort->drawableAreaYDim = static_cast<int> (fabs( (myRasterViewPort->clippedHeight / theQgsMapToPixel->mapUnitsPerPixel() * mGeoTransform[5])) + 0.5);
+  myRasterViewPort->drawableAreaXDim = static_cast<int> (fabs( (myRasterViewPort->clippedWidth / theQgsMapToPixel.mapUnitsPerPixel() * mGeoTransform[1])) + 0.5);
+  myRasterViewPort->drawableAreaYDim = static_cast<int> (fabs( (myRasterViewPort->clippedHeight / theQgsMapToPixel.mapUnitsPerPixel() * mGeoTransform[5])) + 0.5);
 
 #ifdef QGISDEBUG
-  QgsLogger::debug("QgsRasterLayer::draw: mapUnitsPerPixel", theQgsMapToPixel->mapUnitsPerPixel(), 1, __FILE__,\
+  QgsLogger::debug("QgsRasterLayer::draw: mapUnitsPerPixel", theQgsMapToPixel.mapUnitsPerPixel(), 1, __FILE__,\
       __FUNCTION__, __LINE__);
   QgsLogger::debug("QgsRasterLayer::draw: mRasterXDim", mRasterXDim, 1, __FILE__, __FUNCTION__, __LINE__); 
   QgsLogger::debug("QgsRasterLayer::draw: mRasterYDim", mRasterYDim, 1, __FILE__, __FUNCTION__, __LINE__);
@@ -1200,9 +1209,9 @@ bool QgsRasterLayer::draw(QPainter* painter, const QgsRenderContext& renderConte
                          // Below should calculate to the actual pixel size of the
                          // part of the layer that's visible.
                          static_cast<int>( fabs( (myRasterViewPort->clippedXMax -  myRasterViewPort->clippedXMin)
-                                                 / theQgsMapToPixel->mapUnitsPerPixel() * mGeoTransform[1]) + 1),
+                                                 / theQgsMapToPixel.mapUnitsPerPixel() * mGeoTransform[1]) + 1),
                          static_cast<int>( fabs( (myRasterViewPort->clippedYMax -  myRasterViewPort->clippedYMin)
-                                                 / theQgsMapToPixel->mapUnitsPerPixel() * mGeoTransform[5]) + 1)
+                                                 / theQgsMapToPixel.mapUnitsPerPixel() * mGeoTransform[5]) + 1)
 //                         myRasterViewPort->drawableAreaXDim,
 //                         myRasterViewPort->drawableAreaYDim
                         );
@@ -1270,7 +1279,7 @@ bool QgsRasterLayer::draw(QPainter* painter, const QgsRenderContext& renderConte
     //    draw(theQPainter,myRasterViewPort);
       // /\/\/\ - commented-out to handle zoomed-in rasters
       // \/\/\/ - added to handle zoomed-in rasters
-      draw(theQPainter, myRasterViewPort, theQgsMapToPixel);
+      draw(theQPainter, myRasterViewPort, &theQgsMapToPixel);
       // /\/\/\ - added to handle zoomed-in rasters
     }
 
@@ -1278,7 +1287,6 @@ bool QgsRasterLayer::draw(QPainter* painter, const QgsRenderContext& renderConte
 
   delete myRasterViewPort;
   QgsDebugMsg("QgsRasterLayer::draw: exiting.");
-#endif //0
 
   return TRUE;
 
@@ -1286,7 +1294,7 @@ bool QgsRasterLayer::draw(QPainter* painter, const QgsRenderContext& renderConte
 
 void QgsRasterLayer::draw (QPainter * theQPainter, 
     QgsRasterViewPort * theRasterViewPort,
-    QgsMapToPixel * theQgsMapToPixel)
+    const QgsMapToPixel* theQgsMapToPixel)
 {
   QgsDebugMsg("QgsRasterLayer::draw (3 arguments)");
   //
@@ -1424,7 +1432,7 @@ void QgsRasterLayer::draw (QPainter * theQPainter,
 }                               //end of draw method
 
 
-void QgsRasterLayer::drawSingleBandGray(QPainter * theQPainter, QgsRasterViewPort * theRasterViewPort, QgsMapToPixel * theQgsMapToPixel, int theBandNo)
+void QgsRasterLayer::drawSingleBandGray(QPainter * theQPainter, QgsRasterViewPort * theRasterViewPort, const QgsMapToPixel* theQgsMapToPixel, int theBandNo)
 {
   QgsDebugMsg("QgsRasterLayer::drawSingleBandGray called for layer " + QString::number(theBandNo));
   //Invalid band number, segfault prevention
@@ -1526,7 +1534,7 @@ void QgsRasterLayer::drawSingleBandGray(QPainter * theQPainter, QgsRasterViewPor
 
 void QgsRasterLayer::drawSingleBandPseudoColor(QPainter * theQPainter, 
     QgsRasterViewPort * theRasterViewPort,
-    QgsMapToPixel * theQgsMapToPixel, 
+    const QgsMapToPixel* theQgsMapToPixel, 
     int theBandNo)
 {
   QgsDebugMsg("QgsRasterLayer::drawSingleBandPseudoColor called");
@@ -1631,7 +1639,7 @@ void QgsRasterLayer::drawSingleBandPseudoColor(QPainter * theQPainter,
  * @param theGdalBand - pointer to the GDALRasterBand which should be rendered.
  */
 void QgsRasterLayer::drawPalettedSingleBandColor(QPainter * theQPainter, QgsRasterViewPort * theRasterViewPort, 
-    QgsMapToPixel * theQgsMapToPixel, int theBandNo)
+    const QgsMapToPixel* theQgsMapToPixel, int theBandNo)
 {
   QgsDebugMsg("QgsRasterLayer::drawPalettedSingleBandColor called");
   //Invalid band number, segfault prevention
@@ -1715,7 +1723,7 @@ void QgsRasterLayer::drawPalettedSingleBandColor(QPainter * theQPainter, QgsRast
  * @param theColorQString - QString containing either 'Red' 'Green' or 'Blue' indicating which part of the rgb triplet will be used to render gray.
  */
 void QgsRasterLayer::drawPalettedSingleBandGray(QPainter * theQPainter, QgsRasterViewPort * theRasterViewPort, 
-    QgsMapToPixel * theQgsMapToPixel, int theBandNo,
+    const QgsMapToPixel* theQgsMapToPixel, int theBandNo,
     QString const & theColorQString)
 {
   QgsDebugMsg("QgsRasterLayer::drawPalettedSingleBandGray called");
@@ -1814,7 +1822,7 @@ void QgsRasterLayer::drawPalettedSingleBandGray(QPainter * theQPainter, QgsRaste
  * @param theColorQString - QString containing either 'Red' 'Green' or 'Blue' indicating which part of the rgb triplet will be used to render gray.
  */
 void QgsRasterLayer::drawPalettedSingleBandPseudoColor(QPainter * theQPainter, QgsRasterViewPort * theRasterViewPort,
-    QgsMapToPixel * theQgsMapToPixel, int theBandNo, 
+    const QgsMapToPixel* theQgsMapToPixel, int theBandNo, 
     QString const & theColorQString)
 {
   QgsDebugMsg("QgsRasterLayer::drawPalettedSingleBandPseudoColor called");
@@ -1944,7 +1952,7 @@ void QgsRasterLayer::drawPalettedSingleBandPseudoColor(QPainter * theQPainter, Q
  * @param theGdalBand - pointer to the GDALRasterBand which should be rendered.
  */
 void QgsRasterLayer::drawPalettedMultiBandColor(QPainter * theQPainter, QgsRasterViewPort * theRasterViewPort, 
-    QgsMapToPixel * theQgsMapToPixel, int theBandNo)
+    const QgsMapToPixel* theQgsMapToPixel, int theBandNo)
 {
   QgsDebugMsg("QgsRasterLayer::drawPalettedMultiBandColor called");
   //Invalid band number, segfault prevention
@@ -2051,7 +2059,7 @@ void QgsRasterLayer::drawPalettedMultiBandColor(QPainter * theQPainter, QgsRaste
 
 
 void QgsRasterLayer::drawMultiBandSingleBandGray(QPainter * theQPainter, QgsRasterViewPort * theRasterViewPort, 
-    QgsMapToPixel * theQgsMapToPixel, int theBandNo)
+    const QgsMapToPixel* theQgsMapToPixel, int theBandNo)
 {
   //delegate to drawSingleBandGray!
   drawSingleBandGray(theQPainter, theRasterViewPort, theQgsMapToPixel, theBandNo);
@@ -2059,7 +2067,7 @@ void QgsRasterLayer::drawMultiBandSingleBandGray(QPainter * theQPainter, QgsRast
 
 
 void QgsRasterLayer::drawMultiBandSingleBandPseudoColor(QPainter * theQPainter, QgsRasterViewPort * theRasterViewPort, 
-    QgsMapToPixel * theQgsMapToPixel, int theBandNo)
+    const QgsMapToPixel* theQgsMapToPixel, int theBandNo)
 {
   //delegate to drawSinglePseudocolor!
   drawSingleBandPseudoColor(theQPainter, theRasterViewPort, theQgsMapToPixel, theBandNo);
@@ -2067,7 +2075,7 @@ void QgsRasterLayer::drawMultiBandSingleBandPseudoColor(QPainter * theQPainter, 
 
 
 void QgsRasterLayer::drawMultiBandColor(QPainter * theQPainter, QgsRasterViewPort * theRasterViewPort,
-    QgsMapToPixel * theQgsMapToPixel)
+    const QgsMapToPixel* theQgsMapToPixel)
 {
   QgsDebugMsg("QgsRasterLayer::drawMultiBandColor called");
   int myRedBandNo = getRasterBandNumber(mRedBandName);
@@ -5259,7 +5267,7 @@ void QgsRasterLayer::setNoDataValue(double theNoDataValue)
   }
 }
 
-void QgsRasterLayer::paintImageToCanvas(QPainter* theQPainter, QgsRasterViewPort * theRasterViewPort, QgsMapToPixel * theQgsMapToPixel, QImage* theImage)
+void QgsRasterLayer::paintImageToCanvas(QPainter* theQPainter, QgsRasterViewPort * theRasterViewPort, const QgsMapToPixel* theQgsMapToPixel, QImage* theImage)
 {
   // Set up the initial offset into the myQImage we want to copy to the map canvas
   // This is useful when the source image pixels are larger than the screen image.

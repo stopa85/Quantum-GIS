@@ -22,6 +22,8 @@
 #include "qgsmaptopixel.h"
 #include "qgsrect.h"
 
+class QPainter;
+
 /**Contains information about the context of a rendering operation*/
 class QgsRenderContext
 {
@@ -30,6 +32,9 @@ class QgsRenderContext
   ~QgsRenderContext();
 
   //getters
+
+  QPainter* painter() {return mPainter;}
+
   const QgsCoordinateTransform* coordTransform() const {return mCoordTransform;}
 
   const QgsRect& extent() const {return mExtent;}
@@ -54,6 +59,7 @@ class QgsRenderContext
   void setDrawEditingInformation(bool b){mDrawEditingInformation = b;}
   void setRenderingStopped(bool stopped){mRenderingStopped = stopped;}
   void setScaleFactor(double factor){mScaleFactor = factor;}
+  void setPainter(QPainter* p){mPainter = p;}
 
  private:
 
@@ -61,24 +67,27 @@ class QgsRenderContext
    QgsRenderContext(const QgsRenderContext& other){}
    QgsRenderContext& operator=(const QgsRenderContext&){}
 
-  /**For transformation between coordinate systems. Can be 0 if on-the-fly reprojection is not used*/
-  QgsCoordinateTransform* mCoordTransform;
-
-  /**True if vertex markers for editing should be drawn*/
-  bool mDrawEditingInformation;
-
-  QgsRect mExtent;
-
+   /**Painter for rendering operations*/
+   QPainter* mPainter;
+   
+   /**For transformation between coordinate systems. Can be 0 if on-the-fly reprojection is not used*/
+   QgsCoordinateTransform* mCoordTransform;
+   
+   /**True if vertex markers for editing should be drawn*/
+   bool mDrawEditingInformation;
+   
+   QgsRect mExtent;
+   
   /**If true then no rendered vector elements should be cached as image*/
-  bool mForceVectorOutput;
-  
-  QgsMapToPixel mMapToPixel;
-         
-  /**True if the rendering has been canceled*/
-  bool mRenderingStopped;
-        
-  /**Factor to scale line widths and point marker sizes*/
-  double mScaleFactor;
+   bool mForceVectorOutput;
+   
+   QgsMapToPixel mMapToPixel;
+   
+   /**True if the rendering has been canceled*/
+   bool mRenderingStopped;
+   
+   /**Factor to scale line widths and point marker sizes*/
+   double mScaleFactor;
 };
 
 #endif

@@ -71,7 +71,7 @@ public:
      */
     QString const & name() const;
 
-    virtual bool draw(QPainter* painter, const QgsRenderContext& renderContext);
+    virtual bool draw(QgsRenderContext& renderContext);
 
     /** Draw labels
      * @TODO to be removed: used only in vector layers

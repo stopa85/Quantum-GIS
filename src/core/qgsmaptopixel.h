@@ -87,7 +87,7 @@ class CORE_EXPORT QgsMapToPixel{
     void setMapUnitsPerPixel(double mupp);
     
     //! Return current map units per pixel
-    double mapUnitsPerPixel();
+    double mapUnitsPerPixel() const;
 
     //! Set maximum y value
     void setYmax(double ymax);

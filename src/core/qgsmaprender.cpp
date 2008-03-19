@@ -224,6 +224,10 @@ void QgsMapRender::render(QPainter* painter)
   renderTime.start();
 #endif
 
+  mRenderContext.setDrawEditingInformation(!mOverview);
+  mRenderContext.setPainter(painter);
+  mRenderContext.setCoordTransform(0);
+
   // render all layers in the stack, starting at the base
   QListIterator<QString> li(mLayerSet);
   li.toBack();
@@ -280,9 +284,8 @@ void QgsMapRender::render(QPainter* painter)
       }
 
       mRenderContext.setCoordTransform(ct);
-      mRenderContext.setDrawEditingInformation(!mOverview);
 
-      if (!ml->draw(painter, mRenderContext))
+      if (!ml->draw(mRenderContext))
 	{
 	  emit drawError(ml);
 	}

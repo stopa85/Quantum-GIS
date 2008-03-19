@@ -126,7 +126,7 @@ const QgsRect QgsMapLayer::extent()
     return mLayerExtent;
 }
 
-bool QgsMapLayer::draw(QPainter* painter, const QgsRenderContext& renderContext)
+bool QgsMapLayer::draw(QgsRenderContext& renderContext)
 {
   return false;
 }

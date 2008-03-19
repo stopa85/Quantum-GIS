@@ -711,14 +711,20 @@ std::cerr << i << ": " << ring->first[i]
   return ptr;
 }
 
-bool QgsVectorLayer::draw(QPainter* painter, const QgsRenderContext& renderContext)
+bool QgsVectorLayer::draw(QgsRenderContext& renderContext)
 {
   //set update threshold before each draw to make sure the current setting is picked up
   QSettings settings;
   mUpdateThreshold = settings.readNumEntry("Map/updateThreshold", 0);
   //draw ( p, viewExtent, theMapToPixelTransform, ct, drawingToEditingCanvas, 1., 1.);
   
-  draw(painter, renderContext.extent(), &(renderContext.mapToPixel()), renderContext.coordTransform(), \
+  QPainter* thePainter = renderContext.painter();
+  if(!thePainter)
+    {
+      return false;
+    }
+
+  draw(thePainter, renderContext.extent(), &(renderContext.mapToPixel()), renderContext.coordTransform(), \
        renderContext.drawEditingInformation(), renderContext.scaleFactor(), renderContext.scaleFactor());
   return TRUE; // Assume success always
 }
