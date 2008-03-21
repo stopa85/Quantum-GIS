@@ -340,7 +340,7 @@ existing rings, 5 no feature found where ring can be inserted*/
   bool draw(QgsRenderContext& renderContext);
 
   /** Draws the layer labels using coordinate transformation */
-  void drawLabels(QPainter* painter, const QgsRenderContext& renderContext);
+  void drawLabels(QgsRenderContext& renderContext);
 
   /** \brief Draws the layer using coordinate transformation
    *  \param widthScale line width scale
@@ -357,7 +357,7 @@ existing rings, 5 no feature found where ring can be inserted*/
   /** \brief Draws the layer labels using coordinate transformation
    *  \param scale size scale, applied to all values in pixels
    */
-  void drawLabels(QPainter * p, QgsRect & viewExtent, QgsMapToPixel * cXf, QgsCoordinateTransform* ct, double scale);
+  void drawLabels(QPainter * p, const QgsRect& viewExtent, const QgsMapToPixel* cXf, const QgsCoordinateTransform* ct, double scale);
 
   /** returns array of added features */
   QgsFeatureList& addedFeatures();

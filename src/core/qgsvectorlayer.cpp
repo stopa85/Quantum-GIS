@@ -277,17 +277,20 @@ void QgsVectorLayer::setDisplayField(QString fldName)
 }
 
 //void QgsVectorLayer::drawLabels(QPainter * p, QgsRect & viewExtent, QgsMapToPixel * theMapToPixelTransform, QgsCoordinateTransform* ct)
-void QgsVectorLayer::drawLabels(QPainter* painter, const QgsRenderContext& renderContext)
+void QgsVectorLayer::drawLabels(QgsRenderContext& renderContext)
 {
-#if 0 //todo: adapt to render context
-  drawLabels(p, viewExtent, theMapToPixelTransform, ct, 1.);
-#endif //0
+  QPainter* thePainter = renderContext.painter();
+  if(!thePainter)
+    {
+      return;
+    }
+  drawLabels(thePainter, renderContext.extent(), &(renderContext.mapToPixel()), renderContext.coordTransform(), renderContext.scaleFactor());
 }
 
 // NOTE this is a temporary method added by Tim to prevent label clipping
 // which was occurring when labeller was called in the main draw loop
 // This method will probably be removed again in the near future!
-void QgsVectorLayer::drawLabels(QPainter * p, QgsRect & viewExtent, QgsMapToPixel * theMapToPixelTransform, QgsCoordinateTransform* ct, double scale)
+void QgsVectorLayer::drawLabels(QPainter * p, const QgsRect& viewExtent, const QgsMapToPixel* theMapToPixelTransform, const QgsCoordinateTransform* ct, double scale)
 {
   QgsDebugMsg("Starting draw of labels");
 

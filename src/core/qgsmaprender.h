@@ -178,11 +178,8 @@ class CORE_EXPORT QgsMapRender : public QObject
     //! scale calculator
     QgsScaleCalculator * mScaleCalculator;
     
-    //! utility class for transformation between map and pixmap units
-    //QgsMapToPixel* mCoordXForm; //in mRenderContext
-    
     //! current extent to be drawn
-    //QgsRect mExtent; //in mRenderContext
+    QgsRect mExtent;
     
     //! indicates whether it's map image for overview
     bool mOverview;

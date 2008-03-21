@@ -62,13 +62,13 @@ QgsMapRender::~QgsMapRender()
 
 QgsRect QgsMapRender::extent()
 {
-  return mRenderContext.extent();
+  return mExtent;
 }
 
 void QgsMapRender::updateScale()
 {
   
-  mScale = mScaleCalculator->calculate(mRenderContext.extent(), mSize.width());
+  mScale = mScaleCalculator->calculate(mExtent, mSize.width());
 }
 
 bool QgsMapRender::setExtent(const QgsRect& extent)
@@ -103,7 +103,7 @@ bool QgsMapRender::setExtent(const QgsRect& extent)
       return false;
   }
 
-  mRenderContext.setExtent(extent);
+  mExtent = extent;
   if (!extent.isEmpty())
     adjustExtentToSize();
   return true;
@@ -132,7 +132,6 @@ void QgsMapRender::adjustExtentToSize()
   int myWidth = mSize.width();
 
   QgsMapToPixel newCoordXForm;
-  QgsRect theExtent = mRenderContext.extent();
   
   if (!myWidth || !myHeight)
   {
@@ -143,9 +142,9 @@ void QgsMapRender::adjustExtentToSize()
 
   // calculate the translation and scaling parameters
   // mupp = map units per pixel
-  double muppY = static_cast<double>(theExtent.height()) 
+  double muppY = static_cast<double>(mExtent.height()) 
                / static_cast<double>(myHeight);
-  double muppX = static_cast<double>(theExtent.width())  
+  double muppX = static_cast<double>(mExtent.width())  
                / static_cast<double>(myWidth);
   mMupp = muppY > muppX ? muppY : muppX;
 
@@ -154,39 +153,39 @@ void QgsMapRender::adjustExtentToSize()
 
   if (muppY > muppX)
   {
-    dymin = theExtent.yMin();
-    dymax = theExtent.yMax();
-    whitespace = ((myWidth * mMupp) - theExtent.width()) * 0.5;
-    dxmin = theExtent.xMin() - whitespace;
-    dxmax = theExtent.xMax() + whitespace;
+    dymin = mExtent.yMin();
+    dymax = mExtent.yMax();
+    whitespace = ((myWidth * mMupp) - mExtent.width()) * 0.5;
+    dxmin = mExtent.xMin() - whitespace;
+    dxmax = mExtent.xMax() + whitespace;
   }
   else
   {
-    dxmin = theExtent.xMin();
-    dxmax = theExtent.xMax();
-    whitespace = ((myHeight * mMupp) - theExtent.height()) * 0.5;
-    dymin = theExtent.yMin() - whitespace;
-    dymax = theExtent.yMax() + whitespace;
+    dxmin = mExtent.xMin();
+    dxmax = mExtent.xMax();
+    whitespace = ((myHeight * mMupp) - mExtent.height()) * 0.5;
+    dymin = mExtent.yMin() - whitespace;
+    dymax = mExtent.yMax() + whitespace;
   }
 
 #ifdef QGISDEBUG
   QgsDebugMsg("========== Current Scale ==========");
-  QgsDebugMsg("Current extent is " + theExtent.stringRep());
+  QgsDebugMsg("Current extent is " + mExtent.stringRep());
   QgsLogger::debug("MuppX", muppX, 1, __FILE__, __FUNCTION__, __LINE__);
   QgsLogger::debug("MuppY", muppY, 1, __FILE__, __FUNCTION__, __LINE__);
   QgsLogger::debug("Pixmap width", myWidth, 1, __FILE__, __FUNCTION__, __LINE__);
   QgsLogger::debug("Pixmap height", myHeight, 1, __FILE__, __FUNCTION__, __LINE__);
-  QgsLogger::debug("Extent width", theExtent.width(), 1, __FILE__, __FUNCTION__, __LINE__);
-  QgsLogger::debug("Extent height", theExtent.height(), 1, __FILE__, __FUNCTION__, __LINE__);
+  QgsLogger::debug("Extent width", mExtent.width(), 1, __FILE__, __FUNCTION__, __LINE__);
+  QgsLogger::debug("Extent height", mExtent.height(), 1, __FILE__, __FUNCTION__, __LINE__);
   QgsLogger::debug("whitespace: ", whitespace, 1, __FILE__, __FUNCTION__, __LINE__);
 #endif
 
 
   // update extent
-  theExtent.setXmin(dxmin);
-  theExtent.setXmax(dxmax);
-  theExtent.setYmin(dymin);
-  theExtent.setYmax(dymax);
+  mExtent.setXmin(dxmin);
+  mExtent.setXmax(dxmax);
+  mExtent.setYmin(dymin);
+  mExtent.setYmax(dymax);
 
   // update the scale
   updateScale();
@@ -197,7 +196,7 @@ void QgsMapRender::adjustExtentToSize()
 
   newCoordXForm.setParameters(mMupp, dxmin, dymin, myHeight);
   mRenderContext.setMapToPixel(newCoordXForm);
-  mRenderContext.setExtent(theExtent);
+  mRenderContext.setExtent(mExtent);
 }
 
 
@@ -205,7 +204,7 @@ void QgsMapRender::render(QPainter* painter)
 {
   QgsDebugMsg("========== Rendering ==========");
 
-  if (mRenderContext.extent().isEmpty())
+  if (mExtent.isEmpty())
   {
     QgsLogger::debug("empty extent... not rendering");
     return;
@@ -231,6 +230,8 @@ void QgsMapRender::render(QPainter* painter)
   // render all layers in the stack, starting at the base
   QListIterator<QString> li(mLayerSet);
   li.toBack();
+
+  QgsRect r1, r2;
   
   while (li.hasPrevious())
   {
@@ -266,17 +267,19 @@ void QgsMapRender::render(QPainter* painter)
     {
       connect(ml, SIGNAL(drawingProgress(int,int)), this, SLOT(onDrawingProgress(int,int)));        
       
-      QgsRect r1 = mRenderContext.extent();
-      QgsRect r2;
-      bool split = splitLayersExtent(ml, r1, r2);
       //
                   // Now do the call to the layer that actually does
                   // the rendering work!
       //
+
+      bool split = false;
       
       if (projectionsEnabled())
       {
+	r1 = mExtent;
+	split = splitLayersExtent(ml, r1, r2);
         ct = new QgsCoordinateTransform(ml->srs(), *mDestSRS);
+	mRenderContext.setExtent(r1);
       }
       else
       {
@@ -292,9 +295,11 @@ void QgsMapRender::render(QPainter* painter)
       
       if (split)
       {
-	//todo: set render context extent to r2
-        //if (!ml->draw(painter, r2, mCoordXForm, ct, !mOverview))
-	//emit drawError(ml);
+	mRenderContext.setExtent(r2);
+        if (!ml->draw(mRenderContext))
+	  {
+	    emit drawError(ml);
+	  }
       }
       
       delete ct;
@@ -329,23 +334,28 @@ void QgsMapRender::render(QPainter* painter)
         if ((ml->scaleBasedVisibility() && ml->minScale() < mScale  && ml->maxScale() > mScale)
             || (!ml->scaleBasedVisibility()))
         {
-          QgsRect r1 = mRenderContext.extent();
-	  QgsRect r2;
+          bool split = false;
 
-          bool split = splitLayersExtent(ml, r1, r2);
-      
           if (projectionsEnabled())
           {
+	    QgsRect r1 = mExtent;
+	    split = splitLayersExtent(ml, r1, r2);
             ct = new QgsCoordinateTransform(ml->srs(), *mDestSRS);
+	    mRenderContext.setExtent(r1);
           }
           else
           {
             ct = NULL;
           }
       
-          //ml->drawLabels(painter, r1, mCoordXForm, ct);
+	  mRenderContext.setCoordTransform(ct);
+          
+	  ml->drawLabels(mRenderContext);
           if (split)
-            //ml->drawLabels(painter, r2, mCoordXForm, ct);
+	    {
+	      mRenderContext.setExtent(r2);
+	      ml->drawLabels(mRenderContext);
+	    }
           
           delete ct;
         }

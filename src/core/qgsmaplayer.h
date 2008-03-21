@@ -76,7 +76,7 @@ public:
     /** Draw labels
      * @TODO to be removed: used only in vector layers
      */
-    virtual void drawLabels(QPainter* painter, const QgsRenderContext& renderContext);
+    virtual void drawLabels(QgsRenderContext& renderContext);
 
     /** Return the extent of the layer as a QRect */
     const QgsRect extent();

@@ -131,7 +131,7 @@ bool QgsMapLayer::draw(QgsRenderContext& renderContext)
   return false;
 }
 
-void QgsMapLayer::drawLabels(QPainter* painter, const QgsRenderContext& renderContext)
+void QgsMapLayer::drawLabels(QgsRenderContext& renderContext)
 {
     //  std::cout << "In QgsMapLayer::draw" << std::endl;
 }
