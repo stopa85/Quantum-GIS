@@ -721,25 +721,6 @@ bool QgsVectorLayer::draw(QgsRenderContext& renderContext)
   mUpdateThreshold = settings.readNumEntry("Map/updateThreshold", 0);
   //draw ( p, viewExtent, theMapToPixelTransform, ct, drawingToEditingCanvas, 1., 1.);
   
-  QPainter* thePainter = renderContext.painter();
-  if(!thePainter)
-    {
-      return false;
-    }
-
-  draw(thePainter, renderContext.extent(), &(renderContext.mapToPixel()), renderContext.coordTransform(), \
-       renderContext.drawEditingInformation(), renderContext.scaleFactor(), renderContext.scaleFactor());
-  return TRUE; // Assume success always
-}
-
-void QgsVectorLayer::draw(QPainter * p,
-                          const QgsRect& viewExtent,
-                          const QgsMapToPixel * theMapToPixelTransform,
-                          const QgsCoordinateTransform* ct,
-                          bool drawingToEditingCanvas,
-                          double widthScale,
-                          double symbolScale)
-{
   if (mRenderer)
   {
     // painter is active (begin has been called
@@ -757,26 +738,32 @@ void QgsVectorLayer::draw(QPainter * p,
     /* Scale factor of the marker image*/
     /* We set this to the symbolScale, and if it is NOT changed, */
     /* we don't have to do another scaling here */
-    double markerScaleFactor =  symbolScale;
+    double markerScaleFactor = renderContext.scaleFactor();
     
     if(mEditable)
     {
       // Destroy all cached geometries and clear the references to them
       deleteCachedGeometries();
     }
- 
-    mDataProvider->updateFeatureCount();
-    int totalFeatures = mDataProvider->featureCount();
-    int featureCount = 0;
-    QgsFeature fet;
 
-    QgsAttributeList attributes = mRenderer->classificationAttributes();
-    mDataProvider->select(attributes, viewExtent);
+  mDataProvider->updateFeatureCount();
+  int totalFeatures = mDataProvider->featureCount();
+  int featureCount = 0;
+  QgsFeature fet;
+  
+  QgsAttributeList attributes = mRenderer->classificationAttributes();
+  mDataProvider->select(attributes, renderContext.extent());  
 
-    try
+  try
     {
       while (mDataProvider->getNextFeature(fet))
       {
+
+	if(renderContext.renderingStopped())
+	  {
+	    break;
+	  }
+
         // XXX Something in our draw event is triggering an additional draw event when resizing [TE 01/26/06]
         // XXX Calling this will begin processing the next draw event causing image havoc and recursion crashes.
         //qApp->processEvents(); //so we can trap for esc press
@@ -833,12 +820,12 @@ void QgsVectorLayer::draw(QPainter * p,
 
 	//QgsDebugMsg(QString("markerScale before renderFeature(): %1").arg(markerScaleFactor));
 	// markerScalerFactore reflects the wanted scaling of the marker
-        mRenderer->renderFeature(p, fet, &marker, &markerScaleFactor, sel, widthScale );
+        mRenderer->renderFeature(renderContext.painter(), fet, &marker, &markerScaleFactor, sel, renderContext.scaleFactor());
 	// markerScalerFactore now reflects the actual scaling of the marker that the render performed.
 	//QgsDebugMsg(QString("markerScale after renderFeature(): %1").arg(markerScaleFactor));
 
-        double scale = symbolScale / markerScaleFactor;
-        drawFeature(p,fet,theMapToPixelTransform,ct, &marker, scale, drawingToEditingCanvas);
+        double scale = renderContext.scaleFactor() / markerScaleFactor;
+        drawFeature(renderContext.painter() , fet, &(renderContext.mapToPixel()), renderContext.coordTransform(), &marker, scale, renderContext.drawEditingInformation());
 
         ++featureCount;
       }
@@ -852,12 +839,12 @@ void QgsVectorLayer::draw(QPainter * p,
           bool sel = mSelectedFeatureIds.contains((*it).featureId());
 	  QgsDebugMsg(QString("markerScale before renderFeature(): %1").arg(markerScaleFactor));
 	  // markerScalerFactore reflects the wanted scaling of the marker
-          mRenderer->renderFeature(p, *it, &marker, &markerScaleFactor, 
-              sel, widthScale);
+          mRenderer->renderFeature(renderContext.painter(), *it, &marker, &markerScaleFactor, 
+				   sel, renderContext.scaleFactor());
 	  // markerScalerFactore now reflects the actual scaling of the marker that the render performed.
 	  QgsDebugMsg(QString("markerScale after renderFeature(): %1").arg(markerScaleFactor));
 
-          double scale = symbolScale / markerScaleFactor;
+          double scale = renderContext.scaleFactor() / markerScaleFactor;
     
           if (mChangedGeometries.contains((*it).featureId()))
           {
@@ -866,7 +853,7 @@ void QgsVectorLayer::draw(QPainter * p,
           
           // give a deep copy of the geometry to mCachedGeometry because it will be erased at each redraw
           mCachedGeometries.insert((*it).featureId(), QgsGeometry(*((*it).geometry())) );
-          drawFeature(p,*it,theMapToPixelTransform,ct, &marker,scale, drawingToEditingCanvas);
+          drawFeature(renderContext.painter(), *it, &(renderContext.mapToPixel()), renderContext.coordTransform(), &marker, scale, renderContext.drawEditingInformation());
         }
       }
 
@@ -878,17 +865,15 @@ void QgsVectorLayer::draw(QPainter * p,
       msg += cse.what();
       QgsLogger::warning(msg);
     }
-    QgsDebugMsg("Total features processed is " + QString::number(featureCount));
-    // XXX Something in our draw event is triggering an additional draw event when resizing [TE 01/26/06]
-    // XXX Calling this will begin processing the next draw event causing image havoc and recursion crashes.
-    //qApp->processEvents();
+
   }
   else
   {
     QgsLogger::warning("QgsRenderer is null in QgsVectorLayer::draw()");
   }
-}
 
+  return TRUE; // Assume success always
+}
 
 void QgsVectorLayer::deleteCachedGeometries()
 {

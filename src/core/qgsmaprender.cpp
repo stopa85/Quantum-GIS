@@ -226,6 +226,9 @@ void QgsMapRender::render(QPainter* painter)
   mRenderContext.setDrawEditingInformation(!mOverview);
   mRenderContext.setPainter(painter);
   mRenderContext.setCoordTransform(0);
+  //this flag is only for stopping during the current rendering progress, 
+  //so must be false at every new render operation
+  mRenderContext.setRenderingStopped(false);
 
   // render all layers in the stack, starting at the base
   QListIterator<QString> li(mLayerSet);
@@ -235,6 +238,11 @@ void QgsMapRender::render(QPainter* painter)
   
   while (li.hasPrevious())
   {
+    if(mRenderContext.renderingStopped())
+      {
+	break;
+      }
+
     QString layerId = li.previous();
 
     QgsDebugMsg("Rendering at layer item " + layerId);
@@ -320,6 +328,11 @@ void QgsMapRender::render(QPainter* painter)
     li.toBack();
     while (li.hasPrevious())
     {
+      if(mRenderContext.renderingStopped())
+	{
+	  break;
+	}
+
       QString layerId = li.previous();
 
       // TODO: emit drawingProgress((myRenderCounter++),zOrder.size());

@@ -158,6 +158,8 @@ void QgsComposerMap::draw ( QPainter *painter, QgsRect &extent, QgsMapToPixel *t
       double widthScale = mWidthScale;
       double symbolScale = mSymbolScale;
 
+      theRenderContext.setScaleFactor( (widthScale + symbolScale) / 2);
+
 //TODO: attempt to scale cache lines and point symbols to be larger as we zoom in
 /*    if(creating cache pixmap)
       {
@@ -165,18 +167,18 @@ void QgsComposerMap::draw ( QPainter *painter, QgsRect &extent, QgsMapToPixel *t
         symbolScale *= (cachePixmap.width / map.rect.width);
       }
 */
-      QgsRect r1, r2;
-      r1 = extent;
-      // TODO: revisit later and make this QgsMapRender-aware [MD]
-      // bool split = layer->projectExtent(r1, r2);
-      bool split = false;
+      //QgsRect r1, r2;
+      //r1 = extent;
+      //bool split = layer->projectExtent(r1, r2);
       
-      vector->draw( painter, r1, transform, ct, FALSE, widthScale, symbolScale);
+      //todo: implement with QgsMapRender
+      vector->draw(theRenderContext);
 
-      if ( split )
-      {
-        vector->draw( painter, r2, transform, ct, FALSE, widthScale, symbolScale);
-      }
+      //if ( split )
+      //{
+      //theRenderContext.setExtent(r2);
+      //vector->draw(theRenderContext);
+      //}
     } else { 
       // raster
       if ( plotStyle() == QgsComposition::Print || plotStyle() == QgsComposition::Postscript ) {
@@ -193,7 +195,8 @@ void QgsComposerMap::draw ( QPainter *painter, QgsRect &extent, QgsMapToPixel *t
         painter->save();
         painter->scale( 1./multip, 1./multip);
         layer->draw(theRenderContext);
-              
+            
+	theRenderContext.setMapToPixel(*transform);
         painter->restore();
       } 
       else 

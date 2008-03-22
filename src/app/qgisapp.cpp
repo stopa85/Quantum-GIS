@@ -5313,9 +5313,27 @@ void QgisApp::keyPressEvent ( QKeyEvent * e )
   // commented out for now. [gsherman]
   //    std::cout << e->text().toLocal8Bit().data() << " (keypress recevied)" << std::endl;
   emit keyPressed (e);
-  e->ignore();
+  
+  //cancel rendering progress with esc key
+  if(e->key() == Qt::Key_Escape)
+    {
+      if(mMapCanvas)
+	{
+	  QgsMapRender* theMapRender = mMapCanvas->mapRender();
+	  if(theMapRender)
+	    {
+	      QgsRenderContext* theRenderContext = theMapRender->renderContext();
+	      if(theRenderContext)
+		{
+		  theRenderContext->setRenderingStopped(true);
+		}
+	    }
+	}
+    }
 
+  e->ignore();
 }
+    
 // Debug hook - used to output diagnostic messages when evoked (usually from the menu)
 /* Temporarily disabled...
    void QgisApp::debugHook()
