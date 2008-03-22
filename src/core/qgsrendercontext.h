@@ -51,8 +51,7 @@ class QgsRenderContext
 
   //setters
 
-  /**Sets coordinate transformation. QgsRenderContext takes ownership of the pointer and takes \
-   care of releasing the memory properly*/
+  /**Sets coordinate transformation. QgsRenderContext takes ownership and deletes if necessary*/
   void setCoordTransform(QgsCoordinateTransform* t);
   void setMapToPixel(const QgsMapToPixel& mtp) {mMapToPixel = mtp;}
   void setExtent(const QgsRect& extent){mExtent = extent;}

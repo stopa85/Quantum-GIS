@@ -30,7 +30,7 @@ QgsRenderContext::~QgsRenderContext()
 
 void QgsRenderContext::setCoordTransform(QgsCoordinateTransform* t) 
 {
-  //delete mCoordTransform;
+  delete mCoordTransform;
   mCoordTransform = t;
 }
 

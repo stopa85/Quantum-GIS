@@ -23,6 +23,7 @@
 #include "qgsmaptopixel.h"
 #include "qgsproject.h"
 #include "qgsmaprender.h"
+#include "qgsrendercontext.h"
 #include "qgsvectorlayer.h"
 
 #include "qgslabel.h"
@@ -130,6 +131,11 @@ void QgsComposerMap::draw ( QPainter *painter, QgsRect &extent, QgsMapToPixel *t
   int nlayers = mMapCanvas->layerCount();
     QgsCoordinateTransform* ct;
 
+    QgsRenderContext theRenderContext;
+    theRenderContext.setPainter(painter);
+    theRenderContext.setExtent(extent);
+    theRenderContext.setMapToPixel(*transform);
+
   for ( int i = nlayers - 1; i >= 0; i-- ) {
     QgsMapLayer *layer = mMapCanvas->getZpos(i);
 
@@ -143,6 +149,8 @@ void QgsComposerMap::draw ( QPainter *painter, QgsRect &extent, QgsMapToPixel *t
     {
       ct = NULL;
     }
+
+    theRenderContext.setCoordTransform(ct);
 
     if ( layer->type() == QgsMapLayer::VECTOR ) {
       QgsVectorLayer *vector = dynamic_cast <QgsVectorLayer*> (layer);
@@ -180,20 +188,19 @@ void QgsComposerMap::draw ( QPainter *painter, QgsRect &extent, QgsMapToPixel *t
         double sc = mExtent.width() / (multip*QGraphicsRectItem::rect().width());
               
         QgsMapToPixel trans ( sc, multip*QGraphicsRectItem::rect().height(), mExtent.yMin(), mExtent.xMin() );
-              
+	theRenderContext.setMapToPixel(trans);
+
         painter->save();
         painter->scale( 1./multip, 1./multip);
-        //layer->draw( painter, extent, &trans, ct, FALSE);
+        layer->draw(theRenderContext);
               
         painter->restore();
       } 
       else 
       {
-        //layer->draw( painter, extent, transform, ct, FALSE);
+        layer->draw(theRenderContext);
       }
     }
-    
-    delete ct;
   }
     
   // Draw vector labels
@@ -246,8 +253,6 @@ void QgsComposerMap::draw ( QPainter *painter, QgsRect &extent, QgsMapToPixel *t
         }
         vector->drawLabels (  painter, extent, transform, ct, fontScale );
       }
-    
-      delete ct;
     }
   }
     

@@ -302,8 +302,6 @@ void QgsMapRender::render(QPainter* painter)
 	  }
       }
       
-      delete ct;
-      
       disconnect(ml, SIGNAL(drawingProgress(int,int)), this, SLOT(onDrawingProgress(int,int)));
     }
     else
@@ -356,8 +354,6 @@ void QgsMapRender::render(QPainter* painter)
 	      mRenderContext.setExtent(r2);
 	      ml->drawLabels(mRenderContext);
 	    }
-          
-          delete ct;
         }
       }
     }
