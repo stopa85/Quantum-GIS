@@ -94,6 +94,7 @@ class QgsDbSourceSelect : public QDialog, private Ui::QgsDbSourceSelectBase
       void on_mSearchModeComboBox_currentIndexChanged(const QString & text);
       void setSql(const QModelIndex& index);
       void on_btnHelp_clicked();
+      void on_cmbType_activated(int);
       void on_cmbConnections_activated(int);
       void setLayerType(QString schema, QString table, QString column,
                         QString type);

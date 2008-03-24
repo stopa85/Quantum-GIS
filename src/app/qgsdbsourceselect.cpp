@@ -48,6 +48,7 @@ QgsDbSourceSelect::QgsDbSourceSelect(QgisApp *app, Qt::WFlags fl)
   setupUi(this);
   btnAdd->setEnabled(false);
   
+  
   //get last connection type used
   QString connType=mConnectionRegistry->selectedType();
   populateConnectionList(connType);
@@ -143,6 +144,12 @@ void QgsDbSourceSelect::on_btnHelp_clicked()
   showHelp();
 }
 /** End Autoconnected SLOTS **/
+
+//Remember what type was selected
+void QgsDbSourceSelect::on_cmbType_activated(int)
+{
+  dbChanged();
+}
 
 // Remember which database is selected
 void QgsDbSourceSelect::on_cmbConnections_activated(int)
@@ -251,6 +258,7 @@ void QgsDbSourceSelect::populateConnectionList(QString type)
   for (int i = 0; i < connlist.size(); ++i)
      cmbConnections->addItem(connlist.at(i));
   cmbType->setCurrentIndex(cmbType->findText(type));
+
 }
 void QgsDbSourceSelect::addNewConnection()
 {
@@ -955,9 +963,12 @@ QString QgsDbSourceSelect::fullDescription(QString schema, QString table,
 void QgsDbSourceSelect::dbChanged()
 {
   // Remember which database was selected.
-  QSettings settings;
+  qDebug("dbchanged");
+  mConnectionRegistry->setSelectedType(cmbType->currentText());
+  mConnectionRegistry->setSelected(cmbType->currentText(),cmbConnections->currentText());
+  /*QSettings settings;
   settings.writeEntry("/PostgreSQL/connections/selected", 
-		      cmbConnections->currentText());
+		      cmbConnections->currentText());*/
 }
 
 void QgsDbSourceSelect::setConnectionListPosition()
@@ -1022,61 +1033,3 @@ void QgsDbSourceSelect::setSearchExpression(const QString& regexp)
   
 }
 
-/*
-void QgsGeomColumnTypeThread::setConnInfo(QString s)
-{
-  mConnInfo = s;
-}
-
-void QgsGeomColumnTypeThread::addGeometryColumn(QString schema, QString table, QString column)
-{
-  schemas.push_back(schema);
-  tables.push_back(table);
-  columns.push_back(column);
-}
-
-void QgsGeomColumnTypeThread::stop()
-{
-  mStopped=true;
-}
-
-void QgsGeomColumnTypeThread::getLayerTypes()
-{
-  mStopped=false;
-
-  PGconn *pd = PQconnectdb(mConnInfo.toLocal8Bit().data());
-  if (PQstatus(pd) == CONNECTION_OK)
-  {
-    PQsetClientEncoding(pd, "UNICODE");
-
-    for (uint i = 0; i<schemas.size(); i++)
-    {
-      QString query = QgsDbSourceSelect::makeGeomQuery(schemas[i],
-                                                       tables[i],
-                                                       columns[i]);
-      PGresult* gresult = PQexec(pd, query.toLocal8Bit().data());
-      QString type;
-      if (PQresultStatus(gresult) == PGRES_TUPLES_OK) {
-	QStringList types;
-
-	for(int j=0; j<PQntuples(gresult); j++) {
-		QString type = PQgetvalue(gresult, j, 0);
-		if(type!="")
-		  types += type;
-	}
-
-	type = types.join(",");
-      }
-      PQclear(gresult);
-
-      if(mStopped)
-        break;
-
-      // Now tell the layer list dialog box...
-      emit setLayerType(schemas[i], tables[i], columns[i], type);
-    }
-  }
-
-  PQfinish(pd);
-}
-*/
