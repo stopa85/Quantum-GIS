@@ -4,7 +4,7 @@
 #include <cmath>
 #include <QDomElement>
 
-QgsDiagramRenderer::QgsDiagramRenderer(const QList<int>& classificationAttributes): mClassificationAttributes(classificationAttributes)
+QgsDiagramRenderer::QgsDiagramRenderer(const QList<int>& classificationAttributes): mClassificationAttributes(classificationAttributes), mScaleFactor(1.0)
 {
 }
 
@@ -219,7 +219,7 @@ int QgsDiagramRenderer::calculateDiagramSize(const QgsFeature& f, int& size) con
 
   if(mItemInterpretation == ATTRIBUTE)
     {
-      size = value.toInt();
+      size = (int)(value.toDouble() * mScaleFactor);
       return 0;
     }
 
@@ -230,7 +230,7 @@ int QgsDiagramRenderer::calculateDiagramSize(const QgsFeature& f, int& size) con
 
   if(mItemInterpretation == CONSTANT)
     {
-      size = mItems.constBegin()->size;
+      size = (int)(mItems.constBegin()->size * mScaleFactor);
       return 0; 
     }
 
@@ -246,7 +246,7 @@ int QgsDiagramRenderer::calculateDiagramSize(const QgsFeature& f, int& size) con
 	{
 	  if(current_it->value.toString() == value.toString())
 	    {
-	      size = current_it->size;
+	      size = (int)(current_it->size * mScaleFactor);
 	      sizeAssigned = true;
 	    }
 	}
@@ -263,13 +263,12 @@ int QgsDiagramRenderer::calculateDiagramSize(const QgsFeature& f, int& size) con
 	    {
 	      if(last_it == mItems.constEnd()) //values below classifications receive first items size
 	    {
-	      size = current_it->size;
+	      size = (int)(current_it->size * mScaleFactor);
 	    }
 	      else
 		{
-		  size = interpolateSize(value.toDouble(), last_it->value.toDouble(), \
-					 current_it->value.toDouble(),	\
-					 last_it->size, current_it->size);
+		  size = (int)(interpolateSize(value.toDouble(), last_it->value.toDouble(), current_it->value.toDouble(), last_it->size, current_it->size) * mScaleFactor);
+		  
 		}
 	      sizeAssigned = true;
 	      break;
@@ -279,7 +278,7 @@ int QgsDiagramRenderer::calculateDiagramSize(const QgsFeature& f, int& size) con
 
       if(!sizeAssigned)//values above classification receive last items size
 	{
-	  size = last_it->size;
+	  size = (int)(last_it->size * mScaleFactor);
 	}
     }
 

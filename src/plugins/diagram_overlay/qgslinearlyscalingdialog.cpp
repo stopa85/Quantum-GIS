@@ -58,6 +58,7 @@ QgsDiagramRenderer* QgsLinearlyScalingDialog::createRenderer(const QString& type
   itemList.push_back(firstItem);
   itemList.push_back(secondItem);
   renderer->setDiagramItems(itemList);
+  renderer->setItemInterpretation(QgsDiagramRenderer::LINEAR);
   
   QgsWKNDiagramFactory* f = 0;//new QgsWKNDiagramFactory();
   if(type == "Bar")

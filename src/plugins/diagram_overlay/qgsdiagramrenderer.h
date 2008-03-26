@@ -79,6 +79,7 @@ class QgsDiagramRenderer
   QList<QgsDiagramItem> diagramItems() const {return mItems;}
   void setItemInterpretation(ItemInterpretation i){mItemInterpretation = i;}
   QgsDiagramRenderer::ItemInterpretation itemInterpretation() const {return mItemInterpretation;}
+  void setScaleFactor(double f){mScaleFactor = f;}
 
  private:
   QgsDiagramRenderer();
@@ -93,6 +94,8 @@ class QgsDiagramRenderer
   QList<QgsDiagramItem> mItems;
   /**Describes the type of interpolation (linear by default)*/
   ItemInterpretation mItemInterpretation;
+  /**Factor to multiply the sizes*/
+  double mScaleFactor;
 
   /**Searches the value of the classification attribute(s). Considers that there 
      may be several attributes in case of numeric values (sum).
