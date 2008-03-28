@@ -344,6 +344,8 @@ void QgsDbSourceSelect::deleteConnection()
 }
 void QgsDbSourceSelect::addTables()
 {
+     
+  //check this to support ogr databases   
   m_selectedTables.clear();
 
   typedef QMap<int, QVector<QString> > schemaInfo;
@@ -423,7 +425,16 @@ void QgsDbSourceSelect::addTables()
 		  continue;
 		}
 	    }
-	  query = "\"" + schemaName + "\".\"" + tableName + "\" " + "(" + geomColumnName + ") sql=" + sql;
+	  
+	  //*****************************freddy
+	  QString type=cmbType->currentText();
+	  if(type.contains("Ogr",FALSE)>0)
+       query=tableName;
+      else 
+       query = "\"" + schemaName + "\".\"" + tableName + "\" " + "(" + geomColumnName + ") sql=" + sql; 
+  
+	  //*****************************freddy
+	  
 	  m_selectedTables.push_back(query);
 	}
     }
@@ -684,7 +695,12 @@ QStringList QgsDbSourceSelect::selectedTables()
 
 QString QgsDbSourceSelect::connInfo()
 {
-  return m_connInfo;
+  //check here     
+  QString type=cmbType->currentText();    
+    if (type.startsWith("Ogr"))
+      return "type="+type+" "+m_connInfo;
+    else  
+      return m_connInfo;
 }
 
 void QgsDbSourceSelect::setSql(const QModelIndex& index)

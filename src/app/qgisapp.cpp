@@ -2075,7 +2075,7 @@ void QgisApp::addDatabaseLayer()
     QString connInfo = dbs->connInfo();
     //QString connType = dbs->getConnectionType();
     
-    //qDebug("addDatabase :"+connInfo);
+    qDebug("addDatabase :"+connInfo);
     // for each selected table, connect to the database, parse the WKT geometry,
     // and build a cavnasitem for it
     // readWKB(connInfo,tables);
