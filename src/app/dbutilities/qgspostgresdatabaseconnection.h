@@ -41,27 +41,16 @@ class QgsPostgresDatabaseConnection : public QgsDatabaseConnection
 {
 
 public:
-	typedef std::pair<QString, QString> geomPair;
-
-	typedef std::list<geomPair > geomCol;
-
-
 	QgsPostgresDatabaseConnection();
-
 	QgsPostgresDatabaseConnection(QgsConnectionParameters* conn);
 	~QgsPostgresDatabaseConnection();
 	bool connect();
 	QString baseKey();
 	QList<QgsGeometryColumnDescription *> geometryTables();
-	QList<QgsGeometryColumnDescription *> geometryTables(bool searchGeometryColumnsOnly, bool searchPublicSchemaOnly);
 	QString tableGeometry(QString tableName);
 	QString tableGeometryFromData(QString schema, QString tableName, QString column);
-
 private:
-	QgsGeomColumnTypeThread* mColumnTypeThread;
-
 	QString fullDescription(QString schema, QString table, QString column);
-//	bool geometryTableInformation(PGconn* pg, GeometryColumns& details, bool searchGeometryColumnsOnly, bool searchPublicOnly);
 	bool geometryColumnInformation(PGconn *pg,GeometryColumns& details, bool searchGeometryColumnsOnly, bool searchPublicOnly);
 	
 	PGconn *pd;

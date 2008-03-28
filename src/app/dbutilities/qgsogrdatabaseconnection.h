@@ -19,9 +19,15 @@
 #include "qgsdatabaseconnection.h"
 #include "qgsconnectionparameters.h"
 
-#include "cpl_port.h"
+//#include "cpl_port.h"
+//#include <ogr_api.h>
+//#include <ogrsf_frmts.h>
+
+#define CPL_SUPRESS_CPLUSPLUS
+
 #include <ogr_api.h>
-#include <ogrsf_frmts.h>
+#include <ogr_srs_api.h>
+#include <cpl_error.h>
 
 /**
  * Class to connect to databases using OGR
@@ -31,17 +37,19 @@ class QgsOgrDatabaseConnection : public QgsDatabaseConnection
 
 public:
 	QgsOgrDatabaseConnection();
-
 	QgsOgrDatabaseConnection(QgsConnectionParameters* connectionParameters);
 	~QgsOgrDatabaseConnection();
 	bool connect();
-	QString baseKey();
 	QList<QgsGeometryColumnDescription *> geometryTables();
 	QString tableGeometry(QString tableName);
-
+	QString tableGeometryFromData(QString schema, QString tableName, QString column);
 	void disconnect();
 	void isConnected();
-	
-
+	QString baseKey();
+private:
+    //ogr datasource    
+    OGRDataSourceH poDS;
+    //ogr driver
+    OGRSFDriverH ogrDriver;    	   
 };
-#endif // !defined(EA_55811BBB_229C_4411_8F41_521DE4B175F7__INCLUDED_)
+#endif  

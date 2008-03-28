@@ -41,7 +41,8 @@ QgsOgrDatabaseConnection::QgsOgrDatabaseConnection(QgsConnectionParameters* conn
  * Class destructor
  */
 QgsOgrDatabaseConnection::~QgsOgrDatabaseConnection(){
-
+  OGR_DS_Destroy(poDS);
+  poDS = 0;
 }
 
 
@@ -51,9 +52,7 @@ QgsOgrDatabaseConnection::~QgsOgrDatabaseConnection(){
 bool QgsOgrDatabaseConnection::connect(){
   QString uri;   
   bool result=true;   
-  //QgsURIManager* uriman= new QgsURIManager(mConnectionParameters);   
-  //qDebug("QgsOgrDatabaseConnection::connect: "+ mConnection.name);
-  //qDebug("QgsOgrDatabaseConnection::connect: "+ uriman->getURI());
+  
   if ((this->uri().isEmpty())or(this->uri().isNull()))
    {
      //generateURI According to connectionParameters
@@ -71,13 +70,18 @@ bool QgsOgrDatabaseConnection::connect(){
    {
      uri=this->uri();            
    }
-  qDebug("inche uri:"+uri);  
   //clean all previous errors
   CPLErrorReset(); 
   // Register all OGR-drivers
   OGRRegisterAll();
-  OGRDataSource *poDS;
-  poDS = OGRSFDriverRegistrar::Open(uri, FALSE );
+  
+  
+  
+  CPLPushErrorHandler(CPLQuietErrorHandler);
+  poDS = OGROpen(uri, FALSE,&ogrDriver);
+  CPLPopErrorHandler();
+  
+  //poDS = OGRSFDriverRegistrar::Open(uri, FALSE );
 
   if( poDS == NULL ) {
        QString error=QObject::tr( "Open failed.\n" );
@@ -85,7 +89,7 @@ bool QgsOgrDatabaseConnection::connect(){
 	   setError(error);
        return (false);
     } 
-  OGRDataSource::DestroyDataSource( poDS );
+  //OGRDataSource::DestroyDataSource( poDS );
   return result;       
 }
 
@@ -104,7 +108,63 @@ QString QgsOgrDatabaseConnection::baseKey(){
  */
 QList<QgsGeometryColumnDescription *> QgsOgrDatabaseConnection::geometryTables(){
 
-	//return  NULL;
+
+  bool searchGeometryColumnsOnly=mConnectionParameters->geometryColumnsOnly;
+  bool searchPublicSchemaOnly=mConnectionParameters->publicOnly;
+  
+  QList<QgsGeometryColumnDescription *> details;  
+  
+   
+  int nLayers = OGR_DS_GetLayerCount(poDS);
+  
+  // create a pointer to the layer
+  OGRLayerH  poLayer;
+  // create a pointer to the feature
+  //OGRFeature *poFeature;
+  // create a pointer to the feature-definition
+  OGRFeatureDefnH poFDefn;
+        
+    
+  QStringList result;
+   
+  
+  for (int j = 0; j < nLayers  ; j++) {
+    poLayer = OGR_DS_GetLayer(poDS,j);  
+ 	OGR_L_ResetReading(poLayer);   
+	//poLayer->ResetReading();
+	poFDefn = OGR_L_GetLayerDefn(poLayer);
+	// show names of the layer
+	qDebug("Name of Layer: " + QString(OGR_FD_GetName(poFDefn)));
+	// show geometry of layer
+	qDebug("Geometry of Layer: " +QString(OGR_FD_GetGeomType(poFDefn)));
+    //result << poFDefn->GetName();		
+	
+  
+    
+    QString tableName = OGR_FD_GetName(poFDefn);
+    QString schemaName = "public";
+    QString type;
+    //QString type = OGR_FD_GetGeomType(poFDefn);
+    switch (OGR_FD_GetGeomType(poFDefn))
+     {
+      case wkbUnknown:type="UNKNOWN";break;
+      case wkbPoint: type="POINT";break;
+      case wkbMultiPoint: type="MULTIPOINT";break;
+      case wkbLineString: type="LINESTRING";break;
+      case wkbMultiLineString: type="MULTILINESTRING";break;
+      case wkbPolygon: type="POLYGON";break;
+      case wkbMultiPolygon:type="MULTIPOLYGON";break;
+      case wkbGeometryCollection:type="GEOMETRYCOLLECTION";break;
+      case wkbNone:type="NONE";break;     
+     }
+    //need to check for geometry column name
+    QString column=""; 
+    details.append(new QgsGeometryColumnDescription(type,schemaName,tableName,column));
+        
+	    
+  }
+
+  return  details;
 }
 
 
@@ -114,6 +174,10 @@ QList<QgsGeometryColumnDescription *> QgsOgrDatabaseConnection::geometryTables()
 QString QgsOgrDatabaseConnection::tableGeometry(QString tableName){
 
 	return  NULL;
+}
+
+QString QgsOgrDatabaseConnection::tableGeometryFromData(QString schema, QString tableName, QString column){
+  return NULL;
 }
 
 
