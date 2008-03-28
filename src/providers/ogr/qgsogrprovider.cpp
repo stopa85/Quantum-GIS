@@ -109,13 +109,13 @@ QgsOgrProvider::QgsOgrProvider(QString const & uri)
   // message if the file is read only, because we cope with that
   // ourselves.
   CPLPushErrorHandler(CPLQuietErrorHandler);
-  ogrDataSource = OGROpen(QFile::encodeName(uri).constData(), TRUE, &ogrDriver);
+  ogrDataSource = OGROpen(QFile::encodeName(connString).constData(), TRUE, &ogrDriver);
   CPLPopErrorHandler();
 
   if(ogrDataSource == NULL)
   {
     // try to open read-only
-    ogrDataSource = OGROpen(QFile::encodeName(uri).constData(), FALSE, &ogrDriver);
+    ogrDataSource = OGROpen(QFile::encodeName(connString).constData(), FALSE, &ogrDriver);
 
     //TODO Need to set a flag or something to indicate that the layer
     //TODO is in read-only mode, otherwise edit ops will fail
