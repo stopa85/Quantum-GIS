@@ -95,6 +95,8 @@ QgsDataSourceURI::QgsDataSourceURI(QString uri)
         }
       } else if( pname=="service" ) {
         QgsDebugMsg("service keyword ignored");
+      } else if(pname=="type") {
+        mType = pval;  
       } else if(pname=="user") {
         mUsername = pval;
       } else if(pname=="password") {
