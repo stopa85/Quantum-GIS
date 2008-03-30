@@ -125,139 +125,34 @@ QgsComposerMap::~QgsComposerMap()
 
 /* This function is called by paint() and cache() to render the map.  It does not override any functions
 from QGraphicsItem. */
-void QgsComposerMap::draw ( QPainter *painter, QgsRect &extent, QgsMapToPixel *transform)
+void QgsComposerMap::draw ( QPainter *painter, const QgsRect& extent, const QSize& size, int dpi)
 {
   mMapCanvas->freeze(true);  // necessary ?
-  int nlayers = mMapCanvas->layerCount();
-    QgsCoordinateTransform* ct;
 
-    QgsRenderContext theRenderContext;
-    theRenderContext.setPainter(painter);
-    theRenderContext.setExtent(extent);
-    theRenderContext.setMapToPixel(*transform);
-
-  for ( int i = nlayers - 1; i >= 0; i-- ) {
-    QgsMapLayer *layer = mMapCanvas->getZpos(i);
-
-    //if ( !layer->visible() ) continue;
-
-    if (mMapCanvas->projectionsEnabled())
+  if(!painter)
     {
-      ct = new QgsCoordinateTransform(layer->srs(), mMapCanvas->mapRender()->destinationSrs());
+      return;
     }
-    else
+
+  QgsMapRender* canvasMapRender = mMapCanvas->mapRender();
+  if(!canvasMapRender)
     {
-      ct = NULL;
+      return;
     }
 
-    theRenderContext.setCoordTransform(ct);
-
-    if ( layer->type() == QgsMapLayer::VECTOR ) {
-      QgsVectorLayer *vector = dynamic_cast <QgsVectorLayer*> (layer);
-
-      double widthScale = mWidthScale;
-      double symbolScale = mSymbolScale;
-
-      theRenderContext.setScaleFactor( (widthScale + symbolScale) / 2);
-
-//TODO: attempt to scale cache lines and point symbols to be larger as we zoom in
-/*    if(creating cache pixmap)
-      {
-        widthScale *= (cachePixmap.width / map.rect.width);
-        symbolScale *= (cachePixmap.width / map.rect.width);
-      }
-*/
-      //QgsRect r1, r2;
-      //r1 = extent;
-      //bool split = layer->projectExtent(r1, r2);
-      
-      //todo: implement with QgsMapRender
-      vector->draw(theRenderContext);
-
-      //if ( split )
-      //{
-      //theRenderContext.setExtent(r2);
-      //vector->draw(theRenderContext);
-      //}
-    } else { 
-      // raster
-      if ( plotStyle() == QgsComposition::Print || plotStyle() == QgsComposition::Postscript ) {
-        // we have to rescale the raster to get requested resolution
-              
-        // calculate relation between composition point size and requested resolution (in mm)
-        double multip = (1. / mComposition->scale()) / (25.4 / mComposition->resolution()) ;
-              
-        double sc = mExtent.width() / (multip*QGraphicsRectItem::rect().width());
-              
-        QgsMapToPixel trans ( sc, multip*QGraphicsRectItem::rect().height(), mExtent.yMin(), mExtent.xMin() );
-	theRenderContext.setMapToPixel(trans);
-
-        painter->save();
-        painter->scale( 1./multip, 1./multip);
-        layer->draw(theRenderContext);
-            
-	theRenderContext.setMapToPixel(*transform);
-        painter->restore();
-      } 
-      else 
-      {
-        layer->draw(theRenderContext);
-      }
-    }
-  }
-    
-  // Draw vector labels
-  for ( int i = nlayers - 1; i >= 0; i-- ) {
-    QgsMapLayer *layer = mMapCanvas->getZpos(i);
-
-    if (mMapCanvas->projectionsEnabled())
+  QgsMapRender theMapRender;
+  theMapRender.setExtent(extent);
+  theMapRender.setOutputSize(size, dpi);
+  theMapRender.setLayerSet(canvasMapRender->layerSet());
+  
+  QgsRenderContext* theRenderContext = theMapRender.renderContext();
+  if(theRenderContext)
     {
-      ct = new QgsCoordinateTransform(layer->srs(), mMapCanvas->mapRender()->destinationSrs());
-    }
-    else
-    {
-      ct = NULL;
+      theRenderContext->setDrawEditingInformation(false);
+      theRenderContext->setRenderingStopped(false);
     }
 
-//    if ( !layer->visible() ) continue; //this doesn't work with the newer map layer code
-
-    if ( layer->type() == QgsMapLayer::VECTOR ) {
-      QgsVectorLayer *vector = dynamic_cast <QgsVectorLayer*> (layer);
-
-      if ( vector->labelOn() ) {
-        double fontScale = 25.4 * mFontScale * mComposition->scale() / 72;
-        if ( plotStyle() == QgsComposition::Postscript ) 
-        {
-          //fontScale = QgsComposition::psFontScaleFactor() * 72.0 / mComposition->resolution();
-
-          // TODO
-          // This is not completely correct because fonts written to postscript
-          // should use size metrics.ascent() * 72.0 / mComposition->resolution();
-          // We could add a factor for metrics.ascent()/size but it is variable
-          // Add a parrameter in drawLables() ?
-
-          QFont tempFont;
-          tempFont.setFamily(vector->label()->layerAttributes()->family());
-
-          double size = vector->label()->layerAttributes()->size();
-          size = 25.4 * size / 72;
-
-          tempFont.setPointSizeF(size);
-          QFontMetricsF tempMetrics(tempFont);
-
-          fontScale = tempMetrics.ascent() * 72.0 / mComposition->resolution();
-          //std::cout << "fontScale: " << fontScale << std::endl;
-
-          fontScale *= mFontScale;
-
-          //divide out the font size, since it will be multiplied back in when drawing the labels
-          fontScale /= vector->label()->layerAttributes()->size();
-
-        }
-        vector->drawLabels (  painter, extent, transform, ct, fontScale );
-      }
-    }
-  }
+  theMapRender.render(painter);
     
   mMapCanvas->freeze(false);
 }
@@ -313,7 +208,7 @@ void QgsComposerMap::cache ( void )
 
     QPainter p(&mCachePixmap);
     
-    draw( &p, mCacheExtent, &transform);
+    draw( &p, mCacheExtent, QSize(w, h), mCachePixmap.logicalDpiX());
     p.end();
 
     mNumCachedLayers = mMapCanvas->layerCount();
@@ -355,18 +250,16 @@ void QgsComposerMap::paint ( QPainter* painter, const QStyleOptionGraphicsItem* 
             plotStyle() == QgsComposition::Postscript ) 
   {
     std::cout << "render" << std::endl;
-  
-    double scale = mExtent.width() / QGraphicsRectItem::rect().width();
-    QgsMapToPixel transform(scale, QGraphicsRectItem::rect().height(), mExtent.yMin(), mExtent.xMin() );
+    QPaintDevice* thePaintDevice = painter->device();
+    if(!thePaintDevice)
+      {
+	return;
+      }
 
-    painter->save();
-    painter->translate(0, 0); //do we need this?
-
-    // TODO: Qt4 appears to force QPainter::CoordDevice - need to check if this is actually valid.
-    painter->setClipRect (QRectF( 0, 0, QGraphicsRectItem::rect().width(), QGraphicsRectItem::rect().height() ));
-
-    draw( painter, mExtent, &transform);
-    painter->restore();
+    
+    QRectF bRect = boundingRect();
+    QSize theSize(bRect.width(), bRect.height());
+    draw( painter, mExtent, theSize, 25.4); //scene coordinates seem to be in mm
   } 
 
   // Draw frame around

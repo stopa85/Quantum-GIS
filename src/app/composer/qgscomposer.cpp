@@ -366,7 +366,7 @@ void QgsComposer::on_mActionPrint_activated(void)
 
       std::cout << "Resolution = " << resolution << std::endl;
 
-      double scale = resolution / 25.4 / mComposition->scale();
+      //double scale = resolution / 25.4 / mComposition->scale();
 
       mComposition->setPlotStyle(QgsComposition::Postscript);
 
@@ -398,12 +398,12 @@ void QgsComposer::on_mActionPrint_activated(void)
               }
 
             QPainter p(mPrinter);
-            p.scale(scale, scale);
+            //p.scale(scale, scale);
 
-            QRectF renderArea(0, 0, (mComposition->paperWidth() * mComposition->scale()),
-                              (mComposition->paperHeight() * mComposition->scale()));
+            //QRectF renderArea(0, 0, (mComposition->paperWidth() * mComposition->scale()),
+	    //(mComposition->paperHeight() * mComposition->scale()));
 
-            mComposition->canvas()->render(&p, renderArea);
+            mComposition->canvas()->render(&p/*, renderArea*/);
 
             p.end();
 
@@ -608,12 +608,13 @@ void QgsComposer::on_mActionPrint_activated(void)
             {
               std::cout << "Printing ... " << std::endl;
               QPainter p(mPrinter);
-              p.scale(scale, scale);
+              //p.scale(scale, scale);
 
-              QRectF renderArea(0, 0, (mComposition->paperWidth() * mComposition->scale()),
-                                (mComposition->paperHeight() * mComposition->scale()));
+	      //MH: is this necessary?
+              //QRectF renderArea(0, 0, (mComposition->paperWidth() * mComposition->scale()),
+	      //(mComposition->paperHeight() * mComposition->scale()));
 
-              mComposition->canvas()->render(&p, renderArea);
+              mComposition->canvas()->render(&p/*, renderArea*/);
 
               p.end();
               std::cout << "... printing finished" << std::endl;

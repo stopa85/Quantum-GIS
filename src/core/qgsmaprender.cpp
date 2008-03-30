@@ -230,6 +230,13 @@ void QgsMapRender::render(QPainter* painter)
   //so must be false at every new render operation
   mRenderContext.setRenderingStopped(false);
 
+  //calculate scale factor
+  //use the specified dpi and not those from the paint device
+  //because sometimes QPainter units are in a local coord sys (e.g. in case of QGraphicsScene)
+  double meanDpi = mScaleCalculator->dpi();
+  double scaleFactor = meanDpi/25.4;
+  mRenderContext.setScaleFactor(scaleFactor);
+
   // render all layers in the stack, starting at the base
   QListIterator<QString> li(mLayerSet);
   li.toBack();
