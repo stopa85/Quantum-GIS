@@ -212,6 +212,12 @@ void QgsMapRender::render(QPainter* painter)
 
   if (mDrawing)
     return;
+
+  QPaintDevice* thePaintDevice = painter->device();
+  if(!thePaintDevice)
+    {
+      return;
+    }
   
   mDrawing = true;
   
@@ -233,8 +239,9 @@ void QgsMapRender::render(QPainter* painter)
   //calculate scale factor
   //use the specified dpi and not those from the paint device
   //because sometimes QPainter units are in a local coord sys (e.g. in case of QGraphicsScene)
-  double meanDpi = mScaleCalculator->dpi();
-  double scaleFactor = meanDpi/25.4;
+  double sceneDpi = mScaleCalculator->dpi();
+  double scaleFactor = sceneDpi/25.4; //units should always be mm
+  double rasterScaleFactor = (thePaintDevice->logicalDpiX() + thePaintDevice->logicalDpiY()) / 2.0 /sceneDpi;
   mRenderContext.setScaleFactor(scaleFactor);
 
   // render all layers in the stack, starting at the base
@@ -303,6 +310,29 @@ void QgsMapRender::render(QPainter* painter)
 
       mRenderContext.setCoordTransform(ct);
 
+      //decide if we have to scale the raster
+      //this is necessary in case QGraphicsScene is used
+      bool scaleRaster = false;
+      QgsMapToPixel rasterMapToPixel;
+      QgsMapToPixel bk_mapToPixel;
+      double debug = fabs(rasterScaleFactor - 1.0);
+      if(ml->type() == QgsMapLayer::RASTER && fabs(rasterScaleFactor - 1.0) > 0.000001)
+	{
+	  scaleRaster = true;
+	}
+
+
+      if(scaleRaster)
+	{
+	  bk_mapToPixel = mRenderContext.mapToPixel();
+	  rasterMapToPixel = mRenderContext.mapToPixel();
+	  rasterMapToPixel.setMapUnitsPerPixel(mRenderContext.mapToPixel().mapUnitsPerPixel() / rasterScaleFactor);
+	  rasterMapToPixel.setYmax(mSize.height() * rasterScaleFactor);
+	  mRenderContext.setMapToPixel(rasterMapToPixel);
+	  mRenderContext.painter()->save();
+	  mRenderContext.painter()->scale(1.0/rasterScaleFactor, 1.0/rasterScaleFactor);
+	}
+
       if (!ml->draw(mRenderContext))
 	{
 	  emit drawError(ml);
@@ -316,6 +346,12 @@ void QgsMapRender::render(QPainter* painter)
 	    emit drawError(ml);
 	  }
       }
+
+      if(scaleRaster)
+	{
+	  mRenderContext.setMapToPixel(bk_mapToPixel);
+	  mRenderContext.painter()->restore();
+	}
       
       disconnect(ml, SIGNAL(drawingProgress(int,int)), this, SLOT(onDrawingProgress(int,int)));
     }

@@ -332,6 +332,7 @@ void QgsComposer::on_mActionPrint_activated(void)
 
   //set the resolution and paper orientation each time we call up the dialog, not just the first time we run it
   mPrinter->setResolution(mComposition->resolution());
+
   if (mComposition->paperOrientation() == QgsComposition::Portrait)
   {
     mPrinter->setOrientation(QPrinter::Portrait);

@@ -71,7 +71,10 @@ public:
     bool writeXML( QDomNode & node, QDomDocument & document, bool temp = false );
     bool readXML( QDomNode & node );
      
-    /** \brief Draw to paint device */
+    /** \brief Draw to paint device 
+	@param extent map extent
+	@param size size in scene coordinates
+	@param dpi scene dpi*/
     void draw(QPainter *painter, const QgsRect& extent, const QSize& size, int dpi);
 
     /** \brief Reimplementation of QCanvasItem::paint - draw on canvas */
