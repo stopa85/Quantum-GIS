@@ -65,10 +65,6 @@ class QgsRenderContext
 
  private:
 
-  //Copy constructor and assignement operator forbidden
-   QgsRenderContext(const QgsRenderContext& other){}
-   QgsRenderContext& operator=(const QgsRenderContext&){}
-
    /**Painter for rendering operations*/
    QPainter* mPainter;
    

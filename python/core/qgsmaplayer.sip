@@ -57,12 +57,12 @@ public:
 
     /** Render the layer, to be overridden in child classes
      */
-    virtual bool draw(QPainter* painter, const QgsRenderContext& renderContext);    
+    virtual bool draw(QgsRenderContext& renderContext);
 
     /** Draw labels
      * @TODO to be removed: used only in vector layers
      */
-    virtual void drawLabels(QPainter* painter, QgsRect& rect, QgsMapToPixel* mtp, QgsCoordinateTransform* ct);
+    virtual void drawLabels(QgsRenderContext& renderContext);
 
     /** Return the extent of the layer as a QRect */
     const QgsRect extent();

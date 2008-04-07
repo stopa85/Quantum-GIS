@@ -276,7 +276,6 @@ void QgsVectorLayer::setDisplayField(QString fldName)
   }
 }
 
-//void QgsVectorLayer::drawLabels(QPainter * p, QgsRect & viewExtent, QgsMapToPixel * theMapToPixelTransform, QgsCoordinateTransform* ct)
 void QgsVectorLayer::drawLabels(QgsRenderContext& renderContext)
 {
   QPainter* thePainter = renderContext.painter();
