@@ -267,7 +267,7 @@ QImage QgsSymbol::getPolygonSymbolAsImage()
 QImage QgsSymbol::getCachedPointSymbolAsImage(  double widthScale,
                bool selected, QColor selectionColor )
 {
-  if ( !mCacheUpToDate 
+  if ( !mCacheUpToDate2 
        || ( selected && mSelectionColor != selectionColor ) )
   {
     if ( selected ) {
