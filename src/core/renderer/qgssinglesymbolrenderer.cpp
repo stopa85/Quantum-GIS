@@ -89,8 +89,7 @@ void QgsSingleSymbolRenderer::addSymbol(QgsSymbol* sy)
     updateSymbolAttributes();
 }
 
-void QgsSingleSymbolRenderer::renderFeature(QPainter * p, QgsFeature & f, QImage* img, 
-					    double* scalefactor, bool selected, double widthScale)
+void QgsSingleSymbolRenderer::renderFeature(QPainter * p, QgsFeature & f, QImage* img, bool selected, double widthScale, double rasterScaleFactor)
 {
   // Point 
   if ( img && mVectorType == QGis::Point) {
@@ -114,7 +113,7 @@ void QgsSingleSymbolRenderer::renderFeature(QPainter * p, QgsFeature & f, QImage
     }
 
     *img = mSymbol->getPointSymbolAsImage( widthScale, selected, mSelectionColor,
-                                            *scalefactor * fieldScale, rotation);
+                                            rasterScaleFactor * fieldScale, rotation);
   }
 
 

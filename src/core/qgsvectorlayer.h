@@ -427,6 +427,7 @@ private:                       // Private methods
                    const QgsMapToPixel* cXf,
                    const QgsCoordinateTransform* ct,
                    QImage* marker,
+		   double widthScale,
                    double markerScaleFactor,
                    bool drawingToEditingCanvas);
 

@@ -107,7 +107,7 @@ class CORE_EXPORT QgsSymbol{
         bool selected = false,
         QColor selectionColor = Qt::yellow,
         double scale = 1.0,
-        double rotation = 1.0);
+        double rotation = 0.0);
 
     /**Writes the contents of the symbol to a configuration file
       @ return true in case of success*/

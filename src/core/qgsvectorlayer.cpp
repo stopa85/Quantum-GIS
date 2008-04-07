@@ -738,7 +738,7 @@ bool QgsVectorLayer::draw(QgsRenderContext& renderContext)
     /* Scale factor of the marker image*/
     /* We set this to the symbolScale, and if it is NOT changed, */
     /* we don't have to do another scaling here */
-    double markerScaleFactor = renderContext.scaleFactor();
+    double markerScaleFactor = renderContext.rasterScaleFactor();
     
     if(mEditable)
     {
@@ -820,12 +820,12 @@ bool QgsVectorLayer::draw(QgsRenderContext& renderContext)
 
 	//QgsDebugMsg(QString("markerScale before renderFeature(): %1").arg(markerScaleFactor));
 	// markerScalerFactore reflects the wanted scaling of the marker
-        mRenderer->renderFeature(renderContext.painter(), fet, &marker, &markerScaleFactor, sel, renderContext.scaleFactor());
+        mRenderer->renderFeature(renderContext.painter(), fet, &marker, sel, renderContext.scaleFactor(), renderContext.rasterScaleFactor());
 	// markerScalerFactore now reflects the actual scaling of the marker that the render performed.
 	//QgsDebugMsg(QString("markerScale after renderFeature(): %1").arg(markerScaleFactor));
 
-        double scale = renderContext.scaleFactor() / markerScaleFactor;
-        drawFeature(renderContext.painter() , fet, &(renderContext.mapToPixel()), renderContext.coordTransform(), &marker, scale, renderContext.drawEditingInformation());
+        double scale = renderContext.scaleFactor() /  markerScaleFactor;
+        drawFeature(renderContext.painter() , fet, &(renderContext.mapToPixel()), renderContext.coordTransform(), &marker, renderContext.scaleFactor(), renderContext.rasterScaleFactor(), renderContext.drawEditingInformation());
 
         ++featureCount;
       }
@@ -844,7 +844,7 @@ bool QgsVectorLayer::draw(QgsRenderContext& renderContext)
 	  // markerScalerFactore now reflects the actual scaling of the marker that the render performed.
 	  QgsDebugMsg(QString("markerScale after renderFeature(): %1").arg(markerScaleFactor));
 
-          double scale = renderContext.scaleFactor() / markerScaleFactor;
+          //double scale = renderContext.scaleFactor() / markerScaleFactor;
     
           if (mChangedGeometries.contains((*it).featureId()))
           {
@@ -853,7 +853,7 @@ bool QgsVectorLayer::draw(QgsRenderContext& renderContext)
           
           // give a deep copy of the geometry to mCachedGeometry because it will be erased at each redraw
           mCachedGeometries.insert((*it).featureId(), QgsGeometry(*((*it).geometry())) );
-          drawFeature(renderContext.painter(), *it, &(renderContext.mapToPixel()), renderContext.coordTransform(), &marker, scale, renderContext.drawEditingInformation());
+          drawFeature(renderContext.painter(), *it, &(renderContext.mapToPixel()), renderContext.coordTransform(), &marker, renderContext.scaleFactor(), renderContext.rasterScaleFactor(), renderContext.drawEditingInformation());
         }
       }
 
@@ -2933,7 +2933,8 @@ void QgsVectorLayer::drawFeature(QPainter* p,
                                  const QgsMapToPixel* theMapToPixelTransform,
                                  const QgsCoordinateTransform* ct,
                                  QImage * marker,
-                                 double markerScaleFactor,
+                                 double widthScale,
+				 double rasterScaleFactor,
                                  bool drawingToEditingCanvas)
 {
   // Only have variables, etc outside the switch() statement that are
@@ -2970,10 +2971,11 @@ void QgsVectorLayer::drawFeature(QPainter* p,
 
         transformPoint(x, y, theMapToPixelTransform, ct);
         //QPointF pt(x - (marker->width()/2),  y - (marker->height()/2));
-        QPointF pt(x/markerScaleFactor - (marker->width()/2),  y/markerScaleFactor - (marker->height()/2));
+        QPointF pt(x*rasterScaleFactor - (marker->width()/2),  y*rasterScaleFactor - (marker->height()/2));
 
         p->save();
-        p->scale(markerScaleFactor,markerScaleFactor);
+        //p->scale(markerScaleFactor,markerScaleFactor);
+	p->scale(1.0/rasterScaleFactor, 1.0/rasterScaleFactor);
         p->drawImage(pt, *marker);
         p->restore();
 
@@ -2987,7 +2989,8 @@ void QgsVectorLayer::drawFeature(QPainter* p,
         ptr += 4;
 
         p->save();
-        p->scale(markerScaleFactor, markerScaleFactor);
+        //p->scale(markerScaleFactor, markerScaleFactor);
+	p->scale(1.0/rasterScaleFactor, 1.0/rasterScaleFactor);
 
         for (register unsigned int i = 0; i < nPoints; ++i)
         {
@@ -3006,7 +3009,8 @@ void QgsVectorLayer::drawFeature(QPainter* p,
 
           transformPoint(x, y, theMapToPixelTransform, ct);
           //QPointF pt(x - (marker->width()/2),  y - (marker->height()/2));
-          QPointF pt(x/markerScaleFactor - (marker->width()/2),  y/markerScaleFactor - (marker->height()/2));
+          //QPointF pt(x/markerScaleFactor - (marker->width()/2),  y/markerScaleFactor - (marker->height()/2));
+	  QPointF pt(x, y);
           
 #if defined(Q_WS_X11)
           // Work around a +/- 32768 limitation on coordinates in X11

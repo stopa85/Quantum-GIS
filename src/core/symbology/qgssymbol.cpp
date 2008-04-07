@@ -271,19 +271,19 @@ QImage QgsSymbol::getCachedPointSymbolAsImage(  double widthScale,
        || ( selected && mSelectionColor != selectionColor ) )
   {
     if ( selected ) {
-      cache(  selectionColor );
+      cache2( widthScale, selectionColor );
     } else {
-      cache(  mSelectionColor );
+      cache2( widthScale, mSelectionColor );
     }
   }
   
   if ( selected )
   {
-    return mPointSymbolImageSelected;
+    return mPointSymbolImageSelected2;
   }
   else 
   {
-    return mPointSymbolImage;
+    return mPointSymbolImage2;
   }
 }
 
@@ -298,19 +298,21 @@ QImage QgsSymbol::getPointSymbolAsImage(  double widthScale,
   }
 
   QImage preRotateImage;
+  QPen pen = mPen;
+  double newWidth = mPen.width() * widthScale * scale;
+  pen.setWidth(mPen.width() * widthScale * scale);
 
   if ( selected )
   {
-    QPen pen = mPen;
     pen.setColor ( selectionColor ); 
     QBrush brush = mBrush;
-    preRotateImage = QgsMarkerCatalogue::instance()->imageMarker ( mPointSymbolName, (int)(mPointSize * scale),
+    preRotateImage = QgsMarkerCatalogue::instance()->imageMarker ( mPointSymbolName, (int)(mPointSize * scale * widthScale),
                                                                    pen, mBrush );
   }
   else 
   {
-    preRotateImage = QgsMarkerCatalogue::instance()->imageMarker ( mPointSymbolName, (int)(mPointSize * scale),
-                                                                   mPen, mBrush );
+    preRotateImage = QgsMarkerCatalogue::instance()->imageMarker ( mPointSymbolName, (int)(mPointSize * scale * widthScale),
+                                                                   pen, mBrush );
   }
 
   QMatrix rotationMatrix;
@@ -348,7 +350,7 @@ void QgsSymbol::cache2( double widthScale, QColor selectionColor )
     pen.setWidth ( (int) ( widthScale * pen.width() ) );
 
     
-    mPointSymbolImage2 = QgsMarkerCatalogue::instance()->imageMarker ( mPointSymbolName, mPointSize,
+    mPointSymbolImage2 = QgsMarkerCatalogue::instance()->imageMarker ( mPointSymbolName, mPointSize * widthScale,
 	                        pen, mBrush, false );
 
     QBrush brush = mBrush;
@@ -356,7 +358,7 @@ void QgsSymbol::cache2( double widthScale, QColor selectionColor )
     pen.setColor ( selectionColor ); 
 
     mPointSymbolImageSelected2 = QgsMarkerCatalogue::instance()->imageMarker ( 
-	               mPointSymbolName, mPointSize, pen, brush,  false );
+	               mPointSymbolName, mPointSize * widthScale, pen, brush,  false );
 
     mSelectionColor2 = selectionColor;
     

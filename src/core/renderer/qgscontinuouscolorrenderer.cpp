@@ -72,8 +72,7 @@ void QgsContinuousColorRenderer::setMaximumSymbol(QgsSymbol* sy)
   mMaximumSymbol = sy;
 }
 
-void QgsContinuousColorRenderer::renderFeature(QPainter * p, QgsFeature & f, QImage* img, 
-	double* scalefactor, bool selected, double widthScale)
+void QgsContinuousColorRenderer::renderFeature(QPainter * p, QgsFeature & f, QImage* img, bool selected, double widthScale, double rasterScaleFactor)
 {
   if ((mMinimumSymbol && mMaximumSymbol))
   {
@@ -137,8 +136,6 @@ void QgsContinuousColorRenderer::renderFeature(QPainter * p, QgsFeature & f, QIm
 
       *img = QgsMarkerCatalogue::instance()->imageMarker ( mMinimumSymbol->pointSymbolName(), mMinimumSymbol->pointSize(),
           pen, brush);
-
-      if ( scalefactor ) *scalefactor = 1;
     } 
     else if ( mVectorType == QGis::Line )
     {

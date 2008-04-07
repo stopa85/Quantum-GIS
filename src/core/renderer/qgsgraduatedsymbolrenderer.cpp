@@ -93,8 +93,7 @@ bool QgsGraduatedSymbolRenderer::willRenderFeature(QgsFeature *f)
   return (symbolForFeature(f) != 0);
 }
 
-void QgsGraduatedSymbolRenderer::renderFeature(QPainter * p, QgsFeature & f, QImage* img, 
-	double* scalefactor, bool selected, double widthScale)
+void QgsGraduatedSymbolRenderer::renderFeature(QPainter * p, QgsFeature & f, QImage* img, bool selected, double widthScale, double rasterScaleFactor)
 {
   QgsSymbol* theSymbol = symbolForFeature(&f);
   if(!theSymbol)
@@ -132,7 +131,7 @@ void QgsGraduatedSymbolRenderer::renderFeature(QPainter * p, QgsFeature & f, QIm
       QgsDebugMsg(QString("Feature has rotation factor %1").arg(rotation));
     }
     *img = theSymbol->getPointSymbolAsImage( widthScale, selected, mSelectionColor,
-                                            *scalefactor * fieldScale, rotation);
+                                            rasterScaleFactor * fieldScale, rotation);
   } 
 
   // Line, polygon

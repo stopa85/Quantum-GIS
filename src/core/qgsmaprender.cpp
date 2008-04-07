@@ -243,6 +243,7 @@ void QgsMapRender::render(QPainter* painter)
   double scaleFactor = sceneDpi/25.4; //units should always be mm
   double rasterScaleFactor = (thePaintDevice->logicalDpiX() + thePaintDevice->logicalDpiY()) / 2.0 /sceneDpi;
   mRenderContext.setScaleFactor(scaleFactor);
+  mRenderContext.setRasterScaleFactor(rasterScaleFactor);
 
   // render all layers in the stack, starting at the base
   QListIterator<QString> li(mLayerSet);

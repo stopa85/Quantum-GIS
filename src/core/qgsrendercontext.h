@@ -42,6 +42,8 @@ class QgsRenderContext
   const QgsMapToPixel& mapToPixel() const {return mMapToPixel;}
 
   double scaleFactor() const {return mScaleFactor;}
+
+  double rasterScaleFactor() const {return mRasterScaleFactor;}
   
   bool renderingStopped() const {return mRenderingStopped;}
 
@@ -58,6 +60,7 @@ class QgsRenderContext
   void setDrawEditingInformation(bool b){mDrawEditingInformation = b;}
   void setRenderingStopped(bool stopped){mRenderingStopped = stopped;}
   void setScaleFactor(double factor){mScaleFactor = factor;}
+  void setRasterScaleFactor(double factor){mRasterScaleFactor = factor;}
   void setPainter(QPainter* p){mPainter = p;}
 
  private:
@@ -87,6 +90,9 @@ class QgsRenderContext
    
    /**Factor to scale line widths and point marker sizes*/
    double mScaleFactor;
+
+   /**Factor to scale rasters*/
+   double mRasterScaleFactor;
 };
 
 #endif

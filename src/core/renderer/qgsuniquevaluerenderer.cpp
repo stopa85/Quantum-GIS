@@ -102,8 +102,7 @@ bool QgsUniqueValueRenderer::willRenderFeature(QgsFeature *f)
   return (symbolForFeature(f) != 0);
 }
     
-void QgsUniqueValueRenderer::renderFeature(QPainter* p, QgsFeature& f,QImage* img, 
-	double* scalefactor, bool selected, double widthScale)
+void QgsUniqueValueRenderer::renderFeature(QPainter* p, QgsFeature& f,QImage* img, bool selected, double widthScale, double rasterScaleFactor)
 {
   QgsSymbol* symbol = symbolForFeature(&f);
   if(!symbol) //no matching symbol
@@ -140,7 +139,7 @@ void QgsUniqueValueRenderer::renderFeature(QPainter* p, QgsFeature& f,QImage* im
       QgsDebugMsg(QString("Feature has rotation factor %1").arg(rotation));
     }
     *img = symbol->getPointSymbolAsImage( widthScale, selected, mSelectionColor,
-                                            *scalefactor * fieldScale, rotation);
+                                            rasterScaleFactor * fieldScale, rotation);
 }  
   // Line, polygon
   else if ( mVectorType != QGis::Point )
