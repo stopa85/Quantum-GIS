@@ -122,7 +122,7 @@ void QgsContinuousColorRenderer::renderFeature(QPainter * p, QgsFeature & f, QIm
       // later add support for both pen and brush to dialog
       QPen pen = mMinimumSymbol->pen();
       pen.setColor ( QColor(red, green, blue) );
-      pen.setWidthF ( widthScale * pen.width() );
+      pen.setWidthF ( widthScale * pen.widthF() );
 
       QBrush brush = mMinimumSymbol->brush();
 
@@ -139,8 +139,10 @@ void QgsContinuousColorRenderer::renderFeature(QPainter * p, QgsFeature & f, QIm
     } 
     else if ( mVectorType == QGis::Line )
     {
-      p->setPen( QPen(QColor(red, green, blue),
-            (int)(widthScale*mMinimumSymbol->pen().width()) ));//make sure the correct line width is used
+      QPen linePen;
+      linePen.setColor(QColor(red, green, blue));
+      linePen.setWidthF(widthScale*mMinimumSymbol->pen().widthF());
+      p->setPen(linePen);
     } 
     else
     {
@@ -149,7 +151,7 @@ void QgsContinuousColorRenderer::renderFeature(QPainter * p, QgsFeature & f, QIm
       {
         QPen pen;
         pen.setColor(QColor(0,0,0));
-        pen.setWidthF(widthScale*mMinimumSymbol->pen().width());
+        pen.setWidthF(widthScale*mMinimumSymbol->pen().widthF());
         p->setPen(pen);
       }
       else

@@ -147,14 +147,14 @@ void QgsSymbol::setFillColor(QColor c)
   mCacheUpToDate = mCacheUpToDate2 = false;
 }
 
-int QgsSymbol::lineWidth() const
+double QgsSymbol::lineWidth() const
 {
-  return mPen.width();
+  return mPen.widthF();
 }
 
-void QgsSymbol::setLineWidth(int w)
+void QgsSymbol::setLineWidth(double w)
 {
-  mPen.setWidth(w);
+  mPen.setWidthF(w);
   mCacheUpToDate = mCacheUpToDate2 = false;
 }
 
@@ -299,8 +299,8 @@ QImage QgsSymbol::getPointSymbolAsImage(  double widthScale,
 
   QImage preRotateImage;
   QPen pen = mPen;
-  double newWidth = mPen.width() * widthScale * scale;
-  pen.setWidth(mPen.width() * widthScale * scale);
+  double newWidth = mPen.widthF() * widthScale * scale;
+  pen.setWidth(mPen.widthF() * widthScale * scale);
 
   if ( selected )
   {
@@ -419,7 +419,7 @@ bool QgsSymbol::writeXML( QDomNode & item, QDomDocument & document ) const
     outlinestyle.appendChild(outlinestyletxt);
     symbol.appendChild(outlinestyle);
     QDomElement outlinewidth=document.createElement("outlinewidth");
-    QDomText outlinewidthtxt=document.createTextNode(QString::number(mPen.width()));
+    QDomText outlinewidthtxt=document.createTextNode(QString::number(mPen.widthF()));
     outlinewidth.appendChild(outlinewidthtxt);
     symbol.appendChild(outlinewidth);
     QDomElement fillcolor=document.createElement("fillcolor");
@@ -515,7 +515,7 @@ bool QgsSymbol::readXML( QDomNode & synode )
 
     QDomNode outlwnode = synode.namedItem("outlinewidth");
     QDomElement outlwelement = outlwnode.toElement();
-    setLineWidth(outlwelement.text().toInt());
+    setLineWidth(outlwelement.text().toDouble());
 
     QDomNode fillcnode = synode.namedItem("fillcolor");
     QDomElement fillcelement = fillcnode.toElement();

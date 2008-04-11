@@ -101,8 +101,8 @@ QgsContinuousColorDialog::QgsContinuousColorDialog(QgsVectorLayer * layer)
         btnMaxValue->setColor( maxsymbol->brush().color() );
     }
 
-	outlinewidthspinbox->setMinValue(0);
-	outlinewidthspinbox->setValue(minsymbol->pen().width());
+	outlinewidthspinbox->setMinimum(0);
+	outlinewidthspinbox->setValue(minsymbol->pen().widthF());
 
 	if (renderer->drawPolygonOutline()) 
 	  cb_polygonOutline->setCheckState(Qt::Checked);
@@ -114,7 +114,7 @@ QgsContinuousColorDialog::QgsContinuousColorDialog(QgsVectorLayer * layer)
     else
     {
       cb_polygonOutline->setCheckState(Qt::Checked);
-      outlinewidthspinbox->setValue(1);
+      outlinewidthspinbox->setValue(0.4);
       if (mVectorLayer->vectorType() != QGis::Polygon)
         cb_polygonOutline->setVisible(false);
 
@@ -172,25 +172,31 @@ void QgsContinuousColorDialog::apply()
 
     //create the render items for minimum and maximum value
     QgsSymbol* minsymbol = new QgsSymbol(mVectorLayer->vectorType(), QString::number(minimum, 'f'), "", "");
+    QPen minPen;
+    minPen.setColor(btnMinValue->color());
+    minPen.setWidthF(outlinewidthspinbox->value());
     if (mVectorLayer->vectorType() == QGis::Line || mVectorLayer->vectorType() == QGis::Point)
     {
-	minsymbol->setPen(QPen(btnMinValue->color(), outlinewidthspinbox->value()));
+	minsymbol->setPen(minPen);
     } 
     else
     {
 	minsymbol->setBrush(QBrush(btnMinValue->color()));
-        minsymbol->setPen(QPen(QColor(0, 0, 0), outlinewidthspinbox->value()));
+        minsymbol->setPen(minPen);
     }
     
     QgsSymbol* maxsymbol = new QgsSymbol(mVectorLayer->vectorType(), QString::number(maximum, 'f'), "", "");
+    QPen maxPen;
+    maxPen.setColor(btnMaxValue->color());
+    maxPen.setWidthF(outlinewidthspinbox->value());
     if (mVectorLayer->vectorType() == QGis::Line || mVectorLayer->vectorType() == QGis::Point)
     {
-	maxsymbol->setPen(QPen(btnMaxValue->color(), outlinewidthspinbox->value()));
+	maxsymbol->setPen(maxPen);
     } 
     else
     {
 	maxsymbol->setBrush(QBrush(btnMaxValue->color()));
-	maxsymbol->setPen(QPen(QColor(0, 0, 0), outlinewidthspinbox->value()));
+	maxsymbol->setPen(maxPen);
     }
   
     QgsContinuousColorRenderer* renderer = new QgsContinuousColorRenderer(mVectorLayer->vectorType());

@@ -173,7 +173,7 @@ void QgsGraduatedSymbolDialog::apply()
 	  
 	  sy->setColor(it->second->pen().color());
 	  sy->setLineStyle(it->second->pen().style());
-	  sy->setLineWidth(it->second->pen().width());
+	  sy->setLineWidth(it->second->pen().widthF());
 	  
 	  if (mVectorLayer->vectorType() == QGis::Point)
 	    {
@@ -293,7 +293,7 @@ void QgsGraduatedSymbolDialog::adjustClassification()
           pen.setColor(Qt::black); 
         } 
 
-	pen.setWidth(1);
+	pen.setWidthF(0.4);
 	brush.setStyle(Qt::SolidPattern);
 	symbol->setPen(pen);
 	symbol->setBrush(brush);

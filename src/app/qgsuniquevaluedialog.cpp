@@ -203,7 +203,7 @@ void QgsUniqueValueDialog::changeClassificationAttribute()
 	    {
 	      pen.setColor(thecolor);
 	      pen.setStyle(Qt::SolidLine);
-	      pen.setWidth(1);
+	      pen.setWidthF(0.4);
 	    }
 	  else
 	    {
@@ -211,7 +211,7 @@ void QgsUniqueValueDialog::changeClassificationAttribute()
 	      brush.setStyle(Qt::SolidPattern);
 	      pen.setColor(Qt::black);
 	      pen.setStyle(Qt::SolidLine);
-	      pen.setWidth(1);
+	      pen.setWidthF(0.4);
 	    }
 	  sym->setPen(pen);
 	  sym->setBrush(brush);

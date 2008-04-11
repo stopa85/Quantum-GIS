@@ -147,14 +147,14 @@ void QgsUniqueValueRenderer::renderFeature(QPainter* p, QgsFeature& f,QImage* im
       if( !selected ) 
 	{
 	  QPen pen=symbol->pen();
-	  pen.setWidthF ( widthScale * pen.width() );
+	  pen.setWidthF ( widthScale * pen.widthF() );
 	  p->setPen(pen);
 	  p->setBrush(symbol->brush());
 	}
       else
 	{
 	  QPen pen=symbol->pen();
-	  pen.setWidthF ( widthScale * pen.width() );
+	  pen.setWidthF ( widthScale * pen.widthF() );
 	  pen.setColor(mSelectionColor);
 	  QBrush brush=symbol->brush();
 		brush.setColor(mSelectionColor);
