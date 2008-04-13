@@ -144,6 +144,8 @@ void QgsComposerMap::draw ( QPainter *painter, const QgsRect& extent, const QSiz
   theMapRender.setExtent(extent);
   theMapRender.setOutputSize(size, dpi);
   theMapRender.setLayerSet(canvasMapRender->layerSet());
+  theMapRender.setProjectionsEnabled(canvasMapRender->projectionsEnabled());
+  theMapRender.setDestinationSrs(canvasMapRender->destinationSrs());
   
   QgsRenderContext* theRenderContext = theMapRender.renderContext();
   if(theRenderContext)
