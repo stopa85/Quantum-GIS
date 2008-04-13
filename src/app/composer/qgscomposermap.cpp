@@ -261,6 +261,7 @@ void QgsComposerMap::paint ( QPainter* painter, const QStyleOptionGraphicsItem* 
     
     QRectF bRect = boundingRect();
     QSize theSize(bRect.width(), bRect.height());
+    painter->setClipRect (QRectF( 0, 0, QGraphicsRectItem::rect().width(), QGraphicsRectItem::rect().height() ));
     draw( painter, mExtent, theSize, 25.4); //scene coordinates seem to be in mm
   } 
 
