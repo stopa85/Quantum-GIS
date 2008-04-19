@@ -580,7 +580,7 @@ void QgsMapCanvas::keyPressEvent(QKeyEvent * e)
 
   if(mDrawing)
     {
-      return;
+      e->ignore();
     }
 
   emit keyPressed(e);

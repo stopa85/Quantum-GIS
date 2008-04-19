@@ -5330,8 +5330,10 @@ void QgisApp::keyPressEvent ( QKeyEvent * e )
 	    }
 	}
     }
-
-  e->ignore();
+  else
+    {
+      e->ignore();
+    }
 }
     
 // Debug hook - used to output diagnostic messages when evoked (usually from the menu)
