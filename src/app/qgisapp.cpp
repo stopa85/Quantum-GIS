@@ -1123,6 +1123,9 @@ void QgisApp::createStatusBar()
   // Add a panel to the status bar for the scale, coords and progress
   // And also rendering suppression checkbox
   //
+
+  
+
   mProgressBar = new QProgressBar(statusBar());
   mProgressBar->setMaximumWidth(100);
   mProgressBar->hide();
@@ -1132,6 +1135,10 @@ void QgisApp::createStatusBar()
   // small on some platforms. A point size of 9 still provides
   // plenty of display space on 1024x768 resolutions
   QFont myFont( "Arial", 9 );
+
+  mStopRenderButton = new QPushButton(tr("Stop rendering"), statusBar());
+  statusBar()->addWidget(mStopRenderButton, 0, true);
+
   statusBar()->setFont(myFont);
   mScaleLabel = new QLabel(QString(),statusBar());
   mScaleLabel->setFont(myFont);
@@ -1301,6 +1308,7 @@ void QgisApp::setupConnections()
   connect(mMapCanvas, SIGNAL(scaleChanged(double)), this, SLOT(updateMouseCoordinatePrecision()));
 
   connect(mRenderSuppressionCBox, SIGNAL(toggled(bool )), mMapCanvas, SLOT(setRenderFlag(bool)));
+  connect(mStopRenderButton, SIGNAL(clicked()), this, SLOT(stopRendering()));
 
   // Connect warning dialog from project reading
   connect(QgsProject::instance(), SIGNAL(warnOlderProjectVersion(QString)),
@@ -3260,6 +3268,22 @@ void QgisApp::toggleFullScreen()
     showFullScreen();
     mFullScreenMode = true;
   }
+}
+
+void QgisApp::stopRendering()
+{
+  if(mMapCanvas)
+    {
+      QgsMapRender* mapRender = mMapCanvas->mapRender();
+      if(mapRender)
+	{
+	  QgsRenderContext* renderContext = mapRender->renderContext();
+	  if(renderContext)
+	    {
+	      renderContext->setRenderingStopped(true);
+	    }
+	}
+    }
 }
 
 //reimplements method from base (gui) class
