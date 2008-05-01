@@ -770,16 +770,17 @@ bool QgsVectorLayer::draw(QgsRenderContext& renderContext)
         // If update threshold is greater than 0, check to see if
         // the threshold has been exceeded
 
-        if(mUpdateThreshold > 0)
-        {
-          // signal progress in drawing
-          if(0 == featureCount % mUpdateThreshold)
-	    {
-	      emit screenUpdateRequested();
+	if(mUpdateThreshold > 0 && 0 == featureCount % mUpdateThreshold)
+	  {
+	    emit screenUpdateRequested();
+	    emit drawingProgress(featureCount, totalFeatures);
+	    qApp->processEvents();
+	  }
+	else if(featureCount % 1000 == 0)
+	  {
 	      emit drawingProgress(featureCount, totalFeatures);
 	      qApp->processEvents();
-	    }
-        }
+	  }
 
         if (mEditable)
         {
