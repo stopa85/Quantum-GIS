@@ -60,7 +60,8 @@ QgsAttributeTableDisplay::QgsAttributeTableDisplay(QgsVectorLayer* layer, QgisAp
   connect(mSearchShowResults, SIGNAL(activated(int)), this, SLOT(searchShowResultsChanged(int)));
   connect(btnAdvancedSearch, SIGNAL(clicked()), this, SLOT(advancedSearch()));
   connect(btnClose, SIGNAL(clicked()), this, SLOT(close()));
-
+  connect(tblAttributes, SIGNAL(featureAttributeChanged(int,int)), this, SLOT(changeFeatureAttribute(int,int)));
+  
   //disable those buttons until start editing has been pressed and provider supports it
   mAddAttributeButton->setEnabled(false);
   mDeleteAttributeButton->setEnabled(false);
@@ -191,13 +192,14 @@ void QgsAttributeTableDisplay::stopEditing()
   {
     //commit or roll back?
     QMessageBox::StandardButton commit=QMessageBox::information(this,tr("Stop editing"),
-                                        tr("Do you want to save the changes?"),
-                                        QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+      tr("Do you want to save the changes?"),
+      QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
     if(commit==QMessageBox::Save)
     {
       if(!table()->commitChanges(mLayer))
       {
-        QMessageBox::information(this,tr("Error"),tr("Could not commit changes"));
+        QMessageBox::information(this,tr("Error"),tr("Could not commit changes - changes are still pending"));
+        return;
       }
     }
     else if(commit == QMessageBox::Discard)
@@ -205,9 +207,9 @@ void QgsAttributeTableDisplay::stopEditing()
       table()->rollBack(mLayer);
     }
     else //cancel
-      {
-	return;
-      }
+    {
+      return;
+    }
   }
   btnStartEditing->setEnabled(true);
   btnStopEditing->setEnabled(false);
@@ -405,4 +407,20 @@ void QgsAttributeTableDisplay::on_btnHelp_clicked()
 void QgsAttributeTableDisplay::showHelp()
 {
   QgsContextHelp::run(context_id);
+}
+
+void QgsAttributeTableDisplay::changeFeatureAttribute(int row, int column)
+{
+  QgsFeatureList &flist = mLayer->addedFeatures();
+
+  int id = table()->text(row,0).toInt();
+
+  int i;
+  for(i=0; i<flist.size() && flist[i].featureId()!=id; i++)
+    ;
+
+  if(i==flist.size())
+    return;
+
+  flist[i].changeAttribute(column-1, table()->text(row,column));
 }

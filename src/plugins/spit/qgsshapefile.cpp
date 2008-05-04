@@ -17,8 +17,7 @@
 /* $Id$ */
 
 #include <QApplication>
-#include <ogrsf_frmts.h>
-#include <ogr_geometry.h>
+#include <ogr_api.h>
 #include <string>
 #include <iostream>
 #include <fstream>
@@ -37,6 +36,8 @@
 #include "qgis.h"
 #include "qgslogger.h"
 
+#include "qgspgutil.h"
+
 // for htonl
 #ifdef WIN32
 #include <winsock.h>
@@ -49,11 +50,11 @@ QgsShapeFile::QgsShapeFile(QString name, QString encoding){
   filename = name;
   features = 0;
   OGRRegisterAll();
-  ogrDataSource = OGRSFDriverRegistrar::Open(QFile::encodeName(filename).constData());
+  ogrDataSource = OGROpen(QFile::encodeName(filename).constData(),FALSE,NULL);
   if (ogrDataSource != NULL){
     valid = true;
-    ogrLayer = ogrDataSource->GetLayer(0);
-    features = ogrLayer->GetFeatureCount();
+    ogrLayer = OGR_DS_GetLayer(ogrDataSource,0);
+    features = OGR_L_GetFeatureCount(ogrLayer,TRUE);
   }
   else
     valid = false;
@@ -61,19 +62,14 @@ QgsShapeFile::QgsShapeFile(QString name, QString encoding){
   // init the geometry types
   geometries << "NULL" << "POINT" << "LINESTRING" << "POLYGON" << "MULTPOINT" 
     << "MULTILINESTRING" << "MULTIPOLYGON" << "GEOMETRYCOLLECTION";
-  
+
   codec = QTextCodec::codecForName(encoding.toLocal8Bit().data());
   if (!codec)
     codec = QTextCodec::codecForLocale();
 }
 
 QgsShapeFile::~QgsShapeFile(){
-  if(ogrDataSource != 0)
-  {
-    // don't delete the layer if the datasource is bad -- (causes crash)
-    delete ogrLayer;
-  }
-  delete ogrDataSource;
+  OGR_DS_Destroy( ogrDataSource );
   delete filename;
   delete geom_type;
 }
@@ -92,26 +88,26 @@ bool QgsShapeFile::scanGeometries()
   sg->show();
   qApp->processEvents();
 
-  OGRFeature *feat;
+  OGRFeatureH feat;
   OGRwkbGeometryType currentType = wkbUnknown;
   bool multi = false;
-  while((feat = ogrLayer->GetNextFeature()))
+  while((feat = OGR_L_GetNextFeature(ogrLayer)))
   {
       qApp->processEvents();
 
     //    feat->DumpReadable(NULL);
-    OGRGeometry *geom = feat->GetGeometryRef();
+    OGRGeometryH geom = OGR_F_GetGeometryRef(feat);
     if(geom)
     {
-      QString gml =  geom->exportToGML();
+      QString gml =  OGR_G_ExportToGML(geom);
       //      std::cerr << gml << std::endl; 
       if(gml.find("gml:Multi") > -1)
       {
         //   std::cerr << "MULTI Part Feature detected" << std::endl; 
         multi = true;
       }
-      OGRFeatureDefn *fDef = feat->GetDefnRef();
-      OGRwkbGeometryType gType = fDef->GetGeomType();
+      OGRFeatureDefnH fDef = OGR_F_GetDefnRef(feat);
+      OGRwkbGeometryType gType = OGR_FD_GetGeomType(fDef);
       //      std::cerr << fDef->GetGeomType() << std::endl; 
       if(gType > currentType)
       {
@@ -135,7 +131,7 @@ bool QgsShapeFile::scanGeometries()
     hasMoreDimensions = true;
   }
   
-  ogrLayer->ResetReading();
+  OGR_L_ResetReading(ogrLayer);
   geom_type = geometries[currentType];
   if(multi && (geom_type.find("MULTI") == -1))
   {
@@ -151,14 +147,14 @@ QString QgsShapeFile::getFeatureClass(){
   // type. 
   qApp->processEvents();
   isMulti = scanGeometries();
-  OGRFeature *feat;
+  OGRFeatureH feat;
   // skip features without geometry
-  while ((feat = ogrLayer->GetNextFeature()) != NULL) {
-    if (feat->GetGeometryRef())
+  while ((feat = OGR_L_GetNextFeature(ogrLayer)) != NULL) {
+    if (OGR_F_GetGeometryRef(feat))
       break;
   }
   if(feat){
-    OGRGeometry *geom = feat->GetGeometryRef();
+    OGRGeometryH geom = OGR_F_GetGeometryRef(feat);
     if(geom){
       /* OGR doesn't appear to report geometry type properly
        * for a layer containing both polygon and multipolygon
@@ -222,18 +218,18 @@ QString QgsShapeFile::getFeatureClass(){
         }
       }
       dbf.close();
-      int numFields = feat->GetFieldCount();
+      int numFields = OGR_F_GetFieldCount(feat);
       for(int n=0; n<numFields; n++)
       {
-        QString s = codec->toUnicode(feat->GetFieldDefnRef(n)->GetNameRef());
+        QString s = codec->toUnicode(OGR_Fld_GetNameRef(OGR_F_GetFieldDefnRef(feat,n)));
         column_names.push_back(s);
       }
       
     }else valid = false;
-    delete feat;
+    OGR_F_Destroy( feat );
   }else valid = false;
   
-  ogrLayer->ResetReading();    
+  OGR_L_ResetReading(ogrLayer);
   return valid?geom_type:QString::null;
 }
 
@@ -269,41 +265,30 @@ void QgsShapeFile::setColumnNames(QStringList columns)
   }
 }
 
-bool QgsShapeFile::insertLayer(QString dbname, QString schema, QString geom_col, 
+bool QgsShapeFile::insertLayer(QString dbname, QString schema, QString primary_key, QString geom_col, 
                                QString srid, PGconn * conn, QProgressDialog& pro, bool &fin,
                                QString& errorText)
 {
   connect(&pro, SIGNAL(canceled()), this, SLOT(cancelImport()));
   import_canceled = false;
   bool result = true;
-  // Mangle the table name to make it PG compliant by replacing spaces with 
-  // underscores
-  table_name = table_name.replace(" ","_");
 
-  QString query = "CREATE TABLE "+schema+"."+table_name+"(gid int4 PRIMARY KEY, ";
+  QString query = QString("CREATE TABLE %1.%2(%3 int4 PRIMARY KEY")
+                    .arg( QgsPgUtil::quotedIdentifier(schema) )
+                    .arg( QgsPgUtil::quotedIdentifier(table_name) )
+                    .arg( QgsPgUtil::quotedIdentifier(primary_key) );
 
-  for(uint n=0; n<column_names.size() && result; n++){
-    if(!column_names[n][0].isLetter())
-      result = false;
-
-    char * esc_str = new char[column_names[n].length()*2+1];
-
-    PQescapeString(esc_str, (const char *)column_names[n].lower(), column_names[n].length());
-    QgsDebugMsg("Escaped " + column_names[n] + " to " + QString(esc_str)); 
-    query += esc_str;
-    query += " " + column_types[n];
-
-    if(n<column_names.size()-1)
-    {
-      query += ", ";
-    }
-    delete[] esc_str;
+  for(uint n=0; n<column_names.size() && result; n++)
+  {
+    query += QString(",%1 %2")
+               .arg( QgsPgUtil::quotedIdentifier(column_names[n]) )
+               .arg( column_types[n] );
   }
   query += " )";
 
   QgsDebugMsg("Query string is: " + query);
 
-  PGresult *res = PQexec(conn, (const char *)query);
+  PGresult *res = PQexec(conn, query.toUtf8() );
 
   if(PQresultStatus(res)!=PGRES_COMMAND_OK){
     // flag error and send query and error message to stdout on debug
@@ -318,10 +303,14 @@ bool QgsShapeFile::insertLayer(QString dbname, QString schema, QString geom_col,
     PQclear(res);
   }
 
-  query = "SELECT AddGeometryColumn(\'" + schema + "\', \'" + table_name + "\', \'"+
-    geom_col + "\', " + srid + ", \'" + geom_type + "\', 2)";
+  query = QString("SELECT AddGeometryColumn(%1,%2,%3,%4,%5,2)")
+            .arg( QgsPgUtil::quotedValue( schema ) )
+            .arg( QgsPgUtil::quotedValue( table_name ) )
+            .arg( QgsPgUtil::quotedValue( geom_col ) )
+            .arg( srid )
+            .arg( QgsPgUtil::quotedValue( geom_type ) );
 
-  res = PQexec(conn, (const char *)query);
+  res = PQexec(conn, query.toUtf8() );
 
   if(PQresultStatus(res)!=PGRES_TUPLES_OK){
     errorText += tr("The database gave an error while executing this SQL:") + "\n";
@@ -338,15 +327,16 @@ bool QgsShapeFile::insertLayer(QString dbname, QString schema, QString geom_col,
 
   if(isMulti)
   {
-    query = QString("select constraint_name from information_schema.table_constraints where table_schema='%1' and table_name='%2' and constraint_name in ('$2','enforce_geotype_the_geom')")
-            .arg( schema ).arg( table_name );
+    query = QString("select constraint_name from information_schema.table_constraints where table_schema=%1 and table_name=%2 and constraint_name in ('$2','enforce_geotype_the_geom')")
+              .arg( QgsPgUtil::quotedValue(schema) )
+              .arg( QgsPgUtil::quotedValue(table_name) );
 
     QStringList constraints;
-    res = PQexec( conn, query );
+    res = PQexec(conn, query.toUtf8() );
     if( PQresultStatus( res ) == PGRES_TUPLES_OK )
     {
       for(int i=0; i<PQntuples(res); i++)
-	constraints.append( PQgetvalue(res, i, 0) );
+        constraints.append( PQgetvalue(res, i, 0) );
     }
     PQclear(res);
 
@@ -356,9 +346,11 @@ bool QgsShapeFile::insertLayer(QString dbname, QString schema, QString geom_col,
       // convert the geometries to the same type or allow
       // multiple types in the check constraint. For now, we
       // just drop the constraint...
-      query = "alter table " + table_name + " drop constraint \"" + constraints[0] + "\"";
+      query = QString("alter table %1 drop constraint %2")
+                .arg( QgsPgUtil::quotedIdentifier(table_name) )
+                .arg( QgsPgUtil::quotedIdentifier(constraints[0]) );
 
-      res = PQexec(conn, (const char*)query);
+      res = PQexec(conn, query.toUtf8() );
       if(PQresultStatus(res)!=PGRES_COMMAND_OK) {
         errorText += tr("The database gave an error while executing this SQL:") + "\n";
         errorText += query + '\n';
@@ -374,60 +366,54 @@ bool QgsShapeFile::insertLayer(QString dbname, QString schema, QString geom_col,
   }
       
   //adding the data into the table
-  for(int m=0;m<features && result; m++){
-    if(import_canceled){
+  for(int m=0; m<features && result; m++)
+  {
+    if(import_canceled)
+    {
       fin = true;
       break;
     }
 
-    OGRFeature *feat = ogrLayer->GetNextFeature();
+    OGRFeatureH feat = OGR_L_GetNextFeature(ogrLayer);
     if(feat){
-      OGRGeometry *geom = feat->GetGeometryRef();
+      OGRGeometryH geom = OGR_F_GetGeometryRef(feat);
       if(geom){
-        query = "INSERT INTO \"" + schema + "\".\"" + table_name + "\"" +
-          QString(" VALUES( %1, ").arg(m);
+        query = QString("INSERT INTO %1.%2 VALUES(%3")
+                  .arg( QgsPgUtil::quotedIdentifier(schema) )
+                  .arg( QgsPgUtil::quotedIdentifier(table_name) )
+                  .arg( m );
 
-        int num = geom->WkbSize();
+        int num = OGR_G_WkbSize(geom);
         char * geo_temp = new char[num*3];
         // 'GeometryFromText' supports only 2D coordinates
         // TODO for proper 2.5D support we would need to use 'GeomFromEWKT'
         if (hasMoreDimensions)
-          geom->setCoordinateDimension(2);
-        geom->exportToWkt(&geo_temp);
+          OGR_G_SetCoordinateDimension(geom,2);
+        OGR_G_ExportToWkt(geom,&geo_temp);
         QString geometry(geo_temp);
 
-        QString quotes;
-        for(uint n=0; n<column_types.size(); n++){
-          bool numericType(false);
-          if(column_types[n] == "int" || column_types[n] == "float")
-          {
-            quotes = " ";
-            numericType = true;
-          }
+        for(uint n=0; n<column_types.size(); n++) {
+          QString val;
+          
+          // FIXME: OGR_F_GetFieldAsString returns junk when called with a 8.255 float field
+          if( column_types[n] == "float" ) 
+            val = QString::number( OGR_F_GetFieldAsDouble(feat,n) );
           else
-            quotes = "\'";
-          query += quotes;
+            val = codec->toUnicode(OGR_F_GetFieldAsString(feat,n) );
 
-          // escape the string value and cope with blank data
-          QString val = codec->toUnicode(feat->GetFieldAsString(n));
-          if (val.isEmpty() && numericType)
-          {
+          if( val.isEmpty() )
             val = "NULL";
-          }
-          val.replace("'", "''");
-          //char * esc_str = new char[val.length()*2+1];
-          //PQescapeString(esc_str, (const char *)val.lower().utf8(), val.length());
+          else
+            val = QgsPgUtil::quotedValue( val );
 
-          // add escaped value to the query 
-          query += val; //esc_str;
-          query += QString(quotes + ", ");
-
-          //delete[] esc_str;
+          query += "," + val;
         }
-        query += QString("GeometryFromText(\'")+geometry+QString("\', ")+srid+QString("))");
+        query += QString(",GeometryFromText(%1,%2))")
+                   .arg( QgsPgUtil::quotedValue( geometry ) )
+                   .arg( srid );
 
         if(result)
-          res = PQexec(conn, (const char *)query.utf8());
+          res = PQexec(conn, query.utf8() );
 
         if(PQresultStatus(res)!=PGRES_COMMAND_OK){
           // flag error and send query and error message to stdout on debug
@@ -452,7 +438,7 @@ bool QgsShapeFile::insertLayer(QString dbname, QString schema, QString geom_col,
         qApp->processEvents();
         delete[] geo_temp;
       }
-      delete feat;
+      OGR_F_Destroy( feat );
     }
   }
   // create the GIST index if the the load was successful
@@ -461,7 +447,7 @@ bool QgsShapeFile::insertLayer(QString dbname, QString schema, QString geom_col,
     // prompt user to see if they want to build the index and warn
     // them about the potential time-cost
   }
-  ogrLayer->ResetReading();
+  OGR_L_ResetReading(ogrLayer);
   return result;
 }
 

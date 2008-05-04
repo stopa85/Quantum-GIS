@@ -4,10 +4,9 @@
 
 SET (SPIT_SRCS
      qgsspit.cpp
-     qgsconnectiondialog.cpp
+     ../../app/qgsnewconnection.cpp
      qgspgutil.cpp
      qgsshapefile.cpp
-     qgseditreservedwordsdialog.cpp
 )
 
 SET (SPIT_PLUGIN_SRCS
@@ -21,17 +20,15 @@ SET (SPIT_EXE_SRCS
 )
 
 SET (SPIT_UIS
-     qgsconnectiondialogbase.ui
+     ../../ui/qgsnewconnectionbase.ui
      qgsspitbase.ui
-     qgseditreservedwordsbase.ui
      ../../ui/qgsmessageviewer.ui
 )
 
 SET (SPIT_EXE_MOC_HDRS
      qgsspit.h
      qgsshapefile.h
-     qgseditreservedwordsdialog.h
-     qgsconnectiondialog.h
+     ../../app/qgsnewconnection.h
 )
 
 SET (SPIT_PLUGIN_MOC_HDRS
@@ -57,6 +54,8 @@ INCLUDE_DIRECTORIES(
      ${CMAKE_CURRENT_BINARY_DIR}
      ../../core ../../core/raster ../../core/renderer ../../core/symbology
      ../../gui
+     ../../ui
+     ../../app
      ..
      ${POSTGRES_INCLUDE_DIR}
      ${GDAL_INCLUDE_DIR}

@@ -24,6 +24,7 @@
 #include <cassert>
 #include <cfloat>
 #include <cstring>
+#include <climits>
 #include <cmath>
 #include <iosfwd>
 #include <iostream>
@@ -37,7 +38,7 @@
 #include <QPainter>
 #include <QPainterPath>
 #include <QPolygonF>
-#include <QSettings> //for update threshold
+#include <QSettings>
 #include <QString>
 
 #include "qgsvectorlayer.h"
@@ -456,12 +457,14 @@ unsigned char* QgsVectorLayer::drawLineString(unsigned char* feature,
       (drawingToEditingCanvas)
      )
   {
-      std::vector<double>::const_iterator xIt;
-      std::vector<double>::const_iterator yIt;
-      for(xIt = x.begin(), yIt = y.begin(); xIt != x.end(); ++xIt, ++yIt)
-	{
-	  drawVertexMarker((int)(*xIt), (int)(*yIt), *p);
-	}
+    QgsVectorLayer::VertexMarkerType markerType = currentVertexMarkerType();
+    
+    std::vector<double>::const_iterator xIt;
+    std::vector<double>::const_iterator yIt;
+    for(xIt = x.begin(), yIt = y.begin(); xIt != x.end(); ++xIt, ++yIt)
+      {
+	drawVertexMarker((int)(*xIt), (int)(*yIt), *p, markerType);
+      }
     }
 
   //restore the pen
@@ -703,10 +706,13 @@ std::cerr << i << ": " << ring->first[i]
         (drawingToEditingCanvas)
        )
       {
+
+	QgsVectorLayer::VertexMarkerType markerType = currentVertexMarkerType();
+
 	for(int i = 0; i < path.elementCount(); ++i)
 	  {
             const QPainterPath::Element & e = path.elementAt(i);
-	    drawVertexMarker((int)e.x, (int)e.y, *p);
+	    drawVertexMarker((int)e.x, (int)e.y, *p, markerType);
 	  }
       }
 
@@ -901,11 +907,22 @@ void QgsVectorLayer::deleteCachedGeometries()
   mCachedGeometries.clear();
 }
 
-void QgsVectorLayer::drawVertexMarker(int x, int y, QPainter& p)
+void QgsVectorLayer::drawVertexMarker(int x, int y, QPainter& p, QgsVectorLayer::VertexMarkerType type)
 {
-  p.setPen(QColor(50, 100, 120, 200));
-  p.setBrush(QColor(200, 200, 210, 120));
-  p.drawEllipse(QRectF(x - 7, y - 7, 14, 14));
+  if(type == QgsVectorLayer::SemiTransparentCircle)
+    {
+      p.setPen(QColor(50, 100, 120, 200));
+      p.setBrush(QColor(200, 200, 210, 120));
+      p.drawEllipse(QRectF(x - 7, y - 7, 14, 14));
+    }
+  else
+    {
+      int size = 15;
+      int m = (size-1)/2;
+      p.setPen(QColor(255, 0, 0));
+      p.drawLine(x-m, y+m, x+m, y-m);
+      p.drawLine(x-m, y-m, x+m, y+m);
+    }
 }
 
 void QgsVectorLayer::drawOverlays(QPainter * p, const QgsRect & viewExtent, QgsMapToPixel * cXf, \
@@ -1795,15 +1812,15 @@ int QgsVectorLayer::splitFeatures(const QList<QgsPoint>& splitLine, bool topolog
 	  return 1;
 	}
       
-      if(bBox.isEmpty())
+  if(bBox.isEmpty())
 	{
 	  //if the bbox is a line, try to make a square out of it
-	  if(!bBox.width() > 0.0 && bBox.height() > 0)
+	  if(bBox.width()==0.0 && bBox.height() > 0)
 	    {
 	      bBox.setXmin(bBox.xMin() - bBox.height()/2);
 	      bBox.setXmax(bBox.xMax() + bBox.height()/2);
 	    }
-	  else if(!bBox.height() > 0.0 && bBox.width() > 0)
+	  else if(bBox.height()==0.0 && bBox.width()>0)
 	    {
 	      bBox.setYmin(bBox.yMin() - bBox.width()/2);
 	      bBox.setYmax(bBox.yMax() + bBox.width()/2);
@@ -2269,7 +2286,7 @@ bool QgsVectorLayer::setDataProvider( QString const & provider )
       {
         QgsDebugMsg("Beautifying layer name " + name());
         // adjust the display name for postgres layers
-        QRegExp reg("\".+\"\\.\"(.+)\"");
+        QRegExp reg("\"[^\"]+\"\\.\"([^\"]+)\"");
         reg.indexIn(name());
         QStringList stuff = reg.capturedTexts();
         QString lName = stuff[1];
@@ -3014,6 +3031,20 @@ int QgsVectorLayer::boundingBoxFromPointList(const QList<QgsPoint>& list, double
   return 0;
 }
 
+QgsVectorLayer::VertexMarkerType QgsVectorLayer::currentVertexMarkerType()
+{
+  QSettings settings;
+  QString markerTypeString = settings.value("/qgis/digitizing/marker_style", "SemiTransparentCircle").toString();
+  if(markerTypeString == "Cross")
+    {
+      return QgsVectorLayer::Cross;
+    }
+  else
+    {
+      return QgsVectorLayer::SemiTransparentCircle;
+    }
+}
+
 void QgsVectorLayer::drawFeature(QPainter* p,
                                  QgsFeature& fet,
                                  QgsMapToPixel * theMapToPixelTransform,
@@ -3052,7 +3083,7 @@ void QgsVectorLayer::drawFeature(QPainter* p,
         //  std::cout <<"...WKBPoint (" << x << ", " << y << ")" <<std::endl;
 #endif
 
-	QgsDebugMsg(QString("markerScaleFactor = %1").arg(markerScaleFactor));
+	//QgsDebugMsg(QString("markerScaleFactor = %1").arg(markerScaleFactor));
 
         transformPoint(x, y, theMapToPixelTransform, ct);
         //QPointF pt(x - (marker->width()/2),  y - (marker->height()/2));

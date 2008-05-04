@@ -274,7 +274,7 @@ void QgsLegendLayerFile::table()
 
       connect(mTableDisplay, SIGNAL(deleted()), this, SLOT(invalidateTableDisplay()));
 
-      mTableDisplay->setTitle(tr("Attribute table - ") + name());
+      mTableDisplay->setTitle(tr("Attribute table - ") + vlayer->name());
       mTableDisplay->show();
 
       // Give the table the most recent copy of the actions for this layer.
@@ -475,6 +475,12 @@ void QgsLegendLayerFile::toggleEditing()
   updateLegendItem();
 
 }
+
+bool QgsLegendLayerFile::isEditing()
+{
+  QgsVectorLayer* vlayer = dynamic_cast<QgsVectorLayer*>(mLyr.layer());
+  return vlayer && vlayer->isEditable();
+} 
 
 void QgsLegendLayerFile::layerNameChanged()
 {

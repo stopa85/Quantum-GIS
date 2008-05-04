@@ -17,7 +17,8 @@
  ***************************************************************************/
  /* $Id$ */
 
-#include "qgspluginregistry.h"
+#include <memory>
+
 #include "qgsattributeactiondialog.h"
 #include "qgscontexthelp.h"
 #include "qgscontinuouscolordialog.h"
@@ -27,6 +28,7 @@
 #include "qgslabel.h"
 #include "qgslayerprojectionselector.h"
 #include "qgslogger.h"
+#include "qgspluginregistry.h"
 #include "qgssinglesymboldialog.h"
 #include "qgsuniquevaluedialog.h"
 #include "qgsvectordataprovider.h"

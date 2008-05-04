@@ -130,7 +130,7 @@
 //
 // Gdal/Ogr includes
 //
-#include <ogrsf_frmts.h>
+#include <ogr_api.h>
 
 //
 // Other includes
@@ -176,6 +176,10 @@
 
 #ifndef WIN32
 #include <dlfcn.h>
+#endif
+
+#ifdef WIN32
+#include <windows.h>
 #endif
 
 using namespace std;
@@ -802,12 +806,12 @@ void QgisApp::createActions()
   mActionMoveFeature = new QAction(QIcon(myIconPath+"/mActionMoveFeature.png"), tr("Move Feature"), this);
   mActionMoveFeature->setStatusTip(tr("Move Feature"));
   connect(mActionMoveFeature, SIGNAL(triggered()), this, SLOT(moveFeature()));
-  mActionMoveFeature->setEnabled(true);
+  mActionMoveFeature->setEnabled(false);
   //
   mActionSplitFeatures = new QAction(QIcon(myIconPath+"/mActionSplitFeatures.png"), tr("Split Features"), this);
   mActionSplitFeatures->setStatusTip(tr("Split Features"));
   connect(mActionSplitFeatures, SIGNAL(triggered()), this, SLOT(splitFeatures()));
-  mActionSplitFeatures->setEnabled(true);
+  mActionSplitFeatures->setEnabled(false);
   //
   mActionAddVertex = new QAction(QIcon(myIconPath+"/mActionAddVertex.png"), tr("Add Vertex"), this);
   mActionAddVertex->setStatusTip(tr("Add Vertex"));
@@ -1556,7 +1560,7 @@ void QgisApp::about()
      QString whatsNew = "<html><body>" + tr("Version") + " ";
      whatsNew += QGis::qgisVersion;
      whatsNew += "<h3>" + tr("New features") + "</h3>" +
-       tr("This release candidate includes over 40 bug fixes and enchancements "
+       tr("This release candidate includes over 120 bug fixes and enchancements "
            "over the QGIS 0.9.1 release. In addition we have added "
            "the following new features:");
      whatsNew += "<ul><li>"
@@ -1573,6 +1577,12 @@ void QgisApp::about()
            "in raster layers. Support for color ramps in raster layers. "
            "Support for non-north up rasters. Many other raster "
            "improvements 'under the hood'.")
+       + "</li>"
+       + "<li>"
+       + tr("Updated icons for improved visual consistancy.")
+       + "</li>"
+       + "<li>"
+       + tr("Support for migration of old projects to work in newer QGIS versions.")
        + "</li>"
 //+ "<li>"
 //+ tr("X")
@@ -1743,20 +1753,10 @@ static void buildSupportedVectorFileFilter_(QString & fileFilters)
     return;
   }
 
-  // first get the GDAL driver manager
-
-  OGRSFDriverRegistrar *driverRegistrar = OGRSFDriverRegistrar::GetRegistrar();
-
-  if (!driverRegistrar)
-  {
-    QMessageBox::warning(this,tr("OGR Driver Manager"),tr("unable to get OGRDriverManager"));
-    return;                 // XXX good place to throw exception if we
-  }                           // XXX decide to do exceptions
-
   // then iterate through all of the supported drivers, adding the
   // corresponding file filter
 
-  OGRSFDriver *driver;          // current driver
+  OGRSFDriverH driver;          // current driver
 
   QString driverName;           // current driver name
 
@@ -1768,9 +1768,9 @@ static void buildSupportedVectorFileFilter_(QString & fileFilters)
   // open datasets with no explicitly defined file name extension.
   QgsDebugMsg("Driver count: " + QString::number(driverRegistrar->GetDriverCount()));
 
-  for (int i = 0; i < driverRegistrar->GetDriverCount(); ++i)
+  for (int i = 0; i < OGRGetDriverCount(); ++i)
   {
-    driver = driverRegistrar->GetDriver(i);
+    driver = OGRGetDriver(i);
 
     Q_CHECK_PTR(driver);
 
@@ -1780,9 +1780,7 @@ static void buildSupportedVectorFileFilter_(QString & fileFilters)
       continue;
     }
 
-    driverName = driver->GetName();
-
-
+    driverName = OGR_Dr_GetName(driver);
 
     if (driverName.startsWith("ESRI"))
     {
@@ -3774,6 +3772,11 @@ void QgisApp::inOverview()
 
 void QgisApp::removeLayer()
 {
+  QgsLegendLayerFile* currentLayerFile = mMapLegend->currentLayerFile();
+  if(currentLayerFile && currentLayerFile->isEditing() )
+  {
+    currentLayerFile->toggleEditing();
+  }
   mMapLegend->legendLayerRemove();
 }
 
@@ -3789,7 +3792,6 @@ void QgisApp::zoomToLayerExtent()
 {
   mMapLegend->legendLayerZoom();
 }
-
 
 void QgisApp::showPluginManager()
 {
@@ -4301,6 +4303,11 @@ void QgisApp::openURL(QString url, bool useQgisDocDirectory)
   OSStatus status = LSOpenCFURLRef(urlRef, NULL);
   status = 0; //avoid compiler warning
   CFRelease(urlRef);
+#elif defined(WIN32)
+  if(url.startsWith("file://", Qt::CaseInsensitive))
+    ShellExecute(0, 0, url.mid(7).toLocal8Bit().constData(), 0, 0, SW_SHOWNORMAL);
+  else
+    QDesktopServices::openUrl(url);
 #else
   QDesktopServices::openUrl(url);
 #endif
@@ -4847,12 +4854,17 @@ void QgisApp::activateDeactivateLayerRelatedActions(QgsMapLayer* layer)
         mActionCapturePolygon->setEnabled(false);
         mActionAddVertex->setEnabled(false);
         mActionDeleteVertex->setEnabled(false);
+	mActionMoveVertex->setEnabled(false);
         mActionAddRing->setEnabled(false);
         mActionAddIsland->setEnabled(false);
 	mActionSplitFeatures->setEnabled(false);
         if(vlayer->isEditable() && dprovider->capabilities() & QgsVectorDataProvider::ChangeGeometries)
         {
-          mActionMoveVertex->setEnabled(true);
+	  //don't enable vertex move for single point
+	  if(vlayer->geometryType() != QGis::WKBPoint && vlayer->geometryType() != QGis::WKBPoint25D)
+	    {
+	      mActionMoveVertex->setEnabled(true);
+	    }
           mActionMoveFeature->setEnabled(true);
         }
         return;

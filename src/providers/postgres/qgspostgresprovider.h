@@ -69,7 +69,7 @@ class QgsPostgresProvider:public QgsVectorDataProvider
     /**
       *   Returns the permanent storage type for this layer as a friendly name.
       */
-    QString storageType();
+    virtual QString storageType() const;
 
     /*! Get the QgsSpatialRefSys for this layer
      * @note Must be reimplemented by each provider. 
@@ -110,7 +110,6 @@ class QgsPostgresProvider:public QgsVectorDataProvider
                                 bool fetchGeometry = true,
                                 QgsAttributeList fetchAttributes = QgsAttributeList());
 
-    
     /** Get the feature type. This corresponds to
      * WKBPoint,
      * WKBLineString,
@@ -130,8 +129,6 @@ class QgsPostgresProvider:public QgsVectorDataProvider
     Should this be subLayerCount() instead?
     */
     size_t layerCount() const;
-
-
 
     /**
      * Get the number of features in the layer
@@ -184,13 +181,18 @@ class QgsPostgresProvider:public QgsVectorDataProvider
      */
     void reset();
 
-    /** Returns the minimum value of an attributs
+    /** Returns the minimum value of an attribute
      *  @param index the index of the attribute */
     QVariant minValue(int index);
 
-    /** Returns the maximum value of an attributs
+    /** Returns the maximum value of an attribute
      *  @param index the index of the attribute */
     QVariant maxValue(int index);
+
+    /** Return the unique values of an attribute
+     *  @param index the index of the attribute
+     *  @param values reference to the list of unique values */
+    virtual void getUniqueValues(int index, QStringList &uniqueValues);
 
     /**Returns true if layer is valid
     */
@@ -287,7 +289,6 @@ class QgsPostgresProvider:public QgsVectorDataProvider
     */
     QString name() const;
 
-
     /** return description
 
     Return a terse string describing what the provider is.
@@ -301,12 +302,7 @@ class QgsPostgresProvider:public QgsVectorDataProvider
     */
     QString description() const;
 
-
-
-
-
-
-    signals:
+  signals:
     /** 
      *   This is emitted whenever the worker thread has fully calculated the
      *   PostGIS extents for this layer, and its event has been received by this
@@ -327,11 +323,32 @@ class QgsPostgresProvider:public QgsVectorDataProvider
     void repaintRequested();
 
   private:
+    int providerId; // id to append to provider specific identified (like cursors)
+
+    bool declareCursor(const QString &cursorName,
+                       const QgsAttributeList &fetchAttributes,
+                       bool fetchGeometry,
+                       QString whereClause);
+
+    bool getFeature(PGresult *queryResult, int row, bool fetchGeometry,
+                    QgsFeature &feature,
+                    const QgsAttributeList &fetchAttributes);
+
+    const QgsField &field(int index) const;
+
+    /** Double quote a PostgreSQL identifier for placement in a SQL string.
+     */
+    QString quotedIdentifier( QString ident ) const;
+
+    /** Quote a value for placement in a SQL string.
+     */
+    QString quotedValue( QString value ) const;
+
     /** Load the field list
     */
     void loadFields();
 
-    bool mFirstFetch; //true if fetch forward is called the first time after select
+    bool mFetching;   // true if a cursor was declared
     std::vector < QgsFeature > features;
     QgsFieldMap attributeFields;
     QString mDataComment;
@@ -346,13 +363,6 @@ class QgsPostgresProvider:public QgsVectorDataProvider
     //! Child thread for calculating count.
     QgsPostgresCountThread mCountThread;
 
-
-    /**
-     * Pointer to the PostgreSQL query result object. If this pointer is 0,
-     * there is no current selection set. Any future getNextFeature requests
-     * will require execution of the select query to recreate the result set.
-     */
-    PGresult *queryResult;
     /**
      * Flag indicating if the layer data source is a valid PostgreSQL layer
      */
@@ -435,9 +445,6 @@ class QgsPostgresProvider:public QgsVectorDataProvider
      */
     bool swapEndian;
 
-    /**Stores the names of the attributes to fetch*/
-    std::list<QString> mFetchAttributeNames;
-
     bool deduceEndian();
     bool getGeometryDetails();
 
@@ -445,8 +452,8 @@ class QgsPostgresProvider:public QgsVectorDataProvider
 
     // Produces a QMessageBox with the given title and text. Doesn't
     // return until the user has dismissed the dialog box.
-    void showMessageBox(const QString& title, const QString& text);
-    void showMessageBox(const QString& title, const QStringList& text);
+    static void showMessageBox(const QString& title, const QString& text);
+    static void showMessageBox(const QString& title, const QStringList& text);
 
     // A simple class to store the rows of the sql executed in the
     // findColumns() function.
@@ -465,6 +472,39 @@ class QgsPostgresProvider:public QgsVectorDataProvider
       QString column_type;
     };
 
+    struct PGFieldNotFound {
+    };
+
+    struct PGException {
+      PGException(PGresult *r) : result(r)
+      {
+      }
+
+      PGException(const PGException &e) : result(e.result) 
+      {
+      }
+
+      ~PGException()
+      {
+        if(result)
+          PQclear(result);
+      }
+
+      QString errorMessage() const
+      {
+        return result ?
+          QString::fromUtf8(PQresultErrorMessage(result)) :
+          tr("unexpected PostgreSQL error");
+      }
+
+      void showErrorMessage(QString title) const
+      {
+        showMessageBox(title, errorMessage() );
+      }
+
+    private:
+      PGresult *result;
+    };
 
     // A simple class to store four strings
     class SRC 
@@ -472,7 +512,7 @@ class QgsPostgresProvider:public QgsVectorDataProvider
     public:
       SRC() {};
       SRC(QString s, QString r, QString c, QString t) :
-	schema(s), relation(r), column(c), type(t) {};
+        schema(s), relation(r), column(c), type(t) {};
       QString schema, relation, column, type; 
     };
 
@@ -505,9 +545,6 @@ class QgsPostgresProvider:public QgsVectorDataProvider
     int SRCFromViewColumn(const QString& ns, const QString& relname, const QString& attname_table, 
 			  const QString& attname_view, const QString& viewDefinition, SRC& result) const;
 
-    bool ready;
-    std::ofstream pLog;
-
     //! PostGIS version string
     QString postgisVersionInfo;
 
@@ -529,19 +566,14 @@ class QgsPostgresProvider:public QgsVectorDataProvider
     //! PROJ4 capability
     bool projAvailable;
 
+    int enabledCapabilities;
+
     /**Returns the maximum value of the primary key attribute
        @note  You should run this inside of a PostgreSQL transaction
               so that you can safely increment the value returned for
               use in newly added features.
       */
     int maxPrimaryKeyValue();
-
-    /** Writes a single feature 
-        @param primaryKeyHighWater   is the recommended value of the primary key for this new feature. */
-    bool addFeature(QgsFeature& f, int primaryKeyHighWater);
-
-    /**Deletes a feature*/
-    bool deleteFeature(int id);
 
     //! Get the feature count based on the where clause
     long getFeatureCount();
@@ -552,22 +584,31 @@ class QgsPostgresProvider:public QgsVectorDataProvider
     /**
      * Event sink for events from threads
      */
-    void customEvent ( QCustomEvent * e );
+    void customEvent ( QCustomEvent *e );
 
-private:
-    struct Conn {
-	Conn(PGconn *connection) : ref(1), conn(connection) {}
-
-	int ref;
-    	PGconn *conn;
-    };
-
-    PGconn *connectDb(const char *conninfo);
+    PGconn *connectDb(const QString &conninfo);
     void disconnectDb();
 
+    bool useWkbHex;
+   
+    void appendGeomString(QgsGeometry *geom, QString &geomParam) const;
+    QByteArray paramValue(QString fieldvalue, const QString &defaultValue) const;
+
+    // run a query and check for errors
+    static PGresult *PQexec(PGconn *conn, const char *query);
+
+    // run a query and free result buffer
+    static bool PQexecNR(PGconn *conn, const char *query);
+
+    struct Conn
+    {
+      Conn(PGconn *connection) : ref(1), conn(connection) {}
+
+      int ref;
+      PGconn *conn;
+    };
     static QMap<QString, Conn *> connections;
     static int providerIds;
-    QString providerId;
 };
 
 #endif

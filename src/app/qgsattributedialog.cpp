@@ -21,6 +21,7 @@
 
 #include <QTableWidgetItem>
 #include <QSettings>
+#include <QLineEdit>
 
 QgsAttributeDialog::QgsAttributeDialog(const QgsFieldMap& fields, const QgsAttributeMap& attributes)
   : QDialog(),
@@ -44,9 +45,23 @@ QgsAttributeDialog::QgsAttributeDialog(const QgsFieldMap& fields, const QgsAttri
       mTable->setItem(index, 0, myFieldItem);
 
       // set attribute value
-
       QTableWidgetItem * myValueItem = new QTableWidgetItem((*it).toString());
       mTable->setItem(index, 1, myValueItem);
+
+      QLineEdit *le = new QLineEdit();
+
+      le->setFrame(false);
+
+      if( fields[it.key()].type()==QVariant::Int )
+      {
+        le->setValidator( new QIntValidator(le) );
+      }
+      else if( fields[it.key()].type()==QVariant::Double )
+      {
+        le->setValidator( new QDoubleValidator(le) );
+      }
+
+      mTable->setCellWidget(index, 1, le);
 
       ++index;
     }
@@ -67,7 +82,7 @@ QgsAttributeDialog::~QgsAttributeDialog()
 
 QString QgsAttributeDialog::value(int row)
 {
-  return mTable->item(row,1)->text();
+  return static_cast<QLineEdit*>(mTable->cellWidget(row,1))->text();
 }
 
 bool QgsAttributeDialog::isDirty(int row)
@@ -81,11 +96,31 @@ bool QgsAttributeDialog::queryAttributes(const QgsFieldMap& fields, QgsFeature& 
   QgsAttributeDialog attdialog(fields, featureAttributes);
 
   if (attdialog.exec() == QDialog::Accepted)
-  { 
+  {
     int i=0;
-    for (QgsAttributeMap::const_iterator it = featureAttributes.begin(); it != featureAttributes.end(); ++it)
+    for (QgsAttributeMap::const_iterator it = featureAttributes.begin(); it != featureAttributes.end(); ++it, i++)
     {
-      f.changeAttribute(it.key(), QVariant(attdialog.value(i++)) );
+      QString value = attdialog.value(i);
+
+      if( attdialog.isDirty(i) )
+      {
+        switch( fields[it.key()].type() )
+        {
+        case QVariant::Int:
+          f.changeAttribute(it.key(), value=="" ? QVariant( QString::null ) : QVariant( value.toInt() ) );
+          break;
+
+        case QVariant::Double:
+          f.changeAttribute(it.key(), value=="" ? QVariant( QString::null ) : QVariant( value.toDouble() ) );
+          break;
+
+        default:
+          f.changeAttribute(it.key(), value=="NULL" ? QVariant(QString::null) : QVariant(value) );
+          break;
+        }
+      } else {
+        f.changeAttribute(it.key(), QVariant(value) );
+      }
     }
     return true;
   }

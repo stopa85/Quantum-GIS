@@ -10,4 +10,4 @@ resources.py
 ui_mapserverexport.py
 )
 
-INSTALL(FILES ${INSTALLER_FILES} DESTINATION ${CMAKE_INSTALL_PREFIX}/share/qgis/python/plugins/mapserver_export)
+INSTALL(FILES ${INSTALLER_FILES} DESTINATION ${QGIS_DATA_DIR}/python/plugins/mapserver_export)

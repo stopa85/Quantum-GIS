@@ -1,17 +1,6 @@
 <!DOCTYPE TS>
 <TS>
   <context>
-    <name>@default</name>
-    <message>
-      <source>OGR Driver Manager</source>
-      <translation>Administrador del controlador OGR</translation>
-    </message>
-    <message>
-      <source>unable to get OGRDriverManager</source>
-      <translation>No se puede conseguir un administrador del controlador OGR</translation>
-    </message>
-  </context>
-  <context>
     <name>Dialog</name>
     <message>
       <source>QGIS Plugin Installer</source>
@@ -76,6 +65,85 @@
     <message>
       <source>Delete</source>
       <translation>Borrar</translation>
+    </message>
+  </context>
+  <context>
+    <name>Geoprocessing</name>
+    <message>
+      <source>Geoprocessing</source>
+      <translation>Geoprocesamiento</translation>
+    </message>
+    <message>
+      <source>OK</source>
+      <translation>Aceptar</translation>
+    </message>
+    <message>
+      <source>Exit</source>
+      <translation>Salir</translation>
+    </message>
+    <message>
+      <source>Layer B:</source>
+      <translation>Capa B:</translation>
+    </message>
+    <message>
+      <source>Parameter:</source>
+      <translation>Parámetro:</translation>
+    </message>
+    <message>
+      <source>0.0</source>
+      <translation>0.0</translation>
+    </message>
+    <message>
+      <source>Layer A:</source>
+      <translation>Capa A:</translation>
+    </message>
+    <message>
+      <source>Function:</source>
+      <translation>Función:</translation>
+    </message>
+    <message>
+      <source>Select a function ...</source>
+      <translation>Seleccionar una función...</translation>
+    </message>
+    <message>
+      <source>Buffer</source>
+      <translation>Buffer</translation>
+    </message>
+    <message>
+      <source>Convex Hull</source>
+      <translation type="unfinished" />
+    </message>
+    <message>
+      <source>Difference A - B</source>
+      <translation>Diferencia A - B</translation>
+    </message>
+    <message>
+      <source>Intersection</source>
+      <translation>Intersección</translation>
+    </message>
+    <message>
+      <source>SymDifference</source>
+      <translation type="unfinished" />
+    </message>
+    <message>
+      <source>Union</source>
+      <translation>Unión</translation>
+    </message>
+    <message>
+      <source>Add Layer to Map?</source>
+      <translation>¿Añadir la capa al mapa?</translation>
+    </message>
+    <message>
+      <source>Save as:</source>
+      <translation>Guardar como:</translation>
+    </message>
+    <message>
+      <source>Browse</source>
+      <translation>Explorar</translation>
+    </message>
+    <message>
+      <source>use selected Objects</source>
+      <translation>usar objetos seleccionados</translation>
     </message>
   </context>
   <context>
@@ -186,6 +254,104 @@
     <message>
       <source> from map canvas</source>
       <translation> de la vista del mapa</translation>
+    </message>
+  </context>
+  <context>
+    <name>NewPostgisLayer</name>
+    <message>
+      <source>Create new PostGIS layer</source>
+      <translation>Crear nueva capa PostGIS</translation>
+    </message>
+    <message>
+      <source>Available PostgreSQL connections</source>
+      <translation>Conexiones PostgreSQL disponibles</translation>
+    </message>
+    <message>
+      <source>Delete</source>
+      <translation>Borrar</translation>
+    </message>
+    <message>
+      <source>Edit</source>
+      <translation>Editar</translation>
+    </message>
+    <message>
+      <source>New</source>
+      <translation>Nueva</translation>
+    </message>
+    <message>
+      <source>Connect</source>
+      <translation>Conectar</translation>
+    </message>
+    <message>
+      <source>New layer definition</source>
+      <translation>Definición de la nueva capa</translation>
+    </message>
+    <message>
+      <source>Schema name:</source>
+      <translation>Nombre del esquema:</translation>
+    </message>
+    <message>
+      <source>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>
+p, li { white-space: pre-wrap; }
+&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:8pt; font-weight:400; font-style:normal;&quot;>
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;/p>&lt;/body>&lt;/html></source>
+      <translation type="unfinished" />
+    </message>
+    <message>
+      <source>New layer name:</source>
+      <translation>Nombre de la nueva capa:</translation>
+    </message>
+    <message>
+      <source>Index column:</source>
+      <translation>Columna índice:</translation>
+    </message>
+    <message>
+      <source>gid</source>
+      <translation>GID</translation>
+    </message>
+    <message>
+      <source>Geometry column:</source>
+      <translation>Columna de la geometría:</translation>
+    </message>
+    <message>
+      <source>the_geom</source>
+      <translation type="unfinished" />
+    </message>
+    <message>
+      <source>Geometry type:</source>
+      <translation>Tipo de geometría:</translation>
+    </message>
+    <message>
+      <source>MULTIPOINT</source>
+      <translation>MULTIPUNTO</translation>
+    </message>
+    <message>
+      <source>MULTILINESTRING</source>
+      <translation>CADENAMULTILÍNEA</translation>
+    </message>
+    <message>
+      <source>MULTIPOLYGON</source>
+      <translation>MULTIPOLÍGONO</translation>
+    </message>
+    <message>
+      <source>SRID number:</source>
+      <translation>Número SRID:</translation>
+    </message>
+    <message>
+      <source>Help</source>
+      <translation>Ayuda</translation>
+    </message>
+    <message>
+      <source>F1</source>
+      <translation>F1</translation>
+    </message>
+    <message>
+      <source>Ok</source>
+      <translation>Aceptar</translation>
+    </message>
+    <message>
+      <source>Cancel</source>
+      <translation>Cancelar</translation>
     </message>
   </context>
   <context>
@@ -1044,6 +1210,66 @@ El soporte para Python estará deshabilitado.</translation>
       <source>ERROR: Failed to created default style file as </source>
       <translation>ERROR: no se pudo crear el archivo de estilo predeterminado </translation>
     </message>
+    <message>
+      <source>File could not been opened.</source>
+      <translation>No se pudo abrir el archivo</translation>
+    </message>
+    <message>
+      <source>Dxf2Shp Converter</source>
+      <translation>Conversor Dxf2Shp</translation>
+    </message>
+    <message>
+      <source>Converts from dxf to shp file format</source>
+      <translation>Convierte de formato de archivo dxf a shp</translation>
+    </message>
+    <message>
+      <source>eVis</source>
+      <translation>eVis</translation>
+    </message>
+    <message>
+      <source>An event visualization pluigin for QGIS</source>
+      <translation>Un complemento de visualización de eventos para QGIS</translation>
+    </message>
+    <message>
+      <source>Version 0.7</source>
+      <translation>Versión 0.7</translation>
+    </message>
+    <message>
+      <source>This tool only supports vector data</source>
+      <translation>Esta herramienta sólo soporta datos vectoriales</translation>
+    </message>
+    <message>
+      <source>No active layers found</source>
+      <translation>No se ha encontrado ninguna capa activa</translation>
+    </message>
+    <message>
+      <source>Interpolating...</source>
+      <translation>Interpolando...</translation>
+    </message>
+    <message>
+      <source>Abort</source>
+      <translation>Abortar</translation>
+    </message>
+    <message>
+      <source>Interpolation plugin</source>
+      <translation>Complemento de interpolación</translation>
+    </message>
+    <message>
+      <source>A plugin for interpolation based on vertices of a vector layer</source>
+      <translation>Un complemento para interpolación basado en los vértices de una capa vectorial</translation>
+    </message>
+    <message>
+      <source>Version 0.001</source>
+      <translation>Versión 0.001</translation>
+    </message>
+    <message>
+      <source>SOS plugin</source>
+      <translation>Complemento de SOS</translation>
+    </message>
+    <message>
+      <source>Adds layers from Sensor Observation Service (SOS) to the QGIS canvas</source>
+      <translation>Añade capas de Servicio de Observación de Sensores (SOS) a la vista del mapa de QGIS</translation>
+    </message>
   </context>
   <context>
     <name>QgisApp</name>
@@ -1838,34 +2064,6 @@ Compilado contra Qt </translation>
       <translation>Coordenadas del mapa en la posición del ratón</translation>
     </message>
     <message>
-      <source>Python bindings - This is the major focus of this release it is now possible to create plugins using python. It is also possible to create GIS enabled applications written in python that use the QGIS libraries.</source>
-      <translation>Enlaces Python - Este es el principal objetivo de esta versión. Ahora es posible crear complementos usando Python. También es posible crear aplicaciones de SIG escritas en python que usen las bibliotecas de QGIS.</translation>
-    </message>
-    <message>
-      <source>Removed automake build system - QGIS now needs CMake for compilation.</source>
-      <translation>Eliminado el sistema de compilación de automake - QGIs ahora necesita CMake para compilar.</translation>
-    </message>
-    <message>
-      <source>Many new GRASS tools added (with thanks to http://faunalia.it/)</source>
-      <translation>Muchas herramientas de GRASS nuevas añadidas (gracias a http://faunalia.it/)</translation>
-    </message>
-    <message>
-      <source>Map Composer updates</source>
-      <translation>Actualizaciones del diseñador de mapas</translation>
-    </message>
-    <message>
-      <source>Crash fix for 2.5D shapefiles</source>
-      <translation>Resolución de cuelgues con archivos shape 2.5D</translation>
-    </message>
-    <message>
-      <source>The QGIS libraries have been refactored and better organised.</source>
-      <translation>Las bibliotecas de QGIS se han rehecho y organizado mejor.</translation>
-    </message>
-    <message>
-      <source>Improvements to the GeoReferencer</source>
-      <translation>Mejoras en el Georreferenciador</translation>
-    </message>
-    <message>
       <source>Ctrl+T</source>
       <comment>Hide most toolbars</comment>
       <translation>Ctrl+T</translation>
@@ -1873,10 +2071,6 @@ Compilado contra Qt </translation>
     <message>
       <source>Shows the map coordinates at the current cursor position. The display is continuously updated as the mouse is moved.</source>
       <translation>Muestra las coordenadas del mapa en la posición actual del cursor. La visualización se actualiza continuamente al mover el ratón.</translation>
-    </message>
-    <message>
-      <source>Added locale options to options dialog.</source>
-      <translation>Se han añadido las opciones de locale al diálogo de opciones.</translation>
     </message>
     <message>
       <source>Open an OGR Supported Vector Layer</source>
@@ -2111,26 +2305,6 @@ Compilado contra Qt </translation>
       <translation>No se puede comunicar con el servidor de versión de QGIS</translation>
     </message>
     <message>
-      <source>QGIS Browser Selection</source>
-      <translation>Selección de navegador de QGIS</translation>
-    </message>
-    <message>
-      <source>Enter the name of a web browser to use (eg. konqueror).
-</source>
-      <translation>Introducir el nombre de un navegador web a utilizar (ej. konqueror).
-</translation>
-    </message>
-    <message>
-      <source>Enter the full path if the browser is not in your PATH.
-</source>
-      <translation>Introducir la ruta completa si el navegador no está en la variable de entorno PATH.
-</translation>
-    </message>
-    <message>
-      <source>You can change this option later by selecting Options from the Settings menu (Help Browser tab).</source>
-      <translation>Puede cambiar esta opción más tarde seleccionadon Opciones desde el menú Configuración (pestaña Navegador de la ayuda).</translation>
-    </message>
-    <message>
       <source>Layer is not valid</source>
       <translation>La capa no es válida</translation>
     </message>
@@ -2242,6 +2416,39 @@ Compilado contra Qt </translation>
     <message>
       <source>Warn me when opening a project file saved with an older version of QGIS</source>
       <translation>Avisarme al abrir archivos de proyecto guardados con una versión anterior de QGIS</translation>
+    </message>
+    <message>
+      <source>Toggle full screen mode</source>
+      <translation>Cambiar el modo de pantalla completa</translation>
+    </message>
+    <message>
+      <source>Ctrl-F</source>
+      <comment>Toggle fullscreen mode</comment>
+      <translation>C</translation>
+    </message>
+    <message>
+      <source>Toggle fullscreen mode</source>
+      <translation>Cambiar el modo de pantalla completa</translation>
+    </message>
+    <message>
+      <source>This release candidate includes over 40 bug fixes and enchancements over the QGIS 0.9.1 release. In addition we have added the following new features:</source>
+      <translation>Este candidato de lanzamiento incluye más de 40 correcciones de errores y mejoras en relación a la versión 0.9.1. Además hemos añadido las siguientes funciones nuevas:</translation>
+    </message>
+    <message>
+      <source>Imrovements to digitising capabilities.</source>
+      <translation>Mejora de la capacidad de digitalización.</translation>
+    </message>
+    <message>
+      <source>Supporting default and defined styles (.qml) files for file based vector layers. With styles you can save the symbolisation and other settings associated with a vector layer and they will be loaded whenever you load that layer.</source>
+      <translation>Soporte para archivos (.qml) de estilos predeterminados y definidos, para capas vectoriales basadas en archivos. Con los estilos puede guardar la simbología y otros ajustes asociados a una capa vectorial y se cargarán cada vez que cargue la capa.</translation>
+    </message>
+    <message>
+      <source>Improved support for transparency and contrast stretching in raster layers. Support for color ramps in raster layers. Support for non-north up rasters. Many other raster improvements 'under the hood'.</source>
+      <translation>Soporte mejorado para ajuste de la transparencia y el contraste en capas ráster. Soporte para rampas de color en capas ráster. Soporte para rásters no orientados al norte. Otras muchas mejoras ráster «en la trastienda».</translation>
+    </message>
+    <message>
+      <source></source>
+      <translation type="unfinished" />
     </message>
   </context>
   <context>
@@ -2689,16 +2896,16 @@ Puede cambiar esta opción más tarde seleccionadon Opciones desde el menú Conf
       <translation>Error</translation>
     </message>
     <message>
-      <source>Could not commit changes</source>
-      <translation>No se pudieron guardar los cambios</translation>
-    </message>
-    <message>
       <source>The attribute could not be inserted. The name already exists in the table.</source>
       <translation>No se pudo insertar el atributo. El nombre ya existe en la tabla.</translation>
     </message>
     <message>
       <source>Found %d matching features.</source>
       <translation>Se han encontrado %d elementos coincidentes.</translation>
+    </message>
+    <message>
+      <source>Could not commit changes - changes are still pending</source>
+      <translation>No se pudieron enviar los cambios - los cambios están todavía pendientes</translation>
     </message>
   </context>
   <context>
@@ -2867,16 +3074,16 @@ Puede cambiar esta opción más tarde seleccionadon Opciones desde el menú Conf
       <translation>No volver a mostrar este mensaje</translation>
     </message>
     <message>
-      <source>&lt;p>The SVG export function in Qgis has several problems due to bugs and deficiencies in the Qt4 svg code. Of note, text does not appear in the SVG file and there are problems with the map bounding box clipping other items such as the legend or scale bar.&lt;/p>If you require a vector-based output file from Qgis it is suggested that you try printing to PostScript if the SVG output is not satisfactory.&lt;/p></source>
-      <translation>&lt;p>La función &quot;Exportar a SVG&quot; en Qgis tiene varios problemas debido a errores y deficiencias en el código svg de Qt4. Entre otros problemas, los textos no aparecen en los archivos SVG y hay problemas cuando el marco corta otros elementos como la leyenda o la barra de escala.&lt;/p>Si necesita un mapa vectorial hecho con Qgis, le sugerimos que lo imprima como PostScript si la salida como SVG no es satisfactoria.&lt;/p></translation>
-    </message>
-    <message>
       <source>Choose a filename to save the map as</source>
       <translation>Seleccionar un nombre de archivo para guardar el mapa</translation>
     </message>
     <message>
       <source>SVG Format</source>
       <translation>Formato SVG</translation>
+    </message>
+    <message>
+      <source>&lt;p>The SVG export function in Qgis has several problems due to bugs and deficiencies in the </source>
+      <translation>&lt;p>La función de exportación a SVG de Qgis tiene varios problemas debido a errores y deficiencias en la </translation>
     </message>
   </context>
   <context>
@@ -3794,6 +4001,34 @@ p, li { white-space: pre-wrap; }
       <source>Geometry column</source>
       <translation>Columna de geometría</translation>
     </message>
+    <message>
+      <source>Accessible tables could not be determined</source>
+      <translation>No se pudieron determinar las tablas accesibles</translation>
+    </message>
+    <message>
+      <source>Database connection was successful, but the accessible tables could not be determined.
+
+The error message from the database was:
+%1
+</source>
+      <translation>La conexión a la base de datos tuvo éxito, pero no se pudieron determinar las tablas accesibles.
+
+El mensaje de error de la base de datos fue:
+%1</translation>
+    </message>
+    <message>
+      <source>No accessible tables found</source>
+      <translation>No se encontraron tablas accesibles</translation>
+    </message>
+    <message>
+      <source>Database connection was successful, but no accessible tables were found.
+
+Please verify that you have SELECT privilege on a table carrying PostGIS
+geometry.</source>
+      <translation>La conexión a la base de datos tuvo éxito, pero no se encontraron tablas accesibles.
+
+Por favor, verifique que tiene privilegios para SELECT sobre una tabla que lleve la geometría PostGIS.</translation>
+    </message>
   </context>
   <context>
     <name>QgsDbSourceSelectBase</name>
@@ -4178,21 +4413,6 @@ p, li { white-space: pre-wrap; }
     <message>
       <source>Reserved Words</source>
       <translation>Palabras reservadas</translation>
-    </message>
-  </context>
-  <context>
-    <name>QgsEditReservedWordsDialog</name>
-    <message>
-      <source>Status</source>
-      <translation>Estado</translation>
-    </message>
-    <message>
-      <source>Column Name</source>
-      <translation>Nombre de columna</translation>
-    </message>
-    <message>
-      <source>Index</source>
-      <translation>Índice</translation>
     </message>
   </context>
   <context>
@@ -4662,6 +4882,13 @@ p, li { white-space: pre-wrap; }
     <message>
       <source>GPX input file:</source>
       <translation>Archivo GPX de entrada:</translation>
+    </message>
+    <message>
+      <source>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>
+p, li { white-space: pre-wrap; }
+&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;/p>&lt;/body>&lt;/html></source>
+      <translation type="unfinished" />
     </message>
   </context>
   <context>
@@ -6672,30 +6899,6 @@ en la línea </translation>
       <translation>QGIS - Creador de cuadrículas</translation>
     </message>
     <message>
-      <source>Longitude Interval is invalid - please correct and try again.</source>
-      <translation>El intervalo de la longitud no es válido - por favor, corríjalo y pruebe de nuevo.</translation>
-    </message>
-    <message>
-      <source>Latitude Interval is invalid - please correct and try again.</source>
-      <translation>El intervalo de la latitud no es válido - Por favor, corríjalo y pruebe de nuevo.</translation>
-    </message>
-    <message>
-      <source>Longitude Origin is invalid - please correct and try again..</source>
-      <translation>El origen de la longitud no es válido - Por favor, corríjalo y pruebe de nuevo.</translation>
-    </message>
-    <message>
-      <source>Latitude Origin is invalid - please correct and try again.</source>
-      <translation>El origen de la latitud no es válido - Por favor, corríjalo y pruebe de nuevo.</translation>
-    </message>
-    <message>
-      <source>End Point Longitude is invalid - please correct and try again.</source>
-      <translation>La longitud del punto final no es válida - Por favor, corríjala y pruebe de nuevo.</translation>
-    </message>
-    <message>
-      <source>End Point Latitude is invalid - please correct and try again.</source>
-      <translation>La latitud del punto final no es válida - Por favor, corríjala y pruebe de nuevo.</translation>
-    </message>
-    <message>
       <source>Choose a filename to save under</source>
       <translation>Seleccione un nombre para guardar el archivo</translation>
     </message>
@@ -6711,16 +6914,8 @@ en la línea </translation>
   <context>
     <name>QgsGridMakerPluginGuiBase</name>
     <message>
-      <source>QGIS Plugin Template</source>
-      <translation>Plantilla de complementos de QGIS</translation>
-    </message>
-    <message>
       <source>Graticule Builder</source>
       <translation>Generador de cuadrículas</translation>
-    </message>
-    <message>
-      <source>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;/head>&lt;body style=&quot; white-space: pre-wrap; font-family:Sans Serif; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:Arial; font-size:11pt;&quot;>&lt;span style=&quot; font-size:10pt;&quot;>This plugin will help you to build a graticule shapefile that you can use as an overlay within your qgis map viewer.&lt;/span>&lt;/p>&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:Arial; font-size:10pt;&quot;>Please enter all units in decimal degrees&lt;/p>&lt;/body>&lt;/html></source>
-      <translation>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;/head>&lt;body style=&quot; white-space: pre-wrap; font-family:Sans Serif; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:Arial; font-size:11pt;&quot;>&lt;span style=&quot; font-size:10pt;&quot;>Este complemento le ayudará a construir un archivo shape de cuadrícula que podrá usar como guía en su vista del mapa de QGIS.&lt;/span>&lt;/p>&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:Arial; font-size:10pt;&quot;>Introduzca todas las unidades en grados decimales&lt;/p>&lt;/body>&lt;/html></translation>
     </message>
     <message>
       <source>Type</source>
@@ -6731,10 +6926,6 @@ en la línea </translation>
       <translation>Punto</translation>
     </message>
     <message>
-      <source>Line</source>
-      <translation>Línea</translation>
-    </message>
-    <message>
       <source>Polygon</source>
       <translation>Polígono</translation>
     </message>
@@ -6743,32 +6934,8 @@ en la línea </translation>
       <translation>Origen (esquina inferior izquierda)</translation>
     </message>
     <message>
-      <source>Latitude:</source>
-      <translation>Latitud:</translation>
-    </message>
-    <message>
-      <source>#000.00000; </source>
-      <translation>#000.00000; </translation>
-    </message>
-    <message>
-      <source>Longitude:</source>
-      <translation>Longitud:</translation>
-    </message>
-    <message>
       <source>End point (upper right)</source>
       <translation>Punto final (esquina superior derecha)</translation>
-    </message>
-    <message>
-      <source>Graticle size (units in degrees)</source>
-      <translation>Tamaño de la cuadrícula (unidades en grados)</translation>
-    </message>
-    <message>
-      <source>Latitude Interval:</source>
-      <translation>Intervalo de la latitud:</translation>
-    </message>
-    <message>
-      <source>Longitude Interval:</source>
-      <translation>Intervalo de la longitud:</translation>
     </message>
     <message>
       <source>Output (shape) file</source>
@@ -6777,6 +6944,42 @@ en la línea </translation>
     <message>
       <source>Save As...</source>
       <translation>Guardar como...</translation>
+    </message>
+    <message>
+      <source>QGIS Graticule Creator</source>
+      <translation>Generador de cuadrículas de QGIS</translation>
+    </message>
+    <message>
+      <source>Graticle size</source>
+      <translation>Tamaño de cuadrícula</translation>
+    </message>
+    <message>
+      <source>Y Interval:</source>
+      <translation>Intervalo Y</translation>
+    </message>
+    <message>
+      <source>X Interval:</source>
+      <translation>Intervalo X</translation>
+    </message>
+    <message>
+      <source>Y</source>
+      <translation>Y</translation>
+    </message>
+    <message>
+      <source>X</source>
+      <translation>X</translation>
+    </message>
+    <message>
+      <source>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>
+p, li { white-space: pre-wrap; }
+&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Arial'; font-size:11pt;&quot;>&lt;span style=&quot; font-size:10pt;&quot;>This plugin will help you to build a graticule shapefile that you can use as an overlay within your qgis map viewer.&lt;/span>&lt;/p>
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Arial'; font-size:10pt;&quot;>Please enter all units in decimal degrees&lt;/p>&lt;/body>&lt;/html></source>
+      <translation>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>
+p, li { white-space: pre-wrap; }
+&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Arial'; font-size:11pt;&quot;>&lt;span style=&quot; font-size:10pt;&quot;>Esta complemento le ayudará a construir un archivo shape de cuadrícula que puede usar superpuesto en la vista del mapa de qgis.&lt;/span>&lt;/p>
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Arial'; font-size:10pt;&quot;>Por favor, introduzca todas las unidades en grados decimales.&lt;/p>&lt;/body>&lt;/html></translation>
     </message>
   </context>
   <context>
@@ -6910,6 +7113,60 @@ Esto puede ser por un problema en su conexión a red o en el servidor WMS.</tran
     <message>
       <source>Close</source>
       <translation>Cerrar</translation>
+    </message>
+  </context>
+  <context>
+    <name>QgsInterpolationDialogBase</name>
+    <message>
+      <source>Dialog</source>
+      <translation>Diálogo</translation>
+    </message>
+    <message>
+      <source>Input</source>
+      <translation>Entrada</translation>
+    </message>
+    <message>
+      <source>Input vector layer:</source>
+      <translation>Capa vectorial de entrada:</translation>
+    </message>
+    <message>
+      <source>Use z-Coordinate for interpolation</source>
+      <translation>Usar coordenada Z para interpolación</translation>
+    </message>
+    <message>
+      <source>Interpolation attribute: </source>
+      <translation>Atributo de interpolación: </translation>
+    </message>
+    <message>
+      <source>Output</source>
+      <translation>Salida</translation>
+    </message>
+    <message>
+      <source>Interpolation method:</source>
+      <translation>Método de interpolación:</translation>
+    </message>
+    <message>
+      <source>Number of columns:</source>
+      <translation>Número de columnas:</translation>
+    </message>
+    <message>
+      <source>Number of rows:</source>
+      <translation>Número de filas:</translation>
+    </message>
+    <message>
+      <source>Output File: </source>
+      <translation>Archivo de salida: </translation>
+    </message>
+    <message>
+      <source>...</source>
+      <translation>...</translation>
+    </message>
+  </context>
+  <context>
+    <name>QgsInterpolationPlugin</name>
+    <message>
+      <source>&amp;Interpolation</source>
+      <translation>&amp;Interpolación</translation>
     </message>
   </context>
   <context>
@@ -7456,7 +7713,7 @@ Esto puede ser por un problema en su conexión a red o en el servidor WMS.</tran
     <message>
       <source>- %1 features found</source>
       <comment>Identify results window title</comment>
-      <translation>Encontrados - %1 elementos</translation>
+      <translation>- Encontrados %1 elementos</translation>
     </message>
   </context>
   <context>
@@ -7823,38 +8080,6 @@ Please install PostGIS with GEOS support (http://geos.refractions.net)</source>
 La selección e identificación de objetos espaciales no funcionará correctamente.
 Por favor, instale PostGIS con soporte para GEOS (http://geos.refractions.net)</translation>
     </message>
-    <message>
-      <source>Save layer as...</source>
-      <translation>Guardar capa como...</translation>
-    </message>
-    <message>
-      <source>Error</source>
-      <translation>Error</translation>
-    </message>
-    <message>
-      <source>Error creating field </source>
-      <translation>Error al crear el campo </translation>
-    </message>
-    <message>
-      <source>Layer creation failed</source>
-      <translation>Ha fallado la creación de la capa</translation>
-    </message>
-    <message>
-      <source>Error creating shapefile</source>
-      <translation>Error al crear el archivo shape</translation>
-    </message>
-    <message>
-      <source>The shapefile could not be created (</source>
-      <translation>El archivo shape no se ha podido crear (</translation>
-    </message>
-    <message>
-      <source>Driver not found</source>
-      <translation>No se ha encontrado el controlador</translation>
-    </message>
-    <message>
-      <source> driver is not available</source>
-      <translation> el controlador no está disponible</translation>
-    </message>
   </context>
   <context>
     <name>QgsNewConnection</name>
@@ -8149,21 +8374,22 @@ Información extensa sobre el error:
     </message>
   </context>
   <context>
-    <name>QgsOGRFactory</name>
-    <message>
-      <source>Wrong Path/URI</source>
-      <translation>Ruta/URI errónea</translation>
-    </message>
-    <message>
-      <source>The provided path for the dataset is not valid.</source>
-      <translation>La ruta especificada para el conjunto de datos no es válida.</translation>
-    </message>
-  </context>
-  <context>
     <name>QgsOptions</name>
     <message>
       <source>Detected active locale on your system: </source>
       <translation>Idioma activo detectado en su sistema: </translation>
+    </message>
+    <message>
+      <source>to vertex</source>
+      <translation>a vértice</translation>
+    </message>
+    <message>
+      <source>to segment</source>
+      <translation>a segmento</translation>
+    </message>
+    <message>
+      <source>to vertex and segment</source>
+      <translation>a vértice y segmento</translation>
     </message>
   </context>
   <context>
@@ -8333,50 +8559,6 @@ Información extensa sobre el error:
       <translation>Se usará la proyección global predeterminada &amp;mostrada a continuación.</translation>
     </message>
     <message>
-      <source>Help &amp;Browser</source>
-      <translation>&amp;Navegador de la ayuda</translation>
-    </message>
-    <message>
-      <source>&lt;b>Note:&lt;/b> The browser must be in your PATH or you can specify the full path above</source>
-      <translation>&lt;b>Nota:&lt;/b> El navegador debe estar en la variable PATH o puede especificar la ruta completa arriba</translation>
-    </message>
-    <message>
-      <source>...</source>
-      <translation>...</translation>
-    </message>
-    <message>
-      <source>epiphany</source>
-      <translation>epiphany</translation>
-    </message>
-    <message>
-      <source>firefox</source>
-      <translation>firefox</translation>
-    </message>
-    <message>
-      <source>mozilla-firefox</source>
-      <translation>mozilla-firefox</translation>
-    </message>
-    <message>
-      <source>galeon</source>
-      <translation>galeon</translation>
-    </message>
-    <message>
-      <source>konqueror</source>
-      <translation>konqueror</translation>
-    </message>
-    <message>
-      <source>mozilla</source>
-      <translation>mozilla</translation>
-    </message>
-    <message>
-      <source>opera</source>
-      <translation>opera</translation>
-    </message>
-    <message>
-      <source>Open help documents with</source>
-      <translation>Abrir documentos de ayuda con</translation>
-    </message>
-    <message>
       <source>&amp;General</source>
       <translation>&amp;General</translation>
     </message>
@@ -8463,6 +8645,14 @@ Información extensa sobre el error:
     <message>
       <source>Search radius for vertex edits (in layer units):</source>
       <translation>Radio de búsqueda para edición de vértices (en unidades de la capa):</translation>
+    </message>
+    <message>
+      <source>Default Snap Mode:</source>
+      <translation>Modo de autoensamblado por omisión:</translation>
+    </message>
+    <message>
+      <source>Zoom to mouse cursor</source>
+      <translation>Zoom al cursor del ratón</translation>
     </message>
   </context>
   <context>
@@ -8586,12 +8776,13 @@ Información extensa sobre el error:
       <translation>Crear un área de influencia de una capa PostgreSQL. </translation>
     </message>
     <message>
-      <source> is not a PostgreSQL/PostGIS layer. </source>
-      <translation> no es una capa PostgreSQL/PostGIS. </translation>
+      <source> is not a PostgreSQL/PostGIS layer.
+</source>
+      <translation> no es una capa PostgreSQL/PostGIS</translation>
     </message>
     <message>
-      <source>Geoprocessing functions are only available for PostgreSQL/PostGIS Layers.</source>
-      <translation>Las funciones de geoprocesamiento sólo están disponibles para capas PostgreSQL/PostGIS.</translation>
+      <source>Geoprocessing functions are only available for PostgreSQL/PostGIS Layers</source>
+      <translation>Las funciones de geoprocesamiento sólo están disponibles para capas PostgreSQL/PostGIS</translation>
     </message>
   </context>
   <context>
@@ -9193,30 +9384,6 @@ clave primaria) o que tenga una columna oid de PostgreSQL.</translation>
       <translation>No hay una columna de clave adecuada en la vista</translation>
     </message>
     <message>
-      <source>INSERT error</source>
-      <translation>Error al INSERTAR</translation>
-    </message>
-    <message>
-      <source>An error occured during feature insertion</source>
-      <translation>Ha ocurrido un error durante la inserción de objetos espaciales</translation>
-    </message>
-    <message>
-      <source>DELETE error</source>
-      <translation>Error al BORRAR</translation>
-    </message>
-    <message>
-      <source>An error occured during deletion from disk</source>
-      <translation>Ha ocurrido un error durante el borrado del disco</translation>
-    </message>
-    <message>
-      <source>PostGIS error</source>
-      <translation>Error de PostGIS</translation>
-    </message>
-    <message>
-      <source>When trying: </source>
-      <translation>Cuando se intentaba: </translation>
-    </message>
-    <message>
       <source>Unknown geometry type</source>
       <translation>Tipo de geometría desconocido</translation>
     </message>
@@ -9247,16 +9414,40 @@ clave primaria) o que tenga una columna oid de PostgreSQL.</translation>
       <translation>No se ha podido obtener el tipo ni el srid del objeto espacial</translation>
     </message>
     <message>
-      <source>An error occured contacting the PostgreSQL database</source>
-      <translation>Ocurrió un error al contactar con la base de datos PostgreSQL</translation>
-    </message>
-    <message>
-      <source>The PostgreSQL database returned: </source>
-      <translation>La base de datos PostgrSQL devolvió: </translation>
-    </message>
-    <message>
       <source>Qgis was unable to determine the type and srid of column </source>
       <translation>QGIS no pude determinar el tipo y srid de la columna </translation>
+    </message>
+    <message>
+      <source>Unable to determine table access privileges for the </source>
+      <translation>No se pueden determinar los privilegios de acceso a tabla para el </translation>
+    </message>
+    <message>
+      <source>Error while adding features</source>
+      <translation>Error al añadir objetos espaciales</translation>
+    </message>
+    <message>
+      <source>Error while deleting features</source>
+      <translation>Error al borrar objetos espaciales</translation>
+    </message>
+    <message>
+      <source>Error while adding attributes</source>
+      <translation>Error al añadir atributos</translation>
+    </message>
+    <message>
+      <source>Error while deleting attributes</source>
+      <translation>Error al borrar atributos</translation>
+    </message>
+    <message>
+      <source>Error while changing attributes</source>
+      <translation>Error al cambiar atributos</translation>
+    </message>
+    <message>
+      <source>unexpected PostgreSQL error</source>
+      <translation>error inesperado de PostgreSQL</translation>
+    </message>
+    <message>
+      <source>Error while changing geometry values</source>
+      <translation>Error al cambiar los valores de la geometría</translation>
     </message>
   </context>
   <context>
@@ -10235,6 +10426,91 @@ clave primaria) o que tenga una columna oid de PostgreSQL.</translation>
     </message>
   </context>
   <context>
+    <name>QgsSOSPlugin</name>
+    <message>
+      <source>&amp;Add Sensor layer</source>
+      <translation>&amp;Añadir capa de sensor</translation>
+    </message>
+  </context>
+  <context>
+    <name>QgsSOSSourceSelect</name>
+    <message>
+      <source>Offering not found</source>
+      <translation>No se ha encontrado oferta</translation>
+    </message>
+    <message>
+      <source>An problem occured adding the layer. The information about the selected offering could not be found</source>
+      <translation>Ocurrió un problema al añadir la capa. No se pudo encontrar la información sobre las ofertas seleccionadas.</translation>
+    </message>
+    <message>
+      <source>Are you sure you want to remove the </source>
+      <translation>¿Está seguro de que quiere eliminar la conexión </translation>
+    </message>
+    <message>
+      <source> connection and all associated settings?</source>
+      <translation>y toda la configuración asociada?</translation>
+    </message>
+    <message>
+      <source>Confirm Delete</source>
+      <translation>Confirmar borrado</translation>
+    </message>
+  </context>
+  <context>
+    <name>QgsSOSSourceSelectBase</name>
+    <message>
+      <source>Dialog</source>
+      <translation>Diálogo</translation>
+    </message>
+    <message>
+      <source>Server Connections</source>
+      <translation>Conexiones de servidor</translation>
+    </message>
+    <message>
+      <source>&amp;New</source>
+      <translation>&amp;Nuevo</translation>
+    </message>
+    <message>
+      <source>Delete</source>
+      <translation>Borrar</translation>
+    </message>
+    <message>
+      <source>Edit</source>
+      <translation>Editar</translation>
+    </message>
+    <message>
+      <source>C&amp;onnect</source>
+      <translation>Co&amp;nectar</translation>
+    </message>
+    <message>
+      <source>Offerings</source>
+      <translation>Ofertas</translation>
+    </message>
+    <message>
+      <source>Name</source>
+      <translation>Nombre</translation>
+    </message>
+    <message>
+      <source>Id</source>
+      <translation>Id</translation>
+    </message>
+    <message>
+      <source>Optional settings</source>
+      <translation>Configuración opcional</translation>
+    </message>
+    <message>
+      <source>Observed properties...</source>
+      <translation>Propiedades observadas...</translation>
+    </message>
+    <message>
+      <source>Procedures...</source>
+      <translation>Procedimientos...</translation>
+    </message>
+    <message>
+      <source>Features of interest...</source>
+      <translation>Objetos espaciales de interés...</translation>
+    </message>
+  </context>
+  <context>
     <name>QgsScaleBarPlugin</name>
     <message>
       <source>Bottom Left</source>
@@ -10840,10 +11116,6 @@ clave primaria) o que tenga una columna oid de PostgreSQL.</translation>
       <translation>Archivos shape (*.shp);;Todos los archivos (*.*)</translation>
     </message>
     <message>
-      <source> - Edit Column Names</source>
-      <translation> - Editar nombres de columna</translation>
-    </message>
-    <message>
       <source>The following Shapefile(s) could not be loaded:
 
 </source>
@@ -11038,8 +11310,8 @@ clave primaria) o que tenga una columna oid de PostgreSQL.</translation>
       <translation>]?</translation>
     </message>
     <message>
-      <source>Use the table below to edit column names. Make sure that none of the columns are named using a PostgreSQL reserved word</source>
-      <translation>Usar la tabla de abajo para editar los nombres de columna. Asegúrese de que ninguno de los nombres utilizados sea una palabra reservada de PostgreSQL</translation>
+      <source>%1 of %2 shapefiles could not be imported.</source>
+      <translation>No se pudieron importar %1 de %2 archivos shape.</translation>
     </message>
   </context>
   <context>
@@ -11047,14 +11319,6 @@ clave primaria) o que tenga una columna oid de PostgreSQL.</translation>
     <message>
       <source>SPIT - Shapefile to PostGIS Import Tool</source>
       <translation>SPIT - Herramienta para importar archivos shape a PostGIS</translation>
-    </message>
-    <message>
-      <source>Shapefile to PostGIS Import Tool</source>
-      <translation>Herramienta para importar archivos shape a PostGIS</translation>
-    </message>
-    <message>
-      <source>Shapefile List</source>
-      <translation>Lista de archivos shape</translation>
     </message>
     <message>
       <source>Add a shapefile to the list of files to be imported</source>
@@ -11081,28 +11345,12 @@ clave primaria) o que tenga una columna oid de PostgreSQL.</translation>
       <translation>Eliminar todos</translation>
     </message>
     <message>
-      <source>SRID</source>
-      <translation>SRID</translation>
-    </message>
-    <message>
       <source>Set the SRID to the default value</source>
       <translation>Establecer el SRID al valor por omisión</translation>
     </message>
     <message>
-      <source>Use Default SRID</source>
-      <translation>Utilizar el SRID por omisión</translation>
-    </message>
-    <message>
       <source>Set the geometry column name to the default value</source>
       <translation>Establecer el nombre de la columna de la geometría al valor por omisión</translation>
-    </message>
-    <message>
-      <source>Use Default Geometry Column Name</source>
-      <translation>Usar el nombre de la columna de la geometría por omisión</translation>
-    </message>
-    <message>
-      <source>Geometry Column Name</source>
-      <translation>Nombre de la columna de la geometría</translation>
     </message>
     <message>
       <source>Global Schema</source>
@@ -11125,16 +11373,28 @@ clave primaria) o que tenga una columna oid de PostgreSQL.</translation>
       <translation>Eliminar la conexión actual a PostGIS</translation>
     </message>
     <message>
-      <source>Connect</source>
-      <translation>Conectar</translation>
-    </message>
-    <message>
       <source>Edit the current PostGIS connection</source>
       <translation>Editar la conexión actual a PostGIS</translation>
     </message>
     <message>
       <source>Edit</source>
       <translation>Editar</translation>
+    </message>
+    <message>
+      <source>Import options and shapefile list</source>
+      <translation>Opciones de importación y lista de archivos shape</translation>
+    </message>
+    <message>
+      <source>Use Default SRID or specify here</source>
+      <translation>Usar SRID por omisión o especificar aquí</translation>
+    </message>
+    <message>
+      <source>Use Default Geometry Column Name or specify here</source>
+      <translation>Usar nombre de columna de geometría por omisión o especificar aquí</translation>
+    </message>
+    <message>
+      <source>Primary Key Column Name</source>
+      <translation>Nombre de la columna de clave primaria</translation>
     </message>
   </context>
   <context>
@@ -11863,6 +12123,10 @@ clave primaria) o que tenga una columna oid de PostgreSQL.</translation>
       <source>Note: If you want more control over the map layout please use the map composer function in QGIS.</source>
       <translation>Nota: si quiere más control sobre la disposición del mapa, por favor use la función Diseñador de mapas de QGIS.</translation>
     </message>
+    <message>
+      <source>Page Size</source>
+      <translation>Tamaño de página</translation>
+    </message>
   </context>
   <context>
     <name>QuickPrintPlugin</name>
@@ -11907,6 +12171,654 @@ clave primaria) o que tenga una columna oid de PostgreSQL.</translation>
     <message>
       <source>Plugin Template</source>
       <translation>Plantilla de complementos</translation>
+    </message>
+  </context>
+  <context>
+    <name>dxf2shpConverter</name>
+    <message>
+      <source>Converts DXF files in Shapefile format</source>
+      <translation>Convierte archivos DXF a formato shape</translation>
+    </message>
+  </context>
+  <context>
+    <name>dxf2shpConverterGui</name>
+    <message>
+      <source>Choose a delimited text file to open</source>
+      <translation>Seleccione un archivo de texto delimitado para abrir</translation>
+    </message>
+    <message>
+      <source>QGIS Plugin Template</source>
+      <translation>Plantilla de complementos de QGIS</translation>
+    </message>
+    <message>
+      <source>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>
+p, li { white-space: pre-wrap; }
+&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:22pt;&quot;>Dxf to Shp Converter&lt;/span>&lt;/p>&lt;/body>&lt;/html></source>
+      <translation>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>
+p, li { white-space: pre-wrap; }
+&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:22pt;&quot;>Conversor Dxf a Shp&lt;/span>&lt;/p>&lt;/body>&lt;/html></translation>
+    </message>
+    <message>
+      <source>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>
+p, li { white-space: pre-wrap; }
+&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;&quot;>&lt;span style=&quot; font-size:10pt;&quot;>Output Shp file:&lt;/span>&lt;/p>&lt;/body>&lt;/html></source>
+      <translation>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>
+p, li { white-space: pre-wrap; }
+&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;&quot;>&lt;span style=&quot; font-size:10pt;&quot;>Archivo Shp de salida:&lt;/span>&lt;/p>&lt;/body>&lt;/html></translation>
+    </message>
+    <message>
+      <source>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>
+p, li { white-space: pre-wrap; }
+&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;&quot;>&lt;span style=&quot; font-size:9pt;&quot;>Input DXF file:&lt;/span>&lt;/p>&lt;/body>&lt;/html></source>
+      <translation>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>
+p, li { white-space: pre-wrap; }
+&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;&quot;>&lt;span style=&quot; font-size:9pt;&quot;>Archivo DXF de entrada:&lt;/span>&lt;/p>&lt;/body>&lt;/html></translation>
+    </message>
+    <message>
+      <source>Browse</source>
+      <translation>Explorar</translation>
+    </message>
+    <message>
+      <source>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>
+p, li { white-space: pre-wrap; }
+&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:9pt;&quot;>Shp output file type:&lt;/span>&lt;/p>&lt;/body>&lt;/html></source>
+      <translation>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>
+p, li { white-space: pre-wrap; }
+&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:9pt;&quot;>Tipo de archivo Shp de salida:&lt;/span>&lt;/p>&lt;/body>&lt;/html></translation>
+    </message>
+    <message>
+      <source>Polyline</source>
+      <translation>Polilínea</translation>
+    </message>
+    <message>
+      <source>Polygon</source>
+      <translation>Polígono</translation>
+    </message>
+    <message>
+      <source>Point</source>
+      <translation>Punto</translation>
+    </message>
+    <message>
+      <source>Export text labels</source>
+      <translation>Exportar etiquetas de texto</translation>
+    </message>
+  </context>
+  <context>
+    <name>eVis</name>
+    <message>
+      <source>Create layer from database query</source>
+      <translation>Crear capa a partir de consulta a base de datos</translation>
+    </message>
+    <message>
+      <source>Tool for selecting indiviudual points</source>
+      <translation>Herramienta para seleccionar puntos individuales</translation>
+    </message>
+    <message>
+      <source>Open an Even Browser to explore the current layer</source>
+      <translation>Abrir un explorador de Even para explorar la capa actual</translation>
+    </message>
+  </context>
+  <context>
+    <name>eVisDatabaseConnectionGui</name>
+    <message>
+      <source>Undefined</source>
+      <translation>Indefinido</translation>
+    </message>
+    <message>
+      <source>No predefined queries loaded</source>
+      <translation>Ninguna consulta predefinida cargada</translation>
+    </message>
+    <message>
+      <source>Open File</source>
+      <translation>Abrir archivo</translation>
+    </message>
+    <message>
+      <source>New Database connection requested...</source>
+      <translation>Solicitada nueva conexión a base de datos...</translation>
+    </message>
+    <message>
+      <source>Error: You must select a database type</source>
+      <translation>Error: debe seleccionar un tipo de base de datos</translation>
+    </message>
+    <message>
+      <source>Error: No host name entered</source>
+      <translation>Error: no se ha introducido nombre de servidor</translation>
+    </message>
+    <message>
+      <source>Error: No username entered</source>
+      <translation>Error: no se ha introducido nombre de usuario</translation>
+    </message>
+    <message>
+      <source>Error: No password entered</source>
+      <translation>Error: no se ha introducido nombre de usuario</translation>
+    </message>
+    <message>
+      <source>Error: No database name entered</source>
+      <translation>Error: no se ha introducido nombre de base de datos</translation>
+    </message>
+    <message>
+      <source>Connection to [</source>
+      <translation>Conexión a [</translation>
+    </message>
+    <message>
+      <source>] established.</source>
+      <translation>] establecida.</translation>
+    </message>
+    <message>
+      <source>connected</source>
+      <translation>conectado</translation>
+    </message>
+    <message>
+      <source>] failed: </source>
+      <translation>] falló: </translation>
+    </message>
+    <message>
+      <source>XML (*.xml)</source>
+      <translation>XML (*.xml)</translation>
+    </message>
+    <message>
+      <source>Error: Parse error at line %1, column %2: %3</source>
+      <translation>Error: error de análisis en la línea %1, columna %2: %3</translation>
+    </message>
+    <message>
+      <source>Error: Unabled to open file [</source>
+      <translation>Error: no se puede abrir el archivo [</translation>
+    </message>
+    <message>
+      <source>MSAccess (*.mdb)</source>
+      <translation>MSAccess (*.mdb)</translation>
+    </message>
+    <message>
+      <source>Sqlite (*.db)</source>
+      <translation>Sqlite (*.db)</translation>
+    </message>
+    <message>
+      <source>Error: Query failed: </source>
+      <translation>Error: falló la consulta: </translation>
+    </message>
+    <message>
+      <source>Error: Counld not create temporary file, process halted</source>
+      <translation>Error: no se pudo crear el archivo temporal, se detuvo el proceso</translation>
+    </message>
+    <message>
+      <source>Error: A database connection is not currently established</source>
+      <translation>Error: no hay ninguna conexión a base de datos establecida actualmente</translation>
+    </message>
+  </context>
+  <context>
+    <name>eVisDatabaseConnectionGuiBase</name>
+    <message>
+      <source>Database Connection</source>
+      <translation>Conexión a base de datos</translation>
+    </message>
+    <message>
+      <source>Predfined Queries</source>
+      <translation>Consultas predefinidas</translation>
+    </message>
+    <message>
+      <source>Load predefined queries</source>
+      <translation>Cargar consultas predefinidas</translation>
+    </message>
+    <message>
+      <source>Loads an XML file with predefined queries. Use the Open File window to locate the XML file that contains one or more predefined queries using the format described in the user guide.</source>
+      <translation>Carga un archivo XML con consultas predefinidas. Use la ventana Abrir archivo para localizar el archivo XML que contiene una o más consultas predefinidas usando el formato descrito en la guía de usuario.</translation>
+    </message>
+    <message>
+      <source>The description of the selected query.</source>
+      <translation>La descripción de la consulta seleccionada.</translation>
+    </message>
+    <message>
+      <source>Select the predefined query you want to use from the drop-down list containing queries identified form the file loaded using the Open File icon above. To run the query you need to click on the SQL Query tab. The query will be automatically entered in the query window.</source>
+      <translation>Seleccione la consulta predefinida que quiere usar de la lista desplegable que contiene las consultas identificadas en el archivo cargado usando el icono Abrir archivo de arriba. Para ejecutar la consulta necesita pulsar en la pestaña Consulta SQL. La consulta se introducirá automáticamente en la ventana de consultas.</translation>
+    </message>
+    <message>
+      <source>not connected</source>
+      <translation>no conectado</translation>
+    </message>
+    <message>
+      <source>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>
+p, li { white-space: pre-wrap; }
+&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-style:italic;&quot;>Connection Status: &lt;/span>&lt;/p>&lt;/body>&lt;/html></source>
+      <translation>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>
+p, li { white-space: pre-wrap; }
+&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;>
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-style:italic;&quot;>Estado de la conexión: &lt;/span>&lt;/p>&lt;/body>&lt;/html></translation>
+    </message>
+    <message>
+      <source>Database Host</source>
+      <translation>Servidor de bases de datos</translation>
+    </message>
+    <message>
+      <source>Enter the database host. If the database resides on your desktop you should enter ¨localhost¨. If you selected ¨MSAccess¨ as the database type this option will not be available. </source>
+      <translation>Introduzca el servidor de bases de datos. Si la base de datos está en su equipo deberá introducir ¨localhost¨. Si seleccionó ¨MSAccess¨ como tipo de base de datos esta opción no estará disponible.</translation>
+    </message>
+    <message>
+      <source>Password to access the database.</source>
+      <translation>Contraseña para acceder a la base de datos.</translation>
+    </message>
+    <message>
+      <source>Enter the name of the database.</source>
+      <translation>Introduzca el nombre de la base de datos.</translation>
+    </message>
+    <message>
+      <source>Username</source>
+      <translation>Nombre de usuario</translation>
+    </message>
+    <message>
+      <source>Enter the port through which the database must be accessed if a MYSQL database is used.</source>
+      <translation>Introduzca el puerto a través del cual se debe acceder a la base de datos si se usa una base de datos MYSQL.</translation>
+    </message>
+    <message>
+      <source>Connect to the database using the parameters selected above. If the connection was successful a message will be displayed in the Output Console below saying the connection was established. </source>
+      <translation>Conectar a la base de datos usando los parámetros seleccionados arriba. Si la conexión tuvo éxito se mostrará un mensaje en la consola de salida inferior diciendo que se ha establecido la conexión. </translation>
+    </message>
+    <message>
+      <source>Connect</source>
+      <translation>Conectar</translation>
+    </message>
+    <message>
+      <source>User name to access the database.</source>
+      <translation>Nombre de usuario para acceder a la base de datos.</translation>
+    </message>
+    <message>
+      <source>Select the type of database from the list of supported databases in the drop-down menu.</source>
+      <translation>Seleccione el tipo de base de datos de la lista de bases de datos soportadas en el menú desplegable.</translation>
+    </message>
+    <message>
+      <source>Database Name</source>
+      <translation>Nombre de la base de datos</translation>
+    </message>
+    <message>
+      <source>Password</source>
+      <translation>Contraseña</translation>
+    </message>
+    <message>
+      <source>Database Type</source>
+      <translation>Tipo de base de datos</translation>
+    </message>
+    <message>
+      <source>Port</source>
+      <translation>Puerto</translation>
+    </message>
+    <message>
+      <source>SQL Query</source>
+      <translation>Consulta SQL</translation>
+    </message>
+    <message>
+      <source>Run the query entered above. The status of the query will be displayed in the Output  Console below.</source>
+      <translation>Ejecutar la consulta introducida arriba. El estado de la consulta se mostrará en la consola de salida de abajo.</translation>
+    </message>
+    <message>
+      <source>Run Query</source>
+      <translation>Ejecutar consulta</translation>
+    </message>
+    <message>
+      <source>Enter the query you want to run in this window.</source>
+      <translation>Introduzca la consulta que desea ejecutar en esta ventana.</translation>
+    </message>
+    <message>
+      <source>A window for status messages to be displayed.</source>
+      <translation>Una ventana para mostrar los mensajes de estado.</translation>
+    </message>
+    <message>
+      <source>Output Console</source>
+      <translation>Consola de salida</translation>
+    </message>
+  </context>
+  <context>
+    <name>eVisDatabaseLayerFieldSelectionGuiBase</name>
+    <message>
+      <source>Database File Selection</source>
+      <translation>Selección de archivo de base de datos</translation>
+    </message>
+    <message>
+      <source>The name of the field that contains the Y coordinate of the points.</source>
+      <translation>El nombre del campo que contiene la coordenada Y de los puntos.</translation>
+    </message>
+    <message>
+      <source>The name of the field that contains the X coordinate of the points.</source>
+      <translation>El nombre del campo que contiene la coordenada X de los puntos.</translation>
+    </message>
+    <message>
+      <source>Enter the name for the new layer that will be created and displayed in QGIS.</source>
+      <translation>Introduzca el nombre para la capa nueva que se creará y mostrará en QGIS.</translation>
+    </message>
+    <message>
+      <source>Y Coordinate</source>
+      <translation>Coordenada Y</translation>
+    </message>
+    <message>
+      <source>X Coordinate</source>
+      <translation>Coordenada X</translation>
+    </message>
+    <message>
+      <source>Name of New Layer</source>
+      <translation>Nombre de la capa nueva</translation>
+    </message>
+  </context>
+  <context>
+    <name>eVisGenericEventBrowserGui</name>
+    <message>
+      <source>Generic Event Browser</source>
+      <translation>Explorador de eventos genérico</translation>
+    </message>
+    <message>
+      <source>Field</source>
+      <translation>Campo</translation>
+    </message>
+    <message>
+      <source>Value</source>
+      <translation>Valor</translation>
+    </message>
+    <message>
+      <source>Warning</source>
+      <translation>Atención</translation>
+    </message>
+    <message>
+      <source>This tool only supports vector data</source>
+      <translation>Esta herramienta sólo soporta datos vectoriales</translation>
+    </message>
+    <message>
+      <source>No active layers found</source>
+      <translation>No se ha encontrado ninguna capa activa</translation>
+    </message>
+    <message>
+      <source>Error</source>
+      <translation>Error</translation>
+    </message>
+    <message>
+      <source>Unable to connecto to either the map canvas or application interface</source>
+      <translation>No se puede conectar con la vista del mapa ni con la interfaz de la aplicación</translation>
+    </message>
+    <message>
+      <source>NULL was returned instead of a valid feature</source>
+      <translation>Se devolvió NULO en vez de un objeto espacial válido</translation>
+    </message>
+    <message>
+      <source>Generic Event Browser - Displaying records 01 of 0%n</source>
+      <translation>Explorador de eventos genérico - Mostrando registros 01 de 0%n</translation>
+    </message>
+    <message>
+      <source>Generic Event Browser - Displaying records 01 of %n</source>
+      <translation>Explorador de eventos genérico - Mostrando registros 01 de %n</translation>
+    </message>
+    <message>
+      <source>Attribute Contents</source>
+      <translation>Contenidos de los atributos</translation>
+    </message>
+    <message>
+      <source>Generic Event Browser - Displaying records </source>
+      <translation>Explorador de eventos genérico - Mostrando registros </translation>
+    </message>
+    <message>
+      <source>of</source>
+      <translation>de</translation>
+    </message>
+    <message>
+      <source>Select Application</source>
+      <translation>Seleccionar aplicación</translation>
+    </message>
+    <message>
+      <source>All (*)</source>
+      <translation>Todos (*)</translation>
+    </message>
+  </context>
+  <context>
+    <name>eVisGenericEventBrowserGuiBase</name>
+    <message>
+      <source>Display</source>
+      <translation>Visualizar</translation>
+    </message>
+    <message>
+      <source>Use the Previous button to display the previous photo when more than one photo is available for display.</source>
+      <translation>Usar el botón Anterior para mostrar la foto anterior cuando haya más de una disponible para visualizar.</translation>
+    </message>
+    <message>
+      <source>Previous</source>
+      <translation>Anterior</translation>
+    </message>
+    <message>
+      <source>Use the Next button to display the next photo when more than one photo is available for display.</source>
+      <translation>Usar el botón Siguiente para mostrar la siguiente foto cuando haya más de una disponible para visualizar.</translation>
+    </message>
+    <message>
+      <source>Next</source>
+      <translation>Siguiente</translation>
+    </message>
+    <message>
+      <source>All of the attribute information for the point associated with the photo being viewed is displayed here. If the file type being referenced in the displayed record is not an image but is of a file type defined in the “Configure External Applications” tab then when you double-click on the value of the field containing the path to the file the application to open the file will be launched to view or hear the contents of the file. If the file extension is recognized the attribute data will be displayed in green.</source>
+      <translation>Toda la información de los atributos del punto asociada con la foto que se está viendo se muestra aquí. Si el tipo de archivo que se está referenciando en el registro visualizado no es una imagen pero es de un tipo definido en la pestaña “Configurar aplicaciones externas”, entonces cuando pulse dos veces en el valor del campo que contiene la ruta al archivo se lanzará la aplicación que lo abre para verlo u oír su contenido. Si la extensión del archivo es reconocida, los datos de los atributos se mostrarán en verde.</translation>
+    </message>
+    <message>
+      <source>1</source>
+      <translation>1</translation>
+    </message>
+    <message>
+      <source>Image display area</source>
+      <translation>Área de visualización de imágenes</translation>
+    </message>
+    <message>
+      <source>Display area for the image.</source>
+      <translation>Área de visualización para la imagen.</translation>
+    </message>
+    <message>
+      <source>Options</source>
+      <translation>Opciones</translation>
+    </message>
+    <message>
+      <source>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>
+p, li { white-space: pre-wrap; }
+&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal;&quot;>
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-weight:600;&quot;>Save?&lt;/span>&lt;/p>&lt;/body>&lt;/html></source>
+      <translation>&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>
+p, li { white-space: pre-wrap; }
+&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal;&quot;>
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-weight:600;&quot;>¿Guardar?&lt;/span>&lt;/p>&lt;/body>&lt;/html></translation>
+    </message>
+    <message>
+      <source>Attribute Containing Path to File</source>
+      <translation>Atributo que contiene la ruta al archivo</translation>
+    </message>
+    <message>
+      <source>Use the drop-down list to select the field containing a directory path to the image. This can be an absolute or relative path.</source>
+      <translation>Use la lista desplegable para seleccionar el campo que contiene la ruta al directorio de la imagen. Puede ser una ruta absoluta o relativa.</translation>
+    </message>
+    <message>
+      <source>If checked the path to the image will be defined appending the attribute in the field selected from the “Attribute Containing Path to Image” drop-down list to the “Base Path” defined below.  </source>
+      <translation>Si se marca la ruta a la imagen se definirá añadiendo los atributos del campo seleccionado en la lista desplegable “Atributo que contiene la ruta al archivo“ a la “Ruta base“ definida abajo.</translation>
+    </message>
+    <message>
+      <source>Path Is Relative</source>
+      <translation>La ruta es relativa</translation>
+    </message>
+    <message>
+      <source>If checked, the relative path values will be saved for the next session.</source>
+      <translation>Si se marca, los valores de ruta relativa se guardarán para la próxima sesión.</translation>
+    </message>
+    <message>
+      <source>Reset to default</source>
+      <translation>Restablecer a predeterminado</translation>
+    </message>
+    <message>
+      <source>Resets the values on this line to the default setting.</source>
+      <translation>Restablece los valores de esta línea a la configuración predeterminada.</translation>
+    </message>
+    <message>
+      <source>If checked an arrow pointing in the direction defined by the attribute in the field selected from the drop-down list to the right will be displayed in the QGIS window on top of the point for this image.</source>
+      <translation type="unfinished" />
+    </message>
+    <message>
+      <source>Display Compass Bearing</source>
+      <translation type="unfinished" />
+    </message>
+    <message>
+      <source>Use the drop-down list to select the field containing the compass bearing for the image. This bearing usually references the direction the camera was pointing when the image was acquired. </source>
+      <translation type="unfinished" />
+    </message>
+    <message>
+      <source>If checked, the Display Compass Bearing values will be saved for the next session.</source>
+      <translation type="unfinished" />
+    </message>
+    <message>
+      <source>Compass Offset</source>
+      <translation type="unfinished" />
+    </message>
+    <message>
+      <source>A value to be added to the compass bearing. This allows you to compensate for declination (adjust bearings collected using magnetic bearings to true north bearings). East declinations should be entered using positive values and west declinations should use negative values. </source>
+      <translation type="unfinished" />
+    </message>
+    <message>
+      <source>Define the compass offset using a field from the vector layer attribute table.</source>
+      <translation type="unfinished" />
+    </message>
+    <message>
+      <source> From Attribute</source>
+      <translation type="unfinished" />
+    </message>
+    <message>
+      <source>Use the drop-down list to select the field containing the compass bearing offset. This allows you to compensate for declination (adjust bearings collected using magnetic bearings to true north bearings). East declinations should be entered using positive values and west declinations should use negative values. </source>
+      <translation type="unfinished" />
+    </message>
+    <message>
+      <source>Define the compass offset manually.</source>
+      <translation type="unfinished" />
+    </message>
+    <message>
+      <source>Manual</source>
+      <translation>Manual</translation>
+    </message>
+    <message>
+      <source>If checked, the compass offset values will be saved for the next session.</source>
+      <translation type="unfinished" />
+    </message>
+    <message>
+      <source>Resets the compass offset values to the default settings.</source>
+      <translation type="unfinished" />
+    </message>
+    <message>
+      <source>The base path or url from which images and documents can be “relative”</source>
+      <translation type="unfinished" />
+    </message>
+    <message>
+      <source>Base Path</source>
+      <translation>Ruta base</translation>
+    </message>
+    <message>
+      <source>Base path</source>
+      <translation>Ruta base</translation>
+    </message>
+    <message>
+      <source>The Base Path onto which the relative path defined above will be appended.</source>
+      <translation>La ruta base a la que se añadirá la ruta relativa definida arriba.</translation>
+    </message>
+    <message>
+      <source>If checked, the Base Path will be saved for the next session.</source>
+      <translation>Si está marcado, la ruta base se guardará para la próxima sesión.</translation>
+    </message>
+    <message>
+      <source>Enters the default “Base Path” which is the  path to the directory of the vector layer containing the image information.</source>
+      <translation type="unfinished" />
+    </message>
+    <message>
+      <source>If checked, the Base Path will append only the file name instead of the entire relative path (defined above) to create the full directory path to the file. </source>
+      <translation type="unfinished" />
+    </message>
+    <message>
+      <source>Replace entire path/url stored in image path attribute with user defined
+Base Path (i.e. keep only filename from attribute)</source>
+      <translation type="unfinished" />
+    </message>
+    <message>
+      <source>If checked, the  current check-box setting will be saved for the next session.</source>
+      <translation type="unfinished" />
+    </message>
+    <message>
+      <source>Clears the check-box on this line.</source>
+      <translation type="unfinished" />
+    </message>
+    <message>
+      <source>If checked, the same path rules that are defined  for images will be used for non-image documents such as movies, text documents, and sound files. If not checked the path rules will only apply to images and other documents will ignore the Base Path parameter.</source>
+      <translation type="unfinished" />
+    </message>
+    <message>
+      <source>Apply Path to Image rules when loading docs in external applications</source>
+      <translation type="unfinished" />
+    </message>
+    <message>
+      <source>Clicking on Save will save the settings without closing the Options pane. Clicking on Restore Defaults will reset all of the fields to their default settings. It has the same effect as clicking all of the “Reset to default” buttons. </source>
+      <translation type="unfinished" />
+    </message>
+    <message>
+      <source>Configure External Applications</source>
+      <translation>Configurar aplicaciones externas</translation>
+    </message>
+    <message>
+      <source>File extension and external application in which to load a document of that type</source>
+      <translation type="unfinished" />
+    </message>
+    <message>
+      <source>A table containing file types that can be opened using eVis. Each file type needs a file extension and the path to an application that can open that type of file. This provides the capability of opening a broad range of files such as movies, sound recording, and text documents instead of only images. </source>
+      <translation type="unfinished" />
+    </message>
+    <message>
+      <source>Extension</source>
+      <translation>Extensión</translation>
+    </message>
+    <message>
+      <source>Application</source>
+      <translation>Aplicación</translation>
+    </message>
+    <message>
+      <source>Add new file type</source>
+      <translation>Añadir nuevo tipo de archivo</translation>
+    </message>
+    <message>
+      <source>Add a new file type with a unique extension and the path for the application that can open the file.</source>
+      <translation>Añadir un tipo de archivo nuevo con una extensión única y la ruta a la aplicación que abre el archivo.</translation>
+    </message>
+    <message>
+      <source>Delete current row</source>
+      <translation>Borrar la fila actual</translation>
+    </message>
+    <message>
+      <source>Delete the file type highlighted in the table and defined by a file extension and a path to an associated application.</source>
+      <translation>Borrar el tipo de archivo resaltado en la tabla y definido por una extensión de archivo y una ruta a una aplicación asociada.</translation>
+    </message>
+  </context>
+  <context>
+    <name>eVisImageDisplayWidget</name>
+    <message>
+      <source>Zoom in</source>
+      <translation>Acercar zum</translation>
+    </message>
+    <message>
+      <source>Zoom in to see more detal.</source>
+      <translation>Acercar zum para ver más detalle.</translation>
+    </message>
+    <message>
+      <source>Zoom out</source>
+      <translation>Alejar zum</translation>
+    </message>
+    <message>
+      <source>Zoom out to see more area.</source>
+      <translation>Alejar zum para ver más área.</translation>
+    </message>
+    <message>
+      <source>Zoom to full extent</source>
+      <translation>Zum a extensión completa</translation>
+    </message>
+    <message>
+      <source>Zoom to display the entire image.</source>
+      <translation>Zum para mostrar la imagen completa.</translation>
     </message>
   </context>
   <context>

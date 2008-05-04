@@ -1,4 +1,13 @@
-PROJECT(qgis0.9.2rc1)
+PROJECT(qgis0.10.0)
+SET(CPACK_PACKAGE_VERSION_MAJOR "0")
+SET(CPACK_PACKAGE_VERSION_MINOR "10")
+SET(CPACK_PACKAGE_VERSION_PATCH "0")
+SET(RELEASE_NAME "Io")
+
+SET(PROJECT_VERSION ${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH})
+
+PROJECT(qgis${PROJECT_VERSION})
+
 
 # TODO:
 # - install includes for libs
@@ -25,17 +34,29 @@ SET (PLUGINS_ALSO_BINARIES FALSE)
 
 # try to configure and build GRASS plugin by default
 SET (WITH_GRASS TRUE CACHE BOOL "Determines whether GRASS plugin should be built")
-SET (GRASS_PREFIX "" CACHE PATH "Path to GRASS base directory")
+IF (WITH_GRASS)
+  SET (GRASS_PREFIX "" CACHE PATH "Path to GRASS base directory")
+ENDIF (WITH_GRASS)
+
+# try to configure and build POSTGRESQL support
+SET (WITH_POSTGRESQL TRUE CACHE BOOL "Determines whether POSTGRESQL support should be built")
+IF (WITH_POSTGRESQL)
+  SET (POSTGRESQL_PREFIX "" CACHE PATH "Path to POSTGRESQL base directory")
+ENDIF (WITH_POSTGRESQL)
 
 # try to configure and build python bindings by default
 SET (WITH_BINDINGS TRUE CACHE BOOL "Determines whether python bindings should be built")
+IF (WITH_BINDINGS)
+  # By default bindings will be installed only to QGIS directory
+  # Someone might want to install it to python site-packages directory
+  # as otherwise user has to use PYTHONPATH environemnt variable to add
+  # QGIS bindings to package search path
+  SET (BINDINGS_GLOBAL_INSTALL FALSE CACHE BOOL "Install bindings to global python directory? (might need root)")
+ENDIF (WITH_BINDINGS)
 
-# By default bindings will be installed only to QGIS directory
-# Someone might want to install it to python site-packages directory
-# as otherwise user has to use PYTHONPATH environemnt variable to add
-# QGIS bindings to package search path
-SET (BINDINGS_GLOBAL_INSTALL FALSE CACHE BOOL "Install bindings to global python directory? (might need root)")
-
+# Optionally allow embedding sqlite3 into the binary (sqlite amalgamation) as 
+# recommended by sqlite developer
+SET (WITH_INTERNAL_SQLITE3 FALSE CACHE BOOL "Compile sqlite3 support directly into the binary")
 # Compile flag. Make it posible to turn it off.
 SET (PEDANTIC FALSE CACHE BOOL "Determines if we should compile with -Wall -Werror.")
 
@@ -71,25 +92,38 @@ ENDIF (NOT BISON_EXECUTABLE)
 
 # required
 FIND_PACKAGE(Proj)
-FIND_PACKAGE(Sqlite3)
+
+#optional since we can use internal sqlite
+IF (NOT WITH_INTERNAL_SQLITE3)
+  FIND_PACKAGE(Sqlite3)
+  IF (NOT SQLITE3_FOUND)
+    MESSAGE (SEND_ERROR "sqlite3 dependency was not found (try compiling with sqlite3 internal)!")
+  ENDIF (NOT SQLITE3_FOUND)
+ENDIF (NOT WITH_INTERNAL_SQLITE3)
 FIND_PACKAGE(GEOS)
 FIND_PACKAGE(GDAL)
 
 # optional
-FIND_PACKAGE(Postgres) # PostgreSQL provider, SPIT plugin
+IF (WITH_POSTGRESQL)
+  FIND_PACKAGE(Postgres) # PostgreSQL provider, SPIT plugin
+ENDIF (WITH_POSTGRESQL)
 FIND_PACKAGE(Expat)    # GPS importer plugin
 FIND_PACKAGE(GSL)      # Georeferencer
-FIND_PACKAGE(GRASS)    # GRASS plugin
+IF (WITH_GRASS)
+  FIND_PACKAGE(GRASS)    # GRASS plugin
+ENDIF (WITH_GRASS)
 
-# python support:
-# - mapserver export tool
-# - bindings
-INCLUDE (Python) # file cmake/Python.cmake
+IF (WITH_BINDINGS)
+  # python support:
+  # - mapserver export tool
+  # - bindings
+  INCLUDE (Python) # file cmake/Python.cmake
+ENDIF (WITH_BINDINGS)
 
 
-IF (NOT PROJ_FOUND OR NOT SQLITE3_FOUND OR NOT GEOS_FOUND OR NOT GDAL_FOUND)
+IF (NOT PROJ_FOUND OR NOT GEOS_FOUND OR NOT GDAL_FOUND)
   MESSAGE (SEND_ERROR "Some dependencies were not found!")
-ENDIF (NOT PROJ_FOUND OR NOT SQLITE3_FOUND OR NOT GEOS_FOUND OR NOT GDAL_FOUND)
+ENDIF (NOT PROJ_FOUND OR NOT GEOS_FOUND OR NOT GDAL_FOUND)
 
 IF (POSTGRES_FOUND)
   # following variable is used in qgsconfig.h
@@ -139,15 +173,26 @@ ENDIF (CMAKE_BUILD_TYPE MATCHES Debug)
 
 IF (WIN32)
   SET (DEFAULT_BIN_SUBDIR     .)
-  SET (DEFAULT_LIB_SUBDIR     .)
+  SET (DEFAULT_LIB_SUBDIR     lib)
   SET (DEFAULT_DATA_SUBDIR    .)
   SET (DEFAULT_PLUGIN_SUBDIR  plugins)
-  SET (DEFAULT_INCLUDE_SUBDIR	include)
+  SET (DEFAULT_INCLUDE_SUBDIR include)
   
   IF (MSVC)
+    # Python parts need to be build with nmake not vcexpress
+    # if you dont add this clause, extra blank msvc projects
+    # will pop up mid way through the build process and block
+    # the build, plus the python bindings wont build correctly
+    SET (CMAKE_MAKE_PROGRAM nmake)
+    # put all the build products into a single directory
+    # under build (doesnt affect install target) to make for
+    # easier debugging.
+    # SET(OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/bin)
+    # SET(EXECUTABLE_OUTPUT_PATH ${OUTPUT_DIR})
+    # SET(LIBRARY_OUTPUT_PATH ${OUTPUT_DIR})
     #tell msvc compiler to use main instead of winmain as the
     #application entry point
-    SET(QT_USE_QTMAIN TRUE) 
+    #SET(QT_USE_QTMAIN TRUE) 
     # Turn on defines for non standard maths stuff
     ADD_DEFINITIONS(-D_USE_MATH_DEFINES)
 
@@ -161,8 +206,9 @@ IF (WIN32)
     ADD_DEFINITIONS(-DW_OK=2)
     ADD_DEFINITIONS(-DR_OK=4)
     
-    FILE(GLOB files "${CMAKE_SOURCE_DIR}/win_build/vcdeps/*.*")
-    INSTALL(FILES ${files} DESTINATION .)
+    ADD_DEFINITIONS(-DQGISDEBUG=1)
+
+    INSTALL(DIRECTORY ${CMAKE_SOURCE_DIR}/win_build/vcdeps/. DESTINATION .)
   ENDIF(MSVC)
 ELSE (WIN32)
 
@@ -171,6 +217,8 @@ ELSE (WIN32)
     SET (CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}.app/Contents/MacOS)
     # path for library references
     SET (CMAKE_INSTALL_NAME_DIR @executable_path/lib)
+    #this will define ${APP_SERVICES_LIBRARY}
+    FIND_LIBRARY(APP_SERVICES_LIBRARY ApplicationServices )
   ENDIF (APPLE)
 
   # common for MAC and UNIX
@@ -220,11 +268,11 @@ SET (QGIS_INCLUDE_SUBDIR ${DEFAULT_INCLUDE_SUBDIR} CACHE STRING "Subdirectory wh
 MARK_AS_ADVANCED (QGIS_BIN_SUBDIR QGIS_LIB_SUBDIR QGIS_DATA_SUBDIR QGIS_PLUGIN_SUBDIR QGIS_INCLUDE_SUBDIR)
 
 # full paths for the installation
-SET (QGIS_BIN_DIR     ${CMAKE_INSTALL_PREFIX}/${QGIS_BIN_SUBDIR})
-SET (QGIS_LIB_DIR     ${CMAKE_INSTALL_PREFIX}/${QGIS_LIB_SUBDIR})
-SET (QGIS_DATA_DIR    ${CMAKE_INSTALL_PREFIX}/${QGIS_DATA_SUBDIR})
-SET (QGIS_PLUGIN_DIR  ${CMAKE_INSTALL_PREFIX}/${QGIS_PLUGIN_SUBDIR})
-SET (QGIS_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/${QGIS_INCLUDE_SUBDIR})
+SET (QGIS_BIN_DIR     ${QGIS_BIN_SUBDIR})
+SET (QGIS_LIB_DIR     ${QGIS_LIB_SUBDIR})
+SET (QGIS_DATA_DIR    ${QGIS_DATA_SUBDIR})
+SET (QGIS_PLUGIN_DIR  ${QGIS_PLUGIN_SUBDIR})
+SET (QGIS_INCLUDE_DIR ${QGIS_INCLUDE_SUBDIR})
 
 # manual page - makes sense only on unix systems
 IF (UNIX)
@@ -271,6 +319,8 @@ SUBDIRS(src doc images resources i18n tools)
 
 IF (HAVE_PYTHON AND WITH_BINDINGS)
   SUBDIRS (python)
+ELSE (HAVE_PYTHON AND WITH_BINDINGS)
+  MESSAGE ("Python not being built")
 ENDIF (HAVE_PYTHON AND WITH_BINDINGS)
 
 IF (ENABLE_TESTS)
@@ -310,16 +360,13 @@ ADD_CUSTOM_TARGET(uninstall
 INCLUDE(InstallRequiredSystemLibraries)
 
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Quantum GIS")
-SET(CPACK_PACKAGE_VENDOR "Tim Sutton")
+SET(CPACK_PACKAGE_VENDOR "Open Source Geospatial Foundation")
 SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README")
 SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
-SET(CPACK_PACKAGE_VERSION_MAJOR "0")
-SET(CPACK_PACKAGE_VERSION_MINOR "9")
-SET(CPACK_PACKAGE_VERSION_PATCH "1")
 SET(CPACK_PACKAGE_INSTALL_DIRECTORY "Quantum GIS ${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}")
 IF(WIN32 AND NOT UNIX)
   # There is a bug in NSI that does not handle full unix paths properly. Make
-  # sure there is at least one set of four (4) backlasshes.
+  # sure there is at least one set of four (4) backslashes.
   SET(CPACK_PACKAGE_ICON "${CMAKE_SOURCE_DIR}/win_build\\\\sidebar.bmp")
   SET(CPACK_NSIS_INSTALLED_ICON_NAME "\\\\qgis.exe")
   SET(CPACK_NSIS_DISPLAY_NAME "${CPACK_PACKAGE_INSTALL_DIRECTORY} Quantum GIS")
@@ -335,4 +382,3 @@ ELSE(WIN32 AND NOT UNIX)
 ENDIF(WIN32 AND NOT UNIX)
 SET(CPACK_PACKAGE_EXECUTABLES "qgis" "QGIS")
 INCLUDE(CPack)
-

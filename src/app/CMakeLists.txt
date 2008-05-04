@@ -110,7 +110,6 @@ SET (QGIS_APP_MOC_HDRS
   qgslinestylewidget.h
   qgsludialog.h
   qgsmaplayerinterface.h
-  qgsmaptooledit.h
   qgsmaptoolidentify.h
   qgsmarkerdialog.h
   qgsmeasuredialog.h
@@ -230,7 +229,15 @@ ELSE (WIN32)
 ENDIF (WIN32)
 
 TARGET_LINK_LIBRARIES(qgis
-  ${QT_LIBRARIES}
+  ${QT_QTCORE_LIBRARY} 
+  ${QT_QTGUI_LIBRARY} 
+  ${QT_QTXML_LIBRARY} 
+  #${QT_QTSQL_LIBRARY} 
+  ${QT_QTSVG_LIBRARY} 
+  ${QT_QTNETWORK_LIBRARY} 
+  #should only be needed for win
+  ${QT_QTMAIN_LIBRARY} 
+  ${QT_QT3SUPPORT_LIBRARY} 
   qgis_core
   qgis_gui
   )
@@ -239,8 +246,12 @@ IF (MSVC)
   TARGET_LINK_LIBRARIES(qgis qtmain)
 ENDIF (MSVC)
 
+IF (APPLE)
+  TARGET_LINK_LIBRARIES(qgis ${APP_SERVICES_LIBRARY} )
+ENDIF (APPLE)
+
 SET_TARGET_PROPERTIES(qgis PROPERTIES
-  INSTALL_RPATH ${QGIS_LIB_DIR}
+  INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/${QGIS_LIB_DIR}
   INSTALL_RPATH_USE_LINK_PATH true
   )
 

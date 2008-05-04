@@ -30,12 +30,12 @@ email                : sherman at mrcc.com
 
 class QgsFeature;
 class QgsField;
-class OGRDataSource;
-class OGRSFDriver;
-class OGRLayer;
-class OGRFeature;
-class OGREnvelope;
-class OGRPolygon;
+
+typedef void *OGRDataSourceH;
+typedef void *OGRSFDriverH;
+typedef void *OGRLayerH;
+typedef void *OGRFeatureH;
+typedef void *OGRGeometryH;
 
 /**
   \class QgsOgrProvider
@@ -182,13 +182,25 @@ class QgsOgrProvider : public QgsVectorDataProvider
     */
     bool isValid();
 
+    /** Returns the minimum value of an attribute
+     *  @param index the index of the attribute */
+    QVariant minValue(int index);
+
+    /** Returns the maximum value of an attribute
+     *  @param index the index of the attribute */
+    QVariant maxValue(int index);
+
+    /** Return the unique values of an attribute
+     *  @param index the index of the attribute
+     *  @param values reference to the list of unique values */
+    virtual void getUniqueValues(int index, QStringList &uniqueValues);
 
   protected:
     /** loads fields from input file to member attributeFields */
     void loadFields();
 
     /**Get an attribute associated with a feature*/
-    void getFeatureAttribute(OGRFeature * ogrFet, QgsFeature & f, int attindex);
+    void getFeatureAttribute(OGRFeatureH ogrFet, QgsFeature & f, int attindex);
 
       /** return a provider name
 
@@ -222,19 +234,20 @@ class QgsOgrProvider : public QgsVectorDataProvider
 
 
   private:
-    unsigned char *getGeometryPointer(OGRFeature * fet);
+    unsigned char *getGeometryPointer(OGRFeatureH fet);
     
     QgsFieldMap mAttributeFields;
 
-    OGRDataSource *ogrDataSource;
-    OGREnvelope *extent_;
+    OGRDataSourceH ogrDataSource;
+    void *extent_;
+
     /**This member variable receives the same value as extent_
      in the method QgsOgrProvider::extent(). The purpose is to prevent a memory leak*/
     QgsRect mExtentRect;
-    OGRLayer *ogrLayer;
+    OGRLayerH ogrLayer;
 
     // OGR Driver that was actually used to open the layer
-    OGRSFDriver *ogrDriver;
+    OGRSFDriverH ogrDriver;
 
     // Friendly name of the OGR Driver that was actually used to open the layer
     QString ogrDriverName;
@@ -246,12 +259,11 @@ class QgsOgrProvider : public QgsVectorDataProvider
     long numberFeatures;
     
     //! Selection rectangle 
-    OGRPolygon * mSelectionRectangle;
+    OGRGeometryH mSelectionRectangle;
     /**Adds one feature*/
     bool addFeature(QgsFeature& f);
     /**Deletes one feature*/
     bool deleteFeature(int id);
     //! The geometry factory
     GEOS_GEOM::GeometryFactory *geometryFactory;
-
 };
