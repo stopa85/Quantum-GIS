@@ -1181,10 +1181,7 @@ void QgisApp::createStatusBar()
   mRenderSuppressionCBox->setChecked(true);
   mRenderSuppressionCBox->setFont(myFont);
   QWhatsThis::add(mRenderSuppressionCBox, tr("When checked, the map layers are rendered in response to map navigation commands and other events. When not checked, no rendering is done. This allows you to add a large number of layers and symbolize them before rendering."));
-  QToolTip::add( mRenderSuppressionCBox, tr("Toggle map rendering") );
-#ifdef Q_WS_MAC //MH: disable the button on Mac for now to avoid problems with resizing 
-  mRenderSuppressionCBox->setEnabled(false);
-#endif //Q_WS_MAC
+  QToolTip::add( mRenderSuppressionCBox, tr("Toggle map rendering") ); 
   statusBar()->addWidget(mRenderSuppressionCBox,0,true);
   // On the fly projection status bar icon
   // Changed this to a tool button since a QPushButton is
