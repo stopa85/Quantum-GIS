@@ -172,6 +172,10 @@ QgsOptions::QgsOptions(QWidget *parent, Qt::WFlags fl) :
   mDefaultSnapModeComboBox->setCurrentIndex(mDefaultSnapModeComboBox->findText(tr(defaultSnapString)));
   mDefaultSnappingToleranceSpinBox->setValue(settings.value("/qgis/digitizing/default_snapping_tolerance", 0).toDouble());
   mSearchRadiusVertexEditSpinBox->setValue(settings.value("/qgis/digitizing/search_radius_vertex_edit", 10).toDouble());
+
+#ifdef Q_WS_MAC //MH: disable incremental update on Mac for now to avoid problems with resizing 
+  groupBox_5->setEnabled(false);
+#endif //Q_WS_MAC
 }
 
 //! Destructor

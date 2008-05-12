@@ -763,13 +763,7 @@ bool QgsVectorLayer::draw(QgsRenderContext& renderContext)
 	    break;
 	  }
 
-        // XXX Something in our draw event is triggering an additional draw event when resizing [TE 01/26/06]
-        // XXX Calling this will begin processing the next draw event causing image havoc and recursion crashes.
-        //qApp->processEvents(); //so we can trap for esc press
-        //if (mDrawingCancelled) return;
-        // If update threshold is greater than 0, check to see if
-        // the threshold has been exceeded
-
+#ifndef Q_WS_MAC //MH: disable this on Mac for now to avoid problems with resizing
 	if(mUpdateThreshold > 0 && 0 == featureCount % mUpdateThreshold)
 	  {
 	    emit screenUpdateRequested();
@@ -781,6 +775,7 @@ bool QgsVectorLayer::draw(QgsRenderContext& renderContext)
 	      emit drawingProgress(featureCount, totalFeatures);
 	      qApp->processEvents();
 	  }
+#endif //Q_WS_MAC
 
         if (mEditable)
         {
