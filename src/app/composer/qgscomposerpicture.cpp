@@ -25,7 +25,6 @@
 #include <QImageWriter>
 #include <QSettings>
 #include <QPolygonF>
-#include <QAbstractGraphicsShapeItem>
 #include <QGraphicsScene>
 
 #include <cmath>
@@ -34,22 +33,23 @@
 #define PI 3.14159265358979323846
 
 QgsComposerPicture::QgsComposerPicture ( QgsComposition *composition, 
-					int id, QString file ) 
+					 int id, QString file )
     : QWidget(composition),
-      QAbstractGraphicsShapeItem(0),
+      QgsComposerItem(0),
       mPicturePath ( file ),
       mPictureValid(false),
       mCX(-10), mCY(-10),
       mWidth(0), mHeight(0), mAngle(0),
       mFrame(false),
-      mAreaPoints(4),
-      mBoundingRect(0,0,0,0)
+      mAreaPoints(4)
 {
     setupUi(this);
 
 #ifdef QGISDEBUG
     std::cout << "QgsComposerPicture::QgsComposerPicture()" << std::endl;
 #endif
+
+    setRect(QRectF(0,0,0,0));
 
     mComposition = composition;
     mId  = id;
@@ -68,14 +68,14 @@ QgsComposerPicture::QgsComposerPicture ( QgsComposition *composition,
 
 QgsComposerPicture::QgsComposerPicture ( QgsComposition *composition, int id ) :
     QWidget(),
-    QAbstractGraphicsShapeItem(0),
+    QgsComposerItem(0),
     mFrame(false),
-    mAreaPoints(4),
-    mBoundingRect(0,0,0,0)
+    mAreaPoints(4)
 {
 #ifdef QGISDEBUG
     std::cout << "QgsComposerPicture::QgsComposerPicture()" << std::endl;
 #endif
+    setRect(QRectF(0, 0, 0, 0));
 
     setupUi(this);
 
@@ -301,18 +301,10 @@ void QgsComposerPicture::recalculate()
     mAreaPoints[1] =  QPointF( dx, -dy ); //top right
     mAreaPoints[3] = QPointF( -dx, dy ); //bottom left
 
-    mBoundingRect = mAreaPoints.boundingRect();
+    setRect(mAreaPoints.boundingRect());
 
     QAbstractGraphicsShapeItem::update();
     QAbstractGraphicsShapeItem::scene()->update();
-}
-
-QRectF QgsComposerPicture::boundingRect ( void ) const
-{
-#ifdef QGISDEBUG
-    std::cout << "QgsComposerPicture::boundingRect" << std::endl;
-#endif
-    return mBoundingRect;
 }
 
 QPolygonF QgsComposerPicture::areaPoints() const

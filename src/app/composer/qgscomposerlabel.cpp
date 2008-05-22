@@ -18,7 +18,6 @@
 #include "qgsproject.h"
 
 #include <QGraphicsScene>
-#include <QAbstractGraphicsShapeItem>
 #include <QPolygonF>
 #include <QFontDialog>
 #include <QPainter>
@@ -27,7 +26,7 @@
 
 QgsComposerLabel::QgsComposerLabel ( QgsComposition *composition, int id, 
 	                                            int x, int y, QString text, int fontSize )
-    : QWidget(composition), QAbstractGraphicsShapeItem(0), mBox(false)
+    : QWidget(composition), QgsComposerItem(0), mBox(false)
 {
     setupUi(this);
 
@@ -47,7 +46,7 @@ QgsComposerLabel::QgsComposerLabel ( QgsComposition *composition, int id,
     // Could make this user variable in the future
     mPen.setWidthF (0.5);
 
-    QAbstractGraphicsShapeItem::setPos(x, y);
+    QGraphicsRectItem::setPos(x, y);
 
     mSelected = false;
 
@@ -56,15 +55,15 @@ QgsComposerLabel::QgsComposerLabel ( QgsComposition *composition, int id,
     // Add to canvas
     mComposition->canvas()->addItem(this);
 
-    QAbstractGraphicsShapeItem::setZValue(100);
-    QAbstractGraphicsShapeItem::show();
-    QAbstractGraphicsShapeItem::update();
+    QGraphicsRectItem::setZValue(100);
+    QGraphicsRectItem::show();
+    QGraphicsRectItem::update();
 
     writeSettings();
 }
 
 QgsComposerLabel::QgsComposerLabel ( QgsComposition *composition, int id ) 
-    : QAbstractGraphicsShapeItem(0)
+    : QgsComposerItem(0)
 {
 #ifdef QGISDEBUG
     std::cout << "QgsComposerLabel::QgsComposerLabel()" << std::endl;
@@ -82,9 +81,9 @@ QgsComposerLabel::QgsComposerLabel ( QgsComposition *composition, int id )
 
     // Add to canvas
     mComposition->canvas()->addItem(this);
-    QAbstractGraphicsShapeItem::setZValue(100);
-    QAbstractGraphicsShapeItem::show();
-    QAbstractGraphicsShapeItem::update();
+    QGraphicsRectItem::setZValue(100);
+    QGraphicsRectItem::show();
+    QGraphicsRectItem::update();
 
 }
 
@@ -181,29 +180,64 @@ void QgsComposerLabel::on_mFontButton_clicked()
 {
     bool result;
 
-    QRectF r = boundingRect();
-
     mFont = QFontDialog::getFont(&result, mFont, this );
 
     if ( result ) {
-	    QAbstractGraphicsShapeItem::prepareGeometryChange();
-	    QAbstractGraphicsShapeItem::update();
+	    QGraphicsRectItem::prepareGeometryChange();
+	    QGraphicsRectItem::update();
     }
+
+    setRect(calculateBoundingRect());
     writeSettings();
 }
 
 void QgsComposerLabel::on_mBoxCheckBox_clicked()
-{
-    QRectF r = boundingRect();
-    
-    mBox = mBoxCheckBox->isChecked();
+{ 
+  mBox = mBoxCheckBox->isChecked();
+  
+  QGraphicsRectItem::prepareGeometryChange();
+  QGraphicsRectItem::update();
+  writeSettings();
+}
 
-    QAbstractGraphicsShapeItem::prepareGeometryChange();
-    QAbstractGraphicsShapeItem::update();
+QPolygonF QgsComposerLabel::areaPoints() const
+{
+#ifdef QGISDEBUG
+    std::cout << "QgsComposerLabel::areaPoints" << std::endl;
+#endif
+    QRectF r = boundingRect();
+
+    QPolygonF pa;
+    pa << QPointF( r.x(), r.y() );
+    pa << QPointF( r.x()+r.width(), r.y() );
+    pa << QPointF( r.x()+r.width(), r.y()+r.height() );
+    pa << QPointF( r.x(), r.y()+r.height() );
+
+    return pa ;
+}
+
+void QgsComposerLabel::setOptions ( void )
+{ 
+    mTextEdit->setText ( mText );
+    mBoxCheckBox->setChecked ( mBox );
+    
+}
+
+void QgsComposerLabel::on_mTextEdit_textChanged()
+{ 
+#if QT_VERSION < 0x040300
+    mText = mTextEdit->text();
+#else
+    mText = mTextEdit->toPlainText();
+#endif
+
+    setRect(calculateBoundingRect());
+    QGraphicsRectItem::prepareGeometryChange();
+    QGraphicsRectItem::update();
     writeSettings();
 }
 
-QRectF QgsComposerLabel::boundingRect ( void ) const
+QRectF QgsComposerLabel::calculateBoundingRect ( void ) const
 {
     // Recalculate sizes according to current font size
     
@@ -241,42 +275,6 @@ QRectF QgsComposerLabel::boundingRect ( void ) const
 
 }
 
-QPolygonF QgsComposerLabel::areaPoints() const
-{
-#ifdef QGISDEBUG
-    std::cout << "QgsComposerLabel::areaPoints" << std::endl;
-#endif
-    QRectF r = boundingRect();
-
-    QPolygonF pa;
-    pa << QPointF( r.x(), r.y() );
-    pa << QPointF( r.x()+r.width(), r.y() );
-    pa << QPointF( r.x()+r.width(), r.y()+r.height() );
-    pa << QPointF( r.x(), r.y()+r.height() );
-
-    return pa ;
-}
-
-void QgsComposerLabel::setOptions ( void )
-{ 
-    mTextEdit->setText ( mText );
-    mBoxCheckBox->setChecked ( mBox );
-    
-}
-
-void QgsComposerLabel::on_mTextEdit_textChanged()
-{ 
-    QRectF r = boundingRect();
-#if QT_VERSION < 0x040300
-    mText = mTextEdit->text();
-#else
-    mText = mTextEdit->toPlainText();
-#endif
-    QAbstractGraphicsShapeItem::prepareGeometryChange();
-    QAbstractGraphicsShapeItem::update();
-    writeSettings();
-}
-
 void QgsComposerLabel::setSelected (  bool s ) 
 {
 #ifdef QGISDEBUG
@@ -284,7 +282,7 @@ void QgsComposerLabel::setSelected (  bool s )
 #endif
 
     mSelected = s;
-    QAbstractGraphicsShapeItem::update(); // show highlight
+    QGraphicsRectItem::update(); // show highlight
 }    
 
 bool QgsComposerLabel::selected( void )
@@ -305,8 +303,8 @@ bool QgsComposerLabel::writeSettings ( void )
     
     QgsProject::instance()->writeEntry( "Compositions", path+"text", mText );
 
-    QgsProject::instance()->writeEntry( "Compositions", path+"x", mComposition->toMM((int)QAbstractGraphicsShapeItem::x()) );
-    QgsProject::instance()->writeEntry( "Compositions", path+"y", mComposition->toMM((int)QAbstractGraphicsShapeItem::y()) );
+    QgsProject::instance()->writeEntry( "Compositions", path+"x", mComposition->toMM((int)QGraphicsRectItem::x()) );
+    QgsProject::instance()->writeEntry( "Compositions", path+"y", mComposition->toMM((int)QGraphicsRectItem::y()) );
 
     QgsProject::instance()->writeEntry( "Compositions", path+"font/size", mFont.pointSize() );
     QgsProject::instance()->writeEntry( "Compositions", path+"font/family", mFont.family() );
@@ -331,7 +329,7 @@ bool QgsComposerLabel::readSettings ( void )
 
     int x = mComposition->fromMM( QgsProject::instance()->readDoubleEntry( "Compositions", path+"x", 0, &ok) );
     int y = mComposition->fromMM(QgsProject::instance()->readDoubleEntry( "Compositions", path+"y", 0, &ok) );
-    QAbstractGraphicsShapeItem::setPos(x,y);
+    QGraphicsRectItem::setPos(x,y);
 
     mFont.setFamily ( QgsProject::instance()->readEntry("Compositions", path+"font/family", "", &ok) );
     mFont.setPointSize ( QgsProject::instance()->readNumEntry("Compositions", path+"font/size", 10, &ok) );
@@ -341,7 +339,7 @@ bool QgsComposerLabel::readSettings ( void )
 
     mBox = QgsProject::instance()->readBoolEntry("Compositions", path+"box", false, &ok);
 
-    QAbstractGraphicsShapeItem::update();
+    QGraphicsRectItem::update();
 
     return true;
 }

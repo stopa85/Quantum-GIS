@@ -16,16 +16,23 @@
  ***************************************************************************/
 #include <QWidget>
 #include <QDomNode>
+#include <QGraphicsSceneMouseEvent>
 
 #include "qgscomposition.h"
 #include "qgscomposeritem.h"
 
 #include <iostream>
 
-QgsComposerItem::QgsComposerItem(void)
+QgsComposerItem::QgsComposerItem(QGraphicsItem* parent): QGraphicsRectItem(0)
 {
     mSelected = false;
     mPlotStyle = QgsComposition::Preview;
+}
+
+QgsComposerItem::QgsComposerItem(qreal x, qreal y, qreal width, qreal height, QGraphicsItem* parent): QGraphicsRectItem(x, y, width, height, parent)
+{
+  mSelected = false;
+  mPlotStyle = QgsComposition::Preview;
 }
 
 QgsComposerItem::~QgsComposerItem()
@@ -59,3 +66,25 @@ bool QgsComposerItem::removeSettings ( void )  { return true; }
 bool QgsComposerItem::writeXML( QDomNode & node, QDomDocument & doc, bool templ ) { return true; }
 
 bool QgsComposerItem::readXML( QDomNode & node ) {  return true; }
+
+void QgsComposerItem::mouseMoveEvent ( QGraphicsSceneMouseEvent * event )
+{
+  qWarning("QgsComposerItem::mouseMoveEvent");
+}
+
+void QgsComposerItem::mousePressEvent ( QGraphicsSceneMouseEvent * event )
+{
+  qWarning("QgsComposerItem::mousePressEvent");
+  setCursor(QCursor(evaluateCursor(event->pos())));
+}
+
+void QgsComposerItem::mouseReleaseEvent ( QGraphicsSceneMouseEvent * event )
+{
+  qWarning("QgsComposerItem::mouseReleseEvent");
+  setCursor(Qt::ArrowCursor);
+}
+
+Qt::CursorShape QgsComposerItem::evaluateCursor(const QPointF& itemCoordPos)
+{
+  return Qt::ClosedHandCursor;
+}

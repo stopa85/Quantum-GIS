@@ -29,7 +29,7 @@
 QgsComposerScalebar::QgsComposerScalebar ( QgsComposition *composition, int id, 
 	                                            int x, int y )
     : QWidget(composition),
-    QAbstractGraphicsShapeItem(0),
+    QgsComposerItem(0),
     mComposition(composition),
     mMap(0),
     mBrush(QColor(150,150,150))
@@ -45,7 +45,7 @@ QgsComposerScalebar::QgsComposerScalebar ( QgsComposition *composition, int id,
 
   mMapCanvas = mComposition->mapCanvas();
 
-  QAbstractGraphicsShapeItem::setPos(x, y);
+  QGraphicsRectItem::setPos(x, y);
 
   init();
 
@@ -111,14 +111,14 @@ QgsComposerScalebar::QgsComposerScalebar ( QgsComposition *composition, int id,
   // Add to scene
   mComposition->canvas()->addItem(this);
 
-  QAbstractGraphicsShapeItem::show();
-  QAbstractGraphicsShapeItem::update();
+  QGraphicsRectItem::show();
+  QGraphicsRectItem::update();
 
   writeSettings();
 }
 
 QgsComposerScalebar::QgsComposerScalebar ( QgsComposition *composition, int id ) 
-    : QAbstractGraphicsShapeItem(0),
+    : QgsComposerItem(0),
     mComposition(composition),
     mMap(0),
     mBrush(QColor(150,150,150))
@@ -144,8 +144,8 @@ QgsComposerScalebar::QgsComposerScalebar ( QgsComposition *composition, int id )
   // Add to scene
   mComposition->canvas()->addItem(this);
 
-  QAbstractGraphicsShapeItem::show();
-  QAbstractGraphicsShapeItem::update();
+  QGraphicsRectItem::show();
+  QGraphicsRectItem::update();
 }
 
 void QgsComposerScalebar::init(void)
@@ -153,7 +153,7 @@ void QgsComposerScalebar::init(void)
   mUnitLabel = "m";
 
   // Rectangle
-  QAbstractGraphicsShapeItem::setZValue(50);
+  QGraphicsRectItem::setZValue(50);
 //    setActive(true);
 
   // Default value (map units?) for the scalebar border
@@ -168,7 +168,7 @@ void QgsComposerScalebar::init(void)
 QgsComposerScalebar::~QgsComposerScalebar()
 {
   std::cerr << "QgsComposerScalebar::~QgsComposerScalebar()" << std::endl;
-  QGraphicsItem::hide();
+  QGraphicsRectItem::hide();
 }
 
 #define FONT_WORKAROUND_SCALE 10
@@ -306,7 +306,7 @@ void QgsComposerScalebar::paint(QPainter * painter, const QStyleOptionGraphicsIt
 #ifdef QGISDEBUG
   std::cout << "draw mPlotStyle = " << plotStyle() << std::endl;
 #endif
-  mBoundingRect = render(painter);
+  setRect(render(painter));
 
   // Show selected / Highlight
   if (mSelected && plotStyle() == QgsComposition::Preview)
@@ -339,8 +339,8 @@ void QgsComposerScalebar::on_mFontButton_clicked(void)
   if (result)
     {
       recalculate();
-      QAbstractGraphicsShapeItem::update();
-      QAbstractGraphicsShapeItem::scene()->update();
+      QGraphicsRectItem::update();
+      QGraphicsRectItem::scene()->update();
       writeSettings();
     }
 }
@@ -349,8 +349,8 @@ void QgsComposerScalebar::on_mUnitLabelLineEdit_editingFinished()
 {
   mUnitLabel = mUnitLabelLineEdit->text();
   recalculate();
-  QAbstractGraphicsShapeItem::update();
-  QAbstractGraphicsShapeItem::scene()->update();
+  QGraphicsRectItem::update();
+  QGraphicsRectItem::scene()->update();
   writeSettings();
 }
 
@@ -358,8 +358,8 @@ void QgsComposerScalebar::on_mMapComboBox_activated(int i)
 {
   mMap = mMaps[i];
   recalculate();
-  QAbstractGraphicsShapeItem::update();
-  QAbstractGraphicsShapeItem::scene()->update();
+  QGraphicsRectItem::update();
+  QGraphicsRectItem::scene()->update();
   writeSettings();
 }
 
@@ -368,8 +368,8 @@ void QgsComposerScalebar::mapChanged(int id)
   if (id != mMap)
     return;
   recalculate();
-  QAbstractGraphicsShapeItem::update();
-  QAbstractGraphicsShapeItem::scene()->update();
+  QGraphicsRectItem::update();
+  QGraphicsRectItem::scene()->update();
 }
 
 void QgsComposerScalebar::sizeChanged()
@@ -379,8 +379,8 @@ void QgsComposerScalebar::sizeChanged()
   mPen.setWidthF(mLineWidthSpinBox->value());
   mMapUnitsPerUnit = mMapUnitsPerUnitLineEdit->text().toInt();
   recalculate();
-  QAbstractGraphicsShapeItem::update();
-  QAbstractGraphicsShapeItem::scene()->update();
+  QGraphicsRectItem::update();
+  QGraphicsRectItem::scene()->update();
   writeSettings();
 }
 
@@ -421,19 +421,11 @@ void QgsComposerScalebar::recalculate(void)
 
   // !!! prepareGeometryChange() MUST BE called before the value returned by areaPoints() changes
   //Is this still true after the port to GraphicsView?
-  QAbstractGraphicsShapeItem::prepareGeometryChange();
+  QGraphicsRectItem::prepareGeometryChange();
 
-  mBoundingRect = render(0);
+  setRect(render(0));
 
   QGraphicsItem::update();
-}
-
-QRectF QgsComposerScalebar::boundingRect(void) const
-{
-#ifdef QGISDEBUG
-  std::cout << "QgsComposerScalebar::boundingRect" << std::endl;
-#endif
-  return mBoundingRect;
 }
 
 QPolygonF QgsComposerScalebar::areaPoints(void) const
@@ -442,7 +434,7 @@ QPolygonF QgsComposerScalebar::areaPoints(void) const
   std::cout << "QgsComposerScalebar::areaPoints" << std::endl;
 #endif
 
-  QRectF r = boundingRect();
+  QRectF r = QGraphicsRectItem::rect();
   QPolygonF pa;
   pa << QPointF(r.x(), r.y());
   pa << QPointF(r.x() + r.width(), r.y());
@@ -491,7 +483,7 @@ void QgsComposerScalebar::setOptions(void)
 void QgsComposerScalebar::setSelected(bool s)
 {
   mSelected = s;
-  QAbstractGraphicsShapeItem::update(); // show highlight
+  QGraphicsRectItem::update(); // show highlight
 }
 
 bool QgsComposerScalebar::selected(void)
@@ -514,8 +506,8 @@ bool QgsComposerScalebar::writeSettings(void)
   QString path;
   path.sprintf("/composition_%d/scalebar_%d/", mComposition->id(), mId);
 
-  QgsProject::instance()->writeEntry("Compositions", path + "x", mComposition->toMM((int) QAbstractGraphicsShapeItem::x()));
-  QgsProject::instance()->writeEntry("Compositions", path + "y", mComposition->toMM((int) QAbstractGraphicsShapeItem::y()));
+  QgsProject::instance()->writeEntry("Compositions", path + "x", mComposition->toMM((int) QGraphicsRectItem::x()));
+  QgsProject::instance()->writeEntry("Compositions", path + "y", mComposition->toMM((int) QGraphicsRectItem::y()));
 
   QgsProject::instance()->writeEntry("Compositions", path + "map", mMap);
 
@@ -544,7 +536,7 @@ bool QgsComposerScalebar::readSettings(void)
 
   double x = mComposition->fromMM(QgsProject::instance()->readDoubleEntry("Compositions", path + "x", 0, &ok));
   double y = mComposition->fromMM(QgsProject::instance()->readDoubleEntry("Compositions", path + "y", 0, &ok));
-  QAbstractGraphicsShapeItem::setPos(x, y);
+  QGraphicsRectItem::setPos(x, y);
 
   mMap = QgsProject::instance()->readNumEntry("Compositions", path + "map", 0, &ok);
   mUnitLabel = QgsProject::instance()->readEntry("Compositions", path + "unit/label", "???", &ok);

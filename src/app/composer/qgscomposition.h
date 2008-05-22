@@ -126,6 +126,9 @@ public:
     /** \brief Get resolutin */
     int resolution ( void );
 
+    /**Get active tool*/
+    QgsComposition::Tool tool() const {return mTool;}
+
     /** \brief Create default composition */
     void createDefault ( void );
 
@@ -156,10 +159,10 @@ public:
     
     /** \brief recieves mouseReleaseEvent from view */
     void mouseReleaseEvent(QMouseEvent*);
-    
+
     /** \brief recieves mouseMoveEvent from view */
     void mouseMoveEvent(QMouseEvent*);
-    
+
     /** \brief recieves keyPressEvent from view */
     void keyPressEvent ( QKeyEvent * e );
 

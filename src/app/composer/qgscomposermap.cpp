@@ -31,7 +31,6 @@
 #include "qgslabelattributes.h"
 
 #include <QGraphicsScene>
-#include <QGraphicsRectItem>
 #include <QPainter>
 #include <iostream>
 #include <cmath>
@@ -42,12 +41,14 @@
 #endif
 
 QgsComposerMap::QgsComposerMap ( QgsComposition *composition, int id, int x, int y, int width, int height )
-    : QWidget(), QGraphicsRectItem(0,0,width,height,0)
+    : QWidget(), QgsComposerItem(0,0,width,height,0)
 {
 #ifdef QGISDEBUG
     std::cout << "QgsComposerMap::QgsComposerMap()" << std::endl;
 #endif
     setupUi(this);
+
+    setAcceptsHoverEvents(true); 
 
     mComposition = composition;
     mId = id;
@@ -67,9 +68,11 @@ QgsComposerMap::QgsComposerMap ( QgsComposition *composition, int id, int x, int
 }
 
 QgsComposerMap::QgsComposerMap ( QgsComposition *composition, int id )
-    : QGraphicsRectItem(0,0,10,10,0)
+    : QgsComposerItem(0,0,10,10,0)
 {
     setupUi(this);
+
+    setAcceptsHoverEvents(true);
 
     mComposition = composition;
     mId = id;
@@ -553,6 +556,7 @@ void QgsComposerMap::on_mSetCurrentExtentButton_clicked ( void )
 void QgsComposerMap::setSelected (  bool s ) 
 {
     mSelected = s;
+    QGraphicsRectItem::setSelected(s);
     QGraphicsRectItem::update(); //re-paint, so we show the highlight boxes
 }    
 

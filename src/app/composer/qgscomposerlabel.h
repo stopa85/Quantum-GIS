@@ -35,7 +35,7 @@ class QDomDocument;
  */
 // NOTE: QgsComposerLabelBase must be first, otherwise does not compile
 //class QgsComposerLabel : public QgsComposerLabelBase, public QCanvasRectangle, public QgsComposerItem
-class QgsComposerLabel : public QWidget, private Ui::QgsComposerLabelBase, public QAbstractGraphicsShapeItem, public QgsComposerItem
+class QgsComposerLabel : public QWidget, private Ui::QgsComposerLabelBase, public QgsComposerItem
 {
     Q_OBJECT
 
@@ -62,13 +62,13 @@ public:
     bool removeSettings ( void );
     bool writeXML( QDomNode & node, QDomDocument & document, bool temp = false );
     bool readXML( QDomNode & node );
-
-    QRectF boundingRect ( void ) const; //errors about overriding things?
      
     /** \brief Reimplementation of QGraphicsItem::paint() - draw on canvas */
     void paint ( QPainter*, const QStyleOptionGraphicsItem*, QWidget* );
 
     QPolygonF areaPoints() const;
+
+    QRectF calculateBoundingRect ( void ) const;
     
     /** \brief Set values in GUI to current values */
     void setOptions ( void );
@@ -99,10 +99,6 @@ private:
 
     // Margin in box
     int mMargin;
-
-    // Current bounding box
-    // Not used - would it be more effecient if paint() updated the bounding box, and boundingRect returned this?
-    //QRect mBoundingRect; 
 
     // Draw box around the label
     bool mBox;

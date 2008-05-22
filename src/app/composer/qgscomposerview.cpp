@@ -40,6 +40,8 @@ QgsComposerView::QgsComposerView( QgsComposer *composer, QWidget* parent, const 
     setFocusProxy ( 0 );
 
     setResizeAnchor ( QGraphicsView::AnchorViewCenter );
+    setMouseTracking(true);
+    setInteractive(true);
 
 }
 
@@ -48,16 +50,28 @@ void QgsComposerView::mousePressEvent(QMouseEvent* e)
     // TODO: find how to get focus without setFocus
     setFocus ();
     mComposer->composition()->mousePressEvent(e);
+    if(mComposer->composition()->tool() == QgsComposition::Select)
+      {
+	QGraphicsView::mousePressEvent(e);
+      }
 }
 
 void QgsComposerView::mouseReleaseEvent(QMouseEvent* e)
 {
     mComposer->composition()->mouseReleaseEvent(e);
+    if(mComposer->composition()->tool() == QgsComposition::Select)
+      {
+	QGraphicsView::mouseReleaseEvent(e);
+      }
 }
 
 void QgsComposerView::mouseMoveEvent(QMouseEvent* e)
 {
     mComposer->composition()->mouseMoveEvent(e);
+    if(mComposer->composition()->tool() == QgsComposition::Select)
+      {
+	QGraphicsView::mouseMoveEvent(e);
+      }
 }
 
 void QgsComposerView::keyPressEvent ( QKeyEvent * e )

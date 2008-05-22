@@ -386,6 +386,7 @@ void QgsComposition::mousePressEvent(QMouseEvent* e)
 
 void QgsComposition::mouseMoveEvent(QMouseEvent* e)
 {
+
 #ifdef QGISDEBUG
   std::cerr << "QgsComposition::mouseMoveEvent() mTool = " << mTool << " mToolStep = "
     << mToolStep << std::endl;
@@ -481,14 +482,8 @@ void QgsComposition::mouseReleaseEvent(QMouseEvent* e)
 
           m->setUserExtent( mMapCanvas->extent());
           mItems.push_back(m);
-          m->setSelected ( true );//do we need this twice?
-
-          if ( mSelectedItem ) {
-            QgsComposerItem *coi = dynamic_cast <QgsComposerItem *> (mSelectedItem);
-            coi->setSelected ( false );
-          }
-
           m->setSelected ( true );
+
           mComposer->showItemOptions ( m->options() );
           mSelectedItem = dynamic_cast <QGraphicsItem *> (m);
         } else {

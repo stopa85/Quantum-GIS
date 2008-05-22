@@ -35,7 +35,7 @@ class QPen;
  *  \brief Object representing map window. 
  */
 // NOTE: QgsComposerScalebarBase must be first, otherwise does not compile
-class QgsComposerScalebar : public QWidget, private Ui::QgsComposerScalebarBase, public QAbstractGraphicsShapeItem, public QgsComposerItem
+class QgsComposerScalebar : public QWidget, private Ui::QgsComposerScalebarBase, public QgsComposerItem
 {
     Q_OBJECT
 
@@ -64,8 +64,6 @@ public:
     bool removeSettings ( void );
     bool writeXML( QDomNode & node, QDomDocument & document, bool temp = false );
     bool readXML( QDomNode & node );
-
-    QRectF boundingRect ( void ) const;
      
     /** \brief Draw to paint device, internal use 
      *  \param painter painter or 0
@@ -119,9 +117,6 @@ private:
 
     // Vector of map id for maps in combobox
     std::vector<int> mMaps;
-
-    // Current bounding box
-    QRectF mBoundingRect;
 
     // Number of map units in scalebar unit
     double mMapUnitsPerUnit;

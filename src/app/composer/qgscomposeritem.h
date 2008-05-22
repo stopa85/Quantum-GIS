@@ -18,6 +18,7 @@
 #define QGSCOMPOSERITEM_H
 
 #include "qgscomposition.h"
+#include <QGraphicsRectItem>
 
 class QWidget;
 class QDomNode;
@@ -25,11 +26,12 @@ class QDomDocument;
 
 class QqsComposition;
 
-class QgsComposerItem
+class QgsComposerItem: public QGraphicsRectItem
 {
 
 public:
-    QgsComposerItem();
+    QgsComposerItem(QGraphicsItem* parent = 0);
+    QgsComposerItem(qreal x, qreal y, qreal width, qreal height,QGraphicsItem* parent = 0); 
     virtual ~QgsComposerItem(); 
 public:
     /** \brief Set plot style */
@@ -62,7 +64,7 @@ public:
     virtual bool readSettings ( void );
 
     /** delete settings from project file  */
-    virtual bool removeSettings( void ); 
+    virtual bool removeSettings( void );
 
     /** stores state in DOM node
      * @param node is DOM node corresponding to '???' tag
@@ -79,6 +81,14 @@ protected:
     QgsComposition::PlotStyle mPlotStyle;
     bool mSelected;
     int mId;
+
+    //event handlers
+    virtual void mouseMoveEvent ( QGraphicsSceneMouseEvent * event );
+    virtual void mousePressEvent ( QGraphicsSceneMouseEvent * event );
+    virtual void mouseReleaseEvent ( QGraphicsSceneMouseEvent * event );
+
+    /**Finds out the appropriate cursor for the current mouse position in the widget (e.g. move in the middle, resize at border)*/
+    Qt::CursorShape evaluateCursor(const QPointF& itemCoordPos);
 
 private:
 };

@@ -58,8 +58,7 @@ class QTreeWidgetItem;
  */
 // NOTE: QgsComposerVectorLegendBase must be first, otherwise does not compile
 class QgsComposerVectorLegend : public QWidget,
-                                private Ui::QgsComposerVectorLegendBase, 
-                                public QGraphicsRectItem, 
+                                private Ui::QgsComposerVectorLegendBase,  
                                 public QgsComposerItem
 {
     Q_OBJECT

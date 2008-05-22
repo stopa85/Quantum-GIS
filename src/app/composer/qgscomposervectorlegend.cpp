@@ -38,7 +38,7 @@
 
 QgsComposerVectorLegend::QgsComposerVectorLegend ( QgsComposition *composition, int id, 
                                               int x, int y, int fontSize )
-    : QWidget(composition), QGraphicsRectItem(x,y,10,10,0)
+    : QWidget(composition), QgsComposerItem(x,y,10,10,0)
 {
   setupUi(this);
 
@@ -77,7 +77,7 @@ QgsComposerVectorLegend::QgsComposerVectorLegend ( QgsComposition *composition, 
 }
 
 QgsComposerVectorLegend::QgsComposerVectorLegend ( QgsComposition *composition, int id ) 
-    : QGraphicsRectItem(0,0,10,10,0)
+    : QgsComposerItem(0,0,10,10,0)
 {
 #ifdef QGISDEBUG
     std::cout << "QgsComposerVectorLegend::QgsComposerVectorLegend()" << std::endl;

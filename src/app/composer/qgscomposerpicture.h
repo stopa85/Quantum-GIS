@@ -35,8 +35,7 @@ class QPainter;
  */
 // NOTE: QgsComposerPictureBase must be first, otherwise does not compile
 //                                public QCanvasRectangle, 
-class QgsComposerPicture : public QWidget, private Ui::QgsComposerPictureBase, 
-				public QAbstractGraphicsShapeItem, public QgsComposerItem
+class QgsComposerPicture : public QWidget, private Ui::QgsComposerPictureBase, public QgsComposerItem
 {
     Q_OBJECT
 
@@ -64,10 +63,6 @@ public:
     bool removeSettings ( void );
     bool writeXML( QDomNode & node, QDomDocument & document, bool temp = false );
     bool readXML( QDomNode & node );
-
-
-    // Reimplement QCanvasItem::boundingRect
-    QRectF boundingRect ( void ) const;
 
     QPolygonF areaPoints() const;
 
@@ -145,9 +140,6 @@ private:
 
     // Called when picture file is changed
     void pictureChanged ( void );
-
-    // Current bounding box
-    QRectF mBoundingRect;
 
     // Adjust size so that picture fits to current box
     void adjustPictureSize();
