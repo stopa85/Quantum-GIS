@@ -104,6 +104,9 @@ public:
     /** \brief Font size scale */
     double fontScale ( void );
 
+    /** resizes an item in x- and y direction (canvas coordinates)*/
+    void resize(double dx, double dy);
+
     /** \brief Scale */
     double scale ( void );
 

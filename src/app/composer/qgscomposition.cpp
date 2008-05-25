@@ -186,6 +186,7 @@ void QgsComposition::createCanvas(void)
   mPaperItem->setBrush( QColor(255,255,255) );
   mPaperItem->setPen( QPen(QColor(0,0,0), 0) ); // 0 line width makes it use a cosmetic pen - 1px, regardless of scale.
   mPaperItem->setZValue(0);
+  mPaperItem->setAcceptedMouseButtons(0);
   mPaperItem->show();
 }
 
@@ -397,8 +398,8 @@ void QgsComposition::mouseMoveEvent(QMouseEvent* e)
   switch ( mTool ) {
     case Select:
       if ( mSelectedItem ) {
-        mSelectedItem->setPos(p - mGrabPoint);
-        mCanvas->update();
+        //mSelectedItem->setPos(p - mGrabPoint);
+        //mCanvas->update();
       }
       break;
 

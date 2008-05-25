@@ -683,3 +683,17 @@ bool QgsComposerMap::readXML( QDomNode & node )
     return true;
 }
 
+void QgsComposerMap::resize(double dx, double dy)
+{
+  qWarning("QgsComposerMap::resize");
+  qWarning(QString::number(dx).toLatin1());
+  qWarning(QString::number(dy).toLatin1());
+
+  //setRect
+  QRectF currentRect = QGraphicsRectItem::rect();
+  setRect(currentRect.x(), currentRect.y(), currentRect.width() + dx, currentRect.height() + dy);
+
+  recalculate();
+  
+}
+
