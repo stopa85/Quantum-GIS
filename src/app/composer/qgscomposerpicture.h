@@ -75,9 +75,11 @@ public:
     /** \brief returns TRUE if picture is valid / loaded */
     bool pictureValid();
 
+    void setSize(double width, double height);
+
     // Set box, picture will be inside box, used when placed by mouse.
     // Coordinates do not need to be oriented
-    void setSize(double width, double height );
+    void resize(double dx, double dy);
 
     // Picture dialog, returns file name or empty string
     static QString pictureDialog ( void );    

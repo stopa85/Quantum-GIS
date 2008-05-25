@@ -254,10 +254,18 @@ void QgsComposerPicture::paint ( QPainter* painter, const QStyleOptionGraphicsIt
 
 }
 
-void QgsComposerPicture::setSize(double width, double height )
+void QgsComposerPicture::setSize(double width, double height)
 {
-    mWidth = width;
-    mHeight = height;
+  mWidth = width;
+  mHeight = height;
+  adjustPictureSize(); 
+  recalculate();
+}
+
+void QgsComposerPicture::resize(double dx, double dy )
+{
+    mWidth += dx;
+    mHeight += dy;
     adjustPictureSize(); 
 
     recalculate();
@@ -425,6 +433,12 @@ void QgsComposerPicture::adjustPictureSize ( )
     {
       mWidth = mHeight*box.width()/box.height();
     }
+
+    //make sure the item rect corresponds to mWidth and mHeight...
+    QRectF itemRect = QGraphicsRectItem::rect();
+    itemRect.setWidth(mWidth);
+    itemRect.setHeight(mHeight);
+    QGraphicsRectItem::setRect(itemRect);
 }
 
 void QgsComposerPicture::setOptions ( void )

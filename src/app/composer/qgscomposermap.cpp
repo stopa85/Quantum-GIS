@@ -694,6 +694,5 @@ void QgsComposerMap::resize(double dx, double dy)
   setRect(currentRect.x(), currentRect.y(), currentRect.width() + dx, currentRect.height() + dy);
 
   recalculate();
-  
 }
 
