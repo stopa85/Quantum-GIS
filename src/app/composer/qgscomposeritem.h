@@ -59,7 +59,7 @@ public:
     virtual void setSelected( bool s );
 
     /** \brief Is selected */
-    virtual bool selected( void );
+    virtual bool selected( void ){return QGraphicsRectItem::isSelected();}
     
     /** item id */
     int id ( void );
@@ -97,7 +97,6 @@ public:
 
 protected:
     QgsComposition::PlotStyle mPlotStyle;
-    bool mSelected;
     int mId;
     QgsComposerItem::mouseMoveAction mCurrentMouseMoveAction;
     /**Start point of the last mouse move action (in scene coordinates)*/
@@ -107,6 +106,8 @@ protected:
 
     /**Rectangle used during move and resize actions*/
     QGraphicsRectItem* mBoundingResizeRectangle;
+
+    bool mSelected;
  
     //event handlers
     virtual void mouseMoveEvent ( QGraphicsSceneMouseEvent * event );
@@ -130,6 +131,18 @@ protected:
        @param rx out: width of rectangle should be resized by rx
        @param ry out: height of rectangle should be resized by ry*/
     void rectangleChange(double dx, double dy, double& mx, double& my, double& rx, double& ry) const;
+    
+#if 0 //todo: implement on item level if not provided by graphics view
+    void drawBackground();
+    void drawOutline();
+    void drawSelectionBoxes();
+#endif //0
+
+    /**Draw selection boxes around item*/
+    void drawSelectionBoxes(QPainter* p);
+
+    /**Draw black frame around item*/
+    void drawFrame(QPainter* p);
 };
 
 #endif

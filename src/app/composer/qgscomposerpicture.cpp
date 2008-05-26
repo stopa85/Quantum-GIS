@@ -421,7 +421,12 @@ void QgsComposerPicture::adjustPictureSize ( )
 	 || mWidth == 0 || mHeight == 0 )
     {
 	mWidth = 0;
-	mHeight = 0;	
+	mHeight = 0;
+
+	QRectF itemRect = QGraphicsRectItem::rect();
+	itemRect.setWidth(mWidth);
+	itemRect.setHeight(mHeight);
+	QGraphicsRectItem::setRect(itemRect);	
         return;
     }
 

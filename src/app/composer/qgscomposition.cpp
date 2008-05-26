@@ -240,7 +240,8 @@ void QgsComposition::mousePressEvent(QMouseEvent* e)
 
 //  mGrabPoint = mCanvas.mapToItem(p);
 
-  switch ( mTool ) {
+  switch ( mTool ) 
+    {
     case Select:
       {
 
@@ -251,6 +252,19 @@ void QgsComposition::mousePressEvent(QMouseEvent* e)
 	      newItem = 0;
         }
 
+	QgsComposerItem* selectedItem = dynamic_cast<QgsComposerItem*>(newItem);
+	if(selectedItem)
+	  {
+	    selectedItem->setSelected(true);
+	    if(selectedItem != mSelectedItem)
+	      {
+		mSelectedItem->setSelected(false);
+		mComposer->showItemOptions(selectedItem->options());
+		mSelectedItem = selectedItem;
+	      }
+	  }
+	break;
+
 //what is this doing?  Grabbing the first item in the list?
 /*
         QList<QGraphicsItem*> l = mCanvas->items(p);
@@ -259,6 +273,7 @@ void QgsComposition::mousePressEvent(QMouseEvent* e)
           newItem = *it;
         }
 */
+#if 0
 
         if ( newItem ) { // found
           mGrabPoint = newItem->mapFromScene(p);
@@ -286,6 +301,23 @@ void QgsComposition::mousePressEvent(QMouseEvent* e)
         mCanvas->update();
       }
       break;
+
+
+      if(newItem)
+	{
+	  QgsComposerItem* debugItem = dynamic_cast<QgsComposerItem*>(newItem);
+	  if(debugItem)
+	    {
+	      debugItem->setSelected(true);
+	      debugItem->update();
+	    }
+	  //newItem->setSelected(true);
+	  //newItem->update();
+	  //mComposer->showItemOptions((QWidget*)(newItem));
+	}
+      break;
+#endif //0
+  }
 
     case AddMap:
 
@@ -474,10 +506,12 @@ void QgsComposition::mouseReleaseEvent(QMouseEvent* e)
         delete mRectangleItem;
         mRectangleItem = 0;
 
+	QgsComposerMap* m = 0;
+
         if ( w > 0 && h > 0 ) {
           mComposer->selectItem(); // usually just one map
 
-          QgsComposerMap *m = new QgsComposerMap ( this, mNextItemId++, x, y, w, h );
+          m = new QgsComposerMap ( this, mNextItemId++, x, y, w, h );
 
           m->setPos(x, y);
 
@@ -503,6 +537,10 @@ void QgsComposition::mouseReleaseEvent(QMouseEvent* e)
         mRectangleItem = 0;
 
         QgsComposerPicture *pi = dynamic_cast <QgsComposerPicture*> (mNewCanvasItem);
+	pi->setSize(w, h);
+
+	delete mRectangleItem;
+        mRectangleItem = 0;
 
         if ( w > 0 && h > 0 )
         {

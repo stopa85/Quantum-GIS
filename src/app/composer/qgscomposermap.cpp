@@ -48,8 +48,6 @@ QgsComposerMap::QgsComposerMap ( QgsComposition *composition, int id, int x, int
 #endif
     setupUi(this);
 
-    setAcceptsHoverEvents(true); 
-
     mComposition = composition;
     mId = id;
     mMapCanvas = mComposition->mapCanvas();
@@ -71,8 +69,6 @@ QgsComposerMap::QgsComposerMap ( QgsComposition *composition, int id )
     : QgsComposerItem(0,0,10,10,0)
 {
     setupUi(this);
-
-    setAcceptsHoverEvents(true);
 
     mComposition = composition;
     mId = id;
@@ -232,7 +228,11 @@ void QgsComposerMap::cache ( void )
 
 void QgsComposerMap::paint ( QPainter* painter, const QStyleOptionGraphicsItem* itemStyle, QWidget* pWidget)
 {
-  if ( mDrawing ) return; 
+
+  if ( mDrawing ) 
+    {
+      return;
+    }
   mDrawing = true;
 
 #ifdef QGISDEBUG
@@ -240,73 +240,53 @@ void QgsComposerMap::paint ( QPainter* painter, const QStyleOptionGraphicsItem* 
             << " mPreviewMode = " << mPreviewMode << std::endl;
 #endif
     
-  if ( plotStyle() == QgsComposition::Preview &&  mPreviewMode == Cache ) { // Draw from cache
-    if ( !mCacheUpdated || mMapCanvas->layerCount() != mNumCachedLayers ) 
-    {
-      cache();
-    }
-  
-    // Scale so that the cache fills the map rectangle
-    double scale = 1.0 * QGraphicsRectItem::rect().width() / mCachePixmap.width();
-    #ifdef QGISDEBUG
-    std::cout << "scale = " << scale << std::endl;
-    #endif
-
-    painter->save();
-
-    painter->translate(0, 0); //do we need this?
-    painter->scale(scale,scale);
-
-    // Note: drawing only a visible part of the pixmap doesn't make it much faster
-    painter->drawPixmap(0,0, mCachePixmap);
-
-    painter->restore();
-  } 
+  if ( plotStyle() == QgsComposition::Preview &&  mPreviewMode == Cache ) 
+    { // Draw from cache
+      if ( !mCacheUpdated || mMapCanvas->layerCount() != mNumCachedLayers ) 
+	{
+	  cache();
+	}
+      
+      // Scale so that the cache fills the map rectangle
+      double scale = 1.0 * QGraphicsRectItem::rect().width() / mCachePixmap.width();
+#ifdef QGISDEBUG
+      std::cout << "scale = " << scale << std::endl;
+#endif
+      
+      painter->save();
+      
+      painter->translate(0, 0); //do we need this?
+      painter->scale(scale,scale);
+      
+      painter->drawPixmap(0,0, mCachePixmap);
+      
+      painter->restore();
+    } 
   else if ( (plotStyle() == QgsComposition::Preview && mPreviewMode == Render) || 
             plotStyle() == QgsComposition::Print ||
             plotStyle() == QgsComposition::Postscript ) 
-  {
-    QgsDebugMsg("render")
+    {
+      QgsDebugMsg("render")
 
-    QPaintDevice* thePaintDevice = painter->device();
-    if(!thePaintDevice)
-      {
-	return;
-      }
+	QPaintDevice* thePaintDevice = painter->device();
+      if(!thePaintDevice)
+	{
+	  return;
+	}
 
     
-    QRectF bRect = boundingRect();
-    QSize theSize(bRect.width(), bRect.height());
-    painter->setClipRect (QRectF( 0, 0, QGraphicsRectItem::rect().width(), QGraphicsRectItem::rect().height() ));
-    draw( painter, mExtent, theSize, 25.4); //scene coordinates seem to be in mm
-  } 
+      QRectF bRect = boundingRect();
+      QSize theSize(bRect.width(), bRect.height());
+      painter->setClipRect (QRectF( 0, 0, QGraphicsRectItem::rect().width(), QGraphicsRectItem::rect().height() ));
+      draw( painter, mExtent, theSize, 25.4); //scene coordinates seem to be in mm
+    } 
 
-  // Draw frame around
-  if ( mFrame ) {
-    QPen pen(QColor(0,0,0));
-    pen.setWidthF(0.6*mComposition->scale());
-    painter->setPen( pen );
-    painter->setBrush( Qt::NoBrush );
-    painter->setRenderHint(QPainter::Antialiasing, true); //turn on antialiasing for drawing the box
-    painter->save();
-    painter->translate(0, 0);//do we need this?
-    painter->drawRect (QRectF( 0, 0, QGraphicsRectItem::rect().width(), QGraphicsRectItem::rect().height() ));
-    painter->restore();
-  }
-
-  // Show selected / Highlight
-  if ( mSelected && plotStyle() == QgsComposition::Preview ) {
-    painter->setPen( mComposition->selectionPen() );
-    painter->setBrush( mComposition->selectionBrush() );
-
-    double s = mComposition->selectionBoxSize();
-
-    painter->drawRect (QRectF(0, 0, s, s));
-    painter->drawRect (QRectF(QGraphicsRectItem::rect().width() -s, 0, s, s));
-    painter->drawRect (QRectF(QGraphicsRectItem::rect().width() -s, QGraphicsRectItem::rect().height() -s, s, s));
-    painter->drawRect (QRectF(0, QGraphicsRectItem::rect().height() -s, s, s));
-  }
-    
+  drawFrame(painter);
+  if(isSelected())
+    {
+      drawSelectionBoxes(painter);
+    }
+  
   mDrawing = false;
 }
 
@@ -552,13 +532,6 @@ void QgsComposerMap::on_mSetCurrentExtentButton_clicked ( void )
     writeSettings();
     mComposition->emitMapChanged ( mId );
 }
-
-void QgsComposerMap::setSelected (  bool s ) 
-{
-    mSelected = s;
-    QGraphicsRectItem::setSelected(s);
-    QGraphicsRectItem::update(); //re-paint, so we show the highlight boxes
-}    
 
 bool QgsComposerMap::selected( void )
 {

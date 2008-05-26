@@ -18,6 +18,7 @@
 #include <QDomNode>
 #include <QGraphicsScene>
 #include <QGraphicsSceneMouseEvent>
+#include <QPainter>
 
 #include "qgscomposition.h"
 #include "qgscomposeritem.h"
@@ -26,16 +27,16 @@
 
 QgsComposerItem::QgsComposerItem(QGraphicsItem* parent): QGraphicsRectItem(0), mBoundingResizeRectangle(0) 
 {
-    mSelected = false;
     mPlotStyle = QgsComposition::Preview;
     setAcceptsHoverEvents(true);
+    setFlag(QGraphicsItem::ItemIsSelectable, true);
 }
 
 QgsComposerItem::QgsComposerItem(qreal x, qreal y, qreal width, qreal height, QGraphicsItem* parent): QGraphicsRectItem(x, y, width, height, parent), mBoundingResizeRectangle(0)
 {
-  mSelected = false;
   mPlotStyle = QgsComposition::Preview;
   setAcceptsHoverEvents(true);
+  setFlag(QGraphicsItem::ItemIsSelectable, true);
 }
 
 QgsComposerItem::~QgsComposerItem()
@@ -46,13 +47,13 @@ void QgsComposerItem::setPlotStyle ( QgsComposition::PlotStyle d ) { mPlotStyle 
 
 QgsComposition::PlotStyle QgsComposerItem::plotStyle ( void ) { return mPlotStyle; }
 
+
 void QgsComposerItem::setSelected( bool s ) 
 {
     std::cout << "QgsComposerItem::setSelected" << std::endl; 
-    mSelected = s; 
+    QGraphicsRectItem::setSelected(s);
+    update(); //to draw selection boxes
 }
-
-bool QgsComposerItem::selected( void ) { return mSelected; }
 
 int QgsComposerItem::id(void) { return mId; }
 
@@ -104,7 +105,7 @@ void QgsComposerItem::mousePressEvent ( QGraphicsSceneMouseEvent * event )
   mBoundingResizeRectangle->moveBy(x(), y());
   mBoundingResizeRectangle->setBrush( Qt::NoBrush );
   mBoundingResizeRectangle->setPen( QPen(QColor(0,0,0), 0) );
-  mBoundingResizeRectangle->setZValue(100);
+  mBoundingResizeRectangle->setZValue(90);
   mBoundingResizeRectangle->show();
 
   //QGraphicsRectItem::setVisible(false);
@@ -181,6 +182,10 @@ Qt::CursorShape QgsComposerItem::cursorForPosition(const QPointF& itemCoordPos)
 
 QgsComposerItem::mouseMoveAction QgsComposerItem::mouseMoveActionForPosition(const QPointF& itemCoordPos)
 {
+
+  qWarning("mouseMoveAction: itemcoordpos: " );
+  qWarning(QString::number(itemCoordPos.x()).toLatin1());
+  qWarning(QString::number(itemCoordPos.y()).toLatin1());
   bool nearLeftBorder = false;
   bool nearRightBorder = false;
   bool nearLowerBorder = false;
@@ -283,4 +288,28 @@ void QgsComposerItem::rectangleChange(double dx, double dy, double& mx, double& 
       mx = dx; my = dy;
       break;
     }
+}
+
+void QgsComposerItem::drawSelectionBoxes(QPainter* p)
+{
+  //p->setPen( mComposition->selectionPen() );
+  //p->setBrush( mComposition->selectionBrush() );
+  p->setPen(QPen(QColor(0, 0, 255)));
+
+  double s = 5;//mComposition->selectionBoxSize();
+  
+  p->drawRect (QRectF(0, 0, s, s));
+  p->drawRect (QRectF(QGraphicsRectItem::rect().width() -s, 0, s, s));
+  p->drawRect (QRectF(QGraphicsRectItem::rect().width() -s, QGraphicsRectItem::rect().height() -s, s, s));
+  p->drawRect (QRectF(0, QGraphicsRectItem::rect().height() -s, s, s));
+}
+
+void QgsComposerItem::drawFrame(QPainter* p)
+{
+  QPen pen(QColor(0,0,0));
+  pen.setWidthF(1.0);
+  p->setPen( pen );
+  p->setBrush( Qt::NoBrush );
+  p->setRenderHint(QPainter::Antialiasing, true);
+  p->drawRect (QRectF( 0, 0, QGraphicsRectItem::rect().width(), QGraphicsRectItem::rect().height() ));
 }

@@ -62,7 +62,7 @@ public:
     void init ( void );
 
     // Reimplement QgsComposerItem:
-    void setSelected( bool s );
+    //void setSelected( bool s );
     bool selected( void );
     QWidget *options ( void );
     bool writeSettings ( void );
