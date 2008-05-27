@@ -18,6 +18,7 @@
 #ifndef QGSCOMPOSER_H
 #define QGSCOMPOSER_H
 #include "ui_qgscomposerbase.h"
+#include "qgscomposeritem.h"
 
 class QgisApp;
 class QgsComposerView;
@@ -76,7 +77,8 @@ public:
     void showCompositionOptions ( QWidget *w );
     
     //! Show item options in widget
-    void showItemOptions ( QWidget *w );
+    //void showItemOptions ( QWidget *w );
+    void showItemOptions(const QgsComposerItem* i);
 
     /** \brief stores statei in project */
     bool writeSettings ( void );
@@ -196,6 +198,9 @@ private:
 
     //! Size grip
     QSizeGrip *mSizeGrip;
+
+    //! To know which item to show if selection changes
+    QMap<QgsComposerItem*, QWidget*> mItemWidgetMap;
 
     //! Help context id
     static const int context_id = 985715179;

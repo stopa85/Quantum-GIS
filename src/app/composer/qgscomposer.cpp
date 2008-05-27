@@ -192,6 +192,7 @@ void QgsComposer::showCompositionOptions ( QWidget *w ) {
   }
 }
 
+/*
 void QgsComposer::showItemOptions ( QWidget *w )
 {
 #ifdef QGISDEBUG
@@ -207,6 +208,11 @@ void QgsComposer::showItemOptions ( QWidget *w )
     mItemOptionsLayout->addWidget( w, 0, 0 );
     mOptionsTabWidget->setCurrentPage (1);
   }
+  }*/
+
+void QgsComposer::showItemOptions(const QgsComposerItem* i)
+{
+  //todo...
 }
 
 QgsMapCanvas *QgsComposer::mapCanvas(void)

@@ -69,6 +69,7 @@ SET(QGIS_APP_SRCS
   composer/qgscomposerlabel.cpp
   composer/qgscomposerpicture.cpp
   composer/qgscomposermap.cpp
+  composer/qgscomposermapwidget.cpp
   composer/qgscomposerscalebar.cpp
   composer/qgscomposervectorlegend.cpp
   composer/qgscomposerview.cpp
@@ -126,8 +127,9 @@ SET (QGIS_APP_MOC_HDRS
 
   composer/qgscomposer.h
   composer/qgscomposerlabel.h
-  composer/qgscomposerpicture.h
   composer/qgscomposermap.h
+  composer/qgscomposermapwidget.h
+  composer/qgscomposerpicture.h
   composer/qgscomposerscalebar.h
   composer/qgscomposervectorlegend.h
   composer/qgscomposerview.h

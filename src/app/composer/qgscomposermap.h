@@ -17,10 +17,11 @@
 #ifndef QGSCOMPOSERMAP_H
 #define QGSCOMPOSERMAP_H
 
-#include "ui_qgscomposermapbase.h"
+//#include "ui_qgscomposermapbase.h"
 #include "qgscomposeritem.h"
 #include "qgsrect.h"
 #include <QGraphicsRectItem>
+#include <QObject>
 #include <QPixmap>
 
 class QgsComposition;
@@ -34,9 +35,9 @@ class QPainter;
  *  \brief Object representing map window. 
  */
 // NOTE: QgsComposerMapBase must be first, otherwise does not compile
-class QgsComposerMap : public QWidget, private Ui::QgsComposerMapBase, public QgsComposerItem
+class QgsComposerMap : /*public QWidget , private Ui::QgsComposerMapBase,*/ public QObject, public QgsComposerItem
 {
-    Q_OBJECT
+  Q_OBJECT
 
 public:
     /** Constructor. */
@@ -90,7 +91,7 @@ public:
     void cache ( void );
 
     /** \brief Set values in GUI to current values */
-    void setOptions ( void );
+    //void setOptions ( void );
     
     /** \brief Map name, used in legend combobox etc. */
     QString name ( void );
@@ -115,38 +116,38 @@ public:
 
 public slots:
     // Called by GUI if with or height was changed 
-    void on_mWidthLineEdit_editingFinished ( void );
-    void on_mHeightLineEdit_editingFinished ( void );
+    //void on_mWidthLineEdit_editingFinished ( void );
+    //void on_mHeightLineEdit_editingFinished ( void );
 
     // Set User extent to current map extent
-    void on_mSetCurrentExtentButton_clicked ( void );
+    //void on_mSetCurrentExtentButton_clicked ( void );
 
     // Called by GUI if calculate has changed 
-    void on_mCalculateComboBox_activated ( int i );
+    //void on_mCalculateComboBox_activated ( int i );
 
     // Called by GUI if map scale has changed 
-    void on_mScaleLineEdit_editingFinished ( void );
+    //void on_mScaleLineEdit_editingFinished ( void );
 
     // Called by GUI if with  scale was changed 
-    void on_mFontScaleLineEdit_editingFinished ( void );
-    void on_mSymbolScaleLineEdit_editingFinished ( void );
-    void on_mWidthScaleLineEdit_editingFinished ( void );
+    //void on_mFontScaleLineEdit_editingFinished ( void );
+    //void on_mSymbolScaleLineEdit_editingFinished ( void );
+    //void on_mWidthScaleLineEdit_editingFinished ( void );
 
     // Frame settings changed 
-    void on_mFrameCheckBox_clicked ( void );
+    //void on_mFrameCheckBox_clicked ( void );
 
     // Called by GUI if preview style was changed
-    void on_mPreviewModeComboBox_activated ( int i );
+    //void on_mPreviewModeComboBox_activated ( int i );
 
     // Called if map canvas has changed
     void mapCanvasChanged ( );
 
 private:
     // Called by GUI if with or height was changed 
-    void sizeChanged ( void );
+    //void sizeChanged ( void );
     
     // Called by GUI if with  scale was changed 
-    void scaleChanged ( void );
+    //void scaleChanged ( void );
 
     // Pointer to composition
     QgsComposition *mComposition;

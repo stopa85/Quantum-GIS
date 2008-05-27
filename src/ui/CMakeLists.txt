@@ -17,7 +17,7 @@ SET(QGIS_UIS
   qgsbookmarksbase.ui
   qgscomposerbase.ui
   qgscomposerlabelbase.ui
-  qgscomposermapbase.ui
+  qgscomposermapwidgetbase.ui
   qgscomposerpicturebase.ui
   qgscomposerscalebarbase.ui
   qgscomposervectorlegendbase.ui

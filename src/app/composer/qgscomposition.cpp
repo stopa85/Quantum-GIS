@@ -259,64 +259,11 @@ void QgsComposition::mousePressEvent(QMouseEvent* e)
 	    if(selectedItem != mSelectedItem)
 	      {
 		mSelectedItem->setSelected(false);
-		mComposer->showItemOptions(selectedItem->options());
+		//mComposer->showItemOptions(selectedItem->options()); //todo: separate items from input widgets
 		mSelectedItem = selectedItem;
 	      }
 	  }
 	break;
-
-//what is this doing?  Grabbing the first item in the list?
-/*
-        QList<QGraphicsItem*> l = mCanvas->items(p);
-        for ( QList<QGraphicsItem*>::Iterator it=l.fromLast(); it!=l.end(); --it) {
-          if (! (*it)->isActive() ) continue;
-          newItem = *it;
-        }
-*/
-#if 0
-
-        if ( newItem ) { // found
-          mGrabPoint = newItem->mapFromScene(p);
-          if ( newItem != mSelectedItem ) { // Show options
-
-            if ( mSelectedItem ) {
-              QgsComposerItem *coi = dynamic_cast <QgsComposerItem *> (mSelectedItem);
-              coi->setSelected ( false );
-            }
-
-            QgsComposerItem *coi = dynamic_cast <QgsComposerItem *> (newItem);
-            coi->setSelected ( true );
-
-            mComposer->showItemOptions ( coi->options() );
-            mSelectedItem = newItem;
-          }
-        } else { // not found
-          if ( mSelectedItem ) {
-            QgsComposerItem *coi = dynamic_cast <QgsComposerItem *> (mSelectedItem);
-            coi->setSelected ( false );
-          }
-          mSelectedItem = 0;
-          mComposer->showItemOptions ( (QWidget *) 0 ); // hide old options
-        }
-        mCanvas->update();
-      }
-      break;
-
-
-      if(newItem)
-	{
-	  QgsComposerItem* debugItem = dynamic_cast<QgsComposerItem*>(newItem);
-	  if(debugItem)
-	    {
-	      debugItem->setSelected(true);
-	      debugItem->update();
-	    }
-	  //newItem->setSelected(true);
-	  //newItem->update();
-	  //mComposer->showItemOptions((QWidget*)(newItem));
-	}
-      break;
-#endif //0
   }
 
     case AddMap:
@@ -336,7 +283,7 @@ void QgsComposition::mousePressEvent(QMouseEvent* e)
       std::cerr << "mToolStep = " << mToolStep << std::endl;
 #endif
       break;
-
+      /* //other items besides map disabled for the moment
     case AddVectorLegend:
       {
         mNewCanvasItem->setPos(p);
@@ -414,6 +361,7 @@ void QgsComposition::mousePressEvent(QMouseEvent* e)
         mToolStep = 1;
       }
       break;
+      */
  }
 }
 
@@ -452,7 +400,7 @@ void QgsComposition::mouseMoveEvent(QMouseEvent* e)
         mCanvas->update();
       }//END if(mToolStep == 1)
       break;
-
+      /* //other items besides map disabled for the moment
     case AddPicture:
       if ( mToolStep == 1 )
       {
@@ -479,6 +427,7 @@ void QgsComposition::mouseMoveEvent(QMouseEvent* e)
     case AddScalebar:
     case AddVectorLegend:
     case AddLabel:
+      */
 
       mNewCanvasItem->setPos(p);
       mCanvas->update();
@@ -528,7 +477,7 @@ void QgsComposition::mouseReleaseEvent(QMouseEvent* e)
         mView->unsetCursor();
       }
       break;
-
+      /* //other items besides map are disabled for the moment
     case AddPicture:
       {
         double w = mRectangleItem->rect().width();
@@ -562,6 +511,7 @@ void QgsComposition::mouseReleaseEvent(QMouseEvent* e)
         mView->unsetCursor();
       }
       break;
+      */
 
     case Select:
       if ( mSelectedItem ) {
@@ -572,10 +522,10 @@ void QgsComposition::mouseReleaseEvent(QMouseEvent* e)
       break;
 
     //We don't do anything special for labels, scalebars, or vector legends
-    case AddLabel:
+    /*case AddLabel:
     case AddScalebar:
     case AddVectorLegend:
-      break;
+    break;*/
 
   }
 }

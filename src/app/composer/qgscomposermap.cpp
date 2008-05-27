@@ -41,12 +41,12 @@
 #endif
 
 QgsComposerMap::QgsComposerMap ( QgsComposition *composition, int id, int x, int y, int width, int height )
-    : QWidget(), QgsComposerItem(0,0,width,height,0)
+  : /*QWidget(),*/ QgsComposerItem(0,0,width,height,0)
 {
 #ifdef QGISDEBUG
     std::cout << "QgsComposerMap::QgsComposerMap()" << std::endl;
 #endif
-    setupUi(this);
+    //setupUi(this);
 
     mComposition = composition;
     mId = id;
@@ -68,7 +68,7 @@ QgsComposerMap::QgsComposerMap ( QgsComposition *composition, int id, int x, int
 QgsComposerMap::QgsComposerMap ( QgsComposition *composition, int id )
     : QgsComposerItem(0,0,10,10,0)
 {
-    setupUi(this);
+  //setupUi(this);
 
     mComposition = composition;
     mId = id;
@@ -95,18 +95,18 @@ void QgsComposerMap::init ()
     mCacheUpdated = false;
 
     // Calculate
-    mCalculateComboBox->insertItem( tr("Extent (calculate scale)"), Scale );
-    mCalculateComboBox->insertItem( tr("Scale (calculate extent)"), Extent );
+    //mCalculateComboBox->insertItem( tr("Extent (calculate scale)"), Scale );
+    //mCalculateComboBox->insertItem( tr("Scale (calculate extent)"), Extent );
     mCalculate = Scale;
 
     setPlotStyle ( QgsComposition::Preview );
     
     // Preview style
     mPreviewMode = Cache;
-    mPreviewModeComboBox->insertItem ( tr("Cache"), Cache );
-    mPreviewModeComboBox->insertItem ( tr("Render"), Render );
-    mPreviewModeComboBox->insertItem ( tr("Rectangle"), Rectangle );
-    mPreviewModeComboBox->setCurrentItem ( Cache );
+    //mPreviewModeComboBox->insertItem ( tr("Cache"), Cache );
+    //mPreviewModeComboBox->insertItem ( tr("Render"), Render );
+    //mPreviewModeComboBox->insertItem ( tr("Rectangle"), Rectangle );
+    //mPreviewModeComboBox->setCurrentItem ( Cache );
 
     mWidthScale = 1.0 / mComposition->scale();
     mSymbolScale = 0.5;
@@ -290,6 +290,7 @@ void QgsComposerMap::paint ( QPainter* painter, const QStyleOptionGraphicsItem* 
   mDrawing = false;
 }
 
+/*
 void QgsComposerMap::sizeChanged ( void ) 
 {
     int w, h;
@@ -303,8 +304,9 @@ void QgsComposerMap::sizeChanged ( void )
     QGraphicsRectItem::scene()->update();
     
     writeSettings();
-}
+    }*/
 
+/*
 void QgsComposerMap::on_mWidthLineEdit_editingFinished ( void ) { sizeChanged(); }
 void QgsComposerMap::on_mHeightLineEdit_editingFinished ( void ) { sizeChanged(); }
 
@@ -321,7 +323,7 @@ void QgsComposerMap::on_mCalculateComboBox_activated( int )
     }
     setOptions();
     writeSettings();
-}
+    }*/
 
 double QgsComposerMap::scaleFromUserScale ( double us ) 
 {
@@ -362,6 +364,7 @@ double QgsComposerMap::userScaleFromScale ( double s )
   return us;
 }
 
+/*
 void QgsComposerMap::on_mScaleLineEdit_editingFinished()
 {
 #ifdef QGISDEBUG
@@ -381,8 +384,9 @@ void QgsComposerMap::on_mScaleLineEdit_editingFinished()
     
     writeSettings();
     mComposition->emitMapChanged ( mId );
-}
+    }*/
 
+ /*
 void QgsComposerMap::scaleChanged ( void ) 
 {
     mWidthScale = mWidthScaleLineEdit->text().toDouble();
@@ -395,11 +399,13 @@ void QgsComposerMap::scaleChanged ( void )
     
     writeSettings();
     mComposition->emitMapChanged ( mId );
-}
+    }*/
 
+/*
 void QgsComposerMap::on_mFontScaleLineEdit_editingFinished ( void ) { scaleChanged(); }
 void QgsComposerMap::on_mSymbolScaleLineEdit_editingFinished ( void ) { scaleChanged(); }
 void QgsComposerMap::on_mWidthScaleLineEdit_editingFinished ( void ) { scaleChanged(); }
+*/
 
 void QgsComposerMap::mapCanvasChanged ( void ) 
 {
@@ -410,11 +416,12 @@ void QgsComposerMap::mapCanvasChanged ( void )
     QGraphicsRectItem::update();
 }
 
+/*
 void QgsComposerMap::on_mPreviewModeComboBox_activated ( int i )
 {
     mPreviewMode = (PreviewMode) i;
     writeSettings();
-}
+    }*/
 
 void QgsComposerMap::recalculate ( void ) 
 {
@@ -469,10 +476,11 @@ void QgsComposerMap::recalculate ( void )
   std::cout << "mExtent = " << mExtent.stringRep().toLocal8Bit().data() << std::endl;
 #endif
 
-  setOptions();
+  //setOptions();
   mCacheUpdated = false;
 }
 
+/*
 void QgsComposerMap::on_mFrameCheckBox_clicked ( )
 {
     mFrame = mFrameCheckBox->isChecked();
@@ -480,37 +488,37 @@ void QgsComposerMap::on_mFrameCheckBox_clicked ( )
     QGraphicsRectItem::scene()->update();
 
     writeSettings();
-}
+    }*/
 
-
+ /*
 void QgsComposerMap::setOptions ( void )
 {
 #ifdef QGISDEBUG
   std::cout << "QgsComposerMap::setOptions" << std::endl;
 #endif
     
-  mNameLabel->setText ( mName );
+  //mNameLabel->setText ( mName );
     
-  mCalculateComboBox->setCurrentItem( mCalculate );
+  //mCalculateComboBox->setCurrentItem( mCalculate );
     
-  mWidthLineEdit->setText ( QString("%1").arg( mComposition->toMM((int)QGraphicsRectItem::rect().width()), 0,'g') );
-  mHeightLineEdit->setText ( QString("%1").arg( mComposition->toMM((int)QGraphicsRectItem::rect().height()),0,'g') );
+  //mWidthLineEdit->setText ( QString("%1").arg( mComposition->toMM((int)QGraphicsRectItem::rect().width()), 0,'g') );
+  //mHeightLineEdit->setText ( QString("%1").arg( mComposition->toMM((int)QGraphicsRectItem::rect().height()),0,'g') );
     
   // Scale
   switch ( mComposition->mapCanvas()->mapUnits() ) {
     case QGis::METERS :
     case QGis::FEET :
-      mScaleLineEdit->setText ( QString("%1").arg((int)mUserScale) );
+      //mScaleLineEdit->setText ( QString("%1").arg((int)mUserScale) );
       break;
     case QGis::DEGREES :
     case QGis::UNKNOWN :
-      mScaleLineEdit->setText ( QString("%1").arg(mUserScale,0,'f') );
+      //mScaleLineEdit->setText ( QString("%1").arg(mUserScale,0,'f') );
       break;
   }
   if ( mCalculate == Scale ) {
-    mScaleLineEdit->setEnabled(false);  
+    //mScaleLineEdit->setEnabled(false);  
   } else {
-    mScaleLineEdit->setEnabled(true); 
+    //mScaleLineEdit->setEnabled(true); 
   }
     
   mWidthScaleLineEdit->setText ( QString("%1").arg(mWidthScale,0,'g',2) );
@@ -520,8 +528,9 @@ void QgsComposerMap::setOptions ( void )
   mFrameCheckBox->setChecked ( mFrame );
     
   mPreviewModeComboBox->setCurrentItem( mPreviewMode );
-}
+  }*/
 
+/*
 void QgsComposerMap::on_mSetCurrentExtentButton_clicked ( void )
 { 
     mUserExtent = mMapCanvas->extent();
@@ -531,7 +540,7 @@ void QgsComposerMap::on_mSetCurrentExtentButton_clicked ( void )
     setOptions();
     writeSettings();
     mComposition->emitMapChanged ( mId );
-}
+    }*/
 
 bool QgsComposerMap::selected( void )
 {
@@ -547,7 +556,7 @@ double QgsComposerMap::scale ( void ) { return mScale; }
 
 QWidget *QgsComposerMap::options ( void )
 {
-    setOptions ();
+  //setOptions ();
     return ( dynamic_cast <QWidget *> (this) );
 }
 
