@@ -108,8 +108,16 @@ public:
     /** resizes an item in x- and y direction (canvas coordinates)*/
     void resize(double dx, double dy);
 
+    /**Sets new rect and does recalculate*/
+    void setRect(const QRectF rectangle);
+
     /** \brief Scale */
     double scale ( void );
+
+    Calculate calculationMode() {return mCalculate;}
+    PreviewMode previewMode() {return mPreviewMode;}
+    void setPreviewMode(PreviewMode m) {mPreviewMode = m;}
+    void setCalculationMode(Calculate c) {mCalculate = c;}
 
     // Set cache outdated
     void setCacheUpdated ( bool u = false );
@@ -141,6 +149,10 @@ public slots:
 
     // Called if map canvas has changed
     void mapCanvasChanged ( );
+
+ signals:
+    /**Is emitted when width/height is changed as a result of user interaction*/
+    void extentChanged();
 
 private:
     // Called by GUI if with or height was changed 
@@ -189,7 +201,7 @@ private:
     bool mCacheUpdated;
     
     // Resize schema
-    int mCalculate;
+    Calculate mCalculate;
 
     // Line width scale
     double mWidthScale;

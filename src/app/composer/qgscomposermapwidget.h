@@ -32,8 +32,20 @@ class QgsComposerMapWidget: public QWidget, private Ui::QgsComposerMapWidgetBase
   QgsComposerMapWidget(QgsComposerMap* composerMap);
   ~QgsComposerMapWidget();
 
+  public slots:
+  void on_mWidthLineEdit_editingFinished();
+  void on_mHeightLineEdit_editingFinished();
+  void on_mPreviewModeComboBox_activated(int i);
+  void on_mCalculateComboBox_activated(int i);
+
+  /**Updates width and height without notify the composer map (to avoid infinite recursion)*/
+  void updateSettingsNoSignals();
+
     private:
   QgsComposerMap* mComposerMap;
+
+  /**Sets the current composer map values to the GUI elements*/
+  void updateGuiElements();
 };
 
 #endif

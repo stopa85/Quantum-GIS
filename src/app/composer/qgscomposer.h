@@ -77,7 +77,6 @@ public:
     void showCompositionOptions ( QWidget *w );
     
     //! Show item options in widget
-    //void showItemOptions ( QWidget *w );
     void showItemOptions(const QgsComposerItem* i);
 
     /** \brief stores statei in project */
@@ -94,6 +93,15 @@ public:
 
     //! Restore the window and toolbar state
     void restoreWindowState();
+
+    /** Adds an item and its configuration widget to the composer.	\
+	QgsComposer takes ownership of these objects and deletes them	\
+	if not needed any more.
+    */
+    void addItem(QgsComposerItem* item, QWidget* widget);
+
+    /**Removes (and deletes) the item and its configuration widget from the composer*/
+    void removeItem(QgsComposerItem* item);
 
     //! Move event
     void moveEvent ( QMoveEvent * );
@@ -159,8 +167,6 @@ public slots:
 private:
     //! Set teh pixmap / icons on the toolbar buttons
     void setupTheme();
-    //! remove widget childrens
-    void removeWidgetChildren ( QWidget *w );
 
     /** \brief move up the content of the file
         \param file file

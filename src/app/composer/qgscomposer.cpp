@@ -75,8 +75,6 @@ QgsComposer::QgsComposer( QgisApp *qgis): QMainWindow()
 
   mCompositionOptionsLayout = new QGridLayout( mCompositionOptionsFrame );
   mCompositionOptionsLayout->setMargin(0);
-  mItemOptionsLayout = new QGridLayout( mItemOptionsFrame );
-  mItemOptionsLayout->setMargin(0);
 
   mCompositionNameComboBox->insertItem( tr("Map 1") );
 
@@ -147,72 +145,52 @@ void QgsComposer::open ( void )
   }
 }
 
-void QgsComposer::removeWidgetChildren ( QWidget *w )
+void QgsComposer::showCompositionOptions ( QWidget *w ) 
 {
-#ifdef QGISDEBUG
-  std::cout << "QgsComposer::removeWidgetChildren" << std::endl;
-#endif
+  QWidget* currentWidget = mItemStackedWidget->currentWidget();
+  mItemStackedWidget->removeWidget(currentWidget);
+  mItemStackedWidget->addWidget(w);
+}
 
-  const QObjectList ol = mItemOptionsFrame->children();
-  if ( !ol.isEmpty() ) 
-  {
-    QListIterator<QObject*> olit( ol );
-    QObject *ob;
-    while( olit.hasNext() )
+void QgsComposer::showItemOptions(const QgsComposerItem* item)
+{
+  QWidget* currentWidget = mItemStackedWidget->currentWidget();
+
+  if(!item)
     {
-      ob = olit.next();
-      if( ob->isWidgetType() ) 
-      {
-        QWidget *ow = (QWidget *) ob;
-
-        // The following line is legacy Qt3, is not supported in Qt4
-        // and can cause a SIGABRT
-        //w->removeChild ( ob );
-        // instead:
-        ow->setParent(0);
-        // TODO: Eventually mItemOptionsFrame should be made
-        // a Qt4 QStackedWidget and all this removeWidgetChildren
-        // shenanigans can alledgedly go away
-
-        ow->hide();
-      }
+      mItemStackedWidget->removeWidget(currentWidget);
     }
-  }
+
+  QMap<QgsComposerItem*, QWidget*>::iterator it = mItemWidgetMap.find(const_cast<QgsComposerItem*>(item));
+  if(it == mItemWidgetMap.constEnd())
+    {
+      return;
+    }
+
+  QWidget* newWidget = it.value();
+  if(!newWidget || newWidget == currentWidget) //bail out if new widget does not exist or is already there
+    {
+      return;
+    }
+
+  mItemStackedWidget->addWidget(newWidget);
 }
 
-void QgsComposer::showCompositionOptions ( QWidget *w ) {
-#ifdef QGISDEBUG
-  std::cout << "QgsComposer::showCompositionOptions" << std::endl;
-#endif
-  removeWidgetChildren ( mCompositionOptionsFrame );
-
-  if ( w ) { 
-    w->reparent ( mCompositionOptionsFrame, QPoint(0,0), TRUE );
-    mCompositionOptionsLayout->addWidget( w, 0, 0 );
-  }
+void QgsComposer::addItem(QgsComposerItem* item, QWidget* widget)
+{
+  mItemWidgetMap.insert(item, widget);
 }
 
-/*
-void QgsComposer::showItemOptions ( QWidget *w )
+void QgsComposer::removeItem(QgsComposerItem* item)
 {
-#ifdef QGISDEBUG
-  std::cout << "QgsComposer::showItemOptions" << std::endl;
-#endif
-  removeWidgetChildren ( mItemOptionsFrame );
-
-  // NOTE: It is better to leave there the tab with item options if w is NULL
-
-  if ( w ) {
-    w->reparent ( mItemOptionsFrame, QPoint(0,0), TRUE );
-
-    mItemOptionsLayout->addWidget( w, 0, 0 );
-    mOptionsTabWidget->setCurrentPage (1);
-  }
-  }*/
-
-void QgsComposer::showItemOptions(const QgsComposerItem* i)
-{
-  //todo...
+  QMap<QgsComposerItem*, QWidget*>::iterator it = mItemWidgetMap.find(item);
+  if(it != mItemWidgetMap.end())
+    {
+      delete it.value();
+      mView->scene()->removeItem(item);
+      mItemWidgetMap.remove(item);
+      delete item;
+    }
 }
 
 QgsMapCanvas *QgsComposer::mapCanvas(void)

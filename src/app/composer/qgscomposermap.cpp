@@ -667,14 +667,16 @@ bool QgsComposerMap::readXML( QDomNode & node )
 
 void QgsComposerMap::resize(double dx, double dy)
 {
-  qWarning("QgsComposerMap::resize");
-  qWarning(QString::number(dx).toLatin1());
-  qWarning(QString::number(dy).toLatin1());
-
   //setRect
   QRectF currentRect = QGraphicsRectItem::rect();
-  setRect(currentRect.x(), currentRect.y(), currentRect.width() + dx, currentRect.height() + dy);
+  QRectF newRect = QRectF(currentRect.x(), currentRect.y(), currentRect.width() + dx, currentRect.height() + dy);
+  setRect(newRect);
+}
 
+void QgsComposerMap::setRect(const QRectF rectangle)
+{
+  QGraphicsRectItem::setRect(rectangle);
   recalculate();
+  emit extentChanged();
 }
 

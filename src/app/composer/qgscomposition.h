@@ -145,9 +145,6 @@ public:
     /** \brief pointer to composer */
     QgsComposer *composer(void);
 
-    // Return pointer to widget with composition options 
-    //QWidget *options ( void );
-
     /** \brief Set this composition as active, show its canvas with items and show general options */
     void setActive ( bool active );
 

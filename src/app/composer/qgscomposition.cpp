@@ -22,6 +22,7 @@
 #include "qgscomposerlabel.h"
 
 #include "qgscomposermap.h"
+#include "qgscomposermapwidget.h"
 #include "qgscomposerpicture.h"
 #include "qgscomposerscalebar.h"
 #include "qgscomposervectorlegend.h"
@@ -201,20 +202,10 @@ void QgsComposition::resizeCanvas(void)
 
 QgsComposition::~QgsComposition()
 {
-#ifdef QGISDEBUG
-  std::cerr << "QgsComposition::~QgsComposition" << std::endl;
-#endif
   mView->setScene ( 0 );
 
-  if ( mPaperItem ) delete mPaperItem;
-
-  for (std::list < QgsComposerItem * >::iterator it = mItems.begin(); 
-      it != mItems.end(); ++it) 
-  {
-    delete *it;
-  }
-
-  if ( mCanvas ) delete mCanvas;
+  delete mPaperItem;
+  delete mCanvas;
 }
 
 QgsMapCanvas *QgsComposition::mapCanvas(void) { return mMapCanvas; }
@@ -259,8 +250,9 @@ void QgsComposition::mousePressEvent(QMouseEvent* e)
 	    if(selectedItem != mSelectedItem)
 	      {
 		mSelectedItem->setSelected(false);
-		//mComposer->showItemOptions(selectedItem->options()); //todo: separate items from input widgets
 		mSelectedItem = selectedItem;
+		mCanvas->update();
+		mComposer->showItemOptions(selectedItem);
 	      }
 	  }
 	break;
@@ -457,23 +449,28 @@ void QgsComposition::mouseReleaseEvent(QMouseEvent* e)
 
 	QgsComposerMap* m = 0;
 
-        if ( w > 0 && h > 0 ) {
-          mComposer->selectItem(); // usually just one map
+        if ( w > 0 && h > 0 ) 
+	  {
+	    mComposer->selectItem(); // usually just one map
 
-          m = new QgsComposerMap ( this, mNextItemId++, x, y, w, h );
+	    m = new QgsComposerMap ( this, mNextItemId++, x, y, w, h );
+	    QgsComposerMapWidget* w = new QgsComposerMapWidget(m);
+	    mComposer->addItem(m, w);
 
-          m->setPos(x, y);
+	    m->setPos(x, y);
 
-          m->setUserExtent( mMapCanvas->extent());
-          mItems.push_back(m);
-          m->setSelected ( true );
-
-          mComposer->showItemOptions ( m->options() );
-          mSelectedItem = dynamic_cast <QGraphicsItem *> (m);
-        } else {
-          mToolStep = 0;
-        }
-        mCanvas->update();
+	    m->setUserExtent( mMapCanvas->extent());
+	    mItems.push_back(m);
+	    m->setSelected ( true );
+	    mCanvas->update();
+	    mComposer->showItemOptions(m);
+	    mSelectedItem = m;
+	  } 
+	else 
+	  {
+	    mToolStep = 0;
+	  }
+        //mCanvas->update();
         mView->unsetCursor();
       }
       break;
@@ -544,17 +541,7 @@ void QgsComposition::keyPressEvent ( QKeyEvent * e )
   if ( e->key() == Qt::Key_Delete) { // delete
 
     QgsComposerItem *coi = dynamic_cast <QgsComposerItem *> (mSelectedItem);
-    coi->setSelected ( false );
-    coi->removeSettings();
-    for (std::list < QgsComposerItem * >::iterator it = mItems.begin(); 
-        it != mItems.end(); ++it) 
-    {
-      if ( (*it) == coi ) {
-        mItems.erase ( it );
-        break;
-      }
-    }
-    delete (mSelectedItem);
+    mComposer->removeItem(coi);
     mSelectedItem = 0;
     mCanvas->update();
   }
@@ -727,7 +714,7 @@ void QgsComposition::setTool ( Tool tool )
     mCanvas->update();
   }
   mSelectedItem = 0;
-  mComposer->showItemOptions ( (QWidget *) 0 );
+  mComposer->showItemOptions (0);
 
   if ( mNewCanvasItem ) {
     mNewCanvasItem->setPos(-1000, -1000);
@@ -749,7 +736,7 @@ void QgsComposition::setTool ( Tool tool )
     // Create new object outside the visible area
     QgsComposerVectorLegend *vl = new QgsComposerVectorLegend ( this, mNextItemId++, -1000, -1000, (int) (mPaperHeight/50));
     mNewCanvasItem = dynamic_cast <QGraphicsItem *> (vl);
-    mComposer->showItemOptions ( vl->options() );
+    mComposer->showItemOptions(vl);
 
     mView->viewport()->setMouseTracking ( true ); // to recieve mouse move
 
@@ -761,7 +748,7 @@ void QgsComposition::setTool ( Tool tool )
     QgsComposerLabel *lab = new QgsComposerLabel ( this, mNextItemId++, -1000, -1000, tr("Label"), (int) (mPaperHeight/20));
 
     mNewCanvasItem = dynamic_cast <QGraphicsItem *> (lab);
-    mComposer->showItemOptions ( lab->options() );
+    mComposer->showItemOptions(lab);
 
     mView->viewport()->setMouseTracking ( true ); // to recieve mouse move
   }
@@ -771,7 +758,7 @@ void QgsComposition::setTool ( Tool tool )
     // Create new object outside the visible area
     QgsComposerScalebar *sb = new QgsComposerScalebar ( this, mNextItemId++, -1000, -1000);
     mNewCanvasItem = dynamic_cast <QGraphicsItem*> (sb);
-    mComposer->showItemOptions ( sb->options() );
+    mComposer->showItemOptions(sb);
 
     mView->viewport()->setMouseTracking ( true ); // to recieve mouse move
   }
@@ -801,7 +788,7 @@ void QgsComposition::setTool ( Tool tool )
   	    std::cout << "picture is valid" << std::endl;
 #endif
 	    mNewCanvasItem = dynamic_cast <QGraphicsItem *> (pi);
-	    mComposer->showItemOptions ( pi->options() );
+	    mComposer->showItemOptions(pi);
 
 	    mView->viewport()->setMouseTracking ( true ); // start tracking the mouse
         break; //quit the loop
