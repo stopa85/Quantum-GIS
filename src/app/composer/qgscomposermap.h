@@ -63,7 +63,6 @@ public:
     void init ( void );
 
     // Reimplement QgsComposerItem:
-    //void setSelected( bool s );
     bool selected( void );
     QWidget *options ( void );
     bool writeSettings ( void );
@@ -123,29 +122,6 @@ public:
     void setCacheUpdated ( bool u = false );
 
 public slots:
-    // Called by GUI if with or height was changed 
-    //void on_mWidthLineEdit_editingFinished ( void );
-    //void on_mHeightLineEdit_editingFinished ( void );
-
-    // Set User extent to current map extent
-    //void on_mSetCurrentExtentButton_clicked ( void );
-
-    // Called by GUI if calculate has changed 
-    //void on_mCalculateComboBox_activated ( int i );
-
-    // Called by GUI if map scale has changed 
-    //void on_mScaleLineEdit_editingFinished ( void );
-
-    // Called by GUI if with  scale was changed 
-    //void on_mFontScaleLineEdit_editingFinished ( void );
-    //void on_mSymbolScaleLineEdit_editingFinished ( void );
-    //void on_mWidthScaleLineEdit_editingFinished ( void );
-
-    // Frame settings changed 
-    //void on_mFrameCheckBox_clicked ( void );
-
-    // Called by GUI if preview style was changed
-    //void on_mPreviewModeComboBox_activated ( int i );
 
     // Called if map canvas has changed
     void mapCanvasChanged ( );
@@ -155,11 +131,6 @@ public slots:
     void extentChanged();
 
 private:
-    // Called by GUI if with or height was changed 
-    //void sizeChanged ( void );
-    
-    // Called by GUI if with  scale was changed 
-    //void scaleChanged ( void );
 
     // Pointer to composition
     QgsComposition *mComposition;
@@ -202,15 +173,6 @@ private:
     
     // Resize schema
     Calculate mCalculate;
-
-    // Line width scale
-    double mWidthScale;
-
-    // Symbol scale
-    double mSymbolScale;
-
-    // Font size scale from screen pixels to typographic points
-    double mFontScale;
     
     /** \brief Preview style  */
     PreviewMode mPreviewMode;
@@ -224,6 +186,9 @@ private:
     /** \brief set to true if in state of drawing, other requests are to draw are returned */
     bool mDrawing;
 
+    /**Store last scale factor to avoid unnecessary repaints in case preview mode is 'Render'*/
+    double mLastScaleFactorX;
+
     /** \brief calculate mScale from mUserScale */
     double scaleFromUserScale ( double us );
 
@@ -234,6 +199,10 @@ private:
     void setNewExtent(const QgsRect& extent);
     /**Sets new scale and changes only mExtent*/
     void setNewScale(double scaleDenominator);
+
+    /**Returns the zoom factor of the graphics view. If no 
+     graphics view exists, the default 1 is returned*/
+    double horizontalViewScaleFactor() const;
 };
 
 #endif

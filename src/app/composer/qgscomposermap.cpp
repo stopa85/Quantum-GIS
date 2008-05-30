@@ -42,7 +42,7 @@
 #endif
 
 QgsComposerMap::QgsComposerMap ( QgsComposition *composition, int id, int x, int y, int width, int height )
-  : /*QWidget(),*/ QgsComposerItem(x, y, width,height,0)
+  : QgsComposerItem(x, y, width,height,0)
 {
     mComposition = composition;
     mId = id;
@@ -53,7 +53,6 @@ QgsComposerMap::QgsComposerMap ( QgsComposition *composition, int id, int x, int
     mCacheUpdated = false;
 
     mCalculate = Scale;
-    //mPlotStyle = QgsComposition::Preview;
     setPlotStyle ( QgsComposition::Preview );
     mDrawing = false;
 
@@ -81,55 +80,15 @@ QgsComposerMap::QgsComposerMap ( QgsComposition *composition, int id )
     mMapCanvas = mComposition->mapCanvas();
     mName = QString(tr("Map %1").arg(mId));
 
-    init();
     readSettings();
-    recalculate();
 
     // Add to scene
     mComposition->canvas()->addItem(this);
     QGraphicsRectItem::show();
 }
 
-void QgsComposerMap::init ()
-{
-    mNumCachedLayers = 0;
-    mSelected = false;
-    mUserExtent = mMapCanvas->extent();
-    mDrawing = false;
-
-    // Cache
-    mCacheUpdated = false;
-
-    // Calculate
-    //mCalculateComboBox->insertItem( tr("Extent (calculate scale)"), Scale );
-    //mCalculateComboBox->insertItem( tr("Scale (calculate extent)"), Extent );
-    mCalculate = Scale;
-
-    setPlotStyle ( QgsComposition::Preview );
-    
-    // Preview style
-    mPreviewMode = Cache;
-    //mPreviewModeComboBox->insertItem ( tr("Cache"), Cache );
-    //mPreviewModeComboBox->insertItem ( tr("Render"), Render );
-    //mPreviewModeComboBox->insertItem ( tr("Rectangle"), Rectangle );
-    //mPreviewModeComboBox->setCurrentItem ( Cache );
-
-    mWidthScale = 1.0 / mComposition->scale();
-    mSymbolScale = 0.5;
-    mFontScale = 1.0;
-
-    mFrame = true;
-
-    QGraphicsRectItem::setZValue(20);
-
-    connect ( mMapCanvas, SIGNAL(layersChanged()), this, SLOT(mapCanvasChanged()) );
-}
-
 QgsComposerMap::~QgsComposerMap()
 {
-#ifdef QGISDEBUG
-     std::cerr << "QgsComposerMap::~QgsComposerMap" << std::endl;
-#endif
 }
 
 /* This function is called by paint() and cache() to render the map.  It does not override any functions
@@ -168,54 +127,62 @@ void QgsComposerMap::draw ( QPainter *painter, const QgsRect& extent, const QSiz
   mMapCanvas->freeze(false);
 }
 
-void QgsComposerMap::setUserExtent ( QgsRect const & rect )
-{
-    mUserExtent = rect;
-    recalculate();
-    
-    QGraphicsRectItem::update();
-    QGraphicsRectItem::scene()->update();
-}
-
 void QgsComposerMap::cache ( void )
 {
-    int w = rect().width();
-    int h = rect().height();
+  int w = rect().width() * horizontalViewScaleFactor();
+  int h = rect().height() * horizontalViewScaleFactor();
+
+  if(w > 3000) //limit size of image for better performance
+    {
+      w = 3000;
+    }
+
+  if(h > 3000)
+    {
+      h = 3000;
+    }
       
-    mCachePixmap = QPixmap( w, h );
-    double mupp = mExtent.width() / w;
+  mCachePixmap = QPixmap( w, h );
+  double mupp = mExtent.width() / w;
 
-    // WARNING: ymax in QgsMapToPixel is device height!!!
-    QgsMapToPixel transform(mupp, h, mExtent.yMin(), mExtent.xMin() );
+  // WARNING: ymax in QgsMapToPixel is device height!!!
+  QgsMapToPixel transform(mupp, h, mExtent.yMin(), mExtent.xMin() );
     
-    mCachePixmap.fill(QColor(255,255,255));
-
-    QPainter p(&mCachePixmap);
-    
-    draw( &p, mExtent, QSize(w, h), mCachePixmap.logicalDpiX());
-    p.end();
-
-    mNumCachedLayers = mMapCanvas->layerCount();
-    mCacheUpdated = true;
+  mCachePixmap.fill(QColor(255,255,255));
+  
+  QPainter p(&mCachePixmap);
+  
+  draw( &p, mExtent, QSize(w, h), mCachePixmap.logicalDpiX());
+  p.end();
+  
+  mNumCachedLayers = mMapCanvas->layerCount();
+  mCacheUpdated = true;
 }
 
 void QgsComposerMap::paint ( QPainter* painter, const QStyleOptionGraphicsItem* itemStyle, QWidget* pWidget)
 {
-
   if ( mDrawing ) 
     {
       return;
     }
+
   mDrawing = true;
 
-  painter->setClipRect (QRectF( 0, 0, QGraphicsRectItem::rect().width(), QGraphicsRectItem::rect().height() ));
+  QRectF thisPaintRect = QRectF( 0, 0, QGraphicsRectItem::rect().width(), QGraphicsRectItem::rect().height());
+  painter->save();
+  painter->setClipRect (thisPaintRect);
 
-#ifdef QGISDEBUG
-  std::cout << "QgsComposerMapt::paint mPlotStyle = " << plotStyle() 
-            << " mPreviewMode = " << mPreviewMode << std::endl;
-#endif
+  double currentScaleFactorX = horizontalViewScaleFactor();
+
+  if( plotStyle() == QgsComposition::Preview && mPreviewMode == Render /*&& screen resolution different than last time*/)
+    {
+      if(currentScaleFactorX != mLastScaleFactorX)
+	{
+	  mCacheUpdated = false;
+	}
+    }
     
-  if ( plotStyle() == QgsComposition::Preview &&  mPreviewMode == Cache ) 
+  if ( plotStyle() == QgsComposition::Preview && mPreviewMode != Rectangle) 
     { // Draw from cache
       if ( !mCacheUpdated || mMapCanvas->layerCount() != mNumCachedLayers ) 
 	{
@@ -224,9 +191,6 @@ void QgsComposerMap::paint ( QPainter* painter, const QStyleOptionGraphicsItem* 
       
       // Scale so that the cache fills the map rectangle
       double scale = 1.0 * QGraphicsRectItem::rect().width() / mCachePixmap.width();
-#ifdef QGISDEBUG
-      std::cout << "scale = " << scale << std::endl;
-#endif
       
       painter->save();
       
@@ -237,18 +201,14 @@ void QgsComposerMap::paint ( QPainter* painter, const QStyleOptionGraphicsItem* 
       
       painter->restore();
     } 
-  else if ( (plotStyle() == QgsComposition::Preview && mPreviewMode == Render) || 
-            plotStyle() == QgsComposition::Print ||
-            plotStyle() == QgsComposition::Postscript ) 
+  else if ( plotStyle() == QgsComposition::Print ||
+            plotStyle() == QgsComposition::Postscript) 
     {
-      QgsDebugMsg("render")
-
-	QPaintDevice* thePaintDevice = painter->device();
+      QPaintDevice* thePaintDevice = painter->device();
       if(!thePaintDevice)
 	{
 	  return;
 	}
-
     
       QRectF bRect = boundingRect();
       QSize theSize(bRect.width(), bRect.height());
@@ -261,43 +221,11 @@ void QgsComposerMap::paint ( QPainter* painter, const QStyleOptionGraphicsItem* 
       drawSelectionBoxes(painter);
     }
   
+  painter->restore();
+
+  mLastScaleFactorX =  currentScaleFactorX;
   mDrawing = false;
 }
-
-/*
-void QgsComposerMap::sizeChanged ( void ) 
-{
-    int w, h;
-    w = mComposition->fromMM ( mWidthLineEdit->text().toDouble() );
-    h = mComposition->fromMM ( mHeightLineEdit->text().toDouble() );
-
-    QGraphicsRectItem::setRect(0, 0, w, h);
-    recalculate();
-
-    QGraphicsRectItem::update();
-    QGraphicsRectItem::scene()->update();
-    
-    writeSettings();
-    }*/
-
-/*
-void QgsComposerMap::on_mWidthLineEdit_editingFinished ( void ) { sizeChanged(); }
-void QgsComposerMap::on_mHeightLineEdit_editingFinished ( void ) { sizeChanged(); }
-
-void QgsComposerMap::on_mCalculateComboBox_activated( int )
-{
-    mCalculate = mCalculateComboBox->currentItem();
-    
-    if ( mCalculate == Scale )
-    {
-	  recalculate();
-      mCacheUpdated = false;
-      QGraphicsRectItem::scene()->update();
-      mComposition->emitMapChanged ( mId );
-    }
-    setOptions();
-    writeSettings();
-    }*/
 
 double QgsComposerMap::scaleFromUserScale ( double us ) 
 {
@@ -338,183 +266,16 @@ double QgsComposerMap::userScaleFromScale ( double s )
   return us;
 }
 
-/*
-void QgsComposerMap::on_mScaleLineEdit_editingFinished()
-{
-#ifdef QGISDEBUG
-    std::cout << "QgsComposerMap::on_mScaleLineEdit_editingFinished" << std::endl;
-#endif
-    mCalculate = mCalculateComboBox->currentItem();
-
-    mUserScale = mScaleLineEdit->text().toDouble();
-
-    mScale = scaleFromUserScale ( mUserScale );
-
-    recalculate();
-
-    mCacheUpdated = false;
-    QGraphicsRectItem::update();
-    QGraphicsRectItem::scene()->update();
-    
-    writeSettings();
-    mComposition->emitMapChanged ( mId );
-    }*/
-
- /*
-void QgsComposerMap::scaleChanged ( void ) 
-{
-    mWidthScale = mWidthScaleLineEdit->text().toDouble();
-    mSymbolScale = mSymbolScaleLineEdit->text().toDouble();
-    mFontScale = mFontScaleLineEdit->text().toDouble();
-
-    mCacheUpdated = false;
-    QGraphicsRectItem::update();
-    QGraphicsRectItem::scene()->update();
-    
-    writeSettings();
-    mComposition->emitMapChanged ( mId );
-    }*/
-
-/*
-void QgsComposerMap::on_mFontScaleLineEdit_editingFinished ( void ) { scaleChanged(); }
-void QgsComposerMap::on_mSymbolScaleLineEdit_editingFinished ( void ) { scaleChanged(); }
-void QgsComposerMap::on_mWidthScaleLineEdit_editingFinished ( void ) { scaleChanged(); }
-*/
 
 void QgsComposerMap::mapCanvasChanged ( void ) 
 {
-#ifdef QGISDEBUG
-    std::cout << "QgsComposerMap::canvasChanged" << std::endl;
-#endif
     mCacheUpdated = false;
     QGraphicsRectItem::update();
 }
 
-/*
-void QgsComposerMap::on_mPreviewModeComboBox_activated ( int i )
-{
-    mPreviewMode = (PreviewMode) i;
-    writeSettings();
-    }*/
 
-void QgsComposerMap::recalculate ( void ) 
-{
-#ifdef QGISDEBUG
-  std::cout << "QgsComposerMap::recalculate mCalculate = " << mCalculate << std::endl;
-#endif
-  if ( mCalculate == Scale ) 
-  {
-    // Calculate scale from extent and rectangle
-    double xscale = QGraphicsRectItem::rect().width() / mUserExtent.width();
-    double yscale = QGraphicsRectItem::rect().height() / mUserExtent.height();
 
-    mExtent = mUserExtent;
 
-    if ( xscale < yscale )
-    {
-      mScale = xscale;
-      // extend y
-      double d = ( 1. * QGraphicsRectItem::rect().height() / mScale - mUserExtent.height() ) / 2 ;
-      mExtent.setYmin ( mUserExtent.yMin() - d );
-      mExtent.setYmax ( mUserExtent.yMax() + d );
-    }
-    else
-    {
-      mScale = yscale;
-      // extend x
-      double d = ( 1.* QGraphicsRectItem::rect().width() / mScale - mUserExtent.width() ) / 2 ;
-      mExtent.setXmin ( mUserExtent.xMin() - d );
-      mExtent.setXmax ( mUserExtent.xMax() + d );
-    }
-
-    mUserScale = userScaleFromScale ( mScale );
-  } 
-  else
-  {
-    // Calculate extent
-    double xc = ( mUserExtent.xMax() + mUserExtent.xMin() ) / 2;
-    double yc = ( mUserExtent.yMax() + mUserExtent.yMin() ) / 2;
-  
-    double width = QGraphicsRectItem::rect().width() / mScale;
-    double height = QGraphicsRectItem::rect().height() / mScale;
-  
-    mExtent.setXmin ( xc - width/2  );
-    mExtent.setXmax ( xc + width/2  );
-    mExtent.setYmin ( yc - height/2  );
-    mExtent.setYmax ( yc + height/2  );
-  }
-
-#ifdef QGISDEBUG
-  std::cout << "mUserExtent = " << mUserExtent.stringRep().toLocal8Bit().data() << std::endl;
-  std::cout << "mScale = " << mScale << std::endl;
-  std::cout << "mExtent = " << mExtent.stringRep().toLocal8Bit().data() << std::endl;
-#endif
-
-  //setOptions();
-  mCacheUpdated = false;
-}
-
-/*
-void QgsComposerMap::on_mFrameCheckBox_clicked ( )
-{
-    mFrame = mFrameCheckBox->isChecked();
-    QGraphicsRectItem::update();
-    QGraphicsRectItem::scene()->update();
-
-    writeSettings();
-    }*/
-
- /*
-void QgsComposerMap::setOptions ( void )
-{
-#ifdef QGISDEBUG
-  std::cout << "QgsComposerMap::setOptions" << std::endl;
-#endif
-    
-  //mNameLabel->setText ( mName );
-    
-  //mCalculateComboBox->setCurrentItem( mCalculate );
-    
-  //mWidthLineEdit->setText ( QString("%1").arg( mComposition->toMM((int)QGraphicsRectItem::rect().width()), 0,'g') );
-  //mHeightLineEdit->setText ( QString("%1").arg( mComposition->toMM((int)QGraphicsRectItem::rect().height()),0,'g') );
-    
-  // Scale
-  switch ( mComposition->mapCanvas()->mapUnits() ) {
-    case QGis::METERS :
-    case QGis::FEET :
-      //mScaleLineEdit->setText ( QString("%1").arg((int)mUserScale) );
-      break;
-    case QGis::DEGREES :
-    case QGis::UNKNOWN :
-      //mScaleLineEdit->setText ( QString("%1").arg(mUserScale,0,'f') );
-      break;
-  }
-  if ( mCalculate == Scale ) {
-    //mScaleLineEdit->setEnabled(false);  
-  } else {
-    //mScaleLineEdit->setEnabled(true); 
-  }
-    
-  mWidthScaleLineEdit->setText ( QString("%1").arg(mWidthScale,0,'g',2) );
-  mSymbolScaleLineEdit->setText ( QString("%1").arg(mSymbolScale,0,'g',2) );
-  mFontScaleLineEdit->setText ( QString("%1").arg(mFontScale,0,'g',2) );
-
-  mFrameCheckBox->setChecked ( mFrame );
-    
-  mPreviewModeComboBox->setCurrentItem( mPreviewMode );
-  }*/
-
-/*
-void QgsComposerMap::on_mSetCurrentExtentButton_clicked ( void )
-{ 
-    mUserExtent = mMapCanvas->extent();
-    recalculate();
-    QGraphicsRectItem::update();
-    QGraphicsRectItem::scene()->update();
-    setOptions();
-    writeSettings();
-    mComposition->emitMapChanged ( mId );
-    }*/
 
 bool QgsComposerMap::selected( void )
 {
@@ -546,10 +307,6 @@ QString QgsComposerMap::name ( void )
     return mName;
 }
 
-double QgsComposerMap::widthScale (void ) { return mWidthScale ; }
-double QgsComposerMap::symbolScale (void ) { return mSymbolScale ; }
-double QgsComposerMap::fontScale (void ) { return mFontScale ; }
-
 bool QgsComposerMap::writeSettings ( void )  
 {
   QString path;
@@ -574,10 +331,6 @@ bool QgsComposerMap::writeSettings ( void )
   QgsProject::instance()->writeEntry( "Compositions", path+"west", mUserExtent.xMin() );
 
   QgsProject::instance()->writeEntry( "Compositions", path+"scale", mUserScale );
-
-  QgsProject::instance()->writeEntry( "Compositions", path+"widthscale", mWidthScale );
-  QgsProject::instance()->writeEntry( "Compositions", path+"symbolscale", mSymbolScale );
-  QgsProject::instance()->writeEntry( "Compositions", path+"fontscale", mFontScale );
 
   QgsProject::instance()->writeEntry( "Compositions", path+"frame", mFrame );
 
@@ -615,16 +368,10 @@ bool QgsComposerMap::readSettings ( void )
 
   mUserScale =  QgsProject::instance()->readDoubleEntry( "Compositions", path+"scale", 1000., &ok);
   mScale = scaleFromUserScale ( mUserScale );
-
-  mWidthScale = QgsProject::instance()->readDoubleEntry("Compositions", path+"widthscale", 1., &ok);
-  mSymbolScale = QgsProject::instance()->readDoubleEntry("Compositions", path+"symbolscale", 1., &ok);
-  mFontScale = QgsProject::instance()->readDoubleEntry("Compositions", path+"fontscale", 1., &ok);
     
   mFrame = QgsProject::instance()->readBoolEntry("Compositions", path+"frame", true, &ok);
     
   mPreviewMode = (PreviewMode) QgsProject::instance()->readNumEntry("Compositions", path+"previewmode", Cache, &ok);
-    
-  recalculate();
 
   return true;
 }
@@ -681,4 +428,18 @@ void QgsComposerMap::setNewExtent(const QgsRect& extent)
 void QgsComposerMap::setNewScale(double scaleDenominator)
 {
   //soon...
+}
+
+double QgsComposerMap::horizontalViewScaleFactor() const
+{
+  double result = 1;
+  if(scene())
+    {
+      QList<QGraphicsView*> viewList = scene()->views();
+      if(viewList.size() > 0)
+	{
+	  result = viewList.at(0)->transform().m11();
+	}
+    }
+  return result;
 }

@@ -151,6 +151,8 @@ QRectF QgsComposerVectorLegend::render ( QPainter *p )
   std::cout << "QgsComposerVectorLegend::render p = " << p << std::endl;
 #endif
 
+#if 0
+
   // Painter can be 0, create dummy to avoid many if below
   QPainter *painter = NULL;
   QPixmap *pixmap = NULL;
@@ -288,12 +290,12 @@ QRectF QgsComposerVectorLegend::render ( QPainter *p )
             itemLabels.resize(sectionItemsCount); 
           }
 
-          double widthScale = map->widthScale() * mComposition->scale();
+	  //          double widthScale = map->widthScale() * mComposition->scale();
           if ( plotStyle() == QgsComposition::Preview && mPreviewMode == Render ) {
             widthScale *= mComposition->viewScale();
           }
 		
-          double scale = map->symbolScale() * mComposition->scale();
+          //double scale = map->symbolScale() * mComposition->scale();
 
           int icnt = 0;
           for ( QList<QgsSymbol*>::iterator it = symbols.begin(); it != symbols.end(); ++it ) {
@@ -377,7 +379,7 @@ QRectF QgsComposerVectorLegend::render ( QPainter *p )
           QgsSymbol* sym = (*it);
 	    
           QPen pen = sym->pen();
-          double widthScale = map->widthScale();
+          //double widthScale = map->widthScale();
 
           pen.setWidthF( ( widthScale * pen.widthF() ) );
           pen.setCapStyle(Qt::FlatCap); //make sure that the line doesn't extend past its endpoints
@@ -466,6 +468,7 @@ QRectF QgsComposerVectorLegend::render ( QPainter *p )
   }
 
   return QRectF ( 0, 0, width, height);
+#endif //0
 }
 
 void QgsComposerVectorLegend::cache ( void )
