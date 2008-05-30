@@ -84,6 +84,9 @@ public:
     /** resizes an item in x- and y direction (canvas coordinates)*/
     virtual void resize(double dx, double dy){}
 
+    /**Sets new rect and adapts (0/0) point accordingly*/
+    virtual void setRect(const QRectF& rectangle);
+
     /** stores state in DOM node
      * @param node is DOM node corresponding to '???' tag
      * @param temp write template file
@@ -95,9 +98,12 @@ public:
      */
     virtual bool readXML( QDomNode & node );
 
+    //virtual QRectF boundingRect () const;
+
 protected:
     QgsComposition::PlotStyle mPlotStyle;
     int mId;
+
     QgsComposerItem::mouseMoveAction mCurrentMouseMoveAction;
     /**Start point of the last mouse move action (in scene coordinates)*/
     QPointF mMouseMoveStartPos;
@@ -131,18 +137,15 @@ protected:
        @param rx out: width of rectangle should be resized by rx
        @param ry out: height of rectangle should be resized by ry*/
     void rectangleChange(double dx, double dy, double& mx, double& my, double& rx, double& ry) const;
-    
-#if 0 //todo: implement on item level if not provided by graphics view
-    void drawBackground();
-    void drawOutline();
-    void drawSelectionBoxes();
-#endif //0
 
     /**Draw selection boxes around item*/
     void drawSelectionBoxes(QPainter* p);
 
     /**Draw black frame around item*/
     void drawFrame(QPainter* p);
+
+    /**Draw background*/
+    void drawBackground(QPainter* p);
 };
 
 #endif

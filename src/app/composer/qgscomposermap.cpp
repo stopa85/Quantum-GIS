@@ -25,6 +25,7 @@
 #include "qgsproject.h"
 #include "qgsmaprender.h"
 #include "qgsrendercontext.h"
+#include "qgsscalecalculator.h"
 #include "qgsvectorlayer.h"
 
 #include "qgslabel.h"
@@ -41,35 +42,40 @@
 #endif
 
 QgsComposerMap::QgsComposerMap ( QgsComposition *composition, int id, int x, int y, int width, int height )
-  : /*QWidget(),*/ QgsComposerItem(0,0,width,height,0)
+  : /*QWidget(),*/ QgsComposerItem(x, y, width,height,0)
 {
-#ifdef QGISDEBUG
-    std::cout << "QgsComposerMap::QgsComposerMap()" << std::endl;
-#endif
-    //setupUi(this);
-
     mComposition = composition;
     mId = id;
     mMapCanvas = mComposition->mapCanvas();
     mName = QString(tr("Map %1").arg(mId));
+    
+    // Cache
+    mCacheUpdated = false;
 
-    init();
-    recalculate();
+    mCalculate = Scale;
+    //mPlotStyle = QgsComposition::Preview;
+    setPlotStyle ( QgsComposition::Preview );
+    mDrawing = false;
+
+    //calculate mExtent based on width/height ratio and map canvas extent
+    mExtent = mMapCanvas->extent();
+    setRect(QRectF(x, y, width, height));
+
+    QGraphicsRectItem::setZValue(20);
+
+    connect ( mMapCanvas, SIGNAL(layersChanged()), this, SLOT(mapCanvasChanged()) );
 
     // Add to scene
     mComposition->canvas()->addItem(this);
 
-    QGraphicsRectItem::setPos(x, y);
     QGraphicsRectItem::show();
 
-    writeSettings();
+	    //writeSettings();
 }
 
 QgsComposerMap::QgsComposerMap ( QgsComposition *composition, int id )
     : QgsComposerItem(0,0,10,10,0)
 {
-  //setupUi(this);
-
     mComposition = composition;
     mId = id;
     mMapCanvas = mComposition->mapCanvas();
@@ -173,53 +179,20 @@ void QgsComposerMap::setUserExtent ( QgsRect const & rect )
 
 void QgsComposerMap::cache ( void )
 {
-#ifdef QGISDEBUG
-    std::cout << "QgsComposerMap::cache()" << std::endl;
-#endif
-
-    // Create preview on some reasonable size. It was slow with cca 1500x1500 points on 2x1.5GHz 
-    // Note: The resolution should also respect the line widths, it means that 
-    //       1 pixel in cache should have ia similar size as 1 pixel in canvas
-    //       but it can result in big cache -> limit
-
-    int w = (int)(QGraphicsRectItem::rect().width() * mComposition->viewScale());
-    w = w < 1000 ? w : 1000; //limit the cache pixmap to 1000 pixels wide
-    int h = (int) ( mExtent.height() * w / mExtent.width() );
-    // It can happen that extent is not initialised well -> check 
-    if ( h < 1 || h > 10000 ) h = w; 
-
-#ifdef QGISDEBUG
-    std::cout << "extent = " << mExtent.width() <<  " x " << mExtent.height() << std::endl;
-    std::cout << "cache = " << w <<  " x " << h << std::endl;
-#endif
-
-    mCacheExtent = QgsRect ( mExtent );
-    double scale = mExtent.width() / w;
-    mCacheExtent.setXmax ( mCacheExtent.xMin() + w * scale );
-    mCacheExtent.setYmax ( mCacheExtent.yMin() + h * scale );
+    int w = rect().width();
+    int h = rect().height();
       
     mCachePixmap = QPixmap( w, h );
+    double mupp = mExtent.width() / w;
 
     // WARNING: ymax in QgsMapToPixel is device height!!!
-    QgsMapToPixel transform(scale, h, mCacheExtent.yMin(), mCacheExtent.xMin() );
-
-//somthing about this transform isn't really what we want...
-/*Ideally, the cache pixmap wouldn't behave the same as the map canvas.
-* zooming in should make the lines become thicker, and symbols larger, rather than just
-* redrawing them to be n pixels wide.
-* We also want to make sure that changing the composition's resolution has the desired effect 
-* on both the cache, screen render, and print.
-*/
-
-#ifdef QGISDEBUG
-    std::cout << "transform = " << transform.showParameters().toLocal8Bit().data() << std::endl;
-#endif
+    QgsMapToPixel transform(mupp, h, mExtent.yMin(), mExtent.xMin() );
     
     mCachePixmap.fill(QColor(255,255,255));
 
     QPainter p(&mCachePixmap);
     
-    draw( &p, mCacheExtent, QSize(w, h), mCachePixmap.logicalDpiX());
+    draw( &p, mExtent, QSize(w, h), mCachePixmap.logicalDpiX());
     p.end();
 
     mNumCachedLayers = mMapCanvas->layerCount();
@@ -234,6 +207,8 @@ void QgsComposerMap::paint ( QPainter* painter, const QStyleOptionGraphicsItem* 
       return;
     }
   mDrawing = true;
+
+  painter->setClipRect (QRectF( 0, 0, QGraphicsRectItem::rect().width(), QGraphicsRectItem::rect().height() ));
 
 #ifdef QGISDEBUG
   std::cout << "QgsComposerMapt::paint mPlotStyle = " << plotStyle() 
@@ -277,7 +252,6 @@ void QgsComposerMap::paint ( QPainter* painter, const QStyleOptionGraphicsItem* 
     
       QRectF bRect = boundingRect();
       QSize theSize(bRect.width(), bRect.height());
-      painter->setClipRect (QRectF( 0, 0, QGraphicsRectItem::rect().width(), QGraphicsRectItem::rect().height() ));
       draw( painter, mExtent, theSize, 25.4); //scene coordinates seem to be in mm
     } 
 
@@ -552,7 +526,14 @@ void QgsComposerMap::setCacheUpdated ( bool u )
     mCacheUpdated = u;
 }    
 
-double QgsComposerMap::scale ( void ) { return mScale; }
+//double QgsComposerMap::scale ( void ) { return mScale; }
+double QgsComposerMap::scale()
+{
+  QgsScaleCalculator calculator;
+  calculator.setMapUnits(mMapCanvas->mapUnits());
+  calculator.setDpi(25.4);  //QGraphicsView units are mm
+  return calculator.calculate(mExtent, rect().width());
+}
 
 QWidget *QgsComposerMap::options ( void )
 {
@@ -668,15 +649,36 @@ bool QgsComposerMap::readXML( QDomNode & node )
 void QgsComposerMap::resize(double dx, double dy)
 {
   //setRect
-  QRectF currentRect = QGraphicsRectItem::rect();
+  QRectF currentRect = rect();
   QRectF newRect = QRectF(currentRect.x(), currentRect.y(), currentRect.width() + dx, currentRect.height() + dy);
-  setRect(newRect);
+  setRect(newRect); 
 }
 
-void QgsComposerMap::setRect(const QRectF rectangle)
+void QgsComposerMap::setRect(const QRectF& rectangle)
 {
-  QGraphicsRectItem::setRect(rectangle);
-  recalculate();
+  double w = rectangle.width();
+  double h = rectangle.height();
+  prepareGeometryChange();
+
+  //debug
+  qWarning("QgsComposerMap::setRect");
+  QgsRect debugRect(rectangle.left(), rectangle.top(), rectangle.right(), rectangle.bottom());
+  qWarning(debugRect.stringRep().latin1());
+
+  QgsComposerItem::setRect(rectangle);
+  
+  QGraphicsRectItem::update();
+  double newHeight = mExtent.width() * h / w ;
+  mExtent = QgsRect(mExtent.xMin(), mExtent.yMin(), mExtent.xMax(), mExtent.yMin() + newHeight);
   emit extentChanged();
 }
 
+void QgsComposerMap::setNewExtent(const QgsRect& extent)
+{
+  //soon...
+}
+
+void QgsComposerMap::setNewScale(double scaleDenominator)
+{
+  //soon...
+}

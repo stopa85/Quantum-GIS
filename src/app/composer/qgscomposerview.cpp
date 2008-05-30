@@ -42,7 +42,6 @@ QgsComposerView::QgsComposerView( QgsComposer *composer, QWidget* parent, const 
     setResizeAnchor ( QGraphicsView::AnchorViewCenter );
     setMouseTracking(true);
     setInteractive(true);
-
 }
 
 void QgsComposerView::mousePressEvent(QMouseEvent* e)

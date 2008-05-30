@@ -249,7 +249,10 @@ void QgsComposition::mousePressEvent(QMouseEvent* e)
 	    selectedItem->setSelected(true);
 	    if(selectedItem != mSelectedItem)
 	      {
-		mSelectedItem->setSelected(false);
+		if(mSelectedItem)
+		  {
+		    mSelectedItem->setSelected(false);
+		  }
 		mSelectedItem = selectedItem;
 		mCanvas->update();
 		mComposer->showItemOptions(selectedItem);
@@ -440,10 +443,10 @@ void QgsComposition::mouseReleaseEvent(QMouseEvent* e)
   switch ( mTool ) {
     case AddMap: // mToolStep should be always 1 but rectangle can be 0 size
       {
-        int x = (int) mRectangleItem->rect().x();//use doubles?
-        int y = (int) mRectangleItem->rect().y();
-        int w = (int)mRectangleItem->rect().width();
-        int h = (int)mRectangleItem->rect().height();
+        double x = mRectangleItem->rect().x();//use doubles?
+        double y = mRectangleItem->rect().y();
+        double w = mRectangleItem->rect().width();
+        double h = mRectangleItem->rect().height();
         delete mRectangleItem;
         mRectangleItem = 0;
 
@@ -459,7 +462,7 @@ void QgsComposition::mouseReleaseEvent(QMouseEvent* e)
 
 	    m->setPos(x, y);
 
-	    m->setUserExtent( mMapCanvas->extent());
+	    //m->setUserExtent( mMapCanvas->extent());
 	    mItems.push_back(m);
 	    m->setSelected ( true );
 	    mCanvas->update();

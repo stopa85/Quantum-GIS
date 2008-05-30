@@ -72,7 +72,8 @@ void QgsComposerMapWidget::on_mHeightLineEdit_editingFinished()
 	  return;
 	}
       QRectF composerMapRect = mComposerMap->rect();
-      mComposerMap->resize(composerMapRect.width(), newHeight);
+      QRectF newRect(composerMapRect.x(), composerMapRect.y(), composerMapRect.width(), newHeight);
+      mComposerMap->setRect(newRect);
     }
 }
 

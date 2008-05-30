@@ -24,6 +24,7 @@
 #include "qgscomposeritem.h"
 
 #include <iostream>
+#include "qgsrect.h" //just for debugging
 
 QgsComposerItem::QgsComposerItem(QGraphicsItem* parent): QGraphicsRectItem(0), mBoundingResizeRectangle(0) 
 {
@@ -96,19 +97,18 @@ void QgsComposerItem::mousePressEvent ( QGraphicsSceneMouseEvent * event )
   //set current position and type of mouse move action
   mMouseMoveStartPos = event->lastScenePos();
   mLastMouseEventPos = event->lastPos();
-  mCurrentMouseMoveAction = mouseMoveActionForPosition(event->lastPos());
+  mCurrentMouseMoveAction = mouseMoveActionForPosition(event->pos());
   setCursor(QCursor(cursorForPosition(event->pos())));
 
   //create and show bounding rectangle
-  mBoundingResizeRectangle = new QGraphicsRectItem(QGraphicsRectItem::rect(), 0);
+  mBoundingResizeRectangle = new QGraphicsRectItem(rect(), 0); //problem. Maybe set rect after adding to scene?
   scene()->addItem(mBoundingResizeRectangle);
-  mBoundingResizeRectangle->moveBy(x(), y());
+  mBoundingResizeRectangle->setRect(rect());
+
   mBoundingResizeRectangle->setBrush( Qt::NoBrush );
   mBoundingResizeRectangle->setPen( QPen(QColor(0,0,0), 0) );
   mBoundingResizeRectangle->setZValue(90);
   mBoundingResizeRectangle->show();
-
-  //QGraphicsRectItem::setVisible(false);
 }
 
 void QgsComposerItem::mouseReleaseEvent ( QGraphicsSceneMouseEvent * event )
@@ -120,8 +120,6 @@ void QgsComposerItem::mouseReleaseEvent ( QGraphicsSceneMouseEvent * event )
       delete mBoundingResizeRectangle;
       mBoundingResizeRectangle = 0;
     }
-
-  //QGraphicsRectItem::setVisible(true);
 
   QPointF mouseMoveStopPoint = event->lastScenePos();
   double diffX = mouseMoveStopPoint.x() - mMouseMoveStartPos.x();
@@ -135,8 +133,13 @@ void QgsComposerItem::mouseReleaseEvent ( QGraphicsSceneMouseEvent * event )
 
   double mx, my, rx, ry;
   rectangleChange(diffX, diffY, mx, my, rx, ry);
-  moveBy(mx, my);
-  resize(rx, ry);
+
+  QRectF currentRect = rect();
+  QRectF newRect(currentRect.x() + mx, currentRect.y() + my, currentRect.width() + rx, currentRect.height() + ry);
+  setRect(newRect);
+
+  update();
+  scene()->update();
 
   //reset default action
   mCurrentMouseMoveAction = QgsComposerItem::moveItem;
@@ -182,10 +185,6 @@ Qt::CursorShape QgsComposerItem::cursorForPosition(const QPointF& itemCoordPos)
 
 QgsComposerItem::mouseMoveAction QgsComposerItem::mouseMoveActionForPosition(const QPointF& itemCoordPos)
 {
-
-  qWarning("mouseMoveAction: itemcoordpos: " );
-  qWarning(QString::number(itemCoordPos.x()).toLatin1());
-  qWarning(QString::number(itemCoordPos.y()).toLatin1());
   bool nearLeftBorder = false;
   bool nearRightBorder = false;
   bool nearLowerBorder = false;
@@ -199,11 +198,11 @@ QgsComposerItem::mouseMoveAction QgsComposerItem::mouseMoveActionForPosition(con
     {
       nearUpperBorder = true;
     }
-  if(itemCoordPos.x() > (rect().right() - 5))
+  if(itemCoordPos.x() > (rect().width() - 5))
     {
       nearRightBorder = true;
     }
-  if(itemCoordPos.y() > (rect().bottom() - 5))
+  if(itemCoordPos.y() > (rect().height() - 5))
     {
       nearLowerBorder = true;
     }
@@ -292,24 +291,45 @@ void QgsComposerItem::rectangleChange(double dx, double dy, double& mx, double& 
 
 void QgsComposerItem::drawSelectionBoxes(QPainter* p)
 {
-  //p->setPen( mComposition->selectionPen() );
-  //p->setBrush( mComposition->selectionBrush() );
   p->setPen(QPen(QColor(0, 0, 255)));
 
-  double s = 5;//mComposition->selectionBoxSize();
+  double s = 5;
   
   p->drawRect (QRectF(0, 0, s, s));
-  p->drawRect (QRectF(QGraphicsRectItem::rect().width() -s, 0, s, s));
-  p->drawRect (QRectF(QGraphicsRectItem::rect().width() -s, QGraphicsRectItem::rect().height() -s, s, s));
-  p->drawRect (QRectF(0, QGraphicsRectItem::rect().height() -s, s, s));
+  p->drawRect (QRectF(rect().width() -s, 0, s, s));
+  p->drawRect (QRectF(rect().width() -s, rect().height() -s, s, s));
+  p->drawRect (QRectF(0, rect().height() -s, s, s));
 }
 
 void QgsComposerItem::drawFrame(QPainter* p)
 {
-  QPen pen(QColor(0,0,0));
-  pen.setWidthF(1.0);
-  p->setPen( pen );
-  p->setBrush( Qt::NoBrush );
+  p->setPen(pen());
   p->setRenderHint(QPainter::Antialiasing, true);
-  p->drawRect (QRectF( 0, 0, QGraphicsRectItem::rect().width(), QGraphicsRectItem::rect().height() ));
+  p->drawRect (QRectF( 0, 0, rect().width(), rect().height()));
+}
+
+void QgsComposerItem::setRect(const QRectF& rectangle)
+{
+  QPointF zeroPointPos = pos();
+  prepareGeometryChange();
+  QGraphicsRectItem::setRect(rectangle);
+  //set (0/0) point of item coordinates to top left point again
+  //strange that Qt doesn't do that itself
+  moveBy(rectangle.x() - zeroPointPos.x(), rectangle.y() - zeroPointPos.y());
+  setVisible(true);
+  update();
+}
+
+#if 0
+QRectF QgsComposerItem::boundingRect () const
+{
+  return rect();
+}
+#endif //0
+
+void QgsComposerItem::drawBackground(QPainter* p)
+{
+  p->setBrush(brush());
+  p->setRenderHint(QPainter::Antialiasing, true);
+  p->drawRect (QRectF( 0, 0, rect().width(), rect().height()));
 }

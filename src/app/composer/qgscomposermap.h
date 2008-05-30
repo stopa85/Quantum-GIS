@@ -109,7 +109,7 @@ public:
     void resize(double dx, double dy);
 
     /**Sets new rect and does recalculate*/
-    void setRect(const QRectF rectangle);
+    void setRect(const QRectF& rectangle);
 
     /** \brief Scale */
     double scale ( void );
@@ -229,6 +229,11 @@ private:
 
     /** \brief calculate mUserScale from mScale */
     double userScaleFromScale ( double s );
+
+    /**Sets new Extent and changes only width and height*/
+    void setNewExtent(const QgsRect& extent);
+    /**Sets new scale and changes only mExtent*/
+    void setNewScale(double scaleDenominator);
 };
 
 #endif
