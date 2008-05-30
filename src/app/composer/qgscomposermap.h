@@ -141,9 +141,6 @@ private:
     /** \brief Map name, used in legend combobox etc. */
     QString mName;
 
-    // Map region in map units specified by user 
-    QgsRect mUserExtent;
-
     // Map region in map units realy used for rendering 
     // It can be the same as mUserExtent, but it can be bigger in on dimension if mCalculate==Scale,
     // so that full rectangle in paper is used.
@@ -151,10 +148,6 @@ private:
 
     // Cache extent (it can be bigger for example than mExtent)
     QgsRect mCacheExtent;
-
-    // Size of of the map rectangle in the composition in paper units
-    //double mWidth;
-    //double mHeight;
 
     // Number of paper units in map per paper unit on paper, this is the xxx part of 1:xxx 
     double mUserScale;
@@ -188,12 +181,6 @@ private:
 
     /**Store last scale factor to avoid unnecessary repaints in case preview mode is 'Render'*/
     double mLastScaleFactorX;
-
-    /** \brief calculate mScale from mUserScale */
-    double scaleFromUserScale ( double us );
-
-    /** \brief calculate mUserScale from mScale */
-    double userScaleFromScale ( double s );
 
     /**Sets new Extent and changes only width and height*/
     void setNewExtent(const QgsRect& extent);

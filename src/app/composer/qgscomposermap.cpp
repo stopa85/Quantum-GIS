@@ -227,55 +227,11 @@ void QgsComposerMap::paint ( QPainter* painter, const QStyleOptionGraphicsItem* 
   mDrawing = false;
 }
 
-double QgsComposerMap::scaleFromUserScale ( double us ) 
-{
-  double s=0;
-   
-  switch ( mComposition->mapCanvas()->mapUnits() ) {
-    case QGis::METERS :
-      s = 1000. * mComposition->scale() / us;
-      break;
-    case QGis::FEET :
-      s = 304.8 * mComposition->scale() / us;
-      break;
-    case QGis::UNKNOWN :
-    case QGis::DEGREES :
-      s = mComposition->scale() / us;
-      break;
-  }
-  return s;
-}
-
-double QgsComposerMap::userScaleFromScale ( double s )
-{ 
-  double us=0;
-    
-  switch ( mComposition->mapCanvas()->mapUnits() ) {
-    case QGis::METERS :
-      us = 1000. * mComposition->scale() / s; 
-      break;
-    case QGis::FEET :
-      us = 304.8 * mComposition->scale() / s; 
-      break;
-    case QGis::DEGREES :
-    case QGis::UNKNOWN :
-      us = mComposition->scale() / s;
-      break;
-  }
-    
-  return us;
-}
-
-
 void QgsComposerMap::mapCanvasChanged ( void ) 
 {
     mCacheUpdated = false;
     QGraphicsRectItem::update();
 }
-
-
-
-
 
 bool QgsComposerMap::selected( void )
 {
@@ -324,13 +280,6 @@ bool QgsComposerMap::writeSettings ( void )
   } else {
       QgsProject::instance()->writeEntry( "Compositions", path+"calculate", QString("extent") );
   }
-    
-  QgsProject::instance()->writeEntry( "Compositions", path+"north", mUserExtent.yMax() );
-  QgsProject::instance()->writeEntry( "Compositions", path+"south", mUserExtent.yMin() );
-  QgsProject::instance()->writeEntry( "Compositions", path+"east", mUserExtent.xMax() );
-  QgsProject::instance()->writeEntry( "Compositions", path+"west", mUserExtent.xMin() );
-
-  QgsProject::instance()->writeEntry( "Compositions", path+"scale", mUserScale );
 
   QgsProject::instance()->writeEntry( "Compositions", path+"frame", mFrame );
 
@@ -360,14 +309,6 @@ bool QgsComposerMap::readSettings ( void )
   {
     mCalculate = Scale;
   }
-
-  mUserExtent.setYmax ( QgsProject::instance()->readDoubleEntry( "Compositions", path+"north", 100, &ok) );
-  mUserExtent.setYmin ( QgsProject::instance()->readDoubleEntry( "Compositions", path+"south", 0, &ok) );
-  mUserExtent.setXmax ( QgsProject::instance()->readDoubleEntry( "Compositions", path+"east", 100, &ok) );
-  mUserExtent.setXmin ( QgsProject::instance()->readDoubleEntry( "Compositions", path+"west", 0, &ok) );
-
-  mUserScale =  QgsProject::instance()->readDoubleEntry( "Compositions", path+"scale", 1000., &ok);
-  mScale = scaleFromUserScale ( mUserScale );
     
   mFrame = QgsProject::instance()->readBoolEntry("Compositions", path+"frame", true, &ok);
     
