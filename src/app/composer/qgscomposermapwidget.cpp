@@ -17,6 +17,7 @@
 
 #include "qgscomposermapwidget.h"
 #include "qgscomposermap.h"
+#include "qgsmapcanvas.h"
 
 QgsComposerMapWidget::QgsComposerMapWidget(QgsComposerMap* composerMap): QWidget(), mComposerMap(composerMap)
 {
@@ -25,8 +26,10 @@ QgsComposerMapWidget::QgsComposerMapWidget(QgsComposerMap* composerMap): QWidget
   mHeightLineEdit->setValidator(new QDoubleValidator(0));
   mScaleLineEdit->setValidator(new QDoubleValidator(0));
 
-  mCalculateComboBox->insertItem( 0, tr("Extent (calculate scale)"));
-  mCalculateComboBox->insertItem( 1, tr("Scale (calculate extent)"));
+  mXMinLineEdit->setValidator(new QDoubleValidator(0));
+  mXMaxLineEdit->setValidator(new QDoubleValidator(0));
+  mYMinLineEdit->setValidator(new QDoubleValidator(0));
+  mYMaxLineEdit->setValidator(new QDoubleValidator(0));
 
   mPreviewModeComboBox->insertItem(0, tr("Cache"));
   mPreviewModeComboBox->insertItem(1, tr("Render"));
@@ -58,8 +61,10 @@ void QgsComposerMapWidget::on_mWidthLineEdit_editingFinished()
 	  return;
 	}
       QRectF composerMapRect = mComposerMap->rect();
-      QRectF newRect(composerMapRect.x(), composerMapRect.y(), newWidth, composerMapRect.height());
-      mComposerMap->setRect(newRect);
+      QTransform composerMapTransform = mComposerMap->transform();
+
+      QRectF newRect(composerMapTransform.dx(), composerMapTransform.dy(), newWidth, composerMapRect.height());
+      mComposerMap->setSceneRect(newRect);
     }
 }
 
@@ -74,8 +79,10 @@ void QgsComposerMapWidget::on_mHeightLineEdit_editingFinished()
 	  return;
 	}
       QRectF composerMapRect = mComposerMap->rect();
-      QRectF newRect(composerMapRect.x(), composerMapRect.y(), composerMapRect.width(), newHeight);
-      mComposerMap->setRect(newRect);
+      QTransform composerMapTransform = mComposerMap->transform();
+
+      QRectF newRect(composerMapTransform.dx(), composerMapTransform.dy(), composerMapRect.width(), newHeight);
+      mComposerMap->setSceneRect(newRect);
     }
 }
 
@@ -98,30 +105,6 @@ void QgsComposerMapWidget::on_mPreviewModeComboBox_activated(int i)
   else if(comboText == tr("Rectangle"))
     {
       mComposerMap->setPreviewMode(QgsComposerMap::Rectangle);
-    }
-}
-
-void QgsComposerMapWidget::on_mCalculateComboBox_activated(int i)
-{
-  if(!mComposerMap)
-    {
-      return;
-    }
-  
-  QString comboText = mCalculateComboBox->currentText();
-  if(comboText == tr("Extent (calculate scale)"))
-    {
-      mComposerMap->setCalculationMode(QgsComposerMap::Scale);
-      mHeightLineEdit->setEnabled(true);
-      mWidthLineEdit->setEnabled(true);
-      mScaleLineEdit->setEnabled(false);
-    }
-  else if(comboText == tr("Scale (calculate extent)"))
-    {
-      mComposerMap->setCalculationMode(QgsComposerMap::Extent);
-      mHeightLineEdit->setEnabled(false);
-      mWidthLineEdit->setEnabled(false);
-      mScaleLineEdit->setEnabled(true);
     }
 }
 
@@ -169,12 +152,51 @@ void QgsComposerMapWidget::on_mScaleLineEdit_editingFinished()
   mComposerMap->setNewScale(scaleDenominator);
 }
 
+void QgsComposerMapWidget::on_mSetToMapCanvasExtentButton_clicked()
+{
+  if(mComposerMap)
+    {
+      const QgsMapCanvas* canvas = mComposerMap->mapCanvas();
+      if(canvas)
+	{
+	  QgsRect canvasExtent = canvas->extent();
+	  
+	  //fill text into line edits
+	  mXMinLineEdit->setText(QString::number(canvasExtent.xMin()));
+	  mXMaxLineEdit->setText(QString::number(canvasExtent.xMax()));
+	  mYMinLineEdit->setText(QString::number(canvasExtent.yMin()));
+	  mYMaxLineEdit->setText(QString::number(canvasExtent.yMax()));
+
+	  mComposerMap->setNewExtent(canvasExtent);
+	}
+    }
+}
+
+void QgsComposerMapWidget::on_mXMinLineEdit_editingFinished()
+{
+  updateComposerExtentFromGui();
+}
+
+void QgsComposerMapWidget::on_mXMaxLineEdit_editingFinished()
+{
+  updateComposerExtentFromGui();
+}
+
+void QgsComposerMapWidget::on_mYMinLineEdit_editingFinished()
+{
+  updateComposerExtentFromGui();
+}
+
+void QgsComposerMapWidget::on_mYMaxLineEdit_editingFinished()
+{
+  updateComposerExtentFromGui(); 
+}
+
 void QgsComposerMapWidget::updateSettingsNoSignals()
 {
   mHeightLineEdit->blockSignals(true);
   mWidthLineEdit->blockSignals(true);
   mScaleLineEdit->blockSignals(true);
-  mCalculateComboBox->blockSignals(true);
   mPreviewModeComboBox->blockSignals(true);
 
   updateGuiElements();
@@ -182,7 +204,6 @@ void QgsComposerMapWidget::updateSettingsNoSignals()
   mHeightLineEdit->blockSignals(false);
   mWidthLineEdit->blockSignals(false);
   mScaleLineEdit->blockSignals(false);
-  mCalculateComboBox->blockSignals(false);
   mPreviewModeComboBox->blockSignals(false);
 }
 
@@ -196,31 +217,9 @@ void QgsComposerMapWidget::updateGuiElements()
       mHeightLineEdit->setText(QString::number(composerMapRect.height()));
       mScaleLineEdit->setText(QString::number(mComposerMap->scale()));
 
-      //calculation mode
-      QgsComposerMap::Calculate calculationMode = mComposerMap->calculationMode();
-      int index = -1;
-      if(calculationMode == QgsComposerMap::Scale)
-	{
-	  index = mCalculateComboBox->findText(tr("Extent (calculate scale)"));
-	  mHeightLineEdit->setEnabled(true);
-	  mWidthLineEdit->setEnabled(true);
-	  mScaleLineEdit->setEnabled(false);
-	}
-      else if(calculationMode == QgsComposerMap::Extent)
-	{
-	  index = mCalculateComboBox->findText(tr("Scale (calculate extent)"));
-	  mHeightLineEdit->setEnabled(true);
-	  mWidthLineEdit->setEnabled(true);
-	  mScaleLineEdit->setEnabled(false);
-	}
-      if(index != -1)
-	{
-	  mCalculateComboBox->setCurrentIndex(index);
-	}
-
       //preview mode
       QgsComposerMap::PreviewMode previewMode = mComposerMap->previewMode();
-      index = -1;
+      int index = -1;
       if(previewMode == QgsComposerMap::Cache)
 	{
 	  index = mPreviewModeComboBox->findText(tr("Cache"));
@@ -237,7 +236,37 @@ void QgsComposerMapWidget::updateGuiElements()
 	{
 	  mPreviewModeComboBox->setCurrentIndex(index);
 	}
+
+      //composer map extent
+      QgsRect composerMapExtent = mComposerMap->extent();
+      mXMinLineEdit->setText(QString::number(composerMapExtent.xMin()));
+      mXMaxLineEdit->setText(QString::number(composerMapExtent.xMax()));
+      mYMinLineEdit->setText(QString::number(composerMapExtent.yMin()));
+      mYMaxLineEdit->setText(QString::number(composerMapExtent.yMax()));
     }
+}
+
+void QgsComposerMapWidget::updateComposerExtentFromGui()
+{
+  if(!mComposerMap)
+    {
+      return;
+    }
+
+  double xmin, ymin, xmax, ymax;
+  bool conversionSuccess;
+
+  xmin = mXMinLineEdit->text().toDouble(&conversionSuccess);
+  if(!conversionSuccess){return;}
+  xmax = mXMaxLineEdit->text().toDouble(&conversionSuccess);
+  if(!conversionSuccess){return;}
+  ymin = mYMinLineEdit->text().toDouble(&conversionSuccess);
+  if(!conversionSuccess){return;}
+  ymax = mYMaxLineEdit->text().toDouble(&conversionSuccess);
+  if(!conversionSuccess){return;}
+
+  QgsRect newExtent(xmin, ymin, xmax, ymax);
+  mComposerMap->setNewExtent(newExtent);
 }
 
 

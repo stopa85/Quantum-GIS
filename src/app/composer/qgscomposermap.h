@@ -46,12 +46,6 @@ public:
     QgsComposerMap( QgsComposition *composition, int id );
     ~QgsComposerMap();
 
-    /** \brief Calculate scale/extent.  */
-    enum Calculate {
-	Scale = 0,   // calculate scale from extent 
-	Extent      // calculate map extent from scale
-    };
-
     /** \brief Preview style  */
     enum PreviewMode {
 	Cache = 0,   // Use raster cache 
@@ -83,9 +77,6 @@ public:
     
     /** \brief Create cache image */
     void cache ( void );
-
-    /** \brief Set values in GUI to current values */
-    //void setOptions ( void );
     
     /** \brief Map name, used in legend combobox etc. */
     QString name ( void );
@@ -102,13 +93,18 @@ public:
      /**Sets new scale and changes only mExtent*/
     void setNewScale(double scaleDenominator);
 
-    Calculate calculationMode() {return mCalculate;}
+    /**Sets new Extent and changes width, height (and implicitely also scale)*/
+    void setNewExtent(const QgsRect& extent);
+
     PreviewMode previewMode() {return mPreviewMode;}
     void setPreviewMode(PreviewMode m) {mPreviewMode = m;}
-    void setCalculationMode(Calculate c) {mCalculate = c;}
 
     // Set cache outdated
     void setCacheUpdated ( bool u = false );
+
+    QgsRect extent() const {return mExtent;}
+
+    const QgsMapCanvas* mapCanvas() const {return mMapCanvas;}
 
 public slots:
 
@@ -144,9 +140,6 @@ private:
     // Is cache up to date
     bool mCacheUpdated;
     
-    // Resize schema
-    Calculate mCalculate;
-    
     /** \brief Preview style  */
     PreviewMode mPreviewMode;
 
@@ -158,9 +151,6 @@ private:
 
     /**Store last scale factor to avoid unnecessary repaints in case preview mode is 'Render'*/
     double mLastScaleFactorX;
-
-    /**Sets new Extent and changes only width and height*/
-    void setNewExtent(const QgsRect& extent);
 
     /**Returns the zoom factor of the graphics view. If no 
      graphics view exists, the default 1 is returned*/

@@ -47,7 +47,7 @@ QgsComposerMap::QgsComposerMap ( QgsComposition *composition, int id, int x, int
     // Cache
     mCacheUpdated = false;
 
-    mCalculate = Scale;
+    //mCalculate = Scale;
     setPlotStyle ( QgsComposition::Preview );
     mDrawing = false;
 
@@ -258,11 +258,12 @@ bool QgsComposerMap::writeSettings ( void )
   QgsProject::instance()->writeEntry( "Compositions", path+"width", mComposition->toMM((int)QGraphicsRectItem::rect().width()) );
   QgsProject::instance()->writeEntry( "Compositions", path+"height", mComposition->toMM((int)QGraphicsRectItem::rect().height()) );
 
+  /*
   if ( mCalculate == Scale ) {
       QgsProject::instance()->writeEntry( "Compositions", path+"calculate", QString("scale") );
   } else {
       QgsProject::instance()->writeEntry( "Compositions", path+"calculate", QString("extent") );
-  }
+      }*/
 
   QgsProject::instance()->writeEntry( "Compositions", path+"frame", mFrame );
 
@@ -287,10 +288,10 @@ bool QgsComposerMap::readSettings ( void )
   QString calculate = QgsProject::instance()->readEntry("Compositions", path+"calculate", "scale", &ok);
   if ( calculate == "extent" )
   {
-    mCalculate = Extent;
+    //mCalculate = Extent;
   }else
   {
-    mCalculate = Scale;
+    //mCalculate = Scale;
   }
     
   mFrame = QgsProject::instance()->readBoolEntry("Compositions", path+"frame", true, &ok);
@@ -322,7 +323,7 @@ void QgsComposerMap::resize(double dx, double dy)
   //setRect
   QRectF currentRect = rect();
   QRectF newSceneRect = QRectF(transform().dx(), transform().dy(), currentRect.width() + dx, currentRect.height() + dy);
-  setSceneRect(newSceneRect); 
+  setSceneRect(newSceneRect);
 }
 
 void QgsComposerMap::setSceneRect(const QRectF& rectangle)
@@ -336,12 +337,24 @@ void QgsComposerMap::setSceneRect(const QRectF& rectangle)
   QGraphicsRectItem::update();
   double newHeight = mExtent.width() * h / w ;
   mExtent = QgsRect(mExtent.xMin(), mExtent.yMin(), mExtent.xMax(), mExtent.yMin() + newHeight);
+  mCacheUpdated = false;
   emit extentChanged();
 }
 
 void QgsComposerMap::setNewExtent(const QgsRect& extent)
 {
-  //soon...
+  if(mExtent == extent)
+    {
+      return;
+    }
+  mExtent = extent;
+
+  //adjust height
+  QRectF currentRect = rect();
+  
+  double newHeight = currentRect.width() * extent.height() / extent.width();
+
+  setSceneRect(QRectF(transform().dx(), transform().dy(), currentRect.width(), newHeight));
 }
 
 void QgsComposerMap::setNewScale(double scaleDenominator)
@@ -361,6 +374,7 @@ void QgsComposerMap::setNewScale(double scaleDenominator)
   QgsRect newExtent(mExtent.xMin(), mExtent.yMin(), newXMax, newYMax);
   mExtent = newExtent;
   mCacheUpdated = false;
+  emit extentChanged();
   update();
 }
 

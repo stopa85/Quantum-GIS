@@ -36,9 +36,14 @@ class QgsComposerMapWidget: public QWidget, private Ui::QgsComposerMapWidgetBase
   void on_mWidthLineEdit_editingFinished();
   void on_mHeightLineEdit_editingFinished();
   void on_mPreviewModeComboBox_activated(int i);
-  void on_mCalculateComboBox_activated(int i);
   void on_mFrameCheckBox_stateChanged(int state);
   void on_mScaleLineEdit_editingFinished();
+  void on_mSetToMapCanvasExtentButton_clicked();
+
+  void on_mXMinLineEdit_editingFinished();
+  void on_mXMaxLineEdit_editingFinished();
+  void on_mYMinLineEdit_editingFinished();
+  void on_mYMaxLineEdit_editingFinished();
 
   /**Updates width and height without notify the composer map (to avoid infinite recursion)*/
   void updateSettingsNoSignals();
@@ -48,6 +53,9 @@ class QgsComposerMapWidget: public QWidget, private Ui::QgsComposerMapWidgetBase
 
   /**Sets the current composer map values to the GUI elements*/
   void updateGuiElements();
+
+  /**Sets extent of composer map from line edits*/
+  void updateComposerExtentFromGui();
 };
 
 #endif
