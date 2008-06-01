@@ -100,7 +100,7 @@ QgsComposerPicture::QgsComposerPicture ( QgsComposition *composition, int id ) :
 
 void QgsComposerPicture::init ( void ) 
 {
-  mSelected = false;
+  setSelected(false);
   for ( int i = 0; i < 4; i++ ) 
   {
     mAreaPoints[i] = QPoint( 0, 0 );
@@ -236,7 +236,7 @@ void QgsComposerPicture::paint ( QPainter* painter, const QStyleOptionGraphicsIt
     }
 
     // Show selected / Highlight
-    if ( mSelected && plotStyle() == QgsComposition::Preview ) {
+    if ( isSelected() && plotStyle() == QgsComposition::Preview ) {
       painter->setPen( mComposition->selectionPen() );
       painter->setBrush( mComposition->selectionBrush() );
   
@@ -457,13 +457,13 @@ void QgsComposerPicture::setOptions ( void )
 
 void QgsComposerPicture::setSelected (  bool s ) 
 {
-    mSelected = s;
-    QAbstractGraphicsShapeItem::update(); // show highlight
+  QGraphicsRectItem::setSelected(s);
+  QAbstractGraphicsShapeItem::update(); // show highlight
 }    
 
 bool QgsComposerPicture::selected( void )
 {
-    return mSelected;
+  return isSelected();
 }
 
 QWidget *QgsComposerPicture::options ( void )

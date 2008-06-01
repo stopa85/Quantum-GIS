@@ -105,7 +105,7 @@ QgsComposerVectorLegend::QgsComposerVectorLegend ( QgsComposition *composition, 
 
 void QgsComposerVectorLegend::init ( void ) 
 {
-    mSelected = false;
+  setSelected(false);
     mNumCachedLayers = 0;
     mTitle = tr("Legend");
     mMap = 0;
@@ -524,7 +524,7 @@ void QgsComposerVectorLegend::paint( QPainter* painter, const QStyleOptionGraphi
 
 
   // Draw the "selected highlight" boxes
-  if ( mSelected && plotStyle() == QgsComposition::Preview ) {
+  if ( isSelected() && plotStyle() == QgsComposition::Preview ) {
 
     painter->setPen( mComposition->selectionPen() );
     painter->setBrush( mComposition->selectionBrush() );
@@ -702,13 +702,13 @@ void QgsComposerVectorLegend::setOptions ( void )
 
 void QgsComposerVectorLegend::setSelected (  bool s ) 
 {
-    mSelected = s;
-    QGraphicsRectItem::update(); // show highlight
+  QGraphicsRectItem::setSelected(s);
+  QGraphicsRectItem::update(); // show highlight
 }    
 
 bool QgsComposerVectorLegend::selected( void )
 {
-    return mSelected;
+  return isSelected();
 }
 
 void QgsComposerVectorLegend::contextMenuEvent( QContextMenuEvent *event)

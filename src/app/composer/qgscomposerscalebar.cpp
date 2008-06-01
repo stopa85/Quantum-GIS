@@ -41,7 +41,7 @@ QgsComposerScalebar::QgsComposerScalebar ( QgsComposition *composition, int id,
 #endif
 
   mId = id;
-  mSelected = false;
+  setSelected(false);
 
   mMapCanvas = mComposition->mapCanvas();
 
@@ -130,7 +130,7 @@ QgsComposerScalebar::QgsComposerScalebar ( QgsComposition *composition, int id )
   setupUi(this);
 
   mId = id;
-  mSelected = false;
+  setSelected(false);
 
   mMapCanvas = mComposition->mapCanvas();
 
@@ -309,7 +309,7 @@ void QgsComposerScalebar::paint(QPainter * painter, const QStyleOptionGraphicsIt
   setRect(render(painter));
 
   // Show selected / Highlight
-  if (mSelected && plotStyle() == QgsComposition::Preview)
+  if (isSelected() && plotStyle() == QgsComposition::Preview)
     {
       painter->setPen(mComposition->selectionPen());
       painter->setBrush(mComposition->selectionBrush());
@@ -482,13 +482,13 @@ void QgsComposerScalebar::setOptions(void)
 
 void QgsComposerScalebar::setSelected(bool s)
 {
-  mSelected = s;
+  setSelected(s);
   QGraphicsRectItem::update(); // show highlight
 }
 
 bool QgsComposerScalebar::selected(void)
 {
-  return mSelected;
+  return isSelected();
 }
 
 QWidget *QgsComposerScalebar::options(void)

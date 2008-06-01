@@ -63,7 +63,6 @@ public:
     void init ( void );
 
     // Reimplement QgsComposerItem:
-    bool selected( void );
     QWidget *options ( void );
     bool writeSettings ( void );
     bool readSettings ( void );
@@ -107,8 +106,8 @@ public:
     /** resizes an item in x- and y direction (canvas coordinates)*/
     void resize(double dx, double dy);
 
-    /**Sets new rect and does recalculate*/
-    void setRect(const QRectF& rectangle);
+    /**Sets new scene rectangle bounds and recalculates hight and extent*/
+    void setSceneRect(const QRectF& rectangle);
 
     /** \brief Scale */
     double scale ( void );

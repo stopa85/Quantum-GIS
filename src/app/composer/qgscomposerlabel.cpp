@@ -48,7 +48,7 @@ QgsComposerLabel::QgsComposerLabel ( QgsComposition *composition, int id,
 
     QGraphicsRectItem::setPos(x, y);
 
-    mSelected = false;
+    setSelected(false);
 
     setOptions();
 
@@ -73,7 +73,7 @@ QgsComposerLabel::QgsComposerLabel ( QgsComposition *composition, int id )
 
     mComposition = composition;
     mId  = id;
-    mSelected = false;
+    setSelected(false);
 
     readSettings();
     
@@ -156,7 +156,7 @@ void QgsComposerLabel::paint ( QPainter* painter, const QStyleOptionGraphicsItem
     painter->restore(); //undo our scaling of painter - End of the font workaround
 
     // Show selected / Highlight
-    if ( mSelected && plotStyle() == QgsComposition::Preview ) {
+    if ( isSelected() && plotStyle() == QgsComposition::Preview ) {
         QRectF hr;
         if ( mBox ) {
             hr = boxRect;
@@ -281,13 +281,13 @@ void QgsComposerLabel::setSelected (  bool s )
     std::cout << "QgsComposerLabel::setSelected" << std::endl;
 #endif
 
-    mSelected = s;
+    setSelected(s);
     QGraphicsRectItem::update(); // show highlight
 }    
 
 bool QgsComposerLabel::selected( void )
 {
-    return mSelected;
+  return isSelected();
 }
 
 QWidget *QgsComposerLabel::options ( void )

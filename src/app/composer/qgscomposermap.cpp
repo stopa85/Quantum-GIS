@@ -58,7 +58,7 @@ QgsComposerMap::QgsComposerMap ( QgsComposition *composition, int id, int x, int
 
     //calculate mExtent based on width/height ratio and map canvas extent
     mExtent = mMapCanvas->extent();
-    setRect(QRectF(x, y, width, height));
+    setSceneRect(QRectF(x, y, width, height));
 
     QGraphicsRectItem::setZValue(20);
 
@@ -233,11 +233,6 @@ void QgsComposerMap::mapCanvasChanged ( void )
     QGraphicsRectItem::update();
 }
 
-bool QgsComposerMap::selected( void )
-{
-    return mSelected;
-}
-
 void QgsComposerMap::setCacheUpdated ( bool u ) 
 {
     mCacheUpdated = u;
@@ -338,22 +333,17 @@ void QgsComposerMap::resize(double dx, double dy)
 {
   //setRect
   QRectF currentRect = rect();
-  QRectF newRect = QRectF(currentRect.x(), currentRect.y(), currentRect.width() + dx, currentRect.height() + dy);
-  setRect(newRect); 
+  QRectF newSceneRect = QRectF(transform().dx(), transform().dy(), currentRect.width() + dx, currentRect.height() + dy);
+  setSceneRect(newSceneRect); 
 }
 
-void QgsComposerMap::setRect(const QRectF& rectangle)
+void QgsComposerMap::setSceneRect(const QRectF& rectangle)
 {
   double w = rectangle.width();
   double h = rectangle.height();
   prepareGeometryChange();
 
-  //debug
-  qWarning("QgsComposerMap::setRect");
-  QgsRect debugRect(rectangle.left(), rectangle.top(), rectangle.right(), rectangle.bottom());
-  qWarning(debugRect.stringRep().latin1());
-
-  QgsComposerItem::setRect(rectangle);
+  QgsComposerItem::setSceneRect(rectangle);
   
   QGraphicsRectItem::update();
   double newHeight = mExtent.width() * h / w ;

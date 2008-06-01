@@ -33,11 +33,15 @@ QgsComposerItem::QgsComposerItem(QGraphicsItem* parent): QGraphicsRectItem(0), m
     setFlag(QGraphicsItem::ItemIsSelectable, true);
 }
 
-QgsComposerItem::QgsComposerItem(qreal x, qreal y, qreal width, qreal height, QGraphicsItem* parent): QGraphicsRectItem(x, y, width, height, parent), mBoundingResizeRectangle(0)
+QgsComposerItem::QgsComposerItem(qreal x, qreal y, qreal width, qreal height, QGraphicsItem* parent): QGraphicsRectItem(0, 0, width, height, parent), mBoundingResizeRectangle(0)
 {
   mPlotStyle = QgsComposition::Preview;
   setAcceptsHoverEvents(true);
   setFlag(QGraphicsItem::ItemIsSelectable, true);
+
+  QTransform t;
+  t.translate(x, y);
+  setTransform(t);
 }
 
 QgsComposerItem::~QgsComposerItem()
@@ -57,10 +61,6 @@ void QgsComposerItem::setSelected( bool s )
 }
 
 int QgsComposerItem::id(void) { return mId; }
-
-void QgsComposerItem::showOptions ( QWidget * parent ) { }
-
-QWidget *QgsComposerItem::options ( void ) { return 0; }
 
 bool QgsComposerItem::writeSettings ( void )  { return true; }
 
@@ -83,11 +83,13 @@ void QgsComposerItem::mouseMoveEvent ( QGraphicsSceneMouseEvent * event )
 
       rectangleChange(diffX, diffY, mx, my, rx, ry);
       
+      //QRectF r = mBoundingResizeRectangle->rect();
+      //r.translate(mx, my);
       QRectF r = mBoundingResizeRectangle->rect();
-      r.translate(mx, my);
       r.setWidth(r.width() + rx);
       r.setHeight(r.height() + ry);
       mBoundingResizeRectangle->setRect(r);
+      mBoundingResizeRectangle->moveBy(mx, my);
     }
   mLastMouseEventPos = event->lastPos();
 }
@@ -101,9 +103,12 @@ void QgsComposerItem::mousePressEvent ( QGraphicsSceneMouseEvent * event )
   setCursor(QCursor(cursorForPosition(event->pos())));
 
   //create and show bounding rectangle
-  mBoundingResizeRectangle = new QGraphicsRectItem(rect(), 0); //problem. Maybe set rect after adding to scene?
+  mBoundingResizeRectangle = new QGraphicsRectItem(0);
   scene()->addItem(mBoundingResizeRectangle);
-  mBoundingResizeRectangle->setRect(rect());
+  mBoundingResizeRectangle->setRect(QRectF(0, 0, rect().width(), rect().height()));
+  QTransform resizeTransform;
+  resizeTransform.translate(transform().dx(), transform().dy());
+  mBoundingResizeRectangle->setTransform(resizeTransform);
 
   mBoundingResizeRectangle->setBrush( Qt::NoBrush );
   mBoundingResizeRectangle->setPen( QPen(QColor(0,0,0), 0) );
@@ -135,8 +140,8 @@ void QgsComposerItem::mouseReleaseEvent ( QGraphicsSceneMouseEvent * event )
   rectangleChange(diffX, diffY, mx, my, rx, ry);
 
   QRectF currentRect = rect();
-  QRectF newRect(currentRect.x() + mx, currentRect.y() + my, currentRect.width() + rx, currentRect.height() + ry);
-  setRect(newRect);
+  QRectF newRect(transform().dx() + mx, transform().dy() + my, currentRect.width() + rx, currentRect.height() + ry);
+  setSceneRect(newRect);
 
   update();
   scene()->update();
@@ -292,6 +297,7 @@ void QgsComposerItem::rectangleChange(double dx, double dy, double& mx, double& 
 void QgsComposerItem::drawSelectionBoxes(QPainter* p)
 {
   p->setPen(QPen(QColor(0, 0, 255)));
+  p->setBrush(QBrush(QColor(0, 0, 255)));
 
   double s = 5;
   
@@ -308,24 +314,17 @@ void QgsComposerItem::drawFrame(QPainter* p)
   p->drawRect (QRectF( 0, 0, rect().width(), rect().height()));
 }
 
-void QgsComposerItem::setRect(const QRectF& rectangle)
+void QgsComposerItem::setSceneRect(const QRectF& rectangle)
 {
-  QPointF zeroPointPos = pos();
-  prepareGeometryChange();
-  QGraphicsRectItem::setRect(rectangle);
-  //set (0/0) point of item coordinates to top left point again
-  //strange that Qt doesn't do that itself
-  moveBy(rectangle.x() - zeroPointPos.x(), rectangle.y() - zeroPointPos.y());
-  setVisible(true);
-  update();
-}
+  //setRect in item coordinates
+  QRectF newRect(0, 0, rectangle.width(), rectangle.height());
+  QGraphicsRectItem::setRect(newRect);
 
-#if 0
-QRectF QgsComposerItem::boundingRect () const
-{
-  return rect();
+  //set up transformation matrix for item coordinates
+  QTransform t;
+  t.translate(rectangle.x(), rectangle.y());
+  setTransform(t);
 }
-#endif //0
 
 void QgsComposerItem::drawBackground(QPainter* p)
 {

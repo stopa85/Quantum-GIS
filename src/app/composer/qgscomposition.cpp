@@ -460,8 +460,6 @@ void QgsComposition::mouseReleaseEvent(QMouseEvent* e)
 	    QgsComposerMapWidget* w = new QgsComposerMapWidget(m);
 	    mComposer->addItem(m, w);
 
-	    m->setPos(x, y);
-
 	    //m->setUserExtent( mMapCanvas->extent());
 	    mItems.push_back(m);
 	    m->setSelected ( true );

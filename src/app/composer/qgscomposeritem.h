@@ -64,14 +64,6 @@ public:
     /** item id */
     int id ( void );
 
-    /** Update otions and return pointer to options widget */
-    virtual QWidget *options ( void );
-
-    /** Create option controls
-     * @param parent widget where options are created
-     */
-    virtual void showOptions ( QWidget * parent );
-
     /** stores state in project */
     virtual bool writeSettings ( void );
 
@@ -84,8 +76,9 @@ public:
     /** resizes an item in x- and y direction (canvas coordinates)*/
     virtual void resize(double dx, double dy){}
 
-    /**Sets new rect and adapts (0/0) point accordingly*/
-    virtual void setRect(const QRectF& rectangle);
+    /**Sets this items bound in scene coordinates such that 1 item size units
+     corresponds to 1 scene size unit*/
+    virtual void setSceneRect(const QRectF& rectangle);
 
     /** stores state in DOM node
      * @param node is DOM node corresponding to '???' tag
@@ -97,8 +90,6 @@ public:
      * @param node is DOM node corresponding to '???' tag
      */
     virtual bool readXML( QDomNode & node );
-
-    //virtual QRectF boundingRect () const;
 
 protected:
     QgsComposition::PlotStyle mPlotStyle;
@@ -112,8 +103,6 @@ protected:
 
     /**Rectangle used during move and resize actions*/
     QGraphicsRectItem* mBoundingResizeRectangle;
-
-    bool mSelected;
  
     //event handlers
     virtual void mouseMoveEvent ( QGraphicsSceneMouseEvent * event );
