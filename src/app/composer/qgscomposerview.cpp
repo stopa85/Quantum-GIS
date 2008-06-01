@@ -33,21 +33,12 @@ QgsComposerView::QgsComposerView( QgsComposer *composer, QWidget* parent, const 
 //,name,f|Qt::WNoAutoErase|Qt::WResizeNoErase|Qt::WStaticContents
 {
     mComposer = composer;
-
-    // TODO: nothing doe work -> necessary to call setFocus ()
-    setEnabled ( true );
-    setFocusPolicy ( Qt::StrongFocus );
-    setFocusProxy ( 0 );
-
     setResizeAnchor ( QGraphicsView::AnchorViewCenter );
     setMouseTracking(true);
-    setInteractive(true);
 }
 
 void QgsComposerView::mousePressEvent(QMouseEvent* e)
 {
-    // TODO: find how to get focus without setFocus
-    setFocus ();
     mComposer->composition()->mousePressEvent(e);
     if(mComposer->composition()->tool() == QgsComposition::Select)
       {
@@ -66,6 +57,7 @@ void QgsComposerView::mouseReleaseEvent(QMouseEvent* e)
 
 void QgsComposerView::mouseMoveEvent(QMouseEvent* e)
 {
+  qWarning("QgsComposerView::mouseMoveEvent");
     mComposer->composition()->mouseMoveEvent(e);
     if(mComposer->composition()->tool() == QgsComposition::Select)
       {

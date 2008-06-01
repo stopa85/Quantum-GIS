@@ -97,7 +97,6 @@ QgsComposer::QgsComposer( QgisApp *qgis): QMainWindow()
     qDebug( "unable to connect to aboutToQuit" );
   }
   restoreWindowState();
-
   selectItem(); // Set selection tool
 }
 
