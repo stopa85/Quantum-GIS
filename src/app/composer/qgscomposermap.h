@@ -63,7 +63,6 @@ public:
     void init ( void );
 
     // Reimplement QgsComposerItem:
-    QWidget *options ( void );
     bool writeSettings ( void );
     bool readSettings ( void );
     bool removeSettings ( void );
@@ -78,9 +77,6 @@ public:
 
     /** \brief Reimplementation of QCanvasItem::paint - draw on canvas */
     void paint (QPainter* painter, const QStyleOptionGraphicsItem* itemStyle, QWidget* pWidget);
-    
-    /** \brief Set extent requested by user */
-    void setUserExtent ( QgsRect const & rect);
 
     /** \brief Recalculate rectangle/extent/scale according to current rule */
     void recalculate ( void );
@@ -93,15 +89,6 @@ public:
     
     /** \brief Map name, used in legend combobox etc. */
     QString name ( void );
-
-    /** \brief Width scale */
-    double widthScale(void);
-    
-    /** \brief Symbol scale */
-    double symbolScale ( void );
-    
-    /** \brief Font size scale */
-    double fontScale ( void );
 
     /** resizes an item in x- and y direction (canvas coordinates)*/
     void resize(double dx, double dy);
@@ -145,15 +132,6 @@ private:
     // so that full rectangle in paper is used.
     QgsRect mExtent;
 
-    // Cache extent (it can be bigger for example than mExtent)
-    QgsRect mCacheExtent;
-
-    // Number of paper units in map per paper unit on paper, this is the xxx part of 1:xxx 
-    double mUserScale;
-
-    // Scale from map (in map units) to paper (in canvas points), i.e. size_on_paper/size_in_map
-    double mScale;
-
     // Cache used in composer preview
     // NOTE:  QCanvasView is slow with bigger images but the spped does not decrease with image size.
     //        It is very slow, with zoom in in QCanvasView, it seems, that QCanvas is stored as a big image
@@ -172,10 +150,7 @@ private:
     /** \brief Number of layers when cache was created  */
     int mNumCachedLayers;
 
-    /** \brief Draw frame  */
-    bool mFrame;
-
-    /** \brief set to true if in state of drawing, other requests are to draw are returned */
+    /** \brief set to true if in state of drawing. Concurrent requests to draw method are returned if set to true */
     bool mDrawing;
 
     /**Store last scale factor to avoid unnecessary repaints in case preview mode is 'Render'*/

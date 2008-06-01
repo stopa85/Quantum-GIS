@@ -26,14 +26,14 @@
 #include <iostream>
 #include "qgsrect.h" //just for debugging
 
-QgsComposerItem::QgsComposerItem(QGraphicsItem* parent): QGraphicsRectItem(0), mBoundingResizeRectangle(0) 
+QgsComposerItem::QgsComposerItem(QGraphicsItem* parent): QGraphicsRectItem(0), mBoundingResizeRectangle(0), mFrame(true)
 {
     mPlotStyle = QgsComposition::Preview;
     setAcceptsHoverEvents(true);
     setFlag(QGraphicsItem::ItemIsSelectable, true);
 }
 
-QgsComposerItem::QgsComposerItem(qreal x, qreal y, qreal width, qreal height, QGraphicsItem* parent): QGraphicsRectItem(0, 0, width, height, parent), mBoundingResizeRectangle(0)
+QgsComposerItem::QgsComposerItem(qreal x, qreal y, qreal width, qreal height, QGraphicsItem* parent): QGraphicsRectItem(0, 0, width, height, parent), mBoundingResizeRectangle(0), mFrame(true)
 {
   mPlotStyle = QgsComposition::Preview;
   setAcceptsHoverEvents(true);
@@ -309,9 +309,12 @@ void QgsComposerItem::drawSelectionBoxes(QPainter* p)
 
 void QgsComposerItem::drawFrame(QPainter* p)
 {
-  p->setPen(pen());
-  p->setRenderHint(QPainter::Antialiasing, true);
-  p->drawRect (QRectF( 0, 0, rect().width(), rect().height()));
+  if(mFrame)
+    {
+      p->setPen(pen());
+      p->setRenderHint(QPainter::Antialiasing, true);
+      p->drawRect (QRectF( 0, 0, rect().width(), rect().height()));
+    }
 }
 
 void QgsComposerItem::setSceneRect(const QRectF& rectangle)

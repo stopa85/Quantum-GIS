@@ -91,6 +91,9 @@ public:
      */
     virtual bool readXML( QDomNode & node );
 
+    bool frame() const {return mFrame;}
+    void setFrame(bool drawFrame){mFrame = drawFrame;}
+
 protected:
     QgsComposition::PlotStyle mPlotStyle;
     int mId;
@@ -103,6 +106,9 @@ protected:
 
     /**Rectangle used during move and resize actions*/
     QGraphicsRectItem* mBoundingResizeRectangle;
+
+    /**True if item fram needs to be painted*/
+    bool mFrame;
  
     //event handlers
     virtual void mouseMoveEvent ( QGraphicsSceneMouseEvent * event );

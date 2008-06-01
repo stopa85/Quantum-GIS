@@ -32,6 +32,8 @@ QgsComposerMapWidget::QgsComposerMapWidget(QgsComposerMap* composerMap): QWidget
   mPreviewModeComboBox->insertItem(1, tr("Render"));
   mPreviewModeComboBox->insertItem(2, tr("Rectangle"));
 
+  mFrameCheckBox->setCheckState(Qt::Checked);
+
   if(composerMap)
     {
       connect(composerMap, SIGNAL(extentChanged()), this, SLOT(updateSettingsNoSignals()));
@@ -121,6 +123,32 @@ void QgsComposerMapWidget::on_mCalculateComboBox_activated(int i)
       mWidthLineEdit->setEnabled(false);
       mScaleLineEdit->setEnabled(true);
     }
+}
+
+void QgsComposerMapWidget::on_mFrameCheckBox_stateChanged(int state)
+{
+  if(!mComposerMap)
+    {
+      return;
+    }
+
+  if(state == Qt::Checked)
+    {
+      if(mComposerMap->frame())
+	{
+	  return;
+	}
+      mComposerMap->setFrame(true);
+    }
+  else
+    {
+      if(!mComposerMap->frame())
+	{
+	  return;
+	}
+      mComposerMap->setFrame(false);
+    }
+  mComposerMap->update();
 }
 
 void QgsComposerMapWidget::updateSettingsNoSignals()

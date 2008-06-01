@@ -247,12 +247,6 @@ double QgsComposerMap::scale()
   return calculator.calculate(mExtent, rect().width());
 }
 
-QWidget *QgsComposerMap::options ( void )
-{
-  //setOptions ();
-    return ( dynamic_cast <QWidget *> (this) );
-}
-
 QString QgsComposerMap::name ( void ) 
 {
     return mName;
