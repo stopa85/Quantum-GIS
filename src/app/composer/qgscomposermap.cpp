@@ -36,11 +36,6 @@
 #include <iostream>
 #include <cmath>
 
-// round isn't defined by default in msvc
-#ifdef _MSC_VER
- #define round(x)  ((x) >= 0 ? floor((x)+0.5) : floor((x)-0.5))
-#endif
-
 QgsComposerMap::QgsComposerMap ( QgsComposition *composition, int id, int x, int y, int width, int height )
   : QgsComposerItem(x, y, width,height,0)
 {
@@ -238,7 +233,6 @@ void QgsComposerMap::setCacheUpdated ( bool u )
     mCacheUpdated = u;
 }    
 
-//double QgsComposerMap::scale ( void ) { return mScale; }
 double QgsComposerMap::scale()
 {
   QgsScaleCalculator calculator;
@@ -352,7 +346,22 @@ void QgsComposerMap::setNewExtent(const QgsRect& extent)
 
 void QgsComposerMap::setNewScale(double scaleDenominator)
 {
-  //soon...
+  double currentScaleDenominator = scale();
+
+  if(scaleDenominator == currentScaleDenominator)
+    {
+      return;
+    }
+
+  double scaleRatio = scaleDenominator / currentScaleDenominator;
+
+  double newXMax = mExtent.xMin() + scaleRatio * (mExtent.xMax() - mExtent.xMin());
+  double newYMax = mExtent.yMin() + scaleRatio * (mExtent.yMax() - mExtent.yMin());
+
+  QgsRect newExtent(mExtent.xMin(), mExtent.yMin(), newXMax, newYMax);
+  mExtent = newExtent;
+  mCacheUpdated = false;
+  update();
 }
 
 double QgsComposerMap::horizontalViewScaleFactor() const

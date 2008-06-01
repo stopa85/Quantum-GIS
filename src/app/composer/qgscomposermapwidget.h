@@ -37,7 +37,8 @@ class QgsComposerMapWidget: public QWidget, private Ui::QgsComposerMapWidgetBase
   void on_mHeightLineEdit_editingFinished();
   void on_mPreviewModeComboBox_activated(int i);
   void on_mCalculateComboBox_activated(int i);
-  void on_mFrameCheckBox_stateChanged(int state); 
+  void on_mFrameCheckBox_stateChanged(int state);
+  void on_mScaleLineEdit_editingFinished();
 
   /**Updates width and height without notify the composer map (to avoid infinite recursion)*/
   void updateSettingsNoSignals();

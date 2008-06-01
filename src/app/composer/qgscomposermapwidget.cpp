@@ -151,6 +151,24 @@ void QgsComposerMapWidget::on_mFrameCheckBox_stateChanged(int state)
   mComposerMap->update();
 }
 
+void QgsComposerMapWidget::on_mScaleLineEdit_editingFinished()
+{
+  if(!mComposerMap)
+    {
+      return;
+    }
+
+  bool conversionSuccess;
+  double scaleDenominator = mScaleLineEdit->text().toDouble(&conversionSuccess);
+  
+  if(!conversionSuccess)
+    {
+      return;
+    }
+
+  mComposerMap->setNewScale(scaleDenominator);
+}
+
 void QgsComposerMapWidget::updateSettingsNoSignals()
 {
   mHeightLineEdit->blockSignals(true);

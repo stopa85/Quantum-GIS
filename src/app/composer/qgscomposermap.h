@@ -99,6 +99,9 @@ public:
     /** \brief Scale */
     double scale ( void );
 
+     /**Sets new scale and changes only mExtent*/
+    void setNewScale(double scaleDenominator);
+
     Calculate calculationMode() {return mCalculate;}
     PreviewMode previewMode() {return mPreviewMode;}
     void setPreviewMode(PreviewMode m) {mPreviewMode = m;}
@@ -158,8 +161,6 @@ private:
 
     /**Sets new Extent and changes only width and height*/
     void setNewExtent(const QgsRect& extent);
-    /**Sets new scale and changes only mExtent*/
-    void setNewScale(double scaleDenominator);
 
     /**Returns the zoom factor of the graphics view. If no 
      graphics view exists, the default 1 is returned*/
