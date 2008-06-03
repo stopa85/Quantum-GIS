@@ -152,7 +152,7 @@ public:
     QGraphicsScene *canvas(void);
     
     /** \brief recieves mousePressEvent from view */
-    void mousePressEvent(QMouseEvent*);
+    void mousePressEvent(QMouseEvent*, bool shiftKeyPressed = false);
     
     /** \brief recieves mouseReleaseEvent from view */
     void mouseReleaseEvent(QMouseEvent*);
@@ -171,6 +171,12 @@ public:
     
     /**  \brief Set tool */
     void setTool ( Tool tool );
+
+    /**Insert a group containing the selected items*/
+    void groupItems();
+
+    /**Removes items from selected group and also the group item*/
+    void ungroupItems();
 
     /** Refresh. Refresh objects which are not updated automaticaly, e.g. map object does not know
      * if a layer was switched on/off. Later should be substituted by appropriate signals 

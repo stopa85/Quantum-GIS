@@ -29,7 +29,7 @@
 
 // Note: |WRepaintNoErase|WResizeNoErase|WStaticContents doeen't make it faster
 QgsComposerView::QgsComposerView( QgsComposer *composer, QWidget* parent, const char* name, Qt::WFlags f) :
-                                  QGraphicsView(parent)
+  QGraphicsView(parent), mShiftKeyPressed(false)
 //,name,f|Qt::WNoAutoErase|Qt::WResizeNoErase|Qt::WStaticContents
 {
     mComposer = composer;
@@ -39,11 +39,11 @@ QgsComposerView::QgsComposerView( QgsComposer *composer, QWidget* parent, const 
 
 void QgsComposerView::mousePressEvent(QMouseEvent* e)
 {
-    mComposer->composition()->mousePressEvent(e);
-    if(mComposer->composition()->tool() == QgsComposition::Select)
-      {
-	QGraphicsView::mousePressEvent(e);
-      }
+  mComposer->composition()->mousePressEvent(e, mShiftKeyPressed);
+  if(mComposer->composition()->tool() == QgsComposition::Select)
+    {
+      QGraphicsView::mousePressEvent(e);
+    }
 }
 
 void QgsComposerView::mouseReleaseEvent(QMouseEvent* e)
@@ -67,7 +67,19 @@ void QgsComposerView::mouseMoveEvent(QMouseEvent* e)
 
 void QgsComposerView::keyPressEvent ( QKeyEvent * e )
 {
-    mComposer->composition()->keyPressEvent ( e );
+  if(e->key() == Qt::Key_Shift)
+    {
+      mShiftKeyPressed = true;
+    }
+  mComposer->composition()->keyPressEvent ( e );
+}
+
+void QgsComposerView::keyReleaseEvent ( QKeyEvent * e )
+{
+  if(e->key() == Qt::Key_Shift)
+    {
+      mShiftKeyPressed = false;
+    }
 }
 
 void QgsComposerView::resizeEvent ( QResizeEvent *  )

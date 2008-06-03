@@ -234,6 +234,8 @@
    <addaction name="mActionAddNewVectLegend" />
    <addaction name="mActionAddNewScalebar" />
    <addaction name="mActionSelectMoveItem" />
+   <addaction name="mActionGroupItems" />
+   <addaction name="mActionUngroupItems" />
   </widget>
   <action name="mActionOpenTemplate" >
    <property name="icon" >
@@ -353,6 +355,16 @@
    </property>
    <property name="text" >
     <string>Add Image</string>
+   </property>
+  </action>
+  <action name="mActionGroupItems" >
+   <property name="text" >
+    <string>Group Items</string>
+   </property>
+  </action>
+  <action name="mActionUngroupItems" >
+   <property name="text" >
+    <string>Ungroup items</string>
    </property>
   </action>
  </widget>

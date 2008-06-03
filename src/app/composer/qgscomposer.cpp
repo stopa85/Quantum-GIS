@@ -65,7 +65,10 @@ QgsComposer::QgsComposer( QgisApp *qgis): QMainWindow()
 #ifdef QGISDEBUG
   std::cout << "QgsComposer::QgsComposer" << std::endl;
 #endif
-
+ 
+  setMouseTracking(true);
+  mSplitter->setMouseTracking(true);
+  mViewFrame->setMouseTracking(true);
   mView = new QgsComposerView ( this, mViewFrame);
   mPrinter = 0;
 
@@ -172,6 +175,7 @@ void QgsComposer::showItemOptions(const QgsComposerItem* item)
       return;
     }
 
+  mItemStackedWidget->removeWidget(currentWidget);
   mItemStackedWidget->addWidget(newWidget);
 }
 
@@ -872,6 +876,22 @@ void QgsComposer::on_mActionAddImage_activated(void)
   setToolActionsOff();
   mActionAddImage->setOn ( true );
   mView->setCursor(QCursor(cross_hair_cursor));
+}
+ 
+void QgsComposer::on_mActionGroupItems_activated(void)
+{
+  if(mComposition)
+    {
+      mComposition->groupItems();
+    }
+}
+
+void QgsComposer::on_mActionUngroupItems_activated(void)
+{
+  if(mComposition)
+    {
+      mComposition->ungroupItems();
+    }
 }
 
 void QgsComposer::moveEvent ( QMoveEvent *e ) { saveWindowState(); }

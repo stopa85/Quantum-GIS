@@ -39,10 +39,12 @@ protected:
     void mouseMoveEvent(QMouseEvent*);
 
     void keyPressEvent ( QKeyEvent * e );
+    void keyReleaseEvent ( QKeyEvent * e );
     void resizeEvent ( QResizeEvent *  );
 
 private:
     QgsComposer *mComposer;
+    bool mShiftKeyPressed;
 
 };
 

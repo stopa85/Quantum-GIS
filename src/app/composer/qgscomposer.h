@@ -149,6 +149,12 @@ public slots:
     //! Add new picture
     void on_mActionAddImage_activated(void);
 
+    //! Group selected items 
+    void on_mActionGroupItems_activated(void);
+
+    //! Ungroup selected item group
+    void on_mActionUngroupItems_activated(void);
+
     //! read project
     void projectRead();
 

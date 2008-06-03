@@ -19,6 +19,7 @@
 
 #include "qgscomposer.h"
 #include "qgscomposeritem.h"
+#include "qgscomposeritemgroup.h"
 #include "qgscomposerlabel.h"
 
 #include "qgscomposermap.h"
@@ -220,7 +221,7 @@ void QgsComposition::setActive (  bool active )
   }
 }
 
-void QgsComposition::mousePressEvent(QMouseEvent* e)
+void QgsComposition::mousePressEvent(QMouseEvent* e, bool shiftKeyPressed)
 {
 #ifdef QGISDEBUG
   std::cerr << "QgsComposition::mousePressEvent() mTool = " << mTool << " mToolStep = "
@@ -246,17 +247,15 @@ void QgsComposition::mousePressEvent(QMouseEvent* e)
 	QgsComposerItem* selectedItem = dynamic_cast<QgsComposerItem*>(newItem);
 	if(selectedItem)
 	  {
-	    selectedItem->setSelected(true);
-	    if(selectedItem != mSelectedItem)
+	    if(!shiftKeyPressed)
 	      {
-		if(mSelectedItem)
-		  {
-		    mSelectedItem->setSelected(false);
-		  }
-		mSelectedItem = selectedItem;
-		mCanvas->update();
-		mComposer->showItemOptions(selectedItem);
+		canvas()->clearSelection();
 	      }
+	    
+	    //toggle selection state of selected item
+	    bool currentSelectState = selectedItem->isSelected();
+	    selectedItem->setSelected(!currentSelectState);
+	    mComposer->showItemOptions(selectedItem);
 	  }
 	break;
   }
@@ -534,33 +533,52 @@ void QgsComposition::keyPressEvent ( QKeyEvent * e )
   std::cout << "QgsComposition::keyPressEvent() key = " << e->key() << std::endl;
 #endif
 
-  if(!mSelectedItem)
-    {
-      return;
-    }
+  QList<QGraphicsItem *> selectionList = canvas()->selectedItems();
 
   if ( e->key() == Qt::Key_Delete) { // delete
 
-    QgsComposerItem *coi = dynamic_cast <QgsComposerItem *> (mSelectedItem);
-    mComposer->removeItem(coi);
+    QList<QGraphicsItem *> selectionList = canvas()->selectedItems();
+    QList<QGraphicsItem *>::iterator sIt = selectionList.begin();
+    for(; sIt != selectionList.end(); ++sIt)
+      {
+	mComposer->removeItem(dynamic_cast<QgsComposerItem *>(*sIt));
+      }
+
     mSelectedItem = 0;
     mCanvas->update();
   }
-  else if(e->key() == Qt::Key_Left)
+
+  if(e->key() == Qt::Key_Left)
     {
-      mSelectedItem->moveBy(-1.0, 0.0);
+      QList<QGraphicsItem *>::iterator sIt = selectionList.begin();
+      for(; sIt != selectionList.end(); ++sIt)
+	{
+	  ((QgsComposerItem*)(*sIt))->move(-1.0, 0.0);
+	}
     }
   else if(e->key() == Qt::Key_Right)
     {
-      mSelectedItem->moveBy(1.0, 0.0);
+      QList<QGraphicsItem *>::iterator sIt = selectionList.begin();
+      for(; sIt != selectionList.end(); ++sIt)
+	{
+	  ((QgsComposerItem*)(*sIt))->move(1.0, 0.0);
+	}
     }
   else if(e->key() == Qt::Key_Down)
     {
-      mSelectedItem->moveBy(0.0, 1.0);
+      QList<QGraphicsItem *>::iterator sIt = selectionList.begin();
+      for(; sIt != selectionList.end(); ++sIt)
+	{
+	  ((QgsComposerItem*)(*sIt))->move(0.0, 1.0);
+	}
     }
   else if(e->key() == Qt::Key_Up)
     {
-      mSelectedItem->moveBy(0.0, -1.0);
+      QList<QGraphicsItem *>::iterator sIt = selectionList.begin();
+      for(; sIt != selectionList.end(); ++sIt)
+	{
+	  ((QgsComposerItem*)(*sIt))->move(0.0, -1.0);
+	}
     }
 }
 
@@ -806,6 +824,53 @@ void QgsComposition::setTool ( Tool tool )
 
   mTool = tool;
   mToolStep = 0;
+}
+
+void QgsComposition::groupItems()
+{
+  if(!mComposer || !canvas())
+    {
+      return;
+    }
+  QList<QGraphicsItem *> selectedItems = canvas()->selectedItems();
+
+  if(selectedItems.size() < 2)
+    {
+      return; //not enough items for a group
+    }
+
+  QgsComposerItemGroup* itemGroup = new QgsComposerItemGroup(this, 0);
+
+  QList<QGraphicsItem *>::iterator itemIt = selectedItems.begin();
+  for(; itemIt != selectedItems.end(); ++itemIt)
+    {
+      itemGroup->addItem((QgsComposerItem*)(*itemIt));
+    }
+
+  mComposer->addItem(itemGroup, 0);
+  mCanvas->addItem(itemGroup);
+  itemGroup->setSelected(true);
+  mComposer->showItemOptions(0);
+}
+
+void QgsComposition::ungroupItems()
+{
+  if(!mComposer || !canvas())
+    {
+      return;
+    }
+  QList<QGraphicsItem *> selectedItems = canvas()->selectedItems();
+  QList<QGraphicsItem *>::iterator itemIt = selectedItems.begin();
+  for(; itemIt != selectedItems.end(); ++itemIt)
+    {
+      QgsComposerItemGroup* itemGroup = dynamic_cast<QgsComposerItemGroup*>(*itemIt);
+      if(itemGroup)
+	{
+	  itemGroup->removeItems();
+	  mCanvas->removeItem(itemGroup);
+	  mComposer->removeItem(itemGroup);
+	}
+    }
 }
 
 std::vector<QgsComposerMap*> QgsComposition::maps(void) 

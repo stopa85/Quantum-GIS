@@ -73,8 +73,11 @@ public:
     /** delete settings from project file  */
     virtual bool removeSettings( void );
 
-    /** resizes an item in x- and y direction (canvas coordinates)*/
+    /** resizes an item in x- and y direction (scene coordinates)*/
     virtual void resize(double dx, double dy){}
+
+    /** moves the whole item in scene coordinates*/
+    virtual void move(double dx, double dy);
 
     /**Sets this items bound in scene coordinates such that 1 item size units
      corresponds to 1 scene size unit*/
@@ -93,6 +96,10 @@ public:
 
     bool frame() const {return mFrame;}
     void setFrame(bool drawFrame){mFrame = drawFrame;}
+
+    /**Composite operations for item groups do nothing per default*/
+    virtual void addItem(QgsComposerItem* item) {}
+    virtual void removeItems() {}
 
 protected:
     QgsComposition::PlotStyle mPlotStyle;
@@ -114,9 +121,6 @@ protected:
     virtual void mouseMoveEvent ( QGraphicsSceneMouseEvent * event );
     virtual void mousePressEvent ( QGraphicsSceneMouseEvent * event );
     virtual void mouseReleaseEvent ( QGraphicsSceneMouseEvent * event );
-    
-    virtual void hoverEnterEvent ( QGraphicsSceneHoverEvent * event );
-    virtual void hoverMoveEvent ( QGraphicsSceneHoverEvent * event );
 
     /**Finds out the appropriate cursor for the current mouse position in the widget (e.g. move in the middle, resize at border)*/
     Qt::CursorShape cursorForPosition(const QPointF& itemCoordPos);
@@ -134,13 +138,13 @@ protected:
     void rectangleChange(double dx, double dy, double& mx, double& my, double& rx, double& ry) const;
 
     /**Draw selection boxes around item*/
-    void drawSelectionBoxes(QPainter* p);
+    virtual void drawSelectionBoxes(QPainter* p);
 
     /**Draw black frame around item*/
-    void drawFrame(QPainter* p);
+    virtual void drawFrame(QPainter* p);
 
     /**Draw background*/
-    void drawBackground(QPainter* p);
+    virtual void drawBackground(QPainter* p);
 };
 
 #endif

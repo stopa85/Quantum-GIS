@@ -74,6 +74,7 @@ bool QgsComposerItem::readXML( QDomNode & node ) {  return true; }
 
 void QgsComposerItem::mouseMoveEvent ( QGraphicsSceneMouseEvent * event )
 {
+  qWarning("QgsComposerItem::mouseMoveEvent");
   if(mBoundingResizeRectangle)
     {
       double diffX = event->lastPos().x() - mLastMouseEventPos.x();
@@ -149,17 +150,6 @@ void QgsComposerItem::mouseReleaseEvent ( QGraphicsSceneMouseEvent * event )
   //reset default action
   mCurrentMouseMoveAction = QgsComposerItem::moveItem;
   setCursor(Qt::ArrowCursor);
-}
-
-void QgsComposerItem::hoverEnterEvent ( QGraphicsSceneHoverEvent * event )
-{
-  qWarning("QgsComposerItem::hoverEnterEvent");
-}
-
-void QgsComposerItem::hoverMoveEvent( QGraphicsSceneHoverEvent * event )
-{
-  qWarning("QgsComposerItem::hoverMoveEvent");
-  setCursor(QCursor(cursorForPosition(event->pos())));
 }
 
 Qt::CursorShape QgsComposerItem::cursorForPosition(const QPointF& itemCoordPos)
@@ -315,6 +305,13 @@ void QgsComposerItem::drawFrame(QPainter* p)
       p->setRenderHint(QPainter::Antialiasing, true);
       p->drawRect (QRectF( 0, 0, rect().width(), rect().height()));
     }
+}
+
+void QgsComposerItem::move(double dx, double dy)
+{
+  QTransform newTransform;
+  newTransform.translate(transform().dx() + dx, transform().dy() + dy);
+  setTransform(newTransform);
 }
 
 void QgsComposerItem::setSceneRect(const QRectF& rectangle)
