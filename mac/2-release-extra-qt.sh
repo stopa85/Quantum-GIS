@@ -70,7 +70,10 @@ FILES="qgis
   lib/qgis/libwmsprovider.so
   lib/qgis/libgpsimporterplugin.so
   lib/qgis/libevis.so
-  lib/qgis/libquickprintplugin.so"
+  lib/qgis/libquickprintplugin.so
+  share/qgis/python/qgis/core.so
+  share/qgis/python/qgis/gui.so
+  lib/libqgispython.dylib"
 for FILE in ${FILES}
 do
  for FRAMEWORK in QtCore QtGui QtNetwork QtSql QtSvg QtXml
@@ -147,7 +150,6 @@ popd
 
 strip -x ${FRAMEWORKPREFIX}/QtGui.framework/Versions/4/QtGui 
 strip -x ${FRAMEWORKPREFIX}/QtCore.framework/Versions/4/QtCore 
-strip -x ${FRAMEWORKPREFIX}/Qt3Support.framework/Versions/4/Qt3Support 
 strip -x ${FRAMEWORKPREFIX}/QtSql.framework/Versions/4/QtSql 
 strip -x ${FRAMEWORKPREFIX}/QtSvg.framework/Versions/4/QtSvg 
 strip -x ${FRAMEWORKPREFIX}/QtXml.framework/Versions/4/QtXml 

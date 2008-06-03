@@ -1,12 +1,3 @@
-
-# TODO: delete from SVN
-#   qgslinestyledialog.(cpp|h)
-#   qgslinestylewidget.(cpp|h)
-#   qgsmarkerdialog.(cpp|h)
-#   qgspatterndialog.(cpp|h)
-#   qgspointstylewidget.(cpp|h)
-#   qgsvectorsymbologywidget.(cpp|h)
-
 SET(QGIS_APP_SRCS
   main.cpp
   qgisapp.cpp
@@ -25,7 +16,6 @@ SET(QGIS_APP_SRCS
   qgsdbfilterproxymodel.cpp
   qgsdbtablemodel.cpp
   qgsdelattrdialog.cpp
-  qgsfillstylewidget.cpp
   qgsgeomtypedialog.cpp
   qgsgraduatedsymboldialog.cpp
   qgshelpviewer.cpp
@@ -55,6 +45,7 @@ SET(QGIS_APP_SRCS
   qgspluginmanager.cpp
   qgspluginmetadata.cpp
   qgspluginregistry.cpp
+  qgspythondialog.cpp
   qgsprojectproperties.cpp
   qgsrasterlayerproperties.cpp
   qgssearchquerybuilder.cpp
@@ -103,7 +94,6 @@ SET (QGIS_APP_MOC_HDRS
   qgscontinuouscolordialog.h
   qgscustomprojectiondialog.h
   qgsdelattrdialog.h
-  qgsfillstylewidget.h
   qgsgeomtypedialog.h
   qgsgraduatedsymboldialog.h
   qgshelpviewer.h
@@ -117,6 +107,7 @@ SET (QGIS_APP_MOC_HDRS
   qgsoptions.h
   qgspastetransformations.h
   qgspluginmanager.h
+  qgspythondialog.h
   qgsprojectproperties.h
   qgsrasterlayerproperties.h
   qgssearchquerybuilder.h
@@ -154,11 +145,6 @@ IF (POSTGRES_FOUND)
     )
 ENDIF (POSTGRES_FOUND)
 
-# Python support
-IF (PYTHON_FOUND)
-  SET (QGIS_APP_SRCS ${QGIS_APP_SRCS} qgspythondialog.cpp qgspythonutils.cpp)
-  SET (QGIS_APP_MOC_HDRS ${QGIS_APP_MOC_HDRS} qgspythondialog.h)
-ENDIF (PYTHON_FOUND)
 
 QT4_WRAP_CPP(QGIS_APP_MOC_SRCS ${QGIS_APP_MOC_HDRS})
 
@@ -200,6 +186,7 @@ INCLUDE_DIRECTORIES(
   ../core/raster ../core/renderer ../core/symbology
   ../gui
   ../plugins
+  ../python
   ${PROJ_INCLUDE_DIR}
   ${SQLITE3_INCLUDE_DIR}
   ${GEOS_INCLUDE_DIR}
@@ -209,10 +196,6 @@ INCLUDE_DIRECTORIES(
 IF (POSTGRES_FOUND)
   INCLUDE_DIRECTORIES(${POSTGRES_INCLUDE_DIR})
 ENDIF (POSTGRES_FOUND)
-
-IF (PYTHON_FOUND)
-  INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
-ENDIF (PYTHON_FOUND)
 
 #############
 
@@ -251,10 +234,6 @@ SET_TARGET_PROPERTIES(qgis PROPERTIES
   INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/${QGIS_LIB_DIR}
   INSTALL_RPATH_USE_LINK_PATH true
   )
-
-IF (PYTHON_FOUND)
-  TARGET_LINK_LIBRARIES(qgis ${PYTHON_LIBRARIES})
-ENDIF (PYTHON_FOUND)
 
 IF (POSTGRES_FOUND)
   TARGET_LINK_LIBRARIES (qgis ${POSTGRES_LIBRARY})

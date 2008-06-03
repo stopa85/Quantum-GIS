@@ -1,11 +1,10 @@
 /***************************************************************************
-                                 qgslinestyle.h
-                               ------------------
-        begin                : March 2005
-        copyright            : (C) 2005 by Tim Sutton
-        email                : tim@linfiniti.com
- ***************************************************************************/
-/***************************************************************************
+    qgispython.cpp - python support in QGIS
+    ---------------------
+    begin                : May 2008
+    copyright            : (C) 2008 by Martin Dobias
+    email                : wonder.sk at gmail dot com
+ ***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -13,14 +12,12 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
+/* $Id$ */
 
-#include "qgslinestylewidget.h"
+#include "qgis.h"
+#include "qgspythonutilsimpl.h"
 
-QgsLineStyleWidget::QgsLineStyleWidget( QWidget *parent, const char * name, Qt::WFlags f)
-           :QgsLineStyleWidgetBase( )
+QGISEXTERN QgsPythonUtils* instance()
 {
-}
-
-QgsLineStyleWidget::~QgsLineStyleWidget()
-{
+  return new QgsPythonUtilsImpl();
 }

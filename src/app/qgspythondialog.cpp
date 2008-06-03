@@ -17,19 +17,19 @@
 #include "qgspythondialog.h"
 #include "qgspythonutils.h"
 
+#include <QShowEvent>
+#include <QCloseEvent>
 
-QgsPythonDialog::QgsPythonDialog(QgisInterface* pIface, QWidget *parent)
+QgsPythonDialog::QgsPythonDialog(QgisInterface* pIface, QgsPythonUtils* pythonUtils, QWidget *parent)
   : QDialog(parent)
 {
   setupUi(this);
   mIface = pIface;
-  
-  QgsPythonUtils::installConsoleHooks();
+  mPythonUtils = pythonUtils;
 }
 
 QgsPythonDialog::~QgsPythonDialog()
 {
-  QgsPythonUtils::uninstallConsoleHooks();
 }
 
 QString QgsPythonDialog::escapeHtml(QString text)
@@ -42,13 +42,13 @@ void QgsPythonDialog::on_edtCmdLine_returnPressed()
   QString command = edtCmdLine->text();
   QString output;
   
+  
   // when using Py_single_input the return value will be always null
   // we're using custom hooks for output and exceptions to show output in console
-  if (QgsPythonUtils::runString(command))
+  if (mPythonUtils->runStringUnsafe(command))
   {
-    QgsPythonUtils::evalString("sys.stdout.data", output);
-    QgsPythonUtils::runString("sys.stdout.data = ''");
-    QString result = QgsPythonUtils::getResult();
+    mPythonUtils->evalString("sys.stdout.get_and_clean_data()", output);
+    QString result = mPythonUtils->getResult();
     // escape the result so python objects display properly and
     // we can still use html output to get nicely formatted display
     output = escapeHtml(output) + escapeHtml(result);
@@ -59,19 +59,31 @@ void QgsPythonDialog::on_edtCmdLine_returnPressed()
   else
   {
     QString className, errorText;
-    QgsPythonUtils::getError(className, errorText);
+    mPythonUtils->getError(className, errorText);
     
     output = "<font color=\"red\">" + escapeHtml(className) + ": " + escapeHtml(errorText) + "</font><br>";
   }
    
-  QString str = "<b><font color=\"green\">>>></font> " + escapeHtml(command) + "</b><br>" + output;
-#if QT_VERSION < 0x040300
-  txtHistory->setText(txtHistory->text() + str);
-#else
-  txtHistory->setPlainText(txtHistory->toPlainText() + str);
-#endif
+  QString str = "<b><font color=\"green\">&gt;&gt;&gt;</font> " + escapeHtml(command) + "</b><br>" + output;
+  
   edtCmdLine->setText("");
   
   txtHistory->moveCursor(QTextCursor::End);
+  txtHistory->insertHtml(str);
+  txtHistory->moveCursor(QTextCursor::End);
   txtHistory->ensureCursorVisible();
+}
+
+void QgsPythonDialog::showEvent(QShowEvent* event)
+{
+  QDialog::showEvent(event);
+  
+  mPythonUtils->installConsoleHooks();
+}
+
+void QgsPythonDialog::closeEvent(QCloseEvent* event)
+{
+  mPythonUtils->uninstallConsoleHooks();
+  
+  QDialog::closeEvent(event);
 }

@@ -19,7 +19,6 @@
 #ifndef QGSPLUGINMANAGER_H
 #define QGSPLUGINMANAGER_H
 #include <vector>
-#include <QTableView>
 #include <QStandardItemModel>
 #include <QSortFilterProxyModel>
 #include <QStandardItem>
@@ -28,6 +27,7 @@
 #include "qgisgui.h"
 
 class QgsPluginItem;
+class QgsPythonUtils;
 class QTableView;
 
 /*!
@@ -39,7 +39,7 @@ class QgsPluginManager : public QDialog, private Ui::QgsPluginManagerBase
   Q_OBJECT
   public:
     //! Constructor
-    QgsPluginManager(QWidget *parent = 0, Qt::WFlags fl = QgisGui::ModalDialogFlags);
+    QgsPluginManager(QgsPythonUtils* pythonUtils, QWidget *parent = 0, Qt::WFlags fl = QgisGui::ModalDialogFlags);
     //! Destructor
     ~QgsPluginManager();
     //! Get description of plugins (name, etc)
@@ -70,6 +70,8 @@ class QgsPluginManager : public QDialog, private Ui::QgsPluginManagerBase
   private:
     QStandardItemModel *mModelPlugins;
     QSortFilterProxyModel * mModelProxy;
+    
+    QgsPythonUtils* mPythonUtils;
 };
 
 #endif

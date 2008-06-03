@@ -52,19 +52,19 @@
 #include <QPrinter>
 #include <QProcess>
 #include <QProgressBar>
+#include <QRegExp>
+#include <QRegExpValidator>
 #include <QSettings>
 #include <QSplashScreen>
 #include <QStatusBar>
 #include <QStringList>
 #include <QTcpSocket>
 #include <QTextStream>
+#include <QTimer>
 #include <QToolButton>
 #include <QVBoxLayout>
 #include <QWhatsThis>
 #include <QtGlobal>
-#include <QRegExp>
-#include <QRegExpValidator>
-#include <QTimer>
 //
 // Mac OS X Includes
 // Must include before GEOS 3 due to unqualified use of 'Point'
@@ -167,10 +167,8 @@
 #include "qgsdbsourceselect.h"
 #endif
 
-#ifdef HAVE_PYTHON
 #include "qgspythondialog.h"
 #include "qgspythonutils.h"
-#endif
 
 #ifndef WIN32
 #include <dlfcn.h>
@@ -304,7 +302,8 @@ static void customSrsValidation_(QgsSpatialRefSys* srs)
 // constructor starts here
   QgisApp::QgisApp(QSplashScreen *splash, QWidget * parent, Qt::WFlags fl)
 : QMainWindow(parent,fl),
-  mSplash(splash)
+  mSplash(splash),
+  mPythonUtils(NULL), mPythonConsole(NULL)
 {
 //  setupUi(this);
   resize(640, 480);
@@ -358,14 +357,46 @@ static void customSrsValidation_(QgsSpatialRefSys* srs)
   qApp->processEvents();
   QgsApplication::initQgis();
   
-#ifdef HAVE_PYTHON
   mSplash->showMessage(tr("Starting Python"), Qt::AlignHCenter | Qt::AlignBottom);
   qApp->processEvents();
-  QgsPythonUtils::initPython(mQgisInterface);
-
-  if (!QgsPythonUtils::isEnabled())
-    mActionShowPythonDialog->setEnabled(false);
+  // try to load python support
+  QString pythonlibName("qgispython");
+#ifdef Q_WS_MAC
+  pythonlibName.prepend(QgsApplication::prefixPath() + "/lib/");
 #endif
+  QLibrary pythonlib(pythonlibName);
+  // It's necessary to set these two load hints, otherwise Python library won't work correctly
+  // see http://lists.kde.org/?l=pykde&m=117190116820758&w=2
+  pythonlib.setLoadHints(QLibrary::ResolveAllSymbolsHint | QLibrary::ExportExternalSymbolsHint);
+  if (pythonlib.load())
+  {
+    QgsDebugMsg("Python support library loaded successfully.");
+    typedef QgsPythonUtils* (*inst)();
+    inst pythonlib_inst = (inst) pythonlib.resolve("instance");
+    if (pythonlib_inst)
+    {
+      QgsDebugMsg("Python support library's instance() symbol resolved.");
+      mPythonUtils = pythonlib_inst();
+      mPythonUtils->initPython(mQgisInterface);
+    }
+    else
+    {
+      QgsDebugMsg("Couldn't resolve python support library's instance() symbol.");
+    }
+  }
+  else
+  {
+    QgsDebugMsg("Couldn't load Python support library.");
+  }
+  
+  if (mPythonUtils && mPythonUtils->isEnabled())
+  {
+    mActionShowPythonDialog = new QAction(tr("Python console"), this);
+    connect(mActionShowPythonDialog, SIGNAL(triggered()), this, SLOT(showPythonDialog()));
+
+    mPluginMenu->addAction(mActionShowPythonDialog);
+    QgsDebugMsg("Python support ENABLED :-)");
+  }
 
   // Create the plugin registry and load plugins
   // load any plugins that were running in the last session
@@ -410,7 +441,7 @@ static void customSrsValidation_(QgsSpatialRefSys* srs)
   setAcceptDrops(true);
 
   mFullScreenMode = false;
-  showNormal();
+  show();
   qApp->processEvents();
 } // QgisApp ctor
 
@@ -439,9 +470,8 @@ QgisApp::~QgisApp()
   delete mMapTools.mAddRing;
   delete mMapTools.mAddIsland;
 
-#ifdef HAVE_PYTHON
   delete mPythonConsole;
-#endif
+  delete mPythonUtils;
   
   // delete map layer registry and provider registry
   QgsApplication::exitQgis();
@@ -558,10 +588,10 @@ void QgisApp::createActions()
   //
   // Layer Menu Related Items
   //
-  mActionAddNonDbLayer= new QAction(QIcon(myIconPath+"/mActionAddNonDbLayer.png"), tr("Add a Vector Layer..."), this);
-  mActionAddNonDbLayer->setShortcut(tr("V","Add a Vector Layer"));
-  mActionAddNonDbLayer->setStatusTip(tr("Add a Vector Layer"));
-  connect(mActionAddNonDbLayer, SIGNAL(triggered()), this, SLOT(addVectorLayer()));
+  mActionAddOgrLayer= new QAction(QIcon(myIconPath+"/mActionAddOgrLayer.png"), tr("Add a Vector Layer..."), this);
+  mActionAddOgrLayer->setShortcut(tr("V","Add a Vector Layer"));
+  mActionAddOgrLayer->setStatusTip(tr("Add a Vector Layer"));
+  connect(mActionAddOgrLayer, SIGNAL(triggered()), this, SLOT(addVectorLayer()));
   //
   mActionAddRasterLayer= new QAction(QIcon(myIconPath+"/mActionAddRasterLayer.png"), tr("Add a Raster Layer..."), this);
   mActionAddRasterLayer->setShortcut(tr("R","Add a Raster Layer"));
@@ -589,6 +619,7 @@ void QgisApp::createActions()
   mActionRemoveLayer->setShortcut(tr("Ctrl+D","Remove a Layer"));
   mActionRemoveLayer->setStatusTip(tr("Remove a Layer"));
   connect(mActionRemoveLayer, SIGNAL(triggered()), this, SLOT(removeLayer()));
+  mActionRemoveLayer->setEnabled(false);
   //
   mActionAddAllToOverview= new QAction(QIcon(myIconPath+"/mActionAddAllToOverview.png"), tr("Add All To Overview"), this);
   mActionAddAllToOverview->setShortcut(tr("+","Show all layers in the overview map"));
@@ -757,6 +788,7 @@ void QgisApp::createActions()
   mActionInOverview->setShortcut(tr("O","Add current layer to overview map"));
   mActionInOverview->setStatusTip(tr("Add current layer to overview map"));
   connect(mActionInOverview, SIGNAL(triggered()), this, SLOT(inOverview()));
+  mActionInOverview->setEnabled(false);
   //
   // Plugin Menu Related Items
   //
@@ -777,6 +809,7 @@ void QgisApp::createActions()
   mActionToggleEditing->setStatusTip(tr("Toggles the editing state of the current layer")); 
   mActionToggleEditing->setCheckable(true);
   connect(mActionToggleEditing, SIGNAL(triggered()), this, SLOT(toggleEditing()));
+  mActionToggleEditing->setEnabled(false);
   
   //
   mActionCapturePoint= new QAction(QIcon(myIconPath+"/mActionCapturePoint.png"), tr("Capture Point"), this);
@@ -857,21 +890,16 @@ void QgisApp::createActions()
   mActionMapTips->setStatusTip(tr("Show information about a feature when the mouse is hovered over it"));
   connect ( mActionMapTips, SIGNAL ( triggered() ), this, SLOT ( toggleMapTips() ) );
   mActionMapTips->setCheckable(true);
-  
-#ifdef HAVE_PYTHON  
-  mActionShowPythonDialog = new QAction(tr("Python console"), this);
-  connect(mActionShowPythonDialog, SIGNAL(triggered()), this, SLOT(showPythonDialog()));
-  mPythonConsole = NULL;
-#endif
 }
 
 void QgisApp::showPythonDialog()
 {
-#ifdef HAVE_PYTHON
+  if (!mPythonUtils || !mPythonUtils->isEnabled())
+    return;
+  
   if (mPythonConsole == NULL)
-    mPythonConsole = new QgsPythonDialog(mQgisInterface);
+    mPythonConsole = new QgsPythonDialog(mQgisInterface, mPythonUtils);
   mPythonConsole->show();
-#endif
 }
 
 void QgisApp::createActionGroups()
@@ -964,7 +992,7 @@ void QgisApp::createMenus()
   //
   // Layers Menu
   mLayerMenu = menuBar()->addMenu(tr("&Layer"));
-  mLayerMenu->addAction(mActionAddNonDbLayer);
+  mLayerMenu->addAction(mActionAddOgrLayer);
   mLayerMenu->addAction(mActionAddRasterLayer);
 #ifdef HAVE_POSTGRESQL
   mLayerMenu->addAction(mActionAddLayer);
@@ -992,9 +1020,6 @@ void QgisApp::createMenus()
   // Plugins Menu
   mPluginMenu = menuBar()->addMenu(tr("&Plugins"));
   mPluginMenu->addAction(mActionShowPluginManager);
-#ifdef HAVE_PYTHON
-  mPluginMenu->addAction(mActionShowPythonDialog);
-#endif
   mPluginMenu->addSeparator();
 
   // Add the plugin manager action to it
@@ -1018,7 +1043,7 @@ void QgisApp::createMenus()
 void QgisApp::createToolBars()
 {
   QSize myIconSize ( 24,24 );
-  //QSize myIconSize ( 32,32 ); //large icons
+  // QSize myIconSize ( 32,32 ); //large icons
   // Note: we need to set each object name to ensure that
   // qmainwindow::saveState and qmainwindow::restoreState
   // work properly
@@ -1034,29 +1059,22 @@ void QgisApp::createToolBars()
   mFileToolBar->addAction(mActionFileSaveAs);
   mFileToolBar->addAction(mActionFileOpen);
   mFileToolBar->addAction(mActionFilePrint);
+  mFileToolBar->addAction(mActionAddOgrLayer);
+  mFileToolBar->addAction(mActionAddRasterLayer);
+#ifdef HAVE_POSTGRESQL
+  mFileToolBar->addAction(mActionAddLayer);
+#endif
+  mFileToolBar->addAction(mActionAddWmsLayer);
   //
   // Layer Toolbar
   mLayerToolBar = addToolBar(tr("Manage Layers"));
   mLayerToolBar->setIconSize(myIconSize);
   mLayerToolBar->setObjectName("LayerToolBar");
-  mLayerToolBar->addAction(mActionAddNonDbLayer);
-  mLayerToolBar->addAction(mActionAddRasterLayer);
-#ifdef HAVE_POSTGRESQL
-  mLayerToolBar->addAction(mActionAddLayer);
-#endif
-  mLayerToolBar->addAction(mActionAddWmsLayer);
   mLayerToolBar->addAction(mActionNewVectorLayer);
   mLayerToolBar->addAction(mActionRemoveLayer);
   mLayerToolBar->addAction(mActionInOverview);
   mLayerToolBar->addAction(mActionShowAllLayers);
   mLayerToolBar->addAction(mActionHideAllLayers);
-  //
-  // Help Toolbar
-  mHelpToolBar = addToolBar(tr("Help"));
-  mHelpToolBar->setIconSize(myIconSize);
-  mHelpToolBar->setObjectName("Help");
-  mHelpToolBar->addAction(mActionHelpContents);
-  mHelpToolBar->addAction(QWhatsThis::createAction());
   //
   // Digitizing Toolbar
   mDigitizeToolBar = addToolBar(tr("Digitizing"));
@@ -1068,12 +1086,12 @@ void QgisApp::createToolBars()
   mDigitizeToolBar->addAction(mActionCapturePolygon);
   mDigitizeToolBar->addAction(mActionAddRing);
   mDigitizeToolBar->addAction(mActionAddIsland);
-  mDigitizeToolBar->addAction(mActionMoveFeature);
   mDigitizeToolBar->addAction(mActionSplitFeatures);
-  mDigitizeToolBar->addAction(mActionDeleteSelected);
+  mDigitizeToolBar->addAction(mActionMoveFeature);
+  mDigitizeToolBar->addAction(mActionMoveVertex);
   mDigitizeToolBar->addAction(mActionAddVertex);
   mDigitizeToolBar->addAction(mActionDeleteVertex);
-  mDigitizeToolBar->addAction(mActionMoveVertex);
+  mDigitizeToolBar->addAction(mActionDeleteSelected);
   mDigitizeToolBar->addAction(mActionEditCut);
   mDigitizeToolBar->addAction(mActionEditCopy);
   mDigitizeToolBar->addAction(mActionEditPaste);
@@ -1108,6 +1126,13 @@ void QgisApp::createToolBars()
   mPluginToolBar = addToolBar(tr("Plugins"));
   mPluginToolBar->setIconSize(myIconSize);
   mPluginToolBar->setObjectName("Plugins");
+  //
+  // Help Toolbar
+  mHelpToolBar = addToolBar(tr("Help"));
+  mHelpToolBar->setIconSize(myIconSize);
+  mHelpToolBar->setObjectName("Help");
+  mHelpToolBar->addAction(mActionHelpContents);
+  mHelpToolBar->addAction(QWhatsThis::createAction());
 
   //Add the menu for toolbar visibility here
   //because createPopupMenu() would return 0
@@ -1126,29 +1151,23 @@ void QgisApp::createStatusBar()
   // Add a panel to the status bar for the scale, coords and progress
   // And also rendering suppression checkbox
   //
-
-  
-
   mProgressBar = new QProgressBar(statusBar());
   mProgressBar->setMaximumWidth(100);
   mProgressBar->hide();
-  mProgressBar->setWhatsThis(tr("Progress bar that displays the status of rendering layers and other time-intensive operations"));
+  mProgressBar->setWhatsThis(tr("Progress bar that displays the status "
+        "of rendering layers and other time-intensive operations"));
   statusBar()->addWidget(mProgressBar, 1,true);
   // Bumped the font up one point size since 8 was too 
   // small on some platforms. A point size of 9 still provides
   // plenty of display space on 1024x768 resolutions
   QFont myFont( "Arial", 9 );
 
-  mStopRenderButton = new QPushButton(tr("Stop rendering"), statusBar());
-#ifdef Q_WS_MAC //MH: disable the button on Mac for now to avoid problems with resizing
-  mStopRenderButton->setEnabled(false);
-#endif //Q_WS_MAC
-  statusBar()->addWidget(mStopRenderButton, 0, true);
 
   statusBar()->setFont(myFont);
   mScaleLabel = new QLabel(QString(),statusBar());
   mScaleLabel->setFont(myFont);
   mScaleLabel->setMinimumWidth(10);
+  mScaleLabel->setMaximumHeight(20);
   mScaleLabel->setMargin(3);
   mScaleLabel->setAlignment(Qt::AlignCenter);
   mScaleLabel->setFrameStyle(QFrame::NoFrame);
@@ -1160,6 +1179,7 @@ void QgisApp::createStatusBar()
   mScaleEdit->setFont(myFont);
   mScaleEdit->setMinimumWidth(10);
   mScaleEdit->setMaximumWidth(100);
+  mScaleEdit->setMaximumHeight(20);
   mScaleEdit->setMargin(0);
   mScaleEdit->setAlignment(Qt::AlignLeft);
   QRegExp validator("\\d+\\.?\\d*:\\d+\\.?\\d*");
@@ -1173,17 +1193,31 @@ void QgisApp::createStatusBar()
   //coords status bar widget
   mCoordsLabel = new QLabel(QString(), statusBar());
   mCoordsLabel->setMinimumWidth(10);
+  mCoordsLabel->setMaximumHeight(20);
   mCoordsLabel->setFont(myFont);
   mCoordsLabel->setMargin(3);
   mCoordsLabel->setAlignment(Qt::AlignCenter);
-  mCoordsLabel->setWhatsThis(tr("Shows the map coordinates at the current cursor position. The display is continuously updated as the mouse is moved."));
+  mCoordsLabel->setWhatsThis(tr("Shows the map coordinates at the "
+        "current cursor position. The display is continuously updated "
+        "as the mouse is moved."));
   mCoordsLabel->setToolTip(tr("Map coordinates at mouse cursor position"));
   statusBar()->addWidget(mCoordsLabel, 0, true);
+  //stop rendering status bar widget
+  mStopRenderButton = new QToolButton( statusBar() );
+  mStopRenderButton->setMaximumWidth(20);
+  mStopRenderButton->setMaximumHeight(20);
+//#ifdef Q_WS_MAC //MH: disable the button on Mac for now to avoid problems with resizing
+  mStopRenderButton->setEnabled(false);
+//#endif //Q_WS_MAC
+  statusBar()->addWidget(mStopRenderButton, 0, true);
   // render suppression status bar widget
   mRenderSuppressionCBox = new QCheckBox(tr("Render"),statusBar());
   mRenderSuppressionCBox->setChecked(true);
   mRenderSuppressionCBox->setFont(myFont);
-  mRenderSuppressionCBox->setWhatsThis(tr("When checked, the map layers are rendered in response to map navigation commands and other events. When not checked, no rendering is done. This allows you to add a large number of layers and symbolize them before rendering."));
+  mRenderSuppressionCBox->setWhatsThis(tr("When checked, the map layers "
+        "are rendered in response to map navigation commands and other "
+        "events. When not checked, no rendering is done. This allows you "
+        "to add a large number of layers and symbolize them before rendering."));
   mRenderSuppressionCBox->setToolTip(tr("Toggle map rendering") );
   statusBar()->addWidget(mRenderSuppressionCBox,0,true);
   // On the fly projection status bar icon
@@ -1203,11 +1237,13 @@ void QgisApp::createStatusBar()
   {
     QMessageBox::critical(this, tr("Resource Location Error"), 
         tr("Error reading icon resources from: \n %1\n Quitting...").arg(myIconPath));
-
     exit(0);
   }
-  mOnTheFlyProjectionStatusButton->setWhatsThis(tr("This icon shows whether on the fly projection is enabled or not. Click the icon to bring up the project properties dialog to alter this behaviour."));
-  mOnTheFlyProjectionStatusButton->setToolTip(tr("Projection status - Click to open projection dialog"));
+  mOnTheFlyProjectionStatusButton->setWhatsThis(tr("This icon shows whether "
+        "on the fly projection is enabled or not. Click the icon to bring up "
+        "the project properties dialog to alter this behaviour."));
+  mOnTheFlyProjectionStatusButton->setToolTip(tr("Projection status - Click "
+        "to open projection dialog"));
   connect(mOnTheFlyProjectionStatusButton, SIGNAL(clicked()),
       this, SLOT(projectPropertiesProjections()));//bring up the project props dialog when clicked
   statusBar()->addWidget(mOnTheFlyProjectionStatusButton,0,true);
@@ -1253,7 +1289,7 @@ void QgisApp::setTheme(QString theThemeName)
   mActionExportMapServer->setIconSet(QIcon(QPixmap(myIconPath + "/mActionExportMapServer.png")));
   */
   mActionFileExit->setIconSet(QIcon(QPixmap(myIconPath + "/mActionFileExit.png")));
-  mActionAddNonDbLayer->setIconSet(QIcon(QPixmap(myIconPath + "/mActionAddNonDbLayer.png")));
+  mActionAddOgrLayer->setIconSet(QIcon(QPixmap(myIconPath + "/mActionAddOgrLayer.png")));
   mActionAddRasterLayer->setIconSet(QIcon(QPixmap(myIconPath + "/mActionAddRasterLayer.png")));
   mActionAddLayer->setIconSet(QIcon(QPixmap(myIconPath + "/mActionAddLayer.png")));
   mActionRemoveLayer->setIconSet(QIcon(QPixmap(myIconPath + "/mActionRemoveLayer.png")));
@@ -1305,7 +1341,6 @@ void QgisApp::setupConnections()
           mMapLegend, SLOT(removeAll()));
   connect(QgsMapLayerRegistry::instance(), SIGNAL(layerWasAdded(QgsMapLayer*)),
           mMapLegend, SLOT(addLayer(QgsMapLayer *)));
-  
   connect(mMapLegend, SIGNAL(currentLayerChanged(QgsMapLayer*)),
           this, SLOT(activateDeactivateLayerRelatedActions(QgsMapLayer*)));
 
@@ -1321,6 +1356,9 @@ void QgisApp::setupConnections()
   connect(mMapCanvas, SIGNAL(scaleChanged(double)), this, SLOT(updateMouseCoordinatePrecision()));
 
   connect(mRenderSuppressionCBox, SIGNAL(toggled(bool )), mMapCanvas, SLOT(setRenderFlag(bool)));
+  //
+  // Do we really need this ??? - its already connected to the esc key...TS
+  //
   connect(mStopRenderButton, SIGNAL(clicked()), this, SLOT(stopRendering()));
 
   // Connect warning dialog from project reading
@@ -1332,7 +1370,8 @@ void QgisApp::createCanvas()
 {
   // "theMapCanvas" used to find this canonical instance later
   mMapCanvas = new QgsMapCanvas(this, "theMapCanvas" );
-  mMapCanvas->setWhatsThis(tr("Map canvas. This is where raster and vector layers are displayed when added to the map"));
+  mMapCanvas->setWhatsThis(tr("Map canvas. This is where raster and vector"
+        "layers are displayed when added to the map"));
   
 //  mMapCanvas->setMinimumWidth(10);
 //  QVBoxLayout *myCanvasLayout = new QVBoxLayout;
@@ -1631,6 +1670,7 @@ void QgisApp::restoreSessionPlugins(QString thePluginDirString)
 {
   QSettings mySettings;
 
+  QgsApplication::showSettings();
   QgsDebugMsg("\n\n*************************************************");
   QgsDebugMsg("Restoring plugins from last session " + thePluginDirString);
   
@@ -1690,31 +1730,30 @@ void QgisApp::restoreSessionPlugins(QString thePluginDirString)
     delete myLib;
   }
 
-#ifdef HAVE_PYTHON
   QString pluginName, description, version;
   
-  if (QgsPythonUtils::isEnabled())
+  if (mPythonUtils && mPythonUtils->isEnabled())
   {
   
     // check for python plugins system-wide
-    QStringList pluginList = QgsPythonUtils::pluginList();
+    QStringList pluginList = mPythonUtils->pluginList();
 
     for (int i = 0; i < pluginList.size(); i++)
     {
       QString packageName = pluginList[i];
    
       // import plugin's package
-      if (!QgsPythonUtils::loadPlugin(packageName))
+      if (!mPythonUtils->loadPlugin(packageName))
         continue;
       
       // get information from the plugin
       // if there are some problems, don't continue with metadata retreival
-      pluginName = QgsPythonUtils::getPluginMetadata(packageName, "name");
+      pluginName = mPythonUtils->getPluginMetadata(packageName, "name");
       if (pluginName != "__error__")
       {
-        description = QgsPythonUtils::getPluginMetadata(packageName, "description");
+        description = mPythonUtils->getPluginMetadata(packageName, "description");
         if (description != "__error__")
-          version = QgsPythonUtils::getPluginMetadata(packageName, "version");
+          version = mPythonUtils->getPluginMetadata(packageName, "version");
       }
       
       if (pluginName == "__error__" || description == "__error__" || version == "__error__")
@@ -1729,7 +1768,7 @@ void QgisApp::restoreSessionPlugins(QString thePluginDirString)
       }
     }
   }
-#endif
+  
   QgsDebugMsg("Loading plugins completed");
   QgsDebugMsg("*************************************************\n\n");
 }
@@ -3304,17 +3343,22 @@ void QgisApp::toggleFullScreen()
 void QgisApp::stopRendering()
 {
   if(mMapCanvas)
+  {
+    QgsMapRender* mypMapRender = mMapCanvas->mapRender();
+    if(mypMapRender)
     {
-      QgsMapRender* mapRender = mMapCanvas->mapRender();
-      if(mapRender)
-	{
-	  QgsRenderContext* renderContext = mapRender->renderContext();
-	  if(renderContext)
-	    {
-	      renderContext->setRenderingStopped(true);
-	    }
-	}
+      QgsRenderContext* mypRenderContext = mypMapRender->renderContext();
+      if(mypRenderContext)
+      {
+        mypRenderContext->setRenderingStopped(true);
+      }
     }
+  }
+}
+
+QToolBar * QgisApp::fileToolBar()
+{
+  return mFileToolBar;
 }
 
 //reimplements method from base (gui) class
@@ -3840,7 +3884,7 @@ void QgisApp::zoomToLayerExtent()
 
 void QgisApp::showPluginManager()
 {
-  QgsPluginManager *pm = new QgsPluginManager(this);
+  QgsPluginManager *pm = new QgsPluginManager(mPythonUtils, this);
   pm->resizeColumnsToContents(); 
   if (pm->exec())
   {
@@ -3865,9 +3909,11 @@ void QgisApp::showPluginManager()
 
 void QgisApp::loadPythonPlugin(QString packageName, QString pluginName)
 {
-#ifdef HAVE_PYTHON
-  if (!QgsPythonUtils::isEnabled())
+  if (!mPythonUtils || !mPythonUtils->isEnabled())
+  {
+    QgsDebugMsg("Python is not enabled in QGIS.");
     return;
+  }
   
   QgsDebugMsg("I should load python plugin: " + pluginName + " (package: " + packageName + ")");
   
@@ -3876,8 +3922,8 @@ void QgisApp::loadPythonPlugin(QString packageName, QString pluginName)
   // is loaded already?
   if (pRegistry->library(pluginName).isEmpty())
   {
-    QgsPythonUtils::loadPlugin(packageName);
-    QgsPythonUtils::startPlugin(packageName);
+    mPythonUtils->loadPlugin(packageName);
+    mPythonUtils->startPlugin(packageName);
   
     // TODO: test success
   
@@ -3888,11 +3934,6 @@ void QgisApp::loadPythonPlugin(QString packageName, QString pluginName)
     QSettings settings;
     settings.writeEntry("/PythonPlugins/" + packageName, true);
   }
-  
-
-#else
-  QgsDebugMsg("Python is not enabled in QGIS.");
-#endif
 }
 
 void QgisApp::loadPlugin(QString name, QString description, QString theFullPathName)
@@ -4804,8 +4845,16 @@ void QgisApp::activateDeactivateLayerRelatedActions(QgsMapLayer* layer)
 {
   if(!layer)
   {
+    mActionToggleEditing->setEnabled(false);
+    mActionRemoveLayer->setEnabled(false);
+    mActionInOverview->setEnabled(false);
+    mActionEditCopy->setEnabled(false);
     return;
   }
+
+  mActionToggleEditing->setEnabled(true);
+  mActionRemoveLayer->setEnabled(true);
+  mActionInOverview->setEnabled(true);
 
   /***********Vector layers****************/
   if(layer->type() == QgsMapLayer::VECTOR)
@@ -4851,28 +4900,28 @@ void QgisApp::activateDeactivateLayerRelatedActions(QgsMapLayer* layer)
         if(vlayer->isEditable() && dprovider->capabilities() & QgsVectorDataProvider::AddFeatures)
         {
           mActionCapturePoint->setEnabled(true);
-	  mActionMoveFeature->setEnabled(true);
+          mActionMoveFeature->setEnabled(true);
         }
         else
         {
           mActionCapturePoint->setEnabled(false);
-	  mActionMoveFeature->setEnabled(false);
+          mActionMoveFeature->setEnabled(false);
         }
         mActionCaptureLine->setEnabled(false);
         mActionCapturePolygon->setEnabled(false);
         mActionAddVertex->setEnabled(false);
         mActionDeleteVertex->setEnabled(false);
-	mActionMoveVertex->setEnabled(false);
+        mActionMoveVertex->setEnabled(false);
         mActionAddRing->setEnabled(false);
         mActionAddIsland->setEnabled(false);
-	mActionSplitFeatures->setEnabled(false);
+        mActionSplitFeatures->setEnabled(false);
         if(vlayer->isEditable() && dprovider->capabilities() & QgsVectorDataProvider::ChangeGeometries)
         {
-	  //don't enable vertex move for single point
-	  if(vlayer->geometryType() != QGis::WKBPoint && vlayer->geometryType() != QGis::WKBPoint25D)
-	    {
-	      mActionMoveVertex->setEnabled(true);
-	    }
+          //don't enable vertex move for single point
+          if(vlayer->geometryType() != QGis::WKBPoint && vlayer->geometryType() != QGis::WKBPoint25D)
+          {
+            mActionMoveVertex->setEnabled(true);
+          }
           mActionMoveFeature->setEnabled(true);
         }
         return;
@@ -4882,14 +4931,14 @@ void QgisApp::activateDeactivateLayerRelatedActions(QgsMapLayer* layer)
         if(vlayer->isEditable() && dprovider->capabilities() & QgsVectorDataProvider::AddFeatures)
         {
           mActionCaptureLine->setEnabled(true);
-	  mActionSplitFeatures->setEnabled(true);
-	  mActionMoveFeature->setEnabled(true);
+          mActionSplitFeatures->setEnabled(true);
+          mActionMoveFeature->setEnabled(true);
         }
         else
         {
           mActionCaptureLine->setEnabled(false);
-	  mActionSplitFeatures->setEnabled(false);
-	  mActionMoveFeature->setEnabled(false);
+          mActionSplitFeatures->setEnabled(false);
+          mActionMoveFeature->setEnabled(false);
         }
         mActionCapturePoint->setEnabled(false);
         mActionCapturePolygon->setEnabled(false);
@@ -4901,18 +4950,18 @@ void QgisApp::activateDeactivateLayerRelatedActions(QgsMapLayer* layer)
         if(vlayer->isEditable() && dprovider->capabilities() & QgsVectorDataProvider::AddFeatures)
         {
           mActionCapturePolygon->setEnabled(true);
-	  mActionAddRing->setEnabled(true);
-	  mActionAddIsland->setEnabled(true);
-	  mActionSplitFeatures->setEnabled(true);
-	  mActionMoveFeature->setEnabled(true);
+          mActionAddRing->setEnabled(true);
+          mActionAddIsland->setEnabled(true);
+          mActionSplitFeatures->setEnabled(true);
+          mActionMoveFeature->setEnabled(true);
         }
         else
         {
           mActionCapturePolygon->setEnabled(false);
-	  mActionAddRing->setEnabled(false);
-	  mActionAddIsland->setEnabled(false);
-	  mActionSplitFeatures->setEnabled(false);
-	  mActionMoveFeature->setEnabled(false);
+          mActionAddRing->setEnabled(false);
+          mActionAddIsland->setEnabled(false);
+          mActionSplitFeatures->setEnabled(false);
+          mActionMoveFeature->setEnabled(false);
         }
         mActionCapturePoint->setEnabled(false);
         mActionCaptureLine->setEnabled(false);
@@ -5340,27 +5389,16 @@ void QgisApp::keyPressEvent ( QKeyEvent * e )
   // commented out for now. [gsherman]
   //    std::cout << e->text().toLocal8Bit().data() << " (keypress recevied)" << std::endl;
   emit keyPressed (e);
-  
+
   //cancel rendering progress with esc key
   if(e->key() == Qt::Key_Escape)
-    {
-      if(mMapCanvas)
-	{
-	  QgsMapRender* theMapRender = mMapCanvas->mapRender();
-	  if(theMapRender)
-	    {
-	      QgsRenderContext* theRenderContext = theMapRender->renderContext();
-	      if(theRenderContext)
-		{
-		  theRenderContext->setRenderingStopped(true);
-		}
-	    }
-	}
-    }
+  {
+    stopRendering();
+  }
   else
-    {
-      e->ignore();
-    }
+  {
+    e->ignore();
+  }
 }
     
 // Debug hook - used to output diagnostic messages when evoked (usually from the menu)

@@ -19,24 +19,24 @@
 #ifndef QGISAPP_H
 #define QGISAPP_H
 
-class QRect;
-class QStringList;
+class QActionGroup;
+class QCheckBox;
 class QCursor;
+class QFileInfo;
+class QKeyEvent;
 class QLabel;
 class QLineEdit;
-class QProgressBar;
-class QFileInfo;
-class QSettings;
-class QTcpSocket;
-class QCheckBox;
-class QToolButton;
-class QKeyEvent;
 class QMenu;
 class QPixmap;
+class QProgressBar;
 class QPushButton;
+class QRect;
+class QSettings;
 class QSplashScreen;
+class QStringList;
+class QToolButton;
+class QTcpSocket;
 class QValidator;
-class QActionGroup;
 
 class QgisAppInterface;
 class QgsClipboard;
@@ -50,11 +50,13 @@ class QgsMapTool;
 class QgsPoint;
 class QgsProviderRegistry;
 class QgsPythonDialog;
+class QgsPythonUtils;
 class QgsRasterLayer;
 class QgsRect;
 class QgsVectorLayer;
 
 #include <QMainWindow>
+#include <QToolBar>
 #include <QAbstractSocket>
 
 #include "qgsconfig.h"
@@ -380,6 +382,12 @@ public slots:
   //! Stops rendering of the main map
   void stopRendering();
 
+  /** Get a reference to the file toolbar. Mainly intended 
+  *   to be used by plugins that want to specifically add 
+  *   an icon into the file toolbar for consistency e.g.
+  *   addWFS and GPS plugins.
+  */
+  QToolBar * fileToolBar();
 signals:
   /** emitted when a key is pressed and we want non widget sublasses to be able
     to pick up on this (e.g. maplayer) */
@@ -469,7 +477,7 @@ private:
   QAction *mActionSaveMapAsImage;
   QAction *mActionExportMapServer;
   QAction *mActionFileExit;
-  QAction *mActionAddNonDbLayer;
+  QAction *mActionAddOgrLayer;
   QAction *mActionAddRasterLayer;
   QAction *mActionAddLayer;
   QAction *mActionRemoveLayer;
@@ -524,9 +532,8 @@ private:
   QAction *mActionShowAllToolbars;
   QAction *mActionHideAllToolbars;
   QAction *mActionToggleFullScreen;
-#ifdef HAVE_PYTHON
   QAction *mActionShowPythonDialog;
-#endif
+  
   //
   //tool groups -------------------------------------
   QActionGroup *mMapToolGroup;
@@ -581,7 +588,7 @@ class Tools
   //! Widget used to suppress rendering
   QCheckBox * mRenderSuppressionCBox;
   //! Button used to stop rendering
-  QPushButton* mStopRenderButton;
+  QToolButton* mStopRenderButton;
   //! Widget in status bar used to show status of on the fly projection
   QToolButton * mOnTheFlyProjectionStatusButton;
   //! Popup menu
@@ -659,9 +666,8 @@ class Tools
   
   //!flag to indicat wehter we are in fullscreen mode or not
   bool mFullScreenMode;
-#ifdef HAVE_PYTHON
   QgsPythonDialog* mPythonConsole;
-#endif
+  QgsPythonUtils* mPythonUtils;
 };
 
 #endif

@@ -1,11 +1,9 @@
-PROJECT(qgis0.11.0)
 SET(CPACK_PACKAGE_VERSION_MAJOR "0")
 SET(CPACK_PACKAGE_VERSION_MINOR "11")
 SET(CPACK_PACKAGE_VERSION_PATCH "0")
+SET(COMPLETE_VERSION ${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH})
 SET(RELEASE_NAME "Metis")
-
-SET(PROJECT_VERSION ${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH})
-
+SET(PROJECT_VERSION ${COMPLETE_VERSION})
 PROJECT(qgis${PROJECT_VERSION})
 
 
@@ -14,7 +12,9 @@ PROJECT(qgis${PROJECT_VERSION})
 # - nice output when configured
 # - rename *.ui files to have the same filename as their implementation
 #   e.g. instead of blahblahbase.ui use blahblah.ui
-#   because it's more common in Qt4
+#   because it's more common in Qt4 
+# Note on last point above by Tim Sutton - I prefer to have the base suffix
+# as it indicates the ui generated class will be a base class for the widget.
 
 #############################################################
 # CMake settings
@@ -173,7 +173,6 @@ ENDIF (CMAKE_BUILD_TYPE MATCHES Debug)
 # platform specific stuff
 
 IF (WIN32)
-  SET (DEFAULT_BIN_SUBDIR     .)
   SET (DEFAULT_LIB_SUBDIR     lib)
   SET (DEFAULT_DATA_SUBDIR    .)
   SET (DEFAULT_PLUGIN_SUBDIR  plugins)
@@ -185,6 +184,7 @@ IF (WIN32)
     # will pop up mid way through the build process and block
     # the build, plus the python bindings wont build correctly
     SET (CMAKE_MAKE_PROGRAM nmake)
+    SET (DEFAULT_BIN_SUBDIR bin)
     # put all the build products into a single directory
     # under build (doesnt affect install target) to make for
     # easier debugging.
@@ -210,6 +210,8 @@ IF (WIN32)
     ADD_DEFINITIONS(-DQGISDEBUG=1)
 
     INSTALL(DIRECTORY ${CMAKE_SOURCE_DIR}/win_build/vcdeps/. DESTINATION .)
+  ELSE(MSVC)
+    SET (DEFAULT_BIN_SUBDIR     .)
   ENDIF(MSVC)
 ELSE (WIN32)
 
@@ -239,14 +241,17 @@ IF (WIN32)
   IF (MSVC)
     ADD_DEFINITIONS("-DCORE_EXPORT=__declspec(dllimport)")
     ADD_DEFINITIONS("-DGUI_EXPORT=__declspec(dllimport)")
+    ADD_DEFINITIONS("-DPYTHON_EXPORT=__declspec(dllimport)")
   ELSE (MSVC)
     ADD_DEFINITIONS("\"-DCORE_EXPORT=__declspec(dllimport)\"")
     ADD_DEFINITIONS("\"-DGUI_EXPORT=__declspec(dllimport)\"")
+    ADD_DEFINITIONS("\"-DPYTHON_EXPORT=__declspec(dllimport)\"")
   ENDIF (MSVC)
 ELSE (WIN32)
   # other compilers don't use that MSVC construct
   ADD_DEFINITIONS(-DCORE_EXPORT=)
   ADD_DEFINITIONS(-DGUI_EXPORT=)
+  ADD_DEFINITIONS(-DPYTHON_EXPORT=)
 ENDIF (WIN32)
 
 #############################################################
@@ -360,7 +365,7 @@ SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Quantum GIS")
 SET(CPACK_PACKAGE_VENDOR "Open Source Geospatial Foundation")
 SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README")
 SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
-SET(CPACK_PACKAGE_INSTALL_DIRECTORY "Quantum GIS ${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}")
+SET(CPACK_PACKAGE_INSTALL_DIRECTORY "Quantum GIS ${COMPLETE_VERSION}")
 IF(WIN32 AND NOT UNIX)
   # There is a bug in NSI that does not handle full unix paths properly. Make
   # sure there is at least one set of four (4) backslashes.
