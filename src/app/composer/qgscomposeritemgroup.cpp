@@ -63,6 +63,7 @@ void QgsComposerItemGroup::addItem(QgsComposerItem* item)
     }
   mItems.insert(item);
   item->setSelected(false);
+  item->setFlag(QGraphicsItem::ItemIsSelectable, false); //item in groups cannot be selected
 
   //update extent (which is in scene coordinates)
   double minXItem = item->transform().dx();
@@ -98,12 +99,17 @@ void QgsComposerItemGroup::addItem(QgsComposerItem* item)
 	}
     }
 
-  setSceneRect(mSceneBoundingRectangle);
+  QgsComposerItem::setSceneRect(mSceneBoundingRectangle); //call method of superclass to avoid repositioning of items
 
 }
 
 void QgsComposerItemGroup::removeItems()
 {
+  QSet<QgsComposerItem*>::iterator item_it = mItems.begin();
+  for(; item_it != mItems.end(); ++item_it)
+    {
+      (*item_it)->setFlag(QGraphicsItem::ItemIsSelectable, true); //enable item selection again
+    }
   mItems.clear();
 }
 
@@ -124,6 +130,34 @@ void QgsComposerItemGroup::move(double dx, double dy)
       (*item_it)->move(dx, dy);
     }
   QgsComposerItem::move(dx, dy);
+}
+
+void QgsComposerItemGroup::setSceneRect(const QRectF& rectangle)
+{
+  //call resize and transform for every item
+
+  double transformX = rectangle.x() - transform().dx();
+  double transformY = rectangle.y() - transform().dy();
+
+  double dx = rectangle.width() - rect().width();
+  double dy = rectangle.height() - rect().height();
+  double widthRatio, heightRatio;
+
+  QSet<QgsComposerItem*>::iterator item_it = mItems.begin();
+  for(; item_it != mItems.end(); ++item_it)
+    {
+      (*item_it)->move(transformX, transformY);
+      widthRatio = (*item_it)->rect().width() / rect().width();
+      heightRatio = (*item_it)->rect().height() / rect().height();
+      (*item_it)->resize(dx * widthRatio, dy * heightRatio);
+    }
+
+  QgsComposerItem::setSceneRect(rectangle);
+}
+
+void QgsComposerItemGroup::resize(double dx, double dy)
+{
+  //soon...
 }
 
 void QgsComposerItemGroup::drawFrame(QPainter* p)

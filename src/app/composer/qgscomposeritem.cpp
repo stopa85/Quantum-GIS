@@ -307,6 +307,13 @@ void QgsComposerItem::drawFrame(QPainter* p)
     }
 }
 
+void QgsComposerItem::resize(double dx, double dy)
+{
+  //default implementation just calls setSceneRect
+  QRectF newSceneRect(transform().dx(), transform().dy(), rect().width() + dx, rect().height() + dy);
+  setSceneRect(newSceneRect);
+}
+
 void QgsComposerItem::move(double dx, double dy)
 {
   QTransform newTransform;

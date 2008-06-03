@@ -74,7 +74,7 @@ public:
     virtual bool removeSettings( void );
 
     /** resizes an item in x- and y direction (scene coordinates)*/
-    virtual void resize(double dx, double dy){}
+    virtual void resize(double dx, double dy);
 
     /** moves the whole item in scene coordinates*/
     virtual void move(double dx, double dy);
