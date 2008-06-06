@@ -124,31 +124,36 @@ void QgsComposerItemGroup::paint( QPainter * painter, const QStyleOptionGraphics
 
 void QgsComposerItemGroup::setSceneRect(const QRectF& rectangle)
 {
-  //call resize and transform for every item
-
-  double transformX = rectangle.x() - transform().dx();
-  double transformY = rectangle.y() - transform().dy();
-
-  double dx = rectangle.width() - rect().width();
-  double dy = rectangle.height() - rect().height();
-
-  double itemWidthRatio, itemHeightRatio;
+  double xLeftCurrent = transform().dx();
+  double xRightCurrent = xLeftCurrent + rect().width();
+  double yTopCurrent = transform().dy();
+  double yBottomCurrent = yTopCurrent + rect().height();
   
-  double newItemWidth, newItemHeight;
-  QRectF newItemRect;
+  double xItemLeft, xItemRight, yItemTop, yItemBottom;
+  double xItemLeftNew, xItemRightNew, yItemTopNew, yItemBottomNew;
+  double xParamLeft, xParamRight, yParamTop, yParamBottom;
+  
 
   QSet<QgsComposerItem*>::iterator item_it = mItems.begin();
   for(; item_it != mItems.end(); ++item_it)
-    { 
-      itemWidthRatio = (*item_it)->rect().width()/ mSceneBoundingRectangle.width();
-      itemHeightRatio = (*item_it)->rect().height()/ mSceneBoundingRectangle.height();
+    {
+      xItemLeft = (*item_it)->transform().dx();
+      xItemRight = xItemLeft + (*item_it)->rect().width();
+      yItemTop = (*item_it)->transform().dy();
+      yItemBottom = yItemTop + (*item_it)->rect().height();
 
-      newItemWidth = (*item_it)->rect().width() + dx * itemWidthRatio;
-      newItemHeight = (*item_it)->rect().height() + dy * itemHeightRatio;
-      newItemRect = QRectF((*item_it)->transform().dx() + transformX, (*item_it)->transform().dy() + transformY, newItemWidth, newItemHeight);  
-      (*item_it)->setSceneRect(newItemRect);
+      xParamLeft = ( xItemLeft - xLeftCurrent) / (xRightCurrent - xLeftCurrent);
+      xParamRight = ( xItemRight - xLeftCurrent) / (xRightCurrent - xLeftCurrent);
+      yParamTop = (yItemTop - yTopCurrent) / (yBottomCurrent - yTopCurrent);
+      yParamBottom = (yItemBottom - yTopCurrent) / (yBottomCurrent - yTopCurrent);
+
+      xItemLeftNew = xParamLeft * rectangle.right()  + (1 - xParamLeft) * rectangle.left();
+      xItemRightNew = xParamRight * rectangle.right() + (1 - xParamRight) * rectangle.left();
+      yItemTopNew = yParamTop * rectangle.bottom() + (1 - yParamTop) * rectangle.top();
+      yItemBottomNew = yParamBottom * rectangle.bottom() + (1 - yParamBottom) * rectangle.top();
+
+      (*item_it)->setSceneRect(QRectF(xItemLeftNew, yItemTopNew, xItemRightNew - xItemLeftNew, yItemBottomNew - yItemTopNew));    
     }
-
   QgsComposerItem::setSceneRect(rectangle);
 }
 
