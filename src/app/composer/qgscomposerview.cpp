@@ -58,11 +58,11 @@ void QgsComposerView::mouseReleaseEvent(QMouseEvent* e)
 void QgsComposerView::mouseMoveEvent(QMouseEvent* e)
 {
   qWarning("QgsComposerView::mouseMoveEvent");
-    mComposer->composition()->mouseMoveEvent(e);
-    if(mComposer->composition()->tool() == QgsComposition::Select)
-      {
-	QGraphicsView::mouseMoveEvent(e);
-      }
+  mComposer->composition()->mouseMoveEvent(e);
+  if(mComposer->composition()->tool() == QgsComposition::Select)
+    {
+      QGraphicsView::mouseMoveEvent(e);
+    }
 }
 
 void QgsComposerView::keyPressEvent ( QKeyEvent * e )

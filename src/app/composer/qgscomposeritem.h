@@ -73,11 +73,8 @@ public:
     /** delete settings from project file  */
     virtual bool removeSettings( void );
 
-    /** resizes an item in x- and y direction (scene coordinates)*/
-    virtual void resize(double dx, double dy);
-
-    /** moves the whole item in scene coordinates*/
-    virtual void move(double dx, double dy);
+    /**Moves item in canvas coordinates*/
+    void move(double dx, double dy);
 
     /**Sets this items bound in scene coordinates such that 1 item size units
      corresponds to 1 scene size unit*/

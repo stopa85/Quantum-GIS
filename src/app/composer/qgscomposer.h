@@ -150,10 +150,10 @@ public slots:
     void on_mActionAddImage_activated(void);
 
     //! Group selected items 
-    void on_mActionGroupItems_activated(void);
+    void groupItems(void);
 
     //! Ungroup selected item group
-    void on_mActionUngroupItems_activated(void);
+    void ungroupItems(void);
 
     //! read project
     void projectRead();
@@ -169,6 +169,9 @@ public slots:
 
     //! Slot for when the close button is clicked
     void on_closePButton_clicked();
+
+ protected:
+    void mouseMoveEvent(QMouseEvent* e){qWarning("QgsComposer mouse move event");}
 
 private:
     //! Set teh pixmap / icons on the toolbar buttons

@@ -53,6 +53,16 @@ QgsComposer::QgsComposer( QgisApp *qgis): QMainWindow()
 {
   setupUi(this);
   setupTheme();
+
+  QString myIconPath = QgsApplication::themePath();
+  qWarning(QString(myIconPath +"mActionGroupItems.png").latin1() );
+
+  toolBar->addAction(QIcon(QPixmap(myIconPath+"mActionGroupItems.png")), tr("&Group Items"), this, SLOT(groupItems()));
+  toolBar->addAction(QIcon(QPixmap(myIconPath+"mActionUngroupItems.png")), tr("&Ungroup Items"), this, SLOT(ungroupItems()));
+
+ 
+  
+
   setWindowTitle(tr("QGIS - print composer"));
 
   // Template save and load is not yet implemented, so disable those actions
@@ -101,6 +111,8 @@ QgsComposer::QgsComposer( QgisApp *qgis): QMainWindow()
   }
   restoreWindowState();
   selectItem(); // Set selection tool
+
+  mView->setFocus();
 }
 
 QgsComposer::~QgsComposer()
@@ -878,7 +890,7 @@ void QgsComposer::on_mActionAddImage_activated(void)
   mView->setCursor(QCursor(cross_hair_cursor));
 }
  
-void QgsComposer::on_mActionGroupItems_activated(void)
+void QgsComposer::groupItems(void)
 {
   if(mComposition)
     {
@@ -886,7 +898,7 @@ void QgsComposer::on_mActionGroupItems_activated(void)
     }
 }
 
-void QgsComposer::on_mActionUngroupItems_activated(void)
+void QgsComposer::ungroupItems(void)
 {
   if(mComposition)
     {

@@ -442,7 +442,7 @@ void QgsComposition::mouseReleaseEvent(QMouseEvent* e)
   switch ( mTool ) {
     case AddMap: // mToolStep should be always 1 but rectangle can be 0 size
       {
-        double x = mRectangleItem->rect().x();//use doubles?
+        double x = mRectangleItem->rect().x();
         double y = mRectangleItem->rect().y();
         double w = mRectangleItem->rect().width();
         double h = mRectangleItem->rect().height();
@@ -458,8 +458,6 @@ void QgsComposition::mouseReleaseEvent(QMouseEvent* e)
 	    m = new QgsComposerMap ( this, mNextItemId++, x, y, w, h );
 	    QgsComposerMapWidget* w = new QgsComposerMapWidget(m);
 	    mComposer->addItem(m, w);
-
-	    //m->setUserExtent( mMapCanvas->extent());
 	    mItems.push_back(m);
 	    m->setSelected ( true );
 	    mCanvas->update();
@@ -849,6 +847,7 @@ void QgsComposition::groupItems()
 
   mComposer->addItem(itemGroup, 0);
   mCanvas->addItem(itemGroup);
+  mItems.push_back(itemGroup);
   itemGroup->setSelected(true);
   mComposer->showItemOptions(0);
 }

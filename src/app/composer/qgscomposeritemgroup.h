@@ -31,8 +31,6 @@ class QgsComposerItemGroup: public QgsComposerItem
   void removeItems();
   /**Draw outline and ev. selection handles*/
   void paint( QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget * widget = 0);
-  /**Moves all contained items by dx/dy*/
-  void move(double dx, double dy);
   /**Sets this items bound in scene coordinates such that 1 item size units
      corresponds to 1 scene size unit*/
   void setSceneRect(const QRectF& rectangle);

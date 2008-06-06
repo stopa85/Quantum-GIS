@@ -286,15 +286,18 @@ void QgsComposerItem::rectangleChange(double dx, double dy, double& mx, double& 
 
 void QgsComposerItem::drawSelectionBoxes(QPainter* p)
 {
-  p->setPen(QPen(QColor(0, 0, 255)));
-  p->setBrush(QBrush(QColor(0, 0, 255)));
-
-  double s = 5;
-  
-  p->drawRect (QRectF(0, 0, s, s));
-  p->drawRect (QRectF(rect().width() -s, 0, s, s));
-  p->drawRect (QRectF(rect().width() -s, rect().height() -s, s, s));
-  p->drawRect (QRectF(0, rect().height() -s, s, s));
+  if(plotStyle() == QgsComposition::Preview)
+    {
+      p->setPen(QPen(QColor(0, 0, 255)));
+      p->setBrush(QBrush(QColor(0, 0, 255)));
+      
+      double s = 5;
+      
+      p->drawRect (QRectF(0, 0, s, s));
+      p->drawRect (QRectF(rect().width() -s, 0, s, s));
+      p->drawRect (QRectF(rect().width() -s, rect().height() -s, s, s));
+      p->drawRect (QRectF(0, rect().height() -s, s, s));
+    }
 }
 
 void QgsComposerItem::drawFrame(QPainter* p)
@@ -307,18 +310,11 @@ void QgsComposerItem::drawFrame(QPainter* p)
     }
 }
 
-void QgsComposerItem::resize(double dx, double dy)
-{
-  //default implementation just calls setSceneRect
-  QRectF newSceneRect(transform().dx(), transform().dy(), rect().width() + dx, rect().height() + dy);
-  setSceneRect(newSceneRect);
-}
-
 void QgsComposerItem::move(double dx, double dy)
 {
-  QTransform newTransform;
-  newTransform.translate(transform().dx() + dx, transform().dy() + dy);
-  setTransform(newTransform);
+  QTransform t = transform();
+  QRectF newSceneRect(t.dx() + dx, t.dy() + dy, rect().width(), rect().height());
+  setSceneRect(newSceneRect);
 }
 
 void QgsComposerItem::setSceneRect(const QRectF& rectangle)

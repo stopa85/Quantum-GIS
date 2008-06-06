@@ -9,10 +9,16 @@
     <height>609</height>
    </rect>
   </property>
+  <property name="mouseTracking" >
+   <bool>true</bool>
+  </property>
   <property name="windowTitle" >
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget" >
+   <property name="mouseTracking" >
+    <bool>true</bool>
+   </property>
    <layout class="QVBoxLayout" >
     <property name="spacing" >
      <number>6</number>
@@ -31,10 +37,16 @@
     </property>
     <item>
      <widget class="QSplitter" name="mSplitter" >
+      <property name="mouseTracking" >
+       <bool>true</bool>
+      </property>
       <property name="orientation" >
        <enum>Qt::Horizontal</enum>
       </property>
       <widget class="QFrame" name="mViewFrame" >
+       <property name="mouseTracking" >
+        <bool>true</bool>
+       </property>
        <property name="frameShape" >
         <enum>QFrame::StyledPanel</enum>
        </property>
@@ -234,8 +246,6 @@
    <addaction name="mActionAddNewVectLegend" />
    <addaction name="mActionAddNewScalebar" />
    <addaction name="mActionSelectMoveItem" />
-   <addaction name="mActionGroupItems" />
-   <addaction name="mActionUngroupItems" />
   </widget>
   <action name="mActionOpenTemplate" >
    <property name="icon" >
@@ -355,16 +365,6 @@
    </property>
    <property name="text" >
     <string>Add Image</string>
-   </property>
-  </action>
-  <action name="mActionGroupItems" >
-   <property name="text" >
-    <string>Group Items</string>
-   </property>
-  </action>
-  <action name="mActionUngroupItems" >
-   <property name="text" >
-    <string>Ungroup items</string>
    </property>
   </action>
  </widget>

@@ -122,16 +122,6 @@ void QgsComposerItemGroup::paint( QPainter * painter, const QStyleOptionGraphics
     }
 }
 
-void QgsComposerItemGroup::move(double dx, double dy)
-{
-  QSet<QgsComposerItem*>::iterator item_it = mItems.begin();
-  for(; item_it != mItems.end(); ++item_it)
-    {
-      (*item_it)->move(dx, dy);
-    }
-  QgsComposerItem::move(dx, dy);
-}
-
 void QgsComposerItemGroup::setSceneRect(const QRectF& rectangle)
 {
   //call resize and transform for every item
@@ -141,28 +131,30 @@ void QgsComposerItemGroup::setSceneRect(const QRectF& rectangle)
 
   double dx = rectangle.width() - rect().width();
   double dy = rectangle.height() - rect().height();
-  double widthRatio, heightRatio;
+
+  double itemWidthRatio, itemHeightRatio;
+  
+  double newItemWidth, newItemHeight;
+  QRectF newItemRect;
 
   QSet<QgsComposerItem*>::iterator item_it = mItems.begin();
   for(; item_it != mItems.end(); ++item_it)
-    {
-      (*item_it)->move(transformX, transformY);
-      widthRatio = (*item_it)->rect().width() / rect().width();
-      heightRatio = (*item_it)->rect().height() / rect().height();
-      (*item_it)->resize(dx * widthRatio, dy * heightRatio);
+    { 
+      itemWidthRatio = (*item_it)->rect().width()/ mSceneBoundingRectangle.width();
+      itemHeightRatio = (*item_it)->rect().height()/ mSceneBoundingRectangle.height();
+
+      newItemWidth = (*item_it)->rect().width() + dx * itemWidthRatio;
+      newItemHeight = (*item_it)->rect().height() + dy * itemHeightRatio;
+      newItemRect = QRectF((*item_it)->transform().dx() + transformX, (*item_it)->transform().dy() + transformY, newItemWidth, newItemHeight);  
+      (*item_it)->setSceneRect(newItemRect);
     }
 
   QgsComposerItem::setSceneRect(rectangle);
 }
 
-void QgsComposerItemGroup::resize(double dx, double dy)
-{
-  //soon...
-}
-
 void QgsComposerItemGroup::drawFrame(QPainter* p)
 {
-  if(mFrame)
+  if(mFrame && plotStyle() == QgsComposition::Preview)
     {
       QPen newPen(pen());
       newPen.setStyle(Qt::DashLine);
