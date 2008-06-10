@@ -82,13 +82,18 @@ void QgsComposerItem::mouseMoveEvent ( QGraphicsSceneMouseEvent * event )
 
       rectangleChange(diffX, diffY, mx, my, rx, ry);
       
-      //QRectF r = mBoundingResizeRectangle->rect();
-      //r.translate(mx, my);
       QRectF r = mBoundingResizeRectangle->rect();
-      r.setWidth(r.width() + rx);
-      r.setHeight(r.height() + ry);
-      mBoundingResizeRectangle->setRect(r);
-      mBoundingResizeRectangle->moveBy(mx, my);
+      double newWidth = r.width() + rx;
+      double newHeight = r.height() + ry;
+
+      QTransform oldTransform = mBoundingResizeRectangle->transform();
+      QTransform transform;
+      transform.translate(oldTransform.dx() + mx, oldTransform.dy() + my);
+      
+      QRectF newBoundingRect(0, 0, newWidth, newHeight);
+
+      mBoundingResizeRectangle->setRect(newBoundingRect);
+      mBoundingResizeRectangle->setTransform(transform);
     }
   mLastMouseEventPos = event->lastPos();
 }
