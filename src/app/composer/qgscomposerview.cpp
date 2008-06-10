@@ -34,7 +34,8 @@ QgsComposerView::QgsComposerView( QgsComposer *composer, QWidget* parent, const 
 {
     mComposer = composer;
     setResizeAnchor ( QGraphicsView::AnchorViewCenter );
-    setMouseTracking(true);
+    setMouseTracking(true);  
+    viewport()->setMouseTracking ( true );
 }
 
 void QgsComposerView::mousePressEvent(QMouseEvent* e)

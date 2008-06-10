@@ -124,6 +124,8 @@ void QgsComposerItemGroup::paint( QPainter * painter, const QStyleOptionGraphics
 
 void QgsComposerItemGroup::setSceneRect(const QRectF& rectangle)
 {
+  //calculate values between 0 and 1 for boundaries of all contained items, depending on their positions in the item group rectangle.
+  //then position the item boundaries in the new item group rect such that these values are the same
   double xLeftCurrent = transform().dx();
   double xRightCurrent = xLeftCurrent + rect().width();
   double yTopCurrent = transform().dy();

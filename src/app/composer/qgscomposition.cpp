@@ -21,6 +21,7 @@
 #include "qgscomposeritem.h"
 #include "qgscomposeritemgroup.h"
 #include "qgscomposerlabel.h"
+#include "qgscomposerlabelwidget.h"
 
 #include "qgscomposermap.h"
 #include "qgscomposermapwidget.h"
@@ -35,6 +36,7 @@
 #include <QGraphicsRectItem>
 #include <QMatrix>
 #include <QMessageBox>
+#include <QMouseEvent>
 
 #include <iostream>
 #include <math.h>
@@ -258,24 +260,48 @@ void QgsComposition::mousePressEvent(QMouseEvent* e, bool shiftKeyPressed)
 	    mComposer->showItemOptions(selectedItem);
 	  }
 	break;
-  }
+      }
 
     case AddMap:
 
 #ifdef QGISDEBUG
       std::cerr << "AddMap" << std::endl;
 #endif
-      if ( mToolStep == 0 ) {
-        mRectangleItem = new QGraphicsRectItem( p.x(), p.y(), 0, 0, 0, mCanvas );//null parent
-        mRectangleItem->setBrush( Qt::NoBrush );
-        mRectangleItem->setPen( QPen(QColor(0,0,0), 0) );
-        mRectangleItem->setZValue(100);
-        mRectangleItem->show();
-        mToolStep = 1;
-      }
+      if ( mToolStep == 0 ) 
+	{
+	  mRectangleItem = new QGraphicsRectItem( p.x(), p.y(), 0, 0, 0, mCanvas );//null parent
+	  mRectangleItem->setBrush( Qt::NoBrush );
+	  mRectangleItem->setPen( QPen(QColor(0,0,0), 0) );
+	  mRectangleItem->setZValue(100);
+	  mRectangleItem->show();
+	  mToolStep = 1;
+	}
 #ifdef QGISDEBUG
       std::cerr << "mToolStep = " << mToolStep << std::endl;
 #endif
+      break;
+    case AddLabel:
+      if(mToolStep == 0)
+	{
+	  QgsComposerLabel* newLabelItem = new QgsComposerLabel(this, mNextItemId++);
+	  newLabelItem->setText("Quantum GIS");
+	  newLabelItem->adjustSizeToText();
+	  newLabelItem->setSceneRect(QRectF(p.x(), p.y(), newLabelItem->rect().width(), newLabelItem->rect().height()));
+	  newLabelItem->setZValue(60);
+	  
+	  QgsComposerLabelWidget* newLabelWidget = new QgsComposerLabelWidget(newLabelItem);
+	  
+	  mComposer->addItem(newLabelItem, newLabelWidget);
+	  mItems.push_back(newLabelItem);
+	  canvas()->addItem(newLabelItem);
+	  newLabelItem->setSelected ( true );
+	  mCanvas->update();
+	  mComposer->showItemOptions(newLabelItem);
+	  mSelectedItem = newLabelItem;
+	  newLabelItem->show();
+	  mToolStep = 1;
+	  setTool(Select);
+	}
       break;
       /* //other items besides map disabled for the moment
     case AddVectorLegend:
@@ -295,26 +321,6 @@ void QgsComposition::mousePressEvent(QMouseEvent* e, bool shiftKeyPressed)
         mCanvas->update();
       }
       break;
-
-    case AddLabel:
-      {
-        mNewCanvasItem->setPos(p);
-
-        QgsComposerLabel *lab = dynamic_cast <QgsComposerLabel*> (mNewCanvasItem);
-        lab->writeSettings();
-        mItems.push_back(lab);
-        mNewCanvasItem = 0;
-        mComposer->selectItem(); // usually just one ???
-
-        // Select and show options
-        lab->setSelected ( true );
-        mComposer->showItemOptions ( lab->options() );
-        mSelectedItem = dynamic_cast <QGraphicsItem*> (lab);
-
-        mCanvas->update();
-      }
-      break;
-
     case AddScalebar:
       {
         mNewCanvasItem->setPos(p);
@@ -724,7 +730,6 @@ int QgsComposition::fromMM ( double v ) { return (int) (v * mScale); }
 void QgsComposition::setTool ( Tool tool )
 {
   // Stop old in progress
-  mView->viewport()->setMouseTracking ( false ); // stop mouse tracking
   if ( mSelectedItem ) {
     QgsComposerItem *coi = dynamic_cast <QgsComposerItem *> (mSelectedItem);
     coi->setSelected ( false );
@@ -758,17 +763,18 @@ void QgsComposition::setTool ( Tool tool )
     mView->viewport()->setMouseTracking ( true ); // to recieve mouse move
 
   }
-  else if ( tool == AddLabel ) {
+  /*else if ( tool == AddLabel ) {
     if ( mNewCanvasItem ) delete mNewCanvasItem;
 
     // Create new object outside the visible area
-    QgsComposerLabel *lab = new QgsComposerLabel ( this, mNextItemId++, -1000, -1000, tr("Label"), (int) (mPaperHeight/20));
+    //QgsComposerLabel *lab = new QgsComposerLabel ( this, mNextItemId++, -1000, -1000, tr("Label"), (int) (mPaperHeight/20));
+    
 
-    mNewCanvasItem = dynamic_cast <QGraphicsItem *> (lab);
-    mComposer->showItemOptions(lab);
+    //mNewCanvasItem = dynamic_cast <QGraphicsItem *> (lab);
+    //mComposer->showItemOptions(lab);
 
     mView->viewport()->setMouseTracking ( true ); // to recieve mouse move
-  }
+    }*/
  else if ( tool == AddScalebar ) {
     if ( mNewCanvasItem ) delete mNewCanvasItem;
 

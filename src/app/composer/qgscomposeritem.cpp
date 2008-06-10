@@ -29,14 +29,12 @@
 QgsComposerItem::QgsComposerItem(QGraphicsItem* parent): QGraphicsRectItem(0), mBoundingResizeRectangle(0), mFrame(true)
 {
     mPlotStyle = QgsComposition::Preview;
-    setAcceptsHoverEvents(true);
     setFlag(QGraphicsItem::ItemIsSelectable, true);
 }
 
 QgsComposerItem::QgsComposerItem(qreal x, qreal y, qreal width, qreal height, QGraphicsItem* parent): QGraphicsRectItem(0, 0, width, height, parent), mBoundingResizeRectangle(0), mFrame(true)
 {
   mPlotStyle = QgsComposition::Preview;
-  setAcceptsHoverEvents(true);
   setFlag(QGraphicsItem::ItemIsSelectable, true);
 
   QTransform t;

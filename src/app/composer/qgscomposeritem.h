@@ -46,7 +46,7 @@ public:
     };
 
     QgsComposerItem(QGraphicsItem* parent = 0);
-    QgsComposerItem(qreal x, qreal y, qreal width, qreal height,QGraphicsItem* parent = 0); 
+    QgsComposerItem(qreal x, qreal y, qreal width, qreal height, QGraphicsItem* parent = 0); 
     virtual ~QgsComposerItem(); 
 
     /** \brief Set plot style */

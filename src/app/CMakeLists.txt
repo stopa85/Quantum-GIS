@@ -59,6 +59,7 @@ SET(QGIS_APP_SRCS
   composer/qgscomposeritem.cpp
   composer/qgscomposeritemgroup.cpp
   composer/qgscomposerlabel.cpp
+  composer/qgscomposerlabelwidget.cpp
   composer/qgscomposerpicture.cpp
   composer/qgscomposermap.cpp
   composer/qgscomposermapwidget.cpp
@@ -118,7 +119,7 @@ SET (QGIS_APP_MOC_HDRS
   qgsvectorlayerproperties.h
 
   composer/qgscomposer.h
-  composer/qgscomposerlabel.h
+  composer/qgscomposerlabelwidget.h
   composer/qgscomposermap.h
   composer/qgscomposermapwidget.h
   composer/qgscomposerpicture.h

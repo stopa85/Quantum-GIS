@@ -14,6 +14,61 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
+
+#include "qgscomposerlabel.h"
+#include <QPainter>
+
+QgsComposerLabel::QgsComposerLabel( QgsComposition *composition, int id): QgsComposerItem(0)
+{
+  mId = id;
+}
+
+QgsComposerLabel::~QgsComposerLabel()
+{
+  //todo
+}
+
+void QgsComposerLabel::paint(QPainter* painter, const QStyleOptionGraphicsItem* itemStyle, QWidget* pWidget)
+{
+  if(!painter)
+    {
+      return;
+    }
+  
+  if(plotStyle() == QgsComposition::Preview)
+    {
+      painter->setFont(mFont);
+    }
+  else
+    {
+      //scale font
+      QFont outputFont(mFont);
+      double dpiPaintDevice = (painter->device()->logicalDpiX() + painter->device()->logicalDpiY()) / 2;
+      outputFont.setPointSizeF(mFont.pointSizeF() * 25.4 / dpiPaintDevice);
+      painter->setFont(outputFont);
+    }
+  painter->drawText(rect(), Qt::AlignLeft, mText, 0);
+
+  drawFrame(painter);
+  if(isSelected())
+    {
+      drawSelectionBoxes(painter);
+    }
+}
+
+void QgsComposerLabel::setFontSize(double size)
+{
+  mFont.setPointSizeF(size);
+}
+
+void QgsComposerLabel::adjustSizeToText()
+{
+  //find out width and hight mText and set bounding box to it
+  QFontMetricsF fontInfo(mFont);
+  setSceneRect(QRectF(transform().dx(), transform().dy(), fontInfo.width(mText), fontInfo.xHeight()));
+}
+
+#if 0
 #include "qgscomposerlabel.h"
 #include "qgsproject.h"
 
@@ -360,3 +415,5 @@ bool QgsComposerLabel::readXML( QDomNode & node )
 {
     return true;
 }
+
+#endif //0
