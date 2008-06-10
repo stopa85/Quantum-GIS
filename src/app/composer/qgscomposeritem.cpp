@@ -349,7 +349,6 @@ double QgsComposerItem::fontPointScaleFactor(const QPainter* p) const
 
 void QgsComposerItem::hoverMoveEvent ( QGraphicsSceneHoverEvent * event )
 {
-  qWarning("QgsComposerItem::hoverMoveEvent");
   if(isSelected())
     {
       setCursor(cursorForPosition(event->pos()));

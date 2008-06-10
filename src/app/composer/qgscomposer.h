@@ -170,9 +170,6 @@ public slots:
     //! Slot for when the close button is clicked
     void on_closePButton_clicked();
 
- protected:
-    void mouseMoveEvent(QMouseEvent* e){qWarning("QgsComposer mouse move event");}
-
 private:
     //! Set teh pixmap / icons on the toolbar buttons
     void setupTheme();
