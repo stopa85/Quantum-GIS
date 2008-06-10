@@ -15,6 +15,26 @@
  ***************************************************************************/
 
 #include "qgscomposerscalebar.h"
+
+QgsComposerScaleBar::QgsComposerScaleBar(QgsComposition* composition)
+{
+
+}
+
+QgsComposerScaleBar::~QgsComposerScaleBar()
+{
+
+}
+
+void QgsComposerScaleBar::paint (QPainter* painter, const QStyleOptionGraphicsItem* itemStyle, QWidget* pWidget)
+{
+  //soon...
+}
+
+
+
+#if 0
+#include "qgscomposerscalebar.h"
 #include "qgscomposermap.h"
 #include "qgsproject.h"
 
@@ -576,3 +596,5 @@ bool QgsComposerScalebar::readXML(QDomNode & node)
 {
   return true;
 }
+
+#endif //0

@@ -30,12 +30,14 @@ QgsComposerItem::QgsComposerItem(QGraphicsItem* parent): QGraphicsRectItem(0), m
 {
     mPlotStyle = QgsComposition::Preview;
     setFlag(QGraphicsItem::ItemIsSelectable, true);
+    setAcceptsHoverEvents(true);
 }
 
 QgsComposerItem::QgsComposerItem(qreal x, qreal y, qreal width, qreal height, QGraphicsItem* parent): QGraphicsRectItem(0, 0, width, height, parent), mBoundingResizeRectangle(0), mFrame(true)
 {
   mPlotStyle = QgsComposition::Preview;
   setFlag(QGraphicsItem::ItemIsSelectable, true);
+  setAcceptsHoverEvents(true);
 
   QTransform t;
   t.translate(x, y);
@@ -343,4 +345,13 @@ double QgsComposerItem::fontPointScaleFactor(const QPainter* p) const
 {
   double dpiPaintDevice = (p->device()->logicalDpiX() + p->device()->logicalDpiY()) / 2;
   return (25.4 / dpiPaintDevice / 0.376); //consider 1 point equals 0.376 mm 
+}
+
+void QgsComposerItem::hoverMoveEvent ( QGraphicsSceneHoverEvent * event )
+{
+  qWarning("QgsComposerItem::hoverMoveEvent");
+  if(isSelected())
+    {
+      setCursor(cursorForPosition(event->pos()));
+    }
 }

@@ -752,7 +752,7 @@ void QgsComposition::setTool ( Tool tool )
   }
 
   // Start new
-  if ( tool == AddVectorLegend ) { // Create temporary object
+  /*if ( tool == AddVectorLegend ) { // Create temporary object
     if ( mNewCanvasItem ) delete mNewCanvasItem;
 
     // Create new object outside the visible area
@@ -763,7 +763,7 @@ void QgsComposition::setTool ( Tool tool )
     mView->viewport()->setMouseTracking ( true ); // to recieve mouse move
 
   }
-  /*else if ( tool == AddLabel ) {
+  else if ( tool == AddLabel ) {
     if ( mNewCanvasItem ) delete mNewCanvasItem;
 
     // Create new object outside the visible area
@@ -774,7 +774,7 @@ void QgsComposition::setTool ( Tool tool )
     //mComposer->showItemOptions(lab);
 
     mView->viewport()->setMouseTracking ( true ); // to recieve mouse move
-    }*/
+    }
  else if ( tool == AddScalebar ) {
     if ( mNewCanvasItem ) delete mNewCanvasItem;
 
@@ -925,6 +925,7 @@ void QgsComposition::emitMapChanged ( int id )
 
 bool QgsComposition::writeSettings ( void )
 {
+#if 0
   QString path, val;
   path.sprintf("/composition_%d/", mId );
   QgsProject::instance()->writeEntry( "Compositions", path+"width", mUserPaperWidth );
@@ -938,12 +939,14 @@ bool QgsComposition::writeSettings ( void )
   }
   QgsProject::instance()->writeEntry( "Compositions", path+"orientation", val );
 
-
+#endif //0
   return true;
 }
 
 bool QgsComposition::readSettings ( void )
 {
+#if 0
+
 #ifdef QGISDEBUG
   std::cout << "QgsComposition::readSettings" << std::endl;
 #endif
@@ -1024,7 +1027,7 @@ bool QgsComposition::readSettings ( void )
 
 
   mCanvas->update();
-
+#endif //0
   return true;
 }
 

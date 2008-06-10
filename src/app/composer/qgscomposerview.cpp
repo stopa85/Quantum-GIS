@@ -62,6 +62,7 @@ void QgsComposerView::mouseMoveEvent(QMouseEvent* e)
   mComposer->composition()->mouseMoveEvent(e);
   if(mComposer->composition()->tool() == QgsComposition::Select)
     {
+      qWarning("using default implementation of mouseMoveEvent");
       QGraphicsView::mouseMoveEvent(e);
     }
 }

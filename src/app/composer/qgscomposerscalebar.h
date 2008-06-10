@@ -16,6 +16,56 @@
 #ifndef QGSCOMPOSERSCALEBAR_H
 #define QGSCOMPOSERSCALEBAR_H
 
+#include "qgscomposeritem.h"
+#include <QPen>
+
+class QgsComposerScaleBar: public QgsComposerItem
+{
+ public:
+
+  enum Style
+    {
+      Bar_Ticks_Down,
+      Bar_Ticks_Middle,
+      Bar_Ticks_Up,
+      Single_Box,
+      Double_Box,
+    };
+
+  QgsComposerScaleBar(QgsComposition* composition);
+  ~QgsComposerScaleBar();
+
+  /** \brief Reimplementation of QCanvasItem::paint*/
+  void paint (QPainter* painter, const QStyleOptionGraphicsItem* itemStyle, QWidget* pWidget);
+
+  
+ protected:
+
+  /**Reference to composer map object*/
+  QgsComposerMap* mComposerMap;
+  /**Number of segments on right side*/
+  int mNumSegments;
+  /**Number of segments on left side*/
+  int mNumSegmentsLeft;
+  /**Size of a segment (in map units)*/
+  int mNumUnitsPerSegment;
+  /**Labeling of map units*/
+  QString mUnitLabeling;
+  /**Font*/
+  QFont mFont;
+  /**Outline*/
+  QPen mPen;
+  /**Fill*/
+  QBrush mBrush;
+  /**Height of bars/lines*/
+  double mHeight;
+  
+};
+
+#endif //QGSCOMPOSERSCALEBAR_H
+
+#if 0
+
 #include "ui_qgscomposerscalebarbase.h"
 #include "qgscomposeritem.h"
 #include <QAbstractGraphicsShapeItem>
@@ -149,4 +199,4 @@ private:
     void sizeChanged ( void );
 };
 
-#endif
+#endif //0

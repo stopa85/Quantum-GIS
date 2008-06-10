@@ -119,6 +119,8 @@ protected:
     virtual void mousePressEvent ( QGraphicsSceneMouseEvent * event );
     virtual void mouseReleaseEvent ( QGraphicsSceneMouseEvent * event );
 
+    virtual void hoverMoveEvent ( QGraphicsSceneHoverEvent * event );
+
     /**Finds out the appropriate cursor for the current mouse position in the widget (e.g. move in the middle, resize at border)*/
     Qt::CursorShape cursorForPosition(const QPointF& itemCoordPos);
 
