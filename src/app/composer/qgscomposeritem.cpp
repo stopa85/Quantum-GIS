@@ -106,7 +106,6 @@ void QgsComposerItem::mousePressEvent ( QGraphicsSceneMouseEvent * event )
   mMouseMoveStartPos = event->lastScenePos();
   mLastMouseEventPos = event->lastPos();
   mCurrentMouseMoveAction = mouseMoveActionForPosition(event->pos());
-  setCursor(QCursor(cursorForPosition(event->pos())));
 
   //create and show bounding rectangle
   mBoundingResizeRectangle = new QGraphicsRectItem(0);
@@ -284,7 +283,7 @@ void QgsComposerItem::rectangleChange(double dx, double dy, double& mx, double& 
       break;
 
     case QgsComposerItem::moveItem:
-      mx = dx; my = dy;
+      mx = dx; my = dy; rx = 0, ry = 0;
       break;
     }
 }
