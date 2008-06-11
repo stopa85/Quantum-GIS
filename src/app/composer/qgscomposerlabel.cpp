@@ -18,7 +18,7 @@
 #include "qgscomposerlabel.h"
 #include <QPainter>
 
-QgsComposerLabel::QgsComposerLabel( QgsComposition *composition, int id): QgsComposerItem(0)
+QgsComposerLabel::QgsComposerLabel( QgsComposition *composition, int id): QgsComposerItem(0), mMargin(0.0)
 {
   mId = id;
 }
@@ -40,7 +40,7 @@ void QgsComposerLabel::paint(QPainter* painter, const QStyleOptionGraphicsItem* 
   outputFont.setPointSizeF(mFont.pointSizeF() * fontPointScaleFactor(painter));
 
   painter->setFont(outputFont);
-  painter->drawText(rect(), Qt::AlignLeft, mText, 0);
+  painter->drawText(QRectF(mMargin, mMargin, rect().width(), rect().height()), Qt::AlignLeft, mText, 0);
 
   drawFrame(painter);
   if(isSelected())
@@ -57,8 +57,12 @@ void QgsComposerLabel::setFontSize(double size)
 void QgsComposerLabel::adjustSizeToText()
 {
   //find out width and hight mText and set bounding box to it
-  QFontMetricsF fontInfo(mFont);
-  setSceneRect(QRectF(transform().dx(), transform().dy(), fontInfo.width(mText), fontInfo.xHeight()));
+  QFont scaledFont(mFont);
+  scaledFont.setPointSizeF(mFont.pointSizeF() * (25.4 / 120 / 0.376)); //how to find out the 120 dpi of QGraphicsView?
+
+
+  QFontMetricsF fontInfo(scaledFont);
+  setSceneRect(QRectF(transform().dx(), transform().dy(), fontInfo.width(mText) + 2 * mMargin, fontInfo.ascent() + 2 * mMargin));
 }
 
 

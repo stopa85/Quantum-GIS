@@ -36,6 +36,8 @@ class QgsComposerLabel: public QgsComposerItem
   QFont font() {return mFont;}
   void setFont(const QFont& f){mFont = f;}
   void setFontSize(double size);
+  double margin(){return mMargin;}
+  void setMargin(double m){mMargin = m;}
  
  private:
   // Text 
@@ -43,6 +45,9 @@ class QgsComposerLabel: public QgsComposerItem
 
     // Font
     QFont mFont;
+
+    // Border between text and fram (in mm)
+    double mMargin;
 };
 
 #endif 

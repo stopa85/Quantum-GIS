@@ -77,5 +77,15 @@ void QgsComposerLabelWidget::on_mBoxCheckBox_stateChanged(int state)
     }
 }
 
+void QgsComposerLabelWidget::on_mMarginDoubleSpinBox_valueChanged(double d)
+{
+  if(mComposerLabel)
+    {
+      mComposerLabel->setMargin(d);
+      mComposerLabel->adjustSizeToText();
+      mComposerLabel->update();
+    }
+}
+
 
 

@@ -33,6 +33,7 @@ class QgsComposerLabelWidget: public QWidget, private Ui::QgsComposerLabelWidget
   void on_mTextEdit_textChanged();
   void on_mFontButton_clicked();
   void on_mBoxCheckBox_stateChanged(int state);
+  void on_mMarginDoubleSpinBox_valueChanged(double d);
 
  private:
   QgsComposerLabel* mComposerLabel;
