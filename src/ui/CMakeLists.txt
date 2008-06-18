@@ -1,4 +1,3 @@
-
 SET(QGIS_UIS
   qgisappbase.ui
   qgsabout.ui
@@ -18,27 +17,22 @@ SET(QGIS_UIS
   qgscustomprojectiondialogbase.ui
   qgsdbsourceselectbase.ui
   qgsdelattrdialogbase.ui
-  qgsfillstylewidgetbase.ui
+  qgsdetaileditemwidgetbase.ui
   qgsgeomtypedialogbase.ui
   qgsgraduatedsymboldialogbase.ui
   qgshelpviewerbase.ui
   qgsidentifyresultsbase.ui
   qgslabeldialogbase.ui
   qgslayerprojectionselectorbase.ui
-  qgslinestyledialogbase.ui
-  qgslinestylewidgetbase.ui
   qgsludialogbase.ui
-  qgsmarkerdialogbase.ui
   qgsmeasurebase.ui
   qgsmessageviewer.ui
   qgsnewconnectionbase.ui
   qgsnewhttpconnectionbase.ui
   qgsoptionsbase.ui
   qgspastetransformationsbase.ui
-  qgspatterndialogbase.ui
   qgspgquerybuilderbase.ui
   qgspluginmanagerbase.ui
-  qgspointstylewidgetbase.ui
   qgsprojectionselectorbase.ui
   qgsprojectpropertiesbase.ui
   qgsrasterlayerpropertiesbase.ui
@@ -47,12 +41,8 @@ SET(QGIS_UIS
   qgssnappingdialogbase.ui
   qgsuniquevaluedialogbase.ui
   qgsvectorlayerpropertiesbase.ui
-  qgsvectorsymbologywidgetbase.ui
+  qgspythondialog.ui
 )
-
-IF (PYTHON_FOUND)
-  SET (QGIS_UIS ${QGIS_UIS} ../ui/qgspythondialog.ui)
-ENDIF (PYTHON_FOUND)
 
 QT4_WRAP_UI(QGIS_UIS_H ${QGIS_UIS})
 

@@ -27,7 +27,6 @@
 #include <QSettings>
 #include <QColorDialog>
 #include <QLocale>
-#include <QTextCodec>
 
 #include <cassert>
 #include <iostream>
@@ -62,16 +61,22 @@ QgsOptions::QgsOptions(QWidget *parent, Qt::WFlags fl) :
 #endif
   spinBoxIdentifyValue->setValue(identifyValue);
 
+  //Web proxy settings
+  grpProxy->setChecked(settings.value("proxy/proxyEnabled", "0").toBool());
+  leProxyHost->setText(settings.value("proxy/proxyHost", "").toString());
+  leProxyPort->setText(settings.value("proxy/proxyPort", "").toString());
+  leProxyUser->setText(settings.value("proxy/proxyUser", "").toString());
+  leProxyPassword->setText(settings.value("proxy/proxyPassword", "").toString());
   // set the current theme
-  cmbTheme->setCurrentText(settings.readEntry("/Themes"));
+  cmbTheme->setItemText(cmbTheme->currentIndex(), settings.value("/Themes").toString());
   // set the display update threshold
-  spinBoxUpdateThreshold->setValue(settings.readNumEntry("/Map/updateThreshold"));
+  spinBoxUpdateThreshold->setValue(settings.value("/Map/updateThreshold").toInt());
   //set the default projection behaviour radio buttongs
-  if (settings.readEntry("/Projections/defaultBehaviour")=="prompt")
+  if (settings.value("/Projections/defaultBehaviour").toString()=="prompt")
   {
     radPromptForProjection->setChecked(true);
   }
-  else if (settings.readEntry("/Projections/defaultBehaviour")=="useProject")
+  else if (settings.value("/Projections/defaultBehaviour").toString()=="useProject")
   {
     radUseProjectProjection->setChecked(true);
   }
@@ -79,30 +84,30 @@ QgsOptions::QgsOptions(QWidget *parent, Qt::WFlags fl) :
   {
     radUseGlobalProjection->setChecked(true);
   }
-  mGlobalSRSID = settings.readNumEntry("/Projections/defaultProjectionSRSID",GEOSRS_ID);
+  mGlobalSRSID = settings.value("/Projections/defaultProjectionSRSID",(int)GEOSRS_ID).toInt();
   //! @todo changes this control name in gui to txtGlobalProjString
   QString myProjString = QgsSpatialRefSys::getProj4FromSrsId(mGlobalSRSID);
   txtGlobalWKT->setText(myProjString);
 
   // populate combo box with ellipsoids
   getEllipsoidList();
-  QString myEllipsoidId = settings.readEntry("/qgis/measure/ellipsoid", "WGS84");
-  cmbEllipsoid->setCurrentText(getEllipsoidName(myEllipsoidId));
+  QString myEllipsoidId = settings.value("/qgis/measure/ellipsoid", "WGS84").toString();
+  cmbEllipsoid->setItemText(cmbEllipsoid->currentIndex(), getEllipsoidName(myEllipsoidId));
   // add the themes to the combo box on the option dialog
   QDir myThemeDir( QgsApplication::pkgDataPath()+"/themes/" );
   myThemeDir.setFilter(QDir::Dirs);
-  QStringList myDirList = myThemeDir.entryList("*");
+  QStringList myDirList = myThemeDir.entryList(QStringList("*"));
   cmbTheme->clear();
   for(int i=0; i < myDirList.count(); i++)
   {
     if(myDirList[i] != "." && myDirList[i] != "..")
     {
-      cmbTheme->insertItem(myDirList[i]);
+      cmbTheme->addItem(myDirList[i]);
     }
   }
 
   // set the theme combo
-  cmbTheme->setCurrentText(settings.readEntry("/Themes","default"));
+  cmbTheme->setItemText(cmbTheme->currentIndex(), settings.value("/Themes","default").toString());
 
   //set the state of the checkboxes
   chkAntiAliasing->setChecked(settings.value("/qgis/enable_anti_aliasing",false).toBool());
@@ -111,6 +116,7 @@ QgsOptions::QgsOptions(QWidget *parent, Qt::WFlags fl) :
   // but the checkbox is true to use QPixmap
   chkUseQPixmap->setChecked(!(settings.value("/qgis/use_qimage_to_render", true).toBool()));
   chkAddedVisibility->setChecked(settings.value("/qgis/new_layers_visible",true).toBool());
+  cbxLegendClassifiers->setChecked(settings.value("/qgis/showLegendClassifiers",false).toBool());
   cbxHideSplash->setChecked(settings.value("/qgis/hideSplash",false).toBool());
 
   //set the colour for selections
@@ -144,14 +150,14 @@ QgsOptions::QgsOptions(QWidget *parent, Qt::WFlags fl) :
   //
   // Locale settings 
   //
-  QString mySystemLocale = QTextCodec::locale();
+  QString mySystemLocale = QLocale::system().name();
   lblSystemLocale->setText(tr("Detected active locale on your system: ") + mySystemLocale);
   QString myUserLocale = settings.value("locale/userLocale", "").toString();
   QStringList myI18nList = i18nList();
   cboLocale->addItems(myI18nList);
   if (myI18nList.contains(myUserLocale))
   {
-    cboLocale->setCurrentText(myUserLocale);
+    cboLocale->setItemText(cboLocale->currentIndex(), myUserLocale);
   }
   bool myLocaleOverrideFlag = settings.value("locale/overrideFlag",false).toBool();
   grpLocale->setChecked(myLocaleOverrideFlag);
@@ -168,8 +174,8 @@ QgsOptions::QgsOptions(QWidget *parent, Qt::WFlags fl) :
   mDefaultSnapModeComboBox->insertItem(0, tr("to vertex"));
   mDefaultSnapModeComboBox->insertItem(1, tr("to segment"));
   mDefaultSnapModeComboBox->insertItem(2, tr("to vertex and segment"));
-  QString defaultSnapString = settings.value("/qgis/digitizing/default_snap_mode", "to vertex").toString();
-  mDefaultSnapModeComboBox->setCurrentIndex(mDefaultSnapModeComboBox->findText(tr(defaultSnapString)));
+  QString defaultSnapString = settings.value("/qgis/digitizing/default_snap_mode", tr("to vertex")).toString();
+  mDefaultSnapModeComboBox->setCurrentIndex(mDefaultSnapModeComboBox->findText(defaultSnapString));
   mDefaultSnappingToleranceSpinBox->setValue(settings.value("/qgis/digitizing/default_snapping_tolerance", 0).toDouble());
   mSearchRadiusVertexEditSpinBox->setValue(settings.value("/qgis/digitizing/search_radius_vertex_edit", 10).toDouble());
 
@@ -186,6 +192,10 @@ QgsOptions::QgsOptions(QWidget *parent, Qt::WFlags fl) :
     {
       mMarkerStyleComboBox->setCurrentIndex(mMarkerStyleComboBox->findText(tr("Cross")));
     }
+
+#ifdef Q_WS_MAC //MH: disable incremental update on Mac for now to avoid problems with resizing 
+  groupBox_5->setEnabled(false);
+#endif //Q_WS_MAC
 }
 
 //! Destructor
@@ -242,54 +252,62 @@ QString QgsOptions::theme()
 void QgsOptions::saveOptions()
 {
   QSettings settings;
-  settings.writeEntry("/Map/identifyRadius", spinBoxIdentifyValue->value());
-  settings.writeEntry("/qgis/hideSplash",cbxHideSplash->isChecked());
-  settings.writeEntry("/qgis/new_layers_visible",chkAddedVisibility->isChecked());
-  settings.writeEntry("/qgis/enable_anti_aliasing",chkAntiAliasing->isChecked());
-  settings.writeEntry("/qgis/use_qimage_to_render", !(chkUseQPixmap->isChecked()));
+  //Web proxy settings
+  settings.setValue("proxy/proxyEnabled", grpProxy->isChecked());
+  settings.setValue("proxy/proxyHost", leProxyHost->text());
+  settings.setValue("proxy/proxyPort", leProxyPort->text());
+  settings.setValue("proxy/proxyUser", leProxyUser->text());
+  settings.setValue("proxy/proxyPassword", leProxyPassword->text());
+  //general settings
+  settings.setValue("/Map/identifyRadius", spinBoxIdentifyValue->value());
+  settings.setValue("/qgis/showLegendClassifiers",cbxLegendClassifiers->isChecked());
+  settings.setValue("/qgis/hideSplash",cbxHideSplash->isChecked());
+  settings.setValue("/qgis/new_layers_visible",chkAddedVisibility->isChecked());
+  settings.setValue("/qgis/enable_anti_aliasing",chkAntiAliasing->isChecked());
+  settings.setValue("/qgis/use_qimage_to_render", !(chkUseQPixmap->isChecked()));
   settings.setValue("qgis/capitaliseLayerName", capitaliseCheckBox->isChecked());
   settings.setValue("qgis/askToSaveProjectChanges", chbAskToSaveProjectChanges->isChecked());
   settings.setValue("qgis/warnOldProjectVersion", chbWarnOldProjectVersion->isChecked());
 
   if(cmbTheme->currentText().length() == 0)
   {
-    settings.writeEntry("/Themes", "default");
+    settings.setValue("/Themes", "default");
   }else{
-    settings.writeEntry("/Themes",cmbTheme->currentText());
+    settings.setValue("/Themes",cmbTheme->currentText());
   }
-  settings.writeEntry("/Map/updateThreshold", spinBoxUpdateThreshold->value());
+  settings.setValue("/Map/updateThreshold", spinBoxUpdateThreshold->value());
   //check behaviour so default projection when new layer is added with no
   //projection defined...
   if (radPromptForProjection->isChecked())
   {
     //
-    settings.writeEntry("/Projections/defaultBehaviour", "prompt");
+    settings.setValue("/Projections/defaultBehaviour", "prompt");
   }
   else if(radUseProjectProjection->isChecked())
   {
     //
-    settings.writeEntry("/Projections/defaultBehaviour", "useProject");
+    settings.setValue("/Projections/defaultBehaviour", "useProject");
   }
   else //assumes radUseGlobalProjection is checked
   {
     //
-    settings.writeEntry("/Projections/defaultBehaviour", "useGlobal");
+    settings.setValue("/Projections/defaultBehaviour", "useGlobal");
   }
-  settings.writeEntry("/Projections/defaultProjectionSRSID",(int)mGlobalSRSID);
+  settings.setValue("/Projections/defaultProjectionSRSID",(int)mGlobalSRSID);
 
-  settings.writeEntry("/qgis/measure/ellipsoid", getEllipsoidAcronym(cmbEllipsoid->currentText()));
+  settings.setValue("/qgis/measure/ellipsoid", getEllipsoidAcronym(cmbEllipsoid->currentText()));
 
   //set the colour for selections
   QColor myColor = pbnSelectionColour->color();
-  int myRed = settings.writeEntry("/qgis/default_selection_color_red",myColor.red());
-  int myGreen = settings.writeEntry("/qgis/default_selection_color_green",myColor.green());
-  int myBlue = settings.writeEntry("/qgis/default_selection_color_blue",myColor.blue());
+  settings.setValue("/qgis/default_selection_color_red",myColor.red());
+  settings.setValue("/qgis/default_selection_color_green",myColor.green());
+  settings.setValue("/qgis/default_selection_color_blue",myColor.blue());
 
   //set the default color for canvas background
   myColor = pbnCanvasColor->color();
-  myRed = settings.writeEntry("/qgis/default_canvas_color_red",myColor.red());
-  myGreen = settings.writeEntry("/qgis/default_canvas_color_green",myColor.green());
-  myBlue = settings.writeEntry("/qgis/default_canvas_color_blue",myColor.blue());
+  settings.setValue("/qgis/default_canvas_color_red",myColor.red());
+  settings.setValue("/qgis/default_canvas_color_green",myColor.green());
+  settings.setValue("/qgis/default_canvas_color_blue",myColor.blue());
 
   //set the default color for the measure tool
   myColor = pbnMeasureColour->color();
@@ -297,8 +315,8 @@ void QgsOptions::saveOptions()
   settings.setValue("/qgis/default_measure_color_green",myColor.green());
   settings.setValue("/qgis/default_measure_color_blue",myColor.blue());
 
-  settings.writeEntry("/qgis/wheel_action", cmbWheelAction->currentIndex());
-  settings.writeEntry("/qgis/zoom_factor", spinZoomFactor->value());
+  settings.setValue("/qgis/wheel_action", cmbWheelAction->currentIndex());
+  settings.setValue("/qgis/zoom_factor", spinZoomFactor->value());
 
   settings.setValue("/qgis/splitterRedraw", cbxSplitterRedraw->isChecked());
 
@@ -412,7 +430,7 @@ void QgsOptions::getEllipsoidList()
   int           myResult;
 
 
-  cmbEllipsoid->insertItem(ELLIPS_FLAT_DESC);
+  cmbEllipsoid->addItem(ELLIPS_FLAT_DESC);
   //check the db is available
   myResult = sqlite3_open(QgsApplication::qgisUserDbFilePath().toUtf8().data(), &myDatabase);
   if(myResult) 
@@ -425,13 +443,13 @@ void QgsOptions::getEllipsoidList()
 
   // Set up the query to retreive the projection information needed to populate the ELLIPSOID list
   QString mySql = "select * from tbl_ellipsoid order by name";
-  myResult = sqlite3_prepare(myDatabase, (const char *)mySql, mySql.length(), &myPreparedStatement, &myTail);
+  myResult = sqlite3_prepare(myDatabase, mySql.toUtf8(), mySql.length(), &myPreparedStatement, &myTail);
   // XXX Need to free memory from the error msg if one is set
   if(myResult == SQLITE_OK)
   {
     while(sqlite3_step(myPreparedStatement) == SQLITE_ROW)
     {
-      cmbEllipsoid->insertItem((char *)sqlite3_column_text(myPreparedStatement,1));
+      cmbEllipsoid->addItem((const char *)sqlite3_column_text(myPreparedStatement,1));
     }
   }
   // close the sqlite3 statement
@@ -457,12 +475,12 @@ QString QgsOptions::getEllipsoidAcronym(QString theEllipsoidName)
   }
   // Set up the query to retreive the projection information needed to populate the ELLIPSOID list
   QString mySql = "select acronym from tbl_ellipsoid where name='" + theEllipsoidName + "'";
-  myResult = sqlite3_prepare(myDatabase, (const char *)mySql, mySql.length(), &myPreparedStatement, &myTail);
+  myResult = sqlite3_prepare(myDatabase, mySql.toUtf8(), mySql.length(), &myPreparedStatement, &myTail);
   // XXX Need to free memory from the error msg if one is set
   if(myResult == SQLITE_OK)
   {
     if (sqlite3_step(myPreparedStatement) == SQLITE_ROW)
-      myName = QString((char *)sqlite3_column_text(myPreparedStatement,0));
+      myName = QString((const char *)sqlite3_column_text(myPreparedStatement,0));
   }
   // close the sqlite3 statement
   sqlite3_finalize(myPreparedStatement);
@@ -489,12 +507,12 @@ QString QgsOptions::getEllipsoidName(QString theEllipsoidAcronym)
   }
   // Set up the query to retreive the projection information needed to populate the ELLIPSOID list
   QString mySql = "select name from tbl_ellipsoid where acronym='" + theEllipsoidAcronym + "'";
-  myResult = sqlite3_prepare(myDatabase, (const char *)mySql, mySql.length(), &myPreparedStatement, &myTail);
+  myResult = sqlite3_prepare(myDatabase, mySql.toUtf8(), mySql.length(), &myPreparedStatement, &myTail);
   // XXX Need to free memory from the error msg if one is set
   if(myResult == SQLITE_OK)
   {
     if (sqlite3_step(myPreparedStatement) == SQLITE_ROW)
-      myName = QString((char *)sqlite3_column_text(myPreparedStatement,0));
+      myName = QString((const char *)sqlite3_column_text(myPreparedStatement,0));
   }
   // close the sqlite3 statement
   sqlite3_finalize(myPreparedStatement);

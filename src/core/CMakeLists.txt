@@ -40,6 +40,7 @@ SET(QGIS_CORE_SRCS
   qgsproviderregistry.cpp
   qgsrasterdataprovider.cpp
   qgsrect.cpp
+  qgsrendercontext.cpp
   qgsrunprocess.cpp
   qgsscalecalculator.cpp
   qgssearchstring.cpp
@@ -289,3 +290,4 @@ spatialindex/qgsspatialindex.h
 
 INSTALL(CODE "MESSAGE(\"Installing CORE headers...\")")
 INSTALL(FILES ${QGIS_CORE_HDRS} ${QGIS_CORE_MOC_HDRS} DESTINATION ${QGIS_INCLUDE_DIR}) 
+

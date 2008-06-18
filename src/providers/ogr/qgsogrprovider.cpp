@@ -34,6 +34,7 @@ email                : sherman at mrcc.com
 #include <QFileInfo>
 #include <QMap>
 #include <QString>
+#include <QTextCodec>
 
 //TODO Following ifndef can be removed once WIN32 GEOS support
 //    is fixed
@@ -354,7 +355,7 @@ void QgsOgrProvider::select(QgsAttributeList fetchAttributes, QgsRect rect, bool
   {
     OGRGeometryH filter = 0;
     QString wktExtent = QString("POLYGON ((%1))").arg(rect.asPolygon());
-    const char *wktText = (const char *)wktExtent;
+    const char *wktText = wktExtent.toAscii();
 
     if(useIntersect)
     {
@@ -367,7 +368,7 @@ void QgsOgrProvider::select(QgsAttributeList fetchAttributes, QgsRect rect, bool
         NULL, &mSelectionRectangle);
     }
 
-    wktText = (const char *) wktExtent;
+    wktText = wktExtent.toAscii();
     OGR_G_CreateFromWkt( (char **)&wktText, NULL, &filter );
     QgsDebugMsg("Setting spatial filter using " + wktExtent);
     OGR_L_SetSpatialFilter( ogrLayer, filter );
@@ -554,6 +555,8 @@ bool QgsOgrProvider::addFeature(QgsFeature& f)
   {
     QgsLogger::warning("Writing of the feature failed");
     returnValue = false;
+  } else {
+    f.setFeatureId( OGR_F_GetFID(feature) );
   }
   ++numberFeatures;
   OGR_F_Destroy( feature );
@@ -732,7 +735,7 @@ bool QgsOgrProvider::createSpatialIndex()
   QString filename=dataSourceUri().section('/',-1,-1);//find out the filename from the uri
   QString layername=filename.section('.',0,0);
   QString sql="CREATE SPATIAL INDEX ON "+layername;
-  OGR_DS_ExecuteSQL (ogrDataSource,sql.ascii(), OGR_L_GetSpatialFilter(ogrLayer),"");
+  OGR_DS_ExecuteSQL (ogrDataSource, sql.toAscii(), OGR_L_GetSpatialFilter(ogrLayer),"");
   //find out, if the .qix file is there
   QString indexname = dataSourceUri();
   indexname.truncate(dataSourceUri().length()-filename.length());
@@ -916,7 +919,7 @@ QString  QgsOgrProvider::description() const
 static QString createFileFilter_(QString const &longName, QString const &glob)
 {
   return "[OGR] " + 
-    longName + " (" + glob.lower() + " " + glob.upper() + ");;";
+    longName + " (" + glob.toLower() + " " + glob.toUpper() + ");;";
 } // createFileFilter_
 
 
@@ -1127,7 +1130,7 @@ QGISEXTERN bool createEmptyDataSource(const QString& uri,
 {
   OGRSFDriverH driver;
   OGRRegisterAll();
-  driver = OGRGetDriverByName(format);
+  driver = OGRGetDriverByName(format.toAscii());
   if(driver == NULL)
   {
     return false;
@@ -1276,7 +1279,7 @@ void QgsOgrProvider::getUniqueValues(int index, QStringList &uniqueValues)
 
   uniqueValues.clear();
 
-  OGRLayerH l = OGR_DS_ExecuteSQL(ogrDataSource, sql.ascii(), NULL, "SQL");
+  OGRLayerH l = OGR_DS_ExecuteSQL(ogrDataSource, sql.toAscii(), NULL, "SQL");
   if(l==0)
     return;
 
@@ -1287,7 +1290,7 @@ void QgsOgrProvider::getUniqueValues(int index, QStringList &uniqueValues)
     OGR_F_Destroy(f);
   }
 
-  OGR_DS_ReleaseResultSet(l, ogrDataSource);
+  OGR_DS_ReleaseResultSet(ogrDataSource, l);
 }
 
 
@@ -1301,7 +1304,7 @@ QVariant QgsOgrProvider::minValue(int index)
   
   QString sql = QString("SELECT MIN(%1) FROM %2").arg( fld.name() ).arg( fi.baseName() );
 
-  OGRLayerH l = OGR_DS_ExecuteSQL(ogrDataSource, sql.ascii(), NULL, "SQL");
+  OGRLayerH l = OGR_DS_ExecuteSQL(ogrDataSource, sql.toAscii(), NULL, "SQL");
 
   if(l==0)
     return QVariant();
@@ -1309,7 +1312,7 @@ QVariant QgsOgrProvider::minValue(int index)
   OGRFeatureH f = OGR_L_GetNextFeature(l);
   if(f==0)
   {
-    OGR_DS_ReleaseResultSet(l, ogrDataSource);
+    OGR_DS_ReleaseResultSet(ogrDataSource, l);
     return QVariant();
   }
 
@@ -1327,7 +1330,7 @@ QVariant QgsOgrProvider::minValue(int index)
     default: assert(NULL && "unsupported field type");
   }
   
-  OGR_DS_ReleaseResultSet(l, ogrDataSource);
+  OGR_DS_ReleaseResultSet(ogrDataSource, l);
 
   return value;
 }
@@ -1341,14 +1344,14 @@ QVariant QgsOgrProvider::maxValue(int index)
   
   QString sql = QString("SELECT MAX(%1) FROM %2").arg( fld.name() ).arg( fi.baseName() );
 
-  OGRLayerH l = OGR_DS_ExecuteSQL(ogrDataSource, sql.ascii(), NULL, "SQL");
+  OGRLayerH l = OGR_DS_ExecuteSQL(ogrDataSource, sql.toAscii(), NULL, "SQL");
   if(l==0)
     return QVariant();
 
   OGRFeatureH f = OGR_L_GetNextFeature(l);
   if(f==0)
   {
-    OGR_DS_ReleaseResultSet(l, ogrDataSource);
+    OGR_DS_ReleaseResultSet(ogrDataSource, l);
     return QVariant();
   }
 
@@ -1366,7 +1369,7 @@ QVariant QgsOgrProvider::maxValue(int index)
     default: assert(NULL && "unsupported field type");
   }
   
-  OGR_DS_ReleaseResultSet(l, ogrDataSource);
+  OGR_DS_ReleaseResultSet(ogrDataSource, l);
 
   return value;
 }

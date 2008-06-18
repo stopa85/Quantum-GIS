@@ -31,8 +31,8 @@
 #include <QStringList> 
 #include <QStyle>
 #include <QPlastiqueStyle>
-#include <QTextCodec>
 #include <QTranslator>
+#include <QImageReader>
 
 #include <iostream>
 #include <cstdio>
@@ -59,6 +59,9 @@
 
 #ifdef Q_OS_MACX
 #include <ApplicationServices/ApplicationServices.h>
+#if MAC_OS_X_VERSION_MAX_ALLOWED < 1050
+typedef SInt32 SRefCon;
+#endif
 #endif
 
 #include "qgisapp.h"
@@ -117,7 +120,7 @@ static QStringList myFileList;
  * May be called at startup before application is initialized as well as
  * at any time while the application is running.
  */
-short openDocumentsAEHandler(const AppleEvent *event, AppleEvent *reply, long refCon)
+OSErr openDocumentsAEHandler(const AppleEvent *event, AppleEvent *reply, SRefCon refCon)
 {
   AEDescList docs;
   if (AEGetParamDesc(event, keyDirectObject, typeAEList, &docs) == noErr)
@@ -154,18 +157,23 @@ short openDocumentsAEHandler(const AppleEvent *event, AppleEvent *reply, long re
     }
 
     // Open files now if application has been initialized
-    QgisApp *qgis = dynamic_cast<QgisApp *>(qApp->mainWidget());
-    if (qgis)
+    QWidgetList wl = QApplication::topLevelWidgets();
+    for (QWidgetList::iterator it = wl.begin(); it != wl.end(); ++it)
     {
-      if (!myProjectFileName.isEmpty())
+      QgisApp *qgis = dynamic_cast<QgisApp *>(*it);
+      if (qgis && qgis->objectName() == "QgisApp")
       {
-        qgis->openProject(myProjectFileName);
-      }
-      for (QStringList::Iterator myIterator = myFileList.begin();
-           myIterator != myFileList.end(); ++myIterator ) 
-      {
-        QString fileName = *myIterator;
-        qgis->openLayer(fileName);
+        if (!myProjectFileName.isEmpty())
+        {
+          qgis->openProject(myProjectFileName);
+        }
+        for (QStringList::Iterator myIterator = myFileList.begin();
+             myIterator != myFileList.end(); ++myIterator ) 
+        {
+          QString fileName = *myIterator;
+          qgis->openLayer(fileName);
+        }
+        break;
       }
     }
   }
@@ -307,7 +315,7 @@ int main(int argc, char *argv[])
       break;
 
     case 's':
-      mySnapshotFileName = QDir::convertSeparators(QFileInfo(QFile::decodeName(optarg)).absFilePath());
+      mySnapshotFileName = QDir::convertSeparators(QFileInfo(QFile::decodeName(optarg)).absoluteFilePath());
       break;
 
     case 'l':
@@ -315,7 +323,7 @@ int main(int argc, char *argv[])
       break;
 
     case 'p':
-      myProjectFileName = QDir::convertSeparators(QFileInfo(QFile::decodeName(optarg)).absFilePath());
+      myProjectFileName = QDir::convertSeparators(QFileInfo(QFile::decodeName(optarg)).absoluteFilePath());
       break;
 
     case 'e':
@@ -347,7 +355,7 @@ int main(int argc, char *argv[])
     int idx = optind;
     std::cout << idx << ": " << argv[idx] << std::endl;
 #endif
-    myFileList.append(QDir::convertSeparators(QFileInfo(QFile::decodeName(argv[optind++])).absFilePath()));
+    myFileList.append(QDir::convertSeparators(QFileInfo(QFile::decodeName(argv[optind++])).absoluteFilePath()));
     }
   }
   }
@@ -371,7 +379,7 @@ int main(int argc, char *argv[])
     std::cerr << "QGIS starting in non-interactive mode not supported.\n You are seeing this message most likely because you have no DISPLAY environment variable set." << std::endl;
     exit(1); //exit for now until a version of qgis is capabable of running non interactive
   }
-  QgsApplication a(argc, argv, myUseGuiFlag );
+  QgsApplication myApp(argc, argv, myUseGuiFlag );
   //  
   // Set up the QSettings environment must be done after qapp is created
   QCoreApplication::setOrganizationName("QuantumGIS");
@@ -390,7 +398,7 @@ int main(int argc, char *argv[])
   QString gdalPlugins(QCoreApplication::applicationDirPath().append("/lib/gdalplugins"));
   if (QFile::exists(gdalPlugins) && !getenv("GDAL_DRIVER_PATH"))
   {
-    setenv("GDAL_DRIVER_PATH", gdalPlugins, 1);
+    setenv("GDAL_DRIVER_PATH", gdalPlugins.toUtf8(), 1);
   }
 #endif
 
@@ -415,7 +423,7 @@ int main(int argc, char *argv[])
   }
 
   
-  // a.setFont(QFont("helvetica", 11));
+  // myApp.setFont(QFont("helvetica", 11));
 
   QString i18nPath = QgsApplication::i18nPath();
 
@@ -423,7 +431,6 @@ int main(int argc, char *argv[])
   /* Translation file for QGIS.
    */
   QSettings mySettings;
-  QString mySystemLocale = QLocale::languageToString(QLocale::system().language());
   QString myUserLocale = mySettings.value("locale/userLocale", "").toString();
   bool myLocaleOverrideFlag = mySettings.value("locale/overrideFlag",false).toBool();
   QString myLocale;
@@ -444,7 +451,10 @@ int main(int argc, char *argv[])
   {
     if (!myLocaleOverrideFlag || myUserLocale.isEmpty())
     {
-      myTranslationCode = QTextCodec::locale();
+      myTranslationCode = QLocale::system().name();
+      //setting the locale/userLocale when the --lang= option is not set will allow third party 
+      //plugins to always use the same locale as the QGIS, otherwise they can be out of sync
+      mySettings.setValue("locale/userLocale", myTranslationCode);
     }
     else
     {
@@ -459,7 +469,7 @@ int main(int argc, char *argv[])
   QTranslator qgistor(0);
   if (qgistor.load(QString("qgis_") + myTranslationCode, i18nPath))
   {
-    a.installTranslator(&qgistor);
+    myApp.installTranslator(&qgistor);
   }
   /* Translation file for Qt.
    * The strings from the QMenuBar context section are used by Qt/Mac to shift
@@ -469,7 +479,7 @@ int main(int argc, char *argv[])
   QTranslator qttor(0);
   if (qttor.load(QString("qt_") + myTranslationCode, i18nPath))
   {
-    a.installTranslator(&qttor);
+    myApp.installTranslator(&qttor);
   }
 
   //set up splash screen 
@@ -494,11 +504,55 @@ int main(int argc, char *argv[])
     mypSplash->show();
   }
 
+  // For non static builds on mac and win (static builds are not supported)
+  // we need to be sure we can find the qt image
+  // plugins. In mac be sure to look in the
+  // application bundle...
+#ifdef Q_WS_WIN
+  QCoreApplication::addLibraryPath( QApplication::applicationDirPath() 
+      + QDir::separator() + "plugins" );
+#endif
+#ifdef Q_OS_MACX
+  //qDebug("Adding qt image plugins to plugin search path...");
+  CFURLRef myBundleRef = CFBundleCopyBundleURL(CFBundleGetMainBundle());
+  CFStringRef myMacPath = CFURLCopyFileSystemPath(myBundleRef, kCFURLPOSIXPathStyle);
+  const char *mypPathPtr = CFStringGetCStringPtr(myMacPath,CFStringGetSystemEncoding());
+  CFRelease(myBundleRef);
+  CFRelease(myMacPath);
+  QString myPath(mypPathPtr);
+  // if we are not in a bundle assume that the app is built
+  // as a non bundle app and that image plugins will be
+  // in system Qt frameworks. If the app is a bundle
+  // lets try to set the qt plugin search path...
+  QFileInfo myInfo(myPath);
+  if (myInfo.isBundle())
+  {
+    // First clear the plugin search paths so we can be sure
+    // only plugins from the bundle are being used
+    QStringList myPathList;
+    QCoreApplication::setLibraryPaths(myPathList);
+    // Now set the paths inside the bundle
+    myPath += "/Contents/plugins";
+    QCoreApplication::addLibraryPath( myPath );
+    //next two lines should not be needed, testing only
+    //QCoreApplication::addLibraryPath( myPath + "/imageformats" );
+    //QCoreApplication::addLibraryPath( myPath + "/sqldrivers" );
+    //foreach (myPath, myApp.libraryPaths())
+    //{
+      //qDebug("Path:" + myPath.toLocal8Bit());
+    //}
+    //qDebug( "Added %s to plugin search path", qPrintable( myPath ) );
+    //QList<QByteArray> myFormats = QImageReader::supportedImageFormats();
+    //for ( int x = 0; x < myFormats.count(); ++x ) {
+    //  qDebug("Format: " + myFormats[x]);
+    //} 
+  }
+#endif
 
 
 
   QgisApp *qgis = new QgisApp(mypSplash); // "QgisApp" used to find canonical instance
-  qgis->setName( "QgisApp" );
+  qgis->setObjectName( "QgisApp" );
   
 
   /////////////////////////////////////////////////////////////////////
@@ -512,7 +566,7 @@ int main(int argc, char *argv[])
     // check for a .qgs
     for(int i = 0; i < argc; i++)
     {
-      QString arg = QDir::convertSeparators(QFileInfo(QFile::decodeName(argv[i])).absFilePath());
+      QString arg = QDir::convertSeparators(QFileInfo(QFile::decodeName(argv[i])).absoluteFilePath());
       if(arg.contains(".qgs"))
       {
         myProjectFileName = arg;
@@ -568,7 +622,7 @@ int main(int argc, char *argv[])
     for (int i = 0; i < 3; i++)
     {
       // find comma and get coordinate
-      pos = myInitialExtent.find(',', posOld);
+      pos = myInitialExtent.indexOf(',', posOld);
       if (pos == -1) {
         ok = false; break;
       }
@@ -610,11 +664,11 @@ int main(int argc, char *argv[])
       qApp->processEvents(), grab the pixmap, save it, hide the window and exit.
       */
     //qgis->show();
-    a.processEvents();
+    myApp.processEvents();
     QPixmap * myQPixmap = new QPixmap(800,600);
     myQPixmap->fill();
     qgis->saveMapAsImage(mySnapshotFileName,myQPixmap);
-    a.processEvents();
+    myApp.processEvents();
     qgis->hide();
     return 1;
   }
@@ -624,10 +678,10 @@ int main(int argc, char *argv[])
   // Continue on to interactive gui...
   /////////////////////////////////////////////////////////////////////
   qgis->show();
-  a.connect(&a, SIGNAL(lastWindowClosed()), &a, SLOT(quit()));
+  myApp.connect(&myApp, SIGNAL(lastWindowClosed()), &myApp, SLOT(quit()));
 
   mypSplash->finish(qgis);
   delete mypSplash;
-  return a.exec();
+  return myApp.exec();
 
 }

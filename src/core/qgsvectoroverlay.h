@@ -39,7 +39,7 @@ class CORE_EXPORT QgsVectorOverlay
   void setAttributes(const QgsAttributeList& att){mAttributes = att;}
   virtual void createOverlayObjects(const QgsRect& viewExtent) = 0;
   /**Draws the overlay objects*/
-  virtual void drawOverlayObjects(QPainter * p, const QgsRect& viewExtent, QgsMapToPixel * cXf, QgsCoordinateTransform* ct) const = 0;
+  virtual void drawOverlayObjects(QPainter * p, const QgsRect& viewExtent, const QgsMapToPixel* cXf, const QgsCoordinateTransform* ct) const = 0;
   /**Returns the name of the overlay layer*/
   virtual QString name() const = 0;
   

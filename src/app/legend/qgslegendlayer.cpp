@@ -43,6 +43,7 @@
 #include <QMenu>
 #include <QMessageBox>
 #include <QPainter>
+#include <QSettings>
 
 QgsLegendLayer::QgsLegendLayer(QTreeWidgetItem* parent,QString name)
     : QgsLegendItem(parent, name)
@@ -51,6 +52,7 @@ QgsLegendLayer::QgsLegendLayer(QTreeWidgetItem* parent,QString name)
   setFlags(Qt::ItemIsEditable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled | Qt::ItemIsSelectable);
   setCheckState (0, Qt::Checked);
   setText(0, name);
+  setupFont();
 }
 
 QgsLegendLayer::QgsLegendLayer(QTreeWidget* parent, QString name): QgsLegendItem(parent, name)
@@ -59,6 +61,7 @@ QgsLegendLayer::QgsLegendLayer(QTreeWidget* parent, QString name): QgsLegendItem
   setFlags(Qt::ItemIsEditable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled | Qt::ItemIsSelectable);
   setCheckState (0, Qt::Checked);
   setText(0, name);
+  setupFont();
 }
 
 QgsLegendLayer::QgsLegendLayer(QString name): QgsLegendItem()
@@ -67,6 +70,7 @@ QgsLegendLayer::QgsLegendLayer(QString name): QgsLegendItem()
   setFlags(Qt::ItemIsEditable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled | Qt::ItemIsSelectable);
   setCheckState (0, Qt::Checked);
   setText(0, name);
+  setupFont();
 }
 
 QgsLegendLayer::~QgsLegendLayer()
@@ -74,6 +78,12 @@ QgsLegendLayer::~QgsLegendLayer()
   mType=LEGEND_LAYER;
 }
 
+void QgsLegendLayer::setupFont() //private method
+{
+  QFont myFont = font(0);
+  myFont.setBold(true); //visually differentiate layer labels from the rest
+  setFont(0,myFont);
+}
 void QgsLegendLayer::setLayerTypeIcon()
 {
   QIcon myIcon(getOriginalPixmap());
@@ -206,51 +216,51 @@ std::list<QgsLegendLayerFile*> QgsLegendLayer::legendLayerFiles()
 void QgsLegendLayer::updateLayerSymbologySettings(const QgsMapLayer* mapLayer)
 {
   if(mapLayer)
+  {
+    //find all layers
+    std::list<QgsMapLayer*> theMapLayers = mapLayers();
+    for(std::list<QgsMapLayer*>::iterator it = theMapLayers.begin(); it != theMapLayers.end(); ++it)
     {
-      //find all layers
-      std::list<QgsMapLayer*> theMapLayers = mapLayers();
-      for(std::list<QgsMapLayer*>::iterator it = theMapLayers.begin(); it != theMapLayers.end(); ++it)
-	{
-	  if((*it) != mapLayer)
-	    {
-	      (*it)->copySymbologySettings(*mapLayer);
-	    }
-	}
-      // source might have changed - e.g. other subset
-      setToolTip(0, mapLayer->publicSource());
+      if((*it) != mapLayer)
+      {
+        (*it)->copySymbologySettings(*mapLayer);
+      }
     }
+    // source might have changed - e.g. other subset
+    setToolTip(0, mapLayer->publicSource());
+  }
 }
 
 void QgsLegendLayer::updateCheckState()
 {
   std::list<QgsLegendLayerFile*> llfiles = legendLayerFiles();
   if(llfiles.size() < 1)
-    {
-      return;
-    }
+  {
+    return;
+  }
 
   std::list<QgsLegendLayerFile*>::iterator iter = llfiles.begin();
   Qt::CheckState theState = (*iter)->checkState(0);
   for(; iter != llfiles.end(); ++iter)
+  {
+    if(theState != (*iter)->checkState(0))
     {
-      if(theState != (*iter)->checkState(0))
-	{
-	  theState = Qt::PartiallyChecked;
-	  break;
-	}
+      theState = Qt::PartiallyChecked;
+      break;
     }
+  }
 
   if(theState != checkState(0))
-    {
-      treeWidget()->blockSignals(true);
-      setCheckState(0, theState);
-      //notify the legend that the check state has changed
-      legend()->updateCheckStates(this, theState);
-      treeWidget()->blockSignals(false);
-    }
+  {
+    treeWidget()->blockSignals(true);
+    setCheckState(0, theState);
+    //notify the legend that the check state has changed
+    legend()->updateCheckStates(this, theState);
+    treeWidget()->blockSignals(false);
+  }
 }
 
-void QgsLegendLayer::refreshSymbology(const QString& key)
+void QgsLegendLayer::refreshSymbology(const QString& key, double widthScale)
 {
   QgsMapLayer* theMapLayer = QgsMapLayerRegistry::instance()->mapLayer(key);
   if(!theMapLayer)
@@ -261,7 +271,7 @@ void QgsLegendLayer::refreshSymbology(const QString& key)
   if (theMapLayer->type() == QgsMapLayer::VECTOR) // VECTOR
   {
     QgsVectorLayer* vlayer = dynamic_cast<QgsVectorLayer*>(theMapLayer);
-    vectorLayerSymbology(vlayer); // get and change symbology
+    vectorLayerSymbology(vlayer, widthScale); // get and change symbology
   }
   else // RASTER
   {
@@ -310,7 +320,7 @@ void QgsLegendLayer::changeSymbologySettings(const QgsMapLayer* theMapLayer,
 
 
 
-void QgsLegendLayer::vectorLayerSymbology(const QgsVectorLayer* layer)
+void QgsLegendLayer::vectorLayerSymbology(const QgsVectorLayer* layer, double widthScale)
 {
   SymbologyList itemList;
 
@@ -372,7 +382,7 @@ void QgsLegendLayer::vectorLayerSymbology(const QgsVectorLayer* layer)
     QImage img;
     if((*it)->type() == QGis::Point)
     {
-      img = (*it)->getPointSymbolAsImage();
+      img = (*it)->getPointSymbolAsImage(widthScale);
     }
     else if((*it)->type() == QGis::Line)
     {
@@ -404,6 +414,23 @@ void QgsLegendLayer::vectorLayerSymbology(const QgsVectorLayer* layer)
 
     QPixmap pix = QPixmap::fromImage(img); // convert to pixmap
     itemList.push_back(std::make_pair(values, pix));
+  }
+  
+  //create an item for each classification field (only one for most renderers)
+  QSettings settings;
+  if (settings.value("/qgis/showLegendClassifiers",false).toBool())
+  {
+    if(renderer->needsAttributes()) 
+    {
+      QgsAttributeList classfieldlist = renderer->classificationAttributes();
+      const QgsFieldMap& fields = layer->getDataProvider()->fields();
+      for(QgsAttributeList::iterator it = classfieldlist.begin(); it!=classfieldlist.end(); ++it)
+      {
+        const QgsField& theField = fields[*it];
+        QString classfieldname = theField.name();
+        itemList.push_front(std::make_pair(classfieldname, QPixmap()));
+      }
+    }
   }
 
   changeSymbologySettings(layer, itemList);

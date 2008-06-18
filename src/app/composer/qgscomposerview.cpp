@@ -67,12 +67,15 @@ void QgsComposerView::keyPressEvent ( QKeyEvent * e )
 
 void QgsComposerView::resizeEvent ( QResizeEvent *  )
 {
+#ifdef QGISDEBUG
+  std::cout << "QgsComposerView::resizeEvent()" << std::endl;
+#endif
+
 /* BUG: When QT adds scrollbars because we're zooming in, it causes a resizeEvent.
  *  If we call zoomFull(), we reset the view size, which keeps us from zooming in.
  *  Really, we should do something like re-center the window.
 */
     //mComposer->zoomFull();
-std::cout << "resize anchor: " << resizeAnchor() << std::endl;
 }
 
 //TODO: add mouse wheel event forwarding

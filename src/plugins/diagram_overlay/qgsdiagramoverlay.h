@@ -29,7 +29,7 @@ class QgsDiagramOverlay: public QgsVectorOverlay
   QgsDiagramOverlay(QgsVectorLayer* vl);
   ~QgsDiagramOverlay();
   void createOverlayObjects(const QgsRect& viewExtent);
-  void drawOverlayObjects(QPainter * p, const QgsRect& viewExtent, QgsMapToPixel * cXf, QgsCoordinateTransform* ct) const;
+  void drawOverlayObjects(QPainter * p, const QgsRect& viewExtent, const QgsMapToPixel* cXf, const QgsCoordinateTransform* ct) const;
 
   //setters and getters
   QString name() const{return "diagram";}

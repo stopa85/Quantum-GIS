@@ -18,11 +18,13 @@
 #include "qgscomposermap.h"
 
 #include "qgscoordinatetransform.h"
+#include "qgslogger.h"
 #include "qgsmapcanvas.h"
 #include "qgsmaplayer.h"
 #include "qgsmaptopixel.h"
 #include "qgsproject.h"
 #include "qgsmaprender.h"
+#include "qgsrendercontext.h"
 #include "qgsvectorlayer.h"
 
 #include "qgslabel.h"
@@ -42,8 +44,9 @@
 QgsComposerMap::QgsComposerMap ( QgsComposition *composition, int id, int x, int y, int width, int height )
     : QWidget(), QGraphicsRectItem(0,0,width,height,0)
 {
-std::cout << "QgsComposerMap::QgsComposerMap()" << std::endl;
-
+#ifdef QGISDEBUG
+    std::cout << "QgsComposerMap::QgsComposerMap()" << std::endl;
+#endif
     setupUi(this);
 
     mComposition = composition;
@@ -93,18 +96,18 @@ void QgsComposerMap::init ()
     mCacheUpdated = false;
 
     // Calculate
-    mCalculateComboBox->insertItem( tr("Extent (calculate scale)"), Scale );
-    mCalculateComboBox->insertItem( tr("Scale (calculate extent)"), Extent );
+    mCalculateComboBox->addItem( tr("Extent (calculate scale)"), Scale );
+    mCalculateComboBox->addItem( tr("Scale (calculate extent)"), Extent );
     mCalculate = Scale;
 
     setPlotStyle ( QgsComposition::Preview );
     
     // Preview style
     mPreviewMode = Cache;
-    mPreviewModeComboBox->insertItem ( tr("Cache"), Cache );
-    mPreviewModeComboBox->insertItem ( tr("Render"), Render );
-    mPreviewModeComboBox->insertItem ( tr("Rectangle"), Rectangle );
-    mPreviewModeComboBox->setCurrentItem ( Cache );
+    mPreviewModeComboBox->addItem ( tr("Cache"), Cache );
+    mPreviewModeComboBox->addItem ( tr("Render"), Render );
+    mPreviewModeComboBox->addItem ( tr("Rectangle"), Rectangle );
+    mPreviewModeComboBox->setCurrentIndex ( Cache );
 
     mWidthScale = 1.0 / mComposition->scale();
     mSymbolScale = 0.5;
@@ -119,137 +122,43 @@ void QgsComposerMap::init ()
 
 QgsComposerMap::~QgsComposerMap()
 {
+#ifdef QGISDEBUG
      std::cerr << "QgsComposerMap::~QgsComposerMap" << std::endl;
+#endif
 }
 
 /* This function is called by paint() and cache() to render the map.  It does not override any functions
 from QGraphicsItem. */
-void QgsComposerMap::draw ( QPainter *painter, QgsRect &extent, QgsMapToPixel *transform)
+void QgsComposerMap::draw ( QPainter *painter, const QgsRect& extent, const QSize& size, int dpi)
 {
   mMapCanvas->freeze(true);  // necessary ?
-  int nlayers = mMapCanvas->layerCount();
-    QgsCoordinateTransform* ct;
 
-  for ( int i = nlayers - 1; i >= 0; i-- ) {
-    QgsMapLayer *layer = mMapCanvas->getZpos(i);
-
-    //if ( !layer->visible() ) continue;
-
-    if (mMapCanvas->projectionsEnabled())
+  if(!painter)
     {
-      ct = new QgsCoordinateTransform(layer->srs(), mMapCanvas->mapRender()->destinationSrs());
+      return;
     }
-    else
+
+  QgsMapRender* canvasMapRender = mMapCanvas->mapRender();
+  if(!canvasMapRender)
     {
-      ct = NULL;
+      return;
     }
 
-    if ( layer->type() == QgsMapLayer::VECTOR ) {
-      QgsVectorLayer *vector = dynamic_cast <QgsVectorLayer*> (layer);
-
-      double widthScale = mWidthScale;
-      double symbolScale = mSymbolScale;
-
-//TODO: attempt to scale cache lines and point symbols to be larger as we zoom in
-/*    if(creating cache pixmap)
-      {
-        widthScale *= (cachePixmap.width / map.rect.width);
-        symbolScale *= (cachePixmap.width / map.rect.width);
-      }
-*/
-      QgsRect r1, r2;
-      r1 = extent;
-      // TODO: revisit later and make this QgsMapRender-aware [MD]
-      // bool split = layer->projectExtent(r1, r2);
-      bool split = false;
-      
-      vector->draw( painter, r1, transform, ct, FALSE, widthScale, symbolScale);
-
-      if ( split )
-      {
-        vector->draw( painter, r2, transform, ct, FALSE, widthScale, symbolScale);
-      }
-    } else { 
-      // raster
-      if ( plotStyle() == QgsComposition::Print || plotStyle() == QgsComposition::Postscript ) {
-        // we have to rescale the raster to get requested resolution
-              
-        // calculate relation between composition point size and requested resolution (in mm)
-        double multip = (1. / mComposition->scale()) / (25.4 / mComposition->resolution()) ;
-              
-        double sc = mExtent.width() / (multip*QGraphicsRectItem::rect().width());
-              
-        QgsMapToPixel trans ( sc, multip*QGraphicsRectItem::rect().height(), mExtent.yMin(), mExtent.xMin() );
-              
-        painter->save();
-        painter->scale( 1./multip, 1./multip);
-        layer->draw( painter, extent, &trans, ct, FALSE);
-              
-        painter->restore();
-      } 
-      else 
-      {
-        layer->draw( painter, extent, transform, ct, FALSE);
-      }
-    }
-    
-    delete ct;
-  }
-    
-  // Draw vector labels
-  for ( int i = nlayers - 1; i >= 0; i-- ) {
-    QgsMapLayer *layer = mMapCanvas->getZpos(i);
-
-    if (mMapCanvas->projectionsEnabled())
+  QgsMapRender theMapRender;
+  theMapRender.setExtent(extent);
+  theMapRender.setOutputSize(size, dpi);
+  theMapRender.setLayerSet(canvasMapRender->layerSet());
+  theMapRender.setProjectionsEnabled(canvasMapRender->projectionsEnabled());
+  theMapRender.setDestinationSrs(canvasMapRender->destinationSrs());
+  
+  QgsRenderContext* theRenderContext = theMapRender.renderContext();
+  if(theRenderContext)
     {
-      ct = new QgsCoordinateTransform(layer->srs(), mMapCanvas->mapRender()->destinationSrs());
-    }
-    else
-    {
-      ct = NULL;
+      theRenderContext->setDrawEditingInformation(false);
+      theRenderContext->setRenderingStopped(false);
     }
 
-//    if ( !layer->visible() ) continue; //this doesn't work with the newer map layer code
-
-    if ( layer->type() == QgsMapLayer::VECTOR ) {
-      QgsVectorLayer *vector = dynamic_cast <QgsVectorLayer*> (layer);
-
-      if ( vector->labelOn() ) {
-        double fontScale = 25.4 * mFontScale * mComposition->scale() / 72;
-        if ( plotStyle() == QgsComposition::Postscript ) 
-        {
-          //fontScale = QgsComposition::psFontScaleFactor() * 72.0 / mComposition->resolution();
-
-          // TODO
-          // This is not completely correct because fonts written to postscript
-          // should use size metrics.ascent() * 72.0 / mComposition->resolution();
-          // We could add a factor for metrics.ascent()/size but it is variable
-          // Add a parrameter in drawLables() ?
-
-          QFont tempFont;
-          tempFont.setFamily(vector->label()->layerAttributes()->family());
-
-          double size = vector->label()->layerAttributes()->size();
-          size = 25.4 * size / 72;
-
-          tempFont.setPointSizeF(size);
-          QFontMetricsF tempMetrics(tempFont);
-
-          fontScale = tempMetrics.ascent() * 72.0 / mComposition->resolution();
-          //std::cout << "fontScale: " << fontScale << std::endl;
-
-          fontScale *= mFontScale;
-
-          //divide out the font size, since it will be multiplied back in when drawing the labels
-          fontScale /= vector->label()->layerAttributes()->size();
-
-        }
-        vector->drawLabels (  painter, extent, transform, ct, fontScale );
-      }
-    
-      delete ct;
-    }
-  }
+  theMapRender.render(painter);
     
   mMapCanvas->freeze(false);
 }
@@ -265,7 +174,9 @@ void QgsComposerMap::setUserExtent ( QgsRect const & rect )
 
 void QgsComposerMap::cache ( void )
 {
+#ifdef QGISDEBUG
     std::cout << "QgsComposerMap::cache()" << std::endl;
+#endif
 
     // Create preview on some reasonable size. It was slow with cca 1500x1500 points on 2x1.5GHz 
     // Note: The resolution should also respect the line widths, it means that 
@@ -278,15 +189,17 @@ void QgsComposerMap::cache ( void )
     // It can happen that extent is not initialised well -> check 
     if ( h < 1 || h > 10000 ) h = w; 
 
+#ifdef QGISDEBUG
     std::cout << "extent = " << mExtent.width() <<  " x " << mExtent.height() << std::endl;
     std::cout << "cache = " << w <<  " x " << h << std::endl;
+#endif
 
     mCacheExtent = QgsRect ( mExtent );
     double scale = mExtent.width() / w;
     mCacheExtent.setXmax ( mCacheExtent.xMin() + w * scale );
     mCacheExtent.setYmax ( mCacheExtent.yMin() + h * scale );
       
-    mCachePixmap.resize( w, h );
+    mCachePixmap = QPixmap( w, h );
 
     // WARNING: ymax in QgsMapToPixel is device height!!!
     QgsMapToPixel transform(scale, h, mCacheExtent.yMin(), mCacheExtent.xMin() );
@@ -299,13 +212,15 @@ void QgsComposerMap::cache ( void )
 * on both the cache, screen render, and print.
 */
 
+#ifdef QGISDEBUG
     std::cout << "transform = " << transform.showParameters().toLocal8Bit().data() << std::endl;
+#endif
     
     mCachePixmap.fill(QColor(255,255,255));
 
     QPainter p(&mCachePixmap);
     
-    draw( &p, mCacheExtent, &transform);
+    draw( &p, mCacheExtent, QSize(w, h), mCachePixmap.logicalDpiX());
     p.end();
 
     mNumCachedLayers = mMapCanvas->layerCount();
@@ -317,12 +232,12 @@ void QgsComposerMap::paint ( QPainter* painter, const QStyleOptionGraphicsItem* 
   if ( mDrawing ) return; 
   mDrawing = true;
 
+#ifdef QGISDEBUG
   std::cout << "QgsComposerMapt::paint mPlotStyle = " << plotStyle() 
             << " mPreviewMode = " << mPreviewMode << std::endl;
+#endif
     
   if ( plotStyle() == QgsComposition::Preview &&  mPreviewMode == Cache ) { // Draw from cache
-    std::cout << "use cache" << std::endl;
-
     if ( !mCacheUpdated || mMapCanvas->layerCount() != mNumCachedLayers ) 
     {
       cache();
@@ -330,8 +245,10 @@ void QgsComposerMap::paint ( QPainter* painter, const QStyleOptionGraphicsItem* 
   
     // Scale so that the cache fills the map rectangle
     double scale = 1.0 * QGraphicsRectItem::rect().width() / mCachePixmap.width();
+    #ifdef QGISDEBUG
     std::cout << "scale = " << scale << std::endl;
-  
+    #endif
+
     painter->save();
 
     painter->translate(0, 0); //do we need this?
@@ -346,19 +263,19 @@ void QgsComposerMap::paint ( QPainter* painter, const QStyleOptionGraphicsItem* 
             plotStyle() == QgsComposition::Print ||
             plotStyle() == QgsComposition::Postscript ) 
   {
-    std::cout << "render" << std::endl;
-  
-    double scale = mExtent.width() / QGraphicsRectItem::rect().width();
-    QgsMapToPixel transform(scale, QGraphicsRectItem::rect().height(), mExtent.yMin(), mExtent.xMin() );
+    QgsDebugMsg("render")
 
-    painter->save();
-    painter->translate(0, 0); //do we need this?
+    QPaintDevice* thePaintDevice = painter->device();
+    if(!thePaintDevice)
+      {
+	return;
+      }
 
-    // TODO: Qt4 appears to force QPainter::CoordDevice - need to check if this is actually valid.
+    
+    QRectF bRect = boundingRect();
+    QSize theSize(bRect.width(), bRect.height());
     painter->setClipRect (QRectF( 0, 0, QGraphicsRectItem::rect().width(), QGraphicsRectItem::rect().height() ));
-
-    draw( painter, mExtent, &transform);
-    painter->restore();
+    draw( painter, mExtent, theSize, 25.4); //scene coordinates seem to be in mm
   } 
 
   // Draw frame around
@@ -410,7 +327,7 @@ void QgsComposerMap::on_mHeightLineEdit_editingFinished ( void ) { sizeChanged()
 
 void QgsComposerMap::on_mCalculateComboBox_activated( int )
 {
-    mCalculate = mCalculateComboBox->currentItem();
+    mCalculate = mCalculateComboBox->currentIndex();
     
     if ( mCalculate == Scale )
     {
@@ -467,7 +384,7 @@ void QgsComposerMap::on_mScaleLineEdit_editingFinished()
 #ifdef QGISDEBUG
     std::cout << "QgsComposerMap::on_mScaleLineEdit_editingFinished" << std::endl;
 #endif
-    mCalculate = mCalculateComboBox->currentItem();
+    mCalculate = mCalculateComboBox->currentIndex();
 
     mUserScale = mScaleLineEdit->text().toDouble();
 
@@ -503,8 +420,9 @@ void QgsComposerMap::on_mWidthScaleLineEdit_editingFinished ( void ) { scaleChan
 
 void QgsComposerMap::mapCanvasChanged ( void ) 
 {
+#ifdef QGISDEBUG
     std::cout << "QgsComposerMap::canvasChanged" << std::endl;
-
+#endif
     mCacheUpdated = false;
     QGraphicsRectItem::update();
 }
@@ -562,9 +480,11 @@ void QgsComposerMap::recalculate ( void )
     mExtent.setYmax ( yc + height/2  );
   }
 
+#ifdef QGISDEBUG
   std::cout << "mUserExtent = " << mUserExtent.stringRep().toLocal8Bit().data() << std::endl;
   std::cout << "mScale = " << mScale << std::endl;
   std::cout << "mExtent = " << mExtent.stringRep().toLocal8Bit().data() << std::endl;
+#endif
 
   setOptions();
   mCacheUpdated = false;
@@ -581,12 +501,14 @@ void QgsComposerMap::on_mFrameCheckBox_clicked ( )
 
 
 void QgsComposerMap::setOptions ( void )
-{ 
+{
+#ifdef QGISDEBUG
   std::cout << "QgsComposerMap::setOptions" << std::endl;
+#endif
     
   mNameLabel->setText ( mName );
     
-  mCalculateComboBox->setCurrentItem( mCalculate );
+  mCalculateComboBox->setCurrentIndex( mCalculate );
     
   mWidthLineEdit->setText ( QString("%1").arg( mComposition->toMM((int)QGraphicsRectItem::rect().width()), 0,'g') );
   mHeightLineEdit->setText ( QString("%1").arg( mComposition->toMM((int)QGraphicsRectItem::rect().height()),0,'g') );
@@ -614,7 +536,7 @@ void QgsComposerMap::setOptions ( void )
 
   mFrameCheckBox->setChecked ( mFrame );
     
-  mPreviewModeComboBox->setCurrentItem( mPreviewMode );
+  mPreviewModeComboBox->setCurrentIndex( mPreviewMode );
 }
 
 void QgsComposerMap::on_mSetCurrentExtentButton_clicked ( void )

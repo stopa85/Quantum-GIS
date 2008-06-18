@@ -33,6 +33,7 @@ class QPainter;
 class QImage;
 
 class QgsAttributeAction;
+class QgsCoordinateTransform;
 class QgsField;
 class QgsFeature;
 class QgsGeometry;
@@ -335,34 +336,18 @@ existing rings, 5 no feature found where ring can be inserted*/
                               const QgsNewAttributesMap& added,
                               const QgsChangedAttributesMap& changed);
 
-  /** Draws the layer using coordinate transformation
+  /** Draws the layer
    *  @return FALSE if an error occurred during drawing
    */
-  bool draw(QPainter * p,
-            QgsRect & viewExtent,
-            QgsMapToPixel * cXf,
-            QgsCoordinateTransform* ct,
-            bool drawingToEditingCanvas);
+  bool draw(QgsRenderContext& renderContext);
 
   /** Draws the layer labels using coordinate transformation */
-  void drawLabels(QPainter * p, QgsRect & viewExtent, QgsMapToPixel * cXf, QgsCoordinateTransform* ct);
-
-  /** \brief Draws the layer using coordinate transformation
-   *  \param widthScale line width scale
-   *  \param symbolScale symbol scale
-   */
-  void draw(QPainter * p,
-            QgsRect & viewExtent,
-            QgsMapToPixel * cXf,
-            QgsCoordinateTransform* ct,
-            bool drawingToEditingCanvas,
-            double widthScale,
-            double symbolScale);
+  void drawLabels(QgsRenderContext& renderContext);
 
   /** \brief Draws the layer labels using coordinate transformation
    *  \param scale size scale, applied to all values in pixels
    */
-  void drawLabels(QPainter * p, QgsRect & viewExtent, QgsMapToPixel * cXf, QgsCoordinateTransform* ct, double scale);
+  void drawLabels(QPainter * p, const QgsRect& viewExtent, const QgsMapToPixel* cXf, const QgsCoordinateTransform* ct, double scale);
 
   /** returns array of added features */
   QgsFeatureList& addedFeatures();
@@ -458,26 +443,27 @@ private:                       // Private methods
    */
   void drawFeature(QPainter* p,
                    QgsFeature& fet,
-                   QgsMapToPixel * cXf,
-                   QgsCoordinateTransform* ct,
+                   const QgsMapToPixel* cXf,
+                   const QgsCoordinateTransform* ct,
                    QImage* marker,
+		   double widthScale,
                    double markerScaleFactor,
                    bool drawingToEditingCanvas);
 
   /** Convenience function to transform the given point */
   void transformPoint(double& x, double& y,
-                      QgsMapToPixel* mtp, QgsCoordinateTransform* ct);
+                      const QgsMapToPixel* mtp, const QgsCoordinateTransform* ct);
   
   void transformPoints(std::vector<double>& x, std::vector<double>& y, std::vector<double>& z,
-                       QgsMapToPixel* mtp, QgsCoordinateTransform* ct);
+                       const QgsMapToPixel* mtp, const QgsCoordinateTransform* ct);
 
   /** Draw the linestring as given in the WKB format. Returns a pointer
    * to the byte after the end of the line string binary data stream (WKB).
    */
   unsigned char* drawLineString(unsigned char* WKBlinestring,
                                 QPainter* p,
-                                QgsMapToPixel* mtp,
-                                QgsCoordinateTransform* ct,
+                                const QgsMapToPixel* mtp,
+                                const QgsCoordinateTransform* ct,
                                 bool drawingToEditingCanvas);
 
   /** Draw the polygon as given in the WKB format. Returns a pointer to
@@ -485,8 +471,8 @@ private:                       // Private methods
    */
   unsigned char* drawPolygon(unsigned char* WKBpolygon,
                              QPainter* p,
-                             QgsMapToPixel* mtp,
-                             QgsCoordinateTransform* ct,
+                             const QgsMapToPixel* mtp,
+                             const QgsCoordinateTransform* ct,
                              bool drawingToEditingCanvas);
 
   /** Goes through all features and finds a free id (e.g. to give it temporarily to a not-commited feature) */
@@ -498,7 +484,7 @@ private:                       // Private methods
   /** Draws a vertex symbol at (screen) coordinates x, y. (Useful to assist vertex editing.) */
   void drawVertexMarker(int x, int y, QPainter& p, QgsVectorLayer::VertexMarkerType type);
   /**Draws the overlay layers*/
-  void drawOverlays(QPainter * p, const QgsRect & viewExtent, QgsMapToPixel * cXf, QgsCoordinateTransform* ct);
+  void drawOverlays(QPainter * p, const QgsRect & viewExtent, const QgsMapToPixel* cXf, const QgsCoordinateTransform* ct);
 
   /**Snaps to a geometry and adds the result to the multimap if it is within the snapping result
    @param startPoint start point of the snap

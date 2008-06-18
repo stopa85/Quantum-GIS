@@ -40,7 +40,7 @@ QgsMapLayerRegistry *QgsMapLayerRegistry::instance()
 // Main class begins now...
 //
 
-QgsMapLayerRegistry::QgsMapLayerRegistry(QObject *parent, const char *name) : QObject(parent,name) 
+QgsMapLayerRegistry::QgsMapLayerRegistry(QObject *parent) : QObject(parent) 
 {
   QgsDebugMsg("QgsMapLayerRegistry created!");
   // constructor does nothing
@@ -103,7 +103,7 @@ void QgsMapLayerRegistry::removeMapLayer(QString theLayerId, bool theEmitSignal)
   QgsDebugMsg("QgsMapLayerRegistry::removemaplayer - deleting map layer.");
   delete mMapLayers[theLayerId]; 
   QgsDebugMsg("QgsMapLayerRegistry::removemaplayer - unregistering map layer.");
-  mMapLayers.erase(theLayerId);
+  mMapLayers.remove(theLayerId);
   QgsDebugMsg("QgsMapLayerRegistry::removemaplayer - operation complete.");
 }
 

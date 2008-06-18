@@ -72,6 +72,9 @@ class GUI_EXPORT QgisInterface : public QObject
     virtual QgsVectorLayer* addVectorLayer(QString vectorLayerPath, QString baseName, QString providerKey)=0;
     //! Add a raster layer given a raster layer file name
     virtual QgsRasterLayer* addRasterLayer(QString rasterLayerPath, QString baseName = QString())=0;
+    //! Add a WMS layer
+    virtual QgsRasterLayer* addRasterLayer(const QString& url, const QString& layerName, const QString& providerKey, const QStringList& layers, \
+					   const QStringList& styles, const QString& format, const QString& crs) = 0;
 
     //! Add a project
     virtual bool addProject(QString theProject)=0; 
@@ -86,8 +89,11 @@ class GUI_EXPORT QgisInterface : public QObject
     //! Remove an action (icon) from the plugin toolbar
     virtual void removeToolBarIcon(QAction *qAction) = 0;
     //! Add toolbar with specified name
-    virtual QToolBar* addToolBar(QString name)=0;
-
+    virtual QToolBar * addToolBar(QString name)=0;
+    /** Get the file toolbar - intended for use with plugins which
+    *   add a new file type handler.
+    */
+    virtual QToolBar * fileToolBar()=0;
     // TODO: is this deprecated in favour of QgsContextHelp?
     /** Open a url in the users browser. By default the QGIS doc directory is used
      * as the base for the URL. To open a URL that is not relative to the installed

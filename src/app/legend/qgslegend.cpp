@@ -28,6 +28,7 @@
 #include "qgslegendlayerfile.h"
 #include "qgslegendlayerfilegroup.h"
 #include "qgsmapcanvas.h"
+#include "qgsmapcanvasmap.h"
 #include "qgsmaplayer.h"
 #include "qgsmaplayerregistry.h"
 #include "qgsmaprender.h"
@@ -79,7 +80,9 @@ QgsLegend::QgsLegend(QWidget * parent, const char *name)
   setAutoScroll(true);
   QFont f("Arial", 10, QFont::Normal);
   setFont(f);
-  setBackgroundColor(QColor(192, 192, 192));
+  QPalette palette;
+  palette.setColor(backgroundRole(), QColor(192, 192, 192));
+  setPalette(palette);
 
   setColumnCount(1);
   header()->setHidden(1);
@@ -1017,8 +1020,8 @@ bool QgsLegend::readXML(QDomNode& legendnode)
 		  // remove the whole legendlayer if this is the only legendlayerfile
 		  if(childelem.previousSibling().isNull() && childelem.nextSibling().isNull())
 		    {
-		      collapsed.remove(lastLayer);
-		      expanded.remove(lastLayer);
+		      collapsed.removeAll(lastLayer);
+		      expanded.removeAll(lastLayer);
 		      delete lastLayer;
 		      lastLayer=0;
 		    }
@@ -1028,8 +1031,8 @@ bool QgsLegend::readXML(QDomNode& legendnode)
 		  QgsLegendLayerFile* theLegendLayerFile = new QgsLegendLayerFile(lastLayerFileGroup, QgsLegendLayerFile::nameFromLayer(theMapLayer), theMapLayer);
 
 		  // load layer's visibility and 'show in overview' flag
-		  theLegendLayerFile->setVisible(atoi(childelem.attribute("visible", "1"))); //Default is visible
-		  theLegendLayerFile->setInOverview(atoi(childelem.attribute("inOverview")));
+		  theLegendLayerFile->setVisible(atoi(childelem.attribute("visible", "1").toUtf8())); //Default is visible
+		  theLegendLayerFile->setInOverview(atoi(childelem.attribute("inOverview").toUtf8()));
 		  
 		  // set the check state
 		  blockSignals(true);
@@ -1432,7 +1435,7 @@ std::deque<QString> QgsLegend::layerIDs()
   qWarning("QgsLegend::layerIDs()");
   for(std::deque<QString>::iterator it = layers.begin(); it != layers.end(); ++it)
     {
-      qWarning(*it);
+      qWarning((*it).toUtf8());
     }
 #endif
 
@@ -1451,7 +1454,13 @@ void QgsLegend::refreshLayerSymbology(QString key, bool expandItem)
   //store the current item
   QTreeWidgetItem* theCurrentItem = currentItem();
 
-  theLegendLayer->refreshSymbology(key);
+  double widthScale = 1.0;
+  if(mMapCanvas && mMapCanvas->map())
+    {
+      widthScale = mMapCanvas->map()->paintDevice().logicalDpiX()/25.4;
+    }
+
+  theLegendLayer->refreshSymbology(key, widthScale);
   
   //restore the current item again
   setCurrentItem(theCurrentItem);

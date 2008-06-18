@@ -30,7 +30,7 @@ email                : sherman at mrcc.com
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QSettings>
-#include <QTextOStream>
+#include <QTextStream>
 #include <QTableWidgetItem>
 #include <QHeaderView>
 #include <QStringList>
@@ -191,14 +191,16 @@ QgsDbSourceSelect::~QgsDbSourceSelect()
 void QgsDbSourceSelect::populateConnectionList()
 {
   QSettings settings;
-  QStringList keys = settings.subkeyList("/PostgreSQL/connections");
+  settings.beginGroup("/PostgreSQL/connections");
+  QStringList keys = settings.childGroups();
   QStringList::Iterator it = keys.begin();
   cmbConnections->clear();
   while (it != keys.end())
   {
-    cmbConnections->insertItem(*it);
+    cmbConnections->addItem(*it);
     ++it;
   }
+  settings.endGroup();
   setConnectionListPosition();
 }
 void QgsDbSourceSelect::addNewConnection()
@@ -229,17 +231,17 @@ void QgsDbSourceSelect::deleteConnection()
   QMessageBox::StandardButton result = QMessageBox::information(this, tr("Confirm Delete"), msg, QMessageBox::Ok | QMessageBox::Cancel);
   if (result == QMessageBox::Ok)
   {
-    settings.removeEntry(key + "/host");
-    settings.removeEntry(key + "/database");
-    settings.removeEntry(key + "/username");
-    settings.removeEntry(key + "/password");
-    settings.removeEntry(key + "/port");
-    settings.removeEntry(key + "/save");
-    settings.removeEntry(key);
+    settings.remove(key + "/host");
+    settings.remove(key + "/database");
+    settings.remove(key + "/username");
+    settings.remove(key + "/password");
+    settings.remove(key + "/port");
+    settings.remove(key + "/save");
+    settings.remove(key);
     //if(!success){
     //  QMessageBox::information(this,"Unable to Remove","Unable to remove the connection " + cmbConnections->currentText());
     //}
-    cmbConnections->removeItem(cmbConnections->currentItem());  // populateConnectionList();
+    cmbConnections->removeItem(cmbConnections->currentIndex());  // populateConnectionList();
     setConnectionListPosition();
   }
 }
@@ -299,7 +301,7 @@ void QgsDbSourceSelect::addTables()
 
       if(geomColumnName.contains(" AS "))
       {
-        int a = geomColumnName.find(" AS ");
+        int a = geomColumnName.indexOf(" AS ");
         QString typeName = geomColumnName.mid(a+4); //only the type name
         geomColumnName = geomColumnName.mid(0, a); //only the geom column name
 
@@ -324,7 +326,9 @@ void QgsDbSourceSelect::addTables()
           continue;
         }
       }
-      query = "\"" + schemaName + "\".\"" + tableName + "\" " + "(" + geomColumnName + ") sql=" + sql;
+
+      query += "\"" + schemaName + "\".\"" + tableName + "\" " + "(" + geomColumnName + ") sql=" + sql;
+
       m_selectedTables.push_back(query);
     }
   }
@@ -356,29 +360,29 @@ void QgsDbSourceSelect::on_btnConnect_clicked()
   bool makeConnection = true;
   QString key = "/PostgreSQL/connections/" + cmbConnections->currentText();
 
-  QString database = settings.readEntry(key + "/database");
-  QString username = settings.readEntry(key + "/username");
-  QString password = settings.readEntry(key + "/password");
+  QString database = settings.value(key + "/database").toString();
+  QString username = settings.value(key + "/username").toString();
+  QString password = settings.value(key + "/password").toString();
 
   if ( password.isEmpty() )
   {
     // get password from user 
     makeConnection = false;
-    password = QInputDialog::getText(tr("Password for ") + username,
+    password = QInputDialog::getText(this, tr("Password for ") + username,
       tr("Please enter your password:"),
-      QLineEdit::Password, QString::null, &makeConnection, this);
+      QLineEdit::Password, QString::null, &makeConnection);
     // allow null password entry in case its valid for the database
   }
 
   QgsDataSourceURI uri;
-  uri.setConnection( settings.readEntry(key + "/host"),
-    settings.readEntry(key + "/port"),
+  uri.setConnection( settings.value(key + "/host").toString(),
+    settings.value(key + "/port").toString(),
     database,
-    settings.readEntry(key + "/username"),
+    settings.value(key + "/username").toString(),
     password );
 
-  bool searchPublicOnly = settings.readBoolEntry(key + "/publicOnly");
-  bool searchGeometryColumnsOnly = settings.readBoolEntry(key + "/geometryColumnsOnly");
+  bool searchPublicOnly = settings.value(key + "/publicOnly").toBool();
+  bool searchGeometryColumnsOnly = settings.value(key + "/geometryColumnsOnly").toBool();
 
   // Need to escape the password to allow for single quotes and backslashes
 
@@ -433,7 +437,7 @@ void QgsDbSourceSelect::on_btnConnect_clicked()
       QMessageBox::warning(this, tr("Connection failed"),
         tr
         ("Connection to %1 on %2 failed. Either the database is down or your settings are incorrect.%3Check your username and password and try again.%4The database said:%5%6").
-        arg(settings.readEntry(key + "/database")).arg(settings.readEntry(key + "/host")).arg("\n\n").arg("\n\n").arg("\n").arg(QString::fromUtf8(PQerrorMessage(pd))));
+        arg(settings.value(key + "/database").toString()).arg(settings.value(key + "/host").toString()).arg("\n\n").arg("\n\n").arg("\n").arg(QString::fromUtf8(PQerrorMessage(pd))));
     }
   }
 
@@ -486,7 +490,7 @@ void QgsDbSourceSelect::setSql(const QModelIndex& index)
   QString schemaName = mTableModel.itemFromIndex(mProxyModel.mapToSource(schemaSibling))->text();
   QString tableName = mTableModel.itemFromIndex(mProxyModel.mapToSource(tableSibling))->text(); 
   QString tableString = "\"" + schemaName + "\".\"" + tableName + "\"";
-  qWarning(tableString);
+  qWarning(tableString.toUtf8());
 
   QString currentSql;
   QModelIndex sqlSibling = index.sibling(index.row(), 4);
@@ -523,7 +527,7 @@ void QgsDbSourceSelect::addSearchGeometryColumn(const QString &schema, const QSt
 bool QgsDbSourceSelect::getTableInfo(PGconn *pg, bool searchGeometryColumnsOnly, bool searchPublicOnly)
 {
   bool ok = false;
-  QApplication::setOverrideCursor(Qt::waitCursor);
+  QApplication::setOverrideCursor(Qt::WaitCursor);
 
   // The following query returns only tables that exist and the user has SELECT privilege on.
   // Can't use regclass here because table must exist, else error occurs.
@@ -591,17 +595,20 @@ bool QgsDbSourceSelect::getTableInfo(PGconn *pg, bool searchGeometryColumnsOnly,
   sql = "select pg_class.relname,pg_namespace.nspname,pg_attribute.attname,pg_class.relkind "
     "from pg_attribute, pg_class, pg_namespace "
     "where pg_namespace.oid = pg_class.relnamespace "
-    "and pg_attribute.atttypid = regtype('geometry') "
     "and pg_attribute.attrelid = pg_class.oid "
+    "and ("
+      "pg_attribute.atttypid = regtype('geometry')"
+      " or "
+      "pg_attribute.atttypid IN (select oid FROM pg_type WHERE typbasetype=regtype('geometry'))"
+    ") "
     "and has_schema_privilege(pg_namespace.nspname,'usage') "
     "and has_table_privilege('\"'||pg_namespace.nspname||'\".\"'||pg_class.relname||'\"','select') ";
   // user has select privilege
   if (searchPublicOnly)
     sql += "and pg_namespace.nspname = 'public' ";
 
-  sql += "and pg_namespace.nspname||'.'||pg_class.relname not in "	//  needs to be table and schema
-    "(select f_table_schema||'.'||f_table_name from geometry_columns) "
-    "and pg_class.relkind in ('v', 'r')"; // only from views and relations (tables)
+  sql += "and not exists (select * from geometry_columns WHERE pg_namespace.nspname=f_table_schema AND pg_class.relname=f_table_name) "
+          "and pg_class.relkind in ('v', 'r')"; // only from views and relations (tables)
 
   result = PQexec(pg, sql.toUtf8());
 
@@ -639,14 +646,14 @@ bool QgsDbSourceSelect::getGeometryColumnInfo(PGconn *pg,
   QApplication::setOverrideCursor(Qt::waitCursor);
 
   QString sql = "select * from geometry_columns";
-  // where f_table_schema ='" + settings.readEntry(key + "/database") + "'";
+  // where f_table_schema ='" + settings.value(key + "/database").toString() + "'";
   sql += " order by f_table_schema,f_table_name";
   //qDebug("Fetching tables using: " + sql);
   PGresult *result = PQexec(pg, sql.toUtf8());
   if (result)
   {
     QString msg;
-    QTextOStream(&msg) << "Fetched " << PQntuples(result) << " tables from database";
+    QTextStream(&msg) << "Fetched " << PQntuples(result) << " tables from database";
     //qDebug(msg);
     for (int idx = 0; idx < PQntuples(result); idx++)
     {
@@ -751,7 +758,7 @@ void QgsDbSourceSelect::dbChanged()
 {
   // Remember which database was selected.
   QSettings settings;
-  settings.writeEntry("/PostgreSQL/connections/selected", 
+  settings.setValue("/PostgreSQL/connections/selected", 
     cmbConnections->currentText());
 }
 
@@ -759,13 +766,13 @@ void QgsDbSourceSelect::setConnectionListPosition()
 {
   QSettings settings;
   // If possible, set the item currently displayed database
-  QString toSelect = settings.readEntry("/PostgreSQL/connections/selected");
+  QString toSelect = settings.value("/PostgreSQL/connections/selected").toString();
   // Does toSelect exist in cmbConnections?
   bool set = false;
   for (int i = 0; i < cmbConnections->count(); ++i)
-    if (cmbConnections->text(i) == toSelect)
+    if (cmbConnections->itemText(i) == toSelect)
     {
-      cmbConnections->setCurrentItem(i);
+      cmbConnections->setCurrentIndex(i);
       set = true;
       break;
     }
@@ -780,9 +787,9 @@ void QgsDbSourceSelect::setConnectionListPosition()
       // the user has used qgis with database connections, so default to
       // the first in the list of connetions. Otherwise default to the last.
       if (toSelect.isNull())
-        cmbConnections->setCurrentItem(0);
+        cmbConnections->setCurrentIndex(0);
       else
-        cmbConnections->setCurrentItem(cmbConnections->count()-1);
+        cmbConnections->setCurrentIndex(cmbConnections->count()-1);
     }
 }
 

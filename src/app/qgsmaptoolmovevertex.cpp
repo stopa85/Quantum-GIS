@@ -20,6 +20,7 @@
 #include "qgsproject.h"
 #include "qgsrubberband.h"
 #include "qgsvectorlayer.h"
+#include <QMouseEvent>
 
 QgsMapToolMoveVertex::QgsMapToolMoveVertex(QgsMapCanvas* canvas): QgsMapToolVertexEdit(canvas)
 {
@@ -33,6 +34,11 @@ QgsMapToolMoveVertex::~QgsMapToolMoveVertex()
 
 void QgsMapToolMoveVertex::canvasMoveEvent(QMouseEvent * e)
 {
+  if(mRecentSnappingResults.size() < 1)
+    {
+      return ; //snapping not necessary
+    }
+
   //list of rubber bands, snapping results and point index to move
   //must have equal size
   int rbSize = mRubberBands.size();
@@ -50,7 +56,8 @@ void QgsMapToolMoveVertex::canvasMoveEvent(QMouseEvent * e)
   QList<QgsRubberBand*>::iterator rb_it = mRubberBands.begin();
 
   QList<QgsSnappingResult> snapResults;
-  if(mSnapper.snapToBackgroundLayers(e->pos(), snapResults) != 0)
+  
+  if(mSnapper.snapToBackgroundLayers(e->pos(), snapResults, mExcludePoint) != 0)
   {
     return; //error, bail out
   }
@@ -118,7 +125,10 @@ void QgsMapToolMoveVertex::canvasPressEvent(QMouseEvent * e)
       mRubberBands.push_back(rb);
     }
 
-  //create rubber band list for snapping results
+  if(mRecentSnappingResults.size() > 0)
+    {
+      mExcludePoint.push_back(mRecentSnappingResults.first().snappedVertex);
+    }
 }
 
 void QgsMapToolMoveVertex::canvasReleaseEvent(QMouseEvent * e)
@@ -137,7 +147,7 @@ void QgsMapToolMoveVertex::canvasReleaseEvent(QMouseEvent * e)
       QgsPoint snappedPointLayerCoord;
       QList<QgsSnappingResult> snapResults;
 
-      if(mSnapper.snapToBackgroundLayers(e->pos(), snapResults) != 0)
+      if(mSnapper.snapToBackgroundLayers(e->pos(), snapResults, mExcludePoint) != 0)
       {
 	  //error
       }
@@ -170,6 +180,7 @@ void QgsMapToolMoveVertex::canvasReleaseEvent(QMouseEvent * e)
 
   mRecentSnappingResults.clear();
   mRubberBandMovingPoints.clear();
+  mExcludePoint.clear();
 
   mCanvas->refresh();
 }

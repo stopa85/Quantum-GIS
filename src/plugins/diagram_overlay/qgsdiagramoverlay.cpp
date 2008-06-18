@@ -102,7 +102,7 @@ void QgsDiagramOverlay::createOverlayObjects(const QgsRect& viewExtent)
     }
 }
 
-void QgsDiagramOverlay::drawOverlayObjects(QPainter * p, const QgsRect& viewExtent, QgsMapToPixel * cXf, QgsCoordinateTransform* ct) const
+void QgsDiagramOverlay::drawOverlayObjects(QPainter * p, const QgsRect& viewExtent, const QgsMapToPixel* cXf, const QgsCoordinateTransform* ct) const
 {
   if(!mDisplayFlag)
     {

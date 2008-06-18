@@ -77,6 +77,12 @@ QgsRasterLayer* QgisAppInterface::addRasterLayer(QString rasterLayerPath, QStrin
   return qgis->addRasterLayer(rasterLayerPath, baseName);
 }
 
+QgsRasterLayer* QgisAppInterface::addRasterLayer(const QString& url, const QString& baseName, const QString& providerKey, \
+						 const QStringList& layers, const QStringList& styles, const QString& format, const QString& crs)
+{
+  return qgis->addRasterLayer(url, baseName, providerKey, layers, styles, format, crs);
+}
+
 bool QgisAppInterface::addProject(QString theProjectName)
 {
   return qgis->addProject(theProjectName);
@@ -115,6 +121,10 @@ QToolBar* QgisAppInterface::addToolBar(QString name)
 {
   return qgis->addToolBar(name);
 }
+QToolBar * QgisAppInterface::fileToolBar()
+{
+  return qgis->fileToolBar();
+}
 void QgisAppInterface::openURL(QString url, bool useQgisDocDirectory)
 {
   qgis->openURL(url, useQgisDocDirectory);
@@ -132,7 +142,7 @@ QWidget * QgisAppInterface::getMainWindow()
 
 QToolBox* QgisAppInterface::getToolBox()
 {
-  return qgis->toolBox;
+  return NULL;
 }
 
 void QgisAppInterface::refreshLegend(QgsMapLayer *l)

@@ -473,7 +473,12 @@ void QgsGrassNewMapset::setGrassProjection()
     OGRSpatialReferenceH hSRS = NULL;
     hSRS = OSRNewSpatialReference(NULL);
     int errcode;
-    if ( (errcode = OSRImportFromProj4(hSRS, proj4.ascii())) != OGRERR_NONE) {
+    const char *oldlocale = setlocale(LC_ALL, NULL);
+    setlocale(LC_ALL, "C");
+    errcode = OSRImportFromProj4(hSRS, proj4.ascii());
+    setlocale(LC_ALL, oldlocale);
+    if ( errcode!=OGRERR_NONE )
+    {
       std::cerr << "OGR can't parse PROJ.4-style parameter string:\n" << proj4.ascii()
         << "\nOGR Error code was " << errcode << std::endl;
 
@@ -604,7 +609,7 @@ void QgsGrassNewMapset::setRegionPage()
       }
       catch(QgsCsException &cse)
       {
-        UNUSED(cse);
+        Q_UNUSED(cse);
         std::cerr << "Cannot transform point" << std::endl;
         ok = false;
         break;
@@ -950,7 +955,7 @@ void QgsGrassNewMapset::setSelectedRegion()
       }
       catch(QgsCsException &cse)
       {
-        UNUSED(cse);
+        Q_UNUSED(cse);
         std::cerr << "Cannot transform point" << std::endl;
         ok = false;
         break;
@@ -1040,7 +1045,7 @@ void QgsGrassNewMapset::setCurrentRegion()
       }
       catch(QgsCsException &cse)
       {
-        UNUSED(cse);
+        Q_UNUSED(cse);
         std::cerr << "Cannot transform point" << std::endl;
         ok = false;
         break;
@@ -1186,7 +1191,7 @@ void QgsGrassNewMapset::drawRegion()
       }
       catch(QgsCsException &cse)
       {
-        UNUSED(cse);
+        Q_UNUSED(cse);
         std::cerr << "Cannot transform point" << std::endl;
         ok = false;
         break;

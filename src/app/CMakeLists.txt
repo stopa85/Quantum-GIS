@@ -1,6 +1,3 @@
-
-# TODO: delete qgsvectorsymbologywidget.cpp and qgsvectorsymbologywidget.h from SVN
-
 SET(QGIS_APP_SRCS
   main.cpp
   qgisapp.cpp
@@ -19,14 +16,11 @@ SET(QGIS_APP_SRCS
   qgsdbfilterproxymodel.cpp
   qgsdbtablemodel.cpp
   qgsdelattrdialog.cpp
-  qgsfillstylewidget.cpp
   qgsgeomtypedialog.cpp
   qgsgraduatedsymboldialog.cpp
   qgshelpviewer.cpp
   qgsidentifyresults.cpp
   qgslabeldialog.cpp
-  qgslinestyledialog.cpp
-  qgslinestylewidget.cpp
   qgsludialog.cpp
   qgsmaptooladdfeature.cpp
   qgsmaptooladdvertex.cpp
@@ -41,19 +35,17 @@ SET(QGIS_APP_SRCS
   qgsmaptoolselect.cpp
   qgsmaptoolsplitfeatures.cpp
   qgsmaptoolvertexedit.cpp
-  qgsmarkerdialog.cpp
   qgsmeasuredialog.cpp
   qgsmeasuretool.cpp
   qgsnewhttpconnection.cpp
   qgsnumericsortlistviewitem.cpp
   qgsoptions.cpp
   qgspastetransformations.cpp
-  qgspatterndialog.cpp
   qgspluginitem.cpp
   qgspluginmanager.cpp
   qgspluginmetadata.cpp
   qgspluginregistry.cpp
-  qgspointstylewidget.cpp
+  qgspythondialog.cpp
   qgsprojectproperties.cpp
   qgsrasterlayerproperties.cpp
   qgssearchquerybuilder.cpp
@@ -100,25 +92,20 @@ SET (QGIS_APP_MOC_HDRS
   qgscontinuouscolordialog.h
   qgscustomprojectiondialog.h
   qgsdelattrdialog.h
-  qgsfillstylewidget.h
   qgsgeomtypedialog.h
   qgsgraduatedsymboldialog.h
   qgshelpviewer.h
   qgsidentifyresults.h
   qgslabeldialog.h
-  qgslinestyledialog.h
-  qgslinestylewidget.h
   qgsludialog.h
   qgsmaplayerinterface.h
   qgsmaptoolidentify.h
-  qgsmarkerdialog.h
   qgsmeasuredialog.h
   qgsnewhttpconnection.h
   qgsoptions.h
   qgspastetransformations.h
-  qgspatterndialog.h
   qgspluginmanager.h
-  qgspointstylewidget.h
+  qgspythondialog.h
   qgsprojectproperties.h
   qgsrasterlayerproperties.h
   qgssearchquerybuilder.h
@@ -155,11 +142,6 @@ IF (POSTGRES_FOUND)
     )
 ENDIF (POSTGRES_FOUND)
 
-# Python support
-IF (PYTHON_FOUND)
-  SET (QGIS_APP_SRCS ${QGIS_APP_SRCS} qgspythondialog.cpp qgspythonutils.cpp)
-  SET (QGIS_APP_MOC_HDRS ${QGIS_APP_MOC_HDRS} qgspythondialog.h)
-ENDIF (PYTHON_FOUND)
 
 QT4_WRAP_CPP(QGIS_APP_MOC_SRCS ${QGIS_APP_MOC_HDRS})
 
@@ -201,6 +183,7 @@ INCLUDE_DIRECTORIES(
   ../core/raster ../core/renderer ../core/symbology
   ../gui
   ../plugins
+  ../python
   ${PROJ_INCLUDE_DIR}
   ${SQLITE3_INCLUDE_DIR}
   ${GEOS_INCLUDE_DIR}
@@ -211,40 +194,34 @@ IF (POSTGRES_FOUND)
   INCLUDE_DIRECTORIES(${POSTGRES_INCLUDE_DIR})
 ENDIF (POSTGRES_FOUND)
 
-IF (PYTHON_FOUND)
-  INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
-ENDIF (PYTHON_FOUND)
-
 #############
 
 IF (WIN32)
   # 'WIN32' removes console, which is Bad when debugging
   IF (CMAKE_BUILD_TYPE MATCHES Debug)
-    ADD_EXECUTABLE(qgis ${QGIS_APP_SRCS} ${QGIS_APP_MOC_SRCS})
+    ADD_EXECUTABLE(qgis ${QGIS_APP_SRCS} ${QGIS_APP_MOC_SRCS} ${IMAGE_RCC_SRCS})
   ELSE (CMAKE_BUILD_TYPE MATCHES Debug)
-    ADD_EXECUTABLE(qgis WIN32 ${QGIS_APP_SRCS} ${QGIS_APP_MOC_SRCS})
+    ADD_EXECUTABLE(qgis WIN32 ${QGIS_APP_SRCS} ${QGIS_APP_MOC_SRCS} ${IMAGE_RCC_SRCS})
   ENDIF (CMAKE_BUILD_TYPE MATCHES Debug)
 ELSE (WIN32)
-  ADD_EXECUTABLE(qgis ${QGIS_APP_SRCS} ${QGIS_APP_MOC_SRCS})
+  ADD_EXECUTABLE(qgis ${QGIS_APP_SRCS} ${QGIS_APP_MOC_SRCS} ${IMAGE_RCC_SRCS})
 ENDIF (WIN32)
 
 TARGET_LINK_LIBRARIES(qgis
   ${QT_QTCORE_LIBRARY} 
   ${QT_QTGUI_LIBRARY} 
   ${QT_QTXML_LIBRARY} 
-  #${QT_QTSQL_LIBRARY} 
   ${QT_QTSVG_LIBRARY} 
   ${QT_QTNETWORK_LIBRARY} 
+  ${QT_QTSQL_LIBRARY}
   #should only be needed for win
   ${QT_QTMAIN_LIBRARY} 
-  ${QT_QT3SUPPORT_LIBRARY} 
   qgis_core
   qgis_gui
   )
-IF (MSVC)
-  #This resolves issues like cant find winmain etc
-  TARGET_LINK_LIBRARIES(qgis qtmain)
-ENDIF (MSVC)
+IF (${QTVERSION} STRLESS "4.3.0")
+  TARGET_LINK_LIBRARIES(qgis ${QT_QT3SUPPORT_LIBRARY} )
+ENDIF (${QTVERSION} STRLESS "4.3.0")
 
 IF (APPLE)
   TARGET_LINK_LIBRARIES(qgis ${APP_SERVICES_LIBRARY} )
@@ -254,10 +231,6 @@ SET_TARGET_PROPERTIES(qgis PROPERTIES
   INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/${QGIS_LIB_DIR}
   INSTALL_RPATH_USE_LINK_PATH true
   )
-
-IF (PYTHON_FOUND)
-  TARGET_LINK_LIBRARIES(qgis ${PYTHON_LIBRARIES})
-ENDIF (PYTHON_FOUND)
 
 IF (POSTGRES_FOUND)
   TARGET_LINK_LIBRARIES (qgis ${POSTGRES_LIBRARY})

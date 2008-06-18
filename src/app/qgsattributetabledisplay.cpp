@@ -33,6 +33,7 @@
 #include "qgsvectordataprovider.h"
 #include "qgscontexthelp.h"
 
+#include <QCloseEvent>
 #include <QMessageBox>
 #include <QIcon>
 #include <QPixmap>
@@ -59,7 +60,9 @@ QgsAttributeTableDisplay::QgsAttributeTableDisplay(QgsVectorLayer* layer, QgisAp
   connect(mSearchButton, SIGNAL(clicked()), this, SLOT(search()));
   connect(mSearchShowResults, SIGNAL(activated(int)), this, SLOT(searchShowResultsChanged(int)));
   connect(btnAdvancedSearch, SIGNAL(clicked()), this, SLOT(advancedSearch()));
-  connect(btnClose, SIGNAL(clicked()), this, SLOT(close()));
+  connect(buttonBox, SIGNAL(helpRequested()), this, SLOT(showHelp()));
+  connect(buttonBox->button(QDialogButtonBox::Close), SIGNAL(clicked()), 
+      this, SLOT(close()));
   connect(tblAttributes, SIGNAL(featureAttributeChanged(int,int)), this, SLOT(changeFeatureAttribute(int,int)));
   
   //disable those buttons until start editing has been pressed and provider supports it
@@ -87,14 +90,14 @@ QgsAttributeTableDisplay::QgsAttributeTableDisplay(QgsVectorLayer* layer, QgisAp
     QgsFieldMap::const_iterator fldIt;
     for (fldIt = xfields.constBegin(); fldIt != xfields.constEnd(); ++fldIt)
     {
-      mSearchColumns->insertItem(fldIt->name());
+      mSearchColumns->addItem(fldIt->name());
     }
   }
   
   // TODO: create better labels
-  mSearchShowResults->insertItem(tr("select"));
-  mSearchShowResults->insertItem(tr("select and bring to top"));
-  mSearchShowResults->insertItem(tr("show only matching"));
+  mSearchShowResults->addItem(tr("select"));
+  mSearchShowResults->addItem(tr("select and bring to top"));
+  mSearchShowResults->addItem(tr("show only matching"));
 }
 
 QgsAttributeTableDisplay::~QgsAttributeTableDisplay()
@@ -107,19 +110,19 @@ QgsAttributeTable *QgsAttributeTableDisplay::table()
 void QgsAttributeTableDisplay::setTheme()
 {
   QString myIconPath = QgsApplication::themePath();
-  mAddAttributeButton->setPixmap(QPixmap(myIconPath+"/mActionNewAttribute.png"));
-  mRemoveSelectionButton->setPixmap(QPixmap(myIconPath+"/mActionUnselectAttributes.png"));
-  mSelectedToTopButton->setPixmap(QPixmap(myIconPath+"/mActionSelectedToTop.png"));
-  mInvertSelectionButton->setPixmap(QPixmap(myIconPath+"/mActionInvertSelection.png"));
-  mCopySelectedRowsButton->setPixmap(QPixmap(myIconPath+"/mActionCopySelected.png"));
-  mZoomMapToSelectedRowsButton->setPixmap(QPixmap(myIconPath+"/mActionZoomToSelected.png"));
-  mAddAttributeButton->setPixmap(QPixmap(myIconPath+"/mActionNewAttribute.png"));
-  mDeleteAttributeButton->setPixmap(QPixmap(myIconPath+"/mActionDeleteAttribute.png"));
+  mAddAttributeButton->setIcon(QPixmap(myIconPath+"/mActionNewAttribute.png"));
+  mRemoveSelectionButton->setIcon(QPixmap(myIconPath+"/mActionUnselectAttributes.png"));
+  mSelectedToTopButton->setIcon(QPixmap(myIconPath+"/mActionSelectedToTop.png"));
+  mInvertSelectionButton->setIcon(QPixmap(myIconPath+"/mActionInvertSelection.png"));
+  mCopySelectedRowsButton->setIcon(QPixmap(myIconPath+"/mActionCopySelected.png"));
+  mZoomMapToSelectedRowsButton->setIcon(QPixmap(myIconPath+"/mActionZoomToSelected.png"));
+  mAddAttributeButton->setIcon(QPixmap(myIconPath+"/mActionNewAttribute.png"));
+  mDeleteAttributeButton->setIcon(QPixmap(myIconPath+"/mActionDeleteAttribute.png"));
 }
 
 void QgsAttributeTableDisplay::setTitle(QString title)
 {
-  setCaption(title);
+  setWindowTitle(title);
 }
 
 void QgsAttributeTableDisplay::deleteAttributes()
@@ -175,7 +178,7 @@ void QgsAttributeTableDisplay::startEditing()
     {
       btnStartEditing->setEnabled(false);
       btnStopEditing->setEnabled(true);
-      btnClose->setEnabled(false);
+      buttonBox->button(QDialogButtonBox::Close)->setEnabled(false);
       //make the dialog modal when in editable
       //otherwise map editing and table editing
       //may disturb each other
@@ -213,7 +216,7 @@ void QgsAttributeTableDisplay::stopEditing()
   }
   btnStartEditing->setEnabled(true);
   btnStopEditing->setEnabled(false);
-  btnClose->setEnabled(true);
+  buttonBox->button(QDialogButtonBox::Close)->setEnabled(true);
   mAddAttributeButton->setEnabled(false);
   mDeleteAttributeButton->setEnabled(false);
   table()->setReadOnly(true);
@@ -232,7 +235,7 @@ void QgsAttributeTableDisplay::invertSelection()
 {
   if(mLayer)
   {
-    QApplication::setOverrideCursor(Qt::waitCursor);
+    QApplication::setOverrideCursor(Qt::WaitCursor);
     mLayer->invertSelection();
     QApplication::restoreOverrideCursor();
   }
@@ -264,7 +267,7 @@ void QgsAttributeTableDisplay::search()
   // else attributes containing entered text will be matched
 
   QgsVectorDataProvider* provider = mLayer->getDataProvider();
-  int item = mSearchColumns->currentItem();
+  int item = mSearchColumns->currentIndex();
   QVariant::Type type = provider->fields()[item].type();
   bool numeric = (type == QVariant::Int || type == QVariant::Double);
   
@@ -294,7 +297,7 @@ void QgsAttributeTableDisplay::advancedSearch()
 
 void QgsAttributeTableDisplay::searchShowResultsChanged(int item)
 {
-  QApplication::setOverrideCursor(Qt::waitCursor);
+  QApplication::setOverrideCursor(Qt::WaitCursor);
 
   if (item == 2) // show only matching
   {
@@ -336,7 +339,7 @@ void QgsAttributeTableDisplay::doSearch(const QString& searchString)
 
   QgsDebugMsg("Search by attribute: " + searchString + " parsed as: " + search.tree()->makeSearchString());
 
-  QApplication::setOverrideCursor(Qt::waitCursor);
+  QApplication::setOverrideCursor(Qt::WaitCursor);
 
   // TODO: need optimized getNextFeature which won't extract geometry
   // or search by traversing table ... which one is quicker?
@@ -369,11 +372,11 @@ void QgsAttributeTableDisplay::doSearch(const QString& searchString)
   }
 
   // update table
-  searchShowResultsChanged(mSearchShowResults->currentItem());
+  searchShowResultsChanged(mSearchShowResults->currentIndex());
    
   QString str;
   if (mSearchIds.size())
-    str.sprintf(tr("Found %d matching features.","", mSearchIds.size()), mSearchIds.size());
+    str.sprintf(tr("Found %d matching features.","", mSearchIds.size()).toUtf8(), mSearchIds.size());
   else
     str = tr("No matching features found.");
   QMessageBox::information(this, tr("Search results"), str);
@@ -400,10 +403,6 @@ void QgsAttributeTableDisplay::saveWindowLocation()
   settings.setValue("/Windows/AttributeTable/geometry", saveGeometry());
 } 
 
-void QgsAttributeTableDisplay::on_btnHelp_clicked()
-{
-  showHelp();
-}
 void QgsAttributeTableDisplay::showHelp()
 {
   QgsContextHelp::run(context_id);
@@ -413,7 +412,7 @@ void QgsAttributeTableDisplay::changeFeatureAttribute(int row, int column)
 {
   QgsFeatureList &flist = mLayer->addedFeatures();
 
-  int id = table()->text(row,0).toInt();
+  int id = table()->item(row,0)->text().toInt();
 
   int i;
   for(i=0; i<flist.size() && flist[i].featureId()!=id; i++)
@@ -422,5 +421,5 @@ void QgsAttributeTableDisplay::changeFeatureAttribute(int row, int column)
   if(i==flist.size())
     return;
 
-  flist[i].changeAttribute(column-1, table()->text(row,column));
+  flist[i].changeAttribute(column-1, table()->item(row,column)->text());
 }

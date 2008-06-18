@@ -93,11 +93,11 @@ bool QgsSpatialRefSys::createFromOgcWmsCrs(QString theCrs)
 {
   QStringList parts = theCrs.split(":");
 
-  if (parts.at(0) == "EPSG")
+  if(parts.at(0).compare("EPSG", Qt::CaseInsensitive) == 0)
   {
     createFromEpsg( parts.at(1).toLong() );
   }
-  else if (parts.at(0) == "CRS")
+  else if(parts.at(0).compare("CRS", Qt::CaseInsensitive) == 0)
   {
     if (parts.at(1) == "84")
     {
@@ -213,7 +213,7 @@ bool QgsSpatialRefSys::loadFromDb(QString db, QString field, long id)
   */
 
   QString mySql = "select srs_id,description,projection_acronym,ellipsoid_acronym,parameters,srid,epsg,is_geo from tbl_srs where " + field + "='" + QString::number(id) + "'";
-  myResult = sqlite3_prepare(myDatabase, mySql.utf8(), mySql.length(), &myPreparedStatement, &myTail);
+  myResult = sqlite3_prepare(myDatabase, mySql.toUtf8(), mySql.length(), &myPreparedStatement, &myTail);
   // XXX Need to free memory from the error msg if one is set
   if(myResult == SQLITE_OK && sqlite3_step(myPreparedStatement) == SQLITE_ROW)
   {
@@ -228,7 +228,10 @@ bool QgsSpatialRefSys::loadFromDb(QString db, QString field, long id)
     mGeoFlag = (geo == 0 ? false : true);
     setMapUnits();
     mIsValidFlag = true;
-    OSRImportFromProj4( mSRS, (const char *)proj4String.latin1() );
+    const char *oldlocale = setlocale(LC_ALL, NULL);
+    setlocale(LC_ALL, "C");
+    OSRImportFromProj4( mSRS, proj4String.toLatin1().constData() );
+    setlocale(LC_ALL, oldlocale);
   }
   else
   {
@@ -250,10 +253,10 @@ bool QgsSpatialRefSys::createFromWkt(QString theWkt)
     return mIsValidFlag;
   }
   QgsDebugMsg("QgsSpatialRefSys::createFromWkt(QString theWkt) using: " + theWkt);
-  //this is really ugly but we need to get a QString to a char**
-  char *pWkt = (char *)theWkt.latin1();
+  QByteArray ba = theWkt.toLatin1();
+  const char *pWkt = ba;
 
-  OGRErr myInputResult = OSRImportFromWkt( mSRS, &pWkt );
+  OGRErr myInputResult = OSRImportFromWkt( mSRS, (char **)&pWkt );
 
   if (myInputResult != OGRERR_NONE)
   {
@@ -308,7 +311,7 @@ bool QgsSpatialRefSys::createFromProj4 (const QString theProj4String)
   QRegExp myProjRegExp( "\\+proj=\\S+" );
   int myStart= 0;
   int myLength=0;
-  myStart = myProjRegExp.search(theProj4String, myStart);
+  myStart = myProjRegExp.indexIn(theProj4String, myStart);
   if (myStart==-1)
   {
     QgsDebugMsg("error proj string supplied has no +proj argument");
@@ -324,7 +327,7 @@ bool QgsSpatialRefSys::createFromProj4 (const QString theProj4String)
   QRegExp myEllipseRegExp( "\\+ellps=\\S+" );
   myStart= 0;
   myLength=0;
-  myStart = myEllipseRegExp.search(theProj4String, myStart);
+  myStart = myEllipseRegExp.indexIn(theProj4String, myStart);
   if (myStart!=-1)
   {
     myLength = myEllipseRegExp.matchedLength();
@@ -334,7 +337,7 @@ bool QgsSpatialRefSys::createFromProj4 (const QString theProj4String)
   QRegExp myAxisRegExp( "\\+a=\\S+" );
   myStart= 0;
   myLength=0;
-  myStart = myAxisRegExp.search(theProj4String, myStart);
+  myStart = myAxisRegExp.indexIn(theProj4String, myStart);
   if (myStart==-1 && mEllipsoidAcronym.isNull())
   {
     QgsLogger::warning("QgsSpatialRefSys::createFromProj4 error proj string supplied has no +ellps or +a argument");
@@ -351,16 +354,16 @@ bool QgsSpatialRefSys::createFromProj4 (const QString theProj4String)
   */
   long mySrsId = 0;
   QgsSpatialRefSys::RecordMap myRecord;
-  if (!mDescription.stripWhiteSpace ().isEmpty())
+  if (!mDescription.trimmed().isEmpty())
   {
-    myRecord = getRecord("select * from tbl_srs where description='" + mDescription.stripWhiteSpace () + "'");
+    myRecord = getRecord("select * from tbl_srs where description='" + mDescription.trimmed() + "'");
   }
 
   /*
   * - if the above does not match perform a whole text search on proj4 string (if not null)
   */
   QgsDebugMsg("QgsSpatialRefSys::createFromProj4 wholetext match on name failed, trying proj4string match");
-  myRecord = getRecord("select * from tbl_srs where parameters='" + theProj4String.stripWhiteSpace () + "'");
+  myRecord = getRecord("select * from tbl_srs where parameters='" + theProj4String.trimmed() + "'");
   if (!myRecord.empty())
   {
     mySrsId=myRecord["srs_id"].toLong();
@@ -383,8 +386,8 @@ bool QgsSpatialRefSys::createFromProj4 (const QString theProj4String)
     int myLength2 = 0;
     QString lat1Str = "";
     QString lat2Str = "";
-    myStart1 = myLat1RegExp.search(theProj4String, myStart1);
-    myStart2 = myLat2RegExp.search(theProj4String, myStart2);
+    myStart1 = myLat1RegExp.indexIn(theProj4String, myStart1);
+    myStart2 = myLat2RegExp.indexIn(theProj4String, myStart2);
     if ((myStart1 != -1) && (myStart2 != -1))
     {
       myLength1 = myLat1RegExp.matchedLength();
@@ -401,14 +404,17 @@ bool QgsSpatialRefSys::createFromProj4 (const QString theProj4String)
       theProj4StringModified.replace(myStart1+LAT_PREFIX_LEN,myLength1-LAT_PREFIX_LEN,lat2Str);
       // Now we have to find the lat_2 location again since it has potentially moved...
       myStart2 = 0;
-      myStart2 = myLat2RegExp.search(theProj4String, myStart2);
+      myStart2 = myLat2RegExp.indexIn(theProj4String, myStart2);
       theProj4StringModified.replace(myStart2+LAT_PREFIX_LEN,myLength2-LAT_PREFIX_LEN,lat1Str);
       QgsDebugMsg("QgsSpatialRefSys::createFromProj4 - trying proj4string match with swapped lat_1,lat_2");
-      myRecord = getRecord("select * from tbl_srs where parameters='" + theProj4StringModified.stripWhiteSpace () + "'");
+      myRecord = getRecord("select * from tbl_srs where parameters='" + theProj4StringModified.trimmed() + "'");
       if (!myRecord.empty())
       {
         // Success!  We have found the proj string by swapping the lat_1 and lat_2
-        OSRImportFromProj4(mSRS, (const char *)theProj4StringModified.latin1() );
+        const char *oldlocale = setlocale(LC_ALL, NULL);
+        setlocale(LC_ALL, "C");
+        OSRImportFromProj4(mSRS, theProj4StringModified.toLatin1().constData() );
+        setlocale(LC_ALL, oldlocale); 
         mySrsId=myRecord["srs_id"].toLong();
         QgsDebugMsg("QgsSpatialRefSys::createFromProj4 proj4string match search for srsid returned srsid: " + QString::number(mySrsId));
         if (mySrsId > 0)
@@ -463,7 +469,7 @@ QgsSpatialRefSys::RecordMap QgsSpatialRefSys::getRecord(QString theSql)
     return myMap;
   }
 
-  myResult = sqlite3_prepare(myDatabase, theSql.utf8(), theSql.length(), &myPreparedStatement, &myTail);
+  myResult = sqlite3_prepare(myDatabase, theSql.toUtf8(), theSql.length(), &myPreparedStatement, &myTail);
   // XXX Need to free memory from the error msg if one is set
   if(myResult == SQLITE_OK && sqlite3_step(myPreparedStatement) == SQLITE_ROW)
   {
@@ -499,7 +505,7 @@ QgsSpatialRefSys::RecordMap QgsSpatialRefSys::getRecord(QString theSql)
       return myMap;
     }
 
-    myResult = sqlite3_prepare(myDatabase, theSql.utf8(), theSql.length(), &myPreparedStatement, &myTail);
+    myResult = sqlite3_prepare(myDatabase, theSql.toUtf8(), theSql.length(), &myPreparedStatement, &myTail);
     // XXX Need to free memory from the error msg if one is set
     if(myResult == SQLITE_OK && sqlite3_step(myPreparedStatement) == SQLITE_ROW)
     {
@@ -522,12 +528,12 @@ QgsSpatialRefSys::RecordMap QgsSpatialRefSys::getRecord(QString theSql)
   sqlite3_close(myDatabase);
 
 #ifdef QGISDEBUG
-	 QgsDebugMsg("QgsSpatialRefSys::getRecord retrieved:  " + theSql);
-	 RecordMap::Iterator it;
-	 for ( it = myMap.begin(); it != myMap.end(); ++it )
-	   {
-	     QgsDebugMsgLevel(it.key() + " => " + it.data(), 2);
-	   }
+  QgsDebugMsg("QgsSpatialRefSys::getRecord retrieved:  " + theSql);
+  RecordMap::Iterator it;
+  for ( it = myMap.begin(); it != myMap.end(); ++it )
+  {
+    QgsDebugMsgLevel(it.key() + " => " + it.value(), 2);
+  }
 #endif
 
   return myMap;
@@ -658,7 +664,10 @@ void QgsSpatialRefSys::setDescription (QString theDescription)
 }
 void QgsSpatialRefSys::setProj4String (QString theProj4String)
 {
-  mIsValidFlag = OSRImportFromProj4(mSRS, (const char *)theProj4String.latin1())==OGRERR_NONE;
+  const char *oldlocale = setlocale(LC_ALL, NULL);
+  setlocale(LC_ALL, "C");
+  mIsValidFlag = OSRImportFromProj4(mSRS, theProj4String.toLatin1().constData() )==OGRERR_NONE;
+  setlocale(LC_ALL, oldlocale);
 }
 void QgsSpatialRefSys::setGeographicFlag (bool theGeoFlag)
 {
@@ -773,7 +782,7 @@ long QgsSpatialRefSys::findMatchingProj()
     return 0;
   }
 
-  myResult = sqlite3_prepare(myDatabase, mySql.utf8(), mySql.length(), &myPreparedStatement, &myTail);
+  myResult = sqlite3_prepare(myDatabase, mySql.toUtf8(), mySql.length(), &myPreparedStatement, &myTail);
   // XXX Need to free memory from the error msg if one is set
   if(myResult == SQLITE_OK)
   {
@@ -813,7 +822,7 @@ long QgsSpatialRefSys::findMatchingProj()
     return 0;
   }
 
-  myResult = sqlite3_prepare(myDatabase, mySql.utf8(), mySql.length(), &myPreparedStatement, &myTail);
+  myResult = sqlite3_prepare(myDatabase, mySql.toUtf8(), mySql.length(), &myPreparedStatement, &myTail);
   // XXX Need to free memory from the error msg if one is set
   if(myResult == SQLITE_OK)
   {
@@ -1019,7 +1028,7 @@ QString QgsSpatialRefSys::getProj4FromSrsId(const int theSrsId)
       QgsDebugMsg("QgsSpatialRefSys::getProj4FromSrsId :  mySrsId = " + QString::number(theSrsId));
       QgsDebugMsg("QgsSpatialRefSys::getProj4FromSrsId :  USER_PROJECTION_START_ID = " + QString::number(USER_PROJECTION_START_ID));
       QgsDebugMsg("QgsSpatialRefSys::getProj4FromSrsId :Selection sql : " + mySql);
-	  
+
       //
       // Determine if this is a user projection or a system on
       // user projection defs all have srs_id >= 100000
@@ -1031,7 +1040,7 @@ QString QgsSpatialRefSys::getProj4FromSrsId(const int theSrsId)
         myFileInfo.setFile(myDatabaseFileName);
         if ( !myFileInfo.exists( ) ) //its unlikely that this condition will ever be reached
         {
-	  QgsLogger::critical("QgsSpatialRefSys::getProj4FromSrsId :  users qgis.db not found");
+          QgsLogger::critical("QgsSpatialRefSys::getProj4FromSrsId :  users qgis.db not found");
           return NULL;
         }
       }
@@ -1046,13 +1055,13 @@ QString QgsSpatialRefSys::getProj4FromSrsId(const int theSrsId)
       rc = openDb(myDatabaseFileName, &db);
       if(rc)
       {
-	return QString();
+        return QString();
       }
       // prepare the sql statement
       const char *pzTail;
       sqlite3_stmt *ppStmt;
 
-      rc = sqlite3_prepare(db, mySql.utf8(), mySql.length(), &ppStmt, &pzTail);
+      rc = sqlite3_prepare(db, mySql.toUtf8(), mySql.length(), &ppStmt, &pzTail);
       // XXX Need to free memory from the error msg if one is set
 
       if(rc == SQLITE_OK)

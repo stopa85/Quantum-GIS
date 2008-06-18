@@ -66,6 +66,7 @@
 #include "qgspoint.h"
 #include "qgsproviderregistry.h"
 #include "qgsrect.h"
+#include "qgsrendercontext.h"
 #include "qgssinglesymbolrenderer.h"
 #include "qgsspatialrefsys.h"
 #include "qgsvectordataprovider.h"
@@ -244,21 +245,21 @@ void QgsVectorLayer::setDisplayField(QString fldName)
       // We assume that the user has organized the data with the
       // more "interesting" field names first. As such, name should
       // be selected before oldname, othername, etc.
-      if (fldName.find("name", false) > -1)
+      if (fldName.indexOf("name", false) > -1)
       {
         if(idxName.isEmpty())
         {
           idxName = fldName;
         }
       }
-      if (fldName.find("descrip", false) > -1)
+      if (fldName.indexOf("descrip", false) > -1)
       {
         if(idxName.isEmpty())
         {
           idxName = fldName;
         }
       }
-      if (fldName.find("id", false) > -1)
+      if (fldName.indexOf("id", false) > -1)
       {
         if(idxId.isEmpty())
         {
@@ -290,15 +291,20 @@ void QgsVectorLayer::setDisplayField(QString fldName)
   }
 }
 
-void QgsVectorLayer::drawLabels(QPainter * p, QgsRect & viewExtent, QgsMapToPixel * theMapToPixelTransform, QgsCoordinateTransform* ct)
+void QgsVectorLayer::drawLabels(QgsRenderContext& renderContext)
 {
-  drawLabels(p, viewExtent, theMapToPixelTransform, ct, 1.);
+  QPainter* thePainter = renderContext.painter();
+  if(!thePainter)
+    {
+      return;
+    }
+  drawLabels(thePainter, renderContext.extent(), &(renderContext.mapToPixel()), renderContext.coordTransform(), 1.0 / renderContext.rasterScaleFactor());
 }
 
 // NOTE this is a temporary method added by Tim to prevent label clipping
 // which was occurring when labeller was called in the main draw loop
 // This method will probably be removed again in the near future!
-void QgsVectorLayer::drawLabels(QPainter * p, QgsRect & viewExtent, QgsMapToPixel * theMapToPixelTransform, QgsCoordinateTransform* ct, double scale)
+void QgsVectorLayer::drawLabels(QPainter * p, const QgsRect& viewExtent, const QgsMapToPixel* theMapToPixelTransform, const QgsCoordinateTransform* ct, double scale)
 {
   QgsDebugMsg("Starting draw of labels");
 
@@ -348,7 +354,7 @@ void QgsVectorLayer::drawLabels(QPainter * p, QgsRect & viewExtent, QgsMapToPixe
     }
     catch (QgsCsException &e)
     {
-      UNUSED(e);
+      Q_UNUSED(e);
       QgsLogger::critical("Error projecting label locations, caught in " + QString(__FILE__) + ", line " +QString(__LINE__));
     }
 
@@ -366,8 +372,8 @@ void QgsVectorLayer::drawLabels(QPainter * p, QgsRect & viewExtent, QgsMapToPixe
 
 unsigned char* QgsVectorLayer::drawLineString(unsigned char* feature, 
     QPainter* p,
-    QgsMapToPixel* mtp,
-    QgsCoordinateTransform* ct,
+    const QgsMapToPixel* mtp,
+    const QgsCoordinateTransform* ct,
     bool drawingToEditingCanvas)
 {
   unsigned char *ptr = feature + 5;
@@ -475,8 +481,8 @@ unsigned char* QgsVectorLayer::drawLineString(unsigned char* feature,
 
 unsigned char* QgsVectorLayer::drawPolygon(unsigned char* feature, 
     QPainter* p, 
-    QgsMapToPixel* mtp, 
-    QgsCoordinateTransform* ct,
+    const QgsMapToPixel* mtp, 
+    const QgsCoordinateTransform* ct,
     bool drawingToEditingCanvas)
 {
   typedef std::pair<std::vector<double>, std::vector<double> > ringType;
@@ -727,29 +733,13 @@ std::cerr << i << ": " << ring->first[i]
   return ptr;
 }
 
-
-bool QgsVectorLayer::draw(QPainter * p,
-                          QgsRect & viewExtent,
-                          QgsMapToPixel * theMapToPixelTransform,
-                          QgsCoordinateTransform* ct,
-                          bool drawingToEditingCanvas)
+bool QgsVectorLayer::draw(QgsRenderContext& renderContext)
 {
   //set update threshold before each draw to make sure the current setting is picked up
   QSettings settings;
-  mUpdateThreshold = settings.readNumEntry("Map/updateThreshold", 0);
-  draw ( p, viewExtent, theMapToPixelTransform, ct, drawingToEditingCanvas, 1., 1.);
-
-  return TRUE; // Assume success always
-}
-
-void QgsVectorLayer::draw(QPainter * p,
-                          QgsRect & viewExtent,
-                          QgsMapToPixel * theMapToPixelTransform,
-                          QgsCoordinateTransform* ct,
-                          bool drawingToEditingCanvas,
-                          double widthScale,
-                          double symbolScale)
-{
+  mUpdateThreshold = settings.value("Map/updateThreshold", 0).toInt();
+  //draw ( p, viewExtent, theMapToPixelTransform, ct, drawingToEditingCanvas, 1., 1.);
+  
   if (mRenderer)
   {
     // painter is active (begin has been called
@@ -767,43 +757,45 @@ void QgsVectorLayer::draw(QPainter * p,
     /* Scale factor of the marker image*/
     /* We set this to the symbolScale, and if it is NOT changed, */
     /* we don't have to do another scaling here */
-    double markerScaleFactor =  symbolScale;
+    double markerScaleFactor = renderContext.rasterScaleFactor();
     
     if(mEditable)
     {
       // Destroy all cached geometries and clear the references to them
       deleteCachedGeometries();
     }
- 
-    mDataProvider->updateFeatureCount();
-    int totalFeatures = mDataProvider->featureCount();
-    int featureCount = 0;
-    QgsFeature fet;
 
-    QgsAttributeList attributes = mRenderer->classificationAttributes();
-    mDataProvider->select(attributes, viewExtent);
+  mDataProvider->updateFeatureCount();
+  int totalFeatures = mDataProvider->featureCount();
+  int featureCount = 0;
+  QgsFeature fet;
+  
+  QgsAttributeList attributes = mRenderer->classificationAttributes();
+  mDataProvider->select(attributes, renderContext.extent());  
 
-    try
+  try
     {
       while (mDataProvider->getNextFeature(fet))
       {
-        // XXX Something in our draw event is triggering an additional draw event when resizing [TE 01/26/06]
-        // XXX Calling this will begin processing the next draw event causing image havoc and recursion crashes.
-        //qApp->processEvents(); //so we can trap for esc press
-        //if (mDrawingCancelled) return;
-        // If update threshold is greater than 0, check to see if
-        // the threshold has been exceeded
 
-        if(mUpdateThreshold > 0)
-        {
-          // signal progress in drawing
-          if(0 == featureCount % mUpdateThreshold)
-	    {
-	      emit screenUpdateRequested();
+	if(renderContext.renderingStopped())
+	  {
+	    break;
+	  }
+
+#ifndef Q_WS_MAC //MH: disable this on Mac for now to avoid problems with resizing
+	if(mUpdateThreshold > 0 && 0 == featureCount % mUpdateThreshold)
+	  {
+	    emit screenUpdateRequested();
+	    emit drawingProgress(featureCount, totalFeatures);
+	    qApp->processEvents();
+	  }
+	else if(featureCount % 1000 == 0)
+	  {
 	      emit drawingProgress(featureCount, totalFeatures);
 	      qApp->processEvents();
-	    }
-        }
+	  }
+#endif //Q_WS_MAC
 
         if (mEditable)
         {
@@ -841,14 +833,14 @@ void QgsVectorLayer::draw(QPainter * p,
           sel = FALSE;
         }
 
-	//QgsDebugMsg(QString("markerScale before renderFeature(): %1").arg(markerScaleFactor));
-	// markerScalerFactore reflects the wanted scaling of the marker
-        mRenderer->renderFeature(p, fet, &marker, &markerScaleFactor, sel, widthScale );
-	// markerScalerFactore now reflects the actual scaling of the marker that the render performed.
-	//QgsDebugMsg(QString("markerScale after renderFeature(): %1").arg(markerScaleFactor));
+        //QgsDebugMsg(QString("markerScale before renderFeature(): %1").arg(markerScaleFactor));
+	      // markerScalerFactore reflects the wanted scaling of the marker
+        mRenderer->renderFeature(renderContext.painter(), fet, &marker, sel, renderContext.scaleFactor(), renderContext.rasterScaleFactor());
+        // markerScalerFactore now reflects the actual scaling of the marker that the render performed.
+        //QgsDebugMsg(QString("markerScale after renderFeature(): %1").arg(markerScaleFactor));
 
-        double scale = symbolScale / markerScaleFactor;
-        drawFeature(p,fet,theMapToPixelTransform,ct, &marker, scale, drawingToEditingCanvas);
+        //double scale = renderContext.scaleFactor() /  markerScaleFactor;
+        drawFeature(renderContext.painter() , fet, &(renderContext.mapToPixel()), renderContext.coordTransform(), &marker, renderContext.scaleFactor(), renderContext.rasterScaleFactor(), renderContext.drawEditingInformation());
 
         ++featureCount;
       }
@@ -860,14 +852,13 @@ void QgsVectorLayer::draw(QPainter * p,
         for(; it != mAddedFeatures.end(); ++it)
         {
           bool sel = mSelectedFeatureIds.contains((*it).featureId());
-	  QgsDebugMsg(QString("markerScale before renderFeature(): %1").arg(markerScaleFactor));
-	  // markerScalerFactore reflects the wanted scaling of the marker
-          mRenderer->renderFeature(p, *it, &marker, &markerScaleFactor, 
-              sel, widthScale);
-	  // markerScalerFactore now reflects the actual scaling of the marker that the render performed.
-	  QgsDebugMsg(QString("markerScale after renderFeature(): %1").arg(markerScaleFactor));
+          //QgsDebugMsg(QString("markerScale before renderFeature(): %1").arg(markerScaleFactor));
+          // markerScalerFactore reflects the wanted scaling of the marker
+          mRenderer->renderFeature(renderContext.painter(), *it, &marker, sel, renderContext.scaleFactor(), renderContext.rasterScaleFactor());
+          // markerScalerFactore now reflects the actual scaling of the marker that the render performed.
+          //QgsDebugMsg(QString("markerScale after renderFeature(): %1").arg(markerScaleFactor));
 
-          double scale = symbolScale / markerScaleFactor;
+          //double scale = renderContext.scaleFactor() / markerScaleFactor;
     
           if (mChangedGeometries.contains((*it).featureId()))
           {
@@ -876,7 +867,7 @@ void QgsVectorLayer::draw(QPainter * p,
           
           // give a deep copy of the geometry to mCachedGeometry because it will be erased at each redraw
           mCachedGeometries.insert((*it).featureId(), QgsGeometry(*((*it).geometry())) );
-          drawFeature(p,*it,theMapToPixelTransform,ct, &marker,scale, drawingToEditingCanvas);
+          drawFeature(renderContext.painter(), *it, &(renderContext.mapToPixel()), renderContext.coordTransform(), &marker, renderContext.scaleFactor(), renderContext.rasterScaleFactor(), renderContext.drawEditingInformation());
         }
       }
 
@@ -888,18 +879,16 @@ void QgsVectorLayer::draw(QPainter * p,
       msg += cse.what();
       QgsLogger::warning(msg);
     }
-    QgsDebugMsg("Total features processed is " + QString::number(featureCount));
-    // XXX Something in our draw event is triggering an additional draw event when resizing [TE 01/26/06]
-    // XXX Calling this will begin processing the next draw event causing image havoc and recursion crashes.
-    //qApp->processEvents();
+
   }
   else
   {
     QgsLogger::warning("QgsRenderer is null in QgsVectorLayer::draw()");
   }
-  drawOverlays(p, viewExtent, theMapToPixelTransform, ct);
-}
+  drawOverlays(renderContext.painter(), renderContext.extent(), &(renderContext.mapToPixel()), renderContext.coordTransform());
 
+  return TRUE; // Assume success always
+}
 
 void QgsVectorLayer::deleteCachedGeometries()
 {
@@ -925,8 +914,8 @@ void QgsVectorLayer::drawVertexMarker(int x, int y, QPainter& p, QgsVectorLayer:
     }
 }
 
-void QgsVectorLayer::drawOverlays(QPainter * p, const QgsRect & viewExtent, QgsMapToPixel * cXf, \
-QgsCoordinateTransform* ct)
+void QgsVectorLayer::drawOverlays(QPainter * p, const QgsRect & viewExtent, const QgsMapToPixel* cXf, \
+const QgsCoordinateTransform* ct)
 {
   for(std::list<QgsVectorOverlay*>::const_iterator it = mOverlays.begin(); it != mOverlays.end(); ++it)
     {
@@ -1359,10 +1348,30 @@ int QgsVectorLayer::featuresInRectangle(const QgsRect& searchRect, QList<QgsFeat
 	    }
 	  if(fetchAttributes)
 	    {
-	      QgsFeature tmpFeature;
-	      mDataProvider->getFeatureAtId(changedIt.key(), tmpFeature, false, mDataProvider->allAttributesList());
-	      newFeature.setAttributeMap(tmpFeature.attributeMap());
-	      
+	      if(changedIt.key()<0)
+		{
+		  //The feature is in mAddedFeature's list because its id<0
+		  bool findMyFeature = false;
+		  for (QgsFeatureList::iterator iter = mAddedFeatures.begin(); iter != mAddedFeatures.end(); ++iter)
+		    {
+		      if(iter->featureId()==changedIt.key())
+			{
+			   findMyFeature = true;
+			   newFeature.setAttributeMap(iter->attributeMap());
+			   break;
+			}
+		    }
+		  if(!findMyFeature)
+		    {
+		      QgsLogger::warning("No attribute for the feature");
+		    }
+		}
+	      else
+		{
+		  QgsFeature tmpFeature;
+		  mDataProvider->getFeatureAtId(changedIt.key(), tmpFeature, false, mDataProvider->allAttributesList());
+		  newFeature.setAttributeMap(tmpFeature.attributeMap());
+		}
 	    }
 	  features.push_back(newFeature);
 	}
@@ -1646,7 +1655,7 @@ bool QgsVectorLayer::deleteSelectedFeatures()
         noncommited = TRUE;
         
         // Delete the feature itself
-        mAddedFeatures.remove(iter);
+        mAddedFeatures.erase(iter);
         
         break;
       }
@@ -2095,9 +2104,8 @@ bool QgsVectorLayer::startEditing()
   
 bool QgsVectorLayer::readXML_( QDomNode & layer_node )
 {
-#ifdef QGISDEBUG
-  std::cerr << "Datasource in QgsVectorLayer::readXML_: " << mDataSource.toLocal8Bit().data() << std::endl;
-#endif
+  QgsDebugMsg(QString("Datasource in QgsVectorLayer::readXML_: ") + mDataSource.toLocal8Bit().data());
+
   // process the attribute actions
   mActions->readXML(layer_node);
 
@@ -2217,17 +2225,14 @@ bool QgsVectorLayer::readXML_( QDomNode & layer_node )
     setLabelOn(true);
   }
 
-#ifdef QGISDEBUG
-  std::cout << "Testing if qgsvectorlayer can call label readXML routine" << std::endl;
-#endif
+  QgsDebugMsg("Testing if qgsvectorlayer can call label readXML routine")
+
 
   QDomNode labelattributesnode = layer_node.namedItem("labelattributes");
 
   if(!labelattributesnode.isNull())
   {
-#ifdef QGISDEBUG
-    std::cout << "qgsvectorlayer calling label readXML routine" << std::endl;
-#endif
+    QgsDebugMsg("qgsvectorlayer calling label readXML routine")
     mLabel->readXML(labelattributesnode);
   }
 
@@ -2294,6 +2299,9 @@ bool QgsVectorLayer::setDataProvider( QString const & provider )
           lName = name();
         setLayerName(lName);
         QgsDebugMsg("Beautifying layer name " + name());
+
+        // deal with unnecessary schema qualification to make v.in.ogr happy
+        mDataSource = mDataProvider->dataSourceUri();
       }
 
       // label
@@ -2302,7 +2310,7 @@ bool QgsVectorLayer::setDataProvider( QString const & provider )
     }
     else
     {
-      QgsDebugMsg("Invalid provider plugin " + QString(mDataSource.ascii()));
+      QgsDebugMsg("Invalid provider plugin " + QString(mDataSource.toUtf8()));
       return false;
     }
   }
@@ -2888,7 +2896,7 @@ bool QgsVectorLayer::snapPoint(QgsPoint& point, double tolerance)
 }
 
 
-int QgsVectorLayer::snapWithContext(const QgsPoint& startPoint, double snappingTolerance, QMultiMap<double, QgsSnappingResult>& snappingResults, \
+int QgsVectorLayer::snapWithContext(const QgsPoint& startPoint, double snappingTolerance, QMultiMap<double, QgsSnappingResult>& snappingResults,
 		      QgsSnapper::SNAP_TO snap_to)
 {
   if (snappingTolerance<=0 || !mDataProvider)
@@ -2897,7 +2905,7 @@ int QgsVectorLayer::snapWithContext(const QgsPoint& startPoint, double snappingT
     }
   
   QList<QgsFeature> featureList;
-  QgsRect searchRect(startPoint.x()-snappingTolerance, startPoint.y()-snappingTolerance, \
+  QgsRect searchRect(startPoint.x()-snappingTolerance, startPoint.y()-snappingTolerance,
 		     startPoint.x()+snappingTolerance, startPoint.y()+snappingTolerance);
   double sqrSnappingTolerance = snappingTolerance * snappingTolerance;
 
@@ -2915,7 +2923,7 @@ int QgsVectorLayer::snapWithContext(const QgsPoint& startPoint, double snappingT
   return 0;	    
 }
 
-void QgsVectorLayer::snapToGeometry(const QgsPoint& startPoint, int featureId, QgsGeometry* geom, double sqrSnappingTolerance, \
+void QgsVectorLayer::snapToGeometry(const QgsPoint& startPoint, int featureId, QgsGeometry* geom, double sqrSnappingTolerance,
 				    QMultiMap<double, QgsSnappingResult>& snappingResults, QgsSnapper::SNAP_TO snap_to) const
 {
   if(!geom)
@@ -3047,10 +3055,11 @@ QgsVectorLayer::VertexMarkerType QgsVectorLayer::currentVertexMarkerType()
 
 void QgsVectorLayer::drawFeature(QPainter* p,
                                  QgsFeature& fet,
-                                 QgsMapToPixel * theMapToPixelTransform,
-                                 QgsCoordinateTransform* ct,
+                                 const QgsMapToPixel* theMapToPixelTransform,
+                                 const QgsCoordinateTransform* ct,
                                  QImage * marker,
-                                 double markerScaleFactor,
+                                 double widthScale,
+				 double rasterScaleFactor,
                                  bool drawingToEditingCanvas)
 {
   // Only have variables, etc outside the switch() statement that are
@@ -3087,10 +3096,11 @@ void QgsVectorLayer::drawFeature(QPainter* p,
 
         transformPoint(x, y, theMapToPixelTransform, ct);
         //QPointF pt(x - (marker->width()/2),  y - (marker->height()/2));
-        QPointF pt(x/markerScaleFactor - (marker->width()/2),  y/markerScaleFactor - (marker->height()/2));
+        QPointF pt(x*rasterScaleFactor - (marker->width()/2),  y*rasterScaleFactor - (marker->height()/2));
 
         p->save();
-        p->scale(markerScaleFactor,markerScaleFactor);
+        //p->scale(markerScaleFactor,markerScaleFactor);
+	p->scale(1.0/rasterScaleFactor, 1.0/rasterScaleFactor);
         p->drawImage(pt, *marker);
         p->restore();
 
@@ -3104,7 +3114,8 @@ void QgsVectorLayer::drawFeature(QPainter* p,
         ptr += 4;
 
         p->save();
-        p->scale(markerScaleFactor, markerScaleFactor);
+        //p->scale(markerScaleFactor, markerScaleFactor);
+	p->scale(1.0/rasterScaleFactor, 1.0/rasterScaleFactor);
 
         for (register unsigned int i = 0; i < nPoints; ++i)
         {
@@ -3123,7 +3134,8 @@ void QgsVectorLayer::drawFeature(QPainter* p,
 
           transformPoint(x, y, theMapToPixelTransform, ct);
           //QPointF pt(x - (marker->width()/2),  y - (marker->height()/2));
-          QPointF pt(x/markerScaleFactor - (marker->width()/2),  y/markerScaleFactor - (marker->height()/2));
+          //QPointF pt(x/markerScaleFactor - (marker->width()/2),  y/markerScaleFactor - (marker->height()/2));
+	  QPointF pt(x, y);
           
 #if defined(Q_WS_X11)
           // Work around a +/- 32768 limitation on coordinates in X11
@@ -3299,8 +3311,8 @@ bool QgsVectorLayer::commitAttributeChanges(const QgsAttributeIds& deleted,
 // Convenience function to transform the given point
 inline void QgsVectorLayer::transformPoint(double& x, 
     double& y, 
-    QgsMapToPixel* mtp,
-    QgsCoordinateTransform* ct)
+    const QgsMapToPixel* mtp,
+    const QgsCoordinateTransform* ct)
 {
   // transform the point
   if (ct)
@@ -3316,7 +3328,7 @@ inline void QgsVectorLayer::transformPoint(double& x,
 
 inline void QgsVectorLayer::transformPoints(
     std::vector<double>& x, std::vector<double>& y, std::vector<double>& z,
-    QgsMapToPixel* mtp, QgsCoordinateTransform* ct)
+    const QgsMapToPixel* mtp, const QgsCoordinateTransform* ct)
 {
   // transform the point
   if (ct)

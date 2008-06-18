@@ -19,7 +19,6 @@ public:
     // Static methods:
     //
     static void buildSupportedRasterFileFilter(QString & fileFilters);
-    static bool isSupportedRasterDriver(const QString & driverName);
     static void registerGdalDrivers();
     
     /** This helper checks to see whether the filename appears to be a valid
@@ -78,8 +77,7 @@ public:
      *
      * \param point[in]  a coordinate in the CRS of this layer.
      */
-    // TODO: wrap
-    //void identify(const QgsPoint & point, std::map<QString,QString>& results);
+    void identify(const QgsPoint & point, QMap<QString,QString>& results /Out/);
 
     /** \brief Identify arbitrary details from the WMS server found on the point position
      *
@@ -105,16 +103,8 @@ public:
      QPixmap getPaletteAsPixmap();
      
     /** \brief This is called when the view on the rasterlayer needs to be refreshed (redrawn).   
-         
-        \param drawingToEditingCanvas  Are we drawing to an editable canvas? 
-                                       currently not used, but retain to be similar to 
-                                       the QgsVectorLayer interface 
      */
-    bool draw(QPainter * theQPainter,
-              QgsRect & theViewExtent, 
-              QgsMapToPixel * theQgsMapToPixel,
-              QgsCoordinateTransform* ct,
-              bool drawingToEditingCanvas);
+    bool draw(QgsRenderContext& renderContext);
 
     /** \brief This is an overloaded version of the above function that is called by both draw above and drawThumbnail */
     void draw(QPainter * theQPainter, QgsRasterViewPort * myRasterViewPort,
@@ -217,14 +207,6 @@ public:
     
     /** \brief Mutator for transparent band name mapping.  */
     void setTransparentBandName(const QString & theBandNameQString);
-    //
-    // Accessor and mutator for transparent band name
-    // 
-    /** \brief  Accessor for transparent band name mapping. */
-    QString getTransparentLayerName();
-    
-    /** \brief Mutator for transparent band name mapping.  */
-    void setTransparentLayerName(const QString & theLayerNameQString);
     
     //
     // Accessor and mutator for gray band name
@@ -259,6 +241,12 @@ public:
     void setMaximumValue(unsigned int theBand, double theValue);
 
     void setMaximumValue(QString theBand, double theValue, bool theGenerateLookupTableFlag=true);
+
+    /** \brief Wrapper for GDALComputeRasterMinMax with the estimate option */
+    void computeMinimumMaximumEstimates(int theBand, double* theMinMax);
+
+    /** \brief Wrapper for GDALComputeRasterMinMax with the estimate option */
+    void computeMinimumMaximumEstimates(QString theBand, double* theMinMax);
 
     QgsContrastEnhancement* getContrastEnhancement(unsigned int theBand);
 
@@ -454,13 +442,13 @@ public:
      /** \brief Mutator for mUserDefinedRGBMinMaxFlag */
     void setUserDefinedRGBMinMax(bool theBool);
 
-    /** \brief Accessor for userDefinedMinMax.  */
+    /** \brief Accessor for mUserDefinedRGBMinMaxFlag.  */
     bool getUserDefinedRGBMinMax();
 
-    /** \brief Mutator for mUserDefinedRGBMinMaxFlag */
+    /** \brief Mutator for mUserDefinedGrayMinMaxFlag */
     void setUserDefinedGrayMinMax(bool theBool);
 
-    /** \brief Accessor for userDefinedMinMax.  */
+    /** \brief Accessor for mUserDefinedGrayMinMaxFlag.  */
     bool getUserDefinedGrayMinMax();
 
 public slots:    
@@ -547,34 +535,16 @@ public:
                  const QStringList & layers = QStringList(),
                  const QStringList & styles = QStringList(),
                  const QString & format = QString(),
-                 const QString & crs = QString(),
-                 const QString & proxyHost = QString(),
-                 int proxyPort = 80,
-                 const QString & proxyUser = QString(),
-                 const QString & proxyPass = QString());
+                 const QString & crs = QString());
 
   void setDataProvider( const QString & provider,
                         const QStringList & layers,
                         const QStringList & styles,
                         const QString & format,
-                        const QString & crs,
-                        const QString & proxyHost,
-                        int proxyPort,
-                        const QString & proxyUser,
-                        const QString & proxyPass );
+                        const QString & crs);
 
   //! Does this layer use a provider for setting/retrieving data?
   bool usesProvider();
-
-  /**
-   * Sets a proxy for the path given in the constructor
-   *
-   * \retval TRUE if proxy setting is successful (if indeed it is supported)
-   */
-  bool setProxy(const QString & host = 0,
-                            int port = 80,
-                const QString & user = 0,
-                const QString & pass = 0);
 
   //! Which provider is being used for this Raster Layer?
   QString providerKey();

@@ -213,7 +213,7 @@ bool QgsMapCanvas::isDrawing()
 
 // return the current coordinate transform based on the extents and
 // device size
-QgsMapToPixel * QgsMapCanvas::getCoordinateTransform()
+const QgsMapToPixel * QgsMapCanvas::getCoordinateTransform()
 {
   return mMapRender->coordXForm();
 }
@@ -586,7 +586,7 @@ void QgsMapCanvas::keyPressEvent(QKeyEvent * e)
 
   if(mDrawing)
     {
-      return;
+      e->ignore();
     }
 
   emit keyPressed(e);
@@ -703,6 +703,19 @@ void QgsMapCanvas::keyReleaseEvent(QKeyEvent * e)
 } //keyReleaseEvent()
 
 
+void QgsMapCanvas::mouseDoubleClickEvent(QMouseEvent * e)
+{
+  if(mDrawing)
+  {
+    return;
+  }
+
+  // call handler of current map tool
+  if (mMapTool)
+     mMapTool->canvasDoubleClickEvent(e);  
+} // mouseDoubleClickEvent
+
+
 void QgsMapCanvas::mousePressEvent(QMouseEvent * e)
 {
   if(mDrawing)
@@ -766,7 +779,19 @@ void QgsMapCanvas::resizeEvent(QResizeEvent * e)
   
   lastSize = e->size();
 
-  if (isAlreadyIn || mDrawing) return;
+  if (isAlreadyIn || mDrawing)
+    {
+      //cancel current render progress
+      if(mMapRender)
+	{
+	  QgsRenderContext* theRenderContext = mMapRender->renderContext();
+	  if(theRenderContext)
+	    {
+	      theRenderContext->setRenderingStopped(true);
+	    }
+	}
+      return;
+    }
   isAlreadyIn = true;
 
   while (lastSize != QSize(-1,-1))
@@ -887,7 +912,6 @@ void QgsMapCanvas::zoomWithCenter(int x, int y, bool zoomIn)
   setExtent(r);
   refresh();
 }
-
 
 void QgsMapCanvas::mouseMoveEvent(QMouseEvent * e)
 {
@@ -1038,6 +1062,15 @@ QGis::units QgsMapCanvas::mapUnits() const
 void QgsMapCanvas::setRenderFlag(bool theFlag)
 {
   mRenderFlag = theFlag;
+  if(mMapRender)
+    {
+      QgsRenderContext* rc = mMapRender->renderContext();
+      if(rc)
+	{
+	  rc->setRenderingStopped(!theFlag);
+	}
+    }
+
   if(mRenderFlag)
     {
       refresh();
@@ -1167,7 +1200,7 @@ void QgsMapCanvas::showError(QgsMapLayer * mapLayer)
 //   );
 
   QgsMessageViewer * mv = new QgsMessageViewer(this);
-  mv->setCaption( mapLayer->errorCaptionString() );
+  mv->setWindowTitle( mapLayer->errorCaptionString() );
   mv->setMessageAsPlainText(
     tr("Could not draw") + " " + mapLayer->name() + " " + tr("because") + ":\n" +
     mapLayer->errorString()

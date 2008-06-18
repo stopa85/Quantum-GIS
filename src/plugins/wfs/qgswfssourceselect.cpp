@@ -58,14 +58,16 @@ QgsWFSSourceSelect::~QgsWFSSourceSelect()
 void QgsWFSSourceSelect::populateConnectionList()
 {
   QSettings settings;
-  QStringList keys = settings.subkeyList("/Qgis/connections-wfs");
+  settings.beginGroup("/Qgis/connections-wfs");
+  QStringList keys = settings.childGroups();
   QStringList::Iterator it = keys.begin();
   cmbConnections->clear();
   while (it != keys.end())
   {
-    cmbConnections->insertItem(*it);
+    cmbConnections->addItem(*it);
     ++it;
   }
+  settings.endGroup();
 
   if (keys.begin() != keys.end())
   {
@@ -215,7 +217,7 @@ int QgsWFSSourceSelect::getCapabilitiesGET(QString uri, std::list<QString>& type
 
   //print out result for a test
   QString resultString(result);
-  qWarning(resultString);
+  qWarning(resultString.toUtf8());
 
   return 0;
 }
@@ -260,7 +262,7 @@ void QgsWFSSourceSelect::deleteEntryOfServerList()
   if (result == QMessageBox::Ok)
   {
     settings.remove(key);
-    cmbConnections->removeItem(cmbConnections->currentItem());
+    cmbConnections->removeItem(cmbConnections->currentIndex());
   }
 }
 
@@ -270,7 +272,7 @@ void QgsWFSSourceSelect::connectToServer()
   QSettings settings;
   QString key = "/Qgis/connections-wfs/" + cmbConnections->currentText() + "/url";
   mUri = settings.value(key).toString();
-  qWarning("url is: " + mUri);
+  qWarning("url is: " + mUri.toUtf8());
 
   //make a GetCapabilities request
   std::list<QString> typenames;
@@ -340,7 +342,7 @@ void QgsWFSSourceSelect::addLayer()
     {
       uri.append("?");
     }
-  qWarning(uri + "SERVICE=WFS&VERSION=1.0.0&REQUEST=GetFeature&TYPENAME=" + typeName);
+  qWarning(uri.toUtf8() + "SERVICE=WFS&VERSION=1.0.0&REQUEST=GetFeature&TYPENAME=" + typeName.toUtf8());
 
   //get CRS
   QString crsString;
@@ -376,7 +378,7 @@ void QgsWFSSourceSelect::changeCRSFilter()
   if(currentTreeItem)
     {
       QString currentTypename = currentTreeItem->text(1);
-      qWarning("the current typename is: " + currentTypename);
+      qWarning("the current typename is: " + currentTypename.toUtf8());
     
       std::map<QString, std::list<QString> >::const_iterator crsIterator = mAvailableCRS.find(currentTypename);
       if(crsIterator != mAvailableCRS.end())

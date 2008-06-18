@@ -31,8 +31,10 @@
 #include "qgsproject.h"
 
 #include <QGraphicsRectItem>
+#include <QKeyEvent>
 #include <QMatrix>
 #include <QMessageBox>
+#include <QMouseEvent>
 
 #include <iostream>
 #include <math.h>
@@ -101,7 +103,7 @@ QgsComposition::QgsComposition( QgsComposer *c, int id )
 
   mPaper = mDefaultPaper = mCustomPaper = 0;
   for( int i = 0; i < (int)mPapers.size(); i++ ) {
-    mPaperSizeComboBox->insertItem( mPapers[i].mName );
+    mPaperSizeComboBox->addItem( mPapers[i].mName );
     // Map - A4 land for now, if future read from template
     if ( mPapers[i].mWidth == 210 && mPapers[i].mHeight == 297 ){
       mDefaultPaper = i;
@@ -110,11 +112,11 @@ QgsComposition::QgsComposition( QgsComposer *c, int id )
   }
 
   // Orientation
-  mPaperOrientationComboBox->insertItem( tr("Portrait"), Portrait );
-  mPaperOrientationComboBox->insertItem( tr("Landscape"), Landscape );
+  mPaperOrientationComboBox->addItem( tr("Portrait"), Portrait );
+  mPaperOrientationComboBox->addItem( tr("Landscape"), Landscape );
   mPaperOrientation = Landscape;
 
-  mPaperUnitsComboBox->insertItem( "mm" );
+  mPaperUnitsComboBox->addItem( "mm" );
 
   // Create canvas 
   mPaperWidth = 1;
@@ -130,8 +132,8 @@ QgsComposition::QgsComposition( QgsComposer *c, int id )
 
 void QgsComposition::createDefault(void) 
 {
-  mPaperSizeComboBox->setCurrentItem(mDefaultPaper);
-  mPaperOrientationComboBox->setCurrentItem(Landscape);
+  mPaperSizeComboBox->setCurrentIndex(mDefaultPaper);
+  mPaperOrientationComboBox->setCurrentIndex(Landscape);
 
   mUserPaperWidth = mPapers[mDefaultPaper].mWidth;
   mUserPaperHeight = mPapers[mDefaultPaper].mHeight;
@@ -296,7 +298,6 @@ void QgsComposition::mousePressEvent(QMouseEvent* e)
         mRectangleItem->setBrush( Qt::NoBrush );
         mRectangleItem->setPen( QPen(QColor(0,0,0), 0) );
         mRectangleItem->setZValue(100);
-        //mRectangleItem->setActive(false);
         mRectangleItem->show();
         mToolStep = 1;
       }
@@ -388,10 +389,9 @@ void QgsComposition::mousePressEvent(QMouseEvent* e)
 void QgsComposition::mouseMoveEvent(QMouseEvent* e)
 {
 #ifdef QGISDEBUG
-#endif
   std::cerr << "QgsComposition::mouseMoveEvent() mTool = " << mTool << " mToolStep = "
     << mToolStep << std::endl;
-
+#endif
 
   QPointF p = mView->mapToScene(e->pos());
 
@@ -497,6 +497,7 @@ void QgsComposition::mouseReleaseEvent(QMouseEvent* e)
           mToolStep = 0;
         }
         mCanvas->update();
+        mView->unsetCursor();
       }
       break;
 
@@ -526,6 +527,7 @@ void QgsComposition::mouseReleaseEvent(QMouseEvent* e)
         } else {
             mToolStep = 0;
         }
+        mView->unsetCursor();
       }
       break;
 
@@ -552,7 +554,12 @@ void QgsComposition::keyPressEvent ( QKeyEvent * e )
   std::cout << "QgsComposition::keyPressEvent() key = " << e->key() << std::endl;
 #endif
 
-  if ( e->key() == Qt::Key_Delete && mSelectedItem ) { // delete
+  if(!mSelectedItem)
+    {
+      return;
+    }
+
+  if ( e->key() == Qt::Key_Delete) { // delete
 
     QgsComposerItem *coi = dynamic_cast <QgsComposerItem *> (mSelectedItem);
     coi->setSelected ( false );
@@ -569,6 +576,22 @@ void QgsComposition::keyPressEvent ( QKeyEvent * e )
     mSelectedItem = 0;
     mCanvas->update();
   }
+  else if(e->key() == Qt::Key_Left)
+    {
+      mSelectedItem->moveBy(-1.0, 0.0);
+    }
+  else if(e->key() == Qt::Key_Right)
+    {
+      mSelectedItem->moveBy(1.0, 0.0);
+    }
+  else if(e->key() == Qt::Key_Down)
+    {
+      mSelectedItem->moveBy(0.0, 1.0);
+    }
+  else if(e->key() == Qt::Key_Up)
+    {
+      mSelectedItem->moveBy(0.0, -1.0);
+    }
 }
 
 void QgsComposition::paperSizeChanged ( void )
@@ -577,8 +600,8 @@ void QgsComposition::paperSizeChanged ( void )
   std::cout << "QgsComposition::paperSizeChanged" << std::endl;
 #endif
 
-  mPaper = mPaperSizeComboBox->currentItem();
-  mPaperOrientation = mPaperOrientationComboBox->currentItem();
+  mPaper = mPaperSizeComboBox->currentIndex();
+  mPaperOrientation = mPaperOrientationComboBox->currentIndex();
 #ifdef QGISDEBUG
   std::cout << "custom = " << mPapers[mPaper].mCustom << std::endl;
   std::cout << "orientation = " << mPaperOrientation << std::endl;
@@ -602,7 +625,7 @@ void QgsComposition::paperSizeChanged ( void )
   }
   catch (std::bad_alloc& ba)
   {
-    UNUSED(ba);
+    Q_UNUSED(ba);
     // A better solution here would be to set the canvas back to the
     // original size and carry on, but for the moment this will
     // prevent a crash due to an uncaught exception.
@@ -642,8 +665,8 @@ void QgsComposition::resolutionChanged ( void )
 
 void QgsComposition::setOptions ( void )
 {
-  mPaperSizeComboBox->setCurrentItem(mPaper);
-  mPaperOrientationComboBox->setCurrentItem(mPaperOrientation);
+  mPaperSizeComboBox->setCurrentIndex(mPaper);
+  mPaperOrientationComboBox->setCurrentIndex(mPaperOrientation);
   mPaperWidthLineEdit->setText ( QString("%1").arg(mUserPaperWidth,0,'g') );
   mPaperHeightLineEdit->setText ( QString("%1").arg(mUserPaperHeight,0,'g') );
   mResolutionLineEdit->setText ( QString("%1").arg(mResolution) );
@@ -915,7 +938,7 @@ bool QgsComposition::readSettings ( void )
     std::cout << "key: " << (*it).toLocal8Bit().data() << std::endl;
 #endif
 
-    QStringList l = QStringList::split( '_', (*it) );
+    QStringList l = it->split( '_', QString::SkipEmptyParts );
     if ( l.size() == 2 ) {
       QString name = l.first();
       QString ids = l.last();
@@ -935,7 +958,7 @@ bool QgsComposition::readSettings ( void )
     std::cout << "key: " << (*it).toLocal8Bit().data() << std::endl;
 #endif
 
-    QStringList l = QStringList::split( '_', (*it) );
+    QStringList l = it->split( '_', QString::SkipEmptyParts );
     if ( l.size() == 2 ) {
       QString name = l.first();
       QString ids = l.last();

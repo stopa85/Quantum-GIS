@@ -36,7 +36,10 @@ QgsComposerScalebar::QgsComposerScalebar ( QgsComposition *composition, int id,
 {
   setupUi(this);
 
+#ifdef QGISDEBUG
   std::cout << "QgsComposerScalebar::QgsComposerScalebar()" << std::endl;
+#endif
+
   mId = id;
   mSelected = false;
 
@@ -120,7 +123,9 @@ QgsComposerScalebar::QgsComposerScalebar ( QgsComposition *composition, int id )
     mMap(0),
     mBrush(QColor(150,150,150))
 {
+#ifdef QGISDEBUG
   std::cout << "QgsComposerScalebar::QgsComposerScalebar()" << std::endl;
+#endif
 
   setupUi(this);
 
@@ -238,15 +243,15 @@ QRectF QgsComposerScalebar::render(QPainter * p)
   // labels
 
   // Font size in canvas units
-  float size = 25.4 * mComposition->scale() * mFont.pointSizeFloat() / 72;
+  float size = 25.4 * mComposition->scale() * mFont.pointSizeF() / 72;
 
 
   // Create QFontMetrics so we can correctly place the text
   QFont font(mFont);
-  font.setPointSizeFloat(size);
+  font.setPointSizeF(size);
   QFontMetrics metrics(font);
 
-  font.setPointSizeFloat(size * FONT_WORKAROUND_SCALE); //hack to work around Qt font bug
+  font.setPointSizeF(size * FONT_WORKAROUND_SCALE); //hack to work around Qt font bug
 
   if (plotStyle() == QgsComposition::Postscript)
   {
@@ -410,7 +415,9 @@ void QgsComposerScalebar::moveBy(double x, double y)
 
 void QgsComposerScalebar::recalculate(void)
 {
+#ifdef QGISDEBUG
   std::cout << "QgsComposerScalebar::recalculate" << std::endl;
+#endif
 
   // !!! prepareGeometryChange() MUST BE called before the value returned by areaPoints() changes
   //Is this still true after the port to GraphicsView?
@@ -423,13 +430,17 @@ void QgsComposerScalebar::recalculate(void)
 
 QRectF QgsComposerScalebar::boundingRect(void) const
 {
+#ifdef QGISDEBUG
   std::cout << "QgsComposerScalebar::boundingRect" << std::endl;
+#endif
   return mBoundingRect;
 }
 
 QPolygonF QgsComposerScalebar::areaPoints(void) const
 {
+#ifdef QGISDEBUG
   std::cout << "QgsComposerScalebar::areaPoints" << std::endl;
+#endif
 
   QRectF r = boundingRect();
   QPolygonF pa;
@@ -456,24 +467,24 @@ void QgsComposerScalebar::setOptions(void)
   mMaps.clear();
 
   bool found = false;
-  mMapComboBox->insertItem("", 0);
+  mMapComboBox->addItem("");
   mMaps.push_back(0);
   for (int i = 0; i < (int)maps.size(); i++)
     {
-      mMapComboBox->insertItem(maps[i]->name(), i + 1);
+      mMapComboBox->addItem(maps[i]->name());
       mMaps.push_back(maps[i]->id());
 
       if (maps[i]->id() == mMap)
         {
           found = true;
-          mMapComboBox->setCurrentItem(i + 1);
+          mMapComboBox->setCurrentIndex(i + 1);
         }
     }
 
   if (!found)
     {
       mMap = 0;
-      mMapComboBox->setCurrentItem(0);
+      mMapComboBox->setCurrentIndex(0);
     }
 }
 
@@ -496,7 +507,10 @@ QWidget *QgsComposerScalebar::options(void)
 
 bool QgsComposerScalebar::writeSettings(void)
 {
+#ifdef QGISDEBUG
   std::cout << "QgsComposerScalebar::writeSettings" << std::endl;
+#endif
+
   QString path;
   path.sprintf("/composition_%d/scalebar_%d/", mComposition->id(), mId);
 

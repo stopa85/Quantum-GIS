@@ -19,14 +19,15 @@
 #ifndef QGSPLUGINMANAGER_H
 #define QGSPLUGINMANAGER_H
 #include <vector>
-#include <QTableView>
 #include <QStandardItemModel>
+#include <QSortFilterProxyModel>
 #include <QStandardItem>
 #include <QHeaderView>
 #include "ui_qgspluginmanagerbase.h"
 #include "qgisgui.h"
 
 class QgsPluginItem;
+class QgsPythonUtils;
 class QTableView;
 
 /*!
@@ -38,7 +39,7 @@ class QgsPluginManager : public QDialog, private Ui::QgsPluginManagerBase
   Q_OBJECT
   public:
     //! Constructor
-    QgsPluginManager(QWidget *parent = 0, Qt::WFlags fl = QgisGui::ModalDialogFlags);
+    QgsPluginManager(QgsPythonUtils* pythonUtils, QWidget *parent = 0, Qt::WFlags fl = QgisGui::ModalDialogFlags);
     //! Destructor
     ~QgsPluginManager();
     //! Get description of plugins (name, etc)
@@ -57,17 +58,20 @@ class QgsPluginManager : public QDialog, private Ui::QgsPluginManagerBase
     void sortModel(int );
   public slots:
     //! Enable disable checkbox
-    void on_lstPlugins_clicked(const QModelIndex & );
+    void on_vwPlugins_clicked(const QModelIndex & );
     //! Load selected plugins and close the dialog
-    void on_btnOk_clicked();
+    void accept();
     //! Select all plugins by setting their checkbox on
-    void on_btnSelectAll_clicked();
+    void selectAll();
     //! Clear all selections by clearing the plugins checkbox
-    void on_btnClearAll_clicked();
-    //! Close the dialog
-    void on_btnClose_clicked();
+    void clearAll();
+    //! Update the filter when user changes the filter expression
+    void on_leFilter_textChanged(QString theText);
   private:
     QStandardItemModel *mModelPlugins;
+    QSortFilterProxyModel * mModelProxy;
+    
+    QgsPythonUtils* mPythonUtils;
 };
 
 #endif

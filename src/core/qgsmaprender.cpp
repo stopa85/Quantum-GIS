@@ -36,7 +36,6 @@
 
 QgsMapRender::QgsMapRender()
 {
-  mCoordXForm = new QgsMapToPixel;
   mScaleCalculator = new QgsScaleCalculator;
   mDistArea = new QgsDistanceArea;
     
@@ -55,7 +54,6 @@ QgsMapRender::QgsMapRender()
 
 QgsMapRender::~QgsMapRender()
 {
-  delete mCoordXForm;
   delete mScaleCalculator;
   delete mDistArea;
   delete mDestSRS;
@@ -69,6 +67,7 @@ QgsRect QgsMapRender::extent()
 
 void QgsMapRender::updateScale()
 {
+  
   mScale = mScaleCalculator->calculate(mExtent, mSize.width());
 }
 
@@ -105,7 +104,7 @@ bool QgsMapRender::setExtent(const QgsRect& extent)
   }
 
   mExtent = extent;
-  if (!mExtent.isEmpty())
+  if (!extent.isEmpty())
     adjustExtentToSize();
   return true;
 }
@@ -131,11 +130,13 @@ void QgsMapRender::adjustExtentToSize()
 {
   int myHeight = mSize.height();
   int myWidth = mSize.width();
+
+  QgsMapToPixel newCoordXForm;
   
   if (!myWidth || !myHeight)
   {
     mScale = 1;
-    mCoordXForm->setParameters(0, 0, 0, 0);
+    newCoordXForm.setParameters(0, 0, 0, 0);
     return;
   }
 
@@ -193,7 +194,9 @@ void QgsMapRender::adjustExtentToSize()
   QgsLogger::debug("Scale (assuming meters as map units) = 1", mScale, 1, __FILE__, __FUNCTION__, __LINE__);
 #endif
 
-  mCoordXForm->setParameters(mMupp, dxmin, dymin, myHeight);
+  newCoordXForm.setParameters(mMupp, dxmin, dymin, myHeight);
+  mRenderContext.setMapToPixel(newCoordXForm);
+  mRenderContext.setExtent(mExtent);
 }
 
 
@@ -209,9 +212,15 @@ void QgsMapRender::render(QPainter* painter)
 
   if (mDrawing)
     return;
-  
+
+  QPaintDevice* thePaintDevice = painter->device();
+  if(!thePaintDevice)
+  {
+    return;
+  }
+
   mDrawing = true;
-  
+
   QgsCoordinateTransform* ct;
 
 #ifdef QGISDEBUG
@@ -220,12 +229,35 @@ void QgsMapRender::render(QPainter* painter)
   renderTime.start();
 #endif
 
+  mRenderContext.setDrawEditingInformation(!mOverview);
+  mRenderContext.setPainter(painter);
+  mRenderContext.setCoordTransform(0);
+  //this flag is only for stopping during the current rendering progress, 
+  //so must be false at every new render operation
+  mRenderContext.setRenderingStopped(false);
+
+  //calculate scale factor
+  //use the specified dpi and not those from the paint device
+  //because sometimes QPainter units are in a local coord sys (e.g. in case of QGraphicsScene)
+  double sceneDpi = mScaleCalculator->dpi();
+  double scaleFactor = sceneDpi/25.4; //units should always be mm
+  double rasterScaleFactor = (thePaintDevice->logicalDpiX() + thePaintDevice->logicalDpiY()) / 2.0 /sceneDpi;
+  mRenderContext.setScaleFactor(scaleFactor);
+  mRenderContext.setRasterScaleFactor(rasterScaleFactor);
+
   // render all layers in the stack, starting at the base
   QListIterator<QString> li(mLayerSet);
   li.toBack();
-  
+
+  QgsRect r1, r2;
+
   while (li.hasPrevious())
   {
+    if(mRenderContext.renderingStopped())
+    {
+      break;
+    }
+
     QString layerId = li.previous();
 
     QgsDebugMsg("Rendering at layer item " + layerId);
@@ -246,8 +278,8 @@ void QgsMapRender::render(QPainter* painter)
       QgsLogger::warning("Layer not found in registry!");
       continue;
     }
-        
-		QgsDebugMsg("Rendering layer " + ml->name());
+
+    QgsDebugMsg("Rendering layer " + ml->name());
     QgsDebugMsg("  Layer minscale " + QString("%1").arg(ml->minScale()) );
     QgsDebugMsg("  Layer maxscale " + QString("%1").arg(ml->maxScale()) );
     QgsDebugMsg("  Scale dep. visibility enabled? " + QString("%1").arg(ml->scaleBasedVisibility()) );
@@ -257,45 +289,82 @@ void QgsMapRender::render(QPainter* painter)
         || (!ml->scaleBasedVisibility()))
     {
       connect(ml, SIGNAL(drawingProgress(int,int)), this, SLOT(onDrawingProgress(int,int)));        
-      
-      QgsRect r1 = mExtent, r2;
-      bool split = splitLayersExtent(ml, r1, r2);
+
       //
-                  // Now do the call to the layer that actually does
-                  // the rendering work!
+      // Now do the call to the layer that actually does
+      // the rendering work!
       //
-      
+
+      bool split = false;
+
       if (projectionsEnabled())
       {
+        r1 = mExtent;
+        split = splitLayersExtent(ml, r1, r2);
         ct = new QgsCoordinateTransform(ml->srs(), *mDestSRS);
+        mRenderContext.setExtent(r1);
       }
       else
       {
         ct = NULL;
       }
-      
-      if (!ml->draw(painter, r1, mCoordXForm, ct, !mOverview))
+
+      mRenderContext.setCoordTransform(ct);
+
+      //decide if we have to scale the raster
+      //this is necessary in case QGraphicsScene is used
+      bool scaleRaster = false;
+      QgsMapToPixel rasterMapToPixel;
+      QgsMapToPixel bk_mapToPixel;
+    
+      if(ml->type() == QgsMapLayer::RASTER && fabs(rasterScaleFactor - 1.0) > 0.000001)
+      {
+        scaleRaster = true;
+      }
+
+
+      if(scaleRaster)
+      {
+        bk_mapToPixel = mRenderContext.mapToPixel();
+        rasterMapToPixel = mRenderContext.mapToPixel();
+        rasterMapToPixel.setMapUnitsPerPixel(mRenderContext.mapToPixel().mapUnitsPerPixel() / rasterScaleFactor);
+        rasterMapToPixel.setYmax(mSize.height() * rasterScaleFactor);
+        mRenderContext.setMapToPixel(rasterMapToPixel);
+        mRenderContext.painter()->save();
+        mRenderContext.painter()->scale(1.0/rasterScaleFactor, 1.0/rasterScaleFactor);
+      }
+
+      if (!ml->draw(mRenderContext))
+      {
         emit drawError(ml);
-      
+      }
+
       if (split)
       {
-        if (!ml->draw(painter, r2, mCoordXForm, ct, !mOverview))
+        mRenderContext.setExtent(r2);
+        if (!ml->draw(mRenderContext))
+        {
           emit drawError(ml);
+        }
       }
-      
-      delete ct;
-      
+
+      if(scaleRaster)
+      {
+        mRenderContext.setMapToPixel(bk_mapToPixel);
+        mRenderContext.painter()->restore();
+      }
+
       disconnect(ml, SIGNAL(drawingProgress(int,int)), this, SLOT(onDrawingProgress(int,int)));
     }
     else
     {
       QgsDebugMsg("Layer not rendered because it is not within the defined "
-                  "visibility scale range");
+          "visibility scale range");
     }
 
   } // while (li.hasPrevious())
-      
-    QgsDebugMsg("Done rendering map layers");
+
+  QgsDebugMsg("Done rendering map layers");
 
   if (!mOverview)
   {
@@ -303,11 +372,16 @@ void QgsMapRender::render(QPainter* painter)
     li.toBack();
     while (li.hasPrevious())
     {
+      if(mRenderContext.renderingStopped())
+      {
+        break;
+      }
+
       QString layerId = li.previous();
 
       // TODO: emit drawingProgress((myRenderCounter++),zOrder.size());
       QgsMapLayer *ml = QgsMapLayerRegistry::instance()->mapLayer(layerId);
-  
+
       if (ml && (ml->type() != QgsMapLayer::RASTER))
       {
         // only make labels if the layer is visible
@@ -315,23 +389,28 @@ void QgsMapRender::render(QPainter* painter)
         if ((ml->scaleBasedVisibility() && ml->minScale() < mScale  && ml->maxScale() > mScale)
             || (!ml->scaleBasedVisibility()))
         {
-          QgsRect r1 = mExtent, r2;
-          bool split = splitLayersExtent(ml, r1, r2);
-      
+          bool split = false;
+
           if (projectionsEnabled())
           {
+            QgsRect r1 = mExtent;
+            split = splitLayersExtent(ml, r1, r2);
             ct = new QgsCoordinateTransform(ml->srs(), *mDestSRS);
+            mRenderContext.setExtent(r1);
           }
           else
           {
             ct = NULL;
           }
-      
-          ml->drawLabels(painter, r1, mCoordXForm, ct);
+
+          mRenderContext.setCoordTransform(ct);
+
+          ml->drawLabels(mRenderContext);
           if (split)
-            ml->drawLabels(painter, r2, mCoordXForm, ct);
-          
-          delete ct;
+          {
+            mRenderContext.setExtent(r2);
+            ml->drawLabels(mRenderContext);
+          }
         }
       }
     }
@@ -339,7 +418,7 @@ void QgsMapRender::render(QPainter* painter)
 
   // make sure progress bar arrives at 100%!
   emit drawingProgress(1,1);      
-      
+
 #ifdef QGISDEBUG
   QgsDebugMsg("Rendering done in (seconds): " + QString("%1").arg(renderTime.elapsed() / 1000.0) );
 #endif
@@ -462,7 +541,7 @@ bool QgsMapRender::splitLayersExtent(QgsMapLayer* layer, QgsRect& extent, QgsRec
     }
     catch (QgsCsException &cse)
     {
-      UNUSED(cse);
+      Q_UNUSED(cse);
       QgsLogger::warning("Transform error caught in " + QString(__FILE__) + ", line " + QString::number(__LINE__));
       extent = QgsRect(-DBL_MAX, -DBL_MAX, DBL_MAX, DBL_MAX);
       r2     = QgsRect(-DBL_MAX, -DBL_MAX, DBL_MAX, DBL_MAX);

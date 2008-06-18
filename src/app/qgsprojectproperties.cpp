@@ -73,9 +73,13 @@ QgsProjectProperties::QgsProjectProperties(QgsMapCanvas* mapCanvas, QWidget *par
   // position display is set (manual or automatic)
   bool automaticPrecision = QgsProject::instance()->readBoolEntry("PositionPrecision","/Automatic");
   if (automaticPrecision)
+  {
     radAutomatic->setChecked(true);
+  }
   else
+  {
     radManual->setChecked(true);
+  }
 
   int dp = QgsProject::instance()->readNumEntry("PositionPrecision", "/DecimalPlaces");
   spinBoxDP->setValue(dp);
@@ -349,7 +353,7 @@ bool QgsProjectProperties::isProjected()
 
 void QgsProjectProperties::showProjectionsTab()
 {
-  tabWidget->setCurrentPage(1);
+  tabWidget->setCurrentIndex(1);
 }
 
 void QgsProjectProperties::on_pbnSelectionColour_clicked()

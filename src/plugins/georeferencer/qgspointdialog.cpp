@@ -18,6 +18,7 @@
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QMessageBox>
+#include <QMouseEvent>
 #include <QPainter>
 #include <QTextStream>
 
@@ -456,7 +457,7 @@ void QgsPointDialog::enableRelevantControls()
 
 QString QgsPointDialog::guessWorldFileName(const QString& raster)
 {
-  int point = raster.findRev('.');
+  int point = raster.lastIndexOf('.');
   QString worldfile = "";
   if (point != -1 && point != raster.length() - 1) 
     {
@@ -534,11 +535,13 @@ void QgsPointDialog::initialize()
   
   // set up the canvas
   QHBoxLayout* layout = new QHBoxLayout(canvasFrame);
-  layout->setAutoAdd(true);
   mCanvas = new QgsMapCanvas(canvasFrame, "georefCanvas");
-  mCanvas->setBackgroundColor(Qt::white);
+  QPalette palette;
+  palette.setColor(mCanvas->backgroundRole(), Qt::white);
+  mCanvas->setPalette(palette);
   mCanvas->setMinimumWidth(400);
   //mCanvas->freeze(true);
+  layout->addWidget(mCanvas);
   
   // set up map tools
   mToolZoomIn = new QgsMapToolZoom(mCanvas, FALSE /* zoomOut */); 

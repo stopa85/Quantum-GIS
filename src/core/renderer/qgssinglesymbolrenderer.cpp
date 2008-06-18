@@ -53,7 +53,7 @@ QgsSingleSymbolRenderer::QgsSingleSymbolRenderer(QGis::VectorType type)
     sy->setFillStyle(Qt::SolidPattern);
     sy->setColor(QColor(0, 0, 0));
   }
-  sy->setLineWidth(1);
+  sy->setLineWidth(0.4);
   mSymbol=sy;
   updateSymbolAttributes();
 }
@@ -89,8 +89,7 @@ void QgsSingleSymbolRenderer::addSymbol(QgsSymbol* sy)
   updateSymbolAttributes();
 }
 
-void QgsSingleSymbolRenderer::renderFeature(QPainter * p, QgsFeature & f, QImage* img, 
-					    double* scalefactor, bool selected, double widthScale)
+void QgsSingleSymbolRenderer::renderFeature(QPainter * p, QgsFeature & f, QImage* img, bool selected, double widthScale, double rasterScaleFactor)
 {
   // Point 
   if ( img && mVectorType == QGis::Point) {
@@ -113,8 +112,7 @@ void QgsSingleSymbolRenderer::renderFeature(QPainter * p, QgsFeature & f, QImage
       QgsDebugMsg(QString("Feature has rotation factor %1").arg(rotation));
     }
 
-    *img = mSymbol->getPointSymbolAsImage( widthScale, selected, mSelectionColor,
-                                            *scalefactor * fieldScale, rotation);
+    *img = mSymbol->getPointSymbolAsImage( widthScale, selected, mSelectionColor, fieldScale, rotation, rasterScaleFactor);
   }
 
 
@@ -124,14 +122,14 @@ void QgsSingleSymbolRenderer::renderFeature(QPainter * p, QgsFeature & f, QImage
     if( !selected ) 
     {
       QPen pen=mSymbol->pen();
-      pen.setWidthF ( widthScale * pen.width() );
+      pen.setWidthF ( widthScale * pen.widthF() );
       p->setPen(pen);
       p->setBrush(mSymbol->brush());
     }
     else
     {
       QPen pen=mSymbol->pen();
-      pen.setWidthF ( widthScale * pen.width() );
+      pen.setWidthF ( widthScale * pen.widthF() );
       // We set pen color in case it is an area with no brush (transparent).
       // Previously, this was only done for lines. Why?
       pen.setColor(mSelectionColor);

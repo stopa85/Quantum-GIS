@@ -54,12 +54,14 @@ QgsDiagramDialog::QgsDiagramDialog(QgsVectorLayer* vl): QgsVectorOverlayDialog(v
       const QgsFieldMap & fields = provider->fields();
       QString str;
       
+      int comboIndex = 0;
       for (QgsFieldMap::const_iterator it = fields.begin(); it != fields.end(); ++it)
         {
 	  str = (*it).name();
-	  mAttributesComboBox->insertItem(str);
-	  mClassificationComboBox->insertItem(str);
-        }
+	  mAttributesComboBox->insertItem(comboIndex, str);
+	  mClassificationComboBox->insertItem(comboIndex, str);
+	  ++comboIndex;
+	}
     } 
 
   mClassificationTypeComboBox->insertItem(0, "linearly scaling");

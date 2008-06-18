@@ -51,10 +51,6 @@ static QString DEFAULT_LATLON_CRS = "CRS:84";
 QgsWmsProvider::QgsWmsProvider(QString const & uri)
   : QgsRasterDataProvider(uri),
     httpuri(uri),
-    mHttpProxyHost(0),
-    mHttpProxyPort(80),
-    mHttpProxyUser(0),
-    mHttpProxyPass(0),
     httpcapabilitiesresponse(0),
     imageCrs(DEFAULT_LATLON_CRS),
     cachedImage(0),
@@ -134,42 +130,6 @@ QgsWmsProvider::~QgsWmsProvider()
 }
 
 
-QString QgsWmsProvider::proxyHost() const
-{
-  return mHttpProxyHost;
-}
-
-
-int QgsWmsProvider::proxyPort() const
-{
-  return mHttpProxyPort;
-}
-
-
-QString QgsWmsProvider::proxyUser() const
-{
-  return mHttpProxyUser;
-}
-
-
-QString QgsWmsProvider::proxyPass() const
-{
-  return mHttpProxyPass;
-}
-
-
-bool QgsWmsProvider::setProxy(QString const & host,
-                                          int port,
-                              QString const & user,
-                              QString const & pass)
-{
-  mHttpProxyHost = host;
-  mHttpProxyPort = port;
-  mHttpProxyUser = user;
-  mHttpProxyPass = pass;
-
-  return TRUE;
-}
 
 bool QgsWmsProvider::supportedLayers(std::vector<QgsWmsLayerProperty> & layers)
 {
@@ -334,13 +294,44 @@ QImage* QgsWmsProvider::draw(QgsRect  const & viewExtent, int pixelWidth, int pi
 
   // Bounding box in WMS format
   QString bbox;
+
+  //according to the WMS spec for 1.3, the order of x - and y - coordinates is inverted for geographical CRS
+  bool changeXY = false;
+  if(mCapabilities.version == "1.3.0" || mCapabilities.version == "1.3")
+    {
+      //create CRS from string
+      bool conversionOk;
+      int epsgNr = imageCrs.section(":", 1, 1).toInt(&conversionOk);
+      if(conversionOk)
+	{
+	  QgsSpatialRefSys theSrs;
+	  theSrs.createFromEpsg(epsgNr);
+	  if(theSrs.geographicFlag())
+	    {
+	      changeXY = true;
+	    }
+	}
+    }
+ 
+
   // Warning: does not work with scientific notation
-  bbox = QString("%1,%2,%3,%4").
-          arg(viewExtent.xMin(),0,'f').
-          arg(viewExtent.yMin(),0,'f').
-          arg(viewExtent.xMax(),0,'f').
-          arg(viewExtent.yMax(),0,'f');
-          
+  if(changeXY)
+    {
+      bbox = QString("%1,%2,%3,%4").
+	arg(viewExtent.yMin(),0,'f').
+	arg(viewExtent.xMin(),0,'f').
+	arg(viewExtent.yMax(),0,'f').
+	arg(viewExtent.xMax(),0,'f');
+    }
+  else
+    {
+      bbox = QString("%1,%2,%3,%4").
+	arg(viewExtent.xMin(),0,'f').
+	arg(viewExtent.yMin(),0,'f').
+	arg(viewExtent.xMax(),0,'f').
+	arg(viewExtent.yMax(),0,'f');
+    }        
+  
   // Width in WMS format
   QString width;
   width = width.setNum(pixelWidth);
@@ -409,7 +400,7 @@ QImage* QgsWmsProvider::draw(QgsRect  const & viewExtent, int pixelWidth, int pi
       url += "TRANSPARENT=TRUE";
     }
 
-  qWarning(url);
+  qWarning(url.toUtf8());
 
   // cache some details for if the user wants to do an identifyAsHtml() later
   mGetFeatureInfoUrlBase = baseUrl;
@@ -510,7 +501,8 @@ QImage* QgsWmsProvider::draw(QgsRect  const & viewExtent, int pixelWidth, int pi
   {
     delete cachedImage;
   }
-  cachedImage = new QImage(imagesource);
+  cachedImage = new QImage();
+  *cachedImage = QImage::fromData(imagesource);
 
   // Remember settings for useful caching next time.
   cachedViewExtent = viewExtent;
@@ -623,11 +615,7 @@ QByteArray QgsWmsProvider::retrieveUrl(QString url)
 {
   QgsDebugMsg("WMS request Url: " + url);
   QgsHttpTransaction http(
-    url,
-    mHttpProxyHost,
-    mHttpProxyPort,
-    mHttpProxyUser,
-    mHttpProxyPass);
+    url);
 
   // Do a passthrough for the status bar text
   connect(
@@ -1721,14 +1709,14 @@ bool QgsWmsProvider::calculateExtent()
 
     // Convert to the user's CRS as required
     try
-      {
-	extent = mCoordinateTransform->transformBoundingBox(extent, QgsCoordinateTransform::FORWARD);
-      }
+    {
+      extent = mCoordinateTransform->transformBoundingBox(extent, QgsCoordinateTransform::FORWARD);
+    }
     catch(QgsCsException &cse)
-      {
-	UNUSED(cse);
-	continue; //ignore extents of layers which cannot be transformed info the required CRS
-      }
+    {
+      Q_UNUSED(cse);
+      continue; //ignore extents of layers which cannot be transformed info the required CRS
+    }
 
     //make sure extent does not contain 'inf' or 'nan'
     if (!extent.isFinite())
@@ -1945,7 +1933,7 @@ QString QgsWmsProvider::getMetadata()
     myMetadataQString += tr("Selected");
     myMetadataQString += "</td>";
     myMetadataQString += "<td bgcolor=\"gray\">";
-    myMetadataQString += (activeSubLayers.findIndex(layerName) >= 0) ?
+    myMetadataQString += (activeSubLayers.indexOf(layerName) >= 0) ?
                            tr("Yes") : tr("No");
     myMetadataQString += "</td></tr>";
   
@@ -1954,7 +1942,7 @@ QString QgsWmsProvider::getMetadata()
     myMetadataQString += tr("Visibility");
     myMetadataQString += "</td>";
     myMetadataQString += "<td bgcolor=\"gray\">";
-    myMetadataQString += (activeSubLayers.findIndex(layerName) >= 0) ?
+    myMetadataQString += (activeSubLayers.indexOf(layerName) >= 0) ?
                            (
                             (activeSubLayerVisibility.find(layerName)->second) ?
                             tr("Visible") : tr("Hidden")

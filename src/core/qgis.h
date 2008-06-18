@@ -29,7 +29,8 @@
 * This API documentation provides information about all classes that make up QGIS.
 */
 
-#include <qevent.h>
+#include <QEvent>
+#include <QString>
 
 class CORE_EXPORT QGis
 { 
@@ -131,13 +132,6 @@ public:
   /** Magick number that determins whether a projection srsid is a system (srs.db)
    *  or user (~/.qgis.qgis.db) defined projection. */
   const int USER_PROJECTION_START_ID=100000;
-
-#ifdef _MSC_VER
-// fake use to make unused variable warnings go away in Visual C++
-#define UNUSED(symbol) symbol
-#else
-#  define UNUSED(symbol)
-#endif
 
 // FIXME: also in qgisinterface.h
 #ifndef QGISEXTERN

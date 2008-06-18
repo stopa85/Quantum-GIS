@@ -22,7 +22,7 @@
 //qt includes
 #include <QDomNode>
 #include <QDomElement>
-#include <QTextOStream>
+#include <QTextStream>
 #include <QApplication>
 
 extern "C" {
@@ -147,8 +147,8 @@ void QgsCoordinateTransform::initialise()
   }
 
   // init the projections (destination and source)
-  mDestinationProjection = pj_init_plus(mDestSRS.proj4String());
-  mSourceProjection = pj_init_plus(mSourceSRS.proj4String());
+  mDestinationProjection = pj_init_plus(mDestSRS.proj4String().toUtf8());
+  mSourceProjection = pj_init_plus(mSourceSRS.proj4String().toUtf8());
 
   mInitialisedFlag = true;
   if ( mDestinationProjection == NULL )
@@ -208,7 +208,7 @@ void QgsCoordinateTransform::initialise()
 //
 
 
-QgsPoint QgsCoordinateTransform::transform(const QgsPoint thePoint,TransformDirection direction)
+QgsPoint QgsCoordinateTransform::transform(const QgsPoint thePoint,TransformDirection direction) const
 {
   if (mShortCircuit || !mInitialisedFlag) return thePoint;
   // transform x
@@ -233,7 +233,7 @@ QgsPoint QgsCoordinateTransform::transform(const QgsPoint thePoint,TransformDire
 }
 
 
-QgsPoint QgsCoordinateTransform::transform(const double theX, const double theY=0,TransformDirection direction)
+QgsPoint QgsCoordinateTransform::transform(const double theX, const double theY=0,TransformDirection direction) const
 {
   try
   {
@@ -247,7 +247,7 @@ QgsPoint QgsCoordinateTransform::transform(const double theX, const double theY=
   }
 }
 
-QgsRect QgsCoordinateTransform::transform(const QgsRect theRect,TransformDirection direction)
+QgsRect QgsCoordinateTransform::transform(const QgsRect theRect,TransformDirection direction) const
 {
   if (mShortCircuit || !mInitialisedFlag) return theRect;
   // transform x
@@ -287,7 +287,7 @@ QgsRect QgsCoordinateTransform::transform(const QgsRect theRect,TransformDirecti
 }
 
 void QgsCoordinateTransform::transformInPlace(double& x, double& y, double& z,
-    TransformDirection direction)
+    TransformDirection direction) const
 {
   if (mShortCircuit || !mInitialisedFlag)
     return;
@@ -309,7 +309,7 @@ void QgsCoordinateTransform::transformInPlace(double& x, double& y, double& z,
 
 void QgsCoordinateTransform::transformInPlace(std::vector<double>& x,
     std::vector<double>& y, std::vector<double>& z,
-    TransformDirection direction)
+    TransformDirection direction) const
 {
   if (mShortCircuit || !mInitialisedFlag)
     return;
@@ -334,7 +334,7 @@ void QgsCoordinateTransform::transformInPlace(std::vector<double>& x,
 }
 
 
-QgsRect QgsCoordinateTransform::transformBoundingBox(const QgsRect rect, TransformDirection direction)
+QgsRect QgsCoordinateTransform::transformBoundingBox(const QgsRect rect, TransformDirection direction) const
 {
   // Calculate the bounding box of a QgsRect in the source SRS
   // when projected to the destination SRS (or the inverse).
@@ -409,7 +409,7 @@ QgsRect QgsCoordinateTransform::transformBoundingBox(const QgsRect rect, Transfo
   return bb_rect;
 }
 
-void QgsCoordinateTransform::transformCoords( const int& numPoints, double *x, double *y, double *z,TransformDirection direction)
+void QgsCoordinateTransform::transformCoords( const int& numPoints, double *x, double *y, double *z,TransformDirection direction) const
 {
   // Refuse to transform the points if the srs's are invalid
   if (!mSourceSRS.isValid())
@@ -478,7 +478,7 @@ void QgsCoordinateTransform::transformCoords( const int& numPoints, double *x, d
   {
     //something bad happened....
     QString msg;
-    QTextOStream pjErr(&msg);
+    QTextStream pjErr(&msg);
 
     pjErr << tr("Failed") << " " << dir << " " << tr("transform of") << '\n';
     for (int i = 0; i < numPoints; ++i)
@@ -561,7 +561,7 @@ const char *finder( const char *name )
     proj = QApplication::applicationDirPath() 
            + "/share/proj/" + QString(name);
 #endif
-    return proj.ascii(); 
+    return proj.toUtf8(); 
 }
 
 void QgsCoordinateTransform::setFinder()

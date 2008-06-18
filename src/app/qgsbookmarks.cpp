@@ -26,6 +26,7 @@
 #include <QFileInfo>
 #include <QMessageBox>
 #include <QSettings>
+#include <QPushButton>
 
 //standard includes
 #include <iostream>
@@ -38,9 +39,6 @@ QgsBookmarks::QgsBookmarks(QWidget *parent, Qt::WFlags fl)
   mParent(parent)
 {
   setupUi(this);
-  connect(btnClose, SIGNAL(clicked()), this, SLOT(close()));
-  connect(this, SIGNAL(finished(int)), this, SLOT(saveWindowLocation()));
-
   // user database is created at QGIS startup in QgisApp::createDB
   // we just check whether there is our database [MD]
   QFileInfo myFileInfo;
@@ -55,13 +53,29 @@ QgsBookmarks::QgsBookmarks(QWidget *parent, Qt::WFlags fl)
   // Note proper queens english on next line
   initialise();
 
+  //
+  // Create the zoomto and delete buttons and add them to the 
+  // toolbar
+  //
+  QPushButton * btnDelete = new QPushButton(tr("&Delete"));
+  QPushButton * btnZoomTo = new QPushButton(tr("&Zoom to"));
+  btnZoomTo->setDefault(true);
+  buttonBox->addButton(btnDelete, QDialogButtonBox::ActionRole);
+  buttonBox->addButton(btnZoomTo, QDialogButtonBox::ActionRole);
+  // connect the slot up to catch when a bookmark is deleted 
+  connect(btnDelete, SIGNAL(clicked()), this, SLOT(on_btnDelete_clicked()));
+  // connect the slot up to catch when a bookmark is zoomed to
+  connect(btnZoomTo, SIGNAL(clicked()), this, SLOT(on_btnZoomTo_clicked()));
   // connect the slot up to catch when a new bookmark is added
   connect(mParent, SIGNAL(bookmarkAdded()), this, SLOT(refreshBookmarks()));
+  //and for help requested
+  connect(buttonBox, SIGNAL(helpRequested()), this, SLOT(helpRequested()));
 }
 
 // Destructor
 QgsBookmarks::~QgsBookmarks()
 {
+  saveWindowLocation();
 }
 
 void QgsBookmarks::refreshBookmarks()
@@ -80,29 +94,35 @@ void QgsBookmarks::initialise()
     sqlite3_stmt *ppStmt;
     QString sql = "select * from tbl_bookmarks";
 
-    rc = sqlite3_prepare(db, sql.utf8(), sql.length(), &ppStmt, &pzTail);
+    rc = sqlite3_prepare(db, sql.toUtf8(), sql.length(), &ppStmt, &pzTail);
     // XXX Need to free memory from the error msg if one is set
     if(rc == SQLITE_OK)
     {
       // get the first row of the result set
       while(sqlite3_step(ppStmt) == SQLITE_ROW)
       {
+        QTreeWidgetItem *item = new QTreeWidgetItem(lstBookmarks);
         QString name = QString::fromUtf8((const char *)sqlite3_column_text(ppStmt, 1));
         //        sqlite3_bind_parameter_index(ppStmt, "name"));
         //QgsDebugMsg("Bookmark name: " + name.toLocal8Bit().data()); 
-        Q3ListViewItem *lvi = new Q3ListViewItem(lstBookmarks, name);
+        item->setText(0, name);
         // set the project name
-        lvi->setText(1, QString::fromUtf8((const char *)sqlite3_column_text(ppStmt, 2))); 
+        item->setText(1, QString::fromUtf8((const char *)sqlite3_column_text(ppStmt, 2))); 
         // get the extents
         QString xMin = QString::fromUtf8((const char *)sqlite3_column_text(ppStmt, 3));
         QString yMin = QString::fromUtf8((const char *)sqlite3_column_text(ppStmt, 4));
         QString xMax = QString::fromUtf8((const char *)sqlite3_column_text(ppStmt, 5));
         QString yMax = QString::fromUtf8((const char *)sqlite3_column_text(ppStmt, 6));
         // set the extents
-        lvi->setText(2, xMin + ", " + yMin + ", " + xMax + ", " + yMax); 
+        item->setText(2, xMin + ", " + yMin + ", " + xMax + ", " + yMax); 
         // set the id
-        lvi->setText(3, QString::fromUtf8((const char *)sqlite3_column_text(ppStmt, 0)));
+        item->setText(3, QString::fromUtf8((const char *)sqlite3_column_text(ppStmt, 0)));
       }
+      for (int col = 0; col < 4; col++)
+      {
+        lstBookmarks->resizeColumnToContents(col);
+      }
+      lstBookmarks->sortByColumn(0, Qt::AscendingOrder);
     }
     else
     {
@@ -133,30 +153,30 @@ void QgsBookmarks::saveWindowLocation()
 void QgsBookmarks::on_btnDelete_clicked()
 {
   // get the current item
-  Q3ListViewItem *lvi = lstBookmarks->currentItem();
-  if(lvi)
+  QTreeWidgetItem *item = lstBookmarks->currentItem();
+  if(item)
   {
     // make sure the user really wants to delete this bookmark
     if(QMessageBox::Ok == QMessageBox::information(this,tr("Really Delete?"),
-          tr("Are you sure you want to delete the ") + lvi->text(0) + tr(" bookmark?"),
+          tr("Are you sure you want to delete the ") + item->text(0) + tr(" bookmark?"),
           QMessageBox::Ok | QMessageBox::Cancel))
     {
       // remove it from the listview
-      lstBookmarks->takeItem(lvi);
+      item = lstBookmarks->takeTopLevelItem(lstBookmarks->indexOfTopLevelItem(item));
       // delete it from the database
       int rc = connectDb();
       if(rc == SQLITE_OK)
       {
         char *errmsg;
         // build the sql statement
-        QString sql = "delete from tbl_bookmarks where bookmark_id = " + lvi->text(3);
-        rc = sqlite3_exec(db, sql.utf8(), NULL, NULL, &errmsg);
+        QString sql = "delete from tbl_bookmarks where bookmark_id = " + item->text(3);
+        rc = sqlite3_exec(db, sql.toUtf8(), NULL, NULL, &errmsg);
         if(rc != SQLITE_OK)
         {
           // XXX Provide popup message on failure?
           QMessageBox::warning(this, tr("Error deleting bookmark"),
                                tr("Failed to delete the ") + 
-                               lvi->text(0) +
+                               item->text(0) +
                                tr(" bookmark from the database. The "
                                   "database said:\n") + QString(errmsg));
           sqlite3_free(errmsg);
@@ -164,6 +184,7 @@ void QgsBookmarks::on_btnDelete_clicked()
         // close the database
         sqlite3_close(db);
       }
+      delete item;
     }
   }
 }
@@ -173,7 +194,7 @@ void QgsBookmarks::on_btnZoomTo_clicked()
   zoomToBookmark();
 }
 
-void QgsBookmarks::on_lstBookmarks_doubleClicked(Q3ListViewItem *lvi)
+void QgsBookmarks::on_lstBookmarks_doubleClicked(QTreeWidgetItem *lvi)
 {
   zoomToBookmark();
 }
@@ -183,8 +204,8 @@ void QgsBookmarks::zoomToBookmark()
 	// Need to fetch the extent for the selected bookmark and then redraw
 	// the map
   // get the current item
-  Q3ListViewItem *lvi = lstBookmarks->currentItem();
-  if(!lvi)
+  QTreeWidgetItem *item = lstBookmarks->currentItem();
+  if(!item)
   {
       return;
   }
@@ -195,8 +216,8 @@ void QgsBookmarks::zoomToBookmark()
     sqlite3_stmt *ppStmt;
     const char *pzTail;
     // build the sql statement
-    QString sql = "select xmin, ymin, xmax, ymax from tbl_bookmarks where bookmark_id = " + lvi->text(3);
-    rc = sqlite3_prepare(db, sql.utf8(), sql.length(), &ppStmt, &pzTail);
+    QString sql = "select xmin, ymin, xmax, ymax from tbl_bookmarks where bookmark_id = " + item->text(3);
+    rc = sqlite3_prepare(db, sql.toUtf8(), sql.length(), &ppStmt, &pzTail);
     if(rc == SQLITE_OK)
     {
       if(sqlite3_step(ppStmt) == SQLITE_ROW){
@@ -241,7 +262,7 @@ int QgsBookmarks::connectDb()
   return rc;
 }
 
-void QgsBookmarks::on_btnHelp_clicked()
+void QgsBookmarks::helpRequested()
 {
   QgsContextHelp::run(context_id);
 }

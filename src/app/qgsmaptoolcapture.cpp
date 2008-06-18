@@ -33,6 +33,7 @@
 #include <QCursor>
 #include <QPixmap>
 #include <QMessageBox>
+#include <QMouseEvent>
 
 
 QgsMapToolCapture::QgsMapToolCapture(QgsMapCanvas* canvas, enum CaptureTool tool)
@@ -105,7 +106,7 @@ int QgsMapToolCapture::addVertex(const QPoint& p)
     }
   catch(QgsCsException &cse)
     {
-		  UNUSED(cse);
+		  Q_UNUSED(cse);
       return 2;
     }
 
@@ -122,7 +123,7 @@ int QgsMapToolCapture::addVertex(const QPoint& p)
 	}
       catch(QgsCsException &cse)
 	{
-    UNUSED (cse);
+    Q_UNUSED (cse);
 	  return 2;
 	}
       mRubberBand->addPoint(mapPoint);

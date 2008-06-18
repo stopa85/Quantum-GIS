@@ -72,9 +72,9 @@ QgsProviderRegistry::QgsProviderRegistry(QString pluginPath)
   mLibraryDirectory.setFilter( QDir::Files | QDir::NoSymLinks );
 
 #ifdef WIN32
-  mLibraryDirectory.setNameFilter( "*.dll" );
+  mLibraryDirectory.setNameFilters( QStringList("*.dll") );
 #else
-  mLibraryDirectory.setNameFilter( "*.so" );
+  mLibraryDirectory.setNameFilters( QStringList("*.so") );
 #endif
 
 #ifdef QGISDEBUG
@@ -110,7 +110,7 @@ QgsProviderRegistry::QgsProviderRegistry(QString pluginPath)
       if (loaded)
       {
 #ifdef QGISDEBUG
-	QgsLogger::debug("Checking  " + myLib->library(), 1, __FILE__, __FUNCTION__, __LINE__);
+	QgsLogger::debug("Checking  " + myLib->fileName(), 1, __FILE__, __FUNCTION__, __LINE__);
 #endif
         // get the description and the key for the provider plugin
         isprovider_t *isProvider = (isprovider_t *) myLib->resolve("isProvider");
@@ -131,7 +131,7 @@ QgsProviderRegistry::QgsProviderRegistry(QString pluginPath)
             {
               // add this provider to the provider map
               mProviders[pKey()] = 
-                new QgsProviderMetadata(pKey(), pDesc(), myLib->library());
+                new QgsProviderMetadata(pKey(), pDesc(), myLib->fileName());
 #ifdef QGISDEBUG
 	      QgsDebugMsg("Loaded " + pDesc());
 #endif
@@ -170,7 +170,7 @@ QgsProviderRegistry::QgsProviderRegistry(QString pluginPath)
             }
             else
             {
-	      QgsLogger::debug("Unable to find one of the required provider functions (providerKey() or description()) in " + myLib->library());
+	      QgsLogger::debug("Unable to find one of the required provider functions (providerKey() or description()) in " + myLib->fileName());
             }
           }
           else
@@ -181,7 +181,7 @@ QgsProviderRegistry::QgsProviderRegistry(QString pluginPath)
         else
         {
 #ifdef QGISDEBUG
-	  QgsDebugMsg(myLib->library() + " is not a provider");
+	  QgsDebugMsg(myLib->fileName() + " is not a provider");
 #endif
         }
       }
@@ -316,7 +316,7 @@ QgsDataProvider* QgsProviderRegistry::getProvider( QString const & providerKey,
   QString lib = library(providerKey);
 
 #ifdef TESTPROVIDERLIB
-  const char *cLib = (const char *) lib;
+  const char *cLib = lib.toUtf8();
 
   // test code to help debug provider loading problems
   //  void *handle = dlopen(cLib, RTLD_LAZY);
@@ -334,10 +334,10 @@ QgsDataProvider* QgsProviderRegistry::getProvider( QString const & providerKey,
 #endif
 
   // load the data provider
-  QLibrary* myLib = new QLibrary((const char *) lib);
+  QLibrary* myLib = new QLibrary(lib);
 
 #ifdef QGISDEBUG
-  QgsDebugMsg("QgsProviderRegistry::getRasterProvider: Library name is " + myLib->library());
+  QgsDebugMsg("QgsProviderRegistry::getRasterProvider: Library name is " + myLib->fileName());
 #endif
 
   bool loaded = myLib->load();

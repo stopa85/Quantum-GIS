@@ -27,6 +27,7 @@
 #include "qgsvectorlayer.h"
 #include "qgslogger.h"
 #include <QMessageBox>
+#include <QMouseEvent>
 
 QgsMapToolAddFeature::QgsMapToolAddFeature(QgsMapCanvas* canvas, enum CaptureTool tool): QgsMapToolCapture(canvas, tool)
 {
@@ -107,7 +108,7 @@ void QgsMapToolAddFeature::canvasReleaseEvent(QMouseEvent * e)
         }
         catch(QgsCsException &cse)
         {
-          UNUSED(cse);
+          Q_UNUSED(cse);
           QMessageBox::information(0, QObject::tr("Coordinate transform error"), \
                                    QObject::tr("Cannot transform the point to the layers coordinate system"));
           return;
@@ -169,16 +170,23 @@ void QgsMapToolAddFeature::canvasReleaseEvent(QMouseEvent * e)
 	  // add the fields to the QgsFeature
 	  const QgsFieldMap fields=provider->fields();
 	  for(QgsFieldMap::const_iterator it = fields.constBegin(); it != fields.constEnd(); ++it)
-	    {
-	      f->addAttribute(it.key(), provider->getDefaultValue(it.key()) );
-	    }
+    {
+      f->addAttribute(it.key(), provider->getDefaultValue(it.key()) );
+    }
 	  
 	  // show the dialog to enter attribute values
-	  if (QgsAttributeDialog::queryAttributes(fields, *f))
+    QgsAttributeDialog * mypDialog = new QgsAttributeDialog(fields,f );
+	  if (mypDialog->exec())
+    {
+      qDebug("Adding feature to layer");
 	    vlayer->addFeature(*f);
+    }
 	  else
+    {
+      qDebug("Adding feature to layer failed");
 	    delete f;
-	  
+    }
+    delete mypDialog;
 	  mCanvas->refresh();
 	}
       
@@ -428,19 +436,21 @@ void QgsMapToolAddFeature::canvasReleaseEvent(QMouseEvent * e)
 	      f->addAttribute(it.key(), provider->getDefaultValue(it.key()));
 	    }
 	  
-	  if (QgsAttributeDialog::queryAttributes(fields, *f))
-	    {
-	      if(vlayer->addFeature(*f))
-		{
-		  //add points to other features to keep topology up-to-date
-		  int topologicalEditing = QgsProject::instance()->readNumEntry("Digitizing", "/TopologicalEditing", 0);
-		  if(topologicalEditing)
-		    {
-		      vlayer->addTopologicalPoints(f->geometry());
-		    }
-		}
-	    }
+    QgsAttributeDialog * mypDialog = new QgsAttributeDialog(fields,f );
+	  if (mypDialog->exec())
+    {
+      if(vlayer->addFeature(*f))
+      {
+        //add points to other features to keep topology up-to-date
+        int topologicalEditing = QgsProject::instance()->readNumEntry("Digitizing", "/TopologicalEditing", 0);
+        if(topologicalEditing)
+        {
+          vlayer->addTopologicalPoints(f->geometry());
+        }
+      }
+    }
 	  delete f;
+    delete mypDialog;
 	  
 	  // delete the elements of mCaptureList
 	  mCaptureList.clear();

@@ -24,6 +24,7 @@
 #include "qgsproject.h"
 #include "qgsmessageviewer.h"
 #include "qgscontexthelp.h"
+#include "qgscursors.h"
 
 #include <QDesktopWidget>
 #include <QFileDialog>
@@ -68,13 +69,16 @@ QgsComposer::QgsComposer( QgisApp *qgis): QMainWindow()
   mView = new QgsComposerView ( this, mViewFrame);
   mPrinter = 0;
 
-  QGridLayout *l = new QGridLayout(mViewFrame, 1, 1 );
+  QGridLayout *l = new QGridLayout(mViewFrame );
+  l->setMargin(0);
   l->addWidget( mView, 0, 0 );
 
-  mCompositionOptionsLayout = new QGridLayout( mCompositionOptionsFrame, 1, 1 );
-  mItemOptionsLayout = new QGridLayout( mItemOptionsFrame, 1, 1 );
+  mCompositionOptionsLayout = new QGridLayout( mCompositionOptionsFrame );
+  mCompositionOptionsLayout->setMargin(0);
+  mItemOptionsLayout = new QGridLayout( mItemOptionsFrame );
+  mItemOptionsLayout->setMargin(0);
 
-  mCompositionNameComboBox->insertItem( tr("Map 1") );
+  mCompositionNameComboBox->addItem( tr("Map 1") );
 
   mComposition  = new QgsComposition( this, 1 );
   mComposition->setActive ( true );
@@ -110,21 +114,21 @@ void QgsComposer::setupTheme()
   
 
   //now set all the icons
-  mActionOpenTemplate->setIconSet(QIcon(QPixmap(myThemePath + "/mActionFileOpen.png")));
-  mActionSaveTemplateAs->setIconSet(QIcon(QPixmap(myThemePath + "/mActionFileSaveAs.png")));
-  mActionExportAsImage->setIconSet(QIcon(QPixmap(myThemePath + "/mActionExportMapServer.png")));
-  mActionExportAsSVG->setIconSet(QIcon(QPixmap(myThemePath + "/mActionSaveAsSVG.png")));
-  mActionPrint->setIconSet(QIcon(QPixmap(myThemePath + "/mActionFilePrint.png")));
-  mActionZoomAll->setIconSet(QIcon(QPixmap(myThemePath + "/mActionZoomFullExtent.png")));
-  mActionZoomIn->setIconSet(QIcon(QPixmap(myThemePath + "/mActionZoomIn.png")));
-  mActionZoomOut->setIconSet(QIcon(QPixmap(myThemePath + "/mActionZoomOut.png")));
-  mActionRefreshView->setIconSet(QIcon(QPixmap(myThemePath + "/mActionDraw.png")));
-  mActionAddImage->setIconSet(QIcon(QPixmap(myThemePath + "/mActionSaveMapAsImage.png")));
-  mActionAddNewMap->setIconSet(QIcon(QPixmap(myThemePath + "/mActionAddRasterLayer.png")));
-  mActionAddNewLabel->setIconSet(QIcon(QPixmap(myThemePath + "/mActionLabel.png")));
-  mActionAddNewVectLegend->setIconSet(QIcon(QPixmap(myThemePath + "/mActionAddLegend.png")));
-  mActionAddNewScalebar->setIconSet(QIcon(QPixmap(myThemePath + "/mActionScaleBar.png")));
-  mActionSelectMoveItem->setIconSet(QIcon(QPixmap(myThemePath + "/mActionPan.png")));
+  mActionOpenTemplate->setIcon(QIcon(QPixmap(myThemePath + "/mActionFileOpen.png")));
+  mActionSaveTemplateAs->setIcon(QIcon(QPixmap(myThemePath + "/mActionFileSaveAs.png")));
+  mActionExportAsImage->setIcon(QIcon(QPixmap(myThemePath + "/mActionExportMapServer.png")));
+  mActionExportAsSVG->setIcon(QIcon(QPixmap(myThemePath + "/mActionSaveAsSVG.png")));
+  mActionPrint->setIcon(QIcon(QPixmap(myThemePath + "/mActionFilePrint.png")));
+  mActionZoomAll->setIcon(QIcon(QPixmap(myThemePath + "/mActionZoomFullExtent.png")));
+  mActionZoomIn->setIcon(QIcon(QPixmap(myThemePath + "/mActionZoomIn.png")));
+  mActionZoomOut->setIcon(QIcon(QPixmap(myThemePath + "/mActionZoomOut.png")));
+  mActionRefreshView->setIcon(QIcon(QPixmap(myThemePath + "/mActionDraw.png")));
+  mActionAddImage->setIcon(QIcon(QPixmap(myThemePath + "/mActionSaveMapAsImage.png")));
+  mActionAddNewMap->setIcon(QIcon(QPixmap(myThemePath + "/mActionAddRasterLayer.png")));
+  mActionAddNewLabel->setIcon(QIcon(QPixmap(myThemePath + "/mActionLabel.png")));
+  mActionAddNewVectLegend->setIcon(QIcon(QPixmap(myThemePath + "/mActionAddLegend.png")));
+  mActionAddNewScalebar->setIcon(QIcon(QPixmap(myThemePath + "/mActionScaleBar.png")));
+  mActionSelectMoveItem->setIcon(QIcon(QPixmap(myThemePath + "/mActionPan.png")));
 }
 
 void QgsComposer::open ( void )
@@ -183,7 +187,8 @@ void QgsComposer::showCompositionOptions ( QWidget *w ) {
   removeWidgetChildren ( mCompositionOptionsFrame );
 
   if ( w ) { 
-    w->reparent ( mCompositionOptionsFrame, QPoint(0,0), TRUE );
+    w->setParent ( mCompositionOptionsFrame );
+    w->show();
     mCompositionOptionsLayout->addWidget( w, 0, 0 );
   }
 }
@@ -198,10 +203,11 @@ void QgsComposer::showItemOptions ( QWidget *w )
   // NOTE: It is better to leave there the tab with item options if w is NULL
 
   if ( w ) {
-    w->reparent ( mItemOptionsFrame, QPoint(0,0), TRUE );
+    w->setParent ( mItemOptionsFrame );
+    w->show();
 
     mItemOptionsLayout->addWidget( w, 0, 0 );
-    mOptionsTabWidget->setCurrentPage (1);
+    mOptionsTabWidget->setCurrentIndex (1);
   }
 }
 
@@ -222,52 +228,14 @@ QgsComposition *QgsComposer::composition(void)
 
 void QgsComposer::zoomFull(void)
 {
-//can we just use QGraphicsView::fitInView with the "paper" rect?
-
-  QMatrix m;
-
-  // scale
-  double xscale = 1.0 * (mView->width()-10) / mComposition->canvas()->width();
-  double yscale = 1.0 * (mView->height()-10) / mComposition->canvas()->height();
-  double scale = ( xscale < yscale ? xscale : yscale );
-
-  // translate
-  double dx = ( mView->width() - scale * mComposition->canvas()->width() ) / 2;
-  double dy = ( mView->height() - scale * mComposition->canvas()->height() ) / 2;
-
-  m.translate ( dx, dy );
-  m.scale( scale, scale );
-
-  mView->setMatrix( m );
-//  mView->repaintContents(); //needed?
-
+  mView->fitInView(0, 0, mComposition->paperWidth(), mComposition->paperHeight(), Qt::KeepAspectRatio);
 }
 
 void QgsComposer::on_mActionZoomAll_activated(void)
 {
   zoomFull();
 }
-/*
-QMatrix QgsComposer::updateMatrix(double scaleChange)
-{
 
-  double scale = mView->matrix().m11() * scaleChange; // get new scale
-
-  double dx = ( mView->width() - scale * mComposition->canvas()->width() ) / 2;
-  double dy = ( mView->height() - scale * mComposition->canvas()->height() ) / 2;
-
-  // don't translate if composition is bigger than view
-  if (dx < 0) dx = 0;
-  if (dy < 0) dy = 0;
-  
-  // create new world matrix:  
-  QMatrix m;
-  m.translate ( dx, dy );
-  m.scale ( scale, scale );
-  return m;
-
-}
-*/
 void QgsComposer::on_mActionZoomIn_activated(void)
 {
   mView->scale(2, 2);
@@ -322,7 +290,6 @@ void QgsComposer::on_mActionPrint_activated(void)
 
     // There is a bug in Qt<=4.2.2 (dialog is not correct) if output is set to file
     // => disable until they fix it
-    //mPrinter->setOutputToFile (true ) ;
     //mPrinter->setOutputFileName ( QDir::convertSeparators ( QDir::home().path() + "/" + "qgis.eps") );
 #endif
     mPrinter->setColorMode(QPrinter::Color);
@@ -331,11 +298,12 @@ void QgsComposer::on_mActionPrint_activated(void)
   {
     // Because of bug in Qt<=4.2.2 (dialog is not correct) we have to reset always
     // to printer otherwise print to file is checked but printer combobox is in dialog
-    mPrinter->setOutputToFile(false);
+    mPrinter->setOutputFileName(NULL);
   }
 
   //set the resolution and paper orientation each time we call up the dialog, not just the first time we run it
   mPrinter->setResolution(mComposition->resolution());
+
   if (mComposition->paperOrientation() == QgsComposition::Portrait)
   {
     mPrinter->setOrientation(QPrinter::Portrait);
@@ -370,7 +338,7 @@ void QgsComposer::on_mActionPrint_activated(void)
 
       std::cout << "Resolution = " << resolution << std::endl;
 
-      double scale = resolution / 25.4 / mComposition->scale();
+      //double scale = resolution / 25.4 / mComposition->scale();
 
       mComposition->setPlotStyle(QgsComposition::Postscript);
 
@@ -402,12 +370,12 @@ void QgsComposer::on_mActionPrint_activated(void)
               }
 
             QPainter p(mPrinter);
-            p.scale(scale, scale);
+            //p.scale(scale, scale);
 
-            QRectF renderArea(0, 0, (mComposition->paperWidth() * mComposition->scale()),
-                              (mComposition->paperHeight() * mComposition->scale()));
+            //QRectF renderArea(0, 0, (mComposition->paperWidth() * mComposition->scale()),
+	    //(mComposition->paperHeight() * mComposition->scale()));
 
-            mComposition->canvas()->render(&p, renderArea);
+            mComposition->canvas()->render(&p/*, renderArea*/);
 
             p.end();
 
@@ -426,10 +394,10 @@ void QgsComposer::on_mActionPrint_activated(void)
                 std::cout << "Overwrite the bounding box" << std::endl;
                 if (!f.open(QIODevice::ReadWrite))
                   {
-                    throw QgsIOException(tr("Couldn't open " + f.name() + tr(" for read/write")));
+                    throw QgsIOException(tr("Couldn't open ") + f.fileName() + tr(" for read/write"));
                   }
-                Q_LONG offset = 0;
-                Q_LONG size;
+                qint64 offset = 0;
+                qint64 size;
                 bool found = false;
                 QString s;
                 char buf[101];
@@ -437,7 +405,7 @@ void QgsComposer::on_mActionPrint_activated(void)
                   {
                     size = f.readLine(buf, 100);
                     s = QString(buf);
-                    if (s.find("%%BoundingBox:") == 0)
+                    if (s.indexOf("%%BoundingBox:") == 0)
                       {
                         found = true;
                         break;
@@ -465,7 +433,7 @@ void QgsComposer::on_mActionPrint_activated(void)
                         shiftFileContent(&f, offset + size + 1, shift);
                     } else
                       {
-                        if (!f.at(offset))
+                        if (!f.seek(offset))
                           {
                             QMessageBox::warning(this, tr("Error in Print"), tr("Cannot seek"));
                         } else
@@ -474,14 +442,14 @@ void QgsComposer::on_mActionPrint_activated(void)
                             QString es;
                             es.fill(' ', size - 1);
                             f.flush();
-                            if (f.writeBlock(es.toLocal8Bit().data(), size - 1) < size - 1)
+                            if (f.write(es.toLocal8Bit().constData(), size - 1) < size - 1)
                               {
                                 QMessageBox::warning(this, tr("Error in Print"), tr("Cannot overwrite BoundingBox"));
                               }
                             f.flush();
-                            f.at(offset);
+                            f.seek(offset);
                             f.flush();
-                            if (f.writeBlock(s.toLocal8Bit().data(), s.length()) < s.length() - 1)
+                            if (f.write(s.toLocal8Bit().constData(), s.length()) < s.length() - 1)
                               {
                                 QMessageBox::warning(this, tr("Error in Print"), tr("Cannot overwrite BoundingBox"));
                               }
@@ -501,7 +469,7 @@ void QgsComposer::on_mActionPrint_activated(void)
                     std::cout << "Orientation portraint -> overwrite translate" << std::endl;
                     if (!f.open(QIODevice::ReadWrite))
                       {
-                        throw QgsIOException(tr("Couldn't open ") + f.name() + tr(" for read/write"));
+                        throw QgsIOException(tr("Couldn't open ") + f.fileName() + tr(" for read/write"));
                       }
                     offset = 0;
                     found = false;
@@ -517,7 +485,7 @@ void QgsComposer::on_mActionPrint_activated(void)
                       {
                         size = f.readLine(buf, 100);
                         s = QString(buf);
-                        if (rx.search(s) != -1)
+                        if (rx.indexIn(s) != -1)
                           {
                             found = true;
                             break;
@@ -532,9 +500,9 @@ void QgsComposer::on_mActionPrint_activated(void)
                         trans = (int) (72 * mComposition->paperHeight() / 25.4);
                         std::cout << "trans = " << trans << std::endl;
                         //Qt3:
-                        //s.sprintf( "0 %d translate %s scale/defM matrix CM d } d", trans, (const char *)rx.cap(1).toLocal8Bit().data() );
+                        //s.sprintf( "0 %d translate %s scale/defM matrix CM d } d", trans, rx.cap(1).toLocal8Bit().constData() );
                         //Qt4:
-                        s.sprintf("0 %d translate %s scale } def\n", trans, (const char *) rx.cap(1).toLocal8Bit().data());
+                        s.sprintf("0 %d translate %s scale } def\n", trans, rx.cap(1).toLocal8Bit().constData());
 
                         std::cout << "s.length() = " << s.length() << " size = " << size << std::endl;
                         if (s.length() > size)
@@ -546,9 +514,9 @@ void QgsComposer::on_mActionPrint_activated(void)
                                int last = f.size() + shift -1;
                                for ( int i = last; i > offset + size; i-- )
                                {
-                               f.at(i-shift);
+                               f.seek(i-shift);
                                QByteArray ba = f.read(1);
-                               f.at(i);
+                               f.seek(i);
                                f.write(ba);
                                }
                              */
@@ -556,7 +524,7 @@ void QgsComposer::on_mActionPrint_activated(void)
                           }     //END if( s.length() > size)
 
                         // Overwrite the row
-                        if (!f.at(offset))
+                        if (!f.seek(offset))
                           {
                             QMessageBox::warning(this, tr("Error in Print"), tr("Cannot seek"));
                         } else
@@ -565,14 +533,14 @@ void QgsComposer::on_mActionPrint_activated(void)
                             QString es;
                             es.fill(' ', size - 1);
                             f.flush();
-                            if (f.writeBlock(es.toLocal8Bit().data(), size - 1) < size - 1)
+                            if (f.write(es.toLocal8Bit().constData(), size - 1) < size - 1)
                               {
                                 QMessageBox::warning(this, tr("Error in Print"), tr("Cannot overwrite translate"));
                               }
                             f.flush();
-                            f.at(offset);
+                            f.seek(offset);
                             f.flush();
-                            if (f.writeBlock(s.toLocal8Bit().data(), s.length()) < s.length() - 1)
+                            if (f.write(s.toLocal8Bit().constData(), s.length()) < s.length() - 1)
                               {
                                 QMessageBox::warning(this, tr("Error in Print"), tr("Cannot overwrite translate"));
                               }
@@ -612,12 +580,13 @@ void QgsComposer::on_mActionPrint_activated(void)
             {
               std::cout << "Printing ... " << std::endl;
               QPainter p(mPrinter);
-              p.scale(scale, scale);
+              //p.scale(scale, scale);
 
-              QRectF renderArea(0, 0, (mComposition->paperWidth() * mComposition->scale()),
-                                (mComposition->paperHeight() * mComposition->scale()));
+	      //MH: is this necessary?
+              //QRectF renderArea(0, 0, (mComposition->paperWidth() * mComposition->scale()),
+	      //(mComposition->paperHeight() * mComposition->scale()));
 
-              mComposition->canvas()->render(&p, renderArea);
+              mComposition->canvas()->render(&p/*, renderArea*/);
 
               p.end();
               std::cout << "... printing finished" << std::endl;
@@ -634,15 +603,15 @@ void QgsComposer::on_mActionPrint_activated(void)
 }
 
 
-bool QgsComposer::shiftFileContent ( QFile *file, Q_LONG start, int shift )
+bool QgsComposer::shiftFileContent ( QFile *file, qint64 start, int shift )
 {
 	int last = file->size() + shift -1;
 	for ( int i = last; i >= start + shift; i-- )
 	{
-            if ( !file->at(i-shift) ) return false;
+	    if ( !file->seek(i-shift) ) return false;
 	    QByteArray ba = file->read(1);
 	    if ( ba.isEmpty() ) return false;
-	    if ( !file->at(i) ) return false;
+	    if ( !file->seek(i) ) return false;
 	    if ( file->write(ba) != 1 ) return false;
 	}
 	return true;
@@ -682,8 +651,8 @@ void QgsComposer::on_mActionExportAsImage_activated(void)
 
   //find out the last used filter
   QSettings myQSettings;  // where we keep last used filter in persistant state
-  QString myLastUsedFormat = myQSettings.readEntry("/UI/lastSaveAsImageFormat", "png" );
-  QString myLastUsedFile = myQSettings.readEntry("/UI/lastSaveAsImageFile","qgis.png");
+  QString myLastUsedFormat = myQSettings.value("/UI/lastSaveAsImageFormat", "png" ).toString();
+  QString myLastUsedFile = myQSettings.value("/UI/lastSaveAsImageFile","qgis.png").toString();
   QFileInfo file(myLastUsedFile);
 
   // get a list of supported output image types
@@ -693,7 +662,7 @@ void QgsComposer::on_mActionExportAsImage_activated(void)
   for ( ; myCounterInt < QImageWriter::supportedImageFormats().count(); myCounterInt++ )
   {
     QString myFormat=QString(QImageWriter::supportedImageFormats().at( myCounterInt ));
-    QString myFilter = myFormat + " " + tr("format") + " (*." + myFormat.lower() + " *." + myFormat.upper() + ")";
+    QString myFilter = myFormat + " " + tr("format") + " (*." + myFormat.toLower() + " *." + myFormat.toUpper() + ")";
 
     if ( myCounterInt > 0 ) myFilters += ";;";
     myFilters += myFilter;
@@ -708,7 +677,7 @@ void QgsComposer::on_mActionExportAsImage_activated(void)
   FilterMap::Iterator myIterator;
   for ( myIterator = myFilterMap.begin(); myIterator != myFilterMap.end(); ++myIterator )
   {
-    std::cout << myIterator.key().toLocal8Bit().data() << "  :  " << myIterator.data().toLocal8Bit().data() << std::endl;
+    std::cout << myIterator.key().toLocal8Bit().constData() << "  :  " << myIterator.value().toLocal8Bit().constData() << std::endl;
   }
 #endif
 
@@ -724,7 +693,7 @@ void QgsComposer::on_mActionExportAsImage_activated(void)
   myQFileDialog->selectFile( file.fileName() );
 
   // allow for selection of more than one file
-  myQFileDialog->setMode(QFileDialog::AnyFile);
+  myQFileDialog->setFileMode(QFileDialog::AnyFile);
 
   // set the filter to the last one used
   myQFileDialog->selectFilter(myLastUsedFilter);
@@ -740,15 +709,15 @@ void QgsComposer::on_mActionExportAsImage_activated(void)
   
   if ( result != QDialog::Accepted) return;
 
-  myOutputFileNameQString = myQFileDialog->selectedFile();
+  myOutputFileNameQString = myQFileDialog->selectedFiles().first();
   QString myFilterString = myQFileDialog->selectedFilter();
 #ifdef QGISDEBUG
-  std::cout << "Selected filter: " << myFilterString.toLocal8Bit().data() << std::endl;
-  std::cout << "Image type: " << myFilterMap[myFilterString].toLocal8Bit().data() << std::endl;
+  std::cout << "Selected filter: " << myFilterString.toLocal8Bit().constData() << std::endl;
+  std::cout << "Image type: " << myFilterMap[myFilterString].toLocal8Bit().constData() << std::endl;
 #endif
 
-  myQSettings.writeEntry("/UI/lastSaveAsImageFormat" , myFilterMap[myFilterString] );
-  myQSettings.writeEntry("/UI/lastSaveAsImageFile", myOutputFileNameQString);
+  myQSettings.setValue("/UI/lastSaveAsImageFormat" , myFilterMap[myFilterString] );
+  myQSettings.setValue("/UI/lastSaveAsImageFile", myOutputFileNameQString);
 
   if ( myOutputFileNameQString == "" ) return;
 
@@ -770,7 +739,7 @@ QRectF renderArea(0,0,(mComposition->paperWidth() * mComposition->scale()),(mCom
   mComposition->setPlotStyle ( QgsComposition::Preview );
   mView->setScene(mComposition->canvas());
 
-  pixmap.save ( myOutputFileNameQString, myFilterMap[myFilterString].toLocal8Bit().data() );
+  pixmap.save ( myOutputFileNameQString, myFilterMap[myFilterString].toLocal8Bit().constData() );
 }
 
 
@@ -799,7 +768,7 @@ void QgsComposer::on_mActionExportAsSVG_activated(void)
                            "such as the legend or scale bar.</p>"
 #else
                            "Qt4 svg code. In particular, there are problems "
-                           "with layers not being clipped to the map"
+                           "with layers not being clipped to the map "
                            "bounding box.</p>"
 #endif
                            "If you require a vector-based output file from "
@@ -809,22 +778,22 @@ void QgsComposer::on_mActionExportAsSVG_activated(void)
                            "</p>"));
     m->exec();
   }
-  QString myLastUsedFile = myQSettings.readEntry("/UI/lastSaveAsSvgFile","qgis.svg");
+  QString myLastUsedFile = myQSettings.value("/UI/lastSaveAsSvgFile","qgis.svg").toString();
   QFileInfo file(myLastUsedFile);
   QFileDialog *myQFileDialog = new QFileDialog( this, tr("Choose a filename to save the map as"),
                                                 file.path(), tr("SVG Format") + " (*.svg *SVG)" );
   myQFileDialog->selectFile( file.fileName() );
-  myQFileDialog->setMode(QFileDialog::AnyFile);
+  myQFileDialog->setFileMode(QFileDialog::AnyFile);
   myQFileDialog->setAcceptMode(QFileDialog::AcceptSave);
 
   int result = myQFileDialog->exec();
   raise ();
   if ( result != QDialog::Accepted) return;
 
-  QString myOutputFileNameQString = myQFileDialog->selectedFile();
+  QString myOutputFileNameQString = myQFileDialog->selectedFiles().first();
   if ( myOutputFileNameQString == "" ) return;
 
-  myQSettings.writeEntry("/UI/lastSaveAsSvgFile", myOutputFileNameQString);
+  myQSettings.setValue("/UI/lastSaveAsSvgFile", myOutputFileNameQString);
 
   mView->setScene(0);//don't redraw the scene on the display while we render
   mComposition->setPlotStyle ( QgsComposition::Print );
@@ -858,28 +827,28 @@ void QgsComposer::on_mActionExportAsSVG_activated(void)
 
 void QgsComposer::setToolActionsOff(void)
 {
-  mActionOpenTemplate->setOn ( false );
-  mActionSaveTemplateAs->setOn ( false );
-  mActionExportAsImage->setOn ( false );
-  mActionExportAsSVG->setOn ( false );
-  mActionPrint->setOn ( false );
-  mActionZoomAll->setOn ( false );
-  mActionZoomIn->setOn ( false );
-  mActionZoomOut->setOn ( false );
-  mActionRefreshView->setOn ( false );
-  mActionAddNewMap->setOn ( false );
-  mActionAddImage->setOn ( false );
-  mActionAddNewLabel->setOn ( false );
-  mActionAddNewVectLegend->setOn ( false );
-  mActionAddNewScalebar->setOn ( false );
-  mActionSelectMoveItem->setOn ( false );
+  mActionOpenTemplate->setChecked ( false );
+  mActionSaveTemplateAs->setChecked ( false );
+  mActionExportAsImage->setChecked ( false );
+  mActionExportAsSVG->setChecked ( false );
+  mActionPrint->setChecked ( false );
+  mActionZoomAll->setChecked ( false );
+  mActionZoomIn->setChecked ( false );
+  mActionZoomOut->setChecked ( false );
+  mActionRefreshView->setChecked ( false );
+  mActionAddNewMap->setChecked ( false );
+  mActionAddImage->setChecked ( false );
+  mActionAddNewLabel->setChecked ( false );
+  mActionAddNewVectLegend->setChecked ( false );
+  mActionAddNewScalebar->setChecked ( false );
+  mActionSelectMoveItem->setChecked ( false );
 }
 
 void QgsComposer::selectItem(void)
 {
   mComposition->setTool ( QgsComposition::Select );
   setToolActionsOff();
-  mActionSelectMoveItem->setOn ( true );
+  mActionSelectMoveItem->setChecked ( true );
 }
 
 void QgsComposer::on_mActionSelectMoveItem_activated(void)
@@ -891,35 +860,37 @@ void QgsComposer::on_mActionAddNewMap_activated(void)
 {
   mComposition->setTool ( QgsComposition::AddMap );
   setToolActionsOff();
-  mActionAddNewMap->setOn ( true );
+  mActionAddNewMap->setChecked ( true );
+  mView->setCursor(QCursor(cross_hair_cursor));
 }
 
 void QgsComposer::on_mActionAddNewVectLegend_activated(void)
 {
   mComposition->setTool ( QgsComposition::AddVectorLegend );
   setToolActionsOff();
-  mActionAddNewVectLegend->setOn ( true );
+  mActionAddNewVectLegend->setChecked ( true );
 }
 
 void QgsComposer::on_mActionAddNewLabel_activated(void)
 {
   mComposition->setTool ( QgsComposition::AddLabel );
   setToolActionsOff();
-  mActionAddNewLabel->setOn ( true );
+  mActionAddNewLabel->setChecked ( true );
 }
 
 void QgsComposer::on_mActionAddNewScalebar_activated(void)
 {
   mComposition->setTool ( QgsComposition::AddScalebar );
   setToolActionsOff();
-  mActionAddNewScalebar->setOn ( true );
+  mActionAddNewScalebar->setChecked ( true );
 }
 
 void QgsComposer::on_mActionAddImage_activated(void)
 {
   mComposition->setTool ( QgsComposition::AddPicture );
   setToolActionsOff();
-  mActionAddImage->setOn ( true );
+  mActionAddImage->setChecked ( true );
+  mView->setCursor(QCursor(cross_hair_cursor));
 }
 
 void QgsComposer::moveEvent ( QMoveEvent *e ) { saveWindowState(); }
@@ -977,7 +948,7 @@ void QgsComposer::projectRead(void)
 
   bool found = false;
   for ( QStringList::iterator it = l.begin(); it != l.end(); ++it ) {
-    std::cout << "key: " << (*it).toLocal8Bit().data() << std::endl;
+    std::cout << "key: " << (*it).toLocal8Bit().constData() << std::endl;
     if ( (*it).compare ( "composition_1" ) == 0 ) {
       found = true;
       break;

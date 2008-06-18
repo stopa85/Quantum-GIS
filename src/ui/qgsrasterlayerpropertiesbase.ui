@@ -5,8 +5,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>651</width>
-    <height>627</height>
+    <width>596</width>
+    <height>610</height>
    </rect>
   </property>
   <property name="windowTitle" >
@@ -22,12 +22,6 @@
    <bool>true</bool>
   </property>
   <layout class="QGridLayout" >
-   <property name="margin" >
-    <number>9</number>
-   </property>
-   <property name="spacing" >
-    <number>6</number>
-   </property>
    <item row="0" column="0" >
     <widget class="QTabWidget" name="tabBar" >
      <property name="currentIndex" >
@@ -38,836 +32,788 @@
        <string>Symbology</string>
       </attribute>
       <layout class="QGridLayout" >
-       <property name="margin" >
-        <number>9</number>
-       </property>
-       <property name="spacing" >
-        <number>6</number>
-       </property>
-       <item rowspan="2" row="3" column="1" >
-        <widget class="QGroupBox" name="grpGrayScaling" >
+       <item row="0" column="0" colspan="2" >
+        <widget class="QGroupBox" name="groupBox_3" >
          <property name="title" >
-          <string>Grayscale Band Scaling</string>
+          <string>Render as</string>
          </property>
          <layout class="QGridLayout" >
-          <property name="margin" >
-           <number>9</number>
-          </property>
-          <property name="spacing" >
-           <number>6</number>
-          </property>
-          <item row="3" column="0" colspan="5" >
-           <widget class="QLabel" name="lblMinMaxEstimateWarning" >
-            <property name="sizePolicy" >
-             <sizepolicy>
-              <hsizetype>7</hsizetype>
-              <vsizetype>5</vsizetype>
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
+          <item row="0" column="0" >
+           <widget class="QRadioButton" name="rbtnSingleBand" >
             <property name="text" >
-             <string/>
+             <string>Single band gray</string>
             </property>
            </widget>
           </item>
-          <item row="1" column="1" >
-           <widget class="QLineEdit" name="leGrayMin" >
-            <property name="sizePolicy" >
-             <sizepolicy>
-              <hsizetype>0</hsizetype>
-              <vsizetype>0</vsizetype>
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="maximumSize" >
-             <size>
-              <width>75</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="baseSize" >
-             <size>
-              <width>0</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="maxLength" >
-             <number>16</number>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="4" >
-           <widget class="QDoubleSpinBox" name="sboxSingleBandStdDev" >
-            <property name="maximum" >
-             <double>10.000000000000000</double>
-            </property>
-            <property name="singleStep" >
-             <double>0.100000000000000</double>
-            </property>
-            <property name="value" >
-             <double>0.000000000000000</double>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="4" >
-           <widget class="QLineEdit" name="leGrayMax" >
-            <property name="sizePolicy" >
-             <sizepolicy>
-              <hsizetype>0</hsizetype>
-              <vsizetype>0</vsizetype>
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="maximumSize" >
-             <size>
-              <width>75</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="baseSize" >
-             <size>
-              <width>0</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="maxLength" >
-             <number>16</number>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="3" >
-           <widget class="QLabel" name="lblGrayMax" >
-            <property name="sizePolicy" >
-             <sizepolicy>
-              <hsizetype>0</hsizetype>
-              <vsizetype>0</vsizetype>
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
+          <item row="0" column="1" >
+           <widget class="QRadioButton" name="rbtnThreeBand" >
             <property name="text" >
-             <string>Max</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="2" >
-           <spacer>
-            <property name="orientation" >
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" >
-             <size>
-              <width>21</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="2" column="0" colspan="2" >
-           <widget class="QRadioButton" name="rbtnSingleBandStdDev" >
-            <property name="text" >
-             <string>Std Deviation</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0" colspan="5" >
-           <widget class="QRadioButton" name="rbtnSingleBandMinMax" >
-            <property name="text" >
-             <string>Custom Min Max Values:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="2" colspan="2" >
-           <spacer>
-            <property name="orientation" >
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" >
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="1" column="0" >
-           <widget class="QLabel" name="lblGrayMin" >
-            <property name="sizePolicy" >
-             <sizepolicy>
-              <hsizetype>0</hsizetype>
-              <vsizetype>0</vsizetype>
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text" >
-             <string>Min</string>
+             <string>Three band color</string>
             </property>
            </widget>
           </item>
          </layout>
         </widget>
        </item>
-       <item row="7" column="1" >
-        <layout class="QHBoxLayout" >
-         <property name="margin" >
-          <number>11</number>
+       <item row="1" column="0" colspan="2" >
+        <widget class="QStackedWidget" name="stackedWidget" >
+         <property name="sizePolicy" >
+          <sizepolicy vsizetype="Minimum" hsizetype="Expanding" >
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
          </property>
-         <property name="spacing" >
-          <number>6</number>
+         <property name="currentIndex" >
+          <number>0</number>
          </property>
-         <item>
-          <spacer>
-           <property name="orientation" >
-            <enum>Qt::Horizontal</enum>
+         <widget class="QWidget" name="rgb" >
+          <layout class="QGridLayout" >
+           <property name="leftMargin" >
+            <number>0</number>
            </property>
-           <property name="sizeHint" >
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
+           <property name="topMargin" >
+            <number>0</number>
            </property>
-          </spacer>
-         </item>
-         <item>
-          <widget class="QLabel" name="labelContrastEnhancement" >
-           <property name="sizePolicy" >
-            <sizepolicy>
-             <hsizetype>0</hsizetype>
-             <vsizetype>0</vsizetype>
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
+           <property name="rightMargin" >
+            <number>0</number>
            </property>
-           <property name="layoutDirection" >
-            <enum>Qt::LeftToRight</enum>
+           <property name="bottomMargin" >
+            <number>0</number>
            </property>
-           <property name="text" >
-            <string>Contrast Enhancement</string>
+           <item row="0" column="0" >
+            <widget class="QGroupBox" name="grpRgbBands" >
+             <property name="title" >
+              <string>RGB mode band selection and scaling</string>
+             </property>
+             <layout class="QGridLayout" >
+              <item row="0" column="0" >
+               <widget class="QLabel" name="lblRed" >
+                <property name="text" >
+                 <string>Red band</string>
+                </property>
+                <property name="buddy" >
+                 <cstring>cboRed</cstring>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1" colspan="3" >
+               <widget class="QComboBox" name="cboRed" >
+                <property name="sizePolicy" >
+                 <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="minimumSize" >
+                 <size>
+                  <width>150</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="baseSize" >
+                 <size>
+                  <width>100</width>
+                  <height>0</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0" >
+               <widget class="QLabel" name="lblGreen" >
+                <property name="text" >
+                 <string>Green band</string>
+                </property>
+                <property name="buddy" >
+                 <cstring>cboGreen</cstring>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1" colspan="3" >
+               <widget class="QComboBox" name="cboGreen" >
+                <property name="sizePolicy" >
+                 <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="minimumSize" >
+                 <size>
+                  <width>150</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="baseSize" >
+                 <size>
+                  <width>0</width>
+                  <height>0</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0" >
+               <widget class="QLabel" name="lblBlue" >
+                <property name="text" >
+                 <string>Blue band</string>
+                </property>
+                <property name="buddy" >
+                 <cstring>cboBlue</cstring>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="1" colspan="3" >
+               <widget class="QComboBox" name="cboBlue" >
+                <property name="sizePolicy" >
+                 <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="minimumSize" >
+                 <size>
+                  <width>150</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="baseSize" >
+                 <size>
+                  <width>100</width>
+                  <height>0</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="0" colspan="2" >
+               <widget class="QRadioButton" name="rbtnThreeBandMinMax" >
+                <property name="text" >
+                 <string>Custom min / max values</string>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="0" >
+               <widget class="QLabel" name="lblRedMin" >
+                <property name="sizePolicy" >
+                 <sizepolicy vsizetype="Minimum" hsizetype="MinimumExpanding" >
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text" >
+                 <string>Red min</string>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="1" >
+               <widget class="QLineEdit" name="leRedMin" >
+                <property name="sizePolicy" >
+                 <sizepolicy vsizetype="Minimum" hsizetype="Expanding" >
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="maximumSize" >
+                 <size>
+                  <width>75</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
+                <property name="baseSize" >
+                 <size>
+                  <width>0</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="maxLength" >
+                 <number>16</number>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="2" >
+               <widget class="QLabel" name="lblRedMax" >
+                <property name="sizePolicy" >
+                 <sizepolicy vsizetype="Minimum" hsizetype="MinimumExpanding" >
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text" >
+                 <string>Red max</string>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="3" >
+               <widget class="QLineEdit" name="leRedMax" >
+                <property name="sizePolicy" >
+                 <sizepolicy vsizetype="Minimum" hsizetype="Expanding" >
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="maximumSize" >
+                 <size>
+                  <width>75</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
+                <property name="baseSize" >
+                 <size>
+                  <width>0</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="maxLength" >
+                 <number>16</number>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="0" >
+               <widget class="QLabel" name="lblGreenMin" >
+                <property name="sizePolicy" >
+                 <sizepolicy vsizetype="Minimum" hsizetype="MinimumExpanding" >
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text" >
+                 <string>Green min</string>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="1" >
+               <widget class="QLineEdit" name="leGreenMin" >
+                <property name="sizePolicy" >
+                 <sizepolicy vsizetype="Minimum" hsizetype="Expanding" >
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="maximumSize" >
+                 <size>
+                  <width>75</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
+                <property name="baseSize" >
+                 <size>
+                  <width>0</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="maxLength" >
+                 <number>16</number>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="2" >
+               <widget class="QLabel" name="lblGreenMax" >
+                <property name="sizePolicy" >
+                 <sizepolicy vsizetype="Minimum" hsizetype="MinimumExpanding" >
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text" >
+                 <string>Green max</string>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="3" >
+               <widget class="QLineEdit" name="leGreenMax" >
+                <property name="sizePolicy" >
+                 <sizepolicy vsizetype="Minimum" hsizetype="Expanding" >
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="maximumSize" >
+                 <size>
+                  <width>75</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
+                <property name="baseSize" >
+                 <size>
+                  <width>0</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="maxLength" >
+                 <number>16</number>
+                </property>
+               </widget>
+              </item>
+              <item row="6" column="0" >
+               <widget class="QLabel" name="lblBlueMin" >
+                <property name="sizePolicy" >
+                 <sizepolicy vsizetype="Minimum" hsizetype="MinimumExpanding" >
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text" >
+                 <string>Blue min</string>
+                </property>
+               </widget>
+              </item>
+              <item row="6" column="1" >
+               <widget class="QLineEdit" name="leBlueMin" >
+                <property name="sizePolicy" >
+                 <sizepolicy vsizetype="Minimum" hsizetype="Expanding" >
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="maximumSize" >
+                 <size>
+                  <width>75</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
+                <property name="baseSize" >
+                 <size>
+                  <width>0</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="maxLength" >
+                 <number>16</number>
+                </property>
+               </widget>
+              </item>
+              <item row="6" column="2" >
+               <widget class="QLabel" name="lblBlueMax" >
+                <property name="sizePolicy" >
+                 <sizepolicy vsizetype="Minimum" hsizetype="MinimumExpanding" >
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text" >
+                 <string>Blue max</string>
+                </property>
+               </widget>
+              </item>
+              <item row="6" column="3" >
+               <widget class="QLineEdit" name="leBlueMax" >
+                <property name="sizePolicy" >
+                 <sizepolicy vsizetype="Minimum" hsizetype="Expanding" >
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="maximumSize" >
+                 <size>
+                  <width>75</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
+                <property name="baseSize" >
+                 <size>
+                  <width>0</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="maxLength" >
+                 <number>16</number>
+                </property>
+               </widget>
+              </item>
+              <item row="7" column="0" colspan="2" >
+               <widget class="QRadioButton" name="rbtnThreeBandStdDev" >
+                <property name="text" >
+                 <string>Std. deviation</string>
+                </property>
+               </widget>
+              </item>
+              <item row="7" column="3" >
+               <widget class="QDoubleSpinBox" name="sboxThreeBandStdDev" >
+                <property name="maximum" >
+                 <double>10.000000000000000</double>
+                </property>
+                <property name="singleStep" >
+                 <double>0.100000000000000</double>
+                </property>
+                <property name="value" >
+                 <double>0.000000000000000</double>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="gray" >
+          <layout class="QGridLayout" >
+           <property name="leftMargin" >
+            <number>0</number>
            </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QComboBox" name="cboxContrastEnhancementAlgorithm" >
-           <property name="sizePolicy" >
-            <sizepolicy>
-             <hsizetype>0</hsizetype>
-             <vsizetype>0</vsizetype>
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
+           <property name="topMargin" >
+            <number>0</number>
            </property>
-          </widget>
-         </item>
-        </layout>
+           <property name="rightMargin" >
+            <number>0</number>
+           </property>
+           <property name="bottomMargin" >
+            <number>0</number>
+           </property>
+           <item row="0" column="0" >
+            <widget class="QGroupBox" name="groupBox_5" >
+             <property name="title" >
+              <string>Single band properties</string>
+             </property>
+             <layout class="QGridLayout" >
+              <item row="0" column="0" >
+               <widget class="QLabel" name="label" >
+                <property name="sizePolicy" >
+                 <sizepolicy vsizetype="Fixed" hsizetype="Fixed" >
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text" >
+                 <string>Gray band</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1" colspan="5" >
+               <widget class="QComboBox" name="cboGray" >
+                <property name="sizePolicy" >
+                 <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="minimumSize" >
+                 <size>
+                  <width>150</width>
+                  <height>0</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0" >
+               <widget class="QLabel" name="label_5" >
+                <property name="text" >
+                 <string>Color map</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1" colspan="5" >
+               <widget class="QComboBox" name="cboxColorMap" >
+                <property name="sizePolicy" >
+                 <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="minimumSize" >
+                 <size>
+                  <width>150</width>
+                  <height>0</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="1" colspan="5" >
+               <widget class="QCheckBox" name="cboxInvertColorMap" >
+                <property name="sizePolicy" >
+                 <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text" >
+                 <string>Invert color map</string>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="0" colspan="2" >
+               <widget class="QRadioButton" name="rbtnSingleBandMinMax" >
+                <property name="text" >
+                 <string>Custom min / max values</string>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="2" >
+               <widget class="QLabel" name="lblGrayMin" >
+                <property name="sizePolicy" >
+                 <sizepolicy vsizetype="Fixed" hsizetype="Fixed" >
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text" >
+                 <string>Min</string>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="3" >
+               <widget class="QLineEdit" name="leGrayMin" >
+                <property name="sizePolicy" >
+                 <sizepolicy vsizetype="Fixed" hsizetype="Fixed" >
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="maximumSize" >
+                 <size>
+                  <width>75</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
+                <property name="baseSize" >
+                 <size>
+                  <width>0</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="maxLength" >
+                 <number>16</number>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="4" >
+               <widget class="QLabel" name="lblGrayMax" >
+                <property name="sizePolicy" >
+                 <sizepolicy vsizetype="Fixed" hsizetype="Fixed" >
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text" >
+                 <string>Max</string>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="5" >
+               <widget class="QLineEdit" name="leGrayMax" >
+                <property name="sizePolicy" >
+                 <sizepolicy vsizetype="Fixed" hsizetype="Fixed" >
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="maximumSize" >
+                 <size>
+                  <width>75</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
+                <property name="baseSize" >
+                 <size>
+                  <width>0</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="maxLength" >
+                 <number>16</number>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="0" colspan="2" >
+               <widget class="QRadioButton" name="rbtnSingleBandStdDev" >
+                <property name="text" >
+                 <string>Use standard deviation</string>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="3" >
+               <widget class="QDoubleSpinBox" name="sboxSingleBandStdDev" >
+                <property name="maximum" >
+                 <double>10.000000000000000</double>
+                </property>
+                <property name="singleStep" >
+                 <double>0.100000000000000</double>
+                </property>
+                <property name="value" >
+                 <double>0.000000000000000</double>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </widget>
        </item>
-       <item row="6" column="1" >
-        <layout class="QHBoxLayout" >
-         <property name="margin" >
-          <number>11</number>
+       <item row="2" column="0" colspan="2" >
+        <widget class="QLabel" name="lblMinMaxEstimateWarning" >
+         <property name="text" >
+          <string>Note:</string>
          </property>
-         <property name="spacing" >
-          <number>6</number>
-         </property>
-         <item>
-          <spacer>
-           <property name="orientation" >
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" >
-            <size>
-             <width>171</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item>
-          <widget class="QPushButton" name="pbtnLoadMinMax" >
-           <property name="text" >
-            <string>Load Min Max Values From Band(s)</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
+        </widget>
        </item>
-       <item row="5" column="1" >
+       <item row="3" column="0" >
         <spacer>
          <property name="orientation" >
           <enum>Qt::Vertical</enum>
          </property>
          <property name="sizeHint" >
           <size>
-           <width>333</width>
-           <height>41</height>
+           <width>20</width>
+           <height>0</height>
           </size>
          </property>
         </spacer>
        </item>
-       <item rowspan="4" row="4" column="0" >
-        <widget class="QGroupBox" name="grpRgbScaling" >
+       <item row="4" column="0" colspan="2" >
+        <widget class="Line" name="line" >
+         <property name="orientation" >
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0" >
+        <widget class="QGroupBox" name="groupBox_2" >
          <property name="title" >
-          <string>RGB Scaling</string>
+          <string>Load min / max values from band</string>
          </property>
          <layout class="QGridLayout" >
-          <property name="margin" >
-           <number>11</number>
-          </property>
-          <property name="spacing" >
-           <number>6</number>
-          </property>
-          <item row="3" column="3" >
-           <widget class="QLabel" name="lblBlueMax" >
+          <item row="0" column="0" >
+           <widget class="QRadioButton" name="rbtnEstimateMinMax" >
             <property name="text" >
-             <string>&lt;b>&lt;font color='blue'>Max&lt;/font>&lt;/b></string>
+             <string>Estimate (faster)</string>
             </property>
            </widget>
           </item>
-          <item row="4" column="0" colspan="2" >
-           <widget class="QRadioButton" name="rbtnThreeBandStdDev" >
-            <property name="text" >
-             <string>Std Deviation</string>
+          <item row="0" column="1" colspan="2" >
+           <spacer>
+            <property name="orientation" >
+             <enum>Qt::Horizontal</enum>
             </property>
-           </widget>
-          </item>
-          <item row="0" column="0" colspan="5" >
-           <widget class="QRadioButton" name="rbtnThreeBandMinMax" >
-            <property name="text" >
-             <string>Custom Min Max Values</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="4" >
-           <widget class="QLineEdit" name="leGreenMax" >
-            <property name="sizePolicy" >
-             <sizepolicy>
-              <hsizetype>0</hsizetype>
-              <vsizetype>0</vsizetype>
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="maximumSize" >
+            <property name="sizeHint" >
              <size>
-              <width>75</width>
-              <height>16777215</height>
+              <width>81</width>
+              <height>20</height>
              </size>
             </property>
-            <property name="baseSize" >
-             <size>
-              <width>0</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="maxLength" >
-             <number>16</number>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0" >
-           <widget class="QLabel" name="lblGreenMin" >
-            <property name="sizePolicy" >
-             <sizepolicy>
-              <hsizetype>0</hsizetype>
-              <vsizetype>0</vsizetype>
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text" >
-             <string>&lt;b>&lt;font color='green'>Min&lt;/font>&lt;/b></string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="3" >
-           <widget class="QLabel" name="lblGreenMax" >
-            <property name="sizePolicy" >
-             <sizepolicy>
-              <hsizetype>0</hsizetype>
-              <vsizetype>0</vsizetype>
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text" >
-             <string>&lt;b>&lt;font color='green'>Max&lt;/font>&lt;/b></string>
-            </property>
-           </widget>
+           </spacer>
           </item>
           <item row="1" column="0" >
-           <widget class="QLabel" name="lblRedMin" >
-            <property name="sizePolicy" >
-             <sizepolicy>
-              <hsizetype>0</hsizetype>
-              <vsizetype>0</vsizetype>
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
+           <widget class="QRadioButton" name="rbtnActualMinMax" >
             <property name="text" >
-             <string>&lt;b>&lt;font color='red'>Min&lt;/font>&lt;/b></string>
+             <string>Actual (slower)</string>
             </property>
            </widget>
           </item>
-          <item row="3" column="2" >
+          <item row="1" column="1" >
            <spacer>
             <property name="orientation" >
              <enum>Qt::Horizontal</enum>
             </property>
             <property name="sizeHint" >
              <size>
-              <width>21</width>
+              <width>111</width>
               <height>20</height>
              </size>
             </property>
            </spacer>
-          </item>
-          <item row="1" column="4" >
-           <widget class="QLineEdit" name="leRedMax" >
-            <property name="sizePolicy" >
-             <sizepolicy>
-              <hsizetype>0</hsizetype>
-              <vsizetype>0</vsizetype>
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="maximumSize" >
-             <size>
-              <width>75</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="baseSize" >
-             <size>
-              <width>0</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="maxLength" >
-             <number>16</number>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="3" >
-           <widget class="QLabel" name="lblRedMax" >
-            <property name="sizePolicy" >
-             <sizepolicy>
-              <hsizetype>0</hsizetype>
-              <vsizetype>0</vsizetype>
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text" >
-             <string>&lt;b>&lt;font color='red'>Max&lt;/font>&lt;/b></string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="2" >
-           <spacer>
-            <property name="orientation" >
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" >
-             <size>
-              <width>21</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="3" column="4" >
-           <widget class="QLineEdit" name="leBlueMax" >
-            <property name="sizePolicy" >
-             <sizepolicy>
-              <hsizetype>0</hsizetype>
-              <vsizetype>0</vsizetype>
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="maximumSize" >
-             <size>
-              <width>75</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="baseSize" >
-             <size>
-              <width>0</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="maxLength" >
-             <number>16</number>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="1" >
-           <widget class="QLineEdit" name="leBlueMin" >
-            <property name="sizePolicy" >
-             <sizepolicy>
-              <hsizetype>0</hsizetype>
-              <vsizetype>0</vsizetype>
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="maximumSize" >
-             <size>
-              <width>75</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="baseSize" >
-             <size>
-              <width>0</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="maxLength" >
-             <number>16</number>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0" >
-           <widget class="QLabel" name="lblBlueMin" >
-            <property name="sizePolicy" >
-             <sizepolicy>
-              <hsizetype>0</hsizetype>
-              <vsizetype>0</vsizetype>
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text" >
-             <string>&lt;b>&lt;font color='blue'>Min&lt;/font>&lt;/b></string>
-            </property>
-           </widget>
           </item>
           <item row="1" column="2" >
-           <spacer>
-            <property name="orientation" >
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" >
-             <size>
-              <width>21</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="1" column="1" >
-           <widget class="QLineEdit" name="leRedMin" >
-            <property name="sizePolicy" >
-             <sizepolicy>
-              <hsizetype>0</hsizetype>
-              <vsizetype>0</vsizetype>
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="maximumSize" >
-             <size>
-              <width>75</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="baseSize" >
-             <size>
-              <width>0</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="maxLength" >
-             <number>16</number>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="2" colspan="2" >
-           <spacer>
-            <property name="orientation" >
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" >
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="4" column="4" >
-           <widget class="QDoubleSpinBox" name="sboxThreeBandStdDev" >
-            <property name="maximum" >
-             <double>10.000000000000000</double>
-            </property>
-            <property name="singleStep" >
-             <double>0.100000000000000</double>
-            </property>
-            <property name="value" >
-             <double>0.000000000000000</double>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1" >
-           <widget class="QLineEdit" name="leGreenMin" >
-            <property name="sizePolicy" >
-             <sizepolicy>
-              <hsizetype>0</hsizetype>
-              <vsizetype>0</vsizetype>
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="maximumSize" >
-             <size>
-              <width>75</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="baseSize" >
-             <size>
-              <width>0</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="maxLength" >
-             <number>16</number>
+           <widget class="QPushButton" name="pbtnLoadMinMax" >
+            <property name="text" >
+             <string>Load</string>
             </property>
            </widget>
           </item>
          </layout>
         </widget>
        </item>
-       <item row="2" column="1" >
-        <widget class="QGroupBox" name="grpGrayBand" >
+       <item row="5" column="1" >
+        <widget class="QGroupBox" name="groupBox_8" >
          <property name="title" >
-          <string>Grayscale Band Selection</string>
+          <string>Contrast enhancement</string>
          </property>
          <layout class="QGridLayout" >
-          <property name="margin" >
-           <number>11</number>
+          <property name="horizontalSpacing" >
+           <number>-1</number>
           </property>
-          <property name="spacing" >
-           <number>6</number>
+          <property name="verticalSpacing" >
+           <number>-1</number>
           </property>
           <item row="0" column="0" >
-           <widget class="QLabel" name="label" >
+           <widget class="QLabel" name="labelContrastEnhancement" >
             <property name="sizePolicy" >
-             <sizepolicy>
-              <hsizetype>0</hsizetype>
-              <vsizetype>0</vsizetype>
+             <sizepolicy vsizetype="Fixed" hsizetype="Fixed" >
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
+            <property name="layoutDirection" >
+             <enum>Qt::LeftToRight</enum>
+            </property>
             <property name="text" >
-             <string>Gray</string>
+             <string>Current</string>
             </property>
            </widget>
           </item>
           <item row="0" column="1" >
-           <widget class="QComboBox" name="cboGray" >
+           <widget class="QComboBox" name="cboxContrastEnhancementAlgorithm" >
             <property name="sizePolicy" >
-             <sizepolicy>
-              <hsizetype>0</hsizetype>
-              <vsizetype>0</vsizetype>
+             <sizepolicy vsizetype="Fixed" hsizetype="Fixed" >
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
-            <property name="minimumSize" >
-             <size>
-              <width>150</width>
-              <height>0</height>
-             </size>
-            </property>
            </widget>
           </item>
-         </layout>
-        </widget>
-       </item>
-       <item rowspan="2" row="2" column="0" >
-        <widget class="QGroupBox" name="grpRgbBands" >
-         <property name="title" >
-          <string>RGB Mode Band Selection</string>
-         </property>
-         <layout class="QGridLayout" >
-          <property name="margin" >
-           <number>11</number>
-          </property>
-          <property name="spacing" >
-           <number>6</number>
-          </property>
-          <item row="2" column="0" >
-           <widget class="QLabel" name="lblBlue" >
-            <property name="text" >
-             <string>&lt;b>&lt;font color='blue'>Blue&lt;/font>&lt;/b></string>
+          <item row="0" column="2" >
+           <widget class="QPushButton" name="pbtnMakeContrastEnhancementAlgorithmDefault" >
+            <property name="sizePolicy" >
+             <sizepolicy vsizetype="Fixed" hsizetype="Fixed" >
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
             </property>
-            <property name="buddy" >
-             <cstring>cboBlue</cstring>
+            <property name="toolTip" >
+             <string>Save current contrast enhancement algorithm as default. This setting will be persistent between QGIS sessions.</string>
+            </property>
+            <property name="whatsThis" >
+             <string>Saves current contrast enhancement algorithm as a default. This setting will be persistent between QGIS sessions.</string>
+            </property>
+            <property name="text" >
+             <string/>
+            </property>
+            <property name="icon" >
+             <iconset>../../images/themes/default/mActionFileSave.png</iconset>
             </property>
            </widget>
           </item>
           <item row="1" column="0" >
-           <widget class="QLabel" name="lblGreen" >
+           <widget class="QLabel" name="label_4" >
             <property name="text" >
-             <string>&lt;b>&lt;font color='green'>Green&lt;/font>&lt;/b></string>
-            </property>
-            <property name="buddy" >
-             <cstring>cboGreen</cstring>
+             <string>Default</string>
             </property>
            </widget>
           </item>
-          <item row="0" column="0" >
-           <widget class="QLabel" name="lblRed" >
+          <item row="1" column="1" colspan="2" >
+           <widget class="QLabel" name="labelDefaultContrastEnhancementAlgorithm" >
             <property name="text" >
-             <string>&lt;b>&lt;font color='red'>Red&lt;/font>&lt;/b></string>
-            </property>
-            <property name="buddy" >
-             <cstring>cboRed</cstring>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1" >
-           <widget class="QComboBox" name="cboBlue" >
-            <property name="sizePolicy" >
-             <sizepolicy>
-              <hsizetype>0</hsizetype>
-              <vsizetype>0</vsizetype>
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize" >
-             <size>
-              <width>150</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="baseSize" >
-             <size>
-              <width>100</width>
-              <height>0</height>
-             </size>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1" >
-           <widget class="QComboBox" name="cboRed" >
-            <property name="sizePolicy" >
-             <sizepolicy>
-              <hsizetype>0</hsizetype>
-              <vsizetype>0</vsizetype>
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize" >
-             <size>
-              <width>150</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="baseSize" >
-             <size>
-              <width>100</width>
-              <height>0</height>
-             </size>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1" >
-           <widget class="QComboBox" name="cboGreen" >
-            <property name="sizePolicy" >
-             <sizepolicy>
-              <hsizetype>0</hsizetype>
-              <vsizetype>0</vsizetype>
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize" >
-             <size>
-              <width>150</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="baseSize" >
-             <size>
-              <width>0</width>
-              <height>0</height>
-             </size>
+             <string>TextLabel</string>
             </property>
            </widget>
           </item>
          </layout>
         </widget>
        </item>
-       <item row="1" column="1" >
-        <widget class="QGroupBox" name="groupBox_5" >
-         <property name="title" >
-          <string>Color Map</string>
-         </property>
-         <layout class="QVBoxLayout" >
-          <property name="margin" >
-           <number>11</number>
-          </property>
-          <property name="spacing" >
-           <number>6</number>
-          </property>
-          <item>
-           <widget class="QComboBox" name="cboxColorMap" >
-            <property name="sizePolicy" >
-             <sizepolicy>
-              <hsizetype>0</hsizetype>
-              <vsizetype>0</vsizetype>
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize" >
-             <size>
-              <width>150</width>
-              <height>0</height>
-             </size>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="cboxInvertColorMap" >
-            <property name="text" >
-             <string>Invert Color Map</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="1" column="0" >
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tabPageTransparency" >
+      <attribute name="title" >
+       <string>Transparency</string>
+      </attribute>
+      <layout class="QGridLayout" >
+       <item row="0" column="0" >
         <widget class="QGroupBox" name="groupBox_4" >
          <property name="title" >
-          <string>Global Transparency</string>
+          <string>Global transparency</string>
          </property>
          <layout class="QGridLayout" >
-          <property name="margin" >
-           <number>11</number>
-          </property>
-          <property name="spacing" >
-           <number>6</number>
-          </property>
           <item row="0" column="0" colspan="5" >
            <widget class="QSlider" name="sliderTransparency" >
             <property name="sizePolicy" >
-             <sizepolicy>
-              <hsizetype>0</hsizetype>
-              <vsizetype>0</vsizetype>
+             <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
@@ -883,18 +829,12 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="3" >
-           <spacer>
-            <property name="orientation" >
-             <enum>Qt::Horizontal</enum>
+          <item row="1" column="0" >
+           <widget class="QLabel" name="textLabel3" >
+            <property name="text" >
+             <string>None</string>
             </property>
-            <property name="sizeHint" >
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
+           </widget>
           </item>
           <item row="1" column="1" >
            <spacer>
@@ -912,9 +852,7 @@
           <item row="1" column="2" >
            <widget class="QLabel" name="lblTransparencyPercent" >
             <property name="sizePolicy" >
-             <sizepolicy>
-              <hsizetype>0</hsizetype>
-              <vsizetype>0</vsizetype>
+             <sizepolicy vsizetype="Fixed" hsizetype="Fixed" >
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
@@ -924,36 +862,7 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="0" >
-           <widget class="QLabel" name="textLabel3" >
-            <property name="text" >
-             <string>None</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="4" >
-           <widget class="QLabel" name="textLabel4" >
-            <property name="text" >
-             <string>&lt;p align="right">Full&lt;/p></string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="0" column="0" colspan="2" >
-        <widget class="QGroupBox" name="groupBox_3" >
-         <property name="title" >
-          <string>Render as</string>
-         </property>
-         <layout class="QGridLayout" >
-          <property name="margin" >
-           <number>11</number>
-          </property>
-          <property name="spacing" >
-           <number>6</number>
-          </property>
-          <item row="0" column="2" >
+          <item row="1" column="3" >
            <spacer>
             <property name="orientation" >
              <enum>Qt::Horizontal</enum>
@@ -966,245 +875,249 @@
             </property>
            </spacer>
           </item>
-          <item row="0" column="1" >
-           <widget class="QRadioButton" name="rbtnSingleBand" >
+          <item row="1" column="4" >
+           <widget class="QLabel" name="textLabel4" >
             <property name="text" >
-             <string>Single Band Gray</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0" >
-           <widget class="QRadioButton" name="rbtnThreeBand" >
-            <property name="text" >
-             <string>Three Band Color</string>
+             <string>&lt;p align="right">Full&lt;/p></string>
             </property>
            </widget>
           </item>
          </layout>
         </widget>
        </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="tabPageTransparency" >
-      <attribute name="title" >
-       <string>Transparent Pixels</string>
-      </attribute>
-      <layout class="QGridLayout" >
-       <property name="margin" >
-        <number>11</number>
-       </property>
-       <property name="spacing" >
-        <number>6</number>
-       </property>
-       <item row="1" column="1" >
-        <spacer>
-         <property name="orientation" >
-          <enum>Qt::Horizontal</enum>
+       <item row="0" column="1" >
+        <widget class="QGroupBox" name="groupBox_7" >
+         <property name="title" >
+          <string>No data value</string>
          </property>
-         <property name="sizeHint" >
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="3" column="0" >
-        <widget class="QComboBox" name="cboxTransparencyBand" >
-         <property name="enabled" >
-          <bool>false</bool>
-         </property>
-         <property name="sizePolicy" >
-          <sizepolicy>
-           <hsizetype>0</hsizetype>
-           <vsizetype>0</vsizetype>
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="minimumSize" >
-          <size>
-           <width>150</width>
-           <height>0</height>
-          </size>
-         </property>
+         <layout class="QVBoxLayout" >
+          <item>
+           <widget class="QLineEdit" name="leNoDataValue" />
+          </item>
+          <item>
+           <widget class="QCheckBox" name="chkboxResetNoDataValue" >
+            <property name="text" >
+             <string>Reset no data value</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </widget>
        </item>
-       <item row="2" column="0" >
-        <widget class="QLabel" name="lblTransarent" >
-         <property name="text" >
-          <string>Transparent Band:</string>
+       <item row="1" column="0" colspan="2" >
+        <widget class="QGroupBox" name="groupBox_6" >
+         <property name="title" >
+          <string>Custom transparency options</string>
          </property>
-        </widget>
-       </item>
-       <item row="1" column="0" >
-        <widget class="QComboBox" name="cboxTransparencyLayer" >
-         <property name="enabled" >
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="0" colspan="3" >
-        <widget class="QLabel" name="label_2" >
-         <property name="text" >
-          <string>Custom Transparency List</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="0" >
-        <widget class="QLabel" name="label_3" >
-         <property name="text" >
-          <string>Transparency Layer;</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="2" colspan="2" >
-        <widget class="QLineEdit" name="leNoDataValue" />
-       </item>
-       <item row="5" column="0" colspan="3" >
-        <widget class="QTableWidget" name="tableTransparency" >
-         <property name="verticalScrollBarPolicy" >
-          <enum>Qt::ScrollBarAsNeeded</enum>
-         </property>
-         <property name="alternatingRowColors" >
-          <bool>true</bool>
-         </property>
-         <property name="selectionMode" >
-          <enum>QAbstractItemView::SingleSelection</enum>
-         </property>
-         <property name="selectionBehavior" >
-          <enum>QAbstractItemView::SelectRows</enum>
-         </property>
-         <property name="showGrid" >
-          <bool>false</bool>
-         </property>
-         <property name="rowCount" >
-          <number>0</number>
-         </property>
-         <property name="columnCount" >
-          <number>0</number>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="3" >
-        <layout class="QVBoxLayout" >
-         <property name="margin" >
-          <number>11</number>
-         </property>
-         <property name="spacing" >
-          <number>6</number>
-         </property>
-         <item>
-          <widget class="QToolButton" name="pbnAddValuesManually" >
-           <property name="toolTip" >
-            <string>Add Values Manually</string>
-           </property>
-           <property name="text" >
-            <string>...</string>
-           </property>
-           <property name="icon" >
-            <iconset>../../images/themes/default/mActionNewAttribute.png</iconset>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QToolButton" name="pbnAddValuesFromDisplay" >
-           <property name="enabled" >
-            <bool>false</bool>
-           </property>
-           <property name="toolTip" >
-            <string>Add Values From Display</string>
-           </property>
-           <property name="text" >
-            <string>...</string>
-           </property>
-           <property name="icon" >
-            <iconset>../../images/themes/default/mActionContextHelp.png</iconset>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QToolButton" name="pbnRemoveSelectedRow" >
-           <property name="toolTip" >
-            <string>Remove Selected Row</string>
-           </property>
-           <property name="text" >
-            <string>...</string>
-           </property>
-           <property name="icon" >
-            <iconset>../../images/themes/default/mActionDeleteAttribute.png</iconset>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QToolButton" name="pbnDefaultValues" >
-           <property name="toolTip" >
-            <string>Default Values</string>
-           </property>
-           <property name="text" >
-            <string>...</string>
-           </property>
-           <property name="icon" >
-            <iconset>../../images/themes/default/mActionCopySelected.png</iconset>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <spacer>
-           <property name="orientation" >
-            <enum>Qt::Vertical</enum>
-           </property>
-           <property name="sizeHint" >
-            <size>
-             <width>20</width>
-             <height>181</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item>
-          <widget class="QToolButton" name="pbnImportTransparentPixelValues" >
-           <property name="toolTip" >
-            <string>Import From File</string>
-           </property>
-           <property name="text" >
-            <string>...</string>
-           </property>
-           <property name="icon" >
-            <iconset>../../images/themes/default/mActionFolder.png</iconset>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QToolButton" name="pbnExportTransparentPixelValues" >
-           <property name="toolTip" >
-            <string>Export To File</string>
-           </property>
-           <property name="text" >
-            <string>...</string>
-           </property>
-           <property name="icon" >
-            <iconset>../../images/themes/default/mActionFileSave.png</iconset>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item row="0" column="2" >
-        <widget class="QLabel" name="textLabel2_4_3" >
-         <property name="text" >
-          <string>No Data Value:</string>
-         </property>
-         <property name="buddy" >
-          <cstring>sliderTransparency</cstring>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="2" >
-        <widget class="QCheckBox" name="chkboxResetNoDataValue" >
-         <property name="text" >
-          <string>Reset No Data Value</string>
-         </property>
+         <layout class="QGridLayout" >
+          <item row="0" column="0" >
+           <widget class="QLabel" name="lblTransarent" >
+            <property name="text" >
+             <string>Transparency band</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2" colspan="2" >
+           <spacer>
+            <property name="orientation" >
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" >
+             <size>
+              <width>261</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="1" column="0" >
+           <widget class="QComboBox" name="cboxTransparencyBand" >
+            <property name="enabled" >
+             <bool>false</bool>
+            </property>
+            <property name="sizePolicy" >
+             <sizepolicy vsizetype="Fixed" hsizetype="Fixed" >
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize" >
+             <size>
+              <width>150</width>
+              <height>0</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="2" colspan="2" >
+           <spacer>
+            <property name="orientation" >
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" >
+             <size>
+              <width>261</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="3" column="0" colspan="3" >
+           <widget class="QLabel" name="label_2" >
+            <property name="text" >
+             <string>Transparent pixel list</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0" colspan="3" >
+           <widget class="QTableWidget" name="tableTransparency" >
+            <property name="verticalScrollBarPolicy" >
+             <enum>Qt::ScrollBarAsNeeded</enum>
+            </property>
+            <property name="alternatingRowColors" >
+             <bool>true</bool>
+            </property>
+            <property name="selectionMode" >
+             <enum>QAbstractItemView::SingleSelection</enum>
+            </property>
+            <property name="selectionBehavior" >
+             <enum>QAbstractItemView::SelectRows</enum>
+            </property>
+            <property name="showGrid" >
+             <bool>false</bool>
+            </property>
+            <property name="rowCount" >
+             <number>0</number>
+            </property>
+            <property name="columnCount" >
+             <number>0</number>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="3" >
+           <layout class="QVBoxLayout" >
+            <property name="leftMargin" >
+             <number>11</number>
+            </property>
+            <property name="topMargin" >
+             <number>11</number>
+            </property>
+            <property name="rightMargin" >
+             <number>11</number>
+            </property>
+            <property name="bottomMargin" >
+             <number>11</number>
+            </property>
+            <item>
+             <widget class="QToolButton" name="pbnAddValuesManually" >
+              <property name="toolTip" >
+               <string>Add values manually</string>
+              </property>
+              <property name="text" >
+               <string>...</string>
+              </property>
+              <property name="icon" >
+               <iconset>../../images/themes/default/mActionNewAttribute.png</iconset>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QToolButton" name="pbnAddValuesFromDisplay" >
+              <property name="enabled" >
+               <bool>false</bool>
+              </property>
+              <property name="toolTip" >
+               <string>Add Values from display</string>
+              </property>
+              <property name="text" >
+               <string>...</string>
+              </property>
+              <property name="icon" >
+               <iconset>../../images/themes/default/mActionContextHelp.png</iconset>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QToolButton" name="pbnRemoveSelectedRow" >
+              <property name="toolTip" >
+               <string>Remove selected row</string>
+              </property>
+              <property name="text" >
+               <string>...</string>
+              </property>
+              <property name="icon" >
+               <iconset>../../images/themes/default/mActionDeleteAttribute.png</iconset>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QToolButton" name="pbnDefaultValues" >
+              <property name="toolTip" >
+               <string>Default values</string>
+              </property>
+              <property name="text" >
+               <string>...</string>
+              </property>
+              <property name="icon" >
+               <iconset>../../images/themes/default/mActionCopySelected.png</iconset>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer>
+              <property name="orientation" >
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" >
+               <size>
+                <width>20</width>
+                <height>181</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QToolButton" name="pbnImportTransparentPixelValues" >
+              <property name="toolTip" >
+               <string>Import from file</string>
+              </property>
+              <property name="text" >
+               <string>...</string>
+              </property>
+              <property name="icon" >
+               <iconset>../../images/themes/default/mActionFolder.png</iconset>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QToolButton" name="pbnExportTransparentPixelValues" >
+              <property name="toolTip" >
+               <string>Export to file</string>
+              </property>
+              <property name="text" >
+               <string>...</string>
+              </property>
+              <property name="icon" >
+               <iconset>../../images/themes/default/mActionFileSave.png</iconset>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="2" column="0" >
+           <spacer>
+            <property name="orientation" >
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" >
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
         </widget>
        </item>
       </layout>
@@ -1214,11 +1127,17 @@
        <string>Colormap</string>
       </attribute>
       <layout class="QGridLayout" >
-       <property name="margin" >
+       <property name="leftMargin" >
         <number>11</number>
        </property>
-       <property name="spacing" >
-        <number>6</number>
+       <property name="topMargin" >
+        <number>11</number>
+       </property>
+       <property name="rightMargin" >
+        <number>11</number>
+       </property>
+       <property name="bottomMargin" >
+        <number>11</number>
        </property>
        <item row="0" column="2" >
         <spacer>
@@ -1248,25 +1167,29 @@
        </item>
        <item row="0" column="0" colspan="2" >
         <layout class="QHBoxLayout" >
-         <property name="margin" >
+         <property name="leftMargin" >
           <number>11</number>
          </property>
-         <property name="spacing" >
-          <number>6</number>
+         <property name="topMargin" >
+          <number>11</number>
+         </property>
+         <property name="rightMargin" >
+          <number>11</number>
+         </property>
+         <property name="bottomMargin" >
+          <number>11</number>
          </property>
          <item>
           <widget class="QLabel" name="mNumberOfEntriesLabel" >
            <property name="text" >
-            <string>Number of entries:</string>
+            <string>Number of entries</string>
            </property>
           </widget>
          </item>
          <item>
           <widget class="QSpinBox" name="sboxNumberOfEntries" >
            <property name="sizePolicy" >
-            <sizepolicy>
-             <hsizetype>0</hsizetype>
-             <vsizetype>0</vsizetype>
+            <sizepolicy vsizetype="Fixed" hsizetype="Fixed" >
              <horstretch>0</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
@@ -1326,16 +1249,22 @@
        </item>
        <item row="0" column="3" >
         <layout class="QHBoxLayout" >
-         <property name="margin" >
+         <property name="leftMargin" >
           <number>11</number>
          </property>
-         <property name="spacing" >
-          <number>6</number>
+         <property name="topMargin" >
+          <number>11</number>
+         </property>
+         <property name="rightMargin" >
+          <number>11</number>
+         </property>
+         <property name="bottomMargin" >
+          <number>11</number>
          </property>
          <item>
           <widget class="QLabel" name="mColorInterpolationLabel" >
            <property name="text" >
-            <string>Color interpolation:</string>
+            <string>Color interpolation</string>
            </property>
           </widget>
          </item>
@@ -1346,16 +1275,22 @@
        </item>
        <item row="1" column="3" >
         <layout class="QHBoxLayout" >
-         <property name="margin" >
+         <property name="leftMargin" >
           <number>11</number>
          </property>
-         <property name="spacing" >
-          <number>6</number>
+         <property name="topMargin" >
+          <number>11</number>
+         </property>
+         <property name="rightMargin" >
+          <number>11</number>
+         </property>
+         <property name="bottomMargin" >
+          <number>11</number>
          </property>
          <item>
           <widget class="QLabel" name="mClassificationModeLabel" >
            <property name="text" >
-            <string>Classification mode:</string>
+            <string>Classification mode</string>
            </property>
           </widget>
          </item>
@@ -1371,23 +1306,35 @@
        <string>General</string>
       </attribute>
       <layout class="QGridLayout" >
-       <property name="margin" >
+       <property name="leftMargin" >
         <number>11</number>
        </property>
-       <property name="spacing" >
-        <number>6</number>
+       <property name="topMargin" >
+        <number>11</number>
+       </property>
+       <property name="rightMargin" >
+        <number>11</number>
+       </property>
+       <property name="bottomMargin" >
+        <number>11</number>
        </property>
        <item row="4" column="0" colspan="3" >
         <widget class="QGroupBox" name="grpSRS" >
          <property name="title" >
-          <string>Spatial Reference System</string>
+          <string>Spatial reference system</string>
          </property>
          <layout class="QGridLayout" >
-          <property name="margin" >
+          <property name="leftMargin" >
            <number>11</number>
           </property>
-          <property name="spacing" >
-           <number>6</number>
+          <property name="topMargin" >
+           <number>11</number>
+          </property>
+          <property name="rightMargin" >
+           <number>11</number>
+          </property>
+          <property name="bottomMargin" >
+           <number>11</number>
           </property>
           <item row="0" column="1" >
            <widget class="QPushButton" name="pbnChangeSpatialRefSys" >
@@ -1409,35 +1356,41 @@
        <item row="3" column="0" colspan="3" >
         <widget class="QGroupBox" name="chkUseScaleDependentRendering" >
          <property name="title" >
-          <string>Scale Dependent Visibility</string>
+          <string>Scale dependent visibility</string>
          </property>
          <property name="checkable" >
           <bool>true</bool>
          </property>
          <layout class="QGridLayout" >
-          <property name="margin" >
+          <property name="leftMargin" >
            <number>11</number>
           </property>
-          <property name="spacing" >
-           <number>6</number>
+          <property name="topMargin" >
+           <number>11</number>
+          </property>
+          <property name="rightMargin" >
+           <number>11</number>
+          </property>
+          <property name="bottomMargin" >
+           <number>11</number>
           </property>
           <item row="0" column="3" >
            <widget class="QSpinBox" name="spinMaximumScale" >
             <property name="toolTip" >
              <string>Maximum scale at which this layer will be displayed. </string>
             </property>
-            <property name="maximum" >
-             <number>100000000</number>
-            </property>
             <property name="minimum" >
              <number>1</number>
+            </property>
+            <property name="maximum" >
+             <number>100000000</number>
             </property>
            </widget>
           </item>
           <item row="0" column="2" >
            <widget class="QLabel" name="textLabel1_2_2_2" >
             <property name="text" >
-             <string>Maximum 1:</string>
+             <string>Maximum</string>
             </property>
             <property name="buddy" >
              <cstring>spinMaximumScale</cstring>
@@ -1449,18 +1402,18 @@
             <property name="toolTip" >
              <string>Minimum scale at which this layer will be displayed. </string>
             </property>
-            <property name="maximum" >
-             <number>100000000</number>
-            </property>
             <property name="minimum" >
              <number>1</number>
+            </property>
+            <property name="maximum" >
+             <number>100000000</number>
             </property>
            </widget>
           </item>
           <item row="0" column="0" >
            <widget class="QLabel" name="textLabel1_3" >
             <property name="text" >
-             <string>Minimum 1:</string>
+             <string>Minimum</string>
             </property>
             <property name="buddy" >
              <cstring>spinMinimumScale</cstring>
@@ -1473,17 +1426,23 @@
        <item row="2" column="0" colspan="2" >
         <widget class="QCheckBox" name="cboxShowDebugInfo" >
          <property name="text" >
-          <string>DebugInfo</string>
+          <string>Show debug info</string>
          </property>
         </widget>
        </item>
        <item row="2" column="2" >
         <layout class="QHBoxLayout" >
-         <property name="margin" >
+         <property name="leftMargin" >
           <number>11</number>
          </property>
-         <property name="spacing" >
-          <number>6</number>
+         <property name="topMargin" >
+          <number>11</number>
+         </property>
+         <property name="rightMargin" >
+          <number>11</number>
+         </property>
+         <property name="bottomMargin" >
+          <number>11</number>
          </property>
          <item>
           <widget class="QLabel" name="lblColumns" >
@@ -1511,7 +1470,7 @@
        <item row="1" column="0" >
         <widget class="QLabel" name="lblLayerSource" >
          <property name="text" >
-          <string>Layer Source:</string>
+          <string>Layer source</string>
          </property>
          <property name="buddy" >
           <cstring>leLayerSource</cstring>
@@ -1531,7 +1490,7 @@
        <item row="0" column="0" >
         <widget class="QLabel" name="lblDisplayName" >
          <property name="text" >
-          <string>Display Name:</string>
+          <string>Display name</string>
          </property>
          <property name="buddy" >
           <cstring>leDisplayName</cstring>
@@ -1540,26 +1499,35 @@
        </item>
        <item row="5" column="0" colspan="3" >
         <layout class="QHBoxLayout" >
-         <property name="margin" >
+         <property name="leftMargin" >
           <number>11</number>
          </property>
-         <property name="spacing" >
-          <number>6</number>
+         <property name="topMargin" >
+          <number>11</number>
+         </property>
+         <property name="rightMargin" >
+          <number>11</number>
+         </property>
+         <property name="bottomMargin" >
+          <number>11</number>
          </property>
          <item>
-          <widget class="Q3GroupBox" name="groupBox10" >
+          <widget class="QGroupBox" name="groupBox10" >
            <property name="title" >
             <string>Thumbnail</string>
            </property>
-           <property name="orientation" >
-            <enum>Qt::Vertical</enum>
-           </property>
            <layout class="QGridLayout" >
-            <property name="margin" >
+            <property name="leftMargin" >
              <number>11</number>
             </property>
-            <property name="spacing" >
-             <number>6</number>
+            <property name="topMargin" >
+             <number>11</number>
+            </property>
+            <property name="rightMargin" >
+             <number>11</number>
+            </property>
+            <property name="bottomMargin" >
+             <number>11</number>
             </property>
             <item row="0" column="0" >
              <spacer>
@@ -1597,19 +1565,22 @@
           </widget>
          </item>
          <item>
-          <widget class="Q3GroupBox" name="groupBox9" >
+          <widget class="QGroupBox" name="groupBox9" >
            <property name="title" >
             <string>Legend:</string>
            </property>
-           <property name="orientation" >
-            <enum>Qt::Vertical</enum>
-           </property>
            <layout class="QGridLayout" >
-            <property name="margin" >
+            <property name="leftMargin" >
              <number>11</number>
             </property>
-            <property name="spacing" >
-             <number>6</number>
+            <property name="topMargin" >
+             <number>11</number>
+            </property>
+            <property name="rightMargin" >
+             <number>11</number>
+            </property>
+            <property name="bottomMargin" >
+             <number>11</number>
             </property>
             <item row="0" column="0" >
              <spacer>
@@ -1647,19 +1618,22 @@
           </widget>
          </item>
          <item>
-          <widget class="Q3GroupBox" name="groupBox8" >
+          <widget class="QGroupBox" name="groupBox8" >
            <property name="title" >
             <string>Palette:</string>
            </property>
-           <property name="orientation" >
-            <enum>Qt::Vertical</enum>
-           </property>
            <layout class="QGridLayout" >
-            <property name="margin" >
+            <property name="leftMargin" >
              <number>11</number>
             </property>
-            <property name="spacing" >
-             <number>6</number>
+            <property name="topMargin" >
+             <number>11</number>
+            </property>
+            <property name="rightMargin" >
+             <number>11</number>
+            </property>
+            <property name="bottomMargin" >
+             <number>11</number>
             </property>
             <item row="0" column="0" >
              <spacer>
@@ -1705,11 +1679,17 @@
        <string>Metadata</string>
       </attribute>
       <layout class="QGridLayout" >
-       <property name="margin" >
+       <property name="leftMargin" >
         <number>11</number>
        </property>
-       <property name="spacing" >
-        <number>6</number>
+       <property name="topMargin" >
+        <number>11</number>
+       </property>
+       <property name="rightMargin" >
+        <number>11</number>
+       </property>
+       <property name="bottomMargin" >
+        <number>11</number>
        </property>
        <item row="0" column="0" >
         <widget class="QTextBrowser" name="txtbMetadata" />
@@ -1721,40 +1701,33 @@
        <string>Pyramids</string>
       </attribute>
       <layout class="QGridLayout" >
-       <property name="margin" >
-        <number>9</number>
-       </property>
-       <property name="spacing" >
-        <number>6</number>
-       </property>
        <item rowspan="2" row="0" column="0" >
         <widget class="QTextEdit" name="tePyramidDescription" >
          <property name="sizePolicy" >
-          <sizepolicy>
-           <hsizetype>7</hsizetype>
-           <vsizetype>7</vsizetype>
+          <sizepolicy vsizetype="Expanding" hsizetype="Expanding" >
            <horstretch>5</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
          <property name="html" >
-          <string></string>
+          <string>&lt;html>&lt;head>&lt;meta name="qrichtext" content="1" />&lt;style type="text/css">
+p, li { white-space: pre-wrap; }
+&lt;/style>&lt;/head>&lt;body style=" font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal;">
+&lt;p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">&lt;/p>&lt;/body>&lt;/html></string>
          </property>
         </widget>
        </item>
        <item row="0" column="1" >
         <widget class="QLabel" name="textLabel5" >
          <property name="text" >
-          <string>Pyramid Resolutions</string>
+          <string>Pyramid resolutions</string>
          </property>
         </widget>
        </item>
        <item row="1" column="1" >
-        <widget class="Q3ListBox" name="lbxPyramidResolutions" >
+        <widget class="QListWidget" name="lbxPyramidResolutions" >
          <property name="sizePolicy" >
-          <sizepolicy>
-           <hsizetype>5</hsizetype>
-           <vsizetype>7</vsizetype>
+          <sizepolicy vsizetype="Expanding" hsizetype="Preferred" >
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
@@ -1766,17 +1739,23 @@
           </size>
          </property>
          <property name="selectionMode" >
-          <enum>Q3ListBox::Multi</enum>
+          <enum>QAbstractItemView::MultiSelection</enum>
          </property>
         </widget>
        </item>
        <item row="2" column="0" colspan="2" >
         <layout class="QHBoxLayout" >
-         <property name="margin" >
+         <property name="leftMargin" >
           <number>11</number>
          </property>
-         <property name="spacing" >
-          <number>6</number>
+         <property name="topMargin" >
+          <number>11</number>
+         </property>
+         <property name="rightMargin" >
+          <number>11</number>
+         </property>
+         <property name="bottomMargin" >
+          <number>11</number>
          </property>
          <item>
           <spacer>
@@ -1797,7 +1776,7 @@
          <item>
           <widget class="QLabel" name="textLabel4_2" >
            <property name="text" >
-            <string>Resampling Method</string>
+            <string>Resampling method</string>
            </property>
            <property name="buddy" >
             <cstring>cboResamplingMethod</cstring>
@@ -1821,7 +1800,7 @@
          <item>
           <widget class="QPushButton" name="buttonBuildPyramids" >
            <property name="text" >
-            <string>Build Pyramids</string>
+            <string>Build pyramids</string>
            </property>
           </widget>
          </item>
@@ -1834,18 +1813,22 @@
        <string>Histogram</string>
       </attribute>
       <layout class="QGridLayout" >
-       <property name="margin" >
+       <property name="leftMargin" >
         <number>11</number>
        </property>
-       <property name="spacing" >
-        <number>6</number>
+       <property name="topMargin" >
+        <number>11</number>
+       </property>
+       <property name="rightMargin" >
+        <number>11</number>
+       </property>
+       <property name="bottomMargin" >
+        <number>11</number>
        </property>
        <item row="0" column="0" colspan="2" >
         <widget class="QLabel" name="pixHistogram" >
          <property name="sizePolicy" >
-          <sizepolicy>
-           <hsizetype>7</hsizetype>
-           <vsizetype>0</vsizetype>
+          <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
@@ -1870,9 +1853,7 @@
        <item row="1" column="0" >
         <widget class="QGroupBox" name="grpHistCharType" >
          <property name="sizePolicy" >
-          <sizepolicy>
-           <hsizetype>7</hsizetype>
-           <vsizetype>0</vsizetype>
+          <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
@@ -1881,16 +1862,22 @@
           <string>Chart Type</string>
          </property>
          <layout class="QGridLayout" >
-          <property name="margin" >
+          <property name="leftMargin" >
            <number>11</number>
           </property>
-          <property name="spacing" >
-           <number>6</number>
+          <property name="topMargin" >
+           <number>11</number>
+          </property>
+          <property name="rightMargin" >
+           <number>11</number>
+          </property>
+          <property name="bottomMargin" >
+           <number>11</number>
           </property>
           <item row="0" column="1" >
            <widget class="QRadioButton" name="radHistTypeLine" >
             <property name="text" >
-             <string>Line Graph</string>
+             <string>Line graph</string>
             </property>
             <property name="checked" >
              <bool>true</bool>
@@ -1900,7 +1887,7 @@
           <item row="0" column="0" >
            <widget class="QRadioButton" name="radHistTypeBar" >
             <property name="text" >
-             <string>Bar Chart</string>
+             <string>Bar chart</string>
             </property>
            </widget>
           </item>
@@ -1920,30 +1907,36 @@
           <string>Options</string>
          </property>
          <layout class="QGridLayout" >
-          <property name="margin" >
+          <property name="leftMargin" >
            <number>11</number>
           </property>
-          <property name="spacing" >
-           <number>6</number>
+          <property name="topMargin" >
+           <number>11</number>
+          </property>
+          <property name="rightMargin" >
+           <number>11</number>
+          </property>
+          <property name="bottomMargin" >
+           <number>11</number>
           </property>
           <item row="0" column="0" >
            <widget class="QLabel" name="textLabel1_2" >
             <property name="text" >
-             <string>Column Count:</string>
+             <string>Column count</string>
             </property>
            </widget>
           </item>
           <item row="1" column="0" colspan="2" >
            <widget class="QCheckBox" name="chkHistIgnoreOutOfRange" >
             <property name="text" >
-             <string>Out Of Range OK?</string>
+             <string>Out of range OK?</string>
             </property>
            </widget>
           </item>
           <item row="2" column="0" colspan="2" >
            <widget class="QCheckBox" name="chkHistAllowApproximation" >
             <property name="text" >
-             <string>Allow Approximation</string>
+             <string>Allow approximation</string>
             </property>
             <property name="checked" >
              <bool>true</bool>
@@ -1952,11 +1945,11 @@
           </item>
           <item row="0" column="1" >
            <widget class="QSpinBox" name="spinHistBinCount" >
-            <property name="maximum" >
-             <number>1024</number>
-            </property>
             <property name="minimum" >
              <number>8</number>
+            </property>
+            <property name="maximum" >
+             <number>1024</number>
             </property>
             <property name="singleStep" >
              <number>8</number>
@@ -1970,7 +1963,7 @@
         </widget>
        </item>
        <item rowspan="2" row="2" column="0" >
-        <widget class="Q3ListBox" name="lstHistogramLabels" >
+        <widget class="QListWidget" name="lstHistogramLabels" >
          <property name="maximumSize" >
           <size>
            <width>99999</width>
@@ -1978,7 +1971,7 @@
           </size>
          </property>
          <property name="selectionMode" >
-          <enum>Q3ListBox::Multi</enum>
+          <enum>QAbstractItemView::MultiSelection</enum>
          </property>
         </widget>
        </item>
@@ -1987,6 +1980,53 @@
     </widget>
    </item>
    <item row="1" column="0" >
+    <layout class="QHBoxLayout" >
+     <property name="spacing" >
+      <number>3</number>
+     </property>
+     <property name="leftMargin" >
+      <number>1</number>
+     </property>
+     <property name="topMargin" >
+      <number>1</number>
+     </property>
+     <property name="rightMargin" >
+      <number>1</number>
+     </property>
+     <property name="bottomMargin" >
+      <number>1</number>
+     </property>
+     <item>
+      <widget class="QPushButton" name="pbnLoadDefaultStyle" >
+       <property name="text" >
+        <string>Restore Default Style</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pbnSaveDefaultStyle" >
+       <property name="text" >
+        <string>Save As Default</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pbnLoadStyle" >
+       <property name="text" >
+        <string>Load Style ...</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pbnSaveStyleAs" >
+       <property name="text" >
+        <string>Save Style ...</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="2" column="0" >
     <widget class="QDialogButtonBox" name="buttonBox" >
      <property name="orientation" >
       <enum>Qt::Horizontal</enum>
@@ -1999,28 +2039,9 @@
   </layout>
  </widget>
  <layoutdefault spacing="6" margin="11" />
- <customwidgets>
-  <customwidget>
-   <class>Q3GroupBox</class>
-   <extends>QGroupBox</extends>
-   <header>Qt3Support/Q3GroupBox</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>Q3TextEdit</class>
-   <extends>Q3Frame</extends>
-   <header>q3textedit.h</header>
-  </customwidget>
-  <customwidget>
-   <class>Q3ListBox</class>
-   <extends>Q3Frame</extends>
-   <header>q3listbox.h</header>
-  </customwidget>
- </customwidgets>
  <tabstops>
   <tabstop>tabBar</tabstop>
   <tabstop>cboxInvertColorMap</tabstop>
-  <tabstop>sliderTransparency</tabstop>
   <tabstop>cboRed</tabstop>
   <tabstop>cboGreen</tabstop>
   <tabstop>cboBlue</tabstop>
@@ -2068,7 +2089,7 @@
    <hints>
     <hint type="sourcelabel" >
      <x>458</x>
-     <y>562</y>
+     <y>589</y>
     </hint>
     <hint type="destinationlabel" >
      <x>3</x>

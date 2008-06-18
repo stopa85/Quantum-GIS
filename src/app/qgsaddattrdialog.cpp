@@ -22,15 +22,13 @@ QgsAddAttrDialog::QgsAddAttrDialog(QgsVectorDataProvider* provider, QWidget *par
 : QDialog(parent, fl), mDataProvider(provider)
 {
     setupUi(this);
-    connect(mOkButton, SIGNAL(clicked()), this, SLOT(accept()));
-    connect(mCancelButton, SIGNAL(clicked()), this, SLOT(reject()));
 
     //fill data types into the combo box    
     const QSet<QString>& typelist=mDataProvider->supportedNativeTypes();
 
     for(QSet<QString>::const_iterator it = typelist.constBegin(); it != typelist.constEnd(); ++it)
       {
-	mTypeBox->insertItem(*it);
+	mTypeBox->addItem(*it);
       }
 }
 
@@ -38,12 +36,10 @@ QgsAddAttrDialog::QgsAddAttrDialog(const std::list<QString>& typelist, QWidget *
 : QDialog(parent, fl), mDataProvider(0)
 {
     setupUi(this);
-    connect(mOkButton, SIGNAL(clicked()), this, SLOT(accept()));
-    connect(mCancelButton, SIGNAL(clicked()), this, SLOT(reject()));
 
     for(std::list<QString>::const_iterator iter=typelist.begin();iter!=typelist.end();++iter)
     {
-	mTypeBox->insertItem(*iter);
+	mTypeBox->addItem(*iter);
     }
 }
 

@@ -64,7 +64,7 @@ QgsMarkerCatalogue::QgsMarkerCatalogue()
 
     QDir dir2 ( svgPath + *it );
 
-    QStringList dl2 = dir2.entryList("*.svg",QDir::Files);
+    QStringList dl2 = dir2.entryList(QStringList("*.svg"),QDir::Files);
 
     for ( QStringList::iterator it2 = dl2.begin(); it2 != dl2.end(); ++it2 ) {
       // TODO test if it is correct SVG
@@ -91,7 +91,7 @@ QgsMarkerCatalogue *QgsMarkerCatalogue::instance()
   return QgsMarkerCatalogue::mMarkerCatalogue;
 }
 
-QImage QgsMarkerCatalogue::imageMarker ( QString fullName, int size, QPen pen, QBrush brush, bool qtBug )
+QImage QgsMarkerCatalogue::imageMarker ( QString fullName, double size, QPen pen, QBrush brush, bool qtBug )
 {
       
   // 
@@ -100,7 +100,7 @@ QImage QgsMarkerCatalogue::imageMarker ( QString fullName, int size, QPen pen, Q
   QImage myImage;
   if ( fullName.left(5) == "hard:" )
   {
-    myImage = QImage (size, size, QImage::Format_ARGB32_Premultiplied);
+    myImage = QImage (size + 1, size + 1, QImage::Format_ARGB32_Premultiplied);
   }
   else
   {
@@ -108,7 +108,7 @@ QImage QgsMarkerCatalogue::imageMarker ( QString fullName, int size, QPen pen, Q
     // proportion of scale factor as in oritignal SVG TS XXX
     if (size < 1) size=1;
     //QPixmap myPixmap = QPixmap(width,height);
-    myImage = QImage(size,size, QImage::Format_ARGB32_Premultiplied);
+    myImage = QImage(size ,size , QImage::Format_ARGB32_Premultiplied);
   }
 
   // starting with transparent QImage
@@ -141,7 +141,7 @@ QImage QgsMarkerCatalogue::imageMarker ( QString fullName, int size, QPen pen, Q
   return QImage(); // empty
 }
 
-QPicture QgsMarkerCatalogue::pictureMarker ( QString fullName, int size, QPen pen, QBrush brush, bool qtBug )
+QPicture QgsMarkerCatalogue::pictureMarker ( QString fullName, double size, QPen pen, QBrush brush, bool qtBug )
 {
 
   //
@@ -182,34 +182,29 @@ QPicture QgsMarkerCatalogue::pictureMarker ( QString fullName, int size, QPen pe
   return QPicture(); // empty
 }
 
-void QgsMarkerCatalogue::svgMarker ( QPainter * thepPainter, QString filename, int scaleFactor)
+void QgsMarkerCatalogue::svgMarker ( QPainter * thepPainter, QString filename, double scaleFactor)
 {
   QSvgRenderer mySVG;
   mySVG.load(filename);
   mySVG.render(thepPainter);
 }
 
-void QgsMarkerCatalogue::hardMarker (QPainter * thepPainter, QString name, int s, QPen pen, QBrush brush, bool qtBug )
+void QgsMarkerCatalogue::hardMarker (QPainter * thepPainter, QString name, double s, QPen pen, QBrush brush, bool qtBug )
 {
   // Size of polygon symbols is calculated so that the boundingbox is circumscribed
   // around a circle with diameter mPointSize
 
-  int half = s/2; // number of points from center
+  double half = s/2; // number of points from center
 
   QgsDebugMsg(QString("Hard marker size %1").arg(s));
 
   // Find out center coordinates.
-  int x_c = s/2;
-  int y_c = x_c;
-
-  // Picture
-  QPicture picture;
-  thepPainter->begin(&picture);
-  thepPainter->setRenderHint(QPainter::Antialiasing);
+  double x_c = s/2;
+  double y_c = x_c;
 
   // Also width must be odd otherwise there are discrepancies visible in canvas!
-  int lw = (int)(2*floor((double)pen.width()/2)+1); // -> lw > 0
-  pen.setWidth(lw);
+  double lw = pen.widthF();//(int)(2*floor((double)pen.widthF()/2)+1); // -> lw > 0
+  pen.setWidthF(lw);
   thepPainter->setPen ( pen );
   thepPainter->setBrush( brush);
   QRect box;
@@ -217,7 +212,7 @@ void QgsMarkerCatalogue::hardMarker (QPainter * thepPainter, QString name, int s
   // Circle radius, is used for other figures also, when compensating for line
   // width is necessary.
 
-  int r = (s-2*lw)/2-1;
+  int r = (s-2*lw)/2 - 1;
   QgsDebugMsg(QString("Hard marker radius %1").arg(r));
 
   if ( name == "circle" ) 
@@ -229,7 +224,7 @@ void QgsMarkerCatalogue::hardMarker (QPainter * thepPainter, QString name, int s
     x_c -= ((lw+5)/4);
     y_c -= ((lw+5)/4);
 
-    thepPainter->drawEllipse(x_c-r, y_c-r, x_c+r, y_c+r);
+    thepPainter->drawEllipse(QRectF(x_c-r, y_c-r, x_c+r, y_c+r));
   } 
   else if ( name == "rectangle" ) 
   {

@@ -42,7 +42,7 @@ QgsSingleSymbolDialog::QgsSingleSymbolDialog(): QDialog(), mVectorLayer(0)
 #endif
 }
 
-QgsSingleSymbolDialog::QgsSingleSymbolDialog(QgsVectorLayer * layer): QDialog(), mVectorLayer(layer)
+QgsSingleSymbolDialog::QgsSingleSymbolDialog(QgsVectorLayer * layer, bool disabled): QDialog(), mVectorLayer(layer)
 {
   setupUi(this);
 
@@ -87,34 +87,34 @@ QgsSingleSymbolDialog::QgsSingleSymbolDialog(QgsVectorLayer * layer): QDialog(),
     ++myCounter;
   }
 
-    // Find out the numerical fields of mVectorLayer, and populate the ComboBox
-    QgsVectorDataProvider *provider = mVectorLayer->getDataProvider();
-    if (provider)
+  // Find out the numerical fields of mVectorLayer, and populate the ComboBox
+  QgsVectorDataProvider *provider = mVectorLayer->getDataProvider();
+  if (provider)
+  {
+    const QgsFieldMap & fields = provider->fields();
+    QString str;
+
+    mRotationClassificationComboBox->addItem(DO_NOT_USE_STR);
+    mScaleClassificationComboBox->addItem(DO_NOT_USE_STR);
+    mFieldMap.insert(std::make_pair(DO_NOT_USE_STR, -1));
+    for (QgsFieldMap::const_iterator it = fields.begin(); 
+        it != fields.end(); 
+        ++it)
     {
-      const QgsFieldMap & fields = provider->fields();
-      QString str;
-      
-      mRotationClassificationComboBox->insertItem(DO_NOT_USE_STR);
-      mScaleClassificationComboBox->insertItem(DO_NOT_USE_STR);
-      mFieldMap.insert(std::make_pair(DO_NOT_USE_STR, -1));
-      for (QgsFieldMap::const_iterator it = fields.begin(); 
-           it != fields.end(); 
-           ++it)
+      QVariant::Type type = (*it).type();
+      if (type == QVariant::Int || type == QVariant::Double)
       {
-        QVariant::Type type = (*it).type();
-        if (type == QVariant::Int || type == QVariant::Double)
-        {
-          mRotationClassificationComboBox->insertItem(it->name());
-          mScaleClassificationComboBox->insertItem(it->name());
-          mFieldMap.insert(std::make_pair(it->name(), it.key()));
-        }
+        mRotationClassificationComboBox->addItem(it->name());
+        mScaleClassificationComboBox->addItem(it->name());
+        mFieldMap.insert(std::make_pair(it->name(), it.key()));
       }
-    } 
-    else
-    {
-      qWarning("Warning, data provider is null in QgsSingleSymbolDialog::QgsSingleSymbolDialog(...)");
-      return;
     }
+  } 
+  else
+  {
+    qWarning("Warning, data provider is null in QgsSingleSymbolDialog::QgsSingleSymbolDialog(...)");
+    return;
+  }
   //
   //set outline / line style
   //
@@ -128,72 +128,69 @@ QgsSingleSymbolDialog::QgsSingleSymbolDialog(QgsVectorLayer * layer): QDialog(),
   //
   //set pattern icons and state
   //
-  cboFillStyle->addItem(QIcon(QgsSymbologyUtils::char2PatternPixmap("SolidPattern")),tr("Solid Pattern"),"SolidPattern");
-  cboFillStyle->addItem(QIcon(QgsSymbologyUtils::char2PatternPixmap("HorPattern")),tr("Hor Pattern"),"HorPattern");
-  cboFillStyle->addItem(QIcon(QgsSymbologyUtils::char2PatternPixmap("VerPattern")),tr("Ver Pattern"),"VerPattern");
-  cboFillStyle->addItem(QIcon(QgsSymbologyUtils::char2PatternPixmap("CrossPattern")),tr("Cross Pattern"),"CrossPattern");
-  cboFillStyle->addItem(QIcon(QgsSymbologyUtils::char2PatternPixmap("BDiagPattern")),tr("BDiag Pattern"),"BDiagPattern");
-  cboFillStyle->addItem(QIcon(QgsSymbologyUtils::char2PatternPixmap("FDiagPattern")),tr("FDiag Pattern"),"FDiagPattern");
-  cboFillStyle->addItem(QIcon(QgsSymbologyUtils::char2PatternPixmap("DiagCrossPattern")),tr("Diag Cross Pattern"),"DiagCrossPattern");
-  cboFillStyle->addItem(QIcon(QgsSymbologyUtils::char2PatternPixmap("Dense1Pattern")),tr("Dense1 Pattern"),"Dense1Pattern");
-  cboFillStyle->addItem(QIcon(QgsSymbologyUtils::char2PatternPixmap("Dense2Pattern")),tr("Dense2 Pattern"),"Dense2Pattern");
-  cboFillStyle->addItem(QIcon(QgsSymbologyUtils::char2PatternPixmap("Dense3Pattern")),tr("Dense3 Pattern"),"Dense3Pattern");
-  cboFillStyle->addItem(QIcon(QgsSymbologyUtils::char2PatternPixmap("Dense4Pattern")),tr("Dense4 Pattern"),"Dense4Pattern");
-  cboFillStyle->addItem(QIcon(QgsSymbologyUtils::char2PatternPixmap("Dense5Pattern")),tr("Dense5 Pattern"),"Dense5Pattern");
-  cboFillStyle->addItem(QIcon(QgsSymbologyUtils::char2PatternPixmap("Dense6Pattern")),tr("Dense6 Pattern"),"Dense6Pattern");
-  cboFillStyle->addItem(QIcon(QgsSymbologyUtils::char2PatternPixmap("Dense7Pattern")),tr("Dense7 Pattern"),"Dense7Pattern");
+  cboFillStyle->addItem(QIcon(QgsSymbologyUtils::char2PatternPixmap("SolidPattern")),tr("Solid"),"SolidPattern");
+  cboFillStyle->addItem(QIcon(QgsSymbologyUtils::char2PatternPixmap("HorPattern")),tr("Horizontal"),"HorPattern");
+  cboFillStyle->addItem(QIcon(QgsSymbologyUtils::char2PatternPixmap("VerPattern")),tr("Vertical"),"VerPattern");
+  cboFillStyle->addItem(QIcon(QgsSymbologyUtils::char2PatternPixmap("CrossPattern")),tr("Cross"),"CrossPattern");
+  cboFillStyle->addItem(QIcon(QgsSymbologyUtils::char2PatternPixmap("BDiagPattern")),tr("BDiagonal"),"BDiagPattern");
+  cboFillStyle->addItem(QIcon(QgsSymbologyUtils::char2PatternPixmap("FDiagPattern")),tr("FDiagonal"),"FDiagPattern");
+  cboFillStyle->addItem(QIcon(QgsSymbologyUtils::char2PatternPixmap("DiagCrossPattern")),tr("Diagonal X"),"DiagCrossPattern");
+  cboFillStyle->addItem(QIcon(QgsSymbologyUtils::char2PatternPixmap("Dense1Pattern")),tr("Dense1"),"Dense1Pattern");
+  cboFillStyle->addItem(QIcon(QgsSymbologyUtils::char2PatternPixmap("Dense2Pattern")),tr("Dense2"),"Dense2Pattern");
+  cboFillStyle->addItem(QIcon(QgsSymbologyUtils::char2PatternPixmap("Dense3Pattern")),tr("Dense3"),"Dense3Pattern");
+  cboFillStyle->addItem(QIcon(QgsSymbologyUtils::char2PatternPixmap("Dense4Pattern")),tr("Dense4"),"Dense4Pattern");
+  cboFillStyle->addItem(QIcon(QgsSymbologyUtils::char2PatternPixmap("Dense5Pattern")),tr("Dense5"),"Dense5Pattern");
+  cboFillStyle->addItem(QIcon(QgsSymbologyUtils::char2PatternPixmap("Dense6Pattern")),tr("Dense6"),"Dense6Pattern");
+  cboFillStyle->addItem(QIcon(QgsSymbologyUtils::char2PatternPixmap("Dense7Pattern")),tr("Dense7"),"Dense7Pattern");
   cboFillStyle->addItem(QIcon(QgsSymbologyUtils::char2PatternPixmap("NoBrush")),tr("No Brush"),"NoBrush");
-  cboFillStyle->addItem(QIcon(QgsSymbologyUtils::char2PatternPixmap("TexturePattern")),tr("Texture Pattern"),"TexturePattern");
+  cboFillStyle->addItem(QIcon(QgsSymbologyUtils::char2PatternPixmap("TexturePattern")),tr("Texture"),"TexturePattern");
 
-  if (mVectorLayer)
+  if( mVectorLayer && mVectorLayer->vectorType() != QGis::Point) {
+    mGroupPoint->setVisible(false);
+    mGroupPoint->setEnabled(false);
+  }
+
+  if(disabled)
   {
-    const QgsSingleSymbolRenderer *renderer=dynamic_cast<const QgsSingleSymbolRenderer*>(mVectorLayer->renderer());
-
-    if (renderer)
-    {
-      // Set from the existing renderer
-      set ( renderer->symbols().first() );
-    }
-    else
-    {
-      // Take values from an example instance
-      QgsSingleSymbolRenderer exampleRenderer = QgsSingleSymbolRenderer( mVectorLayer->vectorType() );
-      set ( exampleRenderer.symbols().first() );
-    }
-
-    if (mVectorLayer && mVectorLayer->vectorType() == QGis::Line)
-    {
-      btnFillColor->setEnabled(false);
-      cboFillStyle->setEnabled(false);
-      mGroupPoint->setEnabled(false);
-      mGroupPoint->setVisible(false);
-    }
-
-    if (mVectorLayer && mVectorLayer->vectorType() == QGis::Polygon) 
-    {
-      mGroupPoint->setEnabled(false);
-      mGroupPoint->setVisible(false);
-    }
-
+    unset();
   }
   else
   {
-    qWarning("Warning, layer is a null pointer in "
-        "QgsSingleSymbolDialog::QgsSingleSymbolDialog(QgsVectorLayer)");
+    if(mVectorLayer)
+    {
+      const QgsSingleSymbolRenderer *renderer=dynamic_cast<const QgsSingleSymbolRenderer*>(mVectorLayer->renderer());
+
+      if (renderer)
+      {
+        // Set from the existing renderer
+        set ( renderer->symbols().first() );
+      }
+      else
+      {
+        // Take values from an example instance
+        QgsSingleSymbolRenderer exampleRenderer = QgsSingleSymbolRenderer( mVectorLayer->vectorType() );
+        set ( exampleRenderer.symbols().first() );
+      }
+    }
+    else
+    {
+      qWarning("Warning, layer is a null pointer in "
+          "QgsSingleSymbolDialog::QgsSingleSymbolDialog(QgsVectorLayer)");
+    }
   }
 
   //do the signal/slot connections
   connect(btnOutlineColor, SIGNAL(clicked()), this, SLOT(selectOutlineColor()));
   connect(btnFillColor, SIGNAL(clicked()), this, SLOT(selectFillColor()));
-  connect(outlinewidthspinbox, SIGNAL(valueChanged(int)), this, SLOT(resendSettingsChanged()));
+  connect(outlinewidthspinbox, SIGNAL(valueChanged(double)), this, SLOT(resendSettingsChanged()));
   connect(mLabelEdit, SIGNAL(textChanged(const QString&)), this, SLOT(resendSettingsChanged()));
   connect (lstSymbols,SIGNAL(currentItemChanged ( QListWidgetItem * , QListWidgetItem * )),
-        this, SLOT (symbolChanged (QListWidgetItem * , QListWidgetItem * )));
+      this, SLOT (symbolChanged (QListWidgetItem * , QListWidgetItem * )));
   connect(mPointSizeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(resendSettingsChanged()));
   connect(mRotationClassificationComboBox, SIGNAL(currentIndexChanged(const QString &)),
-          this, SLOT(resendSettingsChanged()));
+      this, SLOT(resendSettingsChanged()));
   connect(mScaleClassificationComboBox, SIGNAL(currentIndexChanged(const QString &)),
-          this, SLOT(resendSettingsChanged()));
+      this, SLOT(resendSettingsChanged()));
   connect(cboOutlineStyle, SIGNAL(
         currentIndexChanged ( const QString & )), this, SLOT(resendSettingsChanged()));
   connect(cboFillStyle, SIGNAL(
@@ -202,6 +199,7 @@ QgsSingleSymbolDialog::QgsSingleSymbolDialog(QgsVectorLayer * layer): QDialog(),
   connect(cboFillStyle, SIGNAL(
         currentIndexChanged ( int )), this, SLOT(fillStyleChanged(int)));
   connect(toolSelectTexture, SIGNAL(clicked()), this, SLOT(selectTextureImage()));
+
 }
 
 QgsSingleSymbolDialog::~QgsSingleSymbolDialog()
@@ -251,55 +249,77 @@ void QgsSingleSymbolDialog::selectTextureImage()
 
 void QgsSingleSymbolDialog::apply( QgsSymbol *sy )
 {
-    //query the values of the widgets and set the symbology of the vector layer
+  //query the values of the widgets and set the symbology of the vector layer
+  if( btnFillColor->isEnabled() )
     sy->setFillColor(btnFillColor->color());
+
+  if( outlinewidthspinbox->isEnabled() )
     sy->setLineWidth(outlinewidthspinbox->value());
+
+  if( btnOutlineColor->isEnabled() )
     sy->setColor(btnOutlineColor->color());
 
-    //
-    // Apply point symbol
-    // 
-    if ( lstSymbols->currentItem() )
-    {
-      sy->setNamedPointSymbol( lstSymbols->currentItem()->data(Qt::UserRole).toString() ) ;
-    }
+  //
+  // Apply point symbol
+  // 
+  if ( lstSymbols->isEnabled() && lstSymbols->currentItem() )
+  {
+    sy->setNamedPointSymbol( lstSymbols->currentItem()->data(Qt::UserRole).toString() ) ;
+  }
+
+  if( mPointSizeSpinBox->isEnabled() )
     sy->setPointSize ( mPointSizeSpinBox->value() );
 
-    sy->setRotationClassificationField(-1);
-    sy->setScaleClassificationField(-1);
 
-    std::map<QString,int>::iterator iter=mFieldMap.find(mRotationClassificationComboBox->currentText());
+  std::map<QString,int>::iterator iter;
+  if( mRotationClassificationComboBox->isEnabled() )
+  {
+    sy->setRotationClassificationField(-1);
+
+    iter=mFieldMap.find(mRotationClassificationComboBox->currentText());
     if(iter!=mFieldMap.end())
     {
       sy->setRotationClassificationField(iter->second);
     }
+  }
 
+  if( mScaleClassificationComboBox->isEnabled() )
+  {
+    sy->setScaleClassificationField(-1);
     iter = mFieldMap.find(mScaleClassificationComboBox->currentText());
     if(iter!=mFieldMap.end())
     {
       sy->setScaleClassificationField(iter->second);
     }
-    
-    //
-    // Apply the line style
-    //
+  }
+
+  //
+  // Apply the line style
+  //
+  if( cboOutlineStyle->isEnabled() )
+  {
     QString myLineStyle = 
       cboOutlineStyle->itemData(cboOutlineStyle->currentIndex(),Qt::UserRole).toString();
-     sy->setLineStyle(QgsSymbologyUtils::qString2PenStyle(myLineStyle));
+    sy->setLineStyle(QgsSymbologyUtils::qString2PenStyle(myLineStyle));
+  }
 
-    //
-    // Apply the pattern
-    //
+  //
+  // Apply the pattern
+  //
 
-    //Store the file path, and set the brush to TexturePattern.  If we have a different button selected,
-    // the below code will override it, but leave the file path alone.
-   
-    sy->setCustomTexture(mTexturePath);
+  //Store the file path, and set the brush to TexturePattern.  If we have a different button selected,
+  // the below code will override it, but leave the file path alone.
 
+  sy->setCustomTexture(mTexturePath);
+
+  if( cboFillStyle->isEnabled() )
+  {
     QString myFillStyle = 
       cboFillStyle->itemData(cboFillStyle->currentIndex(),Qt::UserRole).toString();
     sy->setFillStyle(QgsSymbologyUtils::qString2BrushStyle(myFillStyle));
+  }
 
+  if( mLabelEdit->isEnabled() )
     sy->setLabel(mLabelEdit->text());
 }
 
@@ -315,10 +335,24 @@ void QgsSingleSymbolDialog::apply()
   mVectorLayer->setRenderer(renderer);
 }
 
-void QgsSingleSymbolDialog::set ( const QgsSymbol *sy ) 
+void QgsSingleSymbolDialog::unset()
+{
+  mLabelEdit->setEnabled(false);
+  lstSymbols->setEnabled(false);
+  mPointSizeSpinBox->setEnabled(false);
+  mRotationClassificationComboBox->setEnabled(false);
+  mScaleClassificationComboBox->setEnabled(false);
+  outlinewidthspinbox->setEnabled(false);
+  btnOutlineColor->setEnabled(false);
+  cboOutlineStyle->setEnabled(false);
+
+  cboFillStyle->setEnabled(false);
+  btnFillColor->setEnabled(false);
+}
+
+void QgsSingleSymbolDialog::set ( const QgsSymbol *sy )
 {
   //set label
-
   mLabelEdit->setText(sy->label());
 
   // Set point symbol
@@ -349,15 +383,16 @@ void QgsSingleSymbolDialog::set ( const QgsSymbol *sy )
       QgsDebugMsg(QString("Found scale field " + scaleclassfield));
     }
   }
-  mRotationClassificationComboBox->setCurrentText(rotationclassfield);
-  mScaleClassificationComboBox->setCurrentText(scaleclassfield);
+  mRotationClassificationComboBox->setItemText(
+    mRotationClassificationComboBox->currentIndex(), rotationclassfield);
+  mScaleClassificationComboBox->setItemText(
+    mScaleClassificationComboBox->currentIndex(), scaleclassfield);
 
-
-  outlinewidthspinbox->setValue(sy->pen().width());
+  outlinewidthspinbox->setValue(sy->pen().widthF());
 
   //set line width 1 as minimum to avoid confusion between line width 0 and no pen line style
   // ... but, drawLine is not correct with width > 0 -> until solved set to 0
-  outlinewidthspinbox->setMinValue(0);
+  outlinewidthspinbox->setMinimum(0);
 
   btnFillColor->setColor( sy->brush().color() );
 
@@ -368,7 +403,7 @@ void QgsSingleSymbolDialog::set ( const QgsSymbol *sy )
   //
   // Set the line style combo
   //
-  
+
   QPen myPen = sy->pen();
   QString myLineStyle = QgsSymbologyUtils::penStyle2QString(myPen.style());
   for ( int i = 0; i < cboOutlineStyle->count(); ++i )
@@ -383,7 +418,7 @@ void QgsSingleSymbolDialog::set ( const QgsSymbol *sy )
   //
   // Set the brush combo
   //
-  
+
   QBrush myBrush = sy->brush();
   QString myFillStyle =  QgsSymbologyUtils::brushStyle2QString(myBrush.style());
   for ( int i = 0; i < cboFillStyle->count(); ++i )
@@ -394,7 +429,7 @@ void QgsSingleSymbolDialog::set ( const QgsSymbol *sy )
       break;
     }
   }
-  
+
   //get and show the file path, even if we aren't using it.
   mTexturePath = sy->customTexture(); 
   //if the file path isn't empty, show the image on the button
@@ -407,6 +442,78 @@ void QgsSingleSymbolDialog::set ( const QgsSymbol *sy )
   {
     //show the default question mark
     //texture->setPixmap(QgsSymbologyUtils::char2PatternPixmap("TexturePattern")); 
+  }
+
+  mLabelEdit->setEnabled(true);
+  lstSymbols->setEnabled(true);
+  mPointSizeSpinBox->setEnabled(true);
+  mRotationClassificationComboBox->setEnabled(true);
+  mScaleClassificationComboBox->setEnabled(true);
+  outlinewidthspinbox->setEnabled(true);
+  btnOutlineColor->setEnabled(true);
+  cboOutlineStyle->setEnabled(true);
+
+  if (mVectorLayer && mVectorLayer->vectorType() != QGis::Line)
+  {
+    btnFillColor->setEnabled(true);
+    cboFillStyle->setEnabled(true);
+  }
+}
+
+void QgsSingleSymbolDialog::updateSet( const QgsSymbol *sy )
+{
+  if( mLabelEdit->isEnabled() && mLabelEdit->text() != sy->label() )
+    mLabelEdit->setEnabled(false);
+
+  if( lstSymbols->isEnabled() && lstSymbols->currentItem()->data( Qt::UserRole ).toString() != sy->pointSymbolName() )
+    lstSymbols->setEnabled(false);
+
+  if( mPointSizeSpinBox->isEnabled() && mPointSizeSpinBox->value()!=sy->pointSize() )
+    mPointSizeSpinBox->setEnabled(false);
+
+  QString rotationclassfield = DO_NOT_USE_STR;
+  QString scaleclassfield = DO_NOT_USE_STR;
+  for(std::map<QString,int>::iterator it=mFieldMap.begin();it!=mFieldMap.end();++it)
+  {
+    if(it->second == sy->rotationClassificationField())
+    {
+      rotationclassfield=it->first;
+      QgsDebugMsg(QString("Found rotation field " + rotationclassfield));
+    }
+    if(it->second == sy->scaleClassificationField())
+    {
+      scaleclassfield=it->first;
+      QgsDebugMsg(QString("Found scale field " + scaleclassfield));
+    }
+  }
+
+  if( mRotationClassificationComboBox->isEnabled() && mRotationClassificationComboBox->currentText()!=rotationclassfield )
+    mRotationClassificationComboBox->setEnabled(false);
+
+  if( mScaleClassificationComboBox->isEnabled() && mScaleClassificationComboBox->currentText()!=scaleclassfield )
+    mScaleClassificationComboBox->setEnabled(false);
+
+  if( outlinewidthspinbox->isEnabled() && outlinewidthspinbox->value() != sy->pen().widthF() )
+    outlinewidthspinbox->setEnabled(false);
+
+  if( btnFillColor->isEnabled() &&  btnFillColor->color() != sy->brush().color() )
+    btnFillColor->setEnabled(false);
+
+  if( btnOutlineColor->isEnabled() &&  btnOutlineColor->color() != sy->pen().color() )
+    btnOutlineColor->setEnabled(false);
+
+  if( cboOutlineStyle->isEnabled() ) {
+    QPen myPen = sy->pen();
+    QString myLineStyle = QgsSymbologyUtils::penStyle2QString(myPen.style());
+    if (cboOutlineStyle->itemData( cboOutlineStyle->currentIndex(), Qt::UserRole ).toString() != myLineStyle)
+      cboOutlineStyle->setEnabled(false);
+  }
+
+  if( cboFillStyle->isEnabled() ) {
+    QBrush myBrush = sy->brush();
+    QString myFillStyle =  QgsSymbologyUtils::brushStyle2QString(myBrush.style());
+    if (cboFillStyle->itemData( cboFillStyle->currentIndex(), Qt::UserRole ).toString() != myFillStyle)
+      cboFillStyle->setEnabled(false);
   }
 }
 
@@ -449,7 +556,7 @@ void QgsSingleSymbolDialog::setFillStyle(Qt::BrushStyle fstyle)
   }
 }
 
-void QgsSingleSymbolDialog::setOutlineWidth(int width)
+void QgsSingleSymbolDialog::setOutlineWidth(double width)
 {
     outlinewidthspinbox->setValue(width);
 }
@@ -466,7 +573,7 @@ Qt::PenStyle QgsSingleSymbolDialog::getOutlineStyle()
     return QgsSymbologyUtils::qString2PenStyle(myLineStyle);
 }
 
-int QgsSingleSymbolDialog::getOutlineWidth()
+double QgsSingleSymbolDialog::getOutlineWidth()
 {
     return outlinewidthspinbox->value();
 }
@@ -525,3 +632,4 @@ void QgsSingleSymbolDialog::fillStyleChanged( int theIndex )
   }
 
 }
+

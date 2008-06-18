@@ -19,8 +19,10 @@
 #include "qgsproviderregistry.h"
 
 #include <QDir>
+#include <QPalette>
 
 #include <qgsconfig.h>
+#include <qgslogger.h>
 
 // for htonl
 #ifdef WIN32
@@ -51,41 +53,68 @@ QgsApplication::QgsApplication(int & argc, char ** argv, bool GUIenabled)
 : QApplication(argc, argv, GUIenabled)
 {
 #if defined(Q_WS_MACX) || defined(Q_WS_WIN32) || defined(WIN32)
-  setPrefixPath(applicationDirPath(), TRUE);
+  setPrefixPath(applicationDirPath(), true);
 #else
-  setPrefixPath(PREFIX, TRUE);
+  QDir myDir(applicationDirPath());
+  myDir.cdUp();
+  QString myPrefix = myDir.absolutePath();
+  setPrefixPath(myPrefix, true);
 #endif
+  //for debuggin
+  showSettings();
 }
 
 QgsApplication::~QgsApplication()
 {}
 
-void QgsApplication::setPrefixPath(const QString& thePrefixPath, bool useDefaultPaths)
+void QgsApplication::setPrefixPath(const QString thePrefixPath, bool useDefaultPaths)
 {
   mPrefixPath = thePrefixPath;
+#if defined(_MSC_VER)
+  if( mPrefixPath.endsWith("/bin") )
+  {
+    mPrefixPath.chop(4);
+  }
+#endif
   if (useDefaultPaths)
   {
-    setPluginPath(mPrefixPath + QString("/") + QString(QGIS_PLUGIN_SUBDIR));
-    setPkgDataPath(mPrefixPath + QString("/") + QString(QGIS_DATA_SUBDIR));
+    setPluginPath(mPrefixPath + QDir::separator() + QString(QGIS_PLUGIN_SUBDIR));
+    setPkgDataPath(mPrefixPath + QDir::separator() + QString(QGIS_DATA_SUBDIR));
   }
 }
 
-void QgsApplication::setPluginPath(const QString& thePluginPath)
+void QgsApplication::setPluginPath(const QString thePluginPath)
 {
   mPluginPath = thePluginPath;
 }
 
-void QgsApplication::setPkgDataPath(const QString& thePkgDataPath)
+void QgsApplication::setPkgDataPath(const QString thePkgDataPath)
 {
   mPkgDataPath = thePkgDataPath;
   mThemePath = mPkgDataPath + QString("/themes/default/");
 }
 
+const QString QgsApplication::prefixPath() 
+{ 
+  return mPrefixPath; 
+}
+const QString QgsApplication::pluginPath() 
+{ 
+  return mPluginPath; 
+}
+const QString QgsApplication::pkgDataPath() 
+{ 
+  return mPkgDataPath; 
+}
+const QString QgsApplication::themePath() 
+{ 
+  return mThemePath; 
+}
 
 /*!
   Set the theme path to the specified theme.
 */
-void QgsApplication::selectTheme(const QString& theThemeName)
+void QgsApplication::selectTheme(const QString theThemeName)
 {
   mThemePath = mPkgDataPath + QString("/themes/") + theThemeName + QString("/");
 }
@@ -158,7 +187,7 @@ const QString QgsApplication::qgisMasterDbFilePath()
  */
 const QString QgsApplication::qgisSettingsDirPath()
 {
-  return QDir::homeDirPath() + QString("/.qgis/");
+  return QDir::homePath() + QString("/.qgis/");
 }
 
 /*!
@@ -220,22 +249,43 @@ void QgsApplication::exitQgis()
   delete QgsProviderRegistry::instance();
 }
 
+void QgsApplication::showSettings()
+{
+  qDebug("\n**********************************");
+  qDebug("QgsApplication state:");
+  qDebug("Prefix       :" + mPrefixPath.toLocal8Bit());
+  qDebug("Plugin Path  :" + mPluginPath.toLocal8Bit());
+  qDebug("PkgData Path :" + mPkgDataPath.toLocal8Bit());
+  qDebug("Theme Path   :" + mThemePath.toLocal8Bit());
+  qDebug("**********************************\n");
+}
+
 QString QgsApplication::reportStyleSheet()
 {
-  QString myStyle = ".glossy,h1,h2,h3{ background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #616161, stop: 0.5 #505050, stop: 0.6 #434343, stop:1 #656565); color: white; padding-left: 4px; border: 1px solid #6c6c6c; }";
-  myStyle += "h1 {font-size : 22pt;}";
-  myStyle += "h2 {font-size : 18pt;}";
-  myStyle += "h3 {font-size : 14pt;}";
-  myStyle += ".cellHeader {color:#466aa5; font-size : 12pt;}";
-  myStyle += ".largeCell {color:#000000; font-size : 12pt;}";
-  myStyle += "table "
-  "{"
-  "  border-width: 1px 1px 1px 1px;"
-  "  border-spacing: 2px;"
-  "  border-style: solid solid solid solid;"
-  "  border-color: black black black black;"
-  "  border-collapse: separate;"
-  "  background-color: white;"
-  "}";
+  //
+  // Make the style sheet desktop preferences aware by using qappliation 
+  // palette as a basis for colours where appropriate
+  //
+  QColor myColor1 = palette().highlight().color();
+  QColor myColor2 = myColor1;
+  myColor2 = myColor2.lighter(110); //10% lighter
+  QString myStyle;
+  myStyle = ".glossy{ background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, "
+    "stop: 0 " + myColor1.name()  + ","
+    "stop: 0.1 " + myColor2.name() + ","
+    "stop: 0.5 " + myColor1.name()  + ","
+    "stop: 0.9 " + myColor2.name() + "," 
+    "stop: 1 " + myColor1.name() + ");"
+    "color: white;"
+    "padding-left: 4px;"
+    "padding-top: 20px;"
+    "padding-bottom: 8px;"
+    "border: 1px solid #6c6c6c;"
+    "}"
+    "h1 {font-size : 22pt; }"
+    "h2 {font-size : 18pt; }"
+    "h3 {font-size : 14pt; }";
   return myStyle;
 }
+
+

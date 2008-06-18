@@ -19,21 +19,23 @@
 #ifndef QGISAPP_H
 #define QGISAPP_H
 
-class QRect;
-class QStringList;
+class QActionGroup;
+class QCheckBox;
 class QCursor;
+class QFileInfo;
+class QKeyEvent;
 class QLabel;
 class QLineEdit;
-class QProgressBar;
-class QFileInfo;
-class QSettings;
-class QTcpSocket;
-class QCheckBox;
-class QToolButton;
-class QKeyEvent;
 class QMenu;
 class QPixmap;
+class QProgressBar;
+class QPushButton;
+class QRect;
+class QSettings;
 class QSplashScreen;
+class QStringList;
+class QToolButton;
+class QTcpSocket;
 class QValidator;
 
 class QgisAppInterface;
@@ -48,14 +50,13 @@ class QgsMapTool;
 class QgsPoint;
 class QgsProviderRegistry;
 class QgsPythonDialog;
+class QgsPythonUtils;
 class QgsRasterLayer;
 class QgsRect;
 class QgsVectorLayer;
 
-#include <map>
-
-#include <ui_qgisappbase.h>
 #include <QMainWindow>
+#include <QToolBar>
 #include <QAbstractSocket>
 
 #include "qgsconfig.h"
@@ -64,12 +65,12 @@ class QgsVectorLayer;
 /*! \class QgisApp
  * \brief Main window for the Qgis application
  */
-class QgisApp : public QMainWindow, public Ui::QgisAppBase
+class QgisApp : public QMainWindow
 {
   Q_OBJECT;
   public:
   //! Constructor
-  QgisApp(QSplashScreen *splash, QWidget * parent = 0, Qt::WFlags fl = Qt::WType_TopLevel);
+  QgisApp(QSplashScreen *splash, QWidget * parent = 0, Qt::WFlags fl = Qt::Window);
   //! Destructor
   ~QgisApp();
   /**
@@ -95,17 +96,13 @@ class QgisApp : public QMainWindow, public Ui::QgisAppBase
    *  Note this is included to support WMS layers only at this stage,
    *  GDAL layer support via a Provider is not yet implemented.
    */
-  void addRasterLayer(QString const & rasterLayerPath,
+  QgsRasterLayer* addRasterLayer(QString const & rasterLayerPath,
       QString const & baseName,
       QString const & providerKey,
       QStringList const & layers,
       QStringList const & styles,
       QString const & format,
-      QString const & crs,
-      QString const & proxyHost = QString(),
-      int proxyPort = 80,
-      QString const & proxyUser = QString(), 
-      QString const & proxyPassword = QString());
+      QString const & crs);
 
   /** open a raster layer for the given file
     @returns false if unable to open a raster layer for rasterFile
@@ -149,6 +146,22 @@ class QgisApp : public QMainWindow, public Ui::QgisAppBase
 
   void dropEvent(QDropEvent *);
 
+  /** Setup the proxy settings from the QSettings environment.
+    * This is not called by default in the constructor. Rather, 
+    * the application must explicitly call setupProx(). If 
+    * you write your own application and wish to explicitly 
+    * set up your own proxy rather, you should e.g.
+    *  QNetworkProxy proxy;
+    *  proxy.setType(QNetworkProxy::Socks5Proxy);
+    *  proxy.setHostName("proxy.example.com");
+    *  proxy.setPort(1080);
+    *  proxy.setUser("username");
+    *  proxy.setPassword("password");
+    *  QNetworkProxy::setApplicationProxy(proxy);
+    *  
+    *  (as documented in Qt documentation.
+  */
+  void setupProxy();
 //private slots:
 public slots:
   //! About QGis
@@ -254,12 +267,6 @@ public slots:
   void options();
   //! Whats-this help slot
   void whatsThis();
-  //! Get the Menu map (key is name, value is menu id)
-  std::map<QString, int> menuMapByName();
-  //! Get the Menu map (key is menu id, value is name)
-  std::map<int, QString> menuMapById();
-  //! Populate the menu maps
-  void populateMenuMaps();
   void socketConnected();
   void socketConnectionClosed();
   void socketReadyRead();
@@ -383,6 +390,16 @@ public slots:
 
   //! Toggle full screen mode
   void toggleFullScreen();
+
+  //! Stops rendering of the main map
+  void stopRendering();
+
+  /** Get a reference to the file toolbar. Mainly intended 
+  *   to be used by plugins that want to specifically add 
+  *   an icon into the file toolbar for consistency e.g.
+  *   addWFS and GPS plugins.
+  */
+  QToolBar * fileToolBar();
 signals:
   /** emitted when a key is pressed and we want non widget sublasses to be able
     to pick up on this (e.g. maplayer) */
@@ -472,7 +489,7 @@ private:
   QAction *mActionSaveMapAsImage;
   QAction *mActionExportMapServer;
   QAction *mActionFileExit;
-  QAction *mActionAddNonDbLayer;
+  QAction *mActionAddOgrLayer;
   QAction *mActionAddRasterLayer;
   QAction *mActionAddLayer;
   QAction *mActionRemoveLayer;
@@ -527,9 +544,8 @@ private:
   QAction *mActionShowAllToolbars;
   QAction *mActionHideAllToolbars;
   QAction *mActionToggleFullScreen;
-#ifdef HAVE_PYTHON
   QAction *mActionShowPythonDialog;
-#endif
+  
   //
   //tool groups -------------------------------------
   QActionGroup *mMapToolGroup;
@@ -543,7 +559,10 @@ private:
   QMenu *mSettingsMenu;
   QMenu *mHelpMenu;
 
-  class Tools
+  QDockWidget *mLegendDock;
+  QDockWidget *mOverviewDock;
+
+class Tools
   {
     public:
       QgsMapTool* mZoomIn;
@@ -580,6 +599,8 @@ private:
   QProgressBar * mProgressBar;
   //! Widget used to suppress rendering
   QCheckBox * mRenderSuppressionCBox;
+  //! Button used to stop rendering
+  QToolButton* mStopRenderButton;
   //! Widget in status bar used to show status of on the fly projection
   QToolButton * mOnTheFlyProjectionStatusButton;
   //! Popup menu
@@ -618,10 +639,6 @@ private:
   QSplashScreen *mSplash;
   //! help viewer
   QgsHelpViewer *mHelpViewer;
-  //! menu map (key is name, value is menu id)
-  std::map<QString, int>mMenuMapByName;
-  //! menu map (key is menu id, value is name)
-  std::map<int, QString>mMenuMapById;
   //! list of recently opened/saved project files
   QStringList mRecentProjectPaths;
   //! Map composer
@@ -661,9 +678,8 @@ private:
   
   //!flag to indicat wehter we are in fullscreen mode or not
   bool mFullScreenMode;
-#ifdef HAVE_PYTHON
   QgsPythonDialog* mPythonConsole;
-#endif
+  QgsPythonUtils* mPythonUtils;
 };
 
 #endif

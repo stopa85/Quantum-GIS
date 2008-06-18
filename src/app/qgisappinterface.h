@@ -54,6 +54,9 @@ class QgisAppInterface : public QgisInterface
         QgsVectorLayer* addVectorLayer(QString vectorLayerPath, QString baseName, QString providerKey);
         //! Add a raster layer given its file name
         QgsRasterLayer* addRasterLayer(QString rasterLayerPath, QString baseName);
+	//! Add a WMS layer
+	QgsRasterLayer* addRasterLayer(const QString& url, const QString& baseName, const QString& providerKey, \
+				       const QStringList& layers, const QStringList& styles, const QString& format, const QString& crs);
 
         //! Add a project
         bool addProject(QString theProjectName);
@@ -69,6 +72,10 @@ class QgisAppInterface : public QgisInterface
         void removeToolBarIcon(QAction *qAction);
         //! Add toolbar with specified name
         QToolBar* addToolBar(QString name);
+        /** Get the file toolbar - intended for use with plugins which
+         *   add a new file type handler.
+         */
+        QToolBar * fileToolBar();
 
         /** Open a url in the users browser. By default the QGIS doc directory is used
          * as the base for the URL. To open a URL that is not relative to the installed

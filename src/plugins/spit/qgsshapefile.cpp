@@ -70,8 +70,6 @@ QgsShapeFile::QgsShapeFile(QString name, QString encoding){
 
 QgsShapeFile::~QgsShapeFile(){
   OGR_DS_Destroy( ogrDataSource );
-  delete filename;
-  delete geom_type;
 }
 
 int QgsShapeFile::getFeatureCount(){
@@ -101,7 +99,7 @@ bool QgsShapeFile::scanGeometries()
     {
       QString gml =  OGR_G_ExportToGML(geom);
       //      std::cerr << gml << std::endl; 
-      if(gml.find("gml:Multi") > -1)
+      if(gml.indexOf("gml:Multi") > -1)
       {
         //   std::cerr << "MULTI Part Feature detected" << std::endl; 
         multi = true;
@@ -133,7 +131,7 @@ bool QgsShapeFile::scanGeometries()
   
   OGR_L_ResetReading(ogrLayer);
   geom_type = geometries[currentType];
-  if(multi && (geom_type.find("MULTI") == -1))
+  if(multi && (geom_type.indexOf("MULTI") == -1))
   {
     geom_type = "MULTI" + geom_type;
   }
@@ -169,7 +167,7 @@ QString QgsShapeFile::getFeatureClass(){
       //geom_type = "GEOMETRY";
       QgsDebugMsg("Preparing to escape " + geom_type);
       char * esc_str = new char[geom_type.length()*2+1];
-      PQescapeString(esc_str, (const char *)geom_type, geom_type.length());
+      PQescapeString(esc_str, geom_type.toUtf8(), geom_type.length());
       geom_type = QString(esc_str);
       QgsDebugMsg("After escaping, geom_type is : " + geom_type);
       delete[] esc_str;
@@ -177,7 +175,7 @@ QString QgsShapeFile::getFeatureClass(){
       QString file(filename);
       file.replace(file.length()-3, 3, "dbf");
       // open the dbf file
-      std::ifstream dbf((const char*)file, std::ios::in | std::ios::binary);
+      std::ifstream dbf(file.toUtf8(), std::ios::in | std::ios::binary);
       // read header
       DbaseHeader dbh;
       dbf.read((char *)&dbh, sizeof(dbh));
@@ -413,7 +411,7 @@ bool QgsShapeFile::insertLayer(QString dbname, QString schema, QString primary_k
                    .arg( srid );
 
         if(result)
-          res = PQexec(conn, query.utf8() );
+          res = PQexec(conn, query.toUtf8() );
 
         if(PQresultStatus(res)!=PGRES_COMMAND_OK){
           // flag error and send query and error message to stdout on debug

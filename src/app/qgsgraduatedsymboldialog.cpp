@@ -35,7 +35,6 @@ QgsGraduatedSymbolDialog::QgsGraduatedSymbolDialog(QgsVectorLayer * layer): QDia
 #endif
 
   setOrientation(Qt::Vertical);
-  setSizeGripEnabled(true);
 
   //find out the numerical fields of mVectorLayer
   QgsVectorDataProvider *provider = mVectorLayer->getDataProvider();
@@ -51,7 +50,7 @@ QgsGraduatedSymbolDialog::QgsGraduatedSymbolDialog(QgsVectorLayer * layer): QDia
       QVariant::Type type = (*it).type();
       if (type == QVariant::Int || type == QVariant::Double)
       {
-        classificationComboBox->insertItem(it->name());
+        classificationComboBox->addItem(it->name());
         mFieldMap.insert(std::make_pair(it->name(), it.key()));
       }
     }
@@ -62,9 +61,9 @@ QgsGraduatedSymbolDialog::QgsGraduatedSymbolDialog(QgsVectorLayer * layer): QDia
     return;
   }
 
-  modeComboBox->insertItem(tr("Equal Interval"));
-  modeComboBox->insertItem(tr("Quantiles"));
-  modeComboBox->insertItem(tr("Empty"));
+  modeComboBox->addItem(tr("Equal Interval"));
+  modeComboBox->addItem(tr("Quantiles"));
+  modeComboBox->addItem(tr("Empty"));
 
   //restore the correct settings
   const QgsGraduatedSymbolRenderer* renderer = dynamic_cast < const QgsGraduatedSymbolRenderer * >(layer->renderer());
@@ -83,7 +82,7 @@ QgsGraduatedSymbolDialog::QgsGraduatedSymbolDialog(QgsVectorLayer * layer): QDia
         break;
       }
     }
-    classificationComboBox->setCurrentText(classfield);
+    classificationComboBox->setItemText(classificationComboBox->currentIndex(), classfield);
 
     numberofclassesspinbox->setValue(list.size());
     //fill the items of the renderer into mValues
@@ -155,7 +154,6 @@ void QgsGraduatedSymbolDialog::apply()
   }
 
   QgsGraduatedSymbolRenderer* renderer = new QgsGraduatedSymbolRenderer(mVectorLayer->vectorType());
-
   for (int item=0;item<mClassListWidget->count();++item)
   {
     QString classbreak=mClassListWidget->item(item)->text();
@@ -173,7 +171,7 @@ void QgsGraduatedSymbolDialog::apply()
 
     sy->setColor(it->second->pen().color());
     sy->setLineStyle(it->second->pen().style());
-    sy->setLineWidth(it->second->pen().width());
+    sy->setLineWidth(it->second->pen().widthF());
 
     if (mVectorLayer->vectorType() == QGis::Point)
     {
@@ -181,7 +179,6 @@ void QgsGraduatedSymbolDialog::apply()
       sy->setPointSize(it->second->pointSize());
       sy->setScaleClassificationField(it->second->scaleClassificationField());
       sy->setRotationClassificationField(it->second->rotationClassificationField());
-
     }
 
     if (mVectorLayer->vectorType() != QGis::Line)
@@ -195,7 +192,7 @@ void QgsGraduatedSymbolDialog::apply()
     bool lbcontainsletter = false;
     for (int j = 0; j < lower_bound.length(); j++)
     {
-      if (lower_bound.ref(j).isLetter())
+      if (lower_bound[j].isLetter())
       {
         lbcontainsletter = true;
       }
@@ -205,7 +202,7 @@ void QgsGraduatedSymbolDialog::apply()
     bool ubcontainsletter = false;
     for (int j = 0; j < upper_bound.length(); j++)
     {
-      if (upper_bound.ref(j).isLetter())
+      if (upper_bound[j].isLetter())
       {
         ubcontainsletter = true;
       }
@@ -293,7 +290,7 @@ void QgsGraduatedSymbolDialog::adjustClassification()
       pen.setColor(Qt::black); 
     } 
 
-    pen.setWidth(1);
+    pen.setWidth(0.4);
     brush.setStyle(Qt::SolidPattern);
     symbol->setPen(pen);
     symbol->setBrush(brush);
@@ -342,7 +339,9 @@ void QgsGraduatedSymbolDialog::adjustClassification()
       (*symbol_it)->setLowerValue(QString::number(lower,'f',3));
       (*symbol_it)->setUpperValue(QString::number(upper,'f',3));
       listBoxText=QString::number(lower,'f',3)+" - " +QString::number(upper,'f',3);
-      mClassListWidget->addItem(listBoxText);
+      QListWidgetItem * mypItem = new QListWidgetItem(listBoxText);
+      updateEntryIcon(*symbol_it,mypItem);
+      mClassListWidget->addItem(mypItem);
 
       mEntries.insert(std::make_pair(listBoxText,*symbol_it));
       ++symbol_it;
@@ -375,6 +374,7 @@ void QgsGraduatedSymbolDialog::changeCurrentValue()
     {
       sydialog.set((*it).second);
       sydialog.setLabel((*it).second->label());
+      updateEntryIcon((*it).second,item);
     }
   }
   sydialog.blockSignals(false);
@@ -391,6 +391,7 @@ void QgsGraduatedSymbolDialog::applySymbologyChanges()
     {
       sydialog.apply((*it).second);
       it->second->setLabel((*it).second->label());
+      updateEntryIcon((*it).second,item);
     }
   }
 }
@@ -422,7 +423,8 @@ void QgsGraduatedSymbolDialog::modifyClass(QListWidgetItem* item)
       QString newclass=dialog.lowerValue()+"-"+dialog.upperValue();
       mEntries.insert(std::make_pair(newclass,symbol));
       item->setText(newclass);
-    }	
+      updateEntryIcon(symbol,item);
+    }
   }
 }
 
@@ -439,7 +441,7 @@ void QgsGraduatedSymbolDialog::deleteCurrentClass()
   mEntries.erase(classValue);
   delete (mClassListWidget->takeItem(currentIndex));
   qWarning("numRows: ");
-  qWarning(QString::number(mClassListWidget->count()));
+  qWarning(QString::number(mClassListWidget->count()).toUtf8());
   //
   if(mClassListWidget->count() < (currentIndex + 1))
   {
@@ -535,3 +537,24 @@ QColor QgsGraduatedSymbolDialog::getColorFromRamp(QString ramp, int step, int to
   }  
   return color; 
 } 
+
+void QgsGraduatedSymbolDialog::updateEntryIcon(QgsSymbol * thepSymbol, 
+    QListWidgetItem * thepItem)
+{
+  QGis::VectorType myType = mVectorLayer->vectorType();
+  switch (myType) 
+  {
+    case QGis::Point:
+      thepItem->setIcon(QIcon(QPixmap::fromImage(thepSymbol->getPointSymbolAsImage())));
+      break;
+    case QGis::Line:
+      thepItem->setIcon(QIcon(QPixmap::fromImage(thepSymbol->getLineSymbolAsImage())));
+      break;
+    case QGis::Polygon:
+      thepItem->setIcon(QIcon(QPixmap::fromImage(thepSymbol->getPolygonSymbolAsImage())));
+      break;
+    default: //unknown
+      //do nothing
+      ;
+  }
+}

@@ -31,21 +31,20 @@ class QgsSingleSymbolDialog: public QDialog, private Ui::QgsSingleSymbolDialogBa
 {
     Q_OBJECT
 public:
-    QgsSingleSymbolDialog(QgsVectorLayer* layer);
+    QgsSingleSymbolDialog(QgsVectorLayer* layer, bool disabled = false);
     ~QgsSingleSymbolDialog();
     QColor getOutlineColor();
     Qt::PenStyle getOutlineStyle();
-    int getOutlineWidth();
+    double getOutlineWidth();
     QColor getFillColor();
     Qt::BrushStyle getFillStyle();
     void setOutlineColor(QColor& c);
     void setOutlineStyle(Qt::PenStyle pstyle);
-    void setOutlineWidth(int width);
+    void setOutlineWidth(double width);
     void setFillColor(QColor& c);
     void setFillStyle(Qt::BrushStyle fstyle);
     void setLabel(QString label);
     QString label();
-
 
 protected:
     QgsVectorLayer* mVectorLayer;
@@ -55,7 +54,9 @@ protected:
 
 public slots:
     /* arrange the widgets on this dialog to reflect the current state of QgsSymbol */
+    void unset();
     void set(const QgsSymbol *sy);
+    void updateSet(const QgsSymbol *sy);
     /**applies the changes to the vector layer*/
     void apply();
     /**applies the changes to the QgsSymbol */

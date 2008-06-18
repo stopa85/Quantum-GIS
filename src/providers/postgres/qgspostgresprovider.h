@@ -1,5 +1,3 @@
-//Added by qt3to4:
-#include <QCustomEvent>
 /***************************************************************************
       qgspostgresprovider.h  -  Data provider for PostgreSQL/PostGIS layers
                              -------------------
@@ -584,7 +582,7 @@ class QgsPostgresProvider:public QgsVectorDataProvider
     /**
      * Event sink for events from threads
      */
-    void customEvent ( QCustomEvent *e );
+    void customEvent ( QEvent *e );
 
     PGconn *connectDb(const QString &conninfo);
     void disconnectDb();

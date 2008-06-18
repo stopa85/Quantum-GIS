@@ -76,8 +76,8 @@ void QgsPgGeoprocessing::initGui()
 {
   // Create the action for tool
   bufferAction = new QAction(QIcon(icon_buffer), tr("&Buffer features"), this);
-  bufferAction->setWhatsThis(tr("Create a buffer for a PostgreSQL layer. " +
-      tr("A new layer is created in the database with the buffered features.")));
+  bufferAction->setWhatsThis(tr("Create a buffer for a PostgreSQL layer. ") +
+      tr("A new layer is created in the database with the buffered features."));
   // Connect the action to the buffer slot
   connect(bufferAction, SIGNAL(triggered()), this, SLOT(buffer()));
 
@@ -103,7 +103,7 @@ void QgsPgGeoprocessing::buffer()
       QgsDebugMsg("data source = " + uri.connInfo() );
 
       // connect to the database and check the capabilities
-      PGconn *capTest = PQconnectdb((const char *) uri.connInfo() );
+      PGconn *capTest = PQconnectdb(uri.connInfo().toUtf8() );
       if (PQstatus(capTest) == CONNECTION_OK) {
         postgisVersion(capTest);
       }
@@ -126,17 +126,17 @@ void QgsPgGeoprocessing::buffer()
         QgsFieldMap flds = dp->fields();
         for (QgsFieldMap::iterator it = flds.begin(); it != flds.end(); ++it) {
           // check the field type -- if its int we can use it
-          if (it->typeName().find("int") > -1) {
+          if (it->typeName().indexOf("int") > -1) {
             bb->addFieldItem(it->name());
           }
         }
         // connect to the database
-        PGconn *conn = PQconnectdb((const char *) uri.connInfo() );
+        PGconn *conn = PQconnectdb(uri.connInfo().toUtf8() );
         if (PQstatus(conn) == CONNECTION_OK) {
           // populate the schema drop-down
           QString schemaSql =
             QString("select nspname from pg_namespace,pg_user where nspowner = usesysid and usename = '%1'").arg( uri.username() );
-          PGresult *schemas = PQexec(conn, (const char *) schemaSql);
+          PGresult *schemas = PQexec(conn, schemaSql.toUtf8());
           if (PQresultStatus(schemas) == PGRES_TUPLES_OK) {
             // add the schemas to the drop-down, otherwise just public (the
             // default) will show up
@@ -154,7 +154,7 @@ void QgsPgGeoprocessing::buffer()
           QgsDebugMsg("SRID SQL: " + sridSql);
 
           QString geometryCol;
-          PGresult *sridq = PQexec(conn, (const char *) sridSql);
+          PGresult *sridq = PQexec(conn, sridSql.toUtf8());
           if (PQresultStatus(sridq) == PGRES_TUPLES_OK) {
             bb->setSrid(PQgetvalue(sridq, 0, 0));
             geometryCol = PQgetvalue(sridq, 0, 1);
@@ -187,7 +187,7 @@ void QgsPgGeoprocessing::buffer()
             if(bb->schema() != "public")
             {
               sql = QString("set search_path = '%1','public'").arg(bb->schema());
-              result = PQexec(conn, (const char *) sql);
+              result = PQexec(conn, sql.toUtf8());
               PQclear(result);
  
               QgsDebugMsg("SQL: " + sql);
@@ -201,7 +201,7 @@ void QgsPgGeoprocessing::buffer()
               .arg(objIdType);
             QgsDebugMsg("SQL: " + sql);
 
-            result = PQexec(conn, (const char *) sql);
+            result = PQexec(conn, sql.toUtf8());
             QgsDebugMsg( QString("Status from create table is %1").arg( PQresultStatus(result) ) );
             QgsDebugMsg( QString("Error message is %1").arg(PQresStatus(PQresultStatus(result))) );
 
@@ -219,7 +219,7 @@ void QgsPgGeoprocessing::buffer()
                 .arg("2");
               QgsDebugMsg("SQL: " + sql);
 
-              PGresult *geoCol = PQexec(conn, (const char *) sql);
+              PGresult *geoCol = PQexec(conn, sql.toUtf8());
 
             if (PQresultStatus(geoCol) == PGRES_TUPLES_OK) {
               PQclear(geoCol);
@@ -234,14 +234,14 @@ void QgsPgGeoprocessing::buffer()
 
               QgsDebugMsg( "SQL: " + sql);
 
-              result = PQexec(conn, (const char *) sql);
+              result = PQexec(conn, sql.toUtf8());
               if(PQresultStatus(result) == PGRES_COMMAND_OK)
               {
               PQclear(result);
               // check pg version and formulate insert query accordingly
               result = PQexec(conn,"select version()");
               QString versionString = PQgetvalue(result,0,0);
-              QStringList versionParts = QStringList::split(" ", versionString);
+              QStringList versionParts = versionString.split(" ", QString::SkipEmptyParts);
               // second element is the version number
               QString version = versionParts[1];
 
@@ -270,7 +270,7 @@ void QgsPgGeoprocessing::buffer()
                   .arg(tableName);
                 QgsDebugMsg("SQL: " + sql);
               }
-              result = PQexec(conn, (const char *) sql);
+              result = PQexec(conn, sql.toUtf8());
               PQclear(result);
               // }
 
@@ -369,18 +369,18 @@ QString QgsPgGeoprocessing::postgisVersion(PGconn *connection){
   gistAvailable = false;
   projAvailable = false;
   // parse out the capabilities and store them
-  QStringList postgisParts = QStringList::split(" ", postgisVersionInfo);
-  QStringList geos = postgisParts.grep("GEOS");
+  QStringList postgisParts = postgisVersionInfo.split(" ", QString::SkipEmptyParts);
+  QStringList geos = postgisParts.filter("GEOS");
   if(geos.size() == 1){
-    geosAvailable = (geos[0].find("=1") > -1);  
+    geosAvailable = (geos[0].indexOf("=1") > -1);  
   }
-  QStringList gist = postgisParts.grep("STATS");
+  QStringList gist = postgisParts.filter("STATS");
   if(gist.size() == 1){
-    gistAvailable = (geos[0].find("=1") > -1);
+    gistAvailable = (geos[0].indexOf("=1") > -1);
   }
-  QStringList proj = postgisParts.grep("PROJ");
+  QStringList proj = postgisParts.filter("PROJ");
   if(proj.size() == 1){
-    projAvailable = (proj[0].find("=1") > -1);
+    projAvailable = (proj[0].indexOf("=1") > -1);
   }
   return postgisVersionInfo;
 }

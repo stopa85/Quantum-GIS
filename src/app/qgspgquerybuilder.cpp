@@ -13,12 +13,18 @@
  *                                                                         *
  ***************************************************************************/
 /* $Id$ */
-#include <iostream>
-#include <QMessageBox>
-#include <QListView>
 #include "qgspgquerybuilder.h"
-#include <qgslogger.h>
+#include "qgslogger.h"
+#include <iostream>
+#include <QListView>
+#include <QMessageBox>
 #include <QRegExp>
+
+#if QT_VERSION < 0x040300
+#define toPlainText() text()
+#endif
+
+
 // default constructor
 QgsPgQueryBuilder::QgsPgQueryBuilder(QWidget *parent, Qt::WFlags fl)
 : QDialog(parent, fl)
@@ -257,7 +263,7 @@ void QgsPgQueryBuilder::on_btnTest_clicked()
   // returned
 
   // if there is no sql, issue a warning
-  if(txtSQL->text().isEmpty())
+  if(txtSQL->toPlainText().isEmpty())
   {
     QMessageBox::information(this, tr("No Query"), tr("You must create a query before you can test it"));
   }
@@ -265,7 +271,7 @@ void QgsPgQueryBuilder::on_btnTest_clicked()
   { 
     QString numRows;
     QString sql = "select count(*) from " + mUri->quotedTablename() 
-      + " where " + txtSQL->text();
+      + " where " + txtSQL->toPlainText();
     PGresult *result = PQexec(mPgConnection, sql.toUtf8());
     if (PQresultStatus(result) == PGRES_TUPLES_OK) 
     {
@@ -318,10 +324,10 @@ void QgsPgQueryBuilder::setConnection(PGconn *con)
 void QgsPgQueryBuilder::on_btnOk_clicked()
 {
   // if user hits Ok and there is no query, skip the validation
-  if(txtSQL->text().stripWhiteSpace().length() > 0)
+  if(txtSQL->toPlainText().trimmed().length() > 0)
   {
     // test the query to see if it will result in a valid layer
-    long numRecs = countRecords(txtSQL->text());
+    long numRecs = countRecords(txtSQL->toPlainText());
     if(numRecs == -1)
     {
       //error in query - show the problem
@@ -347,42 +353,42 @@ void QgsPgQueryBuilder::on_btnOk_clicked()
 
 void QgsPgQueryBuilder::on_btnEqual_clicked()
 {
-  txtSQL->insert(" = ");
+  txtSQL->insertPlainText(" = ");
 }
 
 void QgsPgQueryBuilder::on_btnLessThan_clicked()
 {
-  txtSQL->insert(" < ");
+  txtSQL->insertPlainText(" < ");
 }
 
 void QgsPgQueryBuilder::on_btnGreaterThan_clicked()
 {
-  txtSQL->insert(" > ");
+  txtSQL->insertPlainText(" > ");
 }
 
 void QgsPgQueryBuilder::on_btnPct_clicked()
 {
-  txtSQL->insert("%");
+  txtSQL->insertPlainText("%");
 }
 
 void QgsPgQueryBuilder::on_btnIn_clicked()
 {
-  txtSQL->insert(" IN ");
+  txtSQL->insertPlainText(" IN ");
 }
 
 void QgsPgQueryBuilder::on_btnNotIn_clicked()
 {
-  txtSQL->insert(" NOT IN ");
+  txtSQL->insertPlainText(" NOT IN ");
 }
 
 void QgsPgQueryBuilder::on_btnLike_clicked()
 {
-  txtSQL->insert(" LIKE ");
+  txtSQL->insertPlainText(" LIKE ");
 }
 
 QString QgsPgQueryBuilder::sql()
 {
-  return txtSQL->text();
+  return txtSQL->toPlainText();
 }
 
 void QgsPgQueryBuilder::setSql( QString sqlStatement)
@@ -398,7 +404,7 @@ void QgsPgQueryBuilder::on_lstFields_clicked( const QModelIndex &index )
     
     // If type is gemetry .. normal users don't want to get values?
     QgsField field = mFieldMap[mModelFields->data(lstFields->currentIndex()).toString()];
-    if (field.typeName().find("geometry") > -1)
+    if (field.typeName().indexOf("geometry") > -1)
     {
       btnSampleValues->setEnabled(false);
       btnGetAllValues->setEnabled(false); 
@@ -413,48 +419,48 @@ void QgsPgQueryBuilder::on_lstFields_clicked( const QModelIndex &index )
 
 void QgsPgQueryBuilder::on_lstFields_doubleClicked( const QModelIndex &index )
 {
-  txtSQL->insert("\"" + mModelFields->data(index).toString() + "\"");
+  txtSQL->insertPlainText("\"" + mModelFields->data(index).toString() + "\"");
 }
 
 void QgsPgQueryBuilder::on_lstValues_doubleClicked( const QModelIndex &index )
 {
   if (mActualFieldIsChar)
   {
-    txtSQL->insert("'" + mModelValues->data(index).toString() + "'");
+    txtSQL->insertPlainText("'" + mModelValues->data(index).toString() + "'");
   }else
   {
-    txtSQL->insert(mModelValues->data(index).toString());
+    txtSQL->insertPlainText(mModelValues->data(index).toString());
   }
 }
 
 void QgsPgQueryBuilder::on_btnLessEqual_clicked()
 {
-  txtSQL->insert(" <= ");
+  txtSQL->insertPlainText(" <= ");
 }
 
 void QgsPgQueryBuilder::on_btnGreaterEqual_clicked()
 {
-  txtSQL->insert(" >= ");
+  txtSQL->insertPlainText(" >= ");
 }
 
 void QgsPgQueryBuilder::on_btnNotEqual_clicked()
 {
-  txtSQL->insert(" != ");
+  txtSQL->insertPlainText(" != ");
 }
 
 void QgsPgQueryBuilder::on_btnAnd_clicked()
 {
-  txtSQL->insert(" AND ");
+  txtSQL->insertPlainText(" AND ");
 }
 
 void QgsPgQueryBuilder::on_btnNot_clicked()
 {
-  txtSQL->insert(" NOT ");
+  txtSQL->insertPlainText(" NOT ");
 }
 
 void QgsPgQueryBuilder::on_btnOr_clicked()
 {
-  txtSQL->insert(" OR ");
+  txtSQL->insertPlainText(" OR ");
 }
 
 void QgsPgQueryBuilder::on_btnClear_clicked()
@@ -464,7 +470,7 @@ void QgsPgQueryBuilder::on_btnClear_clicked()
 
 void QgsPgQueryBuilder::on_btnILike_clicked()
 {
-  txtSQL->insert(" ILIKE ");
+  txtSQL->insertPlainText(" ILIKE ");
 }
 void QgsPgQueryBuilder::setDatasourceDescription(QString uri)
 {

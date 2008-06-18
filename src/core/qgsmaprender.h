@@ -17,10 +17,12 @@
 #ifndef QGSMAPRENDER_H
 #define QGSMAPRENDER_H
 
+#include <QSize>
 #include <QStringList>
 
 #include "qgis.h"
 #include "qgsrect.h"
+#include "qgsrendercontext.h"
 
 class QDomDocument;
 class QDomNode;
@@ -59,7 +61,7 @@ class CORE_EXPORT QgsMapRender : public QObject
     //! returns current extent
     QgsRect extent();
     
-    QgsMapToPixel* coordXForm() { return mCoordXForm; }
+    const QgsMapToPixel* coordXForm() { return &(mRenderContext.mapToPixel()); }
     
     double scale() const { return mScale; }
     double mupp() const { return mMupp; }
@@ -127,6 +129,9 @@ class CORE_EXPORT QgsMapRender : public QObject
     //! write settings
     bool writeXML(QDomNode & theNode, QDomDocument & theDoc);
 
+    //! Accessor for render context
+    QgsRenderContext* renderContext(){return &mRenderContext;}
+
   signals:
     
     void drawingProgress(int current, int total);
@@ -174,9 +179,6 @@ class CORE_EXPORT QgsMapRender : public QObject
     //! scale calculator
     QgsScaleCalculator * mScaleCalculator;
     
-    //! utility class for transformation between map and pixmap units
-    QgsMapToPixel* mCoordXForm;
-    
     //! current extent to be drawn
     QgsRect mExtent;
     
@@ -199,6 +201,9 @@ class CORE_EXPORT QgsMapRender : public QObject
 
     //! tool for measuring 
     QgsDistanceArea* mDistArea;
+
+    //!Encapsulates context of rendering
+    QgsRenderContext mRenderContext;
 };
 
 #endif

@@ -39,6 +39,8 @@ class QgisInterface : QObject
     virtual QgsVectorLayer* addVectorLayer(QString vectorLayerPath, QString baseName, QString providerKey)=0;
     //! Add a raster layer given a raster layer file name
     virtual QgsRasterLayer* addRasterLayer(QString rasterLayerPath, QString baseName = QString())=0;
+    //! Add a WMS layer
+    virtual QgsRasterLayer* addRasterLayer(const QString& url, const QString& layerName, const QString& providerKey, const QStringList& layers, const QStringList& styles, const QString& format, const QString& crs) = 0;
 
 
     //! Add a project
@@ -55,6 +57,10 @@ class QgisInterface : QObject
     virtual void removeToolBarIcon(QAction *qAction) = 0;
     //! Add toolbar with specified name
     virtual QToolBar* addToolBar(QString name)=0 /Factory/;
+    /** Get the file toolbar - intended for use with plugins which
+    *   add a new file type handler.
+    */
+    virtual QToolBar * fileToolBar()=0;
 
     // TODO: is this deprecated in favour of QgsContextHelp?
     /** Open a url in the users browser. By default the QGIS doc directory is used

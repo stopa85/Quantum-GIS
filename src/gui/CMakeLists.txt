@@ -4,6 +4,9 @@ qgisgui.cpp
 qgisinterface.cpp
 qgscolorbutton.cpp
 qgscursors.cpp
+qgsdetaileditemdelegate.cpp
+qgsdetaileditemwidget.cpp
+qgsdetaileditemdata.cpp
 qgsencodingfiledialog.cpp
 qgsfiledropedit.cpp
 qgslayerprojectionselector.cpp
@@ -12,6 +15,7 @@ qgsmapcanvasitem.cpp
 qgsmapcanvasmap.cpp
 qgsmapcanvassnapper.cpp
 qgsmapoverviewcanvas.cpp
+qgsmaptip.cpp
 qgsmaptool.cpp
 qgsmaptoolemitpoint.cpp
 qgsmaptoolpan.cpp
@@ -21,17 +25,18 @@ qgsprojectionselector.cpp
 qgsquickprint.cpp
 qgsrubberband.cpp
 qgsvertexmarker.cpp
-qgsmaptip.cpp
 )
 
 SET(QGIS_GUI_MOC_HDRS
+qgsdetaileditemdelegate.h
+qgsdetaileditemwidget.h
 qgisinterface.h
 qgsencodingfiledialog.h
 qgslayerprojectionselector.h
 qgsmapcanvas.h
 qgsmapoverviewcanvas.h
-qgsmessageviewer.h
 qgsmaptoolemitpoint.h
+qgsmessageviewer.h
 qgsprojectionselector.h
 qgsquickprint.h
 )
@@ -78,18 +83,9 @@ TARGET_LINK_LIBRARIES(qgis_gui
   ${QT_QTSVG_LIBRARY} 
   ${QT_QTNETWORK_LIBRARY} 
   ${QT_QTMAIN_LIBRARY} 
-  ${QT_QT3SUPPORT_LIBRARY} 
   ${SQLITE3_LIBRARIES}
   qgis_core
 )
-
-#work aroud for the fact that qt3 support on mac is linked ot qsql
-IF (APPLE)
-  TARGET_LINK_LIBRARIES(qgis_gui
-    ${QT_QTSQL_LIBRARY} 
-    )
-ENDIF (APPLE)
-
 
 INSTALL(TARGETS qgis_gui
   RUNTIME DESTINATION ${QGIS_BIN_DIR}

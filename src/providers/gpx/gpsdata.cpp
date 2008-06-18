@@ -20,6 +20,7 @@
 #include <cstring>
 
 #include <QFile>
+#include <QTextCodec>
 #include <QTextStream>
 #include <QObject>
 #include <QSet>
@@ -308,7 +309,7 @@ void GPSData::removeTracks(const QgsFeatureIds & ids) {
 
 
 void GPSData::writeXML(QTextStream& stream) {
-  stream.setEncoding(QTextStream::UnicodeUTF8);
+  stream.setCodec(QTextCodec::codecForName("UTF8"));
   stream<<"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
   <<"<gpx version=\"1.0\" creator=\"Quantum GIS\">\n";
   for (WaypointIterator wIter = waypoints.begin(); 
@@ -345,7 +346,7 @@ GPSData* GPSData::getData(const QString& filename) {
     char* buffer = new char[bufsize];
     int atEnd = 0;
     while (!file.atEnd()) {
-      long int readBytes = file.readBlock(buffer, bufsize);
+      long int readBytes = file.read(buffer, bufsize);
       if (file.atEnd())
         atEnd = 1;
       if (!XML_Parse(p, buffer, readBytes, atEnd)) {

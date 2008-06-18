@@ -97,7 +97,7 @@ bool QgsDistanceArea::setEllipsoid(const QString& ellipsoid)
   }
   // Set up the query to retreive the projection information needed to populate the ELLIPSOID list
   QString mySql = "select radius, parameter2 from tbl_ellipsoid where acronym='" + ellipsoid + "'";
-  myResult = sqlite3_prepare(myDatabase, (const char *)mySql, mySql.length(), &myPreparedStatement, &myTail);
+  myResult = sqlite3_prepare(myDatabase, mySql.toUtf8(), mySql.length(), &myPreparedStatement, &myTail);
   // XXX Need to free memory from the error msg if one is set
   if(myResult == SQLITE_OK)
   {
@@ -114,9 +114,7 @@ bool QgsDistanceArea::setEllipsoid(const QString& ellipsoid)
   // row for this ellipsoid wasn't found?
   if (radius.isEmpty() || parameter2.isEmpty())
   {
-#ifdef QGISDEBUG
-    std::cout << "setEllipsoid: no row in tbl_ellipsoid for acronym '" << ellipsoid.toLocal8Bit().data() << "'" << std::endl;
-#endif
+    QgsDebugMsg(QString("setEllipsoid: no row in tbl_ellipsoid for acronym '") + ellipsoid.toLocal8Bit().data() + "'")
     return false;
   }
   
@@ -125,9 +123,7 @@ bool QgsDistanceArea::setEllipsoid(const QString& ellipsoid)
     mSemiMajor = radius.mid(2).toDouble();
   else
   {
-#ifdef QGISDEBUG
-    std::cout << "setEllipsoid: wrong format of radius field: '" << radius.toLocal8Bit().data() << "'" << std::endl;
-#endif
+    QgsDebugMsg(QString("setEllipsoid: wrong format of radius field: '") + radius.toLocal8Bit().data() + "'")
     return false;
   }
   
@@ -146,15 +142,11 @@ bool QgsDistanceArea::setEllipsoid(const QString& ellipsoid)
   }
   else
   {
-#ifdef QGISDEBUG
-    std::cout << "setEllipsoid: wrong format of parameter2 field: '" << parameter2.toLocal8Bit().data() << "'" << std::endl;
-#endif
+    QgsDebugMsg(QString("setEllipsoid: wrong format of parameter2 field: '") + parameter2.toLocal8Bit().data() + "'")
     return false;
   }
   
-#ifdef QGISDEBUG
-    std::cout << "setEllipsoid: a=" << mSemiMajor << ", b=" << mSemiMinor << ", 1/f=" << mInvFlattening << std::endl;
-#endif
+  QgsDebugMsg(QString("setEllipsoid: a=") + mSemiMajor + ", b=" + mSemiMinor + ", 1/f=" + mInvFlattening)
 
 
   // get spatial ref system for ellipsoid
@@ -282,7 +274,7 @@ double QgsDistanceArea::measureLine(const QList<QgsPoint>& points)
   }
   catch (QgsCsException &cse)
   {
-    UNUSED(cse);
+    Q_UNUSED(cse);
     QgsLogger::warning(QObject::tr("Caught a coordinate system exception while trying to transform a point. Unable to calculate line length."));
     return 0.0;
   }
@@ -307,7 +299,7 @@ double QgsDistanceArea::measureLine(const QgsPoint& p1, const QgsPoint& p2)
   }
   catch (QgsCsException &cse)
   {
-    UNUSED(cse);
+    Q_UNUSED(cse);
     QgsLogger::warning(QObject::tr("Caught a coordinate system exception while trying to transform a point. Unable to calculate line length."));
     return 0.0;
   }
@@ -369,7 +361,7 @@ unsigned char* QgsDistanceArea::measurePolygon(unsigned char* feature, double* a
   }
   catch (QgsCsException &cse)
   {
-    UNUSED(cse);
+    Q_UNUSED(cse);
     QgsLogger::warning(QObject::tr("Caught a coordinate system exception while trying to transform a point. Unable to calculate polygon area."));
   }
   
@@ -398,7 +390,7 @@ double QgsDistanceArea::measurePolygon(const QList<QgsPoint>& points)
   }
   catch (QgsCsException &cse)
   {
-    UNUSED(cse);
+    Q_UNUSED(cse);
     QgsLogger::warning(QObject::tr("Caught a coordinate system exception while trying to transform a point. Unable to calculate polygon area."));
     return 0.0;
   }
