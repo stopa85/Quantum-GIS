@@ -16,9 +16,9 @@
 
 #include "qgscomposerscalebar.h"
 
-QgsComposerScaleBar::QgsComposerScaleBar(QgsComposition* composition)
+QgsComposerScaleBar::QgsComposerScaleBar(QgsComposition* composition): QgsComposerItem(0)
 {
-
+  
 }
 
 QgsComposerScaleBar::~QgsComposerScaleBar()

@@ -36,19 +36,15 @@
 #include <iostream>
 #include <cmath>
 
-QgsComposerMap::QgsComposerMap ( QgsComposition *composition, int id, int x, int y, int width, int height )
-  : QgsComposerItem(x, y, width,height,0)
+QgsComposerMap::QgsComposerMap ( QgsComposition *composition, int x, int y, int width, int height )
+  : QgsComposerItem(x, y, width, height, composition)
 {
     mComposition = composition;
-    mId = id;
     mMapCanvas = mComposition->mapCanvas();
-    mName = QString(tr("Map %1").arg(mId));
+    mName = "Map"; //QString(tr("Map %1").arg(mId)); //todo: make static member as counter
     
     // Cache
     mCacheUpdated = false;
-
-    //mCalculate = Scale;
-    setPlotStyle ( QgsComposition::Preview );
     mDrawing = false;
 
     //calculate mExtent based on width/height ratio and map canvas extent
@@ -60,25 +56,16 @@ QgsComposerMap::QgsComposerMap ( QgsComposition *composition, int id, int x, int
     connect ( mMapCanvas, SIGNAL(layersChanged()), this, SLOT(mapCanvasChanged()) );
 
     // Add to scene
-    mComposition->canvas()->addItem(this);
 
     QGraphicsRectItem::show();
-
-	    //writeSettings();
 }
 
-QgsComposerMap::QgsComposerMap ( QgsComposition *composition, int id )
-    : QgsComposerItem(0,0,10,10,0)
+QgsComposerMap::QgsComposerMap ( QgsComposition *composition)
+    : QgsComposerItem(0, 0, 10, 10, composition)
 {
     mComposition = composition;
-    mId = id;
     mMapCanvas = mComposition->mapCanvas();
-    mName = QString(tr("Map %1").arg(mId));
-
-    readSettings();
-
-    // Add to scene
-    mComposition->canvas()->addItem(this);
+    mName = "Map"; //QString(tr("Map %1").arg(mId)); //todo: make static member as counter
     QGraphicsRectItem::show();
 }
 
@@ -161,6 +148,11 @@ void QgsComposerMap::paint ( QPainter* painter, const QStyleOptionGraphicsItem* 
       return;
     }
 
+  if(!mComposition)
+    {
+      return;
+    }
+
   mDrawing = true;
 
   QRectF thisPaintRect = QRectF( 0, 0, QGraphicsRectItem::rect().width(), QGraphicsRectItem::rect().height());
@@ -169,7 +161,7 @@ void QgsComposerMap::paint ( QPainter* painter, const QStyleOptionGraphicsItem* 
 
   double currentScaleFactorX = horizontalViewScaleFactor();
 
-  if( plotStyle() == QgsComposition::Preview && mPreviewMode == Render /*&& screen resolution different than last time*/)
+  if( mComposition->plotStyle() == QgsComposition::Preview && mPreviewMode == Render /*&& screen resolution different than last time*/)
     {
       if(currentScaleFactorX != mLastScaleFactorX)
 	{
@@ -177,7 +169,7 @@ void QgsComposerMap::paint ( QPainter* painter, const QStyleOptionGraphicsItem* 
 	}
     }
     
-  if ( plotStyle() == QgsComposition::Preview && mPreviewMode != Rectangle) 
+  if ( mComposition->plotStyle() == QgsComposition::Preview && mPreviewMode != Rectangle) 
     { // Draw from cache
       if ( !mCacheUpdated || mMapCanvas->layerCount() != mNumCachedLayers ) 
 	{
@@ -196,8 +188,8 @@ void QgsComposerMap::paint ( QPainter* painter, const QStyleOptionGraphicsItem* 
       
       painter->restore();
     } 
-  else if ( plotStyle() == QgsComposition::Print ||
-            plotStyle() == QgsComposition::Postscript) 
+  else if ( mComposition->plotStyle() == QgsComposition::Print ||
+            mComposition->plotStyle() == QgsComposition::Postscript) 
     {
       QPaintDevice* thePaintDevice = painter->device();
       if(!thePaintDevice)
@@ -244,78 +236,6 @@ double QgsComposerMap::scale()
 QString QgsComposerMap::name ( void ) 
 {
     return mName;
-}
-
-bool QgsComposerMap::writeSettings ( void )  
-{
-  QString path;
-  path.sprintf("/composition_%d/map_%d/", mComposition->id(), mId ); 
-
-  QgsProject::instance()->writeEntry( "Compositions", path+"x", mComposition->toMM((int)QGraphicsRectItem::pos().x()) );
-  QgsProject::instance()->writeEntry( "Compositions", path+"y", mComposition->toMM((int)QGraphicsRectItem::pos().y()) );
-
-
-  QgsProject::instance()->writeEntry( "Compositions", path+"width", mComposition->toMM((int)QGraphicsRectItem::rect().width()) );
-  QgsProject::instance()->writeEntry( "Compositions", path+"height", mComposition->toMM((int)QGraphicsRectItem::rect().height()) );
-
-  /*
-  if ( mCalculate == Scale ) {
-      QgsProject::instance()->writeEntry( "Compositions", path+"calculate", QString("scale") );
-  } else {
-      QgsProject::instance()->writeEntry( "Compositions", path+"calculate", QString("extent") );
-      }*/
-
-  QgsProject::instance()->writeEntry( "Compositions", path+"frame", mFrame );
-
-  QgsProject::instance()->writeEntry( "Compositions", path+"previewmode", mPreviewMode );
-
-  return true; 
-}
-
-bool QgsComposerMap::readSettings ( void )
-{
-  bool ok;
-  QString path;
-  path.sprintf("/composition_%d/map_%d/", mComposition->id(), mId );
-    
-  double x =  mComposition->fromMM(QgsProject::instance()->readDoubleEntry( "Compositions", path+"x", 0, &ok));
-  double y = mComposition->fromMM(QgsProject::instance()->readDoubleEntry( "Compositions", path+"y", 0, &ok));
-  int w = mComposition->fromMM(QgsProject::instance()->readDoubleEntry( "Compositions", path+"width", 100, &ok)) ;
-  int h = mComposition->fromMM(QgsProject::instance()->readDoubleEntry( "Compositions", path+"height", 100, &ok)) ;
-  QGraphicsRectItem::setRect(0, 0, w, h);
-  QGraphicsRectItem::setPos(x, y);
-
-  QString calculate = QgsProject::instance()->readEntry("Compositions", path+"calculate", "scale", &ok);
-  if ( calculate == "extent" )
-  {
-    //mCalculate = Extent;
-  }else
-  {
-    //mCalculate = Scale;
-  }
-    
-  mFrame = QgsProject::instance()->readBoolEntry("Compositions", path+"frame", true, &ok);
-    
-  mPreviewMode = (PreviewMode) QgsProject::instance()->readNumEntry("Compositions", path+"previewmode", Cache, &ok);
-
-  return true;
-}
-
-bool QgsComposerMap::removeSettings ( void )
-{
-    QString path;
-    path.sprintf("/composition_%d/map_%d", mComposition->id(), mId );
-    return QgsProject::instance()->removeEntry ( "Compositions", path );
-}
-
-bool QgsComposerMap::writeXML( QDomNode & node, QDomDocument & document, bool temp )
-{
-    return true;
-}
-
-bool QgsComposerMap::readXML( QDomNode & node )
-{
-    return true;
 }
 
 void QgsComposerMap::resize(double dx, double dy)

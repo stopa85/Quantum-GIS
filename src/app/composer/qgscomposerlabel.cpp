@@ -18,14 +18,12 @@
 #include "qgscomposerlabel.h"
 #include <QPainter>
 
-QgsComposerLabel::QgsComposerLabel( QgsComposition *composition, int id): QgsComposerItem(0), mMargin(0.0)
+QgsComposerLabel::QgsComposerLabel( QgsComposition *composition): QgsComposerItem(composition), mMargin(0.0)
 {
-  mId = id;
 }
 
 QgsComposerLabel::~QgsComposerLabel()
 {
-  //todo
 }
 
 void QgsComposerLabel::paint(QPainter* painter, const QStyleOptionGraphicsItem* itemStyle, QWidget* pWidget)

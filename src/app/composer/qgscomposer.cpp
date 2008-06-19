@@ -20,6 +20,11 @@
 #include "qgsapplication.h"
 #include "qgscomposerview.h"
 #include "qgscomposition.h"
+#include "qgscompositionwidget.h"
+#include "qgscomposerlabel.h"
+#include "qgscomposerlabelwidget.h"
+#include "qgscomposermap.h"
+#include "qgscomposermapwidget.h"
 #include "qgsexception.h"
 #include "qgsproject.h"
 #include "qgsmessageviewer.h"
@@ -79,20 +84,34 @@ QgsComposer::QgsComposer( QgisApp *qgis): QMainWindow()
   setMouseTracking(true);
   mSplitter->setMouseTracking(true);
   mViewFrame->setMouseTracking(true);
-  mView = new QgsComposerView ( this, mViewFrame);
+
+  //create composer view
+  mView = new QgsComposerView (mViewFrame);
+  connect(mView, SIGNAL(selectedItemChanged(const QgsComposerItem*)), this, SLOT(showItemOptions(const QgsComposerItem*)));
+  connect(mView, SIGNAL(composerLabelAdded(QgsComposerLabel*)), this, SLOT(addComposerLabel(QgsComposerLabel*)));
+  connect(mView, SIGNAL(composerMapAdded(QgsComposerMap*)), this, SLOT(addComposerMap(QgsComposerMap*)));
+  connect(mView, SIGNAL(itemRemoved(QgsComposerItem*)), this, SLOT(deleteItem(QgsComposerItem*)));
+
+  mComposition  = new QgsComposition(mQgis->getMapCanvas());
+  mView->setComposition(mComposition);
+
+  QgsCompositionWidget* compositionWidget = new QgsCompositionWidget(mCompositionOptionsFrame, mComposition);
+  compositionWidget->show();
+
+  mCompositionOptionsLayout = new QGridLayout( mCompositionOptionsFrame );
+  mCompositionOptionsLayout->setMargin(0);
+  mCompositionOptionsLayout->addWidget(compositionWidget);
+  
   mPrinter = 0;
 
   QGridLayout *l = new QGridLayout(mViewFrame );
   l->setMargin(0);
   l->addWidget( mView, 0, 0 );
 
-  mCompositionOptionsLayout = new QGridLayout( mCompositionOptionsFrame );
-  mCompositionOptionsLayout->setMargin(0);
-
   mCompositionNameComboBox->insertItem( tr("Map 1") );
 
-  mComposition  = new QgsComposition( this, 1 );
-  mComposition->setActive ( true );
+  //mComposition  = new QgsComposition( this, 1 );
+  //mComposition->setActive ( true );
 
   // Create size grip (needed by Mac OS X for QMainWindow if QStatusBar is not visible)
   mSizeGrip = new QSizeGrip(this);
@@ -146,7 +165,7 @@ void QgsComposer::setupTheme()
 void QgsComposer::open ( void )
 {
   if ( mFirstTime ) {
-    mComposition->createDefault();
+    //mComposition->createDefault();
     mFirstTime = false;
     show();
     zoomFull(); // zoomFull() does not work properly until we have called show()
@@ -173,6 +192,8 @@ void QgsComposer::showItemOptions(const QgsComposerItem* item)
   if(!item)
     {
       mItemStackedWidget->removeWidget(currentWidget);
+      mItemStackedWidget->setCurrentWidget(0);
+      return;
     }
 
   QMap<QgsComposerItem*, QWidget*>::iterator it = mItemWidgetMap.find(const_cast<QgsComposerItem*>(item));
@@ -182,6 +203,7 @@ void QgsComposer::showItemOptions(const QgsComposerItem* item)
     }
 
   QWidget* newWidget = it.value();
+
   if(!newWidget || newWidget == currentWidget) //bail out if new widget does not exist or is already there
     {
       return;
@@ -189,23 +211,8 @@ void QgsComposer::showItemOptions(const QgsComposerItem* item)
 
   mItemStackedWidget->removeWidget(currentWidget);
   mItemStackedWidget->addWidget(newWidget);
-}
-
-void QgsComposer::addItem(QgsComposerItem* item, QWidget* widget)
-{
-  mItemWidgetMap.insert(item, widget);
-}
-
-void QgsComposer::removeItem(QgsComposerItem* item)
-{
-  QMap<QgsComposerItem*, QWidget*>::iterator it = mItemWidgetMap.find(item);
-  if(it != mItemWidgetMap.end())
-    {
-      delete it.value();
-      mView->scene()->removeItem(item);
-      mItemWidgetMap.remove(item);
-      delete item;
-    }
+  mItemStackedWidget->setCurrentWidget(newWidget);
+  //newWidget->show();
 }
 
 QgsMapCanvas *QgsComposer::mapCanvas(void)
@@ -218,10 +225,10 @@ QgsComposerView *QgsComposer::view(void)
   return mView;
 }
 
-QgsComposition *QgsComposer::composition(void)
+/*QgsComposition *QgsComposer::composition(void)
 {
   return mComposition;
-}
+  }*/
 
 void QgsComposer::zoomFull(void)
 {
@@ -247,12 +254,56 @@ void QgsComposer::on_mActionZoomOut_activated(void)
 
 void QgsComposer::on_mActionRefreshView_activated(void)
 {
+  /*
   mComposition->refresh();
   mView->update();
+  */
 }
 
 void QgsComposer::on_mActionPrint_activated(void)
 {
+  if(!mComposition)
+    {
+      return;
+    }
+
+  QPrinter printer;
+
+  //try to set most of the print dialog settings based on composer properties
+  if(mComposition->paperHeight() > mComposition->paperWidth())
+    {
+      printer.setOrientation(QPrinter::Portrait);
+    }
+  else
+    {
+      printer.setOrientation(QPrinter::Landscape);
+    }
+
+  //set resolution based on composer setting
+  
+
+  printer.setFullPage(true);
+  printer.setColorMode(QPrinter::Color);
+  
+  QPrintDialog printDialog(&printer);
+  
+  if(printDialog.exec() == QDialog::Accepted)
+    {
+      QPainter p(&printer);
+      QRectF paperRect(0, 0, mComposition->paperWidth(), mComposition->paperHeight());
+      QRect pageRect = printer.pageRect();
+      //better in case of custom page size, but only possible with Qt>4.4
+      //with Qt4.4: QRectF paperRect = printer.pageRect(QPrinter::Millimeter)
+      
+
+      QgsComposition::PlotStyle savedPlotStyle = mComposition->plotStyle();
+      mComposition->setPlotStyle(QgsComposition::Print);
+
+      mComposition->render(&p, pageRect, paperRect);
+      
+      mComposition->setPlotStyle(savedPlotStyle);
+    }
+#if 0
   /* Uff!!! It is impossible to set a custom page size for QPrinter.
    * Only the sizes hardcoded in Qt library can be used.
    * 'Fortunately', it seems that everything is written to postscript output file,
@@ -596,7 +647,7 @@ void QgsComposer::on_mActionPrint_activated(void)
     {
       raise();
     }
-
+#endif //0
 }
 
 
@@ -617,6 +668,7 @@ bool QgsComposer::shiftFileContent ( QFile *file, Q_LONG start, int shift )
 void QgsComposer::on_mActionExportAsImage_activated(void)
 {
 
+#if 0
   // Image size 
   int width = (int) (mComposition->resolution() * mComposition->paperWidth() / 25.4); 
   int height = (int) (mComposition->resolution() * mComposition->paperHeight() / 25.4); 
@@ -737,12 +789,12 @@ QRectF renderArea(0,0,(mComposition->paperWidth() * mComposition->scale()),(mCom
   mView->setScene(mComposition->canvas());
 
   pixmap.save ( myOutputFileNameQString, myFilterMap[myFilterString].toLocal8Bit().data() );
+#endif //0
 }
 
 
 void QgsComposer::on_mActionExportAsSVG_activated(void)
 {
-
   QString myQSettingsLabel = "/UI/displaySVGWarning";
   QSettings myQSettings;
 
@@ -792,7 +844,7 @@ void QgsComposer::on_mActionExportAsSVG_activated(void)
 
   myQSettings.writeEntry("/UI/lastSaveAsSvgFile", myOutputFileNameQString);
 
-  mView->setScene(0);//don't redraw the scene on the display while we render
+  //mView->setScene(0);//don't redraw the scene on the display while we render
   mComposition->setPlotStyle ( QgsComposition::Print );
 
 #if QT_VERSION < 0x040300
@@ -803,16 +855,16 @@ void QgsComposer::on_mActionExportAsSVG_activated(void)
   QSvgGenerator generator;
   generator.setFileName(myOutputFileNameQString);
   generator.setSize(QSize( (int)mComposition->paperWidth(), (int)mComposition->paperHeight() ));
-  generator.setResolution((int)(mComposition->resolution() / 25.4)); //because the rendering is done in mm, convert the dpi
+  //generator.setResolution((int)(mComposition->resolution() / 25.4)); //because the rendering is done in mm, convert the dpi
  
   QPainter p(&generator);
   QRectF renderArea(0,0, mComposition->paperWidth(), mComposition->paperHeight());
 #endif
-  mComposition->canvas()->render(&p, renderArea);
+  mComposition->render(&p, renderArea);
   p.end();
 
   mComposition->setPlotStyle ( QgsComposition::Preview );
-  mView->setScene(mComposition->canvas()); //now that we're done, set the view to show the scene again
+  //mView->setScene(mComposition->canvas()); //now that we're done, set the view to show the scene again
 
 #if QT_VERSION < 0x040300
   QRect br = pic.boundingRect();
@@ -824,6 +876,7 @@ void QgsComposer::on_mActionExportAsSVG_activated(void)
 
 void QgsComposer::setToolActionsOff(void)
 {
+#if 0
   mActionOpenTemplate->setOn ( false );
   mActionSaveTemplateAs->setOn ( false );
   mActionExportAsImage->setOn ( false );
@@ -839,70 +892,83 @@ void QgsComposer::setToolActionsOff(void)
   mActionAddNewVectLegend->setOn ( false );
   mActionAddNewScalebar->setOn ( false );
   mActionSelectMoveItem->setOn ( false );
+#endif //0
 }
 
 void QgsComposer::selectItem(void)
 {
+#if 0
   mComposition->setTool ( QgsComposition::Select );
   setToolActionsOff();
   mActionSelectMoveItem->setOn ( true );
+#endif //0
 }
 
 void QgsComposer::on_mActionSelectMoveItem_activated(void)
 {
-  selectItem();
+  if(mView)
+    {
+      mView->setCurrentTool(QgsComposerView::Select);
+    }
 }
 
 void QgsComposer::on_mActionAddNewMap_activated(void)
 {
-  mComposition->setTool ( QgsComposition::AddMap );
-  setToolActionsOff();
-  mActionAddNewMap->setOn ( true );
-  mView->setCursor(QCursor(cross_hair_cursor));
+  if(mView)
+    {
+      mView->setCurrentTool(QgsComposerView::AddMap);
+    }
 }
 
 void QgsComposer::on_mActionAddNewVectLegend_activated(void)
 {
+#if 0
   mComposition->setTool ( QgsComposition::AddVectorLegend );
   setToolActionsOff();
   mActionAddNewVectLegend->setOn ( true );
+#endif //0
 }
 
 void QgsComposer::on_mActionAddNewLabel_activated(void)
 {
-  mComposition->setTool ( QgsComposition::AddLabel );
-  setToolActionsOff();
-  mActionAddNewLabel->setOn ( true );
+  if(mView)
+    {
+      mView->setCurrentTool(QgsComposerView::AddLabel);
+    }
 }
 
 void QgsComposer::on_mActionAddNewScalebar_activated(void)
 {
+#if 0
   mComposition->setTool ( QgsComposition::AddScalebar );
   setToolActionsOff();
   mActionAddNewScalebar->setOn ( true );
+#endif //0
 }
 
 void QgsComposer::on_mActionAddImage_activated(void)
 {
+#if 0
   mComposition->setTool ( QgsComposition::AddPicture );
   setToolActionsOff();
   mActionAddImage->setOn ( true );
   mView->setCursor(QCursor(cross_hair_cursor));
+#endif //0
 }
  
 void QgsComposer::groupItems(void)
 {
-  if(mComposition)
+  if(mView)
     {
-      mComposition->groupItems();
+      mView->groupItems();
     }
 }
 
 void QgsComposer::ungroupItems(void)
 {
-  if(mComposition)
+  if(mView)
     {
-      mComposition->ungroupItems();
+      mView->ungroupItems();
     }
 }
 
@@ -953,8 +1019,8 @@ void QgsComposer::projectRead(void)
 #ifdef QGISDEBUG
   std::cout << "QgsComposer::projectRead" << std::endl;
 #endif
-  if ( mComposition ) delete mComposition;
-  mComposition  = new QgsComposition( this, 1 );
+  //if ( mComposition ) delete mComposition;
+  //mComposition  = new QgsComposition( this, 1 );
 
   // Read composition if it is defined in project
   QStringList l = QgsProject::instance()->subkeyList ( "Compositions", "" );
@@ -969,18 +1035,18 @@ void QgsComposer::projectRead(void)
   }
 
   if ( found ) {
-    mComposition->readSettings ( );
+    //mComposition->readSettings ( );
     mFirstTime = false;
   } else { 
     if ( isVisible() ) {
-      mComposition->createDefault();
+      //mComposition->createDefault();
       mFirstTime = false;
     } else {
       mFirstTime = true;
     }
   }
 
-  mComposition->setActive ( true );
+  //mComposition->setActive ( true );
 }
 
 void QgsComposer::newProject(void)
@@ -988,14 +1054,14 @@ void QgsComposer::newProject(void)
 #ifdef QGISDEBUG
   std::cout << "QgsComposer::newProject" << std::endl;
 #endif
-  if ( mComposition ) delete mComposition;
+  //if ( mComposition ) delete mComposition;
 
-  mComposition  = new QgsComposition( this, 1 );
-  mComposition->setActive ( true );
+  //mComposition  = new QgsComposition( this, 1 );
+  //mComposition->setActive ( true );
 
   // If composer is visible, create default immediately, otherwise wait for the first open()
   if ( isVisible() ) {
-    mComposition->createDefault();
+    //mComposition->createDefault();
     mFirstTime = false;
   } else {
     mFirstTime = true;
@@ -1042,3 +1108,37 @@ bool QgsComposer::readXML( QDomNode & node )
   return true;
 }
 
+void QgsComposer::addComposerMap(QgsComposerMap* map)
+{
+  if(!map)
+    {
+      return;
+    }
+
+  QgsComposerMapWidget* mapWidget= new QgsComposerMapWidget(map);
+  mItemWidgetMap.insert(map, mapWidget);
+}
+
+void QgsComposer::addComposerLabel(QgsComposerLabel* label)
+{
+  if(!label)
+    {
+      return;
+    }
+  
+  QgsComposerLabelWidget* labelWidget = new QgsComposerLabelWidget(label);
+  mItemWidgetMap.insert(label, labelWidget);
+}
+
+void QgsComposer::deleteItem(QgsComposerItem* item)
+{
+  QMap<QgsComposerItem*, QWidget*>::iterator it = mItemWidgetMap.find(item);
+
+  if(it == mItemWidgetMap.end())
+    {
+      return;
+    }
+
+  delete (it.value());
+  mItemWidgetMap.remove(it.key());
+}

@@ -36,6 +36,8 @@
 #include <iostream>
 #include <vector>
 
+#if 0
+
 QgsComposerVectorLegend::QgsComposerVectorLegend ( QgsComposition *composition, int id, 
                                               int x, int y, int fontSize )
     : QWidget(composition), QgsComposerItem(x,y,10,10,0)
@@ -954,3 +956,5 @@ bool QgsComposerVectorLegend::readXML( QDomNode & node )
 {
     return true;
 }
+
+#endif //0

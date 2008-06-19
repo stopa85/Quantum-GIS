@@ -16,6 +16,8 @@
  ***************************************************************************/
 /* $Id$ */
 
+#if 0
+
 #include "qgscomposerpicture.h"
 #include "qgsproject.h"
 
@@ -569,3 +571,5 @@ bool QgsComposerPicture::readXML( QDomNode & node )
 {
     return true;
 }
+
+#endif //0

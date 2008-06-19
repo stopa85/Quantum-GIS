@@ -21,32 +21,19 @@
 #include <QPen>
 #include <QPainter>
 
-QgsComposerItemGroup::QgsComposerItemGroup(QgsComposition* c, QGraphicsItem* parent): QgsComposerItem(parent), mComposition(c)
+QgsComposerItemGroup::QgsComposerItemGroup(QgsComposition* c): QgsComposerItem(c)
 {
-  setZValue(50);
+  setZValue(90);
   show();
 }
 
 QgsComposerItemGroup::~QgsComposerItemGroup()
 {
-  //todo: notify composition to delete child items too
-  //QgsComposer::removeItem(QgsComposerItem* item)
-
-  if(!mComposition)
-    {
-      return;
-    }
-
-  QgsComposer* composer = mComposition->composer();
-  if(!composer)
-    {
-      return;
-    }
-  
   QSet<QgsComposerItem*>::iterator itemIt = mItems.begin();
   for(; itemIt != mItems.end(); ++itemIt)
     {
-      composer->removeItem(*itemIt);
+      emit childItemDeleted(*itemIt);
+      delete (*itemIt);
     }
 }
  
@@ -109,6 +96,7 @@ void QgsComposerItemGroup::removeItems()
   for(; item_it != mItems.end(); ++item_it)
     {
       (*item_it)->setFlag(QGraphicsItem::ItemIsSelectable, true); //enable item selection again
+      (*item_it)->setSelected(true);
     }
   mItems.clear();
 }
@@ -161,7 +149,12 @@ void QgsComposerItemGroup::setSceneRect(const QRectF& rectangle)
 
 void QgsComposerItemGroup::drawFrame(QPainter* p)
 {
-  if(mFrame && plotStyle() == QgsComposition::Preview)
+  if(!mComposition)
+    {
+      return;
+    }
+
+  if(mFrame && mComposition->plotStyle() == QgsComposition::Preview)
     {
       QPen newPen(pen());
       newPen.setStyle(Qt::DashLine);

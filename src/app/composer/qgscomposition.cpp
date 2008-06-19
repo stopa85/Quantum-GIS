@@ -13,6 +13,87 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
+
+#include "qgscomposition.h"
+#include "qgscomposeritem.h"
+#include <QGraphicsRectItem>
+
+QgsComposition::QgsComposition(QgsMapCanvas* mapCanvas): QGraphicsScene(0), mMapCanvas(mapCanvas), mPlotStyle(QgsComposition::Preview), mPaperItem(0)
+{
+  setBackgroundBrush(Qt::gray);
+
+  //set paper item
+  mPaperItem = new QGraphicsRectItem( 0, 0, 297, 210, 0); //default size A4
+  mPaperItem->setBrush(Qt::white);
+  addItem(mPaperItem);
+  mPaperItem->setZValue(0);
+}
+
+QgsComposition::QgsComposition(): QGraphicsScene(0), mMapCanvas(0), mPlotStyle(QgsComposition::Preview), mPaperItem(0)
+{
+
+}
+
+QgsComposition::~QgsComposition()
+{
+  delete mPaperItem;
+}
+
+void QgsComposition::setPaperSize(double width, double height)
+{
+  if(mPaperItem)
+    {
+      mPaperItem->setRect(QRectF(0, 0, width, height));
+    }
+}
+
+double QgsComposition::paperHeight() const
+{
+  return mPaperItem->rect().height();
+}
+
+double QgsComposition::paperWidth() const
+{
+  return mPaperItem->rect().width();
+}
+
+QgsComposerItem* QgsComposition::composerItemAt(const QPointF & position)
+{
+  QList<QGraphicsItem *> itemList = items(position);
+  QList<QGraphicsItem *>::iterator itemIt = itemList.begin();
+
+  for(; itemIt != itemList.end(); ++itemIt)
+    {
+      QgsComposerItem* composerItem = dynamic_cast<QgsComposerItem*>(*itemIt);
+      if(composerItem)
+	{
+	  return composerItem;
+	}
+    }
+  return 0;
+}
+
+QList<QgsComposerItem*> QgsComposition::selectedComposerItems()
+{
+  QList<QgsComposerItem*> composerItemList;
+
+  QList<QGraphicsItem *> graphicsItemList = selectedItems();
+  QList<QGraphicsItem *>::iterator itemIter = graphicsItemList.begin();
+  
+  for(; itemIter != graphicsItemList.end(); ++itemIter)
+    {
+      QgsComposerItem* composerItem = dynamic_cast<QgsComposerItem*>(*itemIter);
+      if(composerItem)
+	{
+	  composerItemList.push_back(composerItem);
+	}
+    }
+
+  return composerItemList;
+}
+
+#if 0
+
 #include <typeinfo>
 
 #include "qgscomposition.h"
@@ -283,7 +364,7 @@ void QgsComposition::mousePressEvent(QMouseEvent* e, bool shiftKeyPressed)
     case AddLabel:
       if(mToolStep == 0)
 	{
-	  QgsComposerLabel* newLabelItem = new QgsComposerLabel(this, mNextItemId++);
+	  QgsComposerLabel* newLabelItem = new QgsComposerLabel(this);
 	  newLabelItem->setText("Quantum GIS");
 	  newLabelItem->adjustSizeToText();
 	  newLabelItem->setSceneRect(QRectF(p.x(), p.y(), newLabelItem->rect().width(), newLabelItem->rect().height()));
@@ -461,7 +542,7 @@ void QgsComposition::mouseReleaseEvent(QMouseEvent* e)
 	  {
 	    mComposer->selectItem(); // usually just one map
 
-	    m = new QgsComposerMap ( this, mNextItemId++, x, y, w, h );
+	    m = new QgsComposerMap ( this, x, y, w, h );
 	    QgsComposerMapWidget* w = new QgsComposerMapWidget(m);
 	    mComposer->addItem(m, w);
 	    mItems.push_back(m);
@@ -693,6 +774,7 @@ double QgsComposition::viewScale ( void )
 //does this even work?
 void QgsComposition::refresh()
 {
+#if 0
   // TODO add signals to map canvas
   for (std::list < QgsComposerItem * >::iterator it = mItems.begin(); it != mItems.end(); ++it)    {
     QgsComposerItem *ci = (*it);
@@ -704,6 +786,7 @@ void QgsComposition::refresh()
       vl->recalculate();
     }
   }
+#endif //0
   mCanvas->update();
 }
 
@@ -843,7 +926,7 @@ void QgsComposition::groupItems()
       return; //not enough items for a group
     }
 
-  QgsComposerItemGroup* itemGroup = new QgsComposerItemGroup(this, 0);
+  QgsComposerItemGroup* itemGroup = new QgsComposerItemGroup(this);
 
   QList<QGraphicsItem *>::iterator itemIt = selectedItems.begin();
   for(; itemIt != selectedItems.end(); ++itemIt)
@@ -889,17 +972,6 @@ std::vector<QgsComposerMap*> QgsComposition::maps(void)
   }
 
   return v;
-}
-
-QgsComposerMap* QgsComposition::map ( int id ) 
-{ 
-  for (std::list < QgsComposerItem * >::iterator it = mItems.begin(); it != mItems.end(); ++it) {
-    QgsComposerItem *ci = (*it);
-    if (  ci->id() == id ) {
-      return ( dynamic_cast<QgsComposerMap*>(ci) );
-    }
-  }
-  return 0;
 }
 
 double QgsComposition::selectionBoxSize ( void )
@@ -1031,3 +1103,4 @@ bool QgsComposition::readSettings ( void )
   return true;
 }
 
+#endif //0

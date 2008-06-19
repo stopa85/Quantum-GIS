@@ -21,6 +21,8 @@
 #include "qgscomposeritem.h"
 
 class QgisApp;
+class QgsComposerLabel;
+class QgsComposerMap;
 class QgsComposerView;
 class QgsComposition;
 class QgsMapCanvas;
@@ -71,13 +73,10 @@ public:
     QgsComposerView *view ( void );
 
     //! Return current composition
-    QgsComposition *composition(void);
+    //QgsComposition *composition(void);
 
     //! Show composition options in widget
     void showCompositionOptions ( QWidget *w );
-    
-    //! Show item options in widget
-    void showItemOptions(const QgsComposerItem* i);
 
     /** \brief stores statei in project */
     bool writeSettings ( void );
@@ -93,15 +92,6 @@ public:
 
     //! Restore the window and toolbar state
     void restoreWindowState();
-
-    /** Adds an item and its configuration widget to the composer.	\
-	QgsComposer takes ownership of these objects and deletes them	\
-	if not needed any more.
-    */
-    void addItem(QgsComposerItem* item, QWidget* widget);
-
-    /**Removes (and deletes) the item and its configuration widget from the composer*/
-    void removeItem(QgsComposerItem* item);
 
     //! Move event
     void moveEvent ( QMoveEvent * );
@@ -169,6 +159,20 @@ public slots:
 
     //! Slot for when the close button is clicked
     void on_closePButton_clicked();
+
+    /**Add a composer map to the item/widget map and creates a configuration widget for it*/
+    void addComposerMap(QgsComposerMap* map);
+
+    /**Adds a composer label to the item/widget map and creates a configuration widget for it*/
+    void addComposerLabel(QgsComposerLabel* label);
+
+    /**Removes item from the item/widget map and deletes the configuration widget*/
+    void deleteItem(QgsComposerItem* item);
+    
+    /**Shows the configuration widget for a composer item*/
+    void showItemOptions(const QgsComposerItem* i);
+
+    
 
 private:
     //! Set teh pixmap / icons on the toolbar buttons

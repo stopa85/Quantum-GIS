@@ -16,6 +16,59 @@
 #ifndef QGSCOMPOSITION_H
 #define QGSCOMPOSITION_H
 
+#include <QGraphicsScene>
+
+class QgsComposerItem;
+class QGraphicsRectItem;
+class QgsMapCanvas;
+
+/**Graphics scene for map printing. It manages the paper item which always is the item in the back (z-value 0)*/
+class QgsComposition: public QGraphicsScene
+{
+ public:
+
+  /** \brief Plot type */
+  enum PlotStyle 
+    {
+      Preview = 0, // Use cache etc
+      Print,       // Render well
+      Postscript   // Fonts need different scaling!
+    };
+
+  QgsComposition(QgsMapCanvas* mapCanvas);
+  ~QgsComposition();
+
+  /**Changes size of paper item*/
+  void setPaperSize(double width, double height);
+
+  /**Returns height of paper item*/
+  double paperHeight() const;
+
+  /**Returns width of paper item*/
+  double paperWidth() const;
+
+  /**Returns the topmose composer item. Ignores mPaperItem*/
+  QgsComposerItem* composerItemAt(const QPointF & position);
+
+  QList<QgsComposerItem*> selectedComposerItems();
+
+  /**Returns pointer to qgis map canvas*/
+  QgsMapCanvas* mapCanvas(){return mMapCanvas;}
+
+  QgsComposition::PlotStyle plotStyle() const {return mPlotStyle;}
+  void setPlotStyle(QgsComposition::PlotStyle style) {mPlotStyle = style;}
+
+ private:
+  QgsMapCanvas* mMapCanvas;
+  QgsComposition::PlotStyle mPlotStyle;
+  QGraphicsRectItem* mPaperItem;
+
+  QgsComposition(); //default constructor is forbidden
+};
+
+#endif 
+
+#if 0
 #include "ui_qgscompositionbase.h"
 
 #include <list>
@@ -204,12 +257,6 @@ public:
     
     /** \brief vector of pointers to maps available in composition */
     std::vector<QgsComposerMap*> maps(void);
-
-    /** \brief Find a map by id 
-     *  \param id canvas item id
-     *  \return pointer to existing map or 0
-     */
-    QgsComposerMap * map (int id);
 
     /** \brief stores statei in project */
     bool writeSettings ( void );

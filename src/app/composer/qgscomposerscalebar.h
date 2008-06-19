@@ -38,6 +38,31 @@ class QgsComposerScaleBar: public QgsComposerItem
   /** \brief Reimplementation of QCanvasItem::paint*/
   void paint (QPainter* painter, const QStyleOptionGraphicsItem* itemStyle, QWidget* pWidget);
 
+  //getters and setters
+  int numSegments() const {return mNumSegments;}
+  void setNumSegments(int nSegments){mNumSegments = nSegments;}
+  
+  int numSegmentsLeft() const {return mNumSegmentsLeft;}
+  void setNumSegmentsLeft(int nSegmentsLeft) {mNumSegmentsLeft = nSegmentsLeft;}
+
+  double numUnitsPerSegment() const {return mNumUnitsPerSegment;}
+  void setNumUnitsPerSegment(double units) {mNumUnitsPerSegment = units;}
+
+  QString unitLabeling() const {return mUnitLabeling;}
+  void setUnitLabeling(const QString& label){mUnitLabeling = label;}
+
+  QFont font() const {return mFont;}
+  void setFont(const QFont& font){mFont = font;}
+
+  QPen pen() const {return mPen;}
+  void setPen(const QPen& pen){mPen = pen;}
+
+  QBrush brush() const {return mBrush;}
+  void setBrush(const QBrush& brush){mBrush = brush;}
+
+  double height() const {return mHeight;}
+  void setHeight(double h) {mHeight = h;}
+
   
  protected:
 
@@ -48,7 +73,7 @@ class QgsComposerScaleBar: public QgsComposerItem
   /**Number of segments on left side*/
   int mNumSegmentsLeft;
   /**Size of a segment (in map units)*/
-  int mNumUnitsPerSegment;
+  double mNumUnitsPerSegment;
   /**Labeling of map units*/
   QString mUnitLabeling;
   /**Font*/

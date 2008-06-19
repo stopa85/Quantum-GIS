@@ -45,24 +45,15 @@ public:
       resizeDRightDown
     };
 
-    QgsComposerItem(QGraphicsItem* parent = 0);
-    QgsComposerItem(qreal x, qreal y, qreal width, qreal height, QGraphicsItem* parent = 0); 
+    QgsComposerItem(QgsComposition* composition);
+    QgsComposerItem(qreal x, qreal y, qreal width, qreal height, QgsComposition* composition); 
     virtual ~QgsComposerItem(); 
-
-    /** \brief Set plot style */
-    void setPlotStyle ( QgsComposition::PlotStyle p );
-
-    /** \brief get plot style */
-    QgsComposition::PlotStyle plotStyle ( void );
 
     /** \brief Set selected, selected item should be highlighted */
     virtual void setSelected( bool s );
 
     /** \brief Is selected */
     virtual bool selected( void ){return QGraphicsRectItem::isSelected();}
-    
-    /** item id */
-    int id ( void );
 
     /** stores state in project */
     virtual bool writeSettings ( void );
@@ -99,8 +90,8 @@ public:
     virtual void removeItems() {}
 
 protected:
-    QgsComposition::PlotStyle mPlotStyle;
-    int mId;
+    
+    QgsComposition* mComposition;
 
     QgsComposerItem::mouseMoveAction mCurrentMouseMoveAction;
     /**Start point of the last mouse move action (in scene coordinates)*/

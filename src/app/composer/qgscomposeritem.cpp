@@ -26,16 +26,14 @@
 #include <iostream>
 #include "qgsrect.h" //just for debugging
 
-QgsComposerItem::QgsComposerItem(QGraphicsItem* parent): QGraphicsRectItem(0), mBoundingResizeRectangle(0), mFrame(true)
+QgsComposerItem::QgsComposerItem(QgsComposition* composition): QGraphicsRectItem(0), mComposition(composition), mBoundingResizeRectangle(0), mFrame(true)
 {
-    mPlotStyle = QgsComposition::Preview;
     setFlag(QGraphicsItem::ItemIsSelectable, true);
     setAcceptsHoverEvents(true);
 }
 
-QgsComposerItem::QgsComposerItem(qreal x, qreal y, qreal width, qreal height, QGraphicsItem* parent): QGraphicsRectItem(0, 0, width, height, parent), mBoundingResizeRectangle(0), mFrame(true)
+QgsComposerItem::QgsComposerItem(qreal x, qreal y, qreal width, qreal height, QgsComposition* composition): QGraphicsRectItem(0, 0, width, height, 0), mComposition(composition), mBoundingResizeRectangle(0), mFrame(true)
 {
-  mPlotStyle = QgsComposition::Preview;
   setFlag(QGraphicsItem::ItemIsSelectable, true);
   setAcceptsHoverEvents(true);
 
@@ -48,19 +46,12 @@ QgsComposerItem::~QgsComposerItem()
 {
 }
 
-void QgsComposerItem::setPlotStyle ( QgsComposition::PlotStyle d ) { mPlotStyle = d; }
-
-QgsComposition::PlotStyle QgsComposerItem::plotStyle ( void ) { return mPlotStyle; }
-
-
 void QgsComposerItem::setSelected( bool s ) 
 {
     std::cout << "QgsComposerItem::setSelected" << std::endl; 
     QGraphicsRectItem::setSelected(s);
     update(); //to draw selection boxes
 }
-
-int QgsComposerItem::id(void) { return mId; }
 
 bool QgsComposerItem::writeSettings ( void )  { return true; }
 
@@ -290,7 +281,12 @@ void QgsComposerItem::rectangleChange(double dx, double dy, double& mx, double& 
 
 void QgsComposerItem::drawSelectionBoxes(QPainter* p)
 {
-  if(plotStyle() == QgsComposition::Preview)
+  if(!mComposition)
+    {
+      return;
+    }
+
+  if(mComposition->plotStyle() == QgsComposition::Preview)
     {
       p->setPen(QPen(QColor(0, 0, 255)));
       p->setBrush(QBrush(QColor(0, 0, 255)));

@@ -17,6 +17,9 @@
 #ifndef QGSCOMPOSERPICTURE_H
 #define QGSCOMPOSERPICTURE_H
 
+
+#if 0
+
 #include "ui_qgscomposerpicturebase.h"
 #include "qgscomposeritem.h"
 #include <QAbstractGraphicsShapeItem>
@@ -146,5 +149,7 @@ private:
     // Adjust size so that picture fits to current box
     void adjustPictureSize();
 };
+
+#endif //0
 
 #endif

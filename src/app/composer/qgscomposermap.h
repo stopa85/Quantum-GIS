@@ -41,9 +41,9 @@ class QgsComposerMap : /*public QWidget , private Ui::QgsComposerMapBase,*/ publ
 
 public:
     /** Constructor. */
-    QgsComposerMap( QgsComposition *composition, int id, int x, int y, int width, int height );
+    QgsComposerMap( QgsComposition *composition, int x, int y, int width, int height );
     /** Constructor. Settings are read from project. */
-    QgsComposerMap( QgsComposition *composition, int id );
+    QgsComposerMap( QgsComposition *composition);
     ~QgsComposerMap();
 
     /** \brief Preview style  */
@@ -55,13 +55,6 @@ public:
 
     /** \brief Initialise GUI and other settings, shared by constructors */
     void init ( void );
-
-    // Reimplement QgsComposerItem:
-    bool writeSettings ( void );
-    bool readSettings ( void );
-    bool removeSettings ( void );
-    bool writeXML( QDomNode & node, QDomDocument & document, bool temp = false );
-    bool readXML( QDomNode & node );
      
     /** \brief Draw to paint device 
 	@param extent map extent
@@ -117,9 +110,6 @@ public slots:
 
 private:
 
-    // Pointer to composition
-    QgsComposition *mComposition;
-    
     // Pointer to map canvas
     QgsMapCanvas *mMapCanvas;
     

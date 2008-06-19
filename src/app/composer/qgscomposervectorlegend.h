@@ -17,6 +17,8 @@
 #ifndef QGSCOMPOSERVECTORLEGEND_H
 #define QGSCOMPOSERVECTORLEGEND_H
 
+#if 0
+
 /*           
  *                    |<>| - mMargin         
  *           
@@ -211,5 +213,7 @@ private:
     /** \brief Draw frame  */
     bool mFrame;
 };
+
+#endif //0
 
 #endif

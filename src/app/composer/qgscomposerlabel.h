@@ -22,7 +22,7 @@
 class QgsComposerLabel: public QgsComposerItem
 {
  public:
-  QgsComposerLabel( QgsComposition *composition, int id);
+  QgsComposerLabel( QgsComposition *composition);
   ~QgsComposerLabel();
 
   /** \brief Reimplementation of QCanvasItem::paint*/

@@ -16,13 +16,16 @@
  ***************************************************************************/
 
 #include "qgscomposeritem.h"
+#include <QObject>
 #include <QSet>
+
 class QgsComposition;
 
-class QgsComposerItemGroup: public QgsComposerItem
+class QgsComposerItemGroup: public QObject, public QgsComposerItem
 {
+  Q_OBJECT
  public:
-  QgsComposerItemGroup(QgsComposition* c, QGraphicsItem* parent = 0);
+  QgsComposerItemGroup(QgsComposition* c);
   ~QgsComposerItemGroup();
   /**Adds an item to the group. All the group members are deleted 
    if the group is deleted*/
@@ -37,12 +40,14 @@ class QgsComposerItemGroup: public QgsComposerItem
   /** resizes an item in x- and y direction (scene coordinates)*/
   void resize(double dx, double dy);
 
+ signals:
+  void childItemDeleted(QgsComposerItem* item);
+
  protected:
   void drawFrame(QPainter* p);
 
  private:
   QSet<QgsComposerItem*> mItems;
-  QgsComposition* mComposition;
   QRectF mSceneBoundingRectangle;
 };
 

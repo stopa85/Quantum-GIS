@@ -60,13 +60,15 @@ SET(QGIS_APP_SRCS
   composer/qgscomposeritemgroup.cpp
   composer/qgscomposerlabel.cpp
   composer/qgscomposerlabelwidget.cpp
-  composer/qgscomposerpicture.cpp
+  #composer/qgscomposerpicture.cpp
   composer/qgscomposermap.cpp
   composer/qgscomposermapwidget.cpp
-  composer/qgscomposerscalebar.cpp
-  composer/qgscomposervectorlegend.cpp
+  #composer/qgscomposerscalebar.cpp
+  #composer/qgscomposerscalebarwidget.cpp
+  #composer/qgscomposervectorlegend.cpp
   composer/qgscomposerview.cpp
   composer/qgscomposition.cpp
+  composer/qgscompositionwidget.cpp
 
   legend/qgslegendgroup.cpp
   legend/qgslegend.cpp
@@ -122,11 +124,12 @@ SET (QGIS_APP_MOC_HDRS
   composer/qgscomposerlabelwidget.h
   composer/qgscomposermap.h
   composer/qgscomposermapwidget.h
-  composer/qgscomposerpicture.h
-  composer/qgscomposerscalebar.h
-  composer/qgscomposervectorlegend.h
+  #composer/qgscomposerpicture.h
+  #composer/qgscomposerscalebarwidget.h
+  #composer/qgscomposervectorlegend.h
   composer/qgscomposerview.h
-  composer/qgscomposition.h
+  composer/qgscomposeritemgroup.h
+  composer/qgscompositionwidget.h
 
   legend/qgslegend.h
   legend/qgslegendlayer.h
