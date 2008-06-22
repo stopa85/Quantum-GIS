@@ -15,10 +15,14 @@
  ***************************************************************************/
 
 #include "qgscomposerscalebar.h"
+#include "qgscomposermap.h"
+#include "qgsrect.h"
+#include <QFontMetricsF>
+#include <QPainter>
 
-QgsComposerScaleBar::QgsComposerScaleBar(QgsComposition* composition): QgsComposerItem(0)
+QgsComposerScaleBar::QgsComposerScaleBar(QgsComposition* composition): QgsComposerItem(composition), mComposerMap(0), mStyle(QgsComposerScaleBar::Single_Box), mSegmentMM(0.0)
 {
-  
+  mLabelBarSpace = 3.0;
 }
 
 QgsComposerScaleBar::~QgsComposerScaleBar()
@@ -28,7 +32,170 @@ QgsComposerScaleBar::~QgsComposerScaleBar()
 
 void QgsComposerScaleBar::paint (QPainter* painter, const QStyleOptionGraphicsItem* itemStyle, QWidget* pWidget)
 {
-  //soon...
+  //calculate top level of the bar
+  QFontMetricsF labelFontMetrics(mFont);
+  double barTopPosition = labelFontMetrics.height() + mLabelBarSpace;
+
+  switch(mStyle)
+    {
+    case QgsComposerScaleBar::Single_Box:
+      drawScaleBarSingleBox(painter, barTopPosition);
+      break;
+    default:
+      break;
+    }
+
+  drawLabels(painter);
+
+  //draw frame and selection boxes if necessary
+  drawFrame(painter);
+  if(isSelected())
+    {
+      drawSelectionBoxes(painter);
+    }
+}
+
+void QgsComposerScaleBar::setNumUnitsPerSegment(double units)
+{
+  mNumUnitsPerSegment = units;
+  refreshSegmentMM();
+}
+
+void QgsComposerScaleBar::setComposerMap(const QgsComposerMap* map)
+{
+  mComposerMap = map;
+  refreshSegmentMM();
+}
+
+void QgsComposerScaleBar::refreshSegmentMM()
+{
+  if(mComposerMap)
+    {
+      //get extent of composer map
+      QgsRect composerMapRect = mComposerMap->extent();
+
+      //get mm dimension of composer map
+      QRectF composerItemRect = mComposerMap->rect();
+
+      //calculate size depending on mNumUnitsPerSegment
+      mSegmentMM = composerItemRect.width() / composerMapRect.width() * mNumUnitsPerSegment;
+    }
+}
+
+void QgsComposerScaleBar::applyDefaultSettings()
+{
+  mNumSegments = 3;
+  mNumSegmentsLeft = 1;
+
+  mHeight = 5;
+
+  mStyle = QgsComposerScaleBar::Single_Box;
+
+  mPen = QPen(QColor(0, 0, 0));
+  mPen.setWidthF(1.0);
+
+  mFont.setPointSizeF(8);
+
+  if(mComposerMap)
+    {
+      //calculate mNumUnitsPerSegment
+      QRectF composerItemRect = mComposerMap->rect();
+      QgsRect composerMapRect = mComposerMap->extent();
+
+      double widthScaleBar = composerItemRect.width() / 5;
+      mNumUnitsPerSegment = composerMapRect.width() / 5 / 4;
+    }
+
+  refreshSegmentMM();
+}
+
+void QgsComposerScaleBar::drawLabels(QPainter* p)
+{
+  if(!p)
+    {
+      return;
+    }
+
+  p->save();
+  p->setFont(mFont);
+
+  QFontMetricsF labelFontMetrics(mFont);
+  double fontHeight = labelFontMetrics.height();
+
+  double mCurrentXCoord = 0;
+
+  //draw labels of the left segments
+  for(int i = 0; i < mNumSegmentsLeft; ++i)
+    {
+      mCurrentXCoord += mSegmentMM / mNumSegmentsLeft;
+    }
+
+  double currentLabelNumber = 0.0;
+
+  //draw labels of the right segments
+  for(int i = 0; i < mNumSegments; ++i)
+    {
+      p->drawText(QPointF(mCurrentXCoord, fontHeight), QString::number(currentLabelNumber));
+      mCurrentXCoord += mSegmentMM;
+      currentLabelNumber += mNumUnitsPerSegment;
+    }
+  
+  p->restore();
+}
+
+void QgsComposerScaleBar::drawScaleBarSingleBox(QPainter* p, double barTopPosition) const
+{
+  if(!p)
+    {
+      return;
+    }
+
+  p->save();
+
+  //mHeight, mBrush, mPen
+  p->setPen(mPen);
+  p->setBrush(mBrush);
+
+  double mCurrentXCoord = 0;
+
+  bool useColor = true; //alternate brush color/white
+
+  //draw the left segments
+  for(int i = 0; i < mNumSegmentsLeft; ++i)
+    {
+      if(useColor) //alternating colors
+	{
+	  p->setBrush(QColor(255, 255, 255));
+	}
+      else
+	{
+	  p->setBrush(QColor(0, 0, 0));
+	}
+      QRectF segmentRect(mCurrentXCoord, barTopPosition, mSegmentMM/mNumSegmentsLeft, mHeight);
+      p->drawRect(segmentRect);
+      mCurrentXCoord += mSegmentMM / mNumSegmentsLeft;
+      useColor = !useColor;
+    }
+  
+  //draw the right segments
+  for(int i = 0; i < mNumSegments; ++i)
+    {
+      if(useColor) //alternating colors
+	{
+	  p->setBrush(QColor(255, 255, 255));
+	}
+      else
+	{
+	  p->setBrush(QColor(0, 0, 0));
+	}
+
+      QRectF segmentRect(mCurrentXCoord, barTopPosition, mSegmentMM, mHeight);
+      p->drawRect(segmentRect);
+      mCurrentXCoord += mSegmentMM;
+      useColor = !useColor;
+    }
+
+  p->restore();
 }
 
 

@@ -19,6 +19,8 @@
 #include "qgscomposeritem.h"
 #include <QPen>
 
+class QgsComposerMap;
+
 class QgsComposerScaleBar: public QgsComposerItem
 {
  public:
@@ -46,7 +48,7 @@ class QgsComposerScaleBar: public QgsComposerItem
   void setNumSegmentsLeft(int nSegmentsLeft) {mNumSegmentsLeft = nSegmentsLeft;}
 
   double numUnitsPerSegment() const {return mNumUnitsPerSegment;}
-  void setNumUnitsPerSegment(double units) {mNumUnitsPerSegment = units;}
+  void setNumUnitsPerSegment(double units);
 
   QString unitLabeling() const {return mUnitLabeling;}
   void setUnitLabeling(const QString& label){mUnitLabeling = label;}
@@ -63,11 +65,19 @@ class QgsComposerScaleBar: public QgsComposerItem
   double height() const {return mHeight;}
   void setHeight(double h) {mHeight = h;}
 
+  void setComposerMap(const QgsComposerMap* map);
+  const QgsComposerMap* composerMap() const {return mComposerMap;}
+
+  /**Apply default settings (scale bar 1/5 of map item width)*/
+  void applyDefaultSettings();
+
+  void setStyle(QgsComposerScaleBar::Style style){mStyle = style;}
+
   
  protected:
 
   /**Reference to composer map object*/
-  QgsComposerMap* mComposerMap;
+  const QgsComposerMap* mComposerMap;
   /**Number of segments on right side*/
   int mNumSegments;
   /**Number of segments on left side*/
@@ -84,7 +94,23 @@ class QgsComposerScaleBar: public QgsComposerItem
   QBrush mBrush;
   /**Height of bars/lines*/
   double mHeight;
+  /**Scalebar style*/
+  QgsComposerScaleBar::Style mStyle;
+  /**Space between bar and Text labels*/
+  double mLabelBarSpace;
+
+  /**Width of a segment (in mm)*/
+  double mSegmentMM;
+
+  /**Calculates with of a segment in mm and stores it in mSegmentMM*/
+  void refreshSegmentMM();
   
+  /**Draw text labels using the current font*/
+  void drawLabels(QPainter* p);
+
+  /**Draws this bar using single box style
+   @param barTopPosition Item coordinates of the bar top. Necessary because of Labels*/
+  void drawScaleBarSingleBox(QPainter* p, double barTopPosition) const;
 };
 
 #endif //QGSCOMPOSERSCALEBAR_H

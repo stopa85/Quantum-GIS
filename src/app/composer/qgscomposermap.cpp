@@ -36,12 +36,14 @@
 #include <iostream>
 #include <cmath>
 
+int QgsComposerMap::mCurrentComposerId = 0;
+
 QgsComposerMap::QgsComposerMap ( QgsComposition *composition, int x, int y, int width, int height )
   : QgsComposerItem(x, y, width, height, composition)
 {
     mComposition = composition;
     mMapCanvas = mComposition->mapCanvas();
-    mName = "Map"; //QString(tr("Map %1").arg(mId)); //todo: make static member as counter
+    mId = mCurrentComposerId++;
     
     // Cache
     mCacheUpdated = false;
@@ -65,7 +67,7 @@ QgsComposerMap::QgsComposerMap ( QgsComposition *composition)
 {
     mComposition = composition;
     mMapCanvas = mComposition->mapCanvas();
-    mName = "Map"; //QString(tr("Map %1").arg(mId)); //todo: make static member as counter
+    mId = mCurrentComposerId++;
     QGraphicsRectItem::show();
 }
 
@@ -231,11 +233,6 @@ double QgsComposerMap::scale()
   calculator.setMapUnits(mMapCanvas->mapUnits());
   calculator.setDpi(25.4);  //QGraphicsView units are mm
   return calculator.calculate(mExtent, rect().width());
-}
-
-QString QgsComposerMap::name ( void ) 
-{
-    return mName;
 }
 
 void QgsComposerMap::resize(double dx, double dy)

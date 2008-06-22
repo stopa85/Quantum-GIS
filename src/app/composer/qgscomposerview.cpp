@@ -22,6 +22,7 @@
 #include "qgscomposerlabel.h"
 #include "qgscomposermap.h"
 #include "qgscomposeritemgroup.h"
+#include "qgscomposerscalebar.h"
 
 QgsComposerView::QgsComposerView( QWidget* parent, const char* name, Qt::WFlags f) :
   QGraphicsView(parent), mShiftKeyPressed(false), mRubberBandItem(0)
@@ -91,6 +92,27 @@ void QgsComposerView::mousePressEvent(QMouseEvent* e)
     }
     break;
 
+  case AddScalebar:
+    {
+      QgsComposerScaleBar* newScaleBar = new QgsComposerScaleBar(composition());
+      
+      //take first available map...
+      QList<const QgsComposerMap*> mapItemList = composition()->composerMapItems();
+      if(mapItemList.size() > 0)
+	{
+	  newScaleBar->setComposerMap(mapItemList.at(0));
+	}
+
+      newScaleBar->applyDefaultSettings(); //4 segments, 1/5 of composer map width
+      scene()->addItem(newScaleBar);
+      emit composerScaleBarAdded(newScaleBar);
+      newScaleBar->setSceneRect(QRectF(scenePoint.x(), scenePoint.y(), 20, 20)); //todo: change this...
+      scene()->clearSelection();
+      newScaleBar->setSelected(true);
+      emit selectedItemChanged(newScaleBar);
+    }
+    break;
+
   default:
     break;
   }
@@ -119,6 +141,7 @@ void QgsComposerView::mouseReleaseEvent(QMouseEvent* e)
 	  }
 
 	QgsComposerMap* composerMap = new QgsComposerMap(composition(), mRubberBandItem->transform().dx(), mRubberBandItem->transform().dy(), mRubberBandItem->rect().width(), mRubberBandItem->rect().height());
+	composerMap->setPreviewMode(QgsComposerMap::Rectangle);
 
 	emit composerMapAdded(composerMap);
 

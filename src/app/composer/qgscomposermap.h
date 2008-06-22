@@ -71,8 +71,8 @@ public:
     /** \brief Create cache image */
     void cache ( void );
     
-    /** \brief Map name, used in legend combobox etc. */
-    QString name ( void );
+    /** \brief Get identification number*/
+    int id() const {return mId;}
 
     /** resizes an item in x- and y direction (canvas coordinates)*/
     void resize(double dx, double dy);
@@ -113,8 +113,8 @@ private:
     // Pointer to map canvas
     QgsMapCanvas *mMapCanvas;
     
-    /** \brief Map name, used in legend combobox etc. */
-    QString mName;
+    /**Unique identifier*/
+    int mId;
 
     // Map region in map units realy used for rendering 
     // It can be the same as mUserExtent, but it can be bigger in on dimension if mCalculate==Scale,
@@ -141,6 +141,9 @@ private:
 
     /**Store last scale factor to avoid unnecessary repaints in case preview mode is 'Render'*/
     double mLastScaleFactorX;
+
+    /**For the generation of new unique ids*/
+    static int mCurrentComposerId;
 
     /**Returns the zoom factor of the graphics view. If no 
      graphics view exists, the default 1 is returned*/

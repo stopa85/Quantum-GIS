@@ -23,6 +23,7 @@
 class QgisApp;
 class QgsComposerLabel;
 class QgsComposerMap;
+class QgsComposerScaleBar;
 class QgsComposerView;
 class QgsComposition;
 class QgsMapCanvas;
@@ -165,6 +166,9 @@ public slots:
 
     /**Adds a composer label to the item/widget map and creates a configuration widget for it*/
     void addComposerLabel(QgsComposerLabel* label);
+
+    /**Adds a composer scale bar to the item/widget map and creates a configuration widget for it*/
+    void addComposerScaleBar(QgsComposerScaleBar* scalebar);
 
     /**Removes item from the item/widget map and deletes the configuration widget*/
     void deleteItem(QgsComposerItem* item);

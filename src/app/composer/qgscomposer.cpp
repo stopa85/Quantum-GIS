@@ -25,6 +25,8 @@
 #include "qgscomposerlabelwidget.h"
 #include "qgscomposermap.h"
 #include "qgscomposermapwidget.h"
+#include "qgscomposerscalebar.h"
+#include "qgscomposerscalebarwidget.h"
 #include "qgsexception.h"
 #include "qgsproject.h"
 #include "qgsmessageviewer.h"
@@ -91,6 +93,7 @@ QgsComposer::QgsComposer( QgisApp *qgis): QMainWindow()
   connect(mView, SIGNAL(composerLabelAdded(QgsComposerLabel*)), this, SLOT(addComposerLabel(QgsComposerLabel*)));
   connect(mView, SIGNAL(composerMapAdded(QgsComposerMap*)), this, SLOT(addComposerMap(QgsComposerMap*)));
   connect(mView, SIGNAL(itemRemoved(QgsComposerItem*)), this, SLOT(deleteItem(QgsComposerItem*)));
+  connect(mView, SIGNAL(composerScaleBarAdded(QgsComposerScaleBar*)), this, SLOT(addComposerScaleBar(QgsComposerScaleBar*)));
 
   mComposition  = new QgsComposition(mQgis->getMapCanvas());
   mView->setComposition(mComposition);
@@ -855,12 +858,12 @@ void QgsComposer::on_mActionExportAsSVG_activated(void)
   QSvgGenerator generator;
   generator.setFileName(myOutputFileNameQString);
   generator.setSize(QSize( (int)mComposition->paperWidth(), (int)mComposition->paperHeight() ));
-  //generator.setResolution((int)(mComposition->resolution() / 25.4)); //because the rendering is done in mm, convert the dpi
- 
+  generator.setResolution(25.4); //because the rendering is done in mm, convert the dpi
+
   QPainter p(&generator);
   QRectF renderArea(0,0, mComposition->paperWidth(), mComposition->paperHeight());
 #endif
-  mComposition->render(&p, renderArea);
+  mComposition->render(&p, renderArea, renderArea);
   p.end();
 
   mComposition->setPlotStyle ( QgsComposition::Preview );
@@ -939,11 +942,10 @@ void QgsComposer::on_mActionAddNewLabel_activated(void)
 
 void QgsComposer::on_mActionAddNewScalebar_activated(void)
 {
-#if 0
-  mComposition->setTool ( QgsComposition::AddScalebar );
-  setToolActionsOff();
-  mActionAddNewScalebar->setOn ( true );
-#endif //0
+  if(mView)
+    {
+      mView->setCurrentTool(QgsComposerView::AddScalebar);
+    }
 }
 
 void QgsComposer::on_mActionAddImage_activated(void)
@@ -1128,6 +1130,17 @@ void QgsComposer::addComposerLabel(QgsComposerLabel* label)
   
   QgsComposerLabelWidget* labelWidget = new QgsComposerLabelWidget(label);
   mItemWidgetMap.insert(label, labelWidget);
+}
+
+void QgsComposer::addComposerScaleBar(QgsComposerScaleBar* scalebar)
+{
+  if(!scalebar)
+    {
+      return;
+    }
+  
+  QgsComposerScaleBarWidget* sbWidget = new QgsComposerScaleBarWidget(scalebar);
+  mItemWidgetMap.insert(scalebar, sbWidget);
 }
 
 void QgsComposer::deleteItem(QgsComposerItem* item)

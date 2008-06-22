@@ -26,6 +26,7 @@ class QgsComposition;
 class QgsComposerItem;
 class QgsComposerLabel;
 class QgsComposerMap;
+class QgsComposerScaleBar;
 
 /**Widget to display the composer items. Manages the composer tools and the mouse/key events. 
  Creates the composer items according to the current map tools and keeps track off the rubber band item*/
@@ -88,6 +89,8 @@ public:
   void composerLabelAdded(QgsComposerLabel* label);
   /**Is emitted when new composer map has been added to the view*/
   void composerMapAdded(QgsComposerMap* map);
+  /**Is emmitted when new composer scale bar has been added*/
+  void composerScaleBarAdded(QgsComposerScaleBar* scalebar);
   /**Is emitted when a composer item has been removed from the scene*/
   void itemRemoved(QgsComposerItem*);
 };

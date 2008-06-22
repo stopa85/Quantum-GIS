@@ -89,6 +89,8 @@ public:
     virtual void addItem(QgsComposerItem* item) {}
     virtual void removeItems() {}
 
+    const QgsComposition* composition() const {return mComposition;}
+
 protected:
     
     QgsComposition* mComposition;
