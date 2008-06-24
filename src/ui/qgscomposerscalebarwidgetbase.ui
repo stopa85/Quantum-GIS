@@ -5,7 +5,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>303</width>
+    <width>367</width>
     <height>487</height>
    </rect>
   </property>
@@ -86,6 +86,23 @@
     <widget class="QLineEdit" name="mUnitLabelLineEdit" />
    </item>
    <item row="5" column="0" >
+    <widget class="QLabel" name="mMapUnitsPerBarUnitLabel" >
+     <property name="text" >
+      <string>Map units per bar unit:</string>
+     </property>
+     <property name="wordWrap" >
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="2" >
+    <widget class="QDoubleSpinBox" name="mMapUnitsPerBarUnitSpinBox" >
+     <property name="maximum" >
+      <double>9999999999999.000000000000000</double>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="0" >
     <widget class="QLabel" name="mMapLabel" >
      <property name="sizePolicy" >
       <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
@@ -104,7 +121,7 @@
      </property>
     </widget>
    </item>
-   <item row="5" column="2" >
+   <item row="6" column="2" >
     <widget class="QComboBox" name="mMapComboBox" >
      <property name="enabled" >
       <bool>true</bool>
@@ -117,17 +134,17 @@
      </property>
     </widget>
    </item>
-   <item row="6" column="0" >
+   <item row="7" column="0" >
     <widget class="QLabel" name="mHeightLabel" >
      <property name="text" >
       <string>Height (mm):</string>
      </property>
     </widget>
    </item>
-   <item row="6" column="2" >
+   <item row="7" column="2" >
     <widget class="QSpinBox" name="mHeightSpinBox" />
    </item>
-   <item row="7" column="0" >
+   <item row="8" column="0" >
     <widget class="QLabel" name="mLineWidthLabel" >
      <property name="text" >
       <string>Line width:</string>
@@ -140,7 +157,7 @@
      </property>
     </widget>
    </item>
-   <item row="7" column="2" >
+   <item row="8" column="2" >
     <widget class="QDoubleSpinBox" name="mLineWidthSpinBox" >
      <property name="sizePolicy" >
       <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
@@ -159,7 +176,7 @@
      </property>
     </widget>
    </item>
-   <item row="8" column="0" >
+   <item row="9" column="0" >
     <widget class="QPushButton" name="mFontButton" >
      <property name="sizePolicy" >
       <sizepolicy vsizetype="Fixed" hsizetype="Preferred" >
@@ -172,14 +189,14 @@
      </property>
     </widget>
    </item>
-   <item row="8" column="2" >
+   <item row="9" column="2" >
     <widget class="QPushButton" name="mColorPushButton" >
      <property name="text" >
       <string>Color...</string>
      </property>
     </widget>
    </item>
-   <item row="9" column="1" >
+   <item row="10" column="1" >
     <spacer>
      <property name="orientation" >
       <enum>Qt::Vertical</enum>
@@ -187,7 +204,7 @@
      <property name="sizeHint" >
       <size>
        <width>20</width>
-       <height>51</height>
+       <height>61</height>
       </size>
      </property>
     </spacer>

@@ -102,11 +102,11 @@ void QgsComposerView::mousePressEvent(QMouseEvent* e)
 	{
 	  newScaleBar->setComposerMap(mapItemList.at(0));
 	}
-
+      
+      newScaleBar->setSceneRect(QRectF(scenePoint.x(), scenePoint.y(), 20, 20));
       newScaleBar->applyDefaultSettings(); //4 segments, 1/5 of composer map width
       scene()->addItem(newScaleBar);
       emit composerScaleBarAdded(newScaleBar);
-      newScaleBar->setSceneRect(QRectF(scenePoint.x(), scenePoint.y(), 20, 20)); //todo: change this...
       scene()->clearSelection();
       newScaleBar->setSelected(true);
       emit selectedItemChanged(newScaleBar);

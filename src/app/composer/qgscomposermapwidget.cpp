@@ -106,6 +106,8 @@ void QgsComposerMapWidget::on_mPreviewModeComboBox_activated(int i)
     {
       mComposerMap->setPreviewMode(QgsComposerMap::Rectangle);
     }
+
+  mComposerMap->update();
 }
 
 void QgsComposerMapWidget::on_mFrameCheckBox_stateChanged(int state)

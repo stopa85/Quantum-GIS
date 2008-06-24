@@ -50,6 +50,9 @@ class QgsComposerScaleBar: public QgsComposerItem
   double numUnitsPerSegment() const {return mNumUnitsPerSegment;}
   void setNumUnitsPerSegment(double units);
 
+  double numMapUnitsPerScaleBarUnit() const {return mNumMapUnitsPerScaleBarUnit;}
+  void setNumMapUnitsPerScaleBarUnit(double d) {mNumMapUnitsPerScaleBarUnit = d;}
+
   QString unitLabeling() const {return mUnitLabeling;}
   void setUnitLabeling(const QString& label){mUnitLabeling = label;}
 
@@ -73,7 +76,12 @@ class QgsComposerScaleBar: public QgsComposerItem
 
   void setStyle(QgsComposerScaleBar::Style style){mStyle = style;}
 
-  
+  /**Sets box size suitable to content*/
+  void adjustBoxSize();
+
+  /**Adjusts box size and calls QgsComposerItem::update()*/
+  void update();
+
  protected:
 
   /**Reference to composer map object*/
@@ -84,6 +92,9 @@ class QgsComposerScaleBar: public QgsComposerItem
   int mNumSegmentsLeft;
   /**Size of a segment (in map units)*/
   double mNumUnitsPerSegment;
+  /**Number of map units per scale bar units (e.g. 1000 to have km for a map with m units)*/
+  double mNumMapUnitsPerScaleBarUnit;
+
   /**Labeling of map units*/
   QString mUnitLabeling;
   /**Font*/
@@ -111,6 +122,9 @@ class QgsComposerScaleBar: public QgsComposerItem
   /**Draws this bar using single box style
    @param barTopPosition Item coordinates of the bar top. Necessary because of Labels*/
   void drawScaleBarSingleBox(QPainter* p, double barTopPosition) const;
+
+  /**Returns height of font considering font scale factor for the given painter*/
+  double fontHeight(QPainter* p) const;
 };
 
 #endif //QGSCOMPOSERSCALEBAR_H

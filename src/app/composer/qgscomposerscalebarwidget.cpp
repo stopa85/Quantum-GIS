@@ -17,6 +17,8 @@
 #include "qgscomposerscalebarwidget.h"
 #include "qgscomposermap.h"
 #include "qgscomposerscalebar.h"
+#include <QColorDialog>
+#include <QFontDialog>
 #include <QWidget>
 
 QgsComposerScaleBarWidget::QgsComposerScaleBarWidget(QgsComposerScaleBar* scaleBar): QWidget(), mComposerScaleBar(scaleBar)
@@ -107,6 +109,7 @@ void QgsComposerScaleBarWidget::setGuiElements()
   mSegmentSizeSpinBox->setValue(mComposerScaleBar->numUnitsPerSegment());
   mLineWidthSpinBox->setValue(mComposerScaleBar->pen().widthF());
   mHeightSpinBox->setValue(mComposerScaleBar->height());
+  mMapUnitsPerBarUnitSpinBox->setValue(mComposerScaleBar->numMapUnitsPerScaleBarUnit());
 
   //map combo box
   if(mComposerScaleBar->composerMap())
@@ -173,3 +176,71 @@ void QgsComposerScaleBarWidget::on_mNumberOfSegmentsSpinBox_valueChanged(int i)
   mComposerScaleBar->update();
 }
 
+void QgsComposerScaleBarWidget::on_mHeightSpinBox_valueChanged(int i)
+{
+if(!mComposerScaleBar)
+   {
+     return;
+   }
+ mComposerScaleBar->setHeight(i);
+ mComposerScaleBar->update();
+}
+
+void QgsComposerScaleBarWidget::on_mFontButton_clicked()
+{
+  if(!mComposerScaleBar)
+    {
+      return;
+    }
+
+  bool dialogAccepted;
+  QFont oldFont = mComposerScaleBar->font();
+  QFont newFont = QFontDialog::getFont(&dialogAccepted, oldFont, 0);
+  if(dialogAccepted)
+    {
+      mComposerScaleBar->setFont(newFont);
+    }
+  mComposerScaleBar->update();
+}
+
+void QgsComposerScaleBarWidget::on_mColorPushButton_clicked()
+{
+  if(!mComposerScaleBar)
+    {
+      return;
+    }
+
+  QColor oldColor = mComposerScaleBar->brush().color();
+  QColor newColor = QColorDialog::getColor(oldColor, 0);
+  
+  if(!newColor.isValid()) //user canceled the dialog
+    {
+      return;
+    }
+
+  QBrush newBrush(newColor);
+  mComposerScaleBar->setBrush(newBrush);
+  mComposerScaleBar->update();
+}
+
+void QgsComposerScaleBarWidget::on_mUnitLabelLineEdit_textChanged(const QString& text)
+{
+  if(!mComposerScaleBar)
+    {
+      return;
+    }
+
+  mComposerScaleBar->setUnitLabeling(text);
+  mComposerScaleBar->update();
+}
+
+void QgsComposerScaleBarWidget::on_mMapUnitsPerBarUnitSpinBox_valueChanged(double d)
+{
+  if(!mComposerScaleBar)
+    {
+      return;
+    }
+  
+  mComposerScaleBar->setNumMapUnitsPerScaleBarUnit(d);
+  mComposerScaleBar->update();
+}

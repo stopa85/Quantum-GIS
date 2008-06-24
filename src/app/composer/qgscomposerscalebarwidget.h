@@ -31,10 +31,16 @@ class QgsComposerScaleBarWidget: public QWidget, private Ui::QgsComposerScaleBar
 
   public slots:
   void on_mMapComboBox_activated(const QString& text);
+  void on_mHeightSpinBox_valueChanged(int i);
   void on_mLineWidthSpinBox_valueChanged(double d);
   void on_mSegmentSizeSpinBox_valueChanged(double d);
   void on_mSegmentsLeftSpinBox_valueChanged(int i);
   void on_mNumberOfSegmentsSpinBox_valueChanged(int i);
+  void on_mUnitLabelLineEdit_textChanged(const QString& text);
+  void on_mMapUnitsPerBarUnitSpinBox_valueChanged(double d);
+  void on_mColorPushButton_clicked();
+  void on_mFontButton_clicked();
+  
 
  protected:
   void showEvent ( QShowEvent * event );
