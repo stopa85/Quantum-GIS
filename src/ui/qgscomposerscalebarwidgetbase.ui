@@ -6,7 +6,7 @@
     <x>0</x>
     <y>0</y>
     <width>367</width>
-    <height>487</height>
+    <height>575</height>
    </rect>
   </property>
   <property name="sizePolicy" >
@@ -177,6 +177,26 @@
     </widget>
    </item>
    <item row="9" column="0" >
+    <widget class="QLabel" name="mLabelBarSpaceLabel" >
+     <property name="text" >
+      <string>Label space:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="2" >
+    <widget class="QDoubleSpinBox" name="mLabelBarSpaceSpinBox" />
+   </item>
+   <item row="10" column="0" >
+    <widget class="QLabel" name="mBoxSpaceLabel" >
+     <property name="text" >
+      <string>Box space:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="10" column="2" >
+    <widget class="QDoubleSpinBox" name="mBoxSizeSpinBox" />
+   </item>
+   <item row="11" column="0" >
     <widget class="QPushButton" name="mFontButton" >
      <property name="sizePolicy" >
       <sizepolicy vsizetype="Fixed" hsizetype="Preferred" >
@@ -189,14 +209,21 @@
      </property>
     </widget>
    </item>
-   <item row="9" column="2" >
+   <item row="11" column="2" >
     <widget class="QPushButton" name="mColorPushButton" >
      <property name="text" >
       <string>Color...</string>
      </property>
     </widget>
    </item>
-   <item row="10" column="1" >
+   <item row="12" column="0" >
+    <widget class="QCheckBox" name="mBoxCheckBox" >
+     <property name="text" >
+      <string>Box</string>
+     </property>
+    </widget>
+   </item>
+   <item row="13" column="1" >
     <spacer>
      <property name="orientation" >
       <enum>Qt::Vertical</enum>
@@ -204,7 +231,7 @@
      <property name="sizeHint" >
       <size>
        <width>20</width>
-       <height>61</height>
+       <height>21</height>
       </size>
      </property>
     </spacer>

@@ -137,9 +137,6 @@ protected:
 
     /**Draw background*/
     virtual void drawBackground(QPainter* p);
-
-    /**Scale factor for fonts that are directly drawn to the composer view and specified in points*/
-    double fontPointScaleFactor(const QPainter* p) const;
 };
 
 #endif

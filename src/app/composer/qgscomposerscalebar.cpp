@@ -19,6 +19,7 @@
 #include "qgsrect.h"
 #include <QFontMetricsF>
 #include <QPainter>
+#include <cmath>
 
 QgsComposerScaleBar::QgsComposerScaleBar(QgsComposition* composition): QgsComposerItem(composition), mComposerMap(0), mStyle(QgsComposerScaleBar::Single_Box), mSegmentMM(0.0)
 {
@@ -34,12 +35,15 @@ void QgsComposerScaleBar::paint (QPainter* painter, const QStyleOptionGraphicsIt
 {
   //calculate top level of the bar
   QFontMetricsF labelFontMetrics(mFont);
-  double barTopPosition = fontHeight(painter) + mLabelBarSpace;
+  double barTopPosition = fontHeight() + mLabelBarSpace + mBoxContentSpace;
 
   switch(mStyle)
     {
     case QgsComposerScaleBar::Single_Box:
       drawScaleBarSingleBox(painter, barTopPosition);
+      break;
+    case QgsComposerScaleBar::Bar_Ticks_Middle:
+      drawScaleBarTicksMiddle(painter, barTopPosition);
       break;
     default:
       break;
@@ -63,8 +67,26 @@ void QgsComposerScaleBar::setNumUnitsPerSegment(double units)
 
 void QgsComposerScaleBar::setComposerMap(const QgsComposerMap* map)
 {
+  disconnect(mComposerMap, SIGNAL(extentChanged()), this, SLOT(updateSegmentSize()));
+  disconnect(mComposerMap, SIGNAL(destroyed(QObject*)), this, SLOT(invalidateCurrentMap()));
   mComposerMap = map;
+
+  if(!map)
+    {
+      return;
+    }
+
+  connect(mComposerMap, SIGNAL(extentChanged()), this, SLOT(updateSegmentSize()));
+  connect(mComposerMap, SIGNAL(destroyed(QObject*)), this, SLOT(invalidateCurrentMap()));
+  
   refreshSegmentMM();
+}
+
+void QgsComposerScaleBar::invalidateCurrentMap()
+{
+  disconnect(mComposerMap, SIGNAL(extentChanged()), this, SLOT(updateSegmentSize()));
+  disconnect(mComposerMap, SIGNAL(destroyed(QObject*)), this, SLOT(invalidateCurrentMap()));
+  mComposerMap = 0;
 }
 
 void QgsComposerScaleBar::refreshSegmentMM()
@@ -84,8 +106,8 @@ void QgsComposerScaleBar::refreshSegmentMM()
 
 void QgsComposerScaleBar::applyDefaultSettings()
 {
-  mNumSegments = 3;
-  mNumSegmentsLeft = 1;
+  mNumSegments = 2;
+  mNumSegmentsLeft = 0;
 
   mNumMapUnitsPerScaleBarUnit = 1.0;
 
@@ -97,8 +119,9 @@ void QgsComposerScaleBar::applyDefaultSettings()
   mPen.setWidthF(1.0);
 
   mBrush.setColor(QColor(0, 0, 0));
+  mBrush.setStyle(Qt::SolidPattern);
 
-  mFont.setPointSizeF(8);
+  mFont.setPointSizeF(4);
 
   mLabelBarSpace = 3.0;
 
@@ -108,8 +131,11 @@ void QgsComposerScaleBar::applyDefaultSettings()
       QRectF composerItemRect = mComposerMap->rect();
       QgsRect composerMapRect = mComposerMap->extent();
 
-      double widthScaleBar = composerItemRect.width() / 5;
-      mNumUnitsPerSegment = composerMapRect.width() / 5 / 4;
+      double proposedScaleBarLength = composerMapRect.width() /4;
+      int powerOf10 = int (pow(10.0, int (log(proposedScaleBarLength) / log(10.0)))); // from scalebar plugin
+      int nPow10 = proposedScaleBarLength / powerOf10;
+      mNumSegments = 2;
+      mNumUnitsPerSegment = (nPow10 / 2) * powerOf10;
     }
 
   refreshSegmentMM();
@@ -126,11 +152,11 @@ void QgsComposerScaleBar::drawLabels(QPainter* p)
   p->save();
   
   QFont labelFont(mFont);
-  labelFont.setPointSizeF(mFont.pointSizeF() * fontPointScaleFactor(p));
+  labelFont.setPointSizeF(mFont.pointSizeF());
 
   p->setFont(labelFont);
 
-  double mCurrentXCoord = mPen.widthF();
+  double mCurrentXCoord = mPen.widthF() + mBoxContentSpace;
 
   //draw labels of the left segments
   for(int i = 0; i < mNumSegmentsLeft; ++i)
@@ -143,11 +169,12 @@ void QgsComposerScaleBar::drawLabels(QPainter* p)
   //draw labels of the right segments
   for(int i = 0; i < mNumSegments; ++i)
     {
-      p->drawText(QPointF(mCurrentXCoord, fontHeight(p)), QString::number(currentLabelNumber / mNumMapUnitsPerScaleBarUnit) + " " + mUnitLabeling);
+      p->drawText(QPointF(mCurrentXCoord, fontHeight() + mBoxContentSpace), QString::number(currentLabelNumber / mNumMapUnitsPerScaleBarUnit));
       mCurrentXCoord += mSegmentMM;
       currentLabelNumber += mNumUnitsPerSegment;
     }
   
+  p->drawText(QPointF(mCurrentXCoord, fontHeight() + mBoxContentSpace), QString::number(currentLabelNumber / mNumMapUnitsPerScaleBarUnit) + " " + mUnitLabeling);
   p->restore();
 }
 
@@ -163,7 +190,7 @@ void QgsComposerScaleBar::drawScaleBarSingleBox(QPainter* p, double barTopPositi
   //mHeight, mBrush, mPen
   p->setPen(mPen);
 
-  double mCurrentXCoord = mPen.widthF();
+  double mCurrentXCoord = mPen.widthF() + mBoxContentSpace;
 
   bool useColor = true; //alternate brush color/white
 
@@ -205,6 +232,42 @@ void QgsComposerScaleBar::drawScaleBarSingleBox(QPainter* p, double barTopPositi
   p->restore();
 }
 
+void QgsComposerScaleBar::drawScaleBarTicksMiddle(QPainter* p, double barTopPosition) const
+{
+  if(!p)
+    {
+      return;
+    }
+  
+  p->save();
+
+  //mHeight, mBrush, mPen
+  p->setPen(mPen);
+
+  double mCurrentXCoord = mPen.widthF() + mBoxContentSpace;
+
+  //draw the left segments
+  for(int i = 0; i < mNumSegmentsLeft; ++i)
+    {
+      p->drawLine(mCurrentXCoord, barTopPosition, mCurrentXCoord, barTopPosition + mHeight);
+      p->drawLine(mCurrentXCoord, barTopPosition + mHeight/2, mCurrentXCoord + mSegmentMM / mNumSegmentsLeft, barTopPosition + mHeight/2);
+      mCurrentXCoord += mSegmentMM / mNumSegmentsLeft;
+    }
+
+  p->drawLine(mCurrentXCoord, barTopPosition, mCurrentXCoord, barTopPosition + mHeight);
+  
+  //draw the right segments
+  for(int i = 0; i < mNumSegments; ++i)
+    {
+      p->drawLine(mCurrentXCoord, barTopPosition, mCurrentXCoord, barTopPosition + mHeight);
+      p->drawLine(mCurrentXCoord, barTopPosition + mHeight/2.0, mCurrentXCoord + mSegmentMM, barTopPosition + mHeight/2.0);
+      mCurrentXCoord += mSegmentMM;
+    }
+
+  p->drawLine(mCurrentXCoord, barTopPosition, mCurrentXCoord, barTopPosition + mHeight);
+  p->restore();
+}
+
 void QgsComposerScaleBar::adjustBoxSize()
 {
   int numFullSegments = mNumSegments;
@@ -213,8 +276,16 @@ void QgsComposerScaleBar::adjustBoxSize()
       ++numFullSegments;
     }
 
-  double width = numFullSegments * mSegmentMM + 2 * mPen.widthF();
-  double height = mHeight + mLabelBarSpace + QFontMetrics(mFont).height();
+  //consider width of largest label
+  double largestLabelNumber = mNumSegments * mNumUnitsPerSegment / mNumMapUnitsPerScaleBarUnit;
+  QString largestLabel = QString::number(largestLabelNumber) + " " + mUnitLabeling;
+  double largestLabelWidth = QFontMetricsF(mFont).width(largestLabel);
+
+  double width = numFullSegments * mSegmentMM + 2 * mPen.widthF() + largestLabelWidth + 2 * mBoxContentSpace;
+  double height = mHeight + mLabelBarSpace + 2 * mBoxContentSpace + QFontMetrics(mFont).height();
+
+  
+
   QRectF sceneBox(transform().dx(), transform().dy(), width, height);
   setSceneRect(sceneBox);
 }
@@ -225,12 +296,16 @@ void QgsComposerScaleBar::update()
   QgsComposerItem::update();
 }
 
-double QgsComposerScaleBar::fontHeight(QPainter* p) const
+double QgsComposerScaleBar::fontHeight() const
 {
-  QFont labelFont(mFont);
-  labelFont.setPointSizeF(mFont.pointSizeF() * fontPointScaleFactor(p));
-  QFontMetricsF labelFontMetrics(labelFont);
-  return labelFontMetrics.height();
+  QFontMetricsF labelFontMetrics(mFont);
+  return labelFontMetrics.ascent();
+}
+
+void QgsComposerScaleBar::updateSegmentSize()
+{
+  refreshSegmentMM();
+  update();
 }
 
 

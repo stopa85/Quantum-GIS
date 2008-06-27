@@ -24,6 +24,10 @@
 QgsComposerScaleBarWidget::QgsComposerScaleBarWidget(QgsComposerScaleBar* scaleBar): QWidget(), mComposerScaleBar(scaleBar)
 {
   setupUi(this);
+
+  mStyleComboBox->insertItem(0, tr("Single_Box"));
+  mStyleComboBox->insertItem(1, tr("Bar_Ticks_Middle"));
+
   setGuiElements(); //set the GUI elements to the state of scaleBar
 }
 
@@ -34,6 +38,9 @@ QgsComposerScaleBarWidget::~QgsComposerScaleBarWidget()
 
 void QgsComposerScaleBarWidget::refreshMapComboBox()
 {
+  //save the current entry in case it is still present after refresh
+  QString saveCurrentComboText = mMapComboBox->currentText();
+
   mMapComboBox->clear();
 
   if(mComposerScaleBar)
@@ -49,6 +56,17 @@ void QgsComposerScaleBarWidget::refreshMapComboBox()
 	      mMapComboBox->addItem(tr("Map ") + QString::number((*mapItemIt)->id()));
 	    } 
 	}
+    }
+
+  if(mMapComboBox->findText(saveCurrentComboText) == -1)
+    {
+      //the former entry is no longer present. Inform the scalebar about the changed composer map
+      on_mMapComboBox_activated(mMapComboBox->currentText());
+    }
+  else
+    {
+      //the former entry is still present. Make it the current entry again
+      mMapComboBox->setCurrentText(saveCurrentComboText);
     }
 }
 
@@ -110,6 +128,8 @@ void QgsComposerScaleBarWidget::setGuiElements()
   mLineWidthSpinBox->setValue(mComposerScaleBar->pen().widthF());
   mHeightSpinBox->setValue(mComposerScaleBar->height());
   mMapUnitsPerBarUnitSpinBox->setValue(mComposerScaleBar->numMapUnitsPerScaleBarUnit());
+  mLabelBarSpaceSpinBox->setValue(mComposerScaleBar->labelBarSpace());
+  mBoxSizeSpinBox->setValue(mComposerScaleBar->boxContentSpace());
 
   //map combo box
   if(mComposerScaleBar->composerMap())
@@ -120,6 +140,16 @@ void QgsComposerScaleBarWidget::setGuiElements()
 	{
 	  mMapComboBox->setCurrentItem(itemId);
 	}
+    }
+
+  //frame
+  if(mComposerScaleBar->frame())
+    {
+      mBoxCheckBox->setCheckState(Qt::Checked);
+    }
+  else
+    {
+      mBoxCheckBox->setCheckState(Qt::Unchecked);
     }
 
   //Style //todo...
@@ -242,5 +272,64 @@ void QgsComposerScaleBarWidget::on_mMapUnitsPerBarUnitSpinBox_valueChanged(doubl
     }
   
   mComposerScaleBar->setNumMapUnitsPerScaleBarUnit(d);
+  mComposerScaleBar->update();
+}
+
+void QgsComposerScaleBarWidget::on_mBoxCheckBox_stateChanged(int state)
+{
+  if(!mComposerScaleBar)
+    {
+      return;
+    }
+
+  if(state == Qt::Checked)
+    {
+      mComposerScaleBar->setFrame(true);
+    }
+  else
+    {
+      mComposerScaleBar->setFrame(false);
+    }
+  mComposerScaleBar->update();
+}
+
+void QgsComposerScaleBarWidget::on_mStyleComboBox_currentIndexChanged(const QString& text)
+{
+  if(!mComposerScaleBar)
+    {
+      return;
+    }
+
+  if(text == tr("Single_Box"))
+    {
+      mComposerScaleBar->setStyle(QgsComposerScaleBar::Single_Box);
+    }
+
+  else if(text == tr("Bar_Ticks_Middle"))
+    {
+      mComposerScaleBar->setStyle(QgsComposerScaleBar::Bar_Ticks_Middle);
+    }
+  mComposerScaleBar->update();
+}
+
+void QgsComposerScaleBarWidget::on_mLabelBarSpaceSpinBox_valueChanged(double d)
+{
+  if(!mComposerScaleBar)
+    {
+      return;
+    }
+
+  mComposerScaleBar->setLabelBarSpace(d);
+  mComposerScaleBar->update();
+}
+
+void QgsComposerScaleBarWidget::on_mBoxSizeSpinBox_valueChanged(double d)
+{
+  if(!mComposerScaleBar)
+    {
+      return;
+    }
+
+  mComposerScaleBar->setBoxContentSpace(d);
   mComposerScaleBar->update();
 }

@@ -32,13 +32,11 @@ void QgsComposerLabel::paint(QPainter* painter, const QStyleOptionGraphicsItem* 
     {
       return;
     }
-  
-  //scale font considering resolution of output device and 1 point equals 0.376 mm
-  QFont outputFont(mFont);
-  outputFont.setPointSizeF(mFont.pointSizeF() * fontPointScaleFactor(painter));
 
-  painter->setFont(outputFont);
-  painter->drawText(QRectF(mMargin, mMargin, rect().width(), rect().height()), Qt::AlignLeft, mText, 0);
+  painter->setFont(mFont);
+
+  QFontMetricsF fontSize(mFont);
+  painter->drawText(mMargin, mMargin + fontSize.ascent(), mText);
 
   drawFrame(painter);
   if(isSelected())
@@ -47,19 +45,21 @@ void QgsComposerLabel::paint(QPainter* painter, const QStyleOptionGraphicsItem* 
     }
 }
 
-void QgsComposerLabel::setFontSize(double size)
+void QgsComposerLabel::setText(const QString& text)
 {
-  mFont.setPointSizeF(size);
+  mText = text;
+  adjustSizeToText();
+}
+
+void QgsComposerLabel::setFont(const QFont& f)
+{
+  mFont = f;
+  adjustSizeToText();
 }
 
 void QgsComposerLabel::adjustSizeToText()
 {
-  //find out width and hight mText and set bounding box to it
-  QFont scaledFont(mFont);
-  scaledFont.setPointSizeF(mFont.pointSizeF() * (25.4 / 120 / 0.376)); //how to find out the 120 dpi of QGraphicsView?
-
-
-  QFontMetricsF fontInfo(scaledFont);
+  QFontMetricsF fontInfo(mFont);
   setSceneRect(QRectF(transform().dx(), transform().dy(), fontInfo.width(mText) + 2 * mMargin, fontInfo.ascent() + 2 * mMargin));
 }
 

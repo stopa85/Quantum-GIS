@@ -17,13 +17,17 @@
 #define QGSCOMPOSERSCALEBAR_H
 
 #include "qgscomposeritem.h"
+#include <QObject>
 #include <QPen>
 
 class QgsComposerMap;
 
-class QgsComposerScaleBar: public QgsComposerItem
+class QgsComposerScaleBar: public QObject, public QgsComposerItem
 {
- public:
+
+ Q_OBJECT
+ 
+public:
 
   enum Style
     {
@@ -71,6 +75,12 @@ class QgsComposerScaleBar: public QgsComposerItem
   void setComposerMap(const QgsComposerMap* map);
   const QgsComposerMap* composerMap() const {return mComposerMap;}
 
+  double labelBarSpace() const {return mLabelBarSpace;}
+  void setLabelBarSpace(double space){mLabelBarSpace = space;}
+
+  double boxContentSpace() const {return mBoxContentSpace;}
+  void setBoxContentSpace(double space){mBoxContentSpace = space;}
+
   /**Apply default settings (scale bar 1/5 of map item width)*/
   void applyDefaultSettings();
 
@@ -81,6 +91,11 @@ class QgsComposerScaleBar: public QgsComposerItem
 
   /**Adjusts box size and calls QgsComposerItem::update()*/
   void update();
+
+ public slots:
+  void updateSegmentSize();
+  /**Sets mCompositionMap to 0 if the map is deleted*/
+  void invalidateCurrentMap();
 
  protected:
 
@@ -107,8 +122,12 @@ class QgsComposerScaleBar: public QgsComposerItem
   double mHeight;
   /**Scalebar style*/
   QgsComposerScaleBar::Style mStyle;
+  
   /**Space between bar and Text labels*/
   double mLabelBarSpace;
+
+  /**Space between content and item box*/
+  double mBoxContentSpace;
 
   /**Width of a segment (in mm)*/
   double mSegmentMM;
@@ -123,8 +142,10 @@ class QgsComposerScaleBar: public QgsComposerItem
    @param barTopPosition Item coordinates of the bar top. Necessary because of Labels*/
   void drawScaleBarSingleBox(QPainter* p, double barTopPosition) const;
 
+  void drawScaleBarTicksMiddle(QPainter* p, double barTopPosition) const;
+
   /**Returns height of font considering font scale factor for the given painter*/
-  double fontHeight(QPainter* p) const;
+  double fontHeight() const;
 };
 
 #endif //QGSCOMPOSERSCALEBAR_H

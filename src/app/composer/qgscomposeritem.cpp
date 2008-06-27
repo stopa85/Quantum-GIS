@@ -336,12 +336,6 @@ void QgsComposerItem::drawBackground(QPainter* p)
   p->drawRect (QRectF( 0, 0, rect().width(), rect().height()));
 }
 
-double QgsComposerItem::fontPointScaleFactor(const QPainter* p) const
-{
-  double dpiPaintDevice = (p->device()->logicalDpiX() + p->device()->logicalDpiY()) / 2;
-  return (25.4 / dpiPaintDevice / 0.376); //consider 1 point equals 0.376 mm 
-}
-
 void QgsComposerItem::hoverMoveEvent ( QGraphicsSceneHoverEvent * event )
 {
   if(isSelected())

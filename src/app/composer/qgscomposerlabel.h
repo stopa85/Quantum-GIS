@@ -32,10 +32,9 @@ class QgsComposerLabel: public QgsComposerItem
   void adjustSizeToText();
 
   QString text() {return mText;}
-  void setText(const QString& text){mText = text;}
+  void setText(const QString& text);
   QFont font() {return mFont;}
-  void setFont(const QFont& f){mFont = f;}
-  void setFontSize(double size);
+  void setFont(const QFont& f);
   double margin(){return mMargin;}
   void setMargin(double m){mMargin = m;}
  
