@@ -16,41 +16,33 @@
 
 #include "qgscomposerscalebar.h"
 #include "qgscomposermap.h"
+#include "qgsscalebarstyle.h"
+#include "qgssingleboxscalebarstyle.h"
+#include "qgsticksmiddlescalebarstyle.h"
 #include "qgsrect.h"
 #include <QFontMetricsF>
 #include <QPainter>
 #include <cmath>
 
-QgsComposerScaleBar::QgsComposerScaleBar(QgsComposition* composition): QgsComposerItem(composition), mComposerMap(0), mStyle(QgsComposerScaleBar::Single_Box), mSegmentMM(0.0)
+QgsComposerScaleBar::QgsComposerScaleBar(QgsComposition* composition): QgsComposerItem(composition), mComposerMap(0), mStyle(0), mSegmentMM(0.0)
 {
   applyDefaultSettings();
 }
 
 QgsComposerScaleBar::~QgsComposerScaleBar()
 {
-
+  delete mStyle;
 }
 
 void QgsComposerScaleBar::paint (QPainter* painter, const QStyleOptionGraphicsItem* itemStyle, QWidget* pWidget)
 {
-  //calculate top level of the bar
-  QFontMetricsF labelFontMetrics(mFont);
-  double barTopPosition = fontHeight() + mLabelBarSpace + mBoxContentSpace;
-
-  switch(mStyle)
+  if(!mStyle)
     {
-    case QgsComposerScaleBar::Single_Box:
-      drawScaleBarSingleBox(painter, barTopPosition);
-      break;
-    case QgsComposerScaleBar::Bar_Ticks_Middle:
-      drawScaleBarTicksMiddle(painter, barTopPosition);
-      break;
-    default:
-      break;
+      return;
     }
 
-  drawLabels(painter);
-
+  mStyle->draw(painter);
+  
   //draw frame and selection boxes if necessary
   drawFrame(painter);
   if(isSelected())
@@ -111,9 +103,11 @@ void QgsComposerScaleBar::applyDefaultSettings()
 
   mNumMapUnitsPerScaleBarUnit = 1.0;
 
-  mHeight = 5;
+  //style
+  delete mStyle;
+  mStyle = new QgsSingleBoxScaleBarStyle(this);
 
-  mStyle = QgsComposerScaleBar::Single_Box;
+  mHeight = 5;
 
   mPen = QPen(QColor(0, 0, 0));
   mPen.setWidthF(1.0);
@@ -142,152 +136,15 @@ void QgsComposerScaleBar::applyDefaultSettings()
   adjustBoxSize();
 }
 
-void QgsComposerScaleBar::drawLabels(QPainter* p)
-{
-  if(!p)
-    {
-      return;
-    }
-
-  p->save();
-  
-  QFont labelFont(mFont);
-  labelFont.setPointSizeF(mFont.pointSizeF());
-
-  p->setFont(labelFont);
-
-  double mCurrentXCoord = mPen.widthF() + mBoxContentSpace;
-
-  //draw labels of the left segments
-  for(int i = 0; i < mNumSegmentsLeft; ++i)
-    {
-      mCurrentXCoord += mSegmentMM / mNumSegmentsLeft;
-    }
-
-  double currentLabelNumber = 0.0;
-
-  //draw labels of the right segments
-  for(int i = 0; i < mNumSegments; ++i)
-    {
-      p->drawText(QPointF(mCurrentXCoord, fontHeight() + mBoxContentSpace), QString::number(currentLabelNumber / mNumMapUnitsPerScaleBarUnit));
-      mCurrentXCoord += mSegmentMM;
-      currentLabelNumber += mNumUnitsPerSegment;
-    }
-  
-  p->drawText(QPointF(mCurrentXCoord, fontHeight() + mBoxContentSpace), QString::number(currentLabelNumber / mNumMapUnitsPerScaleBarUnit) + " " + mUnitLabeling);
-  p->restore();
-}
-
-void QgsComposerScaleBar::drawScaleBarSingleBox(QPainter* p, double barTopPosition) const
-{
-  if(!p)
-    {
-      return;
-    }
-
-  p->save();
-
-  //mHeight, mBrush, mPen
-  p->setPen(mPen);
-
-  double mCurrentXCoord = mPen.widthF() + mBoxContentSpace;
-
-  bool useColor = true; //alternate brush color/white
-
-  //draw the left segments
-  for(int i = 0; i < mNumSegmentsLeft; ++i)
-    {
-      if(useColor) //alternating colors
-	{
-	  p->setBrush(mBrush);
-	}
-      else //white
-	{
-	  p->setBrush(QColor(255, 255, 255));
-	}
-      QRectF segmentRect(mCurrentXCoord, barTopPosition, mSegmentMM/mNumSegmentsLeft, mHeight);
-      p->drawRect(segmentRect);
-      mCurrentXCoord += mSegmentMM / mNumSegmentsLeft;
-      useColor = !useColor;
-    }
-  
-  //draw the right segments
-  for(int i = 0; i < mNumSegments; ++i)
-    {
-      if(useColor) //alternating colors
-	{
-	  p->setBrush(mBrush);
-	}
-      else //white
-	{
-	  p->setBrush(QColor(255, 255, 255));
-	}
-
-      QRectF segmentRect(mCurrentXCoord, barTopPosition, mSegmentMM, mHeight);
-      p->drawRect(segmentRect);
-      mCurrentXCoord += mSegmentMM;
-      useColor = !useColor;
-    }
-
-  p->restore();
-}
-
-void QgsComposerScaleBar::drawScaleBarTicksMiddle(QPainter* p, double barTopPosition) const
-{
-  if(!p)
-    {
-      return;
-    }
-  
-  p->save();
-
-  //mHeight, mBrush, mPen
-  p->setPen(mPen);
-
-  double mCurrentXCoord = mPen.widthF() + mBoxContentSpace;
-
-  //draw the left segments
-  for(int i = 0; i < mNumSegmentsLeft; ++i)
-    {
-      p->drawLine(mCurrentXCoord, barTopPosition, mCurrentXCoord, barTopPosition + mHeight);
-      p->drawLine(mCurrentXCoord, barTopPosition + mHeight/2, mCurrentXCoord + mSegmentMM / mNumSegmentsLeft, barTopPosition + mHeight/2);
-      mCurrentXCoord += mSegmentMM / mNumSegmentsLeft;
-    }
-
-  p->drawLine(mCurrentXCoord, barTopPosition, mCurrentXCoord, barTopPosition + mHeight);
-  
-  //draw the right segments
-  for(int i = 0; i < mNumSegments; ++i)
-    {
-      p->drawLine(mCurrentXCoord, barTopPosition, mCurrentXCoord, barTopPosition + mHeight);
-      p->drawLine(mCurrentXCoord, barTopPosition + mHeight/2.0, mCurrentXCoord + mSegmentMM, barTopPosition + mHeight/2.0);
-      mCurrentXCoord += mSegmentMM;
-    }
-
-  p->drawLine(mCurrentXCoord, barTopPosition, mCurrentXCoord, barTopPosition + mHeight);
-  p->restore();
-}
-
 void QgsComposerScaleBar::adjustBoxSize()
 {
-  int numFullSegments = mNumSegments;
-  if(mNumSegmentsLeft > 0)
+  if(!mStyle)
     {
-      ++numFullSegments;
+      return;
     }
-
-  //consider width of largest label
-  double largestLabelNumber = mNumSegments * mNumUnitsPerSegment / mNumMapUnitsPerScaleBarUnit;
-  QString largestLabel = QString::number(largestLabelNumber) + " " + mUnitLabeling;
-  double largestLabelWidth = QFontMetricsF(mFont).width(largestLabel);
-
-  double width = numFullSegments * mSegmentMM + 2 * mPen.widthF() + largestLabelWidth + 2 * mBoxContentSpace;
-  double height = mHeight + mLabelBarSpace + 2 * mBoxContentSpace + QFontMetrics(mFont).height();
-
   
-
-  QRectF sceneBox(transform().dx(), transform().dy(), width, height);
-  setSceneRect(sceneBox);
+  QRectF box = mStyle->calculateBoxSize();
+  setSceneRect(box);
 }
 
 void QgsComposerScaleBar::update()
@@ -308,569 +165,40 @@ void QgsComposerScaleBar::updateSegmentSize()
   update();
 }
 
-
-#if 0
-#include "qgscomposerscalebar.h"
-#include "qgscomposermap.h"
-#include "qgsproject.h"
-
-#include <QFontDialog>
-#include <QPainter>
-#include <QGraphicsScene>
-
-#include <cmath>
-#include <iostream>
-
-//can we/should we remove the x and y parameters?
-QgsComposerScalebar::QgsComposerScalebar ( QgsComposition *composition, int id, 
-	                                            int x, int y )
-    : QWidget(composition),
-    QgsComposerItem(0),
-    mComposition(composition),
-    mMap(0),
-    mBrush(QColor(150,150,150))
+void QgsComposerScaleBar::segmentPositions(QList<QPair<double, double> >& posWidthList) const
 {
-  setupUi(this);
-
-#ifdef QGISDEBUG
-  std::cout << "QgsComposerScalebar::QgsComposerScalebar()" << std::endl;
-#endif
-
-  mId = id;
-  setSelected(false);
-
-  mMapCanvas = mComposition->mapCanvas();
-
-  QGraphicsRectItem::setPos(x, y);
-
-  init();
-
-  // Set map to the first available if any
-  std::vector < QgsComposerMap * >maps = mComposition->maps();
-  if (maps.size() > 0)
+  posWidthList.clear();
+  double mCurrentXCoord = mPen.widthF() + mBoxContentSpace;
+  
+  //left segments
+  for(int i = 0; i < mNumSegmentsLeft; ++i)
     {
-      mMap = maps[0]->id();
-    }
-  // Set default according to the map
-  QgsComposerMap *map = mComposition->map(mMap);
-  if (map)
-    {
-      mMapUnitsPerUnit = 1.;
-      mUnitLabel = "m";
-
-      // make one segment cca 1/10 of map width and it will be 1xxx, 2xxx or 5xxx
-      double mapwidth = 1. * map->QGraphicsRectItem::rect().width() / map->scale();
-
-      mSegmentLength = mapwidth / 10;
-
-      int powerOf10 = int (pow(10.0, int (log(mSegmentLength) / log(10.0)))); // from scalebar plugin
-
-      int isize = (int) ceil(mSegmentLength / powerOf10);
-
-      if (isize == 3)
-        isize = 2;
-      else if (isize == 4)
-        isize = 5;
-      else if (isize > 5 && isize < 8)
-        isize = 5;
-      else if (isize > 7)
-        isize = 10;
-
-      mSegmentLength = isize * powerOf10;
-
-      // the scale bar will take cca 1/4 of the map width
-      // But always have at least one segment.
-      mNumSegments = std::max(1, (int) (mapwidth / 4 / mSegmentLength));
-
-      int segsize = (int) (mSegmentLength * map->scale());
-
-      int fontsize = segsize / 3;
-
-      if(fontsize < 6)
-      {
-        fontsize = 6;
-      }
-
-      mFont.setPointSize(fontsize);
-  } else
-    {
-      mFont.setPointSize(6);
-      mMapUnitsPerUnit = 1.;
-      mUnitLabel = "m";
-      mSegmentLength = 1000.;
-      mNumSegments = 5;
+      posWidthList.push_back(qMakePair(mCurrentXCoord, mSegmentMM / mNumSegmentsLeft));
+      mCurrentXCoord += mSegmentMM / mNumSegmentsLeft;
     }
 
-  // Calc size
-  recalculate();
-
-  // Add to scene
-  mComposition->canvas()->addItem(this);
-
-  QGraphicsRectItem::show();
-  QGraphicsRectItem::update();
-
-  writeSettings();
-}
-
-QgsComposerScalebar::QgsComposerScalebar ( QgsComposition *composition, int id ) 
-    : QgsComposerItem(0),
-    mComposition(composition),
-    mMap(0),
-    mBrush(QColor(150,150,150))
-{
-#ifdef QGISDEBUG
-  std::cout << "QgsComposerScalebar::QgsComposerScalebar()" << std::endl;
-#endif
-
-  setupUi(this);
-
-  mId = id;
-  setSelected(false);
-
-  mMapCanvas = mComposition->mapCanvas();
-
-  init();
-
-  readSettings();
-
-  // Calc size
-  recalculate();
-
-  // Add to scene
-  mComposition->canvas()->addItem(this);
-
-  QGraphicsRectItem::show();
-  QGraphicsRectItem::update();
-}
-
-void QgsComposerScalebar::init(void)
-{
-  mUnitLabel = "m";
-
-  // Rectangle
-  QGraphicsRectItem::setZValue(50);
-//    setActive(true);
-
-  // Default value (map units?) for the scalebar border
-  mPen.setWidthF(.5);
-
-  // Plot style
-  setPlotStyle(QgsComposition::Preview);
-
-  connect(mComposition, SIGNAL(mapChanged(int)), this, SLOT(mapChanged(int)));
-}
-
-QgsComposerScalebar::~QgsComposerScalebar()
-{
-  std::cerr << "QgsComposerScalebar::~QgsComposerScalebar()" << std::endl;
-  QGraphicsRectItem::hide();
-}
-
-#define FONT_WORKAROUND_SCALE 10
-QRectF QgsComposerScalebar::render(QPainter * p)
-{
-#ifdef QGISDEBUG
-  std::cout << "QgsComposerScalebar::render() "<< std::endl;
-#endif
-
-  // Painter can be 0, create dummy to avoid many if below
-  QPainter *painter;
-  QPixmap *pixmap=NULL;
-  if (p)
-  {
-      painter = p;
-  }else
-  {
-    pixmap = new QPixmap(1, 1);
-    painter = new QPainter(pixmap);
-  }
-#ifdef QGISDEBUG
-  std::cout << "mComposition->scale() = " << mComposition->scale() << std::endl;
-#endif
-
-  QgsComposerMap *map = mComposition->map(mMap); //Get the topmost map from the composition
-
-  double segwidth;
-  if(map)
-  {
-    segwidth = (mSegmentLength * map->scale());  //width of one segment
-  }
-  else //if there is no map, make up a segment width
-  {
-    segwidth = mSegmentLength/100;
-  }
-  double width = (segwidth * mNumSegments); //width of whole scalebar
-  double barLx = -width / 2; //x offset to the left
-
-  double barHeight = (25.4 * mComposition->scale() * mFont.pointSize() / 72);
-
-  double tickSize = barHeight * 1.5; //ticks go from the base of the bar to 1/2 the bar's height above it
-
-  // Draw background rectangle
-  painter->setPen(QPen(QColor(255, 255, 255), 0));
-  painter->setBrush(QBrush(QColor(255, 255, 255), Qt::SolidPattern));
-  painter->drawRect(QRectF(barLx, -barHeight, width, barHeight));
-
-  // set the painter to have grey background and black border
-  painter->setPen(QPen(QColor(0, 0, 0), mPen.widthF()));
-  painter->setBrush(QBrush(QColor(127, 127, 127)));//default to solid brush
-
-  // fill every other segment with grey
-  for (int i = 0; i < mNumSegments; i += 2)
-  {
-    painter->drawRect(QRectF(barLx + ((double)i * segwidth), -barHeight, segwidth, barHeight));
-  }
-
-  // draw a box around the all of the segments
-  painter->setBrush(Qt::NoBrush);
-  painter->drawRect(QRectF(barLx, -barHeight, width, barHeight));
-
-  // set up the pen to draw the tick marks
-  painter->setPen(QPen(QColor(0, 0, 0), mPen.widthF()));
-
-  // draw the tick marks
-  for (int i = 0; i <= mNumSegments; i++)
-  {
-    painter->drawLine(QLineF(barLx + ((double)i * segwidth), 0, barLx + (i * segwidth), -tickSize));
-  }
-
-
-  // labels
-
-  // Font size in canvas units
-  float size = 25.4 * mComposition->scale() * mFont.pointSizeFloat() / 72;
-
-
-  // Create QFontMetrics so we can correctly place the text
-  QFont font(mFont);
-  font.setPointSizeFloat(size);
-  QFontMetrics metrics(font);
-
-  font.setPointSizeFloat(size * FONT_WORKAROUND_SCALE); //hack to work around Qt font bug
-
-  if (plotStyle() == QgsComposition::Postscript)
-  {
-    font.setPointSizeF(metrics.ascent() * 72.0 / mComposition->resolution() * FONT_WORKAROUND_SCALE);
-  }
-
-  painter->setFont(font);
-
-  // Not sure about Style Strategy, QFont::PreferMatch?
-  font.setStyleStrategy((QFont::StyleStrategy) (QFont::PreferOutline | QFont::PreferAntialias));
-
-  double offset = .5 * tickSize; //vertical offset above the top of the tick marks
-  double textRightOverhang=0;//amount the label text hangs over the right edge of the scalebar - used for the bounding box
-
-  for (int i = 0; i <= mNumSegments; i++)
-  {
-    int lab = (int) ((double)i * mSegmentLength / mMapUnitsPerUnit);
-
-    QString txt = QString::number(lab);
-    double shift = (double)metrics.width(txt) / 2;
-
-    if (i == mNumSegments) //on the last label, append the appropriate unit symbol
+  //right segments
+  for(int i = 0; i < mNumSegments; ++i)
     {
-      txt.append(" " + mUnitLabel);
-      textRightOverhang = (double)metrics.width(txt) - shift;
-    }
-
-    double x = barLx + (i * segwidth) - shift; //figure out the bottom left corner and draw the text
-    double y = -tickSize - offset - metrics.descent();
-
-    painter->save();
-    painter->scale(1./FONT_WORKAROUND_SCALE, 1./FONT_WORKAROUND_SCALE);
-    painter->drawText(QPointF(x * FONT_WORKAROUND_SCALE, y * FONT_WORKAROUND_SCALE), txt);
-    painter->restore();
-
-  }//end of label drawing
-
-  double totalHeight = tickSize + offset + metrics.height();
-
-  if (!p)
-    {
-      delete painter;
-      delete pixmap;
-    }
-
-//Add the 1/2 the pen width to get the full bounding box
-return QRectF(barLx - (mPen.widthF()/2), -totalHeight, width + textRightOverhang, totalHeight + (mPen.widthF()/2));
-}
-
-void QgsComposerScalebar::paint(QPainter * painter, const QStyleOptionGraphicsItem * itemStyle, QWidget * pWidget)
-{
-#ifdef QGISDEBUG
-  std::cout << "draw mPlotStyle = " << plotStyle() << std::endl;
-#endif
-  setRect(render(painter));
-
-  // Show selected / Highlight
-  if (isSelected() && plotStyle() == QgsComposition::Preview)
-    {
-      painter->setPen(mComposition->selectionPen());
-      painter->setBrush(mComposition->selectionBrush());
-
-      double s = mComposition->selectionBoxSize();
-      QRectF r = boundingRect();
-
-      painter->drawRect(QRectF(r.x(), r.y(), s, s));
-      painter->drawRect(QRectF(r.x() + r.width() - s, r.y(), s, s));
-      painter->drawRect(QRectF(r.x() + r.width() - s, r.y() + r.height() - s, s, s));
-      painter->drawRect(QRectF(r.x(), r.y() + r.height() - s, s, s));
+      posWidthList.push_back(qMakePair(mCurrentXCoord, mSegmentMM));
+      mCurrentXCoord += mSegmentMM;
     }
 }
 
-/*
-void QgsComposerScalebar::drawShape ( QPainter & painter )
+void QgsComposerScaleBar::setStyle(const QString& styleName)
 {
-    paint ( painter );
-}
-*/
-void QgsComposerScalebar::on_mFontButton_clicked(void)
-{
-  bool result;
+  delete mStyle;
+  mStyle = 0;
 
-  mFont = QFontDialog::getFont(&result, mFont, this);
-
-  if (result)
+  //switch depending on style name
+  if(styleName == tr("Single Box"))
     {
-      recalculate();
-      QGraphicsRectItem::update();
-      QGraphicsRectItem::scene()->update();
-      writeSettings();
+      mStyle = new QgsSingleBoxScaleBarStyle(this);
+    }
+  else if(styleName == tr("Bar Ticks Middle"))
+    {
+      mStyle = new QgsTicksMiddleScaleBarStyle(this);
     }
 }
 
-void QgsComposerScalebar::on_mUnitLabelLineEdit_editingFinished()
-{
-  mUnitLabel = mUnitLabelLineEdit->text();
-  recalculate();
-  QGraphicsRectItem::update();
-  QGraphicsRectItem::scene()->update();
-  writeSettings();
-}
 
-void QgsComposerScalebar::on_mMapComboBox_activated(int i)
-{
-  mMap = mMaps[i];
-  recalculate();
-  QGraphicsRectItem::update();
-  QGraphicsRectItem::scene()->update();
-  writeSettings();
-}
-
-void QgsComposerScalebar::mapChanged(int id)
-{
-  if (id != mMap)
-    return;
-  recalculate();
-  QGraphicsRectItem::update();
-  QGraphicsRectItem::scene()->update();
-}
-
-void QgsComposerScalebar::sizeChanged()
-{
-  mSegmentLength = mSegmentLengthLineEdit->text().toDouble();
-  mNumSegments = mNumSegmentsLineEdit->text().toInt();
-  mPen.setWidthF(mLineWidthSpinBox->value());
-  mMapUnitsPerUnit = mMapUnitsPerUnitLineEdit->text().toInt();
-  recalculate();
-  QGraphicsRectItem::update();
-  QGraphicsRectItem::scene()->update();
-  writeSettings();
-}
-
-void QgsComposerScalebar::on_mLineWidthSpinBox_valueChanged()
-{
-  sizeChanged();
-}
-
-void QgsComposerScalebar::on_mMapUnitsPerUnitLineEdit_editingFinished()
-{
-  sizeChanged();
-}
-
-void QgsComposerScalebar::on_mNumSegmentsLineEdit_editingFinished()
-{
-  sizeChanged();
-}
-
-void QgsComposerScalebar::on_mSegmentLengthLineEdit_editingFinished()
-{
-  sizeChanged();
-}
-/*
-void QgsComposerScalebar::moveBy(double x, double y)
-{
-  std::cout << "QgsComposerScalebar::move" << std::endl;
-  QGraphicsItem::moveBy(x, y);
-
-  recalculate();
-  //writeSettings(); // not necessary called by composition
-}*/
-
-void QgsComposerScalebar::recalculate(void)
-{
-#ifdef QGISDEBUG
-  std::cout << "QgsComposerScalebar::recalculate" << std::endl;
-#endif
-
-  // !!! prepareGeometryChange() MUST BE called before the value returned by areaPoints() changes
-  //Is this still true after the port to GraphicsView?
-  QGraphicsRectItem::prepareGeometryChange();
-
-  setRect(render(0));
-
-  QGraphicsItem::update();
-}
-
-QPolygonF QgsComposerScalebar::areaPoints(void) const
-{
-#ifdef QGISDEBUG
-  std::cout << "QgsComposerScalebar::areaPoints" << std::endl;
-#endif
-
-  QRectF r = QGraphicsRectItem::rect();
-  QPolygonF pa;
-  pa << QPointF(r.x(), r.y());
-  pa << QPointF(r.x() + r.width(), r.y());
-  pa << QPointF(r.x() + r.width(), r.y() + r.height());
-  pa << QPointF(r.x(), r.y() + r.height());
-  return pa;
-}
-
-void QgsComposerScalebar::setOptions(void)
-{
-  mSegmentLengthLineEdit->setText(QString::number(mSegmentLength));
-  mNumSegmentsLineEdit->setText(QString::number(mNumSegments));
-  mUnitLabelLineEdit->setText(mUnitLabel);
-  mMapUnitsPerUnitLineEdit->setText(QString::number(mMapUnitsPerUnit));
-
-  mLineWidthSpinBox->setValue(mPen.widthF());
-
-  // Maps
-  mMapComboBox->clear();
-  std::vector < QgsComposerMap * >maps = mComposition->maps();
-
-  mMaps.clear();
-
-  bool found = false;
-  mMapComboBox->insertItem("", 0);
-  mMaps.push_back(0);
-  for (int i = 0; i < (int)maps.size(); i++)
-    {
-      mMapComboBox->insertItem(maps[i]->name(), i + 1);
-      mMaps.push_back(maps[i]->id());
-
-      if (maps[i]->id() == mMap)
-        {
-          found = true;
-          mMapComboBox->setCurrentItem(i + 1);
-        }
-    }
-
-  if (!found)
-    {
-      mMap = 0;
-      mMapComboBox->setCurrentItem(0);
-    }
-}
-
-void QgsComposerScalebar::setSelected(bool s)
-{
-  setSelected(s);
-  QGraphicsRectItem::update(); // show highlight
-}
-
-bool QgsComposerScalebar::selected(void)
-{
-  return isSelected();
-}
-
-QWidget *QgsComposerScalebar::options(void)
-{
-  setOptions();
-  return (dynamic_cast < QWidget * >(this));
-}
-
-bool QgsComposerScalebar::writeSettings(void)
-{
-#ifdef QGISDEBUG
-  std::cout << "QgsComposerScalebar::writeSettings" << std::endl;
-#endif
-
-  QString path;
-  path.sprintf("/composition_%d/scalebar_%d/", mComposition->id(), mId);
-
-  QgsProject::instance()->writeEntry("Compositions", path + "x", mComposition->toMM((int) QGraphicsRectItem::x()));
-  QgsProject::instance()->writeEntry("Compositions", path + "y", mComposition->toMM((int) QGraphicsRectItem::y()));
-
-  QgsProject::instance()->writeEntry("Compositions", path + "map", mMap);
-
-  QgsProject::instance()->writeEntry("Compositions", path + "unit/label", mUnitLabel);
-  QgsProject::instance()->writeEntry("Compositions", path + "unit/mapunits", mMapUnitsPerUnit);
-
-  QgsProject::instance()->writeEntry("Compositions", path + "segmentsize", mSegmentLength);
-  QgsProject::instance()->writeEntry("Compositions", path + "numsegments", mNumSegments);
-
-  QgsProject::instance()->writeEntry("Compositions", path + "font/size", mFont.pointSize());
-  QgsProject::instance()->writeEntry("Compositions", path + "font/family", mFont.family());
-  QgsProject::instance()->writeEntry("Compositions", path + "font/weight", mFont.weight());
-  QgsProject::instance()->writeEntry("Compositions", path + "font/underline", mFont.underline());
-  QgsProject::instance()->writeEntry("Compositions", path + "font/strikeout", mFont.strikeOut());
-
-  QgsProject::instance()->writeEntry("Compositions", path + "pen/width", (double) mPen.widthF());
-
-  return true;
-}
-
-bool QgsComposerScalebar::readSettings(void)
-{
-  bool ok;
-  QString path;
-  path.sprintf("/composition_%d/scalebar_%d/", mComposition->id(), mId);
-
-  double x = mComposition->fromMM(QgsProject::instance()->readDoubleEntry("Compositions", path + "x", 0, &ok));
-  double y = mComposition->fromMM(QgsProject::instance()->readDoubleEntry("Compositions", path + "y", 0, &ok));
-  QGraphicsRectItem::setPos(x, y);
-
-  mMap = QgsProject::instance()->readNumEntry("Compositions", path + "map", 0, &ok);
-  mUnitLabel = QgsProject::instance()->readEntry("Compositions", path + "unit/label", "???", &ok);
-  mMapUnitsPerUnit = QgsProject::instance()->readDoubleEntry("Compositions", path + "unit/mapunits", 1., &ok);
-
-  mSegmentLength = QgsProject::instance()->readDoubleEntry("Compositions", path + "segmentsize", 1000., &ok);
-  mNumSegments = QgsProject::instance()->readNumEntry("Compositions", path + "numsegments", 5, &ok);
-
-  mFont.setFamily(QgsProject::instance()->readEntry("Compositions", path + "font/family", "", &ok));
-  mFont.setPointSize(QgsProject::instance()->readNumEntry("Compositions", path + "font/size", 10, &ok));
-  mFont.setWeight(QgsProject::instance()->readNumEntry("Compositions", path + "font/weight", (int) QFont::Normal, &ok));
-  mFont.setUnderline(QgsProject::instance()->readBoolEntry("Compositions", path + "font/underline", false, &ok));
-  mFont.setStrikeOut(QgsProject::instance()->readBoolEntry("Compositions", path + "font/strikeout", false, &ok));
-
-  mPen.setWidthF(QgsProject::instance()->readDoubleEntry("Compositions", path + "pen/width", 1, &ok));
-
-  recalculate();
-
-  return true;
-}
-
-bool QgsComposerScalebar::removeSettings(void)
-{
-  std::cerr << "QgsComposerScalebar::deleteSettings" << std::endl;
-
-  QString path;
-  path.sprintf("/composition_%d/scalebar_%d", mComposition->id(), mId);
-  return QgsProject::instance()->removeEntry("Compositions", path);
-}
-
-bool QgsComposerScalebar::writeXML(QDomNode & node, QDomDocument & document, bool temp)
-{
-  return true;
-}
-
-bool QgsComposerScalebar::readXML(QDomNode & node)
-{
-  return true;
-}
-
-#endif //0

@@ -25,8 +25,8 @@ QgsComposerScaleBarWidget::QgsComposerScaleBarWidget(QgsComposerScaleBar* scaleB
 {
   setupUi(this);
 
-  mStyleComboBox->insertItem(0, tr("Single_Box"));
-  mStyleComboBox->insertItem(1, tr("Bar_Ticks_Middle"));
+  mStyleComboBox->insertItem(0, tr("Single Box"));
+  mStyleComboBox->insertItem(1, tr("Bar Ticks Middle"));
 
   setGuiElements(); //set the GUI elements to the state of scaleBar
 }
@@ -300,15 +300,7 @@ void QgsComposerScaleBarWidget::on_mStyleComboBox_currentIndexChanged(const QStr
       return;
     }
 
-  if(text == tr("Single_Box"))
-    {
-      mComposerScaleBar->setStyle(QgsComposerScaleBar::Single_Box);
-    }
-
-  else if(text == tr("Bar_Ticks_Middle"))
-    {
-      mComposerScaleBar->setStyle(QgsComposerScaleBar::Bar_Ticks_Middle);
-    }
+  mComposerScaleBar->setStyle(text);
   mComposerScaleBar->update();
 }
 

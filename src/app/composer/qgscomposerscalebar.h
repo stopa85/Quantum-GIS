@@ -21,6 +21,7 @@
 #include <QPen>
 
 class QgsComposerMap;
+class QgsScaleBarStyle;
 
 class QgsComposerScaleBar: public QObject, public QgsComposerItem
 {
@@ -28,15 +29,6 @@ class QgsComposerScaleBar: public QObject, public QgsComposerItem
  Q_OBJECT
  
 public:
-
-  enum Style
-    {
-      Bar_Ticks_Down,
-      Bar_Ticks_Middle,
-      Bar_Ticks_Up,
-      Single_Box,
-      Double_Box,
-    };
 
   QgsComposerScaleBar(QgsComposition* composition);
   ~QgsComposerScaleBar();
@@ -81,10 +73,21 @@ public:
   double boxContentSpace() const {return mBoxContentSpace;}
   void setBoxContentSpace(double space){mBoxContentSpace = space;}
 
+  double segmentMM() const {return mSegmentMM;}
+
   /**Apply default settings (scale bar 1/5 of map item width)*/
   void applyDefaultSettings();
 
-  void setStyle(QgsComposerScaleBar::Style style){mStyle = style;}
+  /**Sets style by name
+   possibilities are: */
+  void setStyle(const QString& styleName);
+
+  /**Returns the x - positions of the segment borders (in item coordinates) and the width 
+   of the segment*/
+  void segmentPositions(QList<QPair<double, double> >& posWidthList) const; 
+
+  /**Returns height of mFont in points*/
+  double fontHeight() const;
 
   /**Sets box size suitable to content*/
   void adjustBoxSize();
@@ -121,7 +124,7 @@ public:
   /**Height of bars/lines*/
   double mHeight;
   /**Scalebar style*/
-  QgsComposerScaleBar::Style mStyle;
+  QgsScaleBarStyle* mStyle;
   
   /**Space between bar and Text labels*/
   double mLabelBarSpace;
@@ -134,155 +137,8 @@ public:
 
   /**Calculates with of a segment in mm and stores it in mSegmentMM*/
   void refreshSegmentMM();
-  
-  /**Draw text labels using the current font*/
-  void drawLabels(QPainter* p);
-
-  /**Draws this bar using single box style
-   @param barTopPosition Item coordinates of the bar top. Necessary because of Labels*/
-  void drawScaleBarSingleBox(QPainter* p, double barTopPosition) const;
-
-  void drawScaleBarTicksMiddle(QPainter* p, double barTopPosition) const;
-
-  /**Returns height of font considering font scale factor for the given painter*/
-  double fontHeight() const;
 };
 
 #endif //QGSCOMPOSERSCALEBAR_H
 
-#if 0
 
-#include "ui_qgscomposerscalebarbase.h"
-#include "qgscomposeritem.h"
-#include <QAbstractGraphicsShapeItem>
-#include <QRect>
-#include <QPen>
-
-class QgsMapCanvas;
-class QgsComposition;
-class QBrush;
-class QDomNode;
-class QDomDocument;
-class QFont;
-class QPainter;
-class QPen;
-
-/** \class QgsComposerScalebar
- *  \brief Object representing map window. 
- */
-// NOTE: QgsComposerScalebarBase must be first, otherwise does not compile
-class QgsComposerScalebar : public QWidget, private Ui::QgsComposerScalebarBase, public QgsComposerItem
-{
-    Q_OBJECT
-
-public:
-    /** \brief Constructor  
-     *  \param id object id
-     *  \param fontSize font size in typographic points!
-     */
-    QgsComposerScalebar( QgsComposition *composition, int id, int x, int y );
-
-    /** \brief Constructor. Settings are read from project. 
-     *  \param id object id
-     */
-    QgsComposerScalebar( QgsComposition *composition, int id );
-    ~QgsComposerScalebar();
-
-    /** \brief Initialise GUI etc., shared by constructors. */
-    void init(void);
-
-    // Reimplement QgsComposerItem:
-    void setSelected( bool s );
-    bool selected( void );
-    QWidget *options ( void );
-    bool writeSettings ( void );
-    bool readSettings ( void );
-    bool removeSettings ( void );
-    bool writeXML( QDomNode & node, QDomDocument & document, bool temp = false );
-    bool readXML( QDomNode & node );
-     
-    /** \brief Draw to paint device, internal use 
-     *  \param painter painter or 0
-     *  \return bounding box 
-     */
-    QRectF render (QPainter *painter);
-
-    /** \brief Reimplementation of QGraphicsItem::paint - draw on canvas */
-    void paint ( QPainter* painter, const QStyleOptionGraphicsItem* itemStyle, QWidget* pWidget);
-
-    //void drawShape(QPainter&);
-    QPolygonF areaPoints() const;
-    
-    /** \brief Calculate size according to current settings */
-    void recalculate ( void );
-    
-    /** \brief Set values in GUI to current values */
-    void setOptions ( void );
-
-    // Move to position
-//    void moveBy ( double x, double y );
-
-public slots:
-    // Open font dialog
-    void on_mFontButton_clicked ( void );
-
-    // Title changed
-    void on_mUnitLabelLineEdit_editingFinished ( void );
-
-    // Size changed
-    void on_mLineWidthSpinBox_valueChanged ( void );
-    void on_mMapUnitsPerUnitLineEdit_editingFinished ( void );
-    void on_mNumSegmentsLineEdit_editingFinished ( void );
-    void on_mSegmentLengthLineEdit_editingFinished ( void );
-    
-    // Called by GUI when map selection changed
-    void on_mMapComboBox_activated ( int i );
-
-    // Called when map was changed
-    void mapChanged ( int id );
-
-private:
-    // Pointer to composition
-    QgsComposition *mComposition;
-    
-    // Pointer to map canvas
-    QgsMapCanvas *mMapCanvas;
-    
-    // Composer map id or 0
-    int mMap;
-
-    // Vector of map id for maps in combobox
-    std::vector<int> mMaps;
-
-    // Number of map units in scalebar unit
-    double mMapUnitsPerUnit;
-
-    // Unit label
-    QString mUnitLabel;
-
-    // Font. Font size in typographic points!
-    QFont mFont;
-
-    // Pen
-    QPen mPen;
-
-    // Brush
-    QBrush mBrush;
-
-    // Number of parts 
-    int mNumSegments;
-
-    // Segment size in map units
-    double mSegmentLength;
-
-    // Height of scalebar box in canvas units (box style only)
-    double mHeight;
-
-    // Margin
-    int mMargin;
-
-    // Size changed
-    void sizeChanged ( void );
-};
-
-#endif //0

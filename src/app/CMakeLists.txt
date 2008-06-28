@@ -65,6 +65,9 @@ SET(QGIS_APP_SRCS
   composer/qgscomposermapwidget.cpp
   composer/qgscomposerscalebar.cpp
   composer/qgscomposerscalebarwidget.cpp
+  composer/qgsscalebarstyle.cpp
+  composer/qgssingleboxscalebarstyle.cpp
+  composer/qgsticksmiddlescalebarstyle.cpp
   #composer/qgscomposervectorlegend.cpp
   composer/qgscomposerview.cpp
   composer/qgscomposition.cpp
