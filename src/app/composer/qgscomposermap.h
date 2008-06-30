@@ -81,7 +81,7 @@ public:
     void setSceneRect(const QRectF& rectangle);
 
     /** \brief Scale */
-    double scale ( void );
+    double scale ( void ) const;
 
      /**Sets new scale and changes only mExtent*/
     void setNewScale(double scaleDenominator);

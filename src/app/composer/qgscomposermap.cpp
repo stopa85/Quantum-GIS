@@ -227,7 +227,7 @@ void QgsComposerMap::setCacheUpdated ( bool u )
     mCacheUpdated = u;
 }    
 
-double QgsComposerMap::scale()
+double QgsComposerMap::scale() const
 {
   QgsScaleCalculator calculator;
   calculator.setMapUnits(mMapCanvas->mapUnits());

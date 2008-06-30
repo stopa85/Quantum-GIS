@@ -17,6 +17,8 @@
 #include "qgscomposerscalebar.h"
 #include "qgscomposermap.h"
 #include "qgsscalebarstyle.h"
+#include "qgsdoubleboxscalebarstyle.h"
+#include "qgsnumericscalebarstyle.h"
 #include "qgssingleboxscalebarstyle.h"
 #include "qgsticksmiddlescalebarstyle.h"
 #include "qgsrect.h"
@@ -118,6 +120,7 @@ void QgsComposerScaleBar::applyDefaultSettings()
   mFont.setPointSizeF(4);
 
   mLabelBarSpace = 3.0;
+  mBoxContentSpace = 1.0;
 
   if(mComposerMap)
     {
@@ -195,9 +198,17 @@ void QgsComposerScaleBar::setStyle(const QString& styleName)
     {
       mStyle = new QgsSingleBoxScaleBarStyle(this);
     }
+  else if(styleName == tr("Double Box"))
+    {
+      mStyle = new QgsDoubleBoxScaleBarStyle(this);
+    }
   else if(styleName == tr("Bar Ticks Middle"))
     {
       mStyle = new QgsTicksMiddleScaleBarStyle(this);
+    } 
+  else if(styleName == tr("Numeric"))
+    {
+      mStyle = new QgsNumericScaleBarStyle(this);
     }
 }
 

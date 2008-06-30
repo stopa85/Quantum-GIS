@@ -26,7 +26,9 @@ QgsComposerScaleBarWidget::QgsComposerScaleBarWidget(QgsComposerScaleBar* scaleB
   setupUi(this);
 
   mStyleComboBox->insertItem(0, tr("Single Box"));
-  mStyleComboBox->insertItem(1, tr("Bar Ticks Middle"));
+  mStyleComboBox->insertItem(1, tr("Double Box"));
+  mStyleComboBox->insertItem(2, tr("Bar Ticks Middle"));
+  mStyleComboBox->insertItem(3, tr("Numeric"));
 
   setGuiElements(); //set the GUI elements to the state of scaleBar
 }
