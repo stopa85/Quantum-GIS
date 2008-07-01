@@ -23,6 +23,7 @@
 #include "qgscompositionwidget.h"
 #include "qgscomposerlabel.h"
 #include "qgscomposerlabelwidget.h"
+#include "qgscomposerlegend.h"
 #include "qgscomposermap.h"
 #include "qgscomposermapwidget.h"
 #include "qgscomposerscalebar.h"
@@ -94,6 +95,7 @@ QgsComposer::QgsComposer( QgisApp *qgis): QMainWindow()
   connect(mView, SIGNAL(composerMapAdded(QgsComposerMap*)), this, SLOT(addComposerMap(QgsComposerMap*)));
   connect(mView, SIGNAL(itemRemoved(QgsComposerItem*)), this, SLOT(deleteItem(QgsComposerItem*)));
   connect(mView, SIGNAL(composerScaleBarAdded(QgsComposerScaleBar*)), this, SLOT(addComposerScaleBar(QgsComposerScaleBar*)));
+  connect(mView, SIGNAL(composerLegendAdded(QgsComposerLegend*)), this, SLOT(addComposerLegend(QgsComposerLegend*)));
 
   mComposition  = new QgsComposition(mQgis->getMapCanvas());
   mView->setComposition(mComposition);
@@ -160,7 +162,7 @@ void QgsComposer::setupTheme()
   mActionAddImage->setIconSet(QIcon(QPixmap(myThemePath + "/mActionSaveMapAsImage.png")));
   mActionAddNewMap->setIconSet(QIcon(QPixmap(myThemePath + "/mActionAddRasterLayer.png")));
   mActionAddNewLabel->setIconSet(QIcon(QPixmap(myThemePath + "/mActionLabel.png")));
-  mActionAddNewVectLegend->setIconSet(QIcon(QPixmap(myThemePath + "/mActionAddLegend.png")));
+  mActionAddNewLegend->setIconSet(QIcon(QPixmap(myThemePath + "/mActionAddLegend.png")));
   mActionAddNewScalebar->setIconSet(QIcon(QPixmap(myThemePath + "/mActionScaleBar.png")));
   mActionSelectMoveItem->setIconSet(QIcon(QPixmap(myThemePath + "/mActionPan.png")));
 }
@@ -923,13 +925,12 @@ void QgsComposer::on_mActionAddNewMap_activated(void)
     }
 }
 
-void QgsComposer::on_mActionAddNewVectLegend_activated(void)
+void QgsComposer::on_mActionAddNewLegend_activated(void)
 {
-#if 0
-  mComposition->setTool ( QgsComposition::AddVectorLegend );
-  setToolActionsOff();
-  mActionAddNewVectLegend->setOn ( true );
-#endif //0
+  if(mView)
+    {
+      mView->setCurrentTool(QgsComposerView::AddLegend);
+    }
 }
 
 void QgsComposer::on_mActionAddNewLabel_activated(void)
@@ -1141,6 +1142,17 @@ void QgsComposer::addComposerScaleBar(QgsComposerScaleBar* scalebar)
   
   QgsComposerScaleBarWidget* sbWidget = new QgsComposerScaleBarWidget(scalebar);
   mItemWidgetMap.insert(scalebar, sbWidget);
+}
+
+void QgsComposer::addComposerLegend(QgsComposerLegend* legend)
+{
+  if(!legend)
+    {
+      return;
+    }
+  
+  //todo: create a composer legend widget
+  mItemWidgetMap.insert(legend, 0);
 }
 
 void QgsComposer::deleteItem(QgsComposerItem* item)

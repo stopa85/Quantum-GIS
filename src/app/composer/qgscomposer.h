@@ -22,6 +22,7 @@
 
 class QgisApp;
 class QgsComposerLabel;
+class QgsComposerLegend;
 class QgsComposerMap;
 class QgsComposerScaleBar;
 class QgsComposerView;
@@ -128,8 +129,8 @@ public slots:
     //! Add new map
     void on_mActionAddNewMap_activated(void);
 
-    //! Add new vector legend
-    void on_mActionAddNewVectLegend_activated(void);
+    //! Add new legend
+    void on_mActionAddNewLegend_activated(void);
     
     //! Add new label
     void on_mActionAddNewLabel_activated(void);
@@ -169,6 +170,9 @@ public slots:
 
     /**Adds a composer scale bar to the item/widget map and creates a configuration widget for it*/
     void addComposerScaleBar(QgsComposerScaleBar* scalebar);
+
+    /**Adds a composer legend to the item/widget map and creates a configuration widget for it*/
+    void addComposerLegend(QgsComposerLegend* legend);
 
     /**Removes item from the item/widget map and deletes the configuration widget*/
     void deleteItem(QgsComposerItem* item);

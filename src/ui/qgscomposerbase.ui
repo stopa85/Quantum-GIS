@@ -243,7 +243,7 @@
    <addaction name="mActionAddNewMap" />
    <addaction name="mActionAddImage" />
    <addaction name="mActionAddNewLabel" />
-   <addaction name="mActionAddNewVectLegend" />
+   <addaction name="mActionAddNewLegend" />
    <addaction name="mActionAddNewScalebar" />
    <addaction name="mActionSelectMoveItem" />
   </widget>
@@ -311,7 +311,7 @@
     <string>Add new label</string>
    </property>
   </action>
-  <action name="mActionAddNewVectLegend" >
+  <action name="mActionAddNewLegend" >
    <property name="icon" >
     <iconset>../themes/default/mActionAddLegend.png</iconset>
    </property>

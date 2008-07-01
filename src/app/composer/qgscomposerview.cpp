@@ -20,6 +20,7 @@
 
 #include "qgscomposerview.h"
 #include "qgscomposerlabel.h"
+#include "qgscomposerlegend.h"
 #include "qgscomposermap.h"
 #include "qgscomposeritemgroup.h"
 #include "qgscomposerscalebar.h"
@@ -108,10 +109,24 @@ void QgsComposerView::mousePressEvent(QMouseEvent* e)
       scene()->addItem(newScaleBar);
       emit composerScaleBarAdded(newScaleBar);
       scene()->clearSelection();
+      newScaleBar->setZValue(60);
       newScaleBar->setSelected(true);
       emit selectedItemChanged(newScaleBar);
     }
     break;
+
+  case AddLegend:
+    {
+      QgsComposerLegend* newLegend = new QgsComposerLegend(composition());
+      scene()->addItem(newLegend);
+      emit composerLegendAdded(newLegend);
+      scene()->clearSelection();
+      newLegend->setZValue(60);
+      newLegend->setSceneRect(QRectF(scenePoint.x(), scenePoint.y(), newLegend->rect().width(), newLegend->rect().height()));
+      newLegend->setSelected(true);
+      emit selectedItemChanged(newLegend);
+      break;
+    }
 
   default:
     break;

@@ -25,6 +25,7 @@ class QMouseEvent;
 class QgsComposition;
 class QgsComposerItem;
 class QgsComposerLabel;
+class QgsComposerLegend;
 class QgsComposerMap;
 class QgsComposerScaleBar;
 
@@ -40,7 +41,7 @@ public:
   enum Tool {
     Select = 0,      // Select/Move item
     AddMap,          // add new map 
-    AddVectorLegend, // add vector legend
+    AddLegend, // add vector legend
     AddLabel,        // add label
     AddScalebar,     // add scalebar
     AddPicture       // add raster/vector picture
@@ -89,8 +90,10 @@ public:
   void composerLabelAdded(QgsComposerLabel* label);
   /**Is emitted when new composer map has been added to the view*/
   void composerMapAdded(QgsComposerMap* map);
-  /**Is emmitted when new composer scale bar has been added*/
+  /**Is emitted when new composer scale bar has been added*/
   void composerScaleBarAdded(QgsComposerScaleBar* scalebar);
+  /**Is emitted when a new composer legend has been added*/
+  void composerLegendAdded(QgsComposerLegend* legend);
   /**Is emitted when a composer item has been removed from the scene*/
   void itemRemoved(QgsComposerItem*);
 };
