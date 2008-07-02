@@ -66,6 +66,54 @@
         <source>Delete</source>
         <translation>Usuń</translation>
     </message>
+    <message>
+        <source>Dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Point Symbol</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Size</source>
+        <translation type="unfinished">Rozmiar</translation>
+    </message>
+    <message>
+        <source>Area scale field</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Rotation field</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Style Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Outline style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Outline color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Outline width</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fill color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fill style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>...</source>
+        <translation type="unfinished">...</translation>
+    </message>
 </context>
 <context>
     <name>Gui</name>
@@ -79,7 +127,7 @@
     </message>
     <message>
         <source>Documentation:</source>
-        <translation type="unfinished">Dokumentacja:</translation>
+        <translation>Dokumentacja:</translation>
     </message>
     <message>
         <source>You really need to read the QGIS API Documentation now at:</source>
@@ -1059,6 +1107,14 @@ Czy chcesz wskazać ścieżkę (GISBASE) do Twojej instalacji GRASS?</translatio
         <source>Python path:</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Abort</source>
+        <translation type="obsolete">Anuluj</translation>
+    </message>
+    <message>
+        <source>Version 0.001</source>
+        <translation type="obsolete">Wersja 0.001</translation>
+    </message>
 </context>
 <context>
     <name>QgisApp</name>
@@ -1076,11 +1132,11 @@ Czy chcesz wskazać ścieżkę (GISBASE) do Twojej instalacji GRASS?</translatio
     </message>
     <message>
         <source>Map canvas. This is where raster and vector layers are displayed when added to the map</source>
-        <translation type="obsolete">Okno mapy. Tutaj wyświetlane są warstwy rastrowe i wektorowe, które zostały dodane do mapy</translation>
+        <translation type="unfinished">Okno mapy. Tutaj wyświetlane są warstwy rastrowe i wektorowe, które zostały dodane do mapy</translation>
     </message>
     <message>
         <source>Progress bar that displays the status of rendering layers and other time-intensive operations</source>
-        <translation type="unfinished">Pasek postępu informuje o postępie rysowania warstw oraz innych czasochłonnych operacji</translation>
+        <translation>Pasek postępu informuje o postępie rysowania warstw oraz innych czasochłonnych operacji</translation>
     </message>
     <message>
         <source>Displays the current map scale</source>
@@ -1248,15 +1304,15 @@ Czy chcesz wskazać ścieżkę (GISBASE) do Twojej instalacji GRASS?</translatio
     </message>
     <message>
         <source>You are running a development version of QGIS</source>
-        <translation type="unfinished">Pracujesz z wersją rozwojową QGIS</translation>
+        <translation>Pracujesz z wersją rozwojową QGIS</translation>
     </message>
     <message>
         <source>You are running the current version of QGIS</source>
-        <translation type="unfinished">Pracujesz z aktualną wersją QGIS</translation>
+        <translation>Pracujesz z aktualną wersją QGIS</translation>
     </message>
     <message>
         <source>Would you like more information?</source>
-        <translation type="unfinished">Czy chcesz otrzymać więcej informacji?</translation>
+        <translation>Czy chcesz otrzymać więcej informacji?</translation>
     </message>
     <message>
         <source>QGIS Version Information</source>
@@ -1296,7 +1352,7 @@ Czy chcesz wskazać ścieżkę (GISBASE) do Twojej instalacji GRASS?</translatio
     </message>
     <message>
         <source>Open an OGR Supported Vector Layer</source>
-        <translation type="unfinished">Otwórz warstwę wektorową OGR</translation>
+        <translation>Otwórz warstwę wektorową OGR</translation>
     </message>
     <message>
         <source>Save As</source>
@@ -1952,11 +2008,11 @@ Zapisz projekt pod nową nazwą</translation>
     </message>
     <message>
         <source>Layer is not valid</source>
-        <translation type="unfinished">Warstwa jest nieobsługiwana</translation>
+        <translation>Warstwa jest nieobsługiwana</translation>
     </message>
     <message>
         <source>The layer is not a valid layer and can not be added to the map</source>
-        <translation type="unfinished">Warstwa jest nieobsługiwana i nie może być dodana do mapy</translation>
+        <translation>Warstwa jest nieobsługiwana i nie może być dodana do mapy</translation>
     </message>
     <message>
         <source>Save?</source>
@@ -1988,7 +2044,7 @@ Zapisz projekt pod nową nazwą</translation>
     </message>
     <message>
         <source>Unable to create the bookmark. Your user database may be missing or corrupted</source>
-        <translation type="unfinished">Nie mogę stworzyć zakładki. Twoja baza danych użytkownika nie istnieje lub jest uszkodzona</translation>
+        <translation>Nie mogę stworzyć zakładki. Twoja baza danych użytkownika nie istnieje lub jest uszkodzona</translation>
     </message>
     <message>
         <source>Ctrl+?</source>
@@ -2045,19 +2101,19 @@ Hide most toolbars</comment>
     </message>
     <message>
         <source>Starting Python</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Uruchamianie Python</translation>
     </message>
     <message>
         <source>Python console</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Konsola Python</translation>
     </message>
     <message>
         <source>Python error</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Błąd Python</translation>
     </message>
     <message>
         <source>Error when reading metadata of plugin </source>
-        <translation type="unfinished"></translation>
+        <translation>Błąd podczas odczytywania metadanych wtyczki </translation>
     </message>
     <message>
         <source>Provider does not support deletion</source>
@@ -2081,11 +2137,11 @@ Hide most toolbars</comment>
     </message>
     <message>
         <source>Add Ring</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Dodaj pierścień</translation>
     </message>
     <message>
         <source>Add Island</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Dodaj wyspę</translation>
     </message>
     <message>
         <source>Add Island to multipolygon</source>
@@ -2097,15 +2153,15 @@ Hide most toolbars</comment>
     </message>
     <message>
         <source>Scale </source>
-        <translation type="unfinished"></translation>
+        <translation>Skala </translation>
     </message>
     <message>
         <source>Current map scale (formatted as x:y)</source>
-        <translation type="unfinished"></translation>
+        <translation>Obecna skala mapy (zapisana jako x:y)</translation>
     </message>
     <message>
         <source>Map coordinates at mouse cursor position</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Współrzędne mapy w miejscu kursora</translation>
     </message>
     <message>
         <source>Saved project to:</source>
@@ -2113,19 +2169,19 @@ Hide most toolbars</comment>
     </message>
     <message>
         <source>The current layer is not editable. Choose &apos;Start editing&apos; in the digitizing toolbar.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Aktywna warstwa nie jest edytowalna. Wybierz &apos;Rozpocznij edycję&apos; z belki narzędzi digitizacji.</translation>
     </message>
     <message>
         <source>Invalid scale</source>
-        <translation type="unfinished"></translation>
+        <translation>Skala nieprawidłowa</translation>
     </message>
     <message>
         <source>Network error while communicating with server</source>
-        <translation type="unfinished"></translation>
+        <translation>Błąd połączenia sieciowego podczas komunikacji z serwerem</translation>
     </message>
     <message>
         <source>Unknown network socket error</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Nieznany błąd połączenia sieciowego</translation>
     </message>
     <message>
         <source>Unable to communicate with QGIS Version server</source>
@@ -2133,15 +2189,15 @@ Hide most toolbars</comment>
     </message>
     <message>
         <source>Do you want to save the current project?</source>
-        <translation type="unfinished"></translation>
+        <translation>Czy chcesz zapisać aktywny projekt?</translation>
     </message>
     <message>
         <source>Move Feature</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Przesuń obiekt</translation>
     </message>
     <message>
         <source>Split Features</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Rozdziel obiekty</translation>
     </message>
     <message>
         <source>Map Tips</source>
@@ -2149,27 +2205,27 @@ Hide most toolbars</comment>
     </message>
     <message>
         <source>Show information about a feature when the mouse is hovered over it</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Wyświetl informacje o obiekcie po wskazaniu na nim kursorem</translation>
     </message>
     <message>
         <source>Current map scale</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Aktualna skala mapy</translation>
     </message>
     <message>
         <source>Project file is older</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Plik projektu jest starszy</translation>
     </message>
     <message>
         <source>&lt;p&gt;This project file was saved by an older version of QGIS.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">&lt;p&gt;Plik projektu został utworzony w starszej wersji QGIS.</translation>
     </message>
     <message>
         <source> When saving this project file, QGIS will update it to the latest version, possibly rendering it useless for older versions of QGIS.</source>
-        <translation type="unfinished"></translation>
+        <translation> Podczas zapisywania tego pliku projektu, QGIS zaktualizuje go do najnowszej wersji, co najprawdopodobniej spowoduje jego niekompatybilność ze starszymi wersjami QGIS.</translation>
     </message>
     <message>
         <source>&lt;p&gt;Even though QGIS developers try to maintain backwards compatibility, some of the information from the old project file might be lost.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;p&gt;Pomimo, że autorzy QGIS starają się zachować wsteczną kompatybilność, niektóre informacje ze starego pliku projektu mogą być utracone.</translation>
     </message>
     <message>
         <source> To improve the quality of QGIS, we appreciate if you file a bug report at %3.</source>
@@ -2181,11 +2237,11 @@ Hide most toolbars</comment>
     </message>
     <message>
         <source>&lt;p&gt;To remove this warning when opening an older project file, uncheck the box &apos;%5&apos; in the %4 menu.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;p&gt;Aby wyłączyć to ostrzeżenie podczas wczytywania starczych wersji plików projektów, odznacz pole &apos;%5&apos; w menu %4.</translation>
     </message>
     <message>
         <source>&lt;p&gt;Version of the project file: %1&lt;br&gt;Current version of QGIS: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;p&gt;Wersja pliku projektu: %1&lt;br&gt;Aktualna wersja QGIS: %2</translation>
     </message>
     <message>
         <source>&lt;tt&gt;Settings:Options:General&lt;/tt&gt;</source>
@@ -2198,7 +2254,7 @@ Hide most toolbars</comment>
     </message>
     <message>
         <source>Toggle full screen mode</source>
-        <translation type="unfinished">Przełącz tryb pełnoekranowy</translation>
+        <translation>Przełącz tryb pełnoekranowy</translation>
     </message>
     <message>
         <source>Ctrl-F</source>
@@ -2207,7 +2263,7 @@ Hide most toolbars</comment>
     </message>
     <message>
         <source>Toggle fullscreen mode</source>
-        <translation type="unfinished"></translation>
+        <translation>Przełącz tryb pełnoekranowy</translation>
     </message>
     <message>
         <source>Imrovements to digitising capabilities.</source>
@@ -2219,10 +2275,6 @@ Hide most toolbars</comment>
     </message>
     <message>
         <source>Improved support for transparency and contrast stretching in raster layers. Support for color ramps in raster layers. Support for non-north up rasters. Many other raster improvements &apos;under the hood&apos;.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source></source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2253,16 +2305,12 @@ Hide most toolbars</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Map canvas. This is where raster and vectorlayers are displayed when added to the map</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Overview</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Legend</source>
-        <translation type="unfinished">Legenda</translation>
+        <translation>Legenda</translation>
     </message>
     <message>
         <source>You are using QGIS version %1 built against code revision %2.</source>
@@ -2283,6 +2331,14 @@ This binary was compiled against Qt %1,and is currently running against Qt %2</s
     </message>
     <message>
         <source>Shows the map coordinates at the current cursor position. The display is continuously updated as the mouse is moved.</source>
+        <translation type="unfinished">Wyświetla aktualizowane na bieżąco współrzędne mapy dla aktualnej pozycji kursora.</translation>
+    </message>
+    <message>
+        <source>Stop map rendering</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source></source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2368,6 +2424,30 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Join our user mailing list</source>
+        <translation type="unfinished">Dołącz do naszej grupy dyskusyjnej dla użytkowników</translation>
+    </message>
+    <message>
+        <source>&lt;p&gt;The following have sponsored QGIS by contributing money to fund development and other project costs&lt;/p&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation>Nazwa</translation>
+    </message>
+    <message>
+        <source>Website</source>
+        <translation type="unfinished">Strona WWW</translation>
+    </message>
+    <message>
+        <source>Available QGIS Data Provider Plugins</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Available Qt Database Plugins</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Available Qt Image Plugins</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2770,6 +2850,11 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>Could not commit changes - changes are still pending</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Found %d matching features.</source>
+        <translation type="obsolete">
+        </translation>
     </message>
 </context>
 <context>
@@ -6924,6 +7009,12 @@ p, li { white-space: pre-wrap; }
         <source>HTTP transaction completed, however there was an error: %1</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Network timed out after %1 seconds of inactivity.
+This may be a problem in your network connection or at the WMS server.</source>
+        <translation type="obsolete">
+        </translation>
+    </message>
 </context>
 <context>
     <name>QgsIdentifyResults</name>
@@ -6965,6 +7056,17 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>Close</source>
         <translation>Zamknij</translation>
+    </message>
+</context>
+<context>
+    <name>QgsInterpolationDialogBase</name>
+    <message>
+        <source>Output</source>
+        <translation type="obsolete">Wyjście</translation>
+    </message>
+    <message>
+        <source>...</source>
+        <translation type="obsolete">...</translation>
     </message>
 </context>
 <context>
@@ -7599,6 +7701,12 @@ p, li { white-space: pre-wrap; }
 %2</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>- %1 features found</source>
+        <comment>Identify results window title</comment>
+        <translation type="obsolete">
+        </translation>
+    </message>
 </context>
 <context>
     <name>QgsMapToolSplitFeatures</name>
@@ -7937,33 +8045,6 @@ Do you want to overwrite it?</source>
     </message>
 </context>
 <context>
-    <name>QgsMySQLProvider</name>
-    <message>
-        <source>Unable to access relation</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Unable to access the </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source> relation.
-The error message from the database was:
-</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>No GEOS Support!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Your PostGIS installation has no GEOS support.
-Feature selection and identification will not work properly.
-Please install PostGIS with GEOS support (http://geos.refractions.net)</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>QgsNewConnection</name>
     <message>
         <source>Test connection</source>
@@ -8078,12 +8159,8 @@ Rozszerzona informacja o błędzie:
 <context>
     <name>QgsNewHttpConnectionBase</name>
     <message>
-        <source>Create a New WMS connection</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Connection Information</source>
-        <translation type="unfinished">Informacja o połączeniu</translation>
+        <translation type="obsolete">Informacja o połączeniu</translation>
     </message>
     <message>
         <source>Name</source>
@@ -8094,30 +8171,6 @@ Rozszerzona informacja o błędzie:
         <translation>URL</translation>
     </message>
     <message>
-        <source>Proxy Host</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Proxy Port</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Proxy User</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Proxy Password</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Your user name for the HTTP proxy (optional)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Password for your HTTP proxy (optional)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Name of the new connection</source>
         <translation>Nazwa dla nowego połączenia</translation>
     </message>
@@ -8126,28 +8179,28 @@ Rozszerzona informacja o błędzie:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Name of your HTTP proxy (optional)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Port number of your HTTP proxy (optional)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>OK</source>
-        <translation>OK</translation>
+        <translation type="obsolete">OK</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation>Anuluj</translation>
+        <translation type="obsolete">Anuluj</translation>
     </message>
     <message>
         <source>Help</source>
-        <translation>Pomoc</translation>
+        <translation type="obsolete">Pomoc</translation>
     </message>
     <message>
         <source>F1</source>
-        <translation>F1</translation>
+        <translation type="obsolete">F1</translation>
+    </message>
+    <message>
+        <source>Create a new WMS connection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connection details</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -8624,6 +8677,34 @@ odczytu ze źródła danych)</translation>
     <message>
         <source>&lt;b&gt;Note:&lt;/b&gt; Enabling / changing overide on local requires an application restart</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Proxy</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use proxy for web access</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Host</source>
+        <translation type="unfinished">Host</translation>
+    </message>
+    <message>
+        <source>Port</source>
+        <translation type="unfinished">Port</translation>
+    </message>
+    <message>
+        <source>User</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Leave this blank if no proxy username / password are required</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Password</source>
+        <translation type="unfinished">Hasło</translation>
     </message>
 </context>
 <context>
@@ -10003,10 +10084,6 @@ primary key) or has a PostgreSQL oid column.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>No Scaling</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>No-Data Value: Not Set</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10350,10 +10427,6 @@ primary key) or has a PostgreSQL oid column.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Transparency layer;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Transparent pixel list</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10420,13 +10493,6 @@ primary key) or has a PostgreSQL oid column.
     <message>
         <source>Display name</source>
         <translation type="unfinished">Nazwa wyświetlana</translation>
-    </message>
-    <message>
-        <source>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Lucida Grande&apos;; font-size:13pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:&apos;Sans Serif&apos;; font-size:9pt;&quot;&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Pyramid resolutions</source>
@@ -10513,10 +10579,6 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Estimate note:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Restore Default Style</source>
         <translation type="unfinished">Przywróć domyślny styl</translation>
     </message>
@@ -10532,6 +10594,17 @@ p, li { white-space: pre-wrap; }
         <source>Save Style ...</source>
         <translation type="unfinished">Zapisz styl ...</translation>
     </message>
+    <message>
+        <source>Note:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Sans Serif&apos;; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QgsRunProcess</name>
@@ -10546,6 +10619,44 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>Done</source>
         <translation type="unfinished">Zamknij</translation>
+    </message>
+</context>
+<context>
+    <name>QgsSOSSourceSelect</name>
+    <message>
+        <source>Are you sure you want to remove the </source>
+        <translation type="obsolete">Czy na pewno chcesz usunąć </translation>
+    </message>
+    <message>
+        <source> connection and all associated settings?</source>
+        <translation type="obsolete">połączenie i wszystkie związane z nim ustawienia?</translation>
+    </message>
+    <message>
+        <source>Confirm Delete</source>
+        <translation type="obsolete">Zatwierdź usunięcie</translation>
+    </message>
+</context>
+<context>
+    <name>QgsSOSSourceSelectBase</name>
+    <message>
+        <source>&amp;New</source>
+        <translation type="obsolete">&amp;Nowy</translation>
+    </message>
+    <message>
+        <source>Delete</source>
+        <translation type="obsolete">Usuń</translation>
+    </message>
+    <message>
+        <source>Edit</source>
+        <translation type="obsolete">Edytuj</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation type="obsolete">Nazwa</translation>
+    </message>
+    <message>
+        <source>Id</source>
+        <translation type="obsolete">Id</translation>
     </message>
 </context>
 <context>
@@ -10752,6 +10863,11 @@ p, li { white-space: pre-wrap; }
         <source>Search query builder</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Found %d matching features.</source>
+        <translation type="obsolete">
+        </translation>
+    </message>
 </context>
 <context>
     <name>QgsServerSourceSelect</name>
@@ -10796,15 +10912,20 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;p&gt;Several WMS servers have been added to the server list. Note that the proxy fields have been left blank and if you access the internet via a web proxy, you will need to individually set the proxy fields with appropriate values.&lt;/p&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Coordinate Reference System</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>There are no available coordinate reference system for the set of layers you&apos;ve selected.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Coordinate Reference System (%1 available)</source>
+        <translation type="obsolete">
+        </translation>
+    </message>
+    <message>
+        <source>Several WMS servers have been added to the server list. Note that if you access the internet via a web proxy, you will need to set the proxy settings in the QGIS options dialog.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

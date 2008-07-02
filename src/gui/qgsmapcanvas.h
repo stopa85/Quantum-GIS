@@ -234,7 +234,6 @@ class GUI_EXPORT QgsMapCanvas : public QGraphicsView
     //! zooms with the factor supplied. Factor > 1 zooms in
     void zoom(double scaleFactor);
 
-
   public slots:
 
     /**Repaints the canvas map*/
@@ -269,7 +268,7 @@ class GUI_EXPORT QgsMapCanvas : public QGraphicsView
     //! called to write map canvas settings to project
     void writeProject(QDomDocument &);
     
-signals:
+  signals:
     /** Let the owner know how far we are with render operations */
     void setProgress(int,int);
     /** emits current mouse position */
@@ -299,8 +298,11 @@ signals:
 
     //! Emit key release event
     void keyReleased(QKeyEvent * e);
-    
-protected:
+
+    //! Emit map tool changed event
+    void mapToolSet(QgsMapTool *tool);
+
+  protected:
     //! Overridden key press event
     void keyPressEvent(QKeyEvent * e);
 
@@ -381,10 +383,10 @@ private:
        the last entry in case a lot of resize events arrive in short time*/
     QList< QPair<int, int> > mResizeQueue;
     
-  /** debugging member
-      invoked when a connect() is made to this object
-  */
-  void connectNotify( const char * signal );
+    /**debugging member
+       invoked when a connect() is made to this object
+    */
+    void connectNotify( const char * signal );
 
     //! current layer in legend
     QgsMapLayer* mCurrentLayer;

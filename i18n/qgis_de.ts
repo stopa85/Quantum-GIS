@@ -65,6 +65,55 @@
         <source>Delete</source>
         <translation type="unfinished">Löschen</translation>
     </message>
+    <message>
+        <source>Dialog</source>
+        <translation type="unfinished">Dialog</translation>
+    </message>
+    <message>
+        <source>Point Symbol</source>
+        <translation type="unfinished">Punktsymbol </translation>
+    </message>
+    <message>
+        <source>Size</source>
+        <translation type="unfinished">Grösse</translation>
+    </message>
+    <message>
+        <source>Area scale field</source>
+        <translation type="unfinished">Flächenmaßstabs Feld</translation>
+    </message>
+    <message>
+        <source>Rotation field</source>
+        <translation type="unfinished">Rotationsfeld</translation>
+    </message>
+    <message>
+        <source>Style Options</source>
+        <translation type="unfinished">Stiloption</translation>
+    </message>
+    <message>
+        <source>Outline style</source>
+        <translation type="unfinished">Umrandungsstil</translation>
+    </message>
+    <message>
+        <source>Outline color</source>
+        <translation type="unfinished">Umrandungsfarbe
+</translation>
+    </message>
+    <message>
+        <source>Outline width</source>
+        <translation type="unfinished">Umrandungsbreite</translation>
+    </message>
+    <message>
+        <source>Fill color</source>
+        <translation type="unfinished">Füllfarbe</translation>
+    </message>
+    <message>
+        <source>Fill style</source>
+        <translation type="unfinished">Füllstil</translation>
+    </message>
+    <message>
+        <source>...</source>
+        <translation type="unfinished">...</translation>
+    </message>
 </context>
 <context>
     <name>Gui</name>
@@ -995,7 +1044,7 @@ Would you like to specify path (GISBASE) to your GRASS installation?</source>
     </message>
     <message>
         <source>Currently only filebased datasets are supported</source>
-        <translation>Aktuell werden nur filebasierte Daten unterstützt</translation>
+        <translation type="obsolete">Aktuell werden nur filebasierte Daten unterstützt</translation>
     </message>
     <message>
         <source>Loaded default style file from </source>
@@ -1011,11 +1060,11 @@ Would you like to specify path (GISBASE) to your GRASS installation?</source>
     </message>
     <message>
         <source>ERROR: Failed to created default style file as </source>
-        <translation>FEHLER: Konnte standard Style-Datei nicht erstellen als </translation>
+        <translation type="obsolete">FEHLER: Konnte standard Style-Datei nicht erstellen als </translation>
     </message>
     <message>
         <source>File could not been opened.</source>
-        <translation type="unfinished">Datei konnte nicht geöffnet werden.</translation>
+        <translation type="obsolete">Datei konnte nicht geöffnet werden.</translation>
     </message>
     <message>
         <source> is not writeable.</source>
@@ -1060,6 +1109,18 @@ Would you like to specify path (GISBASE) to your GRASS installation?</source>
     <message>
         <source>Uncatched fatal GRASS error</source>
         <translation type="unfinished">Nicht abgefangener fataler GRASS-Fehler.</translation>
+    </message>
+    <message>
+        <source>ERROR: Failed to created default style file as %1 Check file permissions and retry.</source>
+        <translation type="unfinished">FEHLER: Konnte die Datei %1 für den voreingestellten Stil nicht erzeugen.  Bitte prüfen Sie die Zugriffrechte vor einem erneuten Versuch.</translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation type="obsolete">Abbrechen</translation>
+    </message>
+    <message>
+        <source>Version 0.001</source>
+        <translation type="obsolete">Version 0.001</translation>
     </message>
 </context>
 <context>
@@ -1190,7 +1251,7 @@ Would you like to specify path (GISBASE) to your GRASS installation?</source>
     </message>
     <message>
         <source>Choose a filename to save the map image as</source>
-        <translation type="unfinished">Dateinamen zum Speichern des Kartebildes w�hlen</translation>
+        <translation type="unfinished">Dateinamen zum Speichern des Kartebildes w�hlen</translation>
     </message>
     <message>
         <source>Extents: </source>
@@ -2169,12 +2230,8 @@ Would you like to specify path (GISBASE) to your GRASS installation?</source>
         <translation>Verbesserung der Unterstützung für Transparenz- und Kontraststreckung bei Rasterlayern. Unterstützung von Farbverläufen in Rasterlayern. Support für nicht eingenordete Raster. Viele interne Rasterverbessungen.</translation>
     </message>
     <message>
-        <source></source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Resource Location Error</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Resource nicht gefunden</translation>
     </message>
     <message>
         <source>Error reading icon resources from: 
@@ -2186,7 +2243,7 @@ Would you like to specify path (GISBASE) to your GRASS installation?</source>
     </message>
     <message>
         <source>Map canvas. This is where raster and vectorlayers are displayed when added to the map</source>
-        <translation type="unfinished">Kartenansicht. Hier werden Raster- und Vektorlayer angezeigt.</translation>
+        <translation type="obsolete">Kartenansicht. Hier werden Raster- und Vektorlayer angezeigt.</translation>
     </message>
     <message>
         <source>Overview</source>
@@ -2251,6 +2308,18 @@ This binary was compiled against Qt %1,and is currently running against Qt %2</s
         <source>Ctrl-F</source>
         <comment>Toggle fullscreen mode</comment>
         <translation type="unfinished">Vollbildmodus umschalten</translation>
+    </message>
+    <message>
+        <source>Stop map rendering</source>
+        <translation type="unfinished">Zeichnen der Karte abbrechen</translation>
+    </message>
+    <message>
+        <source>Map canvas. This is where raster and vector layers are displayed when added to the map</source>
+        <translation type="unfinished">Kartenansicht.  Hier werden Raster- und Vektorlayer angezeigt, wenn sie der Karte hinzugefügt werden.</translation>
+    </message>
+    <message>
+        <source></source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2324,6 +2393,30 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>Join our user mailing list</source>
         <translation>Abonnieren Sie unsere Mailingliste</translation>
+    </message>
+    <message>
+        <source>&lt;p&gt;The following have sponsored QGIS by contributing money to fund development and other project costs&lt;/p&gt;</source>
+        <translation type="unfinished">&lt;p&gt;QGIS wurde durch Geldspenden für Entwicklungs- und andere Projektkosten unterstützt durch&lt;/p&gt;</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation type="unfinished">Name</translation>
+    </message>
+    <message>
+        <source>Website</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Available QGIS Data Provider Plugins</source>
+        <translation type="unfinished">Verfügbare QGIS-Datenlieferantenplugins</translation>
+    </message>
+    <message>
+        <source>Available Qt Database Plugins</source>
+        <translation type="unfinished">Verfügbare Qt-Datenbankplugins</translation>
+    </message>
+    <message>
+        <source>Available Qt Image Plugins</source>
+        <translation type="unfinished">Verfügbare Qt-Bildformatplugins</translation>
     </message>
 </context>
 <context>
@@ -2469,7 +2562,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Clicking the button will let you select an application to use as the action</source>
-        <translation>Mit diesem Knopf kann man eine Applikation für diese Aktion wählen</translation>
+        <translation type="unfinished">Mit diesem Knopf kann man eine Applikation für diese Aktion wählen</translation>
     </message>
 </context>
 <context>
@@ -2657,6 +2750,11 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>Could not commit changes - changes are still pending</source>
         <translation type="unfinished">Konnten Änderungen nicht commiten - Die Änderungen wurden noch nicht durchgeführt.</translation>
+    </message>
+    <message>
+        <source>Found %d matching features.</source>
+        <translation type="obsolete">
+        </translation>
     </message>
 </context>
 <context>
@@ -4036,6 +4134,13 @@ mit PostGIS-Geometrie haben.</translation>
     <message>
         <source>Encoding:</source>
         <translation>Kodierung:</translation>
+    </message>
+</context>
+<context>
+    <name>QgsFillStyleWidgetBase</name>
+    <message>
+        <source>Form1</source>
+        <translation type="obsolete">Formular1</translation>
     </message>
 </context>
 <context>
@@ -6473,6 +6578,10 @@ bei Zeile </translation>
         <source>Modules Tree</source>
         <translation type="unfinished">Modulbaum</translation>
     </message>
+    <message>
+        <source>Modules List</source>
+        <translation type="unfinished">Modulliste</translation>
+    </message>
 </context>
 <context>
     <name>QgsGridMakerPlugin</name>
@@ -6663,6 +6772,15 @@ p, li { white-space: pre-wrap; }
         <source>HTTP transaction completed, however there was an error: %1</source>
         <translation>HTTP Übertragung beendet, aber es trat ein Fehler auf: %1</translation>
     </message>
+    <message>
+        <source>Network timed out after %1 seconds of inactivity.
+This may be a problem in your network connection or at the WMS server.</source>
+        <translation type="obsolete">
+        </translation>
+    </message>
+</context>
+<context>
+    <name>QgsIDWInterpolatorDialogBase</name>
 </context>
 <context>
     <name>QgsIdentifyResults</name>
@@ -6705,6 +6823,23 @@ p, li { white-space: pre-wrap; }
         <source>Close</source>
         <translation>Schließen</translation>
     </message>
+</context>
+<context>
+    <name>QgsInterpolationDialog</name>
+</context>
+<context>
+    <name>QgsInterpolationDialogBase</name>
+    <message>
+        <source>Output</source>
+        <translation type="obsolete">Ergebnis</translation>
+    </message>
+    <message>
+        <source>...</source>
+        <translation type="obsolete">...</translation>
+    </message>
+</context>
+<context>
+    <name>QgsInterpolationPlugin</name>
 </context>
 <context>
     <name>QgsLUDialogBase</name>
@@ -7166,7 +7301,43 @@ p, li { white-space: pre-wrap; }
     <name>QgsMapLayer</name>
     <message>
         <source> Check file permissions and retry.</source>
-        <translation> Prüfe Dateirechte und versuche erneut.</translation>
+        <translation type="obsolete"> Prüfe Dateirechte und versuche erneut.</translation>
+    </message>
+    <message>
+        <source>%1 at line %2 column %3</source>
+        <translation type="unfinished">%1 in Zeile %2, Spalte %3</translation>
+    </message>
+    <message>
+        <source>could not open user database</source>
+        <translation type="unfinished">konnte die Benutzerdatenbank nicht öffnen</translation>
+    </message>
+    <message>
+        <source>style %1 not found in database</source>
+        <translation type="unfinished">Stil %1 nicht in der Datenbank gefunden</translation>
+    </message>
+    <message>
+        <source>User database could not be opened.</source>
+        <translation type="unfinished">Benutzerdatenbank konnte nicht geöffnet werden.</translation>
+    </message>
+    <message>
+        <source>The style table could not be created.</source>
+        <translation type="unfinished">Die Stiltabelle konnte nicht angelegt werden.</translation>
+    </message>
+    <message>
+        <source>The style %1 was saved to database</source>
+        <translation type="unfinished">Der Stil %1 wurde in der Datenbank gespeichert.</translation>
+    </message>
+    <message>
+        <source>The style %1 was updated in the database.</source>
+        <translation type="unfinished">Der Stil %1 wurde in der Datenbank aktualisiert.</translation>
+    </message>
+    <message>
+        <source>The style %1 could not be updated in the database.</source>
+        <translation type="unfinished">Der Stil %1 konnte nicht in der Datenbank aktualisiert werden.</translation>
+    </message>
+    <message>
+        <source>The style %1 could not be inserted into database.</source>
+        <translation type="unfinished">Der Stil %1 konnte nicht in der Datenbank gespeichert werden.</translation>
     </message>
 </context>
 <context>
@@ -7188,6 +7359,12 @@ p, li { white-space: pre-wrap; }
 %2</source>
         <translation>WMS-Abfrageergebnis für %1
 %2</translation>
+    </message>
+    <message>
+        <source>- %1 features found</source>
+        <comment>Identify results window title</comment>
+        <translation type="obsolete">
+        </translation>
     </message>
 </context>
 <context>
@@ -7505,27 +7682,27 @@ Wollen Sie sie überschreiben?</translation>
     <name>QgsMySQLProvider</name>
     <message>
         <source>Unable to access relation</source>
-        <translation>Auf die Relation kann nicht zugegriffen werden</translation>
+        <translation type="obsolete">Auf die Relation kann nicht zugegriffen werden</translation>
     </message>
     <message>
         <source>Unable to access the </source>
-        <translation>Fehler beim Zugriff auf die </translation>
+        <translation type="obsolete">Fehler beim Zugriff auf die </translation>
     </message>
     <message>
         <source> relation.
 The error message from the database was:
 </source>
-        <translation> Relation. Die Fehlermeldung der Datenbank war:</translation>
+        <translation type="obsolete"> Relation. Die Fehlermeldung der Datenbank war:</translation>
     </message>
     <message>
         <source>No GEOS Support!</source>
-        <translation>Keine GEOS Unterstützung!</translation>
+        <translation type="obsolete">Keine GEOS Unterstützung!</translation>
     </message>
     <message>
         <source>Your PostGIS installation has no GEOS support.
 Feature selection and identification will not work properly.
 Please install PostGIS with GEOS support (http://geos.refractions.net)</source>
-        <translation>Diese PostGIS-Installation hat keine GEOS-Unterstützung.
+        <translation type="obsolete">Diese PostGIS-Installation hat keine GEOS-Unterstützung.
 Objektselektion und -identifizierung kann nicht richtig funktionieren.
 Bitte PostGIS mit GEOS-Unterstützung installieren (http://geos.refractions.net)</translation>
     </message>
@@ -7645,11 +7822,11 @@ Ausführliche Fehlerinformation:</translation>
     <name>QgsNewHttpConnectionBase</name>
     <message>
         <source>Create a New WMS connection</source>
-        <translation>Neue WMS-Verbindung erzeugen</translation>
+        <translation type="obsolete">Neue WMS-Verbindung erzeugen</translation>
     </message>
     <message>
         <source>Connection Information</source>
-        <translation>Verbindunginformationen</translation>
+        <translation type="obsolete">Verbindunginformationen</translation>
     </message>
     <message>
         <source>Name</source>
@@ -7661,27 +7838,27 @@ Ausführliche Fehlerinformation:</translation>
     </message>
     <message>
         <source>Proxy Host</source>
-        <translation>Proxy-Rechner</translation>
+        <translation type="obsolete">Proxy-Rechner</translation>
     </message>
     <message>
         <source>Proxy Port</source>
-        <translation>Proxy-Port</translation>
+        <translation type="obsolete">Proxy-Port</translation>
     </message>
     <message>
         <source>Proxy User</source>
-        <translation>Proxy-Benutzer</translation>
+        <translation type="obsolete">Proxy-Benutzer</translation>
     </message>
     <message>
         <source>Proxy Password</source>
-        <translation>Proxy-Passwort</translation>
+        <translation type="obsolete">Proxy-Passwort</translation>
     </message>
     <message>
         <source>Your user name for the HTTP proxy (optional)</source>
-        <translation>Der Benutzername für den HTTP Proxy (optional)</translation>
+        <translation type="obsolete">Der Benutzername für den HTTP Proxy (optional)</translation>
     </message>
     <message>
         <source>Password for your HTTP proxy (optional)</source>
-        <translation>Passwort für den HTTP Proxy (optional)</translation>
+        <translation type="obsolete">Passwort für den HTTP Proxy (optional)</translation>
     </message>
     <message>
         <source>Name of the new connection</source>
@@ -7693,27 +7870,35 @@ Ausführliche Fehlerinformation:</translation>
     </message>
     <message>
         <source>Name of your HTTP proxy (optional)</source>
-        <translation>Name Ihres HTTP proxies (optional).</translation>
+        <translation type="obsolete">Name Ihres HTTP proxies (optional).</translation>
     </message>
     <message>
         <source>Port number of your HTTP proxy (optional)</source>
-        <translation>Port-Nummer des HTTP-Proxies (optional)</translation>
+        <translation type="obsolete">Port-Nummer des HTTP-Proxies (optional)</translation>
     </message>
     <message>
         <source>OK</source>
-        <translation>OK</translation>
+        <translation type="obsolete">OK</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation>Abbrechen</translation>
+        <translation type="obsolete">Abbrechen</translation>
     </message>
     <message>
         <source>Help</source>
-        <translation>Hilfe</translation>
+        <translation type="obsolete">Hilfe</translation>
     </message>
     <message>
         <source>F1</source>
-        <translation>F1</translation>
+        <translation type="obsolete">F1</translation>
+    </message>
+    <message>
+        <source>Create a new WMS connection</source>
+        <translation type="unfinished">WMS-Verbindung anlegen</translation>
+    </message>
+    <message>
+        <source>Connection details</source>
+        <translation type="unfinished">Verbindungsdetails</translation>
     </message>
 </context>
 <context>
@@ -8097,6 +8282,34 @@ Ausführliche Fehlerinformation:</translation>
     <message>
         <source>&lt;b&gt;Note:&lt;/b&gt; Enabling / changing overide on local requires an application restart</source>
         <translation type="unfinished">&lt;b&gt;Note:&lt;/b&gt; Einschalten/Änderun der Locale-Überschreibung erfordert einen Anwendungsneustart</translation>
+    </message>
+    <message>
+        <source>Proxy</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use proxy for web access</source>
+        <translation type="unfinished">Proxy für Webzugriff benutzen</translation>
+    </message>
+    <message>
+        <source>Host</source>
+        <translation type="unfinished">Host</translation>
+    </message>
+    <message>
+        <source>Port</source>
+        <translation type="unfinished">Port</translation>
+    </message>
+    <message>
+        <source>User</source>
+        <translation type="unfinished">Benutzer</translation>
+    </message>
+    <message>
+        <source>Leave this blank if no proxy username / password are required</source>
+        <translation type="unfinished">Lassen Sie Benutzer/Passwort leer, wenn sie nicht benötigt werden.</translation>
+    </message>
+    <message>
+        <source>Password</source>
+        <translation type="unfinished">Passwort</translation>
     </message>
 </context>
 <context>
@@ -9381,7 +9594,7 @@ Alternativ kann die oid-Spalte von PostgresSQL benutzt werden.</translation>
     </message>
     <message>
         <source>No Scaling</source>
-        <translation>Keine Skalierung</translation>
+        <translation type="obsolete">Keine Skalierung</translation>
     </message>
     <message>
         <source>No-Data Value: Not Set</source>
@@ -9656,7 +9869,7 @@ Alternativ kann die oid-Spalte von PostgresSQL benutzt werden.</translation>
     </message>
     <message>
         <source>Estimate note:</source>
-        <translation>Schätzungshinweis:</translation>
+        <translation type="obsolete">Schätzungshinweis:</translation>
     </message>
     <message>
         <source>Load min / max values from band</source>
@@ -9724,7 +9937,7 @@ Alternativ kann die oid-Spalte von PostgresSQL benutzt werden.</translation>
     </message>
     <message>
         <source>Transparency layer;</source>
-        <translation>Transparenzlayer:</translation>
+        <translation type="obsolete">Transparenzlayer:</translation>
     </message>
     <message>
         <source>Transparent pixel list</source>
@@ -9799,7 +10012,7 @@ Alternativ kann die oid-Spalte von PostgresSQL benutzt werden.</translation>
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Lucida Grande&apos;; font-size:13pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:&apos;Sans Serif&apos;; font-size:9pt;&quot;&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+        <translation type="obsolete">&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Lucida Grande&apos;; font-size:13pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:&apos;Sans Serif&apos;; font-size:9pt;&quot;&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
@@ -9852,6 +10065,17 @@ p, li { white-space: pre-wrap; }
         <source>Save Style ...</source>
         <translation type="unfinished">Stil speichern...</translation>
     </message>
+    <message>
+        <source>Note:</source>
+        <translation type="unfinished">Hinweis:</translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Sans Serif&apos;; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QgsRunProcess</name>
@@ -9866,6 +10090,43 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>Done</source>
         <translation>Fertig</translation>
+    </message>
+</context>
+<context>
+    <name>QgsSOSPlugin</name>
+</context>
+<context>
+    <name>QgsSOSSourceSelect</name>
+</context>
+<context>
+    <name>QgsSOSSourceSelectBase</name>
+    <message>
+        <source>Server Connections</source>
+        <translation type="obsolete">Serververbindungen</translation>
+    </message>
+    <message>
+        <source>&amp;New</source>
+        <translation type="obsolete">&amp;Neu</translation>
+    </message>
+    <message>
+        <source>Delete</source>
+        <translation type="obsolete">Löschen</translation>
+    </message>
+    <message>
+        <source>Edit</source>
+        <translation type="obsolete">Bearbeiten</translation>
+    </message>
+    <message>
+        <source>C&amp;onnect</source>
+        <translation type="obsolete">Verbinden</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation type="obsolete">Name</translation>
+    </message>
+    <message>
+        <source>Id</source>
+        <translation type="obsolete">Id</translation>
     </message>
 </context>
 <context>
@@ -10072,6 +10333,11 @@ p, li { white-space: pre-wrap; }
         <source>Search query builder</source>
         <translation>Suche Query Builder</translation>
     </message>
+    <message>
+        <source>Found %d matching features.</source>
+        <translation type="obsolete">
+        </translation>
+    </message>
 </context>
 <context>
     <name>QgsServerSourceSelect</name>
@@ -10117,7 +10383,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>&lt;p&gt;Several WMS servers have been added to the server list. Note that the proxy fields have been left blank and if you access the internet via a web proxy, you will need to individually set the proxy fields with appropriate values.&lt;/p&gt;</source>
-        <translation>&lt;p&gt;Einige WMS-Server wurden zur Serverauswahlliste hinzugefügt. Die Proxy-Einstellungen wurden leer gelassen. Falls Sie einen Proxy benutzen, um auf das Internet zuzugreifen, müssen Sie die entsprechenden Werte noch in die Proxy-Felder eintragen.&lt;/p&gt;</translation>
+        <translation type="obsolete">&lt;p&gt;Einige WMS-Server wurden zur Serverauswahlliste hinzugefügt. Die Proxy-Einstellungen wurden leer gelassen. Falls Sie einen Proxy benutzen, um auf das Internet zuzugreifen, müssen Sie die entsprechenden Werte noch in die Proxy-Felder eintragen.&lt;/p&gt;</translation>
     </message>
     <message>
         <source>Coordinate Reference System</source>
@@ -10126,6 +10392,15 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>There are no available coordinate reference system for the set of layers you&apos;ve selected.</source>
         <translation>Es existiert kein Koordinatensystem für den ausgewählten Layer.</translation>
+    </message>
+    <message>
+        <source>Coordinate Reference System (%1 available)</source>
+        <translation type="obsolete">
+        </translation>
+    </message>
+    <message>
+        <source>Several WMS servers have been added to the server list. Note that if you access the internet via a web proxy, you will need to set the proxy settings in the QGIS options dialog.</source>
+        <translation type="unfinished">Verschiedene WMS-Server wurden der Serverliste hinzugefügt. Beachten Sie bitte, dass Sie ggf. noch die Proxyeinstellungen in den QGIS Optionen einstellen müssen.</translation>
     </message>
 </context>
 <context>
@@ -10771,6 +11046,12 @@ p, li { white-space: pre-wrap; }
         <source>&amp;Spit</source>
         <translation>&amp;Spit</translation>
     </message>
+</context>
+<context>
+    <name>QgsTINInterpolatorDialog</name>
+</context>
+<context>
+    <name>QgsTINInterpolatorDialogBase</name>
 </context>
 <context>
     <name>QgsUniqueValueDialog</name>

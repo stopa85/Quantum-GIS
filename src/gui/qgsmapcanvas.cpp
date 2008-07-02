@@ -319,10 +319,10 @@ void QgsMapCanvas::setOverview(QgsMapOverviewCanvas* overview)
     // map overview is not owned by map canvas so don't delete it...
   }
   
+  mMapOverview = overview;
+
   if (overview)
   {
-    mMapOverview = overview;
-  
     // connect to the map render to copy its projection settings
     connect(mMapRender, SIGNAL(projectionsEnabled(bool)),
             overview,     SLOT(projectionsEnabled(bool)));
@@ -959,12 +959,13 @@ void QgsMapCanvas::setMapTool(QgsMapTool* tool)
   {
     mLastNonZoomMapTool = NULL;
   }
-  
+
   // set new map tool and activate it
   mMapTool = tool;
   if (mMapTool)
     mMapTool->activate();
 
+  emit mapToolSet(mMapTool);
 } // setMapTool
 
 void QgsMapCanvas::unsetMapTool(QgsMapTool* tool)
@@ -973,6 +974,7 @@ void QgsMapCanvas::unsetMapTool(QgsMapTool* tool)
   {
     mMapTool->deactivate();
     mMapTool = NULL;
+    emit mapToolSet(NULL);
     setCursor(Qt::ArrowCursor);
   }
 

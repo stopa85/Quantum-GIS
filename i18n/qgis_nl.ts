@@ -1,5 +1,4 @@
 <!DOCTYPE TS><TS>
-<defaultcodec></defaultcodec>
 <context>
     <name>@default</name>
     <message>
@@ -76,6 +75,54 @@
     <message>
         <source>Version</source>
         <translation>Versie</translation>
+    </message>
+    <message>
+        <source>Dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Point Symbol</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Size</source>
+        <translation type="unfinished">Formaat</translation>
+    </message>
+    <message>
+        <source>Area scale field</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Rotation field</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Style Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Outline style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Outline color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Outline width</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fill color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fill style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>...</source>
+        <translation type="unfinished">...</translation>
     </message>
 </context>
 <context>
@@ -1857,7 +1904,7 @@ Gecompileerd met Qt-versie</translation>
     </message>
     <message>
         <source>Map canvas. This is where raster and vector layers are displayed when added to the map</source>
-        <translation type="obsolete">Kaart venster. Hier worden raster- en vectorkaartlagen afgebeeld na toevoegen aan de kaart</translation>
+        <translation type="unfinished">Kaart venster. Hier worden raster- en vectorkaartlagen afgebeeld na toevoegen aan de kaart</translation>
     </message>
     <message>
         <source>Map Composer updates</source>
@@ -2569,10 +2616,6 @@ Dubbelklik op een laag in de legenda om de verschijning of andere eigenschappen 
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Map canvas. This is where raster and vectorlayers are displayed when added to the map</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Overview</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2607,6 +2650,10 @@ This binary was compiled against Qt %1,and is currently running against Qt %2</s
     </message>
     <message>
         <source>Support for migration of old projects to work in newer QGIS versions.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Stop map rendering</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2693,11 +2740,11 @@ This binary was compiled against Qt %1,and is currently running against Qt %2</s
     </message>
     <message>
         <source>Name</source>
-        <translation type="obsolete">Naam</translation>
+        <translation type="unfinished">Naam</translation>
     </message>
     <message>
         <source>Website</source>
-        <translation type="obsolete">Website</translation>
+        <translation type="unfinished">Website</translation>
     </message>
     <message>
         <source>QGIS Browser Selection</source>
@@ -2724,6 +2771,22 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Join our user mailing list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;p&gt;The following have sponsored QGIS by contributing money to fund development and other project costs&lt;/p&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Available QGIS Data Provider Plugins</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Available Qt Database Plugins</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Available Qt Image Plugins</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2901,16 +2964,16 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Clicking the button will let you select an application to use as the action</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>...</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">...</translation>
     </message>
     <message>
         <source>Capture</source>
         <translation type="unfinished">Intekenen</translation>
+    </message>
+    <message>
+        <source>Clicking the button will let you select an application to use as the action</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -3098,6 +3161,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>Found %d matching features.</source>
         <translation type="obsolete">Aantal %d passende objecten.
+        
         </translation>
     </message>
     <message>
@@ -5303,7 +5367,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>...</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">...</translation>
     </message>
     <message>
         <source>Add values manually</source>
@@ -6734,7 +6798,7 @@ at line </source>
     <name>QgsGrassNewMapsetBase</name>
     <message>
         <source>...</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">...</translation>
     </message>
     <message>
         <source>Column 1</source>
@@ -7420,12 +7484,16 @@ p, li { white-space: pre-wrap; }
         <source>Network timed out after %1 seconds of inactivity.
 This may be a problem in your network connection or at the WMS server.</source>
         <translation type="obsolete">
+        
         </translation>
     </message>
     <message>
         <source>WMS Server responded unexpectedly with HTTP Status Code %1 (%2)</source>
         <translation type="unfinished"></translation>
     </message>
+</context>
+<context>
+    <name>QgsIDWInterpolatorDialogBase</name>
 </context>
 <context>
     <name>QgsIdentifyResults</name>
@@ -7470,10 +7538,17 @@ This may be a problem in your network connection or at the WMS server.</source>
     </message>
 </context>
 <context>
+    <name>QgsInterpolationDialog</name>
+</context>
+<context>
     <name>QgsInterpolationDialogBase</name>
     <message>
         <source>Output</source>
         <translation type="obsolete">Output</translation>
+    </message>
+    <message>
+        <source>...</source>
+        <translation type="obsolete">...</translation>
     </message>
 </context>
 <context>
@@ -8014,6 +8089,7 @@ This may be a problem in your network connection or at the WMS server.</source>
         <source>- %1 features found</source>
         <comment>Identify results window title</comment>
         <translation type="obsolete">
+        
         </translation>
     </message>
     <message>
@@ -8104,7 +8180,7 @@ Do you want to overwrite it?</source>
     <name>QgsMapserverExportBase</name>
     <message>
         <source>...</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">...</translation>
     </message>
     <message>
         <source>Browse...</source>
@@ -8507,23 +8583,23 @@ Uitgebreide foutinformatie:
     <name>QgsNewHttpConnectionBase</name>
     <message>
         <source>Cancel</source>
-        <translation>Annuleren</translation>
+        <translation type="obsolete">Annuleren</translation>
     </message>
     <message>
         <source>Connection Information</source>
-        <translation>Verbindingsinformatie</translation>
+        <translation type="obsolete">Verbindingsinformatie</translation>
     </message>
     <message>
         <source>Create a New WMS connection</source>
-        <translation>Nieuwe WMS-verbinding aanmaken</translation>
+        <translation type="obsolete">Nieuwe WMS-verbinding aanmaken</translation>
     </message>
     <message>
         <source>F1</source>
-        <translation>F1</translation>
+        <translation type="obsolete">F1</translation>
     </message>
     <message>
         <source>Help</source>
-        <translation>Help</translation>
+        <translation type="obsolete">Help</translation>
     </message>
     <message>
         <source>HTTP address of the Web Map Server</source>
@@ -8539,35 +8615,35 @@ Uitgebreide foutinformatie:
     </message>
     <message>
         <source>Name of your HTTP proxy (optional)</source>
-        <translation>Naam van uw HTTP-proxy (optioneel)</translation>
+        <translation type="obsolete">Naam van uw HTTP-proxy (optioneel)</translation>
     </message>
     <message>
         <source>OK</source>
-        <translation>OK</translation>
+        <translation type="obsolete">OK</translation>
     </message>
     <message>
         <source>Password for your HTTP proxy (optional)</source>
-        <translation>Wachtwoord van uw HTTP-proxy (optioneel)</translation>
+        <translation type="obsolete">Wachtwoord van uw HTTP-proxy (optioneel)</translation>
     </message>
     <message>
         <source>Port number of your HTTP proxy (optional)</source>
-        <translation>Poortnummer van uw HTTP-proxy (optioneel)</translation>
+        <translation type="obsolete">Poortnummer van uw HTTP-proxy (optioneel)</translation>
     </message>
     <message>
         <source>Proxy Host</source>
-        <translation>Proxy-Host</translation>
+        <translation type="obsolete">Proxy-Host</translation>
     </message>
     <message>
         <source>Proxy Password</source>
-        <translation>Proxy-Wachtwoord</translation>
+        <translation type="obsolete">Proxy-Wachtwoord</translation>
     </message>
     <message>
         <source>Proxy Port</source>
-        <translation>Proxy-Poort</translation>
+        <translation type="obsolete">Proxy-Poort</translation>
     </message>
     <message>
         <source>Proxy User</source>
-        <translation>Proxy-Gebruiker</translation>
+        <translation type="obsolete">Proxy-Gebruiker</translation>
     </message>
     <message>
         <source>URL</source>
@@ -8575,7 +8651,15 @@ Uitgebreide foutinformatie:
     </message>
     <message>
         <source>Your user name for the HTTP proxy (optional)</source>
-        <translation>Uw gebruikersnaam van de HTTP-proxy (optioneel)</translation>
+        <translation type="obsolete">Uw gebruikersnaam van de HTTP-proxy (optioneel)</translation>
+    </message>
+    <message>
+        <source>Create a new WMS connection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connection details</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -9031,6 +9115,34 @@ Uitgebreide foutinformatie:
     <message>
         <source>&lt;b&gt;Note:&lt;/b&gt; Enabling / changing overide on local requires an application restart</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Proxy</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use proxy for web access</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Host</source>
+        <translation type="unfinished">Host</translation>
+    </message>
+    <message>
+        <source>Port</source>
+        <translation type="unfinished">Poort</translation>
+    </message>
+    <message>
+        <source>User</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Leave this blank if no proxy username / password are required</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Password</source>
+        <translation type="unfinished">Wachtwoord</translation>
     </message>
 </context>
 <context>
@@ -9531,7 +9643,7 @@ p, li { white-space: pre-wrap; }
     <name>QgsPointDialogBase</name>
     <message>
         <source>...</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">...</translation>
     </message>
     <message>
         <source>Add points</source>
@@ -10414,7 +10526,7 @@ Installeer PostGIS met GEOS-ondersteuning (http://geos.refractions.net)</transla
     <name>QgsRasterLayerPropertiesBase</name>
     <message>
         <source>...</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">...</translation>
     </message>
     <message>
         <source> 00%</source>
@@ -10859,6 +10971,18 @@ p, li { white-space: pre-wrap; }
         <source>Id</source>
         <translation type="obsolete">Id</translation>
     </message>
+    <message>
+        <source>Server Connections</source>
+        <translation type="obsolete">Server-verbindingen</translation>
+    </message>
+    <message>
+        <source>&amp;New</source>
+        <translation type="obsolete">&amp;Nieuw</translation>
+    </message>
+    <message>
+        <source>C&amp;onnect</source>
+        <translation type="obsolete">Ver&amp;binden</translation>
+    </message>
 </context>
 <context>
     <name>QgsScaleBarPlugin</name>
@@ -11043,6 +11167,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>Found %d matching features.</source>
         <translation type="obsolete">
+        
         </translation>
     </message>
     <message>
@@ -11091,6 +11216,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>Coordinate Reference System (%1 available)</source>
         <translation type="obsolete">
+        
         </translation>
     </message>
     <message>
@@ -11103,10 +11229,6 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>provider said</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&lt;p&gt;Several WMS servers have been added to the server list. Note that the proxy fields have been left blank and if you access the internet via a web proxy, you will need to individually set the proxy fields with appropriate values.&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -11127,6 +11249,10 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>You must select at least one layer first.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Several WMS servers have been added to the server list. Note that if you access the internet via a web proxy, you will need to set the proxy settings in the QGIS options dialog.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -11336,7 +11462,7 @@ p, li { white-space: pre-wrap; }
     <name>QgsSingleSymbolDialogBase</name>
     <message>
         <source>...</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">...</translation>
     </message>
     <message>
         <source>Area scale field</source>
@@ -11777,6 +11903,12 @@ p, li { white-space: pre-wrap; }
         <source>&amp;Spit</source>
         <translation type="unfinished"></translation>
     </message>
+</context>
+<context>
+    <name>QgsTINInterpolatorDialog</name>
+</context>
+<context>
+    <name>QgsTINInterpolatorDialogBase</name>
 </context>
 <context>
     <name>QgsUniqueValueDialog</name>

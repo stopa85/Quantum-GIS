@@ -1203,13 +1203,15 @@ void QgisApp::createStatusBar()
         "as the mouse is moved."));
   mCoordsLabel->setToolTip(tr("Map coordinates at mouse cursor position"));
   statusBar()->addPermanentWidget(mCoordsLabel, 0);
+  QString myIconPath = QgsApplication::themePath();
   //stop rendering status bar widget
   mStopRenderButton = new QToolButton( statusBar() );
   mStopRenderButton->setMaximumWidth(20);
   mStopRenderButton->setMaximumHeight(20);
-//#ifdef Q_WS_MAC //MH: disable the button on Mac for now to avoid problems with resizing
-  mStopRenderButton->setEnabled(false);
-//#endif //Q_WS_MAC
+  QPixmap myStopPixmap;
+  myStopPixmap.load(myIconPath+"/mIconDelete.png");
+  mStopRenderButton->setIcon(myStopPixmap);
+  mStopRenderButton->setToolTip(tr("Stop map rendering") );
   statusBar()->addPermanentWidget(mStopRenderButton, 0);
   // render suppression status bar widget
   mRenderSuppressionCBox = new QCheckBox(tr("Render"),statusBar());
@@ -1230,7 +1232,6 @@ void QgisApp::createStatusBar()
   // For Qt/Mac 3.3, the default toolbutton height is 30 and labels were expanding to match
   mOnTheFlyProjectionStatusButton->setMaximumHeight(mScaleLabel->height());
   QPixmap myProjPixmap;
-  QString myIconPath = QgsApplication::themePath();
   myProjPixmap.load(myIconPath+"/mIconProjectionDisabled.png");
   mOnTheFlyProjectionStatusButton->setIcon(myProjPixmap);
   QgsDebugMsg("Icon Path: " + myIconPath.toLocal8Bit());
@@ -1355,6 +1356,7 @@ void QgisApp::setupConnections()
   connect(mMapCanvas, SIGNAL(extentsChanged()),this,SLOT(showExtents()));
   connect(mMapCanvas, SIGNAL(scaleChanged(double)), this, SLOT(showScale(double)));
   connect(mMapCanvas, SIGNAL(scaleChanged(double)), this, SLOT(updateMouseCoordinatePrecision()));
+  connect(mMapCanvas, SIGNAL(mapToolSet(QgsMapTool *)), this, SLOT(mapToolChanged(QgsMapTool *)));
 
   connect(mRenderSuppressionCBox, SIGNAL(toggled(bool )), mMapCanvas, SLOT(setRenderFlag(bool)));
   //
@@ -1371,7 +1373,7 @@ void QgisApp::createCanvas()
 {
   // "theMapCanvas" used to find this canonical instance later
   mMapCanvas = new QgsMapCanvas(this, "theMapCanvas" );
-  mMapCanvas->setWhatsThis(tr("Map canvas. This is where raster and vector"
+  mMapCanvas->setWhatsThis(tr("Map canvas. This is where raster and vector "
         "layers are displayed when added to the map"));
   
 //  mMapCanvas->setMinimumWidth(10);
@@ -2599,8 +2601,9 @@ void QgisApp::fileNew(bool thePromptToSaveFlag)
   
   mMapCanvas->mapRender()->setProjectionsEnabled(FALSE);
   
-  pan(); // set map tool - panning
-
+  // set the initial map tool
+  mMapCanvas->setMapTool(mMapTools.mPan);
+  mNonEditMapTool = mMapTools.mPan;  // signals are not yet setup to catch this
 } // QgisApp::fileNew(bool thePromptToSaveFlag)
 
 
@@ -3123,6 +3126,7 @@ void QgisApp::openProject(const QString & fileName)
 bool QgisApp::openLayer(const QString & fileName)
 {
   QFileInfo fileInfo(fileName);
+
   // try to load it as raster
   QgsMapLayer* ok = NULL;
   CPLPushErrorHandler(CPLQuietErrorHandler); 
@@ -4537,7 +4541,7 @@ bool QgisApp::saveDirty()
     if (QMessageBox::Save == answer)
     {
       if (!fileSave())
-	    answer = QMessageBox::Cancel;
+        answer = QMessageBox::Cancel;
     }
   }
 
@@ -4678,6 +4682,14 @@ void QgisApp::showProgress(int theProgress, int theTotalSteps)
 
 }
 
+void QgisApp::mapToolChanged(QgsMapTool *tool)
+{
+  if( tool && !tool->isEditTool() )
+  {
+    mNonEditMapTool = tool;
+  }
+}
+
 void QgisApp::showExtents()
 {
   // update the statusbar with the current extents.
@@ -4751,8 +4763,6 @@ void QgisApp::showMapTip()
       // only process vector layers
       if ( mypLayer->type() == QgsMapLayer::VECTOR )
       {
-
-
         // Show the maptip if the maptips button is depressed
         if(mMapTipsVisible)
         {
@@ -4864,6 +4874,11 @@ void QgisApp::activateDeactivateLayerRelatedActions(QgsMapLayer* layer)
 
     const QgsVectorLayer* vlayer = dynamic_cast<const QgsVectorLayer*>(layer);
     const QgsVectorDataProvider* dprovider = vlayer->getDataProvider();
+
+    if( !vlayer->isEditable() && mMapCanvas->mapTool() && mMapCanvas->mapTool()->isEditTool() )
+    {
+      mMapCanvas->setMapTool(mNonEditMapTool);
+    }
 
     if (dprovider)
     {
@@ -5310,7 +5325,9 @@ bool QgisApp::addRasterLayers(QStringList const &theFileNameQStringList, bool gu
       myIterator != theFileNameQStringList.end();
       ++myIterator)
   {
-    if (QgsRasterLayer::isValidRasterFileName(*myIterator))
+    QString errMsg;
+
+    if (QgsRasterLayer::isValidRasterFileName(*myIterator,errMsg))
     {
       QFileInfo myFileInfo(*myIterator);
       // get the directory the .adf file was in
@@ -5343,6 +5360,10 @@ bool QgisApp::addRasterLayers(QStringList const &theFileNameQStringList, bool gu
       if(guiWarning)
       {
         QString msg(*myIterator + tr(" is not a supported raster data source"));
+        
+        if( errMsg.size() > 0 )
+            msg += "\n" + errMsg;
+
         QMessageBox::critical(this, tr("Unsupported Data Source"), msg);
       }
       returnValue = false;

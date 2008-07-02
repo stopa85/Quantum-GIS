@@ -3,321 +3,317 @@
     <name>@default</name>
     <message>
         <source>OGR Driver Manager</source>
-        <translation>Bộ quản lý trình điều khiển OGR</translation>
+        <translation type="obsolete">Bộ quản lý trình điều khiển OGR</translation>
     </message>
     <message>
         <source>unable to get OGRDriverManager</source>
-        <translation>không thể khởi động Bộ quản lý Trình điểu khiển OGR</translation>
+        <translation type="obsolete">không thể khởi động Bộ quản lý Trình điểu khiển OGR</translation>
     </message>
     <message>
         <source>Open an OGR Supported Vector Layer</source>
-        <translation>Mở lớp vector được OGR hỗ trợ</translation>
+        <translation type="obsolete">Mở lớp vector được OGR hỗ trợ</translation>
     </message>
     <message>
         <source>is not a valid or recognized data source</source>
-        <translation>không phải là nguồn dữ liệu hợp lệ hoặc không nhận diện được</translation>
+        <translation type="obsolete">không phải là nguồn dữ liệu hợp lệ hoặc không nhận diện được</translation>
     </message>
     <message>
         <source>Invalid Data Source</source>
-        <translation>Nguồn Dữ liệu Không hợp lệ</translation>
+        <translation type="obsolete">Nguồn Dữ liệu Không hợp lệ</translation>
     </message>
     <message>
         <source>Invalid Layer</source>
-        <translation>Lớp không hợp lệ</translation>
+        <translation type="obsolete">Lớp không hợp lệ</translation>
     </message>
     <message>
         <source>%1 is an invalid layer and cannot be loaded.</source>
-        <translation>%1 là một lớp không hợp lệ và không thể nạp được.</translation>
+        <translation type="obsolete">%1 là một lớp không hợp lệ và không thể nạp được.</translation>
     </message>
     <message>
         <source>Save As</source>
-        <translation>Lưu thành</translation>
+        <translation type="obsolete">Lưu thành</translation>
     </message>
     <message>
         <source>Choose a QGIS project file to open</source>
-        <translation>Chọn một tập tin dự án QGIS để mở</translation>
+        <translation type="obsolete">Chọn một tập tin dự án QGIS để mở</translation>
     </message>
     <message>
         <source>QGIS Project Read Error</source>
-        <translation>Lỗi đọc tập tin dự án QGIS</translation>
-    </message>
-    <message>
-        <source></source>
-        <translation></translation>
+        <translation type="obsolete">Lỗi đọc tập tin dự án QGIS</translation>
     </message>
     <message>
         <source>Try to find missing layers?</source>
-        <translation>Cố gắng tìm các lớp bị mất?</translation>
+        <translation type="obsolete">Cố gắng tìm các lớp bị mất?</translation>
     </message>
     <message>
         <source>Unable to open project</source>
-        <translation>Không thể mở dự án</translation>
+        <translation type="obsolete">Không thể mở dự án</translation>
     </message>
     <message>
         <source>Choose a QGIS project file</source>
-        <translation>Chọn một tập tin dự án QGIS</translation>
+        <translation type="obsolete">Chọn một tập tin dự án QGIS</translation>
     </message>
     <message>
         <source>Saved project to:</source>
-        <translation>Lưu dự án vào:</translation>
+        <translation type="obsolete">Lưu dự án vào:</translation>
     </message>
     <message>
         <source>Unable to save project</source>
-        <translation>Không thể lưu dự án</translation>
+        <translation type="obsolete">Không thể lưu dự án</translation>
     </message>
     <message>
         <source>Unable to save project to </source>
-        <translation>Không thể lưu dự án vào</translation>
+        <translation type="obsolete">Không thể lưu dự án vào</translation>
     </message>
     <message>
         <source>Unable to save project </source>
-        <translation>Không thể lưu dự án</translation>
+        <translation type="obsolete">Không thể lưu dự án</translation>
     </message>
     <message>
         <source>Choose a filename to save the QGIS project file as</source>
-        <translation>Chọn tên tập tin để lưu tập tin dự án QGIS thành</translation>
+        <translation type="obsolete">Chọn tên tập tin để lưu tập tin dự án QGIS thành</translation>
     </message>
     <message>
         <source>QGIS: Unable to load project</source>
-        <translation>QGIS: không thể nạp dự án</translation>
+        <translation type="obsolete">QGIS: không thể nạp dự án</translation>
     </message>
     <message>
         <source>Unable to load project </source>
-        <translation>Không thể nạp dự án</translation>
+        <translation type="obsolete">Không thể nạp dự án</translation>
     </message>
     <message>
         <source>Choose a filename to save the map image as</source>
-        <translation>Chọn tên tập tin để lưu ảnh bản đồ thành</translation>
+        <translation type="obsolete">Chọn tên tập tin để lưu ảnh bản đồ thành</translation>
     </message>
     <message>
         <source>Saved map image to</source>
-        <translation>Lưu ảnh bản đồ vào</translation>
+        <translation type="obsolete">Lưu ảnh bản đồ vào</translation>
     </message>
     <message>
         <source>No Layer Selected</source>
-        <translation>Không có lớp nào được chọn</translation>
+        <translation type="obsolete">Không có lớp nào được chọn</translation>
     </message>
     <message>
         <source>To delete features, you must select a vector layer in the legend</source>
-        <translation>Để xóa các đối tượng, bạn phải chọn một lớp vector trong phần chú giải</translation>
+        <translation type="obsolete">Để xóa các đối tượng, bạn phải chọn một lớp vector trong phần chú giải</translation>
     </message>
     <message>
         <source>No Vector Layer Selected</source>
-        <translation>Không có lớp vector nào được chọn</translation>
+        <translation type="obsolete">Không có lớp vector nào được chọn</translation>
     </message>
     <message>
         <source>Deleting features only works on vector layers</source>
-        <translation>Việc xóa đối tượng chỉ áp dụng được đối với các lớp bản đồ vector</translation>
+        <translation type="obsolete">Việc xóa đối tượng chỉ áp dụng được đối với các lớp bản đồ vector</translation>
     </message>
     <message>
         <source>Provider does not support deletion</source>
-        <translation>Trình cung cấp không hỗ trợ việc xóa</translation>
+        <translation type="obsolete">Trình cung cấp không hỗ trợ việc xóa</translation>
     </message>
     <message>
         <source>Data provider does not support deleting features</source>
-        <translation>Trình cung cấp dữ liệu không hỗ trợ việc xóa các đối tượng</translation>
+        <translation type="obsolete">Trình cung cấp dữ liệu không hỗ trợ việc xóa các đối tượng</translation>
     </message>
     <message>
         <source>Layer not editable</source>
-        <translation>Lớp không chỉnh sửa được</translation>
+        <translation type="obsolete">Lớp không chỉnh sửa được</translation>
     </message>
     <message>
         <source>The current layer is not editable. Choose &apos;Start editing&apos; in the digitizing toolbar.</source>
-        <translation>Lớp hiện tại không chỉnh sửa được. Chọn &apos;Bắt đầu chỉnh sửa&apos; trong thanh công cụ số hóa.</translation>
+        <translation type="obsolete">Lớp hiện tại không chỉnh sửa được. Chọn &apos;Bắt đầu chỉnh sửa&apos; trong thanh công cụ số hóa.</translation>
     </message>
     <message>
         <source>Problem deleting features</source>
-        <translation>Trục trặc khi đang xóa các đối tượng</translation>
+        <translation type="obsolete">Trục trặc khi đang xóa các đối tượng</translation>
     </message>
     <message>
         <source>A problem occured during deletion of features</source>
-        <translation>Có trục trặc xảy ra trong khi xóa các đối tượng</translation>
+        <translation type="obsolete">Có trục trặc xảy ra trong khi xóa các đối tượng</translation>
     </message>
     <message>
         <source>Invalid scale</source>
-        <translation>Tỷ lệ không hợp lệ</translation>
+        <translation type="obsolete">Tỷ lệ không hợp lệ</translation>
     </message>
     <message>
         <source>Error Loading Plugin</source>
-        <translation>Lỗi nạp phần mở rộng</translation>
+        <translation type="obsolete">Lỗi nạp phần mở rộng</translation>
     </message>
     <message>
         <source>There was an error loading %1.</source>
-        <translation>Có lỗi khi đang nạp %1.</translation>
+        <translation type="obsolete">Có lỗi khi đang nạp %1.</translation>
     </message>
     <message>
         <source>No MapLayer Plugins</source>
-        <translation>Không có các phần mở rộng MapLayer (Lớp Bản đồ)</translation>
+        <translation type="obsolete">Không có các phần mở rộng MapLayer (Lớp Bản đồ)</translation>
     </message>
     <message>
         <source>No MapLayer plugins in ../plugins/maplayer</source>
-        <translation>Không có phần mở rộng MapLayer (lớp bản đồ) trong ../plugins/maplayer</translation>
+        <translation type="obsolete">Không có phần mở rộng MapLayer (lớp bản đồ) trong ../plugins/maplayer</translation>
     </message>
     <message>
         <source>No Plugins</source>
-        <translation>Không có các phần mở rộng</translation>
+        <translation type="obsolete">Không có các phần mở rộng</translation>
     </message>
     <message>
         <source>No plugins found in ../plugins. To test plugins, start qgis from the src directory</source>
-        <translation>Không tìm thấy các plugin trong ../plugins. Để kiểm tra phần mở rộng, khởi động QGIS từ thư mục src</translation>
+        <translation type="obsolete">Không tìm thấy các plugin trong ../plugins. Để kiểm tra phần mở rộng, khởi động QGIS từ thư mục src</translation>
     </message>
     <message>
         <source>Name</source>
-        <translation>Tên</translation>
+        <translation type="obsolete">Tên</translation>
     </message>
     <message>
         <source>Plugin %1 is named %2</source>
-        <translation>Phần mở rộng %1 được đặt tên là %2</translation>
+        <translation type="obsolete">Phần mở rộng %1 được đặt tên là %2</translation>
     </message>
     <message>
         <source>Plugin Information</source>
-        <translation>Thông tin về phần mở rộng</translation>
+        <translation type="obsolete">Thông tin về phần mở rộng</translation>
     </message>
     <message>
         <source>QGis loaded the following plugin:</source>
-        <translation>QGis đã nạp các phần mở rộng sau:</translation>
+        <translation type="obsolete">QGis đã nạp các phần mở rộng sau:</translation>
     </message>
     <message>
         <source>Name: %1</source>
-        <translation>Tên: %1</translation>
+        <translation type="obsolete">Tên: %1</translation>
     </message>
     <message>
         <source>Version: %1</source>
-        <translation>Phiên bản: %1</translation>
+        <translation type="obsolete">Phiên bản: %1</translation>
     </message>
     <message>
         <source>Description: %1</source>
-        <translation>Mô tả: %1</translation>
+        <translation type="obsolete">Mô tả: %1</translation>
     </message>
     <message>
         <source>Unable to Load Plugin</source>
-        <translation>Không thể nạp phần mở rộng</translation>
+        <translation type="obsolete">Không thể nạp phần mở rộng</translation>
     </message>
     <message>
         <source>QGIS was unable to load the plugin from: %1</source>
-        <translation>QGIS không thể nạp phần mở rộng từ : %1</translation>
+        <translation type="obsolete">QGIS không thể nạp phần mở rộng từ : %1</translation>
     </message>
     <message>
         <source>There is a new version of QGIS available</source>
-        <translation>Đã có phiên bản mới của QGIS</translation>
+        <translation type="obsolete">Đã có phiên bản mới của QGIS</translation>
     </message>
     <message>
         <source>You are running a development version of QGIS</source>
-        <translation>Bạn đang dùng phiên bản QGIS &quot;phát triển&quot;</translation>
+        <translation type="obsolete">Bạn đang dùng phiên bản QGIS &quot;phát triển&quot;</translation>
     </message>
     <message>
         <source>You are running the current version of QGIS</source>
-        <translation>Bạn đang dùng phiên bản QGIS hiện tại</translation>
+        <translation type="obsolete">Bạn đang dùng phiên bản QGIS hiện tại</translation>
     </message>
     <message>
         <source>Would you like more information?</source>
-        <translation>Bạn có muốn biết thêm thông tin không?</translation>
+        <translation type="obsolete">Bạn có muốn biết thêm thông tin không?</translation>
     </message>
     <message>
         <source>QGIS Version Information</source>
-        <translation>Thông tin về phiên bản QGIS</translation>
+        <translation type="obsolete">Thông tin về phiên bản QGIS</translation>
     </message>
     <message>
         <source>QGIS - Changes in SVN Since Last Release</source>
-        <translation>QGIS - Các thay đổi trong SVN kể từ lần phát hành trước</translation>
+        <translation type="obsolete">QGIS - Các thay đổi trong SVN kể từ lần phát hành trước</translation>
     </message>
     <message>
         <source>Unable to get current version information from server</source>
-        <translation>Không thể lấy thông tin về phiên bản hiện tại từ Server</translation>
+        <translation type="obsolete">Không thể lấy thông tin về phiên bản hiện tại từ Server</translation>
     </message>
     <message>
         <source>Connection refused - server may be down</source>
-        <translation>Liên kết bị từ chối - server có thể bị hỏng</translation>
+        <translation type="obsolete">Liên kết bị từ chối - server có thể bị hỏng</translation>
     </message>
     <message>
         <source>QGIS server was not found</source>
-        <translation>Không tìm thấy server của QGIS</translation>
+        <translation type="obsolete">Không tìm thấy server của QGIS</translation>
     </message>
     <message>
         <source>Network error while communicating with server</source>
-        <translation>Lỗi mạng khi giao tiếp với server</translation>
+        <translation type="obsolete">Lỗi mạng khi giao tiếp với server</translation>
     </message>
     <message>
         <source>Unknown network socket error</source>
-        <translation>Lỗi socket mạng không rõ</translation>
+        <translation type="obsolete">Lỗi socket mạng không rõ</translation>
     </message>
     <message>
         <source>Unable to communicate with QGIS Version server</source>
-        <translation>Không thể trao đổi thông tin với server Phiên bản QGIS</translation>
+        <translation type="obsolete">Không thể trao đổi thông tin với server Phiên bản QGIS</translation>
     </message>
     <message>
         <source>QGIS Browser Selection</source>
-        <translation>Chọn trình Duyệt QGIS</translation>
+        <translation type="obsolete">Chọn trình Duyệt QGIS</translation>
     </message>
     <message>
         <source>Enter the name of a web browser to use (eg. konqueror).
 </source>
-        <translation>Nhập tên trình duyệt web bạn muốn dùng (ví dụ konqueror).</translation>
+        <translation type="obsolete">Nhập tên trình duyệt web bạn muốn dùng (ví dụ konqueror).</translation>
     </message>
     <message>
         <source>Enter the full path if the browser is not in your PATH.
 </source>
-        <translation>Nhập đường dẫn đầy đủ nếu trình duyệt không nằm trong PATH (đường dẫn) của bạn.</translation>
+        <translation type="obsolete">Nhập đường dẫn đầy đủ nếu trình duyệt không nằm trong PATH (đường dẫn) của bạn.</translation>
     </message>
     <message>
         <source>You can change this option later by selecting Options from the Settings menu (Help Browser tab).</source>
-        <translation>Bạn có thể thay đổi tùy chọn này sau bằng việc chọn Tùy chọn từ menu Thiết lập (thẻ Trình duyệt Trợ giúp).</translation>
+        <translation type="obsolete">Bạn có thể thay đổi tùy chọn này sau bằng việc chọn Tùy chọn từ menu Thiết lập (thẻ Trình duyệt Trợ giúp).</translation>
     </message>
     <message>
         <source>Layer is not valid</source>
-        <translation>Lớp không hợp lệ</translation>
+        <translation type="obsolete">Lớp không hợp lệ</translation>
     </message>
     <message>
         <source>The layer is not a valid layer and can not be added to the map</source>
-        <translation>Lớp không phải là một lớp hợp lệ và không thể thêm vào bản đồ</translation>
+        <translation type="obsolete">Lớp không phải là một lớp hợp lệ và không thể thêm vào bản đồ</translation>
     </message>
     <message>
         <source>Save?</source>
-        <translation>Lưu?</translation>
+        <translation type="obsolete">Lưu?</translation>
     </message>
     <message>
         <source>Do you want to save the current project?</source>
-        <translation>Bạn có muốn lưu dự án hiện tại?</translation>
+        <translation type="obsolete">Bạn có muốn lưu dự án hiện tại?</translation>
     </message>
     <message>
         <source>Extents: </source>
-        <translation>Phạm vi:</translation>
+        <translation type="obsolete">Phạm vi:</translation>
     </message>
     <message>
         <source>Clipboard contents set to: </source>
-        <translation>Nội dung bộ nhớ clipboard được thiết lập thành:</translation>
+        <translation type="obsolete">Nội dung bộ nhớ clipboard được thiết lập thành:</translation>
     </message>
     <message>
         <source>Open a GDAL Supported Raster Data Source</source>
-        <translation>Mở một nguồn dữ liệu raster được GDAL hỗ trợ</translation>
+        <translation type="obsolete">Mở một nguồn dữ liệu raster được GDAL hỗ trợ</translation>
     </message>
     <message>
         <source> is not a valid or recognized raster data source</source>
-        <translation>không phải là một nguồn dữ liệu raster được biết hoặc hợp lệ</translation>
+        <translation type="obsolete">không phải là một nguồn dữ liệu raster được biết hoặc hợp lệ</translation>
     </message>
     <message>
         <source> is not a supported raster data source</source>
-        <translation>không phải là một nguồn dữ liệu raster được hỗ trợ</translation>
+        <translation type="obsolete">không phải là một nguồn dữ liệu raster được hỗ trợ</translation>
     </message>
     <message>
         <source>Unsupported Data Source</source>
-        <translation>Nguồn Dữ liệu không được hỗ trợ</translation>
+        <translation type="obsolete">Nguồn Dữ liệu không được hỗ trợ</translation>
     </message>
     <message>
         <source>New Bookmark</source>
-        <translation>Đánh dấu mới</translation>
+        <translation type="obsolete">Đánh dấu mới</translation>
     </message>
     <message>
         <source>Enter a name for the new bookmark:</source>
-        <translation>Nhập tên cho đánh dấu mới:</translation>
+        <translation type="obsolete">Nhập tên cho đánh dấu mới:</translation>
     </message>
     <message>
         <source>Error</source>
-        <translation>Lỗi</translation>
+        <translation type="obsolete">Lỗi</translation>
     </message>
     <message>
         <source>Unable to create the bookmark. Your user database may be missing or corrupted</source>
-        <translation>Không thể tạo đánh dấu. CSDL người dùng của bạn có thể mất hoặc bị hỏng</translation>
+        <translation type="obsolete">Không thể tạo đánh dấu. CSDL người dùng của bạn có thể mất hoặc bị hỏng</translation>
     </message>
 </context>
 <context>
@@ -328,7 +324,7 @@
     </message>
     <message>
         <source>Retrieve the list of available plugins, select one and install it</source>
-        <translation>Lấy danh sách các phần mở rộng hiện có, chọn một và cài đặt nó</translation>
+        <translation type="obsolete">Lấy danh sách các phần mở rộng hiện có, chọn một và cài đặt nó</translation>
     </message>
     <message>
         <source>Name of plugin to install</source>
@@ -365,6 +361,157 @@
     <message>
         <source>Author</source>
         <translation>Tác giả</translation>
+    </message>
+    <message>
+        <source>Select repository, retrieve the list of available plugins, select one and install it</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Repository</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Active repository:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add</source>
+        <translation type="unfinished">Thêm</translation>
+    </message>
+    <message>
+        <source>Edit</source>
+        <translation type="unfinished">Chỉnh sửa</translation>
+    </message>
+    <message>
+        <source>Delete</source>
+        <translation type="unfinished">Xóa</translation>
+    </message>
+    <message>
+        <source>Dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Point Symbol</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Size</source>
+        <translation type="unfinished">Kích thước</translation>
+    </message>
+    <message>
+        <source>Area scale field</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Rotation field</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Style Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Outline style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Outline color</source>
+        <translation type="unfinished">Randfarbe</translation>
+    </message>
+    <message>
+        <source>Outline width</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fill color</source>
+        <translation type="unfinished">Füllfarbe</translation>
+    </message>
+    <message>
+        <source>Fill style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>...</source>
+        <translation type="unfinished">...</translation>
+    </message>
+</context>
+<context>
+    <name>Gui</name>
+    <message>
+        <source>Welcome to your automatically generated plugin!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>This is just a starting point. You now need to modify the code to make it do something useful....read on for a more information to get yourself started.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Documentation:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>You really need to read the QGIS API Documentation now at:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>In particular look at the following classes:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>QgsPlugin is an ABC that defines required behaviour your plugin must provide. See below for more details.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>What are all the files in my generated plugin directory for?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>This is the generated CMake file that builds the plugin. You should add you application specific dependencies and source files to this file.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>This is the class that provides the &apos;glue&apos; between your custom application logic and the QGIS application. You will see that a number of methods are already implemented for you - including some examples of how to add a raster or vector layer to the main application map canvas. This class is a concrete instance of the QgisPlugin interface which defines required behaviour for a plugin. In particular, a plugin has a number of static methods and members so that the QgsPluginManager and plugin loader logic can identify each plugin, create an appropriate menu entry for it etc. Note there is nothing stopping you creating multiple toolbar icons and menu entries for a single plugin. By default though a single menu entry and toolbar button is created and its pre-configured to call the run() method in this class when selected. This default implementation provided for you by the plugin builder is well documented, so please refer to the code for further advice.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>This is a Qt designer &apos;ui&apos; file. It defines the look of the default plugin dialog without implementing any application logic. You can modify this form to suite your needs or completely remove it if your plugin does not need to display a user form (e.g. for custom MapTools).</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>This is the concrete class where application logic for the above mentioned dialog should go. The world is your oyster here really....</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>This is the Qt4 resources file for your plugin. The Makefile generated for your plugin is all set up to compile the resource file so all you need to do is add your additional icons etc using the simple xml file format. Note the namespace used for all your resources e.g. (&apos;:/Homann/&apos;). It is important to use this prefix for all your resources. We suggest you include any other images and run time data in this resurce file too.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>This is the icon that will be used for your plugin menu entry and toolbar icon. Simply replace this icon with your own icon to make your plugin disctinctive from the rest.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>This file contains the documentation you are reading now!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Getting developer help:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>For Questions and Comments regarding the plugin builder template and creating your features in QGIS using the plugin interface please contact us via:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;li&gt; the QGIS developers mailing list, or &lt;/li&gt;&lt;li&gt; IRC (#qgis on freenode.net)&lt;/li&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>QGIS is distributed under the Gnu Public License. If you create a useful plugin please consider contributing it back to the community.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Have fun and thank you for choosing QGIS.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1025,6 +1172,18 @@ nicht installierz ist, wo es QGIS finden kann, funktioniert dieses Werkzeug nich
         <source>save new vector files dialog</source>
         <translation type="obsolete">hộp thoại lưu các tập tin vector mới</translation>
     </message>
+    <message>
+        <source>Load layer properties from style file (.qml)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save layer properties as style file (.qml)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save experiment report to portable document format (.pdf)</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QObject</name>
@@ -1229,7 +1388,7 @@ Hiện tại QGIS không hỗ trợ điều này.</translation>
     </message>
     <message>
         <source>Could not snap vertex. Have you set the tolerance in Settings &gt; Project Properties &gt; General?</source>
-        <translation>Không thể bắt đỉnh. Bạn đã thiết lập ngưỡng trong phần Thiết lập &gt; Tính chất phép chiếu &gt; Tổng quát chưa?</translation>
+        <translation type="obsolete">Không thể bắt đỉnh. Bạn đã thiết lập ngưỡng trong phần Thiết lập &gt; Tính chất phép chiếu &gt; Tổng quát chưa?</translation>
     </message>
     <message>
         <source>Project file read error: </source>
@@ -1455,7 +1614,7 @@ Bạn có muốn chỉ định đường dẫn (GISBASE) đến nơi cài đặt
     </message>
     <message>
         <source>Version 0.0001</source>
-        <translation>Phiên bản 0.0001</translation>
+        <translation type="obsolete">Phiên bản 0.0001</translation>
     </message>
     <message>
         <source>Not a vector layer</source>
@@ -1492,19 +1651,19 @@ Bạn có muốn chỉ định đường dẫn (GISBASE) đến nơi cài đặt
     <message>
         <source>Couldn&apos;t load SIP module.
 Python support will be disabled.</source>
-        <translation>Không thể nạp mô-đun SIP
+        <translation type="obsolete">Không thể nạp mô-đun SIP
 Hỗ trợ Python sẽ bị bất hoạt.</translation>
     </message>
     <message>
         <source>Couldn&apos;t load PyQt bindings.
 Python support will be disabled.</source>
-        <translation>Không thể nạp PyQt bindings.
+        <translation type="obsolete">Không thể nạp PyQt bindings.
 Hỗ trợ Python sẽ bị bất hoạt.</translation>
     </message>
     <message>
         <source>Couldn&apos;t load QGIS bindings.
 Python support will be disabled.</source>
-        <translation>Không thể nạp QGIS bindings.
+        <translation type="obsolete">Không thể nạp QGIS bindings.
 Hỗ trợ Python sẽ bị bất hoạt.</translation>
     </message>
     <message>
@@ -1597,15 +1756,15 @@ Hỗ trợ Python sẽ bị bất hoạt.</translation>
     </message>
     <message>
         <source>Change geometry</source>
-        <translation>Thay đổi hình học</translation>
+        <translation type="obsolete">Thay đổi hình học</translation>
     </message>
     <message>
         <source>Data provider of the current layer doesn&apos;t allow changing geometries</source>
-        <translation>Trình cung cấp dữ liệu của lớp hiện tại không cho phép thay đổi các hình học</translation>
+        <translation type="obsolete">Trình cung cấp dữ liệu của lớp hiện tại không cho phép thay đổi các hình học</translation>
     </message>
     <message>
         <source>Cannot edit the vector layer. Use &apos;Start editing&apos; in the legend item menu</source>
-        <translation>Không thể chỉnh sửa lớp vector. Dùng &apos;Bắt đầu chỉnh sửa&apos; trong menu chú giải</translation>
+        <translation type="obsolete">Không thể chỉnh sửa lớp vector. Dùng &apos;Bắt đầu chỉnh sửa&apos; trong menu chú giải</translation>
     </message>
     <message>
         <source> km2</source>
@@ -1953,6 +2112,86 @@ Hỗ trợ Python sẽ bị bất hoạt.</translation>
         <source>PostgreSQL Geoprocessing</source>
         <translation>Xử lý địa lý PostgreSQL</translation>
     </message>
+    <message>
+        <source>Could not remove polygon intersection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Loaded default style file from </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The directory containing your dataset needs to be writeable!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Created default style file as </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ERROR: Failed to created default style file as %1 Check file permissions and retry.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> is not writeable.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Please adjust permissions (if possible) and try again.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Abort</source>
+        <translation type="obsolete">Bỏ</translation>
+    </message>
+    <message>
+        <source>Version 0.001</source>
+        <translation type="obsolete">Phiên bản 0.001</translation>
+    </message>
+    <message>
+        <source>Quick Print</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quick Print is a plugin to quickly print a map with minimal effort.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Uncatched fatal GRASS error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Couldn&apos;t load SIP module.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Python support will be disabled.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Couldn&apos;t load PyQt4.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Couldn&apos;t load PyQGIS.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>An error has occured while executing Python code:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Python version:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Python path:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>An error occured during execution of following code:</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QgisApp</name>
@@ -1966,15 +2205,15 @@ Hỗ trợ Python sẽ bị bất hoạt.</translation>
     </message>
     <message>
         <source>Version </source>
-        <translation>Phiên bản </translation>
+        <translation type="obsolete">Phiên bản </translation>
     </message>
     <message>
         <source> with PostgreSQL support</source>
-        <translation> có hỗ trợ PostgreSQL</translation>
+        <translation type="obsolete"> có hỗ trợ PostgreSQL</translation>
     </message>
     <message>
         <source> (no PostgreSQL support)</source>
-        <translation>(không hỗ trợ PostgreSQL)</translation>
+        <translation type="obsolete">(không hỗ trợ PostgreSQL)</translation>
     </message>
     <message>
         <source>Web Page: http://qgis.sourceforge.net</source>
@@ -1990,7 +2229,7 @@ Hỗ trợ Python sẽ bị bất hoạt.</translation>
     </message>
     <message>
         <source>Available Data Provider Plugins</source>
-        <translation>Các Phần mở rộng Trình cung cấp dữ liệu hiện có</translation>
+        <translation type="obsolete">Các Phần mở rộng Trình cung cấp dữ liệu hiện có</translation>
     </message>
     <message>
         <source>Select one or more layers to add</source>
@@ -1998,11 +2237,11 @@ Hỗ trợ Python sẽ bị bất hoạt.</translation>
     </message>
     <message>
         <source>is not a valid or recognized data source</source>
-        <translation type="obsolete">không phải là nguồn dữ liệu hợp lệ hoặc không nhận diện được</translation>
+        <translation type="unfinished">không phải là nguồn dữ liệu hợp lệ hoặc không nhận diện được</translation>
     </message>
     <message>
         <source>Invalid Data Source</source>
-        <translation type="obsolete">Nguồn Dữ liệu Không hợp lệ</translation>
+        <translation type="unfinished">Nguồn Dữ liệu Không hợp lệ</translation>
     </message>
     <message>
         <source>No OGR Provider</source>
@@ -2034,7 +2273,7 @@ Hỗ trợ Python sẽ bị bất hoạt.</translation>
     </message>
     <message>
         <source>No Layer Selected</source>
-        <translation type="obsolete">Không có lớp nào được chọn</translation>
+        <translation type="unfinished">Không có lớp nào được chọn</translation>
     </message>
     <message>
         <source>To open an attribute table, you must select a layer in the legend</source>
@@ -2042,75 +2281,75 @@ Hỗ trợ Python sẽ bị bất hoạt.</translation>
     </message>
     <message>
         <source>No MapLayer Plugins</source>
-        <translation type="obsolete">Không có plugin MapLayer (Lớp Bản đồ)</translation>
+        <translation type="unfinished">Không có plugin MapLayer (Lớp Bản đồ)</translation>
     </message>
     <message>
         <source>No MapLayer plugins in ../plugins/maplayer</source>
-        <translation type="obsolete">Không có plugin MapLayer (lớp bản đồ) trong ../plugins/maplayer</translation>
+        <translation type="unfinished">Không có plugin MapLayer (lớp bản đồ) trong ../plugins/maplayer</translation>
     </message>
     <message>
         <source>No Plugins</source>
-        <translation type="obsolete">Không có các plugin</translation>
+        <translation type="unfinished">Không có các plugin</translation>
     </message>
     <message>
         <source>No plugins found in ../plugins. To test plugins, start qgis from the src directory</source>
-        <translation type="obsolete">Không tìm thấy các plugin trong ../plugins. Để kiểm tra plugin, khởi động qgis từ thư mục src</translation>
+        <translation type="unfinished">Không tìm thấy các plugin trong ../plugins. Để kiểm tra plugin, khởi động qgis từ thư mục src</translation>
     </message>
     <message>
         <source>Name</source>
-        <translation type="obsolete">Tên</translation>
+        <translation type="unfinished">Tên</translation>
     </message>
     <message>
         <source>Plugin %1 is named %2</source>
-        <translation type="obsolete">Plugin %1 được đặt tên là %2</translation>
+        <translation type="unfinished">Plugin %1 được đặt tên là %2</translation>
     </message>
     <message>
         <source>Plugin Information</source>
-        <translation type="obsolete">Thông tin về plugin</translation>
+        <translation type="unfinished">Thông tin về plugin</translation>
     </message>
     <message>
         <source>QGis loaded the following plugin:</source>
-        <translation type="obsolete">QGis đã nạp plugin sau:</translation>
+        <translation type="unfinished">QGis đã nạp plugin sau:</translation>
     </message>
     <message>
         <source>Name: %1</source>
-        <translation type="obsolete">Tên: %1</translation>
+        <translation type="unfinished">Tên: %1</translation>
     </message>
     <message>
         <source>Version: %1</source>
-        <translation type="obsolete">Phiên bản: %1</translation>
+        <translation type="unfinished">Phiên bản: %1</translation>
     </message>
     <message>
         <source>Description: %1</source>
-        <translation type="obsolete">Mô tả: %1</translation>
+        <translation type="unfinished">Mô tả: %1</translation>
     </message>
     <message>
         <source>Unable to Load Plugin</source>
-        <translation type="obsolete">Không thể nạp plugin</translation>
+        <translation type="unfinished">Không thể nạp plugin</translation>
     </message>
     <message>
         <source>QGIS was unable to load the plugin from: %1</source>
-        <translation type="obsolete">QGIS không thể nạp plugin từ : %1</translation>
+        <translation type="unfinished">QGIS không thể nạp plugin từ : %1</translation>
     </message>
     <message>
         <source>There is a new version of QGIS available</source>
-        <translation type="obsolete">Đã có phiên bản mới của QGIS</translation>
+        <translation type="unfinished">Đã có phiên bản mới của QGIS</translation>
     </message>
     <message>
         <source>You are running a development version of QGIS</source>
-        <translation type="obsolete">Bạn đang dùng phiên bản QGIS &quot;phát triển&quot;</translation>
+        <translation type="unfinished">Bạn đang dùng phiên bản QGIS &quot;phát triển&quot;</translation>
     </message>
     <message>
         <source>You are running the current version of QGIS</source>
-        <translation type="obsolete">Bạn đang dùng phiên bản QGIS hiện tại</translation>
+        <translation type="unfinished">Bạn đang dùng phiên bản QGIS hiện tại</translation>
     </message>
     <message>
         <source>Would you like more information?</source>
-        <translation type="obsolete">Bạn có muốn biết thêm thông tin không?</translation>
+        <translation type="unfinished">Bạn có muốn biết thêm thông tin không?</translation>
     </message>
     <message>
         <source>QGIS Version Information</source>
-        <translation type="obsolete">Thông tin về phiên bản QGIS</translation>
+        <translation type="unfinished">Thông tin về phiên bản QGIS</translation>
     </message>
     <message>
         <source>Yes</source>
@@ -2126,15 +2365,15 @@ Hỗ trợ Python sẽ bị bất hoạt.</translation>
     </message>
     <message>
         <source>Unable to get current version information from server</source>
-        <translation type="obsolete">Không thể lấy thông tin về phiên bản hiện tại từ Server</translation>
+        <translation type="unfinished">Không thể lấy thông tin về phiên bản hiện tại từ Server</translation>
     </message>
     <message>
         <source>Connection refused - server may be down</source>
-        <translation type="obsolete">Liên kết bị từ chối - server có thể bị hỏng</translation>
+        <translation type="unfinished">Liên kết bị từ chối - server có thể bị hỏng</translation>
     </message>
     <message>
         <source>QGIS server was not found</source>
-        <translation type="obsolete">Không tìm thấy server của QGIS</translation>
+        <translation type="unfinished">Không tìm thấy server của QGIS</translation>
     </message>
     <message>
         <source>Error reading from server</source>
@@ -2158,19 +2397,19 @@ Hỗ trợ Python sẽ bị bất hoạt.</translation>
     </message>
     <message>
         <source>Invalid Layer</source>
-        <translation type="obsolete">Lớp không hợp lệ</translation>
+        <translation type="unfinished">Lớp không hợp lệ</translation>
     </message>
     <message>
         <source>%1 is an invalid layer and cannot be loaded.</source>
-        <translation type="obsolete">%1 là một lớp không hợp lệ và không thể nạp được.</translation>
+        <translation type="unfinished">%1 là một lớp không hợp lệ và không thể nạp được.</translation>
     </message>
     <message>
         <source>Error Loading Plugin</source>
-        <translation type="obsolete">Lỗi đang nạp plugin</translation>
+        <translation type="unfinished">Lỗi đang nạp plugin</translation>
     </message>
     <message>
         <source>There was an error loading %1.</source>
-        <translation type="obsolete">Có lỗi khi đang nạp %1.</translation>
+        <translation type="unfinished">Có lỗi khi đang nạp %1.</translation>
     </message>
     <message>
         <source>open files dialog</source>
@@ -2178,7 +2417,7 @@ Hỗ trợ Python sẽ bị bất hoạt.</translation>
     </message>
     <message>
         <source>Saved map image to</source>
-        <translation type="obsolete">Lưu ảnh bản đồ vào</translation>
+        <translation type="unfinished">Lưu ảnh bản đồ vào</translation>
     </message>
     <message>
         <source>QGIS - Changes in CVS Since Last Release</source>
@@ -2186,11 +2425,11 @@ Hỗ trợ Python sẽ bị bất hoạt.</translation>
     </message>
     <message>
         <source>Choose a filename to save the map image as</source>
-        <translation type="obsolete">Chọn tên tập tin để lưu ảnh bản đồ thành</translation>
+        <translation type="unfinished">Chọn tên tập tin để lưu ảnh bản đồ thành</translation>
     </message>
     <message>
         <source>Extents: </source>
-        <translation type="obsolete">Phạm vi:</translation>
+        <translation type="unfinished">Phạm vi:</translation>
     </message>
     <message>
         <source>Web Page: http://qgis.org</source>
@@ -2198,31 +2437,31 @@ Hỗ trợ Python sẽ bị bất hoạt.</translation>
     </message>
     <message>
         <source>Problem deleting features</source>
-        <translation type="obsolete">Trục trặc khi đang xóa các đối tượng</translation>
+        <translation type="unfinished">Trục trặc khi đang xóa các đối tượng</translation>
     </message>
     <message>
         <source>A problem occured during deletion of features</source>
-        <translation type="obsolete">Có trục trặc xảy ra trong khi xóa các đối tượng</translation>
+        <translation type="unfinished">Có trục trặc xảy ra trong khi xóa các đối tượng</translation>
     </message>
     <message>
         <source>No Vector Layer Selected</source>
-        <translation type="obsolete">Không có lớp vector nào được chọn</translation>
+        <translation type="unfinished">Không có lớp vector nào được chọn</translation>
     </message>
     <message>
         <source>Deleting features only works on vector layers</source>
-        <translation type="obsolete">Việc xóa các đối tượng chỉ áp dụng được đối với các lớp bản đồ vector</translation>
+        <translation type="unfinished">Việc xóa các đối tượng chỉ áp dụng được đối với các lớp bản đồ vector</translation>
     </message>
     <message>
         <source>To delete features, you must select a vector layer in the legend</source>
-        <translation type="obsolete">Để xóa các đối tượng, bạn phải chọn một lớp vector trong phần chú giải</translation>
+        <translation type="unfinished">Để xóa các đối tượng, bạn phải chọn một lớp vector trong phần chú giải</translation>
     </message>
     <message>
         <source>Quantum GIS is licensed under the GNU General Public License</source>
-        <translation>Quantum GIS được đăng ký dưới Giấy phép Công cộng chung GNU</translation>
+        <translation type="obsolete">Quantum GIS được đăng ký dưới Giấy phép Công cộng chung GNU</translation>
     </message>
     <message>
         <source>http://www.gnu.org/licenses</source>
-        <translation>http://www.gnu.org/licenses</translation>
+        <translation type="obsolete">http://www.gnu.org/licenses</translation>
     </message>
     <message>
         <source>Map legend that displays all the layers currently on the map canvas. Click on the check box to turn a layer on or off. Double click on a layer in the legend to customize its appearance and set other properties.</source>
@@ -2234,7 +2473,7 @@ Hỗ trợ Python sẽ bị bất hoạt.</translation>
     </message>
     <message>
         <source>Map canvas. This is where raster and vector layers are displayed when added to the map</source>
-        <translation>Khung bản đồ. Đây là vùng các lớp raster và vector được trình bày khi được thêm vào bản đồ</translation>
+        <translation type="unfinished">Khung bản đồ. Đây là vùng các lớp raster và vector được trình bày khi được thêm vào bản đồ</translation>
     </message>
     <message>
         <source>&amp;Plugins</source>
@@ -2358,15 +2597,15 @@ Hỗ trợ Python sẽ bị bất hoạt.</translation>
     </message>
     <message>
         <source>Choose a QGIS project file</source>
-        <translation type="obsolete">Hãy chọn một tập tin dự án QGIS</translation>
+        <translation type="unfinished">Hãy chọn một tập tin dự án QGIS</translation>
     </message>
     <message>
         <source>Unable to save project</source>
-        <translation type="obsolete">Không thể lưu dự án</translation>
+        <translation type="unfinished">Không thể lưu dự án</translation>
     </message>
     <message>
         <source>Unable to save project to </source>
-        <translation type="obsolete">Không thể lưu dự án vào</translation>
+        <translation type="unfinished">Không thể lưu dự án vào</translation>
     </message>
     <message>
         <source>Toggle map rendering</source>
@@ -2442,27 +2681,27 @@ Hỗ trợ Python sẽ bị bất hoạt.</translation>
     </message>
     <message>
         <source>Open an OGR Supported Vector Layer</source>
-        <translation type="obsolete">Mở một lớp vector được OGR hỗ trợ</translation>
+        <translation type="unfinished">Mở một lớp vector được OGR hỗ trợ</translation>
     </message>
     <message>
         <source>QGIS Project Read Error</source>
-        <translation type="obsolete">Lỗi đọc tập tin dự án QGIS</translation>
+        <translation type="unfinished">Lỗi đọc tập tin dự án QGIS</translation>
     </message>
     <message>
         <source>Try to find missing layers?</source>
-        <translation type="obsolete">Cố gắng tìm các lớp bị mất?</translation>
+        <translation type="unfinished">Cố gắng tìm các lớp bị mất?</translation>
     </message>
     <message>
         <source>Open a GDAL Supported Raster Data Source</source>
-        <translation type="obsolete">Mở một nguồn dữ liệu raster được GDAL hỗ trợ</translation>
+        <translation type="unfinished">Mở một nguồn dữ liệu raster được GDAL hỗ trợ</translation>
     </message>
     <message>
         <source>Save As</source>
-        <translation type="obsolete">Lưu thành</translation>
+        <translation type="unfinished">Lưu thành</translation>
     </message>
     <message>
         <source>Choose a QGIS project file to open</source>
-        <translation type="obsolete">Chọn mở một tập tin dự án QGIS</translation>
+        <translation type="unfinished">Chọn mở một tập tin dự án QGIS</translation>
     </message>
     <message>
         <source>Project file exists.</source>
@@ -2474,7 +2713,7 @@ Hỗ trợ Python sẽ bị bất hoạt.</translation>
     </message>
     <message>
         <source>Saved project to:</source>
-        <translation type="obsolete">Lưu dự án vào:</translation>
+        <translation type="unfinished">Lưu dự án vào:</translation>
     </message>
     <message>
         <source>QGIS Browser Selection</source>
@@ -2602,16 +2841,11 @@ Hỗ trợ Python sẽ bị bất hoạt.</translation>
     </message>
     <message>
         <source>Export to MapServer Map...</source>
-        <translation>Xuất ra Bản đồ MapServer...</translation>
-    </message>
-    <message>
-        <source>M</source>
-        <comment>Export as MapServer .map file</comment>
-        <translation></translation>
+        <translation type="obsolete">Xuất ra Bản đồ MapServer...</translation>
     </message>
     <message>
         <source>Export as MapServer .map file</source>
-        <translation>Xuất thành tập tin .map của MapServer</translation>
+        <translation type="obsolete">Xuất thành tập tin .map của MapServer</translation>
     </message>
     <message>
         <source>Exit</source>
@@ -3165,12 +3399,12 @@ Phóng đến toàn bộ phạm vi vùng</translation>
     <message>
         <source>
 Compiled against Qt </source>
-        <translation>
+        <translation type="obsolete">
 Được biên dịch theo Qt </translation>
     </message>
     <message>
         <source>, running against Qt </source>
-        <translation>, đang chạy theo Qt </translation>
+        <translation type="obsolete">, đang chạy theo Qt </translation>
     </message>
     <message>
         <source>New features</source>
@@ -3178,7 +3412,7 @@ Compiled against Qt </source>
     </message>
     <message>
         <source>Error</source>
-        <translation type="obsolete">Lỗi</translation>
+        <translation type="unfinished">Lỗi</translation>
     </message>
     <message>
         <source>T</source>
@@ -3214,15 +3448,15 @@ Compiled against Qt </source>
     </message>
     <message>
         <source>Provider does not support deletion</source>
-        <translation type="obsolete">Trình cung cấp dữ liệu không hỗ trợ việc xóa</translation>
+        <translation type="unfinished">Trình cung cấp dữ liệu không hỗ trợ việc xóa</translation>
     </message>
     <message>
         <source>Data provider does not support deleting features</source>
-        <translation type="obsolete">Trình cung cấp dữ liệu không hỗ trợ việc xóa các đối tượng</translation>
+        <translation type="unfinished">Trình cung cấp dữ liệu không hỗ trợ việc xóa các đối tượng</translation>
     </message>
     <message>
         <source>Layer not editable</source>
-        <translation type="obsolete">Lớp không chỉnh sửa được</translation>
+        <translation type="unfinished">Lớp không chỉnh sửa được</translation>
     </message>
     <message>
         <source>Toggle editing</source>
@@ -3262,39 +3496,260 @@ Compiled against Qt </source>
     </message>
     <message>
         <source>Python bindings - This is the major focus of this release it is now possible to create plugins using python. It is also possible to create GIS enabled applications written in python that use the QGIS libraries.</source>
-        <translation>Python bindings - Đây là trọng tâm chính của lần phát hành này, hiện tại đã có thể tạo các phần mở rộng bằng cách dùng python. Cũng có thể tạo các ứng dụng có chức năng GIS được viết bằng python có dùng các thư viện của QGIS.</translation>
+        <translation type="obsolete">Python bindings - Đây là trọng tâm chính của lần phát hành này, hiện tại đã có thể tạo các phần mở rộng bằng cách dùng python. Cũng có thể tạo các ứng dụng có chức năng GIS được viết bằng python có dùng các thư viện của QGIS.</translation>
     </message>
     <message>
         <source>Removed automake build system - QGIS now needs CMake for compilation.</source>
-        <translation>Hệ thống xây dựng automake đã bị bỏ - QGIS hiện tại dùng trình biên dịch CMake.</translation>
+        <translation type="obsolete">Hệ thống xây dựng automake đã bị bỏ - QGIS hiện tại dùng trình biên dịch CMake.</translation>
     </message>
     <message>
         <source>Many new GRASS tools added (with thanks to http://faunalia.it/)</source>
-        <translation>Nhiều công cụ GRASS được thêm vào (cám ơn http://faunalia.it/)</translation>
+        <translation type="obsolete">Nhiều công cụ GRASS được thêm vào (cám ơn http://faunalia.it/)</translation>
     </message>
     <message>
         <source>Map Composer updates</source>
-        <translation>Các cập nhật trong Trình biên tập Bản đồ</translation>
+        <translation type="obsolete">Các cập nhật trong Trình biên tập Bản đồ</translation>
     </message>
     <message>
         <source>Crash fix for 2.5D shapefiles</source>
-        <translation>Đã sửa lỗi sập với các tập tin shape 2,5D</translation>
+        <translation type="obsolete">Đã sửa lỗi sập với các tập tin shape 2,5D</translation>
     </message>
     <message>
         <source>The QGIS libraries have been refactored and better organised.</source>
-        <translation>Các thư viện QGIS đã được quản lý lại và được tổ chức tốt hơn.</translation>
+        <translation type="obsolete">Các thư viện QGIS đã được quản lý lại và được tổ chức tốt hơn.</translation>
     </message>
     <message>
         <source>Improvements to the GeoReferencer</source>
-        <translation>Các cải tiến đối với trình tham chiếu địa lý</translation>
-    </message>
-    <message>
-        <source></source>
-        <translation></translation>
+        <translation type="obsolete">Các cải tiến đối với trình tham chiếu địa lý</translation>
     </message>
     <message>
         <source>Shows the map coordinates at the current cursor position. The display is continuously updated as the mouse is moved.</source>
         <translation>Hiển thị tọa độ tại vị trí con trỏ. Việc hiển thị được cập nhật liên tục khi chuột di chuyển.</translation>
+    </message>
+    <message>
+        <source>Toggle full screen mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ctrl-F</source>
+        <comment>Toggle fullscreen mode</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Toggle fullscreen mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Move Feature</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Split Features</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Map Tips</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show information about a feature when the mouse is hovered over it</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Current map scale</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Resource Location Error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Error reading icon resources from: 
+ %1
+ Quitting...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Overview</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Legend</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>You are using QGIS version %1 built against code revision %2.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> This copy of QGIS has been built with PostgreSQL support.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> This copy of QGIS has been built without PostgreSQL support.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>
+This binary was compiled against Qt %1,and is currently running against Qt %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>This release candidate includes over 120 bug fixes and enchancements over the QGIS 0.9.1 release. In addition we have added the following new features:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Imrovements to digitising capabilities.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Supporting default and defined styles (.qml) files for file based vector layers. With styles you can save the symbolisation and other settings associated with a vector layer and they will be loaded whenever you load that layer.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Improved support for transparency and contrast stretching in raster layers. Support for color ramps in raster layers. Support for non-north up rasters. Many other raster improvements &apos;under the hood&apos;.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Updated icons for improved visual consistancy.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Support for migration of old projects to work in newer QGIS versions.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unable to open project</source>
+        <translation type="unfinished">Không thể mở dự án</translation>
+    </message>
+    <message>
+        <source>Unable to save project </source>
+        <translation type="unfinished">Không thể lưu dự án</translation>
+    </message>
+    <message>
+        <source>Choose a filename to save the QGIS project file as</source>
+        <translation type="unfinished">Chọn tên tập tin để lưu tập tin dự án QGIS thành</translation>
+    </message>
+    <message>
+        <source>QGIS: Unable to load project</source>
+        <translation type="unfinished">QGIS: không thể nạp dự án</translation>
+    </message>
+    <message>
+        <source>Unable to load project </source>
+        <translation type="unfinished">Không thể nạp dự án</translation>
+    </message>
+    <message>
+        <source>The current layer is not editable. Choose &apos;Start editing&apos; in the digitizing toolbar.</source>
+        <translation type="unfinished">Lớp hiện tại không chỉnh sửa được. Chọn &apos;Bắt đầu chỉnh sửa&apos; trong thanh công cụ số hóa.</translation>
+    </message>
+    <message>
+        <source>Invalid scale</source>
+        <translation type="unfinished">Tỷ lệ không hợp lệ</translation>
+    </message>
+    <message>
+        <source>QGIS - Changes in SVN Since Last Release</source>
+        <translation type="unfinished">QGIS - Các thay đổi trong SVN kể từ lần phát hành trước</translation>
+    </message>
+    <message>
+        <source>Network error while communicating with server</source>
+        <translation type="unfinished">Lỗi mạng khi giao tiếp với server</translation>
+    </message>
+    <message>
+        <source>Unknown network socket error</source>
+        <translation type="unfinished">Lỗi socket mạng không rõ</translation>
+    </message>
+    <message>
+        <source>Unable to communicate with QGIS Version server</source>
+        <translation type="unfinished">Không thể trao đổi thông tin với server Phiên bản QGIS</translation>
+    </message>
+    <message>
+        <source>Layer is not valid</source>
+        <translation type="unfinished">Lớp không hợp lệ</translation>
+    </message>
+    <message>
+        <source>The layer is not a valid layer and can not be added to the map</source>
+        <translation type="unfinished">Lớp không phải là một lớp hợp lệ và không thể thêm vào bản đồ</translation>
+    </message>
+    <message>
+        <source>Save?</source>
+        <translation type="unfinished">Lưu?</translation>
+    </message>
+    <message>
+        <source>Do you want to save the current project?</source>
+        <translation type="unfinished">Bạn có muốn lưu dự án hiện tại?</translation>
+    </message>
+    <message>
+        <source>Clipboard contents set to: </source>
+        <translation type="unfinished">Nội dung bộ nhớ clipboard được thiết lập thành:</translation>
+    </message>
+    <message>
+        <source> is not a valid or recognized raster data source</source>
+        <translation type="unfinished">không phải là một nguồn dữ liệu raster được biết hoặc hợp lệ</translation>
+    </message>
+    <message>
+        <source> is not a supported raster data source</source>
+        <translation type="unfinished">không phải là một nguồn dữ liệu raster được hỗ trợ</translation>
+    </message>
+    <message>
+        <source>Unsupported Data Source</source>
+        <translation type="unfinished">Nguồn Dữ liệu không được hỗ trợ</translation>
+    </message>
+    <message>
+        <source>Enter a name for the new bookmark:</source>
+        <translation type="unfinished">Nhập tên cho đánh dấu mới:</translation>
+    </message>
+    <message>
+        <source>Unable to create the bookmark. Your user database may be missing or corrupted</source>
+        <translation type="unfinished">Không thể tạo đánh dấu. CSDL người dùng của bạn có thể mất hoặc bị hỏng</translation>
+    </message>
+    <message>
+        <source>Project file is older</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;p&gt;This project file was saved by an older version of QGIS.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> When saving this project file, QGIS will update it to the latest version, possibly rendering it useless for older versions of QGIS.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;p&gt;Even though QGIS developers try to maintain backwards compatibility, some of the information from the old project file might be lost.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> To improve the quality of QGIS, we appreciate if you file a bug report at %3.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> Be sure to include the old project file, and state the version of QGIS you used to discover the error.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;p&gt;To remove this warning when opening an older project file, uncheck the box &apos;%5&apos; in the %4 menu.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;p&gt;Version of the project file: %1&lt;br&gt;Current version of QGIS: %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;tt&gt;Settings:Options:General&lt;/tt&gt;</source>
+        <comment>Menu path to setting options</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Warn me when opening a project file saved with an older version of QGIS</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Stop map rendering</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source></source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -4048,11 +4503,11 @@ Compiled against Qt </source>
     </message>
     <message>
         <source>http://www.gnu.org/licenses</source>
-        <translation type="obsolete">http://www.gnu.org/licenses</translation>
+        <translation type="unfinished">http://www.gnu.org/licenses</translation>
     </message>
     <message>
         <source>Quantum GIS is licensed under the GNU General Public License</source>
-        <translation type="obsolete">Quantum GIS ist unter der GNU General Public License lizenziert</translation>
+        <translation type="unfinished">Quantum GIS ist unter der GNU General Public License lizenziert</translation>
     </message>
     <message>
         <source>Contributors</source>
@@ -4116,7 +4571,7 @@ Compiled against Qt </source>
     </message>
     <message>
         <source>&lt;h2&gt;Quantum GIS (qgis)&lt;/h2&gt;</source>
-        <translation>&lt;h2&gt;Quantum GIS (qgis)&lt;/h2&gt;</translation>
+        <translation type="obsolete">&lt;h2&gt;Quantum GIS (qgis)&lt;/h2&gt;</translation>
     </message>
     <message>
         <source>&lt;p align=&quot;center&quot;&gt;Quantum GIS is licensed under the GNU General Public License&lt;p&gt;
@@ -4130,7 +4585,7 @@ Compiled against Qt </source>
     </message>
     <message>
         <source>Subscribe to the QGIS-User mailing list</source>
-        <translation>Đăng ký gia nhập danh sách thư tín Người dùng QGIS</translation>
+        <translation type="obsolete">Đăng ký gia nhập danh sách thư tín Người dùng QGIS</translation>
     </message>
     <message>
         <source>Providers</source>
@@ -4138,19 +4593,11 @@ Compiled against Qt </source>
     </message>
     <message>
         <source>Name</source>
-        <translation type="obsolete">Tên</translation>
+        <translation type="unfinished">Tên</translation>
     </message>
     <message>
         <source>QGIS Browser Selection</source>
         <translation type="obsolete">Chọn trình Duyệt QGIS</translation>
-    </message>
-    <message>
-        <source>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Arial&apos;; font-size:12pt; font-weight:400; font-style:normal; text-decoration:none;&quot;&gt;
-&lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:&apos;Sans Serif&apos;; font-size:9pt;&quot;&gt;Quantum GIS is licensed under the GNU General Public License&lt;/p&gt;
-&lt;p align=&quot;center&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:&apos;Sans Serif&apos;; font-size:9pt;&quot;&gt;http://www.gnu.org/licenses&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation></translation>
     </message>
     <message>
         <source>Developers</source>
@@ -4158,11 +4605,42 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>&lt;h2&gt;QGIS Developers&lt;/h2&gt;</source>
-        <translation>&lt;h2&gt;Những người phát triển QGIS&lt;/h2&gt;</translation>
+        <translation type="obsolete">&lt;h2&gt;Những người phát triển QGIS&lt;/h2&gt;</translation>
     </message>
     <message>
         <source>Sponsors</source>
         <translation>Những người tài trợ</translation>
+    </message>
+    <message>
+        <source>&lt;p&gt;The following have sponsored QGIS by contributing money to fund development and other project costs&lt;/p&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Website</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Available QGIS Data Provider Plugins</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Available Qt Database Plugins</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Available Qt Image Plugins</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Lucida Grande&apos;; font-size:13pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:16px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:x-large; font-weight:600;&quot;&gt;&lt;span style=&quot; font-size:x-large;&quot;&gt;Quantum GIS (QGIS)&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Join our user mailing list</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -4181,26 +4659,26 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>OK</source>
-        <translation>Đồng ý</translation>
+        <translation type="obsolete">Đồng ý</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation>Hủy</translation>
+        <translation type="obsolete">Hủy</translation>
     </message>
 </context>
 <context>
     <name>QgsAttributeActionDialog</name>
     <message>
         <source>Name</source>
-        <translation>Tên</translation>
+        <translation type="obsolete">Tên</translation>
     </message>
     <message>
         <source>Action</source>
-        <translation>Hành động</translation>
+        <translation type="obsolete">Hành động</translation>
     </message>
     <message>
         <source>Capture</source>
-        <translation>Bắt</translation>
+        <translation type="obsolete">Bắt</translation>
     </message>
     <message>
         <source>Select an action</source>
@@ -4213,15 +4691,15 @@ p, li { white-space: pre-wrap; }
     <name>QgsAttributeActionDialogBase</name>
     <message>
         <source>Form1</source>
-        <translation>Mẫu 1</translation>
+        <translation type="obsolete">Mẫu 1</translation>
     </message>
     <message>
         <source>Name</source>
-        <translation type="obsolete">Tên</translation>
+        <translation type="unfinished">Tên</translation>
     </message>
     <message>
         <source>Action</source>
-        <translation type="obsolete">Hành động</translation>
+        <translation type="unfinished">Hành động</translation>
     </message>
     <message>
         <source>This list contains all actions that have been defined for the current layer. Add actions by entering the details in the controls below and then pressing the Insert action button. Actions can be edited here by double clicking on the item.</source>
@@ -4253,7 +4731,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Name:</source>
-        <translation>Tên:</translation>
+        <translation type="obsolete">Tên:</translation>
     </message>
     <message>
         <source>Enter the name of an action here. The name should be unique (qgis will make it unique if necessary).</source>
@@ -4265,7 +4743,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Action:</source>
-        <translation>Hành động:</translation>
+        <translation type="obsolete">Hành động:</translation>
     </message>
     <message>
         <source>Enter the action here. This can be any program, script or command that is available on your system. When the action is invoked any set of characters that start with a % and then have the name of a field will be replaced by the value of that field. The special characters %% will replaced by the value of the field that was selected. Double quote marks group text into single arguments to the program, script or command. Double quotes will be ignored if preceeded by a backslash</source>
@@ -4277,11 +4755,11 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Browse</source>
-        <translation>Duyệt</translation>
+        <translation type="obsolete">Duyệt</translation>
     </message>
     <message>
         <source>Browse for action commands</source>
-        <translation>Duyệt tìm các lệnh hành động</translation>
+        <translation type="obsolete">Duyệt tìm các lệnh hành động</translation>
     </message>
     <message>
         <source>Insert action</source>
@@ -4313,7 +4791,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Capture</source>
-        <translation type="obsolete">Bắt</translation>
+        <translation type="unfinished">Bắt</translation>
     </message>
     <message>
         <source>Capture output</source>
@@ -4330,6 +4808,45 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>Enter the action here. This can be any program, script or command that is available on your system. When the action is invoked any set of characters that start with a % and then have the name of a field will be replaced by the value of that field. The special characters %% will be replaced by the value of the field that was selected. Double quote marks group text into single arguments to the program, script or command. Double quotes will be ignored if preceeded by a backslash</source>
         <translation>Nhập hành động tại đây. Hành động có thể là bất kỳ chương trình, vĩ lệnh (script) hoặc lệnh nào có trên hệ thống của bạn. Khi hành động được kích hoạt, bất kỳ tập hợp ký tự nào bắt đầu bằng a% và sau đó có tên của một trường sẽ được thay thế bởi giá trị của trường đó. Các ký tự đặc biệt %% sẽ được thay thế bởi giá trị của trường được chọn. Dấu nháy kép gộp các chữ thành các đối số duy nhất đối với chương trình, vĩ lệnh hoặc lệnh. Dấu nháy kép sẽ bị bỏ qua nếu trước nó là dấu xuyệc ngược</translation>
+    </message>
+    <message>
+        <source>Attribute Actions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Action properties</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Browse for action</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Click to browse for an action</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>...</source>
+        <translation type="unfinished">...</translation>
+    </message>
+    <message>
+        <source>Clicking the button will let you select an application to use as the action</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QgsAttributeDialog</name>
+    <message>
+        <source> (int)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> (dbl)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> (txt)</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -4348,23 +4865,23 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>1</source>
-        <translation>1</translation>
+        <translation type="obsolete">1</translation>
     </message>
     <message>
         <source>Attribute</source>
-        <translation>Thuộc tính</translation>
+        <translation type="obsolete">Thuộc tính</translation>
     </message>
     <message>
         <source>Value</source>
-        <translation>Giá trị</translation>
+        <translation type="obsolete">Giá trị</translation>
     </message>
     <message>
         <source>&amp;OK</source>
-        <translation>Đồn&amp;g ý</translation>
+        <translation type="obsolete">Đồn&amp;g ý</translation>
     </message>
     <message>
         <source>&amp;Cancel</source>
-        <translation>&amp;Hủy</translation>
+        <translation type="obsolete">&amp;Hủy</translation>
     </message>
 </context>
 <context>
@@ -4398,11 +4915,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>&amp;Close</source>
-        <translation>&amp;Đóng</translation>
-    </message>
-    <message>
-        <source>Alt+C</source>
-        <translation></translation>
+        <translation type="obsolete">&amp;Đóng</translation>
     </message>
     <message>
         <source>Ctrl+X</source>
@@ -4442,11 +4955,11 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>&amp;Help</source>
-        <translation>&amp;Trợ giúp</translation>
+        <translation type="obsolete">&amp;Trợ giúp</translation>
     </message>
     <message>
         <source>Search for:</source>
-        <translation>Tìm:</translation>
+        <translation type="obsolete">Tìm:</translation>
     </message>
     <message>
         <source>in</source>
@@ -4504,6 +5017,10 @@ p, li { white-space: pre-wrap; }
         <source>Ctrl+F</source>
         <translation>Ctrl+F</translation>
     </message>
+    <message>
+        <source>Search for</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QgsAttributeTableDisplay</name>
@@ -4538,6 +5055,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>Found %d matching features.</source>
         <translation type="obsolete">
+        
         </translation>
     </message>
     <message>
@@ -4562,11 +5080,15 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Could not commit changes</source>
-        <translation>Không thể lưu những thay đổi</translation>
+        <translation type="obsolete">Không thể lưu những thay đổi</translation>
     </message>
     <message>
         <source>The attribute could not be inserted. The name already exists in the table.</source>
         <translation>Thuộc tính không thể chèn vào được. Tên này đã có trong bảng.</translation>
+    </message>
+    <message>
+        <source>Could not commit changes - changes are still pending</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -4605,6 +5127,14 @@ p, li { white-space: pre-wrap; }
         <translation> đánh dấu từ CSDL. CSDL đã nói rằng:
 </translation>
     </message>
+    <message>
+        <source>&amp;Delete</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Zoom to</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QgsBookmarksBase</name>
@@ -4630,31 +5160,31 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Zoom To</source>
-        <translation>Phóng đến</translation>
+        <translation type="obsolete">Phóng đến</translation>
     </message>
     <message>
         <source>Zoom to the currently selected bookmark</source>
-        <translation>Phóng đến đánh dấu đang được chọn</translation>
+        <translation type="obsolete">Phóng đến đánh dấu đang được chọn</translation>
     </message>
     <message>
         <source>Delete</source>
-        <translation>Xóa</translation>
+        <translation type="obsolete">Xóa</translation>
     </message>
     <message>
         <source>Delete the currently selected bookmark</source>
-        <translation>Xóa đánh dấu đang được chọn</translation>
+        <translation type="obsolete">Xóa đánh dấu đang được chọn</translation>
     </message>
     <message>
         <source>Close</source>
-        <translation>Đóng</translation>
+        <translation type="obsolete">Đóng</translation>
     </message>
     <message>
         <source>Close the dialog</source>
-        <translation>Đóng hộp thoại</translation>
+        <translation type="obsolete">Đóng hộp thoại</translation>
     </message>
     <message>
         <source>Help</source>
-        <translation>Trợ giúp</translation>
+        <translation type="obsolete">Trợ giúp</translation>
     </message>
 </context>
 <context>
@@ -4811,7 +5341,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>&lt;p&gt;The SVG export function in Qgis has several problems due to bugs and deficiencies in the Qt4 svg code. Of note, text does not appear in the SVG file and there are problems with the map bounding box clipping other items such as the legend or scale bar.&lt;/p&gt;If you require a vector-based output file from Qgis it is suggested that you try printing to PostScript if the SVG output is not satisfactory.&lt;/p&gt;</source>
-        <translation>&lt;p&gt; Chức năng xuất SVG trong QGIS có một số vấn đề do lỗi và khiếm khuyết trong mã svg Qt4. Ghi chú: văn bản không xuất hiện trong tập tin SVG và có các trục trặc với việc ô ranh giới bản đồ cắt các nội dung khác như chú giải hoặc thước tỷ lệ.&lt;/p&gt;Nếu bản cần một tập tin xuất ra dựa trên vector từ QGIS, đề nghị là bạn hãy cố in ra PostScript nếu đầu ra SVG không hợp ý bạn.&lt;/p&gt;</translation>
+        <translation type="obsolete">&lt;p&gt; Chức năng xuất SVG trong QGIS có một số vấn đề do lỗi và khiếm khuyết trong mã svg Qt4. Ghi chú: văn bản không xuất hiện trong tập tin SVG và có các trục trặc với việc ô ranh giới bản đồ cắt các nội dung khác như chú giải hoặc thước tỷ lệ.&lt;/p&gt;Nếu bản cần một tập tin xuất ra dựa trên vector từ QGIS, đề nghị là bạn hãy cố in ra PostScript nếu đầu ra SVG không hợp ý bạn.&lt;/p&gt;</translation>
     </message>
     <message>
         <source>SVG Format</source>
@@ -5155,11 +5685,11 @@ p, li { white-space: pre-wrap; }
     <name>QgsComposerVectorLegend</name>
     <message>
         <source>Layers</source>
-        <translation>Các lớp</translation>
+        <translation type="obsolete">Các lớp</translation>
     </message>
     <message>
         <source>Group</source>
-        <translation>Nhóm</translation>
+        <translation type="obsolete">Nhóm</translation>
     </message>
     <message>
         <source>Legend</source>
@@ -5206,7 +5736,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Column 1</source>
-        <translation>Cột 1</translation>
+        <translation type="obsolete">Cột 1</translation>
     </message>
     <message>
         <source>New Item</source>
@@ -5215,6 +5745,18 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>Preview</source>
         <translation>Xem trước</translation>
+    </message>
+    <message>
+        <source>Layers</source>
+        <translation type="unfinished">Các lớp</translation>
+    </message>
+    <message>
+        <source>Group</source>
+        <translation type="unfinished">Nhóm</translation>
+    </message>
+    <message>
+        <source>ID</source>
+        <translation type="unfinished">ID</translation>
     </message>
 </context>
 <context>
@@ -5354,25 +5896,25 @@ Tốt nhất là bạn khởi động lại QGIS rồi chạy trình biên tập
     </message>
     <message>
         <source>Test connection</source>
-        <translation>Kiểm tra kết nối</translation>
+        <translation type="obsolete">Kiểm tra kết nối</translation>
     </message>
     <message>
         <source>Connection to </source>
-        <translation>Kết nối đến </translation>
+        <translation type="obsolete">Kết nối đến </translation>
     </message>
     <message>
         <source> was successfull</source>
-        <translation> đã thành công</translation>
+        <translation type="obsolete"> đã thành công</translation>
     </message>
     <message>
         <source>Connection failed - Check settings and try again </source>
-        <translation>Kết nối thất bại - Kiểm tra các thiết lập và thử lại </translation>
+        <translation type="obsolete">Kết nối thất bại - Kiểm tra các thiết lập và thử lại </translation>
     </message>
     <message>
         <source>General Interface Help:
 
 </source>
-        <translation>Trợ giúp Giao diện tổng quát:
+        <translation type="obsolete">Trợ giúp Giao diện tổng quát:
 </translation>
     </message>
 </context>
@@ -5384,39 +5926,39 @@ Tốt nhất là bạn khởi động lại QGIS rồi chạy trình biên tập
     </message>
     <message>
         <source>Connection Information</source>
-        <translation>Thông tin kết nối</translation>
+        <translation type="obsolete">Thông tin kết nối</translation>
     </message>
     <message>
         <source>Host</source>
-        <translation>Máy chủ</translation>
+        <translation type="obsolete">Máy chủ</translation>
     </message>
     <message>
         <source>Database</source>
-        <translation>CSDL</translation>
+        <translation type="obsolete">CSDL</translation>
     </message>
     <message>
         <source>Username</source>
-        <translation>Tên người dùng</translation>
+        <translation type="obsolete">Tên người dùng</translation>
     </message>
     <message>
         <source>Name</source>
-        <translation>Tên</translation>
+        <translation type="obsolete">Tên</translation>
     </message>
     <message>
         <source>Name of the new connection</source>
-        <translation>Tên của liên kết mới</translation>
+        <translation type="obsolete">Tên của liên kết mới</translation>
     </message>
     <message>
         <source>Password</source>
-        <translation>Mật mã</translation>
+        <translation type="obsolete">Mật mã</translation>
     </message>
     <message>
         <source>Test Connect</source>
-        <translation>Thử kết nối</translation>
+        <translation type="obsolete">Thử kết nối</translation>
     </message>
     <message>
         <source>Save Password</source>
-        <translation>Lưu mật mã</translation>
+        <translation type="obsolete">Lưu mật mã</translation>
     </message>
     <message>
         <source>OK</source>
@@ -5436,15 +5978,15 @@ Tốt nhất là bạn khởi động lại QGIS rồi chạy trình biên tập
     </message>
     <message>
         <source>Create a New PostGIS connection</source>
-        <translation>Tạo một liên kết PostGIS mới</translation>
+        <translation type="obsolete">Tạo một liên kết PostGIS mới</translation>
     </message>
     <message>
         <source>Port</source>
-        <translation>Port</translation>
+        <translation type="obsolete">Port</translation>
     </message>
     <message>
         <source>5432</source>
-        <translation>5432</translation>
+        <translation type="obsolete">5432</translation>
     </message>
 </context>
 <context>
@@ -5655,11 +6197,8 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-style:italic;&quot;&gt;&lt;span style=&quot; font-style:normal;&quot;&gt;(ghi chú: &amp;amp;copy; nhập ký hiệu bản quyền)&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message encoding="UTF-8">
-        <source>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Sans Serif&apos;; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:14pt;&quot;&gt;© QGIS 2006&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation></translation>
+        <source>© QGIS 2008</source>
+        <translation type="unfinished">© QGIS 2008</translation>
     </message>
 </context>
 <context>
@@ -5729,7 +6268,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Name:</source>
-        <translation>Tên:</translation>
+        <translation type="obsolete">Tên:</translation>
     </message>
     <message>
         <source>Ellipsoid:</source>
@@ -5745,7 +6284,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Parameters:</source>
-        <translation>Các tham số:</translation>
+        <translation type="obsolete">Các tham số:</translation>
     </message>
     <message>
         <source>Expected 
@@ -5775,19 +6314,19 @@ Parameter:</translation>
     </message>
     <message>
         <source>New</source>
-        <translation>Mới</translation>
+        <translation type="obsolete">Mới</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation>Lưu</translation>
+        <translation type="obsolete">Lưu</translation>
     </message>
     <message>
         <source>Delete</source>
-        <translation>Xóa</translation>
+        <translation type="obsolete">Xóa</translation>
     </message>
     <message>
         <source>Close</source>
-        <translation>Đóng</translation>
+        <translation type="obsolete">Đóng</translation>
     </message>
     <message>
         <source>Define</source>
@@ -5795,7 +6334,7 @@ Parameter:</translation>
     </message>
     <message>
         <source>You can define your own custom projection here. The definition must conform to the proj4 format for specifying a Spatial Reference System.</source>
-        <translation type="obsolete">Bạn có thể định nghĩa phép chiếu của riêng mình tại đây. Định nghĩa phải phù hợp với định dạng proj4 để chỉ định Hệ Tham chiếu Không gian.</translation>
+        <translation type="unfinished">Bạn có thể định nghĩa phép chiếu của riêng mình tại đây. Định nghĩa phải phù hợp với định dạng proj4 để chỉ định Hệ Tham chiếu Không gian.</translation>
     </message>
     <message>
         <source>Test</source>
@@ -5803,7 +6342,7 @@ Parameter:</translation>
     </message>
     <message>
         <source>Transform from WGS84 to the chosen projection</source>
-        <translation>Chuyển đổi từ WGS84 thành phép chiếu được chọn</translation>
+        <translation type="obsolete">Chuyển đổi từ WGS84 thành phép chiếu được chọn</translation>
     </message>
     <message>
         <source>Calculate</source>
@@ -5811,7 +6350,7 @@ Parameter:</translation>
     </message>
     <message>
         <source>Projected Corrdinate System</source>
-        <translation>Hệ tọa độ được quy chiếu</translation>
+        <translation type="obsolete">Hệ tọa độ được quy chiếu</translation>
     </message>
     <message>
         <source>Geographic / WGS84</source>
@@ -5819,22 +6358,22 @@ Parameter:</translation>
     </message>
     <message>
         <source>North:</source>
-        <translation>Bắc:</translation>
+        <translation type="obsolete">Bắc:</translation>
     </message>
     <message>
         <source>East:</source>
-        <translation>Đông:</translation>
+        <translation type="obsolete">Đông:</translation>
     </message>
     <message>
         <source>Use the text boxes below to test the projection definition you are creating. Enter a coordinate where both the lat/long and the projected result are known (for example by reading off a map). Then press the calculate button to see if the projection definition you are creating is accurate.</source>
-        <translation type="obsolete">Dùng các ô nhập chữ dưới đây để kiểm tra định nghĩa phép chiếu bạn đang tạo. Nhập một tọa độ mà bạn biết, cả tọa độ kinh/vĩ lẫn tọa độ khi được quy chiếu (ví dụ như đọc ra từ bản đồ). Sau đó nhấn vào nút tính toán để xem định nghĩa phép chiếu bạn đang tạo có chính xác không.</translation>
+        <translation type="unfinished">Dùng các ô nhập chữ dưới đây để kiểm tra định nghĩa phép chiếu bạn đang tạo. Nhập một tọa độ mà bạn biết, cả tọa độ kinh/vĩ lẫn tọa độ khi được quy chiếu (ví dụ như đọc ra từ bản đồ). Sau đó nhấn vào nút tính toán để xem định nghĩa phép chiếu bạn đang tạo có chính xác không.</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Sans Serif&apos;; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:&apos;Arial&apos;; font-size:10pt;&quot;&gt;You can define your own custom projection here. The definition must conform to the proj4 format for specifying a Spatial Reference System.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+        <translation type="obsolete">&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Sans Serif&apos;; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:&apos;Arial&apos;; font-size:10pt;&quot;&gt;Bạn có thể định nghĩa phép chiếu của riêng mình tại đây. Định nghĩa phải phù hợp với định dạng của proj4 để chỉ định một Hệ Tham chiếu Không gian.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
@@ -5844,10 +6383,42 @@ p, li { white-space: pre-wrap; }
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Sans Serif&apos;; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:&apos;Arial&apos;; font-size:10pt;&quot;&gt;Use the text boxes below to test the projection definition you are creating. Enter a coordinate where both the lat/long and the projected result are known (for example by reading off a map). Then press the calculate button to see if the projection definition you are creating is accurate.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+        <translation type="obsolete">&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Sans Serif&apos;; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:&apos;Arial&apos;; font-size:10pt;&quot;&gt;Sử dụng các ô văn bản dưới đây để kiểm tra phép chiếu mà bạn đang tạo. Nhập một tọa độ mà hệ kinh/vĩ độ và kết quả quy chiếu đều hiểu (ví dụ bằng cách đọc tọa độ từ một bản đồ). Sau đó bấm nút Tính toán để kiểm tra xem định nghĩa phép chiếu bạn đang tạo có chính xác không.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation type="unfinished">Tên</translation>
+    </message>
+    <message>
+        <source>Parameters</source>
+        <translation type="unfinished">Các tham số</translation>
+    </message>
+    <message>
+        <source>*</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>S</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>X</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Projected Coordinate System</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>North</source>
+        <translation type="unfinished">Bắc</translation>
+    </message>
+    <message>
+        <source>East</source>
+        <translation type="unfinished">Đông</translation>
     </message>
 </context>
 <context>
@@ -5921,7 +6492,7 @@ has failed. The database said:
     </message>
     <message>
         <source>Name</source>
-        <translation>Tên</translation>
+        <translation type="obsolete">Tên</translation>
     </message>
     <message>
         <source>Sql</source>
@@ -5929,43 +6500,43 @@ has failed. The database said:
     </message>
     <message>
         <source>Point layer</source>
-        <translation>Lớp kiểu điểm</translation>
+        <translation type="obsolete">Lớp kiểu điểm</translation>
     </message>
     <message>
         <source>Multi-point layer</source>
-        <translation>Lớp kiểu điểm đa</translation>
+        <translation type="obsolete">Lớp kiểu điểm đa</translation>
     </message>
     <message>
         <source>Linestring layer</source>
-        <translation>Lớp chuỗi đường (linestring)</translation>
+        <translation type="obsolete">Lớp chuỗi đường (linestring)</translation>
     </message>
     <message>
         <source>Multi-linestring layer</source>
-        <translation>Lớp chuỗi đường đa</translation>
+        <translation type="obsolete">Lớp chuỗi đường đa</translation>
     </message>
     <message>
         <source>Polygon layer</source>
-        <translation>Lớp vùng</translation>
+        <translation type="obsolete">Lớp vùng</translation>
     </message>
     <message>
         <source>Multi-polygon layer</source>
-        <translation>Lớp vùng đa</translation>
+        <translation type="obsolete">Lớp vùng đa</translation>
     </message>
     <message>
         <source>Mixed geometry layer</source>
-        <translation>Lớp hình học hỗn hợp</translation>
+        <translation type="obsolete">Lớp hình học hỗn hợp</translation>
     </message>
     <message>
         <source>Geometry collection layer</source>
-        <translation>Lớp tổng hợp hình học</translation>
+        <translation type="obsolete">Lớp tổng hợp hình học</translation>
     </message>
     <message>
         <source>Waiting for layer type</source>
-        <translation>Đang đợi kiểu lớp</translation>
+        <translation type="obsolete">Đang đợi kiểu lớp</translation>
     </message>
     <message>
         <source>Unknown layer type</source>
-        <translation>Kiểu lớp không biết</translation>
+        <translation type="obsolete">Kiểu lớp không biết</translation>
     </message>
     <message>
         <source>Connection to %1 on %2 failed. Either the database is down or your settings are incorrect.%3Check your username and password and try again.%4The database said:%5%6</source>
@@ -5973,7 +6544,54 @@ has failed. The database said:
     </message>
     <message>
         <source>double click to open PostgreSQL query builder</source>
-        <translation>nhắp chuột đúp để mở trình xây dựng phép truy vấn PostgreSQL</translation>
+        <translation type="obsolete">nhắp chuột đúp để mở trình xây dựng phép truy vấn PostgreSQL</translation>
+    </message>
+    <message>
+        <source>Wildcard</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>RegExp</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>All</source>
+        <translation type="unfinished">Tất cả</translation>
+    </message>
+    <message>
+        <source>Schema</source>
+        <translation type="unfinished">Schema</translation>
+    </message>
+    <message>
+        <source>Table</source>
+        <translation type="unfinished">Bảng</translation>
+    </message>
+    <message>
+        <source>Geometry column</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Accessible tables could not be determined</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Database connection was successful, but the accessible tables could not be determined.
+
+The error message from the database was:
+%1
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No accessible tables found</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Database connection was successful, but no accessible tables were found.
+
+Please verify that you have SELECT privilege on a table carrying PostGIS
+geometry.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -6032,23 +6650,86 @@ has failed. The database said:
     </message>
     <message>
         <source>Tables:</source>
-        <translation>Các bảng:</translation>
+        <translation type="obsolete">Các bảng:</translation>
     </message>
     <message>
         <source>Type</source>
-        <translation>Kiểu</translation>
+        <translation type="obsolete">Kiểu</translation>
     </message>
     <message>
         <source>Name</source>
-        <translation>Tên</translation>
+        <translation type="obsolete">Tên</translation>
     </message>
     <message>
         <source>Sql</source>
-        <translation>Sql</translation>
+        <translation type="obsolete">Sql</translation>
     </message>
     <message>
         <source>Encoding:</source>
-        <translation>Mã hóa:</translation>
+        <translation type="obsolete">Mã hóa:</translation>
+    </message>
+    <message>
+        <source>Search:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Search mode:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Search in columns:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Search options...</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QgsDbTableModel</name>
+    <message>
+        <source>Schema</source>
+        <translation type="unfinished">Schema</translation>
+    </message>
+    <message>
+        <source>Table</source>
+        <translation type="unfinished">Bảng</translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Geometry column</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sql</source>
+        <translation type="unfinished">Sql</translation>
+    </message>
+    <message>
+        <source>Point</source>
+        <translation type="unfinished">Điểm</translation>
+    </message>
+    <message>
+        <source>Multipoint</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Line</source>
+        <translation type="unfinished">Đường</translation>
+    </message>
+    <message>
+        <source>Multiline</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Polygon</source>
+        <translation type="unfinished">Vùng</translation>
+    </message>
+    <message>
+        <source>Multipolygon</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -6059,11 +6740,11 @@ has failed. The database said:
     </message>
     <message>
         <source>OK</source>
-        <translation>Đồng ý</translation>
+        <translation type="obsolete">Đồng ý</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation>Hủy bỏ</translation>
+        <translation type="obsolete">Hủy bỏ</translation>
     </message>
     <message>
         <source>New Item</source>
@@ -6125,7 +6806,19 @@ has failed. The database said:
     </message>
     <message>
         <source>&lt;h1&gt;Description&lt;/h1&gt;&lt;p&gt;Select a delimited text file containing x and y coordinates that you would like to use as a point layer and this plugin will do the job for you!&lt;/p&gt;&lt;p&gt;Use the layer name box to specify the legend name for the new layer. Use the delimiter box to specify what delimeter is used in your file (e.g. space, comma, tab or a regular expression in Perl style). After choosing a delimiter, press the parse button and select the columns containing the x and y values for the layer.&lt;/p&gt;</source>
-        <translation>&lt;h1&gt;Mô tả&lt;/h1&gt;&lt;p&gt;Chọn một tập tin văn bản phân tách cột chứa các tọa độ x và y mà bạn muốn dùng như một lớp kiểu điểm và phần mở rộng này sẽ thực hiện công việc cho bạn!&lt;/p&gt;&lt;p&gt;Sử dụng ô tên lớp để chỉ định tên chú giải cho lớp mới. Dùng ô phân tách cột để chỉ định ký tự phân tách cột nào được sử dụng trong tập tin của bạn (ví dụ khoảng trắng, dấu phẩy, dấu tab hoặc một biểu thức thông thường theo kiểu Perl). Sau khi chọn ký tự tách cột, bấm nút parse và chọn cột chứa các giá trị x và y cho lớp.&lt;/p&gt;</translation>
+        <translation type="obsolete">&lt;h1&gt;Mô tả&lt;/h1&gt;&lt;p&gt;Chọn một tập tin văn bản phân tách cột chứa các tọa độ x và y mà bạn muốn dùng như một lớp kiểu điểm và phần mở rộng này sẽ thực hiện công việc cho bạn!&lt;/p&gt;&lt;p&gt;Sử dụng ô tên lớp để chỉ định tên chú giải cho lớp mới. Dùng ô phân tách cột để chỉ định ký tự phân tách cột nào được sử dụng trong tập tin của bạn (ví dụ khoảng trắng, dấu phẩy, dấu tab hoặc một biểu thức thông thường theo kiểu Perl). Sau khi chọn ký tự tách cột, bấm nút parse và chọn cột chứa các giá trị x và y cho lớp.&lt;/p&gt;</translation>
+    </message>
+    <message>
+        <source>Description</source>
+        <translation type="unfinished">Mô tả</translation>
+    </message>
+    <message>
+        <source>Select a delimited text file containing a header row and one or more rows of x and y coordinates that you would like to use as a point layer and this plugin will do the job for you!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use the layer name box to specify the legend name for the new layer. Use the delimiter box to specify what delimeter is used in your file (e.g. space, comma, tab or a regular expression in Perl style). After choosing a delimiter, press the parse button and select the columns containing the x and y values for the layer.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -6331,13 +7024,6 @@ has failed. The database said:
         <translation>Duyệt...</translation>
     </message>
     <message>
-        <source>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Sans Serif&apos;; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;&gt;
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation></translation>
-    </message>
-    <message>
         <source>The delimiter is taken as is</source>
         <translation>Dấu phân tách cột được dùng như &quot;hiện có&quot;</translation>
     </message>
@@ -6369,6 +7055,21 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>Error</source>
         <translation>Lỗi</translation>
+    </message>
+</context>
+<context>
+    <name>QgsDetailedItemWidgetBase</name>
+    <message>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Heading Label</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Detail label</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -6780,11 +7481,11 @@ p, li { white-space: pre-wrap; }
     <name>QgsEditReservedWordsBase</name>
     <message>
         <source>Edit Reserved Words</source>
-        <translation>Chỉnh sửa các từ đặc biệt</translation>
+        <translation type="obsolete">Chỉnh sửa các từ đặc biệt</translation>
     </message>
     <message>
         <source>Status</source>
-        <translation>Trạng thái</translation>
+        <translation type="obsolete">Trạng thái</translation>
     </message>
     <message>
         <source>Column name</source>
@@ -6792,7 +7493,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Index</source>
-        <translation>Chỉ mục</translation>
+        <translation type="obsolete">Chỉ mục</translation>
     </message>
     <message>
         <source>This shapefile contains reserved words. These may affect the import into PostgreSQL. Edit the column names so none of the reserved words listed at the right are used. You may also change any column name if desired.</source>
@@ -6816,34 +7517,30 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Reserved Words</source>
-        <translation>Các từ đặc biệt</translation>
-    </message>
-    <message>
-        <source>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;/head&gt;&lt;body style=&quot; white-space: pre-wrap; font-family:Sans Serif; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;&gt;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Double click the Column Name column to change the name of the column.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation></translation>
+        <translation type="obsolete">Các từ đặc biệt</translation>
     </message>
     <message>
         <source>Column Name</source>
-        <translation>Tên cột</translation>
+        <translation type="obsolete">Tên cột</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;/head&gt;&lt;body style=&quot; white-space: pre-wrap; font-family:Sans Serif; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;&gt;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;This shapefile contains reserved words. These may affect the import into PostgreSQL. Edit the column names so none of the reserved words listed at the right are used (click on a Column Name entry to edit). You may also change any other column name if desired.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;/head&gt;&lt;body style=&quot; white-space: pre-wrap; font-family:Sans Serif; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;&gt;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Tập tin shape này chứa các từ đặc biệt. Điều này có thể ảnh hưởng đến việc nhập vào PostgreSQL. Chỉnh sửa các tên cột sao cho không có cột nào trùng với các từ đặc biệt liệt kê bên phải (nhắp chuột vào mục Tên cột để chỉnh sửa). Bạn cũng có thể thay đổi bất kỳ tên cột nào nếu muốn.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation type="obsolete">&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;/head&gt;&lt;body style=&quot; white-space: pre-wrap; font-family:Sans Serif; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;&gt;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Tập tin shape này chứa các từ đặc biệt. Điều này có thể ảnh hưởng đến việc nhập vào PostgreSQL. Chỉnh sửa các tên cột sao cho không có cột nào trùng với các từ đặc biệt liệt kê bên phải (nhắp chuột vào mục Tên cột để chỉnh sửa). Bạn cũng có thể thay đổi bất kỳ tên cột nào nếu muốn.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
 </context>
 <context>
     <name>QgsEditReservedWordsDialog</name>
     <message>
         <source>Status</source>
-        <translation>Trạng thái</translation>
+        <translation type="obsolete">Trạng thái</translation>
     </message>
     <message>
         <source>Column Name</source>
-        <translation>Tên cột</translation>
+        <translation type="obsolete">Tên cột</translation>
     </message>
     <message>
         <source>Index</source>
-        <translation>Chỉ mục</translation>
+        <translation type="obsolete">Chỉ mục</translation>
     </message>
 </context>
 <context>
@@ -6857,23 +7554,15 @@ p, li { white-space: pre-wrap; }
     <name>QgsFillStyleWidgetBase</name>
     <message>
         <source>Form1</source>
-        <translation>Mẫu 1</translation>
+        <translation type="obsolete">Mẫu 1</translation>
     </message>
     <message>
         <source>Fill Style</source>
-        <translation>Kiểu tô màu</translation>
-    </message>
-    <message>
-        <source>PolyStyleWidget</source>
-        <translation></translation>
+        <translation type="obsolete">Kiểu tô màu</translation>
     </message>
     <message>
         <source>Colour:</source>
-        <translation>Màu:</translation>
-    </message>
-    <message>
-        <source>col</source>
-        <translation></translation>
+        <translation type="obsolete">Màu:</translation>
     </message>
 </context>
 <context>
@@ -7143,6 +7832,16 @@ p, li { white-space: pre-wrap; }
         <source>Error uploading data</source>
         <translation>Lỗi khi đang tải dữ liệu lên</translation>
     </message>
+    <message>
+        <source>Could not convert data from %1!
+
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Error converting data</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QgsGPSPluginGui</name>
@@ -7161,6 +7860,78 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>Select file and format to import</source>
         <translation>Chọn tập tin và định dạng để nhập</translation>
+    </message>
+    <message>
+        <source>Waypoints</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Routes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>GPX is the %1, which is used to store information about waypoints, routes, and tracks.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>GPS eXchange file format</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select a GPX file and then select the feature types that you want to load.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>This tool will help you download data from a GPS device.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Choose your GPS device, the port it is connected to, the feature type you want to download, a name for your new layer, and the GPX file where you want to store the data.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>If your device isn&apos;t listed, or if you want to change some settings, you can also edit the devices.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>This tool uses the program GPSBabel (%1) to transfer the data.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>This requires that you have GPSBabel installed where QGIS can find it.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>This tool will help you upload data from a GPX layer to a GPS device.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Choose the layer you want to upload, the device you want to upload it to, and the port your device is connected to.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>QGIS can only load GPX files by itself, but many other formats can be converted to GPX using GPSBabel (%1).</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select a GPS file format and the file that you want to import, the feature type that you want to use, a GPX filename that you want to save the converted file as, and a name for the new layer.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>All file formats can not store waypoints, routes, and tracks, so some feature types may be disabled for some file formats.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>QGIS can perform conversions of GPX files, by using GPSBabel (%1) to perform the conversions.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Select a GPX input file name, the type of conversion you want to perform, a GPX filename that you want to save the converted file as, and a name for the new layer created from the result.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -7351,7 +8122,7 @@ p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Sans Serif&apos;; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;&gt;
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:&apos;Arial&apos;; font-size:12pt;&quot;&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;GPX is the &lt;/span&gt;&lt;a href=&quot;http://www.topografix.com/gpx.asp&quot;&gt;&lt;span style=&quot; font-size:10pt; text-decoration: underline; color:#0000ff;&quot;&gt;GPS eXchange file format&lt;/span&gt;&lt;/a&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;, which is used to store information about waypoints, routes, and tracks.&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:&apos;Arial&apos;; font-size:10pt;&quot;&gt;Select a GPX file and then select the feature types that you want to load.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;(new line)
+        <translation type="obsolete">&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;(new line)
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Sans Serif&apos;; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;&gt;
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:&apos;Arial&apos;; font-size:12pt;&quot;&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;GPX là &lt;/span&gt;&lt;a href=&quot;http://www.topografix.com/gpx.asp&quot;&gt;&lt;span style=&quot; font-size:10pt; text-decoration: underline; color:#0000ff;&quot;&gt;định dạng tập tin GPS eXchange&lt;/span&gt;&lt;/a&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;, được dùng để lưu trữ thông tin về điểm, lộ trình và đường đi.&lt;/span&gt;&lt;/p&gt;
@@ -7367,7 +8138,7 @@ p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Sans Serif&apos;; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;&gt;
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:&apos;Arial&apos;; font-size:12pt;&quot;&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;QGIS can only load GPX files by itself, but many other formats can be converted to GPX using GPSBabel (&lt;/span&gt;&lt;a href=&quot;http://gpsbabel.sf.net&quot;&gt;&lt;span style=&quot; font-size:10pt; text-decoration: underline; color:#0000ff;&quot;&gt;http://gpsbabel.sf.net&lt;/span&gt;&lt;/a&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;). This requires that you have GPSBabel installed where QGIS can find it.&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:&apos;Arial&apos;; font-size:10pt;&quot;&gt;Select a GPS file format and the file that you want to import, the feature type that you want to use, a GPX filename that you want to save the converted file as, and a name for the new layer. All file formats can not store waypoints, routes, and tracks, so some feature types may be disabled for some file formats.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;(new line)
+        <translation type="obsolete">&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;(new line)
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Sans Serif&apos;; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;&gt;
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:&apos;Arial&apos;; font-size:12pt;&quot;&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;QGIS chỉ có thể nạp các tập tin GPX, nhưng nhiều định dạng khác có thể đổi thành GPX bằng cách dùng GPSBabel (&lt;/span&gt;&lt;a href=&quot;http://gpsbabel.sf.net&quot;&gt;&lt;span style=&quot; font-size:10pt; text-decoration: underline; color:#0000ff;&quot;&gt;http://gpsbabel.sf.net&lt;/span&gt;&lt;/a&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;). Điều này đòi hỏi bạn phải cài đặt GPSBabel ở nơi QGIS có thể tìm thấy nó.&lt;/span&gt;&lt;/p&gt;
@@ -7383,7 +8154,7 @@ p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Sans Serif&apos;; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;&gt;
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:&apos;Arial&apos;; font-size:12pt;&quot;&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;This tool will help you download data from a GPS device. Choose your GPS device, the port it is connected to, the feature type you want to download, a name for your new layer, and the GPX file where you want to store the data. If your device isn&apos;t listed, or if you want to change some settings, you can also edit the devices.&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:&apos;Arial&apos;; font-size:10pt;&quot;&gt;This tool uses the program GPSBabel (&lt;a href=&quot;http://gpsbabel.sf.net&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;http://gpsbabel.sf.net&lt;/span&gt;&lt;/a&gt;) to transfer the data. If you don&apos;t have GPSBabel installed where QGIS can find it, this tool will not work.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;(new line)
+        <translation type="obsolete">&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;(new line)
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Sans Serif&apos;; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;&gt;
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:&apos;Arial&apos;; font-size:12pt;&quot;&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;Công cụ này sẽ giúp bạn tải dữ liệu xuống từ một máy định vị. Chọn thiết bị GPS, cổng nó kết nối vào, kiểu thuộc tính bạn muốn tải, tên cho lớp mới, và tập tin GPX nơi bạn muốn lưu dữ liệu. Nếu thiết bị của bạn không được liệt kê, hoặc nếu bạn muốn thay đổi một số thiết lập, bạn cũng có thể chỉnh sửa các thiết bị.&lt;/span&gt;&lt;/p&gt;
@@ -7395,12 +8166,35 @@ p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Sans Serif&apos;; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;&gt;
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:&apos;Arial&apos;; font-size:12pt;&quot;&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;This tool will help you upload data from a GPX layer to a GPS device. Choose the layer you want to upload, the device you want to upload it to, and the port your device is connected to. If your device isn&apos;t listed, or if you want to change some settings, you can also edit the devices.&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:&apos;Arial&apos;; font-size:10pt;&quot;&gt;This tool uses the program GPSBabel (&lt;a href=&quot;http://gpsbabel.sf.net&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;http://gpsbabel.sf.net&lt;/span&gt;&lt;/a&gt;) to transfer the data. If you don&apos;t have GPSBabel installed where QGIS can find it, this tool will not work.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;(new line)
+        <translation type="obsolete">&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;(new line)
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Sans Serif&apos;; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;&gt;
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:&apos;Arial&apos;; font-size:12pt;&quot;&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;Công cụ này sẽ giúp bạn tải dữ liệu từ một lớp GPX lên một thiết bị GPS. Chọn lớp bạn muốn tải dữ liệu lên, thiết bị mà bạn muốn tải dữ liệu vào, và cổng mà thiết bị của bạn kết nối vào. Nếu thiết bị của bạn không được liệt kê, hoặc nếu bạn muốn thay đổi một số thiết lập, bạn cũng có thể chỉnh sửa các thiết bị.&lt;/span&gt;&lt;/p&gt;
 
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:&apos;Arial&apos;; font-size:10pt;&quot;&gt;Công cụ này sử dụng chương trình GPSBabel (&lt;a href=&quot;http://gpsbabel.sf.net&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;http://gpsbabel.sf.net&lt;/span&gt;&lt;/a&gt;) để chuyển dữ liệu. Nếu bạn không cài đặt GPSBabel ở chỗ QGIS có thể tìm thấy nó, công cụ này sẽ không hoạt động được.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Sans Serif&apos;; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>(Note: Selecting correct file type in browser dialog important!)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>GPX Conversions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Conversion:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>GPX input file:</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -7422,11 +8216,23 @@ p, li { white-space: pre-wrap; }
     <name>QgsGeomTypeDialog</name>
     <message>
         <source>Name</source>
-        <translation>Tên</translation>
+        <translation type="obsolete">Tên</translation>
     </message>
     <message>
         <source>Type</source>
-        <translation>Kiểu</translation>
+        <translation type="obsolete">Kiểu</translation>
+    </message>
+    <message>
+        <source>Real</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Integer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>String</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -7465,15 +8271,15 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Attributes:</source>
-        <translation>Thuộc tính:</translation>
+        <translation type="obsolete">Thuộc tính:</translation>
     </message>
     <message>
         <source>Add</source>
-        <translation>Thêm</translation>
+        <translation type="obsolete">Thêm</translation>
     </message>
     <message>
         <source>Column 1</source>
-        <translation>Cột 1</translation>
+        <translation type="obsolete">Cột 1</translation>
     </message>
     <message>
         <source>New Item</source>
@@ -7481,11 +8287,35 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Remove</source>
-        <translation>Loại bỏ</translation>
+        <translation type="obsolete">Loại bỏ</translation>
     </message>
     <message>
         <source>File Format:</source>
-        <translation>Định dạng tập tin:</translation>
+        <translation type="obsolete">Định dạng tập tin:</translation>
+    </message>
+    <message>
+        <source>File format</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Attributes</source>
+        <translation type="unfinished">Các Thuộc tính</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation type="unfinished">Tên</translation>
+    </message>
+    <message>
+        <source>Remove selected row</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>...</source>
+        <translation type="unfinished">...</translation>
+    </message>
+    <message>
+        <source>Add values manually</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -7518,7 +8348,35 @@ p, li { white-space: pre-wrap; }
     <name>QgsGeorefPluginGui</name>
     <message>
         <source>Error</source>
-        <translation type="obsolete">Lỗi</translation>
+        <translation type="unfinished">Lỗi</translation>
+    </message>
+    <message>
+        <source>Choose a raster file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Raster files (*.*)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The selected file is not a valid raster file.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>World file exists</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;p&gt;The selected file already seems to have a </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>world file! Do you want to replace it with the </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>new world file?&lt;/p&gt;</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -7735,15 +8593,15 @@ Muster</translation>
     </message>
     <message>
         <source>Classification Field:</source>
-        <translation>Trường phân loại:</translation>
+        <translation type="obsolete">Trường phân loại:</translation>
     </message>
     <message>
         <source>Mode:</source>
-        <translation>Chế độ:</translation>
+        <translation type="obsolete">Chế độ:</translation>
     </message>
     <message>
         <source>Number of Classes:</source>
-        <translation>Số lớp:</translation>
+        <translation type="obsolete">Số lớp:</translation>
     </message>
     <message>
         <source>Delete class</source>
@@ -7752,6 +8610,18 @@ Muster</translation>
     <message>
         <source>Classify</source>
         <translation>Phân loại</translation>
+    </message>
+    <message>
+        <source>Classification field</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mode</source>
+        <translation type="unfinished">Chế độ</translation>
+    </message>
+    <message>
+        <source>Number of classes</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -9440,7 +10310,7 @@ tại dòng </translation>
     </message>
     <message>
         <source>Could not add raster layer: </source>
-        <translation>Không thể thêm lớp raster: </translation>
+        <translation type="obsolete">Không thể thêm lớp raster: </translation>
     </message>
 </context>
 <context>
@@ -9690,6 +10560,14 @@ tại dòng </translation>
         <source> column </source>
         <translation>cột</translation>
     </message>
+    <message>
+        <source>Modules Tree</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Modules List</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QgsGrassToolsBase</name>
@@ -9742,10 +10620,29 @@ tại dòng </translation>
     </message>
 </context>
 <context>
+    <name>QgsGridMakerPluginGui</name>
+    <message>
+        <source>QGIS - Grid Maker</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Please enter the file name before pressing OK!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Choose a filename to save under</source>
+        <translation type="unfinished">Chọn một tên tập tin để lưu</translation>
+    </message>
+    <message>
+        <source>ESRI Shapefile (*.shp)</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>QgsGridMakerPluginGuiBase</name>
     <message>
         <source>QGIS Plugin Template</source>
-        <translation>Mẫu Plugin của QGIS</translation>
+        <translation type="obsolete">Mẫu Plugin của QGIS</translation>
     </message>
     <message>
         <source>&amp;OK</source>
@@ -9778,15 +10675,15 @@ tại dòng </translation>
     </message>
     <message>
         <source>#000.00000; </source>
-        <translation>#000.00000; </translation>
+        <translation type="obsolete">#000.00000; </translation>
     </message>
     <message>
         <source>Latitude:</source>
-        <translation>Vĩ độ:</translation>
+        <translation type="obsolete">Vĩ độ:</translation>
     </message>
     <message>
         <source>Longitude:</source>
-        <translation>Kinh độ:</translation>
+        <translation type="obsolete">Kinh độ:</translation>
     </message>
     <message>
         <source>End point (Upper Right)</source>
@@ -9806,15 +10703,15 @@ tại dòng </translation>
     </message>
     <message>
         <source>Latitude Interval:</source>
-        <translation>Theo vĩ độ:</translation>
+        <translation type="obsolete">Theo vĩ độ:</translation>
     </message>
     <message>
         <source>Longitude Interval:</source>
-        <translation>Theo kinh độ:</translation>
+        <translation type="obsolete">Theo kinh độ:</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;/head&gt;&lt;body style=&quot; white-space: pre-wrap; font-family:Sans Serif; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;&gt;&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:Arial; font-size:11pt;&quot;&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;This plugin will help you to build a graticule shapefile that you can use as an overlay within your qgis map viewer.&lt;/span&gt;&lt;/p&gt;&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:Arial; font-size:10pt;&quot;&gt;Please enter all units in decimal degrees&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;/head&gt;&lt;body style=&quot; white-space: pre-wrap; font-family:Sans Serif; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;&gt;&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:Arial; font-size:11pt;&quot;&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;Phần mở rộng này sẽ giúp bạn tạo một lưới tọa độ định dạng shapefile để chồng lên vùng xem bản đồ trong QGIS.&lt;/span&gt;&lt;/p&gt;&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:Arial; font-size:10pt;&quot;&gt;Hãy nhập tất cả các đơn vị tính theo độ thập phân&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation type="obsolete">&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;/head&gt;&lt;body style=&quot; white-space: pre-wrap; font-family:Sans Serif; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;&gt;&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:Arial; font-size:11pt;&quot;&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;Phần mở rộng này sẽ giúp bạn tạo một lưới tọa độ định dạng shapefile để chồng lên vùng xem bản đồ trong QGIS.&lt;/span&gt;&lt;/p&gt;&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:Arial; font-size:10pt;&quot;&gt;Hãy nhập tất cả các đơn vị tính theo độ thập phân&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Type</source>
@@ -9826,7 +10723,7 @@ tại dòng </translation>
     </message>
     <message>
         <source>Line</source>
-        <translation>Đường</translation>
+        <translation type="obsolete">Đường</translation>
     </message>
     <message>
         <source>Polygon</source>
@@ -9842,7 +10739,7 @@ tại dòng </translation>
     </message>
     <message>
         <source>Graticle size (units in degrees)</source>
-        <translation>Kích thước lưới (đơn vị theo độ)</translation>
+        <translation type="obsolete">Kích thước lưới (đơn vị theo độ)</translation>
     </message>
     <message>
         <source>Output (shape) file</source>
@@ -9851,6 +10748,38 @@ tại dòng </translation>
     <message>
         <source>Save As...</source>
         <translation>Lưu thành...</translation>
+    </message>
+    <message>
+        <source>QGIS Graticule Creator</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Graticle size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Y Interval:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>X Interval:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Y</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>X</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Sans Serif&apos;; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:&apos;Arial&apos;; font-size:11pt;&quot;&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;This plugin will help you to build a graticule shapefile that you can use as an overlay within your qgis map viewer.&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:&apos;Arial&apos;; font-size:10pt;&quot;&gt;Please enter all units in decimal degrees&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -9941,8 +10870,12 @@ tại dòng </translation>
         <source>Network timed out after %1 seconds of inactivity.
 This may be a problem in your network connection or at the WMS server.</source>
         <translation type="obsolete">
+        
         </translation>
     </message>
+</context>
+<context>
+    <name>QgsIDWInterpolatorDialogBase</name>
 </context>
 <context>
     <name>QgsIdentifyResults</name>
@@ -10007,6 +10940,23 @@ This may be a problem in your network connection or at the WMS server.</source>
     </message>
 </context>
 <context>
+    <name>QgsInterpolationDialog</name>
+</context>
+<context>
+    <name>QgsInterpolationDialogBase</name>
+    <message>
+        <source>Output</source>
+        <translation type="obsolete">Đầu ra</translation>
+    </message>
+    <message>
+        <source>...</source>
+        <translation type="obsolete">...</translation>
+    </message>
+</context>
+<context>
+    <name>QgsInterpolationPlugin</name>
+</context>
+<context>
     <name>QgsLUDialogBase</name>
     <message>
         <source>Enter class bounds</source>
@@ -10022,11 +10972,11 @@ This may be a problem in your network connection or at the WMS server.</source>
     </message>
     <message>
         <source>OK</source>
-        <translation>Đồng ý</translation>
+        <translation type="obsolete">Đồng ý</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation>Hủy bỏ</translation>
+        <translation type="obsolete">Hủy bỏ</translation>
     </message>
     <message>
         <source>Upper value</source>
@@ -10045,11 +10995,11 @@ This may be a problem in your network connection or at the WMS server.</source>
     </message>
     <message>
         <source>Field containing label:</source>
-        <translation>Trường dùng làm nhãn:</translation>
+        <translation type="obsolete">Trường dùng làm nhãn:</translation>
     </message>
     <message>
         <source>Default label:</source>
-        <translation>Nhãn mặc định:</translation>
+        <translation type="obsolete">Nhãn mặc định:</translation>
     </message>
     <message>
         <source>Preview:</source>
@@ -10061,7 +11011,7 @@ This may be a problem in your network connection or at the WMS server.</source>
     </message>
     <message>
         <source>Font Style</source>
-        <translation>Kiểu Phông chữ</translation>
+        <translation type="obsolete">Kiểu Phông chữ</translation>
     </message>
     <message>
         <source>Font</source>
@@ -10089,7 +11039,7 @@ This may be a problem in your network connection or at the WMS server.</source>
     </message>
     <message>
         <source>Colour</source>
-        <translation>Màu</translation>
+        <translation type="obsolete">Màu</translation>
     </message>
     <message>
         <source>Position</source>
@@ -10097,11 +11047,11 @@ This may be a problem in your network connection or at the WMS server.</source>
     </message>
     <message>
         <source>X Offset (pts):</source>
-        <translation>Độ dịch theo X (pts):</translation>
+        <translation type="obsolete">Độ dịch theo X (pts):</translation>
     </message>
     <message>
         <source>Y Offset (pts):</source>
-        <translation>Độ dịch theo Y (pts):</translation>
+        <translation type="obsolete">Độ dịch theo Y (pts):</translation>
     </message>
     <message>
         <source>Offset units are in ...</source>
@@ -10113,7 +11063,7 @@ This may be a problem in your network connection or at the WMS server.</source>
     </message>
     <message>
         <source>Buffer Labels?</source>
-        <translation>Đệm cho nhãn không?</translation>
+        <translation type="obsolete">Đệm cho nhãn không?</translation>
     </message>
     <message>
         <source>Size:</source>
@@ -10173,7 +11123,7 @@ This may be a problem in your network connection or at the WMS server.</source>
     </message>
     <message>
         <source>Angle (deg):</source>
-        <translation>Góc (độ):</translation>
+        <translation type="obsolete">Góc (độ):</translation>
     </message>
     <message encoding="UTF-8">
         <source>°</source>
@@ -10185,39 +11135,39 @@ This may be a problem in your network connection or at the WMS server.</source>
     </message>
     <message>
         <source>Data Defined Style</source>
-        <translation>Kiểu được định nghĩa theo dữ liệu</translation>
+        <translation type="obsolete">Kiểu được định nghĩa theo dữ liệu</translation>
     </message>
     <message>
         <source>&amp;Font family:</source>
-        <translation>&amp;Họ phông chữ:</translation>
+        <translation type="obsolete">&amp;Họ phông chữ:</translation>
     </message>
     <message>
         <source>&amp;Italic:</source>
-        <translation>&amp;Nghiêng:</translation>
+        <translation type="obsolete">&amp;Nghiêng:</translation>
     </message>
     <message>
         <source>&amp;Underline:</source>
-        <translation>&amp;Gạch dưới:</translation>
+        <translation type="obsolete">&amp;Gạch dưới:</translation>
     </message>
     <message>
         <source>&amp;Bold:</source>
-        <translation>Đậ&amp;m:</translation>
+        <translation type="obsolete">Đậ&amp;m:</translation>
     </message>
     <message>
         <source>&amp;Size:</source>
-        <translation>&amp;Kích thước:</translation>
+        <translation type="obsolete">&amp;Kích thước:</translation>
     </message>
     <message>
         <source>X Coordinate:</source>
-        <translation>Tọa độ X:</translation>
+        <translation type="obsolete">Tọa độ X:</translation>
     </message>
     <message>
         <source>Y Coordinate:</source>
-        <translation>Tọa độ Y:</translation>
+        <translation type="obsolete">Tọa độ Y:</translation>
     </message>
     <message>
         <source>Placement:</source>
-        <translation>Nơi đặt:</translation>
+        <translation type="obsolete">Nơi đặt:</translation>
     </message>
     <message>
         <source>&amp;Colour:</source>
@@ -10241,7 +11191,7 @@ This may be a problem in your network connection or at the WMS server.</source>
     </message>
     <message>
         <source>Font Alignment</source>
-        <translation>Canh thẳng phông</translation>
+        <translation type="obsolete">Canh thẳng phông</translation>
     </message>
     <message>
         <source>Placement</source>
@@ -10261,23 +11211,126 @@ This may be a problem in your network connection or at the WMS server.</source>
     </message>
     <message>
         <source>Data Defined Alignment</source>
-        <translation>Canh thẳng xác định theo dữ liệu</translation>
+        <translation type="obsolete">Canh thẳng xác định theo dữ liệu</translation>
     </message>
     <message>
         <source>Data Defined Buffer</source>
-        <translation>Đệm xác định theo dữ liệu</translation>
+        <translation type="obsolete">Đệm xác định theo dữ liệu</translation>
     </message>
     <message>
         <source>Data Defined Position</source>
-        <translation>Vị trí xác định theo dữ liệu</translation>
+        <translation type="obsolete">Vị trí xác định theo dữ liệu</translation>
     </message>
     <message>
         <source>Source</source>
-        <translation>Nguồn</translation>
+        <translation type="obsolete">Nguồn</translation>
     </message>
     <message>
         <source>Size Units:</source>
-        <translation>Đơn vị kích thước:</translation>
+        <translation type="obsolete">Đơn vị kích thước:</translation>
+    </message>
+    <message>
+        <source>Field containing label</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Default label</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Data defined style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Data defined alignment</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Data defined buffer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Data defined position</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Font transparency</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Color</source>
+        <translation type="unfinished">Màu</translation>
+    </message>
+    <message>
+        <source>Angle (deg)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Buffer labels?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Buffer size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Transparency</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>X Offset (pts)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Y Offset (pts)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Font family</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Bold</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Italic</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Underline</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Size units</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>X Coordinate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Y Coordinate</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QgsLayerProjectionSelector</name>
+    <message>
+        <source>Define this layer&apos;s projection:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>This layer appears to have no projection specification.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>By default, this layer will now have its projection set to that of the project, but you may override this by selecting a different projection below.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -10303,7 +11356,7 @@ This may be a problem in your network connection or at the WMS server.</source>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;/head&gt;&lt;body style=&quot; white-space: pre-wrap; font-family:Sans Serif; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;&gt;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;Define this layer&apos;s projection:&lt;/span&gt;&lt;/p&gt;&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;/p&gt;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;This layer appears to have no projection specification. By default, this layer will now have its projection set to that of the project, but you may override this by selecting a different projection below.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;/head&gt;&lt;body style=&quot; white-space: pre-wrap; font-family:Sans Serif; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;&gt;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;Định nghĩa phép chiếu của lớp này:&lt;/span&gt;&lt;/p&gt;&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;/p&gt;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Lớp này không có thông tin về phép chiếu. Theo mặc định, phép chiếu của lớp này sẽ được thiết lập theo dự án hiện tại, nhưng bạn có thể ghi đè phép chiếu này bằng cách chọn một phép chiếu khác dưới đây.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation type="obsolete">&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;/head&gt;&lt;body style=&quot; white-space: pre-wrap; font-family:Sans Serif; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;&gt;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;Định nghĩa phép chiếu của lớp này:&lt;/span&gt;&lt;/p&gt;&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;/p&gt;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Lớp này không có thông tin về phép chiếu. Theo mặc định, phép chiếu của lớp này sẽ được thiết lập theo dự án hiện tại, nhưng bạn có thể ghi đè phép chiếu này bằng cách chọn một phép chiếu khác dưới đây.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
 </context>
 <context>
@@ -10588,51 +11641,55 @@ This may be a problem in your network connection or at the WMS server.</source>
         <source>Filling the attribute table has been stopped because there was no more virtual memory left</source>
         <translation>Việc nhập vào bảng thuộc tính đã bị ngưng do không còn bộ nhớ ảo</translation>
     </message>
+    <message>
+        <source>Layer attribute table contains unsupported datatype(s)</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QgsLineStyleDialogBase</name>
     <message>
         <source>Select a line style</source>
-        <translation>Chọn một kiểu đường</translation>
+        <translation type="obsolete">Chọn một kiểu đường</translation>
     </message>
     <message>
         <source>Styles</source>
-        <translation>Kiểu</translation>
+        <translation type="obsolete">Kiểu</translation>
     </message>
     <message>
         <source>Ok</source>
-        <translation>Đồng ý</translation>
+        <translation type="obsolete">Đồng ý</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation>Hủy bỏ</translation>
+        <translation type="obsolete">Hủy bỏ</translation>
     </message>
 </context>
 <context>
     <name>QgsLineStyleWidgetBase</name>
     <message>
         <source>Form2</source>
-        <translation>Mẫu 2</translation>
+        <translation type="obsolete">Mẫu 2</translation>
     </message>
     <message>
         <source>Outline Style</source>
-        <translation>Kiểu đường viền</translation>
+        <translation type="obsolete">Kiểu đường viền</translation>
     </message>
     <message>
         <source>Width:</source>
-        <translation>Chiều rộng:</translation>
+        <translation type="obsolete">Chiều rộng:</translation>
     </message>
     <message>
         <source>Colour:</source>
-        <translation>Màu:</translation>
+        <translation type="obsolete">Màu:</translation>
     </message>
     <message>
         <source>LineStyleWidget</source>
-        <translation>LineStyleWidget</translation>
+        <translation type="obsolete">LineStyleWidget</translation>
     </message>
     <message>
         <source>col</source>
-        <translation>cột</translation>
+        <translation type="obsolete">cột</translation>
     </message>
 </context>
 <context>
@@ -10722,6 +11779,42 @@ This may be a problem in your network connection or at the WMS server.</source>
         <source>&amp;Properties</source>
         <translation type="obsolete">&amp;Các đặc điểm</translation>
     </message>
+    <message>
+        <source>%1 at line %2 column %3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>could not open user database</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>style %1 not found in database</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>User database could not be opened.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The style table could not be created.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The style %1 was saved to database</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The style %1 was updated in the database.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The style %1 could not be updated in the database.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The style %1 could not be inserted into database.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QgsMapToolIdentify</name>
@@ -10737,6 +11830,7 @@ This may be a problem in your network connection or at the WMS server.</source>
         <source>- %1 features found</source>
         <comment>Identify results window title</comment>
         <translation type="obsolete">
+        
         </translation>
     </message>
     <message>
@@ -10748,6 +11842,17 @@ This may be a problem in your network connection or at the WMS server.</source>
 %2</source>
         <translation>Kết quả nhận diện WMS đối với %1
 %2</translation>
+    </message>
+</context>
+<context>
+    <name>QgsMapToolSplitFeatures</name>
+    <message>
+        <source>Split error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>An error occured during feature splitting</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -10982,27 +12087,27 @@ Bạn có muốn ghi đè nó?</translation>
     <name>QgsMarkerDialogBase</name>
     <message>
         <source>Choose a marker symbol</source>
-        <translation>Chọn biểu tượng chỉ dấu</translation>
+        <translation type="obsolete">Chọn biểu tượng chỉ dấu</translation>
     </message>
     <message>
         <source>Directory</source>
-        <translation>Thư mục</translation>
+        <translation type="obsolete">Thư mục</translation>
     </message>
     <message>
         <source>...</source>
-        <translation>...</translation>
+        <translation type="obsolete">...</translation>
     </message>
     <message>
         <source>Ok</source>
-        <translation>Đồng ý</translation>
+        <translation type="obsolete">Đồng ý</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation>Hủy bỏ</translation>
+        <translation type="obsolete">Hủy bỏ</translation>
     </message>
     <message>
         <source>New Item</source>
-        <translation>Mục mới</translation>
+        <translation type="obsolete">Mục mới</translation>
     </message>
 </context>
 <context>
@@ -11041,6 +12146,10 @@ Bạn có muốn ghi đè nó?</translation>
     <message>
         <source>Cl&amp;ose</source>
         <translation>Đón&amp;g</translation>
+    </message>
+    <message>
+        <source>Segments</source>
+        <translation type="unfinished">Các đoạn</translation>
     </message>
 </context>
 <context>
@@ -11103,63 +12212,63 @@ Bạn có muốn ghi đè nó?</translation>
     <name>QgsMySQLProvider</name>
     <message>
         <source>Unable to access relation</source>
-        <translation>Không thể truy cập mối liên hệ</translation>
+        <translation type="obsolete">Không thể truy cập mối liên hệ</translation>
     </message>
     <message>
         <source>Unable to access the </source>
-        <translation>Không thể truy cập vào </translation>
+        <translation type="obsolete">Không thể truy cập vào </translation>
     </message>
     <message>
         <source> relation.
 The error message from the database was:
 </source>
-        <translation> mối liên hệ.
+        <translation type="obsolete"> mối liên hệ.
 Thông báo lỗi từ CSDL là:
 </translation>
     </message>
     <message>
         <source>No GEOS Support!</source>
-        <translation>Không có hỗ trợ GEOS!</translation>
+        <translation type="obsolete">Không có hỗ trợ GEOS!</translation>
     </message>
     <message>
         <source>Your PostGIS installation has no GEOS support.
 Feature selection and identification will not work properly.
 Please install PostGIS with GEOS support (http://geos.refractions.net)</source>
-        <translation>Cài đặt PostGIS của bạn không có hỗ trợ GEOS.
+        <translation type="obsolete">Cài đặt PostGIS của bạn không có hỗ trợ GEOS.
 Phép chọn và nhận diện thuộc tính sẽ không làm việc đúng đắn.
 Vui lòng cài đặt PostGIS có sự hỗ trợ của GEOS (http://geos.refractions.net)</translation>
     </message>
     <message>
         <source>Save layer as...</source>
-        <translation>Lưu lớp thành...</translation>
+        <translation type="obsolete">Lưu lớp thành...</translation>
     </message>
     <message>
         <source>Error</source>
-        <translation>Lỗi</translation>
+        <translation type="obsolete">Lỗi</translation>
     </message>
     <message>
         <source>Error creating field </source>
-        <translation>Lỗi khi tạo trường </translation>
+        <translation type="obsolete">Lỗi khi tạo trường </translation>
     </message>
     <message>
         <source>Layer creation failed</source>
-        <translation>Tạo lớp thất bại</translation>
+        <translation type="obsolete">Tạo lớp thất bại</translation>
     </message>
     <message>
         <source>Error creating shapefile</source>
-        <translation>Lỗi khi tạo tập tin shape</translation>
+        <translation type="obsolete">Lỗi khi tạo tập tin shape</translation>
     </message>
     <message>
         <source>The shapefile could not be created (</source>
-        <translation>Không thể tạo tập tin shape (</translation>
+        <translation type="obsolete">Không thể tạo tập tin shape (</translation>
     </message>
     <message>
         <source>Driver not found</source>
-        <translation>Không thấy trình điều khiển</translation>
+        <translation type="obsolete">Không thấy trình điều khiển</translation>
     </message>
     <message>
         <source> driver is not available</source>
-        <translation> không có trình điều khiển</translation>
+        <translation type="obsolete"> không có trình điều khiển</translation>
     </message>
 </context>
 <context>
@@ -11258,11 +12367,11 @@ Thông tin bổ sung về lỗi:</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;/head&gt;&lt;body style=&quot; white-space: pre-wrap; font-family:Sans Serif; font-size:12pt; font-weight:400; font-style:normal; text-decoration:none;&quot;&gt;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Restrict the search to the public schema for spatial tables not in the geometry_columns table&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;/head&gt;&lt;body style=&quot; white-space: pre-wrap; font-family:Sans Serif; font-size:12pt; font-weight:400; font-style:normal; text-decoration:none;&quot;&gt;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Giới hạn tìm kiếm trong schema công cộng đối với các bảng không gian không có trong bảng geometry_columns &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation type="obsolete">&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;/head&gt;&lt;body style=&quot; white-space: pre-wrap; font-family:Sans Serif; font-size:12pt; font-weight:400; font-style:normal; text-decoration:none;&quot;&gt;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Giới hạn tìm kiếm trong schema công cộng đối với các bảng không gian không có trong bảng geometry_columns &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;/head&gt;&lt;body style=&quot; white-space: pre-wrap; font-family:Sans Serif; font-size:12pt; font-weight:400; font-style:normal; text-decoration:none;&quot;&gt;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;When searching for spatial tables that are not in the geometry_columns tables, restrict the search to tables that are in the public schema (for some databases this can save lots of time)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;/head&gt;&lt;body style=&quot; white-space: pre-wrap; font-family:Sans Serif; font-size:12pt; font-weight:400; font-style:normal; text-decoration:none;&quot;&gt;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Khi tìm kiếm các bảng không gian nào không có trong các bảng geometry_columns, giới hạn việc tìm kiếm đối với các bảng nào ở trong schema công cộng (đối với một số CSDL điều này tiết kiệm đáng kể thời gian)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation type="obsolete">&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;/head&gt;&lt;body style=&quot; white-space: pre-wrap; font-family:Sans Serif; font-size:12pt; font-weight:400; font-style:normal; text-decoration:none;&quot;&gt;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Khi tìm kiếm các bảng không gian nào không có trong các bảng geometry_columns, giới hạn việc tìm kiếm đối với các bảng nào ở trong schema công cộng (đối với một số CSDL điều này tiết kiệm đáng kể thời gian)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Only look in the &apos;public&apos; schema</source>
@@ -11270,26 +12379,42 @@ Thông tin bổ sung về lỗi:</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;/head&gt;&lt;body style=&quot; white-space: pre-wrap; font-family:Sans Serif; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;&gt;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:12pt;&quot;&gt;Restrict the displayed tables to those that are in the geometry_columns table&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;/head&gt;&lt;body style=&quot; white-space: pre-wrap; font-family:Sans Serif; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;&gt;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:12pt;&quot;&gt;Giới hạn các bảng được trình bày ở những bảng nào nằm trong bảng geometry_columns&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation type="obsolete">&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;/head&gt;&lt;body style=&quot; white-space: pre-wrap; font-family:Sans Serif; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;&gt;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:12pt;&quot;&gt;Giới hạn các bảng được trình bày ở những bảng nào nằm trong bảng geometry_columns&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;/head&gt;&lt;body style=&quot; white-space: pre-wrap; font-family:Sans Serif; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;&gt;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:12pt;&quot;&gt;Restricts the displayed tables to those that are in the geometry_columns table. This can speed up the initial display of spatial tables.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;/head&gt;&lt;body style=&quot; white-space: pre-wrap; font-family:Sans Serif; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;&gt;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:12pt;&quot;&gt;Giới hạn các bảng trình bày ở những bảng nào nằm trong bảng geometry_columns. Điều này có thể tăng tốc ban đầu việc trình bày các bảng không gian.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation type="obsolete">&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;/head&gt;&lt;body style=&quot; white-space: pre-wrap; font-family:Sans Serif; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;&gt;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:12pt;&quot;&gt;Giới hạn các bảng trình bày ở những bảng nào nằm trong bảng geometry_columns. Điều này có thể tăng tốc ban đầu việc trình bày các bảng không gian.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Only look in the geometry_columns table</source>
         <translation>Chỉ tìm trong bảng geometry_columns</translation>
+    </message>
+    <message>
+        <source>Restrict the search to the public schema for spatial tables not in the geometry_columns table</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>When searching for spatial tables that are not in the geometry_columns tables, restrict the search to tables that are in the public schema (for some databases this can save lots of time)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Restrict the displayed tables to those that are in the geometry_columns table</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Restricts the displayed tables to those that are in the geometry_columns table. This can speed up the initial display of spatial tables.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>QgsNewHttpConnectionBase</name>
     <message>
         <source>Create a New WMS connection</source>
-        <translation>Tạo một kết nối WMS mới</translation>
+        <translation type="obsolete">Tạo một kết nối WMS mới</translation>
     </message>
     <message>
         <source>Connection Information</source>
-        <translation>Thông tin Kết nối</translation>
+        <translation type="obsolete">Thông tin Kết nối</translation>
     </message>
     <message>
         <source>Name of the new connection</source>
@@ -11305,27 +12430,27 @@ Thông tin bổ sung về lỗi:</translation>
     </message>
     <message>
         <source>Proxy Host</source>
-        <translation>Máy chủ proxy</translation>
+        <translation type="obsolete">Máy chủ proxy</translation>
     </message>
     <message>
         <source>Proxy Port</source>
-        <translation>Cổng proxy</translation>
+        <translation type="obsolete">Cổng proxy</translation>
     </message>
     <message>
         <source>Proxy User</source>
-        <translation>Người dùng proxy</translation>
+        <translation type="obsolete">Người dùng proxy</translation>
     </message>
     <message>
         <source>Proxy Password</source>
-        <translation>mật mã proxy</translation>
+        <translation type="obsolete">mật mã proxy</translation>
     </message>
     <message>
         <source>Your user name for the HTTP proxy (optional)</source>
-        <translation>Tên của bạn đối với proxy HTTP (tùy chọn)</translation>
+        <translation type="obsolete">Tên của bạn đối với proxy HTTP (tùy chọn)</translation>
     </message>
     <message>
         <source>Password for your HTTP proxy (optional)</source>
-        <translation>Mật khẩu cho proxy HTTP của bạn (tùy chọn)</translation>
+        <translation type="obsolete">Mật khẩu cho proxy HTTP của bạn (tùy chọn)</translation>
     </message>
     <message>
         <source>HTTP address of the Web Map Server</source>
@@ -11333,27 +12458,35 @@ Thông tin bổ sung về lỗi:</translation>
     </message>
     <message>
         <source>Name of your HTTP proxy (optional)</source>
-        <translation>Tên của proxy HTTP của bạn (tùy chọn)</translation>
+        <translation type="obsolete">Tên của proxy HTTP của bạn (tùy chọn)</translation>
     </message>
     <message>
         <source>Port number of your HTTP proxy (optional)</source>
-        <translation>Số hiệu cổng của proxy HTTP của bạn (tùy chọn)</translation>
+        <translation type="obsolete">Số hiệu cổng của proxy HTTP của bạn (tùy chọn)</translation>
     </message>
     <message>
         <source>OK</source>
-        <translation>Đồng ý</translation>
+        <translation type="obsolete">Đồng ý</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation>Hủy</translation>
+        <translation type="obsolete">Hủy</translation>
     </message>
     <message>
         <source>Help</source>
-        <translation>Trợ giúp</translation>
+        <translation type="obsolete">Trợ giúp</translation>
     </message>
     <message>
         <source>F1</source>
-        <translation>F1</translation>
+        <translation type="obsolete">F1</translation>
+    </message>
+    <message>
+        <source>Create a new WMS connection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connection details</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -11389,6 +12522,13 @@ Thông tin bổ sung về lỗi:</translation>
     <message>
         <source>North arrow pixmap not found</source>
         <translation>Không tìm thấy pixmap mũi tên chỉ hướng Bắc</translation>
+    </message>
+</context>
+<context>
+    <name>QgsNorthArrowPluginGui</name>
+    <message>
+        <source>Pixmap not found</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -11451,7 +12591,7 @@ Thông tin bổ sung về lỗi:</translation>
     </message>
     <message>
         <source>New Item</source>
-        <translation>Mục mới</translation>
+        <translation type="obsolete">Mục mới</translation>
     </message>
     <message>
         <source>&amp;OK</source>
@@ -11470,11 +12610,11 @@ Thông tin bổ sung về lỗi:</translation>
     <name>QgsOGRFactory</name>
     <message>
         <source>Wrong Path/URI</source>
-        <translation>Đường dẫn/URI sai</translation>
+        <translation type="obsolete">Đường dẫn/URI sai</translation>
     </message>
     <message>
         <source>The provided path for the dataset is not valid.</source>
-        <translation>Đường dẫn được cung cấp cho bộ dữ liệu không đúng.</translation>
+        <translation type="obsolete">Đường dẫn được cung cấp cho bộ dữ liệu không đúng.</translation>
     </message>
 </context>
 <context>
@@ -11482,6 +12622,26 @@ Thông tin bổ sung về lỗi:</translation>
     <message>
         <source>Detected active locale on your system: </source>
         <translation>Thấy thiết lập bản địa đang kích hoạt trên hệ thống của bạn: </translation>
+    </message>
+    <message>
+        <source>to vertex</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>to segment</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>to vertex and segment</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Semi transparent circle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cross</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -11496,7 +12656,7 @@ Thông tin bổ sung về lỗi:</translation>
     </message>
     <message>
         <source>epiphany</source>
-        <translation>epiphany</translation>
+        <translation type="obsolete">epiphany</translation>
     </message>
     <message>
         <source>firebird</source>
@@ -11504,19 +12664,19 @@ Thông tin bổ sung về lỗi:</translation>
     </message>
     <message>
         <source>galeon</source>
-        <translation>galeon</translation>
+        <translation type="obsolete">galeon</translation>
     </message>
     <message>
         <source>konqueror</source>
-        <translation>konqueror</translation>
+        <translation type="obsolete">konqueror</translation>
     </message>
     <message>
         <source>mozilla</source>
-        <translation>mozilla</translation>
+        <translation type="obsolete">mozilla</translation>
     </message>
     <message>
         <source>opera</source>
-        <translation>opera</translation>
+        <translation type="obsolete">opera</translation>
     </message>
     <message>
         <source>Preferred browser (used to open Help documents)</source>
@@ -11544,7 +12704,7 @@ Thông tin bổ sung về lỗi:</translation>
     </message>
     <message>
         <source>Search Radius for Identifying Features</source>
-        <translation>Bán kính tìm kiếm để nhận diện các đối tượng</translation>
+        <translation type="obsolete">Bán kính tìm kiếm để nhận diện các đối tượng</translation>
     </message>
     <message>
         <source>Value</source>
@@ -11572,7 +12732,7 @@ mit dem Erkennen von Objekten ohne sehr weit hineinzuzoomen.
     </message>
     <message>
         <source>&amp;Appearance</source>
-        <translation>&amp;Diện mạo</translation>
+        <translation type="obsolete">&amp;Diện mạo</translation>
     </message>
     <message>
         <source>&amp;Splash Screen</source>
@@ -11580,11 +12740,11 @@ mit dem Erkennen von Objekten ohne sehr weit hineinzuzoomen.
     </message>
     <message>
         <source>&amp;Icon Theme</source>
-        <translation>&amp;Sắc thái</translation>
+        <translation type="obsolete">&amp;Sắc thái</translation>
     </message>
     <message>
         <source>Theme</source>
-        <translation>Sắc thái</translation>
+        <translation type="obsolete">Sắc thái</translation>
     </message>
     <message>
         <source>&lt;b&gt;Note: &lt;/b&gt;Theme changes take effect the next time QGIS is started</source>
@@ -11592,11 +12752,11 @@ mit dem Erkennen von Objekten ohne sehr weit hineinzuzoomen.
     </message>
     <message>
         <source>Help &amp;Browser</source>
-        <translation>&amp;Trình duyệt Trợ giúp</translation>
+        <translation type="obsolete">&amp;Trình duyệt Trợ giúp</translation>
     </message>
     <message>
         <source>Open help documents with</source>
-        <translation>Mở tài liệu trợ giúp bằng</translation>
+        <translation type="obsolete">Mở tài liệu trợ giúp bằng</translation>
     </message>
     <message>
         <source>&lt;b&gt;Note:&lt;/b&gt; The browser must be in your PATH or you can specify &lt;br&gt;the full path above</source>
@@ -11612,7 +12772,7 @@ mit dem Erkennen von Objekten ohne sehr weit hineinzuzoomen.
     </message>
     <message>
         <source>Update display after reading</source>
-        <translation>Cập nhật trình bày sau khi đọc</translation>
+        <translation type="obsolete">Cập nhật trình bày sau khi đọc</translation>
     </message>
     <message>
         <source>Map display will be updated (drawn) after this many features have been read from the data source</source>
@@ -11620,11 +12780,11 @@ mit dem Erkennen von Objekten ohne sehr weit hineinzuzoomen.
     </message>
     <message>
         <source>features</source>
-        <translation>đối tượng</translation>
+        <translation type="obsolete">đối tượng</translation>
     </message>
     <message>
         <source>(Set to 0 to not update the display until all features have been read)</source>
-        <translation>(Thiết lập bằng 0 sẽ không cập nhật trình bày cho đến khi đọc xong tất cả các đối tượng)</translation>
+        <translation type="obsolete">(Thiết lập bằng 0 sẽ không cập nhật trình bày cho đến khi đọc xong tất cả các đối tượng)</translation>
     </message>
     <message>
         <source>&amp;Selection</source>
@@ -11663,11 +12823,11 @@ Theo mặc định QGIS dùng giá trị là 5. Tăng giá trị nếu bạn g�
     </message>
     <message>
         <source>...</source>
-        <translation>...</translation>
+        <translation type="obsolete">...</translation>
     </message>
     <message>
         <source>Initial Visibility</source>
-        <translation>Vùng xem ban đầu</translation>
+        <translation type="obsolete">Vùng xem ban đầu</translation>
     </message>
     <message>
         <source>New layers added to the map are not displayed</source>
@@ -11704,51 +12864,43 @@ nhận diện các tính chất mà không phóng bản đồ lên rất lớn.(
     </message>
     <message>
         <source>Prompt for projection.</source>
-        <translation>Nhắc khai báo phép chiếu.</translation>
+        <translation type="obsolete">Nhắc khai báo phép chiếu.</translation>
     </message>
     <message>
         <source>Project wide default projection will be used.</source>
-        <translation>Phép chiếu mặc định sẽ được dùng.</translation>
+        <translation type="obsolete">Phép chiếu mặc định sẽ được dùng.</translation>
     </message>
     <message>
         <source>Global default projection displayed below will be used.</source>
         <translation type="obsolete">Phép chiếu mặc định toàn cục dưới đây sẽ được dùng. </translation>
     </message>
     <message>
-        <source>firefox</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>mozilla-firefox</source>
-        <translation></translation>
-    </message>
-    <message>
         <source>&amp;Splash screen</source>
-        <translation>Màn hình &amp;Splash</translation>
+        <translation type="obsolete">Màn hình &amp;Splash</translation>
     </message>
     <message>
         <source>Default Map Appearance (Overridden by project properties)</source>
-        <translation>Diện mạo mặc định của bản đồ (bị ghi đè bằng thiết lập trong phần &apos;Tính chất dự án&apos;)</translation>
+        <translation type="obsolete">Diện mạo mặc định của bản đồ (bị ghi đè bằng thiết lập trong phần &apos;Tính chất dự án&apos;)</translation>
     </message>
     <message>
         <source>Selection Color:</source>
-        <translation>Màu phép chọn:</translation>
+        <translation type="obsolete">Màu phép chọn:</translation>
     </message>
     <message>
         <source>Background Color:</source>
-        <translation>Màu nền:</translation>
+        <translation type="obsolete">Màu nền:</translation>
     </message>
     <message>
         <source>Appearance</source>
-        <translation>Diện mạo</translation>
+        <translation type="obsolete">Diện mạo</translation>
     </message>
     <message>
         <source>Capitalise layer name</source>
-        <translation>Viết hoa tên lớp</translation>
+        <translation type="obsolete">Viết hoa tên lớp</translation>
     </message>
     <message>
         <source>&amp;Update during drawing</source>
-        <translation>&amp;Cập nhật trong quá trình vẽ</translation>
+        <translation type="obsolete">&amp;Cập nhật trong quá trình vẽ</translation>
     </message>
     <message>
         <source>By default new la&amp;yers added to the map should be displayed</source>
@@ -11756,11 +12908,11 @@ nhận diện các tính chất mà không phóng bản đồ lên rất lớn.(
     </message>
     <message>
         <source>Rendering</source>
-        <translation>Khi vẽ</translation>
+        <translation type="obsolete">Khi vẽ</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;/head&gt;&lt;body style=&quot; white-space: pre-wrap; font-family:Sans Serif; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;&gt;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Selecting this will unselect the &apos;make lines less&apos; jagged toggle&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;/head&gt;&lt;body style=&quot; white-space: pre-wrap; font-family:Sans Serif; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;&gt;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Chọn mục này sẽ khử chọn lệnh bật/tắt &apos;làm cho đường bớt răng cưa&apos;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation type="obsolete">&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;/head&gt;&lt;body style=&quot; white-space: pre-wrap; font-family:Sans Serif; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;&gt;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Chọn mục này sẽ khử chọn lệnh bật/tắt &apos;làm cho đường bớt răng cưa&apos;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Fix problems with incorrectly filled polygons</source>
@@ -11776,7 +12928,7 @@ nhận diện các tính chất mà không phóng bản đồ lên rất lớn.(
     </message>
     <message>
         <source>Ellipsoid for distance calculations:</source>
-        <translation>Ellipsoid dùng trong tính toán khoảng cách:</translation>
+        <translation type="obsolete">Ellipsoid dùng trong tính toán khoảng cách:</translation>
     </message>
     <message>
         <source>Search radius</source>
@@ -11792,11 +12944,11 @@ nhận diện các tính chất mà không phóng bản đồ lên rất lớn.(
     </message>
     <message>
         <source>Global default projection displa&amp;yed below will be used.</source>
-        <translation>Phép chiếu toàn cầu mặc định &amp;dưới đây sẽ được sử dụng.</translation>
+        <translation type="obsolete">Phép chiếu toàn cầu mặc định &amp;dưới đây sẽ được sử dụng.</translation>
     </message>
     <message>
         <source>&lt;b&gt;Note:&lt;/b&gt; The browser must be in your PATH or you can specify the full path above</source>
-        <translation>&lt;b&gt;Ghi chú:&lt;/b&gt; Trình duyệt phải ở trong đường dẫn của bạn hoặc bạn có thể chỉ định đường dẫn đầy đủ ở trên</translation>
+        <translation type="obsolete">&lt;b&gt;Ghi chú:&lt;/b&gt; Trình duyệt phải ở trong đường dẫn của bạn hoặc bạn có thể chỉ định đường dẫn đầy đủ ở trên</translation>
     </message>
     <message>
         <source>Continuously redraw the map when dragging the legend/map divider</source>
@@ -11812,7 +12964,7 @@ p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Sans Serif&apos;; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Note:&lt;/span&gt; Specify the search radius as a percentage of the map width.&lt;/p&gt;
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+        <translation type="obsolete">&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Sans Serif&apos;; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Ghi chú:&lt;/span&gt; Chỉ định bán kính tìm kiếm dưới dạng phần trăm của chiều ngang bản đồ.&lt;/p&gt;
@@ -11840,11 +12992,11 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Zoom factor:</source>
-        <translation>Hệ số phóng:</translation>
+        <translation type="obsolete">Hệ số phóng:</translation>
     </message>
     <message>
         <source>Mouse wheel action:</source>
-        <translation>Tác dụng của bánh xe chuột:</translation>
+        <translation type="obsolete">Tác dụng của bánh xe chuột:</translation>
     </message>
     <message>
         <source>&amp;General</source>
@@ -11852,15 +13004,15 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>General</source>
-        <translation>Tổng quát</translation>
+        <translation type="obsolete">Tổng quát</translation>
     </message>
     <message>
         <source>Ask to save project changes when required</source>
-        <translation>Hỏi lưu các thay đổi của dự án khi được yêu cầu</translation>
+        <translation type="obsolete">Hỏi lưu các thay đổi của dự án khi được yêu cầu</translation>
     </message>
     <message>
         <source>Rubberband color:</source>
-        <translation>Màu của &apos;băng cao su&apos;:</translation>
+        <translation type="obsolete">Màu của &apos;băng cao su&apos;:</translation>
     </message>
     <message>
         <source>Locale</source>
@@ -11868,7 +13020,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Force Override System Locale</source>
-        <translation>Buộc ghi đè thiết lập bản địa của hệ thống</translation>
+        <translation type="obsolete">Buộc ghi đè thiết lập bản địa của hệ thống</translation>
     </message>
     <message>
         <source>Locale to use instead</source>
@@ -11876,7 +13028,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Note: Enabling / changing overide on local requires an application restart.</source>
-        <translation>Ghi chú: Bật/Thay đổi việc ghi đè thiết lập bản địa yêu cầu khởi động lại ứng dụng.</translation>
+        <translation type="obsolete">Ghi chú: Bật/Thay đổi việc ghi đè thiết lập bản địa yêu cầu khởi động lại ứng dụng.</translation>
     </message>
     <message>
         <source>Additional Info</source>
@@ -11885,6 +13037,186 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>Detected active locale on your system:</source>
         <translation>Thiết lập bản địa đang kích hoạt trên hệ thống của bạn:</translation>
+    </message>
+    <message>
+        <source>Project files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Prompt to save project changes when required</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Warn when opening a project file saved with an older version of QGIS</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Default Map Appearance (overridden by project properties)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Selection color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Background color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Application</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Icon theme</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Capitalise layer names in legend</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Display classification attribute names in legend</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Rendering behavior</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number of features to draw before updating the display</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Note:&lt;/b&gt; Use zero to prevent display updates until all features have been rendered</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Rendering quality</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Selecting this will unselect the &apos;make lines less&apos; jagged toggle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Zoom to mouse cursor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Zoom factor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mouse wheel action</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Rubberband color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ellipsoid for distance calculations</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Note:&lt;/b&gt; Specify the search radius as a percentage of the map width</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Search radius for identifying features and displaying map tips</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Digitizing</source>
+        <translation type="unfinished">Số hóa</translation>
+    </message>
+    <message>
+        <source>Rubberband</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Line width</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Line width in pixels</source>
+        <translation type="unfinished">Chiều rộng đường tính theo điểm ảnh</translation>
+    </message>
+    <message>
+        <source>Line colour</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Snapping</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Default snap mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Default snapping tolerance in layer units</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Search radius for vertex edits in layer units</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Vertex markers</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Marker style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Prompt for projection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Project wide default projection will be used</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Global default projection displa&amp;yed below will be used</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Override system locale</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;Note:&lt;/b&gt; Enabling / changing overide on local requires an application restart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Proxy</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use proxy for web access</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Host</source>
+        <translation type="unfinished">Máy chủ</translation>
+    </message>
+    <message>
+        <source>Port</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>User</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Leave this blank if no proxy username / password are required</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Password</source>
+        <translation type="unfinished">Mật mã</translation>
     </message>
 </context>
 <context>
@@ -11930,19 +13262,19 @@ p, li { white-space: pre-wrap; }
     <name>QgsPatternDialogBase</name>
     <message>
         <source>Select a fill pattern</source>
-        <translation>Chọn một kiểu tô màu</translation>
+        <translation type="obsolete">Chọn một kiểu tô màu</translation>
     </message>
     <message>
         <source>Cancel</source>
-        <translation>Hủy</translation>
+        <translation type="obsolete">Hủy</translation>
     </message>
     <message>
         <source>Ok</source>
-        <translation>Đồng ý</translation>
+        <translation type="obsolete">Đồng ý</translation>
     </message>
     <message>
         <source>No Fill</source>
-        <translation>Không lấp đầy</translation>
+        <translation type="obsolete">Không lấp đầy</translation>
     </message>
 </context>
 <context>
@@ -12013,6 +13345,10 @@ p, li { white-space: pre-wrap; }
         <source>Geoprocessing functions are only available for PostgreSQL/PostGIS Layers</source>
         <translation>Các chức năng xử lý địa lý chỉ dùng được đối với các lớp PostgreSQL/PostGIS</translation>
     </message>
+    <message>
+        <source>Create a buffer for a PostgreSQL layer. </source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QgsPgQueryBuilder</name>
@@ -12034,7 +13370,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Failed to get sample of field values</source>
-        <translation>Thất bại trong việc lấy mẫu của các giá trị trường</translation>
+        <translation type="obsolete">Thất bại trong việc lấy mẫu của các giá trị trường</translation>
     </message>
     <message>
         <source>Query Result</source>
@@ -12121,7 +13457,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Datasource:</source>
-        <translation>Nguồn dữ liệu:</translation>
+        <translation type="obsolete">Nguồn dữ liệu:</translation>
     </message>
     <message>
         <source>Operators</source>
@@ -12187,6 +13523,38 @@ p, li { white-space: pre-wrap; }
         <source>SQL where clause</source>
         <translation>Mệnh đề where của SQL</translation>
     </message>
+    <message>
+        <source>Datasource</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Sans Serif&apos;; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;List of fields in this vector file&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Sans Serif&apos;; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;List of values for the current field.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Sans Serif&apos;; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Take a &lt;span style=&quot; font-weight:600;&quot;&gt;sample&lt;/span&gt; of records in the vector file&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Sans Serif&apos;; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Retrieve &lt;span style=&quot; font-weight:600;&quot;&gt;all&lt;/span&gt; the record in the vector file (&lt;span style=&quot; font-style:italic;&quot;&gt;if the table is big, the operation can consume some time&lt;/span&gt;)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QgsPluginManager</name>
@@ -12202,6 +13570,14 @@ p, li { white-space: pre-wrap; }
         <source>No QGIS plugins found in </source>
         <translation>Không tìm thấy phần mở rộng của QGIS trong</translation>
     </message>
+    <message>
+        <source>&amp;Select All</source>
+        <translation type="unfinished">&amp;Chọn tất cả</translation>
+    </message>
+    <message>
+        <source>&amp;Clear All</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QgsPluginManagerBase</name>
@@ -12211,15 +13587,15 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Name</source>
-        <translation>Tên</translation>
+        <translation type="obsolete">Tên</translation>
     </message>
     <message>
         <source>Description</source>
-        <translation>Mô tả</translation>
+        <translation type="obsolete">Mô tả</translation>
     </message>
     <message>
         <source>Library Name</source>
-        <translation>Tên thư viện</translation>
+        <translation type="obsolete">Tên thư viện</translation>
     </message>
     <message>
         <source>Ok</source>
@@ -12231,7 +13607,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Plugin Directory</source>
-        <translation>Thư viện chứa phần mở rộng</translation>
+        <translation type="obsolete">Thư viện chứa phần mở rộng</translation>
     </message>
     <message>
         <source>...</source>
@@ -12239,47 +13615,63 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>To load a plugin, click the checkbox next to the plugin and click Ok</source>
-        <translation>Để nạp một phần mở rộng, nhắp chuột vào ô đánh dấu cạnh phần mở rộng đó và nhắp &apos;Đồng ý&apos;</translation>
+        <translation type="obsolete">Để nạp một phần mở rộng, nhắp chuột vào ô đánh dấu cạnh phần mở rộng đó và nhắp &apos;Đồng ý&apos;</translation>
     </message>
     <message>
         <source>Version</source>
-        <translation>Phiên bản</translation>
+        <translation type="obsolete">Phiên bản</translation>
     </message>
     <message>
         <source>&amp;Select All</source>
-        <translation>&amp;Chọn tất cả</translation>
+        <translation type="obsolete">&amp;Chọn tất cả</translation>
     </message>
     <message>
         <source>Alt+S</source>
-        <translation>Alt+S</translation>
+        <translation type="obsolete">Alt+S</translation>
     </message>
     <message>
         <source>C&amp;lear All</source>
-        <translation>&amp;Xóa tất cả</translation>
+        <translation type="obsolete">&amp;Xóa tất cả</translation>
     </message>
     <message>
         <source>Alt+L</source>
-        <translation>Alt+L</translation>
+        <translation type="obsolete">Alt+L</translation>
     </message>
     <message>
         <source>&amp;Ok</source>
-        <translation>Đồn&amp;g ý</translation>
+        <translation type="obsolete">Đồn&amp;g ý</translation>
     </message>
     <message>
         <source>Alt+O</source>
-        <translation>Alt+O</translation>
+        <translation type="obsolete">Alt+O</translation>
     </message>
     <message>
         <source>&amp;Close</source>
-        <translation>Đó&amp;ng</translation>
+        <translation type="obsolete">Đó&amp;ng</translation>
     </message>
     <message>
         <source>Alt+C</source>
-        <translation>Alt+C</translation>
+        <translation type="obsolete">Alt+C</translation>
     </message>
     <message>
         <source>QGIS Plugin Manager</source>
         <translation>Trình Quản lý Phần mở rộng của QGIS</translation>
+    </message>
+    <message>
+        <source>To enable / disable a plugin, click its checkbox or description</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Filter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Plugin Directory:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Directory</source>
+        <translation type="unfinished">Thư mục</translation>
     </message>
 </context>
 <context>
@@ -12477,15 +13869,15 @@ p, li { white-space: pre-wrap; }
     <name>QgsPointStyleWidgetBase</name>
     <message>
         <source>Form3</source>
-        <translation>Mẫu 3</translation>
+        <translation type="obsolete">Mẫu 3</translation>
     </message>
     <message>
         <source>Symbol Style</source>
-        <translation>Kiểu biểu tượng</translation>
+        <translation type="obsolete">Kiểu biểu tượng</translation>
     </message>
     <message>
         <source>Scale</source>
-        <translation>Tỷ lệ</translation>
+        <translation type="obsolete">Tỷ lệ</translation>
     </message>
 </context>
 <context>
@@ -12621,27 +14013,27 @@ primary key) hoặc có một cột oid PostgreSQL.
     </message>
     <message>
         <source>INSERT error</source>
-        <translation>lỗi CHÈN</translation>
+        <translation type="obsolete">lỗi CHÈN</translation>
     </message>
     <message>
         <source>An error occured during feature insertion</source>
-        <translation>Một lỗi đã xảy ra trong khi chèn đối tượng</translation>
+        <translation type="obsolete">Một lỗi đã xảy ra trong khi chèn đối tượng</translation>
     </message>
     <message>
         <source>DELETE error</source>
-        <translation>lỗi XÓA</translation>
+        <translation type="obsolete">lỗi XÓA</translation>
     </message>
     <message>
         <source>An error occured during deletion from disk</source>
-        <translation>Một lỗi đã xảy ra trong khi xóa đĩa</translation>
+        <translation type="obsolete">Một lỗi đã xảy ra trong khi xóa đĩa</translation>
     </message>
     <message>
         <source>PostGIS error</source>
-        <translation>Lỗi PostGIS</translation>
+        <translation type="obsolete">Lỗi PostGIS</translation>
     </message>
     <message>
         <source>When trying: </source>
-        <translation>Khi đang: </translation>
+        <translation type="obsolete">Khi đang: </translation>
     </message>
     <message>
         <source>Unknown geometry type</source>
@@ -12675,11 +14067,47 @@ primary key) hoặc có một cột oid PostgreSQL.
     </message>
     <message>
         <source>An error occured contacting the PostgreSQL database</source>
-        <translation>Một lỗi đã xảy ra khi đang trao đổi với CSDL PostgreSQL</translation>
+        <translation type="obsolete">Một lỗi đã xảy ra khi đang trao đổi với CSDL PostgreSQL</translation>
     </message>
     <message>
         <source>The PostgreSQL database returned: </source>
-        <translation>CSDL PostgreSQL trả lại: </translation>
+        <translation type="obsolete">CSDL PostgreSQL trả lại: </translation>
+    </message>
+    <message>
+        <source>Unable to determine table access privileges for the </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Error while adding features</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Error while deleting features</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Error while adding attributes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Error while deleting attributes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Error while changing attributes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Error while changing geometry values</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Qgis was unable to determine the type and srid of column </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>unexpected PostgreSQL error</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -12690,7 +14118,7 @@ primary key) hoặc có một cột oid PostgreSQL.
     </message>
     <message>
         <source>Map Units</source>
-        <translation>Đơn vị bản đồ</translation>
+        <translation type="obsolete">Đơn vị bản đồ</translation>
     </message>
     <message>
         <source>Meters</source>
@@ -12742,7 +14170,7 @@ primary key) hoặc có một cột oid PostgreSQL.
     </message>
     <message>
         <source>Line Width:</source>
-        <translation>Chiều rộng của đường:</translation>
+        <translation type="obsolete">Chiều rộng của đường:</translation>
     </message>
     <message>
         <source>Snapping Tolerance:</source>
@@ -12750,7 +14178,7 @@ primary key) hoặc có một cột oid PostgreSQL.
     </message>
     <message>
         <source>Line Colour:</source>
-        <translation>Màu của đường:</translation>
+        <translation type="obsolete">Màu của đường:</translation>
     </message>
     <message>
         <source>Cursor display precision</source>
@@ -12786,15 +14214,15 @@ primary key) hoặc có một cột oid PostgreSQL.
     </message>
     <message>
         <source>Map Appearance</source>
-        <translation>Diện mạo của bản đồ</translation>
+        <translation type="obsolete">Diện mạo của bản đồ</translation>
     </message>
     <message>
         <source>Selection Color:</source>
-        <translation>Màu phép chọn:</translation>
+        <translation type="obsolete">Màu phép chọn:</translation>
     </message>
     <message>
         <source>Project Title</source>
-        <translation>Tiêu đề phép chiếu</translation>
+        <translation type="obsolete">Tiêu đề phép chiếu</translation>
     </message>
     <message>
         <source>Projection</source>
@@ -12818,19 +14246,51 @@ primary key) hoặc có một cột oid PostgreSQL.
     </message>
     <message>
         <source>Line width in pixels</source>
-        <translation>Chiều rộng đường tính theo điểm ảnh</translation>
+        <translation type="obsolete">Chiều rộng đường tính theo điểm ảnh</translation>
     </message>
     <message>
         <source>Snapping tolerance in map units</source>
-        <translation>Ngưỡng bắt điểm tính theo đơn vị bản đồ</translation>
+        <translation type="obsolete">Ngưỡng bắt điểm tính theo đơn vị bản đồ</translation>
     </message>
     <message>
         <source>Background Color:</source>
-        <translation>Màu nền:</translation>
+        <translation type="obsolete">Màu nền:</translation>
     </message>
     <message>
         <source>Snapping Tolerance (in map units):</source>
-        <translation>Ngưỡng bắt điểm (theo đơn vị bản đồ):</translation>
+        <translation type="obsolete">Ngưỡng bắt điểm (theo đơn vị bản đồ):</translation>
+    </message>
+    <message>
+        <source>Title and colors</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Project title</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Selection color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Background color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Map units</source>
+        <translation type="unfinished">Đơn vị bản đồ</translation>
+    </message>
+    <message>
+        <source>Enable topological editing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Avoid intersections of new polygons</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Snapping options...</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -12907,7 +14367,7 @@ p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;DejaVu Sans Condensed&apos;; font-size:10pt; font-weight:400; font-style:normal; text-decoration:none;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;To access Quantum GIS environment from this python console use object &lt;span style=&quot; font-weight:600;&quot;&gt;iface&lt;/span&gt; from global scope which is an instance of QgisInterface class.&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Usage e.g.: iface.zoomFull()&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;(new line)
+        <translation type="obsolete">&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;(new line)
 p, li { white-space: pre-wrap; }(new line)
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;DejaVu Sans Condensed&apos;; font-size:10pt; font-weight:400; font-style:normal; text-decoration:none;&quot;&gt;(new line)
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Để truy cập môi trường Quantum GIS từ console Python này, hãy dùng đối tượng &lt;span style=&quot; font-weight:600;&quot;&gt;iface&lt;/span&gt; ở phạm vi toàn cục là một trường hợp thuộc nhóm QgisInterface.&lt;/p&gt;(new line)
@@ -12918,11 +14378,59 @@ p, li { white-space: pre-wrap; }(new line)
         <translation>&gt;&gt;&gt;</translation>
     </message>
     <message>
-        <source>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;DejaVu Sans Condensed&apos;; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;&gt;
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:10pt;&quot;&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation></translation>
+        <source>To access Quantum GIS environment from this python console use object from global scope which is an instance of QgisInterface class.&lt;br&gt;Usage e.g.: iface.zoomFull()</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QgsQuickPrint</name>
+    <message>
+        <source> km</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> mm</source>
+        <translation type="unfinished"> mm</translation>
+    </message>
+    <message>
+        <source> cm</source>
+        <translation type="unfinished"> cm</translation>
+    </message>
+    <message>
+        <source> m</source>
+        <translation type="unfinished"> m</translation>
+    </message>
+    <message>
+        <source> miles</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> mile</source>
+        <translation type="unfinished">dặm</translation>
+    </message>
+    <message>
+        <source> inches</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> foot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> feet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> degree</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> degrees</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> unknown</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -12993,11 +14501,11 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Property</source>
-        <translation>Đặc điểm</translation>
+        <translation type="obsolete">Đặc điểm</translation>
     </message>
     <message>
         <source>Value</source>
-        <translation>Giá trị</translation>
+        <translation type="obsolete">Giá trị</translation>
     </message>
     <message>
         <source>Band</source>
@@ -13169,6 +14677,14 @@ p, li { white-space: pre-wrap; }
         <source>No Data Value</source>
         <translation>Không có Giá trị Dữ liệu</translation>
     </message>
+    <message>
+        <source>Band %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>NoDataValue not set</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QgsRasterLayerProperties</name>
@@ -13186,15 +14702,15 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>&lt;h3&gt;Multiband Image Notes&lt;/h3&gt;&lt;p&gt;This is a multiband image. You can choose to render it as grayscale or color (RGB). For color images, you can associate bands to colors arbitarily. For example, if you have a seven band landsat image, you may choose to render it as:&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Visible Blue (0.45 to 0.52 microns) - not mapped&lt;/li&gt;&lt;li&gt;Visible Green (0.52 to 0.60 microns) - not mapped&lt;/li&gt;&lt;/li&gt;Visible Red (0.63 to 0.69 microns) - mapped to red in image&lt;/li&gt;&lt;li&gt;Near Infrared (0.76 to 0.90 microns) - mapped to green in image&lt;/li&gt;&lt;li&gt;Mid Infrared (1.55 to 1.75 microns) - not mapped&lt;/li&gt;&lt;li&gt;Thermal Infrared (10.4 to 12.5 microns) - not mapped&lt;/li&gt;&lt;li&gt;Mid Infrared (2.08 to 2.35 microns) - mapped to blue in image&lt;/li&gt;&lt;/ul&gt;</source>
-        <translation>&lt;h3&gt;Ghi chú ảnh nhiều băng&lt;/h3&gt;&lt;p&gt;Đây là ảnh nhiều băng. Bạn có thể chọn để render nó thành thang xám hoặc ảnh màu (RGB). Với ảnh màu, bạn có thể liên hệ các băng đến các màu một cách tùy ý. Ví dụ, nếu bạn có ảnh landsat 7 băng, bạn có thể chọn render nó thành:&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Xanh nhìn thấy được (0.45 đến 0.52 micromet) - không lên bản đồ&lt;/li&gt;&lt;li&gt;Lục nhìn thấy được (0.52 đến 0.60 microme1t) - không lên bản đồ&lt;/li&gt;&lt;/li&gt;Đỏ nhìn thấy được (0.63 đến 0.69 micromet) - lên bản đồ thành màu đỏ&lt;/li&gt;&lt;li&gt;Gần Hồng ngoại (0.76 đến 0.90 micromet) - lên thành màu lục trong ảnh&lt;/li&gt;&lt;li&gt;Giữa Hồng ngoại (1.55 đến 1.75 micromet) - không lên bản đồ&lt;/li&gt;&lt;li&gt;Hồng ngoại nhiệt (10.4 đến 12.5 micromet) - không lên bản đồ&lt;/li&gt;&lt;li&gt;Giữa Hồng ngoại (2.08 đến 2.35 micromet) - lên bản đồ thành màu xanh trong ảnh&lt;/li&gt;&lt;/ul&gt;</translation>
+        <translation type="obsolete">&lt;h3&gt;Ghi chú ảnh nhiều băng&lt;/h3&gt;&lt;p&gt;Đây là ảnh nhiều băng. Bạn có thể chọn để render nó thành thang xám hoặc ảnh màu (RGB). Với ảnh màu, bạn có thể liên hệ các băng đến các màu một cách tùy ý. Ví dụ, nếu bạn có ảnh landsat 7 băng, bạn có thể chọn render nó thành:&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Xanh nhìn thấy được (0.45 đến 0.52 micromet) - không lên bản đồ&lt;/li&gt;&lt;li&gt;Lục nhìn thấy được (0.52 đến 0.60 microme1t) - không lên bản đồ&lt;/li&gt;&lt;/li&gt;Đỏ nhìn thấy được (0.63 đến 0.69 micromet) - lên bản đồ thành màu đỏ&lt;/li&gt;&lt;li&gt;Gần Hồng ngoại (0.76 đến 0.90 micromet) - lên thành màu lục trong ảnh&lt;/li&gt;&lt;li&gt;Giữa Hồng ngoại (1.55 đến 1.75 micromet) - không lên bản đồ&lt;/li&gt;&lt;li&gt;Hồng ngoại nhiệt (10.4 đến 12.5 micromet) - không lên bản đồ&lt;/li&gt;&lt;li&gt;Giữa Hồng ngoại (2.08 đến 2.35 micromet) - lên bản đồ thành màu xanh trong ảnh&lt;/li&gt;&lt;/ul&gt;</translation>
     </message>
     <message>
         <source>&lt;h3&gt;Paletted Image Notes&lt;/h3&gt; &lt;p&gt;This image uses a fixed color palette. You can remap these colors in different combinations e.g.&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Red - blue in image&lt;/li&gt;&lt;li&gt;Green - blue in image&lt;/li&gt;&lt;li&gt;Blue - green in image&lt;/li&gt;&lt;/ul&gt;</source>
-        <translation>&lt;h3&gt;Ghi chú về ảnh có bảng màu&lt;/h3&gt; &lt;p&gt;Ảnh này dùng bảng màu cố định. Bạn có thể lập lại bản đồ những màu này thành các tổ hợp khác.&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Đỏ - xanh trong ảnh&lt;/li&gt;&lt;li&gt;Lục - xanh trong ảnh&lt;/li&gt;&lt;li&gt;Xanh - lục trong ảnh&lt;/li&gt;&lt;/ul&gt;</translation>
+        <translation type="obsolete">&lt;h3&gt;Ghi chú về ảnh có bảng màu&lt;/h3&gt; &lt;p&gt;Ảnh này dùng bảng màu cố định. Bạn có thể lập lại bản đồ những màu này thành các tổ hợp khác.&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Đỏ - xanh trong ảnh&lt;/li&gt;&lt;li&gt;Lục - xanh trong ảnh&lt;/li&gt;&lt;li&gt;Xanh - lục trong ảnh&lt;/li&gt;&lt;/ul&gt;</translation>
     </message>
     <message>
         <source>&lt;h3&gt;Grayscale Image Notes&lt;/h3&gt; &lt;p&gt;You can remap these grayscale colors to a pseudocolor image using an automatically generated color ramp.&lt;/p&gt;</source>
-        <translation>&lt;h3&gt;Các ghi chú ảnh thang xám&lt;/h3&gt; &lt;p&gt;Bạn có thể lập bản đồ lại các màu thang xám này thành một ảnh giả ảnh màu bằng cách dùng ramp tạo màu tự động.&lt;/p&gt;</translation>
+        <translation type="obsolete">&lt;h3&gt;Các ghi chú ảnh thang xám&lt;/h3&gt; &lt;p&gt;Bạn có thể lập bản đồ lại các màu thang xám này thành một ảnh giả ảnh màu bằng cách dùng ramp tạo màu tự động.&lt;/p&gt;</translation>
     </message>
     <message>
         <source>Grayscale</source>
@@ -13263,6 +14779,154 @@ p, li { white-space: pre-wrap; }
         <source>Building pyramid overviews is not supported on this type of raster.</source>
         <translation>Xây dựng vùng xem tổng quát cho tháp pyramid không được hỗ trợ đối với kiểu ảnh raster này. </translation>
     </message>
+    <message>
+        <source>Custom Colormap</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No Stretch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Stretch To MinMax</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Stretch And Clip To MinMax</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Clip To MinMax</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Discrete</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Linearly</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Equal interval</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quantiles</source>
+        <translation type="unfinished">Phân vị</translation>
+    </message>
+    <message>
+        <source>Red</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Green</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Blue</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Description</source>
+        <translation type="unfinished">Mô tả</translation>
+    </message>
+    <message>
+        <source>Large resolution raster layers can slow navigation in QGIS.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>By creating lower resolution copies of the data (pyramids) performance can be considerably improved as QGIS selects the most suitable resolution to use depending on the level of zoom.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>You must have write access in the directory where the original data is stored to build pyramids.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Please note that building pyramids may alter the original data file and once created they cannot be removed!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Please note that building pyramids could corrupt your image - always make a backup of your data first!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Percent Transparent</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Gray</source>
+        <translation type="unfinished">Xám</translation>
+    </message>
+    <message>
+        <source>Indexed Value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>User Defined</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No-Data Value: Not Set</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Textfile (*.txt)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>QGIS Generated Transparent Pixel Value Export File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Open file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Import Error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The following lines contained errors
+
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Read access denied</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Read access denied. Adjust the file permissions and try again.
+
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Color Ramp</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Default Style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>QGIS Layer Style File (*.qml)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>QGIS</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unknown style format: </source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QgsRasterLayerPropertiesBase</name>
@@ -13300,11 +14964,11 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Layer Source:</source>
-        <translation>Nguồn lớp:</translation>
+        <translation type="obsolete">Nguồn lớp:</translation>
     </message>
     <message>
         <source>Display Name:</source>
-        <translation>Tên trình bày:</translation>
+        <translation type="obsolete">Tên trình bày:</translation>
     </message>
     <message>
         <source>Legend:</source>
@@ -13336,7 +15000,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Transparency:</source>
-        <translation>Độ trong suốt:</translation>
+        <translation type="obsolete">Độ trong suốt:</translation>
     </message>
     <message>
         <source>&lt;p align=&quot;right&quot;&gt;Full&lt;/p&gt;</source>
@@ -13348,11 +15012,11 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Invert Color Map</source>
-        <translation>Đảo Bản đồ Màu</translation>
+        <translation type="obsolete">Đảo Bản đồ Màu</translation>
     </message>
     <message>
         <source>0%</source>
-        <translation>0%</translation>
+        <translation type="obsolete">0%</translation>
     </message>
     <message>
         <source>RGB</source>
@@ -13360,23 +15024,23 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Band</source>
-        <translation>Băng</translation>
+        <translation type="obsolete">Băng</translation>
     </message>
     <message>
         <source>&lt;b&gt;&lt;font color=&quot;#00ff00&quot;&gt;Green&lt;/font&gt;&lt;/b&gt;</source>
-        <translation>&lt;b&gt;&lt;font color=&quot;#00ff00&quot;&gt;Lục&lt;/font&gt;&lt;/b&gt;</translation>
+        <translation type="obsolete">&lt;b&gt;&lt;font color=&quot;#00ff00&quot;&gt;Lục&lt;/font&gt;&lt;/b&gt;</translation>
     </message>
     <message>
         <source>&lt;b&gt;&lt;font color=&quot;#ff0000&quot;&gt;Red&lt;/font&gt;&lt;/b&gt;</source>
-        <translation>&lt;b&gt;&lt;font color=&quot;#ff0000&quot;&gt;Đỏ&lt;/font&gt;&lt;/b&gt;</translation>
+        <translation type="obsolete">&lt;b&gt;&lt;font color=&quot;#ff0000&quot;&gt;Đỏ&lt;/font&gt;&lt;/b&gt;</translation>
     </message>
     <message>
         <source>&lt;b&gt;&lt;font color=&quot;#0000ff&quot;&gt;Blue&lt;/font&gt;&lt;/b&gt;</source>
-        <translation>&lt;b&gt;&lt;font color=&quot;#0000ff&quot;&gt;Xanh&lt;/font&gt;&lt;/b&gt;</translation>
+        <translation type="obsolete">&lt;b&gt;&lt;font color=&quot;#0000ff&quot;&gt;Xanh&lt;/font&gt;&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Color</source>
-        <translation>Màu</translation>
+        <translation type="obsolete">Màu</translation>
     </message>
     <message>
         <source>Grayscale</source>
@@ -13384,15 +15048,15 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Gray</source>
-        <translation>Xám</translation>
+        <translation type="obsolete">Xám</translation>
     </message>
     <message>
         <source>Std Deviations</source>
-        <translation>Độ lệch chuẩn</translation>
+        <translation type="obsolete">Độ lệch chuẩn</translation>
     </message>
     <message>
         <source>Color Map</source>
-        <translation>Bản đồ màu</translation>
+        <translation type="obsolete">Bản đồ màu</translation>
     </message>
     <message>
         <source>Show As</source>
@@ -13459,7 +15123,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Resampling Method</source>
-        <translation>Phương pháp lấy mẫu lại</translation>
+        <translation type="obsolete">Phương pháp lấy mẫu lại</translation>
     </message>
     <message>
         <source>Average Magphase</source>
@@ -13475,7 +15139,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Build Pyramids</source>
-        <translation>Tạo tháp</translation>
+        <translation type="obsolete">Tạo tháp</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;/head&gt;&lt;body style=&quot;font-size:12pt;font-family:Arial&quot;&gt;
@@ -13492,7 +15156,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Pyramid Resolutions</source>
-        <translation>Độ phân giải tháp</translation>
+        <translation type="obsolete">Độ phân giải tháp</translation>
     </message>
     <message>
         <source>Thumbnail</source>
@@ -13544,7 +15208,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Maximum 1:</source>
-        <translation>Trị lớn nhất 1:</translation>
+        <translation type="obsolete">Trị lớn nhất 1:</translation>
     </message>
     <message>
         <source>Maximum scale at which this layer will be displayed. </source>
@@ -13552,7 +15216,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Minimum 1:</source>
-        <translation>Trị nhỏ nhất 1:</translation>
+        <translation type="obsolete">Trị nhỏ nhất 1:</translation>
     </message>
     <message>
         <source>Minimum scale at which this layer will be displayed. </source>
@@ -13581,11 +15245,11 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Out Of Range OK?</source>
-        <translation>Nằm ngoài ranh giới - Chấp nhận?</translation>
+        <translation type="obsolete">Nằm ngoài ranh giới - Chấp nhận?</translation>
     </message>
     <message>
         <source>Allow Approximation</source>
-        <translation>Cho phép tính gần đúng</translation>
+        <translation type="obsolete">Cho phép tính gần đúng</translation>
     </message>
     <message>
         <source>Chart Type</source>
@@ -13593,11 +15257,11 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Bar Chart</source>
-        <translation>Biểu đồ Cột</translation>
+        <translation type="obsolete">Biểu đồ Cột</translation>
     </message>
     <message>
         <source>Line Graph</source>
-        <translation>Biểu đồ đường</translation>
+        <translation type="obsolete">Biểu đồ đường</translation>
     </message>
     <message>
         <source>X Range:</source>
@@ -13609,7 +15273,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Spatial Reference System</source>
-        <translation>Hệ Tham chiếu Không gian</translation>
+        <translation type="obsolete">Hệ Tham chiếu Không gian</translation>
     </message>
     <message>
         <source>Change</source>
@@ -13632,38 +15296,38 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Display</source>
-        <translation>Trình bày</translation>
+        <translation type="obsolete">Trình bày</translation>
     </message>
     <message>
         <source>Grayscale Image</source>
-        <translation>Ảnh thang độ Xám</translation>
+        <translation type="obsolete">Ảnh thang độ Xám</translation>
     </message>
     <message>
         <source>Color Image</source>
-        <translation>Ảnh Màu</translation>
+        <translation type="obsolete">Ảnh Màu</translation>
     </message>
     <message>
         <source>DebugInfo</source>
-        <translation>Thông tin gỡ lỗi</translation>
+        <translation type="obsolete">Thông tin gỡ lỗi</translation>
     </message>
     <message>
         <source>Scale Dependent Visibility</source>
-        <translation>Phép xem phụ thuộc vào tỷ lệ</translation>
+        <translation type="obsolete">Phép xem phụ thuộc vào tỷ lệ</translation>
     </message>
     <message>
         <source>Column Count:</source>
-        <translation>Đếm Cột:</translation>
+        <translation type="obsolete">Đếm Cột:</translation>
     </message>
     <message>
         <source>Transparent</source>
-        <translation>Trong suốt</translation>
+        <translation type="obsolete">Trong suốt</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;/head&gt;&lt;body style=&quot;font-size:10pt;font-family:Sans Serif&quot;&gt;
 &lt;p style=&quot;margin-top:14px&quot; dir=&quot;ltr&quot;&gt;&lt;span style=&quot;font-weight:600&quot;&gt;Notes&lt;/span&gt;&lt;/p&gt;
 &lt;/body&gt;&lt;/html&gt;
 </source>
-        <translation>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;/head&gt;&lt;body style=&quot;font-size:10pt;font-family:Sans Serif&quot;&gt;
+        <translation type="obsolete">&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;/head&gt;&lt;body style=&quot;font-size:10pt;font-family:Sans Serif&quot;&gt;
 &lt;p style=&quot;margin-top:14px&quot; dir=&quot;ltr&quot;&gt;&lt;span style=&quot;font-weight:600&quot;&gt;Ghi chú&lt;/span&gt;&lt;/p&gt;
 &lt;/body&gt;&lt;/html&gt;</translation>
     </message>
@@ -13675,12 +15339,319 @@ p, li { white-space: pre-wrap; }
 &lt;p dir=&quot;ltr&quot;&gt;&lt;span style=&quot;color:#ff0000&quot;&gt;Please note that building pyramids could corrupt your image - always make a backup of your data first!&lt;/span&gt;&lt;/p&gt;
 &lt;/body&gt;&lt;/html&gt;
 </source>
-        <translation>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;/head&gt;&lt;body style=&quot;font-size:10pt;font-family:Sans Serif&quot;&gt;
+        <translation type="obsolete">&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;/head&gt;&lt;body style=&quot;font-size:10pt;font-family:Sans Serif&quot;&gt;
 &lt;p style=&quot;margin-top:18px&quot; dir=&quot;ltr&quot;&gt;&lt;span style=&quot;font-size:15pt;font-weight:600&quot;&gt;Mô tả&lt;/span&gt;&lt;/p&gt;
 &lt;p dir=&quot;ltr&quot;&gt;Các lớp raster có độ phân giải lớn có thể làm chậm việc di chuyển trong QGIS. Bằng cách tạo ra các bản sao có độ phân giải thấp hơn (tháp - pyramid), hiệu suất có thể được cải thiện đáng kể khi QGIS chọn độ phân giải thích hợp nhất để sử dụng tùy theo mức độ phóng lớn. Bạn phải có quyền ghi trong thư mục nơi dữ liệu gốc được lưu để có thể tạo tháp. &lt;/p&gt;
 &lt;p dir=&quot;ltr&quot;&gt;&lt;span style=&quot;color:#ff0000&quot;&gt;Lưu ý rằng việc xây dựng tháp có thể thay đổi tập tin dữ liệu gốc và khi đã được tạo ra không thể loại bỏ chúng được.&lt;/span&gt;&lt;/p&gt;
 &lt;p dir=&quot;ltr&quot;&gt;&lt;span style=&quot;color:#ff0000&quot;&gt;Lưu ý rằng việc xây dựng pyramid có thể làm hỏng ảnh của bạn - luôn sao lưu dữ liệu trước!&lt;/span&gt;&lt;/p&gt;
 &lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <source>Render as</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Single band gray</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Three band color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>RGB mode band selection and scaling</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Red band</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Green band</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Blue band</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Custom min / max values</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Red min</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Red max</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Green min</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Green max</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Blue min</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Blue max</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Std. deviation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Single band properties</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Gray band</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Color map</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Invert color map</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Min</source>
+        <translation type="unfinished">Nhỏ nhất</translation>
+    </message>
+    <message>
+        <source>Max</source>
+        <translation type="unfinished">Lớn nhất</translation>
+    </message>
+    <message>
+        <source>Use standard deviation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Note:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Load min / max values from band</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Estimate (faster)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Actual (slower)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Load</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Contrast enhancement</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Current</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save current contrast enhancement algorithm as default. This setting will be persistent between QGIS sessions.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Saves current contrast enhancement algorithm as a default. This setting will be persistent between QGIS sessions.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Default</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>TextLabel</source>
+        <translation type="unfinished">Nhãn văn bản</translation>
+    </message>
+    <message>
+        <source>Transparency</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Global transparency</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> 00%</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No data value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reset no data value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Custom transparency options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Transparency band</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Transparent pixel list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add values manually</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>...</source>
+        <translation type="unfinished">...</translation>
+    </message>
+    <message>
+        <source>Add Values from display</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Remove selected row</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Default values</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Import from file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Export to file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Colormap</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Number of entries</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete entry</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Classify</source>
+        <translation type="unfinished">Phân loại</translation>
+    </message>
+    <message>
+        <source>1</source>
+        <translation type="unfinished">1</translation>
+    </message>
+    <message>
+        <source>2</source>
+        <translation type="unfinished">2</translation>
+    </message>
+    <message>
+        <source>Color interpolation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Classification mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Spatial reference system</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Scale dependent visibility</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Maximum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Minimum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show debug info</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Layer source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Display name</source>
+        <translation type="unfinished">Tên hiển thị</translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Sans Serif&apos;; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pyramid resolutions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Resampling method</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Build pyramids</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Line graph</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Bar chart</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Column count</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Out of range OK?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Allow approximation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Restore Default Style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save As Default</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Load Style ...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save Style ...</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -13700,6 +15671,39 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>Done</source>
         <translation>Xong</translation>
+    </message>
+</context>
+<context>
+    <name>QgsSOSPlugin</name>
+</context>
+<context>
+    <name>QgsSOSSourceSelect</name>
+</context>
+<context>
+    <name>QgsSOSSourceSelectBase</name>
+    <message>
+        <source>&amp;New</source>
+        <translation type="obsolete">&amp;Mới</translation>
+    </message>
+    <message>
+        <source>Delete</source>
+        <translation type="obsolete">Xóa</translation>
+    </message>
+    <message>
+        <source>Edit</source>
+        <translation type="obsolete">Chỉnh sửa</translation>
+    </message>
+    <message>
+        <source>C&amp;onnect</source>
+        <translation type="obsolete">&amp;Kết nối</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation type="obsolete">Tên</translation>
+    </message>
+    <message>
+        <source>Id</source>
+        <translation type="obsolete">Id</translation>
     </message>
 </context>
 <context>
@@ -13787,6 +15791,22 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>&amp;Decorations</source>
         <translation>&amp;Trang trí</translation>
+    </message>
+    <message>
+        <source> feet/miles</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> miles</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> mile</source>
+        <translation type="unfinished">dặm</translation>
+    </message>
+    <message>
+        <source> inches</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -13904,6 +15924,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>Found %d matching features.</source>
         <translation type="obsolete">
+        
         </translation>
     </message>
     <message>
@@ -13964,6 +15985,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>Coordinate Reference System (%1 available)</source>
         <translation type="obsolete">
+        
         </translation>
     </message>
     <message>
@@ -13980,7 +16002,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>&lt;p&gt;Several WMS servers have been added to the server list. Note that the proxy fields have been left blank and if you access the internet via a web proxy, you will need to individually set the proxy fields with appropriate values.&lt;/p&gt;</source>
-        <translation>&lt;p&gt;Một vài server WMS đã được thêm vào danh sách server. Lưu ý rằng các trường proxy được bỏ trống và nếu bạn truy cập internet thông qua một web proxy, bạn sẽ phải thiết lập từng trường proxy với các giá trị phù hợp.&lt;/p&gt;</translation>
+        <translation type="obsolete">&lt;p&gt;Một vài server WMS đã được thêm vào danh sách server. Lưu ý rằng các trường proxy được bỏ trống và nếu bạn truy cập internet thông qua một web proxy, bạn sẽ phải thiết lập từng trường proxy với các giá trị phù hợp.&lt;/p&gt;</translation>
     </message>
     <message>
         <source>Coordinate Reference System</source>
@@ -13989,6 +16011,10 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>There are no available coordinate reference system for the set of layers you&apos;ve selected.</source>
         <translation>Không có hệ tham chiếu tọa độ nào dùng được cho tập hợp các lớp mà bạn đã chọn.</translation>
+    </message>
+    <message>
+        <source>Several WMS servers have been added to the server list. Note that if you access the internet via a web proxy, you will need to set the proxy settings in the QGIS options dialog.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -14217,6 +16243,97 @@ p, li { white-space: pre-wrap; }
     </message>
 </context>
 <context>
+    <name>QgsSingleSymbolDialog</name>
+    <message>
+        <source>Solid Line</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dash Line</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dot Line</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dash Dot Line</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dash Dot Dot Line</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No Pen</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Solid</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Horizontal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Vertical</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cross</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>BDiagonal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>FDiagonal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Diagonal X</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dense1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dense2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dense3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dense4</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dense5</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dense6</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dense7</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No Brush</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Texture</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>QgsSingleSymbolDialogBase</name>
     <message>
         <source>Single Symbol</source>
@@ -14224,31 +16341,31 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Fill Patterns:</source>
-        <translation>Kiểu tô màu:</translation>
+        <translation type="obsolete">Kiểu tô màu:</translation>
     </message>
     <message>
         <source>No Fill</source>
-        <translation>Không tô màu</translation>
+        <translation type="obsolete">Không tô màu</translation>
     </message>
     <message>
         <source>Outline Width:</source>
-        <translation>Chiều rộng đường viền:</translation>
+        <translation type="obsolete">Chiều rộng đường viền:</translation>
     </message>
     <message>
         <source>Fill Color:</source>
-        <translation>Màu tô:</translation>
+        <translation type="obsolete">Màu tô:</translation>
     </message>
     <message>
         <source>Outline color:</source>
-        <translation>Màu đường viền:</translation>
+        <translation type="obsolete">Màu đường viền:</translation>
     </message>
     <message>
         <source>Outline Style:</source>
-        <translation>Kiểu đường viền:</translation>
+        <translation type="obsolete">Kiểu đường viền:</translation>
     </message>
     <message>
         <source>Point</source>
-        <translation>Điểm</translation>
+        <translation type="obsolete">Điểm</translation>
     </message>
     <message>
         <source>Size</source>
@@ -14256,15 +16373,93 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Symbol</source>
-        <translation>Biểu tượng</translation>
+        <translation type="obsolete">Biểu tượng</translation>
     </message>
     <message>
         <source>Label:</source>
-        <translation>Nhãn:</translation>
+        <translation type="obsolete">Nhãn:</translation>
     </message>
     <message>
         <source>Browse:</source>
-        <translation>Duyệt:</translation>
+        <translation type="obsolete">Duyệt:</translation>
+    </message>
+    <message>
+        <source>Label</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Point Symbol</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Area scale field</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Rotation field</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Style Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Outline style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Outline color</source>
+        <translation type="unfinished">Randfarbe</translation>
+    </message>
+    <message>
+        <source>Outline width</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fill color</source>
+        <translation type="unfinished">Füllfarbe</translation>
+    </message>
+    <message>
+        <source>Fill style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>...</source>
+        <translation type="unfinished">...</translation>
+    </message>
+</context>
+<context>
+    <name>QgsSnappingDialog</name>
+    <message>
+        <source>to vertex</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>to segment</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>to vertex and segment</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QgsSnappingDialogBase</name>
+    <message>
+        <source>Snapping options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Layer</source>
+        <translation type="unfinished">Lớp</translation>
+    </message>
+    <message>
+        <source>Mode</source>
+        <translation type="unfinished">Chế độ</translation>
+    </message>
+    <message>
+        <source>Tolerance</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -14291,7 +16486,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source> - Edit Column Names</source>
-        <translation>- Chỉnh sửa tên cột</translation>
+        <translation type="obsolete">- Chỉnh sửa tên cột</translation>
     </message>
     <message>
         <source>The following Shapefile(s) could not be loaded:
@@ -14470,7 +16665,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Use the table below to edit column names. Make sure that none of the columns are named using a PostgreSQL reserved word</source>
-        <translation>Dùng bảng dưới đây để chỉnh sửa tên các cột. Đảm bảo rằng không có cột nào được đặt tên có các từ đặc biệt ProgreSQL đã dùng</translation>
+        <translation type="obsolete">Dùng bảng dưới đây để chỉnh sửa tên các cột. Đảm bảo rằng không có cột nào được đặt tên có các từ đặc biệt ProgreSQL đã dùng</translation>
     </message>
     <message>
         <source>Error</source>
@@ -14502,7 +16697,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>New Connection</source>
-        <translation>Kết nối mới</translation>
+        <translation type="obsolete">Kết nối mới</translation>
     </message>
     <message>
         <source>Add Shapefiles</source>
@@ -14531,6 +16726,18 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>&lt;/p&gt;&lt;p&gt;The database said:</source>
         <translation>&lt;/p&gt;&lt;p&gt;CSDL nói rằng:</translation>
+    </message>
+    <message>
+        <source>Password for </source>
+        <translation type="unfinished">Mật mã cho</translation>
+    </message>
+    <message>
+        <source>Please enter your password:</source>
+        <translation type="unfinished">Vui lòng nhập mật mã của bạn:</translation>
+    </message>
+    <message>
+        <source>%1 of %2 shapefiles could not be imported.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -14573,7 +16780,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Shapefile List</source>
-        <translation>Danh sách tập tin shape</translation>
+        <translation type="obsolete">Danh sách tập tin shape</translation>
     </message>
     <message>
         <source>File Name</source>
@@ -14601,11 +16808,11 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Geometry Column Name</source>
-        <translation>Tên cột hình học</translation>
+        <translation type="obsolete">Tên cột hình học</translation>
     </message>
     <message>
         <source>SRID</source>
-        <translation>SRID</translation>
+        <translation type="obsolete">SRID</translation>
     </message>
     <message>
         <source>Add ...</source>
@@ -14621,7 +16828,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Shapefile to PostGIS Import Tool</source>
-        <translation>Shapefile in PostGIS Import Tool</translation>
+        <translation type="obsolete">Shapefile in PostGIS Import Tool</translation>
     </message>
     <message>
         <source>Import the defined shapefiles to PostGIS</source>
@@ -14649,7 +16856,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Use Default SRID</source>
-        <translation>Dùng SRID mặc định</translation>
+        <translation type="obsolete">Dùng SRID mặc định</translation>
     </message>
     <message>
         <source>Set the SRID to the default value</source>
@@ -14657,7 +16864,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Use Default Geometry Column Name</source>
-        <translation>Dùng tên cột Hình học mặc định</translation>
+        <translation type="obsolete">Dùng tên cột Hình học mặc định</translation>
     </message>
     <message>
         <source>Set the geometry column name to the default value</source>
@@ -14687,6 +16894,26 @@ p, li { white-space: pre-wrap; }
         <source>Edit the current PostGIS connection</source>
         <translation>Chỉnh sửa kết nối PostGIS hiện tại</translation>
     </message>
+    <message>
+        <source>Connect to PostGIS</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Import options and shapefile list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use Default SRID or specify here</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use Default Geometry Column Name or specify here</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Primary Key Column Name</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QgsSpitPlugin</name>
@@ -14702,6 +16929,12 @@ p, li { white-space: pre-wrap; }
         <source>&amp;Spit</source>
         <translation>&amp;SPIT</translation>
     </message>
+</context>
+<context>
+    <name>QgsTINInterpolatorDialog</name>
+</context>
+<context>
+    <name>QgsTINInterpolatorDialogBase</name>
 </context>
 <context>
     <name>QgsUValDialogBase</name>
@@ -14734,6 +16967,18 @@ p, li { white-space: pre-wrap; }
     </message>
 </context>
 <context>
+    <name>QgsUniqueValueDialog</name>
+    <message>
+        <source>Confirm Delete</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The classification field was changed from &apos;%1&apos; to &apos;%2&apos;.
+Should the existing classes be deleted before classification?</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>QgsUniqueValueDialogBase</name>
     <message>
         <source>Form1</source>
@@ -14741,26 +16986,46 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Classification Field:</source>
-        <translation>Trường phân loại:</translation>
+        <translation type="obsolete">Trường phân loại:</translation>
     </message>
     <message>
         <source>Delete class</source>
-        <translation>Xóa nhóm</translation>
+        <translation type="obsolete">Xóa nhóm</translation>
     </message>
     <message>
         <source>Classify</source>
         <translation>Phân loại</translation>
+    </message>
+    <message>
+        <source>Classification field</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add class</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete classes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Randomize Colors</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reset Colors</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>QgsVectorAttributesModel</name>
     <message>
         <source>id</source>
-        <translation>id</translation>
+        <translation type="obsolete">id</translation>
     </message>
     <message>
         <source>Field %1</source>
-        <translation>Trường %1</translation>
+        <translation type="obsolete">Trường %1</translation>
     </message>
 </context>
 <context>
@@ -15020,6 +17285,22 @@ p, li { white-space: pre-wrap; }
         <source>Comment</source>
         <translation>Ghi chú</translation>
     </message>
+    <message>
+        <source>Default Style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>QGIS Layer Style File (*.qml)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>QGIS</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unknown style format: </source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QgsVectorLayerPropertiesBase</name>
@@ -15029,7 +17310,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Legend type:</source>
-        <translation>Kiểu Chú giải:</translation>
+        <translation type="obsolete">Kiểu Chú giải:</translation>
     </message>
     <message>
         <source>Layer source</source>
@@ -15065,7 +17346,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Transparency:</source>
-        <translation>Độ trong suốt:</translation>
+        <translation type="obsolete">Độ trong suốt:</translation>
     </message>
     <message>
         <source>General</source>
@@ -15097,11 +17378,11 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Maximum 1:</source>
-        <translation>Trị lớn nhất 1:</translation>
+        <translation type="obsolete">Trị lớn nhất 1:</translation>
     </message>
     <message>
         <source>Minimum 1:</source>
-        <translation>Trị nhỏ nhất 1:</translation>
+        <translation type="obsolete">Trị nhỏ nhất 1:</translation>
     </message>
     <message>
         <source>Minimum scale at which this layer will be displayed. </source>
@@ -15113,7 +17394,7 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Spatial Index</source>
-        <translation>Chỉ mục Không gian</translation>
+        <translation type="obsolete">Chỉ mục Không gian</translation>
     </message>
     <message>
         <source>Create Spatial Index</source>
@@ -15121,15 +17402,15 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Create</source>
-        <translation>Tạo</translation>
+        <translation type="obsolete">Tạo</translation>
     </message>
     <message>
         <source>Spatial Reference System</source>
-        <translation>Hệ tham chiếu không gian</translation>
+        <translation type="obsolete">Hệ tham chiếu không gian</translation>
     </message>
     <message>
         <source>Change</source>
-        <translation>Thay đổi</translation>
+        <translation type="obsolete">Thay đổi</translation>
     </message>
     <message>
         <source>Subset</source>
@@ -15155,24 +17436,64 @@ p, li { white-space: pre-wrap; }
         <source>Actions</source>
         <translation>Hành động</translation>
     </message>
+    <message>
+        <source>Legend type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Transparency</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Change SRS</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Maximum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Minimum</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Restore Default Style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save As Default</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Load Style ...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Save Style ...</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QgsVectorSymbologyWidgetBase</name>
     <message>
         <source>Form2</source>
-        <translation>Mẫu 2</translation>
+        <translation type="obsolete">Mẫu 2</translation>
     </message>
     <message>
         <source>Label</source>
-        <translation>Nhãn</translation>
+        <translation type="obsolete">Nhãn</translation>
     </message>
     <message>
         <source>Min</source>
-        <translation>Nhỏ nhất</translation>
+        <translation type="obsolete">Nhỏ nhất</translation>
     </message>
     <message>
         <source>Max</source>
-        <translation>Lớn nhất</translation>
+        <translation type="obsolete">Lớn nhất</translation>
     </message>
     <message>
         <source>Rivers</source>
@@ -15180,19 +17501,19 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Symbol Classes:</source>
-        <translation>Các nhóm biểu tượng:</translation>
+        <translation type="obsolete">Các nhóm biểu tượng:</translation>
     </message>
     <message>
         <source>Count:</source>
-        <translation>Đếm:</translation>
+        <translation type="obsolete">Đếm:</translation>
     </message>
     <message>
         <source>Mode:</source>
-        <translation>Chế độ:</translation>
+        <translation type="obsolete">Chế độ:</translation>
     </message>
     <message>
         <source>Field:</source>
-        <translation>Trường:</translation>
+        <translation type="obsolete">Trường:</translation>
     </message>
 </context>
 <context>
@@ -15232,7 +17553,7 @@ p, li { white-space: pre-wrap; }
     <name>QgsWFSSourceSelectBase</name>
     <message>
         <source>Note: this plugin not considered stable yet. Use it on your own risk</source>
-        <translation>Ghi chú: phần mở rộng này hiện tại chưa ổn định. Khi dùng bạn &quot;tự chịu trách nhiệm&quot;</translation>
+        <translation type="obsolete">Ghi chú: phần mở rộng này hiện tại chưa ổn định. Khi dùng bạn &quot;tự chịu trách nhiệm&quot;</translation>
     </message>
     <message>
         <source>Title</source>
@@ -15281,6 +17602,10 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>C&amp;onnect</source>
         <translation>&amp;Kết nối</translation>
+    </message>
+    <message>
+        <source>Add WFS Layer from a Server</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -15511,6 +17836,102 @@ p, li { white-space: pre-wrap; }
     </message>
 </context>
 <context>
+    <name>QuickPrintGui</name>
+    <message>
+        <source>Portable Document Format (*.pdf)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>quickprint</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unknown format: </source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QuickPrintGuiBase</name>
+    <message>
+        <source>QGIS Quick Print Plugin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Note: If you want more control over the map layout please use the map composer function in QGIS.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Output</source>
+        <translation type="unfinished">Đầu ra</translation>
+    </message>
+    <message>
+        <source>Use last filename but incremented.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>last used filename but incremented will be shown here</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Prompt for file name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Page Size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Copyright</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Map Name e.g. Water Features</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Map Title e.g. ACME inc.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quick Print</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QuickPrintPlugin</name>
+    <message>
+        <source>Quick Print</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Replace this with a short description of the what the plugin does</source>
+        <translation type="unfinished">Thay thế dòng này bằng một mô tả ngắn gọn về chức năng của phần mở rộng</translation>
+    </message>
+    <message>
+        <source>&amp;Quick Print</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>RepositoryDetailsDialog</name>
+    <message>
+        <source>Repository details</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation type="unfinished">Tên:</translation>
+    </message>
+    <message>
+        <source>URL:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>http://</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>SplashScreen</name>
     <message>
         <source>Quantum GIS - </source>
@@ -15525,11 +17946,11 @@ p, li { white-space: pre-wrap; }
     <name>[pluginname]Gui</name>
     <message>
         <source>QGIS Plugin Template</source>
-        <translation>Mẫu phần mở rộng của QGIS</translation>
+        <translation type="obsolete">Mẫu phần mở rộng của QGIS</translation>
     </message>
     <message>
         <source>Plugin Template</source>
-        <translation>Mẫu phần mở rộng</translation>
+        <translation type="obsolete">Mẫu phần mở rộng</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
@@ -15596,7 +18017,7 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:&apos;Sans Serif&apos;;&quot;&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:&apos;Sans Serif&apos;;&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;The QGIS Team&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:&apos;Sans Serif&apos;; font-weight:600;&quot;&gt;2007&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;(new line)
+        <translation type="obsolete">&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;(new line)
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;DejaVu Sans Condensed&apos;; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:&apos;Sans Serif&apos;;&quot;&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;Chào mừng bạn đến với trình tạo phần mở rộng tự động!&lt;/span&gt;&lt;/p&gt;
@@ -15666,11 +18087,11 @@ p, li { white-space: pre-wrap; }
     <name>[pluginname]GuiBase</name>
     <message>
         <source>QGIS Plugin Template</source>
-        <translation type="obsolete">Mẫu Plugin của QGIS</translation>
+        <translation type="unfinished">Mẫu Plugin của QGIS</translation>
     </message>
     <message>
         <source>Plugin Template</source>
-        <translation type="obsolete">Mẫu Plugin</translation>
+        <translation type="unfinished">Mẫu Plugin</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;/head&gt;&lt;body style=&quot;font-size:12pt;font-family:Arial&quot;&gt;
@@ -15716,6 +18137,14 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>Replace this with a short description of the what the plugin does</source>
         <translation>Thay thế dòng này bằng một mô tả ngắn gọn về chức năng của phần mở rộng</translation>
+    </message>
+    <message>
+        <source>[menuitemname]</source>
+        <translation type="unfinished">[tên_mục_menu]</translation>
+    </message>
+    <message>
+        <source>&amp;[menuname]</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 </TS>
