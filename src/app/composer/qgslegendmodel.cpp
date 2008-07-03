@@ -18,6 +18,7 @@
 #include "qgslegendmodel.h"
 #include "qgsmaplayer.h"
 #include "qgsmaplayerregistry.h"
+#include "qgsrasterlayer.h"
 #include "qgsrenderer.h"
 #include "qgssymbol.h"
 #include "qgsvectorlayer.h"
@@ -59,6 +60,7 @@ void QgsLegendModel::setLayerSet(const QStringList& layerIds)
 	  addVectorLayerItems(layerItem, currentLayer);
 	  break;
 	case QgsMapLayer::RASTER:
+	  addRasterLayerItem(layerItem, currentLayer);
 	  break;
 	default:
 	  break;
@@ -146,3 +148,25 @@ int QgsLegendModel::addVectorLayerItems(QStandardItem* layerItem, QgsMapLayer* v
   return 0;
 }
 
+int QgsLegendModel::addRasterLayerItem(QStandardItem* layerItem, QgsMapLayer* rlayer)
+{
+  if(!layerItem || !rlayer)
+    {
+      return 1;
+    }
+
+  QgsRasterLayer* rasterLayer = dynamic_cast<QgsRasterLayer*>(rlayer);
+  if(!rasterLayer)
+    {
+      return 2;
+    }
+
+  QStandardItem* currentSymbolItem = new QStandardItem(QIcon(rasterLayer->getLegendQPixmap(true)), "Raster");
+  QStandardItem* currentLabelItem = new QStandardItem("");
+
+  int currentRowCount = layerItem->rowCount();
+  layerItem->setChild(currentRowCount, 0, currentSymbolItem);
+  layerItem->setChild(currentRowCount, 1, currentLabelItem);
+
+  return 0;
+}

@@ -124,6 +124,8 @@ void QgsComposerLegend::drawLayerChildItems(QPainter* p, QStandardItem* layerIte
   QStandardItem* secondItem;
 
   int numChildren = layerItem->rowCount();
+  p->setFont(mItemFont);
+
   for(int i = 0; i < numChildren; ++i)
     {
       currentYCoord += mSymbolSpace;
@@ -134,7 +136,8 @@ void QgsComposerLegend::drawLayerChildItems(QPainter* p, QStandardItem* layerIte
 
       if(secondItem) //an item with an icon
 	{
-	  firstItem->icon().paint(p, QRect(currentXCoord, currentYCoord, mSymbolWidth, mSymbolHeight));
+	  QIcon symbolIcon = firstItem->icon();
+	  symbolIcon.paint(p, QRect(currentXCoord, currentYCoord + (itemHeight - mSymbolHeight) /2, mSymbolWidth, mSymbolHeight));
 	  currentXCoord += (mSymbolWidth + mIconLabelSpace);
 	  p->drawText(QPointF(currentXCoord, currentYCoord + itemFontMetrics.height()), secondItem->text());
 	}

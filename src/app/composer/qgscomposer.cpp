@@ -24,6 +24,7 @@
 #include "qgscomposerlabel.h"
 #include "qgscomposerlabelwidget.h"
 #include "qgscomposerlegend.h"
+#include "qgscomposerlegendwidget.h"
 #include "qgscomposermap.h"
 #include "qgscomposermapwidget.h"
 #include "qgscomposerscalebar.h"
@@ -1152,7 +1153,8 @@ void QgsComposer::addComposerLegend(QgsComposerLegend* legend)
     }
   
   //todo: create a composer legend widget
-  mItemWidgetMap.insert(legend, 0);
+  QgsComposerLegendWidget* lWidget = new QgsComposerLegendWidget(legend);
+  mItemWidgetMap.insert(legend, lWidget);
 }
 
 void QgsComposer::deleteItem(QgsComposerItem* item)

@@ -37,6 +37,10 @@ class QgsLegendModel: public QStandardItemModel
    @return 0 in case of success*/
   int addVectorLayerItems(QStandardItem* layerItem, QgsMapLayer* vlayer);
 
+  /**Adds item of raster layer
+   @return 0 in case of success*/
+  int addRasterLayerItem(QStandardItem* layerItem, QgsMapLayer* rlayer);
+
  protected:
   QStringList mLayerIds;
 };

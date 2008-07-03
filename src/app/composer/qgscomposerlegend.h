@@ -36,8 +36,36 @@ class QgsComposerLegend: public QgsComposerItem
   /**Returns pointer to the legend model*/
   QgsLegendModel* model(){return &mLegendModel;}
 
+  //setters and getters
   void setTitle(const QString& t) {mTitle = t;}
   QString title() const {return mTitle;}
+
+  const QFont& titleFont() const {return mTitleFont;}
+  void setTitleFont(const QFont& f){mTitleFont = f;}
+
+  const QFont& layerFont() const {return mLayerFont;}
+  void setLayerFont(const QFont& f){mLayerFont = f;}
+
+  const QFont& itemFont() const {return mItemFont;}
+  void setItemFont(const QFont& f){mItemFont = f;}
+
+  double boxSpace() const {return mBoxSpace;}
+  void setBoxSpace(double s){mBoxSpace = s;}
+
+  double layerSpace() const {return mLayerSpace;}
+  void setLayerSpace(double s){mLayerSpace = s;}
+
+  double symbolSpace() const {return mSymbolSpace;}
+  void setSymbolSpace(double s){mSymbolSpace = s;}
+
+  double iconLabelSpace() const {return mIconLabelSpace;}
+  void setIconLabelSpace(double s){mIconLabelSpace = s;}
+
+  double symbolWidth() const {return mSymbolWidth;}
+  void setSymbolWidth(double w){mSymbolWidth = w;}
+
+  double symbolHeight() const {return mSymbolHeight;}
+  void setSymbolHeight(double h){mSymbolHeight = h;}
 
  protected:
   QString mTitle;
