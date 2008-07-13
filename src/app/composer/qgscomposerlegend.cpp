@@ -18,6 +18,7 @@
 #include "qgscomposerlegend.h"
 #include "qgsmaplayer.h"
 #include "qgsmaplayerregistry.h"
+#include "qgssymbol.h"
 #include <QPainter>
 
 QgsComposerLegend::QgsComposerLegend(QgsComposition* composition): QgsComposerItem(composition), mTitle(QObject::tr("Legend")), mBoxSpace(2), mLayerSpace(3), mSymbolSpace(2), mIconLabelSpace(2)
@@ -137,8 +138,29 @@ void QgsComposerLegend::drawLayerChildItems(QPainter* p, QStandardItem* layerIte
       if(secondItem) //an item with an icon
 	{
 	  QIcon symbolIcon = firstItem->icon();
+
+	  //take QgsSymbol* from user data
+	  QVariant symbolVariant = firstItem->data();
+	  if(!symbolVariant.canConvert<void*>())
+	    {
+	      continue;
+	    }
+	  void* symbolData = symbolVariant.value<void*>();
+	  QgsSymbol* symbol = (QgsSymbol*)(symbolData);
+	  if(!symbol)
+	    {
+	      continue;
+	    }
+
+	  //draw symbol considering output device resolution
+	  drawSymbol(p, symbol, currentYCoord + (itemHeight - mSymbolHeight) /2, currentXCoord);
+	  currentXCoord += mIconLabelSpace;
+
+	  /*
 	  symbolIcon.paint(p, QRect(currentXCoord, currentYCoord + (itemHeight - mSymbolHeight) /2, mSymbolWidth, mSymbolHeight));
 	  currentXCoord += (mSymbolWidth + mIconLabelSpace);
+	  */
+	  
 	  p->drawText(QPointF(currentXCoord, currentYCoord + itemFontMetrics.height()), secondItem->text());
 	}
       else //an item witout icon (e.g. name of classification field)
@@ -148,4 +170,83 @@ void QgsComposerLegend::drawLayerChildItems(QPainter* p, QStandardItem* layerIte
  
       currentYCoord += itemHeight;
     }
+}
+
+void QgsComposerLegend::drawSymbol(QPainter* p, QgsSymbol* s, double currentYCoord, double& currentXPosition) const
+{
+  if(!p || !s)
+    {
+      return;
+    }
+
+  QGis::VectorType symbolType = s->type();
+  switch(symbolType)
+    {
+    case QGis::Point:
+      drawPointSymbol(p, s, currentYCoord, currentXPosition);
+      break;
+    case QGis::Line:
+      drawLineSymbol(p, s, currentYCoord, currentXPosition);
+      break;
+    case QGis::Polygon:
+      drawPolygonSymbol(p, s, currentYCoord, currentXPosition);
+      break;
+    }
+}
+
+void QgsComposerLegend::drawPointSymbol(QPainter* p, QgsSymbol* s, double currentYCoord, double& currentXPosition) const
+{
+  if(!p || !s)
+    {
+      return;
+    }
+
+  QPaintDevice* paintDevice = p->device();
+  if(!paintDevice)
+    {
+      return;
+    }
+
+  double rasterScaleFactor = (paintDevice->logicalDpiX() + paintDevice->logicalDpiY()) / 2.0 / 25.4;
+  double widthScale = (paintDevice->logicalDpiX() + paintDevice->logicalDpiY()) / 2 / 25.4;
+
+  //width scale is 1.0
+  QImage pointImage = s->getPointSymbolAsImage(1.0, false, Qt::yellow, 1.0, 0.0, rasterScaleFactor);
+
+  p->save();
+  p->scale(1.0 / rasterScaleFactor, 1.0 / rasterScaleFactor);
+
+  QPointF imageTopLeft(currentXPosition * rasterScaleFactor, currentYCoord * rasterScaleFactor);
+  p->drawImage(imageTopLeft, pointImage);
+  p->restore();
+
+  currentXPosition += pointImage.width();
+}
+
+void QgsComposerLegend::drawLineSymbol(QPainter* p, QgsSymbol* s, double currentYCoord, double& currentXPosition) const
+{
+  if(!p || !s)
+    {
+      return;
+    }
+
+  double yCoord = currentYCoord + mSymbolHeight/2;
+
+  p->setPen(s->pen());
+  p->drawLine(QPointF(currentXPosition, yCoord), QPointF(currentXPosition + mSymbolWidth, yCoord));
+  currentXPosition += mSymbolWidth;
+}
+
+void QgsComposerLegend::drawPolygonSymbol(QPainter* p, QgsSymbol* s, double currentYCoord, double& currentXPosition) const
+{
+  if(!p || !s)
+    {
+      return;
+    }
+
+  p->setBrush(s->brush());
+  p->setPen(s->pen());
+  p->drawRect(QRectF(currentXPosition, currentYCoord, mSymbolWidth, mSymbolHeight));
+
+  currentXPosition += mSymbolWidth;
 }

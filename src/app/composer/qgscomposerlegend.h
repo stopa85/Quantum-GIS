@@ -21,6 +21,8 @@
 #include "qgscomposeritem.h"
 #include "qgslegendmodel.h"
 
+class QgsSymbol;
+
 class QgsComposerLegend: public QgsComposerItem
 {
  public:
@@ -98,6 +100,12 @@ class QgsComposerLegend: public QgsComposerItem
      @param layerItem parent model item (layer)
      @param currentYCoord in/out: current y position of legend item*/
   void drawLayerChildItems(QPainter* p, QStandardItem* layerItem, double& currentYCoord);
+
+  /**Draws a symbol at the current y position and returns the new x position*/
+  void drawSymbol(QPainter* p, QgsSymbol* s, double currentYCoord, double& currentXPosition) const;
+  void drawPointSymbol(QPainter*, QgsSymbol* s, double currentYCoord, double& currentXPosition) const;
+  void drawLineSymbol(QPainter*, QgsSymbol* s, double currentYCoord, double& currentXPosition) const;
+  void drawPolygonSymbol(QPainter* p, QgsSymbol* s, double currentYCoord, double& currentXPosition) const; 
 };
 
 #endif

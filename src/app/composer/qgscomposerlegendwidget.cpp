@@ -22,6 +22,13 @@
 QgsComposerLegendWidget::QgsComposerLegendWidget(QgsComposerLegend* legend): mLegend(legend)
 {
   setupUi(this);
+
+  if(legend)
+    {
+      mItemTreeView->setModel(legend->model());
+    }
+
+  setGuiElements();
 }
 
 QgsComposerLegendWidget::QgsComposerLegendWidget(): mLegend(0)
@@ -33,6 +40,34 @@ QgsComposerLegendWidget::~QgsComposerLegendWidget()
 {
 
 }
+
+void QgsComposerLegendWidget::setGuiElements()
+{
+  if(!mLegend)
+    {
+      return;
+    }
+
+  blockSignals(true);
+  mTitleLineEdit->setText(mLegend->title());
+  mSymbolWidthSpinBox->setValue(mLegend->symbolWidth());
+  mSymbolHeightSpinBox->setValue(mLegend->symbolHeight());
+  mLayerSpaceSpinBox->setValue(mLegend->layerSpace());
+  mSymbolSpaceSpinBox->setValue(mLegend->symbolSpace());
+  mIconLabelSpaceSpinBox->setValue(mLegend->iconLabelSpace());
+  mBoxSpaceSpinBox->setValue(mLegend->boxSpace());
+
+  if(mLegend->frame())
+    { 
+      mBoxCheckBox->setCheckState(Qt::Checked);
+    }
+  else
+    {
+      mBoxCheckBox->setCheckState(Qt::Unchecked);
+    }
+  blockSignals(false);
+}
+
 
 void QgsComposerLegendWidget::on_mTitleLineEdit_textChanged(const QString& text)
 {

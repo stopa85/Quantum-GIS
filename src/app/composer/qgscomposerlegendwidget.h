@@ -45,6 +45,8 @@ class QgsComposerLegendWidget: public QWidget, private Ui::QgsComposerLegendWidg
 
  private:
   QgsComposerLegendWidget();
+  /**Sets GUI according to state of mLegend*/
+  void setGuiElements();
 
   QgsComposerLegend* mLegend;
 };

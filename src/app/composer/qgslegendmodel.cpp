@@ -23,9 +23,12 @@
 #include "qgssymbol.h"
 #include "qgsvectorlayer.h"
 
-QgsLegendModel::QgsLegendModel()
+QgsLegendModel::QgsLegendModel(): QStandardItemModel()
 {
-
+  QStringList headerLabels;
+  headerLabels << tr("Symbol");
+  headerLabels << tr("Value");
+  setHorizontalHeaderLabels(headerLabels);
 }
 
 QgsLegendModel::~QgsLegendModel()
@@ -118,13 +121,17 @@ int QgsLegendModel::addVectorLayerItems(QStandardItem* layerItem, QgsMapLayer* v
 	  break;
 	}
 
+      //Copy QgsSymbol as user data. Cast to void* necessary such that QMetaType handles it
+      QgsSymbol* legendSymbol = new QgsSymbol(**symbolIt);
+      currentSymbolItem->setData(QVariant::fromValue((void*)legendSymbol));
+
       if(!currentSymbolItem)
 	{
 	  continue;
 	}
 
       int currentRowCount = layerItem->rowCount();
-      layerItem->setChild(currentRowCount, 0, currentSymbolItem);
+      currentSymbolItem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
 
       //label
       QString label;
@@ -141,7 +148,12 @@ int QgsLegendModel::addVectorLayerItems(QStandardItem* layerItem, QgsMapLayer* v
 	}
 
       currentLabelItem = new QStandardItem(label);
-      layerItem->setChild(currentRowCount, 1, currentLabelItem);
+      currentLabelItem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
+
+      QList<QStandardItem*> childItemList;
+      childItemList.push_back(currentSymbolItem);
+      childItemList.push_back(currentLabelItem);
+      layerItem->appendRow(childItemList);
       
     }
   
