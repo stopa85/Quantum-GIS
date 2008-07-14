@@ -87,5 +87,3 @@ void QgsComposerLabelWidget::on_mMarginDoubleSpinBox_valueChanged(double d)
     }
 }
 
-
-

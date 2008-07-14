@@ -173,3 +173,30 @@ void QgsComposerLegendWidget::on_mItemFontButton_clicked()
 	}
     }
 }
+
+void QgsComposerLegendWidget::on_mBoxCheckBox_stateChanged(int state)
+{
+  if(mLegend)
+    {
+      if(state == Qt::Checked)
+	{
+	  mLegend->setFrame(true);
+	}
+      else
+	{
+	  mLegend->setFrame(false);
+	}
+      mLegend->update();
+    }
+}
+
+
+void QgsComposerLegendWidget::on_mBoxSpaceSpinBox_valueChanged(double d)
+{
+  if(mLegend)
+    {
+      mLegend->setBoxSpace(d);
+      mLegend->adjustBoxSize();
+      mLegend->update();
+    }
+}

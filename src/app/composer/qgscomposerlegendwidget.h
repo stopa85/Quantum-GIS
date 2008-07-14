@@ -42,6 +42,8 @@ class QgsComposerLegendWidget: public QWidget, private Ui::QgsComposerLegendWidg
   void on_mTitleFontButton_clicked();
   void on_mLayerFontButton_clicked();
   void on_mItemFontButton_clicked();
+  void on_mBoxCheckBox_stateChanged(int state);
+  void on_mBoxSpaceSpinBox_valueChanged(double d);
 
  private:
   QgsComposerLegendWidget();
