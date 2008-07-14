@@ -74,6 +74,7 @@ void QgsComposerLegendWidget::on_mTitleLineEdit_textChanged(const QString& text)
   if(mLegend)
     {
       mLegend->setTitle(text);
+      mLegend->adjustBoxSize();
       mLegend->update();
     }
 }
@@ -83,6 +84,7 @@ void QgsComposerLegendWidget::on_mSymbolWidthSpinBox_valueChanged(double d)
   if(mLegend)
     {
       mLegend->setSymbolWidth(d);
+      mLegend->adjustBoxSize();
       mLegend->update();
     }
 }
@@ -92,6 +94,7 @@ void QgsComposerLegendWidget::on_mSymbolHeightSpinBox_valueChanged(double d)
   if(mLegend)
     {
       mLegend->setSymbolHeight(d);
+      mLegend->adjustBoxSize();
       mLegend->update();
     }
 }
@@ -101,6 +104,7 @@ void QgsComposerLegendWidget::on_mLayerSpaceSpinBox_valueChanged(double d)
   if(mLegend)
     {
       mLegend->setLayerSpace(d);
+      mLegend->adjustBoxSize();
       mLegend->update();
     }
 }
@@ -110,6 +114,7 @@ void QgsComposerLegendWidget::on_mSymbolSpaceSpinBox_valueChanged(double d)
   if(mLegend)
     {
       mLegend->setSymbolSpace(d);
+      mLegend->adjustBoxSize();
       mLegend->update();
     }
 }
@@ -119,6 +124,7 @@ void QgsComposerLegendWidget::on_mIconLabelSpaceSpinBox_valueChanged(double d)
   if(mLegend)
     {
       mLegend->setIconLabelSpace(d);
+      mLegend->adjustBoxSize();
       mLegend->update();
     }
 }
@@ -132,6 +138,7 @@ void QgsComposerLegendWidget::on_mTitleFontButton_clicked()
       if(ok)
 	{
 	  mLegend->setTitleFont(newFont);
+	  mLegend->adjustBoxSize();
 	  mLegend->update();
 	}
     }
@@ -146,6 +153,7 @@ void QgsComposerLegendWidget::on_mLayerFontButton_clicked()
       if(ok)
 	{
 	  mLegend->setLayerFont(newFont);
+	  mLegend->adjustBoxSize();
 	  mLegend->update();
 	}
     }
@@ -160,6 +168,7 @@ void QgsComposerLegendWidget::on_mItemFontButton_clicked()
       if(ok)
 	{
 	  mLegend->setItemFont(newFont);
+	  mLegend->adjustBoxSize();
 	  mLegend->update();
 	}
     }

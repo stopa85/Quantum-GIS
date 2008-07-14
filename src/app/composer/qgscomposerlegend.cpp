@@ -55,14 +55,25 @@ QgsComposerLegend::~QgsComposerLegend()
 
 void QgsComposerLegend::paint(QPainter* painter, const QStyleOptionGraphicsItem* itemStyle, QWidget* pWidget)
 {
+  paintAndDetermineSize(painter);
+}
+
+QSizeF QgsComposerLegend::paintAndDetermineSize(QPainter* painter)
+{
+  QSizeF size;
+  double maxXCoord = 0;
+
   //go through model...
   QStandardItem* rootItem = mLegendModel.invisibleRootItem();
-  if(!rootItem || !painter)
+  if(!rootItem)
     {
-      return;
+      return size;
     }
 
-  painter->save();
+  if(painter)
+    {
+      painter->save();
+    }
 
   int numLayerItems = rootItem->rowCount();
   QStandardItem* currentLayerItem = 0;
@@ -74,8 +85,13 @@ void QgsComposerLegend::paint(QPainter* painter, const QStyleOptionGraphicsItem*
 
   //draw title
   currentYCoordinate += titleFontMetrics.height();
-  painter->setFont(mTitleFont);
-  painter->drawText(QPointF(mBoxSpace, currentYCoordinate), mTitle);
+  if(painter)
+    {
+      painter->setFont(mTitleFont);
+      painter->drawText(QPointF(mBoxSpace, currentYCoordinate), mTitle);
+    }
+
+  maxXCoord = 2 * mBoxSpace + titleFontMetrics.width(mTitle);
 
   //draw layer items
   for(int i = 0; i < numLayerItems; ++i)
@@ -87,33 +103,50 @@ void QgsComposerLegend::paint(QPainter* painter, const QStyleOptionGraphicsItem*
 	  currentYCoordinate += layerFontMetrics.height();
 
 	  //draw layer Item
-	  painter->setFont(mLayerFont);
-	  painter->drawText(QPointF(mBoxSpace, currentYCoordinate), currentLayerItem->text());
+	  if(painter)
+	    {
+	      painter->setFont(mLayerFont);
+	      painter->drawText(QPointF(mBoxSpace, currentYCoordinate), currentLayerItem->text());
+	    }
+
+	  maxXCoord = std::max(maxXCoord, 2 * mBoxSpace + layerFontMetrics.width(currentLayerItem->text()));
 	  
 	  //and child items
-	  drawLayerChildItems(painter, currentLayerItem, currentYCoordinate);
+	  drawLayerChildItems(painter, currentLayerItem, currentYCoordinate, maxXCoord);
 	}
     }
 
-  painter->restore();
+  currentYCoordinate += mBoxSpace;
 
-  //draw frame and selection boxes if necessary
-  drawFrame(painter);
-  if(isSelected())
+  if(painter)
     {
-      drawSelectionBoxes(painter);
+      painter->restore();
+
+      //draw frame and selection boxes if necessary
+      drawFrame(painter);
+      if(isSelected())
+	{
+	  drawSelectionBoxes(painter);
+	}
     }
+
+  size.setHeight(currentYCoordinate);
+  size.setWidth(maxXCoord);
+  return size;
 }
 
 void QgsComposerLegend::adjustBoxSize()
 {
-  //todo...
-  setSceneRect(QRectF(transform().dx(), transform().dy(), 10, 10));
+  QSizeF size = paintAndDetermineSize(0);
+  if(size.isValid())
+    {
+      setSceneRect(QRectF(transform().dx(), transform().dy(), size.width(), size.height()));
+    }
 }
 
-void QgsComposerLegend::drawLayerChildItems(QPainter* p, QStandardItem* layerItem, double& currentYCoord)
+void QgsComposerLegend::drawLayerChildItems(QPainter* p, QStandardItem* layerItem, double& currentYCoord, double& maxXCoord)
 {
-  if(!layerItem || !p)
+  if(!layerItem)
     {
       return;
     }
@@ -125,7 +158,11 @@ void QgsComposerLegend::drawLayerChildItems(QPainter* p, QStandardItem* layerIte
   QStandardItem* secondItem;
 
   int numChildren = layerItem->rowCount();
-  p->setFont(mItemFont);
+
+  if(p)
+    {
+      p->setFont(mItemFont);
+    }
 
   for(int i = 0; i < numChildren; ++i)
     {
@@ -155,17 +192,21 @@ void QgsComposerLegend::drawLayerChildItems(QPainter* p, QStandardItem* layerIte
 	  //draw symbol considering output device resolution
 	  drawSymbol(p, symbol, currentYCoord + (itemHeight - mSymbolHeight) /2, currentXCoord);
 	  currentXCoord += mIconLabelSpace;
-
-	  /*
-	  symbolIcon.paint(p, QRect(currentXCoord, currentYCoord + (itemHeight - mSymbolHeight) /2, mSymbolWidth, mSymbolHeight));
-	  currentXCoord += (mSymbolWidth + mIconLabelSpace);
-	  */
 	  
-	  p->drawText(QPointF(currentXCoord, currentYCoord + itemFontMetrics.height()), secondItem->text());
+	  if(p)
+	    {
+	      p->drawText(QPointF(currentXCoord, currentYCoord + itemFontMetrics.height()), secondItem->text());
+	    }
+
+	  maxXCoord = std::max(maxXCoord, currentXCoord + itemFontMetrics.width(secondItem->text()) + mBoxSpace);
 	}
       else //an item witout icon (e.g. name of classification field)
 	{
-	  p->drawText(QPointF(currentXCoord, currentYCoord + itemFontMetrics.height()), firstItem->text());
+	  if(p)
+	    {
+	      p->drawText(QPointF(currentXCoord, currentYCoord + itemFontMetrics.height()), firstItem->text());
+	    }
+	  maxXCoord = std::max(maxXCoord, currentXCoord + itemFontMetrics.width(firstItem->text()) + mBoxSpace);
 	}
  
       currentYCoord += itemHeight;
@@ -174,7 +215,7 @@ void QgsComposerLegend::drawLayerChildItems(QPainter* p, QStandardItem* layerIte
 
 void QgsComposerLegend::drawSymbol(QPainter* p, QgsSymbol* s, double currentYCoord, double& currentXPosition) const
 {
-  if(!p || !s)
+  if(!s)
     {
       return;
     }
@@ -196,57 +237,74 @@ void QgsComposerLegend::drawSymbol(QPainter* p, QgsSymbol* s, double currentYCoo
 
 void QgsComposerLegend::drawPointSymbol(QPainter* p, QgsSymbol* s, double currentYCoord, double& currentXPosition) const
 {
-  if(!p || !s)
+  if(!s)
     {
       return;
     }
 
-  QPaintDevice* paintDevice = p->device();
-  if(!paintDevice)
+  QImage pointImage;
+  double rasterScaleFactor = 1.0;
+  if(p)
     {
-      return;
+      QPaintDevice* paintDevice = p->device();
+      if(!paintDevice)
+	{
+	  return;
+	}
+      
+      rasterScaleFactor = (paintDevice->logicalDpiX() + paintDevice->logicalDpiY()) / 2.0 / 25.4;
+      double widthScale = (paintDevice->logicalDpiX() + paintDevice->logicalDpiY()) / 2 / 25.4;
     }
-
-  double rasterScaleFactor = (paintDevice->logicalDpiX() + paintDevice->logicalDpiY()) / 2.0 / 25.4;
-  double widthScale = (paintDevice->logicalDpiX() + paintDevice->logicalDpiY()) / 2 / 25.4;
-
+  
   //width scale is 1.0
-  QImage pointImage = s->getPointSymbolAsImage(1.0, false, Qt::yellow, 1.0, 0.0, rasterScaleFactor);
+  pointImage = s->getPointSymbolAsImage(1.0, false, Qt::yellow, 1.0, 0.0, rasterScaleFactor);
 
-  p->save();
-  p->scale(1.0 / rasterScaleFactor, 1.0 / rasterScaleFactor);
-
-  QPointF imageTopLeft(currentXPosition * rasterScaleFactor, currentYCoord * rasterScaleFactor);
-  p->drawImage(imageTopLeft, pointImage);
-  p->restore();
-
+  if(p)
+    {
+      p->save();
+      p->scale(1.0 / rasterScaleFactor, 1.0 / rasterScaleFactor);
+      
+      QPointF imageTopLeft(currentXPosition * rasterScaleFactor, currentYCoord * rasterScaleFactor);
+      p->drawImage(imageTopLeft, pointImage);
+      p->restore();
+    }
+  
   currentXPosition += pointImage.width();
 }
 
 void QgsComposerLegend::drawLineSymbol(QPainter* p, QgsSymbol* s, double currentYCoord, double& currentXPosition) const
 {
-  if(!p || !s)
+  if(!s)
     {
       return;
     }
 
   double yCoord = currentYCoord + mSymbolHeight/2;
 
-  p->setPen(s->pen());
-  p->drawLine(QPointF(currentXPosition, yCoord), QPointF(currentXPosition + mSymbolWidth, yCoord));
+  if(p)
+    {
+      p->save();
+      p->setPen(s->pen());
+      p->drawLine(QPointF(currentXPosition, yCoord), QPointF(currentXPosition + mSymbolWidth, yCoord));
+      p->restore();
+    }
+
   currentXPosition += mSymbolWidth;
 }
 
 void QgsComposerLegend::drawPolygonSymbol(QPainter* p, QgsSymbol* s, double currentYCoord, double& currentXPosition) const
 {
-  if(!p || !s)
+  if(!s)
     {
       return;
     }
 
-  p->setBrush(s->brush());
-  p->setPen(s->pen());
-  p->drawRect(QRectF(currentXPosition, currentYCoord, mSymbolWidth, mSymbolHeight));
+  if(p)
+    {
+      p->setBrush(s->brush());
+      p->setPen(s->pen());
+      p->drawRect(QRectF(currentXPosition, currentYCoord, mSymbolWidth, mSymbolHeight));
+    }
 
   currentXPosition += mSymbolWidth;
 }

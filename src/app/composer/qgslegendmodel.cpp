@@ -121,9 +121,8 @@ int QgsLegendModel::addVectorLayerItems(QStandardItem* layerItem, QgsMapLayer* v
 	  break;
 	}
 
-      //Copy QgsSymbol as user data. Cast to void* necessary such that QMetaType handles it
-      QgsSymbol* legendSymbol = new QgsSymbol(**symbolIt);
-      currentSymbolItem->setData(QVariant::fromValue((void*)legendSymbol));
+      //Pass pointer to QgsSymbol as user data. Cast to void* necessary such that QMetaType handles it
+      currentSymbolItem->setData(QVariant::fromValue((void*)(*symbolIt)));
 
       if(!currentSymbolItem)
 	{

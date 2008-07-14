@@ -32,6 +32,9 @@ class QgsComposerLegend: public QgsComposerItem
   /** \brief Reimplementation of QCanvasItem::paint*/
   void paint (QPainter* painter, const QStyleOptionGraphicsItem* itemStyle, QWidget* pWidget);
 
+  /**Paints the legend and calculates its size. If painter is 0, only size is calculated*/
+  QSizeF paintAndDetermineSize(QPainter* painter);
+
   /**Sets item box to the whole content*/
   void adjustBoxSize();
 
@@ -98,8 +101,10 @@ class QgsComposerLegend: public QgsComposerItem
 
   /**Draws child items of a layer item
      @param layerItem parent model item (layer)
-     @param currentYCoord in/out: current y position of legend item*/
-  void drawLayerChildItems(QPainter* p, QStandardItem* layerItem, double& currentYCoord);
+     @param currentYCoord in/out: current y position of legend item
+     @param maxXCoord in/out: maximum x-coordinate of the whole legend
+  */
+  void drawLayerChildItems(QPainter* p, QStandardItem* layerItem, double& currentYCoord, double& maxXCoord);
 
   /**Draws a symbol at the current y position and returns the new x position*/
   void drawSymbol(QPainter* p, QgsSymbol* s, double currentYCoord, double& currentXPosition) const;
