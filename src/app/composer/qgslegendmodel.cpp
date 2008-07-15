@@ -109,7 +109,7 @@ int QgsLegendModel::addVectorLayerItems(QStandardItem* layerItem, QgsMapLayer* v
       QString lowerValue = (*symbolIt)->lowerValue();
       QString upperValue = (*symbolIt)->upperValue();
 
-      if(lowerValue == upperValue)
+      if(lowerValue == upperValue || upperValue.isEmpty())
 	{
 	  label = lowerValue;
 	}

@@ -48,6 +48,7 @@ class QgsComposerLegendWidget: public QWidget, private Ui::QgsComposerLegendWidg
   //item manipulation
   void on_mMoveDownPushButton_clicked();
   void on_mMoveUpPushButton_clicked();
+  void on_mRemovePushButton_clicked();
 
  private:
   QgsComposerLegendWidget();
