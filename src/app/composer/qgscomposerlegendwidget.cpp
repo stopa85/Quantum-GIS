@@ -304,14 +304,11 @@ void QgsComposerLegendWidget::on_mRemovePushButton_clicked()
     }
 
   QModelIndex parentIndex = currentIndex.parent();
-  if(!parentIndex.isValid())
-    {
-      return;
-    }
   
   itemModel->removeRow(currentIndex.row(), parentIndex);
   if(mLegend)
     {
+      mLegend->adjustBoxSize();
       mLegend->update();
     }
 }

@@ -54,7 +54,8 @@ void QgsLegendModel::setLayerSet(const QStringList& layerIds)
 
       //addItem for layer
       QStandardItem* layerItem = new QStandardItem(currentLayer->name());
-      layerItem->setFlags(Qt::ItemIsEnabled);
+      layerItem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
+     
       invisibleRootItem()->setChild (invisibleRootItem()->rowCount(), layerItem);
 
       switch(currentLayer->type())
