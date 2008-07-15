@@ -20,8 +20,10 @@
 
 #include <QStandardItemModel>
 #include <QStringList>
+#include <QSet>
 
 class QgsMapLayer;
+class QgsSymbol;
 
 /**A model that provides layers as root items. The classification items are children of the layer items*/
 class QgsLegendModel: public QStandardItemModel
@@ -40,6 +42,12 @@ class QgsLegendModel: public QStandardItemModel
   /**Adds item of raster layer
    @return 0 in case of success*/
   int addRasterLayerItem(QStandardItem* layerItem, QgsMapLayer* rlayer);
+
+  void insertSymbol(QgsSymbol* s);
+  void removeSymbol(QgsSymbol* s);
+
+  /**Keep track of copied symbols to delete them if not used anymore*/
+  QSet<QgsSymbol*> mSymbols;
 
  protected:
   QStringList mLayerIds;

@@ -33,7 +33,11 @@ QgsLegendModel::QgsLegendModel(): QStandardItemModel()
 
 QgsLegendModel::~QgsLegendModel()
 {
-
+  QSet<QgsSymbol*>::iterator it = mSymbols.begin();
+  for(; it != mSymbols.end(); ++it)
+    {
+      delete *it;
+    }
 }
 
 void QgsLegendModel::setLayerSet(const QStringList& layerIds)
@@ -121,8 +125,10 @@ int QgsLegendModel::addVectorLayerItems(QStandardItem* layerItem, QgsMapLayer* v
 	  break;
 	}
 
-      //Pass pointer to QgsSymbol as user data. Cast to void* necessary such that QMetaType handles it
-      currentSymbolItem->setData(QVariant::fromValue((void*)(*symbolIt)));
+      //Pass deep copy of QgsSymbol as user data. Cast to void* necessary such that QMetaType handles it
+      QgsSymbol* symbolCopy = new QgsSymbol(**symbolIt);
+      currentSymbolItem->setData(QVariant::fromValue((void*)symbolCopy));
+      insertSymbol(symbolCopy);
 
       if(!currentSymbolItem)
 	{
@@ -180,4 +186,22 @@ int QgsLegendModel::addRasterLayerItem(QStandardItem* layerItem, QgsMapLayer* rl
   layerItem->setChild(currentRowCount, 1, currentLabelItem);
 
   return 0;
+}
+
+void QgsLegendModel::insertSymbol(QgsSymbol* s)
+{
+  QSet<QgsSymbol*>::iterator it = mSymbols.find(s);
+  if(it != mSymbols.end())
+    {
+      delete (*it); //very unlikely
+    }
+  else
+    {
+      mSymbols.insert(s);
+    }
+}
+  
+void QgsLegendModel::removeSymbol(QgsSymbol* s)
+{
+  mSymbols.remove(s);
 }
