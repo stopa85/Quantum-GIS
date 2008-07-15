@@ -154,8 +154,7 @@ void QgsComposerLegend::drawLayerChildItems(QPainter* p, QStandardItem* layerIte
   QFontMetricsF itemFontMetrics(mItemFont);
   double itemHeight = std::max(mSymbolHeight, itemFontMetrics.height());
 
-  QStandardItem* firstItem;
-  QStandardItem* secondItem;
+  QStandardItem* currentItem;
 
   int numChildren = layerItem->rowCount();
 
@@ -169,46 +168,46 @@ void QgsComposerLegend::drawLayerChildItems(QPainter* p, QStandardItem* layerIte
       currentYCoord += mSymbolSpace;
       double currentXCoord = mBoxSpace;
      
-      firstItem = layerItem->child(i, 0);
-      secondItem = layerItem->child(i, 1);
-
-      if(secondItem) //an item with an icon
+      currentItem = layerItem->child(i, 0);
+      
+      if(!currentItem)
 	{
-	  QIcon symbolIcon = firstItem->icon();
-
-	  //take QgsSymbol* from user data
-	  QVariant symbolVariant = firstItem->data();
-	  if(!symbolVariant.canConvert<void*>())
-	    {
-	      continue;
-	    }
+	  continue;
+	}
+	
+      //take QgsSymbol* from user data
+      QVariant symbolVariant = currentItem->data();
+      QgsSymbol* symbol = 0;
+      if(symbolVariant.canConvert<void*>())
+	{
 	  void* symbolData = symbolVariant.value<void*>();
-	  QgsSymbol* symbol = (QgsSymbol*)(symbolData);
-	  if(!symbol)
-	    {
-	      continue;
-	    }
-
-	  //draw symbol considering output device resolution
+	  symbol = (QgsSymbol*)(symbolData);
+	}
+      
+      if(symbol)  //item with symbol?
+	{
+	  //draw symbol
 	  drawSymbol(p, symbol, currentYCoord + (itemHeight - mSymbolHeight) /2, currentXCoord);
 	  currentXCoord += mIconLabelSpace;
-	  
-	  if(p)
-	    {
-	      p->drawText(QPointF(currentXCoord, currentYCoord + itemFontMetrics.height()), secondItem->text());
-	    }
-
-	  maxXCoord = std::max(maxXCoord, currentXCoord + itemFontMetrics.width(secondItem->text()) + mBoxSpace);
 	}
-      else //an item witout icon (e.g. name of classification field)
+      else //item with icon?
 	{
-	  if(p)
+	  QIcon symbolIcon = currentItem->icon();
+	  if(!symbolIcon.isNull() && p)
 	    {
-	      p->drawText(QPointF(currentXCoord, currentYCoord + itemFontMetrics.height()), firstItem->text());
+	      symbolIcon.paint(p, currentXCoord, currentYCoord, mSymbolWidth, mSymbolHeight);
 	    }
-	  maxXCoord = std::max(maxXCoord, currentXCoord + itemFontMetrics.width(firstItem->text()) + mBoxSpace);
+	  currentXCoord += mIconLabelSpace;
 	}
- 
+      
+      //finally draw text
+      if(p)
+	{
+	  p->drawText(QPointF(currentXCoord, currentYCoord + itemFontMetrics.height()), currentItem->text());
+	}
+      
+      maxXCoord = std::max(maxXCoord, currentXCoord + itemFontMetrics.width(currentItem->text()) + mBoxSpace);
+      
       currentYCoord += itemHeight;
     }
 }

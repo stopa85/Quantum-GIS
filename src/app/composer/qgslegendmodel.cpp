@@ -25,10 +25,6 @@
 
 QgsLegendModel::QgsLegendModel(): QStandardItemModel()
 {
-  QStringList headerLabels;
-  headerLabels << tr("Symbol");
-  headerLabels << tr("Value");
-  setHorizontalHeaderLabels(headerLabels);
 }
 
 QgsLegendModel::~QgsLegendModel()
@@ -108,17 +104,31 @@ int QgsLegendModel::addVectorLayerItems(QStandardItem* layerItem, QgsMapLayer* v
 	  continue;
 	}
 
+       //label
+      QString label;
+      QString lowerValue = (*symbolIt)->lowerValue();
+      QString upperValue = (*symbolIt)->upperValue();
+
+      if(lowerValue == upperValue)
+	{
+	  label = lowerValue;
+	}
+      else
+	{
+	  label = lowerValue + " - " + upperValue;
+	}
+
       //icon item
       switch((*symbolIt)->type())
 	{
 	case QGis::Point:
-	  currentSymbolItem = new QStandardItem(QIcon(QPixmap::fromImage((*symbolIt)->getPointSymbolAsImage())), "PointSymbol");
+	  currentSymbolItem = new QStandardItem(QIcon(QPixmap::fromImage((*symbolIt)->getPointSymbolAsImage())), label);
 	  break;
 	case QGis::Line:
-	  currentSymbolItem = new QStandardItem(QIcon(QPixmap::fromImage((*symbolIt)->getLineSymbolAsImage())), "PointSymbol");
+	  currentSymbolItem = new QStandardItem(QIcon(QPixmap::fromImage((*symbolIt)->getLineSymbolAsImage())), label);
 	  break;
 	case QGis::Polygon:
-	  currentSymbolItem = new QStandardItem(QIcon(QPixmap::fromImage((*symbolIt)->getPolygonSymbolAsImage())), "PointSymbol");
+	  currentSymbolItem = new QStandardItem(QIcon(QPixmap::fromImage((*symbolIt)->getPolygonSymbolAsImage())), label);
 	  break;
 	default:
 	  currentSymbolItem = 0;
@@ -138,27 +148,7 @@ int QgsLegendModel::addVectorLayerItems(QStandardItem* layerItem, QgsMapLayer* v
       int currentRowCount = layerItem->rowCount();
       currentSymbolItem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
 
-      //label
-      QString label;
-      QString lowerValue = (*symbolIt)->lowerValue();
-      QString upperValue = (*symbolIt)->upperValue();
-
-      if(lowerValue == upperValue)
-	{
-	  label = lowerValue;
-	}
-      else
-	{
-	  label = lowerValue + " - " + upperValue;
-	}
-
-      currentLabelItem = new QStandardItem(label);
-      currentLabelItem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
-
-      QList<QStandardItem*> childItemList;
-      childItemList.push_back(currentSymbolItem);
-      childItemList.push_back(currentLabelItem);
-      layerItem->appendRow(childItemList);
+      layerItem->setChild(layerItem->rowCount(), 0, currentSymbolItem);
       
     }
   
@@ -178,12 +168,10 @@ int QgsLegendModel::addRasterLayerItem(QStandardItem* layerItem, QgsMapLayer* rl
       return 2;
     }
 
-  QStandardItem* currentSymbolItem = new QStandardItem(QIcon(rasterLayer->getLegendQPixmap(true)), "Raster");
-  QStandardItem* currentLabelItem = new QStandardItem("");
+  QStandardItem* currentSymbolItem = new QStandardItem(QIcon(rasterLayer->getLegendQPixmap(true)), "");
 
   int currentRowCount = layerItem->rowCount();
   layerItem->setChild(currentRowCount, 0, currentSymbolItem);
-  layerItem->setChild(currentRowCount, 1, currentLabelItem);
 
   return 0;
 }

@@ -45,6 +45,10 @@ class QgsComposerLegendWidget: public QWidget, private Ui::QgsComposerLegendWidg
   void on_mBoxCheckBox_stateChanged(int state);
   void on_mBoxSpaceSpinBox_valueChanged(double d);
 
+  //item manipulation
+  void on_mMoveDownPushButton_clicked();
+  void on_mMoveUpPushButton_clicked();
+
  private:
   QgsComposerLegendWidget();
   /**Sets GUI according to state of mLegend*/
