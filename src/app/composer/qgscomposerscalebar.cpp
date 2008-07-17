@@ -202,9 +202,21 @@ void QgsComposerScaleBar::setStyle(const QString& styleName)
     {
       mStyle = new QgsDoubleBoxScaleBarStyle(this);
     }
-  else if(styleName == tr("Line Ticks Middle"))
+  else if(styleName == tr("Line Ticks Middle") || styleName == tr("Line Ticks Down") || styleName == tr("Line Ticks Up"))
     {
       mStyle = new QgsTicksMiddleScaleBarStyle(this);
+      /*if(styleName == tr("Line Ticks Middle"))
+	{
+	  mStyle->setTickPosition(QgsTicksScaleBarStyle::MIDDLE);
+	}
+      else if(styleName == tr("Line Ticks Down"))
+	{
+	  mStyle->setTickPosition(QgsTicksScaleBarStyle::DOWN);
+	}
+      else if(styleName == tr("Line Ticks Up"))
+	{
+	  mStyle->setTickPosition(QgsTicksScaleBarStyle::UP);
+	  }*/
     } 
   else if(styleName == tr("Numeric"))
     {

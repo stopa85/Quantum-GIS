@@ -22,6 +22,13 @@
 class QgsTicksMiddleScaleBarStyle: public QgsScaleBarStyle
 {
   public:
+  enum TickPosition
+    {
+      UP,
+      DOWN,
+      MIDDLE
+    };
+
   QgsTicksMiddleScaleBarStyle(const QgsComposerScaleBar* bar);
   ~QgsTicksMiddleScaleBarStyle();
 
@@ -29,8 +36,12 @@ class QgsTicksMiddleScaleBarStyle: public QgsScaleBarStyle
 
   void draw(QPainter* p) const;
 
+  void setTickPosition(TickPosition p){mTickPosition = p;}
+
  private:
   QgsTicksMiddleScaleBarStyle(); //forbidden
+
+  TickPosition mTickPosition;
 };
 
 #endif 

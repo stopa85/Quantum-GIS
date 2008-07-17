@@ -20,12 +20,12 @@
 
 QgsTicksMiddleScaleBarStyle::QgsTicksMiddleScaleBarStyle(const QgsComposerScaleBar* bar): QgsScaleBarStyle(bar)
 {
-
+  mTickPosition = MIDDLE;
 }
 
 QgsTicksMiddleScaleBarStyle::QgsTicksMiddleScaleBarStyle(): QgsScaleBarStyle(0)
 {
-
+  mTickPosition = MIDDLE;
 }
 
 QgsTicksMiddleScaleBarStyle::~QgsTicksMiddleScaleBarStyle()
@@ -46,6 +46,7 @@ void QgsTicksMiddleScaleBarStyle::draw(QPainter* p) const
     }
   double barTopPosition = mScaleBar->fontHeight() + mScaleBar->labelBarSpace() + mScaleBar->boxContentSpace();
   double middlePosition = barTopPosition + mScaleBar->height()/2.0;
+  double bottomPosition = barTopPosition + mScaleBar->height();
 
   p->save();
   p->setPen(mScaleBar->pen());
@@ -57,7 +58,18 @@ void QgsTicksMiddleScaleBarStyle::draw(QPainter* p) const
   for(; segmentIt != segmentInfo.constEnd(); ++segmentIt)
     {
       p->drawLine(segmentIt->first, barTopPosition, segmentIt->first, barTopPosition + mScaleBar->height());
-      p->drawLine(segmentIt->first, middlePosition, segmentIt->first + mScaleBar->segmentMM(), middlePosition); 
+      switch(mTickPosition)
+	{
+	case DOWN:
+	  p->drawLine(segmentIt->first, barTopPosition, segmentIt->first + mScaleBar->segmentMM(), barTopPosition);
+	  break;
+	case MIDDLE:
+	  p->drawLine(segmentIt->first, middlePosition, segmentIt->first + mScaleBar->segmentMM(), middlePosition); 
+	  break;
+	case UP:
+	  p->drawLine(segmentIt->first, bottomPosition, segmentIt->first + mScaleBar->segmentMM(), bottomPosition); 
+	  break;
+	}
     }
 
   //draw last tick
