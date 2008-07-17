@@ -36,7 +36,7 @@ void QgsComposerLabel::paint(QPainter* painter, const QStyleOptionGraphicsItem* 
   painter->setFont(mFont);
 
   QFontMetricsF fontSize(mFont);
-  painter->drawText(mMargin, mMargin + fontSize.ascent(), mText);
+  painter->drawText(mMargin, mMargin + fontSize.height(), mText);
 
   drawFrame(painter);
   if(isSelected())

@@ -296,17 +296,20 @@ void QgsComposer::on_mActionPrint_activated(void)
   if(printDialog.exec() == QDialog::Accepted)
     {
       QPainter p(&printer);
-      QRectF paperRect(0, 0, mComposition->paperWidth(), mComposition->paperHeight());
-      QRect pageRect = printer.pageRect();
-      //better in case of custom page size, but only possible with Qt>4.4
-      //with Qt4.4: QRectF paperRect = printer.pageRect(QPrinter::Millimeter)
-      
 
       QgsComposition::PlotStyle savedPlotStyle = mComposition->plotStyle();
       mComposition->setPlotStyle(QgsComposition::Print);
 
+#if QT_VERSION < 0x040400
+      QRectF paperRect(0, 0, mComposition->paperWidth(), mComposition->paperHeight());
+      QRect pageRect = printer.pageRect();
       mComposition->render(&p, pageRect, paperRect);
-      
+#else
+      //better in case of custom page size, but only possible with Qt>4.4
+      QRectF paperRectMM = printer.pageRect(QPrinter::Millimeter);
+      QRectF paperRectPixel = printer.pageRect(QPrinter::DevicePixel);
+      mComposition->render(&p, paperRectPixel, paperRectMM);
+#endif   
       mComposition->setPlotStyle(savedPlotStyle);
     }
 #if 0
