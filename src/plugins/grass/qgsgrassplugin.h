@@ -31,6 +31,9 @@ class QgsGrassTools;
 class QgsGrassNewMapset;
 class QgsGrassRegion;
 class QToolBar;
+
+#include <QDockWidget>
+             
 /**
 * \class QgsGrassPlugin
 * \brief OpenModeller plugin for QGIS
@@ -141,6 +144,8 @@ private:
   QgsRubberBand *mRegionBand;
   //! GRASS tools
   QgsGrassTools *mTools;
+  //! Dock widget the tools will be placed into
+  QDockWidget * mpDockWidget;
   //! Pointer to QgsGrassNewMapset
   QgsGrassNewMapset *mNewMapset;
 

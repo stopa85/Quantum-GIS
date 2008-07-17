@@ -18,30 +18,18 @@
 #ifndef QGSGRASSTOOLS_H
 #define QGSGRASSTOOLS_H
 
-class QCloseEvent;
 class QString;
-class QTreeWidget;
-class QTreeWidgetItem;
 class QDomNode;
 class QDomElement;
 class QSize;
 
 class QgisInterface;
-class QgsGrassProvider;
-class QgsGrassBrowser;
-class QgsMapCanvas;
 
 #include "ui_qgsgrasstoolsbase.h"
 
-#include <QDialog>
-#include <QTabWidget>
-#include <QDockWidget>
-
 //
-// For experimental filterable list model by Tim
+// For filtering and model/view 
 //
-#include <QListView>
-#include <QLineEdit>
 #include <QStandardItemModel>
 #include <QSortFilterProxyModel>
 
@@ -51,80 +39,42 @@ class QgsMapCanvas;
  *  \brief Interface to GRASS modules.
  *
  */
-class QgsGrassTools: public QDialog, private Ui::QgsGrassToolsBase
+class QgsGrassTools: public QWidget, private Ui::QgsGrassToolsBase
 {
-    Q_OBJECT;
+  Q_OBJECT;
 
-public:
-    //! Constructor
-    QgsGrassTools ( QgisInterface *iface, 
-	           QWidget * parent = 0, const char * name = 0, Qt::WFlags f = 0 );
+  public:
+  //! Constructor
+  QgsGrassTools ( QgisInterface *iface, QWidget * parent = 0, 
+      const char * name = 0, Qt::WFlags f = 0 );
 
-    //! Destructor
-    ~QgsGrassTools();
+  //! Destructor
+  ~QgsGrassTools();
 
-    //! Recursively add sections and modules to the list view
-    //  If parent is 0, the modules are added to mModulesListView root
-    void addModules ( QTreeWidgetItem *parent, QDomElement &element );
 
-    //! Returns application directory
-    QString appDir();
-
-public slots:
+  public slots:
     //! Load configuration from file
     bool loadConfig(QString filePath);
-    
-    //! Close
-    void close ( void);
+  //! Recursively add sections and modules to the list view
+  //  If parent is 0, the modules are added to mModulesListView root
+  void addModules (QDomElement &element );
+  //! Update the regex used to filter the modules list (autoconnect to ui)
+  void on_mpFilterEdit_textChanged(const QString theText);
+  //! view deteails for a module when its entry is clicked in the list view  (autoconnect to ui)
+  void on_mpListView_activated(const QModelIndex &theIndex );
+  //! Run a module when its entry is clicked in the list view (autoconnect to ui)
+  void on_mpListView_doubleClicked(const QModelIndex &theIndex );
 
-    //! Close event
-    void closeEvent(QCloseEvent *e);
-
-    //! Restore window position 
-    void restorePosition();
-
-    //! Save window position 
-    void saveWindowLocation();
-
-    //! Module in list clicked
-    void moduleClicked ( QTreeWidgetItem * item, int column );
-
-    //! Current mapset changed
-    void mapsetChanged();
-
-    // Emits regionChanged
-    void emitRegionChanged();
-
-    //! Close open tabs with tools
-    void closeTools();
-
-    //! Update the regex used to filter the modules list (autoconnect to ui)
-    void on_mFilterInput_textChanged(QString theText);
-    //! Run a module when its entry is clicked in the list view
-    void listItemClicked(const QModelIndex &theIndex );
-    //! Run a module given its module name e.g. r.in.gdal
-    void runModule(QString name);
 signals:
-    void regionChanged();
+  // void regionChanged();
 
-private:
-    //! Pointer to the QGIS interface object
-    QgisInterface *mIface;
-
-    //! Pointer to canvas
-    QgsMapCanvas *mCanvas;
-
-    //! Browser
-    QgsGrassBrowser *mBrowser;
-
-
-    //
-    // For experimental model & filtered model by Tim
-    //
-    QStandardItemModel * mModelTools;
-    QSortFilterProxyModel * mModelProxy;
-    QListView * mListView2;
-    QDockWidget * mDockWidget;
+  private:
+  //! Pointer to the QGIS interface object
+  QgisInterface *mIface;
+  //!model for tools list view
+  QStandardItemModel * mModelTools;
+  //!model proxy for sorting / filtering tools list view
+  QSortFilterProxyModel * mModelProxy;
 
 };
 

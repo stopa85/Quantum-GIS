@@ -64,21 +64,18 @@ class QgsGrassModule: public QDialog, private  Ui::QgsGrassModuleBase
 
 public:
     //! Constructor
-    QgsGrassModule ( QgsGrassTools *tools, QString moduleName, QgisInterface *iface,  
-	           QString path, QWidget * parent = 0, const char * name = 0, Qt::WFlags f = 0 );
+    QgsGrassModule ( QgsGrassTools *tools, 
+                     QString moduleName, 
+                     QgisInterface *iface, 
+                     QString path, 
+                     QWidget * parent = 0, const char * name = 0, 
+                     Qt::WFlags f = 0 );
 
     //! Destructor
     ~QgsGrassModule();
 
-    //! Returns module label for module description path
-    static QString label ( QString path );
-
-    /** \brief Returns pixmap representing the module 
-     * \param path module path without .qgm extension
-     */
-    static QPixmap pixmap ( QString path, int height );
-
-    //! Find element in GRASS module description by key, if not found, returned element is null
+  
+         //! Find element in GRASS module description by key, if not found, returned element is null
     static QDomNode nodeByKey ( QDomElement gDocElem, QString key );
 
     //! Returns pointer to QGIS interface 
@@ -103,8 +100,17 @@ public:
     // On Window if the module is script the executable will be path to shell
     // Returns empty list if not found.
     static QStringList execArguments ( QString module );
+    
+    //! Returns module label for module description path
+    static QString label ( QString path );
 
-public slots:
+    /** \brief Returns pixmap representing the module 
+     * \param path module path without .qgm extension
+     */
+    static QPixmap pixmap ( QString path, int height );
+        
+protected slots:
+
     //! Run the module with current options
     void on_mRunButton_clicked() { run(); }
     void run ();
@@ -127,6 +133,11 @@ public slots:
     void readStderr();
 
 private:
+  
+
+ 
+  
+  
     //! Pointer to the QGIS interface object
     QgisInterface *mIface;
 
@@ -150,9 +161,6 @@ private:
 
     //! Running GRASS module
     QProcess mProcess;
-
-    //! QGIS directory
-    QString mAppDir;
 
     //! Pointer to options widget
     QgsGrassModuleOptions *mOptions; 
@@ -238,8 +246,6 @@ protected:
     //! Parent widget
     QWidget *mParent;
 
-    //! QGIS directory
-    QString mAppDir;
 };
 
 /*! \class QgsGrassModuleStandardOptions

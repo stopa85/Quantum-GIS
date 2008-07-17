@@ -81,12 +81,11 @@ extern "C" {
 }
 
 QgsGrassShell::QgsGrassShell ( QgsGrassTools *tools, 
-    QTabWidget * parent, const char * name  ):
-QDialog(parent), QgsGrassShellBase(), mTools(tools)
+    QWidget * parent, const char * name  ):
+QDialog(parent), QgsGrassShellBase()
 {
   mValid = false;
   mSkipLines = 2;
-  mTabWidget = parent;
 
 #ifdef WIN32
   QMessageBox::warning( 0, "Warning", 
@@ -101,11 +100,9 @@ QDialog(parent), QgsGrassShellBase(), mTools(tools)
   layout->addWidget ( mText, 0 , 0 );
   mText->show();
 
-  connect(mCloseButton, SIGNAL(clicked()), this, SLOT(closeShell()));
 
   mFont = QFont ( "Courier", 10 );
 
-  mAppDir = mTools->appDir();
 
 #ifndef Q_WS_MAC
   // Qt4.3.2/Mac Q3TextEdit readOnly property causes keys to be processed as keyboard actions
@@ -336,7 +333,7 @@ void QgsGrassShell::keyPressEvent( QKeyEvent * e  )
 
   if ( !mValid ) return;
 
-  mProgressBar->setProgress ( 0, 100 );
+  mProgressBar->setValue ( 0 );
 
   char c = (char) e->ascii();
 #ifdef QGISDEBUG
@@ -701,7 +698,7 @@ void QgsGrassShell::printStdout()
       if ( rxpercent.search(mStdoutBuffer) == 0 ) {
         int mlen = rxpercent.matchedLength();
         int progress = rxpercent.cap(1).toInt();
-        mProgressBar->setProgress ( progress, 100 );
+        mProgressBar->setValue ( progress  );
         mStdoutBuffer.remove ( 0, mlen );
         continue;
       }
@@ -948,15 +945,7 @@ void QgsGrassShell::readStderr()
 {
 }
 
-void QgsGrassShell::closeShell()
-{
-#ifdef QGISDEBUG
-  std::cerr << "QgsGrassShell::closeShell()" << std::endl;
-#endif
 
-  mTabWidget->removePage (this );
-  delete this;
-}
 
 
 QgsGrassShellText::QgsGrassShellText ( QgsGrassShell *gs, 

@@ -80,14 +80,22 @@ QgsGrassPlugin::QgsGrassPlugin(QgisInterface * theQgisInterFace):
 {
   /** Initialize the plugin and set the required attributes */
   pluginNameQString = tr("GrassVector");
-  pluginVersionQString = tr("0.1");
-  pluginDescriptionQString = tr("GRASS layer");
+  pluginVersionQString = tr("0.2");
+  pluginDescriptionQString = tr("GRASS data access and tools");
+  mTools = 0;
+  mpDockWidget =0;
 }
 
 QgsGrassPlugin::~QgsGrassPlugin()
 {
-  if ( mTools ) mTools->closeTools();
   QString err = QgsGrass::closeMapset();
+  if (mTools) delete mTools;
+  if (mpDockWidget)
+  {
+    QSettings settings;
+    settings.setValue("/GRASS/windows/tools/geometry", mpDockWidget->saveGeometry());
+    delete mpDockWidget;
+  }
 }
 
 /* Following functions return name, description, version, and type for the plugin */
@@ -150,8 +158,8 @@ void QgsGrassPlugin::initGui()
     tr("Add GRASS vector layer"), this);
   mAddRasterAction = new QAction(QIcon(":/grass/add_raster.png"),
     tr("Add GRASS raster layer"), this);
-  mOpenToolsAction = new QAction(QIcon(":/grass/grass_tools.png"),
-    tr("Open GRASS tools"), this);
+  //mOpenToolsAction = new QAction(QIcon(":/grass/grass_tools.png"),
+  //  tr("Open GRASS tools"), this);
 
   mRegionAction = new QAction(QIcon(":/grass/grass_region.png"),
     tr("Display Current Grass Region"), this);
@@ -165,7 +173,7 @@ void QgsGrassPlugin::initGui()
 
   mAddVectorAction->setWhatsThis(tr("Adds a GRASS vector layer to the map canvas"));
   mAddRasterAction->setWhatsThis(tr("Adds a GRASS raster layer to the map canvas"));
-  mOpenToolsAction->setWhatsThis(tr("Open GRASS tools"));
+  //mOpenToolsAction->setWhatsThis(tr("Open GRASS tools"));
   mRegionAction->setWhatsThis(tr("Displays the current GRASS region as a rectangle on the map canvas"));
   mEditRegionAction->setWhatsThis(tr("Edit the current GRASS region"));
   mEditAction->setWhatsThis(tr("Edit the currently selected GRASS vector layer."));
@@ -173,7 +181,7 @@ void QgsGrassPlugin::initGui()
   // Connect the action 
   connect(mAddVectorAction, SIGNAL(triggered()), this, SLOT(addVector()));
   connect(mAddRasterAction, SIGNAL(triggered()), this, SLOT(addRaster()));
-  connect(mOpenToolsAction, SIGNAL(triggered()), this, SLOT(openTools()));
+  //connect(mOpenToolsAction, SIGNAL(triggered()), this, SLOT(openTools()));
   connect(mEditAction, SIGNAL(triggered()), this, SLOT(edit()));
   connect(mNewVectorAction, SIGNAL(triggered()), this, SLOT(newVector()));
   connect(mRegionAction, SIGNAL(toggled(bool)), this, SLOT(switchRegion(bool)));
@@ -190,7 +198,7 @@ void QgsGrassPlugin::initGui()
   qGisInterface->addPluginMenu(tr("&GRASS"), mAddRasterAction);
   qGisInterface->addPluginMenu(tr("&GRASS"), mNewVectorAction);
   qGisInterface->addPluginMenu(tr("&GRASS"), mEditAction);
-  qGisInterface->addPluginMenu(tr("&GRASS"), mOpenToolsAction);
+  //qGisInterface->addPluginMenu(tr("&GRASS"), mOpenToolsAction);
   qGisInterface->addPluginMenu(tr("&GRASS"), mRegionAction);
   qGisInterface->addPluginMenu(tr("&GRASS"), mEditRegionAction);
 
@@ -208,7 +216,7 @@ void QgsGrassPlugin::initGui()
   mAddRasterAction->addTo(toolBarPointer);
   mNewVectorAction->addTo(toolBarPointer);
   mEditAction->addTo(toolBarPointer);
-  mOpenToolsAction->addTo(toolBarPointer);
+  //mOpenToolsAction->addTo(toolBarPointer);
   mRegionAction->addTo(toolBarPointer);
   mEditRegionAction->addTo(toolBarPointer);
 
@@ -230,8 +238,9 @@ void QgsGrassPlugin::initGui()
 
 void QgsGrassPlugin::mapsetChanged ()
 {
-  if ( !QgsGrass::activeMode() )  {
-    mOpenToolsAction->setEnabled(false);
+  if ( !QgsGrass::activeMode() ) 
+  {
+    //mOpenToolsAction->setEnabled(false);
     mRegionAction->setEnabled(false);
     mEditRegionAction->setEnabled(false);
     mRegionBand->reset();
@@ -239,13 +248,16 @@ void QgsGrassPlugin::mapsetChanged ()
     mNewVectorAction->setEnabled(false);
 
     if ( mTools ) 
-    {
-      mTools->hide();
+    {      
       delete mTools;
+      delete mpDockWidget;
+      mpDockWidget = 0;
       mTools = 0;
     }    
-  } else {
-    mOpenToolsAction->setEnabled(true);
+  } 
+  else 
+  {
+    //mOpenToolsAction->setEnabled(true);
     mRegionAction->setEnabled(true);
     mEditRegionAction->setEnabled(true);
     mCloseMapsetAction->setEnabled(true);
@@ -255,11 +267,7 @@ void QgsGrassPlugin::mapsetChanged ()
     bool on = settings.readBoolEntry ("/GRASS/region/on", true );
     mRegionAction->setOn(on);
     switchRegion(on);
-
-    if ( mTools ) 
-    {
-      mTools->mapsetChanged();
-    }    
+  
   }
 }
 
@@ -409,14 +417,21 @@ void QgsGrassPlugin::addRaster()
 void QgsGrassPlugin::openTools()
 {
   if ( !mTools ) { 
-    mTools = new QgsGrassTools ( qGisInterface, qGisInterface->getMainWindow(), 0, Qt::WType_Dialog );
+    mTools = new QgsGrassTools ( qGisInterface, qGisInterface->getMainWindow() );
+    mpDockWidget = new QDockWidget(tr("Grass Tools"), 0);
+    mpDockWidget->setWidget(mTools);
+    mpDockWidget->setObjectName("GrassTools");
+    mpDockWidget->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+    qGisInterface->addDockWidget(Qt::LeftDockWidgetArea, mpDockWidget);
+    QSettings settings;
+    mpDockWidget->restoreGeometry(settings.value("/GRASS/windows/tools/geometry").toByteArray());
 
-    std::cout << "connect = " <<
-      connect( mTools, SIGNAL( regionChanged() ), this, SLOT( redrawRegion()) )
-      << "connect" << std::endl;
+    
+    // @TODO this needs to be wired to the new mapbrowser rather!!!
+   // std::cout << "connect = " <<
+    //  connect( mTools, SIGNAL( regionChanged() ), this, SLOT( redrawRegion()) )
+    //  << "connect" << std::endl;
   }
-
-  mTools->show();
 }
 
 
@@ -678,6 +693,7 @@ void QgsGrassPlugin::openMapset()
 
   saveMapset();
   mapsetChanged();
+  openTools();
 }
 
 void QgsGrassPlugin::closeMapset()

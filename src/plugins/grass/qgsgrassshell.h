@@ -13,7 +13,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#include <Q3CString>
+#include <QByteArray>
 #include <Q3Process>
 #include <Q3TextEdit>
 #include <QDialog>
@@ -57,10 +57,10 @@ extern "C" {
  *
  * Output (LINUX):
  * shell -> /dev/pts/<number> -> /dev/ptmx 
- * -> QgsGrassShell::readStdout() -> QCString -> 
+ * -> QgsGrassShell::readStdout() -> QByteArray -> 
  * -> QgsGrassShell::printStdout() -> QTextEdit
  *
- * Reading/printing of shel output is bease on two prerrequisites:
+ * Reading/printing of shell output is bease on two prerrequisites:
  *   1) Lines printed by shell are not endless
  *   2) GRASS GUI messages are always available complete on output
  * thus we read everything on output to buffer in cycle untill 
@@ -76,7 +76,7 @@ class QgsGrassShell: public QDialog, private Ui::QgsGrassShellBase
 
 public:
     QgsGrassShell ( QgsGrassTools *tools, 
-                    QTabWidget * parent = 0, const char * name = 0 );
+                    QWidget * parent = 0, const char * name = 0 );
     ~QgsGrassShell();
 
     // Modes 
@@ -148,7 +148,6 @@ public slots:
     void keyPressEvent ( QKeyEvent * e );
     void keyReleaseEvent ( QKeyEvent * e );
     void mousePressEvent(QMouseEvent* e);
-    void closeShell();
 
 signals:
 
@@ -165,10 +164,10 @@ private:
     QSocketNotifier *mOutNotifier;
 
     // Buffer for data read form shell stdout
-    Q3CString mStdoutBuffer; 
+    QByteArray mStdoutBuffer; 
 
     // Buffer for data read form shell stderr
-    Q3CString mStderrBuffer; 
+    QByteArray mStderrBuffer; 
 
     // Shell process PID
     int mPid;
@@ -196,11 +195,6 @@ private:
     // Pressed keys
     bool mKeyDown[KeyDownCount];
 
-    // Application directory
-    QString mAppDir;
-
-    // GRASS Tools
-    QgsGrassTools *mTools;
 
     // Create new line in nex insert
     // This must be used because QTextEdit will remove all empty
@@ -216,8 +210,6 @@ private:
     // How many lines to skip, used to skip output of first commands sent to shell
     int mSkipLines; 
     
-    // pointer to tab widget in which is the shell
-    QTabWidget* mTabWidget;
 };
 
 class QgsGrassShellText : public Q3TextEdit
