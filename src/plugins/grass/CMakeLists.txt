@@ -1,5 +1,5 @@
 
-SUBDIRS(config modules themes)
+SUBDIRS(config modules )
 
 ADD_DEFINITIONS(-DGRASS_BASE=\\\"${GRASS_PREFIX}\\\")
 ADD_DEFINITIONS(-DHAVE_OPENPTY=${HAVE_OPENPTY})
@@ -141,5 +141,5 @@ INSTALL(TARGETS grassplugin
 
 
 FILE (GLOB GMLS *.gml)
-INSTALL (FILES ${GMLS} images/world.png
+INSTALL (FILES ${GMLS} 
          DESTINATION ${QGIS_DATA_DIR}/grass)

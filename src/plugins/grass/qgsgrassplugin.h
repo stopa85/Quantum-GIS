@@ -98,6 +98,8 @@ public slots:
   void redrawRegion(void);
   //! Post render
   void postRender(QPainter *);
+  //! Open GRASS shell
+  void openShell();
   //! Open tools 
   void openTools(void);
   //! Create new mapset
@@ -155,7 +157,7 @@ private:
   QAction *mCloseMapsetAction;
   QAction *mAddVectorAction;
   QAction *mAddRasterAction;
-  QAction *mOpenToolsAction;
+  QAction *mOpenShellAction;
   QAction *mEditRegionAction; 
   QAction *mEditAction;
   QAction *mNewVectorAction;

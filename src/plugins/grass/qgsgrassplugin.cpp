@@ -158,8 +158,8 @@ void QgsGrassPlugin::initGui()
     tr("Add GRASS vector layer"), this);
   mAddRasterAction = new QAction(QIcon(":/grass/add_raster.png"),
     tr("Add GRASS raster layer"), this);
-  //mOpenToolsAction = new QAction(QIcon(":/grass/grass_tools.png"),
-  //  tr("Open GRASS tools"), this);
+  mOpenShellAction = new QAction(QIcon(":/grass/grass_tools.png"),
+    tr("Open GRASS shell"), this);
 
   mRegionAction = new QAction(QIcon(":/grass/grass_region.png"),
     tr("Display Current Grass Region"), this);
@@ -173,7 +173,7 @@ void QgsGrassPlugin::initGui()
 
   mAddVectorAction->setWhatsThis(tr("Adds a GRASS vector layer to the map canvas"));
   mAddRasterAction->setWhatsThis(tr("Adds a GRASS raster layer to the map canvas"));
-  //mOpenToolsAction->setWhatsThis(tr("Open GRASS tools"));
+  mOpenShellAction->setWhatsThis(tr("Open GRASS shell"));
   mRegionAction->setWhatsThis(tr("Displays the current GRASS region as a rectangle on the map canvas"));
   mEditRegionAction->setWhatsThis(tr("Edit the current GRASS region"));
   mEditAction->setWhatsThis(tr("Edit the currently selected GRASS vector layer."));
@@ -181,7 +181,7 @@ void QgsGrassPlugin::initGui()
   // Connect the action 
   connect(mAddVectorAction, SIGNAL(triggered()), this, SLOT(addVector()));
   connect(mAddRasterAction, SIGNAL(triggered()), this, SLOT(addRaster()));
-  //connect(mOpenToolsAction, SIGNAL(triggered()), this, SLOT(openTools()));
+  connect(mOpenShellAction, SIGNAL(triggered()), this, SLOT(openShell()));
   connect(mEditAction, SIGNAL(triggered()), this, SLOT(edit()));
   connect(mNewVectorAction, SIGNAL(triggered()), this, SLOT(newVector()));
   connect(mRegionAction, SIGNAL(toggled(bool)), this, SLOT(switchRegion(bool)));
@@ -198,7 +198,7 @@ void QgsGrassPlugin::initGui()
   qGisInterface->addPluginMenu(tr("&GRASS"), mAddRasterAction);
   qGisInterface->addPluginMenu(tr("&GRASS"), mNewVectorAction);
   qGisInterface->addPluginMenu(tr("&GRASS"), mEditAction);
-  //qGisInterface->addPluginMenu(tr("&GRASS"), mOpenToolsAction);
+  qGisInterface->addPluginMenu(tr("&GRASS"), mOpenShellAction);
   qGisInterface->addPluginMenu(tr("&GRASS"), mRegionAction);
   qGisInterface->addPluginMenu(tr("&GRASS"), mEditRegionAction);
 
@@ -216,7 +216,7 @@ void QgsGrassPlugin::initGui()
   mAddRasterAction->addTo(toolBarPointer);
   mNewVectorAction->addTo(toolBarPointer);
   mEditAction->addTo(toolBarPointer);
-  //mOpenToolsAction->addTo(toolBarPointer);
+  mOpenShellAction->addTo(toolBarPointer);
   mRegionAction->addTo(toolBarPointer);
   mEditRegionAction->addTo(toolBarPointer);
 
@@ -240,7 +240,7 @@ void QgsGrassPlugin::mapsetChanged ()
 {
   if ( !QgsGrass::activeMode() ) 
   {
-    //mOpenToolsAction->setEnabled(false);
+    //mOpenShellAction->setEnabled(false);
     mRegionAction->setEnabled(false);
     mEditRegionAction->setEnabled(false);
     mRegionBand->reset();
@@ -257,7 +257,7 @@ void QgsGrassPlugin::mapsetChanged ()
   } 
   else 
   {
-    //mOpenToolsAction->setEnabled(true);
+    mOpenShellAction->setEnabled(true);
     mRegionAction->setEnabled(true);
     mEditRegionAction->setEnabled(true);
     mCloseMapsetAction->setEnabled(true);
@@ -412,7 +412,10 @@ void QgsGrassPlugin::addRaster()
     qGisInterface->addRasterLayer(uri, sel->map);
   }
 }
-
+void QgsGrassPlugin::openShell()
+{
+  QMessageBox::warning( 0, tr("Info"), tr("If I was a shell you would sea me...ssssshweessshh.") );
+}
 // Open tools
 void QgsGrassPlugin::openTools()
 {
@@ -797,7 +800,7 @@ void QgsGrassPlugin::unload()
   qGisInterface->removePluginMenu(tr("&GRASS"), mCloseMapsetAction);
   qGisInterface->removePluginMenu(tr("&GRASS"), mAddVectorAction);
   qGisInterface->removePluginMenu(tr("&GRASS"), mAddRasterAction);
-  qGisInterface->removePluginMenu(tr("&GRASS"), mOpenToolsAction);
+  qGisInterface->removePluginMenu(tr("&GRASS"), mOpenShellAction);
   qGisInterface->removePluginMenu(tr("&GRASS"), mRegionAction);
   qGisInterface->removePluginMenu(tr("&GRASS"), mEditRegionAction);
   qGisInterface->removePluginMenu(tr("&GRASS"), mEditAction);
@@ -808,7 +811,7 @@ void QgsGrassPlugin::unload()
   delete mCloseMapsetAction;
   delete mAddVectorAction;
   delete mAddRasterAction;
-  delete mOpenToolsAction;
+  delete mOpenShellAction;
   delete mRegionAction;
   delete mEditRegionAction;
   delete mEditAction;
