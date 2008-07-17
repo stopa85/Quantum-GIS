@@ -35,7 +35,7 @@ QgsTicksMiddleScaleBarStyle::~QgsTicksMiddleScaleBarStyle()
 
 QString QgsTicksMiddleScaleBarStyle::name() const
 {
-  return "Bar Ticks Middle";
+  return "Line Ticks Middle";
 }
 
 void QgsTicksMiddleScaleBarStyle::draw(QPainter* p) const
@@ -57,7 +57,7 @@ void QgsTicksMiddleScaleBarStyle::draw(QPainter* p) const
   for(; segmentIt != segmentInfo.constEnd(); ++segmentIt)
     {
       p->drawLine(segmentIt->first, barTopPosition, segmentIt->first, barTopPosition + mScaleBar->height());
-      p->drawLine(segmentIt->first, middlePosition,  + segmentIt->first + mScaleBar->segmentMM(), middlePosition); 
+      p->drawLine(segmentIt->first, middlePosition, segmentIt->first + mScaleBar->segmentMM(), middlePosition); 
     }
 
   //draw last tick

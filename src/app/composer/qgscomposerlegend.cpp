@@ -203,7 +203,7 @@ void QgsComposerLegend::drawLayerChildItems(QPainter* p, QStandardItem* layerIte
       //finally draw text
       if(p)
 	{
-	  p->drawText(QPointF(currentXCoord, currentYCoord + itemFontMetrics.height()), currentItem->text());
+	  p->drawText(QPointF(currentXCoord, currentYCoord + itemFontMetrics.ascent()), currentItem->text());
 	}
       
       maxXCoord = std::max(maxXCoord, currentXCoord + itemFontMetrics.width(currentItem->text()) + mBoxSpace);

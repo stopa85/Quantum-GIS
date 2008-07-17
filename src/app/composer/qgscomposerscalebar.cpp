@@ -202,7 +202,7 @@ void QgsComposerScaleBar::setStyle(const QString& styleName)
     {
       mStyle = new QgsDoubleBoxScaleBarStyle(this);
     }
-  else if(styleName == tr("Bar Ticks Middle"))
+  else if(styleName == tr("Line Ticks Middle"))
     {
       mStyle = new QgsTicksMiddleScaleBarStyle(this);
     } 

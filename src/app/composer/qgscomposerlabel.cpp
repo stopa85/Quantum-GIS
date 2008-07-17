@@ -20,6 +20,7 @@
 
 QgsComposerLabel::QgsComposerLabel( QgsComposition *composition): QgsComposerItem(composition), mMargin(0.0)
 {
+  mFont.setPointSizeF(3);
 }
 
 QgsComposerLabel::~QgsComposerLabel()
@@ -36,7 +37,7 @@ void QgsComposerLabel::paint(QPainter* painter, const QStyleOptionGraphicsItem* 
   painter->setFont(mFont);
 
   QFontMetricsF fontSize(mFont);
-  painter->drawText(mMargin, mMargin + fontSize.height(), mText);
+  painter->drawText(QPointF(mMargin, mMargin + fontSize.ascent()), mText);
 
   drawFrame(painter);
   if(isSelected())
