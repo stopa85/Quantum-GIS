@@ -70,8 +70,9 @@ SET (GRASS_PLUGIN_MOC_HDRS
      qgsgrassutils.h
 )
 
-SET (GRASS_PLUGIN_RCCS  qgsgrass_plugin.qrc)
-
+SET(GRASS_RCCS 
+    images/qgsgrass_plugin.qrc
+    )
 
 ########################################################
 # Build
@@ -80,7 +81,7 @@ QT4_WRAP_UI (GRASS_PLUGIN_UIS_H  ${GRASS_PLUGIN_UIS})
 
 QT4_WRAP_CPP (GRASS_PLUGIN_MOC_SRCS  ${GRASS_PLUGIN_MOC_HDRS})
 
-QT4_ADD_RESOURCES(GRASS_PLUGIN_RCC_SRCS ${GRASS_PLUGIN_RCCS})
+QT4_ADD_RESOURCES(GRASS_PLUGIN_RCC_SRCS ${GRASS_RCCS})
 
 ########################################################
 # deal with warnings
