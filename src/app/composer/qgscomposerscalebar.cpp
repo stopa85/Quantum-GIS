@@ -43,7 +43,11 @@ void QgsComposerScaleBar::paint (QPainter* painter, const QStyleOptionGraphicsIt
       return;
     }
 
-  mStyle->draw(painter);
+  //calculate half of first label width as labels are drawn centered
+  QFontMetricsF fontMetrics(mFont);
+  QString firstLabel = firstLabelString();
+
+  mStyle->draw(painter, fontMetrics.width(firstLabel) / 2);
   
   //draw frame and selection boxes if necessary
   drawFrame(painter);
@@ -222,6 +226,18 @@ void QgsComposerScaleBar::setStyle(const QString& styleName)
   else if(styleName == tr("Numeric"))
     {
       mStyle = new QgsNumericScaleBarStyle(this);
+    }
+}
+
+QString QgsComposerScaleBar::firstLabelString() const
+{
+  if(mNumSegmentsLeft > 0)
+    {
+      return QString::number(mNumUnitsPerSegment / mNumMapUnitsPerScaleBarUnit);
+    }
+  else
+    {
+      return "0";
     }
 }
 

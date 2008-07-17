@@ -39,7 +39,7 @@ QString QgsDoubleBoxScaleBarStyle::name() const
   return "Double Box";
 }
 
-void QgsDoubleBoxScaleBarStyle::draw(QPainter* p) const
+void QgsDoubleBoxScaleBarStyle::draw(QPainter* p, double xOffset) const
 {
   if(!mScaleBar)
     {
@@ -71,7 +71,7 @@ void QgsDoubleBoxScaleBarStyle::draw(QPainter* p) const
 	  p->setBrush(QColor(255, 255, 255));
 	}
 
-      QRectF segmentRectTop(segmentIt->first, barTopPosition, segmentIt->second, segmentHeight);
+      QRectF segmentRectTop(segmentIt->first + xOffset, barTopPosition, segmentIt->second, segmentHeight);
       p->drawRect(segmentRectTop);
 
       //draw bottom half
@@ -84,7 +84,7 @@ void QgsDoubleBoxScaleBarStyle::draw(QPainter* p) const
 	  p->setBrush(mScaleBar->brush());
 	}
       
-      QRectF segmentRectBottom(segmentIt->first, barTopPosition + segmentHeight, segmentIt->second, segmentHeight);
+      QRectF segmentRectBottom(segmentIt->first + xOffset, barTopPosition + segmentHeight, segmentIt->second, segmentHeight);
       p->drawRect(segmentRectBottom);
       useColor = !useColor;
     }

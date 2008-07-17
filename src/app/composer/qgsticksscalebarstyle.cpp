@@ -38,7 +38,7 @@ QString QgsTicksScaleBarStyle::name() const
   return "Line Ticks Middle";
 }
 
-void QgsTicksScaleBarStyle::draw(QPainter* p) const
+void QgsTicksScaleBarStyle::draw(QPainter* p, double xOffset) const
 {
   if(!mScaleBar)
     {
@@ -57,17 +57,17 @@ void QgsTicksScaleBarStyle::draw(QPainter* p) const
   QList<QPair<double, double> >::const_iterator segmentIt = segmentInfo.constBegin();
   for(; segmentIt != segmentInfo.constEnd(); ++segmentIt)
     {
-      p->drawLine(segmentIt->first, barTopPosition, segmentIt->first, barTopPosition + mScaleBar->height());
+      p->drawLine(segmentIt->first + xOffset, barTopPosition, segmentIt->first + xOffset, barTopPosition + mScaleBar->height());
       switch(mTickPosition)
 	{
 	case DOWN:
-	  p->drawLine(segmentIt->first, barTopPosition, segmentIt->first + mScaleBar->segmentMM(), barTopPosition);
+	  p->drawLine(xOffset + segmentIt->first, barTopPosition, xOffset + segmentIt->first + mScaleBar->segmentMM(), barTopPosition);
 	  break;
 	case MIDDLE:
-	  p->drawLine(segmentIt->first, middlePosition, segmentIt->first + mScaleBar->segmentMM(), middlePosition); 
+	  p->drawLine(xOffset + segmentIt->first, middlePosition, xOffset + segmentIt->first + mScaleBar->segmentMM(), middlePosition); 
 	  break;
 	case UP:
-	  p->drawLine(segmentIt->first, bottomPosition, segmentIt->first + mScaleBar->segmentMM(), bottomPosition); 
+	  p->drawLine(xOffset + segmentIt->first, bottomPosition, xOffset + segmentIt->first + mScaleBar->segmentMM(), bottomPosition); 
 	  break;
 	}
     }
@@ -76,7 +76,7 @@ void QgsTicksScaleBarStyle::draw(QPainter* p) const
   if(!segmentInfo.isEmpty())
     {
       double lastTickPositionX = segmentInfo.last().first + mScaleBar->segmentMM();
-      p->drawLine(lastTickPositionX, barTopPosition, lastTickPositionX, barTopPosition + mScaleBar->height());
+      p->drawLine(lastTickPositionX + xOffset, barTopPosition, lastTickPositionX + xOffset, barTopPosition + mScaleBar->height());
     }
 
   p->restore();

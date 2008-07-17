@@ -31,7 +31,9 @@ class QgsScaleBarStyle
   QgsScaleBarStyle(const QgsComposerScaleBar* bar);
   virtual ~QgsScaleBarStyle();
 
-  virtual void draw(QPainter* p) const = 0; //to do by every subclass
+  /**Draws the style
+   @param xOffset offset to account for centered labeling*/
+  virtual void draw(QPainter* p, double xOffset = 0) const = 0; //to do by every subclass
   virtual void drawLabels(QPainter* p) const; //default implementation provided
   virtual QRectF calculateBoxSize() const; //default implementation provided
   virtual QString name() const = 0; //return name of the style

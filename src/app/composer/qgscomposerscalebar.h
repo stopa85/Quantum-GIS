@@ -95,6 +95,9 @@ public:
   /**Adjusts box size and calls QgsComposerItem::update()*/
   void update();
 
+   /**Returns string of first label (important for drawing, labeling, size calculation*/
+  QString firstLabelString() const;
+
  public slots:
   void updateSegmentSize();
   /**Sets mCompositionMap to 0 if the map is deleted*/

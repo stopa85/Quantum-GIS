@@ -28,7 +28,7 @@ class QgsDoubleBoxScaleBarStyle: public QgsScaleBarStyle
 
   QString name() const;
 
-  void draw(QPainter* p) const;
+  void draw(QPainter* p, double xOffset = 0) const;
 
  private:
   QgsDoubleBoxScaleBarStyle(); //forbidden

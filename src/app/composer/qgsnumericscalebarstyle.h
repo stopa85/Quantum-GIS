@@ -28,7 +28,7 @@ class QgsNumericScaleBarStyle: public QgsScaleBarStyle
 
   QString name() const;
 
-  void draw(QPainter* p) const;
+  void draw(QPainter* p, double xOffset = 0) const;
 
   //calculation of box size is different compared to segment based scale bars
   QRectF calculateBoxSize() const;

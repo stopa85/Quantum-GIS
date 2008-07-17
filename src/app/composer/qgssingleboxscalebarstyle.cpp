@@ -34,7 +34,7 @@ QgsSingleBoxScaleBarStyle::~QgsSingleBoxScaleBarStyle()
   //nothing to do...
 }
 
-void QgsSingleBoxScaleBarStyle::draw(QPainter* p) const
+void QgsSingleBoxScaleBarStyle::draw(QPainter* p, double xOffset) const
 {
   if(!mScaleBar)
     {
@@ -62,7 +62,7 @@ void QgsSingleBoxScaleBarStyle::draw(QPainter* p) const
 	  p->setBrush(QColor(255, 255, 255));
 	}
 
-      QRectF segmentRect(segmentIt->first, barTopPosition, segmentIt->second, mScaleBar->height());
+      QRectF segmentRect(segmentIt->first + xOffset, barTopPosition, segmentIt->second, mScaleBar->height());
       p->drawRect(segmentRect);
       useColor = !useColor;
     }

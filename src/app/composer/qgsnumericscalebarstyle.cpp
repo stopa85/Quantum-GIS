@@ -40,7 +40,7 @@ QString QgsNumericScaleBarStyle::name() const
   return "Numeric";
 }
 
-void QgsNumericScaleBarStyle::draw(QPainter* p) const
+void QgsNumericScaleBarStyle::draw(QPainter* p, double xOffset) const
 {
   if(!p || !mScaleBar)
     {
