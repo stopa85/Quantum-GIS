@@ -1,6 +1,6 @@
 /***************************************************************************
-                            qgsticksmiddlescalebarstyle.cpp
-                            -------------------------------
+                            qgsticksscalebarstyle.cpp
+                            -------------------------
     begin                : June 2008
     copyright            : (C) 2008 by Marco Hugentobler
     email                : marco.hugentobler@karto.baug.ethz.ch
@@ -14,31 +14,31 @@
  *                                                                         *
  ***************************************************************************/
 
-#include "qgsticksmiddlescalebarstyle.h"
+#include "qgsticksscalebarstyle.h"
 #include "qgscomposerscalebar.h"
 #include <QPainter>
 
-QgsTicksMiddleScaleBarStyle::QgsTicksMiddleScaleBarStyle(const QgsComposerScaleBar* bar): QgsScaleBarStyle(bar)
+QgsTicksScaleBarStyle::QgsTicksScaleBarStyle(const QgsComposerScaleBar* bar): QgsScaleBarStyle(bar)
 {
   mTickPosition = MIDDLE;
 }
 
-QgsTicksMiddleScaleBarStyle::QgsTicksMiddleScaleBarStyle(): QgsScaleBarStyle(0)
+QgsTicksScaleBarStyle::QgsTicksScaleBarStyle(): QgsScaleBarStyle(0)
 {
   mTickPosition = MIDDLE;
 }
 
-QgsTicksMiddleScaleBarStyle::~QgsTicksMiddleScaleBarStyle()
+QgsTicksScaleBarStyle::~QgsTicksScaleBarStyle()
 {
 
 }
 
-QString QgsTicksMiddleScaleBarStyle::name() const
+QString QgsTicksScaleBarStyle::name() const
 {
   return "Line Ticks Middle";
 }
 
-void QgsTicksMiddleScaleBarStyle::draw(QPainter* p) const
+void QgsTicksScaleBarStyle::draw(QPainter* p) const
 {
   if(!mScaleBar)
     {

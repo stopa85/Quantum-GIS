@@ -20,7 +20,7 @@
 #include "qgsdoubleboxscalebarstyle.h"
 #include "qgsnumericscalebarstyle.h"
 #include "qgssingleboxscalebarstyle.h"
-#include "qgsticksmiddlescalebarstyle.h"
+#include "qgsticksscalebarstyle.h"
 #include "qgsrect.h"
 #include <QFontMetricsF>
 #include <QPainter>
@@ -204,19 +204,20 @@ void QgsComposerScaleBar::setStyle(const QString& styleName)
     }
   else if(styleName == tr("Line Ticks Middle") || styleName == tr("Line Ticks Down") || styleName == tr("Line Ticks Up"))
     {
-      mStyle = new QgsTicksMiddleScaleBarStyle(this);
-      /*if(styleName == tr("Line Ticks Middle"))
+      QgsTicksScaleBarStyle* tickStyle = new QgsTicksScaleBarStyle(this);
+      if(styleName == tr("Line Ticks Middle"))
 	{
-	  mStyle->setTickPosition(QgsTicksScaleBarStyle::MIDDLE);
+	  tickStyle->setTickPosition(QgsTicksScaleBarStyle::MIDDLE);
 	}
       else if(styleName == tr("Line Ticks Down"))
 	{
-	  mStyle->setTickPosition(QgsTicksScaleBarStyle::DOWN);
+	  tickStyle->setTickPosition(QgsTicksScaleBarStyle::DOWN);
 	}
       else if(styleName == tr("Line Ticks Up"))
 	{
-	  mStyle->setTickPosition(QgsTicksScaleBarStyle::UP);
-	  }*/
+	  tickStyle->setTickPosition(QgsTicksScaleBarStyle::UP);
+	}
+      mStyle = tickStyle;
     } 
   else if(styleName == tr("Numeric"))
     {

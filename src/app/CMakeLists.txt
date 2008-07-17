@@ -72,7 +72,7 @@ SET(QGIS_APP_SRCS
   composer/qgsdoubleboxscalebarstyle.cpp
   composer/qgsnumericscalebarstyle.cpp
   composer/qgssingleboxscalebarstyle.cpp
-  composer/qgsticksmiddlescalebarstyle.cpp
+  composer/qgsticksscalebarstyle.cpp
   #composer/qgscomposervectorlegend.cpp
   composer/qgscomposerview.cpp
   composer/qgscomposition.cpp

@@ -1,5 +1,5 @@
 /***************************************************************************
-                            qgsticksmiddlescalebarstyle.h
+                            qgsticksscalebarstyle.h
                             -----------------------------
     begin                : June 2008
     copyright            : (C) 2008 by Marco Hugentobler
@@ -14,12 +14,12 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef QGSTICKSMIDDLESCALEBARSTYLE_H
-#define QGSTICKSMIDDLESCALEBARSTYLE_H 
+#ifndef QGSTICKSSCALEBARSTYLE_H
+#define QGSTICKSSCALEBARSTYLE_H 
 
 #include "qgsscalebarstyle.h"
 
-class QgsTicksMiddleScaleBarStyle: public QgsScaleBarStyle
+class QgsTicksScaleBarStyle: public QgsScaleBarStyle
 {
   public:
   enum TickPosition
@@ -29,8 +29,8 @@ class QgsTicksMiddleScaleBarStyle: public QgsScaleBarStyle
       MIDDLE
     };
 
-  QgsTicksMiddleScaleBarStyle(const QgsComposerScaleBar* bar);
-  ~QgsTicksMiddleScaleBarStyle();
+  QgsTicksScaleBarStyle(const QgsComposerScaleBar* bar);
+  ~QgsTicksScaleBarStyle();
 
   QString name() const;
 
@@ -39,7 +39,7 @@ class QgsTicksMiddleScaleBarStyle: public QgsScaleBarStyle
   void setTickPosition(TickPosition p){mTickPosition = p;}
 
  private:
-  QgsTicksMiddleScaleBarStyle(); //forbidden
+  QgsTicksScaleBarStyle(); //forbidden
 
   TickPosition mTickPosition;
 };
