@@ -158,7 +158,7 @@ void QgsGrassPlugin::initGui()
     tr("Add GRASS vector layer"), this);
   mAddRasterAction = new QAction(QIcon(":/grass/add_raster.png"),
     tr("Add GRASS raster layer"), this);
-  mOpenShellAction = new QAction(QIcon(":/grass/grass_tools.png"),
+  mOpenShellAction = new QAction(QIcon(":/grass/grass_shell.png"),
     tr("Open GRASS shell"), this);
 
   mRegionAction = new QAction(QIcon(":/grass/grass_region.png"),
