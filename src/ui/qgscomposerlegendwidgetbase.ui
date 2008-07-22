@@ -18,7 +18,7 @@
   <property name="windowTitle" >
    <string>Barscale Options</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout_2" >
+  <layout class="QGridLayout" >
    <item row="0" column="0" >
     <widget class="QGroupBox" name="mGeneralGroupBox" >
      <property name="title" >
@@ -138,7 +138,7 @@
           <property name="orientation" >
            <enum>Qt::Horizontal</enum>
           </property>
-          <property name="sizeHint" stdset="0" >
+          <property name="sizeHint" >
            <size>
             <width>141</width>
             <height>20</height>
@@ -162,7 +162,7 @@
           <property name="orientation" >
            <enum>Qt::Horizontal</enum>
           </property>
-          <property name="sizeHint" stdset="0" >
+          <property name="sizeHint" >
            <size>
             <width>131</width>
             <height>20</height>
@@ -190,7 +190,7 @@
      <property name="title" >
       <string>Items</string>
      </property>
-     <layout class="QGridLayout" name="gridLayout" >
+     <layout class="QGridLayout" >
       <item row="0" column="0" >
        <widget class="QPushButton" name="mMoveDownPushButton" >
         <property name="text" >
@@ -227,11 +227,11 @@
        </widget>
       </item>
       <item row="0" column="5" >
-       <spacer name="horizontalSpacer" >
+       <spacer>
         <property name="orientation" >
          <enum>Qt::Horizontal</enum>
         </property>
-        <property name="sizeHint" stdset="0" >
+        <property name="sizeHint" >
          <size>
           <width>28</width>
           <height>20</height>
@@ -241,7 +241,7 @@
       </item>
       <item row="1" column="0" colspan="6" >
        <widget class="QTreeView" name="mItemTreeView" >
-        <property name="headerHidden" >
+        <property name="headerHidden" stdset="0" >
          <bool>true</bool>
         </property>
        </widget>
