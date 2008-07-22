@@ -67,16 +67,26 @@ void QgsScaleBarStyle::drawLabels(QPainter* p) const
 	  //label first left segment
 	  currentNumericLabel = firstLabel;
 	} 
-      else if(segmentCounter >= nSegmentsLeft)
+      else if(segmentCounter != 0 && segmentCounter == nSegmentsLeft) //reset label number to 0 if there are left segments
 	{
-	  currentNumericLabel = QString::number(currentLabelNumber / mScaleBar->numMapUnitsPerScaleBarUnit());
+	  currentLabelNumber = 0;
 	}
-      p->drawText(QPointF(segmentIt->first - fontMetrics.width(currentNumericLabel) / 2 + xOffset, mScaleBar->fontHeight() + mScaleBar->boxContentSpace()), currentNumericLabel);
       
       if(segmentCounter >= nSegmentsLeft)
 	{
-	  ++segmentCounter;
+	  currentNumericLabel = QString::number(currentLabelNumber / mScaleBar->numMapUnitsPerScaleBarUnit());
 	}
+
+      if(segmentCounter == 0 || segmentCounter >= nSegmentsLeft) //don't draw label for intermediate left segments
+	{
+	  p->drawText(QPointF(segmentIt->first - fontMetrics.width(currentNumericLabel) / 2 + xOffset, mScaleBar->fontHeight() + mScaleBar->boxContentSpace()), currentNumericLabel);
+	}
+      
+      if(segmentCounter >= nSegmentsLeft)
+	{
+	  currentLabelNumber += mScaleBar->numUnitsPerSegment();
+	}
+      ++segmentCounter;
     }
 
   //also draw the last label

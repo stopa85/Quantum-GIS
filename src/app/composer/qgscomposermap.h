@@ -77,6 +77,11 @@ public:
     /** resizes an item in x- and y direction (canvas coordinates)*/
     void resize(double dx, double dy);
 
+    /**Move content of map
+       @param dx move in x-direction (item and canvas coordinates)
+       @param dy move in y-direction (item and canvas coordinates)*/
+    void moveContent(double dx, double dy);
+
     /**Sets new scene rectangle bounds and recalculates hight and extent*/
     void setSceneRect(const QRectF& rectangle);
 
@@ -142,8 +147,13 @@ private:
     /**Store last scale factor to avoid unnecessary repaints in case preview mode is 'Render'*/
     double mLastScaleFactorX;
 
+    /**Store the last map extent to decide if cache needs to be updatet*/
+    QgsRect mCachedMapExtent;
+
     /**For the generation of new unique ids*/
     static int mCurrentComposerId;
+
+    
 
     /**Returns the zoom factor of the graphics view. If no 
      graphics view exists, the default 1 is returned*/

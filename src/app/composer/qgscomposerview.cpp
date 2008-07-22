@@ -1,6 +1,6 @@
 /***************************************************************************
                          qgscomposerview.cpp
-                             -------------------
+                         -------------------
     begin                : January 2005
     copyright            : (C) 2005 by Radim Blazek
     email                : blazek@itc.it
@@ -26,7 +26,7 @@
 #include "qgscomposerscalebar.h"
 
 QgsComposerView::QgsComposerView( QWidget* parent, const char* name, Qt::WFlags f) :
-  QGraphicsView(parent), mShiftKeyPressed(false), mRubberBandItem(0)
+  QGraphicsView(parent), mShiftKeyPressed(false), mRubberBandItem(0), mMoveContentItem(0)
 {
     setResizeAnchor ( QGraphicsView::AnchorViewCenter );
     setMouseTracking(true);  
@@ -59,10 +59,23 @@ void QgsComposerView::mousePressEvent(QMouseEvent* e)
 	  selectedItem->setSelected(true);
 	}
 
-      emit selectedItemChanged(selectedItem);
+      
       QGraphicsView::mousePressEvent(e);
+      emit selectedItemChanged(selectedItem);
+      break;
     }
-    break;
+
+  case MoveItemContent:
+    {
+      //store item as member if it is selected and cursor is over item
+      QgsComposerItem* item = dynamic_cast<QgsComposerItem*>(itemAt(e->pos()));
+      if(item)
+	{
+	  mMoveContentStartPos = scenePoint;
+	}
+      mMoveContentItem = item;
+      break;
+    }
     
   //create rubber band
   case AddMap:
@@ -140,11 +153,28 @@ void QgsComposerView::mouseReleaseEvent(QMouseEvent* e)
       return;
     }
 
+  QPointF scenePoint = mapToScene(e->pos());
+
   switch(mCurrentTool)
     {
     case Select:
-     QGraphicsView::mouseReleaseEvent(e);
-     break;
+      {
+	QGraphicsView::mouseReleaseEvent(e);
+	break;
+      }
+
+     case MoveItemContent:
+       {
+	 if(mMoveContentItem)
+	   {
+	     double moveX = scenePoint.x() - mMoveContentStartPos.x();
+	     double moveY = scenePoint.y() - mMoveContentStartPos.y();
+	     mMoveContentItem->moveContent(-moveX, -moveY);
+	     mMoveContentItem->update();
+	     mMoveContentItem = 0;
+	   }
+	 break;
+       }
 
     case AddMap:
       {

@@ -175,6 +175,10 @@ Qt::CursorShape QgsComposerItem::cursorForPosition(const QPointF& itemCoordPos)
 
 QgsComposerItem::mouseMoveAction QgsComposerItem::mouseMoveActionForPosition(const QPointF& itemCoordPos)
 {
+
+  //move content tool
+  
+
   bool nearLeftBorder = false;
   bool nearRightBorder = false;
   bool nearLowerBorder = false;

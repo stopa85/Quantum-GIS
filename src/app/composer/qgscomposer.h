@@ -141,6 +141,9 @@ public slots:
     //! Add new picture
     void on_mActionAddImage_activated(void);
 
+    //! Set tool to move item content
+    void moveItemContent();
+
     //! Group selected items 
     void groupItems(void);
 

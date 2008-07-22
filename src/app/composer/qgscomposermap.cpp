@@ -140,6 +140,7 @@ void QgsComposerMap::cache ( void )
   p.end();
   
   mNumCachedLayers = mMapCanvas->layerCount();
+  mCachedMapExtent = mExtent;
   mCacheUpdated = true;
 }
 
@@ -173,7 +174,7 @@ void QgsComposerMap::paint ( QPainter* painter, const QStyleOptionGraphicsItem* 
     
   if ( mComposition->plotStyle() == QgsComposition::Preview && mPreviewMode != Rectangle) 
     { // Draw from cache
-      if ( !mCacheUpdated || mMapCanvas->layerCount() != mNumCachedLayers ) 
+      if ( !mCacheUpdated || mMapCanvas->layerCount() != mNumCachedLayers || mCachedMapExtent != mExtent) 
 	{
 	  cache();
 	}
@@ -241,6 +242,22 @@ void QgsComposerMap::resize(double dx, double dy)
   QRectF currentRect = rect();
   QRectF newSceneRect = QRectF(transform().dx(), transform().dy(), currentRect.width() + dx, currentRect.height() + dy);
   setSceneRect(newSceneRect);
+}
+
+void QgsComposerMap::moveContent(double dx, double dy)
+{
+  QRectF itemRect = rect();
+  double xRatio = dx / itemRect.width();
+  double yRatio = dy / itemRect.height();
+
+  double xMoveMapCoord = mExtent.width() * xRatio;
+  double yMoveMapCoord = -(mExtent.height() * yRatio);
+
+  mExtent.setXmin(mExtent.xMin() + xMoveMapCoord);
+  mExtent.setXmax(mExtent.xMax() + xMoveMapCoord);
+  mExtent.setYmin(mExtent.yMin() + yMoveMapCoord);
+  mExtent.setYmax(mExtent.yMax() + yMoveMapCoord);
+  emit extentChanged();
 }
 
 void QgsComposerMap::setSceneRect(const QRectF& rectangle)

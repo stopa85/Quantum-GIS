@@ -66,6 +66,8 @@ QgsComposer::QgsComposer( QgisApp *qgis): QMainWindow()
   QString myIconPath = QgsApplication::themePath();
   qWarning(QString(myIconPath +"mActionGroupItems.png").latin1() );
 
+  toolBar->addAction(tr("Move Item content"), this, SLOT(moveItemContent()));
+
   toolBar->addAction(QIcon(QPixmap(myIconPath+"mActionGroupItems.png")), tr("&Group Items"), this, SLOT(groupItems()));
   toolBar->addAction(QIcon(QPixmap(myIconPath+"mActionUngroupItems.png")), tr("&Ungroup Items"), this, SLOT(ungroupItems()));
 
@@ -961,6 +963,14 @@ void QgsComposer::on_mActionAddImage_activated(void)
   mActionAddImage->setOn ( true );
   mView->setCursor(QCursor(cross_hair_cursor));
 #endif //0
+}
+
+void QgsComposer::moveItemContent()
+{
+  if(mView)
+    {
+      mView->setCurrentTool(QgsComposerView::MoveItemContent);
+    }
 }
  
 void QgsComposer::groupItems(void)

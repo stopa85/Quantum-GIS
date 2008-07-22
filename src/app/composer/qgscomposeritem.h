@@ -67,6 +67,9 @@ public:
     /**Moves item in canvas coordinates*/
     void move(double dx, double dy);
 
+    /**Move Content of item. Does nothing per default (but implemented in composer map)*/
+    virtual void moveContent(double dx, double dy){}
+
     /**Sets this items bound in scene coordinates such that 1 item size units
      corresponds to 1 scene size unit*/
     virtual void setSceneRect(const QRectF& rectangle);

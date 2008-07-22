@@ -44,7 +44,8 @@ public:
     AddLegend, // add vector legend
     AddLabel,        // add label
     AddScalebar,     // add scalebar
-    AddPicture       // add raster/vector picture
+    AddPicture,       // add raster/vector picture
+    MoveItemContent //move content of item (e.g. content of map)
   };
   
   QgsComposerView(QWidget* parent=0, const char* name=0, Qt::WFlags f=0);
@@ -78,6 +79,10 @@ public:
   QgsComposerView::Tool mCurrentTool;
   /**Rubber band item*/
   QGraphicsRectItem* mRubberBandItem;
+  /**Item to move content*/
+  QgsComposerItem* mMoveContentItem;
+  /**Start position of content move*/
+  QPointF mMoveContentStartPos;
 
   public slots:
   /**For QgsComposerItemGroup to send its signals to QgsComposer (or other classes that keep track of input widgets)*/
