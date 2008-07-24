@@ -2,8 +2,9 @@
      qgsgrassshell.cpp
      --------------------------------------
     Date                 : Sun Sep 16 12:06:10 AKDT 2007
-    Copyright            : (C) 2007 by Gary E. Sherman
-    Email                : sherman at mrcc dot com
+    Copyright            : (C) 2007 by Radim Blazek 
+    Revised and ported to Qt4: Tim Sutton 2008
+    Email                : blazek at itc.it
  ***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -15,37 +16,30 @@
 #include <iostream>
 #include <vector>
 
-#include <qstring.h>
-#include <qapplication.h>
-#include <qpushbutton.h>
-#include <qwidget.h>
-#include <q3textedit.h>
-#include <q3process.h>
-#include <qmessagebox.h>
-#include <q3cstring.h>
-#include <qfile.h>
-#include <qdatastream.h>
-#include <qstringlist.h>
-#include <qsocketnotifier.h>
-#include <q3socket.h>
-#include <q3socketdevice.h>
-#include <qevent.h>
-#include <q3textbrowser.h>
-#include <qregexp.h>
-#include <qcursor.h>
-#include <qlayout.h>
-#include <qclipboard.h>
-#include <qfontmetrics.h>
-#include <q3progressbar.h>
+#include <QString>
+#include <QApplication>
+#include <QProcess>
+#include <QMessageBox>
+#include <QFile>
+#include <QDataStream>
+#include <QStringList>
+#include <QSocketNotifier>
+#include <QTcpSocket>
+#include <QEvent>
+#include <QTextBrowser>
+#include <QTextBlock>
+#include <QTextDocument>
+#include <QRegExp>
+#include <QCursor>
+#include <QLayout>
+#include <QClipboard>
+#include <QFontMetrics>
+#include <QFileInfo>
+#include <QProgressBar>
 
 #include "qgsapplication.h"
-
 #include "qgsgrassshell.h"
-//Added by qt3to4:
-#include <QGridLayout>
-#include <QKeyEvent>
-#include <QResizeEvent>
-#include <QMouseEvent>
+#include "qgsgrassshelltext.h"
 
 extern "C" {
 #include <stdio.h>
@@ -80,10 +74,10 @@ extern "C" {
 #endif //!WIN32
 }
 
-QgsGrassShell::QgsGrassShell ( QgsGrassTools *tools, 
-    QWidget * parent, const char * name  ):
-QDialog(parent), QgsGrassShellBase()
+QgsGrassShell::QgsGrassShell ( QWidget * parent, const char * name  ):
+  QTextEdit(parent)
 {
+  setName("GrassShell");
   mValid = false;
   mSkipLines = 2;
 
@@ -93,33 +87,34 @@ QDialog(parent), QgsGrassShellBase()
   return;
 #else 
 
-  setupUi(this);
+  //get focus from both mouse and keyboard
+  setFocusPolicy(Qt::StrongFocus);
+  setTabChangesFocus ( false );
+  setReadOnly ( false );
+  setWordWrapMode ( QTextOption::WrapAnywhere );
 
-  QGridLayout *layout = new QGridLayout( mTextFrame, 1, 1 );
-  mText = new QgsGrassShellText( this, mTextFrame);
-  layout->addWidget ( mText, 0 , 0 );
-  mText->show();
+    // Set tab stops ???
+  mTabStop.resize(200);
+  for ( int i = 0 ; i * 8 < (int)mTabStop.size(); i++ )
+  {
+    mTabStop[i*8] = true;
+  }
+  
+  mpProgressBar = new QProgressBar(this);
+  mpProgressBar->hide();
+  setFont(QFont ( "Courier", 10 ));
 
+ 
 
-  mFont = QFont ( "Courier", 10 );
-
-
-#ifndef Q_WS_MAC
-  // Qt4.3.2/Mac Q3TextEdit readOnly property causes keys to be processed as keyboard actions
-  mText->setReadOnly(TRUE);
-#endif
-  //mText->setFocusPolicy ( QWidget::NoFocus ); // To get key press directly
-
+  //setFocusPolicy ( QWidget::NoFocus ); // To get key press directly
+  append (tr( "GRASS shell ready...") ); 
 #ifndef HAVE_OPENPTY
-  mText->append ( "GRASS shell is not supported" ); 
+  append (tr( "GRASS shell is not supported") ); 
   return;
 #endif
 
-  // TODO set cursor IbeamCursor
-  // This does not work - the cursor is used for scrollbars -> disabled
-  //mText->setCursor ( QCursor(Qt::IbeamCursor) );
-  mParagraph = -1; // first will be 0
-  mIndex = -1;
+
+  mBlockNo = -1; // first will be 0
 
   mNewLine = true;
 
@@ -168,7 +163,7 @@ QDialog(parent), QgsGrassShellBase()
 #endif
   if ( pid == -1 )
   {
-    QMessageBox::warning( 0, "Warning", "Cannot fork shell" );
+    QMessageBox::warning( 0, tr("Warning"), tr("Cannot fork shell") );
     return;
   }
 
@@ -193,8 +188,8 @@ QDialog(parent), QgsGrassShellBase()
     int fd = open ( (char*) slaveName.ascii(), O_RDWR);
     if ( fd < 0 ) 
     {
-      QMessageBox::warning( 0, "Warning", "Cannot open slave file "
-        "in child process" );
+      QMessageBox::warning( 0, tr("Warning"), tr("Cannot open slave file "
+        "in child process") );
       return;
     }
 
@@ -265,18 +260,12 @@ QDialog(parent), QgsGrassShellBase()
   QObject::connect ( mOutNotifier, SIGNAL(activated(int)),
     this, SLOT(readStdout(int)));
 
-  // Set tab stops ???
-  mTabStop.resize(200);
-  for ( int i = 0 ; i * 8 < (int)mTabStop.size(); i++ )
-  {
-    mTabStop[i*8] = true;
-  }
+
 
   // Set trap to write history on SIGUSR1
   //QString trap = "trap 'history -w' SIGUSR1\015\012";
   QString trap = "trap 'history -w' SIGUSR1\015";
   write( mFdMaster, trap.ascii(), trap.length());
-  mText->clear();
 
   resizeTerminal();
   mValid = true;
@@ -320,6 +309,39 @@ QgsGrassShell::~QgsGrassShell()
   }
 #endif
 }
+  
+void QgsGrassShell::focusInEvent ( QFocusEvent * event )
+{
+  //install an event filter to prevent other parts of the app
+  //receiving keystrokes and e.g. invoking menu shortcuts
+  qApp->installEventFilter(this);
+  QTextEdit::focusInEvent(event);
+}
+  void QgsGrassShell::focusOutEvent ( QFocusEvent * event )
+{
+  qApp->removeEventFilter(this);
+  QTextEdit::focusOutEvent(event);
+}
+bool QgsGrassShell::eventFilter(QObject *object, QEvent *event)
+{
+  //note object name must be wrapped in a QString because you can directly compare char[] with char[]
+  if (QString(object->name()) == "GrassShell" && event->type() == QEvent::KeyPress)
+  {
+    if (event->type() != QEvent::KeyPress)
+    {
+      qDebug("Keypress event NOT accepted: ");
+      return false;
+    }
+    qDebug("Keypress event accepted: ");
+    QKeyEvent * mypKeyEvent = static_cast<QKeyEvent *>(event);
+    keyPressEvent(mypKeyEvent);
+    return true; //stop further processing by other widgets
+  }
+  else
+  {
+    return false;
+  }
+}
 
 void QgsGrassShell::keyPressEvent( QKeyEvent * e  )
 {
@@ -333,7 +355,7 @@ void QgsGrassShell::keyPressEvent( QKeyEvent * e  )
 
   if ( !mValid ) return;
 
-  mProgressBar->setValue ( 0 );
+  mpProgressBar->setValue ( 0 );
 
   char c = (char) e->ascii();
 #ifdef QGISDEBUG
@@ -375,10 +397,13 @@ void QgsGrassShell::keyPressEvent( QKeyEvent * e  )
     }
   }
 
+  //pass the key press on to the text edit parent (results in double chars echoed to textedit
+  //QTextEdit::keyPressEvent(  e  );
   ret = write( mFdMaster, s, length);
 #ifdef QGISDEBUG
   std::cerr << "write ret = " << ret << std::endl;
 #endif
+
 }
 
 void QgsGrassShell::keyReleaseEvent( QKeyEvent * e  )
@@ -392,6 +417,7 @@ void QgsGrassShell::keyReleaseEvent( QKeyEvent * e  )
   else if ( e->key() == Qt::Key_Shift ) mKeyDown[DownShift] = false;
   else if ( e->key() == Qt::Key_Alt ) mKeyDown[DownAlt] = false;
   else if ( e->key() == Qt::Key_Meta ) mKeyDown[DownMeta] = false;
+
 }
 
 void QgsGrassShell::readStdout( int socket )
@@ -421,58 +447,58 @@ void QgsGrassShell::printStdout()
   std::cerr << "-->";
   for ( int i = 0; i < (int)mStdoutBuffer.length(); i++ )
   {
-    int c = mStdoutBuffer[i];
-    QString s = "";
-    if ( c > '\037' && c != '\177' ) // control characters
+    int myCharInt = mStdoutBuffer[i];
+    QString myString = "";
+    if ( myCharInt > '\037' && myCharInt != '\177' ) // myControlChar characters
     {
-      s = (char) c;
-      std::cerr << s.local8Bit().data();
+      myString = (char) myCharInt;
+      std::cerr << myString.local8Bit().data();
     }
     else
     {
-      std::cerr << "(c=" << QString::number(c,8).local8Bit().data() << ")";
+      std::cerr << "(myCharInt=" << QString::number(myCharInt,8).local8Bit().data() << ")";
     }
   }
   std::cerr << "<--" << std::endl;
 #endif
 
   eraseCursor();
-  // To make it faster we want to print maximum lenght blocks from buffer
+  // To make it faster we want to print maximum length blocks from buffer
   while ( mStdoutBuffer.length() > 0 ) 
   {
 #ifdef QGISDEBUG
     std::cerr << "------ cycle ------" << std::endl;
 #endif
 
-    // Search control character
-    int control = -1; 
+    // Search myControlChar character
+    int myControlChar = -1; 
     for ( int i = 0; i < (int)mStdoutBuffer.length(); i++ )
     {
-      int c = mStdoutBuffer[i];
-      if ( c < '\037' || c == '\177' )
+      int myCharInt = mStdoutBuffer[i];
+      if ( myCharInt < '\037' || myCharInt == '\177' )
       {
-        control = i;
+        myControlChar = i;
         break;
       }
     }
 #ifdef QGISDEBUG
-    std::cerr << "control = " << control << std::endl;
+    std::cerr << "myControlChar = " << myControlChar << std::endl;
 #endif
 
-    // Process control character if found at index 0
-    if ( control == 0 ) 
+    // Process myControlChar character if myFoundFlag at index 0
+    if ( myControlChar == 0 ) 
     {
-      int c = mStdoutBuffer[0];
+      int myCharInt = mStdoutBuffer[0];
 #ifdef QGISDEBUG
-      std::cerr << "c = " << QString::number(c,8).local8Bit().data() << std::endl;
+      std::cerr << "myCharInt = " << QString::number(myCharInt,8).local8Bit().data() << std::endl;
 #endif
 
-      // control sequence
-      if ( c == '\033' )
+      // myControlChar sequence
+      if ( myCharInt == '\033' )
       {
-        //std::cerr << "control sequence" << std::endl;
+        //std::cerr << "myControlChar sequence" << std::endl;
 
-        bool found = false;
+        bool myFoundFlag = false;
 
         // It is sequence, so it should be at least one more character
         // wait for more data 
@@ -480,32 +506,32 @@ void QgsGrassShell::printStdout()
         if ( mStdoutBuffer[1] == ']' && mStdoutBuffer.length() < 3 ) break;
 
         // ESC ] Ps ; Pt BEL    (xterm title hack)
-        QRegExp rx ( "\\](\\d+);([^\\a]+)\\a" ); 
-        if ( rx.search ( mStdoutBuffer, 1 ) == 1 ) 
+        QRegExp myRegExp ( "\\](\\d+);([^\\a]+)\\a" ); 
+        if ( myRegExp.search ( mStdoutBuffer, 1 ) == 1 ) 
         {
-          int mlen = rx.matchedLength();
+          int mlen = myRegExp.matchedLength();
 #ifdef QGISDEBUG
-          std::cerr << "ESC(set title): " << rx.cap(2).local8Bit().data() << std::endl;
+          std::cerr << "ESC(set title): " << myRegExp.cap(2).local8Bit().data() << std::endl;
 #endif
           mStdoutBuffer.remove ( 0, mlen+1 );
-          found = true;
+          myFoundFlag = true;
         }
 
-        if ( !found ) 
+        if ( !myFoundFlag ) 
         {
           //    ESC [ Pn ; Pn FINAL
           // or ESC [ = Pn ; Pn FINAL
           // or ESC [ = Pn ; Pn FINAL
           // TODO: QRegExp captures only last of repeated patterns 
           //       ( ; separated nums - (;\\d+)* )
-          rx.setPattern ( "\\[([?=])*(\\d+)*(;\\d+)*([A-z])" ); 
-          if ( rx.search ( mStdoutBuffer, 1 ) == 1 ) 
+          myRegExp.setPattern ( "\\[([?=])*(\\d+)*(;\\d+)*([A-z])" ); 
+          if ( myRegExp.search ( mStdoutBuffer, 1 ) == 1 ) 
           {
-            int mlen = rx.matchedLength();
-            char final = rx.cap(4).at(0).latin1();
+            int mlen = myRegExp.matchedLength();
+            char final = myRegExp.cap(4).at(0).latin1();
 
             std::cerr << "final = " << final << std::endl;
-            //std::cerr << "ESC: " << rx.cap(0) << std::endl;
+            //std::cerr << "ESC: " << myRegExp.cap(0) << std::endl;
 
             switch ( final )
             {
@@ -513,14 +539,14 @@ void QgsGrassShell::printStdout()
             case 'h' : // SM - Set Mode
               {
                 int mode = -1;
-                switch ( rx.cap(2).toInt() )
+                switch ( myRegExp.cap(2).toInt() )
                 {
                 case 4 :
                   mode = Insert;
                   break;
 
                 default:
-                  std::cerr << "ESC ignored: " << rx.cap(0).local8Bit().data() << std::endl;
+                  std::cerr << "ESC ignored: " << myRegExp.cap(0).local8Bit().data() << std::endl;
                   break;
                 }
                 if ( mode >= 0 )
@@ -534,41 +560,40 @@ void QgsGrassShell::printStdout()
               }
 
             case 'm' : // SGR - Select Graphic Rendition
-              if ( rx.cap(2).isEmpty() || rx.cap(2).toInt() == 0 )
+              if ( myRegExp.cap(2).isEmpty() || myRegExp.cap(2).toInt() == 0 )
               {
-                for ( int i = 0; i < RendetionCount; i++ )
+                for ( int i = 0; i < RenditionCount; i++ )
                 {
-                  mRendetion[i] = false;
+                  mRendition[i] = false;
                 }
               }
               else
               {
-                std::cerr << "ESC SGR ignored: " << rx.cap(0).local8Bit().data() << std::endl;
+                std::cerr << "ESC SGR ignored: " << myRegExp.cap(0).local8Bit().data() << std::endl;
               }
               break;
 
             case 'P' : // DCH - Delete Character
               {
-                int n = rx.cap(2).toInt();
-                mText->setSelection ( mParagraph, mIndex, mParagraph, mIndex+n, 0 );
-                mText->removeSelectedText ( 0 );
+                int n = myRegExp.cap(2).toInt();
+                textCursor().deleteChar();
                 break;
               }
 
             case 'K' : // EL - Erase In Line
-              if ( rx.cap(2).isEmpty() || rx.cap(2).toInt() == 0 )
+              if ( myRegExp.cap(2).isEmpty() || myRegExp.cap(2).toInt() == 0 )
               {
-                //mText->setSelectionAttributes ( 1, QColor(255,255,255), true );  
-                mText->setSelection ( mParagraph, mIndex, mParagraph, 
-                  mText->paragraphLength(mParagraph), 0 );
-                mText->removeSelectedText ( 0 );
+                //setSelectionAttributes ( 1, QColor(255,255,255), true );  
+                textCursor().select( QTextCursor::LineUnderCursor );
+                textCursor().removeSelectedText();    
               }
               break;
 
               // TODO: multiple tab stops
             case 'H' : // Horizontal Tabulation Set (HTS)
-              mTabStop[mIndex] = true;
-              std::cerr << "TAB set on " << mIndex << std::endl;
+              //@TODO this should be using position in the line rather than the document I think [TS]
+              mTabStop[ textCursor().position()] = true;
+              std::cerr << "TAB set on " << textCursor().position() << std::endl;
               break;
 
             case 'g' : // Tabulation Clear (TBC)
@@ -576,55 +601,57 @@ void QgsGrassShell::printStdout()
               // ESC [ 2 g 	Clears all tab stops in the line
               // ESC [ 3 g 	Clears all tab stops in the Page
               std::cerr << "TAB reset" << std::endl;
-              if ( rx.cap(2).isEmpty() || rx.cap(2).toInt() == 0 )
+              if ( myRegExp.cap(2).isEmpty() || myRegExp.cap(2).toInt() == 0 )
               {
-                mTabStop[mIndex] = false;
+                //@TODO this should be using position in the line rather than the document I think [TS]
+                mTabStop[textCursor().position()] = false;
               } 
               else
               {
                 for (int i = 0; i < (int)mTabStop.size(); i++ ) 
-                  mTabStop[mIndex] = false;
+                  //@TODO this should be using position in the line rather than the document I think [TS]
+                  mTabStop[textCursor().position()] = false;
               }
               break;
 
             default:
-              std::cerr << "ESC ignored: " << rx.cap(0).local8Bit().data() << std::endl;
+              std::cerr << "ESC ignored: " << myRegExp.cap(0).local8Bit().data() << std::endl;
               break;
             }
 
             mStdoutBuffer.remove ( 0, mlen+1 );
-            found = true;
+            myFoundFlag = true;
           }
         }
 
-        if ( !found ) 
+        if ( !myFoundFlag ) 
         {
           // ESC # DIGIT
-          rx.setPattern ( "#(\\d)" ); 
-          if ( rx.search ( mStdoutBuffer, 1 ) == 1 )
+          myRegExp.setPattern ( "#(\\d)" ); 
+          if ( myRegExp.search ( mStdoutBuffer, 1 ) == 1 )
           {
-            std::cerr << "ESC ignored: " << rx.cap(0).local8Bit().data() << std::endl;
+            std::cerr << "ESC ignored: " << myRegExp.cap(0).local8Bit().data() << std::endl;
             mStdoutBuffer.remove ( 0, 3 );
-            found = true;
+            myFoundFlag = true;
           }
         }
 
-        if ( !found ) 
+        if ( !myFoundFlag ) 
         {
           // ESC CHARACTER
-          rx.setPattern ( "[A-z<>=]" ); 
-          if ( rx.search ( mStdoutBuffer, 1 ) == 1 )
+          myRegExp.setPattern ( "[A-z<>=]" ); 
+          if ( myRegExp.search ( mStdoutBuffer, 1 ) == 1 )
           {
-            std::cerr << "ESC ignored: " << rx.cap(0).local8Bit().data() << std::endl;
+            std::cerr << "ESC ignored: " << myRegExp.cap(0).local8Bit().data() << std::endl;
             mStdoutBuffer.remove ( 0, 2 );
-            found = true;
+            myFoundFlag = true;
           }
         }
 
         // TODO: it can happen that the sequence is not complete ->
         //       no match -> how to distinguish unknown sequence from
         //       missing characters
-        if ( !found ) 
+        if ( !myFoundFlag ) 
         {
           // For now move forward
           std::cerr << "UNKNOWN ESC ignored: " << mStdoutBuffer.mid(1,5).data() << std::endl;
@@ -633,14 +660,13 @@ void QgsGrassShell::printStdout()
       }
       else
       {
-        // control character
-        switch ( c ) 
+        // myControlChar character
+        switch ( myCharInt ) 
         {
         case '\015' : // CR
           //std::cerr << "CR" << std::endl;
           mStdoutBuffer.remove ( 0, 1 );
           // TODO : back tab stops?
-          mIndex = 0;
           break;
 
         case '\012' : // NL
@@ -651,7 +677,10 @@ void QgsGrassShell::printStdout()
 
         case '\010' : // BS 
           //std::cerr << "BS" << std::endl;
-          mIndex--;
+          //we must remove the selection first because in a shell backspace can only delete a 
+          //single char
+          textCursor().clearSelection ();
+          textCursor().deletePreviousChar ();
           mStdoutBuffer.remove ( 0, 1 );
           break;
 
@@ -659,7 +688,8 @@ void QgsGrassShell::printStdout()
           {
             //std::cerr << "HT" << std::endl;
             QString space;
-            for ( int i = mIndex; i < (int)mTabStop.size(); i++ )
+            //@TODO this should be using position in the line rather than the document I think [TS]
+            for ( int i = textCursor().position(); i < (int)mTabStop.size(); i++ )
             {
               space.append ( " " );
               if ( mTabStop[i] ) break;
@@ -671,12 +701,12 @@ void QgsGrassShell::printStdout()
 
         case '>' : // Keypad Numeric Mode 
           std::cerr << "Keypad Numeric Mode ignored: " 
-            << QString::number(c,8).local8Bit().data() << std::endl;
+              << QString::number(myCharInt,8).local8Bit().data() << std::endl;
           mStdoutBuffer.remove ( 0, 2 );
           break;
 
-        default : // unknown control, do nothing
-          std::cerr << "UNKNOWN control char ignored: " << QString::number(c,8).local8Bit().data() << std::endl;
+        default : // unknown myControlChar, do nothing
+          std::cerr << "UNKNOWN myControlChar char ignored: " << QString::number(myCharInt,8).local8Bit().data() << std::endl;
           mStdoutBuffer.remove ( 0, 1 );
           break;
         }
@@ -688,42 +718,42 @@ void QgsGrassShell::printStdout()
     // and stop with \015\012 (\n)
 
     // first info
-    QRegExp rxinfo ( "GRASS_INFO_" );
-    int message = rxinfo.search(mStdoutBuffer);
+    QRegExp myRegExpinfo ( "GRASS_INFO_" );
+    int message = myRegExpinfo.search(mStdoutBuffer);
 
-    if ( message == 0 ) // Info found at index 0
+    if ( message == 0 ) // Info myFoundFlag at index 0
     { 
       // First try percent
-      QRegExp rxpercent ( "GRASS_INFO_PERCENT: (\\d+)\\015\\012" );
-      if ( rxpercent.search(mStdoutBuffer) == 0 ) {
-        int mlen = rxpercent.matchedLength();
-        int progress = rxpercent.cap(1).toInt();
-        mProgressBar->setValue ( progress  );
+      QRegExp myRegExpPercent ( "GRASS_INFO_PERCENT: (\\d+)\\015\\012" );
+      if ( myRegExpPercent.search(mStdoutBuffer) == 0 ) {
+        int mlen = myRegExpPercent.matchedLength();
+        int progress = myRegExpPercent.cap(1).toInt();
+        mpProgressBar->setValue ( progress  );
         mStdoutBuffer.remove ( 0, mlen );
         continue;
       }
 
-      QRegExp rxwarning ( "GRASS_INFO_WARNING\\(\\d+,\\d+\\): ([^\\015]*)\\015\\012" );
-      QRegExp rxerror ( "GRASS_INFO_ERROR\\(\\d+,\\d+\\): ([^\\015]*)\\015\\012" );
-      QRegExp rxend ( "GRASS_INFO_END\\(\\d+,\\d+\\)\\015\\012" );
+      QRegExp myRegExpwarning ( "GRASS_INFO_WARNING\\(\\d+,\\d+\\): ([^\\015]*)\\015\\012" );
+      QRegExp myRegExperror ( "GRASS_INFO_ERROR\\(\\d+,\\d+\\): ([^\\015]*)\\015\\012" );
+      QRegExp myRegExpend ( "GRASS_INFO_END\\(\\d+,\\d+\\)\\015\\012" );
 
       int mlen = 0; 
       QString msg;
       QString img;
-      if ( rxwarning.search(mStdoutBuffer) == 0 ) 
+      if ( myRegExpwarning.search(mStdoutBuffer) == 0 ) 
       {
-        mlen = rxwarning.matchedLength();
-        msg = rxwarning.cap(1);
-        img = QgsApplication::pkgDataPath() + "/themes/default/grass/grass_module_warning.png";
+        mlen = myRegExpwarning.matchedLength();
+        msg = myRegExpwarning.cap(1);
+        img = ":/grass/warning.png";
       }
-      else if ( rxerror.search(mStdoutBuffer) == 0 ) 
+      else if ( myRegExperror.search(mStdoutBuffer) == 0 ) 
       {
-        mlen = rxerror.matchedLength();
-        msg = rxerror.cap(1);
-        img = QgsApplication::pkgDataPath() + "/themes/default/grass/grass_module_error.png";
+        mlen = myRegExperror.matchedLength();
+        msg = myRegExperror.cap(1);
+        img =  ":/grass/error.png";
       }
 
-      if ( mlen > 0 ) // found error or warning
+      if ( mlen > 0 ) // myFoundFlag error or warning
       {
 #ifdef QGISDEBUG
         std::cerr << "MSG: " << msg.local8Bit().data() << std::endl;
@@ -736,27 +766,23 @@ void QgsGrassShell::printStdout()
         // but it does not look nice to have empty rows before 
         removeEmptyParagraphs();
 
-        msg.replace ( "&", "&amp;" );
-        msg.replace ( "<", "&lt;" );
-        msg.replace ( ">", "&gt;" );
-        msg.replace ( " ", "&nbsp;" );
-
-        mText->setTextFormat(Qt::RichText);
-        mText->append ( "<img src=\"" + img + "\">" + msg );
-        mParagraph++;
+        textCursor().insertImage(img);
+        insertPlainText ( msg );
+        
+        mBlockNo++;
         mNewLine = true;
         mStdoutBuffer.remove ( 0, mlen );
         continue;
       } 
 
-      if ( rxend.search(mStdoutBuffer) == 0 ) 
+      if ( myRegExpend.search(mStdoutBuffer) == 0 ) 
       {
-        mlen = rxend.matchedLength();
+        mlen = myRegExpend.matchedLength();
         mStdoutBuffer.remove ( 0, mlen );
         continue;
       }
 
-      // No complete message found => wait for input 
+      // No complete message myFoundFlag => wait for input 
       // TODO: 1) Sleep for a moment because GRASS writes 
       //          1 character in loop
       //       2) Fix GRASS to write longer strings
@@ -765,8 +791,8 @@ void QgsGrassShell::printStdout()
 
     // Print plain text
     int length = mStdoutBuffer.length();
-    if ( control >= 0 ) length = control;
-    if ( message >= 0 && (control == -1 || control > message ) )
+    if ( myControlChar >= 0 ) length = myControlChar;
+    if ( message >= 0 && (myControlChar == -1 || myControlChar > message ) )
     {
       length = message;
     }
@@ -784,72 +810,72 @@ void QgsGrassShell::printStdout()
     }
   }
 
-  showCursor();
-  mText->ensureCursorVisible();
+
+  ensureCursorVisible();
 }
 
 void QgsGrassShell::removeEmptyParagraphs()
 {
-  while ( mParagraph >= 0 
-       && mText->text(mParagraph).stripWhiteSpace().length() <= 0 )
+  QTextDocument * mypDocument = document();
+  QTextCursor myEndCursor(mypDocument);
+  textCursor().setPosition(QTextCursor::Start); //start of document
+  myEndCursor.setPosition(QTextCursor::End);//end of document
+  while (textCursor().position() != myEndCursor.position())
   {
-    mText->removeParagraph ( mParagraph );
-    mParagraph--;
+     textCursor().select(QTextCursor::BlockUnderCursor);
+     textCursor().removeSelectedText();
+     textCursor().setPosition(QTextCursor::NextBlock);//start of next block
+     myEndCursor.setPosition(QTextCursor::End);//end of document
   }
-  mIndex = mText->paragraphLength(mParagraph);
+  textCursor().setPosition(QTextCursor::End);
 }
 
-void QgsGrassShell::insert ( QString s )
+void QgsGrassShell::insert ( QString theString )
 {
 #ifdef QGISDEBUG
   std::cerr << "insert()" << std::endl;
 #endif
 
-  if ( s.isEmpty() ) return; 
+  if ( theString.isEmpty() ) return; 
 
-  // In theory mParagraph == mText->paragrephs()-1
+  // In theory mBlockNo == paragraphs()-1
   // but if something goes wrong (more paragraphs) we want to write 
   // at the end
-  if ( mParagraph > -1 && mParagraph != mText->paragraphs()-1 )
+  if ( mBlockNo > -1 && mBlockNo != document()->blockCount()-1 )
   {
-    std::cerr << "WRONG mParagraph!" << std::endl;
+    std::cerr << "WRONG mBlockNo!" << std::endl;
     mNewLine = true;
   }
 
   // Bug?: QTextEdit::setOverwriteMode does not work, always 'insert'
   //       -> if Insert mode is not set, delete first the string 
   //          to the right
-  // mText->setOverwriteMode ( !mMode[Insert] ); // does not work
-  if ( !mMode[Insert] && !mNewLine && mParagraph >= 0 &&
-    mText->paragraphLength(mParagraph) > mIndex ) 
+  // setOverwriteMode ( !mMode[Insert] ); // does not work
+  if ( !mMode[Insert] && !mNewLine && mBlockNo >= 0  ) 
   {
 #ifdef QGISDEBUG
-    std::cerr << "erase old " << mIndex+s.length() << " chars "  << std::endl;
+    std::cerr << "erase old " << textCursor().position() + theString.length() << " chars "  << std::endl;
 #endif
-    mText->setSelection ( mParagraph, mIndex, mParagraph, mIndex+s.length(), 0 );
-    mText->removeSelectedText ( 0 );
+    
+    textCursor().clearSelection();
+    textCursor().setPosition ( textCursor().position(), QTextCursor::MoveAnchor );
+    //If the anchor() is kept where it is and the position() is moved, the text in between will be selected.
+    textCursor().setPosition (  textCursor().position() + theString.length(), QTextCursor::KeepAnchor );
+    textCursor().removeSelectedText ( );
   }
 
   if ( mNewLine )
   {
     // Start new paragraph
-    mText->setTextFormat(Qt::PlainText);
-    mText->setCurrentFont ( mFont ); 
-    mText->append ( s );
-    mIndex = s.length();
-    //mParagraph++;
-    mParagraph = mText->paragraphs()-1;
+    append ( theString );
+    //mBlockNo++;
+    mBlockNo = document()->blockCount()-1;
     mNewLine = false;
   }
   else
   {
-    // Append to existing paragraph
-    mText->setCursorPosition ( mParagraph, mIndex );
-    mText->setTextFormat(Qt::PlainText);
-    mText->setCurrentFont ( mFont ); 
-    mText->insert ( s );
-
-    mIndex += s.length(); 
+    insertPlainText ( theString );
+    textCursor().setPosition(textCursor().position() + theString.length()); 
   }
 }
 
@@ -857,18 +883,14 @@ void QgsGrassShell::newLine()
 {
   if ( mSkipLines > 0 )
   {
-    mText->clear();
     mSkipLines--;
   }
   if ( mNewLine ) 
   {
-    mText->setTextFormat(Qt::PlainText);
-    mText->setCurrentFont ( mFont ); 
-    mText->append ( " " );
-    //mParagraph++; 
+    append ( " " );
+    //mBlockNo++; 
     // To be sure that we are at the end
-    mParagraph = mText->paragraphs()-1;
-    mIndex = 0;
+    mBlockNo = document()->blockCount()-1;
   }
   mNewLine = true;
 }
@@ -876,34 +898,39 @@ void QgsGrassShell::newLine()
 void QgsGrassShell::eraseCursor()
 {
   // Remove space representing cursor from the end of current paragraph
-  if ( !mNewLine && mCursorSpace && mParagraph >= 0 ) 
+  if ( !mNewLine && mCursorSpace && mBlockNo >= 0 ) 
   {
-    mText->setSelection ( mParagraph, mIndex, mParagraph, mIndex+1, 0 );
-    mText->removeSelectedText ( 0 );
+    textCursor().setPosition (  textCursor().position(), QTextCursor::MoveAnchor );
+    //If the anchor() is kept where it is and the position() is moved, the text in between will be selected.
+    textCursor().setPosition (  textCursor().position() + 1, QTextCursor::KeepAnchor );
+    textCursor().removeSelectedText ( );
+    
   }
   mCursorSpace = false;
 }
 
+/* Chuck this - we use the inbuilt QTextEdit cursor rather
 void QgsGrassShell::showCursor()
 {
   // Do not highlite cursor if last printed paragraph was GRASS message
   if ( mNewLine ) return;
-
   // If cursor is at the end of paragraph add space  
-  if ( mParagraph >= 0 && mIndex > mText->paragraphLength(mParagraph)-1 )
+  if ( mBlockNo >= 0 && textCursor().atBlockEnd() )
   {
-    mText->setCursorPosition(mParagraph,mIndex);
-    mText->setCursorPosition ( mParagraph, mIndex );
-    mText->insert ( " " );
-    // Warning: do not increase mIndex, 
+    textCursor().setPosition (  textCursor().position(), QTextCursor::MoveAnchor  );
+    insert ( " " );
     // the space if after current position
     mCursorSpace = true;
   }
 
-  // Selection 1 is used as cursor highlite
-  mText->setSelection ( mParagraph, mIndex, mParagraph, mIndex+1, 1 );
-  mText->setSelectionAttributes ( 1, QColor(0,0,0), true );  
+  // Highlight the cursor
+  textCursor().setPosition (  textCursor().position(), QTextCursor::MoveAnchor );
+    //If the anchor() is kept where it is and the position() is moved, the text in between will be selected.
+  textCursor().setPosition (  textCursor().position() + 1, QTextCursor::KeepAnchor );
+  //@todo work out how to do this in Qt4
+  //setSelectionAttributes ( 1, QColor(0,0,0), true );  
 }
+*/
 
 void QgsGrassShell::mousePressEvent(QMouseEvent* e)
 {
@@ -913,6 +940,7 @@ void QgsGrassShell::mousePressEvent(QMouseEvent* e)
 
   if ( !mValid ) return;
 
+  //@TODO Add some logic to check click was in textedit
   // paste clipboard
   if ( e->button() == Qt::MidButton )
   {
@@ -920,17 +948,26 @@ void QgsGrassShell::mousePressEvent(QMouseEvent* e)
     QString text = cb->text(QClipboard::Selection);
     write( mFdMaster, (char*) text.ascii(), text.length() );
   }
+  else
+  {
+    QTextEdit::mousePressEvent(e);
+  }
 }
-
+void QgsGrassShell::resizeEvent(QResizeEvent *e)
+{
+#ifdef QGISDEBUG
+  std::cerr << "resizeEvent()" << std::endl;
+#endif
+  resizeTerminal();
+}
 void QgsGrassShell::resizeTerminal()
 {
 #ifndef WIN32
-  int width = mText->visibleWidth(); 
-  int height = mText->visibleHeight(); 
 
-  QFontMetrics fm ( mFont );
-  int col = (int) (width / fm.width("x")); 
-  int row = (int) (height / fm.height()); 
+
+  QFontMetrics fm ( font() );
+  int col = (int) (width() / fm.width("x")); 
+  int row = (int) (height() / fm.height()); 
 
   struct winsize winSize;
   memset(&winSize, 0, sizeof(winSize));
@@ -938,6 +975,8 @@ void QgsGrassShell::resizeTerminal()
   winSize.ws_col = col;
 
   ioctl( mFdMaster, TIOCSWINSZ, (char *)&winSize );
+  setLineWrapMode(QTextEdit::FixedColumnWidth);
+  setLineWrapColumnOrWidth(col);
 #endif
 }
 
@@ -948,45 +987,4 @@ void QgsGrassShell::readStderr()
 
 
 
-QgsGrassShellText::QgsGrassShellText ( QgsGrassShell *gs, 
-    QWidget * parent, const char *name )
-: Q3TextEdit (parent,name),
-mShell(gs)
-{
-}
 
-QgsGrassShellText::~QgsGrassShellText() {} 
-
-void QgsGrassShellText::contentsMousePressEvent(QMouseEvent* e)
-{
-#ifdef QGISDEBUG
-  std::cerr << "contentsMousePressEvent()" << std::endl;
-#endif
-  mShell->mousePressEvent(e);
-  Q3TextEdit::contentsMousePressEvent(e);
-}
-
-void QgsGrassShellText::keyPressEvent ( QKeyEvent * e )
-{
-#ifdef QGISDEBUG
-  std::cerr << "QgsGrassShellText::keyPressEvent()" << std::endl;
-#endif
-  mShell->keyPressEvent(e);
-}
-
-void QgsGrassShellText::keyReleaseEvent ( QKeyEvent * e )
-{
-#ifdef QGISDEBUG
-  std::cerr << "QgsGrassShellText::keyReleaseEvent()" << std::endl;
-#endif
-  mShell->keyReleaseEvent(e);
-}
-
-void QgsGrassShellText::resizeEvent(QResizeEvent *e)
-{
-#ifdef QGISDEBUG
-  std::cerr << "resizeEvent()" << std::endl;
-#endif
-  mShell->resizeTerminal();
-  Q3TextEdit::resizeEvent(e);
-}

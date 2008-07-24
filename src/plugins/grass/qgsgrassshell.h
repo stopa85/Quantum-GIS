@@ -1,9 +1,9 @@
 /***************************************************************************
      qgsgrassshell.h
-     --------------------------------------
-    Date                 : Sun Sep 16 12:06:16 AKDT 2007
-    Copyright            : (C) 2007 by Gary E. Sherman
-    Email                : sherman at mrcc dot com
+
+    Date                 : Sun Sep 16 12:06:10 AKDT 2007
+    Copyright            : (C) 2007 by Radim Blazek 
+    Email                : blazek at itc.it
  ***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -14,22 +14,15 @@
  ***************************************************************************/
 
 #include <QByteArray>
-#include <Q3Process>
-#include <Q3TextEdit>
-#include <QDialog>
-#include <QKeyEvent>
+#include <QProcess>
 #include <QMessageBox>
-#include <QMouseEvent>
-#include <QResizeEvent>
 #include <QSocketNotifier>
-#include <QString>
+#include <QPointer>
+#include <QTextEdit>
 
-#include "qgsgrasstools.h"
-#include "ui_qgsgrassshellbase.h"
+class QProgressBar;
 
-class QTabWidget;
 
-class QgsGrassShellText;
 
 extern "C" {
 #include <stdio.h>
@@ -70,13 +63,12 @@ extern "C" {
  * are transformed to appropriate output written to QTextEdit.
  */
 
-class QgsGrassShell: public QDialog, private Ui::QgsGrassShellBase
+class QgsGrassShell: public QTextEdit
 {
     Q_OBJECT;
 
 public:
-    QgsGrassShell ( QgsGrassTools *tools, 
-                    QWidget * parent = 0, const char * name = 0 );
+    QgsGrassShell (QWidget * parent = 0, const char * name = 0 );
     ~QgsGrassShell();
 
     // Modes 
@@ -98,7 +90,7 @@ public:
         Underline,
         Blink,
         Reverse,
-        RendetionCount
+        RenditionCount
     };
 
     // Pressed key 
@@ -130,8 +122,8 @@ public:
     // Erase cursor highlight (space)
     void eraseCursor(void);
 
-    // Highlite cursor
-    void showCursor(void);
+    // Highlite cursor - delete this? [TS]
+   //void showCursor(void);
 
     // Reset pseudoterminal size
     void resizeTerminal ();
@@ -141,14 +133,20 @@ public:
 
     // Reset cursor to current position
     //void setCursorPosition();
-
+    
 public slots:
-    void readStdout(int socket);
-    void readStderr();
-    void keyPressEvent ( QKeyEvent * e );
-    void keyReleaseEvent ( QKeyEvent * e );
-    void mousePressEvent(QMouseEvent* e);
 
+  void focusInEvent ( QFocusEvent * event );
+  void focusOutEvent ( QFocusEvent * event );
+  // filter keypresses from going to main app
+  bool eventFilter( QObject *object, QEvent *event );
+  void keyPressEvent ( QKeyEvent * e );
+  void keyReleaseEvent ( QKeyEvent * e );
+  void mousePressEvent(QMouseEvent* e);
+  void resizeEvent ( QResizeEvent * );
+
+  void readStdout(int socket);
+  void readStderr();
 signals:
 
 private:
@@ -180,23 +178,21 @@ private:
     bool mCursorSpace; 
 
     // Current cursor position
-    int mParagraph;
-    int mIndex;
+    int mBlockNo;
+    int mPosition;
 
-    // Text widget
-    QgsGrassShellText *mText;
+    // Progress bar
+    QPointer <QProgressBar> mpProgressBar;
 
-    // Default text font
-    QFont mFont;
 
-    // Rendetion
-    bool mRendetion[RendetionCount];
+    // Rendition
+    bool mRendition[RenditionCount];
 
     // Pressed keys
     bool mKeyDown[KeyDownCount];
 
 
-    // Create new line in nex insert
+    // Create new line in next insert
     // This must be used because QTextEdit will remove all empty
     // paragraphs
     bool mNewLine;
@@ -212,19 +208,5 @@ private:
     
 };
 
-class QgsGrassShellText : public Q3TextEdit
-{
-    Q_OBJECT;
-public:
-    QgsGrassShellText ( QgsGrassShell *, 
-	                QWidget * parent = 0, const char * name = 0 );
-    ~QgsGrassShellText();
-public slots:
-    void contentsMousePressEvent(QMouseEvent *);
-    void resizeEvent ( QResizeEvent *);
-    void keyPressEvent ( QKeyEvent * e );
-    void keyReleaseEvent ( QKeyEvent * e );
-private:
-    QgsGrassShell *mShell;
-};
+
 

@@ -17,8 +17,8 @@
     <file>grass_delete_vertex.png</file>
     <file>grass_edit_attributes.png</file>
     <file>grass_edit.png</file>
-    <file>grass_module_error.png</file>
-    <file>grass_module_warning.png</file>
+    <file>error.png</file>
+    <file>warning.png</file>
     <file>grass_move_line.png</file>
     <file>grass_move_vertex.png</file>
     <file>grass_new_boundary.png</file>

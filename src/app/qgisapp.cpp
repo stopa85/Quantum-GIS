@@ -1589,12 +1589,15 @@ void QgisApp::saveWindowState()
 void QgisApp::restoreWindowState()
 {
   // restore the toolbar and dock widgets postions using Qt4 settings API
+  QByteArray myDefaultState("\0\0\0\xff\0\0\0\0\xfd\0\0\0\x1\0\0\0\0\0\0\x1\0\0\0\x2\0\xfc\x2\0\0\0\x2\xfb\0\0\0\f\0L\0\x65\0g\0\x65\0n\0\x64\x1\0\0\0\x66\0\0\x1\xc4\0\0\0\x62\0\xff\xff\xff\xfb\0\0\0\x10\0O\0v\0\x65\0r\0v\0i\0\x65\0w\x1\0\0\x2\x30\0\0\0\x36\0\0\0\x17\0\xff\xff\xff\0\0\x3/\0\0\x2\0\0\0\0\x4\0\0\0\x4\0\0\0\b\0\0\0\b\xfc\0\0\0\x5\0\0\0\0\0\0\0\x1\0\0\0\n\0G\0R\0\x41\0S\0S\x1\0\0\0\0\0\0\x2\0\0\0\0\0\0\0\0\0\0\0\0\x1\0\0\0\0\0\0\0\x1\0\0\0\x1\0\0\0\xe\0P\0l\0u\0g\0i\0n\0s\x1\0\0\0\0\0\0\x2\0\0\0\0\0\0\0\0\0\0\0\0\x2\0\0\0\x4\0\0\0\x16\0\x46\0i\0l\0\x65\0T\0o\0o\0l\0\x42\0\x61\0r\x1\0\0\0\0\0\0\x1\xa2\0\0\0\0\0\0\0\0\0\0\0\x18\0L\0\x61\0y\0\x65\0r\0T\0o\0o\0l\0\x42\0\x61\0r\x1\0\0\x1\xa2\0\0\0\xc8\0\0\0\0\0\0\0\0\0\0\0\x14\0\x41\0t\0t\0r\0i\0\x62\0u\0t\0\x65\0s\x1\0\0\x2j\0\0\x2\x15\0\0\0\0\0\0\0\0\0\0\0\b\0H\0\x65\0l\0p\0\0\0\x3\xd8\0\0\0\xa7\0\0\0\0\0\0\0\0\0\0\0\x2\0\0\0\x2\0\0\0\x14\0\x44\0i\0g\0i\0t\0i\0z\0i\0n\0g\x1\0\0\0\0\0\0\x2\x36\0\0\0\0\0\0\0\0\0\0\0\x1c\0M\0\x61\0p\0 \0N\0\x61\0v\0i\0g\0\x61\0t\0i\0o\0n\x1\0\0\x2\x36\0\0\x2I\0\0\0\0\0\0\0\0");
+  QByteArray myDefaultGeometry ("\x1\xd9\xd0\xcb\0\x1\0\0\0\0\0\0\0\0\0\0\0\0\x4\x7f\0\0\x2\x9d\0\0\0\0\0\0\0-\0\0\x4~\0\0\x1\x8d\0\0\0\0\x2\0");
   QSettings settings;
-  QVariant vstate = settings.value("/UI/state");
+  QVariant vstate = settings.value("/UI/state",myDefaultState);
+  qDebug("vstate : " + vstate.toString().toLocal8Bit());
   this->restoreState(vstate.toByteArray());
 
   // restore window geometry
-  restoreGeometry(settings.value("/UI/geometry").toByteArray());
+  restoreGeometry(settings.value("/UI/geometry",myDefaultGeometry).toByteArray());
 //  canvasLegendSplit->restoreState(settings.value("/UI/canvasSplitterState").toByteArray());
 //  legendOverviewSplit->restoreState(settings.value("/UI/legendSplitterState").toByteArray());
 }
@@ -5406,10 +5409,7 @@ bool QgisApp::addRasterLayers(QStringList const &theFileNameQStringList, bool gu
 
 void QgisApp::keyPressEvent ( QKeyEvent * e )
 {
-  // The following statment causes a crash on WIN32 and should be 
-  // enclosed in an #ifdef QGISDEBUG if its really necessary. Its
-  // commented out for now. [gsherman]
-  //    std::cout << e->text().toLocal8Bit().data() << " (keypress recevied)" << std::endl;
+
   emit keyPressed (e);
 
   //cancel rendering progress with esc key

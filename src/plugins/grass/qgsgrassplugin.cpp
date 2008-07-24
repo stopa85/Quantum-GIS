@@ -63,6 +63,7 @@ extern "C" {
 #include "qgsgrassattributes.h"
 #include "qgsgrassselect.h"
 #include "qgsgrassedit.h"
+#include "qgsgrassshell.h"
 #include "qgsgrasstools.h"
 #include "qgsgrassregion.h"
 #include "qgsgrassnewmapset.h"
@@ -82,19 +83,16 @@ QgsGrassPlugin::QgsGrassPlugin(QgisInterface * theQgisInterFace):
   pluginNameQString = tr("GrassVector");
   pluginVersionQString = tr("0.2");
   pluginDescriptionQString = tr("GRASS data access and tools");
-  mTools = 0;
-  mpDockWidget =0;
 }
 
 QgsGrassPlugin::~QgsGrassPlugin()
 {
   QString err = QgsGrass::closeMapset();
-  if (mTools) delete mTools;
-  if (mpDockWidget)
+  if (mpToolsDockWidget)
   {
     QSettings settings;
-    settings.setValue("/GRASS/windows/tools/geometry", mpDockWidget->saveGeometry());
-    delete mpDockWidget;
+    settings.setValue("/GRASS/windows/tools/geometry", mpToolsDockWidget->saveGeometry());
+    delete mpToolsDockWidget;
   }
 }
 
@@ -130,7 +128,6 @@ int QgsGrassPlugin::type()
 void QgsGrassPlugin::initGui()
 {
   toolBarPointer = 0;
-  mTools = 0;
   mNewMapset = 0;
   mRegion = 0; 
 
@@ -247,13 +244,10 @@ void QgsGrassPlugin::mapsetChanged ()
     mCloseMapsetAction->setEnabled(false);
     mNewVectorAction->setEnabled(false);
 
-    if ( mTools ) 
-    {      
-      delete mTools;
-      delete mpDockWidget;
-      mpDockWidget = 0;
-      mTools = 0;
-    }    
+    if ( mpToolsDockWidget ) 
+    {
+      delete mpToolsDockWidget;
+    }
   } 
   else 
   {
@@ -414,20 +408,28 @@ void QgsGrassPlugin::addRaster()
 }
 void QgsGrassPlugin::openShell()
 {
-  QMessageBox::warning( 0, tr("Info"), tr("If I was a shell you would sea me...ssssshweessshh.") );
+  QgsGrassShell * mypShell = new QgsGrassShell ( qGisInterface->getMainWindow() );
+  QDockWidget * mypShellDockWidget = new QDockWidget(tr("Grass Shell"),qGisInterface->getMainWindow() );
+  mypShellDockWidget->setWidget(mypShell);
+  mypShellDockWidget->setObjectName("GrassShell");
+  mypShellDockWidget->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::TopDockWidgetArea);
+  qGisInterface->addDockWidget(Qt::BottomDockWidgetArea, mypShellDockWidget);
+  mypShellDockWidget->show();
 }
 // Open tools
 void QgsGrassPlugin::openTools()
 {
-  if ( !mTools ) { 
-    mTools = new QgsGrassTools ( qGisInterface, qGisInterface->getMainWindow() );
-    mpDockWidget = new QDockWidget(tr("Grass Tools"), 0);
-    mpDockWidget->setWidget(mTools);
-    mpDockWidget->setObjectName("GrassTools");
-    mpDockWidget->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-    qGisInterface->addDockWidget(Qt::LeftDockWidgetArea, mpDockWidget);
+  if ( !mpToolsDockWidget ) 
+  {
+    //toolbox will be deleted when its parent is deleted 
+    QgsGrassTools * mypTools = new QgsGrassTools ( qGisInterface, qGisInterface->getMainWindow() );
+    mpToolsDockWidget = new QDockWidget(tr("Grass Tools"), qGisInterface->getMainWindow());
+    mpToolsDockWidget->setWidget(mypTools);
+    mpToolsDockWidget->setObjectName("GrassTools");
+    mpToolsDockWidget->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+    qGisInterface->addDockWidget(Qt::LeftDockWidgetArea, mpToolsDockWidget);
     QSettings settings;
-    mpDockWidget->restoreGeometry(settings.value("/GRASS/windows/tools/geometry").toByteArray());
+    mpToolsDockWidget->restoreGeometry(settings.value("/GRASS/windows/tools/geometry").toByteArray());
 
     
     // @TODO this needs to be wired to the new mapbrowser rather!!!

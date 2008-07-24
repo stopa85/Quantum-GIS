@@ -48,7 +48,6 @@ SET (GRASS_PLUGIN_UIS
      qgsgrassmapcalcbase.ui
      qgsgrassmodulebase.ui
      qgsgrassnewmapsetbase.ui
-     qgsgrassshellbase.ui
      qgsgrassattributesbase.ui
      qgsgrassregionbase.ui
      ../../ui/qgsprojectionselectorbase.ui

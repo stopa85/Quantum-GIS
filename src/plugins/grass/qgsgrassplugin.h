@@ -17,8 +17,7 @@
 #ifndef QGSGRASSPLUGIN_H
 #define QGSGRASSPLUGIN_H
 #include "../qgisplugin.h"
-#include <qwidget.h>
-#include <qpen.h>
+#include <QPen>
 
 
 #include <vector>
@@ -27,12 +26,13 @@ class QgisInterface;
 class QgsMapCanvas;
 class QgsRubberBand;
 
-class QgsGrassTools;
+
 class QgsGrassNewMapset;
 class QgsGrassRegion;
 class QToolBar;
 
 #include <QDockWidget>
+#include <QPointer>
              
 /**
 * \class QgsGrassPlugin
@@ -144,10 +144,9 @@ private:
   QgsGrassRegion *mRegion;
   // Region rubber band
   QgsRubberBand *mRegionBand;
-  //! GRASS tools
-  QgsGrassTools *mTools;
+
   //! Dock widget the tools will be placed into
-  QDockWidget * mpDockWidget;
+  QPointer <QDockWidget> mpToolsDockWidget;
   //! Pointer to QgsGrassNewMapset
   QgsGrassNewMapset *mNewMapset;
 
