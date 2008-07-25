@@ -39,7 +39,6 @@
 
 #include "qgsapplication.h"
 #include "qgsgrassshell.h"
-#include "qgsgrassshelltext.h"
 
 extern "C" {
 #include <stdio.h>
