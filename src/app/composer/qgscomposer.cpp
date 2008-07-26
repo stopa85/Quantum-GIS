@@ -126,6 +126,7 @@ QgsComposer::QgsComposer( QgisApp *qgis): QMainWindow()
   mSizeGrip->resize(mSizeGrip->sizeHint());
   mSizeGrip->move(rect().bottomRight() - mSizeGrip->rect().bottomRight());
 
+#if 0 //hopefully not necessary any more
   if ( ! connect( mQgis, SIGNAL( projectRead() ), this, SLOT( projectRead()) ) ) {
     qDebug( "unable to connect to projectRead" );
   } 
@@ -136,10 +137,19 @@ QgsComposer::QgsComposer( QgisApp *qgis): QMainWindow()
   if ( ! connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(saveWindowState()) ) ) { 
     qDebug( "unable to connect to aboutToQuit" );
   }
+#endif //0
+
   restoreWindowState();
   selectItem(); // Set selection tool
 
   mView->setFocus();
+
+  //connect with signals from QgsProject to read/write project files
+  if(QgsProject::instance())
+    {
+      connect(QgsProject::instance(), SIGNAL(readProject(const QDomDocument&)), this, SLOT(readXML(const QDomDocument& doc)));
+      connect(QgsProject::instance(), SIGNAL(writeProject(QDomDocument&)), this, SLOT(writeXML(QDomDocument&)));
+    }
 }
 
 QgsComposer::~QgsComposer()
@@ -1105,24 +1115,39 @@ bool QgsComposer::readSettings ( void )
   return ok;
 }
 
-bool QgsComposer::writeXML( QDomNode & node, QDomDocument & doc )
+void  QgsComposer::writeXML(QDomDocument& doc)
 {
-#ifdef QGISDEBUG
-  std::cout << "QgsComposer::writeXML" << std::endl;
-#endif
-  QDomElement compositionsNode = doc.createElement("compositions");
+  QDomNodeList nl = doc.elementsByTagName("qgis");
+  if (nl.count() < 1)
+    {
+      return;
+    }
+  QDomElement qgisElem = nl.at(0).toElement();
+  if(qgisElem.isNull())
+    {
+      return;
+    }
+  
+  QDomElement composerNode = doc.createElement("composer");
+  qgisElem.appendChild( composerNode );
 
-  node.appendChild( compositionsNode );
+  //store composer items:
+  QMap<QgsComposerItem*, QWidget*>::const_iterator itemIt = mItemWidgetMap.constBegin();
+  for(; itemIt != mItemWidgetMap.constEnd(); ++itemIt)
+    {
+      itemIt.key()->writeXML(composerNode, doc);
+    }
 
-  return true;
+  //store composer view
+
+  //store composition
+
+  return;
 }
 
-bool QgsComposer::readXML( QDomNode & node )
+void QgsComposer::readXML(const QDomDocument& doc)
 {
-#ifdef QGISDEBUG
-  std::cout << "QgsComposer::readXML" << std::endl;
-#endif
-  return true;
+  //todo...
 }
 
 void QgsComposer::addComposerMap(QgsComposerMap* map)

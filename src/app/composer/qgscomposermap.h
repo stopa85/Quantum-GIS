@@ -104,6 +104,12 @@ public:
 
     const QgsMapCanvas* mapCanvas() const {return mMapCanvas;}
 
+    /** stores state in DOM node
+     * @param elem is DOM element corresponding to 'Composer' tag
+     * @param temp write template file
+     */
+    bool writeXML(QDomElement& elem, QDomDocument & doc);
+
 public slots:
 
     // Called if map canvas has changed

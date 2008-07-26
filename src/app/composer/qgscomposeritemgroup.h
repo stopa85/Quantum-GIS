@@ -40,6 +40,12 @@ class QgsComposerItemGroup: public QObject, public QgsComposerItem
   /** resizes an item in x- and y direction (scene coordinates)*/
   void resize(double dx, double dy);
 
+  /** stores state in DOM node
+     * @param elem is DOM element corresponding to 'Composer' tag
+     * @param temp write template file
+     */
+  bool writeXML(QDomElement& elem, QDomDocument & doc);
+
  signals:
   void childItemDeleted(QgsComposerItem* item);
 

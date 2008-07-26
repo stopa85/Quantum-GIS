@@ -72,6 +72,12 @@ class QgsComposerLegend: public QgsComposerItem
   double symbolHeight() const {return mSymbolHeight;}
   void setSymbolHeight(double h){mSymbolHeight = h;}
 
+  /** stores state in DOM node
+     * @param elem is DOM element corresponding to 'Composer' tag
+     * @param temp write template file
+     */
+  bool writeXML(QDomElement& elem, QDomDocument & doc);
+
  protected:
   QString mTitle;
 

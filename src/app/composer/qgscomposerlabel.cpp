@@ -16,6 +16,7 @@
  ***************************************************************************/
 
 #include "qgscomposerlabel.h"
+#include <QDomElement>
 #include <QPainter>
 
 QgsComposerLabel::QgsComposerLabel( QgsComposition *composition): QgsComposerItem(composition), mMargin(0.0)
@@ -62,6 +63,28 @@ void QgsComposerLabel::adjustSizeToText()
 {
   QFontMetricsF fontInfo(mFont);
   setSceneRect(QRectF(transform().dx(), transform().dy(), fontInfo.width(mText) + 2 * mMargin, fontInfo.ascent() + 2 * mMargin));
+}
+
+bool QgsComposerLabel::writeXML(QDomElement& elem, QDomDocument & doc)
+{
+  if(elem.isNull())
+    {
+      return false;
+    }
+
+  QDomElement composerLabelElem = doc.createElement("ComposerLabel");
+
+  composerLabelElem.setAttribute("labelText", mText);
+  composerLabelElem.setAttribute("margin", mMargin);
+
+
+  //font
+  QDomElement labelFontElem = doc.createElement("LabelFont");
+  writeFontXML(mFont, labelFontElem, doc);
+  composerLabelElem.appendChild(labelFontElem);
+
+  elem.appendChild(composerLabelElem);
+  return _writeXML(composerLabelElem, doc);
 }
 
 

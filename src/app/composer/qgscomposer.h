@@ -86,12 +86,6 @@ public:
     /** \brief read state from project */
     bool readSettings ( void );
 
-    //! Stores state in DOM node
-    bool writeXML( QDomNode & node, QDomDocument & doc);
-
-    //! Sets state from DOM document
-    bool readXML( QDomNode & node );
-
     //! Restore the window and toolbar state
     void restoreWindowState();
 
@@ -182,6 +176,15 @@ public slots:
     
     /**Shows the configuration widget for a composer item*/
     void showItemOptions(const QgsComposerItem* i);
+
+    //XML, usually connected with QgsProject::readProject and QgsProject::writeProject
+
+    //! Stores state in DOM node
+    void writeXML(QDomDocument& doc);
+
+    //! Sets state from DOM document
+    void readXML( const QDomDocument& doc);
+
 
     
 

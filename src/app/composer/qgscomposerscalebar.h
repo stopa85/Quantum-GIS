@@ -98,6 +98,12 @@ public:
    /**Returns string of first label (important for drawing, labeling, size calculation*/
   QString firstLabelString() const;
 
+  /** stores state in DOM node
+     * @param elem is DOM element corresponding to 'Composer' tag
+     * @param temp write template file
+     */
+  bool writeXML(QDomElement& elem, QDomDocument & doc);
+
  public slots:
   void updateSegmentSize();
   /**Sets mCompositionMap to 0 if the map is deleted*/

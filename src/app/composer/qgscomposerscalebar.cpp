@@ -241,4 +241,9 @@ QString QgsComposerScaleBar::firstLabelString() const
     }
 }
 
+bool QgsComposerScaleBar::writeXML(QDomElement& elem, QDomDocument & doc)
+{
+  return true;
+}
+
 

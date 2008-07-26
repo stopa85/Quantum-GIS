@@ -164,3 +164,8 @@ void QgsComposerItemGroup::drawFrame(QPainter* p)
       p->drawRect (QRectF( 0, 0, rect().width(), rect().height()));
     }
 }
+
+bool QgsComposerItemGroup::writeXML(QDomElement& elem, QDomDocument & doc)
+{
+  return true;
+}

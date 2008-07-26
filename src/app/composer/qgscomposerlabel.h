@@ -37,6 +37,12 @@ class QgsComposerLabel: public QgsComposerItem
   void setFont(const QFont& f);
   double margin(){return mMargin;}
   void setMargin(double m){mMargin = m;}
+
+  /** stores state in DOM node
+     * @param node is DOM node corresponding to 'Composer' tag
+     * @param temp write template file
+     */
+  bool writeXML(QDomElement& elem, QDomDocument & doc);
  
  private:
   // Text 

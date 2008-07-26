@@ -317,3 +317,8 @@ void QgsComposerLegend::drawPolygonSymbol(QPainter* p, QgsSymbol* s, double curr
 
   currentXPosition += mSymbolWidth;
 }
+
+bool QgsComposerLegend::writeXML(QDomElement& elem, QDomDocument & doc)
+{
+  return true;
+}

@@ -58,10 +58,50 @@ bool QgsComposerItem::writeSettings ( void )  { return true; }
 bool QgsComposerItem::readSettings ( void )  { return true; }
 
 bool QgsComposerItem::removeSettings ( void )  { return true; }
-    
-bool QgsComposerItem::writeXML( QDomNode & node, QDomDocument & doc, bool templ ) { return true; }
 
-bool QgsComposerItem::readXML( QDomNode & node ) {  return true; }
+bool QgsComposerItem::_writeXML(QDomElement& itemElem, QDomDocument& doc)
+{
+  //to come
+  return true;
+}
+
+bool QgsComposerItem::readXML( QDomElement& elem) {  return true; }
+
+void QgsComposerItem::writeFontXML(const QFont& font, QDomElement& parent, QDomDocument& doc)
+{
+  if(parent.isNull())
+    {
+      return;
+    }
+
+  QDomElement fontElem = doc.createElement("Font");
+  bool boldValue = font.bold();
+  bool italic = font.italic();
+  double size = font.pointSizeF();
+
+  if(boldValue)
+    {
+      fontElem.setAttribute("bold", "true");
+    }
+  else
+    {
+      fontElem.setAttribute("bold", "false");
+    }
+
+  if(italic)
+    {
+      fontElem.setAttribute("italic", "true");
+    }
+  else
+    {
+      fontElem.setAttribute("italic", "false");
+    }
+
+  fontElem.setAttribute("pointSize", QString::number(size));
+  fontElem.setAttribute("family", font.family());
+
+  parent.appendChild(fontElem);
+}
 
 void QgsComposerItem::mouseMoveEvent ( QGraphicsSceneMouseEvent * event )
 {

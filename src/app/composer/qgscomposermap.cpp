@@ -325,3 +325,8 @@ double QgsComposerMap::horizontalViewScaleFactor() const
     }
   return result;
 }
+
+bool QgsComposerMap::writeXML(QDomElement& elem, QDomDocument & doc)
+{
+  return true;
+}
