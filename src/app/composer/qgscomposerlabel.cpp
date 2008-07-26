@@ -80,7 +80,7 @@ bool QgsComposerLabel::writeXML(QDomElement& elem, QDomDocument & doc)
 
   //font
   QDomElement labelFontElem = doc.createElement("LabelFont");
-  writeFontXML(mFont, labelFontElem, doc);
+  labelFontElem.setAttribute("description", mFont.toString());
   composerLabelElem.appendChild(labelFontElem);
 
   elem.appendChild(composerLabelElem);

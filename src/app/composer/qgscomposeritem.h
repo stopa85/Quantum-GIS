@@ -83,9 +83,6 @@ public:
     /**Writes parameter that are not subclass specific in document. Usually called from subclass specific methods*/
     bool _writeXML(QDomElement& itemElem, QDomDocument& doc);
 
-    /**Creates a font element and appends it to parent*/
-    void writeFontXML(const QFont& font, QDomElement& parent, QDomDocument& doc);
-
     /** sets state from DOM document
      * @param node is DOM node corresponding to 'Composer' tag
      */
