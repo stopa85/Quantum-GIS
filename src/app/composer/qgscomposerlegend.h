@@ -106,9 +106,10 @@ class QgsComposerLegend: public QgsComposerItem
   */
   void drawLayerChildItems(QPainter* p, QStandardItem* layerItem, double& currentYCoord, double& maxXCoord);
 
-  /**Draws a symbol at the current y position and returns the new x position*/
-  void drawSymbol(QPainter* p, QgsSymbol* s, double currentYCoord, double& currentXPosition) const;
-  void drawPointSymbol(QPainter*, QgsSymbol* s, double currentYCoord, double& currentXPosition) const;
+  /**Draws a symbol at the current y position and returns the new x position. Returns real symbol height, because for points, 
+   it is possible that it differs from mSymbolHeight*/
+  void drawSymbol(QPainter* p, QgsSymbol* s, double currentYCoord, double& currentXPosition, double& symbolHeight) const;
+  void drawPointSymbol(QPainter*, QgsSymbol* s, double currentYCoord, double& currentXPosition, double& symbolHeight) const;
   void drawLineSymbol(QPainter*, QgsSymbol* s, double currentYCoord, double& currentXPosition) const;
   void drawPolygonSymbol(QPainter* p, QgsSymbol* s, double currentYCoord, double& currentXPosition) const; 
 };

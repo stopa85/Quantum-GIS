@@ -152,7 +152,9 @@ void QgsComposerLegend::drawLayerChildItems(QPainter* p, QStandardItem* layerIte
     }
 
   QFontMetricsF itemFontMetrics(mItemFont);
-  double itemHeight = std::max(mSymbolHeight, itemFontMetrics.height());
+
+  //standerd item height
+  double itemHeight = std::max(mSymbolHeight, itemFontMetrics.ascent());
 
   QStandardItem* currentItem;
 
@@ -165,6 +167,10 @@ void QgsComposerLegend::drawLayerChildItems(QPainter* p, QStandardItem* layerIte
 
   for(int i = 0; i < numChildren; ++i)
     {
+      //real symbol height. Can be different from standard height in case of point symbols 
+      double realSymbolHeight;
+      double realItemHeight = itemHeight; //will be adjusted if realSymbolHeight turns out to be larger
+      
       currentYCoord += mSymbolSpace;
       double currentXCoord = mBoxSpace;
      
@@ -187,7 +193,8 @@ void QgsComposerLegend::drawLayerChildItems(QPainter* p, QStandardItem* layerIte
       if(symbol)  //item with symbol?
 	{
 	  //draw symbol
-	  drawSymbol(p, symbol, currentYCoord + (itemHeight - mSymbolHeight) /2, currentXCoord);
+	  drawSymbol(p, symbol, currentYCoord + (itemHeight - mSymbolHeight) /2, currentXCoord, realSymbolHeight);
+	  realItemHeight = std::max(realSymbolHeight, itemHeight);
 	  currentXCoord += mIconLabelSpace;
 	}
       else //item with icon?
@@ -203,16 +210,16 @@ void QgsComposerLegend::drawLayerChildItems(QPainter* p, QStandardItem* layerIte
       //finally draw text
       if(p)
 	{
-	  p->drawText(QPointF(currentXCoord, currentYCoord + itemFontMetrics.ascent()), currentItem->text());
+	  p->drawText(QPointF(currentXCoord, currentYCoord + itemFontMetrics.ascent() + (realItemHeight - itemFontMetrics.ascent()) / 2), currentItem->text());
 	}
       
       maxXCoord = std::max(maxXCoord, currentXCoord + itemFontMetrics.width(currentItem->text()) + mBoxSpace);
       
-      currentYCoord += itemHeight;
+      currentYCoord += realItemHeight;
     }
 }
 
-void QgsComposerLegend::drawSymbol(QPainter* p, QgsSymbol* s, double currentYCoord, double& currentXPosition) const
+void QgsComposerLegend::drawSymbol(QPainter* p, QgsSymbol* s, double currentYCoord, double& currentXPosition, double& symbolHeight) const
 {
   if(!s)
     {
@@ -223,18 +230,20 @@ void QgsComposerLegend::drawSymbol(QPainter* p, QgsSymbol* s, double currentYCoo
   switch(symbolType)
     {
     case QGis::Point:
-      drawPointSymbol(p, s, currentYCoord, currentXPosition);
+      drawPointSymbol(p, s, currentYCoord, currentXPosition, symbolHeight);
       break;
     case QGis::Line:
       drawLineSymbol(p, s, currentYCoord, currentXPosition);
+      symbolHeight = mSymbolHeight;
       break;
     case QGis::Polygon:
       drawPolygonSymbol(p, s, currentYCoord, currentXPosition);
+      symbolHeight = mSymbolHeight;
       break;
     }
 }
 
-void QgsComposerLegend::drawPointSymbol(QPainter* p, QgsSymbol* s, double currentYCoord, double& currentXPosition) const
+void QgsComposerLegend::drawPointSymbol(QPainter* p, QgsSymbol* s, double currentYCoord, double& currentXPosition, double& symbolHeight) const
 {
   if(!s)
     {
@@ -268,7 +277,8 @@ void QgsComposerLegend::drawPointSymbol(QPainter* p, QgsSymbol* s, double curren
       p->restore();
     }
   
-  currentXPosition += pointImage.width();
+  currentXPosition += pointImage.width() / rasterScaleFactor;
+  symbolHeight = pointImage.height() / rasterScaleFactor;
 }
 
 void QgsComposerLegend::drawLineSymbol(QPainter* p, QgsSymbol* s, double currentYCoord, double& currentXPosition) const
