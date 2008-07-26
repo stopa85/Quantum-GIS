@@ -17,6 +17,7 @@
 
 #include "qgscomposerlegendwidget.h"
 #include "qgscomposerlegend.h"
+#include "qgscomposerlegenditemdialog.h"
 #include <QFontDialog>
 
 QgsComposerLegendWidget::QgsComposerLegendWidget(QgsComposerLegend* legend): mLegend(legend)
@@ -319,6 +320,39 @@ void QgsComposerLegendWidget::on_mRemovePushButton_clicked()
   QModelIndex parentIndex = currentIndex.parent();
   
   itemModel->removeRow(currentIndex.row(), parentIndex);
+  if(mLegend)
+    {
+      mLegend->adjustBoxSize();
+      mLegend->update();
+    }
+}
+
+void QgsComposerLegendWidget::on_mEditPushButton_clicked()
+{
+  QStandardItemModel* itemModel = dynamic_cast<QStandardItemModel*>(mItemTreeView->model());
+  if(!itemModel)
+    {
+      return;
+    }
+
+  //get current item
+  QModelIndex currentIndex = mItemTreeView->currentIndex();
+  if(!currentIndex.isValid())
+    {
+      return;
+    }
+
+  QStandardItem* currentItem = itemModel->itemFromIndex(currentIndex);
+  if(!currentItem)
+    {
+      return;
+    }
+
+  QgsComposerLegendItemDialog itemDialog(currentItem);
+  if(itemDialog.exec() == QDialog::Accepted)
+    {
+      currentItem->setText(itemDialog.itemText());
+    } 
   if(mLegend)
     {
       mLegend->adjustBoxSize();
