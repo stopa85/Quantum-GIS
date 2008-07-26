@@ -225,20 +225,26 @@ void QgsComposerLegendWidget::on_mMoveDownPushButton_clicked()
     }
 
   QModelIndex parentIndex = currentIndex.parent();
-  if(!parentIndex.isValid())
+  QList<QStandardItem*> itemToMove;
+  QList<QStandardItem*> youngerSiblingItem;
+
+  if(!parentIndex.isValid()) //move toplevel (layer) item
     {
-      return;
+      youngerSiblingItem = itemModel->takeRow(row + 1);
+      itemToMove = itemModel->takeRow(row);
+      itemModel->insertRow(row, youngerSiblingItem);
+      itemModel->insertRow(row + 1, itemToMove);
     }
+  else //move child (classification) item
+    {
+      QStandardItem* parentItem = itemModel->itemFromIndex(parentIndex);
+      youngerSiblingItem = parentItem->takeRow(row + 1);
+      itemToMove = parentItem->takeRow(row);
+      parentItem->insertRow(row, youngerSiblingItem);
+      parentItem->insertRow(row + 1, itemToMove);
+    } 
 
-  //exchange the items
-  QStandardItem* parentItem = itemModel->itemFromIndex(parentIndex);
-  QList<QStandardItem*> youngerSiblingItem = parentItem->takeRow(row + 1);
-  QList<QStandardItem*> itemToMove = parentItem->takeRow(row);
-  
-  parentItem->insertRow(row, youngerSiblingItem);
-  parentItem->insertRow(row + 1, itemToMove); 
   mItemTreeView->setCurrentIndex(itemModel->indexFromItem(itemToMove.at(0)));
-
   if(mLegend)
     {
       mLegend->update();
@@ -269,20 +275,27 @@ void QgsComposerLegendWidget::on_mMoveUpPushButton_clicked()
     }
 
   QModelIndex parentIndex = currentIndex.parent();
-  if(!parentIndex.isValid())
+  QList<QStandardItem*> itemToMove;
+  QList<QStandardItem*> olderSiblingItem;
+  
+  if(!parentIndex.isValid()) //move toplevel item
     {
-      return;
+      itemToMove = itemModel->takeRow(row);
+      olderSiblingItem = itemModel->takeRow(row - 1);
+      itemModel->insertRow(row - 1, itemToMove);
+      itemModel->insertRow(row, olderSiblingItem);
+   
     }
-  
-  //exchange the items
-  QStandardItem* parentItem = itemModel->itemFromIndex(parentIndex);
-  QList<QStandardItem*> itemToMove = parentItem->takeRow(row);
-  QList<QStandardItem*> olderSiblingItem = parentItem->takeRow(row - 1);
-  
-  parentItem->insertRow(row - 1, itemToMove);
-  parentItem->insertRow(row, olderSiblingItem);
-  mItemTreeView->setCurrentIndex(itemModel->indexFromItem(itemToMove.at(0)));
+  else //move classification items
+    {
+      QStandardItem* parentItem = itemModel->itemFromIndex(parentIndex);
+      itemToMove = parentItem->takeRow(row);
+      olderSiblingItem = parentItem->takeRow(row - 1);
+      parentItem->insertRow(row - 1, itemToMove);
+      parentItem->insertRow(row, olderSiblingItem);
+    }
 
+  mItemTreeView->setCurrentIndex(itemModel->indexFromItem(itemToMove.at(0)));
   if(mLegend)
     {
       mLegend->update();
