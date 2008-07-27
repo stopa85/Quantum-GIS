@@ -89,7 +89,41 @@ bool QgsComposerItem::_writeXML(QDomElement& itemElem, QDomDocument& doc)
   return true;
 }
 
-bool QgsComposerItem::readXML( QDomElement& elem) {  return true; }
+bool QgsComposerItem::_readXML(const QDomElement& itemElem, const QDomDocument& doc)
+{
+  if(itemElem.isNull())
+    {
+      return false;
+    }
+  
+  //frame
+  QString frame = itemElem.attribute("frame");
+  if(frame.compare("true", Qt::CaseInsensitive) == 0)
+    {
+      mFrame = true;
+    }
+  else
+    {
+      mFrame = false;
+    }
+
+  //position
+  double x, y, width, height;
+  bool xOk, yOk, widthOk, heightOk;
+
+  x = itemElem.attribute("x").toDouble(&xOk);
+  y = itemElem.attribute("y").toDouble(&yOk);
+  width = itemElem.attribute("width").toDouble(&widthOk);
+  height = itemElem.attribute("height").toDouble(&heightOk);
+
+  if(!xOk || !yOk || !widthOk || !heightOk)
+    {
+      return false;
+    }
+
+  setSceneRect(QRectF(x, y, width, height));
+  return true;
+}
 
 void QgsComposerItem::mouseMoveEvent ( QGraphicsSceneMouseEvent * event )
 {

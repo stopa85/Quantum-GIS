@@ -167,5 +167,10 @@ void QgsComposerItemGroup::drawFrame(QPainter* p)
 
 bool QgsComposerItemGroup::writeXML(QDomElement& elem, QDomDocument & doc)
 {
-  return true;
+  return true; //soon...
+}
+
+bool QgsComposerItemGroup::readXML(const QDomElement& itemElem, const QDomDocument& doc)
+{
+  return false; //soon...
 }

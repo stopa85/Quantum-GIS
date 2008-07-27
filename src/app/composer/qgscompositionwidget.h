@@ -51,6 +51,8 @@ class QgsCompositionWidget: public QWidget, private Ui::QgsCompositionWidgetBase
   void applyWidthHeight();
   /**Makes sure width/height values for custom paper matches the current orientation*/
   void adjustOrientation();
+  /**Sets GUI elements to width/height from composition*/
+  void displayCompositionWidthHeight();
   
   void createPaperEntries();
   void insertPaperEntries();

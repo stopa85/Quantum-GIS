@@ -35,6 +35,7 @@ QgsComposerLabelWidget::QgsComposerLabelWidget(QgsComposerLabel* label): QWidget
 	{
 	  mBoxCheckBox->setCheckState(Qt::Unchecked);
 	}
+      mMarginDoubleSpinBox->setValue(mComposerLabel->margin());
     }
 }
 

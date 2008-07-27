@@ -243,7 +243,12 @@ QString QgsComposerScaleBar::firstLabelString() const
 
 bool QgsComposerScaleBar::writeXML(QDomElement& elem, QDomDocument & doc)
 {
-  return true;
+  return true; //soon...
+}
+
+bool QgsComposerScaleBar::readXML(const QDomElement& itemElem, const QDomDocument& doc)
+{
+  return false; //soon...
 }
 
 

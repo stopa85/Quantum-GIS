@@ -17,6 +17,8 @@
 #include "qgscomposition.h"
 #include "qgscomposeritem.h"
 #include "qgscomposermap.h"
+#include <QDomDocument>
+#include <QDomElement>
 #include <QGraphicsRectItem>
 
 QgsComposition::QgsComposition(QgsMapCanvas* mapCanvas): QGraphicsScene(0), mMapCanvas(mapCanvas), mPlotStyle(QgsComposition::Preview), mPaperItem(0)
@@ -130,4 +132,42 @@ const QgsComposerMap* QgsComposition::getComposerMapById(int id) const
     }
 
   return 0;
+}
+
+bool QgsComposition::writeXML(QDomElement& composerElem, QDomDocument& doc)
+{
+  if(composerElem.isNull())
+    {
+      return false;
+    }
+
+  QDomElement compositionElem = doc.createElement("Composition");
+  if(mPaperItem)
+    {
+      compositionElem.setAttribute("paperWidth", mPaperItem->rect().width());
+      compositionElem.setAttribute("paperHeight", mPaperItem->rect().height());
+    }
+  composerElem.appendChild(compositionElem);
+}
+
+bool QgsComposition::readXML(const QDomElement& compositionElem, const QDomDocument& doc)
+{
+  if(compositionElem.isNull())
+    {
+      return false;
+    }
+
+  //create paper item
+  bool widthConversionOk, heightConversionOk;
+  double paperWidth = compositionElem.attribute("paperWidth").toDouble(&widthConversionOk);
+  double paperHeight = compositionElem.attribute("paperHeight").toDouble(&heightConversionOk);
+
+  if(widthConversionOk && heightConversionOk)
+    {
+      delete mPaperItem;
+      mPaperItem = new QGraphicsRectItem( 0, 0, paperWidth, paperHeight, 0);
+      mPaperItem->setBrush(Qt::white);
+      addItem(mPaperItem);
+      mPaperItem->setZValue(0);
+    }
 }

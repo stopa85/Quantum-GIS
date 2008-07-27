@@ -320,5 +320,10 @@ void QgsComposerLegend::drawPolygonSymbol(QPainter* p, QgsSymbol* s, double curr
 
 bool QgsComposerLegend::writeXML(QDomElement& elem, QDomDocument & doc)
 {
-  return true;
+  return true; //soon...
+}
+
+bool QgsComposerLegend::readXML(const QDomElement& itemElem, const QDomDocument& doc)
+{
+  return false; //soon...
 }

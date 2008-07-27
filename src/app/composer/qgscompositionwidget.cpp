@@ -29,8 +29,9 @@ QgsCompositionWidget::QgsCompositionWidget(QWidget* parent, QgsComposition* c): 
   mPaperOrientationComboBox->insertItem(1, tr("Portrait"));
   mPaperOrientationComboBox->blockSignals(false);
   mPaperOrientationComboBox->setCurrentItem(0);
-
-  applyCurrentPaperSettings();
+  
+  //read with/height from composition and find suitable entries to display
+  displayCompositionWidthHeight();
 }
 
 QgsCompositionWidget::QgsCompositionWidget(): QWidget(0), mComposition(0)
@@ -76,8 +77,6 @@ void QgsCompositionWidget::createPaperEntries()
   mPaperMap.insert ( tr("Legal (8.5x14 inches)"), QgsCompositionPaper( tr("Legal (8.5x14 inches)"), 216, 356 ) );
   mPaperSizeComboBox->insertItem(14, tr("Legal (8.5x14 inches)"));
   mPaperSizeComboBox->blockSignals(false);
-
-  mPaperSizeComboBox->setCurrentIndex(2); //A4 default
 }
 
 void QgsCompositionWidget::on_mPaperSizeComboBox_currentIndexChanged(const QString& text)
@@ -202,4 +201,65 @@ void QgsCompositionWidget::on_mPaperWidthLineEdit_editingFinished()
 void QgsCompositionWidget::on_mPaperHeightLineEdit_editingFinished()
 {
   applyWidthHeight();
+}
+
+void QgsCompositionWidget::displayCompositionWidthHeight()
+{
+  if(!mComposition)
+    {
+      return;
+    }
+
+  //block all signals to avoid infinite recursion
+  mPaperSizeComboBox->blockSignals(true);
+  mPaperUnitsComboBox->blockSignals(true);
+  mPaperWidthLineEdit->blockSignals(true);
+  mPaperHeightLineEdit->blockSignals(true);
+  mPaperOrientationComboBox->blockSignals(true);
+  mResolutionLineEdit->blockSignals(true);
+
+  double paperWidth = mComposition->paperWidth();
+  mPaperWidthLineEdit->setText(QString::number(paperWidth));
+
+  double paperHeight = mComposition->paperHeight();
+  mPaperHeightLineEdit->setText(QString::number(paperHeight));
+
+  //set orientation
+  if(paperWidth > paperHeight)
+    {
+      mPaperOrientationComboBox->setCurrentIndex(mPaperOrientationComboBox->findText(tr("Landscape")));
+    }
+  else
+    {
+      mPaperOrientationComboBox->setCurrentIndex(mPaperOrientationComboBox->findText(tr("Portrait")));
+    }
+
+  //set paper name
+  bool found = false;
+  QMap<QString, QgsCompositionPaper>::const_iterator paper_it = mPaperMap.constBegin();
+  for(; paper_it != mPaperMap.constEnd(); ++paper_it)
+    {
+      QgsCompositionPaper currentPaper = paper_it.value();
+
+      //consider width and height values may be exchanged
+      if( (currentPaper.mWidth == paperWidth && currentPaper.mHeight == paperHeight)
+	  || (currentPaper.mWidth == paperHeight && currentPaper.mHeight == paperWidth) )
+	{
+	  mPaperSizeComboBox->setCurrentItem(mPaperSizeComboBox->findText(paper_it.key()));
+	  found = true;
+	}
+    }
+
+  if(!found)
+    {
+      //custom
+      mPaperSizeComboBox->setCurrentItem(0);
+    }
+
+  mPaperSizeComboBox->blockSignals(false);
+  mPaperUnitsComboBox->blockSignals(false);
+  mPaperWidthLineEdit->blockSignals(false);
+  mPaperHeightLineEdit->blockSignals(false);
+  mPaperOrientationComboBox->blockSignals(false);
+  mResolutionLineEdit->blockSignals(false);
 }

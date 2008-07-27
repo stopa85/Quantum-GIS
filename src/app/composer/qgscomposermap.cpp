@@ -328,5 +328,10 @@ double QgsComposerMap::horizontalViewScaleFactor() const
 
 bool QgsComposerMap::writeXML(QDomElement& elem, QDomDocument & doc)
 {
-  return true;
+  return true; //soon...
+}
+
+bool QgsComposerMap::readXML(const QDomElement& itemElem, const QDomDocument& doc)
+{
+  return false; //soon...
 }

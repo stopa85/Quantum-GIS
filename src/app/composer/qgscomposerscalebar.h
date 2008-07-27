@@ -104,6 +104,11 @@ public:
      */
   bool writeXML(QDomElement& elem, QDomDocument & doc);
 
+  /** sets state from DOM document
+     * @param itemElem is DOM node corresponding to item tag
+     */
+  bool readXML(const QDomElement& itemElem, const QDomDocument& doc);
+
  public slots:
   void updateSegmentSize();
   /**Sets mCompositionMap to 0 if the map is deleted*/

@@ -110,6 +110,11 @@ public:
      */
     bool writeXML(QDomElement& elem, QDomDocument & doc);
 
+    /** sets state from DOM document
+     * @param itemElem is DOM node corresponding to 'ComposerMap' tag
+     */
+    bool readXML(const QDomElement& itemElem, const QDomDocument& doc);
+
 public slots:
 
     // Called if map canvas has changed

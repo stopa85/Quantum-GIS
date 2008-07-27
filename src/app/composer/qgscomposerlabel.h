@@ -43,6 +43,11 @@ class QgsComposerLabel: public QgsComposerItem
      * @param temp write template file
      */
   bool writeXML(QDomElement& elem, QDomDocument & doc);
+
+  /** sets state from DOM document
+     * @param node is DOM node corresponding to 'ComposerLabel' tag
+     */
+  bool readXML(const QDomElement& itemElem, const QDomDocument& doc);
  
  private:
   // Text 

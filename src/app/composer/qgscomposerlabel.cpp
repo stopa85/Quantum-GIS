@@ -75,7 +75,7 @@ bool QgsComposerLabel::writeXML(QDomElement& elem, QDomDocument & doc)
   QDomElement composerLabelElem = doc.createElement("ComposerLabel");
 
   composerLabelElem.setAttribute("labelText", mText);
-  composerLabelElem.setAttribute("margin", mMargin);
+  composerLabelElem.setAttribute("margin", QString::number(mMargin));
 
 
   //font
@@ -87,4 +87,35 @@ bool QgsComposerLabel::writeXML(QDomElement& elem, QDomDocument & doc)
   return _writeXML(composerLabelElem, doc);
 }
 
+bool QgsComposerLabel::readXML(const QDomElement& itemElem, const QDomDocument& doc)
+{
+  if(itemElem.isNull())
+    {
+      return false;
+    }
 
+  //restore label specific properties
+  
+  //text
+  mText = itemElem.attribute("labelText");
+
+  //margin
+  mMargin = itemElem.attribute("margin").toDouble();
+
+  //font
+  QDomNodeList labelFontList = itemElem.elementsByTagName("LabelFont");
+  if(labelFontList.size() > 0)
+    {
+      QDomElement labelFontElem = labelFontList.at(0).toElement();
+      mFont.fromString(labelFontElem.attribute("description"));
+    }
+
+  //restore general composer item properties
+  QDomNodeList composerItemList = itemElem.elementsByTagName("ComposerItem");
+  if(composerItemList.size() > 0)
+    {
+      QDomElement composerItemElem = composerItemList.at(0).toElement();
+      _readXML(composerItemElem, doc);
+    }
+  return false; //soon...
+}

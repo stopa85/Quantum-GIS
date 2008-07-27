@@ -80,13 +80,16 @@ public:
      */
     virtual bool writeXML(QDomElement& elem, QDomDocument & doc) = 0;
 
-    /**Writes parameter that are not subclass specific in document. Usually called from subclass specific methods*/
+    /**Writes parameter that are not subclass specific in document. Usually called from writeXML methods of subclasses*/
     bool _writeXML(QDomElement& itemElem, QDomDocument& doc);
 
     /** sets state from DOM document
-     * @param node is DOM node corresponding to 'Composer' tag
+     * @param itemElem is DOM node corresponding to item tag
      */
-    virtual bool readXML( QDomElement& elem);
+    virtual bool readXML(const QDomElement& itemElem, const QDomDocument& doc) = 0;
+
+    /**Reads parameter that are not subclass specific in document. Usually called from readXML methods of subclasses*/
+    bool _readXML(const QDomElement& itemElem, const QDomDocument& doc);
 
     
 

@@ -78,6 +78,11 @@ class QgsComposerLegend: public QgsComposerItem
      */
   bool writeXML(QDomElement& elem, QDomDocument & doc);
 
+  /** sets state from DOM document
+     * @param itemElem is DOM node corresponding to item tag
+     */
+  bool readXML(const QDomElement& itemElem, const QDomDocument& doc);
+
  protected:
   QString mTitle;
 

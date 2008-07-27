@@ -23,6 +23,9 @@ class QgsComposerMap;
 class QGraphicsRectItem;
 class QgsMapCanvas;
 
+class QDomDocument;
+class QDomElement;
+
 /**Graphics scene for map printing. It manages the paper item which always is the item in the back (z-value 0)*/
 class QgsComposition: public QGraphicsScene
 {
@@ -65,6 +68,12 @@ class QgsComposition: public QGraphicsScene
 
   QgsComposition::PlotStyle plotStyle() const {return mPlotStyle;}
   void setPlotStyle(QgsComposition::PlotStyle style) {mPlotStyle = style;}
+
+  /**Writes settings to xml (paper dimension)*/
+  bool writeXML(QDomElement& composerElem, QDomDocument& doc);
+
+  /**Reads settings from xml file*/
+  bool readXML(const QDomElement& compositionElem, const QDomDocument& doc);
 
  private:
   QgsMapCanvas* mMapCanvas;
