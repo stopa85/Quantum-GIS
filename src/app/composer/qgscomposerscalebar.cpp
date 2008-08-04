@@ -22,6 +22,8 @@
 #include "qgssingleboxscalebarstyle.h"
 #include "qgsticksscalebarstyle.h"
 #include "qgsrect.h"
+#include <QDomDocument>
+#include <QDomElement>
 #include <QFontMetricsF>
 #include <QPainter>
 #include <cmath>
@@ -229,6 +231,18 @@ void QgsComposerScaleBar::setStyle(const QString& styleName)
     }
 }
 
+QString QgsComposerScaleBar::style() const
+{
+  if(mStyle)
+    {
+      return mStyle->name();
+    }
+  else
+    {
+      return "";
+    }
+}
+
 QString QgsComposerScaleBar::firstLabelString() const
 {
   if(mNumSegmentsLeft > 0)
@@ -243,12 +257,111 @@ QString QgsComposerScaleBar::firstLabelString() const
 
 bool QgsComposerScaleBar::writeXML(QDomElement& elem, QDomDocument & doc)
 {
-  return true; //soon...
+  if(elem.isNull())
+    {
+      return false;
+    }
+
+  QDomElement composerScaleBarElem = doc.createElement("ComposerScaleBar");
+  composerScaleBarElem.setAttribute("height", mHeight);
+  composerScaleBarElem.setAttribute("labelBarSpace", mLabelBarSpace);
+  composerScaleBarElem.setAttribute("boxContentSpace", mBoxContentSpace);
+  composerScaleBarElem.setAttribute("numSegments", mNumSegments);
+  composerScaleBarElem.setAttribute("numSegmentsLeft", mNumSegmentsLeft);
+  composerScaleBarElem.setAttribute("numUnitsPerSegment", mNumUnitsPerSegment);
+  composerScaleBarElem.setAttribute("numMapUnitsPerScaleBarUnit", mNumMapUnitsPerScaleBarUnit);
+  composerScaleBarElem.setAttribute("font", mFont.toString());
+  composerScaleBarElem.setAttribute("outlineWidth", mPen.widthF());
+  
+  //style
+  if(mStyle)
+    {
+      composerScaleBarElem.setAttribute("style", mStyle->name());
+    }
+
+  //map id
+  if(mComposerMap)
+    {
+      composerScaleBarElem.setAttribute("mapId", mComposerMap->id());
+    }
+
+  //fill color
+  QColor brushColor = mBrush.color();
+  QDomElement colorElem = doc.createElement("BrushColor");
+  colorElem.setAttribute("red", brushColor.red());
+  colorElem.setAttribute("green", brushColor.green());
+  colorElem.setAttribute("blue", brushColor.blue());
+  composerScaleBarElem.appendChild(colorElem);
+
+  elem.appendChild(composerScaleBarElem);
+  return _writeXML(composerScaleBarElem, doc);
 }
 
 bool QgsComposerScaleBar::readXML(const QDomElement& itemElem, const QDomDocument& doc)
 {
-  return false; //soon...
+  if(itemElem.isNull())
+    {
+      return false;
+    }
+
+  mHeight = itemElem.attribute("height", "5.0").toDouble();
+  mLabelBarSpace = itemElem.attribute("labelBarSpace", "3.0").toDouble();
+  mBoxContentSpace = itemElem.attribute("boxContentSpace", "1.0").toDouble();
+  mNumSegments = itemElem.attribute("numSegments", "2").toInt();
+  mNumSegmentsLeft = itemElem.attribute("numSegmentsLeft", "0").toInt();
+  mNumUnitsPerSegment = itemElem.attribute("numUnitsPerSegment", "1.0").toDouble();
+  mNumMapUnitsPerScaleBarUnit = itemElem.attribute("numMapUnitsPerScaleBarUnit", "1.0").toDouble();
+  mPen.setWidthF(itemElem.attribute("outlineWidth", "1.0").toDouble());
+  QString fontString = itemElem.attribute("font", "");
+  if(!fontString.isEmpty())
+    {
+      mFont.fromString(fontString);
+    }
+
+  //style
+  delete mStyle;
+  mStyle = 0;
+  QString styleString = itemElem.attribute("style", "");
+  if(!styleString.isEmpty())
+    {
+      if(styleString == "Line with Ticks")
+	{
+	  mStyle = new QgsTicksScaleBarStyle(this);
+	}
+      else if(styleString == "Single Box")
+	{
+	  mStyle = new QgsSingleBoxScaleBarStyle(this);
+	}
+      else if(styleString == "Double Box")
+	{
+	  mStyle = new QgsDoubleBoxScaleBarStyle(this);
+	}
+      else //numeric
+	{
+	  mStyle = new QgsNumericScaleBarStyle(this);
+	}
+    }
+  
+
+  //map
+  int mapId = itemElem.attribute("mapId", "-1").toInt();
+  if(mapId >= 0)
+    {
+      const QgsComposerMap* composerMap = mComposition->getComposerMapById(mapId);
+      mComposerMap = composerMap;
+    }
+	
+  refreshSegmentMM();
+
+  //restore general composer item properties
+  QDomNodeList composerItemList = itemElem.elementsByTagName("ComposerItem");
+  if(composerItemList.size() > 0)
+    {
+      QDomElement composerItemElem = composerItemList.at(0).toElement();
+      _readXML(composerItemElem, doc);
+    }
+  
+  return true;
 }
 
 

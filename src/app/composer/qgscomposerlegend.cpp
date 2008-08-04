@@ -23,16 +23,8 @@
 
 QgsComposerLegend::QgsComposerLegend(QgsComposition* composition): QgsComposerItem(composition), mTitle(QObject::tr("Legend")), mBoxSpace(2), mLayerSpace(3), mSymbolSpace(2), mIconLabelSpace(2)
 {
-  QStringList layerIdList;
-  QMap<QString,QgsMapLayer*> layerMap =  QgsMapLayerRegistry::instance()->mapLayers();
-  QMap<QString,QgsMapLayer*>::const_iterator mapIt = layerMap.constBegin();
-
-  for(; mapIt != layerMap.constEnd(); ++mapIt)
-    {
-      layerIdList.push_back(mapIt.key());
-    }
-
-  mLegendModel.setLayerSet(layerIdList);
+  QStringList idList = layerIdList();
+  mLegendModel.setLayerSet(idList);
 
   //default font size
   mTitleFont.setPointSizeF(4);
@@ -41,6 +33,8 @@ QgsComposerLegend::QgsComposerLegend(QgsComposition* composition): QgsComposerIt
   mSymbolWidth = 7;
   mSymbolHeight = 4;
   adjustBoxSize();
+
+  connect(&mLegendModel, SIGNAL(layersChanged()), this, SLOT(synchronizeWithModel()));
 }
 
 QgsComposerLegend::QgsComposerLegend(): QgsComposerItem(0)
@@ -316,6 +310,26 @@ void QgsComposerLegend::drawPolygonSymbol(QPainter* p, QgsSymbol* s, double curr
     }
 
   currentXPosition += mSymbolWidth;
+}
+
+QStringList QgsComposerLegend::layerIdList() const
+{
+  QStringList layerIdList;
+  QMap<QString,QgsMapLayer*> layerMap =  QgsMapLayerRegistry::instance()->mapLayers();
+  QMap<QString,QgsMapLayer*>::const_iterator mapIt = layerMap.constBegin();
+
+  for(; mapIt != layerMap.constEnd(); ++mapIt)
+    {
+      layerIdList.push_back(mapIt.key());
+    }
+
+  return layerIdList;
+}
+
+void QgsComposerLegend::synchronizeWithModel()
+{
+  adjustBoxSize();
+  update();
 }
 
 bool QgsComposerLegend::writeXML(QDomElement& elem, QDomDocument & doc)

@@ -131,6 +131,7 @@ SET (QGIS_APP_MOC_HDRS
 
   composer/qgscomposer.h
   composer/qgscomposerlabelwidget.h
+  composer/qgscomposerlegend.h
   composer/qgscomposerlegendwidget.h
   composer/qgscomposermap.h
   composer/qgscomposermapwidget.h
@@ -139,6 +140,7 @@ SET (QGIS_APP_MOC_HDRS
   composer/qgscomposerview.h
   composer/qgscomposeritemgroup.h
   composer/qgscompositionwidget.h
+  composer/qgslegendmodel.h
 
   legend/qgslegend.h
   legend/qgslegendlayer.h

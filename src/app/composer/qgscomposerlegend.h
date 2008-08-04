@@ -20,11 +20,14 @@
 
 #include "qgscomposeritem.h"
 #include "qgslegendmodel.h"
+#include <QObject>
 
 class QgsSymbol;
 
-class QgsComposerLegend: public QgsComposerItem
+class QgsComposerLegend: public QObject, public QgsComposerItem
 {
+  Q_OBJECT
+
  public:
   QgsComposerLegend(QgsComposition* composition);
   ~QgsComposerLegend();
@@ -83,6 +86,10 @@ class QgsComposerLegend: public QgsComposerItem
      */
   bool readXML(const QDomElement& itemElem, const QDomDocument& doc);
 
+ public slots:
+  /**Data changed*/
+  void synchronizeWithModel();
+
  protected:
   QString mTitle;
 
@@ -123,6 +130,9 @@ class QgsComposerLegend: public QgsComposerItem
   void drawPointSymbol(QPainter*, QgsSymbol* s, double currentYCoord, double& currentXPosition, double& symbolHeight) const;
   void drawLineSymbol(QPainter*, QgsSymbol* s, double currentYCoord, double& currentXPosition) const;
   void drawPolygonSymbol(QPainter* p, QgsSymbol* s, double currentYCoord, double& currentXPosition) const; 
+
+  /**Helper function that lists ids of layers contained in map canvas*/
+  QStringList layerIdList() const;
 };
 
 #endif

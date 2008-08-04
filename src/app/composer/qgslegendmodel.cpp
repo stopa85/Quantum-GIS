@@ -25,6 +25,10 @@
 
 QgsLegendModel::QgsLegendModel(): QStandardItemModel()
 {
+  if(QgsMapLayerRegistry::instance())
+    {
+      connect(QgsMapLayerRegistry::instance(), SIGNAL(layerWillBeRemoved(QString)), this, SLOT(removeLayer(const QString&)));
+    }
 }
 
 QgsLegendModel::~QgsLegendModel()
@@ -54,6 +58,8 @@ void QgsLegendModel::setLayerSet(const QStringList& layerIds)
 
       //addItem for layer
       QStandardItem* layerItem = new QStandardItem(currentLayer->name());
+      //set layer id as user data into the item
+      layerItem->setData(QVariant(currentLayer->getLayerID()));
       layerItem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
      
       invisibleRootItem()->setChild (invisibleRootItem()->rowCount(), layerItem);
@@ -193,4 +199,74 @@ void QgsLegendModel::insertSymbol(QgsSymbol* s)
 void QgsLegendModel::removeSymbol(QgsSymbol* s)
 {
   mSymbols.remove(s);
+}
+
+void QgsLegendModel::updateLayerEntries(const QStringList& newLayerIds)
+{
+  if(!invisibleRootItem())
+    {
+      return;
+    }
+
+  //check for layers to remove
+  QStandardItem* currentLayerItem = 0;
+  QSet<int> rowsToRemove;
+
+  int numRootItems = rowCount();
+  for(int i = 0; i < numRootItems ; ++i)
+    {
+      currentLayerItem = item(i);
+      if(!currentLayerItem)
+	{
+	  continue;
+	}
+
+      QString layerId = currentLayerItem->data().toString();
+
+      if(!newLayerIds.contains(layerId)) //layer has been removed
+	{
+	  rowsToRemove.insert(i);
+	}
+    }
+
+  //remove layers in reverse order
+  if(rowsToRemove.size() > 0)
+    {
+      QSet<int>::const_iterator delete_it = --rowsToRemove.constEnd();
+      for(;; --delete_it)
+	{
+	  removeRow(*delete_it);
+	  if(delete_it == rowsToRemove.constBegin())
+	    {
+	      break;
+	    }
+	}
+
+    }
+
+
+  mLayerIds = newLayerIds;
+}
+
+void QgsLegendModel::removeLayer(const QString& layerId)
+{
+  QStandardItem* currentLayerItem = 0;
+
+  int numRootItems = rowCount();
+  for(int i = 0; i < numRootItems ; ++i)
+    {
+      currentLayerItem = item(i);
+      if(!currentLayerItem)
+	{
+	  continue;
+	}
+
+      QString currentId = currentLayerItem->data().toString();
+      if(currentId == layerId)
+	{
+	  removeRow(i);
+	  emit layersChanged();
+	  return;
+	}
+    }
 }

@@ -35,7 +35,7 @@ QgsTicksScaleBarStyle::~QgsTicksScaleBarStyle()
 
 QString QgsTicksScaleBarStyle::name() const
 {
-  return "Line Ticks Middle";
+  return "Line with Ticks";
 }
 
 void QgsTicksScaleBarStyle::draw(QPainter* p, double xOffset) const

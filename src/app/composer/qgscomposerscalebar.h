@@ -82,6 +82,9 @@ public:
    possibilities are: */
   void setStyle(const QString& styleName);
 
+  /**Returns style name*/
+  QString style() const;
+
   /**Returns the x - positions of the segment borders (in item coordinates) and the width 
    of the segment*/
   void segmentPositions(QList<QPair<double, double> >& posWidthList) const; 

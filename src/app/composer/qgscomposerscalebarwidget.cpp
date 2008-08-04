@@ -156,7 +156,7 @@ void QgsComposerScaleBarWidget::setGuiElements()
       mBoxCheckBox->setCheckState(Qt::Unchecked);
     }
 
-  //Style //todo...
+  //todo: style...
   
   
   blockSignals(false);

@@ -186,7 +186,7 @@ void QgsComposerMap::paint ( QPainter* painter, const QStyleOptionGraphicsItem* 
       
       painter->translate(0, 0); //do we need this?
       painter->scale(scale,scale);
-      
+
       painter->drawPixmap(0,0, mCachePixmap);
       
       painter->restore();
@@ -211,6 +211,7 @@ void QgsComposerMap::paint ( QPainter* painter, const QStyleOptionGraphicsItem* 
       drawSelectionBoxes(painter);
     }
   
+ 
   painter->restore();
 
   mLastScaleFactorX =  currentScaleFactorX;
@@ -328,10 +329,89 @@ double QgsComposerMap::horizontalViewScaleFactor() const
 
 bool QgsComposerMap::writeXML(QDomElement& elem, QDomDocument & doc)
 {
-  return true; //soon...
+  if(elem.isNull())
+    {
+      return false;
+    }
+
+  QDomElement composerMapElem = doc.createElement("ComposerMap");
+  
+  //previewMode
+  if(mPreviewMode == Cache)
+    {
+      composerMapElem.setAttribute("previewMode", "Cache");
+    }
+  else if(mPreviewMode == Render)
+    {
+      composerMapElem.setAttribute("previewMode", "Render");
+    }
+  else //rectangle
+    {
+      composerMapElem.setAttribute("previewMode", "Rectangle");
+    }
+
+  //extent
+  QDomElement extentElem = doc.createElement("Extent");
+  extentElem.setAttribute("xmin", QString::number(mExtent.xMin()));
+  extentElem.setAttribute("xmax", QString::number(mExtent.xMax()));
+  extentElem.setAttribute("ymin", QString::number(mExtent.yMin()));
+  extentElem.setAttribute("ymax", QString::number(mExtent.yMax()));
+  composerMapElem.appendChild(extentElem);
+
+  mCacheUpdated = false;
+  mNumCachedLayers = 0;
+
+  elem.appendChild(composerMapElem);
+  return _writeXML(composerMapElem, doc);
 }
 
 bool QgsComposerMap::readXML(const QDomElement& itemElem, const QDomDocument& doc)
 {
-  return false; //soon...
+  if(itemElem.isNull())
+    {
+      return false;
+    }
+
+  //previewMode
+  QString previewMode = itemElem.attribute("previewMode");
+  if(previewMode == "Cache")
+    {
+      mPreviewMode = Cache;
+    }
+  else if(previewMode == "Render")
+    {
+      mPreviewMode = Render;
+    }
+  else
+    {
+      mPreviewMode = Rectangle;
+    }
+
+  //extent
+  QDomNodeList extentNodeList = itemElem.elementsByTagName("Extent");
+  if(extentNodeList.size() > 0)
+    {
+      QDomElement extentElem = extentNodeList.at(0).toElement();
+      double xmin, xmax, ymin, ymax;
+      xmin = extentElem.attribute("xmin").toDouble();
+      xmax = extentElem.attribute("xmax").toDouble();
+      ymin = extentElem.attribute("ymin").toDouble();
+      ymax = extentElem.attribute("ymax").toDouble();
+
+      mExtent = QgsRect(xmin, ymin, xmax, ymax);
+    }
+
+  mDrawing = false;
+  mNumCachedLayers = 0;
+  mCacheUpdated = false;
+
+  //restore general composer item properties
+  QDomNodeList composerItemList = itemElem.elementsByTagName("ComposerItem");
+  if(composerItemList.size() > 0)
+    {
+      QDomElement composerItemElem = composerItemList.at(0).toElement();
+      _readXML(composerItemElem, doc);
+    }
+
+  return true;
 }

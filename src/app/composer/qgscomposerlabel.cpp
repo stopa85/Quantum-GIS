@@ -117,5 +117,5 @@ bool QgsComposerLabel::readXML(const QDomElement& itemElem, const QDomDocument& 
       QDomElement composerItemElem = composerItemList.at(0).toElement();
       _readXML(composerItemElem, doc);
     }
-  return false; //soon...
+  return true;
 }

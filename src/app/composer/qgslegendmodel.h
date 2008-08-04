@@ -28,11 +28,21 @@ class QgsSymbol;
 /**A model that provides layers as root items. The classification items are children of the layer items*/
 class QgsLegendModel: public QStandardItemModel
 {
+  Q_OBJECT
+
  public:
   QgsLegendModel();
   ~QgsLegendModel();
 
   void setLayerSet(const QStringList& layerIds);
+  /**Apply added or removed layers to the model*/
+  void updateLayerEntries(const QStringList& newLayerIds);
+
+ public slots:
+  void removeLayer(const QString& layerId);
+
+ signals:
+  void layersChanged();
 
  private:
   /**Adds classification items of vector layers

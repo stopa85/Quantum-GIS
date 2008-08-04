@@ -1219,6 +1219,33 @@ void QgsComposer::readXML(const QDomDocument& doc)
 	  newLabel->readXML(currentComposerLabelElem, doc);
 	  addComposerLabel(newLabel);
 	  mComposition->addItem(newLabel);
+	  newLabel->setZValue(60);
+	  mComposition->update();
+	}
+
+      //composer maps
+      QDomNodeList composerMapList = composerElem.elementsByTagName("ComposerMap");
+      for(int i = 0; i < composerMapList.size(); ++i)
+	{
+	  QDomElement currentComposerMapElem = composerMapList.at(i).toElement();
+	  QgsComposerMap* newMap = new QgsComposerMap(mComposition);
+	  newMap->readXML(currentComposerMapElem, doc);
+	  addComposerMap(newMap);
+	  mComposition->addItem(newMap);
+	  newMap->setZValue(50);
+	  mComposition->update();
+	}
+
+      //composer scalebars
+      QDomNodeList composerScaleBarList = composerElem.elementsByTagName("ComposerScaleBar");
+      for(int i = 0; i < composerScaleBarList.size(); ++i)
+	{
+	  QDomElement currentScaleBarElem = composerScaleBarList.at(i).toElement();
+	  QgsComposerScaleBar* newScaleBar = new QgsComposerScaleBar(mComposition);
+	  newScaleBar->readXML(currentScaleBarElem, doc);
+	  addComposerScaleBar(newScaleBar);
+	  mComposition->addItem(newScaleBar);
+	  newScaleBar->setZValue(60);
 	  mComposition->update();
 	}
     }
