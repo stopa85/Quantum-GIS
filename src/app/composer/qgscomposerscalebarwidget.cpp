@@ -25,6 +25,7 @@ QgsComposerScaleBarWidget::QgsComposerScaleBarWidget(QgsComposerScaleBar* scaleB
 {
   setupUi(this);
 
+  blockMemberSignals(true);
   mStyleComboBox->insertItem(0, tr("Single Box"));
   mStyleComboBox->insertItem(1, tr("Double Box"));
   mStyleComboBox->insertItem(2, tr("Line Ticks Middle"));
@@ -33,6 +34,7 @@ QgsComposerScaleBarWidget::QgsComposerScaleBarWidget(QgsComposerScaleBar* scaleB
   mStyleComboBox->insertItem(5, tr("Numeric"));
 
   setGuiElements(); //set the GUI elements to the state of scaleBar
+  blockMemberSignals(false);
 }
 
 QgsComposerScaleBarWidget::~QgsComposerScaleBarWidget()
@@ -125,7 +127,6 @@ void QgsComposerScaleBarWidget::setGuiElements()
       return;
     }
 
-  blockSignals(true);
   mNumberOfSegmentsSpinBox->setValue(mComposerScaleBar->numSegments());
   mSegmentsLeftSpinBox->setValue(mComposerScaleBar->numSegmentsLeft());
   mSegmentSizeSpinBox->setValue(mComposerScaleBar->numUnitsPerSegment());
@@ -134,6 +135,7 @@ void QgsComposerScaleBarWidget::setGuiElements()
   mMapUnitsPerBarUnitSpinBox->setValue(mComposerScaleBar->numMapUnitsPerScaleBarUnit());
   mLabelBarSpaceSpinBox->setValue(mComposerScaleBar->labelBarSpace());
   mBoxSizeSpinBox->setValue(mComposerScaleBar->boxContentSpace());
+  mUnitLabelLineEdit->setText(mComposerScaleBar->unitLabeling());
 
   //map combo box
   if(mComposerScaleBar->composerMap())
@@ -156,10 +158,9 @@ void QgsComposerScaleBarWidget::setGuiElements()
       mBoxCheckBox->setCheckState(Qt::Unchecked);
     }
 
-  //todo: style...
-  
-  
-  blockSignals(false);
+  //style...
+  QString style = mComposerScaleBar->style();
+  mStyleComboBox->setCurrentIndex(mStyleComboBox->findText(tr(style.toLocal8Bit().data())));
 }
 
 //slots
@@ -328,4 +329,20 @@ void QgsComposerScaleBarWidget::on_mBoxSizeSpinBox_valueChanged(double d)
 
   mComposerScaleBar->setBoxContentSpace(d);
   mComposerScaleBar->update();
+}
+
+void QgsComposerScaleBarWidget::blockMemberSignals(bool block)
+{
+  mSegmentSizeSpinBox->blockSignals(block);
+  mNumberOfSegmentsSpinBox->blockSignals(block);
+  mSegmentsLeftSpinBox->blockSignals(block);
+  mStyleComboBox->blockSignals(block);
+  mUnitLabelLineEdit->blockSignals(block);
+  mMapUnitsPerBarUnitSpinBox->blockSignals(block);
+  mMapComboBox->blockSignals(block);
+  mHeightSpinBox->blockSignals(block);
+  mLineWidthSpinBox->blockSignals(block);
+  mLabelBarSpaceSpinBox->blockSignals(block);
+  mBoxSizeSpinBox->blockSignals(block);
+  mBoxCheckBox->blockSignals(block);
 }

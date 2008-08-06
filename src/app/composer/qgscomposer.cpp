@@ -261,13 +261,13 @@ void QgsComposer::on_mActionZoomAll_activated(void)
 void QgsComposer::on_mActionZoomIn_activated(void)
 {
   mView->scale(2, 2);
-  mView->update();
+  //mView->update();
 }
 
 void QgsComposer::on_mActionZoomOut_activated(void)
 {
   mView->scale(.5, .5);
-  mView->update();
+  //mView->update();
 }
 
 void QgsComposer::on_mActionRefreshView_activated(void)

@@ -183,12 +183,8 @@ void QgsComposerMap::paint ( QPainter* painter, const QStyleOptionGraphicsItem* 
       double scale = 1.0 * QGraphicsRectItem::rect().width() / mCachePixmap.width();
       
       painter->save();
-      
-      painter->translate(0, 0); //do we need this?
       painter->scale(scale,scale);
-
       painter->drawPixmap(0,0, mCachePixmap);
-      
       painter->restore();
     } 
   else if ( mComposition->plotStyle() == QgsComposition::Print ||

@@ -272,6 +272,7 @@ bool QgsComposerScaleBar::writeXML(QDomElement& elem, QDomDocument & doc)
   composerScaleBarElem.setAttribute("numMapUnitsPerScaleBarUnit", mNumMapUnitsPerScaleBarUnit);
   composerScaleBarElem.setAttribute("font", mFont.toString());
   composerScaleBarElem.setAttribute("outlineWidth", mPen.widthF());
+  composerScaleBarElem.setAttribute("unitLabel", mUnitLabeling);
   
   //style
   if(mStyle)
@@ -312,6 +313,7 @@ bool QgsComposerScaleBar::readXML(const QDomElement& itemElem, const QDomDocumen
   mNumUnitsPerSegment = itemElem.attribute("numUnitsPerSegment", "1.0").toDouble();
   mNumMapUnitsPerScaleBarUnit = itemElem.attribute("numMapUnitsPerScaleBarUnit", "1.0").toDouble();
   mPen.setWidthF(itemElem.attribute("outlineWidth", "1.0").toDouble());
+  mUnitLabeling = itemElem.attribute("unitLabel");
   QString fontString = itemElem.attribute("font", "");
   if(!fontString.isEmpty())
     {
@@ -322,26 +324,7 @@ bool QgsComposerScaleBar::readXML(const QDomElement& itemElem, const QDomDocumen
   delete mStyle;
   mStyle = 0;
   QString styleString = itemElem.attribute("style", "");
-  if(!styleString.isEmpty())
-    {
-      if(styleString == "Line with Ticks")
-	{
-	  mStyle = new QgsTicksScaleBarStyle(this);
-	}
-      else if(styleString == "Single Box")
-	{
-	  mStyle = new QgsSingleBoxScaleBarStyle(this);
-	}
-      else if(styleString == "Double Box")
-	{
-	  mStyle = new QgsDoubleBoxScaleBarStyle(this);
-	}
-      else //numeric
-	{
-	  mStyle = new QgsNumericScaleBarStyle(this);
-	}
-    }
-  
+  setStyle(tr(styleString.toLocal8Bit().data()));
 
   //map
   int mapId = itemElem.attribute("mapId", "-1").toInt();
