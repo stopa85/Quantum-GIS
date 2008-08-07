@@ -16,14 +16,17 @@
  ***************************************************************************/
 
 #include "qgslegendmodel.h"
+#include "qgsfield.h"
 #include "qgsmaplayer.h"
 #include "qgsmaplayerregistry.h"
 #include "qgsrasterlayer.h"
 #include "qgsrenderer.h"
 #include "qgssymbol.h"
+#include "qgsvectordataprovider.h"
 #include "qgsvectorlayer.h"
 #include <QDomDocument>
 #include <QDomElement>
+#include <QSettings>
 
 QgsLegendModel::QgsLegendModel(): QStandardItemModel()
 {
@@ -94,6 +97,30 @@ int QgsLegendModel::addVectorLayerItems(QStandardItem* layerItem, QgsMapLayer* v
   if(!vectorRenderer)
     {
       return 3;
+    }
+
+  //text field that describes classification attribute?
+  QSettings settings;
+  if(settings.value("/qgis/showLegendClassifiers",false).toBool())
+    {
+      QgsVectorDataProvider* provider = vectorLayer->getDataProvider();
+      
+      if(provider)
+	{
+	  QgsFieldMap providerFields = provider->fields();
+	  QgsAttributeList attributes = vectorRenderer->classificationAttributes();
+	  QgsAttributeList::const_iterator att_it = attributes.constBegin();
+	  for(; att_it != attributes.constEnd(); ++att_it)
+	    {
+	      QgsFieldMap::const_iterator fieldIt = providerFields.find(*att_it);
+	      if(fieldIt != providerFields.constEnd())
+		{
+		  QString attributeName = fieldIt.value().name();
+		  QStandardItem* attributeItem = new QStandardItem(attributeName);
+		  layerItem->setChild(layerItem->rowCount(), 0, attributeItem);
+		}
+	    }
+	}
     }
 
   const QList<QgsSymbol*> vectorSymbols = vectorRenderer->symbols();
@@ -327,13 +354,14 @@ bool QgsLegendModel::writeXML(QDomElement& composerLegendElem, QDomDocument& doc
 	      textItemElem.setAttribute("text", currentClassificationItem->text());
 	      newLayerItem.appendChild(textItemElem);
 	    }
-	  
-	  //else it can only be a raster item
-	  QDomElement rasterClassElem = doc.createElement("RasterItem");
-	  rasterClassElem.setAttribute("text", currentClassificationItem->text());
-	  //storing the layer id also in the raster item makes parsing easier
-	  rasterClassElem.setAttribute("layerId", currentLayerItem->data().toString());
-	  newLayerItem.appendChild(rasterClassElem);
+	  else //else it can only be a raster item
+	    {
+	      QDomElement rasterClassElem = doc.createElement("RasterItem");
+	      rasterClassElem.setAttribute("text", currentClassificationItem->text());
+	      //storing the layer id also in the raster item makes parsing easier
+	      rasterClassElem.setAttribute("layerId", currentLayerItem->data().toString());
+	      newLayerItem.appendChild(rasterClassElem);
+	    }
 	}
 
       legendModelElem.appendChild(newLayerItem);

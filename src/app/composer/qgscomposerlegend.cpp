@@ -199,9 +199,9 @@ void QgsComposerLegend::drawLayerChildItems(QPainter* p, QStandardItem* layerIte
 	  if(!symbolIcon.isNull() && p)
 	    {
 	      symbolIcon.paint(p, currentXCoord, currentYCoord, mSymbolWidth, mSymbolHeight);
+	      currentXCoord += mSymbolWidth;
+	      currentXCoord += mIconLabelSpace;
 	    }
-	  currentXCoord += mSymbolWidth;
-	  currentXCoord += mIconLabelSpace;
 	}
       
       //finally draw text
