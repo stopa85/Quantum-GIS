@@ -1219,7 +1219,6 @@ void QgsComposer::readXML(const QDomDocument& doc)
 	  newLabel->readXML(currentComposerLabelElem, doc);
 	  addComposerLabel(newLabel);
 	  mComposition->addItem(newLabel);
-	  newLabel->setZValue(60);
 	  mComposition->update();
 	}
 
@@ -1232,7 +1231,6 @@ void QgsComposer::readXML(const QDomDocument& doc)
 	  newMap->readXML(currentComposerMapElem, doc);
 	  addComposerMap(newMap);
 	  mComposition->addItem(newMap);
-	  newMap->setZValue(50);
 	  mComposition->update();
 	}
 
@@ -1245,7 +1243,18 @@ void QgsComposer::readXML(const QDomDocument& doc)
 	  newScaleBar->readXML(currentScaleBarElem, doc);
 	  addComposerScaleBar(newScaleBar);
 	  mComposition->addItem(newScaleBar);
-	  newScaleBar->setZValue(60);
+	  mComposition->update();
+	}
+
+      //composer legends
+      QDomNodeList composerLegendList = composerElem.elementsByTagName("ComposerLegend");
+      for(int i = 0; i < composerLegendList.size(); ++i)
+	{
+	  QDomElement currentLegendElem = composerLegendList.at(i).toElement();
+	  QgsComposerLegend* newLegend = new QgsComposerLegend(mComposition);
+	  newLegend->readXML(currentLegendElem, doc);
+	  addComposerLegend(newLegend);
+	  mComposition->addItem(newLegend);
 	  mComposition->update();
 	}
     }
@@ -1293,7 +1302,6 @@ void QgsComposer::addComposerLegend(QgsComposerLegend* legend)
       return;
     }
   
-  //todo: create a composer legend widget
   QgsComposerLegendWidget* lWidget = new QgsComposerLegendWidget(legend);
   mItemWidgetMap.insert(legend, lWidget);
 }

@@ -83,6 +83,7 @@ bool QgsComposerItem::_writeXML(QDomElement& itemElem, QDomDocument& doc)
   composerItemElem.setAttribute("y", transform().dy());
   composerItemElem.setAttribute("width", rect().width());
   composerItemElem.setAttribute("height", rect().height());
+  composerItemElem.setAttribute("zValue", QString::number(zValue()));
 
   itemElem.appendChild(composerItemElem);
 
@@ -122,6 +123,7 @@ bool QgsComposerItem::_readXML(const QDomElement& itemElem, const QDomDocument& 
     }
 
   setSceneRect(QRectF(x, y, width, height));
+  setZValue(itemElem.attribute("zValue").toDouble());
   return true;
 }
 

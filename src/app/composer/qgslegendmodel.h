@@ -22,6 +22,8 @@
 #include <QStringList>
 #include <QSet>
 
+class QDomDocument;
+class QDomElement;
 class QgsMapLayer;
 class QgsSymbol;
 
@@ -38,6 +40,9 @@ class QgsLegendModel: public QStandardItemModel
   /**Apply added or removed layers to the model*/
   void updateLayerEntries(const QStringList& newLayerIds);
 
+  bool writeXML(QDomElement& composerLegendElem, QDomDocument& doc);
+  bool readXML(const QDomElement& legendModelElem, const QDomDocument& doc);
+
  public slots:
   void removeLayer(const QString& layerId);
 
@@ -53,8 +58,12 @@ class QgsLegendModel: public QStandardItemModel
    @return 0 in case of success*/
   int addRasterLayerItem(QStandardItem* layerItem, QgsMapLayer* rlayer);
 
+  /**Insert a symbol into QgsLegendModel symbol storage*/
   void insertSymbol(QgsSymbol* s);
+  /**Removes and deletes a symbol*/
   void removeSymbol(QgsSymbol* s);
+  /**Removes and deletes all stored symbols*/
+  void removeAllSymbols();
 
   /**Keep track of copied symbols to delete them if not used anymore*/
   QSet<QgsSymbol*> mSymbols;

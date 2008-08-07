@@ -22,6 +22,8 @@
 #include "qgsrenderer.h"
 #include "qgssymbol.h"
 #include "qgsvectorlayer.h"
+#include <QDomDocument>
+#include <QDomElement>
 
 QgsLegendModel::QgsLegendModel(): QStandardItemModel()
 {
@@ -33,11 +35,7 @@ QgsLegendModel::QgsLegendModel(): QStandardItemModel()
 
 QgsLegendModel::~QgsLegendModel()
 {
-  QSet<QgsSymbol*>::iterator it = mSymbols.begin();
-  for(; it != mSymbols.end(); ++it)
-    {
-      delete *it;
-    }
+  removeAllSymbols();
 }
 
 void QgsLegendModel::setLayerSet(const QStringList& layerIds)
@@ -190,15 +188,22 @@ void QgsLegendModel::insertSymbol(QgsSymbol* s)
     {
       delete (*it); //very unlikely
     }
-  else
-    {
-      mSymbols.insert(s);
-    }
+  mSymbols.insert(s);
 }
   
 void QgsLegendModel::removeSymbol(QgsSymbol* s)
 {
   mSymbols.remove(s);
+}
+
+void QgsLegendModel::removeAllSymbols()
+{
+  QSet<QgsSymbol*>::iterator it = mSymbols.begin();
+  for(; it != mSymbols.end(); ++it)
+    {
+      delete *it;
+    }
+  mSymbols.clear();
 }
 
 void QgsLegendModel::updateLayerEntries(const QStringList& newLayerIds)
@@ -268,5 +273,163 @@ void QgsLegendModel::removeLayer(const QString& layerId)
 	  emit layersChanged();
 	  return;
 	}
+    }
+}
+
+bool QgsLegendModel::writeXML(QDomElement& composerLegendElem, QDomDocument& doc)
+{
+  if(composerLegendElem.isNull())
+    {
+      return false;
+    }
+  
+  QDomElement legendModelElem = doc.createElement("Model");
+  
+  //iterate over all items...
+  QStandardItem* currentLayerItem = 0;
+  QStandardItem* currentClassificationItem = 0;
+  int numRootItems = rowCount();
+  
+  for(int i = 0; i < numRootItems; ++i)
+    {
+      currentLayerItem = item(i);
+      QDomElement newLayerItem = doc.createElement("LayerItem");
+      newLayerItem.setAttribute("layerId", currentLayerItem->data().toString());
+      newLayerItem.setAttribute("text", currentLayerItem->text());
+
+      //add layer/classification items
+      int numClassItems = currentLayerItem->rowCount();
+      for(int j = 0; j < numClassItems; ++j)
+	{
+	  currentClassificationItem = currentLayerItem->child(j);
+	 
+	  //store text and QgsSymbol for vector classification items
+	  QVariant symbolVariant = currentClassificationItem->data();
+	  QgsSymbol* symbol = 0;
+	  if(symbolVariant.canConvert<void*>())
+	    {
+	      void* symbolData = symbolVariant.value<void*>();
+	      symbol = (QgsSymbol*)(symbolData);
+	    }
+	  if(symbol)
+	    {
+	      QDomElement vectorClassElem = doc.createElement("VectorClassificationItem");
+	      vectorClassElem.setAttribute("text", currentClassificationItem->text());
+	      symbol->writeXML(vectorClassElem, doc);
+	      newLayerItem.appendChild(vectorClassElem);
+	      continue;
+	    }
+
+	  //a text item
+	  if(currentClassificationItem->icon().isNull())
+	    {
+	      QDomElement textItemElem = doc.createElement("TextItem");
+	      textItemElem.setAttribute("text", currentClassificationItem->text());
+	      newLayerItem.appendChild(textItemElem);
+	    }
+	  
+	  //else it can only be a raster item
+	  QDomElement rasterClassElem = doc.createElement("RasterItem");
+	  rasterClassElem.setAttribute("text", currentClassificationItem->text());
+	  //storing the layer id also in the raster item makes parsing easier
+	  rasterClassElem.setAttribute("layerId", currentLayerItem->data().toString());
+	  newLayerItem.appendChild(rasterClassElem);
+	}
+
+      legendModelElem.appendChild(newLayerItem);
+    }
+
+  composerLegendElem.appendChild(legendModelElem);
+  return true;
+}
+
+bool QgsLegendModel::readXML(const QDomElement& legendModelElem, const QDomDocument& doc)
+{
+  if(legendModelElem.isNull())
+    {
+      return false;
+    }
+
+  //delete all stored symbols first
+  removeAllSymbols();
+
+  //iterate over layer items
+  QDomNodeList layerItemList = legendModelElem.elementsByTagName("LayerItem");
+  QgsMapLayer* currentLayer = 0; //store current layer to get 
+
+  for(int i = 0; i < layerItemList.size(); ++i)
+    {
+      QDomElement layerItemElem = layerItemList.at(i).toElement();
+      QString layerId = layerItemElem.attribute("layerId");
+
+      QStandardItem* layerItem = new QStandardItem(layerItemElem.attribute("text"));
+
+      //set layer id as user data into the item
+      layerItem->setData(QVariant(layerId));
+      layerItem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
+
+      currentLayer = QgsMapLayerRegistry::instance()->mapLayer(layerId);
+
+      //go through all children of layerItemElem
+      QDomElement currentChildElement = layerItemElem.firstChildElement();
+      while(!currentChildElement.isNull())
+	{
+	  QStandardItem* childItem = new QStandardItem(currentChildElement.attribute("text"));
+	  if(currentChildElement.tagName() == "RasterItem")
+	    {
+	      //get icon from current layer
+	      QgsRasterLayer* rasterLayer = dynamic_cast<QgsRasterLayer*>(currentLayer);
+	      if(rasterLayer)
+		{
+		  childItem->setIcon(QIcon(rasterLayer->getLegendQPixmap(true)));
+		}
+	      layerItem->setChild(layerItem->rowCount(), 0, childItem);
+	    }
+	  else if(currentChildElement.tagName() == "VectorClassificationItem")
+	    {
+	      //read QgsSymbol from xml and get icon
+	      QgsVectorLayer* vectorLayer = dynamic_cast<QgsVectorLayer*>(currentLayer);
+	      if(vectorLayer)
+		{
+		  //look for symbol
+		  QDomNodeList symbolNodeList = currentChildElement.elementsByTagName("symbol");
+		  if(symbolNodeList.size() > 0)
+		    {
+		      QgsSymbol* symbol = new QgsSymbol(vectorLayer->vectorType());
+		      QDomNode symbolNode = symbolNodeList.at(0);
+		      symbol->readXML(symbolNode);
+		      childItem->setData(QVariant::fromValue((void*)symbol));
+		      
+		      //add icon
+		      switch(symbol->type())
+			{
+			case QGis::Point:
+			  childItem->setIcon(QIcon(QPixmap::fromImage(symbol->getPointSymbolAsImage())));
+			  break;
+			case QGis::Line:
+			  childItem->setIcon(QIcon(QPixmap::fromImage(symbol->getLineSymbolAsImage())));
+			  break;
+			case QGis::Polygon:
+			  childItem->setIcon(QIcon(QPixmap::fromImage(symbol->getPolygonSymbolAsImage())));
+			  break;
+			}
+		      insertSymbol(symbol);
+		    }
+		}
+	      layerItem->setChild(layerItem->rowCount(), 0, childItem);
+	    }
+	  else if(currentChildElement.tagName() == "TextItem")
+	    {
+	      layerItem->setChild(layerItem->rowCount(), 0, childItem);
+	    }
+	  else //unknown tag name, don't add item
+	    {
+	      delete childItem;
+	    }
+			    
+	  currentChildElement = currentChildElement.nextSiblingElement();
+	}
+
+      invisibleRootItem()->setChild (invisibleRootItem()->rowCount(), layerItem);
     }
 }

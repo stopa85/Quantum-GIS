@@ -19,6 +19,8 @@
 #include "qgsmaplayer.h"
 #include "qgsmaplayerregistry.h"
 #include "qgssymbol.h"
+#include <QDomDocument>
+#include <QDomElement>
 #include <QPainter>
 
 QgsComposerLegend::QgsComposerLegend(QgsComposition* composition): QgsComposerItem(composition), mTitle(QObject::tr("Legend")), mBoxSpace(2), mLayerSpace(3), mSymbolSpace(2), mIconLabelSpace(2)
@@ -198,6 +200,7 @@ void QgsComposerLegend::drawLayerChildItems(QPainter* p, QStandardItem* layerIte
 	    {
 	      symbolIcon.paint(p, currentXCoord, currentYCoord, mSymbolWidth, mSymbolHeight);
 	    }
+	  currentXCoord += mSymbolWidth;
 	  currentXCoord += mIconLabelSpace;
 	}
       
@@ -334,10 +337,84 @@ void QgsComposerLegend::synchronizeWithModel()
 
 bool QgsComposerLegend::writeXML(QDomElement& elem, QDomDocument & doc)
 {
-  return true; //soon...
+  if(elem.isNull())
+    {
+      return false;
+    }
+
+  QDomElement composerLegendElem = doc.createElement("ComposerLegend");
+
+  //write general properties
+  composerLegendElem.setAttribute("title", mTitle);
+  composerLegendElem.setAttribute("titleFont", mTitleFont.toString());
+  composerLegendElem.setAttribute("layerFont", mLayerFont.toString());
+  composerLegendElem.setAttribute("itemFont", mItemFont.toString());
+  composerLegendElem.setAttribute("boxSpace", QString::number(mBoxSpace));
+  composerLegendElem.setAttribute("layerSpace", QString::number(mLayerSpace));
+  composerLegendElem.setAttribute("symbolSpace", QString::number(mSymbolSpace));
+  composerLegendElem.setAttribute("iconLabelSpace", QString::number(mIconLabelSpace));
+  composerLegendElem.setAttribute("symbolWidth", mSymbolWidth);
+  composerLegendElem.setAttribute("symbolHeight", mSymbolHeight);
+
+  //write model properties
+  mLegendModel.writeXML(composerLegendElem, doc);
+
+  elem.appendChild(composerLegendElem);
+  return _writeXML(composerLegendElem, doc);
 }
 
 bool QgsComposerLegend::readXML(const QDomElement& itemElem, const QDomDocument& doc)
 {
-  return false; //soon...
+  if(itemElem.isNull())
+    {
+      return false;
+    }
+
+  //read general properties
+  mTitle = itemElem.attribute("title");
+  //title font
+  QString titleFontString = itemElem.attribute("titleFont");
+  if(!titleFontString.isEmpty())
+    {
+      mTitleFont.fromString(titleFontString);
+    }
+  //layer font
+  QString layerFontString = itemElem.attribute("layerFont");
+  if(!layerFontString.isEmpty())
+    {
+      mLayerFont.fromString(layerFontString);
+    }
+  //item font
+  QString itemFontString = itemElem.attribute("itemFont");
+  if(!itemFontString.isEmpty())
+    {
+      mItemFont.fromString(itemFontString);
+    }
+
+  //spaces
+  mBoxSpace = itemElem.attribute("boxSpace", "2.0").toDouble();
+  mLayerSpace = itemElem.attribute("layerSpace", "3.0").toDouble();
+  mSymbolSpace = itemElem.attribute("symbolSpace", "2.0").toDouble();
+  mIconLabelSpace = itemElem.attribute("iconLabelSpace", "2.0").toDouble();
+  mSymbolWidth = itemElem.attribute("symbolWidth", "7.0").toDouble();
+  mSymbolHeight = itemElem.attribute("symbolHeight", "14.0").toDouble();
+
+  //read model properties
+  QDomNodeList modelNodeList = itemElem.elementsByTagName("Model");
+  if(modelNodeList.size() > 0)
+    {
+      QDomElement modelElem = modelNodeList.at(0).toElement();
+      mLegendModel.clear();
+      mLegendModel.readXML(modelElem, doc);
+    }
+
+  //restore general composer item properties
+  QDomNodeList composerItemList = itemElem.elementsByTagName("ComposerItem");
+  if(composerItemList.size() > 0)
+    {
+      QDomElement composerItemElem = composerItemList.at(0).toElement();
+      _readXML(composerItemElem, doc);
+    }
+
+  return true;
 }
