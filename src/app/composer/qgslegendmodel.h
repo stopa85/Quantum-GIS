@@ -45,6 +45,7 @@ class QgsLegendModel: public QStandardItemModel
 
  public slots:
   void removeLayer(const QString& layerId);
+  void addLayer(QgsMapLayer* theMapLayer);
 
  signals:
   void layersChanged();

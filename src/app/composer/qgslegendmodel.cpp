@@ -33,6 +33,7 @@ QgsLegendModel::QgsLegendModel(): QStandardItemModel()
   if(QgsMapLayerRegistry::instance())
     {
       connect(QgsMapLayerRegistry::instance(), SIGNAL(layerWillBeRemoved(QString)), this, SLOT(removeLayer(const QString&)));
+      connect(QgsMapLayerRegistry::instance(), SIGNAL(layerWasAdded(QgsMapLayer*)), this, SLOT(addLayer(QgsMapLayer*)));
     }
 }
 
@@ -43,8 +44,6 @@ QgsLegendModel::~QgsLegendModel()
 
 void QgsLegendModel::setLayerSet(const QStringList& layerIds)
 {
-  //in future check which layers have newly been added or deleted
-
   mLayerIds = layerIds;
   
   //for now clear the model and add the new entries
@@ -296,11 +295,40 @@ void QgsLegendModel::removeLayer(const QString& layerId)
       QString currentId = currentLayerItem->data().toString();
       if(currentId == layerId)
 	{
-	  removeRow(i);
+	  removeRow(i); //todo: also remove the subitems and their symbols...
 	  emit layersChanged();
 	  return;
 	}
     }
+}
+
+void QgsLegendModel::addLayer(QgsMapLayer* theMapLayer)
+{
+  if(!theMapLayer)
+    {
+      return;
+    }
+
+  //append new layer item
+  QStandardItem* layerItem = new QStandardItem(theMapLayer->name());
+  //set layer id as user data into the item
+  layerItem->setData(QVariant(theMapLayer->getLayerID()));
+  layerItem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
+  invisibleRootItem()->setChild (invisibleRootItem()->rowCount(), layerItem); 
+
+  //and child items of layer
+  switch(theMapLayer->type())
+    {
+    case QgsMapLayer::VECTOR:
+      addVectorLayerItems(layerItem, theMapLayer);
+      break;
+    case QgsMapLayer::RASTER:
+      addRasterLayerItem(layerItem, theMapLayer);
+      break;
+    default:
+      break;
+    }
+  emit layersChanged();
 }
 
 bool QgsLegendModel::writeXML(QDomElement& composerLegendElem, QDomDocument& doc)
