@@ -255,7 +255,10 @@ QgsComposerView *QgsComposer::view(void)
 
 void QgsComposer::zoomFull(void)
 {
-  mView->fitInView(0, 0, mComposition->paperWidth(), mComposition->paperHeight(), Qt::KeepAspectRatio);
+  if(mView)
+    {
+      mView->fitInView(0, 0, mComposition->paperWidth(), mComposition->paperHeight(), Qt::KeepAspectRatio);
+    }
 }
 
 void QgsComposer::on_mActionZoomAll_activated(void)
@@ -1157,6 +1160,22 @@ void  QgsComposer::writeXML(QDomDocument& doc)
 
 void QgsComposer::readXML(const QDomDocument& doc)
 {
+  //look for Composer element
+  QDomNodeList nl = doc.elementsByTagName("Composer");
+  if(nl.size() < 1)
+    {
+      return; //nothing to do...
+    }
+  QDomElement composerElem = nl.at(0).toElement();
+
+  //look for Composition element
+  QDomNodeList cnl = composerElem.elementsByTagName("Composition");
+  if(cnl.size() < 1)
+    {
+      return; //nothing to do
+    }
+
+
   //delete composer view and composition
   delete mView;
   mView = 0;
@@ -1167,101 +1186,86 @@ void QgsComposer::readXML(const QDomDocument& doc)
     {
       delete (*it);
     }
-
   //delete composition widget
   QgsCompositionWidget* oldCompositionWidget = dynamic_cast<QgsCompositionWidget*>(mCompositionOptionsFrame->children().at(0));
   delete oldCompositionWidget;
   delete mCompositionOptionsLayout;
   mCompositionOptionsLayout = 0;
-
-  //look for Composer element
-
-  QDomNodeList nl = doc.elementsByTagName("Composer");
-  if(nl.size() < 1)
+    
+  QDomElement compositionElem = cnl.at(0).toElement();
+  
+  //todo: move in function because duplicated code with constructor
+  mView = new QgsComposerView(mViewFrame);
+  connect(mView, SIGNAL(selectedItemChanged(const QgsComposerItem*)), this, SLOT(showItemOptions(const QgsComposerItem*)));
+  connect(mView, SIGNAL(composerLabelAdded(QgsComposerLabel*)), this, SLOT(addComposerLabel(QgsComposerLabel*)));
+  connect(mView, SIGNAL(composerMapAdded(QgsComposerMap*)), this, SLOT(addComposerMap(QgsComposerMap*)));
+  connect(mView, SIGNAL(itemRemoved(QgsComposerItem*)), this, SLOT(deleteItem(QgsComposerItem*)));
+  connect(mView, SIGNAL(composerScaleBarAdded(QgsComposerScaleBar*)), this, SLOT(addComposerScaleBar(QgsComposerScaleBar*)));
+  connect(mView, SIGNAL(composerLegendAdded(QgsComposerLegend*)), this, SLOT(addComposerLegend(QgsComposerLegend*)));
+  
+  mComposition = new QgsComposition(mQgis->getMapCanvas());
+  mComposition->readXML(compositionElem, doc);
+  
+  QGridLayout *l = new QGridLayout(mViewFrame );
+  l->setMargin(0);
+  l->addWidget( mView, 0, 0 );
+  
+  //create compositionwidget
+  QgsCompositionWidget* compositionWidget = new QgsCompositionWidget(mCompositionOptionsFrame, mComposition);
+  compositionWidget->show();
+  
+  mCompositionOptionsLayout = new QGridLayout( mCompositionOptionsFrame );
+  mCompositionOptionsLayout->setMargin(0);
+  mCompositionOptionsLayout->addWidget(compositionWidget);
+  
+  //read and restore all the items
+  
+  //composer labels
+  QDomNodeList composerLabelList = composerElem.elementsByTagName("ComposerLabel");
+  for(int i = 0; i < composerLabelList.size(); ++i)
     {
-      return; //nothing to do...
+      QDomElement currentComposerLabelElem = composerLabelList.at(i).toElement();
+      QgsComposerLabel* newLabel = new QgsComposerLabel(mComposition);
+      newLabel->readXML(currentComposerLabelElem, doc);
+      addComposerLabel(newLabel);
+      mComposition->addItem(newLabel);
+      mComposition->update();
     }
-  QDomElement composerElem = nl.at(0).toElement();
-
-  //look for Composition element
-  QDomNodeList cnl = composerElem.elementsByTagName("Composition");
-  if(cnl.size() > 0)
+  
+  //composer maps
+  QDomNodeList composerMapList = composerElem.elementsByTagName("ComposerMap");
+  for(int i = 0; i < composerMapList.size(); ++i)
     {
-      QDomElement compositionElem = cnl.at(0).toElement();
-
-      //todo: move in function because duplicated code with constructor
-      mView = new QgsComposerView(mViewFrame);
-      connect(mView, SIGNAL(selectedItemChanged(const QgsComposerItem*)), this, SLOT(showItemOptions(const QgsComposerItem*)));
-      connect(mView, SIGNAL(composerLabelAdded(QgsComposerLabel*)), this, SLOT(addComposerLabel(QgsComposerLabel*)));
-      connect(mView, SIGNAL(composerMapAdded(QgsComposerMap*)), this, SLOT(addComposerMap(QgsComposerMap*)));
-      connect(mView, SIGNAL(itemRemoved(QgsComposerItem*)), this, SLOT(deleteItem(QgsComposerItem*)));
-      connect(mView, SIGNAL(composerScaleBarAdded(QgsComposerScaleBar*)), this, SLOT(addComposerScaleBar(QgsComposerScaleBar*)));
-      connect(mView, SIGNAL(composerLegendAdded(QgsComposerLegend*)), this, SLOT(addComposerLegend(QgsComposerLegend*)));
-
-      mComposition = new QgsComposition(mQgis->getMapCanvas());
-      mComposition->readXML(compositionElem, doc);
-
-      QGridLayout *l = new QGridLayout(mViewFrame );
-      l->setMargin(0);
-      l->addWidget( mView, 0, 0 );
-
-      //create compositionwidget
-      QgsCompositionWidget* compositionWidget = new QgsCompositionWidget(mCompositionOptionsFrame, mComposition);
-      compositionWidget->show();
-
-      mCompositionOptionsLayout = new QGridLayout( mCompositionOptionsFrame );
-      mCompositionOptionsLayout->setMargin(0);
-      mCompositionOptionsLayout->addWidget(compositionWidget);
-
-      //read and restore all the items
-      
-      //composer labels
-      QDomNodeList composerLabelList = composerElem.elementsByTagName("ComposerLabel");
-      for(int i = 0; i < composerLabelList.size(); ++i)
-	{
-	  QDomElement currentComposerLabelElem = composerLabelList.at(i).toElement();
-	  QgsComposerLabel* newLabel = new QgsComposerLabel(mComposition);
-	  newLabel->readXML(currentComposerLabelElem, doc);
-	  addComposerLabel(newLabel);
-	  mComposition->addItem(newLabel);
-	  mComposition->update();
-	}
-
-      //composer maps
-      QDomNodeList composerMapList = composerElem.elementsByTagName("ComposerMap");
-      for(int i = 0; i < composerMapList.size(); ++i)
-	{
-	  QDomElement currentComposerMapElem = composerMapList.at(i).toElement();
-	  QgsComposerMap* newMap = new QgsComposerMap(mComposition);
-	  newMap->readXML(currentComposerMapElem, doc);
-	  addComposerMap(newMap);
-	  mComposition->addItem(newMap);
-	  mComposition->update();
-	}
-
-      //composer scalebars
-      QDomNodeList composerScaleBarList = composerElem.elementsByTagName("ComposerScaleBar");
-      for(int i = 0; i < composerScaleBarList.size(); ++i)
-	{
-	  QDomElement currentScaleBarElem = composerScaleBarList.at(i).toElement();
-	  QgsComposerScaleBar* newScaleBar = new QgsComposerScaleBar(mComposition);
-	  newScaleBar->readXML(currentScaleBarElem, doc);
-	  addComposerScaleBar(newScaleBar);
-	  mComposition->addItem(newScaleBar);
-	  mComposition->update();
-	}
-
-      //composer legends
-      QDomNodeList composerLegendList = composerElem.elementsByTagName("ComposerLegend");
-      for(int i = 0; i < composerLegendList.size(); ++i)
-	{
-	  QDomElement currentLegendElem = composerLegendList.at(i).toElement();
-	  QgsComposerLegend* newLegend = new QgsComposerLegend(mComposition);
-	  newLegend->readXML(currentLegendElem, doc);
-	  addComposerLegend(newLegend);
-	  mComposition->addItem(newLegend);
-	  mComposition->update();
-	}
+      QDomElement currentComposerMapElem = composerMapList.at(i).toElement();
+      QgsComposerMap* newMap = new QgsComposerMap(mComposition);
+      newMap->readXML(currentComposerMapElem, doc);
+      addComposerMap(newMap);
+      mComposition->addItem(newMap);
+      mComposition->update();
+    }
+  
+  //composer scalebars
+  QDomNodeList composerScaleBarList = composerElem.elementsByTagName("ComposerScaleBar");
+  for(int i = 0; i < composerScaleBarList.size(); ++i)
+    {
+      QDomElement currentScaleBarElem = composerScaleBarList.at(i).toElement();
+      QgsComposerScaleBar* newScaleBar = new QgsComposerScaleBar(mComposition);
+      newScaleBar->readXML(currentScaleBarElem, doc);
+      addComposerScaleBar(newScaleBar);
+      mComposition->addItem(newScaleBar);
+      mComposition->update();
+    }
+  
+  //composer legends
+  QDomNodeList composerLegendList = composerElem.elementsByTagName("ComposerLegend");
+  for(int i = 0; i < composerLegendList.size(); ++i)
+    {
+      QDomElement currentLegendElem = composerLegendList.at(i).toElement();
+      QgsComposerLegend* newLegend = new QgsComposerLegend(mComposition);
+      newLegend->readXML(currentLegendElem, doc);
+      addComposerLegend(newLegend);
+      mComposition->addItem(newLegend);
+      mComposition->update();
     }
 
   mView->setComposition(mComposition);
