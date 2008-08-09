@@ -64,14 +64,25 @@ QgsComposer::QgsComposer( QgisApp *qgis): QMainWindow()
   setupTheme();
 
   QString myIconPath = QgsApplication::themePath();
-  qWarning(QString(myIconPath +"mActionGroupItems.png").latin1() );
 
-  toolBar->addAction(QIcon(QPixmap(myIconPath+"mActionMoveItemContent.png")), tr("Move Item content"), this, SLOT(moveItemContent()));
+  QAction* moveItemContentAction = new QAction(QIcon(QPixmap(myIconPath+"mActionMoveItemContent.png")), tr("Move Item content"), 0);
+  moveItemContentAction->setCheckable(true);
+  connect(moveItemContentAction, SIGNAL(triggered()), this, SLOT(moveItemContent()));
+  toolBar->addAction(moveItemContentAction);
+  //toolBar->addAction(QIcon(QPixmap(myIconPath+"mActionMoveItemContent.png")), tr("Move Item content"), this, SLOT(moveItemContent()));
 
   toolBar->addAction(QIcon(QPixmap(myIconPath+"mActionGroupItems.png")), tr("&Group Items"), this, SLOT(groupItems()));
   toolBar->addAction(QIcon(QPixmap(myIconPath+"mActionUngroupItems.png")), tr("&Ungroup Items"), this, SLOT(ungroupItems()));
 
- 
+  QActionGroup* toggleActionGroup = new QActionGroup(this);
+  toggleActionGroup->addAction(moveItemContentAction);
+  toggleActionGroup->addAction(mActionAddNewMap);
+  toggleActionGroup->addAction(mActionAddNewLabel);
+  toggleActionGroup->addAction(mActionAddNewLegend);
+  toggleActionGroup->addAction(mActionAddNewScalebar);
+  toggleActionGroup->addAction(mActionAddImage);
+  toggleActionGroup->addAction(mActionSelectMoveItem);
+  toggleActionGroup->setExclusive(true);
   
 
   setWindowTitle(tr("QGIS - print composer"));
@@ -79,6 +90,13 @@ QgsComposer::QgsComposer( QgisApp *qgis): QMainWindow()
   // Template save and load is not yet implemented, so disable those actions
   mActionOpenTemplate->setEnabled(false);
   mActionSaveTemplateAs->setEnabled(false);
+
+  mActionAddNewMap->setCheckable(true);
+  mActionAddNewLabel->setCheckable(true);
+  mActionAddNewLegend->setCheckable(true);
+  mActionSelectMoveItem->setCheckable(true);
+  mActionAddNewScalebar->setCheckable(true);
+  mActionAddImage->setCheckable(true);
 
   mQgis = qgis;
   mFirstTime = true;
@@ -125,19 +143,6 @@ QgsComposer::QgsComposer( QgisApp *qgis): QMainWindow()
   mSizeGrip = new QSizeGrip(this);
   mSizeGrip->resize(mSizeGrip->sizeHint());
   mSizeGrip->move(rect().bottomRight() - mSizeGrip->rect().bottomRight());
-
-#if 0 //hopefully not necessary any more
-  if ( ! connect( mQgis, SIGNAL( projectRead() ), this, SLOT( projectRead()) ) ) {
-    qDebug( "unable to connect to projectRead" );
-  } 
-  if ( ! connect( mQgis, SIGNAL( newProject() ), this, SLOT(newProject()) ) ) {
-    qDebug( "unable to connect to newProject" );
-  }
-
-  if ( ! connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(saveWindowState()) ) ) { 
-    qDebug( "unable to connect to aboutToQuit" );
-  }
-#endif //0
 
   restoreWindowState();
   selectItem(); // Set selection tool
