@@ -32,7 +32,8 @@ QgsComposerMapWidget::QgsComposerMapWidget(QgsComposerMap* composerMap): QWidget
   mYMaxLineEdit->setValidator(new QDoubleValidator(0));
 
   mPreviewModeComboBox->insertItem(0, tr("Cache"));
-  mPreviewModeComboBox->insertItem(1, tr("Render"));
+  //MH: disabled because this option leads to frequent crashes with Qt 4.4.0 and 4.4.1
+  //mPreviewModeComboBox->insertItem(1, tr("Render"));
   mPreviewModeComboBox->insertItem(2, tr("Rectangle"));
 
   mFrameCheckBox->setCheckState(Qt::Checked);
@@ -97,14 +98,17 @@ void QgsComposerMapWidget::on_mPreviewModeComboBox_activated(int i)
   if(comboText == tr("Cache"))
     {
       mComposerMap->setPreviewMode(QgsComposerMap::Cache);
+      mUpdatePreviewButton->setEnabled(true);
     }
   else if(comboText == tr("Render"))
     {
       mComposerMap->setPreviewMode(QgsComposerMap::Render);
+      mUpdatePreviewButton->setEnabled(true);
     }
   else if(comboText == tr("Rectangle"))
     {
       mComposerMap->setPreviewMode(QgsComposerMap::Rectangle);
+      mUpdatePreviewButton->setEnabled(false);
     }
 
   mComposerMap->update();
@@ -233,6 +237,7 @@ void QgsComposerMapWidget::updateGuiElements()
       else if(previewMode == QgsComposerMap::Rectangle)
 	{
 	  index = mPreviewModeComboBox->findText(tr("Rectangle"));
+	  mUpdatePreviewButton->setEnabled(false);
 	}
       if(index != -1)
 	{
@@ -271,4 +276,18 @@ void QgsComposerMapWidget::updateComposerExtentFromGui()
   mComposerMap->setNewExtent(newExtent);
 }
 
+void QgsComposerMapWidget::on_mUpdatePreviewButton_clicked()
+{
+  if(!mComposerMap)
+    {
+      return;
+    }
 
+  if(mComposerMap->isDrawing())
+    {
+      return;
+    }
+
+  mComposerMap->setCacheUpdated(false);
+  mComposerMap->update();
+}

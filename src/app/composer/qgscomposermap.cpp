@@ -49,6 +49,10 @@ QgsComposerMap::QgsComposerMap ( QgsComposition *composition, int x, int y, int 
     mCacheUpdated = false;
     mDrawing = false;
 
+    //Offset
+    mXOffset = 0.0;
+    mYOffset = 0.0;
+
     //calculate mExtent based on width/height ratio and map canvas extent
     mExtent = mMapCanvas->extent();
     setSceneRect(QRectF(x, y, width, height));
@@ -65,10 +69,14 @@ QgsComposerMap::QgsComposerMap ( QgsComposition *composition, int x, int y, int 
 QgsComposerMap::QgsComposerMap ( QgsComposition *composition)
     : QgsComposerItem(0, 0, 10, 10, composition)
 {
-    mComposition = composition;
-    mMapCanvas = mComposition->mapCanvas();
-    mId = mCurrentComposerId++;
-    QGraphicsRectItem::show();
+  //Offset
+  mXOffset = 0.0;
+  mYOffset = 0.0;
+  
+  mComposition = composition;
+  mMapCanvas = mComposition->mapCanvas();
+  mId = mCurrentComposerId++;
+  QGraphicsRectItem::show();
 }
 
 QgsComposerMap::~QgsComposerMap()
@@ -184,7 +192,7 @@ void QgsComposerMap::paint ( QPainter* painter, const QStyleOptionGraphicsItem* 
       
       painter->save();
       painter->scale(scale,scale);
-      painter->drawPixmap(0,0, mCachePixmap);
+      painter->drawPixmap(mXOffset / scale, mYOffset / scale, mCachePixmap);
       painter->restore();
     } 
   else if ( mComposition->plotStyle() == QgsComposition::Print ||
@@ -307,6 +315,12 @@ void QgsComposerMap::setNewScale(double scaleDenominator)
   mCacheUpdated = false;
   emit extentChanged();
   update();
+}
+
+void QgsComposerMap::setOffset(double xOffset, double yOffset)
+{
+  mXOffset = xOffset;
+  mYOffset = yOffset;
 }
 
 double QgsComposerMap::horizontalViewScaleFactor() const

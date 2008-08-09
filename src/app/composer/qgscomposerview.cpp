@@ -167,6 +167,13 @@ void QgsComposerView::mouseReleaseEvent(QMouseEvent* e)
        {
 	 if(mMoveContentItem)
 	   {
+	     //update map preview if composer map
+	     QgsComposerMap* composerMap = dynamic_cast<QgsComposerMap*>(mMoveContentItem);
+	     if(composerMap)
+	       {
+		 composerMap->setOffset(0, 0);
+	       }
+
 	     double moveX = scenePoint.x() - mMoveContentStartPos.x();
 	     double moveY = scenePoint.y() - mMoveContentStartPos.y();
 	     mMoveContentItem->moveContent(-moveX, -moveY);
@@ -237,9 +244,19 @@ void QgsComposerView::mouseMoveEvent(QMouseEvent* e)
 	  newWidth = scenePoint.x() - mRubberBandItem->transform().dx();
 	  newHeight = scenePoint.y() - mRubberBandItem->transform().dy();
 	  mRubberBandItem->setRect(0, 0, newWidth, newHeight);
-	  
 	  break;
-	  
+
+	case MoveItemContent:
+	  {
+	    //update map preview if composer map
+	    QgsComposerMap* composerMap = dynamic_cast<QgsComposerMap*>(mMoveContentItem);
+	    if(composerMap)
+	      {
+		composerMap->setOffset(scenePoint.x() - mMoveContentStartPos.x(), scenePoint.y() - mMoveContentStartPos.y());
+		composerMap->update();
+	      }
+	    break;
+	  }
 	default:
 	  break;
 	}
@@ -382,3 +399,6 @@ void QgsComposerView::sendItemRemovedSignal(QgsComposerItem* item)
 {
   emit itemRemoved(item);
 }
+
+
+

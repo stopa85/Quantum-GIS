@@ -74,6 +74,9 @@ public:
     /** \brief Get identification number*/
     int id() const {return mId;}
 
+    /**True if a draw is already in progress*/
+    bool isDrawing() const {return mDrawing;}
+
     /** resizes an item in x- and y direction (canvas coordinates)*/
     void resize(double dx, double dy);
 
@@ -103,6 +106,9 @@ public:
     QgsRect extent() const {return mExtent;}
 
     const QgsMapCanvas* mapCanvas() const {return mMapCanvas;}
+
+    /**Sets offset values to shift image (useful for live updates when moving item content)*/
+    void setOffset(double xOffset, double yOffset);
 
     /** stores state in DOM node
      * @param elem is DOM element corresponding to 'Composer' tag
@@ -161,10 +167,13 @@ private:
     /**Store the last map extent to decide if cache needs to be updatet*/
     QgsRect mCachedMapExtent;
 
+    /**Offset in x direction for showing map cache image*/
+    double mXOffset;
+    /**Offset in y direction for showing map cache image*/
+    double mYOffset;
+
     /**For the generation of new unique ids*/
     static int mCurrentComposerId;
-
-    
 
     /**Returns the zoom factor of the graphics view. If no 
      graphics view exists, the default 1 is returned*/
