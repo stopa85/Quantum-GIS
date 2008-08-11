@@ -27,10 +27,11 @@
 #include "qgsgraduatedsymboldialog.h"
 #include "qgslabeldialog.h"
 #include "qgslabel.h"
-#include "qgslayerprojectionselector.h"
+#include "qgsgenericprojectionselector.h"
 #include "qgslogger.h"
 #include "qgspluginmetadata.h"
 #include "qgspluginregistry.h"
+#include "qgsproject.h"
 #include "qgssinglesymboldialog.h"
 #include "qgsuniquevaluedialog.h"
 #include "qgsvectordataprovider.h"
@@ -208,7 +209,8 @@ void QgsVectorLayerProperties::reset( void )
   {
     displayFieldComboBox->addItem( it->name() );
   }   
-  displayFieldComboBox->setItemText( displayFieldComboBox->currentIndex(), layer->displayField() );
+  displayFieldComboBox->setCurrentIndex( displayFieldComboBox->findText(
+        layer->displayField() ) );
 
   // set up the scale based layer visibility stuff....
   chkUseScaleDependentRendering->setChecked(layer->scaleBasedVisibility());
@@ -365,6 +367,8 @@ void QgsVectorLayerProperties::apply()
   emit refreshLegend(layer->getLayerID(), false);
 
   layer->triggerRepaint();
+  // notify the project we've made a change
+  QgsProject::instance()->dirty(true);
 
 }
 
@@ -629,11 +633,12 @@ QString QgsVectorLayerProperties::getMetadata()
 
 void QgsVectorLayerProperties::on_pbnChangeSpatialRefSys_clicked()
 {
-  QgsLayerProjectionSelector * mySelector = new QgsLayerProjectionSelector(this);
+  QgsGenericProjectionSelector * mySelector = new QgsGenericProjectionSelector(this);
+  mySelector->setMessage();
   mySelector->setSelectedSRSID(layer->srs().srsid());
   if(mySelector->exec())
   {
-    QgsSpatialRefSys srs(mySelector->getCurrentSRSID(), QgsSpatialRefSys::QGIS_SRSID);
+    QgsSpatialRefSys srs(mySelector->getSelectedSRSID(), QgsSpatialRefSys::QGIS_SRSID);
     layer->setSrs(srs);
   }
   else
@@ -653,12 +658,17 @@ void QgsVectorLayerProperties::on_pbnLoadDefaultStyle_clicked()
   //reset if the default style was loaded ok only
   if ( defaultLoadedFlag )
   {
+    // all worked ok so no need to inform user
     reset ();
   }
-  QMessageBox::information( this, 
-      tr("Default Style"), 
-      myMessage
-      ); 
+  else
+  {
+    //something went wrong - let them know why
+    QMessageBox::information( this, 
+        tr("Default Style"), 
+        myMessage
+        ); 
+  }
 }
 
 void QgsVectorLayerProperties::on_pbnSaveDefaultStyle_clicked()
@@ -670,10 +680,14 @@ void QgsVectorLayerProperties::on_pbnSaveDefaultStyle_clicked()
   // after calling this the above flag will be set true for success
   // or false if the save operation failed
   QString myMessage = layer->saveDefaultStyle( defaultSavedFlag );
-  QMessageBox::information( this, 
-      tr("Default Style"), 
-      myMessage
-      ); 
+  if ( !defaultSavedFlag )
+  {
+    //only raise the message if something went wrong
+    QMessageBox::information( this, 
+        tr("Default Style"), 
+        myMessage
+        ); 
+  }
 }
 
 
@@ -722,10 +736,14 @@ void QgsVectorLayerProperties::on_pbnLoadStyle_clicked()
       {
         reset ();
       }
-      QMessageBox::information( this, 
-          tr("Default Style"), 
-          myMessage
-          ); 
+      else
+      {
+        //let the user know what went wrong
+        QMessageBox::information( this, 
+            tr("Saved Style"), 
+            myMessage
+            ); 
+      }
     }
     else
     {
@@ -786,10 +804,14 @@ void QgsVectorLayerProperties::on_pbnSaveStyleAs_clicked()
       {
         reset ();
       }
-      QMessageBox::information( this, 
-          tr("Default Style"), 
-          myMessage
-          ); 
+      else
+      {
+        //let the user know what went wrong
+        QMessageBox::information( this, 
+            tr("Saved Style"), 
+            myMessage
+            ); 
+      }
     }
     else
     {

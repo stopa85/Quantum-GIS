@@ -41,6 +41,7 @@ ENDIF (WIN32)
 # the TEST_DATA_DIR variable is set in the top level CMakeLists.txt
 ADD_DEFINITIONS(-DTEST_DATA_DIR="\\"${TEST_DATA_DIR}\\"")
 
+ADD_DEFINITIONS(-DINSTALL_PREFIX="\\"${CMAKE_INSTALL_PREFIX}\\"")
 #############################################################
 # libraries
 
@@ -75,9 +76,26 @@ ADD_CUSTOM_TARGET(qgis_applicationtestmoc ALL DEPENDS ${qgis_applicationtest_MOC
 ADD_EXECUTABLE(qgis_applicationtest ${qgis_applicationtest_SRCS})
 ADD_DEPENDENCIES(qgis_applicationtest qgis_applicationtestmoc)
 TARGET_LINK_LIBRARIES(qgis_applicationtest ${QT_LIBRARIES} qgis_core)
+  #No relinking and full RPATH for the install tree
+  #See: http://www.cmake.org/Wiki/CMake_RPATH_handling#No_relinking_and_full_RPATH_for_the_install_tree
 SET_TARGET_PROPERTIES(qgis_applicationtest 
+  # skip the full RPATH for the build tree
+  PROPERTIES SKIP_BUILD_RPATH  TRUE
+  )
+SET_TARGET_PROPERTIES(qgis_applicationtest 
+  # when building, use the install RPATH already
+  # (so it doesn't need to relink when installing)
+  PROPERTIES BUILD_WITH_INSTALL_RPATH TRUE 
+  )
+SET_TARGET_PROPERTIES(qgis_applicationtest 
+  # the RPATH to be used when installing
   PROPERTIES INSTALL_RPATH ${QGIS_LIB_DIR}
-  INSTALL_RPATH_USE_LINK_PATH true)
+  )
+SET_TARGET_PROPERTIES(qgis_applicationtest 
+  # add the automatically determined parts of the RPATH
+  # which point to directories outside the build tree to the install RPATH
+  PROPERTIES INSTALL_RPATH_USE_LINK_PATH TRUE
+  )
 IF (APPLE)
   # For Mac OS X, the executable must be at the root of the bundle's executable folder
   INSTALL(TARGETS qgis_applicationtest RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
@@ -106,6 +124,50 @@ IF (APPLE)
 ELSE (APPLE)
   INSTALL(TARGETS qgis_filewritertest RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
   ADD_TEST(qgis_filewritertest ${CMAKE_INSTALL_PREFIX}/bin/qgis_filewritertest)
+ENDIF (APPLE)
+
+
+#
+# Ticket 992 Regression992 test
+#
+SET(regression992_SRCS regression992.cpp ${util_SRCS})
+SET(regression992_MOC_CPPS regression992.cpp)
+QT4_WRAP_CPP(regression992_MOC_SRCS ${regression992_MOC_CPPS})
+ADD_CUSTOM_TARGET(regression992moc ALL DEPENDS ${regression992_MOC_SRCS})
+ADD_EXECUTABLE(regression992 ${regression992_SRCS})
+ADD_DEPENDENCIES(regression992 regression992moc)
+TARGET_LINK_LIBRARIES(regression992 ${QT_LIBRARIES} qgis_core)
+SET_TARGET_PROPERTIES(regression992
+  PROPERTIES INSTALL_RPATH ${QGIS_LIB_DIR}
+  INSTALL_RPATH_USE_LINK_PATH true)
+IF (APPLE)
+# For Mac OS X, the executable must be at the root of the bundle's executable folder
+  INSTALL(TARGETS regression992 RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
+  ADD_TEST(regression992 ${CMAKE_INSTALL_PREFIX}/regression992)
+ELSE (APPLE)
+  INSTALL(TARGETS regression992 RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
+  ADD_TEST(regression992 ${CMAKE_INSTALL_PREFIX}/bin/regression992)
+ENDIF (APPLE)
+#
+# Ticket 1141 Regression1141 test
+#
+SET(regression1141_SRCS regression1141.cpp ${util_SRCS})
+SET(regression1141_MOC_CPPS regression1141.cpp)
+QT4_WRAP_CPP(regression1141_MOC_SRCS ${regression1141_MOC_CPPS})
+ADD_CUSTOM_TARGET(regression1141moc ALL DEPENDS ${regression1141_MOC_SRCS})
+ADD_EXECUTABLE(regression1141 ${regression1141_SRCS})
+ADD_DEPENDENCIES(regression1141 regression1141moc)
+TARGET_LINK_LIBRARIES(regression1141 ${QT_LIBRARIES} qgis_core)
+SET_TARGET_PROPERTIES(regression1141
+  PROPERTIES INSTALL_RPATH ${QGIS_LIB_DIR}
+  INSTALL_RPATH_USE_LINK_PATH true)
+IF (APPLE)
+# For Mac OS X, the executable must be at the root of the bundle's executable folder
+  INSTALL(TARGETS regression1141 RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
+  ADD_TEST(regression1141 ${CMAKE_INSTALL_PREFIX}/regression1141)
+ELSE (APPLE)
+  INSTALL(TARGETS regression1141 RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
+  ADD_TEST(regression1141 ${CMAKE_INSTALL_PREFIX}/bin/regression1141)
 ENDIF (APPLE)
 #
 # QgsRasterLayer test
@@ -171,25 +233,25 @@ ELSE (APPLE)
   ADD_TEST(qgis_rendererstest ${CMAKE_INSTALL_PREFIX}/bin/qgis_rendererstest)
 ENDIF (APPLE)
 #
-# QgsMapRender test
+# QgsMapRenderer test
 #
-SET(qgis_maprendertest_SRCS testqgsmaprender.cpp ${util_SRCS})
-SET(qgis_maprendertest_MOC_CPPS testqgsmaprender.cpp)
-QT4_WRAP_CPP(qgis_maprendertest_MOC_SRCS ${qgis_maprendertest_MOC_CPPS})
-ADD_CUSTOM_TARGET(qgis_maprendertestmoc ALL DEPENDS ${qgis_maprendertest_MOC_SRCS})
-ADD_EXECUTABLE(qgis_maprendertest ${qgis_maprendertest_SRCS})
-ADD_DEPENDENCIES(qgis_maprendertest qgis_maprendertestmoc)
-TARGET_LINK_LIBRARIES(qgis_maprendertest ${QT_LIBRARIES} qgis_core)
-SET_TARGET_PROPERTIES(qgis_maprendertest 
+SET(qgis_maprenderertest_SRCS testqgsmaprenderer.cpp ${util_SRCS})
+SET(qgis_maprenderertest_MOC_CPPS testqgsmaprenderer.cpp)
+QT4_WRAP_CPP(qgis_maprenderertest_MOC_SRCS ${qgis_maprenderertest_MOC_CPPS})
+ADD_CUSTOM_TARGET(qgis_maprenderertestmoc ALL DEPENDS ${qgis_maprenderertest_MOC_SRCS})
+ADD_EXECUTABLE(qgis_maprenderertest ${qgis_maprenderertest_SRCS})
+ADD_DEPENDENCIES(qgis_maprenderertest qgis_maprenderertestmoc)
+TARGET_LINK_LIBRARIES(qgis_maprenderertest ${QT_LIBRARIES} qgis_core)
+SET_TARGET_PROPERTIES(qgis_maprenderertest 
   PROPERTIES INSTALL_RPATH ${QGIS_LIB_DIR}
   INSTALL_RPATH_USE_LINK_PATH true)
 IF (APPLE)
   # For Mac OS X, the executable must be at the root of the bundle's executable folder
-  INSTALL(TARGETS qgis_maprendertest RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
-  ADD_TEST(qgis_maprendertest ${CMAKE_INSTALL_PREFIX}/qgis_maprendertest)
+  INSTALL(TARGETS qgis_maprenderertest RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
+  ADD_TEST(qgis_maprenderertest ${CMAKE_INSTALL_PREFIX}/qgis_maprenderertest)
 ELSE (APPLE)
-  INSTALL(TARGETS qgis_maprendertest RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
-  ADD_TEST(qgis_maprendertest ${CMAKE_INSTALL_PREFIX}/bin/qgis_maprendertest)
+  INSTALL(TARGETS qgis_maprenderertest RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
+  ADD_TEST(qgis_maprenderertest ${CMAKE_INSTALL_PREFIX}/bin/qgis_maprenderertest)
 ENDIF (APPLE)
 #
 # QgsGeometry test

@@ -63,8 +63,8 @@ extern "C" {
 #include <grass/Vect.h>
 }
 
-#include "../../src/providers/grass/qgsgrass.h"
-#include "../../src/providers/grass/qgsgrassprovider.h"
+#include "qgsgrass.h"
+#include "qgsgrassprovider.h"
 #include "qgsgrassattributes.h"
 #include "qgsgrasstools.h"
 #include "qgsgrassmodule.h"
@@ -95,30 +95,18 @@ static QString getShortPath(const QString &path)
 }
 #endif
 
-QgsGrassToolsTabWidget::QgsGrassToolsTabWidget( QWidget * parent ): 
-  QTabWidget(parent)
-{
-  // Default height seems to be too small for our purpose
-  int height = (int)(1.5 * tabBar()->iconSize().height());
-  // Max width (see QgsGrassModule::pixmap for hardcoded sizes)
-  int width = 3*height + 28 + 29;
-  tabBar()->setIconSize( QSize(width,height) );
-}
 
-QSize QgsGrassToolsTabWidget::iconSize()
-{
-  return tabBar()->iconSize();
-}
-
-QgsGrassToolsTabWidget::~QgsGrassToolsTabWidget() {}
 
 QgsGrassTools::QgsGrassTools ( QgisInterface *iface, 
 	                     QWidget * parent, const char * name, Qt::WFlags f )
- : QDialog ( parent )
+  : QDialog(parent, f ), QgsGrassToolsBase ()
 {
+  
+  setupUi(this);
 #ifdef QGISDEBUG
   std::cerr << "QgsGrassTools()" << std::endl;
 #endif
+  qRegisterMetaType<QgsDetailedItemData>();
 
   setWindowTitle ( tr("GRASS Tools") );
   //    setupUi(this);
@@ -129,36 +117,12 @@ QgsGrassTools::QgsGrassTools ( QgisInterface *iface,
   connect( qApp, SIGNAL(aboutToQuit()), 
     this, SLOT(closeTools()) );
 
-  mTabWidget = new QgsGrassToolsTabWidget (this);
-  QVBoxLayout *layout1 = new QVBoxLayout(this);
-  layout1->addWidget(mTabWidget);
-
   //
   // Radims original tree view code.
   //
-  // Warning: if the tree is not the first page modules are 
-  // displayed over the other pages on first load
-
-  mModulesListView = new QTreeWidget();
-  mTabWidget->addTab( mModulesListView, tr("Modules Tree") );
-  mModulesListView->setColumnCount(1);
-  QStringList headers;
-  headers << tr("Modules");
-  mModulesListView->setHeaderLabels(headers);    
-  // Set list view
-  mModulesListView->clear();
-  mModulesListView->setSortingEnabled(false);
-  mModulesListView->setRootIsDecorated(true);
-  //    mModulesListView->setResizeMode(QTreeWidget::AllColumns);
-  mModulesListView->header()->hide();
-
-  connect( mModulesListView, SIGNAL(itemClicked(QTreeWidgetItem *, int)), 
-    this, SLOT(moduleClicked( QTreeWidgetItem *, int)) );
-
-  QString title = tr("GRASS Tools: ") + QgsGrass::getDefaultLocation()
-    + "/" + QgsGrass::getDefaultMapset();
-  setCaption(title);
-  mModulesListView->show(); 
+  mModulesTree->header()->hide();
+  connect( mModulesTree, SIGNAL(itemClicked(QTreeWidgetItem *, int)), 
+   this, SLOT(moduleClicked( QTreeWidgetItem *, int)) );
 
 
   //
@@ -168,20 +132,16 @@ QgsGrassTools::QgsGrassTools ( QgisInterface *iface,
   mModelProxy = new QSortFilterProxyModel(this);
   mModelProxy->setSourceModel(mModelTools);
   mModelProxy->setFilterRole(Qt::UserRole + 2);
-  mListView = new QListView();
+
   mListView->setModel(mModelProxy);
-  mListView->setFocus();
   mListView->setItemDelegateForColumn(0,new QgsDetailedItemDelegate());
   mListView->setUniformItemSizes(false);
-  mListView->show();
-  QWidget * mypBase = new QWidget(this);
-  QVBoxLayout * mypListTabLayout = new QVBoxLayout(mypBase);
-  mypListTabLayout->addWidget(mListView);
-  mFilterInput = new QLineEdit(this);
-  mypListTabLayout->addWidget(mFilterInput);
-  mTabWidget->addTab( mypBase, tr("Modules List") );
-  connect( mFilterInput, SIGNAL(textChanged(QString)), 
-    this, SLOT(filterChanged(QString)) );
+  //mListView2 = new QListView(this);
+  //mDockWidget = new QDockWidget(tr("Grass Tools"), 0);
+  //mDockWidget->setWidget(mListView2);
+  //mDockWidget->setObjectName("GrassTools");
+  //mDockWidget->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+  //mIface->addDockWidget(Qt::LeftDockWidgetArea, mDockWidget);
   connect( mListView, SIGNAL(clicked(const QModelIndex)), 
     this, SLOT(listItemClicked(const QModelIndex)));
   //
@@ -199,13 +159,19 @@ QgsGrassTools::QgsGrassTools ( QgisInterface *iface,
   loadConfig ( conf );
   QApplication::restoreOverrideCursor();
   //statusBar()->hide();
+  
+  // set the dialog title
+  QString title = tr("GRASS Tools: ") + QgsGrass::getDefaultLocation()
+      + "/" + QgsGrass::getDefaultMapset();
+  setCaption(title);
 
-  // Add map browser 
+  
+    // Add map browser 
   mBrowser = new QgsGrassBrowser ( mIface, this );
   mTabWidget->addTab( mBrowser, tr("Browser") );
 
   connect( mBrowser, SIGNAL(regionChanged()), 
-    this, SLOT(emitRegionChanged()) );
+           this, SLOT(emitRegionChanged()) );
 }
 
 void QgsGrassTools::moduleClicked( QTreeWidgetItem * item, int column )
@@ -318,7 +284,6 @@ void QgsGrassTools::runModule(QString name)
   is.addPixmap ( pixmap2 );
   mTabWidget->addTab ( m, is, "" );
 
-  QgsGrassToolsTabWidget tw;
 
   mTabWidget->setCurrentPage ( mTabWidget->count()-1 );
 
@@ -334,8 +299,8 @@ bool QgsGrassTools::loadConfig(QString filePath)
 #ifdef QGISDEBUG
   std::cerr << "QgsGrassTools::loadConfig(): " << filePath.toLocal8Bit().data() << std::endl;
 #endif
-  mModulesListView->clear();
-  mModulesListView->setIconSize(QSize(80,22));
+  mModulesTree->clear();
+  mModulesTree->setIconSize(QSize(80,22));
 
   QFile file ( filePath );
 
@@ -403,7 +368,7 @@ void QgsGrassTools::addModules (  QTreeWidgetItem *parent, QDomElement &element 
       } 
       else 
       {
-        item = new QTreeWidgetItem( mModulesListView, lastItem );
+        item = new QTreeWidgetItem( mModulesTree, lastItem );
       }
 
       if ( e.tagName() == "section" ) 
@@ -411,7 +376,7 @@ void QgsGrassTools::addModules (  QTreeWidgetItem *parent, QDomElement &element 
         QString label = e.attribute("label");
         QgsDebugMsg( QString("label = %1").arg(label) );
         item->setText( 0, label );
-        item->setExpanded(true); // for debuging to spare one click
+        item->setExpanded(true); 
 
         addModules ( item, e );
 
@@ -544,7 +509,7 @@ void QgsGrassTools::closeTools()
 // Helper function for Tim's experimental model list
 //
 
-void QgsGrassTools::filterChanged(QString theText)
+void QgsGrassTools::on_mFilterInput_textChanged(QString theText)
 {
   QgsDebugMsg("PluginManager filter changed to :" + theText);
   QRegExp::PatternSyntax mySyntax = QRegExp::PatternSyntax(QRegExp::RegExp);

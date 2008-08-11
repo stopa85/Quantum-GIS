@@ -51,6 +51,9 @@ class CORE_EXPORT QgsDistanceArea
     
     //! sets source spatial reference system (by QGIS SRS)
     void setSourceSRS(long epsgId);
+
+    //! sets source spatial reference system (by EPSG)
+    void setSourceEPSG(long epsgId);
     
     //! returns source spatial reference system
     long sourceSRS() { return mSourceRefSys; }

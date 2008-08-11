@@ -55,8 +55,6 @@ QgsAttributeTableDisplay::QgsAttributeTableDisplay(QgsVectorLayer* layer, QgisAp
   connect(mZoomMapToSelectedRowsButton, SIGNAL(clicked()), this, SLOT(zoomMapToSelectedRows()));
   connect(mAddAttributeButton, SIGNAL(clicked()), this, SLOT(addAttribute()));
   connect(mDeleteAttributeButton, SIGNAL(clicked()), this, SLOT(deleteAttributes()));
-  connect(btnStartEditing, SIGNAL(clicked()), this, SLOT(startEditing()));
-  connect(btnStopEditing, SIGNAL(clicked()), this, SLOT(stopEditing()));
   connect(mSearchButton, SIGNAL(clicked()), this, SLOT(search()));
   connect(mSearchShowResults, SIGNAL(activated(int)), this, SLOT(searchShowResultsChanged(int)));
   connect(btnAdvancedSearch, SIGNAL(clicked()), this, SLOT(advancedSearch()));
@@ -69,17 +67,16 @@ QgsAttributeTableDisplay::QgsAttributeTableDisplay(QgsVectorLayer* layer, QgisAp
   mAddAttributeButton->setEnabled(false);
   mDeleteAttributeButton->setEnabled(false);
 
-  btnStopEditing->setEnabled(false);
   int cap=layer->getDataProvider()->capabilities();
   if((cap&QgsVectorDataProvider::ChangeAttributeValues)
       ||(cap&QgsVectorDataProvider::AddAttributes)
       ||(cap&QgsVectorDataProvider::DeleteAttributes))
   {
-    btnStartEditing->setEnabled(true);
+    btnEdit->setEnabled(true);
   }
   else
   {
-    btnStartEditing->setEnabled(false);
+    btnEdit->setEnabled(false);
   }
 
   // fill in mSearchColumns with available columns
@@ -109,15 +106,15 @@ QgsAttributeTable *QgsAttributeTableDisplay::table()
 }
 void QgsAttributeTableDisplay::setTheme()
 {
-  QString myIconPath = QgsApplication::themePath();
-  mAddAttributeButton->setIcon(QPixmap(myIconPath+"/mActionNewAttribute.png"));
-  mRemoveSelectionButton->setIcon(QPixmap(myIconPath+"/mActionUnselectAttributes.png"));
-  mSelectedToTopButton->setIcon(QPixmap(myIconPath+"/mActionSelectedToTop.png"));
-  mInvertSelectionButton->setIcon(QPixmap(myIconPath+"/mActionInvertSelection.png"));
-  mCopySelectedRowsButton->setIcon(QPixmap(myIconPath+"/mActionCopySelected.png"));
-  mZoomMapToSelectedRowsButton->setIcon(QPixmap(myIconPath+"/mActionZoomToSelected.png"));
-  mAddAttributeButton->setIcon(QPixmap(myIconPath+"/mActionNewAttribute.png"));
-  mDeleteAttributeButton->setIcon(QPixmap(myIconPath+"/mActionDeleteAttribute.png"));
+  mAddAttributeButton->setIcon(QgisApp::getThemeIcon("/mActionNewAttribute.png"));
+  mRemoveSelectionButton->setIcon(QgisApp::getThemeIcon("/mActionUnselectAttributes.png"));
+  mSelectedToTopButton->setIcon(QgisApp::getThemeIcon("/mActionSelectedToTop.png"));
+  mInvertSelectionButton->setIcon(QgisApp::getThemeIcon("/mActionInvertSelection.png"));
+  mCopySelectedRowsButton->setIcon(QgisApp::getThemeIcon("/mActionCopySelected.png"));
+  mZoomMapToSelectedRowsButton->setIcon(QgisApp::getThemeIcon("/mActionZoomToSelected.png"));
+  mAddAttributeButton->setIcon(QgisApp::getThemeIcon("/mActionNewAttribute.png"));
+  mDeleteAttributeButton->setIcon(QgisApp::getThemeIcon("/mActionDeleteAttribute.png"));
+  btnEdit->setIcon(QgisApp::getThemeIcon("/mActionToggleEditing.png"));
 }
 
 void QgsAttributeTableDisplay::setTitle(QString title)
@@ -176,16 +173,33 @@ void QgsAttributeTableDisplay::startEditing()
     }
     if(editing)
     {
-      btnStartEditing->setEnabled(false);
-      btnStopEditing->setEnabled(true);
+      btnEdit->setText(tr("Stop editing"));
       buttonBox->button(QDialogButtonBox::Close)->setEnabled(false);
       //make the dialog modal when in editable
       //otherwise map editing and table editing
       //may disturb each other
-      hide();
-      setModal(true);
-      show();
+      //hide();
+      //setModal(true);
+      //show();
     }
+    else
+    {
+      //revert button
+      QMessageBox::information(this,tr("Editing not permitted"),tr("The data provider is read only, editing is not allowed."));
+      btnEdit->setChecked(false);
+    }
+  }
+}
+
+void QgsAttributeTableDisplay::on_btnEdit_toggled(bool theFlag)
+{
+  if (theFlag)
+  {
+    startEditing();
+  }
+  else
+  {
+    stopEditing();
   }
 }
 
@@ -214,8 +228,7 @@ void QgsAttributeTableDisplay::stopEditing()
       return;
     }
   }
-  btnStartEditing->setEnabled(true);
-  btnStopEditing->setEnabled(false);
+  btnEdit->setText(tr("Start editing"));
   buttonBox->button(QDialogButtonBox::Close)->setEnabled(true);
   mAddAttributeButton->setEnabled(false);
   mDeleteAttributeButton->setEnabled(false);

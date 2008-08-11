@@ -57,7 +57,7 @@
 #include "qgsspatialrefsys.h"
 #include "qgsprojectionselector.h"
 
-#include "../../src/providers/grass/qgsgrass.h"
+#include "qgsgrass.h"
 #include "qgsgrassnewmapset.h"
 
 // For bug in GPJ_osr_to_grass()
@@ -449,7 +449,7 @@ void QgsGrassNewMapset::setGrassProjection()
 #endif
   setError ( mProjErrorLabel, "");
 
-  QString proj4 = mProjectionSelector->getCurrentProj4String();
+  QString proj4 = mProjectionSelector->getSelectedProj4String();
 
   // Not defined
   if ( mNoProjRadioButton->isChecked() )
@@ -473,10 +473,10 @@ void QgsGrassNewMapset::setGrassProjection()
     OGRSpatialReferenceH hSRS = NULL;
     hSRS = OSRNewSpatialReference(NULL);
     int errcode;
-    const char *oldlocale = setlocale(LC_ALL, NULL);
-    setlocale(LC_ALL, "C");
+    const char *oldlocale = setlocale(LC_NUMERIC, NULL);
+    setlocale(LC_NUMERIC, "C");
     errcode = OSRImportFromProj4(hSRS, proj4.ascii());
-    setlocale(LC_ALL, oldlocale);
+    setlocale(LC_NUMERIC, oldlocale);
     if ( errcode!=OGRERR_NONE )
     {
       std::cerr << "OGR can't parse PROJ.4-style parameter string:\n" << proj4.ascii()
@@ -568,12 +568,12 @@ void QgsGrassNewMapset::setRegionPage()
   if ( mProjRadioButton->isChecked() ) 
   { 
 #ifdef QGISDEBUG
-    std::cerr << "getCurrentSRSID() = " << mProjectionSelector->getCurrentSRSID() << std::endl;
+    std::cerr << "getSelectedSRSID() = " << mProjectionSelector->getSelectedSRSID() << std::endl;
 #endif
 
-    if ( mProjectionSelector->getCurrentSRSID() > 0 )
+    if ( mProjectionSelector->getSelectedSRSID() > 0 )
     {
-      newSrs.createFromSrsId ( mProjectionSelector->getCurrentSRSID() );
+      newSrs.createFromSrsId ( mProjectionSelector->getSelectedSRSID() );
       if (  ! newSrs.isValid() )
       {
         QMessageBox::warning( 0, tr("Warning"), 
@@ -691,7 +691,7 @@ void QgsGrassNewMapset::setGrassRegionDefaults()
   if ( extSet && 
     ( mNoProjRadioButton->isChecked() ||
     ( mProjRadioButton->isChecked()  
-    && srsid == mProjectionSelector->getCurrentSRSID() ) 
+    && srsid == mProjectionSelector->getSelectedSRSID() ) 
     )
     )
   {
@@ -915,7 +915,7 @@ void QgsGrassNewMapset::setSelectedRegion()
 
 
   // Warning: seems that crashes if source == dest
-  if ( mProjectionSelector->getCurrentSRSID() != 2585 )
+  if ( mProjectionSelector->getSelectedSRSID() != 2585 )
   {
     // Warning: QgsSpatialRefSys::EPSG is broken (using epsg_id)
     //QgsSpatialRefSys source ( 4326, QgsSpatialRefSys::EPSG );
@@ -928,7 +928,7 @@ void QgsGrassNewMapset::setSelectedRegion()
       return;
     }
 
-    QgsSpatialRefSys dest ( mProjectionSelector->getCurrentSRSID(), 
+    QgsSpatialRefSys dest ( mProjectionSelector->getSelectedSRSID(), 
       QgsSpatialRefSys::QGIS_SRSID );
 
     if ( !dest.isValid() ) 
@@ -1141,9 +1141,9 @@ void QgsGrassNewMapset::drawRegion()
   points.push_back( QgsPoint( points[0] ) ); // close polygon
 
   // Warning: seems that crashes if source == dest
-  if ( mProjectionSelector->getCurrentSRSID() != 2585 )
+  if ( mProjectionSelector->getSelectedSRSID() != 2585 )
   {
-    QgsSpatialRefSys source ( mProjectionSelector->getCurrentSRSID(), 
+    QgsSpatialRefSys source ( mProjectionSelector->getSelectedSRSID(), 
       QgsSpatialRefSys::QGIS_SRSID );
 
     if ( !source.isValid() ) 

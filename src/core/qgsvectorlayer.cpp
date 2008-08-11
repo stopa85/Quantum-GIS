@@ -496,9 +496,9 @@ unsigned char* QgsVectorLayer::drawPolygon(unsigned char* feature,
     return feature + 9;
 
   unsigned int wkbType = *((int*)(feature+1));
-  
+
   bool hasZValue = (wkbType == QGis::WKBPolygon25D);
-  
+
   int total_points = 0;
 
   // A vector containing a pointer to a pair of double vectors.The
@@ -533,10 +533,10 @@ std::cerr << "Points for ring " << idx << " ("
       ptr += sizeof(double);
       ring->second[jdx] = *((double *) ptr);
       ptr += sizeof(double);
-      
+
       if (hasZValue)
         ptr += sizeof(double);
-      
+
       /*
 #ifdef QGISDEBUG
 std::cerr << jdx << ": " 
@@ -599,7 +599,7 @@ std::cerr << i << ": " << ring->first[i]
   // this means that adding inner rings to the path creates
   // holes in outer ring
   QPainterPath path; // OddEven fill rule by default
-  
+
   // Only try to draw polygons if there is something to draw
   if (total_points > 0)
   {
@@ -633,18 +633,18 @@ std::cerr << i << ": " << ring->first[i]
     // needed :)
     QgsDebugMsg("Pixel points are:");
     for (int i = 0; i < pa.size(); ++i)
-      {
-	QgsDebugMsgLevel("i" + QString::number(i), 2);
-	QgsDebugMsgLevel("pa[i].x()" + QString::number(pa[i].x()), 2);
-	QgsDebugMsgLevel("pa[i].y()" + QString::number(pa[i].y()), 2);
-      }
+    {
+      QgsDebugMsgLevel("i" + QString::number(i), 2);
+      QgsDebugMsgLevel("pa[i].x()" + QString::number(pa[i].x()), 2);
+      QgsDebugMsgLevel("pa[i].y()" + QString::number(pa[i].y()), 2);
+    }
     std::cerr << "Ring positions are:\n";
     QgsDebugMsg("Ring positions are:");
     for (int i = 0; i < ringDetails.size(); ++i)
-      {
-	QgsDebugMsgLevel("ringDetails[i].first" + QString::number(ringDetails[i].first), 2);
-	QgsDebugMsgLevel("ringDetails[i].second" + QString::number(ringDetails[i].second), 2);
-      }
+    {
+      QgsDebugMsgLevel("ringDetails[i].first" + QString::number(ringDetails[i].first), 2);
+      QgsDebugMsgLevel("ringDetails[i].second" + QString::number(ringDetails[i].second), 2);
+    }
     QgsDebugMsg("Outer ring point is " + QString::number(outerRingPt.x()) + ", " + QString::number(outerRingPt.y()));
 #endif
 
@@ -678,58 +678,58 @@ std::cerr << i << ": " << ring->first[i]
     //
     QBrush myTransparentBrush = p->brush();
     QColor myColor = brush.color();
-    
+
     //only set transparency from layer level if renderer does not provide
     //transparency on class level
     if(!mRenderer->usesTransparency())
-      {
-	myColor.setAlpha(mTransparencyLevel);
-      }
+    {
+      myColor.setAlpha(mTransparencyLevel);
+    }
     myTransparentBrush.setColor(myColor);
     QPen myTransparentPen = p->pen(); // store current pen
     myColor = myTransparentPen.color();
-    
+
     //only set transparency from layer level if renderer does not provide
     //transparency on class level
     if(!mRenderer->usesTransparency())
-      {
-	myColor.setAlpha(mTransparencyLevel);
-      }
+    {
+      myColor.setAlpha(mTransparencyLevel);
+    }
     myTransparentPen.setColor(myColor);
-    
+
     p->setBrush(myTransparentBrush);
     p->setPen (myTransparentPen);
-    
+
     //
     // draw the polygon
     // 
     p->drawPath(path);
-    
+
 
     // draw vertex markers if in editing mode, but only to the main canvas
     if (
         (mEditable) &&
         (drawingToEditingCanvas)
        )
+    {
+
+      QgsVectorLayer::VertexMarkerType markerType = currentVertexMarkerType();
+
+      for(int i = 0; i < path.elementCount(); ++i)
       {
-
-	QgsVectorLayer::VertexMarkerType markerType = currentVertexMarkerType();
-
-	for(int i = 0; i < path.elementCount(); ++i)
-	  {
-            const QPainterPath::Element & e = path.elementAt(i);
-	    drawVertexMarker((int)e.x, (int)e.y, *p, markerType);
-	  }
+        const QPainterPath::Element & e = path.elementAt(i);
+        drawVertexMarker((int)e.x, (int)e.y, *p, markerType);
       }
+    }
 
     //
     //restore brush and pen to original
     //
     p->setBrush ( brush );
     p->setPen ( pen );
-  
+
   } // totalPoints > 0
-  
+
   return ptr;
 }
 
@@ -2102,9 +2102,9 @@ bool QgsVectorLayer::startEditing()
 }
 
   
-bool QgsVectorLayer::readXML_( QDomNode & layer_node )
+bool QgsVectorLayer::readXml( QDomNode & layer_node )
 {
-  QgsDebugMsg(QString("Datasource in QgsVectorLayer::readXML_: ") + mDataSource.toLocal8Bit().data());
+  QgsDebugMsg(QString("Datasource in QgsVectorLayer::readXml: ") + mDataSource.toLocal8Bit().data());
 
   // process the attribute actions
   mActions->readXML(layer_node);
@@ -2238,7 +2238,7 @@ bool QgsVectorLayer::readXML_( QDomNode & layer_node )
 
   return mValid;               // should be true if read successfully
 
-} // void QgsVectorLayer::readXML_
+} // void QgsVectorLayer::readXml
 
 
 
@@ -2328,7 +2328,7 @@ bool QgsVectorLayer::setDataProvider( QString const & provider )
 
 
 
-/* virtual */ bool QgsVectorLayer::writeXML_( QDomNode & layer_node,
+/* virtual */ bool QgsVectorLayer::writeXml( QDomNode & layer_node,
     QDomDocument & document )
 {
   // first get the layer element so that we can append the type attribute
@@ -2487,7 +2487,7 @@ bool QgsVectorLayer::setDataProvider( QString const & provider )
     }
 
   return true;
-} // bool QgsVectorLayer::writeXML_
+} // bool QgsVectorLayer::writeXml
 
 
 int QgsVectorLayer::findFreeId()
@@ -2557,6 +2557,15 @@ bool QgsVectorLayer::commitChanges()
     }
     else
     {
+      //Remove all negative Id in selected features as they are not valid any more after commit
+      if(mSelectedFeatureIds.size() > 0)
+	{
+	  for(QgsFeatureList::iterator it = mAddedFeatures.begin(); it != mAddedFeatures.end(); ++it)
+	    {
+	      mSelectedFeatureIds.remove(it->featureId());
+	    }
+	}  
+
       // done, remove features from the list
       mAddedFeatures.clear();
       addedFeaturesOk = TRUE;

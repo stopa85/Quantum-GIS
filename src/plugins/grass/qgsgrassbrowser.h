@@ -22,6 +22,7 @@ class QAction;
 class QTreeView;
 class QTextBrowser;
 class QDirModel;
+class QIcon;
 
 class QgisInterface;
 #include "qgsgrassmodel.h"

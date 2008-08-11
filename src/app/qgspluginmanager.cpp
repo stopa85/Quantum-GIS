@@ -91,6 +91,7 @@ QgsPluginManager::QgsPluginManager(QgsPythonUtils* pythonUtils, QWidget * parent
   // connect the slot up to catch when a bookmark is zoomed to
   connect(btnClearAll, SIGNAL(clicked()), this, SLOT(clearAll()));
   
+  qRegisterMetaType<QgsDetailedItemData>();
 }
 
 
@@ -161,8 +162,7 @@ void QgsPluginManager::getPythonPluginDescriptions()
     //myData.setIcon(pixmap); //todo use a python logo here
     myData.setCheckable(true);
     myData.setRenderAsWidget(false);
-    QVariant myVariant = qVariantFromValue(myData);
-    mypDetailItem->setData(myVariant,PLUGIN_DATA_ROLE);
+    myData.setChecked(false); //start off assuming false
 
     // check to see if the plugin is loaded and set the checkbox accordingly
     QgsPluginRegistry *pRegistry = QgsPluginRegistry::instance();
@@ -177,9 +177,11 @@ void QgsPluginManager::getPythonPluginDescriptions()
       if (libName == packageName)
       {
         // set the checkbox
-        mypDetailItem->setCheckState(Qt::Checked);
+        myData.setChecked(true);
       }
     }
+    QVariant myVariant = qVariantFromValue(myData);
+    mypDetailItem->setData(myVariant,PLUGIN_DATA_ROLE);
     // Add item to model
     mModelPlugins->appendRow(mypDetailItem);
   }
@@ -305,15 +307,13 @@ sharedLibExtension = "*.so*";
     myData.setTitle(pName());
     myData.setDetail(pDesc());
     myData.setRenderAsWidget(false);
-    QVariant myVariant = qVariantFromValue(myData);
+    myData.setCheckable(true);
+    myData.setChecked(false); //start unchecked - we will check it later if needed
+
     //round trip test - delete this...no need to uncomment
     //QgsDetailedItemData myData2 = qVariantValue<QgsDetailedItemData>(myVariant);
     //Q_ASSERT(myData.title() == myData2.title());
     //round trip test ends
-    mypDetailItem->setData(myVariant,PLUGIN_DATA_ROLE);
-    // Let the first col  have a checkbox
-    mypDetailItem->setCheckable(true);
-    mypDetailItem->setEditable(false);
 
     QgsDebugMsg("Getting an instance of the QgsPluginRegistry");
 
@@ -332,9 +332,11 @@ sharedLibExtension = "*.so*";
       if (libName == myLib->fileName())
       {
         // set the checkbox
-        mypDetailItem->setCheckState(Qt::Checked);
+        myData.setChecked(true);
       }
     }
+    QVariant myVariant = qVariantFromValue(myData);
+    mypDetailItem->setData(myVariant,PLUGIN_DATA_ROLE);
     // Add items to model
     mModelPlugins->appendRow(mypDetailItem);
 
@@ -358,7 +360,9 @@ void QgsPluginManager::unload()
   {
     // FPV - I want to use index. You can do evrething with item.
     QModelIndex myIndex=mModelPlugins->index(row,0);
-    if (mModelPlugins->data(myIndex,Qt::CheckStateRole).toInt() == 0)
+    QgsDetailedItemData myData = 
+        qVariantValue<QgsDetailedItemData>(mModelPlugins->data(myIndex,PLUGIN_DATA_ROLE));
+    if (!myData.isChecked())
     {
       // iThe plugin name without version string in its data PLUGIN_LIB [ts]
       myIndex=mModelPlugins->index(row,0);
@@ -402,7 +406,10 @@ std::vector < QgsPluginItem > QgsPluginManager::getSelectedPlugins()
   // FPV - I want to use item here. You can do everything with index if you want.
   for (int row=0;row < mModelPlugins->rowCount();row++)
   {
-    if (mModelPlugins->item(row,0)->checkState() == Qt::Checked)
+    QgsDetailedItemData myData = 
+        qVariantValue<QgsDetailedItemData>(mModelPlugins->item(row,0)->data(PLUGIN_DATA_ROLE));
+
+    if (myData.isChecked())
     {
       QString pluginName = mModelPlugins->item(row,0)->data(PLUGIN_LIBRARY_NAME_ROLE).toString();
       bool pythonic = false;
@@ -437,8 +444,13 @@ void QgsPluginManager::selectAll()
   // select all plugins
   for (int row=0;row < mModelPlugins->rowCount();row++)
   {
-    QStandardItem *myItem=mModelPlugins->item(row,0);
-    myItem->setCheckState(Qt::Checked);
+    QStandardItem *mypItem=mModelPlugins->item(row,0);
+    QgsDetailedItemData myData = 
+        qVariantValue<QgsDetailedItemData>(mypItem->data(PLUGIN_DATA_ROLE));
+    myData.setChecked(true);
+    QVariant myVariant = qVariantFromValue(myData);
+    mypItem->setData(myVariant,PLUGIN_DATA_ROLE);
+    
   }
 }
 
@@ -447,8 +459,12 @@ void QgsPluginManager::clearAll()
   // clear all selection checkboxes
   for (int row=0;row < mModelPlugins->rowCount();row++)
   {
-    QStandardItem *myItem=mModelPlugins->item(row,0);
-    myItem->setCheckState(Qt::Unchecked);
+    QStandardItem *mypItem=mModelPlugins->item(row,0);
+    QgsDetailedItemData myData = 
+        qVariantValue<QgsDetailedItemData>(mypItem->data(PLUGIN_DATA_ROLE));
+    myData.setChecked(false);
+    QVariant myVariant = qVariantFromValue(myData);
+    mypItem->setData(myVariant,PLUGIN_DATA_ROLE);
   }
 }
 
@@ -463,14 +479,18 @@ void QgsPluginManager::on_vwPlugins_clicked(const QModelIndex &theIndex )
     //
     QStandardItem * mypItem = 
       mModelPlugins->findItems(theIndex.data(Qt ::DisplayRole).toString()).first();
-    if ( mypItem->checkState() == Qt::Checked )
+    QgsDetailedItemData myData = 
+        qVariantValue<QgsDetailedItemData>(mypItem->data(PLUGIN_DATA_ROLE));
+    if ( myData.isChecked() )
     {
-      mypItem->setCheckState(Qt::Unchecked);
+      myData.setChecked(false);
     } 
     else 
     {
-      mypItem->setCheckState(Qt::Checked);
+      myData.setChecked(true);
     }
+    QVariant myVariant = qVariantFromValue(myData);
+    mypItem->setData(myVariant,PLUGIN_DATA_ROLE);
   }
 }
 

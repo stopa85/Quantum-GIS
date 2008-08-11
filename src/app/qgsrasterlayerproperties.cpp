@@ -17,9 +17,10 @@
 
 #include "qgslogger.h"
 #include "qgsapplication.h"
+#include "qgisapp.h"
 #include "qgscoordinatetransform.h"
 #include "qgsrasterlayerproperties.h"
-#include "qgslayerprojectionselector.h"
+#include "qgsgenericprojectionselector.h"
 #include "qgsproject.h"
 #include "qgsrasterbandstats.h"
 #include "qgsrasterlayer.h"
@@ -280,17 +281,17 @@ QgsRasterLayerProperties::QgsRasterLayerProperties(QgsMapLayer *lyr, QWidget *pa
 
   cboxTransparencyBand->addItem(TRSTRING_NOT_SET);
 
-  QString myThemePath = QgsApplication::themePath();
-  QPixmap myPyramidPixmap(myThemePath + "/mIconPyramid.png");
-  QPixmap myNoPyramidPixmap(myThemePath + "/mIconNoPyramid.png");
+  QIcon myPyramidPixmap(QgisApp::getThemeIcon("/mIconPyramid.png"));
+  QIcon myNoPyramidPixmap(QgisApp::getThemeIcon("/mIconNoPyramid.png"));
 
-  pbnAddValuesManually->setIcon(QIcon(QPixmap(myThemePath + "/mActionNewAttribute.png")));
-  pbnAddValuesFromDisplay->setIcon(QIcon(QPixmap(myThemePath + "/mActionContextHelp.png")));
-  pbnRemoveSelectedRow->setIcon(QIcon(QPixmap(myThemePath + "/mActionDeleteAttribute.png")));
-  pbnDefaultValues->setIcon(QIcon(QPixmap(myThemePath + "/mActionCopySelected.png")));
-  pbnImportTransparentPixelValues->setIcon(QIcon(QPixmap(myThemePath + "/mActionFileOpen.png")));
-  pbnExportTransparentPixelValues->setIcon(QIcon(QPixmap(myThemePath + "/mActionFileSave.png")));
-  pbtnMakeContrastEnhancementAlgorithmDefault->setIcon(QIcon(QPixmap(myThemePath + "/mActionFileSave.png")));
+  pbnAddValuesManually->setIcon(QgisApp::getThemeIcon("/mActionNewAttribute.png"));
+  pbnAddValuesFromDisplay->setIcon(QgisApp::getThemeIcon("/mActionContextHelp.png"));
+  pbnRemoveSelectedRow->setIcon(QgisApp::getThemeIcon("/mActionDeleteAttribute.png"));
+  pbnDefaultValues->setIcon(QgisApp::getThemeIcon("/mActionCopySelected.png"));
+  pbnImportTransparentPixelValues->setIcon(QgisApp::getThemeIcon("/mActionFileOpen.png"));
+  pbnExportTransparentPixelValues->setIcon(QgisApp::getThemeIcon("/mActionFileSave.png"));
+  pbtnMakeBandCombinationDefault->setIcon(QgisApp::getThemeIcon("/mActionFileSave.png"));
+  pbtnMakeContrastEnhancementAlgorithmDefault->setIcon(QgisApp::getThemeIcon("/mActionFileSave.png"));
 
   // Only do pyramids if dealing directly with GDAL.
   if (mRasterLayerIsGdal)
@@ -333,8 +334,8 @@ QgsRasterLayerProperties::QgsRasterLayerProperties(QgsMapLayer *lyr, QWidget *pa
   QString pyramidSentence1 = tr("Large resolution raster layers can slow navigation in QGIS.");
   QString pyramidSentence2 = tr("By creating lower resolution copies of the data (pyramids) performance can be considerably improved as QGIS selects the most suitable resolution to use depending on the level of zoom.");
   QString pyramidSentence3 = tr("You must have write access in the directory where the original data is stored to build pyramids.");
-  QString pyramidSentence4 = tr("Please note that building pyramids may alter the original data file and once created they cannot be removed!");
-  QString pyramidSentence5 = tr("Please note that building pyramids could corrupt your image - always make a backup of your data first!");
+  QString pyramidSentence4 = tr("Please note that building internal pyramids may alter the original data file and once created they cannot be removed!");
+  QString pyramidSentence5 = tr("Please note that building internal pyramids could corrupt your image - always make a backup of your data first!");
 
   tePyramidDescription->setHtml(pyramidFormat.arg(pyramidHeader).arg(pyramidSentence1)
 				.arg(pyramidSentence2).arg(pyramidSentence3)
@@ -729,20 +730,25 @@ void QgsRasterLayerProperties::sync()
   
   //Display the current default contrast enhancement algorithm
   QSettings myQSettings;
-  QString myDefaultAlgorithm = myQSettings.value("/Raster/defaultContrastEnhancementAlgorithm", "NO_STRETCH").toString();
-  if(myDefaultAlgorithm == "NO_STRETCH")
+  mDefaultRedBand = myQSettings.value("/Raster/defaultRedBand", 1).toInt();
+  mDefaultGreenBand = myQSettings.value("/Raster/defaultGreenBand", 2).toInt();
+  mDefaultBlueBand = myQSettings.value("/Raster/defaultBlueBand", 3).toInt();
+  labelDefaultBandCombination->setText(QString(tr("Default") + " R:%1 G:%2 B:%3") .arg(mDefaultRedBand) .arg(mDefaultGreenBand) .arg(mDefaultBlueBand));
+    
+  mDefaultContrastEnhancementAlgorithm = myQSettings.value("/Raster/defaultContrastEnhancementAlgorithm", "NO_STRETCH").toString();
+  if(mDefaultContrastEnhancementAlgorithm == "NO_STRETCH")
   {
     labelDefaultContrastEnhancementAlgorithm->setText(tr("No Stretch"));
   }
-  if(myDefaultAlgorithm == "STRETCH_TO_MINMAX")
+  if(mDefaultContrastEnhancementAlgorithm == "STRETCH_TO_MINMAX")
   {
     labelDefaultContrastEnhancementAlgorithm->setText(tr("Stretch To MinMax"));
   }
-  else if(myDefaultAlgorithm == "STRETCH_AND_CLIP_TO_MINMAX")
+  else if(mDefaultContrastEnhancementAlgorithm == "STRETCH_AND_CLIP_TO_MINMAX")
   {
     labelDefaultContrastEnhancementAlgorithm->setText(tr("Stretch And Clip To MinMax"));
   }
-  else if(myDefaultAlgorithm == "CLIP_TO_MINMAX")
+  else if(mDefaultContrastEnhancementAlgorithm == "CLIP_TO_MINMAX")
   {
     labelDefaultContrastEnhancementAlgorithm->setText(tr("Clip To MinMax"));
   }
@@ -1196,6 +1202,13 @@ void QgsRasterLayerProperties::apply()
     }
   }
 
+  QSettings myQSettings;
+  myQSettings.setValue("/Raster/defaultRedBand", mDefaultRedBand);
+  myQSettings.setValue("/Raster/defaultGreenBand", mDefaultGreenBand);
+  myQSettings.setValue("/Raster/defaultBlueBand", mDefaultBlueBand);
+  
+  myQSettings.setValue("/Raster/defaultContrastEnhancementAlgorithm", mDefaultContrastEnhancementAlgorithm);
+  
 #ifdef QGISDEBUG
       QgsDebugMsg("QgsRasterLayerProperties::apply processing transparency tab");
 #endif
@@ -1545,6 +1558,8 @@ void QgsRasterLayerProperties::apply()
     cboxContrastEnhancementAlgorithm->removeItem(cboxContrastEnhancementAlgorithm->findText(tr("User Defined")));
   }
 
+  // notify the project we've made a change
+  QgsProject::instance()->dirty(true);
 }//apply
 
 void QgsRasterLayerProperties::on_buttonBox_helpRequested()
@@ -1555,6 +1570,7 @@ void QgsRasterLayerProperties::on_buttonBox_helpRequested()
 void QgsRasterLayerProperties::on_buttonBuildPyramids_clicked()
 {
 
+  connect(mRasterLayer, SIGNAL(progressUpdate(int)), mPyramidProgress, SLOT(setValue(int)));
   //
   // Go through the list marking any files that are selected in the listview
   // as true so that we can generate pyramids for them.
@@ -1575,8 +1591,13 @@ void QgsRasterLayerProperties::on_buttonBuildPyramids_clicked()
 
   // let the user know we're going to possibly be taking a while
   QApplication::setOverrideCursor(Qt::WaitCursor);
-  QString res = mRasterLayer->buildPyramids(myPyramidList,cboResamplingMethod->currentText());
+  bool myBuildInternalFlag = cbxInternalPyramids->isChecked();
+  QString res = mRasterLayer->buildPyramids(
+        myPyramidList,
+        cboResamplingMethod->currentText(),
+        myBuildInternalFlag);
   QApplication::restoreOverrideCursor();
+  disconnect(mRasterLayer, SIGNAL(progressUpdate(int)), mPyramidProgress, SLOT(setValue(int)));
   if (!res.isNull())
   {
     if (res == "ERROR_WRITE_ACCESS")
@@ -1587,7 +1608,8 @@ void QgsRasterLayerProperties::on_buttonBuildPyramids_clicked()
     else if (res == "ERROR_WRITE_FORMAT")
     {
       QMessageBox::warning(this, tr("Building pyramids failed."),
-          tr("The file was not writeable. Some formats can not be written to, only read. You can also try to check the permissions and then try again.") );
+          tr("The file was not writeable. Some formats do not "
+            "support pyramid overviews. Consult the GDAL documentation if in doubt.") );
     }
     else if (res == "FAILED_NOT_SUPPORTED")
     {
@@ -1601,9 +1623,8 @@ void QgsRasterLayerProperties::on_buttonBuildPyramids_clicked()
   // repopulate the pyramids list
   //
   lbxPyramidResolutions->clear();
-  QString myThemePath = QgsApplication::themePath();
-  QPixmap myPyramidPixmap(myThemePath + "/mIconPyramid.png");
-  QPixmap myNoPyramidPixmap(myThemePath + "/mIconNoPyramid.png");
+  QIcon myPyramidPixmap(QgisApp::getThemeIcon("/mIconPyramid.png"));
+  QIcon myNoPyramidPixmap(QgisApp::getThemeIcon("/mIconNoPyramid.png"));
 
   QgsRasterLayer::RasterPyramidList::iterator myRasterPyramidIterator;
   for ( myRasterPyramidIterator=myPyramidList.begin();
@@ -1683,11 +1704,11 @@ void QgsRasterLayerProperties::on_pbnAddValuesManually_clicked()
 void QgsRasterLayerProperties::on_pbnChangeSpatialRefSys_clicked()
 {
 
-  QgsLayerProjectionSelector * mySelector = new QgsLayerProjectionSelector(this);
+  QgsGenericProjectionSelector * mySelector = new QgsGenericProjectionSelector(this);
   mySelector->setSelectedSRSID(mRasterLayer->srs().srsid());
   if(mySelector->exec())
   {
-    QgsSpatialRefSys srs(mySelector->getCurrentSRSID(), QgsSpatialRefSys::QGIS_SRSID);
+    QgsSpatialRefSys srs(mySelector->getSelectedSRSID(), QgsSpatialRefSys::QGIS_SRSID);
     mRasterLayer->setSrs(srs);
   }
   else
@@ -1853,33 +1874,12 @@ void QgsRasterLayerProperties::on_pbnExportTransparentPixelValues_clicked()
 
 void QgsRasterLayerProperties::on_pbnHistRefresh_clicked()
 {
+  connect(mRasterLayer, SIGNAL(progressUpdate(int)), mHistogramProgress, SLOT(setValue(int)));
+  QApplication::setOverrideCursor(Qt::WaitCursor);
 #ifdef QGISDEBUG
   std::cout << "QgsRasterLayerProperties::on_pbnHistRefresh_clicked" << std::endl;
 #endif
   int myBandCountInt = mRasterLayer->getBandCount();
-  //
-  // Find out how many bands are selected and short circuit out clearing the image
-  // if needed
-  int mySelectionCount=0;
-  for (int myIteratorInt = 1;
-      myIteratorInt <= myBandCountInt;
-      ++myIteratorInt)
-  {
-    QgsRasterBandStats myRasterBandStats = mRasterLayer->getRasterBandStats(myIteratorInt);
-    QListWidgetItem *myItem = lstHistogramLabels->item( myIteratorInt-1 );
-    if ( myItem->isSelected() )
-    {
-      mySelectionCount++;
-    }
-  }
-  if (mySelectionCount==0)
-  {
-    int myImageWidth = pixHistogram->width();
-    int myImageHeight =  pixHistogram->height();
-    QPixmap myPixmap(myImageWidth,myImageHeight);
-    myPixmap.fill(Qt::white);
-    pixHistogram->setPixmap(myPixmap);
-  }
 
   // Explanation:
   // We use the gdal histogram creation routine is called for each selected  
@@ -1969,6 +1969,7 @@ void QgsRasterLayerProperties::on_pbnHistRefresh_clicked()
       myFirstItemFlag=false;
     }
   }
+  disconnect(mRasterLayer, SIGNAL(progressUpdate(int)), mHistogramProgress, SLOT(setValue(int)));
 #ifdef QGISDEBUG
   std::cout << "max " << myYAxisMax << std::endl;
   std::cout << "min " << myYAxisMin << std::endl;
@@ -2298,6 +2299,7 @@ void QgsRasterLayerProperties::on_pbnHistRefresh_clicked()
   //
   myPainter.end();
   pixHistogram->setPixmap(myPixmap);
+  QApplication::restoreOverrideCursor();
 }
 
 void QgsRasterLayerProperties::on_pbnImportTransparentPixelValues_clicked()
@@ -2766,32 +2768,36 @@ void QgsRasterLayerProperties::on_pbtnLoadMinMax_clicked()
   }
 }
 
+void QgsRasterLayerProperties::on_pbtnMakeBandCombinationDefault_clicked()
+{
+  mDefaultRedBand = cboRed->currentIndex() + 1;
+  mDefaultGreenBand = cboGreen->currentIndex() + 1;
+  mDefaultBlueBand = cboBlue->currentIndex() + 1;
+  labelDefaultBandCombination->setText(QString(tr("Default") + " R:%1 G:%2 B:%3") .arg(mDefaultRedBand) .arg(mDefaultGreenBand) .arg(mDefaultBlueBand));
+}
+
 void QgsRasterLayerProperties::on_pbtnMakeContrastEnhancementAlgorithmDefault_clicked()
 {
-  //Like some of the other functionality in the raster properties GUI this deviated a little from the 
-  //best practice of GUI design as this pressing cancel will not undo setting the default 
-  //contrast enhancement algorithm
   if(cboxContrastEnhancementAlgorithm->currentText() != tr("User Defined"))
   {
-    QSettings myQSettings;
     if(cboxContrastEnhancementAlgorithm->currentText() == tr("No Stretch"))
     {
-      myQSettings.setValue("/Raster/defaultContrastEnhancementAlgorithm", "NO_STRETCH");
+      mDefaultContrastEnhancementAlgorithm = "NO_STRETCH";
       labelDefaultContrastEnhancementAlgorithm->setText(cboxContrastEnhancementAlgorithm->currentText());
     }
     else if(cboxContrastEnhancementAlgorithm->currentText() == tr("Stretch To MinMax"))
     {
-      myQSettings.setValue("/Raster/defaultContrastEnhancementAlgorithm", "STRETCH_TO_MINMAX");
+      mDefaultContrastEnhancementAlgorithm = "STRETCH_TO_MINMAX";
       labelDefaultContrastEnhancementAlgorithm->setText(cboxContrastEnhancementAlgorithm->currentText());
     }
     else if(cboxContrastEnhancementAlgorithm->currentText() == tr("Stretch And Clip To MinMax"))
     {
-      myQSettings.setValue("/Raster/defaultContrastEnhancementAlgorithm", "STRETCH_AND_CLIP_TO_MINMAX");
+      mDefaultContrastEnhancementAlgorithm =  "STRETCH_AND_CLIP_TO_MINMAX";
       labelDefaultContrastEnhancementAlgorithm->setText(cboxContrastEnhancementAlgorithm->currentText());
     }
     else if(cboxContrastEnhancementAlgorithm->currentText() == tr("Clip To MinMax"))
     {
-      myQSettings.setValue("/Raster/defaultContrastEnhancementAlgorithm", "CLIP_TO_MINMAX");
+      mDefaultContrastEnhancementAlgorithm = "CLIP_TO_MINMAX";
       labelDefaultContrastEnhancementAlgorithm->setText(cboxContrastEnhancementAlgorithm->currentText());
     }
     else
@@ -2866,12 +2872,17 @@ void QgsRasterLayerProperties::on_pbnLoadDefaultStyle_clicked()
   //reset if the default style was loaded ok only
   if ( defaultLoadedFlag )
   {
+    //it worked so do it quietly
     sync();
   }
-  QMessageBox::information( this, 
-      tr("Default Style"), 
-      myMessage
-      ); 
+  else
+  {
+    //otherwise let the user know what went wrong
+    QMessageBox::information( this, 
+        tr("Default Style"), 
+        myMessage
+        ); 
+  }
 }
 
 void QgsRasterLayerProperties::on_pbnSaveDefaultStyle_clicked()
@@ -2881,10 +2892,14 @@ void QgsRasterLayerProperties::on_pbnSaveDefaultStyle_clicked()
   // after calling this the above flag will be set true for success
   // or false if the save operation failed
   QString myMessage = mRasterLayer->saveDefaultStyle( defaultSavedFlag );
-  QMessageBox::information( this, 
-      tr("Default Style"), 
-      myMessage
-      ); 
+  if ( !defaultSavedFlag )
+  {
+    //let the user know what went wrong
+    QMessageBox::information( this, 
+        tr("Default Style"), 
+        myMessage
+        ); 
+  }
 }
 
 
@@ -2933,10 +2948,14 @@ void QgsRasterLayerProperties::on_pbnLoadStyle_clicked()
       {
         sync();
       }
-      QMessageBox::information( this, 
-          tr("Default Style"), 
-          myMessage
-          ); 
+      else
+      {
+        //let the user know something went wrong...
+        QMessageBox::information( this, 
+            tr("Saved Style"), 
+            myMessage
+            ); 
+      }
     }
     else
     {
@@ -2993,12 +3012,17 @@ void QgsRasterLayerProperties::on_pbnSaveStyleAs_clicked()
       //reset if the default style was loaded ok only
       if ( defaultLoadedFlag )
       {
+        //dont show the message if all went well...
         sync();
       }
-      QMessageBox::information( this, 
-          tr("Default Style"), 
-          myMessage
-          ); 
+      else
+      {
+        //if something went wrong let the user know why
+        QMessageBox::information( this, 
+            tr("Saved Style"), 
+            myMessage
+            ); 
+      }
     }
     else
     {

@@ -20,7 +20,7 @@
 #include "qgsoptions.h"
 #include "qgis.h"
 #include "qgisapp.h"
-#include "qgslayerprojectionselector.h"
+#include "qgsgenericprojectionselector.h"
 #include "qgsspatialrefsys.h"
 
 #include <QFileDialog>
@@ -84,10 +84,8 @@ QgsOptions::QgsOptions(QWidget *parent, Qt::WFlags fl) :
   {
     radUseGlobalProjection->setChecked(true);
   }
-  mGlobalSRSID = settings.value("/Projections/defaultProjectionSRSID",(int)GEOSRS_ID).toInt();
-  //! @todo changes this control name in gui to txtGlobalProjString
-  QString myProjString = QgsSpatialRefSys::getProj4FromSrsId(mGlobalSRSID);
-  txtGlobalWKT->setText(myProjString);
+
+  txtGlobalWKT->setText(settings.value("/Projections/defaultProjectionString",GEOPROJ4).toString());
 
   // populate combo box with ellipsoids
   getEllipsoidList();
@@ -107,7 +105,7 @@ QgsOptions::QgsOptions(QWidget *parent, Qt::WFlags fl) :
   }
 
   // set the theme combo
-  cmbTheme->setItemText(cmbTheme->currentIndex(), settings.value("/Themes","default").toString());
+  cmbTheme->setCurrentIndex(cmbTheme->findText(settings.value("/Themes","default").toString()));
 
   //set the state of the checkboxes
   chkAntiAliasing->setChecked(settings.value("/qgis/enable_anti_aliasing",false).toBool());
@@ -293,7 +291,8 @@ void QgsOptions::saveOptions()
     //
     settings.setValue("/Projections/defaultBehaviour", "useGlobal");
   }
-  settings.setValue("/Projections/defaultProjectionSRSID",(int)mGlobalSRSID);
+
+  settings.setValue("/Projections/defaultProjectionString", txtGlobalWKT->toPlainText());
 
   settings.setValue("/qgis/measure/ellipsoid", getEllipsoidAcronym(cmbEllipsoid->currentText()));
 
@@ -366,16 +365,22 @@ void QgsOptions::saveOptions()
 void QgsOptions::on_pbnSelectProjection_clicked()
 {
   QSettings settings;
-  QgsLayerProjectionSelector * mySelector = new QgsLayerProjectionSelector(this);
-  mySelector->setSelectedSRSID(mGlobalSRSID);
+  QgsGenericProjectionSelector * mySelector = new QgsGenericProjectionSelector(this);
+
+  //find out srs id of current proj4 string
+  QgsSpatialRefSys refSys;
+  if(refSys.createFromProj4(txtGlobalWKT->toPlainText()))
+    {
+      mySelector->setSelectedSRSID(refSys.srsid());
+    }
+
   if(mySelector->exec())
   {
 #ifdef QGISDEBUG
     std::cout << "------ Global Default Projection Selection Set ----------" << std::endl;
-#endif
-    mGlobalSRSID = mySelector->getCurrentSRSID();  
+#endif 
     //! @todo changes this control name in gui to txtGlobalProjString
-    txtGlobalWKT->setText(mySelector->getCurrentProj4String());
+    txtGlobalWKT->setText(mySelector->getSelectedProj4String());
 #ifdef QGISDEBUG
     std::cout << "------ Global Default Projection now set to ----------\n" << mGlobalSRSID << std::endl;
 #endif
@@ -441,7 +446,7 @@ void QgsOptions::getEllipsoidList()
     assert(myResult == 0);
   }
 
-  // Set up the query to retreive the projection information needed to populate the ELLIPSOID list
+  // Set up the query to retrieve the projection information needed to populate the ELLIPSOID list
   QString mySql = "select * from tbl_ellipsoid order by name";
   myResult = sqlite3_prepare(myDatabase, mySql.toUtf8(), mySql.length(), &myPreparedStatement, &myTail);
   // XXX Need to free memory from the error msg if one is set
@@ -473,7 +478,7 @@ QString QgsOptions::getEllipsoidAcronym(QString theEllipsoidName)
     //     database if it does not exist.
     assert(myResult == 0);
   }
-  // Set up the query to retreive the projection information needed to populate the ELLIPSOID list
+  // Set up the query to retrieve the projection information needed to populate the ELLIPSOID list
   QString mySql = "select acronym from tbl_ellipsoid where name='" + theEllipsoidName + "'";
   myResult = sqlite3_prepare(myDatabase, mySql.toUtf8(), mySql.length(), &myPreparedStatement, &myTail);
   // XXX Need to free memory from the error msg if one is set

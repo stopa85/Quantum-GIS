@@ -137,23 +137,16 @@
 #include "qgsrastertransparency.h"
 #include "qgsrastershader.h"
 #include "qgsrastershaderfunction.h"
-
-/*
- * 
- * New includes that will convert this class to a data provider interface
- * (B Morley)
- *
- */ 
- 
 #include "qgsrasterdataprovider.h"
 
-/*
- * END
- */
 
 #define CPL_SUPRESS_CPLUSPLUS
-
 #include <gdal.h>
+
+int CPL_STDCALL progressCallback( double dfComplete, 
+    const char *pszMessage,
+    void * pProgressArg );
+
 
 //
 // Forward declarations
@@ -367,7 +360,8 @@ public:
     /** \brief Get the number of a band given its name. Note this will be the rewritten name set 
     *   up in the constructor, and will not necessarily be the same as the name retrieved directly from gdal!
     *   If no matching band is found zero will be returned! */
-    int getRasterBandNumber (const QString & theBandNameQString);
+
+    int getRasterBandNumber (const QString & theBandName);
     /** \brief Get the name of a band given its number.  */
     const  QString getRasterBandName(int theBandNoInt);
     /** \brief Find out whether a given band exists.    */
@@ -379,8 +373,9 @@ public:
     {
         return mRedBandName;
     }
+
     /** \brief Mutator for red band name (allows alternate mappings e.g. map blue as red color). */
-    void setRedBandName(const QString & theBandNameQString);
+    void setRedBandName(const QString & theBandName);
     // 
     // Accessor and mutator for green band name
     // 
@@ -390,7 +385,7 @@ public:
         return mGreenBandName;
     }
     /** \brief Mutator for green band name mapping.  */
-    void setGreenBandName(const QString & theBandNameQString);
+    void setGreenBandName(const QString & theBandName);
     //
     // Accessor and mutator for blue band name
     // 
@@ -400,7 +395,7 @@ public:
         return mBlueBandName;
     }
     /** \brief Mutator for blue band name mapping.  */
-    void setBlueBandName(const QString & theBandNameQString);
+    void setBlueBandName(const QString & theBandName);
     
      //
     // Accessor raster transparency object
@@ -417,7 +412,7 @@ public:
         return mTransparencyBandName;
     }
     /** \brief Mutator for transparent band name mapping.  */
-    void setTransparentBandName(const QString & theBandNameQString);
+    void setTransparentBandName(const QString & theBandName);
     
     //
     // Accessor and mutator for gray band name
@@ -428,7 +423,7 @@ public:
         return mGrayBandName;
     }
     /** \brief Mutator for gray band name mapping.  */
-    void setGrayBandName(const QString & theBandNameQString);
+    void setGrayBandName(const QString & theBandName);
     // 
     // Accessor and mutator for mDebugOverlayFlag
     // 
@@ -846,12 +841,18 @@ public slots:
 
     /** \brief Create  gdal pyramid overviews  for this layer.
     * This will speed up performance at the expense of hard drive space.
-    * Also, write access to the file is required. If no paramter is passed in
+    * Also, write access to the file is required for creating internal pyramids,
+    * and to the directory in which the files exists if external 
+    * pyramids (.ovr) are to be created. If no paramter is passed in
     * it will default to nearest neighbor resampling.
+    * @param theTryInternalFlag - Try to make the pyramids internal to 
+    * the raster file if supported (e.g. geotiff). If not supported it 
+    * will revert to creating external .ovr file anyway.
     * \return null string on success, otherwise a string specifying error
     */
     QString buildPyramids(const RasterPyramidList &, 
-                          const QString &  theResamplingMethod="NEAREST");
+                          const QString &  theResamplingMethod="NEAREST",
+                          bool theTryInternalFlag=false);
     /** \brief Used at the moment by the above function but hopefully will later
     be useable by any operation that needs to notify the user of its progress. */
 /*
@@ -885,7 +886,7 @@ public slots:
         Called by QgsMapLayer::readXML().
 
     */
-    /* virtual */ bool readXML_( QDomNode & layer_node );
+    /* virtual */ bool readXml( QDomNode & layer_node );
 
 
 
@@ -896,7 +897,7 @@ public slots:
       Called by QgsMapLayer::writeXML().
 
   */
-  /* virtual */ bool writeXML_( QDomNode & layer_node, QDomDocument & doc );
+  /* virtual */ bool writeXml( QDomNode & layer_node, QDomDocument & doc );
     
 private:
 
@@ -1010,6 +1011,9 @@ private:
     /** \brief Update the layer if it is outdated */
     bool update ();
 
+    /** \brief Verify and transform band name for internal consistency. Return 'Not Set' on any type of failure */
+    QString validateBandName(const QString & theBandName);
+
     //
     // Private member vars
     //
@@ -1110,9 +1114,18 @@ public:
   //! Which provider is being used for this Raster Layer?
   QString providerKey();
 
+  /** A wrapper function to emit a progress update signal.
+   * For example used by gdal callback to show pyramid building progress.
+   */
+  void showProgress(int theValue);
+  
 public slots:
 
   void showStatusMessage(const QString & theMessage);
+
+signals:
+  //for notifying listeners of long running processes
+  void progressUpdate(int theValue);
 
 
 private:

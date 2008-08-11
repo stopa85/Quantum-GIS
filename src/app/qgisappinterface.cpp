@@ -140,9 +140,9 @@ QWidget * QgisAppInterface::getMainWindow()
   return qgis;
 }
 
-QToolBox* QgisAppInterface::getToolBox()
+void QgisAppInterface::addDockWidget ( Qt::DockWidgetArea area, QDockWidget * dockwidget )
 {
-  return NULL;
+  qgis->addDockWidget (  area, dockwidget );
 }
 
 void QgisAppInterface::refreshLegend(QgsMapLayer *l)

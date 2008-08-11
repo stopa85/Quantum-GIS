@@ -1,7 +1,7 @@
 SUBDIRS (copyright_label delimited_text diagram_overlay grid_maker north_arrow scale_bar)
 
 IF (POSTGRES_FOUND)
-  SUBDIRS (geoprocessing spit)
+  SUBDIRS (spit)
 ENDIF (POSTGRES_FOUND)
 
 IF (EXPAT_FOUND)
@@ -20,3 +20,5 @@ INSTALL(FILES qgisplugin.h qgsrendererplugin.h DESTINATION ${QGIS_INCLUDE_DIR})
 
 SUBDIRS (quick_print)
 
+
+SUBDIRS (coordinate_capture dxf2shp_converter) 

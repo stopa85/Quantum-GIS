@@ -18,7 +18,7 @@
 
 #include "qgsserversourceselect.h"
 
-#include "qgslayerprojectionselector.h"
+#include "qgsgenericprojectionselector.h"
 
 #include "qgsnewhttpconnection.h"
 #include "qgsnumericsortlistviewitem.h"
@@ -429,18 +429,22 @@ void QgsServerSourceSelect::on_btnChangeSpatialRefSys_clicked()
 
   QSet<QString> crsFilter = mWmsProvider->supportedCrsForLayers(m_selectedLayers);
 
-  QgsLayerProjectionSelector * mySelector =
-    new QgsLayerProjectionSelector(this);
+  QgsGenericProjectionSelector * mySelector =
+    new QgsGenericProjectionSelector(this);
+  mySelector->setMessage();
 
   mySelector->setOgcWmsCrsFilter(crsFilter);
 
-  long myDefaultSRS = QgsProject::instance()->readNumEntry("SpatialRefSys", "/ProjectSRSID", GEOSRS_ID);
-
-  mySelector->setSelectedSRSID(myDefaultSRS);
+  QString myDefaultProjString = QgsProject::instance()->readEntry("SpatialRefSys", "/ProjectSRSProj4String", GEOPROJ4);
+  QgsSpatialRefSys defaultSRS;
+  if(defaultSRS.createFromProj4(myDefaultProjString))
+    {
+      mySelector->setSelectedSRSID(defaultSRS.srsid());
+    }
 
   if (mySelector->exec())
   {
-    m_Epsg = mySelector->getCurrentEpsg();
+    m_Epsg = mySelector->getSelectedEpsg();
   }
   else
   {
@@ -448,7 +452,7 @@ void QgsServerSourceSelect::on_btnChangeSpatialRefSys_clicked()
   }
 
   labelCoordRefSys->setText( descriptionForEpsg(m_Epsg) );
-//  labelCoordRefSys->setText( mySelector->getCurrentProj4String() );
+//  labelCoordRefSys->setText( mySelector->getSelectedProj4String() );
 
   delete mySelector;
 

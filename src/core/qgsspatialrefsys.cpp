@@ -228,10 +228,10 @@ bool QgsSpatialRefSys::loadFromDb(QString db, QString field, long id)
     mGeoFlag = (geo == 0 ? false : true);
     setMapUnits();
     mIsValidFlag = true;
-    const char *oldlocale = setlocale(LC_ALL, NULL);
-    setlocale(LC_ALL, "C");
+    const char *oldlocale = setlocale(LC_NUMERIC, NULL);
+    setlocale(LC_NUMERIC, "C");
     OSRImportFromProj4( mSRS, proj4String.toLatin1().constData() );
-    setlocale(LC_ALL, oldlocale);
+    setlocale(LC_NUMERIC, oldlocale);
   }
   else
   {
@@ -260,11 +260,11 @@ bool QgsSpatialRefSys::createFromWkt(QString theWkt)
 
   if (myInputResult != OGRERR_NONE)
   {
-    QgsDebugMsg("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv");
+    QgsDebugMsg("\n---------------------------------------------------------------");
     QgsDebugMsg("QgsSpatialRefSys::createFromWkt(QString theWkt) ");
     QgsDebugMsg("This SRS could *** NOT *** be set from the supplied WKT ");
     QgsDebugMsg("INPUT: " + theWkt);
-    QgsDebugMsg("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
+    QgsDebugMsg("---------------------------------------------------------------\n");
     return mIsValidFlag;
   }
 
@@ -289,10 +289,9 @@ bool QgsSpatialRefSys::createFromWkt(QString theWkt)
 bool QgsSpatialRefSys::isValid() const
 {
   if (mIsValidFlag)
+  {
     return true;
-
-  QgsDebugMsg("It's an invalid SRS without valid proj4 string");
-
+  }
   return false;
 }
 
@@ -411,10 +410,10 @@ bool QgsSpatialRefSys::createFromProj4 (const QString theProj4String)
       if (!myRecord.empty())
       {
         // Success!  We have found the proj string by swapping the lat_1 and lat_2
-        const char *oldlocale = setlocale(LC_ALL, NULL);
-        setlocale(LC_ALL, "C");
+        const char *oldlocale = setlocale(LC_NUMERIC, NULL);
+        setlocale(LC_NUMERIC, "C");
         OSRImportFromProj4(mSRS, theProj4StringModified.toLatin1().constData() );
-        setlocale(LC_ALL, oldlocale); 
+        setlocale(LC_NUMERIC, oldlocale); 
         mySrsId=myRecord["srs_id"].toLong();
         QgsDebugMsg("QgsSpatialRefSys::createFromProj4 proj4string match search for srsid returned srsid: " + QString::number(mySrsId));
         if (mySrsId > 0)
@@ -664,10 +663,10 @@ void QgsSpatialRefSys::setDescription (QString theDescription)
 }
 void QgsSpatialRefSys::setProj4String (QString theProj4String)
 {
-  const char *oldlocale = setlocale(LC_ALL, NULL);
-  setlocale(LC_ALL, "C");
+  const char *oldlocale = setlocale(LC_NUMERIC, NULL);
+  setlocale(LC_NUMERIC, "C");
   mIsValidFlag = OSRImportFromProj4(mSRS, theProj4String.toLatin1().constData() )==OGRERR_NONE;
-  setlocale(LC_ALL, oldlocale);
+  setlocale(LC_NUMERIC, oldlocale);
 }
 void QgsSpatialRefSys::setGeographicFlag (bool theGeoFlag)
 {
@@ -769,7 +768,7 @@ long QgsSpatialRefSys::findMatchingProj()
   sqlite3_stmt *myPreparedStatement;
   int           myResult;
 
-  // Set up the query to retreive the projection information needed to populate the list
+  // Set up the query to retrieve the projection information needed to populate the list
   QString mySql = QString ("select srs_id,parameters from tbl_srs where projection_acronym='" +
                            mProjectionAcronym + "' and ellipsoid_acronym='" + mEllipsoidAcronym + "'");
   // Get the full path name to the sqlite3 spatial reference database.
@@ -954,7 +953,7 @@ bool QgsSpatialRefSys::readXML( QDomNode & theNode )
   else
   {
     // Return default SRS if none was found in the XML.
-    createFromEpsg(EPSGID);
+    createFromEpsg(GEOEPSG_ID);
   }
   return true;
 }

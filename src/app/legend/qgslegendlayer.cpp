@@ -19,6 +19,7 @@
  ***************************************************************************/
 
 #include "qgsapplication.h"
+#include "qgisapp.h"
 #include "qgslegend.h"
 #include "qgslegendlayer.h"
 #include "qgslegendlayerfile.h"
@@ -453,28 +454,27 @@ void QgsLegendLayer::updateIcon()
   QgsLegendLayerFile* theFile = firstLayerFile();
 
   if(mapLayers().size() == 1)
+  {
+    //overview
+    if(theFile->isInOverview())
     {
-  
-      //overview
-      if(theFile->isInOverview())
-	{
-	  // Overlay the overview icon on the default icon
-	  QPixmap myPixmap(QgsApplication::themePath()+"mIconOverview.png");
-	  QPainter p(&newIcon);
-	  p.drawPixmap(0,0,myPixmap);
-	  p.end();
-	}
-      
-      //editable
-      if(theLayer->isEditable())
-	{
-	  // Overlay the editable icon on the default icon
-	  QPixmap myPixmap(QgsApplication::themePath()+"mIconEditable.png");
-	  QPainter p(&newIcon);
-	  p.drawPixmap(0,0,myPixmap);
-	  p.end();
-	}
+      // Overlay the overview icon on the default icon
+      QPixmap myPixmap = QgisApp::getThemePixmap(+"mIconOverview.png");
+      QPainter p(&newIcon);
+      p.drawPixmap(0,0,myPixmap);
+      p.end();
     }
+
+    //editable
+    if(theLayer->isEditable())
+    {
+      // Overlay the editable icon on the default icon
+      QPixmap myPixmap = QgisApp::getThemePixmap(+"mIconEditable.png");
+      QPainter p(&newIcon);
+      p.drawPixmap(0,0,myPixmap);
+      p.end();
+    }
+  }
 
   QIcon theIcon(newIcon);
   setIcon(0, theIcon);
@@ -485,48 +485,39 @@ QPixmap QgsLegendLayer::getOriginalPixmap() const
   QgsMapLayer* firstLayer = firstMapLayer();
   if(firstLayer)
   {
-    QString myThemePath = QgsApplication::themePath();
-    QString myPath;
-
     if (firstLayer->type() == QgsMapLayer::VECTOR)
     {
       QgsVectorLayer* vlayer = dynamic_cast<QgsVectorLayer*>(firstLayer);
       switch(vlayer->vectorType())
       {
         case QGis::Point:
-          myPath = myThemePath+"/mIconPointLayer.png";
+          return QgisApp::getThemePixmap("/mIconPointLayer.png");
           break;
         case QGis::Line:
-          myPath = myThemePath+"/mIconLineLayer.png";
+          return QgisApp::getThemePixmap("/mIconLineLayer.png");
           break;
         case QGis::Polygon:
-          myPath = myThemePath+"/mIconPolygonLayer.png";
+          return QgisApp::getThemePixmap("/mIconPolygonLayer.png");
           break;
         default:
-          myPath = myThemePath+"/mIconLayer.png";
+          return QgisApp::getThemePixmap("/mIconLayer.png");
       }
     }
-    else // RASTER
+    else if (firstLayer->type() == QgsMapLayer::RASTER)
     {
-      myPath = myThemePath+"/mIconLayer.png";
-    }
-
-    
-    QFileInfo file(myPath);
-    if(file.exists())
-    {
-      return QPixmap(file.absoluteFilePath());
+      QgsRasterLayer* rlayer = dynamic_cast<QgsRasterLayer*>(firstLayer);
+      QPixmap myPixmap(32,32);
+      rlayer->drawThumbnail(&myPixmap);
+      return myPixmap;
     }
   }
 
-  QPixmap emptyPixmap;
-  return emptyPixmap;
-}
-
+  // undefined - should never reach this
+  return QgisApp::getThemePixmap("/mIconLayer.png");
+}			
 
 void QgsLegendLayer::addToPopupMenu(QMenu& theMenu, QAction* toggleEditingAction)
 {
-  QString iconsPath = QgsApplication::themePath();
   std::list<QgsLegendLayerFile*> files = legendLayerFiles();
   QgsMapLayer* firstLayer = NULL;
   if (files.size() > 0)
@@ -535,7 +526,7 @@ void QgsLegendLayer::addToPopupMenu(QMenu& theMenu, QAction* toggleEditingAction
   }
   
   // zoom to layer extent
-  theMenu.addAction(QIcon(iconsPath+QString("/mActionZoomToLayer.png")),
+  theMenu.addAction(QgisApp::getThemeIcon("/mActionZoomToLayer.png"),
                     tr("&Zoom to layer extent"), legend(), SLOT(legendLayerZoom()));
   if (firstLayer && firstLayer->type() == QgsMapLayer::RASTER)
   {
@@ -548,7 +539,7 @@ void QgsLegendLayer::addToPopupMenu(QMenu& theMenu, QAction* toggleEditingAction
   showInOverviewAction->setChecked(isInOverview());
     
   // remove from canvas
-  theMenu.addAction(QIcon(QPixmap(iconsPath+QString("/mActionRemove.png"))),
+  theMenu.addAction(QgisApp::getThemeIcon("/mActionRemove.png"),
                     tr("&Remove"), legend(), SLOT(legendLayerRemove()));
 	  
   theMenu.addSeparator();

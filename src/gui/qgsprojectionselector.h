@@ -52,7 +52,6 @@ class GUI_EXPORT QgsProjectionSelector: public QWidget, private Ui::QgsProjectio
        */
       void applyProjList(QSet<QString> * crsFilter = 0);
 
-      void updateProjAndEllipsoidAcronyms(int theSrsid, QString theProj4String);
 
       /*!
        * \brief Make the string safe for use in SQL statements.
@@ -66,7 +65,7 @@ class GUI_EXPORT QgsProjectionSelector: public QWidget, private Ui::QgsProjectio
       const QString stringSQLSafe(const QString theSQL);
 
       //! Gets the current EPSG-style projection identifier
-      long getCurrentEpsg();
+      long getSelectedEpsg();
 
     public slots:
       void setSelectedSRSName(QString theSRSName);
@@ -74,16 +73,15 @@ class GUI_EXPORT QgsProjectionSelector: public QWidget, private Ui::QgsProjectio
       QString getSelectedName();
 
       void setSelectedSRSID(long theSRSID);
+      void setSelectedEpsg(long epsg);
 
-      //void setSelectedEPSG(long epsg);
-
-      QString getCurrentProj4String();
+      QString getSelectedProj4String();
 
       //! Gets the current PostGIS-style projection identifier
-      long getCurrentSRID();
+      long getSelectedSRID();
 
       //! Gets the current QGIS projection identfier
-      long getCurrentSRSID();
+      long getSelectedSRSID();
 
       /**
        * \brief filters this widget by the given CRSs
@@ -154,8 +152,10 @@ class GUI_EXPORT QgsProjectionSelector: public QWidget, private Ui::QgsProjectio
        *
        * \param attributeName   The sqlite3 column name, typically "srid" or "epsg"
        */
-      long getCurrentLongAttribute(QString attributeName);
+      long getSelectedLongAttribute(QString attributeName);
 
+      /** Show the user a warning if the srs database could not be found */
+      const void showDBMissingWarning(const QString theFileName);
       // List view nodes for the tree view of projections
       //! User defined projections node
       QTreeWidgetItem *mUserProjList;

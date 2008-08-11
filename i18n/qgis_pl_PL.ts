@@ -1,4 +1,5 @@
-<!DOCTYPE TS><TS>
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE TS><TS version="1.1" language="pl">
 <defaultcodec></defaultcodec>
 <context>
     <name>Dialog</name>
@@ -1076,10 +1077,6 @@ Czy chcesz wskazać ścieżkę (GISBASE) do Twojej instalacji GRASS?</translatio
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Type:</source>
-        <translation type="obsolete">Typ:</translation>
-    </message>
-    <message>
         <source> is not writeable.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1106,14 +1103,6 @@ Czy chcesz wskazać ścieżkę (GISBASE) do Twojej instalacji GRASS?</translatio
     <message>
         <source>Python path:</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Abort</source>
-        <translation type="obsolete">Anuluj</translation>
-    </message>
-    <message>
-        <source>Version 0.001</source>
-        <translation type="obsolete">Wersja 0.001</translation>
     </message>
 </context>
 <context>
@@ -1151,32 +1140,8 @@ Czy chcesz wskazać ścieżkę (GISBASE) do Twojej instalacji GRASS?</translatio
         <translation>Jeśli pole jest zaznaczone, to warstwy są odrysowywane na bieżąco w odpowiedzi na użycie narzędzi nawigacyjnych i inne zdarzenia. Umożliwia to dodanie wielu warstw i określenie dla nich symboli przed odrysowaniem.</translation>
     </message>
     <message>
-        <source>Version </source>
-        <translation type="obsolete">Wersja </translation>
-    </message>
-    <message>
-        <source> with PostgreSQL support</source>
-        <translation type="obsolete"> z obsługą PostgreSQL</translation>
-    </message>
-    <message>
-        <source> (no PostgreSQL support)</source>
-        <translation type="obsolete"> (bez obsługi PostgreSQL)</translation>
-    </message>
-    <message>
-        <source>Quantum GIS is licensed under the GNU General Public License</source>
-        <translation type="obsolete">Quantum GIS jest rozpowszechniany na zasadach określonych w Powszechnej Licencji Publicznej GNU</translation>
-    </message>
-    <message>
-        <source>http://www.gnu.org/licenses</source>
-        <translation type="obsolete">http://www.gnu.org/licenses</translation>
-    </message>
-    <message>
         <source>Version</source>
         <translation>Wersja</translation>
-    </message>
-    <message>
-        <source>Available Data Provider Plugins</source>
-        <translation type="obsolete">Dostępne wtyczki źródeł danych</translation>
     </message>
     <message>
         <source>is not a valid or recognized data source</source>
@@ -1734,7 +1699,7 @@ Zapisz projekt pod nową nazwą</translation>
     <message>
         <source>Ctrl+F</source>
         <comment>Zoom to selection</comment>
-        <translation>Ctrl+</translation>
+        <translation type="unfinished">Ctrl+F</translation>
     </message>
     <message>
         <source>Zoom to selection</source>
@@ -1980,7 +1945,7 @@ Zapisz projekt pod nową nazwą</translation>
     </message>
     <message>
         <source>New features</source>
-        <translation>Nowe obiekty</translation>
+        <translation>Nowości</translation>
     </message>
     <message>
         <source>Unable to open project</source>
@@ -2087,13 +2052,6 @@ Zapisz projekt pod nową nazwą</translation>
         <source>T</source>
         <comment>Show most toolbars</comment>
         <translation>T</translation>
-    </message>
-    <message>
-        <source>Ctrl+T</source>
-        <comment>
-
-Hide most toolbars</comment>
-        <translation type="obsolete">Ctrl+T</translation>
     </message>
     <message>
         <source>Checking provider plugins</source>
@@ -2291,7 +2249,8 @@ Hide most toolbars</comment>
     </message>
     <message>
         <source>Ctrl+T</source>
-        <comment>Hide most toolbars</comment>
+        <comment>
+Hide most toolbars</comment>
         <translation type="unfinished">Ctrl+T</translation>
     </message>
     <message>
@@ -2376,10 +2335,6 @@ This binary was compiled against Qt %1,and is currently running against Qt %2</s
         <translation>Strona domowa QGIS</translation>
     </message>
     <message>
-        <source>Subscribe to the QGIS-User mailing list</source>
-        <translation type="obsolete">Subskrybuj listę QGIS-User</translation>
-    </message>
-    <message>
         <source>Version</source>
         <translation>Wersja</translation>
     </message>
@@ -2392,16 +2347,8 @@ This binary was compiled against Qt %1,and is currently running against Qt %2</s
         <translation>Źródła danych</translation>
     </message>
     <message>
-        <source>&lt;h2&gt;Quantum GIS (qgis)&lt;/h2&gt;</source>
-        <translation type="obsolete">&lt;h2&gt;Quantum GIS (qgis)&lt;/h2&gt;</translation>
-    </message>
-    <message>
         <source>Developers</source>
         <translation>Programiści</translation>
-    </message>
-    <message>
-        <source>&lt;h2&gt;QGIS Developers&lt;/h2&gt;</source>
-        <translation type="obsolete">&lt;h2&gt;Programiści QGIS&lt;/h2&gt;</translation>
     </message>
     <message>
         <source>Sponsors</source>
@@ -2465,25 +2412,9 @@ p, li { white-space: pre-wrap; }
         <source>Type:</source>
         <translation>Typ:</translation>
     </message>
-    <message>
-        <source>OK</source>
-        <translation type="obsolete">OK</translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation type="obsolete">Anuluj</translation>
-    </message>
 </context>
 <context>
     <name>QgsAttributeActionDialog</name>
-    <message>
-        <source>Name</source>
-        <translation type="obsolete">Nazwa</translation>
-    </message>
-    <message>
-        <source>Action</source>
-        <translation type="obsolete">Akcja</translation>
-    </message>
     <message>
         <source>Select an action</source>
         <comment>File dialog window title</comment>
@@ -2492,10 +2423,6 @@ p, li { white-space: pre-wrap; }
 </context>
 <context>
     <name>QgsAttributeActionDialogBase</name>
-    <message>
-        <source>Form1</source>
-        <translation type="obsolete">Form1</translation>
-    </message>
     <message>
         <source>This list contains all actions that have been defined for the current layer. Add actions by entering the details in the controls below and then pressing the Insert action button. Actions can be edited here by double clicking on the item.</source>
         <translation>Lista zawiera wszystkie akcje zdefiniowane dla bieżącej warstwy. Dodaj akcje wprowadzając szczegóły w kontrolkach poniżej, a następnie kliknij przycisk Dodaj. Akcje mogą być edytowane po dwukrotnym kliknięciu na jedną z nich.</translation>
@@ -2525,24 +2452,12 @@ p, li { white-space: pre-wrap; }
         <translation>Usuń wybraną akcję</translation>
     </message>
     <message>
-        <source>Name:</source>
-        <translation type="obsolete">Nazwa:</translation>
-    </message>
-    <message>
         <source>Enter the action name here</source>
         <translation>Wpisz tutaj nazwę akcji</translation>
     </message>
     <message>
-        <source>Action:</source>
-        <translation type="obsolete">Akcja:</translation>
-    </message>
-    <message>
         <source>Enter the action command here</source>
         <translation>Wpisz tutaj polecenie akcji</translation>
-    </message>
-    <message>
-        <source>Browse</source>
-        <translation type="obsolete">Przeglądaj</translation>
     </message>
     <message>
         <source>Insert action</source>
@@ -2650,26 +2565,6 @@ p, li { white-space: pre-wrap; }
         <source>Enter Attribute Values</source>
         <translation>Wprowadź wartość atrybutu</translation>
     </message>
-    <message>
-        <source>1</source>
-        <translation type="obsolete">1</translation>
-    </message>
-    <message>
-        <source>Attribute</source>
-        <translation type="obsolete">Atrybut</translation>
-    </message>
-    <message>
-        <source>Value</source>
-        <translation type="obsolete">Wartość</translation>
-    </message>
-    <message>
-        <source>&amp;OK</source>
-        <translation type="obsolete">&amp;OK</translation>
-    </message>
-    <message>
-        <source>&amp;Cancel</source>
-        <translation type="obsolete">&amp;Anuluj</translation>
-    </message>
 </context>
 <context>
     <name>QgsAttributeTable</name>
@@ -2687,14 +2582,6 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>Start editing</source>
         <translation>Rozpocznij edycję</translation>
-    </message>
-    <message>
-        <source>&amp;Close</source>
-        <translation type="obsolete">&amp;Zamknij</translation>
-    </message>
-    <message>
-        <source>Alt+C</source>
-        <translation type="obsolete">Alt+C</translation>
     </message>
     <message>
         <source>Ctrl+X</source>
@@ -2745,10 +2632,6 @@ p, li { white-space: pre-wrap; }
         <translation>Alt+G</translation>
     </message>
     <message>
-        <source>Search for:</source>
-        <translation type="obsolete">Szukaj:</translation>
-    </message>
-    <message>
         <source>in</source>
         <translation> w</translation>
     </message>
@@ -2763,10 +2646,6 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>Alt+N</source>
         <translation>Alt+N</translation>
-    </message>
-    <message>
-        <source>&amp;Help</source>
-        <translation type="obsolete">&amp;Pomoc</translation>
     </message>
     <message>
         <source>New column</source>
@@ -2851,11 +2730,6 @@ p, li { white-space: pre-wrap; }
         <source>Could not commit changes - changes are still pending</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
-        <source>Found %d matching features.</source>
-        <translation type="obsolete">
-        </translation>
-    </message>
 </context>
 <context>
     <name>QgsBookmarks</name>
@@ -2914,34 +2788,6 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>Id</source>
         <translation>Id</translation>
-    </message>
-    <message>
-        <source>Zoom To</source>
-        <translation type="obsolete">Powiększ do</translation>
-    </message>
-    <message>
-        <source>Zoom to the currently selected bookmark</source>
-        <translation type="obsolete">Powiększ do wybranej zakładki</translation>
-    </message>
-    <message>
-        <source>Delete</source>
-        <translation type="obsolete">Usuń</translation>
-    </message>
-    <message>
-        <source>Delete the currently selected bookmark</source>
-        <translation type="obsolete">Usuń wybraną zakładkę</translation>
-    </message>
-    <message>
-        <source>Close</source>
-        <translation type="obsolete">Zamknij</translation>
-    </message>
-    <message>
-        <source>Close the dialog</source>
-        <translation type="obsolete">Zamknij okno</translation>
-    </message>
-    <message>
-        <source>Help</source>
-        <translation type="obsolete">Pomoc</translation>
     </message>
 </context>
 <context>
@@ -3315,14 +3161,6 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>QgsComposerVectorLegend</name>
     <message>
-        <source>Layers</source>
-        <translation type="obsolete">Warstwy</translation>
-    </message>
-    <message>
-        <source>Group</source>
-        <translation type="obsolete">Grupa</translation>
-    </message>
-    <message>
         <source>Combine selected layers</source>
         <translation>Połącz wybrane warstwy</translation>
     </message>
@@ -3364,10 +3202,6 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>Box</source>
         <translation>Prostokąt</translation>
-    </message>
-    <message>
-        <source>Column 1</source>
-        <translation type="obsolete">Kolumna 1</translation>
     </message>
     <message>
         <source>Preview</source>
@@ -3661,10 +3495,6 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>&#xa9; QGIS 2008</source>
-        <translation type="obsolete">© QGIS 2008</translation>
-    </message>
-    <message encoding="UTF-8">
-        <source>© QGIS 2008</source>
         <translation>© QGIS 2008</translation>
     </message>
 </context>
@@ -3734,10 +3564,6 @@ p, li { white-space: pre-wrap; }
         <translation>Definiuj</translation>
     </message>
     <message>
-        <source>Parameters:</source>
-        <translation type="obsolete">Parametry:</translation>
-    </message>
-    <message>
         <source>|&lt;</source>
         <translation>|&lt;</translation>
     </message>
@@ -3758,32 +3584,8 @@ p, li { white-space: pre-wrap; }
         <translation>&gt;|</translation>
     </message>
     <message>
-        <source>New</source>
-        <translation type="obsolete">Nowy</translation>
-    </message>
-    <message>
-        <source>Save</source>
-        <translation type="obsolete">Zapisz</translation>
-    </message>
-    <message>
-        <source>Delete</source>
-        <translation type="obsolete">Usuń</translation>
-    </message>
-    <message>
-        <source>Close</source>
-        <translation type="obsolete">Zamknij</translation>
-    </message>
-    <message>
-        <source>Name:</source>
-        <translation type="obsolete">Nazwa:</translation>
-    </message>
-    <message>
         <source>Test</source>
         <translation>Testuj</translation>
-    </message>
-    <message>
-        <source>Transform from WGS84 to the chosen projection</source>
-        <translation type="obsolete">Przekształć z WGS84 do wybranego układu współrzędnych</translation>
     </message>
     <message>
         <source>Calculate</source>
@@ -3792,14 +3594,6 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>Geographic / WGS84</source>
         <translation>Geograficzny /WGS84</translation>
-    </message>
-    <message>
-        <source>North:</source>
-        <translation type="obsolete">Północ:</translation>
-    </message>
-    <message>
-        <source>East:</source>
-        <translation type="obsolete">Wschód:</translation>
     </message>
     <message>
         <source>You can define your own custom projection here. The definition must conform to the proj4 format for specifying a Spatial Reference System.</source>
@@ -4047,14 +3841,6 @@ geometry.</source>
     <message>
         <source>Delete Attributes</source>
         <translation>Usuń atrybuty</translation>
-    </message>
-    <message>
-        <source>OK</source>
-        <translation type="obsolete">OK</translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation type="obsolete">Anuluj</translation>
     </message>
 </context>
 <context>
@@ -4310,21 +4096,6 @@ geometry.</source>
     <message>
         <source>Encoding:</source>
         <translation>Kodowanie:</translation>
-    </message>
-</context>
-<context>
-    <name>QgsFillStyleWidgetBase</name>
-    <message>
-        <source>Form1</source>
-        <translation type="obsolete">Form1</translation>
-    </message>
-    <message>
-        <source>Fill Style</source>
-        <translation type="obsolete">Styl wypełnienia</translation>
-    </message>
-    <message>
-        <source>Colour:</source>
-        <translation type="obsolete">Kolor:</translation>
     </message>
 </context>
 <context>
@@ -4788,14 +4559,6 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>QgsGeomTypeDialog</name>
     <message>
-        <source>Name</source>
-        <translation type="obsolete">Nazwa</translation>
-    </message>
-    <message>
-        <source>Type</source>
-        <translation type="obsolete">Typ</translation>
-    </message>
-    <message>
         <source>Real</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4829,26 +4592,6 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>New Vector Layer</source>
         <translation>Nowa warstwa wektorowa</translation>
-    </message>
-    <message>
-        <source>Attributes:</source>
-        <translation type="obsolete">Atrybuty:</translation>
-    </message>
-    <message>
-        <source>Add</source>
-        <translation type="obsolete">Dodaj</translation>
-    </message>
-    <message>
-        <source>Column 1</source>
-        <translation type="obsolete">Kolumna 1</translation>
-    </message>
-    <message>
-        <source>Remove</source>
-        <translation type="obsolete">Usuń</translation>
-    </message>
-    <message>
-        <source>File Format:</source>
-        <translation type="obsolete">Format pliku:</translation>
     </message>
     <message>
         <source>File format</source>
@@ -5021,18 +4764,6 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>graduated Symbol</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Classification Field:</source>
-        <translation type="obsolete">Pole klasyfikacji:</translation>
-    </message>
-    <message>
-        <source>Mode:</source>
-        <translation type="obsolete">Tryb:</translation>
-    </message>
-    <message>
-        <source>Number of Classes:</source>
-        <translation type="obsolete">Liczba klas:</translation>
     </message>
     <message>
         <source>Delete class</source>
@@ -5348,30 +5079,6 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Color</source>
-        <comment>
-
-
-Column title</comment>
-        <translation type="obsolete">Kolor</translation>
-    </message>
-    <message>
-        <source>Type</source>
-        <comment>
-
-
-Column title</comment>
-        <translation type="obsolete">Typ</translation>
-    </message>
-    <message>
-        <source>Index</source>
-        <comment>
-
-
-Column title</comment>
-        <translation type="obsolete">Indeks</translation>
-    </message>
-    <message>
         <source>Column</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5401,17 +5108,20 @@ Column title</comment>
     </message>
     <message>
         <source>Color</source>
-        <comment>Column title</comment>
+        <comment>
+Column title</comment>
         <translation type="unfinished">Kolor</translation>
     </message>
     <message>
         <source>Type</source>
-        <comment>Column title</comment>
+        <comment>
+Column title</comment>
         <translation type="unfinished">Typ</translation>
     </message>
     <message>
         <source>Index</source>
-        <comment>Column title</comment>
+        <comment>
+Column title</comment>
         <translation type="unfinished">Indeks</translation>
     </message>
 </context>
@@ -7009,12 +6719,6 @@ p, li { white-space: pre-wrap; }
         <source>HTTP transaction completed, however there was an error: %1</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
-        <source>Network timed out after %1 seconds of inactivity.
-This may be a problem in your network connection or at the WMS server.</source>
-        <translation type="obsolete">
-        </translation>
-    </message>
 </context>
 <context>
     <name>QgsIdentifyResults</name>
@@ -7059,17 +6763,6 @@ This may be a problem in your network connection or at the WMS server.</source>
     </message>
 </context>
 <context>
-    <name>QgsInterpolationDialogBase</name>
-    <message>
-        <source>Output</source>
-        <translation type="obsolete">Wyjście</translation>
-    </message>
-    <message>
-        <source>...</source>
-        <translation type="obsolete">...</translation>
-    </message>
-</context>
-<context>
     <name>QgsLUDialogBase</name>
     <message>
         <source>Enter class bounds</source>
@@ -7084,14 +6777,6 @@ This may be a problem in your network connection or at the WMS server.</source>
         <translation>-</translation>
     </message>
     <message>
-        <source>OK</source>
-        <translation type="obsolete">OK</translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation type="obsolete">Anuluj</translation>
-    </message>
-    <message>
         <source>Upper value</source>
         <translation>Wyższa wartość</translation>
     </message>
@@ -7101,18 +6786,6 @@ This may be a problem in your network connection or at the WMS server.</source>
     <message>
         <source>Form1</source>
         <translation>Form1</translation>
-    </message>
-    <message>
-        <source>Field containing label:</source>
-        <translation type="obsolete">Pole dla etykiety:</translation>
-    </message>
-    <message>
-        <source>Default label:</source>
-        <translation type="obsolete">Domyślna etykieta:</translation>
-    </message>
-    <message>
-        <source>Font Style</source>
-        <translation type="obsolete">Styl czcionki</translation>
     </message>
     <message>
         <source>Font</source>
@@ -7133,10 +6806,6 @@ This may be a problem in your network connection or at the WMS server.</source>
     <message>
         <source>Transparency:</source>
         <translation>Przezroczystość:</translation>
-    </message>
-    <message>
-        <source>Colour</source>
-        <translation type="obsolete">Kolor</translation>
     </message>
     <message>
         <source>Above</source>
@@ -7175,18 +6844,6 @@ This may be a problem in your network connection or at the WMS server.</source>
         <translation>Dolny lewy</translation>
     </message>
     <message>
-        <source>Angle (deg):</source>
-        <translation type="obsolete">Kąt (stopnie):</translation>
-    </message>
-    <message>
-        <source>&#xb0;</source>
-        <translation type="obsolete">°</translation>
-    </message>
-    <message>
-        <source>Buffer Labels?</source>
-        <translation type="obsolete">Buforować etykiety?</translation>
-    </message>
-    <message>
         <source>Size:</source>
         <translation>Rozmiar:</translation>
     </message>
@@ -7203,46 +6860,6 @@ This may be a problem in your network connection or at the WMS server.</source>
         <translation>Pozycja</translation>
     </message>
     <message>
-        <source>X Offset (pts):</source>
-        <translation type="obsolete">Przesunięcie X (pts):</translation>
-    </message>
-    <message>
-        <source>Y Offset (pts):</source>
-        <translation type="obsolete">Przesunięcie Y (pts):</translation>
-    </message>
-    <message>
-        <source>&amp;Font family:</source>
-        <translation type="obsolete">Krój &amp;czcionki:</translation>
-    </message>
-    <message>
-        <source>&amp;Italic:</source>
-        <translation type="obsolete">&amp;Kursywa:</translation>
-    </message>
-    <message>
-        <source>&amp;Underline:</source>
-        <translation type="obsolete">&amp;Podkreślona:</translation>
-    </message>
-    <message>
-        <source>&amp;Bold:</source>
-        <translation type="obsolete">Pogru&amp;biona:</translation>
-    </message>
-    <message>
-        <source>&amp;Size:</source>
-        <translation type="obsolete">&amp;Rozmiar:</translation>
-    </message>
-    <message>
-        <source>Placement:</source>
-        <translation type="obsolete">Umiejscowienie:</translation>
-    </message>
-    <message>
-        <source>X Coordinate:</source>
-        <translation type="obsolete">Współrzędna X:</translation>
-    </message>
-    <message>
-        <source>Y Coordinate:</source>
-        <translation type="obsolete">Współrzędna Y:</translation>
-    </message>
-    <message>
         <source>Preview:</source>
         <translation>Podgląd:</translation>
     </message>
@@ -7253,10 +6870,6 @@ This may be a problem in your network connection or at the WMS server.</source>
     <message>
         <source>Font size units</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Font Alignment</source>
-        <translation type="obsolete">Wyrównanie</translation>
     </message>
     <message>
         <source>Placement</source>
@@ -7275,11 +6888,7 @@ This may be a problem in your network connection or at the WMS server.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Source</source>
-        <translation type="obsolete">Żródło</translation>
-    </message>
-    <message encoding="UTF-8">
-        <source>°</source>
+        <source>&#xb0;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -7599,40 +7208,6 @@ This may be a problem in your network connection or at the WMS server.</source>
     </message>
 </context>
 <context>
-    <name>QgsLineStyleDialogBase</name>
-    <message>
-        <source>Select a line style</source>
-        <translation type="obsolete">Wybierz styl linii</translation>
-    </message>
-    <message>
-        <source>Styles</source>
-        <translation type="obsolete">Style</translation>
-    </message>
-    <message>
-        <source>Ok</source>
-        <translation type="obsolete">OK</translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation type="obsolete">Anuluj</translation>
-    </message>
-</context>
-<context>
-    <name>QgsLineStyleWidgetBase</name>
-    <message>
-        <source>Form2</source>
-        <translation type="obsolete">Form2</translation>
-    </message>
-    <message>
-        <source>Width:</source>
-        <translation type="obsolete">Szerokość:</translation>
-    </message>
-    <message>
-        <source>Colour:</source>
-        <translation type="obsolete">Kolor:</translation>
-    </message>
-</context>
-<context>
     <name>QgsMapCanvas</name>
     <message>
         <source>Could not draw</source>
@@ -7700,12 +7275,6 @@ This may be a problem in your network connection or at the WMS server.</source>
         <source>WMS identify result for %1
 %2</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>- %1 features found</source>
-        <comment>Identify results window title</comment>
-        <translation type="obsolete">
-        </translation>
     </message>
 </context>
 <context>
@@ -7946,33 +7515,6 @@ Do you want to overwrite it?</source>
     </message>
 </context>
 <context>
-    <name>QgsMarkerDialogBase</name>
-    <message>
-        <source>Choose a marker symbol</source>
-        <translation type="obsolete">Wybierz symbol znacznika</translation>
-    </message>
-    <message>
-        <source>Directory</source>
-        <translation type="obsolete">Katalog</translation>
-    </message>
-    <message>
-        <source>...</source>
-        <translation type="obsolete">...</translation>
-    </message>
-    <message>
-        <source>Ok</source>
-        <translation type="obsolete">OK</translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation type="obsolete">Anuluj</translation>
-    </message>
-    <message>
-        <source>New Item</source>
-        <translation type="obsolete">Nowy</translation>
-    </message>
-</context>
-<context>
     <name>QgsMeasureBase</name>
     <message>
         <source>Measure</source>
@@ -8159,10 +7701,6 @@ Rozszerzona informacja o błędzie:
 <context>
     <name>QgsNewHttpConnectionBase</name>
     <message>
-        <source>Connection Information</source>
-        <translation type="obsolete">Informacja o połączeniu</translation>
-    </message>
-    <message>
         <source>Name</source>
         <translation>Nazwa</translation>
     </message>
@@ -8177,22 +7715,6 @@ Rozszerzona informacja o błędzie:
     <message>
         <source>HTTP address of the Web Map Server</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>OK</source>
-        <translation type="obsolete">OK</translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation type="obsolete">Anuluj</translation>
-    </message>
-    <message>
-        <source>Help</source>
-        <translation type="obsolete">Pomoc</translation>
-    </message>
-    <message>
-        <source>F1</source>
-        <translation type="obsolete">F1</translation>
     </message>
     <message>
         <source>Create a new WMS connection</source>
@@ -8300,10 +7822,6 @@ Rozszerzona informacja o błędzie:
         <translation>Ikona</translation>
     </message>
     <message>
-        <source>New Item</source>
-        <translation type="obsolete">Nowy</translation>
-    </message>
-    <message>
         <source>Browse...</source>
         <translation type="unfinished">Przeglądaj...</translation>
     </message>
@@ -8342,20 +7860,8 @@ Rozszerzona informacja o błędzie:
         <translation>Ustawienia QGIS</translation>
     </message>
     <message>
-        <source>&amp;Appearance</source>
-        <translation type="obsolete">&amp;Wygląd</translation>
-    </message>
-    <message>
         <source>Hide splash screen at startup</source>
         <translation>Nie pokazuj ekranu powitalnego przy starcie</translation>
-    </message>
-    <message>
-        <source>&amp;Icon Theme</source>
-        <translation type="obsolete">&amp;Temat ikon</translation>
-    </message>
-    <message>
-        <source>Theme</source>
-        <translation type="obsolete">Temat</translation>
     </message>
     <message>
         <source>&lt;b&gt;Note: &lt;/b&gt;Theme changes take effect the next time QGIS is started</source>
@@ -8366,61 +7872,12 @@ Rozszerzona informacja o błędzie:
         <translation>&amp;Rysowywanie</translation>
     </message>
     <message>
-        <source>Update display after reading</source>
-        <translation type="obsolete">Odśwież mapę po odczytaniu</translation>
-    </message>
-    <message>
         <source>Map display will be updated (drawn) after this many features have been read from the data source</source>
         <translation>Ekran mapy będzie odświeżany po wczytaniu podanej tu ilości obiektów</translation>
     </message>
     <message>
-        <source>features</source>
-        <translation type="obsolete">obiektów</translation>
-    </message>
-    <message>
-        <source>(Set to 0 to not update the display until all features have been read)</source>
-        <translation type="obsolete">(Podanie wartości 0 sprawi, że ekran nie będzie aktualizowany aż do zakończenia
-odczytu ze źródła danych)</translation>
-    </message>
-    <message>
-        <source>Initial Visibility</source>
-        <translation type="obsolete">Widoczność początkowa</translation>
-    </message>
-    <message>
         <source>Select Global Default ...</source>
         <translation>Wskaż domyślne globalnie...</translation>
-    </message>
-    <message>
-        <source>Prompt for projection.</source>
-        <translation type="obsolete">Pytaj o układ współrzędnych.</translation>
-    </message>
-    <message>
-        <source>Project wide default projection will be used.</source>
-        <translation type="obsolete">Użyj domyślnego układu współrzędnych projektu.</translation>
-    </message>
-    <message>
-        <source>&amp;Splash screen</source>
-        <translation type="obsolete">&amp;Ekran powitalny</translation>
-    </message>
-    <message>
-        <source>Default Map Appearance (Overridden by project properties)</source>
-        <translation type="obsolete">Domyślny wygląd mapy (podrzędny do właściwości projektu)</translation>
-    </message>
-    <message>
-        <source>Background Color:</source>
-        <translation type="obsolete">Kolor tła:</translation>
-    </message>
-    <message>
-        <source>Selection Color:</source>
-        <translation type="obsolete">Kolor zaznaczenia:</translation>
-    </message>
-    <message>
-        <source>Appearance</source>
-        <translation type="obsolete">Wygląd</translation>
-    </message>
-    <message>
-        <source>Capitalise layer name</source>
-        <translation type="obsolete">Nazwa warstwy od dużej litery</translation>
     </message>
     <message>
         <source>Make lines appear less jagged at the expense of some drawing performance</source>
@@ -8431,16 +7888,8 @@ odczytu ze źródła danych)</translation>
         <translation>Domyślnie nowo dodawane warstw&amp;y są wyświetlane</translation>
     </message>
     <message>
-        <source>&amp;Update during drawing</source>
-        <translation type="obsolete">&amp;Odświeżanie podczas rysowania</translation>
-    </message>
-    <message>
         <source>Measure tool</source>
         <translation>Narzędzie pomiaru</translation>
-    </message>
-    <message>
-        <source>Ellipsoid for distance calculations:</source>
-        <translation type="obsolete">Elipsoida do kalkulacji odległości:</translation>
     </message>
     <message>
         <source>Search radius</source>
@@ -8453,14 +7902,6 @@ odczytu ze źródła danych)</translation>
     <message>
         <source>When layer is loaded that has no projection information</source>
         <translation>Gdy dodawana warstwa nie posiada informacji o układzie współrzędnych</translation>
-    </message>
-    <message>
-        <source>Global default projection displa&amp;yed below will be used.</source>
-        <translation type="obsolete">Użyj globalnego dom&amp;yślnego układu współrzędnych, wyświetlonego poniżej.</translation>
-    </message>
-    <message>
-        <source>Rendering</source>
-        <translation type="obsolete">Renderowanie</translation>
     </message>
     <message>
         <source>Fix problems with incorrectly filled polygons</source>
@@ -8499,10 +7940,6 @@ odczytu ze źródła danych)</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>General</source>
-        <translation type="obsolete">Ogólne</translation>
-    </message>
-    <message>
         <source>Locale</source>
         <translation type="unfinished"></translation>
     </message>
@@ -8531,16 +7968,8 @@ odczytu ze źródła danych)</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Line Width:</source>
-        <translation type="obsolete">Szerokość linii:</translation>
-    </message>
-    <message>
         <source>Line width in pixels</source>
         <translation type="unfinished">Szerokość linii w pikselach</translation>
-    </message>
-    <message>
-        <source>Line Colour:</source>
-        <translation type="obsolete">Kolor linii:</translation>
     </message>
     <message>
         <source>Snapping</source>
@@ -8747,25 +8176,6 @@ odczytu ze źródła danych)</translation>
     </message>
 </context>
 <context>
-    <name>QgsPatternDialogBase</name>
-    <message>
-        <source>Select a fill pattern</source>
-        <translation type="obsolete">Wybierz szablon wypełnienia</translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation type="obsolete">Anuluj</translation>
-    </message>
-    <message>
-        <source>Ok</source>
-        <translation type="obsolete">OK</translation>
-    </message>
-    <message>
-        <source>No Fill</source>
-        <translation type="obsolete">Bez wypełnienia</translation>
-    </message>
-</context>
-<context>
     <name>QgsPgGeoprocessing</name>
     <message>
         <source>Buffer features in layer %1</source>
@@ -8939,10 +8349,6 @@ odczytu ze źródła danych)</translation>
         <translation>Pola</translation>
     </message>
     <message>
-        <source>Datasource:</source>
-        <translation type="obsolete">Źródło danych:</translation>
-    </message>
-    <message>
         <source>Operators</source>
         <translation>Operatory</translation>
     </message>
@@ -9050,18 +8456,6 @@ p, li { white-space: pre-wrap; }
         <translation>Nie znaleziono wtyczek QGIS</translation>
     </message>
     <message>
-        <source>Name</source>
-        <translation type="obsolete">Nazwa</translation>
-    </message>
-    <message>
-        <source>Version</source>
-        <translation type="obsolete">Wersja</translation>
-    </message>
-    <message>
-        <source>Description</source>
-        <translation type="obsolete">Opis</translation>
-    </message>
-    <message>
         <source>&amp;Select All</source>
         <translation>&amp;Zaznacz wszystko</translation>
     </message>
@@ -9072,46 +8466,6 @@ p, li { white-space: pre-wrap; }
 </context>
 <context>
     <name>QgsPluginManagerBase</name>
-    <message>
-        <source>Plugin Directory</source>
-        <translation type="obsolete">Katalog wtyczek</translation>
-    </message>
-    <message>
-        <source>To load a plugin, click the checkbox next to the plugin and click Ok</source>
-        <translation type="obsolete">Aby wczytać wtyczkę, zaznacz pole wyboru obok nazwy wtyczki i kliknij OK</translation>
-    </message>
-    <message>
-        <source>&amp;Select All</source>
-        <translation type="obsolete">&amp;Zaznacz wszystko</translation>
-    </message>
-    <message>
-        <source>Alt+S</source>
-        <translation type="obsolete">Alt+S</translation>
-    </message>
-    <message>
-        <source>C&amp;lear All</source>
-        <translation type="obsolete">&amp;Odznacz wszystko</translation>
-    </message>
-    <message>
-        <source>Alt+L</source>
-        <translation type="obsolete">Alt+L</translation>
-    </message>
-    <message>
-        <source>&amp;Ok</source>
-        <translation type="obsolete">&amp;OK</translation>
-    </message>
-    <message>
-        <source>Alt+O</source>
-        <translation type="obsolete">Alt+O</translation>
-    </message>
-    <message>
-        <source>&amp;Close</source>
-        <translation type="obsolete">&amp;Zamknij</translation>
-    </message>
-    <message>
-        <source>Alt+C</source>
-        <translation type="obsolete">Alt+C</translation>
-    </message>
     <message>
         <source>QGIS Plugin Manager</source>
         <translation>Menedżer wtyczek QGIS</translation>
@@ -9298,17 +8652,6 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>Create and load layer</source>
         <translation>Stwórz i wczytaj warstwę</translation>
-    </message>
-</context>
-<context>
-    <name>QgsPointStyleWidgetBase</name>
-    <message>
-        <source>Form3</source>
-        <translation type="obsolete">Form3</translation>
-    </message>
-    <message>
-        <source>Scale</source>
-        <translation type="obsolete">Skala</translation>
     </message>
 </context>
 <context>
@@ -9508,10 +8851,6 @@ primary key) or has a PostgreSQL oid column.
         <translation>Domyślna nazwa projektu</translation>
     </message>
     <message>
-        <source>Map Units</source>
-        <translation type="obsolete">Jednostki mapy</translation>
-    </message>
-    <message>
         <source>Meters</source>
         <translation>Metry</translation>
     </message>
@@ -9556,28 +8895,12 @@ primary key) or has a PostgreSQL oid column.
         <translation>miejsca dziesiętne</translation>
     </message>
     <message>
-        <source>Map Appearance</source>
-        <translation type="obsolete">Wygląd mapy</translation>
-    </message>
-    <message>
-        <source>Selection Color:</source>
-        <translation type="obsolete">Kolor zaznaczenia:</translation>
-    </message>
-    <message>
-        <source>Project Title</source>
-        <translation type="obsolete">Tytuł projektu</translation>
-    </message>
-    <message>
         <source>Projection</source>
         <translation>Układ współrzędnych</translation>
     </message>
     <message>
         <source>Enable on the fly projection</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Background Color:</source>
-        <translation type="obsolete">Kolor tła:</translation>
     </message>
     <message>
         <source>Precision</source>
@@ -9841,14 +9164,6 @@ primary key) or has a PostgreSQL oid column.
     <message>
         <source>Pixel Size:</source>
         <translation>Rozmiar piksela:</translation>
-    </message>
-    <message>
-        <source>Property</source>
-        <translation type="obsolete">Właściwość</translation>
-    </message>
-    <message>
-        <source>Value</source>
-        <translation type="obsolete">Wartość</translation>
     </message>
     <message>
         <source>Band</source>
@@ -10167,10 +9482,6 @@ primary key) or has a PostgreSQL oid column.
         <translation>Brak</translation>
     </message>
     <message>
-        <source>Gray</source>
-        <translation type="obsolete">Szary</translation>
-    </message>
-    <message>
         <source>General</source>
         <translation>Ogólne</translation>
     </message>
@@ -10199,28 +9510,12 @@ primary key) or has a PostgreSQL oid column.
         <translation>Paleta:</translation>
     </message>
     <message>
-        <source>Maximum 1:</source>
-        <translation type="obsolete">Maksymalna 1:</translation>
-    </message>
-    <message>
         <source>Maximum scale at which this layer will be displayed. </source>
         <translation>Maksymalna skala, dla której wartstwa będzie wyświetlana.</translation>
     </message>
     <message>
-        <source>Minimum 1:</source>
-        <translation type="obsolete">Minimalna 1:</translation>
-    </message>
-    <message>
         <source>Minimum scale at which this layer will be displayed. </source>
         <translation>Minimalna skala, dla której wartstwa będzie wyświetlana.</translation>
-    </message>
-    <message>
-        <source>Layer Source:</source>
-        <translation type="obsolete">Źródło warstwy:</translation>
-    </message>
-    <message>
-        <source>Display Name:</source>
-        <translation type="obsolete">Nazwa wyświetlana:</translation>
     </message>
     <message>
         <source>Metadata</source>
@@ -10251,10 +9546,6 @@ primary key) or has a PostgreSQL oid column.
         <translation>Opcje</translation>
     </message>
     <message>
-        <source>Out Of Range OK?</source>
-        <translation type="obsolete">Poza zakresem OK?</translation>
-    </message>
-    <message>
         <source>Chart Type</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10269,42 +9560,6 @@ primary key) or has a PostgreSQL oid column.
     <message>
         <source>Min</source>
         <translation>Min</translation>
-    </message>
-    <message>
-        <source>&lt;b&gt;&lt;font color=&apos;blue&apos;&gt;Max&lt;/font&gt;&lt;/b&gt;</source>
-        <translation type="obsolete">&lt;b&gt;&lt;font color=&apos;blue&apos;&gt;Max&lt;/font&gt;&lt;/b&gt;</translation>
-    </message>
-    <message>
-        <source>&lt;b&gt;&lt;font color=&apos;green&apos;&gt;Min&lt;/font&gt;&lt;/b&gt;</source>
-        <translation type="obsolete">&lt;b&gt;&lt;font color=&apos;green&apos;&gt;Min&lt;/font&gt;&lt;/b&gt;</translation>
-    </message>
-    <message>
-        <source>&lt;b&gt;&lt;font color=&apos;green&apos;&gt;Max&lt;/font&gt;&lt;/b&gt;</source>
-        <translation type="obsolete">&lt;b&gt;&lt;font color=&apos;green&apos;&gt;Max&lt;/font&gt;&lt;/b&gt;</translation>
-    </message>
-    <message>
-        <source>&lt;b&gt;&lt;font color=&apos;red&apos;&gt;Min&lt;/font&gt;&lt;/b&gt;</source>
-        <translation type="obsolete">&lt;b&gt;&lt;font color=&apos;red&apos;&gt;Min&lt;/font&gt;&lt;/b&gt;</translation>
-    </message>
-    <message>
-        <source>&lt;b&gt;&lt;font color=&apos;red&apos;&gt;Max&lt;/font&gt;&lt;/b&gt;</source>
-        <translation type="obsolete">&lt;b&gt;&lt;font color=&apos;red&apos;&gt;Max&lt;/font&gt;&lt;/b&gt;</translation>
-    </message>
-    <message>
-        <source>&lt;b&gt;&lt;font color=&apos;blue&apos;&gt;Min&lt;/font&gt;&lt;/b&gt;</source>
-        <translation type="obsolete">&lt;b&gt;&lt;font color=&apos;blue&apos;&gt;Min&lt;/font&gt;&lt;/b&gt;</translation>
-    </message>
-    <message>
-        <source>&lt;b&gt;&lt;font color=&apos;blue&apos;&gt;Blue&lt;/font&gt;&lt;/b&gt;</source>
-        <translation type="obsolete">&lt;b&gt;&lt;font color=&apos;blue&apos;&gt;Niebieski&lt;/font&gt;&lt;/b&gt;</translation>
-    </message>
-    <message>
-        <source>&lt;b&gt;&lt;font color=&apos;green&apos;&gt;Green&lt;/font&gt;&lt;/b&gt;</source>
-        <translation type="obsolete">&lt;b&gt;&lt;font color=&apos;green&apos;&gt;Zielony&lt;/font&gt;&lt;/b&gt;</translation>
-    </message>
-    <message>
-        <source>&lt;b&gt;&lt;font color=&apos;red&apos;&gt;Red&lt;/font&gt;&lt;/b&gt;</source>
-        <translation type="obsolete">&lt;b&gt;&lt;font color=&apos;red&apos;&gt;Czerwony&lt;/font&gt;&lt;/b&gt;</translation>
     </message>
     <message>
         <source> 00%</source>
@@ -10622,44 +9877,6 @@ p, li { white-space: pre-wrap; }
     </message>
 </context>
 <context>
-    <name>QgsSOSSourceSelect</name>
-    <message>
-        <source>Are you sure you want to remove the </source>
-        <translation type="obsolete">Czy na pewno chcesz usunąć </translation>
-    </message>
-    <message>
-        <source> connection and all associated settings?</source>
-        <translation type="obsolete">połączenie i wszystkie związane z nim ustawienia?</translation>
-    </message>
-    <message>
-        <source>Confirm Delete</source>
-        <translation type="obsolete">Zatwierdź usunięcie</translation>
-    </message>
-</context>
-<context>
-    <name>QgsSOSSourceSelectBase</name>
-    <message>
-        <source>&amp;New</source>
-        <translation type="obsolete">&amp;Nowy</translation>
-    </message>
-    <message>
-        <source>Delete</source>
-        <translation type="obsolete">Usuń</translation>
-    </message>
-    <message>
-        <source>Edit</source>
-        <translation type="obsolete">Edytuj</translation>
-    </message>
-    <message>
-        <source>Name</source>
-        <translation type="obsolete">Nazwa</translation>
-    </message>
-    <message>
-        <source>Id</source>
-        <translation type="obsolete">Id</translation>
-    </message>
-</context>
-<context>
     <name>QgsScaleBarPlugin</name>
     <message>
         <source> metres/km</source>
@@ -10863,11 +10080,6 @@ p, li { white-space: pre-wrap; }
         <source>Search query builder</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
-        <source>Found %d matching features.</source>
-        <translation type="obsolete">
-        </translation>
-    </message>
 </context>
 <context>
     <name>QgsServerSourceSelect</name>
@@ -10918,11 +10130,6 @@ p, li { white-space: pre-wrap; }
     <message>
         <source>There are no available coordinate reference system for the set of layers you&apos;ve selected.</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Coordinate Reference System (%1 available)</source>
-        <translation type="obsolete">
-        </translation>
     </message>
     <message>
         <source>Several WMS servers have been added to the server list. Note that if you access the internet via a web proxy, you will need to set the proxy settings in the QGIS options dialog.</source>
@@ -11591,14 +10798,6 @@ Should the existing classes be deleted before classification?</source>
         <translation>Form1</translation>
     </message>
     <message>
-        <source>Classification Field:</source>
-        <translation type="obsolete">Pole klasyfikacji:</translation>
-    </message>
-    <message>
-        <source>Delete class</source>
-        <translation type="obsolete">Usuń klasę</translation>
-    </message>
-    <message>
         <source>Classify</source>
         <translation>Klasyfikuj</translation>
     </message>
@@ -11800,16 +10999,8 @@ Should the existing classes be deleted before classification?</source>
         <translation>Właściwości warstwy</translation>
     </message>
     <message>
-        <source>Legend type:</source>
-        <translation type="obsolete">Rodzaj legendy:</translation>
-    </message>
-    <message>
         <source>Symbology</source>
         <translation>Symbolika</translation>
-    </message>
-    <message>
-        <source>Transparency:</source>
-        <translation type="obsolete">Przeźroczystość:</translation>
     </message>
     <message>
         <source>General</source>
@@ -11818,14 +11009,6 @@ Should the existing classes be deleted before classification?</source>
     <message>
         <source>Use scale dependent rendering</source>
         <translation>Użyj rysowania zależnego od skali</translation>
-    </message>
-    <message>
-        <source>Maximum 1:</source>
-        <translation type="obsolete">Maksymalna 1:</translation>
-    </message>
-    <message>
-        <source>Minimum 1:</source>
-        <translation type="obsolete">Minimalna 1:</translation>
     </message>
     <message>
         <source>Minimum scale at which this layer will be displayed. </source>
@@ -11842,10 +11025,6 @@ Should the existing classes be deleted before classification?</source>
     <message>
         <source>Use this control to set which field is placed at the top level of the Identify Results dialog box.</source>
         <translation>Użyj tego narzędzia aby ustawić pola wyświetlane na górze w oknie wyników identyfikacji.</translation>
-    </message>
-    <message>
-        <source>Change</source>
-        <translation type="obsolete">Zmień</translation>
     </message>
     <message>
         <source>Display field for the Identify Results dialog box</source>
@@ -11926,33 +11105,6 @@ Should the existing classes be deleted before classification?</source>
     <message>
         <source>Minimum</source>
         <translation type="unfinished">Minimum</translation>
-    </message>
-</context>
-<context>
-    <name>QgsVectorSymbologyWidgetBase</name>
-    <message>
-        <source>Form2</source>
-        <translation type="obsolete">Form2</translation>
-    </message>
-    <message>
-        <source>Label</source>
-        <translation type="obsolete">Etykieta</translation>
-    </message>
-    <message>
-        <source>Min</source>
-        <translation type="obsolete">Min</translation>
-    </message>
-    <message>
-        <source>Max</source>
-        <translation type="obsolete">Max</translation>
-    </message>
-    <message>
-        <source>Mode:</source>
-        <translation type="obsolete">Tryb:</translation>
-    </message>
-    <message>
-        <source>Field:</source>
-        <translation type="obsolete">Pole:</translation>
     </message>
 </context>
 <context>

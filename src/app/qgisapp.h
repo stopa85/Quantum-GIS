@@ -58,6 +58,7 @@ class QgsVectorLayer;
 #include <QMainWindow>
 #include <QToolBar>
 #include <QAbstractSocket>
+#include <QPointer>
 
 #include "qgsconfig.h"
 #include <qgspoint.h>
@@ -162,6 +163,14 @@ class QgisApp : public QMainWindow
     *  (as documented in Qt documentation.
   */
   void setupProxy();
+  //! Helper to get a theme icon. It will fall back to the 
+  //default theme if the active theme does not have the required
+  //icon.
+  static QIcon getThemeIcon(const QString theName);
+  //! Helper to get a theme icon as a pixmap. It will fall back to the 
+  //default theme if the active theme does not have the required
+  //icon.
+  static QPixmap getThemePixmap(const QString theName);
 //private slots:
 public slots:
   //! About QGis
@@ -182,8 +191,6 @@ public slots:
   void inOverview();
   //! Slot to show the map coordinate position of the mouse cursor
   void showMouseCoordinate(QgsPoint &);
-  //copy the click coord to clipboard and let the user know its there
-  void showCapturePointCoordinate(QgsPoint &);
   //! Slot to show current map scale;
   void showScale(double theScale);
   //! Slot to handle user scale input;
@@ -194,12 +201,10 @@ public slots:
   void zoomToLayerExtent();
   //! load any plugins used in the last qgis session
   void restoreSessionPlugins(QString thePluginDirString);
-  //! test plugin functionality
-  void testPluginFunctions();
-  //! test maplayer plugins
-  void testMapLayerPlugins();
   //! plugin manager
   void showPluginManager();
+  //! load python support if possible
+  void loadPythonSupport();
   //! plugin loader
   void loadPlugin(QString name, QString description, QString mFullPath);
   //! python plugin loader
@@ -325,8 +330,14 @@ public slots:
   Is called from the legend when the current legend item has changed*/
   void activateDeactivateLayerRelatedActions(QgsMapLayer* layer);
 
+
 public slots:
+  /** Add a dock widget to the main window. Overloaded from QMainWindow.
+   * After adding the dock widget to the ui (by delegating to the QMainWindow
+   * parent class, it will also add it to the view menu list of docks.*/
+  void addDockWidget ( Qt::DockWidgetArea area, QDockWidget * dockwidget );
   void showProgress(int theProgress, int theTotalSteps);
+  void extentsViewToggled(bool theFlag);
   void showExtents();
   void showStatusMessage(QString theMessage);
   void updateMouseCoordinatePrecision();
@@ -589,9 +600,6 @@ class Tools
 
   QgsMapTool *mNonEditMapTool;
   
-  //!The name of the active theme
-  QString mThemeName;
-
   //! Widget that will live on the statusbar to display "scale 1:"
   QLabel * mScaleLabel;
   //! Widget that will live on the statusbar to display scale value
@@ -604,6 +612,8 @@ class Tools
   QProgressBar * mProgressBar;
   //! Widget used to suppress rendering
   QCheckBox * mRenderSuppressionCBox;
+  //! A toggle to switch between mouse coords and view extents display
+  QToolButton * mToggleExtentsViewButton;
   //! Button used to stop rendering
   QToolButton* mStopRenderButton;
   //! Widget in status bar used to show status of on the fly projection
@@ -634,6 +644,8 @@ class Tools
   QString mStartupPath;
   //! full path name of the current map file (if it has been saved or loaded)
   QString mFullPathName;
+  //! A dock to show the attribute table (user optional)
+  QPointer<QDockWidget> mpTableDockWidget;
 
   //! interface to QgisApp for plugins
   QgisAppInterface *mQgisInterface;

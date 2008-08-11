@@ -29,10 +29,11 @@
 
 //qgis includes...
 #include <qgsrasterlayer.h> 
+#include <qgsrasterpyramid.h>
 #include <qgsrasterbandstats.h> 
 #include <qgsmaplayerregistry.h> 
 #include <qgsapplication.h>
-#include <qgsmaprender.h> 
+#include <qgsmaprenderer.h> 
 
 //qgis unit test includes
 #include <qgsrenderchecker.h>
@@ -55,13 +56,14 @@ class TestQgsRasterLayer: public QObject
     void landsatBasic();
     void landsatBasic875Qml();
     void checkDimensions(); 
+    void buildExternalOverviews();
   private:
     bool render(QString theFileName);
     bool setQml (QString theType);
     QString mTestDataDir;
     QgsRasterLayer * mpRasterLayer;
     QgsRasterLayer * mpLandsatRasterLayer;
-    QgsMapRender * mpMapRenderer;
+    QgsMapRenderer * mpMapRenderer;
     QString mReport;
 };
 
@@ -70,17 +72,9 @@ void TestQgsRasterLayer::initTestCase()
 {
   // init QGIS's paths - true means that all path will be inited from prefix
   QString qgisPath = QCoreApplication::applicationDirPath ();
-  QgsApplication::setPrefixPath(qgisPath, TRUE);
-#ifdef Q_OS_LINUX
-  QgsApplication::setPkgDataPath(qgisPath + "/../share/qgis");
-#endif
+  QgsApplication::setPrefixPath(INSTALL_PREFIX, true);
+  QgsApplication::showSettings();
   //create some objects that will be used in all tests...
-
-  std::cout << "Prefix  PATH: " << QgsApplication::prefixPath().toLocal8Bit().data() << std::endl;
-  std::cout << "Plugin  PATH: " << QgsApplication::pluginPath().toLocal8Bit().data() << std::endl;
-  std::cout << "PkgData PATH: " << QgsApplication::pkgDataPath().toLocal8Bit().data() << std::endl;
-  std::cout << "User DB PATH: " << QgsApplication::qgisUserDbFilePath().toLocal8Bit().data() << std::endl;
-
   //create a raster layer that will be used in all tests...
   mTestDataDir = QString(TEST_DATA_DIR) + QDir::separator(); //defined in CmakeLists.txt
   QString myFileName = mTestDataDir + "tenbytenraster.asc";
@@ -95,7 +89,7 @@ void TestQgsRasterLayer::initTestCase()
   QgsMapLayerRegistry::instance()->addMapLayer(mpRasterLayer);
   QgsMapLayerRegistry::instance()->addMapLayer(mpLandsatRasterLayer);
   // add the test layer to the maprender
-  mpMapRenderer = new QgsMapRender();
+  mpMapRenderer = new QgsMapRenderer();
   QStringList myLayers;
   myLayers << mpRasterLayer->getLayerID();
   mpMapRenderer->setLayerSet(myLayers);
@@ -162,6 +156,54 @@ void TestQgsRasterLayer::checkDimensions()
    QVERIFY ( mpRasterLayer->getRasterBandStats(1).elementCount == 100 );
 }
 
+void TestQgsRasterLayer::buildExternalOverviews()
+{
+  //before we begin delete any old ovr file (if it exists)
+  //and make a copy of the landsat raster into the temp dir
+
+  QString myTempPath = QDir::tempPath() + QDir::separator();
+  QFile::remove( myTempPath + "landsat.tif.ovr" );
+  QFile::copy( mTestDataDir + "landsat.tif" , myTempPath + "landsat.tif" );
+  QFileInfo myRasterFileInfo ( myTempPath + "landsat.tif" );
+  QgsRasterLayer * mypLayer = new QgsRasterLayer ( myRasterFileInfo.filePath(),
+            myRasterFileInfo.completeBaseName() );
+
+
+  //
+  // Ok now we can go on to test
+  //
+
+  bool myInternalFlag = false;
+  QgsRasterLayer::RasterPyramidList myPyramidList = mypLayer->buildRasterPyramidList();
+  for ( int myCounterInt = 0; myCounterInt < myPyramidList.count(); myCounterInt++ )
+  {
+    //mark to be pyramided
+    myPyramidList[myCounterInt].existsFlag=true;
+  }
+  //now actually make the pyramids
+  QString myResult = mypLayer->buildPyramids(
+        myPyramidList,
+        "NEAREST",
+        myInternalFlag
+        );
+  qDebug (myResult.toLocal8Bit());
+  //
+  // Lets verify we have pyramids now...
+  //
+  myPyramidList = mypLayer->buildRasterPyramidList();
+  for ( int myCounterInt = 0; myCounterInt < myPyramidList.count(); myCounterInt++ )
+  {
+    //mark to be pyramided
+    QVERIFY(myPyramidList.at(myCounterInt).existsFlag);
+  }
+
+  //
+  // And that they were indeed in an external file...
+  //
+  QVERIFY(QFile::exists(myTempPath + "landsat.tif.ovr"));
+  //cleanup
+  delete mypLayer;
+}
 bool TestQgsRasterLayer::render(QString theTestType)
 {
   mReport += "<h2>" + theTestType + "</h2>\n";

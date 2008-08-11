@@ -115,6 +115,13 @@ For complete information, see the wiki at:
 
 = Building under windows using msys =
 
+**Note:** For a detailed account of building all the dependencies yourself you 
+can visit Marco Pasetti's website here:
+
+http://www.webalice.it/marco.pasetti/qgis+grass/BuildFromSource.html
+
+Read on to use the simplified approach with pre-built libraries...
+
 == MSYS: ==
 
 MSYS provides a unix style build environment under windows. We have created a
@@ -122,7 +129,7 @@ zip archive that contains just about all dependencies.
 
 Get this: 
 
-http://qgis.org/uploadfiles/msys/msys.zip
+http://download.osgeo.org/qgis/win32/msys.zip
 
 and unpack to c:\msys
 
@@ -190,8 +197,8 @@ http://python.org/download/
 
 === Download SIP and PyQt4 sources ===
 
-http://www.riverbankcomputing.com/Downloads/sip4/
-http://www.riverbankcomputing.com/Downloads/PyQt4/GPL/
+http://www.riverbankcomputing.com/software/sip/download
+http://www.riverbankcomputing.com/software/pyqt/download
 
 Extract each of the above zip files in a temporary directory. Make sure
 to get versions that match your current Qt installed version.
@@ -366,7 +373,7 @@ sudo ln -s /usr/local/ local
 
 == Install Qt4 from .dmg ==
 
-You need a minimum of Qt4.2. I suggest getting the latest (at time of writing).
+You need a minimum of Qt4.3.0. I suggest getting the latest (at time of writing).
 
 ``` 
 ftp://ftp.trolltech.com/qt/source/qt-mac-opensource-4.3.2.dmg
@@ -471,7 +478,7 @@ __Leopard note:__ Leopard includes a usable Python 2.5.  Though you can install 
 Retrieve the python bindings toolkit SIP from
 
 ``` 
-http://www.riverbankcomputing.com/Downloads/sip4/
+http://www.riverbankcomputing.com/software/sip/download
 ```
 
 Then extract and build it (this installs by default into the Python framework):
@@ -506,7 +513,7 @@ export PATH=/Library/Frameworks/Python.framework/Versions/Current/bin:$PATH$
 Retrieve the python bindings toolkit for Qt from
 
 ``` 
-http://www.riverbankcomputing.com/Downloads/PyQt4/GPL/
+http://www.riverbankcomputing.com/software/pyqt/download
 ```
 
 Then extract and build it (this installs by default into the Python framework):
@@ -834,7 +841,7 @@ skip this section.
 Now you can install grass from dapper:
 
 ```
-sudo apt-get install grass libgrass-dev libgdal-1.4.0-grass 
+sudo apt-get install grass libgrass-dev libgdal1-1.4.0-grass 
 ```
 
 /!\ You may need to explicitly state your grass version e.g. libgdal1-1.3.2-grass

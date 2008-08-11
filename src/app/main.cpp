@@ -376,7 +376,9 @@ int main(int argc, char *argv[])
 #endif
   if (!myUseGuiFlag) 
   {
-    std::cerr << "QGIS starting in non-interactive mode not supported.\n You are seeing this message most likely because you have no DISPLAY environment variable set." << std::endl;
+    std::cerr << "QGIS starting in non-interactive mode not supported.\n You "
+      "are seeing this message most likely because you have no DISPLAY "
+      "environment variable set." << std::endl;
     exit(1); //exit for now until a version of qgis is capabable of running non interactive
   }
   QgsApplication myApp(argc, argv, myUseGuiFlag );
@@ -384,7 +386,7 @@ int main(int argc, char *argv[])
   // Set up the QSettings environment must be done after qapp is created
   QCoreApplication::setOrganizationName("QuantumGIS");
   QCoreApplication::setOrganizationDomain("qgis.org");
-  QCoreApplication::setApplicationName("qgis");
+  QCoreApplication::setApplicationName("QGIS");
 #ifdef Q_OS_MACX
   // Install OpenDocuments AppleEvent handler after application object is initialized
   // but before any other event handling (including dialogs or splash screens) occurs.
@@ -463,8 +465,8 @@ int main(int argc, char *argv[])
   }
 
 #ifdef QGISDEBUG
-  std::cout << "Setting translation to "
-    << i18nPath.toLocal8Bit().data() << "/qgis_" << myTranslationCode.toLocal8Bit().data() << std::endl;
+  //std::cout << "Setting translation to "
+  //  << i18nPath.toLocal8Bit().data() << "/qgis_" << myTranslationCode.toLocal8Bit().data() << std::endl;
 #endif
   QTranslator qgistor(0);
   if (qgistor.load(QString("qgis_") + myTranslationCode, i18nPath))

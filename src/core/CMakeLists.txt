@@ -7,9 +7,9 @@ SET(QGIS_CORE_SRCS
   qgis.cpp
   qgsapplication.cpp
   qgsattributeaction.cpp
+  qgscentralpointpositionmanager.cpp
   qgsclipper.cpp
   qgscontexthelp.cpp
-  qgscentralpointpositionmanager.cpp
   qgscoordinatetransform.cpp
   qgsdatasourceuri.cpp
   qgsdistancearea.cpp
@@ -24,7 +24,7 @@ SET(QGIS_CORE_SRCS
   qgslogger.cpp
   qgsmaplayer.cpp
   qgsmaplayerregistry.cpp
-  qgsmaprender.cpp
+  qgsmaprenderer.cpp
   qgsmaptopixel.cpp
   qgsmessageoutput.cpp
   qgsoverlayobject.cpp
@@ -39,8 +39,8 @@ SET(QGIS_CORE_SRCS
   qgsprovidermetadata.cpp
   qgsproviderregistry.cpp
   qgsrasterdataprovider.cpp
-  qgsrect.cpp
   qgsrendercontext.cpp
+  qgsrect.cpp
   qgsrunprocess.cpp
   qgsscalecalculator.cpp
   qgssearchstring.cpp
@@ -101,7 +101,7 @@ qgsdataprovider.h
 qgshttptransaction.h
 qgsmaplayer.h
 qgsmaplayerregistry.h
-qgsmaprender.h
+qgsmaprenderer.h
 qgsmessageoutput.h
 qgsproject.h
 qgsrunprocess.h
@@ -112,7 +112,8 @@ raster/qgsrasterlayer.h
 
 QT4_WRAP_CPP(QGIS_CORE_MOC_SRCS ${QGIS_CORE_MOC_HDRS})
 
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} 
+INCLUDE_DIRECTORIES(
+  ${CMAKE_CURRENT_SOURCE_DIR} 
   raster 
   renderer 
   symbology
@@ -183,22 +184,14 @@ TARGET_LINK_LIBRARIES(qgis_core
   ${QT_QTCORE_LIBRARY} 
   ${QT_QTGUI_LIBRARY} 
   ${QT_QTXML_LIBRARY} 
-  #${QT_QTSQL_LIBRARY} 
   ${QT_QTSVG_LIBRARY} 
   ${QT_QTNETWORK_LIBRARY} 
   ${QT_QTMAIN_LIBRARY} 
-  ${QT_QT3SUPPORT_LIBRARY} 
   ${PROJ_LIBRARY}
   ${GEOS_LIBRARY}
   ${GDAL_LIBRARY}
   ${PLATFORM_LIBRARIES}
 )
-#work aroud for the fact that qt3 support on mac is linked ot qsql
-IF (APPLE)
-  TARGET_LINK_LIBRARIES(qgis_core
-    ${QT_QTSQL_LIBRARY} 
-    )
-ENDIF (APPLE)
 
 IF (NOT WITH_INTERNAL_SQLITE3)
   TARGET_LINK_LIBRARIES(qgis_core ${SQLITE3_LIBRARY})
@@ -233,10 +226,9 @@ qgsline.h
 qgslogger.h
 qgsmaplayer.h
 qgsmaplayerregistry.h
-qgsmaprender.h
+qgsmaprenderer.h
 qgsmaptopixel.h
 qgsmessageoutput.h
-qgsoverlayobject.h
 qgspoint.h
 qgsproject.h
 qgsprojectfiletransform.h
@@ -248,6 +240,7 @@ qgsprovidermetadata.h
 qgsproviderregistry.h
 qgsrasterdataprovider.h
 qgsrect.h
+qgsrendercontext.h
 qgsrunprocess.h
 qgsscalecalculator.h
 qgssearchstring.h
@@ -257,7 +250,6 @@ qgsspatialrefsys.h
 qgsvectordataprovider.h
 qgsvectorfilewriter.h
 qgsvectorlayer.h
-qgsvectoroverlay.h
 
 raster/qgscliptominmaxenhancement.h
 raster/qgscolorrampshader.h
@@ -290,4 +282,3 @@ spatialindex/qgsspatialindex.h
 
 INSTALL(CODE "MESSAGE(\"Installing CORE headers...\")")
 INSTALL(FILES ${QGIS_CORE_HDRS} ${QGIS_CORE_MOC_HDRS} DESTINATION ${QGIS_INCLUDE_DIR}) 
-

@@ -270,7 +270,7 @@ QgsProject * QgsProject::theProject_;
              {
                  previousQgsPropertyKey->removeKey( currentProperty->name() );
              }
-             else if ( 0 == ( nextProperty = currentProperty->find( keySequence.first() ) ) )
+             else if ( ( nextProperty = currentProperty->find( keySequence.first() ) ) )
              {
                  previousQgsPropertyKey = currentProperty;
                  currentProperty = dynamic_cast<QgsPropertyKey*>(nextProperty);
@@ -326,7 +326,7 @@ QgsProject * QgsProject::theProject_;
       */ 
      void clear()
      {
-         QgsDebugMsg( "Clearing project properties Impl->clear();" );
+         //QgsDebugMsg( "Clearing project properties Impl->clear();" );
 
          properties_.clearKeys();
          title = "";
@@ -1034,7 +1034,7 @@ bool QgsProject::write()
 
 void QgsProject::clearProperties()
 {
-    QgsDebugMsg("Clearing project properties QgsProject::clearProperties()");
+    //QgsDebugMsg("Clearing project properties QgsProject::clearProperties()");
     
     imp_->clear();
 

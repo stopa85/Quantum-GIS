@@ -285,9 +285,14 @@ void QgsGPSPluginGui::on_pbnIMPOutput_clicked() {
     leIMPOutput->setText(myFileNameQString);
 }
 
+void QgsGPSPluginGui::on_pbnRefresh_clicked()
+{
+  populatePortComboBoxes();
+}
 
 void QgsGPSPluginGui::populatePortComboBoxes() {
   
+  cmbDLPort->clear();
 #ifdef linux
   // look for linux serial devices
   QString linuxDev("/dev/ttyS%1");
@@ -354,9 +359,13 @@ void QgsGPSPluginGui::populatePortComboBoxes() {
 #ifdef WIN32
   cmbULPort->addItem("com1");
   cmbULPort->addItem("com2");
+  cmbULPort->addItem("com3");
+  cmbULPort->addItem("com4");
   cmbULPort->addItem("usb:");
   cmbDLPort->addItem("com1");
   cmbDLPort->addItem("com2");
+  cmbDLPort->addItem("com3");
+  cmbDLPort->addItem("com4");
   cmbDLPort->addItem("usb:");
 #endif
 

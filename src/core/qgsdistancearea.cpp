@@ -43,7 +43,7 @@ QgsDistanceArea::QgsDistanceArea()
   // init with default settings
   mProjectionsEnabled = FALSE;
   mCoordTransform = new QgsCoordinateTransform;
-  setSourceSRS(EPSGID); // WGS 84
+  setSourceEPSG(GEOEPSG_ID); // WGS 84
   setEllipsoid("WGS84");
 }
 
@@ -59,8 +59,14 @@ void QgsDistanceArea::setProjectionsEnabled(bool flag)
   mProjectionsEnabled = flag;
 }
 
-
 void QgsDistanceArea::setSourceSRS(long epsgId)
+{
+  QgsSpatialRefSys srcSRS;
+  srcSRS.createFromEpsg(epsgId);
+  mCoordTransform->setSourceSRS(srcSRS);
+}
+
+void QgsDistanceArea::setSourceEPSG(long epsgId)
 {
   QgsSpatialRefSys srcSRS;
   srcSRS.createFromEpsg(epsgId);
@@ -95,7 +101,7 @@ bool QgsDistanceArea::setEllipsoid(const QString& ellipsoid)
     //     database if it does not exist.
     return false;
   }
-  // Set up the query to retreive the projection information needed to populate the ELLIPSOID list
+  // Set up the query to retrieve the projection information needed to populate the ELLIPSOID list
   QString mySql = "select radius, parameter2 from tbl_ellipsoid where acronym='" + ellipsoid + "'";
   myResult = sqlite3_prepare(myDatabase, mySql.toUtf8(), mySql.length(), &myPreparedStatement, &myTail);
   // XXX Need to free memory from the error msg if one is set

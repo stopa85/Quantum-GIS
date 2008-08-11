@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE qgisgrassmodule SYSTEM "http://mrcc.com/qgisgrassmodule.dtd">
 
-<qgisgrassmodule label="Import OGR/PostGIS vector layer" module="v.in.ogr">
-	<ogr key="dsn" layeroption="layer" whereoption="where" label="OGR vector layer" />
-	<option key="output" />
+<qgisgrassmodule label="Import OGR/PostGIS vector layers" module="v.in.ogr">
 	<flag key="o" answer="on" hidden="yes" />
+	<flag key="z" answer="off" hidden="no" />
+	<flag key="r" answer="off" hidden="no" />
+	<option key="dsn" label="Path to the OGR data source" />
+	<option key="layer" label="OGR layer name" />
+	<option key="output" />	
+	<option key="type" />
 </qgisgrassmodule>

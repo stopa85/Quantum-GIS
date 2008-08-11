@@ -22,7 +22,8 @@
 #include <QPalette>
 
 #include <qgsconfig.h>
-#include <qgslogger.h>
+
+#include <iostream>
 
 // for htonl
 #ifdef WIN32
@@ -34,7 +35,7 @@
 QString QgsApplication::mPrefixPath;
 QString QgsApplication::mPluginPath;
 QString QgsApplication::mPkgDataPath;
-QString QgsApplication::mThemePath;
+QString QgsApplication::mThemeName;
 
 /*!
   \class QgsApplication
@@ -60,8 +61,6 @@ QgsApplication::QgsApplication(int & argc, char ** argv, bool GUIenabled)
   QString myPrefix = myDir.absolutePath();
   setPrefixPath(myPrefix, true);
 #endif
-  //for debuggin
-  showSettings();
 }
 
 QgsApplication::~QgsApplication()
@@ -78,8 +77,8 @@ void QgsApplication::setPrefixPath(const QString thePrefixPath, bool useDefaultP
 #endif
   if (useDefaultPaths)
   {
-    setPluginPath(mPrefixPath + QDir::separator() + QString(QGIS_PLUGIN_SUBDIR));
-    setPkgDataPath(mPrefixPath + QDir::separator() + QString(QGIS_DATA_SUBDIR));
+    setPluginPath(mPrefixPath + "/" + QString(QGIS_PLUGIN_SUBDIR));
+    setPkgDataPath(mPrefixPath + "/" + QString(QGIS_DATA_SUBDIR));
   }
 }
 
@@ -91,7 +90,6 @@ void QgsApplication::setPluginPath(const QString thePluginPath)
 void QgsApplication::setPkgDataPath(const QString thePkgDataPath)
 {
   mPkgDataPath = thePkgDataPath;
-  mThemePath = mPkgDataPath + QString("/themes/default/");
 }
 
 const QString QgsApplication::prefixPath() 
@@ -106,19 +104,38 @@ const QString QgsApplication::pkgDataPath()
 { 
   return mPkgDataPath; 
 }
-const QString QgsApplication::themePath() 
+const QString QgsApplication::defaultThemePath() 
 { 
-  return mThemePath; 
+  return mPkgDataPath + "/themes/default/";
+}
+const QString QgsApplication::activeThemePath() 
+{ 
+  return mPkgDataPath + "/themes/" + mThemeName + "/";
 }
 
 /*!
   Set the theme path to the specified theme.
 */
-void QgsApplication::selectTheme(const QString theThemeName)
+void QgsApplication::setThemeName(const QString theThemeName)
 {
-  mThemePath = mPkgDataPath + QString("/themes/") + theThemeName + QString("/");
+  QString myPath = mPkgDataPath + "/themes/" + theThemeName + "/";
+  //check it exists and if not roll back to default theme
+  if (QFile::exists(myPath))
+  {
+    mThemeName = theThemeName;
+  }
+  else
+  {
+    mThemeName = "default";
+  }
 }
-
+/*!
+ * Get the active theme name
+ */
+const QString QgsApplication::themeName()
+{
+  return mThemeName;
+}
 /*!
   Returns the path to the authors file.
 */
@@ -249,15 +266,24 @@ void QgsApplication::exitQgis()
   delete QgsProviderRegistry::instance();
 }
 
-void QgsApplication::showSettings()
+QString QgsApplication::showSettings()
 {
-  qDebug("\n**********************************");
-  qDebug("QgsApplication state:");
-  qDebug("Prefix       :" + mPrefixPath.toLocal8Bit());
-  qDebug("Plugin Path  :" + mPluginPath.toLocal8Bit());
-  qDebug("PkgData Path :" + mPkgDataPath.toLocal8Bit());
-  qDebug("Theme Path   :" + mThemePath.toLocal8Bit());
-  qDebug("**********************************\n");
+  QString myState = QString("Application state:\n"  
+  "Prefix              : %1\n" 
+  "Plugin Path         : %2\n" 
+  "Package Data Path   : %3\n" 
+  "Active Theme Name   : %4\n" 
+  "Active Theme Path   : %5\n"
+  "Default Theme Path  : %6\n"
+  "User DB Path        : %7\n")
+  .arg(mPrefixPath)
+  .arg(mPluginPath)
+  .arg(mPkgDataPath)
+  .arg(themeName())
+  .arg(activeThemePath())
+  .arg(defaultThemePath())
+  .arg(qgisMasterDbFilePath());
+return myState;
 }
 
 QString QgsApplication::reportStyleSheet()
