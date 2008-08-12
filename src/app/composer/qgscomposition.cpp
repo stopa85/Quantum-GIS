@@ -20,6 +20,7 @@
 #include <QDomDocument>
 #include <QDomElement>
 #include <QGraphicsRectItem>
+#include <QPrinter> //to find out screen resolution
 
 QgsComposition::QgsComposition(QgsMapCanvas* mapCanvas): QGraphicsScene(0), mMapCanvas(mapCanvas), mPlotStyle(QgsComposition::Preview), mPaperItem(0)
 {
@@ -30,6 +31,9 @@ QgsComposition::QgsComposition(QgsMapCanvas* mapCanvas): QGraphicsScene(0), mMap
   mPaperItem->setBrush(Qt::white);
   addItem(mPaperItem);
   mPaperItem->setZValue(0);
+
+  QPrinter resolutionTest(QPrinter::ScreenResolution);
+  mPrintoutResolution = resolutionTest.resolution();
 }
 
 QgsComposition::QgsComposition(): QGraphicsScene(0), mMapCanvas(0), mPlotStyle(QgsComposition::Preview), mPaperItem(0)

@@ -17,6 +17,7 @@
 #include "qgscompositionwidget.h"
 #include "qgscomposition.h"
 #include <QWidget>
+#include <QPrinter> //for screen resolution
 
 QgsCompositionWidget::QgsCompositionWidget(QWidget* parent, QgsComposition* c): QWidget(parent), mComposition(c)
 {
@@ -32,6 +33,12 @@ QgsCompositionWidget::QgsCompositionWidget(QWidget* parent, QgsComposition* c): 
   
   //read with/height from composition and find suitable entries to display
   displayCompositionWidthHeight();
+
+  //read printout resolution from composition
+  if(mComposition)
+    {
+      mResolutionLineEdit->setText(QString::number(mComposition->printoutResolution()));
+    }
 }
 
 QgsCompositionWidget::QgsCompositionWidget(): QWidget(0), mComposition(0)
@@ -262,4 +269,20 @@ void QgsCompositionWidget::displayCompositionWidthHeight()
   mPaperHeightLineEdit->blockSignals(false);
   mPaperOrientationComboBox->blockSignals(false);
   mResolutionLineEdit->blockSignals(false);
+}
+
+void QgsCompositionWidget::on_mResolutionLineEdit_textChanged(const QString& text)
+{
+  bool conversionOk;
+  int resolution = text.toInt(&conversionOk);
+  if(conversionOk && mComposition)
+    {
+      mComposition->setPrintoutResolution(resolution);
+    }
+  else if(mComposition)
+    {
+      //set screen resolution per default
+      QPrinter resolutionInfo(QPrinter::ScreenResolution);
+      mComposition->setPrintoutResolution(resolutionInfo.resolution());
+    }
 }

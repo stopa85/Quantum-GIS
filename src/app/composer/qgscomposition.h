@@ -63,6 +63,9 @@ class QgsComposition: public QGraphicsScene
    @return id or 0 pointer if the composer map item does not exist*/
   const QgsComposerMap* getComposerMapById(int id) const;
 
+  int printoutResolution() const {return mPrintoutResolution;}
+  void setPrintoutResolution(int dpi){mPrintoutResolution = dpi;}
+
   /**Returns pointer to qgis map canvas*/
   QgsMapCanvas* mapCanvas(){return mMapCanvas;}
 
@@ -79,6 +82,9 @@ class QgsComposition: public QGraphicsScene
   QgsMapCanvas* mMapCanvas;
   QgsComposition::PlotStyle mPlotStyle;
   QGraphicsRectItem* mPaperItem;
+
+  /**Dpi for printout*/
+  int mPrintoutResolution;
 
   QgsComposition(); //default constructor is forbidden
 };

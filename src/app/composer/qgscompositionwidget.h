@@ -39,6 +39,7 @@ class QgsCompositionWidget: public QWidget, private Ui::QgsCompositionWidgetBase
   void on_mPaperOrientationComboBox_currentIndexChanged(const QString& text);
   void on_mPaperWidthLineEdit_editingFinished();
   void on_mPaperHeightLineEdit_editingFinished();
+  void on_mResolutionLineEdit_textChanged(const QString& text);
   
  private:
   QgsComposition* mComposition;
