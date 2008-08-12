@@ -288,6 +288,10 @@ void QgsComposerMapWidget::on_mUpdatePreviewButton_clicked()
       return;
     }
 
+  mUpdatePreviewButton->setEnabled(false); //prevent crashes because of many button clicks
+
   mComposerMap->setCacheUpdated(false);
   mComposerMap->update();
+
+  mUpdatePreviewButton->setEnabled(true);
 }

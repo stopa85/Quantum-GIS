@@ -382,6 +382,9 @@ bool QgsComposerMap::readXML(const QDomElement& itemElem, const QDomDocument& do
       return false;
     }
 
+  mPreviewMode = Rectangle;
+  
+#if 0 //leads to frequent crashes on Qt 4.4.0/4.4.1
   //previewMode
   QString previewMode = itemElem.attribute("previewMode");
   if(previewMode == "Cache")
@@ -396,6 +399,7 @@ bool QgsComposerMap::readXML(const QDomElement& itemElem, const QDomDocument& do
     {
       mPreviewMode = Rectangle;
     }
+#endif //0
 
   //extent
   QDomNodeList extentNodeList = itemElem.elementsByTagName("Extent");

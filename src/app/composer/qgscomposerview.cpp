@@ -400,5 +400,3 @@ void QgsComposerView::sendItemRemovedSignal(QgsComposerItem* item)
   emit itemRemoved(item);
 }
 
-
-
