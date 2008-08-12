@@ -29,9 +29,18 @@ QgsComposerLegend::QgsComposerLegend(QgsComposition* composition): QgsComposerIt
   mLegendModel.setLayerSet(idList);
 
   //default font size
-  mTitleFont.setPointSizeF(4);
-  mLayerFont.setPointSizeF(3);
-  mItemFont.setPointSizeF(2);
+  if(mComposition)
+    {
+      mTitleFont.setPixelSize(mComposition->pixelFontSize(14));
+      mLayerFont.setPixelSize(mComposition->pixelFontSize(12));
+      mItemFont.setPixelSize(mComposition->pixelFontSize(12));
+    }
+  else
+    {
+      mTitleFont.setPixelSize(5);
+      mLayerFont.setPixelSize(4);
+      mItemFont.setPixelSize(3);
+    }
   mSymbolWidth = 7;
   mSymbolHeight = 4;
   adjustBoxSize();
@@ -333,6 +342,93 @@ void QgsComposerLegend::synchronizeWithModel()
 {
   adjustBoxSize();
   update();
+}
+
+void QgsComposerLegend::setTitleFont(const QFont& f)
+{
+  if(mComposition)
+    {
+      int pixelSize = mComposition->pixelFontSize(f.pointSizeF());
+      mTitleFont = f;
+      mTitleFont.setPixelSize(pixelSize);
+    }
+  else
+    {
+      mTitleFont = f;
+    }
+
+  adjustBoxSize();
+  update();
+}
+
+void QgsComposerLegend::setLayerFont(const QFont& f)
+{
+  if(mComposition)
+    {
+      int pixelSize = mComposition->pixelFontSize(f.pointSizeF());
+      mLayerFont = f;
+      mLayerFont.setPixelSize(pixelSize);
+    }
+  else
+    {
+      mLayerFont = f;
+    }
+  
+  adjustBoxSize();
+  update();
+}
+
+void QgsComposerLegend::setItemFont(const QFont& f)
+{
+  if(mComposition)
+    {
+      int pixelSize = mComposition->pixelFontSize(f.pointSizeF());
+      mItemFont = f;
+      mItemFont.setPixelSize(pixelSize);
+    }
+  else
+    {
+      mItemFont = f;
+    }
+  
+  adjustBoxSize();
+  update();
+}
+
+QFont QgsComposerLegend::titleFont() const
+{
+  if(mComposition) //make pixel to point conversion to show correct point value in dialogs
+    {
+      double pointSize = mComposition->pointFontSize(mTitleFont.pixelSize());
+      QFont returnFont = mTitleFont;
+      returnFont.setPointSize(pointSize);
+      return returnFont;
+    }
+  return mTitleFont;
+}
+
+QFont QgsComposerLegend::layerFont() const
+{
+  if(mComposition) //make pixel to point conversion to show correct point value in dialogs
+    {
+      double pointSize = mComposition->pointFontSize(mLayerFont.pixelSize());
+      QFont returnFont = mLayerFont;
+      returnFont.setPointSize(pointSize);
+      return returnFont;
+    }
+  return mLayerFont;
+}
+
+QFont QgsComposerLegend::itemFont() const
+{
+  if(mComposition) //make pixel to point conversion to show correct point value in dialogs
+    {
+      double pointSize = mComposition->pointFontSize(mItemFont.pixelSize());
+      QFont returnFont = mItemFont;
+      returnFont.setPointSize(pointSize);
+      return returnFont;
+    }
+  return mItemFont;
 }
 
 bool QgsComposerLegend::writeXML(QDomElement& elem, QDomDocument & doc)

@@ -52,8 +52,8 @@ public:
   QString unitLabeling() const {return mUnitLabeling;}
   void setUnitLabeling(const QString& label){mUnitLabeling = label;}
 
-  QFont font() const {return mFont;}
-  void setFont(const QFont& font){mFont = font;}
+  QFont font() const;
+  void setFont(const QFont& font);
 
   QPen pen() const {return mPen;}
   void setPen(const QPen& pen){mPen = pen;}

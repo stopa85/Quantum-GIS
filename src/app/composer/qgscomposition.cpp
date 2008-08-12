@@ -138,6 +138,19 @@ const QgsComposerMap* QgsComposition::getComposerMapById(int id) const
   return 0;
 }
 
+int QgsComposition::pixelFontSize(double pointSize) const
+{
+  //in QgsComposition, one unit = one mm
+  double sizeMM = pointSize * 0.3527;
+  return sizeMM;
+}
+
+double QgsComposition::pointFontSize(int pixelSize) const
+{
+  double sizePoint = pixelSize / 0.3527;
+  return sizePoint;
+}
+
 bool QgsComposition::writeXML(QDomElement& composerElem, QDomDocument& doc)
 {
   if(composerElem.isNull())

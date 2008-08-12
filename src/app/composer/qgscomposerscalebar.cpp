@@ -123,7 +123,15 @@ void QgsComposerScaleBar::applyDefaultSettings()
   mBrush.setColor(QColor(0, 0, 0));
   mBrush.setStyle(Qt::SolidPattern);
 
-  mFont.setPointSizeF(4);
+  //default size 12 point
+  if(mComposition)
+    {
+      mFont.setPixelSize(mComposition->pixelFontSize(12));
+    }
+  else
+    {
+      mFont.setPixelSize(5);
+    }
 
   mLabelBarSpace = 3.0;
   mBoxContentSpace = 1.0;
@@ -253,6 +261,37 @@ QString QgsComposerScaleBar::firstLabelString() const
     {
       return "0";
     }
+}
+
+QFont QgsComposerScaleBar::font() const
+{
+#if 0 //needed by scale bar style, therefore don't convert back to points
+  if(mComposition) //make pixel to point conversion to show correct point value in dialogs
+    {
+      double pointSize = mComposition->pointFontSize(mFont.pixelSize());
+      QFont returnFont = mFont;
+      returnFont.setPointSize(pointSize);
+      return returnFont;
+    }
+#endif //0
+  return mFont;
+}
+
+void QgsComposerScaleBar::setFont(const QFont& font)
+{
+   //set font size in pixels for proper preview and printout
+  if(mComposition)
+    {
+      int pixelSize = mComposition->pixelFontSize(font.pointSizeF());
+      mFont = font;
+      mFont.setPixelSize(pixelSize);
+    }
+  else
+    {
+      mFont = font;
+    }
+  adjustBoxSize();
+  update();
 }
 
 bool QgsComposerScaleBar::writeXML(QDomElement& elem, QDomDocument & doc)

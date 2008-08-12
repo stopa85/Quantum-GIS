@@ -72,6 +72,14 @@ class QgsComposition: public QGraphicsScene
   QgsComposition::PlotStyle plotStyle() const {return mPlotStyle;}
   void setPlotStyle(QgsComposition::PlotStyle style) {mPlotStyle = style;}
 
+  /**Returns the pixel font size for a font that has point size set.
+   The result depends on the resolution (dpi) and of the preview mode. Each item that sets 
+  a font should call this function before drawing text*/
+  int pixelFontSize(double pointSize) const;
+
+  /**Does the inverse calculation and returns points for pixels (equals to mm in QgsComposition)*/
+  double pointFontSize(int pixelSize) const;
+
   /**Writes settings to xml (paper dimension)*/
   bool writeXML(QDomElement& composerElem, QDomDocument& doc);
 

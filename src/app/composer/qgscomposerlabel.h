@@ -33,7 +33,7 @@ class QgsComposerLabel: public QgsComposerItem
 
   QString text() {return mText;}
   void setText(const QString& text);
-  QFont font() {return mFont;}
+  QFont font() const;
   void setFont(const QFont& f);
   double margin(){return mMargin;}
   void setMargin(double m){mMargin = m;}

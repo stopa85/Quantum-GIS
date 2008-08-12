@@ -21,7 +21,15 @@
 
 QgsComposerLabel::QgsComposerLabel( QgsComposition *composition): QgsComposerItem(composition), mMargin(0.0)
 {
-  mFont.setPointSizeF(3);
+  //default font size is 10 point
+  if(mComposition)
+    {
+      mFont.setPixelSize(mComposition->pixelFontSize(10));
+    }
+  else
+    {
+      mFont.setPixelSize(4);
+    }
 }
 
 QgsComposerLabel::~QgsComposerLabel()
@@ -55,7 +63,17 @@ void QgsComposerLabel::setText(const QString& text)
 
 void QgsComposerLabel::setFont(const QFont& f)
 {
-  mFont = f;
+  //set font size in pixels for proper preview and printout
+  if(mComposition)
+    {
+      int pixelSize = mComposition->pixelFontSize(f.pointSizeF());
+      mFont = f;
+      mFont.setPixelSize(pixelSize);
+    }
+  else
+    {
+      mFont = f;
+    }
   adjustSizeToText();
 }
 
@@ -63,6 +81,18 @@ void QgsComposerLabel::adjustSizeToText()
 {
   QFontMetricsF fontInfo(mFont);
   setSceneRect(QRectF(transform().dx(), transform().dy(), fontInfo.width(mText) + 2 * mMargin, fontInfo.ascent() + 2 * mMargin));
+}
+
+QFont QgsComposerLabel::font() const
+{
+  if(mComposition) //make pixel to point conversion to show correct point value in dialogs
+    {
+      double pointSize = mComposition->pointFontSize(mFont.pixelSize());
+      QFont returnFont = mFont;
+      returnFont.setPointSize(pointSize);
+      return returnFont;
+    }
+  return mFont;
 }
 
 bool QgsComposerLabel::writeXML(QDomElement& elem, QDomDocument & doc)

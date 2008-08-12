@@ -48,14 +48,14 @@ class QgsComposerLegend: public QObject, public QgsComposerItem
   void setTitle(const QString& t) {mTitle = t;}
   QString title() const {return mTitle;}
 
-  const QFont& titleFont() const {return mTitleFont;}
-  void setTitleFont(const QFont& f){mTitleFont = f;}
+  QFont titleFont() const;
+  void setTitleFont(const QFont& f);
 
-  const QFont& layerFont() const {return mLayerFont;}
-  void setLayerFont(const QFont& f){mLayerFont = f;}
+  QFont layerFont() const;
+  void setLayerFont(const QFont& f);
 
-  const QFont& itemFont() const {return mItemFont;}
-  void setItemFont(const QFont& f){mItemFont = f;}
+  QFont itemFont() const;
+  void setItemFont(const QFont& f);
 
   double boxSpace() const {return mBoxSpace;}
   void setBoxSpace(double s){mBoxSpace = s;}
