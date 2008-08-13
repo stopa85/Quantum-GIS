@@ -145,6 +145,7 @@ void QgsComposerView::mousePressEvent(QMouseEvent* e)
     {
       QgsComposerPicture* newPicture = new QgsComposerPicture(composition());
       scene()->addItem(newPicture);
+      emit composerPictureAdded(newPicture);
       scene()->clearSelection();
       newPicture->setZValue(60);
       newPicture->setSceneRect(QRectF(scenePoint.x(), scenePoint.y(), 30, 30));

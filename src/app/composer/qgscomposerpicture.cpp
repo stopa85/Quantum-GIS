@@ -58,6 +58,10 @@ void QgsComposerPicture::paint (QPainter* painter, const QStyleOptionGraphicsIte
 	  updateImageFromSvg();
 	}
     }
+
+  painter->save();
+  painter->rotate(mRotation);
+
   if(mMode != UNKNOWN)
     {
       painter->drawImage(QRectF(0, 0, rect().width(), rect().height()), mImage, QRectF(0, 0, mImage.width(), mImage.height()));
@@ -69,6 +73,8 @@ void QgsComposerPicture::paint (QPainter* painter, const QStyleOptionGraphicsIte
     {
       drawSelectionBoxes(painter);
     }
+
+  painter->restore();
 }
 
 void QgsComposerPicture::setPictureFile(const QString& path)
@@ -129,6 +135,18 @@ void QgsComposerPicture::setSceneRect(const QRectF& rectangle)
       mImage = QImage(rectangle.width() * mCachedDpi/25.4, rectangle.height() * mCachedDpi/25.4, QImage::Format_ARGB32);
     }
   QgsComposerItem::setSceneRect(rectangle);
+}
+
+void QgsComposerPicture::setRotation(double rotation)
+{
+  if(rotation > 360)
+    {
+      mRotation = ((int)rotation) % 360;
+    }
+  else
+    {
+      mRotation = rotation;
+    }
 }
 
 bool QgsComposerPicture::writeXML(QDomElement& elem, QDomDocument & doc)

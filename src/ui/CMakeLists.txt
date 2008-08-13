@@ -11,7 +11,7 @@ SET(QGIS_UIS
   qgscomposerlegenditemdialogbase.ui
   qgscomposerlegendwidgetbase.ui
   qgscomposermapwidgetbase.ui
-  qgscomposerpicturebase.ui
+  qgscomposerpicturewidgetbase.ui
   qgscomposerscalebarwidgetbase.ui
   qgscomposervectorlegendbase.ui
   qgscompositionbase.ui

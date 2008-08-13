@@ -61,6 +61,7 @@ SET(QGIS_APP_SRCS
   composer/qgscomposerlabel.cpp
   composer/qgscomposerlabelwidget.cpp
   composer/qgscomposerpicture.cpp
+  composer/qgscomposerpicturewidget.cpp
   composer/qgscomposermap.cpp
   composer/qgscomposermapwidget.cpp
   composer/qgscomposerscalebar.cpp
@@ -74,7 +75,6 @@ SET(QGIS_APP_SRCS
   composer/qgsnumericscalebarstyle.cpp
   composer/qgssingleboxscalebarstyle.cpp
   composer/qgsticksscalebarstyle.cpp
-  #composer/qgscomposervectorlegend.cpp
   composer/qgscomposerview.cpp
   composer/qgscomposition.cpp
   composer/qgscompositionwidget.cpp
@@ -135,6 +135,7 @@ SET (QGIS_APP_MOC_HDRS
   composer/qgscomposerlegendwidget.h
   composer/qgscomposermap.h
   composer/qgscomposermapwidget.h
+  composer/qgscomposerpicturewidget.h
   composer/qgscomposerscalebar.h
   composer/qgscomposerscalebarwidget.h
   composer/qgscomposerview.h

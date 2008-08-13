@@ -27,6 +27,7 @@ class QgsComposerItem;
 class QgsComposerLabel;
 class QgsComposerLegend;
 class QgsComposerMap;
+class QgsComposerPicture;
 class QgsComposerScaleBar;
 
 /**Widget to display the composer items. Manages the composer tools and the mouse/key events. 
@@ -99,6 +100,8 @@ public:
   void composerScaleBarAdded(QgsComposerScaleBar* scalebar);
   /**Is emitted when a new composer legend has been added*/
   void composerLegendAdded(QgsComposerLegend* legend);
+  /**Is emitted when a new composer picture has been added*/
+  void composerPictureAdded(QgsComposerPicture* picture);
   /**Is emitted when a composer item has been removed from the scene*/
   void itemRemoved(QgsComposerItem*);
 };

@@ -27,6 +27,8 @@
 #include "qgscomposerlegendwidget.h"
 #include "qgscomposermap.h"
 #include "qgscomposermapwidget.h"
+#include "qgscomposerpicture.h"
+#include "qgscomposerpicturewidget.h"
 #include "qgscomposerscalebar.h"
 #include "qgscomposerscalebarwidget.h"
 #include "qgsexception.h"
@@ -117,6 +119,7 @@ QgsComposer::QgsComposer( QgisApp *qgis): QMainWindow()
   connect(mView, SIGNAL(itemRemoved(QgsComposerItem*)), this, SLOT(deleteItem(QgsComposerItem*)));
   connect(mView, SIGNAL(composerScaleBarAdded(QgsComposerScaleBar*)), this, SLOT(addComposerScaleBar(QgsComposerScaleBar*)));
   connect(mView, SIGNAL(composerLegendAdded(QgsComposerLegend*)), this, SLOT(addComposerLegend(QgsComposerLegend*)));
+  connect(mView, SIGNAL(composerPictureAdded(QgsComposerPicture*)), this, SLOT(addComposerPicture(QgsComposerPicture*)));
 
   mComposition  = new QgsComposition(mQgis->getMapCanvas());
   mView->setComposition(mComposition);
@@ -1316,6 +1319,17 @@ void QgsComposer::addComposerLegend(QgsComposerLegend* legend)
   
   QgsComposerLegendWidget* lWidget = new QgsComposerLegendWidget(legend);
   mItemWidgetMap.insert(legend, lWidget);
+}
+
+void QgsComposer::addComposerPicture(QgsComposerPicture* picture)
+{
+  if(!picture)
+    {
+      return;
+    }
+
+  QgsComposerPictureWidget* pWidget = new QgsComposerPictureWidget(picture);
+  mItemWidgetMap.insert(picture, pWidget);
 }
 
 void QgsComposer::deleteItem(QgsComposerItem* item)

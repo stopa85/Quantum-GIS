@@ -38,6 +38,10 @@ class QgsComposerPicture: public QgsComposerItem
      corresponds to 1 scene size unit*/
   void setSceneRect(const QRectF& rectangle);
 
+  void setRotation(double rotation);
+
+  double rotation() const {return mRotation;}
+
   /** stores state in DOM node
      * @param node is DOM node corresponding to 'Composer' tag
      * @param temp write template file
