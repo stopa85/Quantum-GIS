@@ -74,6 +74,7 @@ class QgsComposerPicture: public QgsComposerItem
   /**False if image needs to be rendered from svg*/
   bool mSvgCacheUpToDate;
   int mCachedDpi; //store dpis for which the svg cache is valid
+  QSize mDefaultSvgSize;
 };
 
 #endif

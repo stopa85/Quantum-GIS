@@ -64,7 +64,20 @@ void QgsComposerPicture::paint (QPainter* painter, const QStyleOptionGraphicsIte
 
   if(mMode != UNKNOWN)
     {
-      painter->drawImage(QRectF(0, 0, rect().width(), rect().height()), mImage, QRectF(0, 0, mImage.width(), mImage.height()));
+      double widthRatio = mImage.width() / rect().width();
+      double heightRatio = mImage.height() / rect().height();
+      double targetWidth, targetHeight;
+      if(widthRatio > heightRatio)
+	{
+	  targetWidth = rect().width();
+	  targetHeight = mImage.height() / widthRatio;
+	}
+      else
+	{
+	  targetHeight = rect().height();
+	  targetWidth = mImage.width() / heightRatio;
+	}
+      painter->drawImage(QRectF(0, 0, targetWidth, targetHeight), mImage, QRectF(0, 0, mImage.width(), mImage.height()));
     }
 
   //frame and selection boxes
@@ -94,6 +107,7 @@ void QgsComposerPicture::setPictureFile(const QString& path)
       if(validTestRenderer.isValid())
 	{
 	  mMode = SVG;
+	  mDefaultSvgSize = validTestRenderer.defaultSize();
 	}
       else
 	{
@@ -132,7 +146,24 @@ void QgsComposerPicture::setSceneRect(const QRectF& rectangle)
   mSvgCacheUpToDate = false;
   if(mMode == SVG)
     {
-      mImage = QImage(rectangle.width() * mCachedDpi/25.4, rectangle.height() * mCachedDpi/25.4, QImage::Format_ARGB32);
+      //keep aspect ratio
+      double widthRatio = rectangle.width() / mDefaultSvgSize.width();
+      double heightRatio = rectangle.height() / mDefaultSvgSize.height();
+
+      double newImageWidth;
+      double newImageHeight;
+
+      if(widthRatio > heightRatio)
+	{
+	  newImageWidth = rectangle.width() * mCachedDpi / 25.4;
+	  newImageHeight = mDefaultSvgSize.height() * widthRatio * mCachedDpi / 25.4;
+	}
+      else
+	{
+	  newImageHeight = rectangle.height() * mCachedDpi / 25.4;
+	  newImageWidth = mDefaultSvgSize.width() * heightRatio * mCachedDpi / 25.4;
+	}
+      mImage = QImage(newImageWidth, newImageHeight, QImage::Format_ARGB32);
     }
   QgsComposerItem::setSceneRect(rectangle);
 }
