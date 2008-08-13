@@ -20,10 +20,12 @@
 #include "qgscomposeritem.h"
 #include <QFile>
 #include <QImage>
+#include <QObject>
 
 /**A composer class that displays svg files or raster format (jpg, png, ...)*/
-class QgsComposerPicture: public QgsComposerItem
+class QgsComposerPicture: public QObject, public QgsComposerItem
 {
+  Q_OBJECT
  public:
   QgsComposerPicture(QgsComposition *composition);
   ~QgsComposerPicture();
@@ -33,6 +35,7 @@ class QgsComposerPicture: public QgsComposerItem
 
   /**Sets the source file of the image (may be svg or a raster format)*/
   void setPictureFile(const QString& path);
+  QString pictureFile() const;
 
   /**Sets this items bound in scene coordinates such that 1 item size units
      corresponds to 1 scene size unit*/
@@ -75,6 +78,10 @@ class QgsComposerPicture: public QgsComposerItem
   bool mSvgCacheUpToDate;
   int mCachedDpi; //store dpis for which the svg cache is valid
   QSize mDefaultSvgSize;
+
+ signals:
+  /**Tell the configuration widget that the settings need to be updated*/
+  void settingsChanged();
 };
 
 #endif

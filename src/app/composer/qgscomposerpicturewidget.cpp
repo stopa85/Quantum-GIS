@@ -17,6 +17,7 @@
 
 #include "qgscomposerpicturewidget.h"
 #include "qgscomposerpicture.h"
+#include <QDoubleValidator>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QMessageBox>
@@ -24,6 +25,13 @@
 QgsComposerPictureWidget::QgsComposerPictureWidget(QgsComposerPicture* picture): QWidget(), mPicture(picture)
 {
   setupUi(this);
+
+  mWidthLineEdit->setValidator(new QDoubleValidator(this));
+  mHeightLineEdit->setValidator(new QDoubleValidator(this));
+
+  setGuiElementValues();
+
+  connect(mPicture, SIGNAL(settingsChanged()), this, SLOT(setGuiElementValues()));
 }
 
 QgsComposerPictureWidget::~QgsComposerPictureWidget()
@@ -33,8 +41,17 @@ QgsComposerPictureWidget::~QgsComposerPictureWidget()
 
 void QgsComposerPictureWidget::on_mPictureBrowseButton_clicked()
 {
+  QString openDir;
+  QString lineEditText = mPictureLineEdit->text();
+  if(!lineEditText.isEmpty())
+    {
+      QFileInfo openDirFileInfo(lineEditText);
+      openDir = openDirFileInfo.path();
+    }
+  
+
   //show file dialog
-  QString filePath = QFileDialog::getOpenFileName(0, tr("Select svg/image file"));
+  QString filePath = QFileDialog::getOpenFileName(0, tr("Select svg or image file"), openDir);
   if(filePath.isEmpty())
     {
       return;
@@ -80,11 +97,76 @@ void QgsComposerPictureWidget::on_mPictureLineEdit_editingFinished()
     }
 }
 
+void QgsComposerPictureWidget::on_mWidthLineEdit_editingFinished()
+{
+  if(mPicture)
+    {
+      QRectF pictureRect = mPicture->rect();
+
+      bool conversionOk;
+      double newWidth = mWidthLineEdit->text().toDouble(&conversionOk);
+      if(conversionOk)
+	{
+	  QRectF newSceneRect(mPicture->transform().dx(), mPicture->transform().dy(), newWidth, pictureRect.height());
+	  mPicture->setSceneRect(newSceneRect);
+	}
+    } 
+}
+
+void QgsComposerPictureWidget::on_mHeightLineEdit_editingFinished()
+{
+  if(mPicture)
+    {
+      QRectF pictureRect = mPicture->rect();
+      
+      bool conversionOk;
+      double newHeight = mHeightLineEdit->text().toDouble(&conversionOk);
+      if(conversionOk)
+	{
+	  QRectF newSceneRect(mPicture->transform().dx(), mPicture->transform().dy(), pictureRect.width(), newHeight);
+	  mPicture->setSceneRect(newSceneRect);
+	}
+    } 
+}
+
 void QgsComposerPictureWidget::on_mRotationSpinBox_valueChanged(double d)
 {
   if(mPicture)
     {
       mPicture->setRotation(d);
       mPicture->update();
+    }
+}
+
+void QgsComposerPictureWidget::setGuiElementValues()
+{
+  //set initial gui values
+  if(mPicture)
+    {
+      mWidthLineEdit->blockSignals(true);
+      mHeightLineEdit->blockSignals(true);
+      mRotationSpinBox->blockSignals(true);
+      mFrameCheckBox->blockSignals(true);
+      mPictureLineEdit->blockSignals(true);
+  
+      mPictureLineEdit->setText(mPicture->pictureFile());
+      QRectF pictureRect = mPicture->rect();
+      mWidthLineEdit->setText(QString::number(pictureRect.width()));
+      mHeightLineEdit->setText(QString::number(pictureRect.height()));
+      mRotationSpinBox->setValue(mPicture->rotation());
+      if(mPicture->frame())
+	{
+	  mFrameCheckBox->setCheckState(Qt::Checked);
+	}
+      else
+	{
+	  mFrameCheckBox->setCheckState(Qt::Unchecked);
+	}
+      
+      mWidthLineEdit->blockSignals(false);
+      mHeightLineEdit->blockSignals(false);
+      mRotationSpinBox->blockSignals(false);
+      mFrameCheckBox->blockSignals(false);
+      mPictureLineEdit->blockSignals(false);
     }
 }

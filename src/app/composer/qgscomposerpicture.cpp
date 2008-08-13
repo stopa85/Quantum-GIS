@@ -22,11 +22,11 @@
 #include <QPainter>
 #include <QSvgRenderer>
 
-QgsComposerPicture::QgsComposerPicture(QgsComposition *composition): QgsComposerItem(composition), mMode(UNKNOWN), mSvgCacheUpToDate(false), mCachedDpi(0)
+QgsComposerPicture::QgsComposerPicture(QgsComposition *composition): QgsComposerItem(composition), QObject(0), mRotation(0.0), mMode(UNKNOWN), mSvgCacheUpToDate(false), mCachedDpi(0)
 {
 }
 
-QgsComposerPicture::QgsComposerPicture(): QgsComposerItem(0), mMode(UNKNOWN), mSvgCacheUpToDate(false)
+QgsComposerPicture::QgsComposerPicture(): QgsComposerItem(0), mRotation(0.0), mMode(UNKNOWN), mSvgCacheUpToDate(false)
 {
 
 }
@@ -127,6 +127,7 @@ void QgsComposerPicture::setPictureFile(const QString& path)
 	  mMode = UNKNOWN;
 	}
     }
+  emit settingsChanged();
 }
 
 void QgsComposerPicture::updateImageFromSvg()
@@ -166,6 +167,7 @@ void QgsComposerPicture::setSceneRect(const QRectF& rectangle)
       mImage = QImage(newImageWidth, newImageHeight, QImage::Format_ARGB32);
     }
   QgsComposerItem::setSceneRect(rectangle);
+  emit settingsChanged();
 }
 
 void QgsComposerPicture::setRotation(double rotation)
@@ -178,6 +180,11 @@ void QgsComposerPicture::setRotation(double rotation)
     {
       mRotation = rotation;
     }
+}
+
+QString QgsComposerPicture::pictureFile() const
+{
+  return mSourceFile.fileName();
 }
 
 bool QgsComposerPicture::writeXML(QDomElement& elem, QDomDocument & doc)

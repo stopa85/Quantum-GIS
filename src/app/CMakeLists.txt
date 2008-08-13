@@ -135,6 +135,7 @@ SET (QGIS_APP_MOC_HDRS
   composer/qgscomposerlegendwidget.h
   composer/qgscomposermap.h
   composer/qgscomposermapwidget.h
+  composer/qgscomposerpicture.h
   composer/qgscomposerpicturewidget.h
   composer/qgscomposerscalebar.h
   composer/qgscomposerscalebarwidget.h

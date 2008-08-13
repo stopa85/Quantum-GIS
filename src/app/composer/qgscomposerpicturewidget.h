@@ -34,6 +34,10 @@ class QgsComposerPictureWidget: public QWidget, private Ui::QgsComposerPictureWi
   void on_mPictureBrowseButton_clicked();
   void on_mPictureLineEdit_editingFinished();
   void on_mRotationSpinBox_valueChanged(double d);
+  void on_mWidthLineEdit_editingFinished();
+  void on_mHeightLineEdit_editingFinished();
+  /**Sets the GUI elements to the values of mPicture*/
+  void setGuiElementValues();
 
  private:
   QgsComposerPicture* mPicture;
