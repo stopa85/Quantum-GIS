@@ -61,7 +61,7 @@ QgsComposerMap::QgsComposerMap ( QgsComposition *composition, int x, int y, int 
 
     connect ( mMapCanvas, SIGNAL(layersChanged()), this, SLOT(mapCanvasChanged()) );
 
-    // Add to scene
+    setToolTip(tr("Map") + " " + QString::number(mId));
 
     QGraphicsRectItem::show();
 }
@@ -76,6 +76,7 @@ QgsComposerMap::QgsComposerMap ( QgsComposition *composition)
   mComposition = composition;
   mMapCanvas = mComposition->mapCanvas();
   mId = mCurrentComposerId++;
+  setToolTip(tr("Map") + " " + QString::number(mId));
   QGraphicsRectItem::show();
 }
 
@@ -269,11 +270,11 @@ void QgsComposerMap::setSceneRect(const QRectF& rectangle)
 {
   double w = rectangle.width();
   double h = rectangle.height();
-  prepareGeometryChange();
+  //prepareGeometryChange();
 
   QgsComposerItem::setSceneRect(rectangle);
   
-  QGraphicsRectItem::update();
+  //QGraphicsRectItem::update();
   double newHeight = mExtent.width() * h / w ;
   mExtent = QgsRect(mExtent.xMin(), mExtent.yMin(), mExtent.xMax(), mExtent.yMin() + newHeight);
   mCacheUpdated = false;

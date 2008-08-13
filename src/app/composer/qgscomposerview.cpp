@@ -23,6 +23,7 @@
 #include "qgscomposerlegend.h"
 #include "qgscomposermap.h"
 #include "qgscomposeritemgroup.h"
+#include "qgscomposerpicture.h"
 #include "qgscomposerscalebar.h"
 
 QgsComposerView::QgsComposerView( QWidget* parent, const char* name, Qt::WFlags f) :
@@ -139,6 +140,16 @@ void QgsComposerView::mousePressEvent(QMouseEvent* e)
       newLegend->setSelected(true);
       emit selectedItemChanged(newLegend);
       break;
+    }
+  case AddPicture:
+    {
+      QgsComposerPicture* newPicture = new QgsComposerPicture(composition());
+      scene()->addItem(newPicture);
+      scene()->clearSelection();
+      newPicture->setZValue(60);
+      newPicture->setSceneRect(QRectF(scenePoint.x(), scenePoint.y(), 30, 30));
+      newPicture->setSelected(true);
+      emit selectedItemChanged(newPicture);
     }
 
   default:

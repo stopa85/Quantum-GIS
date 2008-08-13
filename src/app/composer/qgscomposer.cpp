@@ -980,12 +980,10 @@ void QgsComposer::on_mActionAddNewScalebar_activated(void)
 
 void QgsComposer::on_mActionAddImage_activated(void)
 {
-#if 0
-  mComposition->setTool ( QgsComposition::AddPicture );
-  setToolActionsOff();
-  mActionAddImage->setOn ( true );
-  mView->setCursor(QCursor(cross_hair_cursor));
-#endif //0
+  if(mView)
+    {
+      mView->setCurrentTool(QgsComposerView::AddPicture);
+    }
 }
 
 void QgsComposer::moveItemContent()

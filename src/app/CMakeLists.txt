@@ -60,7 +60,7 @@ SET(QGIS_APP_SRCS
   composer/qgscomposeritemgroup.cpp
   composer/qgscomposerlabel.cpp
   composer/qgscomposerlabelwidget.cpp
-  #composer/qgscomposerpicture.cpp
+  composer/qgscomposerpicture.cpp
   composer/qgscomposermap.cpp
   composer/qgscomposermapwidget.cpp
   composer/qgscomposerscalebar.cpp
