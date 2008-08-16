@@ -197,6 +197,8 @@ public slots:
 private:
     //! Set teh pixmap / icons on the toolbar buttons
     void setupTheme();
+    /**Etablishes the signal slot connection for the class*/
+    void connectSlots();
 
 #if 0
     /** \brief move up the content of the file

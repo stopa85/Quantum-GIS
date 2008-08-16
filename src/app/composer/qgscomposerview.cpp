@@ -104,6 +104,7 @@ void QgsComposerView::mousePressEvent(QMouseEvent* e)
       newLabelItem->setZValue(60);
       newLabelItem->setSelected(true);
       emit selectedItemChanged(newLabelItem);
+      emit actionFinished();
     }
     break;
 
@@ -126,6 +127,7 @@ void QgsComposerView::mousePressEvent(QMouseEvent* e)
       newScaleBar->setZValue(60);
       newScaleBar->setSelected(true);
       emit selectedItemChanged(newScaleBar);
+      emit actionFinished();
     }
     break;
 
@@ -139,6 +141,7 @@ void QgsComposerView::mousePressEvent(QMouseEvent* e)
       newLegend->setSceneRect(QRectF(scenePoint.x(), scenePoint.y(), newLegend->rect().width(), newLegend->rect().height()));
       newLegend->setSelected(true);
       emit selectedItemChanged(newLegend);
+      emit actionFinished();
       break;
     }
   case AddPicture:
@@ -151,6 +154,7 @@ void QgsComposerView::mousePressEvent(QMouseEvent* e)
       newPicture->setSceneRect(QRectF(scenePoint.x(), scenePoint.y(), 30, 30));
       newPicture->setSelected(true);
       emit selectedItemChanged(newPicture);
+      emit actionFinished();
     }
 
   default:
@@ -218,6 +222,7 @@ void QgsComposerView::mouseReleaseEvent(QMouseEvent* e)
 
 	composerMap->setSelected(true);
 	emit selectedItemChanged(composerMap);
+	emit actionFinished();
       }
       break;
 

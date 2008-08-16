@@ -113,13 +113,7 @@ QgsComposer::QgsComposer( QgisApp *qgis): QMainWindow()
 
   //create composer view
   mView = new QgsComposerView (mViewFrame);
-  connect(mView, SIGNAL(selectedItemChanged(const QgsComposerItem*)), this, SLOT(showItemOptions(const QgsComposerItem*)));
-  connect(mView, SIGNAL(composerLabelAdded(QgsComposerLabel*)), this, SLOT(addComposerLabel(QgsComposerLabel*)));
-  connect(mView, SIGNAL(composerMapAdded(QgsComposerMap*)), this, SLOT(addComposerMap(QgsComposerMap*)));
-  connect(mView, SIGNAL(itemRemoved(QgsComposerItem*)), this, SLOT(deleteItem(QgsComposerItem*)));
-  connect(mView, SIGNAL(composerScaleBarAdded(QgsComposerScaleBar*)), this, SLOT(addComposerScaleBar(QgsComposerScaleBar*)));
-  connect(mView, SIGNAL(composerLegendAdded(QgsComposerLegend*)), this, SLOT(addComposerLegend(QgsComposerLegend*)));
-  connect(mView, SIGNAL(composerPictureAdded(QgsComposerPicture*)), this, SLOT(addComposerPicture(QgsComposerPicture*)));
+  connectSlots();
 
   mComposition  = new QgsComposition(mQgis->getMapCanvas());
   mView->setComposition(mComposition);
@@ -186,6 +180,18 @@ void QgsComposer::setupTheme()
   mActionAddNewLegend->setIcon(QIcon(QPixmap(myThemePath + "/mActionAddLegend.png")));
   mActionAddNewScalebar->setIcon(QIcon(QPixmap(myThemePath + "/mActionScaleBar.png")));
   mActionSelectMoveItem->setIcon(QIcon(QPixmap(myThemePath + "/mActionPan.png")));
+}
+
+void QgsComposer::connectSlots()
+{
+  connect(mView, SIGNAL(selectedItemChanged(const QgsComposerItem*)), this, SLOT(showItemOptions(const QgsComposerItem*)));
+  connect(mView, SIGNAL(composerLabelAdded(QgsComposerLabel*)), this, SLOT(addComposerLabel(QgsComposerLabel*)));
+  connect(mView, SIGNAL(composerMapAdded(QgsComposerMap*)), this, SLOT(addComposerMap(QgsComposerMap*)));
+  connect(mView, SIGNAL(itemRemoved(QgsComposerItem*)), this, SLOT(deleteItem(QgsComposerItem*)));
+  connect(mView, SIGNAL(composerScaleBarAdded(QgsComposerScaleBar*)), this, SLOT(addComposerScaleBar(QgsComposerScaleBar*)));
+  connect(mView, SIGNAL(composerLegendAdded(QgsComposerLegend*)), this, SLOT(addComposerLegend(QgsComposerLegend*)));
+  connect(mView, SIGNAL(composerPictureAdded(QgsComposerPicture*)), this, SLOT(addComposerPicture(QgsComposerPicture*)));
+  connect(mView, SIGNAL(actionFinished()), this, SLOT(setSelectionTool()));
 }
 
 void QgsComposer::open ( void )
@@ -1204,13 +1210,8 @@ void QgsComposer::readXML(const QDomDocument& doc)
   
   //todo: move in function because duplicated code with constructor
   mView = new QgsComposerView(mViewFrame);
-  connect(mView, SIGNAL(selectedItemChanged(const QgsComposerItem*)), this, SLOT(showItemOptions(const QgsComposerItem*)));
-  connect(mView, SIGNAL(composerLabelAdded(QgsComposerLabel*)), this, SLOT(addComposerLabel(QgsComposerLabel*)));
-  connect(mView, SIGNAL(composerMapAdded(QgsComposerMap*)), this, SLOT(addComposerMap(QgsComposerMap*)));
-  connect(mView, SIGNAL(itemRemoved(QgsComposerItem*)), this, SLOT(deleteItem(QgsComposerItem*)));
-  connect(mView, SIGNAL(composerScaleBarAdded(QgsComposerScaleBar*)), this, SLOT(addComposerScaleBar(QgsComposerScaleBar*)));
-  connect(mView, SIGNAL(composerLegendAdded(QgsComposerLegend*)), this, SLOT(addComposerLegend(QgsComposerLegend*)));
-  
+  connectSlots();
+
   mComposition = new QgsComposition(mQgis->getMapCanvas());
   mComposition->readXML(compositionElem, doc);
   
@@ -1362,4 +1363,5 @@ void QgsComposer::deleteItem(QgsComposerItem* item)
 void QgsComposer::setSelectionTool()
 {
   mActionSelectMoveItem->setChecked(true);
+  on_mActionSelectMoveItem_activated();
 }
