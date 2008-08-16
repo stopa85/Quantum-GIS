@@ -65,7 +65,7 @@ QgsComposer::QgsComposer( QgisApp *qgis): QMainWindow()
   setupUi(this);
   setupTheme();
 
-  QString myIconPath = QgsApplication::themePath();
+  QString myIconPath = QgsApplication::activeThemePath();
 
   QAction* moveItemContentAction = new QAction(QIcon(QPixmap(myIconPath+"mActionMoveItemContent.png")), tr("Move Item content"), 0);
   moveItemContentAction->setCheckable(true);
@@ -137,7 +137,7 @@ QgsComposer::QgsComposer( QgisApp *qgis): QMainWindow()
   l->setMargin(0);
   l->addWidget( mView, 0, 0 );
 
-  mCompositionNameComboBox->insertItem( tr("Map 1") );
+  mCompositionNameComboBox->insertItem(0, tr("Map 1") );
 
   //mComposition  = new QgsComposition( this, 1 );
   //mComposition->setActive ( true );
@@ -167,25 +167,25 @@ QgsComposer::~QgsComposer()
 void QgsComposer::setupTheme()
 {
   //calculate the active theme path
-  QString myThemePath= QgsApplication::themePath();
+  QString myThemePath= QgsApplication::activeThemePath();
   
 
   //now set all the icons
-  mActionOpenTemplate->setIconSet(QIcon(QPixmap(myThemePath + "/mActionFileOpen.png")));
-  mActionSaveTemplateAs->setIconSet(QIcon(QPixmap(myThemePath + "/mActionFileSaveAs.png")));
-  mActionExportAsImage->setIconSet(QIcon(QPixmap(myThemePath + "/mActionExportMapServer.png")));
-  mActionExportAsSVG->setIconSet(QIcon(QPixmap(myThemePath + "/mActionSaveAsSVG.png")));
-  mActionPrint->setIconSet(QIcon(QPixmap(myThemePath + "/mActionFilePrint.png")));
-  mActionZoomAll->setIconSet(QIcon(QPixmap(myThemePath + "/mActionZoomFullExtent.png")));
-  mActionZoomIn->setIconSet(QIcon(QPixmap(myThemePath + "/mActionZoomIn.png")));
-  mActionZoomOut->setIconSet(QIcon(QPixmap(myThemePath + "/mActionZoomOut.png")));
-  mActionRefreshView->setIconSet(QIcon(QPixmap(myThemePath + "/mActionDraw.png")));
-  mActionAddImage->setIconSet(QIcon(QPixmap(myThemePath + "/mActionSaveMapAsImage.png")));
-  mActionAddNewMap->setIconSet(QIcon(QPixmap(myThemePath + "/mActionAddRasterLayer.png")));
-  mActionAddNewLabel->setIconSet(QIcon(QPixmap(myThemePath + "/mActionLabel.png")));
-  mActionAddNewLegend->setIconSet(QIcon(QPixmap(myThemePath + "/mActionAddLegend.png")));
-  mActionAddNewScalebar->setIconSet(QIcon(QPixmap(myThemePath + "/mActionScaleBar.png")));
-  mActionSelectMoveItem->setIconSet(QIcon(QPixmap(myThemePath + "/mActionPan.png")));
+  mActionOpenTemplate->setIcon(QIcon(QPixmap(myThemePath + "/mActionFileOpen.png")));
+  mActionSaveTemplateAs->setIcon(QIcon(QPixmap(myThemePath + "/mActionFileSaveAs.png")));
+  mActionExportAsImage->setIcon(QIcon(QPixmap(myThemePath + "/mActionExportMapServer.png")));
+  mActionExportAsSVG->setIcon(QIcon(QPixmap(myThemePath + "/mActionSaveAsSVG.png")));
+  mActionPrint->setIcon(QIcon(QPixmap(myThemePath + "/mActionFilePrint.png")));
+  mActionZoomAll->setIcon(QIcon(QPixmap(myThemePath + "/mActionZoomFullExtent.png")));
+  mActionZoomIn->setIcon(QIcon(QPixmap(myThemePath + "/mActionZoomIn.png")));
+  mActionZoomOut->setIcon(QIcon(QPixmap(myThemePath + "/mActionZoomOut.png")));
+  mActionRefreshView->setIcon(QIcon(QPixmap(myThemePath + "/mActionDraw.png")));
+  mActionAddImage->setIcon(QIcon(QPixmap(myThemePath + "/mActionSaveMapAsImage.png")));
+  mActionAddNewMap->setIcon(QIcon(QPixmap(myThemePath + "/mActionAddRasterLayer.png")));
+  mActionAddNewLabel->setIcon(QIcon(QPixmap(myThemePath + "/mActionLabel.png")));
+  mActionAddNewLegend->setIcon(QIcon(QPixmap(myThemePath + "/mActionAddLegend.png")));
+  mActionAddNewScalebar->setIcon(QIcon(QPixmap(myThemePath + "/mActionScaleBar.png")));
+  mActionSelectMoveItem->setIcon(QIcon(QPixmap(myThemePath + "/mActionPan.png")));
 }
 
 void QgsComposer::open ( void )
@@ -688,6 +688,7 @@ void QgsComposer::on_mActionPrint_activated(void)
 }
 
 
+#if 0
 bool QgsComposer::shiftFileContent ( QFile *file, Q_LONG start, int shift )
 {
 	int last = file->size() + shift -1;
@@ -701,6 +702,7 @@ bool QgsComposer::shiftFileContent ( QFile *file, Q_LONG start, int shift )
 	}
 	return true;
 }
+#endif //0
 
 void QgsComposer::on_mActionExportAsImage_activated(void)
 {
@@ -864,12 +866,12 @@ void QgsComposer::on_mActionExportAsSVG_activated(void)
                            "</p>"));
     m->exec();
   }
-  QString myLastUsedFile = myQSettings.readEntry("/UI/lastSaveAsSvgFile","qgis.svg");
+  QString myLastUsedFile = myQSettings.value("/UI/lastSaveAsSvgFile","qgis.svg").toString();
   QFileInfo file(myLastUsedFile);
   QFileDialog *myQFileDialog = new QFileDialog( this, tr("Choose a filename to save the map as"),
                                                 file.path(), tr("SVG Format") + " (*.svg *SVG)" );
   myQFileDialog->selectFile( file.fileName() );
-  myQFileDialog->setMode(QFileDialog::AnyFile);
+  myQFileDialog->setFileMode(QFileDialog::AnyFile);
   myQFileDialog->setAcceptMode(QFileDialog::AcceptSave);
 
   int result = myQFileDialog->exec();
@@ -879,7 +881,7 @@ void QgsComposer::on_mActionExportAsSVG_activated(void)
   QString myOutputFileNameQString = myQFileDialog->selectedFiles().first();
   if ( myOutputFileNameQString == "" ) return;
 
-  myQSettings.writeEntry("/UI/lastSaveAsSvgFile", myOutputFileNameQString);
+  myQSettings.setValue("/UI/lastSaveAsSvgFile", myOutputFileNameQString);
 
   //mView->setScene(0);//don't redraw the scene on the display while we render
   mComposition->setPlotStyle ( QgsComposition::Print );
@@ -1355,4 +1357,9 @@ void QgsComposer::deleteItem(QgsComposerItem* item)
 
   delete (it.value());
   mItemWidgetMap.remove(it.key());
+}
+
+void QgsComposer::setSelectionTool()
+{
+  mActionSelectMoveItem->setChecked(true);
 }

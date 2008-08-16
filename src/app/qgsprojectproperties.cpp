@@ -26,7 +26,7 @@
 #include "qgsmapcanvas.h"
 #include "qgsmaplayer.h"
 #include "qgsmaplayerregistry.h"
-#include "qgsmaprender.h"
+#include "qgsmaprenderer.h"
 #include "qgsproject.h"
 #include "qgsrenderer.h"
 #include "qgssnappingdialog.h"
@@ -48,10 +48,10 @@ QgsProjectProperties::QgsProjectProperties(QgsMapCanvas* mapCanvas, QWidget *par
   connect(this, SIGNAL(accepted()), this, SLOT(apply()));
 
   ///////////////////////////////////////////////////////////
-  // Properties stored in map canvas's QgsMapRender
+  // Properties stored in map canvas's QgsMapRenderer
   // these ones are propagated to QgsProject by a signal
   
-  QgsMapRender* myRender = mMapCanvas->mapRender();
+  QgsMapRenderer* myRender = mMapCanvas->mapRenderer();
   QGis::units myUnit = myRender->mapUnits();
   setMapUnits(myUnit);
 
@@ -59,7 +59,6 @@ QgsProjectProperties::QgsProjectProperties(QgsMapCanvas* mapCanvas, QWidget *par
   bool myProjectionEnabled = myRender->projectionsEnabled();
   cbxProjectionEnabled->setChecked(myProjectionEnabled);
   
-  // set the default wkt to WGS 84
   long mySRSID = myRender->destinationSrs().srsid();
   QgsDebugMsg("Read project SRSID: " + QString::number(mySRSID));
   projectionSelector->setSelectedSRSID(mySRSID);
@@ -175,7 +174,7 @@ QgsProjectProperties::~QgsProjectProperties()
 // return the map units
 QGis::units QgsProjectProperties::mapUnits() const
 {
-  return mMapCanvas->mapRender()->mapUnits();
+  return mMapCanvas->mapRenderer()->mapUnits();
 }
 
 
@@ -198,7 +197,7 @@ void QgsProjectProperties::setMapUnits(QGis::units unit)
   {
     radDecimalDegrees->setChecked(true);
   }
-  mMapCanvas->mapRender()->setMapUnits(unit);
+  mMapCanvas->mapRenderer()->setMapUnits(unit);
 }
 
 
@@ -236,7 +235,7 @@ void QgsProjectProperties::apply()
     mapUnit=QGis::DEGREES;
   }
 
-  QgsMapRender* myRender = mMapCanvas->mapRender();
+  QgsMapRenderer* myRender = mMapCanvas->mapRenderer();
       
   myRender->setMapUnits(mapUnit);
 
@@ -246,15 +245,15 @@ void QgsProjectProperties::apply()
   // selected that has an srid. This prevents error if the user
   // selects a top-level node rather than an actual coordinate
   // system
-  long mySRSID = projectionSelector->getCurrentSRSID();
+  long mySRSID = projectionSelector->getSelectedSRSID();
   if (mySRSID)
   {
     QgsSpatialRefSys srs(mySRSID, QgsSpatialRefSys::QGIS_SRSID);
     myRender->setDestinationSrs(srs);
     
     // write the currently selected projections _proj string_ to project settings
-    std::cout << "SpatialRefSys/ProjectSRSProj4String: " <<  projectionSelector->getCurrentProj4String().toLocal8Bit().data() << std::endl;
-    QgsProject::instance()->writeEntry("SpatialRefSys","/ProjectSRSProj4String",projectionSelector->getCurrentProj4String());
+    std::cout << "SpatialRefSys/ProjectSRSProj4String: " <<  projectionSelector->getSelectedProj4String().toLocal8Bit().data() << std::endl;
+    QgsProject::instance()->writeEntry("SpatialRefSys","/ProjectSRSProj4String",projectionSelector->getSelectedProj4String());
 
     // Set the map units to the projected coordinates if we are projecting
     if (isProjected())
@@ -353,7 +352,7 @@ bool QgsProjectProperties::isProjected()
 
 void QgsProjectProperties::showProjectionsTab()
 {
-  tabWidget->setCurrentPage(1);
+  tabWidget->setCurrentIndex(1);
 }
 
 void QgsProjectProperties::on_pbnSelectionColour_clicked()

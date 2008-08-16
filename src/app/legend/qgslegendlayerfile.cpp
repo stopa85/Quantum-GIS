@@ -19,6 +19,7 @@
  ***************************************************************************/
 
 #include "qgsapplication.h"
+#include "qgisapp.h"
 #include "qgslegend.h"
 #include "qgslegendlayer.h"
 #include "qgslegendlayerfile.h"
@@ -50,7 +51,7 @@ QgsLegendLayerFile::QgsLegendLayerFile(QTreeWidgetItem * theLegendItem, QString 
   // many layers and the user wants to adjusty symbology, etc prior to
   // actually viewing the layer.
   QSettings settings;
-  bool visible = settings.readBoolEntry("/qgis/new_layers_visible", 1);
+  bool visible = settings.value("/qgis/new_layers_visible", true).toBool();
   mLyr.setVisible(visible);
 
   // not in overview by default
@@ -104,7 +105,7 @@ QgsLegendItem::DRAG_ACTION QgsLegendLayerFile::accept(const QgsLegendItem* li) c
 
 QPixmap QgsLegendLayerFile::getOriginalPixmap() const
 {
-  QPixmap myPixmap(QgsApplication::themePath()+"mActionFileSmall.png");
+  QPixmap myPixmap = QgisApp::getThemePixmap("mActionFileSmall.png");
   return myPixmap;
 }
 
@@ -148,7 +149,7 @@ void QgsLegendLayerFile::setIconAppearance(bool inOverview,
   if (inOverview)
   {
     // Overlay the overview icon on the default icon
-    QPixmap myPixmap(QgsApplication::themePath()+"mIconOverview.png");
+    QPixmap myPixmap = QgisApp::getThemePixmap("mIconOverview.png");
     QPainter p(&newIcon);
     p.drawPixmap(0,0,myPixmap);
     p.end();
@@ -157,7 +158,7 @@ void QgsLegendLayerFile::setIconAppearance(bool inOverview,
   if (editable)
   {
     // Overlay the editable icon on the default icon
-    QPixmap myPixmap(QgsApplication::themePath()+"mIconEditable.png");
+    QPixmap myPixmap = QgisApp::getThemePixmap("mIconEditable.png");
     QPainter p(&newIcon);
     p.drawPixmap(0,0,myPixmap);
     p.end();
@@ -174,7 +175,7 @@ void QgsLegendLayerFile::setIconAppearance(bool inOverview,
 QString QgsLegendLayerFile::nameFromLayer(QgsMapLayer* layer)
 {
   QString sourcename = layer->source(); //todo: move this duplicated code into a new function
-  if(sourcename.startsWith("host", false))
+  if(sourcename.startsWith("host", Qt::CaseInsensitive))
     {
       //this layer is a database layer
       //modify source string such that password is not visible
@@ -242,7 +243,7 @@ void QgsLegendLayerFile::table()
   else
   {
     // display the attribute table
-    QApplication::setOverrideCursor(Qt::waitCursor);
+    QApplication::setOverrideCursor(Qt::WaitCursor);
 
     // TODO: pointer to QgisApp should be passed instead of NULL
     // but we don't have pointer to it. [MD]
@@ -340,7 +341,7 @@ void QgsLegendLayerFile::saveAsShapefileGeneral(bool saveOnlySelection)
   // Get a file to process, starting at the current directory
   QSettings settings;
   QString filter =  QString("Shapefiles (*.shp)");
-  QString dirName = settings.readEntry("/UI/lastShapefileDir", ".");
+  QString dirName = settings.value("/UI/lastShapefileDir", ".").toString();
 
   QgsEncodingFileDialog* openFileDialog = new QgsEncodingFileDialog(0,
       tr("Save layer as..."),
@@ -358,14 +359,14 @@ void QgsLegendLayerFile::saveAsShapefileGeneral(bool saveOnlySelection)
   
   QString encoding = openFileDialog->encoding();
   QString shapefileName = openFileDialog->selectedFiles().first();
-  settings.writeEntry("/UI/lastShapefileDir", QFileInfo(shapefileName).absolutePath());
+  settings.setValue("/UI/lastShapefileDir", QFileInfo(shapefileName).absolutePath());
   
   
   if (shapefileName.isNull())
     return;
 
   // add the extension if not present
-  if (shapefileName.find(".shp") == -1)
+  if (shapefileName.indexOf(".shp") == -1)
   {
     shapefileName += ".shp";
   }
@@ -380,7 +381,7 @@ void QgsLegendLayerFile::saveAsShapefileGeneral(bool saveOnlySelection)
       }
   }
   // ok if the file existed it should be deleted now so we can continue...
-  QApplication::setOverrideCursor(Qt::waitCursor);
+  QApplication::setOverrideCursor(Qt::WaitCursor);
   
   QgsVectorFileWriter::WriterError error;
   error = QgsVectorFileWriter::writeAsShapefile(vlayer, shapefileName, encoding, saveOnlySelection);
@@ -494,10 +495,9 @@ void QgsLegendLayerFile::layerNameChanged()
 void QgsLegendLayerFile::addToPopupMenu(QMenu& theMenu, QAction* toggleEditingAction)
 {
   QgsMapLayer* lyr = layer();
-  QString iconsPath = QgsApplication::themePath();
 
   // zoom to layer extent
-  theMenu.addAction(QIcon(iconsPath+QString("/mActionZoomToLayer.png")),
+  theMenu.addAction(QgisApp::getThemeIcon("/mActionZoomToLayer.png"),
                     tr("&Zoom to layer extent"), legend(), SLOT(legendLayerZoom()));
   
   // show in overview
@@ -508,7 +508,7 @@ void QgsLegendLayerFile::addToPopupMenu(QMenu& theMenu, QAction* toggleEditingAc
   showInOverviewAction->blockSignals(false);
   
   // remove from canvas
-  theMenu.addAction(QIcon(iconsPath+QString("/mActionRemove.png")),
+  theMenu.addAction(QgisApp::getThemeIcon("/mActionRemove.png"),
                     tr("&Remove"), legend(), SLOT(legendLayerRemove()));
 
   theMenu.addSeparator();

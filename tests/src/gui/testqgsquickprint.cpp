@@ -23,7 +23,7 @@
 
 #include <iostream>
 //qgis includes...
-#include <qgsmaprender.h> 
+#include <qgsmaprenderer.h> 
 #include <qgsmaplayer.h> 
 #include <qgsvectorlayer.h> 
 #include <qgsapplication.h>
@@ -46,10 +46,9 @@ class TestQgsQuickPrint: public QObject
     void cleanup(){};// will be called after every testfunction.
 
     void basicMapTest();
-    QString getQgisPath(); // Gets the path to QGIS installation
   private:
     bool imageCheck(QString theType); //as above
-    QgsMapRender * mpMapRenderer;
+    QgsMapRenderer * mpMapRenderer;
     QgsMapLayer * mpPointsLayer;
     QgsMapLayer * mpLinesLayer;
     QgsMapLayer * mpPolysLayer;
@@ -57,34 +56,17 @@ class TestQgsQuickPrint: public QObject
     QString mReport;
 };
 
-QString TestQgsQuickPrint::getQgisPath()
-{
-#ifdef Q_OS_LINUX 
-  QString qgisPath = QCoreApplication::applicationDirPath () + "/../";
-#else //mac and win
-  QString qgisPath = QCoreApplication::applicationDirPath () ;
-#endif
-  return qgisPath;
-}
-
 void TestQgsQuickPrint::initTestCase()
 {
+  //
+  // Runs once before any tests are run
+  //
   // init QGIS's paths - true means that all path will be inited from prefix
-  //QString qgisPath = QCoreApplication::applicationDirPath ();
-  QgsApplication::setPrefixPath(getQgisPath(), TRUE);
-#ifdef Q_OS_LINUX
-//  QgsApplication::setPkgDataPath(qgisPath + "/../share/qgis");
-//  QgsApplication::setPluginPath(qgisPath + "/../lib/qgis");
-#endif
+  QString qgisPath = QCoreApplication::applicationDirPath ();
+  QgsApplication::setPrefixPath(INSTALL_PREFIX, true);
+  QgsApplication::showSettings();
   // Instantiate the plugin directory so that providers are loaded
   QgsProviderRegistry::instance(QgsApplication::pluginPath());
-
-  //create some objects that will be used in all tests...
-
-  std::cout << "Prefix  PATH: " << QgsApplication::prefixPath().toLocal8Bit().data() << std::endl;
-  std::cout << "Plugin  PATH: " << QgsApplication::pluginPath().toLocal8Bit().data() << std::endl;
-  std::cout << "PkgData PATH: " << QgsApplication::pkgDataPath().toLocal8Bit().data() << std::endl;
-  std::cout << "User DB PATH: " << QgsApplication::qgisUserDbFilePath().toLocal8Bit().data() << std::endl;
 
   //
   //create a point layer that will be used in all tests...
@@ -122,7 +104,7 @@ void TestQgsQuickPrint::initTestCase()
   // since maprender does not require a qui
   // and is more light weight
   //
-  mpMapRenderer = new QgsMapRender();
+  mpMapRenderer = new QgsMapRenderer();
   QStringList myLayers;
   myLayers << mpPointsLayer->getLayerID();
   myLayers << mpPolysLayer->getLayerID();
@@ -159,7 +141,7 @@ void TestQgsQuickPrint::basicMapTest()
   QgsQuickPrint myQuickPrint;
   myQuickPrint.setMapBackgroundColor ( Qt::cyan );
   myQuickPrint.setOutputPdf (QDir::tempPath() + QDir::separator() + "quickprinttest.pdf");
-  myQuickPrint.setMapRender (mpMapRenderer);
+  myQuickPrint.setMapRenderer (mpMapRenderer);
   myQuickPrint.setTitle ("Map Title");
   myQuickPrint.setName ("Map Name");
   myQuickPrint.setCopyright ("Copyright Text");

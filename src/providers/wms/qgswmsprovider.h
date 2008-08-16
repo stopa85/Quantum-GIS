@@ -328,8 +328,6 @@ class QgsCoordinateTransform;
   interface defined in the QgsDataProvider class to provide access to spatial
   data residing in a OGC Web Map Service.
   
-  TODO: Make it work
-  
 */
 class QgsWmsProvider : public QgsRasterDataProvider
 {
@@ -342,8 +340,8 @@ public:
   /**
   * Constructor for the provider. 
   *
-  * \param   uri   HTTP URL of the Web Server.  If setProxy() is not also called then we will
-  *                contact the host directly.
+  * \param   uri   HTTP URL of the Web Server.  If needed a proxy will be used
+  *                otherwise we contact the host directly.
   *
   */
   QgsWmsProvider(QString const & uri = 0);
@@ -352,41 +350,11 @@ public:
   virtual ~QgsWmsProvider();
 
   /**
-   * Gets the HTTP proxy host used for this connection
-   */
-  virtual QString proxyHost() const;
-
-  /**
-   * Gets the HTTP proxy port used for this connection
-   */
-  virtual int proxyPort() const;
-
-  /**
-   * Gets the HTTP proxy user name used for this connection
-   */
-  virtual QString proxyUser() const;
-
-  /**
-   * Gets the HTTP proxy user password used for this connection
-   */
-  virtual QString proxyPass() const;
-
-  /**
-   *
-   * Sets an HTTP proxy for the URL given in the constructor
-   *
-   */
-  virtual bool setProxy(QString const & host = 0,
-                                    int port = 80,
-                        QString const & user = 0,
-                        QString const & pass = 0);
-
-  /**
    * \brief   Returns a list of the supported layers of the WMS server
    *
    * \param[out] layers   The list of layers will be placed here.
    *
-   * \retval FALSE if the layers could not be retreived or parsed -
+   * \retval FALSE if the layers could not be retrieved or parsed -
    *         see errorString() for more info
    *
    * \todo Document this better, make static
@@ -619,7 +587,7 @@ private:
    *
    * \param forceRefresh  if true, ignores any previous response cached in memory
    *                      and always contact the server for a new copy.
-   * \retval FALSE if the capabilities document could not be retreived or parsed - 
+   * \retval FALSE if the capabilities document could not be retrieved or parsed - 
    *         see errorString() for more info
    *
    * When this returns, "layers" will make sense.
@@ -711,7 +679,7 @@ private:
   /**
    * \brief Calculates the combined extent of the layers selected by layersDrawn
    *
-   * \retval FALSE if the capabilities document could not be retreived or parsed - 
+   * \retval FALSE if the capabilities document could not be retrieved or parsed - 
    *         see errorString() for more info
    */
   bool calculateExtent();
@@ -722,18 +690,6 @@ private:
 
   //! URL part of URI (httpuri)
   QString baseUrl;
-
-  //! HTTP proxy host name for the WMS for this layer
-  QString mHttpProxyHost;
-
-  //! HTTP proxy port number for the WMS for this layer
-  int mHttpProxyPort;
-
-  //! HTTP proxy username for the WMS for this layer
-  QString mHttpProxyUser;
-
-  //! HTTP proxy password for the WMS for this layer
-  QString mHttpProxyPass;
 
   /**
    * Flag indicating if the layer data source is a valid WMS layer

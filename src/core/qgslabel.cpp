@@ -71,7 +71,7 @@ QString QgsLabel::fieldValue ( int attr, QgsFeature &feature )
 
     const QgsAttributeMap& attrs = feature.attributeMap();
     QgsAttributeMap::const_iterator it = attrs.find(mLabelFieldIdx[attr]);
-    
+
     if (it != attrs.end())
     {
       return it->toString();
@@ -86,7 +86,7 @@ void QgsLabel::renderLabel( QPainter * painter, const QgsRect& viewExtent,
                             const QgsCoordinateTransform* coordTransform,
                             const QgsMapToPixel *transform,
                             QgsFeature &feature, bool selected, QgsLabelAttributes *classAttributes,
-       			    double sizeScale )
+                            double sizeScale )
 {
 
     QPen pen;
@@ -137,23 +137,23 @@ void QgsLabel::renderLabel( QPainter * painter, const QgsRect& viewExtent,
     int sizeType;
     value = fieldValue ( SizeType, feature );
     if( value.isEmpty() )
-    	sizeType = mLabelAttributes->sizeType();
+      sizeType = mLabelAttributes->sizeType();
     else
     {
-    	value = value.lower();
-	if( value.compare("mapunits") == 0 )
-		sizeType = QgsLabelAttributes::MapUnits;
-	else
-		sizeType = QgsLabelAttributes::PointUnits;
+      value = value.toLower();
+      if( value.compare("mapunits") == 0 )
+        sizeType = QgsLabelAttributes::MapUnits;
+      else
+        sizeType = QgsLabelAttributes::PointUnits;
     }
     if ( sizeType == QgsLabelAttributes::MapUnits )
     {
         size *= scale;
     } else {
-	size *= sizeScale;
+        size *= sizeScale;
     }
     if(size>0.0)
-    	font.setPointSizeFloat ( size );
+    	font.setPointSizeF ( size );
 
     value = fieldValue ( Color, feature );
     if ( value.isEmpty() )
@@ -214,8 +214,26 @@ void QgsLabel::renderLabel( QPainter * painter, const QgsRect& viewExtent,
     /* Alignment */
     int alignment;
     QFontMetrics fm ( font );
-    int width = fm.width ( text );
-    int height = fm.height();
+    int width, height;
+
+    if( mLabelAttributes->multilineEnabled() )
+    {
+      QStringList texts = text.split("\n");
+      
+      width=0;
+      for(int i=0; i<texts.size(); i++) {
+        int w = fm.width(texts[i]);
+        if(w>width)
+          width=w;
+      }
+
+      height = fm.height()*texts.size();
+    }
+    else
+    { 
+      width = fm.width ( text );
+      height = fm.height();
+    }
     int dx = 0;
     int dy = 0;
 
@@ -226,23 +244,23 @@ void QgsLabel::renderLabel( QPainter * painter, const QgsRect& viewExtent,
     }
     else
     {
-        value = value.lower();
+      value = value.toLower();
 
-	alignment=0;
+      alignment=0;
 
-        if ( value.contains("left") )
-            alignment |= Qt::AlignLeft;
-        else if( value.contains("right") )
-	    alignment |= Qt::AlignRight;
-	else
-	    alignment |= Qt::AlignHCenter;
+      if ( value.contains("left") )
+        alignment |= Qt::AlignLeft;
+      else if( value.contains("right") )
+        alignment |= Qt::AlignRight;
+      else
+        alignment |= Qt::AlignHCenter;
 
-	if( value.contains("bottom") )
-	    alignment |= Qt::AlignBottom;
-	else if( value.contains("top") )
-	    alignment |= Qt::AlignTop;
-	else
-	    alignment |= Qt::AlignVCenter;
+      if( value.contains("bottom") )
+        alignment |= Qt::AlignBottom;
+      else if( value.contains("top") )
+        alignment |= Qt::AlignTop;
+      else
+        alignment |= Qt::AlignVCenter;
     }
 
     if ( alignment & Qt::AlignLeft )
@@ -319,7 +337,7 @@ void QgsLabel::renderLabel( QPainter * painter, const QgsRect& viewExtent,
     {
       renderLabel(painter, overridePoint, coordTransform, 
                   transform, text, font, pen, dx, dy,
-                  xoffset, yoffset, ang);
+                  xoffset, yoffset, ang, width, height, alignment);
     }
     else
     {
@@ -329,7 +347,7 @@ void QgsLabel::renderLabel( QPainter * painter, const QgsRect& viewExtent,
       {
         renderLabel(painter, points[i], coordTransform, 
                     transform, text, font, pen, dx, dy,
-                    xoffset, yoffset, ang);
+                    xoffset, yoffset, ang, width, height, alignment);
       }
     }
 }
@@ -340,7 +358,8 @@ void QgsLabel::renderLabel(QPainter* painter, QgsPoint point,
                            QString text, QFont font, QPen pen,
                            int dx, int dy, 
                            double xoffset, double yoffset, 
-                           double ang)
+                           double ang,
+                           int width, int height, int alignment)
 {
     // Convert point to projected units
     if (coordTransform)
@@ -372,31 +391,38 @@ void QgsLabel::renderLabel(QPainter* painter, QgsPoint point,
     painter->setFont ( font );
     painter->translate ( x, y );
     painter->rotate ( -ang );
+
     //
     // Draw a buffer behind the text if one is desired
     //
     if (mLabelAttributes->bufferSizeIsSet() && mLabelAttributes->bufferEnabled())
     {
-        int myBufferSize = static_cast<int>(mLabelAttributes->bufferSize());
-        if (mLabelAttributes->bufferColorIsSet())
+      int myBufferSize = static_cast<int>(mLabelAttributes->bufferSize());
+      if (mLabelAttributes->bufferColorIsSet())
+      {
+          painter->setPen( mLabelAttributes->bufferColor());
+      }
+      else //default to a white buffer
+      {
+          painter->setPen( Qt::white);
+      }
+      for (int i = dx-myBufferSize; i <= dx+myBufferSize; i++)
+      {
+        for (int j = dy-myBufferSize; j <= dy+myBufferSize; j++)
         {
-            painter->setPen( mLabelAttributes->bufferColor());
+          if( mLabelAttributes->multilineEnabled() )
+            painter->drawText( i , j-height, width, height, alignment, text);
+          else
+            painter->drawText( i , j, text);
         }
-        else //default to a white buffer
-        {
-            painter->setPen( Qt::white);
-        }
-        for (int i = dx-myBufferSize; i <= dx+myBufferSize; i++)
-        {
-            for (int j = dy-myBufferSize; j <= dy+myBufferSize; j++)
-            {
-                painter->drawText( i ,j, text);
-            }
-        }
+      }
     }
 
     painter->setPen ( pen );
-    painter->drawText ( dx, dy, text );
+    if( mLabelAttributes->multilineEnabled() )
+      painter->drawText ( dx, dy-height, width, height, alignment, text );
+    else
+      painter->drawText ( dx, dy, text );
     painter->restore();
 }
 
@@ -882,6 +908,20 @@ void QgsLabel::readXML( const QDomNode& node )
         setLabelField ( BufferEnabled, _elementFieldIndex(el) );
     }
 
+    scratchNode = node.namedItem("multilineenabled");
+
+    if ( scratchNode.isNull() )
+    {
+        QgsDebugMsg("couldn't find QgsLabel ``multilineenabled'' attribute");
+    }
+    else
+    {
+        el = scratchNode.toElement();
+
+        mLabelAttributes->setMultilineEnabled ( (bool)el.attribute("on","0").toInt() );
+        setLabelField ( MultilineEnabled, _elementFieldIndex(el) );
+    }
+
 } // QgsLabel::readXML()
 
 
@@ -896,18 +936,18 @@ void QgsLabel::writeXML(std::ostream& xml)
     {
       if (mLabelFieldIdx[Text] != -1)
       {
-          xml << "\t\t\t<label text=\"" << (const char*)(mLabelAttributes->text().utf8())
+          xml << "\t\t\t<label text=\"" << mLabelAttributes->text().toUtf8().constData()
               << "\" field=\"" << mLabelFieldIdx[Text] << "\" />\n";
       }
       else
       {
-          xml << "\t\t\t<label text=\"" << (const char*)(mLabelAttributes->text().utf8())
+          xml << "\t\t\t<label text=\"" << mLabelAttributes->text().toUtf8().constData()
               << "\" field=\"\" />\n";
       }
     }
     else
     {
-        xml << "\t\t\t<label text=\"" << (const char*)(mLabelAttributes->text().utf8())
+        xml << "\t\t\t<label text=\"" << mLabelAttributes->text().toUtf8().constData()
             << "\" field=\"\" />\n";
     }
 
@@ -916,12 +956,12 @@ void QgsLabel::writeXML(std::ostream& xml)
     {
       if (mLabelFieldIdx[Family] != -1)
       {
-          xml << "\t\t\t<family name=\"" << mLabelAttributes->family().utf8().data()
+          xml << "\t\t\t<family name=\"" << mLabelAttributes->family().toUtf8().constData()
               << "\" field=\"" << mLabelFieldIdx[Family] << "\" />\n";
       }
       else
       {
-          xml << "\t\t\t<family name=\"" << mLabelAttributes->family().utf8().data()
+          xml << "\t\t\t<family name=\"" << mLabelAttributes->family().toUtf8().constData()
               << "\" field=\"\" />\n";
       }
     }
@@ -944,14 +984,14 @@ void QgsLabel::writeXML(std::ostream& xml)
        	else
 	{
           xml << "\t\t\t<size value=\"" << mLabelAttributes->size()
-              << "\" units=\"" << (const char *)QgsLabelAttributes::unitsName(mLabelAttributes->sizeType()).utf8()
+              << "\" units=\"" << QgsLabelAttributes::unitsName(mLabelAttributes->sizeType()).toUtf8().constData()
               << "\" field=\"" << mLabelFieldIdx[Size] << "\" />\n";
 	}
       }
       else
       {
           xml << "\t\t\t<size value=\"" << mLabelAttributes->size()
-              << "\" units=\"" << (const char *)QgsLabelAttributes::unitsName(mLabelAttributes->sizeType()).utf8()
+              << "\" units=\"" << QgsLabelAttributes::unitsName(mLabelAttributes->sizeType()).toUtf8().constData()
               << "\" field=\"\" />\n";
       }
     }
@@ -1065,7 +1105,7 @@ void QgsLabel::writeXML(std::ostream& xml)
     // offset
     if ( mLabelAttributes->offsetIsSet() )
     {
-            xml << "\t\t\t<offset  units=\"" << QgsLabelAttributes::unitsName(mLabelAttributes->offsetType()).utf8().data()
+            xml << "\t\t\t<offset  units=\"" << QgsLabelAttributes::unitsName(mLabelAttributes->offsetType()).toUtf8().constData()
             << "\" x=\"" << mLabelAttributes->xOffset() << "\" xfield=\"" << mLabelFieldIdx[XOffset]
             << "\" y=\"" << mLabelAttributes->yOffset() << "\" yfield=\"" << mLabelFieldIdx[YOffset]
             << "\" />\n";
@@ -1092,7 +1132,7 @@ void QgsLabel::writeXML(std::ostream& xml)
     // alignment
     if ( mLabelAttributes->alignmentIsSet() )
     {
-      xml << "\t\t\t<alignment value=\"" << QgsLabelAttributes::alignmentName(mLabelAttributes->alignment()).utf8().data()
+      xml << "\t\t\t<alignment value=\"" << QgsLabelAttributes::alignmentName(mLabelAttributes->alignment()).toUtf8().constData()
             << "\" field=\"" << mLabelFieldIdx[Alignment] << "\" />\n";
     }
 
@@ -1125,13 +1165,13 @@ void QgsLabel::writeXML(std::ostream& xml)
       if (mLabelFieldIdx[BufferSize] != -1)
       {
           xml << "\t\t\t<buffersize value=\"" << mLabelAttributes->bufferSize()
-              << "\" units=\"" << (const char *)QgsLabelAttributes::unitsName(mLabelAttributes->bufferSizeType()).utf8()
+              << "\" units=\"" << QgsLabelAttributes::unitsName(mLabelAttributes->bufferSizeType()).toUtf8().constData()
               << "\" field=\"" << mLabelFieldIdx[BufferSize] << "\" />\n";
       }
       else
       {
           xml << "\t\t\t<buffersize value=\"" << mLabelAttributes->bufferSize()
-              << "\" units=\"" << (const char *)QgsLabelAttributes::unitsName(mLabelAttributes->bufferSizeType()).utf8()
+              << "\" units=\"" << QgsLabelAttributes::unitsName(mLabelAttributes->bufferSizeType()).toUtf8().constData()
               << "\" field=\"\" />\n";
       }
     }
@@ -1158,6 +1198,26 @@ void QgsLabel::writeXML(std::ostream& xml)
     {
         xml << "\t\t\t<bufferenabled on=\"" << "\" field=\"" << "\" />\n";
     }
+
+    // multiline enabled
+    if (mLabelAttributes->multilineEnabled())
+    {
+      if (mLabelFieldIdx[MultilineEnabled] != -1)
+      {
+          xml << "\t\t\t<multilineenabled on=\"" << mLabelAttributes->multilineEnabled()
+              << "\" field=\"" << mLabelFieldIdx[MultilineEnabled] << "\" />\n";
+      }
+      else
+      {
+          xml << "\t\t\t<multilineenabled on=\"" << mLabelAttributes->multilineEnabled()
+              << "\" field=\"\" />\n";
+      }
+    }
+    else
+    {
+        xml << "\t\t\t<multilineenabled on=\"" << "\" field=\"" << "\" />\n";
+    }
+
     xml << "\t\t</labelattributes>\n";
 }
 

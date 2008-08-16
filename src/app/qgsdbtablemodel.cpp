@@ -17,6 +17,7 @@
 
 #include "qgsdbtablemodel.h"
 #include "qgsapplication.h"
+#include "qgisapp.h"
 
 QgsDbTableModel::QgsDbTableModel(): QStandardItemModel(), mTableCount(0)
 {
@@ -53,12 +54,10 @@ void QgsDbTableModel::addTableEntry(QString type, QString schemaName, QString ta
   }
 
   //path to icon for specified type
-  QString myThemePath = QgsApplication::themePath();
   QString typeName;
-  QString iconFile;
 
   QGis::WKBTYPE wkbType = qgisTypeFromDbType(type);
-  iconFile = iconFilePathForType(wkbType);
+  QIcon iconFile = iconForType(wkbType);
 
   QList<QStandardItem*> childItemList;
   QStandardItem* schemaNameItem = new QStandardItem(schemaName);
@@ -93,14 +92,16 @@ void QgsDbTableModel::setSql(const QModelIndex& index, const QString& sql)
   //find out schema name and table name
   QModelIndex schemaSibling = index.sibling(index.row(), 0);
   QModelIndex tableSibling = index.sibling(index.row(), 1);
+  QModelIndex geomSibling = index.sibling(index.row(), 3);
 
-  if(!schemaSibling.isValid() || !tableSibling.isValid())
+  if(!schemaSibling.isValid() || !tableSibling.isValid() || !geomSibling.isValid())
   {
     return;
   }
 
   QString schemaName = itemFromIndex(schemaSibling)->text();
-  QString tableName = itemFromIndex(tableSibling)->text(); 
+  QString tableName = itemFromIndex(tableSibling)->text();
+  QString geomName = itemFromIndex(geomSibling)->text();
 
   QList<QStandardItem*> schemaItems = findItems(schemaName, Qt::MatchExactly, 0);
   if(schemaItems.size() < 1)
@@ -113,6 +114,7 @@ void QgsDbTableModel::setSql(const QModelIndex& index, const QString& sql)
 
   QModelIndex currentChildIndex;
   QModelIndex currentTableIndex;
+  QModelIndex currentGeomIndex;
 
   for(int i = 0; i < numChildren; ++i)
   {
@@ -127,7 +129,14 @@ void QgsDbTableModel::setSql(const QModelIndex& index, const QString& sql)
       continue;
     }
 
-    if(itemFromIndex(currentTableIndex)->text() == tableName)
+    currentGeomIndex = currentChildIndex.sibling(i, 3);
+    if(!currentGeomIndex.isValid())
+    {
+      continue;
+    }
+
+    if(itemFromIndex(currentTableIndex)->text() == tableName &&
+       itemFromIndex(currentGeomIndex)->text() == geomName )
     {
       QModelIndex sqlIndex = currentChildIndex.sibling(i, 4);
       if(sqlIndex.isValid())
@@ -187,9 +196,9 @@ void QgsDbTableModel::setGeometryTypesForTable(const QString& schema, const QStr
       }
 
       QGis::WKBTYPE wkbType = qgisTypeFromDbType(typeList.at(0));
-      QString iconPath = iconFilePathForType(wkbType);
+      QIcon myIcon = iconForType(wkbType);
       itemFromIndex(currentTypeIndex)->setText(typeList.at(0)); //todo: add other rows
-      itemFromIndex(currentTypeIndex)->setIcon(QIcon(iconPath));
+      itemFromIndex(currentTypeIndex)->setIcon(myIcon);
       if(!geomColText.contains(" AS "))
       {
         itemFromIndex(currentGeomColumnIndex)->setText(geomColText + " AS " + typeList.at(0));
@@ -204,22 +213,21 @@ void QgsDbTableModel::setGeometryTypesForTable(const QString& schema, const QStr
   }
 }
 
-QString QgsDbTableModel::iconFilePathForType(QGis::WKBTYPE type) const
+QIcon QgsDbTableModel::iconForType(QGis::WKBTYPE type) const
 {
-  QString myThemePath = QgsApplication::themePath();
   if(type == QGis::WKBPoint || type == QGis::WKBPoint25D || type == QGis::WKBMultiPoint || type == QGis::WKBMultiPoint25D)
   {
-    return myThemePath+"/mIconPointLayer.png";
+    return QgisApp::getThemeIcon("/mIconPointLayer.png");
   }
   else if(type == QGis::WKBLineString || type == QGis::WKBLineString25D || type == QGis::WKBMultiLineString || type == QGis::WKBMultiLineString25D)
   {
-    return myThemePath+"/mIconLineLayer.png";
+    return QgisApp::getThemeIcon("/mIconLineLayer.png");
   }
   else if(type == QGis::WKBPolygon || type == QGis::WKBPolygon25D || type == QGis::WKBMultiPolygon || type == QGis::WKBMultiPolygon25D)
   {
-    return myThemePath+"/mIconPolygonLayer.png";
+    return QgisApp::getThemeIcon("/mIconPolygonLayer.png");
   }
-  else return "";
+  else return QIcon();
 }
 
 QString QgsDbTableModel::displayStringForType(QGis::WKBTYPE type) const

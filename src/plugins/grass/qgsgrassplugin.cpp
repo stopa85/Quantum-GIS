@@ -16,6 +16,7 @@
 /*  $Id$ */
 
 // includes
+#include "qgsapplication.h"
 #include "qgsmaplayer.h"
 #include "qgisinterface.h"
 #include "qgsmapcanvas.h"
@@ -39,6 +40,7 @@
 #include <qregexp.h>
 #include <qglobal.h>
 #include <qinputdialog.h>
+#include <QIcon>
 //Added by qt3to4:
 #include <QPixmap>
 #include <Q3PointArray>
@@ -55,8 +57,8 @@ extern "C" {
 }
 
 #include "qgsgrassplugin.h"
-#include "../../src/providers/grass/qgsgrass.h"
-#include "../../src/providers/grass/qgsgrassprovider.h"
+#include "qgsgrass.h"
+#include "qgsgrassprovider.h"
 
 //the gui subclass
 #include "qgsgrassutils.h"
@@ -142,26 +144,26 @@ void QgsGrassPlugin::initGui()
   mRegionBand->setZValue(20);
 
   // Create the action for tool
-  mOpenMapsetAction = new QAction(QIcon(":/grass/grass_open_mapset.png"), tr("Open mapset"), this );
-  mNewMapsetAction = new QAction(QIcon(":/grass/grass_new_mapset.png"), tr("New mapset"), this );
-  mCloseMapsetAction = new QAction(QIcon(":/grass/grass_close_mapset.png"), tr("Close mapset"), this );
+  mOpenMapsetAction = new QAction(getThemeIcon("grass_open_mapset.png"), tr("Open mapset"), this );
+  mNewMapsetAction = new QAction(getThemeIcon("grass_new_mapset.png"), tr("New mapset"), this );
+  mCloseMapsetAction = new QAction(getThemeIcon("grass_close_mapset.png"), tr("Close mapset"), this );
 
-  mAddVectorAction = new QAction(QIcon(":/grass/add_vector.png"),
+  mAddVectorAction = new QAction(getThemeIcon("grass_add_vector.png"),
     tr("Add GRASS vector layer"), this);
-  mAddRasterAction = new QAction(QIcon(":/grass/add_raster.png"),
+  mAddRasterAction = new QAction(getThemeIcon("grass_add_raster.png"),
     tr("Add GRASS raster layer"), this);
-  mOpenToolsAction = new QAction(QIcon(":/grass/grass_tools.png"),
+  mOpenToolsAction = new QAction(getThemeIcon("grass_tools.png"),
     tr("Open GRASS tools"), this);
 
-  mRegionAction = new QAction(QIcon(":/grass/grass_region.png"),
+  mRegionAction = new QAction(getThemeIcon("grass_region.png"),
     tr("Display Current Grass Region"), this);
   mRegionAction->setCheckable(true);     
 
-  mEditRegionAction = new QAction(QIcon(":/grass/grass_region_edit.png"),
+  mEditRegionAction = new QAction(getThemeIcon("grass_region_edit.png"),
     tr("Edit Current Grass Region"), this);
-  mEditAction = new QAction(QIcon(":/grass/grass_edit.png"),
+  mEditAction = new QAction(getThemeIcon("grass_edit.png"),
     tr("Edit Grass Vector layer"), this);
-  mNewVectorAction = new QAction(QIcon(":/grass/grass_new_vector_layer.png"),tr("Create new Grass Vector"), this);
+  mNewVectorAction = new QAction(getThemeIcon("grass_new_vector_layer.png"),tr("Create new Grass Vector"), this);
 
   mAddVectorAction->setWhatsThis(tr("Adds a GRASS vector layer to the map canvas"));
   mAddRasterAction->setWhatsThis(tr("Adds a GRASS raster layer to the map canvas"));
@@ -266,7 +268,7 @@ void QgsGrassPlugin::mapsetChanged ()
 void QgsGrassPlugin::saveMapset()
 {
 #ifdef QGISDEBUG
-  std::cerr << "QgsGrassPlugin::addVector()" << std::endl;
+  //std::cerr << "QgsGrassPlugin::addVector()" << std::endl;
 #endif
 
   // Save working mapset in project file
@@ -284,7 +286,7 @@ void QgsGrassPlugin::saveMapset()
 void QgsGrassPlugin::addVector()
 {
 #ifdef QGISDEBUG
-  std::cerr << "QgsGrassPlugin::addVector()" << std::endl;
+  //std::cerr << "QgsGrassPlugin::addVector()" << std::endl;
 #endif
   QString uri;
 
@@ -294,15 +296,15 @@ void QgsGrassPlugin::addVector()
     uri = sel->gisdbase + "/" + sel->location + "/" + sel->mapset + "/" + sel->map + "/" + sel->layer;
   }
 #ifdef QGISDEBUG
-  std::cerr << "plugin URI: " << uri.toLocal8Bit().data() << std::endl;
+  //std::cerr << "plugin URI: " << uri.toLocal8Bit().data() << std::endl;
 #endif
   if ( uri.length() == 0 )
   {
-    std::cerr << "Nothing was selected" << std::endl;
+    //std::cerr << "Nothing was selected" << std::endl;
     return;
   } else {
 #ifdef QGISDEBUG
-    std::cout << "Add new vector layer" << std::endl;
+    //std::cout << "Add new vector layer" << std::endl;
 #endif
 
     // create vector name: vector layer
@@ -356,8 +358,10 @@ void QgsGrassPlugin::addVector()
       }
 
       Vect_close ( &map );
-    } else {
-      std::cerr << "Cannot open GRASS vector: " << QgsGrass::getErrorMessage().toLocal8Bit().data() << std::endl;
+    } 
+    else 
+    {
+      QMessageBox::warning( 0, tr("Warning"), "Cannot open GRASS vector:\n " + QgsGrass::getErrorMessage());
     }
 
     qGisInterface->addVectorLayer( uri, name, "grass");
@@ -368,11 +372,11 @@ void QgsGrassPlugin::addVector()
 void QgsGrassPlugin::addRaster()
 {
 #ifdef QGISDEBUG
-  std::cerr << "QgsGrassPlugin::addRaster()" << std::endl;
+  //std::cerr << "QgsGrassPlugin::addRaster()" << std::endl;
 #endif
   QString uri;
 
-  std::cerr << "QgsGrassPlugin::addRaster" << std::endl;
+  //std::cerr << "QgsGrassPlugin::addRaster" << std::endl;
 
   QgsGrassSelect *sel = new QgsGrassSelect(QgsGrassSelect::RASTER );
   if ( sel->exec() ) {
@@ -386,14 +390,14 @@ void QgsGrassPlugin::addRaster()
     uri = sel->gisdbase + "/" + sel->location + "/" + sel->mapset + "/" + element + "/" + sel->map;
   }
 #ifdef QGISDEBUG
-  std::cerr << "plugin URI: " << uri.toLocal8Bit().data() << std::endl;
+  //std::cerr << "plugin URI: " << uri.toLocal8Bit().data() << std::endl;
 #endif
   if ( uri.length() == 0 ) {
-    std::cerr << "Nothing was selected" << std::endl;
+    //std::cerr << "Nothing was selected" << std::endl;
     return;
   } else {
 #ifdef QGISDEBUG
-    std::cout << "Add new raster layer" << std::endl;
+    //std::cout << "Add new raster layer" << std::endl;
 #endif
     // create raster name
     int pos = uri.findRev('/');
@@ -411,9 +415,9 @@ void QgsGrassPlugin::openTools()
   if ( !mTools ) { 
     mTools = new QgsGrassTools ( qGisInterface, qGisInterface->getMainWindow(), 0, Qt::WType_Dialog );
 
-    std::cout << "connect = " <<
-      connect( mTools, SIGNAL( regionChanged() ), this, SLOT( redrawRegion()) )
-      << "connect" << std::endl;
+    //std::cout << "connect = " <<
+      connect( mTools, SIGNAL( regionChanged() ), this, SLOT( redrawRegion()) );
+    //  << "connect" << std::endl;
   }
 
   mTools->show();
@@ -445,7 +449,7 @@ void QgsGrassPlugin::edit()
 void QgsGrassPlugin::setEditAction()
 {
 #ifdef QGISDEBUG
-  std::cout << "QgsGrassPlugin::setEditAction()" << std::endl;
+  //std::cout << "QgsGrassPlugin::setEditAction()" << std::endl;
 #endif
 
   QgsMapLayer *layer = (QgsMapLayer *) qGisInterface->activeLayer();
@@ -463,7 +467,7 @@ void QgsGrassPlugin::setEditAction()
 void QgsGrassPlugin::newVector()
 {
 #ifdef QGISDEBUG
-  std::cout << "QgsGrassPlugin::newVector()" << std::endl;
+  //std::cout << "QgsGrassPlugin::newVector()" << std::endl;
 #endif
 
   if ( QgsGrassEdit::isRunning() ) {
@@ -537,14 +541,14 @@ void QgsGrassPlugin::newVector()
 void QgsGrassPlugin::postRender(QPainter *painter)
 {
 #ifdef QGISDEBUG
-  std::cout << "QgsGrassPlugin::postRender()" << std::endl;
+  //std::cout << "QgsGrassPlugin::postRender()" << std::endl;
 #endif
 }
 
 void QgsGrassPlugin::displayRegion()
 {
 #ifdef QGISDEBUG
-  std::cout << "QgsGrassPlugin::displayRegion()" << std::endl;
+  //std::cout << "QgsGrassPlugin::displayRegion()" << std::endl;
 #endif
 
   mRegionBand->reset();
@@ -590,7 +594,7 @@ void QgsGrassPlugin::displayRegion()
 void QgsGrassPlugin::switchRegion(bool on)
 {
 #ifdef QGISDEBUG
-  std::cout << "QgsGrassPlugin::switchRegion()" << std::endl;
+  //std::cout << "QgsGrassPlugin::switchRegion()" << std::endl;
 #endif
 
   QSettings settings;
@@ -606,7 +610,7 @@ void QgsGrassPlugin::switchRegion(bool on)
 void QgsGrassPlugin::redrawRegion()
 {
 #ifdef QGISDEBUG
-  std::cout << "QgsGrassPlugin::redrawRegion()" << std::endl;
+  //std::cout << "QgsGrassPlugin::redrawRegion()" << std::endl;
 #endif
   if ( mRegionAction->isOn() )
   {
@@ -617,7 +621,7 @@ void QgsGrassPlugin::redrawRegion()
 void QgsGrassPlugin::changeRegion(void)
 {
 #ifdef QGISDEBUG
-  std::cout << "QgsGrassPlugin::changeRegion()" << std::endl;
+  //std::cout << "QgsGrassPlugin::changeRegion()" << std::endl;
 #endif
 
   if ( mRegion ) { // running
@@ -658,7 +662,7 @@ void QgsGrassPlugin::setRegionPen(QPen & pen)
 void QgsGrassPlugin::openMapset()
 {
 #ifdef QGISDEBUG
-  std::cerr << "QgsGrassPlugin::openMapset()" << std::endl;
+  //std::cerr << "QgsGrassPlugin::openMapset()" << std::endl;
 #endif
 
   QString element;
@@ -683,7 +687,7 @@ void QgsGrassPlugin::openMapset()
 void QgsGrassPlugin::closeMapset()
 {
 #ifdef QGISDEBUG
-  std::cerr << "QgsGrassPlugin::closeMapset()" << std::endl;
+  //std::cerr << "QgsGrassPlugin::closeMapset()" << std::endl;
 #endif
 
   QString err = QgsGrass::closeMapset ();
@@ -712,7 +716,7 @@ void QgsGrassPlugin::newMapset()
 void QgsGrassPlugin::projectRead()
 {
 #ifdef QGISDEBUG
-  std::cout << "QgsGrassPlugin::projectRead" << std::endl;
+  //std::cout << "QgsGrassPlugin::projectRead" << std::endl;
 #endif
   bool ok;
   QString gisdbase = QgsProject::instance()->readEntry( 
@@ -765,7 +769,7 @@ void QgsGrassPlugin::projectRead()
 void QgsGrassPlugin::newProject()
 {
 #ifdef QGISDEBUG
-  std::cout << "QgsGrassPlugin::newProject" << std::endl;
+  //std::cout << "QgsGrassPlugin::newProject" << std::endl;
 #endif
 }
 
@@ -809,6 +813,25 @@ void QgsGrassPlugin::unload()
   QWidget* qgis = qGisInterface->getMainWindow();
   disconnect( qgis, SIGNAL( projectRead() ), this, SLOT( projectRead()));
   disconnect( qgis, SIGNAL( newProject() ), this, SLOT(newProject()));
+}
+// Note this code is duplicated from qgisapp.cpp because
+// I didnt want to make plugins dependent on qgsapplication 
+// and because it needs grass specific path into 
+// the GRASS plugin resource bundle [TS] 
+QIcon QgsGrassPlugin::getThemeIcon(const QString theName)
+{
+  QString myPath = ":/" + QgsApplication::themeName() + "/grass/" + theName;
+  QString myDefaultPath = ":/default/grass/" + theName;
+  if (QFile::exists(myPath))
+  {
+    return QIcon(myPath);
+  }
+  else
+  {
+    //could still return an empty icon if it
+    //doesnt exist in the default theme either!
+    return QIcon(myDefaultPath);
+  }
 }
 
 /** 

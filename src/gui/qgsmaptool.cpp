@@ -17,8 +17,8 @@
 #include "qgslogger.h"
 #include "qgsmaptool.h"
 #include "qgsmapcanvas.h"
-#include "qgsmaprender.h"
 #include "qgsmaptopixel.h"
+#include "qgsmaprenderer.h"
 #include <QAction>
 #include <QAbstractButton>
 
@@ -48,17 +48,17 @@ QgsPoint QgsMapTool::toLayerCoords(QgsMapLayer* layer, const QPoint& point)
 
 QgsPoint QgsMapTool::toLayerCoords(QgsMapLayer* layer, const QgsPoint& point)
 {
-  return mCanvas->mapRender()->outputCoordsToLayerCoords(layer, point);
+  return mCanvas->mapRenderer()->outputCoordsToLayerCoords(layer, point);
 }
 
 QgsPoint QgsMapTool::toMapCoords(QgsMapLayer* layer, const QgsPoint& point)
 {
-  return mCanvas->mapRender()->layerCoordsToOutputCoords(layer, point);
+  return mCanvas->mapRenderer()->layerCoordsToOutputCoords(layer, point);
 }
 
 QgsRect QgsMapTool::toLayerCoords(QgsMapLayer* layer, const QgsRect& rect)
 {
-  return mCanvas->mapRender()->outputCoordsToLayerCoords(layer, rect);
+  return mCanvas->mapRenderer()->outputCoordsToLayerCoords(layer, rect);
 }
 
 QPoint QgsMapTool::toCanvasCoords(const QgsPoint& point)
@@ -137,6 +137,11 @@ void QgsMapTool::renderComplete()
 }
 
 bool QgsMapTool::isZoomTool()
+{
+  return false;
+}
+
+bool QgsMapTool::isEditTool()
 {
   return false;
 }

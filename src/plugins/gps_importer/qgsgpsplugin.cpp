@@ -46,9 +46,6 @@
 //the gui subclass
 #include "qgsgpsplugingui.h"
 
-// xpm for creating the toolbar icon
-#include "icon.xpm"
-
 
 static const char * const ident_ = 
   "$Id$";
@@ -90,8 +87,8 @@ QgsGPSPlugin::~QgsGPSPlugin()
 void QgsGPSPlugin::initGui()
 {
   // add an action to the toolbar
-  mQActionPointer = new QAction(QIcon(icon), tr("&Gps Tools"), this);
-  mCreateGPXAction = new QAction(QIcon(icon), tr("&Create new GPX layer"), this);
+  mQActionPointer = new QAction(QIcon(":/gps_importer.png"), tr("&Gps Tools"), this);
+  mCreateGPXAction = new QAction(QIcon(":/gps_importer.png"), tr("&Create new GPX layer"), this);
 
   mQActionPointer->setWhatsThis(tr("Creates a new GPX layer and displays it on the map canvas"));
   mCreateGPXAction->setWhatsThis(tr("Creates a new GPX layer and displays it on the map canvas"));
@@ -109,7 +106,7 @@ void QgsGPSPlugin::help()
   //implement me!
 }
 
-// Slot called when the buffer menu item is activated
+// Slot called when the menu item is activated
 void QgsGPSPlugin::run()
 {
   // find all GPX layers
@@ -212,7 +209,7 @@ void QgsGPSPlugin::loadGPXFile(QString filename, bool loadWaypoints, bool loadRo
   
   // remember the directory
   QSettings settings;
-  settings.writeEntry("/Plugin-GPS/gpxdirectory", fileInfo.dirPath());
+  settings.setValue("/Plugin-GPS/gpxdirectory", fileInfo.path());
   
   // add the requested layers
   if (loadTracks)
@@ -437,8 +434,8 @@ void QgsGPSPlugin::downloadFromGPS(QString device, QString port,
   
   // everything was OK, remember the device and port for next time
   QSettings settings;
-  settings.writeEntry("/Plugin-GPS/lastdldevice", device);
-  settings.writeEntry("/Plugin-GPS/lastdlport", port);
+  settings.setValue("/Plugin-GPS/lastdldevice", device);
+  settings.setValue("/Plugin-GPS/lastdlport", port);
   
   emit closeGui();
 }
@@ -471,7 +468,7 @@ void QgsGPSPlugin::uploadToGPS(QgsVectorLayer* gpxLayer, QString device,
   // try to start the gpsbabel process
   QStringList babelArgs = 
     mDevices[device]->exportCommand(mBabelPath, typeArg, 
-				       source.left(source.findRev('?')), port);
+				       source.left(source.lastIndexOf('?')), port);
   if (babelArgs.isEmpty()) {
     QMessageBox::warning(NULL, tr("Not supported"),
 			 QString(tr("This device does not support uploading of "))+
@@ -509,8 +506,8 @@ void QgsGPSPlugin::uploadToGPS(QgsVectorLayer* gpxLayer, QString device,
   
   // everything was OK, remember this device for next time
   QSettings settings;
-  settings.writeEntry("/Plugin-GPS/lastuldevice", device);
-  settings.writeEntry("/Plugin-GPS/lastulport", port);
+  settings.setValue("/Plugin-GPS/lastuldevice", device);
+  settings.setValue("/Plugin-GPS/lastulport", port);
   
   emit closeGui();
 }

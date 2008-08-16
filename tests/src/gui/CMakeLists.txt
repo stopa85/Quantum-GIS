@@ -29,12 +29,12 @@ IF (WIN32)
     ADD_DEFINITIONS("-DCORE_EXPORT=__declspec(dllimport)")
     #ADD_DEFINITIONS("-DPLUGIN_EXPORT=__declspec(dllimport)")
     #next needed for qgis gui includes
-    ADD_DEFINITIONS("-DGUI_EXPORT=__declspec(dllexport)")
+    ADD_DEFINITIONS("-DGUI_EXPORT=__declspec(dllimport)")
   ELSE (MSVC)
     ADD_DEFINITIONS("-UCORE_EXPORT \"-DCORE_EXPORT=__declspec(dllimport)\"")
     #ADD_DEFINITIONS("\"-DPLUGIN_EXPORT=__declspec(dllimport)\"")
     #next needed for qgis gui includes
-    ADD_DEFINITIONS("-UGUI_EXPORT \"-DGUI_EXPORT=__declspec(dllexport)\"")
+    ADD_DEFINITIONS("-UGUI_EXPORT \"-DGUI_EXPORT=__declspec(dllimport)\"")
   ENDIF (MSVC)
 ENDIF (WIN32)
 
@@ -43,6 +43,7 @@ ENDIF (WIN32)
 # the TEST_DATA_DIR variable is set in the top level CMakeLists.txt
 ADD_DEFINITIONS(-DTEST_DATA_DIR="\\"${TEST_DATA_DIR}\\"")
 
+ADD_DEFINITIONS(-DINSTALL_PREFIX="\\"${CMAKE_INSTALL_PREFIX}\\"")
 #############################################################
 # libraries
 
@@ -86,7 +87,7 @@ IF (APPLE)
   ADD_TEST(qgis_quickprinttest ${CMAKE_INSTALL_PREFIX}/qgis_quickprinttest)
 ELSE (APPLE)
   INSTALL(TARGETS qgis_quickprinttest RUNTIME DESTINATION ${QGIS_BIN_DIR})
-  ADD_TEST(qgis_quickprinttest ${QGIS_BIN_DIR}/qgis_quickprinttest)
+  ADD_TEST(qgis_quickprinttest ${CMAKE_INSTALL_PREFIX}/bin/qgis_quickprinttest)
 ENDIF (APPLE)
 
 

@@ -19,9 +19,6 @@
 
 #include "qgsvectordataprovider.h"
 
-
-#include <map>
-
 #include <QStringList>
 
 class QgsFeature;
@@ -45,6 +42,8 @@ class QTextStream;
 */
 class QgsDelimitedTextProvider : public QgsVectorDataProvider
 {
+  Q_OBJECT;
+
 public:
 
   QgsDelimitedTextProvider(QString uri = QString());
@@ -214,7 +213,7 @@ private:
   struct wkbPoint
   {
     unsigned char byteOrder;
-    Q_UINT32 wkbType;
+    quint32 wkbType;
     double x;
     double y;
   };

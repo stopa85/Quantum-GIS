@@ -27,8 +27,9 @@
 #include "qgsgraduatedsymboldialog.h"
 #include "qgslabeldialog.h"
 #include "qgslabel.h"
-#include "qgslayerprojectionselector.h"
+#include "qgsgenericprojectionselector.h"
 #include "qgslogger.h"
+#include "qgsproject.h"
 #include "qgssinglesymboldialog.h"
 #include "qgsuniquevaluedialog.h"
 #include "qgsvectordataprovider.h"
@@ -146,15 +147,15 @@ void QgsVectorLayerProperties::alterLayerDialog(const QString & dialogString)
 
 void QgsVectorLayerProperties::setLegendType(QString type)
 {
-  legendtypecombobox->setCurrentText(type);
+  legendtypecombobox->setItemText(legendtypecombobox->currentIndex(), type);
 }
 
 void QgsVectorLayerProperties::setDisplayField(QString name)
 {
-  displayFieldComboBox->setCurrentText(name);
+  displayFieldComboBox->setItemText(displayFieldComboBox->currentIndex(), name);
 }
 
-//! @note in raster props, this metho d is called sync()
+//! @note in raster props, this method is called sync()
 void QgsVectorLayerProperties::reset( void )
 {
   // populate the general information
@@ -190,9 +191,10 @@ void QgsVectorLayerProperties::reset( void )
   const QgsFieldMap& myFields = dp->fields();
   for (QgsFieldMap::const_iterator it = myFields.begin(); it != myFields.end(); ++it)
   {
-    displayFieldComboBox->insertItem( it->name() );
+    displayFieldComboBox->addItem( it->name() );
   }   
-  displayFieldComboBox->setCurrentText( layer->displayField() );
+  displayFieldComboBox->setCurrentIndex( displayFieldComboBox->findText(
+        layer->displayField() ) );
 
   // set up the scale based layer visibility stuff....
   chkUseScaleDependentRendering->setChecked(layer->scaleBasedVisibility());
@@ -202,12 +204,12 @@ void QgsVectorLayerProperties::reset( void )
   // symbology initialization
   if(legendtypecombobox->count()==0)
   {
-    legendtypecombobox->insertItem(tr("Single Symbol"));
+    legendtypecombobox->addItem(tr("Single Symbol"));
     if(myFields.size()>0)
     {
-      legendtypecombobox->insertItem(tr("Graduated Symbol"));
-      legendtypecombobox->insertItem(tr("Continuous Color"));
-      legendtypecombobox->insertItem(tr("Unique Value"));
+      legendtypecombobox->addItem(tr("Graduated Symbol"));
+      legendtypecombobox->addItem(tr("Continuous Color"));
+      legendtypecombobox->addItem(tr("Unique Value"));
     }
   }
 
@@ -341,6 +343,8 @@ void QgsVectorLayerProperties::apply()
   emit refreshLegend(layer->getLayerID(), false);
 
   layer->triggerRepaint();
+  // notify the project we've made a change
+  QgsProject::instance()->dirty(true);
 
 }
 
@@ -605,11 +609,12 @@ QString QgsVectorLayerProperties::getMetadata()
 
 void QgsVectorLayerProperties::on_pbnChangeSpatialRefSys_clicked()
 {
-  QgsLayerProjectionSelector * mySelector = new QgsLayerProjectionSelector(this);
+  QgsGenericProjectionSelector * mySelector = new QgsGenericProjectionSelector(this);
+  mySelector->setMessage();
   mySelector->setSelectedSRSID(layer->srs().srsid());
   if(mySelector->exec())
   {
-    QgsSpatialRefSys srs(mySelector->getCurrentSRSID(), QgsSpatialRefSys::QGIS_SRSID);
+    QgsSpatialRefSys srs(mySelector->getSelectedSRSID(), QgsSpatialRefSys::QGIS_SRSID);
     layer->setSrs(srs);
   }
   else
@@ -629,25 +634,36 @@ void QgsVectorLayerProperties::on_pbnLoadDefaultStyle_clicked()
   //reset if the default style was loaded ok only
   if ( defaultLoadedFlag )
   {
+    // all worked ok so no need to inform user
     reset ();
   }
-  QMessageBox::information( this, 
-      tr("Default Style"), 
-      myMessage
-      ); 
+  else
+  {
+    //something went wrong - let them know why
+    QMessageBox::information( this, 
+        tr("Default Style"), 
+        myMessage
+        ); 
+  }
 }
 
 void QgsVectorLayerProperties::on_pbnSaveDefaultStyle_clicked()
 {
+  apply(); // make sure the qml to save is uptodate
+
   // a flag passed by reference
   bool defaultSavedFlag = false;
   // after calling this the above flag will be set true for success
   // or false if the save operation failed
   QString myMessage = layer->saveDefaultStyle( defaultSavedFlag );
-  QMessageBox::information( this, 
-      tr("Default Style"), 
-      myMessage
-      ); 
+  if ( !defaultSavedFlag )
+  {
+    //only raise the message if something went wrong
+    QMessageBox::information( this, 
+        tr("Default Style"), 
+        myMessage
+        ); 
+  }
 }
 
 
@@ -685,7 +701,7 @@ void QgsVectorLayerProperties::on_pbnLoadStyle_clicked()
     if ( myFileDialog->selectedFilter() == tr ( "QGIS Layer Style File (*.qml)" ) )
     {
       //ensure the user never ommitted the extension from the filename
-      if ( !myFileName.toUpper().endsWith ( ".QML" ) )
+      if ( !myFileName.endsWith( ".qml", Qt::CaseInsensitive ) )
       {
         myFileName += ".qml";
       }
@@ -696,10 +712,14 @@ void QgsVectorLayerProperties::on_pbnLoadStyle_clicked()
       {
         reset ();
       }
-      QMessageBox::information( this, 
-          tr("Default Style"), 
-          myMessage
-          ); 
+      else
+      {
+        //let the user know what went wrong
+        QMessageBox::information( this, 
+            tr("Saved Style"), 
+            myMessage
+            ); 
+      }
     }
     else
     {
@@ -714,7 +734,6 @@ void QgsVectorLayerProperties::on_pbnLoadStyle_clicked()
 
 void QgsVectorLayerProperties::on_pbnSaveStyleAs_clicked()
 {
-
   QSettings myQSettings;  // where we keep last used filter in persistant state
   QString myLastUsedDir = myQSettings.value ( "style/lastStyleDir", "." ).toString();
 
@@ -746,11 +765,14 @@ void QgsVectorLayerProperties::on_pbnSaveStyleAs_clicked()
   {
     if ( myFileDialog->selectedFilter() == tr ( "QGIS Layer Style File (*.qml)" ) )
     {
+      apply(); // make sure the qml to save is uptodate
+
       //ensure the user never ommitted the extension from the filename
-      if ( !myOutputFileName.toUpper().endsWith ( ".QML" ) )
+      if ( !myOutputFileName.endsWith ( ".qml", Qt::CaseInsensitive ) )
       {
         myOutputFileName += ".qml";
       }
+
       bool defaultLoadedFlag = false;
       QString myMessage = layer->saveNamedStyle( myOutputFileName, defaultLoadedFlag );
       //reset if the default style was loaded ok only
@@ -758,10 +780,14 @@ void QgsVectorLayerProperties::on_pbnSaveStyleAs_clicked()
       {
         reset ();
       }
-      QMessageBox::information( this, 
-          tr("Default Style"), 
-          myMessage
-          ); 
+      else
+      {
+        //let the user know what went wrong
+        QMessageBox::information( this, 
+            tr("Saved Style"), 
+            myMessage
+            ); 
+      }
     }
     else
     {

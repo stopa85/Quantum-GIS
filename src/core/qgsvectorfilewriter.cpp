@@ -83,7 +83,7 @@ QgsVectorFileWriter::QgsVectorFileWriter(const QString& shapefileName,
   }
  
   // datasource created, now create the output layer
-  QString layerName = shapefileName.left(shapefileName.find(".shp"));
+  QString layerName = shapefileName.left(shapefileName.indexOf(".shp"));
   OGRwkbGeometryType wkbType = static_cast<OGRwkbGeometryType>(geometryType);
   mLayer = OGR_DS_CreateLayer(mDS,QFile::encodeName(layerName).data(), ogrRef, wkbType, NULL);
   
@@ -111,6 +111,8 @@ QgsVectorFileWriter::QgsVectorFileWriter(const QString& shapefileName,
     const QgsField& attrField = fldIt.value();
     
     OGRFieldType ogrType = OFTString; //default to string
+    int ogrWidth = -1;
+    int ogrPrecision = -1;
     switch (attrField.type())
     {
       case QVariant::String:
@@ -118,9 +120,12 @@ QgsVectorFileWriter::QgsVectorFileWriter(const QString& shapefileName,
         break;
       case QVariant::Int:
         ogrType = OFTInteger;
+        ogrWidth = 10;
         break;
       case QVariant::Double:
         ogrType = OFTReal;
+        ogrWidth = 32;
+        ogrPrecision = 3;
         break;
       default:
         //assert(0 && "invalid variant type!");
@@ -130,13 +135,21 @@ QgsVectorFileWriter::QgsVectorFileWriter(const QString& shapefileName,
 
     // create field definition
     OGRFieldDefnH fld = OGR_Fld_Create(mCodec->fromUnicode(attrField.name()), ogrType);
-    OGR_Fld_SetWidth(fld,attrField.length());
-    OGR_Fld_SetPrecision(fld,attrField.precision());
+    if(ogrWidth>0)
+    {
+      OGR_Fld_SetWidth(fld, ogrWidth);
+    }
+
+    if(ogrPrecision>=0)
+    {
+      OGR_Fld_SetPrecision(fld, ogrPrecision);
+    }
 
     // create the field
     QgsDebugMsg("creating field " + attrField.name() +
                 " type " + QString(QVariant::typeToName(attrField.type())) +
-                " width length " + QString::number(attrField.length()));
+                " width " + QString::number(ogrWidth) +
+                " precision " + QString::number(ogrPrecision));
     if (OGR_L_CreateField(mLayer,fld,TRUE) != OGRERR_NONE)
     {
       QgsDebugMsg("error creating field " + attrField.name());
@@ -200,7 +213,7 @@ bool QgsVectorFileWriter::addFeature(QgsFeature& feature)
         OGR_F_SetFieldString(poFeature, ogrField, mCodec->fromUnicode(attrValue.toString()).data());
         break;
       default:
-        //assert(0 && "invalid variant type");
+        QgsDebugMsg("Invalid variant type for field "+QString::number(ogrField)+": "+QString::number(attrValue.type()));
         return false;
     }
   }
@@ -321,43 +334,25 @@ bool QgsVectorFileWriter::deleteShapeFile(QString theFileName)
 {
   //
   // Remove old copies that may be lying around
+  // TODO: should be case-insensitive
   //
-  QFileInfo myInfo(theFileName);
   QString myFileBase = theFileName.replace(".shp","");
-  if (myInfo.exists())
+  bool ok = TRUE;
+
+  const char* suffixes[] = { ".shp", ".shx", ".dbf", ".prj", ".qix" };
+  for (int i = 0; i < sizeof(suffixes) / sizeof(char*); i++)
   {
-    if(!QFile::remove(myFileBase + ".shp"))
+    QString file = myFileBase + suffixes[i];
+    QFileInfo myInfo(file);
+    if (myInfo.exists())
     {
-      qDebug("Removing file failed : " + myFileBase.toLocal8Bit() + ".shp");
-      return false;
+      if(!QFile::remove(file))
+      {
+        QgsDebugMsg("Removing file failed : " + file);
+        ok = FALSE;
+      }
     }
   }
-  myInfo.setFile(myFileBase + ".shx");
-  if (myInfo.exists())
-  {
-    if(!QFile::remove(myFileBase + ".shx"))
-    {
-      qDebug("Removing file failed : " + myFileBase.toLocal8Bit() + ".shx");
-      return false;
-    }
-  }
-  myInfo.setFile(myFileBase + ".dbf");
-  if (myInfo.exists())
-  {
-    if(!QFile::remove(myFileBase + ".dbf"))
-    {
-      qDebug("Removing file failed : " + myFileBase.toLocal8Bit() + ".dbf");
-      return false;
-    }
-  }
-  myInfo.setFile(myFileBase + ".prj");
-  if (myInfo.exists())
-  {
-    if(!QFile::remove(myFileBase + ".prj"))
-    {
-      qDebug("Removing file failed : " + myFileBase.toLocal8Bit() + ".prj");
-      return false;
-    }
-  }
-  return true;
+  
+  return ok;
 }

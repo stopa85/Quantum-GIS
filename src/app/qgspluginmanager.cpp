@@ -50,6 +50,12 @@
 #include <dlfcn.h>
 #endif
 #endif
+
+
+const int PLUGIN_DATA_ROLE=Qt::UserRole;
+const int PLUGIN_LIBRARY_ROLE=Qt::UserRole + 1;
+const int PLUGIN_LIBRARY_NAME_ROLE=Qt::UserRole + 2;
+
 QgsPluginManager::QgsPluginManager(QgsPythonUtils* pythonUtils, QWidget * parent, Qt::WFlags fl)
 : QDialog(parent, fl)
 {
@@ -70,6 +76,7 @@ QgsPluginManager::QgsPluginManager(QgsPythonUtils* pythonUtils, QWidget * parent
   setTable();
   getPluginDescriptions();
   getPythonPluginDescriptions();
+  mModelProxy->sort(0,Qt::AscendingOrder);
   //
   // Create the select all and clear all buttons and add them to the 
   // buttonBox
@@ -84,6 +91,7 @@ QgsPluginManager::QgsPluginManager(QgsPythonUtils* pythonUtils, QWidget * parent
   // connect the slot up to catch when a bookmark is zoomed to
   connect(btnClearAll, SIGNAL(clicked()), this, SLOT(clearAll()));
   
+  qRegisterMetaType<QgsDetailedItemData>();
 }
 
 
@@ -98,7 +106,6 @@ void QgsPluginManager::setTable()
   mModelPlugins= new QStandardItemModel(0,1);
   mModelProxy = new QSortFilterProxyModel(this);
   mModelProxy->setSourceModel(mModelPlugins);
-  //mModelProxy->setFilterKeyColumn(0);
   vwPlugins->setModel(mModelProxy);
   vwPlugins->setFocus();
   vwPlugins->setItemDelegateForColumn(0,new QgsDetailedItemDelegate());
@@ -138,31 +145,27 @@ void QgsPluginManager::getPythonPluginDescriptions()
     QString description = mPythonUtils->getPluginMetadata(packageName, "description");
     QString version     = mPythonUtils->getPluginMetadata(packageName, "version");
     
-    if (pluginName == "???" || description == "???" || version == "???")
-      continue;
+    if (pluginName == "???" || description == "???" || version == "???") continue;
 
-    // We will create two items for each row:
-    // The first has the following roles :
-    // - DisplayRole : the name and version of the version of the plugin e.g. Plugin Foo (version 1.0)
-    // - UserRole : the description of the plugin.
-    // And the second has these roles :
-    // - DisplayRole : the library name (without path) for the plugin e.g. libfoo.so
-    // - UserRole : the name of the plugin without version e.g. plugin foor
-    // The plugin name without version is used elsewhere in this class to match
-    // aganst plugins loaded in the plugin registry
-    QStandardItem * mypDetailItem = new QStandardItem(
-        pluginName + " (" + version + ")");
-    mypDetailItem->setData(description,Qt::UserRole);
+    // filtering will be done on the display role so give it name and desription
+    // user wont see this text since we are using a custome delegate
+    QStandardItem * mypDetailItem = new QStandardItem( pluginName + " - " + description);
     QString myLibraryName = "python:" + packageName;;
-    QStandardItem * mypLibraryNameItem = new QStandardItem(myLibraryName);
-    mypLibraryNameItem->setData(pluginName,Qt::UserRole);
-    // myName have a checkbox
-    mypDetailItem->setCheckable(true);
+    mypDetailItem->setData(myLibraryName, PLUGIN_LIBRARY_ROLE); //for loading libs later
+    mypDetailItem->setData(pluginName, PLUGIN_LIBRARY_NAME_ROLE); //for matching in registry later
+    mypDetailItem->setCheckable(false);
     mypDetailItem->setEditable(false);
+    // setData in the delegate with a variantised QgsDetailedItemData
+    QgsDetailedItemData myData;
+    myData.setTitle(pluginName + " (" + version + ")");
+    myData.setDetail(description);
+    //myData.setIcon(pixmap); //todo use a python logo here
+    myData.setCheckable(true);
+    myData.setRenderAsWidget(false);
+    myData.setChecked(false); //start off assuming false
 
     // check to see if the plugin is loaded and set the checkbox accordingly
     QgsPluginRegistry *pRegistry = QgsPluginRegistry::instance();
-
     QString libName = pRegistry->library(pluginName);
     if (libName.length() == 0 || !pRegistry->isPythonPlugin(pluginName))
     {
@@ -174,13 +177,13 @@ void QgsPluginManager::getPythonPluginDescriptions()
       if (libName == packageName)
       {
         // set the checkbox
-        mypDetailItem->setCheckState(Qt::Checked);
+        myData.setChecked(true);
       }
     }
-    // Add items to model
-    QList<QStandardItem *> myItems;
-    myItems << mypDetailItem << mypLibraryNameItem;
-    mModelPlugins->appendRow(myItems);
+    QVariant myVariant = qVariantFromValue(myData);
+    mypDetailItem->setData(myVariant,PLUGIN_DATA_ROLE);
+    // Add item to model
+    mModelPlugins->appendRow(mypDetailItem);
   }
 }
 
@@ -238,12 +241,12 @@ sharedLibExtension = "*.so*";
     bool loaded = myLib->load();
     if (!loaded)
     {
-      QgsDebugMsg("Failed to load: " + myLib->library());
+      QgsDebugMsg("Failed to load: " + myLib->fileName());
       delete myLib;
       continue;
     }
 
-    QgsDebugMsg("Loaded library: " + myLib->library());
+    QgsDebugMsg("Loaded library: " + myLib->fileName());
 
     // Don't bother with libraries that are providers
     //if(!myLib->resolve("isProvider"))
@@ -262,73 +265,63 @@ sharedLibExtension = "*.so*";
     version_t *pVersion = (version_t *) myLib->resolve("version");
 
     // show the values (or lack of) for each function
-    if(pName){
+    if(pName)
+    {
       QgsDebugMsg("Plugin name: " + pName());
-    }else{
+    }
+    else
+    {
       QgsDebugMsg("Plugin name not returned when queried\n");
     }
-    if(pDesc){
+    if(pDesc)
+    {
       QgsDebugMsg("Plugin description: " + pDesc());
-    }else{
+    }
+    else
+    {
       QgsDebugMsg("Plugin description not returned when queried\n");
     }
-    if(pVersion){
+    if(pVersion)
+    {
       QgsDebugMsg("Plugin version: " + pVersion());
-    }else{
+    }
+    else
+    {
       QgsDebugMsg("Plugin version not returned when queried\n");
     }
 
     if (!pName || !pDesc || !pVersion)
     {
-      QgsDebugMsg("Failed to get name, description, or type for " + myLib->library());
+      QgsDebugMsg("Failed to get name, description, or type for " + myLib->fileName());
       delete myLib;
       continue;
     }
 
-    // We will create two items for each row:
-    // The first has the following roles :
-    // - DisplayRole : the name and version of the version of the plugin e.g. Plugin Foo (version 1.0)
-    // - UserRole : the description of the plugin.
-    // And the second has these roles :
-    // - DisplayRole : the library name (without path) for the plugin e.g. libfoo.so
-    // - UserRole : the name of the plugin without version e.g. plugin foor
-    // The plugin name without version is used elsewhere in this class to match
-    // aganst plugins loaded in the plugin registry
-        
-    QStandardItem * mypDetailItem = new QStandardItem(
-        pName() + " (" + pVersion() + ")");
-    //
-    // Uncomment this block to render item using simple painter technique
-    // 
-    mypDetailItem->setData(pDesc(),Qt::UserRole);
-    //
-    //Uncomment this block to used widget based detail items (experimental)
-    //
-    /*
+    QString myLibraryName = pluginDir[i];
+    // filtering will be done on the display role so give it name and desription
+    // user wont see this text since we are using a custome delegate
+    QStandardItem * mypDetailItem = new QStandardItem(pName() + " - " + pDesc());
+    mypDetailItem->setData(myLibraryName,PLUGIN_LIBRARY_ROLE);
+    mypDetailItem->setData(pName(), PLUGIN_LIBRARY_NAME_ROLE); //for matching in registry later
     QgsDetailedItemData myData;
     myData.setTitle(pName());
     myData.setDetail(pDesc());
-    QVariant myVariant = qVariantFromValue(myData);
+    myData.setRenderAsWidget(false);
+    myData.setCheckable(true);
+    myData.setChecked(false); //start unchecked - we will check it later if needed
+
     //round trip test - delete this...no need to uncomment
     //QgsDetailedItemData myData2 = qVariantValue<QgsDetailedItemData>(myVariant);
     //Q_ASSERT(myData.title() == myData2.title());
     //round trip test ends
-    mypDetailItem->setData(myVariant,Qt::UserRole);
-    */
-    QString myLibraryName = pluginDir[i];
-    QStandardItem * mypLibraryNameItem = new QStandardItem(myLibraryName);
-    mypLibraryNameItem->setData(pName(),Qt::UserRole);
-    // Let the first col  have a checkbox
-    mypDetailItem->setCheckable(true);
-    mypDetailItem->setEditable(false);
 
     QgsDebugMsg("Getting an instance of the QgsPluginRegistry");
 
     // check to see if the plugin is loaded and set the checkbox accordingly
     QgsPluginRegistry *pRegistry = QgsPluginRegistry::instance();
+    QString libName = pRegistry->library(pName());
 
     // get the library using the plugin description
-    QString libName = pRegistry->library(pName());
     if (libName.length() == 0)
     {
       QgsDebugMsg("Couldn't find library name in the registry");
@@ -336,16 +329,16 @@ sharedLibExtension = "*.so*";
     else
     {
       QgsDebugMsg("Found library name in the registry");
-      if (libName == myLib->library())
+      if (libName == myLib->fileName())
       {
         // set the checkbox
-        mypDetailItem->setCheckState(Qt::Checked);
+        myData.setChecked(true);
       }
     }
+    QVariant myVariant = qVariantFromValue(myData);
+    mypDetailItem->setData(myVariant,PLUGIN_DATA_ROLE);
     // Add items to model
-    QList<QStandardItem *> myItems;
-    myItems << mypDetailItem << mypLibraryNameItem;
-    mModelPlugins->appendRow(myItems);
+    mModelPlugins->appendRow(mypDetailItem);
 
     delete myLib;
   }
@@ -367,17 +360,20 @@ void QgsPluginManager::unload()
   {
     // FPV - I want to use index. You can do evrething with item.
     QModelIndex myIndex=mModelPlugins->index(row,0);
-    if (mModelPlugins->data(myIndex,Qt::CheckStateRole).toInt() == 0)
+    QgsDetailedItemData myData = 
+        qVariantValue<QgsDetailedItemData>(mModelPlugins->data(myIndex,PLUGIN_DATA_ROLE));
+    if (!myData.isChecked())
     {
-      // Get the second col index now since it stores the 
-      // plugin name without version string in its data UserRole [ts]
-      myIndex=mModelPlugins->index(row,1);
+      // iThe plugin name without version string in its data PLUGIN_LIB [ts]
+      myIndex=mModelPlugins->index(row,0);
       // its off -- see if it is loaded and if so, unload it
       QgsPluginRegistry *pRegistry = QgsPluginRegistry::instance();
 #ifdef QGISDEBUG
-      std::cout << "Checking to see if " << mModelPlugins->data(myIndex, Qt::UserRole).toString().toLocal8Bit().data() << " is loaded" << std::endl;
+      std::cout << "Checking to see if " << 
+        mModelPlugins->data(myIndex, PLUGIN_LIBRARY_NAME_ROLE).toString().toLocal8Bit().data() << 
+        " is loaded" << std::endl;
 #endif
-      QString pluginName = mModelPlugins->data(myIndex,Qt::UserRole).toString();
+      QString pluginName = mModelPlugins->data(myIndex,PLUGIN_LIBRARY_NAME_ROLE).toString();
       if (pRegistry->isPythonPlugin(pluginName))
       {
         if (mPythonUtils && mPythonUtils->isEnabled())
@@ -410,12 +406,15 @@ std::vector < QgsPluginItem > QgsPluginManager::getSelectedPlugins()
   // FPV - I want to use item here. You can do everything with index if you want.
   for (int row=0;row < mModelPlugins->rowCount();row++)
   {
-    if (mModelPlugins->item(row,0)->checkState() == Qt::Checked)
+    QgsDetailedItemData myData = 
+        qVariantValue<QgsDetailedItemData>(mModelPlugins->item(row,0)->data(PLUGIN_DATA_ROLE));
+
+    if (myData.isChecked())
     {
-      QString pluginName = mModelPlugins->item(row,1)->data(Qt::UserRole).toString();
+      QString pluginName = mModelPlugins->item(row,0)->data(PLUGIN_LIBRARY_NAME_ROLE).toString();
       bool pythonic = false;
 
-      QString library = mModelPlugins->item(row,1)->text();
+      QString library = mModelPlugins->item(row,0)->data(PLUGIN_LIBRARY_ROLE).toString();
       if (library.left(7) == "python:")
       {
         library = library.mid(7);
@@ -425,7 +424,15 @@ std::vector < QgsPluginItem > QgsPluginManager::getSelectedPlugins()
       {
         library = lblPluginDir->text() + QDir::separator() + library;
       }
-      pis.push_back(QgsPluginItem(pluginName, mModelPlugins->item(row,0)->text(), library, 0, pythonic));
+      // Ctor params for plugin item:
+      //QgsPluginItem(QString name=0, 
+      //              QString description=0, 
+      //              QString fullPath=0, 
+      //              QString type=0, 
+      //              bool python=false);
+      pis.push_back(QgsPluginItem(pluginName, 
+            mModelPlugins->item(row,0)->data(Qt::DisplayRole).toString(), //display role 
+            library, 0, pythonic));
     }
 
   }
@@ -437,8 +444,13 @@ void QgsPluginManager::selectAll()
   // select all plugins
   for (int row=0;row < mModelPlugins->rowCount();row++)
   {
-    QStandardItem *myItem=mModelPlugins->item(row,0);
-    myItem->setCheckState(Qt::Checked);
+    QStandardItem *mypItem=mModelPlugins->item(row,0);
+    QgsDetailedItemData myData = 
+        qVariantValue<QgsDetailedItemData>(mypItem->data(PLUGIN_DATA_ROLE));
+    myData.setChecked(true);
+    QVariant myVariant = qVariantFromValue(myData);
+    mypItem->setData(myVariant,PLUGIN_DATA_ROLE);
+    
   }
 }
 
@@ -447,8 +459,12 @@ void QgsPluginManager::clearAll()
   // clear all selection checkboxes
   for (int row=0;row < mModelPlugins->rowCount();row++)
   {
-    QStandardItem *myItem=mModelPlugins->item(row,0);
-    myItem->setCheckState(Qt::Unchecked);
+    QStandardItem *mypItem=mModelPlugins->item(row,0);
+    QgsDetailedItemData myData = 
+        qVariantValue<QgsDetailedItemData>(mypItem->data(PLUGIN_DATA_ROLE));
+    myData.setChecked(false);
+    QVariant myVariant = qVariantFromValue(myData);
+    mypItem->setData(myVariant,PLUGIN_DATA_ROLE);
   }
 }
 
@@ -462,15 +478,19 @@ void QgsPluginManager::on_vwPlugins_clicked(const QModelIndex &theIndex )
     // little hoop to get the correct item
     //
     QStandardItem * mypItem = 
-      mModelPlugins->findItems(theIndex.data(Qt::DisplayRole).toString()).first();
-    if ( mypItem->checkState() == Qt::Checked )
+      mModelPlugins->findItems(theIndex.data(Qt ::DisplayRole).toString()).first();
+    QgsDetailedItemData myData = 
+        qVariantValue<QgsDetailedItemData>(mypItem->data(PLUGIN_DATA_ROLE));
+    if ( myData.isChecked() )
     {
-      mypItem->setCheckState(Qt::Unchecked);
+      myData.setChecked(false);
     } 
     else 
     {
-      mypItem->setCheckState(Qt::Checked);
+      myData.setChecked(true);
     }
+    QVariant myVariant = qVariantFromValue(myData);
+    mypItem->setData(myVariant,PLUGIN_DATA_ROLE);
   }
 }
 

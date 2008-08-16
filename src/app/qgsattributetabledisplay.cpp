@@ -33,6 +33,7 @@
 #include "qgsvectordataprovider.h"
 #include "qgscontexthelp.h"
 
+#include <QCloseEvent>
 #include <QMessageBox>
 #include <QIcon>
 #include <QPixmap>
@@ -54,8 +55,6 @@ QgsAttributeTableDisplay::QgsAttributeTableDisplay(QgsVectorLayer* layer, QgisAp
   connect(mZoomMapToSelectedRowsButton, SIGNAL(clicked()), this, SLOT(zoomMapToSelectedRows()));
   connect(mAddAttributeButton, SIGNAL(clicked()), this, SLOT(addAttribute()));
   connect(mDeleteAttributeButton, SIGNAL(clicked()), this, SLOT(deleteAttributes()));
-  connect(btnStartEditing, SIGNAL(clicked()), this, SLOT(startEditing()));
-  connect(btnStopEditing, SIGNAL(clicked()), this, SLOT(stopEditing()));
   connect(mSearchButton, SIGNAL(clicked()), this, SLOT(search()));
   connect(mSearchShowResults, SIGNAL(activated(int)), this, SLOT(searchShowResultsChanged(int)));
   connect(btnAdvancedSearch, SIGNAL(clicked()), this, SLOT(advancedSearch()));
@@ -68,17 +67,16 @@ QgsAttributeTableDisplay::QgsAttributeTableDisplay(QgsVectorLayer* layer, QgisAp
   mAddAttributeButton->setEnabled(false);
   mDeleteAttributeButton->setEnabled(false);
 
-  btnStopEditing->setEnabled(false);
   int cap=layer->getDataProvider()->capabilities();
   if((cap&QgsVectorDataProvider::ChangeAttributeValues)
       ||(cap&QgsVectorDataProvider::AddAttributes)
       ||(cap&QgsVectorDataProvider::DeleteAttributes))
   {
-    btnStartEditing->setEnabled(true);
+    btnEdit->setEnabled(true);
   }
   else
   {
-    btnStartEditing->setEnabled(false);
+    btnEdit->setEnabled(false);
   }
 
   // fill in mSearchColumns with available columns
@@ -89,14 +87,14 @@ QgsAttributeTableDisplay::QgsAttributeTableDisplay(QgsVectorLayer* layer, QgisAp
     QgsFieldMap::const_iterator fldIt;
     for (fldIt = xfields.constBegin(); fldIt != xfields.constEnd(); ++fldIt)
     {
-      mSearchColumns->insertItem(fldIt->name());
+      mSearchColumns->addItem(fldIt->name());
     }
   }
   
   // TODO: create better labels
-  mSearchShowResults->insertItem(tr("select"));
-  mSearchShowResults->insertItem(tr("select and bring to top"));
-  mSearchShowResults->insertItem(tr("show only matching"));
+  mSearchShowResults->addItem(tr("select"));
+  mSearchShowResults->addItem(tr("select and bring to top"));
+  mSearchShowResults->addItem(tr("show only matching"));
 }
 
 QgsAttributeTableDisplay::~QgsAttributeTableDisplay()
@@ -108,20 +106,20 @@ QgsAttributeTable *QgsAttributeTableDisplay::table()
 }
 void QgsAttributeTableDisplay::setTheme()
 {
-  QString myIconPath = QgsApplication::themePath();
-  mAddAttributeButton->setPixmap(QPixmap(myIconPath+"/mActionNewAttribute.png"));
-  mRemoveSelectionButton->setPixmap(QPixmap(myIconPath+"/mActionUnselectAttributes.png"));
-  mSelectedToTopButton->setPixmap(QPixmap(myIconPath+"/mActionSelectedToTop.png"));
-  mInvertSelectionButton->setPixmap(QPixmap(myIconPath+"/mActionInvertSelection.png"));
-  mCopySelectedRowsButton->setPixmap(QPixmap(myIconPath+"/mActionCopySelected.png"));
-  mZoomMapToSelectedRowsButton->setPixmap(QPixmap(myIconPath+"/mActionZoomToSelected.png"));
-  mAddAttributeButton->setPixmap(QPixmap(myIconPath+"/mActionNewAttribute.png"));
-  mDeleteAttributeButton->setPixmap(QPixmap(myIconPath+"/mActionDeleteAttribute.png"));
+  mAddAttributeButton->setIcon(QgisApp::getThemeIcon("/mActionNewAttribute.png"));
+  mRemoveSelectionButton->setIcon(QgisApp::getThemeIcon("/mActionUnselectAttributes.png"));
+  mSelectedToTopButton->setIcon(QgisApp::getThemeIcon("/mActionSelectedToTop.png"));
+  mInvertSelectionButton->setIcon(QgisApp::getThemeIcon("/mActionInvertSelection.png"));
+  mCopySelectedRowsButton->setIcon(QgisApp::getThemeIcon("/mActionCopySelected.png"));
+  mZoomMapToSelectedRowsButton->setIcon(QgisApp::getThemeIcon("/mActionZoomToSelected.png"));
+  mAddAttributeButton->setIcon(QgisApp::getThemeIcon("/mActionNewAttribute.png"));
+  mDeleteAttributeButton->setIcon(QgisApp::getThemeIcon("/mActionDeleteAttribute.png"));
+  btnEdit->setIcon(QgisApp::getThemeIcon("/mActionToggleEditing.png"));
 }
 
 void QgsAttributeTableDisplay::setTitle(QString title)
 {
-  setCaption(title);
+  setWindowTitle(title);
 }
 
 void QgsAttributeTableDisplay::deleteAttributes()
@@ -175,16 +173,33 @@ void QgsAttributeTableDisplay::startEditing()
     }
     if(editing)
     {
-      btnStartEditing->setEnabled(false);
-      btnStopEditing->setEnabled(true);
+      btnEdit->setText(tr("Stop editing"));
       buttonBox->button(QDialogButtonBox::Close)->setEnabled(false);
       //make the dialog modal when in editable
       //otherwise map editing and table editing
       //may disturb each other
-      hide();
-      setModal(true);
-      show();
+      //hide();
+      //setModal(true);
+      //show();
     }
+    else
+    {
+      //revert button
+      QMessageBox::information(this,tr("Editing not permitted"),tr("The data provider is read only, editing is not allowed."));
+      btnEdit->setChecked(false);
+    }
+  }
+}
+
+void QgsAttributeTableDisplay::on_btnEdit_toggled(bool theFlag)
+{
+  if (theFlag)
+  {
+    startEditing();
+  }
+  else
+  {
+    stopEditing();
   }
 }
 
@@ -213,8 +228,7 @@ void QgsAttributeTableDisplay::stopEditing()
       return;
     }
   }
-  btnStartEditing->setEnabled(true);
-  btnStopEditing->setEnabled(false);
+  btnEdit->setText(tr("Start editing"));
   buttonBox->button(QDialogButtonBox::Close)->setEnabled(true);
   mAddAttributeButton->setEnabled(false);
   mDeleteAttributeButton->setEnabled(false);
@@ -234,7 +248,7 @@ void QgsAttributeTableDisplay::invertSelection()
 {
   if(mLayer)
   {
-    QApplication::setOverrideCursor(Qt::waitCursor);
+    QApplication::setOverrideCursor(Qt::WaitCursor);
     mLayer->invertSelection();
     QApplication::restoreOverrideCursor();
   }
@@ -266,7 +280,7 @@ void QgsAttributeTableDisplay::search()
   // else attributes containing entered text will be matched
 
   QgsVectorDataProvider* provider = mLayer->getDataProvider();
-  int item = mSearchColumns->currentItem();
+  int item = mSearchColumns->currentIndex();
   QVariant::Type type = provider->fields()[item].type();
   bool numeric = (type == QVariant::Int || type == QVariant::Double);
   
@@ -296,7 +310,7 @@ void QgsAttributeTableDisplay::advancedSearch()
 
 void QgsAttributeTableDisplay::searchShowResultsChanged(int item)
 {
-  QApplication::setOverrideCursor(Qt::waitCursor);
+  QApplication::setOverrideCursor(Qt::WaitCursor);
 
   if (item == 2) // show only matching
   {
@@ -338,7 +352,7 @@ void QgsAttributeTableDisplay::doSearch(const QString& searchString)
 
   QgsDebugMsg("Search by attribute: " + searchString + " parsed as: " + search.tree()->makeSearchString());
 
-  QApplication::setOverrideCursor(Qt::waitCursor);
+  QApplication::setOverrideCursor(Qt::WaitCursor);
 
   // TODO: need optimized getNextFeature which won't extract geometry
   // or search by traversing table ... which one is quicker?
@@ -371,7 +385,7 @@ void QgsAttributeTableDisplay::doSearch(const QString& searchString)
   }
 
   // update table
-  searchShowResultsChanged(mSearchShowResults->currentItem());
+  searchShowResultsChanged(mSearchShowResults->currentIndex());
    
   QString str;
   if (mSearchIds.size())

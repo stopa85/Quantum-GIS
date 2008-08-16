@@ -313,7 +313,14 @@ bool QgsPointDialog::generateWorldFile()
     QgsImageWarper::ResamplingMethod resampling;
     QgsImageWarper warper(-rotation);
     d.getWarpOptions(resampling, useZeroForTrans, compressionMethod);
-    warper.warp(mLayer->source(), outputFileName, 
+    //Closing the dialog by pressing the X button rather than clicking the OK button causes GDAL to barf and QGIS
+    //to crash because reasampling is not a valid option
+    //**not sure exactly what is going on in the case as the other two options are still correct but that could be coincidence
+    if(resampling != QgsImageWarper::NearestNeighbour && resampling != QgsImageWarper::Bilinear && resampling != QgsImageWarper::Cubic)
+    {
+      return false;
+    }
+    warper.warp(mLayer->source(), outputFileName,
 		xOffset, yOffset, resampling, useZeroForTrans, compressionMethod);
   }
 
@@ -457,7 +464,7 @@ void QgsPointDialog::enableRelevantControls()
 
 QString QgsPointDialog::guessWorldFileName(const QString& raster)
 {
-  int point = raster.findRev('.');
+  int point = raster.lastIndexOf('.');
   QString worldfile = "";
   if (point != -1 && point != raster.length() - 1) 
     {
@@ -479,35 +486,33 @@ void QgsPointDialog::initialize()
 {
   setupUi(this);
   
-  QString myIconPath = QgsApplication::themePath();
-  
   // setup actions
   //
-  mActionZoomIn= new QAction(QIcon(myIconPath+"/mActionZoomIn.png"), tr("Zoom In"), this);
+  mActionZoomIn= new QAction(getThemeIcon("/mActionZoomIn.png"), tr("Zoom In"), this);
   mActionZoomIn->setShortcut(tr("z"));
   mActionZoomIn->setStatusTip(tr("Zoom In"));
   connect(mActionZoomIn, SIGNAL(triggered()), this, SLOT(zoomIn()));
   //
-  mActionZoomOut= new QAction(QIcon(myIconPath+"/mActionZoomOut.png"), tr("Zoom Out"), this);
+  mActionZoomOut= new QAction(getThemeIcon("/mActionZoomOut.png"), tr("Zoom Out"), this);
   mActionZoomOut->setShortcut(tr("Z"));
   mActionZoomOut->setStatusTip(tr("Zoom Out"));
   connect(mActionZoomOut, SIGNAL(triggered()), this, SLOT(zoomOut()));
   //
-  mActionZoomToLayer= new QAction(QIcon(myIconPath+"/mActionZoomToLayer.png"), tr("Zoom To Layer"), this);
+  mActionZoomToLayer= new QAction(getThemeIcon("/mActionZoomToLayer.png"), tr("Zoom To Layer"), this);
   //mActionZoomToLayer->setShortcut(tr("Ctrl+O"));
   mActionZoomToLayer->setStatusTip(tr("Zoom to Layer"));
   connect(mActionZoomToLayer, SIGNAL(triggered()), this, SLOT(zoomToLayer()));
   //
-  mActionPan= new QAction(QIcon(myIconPath+"/mActionPan.png"), tr("Pan Map"), this);
+  mActionPan= new QAction(getThemeIcon("/mActionPan.png"), tr("Pan Map"), this);
   mActionPan->setStatusTip(tr("Pan the map"));
   connect(mActionPan, SIGNAL(triggered()), this, SLOT(pan()));
   //
-  mActionAddPoint= new QAction(QIcon(myIconPath+"/mActionCapturePoint.png"), tr("Add Point"), this);
+  mActionAddPoint= new QAction(getThemeIcon("/mActionCapturePoint.png"), tr("Add Point"), this);
   mActionAddPoint->setShortcut(tr("."));
   mActionAddPoint->setStatusTip(tr("Capture Points"));
   connect(mActionAddPoint, SIGNAL(triggered()), this, SLOT(addPoint()));
   //
-  mActionDeletePoint = new QAction(QIcon(myIconPath+"/mActionDeleteSelected.png"), tr("Delete Point"), this);
+  mActionDeletePoint = new QAction(getThemeIcon("/mActionDeleteSelected.png"), tr("Delete Point"), this);
   mActionDeletePoint->setStatusTip(tr("Delete Selected"));
   connect(mActionDeletePoint, SIGNAL(triggered()), this, SLOT(deletePoint()));
   
@@ -536,7 +541,9 @@ void QgsPointDialog::initialize()
   // set up the canvas
   QHBoxLayout* layout = new QHBoxLayout(canvasFrame);
   mCanvas = new QgsMapCanvas(canvasFrame, "georefCanvas");
-  mCanvas->setBackgroundColor(Qt::white);
+  QPalette palette;
+  palette.setColor(mCanvas->backgroundRole(), Qt::white);
+  mCanvas->setPalette(palette);
   mCanvas->setMinimumWidth(400);
   //mCanvas->freeze(true);
   layout->addWidget(mCanvas);
@@ -562,4 +569,20 @@ void QgsPointDialog::initialize()
 
   pbnGenerateWorldFile->setEnabled(false);
   pbnGenerateAndLoad->setEnabled(false);
+}
+
+// Note this code is duplicated from qgisapp.cpp because
+// I didnt want to make plugins on qgsapplication [TS]
+QIcon QgsPointDialog::getThemeIcon(const QString theName)
+{
+  if (QFile::exists(QgsApplication::activeThemePath() + theName))
+  {
+    return QIcon(QgsApplication::activeThemePath() + theName);
+  }
+  else
+  {
+    //could still return an empty icon if it
+    //doesnt exist in the default theme either!
+    return QIcon(QgsApplication::defaultThemePath() + theName);
+  }
 }

@@ -67,7 +67,7 @@ QgsAttributeTable::QgsAttributeTable(QWidget * parent):
 {
   QFont f(font());
   f.setFamily("Helvetica");
-  f.setPointSize(11);
+  f.setPointSize(9);
   setFont(f);
   mDelegate = new QgsAttributeTableItemDelegate(mFields, this);
   setItemDelegate(mDelegate);
@@ -97,13 +97,13 @@ void QgsAttributeTable::setColumnReadOnly(int col, bool ro)
   for (int i = 0; i < rowCount(); ++i)
   {
   	QTableWidgetItem *item = this->item(i, col);
-    item->setFlags(ro ? item->flags() | Qt::ItemIsEditable : item->flags() & ~Qt::ItemIsEditable);
+    item->setFlags(ro ? item->flags() & ~Qt::ItemIsEditable : item->flags() | Qt::ItemIsEditable);
   }
 }
 
 void QgsAttributeTable::columnClicked(int col)
 {
-  QApplication::setOverrideCursor(Qt::waitCursor);
+  QApplication::setOverrideCursor(Qt::WaitCursor);
 
   //store the ids of the selected rows in a list
   QList<int> idsOfSelected;
@@ -198,7 +198,7 @@ void QgsAttributeTable::insertFeatureId(int id, int row)
 void QgsAttributeTable::selectRowWithId(int id)
 {
   QMap < int, int >::iterator it = rowIdMap.find(id);
-  setRangeSelected(QTableWidgetSelectionRange(it.data(), 0, it.data(), columnCount()-1), true);
+  setRangeSelected(QTableWidgetSelectionRange(it.value(), 0, it.value(), columnCount()-1), true);
 }
 
 void QgsAttributeTable::sortColumn(int col, bool ascending)
@@ -208,7 +208,7 @@ void QgsAttributeTable::sortColumn(int col, bool ascending)
   bool containsletter = false;
   for (int i = 0; i < firstentry.length(); i++)
   {
-    if (firstentry.ref(i).isLetter())
+    if (firstentry[i].isLetter())
     {
       containsletter = true;
       break;
@@ -358,8 +358,15 @@ void QgsAttributeTable::contextMenuEvent(QContextMenuEvent *event)
   mActionValues.clear();
 
   for (int i = 0; i < columnCount(); ++i)
-    mActionValues.push_back(std::make_pair(horizontalHeaderItem(i)->text(), item(row, i)->text()));
-
+  {
+    if (row >= 0) //prevent crash if row is negative, see ticket #1149
+    {
+      mActionValues.push_back(
+        std::make_pair(
+          horizontalHeaderItem( i )->text(),
+          item( row, i )->text() ) );
+    }
+  }
   // The item that was clicked on, stored as an index into the
   // mActionValues vector.
   mClickedOnValue = col;
@@ -388,11 +395,9 @@ bool QgsAttributeTable::addAttribute(const QString& name, const QString& type)
   mAddedAttributes.insert(name,type);
 
   QgsDebugMsg("inserting attribute " + name + " of type " + type + ", numCols: " + QString::number(columnCount()) );
-
   //add a new column at the end of the table
-
   insertColumn(columnCount());
-  horizontalHeaderItem(columnCount()-1)->setText(name);
+  setHorizontalHeaderItem(columnCount()-1, new QTableWidgetItem(name));
   mEdited=true;
   return true;
 }
@@ -403,7 +408,7 @@ void QgsAttributeTable::deleteAttribute(const QString& name)
   QgsNewAttributesMap::iterator iter = mAddedAttributes.find(name);
   if(iter!=mAddedAttributes.end())
   {
-    mAddedAttributes.remove(iter);
+    mAddedAttributes.erase(iter);
     removeAttrColumn(name);
   }
   else

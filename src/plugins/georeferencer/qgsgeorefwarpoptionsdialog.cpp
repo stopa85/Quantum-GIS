@@ -22,9 +22,9 @@ QgsGeorefWarpOptionsDialog::QgsGeorefWarpOptionsDialog(QWidget* parent)
   setupUi(this);
   QStringList compressionMethods;
   compressionMethods << "NONE";
-  compressionMethods << "LZW (" + tr("unstable") + ")";
-  compressionMethods << "PACKBITS (" + tr("unstable") + ")";
-  compressionMethods << "DEFLATE (" + tr("unstable") + ")";
+  compressionMethods << "LZW";
+  compressionMethods << "PACKBITS";
+  compressionMethods << "DEFLATE";
   mCompressionComboBox->addItems(compressionMethods);
 }
 
@@ -62,7 +62,7 @@ void QgsGeorefWarpOptionsDialog::on_pbnOK_clicked() {
     QgsImageWarper::Bilinear,
     QgsImageWarper::Cubic
   };
-  resampling = methods[cmbResampling->currentItem()];
+  resampling = methods[cmbResampling->currentIndex()];
   useZeroAsTransparency = cbxZeroAsTrans->isChecked();
   close();
 }

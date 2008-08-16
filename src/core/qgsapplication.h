@@ -24,8 +24,24 @@ class CORE_EXPORT QgsApplication: public QApplication
     QgsApplication(int & argc, char ** argv, bool GUIenabled);
     virtual ~QgsApplication();
 
-    //! Set the theme path to the specified theme.
-    static void selectTheme(const QString theThemeName);
+    /** Set the active theme to the specified theme.
+     * The theme name should be a single word e.g. 'default','classic'.
+     * The theme search path usually will be pkgDataPath + "/themes/" + themName + "/"
+     * but plugin writers etc can use themeName() as a basis for searching
+     * for resources in their own datastores e.g. a Qt4 resource bundle.
+     * @Note A basic test will be carried out to ensure the theme search path
+     * based on the supplied theme name exists. If it does not the theme name will 
+     * be reverted to 'default'.
+     */
+    static void setThemeName(const QString theThemeName);
+
+    /** Set the active theme to the specified theme.
+     * The theme name should be a single word e.g. 'default','classic'.
+     * The theme search path usually will be pkgDataPath + "/themes/" + themName + "/"
+     * but plugin writers etc can use this method as a basis for searching
+     * for resources in their own datastores e.g. a Qt4 resource bundle.
+     */
+    static const QString themeName() ;
 
     //! Returns the path to the authors file.
     static const QString authorsFilePath();
@@ -75,8 +91,11 @@ class CORE_EXPORT QgsApplication: public QApplication
     //! Returns the common root path of all application data directories.
     static const QString pkgDataPath(); 
 
-    //! Returns the path to the current theme directory.
-    static const QString themePath(); 
+    //! Returns the path to the currently active theme directory.
+    static const QString activeThemePath(); 
+
+    //! Returns the path to the default theme directory.
+    static const QString defaultThemePath(); 
     
     //! Alters prefix path - used by 3rd party apps
     static void setPrefixPath(const QString thePrefixPath, bool useDefaultPaths = FALSE);
@@ -113,14 +132,14 @@ class CORE_EXPORT QgsApplication: public QApplication
      * the gradient fills for backgrounds.
      */
     static QString reportStyleSheet();
-    /** Print to stdout the paths used in this application instance.
-     * useful for debugging mainly.*/
-    static void showSettings();
+    /** Convenience function to get a summary of the paths used in this 
+     * application instance useful for debugging mainly.*/
+    static QString showSettings();
   private:
     static QString mPrefixPath;
     static QString mPluginPath;
     static QString mPkgDataPath;
-    static QString mThemePath;
+    static QString mThemeName;
 };
 
 #endif

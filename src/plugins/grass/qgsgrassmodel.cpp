@@ -36,14 +36,15 @@
 #include "qgis.h"
 #include "qgsapplication.h"
 #include "qgslogger.h"
+#include "qgsgrassplugin.h"
 
 extern "C" {
 #include <grass/gis.h>
 #include <grass/Vect.h>
 }
 
-#include "../../src/providers/grass/qgsgrass.h"
-#include "../../src/providers/grass/qgsgrassprovider.h"
+#include "qgsgrass.h"
+#include "qgsgrassprovider.h"
 #include "qgsgrassmodel.h"
 #include "qgsgrassselect.h"
 
@@ -488,12 +489,11 @@ QgsGrassModel::QgsGrassModel ( QObject * parent )
 
   mIconFile = QIcon(style->standardPixmap(QStyle::SP_FileIcon));
 
-  QString iconPath = QgsApplication::themePath();
-  mIconPointLayer = QIcon ( iconPath+"/mIconPointLayer.png" );
-  mIconLineLayer = QIcon ( iconPath+"/mIconLineLayer.png" );
-  mIconPolygonLayer = QIcon ( iconPath+"/mIconPolygonLayer.png" );
-  mIconVectorLayer = QIcon ( iconPath+"/grass/grass_browser_vector_layer.png" );
-  mIconRasterLayer = QIcon ( iconPath+"/grass/grass_browser_raster_layer.png" );
+  mIconPointLayer = QgsGrassPlugin::getThemeIcon("/mIconPointLayer.png" );
+  mIconLineLayer = QgsGrassPlugin::getThemeIcon("/mIconLineLayer.png" );
+  mIconPolygonLayer = QgsGrassPlugin::getThemeIcon("/mIconPolygonLayer.png" );
+  mIconVectorLayer = QgsGrassPlugin::getThemeIcon("/grass/grass_browser_vector_layer.png" );
+  mIconRasterLayer = QgsGrassPlugin::getThemeIcon("/grass/grass_browser_raster_layer.png" );
 
   mRoot = new QgsGrassModelItem();
   mRoot->mType = QgsGrassModel::Location;
@@ -589,7 +589,7 @@ void QgsGrassModel::addItems(QgsGrassModelItem *item, QStringList list, int type
 
     if ( insertAt >= 0 )
     {
-      QgsDebugMsg( QString("insert %1 at %2").arg(name).arg(insertAt) );;
+      QgsDebugMsg( QString("insert %1 at %2").arg(name).arg(insertAt) );
       beginInsertRows( index, insertAt, insertAt );
       QgsGrassModelItem *newItem = new QgsGrassModelItem();
       item->mChildren.insert( insertAt, newItem );

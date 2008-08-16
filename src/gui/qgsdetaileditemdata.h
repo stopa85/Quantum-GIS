@@ -26,22 +26,30 @@
 /** This class is the data only representation of a 
  * QgsDetailedItemWidget, designed to be used in custom views.
  */
-class QgsDetailedItemData 
+class GUI_EXPORT QgsDetailedItemData 
 {
   public:
     QgsDetailedItemData();
     ~QgsDetailedItemData();
-    void setTitle(QString theTitle);
-    void setDetail(QString theDetail);
-    void setIcon(QPixmap theIcon);
-    void setCheckable(bool theFlag);
-    void setChecked(bool theFlag);
+    void setTitle(const QString theTitle);
+    void setDetail(const QString theDetail);
+    void setIcon(const QPixmap theIcon);
+    void setCheckable(const bool theFlag);
+    void setChecked(const bool theFlag);
+    /** This is a hint to the delegate to render using 
+     * a widget rather than manually painting every 
+     * part of the list item.
+     * @note the delegate may completely ignore this 
+     * depending on the delegate implementation.
+     */
+    void setRenderAsWidget(bool theFlag);
 
-    QString title();
-    QString detail();
-    QPixmap icon();
-    bool isCheckable();
-    bool isChecked();
+    QString title() const;
+    QString detail() const;
+    QPixmap icon() const;
+    bool isCheckable() const;
+    bool isChecked() const;
+    bool isRenderedAsWidget() const;
 
   private:
     QString mTitle;
@@ -50,6 +58,7 @@ class QgsDetailedItemData
     QPixmap mPixmap;
     bool mCheckableFlag;
     bool mCheckedFlag;
+    bool mRenderAsWidgetFlag;
 };
 
 // Make QVariant aware of this data type (see qtdocs star 

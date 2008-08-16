@@ -29,7 +29,7 @@ QgsCompositionWidget::QgsCompositionWidget(QWidget* parent, QgsComposition* c): 
   mPaperOrientationComboBox->insertItem(0, tr("Landscape"));
   mPaperOrientationComboBox->insertItem(1, tr("Portrait"));
   mPaperOrientationComboBox->blockSignals(false);
-  mPaperOrientationComboBox->setCurrentItem(0);
+  mPaperOrientationComboBox->setCurrentIndex(0);
   
   //read with/height from composition and find suitable entries to display
   displayCompositionWidthHeight();
@@ -252,7 +252,7 @@ void QgsCompositionWidget::displayCompositionWidthHeight()
       if( (currentPaper.mWidth == paperWidth && currentPaper.mHeight == paperHeight)
 	  || (currentPaper.mWidth == paperHeight && currentPaper.mHeight == paperWidth) )
 	{
-	  mPaperSizeComboBox->setCurrentItem(mPaperSizeComboBox->findText(paper_it.key()));
+	  mPaperSizeComboBox->setCurrentIndex(mPaperSizeComboBox->findText(paper_it.key()));
 	  found = true;
 	}
     }
@@ -260,7 +260,7 @@ void QgsCompositionWidget::displayCompositionWidthHeight()
   if(!found)
     {
       //custom
-      mPaperSizeComboBox->setCurrentItem(0);
+      mPaperSizeComboBox->setCurrentIndex(0);
     }
 
   mPaperSizeComboBox->blockSignals(false);

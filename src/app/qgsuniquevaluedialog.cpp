@@ -42,7 +42,7 @@ QgsUniqueValueDialog::QgsUniqueValueDialog(QgsVectorLayer* vl): QDialog(), mVect
     for (QgsFieldMap::const_iterator it = fields.begin(); it != fields.end(); ++it)
     {
       str = (*it).name();
-      mClassificationComboBox->insertItem(str);
+      mClassificationComboBox->addItem(str);
     }
   }
   else
@@ -68,7 +68,7 @@ QgsUniqueValueDialog::QgsUniqueValueDialog(QgsVectorLayer* vl): QDialog(), mVect
     //QString field = provider->fields()[ classattr ].name();
     QString field = provider->fields()[ renderer->classificationField() ].name();
     mOldClassificationAttribute = field;
-    mClassificationComboBox->setCurrentItem( mClassificationComboBox->findText(field) );
+    mClassificationComboBox->setCurrentIndex( mClassificationComboBox->findText(field) );
 
     const QList<QgsSymbol*> list = renderer->symbols();
     //fill the items of the renderer into mValues
@@ -292,29 +292,19 @@ void QgsUniqueValueDialog::changeClassificationAttribute()
   QgsVectorDataProvider *provider = dynamic_cast<QgsVectorDataProvider *>(mVectorLayer->getDataProvider());
   if (provider)
   {
-    QString value;
-    QgsAttributeList attlist;
-
     int nr = provider->indexFromFieldName(attributeName);
     if(nr == -1)
     {
       return;
     }
-    attlist.append(nr);
 
-    provider->select(attlist, QgsRect(), false);
-    QgsFeature feat;
+    QStringList values;
+    provider->getUniqueValues(nr, values);
 
-    //go through all the features and insert their value into the map and into mClassListWidget
-    while(provider->getNextFeature(feat)) 
+    for(int i=0; i<values.size(); i++)
     {
-      const QgsAttributeMap& attrs = feat.attributeMap();
-      value = attrs[nr].toString();
-
-      if( mValues.contains(value) )
-        continue;
-
-      addClass(value);
+      if( !mValues.contains(values[i]) )
+        addClass(values[i]);
     }
   }
 }
@@ -330,7 +320,7 @@ void QgsUniqueValueDialog::itemChanged( QListWidgetItem *item )
   if( !mValues.contains(newValue) )
   {
     QgsSymbol *sy = mValues[oldValue];
-    mValues.erase(oldValue);
+    mValues.remove(oldValue);
     mValues.insert(newValue, sy);
     sy->setLowerValue(newValue);
     item->setData( Qt::UserRole, newValue );
@@ -401,7 +391,7 @@ void QgsUniqueValueDialog::deleteSelectedClasses()
     if(!currentItem)
       continue;
  
-    mValues.erase( currentItem->text() );
+    mValues.remove( currentItem->text() );
 
     mClassListWidget->removeItemWidget(currentItem);
     delete currentItem;

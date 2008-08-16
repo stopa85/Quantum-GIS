@@ -50,7 +50,7 @@
 #include "qgsmapcanvas.h"
 #include "qgsmapcanvasitem.h"
 #include "qgsmaplayer.h"
-#include "qgsmaprender.h"
+#include "qgsmaprenderer.h"
 #include "qgsvectorlayer.h"
 #include "qgsdataprovider.h"
 #include "qgsmaptoolpan.h"
@@ -66,12 +66,13 @@ extern "C" {
 #include <grass/Vect.h>
 }
 
-#include "../../src/providers/grass/qgsgrass.h"
-#include "../../src/providers/grass/qgsgrassprovider.h"
+#include "qgsgrass.h"
+#include "qgsgrassprovider.h"
 #include "qgsgrassattributes.h"
 #include "qgsgrassedit.h"
 #include "qgsgrassedittools.h"
 #include "qgsgrassutils.h"
+#include "qgsgrassplugin.h"
 
 #ifdef _MSC_VER
 #define round(x)  ((x) >= 0 ? floor((x)+0.5) : floor((x)-0.5))
@@ -142,6 +143,7 @@ QgsGrassEdit::QgsGrassEdit ( QgisInterface *iface, QgsMapLayer* layer, bool newM
   //TODO dynamic_cast ?
   mProvider = (QgsGrassProvider *) mLayer->getDataProvider();
 
+
   init();
 
 }
@@ -207,79 +209,84 @@ void QgsGrassEdit::init()
     return;
   }
 
+  
+  mRubberBandLine = new QgsRubberBand(mCanvas);
+  mRubberBandIcon = new QgsVertexMarker(mCanvas);
+  mRubberBandLine->setZValue(20);
+  mRubberBandIcon->setZValue(20);
+  
   connect ( mCanvas, SIGNAL(keyPressed(QKeyEvent *)), this, SLOT(keyPress(QKeyEvent *)) );
 
-  QString myIconPath = QgsApplication::themePath() + "/grass/";
 
   mToolBar = addToolBar(tr("Edit tools"));
 
   mNewPointAction = new QAction(
-    QIcon(myIconPath+"grass_new_point.png"), tr("New point"), this);
+    QgsGrassPlugin::getThemeIcon("grass_new_point.png"), tr("New point"), this);
   mNewPointAction->setShortcut ( QKeySequence(Qt::Key_F1) ); 
   mToolBar->addAction ( mNewPointAction );
   connect ( mNewPointAction, SIGNAL(triggered()), this, SLOT(newPoint()) );
 
   mNewLineAction = new QAction(
-    QIcon(myIconPath+"grass_new_line.png"), tr("New line"), this);
+    QgsGrassPlugin::getThemeIcon("grass_new_line.png"), tr("New line"), this);
   mNewLineAction->setShortcut ( QKeySequence(Qt::Key_F2) ); 
   mToolBar->addAction ( mNewLineAction );
   connect ( mNewLineAction, SIGNAL(triggered()), this, SLOT(newLine()) );
 
   mNewBoundaryAction = new QAction(
-    QIcon(myIconPath+"grass_new_boundary.png"), tr("New boundary"), this);
+    QgsGrassPlugin::getThemeIcon("grass_new_boundary.png"), tr("New boundary"), this);
   mNewBoundaryAction->setShortcut ( QKeySequence(Qt::Key_F3) ); 
   mToolBar->addAction ( mNewBoundaryAction );
   connect ( mNewBoundaryAction, SIGNAL(triggered()), this, SLOT(newBoundary()) );
 
   mNewCentroidAction = new QAction(
-    QIcon(myIconPath+"grass_new_centroid.png"), tr("New centroid"), this);
+    QgsGrassPlugin::getThemeIcon("grass_new_centroid.png"), tr("New centroid"), this);
   mNewCentroidAction->setShortcut ( QKeySequence(Qt::Key_F4) ); 
   mToolBar->addAction ( mNewCentroidAction );
   connect ( mNewCentroidAction, SIGNAL(triggered()), this, SLOT(newCentroid()) );
 
   mMoveVertexAction = new QAction(
-    QIcon(myIconPath+"grass_move_vertex.png"), tr("Move vertex"), this);
+    QgsGrassPlugin::getThemeIcon("grass_move_vertex.png"), tr("Move vertex"), this);
   mMoveVertexAction->setShortcut ( QKeySequence(Qt::Key_F5) ); 
   mToolBar->addAction ( mMoveVertexAction );
   connect ( mMoveVertexAction, SIGNAL(triggered()), this, SLOT(moveVertex()) );
 
   mAddVertexAction = new QAction(
-    QIcon(myIconPath+"grass_add_vertex.png"), tr("Add vertex"), this);
+    QgsGrassPlugin::getThemeIcon("grass_add_vertex.png"), tr("Add vertex"), this);
   mAddVertexAction->setShortcut ( QKeySequence(Qt::Key_F6) ); 
   mToolBar->addAction ( mAddVertexAction );
   connect ( mAddVertexAction, SIGNAL(triggered()), this, SLOT(addVertex()) );
 
   mDeleteVertexAction = new QAction(
-    QIcon(myIconPath+"grass_delete_vertex.png"), tr("Delete vertex"), this);
+    QgsGrassPlugin::getThemeIcon("grass_delete_vertex.png"), tr("Delete vertex"), this);
   mDeleteVertexAction->setShortcut ( QKeySequence(Qt::Key_F7) ); 
   mToolBar->addAction ( mDeleteVertexAction );
   connect ( mDeleteVertexAction, SIGNAL(triggered()), this, SLOT(deleteVertex()) );
 
   mMoveLineAction = new QAction(
-    QIcon(myIconPath+"grass_move_line.png"), tr("Move element"), this);
+    QgsGrassPlugin::getThemeIcon("grass_move_line.png"), tr("Move element"), this);
   mMoveLineAction->setShortcut ( QKeySequence(Qt::Key_F9) ); 
   mToolBar->addAction ( mMoveLineAction );
   connect ( mMoveLineAction, SIGNAL(triggered()), this, SLOT(moveLine()) );
 
   mSplitLineAction = new QAction(
-    QIcon(myIconPath+"grass_split_line.png"), tr("Split line"), this);
+    QgsGrassPlugin::getThemeIcon("grass_split_line.png"), tr("Split line"), this);
   mSplitLineAction->setShortcut ( QKeySequence(Qt::Key_F10) ); 
   mToolBar->addAction ( mSplitLineAction );
   connect ( mSplitLineAction, SIGNAL(triggered()), this, SLOT(splitLine()) );
 
   mDeleteLineAction = new QAction(
-    QIcon(myIconPath+"grass_delete_line.png"), tr("Delete element"), this);
+    QgsGrassPlugin::getThemeIcon("grass_delete_line.png"), tr("Delete element"), this);
   mDeleteLineAction->setShortcut ( QKeySequence(Qt::Key_F11) ); 
   mToolBar->addAction ( mDeleteLineAction );
   connect ( mDeleteLineAction, SIGNAL(triggered()), this, SLOT(deleteLine()) );
 
   mEditAttributesAction = new QAction(
-    QIcon(myIconPath+"grass_edit_attributes.png"), tr("Edit attributes"), this);
+    QgsGrassPlugin::getThemeIcon("grass_edit_attributes.png"), tr("Edit attributes"), this);
   mToolBar->addAction ( mEditAttributesAction );
   connect ( mEditAttributesAction, SIGNAL(triggered()), this, SLOT(editAttributes()) );
 
   mCloseEditAction = new QAction(
-    QIcon(myIconPath+"grass_close_edit.png"), tr("Close"), this);
+    QgsGrassPlugin::getThemeIcon("grass_close_edit.png"), tr("Close"), this);
   mToolBar->addAction ( mCloseEditAction );
   connect ( mCloseEditAction, SIGNAL(triggered()), this, SLOT(closeEdit()) );
 
@@ -387,6 +394,8 @@ void QgsGrassEdit::init()
 
   for ( int i = 0; i < SYMB_COUNT; i++ ) {
     bool ok;
+
+
     bool displ = settings.readBoolEntry ( 
       spath + "display/" + QString::number(i), 
       true, &ok );
@@ -400,6 +409,11 @@ void QgsGrassEdit::init()
     if ( ok ) {
       QColor color( colorName );
       mSymb[i].setColor( color );
+       // Use the 'dynamic' color for mRubberBand
+      if ( i == SYMB_DYNAMIC )
+      {
+        mRubberBandLine->setColor(QColor(colorName));
+      }
     }
     mSymb[i].setWidth( mLineWidth );
   }
@@ -415,6 +429,7 @@ void QgsGrassEdit::init()
   symbologyList->clear();
   symbologyList->setSorting(-1);
 
+  
   for ( int i = SYMB_COUNT-1; i >= 0; i-- ) {
     if ( i == SYMB_NODE_0 ) continue;
 
@@ -492,10 +507,7 @@ void QgsGrassEdit::init()
 
   mPixmap = &mCanvasEdit->pixmap();
 
-  mRubberBandLine = new QgsRubberBand(mCanvas);
-  mRubberBandIcon = new QgsVertexMarker(mCanvas);
-  mRubberBandLine->setZValue(20);
-  mRubberBandIcon->setZValue(20);
+
 
   // Init GUI values
   mCatModeBox->insertItem( tr("Next not used"), CAT_MODE_NEXT );
@@ -729,6 +741,11 @@ void QgsGrassEdit::changeSymbology(Q3ListViewItem * item, const QPoint & pnt, in
     // TODO use a name instead of index
     sn.sprintf( "/GRASS/edit/symb/color/%d", index );
     settings.writeEntry ( sn, mSymb[index].color().name() );
+     // Use the 'dynamic' color for mRubberBand
+    if ( index == SYMB_DYNAMIC )
+    {
+      mRubberBandLine->setColor(color);
+    }
   }
 }
 
@@ -1100,8 +1117,8 @@ double QgsGrassEdit::threshold ( void )
   {
     try
     {
-      p1 = mCanvas->mapRender()->outputCoordsToLayerCoords(mLayer, p1);
-      p2 = mCanvas->mapRender()->outputCoordsToLayerCoords(mLayer, p2);
+      p1 = mCanvas->mapRenderer()->outputCoordsToLayerCoords(mLayer, p1);
+      p2 = mCanvas->mapRenderer()->outputCoordsToLayerCoords(mLayer, p2);
     }
     catch(QgsCsException& cse)
     {
@@ -1738,13 +1755,13 @@ void QgsGrassEdit::displayNode ( int node, const QPen & pen, int size, QPainter 
 
 QgsPoint QgsGrassEdit::transformLayerToCanvas ( QgsPoint point)
 {
-  point = mCanvas->mapRender()->layerCoordsToOutputCoords(mLayer, point);
+  point = mCanvas->mapRenderer()->layerCoordsToOutputCoords(mLayer, point);
   return mTransform->transform(point);
 }
 
 QgsPoint QgsGrassEdit::transformLayerToMap ( QgsPoint point)
 {
-  return mCanvas->mapRender()->layerCoordsToOutputCoords(mLayer, point);
+  return mCanvas->mapRenderer()->layerCoordsToOutputCoords(mLayer, point);
 }
 
 void QgsGrassEdit::displayIcon ( double x, double y, const QPen & pen,

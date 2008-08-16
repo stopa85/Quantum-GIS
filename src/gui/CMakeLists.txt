@@ -9,7 +9,7 @@ qgsdetaileditemwidget.cpp
 qgsdetaileditemdata.cpp
 qgsencodingfiledialog.cpp
 qgsfiledropedit.cpp
-qgslayerprojectionselector.cpp
+qgsgenericprojectionselector.cpp
 qgsmapcanvas.cpp
 qgsmapcanvasitem.cpp
 qgsmapcanvasmap.cpp
@@ -30,10 +30,9 @@ qgsvertexmarker.cpp
 SET(QGIS_GUI_MOC_HDRS
 qgsdetaileditemdelegate.h
 qgsdetaileditemwidget.h
-qgsdetaileditemdata.h
 qgisinterface.h
 qgsencodingfiledialog.h
-qgslayerprojectionselector.h
+qgsgenericprojectionselector.h
 qgsmapcanvas.h
 qgsmapoverviewcanvas.h
 qgsmaptoolemitpoint.h
@@ -102,7 +101,7 @@ qgscolorbutton.h
 qgscursors.h
 qgsencodingfiledialog.h
 qgsfiledropedit.h
-qgslayerprojectionselector.h
+qgsgenericprojectionselector.h
 qgsmapcanvas.h
 qgsmapcanvasitem.h
 qgsmapcanvasmap.h

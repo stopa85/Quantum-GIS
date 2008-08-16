@@ -43,7 +43,7 @@ QgsDistanceArea::QgsDistanceArea()
   // init with default settings
   mProjectionsEnabled = FALSE;
   mCoordTransform = new QgsCoordinateTransform;
-  setSourceSRS(GEOSRS_ID); // WGS 84
+  setSourceEPSG(GEOEPSG_ID); // WGS 84
   setEllipsoid("WGS84");
 }
 
@@ -59,11 +59,17 @@ void QgsDistanceArea::setProjectionsEnabled(bool flag)
   mProjectionsEnabled = flag;
 }
 
-
 void QgsDistanceArea::setSourceSRS(long srsid)
 {
   QgsSpatialRefSys srcSRS;
   srcSRS.createFromSrsId(srsid);
+  mCoordTransform->setSourceSRS(srcSRS);
+}
+
+void QgsDistanceArea::setSourceEPSG(long epsgId)
+{
+  QgsSpatialRefSys srcSRS;
+  srcSRS.createFromEpsg(epsgId);
   mCoordTransform->setSourceSRS(srcSRS);
 }
 
@@ -95,7 +101,7 @@ bool QgsDistanceArea::setEllipsoid(const QString& ellipsoid)
     //     database if it does not exist.
     return false;
   }
-  // Set up the query to retreive the projection information needed to populate the ELLIPSOID list
+  // Set up the query to retrieve the projection information needed to populate the ELLIPSOID list
   QString mySql = "select radius, parameter2 from tbl_ellipsoid where acronym='" + ellipsoid + "'";
   myResult = sqlite3_prepare(myDatabase, mySql.toUtf8(), mySql.length(), &myPreparedStatement, &myTail);
   // XXX Need to free memory from the error msg if one is set
@@ -114,9 +120,7 @@ bool QgsDistanceArea::setEllipsoid(const QString& ellipsoid)
   // row for this ellipsoid wasn't found?
   if (radius.isEmpty() || parameter2.isEmpty())
   {
-#ifdef QGISDEBUG
-    std::cout << "setEllipsoid: no row in tbl_ellipsoid for acronym '" << ellipsoid.toLocal8Bit().data() << "'" << std::endl;
-#endif
+    QgsDebugMsg(QString("setEllipsoid: no row in tbl_ellipsoid for acronym '") + ellipsoid.toLocal8Bit().data() + "'")
     return false;
   }
   
@@ -125,9 +129,7 @@ bool QgsDistanceArea::setEllipsoid(const QString& ellipsoid)
     mSemiMajor = radius.mid(2).toDouble();
   else
   {
-#ifdef QGISDEBUG
-    std::cout << "setEllipsoid: wrong format of radius field: '" << radius.toLocal8Bit().data() << "'" << std::endl;
-#endif
+    QgsDebugMsg(QString("setEllipsoid: wrong format of radius field: '") + radius.toLocal8Bit().data() + "'")
     return false;
   }
   
@@ -146,15 +148,11 @@ bool QgsDistanceArea::setEllipsoid(const QString& ellipsoid)
   }
   else
   {
-#ifdef QGISDEBUG
-    std::cout << "setEllipsoid: wrong format of parameter2 field: '" << parameter2.toLocal8Bit().data() << "'" << std::endl;
-#endif
+    QgsDebugMsg(QString("setEllipsoid: wrong format of parameter2 field: '") + parameter2.toLocal8Bit().data() + "'")
     return false;
   }
   
-#ifdef QGISDEBUG
-    std::cout << "setEllipsoid: a=" << mSemiMajor << ", b=" << mSemiMinor << ", 1/f=" << mInvFlattening << std::endl;
-#endif
+  QgsDebugMsg(QString("setEllipsoid: a=") + mSemiMajor + ", b=" + mSemiMinor + ", 1/f=" + mInvFlattening)
 
 
   // get spatial ref system for ellipsoid

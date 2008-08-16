@@ -17,7 +17,7 @@
 #include "qgsdistancearea.h"
 #include "qgslogger.h"
 #include "qgsmapcanvas.h"
-#include "qgsmaprender.h"
+#include "qgsmaprenderer.h"
 #include "qgsmaptopixel.h"
 #include "qgsrubberband.h"
 
@@ -67,7 +67,7 @@ void QgsMeasureTool::activate()
   
   // If we suspect that they have data that is projected, yet the
   // map SRS is set to a geographic one, warn them.
-  if (mCanvas->mapRender()->distArea()->geographic() &&
+  if (mCanvas->mapRenderer()->distArea()->geographic() &&
       (mCanvas->extent().height() > 360 || 
        mCanvas->extent().width() > 720))
   {
@@ -122,7 +122,7 @@ void QgsMeasureTool::updateProjection()
   // mCalc->setEllipsoid(ellipsoid);
 
   // set source SRS and projections enabled flag
-  // QgsMapRender* mapRender = mCanvas->mapRender();
+  // QgsMapRenderer* mapRender = mCanvas->mapRenderer();
   // mCalc->setProjectionsEnabled(mapRender->projectionsEnabled());
   // int srsid = mapRender->destinationSrs().srsid();
   // mCalc->setSourceSRS(srsid);
@@ -164,7 +164,7 @@ void QgsMeasureTool::canvasReleaseEvent(QMouseEvent * e)
 {
   QgsPoint point = mCanvas->getCoordinateTransform()->toMapCoordinates(e->x(), e->y());
 
-  if(e->button() == Qt::RightButton && (e->state() & Qt::LeftButton) == 0) // restart
+  if(e->button() == Qt::RightButton && (e->buttons() & Qt::LeftButton) == 0) // restart
   {
     if (mRightMouseClicked)
       mDialog->restart();

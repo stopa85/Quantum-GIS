@@ -315,7 +315,7 @@ int main(int argc, char *argv[])
       break;
 
     case 's':
-      mySnapshotFileName = QDir::convertSeparators(QFileInfo(QFile::decodeName(optarg)).absFilePath());
+      mySnapshotFileName = QDir::convertSeparators(QFileInfo(QFile::decodeName(optarg)).absoluteFilePath());
       break;
 
     case 'l':
@@ -323,7 +323,7 @@ int main(int argc, char *argv[])
       break;
 
     case 'p':
-      myProjectFileName = QDir::convertSeparators(QFileInfo(QFile::decodeName(optarg)).absFilePath());
+      myProjectFileName = QDir::convertSeparators(QFileInfo(QFile::decodeName(optarg)).absoluteFilePath());
       break;
 
     case 'e':
@@ -355,7 +355,7 @@ int main(int argc, char *argv[])
     int idx = optind;
     std::cout << idx << ": " << argv[idx] << std::endl;
 #endif
-    myFileList.append(QDir::convertSeparators(QFileInfo(QFile::decodeName(argv[optind++])).absFilePath()));
+    myFileList.append(QDir::convertSeparators(QFileInfo(QFile::decodeName(argv[optind++])).absoluteFilePath()));
     }
   }
   }
@@ -376,7 +376,9 @@ int main(int argc, char *argv[])
 #endif
   if (!myUseGuiFlag) 
   {
-    std::cerr << "QGIS starting in non-interactive mode not supported.\n You are seeing this message most likely because you have no DISPLAY environment variable set." << std::endl;
+    std::cerr << "QGIS starting in non-interactive mode not supported.\n You "
+      "are seeing this message most likely because you have no DISPLAY "
+      "environment variable set." << std::endl;
     exit(1); //exit for now until a version of qgis is capabable of running non interactive
   }
   QgsApplication myApp(argc, argv, myUseGuiFlag );
@@ -384,7 +386,7 @@ int main(int argc, char *argv[])
   // Set up the QSettings environment must be done after qapp is created
   QCoreApplication::setOrganizationName("QuantumGIS");
   QCoreApplication::setOrganizationDomain("qgis.org");
-  QCoreApplication::setApplicationName("qgis");
+  QCoreApplication::setApplicationName("QGIS");
 #ifdef Q_OS_MACX
   // Install OpenDocuments AppleEvent handler after application object is initialized
   // but before any other event handling (including dialogs or splash screens) occurs.
@@ -463,8 +465,8 @@ int main(int argc, char *argv[])
   }
 
 #ifdef QGISDEBUG
-  std::cout << "Setting translation to "
-    << i18nPath.toLocal8Bit().data() << "/qgis_" << myTranslationCode.toLocal8Bit().data() << std::endl;
+  //std::cout << "Setting translation to "
+  //  << i18nPath.toLocal8Bit().data() << "/qgis_" << myTranslationCode.toLocal8Bit().data() << std::endl;
 #endif
   QTranslator qgistor(0);
   if (qgistor.load(QString("qgis_") + myTranslationCode, i18nPath))
@@ -566,7 +568,7 @@ int main(int argc, char *argv[])
     // check for a .qgs
     for(int i = 0; i < argc; i++)
     {
-      QString arg = QDir::convertSeparators(QFileInfo(QFile::decodeName(argv[i])).absFilePath());
+      QString arg = QDir::convertSeparators(QFileInfo(QFile::decodeName(argv[i])).absoluteFilePath());
       if(arg.contains(".qgs"))
       {
         myProjectFileName = arg;
@@ -622,7 +624,7 @@ int main(int argc, char *argv[])
     for (int i = 0; i < 3; i++)
     {
       // find comma and get coordinate
-      pos = myInitialExtent.find(',', posOld);
+      pos = myInitialExtent.indexOf(',', posOld);
       if (pos == -1) {
         ok = false; break;
       }

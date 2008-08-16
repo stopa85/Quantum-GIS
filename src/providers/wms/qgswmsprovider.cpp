@@ -51,10 +51,6 @@ static QString DEFAULT_LATLON_CRS = "CRS:84";
 QgsWmsProvider::QgsWmsProvider(QString const & uri)
   : QgsRasterDataProvider(uri),
     httpuri(uri),
-    mHttpProxyHost(0),
-    mHttpProxyPort(80),
-    mHttpProxyUser(0),
-    mHttpProxyPass(0),
     httpcapabilitiesresponse(0),
     imageCrs(DEFAULT_LATLON_CRS),
     cachedImage(0),
@@ -134,42 +130,6 @@ QgsWmsProvider::~QgsWmsProvider()
 }
 
 
-QString QgsWmsProvider::proxyHost() const
-{
-  return mHttpProxyHost;
-}
-
-
-int QgsWmsProvider::proxyPort() const
-{
-  return mHttpProxyPort;
-}
-
-
-QString QgsWmsProvider::proxyUser() const
-{
-  return mHttpProxyUser;
-}
-
-
-QString QgsWmsProvider::proxyPass() const
-{
-  return mHttpProxyPass;
-}
-
-
-bool QgsWmsProvider::setProxy(QString const & host,
-                                          int port,
-                              QString const & user,
-                              QString const & pass)
-{
-  mHttpProxyHost = host;
-  mHttpProxyPort = port;
-  mHttpProxyUser = user;
-  mHttpProxyPass = pass;
-
-  return TRUE;
-}
 
 bool QgsWmsProvider::supportedLayers(std::vector<QgsWmsLayerProperty> & layers)
 {
@@ -541,7 +501,8 @@ QImage* QgsWmsProvider::draw(QgsRect  const & viewExtent, int pixelWidth, int pi
   {
     delete cachedImage;
   }
-  cachedImage = new QImage(imagesource);
+  cachedImage = new QImage();
+  *cachedImage = QImage::fromData(imagesource);
 
   // Remember settings for useful caching next time.
   cachedViewExtent = viewExtent;
@@ -654,11 +615,7 @@ QByteArray QgsWmsProvider::retrieveUrl(QString url)
 {
   QgsDebugMsg("WMS request Url: " + url);
   QgsHttpTransaction http(
-    url,
-    mHttpProxyHost,
-    mHttpProxyPort,
-    mHttpProxyUser,
-    mHttpProxyPass);
+    url);
 
   // Do a passthrough for the status bar text
   connect(
@@ -1650,8 +1607,6 @@ void QgsWmsProvider::parseServiceException(QDomElement const & e)
   mError += "\n" + tr("The WMS vendor also reported: ");
   mError += seText;
 
-  mError += "\n" + tr("This is probably due to a bug in the QGIS program.  Please report this error.");
-
   // TODO = e.attribute("locator");
 
   QgsDebugMsg("composed error message '"  + mError  + "'.");
@@ -1976,7 +1931,7 @@ QString QgsWmsProvider::getMetadata()
     myMetadataQString += tr("Selected");
     myMetadataQString += "</td>";
     myMetadataQString += "<td bgcolor=\"gray\">";
-    myMetadataQString += (activeSubLayers.findIndex(layerName) >= 0) ?
+    myMetadataQString += (activeSubLayers.indexOf(layerName) >= 0) ?
                            tr("Yes") : tr("No");
     myMetadataQString += "</td></tr>";
   
@@ -1985,7 +1940,7 @@ QString QgsWmsProvider::getMetadata()
     myMetadataQString += tr("Visibility");
     myMetadataQString += "</td>";
     myMetadataQString += "<td bgcolor=\"gray\">";
-    myMetadataQString += (activeSubLayers.findIndex(layerName) >= 0) ?
+    myMetadataQString += (activeSubLayers.indexOf(layerName) >= 0) ?
                            (
                             (activeSubLayerVisibility.find(layerName)->second) ?
                             tr("Visible") : tr("Hidden")

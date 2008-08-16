@@ -79,7 +79,7 @@ public:
     virtual void drawLabels(QgsRenderContext& renderContext);
 
     /** Return the extent of the layer as a QRect */
-    const QgsRect extent();
+    QgsRect extent() const;
 
     /*! Return the status of the layer. An invalid layer is one which has a bad datasource
      * or other problem. Child classes set this flag when intialized
@@ -128,7 +128,7 @@ public:
        The DOM node corresponds to a DOM document project file XML element read
        by QgsProject.
 
-       This, in turn, calls readXML_(), which is over-rideable by sub-classes so
+       This, in turn, calls readXml(), which is over-rideable by sub-classes so
        that they can read their own specific state from the given DOM node.
 
        Invoked by QgsProject::read().
@@ -145,7 +145,7 @@ public:
        The DOM node corresponds to a DOM document project file XML element to be
        written by QgsProject.
 
-       This, in turn, calls writeXML_(), which is over-rideable by sub-classes so
+       This, in turn, calls writeXml(), which is over-rideable by sub-classes so
        that they can write their own specific state to the given DOM node.
 
        Invoked by QgsProject::write().
@@ -201,7 +201,7 @@ public:
      * @see also loadNamedStyle ();
      */
     virtual QString loadDefaultStyle ( bool & theResultFlag );
-  
+
     /** Retrieve a named style for this layer if one 
      * exists (either as a .qml file on disk or as a 
      * record in the users style table in their personal qgis.db)
@@ -216,6 +216,8 @@ public:
      * @see also loadDefaultStyle ();
      */
     virtual QString loadNamedStyle ( const QString theURI , bool & theResultFlag );
+
+    virtual bool loadNamedStyleFromDb ( const QString db, const QString theURI , QString &qml );
 
     /** Save the properties of this layer as the default style 
      * (either as a .qml file on disk or as a 
@@ -287,12 +289,12 @@ protected:
     /** called by readXML(), used by children to read state specific to them from
         project files.
     */
-    virtual bool readXML_( QDomNode & layer_node );
+    virtual bool readXml( QDomNode & layer_node );
 
     /** called by writeXML(), used by children to write state specific to them to
         project files.
     */
-    virtual bool writeXML_( QDomNode & layer_node, QDomDocument & document );
+    virtual bool writeXml( QDomNode & layer_node, QDomDocument & document );
 
     /** debugging member - invoked when a connect() is made to this object */
     void connectNotify( const char * signal );

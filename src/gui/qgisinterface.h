@@ -22,7 +22,7 @@
 class QAction;
 class QMenu;
 class QToolBar;
-class QToolBox;
+class QDockWidget;
 class QWidget;
 #include <QObject>
 
@@ -72,6 +72,9 @@ class GUI_EXPORT QgisInterface : public QObject
     virtual QgsVectorLayer* addVectorLayer(QString vectorLayerPath, QString baseName, QString providerKey)=0;
     //! Add a raster layer given a raster layer file name
     virtual QgsRasterLayer* addRasterLayer(QString rasterLayerPath, QString baseName = QString())=0;
+    //! Add a WMS layer
+    virtual QgsRasterLayer* addRasterLayer(const QString& url, const QString& layerName, const QString& providerKey, const QStringList& layers, \
+					   const QStringList& styles, const QString& format, const QString& crs) = 0;
 
     //! Add a project
     virtual bool addProject(QString theProject)=0; 
@@ -112,8 +115,8 @@ class GUI_EXPORT QgisInterface : public QObject
     /** Remove action from the plugins menu */
     virtual void removePluginMenu(QString name, QAction* action)=0;
 
-    /** Return a pointer to the toolbox (where additional pages can be inserted) */
-    virtual QToolBox* getToolBox()=0;
+    /** Add a dock widget to the main window */
+    virtual void addDockWidget ( Qt::DockWidgetArea area, QDockWidget * dockwidget )=0;
 
     /** refresh the legend of a layer */
     virtual void refreshLegend(QgsMapLayer *l)=0;

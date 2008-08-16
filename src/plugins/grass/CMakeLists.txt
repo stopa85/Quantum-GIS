@@ -42,6 +42,7 @@ SET (GRASS_PLUGIN_SRCS
 )
 
 SET (GRASS_PLUGIN_UIS
+     qgsgrasstoolsbase.ui
      qgsgrassselectbase.ui
      qgsgrasseditbase.ui
      qgsgrassmapcalcbase.ui
@@ -114,11 +115,15 @@ INCLUDE_DIRECTORIES(
      ../../core/renderer 
      ../../core/symbology
      ../../gui
+     ../../providers/grass
      ${CMAKE_CURRENT_BINARY_DIR}/../../ui
      ${GRASS_INCLUDE_DIR}
      ${GDAL_INCLUDE_DIR}
      ${PROJ_INCLUDE_DIR}
 )
+
+SET( QT_USE_QT3SUPPORT TRUE )
+INCLUDE( ${QT_USE_FILE} )
 
 TARGET_LINK_LIBRARIES(grassplugin
   qgis_core

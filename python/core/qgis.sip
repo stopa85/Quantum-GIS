@@ -99,7 +99,7 @@ public:
   /** Magic number for a geographic coord sys in QGIS srs.db tbl_srs.srs_id */
   const long GEOSRS_ID;
   /**  Magic number for a geographic coord sys in EPSG ID format */
-  const long EPSGID;
+  const long GEOEPSG_ID;
   /** The length of teh string "+proj=" */
   const int PROJ_PREFIX_LEN;
   /** The length of teh string "+ellps=" */
@@ -108,3 +108,11 @@ public:
    *  or user (~/.qgis.qgis.db) defined projection. */
   const int USER_PROJECTION_START_ID;
 
+  //
+  // Constants for point symbols
+  //
+
+  /** Magic number that determines the minimum allowable point size for point symbols */
+  const float MINIMUM_POINT_SIZE;
+  /** Magic number that determines the minimum allowable point size for point symbols */
+  const float DEFAULT_POINT_SIZE;

@@ -114,10 +114,10 @@ public:
     // Accessors for image height and width
     //
     /** \brief Accessor that returns the width of the (unclipped) raster  */
-    const int getRasterXDim();
+    int getRasterXDim();
 
     /** \brief Accessor that returns the height of the (unclipped) raster  */
-    const int getRasterYDim();
+    int getRasterYDim();
 
     //
     // Accessor and mutator for no data double
@@ -126,7 +126,7 @@ public:
     bool isNoDataValueValid();
     
     /** \brief  Accessor that returns the NO_DATA entry for this raster. */
-    const double getNoDataValue(bool* isValid=0);
+    double getNoDataValue(bool* isValid=0);
 
     /** \brief  Mutator that allows the  NO_DATA entry for this raster to be overridden. */
     void setNoDataValue(double theNoData);
@@ -152,11 +152,11 @@ public:
     void setStdDevsToPlot(double the);
     
     /** \brief Get the number of bands in this layer  */
-    const unsigned int getBandCount();
+    unsigned int getBandCount();
     /** \brief Get RasterBandStats for a band given its number (read only)  */
     const  QgsRasterBandStats getRasterBandStats(int);
     /** \brief  Check whether a given band number has stats associated with it */
-    const bool hasStats(int theBandNoInt);
+    bool hasStats(int theBandNoInt);
     /** \brief Overloaded method that also returns stats for a band, but uses the band colour name
     *    Note this approach is not recommeneded because it is possible for two gdal raster
     *    bands to have the same name!
@@ -165,7 +165,7 @@ public:
     /** \brief Get the number of a band given its name. Note this will be the rewritten name set 
     *   up in the constructor, and will not necessarily be the same as the name retrieved directly from gdal!
     *   If no matching band is found zero will be returned! */
-    const  int getRasterBandNumber (const QString & theBandNameQString);
+    int getRasterBandNumber (const QString & theBandNameQString);
     /** \brief Get the name of a band given its number.  */
     const  QString getRasterBandName(int theBandNoInt);
     /** \brief Find out whether a given band exists.    */
@@ -207,14 +207,6 @@ public:
     
     /** \brief Mutator for transparent band name mapping.  */
     void setTransparentBandName(const QString & theBandNameQString);
-    //
-    // Accessor and mutator for transparent band name
-    // 
-    /** \brief  Accessor for transparent band name mapping. */
-    QString getTransparentLayerName();
-    
-    /** \brief Mutator for transparent band name mapping.  */
-    void setTransparentLayerName(const QString & theLayerNameQString);
     
     //
     // Accessor and mutator for gray band name
@@ -450,13 +442,13 @@ public:
      /** \brief Mutator for mUserDefinedRGBMinMaxFlag */
     void setUserDefinedRGBMinMax(bool theBool);
 
-    /** \brief Accessor for userDefinedMinMax.  */
+    /** \brief Accessor for mUserDefinedRGBMinMaxFlag.  */
     bool getUserDefinedRGBMinMax();
 
-    /** \brief Mutator for mUserDefinedRGBMinMaxFlag */
+    /** \brief Mutator for mUserDefinedGrayMinMaxFlag */
     void setUserDefinedGrayMinMax(bool theBool);
 
-    /** \brief Accessor for userDefinedMinMax.  */
+    /** \brief Accessor for mUserDefinedGrayMinMaxFlag.  */
     bool getUserDefinedGrayMinMax();
 
 public slots:    
@@ -471,12 +463,18 @@ public slots:
 
     /** \brief Create  gdal pyramid overviews  for this layer.
     * This will speed up performance at the expense of hard drive space.
-    * Also, write access to the file is required. If no paramter is passed in
+    * Also, write access to the file is required for creating internal pyramids,
+    * and to the directory in which the files exists if external 
+    * pyramids (.ovr) are to be created. If no paramter is passed in
     * it will default to nearest neighbor resampling.
+    * @param theTryInternalFlag - Try to make the pyramids internal to 
+    * the raster file if supported (e.g. geotiff). If not supported it 
+    * will revert to creating external .ovr file anyway.
     * \return null string on success, otherwise a string specifying error
     */
     QString buildPyramids(const RasterPyramidList &, 
-                          const QString &  theResamplingMethod="NEAREST");
+                          const QString &  theResamplingMethod="NEAREST",
+                          bool theTryInternalFlag=false);
     /** \brief Used at the moment by the above function but hopefully will later
     be useable by any operation that needs to notify the user of its progress. */
 /*
@@ -510,7 +508,7 @@ public slots:
         Called by QgsMapLayer::readXML().
 
     */
-    /* virtual */ bool readXML_( QDomNode & layer_node );
+    /* virtual */ bool readXml( QDomNode & layer_node );
 
 
 
@@ -521,7 +519,7 @@ public slots:
       Called by QgsMapLayer::writeXML().
 
   */
-  /* virtual */ bool writeXML_( QDomNode & layer_node, QDomDocument & doc );
+  /* virtual */ bool writeXml( QDomNode & layer_node, QDomDocument & doc );
     
 
 /*
@@ -543,34 +541,16 @@ public:
                  const QStringList & layers = QStringList(),
                  const QStringList & styles = QStringList(),
                  const QString & format = QString(),
-                 const QString & crs = QString(),
-                 const QString & proxyHost = QString(),
-                 int proxyPort = 80,
-                 const QString & proxyUser = QString(),
-                 const QString & proxyPass = QString());
+                 const QString & crs = QString());
 
   void setDataProvider( const QString & provider,
                         const QStringList & layers,
                         const QStringList & styles,
                         const QString & format,
-                        const QString & crs,
-                        const QString & proxyHost,
-                        int proxyPort,
-                        const QString & proxyUser,
-                        const QString & proxyPass );
+                        const QString & crs);
 
   //! Does this layer use a provider for setting/retrieving data?
   bool usesProvider();
-
-  /**
-   * Sets a proxy for the path given in the constructor
-   *
-   * \retval TRUE if proxy setting is successful (if indeed it is supported)
-   */
-  bool setProxy(const QString & host = 0,
-                            int port = 80,
-                const QString & user = 0,
-                const QString & pass = 0);
 
   //! Which provider is being used for this Raster Layer?
   QString providerKey();

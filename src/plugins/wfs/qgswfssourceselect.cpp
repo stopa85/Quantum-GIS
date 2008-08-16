@@ -18,7 +18,7 @@
 #include "qgisinterface.h"
 #include "qgswfssourceselect.h"
 #include "qgsnewhttpconnection.h"
-#include "qgslayerprojectionselector.h"
+#include "qgsgenericprojectionselector.h"
 #include "qgshttptransaction.h"
 #include "qgscontexthelp.h"
 #include "qgsproject.h"
@@ -47,7 +47,8 @@ QgsWFSSourceSelect::QgsWFSSourceSelect(QWidget* parent, QgisInterface* iface): Q
   connect(treeWidget, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)), this, SLOT(changeCRSFilter()));
   populateConnectionList();
 
-  mProjectionSelector = new QgsLayerProjectionSelector(this);
+  mProjectionSelector = new QgsGenericProjectionSelector(this);
+  mProjectionSelector->setMessage();
 }
 
 QgsWFSSourceSelect::~QgsWFSSourceSelect()
@@ -58,14 +59,16 @@ QgsWFSSourceSelect::~QgsWFSSourceSelect()
 void QgsWFSSourceSelect::populateConnectionList()
 {
   QSettings settings;
-  QStringList keys = settings.subkeyList("/Qgis/connections-wfs");
+  settings.beginGroup("/Qgis/connections-wfs");
+  QStringList keys = settings.childGroups();
   QStringList::Iterator it = keys.begin();
   cmbConnections->clear();
   while (it != keys.end())
   {
-    cmbConnections->insertItem(*it);
+    cmbConnections->addItem(*it);
     ++it;
   }
+  settings.endGroup();
 
   if (keys.begin() != keys.end())
   {
@@ -135,11 +138,7 @@ int QgsWFSSourceSelect::getCapabilities(const QString& uri, QgsWFSSourceSelect::
 
 int QgsWFSSourceSelect::getCapabilitiesGET(QString uri, std::list<QString>& typenames, std::list< std::list<QString> >& crs, std::list<QString>& titles, std::list<QString>& abstracts)
 {
-  if(!(uri.contains("?"))) 
-    {
-      uri.append("?");
-    }
-  QString request = uri + "SERVICE=WFS&REQUEST=GetCapabilities&VERSION=1.1.1";
+  QString request = uri + "SERVICE=WFS&REQUEST=GetCapabilities&VERSION=1.0.0";
   
   QByteArray result;
   QgsHttpTransaction http(request);
@@ -260,7 +259,7 @@ void QgsWFSSourceSelect::deleteEntryOfServerList()
   if (result == QMessageBox::Ok)
   {
     settings.remove(key);
-    cmbConnections->removeItem(cmbConnections->currentItem());
+    cmbConnections->removeItem(cmbConnections->currentIndex());
   }
 }
 
@@ -277,6 +276,16 @@ void QgsWFSSourceSelect::connectToServer()
   std::list< std::list<QString> > crsList;
   std::list<QString> titles;
   std::list<QString> abstracts;
+
+  //modify mUri to add '?' or '&' at the end if it is not already there
+  if ( !(mUri.contains("?")) ) 
+    {
+      mUri.append("?");
+    }
+  else if ((mUri.right(1) != "?") && (mUri.right(1) != "&"))
+    {
+      mUri.append("&");
+    }
 
   if(getCapabilities(mUri, QgsWFSSourceSelect::GET, typenames, crsList, titles, abstracts) != 0)
     {
@@ -346,7 +355,7 @@ void QgsWFSSourceSelect::addLayer()
   QString crsString;
   if(mProjectionSelector)
     {
-      long epsgNr = mProjectionSelector->getCurrentEpsg();
+      long epsgNr = mProjectionSelector->getSelectedEpsg();
       if(epsgNr != 0)
 	{
 	  crsString = "&SRSNAME=EPSG:"+QString::number(epsgNr);
@@ -364,7 +373,7 @@ void QgsWFSSourceSelect::changeCRS()
 {
   if(mProjectionSelector->exec())
     {
-      QString crsString = "EPSG: " + QString::number(mProjectionSelector->getCurrentEpsg());
+      QString crsString = "EPSG: " + QString::number(mProjectionSelector->getSelectedEpsg());
       labelCoordRefSys->setText(crsString);
     }
 }

@@ -23,7 +23,7 @@
 #include "qgsmaplayer.h"
 #include "qgsmaptopixel.h"
 #include "qgsproject.h"
-#include "qgsmaprender.h"
+#include "qgsmaprenderer.h"
 #include "qgsrendercontext.h"
 #include "qgsscalecalculator.h"
 #include "qgsvectorlayer.h"
@@ -95,13 +95,13 @@ void QgsComposerMap::draw ( QPainter *painter, const QgsRect& extent, const QSiz
       return;
     }
 
-  QgsMapRender* canvasMapRender = mMapCanvas->mapRender();
+  QgsMapRenderer* canvasMapRender = mMapCanvas->mapRenderer();
   if(!canvasMapRender)
     {
       return;
     }
 
-  QgsMapRender theMapRender;
+  QgsMapRenderer theMapRender;
   theMapRender.setExtent(extent);
   theMapRender.setOutputSize(size, dpi);
   theMapRender.setLayerSet(canvasMapRender->layerSet());

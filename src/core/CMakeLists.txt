@@ -23,7 +23,7 @@ SET(QGIS_CORE_SRCS
   qgslogger.cpp
   qgsmaplayer.cpp
   qgsmaplayerregistry.cpp
-  qgsmaprender.cpp
+  qgsmaprenderer.cpp
   qgsmaptopixel.cpp
   qgsmessageoutput.cpp
   qgspoint.cpp
@@ -97,7 +97,7 @@ qgsdataprovider.h
 qgshttptransaction.h
 qgsmaplayer.h
 qgsmaplayerregistry.h
-qgsmaprender.h
+qgsmaprenderer.h
 qgsmessageoutput.h
 qgsproject.h
 qgsrunprocess.h
@@ -108,7 +108,8 @@ raster/qgsrasterlayer.h
 
 QT4_WRAP_CPP(QGIS_CORE_MOC_SRCS ${QGIS_CORE_MOC_HDRS})
 
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} 
+INCLUDE_DIRECTORIES(
+  ${CMAKE_CURRENT_SOURCE_DIR} 
   raster 
   renderer 
   symbology
@@ -221,7 +222,7 @@ qgsline.h
 qgslogger.h
 qgsmaplayer.h
 qgsmaplayerregistry.h
-qgsmaprender.h
+qgsmaprenderer.h
 qgsmaptopixel.h
 qgsmessageoutput.h
 qgspoint.h

@@ -77,6 +77,12 @@ QgsRasterLayer* QgisAppInterface::addRasterLayer(QString rasterLayerPath, QStrin
   return qgis->addRasterLayer(rasterLayerPath, baseName);
 }
 
+QgsRasterLayer* QgisAppInterface::addRasterLayer(const QString& url, const QString& baseName, const QString& providerKey, \
+						 const QStringList& layers, const QStringList& styles, const QString& format, const QString& crs)
+{
+  return qgis->addRasterLayer(url, baseName, providerKey, layers, styles, format, crs);
+}
+
 
 bool QgisAppInterface::addProject(QString theProjectName)
 {
@@ -135,9 +141,9 @@ QWidget * QgisAppInterface::getMainWindow()
   return qgis;
 }
 
-QToolBox* QgisAppInterface::getToolBox()
+void QgisAppInterface::addDockWidget ( Qt::DockWidgetArea area, QDockWidget * dockwidget )
 {
-  return NULL;
+  qgis->addDockWidget (  area, dockwidget );
 }
 
 void QgisAppInterface::refreshLegend(QgsMapLayer *l)

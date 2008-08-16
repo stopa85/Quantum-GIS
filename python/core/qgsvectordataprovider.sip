@@ -120,7 +120,7 @@ class QgsVectorDataProvider : QgsDataProvider
        * @param index the index of the attribute
        *
        * Default implementation walks all numeric attributes and caches minimal
-       * and maximal values. If provider has facilities to retreive minimal
+       * and maximal values. If provider has facilities to retrieve minimal
        * value directly, override this function.
        */
       virtual QVariant minValue(int index);
@@ -130,7 +130,7 @@ class QgsVectorDataProvider : QgsDataProvider
        * @param index the index of the attribute
        *
        * Default implementation walks all numeric attributes and caches minimal
-       * and maximal values. If provider has facilities to retreive maximal
+       * and maximal values. If provider has facilities to retrieve maximal
        * value directly, override this function.
        */
       virtual QVariant maxValue(int index);
@@ -148,7 +148,7 @@ class QgsVectorDataProvider : QgsDataProvider
        * Adds a list of features
        * @return true in case of success and false in case of failure
        */
-      virtual bool addFeatures(QList<QgsFeature> & flist);
+      virtual bool addFeatures(QList<QgsFeature> & flist /In,Out/);
 
       /** 
        * Deletes a feature

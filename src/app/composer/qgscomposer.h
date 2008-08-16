@@ -189,6 +189,8 @@ public slots:
     //! Sets state from DOM document
     void readXML( const QDomDocument& doc);
 
+    void setSelectionTool();
+
 
     
 
@@ -196,13 +198,15 @@ private:
     //! Set teh pixmap / icons on the toolbar buttons
     void setupTheme();
 
+#if 0
     /** \brief move up the content of the file
         \param file file
 	\param from starting position
 	\param shift shift in bytes 
     */
-    bool shiftFileContent ( QFile *file, Q_LONG start, int shift );
-    
+    bool shiftFileContent ( QFile *file, qint64 start, int shift );
+#endif //0    
+
     //! Set buttons up
     void setToolActionsOff (void);
 

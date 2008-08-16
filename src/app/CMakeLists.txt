@@ -114,6 +114,9 @@ SET (QGIS_APP_MOC_HDRS
   qgsludialog.h
   qgsmaplayerinterface.h
   qgsmaptoolidentify.h
+  qgsmaptoolsplitfeatures.h
+  qgsmaptoolvertexedit.h
+  qgsmeasuretool.h
   qgsmeasuredialog.h
   qgsnewhttpconnection.h
   qgsoptions.h
@@ -128,6 +131,7 @@ SET (QGIS_APP_MOC_HDRS
   qgssnappingdialog.h
   qgsuniquevaluedialog.h
   qgsvectorlayerproperties.h
+  qgsdbtablemodel.h
 
   composer/qgscomposer.h
   composer/qgscomposerlabelwidget.h

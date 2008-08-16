@@ -72,7 +72,7 @@ void QgsComposerScaleBarWidget::refreshMapComboBox()
   else
     {
       //the former entry is still present. Make it the current entry again
-      mMapComboBox->setCurrentText(saveCurrentComboText);
+      mMapComboBox->setCurrentIndex(mMapComboBox->findText(saveCurrentComboText));
     }
 }
 
@@ -144,7 +144,7 @@ void QgsComposerScaleBarWidget::setGuiElements()
       int itemId = mMapComboBox->findText(mapText);
       if(itemId > 0)
 	{
-	  mMapComboBox->setCurrentItem(itemId);
+	  mMapComboBox->setCurrentIndex(itemId);
 	}
     }
 

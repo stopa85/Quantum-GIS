@@ -138,6 +138,17 @@ QgsRect QgsRect::intersect(QgsRect * rect) const
   return intersection;
 }
 
+bool QgsRect::intersects(const QgsRect& rect) const
+{
+  double x1 = (xmin > rect.xmin ? xmin : rect.xmin);
+  double x2 = (xmax < rect.xmax ? xmax : rect.xmax);
+  if (x1 > x2) return FALSE;
+  double y1 = (ymin > rect.ymin ? ymin : rect.ymin);
+  double y2 = (ymax < rect.ymax ? ymax : rect.ymax);
+  if (y1 > y2) return FALSE;
+  return TRUE;
+}
+
 
 void QgsRect::combineExtentWith(QgsRect * rect)
 {
@@ -228,9 +239,9 @@ QString QgsRect::asPolygon() const
 //     xmin, ymin, xmin, ymax, xmax, ymax, xmax, ymin, xmin, ymin);
    QString rep;
 
-   QTextOStream foo( &rep );
+   QTextStream foo( &rep );
 
-   foo.precision(8);
+   foo.setRealNumberPrecision(8);
    foo.setRealNumberNotation(QTextStream::FixedNotation);
    // NOTE: a polygon isn't a polygon unless its closed. In the case of 
    //       a rectangle, that means 5 points (last == first)
