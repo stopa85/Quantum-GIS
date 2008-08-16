@@ -115,7 +115,11 @@ void QgsComposerMap::draw ( QPainter *painter, const QgsRect& extent, const QSiz
       theRenderContext->setRenderingStopped(false);
     }
 
-  theMapRender.render(painter);
+  //force composer map scale for scale dependent visibility
+  double bk_scale = theMapRender.scale();
+  theMapRender.setScale(scale());
+  theMapRender.render(painter);  
+  theMapRender.setScale(bk_scale);
     
   mMapCanvas->freeze(false);
 }
