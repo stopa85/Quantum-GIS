@@ -1274,6 +1274,18 @@ void QgsComposer::readXML(const QDomDocument& doc)
       mComposition->update();
     }
 
+  //composer pictures
+  QDomNodeList composerPictureList = composerElem.elementsByTagName("ComposerPicture");
+  for(int i = 0; i < composerPictureList.size(); ++i)
+    {
+      QDomElement currentPictureElem = composerPictureList.at(i).toElement();
+      QgsComposerPicture* newPicture = new QgsComposerPicture(mComposition);
+      newPicture->readXML(currentPictureElem, doc);
+      addComposerPicture(newPicture);
+      mComposition->addItem(newPicture);
+      mComposition->update();
+    }
+
   mView->setComposition(mComposition);
 }
 

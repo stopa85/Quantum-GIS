@@ -17,6 +17,8 @@
 /* $Id$ */
 
 #include "qgscomposerpicture.h"
+#include <QDomDocument>
+#include <QDomElement>
 #include <QFileInfo>
 #include <QImageReader>
 #include <QPainter>
@@ -189,10 +191,39 @@ QString QgsComposerPicture::pictureFile() const
 
 bool QgsComposerPicture::writeXML(QDomElement& elem, QDomDocument & doc)
 {
-  return false; //soon...
+  if(elem.isNull())
+    {
+      return false;
+    }
+  QDomElement composerPictureElem = doc.createElement("ComposerPicture");
+  composerPictureElem.setAttribute("file", mSourceFile.fileName());
+  composerPictureElem.setAttribute("rotation", QString::number(mRotation));
+  _writeXML(composerPictureElem, doc);
+  elem.appendChild(composerPictureElem);
+  return true;
 }
 
 bool QgsComposerPicture::readXML(const QDomElement& itemElem, const QDomDocument& doc)
 {
+  if(itemElem.isNull())
+    {
+      return false;
+    }
+
+  QDomNodeList composerItemList = itemElem.elementsByTagName("ComposerItem");
+  if(composerItemList.size() > 0)
+    {
+      _readXML(composerItemList.at(0).toElement(), doc);
+    }
+
+  mSvgCacheUpToDate = false;
+  mDefaultSvgSize = QSize(0, 0);
+  mCachedDpi = 0;
+  
+  QString fileName = itemElem.attribute("file");
+  setPictureFile(fileName);
+  
+  mRotation = itemElem.attribute("rotation").toDouble();
+
   return false; //soon...
 }
