@@ -126,6 +126,11 @@ void QgsComposerMap::draw ( QPainter *painter, const QgsRect& extent, const QSiz
 
 void QgsComposerMap::cache ( void )
 {
+  if(mPreviewMode == Rectangle)
+    {
+      return;
+    }
+
   int w = rect().width() * horizontalViewScaleFactor();
   int h = rect().height() * horizontalViewScaleFactor();
 
@@ -151,9 +156,6 @@ void QgsComposerMap::cache ( void )
   
   draw( &p, mExtent, QSize(w, h), mCachePixmap.logicalDpiX());
   p.end();
-  
-  mNumCachedLayers = mMapCanvas->layerCount();
-  mCachedMapExtent = mExtent;
   mCacheUpdated = true;
 }
 
@@ -176,21 +178,13 @@ void QgsComposerMap::paint ( QPainter* painter, const QStyleOptionGraphicsItem* 
   painter->setClipRect (thisPaintRect);
 
   double currentScaleFactorX = horizontalViewScaleFactor();
-
-  if( mComposition->plotStyle() == QgsComposition::Preview && mPreviewMode == Render /*&& screen resolution different than last time*/)
-    {
-      if(currentScaleFactorX != mLastScaleFactorX)
-	{
-	  mCacheUpdated = false;
-	}
-    }
     
   if ( mComposition->plotStyle() == QgsComposition::Preview && mPreviewMode != Rectangle) 
-    { // Draw from cache
-      if ( !mCacheUpdated || mMapCanvas->layerCount() != mNumCachedLayers || mCachedMapExtent != mExtent) 
-	{
-	  cache();
-	}
+    { 
+      //draw cached pixmap. This function does not call cache() any more because 
+      //Qt 4.4.0 and 4.4.1 have problems with recursive paintings
+      //QgsComposerMap::cache() and QgsComposerMap::update() need to be called by
+      //client functions
       
       // Scale so that the cache fills the map rectangle
       double scale = 1.0 * QGraphicsRectItem::rect().width() / mCachePixmap.width();
@@ -268,6 +262,8 @@ void QgsComposerMap::moveContent(double dx, double dy)
   mExtent.setYmin(mExtent.yMin() + yMoveMapCoord);
   mExtent.setYmax(mExtent.yMax() + yMoveMapCoord);
   emit extentChanged();
+  cache();
+  update();
 }
 
 void QgsComposerMap::setSceneRect(const QRectF& rectangle)
@@ -283,6 +279,8 @@ void QgsComposerMap::setSceneRect(const QRectF& rectangle)
   mExtent = QgsRect(mExtent.xMin(), mExtent.yMin(), mExtent.xMax(), mExtent.yMin() + newHeight);
   mCacheUpdated = false;
   emit extentChanged();
+  cache();
+  update();
 }
 
 void QgsComposerMap::setNewExtent(const QgsRect& extent)
@@ -319,6 +317,7 @@ void QgsComposerMap::setNewScale(double scaleDenominator)
   mExtent = newExtent;
   mCacheUpdated = false;
   emit extentChanged();
+  cache();
   update();
 }
 
@@ -389,7 +388,6 @@ bool QgsComposerMap::readXML(const QDomElement& itemElem, const QDomDocument& do
 
   mPreviewMode = Rectangle;
   
-#if 0 //leads to frequent crashes on Qt 4.4.0/4.4.1
   //previewMode
   QString previewMode = itemElem.attribute("previewMode");
   if(previewMode == "Cache")
@@ -404,7 +402,6 @@ bool QgsComposerMap::readXML(const QDomElement& itemElem, const QDomDocument& do
     {
       mPreviewMode = Rectangle;
     }
-#endif //0
 
   //extent
   QDomNodeList extentNodeList = itemElem.elementsByTagName("Extent");
@@ -430,6 +427,12 @@ bool QgsComposerMap::readXML(const QDomElement& itemElem, const QDomDocument& do
     {
       QDomElement composerItemElem = composerItemList.at(0).toElement();
       _readXML(composerItemElem, doc);
+    }
+  
+  if(mPreviewMode != Rectangle)
+    {
+      cache();
+      update();
     }
 
   return true;

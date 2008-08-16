@@ -111,6 +111,7 @@ void QgsComposerMapWidget::on_mPreviewModeComboBox_activated(int i)
       mUpdatePreviewButton->setEnabled(false);
     }
 
+  mComposerMap->cache();
   mComposerMap->update();
 }
 
@@ -291,6 +292,7 @@ void QgsComposerMapWidget::on_mUpdatePreviewButton_clicked()
   mUpdatePreviewButton->setEnabled(false); //prevent crashes because of many button clicks
 
   mComposerMap->setCacheUpdated(false);
+  mComposerMap->cache();
   mComposerMap->update();
 
   mUpdatePreviewButton->setEnabled(true);
