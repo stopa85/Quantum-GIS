@@ -24,6 +24,7 @@
 #include "qgscomposeritem.h"
 
 #include <iostream>
+#include <limits>
 #include "qgsrect.h" //just for debugging
 
 QgsComposerItem::QgsComposerItem(QgsComposition* composition): QGraphicsRectItem(0), mComposition(composition), mBoundingResizeRectangle(0), mFrame(true)
