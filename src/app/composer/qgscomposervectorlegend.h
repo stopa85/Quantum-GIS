@@ -31,7 +31,7 @@
  *                --  |  +-----+             |  __ 
  *  mSymbolHeight |   |  |     | Item Label  |  __| - mFont->pointSize()
  *                --  |  +-----+             |  --          
- *                    |                      |    | - mSymbolSpace (vertical space between symbo, boxes)
+ *                    |                      |    | - mSymbolSpace (vertical space between symbol, boxes)
  *                    |  +-----+             |  --
  *                    |  |     | Item Label  |
  *                    |  +-----+             |            
@@ -43,19 +43,20 @@
  *                   
  */ 
  
+
 #include "ui_qgscomposervectorlegendbase.h"
 #include "qgscomposeritem.h"
 
 #include <QGraphicsRectItem>
 #include <QPen>
-
 class QgsComposition;
 class QgsMapCanvas;
 class QDomNode;
 class QDomDocument;
 class QTreeWidgetItem;
 
-/** \class QgsComposerVectorLegend 
+/** \ingroup MapComposer
+ *  \class QgsComposerVectorLegend 
  *  \brief Object representing map window. 
  */
 // NOTE: QgsComposerVectorLegendBase must be first, otherwise does not compile

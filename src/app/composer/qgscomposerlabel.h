@@ -19,6 +19,9 @@
 
 #include "qgscomposeritem.h"
 
+/** \ingroup MapComposer
+ * A label that can be placed onto a map composition.
+ */
 class QgsComposerLabel: public QgsComposerItem
 {
  public:

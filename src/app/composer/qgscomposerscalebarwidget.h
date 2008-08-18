@@ -21,6 +21,9 @@
 
 class QgsComposerScaleBar;
 
+/** \ingroup MapComposer
+ * A widget to define the properties of a QgsComposerScaleBarItem.
+ */
 class QgsComposerScaleBarWidget: public QWidget, private Ui::QgsComposerScaleBarWidgetBase
 {
   Q_OBJECT

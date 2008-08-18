@@ -22,7 +22,9 @@
 
 class QStandardItem;
 
-/**A dialog to enter properties of composer legend items (currently only item text)*/
+/** \ingroup MapComposer
+ * A dialog to enter properties of composer legend items (currently only item text)
+ * */
 class QgsComposerLegendItemDialog: private Ui::QgsComposerLegendItemDialogBase, public QDialog
 {
  public:

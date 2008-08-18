@@ -27,7 +27,10 @@ class QDomElement;
 class QgsMapLayer;
 class QgsSymbol;
 
-/**A model that provides layers as root items. The classification items are children of the layer items*/
+/** \ingroup MapComposer
+ * A model that provides layers as root items. The classification items are 
+ * children of the layer items.
+ */
 class QgsLegendModel: public QStandardItemModel
 {
   Q_OBJECT

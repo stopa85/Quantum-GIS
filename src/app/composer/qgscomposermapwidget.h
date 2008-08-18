@@ -22,7 +22,9 @@
 
 class QgsComposerMap;
 
-/**Input widget for the configuration of QgsComposerMap*/
+/** \ingroup MapComposer
+ * Input widget for the configuration of QgsComposerMap
+ * */
 class QgsComposerMapWidget: public QWidget, private Ui::QgsComposerMapWidgetBase
 {
   Q_OBJECT

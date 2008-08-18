@@ -39,7 +39,9 @@ class QResizeEvent;
 class QFile;
 class QSizeGrip;
 
-/* The constructor creates empty composer, without compositions and mFirstTime set to true. 
+/** \ingroup MapComposer
+ * \brief A gui for composing a printable map.
+ * The constructor creates empty composer, without compositions and mFirstTime set to true. 
  * - if signal projectRead() is recieved all old compositions are deleted and
  *     - if the composition exists in project it is created from project settings (mFirstTime set to false)
  *     - if the composition does not exist in project 

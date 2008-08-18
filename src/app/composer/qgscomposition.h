@@ -26,7 +26,10 @@ class QgsMapCanvas;
 class QDomDocument;
 class QDomElement;
 
-/**Graphics scene for map printing. It manages the paper item which always is the item in the back (z-value 0)*/
+/** \ingroup MapComposer
+ * Graphics scene for map printing. It manages the paper item which always 
+ * is the item in the back (z-value 0).
+ * */
 class QgsComposition: public QGraphicsScene
 {
  public:

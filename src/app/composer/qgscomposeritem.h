@@ -26,6 +26,9 @@ class QDomElement;
 
 class QqsComposition;
 
+/** \ingroup MapComposer
+ * A item that forms part of a map composition.
+ */
 class QgsComposerItem: public QGraphicsRectItem
 {
 

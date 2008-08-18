@@ -31,7 +31,8 @@ class QDomNode;
 class QDomDocument;
 class QPainter;
 
-/** \class QgsComposerMap 
+/** \ingroup MapComposer
+ *  \class QgsComposerMap 
  *  \brief Object representing map window. 
  */
 // NOTE: QgsComposerMapBase must be first, otherwise does not compile

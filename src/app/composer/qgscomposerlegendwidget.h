@@ -23,6 +23,9 @@
 
 class QgsComposerLegend;
 
+/** \ingroup MapComposer
+ * A widget for setting properties relating to a composer legend.
+ */
 class QgsComposerLegendWidget: public QWidget, private Ui::QgsComposerLegendWidgetBase
 {
   Q_OBJECT

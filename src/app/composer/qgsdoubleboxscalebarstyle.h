@@ -19,7 +19,9 @@
 
 #include "qgsscalebarstyle.h"
 
-/**Double box with alternating colors*/
+/** \ingroup MapComposer
+  * Double box with alternating colors
+  */
 class QgsDoubleBoxScaleBarStyle: public QgsScaleBarStyle
 {
  public:

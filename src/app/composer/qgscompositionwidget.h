@@ -18,6 +18,9 @@
 
 class QgsComposition;
 
+/** \ingroup MapComposer
+ * Struct to hold map composer paper properties.
+ */
 struct QgsCompositionPaper
 {
   QgsCompositionPaper(QString name, double width, double height){mName = name; mWidth = width; mHeight = height;}
@@ -26,7 +29,9 @@ struct QgsCompositionPaper
   double mHeight;
 };
 
-/**Input widget for QgsComposition*/
+/** \ingroup MapComposer
+  * Input widget for QgsComposition
+  */
 class QgsCompositionWidget: public QWidget, private Ui::QgsCompositionWidgetBase
 {
   Q_OBJECT

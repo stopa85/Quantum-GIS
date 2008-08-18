@@ -22,7 +22,9 @@
 #include <QImage>
 #include <QObject>
 
-/**A composer class that displays svg files or raster format (jpg, png, ...)*/
+/** \ingroup MapComposer
+ * A composer class that displays svg files or raster format (jpg, png, ...)
+ * */
 class QgsComposerPicture: public QObject, public QgsComposerItem
 {
   Q_OBJECT

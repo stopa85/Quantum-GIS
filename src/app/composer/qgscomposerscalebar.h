@@ -22,6 +22,9 @@
 
 class QgsComposerMap;
 class QgsScaleBarStyle;
+/** \ingroup MapComposer
+ * A scale bar item that can be added to a map composition.
+ */
 
 class QgsComposerScaleBar: public QObject, public QgsComposerItem
 {

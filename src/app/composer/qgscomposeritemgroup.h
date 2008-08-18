@@ -21,6 +21,9 @@
 
 class QgsComposition;
 
+/** \ingroup MapComposer
+ * A container for grouping several QgsComposerItems
+ */
 class QgsComposerItemGroup: public QObject, public QgsComposerItem
 {
   Q_OBJECT

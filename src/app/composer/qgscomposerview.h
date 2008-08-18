@@ -30,8 +30,12 @@ class QgsComposerMap;
 class QgsComposerPicture;
 class QgsComposerScaleBar;
 
-/**Widget to display the composer items. Manages the composer tools and the mouse/key events. 
- Creates the composer items according to the current map tools and keeps track off the rubber band item*/
+/** \ingroup MapComposer
+ * Widget to display the composer items. Manages the composer tools and the
+ * mouse/key events. 
+ * Creates the composer items according to the current map tools and keeps track
+ * of the rubber band item.
+ */
 class QgsComposerView: public QGraphicsView
 {
     Q_OBJECT

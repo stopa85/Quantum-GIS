@@ -19,6 +19,9 @@
 
 #include "qgsscalebarstyle.h"
 
+/** \ingroup MapComposer
+ * A scale bar that draws segments using short ticks.
+ */
 class QgsTicksScaleBarStyle: public QgsScaleBarStyle
 {
   public:

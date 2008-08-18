@@ -23,7 +23,9 @@
 #include <QObject>
 
 class QgsSymbol;
-
+/** \ingroup MapComposer
+ * A legend that can be placed onto a map composition
+ */
 class QgsComposerLegend: public QObject, public QgsComposerItem
 {
   Q_OBJECT
