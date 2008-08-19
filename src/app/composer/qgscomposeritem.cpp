@@ -390,12 +390,30 @@ void QgsComposerItem::move(double dx, double dy)
 void QgsComposerItem::setSceneRect(const QRectF& rectangle)
 {
   //setRect in item coordinates
-  QRectF newRect(0, 0, rectangle.width(), rectangle.height());
+  double newWidth = rectangle.width();
+  double newHeight = rectangle.height();
+  double xTranslation = rectangle.x();
+  double yTranslation = rectangle.y();
+
+  //correction if width and/or height are negative
+  if( rectangle.width() < 0 )
+    {
+      newWidth = - rectangle.width();
+      xTranslation -= newWidth;
+    }
+
+  if(rectangle.height() < 0)
+    {
+      newHeight = - rectangle.height();
+      yTranslation -= newHeight;
+    }
+  
+  QRectF newRect(0, 0, newWidth, newHeight);
   QGraphicsRectItem::setRect(newRect);
 
   //set up transformation matrix for item coordinates
   QTransform t;
-  t.translate(rectangle.x(), rectangle.y());
+  t.translate(xTranslation, yTranslation);
   setTransform(t);
 }
 
