@@ -31,6 +31,12 @@ QgsComposerItem::QgsComposerItem(QgsComposition* composition): QGraphicsRectItem
 {
     setFlag(QGraphicsItem::ItemIsSelectable, true);
     setAcceptsHoverEvents(true);
+
+    //set default pen and brush
+    setBrush(QBrush(QColor(255, 255, 255, 255)));
+    QPen defaultPen(QColor(0, 0, 0));
+    defaultPen.setWidth(1);
+    setPen(defaultPen);
 }
 
 QgsComposerItem::QgsComposerItem(qreal x, qreal y, qreal width, qreal height, QgsComposition* composition): QGraphicsRectItem(0, 0, width, height, 0), mComposition(composition), mBoundingResizeRectangle(0), mFrame(true)
@@ -41,6 +47,12 @@ QgsComposerItem::QgsComposerItem(qreal x, qreal y, qreal width, qreal height, Qg
   QTransform t;
   t.translate(x, y);
   setTransform(t);
+
+  //set default pen and brush
+  setBrush(QBrush(QColor(255, 255, 255, 255)));
+  QPen defaultPen(QColor(0, 0, 0));
+  defaultPen.setWidth(1);
+  setPen(defaultPen);
 }
 
 QgsComposerItem::~QgsComposerItem()
@@ -85,6 +97,25 @@ bool QgsComposerItem::_writeXML(QDomElement& itemElem, QDomDocument& doc)
   composerItemElem.setAttribute("width", rect().width());
   composerItemElem.setAttribute("height", rect().height());
   composerItemElem.setAttribute("zValue", QString::number(zValue()));
+  composerItemElem.setAttribute("outlineWidth", QString::number(pen().widthF()));
+
+  //frame color
+  QDomElement frameColorElem = doc.createElement("FrameColor");
+  QColor frameColor = pen().color();
+  frameColorElem.setAttribute("red", QString::number(frameColor.red()));
+  frameColorElem.setAttribute("green", QString::number(frameColor.green()));
+  frameColorElem.setAttribute("blue", QString::number(frameColor.blue()));
+  frameColorElem.setAttribute("alpha", QString::number(frameColor.alpha()));
+  composerItemElem.appendChild(frameColorElem);
+
+  //background color
+  QDomElement bgColorElem = doc.createElement("BackgroundColor");
+  QColor bgColor = brush().color();
+  bgColorElem.setAttribute("red", QString::number(bgColor.red()));
+  bgColorElem.setAttribute("green", QString::number(bgColor.green()));
+  bgColorElem.setAttribute("blue", QString::number(bgColor.blue()));
+  bgColorElem.setAttribute("alpha", QString::number(bgColor.alpha()));
+  composerItemElem.appendChild(bgColorElem);
 
   itemElem.appendChild(composerItemElem);
 
@@ -125,6 +156,44 @@ bool QgsComposerItem::_readXML(const QDomElement& itemElem, const QDomDocument& 
 
   setSceneRect(QRectF(x, y, width, height));
   setZValue(itemElem.attribute("zValue").toDouble());
+
+  //pen
+  QDomNodeList frameColorList = itemElem.elementsByTagName("FrameColor");
+  if(frameColorList.size() > 0)
+    {
+      QDomElement frameColorElem = frameColorList.at(0).toElement();
+      bool redOk, greenOk, blueOk, alphaOk, widthOk;
+      int penRed, penGreen, penBlue, penAlpha, penWidth;
+      penWidth = itemElem.attribute("outlineWidth").toDouble(&widthOk);
+      penRed = frameColorElem.attribute("red").toDouble(&redOk);
+      penGreen = frameColorElem.attribute("green").toDouble(&greenOk);
+      penBlue = frameColorElem.attribute("blue").toDouble(&blueOk);
+      penAlpha = frameColorElem.attribute("alpha").toDouble(&alphaOk);
+      if(redOk && greenOk && blueOk && alphaOk && widthOk)
+	{
+	  QPen framePen(QColor(penRed, penGreen, penBlue, penAlpha));
+	  framePen.setWidth(penWidth);
+	  setPen(framePen);
+	}
+    }
+
+  //brush
+  QDomNodeList bgColorList = itemElem.elementsByTagName("BackgroundColor");
+  if(bgColorList.size() > 0)
+    {
+      QDomElement bgColorElem = bgColorList.at(0).toElement();
+      bool redOk, greenOk, blueOk, alphaOk;
+      int bgRed, bgGreen, bgBlue, bgAlpha;
+      bgRed = bgColorElem.attribute("red").toDouble(&redOk);
+      bgGreen = bgColorElem.attribute("green").toDouble(&greenOk);
+      bgBlue = bgColorElem.attribute("blue").toDouble(&blueOk);
+      bgAlpha = bgColorElem.attribute("alpha").toDouble(&alphaOk);
+      if(redOk && greenOk && blueOk && alphaOk)
+	{
+	  QColor brushColor(bgRed, bgGreen, bgBlue, bgAlpha);
+	  setBrush(QBrush(brushColor));
+	}
+    }
   return true;
 }
 
@@ -371,7 +440,7 @@ void QgsComposerItem::drawSelectionBoxes(QPainter* p)
 
 void QgsComposerItem::drawFrame(QPainter* p)
 {
-  if(mFrame)
+  if(mFrame && p)
     {
       p->setPen(pen());
       p->setBrush(Qt::NoBrush);
@@ -419,9 +488,13 @@ void QgsComposerItem::setSceneRect(const QRectF& rectangle)
 
 void QgsComposerItem::drawBackground(QPainter* p)
 {
-  p->setBrush(brush());
-  p->setRenderHint(QPainter::Antialiasing, true);
-  p->drawRect (QRectF( 0, 0, rect().width(), rect().height()));
+  if(p)
+    {
+      p->setBrush(brush());
+      p->setPen(Qt::NoPen);
+      p->setRenderHint(QPainter::Antialiasing, true);
+      p->drawRect (QRectF( 0, 0, rect().width(), rect().height()));
+    }
 }
 
 void QgsComposerItem::hoverMoveEvent ( QGraphicsSceneHoverEvent * event )

@@ -6,7 +6,7 @@
     <x>0</x>
     <y>0</y>
     <width>496</width>
-    <height>575</height>
+    <height>626</height>
    </rect>
   </property>
   <property name="sizePolicy" >
@@ -134,43 +134,6 @@
          <widget class="QDoubleSpinBox" name="mIconLabelSpaceSpinBox" />
         </item>
         <item>
-         <spacer>
-          <property name="orientation" >
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" >
-           <size>
-            <width>141</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-       </layout>
-      </item>
-      <item row="4" column="0" >
-       <layout class="QHBoxLayout" >
-        <item>
-         <widget class="QCheckBox" name="mBoxCheckBox" >
-          <property name="text" >
-           <string>Box</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <spacer>
-          <property name="orientation" >
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" >
-           <size>
-            <width>131</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item>
          <widget class="QLabel" name="mBoxSpaceLabel" >
           <property name="text" >
            <string>Box space:</string>
@@ -186,9 +149,9 @@
     </widget>
    </item>
    <item row="1" column="0" >
-    <widget class="QGroupBox" name="mItemsGroupBox" >
+    <widget class="QGroupBox" name="mLegendItemsGroupBox" >
      <property name="title" >
-      <string>Items</string>
+      <string>Legend items</string>
      </property>
      <layout class="QGridLayout" >
       <item row="0" column="0" >

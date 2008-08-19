@@ -18,11 +18,16 @@
 #include "qgscomposerlegendwidget.h"
 #include "qgscomposerlegend.h"
 #include "qgscomposerlegenditemdialog.h"
+#include "qgscomposeritemwidget.h"
 #include <QFontDialog>
 
 QgsComposerLegendWidget::QgsComposerLegendWidget(QgsComposerLegend* legend): mLegend(legend)
 {
   setupUi(this);
+
+  //add widget for item properties
+  QgsComposerItemWidget* itemPropertiesWidget = new QgsComposerItemWidget(this, legend);
+  gridLayout->addWidget(itemPropertiesWidget, 2, 0, 1, 1);
 
   if(legend)
     {
@@ -58,14 +63,6 @@ void QgsComposerLegendWidget::setGuiElements()
   mIconLabelSpaceSpinBox->setValue(mLegend->iconLabelSpace());
   mBoxSpaceSpinBox->setValue(mLegend->boxSpace());
 
-  if(mLegend->frame())
-    { 
-      mBoxCheckBox->setCheckState(Qt::Checked);
-    }
-  else
-    {
-      mBoxCheckBox->setCheckState(Qt::Unchecked);
-    }
   blockSignals(false);
 }
 
@@ -172,22 +169,6 @@ void QgsComposerLegendWidget::on_mItemFontButton_clicked()
 	  mLegend->adjustBoxSize();
 	  mLegend->update();
 	}
-    }
-}
-
-void QgsComposerLegendWidget::on_mBoxCheckBox_stateChanged(int state)
-{
-  if(mLegend)
-    {
-      if(state == Qt::Checked)
-	{
-	  mLegend->setFrame(true);
-	}
-      else
-	{
-	  mLegend->setFrame(false);
-	}
-      mLegend->update();
     }
 }
 

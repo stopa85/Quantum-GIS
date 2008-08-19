@@ -10,6 +10,7 @@ SET(QGIS_UIS
   qgscomposerlabelwidgetbase.ui
   qgscomposerlegenditemdialogbase.ui
   qgscomposerlegendwidgetbase.ui
+  qgscomposeritemwidgetbase.ui
   qgscomposermapwidgetbase.ui
   qgscomposerpicturewidgetbase.ui
   qgscomposerscalebarwidgetbase.ui

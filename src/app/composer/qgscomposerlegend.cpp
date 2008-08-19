@@ -68,6 +68,8 @@ QSizeF QgsComposerLegend::paintAndDetermineSize(QPainter* painter)
   QSizeF size;
   double maxXCoord = 0;
 
+  
+
   //go through model...
   QStandardItem* rootItem = mLegendModel.invisibleRootItem();
   if(!rootItem)
@@ -75,9 +77,12 @@ QSizeF QgsComposerLegend::paintAndDetermineSize(QPainter* painter)
       return size;
     }
 
+
   if(painter)
     {
       painter->save();
+      drawBackground(painter);
+      painter->setPen(QPen(QColor(0, 0, 0))); //draw all text black
     }
 
   int numLayerItems = rootItem->rowCount();
