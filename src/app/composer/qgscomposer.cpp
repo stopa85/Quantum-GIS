@@ -331,6 +331,8 @@ void QgsComposer::on_mActionPrint_activated(void)
       QgsComposition::PlotStyle savedPlotStyle = mComposition->plotStyle();
       mComposition->setPlotStyle(QgsComposition::Print);
 
+      QApplication::setOverrideCursor(Qt::BusyCursor);
+
 #if QT_VERSION < 0x040400
       QRectF paperRect(0, 0, mComposition->paperWidth(), mComposition->paperHeight());
       QRect pageRect = printer.pageRect();
@@ -342,6 +344,8 @@ void QgsComposer::on_mActionPrint_activated(void)
       mComposition->render(&p, paperRectPixel, paperRectMM);
 #endif   
       mComposition->setPlotStyle(savedPlotStyle);
+
+      QApplication::restoreOverrideCursor();
     }
 #if 0
   /* Uff!!! It is impossible to set a custom page size for QPrinter.
