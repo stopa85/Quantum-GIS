@@ -84,7 +84,7 @@ void QgsComposerScaleBarWidget::showEvent ( QShowEvent * event )
 
 void QgsComposerScaleBarWidget::on_mMapComboBox_activated(const QString& text)
 {
-  if(!mComposerScaleBar)
+  if(!mComposerScaleBar || text.isEmpty())
     {
       return;
     }
