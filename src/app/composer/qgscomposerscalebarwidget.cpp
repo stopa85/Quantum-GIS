@@ -15,6 +15,7 @@
  ***************************************************************************/
 
 #include "qgscomposerscalebarwidget.h"
+#include "qgscomposeritemwidget.h"
 #include "qgscomposermap.h"
 #include "qgscomposerscalebar.h"
 #include <QColorDialog>
@@ -24,6 +25,10 @@
 QgsComposerScaleBarWidget::QgsComposerScaleBarWidget(QgsComposerScaleBar* scaleBar): QWidget(), mComposerScaleBar(scaleBar)
 {
   setupUi(this);
+
+  //add widget for general composer item properties
+  QgsComposerItemWidget* itemPropertiesWidget = new QgsComposerItemWidget(this, scaleBar);
+  gridLayout->addWidget(itemPropertiesWidget, 14, 0, 1, 3);
 
   blockMemberSignals(true);
   mStyleComboBox->insertItem(0, tr("Single Box"));
@@ -148,16 +153,6 @@ void QgsComposerScaleBarWidget::setGuiElements()
 	}
     }
 
-  //frame
-  if(mComposerScaleBar->frame())
-    {
-      mBoxCheckBox->setCheckState(Qt::Checked);
-    }
-  else
-    {
-      mBoxCheckBox->setCheckState(Qt::Unchecked);
-    }
-
   //style...
   QString style = mComposerScaleBar->style();
   mStyleComboBox->setCurrentIndex(mStyleComboBox->findText(tr(style.toLocal8Bit().data())));
@@ -280,24 +275,6 @@ void QgsComposerScaleBarWidget::on_mMapUnitsPerBarUnitSpinBox_valueChanged(doubl
   mComposerScaleBar->update();
 }
 
-void QgsComposerScaleBarWidget::on_mBoxCheckBox_stateChanged(int state)
-{
-  if(!mComposerScaleBar)
-    {
-      return;
-    }
-
-  if(state == Qt::Checked)
-    {
-      mComposerScaleBar->setFrame(true);
-    }
-  else
-    {
-      mComposerScaleBar->setFrame(false);
-    }
-  mComposerScaleBar->update();
-}
-
 void QgsComposerScaleBarWidget::on_mStyleComboBox_currentIndexChanged(const QString& text)
 {
   if(!mComposerScaleBar)
@@ -344,5 +321,4 @@ void QgsComposerScaleBarWidget::blockMemberSignals(bool block)
   mLineWidthSpinBox->blockSignals(block);
   mLabelBarSpaceSpinBox->blockSignals(block);
   mBoxSizeSpinBox->blockSignals(block);
-  mBoxCheckBox->blockSignals(block);
 }

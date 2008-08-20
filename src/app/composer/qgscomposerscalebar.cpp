@@ -40,10 +40,13 @@ QgsComposerScaleBar::~QgsComposerScaleBar()
 
 void QgsComposerScaleBar::paint (QPainter* painter, const QStyleOptionGraphicsItem* itemStyle, QWidget* pWidget)
 {
-  if(!mStyle)
+  if(!mStyle || !painter)
     {
       return;
     }
+
+  drawBackground(painter);
+  painter->setPen(QPen(QColor(0, 0, 0))); //draw all text black
 
   //calculate half of first label width as labels are drawn centered
   QFontMetricsF fontMetrics(mFont);
