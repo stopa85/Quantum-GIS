@@ -166,7 +166,7 @@ void QgsComposerMap::paint ( QPainter* painter, const QStyleOptionGraphicsItem* 
       return;
     }
 
-  if(!mComposition)
+  if(!mComposition || !painter)
     {
       return;
     }
@@ -176,6 +176,9 @@ void QgsComposerMap::paint ( QPainter* painter, const QStyleOptionGraphicsItem* 
   QRectF thisPaintRect = QRectF( 0, 0, QGraphicsRectItem::rect().width(), QGraphicsRectItem::rect().height());
   painter->save();
   painter->setClipRect (thisPaintRect);
+
+  drawBackground(painter);
+
 
   double currentScaleFactorX = horizontalViewScaleFactor();
     

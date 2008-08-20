@@ -16,12 +16,18 @@
  ***************************************************************************/
 
 #include "qgscomposermapwidget.h"
+#include "qgscomposeritemwidget.h"
 #include "qgscomposermap.h"
 #include "qgsmapcanvas.h"
 
 QgsComposerMapWidget::QgsComposerMapWidget(QgsComposerMap* composerMap): QWidget(), mComposerMap(composerMap)
 {
   setupUi(this);
+
+  //add widget for general composer item properties
+  QgsComposerItemWidget* itemPropertiesWidget = new QgsComposerItemWidget(this, composerMap);
+  gridLayout->addWidget(itemPropertiesWidget, 9, 0, 1, 4);
+
   mWidthLineEdit->setValidator(new QDoubleValidator(0));
   mHeightLineEdit->setValidator(new QDoubleValidator(0));
   mScaleLineEdit->setValidator(new QDoubleValidator(0));
@@ -35,8 +41,6 @@ QgsComposerMapWidget::QgsComposerMapWidget(QgsComposerMap* composerMap): QWidget
   //MH: disabled because this option leads to frequent crashes with Qt 4.4.0 and 4.4.1
   //mPreviewModeComboBox->insertItem(1, tr("Render"));
   mPreviewModeComboBox->insertItem(2, tr("Rectangle"));
-
-  mFrameCheckBox->setCheckState(Qt::Checked);
 
   if(composerMap)
     {
@@ -112,32 +116,6 @@ void QgsComposerMapWidget::on_mPreviewModeComboBox_activated(int i)
     }
 
   mComposerMap->cache();
-  mComposerMap->update();
-}
-
-void QgsComposerMapWidget::on_mFrameCheckBox_stateChanged(int state)
-{
-  if(!mComposerMap)
-    {
-      return;
-    }
-
-  if(state == Qt::Checked)
-    {
-      if(mComposerMap->frame())
-	{
-	  return;
-	}
-      mComposerMap->setFrame(true);
-    }
-  else
-    {
-      if(!mComposerMap->frame())
-	{
-	  return;
-	}
-      mComposerMap->setFrame(false);
-    }
   mComposerMap->update();
 }
 
