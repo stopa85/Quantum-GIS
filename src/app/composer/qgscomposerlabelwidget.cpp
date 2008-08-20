@@ -17,24 +17,21 @@
 
 #include "qgscomposerlabelwidget.h"
 #include "qgscomposerlabel.h"
+#include "qgscomposeritemwidget.h"
 #include <QFontDialog>
 #include <QWidget>
 
 QgsComposerLabelWidget::QgsComposerLabelWidget(QgsComposerLabel* label): QWidget(), mComposerLabel(label)
 {
   setupUi(this);
+
+  //add widget for general composer item properties
+  QgsComposerItemWidget* itemPropertiesWidget = new QgsComposerItemWidget(this, label);
+  gridLayout->addWidget(itemPropertiesWidget, 5, 0, 1, 2);
+
   if(mComposerLabel)
     {
       mTextEdit->setText(mComposerLabel->text());
-      bool frame = mComposerLabel->frame();
-      if(frame)
-	{
-	  mBoxCheckBox->setCheckState(Qt::Checked);
-	}
-      else
-	{
-	  mBoxCheckBox->setCheckState(Qt::Unchecked);
-	}
       mMarginDoubleSpinBox->setValue(mComposerLabel->margin());
     }
 }
@@ -59,22 +56,6 @@ void QgsComposerLabelWidget::on_mFontButton_clicked()
 	  mComposerLabel->setFont(newFont);
 	  mComposerLabel->update();
 	}
-    }
-}
-
-void QgsComposerLabelWidget::on_mBoxCheckBox_stateChanged(int state)
-{
-  if(mComposerLabel)
-    {
-      if(state == Qt::Checked)
-	{
-	  mComposerLabel->setFrame(true);
-	}
-      else
-	{
-	  mComposerLabel->setFrame(false);
-	}
-      mComposerLabel->update();
     }
 }
 

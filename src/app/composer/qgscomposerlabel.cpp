@@ -43,6 +43,8 @@ void QgsComposerLabel::paint(QPainter* painter, const QStyleOptionGraphicsItem* 
       return;
     }
 
+  drawBackground(painter);
+  painter->setPen(QPen(QColor(0, 0, 0))); //draw all text black
   painter->setFont(mFont);
 
   QFontMetricsF fontSize(mFont);
