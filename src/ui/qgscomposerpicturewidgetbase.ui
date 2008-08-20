@@ -6,7 +6,7 @@
     <x>0</x>
     <y>0</y>
     <width>274</width>
-    <height>419</height>
+    <height>183</height>
    </rect>
   </property>
   <property name="sizePolicy" >
@@ -122,24 +122,14 @@
     </layout>
    </item>
    <item row="2" column="0" >
-    <widget class="QCheckBox" name="mFrameCheckBox" >
-     <property name="text" >
-      <string>Frame</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="0" >
     <spacer>
      <property name="orientation" >
       <enum>Qt::Vertical</enum>
      </property>
-     <property name="sizeType" >
-      <enum>QSizePolicy::Expanding</enum>
-     </property>
      <property name="sizeHint" >
       <size>
-       <width>22</width>
-       <height>73</height>
+       <width>20</width>
+       <height>21</height>
       </size>
      </property>
     </spacer>
@@ -150,7 +140,6 @@
  <tabstops>
   <tabstop>mPictureBrowseButton</tabstop>
   <tabstop>mPictureLineEdit</tabstop>
-  <tabstop>mFrameCheckBox</tabstop>
  </tabstops>
  <resources/>
  <connections/>

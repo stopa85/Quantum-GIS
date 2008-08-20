@@ -17,6 +17,7 @@
 
 #include "qgscomposerpicturewidget.h"
 #include "qgscomposerpicture.h"
+#include "qgscomposeritemwidget.h"
 #include <QDoubleValidator>
 #include <QFileDialog>
 #include <QFileInfo>
@@ -25,6 +26,10 @@
 QgsComposerPictureWidget::QgsComposerPictureWidget(QgsComposerPicture* picture): QWidget(), mPicture(picture)
 {
   setupUi(this);
+
+  //add widget for general composer item properties
+  QgsComposerItemWidget* itemPropertiesWidget = new QgsComposerItemWidget(this, picture);
+  gridLayout->addWidget(itemPropertiesWidget, 4, 0, 1, 1);
 
   mWidthLineEdit->setValidator(new QDoubleValidator(this));
   mHeightLineEdit->setValidator(new QDoubleValidator(this));
@@ -146,7 +151,6 @@ void QgsComposerPictureWidget::setGuiElementValues()
       mWidthLineEdit->blockSignals(true);
       mHeightLineEdit->blockSignals(true);
       mRotationSpinBox->blockSignals(true);
-      mFrameCheckBox->blockSignals(true);
       mPictureLineEdit->blockSignals(true);
   
       mPictureLineEdit->setText(mPicture->pictureFile());
@@ -154,19 +158,10 @@ void QgsComposerPictureWidget::setGuiElementValues()
       mWidthLineEdit->setText(QString::number(pictureRect.width()));
       mHeightLineEdit->setText(QString::number(pictureRect.height()));
       mRotationSpinBox->setValue(mPicture->rotation());
-      if(mPicture->frame())
-	{
-	  mFrameCheckBox->setCheckState(Qt::Checked);
-	}
-      else
-	{
-	  mFrameCheckBox->setCheckState(Qt::Unchecked);
-	}
       
       mWidthLineEdit->blockSignals(false);
       mHeightLineEdit->blockSignals(false);
       mRotationSpinBox->blockSignals(false);
-      mFrameCheckBox->blockSignals(false);
       mPictureLineEdit->blockSignals(false);
     }
 }

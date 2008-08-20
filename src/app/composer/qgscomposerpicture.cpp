@@ -63,6 +63,7 @@ void QgsComposerPicture::paint (QPainter* painter, const QStyleOptionGraphicsIte
 
   painter->save();
   painter->rotate(mRotation);
+  drawBackground(painter); 
 
   if(mMode != UNKNOWN)
     {
