@@ -65,7 +65,7 @@ void QgsMapToolAddFeature::canvasReleaseEvent(QMouseEvent * e)
       return;
     }
   
-  QgsVectorDataProvider* provider = vlayer->getDataProvider();
+  QgsVectorDataProvider* provider = vlayer->dataProvider();
   
   if(!(provider->capabilities() & QgsVectorDataProvider::AddFeatures))
     {
@@ -104,7 +104,7 @@ void QgsMapToolAddFeature::canvasReleaseEvent(QMouseEvent * e)
         try
         {
           savePoint = toLayerCoords(vlayer, idPoint);
-          QgsDebugMsg("savePoint = " + savePoint.stringRep());
+          QgsDebugMsg("savePoint = " + savePoint.toString());
         }
         catch(QgsCsException &cse)
         {

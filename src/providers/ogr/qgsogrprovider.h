@@ -58,7 +58,7 @@ class QgsOgrProvider : public QgsVectorDataProvider
 
     
     
-    virtual QgsSpatialRefSys getSRS();
+    virtual QgsCoordinateReferenceSystem getCRS();
    
     
     /**
@@ -184,7 +184,7 @@ class QgsOgrProvider : public QgsVectorDataProvider
 
     /** Returns the minimum value of an attribute
      *  @param index the index of the attribute */
-    QVariant minValue(int index);
+    QVariant minimumValue(int index);
 
     /** Returns the maximum value of an attribute
      *  @param index the index of the attribute */

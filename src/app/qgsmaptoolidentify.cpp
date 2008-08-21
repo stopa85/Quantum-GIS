@@ -28,7 +28,7 @@
 #include "qgsmaptoolidentify.h"
 #include "qgsrasterlayer.h"
 #include "qgsrubberband.h"
-#include "qgsspatialrefsys.h"
+#include "qgscoordinatereferencesystem.h"
 #include "qgsvectordataprovider.h"
 #include "qgsvectorlayer.h"
 
@@ -159,7 +159,7 @@ void QgsMapToolIdentify::identifyRasterLayer(QgsRasterLayer* layer, const QgsPoi
     mResults->addAttribute(it.key(), it.value());
   }
 
-  mResults->addAttribute( tr("(clicked coordinate)"), point.stringRep() );
+  mResults->addAttribute( tr("(clicked coordinate)"), point.toString() );
 
   mResults->showAllAttributes();
   mResults->show();
@@ -220,7 +220,7 @@ void QgsMapToolIdentify::identifyRasterWmsLayer(QgsRasterLayer* layer, const Qgs
 
   QgsMessageViewer* viewer = new QgsMessageViewer();
   viewer->setWindowTitle( layer->name() );
-  viewer->setMessageAsPlainText( QString(tr("WMS identify result for %1\n%2")).arg(point.stringRep()).arg(text) );
+  viewer->setMessageAsPlainText( QString(tr("WMS identify result for %1\n%2")).arg(point.toString()).arg(text) );
 
   viewer->showMessage(); // deletes itself on close
 }
@@ -239,8 +239,8 @@ void QgsMapToolIdentify::identifyVectorLayer(QgsVectorLayer* layer, const QgsPoi
   double searchRadius = mCanvas->extent().width() * (identifyValue/100.0);
 
   QgsRect r;
-  r.setXmin(point.x() - searchRadius);
-  r.setXmax(point.x() + searchRadius);
+  r.setXMinimum(point.x() - searchRadius);
+  r.setXMaximum(point.x() + searchRadius);
   r.setYmin(point.y() - searchRadius);
   r.setYmax(point.y() + searchRadius);
 
@@ -250,14 +250,14 @@ void QgsMapToolIdentify::identifyVectorLayer(QgsVectorLayer* layer, const QgsPoi
   //QgsFeature feat;
   QgsAttributeAction& actions = *layer->actions();
   QString fieldIndex = layer->displayField();
-  QgsVectorDataProvider* dataProvider = layer->getDataProvider();
+  QgsVectorDataProvider* dataProvider = layer->dataProvider();
   const QgsFieldMap& fields = dataProvider->fields();
 
   // init distance/area calculator
   QgsDistanceArea calc;
   calc.setProjectionsEnabled(mCanvas->projectionsEnabled()); // project?
   calc.setEllipsoid(ellipsoid);
-  calc.setSourceSRS(layer->srs().srsid());
+  calc.setSourceCRS(layer->srs().srsid());
 
   // display features falling within the search radius
   if(!mResults)
@@ -391,8 +391,8 @@ void QgsMapToolIdentify::identifyVectorLayer(QgsVectorLayer* layer, const QgsPoi
   double searchRadius = mCanvas->extent().width() * (identifyValue/100.0);
 
   QgsRect r;
-  r.setXmin(point.x() - searchRadius);
-  r.setXmax(point.x() + searchRadius);
+  r.setXMinimum(point.x() - searchRadius);
+  r.setXMaximum(point.x() + searchRadius);
   r.setYmin(point.y() - searchRadius);
   r.setYmax(point.y() + searchRadius);
 
@@ -402,7 +402,7 @@ void QgsMapToolIdentify::identifyVectorLayer(QgsVectorLayer* layer, const QgsPoi
   QgsFeature feat;
   QgsAttributeAction& actions = *layer->actions();
   QString fieldIndex = layer->displayField();
-  QgsVectorDataProvider* dataProvider = layer->getDataProvider();
+  QgsVectorDataProvider* dataProvider = layer->dataProvider();
   QgsAttributeList allAttributes = dataProvider->allAttributesList();
   const QgsFieldMap& fields = dataProvider->fields();
 
@@ -412,7 +412,7 @@ void QgsMapToolIdentify::identifyVectorLayer(QgsVectorLayer* layer, const QgsPoi
   QgsDistanceArea calc;
   calc.setProjectionsEnabled(mCanvas->projectionsEnabled()); // project?
   calc.setEllipsoid(ellipsoid);
-  calc.setSourceSRS(layer->srs().srsid());
+  calc.setSourceCRS(layer->srs().srsid());
 
   if ( !layer->isEditable() )
   {
@@ -440,7 +440,7 @@ void QgsMapToolIdentify::identifyVectorLayer(QgsVectorLayer* layer, const QgsPoi
     int lastFeatureId = 0;
 
     QTreeWidgetItem *click = mResults->addNode(tr("(clicked coordinate)"));
-    click->setText(1, point.stringRep());
+    click->setText(1, point.toString());
 
     while (dataProvider->getNextFeature(feat))
     {

@@ -25,7 +25,7 @@
 
 #include "qgscoordinatetransform.h"
 #include "qgsrect.h"
-#include "qgsspatialrefsys.h"
+#include "qgscoordinatereferencesystem.h"
 
 #include "qgshttptransaction.h"
 
@@ -93,7 +93,7 @@ QgsWmsProvider::QgsWmsProvider(QString const & uri)
 //  getServerCapabilities();
 
   //httpuri = "http://www.ga.gov.au/bin/getmap.pl?dataset=national&Service=WMS&Version=1.1.0&Request=GetMap&"
-  //      "BBox=130,-40,160,-10&SRS=EPSG:4326&Width=400&Height=400&Layers=railways&Format=image/png";
+  //      "BBox=130,-40,160,-10&CRS=EPSG:4326&Width=400&Height=400&Layers=railways&Format=image/png";
 
   //httpuri = "http://www.ga.gov.au/bin/getmap.pl?dataset=national&";
         
@@ -102,7 +102,7 @@ QgsWmsProvider::QgsWmsProvider(QString const & uri)
   uri = "http://www.ga.gov.au/bin/mapserv40?"
         "map=/public/http/www/docs/map/national/national.map&"
         "map_logo_status=off&map_coast_status=off&Service=WMS&Version=1.1.0&"
-        "Request=GetMap&BBox=130,-40,160,-10&SRS=EPSG:4326&Width=800&"
+        "Request=GetMap&BBox=130,-40,160,-10&CRS=EPSG:4326&Width=800&"
         "Height=800&Layers=railways&Format=image/png";
 */
   
@@ -304,7 +304,7 @@ QImage* QgsWmsProvider::draw(QgsRect  const & viewExtent, int pixelWidth, int pi
       int epsgNr = imageCrs.section(":", 1, 1).toInt(&conversionOk);
       if(conversionOk)
 	{
-	  QgsSpatialRefSys theSrs;
+	  QgsCoordinateReferenceSystem theSrs;
 	  theSrs.createFromEpsg(epsgNr);
 	  if(theSrs.geographicFlag())
 	    {
@@ -383,7 +383,7 @@ QImage* QgsWmsProvider::draw(QgsRect  const & viewExtent, int pixelWidth, int pi
   url += "&";
   url += "BBOX=" + bbox;
   url += "&";
-  url += "SRS=" + imageCrs;
+  url += "CRS=" + imageCrs;
   url += "&";
   url += "WIDTH=" + width;
   url += "&";
@@ -412,7 +412,7 @@ QImage* QgsWmsProvider::draw(QgsRect  const & viewExtent, int pixelWidth, int pi
   mGetFeatureInfoUrlBase += "&";
   mGetFeatureInfoUrlBase += "BBOX=" + bbox;
   mGetFeatureInfoUrlBase += "&";
-  mGetFeatureInfoUrlBase += "SRS=" + imageCrs;
+  mGetFeatureInfoUrlBase += "CRS=" + imageCrs;
   mGetFeatureInfoUrlBase += "&";
   mGetFeatureInfoUrlBase += "WIDTH=" + width;
   mGetFeatureInfoUrlBase += "&";
@@ -472,7 +472,7 @@ QImage* QgsWmsProvider::draw(QgsRect  const & viewExtent, int pixelWidth, int pi
     mErrorCaption = tr("WMS Service Exception");
 
     // set mError with the following:
-    parseServiceExceptionReportDOM(imagesource);
+    parseServiceExceptionReportDom(imagesource);
 
     mError += "\n" + tr("Tried URL: ") + url;
 
@@ -585,15 +585,15 @@ bool QgsWmsProvider::retrieveServerCapabilities(bool forceRefresh)
     }
 */
 
-    QgsDebugMsg("Converting to DOM.");
+    QgsDebugMsg("Converting to Dom.");
 
     bool domOK;
-    domOK = parseCapabilitiesDOM(httpcapabilitiesresponse, mCapabilities);
+    domOK = parseCapabilitiesDom(httpcapabilitiesresponse, mCapabilities);
 
     if (!domOK)
     {
-      // We had an DOM exception - 
-      // mErrorCaption and mError are pre-filled by parseCapabilitiesDOM
+      // We had an Dom exception - 
+      // mErrorCaption and mError are pre-filled by parseCapabilitiesDom
 
       mError += "\n" + tr("Tried URL: ") + url;
 
@@ -649,7 +649,7 @@ QByteArray QgsWmsProvider::retrieveUrl(QString url)
     mErrorCaption = tr("WMS Service Exception");
 
     // set mError with the following:
-    parseServiceExceptionReportDOM(httpResponse);
+    parseServiceExceptionReportDom(httpResponse);
 
     mError += "\n" + tr("Tried URL: ") + url;
 
@@ -693,15 +693,15 @@ bool QgsWmsProvider::downloadCapabilitiesURI(QString const & uri)
     return FALSE;
   }
 
-  QgsDebugMsg("Converting to DOM.");
+  QgsDebugMsg("Converting to Dom.");
 
   bool domOK;
-  domOK = parseCapabilitiesDOM(httpcapabilitiesresponse, capabilities);
+  domOK = parseCapabilitiesDom(httpcapabilitiesresponse, capabilities);
 
   if (!domOK)
   {
-    // We had an DOM exception - 
-    // mErrorCaption and mError are pre-filled by parseCapabilitiesDOM
+    // We had an Dom exception - 
+    // mErrorCaption and mError are pre-filled by parseCapabilitiesDom
 
     mError += "\n" + tr("Tried URL: ") + uri;
 
@@ -717,7 +717,7 @@ bool QgsWmsProvider::downloadCapabilitiesURI(QString const & uri)
 }
 #endif
 
-bool QgsWmsProvider::parseCapabilitiesDOM(QByteArray const & xml, QgsWmsCapabilitiesProperty& capabilitiesProperty)
+bool QgsWmsProvider::parseCapabilitiesDom(QByteArray const & xml, QgsWmsCapabilitiesProperty& capabilitiesProperty)
 {
   QgsDebugMsg("entering.");
 
@@ -737,7 +737,7 @@ bool QgsWmsProvider::parseCapabilitiesDOM(QByteArray const & xml, QgsWmsCapabili
   // have that limitation.
 
   QString responsestring(QString::fromAscii(xml.constData(), xml.size()));
-  QgsLogger::debug("QgsWmsProvider::parseCapabilitiesDOM, received the following data: "+responsestring);
+  QgsLogger::debug("QgsWmsProvider::parseCapabilitiesDom, received the following data: "+responsestring);
   
   //QFile file( "/tmp/qgis-wmsprovider-capabilities.xml" );
   //if ( file.open( QIODevice::WriteOnly ) ) 
@@ -747,15 +747,15 @@ bool QgsWmsProvider::parseCapabilitiesDOM(QByteArray const & xml, QgsWmsCapabili
   //}
 #endif
   
-  // Convert completed document into a DOM
+  // Convert completed document into a Dom
   QString errorMsg;
   int errorLine;
   int errorColumn;
-  bool contentSuccess = capabilitiesDOM.setContent(xml, false, &errorMsg, &errorLine, &errorColumn);
+  bool contentSuccess = capabilitiesDom.setContent(xml, false, &errorMsg, &errorLine, &errorColumn);
 
   if (!contentSuccess)
   {
-    mErrorCaption = tr("DOM Exception");
+    mErrorCaption = tr("Dom Exception");
     mError = QString(tr("Could not get WMS capabilities: %1 at line %2 column %3")
                 .arg(errorMsg)
                 .arg(errorLine)
@@ -763,12 +763,12 @@ bool QgsWmsProvider::parseCapabilitiesDOM(QByteArray const & xml, QgsWmsCapabili
 
     mError += "\n" + tr("This is probably due to an incorrect WMS Server URL.");
 
-  QgsLogger::debug("DOM Exception: "+mError);
+  QgsLogger::debug("Dom Exception: "+mError);
 
     return FALSE;
   }
 
-  QDomElement docElem = capabilitiesDOM.documentElement();
+  QDomElement docElem = capabilitiesDom.documentElement();
 
   // Assert that the DTD is what we expected (i.e. a WMS Capabilities document)
   QgsDebugMsg("testing tagName " + docElem.tagName() );
@@ -781,7 +781,7 @@ bool QgsWmsProvider::parseCapabilitiesDOM(QByteArray const & xml, QgsWmsCapabili
       )
      )
   {
-    mErrorCaption = tr("DOM Exception");
+    mErrorCaption = tr("Dom Exception");
     mError = QString(tr("Could not get WMS capabilities in the "
                         "expected format (DTD): no %1 or %2 found")
                 .arg("WMS_Capabilities")
@@ -790,7 +790,7 @@ bool QgsWmsProvider::parseCapabilitiesDOM(QByteArray const & xml, QgsWmsCapabili
 
     mError += "\n" + tr("This is probably due to an incorrect WMS Server URL.");
 
-  QgsLogger::debug("DOM Exception: "+mError);
+  QgsLogger::debug("Dom Exception: "+mError);
 
     return FALSE;
   }
@@ -1324,9 +1324,9 @@ void QgsWmsProvider::parseLayer(QDomElement const & e, QgsWmsLayerProperty& laye
           {
             layerProperty.crs.push_back(e1.text());
           }
-          else if (e1.tagName() == "SRS")        // legacy from earlier versions of WMS
+          else if (e1.tagName() == "CRS")        // legacy from earlier versions of WMS
           {
-            // SRS can contain several definitions separated by whitespace
+            // CRS can contain several definitions separated by whitespace
             // though this was deprecated in WMS 1.1.1
             QStringList srsList = e1.text().split(QRegExp("\\s+"));
 
@@ -1377,7 +1377,7 @@ void QgsWmsProvider::parseLayer(QDomElement const & e, QgsWmsLayerProperty& laye
                                    e1.attribute("maxx").toDouble(),
                                    e1.attribute("maxy").toDouble()
                                  );
-              bbox.crs = e1.attribute("SRS");
+              bbox.crs = e1.attribute("CRS");
               layerProperty.boundingBox.push_back ( bbox );
           }
           else if (e1.tagName() == "Dimension")
@@ -1463,7 +1463,7 @@ void QgsWmsProvider::parseLayer(QDomElement const & e, QgsWmsLayerProperty& laye
 
     QgsDebugMsg("extent for " 
              + layerProperty.name  + " is "
-             + extentForLayer[ layerProperty.name ].stringRep(3)  + "." );
+             + extentForLayer[ layerProperty.name ].toString(3)  + "." );
 
     // Insert into the local class' registry
     layersSupported.push_back(layerProperty);
@@ -1479,7 +1479,7 @@ void QgsWmsProvider::parseLayer(QDomElement const & e, QgsWmsLayerProperty& laye
 }
 
 
-bool QgsWmsProvider::parseServiceExceptionReportDOM(QByteArray const & xml)
+bool QgsWmsProvider::parseServiceExceptionReportDom(QByteArray const & xml)
 {
   QgsDebugMsg("entering.");
 
@@ -1489,27 +1489,27 @@ bool QgsWmsProvider::parseServiceExceptionReportDOM(QByteArray const & xml)
   QgsDebugMsg("received the following data: "+responsestring);
 #endif
 
-  // Convert completed document into a DOM
+  // Convert completed document into a Dom
   QString errorMsg;
   int errorLine;
   int errorColumn;
-  bool contentSuccess = serviceExceptionReportDOM.setContent(xml, false, &errorMsg, &errorLine, &errorColumn);
+  bool contentSuccess = serviceExceptionReportDom.setContent(xml, false, &errorMsg, &errorLine, &errorColumn);
 
   if (!contentSuccess)
   {
-    mErrorCaption = tr("DOM Exception");
+    mErrorCaption = tr("Dom Exception");
     mError = QString(tr("Could not get WMS Service Exception at %1: %2 at line %3 column %4")
                 .arg(baseUrl)
                 .arg(errorMsg)
                 .arg(errorLine)
                 .arg(errorColumn) );
 
-  QgsLogger::debug("DOM Exception: "+mError);
+  QgsLogger::debug("Dom Exception: "+mError);
 
     return FALSE;
   }
 
-  QDomElement docElem = serviceExceptionReportDOM.documentElement();
+  QDomElement docElem = serviceExceptionReportDom.documentElement();
 
   // TODO: Assert the docElem.tagName() is "ServiceExceptionReport"
 
@@ -1555,9 +1555,9 @@ void QgsWmsProvider::parseServiceException(QDomElement const & e)
   {
     mError = tr("Request contains a CRS not offered by the server for one or more of the Layers in the request.");
   }
-  else if (seCode == "InvalidSRS")  // legacy WMS < 1.3.0
+  else if (seCode == "InvalidCRS")  // legacy WMS < 1.3.0
   {
-    mError = tr("Request contains a SRS not offered by the server for one or more of the Layers in the request.");
+    mError = tr("Request contains a CRS not offered by the server for one or more of the Layers in the request.");
   }
   else if (seCode == "LayerNotDefined")
   {
@@ -1687,8 +1687,8 @@ bool QgsWmsProvider::calculateExtent()
   // box to the user's selected CRS
   if (!mCoordinateTransform)
   {
-    QgsSpatialRefSys qgisSrsSource;
-    QgsSpatialRefSys qgisSrsDest;
+    QgsCoordinateReferenceSystem qgisSrsSource;
+    QgsCoordinateReferenceSystem qgisSrsDest;
 
     qgisSrsSource.createFromOgcWmsCrs(DEFAULT_LATLON_CRS);
     qgisSrsDest  .createFromOgcWmsCrs(imageCrs);
@@ -1734,12 +1734,12 @@ bool QgsWmsProvider::calculateExtent()
 
     firstLayer = false;
   
-  QgsDebugMsg("combined extent is '"  + layerExtent.stringRep()
+  QgsDebugMsg("combined extent is '"  + layerExtent.toString()
 	      + "' after '"  + (*it) + "'." );
 
   }
 
-  QgsDebugMsg("exiting with '"  + layerExtent.stringRep() + "'.");
+  QgsDebugMsg("exiting with '"  + layerExtent.toString() + "'.");
 
   return TRUE;
 
@@ -2017,7 +2017,7 @@ QString QgsWmsProvider::getMetadata()
     myMetadataQString += tr("WGS 84 Bounding Box");
     myMetadataQString += "</td>";
     myMetadataQString += "<td bgcolor=\"gray\">";
-    myMetadataQString += extentForLayer[ layerName ].stringRep().toLocal8Bit().data();
+    myMetadataQString += extentForLayer[ layerName ].toString().toLocal8Bit().data();
     myMetadataQString += "</td></tr>";
 
     // Layer Coordinate Reference Systems
@@ -2153,10 +2153,10 @@ QString QgsWmsProvider::identifyAsText(const QgsPoint& point)
 }
 
 
-QgsSpatialRefSys QgsWmsProvider::getSRS()
+QgsCoordinateReferenceSystem QgsWmsProvider::getCRS()
 {
   // TODO: implement
-  return QgsSpatialRefSys();
+  return QgsCoordinateReferenceSystem();
 }
 
 

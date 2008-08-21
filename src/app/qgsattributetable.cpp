@@ -471,7 +471,7 @@ bool QgsAttributeTable::commitChanges(QgsVectorLayer* layer)
   {
     //convert strings of deleted attributes to ids
 
-    QgsVectorDataProvider* provider = layer->getDataProvider();
+    QgsVectorDataProvider* provider = layer->dataProvider();
 
     if(provider)
     {
@@ -556,7 +556,7 @@ bool QgsAttributeTable::rollBack(QgsVectorLayer* layer)
 
 void QgsAttributeTable::fillTable(QgsVectorLayer* layer)
 {
-  QgsVectorDataProvider* provider=layer->getDataProvider();
+  QgsVectorDataProvider* provider=layer->dataProvider();
   if(provider)
   {
     QgsFeature fet;

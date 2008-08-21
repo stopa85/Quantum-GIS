@@ -20,7 +20,7 @@
 #include "qgsfield.h"
 #include "qgsgeometry.h"
 #include "qgshttptransaction.h"
-#include "qgsspatialrefsys.h"
+#include "qgscoordinatereferencesystem.h"
 #include "qgswfsdata.h"
 #include "qgswfsprovider.h"
 #include "qgslogger.h"
@@ -37,7 +37,7 @@ static const QString WFS_NAMESPACE = "http://www.opengis.net/wfs";
 static const QString GML_NAMESPACE = "http://www.opengis.net/gml";
 
 QgsWFSProvider::QgsWFSProvider(const QString& uri)
-  : QgsVectorDataProvider(uri), mUseIntersect(false), mSelectedFeatures(0), mSourceSRS(0), mFeatureCount(0), mValid(true)
+  : QgsVectorDataProvider(uri), mUseIntersect(false), mSelectedFeatures(0), mSourceCRS(0), mFeatureCount(0), mValid(true)
 {
   if(getFeature(uri) == 0)
     {
@@ -138,9 +138,9 @@ void QgsWFSProvider::reset()
     }
 }
 
-QgsSpatialRefSys QgsWFSProvider::getSRS()
+QgsCoordinateReferenceSystem QgsWFSProvider::getCRS()
 {
-  return mSourceSRS;
+  return mSourceCRS;
 }
 
 QgsRect QgsWFSProvider::extent()
@@ -264,7 +264,7 @@ int QgsWFSProvider::getFeatureGET(const QString& uri, const QString& geometryAtt
       return 3;
     }
 
-  setSRSFromGML2(featureCollectionElement);  
+  setCRSFromGML2(featureCollectionElement);  
 
   if(getFeaturesFromGML2(featureCollectionElement, geometryAttribute) != 0)
   {
@@ -282,7 +282,7 @@ int QgsWFSProvider::getFeatureGET(const QString& uri, const QString& geometryAtt
       thematicAttributes.insert(it->name());
     }
   
-  QgsWFSData dataReader(uri, &mExtent, &mSourceSRS, &dataFeatures, geometryAttribute, thematicAttributes, &mWKBType);
+  QgsWFSData dataReader(uri, &mExtent, &mSourceCRS, &dataFeatures, geometryAttribute, thematicAttributes, &mWKBType);
   QObject::connect(dataReader.http(), SIGNAL(dataReadProgress(int, int)), this, SLOT(handleWFSProgressMessage(int, int)));
 
   //also connect to setStatus signal of qgisapp (if it exists)
@@ -313,7 +313,7 @@ int QgsWFSProvider::getFeatureGET(const QString& uri, const QString& geometryAtt
   qWarning("feature count after request is:");
   qWarning(QString::number(dataFeatures.size()).toLocal8Bit().data());
   qWarning("mExtent after request is:");
-  qWarning(mExtent.stringRep().toLocal8Bit().data());
+  qWarning(mExtent.toString().toLocal8Bit().data());
 
   mFeatureCount = 0;
 
@@ -365,7 +365,7 @@ int QgsWFSProvider::getFeatureFILE(const QString& uri, const QString& geometryAt
       return 3;
     }
 
-  setSRSFromGML2(featureCollectionElement);  
+  setCRSFromGML2(featureCollectionElement);  
 
   if(getFeaturesFromGML2(featureCollectionElement, geometryAttribute) != 0)
   {
@@ -635,10 +635,10 @@ int QgsWFSProvider::getExtentFromGML2(QgsRect* extent, const QDomElement& wfsCol
 	}
       
       std::list<QgsPoint>::const_iterator it = boundingPoints.begin();
-      extent->setXmin(it->x());
+      extent->setXMinimum(it->x());
       extent->setYmin(it->y());
       ++it;
-      extent->setXmax(it->x());
+      extent->setXMaximum(it->x());
       extent->setYmax(it->y());
       return 0;
     }
@@ -674,9 +674,9 @@ int QgsWFSProvider::getExtentFromGML2(QgsRect* extent, const QDomElement& wfsCol
 	{
 	  return 10;
 	}
-      extent->setXmin(x1);
+      extent->setXMinimum(x1);
       extent->setYmin(y1);
-      extent->setXmax(x2);
+      extent->setXMaximum(x2);
       extent->setYmax(y2);
       return 0;
     }
@@ -686,9 +686,9 @@ int QgsWFSProvider::getExtentFromGML2(QgsRect* extent, const QDomElement& wfsCol
     }
 }
 
-int QgsWFSProvider::setSRSFromGML2(const QDomElement& wfsCollectionElement)
+int QgsWFSProvider::setCRSFromGML2(const QDomElement& wfsCollectionElement)
 {
-  QgsDebugMsg("entering QgsWFSProvider::setSRSFromGML");
+  QgsDebugMsg("entering QgsWFSProvider::setCRSFromGML");
   //search <gml:boundedBy>
   QDomNodeList boundedByList = wfsCollectionElement.elementsByTagNameNS(GML_NAMESPACE, "boundedBy");
   if(boundedByList.size() < 1)
@@ -735,9 +735,9 @@ int QgsWFSProvider::setSRSFromGML2(const QDomElement& wfsCollectionElement)
 	}
     }
 
-  if(!mSourceSRS.createFromEpsg(epsgId))
+  if(!mSourceCRS.createFromEpsg(epsgId))
     {
-      QgsDebugMsg("Error, creation of QgsSpatialRefSys failed");
+      QgsDebugMsg("Error, creation of QgsCoordinateReferenceSystem failed");
       return 6;
     }
   return 0;

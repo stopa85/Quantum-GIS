@@ -176,7 +176,7 @@ void QgsRubberBand::setToGeometry(QgsGeometry* geom, QgsVectorLayer& layer)
       {
         mIsPolygon = true;
         double d = mMapCanvas->extent().width() * 0.005;
-        QgsPoint pt = mr->layerCoordsToOutputCoords((QgsMapLayer*)&layer, geom->asPoint());
+        QgsPoint pt = mr->layerToMapCoordinates((QgsMapLayer*)&layer, geom->asPoint());
         addPoint(QgsPoint(pt.x()-d,pt.y()-d));
         addPoint(QgsPoint(pt.x()+d,pt.y()-d));
         addPoint(QgsPoint(pt.x()+d,pt.y()+d));
@@ -193,10 +193,10 @@ void QgsRubberBand::setToGeometry(QgsGeometry* geom, QgsVectorLayer& layer)
         for(int i = 0; i < mpt.size(); ++i)
         {
           QgsPoint pt = mpt[i];
-          addPoint(mr->layerCoordsToOutputCoords((QgsMapLayer*)&layer, QgsPoint(pt.x()-d,pt.y()-d)));
-          addPoint(mr->layerCoordsToOutputCoords((QgsMapLayer*)&layer, QgsPoint(pt.x()+d,pt.y()-d)));
-          addPoint(mr->layerCoordsToOutputCoords((QgsMapLayer*)&layer, QgsPoint(pt.x()+d,pt.y()+d)));
-          addPoint(mr->layerCoordsToOutputCoords((QgsMapLayer*)&layer, QgsPoint(pt.x()-d,pt.y()+d)));
+          addPoint(mr->layerToMapCoordinates((QgsMapLayer*)&layer, QgsPoint(pt.x()-d,pt.y()-d)));
+          addPoint(mr->layerToMapCoordinates((QgsMapLayer*)&layer, QgsPoint(pt.x()+d,pt.y()-d)));
+          addPoint(mr->layerToMapCoordinates((QgsMapLayer*)&layer, QgsPoint(pt.x()+d,pt.y()+d)));
+          addPoint(mr->layerToMapCoordinates((QgsMapLayer*)&layer, QgsPoint(pt.x()-d,pt.y()+d)));
         }
       }
       break;
@@ -208,7 +208,7 @@ void QgsRubberBand::setToGeometry(QgsGeometry* geom, QgsVectorLayer& layer)
         QgsPolyline line = geom->asPolyline();
         for (int i = 0; i < line.count(); i++)
         {
-          addPoint(mr->layerCoordsToOutputCoords((QgsMapLayer*)&layer, line[i]));
+          addPoint(mr->layerToMapCoordinates((QgsMapLayer*)&layer, line[i]));
         }
       }
       break;
@@ -227,7 +227,7 @@ void QgsRubberBand::setToGeometry(QgsGeometry* geom, QgsVectorLayer& layer)
           QgsPolyline line = mline[i];
           for(int j = 0; j < line.size(); ++j)
           {
-            addPoint(mr->layerCoordsToOutputCoords((QgsMapLayer*)&layer, line[j]), false, i);
+            addPoint(mr->layerToMapCoordinates((QgsMapLayer*)&layer, line[j]), false, i);
           }
         }
       }
@@ -241,7 +241,7 @@ void QgsRubberBand::setToGeometry(QgsGeometry* geom, QgsVectorLayer& layer)
         QgsPolyline line = poly[0];
         for (int i = 0; i < line.count(); i++)
         {
-          addPoint(mr->layerCoordsToOutputCoords((QgsMapLayer*)&layer, line[i]));
+          addPoint(mr->layerToMapCoordinates((QgsMapLayer*)&layer, line[i]));
         }
       }
       break;
@@ -261,7 +261,7 @@ void QgsRubberBand::setToGeometry(QgsGeometry* geom, QgsVectorLayer& layer)
           QgsPolyline line = poly[0];
           for(int j = 0; j < line.count(); ++j)
           {
-            addPoint(mr->layerCoordsToOutputCoords((QgsMapLayer*)&layer, line[j]), false, i);
+            addPoint(mr->layerToMapCoordinates((QgsMapLayer*)&layer, line[j]), false, i);
           }
         }
       }
@@ -329,7 +329,7 @@ void QgsRubberBand::updateRect()
         r.combineExtentWith(it->x() + mTranslationOffsetX, it->y() + mTranslationOffsetY);
         //QgsDebugMsg("Combining extent with: " + QString::number(it->x()) + "//" + QString::number(it->y()));
       }
-      //QgsDebugMsg("r: " + r.stringRep());
+      //QgsDebugMsg("r: " + r.toString());
     }
     setRect(r);
   }

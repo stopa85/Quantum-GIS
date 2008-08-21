@@ -47,14 +47,14 @@ class QgsComposerPicture: public QObject, public QgsComposerItem
 
   double rotation() const {return mRotation;}
 
-  /** stores state in DOM node
-     * @param node is DOM node corresponding to 'Composer' tag
+  /** stores state in Dom node
+     * @param node is Dom node corresponding to 'Composer' tag
      * @param temp write template file
      */
     bool writeXML(QDomElement& elem, QDomDocument & doc);
 
-   /** sets state from DOM document
-     * @param itemElem is DOM node corresponding to item tag
+   /** sets state from Dom document
+     * @param itemElem is Dom node corresponding to item tag
      */
     bool readXML(const QDomElement& itemElem, const QDomDocument& doc); 
 

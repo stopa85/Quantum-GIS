@@ -35,7 +35,7 @@ class CORE_EXPORT QgsRenderContext
 
   QPainter* painter() {return mPainter;}
 
-  const QgsCoordinateTransform* coordTransform() const {return mCoordTransform;}
+  const QgsCoordinateTransform* coordinateTransform() const {return mCoordTransform;}
 
   const QgsRect& extent() const {return mExtent;}
 

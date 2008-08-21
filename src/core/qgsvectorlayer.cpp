@@ -66,7 +66,7 @@
 #include "qgsrect.h"
 #include "qgsrendercontext.h"
 #include "qgssinglesymbolrenderer.h"
-#include "qgsspatialrefsys.h"
+#include "qgscoordinatereferencesystem.h"
 #include "qgsvectordataprovider.h"
 
 #ifdef Q_WS_X11
@@ -277,14 +277,14 @@ void QgsVectorLayer::setDisplayField(QString fldName)
   }
 }
 
-void QgsVectorLayer::drawLabels(QgsRenderContext& renderContext)
+void QgsVectorLayer::drawLabels(QgsRenderContext& rendererContext)
 {
-  QPainter* thePainter = renderContext.painter();
+  QPainter* thePainter = rendererContext.painter();
   if(!thePainter)
     {
       return;
     }
-  drawLabels(thePainter, renderContext.extent(), &(renderContext.mapToPixel()), renderContext.coordTransform(), 1.0 / renderContext.rasterScaleFactor());
+  drawLabels(thePainter, rendererContext.extent(), &(rendererContext.mapToPixel()), rendererContext.coordinateTransform(), 1.0 / rendererContext.rasterScaleFactor());
 }
 
 // NOTE this is a temporary method added by Tim to prevent label clipping
@@ -719,7 +719,7 @@ std::cerr << i << ": " << ring->first[i]
   return ptr;
 }
 
-bool QgsVectorLayer::draw(QgsRenderContext& renderContext)
+bool QgsVectorLayer::draw(QgsRenderContext& rendererContext)
 {
   //set update threshold before each draw to make sure the current setting is picked up
   QSettings settings;
@@ -743,7 +743,7 @@ bool QgsVectorLayer::draw(QgsRenderContext& renderContext)
     /* Scale factor of the marker image*/
     /* We set this to the symbolScale, and if it is NOT changed, */
     /* we don't have to do another scaling here */
-    double markerScaleFactor = renderContext.rasterScaleFactor();
+    double markerScaleFactor = rendererContext.rasterScaleFactor();
     
     if(mEditable)
     {
@@ -757,14 +757,14 @@ bool QgsVectorLayer::draw(QgsRenderContext& renderContext)
   QgsFeature fet;
   
   QgsAttributeList attributes = mRenderer->classificationAttributes();
-  mDataProvider->select(attributes, renderContext.extent());  
+  mDataProvider->select(attributes, rendererContext.extent());  
 
   try
     {
       while (mDataProvider->getNextFeature(fet))
       {
 
-	if(renderContext.renderingStopped())
+	if(rendererContext.renderingStopped())
 	  {
 	    break;
 	  }
@@ -821,12 +821,12 @@ bool QgsVectorLayer::draw(QgsRenderContext& renderContext)
 
         //QgsDebugMsg(QString("markerScale before renderFeature(): %1").arg(markerScaleFactor));
 	      // markerScalerFactore reflects the wanted scaling of the marker
-        mRenderer->renderFeature(renderContext.painter(), fet, &marker, sel, renderContext.scaleFactor(), renderContext.rasterScaleFactor());
+        mRenderer->renderFeature(rendererContext.painter(), fet, &marker, sel, rendererContext.scaleFactor(), rendererContext.rasterScaleFactor());
         // markerScalerFactore now reflects the actual scaling of the marker that the render performed.
         //QgsDebugMsg(QString("markerScale after renderFeature(): %1").arg(markerScaleFactor));
 
-        //double scale = renderContext.scaleFactor() /  markerScaleFactor;
-        drawFeature(renderContext.painter() , fet, &(renderContext.mapToPixel()), renderContext.coordTransform(), &marker, renderContext.scaleFactor(), renderContext.rasterScaleFactor(), renderContext.drawEditingInformation());
+        //double scale = rendererContext.scaleFactor() /  markerScaleFactor;
+        drawFeature(rendererContext.painter() , fet, &(rendererContext.mapToPixel()), rendererContext.coordinateTransform(), &marker, rendererContext.scaleFactor(), rendererContext.rasterScaleFactor(), rendererContext.drawEditingInformation());
 
         ++featureCount;
       }
@@ -840,11 +840,11 @@ bool QgsVectorLayer::draw(QgsRenderContext& renderContext)
           bool sel = mSelectedFeatureIds.contains((*it).featureId());
           //QgsDebugMsg(QString("markerScale before renderFeature(): %1").arg(markerScaleFactor));
           // markerScalerFactore reflects the wanted scaling of the marker
-          mRenderer->renderFeature(renderContext.painter(), *it, &marker, sel, renderContext.scaleFactor(), renderContext.rasterScaleFactor());
+          mRenderer->renderFeature(rendererContext.painter(), *it, &marker, sel, rendererContext.scaleFactor(), rendererContext.rasterScaleFactor());
           // markerScalerFactore now reflects the actual scaling of the marker that the render performed.
           //QgsDebugMsg(QString("markerScale after renderFeature(): %1").arg(markerScaleFactor));
 
-          //double scale = renderContext.scaleFactor() / markerScaleFactor;
+          //double scale = rendererContext.scaleFactor() / markerScaleFactor;
     
           if (mChangedGeometries.contains((*it).featureId()))
           {
@@ -853,7 +853,7 @@ bool QgsVectorLayer::draw(QgsRenderContext& renderContext)
           
           // give a deep copy of the geometry to mCachedGeometry because it will be erased at each redraw
           mCachedGeometries.insert((*it).featureId(), QgsGeometry(*((*it).geometry())) );
-          drawFeature(renderContext.painter(), *it, &(renderContext.mapToPixel()), renderContext.coordTransform(), &marker, renderContext.scaleFactor(), renderContext.rasterScaleFactor(), renderContext.drawEditingInformation());
+          drawFeature(rendererContext.painter(), *it, &(rendererContext.mapToPixel()), rendererContext.coordinateTransform(), &marker, rendererContext.scaleFactor(), rendererContext.rasterScaleFactor(), rendererContext.drawEditingInformation());
         }
       }
 
@@ -982,12 +982,12 @@ void QgsVectorLayer::triggerRepaint()
   emit repaintRequested();
 }
 
-QgsVectorDataProvider* QgsVectorLayer::getDataProvider()
+QgsVectorDataProvider* QgsVectorLayer::dataProvider()
 {
   return mDataProvider;
 }
 
-const QgsVectorDataProvider* QgsVectorLayer::getDataProvider() const
+const QgsVectorDataProvider* QgsVectorLayer::dataProvider() const
 {
   return mDataProvider;
 }
@@ -1338,7 +1338,7 @@ int QgsVectorLayer::featuresInRectangle(const QgsRect& searchRect, QList<QgsFeat
     }
   
   QgsFeature f;
-  while(getDataProvider() && getDataProvider()->getNextFeature(f))
+  while(dataProvider() && dataProvider()->getNextFeature(f))
     {
       if(mChangedGeometries.contains(f.featureId()) || mDeletedFeatureIds.contains(f.featureId()))
 	{
@@ -1612,7 +1612,7 @@ int QgsVectorLayer::addRing(const QList<QgsPoint>& ring)
 
   if(boundingBoxFromPointList(ring, xMin, yMin, xMax, yMax) == 0)
     {
-      bBox.setXmin(xMin); bBox.setYmin(yMin); bBox.setXmax(xMax); bBox.setYmax(yMax);
+      bBox.setXMinimum(xMin); bBox.setYmin(yMin); bBox.setXMaximum(xMax); bBox.setYmax(yMax);
     }
   else
     {
@@ -1739,7 +1739,7 @@ int QgsVectorLayer::splitFeatures(const QList<QgsPoint>& splitLine, bool topolog
     {
       if(boundingBoxFromPointList(splitLine, xMin, yMin, xMax, yMax) == 0)
 	{
-	  bBox.setXmin(xMin); bBox.setYmin(yMin); bBox.setXmax(xMax); bBox.setYmax(yMax);
+	  bBox.setXMinimum(xMin); bBox.setYmin(yMin); bBox.setXMaximum(xMax); bBox.setYmax(yMax);
 	}
       else
 	{
@@ -1751,8 +1751,8 @@ int QgsVectorLayer::splitFeatures(const QList<QgsPoint>& splitLine, bool topolog
 	  //if the bbox is a line, try to make a square out of it
 	  if(bBox.width()==0.0 && bBox.height() > 0)
 	    {
-	      bBox.setXmin(bBox.xMin() - bBox.height()/2);
-	      bBox.setXmax(bBox.xMax() + bBox.height()/2);
+	      bBox.setXMinimum(bBox.xMin() - bBox.height()/2);
+	      bBox.setXMaximum(bBox.xMax() + bBox.height()/2);
 	    }
 	  else if(bBox.height()==0.0 && bBox.width()>0)
 	    {
@@ -1998,12 +1998,12 @@ QgsLabel * QgsVectorLayer::label()
   return mLabel;
 }
 
-void QgsVectorLayer::setLabelOn ( bool on )
+void QgsVectorLayer::enableLabels ( bool on )
 {
   mLabelOn = on;
 }
 
-bool QgsVectorLayer::labelOn ( void )
+bool QgsVectorLayer::hasLabelsEnabled ( void )
 {
   return mLabelOn;
 }
@@ -2140,14 +2140,14 @@ bool QgsVectorLayer::readXml( QDomNode & layer_node )
 
   // Test if labeling is on or off
   QDomElement element = labelnode.toElement();
-  int labelOn = element.text().toInt();
-  if (labelOn < 1)
+  int hasLabelsEnabled = element.text().toInt();
+  if (hasLabelsEnabled < 1)
   {
-    setLabelOn(false);
+    enableLabels(false);
   }
   else
   {
-    setLabelOn(true);
+    enableLabels(true);
   }
 
   QgsDebugMsg("Testing if qgsvectorlayer can call label readXML routine")
@@ -2197,11 +2197,11 @@ bool QgsVectorLayer::setDataProvider( QString const & provider )
       QgsRect mbr = mDataProvider->extent();
 
       // show the extent
-      QString s = mbr.stringRep();
+      QString s = mbr.toString();
       QgsDebugMsg("Extent of layer: " +  s);
       // store the extent
-      mLayerExtent.setXmax(mbr.xMax());
-      mLayerExtent.setXmin(mbr.xMin());
+      mLayerExtent.setXMaximum(mbr.xMax());
+      mLayerExtent.setXMinimum(mbr.xMin());
       mLayerExtent.setYmax(mbr.yMax());
       mLayerExtent.setYmin(mbr.yMin());
 
@@ -2307,7 +2307,7 @@ bool QgsVectorLayer::setDataProvider( QString const & provider )
   QDomElement label  = document.createElement( "label" );
   QDomText labelText = document.createTextNode( "" );
 
-  if ( labelOn() )
+  if ( hasLabelsEnabled() )
   {
     labelText.setData( "1" );
   }
@@ -2360,7 +2360,7 @@ bool QgsVectorLayer::setDataProvider( QString const & provider )
 
     myLabel->writeXML(labelXML);
 
-    QDomDocument labelDOM;
+    QDomDocument labelDom;
 
     std::string rawXML;
     std::string temp_str;
@@ -2380,7 +2380,7 @@ bool QgsVectorLayer::setDataProvider( QString const & provider )
 #endif
     const char * s = rawXML.c_str(); // debugger probe
     // Use the const char * form of the xml to make non-stl qt happy
-    if ( ! labelDOM.setContent( QString::fromUtf8(s), &errorMsg, &errorLine, &errorColumn ) )
+    if ( ! labelDom.setContent( QString::fromUtf8(s), &errorMsg, &errorLine, &errorColumn ) )
     {
       qDebug( ("XML import error at line %d column %d " + errorMsg).toLocal8Bit().data(), errorLine, errorColumn );
 
@@ -2390,15 +2390,15 @@ bool QgsVectorLayer::setDataProvider( QString const & provider )
     // lastChild() because the first two nodes are the <xml> and
     // <!DOCTYPE> nodes; the label node follows that, and is (hopefully)
     // the last node.
-    QDomNode labelDOMNode = document.importNode( labelDOM.lastChild(), true );
+    QDomNode labelDomNode = document.importNode( labelDom.lastChild(), true );
 
-    if ( ! labelDOMNode.isNull() )
+    if ( ! labelDomNode.isNull() )
     {
-      layer_node.appendChild( labelDOMNode );
+      layer_node.appendChild( labelDomNode );
     }
     else
     {
-      qDebug( "not able to import label DOM node" );
+      qDebug( "not able to import label Dom node" );
 
       // XXX return false?
     }
@@ -3146,8 +3146,8 @@ void QgsVectorLayer::setCoordinateSystem()
   // for this layer
   //
   
-  // get SRS directly from provider
-  *mSRS = mDataProvider->getSRS();
+  // get CRS directly from provider
+  *mCRS = mDataProvider->getCRS();
   
   /*  
   
@@ -3163,22 +3163,22 @@ void QgsVectorLayer::setCoordinateSystem()
       mySourceWKT=QString("");
     }
     QgsDebugMsg("QgsVectorLayer::setCoordinateSystem --- using wkt " + mySourceWKT);
-    mSRS->createFromWkt(mySourceWKT);
+    mCRS->createFromWkt(mySourceWKT);
   }
   else
   {
     QgsDebugMsg("QgsVectorLayer::setCoordinateSystem --- using srid " + QString::number(srid));
-    mSRS->createFromSrid(srid);
+    mCRS->createFromSrid(srid);
   }
   */
 
-  //QgsSpatialRefSys provides a mechanism for FORCE a srs to be valid
+  //QgsCoordinateReferenceSystem provides a mechanism for FORCE a srs to be valid
   //which is inolves falling back to system, project or user selected
   //defaults if the srs is not properly intialised.
   //we only nee to do that if the srs is not alreay valid
-  if (!mSRS->isValid())
+  if (!mCRS->isValid())
   {
-    mSRS->validate();
+    mCRS->validate();
   }
 
 }
@@ -3301,5 +3301,5 @@ QgsChangedAttributesMap& QgsVectorLayer::changedAttributes()
 void QgsVectorLayer::setModified(bool modified, bool onlyGeometry)
 {
   mModified = modified;
-  emit wasModified(onlyGeometry);
+  emit layerModified(onlyGeometry);
 }

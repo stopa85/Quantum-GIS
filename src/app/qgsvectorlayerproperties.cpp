@@ -77,7 +77,7 @@ QgsVectorLayerProperties::QgsVectorLayerProperties(QgsVectorLayer * lyr,
       this, SLOT(setLabelCheckBox()));
 
   // Create the Actions dialog tab
-  QgsVectorDataProvider *dp = dynamic_cast<QgsVectorDataProvider *>(layer->getDataProvider());
+  QgsVectorDataProvider *dp = dynamic_cast<QgsVectorDataProvider *>(layer->dataProvider());
   QVBoxLayout *actionLayout = new QVBoxLayout( actionOptionsFrame );
   actionLayout->setMargin(0);
   QgsFieldMap fields = dp->fields();
@@ -86,9 +86,9 @@ QgsVectorLayerProperties::QgsVectorLayerProperties(QgsVectorLayer * lyr,
   actionLayout->addWidget( actionDialog );
 
   reset();
-  if(layer->getDataProvider())//enable spatial index button group if supported by provider
+  if(layer->dataProvider())//enable spatial index button group if supported by provider
   {
-    int capabilities=layer->getDataProvider()->capabilities();
+    int capabilities=layer->dataProvider()->capabilities();
     if(!(capabilities&QgsVectorDataProvider::CreateSpatialIndex))
     {
       pbnIndex->setEnabled(false);
@@ -168,7 +168,7 @@ void QgsVectorLayerProperties::reset( void )
         "layers. To enter or modify the query, click on the Query Builder button"));
 
   //we are dealing with a pg layer here so that we can enable the sql box
-  QgsVectorDataProvider *dp = dynamic_cast<QgsVectorDataProvider *>(layer->getDataProvider());
+  QgsVectorDataProvider *dp = dynamic_cast<QgsVectorDataProvider *>(layer->dataProvider());
   //see if we are dealing with a pg layer here
   if(layer->providerType() == "postgres")
   {
@@ -249,7 +249,7 @@ void QgsVectorLayerProperties::reset( void )
       SLOT(alterLayerDialog(const QString &)));
 
   // reset fields in label dialog
-  layer->label()->setFields ( layer->getDataProvider()->fields() );
+  layer->label()->setFields ( layer->dataProvider()->fields() );
 
   //set the metadata contents
   QString myStyle = QgsApplication::reportStyleSheet(); 
@@ -258,7 +258,7 @@ void QgsVectorLayerProperties::reset( void )
   teMetadata->setHtml(getMetadata());
   actionDialog->init();
   labelDialog->init();
-  labelCheckBox->setChecked(layer->labelOn());
+  labelCheckBox->setChecked(layer->hasLabelsEnabled());
   //set the transparency slider
   sliderTransparency->setValue(255 - layer->getTransparency());
   //update the transparency percentage label
@@ -308,7 +308,7 @@ void QgsVectorLayerProperties::apply()
   actionDialog->apply();
 
   labelDialog->apply();
-  layer->setLabelOn(labelCheckBox->isChecked());
+  layer->enableLabels(labelCheckBox->isChecked());
   layer->setLayerName(displayName());
 
 
@@ -356,7 +356,7 @@ void QgsVectorLayerProperties::on_pbnQueryBuilder_clicked()
 
   // get the data provider
   QgsVectorDataProvider *dp =
-    dynamic_cast<QgsVectorDataProvider *>(layer->getDataProvider());
+    dynamic_cast<QgsVectorDataProvider *>(layer->dataProvider());
   // cast to postgres provider type
   QgsPostgresProvider * myPGProvider = (QgsPostgresProvider *) dp;
   // create the query builder object using the table name
@@ -385,7 +385,7 @@ void QgsVectorLayerProperties::on_pbnQueryBuilder_clicked()
 
 void QgsVectorLayerProperties::on_pbnIndex_clicked()
 {
-  QgsVectorDataProvider* pr=layer->getDataProvider();
+  QgsVectorDataProvider* pr=layer->dataProvider();
   if(pr)
   {
     setCursor(Qt::WaitCursor);
@@ -524,7 +524,7 @@ QString QgsVectorLayerProperties::getMetadata()
     myMetadata += tr("Project (Output) Spatial Reference System:");
     myMetadata += "</td></tr>";  
     myMetadata += "<tr><td>";
-    myMetadata += coordinateTransform->destSRS().proj4String().replace(QRegExp("\"")," \"");                       
+    myMetadata += coordinateTransform->destCRS().proj4String().replace(QRegExp("\"")," \"");                       
     myMetadata += "</td></tr>";
     */
 
@@ -569,7 +569,7 @@ QString QgsVectorLayerProperties::getMetadata()
   myMetadata += "</th>";
 
   //get info for each field by looping through them
-  QgsVectorDataProvider *myDataProvider = dynamic_cast<QgsVectorDataProvider *>(layer->getDataProvider());
+  QgsVectorDataProvider *myDataProvider = dynamic_cast<QgsVectorDataProvider *>(layer->dataProvider());
   const QgsFieldMap& myFields = myDataProvider->fields();
   for (QgsFieldMap::const_iterator it = myFields.begin(); it != myFields.end(); ++it)
   {
@@ -611,10 +611,10 @@ void QgsVectorLayerProperties::on_pbnChangeSpatialRefSys_clicked()
 {
   QgsGenericProjectionSelector * mySelector = new QgsGenericProjectionSelector(this);
   mySelector->setMessage();
-  mySelector->setSelectedSRSID(layer->srs().srsid());
+  mySelector->setSelectedCRSID(layer->srs().srsid());
   if(mySelector->exec())
   {
-    QgsSpatialRefSys srs(mySelector->getSelectedSRSID(), QgsSpatialRefSys::QGIS_SRSID);
+    QgsCoordinateReferenceSystem srs(mySelector->getSelectedCRSID(), QgsCoordinateReferenceSystem::QGIS_CRSID);
     layer->setSrs(srs);
   }
   else

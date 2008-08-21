@@ -77,14 +77,14 @@ class QgsComposerLegend: public QObject, public QgsComposerItem
   double symbolHeight() const {return mSymbolHeight;}
   void setSymbolHeight(double h){mSymbolHeight = h;}
 
-  /** stores state in DOM node
-     * @param elem is DOM element corresponding to 'Composer' tag
+  /** stores state in Dom node
+     * @param elem is Dom element corresponding to 'Composer' tag
      * @param temp write template file
      */
   bool writeXML(QDomElement& elem, QDomDocument & doc);
 
-  /** sets state from DOM document
-     * @param itemElem is DOM node corresponding to item tag
+  /** sets state from Dom document
+     * @param itemElem is Dom node corresponding to item tag
      */
   bool readXML(const QDomElement& itemElem, const QDomDocument& doc);
 

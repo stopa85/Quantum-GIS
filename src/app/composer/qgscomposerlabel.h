@@ -41,14 +41,14 @@ class QgsComposerLabel: public QgsComposerItem
   double margin(){return mMargin;}
   void setMargin(double m){mMargin = m;}
 
-  /** stores state in DOM node
-     * @param node is DOM node corresponding to 'Composer' tag
+  /** stores state in Dom node
+     * @param node is Dom node corresponding to 'Composer' tag
      * @param temp write template file
      */
   bool writeXML(QDomElement& elem, QDomDocument & doc);
 
-  /** sets state from DOM document
-     * @param node is DOM node corresponding to 'ComposerLabel' tag
+  /** sets state from Dom document
+     * @param node is Dom node corresponding to 'ComposerLabel' tag
      */
   bool readXML(const QDomElement& itemElem, const QDomDocument& doc);
  

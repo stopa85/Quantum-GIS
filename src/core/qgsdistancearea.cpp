@@ -24,7 +24,7 @@
 #include "qgis.h"
 #include "qgspoint.h"
 #include "qgscoordinatetransform.h"
-#include "qgsspatialrefsys.h"
+#include "qgscoordinatereferencesystem.h"
 #include "qgsgeometry.h"
 #include "qgsdistancearea.h"
 #include "qgsapplication.h"
@@ -59,18 +59,18 @@ void QgsDistanceArea::setProjectionsEnabled(bool flag)
   mProjectionsEnabled = flag;
 }
 
-void QgsDistanceArea::setSourceSRS(long srsid)
+void QgsDistanceArea::setSourceCRS(long srsid)
 {
-  QgsSpatialRefSys srcSRS;
-  srcSRS.createFromSrsId(srsid);
-  mCoordTransform->setSourceSRS(srcSRS);
+  QgsCoordinateReferenceSystem srcCRS;
+  srcCRS.createFromSrsId(srsid);
+  mCoordTransform->setSourceCRS(srcCRS);
 }
 
 void QgsDistanceArea::setSourceEPSG(long epsgId)
 {
-  QgsSpatialRefSys srcSRS;
-  srcSRS.createFromEpsg(epsgId);
-  mCoordTransform->setSourceSRS(srcSRS);
+  QgsCoordinateReferenceSystem srcCRS;
+  srcCRS.createFromEpsg(epsgId);
+  mCoordTransform->setSourceCRS(srcCRS);
 }
 
 
@@ -159,11 +159,11 @@ bool QgsDistanceArea::setEllipsoid(const QString& ellipsoid)
   QString proj4 = "+proj=longlat +ellps=";
   proj4 += ellipsoid;
   proj4 += " +no_defs";
-  QgsSpatialRefSys destSRS;
-  destSRS.createFromProj4(proj4);
+  QgsCoordinateReferenceSystem destCRS;
+  destCRS.createFromProj4(proj4);
   
-  // set transformation from project SRS to ellipsoid coordinates
-  mCoordTransform->setDestSRS(destSRS);
+  // set transformation from project CRS to ellipsoid coordinates
+  mCoordTransform->setDestCRS(destCRS);
 
   // precalculate some values for area calculations
   computeAreaInit();
@@ -621,12 +621,12 @@ double QgsDistanceArea::computePolygonFlatArea(const QList<QgsPoint>& points)
   // QgsDebugMsg("New area calc, nr of points: " + QString::number(size));
   for(i = 0; i < size; i++)
   {
-    // QgsDebugMsg("Area from point: " + (points[i]).stringRep(2));
+    // QgsDebugMsg("Area from point: " + (points[i]).toString(2));
     // Using '% size', so that we always end with the starting point
     // and thus close the polygon.
     area = area + points[i].x()*points[(i+1) % size].y() - points[(i+1) % size].x()*points[i].y();
   }
-  // QgsDebugMsg("Area from point: " + (points[i % size]).stringRep(2));
+  // QgsDebugMsg("Area from point: " + (points[i % size]).toString(2));
   area = area / 2.0;
   return fabs(area); // All areas are positive!
 }

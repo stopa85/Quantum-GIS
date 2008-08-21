@@ -28,7 +28,7 @@ email                : tim at linfiniti.com
 #include "qgsrasterviewport.h"
 #include "qgsrect.h"
 #include "qgsrendercontext.h"
-#include "qgsspatialrefsys.h"
+#include "qgscoordinatereferencesystem.h"
 
 #include "gdalwarper.h"
 #include "cpl_conv.h"
@@ -445,8 +445,8 @@ bool QgsRasterLayer::readFile( QString const & fileName )
   // QgsCoordinateTransform for this layer
   // NOTE: we must do this before getMetadata is called
 
-  QgsDebugMsg("Raster initial SRS");
-  mSRS->debugPrint();
+  QgsDebugMsg("Raster initial CRS");
+  mCRS->debugPrint();
 
   QString mySourceWKT = getProjectionWKT();
 
@@ -454,15 +454,15 @@ bool QgsRasterLayer::readFile( QString const & fileName )
   QgsDebugMsg("QgsRasterLayer::readFile --- using wkt\n" + mySourceWKT);
   QgsDebugMsg("--------------------------------------------------------------------------------------");
 
-  mSRS->createFromWkt(mySourceWKT);
+  mCRS->createFromWkt(mySourceWKT);
   //get the project projection, defaulting to this layer's projection
   //if none exists....
-  if (!mSRS->isValid())
+  if (!mCRS->isValid())
   {
-    mSRS->validate();
+    mCRS->validate();
   }
-  QgsDebugMsg("Raster determined to have the following SRS");
-  mSRS->debugPrint();
+  QgsDebugMsg("Raster determined to have the following CRS");
+  mCRS->debugPrint();
 
   //set up the coordinat transform - in the case of raster this is mainly used to convert
   //the inverese projection of the map extents of the canvas when zzooming in etc. so
@@ -480,10 +480,10 @@ bool QgsRasterLayer::readFile( QString const & fileName )
     GDALGetRasterXSize(mGdalDataset) * mGeoTransform[4] +
     GDALGetRasterYSize(mGdalDataset) * mGeoTransform[5];
 
-  mLayerExtent.setXmax(myXMax);
+  mLayerExtent.setXMaximum(myXMax);
   // The affine transform reduces to these values at the
   // top-left corner of the raster
-  mLayerExtent.setXmin(mGeoTransform[0]);
+  mLayerExtent.setXMinimum(mGeoTransform[0]);
   mLayerExtent.setYmax(mGeoTransform[3]);
   mLayerExtent.setYmin(myYMin);
 
@@ -603,21 +603,21 @@ bool QgsRasterLayer::readFile( QString const & fileName )
 QString QgsRasterLayer::getProjectionWKT() 
 { 
   QString myWKTString;
-  QgsSpatialRefSys mySRS;   
+  QgsCoordinateReferenceSystem myCRS;   
   myWKTString=QString (GDALGetProjectionRef(mGdalDataset));
-  mySRS.createFromWkt(myWKTString);
-  if (!mySRS.isValid())
+  myCRS.createFromWkt(myWKTString);
+  if (!myCRS.isValid())
   {
     //try to get the gcp srs from the raster layer if available
     myWKTString=QString(GDALGetGCPProjection(mGdalDataset));
 
 // What is the purpose of this piece of code?
 // Sideeffects from validate()?
-//    mySRS.createFromWkt(myWKTString);
-//    if (!mySRS.isValid())
+//    myCRS.createFromWkt(myWKTString);
+//    if (!myCRS.isValid())
 //    {
-//      // use force and make SRS valid!
-//      mySRS.validate();
+//      // use force and make CRS valid!
+//      myCRS.validate();
 //    }
 
   }
@@ -934,7 +934,7 @@ QPixmap QgsRasterLayer::getPaletteAsPixmap()
   }
 }
 
-bool QgsRasterLayer::draw(QgsRenderContext& renderContext)
+bool QgsRasterLayer::draw(QgsRenderContext& rendererContext)
 {
   QgsDebugMsg("QgsRasterLayer::draw(4 arguments): entered.");
 
@@ -949,9 +949,9 @@ bool QgsRasterLayer::draw(QgsRenderContext& renderContext)
     return FALSE;
   }    
 
-  const QgsMapToPixel& theQgsMapToPixel = renderContext.mapToPixel();
-  const QgsRect& theViewExtent = renderContext.extent();
-  QPainter* theQPainter = renderContext.painter();
+  const QgsMapToPixel& theQgsMapToPixel = rendererContext.mapToPixel();
+  const QgsRect& theViewExtent = rendererContext.extent();
+  QPainter* theQPainter = rendererContext.painter();
 
   if(!theQPainter)
     {
@@ -3488,7 +3488,7 @@ QString QgsRasterLayer::getMetadata()
   myMetadata += tr("Layer Spatial Reference System: ");
   myMetadata += "</p>\n";
   myMetadata += "<p>";
-  myMetadata += mSRS->proj4String();
+  myMetadata += mCRS->proj4String();
   myMetadata += "</p>\n";
 
   // output coordinate system
@@ -3498,7 +3498,7 @@ QString QgsRasterLayer::getMetadata()
       myMetadata += tr("Project Spatial Reference System: ");
       myMetadata += "</p>\n";
       myMetadata += "<p>";
-      myMetadata +=  mCoordinateTransform->destSRS().proj4String();
+      myMetadata +=  mCoordinateTransform->destCRS().proj4String();
       myMetadata += "</p>\n";
       */
 
@@ -4923,11 +4923,11 @@ void QgsRasterLayer::setDataProvider( QString const & provider,
           QgsRect mbr = mDataProvider->extent();
 
           // show the extent
-          QString s = mbr.stringRep();
+          QString s = mbr.toString();
           QgsDebugMsg("QgsRasterLayer::setDataProvider: Extent of layer: " + s);
           // store the extent
-          mLayerExtent.setXmax(mbr.xMax());
-          mLayerExtent.setXmin(mbr.xMin());
+          mLayerExtent.setXMaximum(mbr.xMax());
+          mLayerExtent.setXMinimum(mbr.xMin());
           mLayerExtent.setYmax(mbr.yMax());
           mLayerExtent.setYmin(mbr.yMin());
 
@@ -4937,9 +4937,9 @@ void QgsRasterLayer::setDataProvider( QString const & provider,
           // set up the raster drawing style
           drawingStyle = MULTI_BAND_COLOR;  //sensible default
 
-          // Setup source SRS
-          *mSRS = QgsSpatialRefSys();
-          mSRS->createFromOgcWmsCrs(crs);
+          // Setup source CRS
+          *mCRS = QgsCoordinateReferenceSystem();
+          mCRS->createFromOgcWmsCrs(crs);
         }
       }
       else
@@ -5009,12 +5009,12 @@ QString QgsRasterLayer::errorString()
 }
 
 
-QgsRasterDataProvider* QgsRasterLayer::getDataProvider()
+QgsRasterDataProvider* QgsRasterLayer::dataProvider()
 {
   return mDataProvider;
 }
 
-const QgsRasterDataProvider* QgsRasterLayer::getDataProvider() const
+const QgsRasterDataProvider* QgsRasterLayer::dataProvider() const
 {
   return mDataProvider;
 }

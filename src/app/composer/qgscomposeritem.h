@@ -77,8 +77,8 @@ public:
      corresponds to 1 scene size unit*/
     virtual void setSceneRect(const QRectF& rectangle);
 
-    /** stores state in DOM node
-     * @param node is DOM node corresponding to 'Composer' tag
+    /** stores state in Dom node
+     * @param node is Dom node corresponding to 'Composer' tag
      * @param temp write template file
      */
     virtual bool writeXML(QDomElement& elem, QDomDocument & doc) = 0;
@@ -86,8 +86,8 @@ public:
     /**Writes parameter that are not subclass specific in document. Usually called from writeXML methods of subclasses*/
     bool _writeXML(QDomElement& itemElem, QDomDocument& doc);
 
-    /** sets state from DOM document
-     * @param itemElem is DOM node corresponding to item tag
+    /** sets state from Dom document
+     * @param itemElem is Dom node corresponding to item tag
      */
     virtual bool readXML(const QDomElement& itemElem, const QDomDocument& doc) = 0;
 

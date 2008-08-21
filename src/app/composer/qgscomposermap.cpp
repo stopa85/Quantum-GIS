@@ -108,7 +108,7 @@ void QgsComposerMap::draw ( QPainter *painter, const QgsRect& extent, const QSiz
   theMapRender.setProjectionsEnabled(canvasMapRender->projectionsEnabled());
   theMapRender.setDestinationSrs(canvasMapRender->destinationSrs());
   
-  QgsRenderContext* theRenderContext = theMapRender.renderContext();
+  QgsRenderContext* theRenderContext = theMapRender.rendererContext();
   if(theRenderContext)
     {
       theRenderContext->setDrawEditingInformation(false);
@@ -260,8 +260,8 @@ void QgsComposerMap::moveContent(double dx, double dy)
   double xMoveMapCoord = mExtent.width() * xRatio;
   double yMoveMapCoord = -(mExtent.height() * yRatio);
 
-  mExtent.setXmin(mExtent.xMin() + xMoveMapCoord);
-  mExtent.setXmax(mExtent.xMax() + xMoveMapCoord);
+  mExtent.setXMinimum(mExtent.xMin() + xMoveMapCoord);
+  mExtent.setXMaximum(mExtent.xMax() + xMoveMapCoord);
   mExtent.setYmin(mExtent.yMin() + yMoveMapCoord);
   mExtent.setYmax(mExtent.yMax() + yMoveMapCoord);
   emit extentChanged();

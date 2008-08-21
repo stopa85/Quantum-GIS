@@ -60,13 +60,13 @@ QgsRasterLayerProperties::QgsRasterLayerProperties(QgsMapLayer *lyr, QWidget *pa
   mGrayActualMinimumMaximum = false;
   mRGBActualMinimumMaximum = false;
   
-  if (mRasterLayer->getDataProvider() == 0)
+  if (mRasterLayer->dataProvider() == 0)
   {
     // This is a GDAL-based layer
     mRasterLayerIsGdal = TRUE;
     mRasterLayerIsWms = FALSE;
   }
-  else if (mRasterLayer->getDataProvider()->name() == "wms")
+  else if (mRasterLayer->dataProvider()->name() == "wms")
   {
     // This is a WMS-based layer
     mRasterLayerIsWms = TRUE;
@@ -1705,10 +1705,10 @@ void QgsRasterLayerProperties::on_pbnChangeSpatialRefSys_clicked()
 {
 
   QgsGenericProjectionSelector * mySelector = new QgsGenericProjectionSelector(this);
-  mySelector->setSelectedSRSID(mRasterLayer->srs().srsid());
+  mySelector->setSelectedCRSID(mRasterLayer->srs().srsid());
   if(mySelector->exec())
   {
-    QgsSpatialRefSys srs(mySelector->getSelectedSRSID(), QgsSpatialRefSys::QGIS_SRSID);
+    QgsCoordinateReferenceSystem srs(mySelector->getSelectedCRSID(), QgsCoordinateReferenceSystem::QGIS_CRSID);
     mRasterLayer->setSrs(srs);
   }
   else

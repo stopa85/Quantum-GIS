@@ -39,10 +39,10 @@ QgsAttributeDialog::QgsAttributeDialog(QgsVectorLayer *vl, QgsFeature * thepFeat
     mLayer(vl)
 {
   setupUi(this);
-  if (mpFeature==NULL || vl->getDataProvider()==NULL )
+  if (mpFeature==NULL || vl->dataProvider()==NULL )
     return;
 
-  const QgsFieldMap &theFieldMap = vl->getDataProvider()->fields();
+  const QgsFieldMap &theFieldMap = vl->dataProvider()->fields();
 
   if (theFieldMap.isEmpty()) return;
 
@@ -168,7 +168,7 @@ void QgsAttributeDialog::accept()
       it != myAttributes.end(); 
       ++it)
   {
-    const QgsFieldMap &theFieldMap = mLayer->getDataProvider()->fields();
+    const QgsFieldMap &theFieldMap = mLayer->dataProvider()->fields();
 
     //Q_ASSERT(myIndex <= mpWidgets.size());
     QString myFieldName = theFieldMap[it.key()].name();

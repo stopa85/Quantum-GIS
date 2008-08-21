@@ -72,7 +72,7 @@ QgsLegendLayerFile::QgsLegendLayerFile(QTreeWidgetItem * theLegendItem, QString 
     // get notifications of changed selection - used to update attribute table
     connect(mLyr.layer(), SIGNAL(selectionChanged()), this, SLOT(selectionChanged()));
     // get notifications of modified layer - used to close table as it's out of sync
-    connect(mLyr.layer(), SIGNAL(wasModified(bool)), this, SLOT(closeTable(bool)));
+    connect(mLyr.layer(), SIGNAL(layerModified(bool)), this, SLOT(closeTable(bool)));
   }  
   connect(mLyr.layer(), SIGNAL(layerNameChanged()), this, SLOT(layerNameChanged()));
 }
@@ -422,7 +422,7 @@ void QgsLegendLayerFile::toggleEditing()
   if (!vlayer->isEditable())
   {
     vlayer->startEditing();
-    if(!(vlayer->getDataProvider()->capabilities() & QgsVectorDataProvider::AddFeatures))
+    if(!(vlayer->dataProvider()->capabilities() & QgsVectorDataProvider::AddFeatures))
     {
       QMessageBox::information(0,tr("Start editing failed"),
         tr("Provider cannot be opened for editing"));
@@ -521,7 +521,7 @@ void QgsLegendLayerFile::addToPopupMenu(QMenu& theMenu, QAction* toggleEditingAc
     theMenu.addAction(tr("&Open attribute table"), this, SLOT(table()));
     
     // editing
-    int cap = vlayer->getDataProvider()->capabilities();
+    int cap = vlayer->dataProvider()->capabilities();
     if ((cap & QgsVectorDataProvider::AddFeatures)
         ||(cap & QgsVectorDataProvider::DeleteFeatures))
     {

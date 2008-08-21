@@ -21,7 +21,7 @@
 #include <QDomElement>
 #include "qgis.h"
 #include "qgsrect.h"
-#include "qgsspatialrefsys.h"
+#include "qgscoordinatereferencesystem.h"
 #include "qgsvectordataprovider.h"
 #include <geos/version.h>
 #if GEOS_VERSION_MAJOR < 3 
@@ -82,7 +82,7 @@ class QgsWFSProvider: public QgsVectorDataProvider
   const QgsFieldMap & fields() const;
   void reset();
   
-  virtual QgsSpatialRefSys getSRS();
+  virtual QgsCoordinateReferenceSystem getCRS();
   
   /* Inherited from QgsDataProvider */
   
@@ -131,8 +131,8 @@ class QgsWFSProvider: public QgsVectorDataProvider
   std::vector<void*>::iterator mFeatureIterator;
   /**Geometry type of the features in this layer*/
   mutable QGis::WKBTYPE mWKBType;
-  /**Source SRS*/
-  QgsSpatialRefSys mSourceSRS;
+  /**Source CRS*/
+  QgsCoordinateReferenceSystem mSourceCRS;
   int mFeatureCount;
   /**Flag if provider is valid*/
   bool mValid;
@@ -180,8 +180,8 @@ class QgsWFSProvider: public QgsVectorDataProvider
      @param elem the <gml:coordinates> element
      @return 0 in case of success*/
   int readGML2Coordinates(std::list<QgsPoint>& coords, const QDomElement elem) const;
-  /**Tries to create a QgsSpatialRefSys object and assign it to mSourceSRS. Returns 0 in case of success*/
-  int setSRSFromGML2(const QDomElement& wfsCollectionElement);
+  /**Tries to create a QgsCoordinateReferenceSystem object and assign it to mSourceCRS. Returns 0 in case of success*/
+  int setCRSFromGML2(const QDomElement& wfsCollectionElement);
 };
 
 #endif

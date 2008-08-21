@@ -14,7 +14,7 @@
  ***************************************************************************/
 #include "qgswfsdata.h"
 #include "qgsrect.h"
-#include "qgsspatialrefsys.h"
+#include "qgscoordinatereferencesystem.h"
 #include <QBuffer>
 #include <QUrl>
 
@@ -24,7 +24,7 @@
 const char NS_SEPARATOR = '?';
 const QString GML_NAMESPACE = "http://www.opengis.net/gml";
 
-QgsWFSData::QgsWFSData(const QString& uri, QgsRect* extent, QgsSpatialRefSys* srs, std::list<QgsFeature*>* features, const QString& geometryAttribute, const std::set<QString>& thematicAttributes, QGis::WKBTYPE* wkbType): QObject(), mUri(uri), mExtent(extent), mSrs(srs), mFeatures(features), mGeometryAttribute(geometryAttribute), mThematicAttributes(thematicAttributes), mWkbType(wkbType), mFinished(false), mFeatureCount(0)
+QgsWFSData::QgsWFSData(const QString& uri, QgsRect* extent, QgsCoordinateReferenceSystem* srs, std::list<QgsFeature*>* features, const QString& geometryAttribute, const std::set<QString>& thematicAttributes, QGis::WKBTYPE* wkbType): QObject(), mUri(uri), mExtent(extent), mSrs(srs), mFeatures(features), mGeometryAttribute(geometryAttribute), mThematicAttributes(thematicAttributes), mWkbType(wkbType), mFinished(false), mFeatureCount(0)
 {
   //qWarning("Name of the geometry attribute is:");
   //qWarning(mGeometryAttribute.toLocal8Bit().data());

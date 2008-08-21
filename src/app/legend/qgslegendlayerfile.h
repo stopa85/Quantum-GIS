@@ -77,7 +77,7 @@ public:
     /**Connected to layer's selectionChanged() */
     void selectionChanged();
     
-    /**Connected to layer's wasModified() */
+    /**Connected to layer's layerModified() */
     void closeTable(bool onlyGeometryWasChanged);
     
     /**Save as shapefile*/

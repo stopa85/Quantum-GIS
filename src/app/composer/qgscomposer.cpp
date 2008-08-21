@@ -108,7 +108,7 @@ QgsComposer::QgsComposer( QgisApp *qgis): QMainWindow()
 #endif
  
   setMouseTracking(true);
-  mSplitter->setMouseTracking(true);
+  //mSplitter->setMouseTracking(true);
   mViewFrame->setMouseTracking(true);
 
   //create composer view
@@ -1036,7 +1036,7 @@ void QgsComposer::saveWindowState()
 {
   QSettings settings;
   settings.setValue("/Composer/geometry", saveGeometry());
-  settings.setValue("/Composer/splitterState", mSplitter->saveState());
+  //settings.setValue("/Composer/splitterState", mSplitter->saveState());
 }
 
 void QgsComposer::restoreWindowState()
@@ -1045,12 +1045,14 @@ void QgsComposer::restoreWindowState()
   restoreGeometry(settings.value("/Composer/geometry").toByteArray());
   QVariant splitterState = settings.value("/Composer/splitterState");
   if (splitterState != QVariant::QVariant())
-    mSplitter->restoreState(settings.value("/Composer/splitterState").toByteArray());
+  {
+    //mSplitter->restoreState(settings.value("/Composer/splitterState").toByteArray());
+  }
   else
   {
     QList<int> defaultSize;
     defaultSize << 300 << 100; // page display 300 pixels, details pane 100 pixels
-    mSplitter->setSizes(defaultSize);
+    //mSplitter->setSizes(defaultSize);
   }
 }
 

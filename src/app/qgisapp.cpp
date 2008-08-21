@@ -218,14 +218,14 @@ static void setTitleBarText_( QWidget & qgisApp )
 
   if ( QgsProject::instance()->title().isEmpty() )
   {
-    if ( QgsProject::instance()->filename().isEmpty() )
+    if ( QgsProject::instance()->setFilename().isEmpty() )
     {
       // no project title nor file name, so just leave caption with
       // application name and version
     }
     else
     {
-      QFileInfo projectFileInfo( QgsProject::instance()->filename() );
+      QFileInfo projectFileInfo( QgsProject::instance()->setFilename() );
       caption += projectFileInfo.baseName();
     }
   }
@@ -247,13 +247,13 @@ static QgsMessageOutput* messageOutputViewer_()
 
 
 /**
- * This function contains forced validation of SRS used in QGIS.
+ * This function contains forced validation of CRS used in QGIS.
  * There are 3 options depending on the settings:
- * - ask for SRS using projection selecter
- * - use project's SRS
- * - use predefined global SRS
+ * - ask for CRS using projection selecter
+ * - use project's CRS
+ * - use predefined global CRS
  */
-static void customSrsValidation_(QgsSpatialRefSys* srs)
+static void customSrsValidation_(QgsCoordinateReferenceSystem* srs)
 {
   QString proj4String;
   QSettings mySettings;
@@ -266,16 +266,16 @@ static void customSrsValidation_(QgsSpatialRefSys* srs)
 
     QgsGenericProjectionSelector * mySelector = new QgsGenericProjectionSelector();
     mySelector->setMessage(); //shows a generic message
-    proj4String = QgsProject::instance()->readEntry("SpatialRefSys","//ProjectSRSProj4String",GEOPROJ4);
-    QgsSpatialRefSys defaultSRS;
-    if(defaultSRS.createFromProj4(proj4String))
+    proj4String = QgsProject::instance()->readEntry("SpatialRefSys","//ProjectCRSProj4String",GEOPROJ4);
+    QgsCoordinateReferenceSystem defaultCRS;
+    if(defaultCRS.createFromProj4(proj4String))
     {
-      mySelector->setSelectedSRSID(defaultSRS.srsid());
+      mySelector->setSelectedCRSID(defaultCRS.srsid());
     }
 
     if(mySelector->exec())
     {
-      QgsDebugMsg("Layer srs set from dialog: " + QString::number(mySelector->getSelectedSRSID()));
+      QgsDebugMsg("Layer srs set from dialog: " + QString::number(mySelector->getSelectedCRSID()));
       srs->createFromProj4(mySelector->getSelectedProj4String());
       srs->debugPrint();
     }
@@ -287,8 +287,8 @@ static void customSrsValidation_(QgsSpatialRefSys* srs)
   }
   else if (myDefaultProjectionOption=="useProject")
   {
-    // XXX TODO: Change project to store selected CS as 'projectSRS' not 'selectedWKT'
-    proj4String = QgsProject::instance()->readEntry("SpatialRefSys","//ProjectSRSProj4String",GEOPROJ4);
+    // XXX TODO: Change project to store selected CS as 'projectCRS' not 'selectedWKT'
+    proj4String = QgsProject::instance()->readEntry("SpatialRefSys","//ProjectCRSProj4String",GEOPROJ4);
     QgsDebugMsg("Layer srs set from project: " + proj4String);
     srs->createFromProj4(proj4String);  
     srs->debugPrint();
@@ -352,7 +352,7 @@ static void customSrsValidation_(QgsSpatialRefSys* srs)
   setWindowTitle(caption);
 
   // set QGIS specific srs validation
-  QgsSpatialRefSys::setCustomSrsValidation(customSrsValidation_);
+  QgsCoordinateReferenceSystem::setCustomSrsValidation(customSrsValidation_);
   // set graphical message output
   QgsMessageOutput::setMessageOutputCreator(messageOutputViewer_);
   
@@ -2049,7 +2049,7 @@ bool QgisApp::addVectorLayers(QStringList const & theLayerQStringList, const QSt
 // Let render() do its own cursor management
 //  QApplication::restoreOverrideCursor();
 
-  statusBar()->showMessage(mMapCanvas->extent().stringRep(2));
+  statusBar()->showMessage(mMapCanvas->extent().toString(2));
 
   return true;
 } // QgisApp::addVectorLayer()
@@ -2130,7 +2130,7 @@ void QgisApp::addDatabaseLayer()
 
     QApplication::restoreOverrideCursor();
 
-    statusBar()->showMessage(mMapCanvas->extent().stringRep(2));
+    statusBar()->showMessage(mMapCanvas->extent().toString(2));
   }
 
   delete dbs;
@@ -2181,9 +2181,9 @@ enum dataType { IS_VECTOR, IS_RASTER, IS_BOGUS };
 
 
 
-/** returns data type associated with the given QgsProject file DOM node
+/** returns data type associated with the given QgsProject file Dom node
 
-  The DOM node should represent the state associated with a specific layer.
+  The Dom node should represent the state associated with a specific layer.
   */
 static
   dataType
@@ -2219,7 +2219,7 @@ dataType_( QDomNode & layerNode )
 
 /** return the data source for the given layer
 
-  The QDomNode is a QgsProject DOM node corresponding to a map layer state.
+  The QDomNode is a QgsProject Dom node corresponding to a map layer state.
 
   Essentially dumps <datasource> tag.
 
@@ -2249,7 +2249,7 @@ typedef enum { IS_FILE, IS_DATABASE, IS_URL, IS_UNKNOWN } providerType;
 
 /** return the physical storage type associated with the given layer
 
-  The QDomNode is a QgsProject DOM node corresponding to a map layer state.
+  The QDomNode is a QgsProject Dom node corresponding to a map layer state.
 
   If the <provider> is "ogr", then it's a file type.
 
@@ -2510,7 +2510,7 @@ void QgisApp::fileNew(bool thePromptToSaveFlag)
 
   QgsProject* prj = QgsProject::instance();
   prj->title( QString::null );
-  prj->filename( QString::null );
+  prj->setFilename( QString::null );
   prj->clearProperties(); // why carry over properties from previous projects?
   
   QSettings settings;
@@ -2732,7 +2732,7 @@ void QgisApp::fileOpen()
     delete mComposer;
     mComposer = new QgsComposer(this);
 
-    QgsProject::instance()->filename( fullPath );
+    QgsProject::instance()->setFilename( fullPath );
 
     try 
     {
@@ -2865,7 +2865,7 @@ bool QgisApp::fileSave()
   // the current project file name is empty
   bool isNewProject = false;
 
-  if ( QgsProject::instance()->filename().isNull() )
+  if ( QgsProject::instance()->setFilename().isNull() )
   {
     isNewProject = true;
 
@@ -2900,7 +2900,7 @@ bool QgisApp::fileSave()
     }
 
 
-    QgsProject::instance()->filename( fullPath.filePath() );
+    QgsProject::instance()->setFilename( fullPath.filePath() );
   }
 
   try
@@ -2908,7 +2908,7 @@ bool QgisApp::fileSave()
     if ( QgsProject::instance()->write() )
     {
       setTitleBarText_(*this); // update title bar
-      statusBar()->showMessage(tr("Saved project to:") + " " + QgsProject::instance()->filename() );
+      statusBar()->showMessage(tr("Saved project to:") + " " + QgsProject::instance()->setFilename() );
 
       if (isNewProject)
       {
@@ -2921,13 +2921,13 @@ bool QgisApp::fileSave()
     {
       QMessageBox::critical(this,
           tr("Unable to save project"),
-          tr("Unable to save project to ") + QgsProject::instance()->filename() );
+          tr("Unable to save project to ") + QgsProject::instance()->setFilename() );
     }
   }
   catch ( std::exception & e )
   {
     QMessageBox::critical( this,
-        tr("Unable to save project ") + QgsProject::instance()->filename(),
+        tr("Unable to save project ") + QgsProject::instance()->setFilename(),
         QString::fromLocal8Bit( e.what() ) );
   }
   return true;
@@ -2986,12 +2986,12 @@ void QgisApp::fileSaveAs()
 
   try
   {
-    QgsProject::instance()->filename( fullPath.filePath() );
+    QgsProject::instance()->setFilename( fullPath.filePath() );
 
     if ( QgsProject::instance()->write() )
     {
       setTitleBarText_(*this); // update title bar
-      statusBar()->showMessage(tr("Saved project to:") + " " + QgsProject::instance()->filename() );
+      statusBar()->showMessage(tr("Saved project to:") + " " + QgsProject::instance()->setFilename() );
       // add this to the list of recently used project files
       saveRecentProjectPath(fullPath.filePath(), settings);
     }
@@ -2999,13 +2999,13 @@ void QgisApp::fileSaveAs()
     {
       QMessageBox::critical(this,
           tr("Unable to save project"),
-          tr("Unable to save project to ") + QgsProject::instance()->filename() );
+          tr("Unable to save project to ") + QgsProject::instance()->setFilename() );
     }
   }
   catch ( std::exception & e )
   {
     QMessageBox::critical( 0x0,
-        tr("Unable to save project ") + QgsProject::instance()->filename(),
+        tr("Unable to save project ") + QgsProject::instance()->setFilename(),
         QString::fromLocal8Bit( e.what() ),
         QMessageBox::Ok,
         Qt::NoButton );
@@ -3300,7 +3300,7 @@ void QgisApp::stopRendering()
     QgsMapRenderer* mypMapRenderer = mMapCanvas->mapRenderer();
     if(mypMapRenderer)
     {
-      QgsRenderContext* mypRenderContext = mypMapRenderer->renderContext();
+      QgsRenderContext* mypRenderContext = mypMapRenderer->rendererContext();
       if(mypRenderContext)
       {
         mypRenderContext->setRenderingStopped(true);
@@ -3421,7 +3421,7 @@ void QgisApp::deleteSelected()
     return;
   }
       
-  if(!(vlayer->getDataProvider()->capabilities() & QgsVectorDataProvider::DeleteFeatures))
+  if(!(vlayer->dataProvider()->capabilities() & QgsVectorDataProvider::DeleteFeatures))
   {
     QMessageBox::information(this, tr("Provider does not support deletion"), 
                             tr("Data provider does not support deleting features"));
@@ -3559,7 +3559,7 @@ void QgisApp::editCut(QgsMapLayer * layerContainingSelection)
     if (selectionVectorLayer != 0)
     {
       QgsFeatureList features = selectionVectorLayer->selectedFeatures();
-      clipboard()->replaceWithCopyOf( selectionVectorLayer->getDataProvider()->fields(), features );
+      clipboard()->replaceWithCopyOf( selectionVectorLayer->dataProvider()->fields(), features );
       selectionVectorLayer->deleteSelectedFeatures();
     }
   }
@@ -3585,7 +3585,7 @@ void QgisApp::editCopy(QgsMapLayer * layerContainingSelection)
     if (selectionVectorLayer != 0)
     {
       QgsFeatureList features = selectionVectorLayer->selectedFeatures();
-      clipboard()->replaceWithCopyOf( selectionVectorLayer->getDataProvider()->fields(), features );
+      clipboard()->replaceWithCopyOf( selectionVectorLayer->dataProvider()->fields(), features );
     }
   }
 }
@@ -3687,7 +3687,7 @@ void QgisApp::showMouseCoordinate(QgsPoint & p)
   }
   else
   {
-    mCoordsLabel->setText(p.stringRep(mMousePrecisionDecimalPlaces));
+    mCoordsLabel->setText(p.toString(mMousePrecisionDecimalPlaces));
     // Set minimum necessary width
     if ( mCoordsLabel->width() > mCoordsLabel->minimumWidth() )
     {
@@ -4250,7 +4250,7 @@ QgsVectorLayer* QgisApp::addVectorLayer(QString vectorLayerPath, QString baseNam
     // notify the project we've made a change
     QgsProject::instance()->dirty(true);
 
-    statusBar()->showMessage(mMapCanvas->extent().stringRep(2));
+    statusBar()->showMessage(mMapCanvas->extent().toString(2));
 
   }
   else
@@ -4293,7 +4293,7 @@ void QgisApp::addMapLayer(QgsMapLayer *theMapLayer)
     // add it to the mapcanvas collection
     // not necessary since adding to registry adds to canvas mMapCanvas->addLayer(theMapLayer);
 
-    statusBar()->showMessage(mMapCanvas->extent().stringRep(2));
+    statusBar()->showMessage(mMapCanvas->extent().toString(2));
     // notify the project we've made a change
     QgsProject::instance()->dirty(true);
 
@@ -4331,13 +4331,13 @@ bool QgisApp::saveDirty()
   mMapCanvas->freeze(true);
 
   //QgsDebugMsg(QString("Layer count is %1").arg(mMapCanvas->layerCount()));
-  //QgsDebugMsg(QString("Project is %1dirty").arg( QgsProject::instance()->dirty() ? "" : "not "));
+  //QgsDebugMsg(QString("Project is %1dirty").arg( QgsProject::instance()->isDirty() ? "" : "not "));
   //QgsDebugMsg(QString("Map canvas is %1dirty").arg(mMapCanvas->isDirty() ? "" : "not "));
 
   QSettings settings;
   bool askThem = settings.value("qgis/askToSaveProjectChanges", true).toBool();
 
-  if (askThem && (QgsProject::instance()->dirty() || (mMapCanvas->isDirty()) && mMapCanvas->layerCount() > 0))
+  if (askThem && (QgsProject::instance()->isDirty() || (mMapCanvas->isDirty()) && mMapCanvas->layerCount() > 0))
   {
     // flag project as dirty since dirty state of canvas is reset if "dirty"
     // is based on a zoom or pan
@@ -4442,7 +4442,7 @@ void QgisApp::destinationSrsChanged()
 {
   // save this information to project
   long srsid = mMapCanvas->mapRenderer()->destinationSrs().srsid();
-  QgsProject::instance()->writeEntry("SpatialRefSys", "/ProjectSRSID", (int)srsid);
+  QgsProject::instance()->writeEntry("SpatialRefSys", "/ProjectCRSID", (int)srsid);
 
 }
 
@@ -4515,7 +4515,7 @@ void QgisApp::showExtents()
   }
   // update the statusbar with the current extents.
   QgsRect myExtents = mMapCanvas->extent();
-  mCoordsLabel->setText(QString(tr("Extents: ")) + myExtents.stringRep(true));
+  mCoordsLabel->setText(QString(tr("Extents: ")) + myExtents.toString(true));
   //ensure the label is big enough
   if ( mCoordsLabel->width() > mCoordsLabel->minimumWidth() )
   {
@@ -4630,16 +4630,16 @@ void QgisApp::projectProperties()
 
   QgsMapRenderer* myRender = mMapCanvas->mapRenderer();
   bool wasProjected = myRender->projectionsEnabled();
-  long oldSRSID = myRender->destinationSrs().srsid();
+  long oldCRSID = myRender->destinationSrs().srsid();
 
   // Display the modal dialog box.
   pp->exec();
 
-  long newSRSID = myRender->destinationSrs().srsid();
+  long newCRSID = myRender->destinationSrs().srsid();
   bool isProjected = myRender->projectionsEnabled();
   
-  // projections have been turned on/off or dest SRS has changed while projections are on
-  if (wasProjected != isProjected || (isProjected && oldSRSID != newSRSID))
+  // projections have been turned on/off or dest CRS has changed while projections are on
+  if (wasProjected != isProjected || (isProjected && oldCRSID != newCRSID))
   {
     // TODO: would be better to try to reproject current extent to the new one
     mMapCanvas->updateFullExtent();
@@ -4688,7 +4688,7 @@ void QgisApp::activateDeactivateLayerRelatedActions(QgsMapLayer* layer)
     mActionEditCopy->setEnabled(true);
 
     const QgsVectorLayer* vlayer = dynamic_cast<const QgsVectorLayer*>(layer);
-    const QgsVectorDataProvider* dprovider = vlayer->getDataProvider();
+    const QgsVectorDataProvider* dprovider = vlayer->dataProvider();
 
     if( !vlayer->isEditable() && mMapCanvas->mapTool() && mMapCanvas->mapTool()->isEditTool() )
     {
@@ -4841,7 +4841,7 @@ void QgisApp::activateDeactivateLayerRelatedActions(QgsMapLayer* layer)
     mActionEditPaste->setEnabled(false);
 
     const QgsRasterLayer* vlayer = dynamic_cast<const QgsRasterLayer*> (layer);
-    const QgsRasterDataProvider* dprovider = vlayer->getDataProvider();
+    const QgsRasterDataProvider* dprovider = vlayer->dataProvider();
     if (dprovider)
     {
       // does provider allow the identify map tool?
@@ -4985,7 +4985,7 @@ QgsRasterLayer* QgisApp::addRasterLayer(QString const & rasterFile, QString cons
   }
   else
   {
-    statusBar()->showMessage(mMapCanvas->extent().stringRep(2));
+    statusBar()->showMessage(mMapCanvas->extent().toString(2));
     mMapCanvas->freeze(false);
     QApplication::restoreOverrideCursor();
 
@@ -5054,7 +5054,7 @@ QgsRasterLayer* QgisApp::addRasterLayer(QString const & rasterLayerPath,
   {
     addRasterLayer(layer);
     
-    statusBar()->showMessage(mMapCanvas->extent().stringRep(2));
+    statusBar()->showMessage(mMapCanvas->extent().toString(2));
 
   }
   else
@@ -5152,7 +5152,7 @@ bool QgisApp::addRasterLayers(QStringList const &theFileNameQStringList, bool gu
     }
   }
 
-  statusBar()->showMessage(mMapCanvas->extent().stringRep(2));
+  statusBar()->showMessage(mMapCanvas->extent().toString(2));
   mMapCanvas->freeze(false);
   mMapCanvas->refresh();
 

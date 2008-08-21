@@ -67,7 +67,7 @@ QgsAttributeTableDisplay::QgsAttributeTableDisplay(QgsVectorLayer* layer, QgisAp
   mAddAttributeButton->setEnabled(false);
   mDeleteAttributeButton->setEnabled(false);
 
-  int cap=layer->getDataProvider()->capabilities();
+  int cap=layer->dataProvider()->capabilities();
   if((cap&QgsVectorDataProvider::ChangeAttributeValues)
       ||(cap&QgsVectorDataProvider::AddAttributes)
       ||(cap&QgsVectorDataProvider::DeleteAttributes))
@@ -80,7 +80,7 @@ QgsAttributeTableDisplay::QgsAttributeTableDisplay(QgsVectorLayer* layer, QgisAp
   }
 
   // fill in mSearchColumns with available columns
-  QgsVectorDataProvider* provider = mLayer->getDataProvider();
+  QgsVectorDataProvider* provider = mLayer->dataProvider();
   if (provider)
   {
     const QgsFieldMap& xfields = provider->fields();
@@ -137,7 +137,7 @@ void QgsAttributeTableDisplay::deleteAttributes()
 
 void QgsAttributeTableDisplay::addAttribute()
 {
-  QgsAddAttrDialog dialog(mLayer->getDataProvider(), this);
+  QgsAddAttrDialog dialog(mLayer->dataProvider(), this);
   if(dialog.exec()==QDialog::Accepted)
   {
     if(!table()->addAttribute(dialog.name(),dialog.type()))
@@ -149,7 +149,7 @@ void QgsAttributeTableDisplay::addAttribute()
 
 void QgsAttributeTableDisplay::startEditing()
 {
-  QgsVectorDataProvider* provider=mLayer->getDataProvider();
+  QgsVectorDataProvider* provider=mLayer->dataProvider();
   bool editing=false; 
 
   if(provider)
@@ -279,7 +279,7 @@ void QgsAttributeTableDisplay::search()
   // if selected field is numeric, numeric comparison will be used
   // else attributes containing entered text will be matched
 
-  QgsVectorDataProvider* provider = mLayer->getDataProvider();
+  QgsVectorDataProvider* provider = mLayer->dataProvider();
   int item = mSearchColumns->currentIndex();
   QVariant::Type type = provider->fields()[item].type();
   bool numeric = (type == QVariant::Int || type == QVariant::Double);
@@ -357,7 +357,7 @@ void QgsAttributeTableDisplay::doSearch(const QString& searchString)
   // TODO: need optimized getNextFeature which won't extract geometry
   // or search by traversing table ... which one is quicker?
   QgsFeature fet;
-  QgsVectorDataProvider* provider = mLayer->getDataProvider();
+  QgsVectorDataProvider* provider = mLayer->dataProvider();
   mSearchIds.clear();
   const QgsFieldMap& fields = provider->fields();
   QgsAttributeList all = provider->allAttributesList();

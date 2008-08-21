@@ -2230,7 +2230,7 @@ double QgsGeometry::sqrDistToVertexAt(QgsPoint& point, int atVertex)
   QgsPoint pnt = vertexAt(atVertex);
   if (pnt != QgsPoint(0,0))
   {
-    QgsDebugMsg("Exiting with distance to " + pnt.stringRep());
+    QgsDebugMsg("Exiting with distance to " + pnt.toString());
     return point.sqrDist(pnt);
   }
   else
@@ -2495,7 +2495,7 @@ double QgsGeometry::closestSegmentWithContext(const QgsPoint& point,
   } // switch (wkbType)
 
 
-  QgsDebugMsg("Exiting with nearest point " + point.stringRep() +
+  QgsDebugMsg("Exiting with nearest point " + point.toString() +
       ", dist: " + QString::number(sqrDist) + ".");
 
   return sqrDist;
