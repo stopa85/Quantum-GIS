@@ -56,28 +56,14 @@ SET(QGIS_APP_SRCS
   qgsvectorlayerproperties.cpp
 
   composer/qgscomposer.cpp
-  composer/qgscomposeritem.cpp
-  composer/qgscomposeritemgroup.cpp
   composer/qgscomposeritemwidget.cpp
-  composer/qgscomposerlabel.cpp
   composer/qgscomposerlabelwidget.cpp
-  composer/qgscomposerpicture.cpp
   composer/qgscomposerpicturewidget.cpp
-  composer/qgscomposermap.cpp
   composer/qgscomposermapwidget.cpp
-  composer/qgscomposerscalebar.cpp
   composer/qgscomposerscalebarwidget.cpp
-  composer/qgslegendmodel.cpp
-  composer/qgscomposerlegend.cpp
   composer/qgscomposerlegenditemdialog.cpp
   composer/qgscomposerlegendwidget.cpp
-  composer/qgsscalebarstyle.cpp
-  composer/qgsdoubleboxscalebarstyle.cpp
-  composer/qgsnumericscalebarstyle.cpp
-  composer/qgssingleboxscalebarstyle.cpp
-  composer/qgsticksscalebarstyle.cpp
   composer/qgscomposerview.cpp
-  composer/qgscomposition.cpp
   composer/qgscompositionwidget.cpp
 
   legend/qgslegendgroup.cpp
@@ -137,18 +123,12 @@ SET (QGIS_APP_MOC_HDRS
   composer/qgscomposer.h
   composer/qgscomposeritemwidget.h
   composer/qgscomposerlabelwidget.h
-  composer/qgscomposerlegend.h
   composer/qgscomposerlegendwidget.h
-  composer/qgscomposermap.h
   composer/qgscomposermapwidget.h
-  composer/qgscomposerpicture.h
   composer/qgscomposerpicturewidget.h
-  composer/qgscomposerscalebar.h
   composer/qgscomposerscalebarwidget.h
   composer/qgscomposerview.h
-  composer/qgscomposeritemgroup.h
   composer/qgscompositionwidget.h
-  composer/qgslegendmodel.h
 
   legend/qgslegend.h
   legend/qgslegendlayer.h
@@ -206,7 +186,7 @@ INCLUDE_DIRECTORIES(
   ${CMAKE_CURRENT_BINARY_DIR}
   ${CMAKE_CURRENT_BINARY_DIR}/../ui
   ../core
-  ../core/raster ../core/renderer ../core/symbology
+  ../core/composer ../core/raster ../core/renderer ../core/symbology
   ../gui
   ../plugins
   ../python

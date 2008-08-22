@@ -17,7 +17,6 @@
 
 #include "qgscomposeritemgroup.h"
 #include "qgscomposition.h"
-#include "qgscomposer.h" //probably use other approach to delete items because including this in a composer class is ugly
 #include <QPen>
 #include <QPainter>
 

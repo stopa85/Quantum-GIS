@@ -19,8 +19,6 @@
 #include <QObject>
 #include <QSet>
 
-class QgsComposition;
-
 /** \ingroup MapComposer
  * A container for grouping several QgsComposerItems
  */
