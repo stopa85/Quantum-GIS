@@ -69,7 +69,7 @@ class QgsComposition: public QGraphicsScene
   int printoutResolution() const {return mPrintoutResolution;}
   void setPrintoutResolution(int dpi){mPrintoutResolution = dpi;}
 
-  /**Returns pointer to qgis map canvas*/
+  /**Returns pointer to map renderer of qgis map canvas*/
   QgsMapRenderer* mapRenderer(){return mMapRenderer;}
 
   QgsComposition::PlotStyle plotStyle() const {return mPlotStyle;}
@@ -90,7 +90,7 @@ class QgsComposition: public QGraphicsScene
   bool readXML(const QDomElement& compositionElem, const QDomDocument& doc);
 
  private:
-  /**Pointere to map renderer of QGIS main map*/
+  /**Pointer to map renderer of QGIS main map*/
   QgsMapRenderer* mMapRenderer;
   QgsComposition::PlotStyle mPlotStyle;
   QGraphicsRectItem* mPaperItem;

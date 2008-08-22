@@ -133,7 +133,8 @@ public slots:
 
 private:
 
-    // Pointer to map renderer of main map
+    // Pointer to map renderer of the QGIS main map. Note that QgsComposerMap uses a different map renderer, 
+    //it just copies some properties from the main map renderer.
     QgsMapRenderer *mMapRenderer;
     
     /**Unique identifier*/
