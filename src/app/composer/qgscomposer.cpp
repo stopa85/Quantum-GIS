@@ -33,6 +33,7 @@
 #include "qgscomposerscalebarwidget.h"
 #include "qgsexception.h"
 #include "qgsproject.h"
+#include "qgsmapcanvas.h"
 #include "qgsmessageviewer.h"
 #include "qgscontexthelp.h"
 #include "qgscursors.h"
@@ -115,7 +116,7 @@ QgsComposer::QgsComposer( QgisApp *qgis): QMainWindow()
   mView = new QgsComposerView (mViewFrame);
   connectSlots();
 
-  mComposition  = new QgsComposition(mQgis->getMapCanvas());
+  mComposition  = new QgsComposition(mQgis->getMapCanvas()->mapRenderer());
   mView->setComposition(mComposition);
 
   QgsCompositionWidget* compositionWidget = new QgsCompositionWidget(mCompositionOptionsFrame, mComposition);
@@ -1215,7 +1216,7 @@ void QgsComposer::readXML(const QDomDocument& doc)
   mView = new QgsComposerView(mViewFrame);
   connectSlots();
 
-  mComposition = new QgsComposition(mQgis->getMapCanvas());
+  mComposition = new QgsComposition(mQgis->getMapCanvas()->mapRenderer());
   mComposition->readXML(compositionElem, doc);
   
   QGridLayout *l = new QGridLayout(mViewFrame );

@@ -21,7 +21,7 @@
 #include <QDomElement>
 #include <QGraphicsRectItem>
 
-QgsComposition::QgsComposition(QgsMapCanvas* mapCanvas): QGraphicsScene(0), mMapCanvas(mapCanvas), mPlotStyle(QgsComposition::Preview), mPaperItem(0)
+QgsComposition::QgsComposition(QgsMapRenderer* mapRenderer): QGraphicsScene(0), mMapRenderer(mapRenderer), mPlotStyle(QgsComposition::Preview), mPaperItem(0)
 {
   setBackgroundBrush(Qt::gray);
 
@@ -33,7 +33,7 @@ QgsComposition::QgsComposition(QgsMapCanvas* mapCanvas): QGraphicsScene(0), mMap
   mPrintoutResolution = 300; //hardcoded default
 }
 
-QgsComposition::QgsComposition(): QGraphicsScene(0), mMapCanvas(0), mPlotStyle(QgsComposition::Preview), mPaperItem(0)
+QgsComposition::QgsComposition(): QGraphicsScene(0), mMapRenderer(0), mPlotStyle(QgsComposition::Preview), mPaperItem(0)
 {
 
 }

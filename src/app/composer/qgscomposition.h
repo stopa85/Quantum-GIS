@@ -21,7 +21,7 @@
 class QgsComposerItem;
 class QgsComposerMap;
 class QGraphicsRectItem;
-class QgsMapCanvas;
+class QgsMapRenderer;
 
 class QDomDocument;
 class QDomElement;
@@ -42,7 +42,7 @@ class QgsComposition: public QGraphicsScene
       Postscript   // Fonts need different scaling!
     };
 
-  QgsComposition(QgsMapCanvas* mapCanvas);
+  QgsComposition(QgsMapRenderer* mapRenderer);
   ~QgsComposition();
 
   /**Changes size of paper item*/
@@ -70,7 +70,7 @@ class QgsComposition: public QGraphicsScene
   void setPrintoutResolution(int dpi){mPrintoutResolution = dpi;}
 
   /**Returns pointer to qgis map canvas*/
-  QgsMapCanvas* mapCanvas(){return mMapCanvas;}
+  QgsMapRenderer* mapRenderer(){return mMapRenderer;}
 
   QgsComposition::PlotStyle plotStyle() const {return mPlotStyle;}
   void setPlotStyle(QgsComposition::PlotStyle style) {mPlotStyle = style;}
@@ -90,7 +90,8 @@ class QgsComposition: public QGraphicsScene
   bool readXML(const QDomElement& compositionElem, const QDomDocument& doc);
 
  private:
-  QgsMapCanvas* mMapCanvas;
+  /**Pointere to map renderer of QGIS main map*/
+  QgsMapRenderer* mMapRenderer;
   QgsComposition::PlotStyle mPlotStyle;
   QGraphicsRectItem* mPaperItem;
 

@@ -18,7 +18,7 @@
 #include "qgscomposermapwidget.h"
 #include "qgscomposeritemwidget.h"
 #include "qgscomposermap.h"
-#include "qgsmapcanvas.h"
+#include "qgsmaprenderer.h"
 
 QgsComposerMapWidget::QgsComposerMapWidget(QgsComposerMap* composerMap): QWidget(), mComposerMap(composerMap)
 {
@@ -141,10 +141,10 @@ void QgsComposerMapWidget::on_mSetToMapCanvasExtentButton_clicked()
 {
   if(mComposerMap)
     {
-      const QgsMapCanvas* canvas = mComposerMap->mapCanvas();
-      if(canvas)
+      const QgsMapRenderer* renderer = mComposerMap->mapRenderer();
+      if(renderer)
 	{
-	  QgsRect canvasExtent = canvas->extent();
+	  QgsRect canvasExtent = renderer->extent();
 	  
 	  //fill text into line edits
 	  mXMinLineEdit->setText(QString::number(canvasExtent.xMin()));

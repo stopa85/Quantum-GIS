@@ -19,7 +19,7 @@
 
 #include "qgscoordinatetransform.h"
 #include "qgslogger.h"
-#include "qgsmapcanvas.h"
+#include "qgsmaprenderer.h"
 #include "qgsmaplayer.h"
 #include "qgsmaptopixel.h"
 #include "qgsproject.h"
@@ -32,6 +32,7 @@
 #include "qgslabelattributes.h"
 
 #include <QGraphicsScene>
+#include <QGraphicsView>
 #include <QPainter>
 #include <iostream>
 #include <cmath>
@@ -42,7 +43,7 @@ QgsComposerMap::QgsComposerMap ( QgsComposition *composition, int x, int y, int 
   : QgsComposerItem(x, y, width, height, composition)
 {
     mComposition = composition;
-    mMapCanvas = mComposition->mapCanvas();
+    mMapRenderer = mComposition->mapRenderer();
     mId = mCurrentComposerId++;
     
     // Cache
@@ -54,12 +55,15 @@ QgsComposerMap::QgsComposerMap ( QgsComposition *composition, int x, int y, int 
     mYOffset = 0.0;
 
     //calculate mExtent based on width/height ratio and map canvas extent
-    mExtent = mMapCanvas->extent();
+    if(mMapRenderer)
+      {
+	mExtent = mMapRenderer->extent();
+      }
     setSceneRect(QRectF(x, y, width, height));
 
     QGraphicsRectItem::setZValue(20);
 
-    connect ( mMapCanvas, SIGNAL(layersChanged()), this, SLOT(mapCanvasChanged()) );
+    
 
     setToolTip(tr("Map") + " " + QString::number(mId));
 
@@ -74,7 +78,7 @@ QgsComposerMap::QgsComposerMap ( QgsComposition *composition)
   mYOffset = 0.0;
   
   mComposition = composition;
-  mMapCanvas = mComposition->mapCanvas();
+  mMapRenderer = mComposition->mapRenderer();
   mId = mCurrentComposerId++;
   setToolTip(tr("Map") + " " + QString::number(mId));
   QGraphicsRectItem::show();
@@ -88,15 +92,12 @@ QgsComposerMap::~QgsComposerMap()
 from QGraphicsItem. */
 void QgsComposerMap::draw ( QPainter *painter, const QgsRect& extent, const QSize& size, int dpi)
 {
-  mMapCanvas->freeze(true);  // necessary ?
-
   if(!painter)
     {
       return;
     }
 
-  QgsMapRenderer* canvasMapRender = mMapCanvas->mapRenderer();
-  if(!canvasMapRender)
+  if(!mMapRenderer)
     {
       return;
     }
@@ -104,9 +105,9 @@ void QgsComposerMap::draw ( QPainter *painter, const QgsRect& extent, const QSiz
   QgsMapRenderer theMapRender;
   theMapRender.setExtent(extent);
   theMapRender.setOutputSize(size, dpi);
-  theMapRender.setLayerSet(canvasMapRender->layerSet());
-  theMapRender.setProjectionsEnabled(canvasMapRender->projectionsEnabled());
-  theMapRender.setDestinationSrs(canvasMapRender->destinationSrs());
+  theMapRender.setLayerSet(mMapRenderer->layerSet());
+  theMapRender.setProjectionsEnabled(mMapRenderer->projectionsEnabled());
+  theMapRender.setDestinationSrs(mMapRenderer->destinationSrs());
   
   QgsRenderContext* theRenderContext = theMapRender.rendererContext();
   if(theRenderContext)
@@ -120,8 +121,6 @@ void QgsComposerMap::draw ( QPainter *painter, const QgsRect& extent, const QSiz
   theMapRender.setScale(scale());
   theMapRender.render(painter);  
   theMapRender.setScale(bk_scale);
-    
-  mMapCanvas->freeze(false);
 }
 
 void QgsComposerMap::cache ( void )
@@ -238,7 +237,7 @@ void QgsComposerMap::setCacheUpdated ( bool u )
 double QgsComposerMap::scale() const
 {
   QgsScaleCalculator calculator;
-  calculator.setMapUnits(mMapCanvas->mapUnits());
+  calculator.setMapUnits(mMapRenderer->mapUnits());
   calculator.setDpi(25.4);  //QGraphicsView units are mm
   return calculator.calculate(mExtent, rect().width());
 }
@@ -339,6 +338,10 @@ double QgsComposerMap::horizontalViewScaleFactor() const
       if(viewList.size() > 0)
 	{
 	  result = viewList.at(0)->transform().m11();
+	}
+      else
+	{
+	  return 1; //probably called from non-gui code
 	}
     }
   return result;

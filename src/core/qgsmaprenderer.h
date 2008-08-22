@@ -59,7 +59,7 @@ class CORE_EXPORT QgsMapRenderer : public QObject
     bool setExtent(const QgsRect& extent);
     
     //! returns current extent
-    QgsRect extent();
+    QgsRect extent() const;
     
     const QgsMapToPixel* coordinateTransform() { return &(mRenderContext.mapToPixel()); }
     

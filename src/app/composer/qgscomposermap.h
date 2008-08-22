@@ -25,7 +25,7 @@
 #include <QPixmap>
 
 class QgsComposition;
-class QgsMapCanvas;
+class QgsMapRenderer;
 class QgsMapToPixel;
 class QDomNode;
 class QDomDocument;
@@ -106,7 +106,7 @@ public:
 
     QgsRect extent() const {return mExtent;}
 
-    const QgsMapCanvas* mapCanvas() const {return mMapCanvas;}
+    const QgsMapRenderer* mapRenderer() const {return mMapRenderer;}
 
     /**Sets offset values to shift image (useful for live updates when moving item content)*/
     void setOffset(double xOffset, double yOffset);
@@ -133,8 +133,8 @@ public slots:
 
 private:
 
-    // Pointer to map canvas
-    QgsMapCanvas *mMapCanvas;
+    // Pointer to map renderer of main map
+    QgsMapRenderer *mMapRenderer;
     
     /**Unique identifier*/
     int mId;
