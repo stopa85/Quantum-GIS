@@ -111,14 +111,14 @@ public:
     /**Sets offset values to shift image (useful for live updates when moving item content)*/
     void setOffset(double xOffset, double yOffset);
 
-    /** stores state in Dom node
-     * @param elem is Dom element corresponding to 'Composer' tag
+    /** stores state in DOM node
+     * @param elem is DOM element corresponding to 'Composer' tag
      * @param temp write template file
      */
     bool writeXML(QDomElement& elem, QDomDocument & doc);
 
-    /** sets state from Dom document
-     * @param itemElem is Dom node corresponding to 'ComposerMap' tag
+    /** sets state from DOM document
+     * @param itemElem is DOM node corresponding to 'ComposerMap' tag
      */
     bool readXML(const QDomElement& itemElem, const QDomDocument& doc);
 
@@ -175,6 +175,9 @@ private:
 
     /**For the generation of new unique ids*/
     static int mCurrentComposerId;
+
+    /**Etablishes signal/slot connection for update in case of layer change*/
+    void connectUpdateSlot();
 
     /**Returns the zoom factor of the graphics view. If no 
      graphics view exists, the default 1 is returned*/

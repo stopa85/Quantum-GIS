@@ -21,6 +21,7 @@
 #include "qgslogger.h"
 #include "qgsmaprenderer.h"
 #include "qgsmaplayer.h"
+#include "qgsmaplayerregistry.h"
 #include "qgsmaptopixel.h"
 #include "qgsproject.h"
 #include "qgsmaprenderer.h"
@@ -54,6 +55,8 @@ QgsComposerMap::QgsComposerMap ( QgsComposition *composition, int x, int y, int 
     mXOffset = 0.0;
     mYOffset = 0.0;
 
+    connectUpdateSlot();
+
     //calculate mExtent based on width/height ratio and map canvas extent
     if(mMapRenderer)
       {
@@ -62,9 +65,7 @@ QgsComposerMap::QgsComposerMap ( QgsComposition *composition, int x, int y, int 
     setSceneRect(QRectF(x, y, width, height));
 
     QGraphicsRectItem::setZValue(20);
-
     
-
     setToolTip(tr("Map") + " " + QString::number(mId));
 
     QGraphicsRectItem::show();
@@ -76,6 +77,8 @@ QgsComposerMap::QgsComposerMap ( QgsComposition *composition)
   //Offset
   mXOffset = 0.0;
   mYOffset = 0.0;
+
+  connectUpdateSlot();
   
   mComposition = composition;
   mMapRenderer = mComposition->mapRenderer();
@@ -226,6 +229,7 @@ void QgsComposerMap::paint ( QPainter* painter, const QStyleOptionGraphicsItem* 
 void QgsComposerMap::mapCanvasChanged ( void ) 
 {
     mCacheUpdated = false;
+    cache();
     QGraphicsRectItem::update();
 }
 
@@ -345,6 +349,17 @@ double QgsComposerMap::horizontalViewScaleFactor() const
 	}
     }
   return result;
+}
+
+void QgsComposerMap::connectUpdateSlot()
+{
+  //connect signal from layer registry to update in case of new or deleted layers
+    QgsMapLayerRegistry* layerRegistry = QgsMapLayerRegistry::instance();
+    if(layerRegistry)
+      {
+	connect(layerRegistry, SIGNAL(layerWillBeRemoved(QString)), this, SLOT(mapCanvasChanged()));
+	connect(layerRegistry, SIGNAL(layerWasAdded(QgsMapLayer*)), this, SLOT(mapCanvasChanged()));
+      }
 }
 
 bool QgsComposerMap::writeXML(QDomElement& elem, QDomDocument & doc)
