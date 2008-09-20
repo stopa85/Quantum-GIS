@@ -150,6 +150,24 @@ class QgsComposer: public QMainWindow, private Ui::QgsComposerBase
     //!Move selected items to bottom
     void moveSelectedItemsToBottom();
 
+    //!Align selected composer items left
+    void alignSelectedItemsLeft();
+
+    //!Align selected composere items horizontally centered
+    void alignSelectedItemsHCenter();
+
+    //!Align selected composer items right
+    void alignSelectedItemsRight();
+
+    //!Align selected composer items to top
+    void alignSelectedItemsTop();
+
+    //!Align selected composer items vertically centered
+    void alignSelectedItemsVCenter();
+
+    //!Align selected composer items to bottom
+    void alignSelectedItemsBottom();
+
     //! Save window state
     void saveWindowState();
 

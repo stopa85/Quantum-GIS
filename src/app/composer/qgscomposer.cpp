@@ -105,6 +105,24 @@ QgsComposer::QgsComposer( QgisApp *qgis ): QMainWindow()
                                      tr( "Send to Back" ), this, SLOT( moveSelectedItemsToBottom() ) );
   moveItemsToBottomAction->setToolTip( tr( "Move selected items to bottom" ) );
 
+  QAction* alignLeftAction = toolBar->addAction( QIcon( QPixmap( myIconPath + "mActionAlignLeft.png")), tr("Align left"), this, SLOT(alignSelectedItemsLeft()));
+  alignLeftAction->setToolTip( tr("Align selected items left"));
+
+  QAction* alignHCenterAction = toolBar->addAction( QIcon( QPixmap( myIconPath + "mActionAlignHCenter.png")), tr("Align center horizontal"), this, SLOT(alignSelectedItemsHCenter()));
+  alignHCenterAction->setToolTip( tr("Align center horizontal"));
+
+  QAction* alignRightAction = toolBar->addAction( QIcon( QPixmap( myIconPath + "mActionAlignRight.png")), tr("Align right"), this, SLOT(alignSelectedItemsRight()));
+  alignRightAction->setToolTip( tr("Align selected items right"));
+
+  QAction* alignTopAction = toolBar->addAction( QIcon( QPixmap( myIconPath + "mActionAlignTop.png")), tr("Align top"), this, SLOT(alignSelectedItemsTop()));
+  alignTopAction->setToolTip( tr("Align selected items to top"));
+
+  QAction* alignVCenterAction = toolBar->addAction( QIcon( QPixmap( myIconPath + "mActionAlignVCenter.png")), tr("Align center vertical"), this, SLOT(alignSelectedItemsVCenter()));
+  alignVCenterAction->setToolTip( tr("Align center vertical"));
+
+  QAction* alignBottomAction = toolBar->addAction( QIcon( QPixmap( myIconPath + "mActionAlignBottom.png")), tr("Align bottom"), this, SLOT(alignSelectedItemsBottom()));
+  alignBottomAction->setToolTip( tr("Align selected items bottom"));
+
   QActionGroup* toggleActionGroup = new QActionGroup( this );
   toggleActionGroup->addAction( moveItemContentAction );
   toggleActionGroup->addAction( mActionAddNewMap );
@@ -803,6 +821,54 @@ void QgsComposer::moveSelectedItemsToBottom()
   {
     mComposition->moveSelectedItemsToBottom();
   }
+}
+
+void QgsComposer::alignSelectedItemsLeft()
+{
+  if(mComposition)
+    {
+      mComposition->alignSelectedItemsLeft();
+    }
+}
+
+void QgsComposer::alignSelectedItemsHCenter()
+{
+  if(mComposition)
+    {
+      mComposition->alignSelectedItemsHCenter();
+    }
+}
+
+void QgsComposer::alignSelectedItemsRight()
+{
+  if(mComposition)
+    {
+      mComposition->alignSelectedItemsRight();
+    }
+}
+
+void QgsComposer::alignSelectedItemsTop()
+{
+  if(mComposition)
+    {
+      mComposition->alignSelectedItemsTop();
+    }
+}
+
+void QgsComposer::alignSelectedItemsVCenter()
+{
+  if(mComposition)
+    {
+      mComposition->alignSelectedItemsVCenter();
+    }
+}
+
+void QgsComposer::alignSelectedItemsBottom()
+{
+  if(mComposition)
+    {
+      mComposition->alignSelectedItemsBottom();
+    }
 }
 
 void QgsComposer::moveEvent( QMoveEvent *e ) { saveWindowState(); }

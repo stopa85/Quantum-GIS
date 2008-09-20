@@ -319,6 +319,156 @@ void QgsComposition::moveItemToBottom( QgsComposerItem* item )
   mItemZList.push_front( item );
 }
 
+void QgsComposition::alignSelectedItemsLeft()
+{
+  QList<QgsComposerItem*> selectedItems = selectedComposerItems();
+  if(selectedItems.size() < 2)
+    {
+      return;
+    }
+
+  QRectF selectedItemBBox;
+  if(boundingRectOfSelectedItems(selectedItemBBox) != 0)
+    {
+      return;
+    }
+
+  double minXCoordinate = selectedItemBBox.left();
+
+  //align items left to minimum x coordinate
+  QList<QgsComposerItem*>::iterator align_it = selectedItems.begin();
+  for(; align_it != selectedItems.end(); ++align_it)
+    {
+      QTransform itemTransform = (*align_it)->transform();
+      itemTransform.translate( minXCoordinate - itemTransform.dx(), 0);
+      (*align_it)->setTransform(itemTransform);
+    }
+}
+
+void QgsComposition::alignSelectedItemsHCenter()
+{
+  QList<QgsComposerItem*> selectedItems = selectedComposerItems();
+  if(selectedItems.size() < 2)
+    {
+      return;
+    }
+
+  QRectF selectedItemBBox;
+  if(boundingRectOfSelectedItems(selectedItemBBox) != 0)
+    {
+      return;
+    }
+
+  double averageXCoord = (selectedItemBBox.left() + selectedItemBBox.right()) / 2.0;
+
+  //place items
+  QList<QgsComposerItem*>::iterator align_it = selectedItems.begin();
+  for(; align_it != selectedItems.end(); ++align_it)
+    {
+      QTransform itemTransform = (*align_it)->transform();
+      itemTransform.translate( averageXCoord - itemTransform.dx() - (*align_it)->rect().width() / 2.0, 0);
+      (*align_it)->setTransform(itemTransform);
+    }
+}
+
+void QgsComposition::alignSelectedItemsRight()
+{
+  QList<QgsComposerItem*> selectedItems = selectedComposerItems();
+  if(selectedItems.size() < 2)
+    {
+      return;
+    }
+
+  QRectF selectedItemBBox;
+  if(boundingRectOfSelectedItems(selectedItemBBox) != 0)
+    {
+      return;
+    }
+
+  double maxXCoordinate = selectedItemBBox.right();
+
+  //align items right to maximum x coordinate
+  QList<QgsComposerItem*>::iterator align_it = selectedItems.begin();
+  for(; align_it != selectedItems.end(); ++align_it)
+    {
+      QTransform itemTransform = (*align_it)->transform();
+      itemTransform.translate( maxXCoordinate - itemTransform.dx() - (*align_it)->rect().width(), 0);
+      (*align_it)->setTransform(itemTransform);
+    }
+}
+
+void QgsComposition::alignSelectedItemsTop()
+{
+  QList<QgsComposerItem*> selectedItems = selectedComposerItems();
+  if(selectedItems.size() < 2)
+    {
+      return;
+    }
+
+  QRectF selectedItemBBox;
+  if(boundingRectOfSelectedItems(selectedItemBBox) != 0)
+    {
+      return;
+    }
+
+  double minYCoordinate = selectedItemBBox.top();
+  QList<QgsComposerItem*>::iterator align_it = selectedItems.begin();
+  for(; align_it != selectedItems.end(); ++align_it)
+    {
+      QTransform itemTransform = (*align_it)->transform();
+      itemTransform.translate(0, minYCoordinate - itemTransform.dy());
+      (*align_it)->setTransform(itemTransform);
+    }
+}
+
+void QgsComposition::alignSelectedItemsVCenter()
+{
+  QList<QgsComposerItem*> selectedItems = selectedComposerItems();
+  if(selectedItems.size() < 2)
+    {
+      return;
+    }
+
+  QRectF selectedItemBBox;
+  if(boundingRectOfSelectedItems(selectedItemBBox) != 0)
+    {
+      return;
+    }
+
+  double averageYCoord = (selectedItemBBox.top() + selectedItemBBox.bottom()) / 2.0;
+  QList<QgsComposerItem*>::iterator align_it = selectedItems.begin();
+  for(; align_it != selectedItems.end(); ++align_it)
+    {
+      QTransform itemTransform = (*align_it)->transform();
+      itemTransform.translate(0, averageYCoord - itemTransform.dy() - (*align_it)->rect().height() / 2);
+      (*align_it)->setTransform(itemTransform);
+    }
+}
+
+void QgsComposition::alignSelectedItemsBottom()
+{
+  QList<QgsComposerItem*> selectedItems = selectedComposerItems();
+  if(selectedItems.size() < 2)
+    {
+      return;
+    }
+
+ QRectF selectedItemBBox;
+  if(boundingRectOfSelectedItems(selectedItemBBox) != 0)
+    {
+      return;
+    }
+
+  double maxYCoord = selectedItemBBox.bottom();
+  QList<QgsComposerItem*>::iterator align_it = selectedItems.begin();
+  for(; align_it != selectedItems.end(); ++align_it)
+    {
+      QTransform itemTransform = (*align_it)->transform();
+      itemTransform.translate(0, maxYCoord - itemTransform.dy() - (*align_it)->rect().height());
+      (*align_it)->setTransform(itemTransform);
+    }
+}
+
 void QgsComposition::updateZValues()
 {
   int counter = 1;
@@ -400,4 +550,44 @@ void QgsComposition::sortZList()
   {
     qWarning( QString::number(( *after_it )->zValue() ).toLocal8Bit().data() );
   }
+}
+
+int QgsComposition::boundingRectOfSelectedItems(QRectF& bRect)
+{
+  QList<QgsComposerItem*> selectedItems = selectedComposerItems();
+  if(selectedItems.size() < 1)
+    {
+      return 1;
+    }
+
+  //set the box to the first item
+  QgsComposerItem* currentItem = selectedItems.at(0);
+  double minX = currentItem->transform().dx();
+  double minY = currentItem->transform().dy();
+  double maxX = minX + currentItem->rect().width();
+  double maxY = minY + currentItem->rect().height();
+
+  double currentMinX, currentMinY, currentMaxX, currentMaxY;
+
+  for(int i = 1; i < selectedItems.size(); ++i)
+    {
+      currentItem = selectedItems.at(i);
+      currentMinX = currentItem->transform().dx();
+      currentMinY = currentItem->transform().dy();
+      currentMaxX = currentMinX + currentItem->rect().width();
+      currentMaxY = currentMinY + currentItem->rect().height();
+
+      if(currentMinX < minX)
+	minX = currentMinX;
+      if(currentMaxX > maxX)
+	maxX = currentMaxX;
+      if(currentMinY < minY)
+	minY = currentMinY;
+      if(currentMaxY > maxY)
+	maxY = currentMaxY;
+    }
+
+  bRect.setTopLeft(QPointF(minX, minY));
+  bRect.setBottomRight(QPointF(maxX, maxY));
+  return 0;
 }

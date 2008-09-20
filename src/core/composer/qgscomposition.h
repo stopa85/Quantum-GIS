@@ -97,6 +97,7 @@ class CORE_EXPORT QgsComposition: public QGraphicsScene
     /**Removes item from z list. Usually called from destructor of QgsComposerItem*/
     void removeItemFromZList( QgsComposerItem* item );
 
+    //functions to move selected items in hierarchy
     void raiseSelectedItems();
     void raiseItem( QgsComposerItem* item );
     void lowerSelectedItems();
@@ -105,6 +106,14 @@ class CORE_EXPORT QgsComposition: public QGraphicsScene
     void moveItemToTop( QgsComposerItem* item );
     void moveSelectedItemsToBottom();
     void moveItemToBottom( QgsComposerItem* item );
+
+    //functions to align selected items
+    void alignSelectedItemsLeft();
+    void alignSelectedItemsHCenter();
+    void alignSelectedItemsRight();
+    void alignSelectedItemsTop();
+    void alignSelectedItemsVCenter();
+    void alignSelectedItemsBottom();
 
     /**Sorts the zList. The only time where this function needs to be called is from QgsComposer
      after reading all the items from xml file*/
@@ -127,6 +136,10 @@ class CORE_EXPORT QgsComposition: public QGraphicsScene
 
     /**Reset z-values of items based on position in z list*/
     void updateZValues();
+
+    /**Returns the bounding rectangle of the selected items in scene coordinates
+     @return 0 in case of success*/
+    int boundingRectOfSelectedItems(QRectF& bRect);
 };
 
 #endif
