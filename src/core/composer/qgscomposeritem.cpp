@@ -220,10 +220,18 @@ bool QgsComposerItem::_readXML( const QDomElement& itemElem, const QDomDocument&
 void QgsComposerItem::mouseMoveEvent( QGraphicsSceneMouseEvent * event )
 {
   qWarning( "QgsComposerItem::mouseMoveEvent" );
+    
+  QPointF sceneMovePoint = event->lastScenePos();
+
+  if(composition() && composition()->snapToGridEnabled())
+    {
+      sceneMovePoint = composition()->snapPointToGrid(sceneMovePoint);
+    }
+
   if ( mBoundingResizeRectangle )
   {
-    double diffX = event->lastPos().x() - mLastMouseEventPos.x();
-    double diffY = event->lastPos().y() - mLastMouseEventPos.y();
+    double diffX = sceneMovePoint.x() - mLastMouseEventPos.x();
+    double diffY = sceneMovePoint.y() - mLastMouseEventPos.y();
 
     double mx, my, rx, ry;
 
@@ -242,14 +250,14 @@ void QgsComposerItem::mouseMoveEvent( QGraphicsSceneMouseEvent * event )
     mBoundingResizeRectangle->setRect( newBoundingRect );
     mBoundingResizeRectangle->setTransform( transform );
   }
-  mLastMouseEventPos = event->lastPos();
+  mLastMouseEventPos = sceneMovePoint;
 }
 
 void QgsComposerItem::mousePressEvent( QGraphicsSceneMouseEvent * event )
 {
   //set current position and type of mouse move action
   mMouseMoveStartPos = event->lastScenePos();
-  mLastMouseEventPos = event->lastPos();
+  mLastMouseEventPos = event->lastScenePos();
   mCurrentMouseMoveAction = mouseMoveActionForPosition( event->pos() );
 
   //create and show bounding rectangle
@@ -277,6 +285,10 @@ void QgsComposerItem::mouseReleaseEvent( QGraphicsSceneMouseEvent * event )
   }
 
   QPointF mouseMoveStopPoint = event->lastScenePos();
+  if(composition() && composition()->snapToGridEnabled())
+    {
+      mouseMoveStopPoint = composition()->snapPointToGrid(mouseMoveStopPoint);
+    }
   double diffX = mouseMoveStopPoint.x() - mMouseMoveStartPos.x();
   double diffY = mouseMoveStopPoint.y() - mMouseMoveStartPos.y();
 

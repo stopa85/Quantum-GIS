@@ -142,7 +142,7 @@ class CORE_EXPORT QgsComposerItem: public QGraphicsRectItem
     QgsComposerItem::mouseMoveAction mCurrentMouseMoveAction;
     /**Start point of the last mouse move action (in scene coordinates)*/
     QPointF mMouseMoveStartPos;
-    /**Position of the last mouse move event (in item coordinates)*/
+    /**Position of the last mouse move event (in scene coordinates)*/
     QPointF mLastMouseEventPos;
 
     /**Rectangle used during move and resize actions*/

@@ -57,6 +57,18 @@ class CORE_EXPORT QgsComposition: public QGraphicsScene
     /**Returns width of paper item*/
     double paperWidth() const;
 
+    void setSnapToGridEnabled(bool b) {mSnapToGrid = b;}
+    bool snapToGridEnabled() const {return mSnapToGrid;}
+
+    void setSnapGridResolution(double r){mSnapGridResolution = r;}
+    double snapGridResolution() const {return mSnapGridResolution;}
+
+    void setSnapGridOffsetX(double offset){mSnapGridOffsetX = offset;}
+    double snapGridOffsetX() const {return mSnapGridOffsetX;}
+
+    void setSnapGridOffsetY(double offset){mSnapGridOffsetY = offset;}
+    double snapGridOffsetY() const {return mSnapGridOffsetY;}
+
     /**Returns the topmose composer item. Ignores mPaperItem*/
     QgsComposerItem* composerItemAt( const QPointF & position );
 
@@ -119,6 +131,9 @@ class CORE_EXPORT QgsComposition: public QGraphicsScene
      after reading all the items from xml file*/
     void sortZList();
 
+    /**Snaps a scene coordinate point to grid*/
+    QPointF snapPointToGrid(const QPointF& scenePoint) const;
+
 
   private:
     /**Pointer to map renderer of QGIS main map*/
@@ -131,6 +146,12 @@ class CORE_EXPORT QgsComposition: public QGraphicsScene
 
     /**Dpi for printout*/
     int mPrintoutResolution;
+
+    /**Parameters for snap to grid function*/
+    bool mSnapToGrid;
+    double mSnapGridResolution;
+    double mSnapGridOffsetX;
+    double mSnapGridOffsetY;
 
     QgsComposition(); //default constructor is forbidden
 

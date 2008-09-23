@@ -46,6 +46,11 @@ class QgsCompositionWidget: public QWidget, private Ui::QgsCompositionWidgetBase
     void on_mPaperHeightLineEdit_editingFinished();
     void on_mResolutionLineEdit_textChanged( const QString& text );
 
+    void on_mSnapToGridCheckBox_stateChanged(int state);
+    void on_mResolutionSpinBox_valueChanged(double d);
+    void on_mOffsetXSpinBox_valueChanged(double d);
+    void on_mOffsetYSpinBox_valueChanged(double d);
+
   private:
     QgsComposition* mComposition;
     QMap<QString, QgsCompositionPaper> mPaperMap;
@@ -59,6 +64,8 @@ class QgsCompositionWidget: public QWidget, private Ui::QgsCompositionWidgetBase
     void adjustOrientation();
     /**Sets GUI elements to width/height from composition*/
     void displayCompositionWidthHeight();
+    /**Sets GUI elements to snaping distances of composition*/
+    void displaySnapingSettings();
 
     void createPaperEntries();
     void insertPaperEntries();

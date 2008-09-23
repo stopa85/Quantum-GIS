@@ -275,6 +275,37 @@ void QgsCompositionWidget::displayCompositionWidthHeight()
   mResolutionLineEdit->blockSignals( false );
 }
 
+void QgsCompositionWidget::displaySnapingSettings()
+{
+  if(!mComposition)
+    {
+      return;
+    }
+
+  mSnapToGridCheckBox->blockSignals(true);
+  mResolutionSpinBox->blockSignals(true);
+  mOffsetXSpinBox->blockSignals(true);
+  mOffsetYSpinBox->blockSignals(true);
+  
+  if(mComposition->snapToGridEnabled())
+    {
+      mSnapToGridCheckBox->setCheckState(Qt::Checked);
+    }
+  else
+    {
+      mSnapToGridCheckBox->setCheckState(Qt::Unchecked);
+    }
+
+  mResolutionSpinBox->setValue(mComposition->snapGridResolution());
+  mOffsetXSpinBox->setValue(mComposition->snapGridOffsetX());
+  mOffsetYSpinBox->setValue(mComposition->snapGridOffsetY());
+
+  mSnapToGridCheckBox->blockSignals(false);
+  mResolutionSpinBox->blockSignals(false);
+  mOffsetXSpinBox->blockSignals(false);
+  mOffsetYSpinBox->blockSignals(false); 
+}
+
 void QgsCompositionWidget::on_mResolutionLineEdit_textChanged( const QString& text )
 {
   bool conversionOk;
@@ -289,4 +320,43 @@ void QgsCompositionWidget::on_mResolutionLineEdit_textChanged( const QString& te
     QPrinter resolutionInfo( QPrinter::ScreenResolution );
     mComposition->setPrintoutResolution( resolutionInfo.resolution() );
   }
+}
+
+void QgsCompositionWidget::on_mSnapToGridCheckBox_stateChanged(int state)
+{
+  if(mComposition)
+    {
+      if(state == Qt::Checked)
+	{
+	  mComposition->setSnapToGridEnabled(true);
+	}
+      else
+	{
+	  mComposition->setSnapToGridEnabled(false);
+	}
+    }
+}
+
+void QgsCompositionWidget::on_mResolutionSpinBox_valueChanged(double d)
+{
+  if(mComposition)
+    {
+      mComposition->setSnapGridResolution(d);
+    }
+}
+
+void QgsCompositionWidget::on_mOffsetXSpinBox_valueChanged(double d)
+{
+  if(mComposition)
+    {
+      mComposition->setSnapGridOffsetX(d);
+    }
+}
+
+void QgsCompositionWidget::on_mOffsetYSpinBox_valueChanged(double d)
+{
+  if(mComposition)
+    {
+      mComposition->setSnapGridOffsetY(d);
+    }
 }

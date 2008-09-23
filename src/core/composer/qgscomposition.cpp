@@ -21,7 +21,7 @@
 #include <QDomElement>
 #include <QGraphicsRectItem>
 
-QgsComposition::QgsComposition( QgsMapRenderer* mapRenderer ): QGraphicsScene( 0 ), mMapRenderer( mapRenderer ), mPlotStyle( QgsComposition::Preview ), mPaperItem( 0 )
+QgsComposition::QgsComposition( QgsMapRenderer* mapRenderer ): QGraphicsScene( 0 ), mMapRenderer( mapRenderer ), mPlotStyle( QgsComposition::Preview ), mPaperItem( 0 ), mSnapToGrid(false), mSnapGridResolution(0.0), mSnapGridOffsetX(0.0), mSnapGridOffsetY(0.0)
 {
   setBackgroundBrush( Qt::gray );
 
@@ -33,7 +33,7 @@ QgsComposition::QgsComposition( QgsMapRenderer* mapRenderer ): QGraphicsScene( 0
   mPrintoutResolution = 300; //hardcoded default
 }
 
-QgsComposition::QgsComposition(): QGraphicsScene( 0 ), mMapRenderer( 0 ), mPlotStyle( QgsComposition::Preview ), mPaperItem( 0 )
+QgsComposition::QgsComposition(): QGraphicsScene( 0 ), mMapRenderer( 0 ), mPlotStyle( QgsComposition::Preview ), mPaperItem( 0 ), mSnapToGrid(false), mSnapGridResolution(0.0), mSnapGridOffsetX(0.0), mSnapGridOffsetY(0.0)
 {
 
 }
@@ -550,6 +550,20 @@ void QgsComposition::sortZList()
   {
     qWarning( QString::number(( *after_it )->zValue() ).toLocal8Bit().data() );
   }
+}
+
+QPointF QgsComposition::snapPointToGrid(const QPointF& scenePoint) const
+{
+  if(!mSnapToGrid || (!mSnapGridResolution > 0))
+    {
+      return scenePoint;
+    }
+
+  //snap x coordinate //todo: add support for x- and y- offset
+  int xRatio = (int)(scenePoint.x() / mSnapGridResolution + 0.5);
+  int yRatio = (int)(scenePoint.y() / mSnapGridResolution + 0.5);
+
+  return QPointF(xRatio * mSnapGridResolution, yRatio * mSnapGridResolution);
 }
 
 int QgsComposition::boundingRectOfSelectedItems(QRectF& bRect)
