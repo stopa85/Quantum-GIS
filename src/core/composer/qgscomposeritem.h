@@ -48,8 +48,12 @@ class CORE_EXPORT QgsComposerItem: public QGraphicsRectItem
       resizeDRightDown
     };
 
-    QgsComposerItem( QgsComposition* composition );
-    QgsComposerItem( qreal x, qreal y, qreal width, qreal height, QgsComposition* composition );
+    /**Constructor 
+     @param manageZValue true if the z-Value of this object should be managed by mComposition*/
+    QgsComposerItem( QgsComposition* composition, bool manageZValue = true);
+    /**Constructor with box position and composer object
+     @param manageZValue true if the z-Value of this object should be managed by mComposition*/
+    QgsComposerItem( qreal x, qreal y, qreal width, qreal height, QgsComposition* composition, bool manageZValue = true);
     virtual ~QgsComposerItem();
 
     /** \brief Set selected, selected item should be highlighted */

@@ -17,6 +17,7 @@
 #include "qgscomposition.h"
 #include "qgscomposeritem.h"
 #include "qgscomposermap.h"
+#include "qgspaperitem.h"
 #include <QDomDocument>
 #include <QDomElement>
 #include <QGraphicsRectItem>
@@ -26,7 +27,7 @@ QgsComposition::QgsComposition( QgsMapRenderer* mapRenderer ): QGraphicsScene( 0
   setBackgroundBrush( Qt::gray );
 
   //set paper item
-  mPaperItem = new QGraphicsRectItem( 0, 0, 297, 210, 0 ); //default size A4
+  mPaperItem = new QgsPaperItem( 0, 0, 297, 210, this); //default size A4
   mPaperItem->setBrush( Qt::white );
   addItem( mPaperItem );
   mPaperItem->setZValue( 0 );
@@ -181,7 +182,7 @@ bool QgsComposition::readXML( const QDomElement& compositionElem, const QDomDocu
   if ( widthConversionOk && heightConversionOk )
   {
     delete mPaperItem;
-    mPaperItem = new QGraphicsRectItem( 0, 0, paperWidth, paperHeight, 0 );
+    mPaperItem = new QgsPaperItem( 0, 0, paperWidth, paperHeight, this);
     mPaperItem->setBrush( Qt::white );
     addItem( mPaperItem );
     mPaperItem->setZValue( 0 );
@@ -560,10 +561,10 @@ QPointF QgsComposition::snapPointToGrid(const QPointF& scenePoint) const
     }
 
   //snap x coordinate //todo: add support for x- and y- offset
-  int xRatio = (int)(scenePoint.x() / mSnapGridResolution + 0.5);
-  int yRatio = (int)(scenePoint.y() / mSnapGridResolution + 0.5);
+  int xRatio = (int)((scenePoint.x() - mSnapGridOffsetX) / mSnapGridResolution + 0.5);
+  int yRatio = (int)((scenePoint.y() - mSnapGridOffsetY) / mSnapGridResolution + 0.5);
 
-  return QPointF(xRatio * mSnapGridResolution, yRatio * mSnapGridResolution);
+  return QPointF(xRatio * mSnapGridResolution + mSnapGridOffsetX, yRatio * mSnapGridResolution + mSnapGridOffsetY);
 }
 
 int QgsComposition::boundingRectOfSelectedItems(QRectF& bRect)
@@ -604,4 +605,40 @@ int QgsComposition::boundingRectOfSelectedItems(QRectF& bRect)
   bRect.setTopLeft(QPointF(minX, minY));
   bRect.setBottomRight(QPointF(maxX, maxY));
   return 0;
+}
+
+void QgsComposition::setSnapToGridEnabled(bool b)
+{
+  mSnapToGrid = b;
+  if(mPaperItem)
+    {
+      mPaperItem->update();
+    }
+}
+
+void QgsComposition::setSnapGridResolution(double r)
+{
+  mSnapGridResolution = r;
+  if(mPaperItem)
+    {
+      mPaperItem->update();
+    }
+}
+
+void QgsComposition::setSnapGridOffsetX(double offset)
+{
+  mSnapGridOffsetX = offset;
+  if(mPaperItem)
+    {
+      mPaperItem->update();
+    }
+}
+
+void QgsComposition::setSnapGridOffsetY(double offset)
+{
+  mSnapGridOffsetY = offset;
+  if(mPaperItem)
+    {
+      mPaperItem->update();
+    } 
 }

@@ -21,6 +21,7 @@
 
 class QgsComposerItem;
 class QgsComposerMap;
+class QgsPaperItem;
 class QGraphicsRectItem;
 class QgsMapRenderer;
 
@@ -57,16 +58,16 @@ class CORE_EXPORT QgsComposition: public QGraphicsScene
     /**Returns width of paper item*/
     double paperWidth() const;
 
-    void setSnapToGridEnabled(bool b) {mSnapToGrid = b;}
+    void setSnapToGridEnabled(bool b); 
     bool snapToGridEnabled() const {return mSnapToGrid;}
 
-    void setSnapGridResolution(double r){mSnapGridResolution = r;}
+    void setSnapGridResolution(double r);
     double snapGridResolution() const {return mSnapGridResolution;}
 
-    void setSnapGridOffsetX(double offset){mSnapGridOffsetX = offset;}
+    void setSnapGridOffsetX(double offset);
     double snapGridOffsetX() const {return mSnapGridOffsetX;}
 
-    void setSnapGridOffsetY(double offset){mSnapGridOffsetY = offset;}
+    void setSnapGridOffsetY(double offset);
     double snapGridOffsetY() const {return mSnapGridOffsetY;}
 
     /**Returns the topmose composer item. Ignores mPaperItem*/
@@ -139,7 +140,7 @@ class CORE_EXPORT QgsComposition: public QGraphicsScene
     /**Pointer to map renderer of QGIS main map*/
     QgsMapRenderer* mMapRenderer;
     QgsComposition::PlotStyle mPlotStyle;
-    QGraphicsRectItem* mPaperItem;
+    QgsPaperItem* mPaperItem;
 
     /**Maintains z-Order of items. Starts with item at position 1 (position 0 is always paper item)*/
     QLinkedList<QgsComposerItem*> mItemZList;

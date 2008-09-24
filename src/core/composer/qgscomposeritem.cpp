@@ -29,7 +29,7 @@
 
 #define FONT_WORKAROUND_SCALE 10 //scale factor for upscaling fontsize and downscaling painter
 
-QgsComposerItem::QgsComposerItem( QgsComposition* composition ): QGraphicsRectItem( 0 ), mComposition( composition ), mBoundingResizeRectangle( 0 ), mFrame( true )
+QgsComposerItem::QgsComposerItem( QgsComposition* composition, bool manageZValue): QGraphicsRectItem( 0 ), mComposition( composition ), mBoundingResizeRectangle( 0 ), mFrame( true )
 {
   setFlag( QGraphicsItem::ItemIsSelectable, true );
   setAcceptsHoverEvents( true );
@@ -41,13 +41,13 @@ QgsComposerItem::QgsComposerItem( QgsComposition* composition ): QGraphicsRectIt
   setPen( defaultPen );
 
   //let z-Value be managed by composition
-  if ( mComposition )
+  if ( mComposition && manageZValue)
   {
     mComposition->addItemToZList( this );
   }
 }
 
-QgsComposerItem::QgsComposerItem( qreal x, qreal y, qreal width, qreal height, QgsComposition* composition ): QGraphicsRectItem( 0, 0, width, height, 0 ), mComposition( composition ), mBoundingResizeRectangle( 0 ), mFrame( true )
+QgsComposerItem::QgsComposerItem( qreal x, qreal y, qreal width, qreal height, QgsComposition* composition, bool manageZValue): QGraphicsRectItem( 0, 0, width, height, 0 ), mComposition( composition ), mBoundingResizeRectangle( 0 ), mFrame( true )
 {
   setFlag( QGraphicsItem::ItemIsSelectable, true );
   setAcceptsHoverEvents( true );
@@ -63,7 +63,7 @@ QgsComposerItem::QgsComposerItem( qreal x, qreal y, qreal width, qreal height, Q
   setPen( defaultPen );
 
 //let z-Value be managed by composition
-  if ( mComposition )
+  if ( mComposition && manageZValue)
   {
     mComposition->addItemToZList( this );
   }
@@ -222,43 +222,69 @@ void QgsComposerItem::mouseMoveEvent( QGraphicsSceneMouseEvent * event )
   qWarning( "QgsComposerItem::mouseMoveEvent" );
     
   QPointF sceneMovePoint = event->lastScenePos();
-
-  if(composition() && composition()->snapToGridEnabled())
-    {
-      sceneMovePoint = composition()->snapPointToGrid(sceneMovePoint);
-    }
-
   if ( mBoundingResizeRectangle )
   {
-    double diffX = sceneMovePoint.x() - mLastMouseEventPos.x();
-    double diffY = sceneMovePoint.y() - mLastMouseEventPos.y();
+    //move action, change only transform but not rectangle
+    if(mCurrentMouseMoveAction == QgsComposerItem::moveItem) //move action
+      {
+	double diffX = sceneMovePoint.x() - mLastMouseEventPos.x();
+	double diffY = sceneMovePoint.y() - mLastMouseEventPos.y();
 
-    double mx, my, rx, ry;
+	//snap rectangle position but not the move point
+	double mx, my, rx, ry;
+	rectangleChange( diffX, diffY, mx, my, rx, ry );
 
-    rectangleChange( diffX, diffY, mx, my, rx, ry );
+	QTransform oldTransform = mBoundingResizeRectangle->transform();
+	QTransform transform;
+	QPointF upperLeft(oldTransform.dx() + mx, oldTransform.dy() + my);
+	QPointF snappedUpperLeft = upperLeft;
+	if(mx != 0.0 || my != 0.0)
+	  {
+	    snappedUpperLeft = mComposition->snapPointToGrid(upperLeft);
+	  }
+	transform.translate( snappedUpperLeft.x(), snappedUpperLeft.y());
+	mBoundingResizeRectangle->setTransform(transform);
 
-    QRectF r = mBoundingResizeRectangle->rect();
-    double newWidth = r.width() + rx;
-    double newHeight = r.height() + ry;
-
-    QTransform oldTransform = mBoundingResizeRectangle->transform();
-    QTransform transform;
-    transform.translate( oldTransform.dx() + mx, oldTransform.dy() + my );
-
-    QRectF newBoundingRect( 0, 0, newWidth, newHeight );
-
-    mBoundingResizeRectangle->setRect( newBoundingRect );
-    mBoundingResizeRectangle->setTransform( transform );
+	mLastMouseEventPos.setX(sceneMovePoint.x() + snappedUpperLeft.x() - upperLeft.x());
+	mLastMouseEventPos.setY(sceneMovePoint.y() + snappedUpperLeft.y() - upperLeft.y());
+      }
+    else //resize action, change only rect but not transformation
+      {
+	if(composition() && composition()->snapToGridEnabled())
+	  {
+	    sceneMovePoint = composition()->snapPointToGrid(sceneMovePoint);
+	  }
+	
+	double diffX = sceneMovePoint.x() - mLastMouseEventPos.x();
+	double diffY = sceneMovePoint.y() - mLastMouseEventPos.y();
+	
+	double mx, my, rx, ry;
+	
+	rectangleChange( diffX, diffY, mx, my, rx, ry );
+	
+	QRectF r = mBoundingResizeRectangle->rect();
+	double newWidth = r.width() + rx;
+	double newHeight = r.height() + ry;	
+	QRectF newBoundingRect( 0, 0, newWidth, newHeight );
+	
+	mBoundingResizeRectangle->setRect( newBoundingRect );
+	mLastMouseEventPos = sceneMovePoint;
+      }
+    
   }
-  mLastMouseEventPos = sceneMovePoint;
 }
 
 void QgsComposerItem::mousePressEvent( QGraphicsSceneMouseEvent * event )
 {
-  //set current position and type of mouse move action
+  if(!composition())
+    {
+      return;
+    }
+  mCurrentMouseMoveAction = mouseMoveActionForPosition( event->pos() );
+
+  //use snapped position for start point and last event point
   mMouseMoveStartPos = event->lastScenePos();
   mLastMouseEventPos = event->lastScenePos();
-  mCurrentMouseMoveAction = mouseMoveActionForPosition( event->pos() );
 
   //create and show bounding rectangle
   mBoundingResizeRectangle = new QGraphicsRectItem( 0 );
@@ -285,25 +311,46 @@ void QgsComposerItem::mouseReleaseEvent( QGraphicsSceneMouseEvent * event )
   }
 
   QPointF mouseMoveStopPoint = event->lastScenePos();
-  if(composition() && composition()->snapToGridEnabled())
+  
+  if(mCurrentMouseMoveAction == QgsComposerItem::moveItem) //move action
     {
-      mouseMoveStopPoint = composition()->snapPointToGrid(mouseMoveStopPoint);
+      double diffX = mouseMoveStopPoint.x() - mMouseMoveStartPos.x();
+      double diffY = mouseMoveStopPoint.y() - mMouseMoveStartPos.y();
+
+      //it was only a click
+      if ( abs( diffX ) < std::numeric_limits<double>::min() && abs( diffY ) < std::numeric_limits<double>::min() )
+	{
+	  return;
+	}
+
+      QPointF upperLeft(transform().dx() + diffX, transform().dy() + diffY);
+      QPointF snappedUpperLeft = mComposition->snapPointToGrid(upperLeft);
+      QTransform transform;
+      transform.translate(snappedUpperLeft.x(), snappedUpperLeft.y());
+      setTransform(transform);
     }
-  double diffX = mouseMoveStopPoint.x() - mMouseMoveStartPos.x();
-  double diffY = mouseMoveStopPoint.y() - mMouseMoveStartPos.y();
+  else //resize action
+    {
+      if(composition() && composition()->snapToGridEnabled())
+	{
+	  mouseMoveStopPoint = composition()->snapPointToGrid(mouseMoveStopPoint);
+	}
+      double diffX = mouseMoveStopPoint.x() - mMouseMoveStartPos.x();
+      double diffY = mouseMoveStopPoint.y() - mMouseMoveStartPos.y();
+      
+      //it was only a click
+      if ( abs( diffX ) < std::numeric_limits<double>::min() && abs( diffY ) < std::numeric_limits<double>::min() )
+	{
+	  return;
+	}
+      
+      double mx, my, rx, ry;
+      rectangleChange( diffX, diffY, mx, my, rx, ry );
 
-  //it was only a click
-  if ( abs( diffX ) < std::numeric_limits<double>::min() && abs( diffY ) < std::numeric_limits<double>::min() )
-  {
-    return;
-  }
-
-  double mx, my, rx, ry;
-  rectangleChange( diffX, diffY, mx, my, rx, ry );
-
-  QRectF currentRect = rect();
-  QRectF newRect( transform().dx() + mx, transform().dy() + my, currentRect.width() + rx, currentRect.height() + ry );
-  setSceneRect( newRect );
+      QRectF currentRect = rect();
+      QRectF newRect( transform().dx() + mx, transform().dy() + my, currentRect.width() + rx, currentRect.height() + ry );
+      setSceneRect( newRect );
+    }
 
   update();
   scene()->update();
