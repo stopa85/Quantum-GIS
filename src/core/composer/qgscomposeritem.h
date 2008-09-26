@@ -168,14 +168,15 @@ class CORE_EXPORT QgsComposerItem: public QGraphicsRectItem
     /**Finds out which mouse move action to choose depending on the cursor position inside the widget*/
     QgsComposerItem::mouseMoveAction mouseMoveActionForPosition( const QPointF& itemCoordPos );
 
-    /**Calculate rectangle changes according to mouse move (dx, dy) and the current mouse move action
-       @param dx x-coordinate move of cursor
-       @param dy y-coordinate move of cursor
-       @param mx out: rectangle should be moved by mx in x-direction
-       @param my out: rectangle should be moved by my in y-direction
-       @param rx out: width of rectangle should be resized by rx
-       @param ry out: height of rectangle should be resized by ry*/
-    void rectangleChange( double dx, double dy, double& mx, double& my, double& rx, double& ry ) const;
+    /**Changes the rectangle of an item depending on current mouse action (resize or move)
+     @param currentPosition current position of mouse cursor
+     @param mouseMoveStartPos cursor position at the start of the current mouse action
+     @param originalItem Item position at the start of the mouse action
+     @param dx x-Change of mouse cursor
+     @param dy y-Change of mouse cursor
+     @param changeItem Item to change size (can be the same as originalItem or a differen one)
+    */
+    void changeItemRectangle(const QPointF& currentPosition, const QPointF& mouseMoveStartPos, const QGraphicsRectItem* originalItem, double dx, double dy, QGraphicsRectItem* changeItem);
 
     /**Draw selection boxes around item*/
     virtual void drawSelectionBoxes( QPainter* p );
