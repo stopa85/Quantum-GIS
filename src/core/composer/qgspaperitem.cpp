@@ -20,11 +20,13 @@
 
 QgsPaperItem::QgsPaperItem(QgsComposition* c): QgsComposerItem(c, false)
 {
+  setFlag( QGraphicsItem::ItemIsSelectable, false );
   setZValue(0);
 }
 
 QgsPaperItem::QgsPaperItem( qreal x, qreal y, qreal width, qreal height, QgsComposition* composition ): QgsComposerItem(x, y, width, height, composition, false)
 {
+  setFlag( QGraphicsItem::ItemIsSelectable, false );
   setZValue(0);
 }
 
