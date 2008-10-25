@@ -48,6 +48,19 @@ class CORE_EXPORT QgsComposerItem: public QGraphicsRectItem
       resizeDRightDown
     };
 
+    enum ItemPositionMode
+      {
+	UpperLeft,
+	UpperMiddle,
+	UpperRight,
+	MiddleLeft,
+	Middle,
+	MiddleRight,
+	LowerLeft,
+	LowerMiddle,
+	LowerRight
+      };
+
     /**Constructor 
      @param manageZValue true if the z-Value of this object should be managed by mComposition*/
     QgsComposerItem( QgsComposition* composition, bool manageZValue = true);
@@ -84,6 +97,9 @@ class CORE_EXPORT QgsComposerItem: public QGraphicsRectItem
     @param x x-position of mouse cursor (in item coordinates)
     @param y y-position of mouse cursor (in item coordinates)*/
     virtual void zoomContent( int delta, double x, double y) {}
+
+    /**Moves the item to a new position (in canvas coordinates)*/
+    void setItemPosition(double x, double y, ItemPositionMode itemPoint = UpperLeft);
 
     /**Sets this items bound in scene coordinates such that 1 item size units
      corresponds to 1 scene size unit*/

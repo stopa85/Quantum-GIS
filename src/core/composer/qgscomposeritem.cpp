@@ -497,6 +497,37 @@ void QgsComposerItem::move( double dx, double dy )
   setSceneRect( newSceneRect );
 }
 
+void QgsComposerItem::setItemPosition(double x, double y, ItemPositionMode itemPoint)
+{
+  double width = rect().width();
+  double height = rect().height();
+
+  double upperLeftX = x;
+  double upperLeftY = y;
+
+  //adjust x-coordinate if placement is not done to a left point
+  if(itemPoint == UpperMiddle || itemPoint == Middle || itemPoint == LowerMiddle)
+    {
+      upperLeftX -= width / 2.0;
+    }
+  else if(itemPoint == UpperRight || itemPoint == MiddleRight || itemPoint == LowerRight)
+    {
+      upperLeftX -= width;
+    }
+
+  //adjust y-coordinate if placement is not done to an upper point
+  if(itemPoint == MiddleLeft || itemPoint == Middle || itemPoint == MiddleRight)
+    {
+      upperLeftY -= height / 2.0;
+    }
+  else if(itemPoint == LowerLeft || itemPoint == LowerMiddle || itemPoint == LowerRight)
+    {
+      upperLeftY -= height;
+    }
+
+  setSceneRect(QRectF(upperLeftX, upperLeftY, width, height));
+}
+
 void QgsComposerItem::setSceneRect( const QRectF& rectangle )
 {
   //setRect in item coordinates
