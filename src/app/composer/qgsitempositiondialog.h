@@ -27,7 +27,7 @@ class QgsItemPositionDialog: public QDialog, private Ui::QgsItemPositionDialogBa
 {
   Q_OBJECT
  public:
-  QgsItemPositionDialog(const QRectF& itemPosition, QWidget* parent = 0);
+  QgsItemPositionDialog(QgsComposerItem* item, QWidget* parent = 0);
   ~QgsItemPositionDialog();
 
   /**Get selected x- and y-coordinate as point. Returns 0 in case of success*/
@@ -36,6 +36,10 @@ class QgsItemPositionDialog: public QDialog, private Ui::QgsItemPositionDialogBa
   QgsComposerItem::ItemPositionMode positionMode() const;
 
  public slots:
+
+  void on_mCloseButton_clicked();
+  void on_mSetPositionButton_clicked();
+
   //adjust coordinates in line edits
   void on_mUpperLeftCheckBox_stateChanged(int state);
   void on_mUpperMiddleCheckBox_stateChanged(int state);
@@ -48,7 +52,7 @@ class QgsItemPositionDialog: public QDialog, private Ui::QgsItemPositionDialogBa
   void on_mLowerRightCheckBox_stateChanged(int state);
 
  private:
-  QRectF mItemPosition;
+  QgsComposerItem* mItem;
 
   //default constructor forbidden
   QgsItemPositionDialog();

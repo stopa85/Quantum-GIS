@@ -157,15 +157,6 @@ void QgsComposerItemWidget::on_mPositionButton_clicked()
       return;
     }
 
-  QgsItemPositionDialog d(QRectF(mItem->transform().dx(), mItem->transform().dy(), mItem->rect().width(), mItem->rect().height()), 0);
-  if(d.exec() == QDialog::Accepted)
-    {
-      QgsPoint itemPosition;
-      if(d.position(itemPosition) == 0)
-	{
-	  //query position and mode from dialog
-	  mItem->setItemPosition(itemPosition.x(), itemPosition.y(), d.positionMode());
-	  mItem->update();
-	}
-    }
+  QgsItemPositionDialog d(mItem, 0);
+  d.exec();
 }
