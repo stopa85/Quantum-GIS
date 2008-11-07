@@ -44,11 +44,11 @@ class CORE_EXPORT QgsMapRenderer : public QObject
 
   public:
 
-  /**Output units for pen width and point marker width/height*/
-  enum OUTPUT_UNITS
+    /**Output units for pen width and point marker width/height*/
+    enum OutputUnits
     {
-      MM,
-      PIXEL
+      Millimeters,
+      Pixels
       //MAP_UNITS probably supported in future versions
     };
 
@@ -82,12 +82,12 @@ class CORE_EXPORT QgsMapRenderer : public QObject
     void updateScale();
 
     //! Return the measuring object
-    QgsDistanceArea* distArea() { return mDistArea; }
-    QGis::units mapUnits() const;
-    void setMapUnits( QGis::units u );
+    QgsDistanceArea* distanceArea() { return mDistArea; }
+    QGis::UnitType mapUnits() const;
+    void setMapUnits( QGis::UnitType u );
 
     //! sets whether map image will be for overview
-    void setOverview( bool isOverview = true ) { mOverview = isOverview; }
+    void enableOverviewMode( bool isOverview = true ) { mOverview = isOverview; }
 
     void setOutputSize( QSize size, int dpi );
 
@@ -112,7 +112,7 @@ class CORE_EXPORT QgsMapRenderer : public QObject
     void setProjectionsEnabled( bool enabled );
 
     //! returns true if projections are enabled for this layer set
-    bool projectionsEnabled();
+    bool hasCrsTransformEnabled();
 
     //! sets destination spatial reference system
     void setDestinationSrs( const QgsCoordinateReferenceSystem& srs );
@@ -120,9 +120,9 @@ class CORE_EXPORT QgsMapRenderer : public QObject
     //! returns CRS ID of destination spatial reference system
     const QgsCoordinateReferenceSystem& destinationSrs();
 
-    void setOutputUnits(OUTPUT_UNITS u){mOutputUnits = u;}
+    void setOutputUnits( OutputUnits u ) {mOutputUnits = u;}
 
-    OUTPUT_UNITS outputUnits() const {return mOutputUnits;}
+    OutputUnits outputUnits() const {return mOutputUnits;}
 
     //! returns current extent of layer set
     QgsRect fullExtent();
@@ -149,7 +149,7 @@ class CORE_EXPORT QgsMapRenderer : public QObject
 
     void drawingProgress( int current, int total );
 
-    void projectionsEnabled( bool flag );
+    void hasCrsTransformEnabled( bool flag );
 
     void destinationSrsChanged();
 
@@ -219,7 +219,7 @@ class CORE_EXPORT QgsMapRenderer : public QObject
     QgsRenderContext mRenderContext;
 
     //!Output units
-    OUTPUT_UNITS mOutputUnits;
+    OutputUnits mOutputUnits;
 };
 
 #endif

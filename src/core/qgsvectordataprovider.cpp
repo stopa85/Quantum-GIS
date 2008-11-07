@@ -47,16 +47,16 @@ long QgsVectorDataProvider::updateFeatureCount()
   return -1;
 }
 
-bool QgsVectorDataProvider::getFeatureAtId( int featureId,
+bool QgsVectorDataProvider::featureAtId( int featureId,
     QgsFeature& feature,
     bool fetchGeometry,
     QgsAttributeList fetchAttributes )
 {
   select( fetchAttributes, QgsRect(), fetchGeometry );
 
-  while ( getNextFeature( feature ) )
+  while ( nextFeature( feature ) )
   {
-    if ( feature.featureId() == featureId )
+    if ( feature.id() == featureId )
       return TRUE;
   }
 
@@ -93,7 +93,7 @@ bool QgsVectorDataProvider::changeAttributeValues( const QgsChangedAttributesMap
   return false;
 }
 
-QVariant QgsVectorDataProvider::getDefaultValue( int fieldId )
+QVariant QgsVectorDataProvider::defaultValue( int fieldId )
 {
   return QVariant();
 }
@@ -232,7 +232,21 @@ int QgsVectorDataProvider::fieldNameIndex( const QString& fieldName ) const
   return -1;
 }
 
-QgsAttributeList QgsVectorDataProvider::allAttributesList()
+QMap<QString, int> QgsVectorDataProvider::fieldNameMap() const
+{
+  QMap<QString, int> resultMap;
+
+  const QgsFieldMap& theFields = fields();
+  QgsFieldMap::const_iterator field_it = theFields.constBegin();
+  for ( ; field_it != theFields.constEnd(); ++field_it )
+  {
+    resultMap.insert( field_it.value().name(), field_it.key() );
+  }
+
+  return resultMap;
+}
+
+QgsAttributeList QgsVectorDataProvider::attributeIndexes()
 {
   uint count = fieldCount();
   QgsAttributeList list;
@@ -302,7 +316,7 @@ void QgsVectorDataProvider::uniqueValues( int index, QList<QVariant> &values )
   QSet<QString> set;
   values.clear();
 
-  while ( getNextFeature( f ) )
+  while ( nextFeature( f ) )
   {
     if ( !set.contains( f.attributeMap()[index].toString() ) )
     {
@@ -333,7 +347,7 @@ void QgsVectorDataProvider::fillMinMaxCache()
   QgsAttributeList keys = mCacheMinValues.keys();
   select( keys, QgsRect(), false );
 
-  while ( getNextFeature( f ) )
+  while ( nextFeature( f ) )
   {
     QgsAttributeMap attrMap = f.attributeMap();
     for ( QgsAttributeList::const_iterator it = keys.begin(); it != keys.end(); ++it )

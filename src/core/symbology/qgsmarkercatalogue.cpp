@@ -50,6 +50,7 @@ QgsMarkerCatalogue::QgsMarkerCatalogue()
   mList.append( "hard:cross2" );
   mList.append( "hard:triangle" );
   mList.append( "hard:star" );
+  mList.append( "hard:arrow" );
 
   // SVG
   QString svgPath = QgsApplication::svgPath();
@@ -100,6 +101,13 @@ QImage QgsMarkerCatalogue::imageMarker( QString fullName, double size, QPen pen,
   //
   // First prepare the paintdevice that the marker will be drawn onto
   //
+
+  // Introduce a minimum size, we don't want it to disappear.
+  if ( size < 4 )
+  {
+    size = 4;
+  }
+
   QImage myImage;
   if ( fullName.left( 5 ) == "hard:" )
   {
@@ -109,7 +117,6 @@ QImage QgsMarkerCatalogue::imageMarker( QString fullName, double size, QPen pen,
   {
     // TODO Change this logic so width is size and height is same
     // proportion of scale factor as in oritignal SVG TS XXX
-    if ( size < 1 ) size = 1;
     //QPixmap myPixmap = QPixmap(width,height);
     myImage = QImage( size, size, QImage::Format_ARGB32_Premultiplied );
   }
@@ -218,7 +225,8 @@ void QgsMarkerCatalogue::hardMarker( QPainter * thepPainter, QString name, doubl
   int r = ( s - 2 * lw ) / 2 - 1;
   QgsDebugMsg( QString( "Hard marker radius %1" ).arg( r ) );
 
-  if ( name == "circle" )
+  // If radius is 0, draw a circle, so it wont disappear.
+  if ( name == "circle" || r < 1 )
   {
     // "A stroked ellipse has a size of rectangle.size() plus the pen width."
     // (from Qt doc)
@@ -281,6 +289,22 @@ void QgsMarkerCatalogue::hardMarker( QPainter * thepPainter, QString name, doubl
     pa.setPoint( 8, x_c + half, y_c - oneSixth );
     pa.setPoint( 9, x_c + oneSixth, y_c - oneSixth );
     thepPainter->drawPolygon( pa );
+  }
+
+  else if (name == "arrow")
+  {
+    int oneEight = r / 4;
+    int quarter = r / 2;
+
+    QPolygon pa(7);
+    pa.setPoint( 0, x_c, y_c - r );
+    pa.setPoint( 1, x_c + quarter,  y_c - quarter );
+    pa.setPoint( 2, x_c + oneEight, y_c - quarter );
+    pa.setPoint( 3, x_c + oneEight, y_c + r );
+    pa.setPoint( 4, x_c - oneEight, y_c + r );
+    pa.setPoint( 5, x_c - oneEight, y_c - quarter );
+    pa.setPoint( 6, x_c - quarter,  y_c - quarter );
+    thepPainter->drawPolygon ( pa );
   }
   thepPainter->end();
 }

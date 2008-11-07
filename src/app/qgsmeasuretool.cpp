@@ -67,7 +67,7 @@ void QgsMeasureTool::activate()
 
   // If we suspect that they have data that is projected, yet the
   // map CRS is set to a geographic one, warn them.
-  if ( mCanvas->mapRenderer()->distArea()->geographic() &&
+  if ( mCanvas->mapRenderer()->distanceArea()->geographic() &&
        ( mCanvas->extent().height() > 360 ||
          mCanvas->extent().width() > 720 ) )
   {
@@ -123,9 +123,9 @@ void QgsMeasureTool::updateProjection()
 
   // set source CRS and projections enabled flag
   // QgsMapRenderer* mapRender = mCanvas->mapRenderer();
-  // mCalc->setProjectionsEnabled(mapRender->projectionsEnabled());
+  // mCalc->setProjectionsEnabled(mapRender->hasCrsTransformEnabled());
   // int srsid = mapRender->destinationSrs().srsid();
-  // mCalc->setSourceCRS(srsid);
+  // mCalc->setSourceCrs(srsid);
 
   int myRed = settings.value( "/qgis/default_measure_color_red", 180 ).toInt();
   int myGreen = settings.value( "/qgis/default_measure_color_green", 180 ).toInt();

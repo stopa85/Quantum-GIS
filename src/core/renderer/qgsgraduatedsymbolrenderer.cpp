@@ -22,6 +22,7 @@
 #include "qgsgraduatedsymbolrenderer.h"
 #include "qgssymbol.h"
 #include "qgssymbologyutils.h"
+#include "qgsvectordataprovider.h"
 #include "qgsvectorlayer.h"
 #include <math.h>
 #include <QDomNode>
@@ -30,14 +31,15 @@
 #include <QPainter>
 
 
-QgsGraduatedSymbolRenderer::QgsGraduatedSymbolRenderer( QGis::VectorType type )
+QgsGraduatedSymbolRenderer::QgsGraduatedSymbolRenderer( QGis::GeometryType type, Mode mode )
 {
-  mVectorType = type;
+  mGeometryType = type;
 }
 
 QgsGraduatedSymbolRenderer::QgsGraduatedSymbolRenderer( const QgsGraduatedSymbolRenderer& other )
 {
-  mVectorType = other.mVectorType;
+  mMode = other.mMode;
+  mGeometryType = other.mGeometryType;
   mClassificationField = other.mClassificationField;
   const QList<QgsSymbol*> s = other.symbols();
   for ( QList<QgsSymbol*>::const_iterator it = s.begin(); it != s.end(); ++it )
@@ -51,7 +53,8 @@ QgsGraduatedSymbolRenderer& QgsGraduatedSymbolRenderer::operator=( const QgsGrad
 {
   if ( this != &other )
   {
-    mVectorType = other.mVectorType;
+    mMode = other.mMode;
+    mGeometryType = other.mGeometryType;
     mClassificationField = other.mClassificationField;
     removeSymbols();
     const QList<QgsSymbol*> s = other.symbols();
@@ -68,6 +71,25 @@ QgsGraduatedSymbolRenderer& QgsGraduatedSymbolRenderer::operator=( const QgsGrad
 QgsGraduatedSymbolRenderer::~QgsGraduatedSymbolRenderer()
 {
 
+}
+
+
+QgsGraduatedSymbolRenderer::Mode QgsGraduatedSymbolRenderer::mode() const
+{
+  //mode is only really used to be able to reinstate
+  //the graduated dialog properties properly, so we
+  //dont do anything else besides accessors and mutators in
+  //this class
+  return mMode;
+}
+
+void QgsGraduatedSymbolRenderer::setMode( QgsGraduatedSymbolRenderer::Mode theMode )
+{
+  //mode is only really used to be able to reinstate
+  //the graduated dialog properties properly, so we
+  //dont do anything else besides accessors and mutators in
+  //this class
+  mMode = theMode;
 }
 
 const QList<QgsSymbol*> QgsGraduatedSymbolRenderer::symbols() const
@@ -98,11 +120,11 @@ void QgsGraduatedSymbolRenderer::renderFeature( QPainter * p, QgsFeature & f, QI
   QgsSymbol* theSymbol = symbolForFeature( &f );
   if ( !theSymbol )
   {
-    if ( img && mVectorType == QGis::Point )
+    if ( img && mGeometryType == QGis::Point )
     {
       img->fill( 0 );
     }
-    else if ( mVectorType != QGis::Point )
+    else if ( mGeometryType != QGis::Point )
     {
       p->setPen( Qt::NoPen );
       p->setBrush( Qt::NoBrush );
@@ -112,7 +134,7 @@ void QgsGraduatedSymbolRenderer::renderFeature( QPainter * p, QgsFeature & f, QI
 
   //set the qpen and qpainter to the right values
   // Point
-  if ( img && mVectorType == QGis::Point )
+  if ( img && mGeometryType == QGis::Point )
   {
     double fieldScale = 1.0;
     double rotation = 0.0;
@@ -134,7 +156,7 @@ void QgsGraduatedSymbolRenderer::renderFeature( QPainter * p, QgsFeature & f, QI
   }
 
   // Line, polygon
-  if ( mVectorType != QGis::Point )
+  if ( mGeometryType != QGis::Point )
   {
     if ( !selected )
     {
@@ -142,7 +164,7 @@ void QgsGraduatedSymbolRenderer::renderFeature( QPainter * p, QgsFeature & f, QI
       pen.setWidthF( widthScale * pen.widthF() );
       p->setPen( pen );
 
-      if ( mVectorType == QGis::Polygon )
+      if ( mGeometryType == QGis::Polygon )
       {
         QBrush brush = theSymbol->brush();
         scaleBrush( brush, rasterScaleFactor ); //scale brush content for printout
@@ -152,17 +174,20 @@ void QgsGraduatedSymbolRenderer::renderFeature( QPainter * p, QgsFeature & f, QI
     else
     {
       QPen pen = theSymbol->pen();
-      pen.setColor( mSelectionColor );
       pen.setWidthF( widthScale * pen.widthF() );
-      p->setPen( pen );
 
-      if ( mVectorType == QGis::Polygon )
+      if ( mGeometryType == QGis::Polygon )
       {
         QBrush brush = theSymbol->brush();
         scaleBrush( brush, rasterScaleFactor ); //scale brush content for printout
         brush.setColor( mSelectionColor );
         p->setBrush( brush );
       }
+      else //dont draw outlines in selection colour for polys otherwise they appear merged
+      {
+        pen.setColor( mSelectionColor );
+      }
+      p->setPen( pen );
     }
   }
 }
@@ -190,18 +215,43 @@ QgsSymbol *QgsGraduatedSymbolRenderer::symbolForFeature( const QgsFeature* f )
   return ( *it );
 }
 
-void QgsGraduatedSymbolRenderer::readXML( const QDomNode& rnode, QgsVectorLayer& vl )
+int QgsGraduatedSymbolRenderer::readXML( const QDomNode& rnode, QgsVectorLayer& vl )
 {
-  mVectorType = vl.vectorType();
+  mGeometryType = vl.geometryType();
+  QDomNode modeNode = rnode.namedItem( "mode" );
+  QString modeValue = modeNode.toElement().text();
   QDomNode classnode = rnode.namedItem( "classificationfield" );
-  int classificationfield = classnode.toElement().text().toInt();
+  QString classificationField = classnode.toElement().text();
 
-  this->setClassificationField( classificationfield );
+  QgsVectorDataProvider* theProvider = vl.dataProvider();
+  if ( !theProvider )
+  {
+    return 1;
+  }
+  if ( modeValue == "Empty" )
+  {
+    mMode = QgsGraduatedSymbolRenderer::Empty;
+  }
+  else if ( modeValue == "Quantile" )
+  {
+    mMode = QgsGraduatedSymbolRenderer::Quantile;
+  }
+  else //default
+  {
+    mMode = QgsGraduatedSymbolRenderer::EqualInterval;
+  }
+
+  int classificationId = theProvider->fieldNameIndex( classificationField );
+  if ( classificationId == -1 )
+  {
+    return 2; //@todo: handle gracefully in gui situation where user needs to nominate field
+  }
+  this->setClassificationField( classificationId );
 
   QDomNode symbolnode = rnode.namedItem( "symbol" );
   while ( !symbolnode.isNull() )
   {
-    QgsSymbol* sy = new QgsSymbol( mVectorType );
+    QgsSymbol* sy = new QgsSymbol( mGeometryType );
     sy->readXML( symbolnode );
     this->addSymbol( sy );
 
@@ -209,6 +259,7 @@ void QgsGraduatedSymbolRenderer::readXML( const QDomNode& rnode, QgsVectorLayer&
   }
   updateSymbolAttributes();
   vl.setRenderer( this );
+  return 0;
 }
 
 QgsAttributeList QgsGraduatedSymbolRenderer::classificationAttributes() const
@@ -249,13 +300,57 @@ QString QgsGraduatedSymbolRenderer::name() const
   return "Graduated Symbol";
 }
 
-bool QgsGraduatedSymbolRenderer::writeXML( QDomNode & layer_node, QDomDocument & document ) const
+bool QgsGraduatedSymbolRenderer::writeXML( QDomNode & layer_node, QDomDocument & document, const QgsVectorLayer& vl ) const
 {
   bool returnval = true;
   QDomElement graduatedsymbol = document.createElement( "graduatedsymbol" );
   layer_node.appendChild( graduatedsymbol );
+
+  //
+  // Mode field first ...
+  //
+
+  QString modeValue = "";
+  if ( mMode == QgsGraduatedSymbolRenderer::Empty )
+  {
+    modeValue == "Empty";
+  }
+  else if ( QgsGraduatedSymbolRenderer::Quantile )
+  {
+    modeValue = "Quantile";
+  }
+  else //default
+  {
+    modeValue = "Equal Interval";
+  }
+  QDomElement modeElement = document.createElement( "mode" );
+  QDomText modeText = document.createTextNode( modeValue );
+  modeElement.appendChild( modeText );
+  graduatedsymbol.appendChild( modeElement );
+
+
+
+  //
+  // classification field now ...
+  //
+
   QDomElement classificationfield = document.createElement( "classificationfield" );
-  QDomText classificationfieldtxt = document.createTextNode( QString::number( mClassificationField ) );
+
+  const QgsVectorDataProvider* theProvider = vl.dataProvider();
+  if ( !theProvider )
+  {
+    return false;
+  }
+
+  QString classificationFieldName;
+  QgsFieldMap::const_iterator field_it = theProvider->fields().find( mClassificationField );
+  if ( field_it != theProvider->fields().constEnd() )
+  {
+    classificationFieldName = field_it.value().name();
+  }
+
+
+  QDomText classificationfieldtxt = document.createTextNode( classificationFieldName );
   classificationfield.appendChild( classificationfieldtxt );
   graduatedsymbol.appendChild( classificationfield );
   for ( QList<QgsSymbol*>::const_iterator it = mSymbols.begin(); it != mSymbols.end(); ++it )

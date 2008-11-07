@@ -87,7 +87,7 @@ void QgsMapToolIdentify::canvasReleaseEvent( QMouseEvent * e )
     // coordinates are sent back to the server as pixel coordinates
     // not the layer's native CRS.  So identify on screen coordinates!
     if (
-      ( mLayer->type() == QgsMapLayer::RASTER )
+      ( mLayer->type() == QgsMapLayer::RasterLayer )
       &&
       ( dynamic_cast<QgsRasterLayer*>( mLayer )->providerKey() == "wms" )
     )
@@ -99,11 +99,11 @@ void QgsMapToolIdentify::canvasReleaseEvent( QMouseEvent * e )
       // convert screen coordinates to map coordinates
       QgsPoint idPoint = mCanvas->getCoordinateTransform()->toMapCoordinates( e->x(), e->y() );
 
-      if ( mLayer->type() == QgsMapLayer::VECTOR )
+      if ( mLayer->type() == QgsMapLayer::VectorLayer )
       {
         identifyVectorLayer( idPoint );
       }
-      else if ( mLayer->type() == QgsMapLayer::RASTER )
+      else if ( mLayer->type() == QgsMapLayer::RasterLayer )
       {
         identifyRasterLayer( idPoint );
       }
@@ -243,16 +243,16 @@ void QgsMapToolIdentify::identifyVectorLayer( const QgsPoint& point )
 
   // init distance/area calculator
   QgsDistanceArea calc;
-  calc.setProjectionsEnabled( mCanvas->projectionsEnabled() ); // project?
+  calc.setProjectionsEnabled( mCanvas->hasCrsTransformEnabled() ); // project?
   calc.setEllipsoid( ellipsoid );
-  calc.setSourceCRS( layer->srs().srsid() );
+  calc.setSourceCrs( layer->srs().srsid() );
 
   mFeatureList.clear();
   QApplication::setOverrideCursor( Qt::WaitCursor );
 
   // toLayerCoordinates will throw an exception for an 'invalid' point.
   // For example, if you project a world map onto a globe using EPSG 2163
-  // and then click somewhere off the globe, an exception will be thrown. 
+  // and then click somewhere off the globe, an exception will be thrown.
   try
   {
     // create the search rectangle
@@ -268,7 +268,7 @@ void QgsMapToolIdentify::identifyVectorLayer( const QgsPoint& point )
 
     layer->select( layer->pendingAllAttributesList(), r, true, true );
     QgsFeature f;
-    while ( layer->getNextFeature( f ) )
+    while ( layer->nextFeature( f ) )
       mFeatureList << QgsFeature( f );
   }
   catch ( QgsCsException & cse )
@@ -317,12 +317,12 @@ void QgsMapToolIdentify::identifyVectorLayer( const QgsPoint& point )
     featureCount++;
 
     QTreeWidgetItem* featureNode = mResults->addNode( "foo" );
-    featureNode->setData( 0, Qt::UserRole, QVariant( f_it->featureId() ) ); // save feature id
-    lastFeatureId = f_it->featureId();
+    featureNode->setData( 0, Qt::UserRole, QVariant( f_it->id() ) ); // save feature id
+    lastFeatureId = f_it->id();
     featureNode->setText( 0, fieldIndex );
 
     if ( layer->isEditable() )
-      mResults->addEdit( featureNode, f_it->featureId() );
+      mResults->addEdit( featureNode, f_it->id() );
 
     const QgsAttributeMap& attr = f_it->attributeMap();
 
@@ -339,7 +339,7 @@ void QgsMapToolIdentify::identifyVectorLayer( const QgsPoint& point )
 
     // Calculate derived attributes and insert:
     // measure distance or area depending on geometry type
-    if ( layer->vectorType() == QGis::Line )
+    if ( layer->geometryType() == QGis::Line )
     {
       double dist = calc.measure( f_it->geometry() );
       QString str = calc.textUnit( dist, 3, mCanvas->mapUnits(), false );
@@ -357,13 +357,13 @@ void QgsMapToolIdentify::identifyVectorLayer( const QgsPoint& point )
         mResults->addDerivedAttribute( featureNode, "endY", str );
       }
     }
-    else if ( layer->vectorType() == QGis::Polygon )
+    else if ( layer->geometryType() == QGis::Polygon )
     {
       double area = calc.measure( f_it->geometry() );
       QString str = calc.textUnit( area, 3, mCanvas->mapUnits(), true );
       mResults->addDerivedAttribute( featureNode, QObject::tr( "Area" ), str );
     }
-    else if ( layer->vectorType() == QGis::Point )
+    else if ( layer->geometryType() == QGis::Point )
     {
       // Include the x and y coordinates of the point as a derived attribute
       QString str;
@@ -412,16 +412,16 @@ void QgsMapToolIdentify::showError()
 {
   //   QMessageBox::warning(
   //     this,
-  //     mapLayer->errorCaptionString(),
+  //     mapLayer->lastErrorTitle(),
   //     tr("Could not draw") + " " + mapLayer->name() + " " + tr("because") + ":\n" +
-  //       mapLayer->errorString()
+  //       mapLayer->lastError()
   //   );
 
   QgsMessageViewer * mv = new QgsMessageViewer();
-  mv->setWindowTitle( mLayer->errorCaptionString() );
+  mv->setWindowTitle( mLayer->lastErrorTitle() );
   mv->setMessageAsPlainText(
     QObject::tr( "Could not identify objects on" ) + " " + mLayer->name() + " " + QObject::tr( "because" ) + ":\n" +
-    mLayer->errorString()
+    mLayer->lastError()
   );
   mv->exec(); // deletes itself on close
 }
@@ -451,7 +451,7 @@ void QgsMapToolIdentify::highlightFeature( int featureId )
   mRubberBand = 0;
 
   QgsFeature feat;
-  if ( layer->getFeatureAtId( featureId, feat, true, false ) != 0 )
+  if ( layer->featureAtId( featureId, feat, true, false ) != 0 )
   {
     return;
   }
@@ -461,7 +461,7 @@ void QgsMapToolIdentify::highlightFeature( int featureId )
     return;
   }
 
-  mRubberBand = new QgsRubberBand( mCanvas, feat.geometry()->vectorType() == QGis::Polygon );
+  mRubberBand = new QgsRubberBand( mCanvas, feat.geometry()->type() == QGis::Polygon );
 
   if ( mRubberBand )
   {
@@ -476,7 +476,7 @@ void QgsMapToolIdentify::editFeature( int featureId )
 {
   for ( QgsFeatureList::iterator it = mFeatureList.begin(); it != mFeatureList.end(); it++ )
   {
-    if ( it->featureId() == featureId )
+    if ( it->id() == featureId )
     {
       editFeature( *it );
       break;
@@ -503,7 +503,7 @@ void QgsMapToolIdentify::editFeature( QgsFeature &f )
     for ( QgsAttributeMap::const_iterator it = dst.begin(); it != dst.end(); it++ )
     {
       if ( !src.contains( it.key() ) || it.value() != src[it.key()] )
-        layer->changeAttributeValue( f.featureId(), it.key(), it.value() );
+        layer->changeAttributeValue( f.id(), it.key(), it.value() );
     }
   }
   delete ad;

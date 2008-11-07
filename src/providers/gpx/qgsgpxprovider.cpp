@@ -111,6 +111,7 @@ QgsGPXProvider::QgsGPXProvider( QString uri ) :
 QgsGPXProvider::~QgsGPXProvider()
 {
   GPSData::releaseData( mFileName );
+  delete mSelectionRectangle;
 }
 
 
@@ -126,7 +127,7 @@ int QgsGPXProvider::capabilities() const
          QgsVectorDataProvider::ChangeAttributeValues;
 }
 
-bool QgsGPXProvider::getNextFeature( QgsFeature& feature )
+bool QgsGPXProvider::nextFeature( QgsFeature& feature )
 {
   bool result = false;
 
@@ -212,59 +213,80 @@ bool QgsGPXProvider::getNextFeature( QgsFeature& feature )
       if (( rte->xMax >= b.xMin() ) && ( rte->xMin <= b.xMax() ) &&
           ( rte->yMax >= b.yMin() ) && ( rte->yMin <= b.yMax() ) )
       {
-        feature.setFeatureId( rte->id );
-        result = true;
-
         // some wkb voodoo
-        if ( mFetchGeom )
+        int nPoints = rte->points.size();
+        char* geo = new char[9 + 16 * nPoints];
+        std::memset( geo, 0, 9 + 16 * nPoints );
+        geo[0] = QgsApplication::endian();
+        geo[geo[0] == QgsApplication::NDR ? 1 : 4] = QGis::WKBLineString;
+        std::memcpy( geo + 5, &nPoints, 4 );
+        for ( uint i = 0; i < rte->points.size(); ++i )
         {
-          int nPoints = rte->points.size();
-          char* geo = new char[9 + 16 * nPoints];
-          std::memset( geo, 0, 9 + 16 * nPoints );
-          geo[0] = QgsApplication::endian();
-          geo[geo[0] == QgsApplication::NDR ? 1 : 4] = QGis::WKBLineString;
-          std::memcpy( geo + 5, &nPoints, 4 );
-          for ( uint i = 0; i < rte->points.size(); ++i )
-          {
-            std::memcpy( geo + 9 + 16 * i, &rte->points[i].lon, sizeof( double ) );
-            std::memcpy( geo + 9 + 16 * i + 8, &rte->points[i].lat, sizeof( double ) );
-          }
-          feature.setGeometryAndOwnership(( unsigned char * )geo, 9 + 16 * nPoints );
-        }
-        feature.setValid( true );
-
-        // add attributes if they are wanted
-        for ( iter = mAttributesToFetch.begin(); iter != mAttributesToFetch.end(); ++iter )
-        {
-          switch ( *iter )
-          {
-            case NameAttr:
-              feature.addAttribute( NameAttr, QVariant( rte->name ) );
-              break;
-            case NumAttr:
-              if ( rte->number != std::numeric_limits<int>::max() )
-                feature.addAttribute( NumAttr, QVariant( rte->number ) );
-              break;
-            case CmtAttr:
-              feature.addAttribute( CmtAttr, QVariant( rte->cmt ) );
-              break;
-            case DscAttr:
-              feature.addAttribute( DscAttr, QVariant( rte->desc ) );
-              break;
-            case SrcAttr:
-              feature.addAttribute( SrcAttr, QVariant( rte->src ) );
-              break;
-            case URLAttr:
-              feature.addAttribute( URLAttr, QVariant( rte->url ) );
-              break;
-            case URLNameAttr:
-              feature.addAttribute( URLNameAttr, QVariant( rte->urlname ) );
-              break;
-          }
+          std::memcpy( geo + 9 + 16 * i, &rte->points[i].lon, sizeof( double ) );
+          std::memcpy( geo + 9 + 16 * i + 8, &rte->points[i].lat, sizeof( double ) );
         }
 
-        ++mRteIter;
-        break;
+        //create QgsGeometry and use it for intersection test
+        //if geometry is to be fetched, it is attached to the feature, otherwise we delete it
+        QgsGeometry* theGeometry = new QgsGeometry();
+        theGeometry->fromWkb(( unsigned char * )geo, 9 + 16 * nPoints );
+        bool intersection = theGeometry->intersects( b );//use geos for precise intersection test
+
+        if ( !intersection )
+        {
+          delete theGeometry;
+        }
+        else
+        {
+          if ( mFetchGeom )
+          {
+            feature.setGeometry( theGeometry );
+          }
+          else
+          {
+            delete theGeometry;
+          }
+          feature.setFeatureId( rte->id );
+          result = true;
+          feature.setValid( true );
+
+          // add attributes if they are wanted
+          for ( iter = mAttributesToFetch.begin(); iter != mAttributesToFetch.end(); ++iter )
+          {
+            switch ( *iter )
+            {
+              case NameAttr:
+                feature.addAttribute( NameAttr, QVariant( rte->name ) );
+                break;
+              case NumAttr:
+                if ( rte->number != std::numeric_limits<int>::max() )
+                  feature.addAttribute( NumAttr, QVariant( rte->number ) );
+                break;
+              case CmtAttr:
+                feature.addAttribute( CmtAttr, QVariant( rte->cmt ) );
+                break;
+              case DscAttr:
+                feature.addAttribute( DscAttr, QVariant( rte->desc ) );
+                break;
+              case SrcAttr:
+                feature.addAttribute( SrcAttr, QVariant( rte->src ) );
+                break;
+              case URLAttr:
+                feature.addAttribute( URLAttr, QVariant( rte->url ) );
+                break;
+              case URLNameAttr:
+                feature.addAttribute( URLNameAttr, QVariant( rte->urlname ) );
+                break;
+            }
+          }
+
+          ++mRteIter;
+          break;
+
+        }
+
+        //++mRteIter;
+        //xbreak;
       }
     }
   }
@@ -295,71 +317,90 @@ bool QgsGPXProvider::getNextFeature( QgsFeature& feature )
       if (( trk->xMax >= b.xMin() ) && ( trk->xMin <= b.xMax() ) &&
           ( trk->yMax >= b.yMin() ) && ( trk->yMin <= b.yMax() ) )
       {
-        feature.setFeatureId( trk->id );
-        result = true;
-
         // some wkb voodoo
-        if ( mFetchGeom )
+        char* geo = new char[9 + 16 * totalPoints];
+        if ( !geo )
         {
-          char* geo = new char[9 + 16 * totalPoints];
-          if ( !geo )
-          {
-            QgsDebugMsg( "Too large track!!!" );
-            return false;
-          }
-          std::memset( geo, 0, 9 + 16 * totalPoints );
-          geo[0] = QgsApplication::endian();
-          geo[geo[0] == QgsApplication::NDR ? 1 : 4] = QGis::WKBLineString;
-          std::memcpy( geo + 5, &totalPoints, 4 );
+          QgsDebugMsg( "Too large track!!!" );
+          return false;
+        }
+        std::memset( geo, 0, 9 + 16 * totalPoints );
+        geo[0] = QgsApplication::endian();
+        geo[geo[0] == QgsApplication::NDR ? 1 : 4] = QGis::WKBLineString;
+        std::memcpy( geo + 5, &totalPoints, 4 );
 
-          int thisPoint = 0;
-          for ( std::vector<TrackSegment>::size_type k = 0; k < trk->segments.size(); k++ )
+        int thisPoint = 0;
+        for ( std::vector<TrackSegment>::size_type k = 0; k < trk->segments.size(); k++ )
+        {
+          int nPoints = trk->segments[k].points.size();
+          for ( int i = 0; i < nPoints; ++i )
           {
-            int nPoints = trk->segments[k].points.size();
-            for ( int i = 0; i < nPoints; ++i )
+            std::memcpy( geo + 9 + 16 * thisPoint,     &trk->segments[k].points[i].lon, sizeof( double ) );
+            std::memcpy( geo + 9 + 16 * thisPoint + 8, &trk->segments[k].points[i].lat, sizeof( double ) );
+            thisPoint++;
+          }
+        }
+
+        //create QgsGeometry and use it for intersection test
+        //if geometry is to be fetched, it is attached to the feature, otherwise we delete it
+        QgsGeometry* theGeometry = new QgsGeometry();
+        theGeometry->fromWkb(( unsigned char * )geo, 9 + 16 * totalPoints );
+        bool intersection = theGeometry->intersects( b );//use geos for precise intersection test
+
+        if ( !intersection ) //no intersection, delete geometry and move on
+        {
+          delete theGeometry;
+        }
+        else //intersection
+        {
+          if ( mFetchGeom )
+          {
+            feature.setGeometry( theGeometry );
+          }
+          else
+          {
+            delete theGeometry;
+          }
+          feature.setFeatureId( trk->id );
+          result = true;
+
+          feature.setValid( true );
+
+          // add attributes if they are wanted
+          for ( iter = mAttributesToFetch.begin(); iter != mAttributesToFetch.end(); ++iter )
+          {
+            switch ( *iter )
             {
-              std::memcpy( geo + 9 + 16 * thisPoint,     &trk->segments[k].points[i].lon, sizeof( double ) );
-              std::memcpy( geo + 9 + 16 * thisPoint + 8, &trk->segments[k].points[i].lat, sizeof( double ) );
-              thisPoint++;
+              case NameAttr:
+                feature.addAttribute( NameAttr, QVariant( trk->name ) );
+                break;
+              case NumAttr:
+                if ( trk->number != std::numeric_limits<int>::max() )
+                  feature.addAttribute( NumAttr, QVariant( trk->number ) );
+                break;
+              case CmtAttr:
+                feature.addAttribute( CmtAttr, QVariant( trk->cmt ) );
+                break;
+              case DscAttr:
+                feature.addAttribute( DscAttr, QVariant( trk->desc ) );
+                break;
+              case SrcAttr:
+                feature.addAttribute( SrcAttr, QVariant( trk->src ) );
+                break;
+              case URLAttr:
+                feature.addAttribute( URLAttr, QVariant( trk->url ) );
+                break;
+              case URLNameAttr:
+                feature.addAttribute( URLNameAttr, QVariant( trk->urlname ) );
+                break;
             }
           }
-          feature.setGeometryAndOwnership(( unsigned char * )geo, 9 + 16 * totalPoints );
-        }
-        feature.setValid( true );
 
-        // add attributes if they are wanted
-        for ( iter = mAttributesToFetch.begin(); iter != mAttributesToFetch.end(); ++iter )
-        {
-          switch ( *iter )
-          {
-            case NameAttr:
-              feature.addAttribute( NameAttr, QVariant( trk->name ) );
-              break;
-            case NumAttr:
-              if ( trk->number != std::numeric_limits<int>::max() )
-                feature.addAttribute( NumAttr, QVariant( trk->number ) );
-              break;
-            case CmtAttr:
-              feature.addAttribute( CmtAttr, QVariant( trk->cmt ) );
-              break;
-            case DscAttr:
-              feature.addAttribute( DscAttr, QVariant( trk->desc ) );
-              break;
-            case SrcAttr:
-              feature.addAttribute( SrcAttr, QVariant( trk->src ) );
-              break;
-            case URLAttr:
-              feature.addAttribute( URLAttr, QVariant( trk->url ) );
-              break;
-            case URLNameAttr:
-              feature.addAttribute( URLNameAttr, QVariant( trk->urlname ) );
-              break;
-          }
+          ++mTrkIter;
+          break;
         }
-
-        ++mTrkIter;
-        break;
       }
+
     }
   }
   return result;
@@ -370,6 +411,9 @@ void QgsGPXProvider::select( QgsAttributeList fetchAttributes,
                              bool fetchGeometry,
                              bool useIntersect )
 {
+  delete mSelectionRectangle;
+  mSelectionRectangle = 0;
+
   if ( rect.isEmpty() )
   {
     mSelectionRectangle = new QgsRect( extent() );
@@ -381,7 +425,7 @@ void QgsGPXProvider::select( QgsAttributeList fetchAttributes,
   mAttributesToFetch = fetchAttributes;
   mFetchGeom = fetchGeometry;
 
-  reset();
+  begin();
 }
 
 
@@ -396,7 +440,7 @@ QgsRect QgsGPXProvider::extent()
 /**
  * Return the feature type
  */
-QGis::WKBTYPE QgsGPXProvider::geometryType() const
+QGis::WkbType QgsGPXProvider::geometryType() const
 {
   if ( mFeatureType == WaypointType )
     return QGis::WKBPoint;
@@ -438,7 +482,7 @@ const QgsFieldMap& QgsGPXProvider::fields() const
 }
 
 
-void QgsGPXProvider::reset()
+void QgsGPXProvider::begin()
 {
   if ( mFeatureType == WaypointType )
     mWptIter = data->waypointsBegin();
@@ -478,8 +522,8 @@ bool QgsGPXProvider::addFeatures( QgsFeatureList & flist )
 
 bool QgsGPXProvider::addFeature( QgsFeature& f )
 {
-  unsigned char* geo = f.geometry()->wkbBuffer();
-  QGis::WKBTYPE wkbType = f.geometry()->wkbType();
+  unsigned char* geo = f.geometry()->asWkb();
+  QGis::WkbType wkbType = f.geometry()->wkbType();
   bool success = false;
   GPSObject* obj = NULL;
   const QgsAttributeMap& attrs( f.attributeMap() );
@@ -765,7 +809,7 @@ void QgsGPXProvider::changeAttributeValues( GPSObject& obj, const QgsAttributeMa
 }
 
 
-QVariant QgsGPXProvider::getDefaultValue( int fieldId )
+QVariant QgsGPXProvider::defaultValue( int fieldId )
 {
   if ( fieldId == SrcAttr )
     return tr( "Digitized in QGIS" );
@@ -799,7 +843,7 @@ QString QgsGPXProvider::description() const
   return GPX_DESCRIPTION;
 } // QgsGPXProvider::description()
 
-QgsCoordinateReferenceSystem QgsGPXProvider::getCRS()
+QgsCoordinateReferenceSystem QgsGPXProvider::crs()
 {
   return QgsCoordinateReferenceSystem(); // use default CRS - it's WGS84
 }

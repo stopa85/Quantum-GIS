@@ -109,7 +109,6 @@
 #include "qgslogger.h"
 #include "qgsmapcanvas.h"
 #include "qgsmaplayer.h"
-#include "qgsmaplayerinterface.h"
 #include "qgsmaplayerregistry.h"
 #include "qgsmapoverviewcanvas.h"
 #include "qgsmaprenderer.h"
@@ -119,6 +118,7 @@
 #include "qgspastetransformations.h"
 #include "qgspluginitem.h"
 #include "qgspluginmanager.h"
+#include "qgspluginmetadata.h"
 #include "qgspluginregistry.h"
 #include "qgspoint.h"
 #include "qgsproject.h"
@@ -188,7 +188,6 @@
 class QTreeWidgetItem;
 
 /* typedefs for plugins */
-typedef QgsMapLayerInterface *create_it();
 typedef QgisPlugin *create_ui( QgisInterface * qI );
 typedef QString name_t();
 typedef QString description_t();
@@ -219,7 +218,7 @@ static void buildSupportedVectorFileFilter_( QString & fileFilters );
 static void setTitleBarText_( QWidget & qgisApp )
 {
   QString caption = QgisApp::tr( "Quantum GIS - " );
-  caption += QString( "%1 " ).arg( QGis::qgisVersion ) + " ";
+  caption += QString( "%1 " ).arg( QGis::QGIS_VERSION ) + " ";
 
   if ( QgsProject::instance()->title().isEmpty() )
   {
@@ -260,7 +259,7 @@ static QgsMessageOutput* messageOutputViewer_()
  */
 static void customSrsValidation_( QgsCoordinateReferenceSystem* srs )
 {
-  QString proj4String;
+  QString toProj4;
   QSettings mySettings;
   QString myDefaultProjectionOption =
     mySettings.value( "/Projections/defaultBehaviour" ).toString();
@@ -270,10 +269,10 @@ static void customSrsValidation_( QgsCoordinateReferenceSystem* srs )
     //it in the ctor of the layer projection selector
 
     QgsGenericProjectionSelector * mySelector = new QgsGenericProjectionSelector();
-    mySelector->setMessage(); //shows a generic message
-    proj4String = QgsProject::instance()->readEntry( "SpatialRefSys", "//ProjectCRSProj4String", GEOPROJ4 );
+    mySelector->setMessage( srs->validationHint() ); //shows a generic message, if not speficied
+    toProj4 = QgsProject::instance()->readEntry( "SpatialRefSys", "//ProjectCRSProj4String", GEOPROJ4 );
     QgsCoordinateReferenceSystem defaultCRS;
-    if ( defaultCRS.createFromProj4( proj4String ) )
+    if ( defaultCRS.createFromProj4( toProj4 ) )
     {
       mySelector->setSelectedCrsId( defaultCRS.srsid() );
     }
@@ -282,7 +281,6 @@ static void customSrsValidation_( QgsCoordinateReferenceSystem* srs )
     {
       QgsDebugMsg( "Layer srs set from dialog: " + QString::number( mySelector->selectedCrsId() ) );
       srs->createFromProj4( mySelector->selectedProj4String() );
-      srs->debugPrint();
     }
     else
     {
@@ -292,16 +290,14 @@ static void customSrsValidation_( QgsCoordinateReferenceSystem* srs )
   }
   else if ( myDefaultProjectionOption == "useProject" )
   {
-    // XXX TODO: Change project to store selected CS as 'projectCRS' not 'selectedWKT'
-    proj4String = QgsProject::instance()->readEntry( "SpatialRefSys", "//ProjectCRSProj4String", GEOPROJ4 );
-    QgsDebugMsg( "Layer srs set from project: " + proj4String );
-    srs->createFromProj4( proj4String );
-    srs->debugPrint();
+    // XXX TODO: Change project to store selected CS as 'projectCRS' not 'selectedWkt'
+    toProj4 = QgsProject::instance()->readEntry( "SpatialRefSys", "//ProjectCRSProj4String", GEOPROJ4 );
+    QgsDebugMsg( "Layer srs set from project: " + toProj4 );
+    srs->createFromProj4( toProj4 );
   }
   else ///Projections/defaultBehaviour==useGlobal
   {
     srs->createFromProj4( mySettings.value( "/Projections/defaultProjectionString", GEOPROJ4 ).toString() );
-    srs->debugPrint();
   }
 
 }
@@ -376,7 +372,7 @@ QgisApp::QgisApp( QSplashScreen *splash, QWidget * parent, Qt::WFlags fl )
 
   // set application's caption
   QString caption = tr( "Quantum GIS - " );
-  caption += QString( "%1 ('%2')" ).arg( QGis::qgisVersion ).arg( QGis::qgisReleaseName );
+  caption += QString( "%1 ('%2')" ).arg( QGis::QGIS_VERSION ).arg( QGis::QGIS_RELEASE_NAME );
   setWindowTitle( caption );
 
   // set QGIS specific srs validation
@@ -1496,12 +1492,14 @@ void QgisApp::setupConnections()
   //signal when mouse moved over window (coords display in status bar)
   connect( mMapCanvas, SIGNAL( xyCoordinates( QgsPoint & ) ), this, SLOT( showMouseCoordinate( QgsPoint & ) ) );
   connect( mMapCanvas->mapRenderer(), SIGNAL( drawingProgress( int, int ) ), this, SLOT( showProgress( int, int ) ) );
-  connect( mMapCanvas->mapRenderer(), SIGNAL( projectionsEnabled( bool ) ), this, SLOT( projectionsEnabled( bool ) ) );
+  connect( mMapCanvas->mapRenderer(), SIGNAL( hasCrsTransformEnabled( bool ) ), this, SLOT( hasCrsTransformEnabled( bool ) ) );
   connect( mMapCanvas->mapRenderer(), SIGNAL( destinationSrsChanged() ), this, SLOT( destinationSrsChanged() ) );
   connect( mMapCanvas, SIGNAL( extentsChanged() ), this, SLOT( showExtents() ) );
   connect( mMapCanvas, SIGNAL( scaleChanged( double ) ), this, SLOT( showScale( double ) ) );
   connect( mMapCanvas, SIGNAL( scaleChanged( double ) ), this, SLOT( updateMouseCoordinatePrecision() ) );
   connect( mMapCanvas, SIGNAL( mapToolSet( QgsMapTool * ) ), this, SLOT( mapToolChanged( QgsMapTool * ) ) );
+  connect( mMapCanvas, SIGNAL( selectionChanged( QgsMapLayer * ) ),
+           this, SLOT( activateDeactivateLayerRelatedActions( QgsMapLayer * ) ) );
 
   connect( mRenderSuppressionCBox, SIGNAL( toggled( bool ) ), mMapCanvas, SLOT( setRenderFlag( bool ) ) );
   //
@@ -1510,8 +1508,8 @@ void QgisApp::setupConnections()
   connect( mStopRenderButton, SIGNAL( clicked() ), this, SLOT( stopRendering() ) );
 
   // Connect warning dialog from project reading
-  connect( QgsProject::instance(), SIGNAL( warnOlderProjectVersion( QString ) ),
-           this, SLOT( warnOlderProjectVersion( QString ) ) );
+  connect( QgsProject::instance(), SIGNAL( oldProjectVersionWarning( QString ) ),
+           this, SLOT( oldProjectVersionWarning( QString ) ) );
 
 }
 void QgisApp::createCanvas()
@@ -1584,7 +1582,7 @@ void QgisApp::createOverview()
   // add to the Panel submenu
   mPanelMenu->addAction( mOverviewDock->toggleViewAction() );
 
-  mMapCanvas->setOverview( overviewCanvas );
+  mMapCanvas->enableOverviewMode( overviewCanvas );
 
   // moved here to set anti aliasing to both map canvas and overview
   QSettings mySettings;
@@ -1764,8 +1762,8 @@ void QgisApp::about()
     QApplication::setOverrideCursor( Qt::WaitCursor );
     abt = new QgsAbout();
     QString versionString = tr( "You are using QGIS version %1 built against code revision %2." )
-                            .arg( QGis::qgisVersion )
-                            .arg( QGis::qgisSvnVersion );
+                            .arg( QGis::QGIS_VERSION )
+                            .arg( QGis::QGIS_SVN_VERSION );
 #ifdef HAVE_POSTGRESQL
 
     versionString += tr( " This copy of QGIS has been built with PostgreSQL support." );
@@ -1785,7 +1783,7 @@ void QgisApp::about()
 
     abt->setVersion( versionString );
     QString whatsNew = "<html><body>" + tr( "Version" ) + " ";
-    whatsNew += QGis::qgisVersion;
+    whatsNew += QGis::QGIS_VERSION;
     whatsNew += "<h3>" + tr( "New features" ) + "</h3>" +
                 tr( "This release candidate includes over 60 bug fixes and enchancements "
                     "over the QGIS 0.10.0 release. In addition we have added "
@@ -1849,7 +1847,7 @@ void QgisApp::restoreSessionPlugins( QString thePluginDirString )
   {
     QString myFullPath = thePluginDirString + "/" + myPluginDir[i];
 
-
+    QString baseName = QFileInfo(myFullPath).baseName();
     QLibrary *myLib = new QLibrary( myFullPath );
     bool loaded = myLib->load();
     if ( loaded )
@@ -1861,15 +1859,15 @@ void QgisApp::restoreSessionPlugins( QString thePluginDirString )
       if ( myName && myDescription  && myVersion )
       {
         //check if the plugin was active on last session
-        QString myEntryName = myName();
+        
         // Windows stores a "true" value as a 1 in the registry so we
         // have to use readBoolEntry in this function
 
-        if ( mySettings.value( "/Plugins/" + myEntryName ).toBool() )
+        if ( mySettings.value( "/Plugins/" + baseName ).toBool() )
         {
           //QgsDebugMsg("Loading plugin: " + myEntryName);
 
-          loadPlugin( myName(), myDescription(), myFullPath );
+          loadPlugin( myFullPath, myName() );
         }
         else
         {
@@ -2311,17 +2309,17 @@ void QgisApp::addDatabaseLayer()
 
     QApplication::setOverrideCursor( Qt::WaitCursor );
 
-    QString connInfo = dbs->connInfo();
-    // for each selected table, connect to the database, parse the WKT geometry,
+    QString connectionInfo = dbs->connectionInfo();
+    // for each selected table, connect to the database, parse the Wkt geometry,
     // and build a canvasitem for it
-    // readWKB(connInfo,tables);
+    // readWKB(connectionInfo,tables);
     QStringList::Iterator it = tables.begin();
     while ( it != tables.end() )
     {
 
       // create the layer
       //qWarning("creating layer");
-      QgsVectorLayer *layer = new QgsVectorLayer( connInfo + " table=" + *it, *it, "postgres" );
+      QgsVectorLayer *layer = new QgsVectorLayer( connectionInfo + " table=" + *it, *it, "postgres" );
       if ( layer->isValid() )
       {
         // register this layer with the central layers registry
@@ -2374,7 +2372,7 @@ void QgisApp::addWmsLayer()
   if ( wmss->exec() )
   {
 
-    addRasterLayer( wmss->connInfo(),
+    addRasterLayer( wmss->connectionInfo(),
                     wmss->connName(),
                     "wms",
                     wmss->selectedLayers(),
@@ -2455,7 +2453,7 @@ dataSource_( QDomNode & layerNode )
 
 
 /// the three flavors for data
-typedef enum { IS_FILE, IS_DATABASE, IS_URL, IS_UNKNOWN } providerType;
+typedef enum { IS_FILE, IS_DATABASE, IS_URL, IS_Unknown } providerType;
 
 
 /** return the physical storage type associated with the given layer
@@ -2511,7 +2509,7 @@ providerType_( QDomNode & layerNode )
       QgsDebugMsg( "unknown ``type'' attribute" );
   }
 
-  return IS_UNKNOWN;
+  return IS_Unknown;
 
 } // providerType_
 
@@ -2641,7 +2639,7 @@ findLayer_( QString const & fileFilters, QDomNode const & constLayerNode )
       QgsDebugMsg( "layer is URL based" );
       break;
 
-    case IS_UNKNOWN:
+    case IS_Unknown:
       QgsDebugMsg( "layer has an unkown type" );
       break;
   }
@@ -2776,7 +2774,7 @@ void QgisApp::newVectorLayer()
     return;
   }
 
-  QGis::WKBTYPE geometrytype;
+  QGis::WkbType geometrytype;
   QString fileformat;
 
   QgsGeomTypeDialog geomDialog( this );
@@ -2854,7 +2852,7 @@ void QgisApp::newVectorLayer()
   {
     QgsDebugMsg( "ogr provider loaded" );
 
-    typedef bool ( *createEmptyDataSourceProc )( const QString&, const QString&, const QString&, QGis::WKBTYPE,
+    typedef bool ( *createEmptyDataSourceProc )( const QString&, const QString&, const QString&, QGis::WkbType,
         const std::list<std::pair<QString, QString> >& );
     createEmptyDataSourceProc createEmptyDataSource = ( createEmptyDataSourceProc ) cast_to_fptr( myLib->resolve( "createEmptyDataSource" ) );
     if ( createEmptyDataSource )
@@ -2974,7 +2972,7 @@ void QgisApp::fileOpen()
       QMessageBox::critical( this,
                              tr( "QGIS Project Read Error" ),
                              tr( "" ) + "\n" + QString::fromLocal8Bit( e.what() ) );
-      QgsDebugMsg( "BAD LAYERS FOUND" );
+      QgsDebugMsg( "BAD QgsMapLayer::LayerType FOUND" );
     }
 
     mMapCanvas->freeze( false );
@@ -3043,7 +3041,7 @@ bool QgisApp::addProject( QString projectFile )
   }
   catch ( std::exception & e )
   {
-    QgsDebugMsg( "BAD LAYERS FOUND" );
+    QgsDebugMsg( "BAD QgsMapLayer::LayerType FOUND" );
 
     QMessageBox::critical( this,
                            tr( "Unable to open project" ), QString::fromLocal8Bit( e.what() ) );
@@ -3133,6 +3131,7 @@ bool QgisApp::fileSave()
       QMessageBox::critical( this,
                              tr( "Unable to save project" ),
                              tr( "Unable to save project to " ) + QgsProject::instance()->fileName() );
+      return false;
     }
   }
   catch ( std::exception & e )
@@ -3140,6 +3139,7 @@ bool QgisApp::fileSave()
     QMessageBox::critical( this,
                            tr( "Unable to save project " ) + QgsProject::instance()->fileName(),
                            QString::fromLocal8Bit( e.what() ) );
+    return false;
   }
   return true;
 } // QgisApp::fileSave
@@ -3471,7 +3471,7 @@ void QgisApp::addAllToOverview()
 {
   if ( mMapLegend )
   {
-    mMapLegend->setOverviewAllLayers( true );
+    mMapLegend->enableOverviewModeAllLayers( true );
   }
 
   // notify the project we've made a change
@@ -3483,7 +3483,7 @@ void QgisApp::removeAllFromOverview()
 {
   if ( mMapLegend )
   {
-    mMapLegend->setOverviewAllLayers( false );
+    mMapLegend->enableOverviewModeAllLayers( false );
   }
 
   // notify the project we've made a change
@@ -4143,7 +4143,7 @@ void QgisApp::showPluginManager()
       }
       else
       {
-        loadPlugin( plugin.name(), plugin.description(), plugin.fullPath() );
+        loadPlugin( plugin.fullPath(), plugin.name() );
       }
       it++;
     }
@@ -4188,6 +4188,8 @@ void QgisApp::loadPythonSupport()
 
   if ( mPythonUtils && mPythonUtils->isEnabled() )
   {
+    QgsPluginRegistry::instance()->setPythonUtils( mPythonUtils );
+
     mActionShowPythonDialog = new QAction( tr( "Python Console" ), this );
     connect( mActionShowPythonDialog, SIGNAL( triggered() ), this, SLOT( showPythonDialog() ) );
 
@@ -4208,9 +4210,9 @@ void QgisApp::loadPythonPlugin( QString packageName, QString pluginName )
 
 
   QgsPluginRegistry *pRegistry = QgsPluginRegistry::instance();
-
+  
   // is loaded already?
-  if ( pRegistry->library( pluginName ).isEmpty() )
+  if ( ! pRegistry->isLoaded(packageName) )
   {
     mPythonUtils->loadPlugin( packageName );
     mPythonUtils->startPlugin( packageName );
@@ -4218,7 +4220,7 @@ void QgisApp::loadPythonPlugin( QString packageName, QString pluginName )
     // TODO: test success
 
     // add to plugin registry
-    pRegistry->addPythonPlugin( packageName, pluginName );
+    pRegistry->addPlugin( packageName, QgsPluginMetadata( packageName, pluginName, NULL, true) );
 
     // add to settings
     QSettings settings;
@@ -4229,13 +4231,15 @@ void QgisApp::loadPythonPlugin( QString packageName, QString pluginName )
   }
 }
 
-void QgisApp::loadPlugin( QString name, QString description, QString theFullPathName )
+void QgisApp::loadPlugin( QString theFullPathName, QString name )
 {
   QSettings settings;
   // first check to see if its already loaded
   QgsPluginRegistry *pRegistry = QgsPluginRegistry::instance();
-  QString lib = pRegistry->library( name );
-  if ( lib.length() > 0 )
+  
+  QString baseName = QFileInfo(theFullPathName).baseName();
+  
+  if ( pRegistry->isLoaded(baseName) )
   {
     // plugin is loaded
     // QMessageBox::warning(this, "Already Loaded", description + " is already loaded");
@@ -4268,9 +4272,9 @@ void QgisApp::loadPlugin( QString name, QString description, QString theFullPath
             {
               pl->initGui();
               // add it to the plugin registry
-              pRegistry->addPlugin( myLib->fileName(), name, pl );
+              pRegistry->addPlugin(baseName, QgsPluginMetadata(myLib->fileName(), name, pl) );
               //add it to the qsettings file [ts]
-              settings.setValue( "/Plugins/" + name, true );
+              settings.setValue( "/Plugins/" + baseName, true );
             }
             else
             {
@@ -4279,7 +4283,7 @@ void QgisApp::loadPlugin( QString name, QString description, QString theFullPath
                                     "The following diagnostic information may help the QGIS developers resolve the issue:\n%1." ).arg
                                     ( myError ) );
               //disable it to the qsettings file [ts]
-              settings.setValue( "/Plugins/" + name, false );
+              settings.setValue( "/Plugins/" + baseName, false );
             }
           }
           else
@@ -4287,36 +4291,6 @@ void QgisApp::loadPlugin( QString name, QString description, QString theFullPath
             QgsDebugMsg( "Unable to find the class factory for " + theFullPathName );
           }
 
-        }
-        break;
-        case QgisPlugin::MAPLAYER:
-        {
-          // Map layer - requires interaction with the canvas
-          create_it *cf = ( create_it * ) cast_to_fptr( myLib->resolve( "classFactory" ) );
-          if ( cf )
-          {
-            QgsMapLayerInterface *pl = cf();
-            if ( pl )
-            {
-              // set the main window pointer for the plugin
-              pl->setQgisMainWindow( this );
-              pl->initGui();
-              //add it to the qsettings file [ts]
-              settings.setValue( "/Plugins/" + name, true );
-
-            }
-            else
-            {
-              // something went wrong
-              QMessageBox::warning( this, tr( "Error Loading Plugin" ), tr( "There was an error loading %1." ) );
-              //add it to the qsettings file [ts]
-              settings.setValue( "/Plugins/" + name, false );
-            }
-          }
-          else
-          {
-            QgsDebugMsg( "Unable to find the class factory for " + theFullPathName );
-          }
         }
         break;
         default:
@@ -4356,7 +4330,7 @@ void QgisApp::socketConnected()
   QTextStream os( mSocket );
   mVersionMessage = "";
   // send the qgis version string
-  // os << qgisVersion << "\r\n";
+  // os << QGIS_VERSION << "\r\n";
   os << "GET /qgis/version.txt HTTP/1.0\n\n";
 
 
@@ -4378,14 +4352,14 @@ void QgisApp::socketConnectionClosed()
     // check the version from the  server against our version
     QString versionInfo;
     int currentVersion = parts[0].toInt();
-    if ( currentVersion > QGis::qgisVersionInt )
+    if ( currentVersion > QGis::QGIS_VERSION_INT )
     {
       // show version message from server
       versionInfo = tr( "There is a new version of QGIS available" ) + "\n";
     }
     else
     {
-      if ( QGis::qgisVersionInt > currentVersion )
+      if ( QGis::QGIS_VERSION_INT > currentVersion )
       {
         versionInfo = tr( "You are running a development version of QGIS" ) + "\n";
       }
@@ -4812,7 +4786,7 @@ void QgisApp::destinationSrsChanged()
 
 }
 
-void QgisApp::projectionsEnabled( bool theFlag )
+void QgisApp::hasCrsTransformEnabled( bool theFlag )
 {
   // save this information to project
   QgsProject::instance()->writeEntry( "SpatialRefSys", "/ProjectionsEnabled", ( theFlag ? 1 : 0 ) );
@@ -4944,7 +4918,7 @@ void QgisApp::showMapTip()
     {
       //QgsDebugMsg("Current layer for maptip display is: " + mypLayer->source());
       // only process vector layers
-      if ( mypLayer->type() == QgsMapLayer::VECTOR )
+      if ( mypLayer->type() == QgsMapLayer::VectorLayer )
       {
         // Show the maptip if the maptips button is depressed
         if ( mMapTipsVisible )
@@ -4997,14 +4971,14 @@ void QgisApp::projectProperties()
   //connect (pp,SIGNAL(refresh()), mMapCanvas, SLOT(refresh()));
 
   QgsMapRenderer* myRender = mMapCanvas->mapRenderer();
-  bool wasProjected = myRender->projectionsEnabled();
+  bool wasProjected = myRender->hasCrsTransformEnabled();
   long oldCRSID = myRender->destinationSrs().srsid();
 
   // Display the modal dialog box.
   pp->exec();
 
   long newCRSID = myRender->destinationSrs().srsid();
-  bool isProjected = myRender->projectionsEnabled();
+  bool isProjected = myRender->hasCrsTransformEnabled();
 
   // projections have been turned on/off or dest CRS has changed while projections are on
   if ( wasProjected != isProjected || ( isProjected && oldCRSID != newCRSID ) )
@@ -5055,18 +5029,19 @@ void QgisApp::activateDeactivateLayerRelatedActions( QgsMapLayer* layer )
   mActionAddToOverview->setEnabled( true );
 
   /***********Vector layers****************/
-  if ( layer->type() == QgsMapLayer::VECTOR )
+  if ( layer->type() == QgsMapLayer::VectorLayer )
   {
+    QgsVectorLayer* vlayer = dynamic_cast<QgsVectorLayer*>( layer );
+    const QgsVectorDataProvider* dprovider = vlayer->dataProvider();
+    bool layerHasSelection = ( vlayer->selectedFeatureCount() != 0 );
+
     mActionSelect->setEnabled( true );
     mActionIdentify->setEnabled( true );
     mActionZoomActualSize->setEnabled( false );
     mActionOpenTable->setEnabled( true );
     mActionLayerSaveAs->setEnabled( true );
     mActionLayerSelectionSaveAs->setEnabled( true );
-    mActionCopyFeatures->setEnabled( true );
-
-    const QgsVectorLayer* vlayer = dynamic_cast<const QgsVectorLayer*>( layer );
-    const QgsVectorDataProvider* dprovider = vlayer->dataProvider();
+    mActionCopyFeatures->setEnabled( layerHasSelection );
 
     if ( !vlayer->isEditable() && mMapCanvas->mapTool() && mMapCanvas->mapTool()->isEditTool() )
     {
@@ -5080,7 +5055,7 @@ void QgisApp::activateDeactivateLayerRelatedActions( QgsMapLayer* layer )
       {
         mActionToggleEditing->setEnabled( true );
         mActionToggleEditing->setChecked( vlayer->isEditable() );
-        mActionPasteFeatures->setEnabled( vlayer->isEditable() );
+        mActionPasteFeatures->setEnabled( vlayer->isEditable() && !clipboard()->empty() );
       }
       else
       {
@@ -5091,8 +5066,8 @@ void QgisApp::activateDeactivateLayerRelatedActions( QgsMapLayer* layer )
       //does provider allow deleting of features?
       if ( vlayer->isEditable() && dprovider->capabilities() & QgsVectorDataProvider::DeleteFeatures )
       {
-        mActionDeleteSelected->setEnabled( true );
-        mActionCutFeatures->setEnabled( true );
+        mActionDeleteSelected->setEnabled( layerHasSelection );
+        mActionCutFeatures->setEnabled( layerHasSelection );
       }
       else
       {
@@ -5101,7 +5076,7 @@ void QgisApp::activateDeactivateLayerRelatedActions( QgsMapLayer* layer )
       }
 
 
-      if ( vlayer->vectorType() == QGis::Point )
+      if ( vlayer->geometryType() == QGis::Point )
       {
         if ( vlayer->isEditable() && dprovider->capabilities() & QgsVectorDataProvider::AddFeatures )
         {
@@ -5124,7 +5099,7 @@ void QgisApp::activateDeactivateLayerRelatedActions( QgsMapLayer* layer )
         if ( vlayer->isEditable() && dprovider->capabilities() & QgsVectorDataProvider::ChangeGeometries )
         {
           //don't enable vertex move for single point
-          if ( vlayer->geometryType() != QGis::WKBPoint && vlayer->geometryType() != QGis::WKBPoint25D )
+          if ( vlayer->wkbType() != QGis::WKBPoint && vlayer->wkbType() != QGis::WKBPoint25D )
           {
             mActionMoveVertex->setEnabled( true );
           }
@@ -5132,7 +5107,7 @@ void QgisApp::activateDeactivateLayerRelatedActions( QgsMapLayer* layer )
         }
         return;
       }
-      else if ( vlayer->vectorType() == QGis::Line )
+      else if ( vlayer->geometryType() == QGis::Line )
       {
         if ( vlayer->isEditable() && dprovider->capabilities() & QgsVectorDataProvider::AddFeatures )
         {
@@ -5151,7 +5126,7 @@ void QgisApp::activateDeactivateLayerRelatedActions( QgsMapLayer* layer )
         mActionAddRing->setEnabled( false );
         mActionAddIsland->setEnabled( false );
       }
-      else if ( vlayer->vectorType() == QGis::Polygon )
+      else if ( vlayer->geometryType() == QGis::Polygon )
       {
         if ( vlayer->isEditable() && dprovider->capabilities() & QgsVectorDataProvider::AddFeatures )
         {
@@ -5180,7 +5155,7 @@ void QgisApp::activateDeactivateLayerRelatedActions( QgsMapLayer* layer )
         mActionMoveVertex->setEnabled( true );
         mActionDeleteVertex->setEnabled( true );
         mActionMoveFeature->setEnabled( true );
-        if ( vlayer->vectorType() == QGis::Polygon )
+        if ( vlayer->geometryType() == QGis::Polygon )
         {
           mActionAddRing->setEnabled( true );
           //some polygon layers contain also multipolygon features.
@@ -5199,7 +5174,7 @@ void QgisApp::activateDeactivateLayerRelatedActions( QgsMapLayer* layer )
     }
   }
   /*************Raster layers*************/
-  else if ( layer->type() == QgsMapLayer::RASTER )
+  else if ( layer->type() == QgsMapLayer::RasterLayer )
   {
     mActionSelect->setEnabled( false );
     mActionZoomActualSize->setEnabled( true );
@@ -5221,6 +5196,12 @@ void QgisApp::activateDeactivateLayerRelatedActions( QgsMapLayer* layer )
     mActionCutFeatures->setEnabled( false );
     mActionPasteFeatures->setEnabled( false );
 
+    //NOTE: This check does not really add any protection, as it is called on load not on layer select/activate
+    //If you load a layer with a provider and idenitfy ability then load another without, the tool would be disabled for both
+
+    //Enable the Identify tool ( GDAL datasets draw without a provider )
+    //but turn off if data provider exists and has no Identify capabilities
+    mActionIdentify->setEnabled( true );
     const QgsRasterLayer* vlayer = dynamic_cast<const QgsRasterLayer*>( layer );
     const QgsRasterDataProvider* dprovider = vlayer->dataProvider();
     if ( dprovider )
@@ -5318,7 +5299,7 @@ bool QgisApp::addRasterLayer( QgsRasterLayer * theRasterLayer )
                     SLOT( showProgress( int, int ) ) );
   // connect up any request the raster may make to update the statusbar message
   QObject::connect( theRasterLayer,
-                    SIGNAL( setStatus( QString ) ),
+                    SIGNAL( statusChanged( QString ) ),
                     this,
                     SLOT( showStatusMessage( QString ) ) );
   // notify the project we've made a change
@@ -5649,7 +5630,7 @@ void QgisApp::newBookmark()
 // Slot that gets called when the project file was saved with an older
 // version of QGIS
 
-void QgisApp::warnOlderProjectVersion( QString oldVersion )
+void QgisApp::oldProjectVersionWarning( QString oldVersion )
 {
   QSettings settings;
 
@@ -5670,7 +5651,7 @@ void QgisApp::warnOlderProjectVersion( QString oldVersion )
                                 "uncheck the box '%5' in the %4 menu." ) +
                             tr( "<p>Version of the project file: %1<br>Current version of QGIS: %2" ) )
                           .arg( oldVersion )
-                          .arg( QGis::qgisVersion )
+                          .arg( QGis::QGIS_VERSION )
                           .arg( "<a href=https://svn.qgis.org/trac/wiki>http://svn.qgis.org/trac/wiki</a> " )
                           .arg( tr( "<tt>Settings:Options:General</tt>", "Menu path to setting options" ) )
                           .arg( tr( "Warn me when opening a project file saved with an older version of QGIS" ) )

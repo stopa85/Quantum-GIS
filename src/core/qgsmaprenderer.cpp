@@ -44,14 +44,14 @@ QgsMapRenderer::QgsMapRenderer()
   mOverview = false;
 
   // set default map units - we use WGS 84 thus use degrees
-  setMapUnits( QGis::DEGREES );
+  setMapUnits( QGis::Degrees );
 
   mSize = QSize( 0, 0 );
 
   mProjectionsEnabled = FALSE;
-  mDestCRS = new QgsCoordinateReferenceSystem( GEOEPSG_ID, QgsCoordinateReferenceSystem::EPSG ); //WGS 84
+  mDestCRS = new QgsCoordinateReferenceSystem( GEO_EPSG_CRS_ID, QgsCoordinateReferenceSystem::EpsgCrsId ); //WGS 84
 
-  mOutputUnits = QgsMapRenderer::MM;
+  mOutputUnits = QgsMapRenderer::Millimeters;
 }
 
 QgsMapRenderer::~QgsMapRenderer()
@@ -231,7 +231,7 @@ void QgsMapRenderer::render( QPainter* painter )
 
   mRenderContext.setDrawEditingInformation( !mOverview );
   mRenderContext.setPainter( painter );
-  mRenderContext.setCoordTransform( 0 );
+  mRenderContext.setCoordinateTransform( 0 );
   //this flag is only for stopping during the current rendering progress,
   //so must be false at every new render operation
   mRenderContext.setRenderingStopped( false );
@@ -241,10 +241,10 @@ void QgsMapRenderer::render( QPainter* painter )
   //because sometimes QPainter units are in a local coord sys (e.g. in case of QGraphicsScene)
   double sceneDpi = mScaleCalculator->dpi();
   double scaleFactor = 1.0;
-  if(mOutputUnits == QgsMapRenderer::MM)
-    {
-      scaleFactor = sceneDpi / 25.4;
-    }
+  if ( mOutputUnits == QgsMapRenderer::Millimeters )
+  {
+    scaleFactor = sceneDpi / 25.4;
+  }
   double rasterScaleFactor = ( thePaintDevice->logicalDpiX() + thePaintDevice->logicalDpiY() ) / 2.0 / sceneDpi;
   mRenderContext.setScaleFactor( scaleFactor );
   mRenderContext.setRasterScaleFactor( rasterScaleFactor );
@@ -284,13 +284,13 @@ void QgsMapRenderer::render( QPainter* painter )
     }
 
     QgsDebugMsg( "Rendering layer " + ml->name() );
-    QgsDebugMsg( "  Layer minscale " + QString( "%1" ).arg( ml->minScale() ) );
-    QgsDebugMsg( "  Layer maxscale " + QString( "%1" ).arg( ml->maxScale() ) );
-    QgsDebugMsg( "  Scale dep. visibility enabled? " + QString( "%1" ).arg( ml->scaleBasedVisibility() ) );
+    QgsDebugMsg( "  Layer minscale " + QString( "%1" ).arg( ml->minimumScale() ) );
+    QgsDebugMsg( "  Layer maxscale " + QString( "%1" ).arg( ml->maximumScale() ) );
+    QgsDebugMsg( "  Scale dep. visibility enabled? " + QString( "%1" ).arg( ml->hasScaleBasedVisibility() ) );
     QgsDebugMsg( "  Input extent: " + ml->extent().toString() );
 
-    if (( ml->scaleBasedVisibility() && ml->minScale() < mScale && ml->maxScale() > mScale )
-        || ( !ml->scaleBasedVisibility() ) )
+    if (( ml->hasScaleBasedVisibility() && ml->minimumScale() < mScale && ml->maximumScale() > mScale )
+        || ( !ml->hasScaleBasedVisibility() ) )
     {
       connect( ml, SIGNAL( drawingProgress( int, int ) ), this, SLOT( onDrawingProgress( int, int ) ) );
 
@@ -301,7 +301,7 @@ void QgsMapRenderer::render( QPainter* painter )
 
       bool split = false;
 
-      if ( projectionsEnabled() )
+      if ( hasCrsTransformEnabled() )
       {
         r1 = mExtent;
         split = splitLayersExtent( ml, r1, r2 );
@@ -313,7 +313,7 @@ void QgsMapRenderer::render( QPainter* painter )
         ct = NULL;
       }
 
-      mRenderContext.setCoordTransform( ct );
+      mRenderContext.setCoordinateTransform( ct );
 
       //decide if we have to scale the raster
       //this is necessary in case QGraphicsScene is used
@@ -321,7 +321,7 @@ void QgsMapRenderer::render( QPainter* painter )
       QgsMapToPixel rasterMapToPixel;
       QgsMapToPixel bk_mapToPixel;
 
-      if ( ml->type() == QgsMapLayer::RASTER && fabs( rasterScaleFactor - 1.0 ) > 0.000001 )
+      if ( ml->type() == QgsMapLayer::RasterLayer && fabs( rasterScaleFactor - 1.0 ) > 0.000001 )
       {
         scaleRaster = true;
       }
@@ -386,16 +386,16 @@ void QgsMapRenderer::render( QPainter* painter )
       // TODO: emit drawingProgress((myRenderCounter++),zOrder.size());
       QgsMapLayer *ml = QgsMapLayerRegistry::instance()->mapLayer( layerId );
 
-      if ( ml && ( ml->type() != QgsMapLayer::RASTER ) )
+      if ( ml && ( ml->type() != QgsMapLayer::RasterLayer ) )
       {
         // only make labels if the layer is visible
         // after scale dep viewing settings are checked
-        if (( ml->scaleBasedVisibility() && ml->minScale() < mScale  && ml->maxScale() > mScale )
-            || ( !ml->scaleBasedVisibility() ) )
+        if (( ml->hasScaleBasedVisibility() && ml->minimumScale() < mScale  && ml->maximumScale() > mScale )
+            || ( !ml->hasScaleBasedVisibility() ) )
         {
           bool split = false;
 
-          if ( projectionsEnabled() )
+          if ( hasCrsTransformEnabled() )
           {
             QgsRect r1 = mExtent;
             split = splitLayersExtent( ml, r1, r2 );
@@ -407,7 +407,7 @@ void QgsMapRenderer::render( QPainter* painter )
             ct = NULL;
           }
 
-          mRenderContext.setCoordTransform( ct );
+          mRenderContext.setCoordinateTransform( ct );
 
           ml->drawLabels( mRenderContext );
           if ( split )
@@ -429,7 +429,7 @@ void QgsMapRenderer::render( QPainter* painter )
 
 }
 
-void QgsMapRenderer::setMapUnits( QGis::units u )
+void QgsMapRenderer::setMapUnits( QGis::UnitType u )
 {
   mScaleCalculator->setMapUnits( u );
 
@@ -439,7 +439,7 @@ void QgsMapRenderer::setMapUnits( QGis::units u )
   emit mapUnitsChanged();
 }
 
-QGis::units QgsMapRenderer::mapUnits() const
+QGis::UnitType QgsMapRenderer::mapUnits() const
 {
   return mScaleCalculator->mapUnits();
 }
@@ -461,23 +461,23 @@ void QgsMapRenderer::setProjectionsEnabled( bool enabled )
     QgsDebugMsg( "Adjusting DistArea projection on/off" );
     mDistArea->setProjectionsEnabled( enabled );
     updateFullExtent();
-    emit projectionsEnabled( enabled );
+    emit hasCrsTransformEnabled( enabled );
   }
 }
 
-bool QgsMapRenderer::projectionsEnabled()
+bool QgsMapRenderer::hasCrsTransformEnabled()
 {
   return mProjectionsEnabled;
 }
 
 void QgsMapRenderer::setDestinationSrs( const QgsCoordinateReferenceSystem& srs )
 {
-  QgsDebugMsg( "* Setting destCRS : = " + srs.proj4String() );
+  QgsDebugMsg( "* Setting destCRS : = " + srs.toProj4() );
   QgsDebugMsg( "* DestCRS.srsid() = " + QString::number( srs.srsid() ) );
   if ( *mDestCRS != srs )
   {
     QgsDebugMsg( "Setting DistArea CRS to " + QString::number( srs.srsid() ) );
-    mDistArea->setSourceCRS( srs.srsid() );
+    mDistArea->setSourceCrs( srs.srsid() );
     *mDestCRS = srs;
     updateFullExtent();
     emit destinationSrsChanged();
@@ -488,7 +488,7 @@ const QgsCoordinateReferenceSystem& QgsMapRenderer::destinationSrs()
 {
   QgsDebugMsg( "* Returning destCRS" );
   QgsDebugMsg( "* DestCRS.srsid() = " + QString::number( mDestCRS->srsid() ) );
-  QgsDebugMsg( "* DestCRS.proj4() = " + mDestCRS->proj4String() );
+  QgsDebugMsg( "* DestCRS.proj4() = " + mDestCRS->toProj4() );
   return *mDestCRS;
 }
 
@@ -497,7 +497,7 @@ bool QgsMapRenderer::splitLayersExtent( QgsMapLayer* layer, QgsRect& extent, Qgs
 {
   bool split = false;
 
-  if ( projectionsEnabled() )
+  if ( hasCrsTransformEnabled() )
   {
     try
     {
@@ -513,15 +513,15 @@ bool QgsMapRenderer::splitLayersExtent( QgsMapLayer* layer, QgsRect& extent, Qgs
       // extent separately.
       static const double splitCoord = 180.0;
 
-      if ( tr.sourceCRS().geographicFlag() )
+      if ( tr.sourceCrs().geographicFlag() )
       {
         // Note: ll = lower left point
         //   and ur = upper right point
         QgsPoint ll = tr.transform( extent.xMin(), extent.yMin(),
-                                    QgsCoordinateTransform::INVERSE );
+                                    QgsCoordinateTransform::ReverseTransform );
 
         QgsPoint ur = tr.transform( extent.xMax(), extent.yMax(),
-                                    QgsCoordinateTransform::INVERSE );
+                                    QgsCoordinateTransform::ReverseTransform );
 
         if ( ll.x() > ur.x() )
         {
@@ -531,12 +531,12 @@ bool QgsMapRenderer::splitLayersExtent( QgsMapLayer* layer, QgsRect& extent, Qgs
         }
         else // no need to split
         {
-          extent = tr.transformBoundingBox( extent, QgsCoordinateTransform::INVERSE );
+          extent = tr.transformBoundingBox( extent, QgsCoordinateTransform::ReverseTransform );
         }
       }
       else // can't cross 180
       {
-        extent = tr.transformBoundingBox( extent, QgsCoordinateTransform::INVERSE );
+        extent = tr.transformBoundingBox( extent, QgsCoordinateTransform::ReverseTransform );
       }
     }
     catch ( QgsCsException &cse )
@@ -553,7 +553,7 @@ bool QgsMapRenderer::splitLayersExtent( QgsMapLayer* layer, QgsRect& extent, Qgs
 
 QgsRect QgsMapRenderer::layerExtentToOutputExtent( QgsMapLayer* theLayer, QgsRect extent )
 {
-  if ( projectionsEnabled() )
+  if ( hasCrsTransformEnabled() )
   {
     try
     {
@@ -575,12 +575,12 @@ QgsRect QgsMapRenderer::layerExtentToOutputExtent( QgsMapLayer* theLayer, QgsRec
 
 QgsPoint QgsMapRenderer::layerToMapCoordinates( QgsMapLayer* theLayer, QgsPoint point )
 {
-  if ( projectionsEnabled() )
+  if ( hasCrsTransformEnabled() )
   {
     try
     {
       QgsCoordinateTransform tr( theLayer->srs(), *mDestCRS );
-      point = tr.transform( point, QgsCoordinateTransform::FORWARD );
+      point = tr.transform( point, QgsCoordinateTransform::ForwardTransform );
     }
     catch ( QgsCsException &cse )
     {
@@ -596,12 +596,12 @@ QgsPoint QgsMapRenderer::layerToMapCoordinates( QgsMapLayer* theLayer, QgsPoint 
 
 QgsPoint QgsMapRenderer::mapToLayerCoordinates( QgsMapLayer* theLayer, QgsPoint point )
 {
-  if ( projectionsEnabled() )
+  if ( hasCrsTransformEnabled() )
   {
     try
     {
       QgsCoordinateTransform tr( theLayer->srs(), *mDestCRS );
-      point = tr.transform( point, QgsCoordinateTransform::INVERSE );
+      point = tr.transform( point, QgsCoordinateTransform::ReverseTransform );
     }
     catch ( QgsCsException &cse )
     {
@@ -618,12 +618,12 @@ QgsPoint QgsMapRenderer::mapToLayerCoordinates( QgsMapLayer* theLayer, QgsPoint 
 
 QgsRect QgsMapRenderer::mapToLayerCoordinates( QgsMapLayer* theLayer, QgsRect rect )
 {
-  if ( projectionsEnabled() )
+  if ( hasCrsTransformEnabled() )
   {
     try
     {
       QgsCoordinateTransform tr( theLayer->srs(), *mDestCRS );
-      rect = tr.transform( rect, QgsCoordinateTransform::INVERSE );
+      rect = tr.transform( rect, QgsCoordinateTransform::ReverseTransform );
     }
     catch ( QgsCsException &cse )
     {
@@ -720,27 +720,27 @@ bool QgsMapRenderer::readXML( QDomNode & theNode )
   QDomElement element = myNode.toElement();
 
   // set units
-  QGis::units units;
+  QGis::UnitType units;
   if ( "meters" == element.text() )
   {
-    units = QGis::METERS;
+    units = QGis::Meters;
   }
   else if ( "feet" == element.text() )
   {
-    units = QGis::FEET;
+    units = QGis::Feet;
   }
   else if ( "degrees" == element.text() )
   {
-    units = QGis::DEGREES;
+    units = QGis::Degrees;
   }
   else if ( "unknown" == element.text() )
   {
-    units = QGis::UNKNOWN;
+    units = QGis::UnknownUnit;
   }
   else
   {
     QgsDebugMsg( "Unknown map unit type " + element.text() );
-    units = QGis::DEGREES;
+    units = QGis::Degrees;
   }
   setMapUnits( units );
 
@@ -797,16 +797,16 @@ bool QgsMapRenderer::writeXML( QDomNode & theNode, QDomDocument & theDoc )
 
   switch ( mapUnits() )
   {
-    case QGis::METERS:
+    case QGis::Meters:
       unitsString = "meters";
       break;
-    case QGis::FEET:
+    case QGis::Feet:
       unitsString = "feet";
       break;
-    case QGis::DEGREES:
+    case QGis::Degrees:
       unitsString = "degrees";
       break;
-    case QGis::UNKNOWN:
+    case QGis::UnknownUnit:
     default:
       unitsString = "unknown";
       break;
@@ -844,7 +844,7 @@ bool QgsMapRenderer::writeXML( QDomNode & theNode, QDomDocument & theDoc )
   QDomElement projNode = theDoc.createElement( "projections" );
   theNode.appendChild( projNode );
 
-  QDomText projText = theDoc.createTextNode( QString::number( projectionsEnabled() ) );
+  QDomText projText = theDoc.createTextNode( QString::number( hasCrsTransformEnabled() ) );
   projNode.appendChild( projText );
 
   // destination CRS

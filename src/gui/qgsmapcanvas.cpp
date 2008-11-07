@@ -173,7 +173,7 @@ QgsMapRenderer* QgsMapCanvas::mapRenderer()
 }
 
 
-QgsMapLayer* QgsMapCanvas::getZpos( int index )
+QgsMapLayer* QgsMapCanvas::layer( int index )
 {
   QStringList& layers = mMapRenderer->layerSet();
   if ( index >= 0 && index < ( int ) layers.size() )
@@ -253,13 +253,13 @@ void QgsMapCanvas::setLayerSet( QList<QgsMapCanvasLayer>& layers )
     {
       // Add check if vector layer when disconnecting from selectionChanged slot
       // Ticket #811 - racicot
-      QgsMapLayer *currentLayer = getZpos( i );
+      QgsMapLayer *currentLayer = layer( i );
       disconnect( currentLayer, SIGNAL( repaintRequested() ), this, SLOT( refresh() ) );
       disconnect( currentLayer, SIGNAL( screenUpdateRequested() ), this, SLOT( updateMap() ) );
       QgsVectorLayer *isVectLyr = dynamic_cast < QgsVectorLayer * >( currentLayer );
       if ( isVectLyr )
       {
-        disconnect( currentLayer, SIGNAL( selectionChanged() ), this, SLOT( refresh() ) );
+        disconnect( currentLayer, SIGNAL( selectionChanged() ), this, SLOT( selectionChangedSlot() ) );
       }
     }
 
@@ -269,13 +269,13 @@ void QgsMapCanvas::setLayerSet( QList<QgsMapCanvasLayer>& layers )
     {
       // Add check if vector layer when connecting to selectionChanged slot
       // Ticket #811 - racicot
-      QgsMapLayer *currentLayer = getZpos( i );
+      QgsMapLayer *currentLayer = layer( i );
       connect( currentLayer, SIGNAL( repaintRequested() ), this, SLOT( refresh() ) );
       connect( currentLayer, SIGNAL( screenUpdateRequested() ), this, SLOT( updateMap() ) );
       QgsVectorLayer *isVectLyr = dynamic_cast < QgsVectorLayer * >( currentLayer );
       if ( isVectLyr )
       {
-        connect( currentLayer, SIGNAL( selectionChanged() ), this, SLOT( refresh() ) );
+        connect( currentLayer, SIGNAL( selectionChanged() ), this, SLOT(  selectionChangedSlot() ) );
       }
     }
   }
@@ -306,13 +306,13 @@ void QgsMapCanvas::setLayerSet( QList<QgsMapCanvasLayer>& layers )
 
 } // addLayer
 
-void QgsMapCanvas::setOverview( QgsMapOverviewCanvas* overview )
+void QgsMapCanvas::enableOverviewMode( QgsMapOverviewCanvas* overview )
 {
   if ( mMapOverview )
   {
     // disconnect old map overview if exists
-    disconnect( mMapRenderer, SIGNAL( projectionsEnabled( bool ) ),
-                mMapOverview, SLOT( projectionsEnabled( bool ) ) );
+    disconnect( mMapRenderer, SIGNAL( hasCrsTransformEnabled( bool ) ),
+                mMapOverview, SLOT( hasCrsTransformEnabled( bool ) ) );
     disconnect( mMapRenderer, SIGNAL( destinationSrsChanged() ),
                 mMapOverview, SLOT( destinationSrsChanged() ) );
 
@@ -324,8 +324,8 @@ void QgsMapCanvas::setOverview( QgsMapOverviewCanvas* overview )
   if ( overview )
   {
     // connect to the map render to copy its projection settings
-    connect( mMapRenderer, SIGNAL( projectionsEnabled( bool ) ),
-             overview,     SLOT( projectionsEnabled( bool ) ) );
+    connect( mMapRenderer, SIGNAL( hasCrsTransformEnabled( bool ) ),
+             overview,     SLOT( hasCrsTransformEnabled( bool ) ) );
     connect( mMapRenderer, SIGNAL( destinationSrsChanged() ),
              overview,     SLOT( destinationSrsChanged() ) );
   }
@@ -524,9 +524,9 @@ void QgsMapCanvas::zoomToPreviousExtent()
 } // zoomToPreviousExtent
 
 
-bool QgsMapCanvas::projectionsEnabled()
+bool QgsMapCanvas::hasCrsTransformEnabled()
 {
-  return mMapRenderer->projectionsEnabled();
+  return mMapRenderer->hasCrsTransformEnabled();
 }
 
 void QgsMapCanvas::mapUnitsChanged()
@@ -1061,14 +1061,14 @@ double QgsMapCanvas::mapUnitsPerPixel() const
 } // mapUnitsPerPixel
 
 
-void QgsMapCanvas::setMapUnits( QGis::units u )
+void QgsMapCanvas::setMapUnits( QGis::UnitType u )
 {
   QgsDebugMsg( "Setting map units to " + QString::number( static_cast<int>( u ) ) );
   mMapRenderer->setMapUnits( u );
 }
 
 
-QGis::units QgsMapCanvas::mapUnits() const
+QGis::UnitType QgsMapCanvas::mapUnits() const
 {
   return mMapRenderer->mapUnits();
 }
@@ -1209,16 +1209,16 @@ void QgsMapCanvas::showError( QgsMapLayer * mapLayer )
 {
 //   QMessageBox::warning(
 //     this,
-//     mapLayer->errorCaptionString(),
+//     mapLayer->lastErrorTitle(),
 //     tr("Could not draw") + " " + mapLayer->name() + " " + tr("because") + ":\n" +
-//       mapLayer->errorString()
+//       mapLayer->lastError()
 //   );
 
   QgsMessageViewer * mv = new QgsMessageViewer( this );
-  mv->setWindowTitle( mapLayer->errorCaptionString() );
+  mv->setWindowTitle( mapLayer->lastErrorTitle() );
   mv->setMessageAsPlainText(
     tr( "Could not draw" ) + " " + mapLayer->name() + " " + tr( "because" ) + ":\n" +
-    mapLayer->errorString()
+    mapLayer->lastError()
   );
   mv->exec();
   //MH
@@ -1278,3 +1278,11 @@ void QgsMapCanvas::zoom( double scaleFactor )
   refresh();
 }
 
+void QgsMapCanvas::selectionChangedSlot()
+{
+  // Find out which layer it was that sent the signal.
+  QgsMapLayer * layer = ( QgsMapLayer * )QObject::sender();
+  
+  emit selectionChanged( layer );
+  refresh();
+}

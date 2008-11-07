@@ -52,8 +52,8 @@ QgsCoordinateTransform::QgsCoordinateTransform( const QgsCoordinateReferenceSyst
 }
 
 QgsCoordinateTransform::QgsCoordinateTransform( long theSourceSrsId, long theDestSrsId )
-    : mSourceCRS( theSourceSrsId, QgsCoordinateReferenceSystem::QGIS_CRSID ),
-    mDestCRS( theDestSrsId, QgsCoordinateReferenceSystem::QGIS_CRSID )
+    : mSourceCRS( theSourceSrsId, QgsCoordinateReferenceSystem::InternalCrsId ),
+    mDestCRS( theDestSrsId, QgsCoordinateReferenceSystem::InternalCrsId )
 {
   initialise();
 }
@@ -72,13 +72,13 @@ QgsCoordinateTransform::QgsCoordinateTransform( QString theSourceCRS, QString th
 }
 
 QgsCoordinateTransform::QgsCoordinateTransform( long theSourceSrid,
-    QString theDestWKT,
-    QgsCoordinateReferenceSystem::CRS_TYPE theSourceCRSType ): QObject()
+    QString theDestWkt,
+    QgsCoordinateReferenceSystem::CrsType theSourceCRSType ): QObject()
 {
   setFinder();
 
   mSourceCRS.createFromId( theSourceSrid, theSourceCRSType );
-  mDestCRS.createFromWkt( theDestWKT );
+  mDestCRS.createFromWkt( theDestWkt );
   // initialize the coordinate system data structures
   //XXX Who spells initialize initialise?
   //XXX A: Its the queen's english....
@@ -99,7 +99,7 @@ QgsCoordinateTransform::~QgsCoordinateTransform()
   }
 }
 
-void QgsCoordinateTransform::setSourceCRS( const QgsCoordinateReferenceSystem& theCRS )
+void QgsCoordinateTransform::setSourceCrs( const QgsCoordinateReferenceSystem& theCRS )
 {
   mSourceCRS = theCRS;
   initialise();
@@ -145,12 +145,12 @@ void QgsCoordinateTransform::initialise()
     //No destination projection is set so we set the default output projection to
     //be the same as input proj. This only happens on the first layer loaded
     //whatever that may be...
-    mDestCRS.createFromProj4( mSourceCRS.proj4String() );
+    mDestCRS.createFromProj4( mSourceCRS.toProj4() );
   }
 
   // init the projections (destination and source)
-  mDestinationProjection = pj_init_plus( mDestCRS.proj4String().toUtf8() );
-  mSourceProjection = pj_init_plus( mSourceCRS.proj4String().toUtf8() );
+  mDestinationProjection = pj_init_plus( mDestCRS.toProj4().toUtf8() );
+  mSourceProjection = pj_init_plus( mSourceCRS.toProj4().toUtf8() );
 
   mInitialisedFlag = true;
   if ( mDestinationProjection == NULL )
@@ -185,7 +185,7 @@ void QgsCoordinateTransform::initialise()
 
   //XXX todo overload == operator for QgsCoordinateReferenceSystem
   //at the moment srs.parameters contains the whole proj def...soon it wont...
-  //if (mSourceCRS->proj4String() == mDestCRS->proj4String())
+  //if (mSourceCRS->toProj4() == mDestCRS->toProj4())
   if ( mSourceCRS == mDestCRS )
   {
     // If the source and destination projection are the same, set the short
@@ -416,14 +416,14 @@ void QgsCoordinateTransform::transformCoords( const int& numPoints, double *x, d
   {
     QgsLogger::critical( tr( "The source spatial reference system (CRS) is not valid. " ) +
                          tr( "The coordinates can not be reprojected. The CRS is: " ) +
-                         mSourceCRS.proj4String() );
+                         mSourceCRS.toProj4() );
     return;
   }
   if ( !mDestCRS.isValid() )
   {
     QgsLogger::critical( tr( "The destination spatial reference system (CRS) is not valid. " ) +
                          tr( "The coordinates can not be reprojected. The CRS is: " ) +
-                         mDestCRS.proj4String() );
+                         mDestCRS.toProj4() );
     return;
   }
 
@@ -436,8 +436,8 @@ void QgsCoordinateTransform::transformCoords( const int& numPoints, double *x, d
   QString dir;
   // if the source/destination projection is lat/long, convert the points to radians
   // prior to transforming
-  if (( pj_is_latlong( mDestinationProjection ) && ( direction == INVERSE ) )
-      || ( pj_is_latlong( mSourceProjection ) && ( direction == FORWARD ) ) )
+  if (( pj_is_latlong( mDestinationProjection ) && ( direction == ReverseTransform ) )
+      || ( pj_is_latlong( mSourceProjection ) && ( direction == ForwardTransform ) ) )
   {
     for ( int i = 0; i < numPoints; ++i )
     {
@@ -448,10 +448,10 @@ void QgsCoordinateTransform::transformCoords( const int& numPoints, double *x, d
 
   }
   int projResult;
-  if ( direction == INVERSE )
+  if ( direction == ReverseTransform )
   {
 #if 0
-    QgsDebugMsg( "!!!! INVERSE PROJ4 TRANSFORM !!!!" );
+    QgsDebugMsg( "!!!! ReverseTransform PROJ4 TRANSFORM !!!!" );
     QgsDebugMsg( QString( "     numPoint: %1" ).arg( numPoints ) );
     QgsDebugMsg( QString( "     x       : %1" ).arg( x ) );
     QgsDebugMsg( QString( "     y       : %1" ).arg( y ) );
@@ -462,7 +462,7 @@ void QgsCoordinateTransform::transformCoords( const int& numPoints, double *x, d
   else
   {
 #if 0
-    QgsDebugMsg( "!!!! FORWARD PROJ4 TRANSFORM !!!!" );
+    QgsDebugMsg( "!!!! ForwardTransform PROJ4 TRANSFORM !!!!" );
     QgsDebugMsg( QString( "     numPoint: %1" ).arg( numPoints ) );
     QgsDebugMsg( QString( "     x       : %1" ).arg( x ) );
     QgsDebugMsg( QString( "     y       : %1" ).arg( y ) );
@@ -483,7 +483,7 @@ void QgsCoordinateTransform::transformCoords( const int& numPoints, double *x, d
     pjErr << tr( "Failed" ) << " " << dir << " " << tr( "transform of" ) << '\n';
     for ( int i = 0; i < numPoints; ++i )
     {
-      if ( direction == FORWARD )
+      if ( direction == ForwardTransform )
       {
         pjErr << "(" << x[i] << ", " << y[i] << ")\n";
       }
@@ -504,8 +504,8 @@ void QgsCoordinateTransform::transformCoords( const int& numPoints, double *x, d
   }
   // if the result is lat/long, convert the results from radians back
   // to degrees
-  if (( pj_is_latlong( mDestinationProjection ) && ( direction == FORWARD ) )
-      || ( pj_is_latlong( mSourceProjection ) && ( direction == INVERSE ) ) )
+  if (( pj_is_latlong( mDestinationProjection ) && ( direction == ForwardTransform ) )
+      || ( pj_is_latlong( mSourceProjection ) && ( direction == ReverseTransform ) ) )
   {
     for ( int i = 0; i < numPoints; ++i )
     {

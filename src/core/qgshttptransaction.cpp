@@ -23,6 +23,7 @@
 
 #include "qgshttptransaction.h"
 #include "qgslogger.h"
+#include "qgsconfig.h"
 
 #include <QApplication>
 #include <QUrl>
@@ -77,7 +78,15 @@ bool QgsHttpTransaction::getSynchronously( QByteArray &respondedContent, int red
 
   QUrl qurl( httpurl );
 
-  http = new QHttp( qurl.host(), qurl.port( HTTP_PORT_DEFAULT ) );
+  http = new QHttp( ); 
+  // Create a header so we can set the user agent (Per WMS RFC).
+  QHttpRequestHeader header("GET", qurl.host());
+  // Set host in the header
+  header.setValue( "Host", qurl.host() );
+  // Set the user agent to Quantum GIS plus the version name
+  header.setValue( "User-agent", QString("Quantum GIS - ") + VERSION );
+  // Set the host in the QHttp object
+  http->setHost( qurl.host(), qurl.port( HTTP_PORT_DEFAULT ) );
 
   if ( httphost.isEmpty() )
   {
@@ -104,16 +113,24 @@ bool QgsHttpTransaction::getSynchronously( QByteArray &respondedContent, int red
   // includes the scheme, host and port (the
   // http://www.address.bit:80), so remove that from the url before
   // executing an http GET.
-  QString pathAndQuery = httpurl.remove( 0,
-                                         httpurl.indexOf( qurl.path() ) );
+  // 
+  // gsherman 2008-10-24 - Not sure if the above still holds true. Commenting
+  // out the removal for testing purposes
+  // QString pathAndQuery = httpurl.remove( 0,
+  //                                       httpurl.indexOf( qurl.path() ) );
+
 
   if ( !postData ) //do request with HTTP GET
   {
-    httpid = http->get( pathAndQuery );
+    header.setRequest("GET", httpurl);
+    // do GET using header containing user-agent
+    httpid = http->request(header); 
   }
   else //do request with HTTP POST
   {
-    httpid = http->post( pathAndQuery, *postData );
+    header.setRequest("POST", httpurl);
+    // do POST using header containing user-agent
+    httpid = http->request(header, *postData); 
   }
 
   connect( http, SIGNAL( requestStarted( int ) ),
@@ -183,8 +200,8 @@ bool QgsHttpTransaction::getSynchronously( QByteArray &respondedContent, int red
 
     // Do a passthrough for the status bar text
     connect(
-      &httprecurse, SIGNAL( setStatus( QString ) ),
-      this,        SIGNAL( setStatus( QString ) )
+      &httprecurse, SIGNAL( statusChanged( QString ) ),
+      this,        SIGNAL( statusChanged( QString ) )
     );
 
     httprecurse.getSynchronously( respondedContent, ( redirections + 1 ) );
@@ -280,7 +297,7 @@ void QgsHttpTransaction::dataProgress( int done, int total )
              .arg( done );
   }
 
-  emit setStatus( status );
+  emit statusChanged( status );
 }
 
 
@@ -388,46 +405,46 @@ void QgsHttpTransaction::dataStateChanged( int state )
   {
     case QHttp::Unconnected:
       QgsDebugMsg( "There is no connection to the host." );
-      emit setStatus( QString( QObject::tr( "Not connected" ) ) );
+      emit statusChanged( QString( QObject::tr( "Not connected" ) ) );
       break;
 
     case QHttp::HostLookup:
       QgsDebugMsg( "A host name lookup is in progress." );
 
-      emit setStatus( QString( QObject::tr( "Looking up '%1'" ) )
+      emit statusChanged( QString( QObject::tr( "Looking up '%1'" ) )
                       .arg( httphost ) );
       break;
 
     case QHttp::Connecting:
       QgsDebugMsg( "An attempt to connect to the host is in progress." );
 
-      emit setStatus( QString( QObject::tr( "Connecting to '%1'" ) )
+      emit statusChanged( QString( QObject::tr( "Connecting to '%1'" ) )
                       .arg( httphost ) );
       break;
 
     case QHttp::Sending:
       QgsDebugMsg( "The client is sending its request to the server." );
 
-      emit setStatus( QString( QObject::tr( "Sending request '%1'" ) )
+      emit statusChanged( QString( QObject::tr( "Sending request '%1'" ) )
                       .arg( httpurl ) );
       break;
 
     case QHttp::Reading:
       QgsDebugMsg( "The client's request has been sent and the client is reading the server's response." );
 
-      emit setStatus( QString( QObject::tr( "Receiving reply" ) ) );
+      emit statusChanged( QString( QObject::tr( "Receiving reply" ) ) );
       break;
 
     case QHttp::Connected:
       QgsDebugMsg( "The connection to the host is open, but the client is neither sending a request, nor waiting for a response." );
 
-      emit setStatus( QString( QObject::tr( "Response is complete" ) ) );
+      emit statusChanged( QString( QObject::tr( "Response is complete" ) ) );
       break;
 
     case QHttp::Closing:
       QgsDebugMsg( "The connection is closing down, but is not yet closed. (The state will be Unconnected when the connection is closed.)" );
 
-      emit setStatus( QString( QObject::tr( "Closing down connection" ) ) );
+      emit statusChanged( QString( QObject::tr( "Closing down connection" ) ) );
       break;
   }
 

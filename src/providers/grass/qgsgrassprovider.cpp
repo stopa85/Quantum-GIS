@@ -287,7 +287,7 @@ QString QgsGrassProvider::storageType() const
   return "GRASS (Geographic Resources Analysis and Support System) file";
 }
 
-bool QgsGrassProvider::getNextFeature( QgsFeature& feature )
+bool QgsGrassProvider::nextFeature( QgsFeature& feature )
 {
   int cat, type, id;
   unsigned char *wkb;
@@ -523,7 +523,7 @@ QgsRect QgsGrassProvider::extent()
 /**
 * Return the feature type
 */
-QGis::WKBTYPE QgsGrassProvider::geometryType() const
+QGis::WkbType QgsGrassProvider::geometryType() const
 {
   return mQgisType;
 }
@@ -557,7 +557,7 @@ int QgsGrassProvider::keyField()
   return mLayers[mLayerId].keyColumn;
 }
 
-void QgsGrassProvider::reset()
+void QgsGrassProvider::begin()
 {
   if ( isEdited() || isFrozen() || !mValid )
     return;
@@ -730,7 +730,7 @@ void QgsGrassProvider::loadAttributes( GLAYER &layer )
       QgsDebugMsg( "Database opened -> open select cursor" );
       dbString dbstr;
       db_init_string( &dbstr );
-      db_set_string( &dbstr, (char *)"select * from " );
+      db_set_string( &dbstr, ( char * )"select * from " );
       db_append_string( &dbstr, layer.fieldInfo->table );
 
       QgsDebugMsg( QString( "SQL: %1" ).arg( db_get_string( &dbstr ) ) );
@@ -1074,7 +1074,7 @@ void QgsGrassProvider::updateMap( int mapId )
 
   // TODO: Should be done better / in other place ?
   // TODO: Is it necessary for close ?
-  G__setenv( (char *)"MAPSET", map->mapset.toAscii().data() );
+  G__setenv(( char * )"MAPSET", map->mapset.toAscii().data() );
 
   if ( closeMap ) Vect_close( map->map );
 
@@ -1087,13 +1087,24 @@ void QgsGrassProvider::updateMap( int mapId )
   // Reopen vector
   QgsGrass::resetError(); // to "catch" error after Vect_open_old()
   Vect_set_open_level( 2 );
-  Vect_open_old( map->map, map->mapName.toAscii().data(), map->mapset.toAscii().data() );
+  if ( setjmp( QgsGrass::fatalErrorEnv() ) == 0 )
+  {
+    Vect_open_old( map->map, map->mapName.toAscii().data(), map->mapset.toAscii().data() );
+  }
+  QgsGrass::clearErrorEnv();
 
   if ( QgsGrass::getError() == QgsGrass::FATAL )
   {
     QgsDebugMsg( QString( "Cannot reopen GRASS vector: %1" ).arg( QgsGrass::getErrorMessage() ) );
 
-    // TODO if reopen fails, mLayers should be also updated
+    // if reopen fails, mLayers should be also updated
+    for ( unsigned int i = 0; i <  mLayers.size(); i++ )
+    {
+      if ( mLayers[i].mapId == mapId )
+      {
+        closeLayer( i );
+      }
+    }
     return;
   }
 
@@ -1149,6 +1160,13 @@ bool QgsGrassProvider::mapOutdated( int mapId )
 
   if ( map->lastModified < di.lastModified() )
   {
+    // If the cidx file has been deleted, the map is currently being modified
+    // by an external tool. Do not update until the cidx file has been recreated.
+    if ( !QFileInfo( dp, "cidx" ).exists() )
+    {
+      QgsDebugMsg( QString( "**** The map %1 is being modified and is unavailable ****" ).arg( mapId ) );
+      return false;
+    }
     QgsDebugMsg( QString( "**** The map %1 was modified ****" ).arg( mapId ) );
 
     return true;
@@ -1249,9 +1267,9 @@ struct Map_info *QgsGrassProvider::layerMap( int layerId )
 }
 
 
-QgsCoordinateReferenceSystem QgsGrassProvider::getCRS()
+QgsCoordinateReferenceSystem QgsGrassProvider::crs()
 {
-  QString WKT;
+  QString Wkt;
 
   struct Cell_head cellhd;
 
@@ -1279,14 +1297,14 @@ QgsCoordinateReferenceSystem QgsGrassProvider::getCRS()
     struct Key_Value *projinfo = G_get_projinfo();
     struct Key_Value *projunits = G_get_projunits();
     char *wkt = GPJ_grass_to_wkt( projinfo, projunits,  0, 0 );
-    WKT = QString( wkt );
+    Wkt = QString( wkt );
     free( wkt );
   }
 
   setlocale( LC_NUMERIC, oldlocale );
 
   QgsCoordinateReferenceSystem srs;
-  srs.createFromWkt( WKT );
+  srs.createFromWkt( Wkt );
 
   return srs;
 }
@@ -1423,7 +1441,7 @@ bool QgsGrassProvider::startEdit( void )
 
   // Set current mapset (mapset was previously checked by isGrassEditable() )
   // TODO: Should be done better / in other place ?
-  G__setenv( (char *)"MAPSET", map->mapset.toAscii().data() );
+  G__setenv(( char * )"MAPSET", map->mapset.toAscii().data() );
 
   Vect_close( map->map );
 
@@ -1499,7 +1517,7 @@ bool QgsGrassProvider::closeEdit( bool newMap )
   // Set current mapset (mapset was previously checked by isGrassEditable() )
   // TODO: Should be done better / in other place ?
   // TODO: Is it necessary for build/close ?
-  G__setenv( (char *) "MAPSET", map->mapset.toAscii().data() );
+  G__setenv(( char * ) "MAPSET", map->mapset.toAscii().data() );
 
   Vect_build_partial( map->map, GV_BUILD_NONE, NULL );
   Vect_build( map->map, stderr );

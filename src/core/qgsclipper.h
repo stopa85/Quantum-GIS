@@ -60,16 +60,14 @@ class CORE_EXPORT QgsClipper
     // The limit is set to 30,000 instead of 32768 because that things
     // still go wrong.
 
-    static const double maxX;
-    static const double minX;
-    static const double maxY;
-    static const double minY;
+    static const double MAX_X;
+    static const double MIN_X;
+    static const double MAX_Y;
+    static const double MIN_Y;
 
-    // Used when testing for equivalance to 0.0
-    static const double SMALL_NUM;
 
     // A handy way to refer to the four boundaries
-    enum boundary {Xmax, Xmin, Ymax, Ymin};
+    enum Boundary {XMax, XMin, YMax, YMin};
 
     // Trims the given feature to a rectangular box. Returns the trimmed
     // feature in x and y. The shapeOpen parameter determines whether
@@ -81,23 +79,26 @@ class CORE_EXPORT QgsClipper
 
   private:
 
+    // Used when testing for equivalance to 0.0
+    static const double SMALL_NUM;
+
     // Trims the given feature to the given boundary. Returns the
     // trimmed feature in the outX and outY vectors.
     static void trimFeatureToBoundary( const std::vector<double>& inX,
                                        const std::vector<double>& inY,
                                        std::vector<double>& outX,
                                        std::vector<double>& outY,
-                                       boundary b,
+                                       Boundary b,
                                        bool shapeOpen );
 
     // Determines if a point is inside or outside the given boundary
-    static bool inside( const double x, const double y, boundary b );
+    static bool inside( const double x, const double y, Boundary b );
 
     // Calculates the intersection point between a line defined by a
     // (x1, y1), and (x2, y2) and the given boundary
     static QgsPoint intersect( const double x1, const double y1,
                                const double x2, const double y2,
-                               boundary b );
+                               Boundary b );
 };
 
 // The inline functions
@@ -118,19 +119,19 @@ inline void QgsClipper::trimFeature( std::vector<double>& x,
 {
   std::vector<double> tmpX;
   std::vector<double> tmpY;
-  trimFeatureToBoundary( x, y, tmpX, tmpY, Xmax, shapeOpen );
+  trimFeatureToBoundary( x, y, tmpX, tmpY, XMax, shapeOpen );
 
   x.clear();
   y.clear();
-  trimFeatureToBoundary( tmpX, tmpY, x, y, Ymax, shapeOpen );
+  trimFeatureToBoundary( tmpX, tmpY, x, y, YMax, shapeOpen );
 
   tmpX.clear();
   tmpY.clear();
-  trimFeatureToBoundary( x, y, tmpX, tmpY, Xmin, shapeOpen );
+  trimFeatureToBoundary( x, y, tmpX, tmpY, XMin, shapeOpen );
 
   x.clear();
   y.clear();
-  trimFeatureToBoundary( tmpX, tmpY, x, y, Ymin, shapeOpen );
+  trimFeatureToBoundary( tmpX, tmpY, x, y, YMin, shapeOpen );
 }
 
 // An auxilary function that is part of the polygon trimming
@@ -143,7 +144,7 @@ inline void QgsClipper::trimFeatureToBoundary(
   const std::vector<double>& inY,
   std::vector<double>& outX,
   std::vector<double>& outY,
-  boundary b, bool shapeOpen )
+  Boundary b, bool shapeOpen )
 {
   // The shapeOpen parameter selects whether this function treats the
   // shape as open or closed. False is appropriate for polygons and
@@ -196,24 +197,24 @@ inline void QgsClipper::trimFeatureToBoundary(
 // An auxilary function to trimPolygonToBoundarY() that returns
 // whether a point is inside or outside the given boundary.
 
-inline bool QgsClipper::inside( const double x, const double y, boundary b )
+inline bool QgsClipper::inside( const double x, const double y, Boundary b )
 {
   switch ( b )
   {
-    case Xmax: // x < maxX is inside
-      if ( x < maxX )
+    case XMax: // x < MAX_X is inside
+      if ( x < MAX_X )
         return true;
       break;
-    case Xmin: // x > minX is inside
-      if ( x > minX )
+    case XMin: // x > MIN_X is inside
+      if ( x > MIN_X )
         return true;
       break;
-    case Ymax: // y < maxY is inside
-      if ( y < maxY )
+    case YMax: // y < MAX_Y is inside
+      if ( y < MAX_Y )
         return true;
       break;
-    case Ymin: // y > minY is inside
-      if ( y > minY )
+    case YMin: // y > MIN_Y is inside
+      if ( y > MIN_Y )
         return true;
       break;
   }
@@ -227,7 +228,7 @@ inline bool QgsClipper::inside( const double x, const double y, boundary b )
 
 inline QgsPoint QgsClipper::intersect( const double x1, const double y1,
                                        const double x2, const double y2,
-                                       boundary b )
+                                       Boundary b )
 {
   // This function assumes that the two given points (x1, y1), and
   // (x2, y2) cross the given boundary. Making this assumption allows
@@ -237,21 +238,21 @@ inline QgsPoint QgsClipper::intersect( const double x1, const double y1,
 
   switch ( b )
   {
-    case Xmax: // x = maxX boundary
-      r_n = -( x1 - maxX ) * ( maxY - minY );
-      r_d = ( x2 - x1 )   * ( maxY - minY );
+    case XMax: // x = MAX_X boundary
+      r_n = -( x1 - MAX_X ) * ( MAX_Y - MIN_Y );
+      r_d = ( x2 - x1 )   * ( MAX_Y - MIN_Y );
       break;
-    case Xmin: // x = minX boundary
-      r_n = -( x1 - minX ) * ( maxY - minY );
-      r_d = ( x2 - x1 )   * ( maxY - minY );
+    case XMin: // x = MIN_X boundary
+      r_n = -( x1 - MIN_X ) * ( MAX_Y - MIN_Y );
+      r_d = ( x2 - x1 )   * ( MAX_Y - MIN_Y );
       break;
-    case Ymax: // y = maxY boundary
-      r_n = ( y1 - maxY ) * ( maxX - minX );
-      r_d = -( y2 - y1 )   * ( maxX - minX );
+    case YMax: // y = MAX_Y boundary
+      r_n = ( y1 - MAX_Y ) * ( MAX_X - MIN_X );
+      r_d = -( y2 - y1 )   * ( MAX_X - MIN_X );
       break;
-    case Ymin: // y = minY boundary
-      r_n = ( y1 - minY ) * ( maxX - minX );
-      r_d = -( y2 - y1 )   * ( maxX - minX );
+    case YMin: // y = MIN_Y boundary
+      r_n = ( y1 - MIN_Y ) * ( MAX_X - MIN_X );
+      r_d = -( y2 - y1 )   * ( MAX_X - MIN_X );
       break;
   }
 

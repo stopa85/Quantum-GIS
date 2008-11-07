@@ -57,7 +57,7 @@ class QgsDelimitedTextProvider : public QgsVectorDataProvider
      */
     virtual QString storageType() const;
 
-    /** Select features based on a bounding rectangle. Features can be retrieved with calls to getNextFeature.
+    /** Select features based on a bounding rectangle. Features can be retrieved with calls to nextFeature.
      *  @param fetchAttributes list of attributes which should be fetched
      *  @param rect spatial filter
      *  @param fetchGeometry true if the feature geometry should be fetched
@@ -77,13 +77,13 @@ class QgsDelimitedTextProvider : public QgsVectorDataProvider
      * mFile should be open with the file pointer at the record of the next
      * feature, or EOF.  The feature found on the current line is parsed.
      */
-    virtual bool getNextFeature( QgsFeature& feature );
+    virtual bool nextFeature( QgsFeature& feature );
 
     /**
      * Get feature type.
      * @return int representing the feature type
      */
-    virtual QGis::WKBTYPE geometryType() const;
+    virtual QGis::WkbType geometryType() const;
 
     /**
      * Number of features in the layer
@@ -103,7 +103,7 @@ class QgsDelimitedTextProvider : public QgsVectorDataProvider
     virtual const QgsFieldMap & fields() const;
 
     /** Restart reading features from previous select operation */
-    virtual void reset();
+    virtual void begin();
 
     /** Returns a bitmask containing the supported capabilities
         Note, some capabilities may change depending on whether
@@ -152,7 +152,7 @@ class QgsDelimitedTextProvider : public QgsVectorDataProvider
      */
     bool isValid();
 
-    virtual QgsCoordinateReferenceSystem getCRS();
+    virtual QgsCoordinateReferenceSystem crs();
 
     /* new functions */
 

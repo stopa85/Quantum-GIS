@@ -91,7 +91,7 @@ class CORE_EXPORT QgsComposerMap : /*public QWidget, private Ui::QgsComposerMapB
      @param delta value from wheel event that describes magnitude and direction (positive /negative number)
     @param x x-coordinate of mouse position in item coordinates
     @param y y-coordinate of mouse position in item coordinates*/
-    void zoomContent( int delta, double x, double y);
+    void zoomContent( int delta, double x, double y );
 
     /**Sets new scene rectangle bounds and recalculates hight and extent*/
     void setSceneRect( const QRectF& rectangle );
@@ -187,7 +187,7 @@ class CORE_EXPORT QgsComposerMap : /*public QWidget, private Ui::QgsComposerMapB
     /**For the generation of new unique ids*/
     static int mCurrentComposerId;
 
-    /**Etablishes signal/slot connection for update in case of layer change*/
+    /**Establishes signal/slot connection for update in case of layer change*/
     void connectUpdateSlot();
 
     /**Returns the zoom factor of the graphics view. If no

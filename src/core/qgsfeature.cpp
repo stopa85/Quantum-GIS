@@ -84,7 +84,7 @@ QgsFeature::~QgsFeature()
  * Get the feature id for this feature
  * @return Feature id
  */
-int QgsFeature::featureId() const
+int QgsFeature::id() const
 {
   return mFid;
 }
@@ -184,7 +184,7 @@ void QgsFeature::setGeometry( QgsGeometry* geom )
 void QgsFeature::setGeometryAndOwnership( unsigned char *geom, size_t length )
 {
   QgsGeometry *g = new QgsGeometry();
-  g->setWkbAndOwnership( geom, length );
+  g->fromWkb( geom, length );
   setGeometry( g );
 }
 
@@ -204,7 +204,7 @@ bool QgsFeature::isDirty() const
   return mDirty;
 }
 
-void QgsFeature::resetDirty()
+void QgsFeature::clean()
 {
   mDirty = false;
 }

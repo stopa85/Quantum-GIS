@@ -46,7 +46,7 @@ class QgsField;
  * is set to true. All data loaded from the map to QgsGrassProvider remain unchanged
  * untill closeEdit is called.
  * During editing:
- * getNextFeature() and getFirstFeature() returns 0
+ * nextFeature() and getFirstFeature() returns 0
  * featureCount() returns 0
  * fieldCount() returns original (old) number of fields
  */
@@ -96,7 +96,7 @@ struct GMAP
   struct  Map_info *map; // map header
   int     nUsers;        // number layers using this map
   int     update;        // true if the map is opened in update mode -> disabled standard reading
-  // through getNextFeature(), featureCount() returns 0
+  // through nextFeature(), featureCount() returns 0
   QDateTime lastModified; // last modified time of the vector directory, when the map was opened
   QDateTime lastAttributesModified; // last modified time of the vector 'dbln' file, when the map was opened
   // or attributes were updated. The 'dbln' file is updated by v.to.db etc.
@@ -122,7 +122,7 @@ class GRASS_EXPORT QgsGrassProvider : public QgsVectorDataProvider
     virtual QString storageType() const;
 
 
-    /** Select features based on a bounding rectangle. Features can be retrieved with calls to getNextFeature.
+    /** Select features based on a bounding rectangle. Features can be retrieved with calls to nextFeature.
      *  @param fetchAttributes list of attributes which should be fetched
      *  @param rect spatial filter
      *  @param fetchGeometry true if the feature geometry should be fetched
@@ -141,14 +141,14 @@ class GRASS_EXPORT QgsGrassProvider : public QgsVectorDataProvider
      * @param feature feature which will receive data from the provider
      * @return true when there was a feature to fetch, false when end was hit
      */
-    virtual bool getNextFeature( QgsFeature& feature );
+    virtual bool nextFeature( QgsFeature& feature );
 
 
     /**
-     * Get the feature type as defined in WKBTYPE (qgis.h).
+     * Get the feature type as defined in WkbType (qgis.h).
      * @return int representing the feature type
      */
-    QGis::WKBTYPE geometryType() const;
+    QGis::WkbType geometryType() const;
 
 
     /**
@@ -175,7 +175,7 @@ class GRASS_EXPORT QgsGrassProvider : public QgsVectorDataProvider
     int keyField();
 
     /** Restart reading features from previous select operation */
-    void reset();
+    void begin();
 
     /** Returns the minimum value of an attributs
      *  @param index the index of the attribute */
@@ -195,7 +195,7 @@ class GRASS_EXPORT QgsGrassProvider : public QgsVectorDataProvider
      */
     bool isValid();
 
-    QgsCoordinateReferenceSystem getCRS();
+    QgsCoordinateReferenceSystem crs();
 
     // ----------------------------------- Edit ----------------------------------
 
@@ -522,7 +522,7 @@ class GRASS_EXPORT QgsGrassProvider : public QgsVectorDataProvider
     int     mLayerType;     // layer type POINT, LINE, ...
     int     mGrassType;     // grass feature type: GV_POINT, GV_LINE | GV_BOUNDARY, GV_AREA,
     // ( GV_BOUNDARY, GV_CENTROID )
-    QGis::WKBTYPE mQgisType;// WKBPoint, WKBLineString, ...
+    QGis::WkbType mQgisType;// WKBPoint, WKBLineString, ...
     int     mLayerId;       // ID used in layers
     struct  Map_info *mMap; // vector header pointer
     int     mMapVersion;    // The version of the map for which the instance was last time updated

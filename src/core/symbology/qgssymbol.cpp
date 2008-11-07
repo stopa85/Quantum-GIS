@@ -34,7 +34,7 @@
 #include "qgslogger.h"
 //do we have to include qstring?
 
-QgsSymbol::QgsSymbol( QGis::VectorType t, QString lvalue, QString uvalue, QString label ) :
+QgsSymbol::QgsSymbol( QGis::GeometryType t, QString lvalue, QString uvalue, QString label ) :
     mLowerValue( lvalue ),
     mUpperValue( uvalue ),
     mLabel( label ),
@@ -42,7 +42,7 @@ QgsSymbol::QgsSymbol( QGis::VectorType t, QString lvalue, QString uvalue, QStrin
     mPointSymbolName( "hard:circle" ),
     mPointSize( DEFAULT_POINT_SIZE ),
     mPointSymbolImage( 1, 1, QImage::Format_ARGB32_Premultiplied ),
-    mWidthScale( 1.0 ),
+    mWidthScale( -1.0 ),
     mCacheUpToDate( false ),
     mCacheUpToDate2( false ),
     mRotationClassificationField( -1 ),
@@ -50,7 +50,7 @@ QgsSymbol::QgsSymbol( QGis::VectorType t, QString lvalue, QString uvalue, QStrin
 {}
 
 
-QgsSymbol::QgsSymbol( QGis::VectorType t, QString lvalue, QString uvalue, QString label, QColor c ) :
+QgsSymbol::QgsSymbol( QGis::GeometryType t, QString lvalue, QString uvalue, QString label, QColor c ) :
     mLowerValue( lvalue ),
     mUpperValue( uvalue ),
     mLabel( label ),
@@ -60,7 +60,7 @@ QgsSymbol::QgsSymbol( QGis::VectorType t, QString lvalue, QString uvalue, QStrin
     mPointSymbolName( "hard:circle" ),
     mPointSize( DEFAULT_POINT_SIZE ),
     mPointSymbolImage( 1, 1, QImage::Format_ARGB32_Premultiplied ),
-    mWidthScale( 1.0 ),
+    mWidthScale( -1.0 ),
     mCacheUpToDate( false ),
     mCacheUpToDate2( false ),
     mRotationClassificationField( -1 ),
@@ -71,7 +71,7 @@ QgsSymbol::QgsSymbol()
     : mPointSymbolName( "hard:circle" ),
     mPointSize( DEFAULT_POINT_SIZE ),
     mPointSymbolImage( 1, 1, QImage::Format_ARGB32_Premultiplied ),
-    mWidthScale( 1.0 ),
+    mWidthScale( -1.0 ),
     mCacheUpToDate( false ),
     mCacheUpToDate2( false ),
     mRotationClassificationField( -1 ),
@@ -85,7 +85,7 @@ QgsSymbol::QgsSymbol( QColor c )
     mPointSymbolName( "hard:circle" ),
     mPointSize( DEFAULT_POINT_SIZE ),
     mPointSymbolImage( 1, 1, QImage::Format_ARGB32_Premultiplied ),
-    mWidthScale( 1.0 ),
+    mWidthScale( -1.0 ),
     mCacheUpToDate( false ),
     mCacheUpToDate2( false ),
     mRotationClassificationField( -1 ),
@@ -248,7 +248,8 @@ QImage QgsSymbol::getLineSymbolAsImage()
   //Note by Tim: dont use premultiplied - it causes
   //artifacts on the output icon!
   QImage img( 15, 15, QImage::Format_ARGB32 );//QImage::Format_ARGB32_Premultiplied);
-  img.fill( QColor( 255, 255, 255, 255 ).rgba() );
+  //0 = fully transparent
+  img.fill( QColor( 255, 255, 255, 0 ).rgba() );
   QPainter p( &img );
   p.setRenderHints( QPainter::Antialiasing );
   p.setPen( mPen );
@@ -267,7 +268,8 @@ QImage QgsSymbol::getPolygonSymbolAsImage()
   //Note by Tim: dont use premultiplied - it causes
   //artifacts on the output icon!
   QImage img( 15, 15, QImage::Format_ARGB32 ); //, QImage::Format_ARGB32_Premultiplied);
-  img.fill( QColor( 255, 255, 255, 255 ).rgba() );
+  //0 = fully transparent
+  img.fill( QColor( 255, 255, 255, 0 ).rgba() );
   QPainter p( &img );
   p.setRenderHints( QPainter::Antialiasing );
   p.setPen( mPen );
@@ -330,12 +332,14 @@ QImage QgsSymbol::getCachedPointSymbolAsImage( double widthScale,
 QImage QgsSymbol::getPointSymbolAsImage( double widthScale, bool selected, QColor selectionColor, double scale,
     double rotation, double rasterScaleFactor )
 {
-  //QgsDebugMsg(QString("Symbol scale = %1, and rotation = %2").arg(scale).arg(rotation));
   if ( 1.0 == ( scale * rasterScaleFactor ) && 0 == rotation )
-  {
-    // If scale is 1.0 and rotation 0.0, use cached image.
-    return getCachedPointSymbolAsImage( widthScale, selected, selectionColor );
-  }
+    {
+      if(mWidthScale < 0 || widthScale == mWidthScale)
+	{  
+	  // If scale is 1.0 and rotation 0.0, use cached image.
+	  return getCachedPointSymbolAsImage( widthScale, selected, selectionColor );
+	}
+    }
 
   QImage preRotateImage;
   QPen pen = mPen;
@@ -346,13 +350,17 @@ QImage QgsSymbol::getPointSymbolAsImage( double widthScale, bool selected, QColo
   {
     pen.setColor( selectionColor );
     QBrush brush = mBrush;
-    preRotateImage = QgsMarkerCatalogue::instance()->imageMarker( mPointSymbolName, ( float )( mPointSize * scale * widthScale * rasterScaleFactor ),
-                     pen, mBrush );
+    preRotateImage = QgsMarkerCatalogue::instance()->imageMarker(
+                       mPointSymbolName, ( float )( mPointSize * scale * widthScale *
+                                                    rasterScaleFactor ),
+                       pen, mBrush );
   }
   else
   {
-    preRotateImage = QgsMarkerCatalogue::instance()->imageMarker( mPointSymbolName, ( float )( mPointSize * scale * widthScale * rasterScaleFactor ),
-                     pen, mBrush );
+    preRotateImage = QgsMarkerCatalogue::instance()->imageMarker(
+                       mPointSymbolName, ( float )( mPointSize * scale * widthScale *
+                                                    rasterScaleFactor ),
+                       pen, mBrush );
   }
 
   QMatrix rotationMatrix;

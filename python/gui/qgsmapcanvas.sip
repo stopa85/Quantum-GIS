@@ -58,7 +58,7 @@ class QgsMapCanvas : QGraphicsView
     
     void updateOverview();
     
-    void setOverview(QgsMapOverviewCanvas* overview);
+    void enableOverviewMode(QgsMapOverviewCanvas* overview);
     
     QgsMapCanvasMap* map();
     
@@ -116,7 +116,7 @@ class QgsMapCanvas : QGraphicsView
     void updateFullExtent();
 
     //! return the map layer at postion index in the layer stack
-    QgsMapLayer *getZpos(int index);
+    QgsMapLayer *layer(int index);
     
     //! return number of layers on the map
     int layerCount() const;
@@ -138,10 +138,10 @@ class QgsMapCanvas : QGraphicsView
     bool isDirty() const;
 
     //! Set map units (needed by project properties dialog)
-    void setMapUnits(QGis::units mapUnits);
+    void setMapUnits(QGis::UnitType mapUnits);
     //! Get the current canvas map units
 
-    QGis::units mapUnits() const;
+    QGis::UnitType mapUnits() const;
 
     //! Get the current coordinate transform
     const QgsMapToPixel * getCoordinateTransform();
@@ -194,7 +194,7 @@ class QgsMapCanvas : QGraphicsView
     bool renderFlag();
 
     /** A simple helper method to find out if on the fly projections are enabled or not */
-    bool projectionsEnabled();
+    bool hasCrsTransformEnabled();
 
     /** The map units may have changed, so cope with that */
     void mapUnitsChanged();

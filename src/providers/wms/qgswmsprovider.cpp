@@ -72,21 +72,7 @@ QgsWmsProvider::QgsWmsProvider( QString const & uri )
   // 2) http://xxx.xxx.xx/yyy/yyy?
   // 3) http://xxx.xxx.xx/yyy/yyy?zzz=www
 
-  // Prepare the URI so that we can later simply append param=value
-  baseUrl = httpuri;
-
-  if ( !( baseUrl.contains( "?" ) ) )
-  {
-    baseUrl.append( "?" );
-  }
-  else if (
-    ( baseUrl.right( 1 ) != "?" )
-    &&
-    ( baseUrl.right( 1 ) != "&" )
-  )
-  {
-    baseUrl.append( "&" );
-  }
+  baseUrl = prepareUri( httpuri );
 
   QgsDebugMsg( "baseUrl = " + baseUrl );
 
@@ -110,6 +96,23 @@ QgsWmsProvider::QgsWmsProvider( QString const & uri )
 
 
   QgsDebugMsg( "QgsWmsProvider: exiting constructor." );
+}
+
+QString QgsWmsProvider::prepareUri( QString uri )
+{
+  if ( !( uri.contains( "?" ) ) )
+  {
+    uri.append( "?" );
+  }
+  else if (
+    ( uri.right( 1 ) != "?" ) &&
+    ( uri.right( 1 ) != "&" )
+  )
+  {
+    uri.append( "&" );
+  }
+
+  return uri;
 }
 
 QgsWmsProvider::~QgsWmsProvider()
@@ -274,8 +277,8 @@ QImage* QgsWmsProvider::draw( QgsRect  const & viewExtent, int pixelWidth, int p
 {
   QgsDebugMsg( "Entering." );
 
-  QgsDebugMsg( "pixelWidth = "  + QString( pixelWidth ) );
-  QgsDebugMsg( "pixelHeight = "  + QString( pixelHeight ) );
+  QgsDebugMsg( "pixelWidth = "  + QString::number( pixelWidth ) );
+  QgsDebugMsg( "pixelHeight = "  + QString::number( pixelHeight ) );
   QgsDebugMsg( "viewExtent: " + viewExtent.toString() );
 
   // Can we reuse the previously cached image?
@@ -376,7 +379,7 @@ QImage* QgsWmsProvider::draw( QgsRect  const & viewExtent, int pixelWidth, int p
     crsKey = "CRS";
   }
 
-  QString url = baseUrl;
+  QString url = prepareUri( mCapabilities.capability.request.getMap.dcpType.front().http.get.onlineResource.xlinkHref );
 
   url += "SERVICE=WMS";
   url += "&";
@@ -446,7 +449,7 @@ QImage* QgsWmsProvider::draw( QgsRect  const & viewExtent, int pixelWidth, int p
 
     // Do a passthrough for the status bar text
     connect(
-            &http, SIGNAL(setStatus        (QString)),
+            &http, SIGNAL( statusChanged        (QString)),
              this,   SLOT(showStatusMessage(QString))
            );
 
@@ -566,7 +569,7 @@ bool QgsWmsProvider::retrieveServerCapabilities( bool forceRefresh )
 
         // Do a passthrough for the status bar text
         connect(
-                &http, SIGNAL(setStatus        (QString)),
+                &http, SIGNAL( statusChanged        (QString)),
                  this,   SLOT(showStatusMessage(QString))
                );
 
@@ -622,7 +625,7 @@ QByteArray QgsWmsProvider::retrieveUrl( QString url )
 
   // Do a passthrough for the status bar text
   connect(
-    &http, SIGNAL( setStatus( QString ) ),
+    &http, SIGNAL( statusChanged( QString ) ),
     this,   SLOT( showStatusMessage( QString ) )
   );
 
@@ -675,7 +678,7 @@ bool QgsWmsProvider::downloadCapabilitiesURI( QString const & uri )
 
   // Do a passthrough for the status bar text
   connect(
-    &http, SIGNAL( setStatus( QString ) ),
+    &http, SIGNAL( statusChanged( QString ) ),
     this,   SLOT( showStatusMessage( QString ) )
   );
 
@@ -1666,7 +1669,7 @@ QgsRect QgsWmsProvider::extent()
   return layerExtent;
 }
 
-void QgsWmsProvider::reset()
+void QgsWmsProvider::begin()
 {
   // TODO
 }
@@ -1705,7 +1708,7 @@ void QgsWmsProvider::showStatusMessage( QString const & theMessage )
 {
   // Pass-through
   // TODO: See if we can connect signal-to-signal.  This is a kludge according to the Qt doc.
-  emit setStatus( theMessage );
+  emit statusChanged( theMessage );
 }
 
 
@@ -1746,7 +1749,7 @@ bool QgsWmsProvider::calculateExtent()
     // Convert to the user's CRS as required
     try
     {
-      extent = mCoordinateTransform->transformBoundingBox( extent, QgsCoordinateTransform::FORWARD );
+      extent = mCoordinateTransform->transformBoundingBox( extent, QgsCoordinateTransform::ForwardTransform );
     }
     catch ( QgsCsException &cse )
     {
@@ -1820,7 +1823,7 @@ int QgsWmsProvider::capabilities() const
 }
 
 
-QString QgsWmsProvider::getMetadata()
+QString QgsWmsProvider::metadata()
 {
 
   QString myMetadataQString = "";
@@ -2191,20 +2194,20 @@ QString QgsWmsProvider::identifyAsText( const QgsPoint& point )
 }
 
 
-QgsCoordinateReferenceSystem QgsWmsProvider::getCRS()
+QgsCoordinateReferenceSystem QgsWmsProvider::crs()
 {
   // TODO: implement
   return QgsCoordinateReferenceSystem();
 }
 
 
-QString QgsWmsProvider::errorCaptionString()
+QString QgsWmsProvider::lastErrorTitle()
 {
   return mErrorCaption;
 }
 
 
-QString QgsWmsProvider::errorString()
+QString QgsWmsProvider::lastError()
 {
   QgsDebugMsg( "returning '" + mError  + "'." );
   return mError;

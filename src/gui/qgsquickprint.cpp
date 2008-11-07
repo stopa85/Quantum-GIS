@@ -340,25 +340,23 @@ void QgsQuickPrint::printMap()
   // properly in the print
   int myMapDimensionX = ( myDrawableWidth / 100 ) * myMapHeightPercent;
   int myMapDimensionY = ( myDrawableHeight / 100 ) * myMapWidthPercent;
-  QPixmap myMapPixmap( myMapDimensionX, myMapDimensionY );
-  myMapPixmap.fill( mMapBackgroundColour );
+  
+  QImage myMapImage(QSize(myMapDimensionX, myMapDimensionY), QImage::Format_ARGB32);
+  myMapImage.setDotsPerMeterX((double)(myPrinter.logicalDpiX()) / 25.4 * 1000.0);
+  myMapImage.setDotsPerMeterY((double)(myPrinter.logicalDpiY()) / 25.4 * 1000.0);
+  myMapImage.fill(0);
   QPainter myMapPainter;
-  myMapPainter.begin( &myMapPixmap );
+  myMapPainter.begin(&myMapImage);
   // Now resize for print
-  mpMapRenderer->setOutputSize(
-    QSize( myMapDimensionX, myMapDimensionY ), myPrinter.resolution() );
-  scalePointSymbols( mySymbolScalingAmount, ScaleUp );
-  scaleTextLabels( mySymbolScalingAmount, ScaleUp );
+  mpMapRenderer->setOutputSize(QSize( myMapDimensionX, myMapDimensionY ), (myPrinter.logicalDpiX() + myPrinter.logicalDpiY()) / 2 );
   mpMapRenderer->render( &myMapPainter );
 
   myMapPainter.end();
   //draw the map pixmap onto our pdf print device
   myOriginX = myPrinter.pageRect().left() + myHorizontalSpacing;
   myOriginY += myVerticalSpacing * 2;
-  myPrintPainter.drawPixmap(
-    myOriginX,
-    myOriginY,
-    myMapPixmap );
+
+  myPrintPainter.drawImage(myOriginX, myOriginY, myMapImage);
 
   //
   // Draw the legend
@@ -417,6 +415,8 @@ void QgsQuickPrint::printMap()
         //
         // Single symbol
         //
+        double widthScale =   (myPrinter.logicalDpiX() + myPrinter.logicalDpiY()) / 2.0 / 25.4;
+
         if ( 1 == mySymbolList.size() )
         {
           QgsSymbol * mypSymbol = mySymbolList.at( 0 );
@@ -426,10 +426,8 @@ void QgsQuickPrint::printMap()
           if ( mypSymbol->type() == QGis::Point )
           {
             QImage myImage;
-            myImage = mypSymbol->getPointSymbolAsImage();
-            myPixmap = QPixmap::fromImage( myImage );  // convert to pixmap
-            myPixmap = myPixmap.scaled( myIconWidth, myIconWidth );
-            myPrintPainter.drawPixmap( myLegendXPos, myLegendYPos, myPixmap );
+            myImage = mypSymbol->getPointSymbolAsImage(widthScale);
+            myPrintPainter.drawImage(myLegendXPos, myLegendYPos, myImage);
           }
           else if ( mypSymbol->type() == QGis::Line )
           {
@@ -505,10 +503,8 @@ void QgsQuickPrint::printMap()
             if ( mypSymbol->type() == QGis::Point )
             {
               QImage myImage;
-              myImage = mypSymbol->getPointSymbolAsImage();
-              myPixmap = QPixmap::fromImage( myImage );  // convert to pixmap
-              myPixmap = myPixmap.scaled( myIconWidth, myIconWidth );
-              myPrintPainter.drawPixmap( myLegendXPos, myLegendYPos, myPixmap );
+              myImage = mypSymbol->getPointSymbolAsImage(widthScale);
+              myPrintPainter.drawImage(myLegendXPos, myLegendYPos, myImage);
             }
             else if ( mypSymbol->type() == QGis::Line )
             {
@@ -656,10 +652,6 @@ void QgsQuickPrint::printMap()
   //
   // Finish up
   //
-
-  //reinstate the symbols scaling for screen display
-  scalePointSymbols( mySymbolScalingAmount, ScaleDown );
-  scaleTextLabels( mySymbolScalingAmount, ScaleDown );
 
 
   myPrintPainter.end();
@@ -831,11 +823,11 @@ void QgsQuickPrint::renderPrintScaleBar( QPainter * thepPainter,
   }
 
   //Get type of map units and set scale bar unit label text
-  QGis::units myMapUnits = thepMapRenderer->mapUnits();
+  QGis::UnitType myMapUnits = thepMapRenderer->mapUnits();
   QString myScaleBarUnitLabel;
   switch ( myMapUnits )
   {
-    case QGis::METERS:
+    case QGis::Meters:
       if ( myActualSize > 1000.0 )
       {
         myScaleBarUnitLabel = tr( " km" );
@@ -854,7 +846,7 @@ void QgsQuickPrint::renderPrintScaleBar( QPainter * thepPainter,
       else
         myScaleBarUnitLabel = tr( " m" );
       break;
-    case QGis::FEET:
+    case QGis::Feet:
       if ( myActualSize > 5280.0 ) //5280 feet to the mile
       {
         myScaleBarUnitLabel = tr( " miles" );
@@ -879,13 +871,13 @@ void QgsQuickPrint::renderPrintScaleBar( QPainter * thepPainter,
         myScaleBarUnitLabel = tr( " feet" );
       }
       break;
-    case QGis::DEGREES:
+    case QGis::Degrees:
       if ( myActualSize == 1.0 )
         myScaleBarUnitLabel = tr( " degree" );
       else
         myScaleBarUnitLabel = tr( " degrees" );
       break;
-    case QGis::UNKNOWN:
+    case QGis::UnknownUnit:
       myScaleBarUnitLabel = tr( " unknown" );
     default:
       QgsDebugMsg( "Error: not picked up map units - actual value = "

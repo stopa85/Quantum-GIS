@@ -40,7 +40,7 @@
 QgsVectorFileWriter::QgsVectorFileWriter( const QString& shapefileName,
     const QString& fileEncoding,
     const QgsFieldMap& fields,
-    QGis::WKBTYPE geometryType,
+    QGis::WkbType geometryType,
     const QgsCoordinateReferenceSystem* srs )
     : mDS( NULL ), mLayer( NULL ), mGeom( NULL ), mError( NoError )
 {
@@ -165,7 +165,7 @@ QgsVectorFileWriter::QgsVectorFileWriter( const QString& shapefileName,
   mGeom = createEmptyGeometry( mWkbType );
 }
 
-OGRGeometryH QgsVectorFileWriter::createEmptyGeometry( QGis::WKBTYPE wkbType )
+OGRGeometryH QgsVectorFileWriter::createEmptyGeometry( QGis::WkbType wkbType )
 {
   return OGR_G_CreateGeometry(( OGRwkbGeometryType ) wkbType );
 }
@@ -236,7 +236,7 @@ bool QgsVectorFileWriter::addFeature( QgsFeature& feature )
 
     OGRGeometryH mGeom2 = createEmptyGeometry( geom->wkbType() );
 
-    OGRErr err = OGR_G_ImportFromWkb( mGeom2, geom->wkbBuffer(), geom->wkbSize() );
+    OGRErr err = OGR_G_ImportFromWkb( mGeom2, geom->asWkb(), geom->wkbSize() );
     if ( err != OGRERR_NONE )
     {
       QgsDebugMsg( "Failed to import geometry from WKB: " + QString::number( err ) );
@@ -249,7 +249,7 @@ bool QgsVectorFileWriter::addFeature( QgsFeature& feature )
   }
   else
   {
-    OGRErr err = OGR_G_ImportFromWkb( mGeom, geom->wkbBuffer(), geom->wkbSize() );
+    OGRErr err = OGR_G_ImportFromWkb( mGeom, geom->asWkb(), geom->wkbSize() );
     if ( err != OGRERR_NONE )
     {
       QgsDebugMsg( "Failed to import geometry from WKB: " + QString::number( err ) );
@@ -299,7 +299,7 @@ QgsVectorFileWriter::writeAsShapefile( QgsVectorLayer* layer,
 {
 
   const QgsCoordinateReferenceSystem* outputCRS;
-  QgsCoordinateTransform* ct;
+  QgsCoordinateTransform* ct = 0;
 
   QgsVectorDataProvider* provider = layer->dataProvider();
   int shallTransform = false;
@@ -309,10 +309,12 @@ QgsVectorFileWriter::writeAsShapefile( QgsVectorLayer* layer,
     // This means we should transform
     outputCRS = destCRS;
     shallTransform = true;
-  } else {
+  }
+  else
+  {
     // This means we shouldn't transform, use source CRS as output (if defined)
     outputCRS = &layer->srs();
-  }  
+  }
   QgsVectorFileWriter* writer = new QgsVectorFileWriter( shapefileName,
       fileEncoding, provider->fields(), provider->geometryType(), outputCRS );
 
@@ -320,15 +322,11 @@ QgsVectorFileWriter::writeAsShapefile( QgsVectorLayer* layer,
   WriterError err = writer->hasError();
   if ( err != NoError )
   {
-    if (ct != NULL)
-    {
-      delete ct;
-    }
     delete writer;
     return err;
   }
 
-  QgsAttributeList allAttr = provider->allAttributesList();
+  QgsAttributeList allAttr = provider->attributeIndexes();
   QgsFeature fet;
 
   provider->select( allAttr, QgsRect(), true );
@@ -336,33 +334,33 @@ QgsVectorFileWriter::writeAsShapefile( QgsVectorLayer* layer,
   const QgsFeatureIds& ids = layer->selectedFeaturesIds();
 
   // Create our transform
-  if (destCRS)
+  if ( destCRS )
   {
-    ct = new QgsCoordinateTransform(layer->srs(), *destCRS);
+    ct = new QgsCoordinateTransform( layer->srs(), *destCRS );
   }
 
   // Check for failure
-  if (ct == NULL)
+  if ( ct == NULL )
   {
     shallTransform = false;
   }
 
   // write all features
-  while ( provider->getNextFeature( fet ) )
+  while ( provider->nextFeature( fet ) )
   {
-    if ( onlySelected && !ids.contains( fet.featureId() ) )
+    if ( onlySelected && !ids.contains( fet.id() ) )
       continue;
 
     if ( shallTransform )
     {
-      fet.geometry()->transform(*ct);
+      fet.geometry()->transform( *ct );
     }
     writer->addFeature( fet );
   }
 
   delete writer;
 
-  if (shallTransform)
+  if ( shallTransform )
   {
     delete ct;
   }

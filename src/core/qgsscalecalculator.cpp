@@ -23,7 +23,7 @@
 #include "qgsrect.h"
 #include "qgsscalecalculator.h"
 
-QgsScaleCalculator::QgsScaleCalculator( double dpi, QGis::units mapUnits )
+QgsScaleCalculator::QgsScaleCalculator( double dpi, QGis::UnitType mapUnits )
     : mDpi( dpi ), mMapUnits( mapUnits )
 {}
 
@@ -39,12 +39,12 @@ double QgsScaleCalculator::dpi()
   return mDpi;
 }
 
-void QgsScaleCalculator::setMapUnits( QGis::units mapUnits )
+void QgsScaleCalculator::setMapUnits( QGis::UnitType mapUnits )
 {
   mMapUnits = mapUnits;
 }
 
-QGis::units QgsScaleCalculator::mapUnits() const
+QGis::UnitType QgsScaleCalculator::mapUnits() const
 {
   return mMapUnits;
 }
@@ -57,16 +57,16 @@ double QgsScaleCalculator::calculate( const QgsRect &mapExtent, int canvasWidth 
   // users display, and the canvas width
   switch ( mMapUnits )
   {
-    case QGis::METERS:
+    case QGis::Meters:
       // convert meters to inches
       conversionFactor = 39.3700787;
       delta = mapExtent.xMax() - mapExtent.xMin();
       break;
-    case QGis::FEET:
+    case QGis::Feet:
       conversionFactor = 12.0;
       delta = mapExtent.xMax() - mapExtent.xMin();
       break;
-    case QGis::DEGREES:
+    case QGis::Degrees:
       // degrees require conversion to meters first
       conversionFactor = 39.3700787;
       delta = calculateGeographicDistance( mapExtent );
@@ -81,7 +81,7 @@ double QgsScaleCalculator::calculate( const QgsRect &mapExtent, int canvasWidth 
     QgsDebugMsg( "Can't calculate scale from the input values" );
     return 0;
   }
-  double scale = ( delta * conversionFactor ) / ( (double)canvasWidth / mDpi );
+  double scale = ( delta * conversionFactor ) / (( double )canvasWidth / mDpi );
   return scale;
 }
 

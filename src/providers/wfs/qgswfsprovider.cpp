@@ -63,7 +63,7 @@ QgsWFSProvider::~QgsWFSProvider()
   delete mSpatialIndex;
 }
 
-bool QgsWFSProvider::getNextFeature( QgsFeature& feature )
+bool QgsWFSProvider::nextFeature( QgsFeature& feature )
 {
   while ( true ) //go through the loop until we find a feature in the filter
   {
@@ -72,17 +72,15 @@ bool QgsWFSProvider::getNextFeature( QgsFeature& feature )
       return 0;
     }
 
-    feature.setFeatureId( mFeatures[*mFeatureIterator]->featureId() );
-    if ( mFetchGeom )
-    {
-      QgsGeometry* geometry = mFeatures[*mFeatureIterator]->geometry();
-      unsigned char *geom = geometry->wkbBuffer();
-      int geomSize = geometry->wkbSize();
+    feature.setFeatureId( mFeatures[*mFeatureIterator]->id() );
 
-      unsigned char* copiedGeom = new unsigned char[geomSize];
-      memcpy( copiedGeom, geom, geomSize );
-      feature.setGeometryAndOwnership( copiedGeom, geomSize );
-    }
+    //we need geometry anyway, e.g. for intersection tests
+    QgsGeometry* geometry = mFeatures[*mFeatureIterator]->geometry();
+    unsigned char *geom = geometry->asWkb();
+    int geomSize = geometry->wkbSize();
+    unsigned char* copiedGeom = new unsigned char[geomSize];
+    memcpy( copiedGeom, geom, geomSize );
+    feature.setGeometryAndOwnership( copiedGeom, geomSize );
 
     const QgsAttributeMap& attributes = mFeatures[*mFeatureIterator]->attributeMap();
     for ( QgsAttributeList::const_iterator it = mAttributesToFetch.begin(); it != mAttributesToFetch.end(); ++it )
@@ -92,7 +90,7 @@ bool QgsWFSProvider::getNextFeature( QgsFeature& feature )
     ++mFeatureIterator;
     if ( mUseIntersect )
     {
-      if ( feature.geometry()->intersects( mSpatialFilter ) )
+      if ( feature.geometry() && feature.geometry()->intersects( mSpatialFilter ) )
       {
         return true;
       }
@@ -110,7 +108,7 @@ bool QgsWFSProvider::getNextFeature( QgsFeature& feature )
 
 
 
-QGis::WKBTYPE QgsWFSProvider::geometryType() const
+QGis::WkbType QgsWFSProvider::geometryType() const
 {
   return mWKBType;
 }
@@ -130,12 +128,12 @@ const QgsFieldMap & QgsWFSProvider::fields() const
   return mFields;
 }
 
-void QgsWFSProvider::reset()
+void QgsWFSProvider::begin()
 {
   mFeatureIterator = mSelectedFeatures.begin();
 }
 
-QgsCoordinateReferenceSystem QgsWFSProvider::getCRS()
+QgsCoordinateReferenceSystem QgsWFSProvider::crs()
 {
   return mSourceCRS;
 }
@@ -273,7 +271,7 @@ int QgsWFSProvider::getFeatureGET( const QString& uri, const QString& geometryAt
   QgsWFSData dataReader( uri, &mExtent, &mSourceCRS, mFeatures, geometryAttribute, thematicAttributes, &mWKBType );
   QObject::connect( dataReader.http(), SIGNAL( dataReadProgress( int, int ) ), this, SLOT( handleWFSProgressMessage( int, int ) ) );
 
-  //also connect to setStatus signal of qgisapp (if it exists)
+  //also connect to statusChanged signal of qgisapp (if it exists)
   QWidget* mainWindow = 0;
 
   QWidgetList topLevelWidgets = qApp->topLevelWidgets();
@@ -305,7 +303,7 @@ int QgsWFSProvider::getFeatureGET( const QString& uri, const QString& geometryAt
 
   for ( QList<QgsFeature*>::iterator it = mFeatures.begin(); it != mFeatures.end(); ++it )
   {
-    QgsDebugMsg( "feature " + QString::number(( *it )->featureId() ) );
+    QgsDebugMsg( "feature " + QString::number(( *it )->id() ) );
     mSpatialIndex->insertFeature( **it );
   }
 
@@ -699,7 +697,7 @@ int QgsWFSProvider::setCRSFromGML2( const QDomElement& wfsCollectionElement )
   QgsDebugMsg( "srsName is: " + srsName );
 
 
-  //extract the EPSG id
+  //extract the EpsgCrsId id
   int epsgId;
   bool conversionSuccess;
   if ( srsName.contains( "#" ) )//geoserver has "http://www.opengis.net/gml/srs/epsg.xml#4326"
@@ -719,7 +717,7 @@ int QgsWFSProvider::setCRSFromGML2( const QDomElement& wfsCollectionElement )
     }
   }
   else
-    epsgId = GEOEPSG_ID;
+    epsgId = GEO_EPSG_CRS_ID;
 
   if ( !mSourceCRS.createFromEpsg( epsgId ) )
   {
@@ -740,7 +738,7 @@ int QgsWFSProvider::getFeaturesFromGML2( const QDomElement& wfsCollectionElement
   QgsFeature* f = 0;
   unsigned char* wkb = 0;
   int wkbSize = 0;
-  QGis::WKBTYPE currentType;
+  QGis::WkbType currentType;
   mFeatureCount = 0;
 
   for ( int i = 0; i < featureTypeNodeList.size(); ++i )
@@ -793,7 +791,7 @@ int QgsWFSProvider::getFeaturesFromGML2( const QDomElement& wfsCollectionElement
   return 0;
 }
 
-int QgsWFSProvider::getWkbFromGML2( const QDomNode& geometryElement, unsigned char** wkb, int* wkbSize, QGis::WKBTYPE* type ) const
+int QgsWFSProvider::getWkbFromGML2( const QDomNode& geometryElement, unsigned char** wkb, int* wkbSize, QGis::WkbType* type ) const
 {
   QDomNode geometryChild = geometryElement.firstChild();
   if ( geometryChild.isNull() )
@@ -834,7 +832,7 @@ int QgsWFSProvider::getWkbFromGML2( const QDomNode& geometryElement, unsigned ch
   return 0;
 }
 
-int QgsWFSProvider::getWkbFromGML2Point( const QDomElement& geometryElement, unsigned char** wkb, int* wkbSize, QGis::WKBTYPE* type ) const
+int QgsWFSProvider::getWkbFromGML2Point( const QDomElement& geometryElement, unsigned char** wkb, int* wkbSize, QGis::WkbType* type ) const
 {
   QDomNodeList coordList = geometryElement.elementsByTagNameNS( GML_NAMESPACE, "coordinates" );
   if ( coordList.size() < 1 )
@@ -872,7 +870,7 @@ int QgsWFSProvider::getWkbFromGML2Point( const QDomElement& geometryElement, uns
   return 0;
 }
 
-int QgsWFSProvider::getWkbFromGML2Polygon( const QDomElement& geometryElement, unsigned char** wkb, int* wkbSize, QGis::WKBTYPE* type ) const
+int QgsWFSProvider::getWkbFromGML2Polygon( const QDomElement& geometryElement, unsigned char** wkb, int* wkbSize, QGis::WkbType* type ) const
 {
   //read all the coordinates (as QgsPoint) into memory. Each linear ring has an entry in the vector
   std::vector<std::list<QgsPoint> > ringCoordinates;
@@ -956,7 +954,7 @@ int QgsWFSProvider::getWkbFromGML2Polygon( const QDomElement& geometryElement, u
   return 0;
 }
 
-int QgsWFSProvider::getWkbFromGML2LineString( const QDomElement& geometryElement, unsigned char** wkb, int* wkbSize, QGis::WKBTYPE* type ) const
+int QgsWFSProvider::getWkbFromGML2LineString( const QDomElement& geometryElement, unsigned char** wkb, int* wkbSize, QGis::WkbType* type ) const
 {
   QDomNodeList coordinatesList = geometryElement.elementsByTagNameNS( GML_NAMESPACE, "coordinates" );
   if ( coordinatesList.size() < 1 )
@@ -1000,7 +998,7 @@ int QgsWFSProvider::getWkbFromGML2LineString( const QDomElement& geometryElement
   return 0;
 }
 
-int QgsWFSProvider::getWkbFromGML2MultiPoint( const QDomElement& geometryElement, unsigned char** wkb, int* wkbSize, QGis::WKBTYPE* type ) const
+int QgsWFSProvider::getWkbFromGML2MultiPoint( const QDomElement& geometryElement, unsigned char** wkb, int* wkbSize, QGis::WkbType* type ) const
 {
   std::list<QgsPoint> pointList;
   std::list<QgsPoint> currentPoint;
@@ -1070,7 +1068,7 @@ int QgsWFSProvider::getWkbFromGML2MultiPoint( const QDomElement& geometryElement
   return 0;
 }
 
-int QgsWFSProvider::getWkbFromGML2MultiLineString( const QDomElement& geometryElement, unsigned char** wkb, int* wkbSize, QGis::WKBTYPE* type ) const
+int QgsWFSProvider::getWkbFromGML2MultiLineString( const QDomElement& geometryElement, unsigned char** wkb, int* wkbSize, QGis::WkbType* type ) const
 {
   //geoserver has
   //<gml:MultiLineString>
@@ -1183,7 +1181,7 @@ int QgsWFSProvider::getWkbFromGML2MultiLineString( const QDomElement& geometryEl
   return 0;
 }
 
-int QgsWFSProvider::getWkbFromGML2MultiPolygon( const QDomElement& geometryElement, unsigned char** wkb, int* wkbSize, QGis::WKBTYPE* type ) const
+int QgsWFSProvider::getWkbFromGML2MultiPolygon( const QDomElement& geometryElement, unsigned char** wkb, int* wkbSize, QGis::WkbType* type ) const
 {
   //first list: different polygons, second list: different rings, third list: different points
   std::list<std::list<std::list<QgsPoint> > > multiPolygonPoints;

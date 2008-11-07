@@ -81,14 +81,14 @@ QgsPostgresProvider::QgsPostgresProvider( QString const & uri )
 
   QgsDebugMsg( "Table name is " + mTableName );
   QgsDebugMsg( "SQL is " + sqlWhereClause );
-  QgsDebugMsg( "Connection info is " + mUri.connInfo() );
+  QgsDebugMsg( "Connection info is " + mUri.connectionInfo() );
 
   QgsDebugMsg( "Geometry column is: " + geometryColumn );
   QgsDebugMsg( "Schema is: " + mSchemaName );
   QgsDebugMsg( "Table name is: " + mTableName );
 
   connectionRW = NULL;
-  connectionRO = Conn::connectDb( mUri.connInfo(), true );
+  connectionRO = Conn::connectDb( mUri.connectionInfo(), true );
   if ( connectionRO == NULL )
   {
     valid = false;
@@ -177,7 +177,7 @@ QgsPostgresProvider::QgsPostgresProvider( QString const & uri )
   if ( !getGeometryDetails() ) // gets srid and geometry type
   {
     // the table is not a geometry table
-    numberFeatures = 0;
+    featuresCounted = 0;
     valid = false;
 
     QgsDebugMsg( "Invalid Postgres layer" );
@@ -205,7 +205,7 @@ QgsPostgresProvider::QgsPostgresProvider( QString const & uri )
 
 #ifdef POSTGRESQL_THREADS
   QgsDebugMsg( "About to touch mExtentThread" );
-  mExtentThread.setConnInfo( mUri.connInfo );
+  mExtentThread.setConnInfo( mUri.connectionInfo );
   mExtentThread.setTableName( mTableName );
   mExtentThread.setSqlWhereClause( sqlWhereClause );
   mExtentThread.setGeometryColumn( geometryColumn );
@@ -215,7 +215,7 @@ QgsPostgresProvider::QgsPostgresProvider( QString const & uri )
   QgsDebugMsg( "Main thread just dispatched mExtentThread" );
 
   QgsDebugMsg( "About to touch mCountThread" );
-  mCountThread.setConnInfo( mUri.connInfo );
+  mCountThread.setConnInfo( mUri.connectionInfo );
   mCountThread.setTableName( mTableName );
   mCountThread.setSqlWhereClause( sqlWhereClause );
   mCountThread.setGeometryColumn( geometryColumn );
@@ -565,7 +565,7 @@ void QgsPostgresProvider::select( QgsAttributeList fetchAttributes, QgsRect rect
   mFetching = true;
 }
 
-bool QgsPostgresProvider::getNextFeature( QgsFeature& feature )
+bool QgsPostgresProvider::nextFeature( QgsFeature& feature )
 {
   QString cursorName = QString( "qgisf%1" ).arg( providerId );
 
@@ -616,7 +616,7 @@ bool QgsPostgresProvider::getNextFeature( QgsFeature& feature )
   {
     feature.setGeometryAndOwnership( 0, 0 );
   }
-  feature.setFeatureId( mFeatureQueue.front().featureId() );
+  feature.setFeatureId( mFeatureQueue.front().id() );
   feature.setAttributeMap( mFeatureQueue.front().attributeMap() );
 
   mFeatureQueue.pop();
@@ -624,7 +624,7 @@ bool QgsPostgresProvider::getNextFeature( QgsFeature& feature )
   return true;
 }
 
-bool QgsPostgresProvider::getFeatureAtId( int featureId, QgsFeature& feature, bool fetchGeometry, QgsAttributeList fetchAttributes )
+bool QgsPostgresProvider::featureAtId( int featureId, QgsFeature& feature, bool fetchGeometry, QgsAttributeList fetchAttributes )
 {
   QString cursorName = QString( "qgisfid%1" ).arg( providerId );
   if ( !declareCursor( cursorName, fetchAttributes, fetchGeometry, QString( "%2=%3" ).arg( quotedIdentifier( primaryKey ) ).arg( featureId ) ) )
@@ -676,7 +676,7 @@ QgsRect QgsPostgresProvider::extent()
 /**
  * Return the feature type
  */
-QGis::WKBTYPE QgsPostgresProvider::geometryType() const
+QGis::WkbType QgsPostgresProvider::geometryType() const
 {
   return geomType;
 }
@@ -686,7 +686,7 @@ QGis::WKBTYPE QgsPostgresProvider::geometryType() const
  */
 long QgsPostgresProvider::featureCount() const
 {
-  return numberFeatures;
+  return featuresCounted;
 }
 
 const QgsField &QgsPostgresProvider::field( int index ) const
@@ -720,7 +720,7 @@ QString QgsPostgresProvider::dataComment() const
   return mDataComment;
 }
 
-void QgsPostgresProvider::reset()
+void QgsPostgresProvider::begin()
 {
   if ( mFetching )
   {
@@ -743,7 +743,7 @@ QString QgsPostgresProvider::endianString()
       return QString( "XDR" );
       break;
     default :
-      return QString( "UNKNOWN" );
+      return QString( "Unknown" );
   }
 }
 
@@ -1612,34 +1612,38 @@ bool QgsPostgresProvider::isValid()
   return valid;
 }
 
-QVariant QgsPostgresProvider::getDefaultValue( int fieldId )
+QVariant QgsPostgresProvider::defaultValue( QString fieldName )
+{
+  // Get the default column value from the Postgres information
+  // schema. If there is no default we return an empty string.
+
+  // Maintaining a cache of the results of this query would be quite
+  // simple and if this query is called lots, could save some time.
+
+  QString sql( "SELECT column_default FROM"
+               " information_schema.columns WHERE"
+               " column_default IS NOT NULL"
+               " AND table_schema = " + quotedValue( mSchemaName ) +
+               " AND table_name = " + quotedValue( mTableName ) +
+               " AND column_name = " + quotedValue( fieldName ) );
+
+  QVariant defaultValue( QString::null );
+
+  Result result = connectionRO->PQexec( sql );
+
+  if ( PQntuples( result ) == 1 && !PQgetisnull( result, 0, 0 ) )
+    defaultValue = QString::fromUtf8( PQgetvalue( result, 0, 0 ) );
+
+  // QgsDebugMsg( QString("defaultValue for %1 is NULL: %2").arg(fieldId).arg( defaultValue.isNull() ) );
+
+  return defaultValue;
+}
+
+QVariant QgsPostgresProvider::defaultValue( int fieldId )
 {
   try
   {
-    // Get the default column value from the Postgres information
-    // schema. If there is no default we return an empty string.
-
-    // Maintaining a cache of the results of this query would be quite
-    // simple and if this query is called lots, could save some time.
-    QString fieldName = field( fieldId ).name();
-
-    QString sql( "SELECT column_default FROM"
-                 " information_schema.columns WHERE"
-                 " column_default IS NOT NULL"
-                 " AND table_schema = " + quotedValue( mSchemaName ) +
-                 " AND table_name = " + quotedValue( mTableName ) +
-                 " AND column_name = " + quotedValue( fieldName ) );
-
-    QVariant defaultValue( QString::null );
-
-    Result result = connectionRO->PQexec( sql );
-
-    if ( PQntuples( result ) == 1 && !PQgetisnull( result, 0, 0 ) )
-      defaultValue = QString::fromUtf8( PQgetvalue( result, 0, 0 ) );
-
-    // QgsDebugMsg( QString("defaultValue for %1 is NULL: %2").arg(fieldId).arg( defaultValue.isNull() ) );
-
-    return defaultValue;
+    return defaultValue( field( fieldId ).name() );
   }
   catch ( PGFieldNotFound )
   {
@@ -1750,7 +1754,7 @@ bool QgsPostgresProvider::addFeatures( QgsFeatureList & flist )
 
     const QgsAttributeMap &attributevec = flist[0].attributeMap();
 
-    QStringList defaultValue;
+    QStringList defaultValues;
     QList<int> fieldId;
 
     // look for unique attribute values to place in statement instead of passing as parameter
@@ -1783,7 +1787,7 @@ bool QgsPostgresProvider::addFeatures( QgsFeatureList & flist )
 
       insert += "," + quotedIdentifier( fieldname );
 
-      QString defVal = getDefaultValue( it.key() ).toString();
+      QString defVal = defaultValue( it.key() ).toString();
 
       if ( i == flist.size() )
       {
@@ -1806,8 +1810,8 @@ bool QgsPostgresProvider::addFeatures( QgsFeatureList & flist )
       else
       {
         // value is not unique => add parameter
-        values += QString( ",$%1" ).arg( defaultValue.size() + 3 );
-        defaultValue.append( defVal );
+        values += QString( ",$%1" ).arg( defaultValues.size() + 3 );
+        defaultValues.append( defVal );
         fieldId.append( it.key() );
       }
     }
@@ -1820,7 +1824,11 @@ bool QgsPostgresProvider::addFeatures( QgsFeatureList & flist )
       throw PGException( stmt );
     PQclear( stmt );
 
-    int primaryKeyHighWater = maxPrimaryKeyValue();
+    QString keyDefault = defaultValue( primaryKey ).toString();
+    int primaryKeyHighWater = -1;
+    if ( keyDefault.isNull() )
+      primaryKeyHighWater = maxPrimaryKeyValue();
+    QList<int> newIds;
 
     for ( QgsFeatureList::iterator features = flist.begin(); features != flist.end(); features++ )
     {
@@ -1831,11 +1839,22 @@ bool QgsPostgresProvider::addFeatures( QgsFeatureList & flist )
 
       QStringList params;
       params << geomParam;
-      params << QString( "%1" ).arg( ++primaryKeyHighWater );
-      features->setFeatureId( primaryKeyHighWater );
+
+      if ( keyDefault.isNull() )
+      {
+        ++primaryKeyHighWater;
+        params << QString::number( primaryKeyHighWater );
+        newIds << primaryKeyHighWater;
+      }
+      else
+      {
+        QByteArray key = paramValue( keyDefault, keyDefault );
+        params << key;
+        newIds << key.toInt();
+      }
 
       for ( int i = 0; i < fieldId.size(); i++ )
-        params << paramValue( attributevec[ fieldId[i] ].toString(), defaultValue[i] );
+        params << paramValue( attributevec[ fieldId[i] ].toString(), defaultValues[i] );
 
       PGresult *result = connectionRW->PQexecPrepared( "addfeatures", params );
       if ( result == 0 || PQresultStatus( result ) == PGRES_FATAL_ERROR )
@@ -1843,18 +1862,21 @@ bool QgsPostgresProvider::addFeatures( QgsFeatureList & flist )
       PQclear( result );
     }
 
+    for ( int i = 0; i < flist.size(); i++ )
+      flist[i].setFeatureId( newIds[i] );
+
     connectionRW->PQexecNR( "DEALLOCATE addfeatures" );
     connectionRW->PQexecNR( "COMMIT" );
   }
   catch ( PGException &e )
   {
     e.showErrorMessage( tr( "Error while adding features" ) );
-    connectionRW->PQexecNR( "DEALLOCATE addfeatures" );
     connectionRW->PQexecNR( "ROLLBACK" );
+    connectionRW->PQexecNR( "DEALLOCATE addfeatures" );
     returnvalue = false;
   }
 
-  reset();
+  begin();
   return returnvalue;
 }
 
@@ -1892,7 +1914,7 @@ bool QgsPostgresProvider::deleteFeatures( const QgsFeatureIds & id )
     connectionRW->PQexecNR( "ROLLBACK" );
     returnvalue = false;
   }
-  reset();
+  begin();
   return returnvalue;
 }
 
@@ -1931,7 +1953,7 @@ bool QgsPostgresProvider::addAttributes( const QgsNewAttributesMap & name )
     returnvalue = false;
   }
 
-  reset();
+  begin();
   return returnvalue;
 }
 
@@ -1976,7 +1998,7 @@ bool QgsPostgresProvider::deleteAttributes( const QgsAttributeIds& ids )
     returnvalue = false;
   }
 
-  reset();
+  begin();
   return returnvalue;
 }
 
@@ -2046,14 +2068,14 @@ bool QgsPostgresProvider::changeAttributeValues( const QgsChangedAttributesMap &
     returnvalue = false;
   }
 
-  reset();
+  begin();
 
   return returnvalue;
 }
 
 void QgsPostgresProvider::appendGeomString( QgsGeometry *geom, QString &geomString ) const
 {
-  unsigned char *buf = geom->wkbBuffer();
+  unsigned char *buf = geom->asWkb();
   for ( uint i = 0; i < geom->wkbSize(); ++i )
   {
     if ( connectionRW->useWkbHex() )
@@ -2096,7 +2118,7 @@ bool QgsPostgresProvider::changeGeometryValues( QgsGeometryMap & geometry_map )
 
       QgsDebugMsg( "iterating over the map of changed geometries..." );
 
-      if ( iter->wkbBuffer() )
+      if ( iter->asWkb() )
       {
         QgsDebugMsg( "iterating over feature id " + QString::number( iter.key() ) );
 
@@ -2121,19 +2143,19 @@ bool QgsPostgresProvider::changeGeometryValues( QgsGeometryMap & geometry_map )
   catch ( PGException &e )
   {
     e.showErrorMessage( tr( "Error while changing geometry values" ) );
-    connectionRW->PQexecNR( "DEALLOCATE updatefeatures" );
     connectionRW->PQexecNR( "ROLLBACK" );
+    connectionRW->PQexecNR( "DEALLOCATE updatefeatures" );
     returnvalue = false;
   }
 
-  reset();
+  begin();
 
   QgsDebugMsg( "exiting." );
 
   return returnvalue;
 }
 
-QgsAttributeList QgsPostgresProvider::allAttributesList()
+QgsAttributeList QgsPostgresProvider::attributeIndexes()
 {
   QgsAttributeList attributes;
   for ( QgsFieldMap::const_iterator it = attributeFields.constBegin(); it != attributeFields.constEnd(); ++it )
@@ -2187,11 +2209,11 @@ long QgsPostgresProvider::getFeatureCount()
   QgsDebugMsg( "Approximate Number of features as text: " +
                QString::fromUtf8( PQgetvalue( result, 0, 0 ) ) );
 
-  numberFeatures = QString::fromUtf8( PQgetvalue( result, 0, 0 ) ).toLong();
+  featuresCounted = QString::fromUtf8( PQgetvalue( result, 0, 0 ) ).toLong();
 
-  QgsDebugMsg( "Approximate Number of features: " + QString::number( numberFeatures ) );
+  QgsDebugMsg( "Approximate Number of features: " + QString::number( featuresCounted ) );
 
-  return numberFeatures;
+  return featuresCounted;
 }
 
 // TODO: use the estimateExtents procedure of PostGIS and PostgreSQL 8
@@ -2360,9 +2382,9 @@ void QgsPostgresProvider::customEvent( QEvent * e )
 
       QgsDebugMsg( "count has been calculated" );
 
-      numberFeatures = (( QgsProviderCountCalcEvent* ) e )->numberFeatures();
+      featuresCounted = (( QgsProviderCountCalcEvent* ) e )->featuresCounted();
 
-      QgsDebugMsg( "count is " + QString::number( numberFeatures ) );
+      QgsDebugMsg( "count is " + QString::number( featuresCounted ) );
 
       break;
 
@@ -2689,7 +2711,7 @@ void QgsPostgresProvider::showMessageBox( const QString& title,
 }
 
 
-QgsCoordinateReferenceSystem QgsPostgresProvider::getCRS()
+QgsCoordinateReferenceSystem QgsPostgresProvider::crs()
 {
   QgsCoordinateReferenceSystem srs;
   srs.createFromSrid( srid.toInt() );

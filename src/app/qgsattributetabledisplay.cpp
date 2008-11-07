@@ -80,10 +80,10 @@ QgsAttributeTableDisplay::QgsAttributeTableDisplay( QgsVectorLayer* layer )
   connect( mToggleEditingButton, SIGNAL( clicked() ), this, SLOT( toggleEditing() ) );
   connect( this, SIGNAL( editingToggled( QgsMapLayer * ) ), QgisApp::instance(), SLOT( toggleEditing( QgsMapLayer * ) ) );
 
-  // etablish connection to table
+  // establish connection to table
   connect( tblAttributes, SIGNAL( cellChanged( int, int ) ), this, SLOT( changeFeatureAttribute( int, int ) ) );
 
-  // etablish connections to layer
+  // establish connections to layer
   connect( mLayer, SIGNAL( layerDeleted() ), this, SLOT( close() ) );
 
   connect( mLayer, SIGNAL( selectionChanged() ), this, SLOT( selectionChanged() ) );
@@ -100,7 +100,7 @@ QgsAttributeTableDisplay::QgsAttributeTableDisplay( QgsVectorLayer* layer )
   connect( mLayer, SIGNAL( featureDeleted( int ) ),
            tblAttributes, SLOT( featureDeleted( int ) ) );
 
-  // etablish connections between table and vector layer
+  // establish connections between table and vector layer
   connect( tblAttributes, SIGNAL( selected( int, bool ) ), mLayer, SLOT( select( int, bool ) ) );
   connect( tblAttributes, SIGNAL( selectionRemoved( bool ) ), mLayer, SLOT( removeSelection( bool ) ) );
   connect( tblAttributes, SIGNAL( repaintRequested() ), mLayer, SLOT( triggerRepaint() ) );
@@ -375,11 +375,11 @@ void QgsAttributeTableDisplay::doSearch( QString searchString )
   mLayer->select( mLayer->pendingAllAttributesList(), QgsRect(), false );
 
   QgsFeature f;
-  while ( mLayer->getNextFeature( f ) )
+  while ( mLayer->nextFeature( f ) )
   {
     if ( searchTree->checkAgainst( mLayer->pendingFields(), f.attributeMap() ) )
     {
-      mSearchIds << f.featureId();
+      mSearchIds << f.id();
     }
 
     // check if there were errors during evaluating

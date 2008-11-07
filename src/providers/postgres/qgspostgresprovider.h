@@ -73,9 +73,9 @@ class QgsPostgresProvider : public QgsVectorDataProvider
      * If the provider isn't capable of returning
      * its projection an empty srs will be return, ti will return 0
      */
-    virtual QgsCoordinateReferenceSystem getCRS();
+    virtual QgsCoordinateReferenceSystem crs();
 
-    /** Select features based on a bounding rectangle. Features can be retrieved with calls to getNextFeature.
+    /** Select features based on a bounding rectangle. Features can be retrieved with calls to nextFeature.
      *  @param fetchAttributes list of attributes which should be fetched
      *  @param rect spatial filter
      *  @param fetchGeometry true if the feature geometry should be fetched
@@ -92,7 +92,7 @@ class QgsPostgresProvider : public QgsVectorDataProvider
      * @param feature feature which will receive data from the provider
      * @return true when there was a feature to fetch, false when end was hit
      */
-    virtual bool getNextFeature( QgsFeature& feature );
+    virtual bool nextFeature( QgsFeature& feature );
 
     /**
       * Gets the feature at the given feature ID.
@@ -102,10 +102,10 @@ class QgsPostgresProvider : public QgsVectorDataProvider
       * @param fetchAttributes a list containing the indexes of the attribute fields to copy
       * @return True when feature was found, otherwise false
       */
-    virtual bool getFeatureAtId( int featureId,
-                                 QgsFeature& feature,
-                                 bool fetchGeometry = true,
-                                 QgsAttributeList fetchAttributes = QgsAttributeList() );
+    virtual bool featureAtId( int featureId,
+                              QgsFeature& feature,
+                              bool fetchGeometry = true,
+                              QgsAttributeList fetchAttributes = QgsAttributeList() );
 
     /** Get the feature type. This corresponds to
      * WKBPoint,
@@ -116,7 +116,7 @@ class QgsPostgresProvider : public QgsVectorDataProvider
      * WKBMultiPolygon
      * as defined in qgis.h
      */
-    QGis::WKBTYPE geometryType() const;
+    QGis::WkbType geometryType() const;
 
 
     /** return the number of layers for the current data source
@@ -176,7 +176,7 @@ class QgsPostgresProvider : public QgsVectorDataProvider
     /** Reset the layer - for a PostgreSQL layer, this means clearing the PQresult
      * pointer, setting it to 0 and reloading the field list
      */
-    void reset();
+    void begin();
 
     /** Returns the minimum value of an attribute
      *  @param index the index of the attribute */
@@ -195,10 +195,13 @@ class QgsPostgresProvider : public QgsVectorDataProvider
     */
     bool isValid();
 
-    QgsAttributeList allAttributesList();
+    QgsAttributeList attributeIndexes();
+
+    /**Returns the default value for field specified by @c fieldName */
+    QVariant defaultValue( QString fieldName );
 
     /**Returns the default value for field specified by @c fieldId */
-    QVariant getDefaultValue( int fieldId );
+    QVariant defaultValue( int fieldId );
 
     /**Adds a list of features
       @return true in case of success and false in case of failure*/
@@ -388,7 +391,7 @@ class QgsPostgresProvider : public QgsVectorDataProvider
     /**
      * Geometry type
      */
-    QGis::WKBTYPE geomType;
+    QGis::WkbType geomType;
 
     /**
      * Spatial reference id of the layer
@@ -402,7 +405,7 @@ class QgsPostgresProvider : public QgsVectorDataProvider
     /**
      * Number of features in the layer
      */
-    long numberFeatures;
+    long featuresCounted;
 
     /**
      * Feature queue that GetNextFeature will retrieve from
@@ -663,7 +666,7 @@ class QgsPostgresProvider : public QgsVectorDataProvider
       if ( connectionRW )
         return connectionRW;
 
-      connectionRW = Conn::connectDb( mUri.connInfo(), false );
+      connectionRW = Conn::connectDb( mUri.connectionInfo(), false );
 
       return connectionRW;
     }

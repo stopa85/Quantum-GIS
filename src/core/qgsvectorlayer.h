@@ -146,7 +146,7 @@ class CORE_EXPORT QgsVectorLayer : public QgsMapLayer
     bool copySymbologySettings( const QgsMapLayer& other );
 
     /** Returns true if this layer can be in the same symbology group with another layer */
-    bool isSymbologyCompatible( const QgsMapLayer& other ) const;
+    bool hasCompatibleSymbology( const QgsMapLayer& other ) const;
 
     /** Returns a pointer to the renderer */
     const QgsRenderer* renderer() const;
@@ -155,10 +155,10 @@ class CORE_EXPORT QgsVectorLayer : public QgsMapLayer
     void setRenderer( QgsRenderer * r );
 
     /** Returns point, line or polygon */
-    QGis::VectorType vectorType() const;
+    QGis::GeometryType geometryType() const;
 
     /**Returns the WKBType or WKBUnknown in case of error*/
-    QGis::WKBTYPE geometryType() const;
+    QGis::WkbType wkbType() const;
 
     /** Return the provider type for this layer */
     QString providerType() const;
@@ -172,6 +172,21 @@ class CORE_EXPORT QgsVectorLayer : public QgsMapLayer
      *  @note Called by QgsMapLayer::writeXML().
      */
     virtual bool writeXml( QDomNode & layer_node, QDomDocument & doc );
+
+    /** Read the symbology for the current layer from the Dom node supplied.
+    * @param QDomNode node that will contain the symbology definition for this layer.
+    * @param errorMessage reference to string that will be updated with any error messages
+    * @return true in case of success.
+    */
+    bool readSymbology( const QDomNode& node, QString& errorMessage );
+
+    /** Write the symbology for the layer into the docment provided.
+     *  @param QDomNode the node that will have the style element added to it.
+     *  @param QDomDocument the document that will have the QDomNode added.
+     * @param errorMessage reference to string that will be updated with any error messages
+     *  @return true in case of success.
+     */
+    bool writeSymbology( QDomNode&, QDomDocument& doc, QString& errorMessage ) const;
 
 
     /**
@@ -207,11 +222,11 @@ class CORE_EXPORT QgsVectorLayer : public QgsMapLayer
                  bool fetchGeometry = true,
                  bool useIntersect = false );
 
-    bool getNextFeature( QgsFeature& feature );
+    bool nextFeature( QgsFeature& feature );
 
     /**Gets the feature at the given feature id. Considers the changed, added, deleted and permanent features
      @return 0 in case of success*/
-    int getFeatureAtId( int featureId, QgsFeature &f, bool fetchGeometries = true, bool fetchAttributes = true );
+    int featureAtId( int featureId, QgsFeature &f, bool fetchGeometries = true, bool fetchAttributes = true );
 
     /** Adds a feature
         @param lastFeatureInBatch  If True, will also go to the effort of e.g. updating the extents.
@@ -272,7 +287,7 @@ class CORE_EXPORT QgsVectorLayer : public QgsMapLayer
     /**Splits features cut by the given line
        @param splitLine line that splits the layer features
        @param topologicalEditing true if topological editing is enabled
-       @return 0 in case of success*/
+       @return 0 in case of success, 4 if there is a selection but no feature split*/
     int splitFeatures( const QList<QgsPoint>& splitLine, bool topologicalEditing = false );
 
     /**Changes the specified geometry such that it has no intersections with other
@@ -332,7 +347,7 @@ class CORE_EXPORT QgsVectorLayer : public QgsMapLayer
                          double snappingTolerance,
                          QMultiMap < double,
                          QgsSnappingResult > & snappingResults,
-                         QgsSnapper::SNAP_TO snap_to );
+                         QgsSnapper::SnappingType snap_to );
 
     /** Draws the layer
      *  @return FALSE if an error occurred during drawing
@@ -341,14 +356,6 @@ class CORE_EXPORT QgsVectorLayer : public QgsMapLayer
 
     /** Draws the layer labels using coordinate transformation */
     void drawLabels( QgsRenderContext& rendererContext );
-
-    /** \brief Draws the layer labels using coordinate transformation
-     *  \param scale size scale, applied to all values in pixels
-     */
-    void drawLabels( QPainter * p, const QgsRect& viewExtent,
-                     const QgsMapToPixel* cXf,
-                     const QgsCoordinateTransform* ct,
-                     double scale );
 
     /** returns field list in the to-be-committed state */
     const QgsFieldMap &pendingFields();
@@ -519,7 +526,7 @@ class CORE_EXPORT QgsVectorLayer : public QgsMapLayer
      @param snap_to snap to vertex or to segment
     */
     void snapToGeometry( const QgsPoint& startPoint, int featureId, QgsGeometry* geom, double sqrSnappingTolerance,
-                         QMultiMap<double, QgsSnappingResult>& snappingResults, QgsSnapper::SNAP_TO snap_to ) const;
+                         QMultiMap<double, QgsSnappingResult>& snappingResults, QgsSnapper::SnappingType snap_to ) const;
 
     /**Little helper function that gives bounding box from a list of points.
     @return 0 in case of success*/
@@ -597,8 +604,8 @@ class CORE_EXPORT QgsVectorLayer : public QgsMapLayer
     /** max field index */
     int mMaxUpdatedIndex;
 
-    /** Geometry type as defined in enum WKBTYPE (qgis.h) */
-    int mGeometryType;
+    /** Geometry type as defined in enum WkbType (qgis.h) */
+    int mWkbType;
 
     /** Renderer object which holds the information about how to display the features */
     QgsRenderer *mRenderer;

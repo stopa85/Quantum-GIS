@@ -31,12 +31,12 @@
 #include <QString>
 #include <math.h>
 
-QgsSingleSymbolRenderer::QgsSingleSymbolRenderer( QGis::VectorType type )
+QgsSingleSymbolRenderer::QgsSingleSymbolRenderer( QGis::GeometryType type )
 {
-  mVectorType = type;
+  mGeometryType = type;
 
   //initial setting based on random color
-  QgsSymbol* sy = new QgsSymbol( mVectorType );
+  QgsSymbol* sy = new QgsSymbol( mGeometryType );
 
   //random fill colors for points and polygons and pen colors for lines
   int red = 1 + ( int )( 255.0 * rand() / ( RAND_MAX + 1.0 ) );
@@ -60,7 +60,7 @@ QgsSingleSymbolRenderer::QgsSingleSymbolRenderer( QGis::VectorType type )
 
 QgsSingleSymbolRenderer::QgsSingleSymbolRenderer( const QgsSingleSymbolRenderer& other )
 {
-  mVectorType = other.mVectorType;
+  mGeometryType = other.mGeometryType;
   mSymbol = new QgsSymbol( *other.mSymbol );
   updateSymbolAttributes();
 }
@@ -69,7 +69,7 @@ QgsSingleSymbolRenderer& QgsSingleSymbolRenderer::operator=( const QgsSingleSymb
 {
   if ( this != &other )
   {
-    mVectorType = other.mVectorType;
+    mGeometryType = other.mGeometryType;
     delete mSymbol;
     mSymbol = new QgsSymbol( *other.mSymbol );
   }
@@ -92,7 +92,7 @@ void QgsSingleSymbolRenderer::addSymbol( QgsSymbol* sy )
 void QgsSingleSymbolRenderer::renderFeature( QPainter * p, QgsFeature & f, QImage* img, bool selected, double widthScale, double rasterScaleFactor )
 {
   // Point
-  if ( img && mVectorType == QGis::Point )
+  if ( img && mGeometryType == QGis::Point )
   {
 
     // If scale field is non-negative, use it to scale.
@@ -118,7 +118,7 @@ void QgsSingleSymbolRenderer::renderFeature( QPainter * p, QgsFeature & f, QImag
 
 
   // Line, polygon
-  if ( mVectorType != QGis::Point )
+  if ( mGeometryType != QGis::Point )
   {
     if ( !selected )
     {
@@ -126,7 +126,7 @@ void QgsSingleSymbolRenderer::renderFeature( QPainter * p, QgsFeature & f, QImag
       pen.setWidthF( widthScale * pen.widthF() );
       p->setPen( pen );
 
-      if ( mVectorType == QGis::Polygon )
+      if ( mGeometryType == QGis::Polygon )
       {
         QBrush brush = mSymbol->brush();
         scaleBrush( brush, rasterScaleFactor ); //scale brush content for printout
@@ -137,26 +137,28 @@ void QgsSingleSymbolRenderer::renderFeature( QPainter * p, QgsFeature & f, QImag
     {
       QPen pen = mSymbol->pen();
       pen.setWidthF( widthScale * pen.widthF() );
-      // We set pen color in case it is an area with no brush (transparent).
-      // Previously, this was only done for lines. Why?
-      pen.setColor( mSelectionColor );
-      p->setPen( pen );
-
-      if ( mVectorType == QGis::Polygon )
+      if ( mGeometryType == QGis::Polygon )
       {
         QBrush brush = mSymbol->brush();
         scaleBrush( brush, rasterScaleFactor ); //scale brush content for printout
         brush.setColor( mSelectionColor );
         p->setBrush( brush );
       }
+      else //for lines we draw in selection color
+      {
+        // We set pen color in case it is an area with no brush (transparent).
+        // Previously, this was only done for lines. Why?
+        pen.setColor( mSelectionColor );
+        p->setPen( pen );
+      }
     }
   }
 }
 
-void QgsSingleSymbolRenderer::readXML( const QDomNode& rnode, QgsVectorLayer& vl )
+int QgsSingleSymbolRenderer::readXML( const QDomNode& rnode, QgsVectorLayer& vl )
 {
-  mVectorType = vl.vectorType();
-  QgsSymbol* sy = new QgsSymbol( mVectorType );
+  mGeometryType = vl.geometryType();
+  QgsSymbol* sy = new QgsSymbol( mGeometryType );
 
   QDomNode synode = rnode.namedItem( "symbol" );
 
@@ -174,9 +176,10 @@ void QgsSingleSymbolRenderer::readXML( const QDomNode& rnode, QgsVectorLayer& vl
   //create a renderer and add it to the vector layer
   this->addSymbol( sy );
   vl.setRenderer( this );
+  return 0;
 }
 
-bool QgsSingleSymbolRenderer::writeXML( QDomNode & layer_node, QDomDocument & document ) const
+bool QgsSingleSymbolRenderer::writeXML( QDomNode & layer_node, QDomDocument & document, const QgsVectorLayer& vl ) const
 {
   bool returnval = false;
   QDomElement singlesymbol = document.createElement( "singlesymbol" );

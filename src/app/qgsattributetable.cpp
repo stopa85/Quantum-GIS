@@ -469,7 +469,7 @@ void QgsAttributeTable::fillTable( QgsVectorLayer *layer )
     layer->select( layer->pendingAllAttributesList(), QgsRect(), false );
 
     QgsFeature f;
-    while ( layer->getNextFeature( f ) )
+    while ( layer->nextFeature( f ) )
       features << f;
   }
   else
@@ -501,7 +501,7 @@ void QgsAttributeTable::putFeatureInTable( int row, const QgsFeature& fet )
   }
 
   //id-field
-  int id = fet.featureId();
+  int id = fet.id();
   QTableWidgetItem *twi = new QTableWidgetItem( QString::number( id ) );
   twi->setTextAlignment( Qt::AlignRight | Qt::AlignVCenter );
   setItem( row, 0, twi );
@@ -559,7 +559,7 @@ void QgsAttributeTable::bringSelectedToTop()
   for ( QList<QTableWidgetSelectionRange>::iterator iter = selections.begin();iter != selections.end();++iter )
   {
     removeselection = true;
-    while ( swaptorow<rowCount() && item( swaptorow, 0 )->isSelected() )//selections are not necessary stored in ascending order
+    while ( swaptorow < rowCount() && item( swaptorow, 0 )->isSelected() )//selections are not necessary stored in ascending order
     {
       ++swaptorow;
     }

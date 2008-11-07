@@ -191,7 +191,7 @@ QgsDelimitedTextProvider::QgsDelimitedTextProvider( QString uri )
       else
         parts = line.split( mDelimiter );
 
-      // Skip malformed lines silently. Report line number with getNextFeature()
+      // Skip malformed lines silently. Report line number with nextFeature()
       if ( attributeFields.size() != parts.size() )
       {
         continue;
@@ -281,7 +281,7 @@ QString QgsDelimitedTextProvider::storageType() const
 }
 
 
-bool QgsDelimitedTextProvider::getNextFeature( QgsFeature& feature )
+bool QgsDelimitedTextProvider::nextFeature( QgsFeature& feature )
 {
   // before we do anything else, assume that there's something wrong with
   // the feature
@@ -415,7 +415,7 @@ bool QgsDelimitedTextProvider::getNextFeature( QgsFeature& feature )
 
   return false;
 
-} // getNextFeature
+} // nextFeature
 
 
 void QgsDelimitedTextProvider::select( QgsAttributeList fetchAttributes,
@@ -434,7 +434,7 @@ void QgsDelimitedTextProvider::select( QgsAttributeList fetchAttributes,
   {
     mSelectionRectangle = rect;
   }
-  reset();
+  begin();
 }
 
 
@@ -449,7 +449,7 @@ QgsRect QgsDelimitedTextProvider::extent()
 /**
  * Return the feature type
  */
-QGis::WKBTYPE QgsDelimitedTextProvider::geometryType() const
+QGis::WkbType QgsDelimitedTextProvider::geometryType() const
 {
   return QGis::WKBPoint;
 }
@@ -476,7 +476,7 @@ const QgsFieldMap & QgsDelimitedTextProvider::fields() const
   return attributeFields;
 }
 
-void QgsDelimitedTextProvider::reset()
+void QgsDelimitedTextProvider::begin()
 {
   // Reset feature id to 0
   mFid = 0;
@@ -510,7 +510,7 @@ int QgsDelimitedTextProvider::capabilities() const
 }
 
 
-QgsCoordinateReferenceSystem QgsDelimitedTextProvider::getCRS()
+QgsCoordinateReferenceSystem QgsDelimitedTextProvider::crs()
 {
   // TODO: make provider projection-aware
   return QgsCoordinateReferenceSystem(); // return default CRS

@@ -113,7 +113,7 @@ class CORE_EXPORT QgsRasterDataProvider : public QgsDataProvider
      * Get metadata in a format suitable for feeding directly
      * into a subset of the GUI raster properties "Metadata" tab.
      */
-    virtual QString getMetadata() = 0;
+    virtual QString metadata() = 0;
 
     /**
      * \brief Identify details from a server (e.g. WMS) from the last screen update
@@ -139,7 +139,7 @@ class CORE_EXPORT QgsRasterDataProvider : public QgsDataProvider
      * call a QMessageBox to display the contents.
      *
      */
-    virtual QString errorCaptionString() = 0;
+    virtual QString lastErrorTitle() = 0;
 
     /**
      * \brief   Returns the verbose error text for the last error in this provider
@@ -150,7 +150,7 @@ class CORE_EXPORT QgsRasterDataProvider : public QgsDataProvider
      * call a QMessageBox to display the contents.
      *
      */
-    virtual QString errorString() = 0;
+    virtual QString lastError() = 0;
 
 
   protected:

@@ -40,7 +40,7 @@
 #include "qgsproject.h"
 #include "qgslogger.h"
 
-QgsMapLayer::QgsMapLayer( int type,
+QgsMapLayer::QgsMapLayer( QgsMapLayer::LayerType type,
                           QString lyrname,
                           QString source ) :
     mTransparencyLevel( 255 ), // 0 is completely transparent
@@ -82,7 +82,7 @@ QgsMapLayer::~QgsMapLayer()
   delete mCRS;
 }
 
-int QgsMapLayer::type() const
+QgsMapLayer::LayerType QgsMapLayer::type() const
 {
   return mLayerType;
 }
@@ -140,6 +140,10 @@ void QgsMapLayer::drawLabels( QgsRenderContext& rendererContext )
 
 bool QgsMapLayer::readXML( QDomNode & layer_node )
 {
+  QgsCoordinateReferenceSystem savedCRS;
+  CUSTOM_CRS_VALIDATION savedValidation;
+  bool layerError;
+
   QDomElement element = layer_node.toElement();
 
   // XXX not needed? QString type = element.attribute("type");
@@ -149,15 +153,31 @@ bool QgsMapLayer::readXML( QDomNode & layer_node )
   QDomElement mne = mnl.toElement();
   mDataSource = mne.text();
 
-  // Set the CRS so that we don't ask the user.
+  // Set the CRS from project file, asking the user if necessary.
   // Make it the saved CRS to have WMS layer projected correctly.
   // We will still overwrite whatever GDAL etc picks up anyway
   // further down this function.
   QDomNode srsNode = layer_node.namedItem( "srs" );
   mCRS->readXML( srsNode );
+  mCRS->validate();
+  savedCRS = *mCRS;
+
+  // Do not validate any projections in children, they will be overwritten anyway.
+  // No need to ask the user for a projections when it is overwritten, is there?
+  savedValidation = QgsCoordinateReferenceSystem::customSrsValidation();
+  QgsCoordinateReferenceSystem::setCustomSrsValidation( NULL );
 
   // now let the children grab what they need from the Dom node.
-  if ( !readXml( layer_node ) )
+  layerError = !readXml( layer_node );
+
+  // overwrite CRS with what we read from project file before the raster/vector
+  // file readnig functions changed it. They will if projections is specfied in the file.
+  // FIXME: is this necessary?
+  QgsCoordinateReferenceSystem::setCustomSrsValidation( savedValidation );
+  *mCRS = savedCRS;
+
+  // Abort if any error in layer, such as not found.
+  if ( layerError )
   {
     return false;
   }
@@ -178,26 +198,22 @@ bool QgsMapLayer::readXML( QDomNode & layer_node )
   }
 
   // use scale dependent visibility flag
-  QString scaleBasedVisibility = element.attribute( "scaleBasedVisibilityFlag" );
-  if ( "1" == scaleBasedVisibility )
+  QString hasScaleBasedVisibility = element.attribute( "hasScaleBasedVisibilityFlag" );
+  if ( "1" == hasScaleBasedVisibility )
   {
-    setScaleBasedVisibility( true );
+    toggleScaleBasedVisibility( true );
   }
   else
   {
-    setScaleBasedVisibility( false );
+    toggleScaleBasedVisibility( false );
   }
-  setMinScale( element.attribute( "minScale" ).toFloat() );
-  setMaxScale( element.attribute( "maxScale" ).toFloat() );
+  setMinimumScale( element.attribute( "minimumScale" ).toFloat() );
+  setMaximumScale( element.attribute( "maximumScale" ).toFloat() );
 
   // set name
   mnl = layer_node.namedItem( "layername" );
   mne = mnl.toElement();
   setLayerName( mne.text() );
-
-  // overwrite srs
-  // FIXME: is this necessary?
-  mCRS->readXML( srsNode );
 
   //read transparency level
   QDomNode transparencyNode = layer_node.namedItem( "transparencyLevelInt" );
@@ -228,16 +244,16 @@ bool QgsMapLayer::writeXML( QDomNode & layer_node, QDomDocument & document )
   QDomElement maplayer = document.createElement( "maplayer" );
 
   // use scale dependent visibility flag
-  if ( scaleBasedVisibility() )
+  if ( hasScaleBasedVisibility() )
   {
-    maplayer.setAttribute( "scaleBasedVisibilityFlag", 1 );
+    maplayer.setAttribute( "hasScaleBasedVisibilityFlag", 1 );
   }
   else
   {
-    maplayer.setAttribute( "scaleBasedVisibilityFlag", 0 );
+    maplayer.setAttribute( "hasScaleBasedVisibilityFlag", 0 );
   }
-  maplayer.setAttribute( "minScale", minScale() );
-  maplayer.setAttribute( "maxScale", maxScale() );
+  maplayer.setAttribute( "minimumScale", minimumScale() );
+  maplayer.setAttribute( "maximumScale", maximumScale() );
 
   // ID
   QDomElement id = document.createElement( "id" );
@@ -308,12 +324,12 @@ void QgsMapLayer::invalidTransformInput()
 }
 
 
-QString QgsMapLayer::errorCaptionString()
+QString QgsMapLayer::lastErrorTitle()
 {
   return QString();
 }
 
-QString QgsMapLayer::errorString()
+QString QgsMapLayer::lastError()
 {
   return QString();
 }
@@ -325,33 +341,33 @@ void QgsMapLayer::connectNotify( const char * signal )
 
 
 
-void QgsMapLayer::setScaleBasedVisibility( bool theVisibilityFlag )
+void QgsMapLayer::toggleScaleBasedVisibility( bool theVisibilityFlag )
 {
   mScaleBasedVisibility = theVisibilityFlag;
 }
 
-bool QgsMapLayer::scaleBasedVisibility()
+bool QgsMapLayer::hasScaleBasedVisibility()
 {
   return mScaleBasedVisibility;
 }
 
-void QgsMapLayer::setMinScale( float theMinScale )
+void QgsMapLayer::setMinimumScale( float theMinScale )
 {
   mMinScale = theMinScale;
 }
 
-float QgsMapLayer::minScale()
+float QgsMapLayer::minimumScale()
 {
   return mMinScale;
 }
 
 
-void QgsMapLayer::setMaxScale( float theMaxScale )
+void QgsMapLayer::setMaximumScale( float theMaxScale )
 {
   mMaxScale = theMaxScale;
 }
 
-float QgsMapLayer::maxScale()
+float QgsMapLayer::maximumScale()
 {
   return mMaxScale;
 }
@@ -377,7 +393,7 @@ const QgsCoordinateReferenceSystem& QgsMapLayer::srs()
   return *mCRS;
 }
 
-void QgsMapLayer::setSrs( const QgsCoordinateReferenceSystem& srs )
+void QgsMapLayer::setCrs( const QgsCoordinateReferenceSystem& srs )
 {
   *mCRS = srs;
 }
@@ -519,37 +535,15 @@ QString QgsMapLayer::loadNamedStyle( const QString theURI, bool &theResultFlag )
     return myErrorMessage;
   }
 
-  QDomElement myLayer = myRoot.firstChildElement( "maplayer" );
-  if ( myLayer.isNull() )
+  QString errorMsg;
+  theResultFlag = readSymbology( myRoot, errorMsg );
+  if ( !theResultFlag )
   {
-    myErrorMessage = "Error: maplayer element could not be found in " + theURI;
-    theResultFlag = false;
+    myErrorMessage = QObject::tr( "Loading style file " ) + theURI + QObject::tr( " failed because:" ) + "\n" + errorMsg;
     return myErrorMessage;
   }
 
-  //
-  // we need to ensure the data source matches the layers
-  // current datasource not the one specified in the qml
-  //
-  QDomElement myDataSource = myLayer.firstChildElement( "datasource" );
-  if ( myDataSource.isNull() )
-  {
-    myErrorMessage = "Error: datasource element could not be found in " + theURI;
-    theResultFlag = false;
-    return myErrorMessage;
-  }
-  QDomElement myNewDataSource = myDocument.createElement( "datasource" );
-  QDomText myDataSourceText = myDocument.createTextNode( source() );
-  myNewDataSource.appendChild( myDataSourceText );
-  myLayer.replaceChild( myNewDataSource, myLayer.firstChildElement( "datasource" ) );
-
-  //
-  // Now go on to parse the xml (QDomElement inherits QDomNode
-  // so we can just pass along the element to readXML)
-  //
-  theResultFlag = readXML( myLayer );
-
-  return QObject::tr( "Loaded default style file from " ) + theURI;
+  return "";
 }
 
 QString QgsMapLayer::saveDefaultStyle( bool & theResultFlag )
@@ -567,9 +561,14 @@ QString QgsMapLayer::saveNamedStyle( const QString theURI, bool & theResultFlag 
       "qgis", "http://mrcc.com/qgis.dtd", "SYSTEM" );
   QDomDocument myDocument( documentType );
   QDomElement myRootNode = myDocument.createElement( "qgis" );
-  myRootNode.setAttribute( "version", QString( "%1" ).arg( QGis::qgisVersion ) );
+  myRootNode.setAttribute( "version", QString( "%1" ).arg( QGis::QGIS_VERSION ) );
   myDocument.appendChild( myRootNode );
-  writeXML( myRootNode, myDocument );
+
+  QString errorMsg;
+  if ( !writeSymbology( myRootNode, myDocument, errorMsg ) )
+  {
+    return QObject::tr( "Could not save symbology because:" ) + "\n" + errorMsg;
+  }
 
   // check if the uri is a file or ends with .qml,
   // which indicates that it should become one

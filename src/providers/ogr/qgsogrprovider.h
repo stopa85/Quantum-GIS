@@ -45,7 +45,7 @@ class QgsOgrProvider : public QgsVectorDataProvider
 
 
 
-    virtual QgsCoordinateReferenceSystem getCRS();
+    virtual QgsCoordinateReferenceSystem crs();
 
 
     /**
@@ -53,7 +53,7 @@ class QgsOgrProvider : public QgsVectorDataProvider
      */
     virtual QString storageType() const;
 
-    /** Select features based on a bounding rectangle. Features can be retrieved with calls to getNextFeature.
+    /** Select features based on a bounding rectangle. Features can be retrieved with calls to nextFeature.
      *  @param fetchAttributes list of attributes which should be fetched
      *  @param rect spatial filter
      *  @param fetchGeometry true if the feature geometry should be fetched
@@ -70,7 +70,7 @@ class QgsOgrProvider : public QgsVectorDataProvider
      * @param feature feature which will receive data from the provider
      * @return true when there was a feature to fetch, false when end was hit
      */
-    virtual bool getNextFeature( QgsFeature& feature );
+    virtual bool nextFeature( QgsFeature& feature );
 
     /**
      * Gets the feature at the given feature ID.
@@ -80,16 +80,16 @@ class QgsOgrProvider : public QgsVectorDataProvider
      * @param fetchAttributes a list containing the indexes of the attribute fields to copy
      * @return True when feature was found, otherwise false
      */
-    virtual bool getFeatureAtId( int featureId,
-                                 QgsFeature& feature,
-                                 bool fetchGeometry = true,
-                                 QgsAttributeList fetchAttributes = QgsAttributeList() );
+    virtual bool featureAtId( int featureId,
+                              QgsFeature& feature,
+                              bool fetchGeometry = true,
+                              QgsAttributeList fetchAttributes = QgsAttributeList() );
 
     /**
      * Get feature type.
      * @return int representing the feature type
      */
-    virtual QGis::WKBTYPE geometryType() const;
+    virtual QGis::WkbType geometryType() const;
 
     /** return the number of layers for the current data source
 
@@ -120,7 +120,7 @@ class QgsOgrProvider : public QgsVectorDataProvider
     virtual QgsRect extent();
 
     /** Restart reading features from previous select operation */
-    virtual void reset();
+    virtual void begin();
 
     /**Writes a list of features to the file*/
     virtual bool addFeatures( QgsFeatureList & flist );
@@ -243,7 +243,7 @@ class QgsOgrProvider : public QgsVectorDataProvider
     //! Flag to indicate that spatial intersect should be used in selecting features
     bool mUseIntersect;
     int geomType;
-    long numberFeatures;
+    long featuresCounted;
 
     //! Selection rectangle
     OGRGeometryH mSelectionRectangle;
@@ -251,4 +251,6 @@ class QgsOgrProvider : public QgsVectorDataProvider
     bool addFeature( QgsFeature& f );
     /**Deletes one feature*/
     bool deleteFeature( int id );
+
+    QString quotedIdentifier( QString field );
 };

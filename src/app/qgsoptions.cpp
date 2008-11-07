@@ -80,7 +80,7 @@ QgsOptions::QgsOptions( QWidget *parent, Qt::WFlags fl ) :
     radUseGlobalProjection->setChecked( true );
   }
 
-  txtGlobalWKT->setText( settings.value( "/Projections/defaultProjectionString", GEOPROJ4 ).toString() );
+  txtGlobalWkt->setText( settings.value( "/Projections/defaultProjectionString", GEOPROJ4 ).toString() );
 
   // populate combo box with ellipsoids
   getEllipsoidList();
@@ -165,11 +165,11 @@ QgsOptions::QgsOptions( QWidget *parent, Qt::WFlags fl ) :
   mLineColourToolButton->setColor( QColor( myRed, myGreen, myBlue ) );
 
   //default snap mode
-  mDefaultSnapModeComboBox->insertItem( 0, tr( "to vertex" ) );
-  mDefaultSnapModeComboBox->insertItem( 1, tr( "to segment" ) );
-  mDefaultSnapModeComboBox->insertItem( 2, tr( "to vertex and segment" ) );
-  QString defaultSnapString = settings.value( "/qgis/digitizing/default_snap_mode", tr( "to vertex" ) ).toString();
-  mDefaultSnapModeComboBox->setCurrentIndex( mDefaultSnapModeComboBox->findText( defaultSnapString ) );
+  mDefaultSnapModeComboBox->insertItem( 0, tr( "to vertex" ), "to vertex" );
+  mDefaultSnapModeComboBox->insertItem( 1, tr( "to segment" ), "to segment" );
+  mDefaultSnapModeComboBox->insertItem( 2, tr( "to vertex and segment" ), "to vertex and segment" );
+  QString defaultSnapString = settings.value( "/qgis/digitizing/default_snap_mode", "to vertex" ).toString();
+  mDefaultSnapModeComboBox->setCurrentIndex( mDefaultSnapModeComboBox->findData( defaultSnapString ) );
   mDefaultSnappingToleranceSpinBox->setValue( settings.value( "/qgis/digitizing/default_snapping_tolerance", 0 ).toDouble() );
   mSearchRadiusVertexEditSpinBox->setValue( settings.value( "/qgis/digitizing/search_radius_vertex_edit", 10 ).toDouble() );
 
@@ -291,7 +291,7 @@ void QgsOptions::saveOptions()
     settings.setValue( "/Projections/defaultBehaviour", "useGlobal" );
   }
 
-  settings.setValue( "/Projections/defaultProjectionString", txtGlobalWKT->toPlainText() );
+  settings.setValue( "/Projections/defaultProjectionString", txtGlobalWkt->toPlainText() );
 
   settings.setValue( "/qgis/measure/ellipsoid", getEllipsoidAcronym( cmbEllipsoid->currentText() ) );
 
@@ -326,19 +326,7 @@ void QgsOptions::saveOptions()
   settings.setValue( "/qgis/digitizing/line_color_blue", digitizingColor.blue() );
 
   //default snap mode
-  QString defaultSnapModeString;
-  if ( mDefaultSnapModeComboBox->currentText() == tr( "to vertex" ) )
-  {
-    defaultSnapModeString = "to vertex";
-  }
-  else if ( mDefaultSnapModeComboBox->currentText() == tr( "to segment" ) )
-  {
-    defaultSnapModeString = "to segment";
-  }
-  else if ( mDefaultSnapModeComboBox->currentText() == tr( "to vertex and segment" ) )
-  {
-    defaultSnapModeString = "to vertex and segment";
-  }
+  QString defaultSnapModeString = mDefaultSnapModeComboBox->itemData( mDefaultSnapModeComboBox->currentIndex() ).toString();
   settings.setValue( "/qgis/digitizing/default_snap_mode", defaultSnapModeString );
   settings.setValue( "/qgis/digitizing/default_snapping_tolerance", mDefaultSnappingToleranceSpinBox->value() );
   settings.setValue( "/qgis/digitizing/search_radius_vertex_edit", mSearchRadiusVertexEditSpinBox->value() );
@@ -368,7 +356,7 @@ void QgsOptions::on_pbnSelectProjection_clicked()
 
   //find out srs id of current proj4 string
   QgsCoordinateReferenceSystem refSys;
-  if ( refSys.createFromProj4( txtGlobalWKT->toPlainText() ) )
+  if ( refSys.createFromProj4( txtGlobalWkt->toPlainText() ) )
   {
     mySelector->setSelectedCrsId( refSys.srsid() );
   }
@@ -376,8 +364,8 @@ void QgsOptions::on_pbnSelectProjection_clicked()
   if ( mySelector->exec() )
   {
     //! @todo changes this control name in gui to txtGlobalProjString
-    txtGlobalWKT->setText( mySelector->selectedProj4String() );
-    QgsDebugMsg( QString( "------ Global Default Projection Selection set to ----------\n%1" ).arg( txtGlobalWKT->toPlainText() ) );
+    txtGlobalWkt->setText( mySelector->selectedProj4String() );
+    QgsDebugMsg( QString( "------ Global Default Projection Selection set to ----------\n%1" ).arg( txtGlobalWkt->toPlainText() ) );
   }
   else
   {
@@ -502,7 +490,7 @@ QString QgsOptions::getEllipsoidName( QString theEllipsoidAcronym )
     //     database if it does not exist.
     assert( myResult == 0 );
   }
-  // Set up the query to retreive the projection information needed to populate the ELLIPSOID list
+  // Set up the query to retrieve the projection information needed to populate the ELLIPSOID list
   QString mySql = "select name from tbl_ellipsoid where acronym='" + theEllipsoidAcronym + "'";
   myResult = sqlite3_prepare( myDatabase, mySql.toUtf8(), mySql.length(), &myPreparedStatement, &myTail );
   // XXX Need to free memory from the error msg if one is set

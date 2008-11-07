@@ -51,7 +51,7 @@ void QgsMapToolAddVertex::canvasPressEvent( QMouseEvent * e )
   mRubberBand = 0;
 
   //snap to segments of the current layer
-  if ( mSnapper.snapToCurrentLayer( e->pos(), mRecentSnappingResults, QgsSnapper::SNAP_TO_SEGMENT ) != 0 )
+  if ( mSnapper.snapToCurrentLayer( e->pos(), mRecentSnappingResults, QgsSnapper::SnapToSegment ) != 0 )
   {
     //error
   }
@@ -91,6 +91,14 @@ void QgsMapToolAddVertex::canvasReleaseEvent( QMouseEvent * e )
 
     if ( mSnapper.snapToBackgroundLayers( e->pos(), snapResults ) == 0 )
     {
+
+      //add segment points in case of topological editing
+      int topologicalEditing = QgsProject::instance()->readNumEntry( "Digitizing", "/TopologicalEditing", 0 );
+      if ( topologicalEditing )
+      {
+        insertSegmentVerticesForSnap( snapResults, vlayer );
+      }
+
       snappedPointMapCoord = snapPointFromResults( snapResults, e->pos() );
       snappedPointLayerCoord = toLayerCoordinates( vlayer, snappedPointMapCoord );
 

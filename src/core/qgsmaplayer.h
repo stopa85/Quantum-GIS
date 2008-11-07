@@ -43,20 +43,26 @@ class CORE_EXPORT QgsMapLayer : public QObject
     Q_OBJECT
 
   public:
+    /** Layers enum defining the types of layers that can be added to a map */
+    enum LayerType
+    {
+      VectorLayer,
+      RasterLayer
+    };
 
     /** Constructor
-     * @param type Type of layer as defined in LAYERS enum
+     * @param type Type of layer as defined in QgsMapLayer::LayerType enum
      * @param lyrname Display Name of the layer
      */
-    QgsMapLayer( int type = 0, QString lyrname = QString::null, QString source = QString::null );
+    QgsMapLayer( QgsMapLayer::LayerType type = VectorLayer, QString lyrname = QString::null, QString source = QString::null );
 
     /** Destructor */
     virtual ~QgsMapLayer();
 
     /** Get the type of the layer
-     * @return Integer matching a value in the LAYERS enum
+     * @return Integer matching a value in the QgsMapLayer::LayerType enum
      */
-    int type() const;
+    QgsMapLayer::LayerType type() const;
 
     /** Get this layer's unique ID, this ID is used to access this layer from map layer registry */
     QString getLayerID() const;
@@ -111,12 +117,6 @@ class CORE_EXPORT QgsMapLayer : public QObject
     /** Set the visibility of the given sublayer name */
     virtual void setSubLayerVisibility( QString name, bool vis );
 
-    /** Layers enum defining the types of layers that can be added to a map */
-    enum LAYERS
-    {
-      VECTOR,
-      RASTER
-    };
 
     /** True if the layer can be edited */
     virtual bool isEditable() const = 0;
@@ -158,7 +158,7 @@ class CORE_EXPORT QgsMapLayer : public QObject
     virtual bool copySymbologySettings( const QgsMapLayer& other ) = 0;
 
     /** Returns true if this layer can be in the same symbology group with another layer */
-    virtual bool isSymbologyCompatible( const QgsMapLayer& other ) const = 0;
+    virtual bool hasCompatibleSymbology( const QgsMapLayer& other ) const = 0;
 
     /** Accessor for transparency level. */
     unsigned int getTransparency();
@@ -172,7 +172,7 @@ class CORE_EXPORT QgsMapLayer : public QObject
      * Interactive users of this provider can then, for example,
      * call a QMessageBox to display the contents.
      */
-    virtual QString errorCaptionString();
+    virtual QString lastErrorTitle();
 
     /**
      * If an operation returns 0 (e.g. draw()), this function
@@ -180,13 +180,13 @@ class CORE_EXPORT QgsMapLayer : public QObject
      * Interactive users of this provider can then, for example,
      * call a QMessageBox to display the contents.
      */
-    virtual QString errorString();
+    virtual QString lastError();
 
     /** Returns layer's spatial reference system */
     const QgsCoordinateReferenceSystem& srs();
 
     /** Sets layer's spatial reference system */
-    void setSrs( const QgsCoordinateReferenceSystem& srs );
+    void setCrs( const QgsCoordinateReferenceSystem& srs );
 
 
     /** A convenience function to capitalise the layer name */
@@ -244,22 +244,37 @@ class CORE_EXPORT QgsMapLayer : public QObject
      */
     virtual QString saveNamedStyle( const QString theURI, bool & theResultFlag );
 
+    /** Read the symbology for the current layer from the Dom node supplied.
+     * @param QDomNode node that will contain the symbology definition for this layer.
+     * @param errorMessage reference to string that will be updated with any error messages
+     * @return true in case of success.
+    */
+    virtual bool readSymbology( const QDomNode& node, QString& errorMessage ) = 0;
+
+    /** Write the symbology for the layer into the docment provided.
+     *  @param QDomNode the node that will have the style element added to it.
+     *  @param QDomDocument the document that will have the QDomNode added.
+     * @param errorMessage reference to string that will be updated with any error messages
+     *  @return true in case of success.
+     */
+    virtual bool writeSymbology( QDomNode&, QDomDocument& doc, QString& errorMessage ) const = 0;
+
   public slots:
 
     /** Event handler for when a coordinate transform fails due to bad vertex error */
     virtual void invalidTransformInput();
 
     /** Accessor and mutator for the minimum scale member */
-    void setMinScale( float theMinScale );
-    float minScale();
+    void setMinimumScale( float theMinScale );
+    float minimumScale();
 
     /** Accessor and mutator for the maximum scale member */
-    void setMaxScale( float theMaxScale );
-    float maxScale();
+    void setMaximumScale( float theMaxScale );
+    float maximumScale();
 
     /** Accessor and mutator for the scale based visilibility flag */
-    void setScaleBasedVisibility( bool theVisibilityFlag );
-    bool scaleBasedVisibility();
+    void toggleScaleBasedVisibility( bool theVisibilityFlag );
+    bool hasScaleBasedVisibility();
 
   signals:
 
@@ -267,7 +282,7 @@ class CORE_EXPORT QgsMapLayer : public QObject
     void drawingProgress( int theProgress, int theTotalSteps );
 
     /** Emit a signal with status (e.g. to be caught by QgisApp and display a msg on status bar) */
-    void setStatus( QString theStatusQString );
+    void statusChanged( QString theStatus );
 
     /** Emit a signal that layer name has been changed */
     void layerNameChanged();
@@ -329,7 +344,7 @@ class CORE_EXPORT QgsMapLayer : public QObject
     QString mID;
 
     /** Type of the layer (eg. vector, raster) */
-    int mLayerType;
+    QgsMapLayer::LayerType mLayerType;
 
     /** Tag for embedding additional information */
     QString mTag;

@@ -44,11 +44,11 @@ class CORE_EXPORT QgsCoordinateReferenceSystem
 {
   public:
 
-    enum CRS_TYPE
+    enum CrsType
     {
-      QGIS_CRSID,
-      POSTGIS_SRID,
-      EPSG
+      InternalCrsId,
+      PostgisCrsId,
+      EpsgCrsId
     };
 
     //! Default constructor
@@ -57,17 +57,19 @@ class CORE_EXPORT QgsCoordinateReferenceSystem
     ~QgsCoordinateReferenceSystem();
 
     /*!
-     * Constructs a CRS object from a WKT string
+     * Constructs a CRS object from a Wkt string
      * @param theWkt A String containing a valid Wkt def
      */
     explicit QgsCoordinateReferenceSystem( QString theWkt );
 
     /*! Use this constructor when you want to create a CRS object using
-     *  a postgis SRID, an EPSG id or a QGIS CRS_ID.
+     *  a postgis SRID, an EpsgCrsId id or a QGIS CRS_ID.
+     * @note We encourage you to use EpsgCrsId, Wkt or Proj4 to describe CRS's in your code
+     * wherever possible. QGSI CRS_IDs are not guaranteed to be permanent / involatile.
      * @param theId The ID no valid for the chosen coordinate system id type
-     * @param theType One of the types described in QgsCoordinateReferenceSystem::CRS_TYPE
+     * @param theType One of the types described in QgsCoordinateReferenceSystem::CrsType
      */
-    QgsCoordinateReferenceSystem( const long theId, CRS_TYPE theType = POSTGIS_SRID );
+    QgsCoordinateReferenceSystem( const long theId, CrsType theType = PostgisCrsId );
 
     //! copy constructor
     QgsCoordinateReferenceSystem( const QgsCoordinateReferenceSystem& srs );
@@ -77,16 +79,16 @@ class CORE_EXPORT QgsCoordinateReferenceSystem
 
     // Misc helper functions -----------------------
 
-    void createFromId( const long theId, CRS_TYPE theType = POSTGIS_SRID );
+    void createFromId( const long theId, CrsType theType = PostgisCrsId );
 
     /**
      * \brief Set up this CRS from the given OGC CRS
      *
      * Sets this CRS to the given OGC WMS-format Coordinate Reference Systems.
      *
-     * \note This function only deals with EPSG labels only at this time.
+     * \note This function only deals with EpsgCrsId labels only at this time.
      *
-     * \retval FALSE if not given an EPSG label
+     * \retval FALSE if not given an EpsgCrsId label
      */
     bool createFromOgcWmsCrs( QString theCrs );
 
@@ -98,14 +100,14 @@ class CORE_EXPORT QgsCoordinateReferenceSystem
      */
     bool createFromSrid( const long theSrid );
 
-    /*! Set up this srs using a WKT spatial ref sys definition.
+    /*! Set up this srs using a Wkt spatial ref sys definition.
      * The wkt will be converted to a proj4 string using OGR helper
      * functions. After this the srs databasses will be searched for matches.
      * First the system level read only srs.db will be checked
      * and then the users ~/.qgis/qgis.db database will be checked for a match.
      * @note Any members will be overwritten during this process.
-     * @note SRID and EPSG may be blank if no match can be found on srs db.
-     * @param theWkt The WKT for the desired spatial reference system.
+     * @note SRID and EpsgCrsId may be blank if no match can be found on srs db.
+     * @param theWkt The Wkt for the desired spatial reference system.
      * @return bool TRUE if sucess else false
      */
     bool createFromWkt( const QString theWkt );
@@ -114,7 +116,7 @@ class CORE_EXPORT QgsCoordinateReferenceSystem
      * sqlite backend. First the system level read only srs.db will be checked
      * and then the users ~/.qgis/qgis.db database will be checked for a match.
      * @note Any members will be overwritten during this process.
-     * @param theEpsg The EPSG for the desired spatial reference system.
+     * @param theEpsg The EpsgCrsId for the desired spatial reference system.
      * @return bool TRUE if sucess else false
      */
     bool createFromEpsg( const long theEpsg );
@@ -187,15 +189,6 @@ class CORE_EXPORT QgsCoordinateReferenceSystem
      */
     long findMatchingProj();
 
-    /*! A string based associative array used for passing records around */
-    typedef QMap<QString, QString> RecordMap;
-    /*! Get a record from the srs.db or qgis.db backends, given an sql statment.
-     * @note only handles queries that return a single record.
-     * @note it will first try the system srs.db then the users qgis.db!
-     * @param QString The sql query to execute
-     * @return QMap An associative array of field name <-> value pairs
-     */
-    RecordMap getRecord( QString theSql );
     /*! Overloaded == operator used to compare to CRS's.
      *  Internally it will delegate to the equals method described below
      */
@@ -210,10 +203,6 @@ class CORE_EXPORT QgsCoordinateReferenceSystem
      *  is inconclusive.
      */
     bool equals( QString theProj4String );
-    /*! A helper to get an wkt representation of this srs
-     * @return string containing Wkt of the srs
-     */
-    QString toWkt() const;
 
     /*! Restores state from the given Dom node.
     * @param theNode The node from which state will be restored
@@ -237,16 +226,15 @@ class CORE_EXPORT QgsCoordinateReferenceSystem
      */
     bool writeXML( QDomNode & theNode, QDomDocument & theDoc ) const;
 
-    /** A static helper function to find out the proj4 string for a srsid
-      * @param int theSrsId The srsid used for the lookup
-      * @return QString The proj4 string
-    */
-    static QString getProj4FromSrsId( const int theSrsId );
 
     /** Sets custom function to force valid CRS
      *  QGIS uses implementation in QgisGui::customSrsValidation
      */
     static void setCustomSrsValidation( CUSTOM_CRS_VALIDATION f );
+
+    /** Gets custom function
+     */
+    static CUSTOM_CRS_VALIDATION customSrsValidation();
 
     // Accessors -----------------------------------
 
@@ -254,56 +242,82 @@ class CORE_EXPORT QgsCoordinateReferenceSystem
     *  @return  long theSrsId The internal sqlite3 srs.db primary key for this srs
     */
     long srsid() const;
-    /*! Get the Postgis SRID - if possible.
-    *  @return  long theSRID The internal postgis SRID for this CRS
-    */
-    long srid() const;
+
+    /*! Get the postgis srid for this srs
+     * @return  long theSRID the Postgis spatial_ref_sys identifier for this srs (defaults to 0)
+     */
+    long postgisSrid() const;
+
+    /*! Get the EpsgCrsId identifier for this srs
+     * @return  long theEpsg the ESPG identifier for this srs (defaults to 0)
+     */
+    long epsg() const;
+
     /*! Get the Description
      * @return  QString the Description A textual description of the srs.
      * @note A zero length string will be returned if the description is uninitialised
      */
     QString description() const;
+
     /*! Get the Projection Acronym
      * @return  QString theProjectionAcronym The official proj4 acronym for the projection family
      * @note A zero length string will be returned if the projectionAcronym is uninitialised
      */
     QString projectionAcronym() const;
+
     /*! Get the Ellipsoid Acronym
      * @return  QString theEllipsoidAcronym The official proj4 acronym for the ellipoid
      * @note A zero length string will be returned if the ellipsoidAcronym is uninitialised
      */
     QString ellipsoidAcronym() const;
-    /** Get the Proj Proj4String. If proj and ellps keys are found in the parameters,
+
+    /*! A helper to get an wkt representation of this srs
+     * @return string containing Wkt of the srs
+     */
+    QString toWkt() const;
+
+    /** Get the Proj Proj4 string representation of this srs.
+     * If proj and ellps keys are found in the parameters,
      * they will be stripped out and the Projection and ellipsoid acronyms will be
      * overridden with these.
      * @return  QString theProj4String Proj4 format specifies that define this srs.
-     * @note A zero length string will be returned if the proj4String is uninitialised
+     * @note A zero length string will be returned if the toProj4 is uninitialised
      */
-    QString proj4String() const;
+    QString toProj4() const;
+
     /*! Get this Geographic? flag
      * @return  bool theGeoFlag Whether this is a geographic or projected coordinate system
      */
     bool geographicFlag() const;
-    /*! Get the units that the projection is in
-     * @return QGis::units that gives the units for the coordinate system
-     */
-    QGis::units mapUnits() const;
 
-    /*! Set the postgis srid for this srs
-     * @return  long theSRID the Postgis spatial_ref_sys identifier for this srs (defaults to 0)
+    /*! Get the units that the projection is in
+     * @return QGis::UnitType that gives the units for the coordinate system
      */
-    long postgisSrid() const;
-    /*! Set the EPSG identifier for this srs
-     * @return  long theEpsg the ESPG identifier for this srs (defaults to 0)
-     */
-    long epsg() const;
+    QGis::UnitType mapUnits() const;
+
 
     // Mutators -----------------------------------
+    /*! Set user hint for validation
+     */
+    void setValidationHint( QString html );
+
+    /*! Get user hint for validation
+     */
+    QString validationHint();
+    // Mutators -----------------------------------
+    // We dont want to expose these to the public api since they wont create
+    // a fully valid crs. Programmers should use the createFrom* methods rather
+  private:
+    /** A static helper function to find out the proj4 string for a srsid
+      * @param int theSrsId The srsid used for the lookup
+      * @return QString The proj4 string
+    */
+    static QString proj4FromSrsId( const int theSrsId );
 
     /*! Set the QGIS  SrsId
      *  @param  long theSrsId The internal sqlite3 srs.db primary key for this srs
      */
-    void setSrsId( long theSrsId );
+    void setInternalId( long theSrsId );
     /*! Set the postgis srid
      *  @param  long theSrsId The postgis spatial_ref_sys key for this srs
      */
@@ -320,7 +334,7 @@ class CORE_EXPORT QgsCoordinateReferenceSystem
      * @param  bool theGeoFlag Whether this is a geographic or projected coordinate system
      */
     void setGeographicFlag( bool theGeoFlag );
-    /*! Set the EPSG identifier for this srs
+    /*! Set the EpsgCrsId identifier for this srs
      * @param  long theEpsg the ESPG identifier for this srs (defaults to 0)
      */
     void setEpsg( long theEpsg );
@@ -336,7 +350,17 @@ class CORE_EXPORT QgsCoordinateReferenceSystem
     /*! Print the description if debugging
      */
     void debugPrint();
-  private:
+
+    /*! A string based associative array used for passing records around */
+    typedef QMap<QString, QString> RecordMap;
+    /*! Get a record from the srs.db or qgis.db backends, given an sql statment.
+     * @note only handles queries that return a single record.
+     * @note it will first try the system srs.db then the users qgis.db!
+     * @param QString The sql query to execute
+     * @return QMap An associative array of field name <-> value pairs
+     */
+    RecordMap getRecord( QString theSql );
+
     // Open SQLite db and show message if ccannot be opened
     // returns the same code as sqlite3_open
     static int openDb( QString path, sqlite3 **db );
@@ -352,7 +376,7 @@ class CORE_EXPORT QgsCoordinateReferenceSystem
     //!Whether this is a geographic or projected coordinate system
     bool    mGeoFlag;
     //! The map units
-    QGis::units mMapUnits;
+    QGis::UnitType mMapUnits;
     //!If available, the Postgis spatial_ref_sys identifier for this srs (defaults to 0)
     long    mSRID;
     //!If available the ESPG identifier for this srs (defaults to 0)
@@ -366,6 +390,8 @@ class CORE_EXPORT QgsCoordinateReferenceSystem
     void *mCRS;
 
     bool loadFromDb( QString db, QString field, long id );
+
+    QString mValidationHint;
 
     static CUSTOM_CRS_VALIDATION mCustomSrsValidation;
 };
@@ -405,9 +431,9 @@ inline std::ostream& operator << ( std::ostream& os, const QgsCoordinateReferenc
   }
 
   mySummary += "\n\t\tProj4String  : " ;
-  if ( !r.proj4String().isNull() )
+  if ( !r.toProj4().isNull() )
   {
-    mySummary += r.proj4String();
+    mySummary += r.toProj4();
   }
   else
   {

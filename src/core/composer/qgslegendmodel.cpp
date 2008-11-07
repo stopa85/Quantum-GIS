@@ -66,10 +66,10 @@ void QgsLegendModel::setLayerSet( const QStringList& layerIds )
 
     switch ( currentLayer->type() )
     {
-      case QgsMapLayer::VECTOR:
+      case QgsMapLayer::VectorLayer:
         addVectorLayerItems( layerItem, currentLayer );
         break;
-      case QgsMapLayer::RASTER:
+      case QgsMapLayer::RasterLayer:
         addRasterLayerItem( layerItem, currentLayer );
         break;
       default:
@@ -132,46 +132,6 @@ int QgsLegendModel::addVectorLayerItems( QStandardItem* layerItem, QgsMapLayer* 
       continue;
     }
 
-#if 0
-    //label
-    QString label;
-    QString lowerValue = ( *symbolIt )->lowerValue();
-    QString upperValue = ( *symbolIt )->upperValue();
-
-    if ( lowerValue == upperValue || upperValue.isEmpty() )
-    {
-      label = lowerValue;
-    }
-    else
-    {
-      label = lowerValue + " - " + upperValue;
-    }
-
-    //icon item
-    switch (( *symbolIt )->type() )
-    {
-      case QGis::Point:
-        currentSymbolItem = new QStandardItem( QIcon( QPixmap::fromImage(( *symbolIt )->getPointSymbolAsImage() ) ), label );
-        break;
-      case QGis::Line:
-        currentSymbolItem = new QStandardItem( QIcon( QPixmap::fromImage(( *symbolIt )->getLineSymbolAsImage() ) ), label );
-        break;
-      case QGis::Polygon:
-        currentSymbolItem = new QStandardItem( QIcon( QPixmap::fromImage(( *symbolIt )->getPolygonSymbolAsImage() ) ), label );
-        break;
-      default:
-        currentSymbolItem = 0;
-        break;
-    }
-
-    //Pass deep copy of QgsSymbol as user data. Cast to void* necessary such that QMetaType handles it
-    QgsSymbol* symbolCopy = new QgsSymbol( **symbolIt );
-    currentSymbolItem->setData( QVariant::fromValue(( void* )symbolCopy ) );
-    insertSymbol( symbolCopy );
-
-    currentSymbolItem->setFlags( Qt::ItemIsEnabled | Qt::ItemIsSelectable );
-#endif //0
-
     QStandardItem* currentSymbolItem = itemFromSymbol( *symbolIt );
     if ( !currentSymbolItem )
     {
@@ -198,7 +158,7 @@ int QgsLegendModel::addRasterLayerItem( QStandardItem* layerItem, QgsMapLayer* r
     return 2;
   }
 
-  QStandardItem* currentSymbolItem = new QStandardItem( QIcon( rasterLayer->getLegendQPixmap( true ) ), "" );
+  QStandardItem* currentSymbolItem = new QStandardItem( QIcon( rasterLayer->legendAsPixmap( true ) ), "" );
 
   int currentRowCount = layerItem->rowCount();
   layerItem->setChild( currentRowCount, 0, currentSymbolItem );
@@ -286,10 +246,10 @@ void QgsLegendModel::updateLayer( QStandardItem* layerItem )
     //and add the new ones...
     switch ( mapLayer->type() )
     {
-      case QgsMapLayer::VECTOR:
+      case QgsMapLayer::VectorLayer:
         addVectorLayerItems( layerItem, mapLayer );
         break;
-      case QgsMapLayer::RASTER:
+      case QgsMapLayer::RasterLayer:
         addRasterLayerItem( layerItem, mapLayer );
         break;
       default:
@@ -403,7 +363,7 @@ void QgsLegendModel::updateRasterClassificationItem( QStandardItem* classificati
     return;
   }
 
-  QStandardItem* currentSymbolItem = new QStandardItem( QIcon( rl->getLegendQPixmap( true ) ), "" );
+  QStandardItem* currentSymbolItem = new QStandardItem( QIcon( rl->legendAsPixmap( true ) ), "" );
   parentItem->insertRow( 0, currentSymbolItem );
   parentItem->removeRow( 1 );
 }
@@ -448,10 +408,10 @@ void QgsLegendModel::addLayer( QgsMapLayer* theMapLayer )
   //and child items of layer
   switch ( theMapLayer->type() )
   {
-    case QgsMapLayer::VECTOR:
+    case QgsMapLayer::VectorLayer:
       addVectorLayerItems( layerItem, theMapLayer );
       break;
-    case QgsMapLayer::RASTER:
+    case QgsMapLayer::RasterLayer:
       addRasterLayerItem( layerItem, theMapLayer );
       break;
     default:
@@ -465,30 +425,40 @@ QStandardItem* QgsLegendModel::itemFromSymbol( QgsSymbol* s )
   QStandardItem* currentSymbolItem = 0;
 
   //label
+  QString itemText;
   QString label;
+
   QString lowerValue = s->lowerValue();
   QString upperValue = s->upperValue();
 
-  if ( lowerValue == upperValue || upperValue.isEmpty() )
+  label = s->label();
+
+  //Take the label as item text if it is there
+  if ( !label.isEmpty() )
   {
-    label = lowerValue;
+    itemText = label;
   }
-  else
+  //take single value
+  else if ( lowerValue == upperValue || upperValue.isEmpty() )
   {
-    label = lowerValue + " - " + upperValue;
+    itemText = lowerValue;
+  }
+  else //or value range
+  {
+    itemText = lowerValue + " - " + upperValue;
   }
 
   //icon item
   switch ( s->type() )
   {
     case QGis::Point:
-      currentSymbolItem = new QStandardItem( QIcon( QPixmap::fromImage( s->getPointSymbolAsImage() ) ), label );
+      currentSymbolItem = new QStandardItem( QIcon( QPixmap::fromImage( s->getPointSymbolAsImage() ) ), itemText );
       break;
     case QGis::Line:
-      currentSymbolItem = new QStandardItem( QIcon( QPixmap::fromImage( s->getLineSymbolAsImage() ) ), label );
+      currentSymbolItem = new QStandardItem( QIcon( QPixmap::fromImage( s->getLineSymbolAsImage() ) ), itemText );
       break;
     case QGis::Polygon:
-      currentSymbolItem = new QStandardItem( QIcon( QPixmap::fromImage( s->getPolygonSymbolAsImage() ) ), label );
+      currentSymbolItem = new QStandardItem( QIcon( QPixmap::fromImage( s->getPolygonSymbolAsImage() ) ), itemText );
       break;
     default:
       currentSymbolItem = 0;
@@ -615,7 +585,7 @@ bool QgsLegendModel::readXML( const QDomElement& legendModelElem, const QDomDocu
         QgsRasterLayer* rasterLayer = dynamic_cast<QgsRasterLayer*>( currentLayer );
         if ( rasterLayer )
         {
-          childItem->setIcon( QIcon( rasterLayer->getLegendQPixmap( true ) ) );
+          childItem->setIcon( QIcon( rasterLayer->legendAsPixmap( true ) ) );
         }
         layerItem->setChild( layerItem->rowCount(), 0, childItem );
       }
@@ -629,7 +599,7 @@ bool QgsLegendModel::readXML( const QDomElement& legendModelElem, const QDomDocu
           QDomNodeList symbolNodeList = currentChildElement.elementsByTagName( "symbol" );
           if ( symbolNodeList.size() > 0 )
           {
-            QgsSymbol* symbol = new QgsSymbol( vectorLayer->vectorType() );
+            QgsSymbol* symbol = new QgsSymbol( vectorLayer->type() );
             QDomNode symbolNode = symbolNodeList.at( 0 );
             symbol->readXML( symbolNode );
             childItem->setData( QVariant::fromValue(( void* )symbol ) );
@@ -646,7 +616,7 @@ bool QgsLegendModel::readXML( const QDomElement& legendModelElem, const QDomDocu
               case QGis::Polygon:
                 childItem->setIcon( QIcon( QPixmap::fromImage( symbol->getPolygonSymbolAsImage() ) ) );
                 break;
-              case QGis::Unknown:
+              case QGis::UnknownGeometry:
                 // should not occur
                 break;
             }

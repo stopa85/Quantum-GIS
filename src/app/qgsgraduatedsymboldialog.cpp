@@ -60,13 +60,38 @@ QgsGraduatedSymbolDialog::QgsGraduatedSymbolDialog( QgsVectorLayer * layer ): QD
     return;
   }
 
+  //restore the correct settings
+  const QgsGraduatedSymbolRenderer* renderer = dynamic_cast < const QgsGraduatedSymbolRenderer * >( layer->renderer() );
+
+  //
+  // Set up the mode combo
+  //
   modeComboBox->addItem( tr( "Equal Interval" ) );
   modeComboBox->addItem( tr( "Quantiles" ) );
   modeComboBox->addItem( tr( "Empty" ) );
 
-  //restore the correct settings
-  const QgsGraduatedSymbolRenderer* renderer = dynamic_cast < const QgsGraduatedSymbolRenderer * >( layer->renderer() );
+  if ( renderer )
+  {
+    QString myMode = "";
+    if ( renderer->mode() == QgsGraduatedSymbolRenderer::Empty )
+    {
+      myMode = tr( "Empty" );
+    }
+    else if ( renderer->mode() == QgsGraduatedSymbolRenderer::Quantile )
+    {
+      myMode = tr( "Quantiles" );
+    }
+    else
+    {
+      myMode = tr( "Equal Interval" );
+    }
+    modeComboBox->setCurrentIndex( modeComboBox->findText( myMode ) );
+  }
 
+
+  //
+  // Set up the classfield combo
+  //
   if ( renderer )
   {
     QList < QgsSymbol * >list = renderer->symbols();
@@ -81,7 +106,7 @@ QgsGraduatedSymbolDialog::QgsGraduatedSymbolDialog( QgsVectorLayer * layer ): QD
         break;
       }
     }
-    classificationComboBox->setItemText( classificationComboBox->currentIndex(), classfield );
+    classificationComboBox->setCurrentIndex( classificationComboBox->findText( classfield ) );
 
     numberofclassesspinbox->setValue( list.size() );
     //fill the items of the renderer into mValues
@@ -89,7 +114,7 @@ QgsGraduatedSymbolDialog::QgsGraduatedSymbolDialog( QgsVectorLayer * layer ): QD
     {
       //todo: make an assignment operator and a copy constructor for QgsSymbol
       QString classbreak = ( *it )->lowerValue() + " - " + ( *it )->upperValue();
-      QgsSymbol* sym = new QgsSymbol( mVectorLayer->vectorType(), ( *it )->lowerValue(), ( *it )->upperValue(), ( *it )->label() );
+      QgsSymbol* sym = new QgsSymbol( mVectorLayer->geometryType(), ( *it )->lowerValue(), ( *it )->upperValue(), ( *it )->label() );
       sym->setPen(( *it )->pen() );
       sym->setCustomTexture(( *it )->customTexture() );
       sym->setBrush(( *it )->brush() );
@@ -98,7 +123,9 @@ QgsGraduatedSymbolDialog::QgsGraduatedSymbolDialog( QgsVectorLayer * layer ): QD
       sym->setScaleClassificationField(( *it )->scaleClassificationField() );
       sym->setRotationClassificationField(( *it )->rotationClassificationField() );
       mEntries.insert( std::make_pair( classbreak, sym ) );
-      mClassListWidget->addItem( classbreak );
+      QListWidgetItem * mypItem = new QListWidgetItem( classbreak );
+      updateEntryIcon( sym , mypItem );
+      mClassListWidget->addItem( mypItem );
     }
 
   }
@@ -148,7 +175,26 @@ void QgsGraduatedSymbolDialog::apply()
     return;
   }
 
-  QgsGraduatedSymbolRenderer* renderer = new QgsGraduatedSymbolRenderer( mVectorLayer->vectorType() );
+  QgsGraduatedSymbolRenderer* renderer = new QgsGraduatedSymbolRenderer( mVectorLayer->geometryType() );
+
+  //
+  // First the mode
+  //
+  if ( modeComboBox->currentText() == tr( "Empty" ) )
+  {
+    renderer->setMode( QgsGraduatedSymbolRenderer::Empty );
+  }
+  else if ( modeComboBox->currentText() == tr( "Quantiles" ) )
+  {
+    renderer->setMode( QgsGraduatedSymbolRenderer::Quantile );
+  }
+  else //equal interval by default//equal interval by default
+  {
+    renderer->setMode( QgsGraduatedSymbolRenderer::EqualInterval );
+  }
+  //
+  // Now the class breaks
+  //
   for ( int item = 0;item < mClassListWidget->count();++item )
   {
     QString classbreak = mClassListWidget->item( item )->text();
@@ -162,13 +208,13 @@ void QgsGraduatedSymbolDialog::apply()
     QString upper_bound = it->second->upperValue();
     QString label = it->second->label();
 
-    QgsSymbol* sy = new QgsSymbol( mVectorLayer->vectorType(), lower_bound, upper_bound, label );
+    QgsSymbol* sy = new QgsSymbol( mVectorLayer->geometryType(), lower_bound, upper_bound, label );
 
     sy->setColor( it->second->pen().color() );
     sy->setLineStyle( it->second->pen().style() );
     sy->setLineWidth( it->second->pen().widthF() );
 
-    if ( mVectorLayer->vectorType() == QGis::Point )
+    if ( mVectorLayer->geometryType() == QGis::Point )
     {
       sy->setNamedPointSymbol( it->second->pointSymbolName() );
       sy->setPointSize( it->second->pointSize() );
@@ -176,7 +222,7 @@ void QgsGraduatedSymbolDialog::apply()
       sy->setRotationClassificationField( it->second->rotationClassificationField() );
     }
 
-    if ( mVectorLayer->vectorType() != QGis::Line )
+    if ( mVectorLayer->geometryType() != QGis::Line )
     {
       sy->setFillColor( it->second->brush().color() );
       sy->setCustomTexture( it->second->customTexture() );//necessary?
@@ -224,7 +270,7 @@ void QgsGraduatedSymbolDialog::apply()
 void QgsGraduatedSymbolDialog::adjustClassification()
 {
   mClassListWidget->clear();
-  QGis::VectorType m_type = mVectorLayer->vectorType();
+  QGis::GeometryType m_type = mVectorLayer->geometryType();
   QgsVectorDataProvider *provider = dynamic_cast<QgsVectorDataProvider *>( mVectorLayer->dataProvider() );
   double minimum = 0;
   double maximum = 0;
@@ -251,7 +297,8 @@ void QgsGraduatedSymbolDialog::adjustClassification()
 
   if ( provider )
   {
-    if ( modeComboBox->currentText() == tr( "Equal Interval" ) )
+    if ( modeComboBox->currentText() == tr( "Equal Interval" ) ||
+         modeComboBox->currentText() == tr( "Quantiles" ) )
     {
       minimum = provider->minimumValue( field ).toDouble();
       maximum = provider->maximumValue( field ).toDouble();
@@ -285,7 +332,7 @@ void QgsGraduatedSymbolDialog::adjustClassification()
       pen.setColor( Qt::black );
     }
 
-    pen.setWidth( 0.4 );
+    pen.setWidth( 0.1 );
     brush.setStyle( Qt::SolidPattern );
     symbol->setPen( pen );
     symbol->setBrush( brush );
@@ -307,7 +354,9 @@ void QgsGraduatedSymbolDialog::adjustClassification()
       if ( last_it != quantileBorders.end() )
       {
         listBoxText = QString::number( *last_it, 'f' ) + " - " + QString::number( *it, 'f' );
-        mClassListWidget->addItem( listBoxText );
+        QListWidgetItem *mypItem = new QListWidgetItem( listBoxText );
+        mClassListWidget->addItem( mypItem );
+        updateEntryIcon( *symbol_it, mypItem );
         ( *symbol_it )->setLowerValue( QString::number( *last_it, 'f' ) );
         ( *symbol_it )->setUpperValue( QString::number( *it, 'f' ) );
         mEntries.insert( std::make_pair( listBoxText, *symbol_it ) );
@@ -348,7 +397,9 @@ void QgsGraduatedSymbolDialog::adjustClassification()
     for ( int i = 0;i < numberofclassesspinbox->value();++i )
     {
       listBoxText = "Empty" + QString::number( i + 1 );
-      mClassListWidget->addItem( listBoxText );
+      QListWidgetItem * mypItem = new QListWidgetItem( listBoxText );
+      updateEntryIcon( *symbol_it, mypItem );
+      mClassListWidget->addItem( mypItem );
       mEntries.insert( std::make_pair( listBoxText, *symbol_it ) );
       ++symbol_it;
     }
@@ -466,7 +517,7 @@ int QgsGraduatedSymbolDialog::quantilesFromVectorLayer( std::list<double>& resul
       int index = 0;
 
       provider->select( attList, QgsRect(), false );
-      while ( provider->getNextFeature( currentFeature ) )
+      while ( provider->nextFeature( currentFeature ) )
       {
         currentAttributeMap = currentFeature.attributeMap();
         currentValue = currentAttributeMap[attributeIndex].toDouble();
@@ -535,12 +586,15 @@ QColor QgsGraduatedSymbolDialog::getColorFromRamp( QString ramp, int step, int t
 void QgsGraduatedSymbolDialog::updateEntryIcon( QgsSymbol * thepSymbol,
     QListWidgetItem * thepItem )
 {
-  QGis::VectorType myType = mVectorLayer->vectorType();
+  QGis::GeometryType myType = mVectorLayer->geometryType();
   switch ( myType )
   {
     case QGis::Point:
-      thepItem->setIcon( QIcon( QPixmap::fromImage( thepSymbol->getPointSymbolAsImage() ) ) );
-      break;
+    {
+      int myWidthScale = 4; //magick no to try to make vector props dialog preview look same as legend
+      thepItem->setIcon( QIcon( QPixmap::fromImage( thepSymbol->getPointSymbolAsImage( myWidthScale ) ) ) );
+    }
+    break;
     case QGis::Line:
       thepItem->setIcon( QIcon( QPixmap::fromImage( thepSymbol->getLineSymbolAsImage() ) ) );
       break;

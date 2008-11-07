@@ -54,7 +54,7 @@ class QgsServerSourceSelect : public QDialog, private Ui::QgsServerSourceSelectB
     QString connName();
 
     //! Connection info (uri)
-    QString connInfo();
+    QString connectionInfo();
 
     //! Connection Proxy Host
     QString connProxyHost();
@@ -140,14 +140,14 @@ class QgsServerSourceSelect : public QDialog, private Ui::QgsServerSourceSelectB
     //! Populate the image encoding button group - private for now.
     void populateImageEncodingGroup( QgsWmsProvider* wmsProvider );
 
-    //! Returns a textual description for the EPSG number
+    //! Returns a textual description for the EpsgCrsId number
     QString descriptionForEpsg( long epsg );
 
     //! Name for selected connection
     QString m_connName;
 
     //! URI for selected connection
-    QString m_connInfo;
+    QString m_connectionInfo;
 
     //! Proxy Host for selected connection
     QString m_connProxyHost;

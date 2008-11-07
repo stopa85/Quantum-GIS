@@ -92,7 +92,7 @@ class QgsPostgresCountThread : public QThread
     /**
      *
      */
-    QString connInfo;
+    QString connectionInfo;
 
     /**
      * Name of the table with no schema
@@ -120,7 +120,7 @@ class QgsPostgresCountThread : public QThread
     /**
      * Integer that contains the row count (including non-geometry rows) of the layer
      */
-    long numberFeatures;
+    long featuresCounted;
 
 };
 

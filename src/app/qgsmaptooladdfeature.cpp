@@ -50,7 +50,7 @@ void QgsMapToolAddFeature::canvasReleaseEvent( QMouseEvent * e )
     return;
   }
 
-  QGis::WKBTYPE layerWKBType = vlayer->geometryType();
+  QGis::WkbType layerWKBType = vlayer->wkbType();
 
   //no support for adding features to 2.5D types yet
   if ( layerWKBType == QGis::WKBLineString25D || layerWKBType == QGis::WKBPolygon25D ||
@@ -86,7 +86,7 @@ void QgsMapToolAddFeature::canvasReleaseEvent( QMouseEvent * e )
   if ( mTool == CapturePoint )
   {
     //check we only use this tool for point/multipoint layers
-    if ( vlayer->vectorType() != QGis::Point )
+    if ( vlayer->geometryType() != QGis::Point )
     {
       QMessageBox::information( 0, QObject::tr( "Wrong editing tool" ),
                                 QObject::tr( "Cannot apply the 'capture point' tool on this vector layer" ) );
@@ -171,7 +171,7 @@ void QgsMapToolAddFeature::canvasReleaseEvent( QMouseEvent * e )
       const QgsFieldMap fields = vlayer->pendingFields();
       for ( QgsFieldMap::const_iterator it = fields.constBegin(); it != fields.constEnd(); ++it )
       {
-        f->addAttribute( it.key(), provider->getDefaultValue( it.key() ) );
+        f->addAttribute( it.key(), provider->defaultValue( it.key() ) );
       }
 
       // show the dialog to enter attribute values
@@ -194,7 +194,7 @@ void QgsMapToolAddFeature::canvasReleaseEvent( QMouseEvent * e )
   else if ( mTool == CaptureLine || mTool == CapturePolygon )
   {
     //check we only use the line tool for line/multiline layers
-    if ( mTool == CaptureLine && vlayer->vectorType() != QGis::Line )
+    if ( mTool == CaptureLine && vlayer->geometryType() != QGis::Line )
     {
       QMessageBox::information( 0, QObject::tr( "Wrong editing tool" ),
                                 QObject::tr( "Cannot apply the 'capture line' tool on this vector layer" ) );
@@ -202,7 +202,7 @@ void QgsMapToolAddFeature::canvasReleaseEvent( QMouseEvent * e )
     }
 
     //check we only use the polygon tool for polygon/multipolygon layers
-    if ( mTool == CapturePolygon && vlayer->vectorType() != QGis::Polygon )
+    if ( mTool == CapturePolygon && vlayer->geometryType() != QGis::Polygon )
     {
       QMessageBox::information( 0, QObject::tr( "Wrong editing tool" ),
                                 QObject::tr( "Cannot apply the 'capture polygon' tool on this vector layer" ) );
@@ -234,12 +234,11 @@ void QgsMapToolAddFeature::canvasReleaseEvent( QMouseEvent * e )
 
       mCapturing = FALSE;
 
-      delete mRubberBand;
-      mRubberBand = NULL;
-
       //lines: bail out if there are not at least two vertices
       if ( mTool == CaptureLine && mCaptureList.size() < 2 )
       {
+        delete mRubberBand;
+        mRubberBand = NULL;
         mCaptureList.clear();
         return;
       }
@@ -247,6 +246,8 @@ void QgsMapToolAddFeature::canvasReleaseEvent( QMouseEvent * e )
       //polygons: bail out if there are not at least two vertices
       if ( mTool == CapturePolygon && mCaptureList.size() < 3 )
       {
+        delete mRubberBand;
+        mRubberBand = NULL;
         mCaptureList.clear();
         return;
       }
@@ -321,6 +322,9 @@ void QgsMapToolAddFeature::canvasReleaseEvent( QMouseEvent * e )
         else
         {
           QMessageBox::critical( 0, QObject::tr( "Error" ), QObject::tr( "Cannot add feature. Unknown WKB type" ) );
+          delete mRubberBand;
+          mRubberBand = NULL;
+          mCaptureList.clear();
           return; //unknown wkbtype
         }
         f->setGeometryAndOwnership( &wkb[0], size );
@@ -414,6 +418,9 @@ void QgsMapToolAddFeature::canvasReleaseEvent( QMouseEvent * e )
         else
         {
           QMessageBox::critical( 0, QObject::tr( "Error" ), QObject::tr( "Cannot add feature. Unknown WKB type" ) );
+          delete mRubberBand;
+          mRubberBand = NULL;
+          mCaptureList.clear();
           return; //unknown wkbtype
         }
         f->setGeometryAndOwnership( &wkb[0], size );
@@ -434,7 +441,7 @@ void QgsMapToolAddFeature::canvasReleaseEvent( QMouseEvent * e )
       const QgsFieldMap fields = vlayer->pendingFields();
       for ( QgsFieldMap::const_iterator it = fields.begin(); it != fields.end(); ++it )
       {
-        f->addAttribute( it.key(), provider->getDefaultValue( it.key() ) );
+        f->addAttribute( it.key(), provider->defaultValue( it.key() ) );
       }
 
       QgsAttributeDialog * mypDialog = new QgsAttributeDialog( vlayer, f );
@@ -452,6 +459,9 @@ void QgsMapToolAddFeature::canvasReleaseEvent( QMouseEvent * e )
       }
       delete f;
       delete mypDialog;
+
+      delete mRubberBand;
+      mRubberBand = NULL;
 
       // delete the elements of mCaptureList
       mCaptureList.clear();

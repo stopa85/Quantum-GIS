@@ -385,7 +385,7 @@ class QgisApp : public QMainWindow
     //! load python support if possible
     void loadPythonSupport();
     //! plugin loader
-    void loadPlugin( QString name, QString description, QString mFullPath );
+    void loadPlugin( QString mFullPath, QString name );
     //! python plugin loader
     void loadPythonPlugin( QString packageName, QString pluginName );
     //! Find the QMenu with the given name (ie the user visible text on the menu item)
@@ -509,7 +509,7 @@ class QgisApp : public QMainWindow
     void showExtents();
     void showStatusMessage( QString theMessage );
     void updateMouseCoordinatePrecision();
-    void projectionsEnabled( bool theFlag );
+    void hasCrsTransformEnabled( bool theFlag );
     void destinationSrsChanged();
     //    void debugHook();
     //! Add a vector layer to the map
@@ -548,7 +548,7 @@ class QgisApp : public QMainWindow
     void showPythonDialog();
 
     //! Shows a warning when an old project file is read.
-    void warnOlderProjectVersion( QString );
+    void oldProjectVersionWarning( QString );
 
     //! Toggle map tips on/off
     void toggleMapTips();

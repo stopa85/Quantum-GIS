@@ -47,7 +47,7 @@ QgsPostgresCountThread::~QgsPostgresCountThread()
 
 void QgsPostgresCountThread::setConnInfo( QString s )
 {
-  connInfo = s;
+  connectionInfo = s;
 }
 
 void QgsPostgresCountThread::setTableName( QString s )
@@ -74,12 +74,12 @@ void QgsPostgresCountThread::setGeometryColumn( QString s )
 void QgsPostgresCountThread::run()
 {
 //  // placeholders for now.
-//  QString connInfo;
+//  QString connectionInfo;
 
   QgsDebugMsg( "QgsPostgresCountThread: Started running." );
 
   // Open another connection to the database
-  PGconn *connection = PQconnectdb( connInfo.toUtf8() );
+  PGconn *connection = PQconnectdb( connectionInfo.toUtf8() );
 
   // get the extents
 
@@ -97,10 +97,10 @@ void QgsPostgresCountThread::run()
   QgsDebugMsg( "QgsPostgresCountThread: Query completed." );
 
 
-  numberFeatures = QString( PQgetvalue( result, 0, 0 ) ).toLong();
+  featuresCounted = QString( PQgetvalue( result, 0, 0 ) ).toLong();
   PQclear( result );
 
-  QgsDebugMsg( QString( "QgsPostgresCountThread: Exact Number of features: %1" ).arg( numberFeatures ) );
+  QgsDebugMsg( QString( "QgsPostgresCountThread: Exact Number of features: %1" ).arg( featuresCounted ) );
 
 
   // Send some events (instead of a signal) as it is thread-safe
@@ -111,7 +111,7 @@ void QgsPostgresCountThread::run()
 
   QgsDebugMsg( QString( "About to create and dispatch event %1 to callback" ).arg( QGis::ProviderCountCalcEvent ) );
 
-  QgsProviderCountCalcEvent* e1 = new QgsProviderCountCalcEvent( numberFeatures );
+  QgsProviderCountCalcEvent* e1 = new QgsProviderCountCalcEvent( featuresCounted );
   QApplication::postEvent(( QObject * )callbackObject, e1 );
 
 //  QApplication::postEvent(qApp->mainWidget(), e1);

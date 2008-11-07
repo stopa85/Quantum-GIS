@@ -35,17 +35,17 @@ class CORE_EXPORT QgsComposerItem: public QGraphicsRectItem
   public:
 
     /**Describes the action (move or resize in different directon) to be done during mouse move*/
-    enum mouseMoveAction
+    enum MouseMoveAction
     {
-      moveItem,
-      resizeUp,
-      resizeDown,
-      resizeLeft,
-      resizeRight,
-      resizeDLeftUp,
-      resizeDRightUp,
-      resizeDLeftDown,
-      resizeDRightDown
+      MoveItem,
+      ResizeUp,
+      ResizeDown,
+      ResizeLeft,
+      ResizeRight,
+      ResizeLeftUp,
+      ResizeRightUp,
+      ResizeLeftDown,
+      ResizeRightDown
     };
 
     enum ItemPositionMode
@@ -96,7 +96,7 @@ class CORE_EXPORT QgsComposerItem: public QGraphicsRectItem
      @param delta value from wheel event that describes magnitude and direction (positive /negative number)
     @param x x-position of mouse cursor (in item coordinates)
     @param y y-position of mouse cursor (in item coordinates)*/
-    virtual void zoomContent( int delta, double x, double y) {}
+    virtual void zoomContent( int delta, double x, double y ) {}
 
     /**Moves the item to a new position (in canvas coordinates)*/
     void setItemPosition(double x, double y, ItemPositionMode itemPoint = UpperLeft);
@@ -143,11 +143,11 @@ class CORE_EXPORT QgsComposerItem: public QGraphicsRectItem
     /**Like the above, but with a rectangle for multiline text*/
     void drawText( QPainter* p, const QRectF& rect, const QString& text, const QFont& font ) const;
 
-    /**Returns the font width in MM (considers upscaling and downscaling with FONT_WORKAROUND_SCALE*/
-    double textWidthMM( const QFont& font, const QString& text ) const;
+    /**Returns the font width in Millimeters (considers upscaling and downscaling with FONT_WORKAROUND_SCALE*/
+    double textWidthMillimeters( const QFont& font, const QString& text ) const;
 
-    /**Returns the font ascent in MM (considers upscaling and downscaling with FONT_WORKAROUND_SCALE*/
-    double fontAscentMM( const QFont& font ) const;
+    /**Returns the font ascent in Millimeters (considers upscaling and downscaling with FONT_WORKAROUND_SCALE*/
+    double fontAscentMillimeters( const QFont& font ) const;
 
     /**Calculates font to from point size to pixel size*/
     double pixelFontSize( double pointSize ) const;
@@ -159,7 +159,7 @@ class CORE_EXPORT QgsComposerItem: public QGraphicsRectItem
 
     QgsComposition* mComposition;
 
-    QgsComposerItem::mouseMoveAction mCurrentMouseMoveAction;
+    QgsComposerItem::MouseMoveAction mCurrentMouseMoveAction;
     /**Start point of the last mouse move action (in scene coordinates)*/
     QPointF mMouseMoveStartPos;
     /**Position of the last mouse move event (in scene coordinates)*/
@@ -182,7 +182,7 @@ class CORE_EXPORT QgsComposerItem: public QGraphicsRectItem
     Qt::CursorShape cursorForPosition( const QPointF& itemCoordPos );
 
     /**Finds out which mouse move action to choose depending on the cursor position inside the widget*/
-    QgsComposerItem::mouseMoveAction mouseMoveActionForPosition( const QPointF& itemCoordPos );
+    QgsComposerItem::MouseMoveAction mouseMoveActionForPosition( const QPointF& itemCoordPos );
 
     /**Changes the rectangle of an item depending on current mouse action (resize or move)
      @param currentPosition current position of mouse cursor

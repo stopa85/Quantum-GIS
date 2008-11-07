@@ -44,7 +44,7 @@ QgsContinuousColorDialog::QgsContinuousColorDialog( QgsVectorLayer * layer )
   if ( provider )
   {
     const QgsFieldMap & fields = provider->fields();
-    int fieldnumber( 0 ), combonumber( 0 );
+    int fieldNumber( 0 ), comboNumber( 0 );
     QString str;
 
     for ( QgsFieldMap::const_iterator it = fields.begin(); it != fields.end(); ++it )
@@ -54,10 +54,10 @@ QgsContinuousColorDialog::QgsContinuousColorDialog( QgsVectorLayer * layer )
       {
         str = ( *it ).name();
         classificationComboBox->addItem( str );
-        mFieldMap.insert( std::make_pair( combonumber, fieldnumber ) );
-        combonumber++;
+        mFieldMap.insert( std::make_pair( comboNumber, fieldNumber ) );
+        comboNumber++;
       }
-      fieldnumber++;
+      fieldNumber++;
     }
   }
   else
@@ -91,7 +91,7 @@ QgsContinuousColorDialog::QgsContinuousColorDialog( QgsVectorLayer * layer )
     const QgsSymbol* minsymbol = renderer->minimumSymbol();
     const QgsSymbol* maxsymbol = renderer->maximumSymbol();
 
-    if ( mVectorLayer->vectorType() == QGis::Line || mVectorLayer->vectorType() == QGis::Point )
+    if ( mVectorLayer->geometryType() == QGis::Line || mVectorLayer->geometryType() == QGis::Point )
     {
       btnMinValue->setColor( minsymbol->pen().color() );
       btnMaxValue->setColor( maxsymbol->pen().color() );
@@ -114,7 +114,7 @@ QgsContinuousColorDialog::QgsContinuousColorDialog( QgsVectorLayer * layer )
       cb_polygonOutline->setCheckState( Qt::Unchecked );
     }
 
-    if ( mVectorLayer->vectorType() != QGis::Polygon )
+    if ( mVectorLayer->geometryType() != QGis::Polygon )
     {
       cb_polygonOutline->setVisible( false );
     }
@@ -123,7 +123,7 @@ QgsContinuousColorDialog::QgsContinuousColorDialog( QgsVectorLayer * layer )
   {
     cb_polygonOutline->setCheckState( Qt::Checked );
     outlinewidthspinbox->setValue( 0.4 );
-    if ( mVectorLayer->vectorType() != QGis::Polygon )
+    if ( mVectorLayer->geometryType() != QGis::Polygon )
       cb_polygonOutline->setVisible( false );
 
     btnMinValue->setColor( Qt::black );
@@ -179,11 +179,11 @@ void QgsContinuousColorDialog::apply()
 
 
   //create the render items for minimum and maximum value
-  QgsSymbol* minsymbol = new QgsSymbol( mVectorLayer->vectorType(), QString::number( minimum, 'f' ), "", "" );
+  QgsSymbol* minsymbol = new QgsSymbol( mVectorLayer->geometryType(), QString::number( minimum, 'f' ), "", "" );
   QPen minPen;
   minPen.setColor( btnMinValue->color() );
   minPen.setWidthF( outlinewidthspinbox->value() );
-  if ( mVectorLayer->vectorType() == QGis::Line || mVectorLayer->vectorType() == QGis::Point )
+  if ( mVectorLayer->geometryType() == QGis::Line || mVectorLayer->geometryType() == QGis::Point )
   {
     minsymbol->setPen( minPen );
   }
@@ -193,11 +193,11 @@ void QgsContinuousColorDialog::apply()
     minsymbol->setPen( minPen );
   }
 
-  QgsSymbol* maxsymbol = new QgsSymbol( mVectorLayer->vectorType(), QString::number( maximum, 'f' ), "", "" );
+  QgsSymbol* maxsymbol = new QgsSymbol( mVectorLayer->geometryType(), QString::number( maximum, 'f' ), "", "" );
   QPen maxPen;
   maxPen.setColor( btnMaxValue->color() );
   maxPen.setWidthF( outlinewidthspinbox->value() );
-  if ( mVectorLayer->vectorType() == QGis::Line || mVectorLayer->vectorType() == QGis::Point )
+  if ( mVectorLayer->geometryType() == QGis::Line || mVectorLayer->geometryType() == QGis::Point )
   {
     maxsymbol->setPen( maxPen );
   }
@@ -207,7 +207,7 @@ void QgsContinuousColorDialog::apply()
     maxsymbol->setPen( maxPen );
   }
 
-  QgsContinuousColorRenderer* renderer = new QgsContinuousColorRenderer( mVectorLayer->vectorType() );
+  QgsContinuousColorRenderer* renderer = new QgsContinuousColorRenderer( mVectorLayer->geometryType() );
   mVectorLayer->setRenderer( renderer );
 
   renderer->setMinimumSymbol( minsymbol );

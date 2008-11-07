@@ -76,7 +76,7 @@ int QgsInterpolator::cacheBaseData()
 
     QgsFeature theFeature;
     double attributeValue = 0.0;
-    while ( provider->getNextFeature( theFeature ) )
+    while ( provider->nextFeature( theFeature ) )
     {
       if ( !zCoordInterpolation )
       {
@@ -107,10 +107,10 @@ int QgsInterpolator::addVerticesToCache( QgsGeometry* geom, double attributeValu
   }
 
   bool hasZValue = false;
-  unsigned char* currentWkbPtr = geom->wkbBuffer();
+  unsigned char* currentWkbPtr = geom->asWkb();
   vertexData theVertex; //the current vertex
 
-  QGis::WKBTYPE wkbType = geom->wkbType();
+  QGis::WkbType wkbType = geom->wkbType();
   switch ( wkbType )
   {
     case QGis::WKBPoint25D:

@@ -20,6 +20,7 @@
 #include "qgsmarkercatalogue.h"
 #include "qgssymbol.h"
 #include "qgssymbologyutils.h"
+#include "qgsvectordataprovider.h"
 #include "qgsvectorlayer.h"
 
 #include <cfloat>
@@ -27,14 +28,14 @@
 #include <QPainter>
 #include <QImage>
 
-QgsContinuousColorRenderer::QgsContinuousColorRenderer( QGis::VectorType type ): mMinimumSymbol( 0 ), mMaximumSymbol( 0 )
+QgsContinuousColorRenderer::QgsContinuousColorRenderer( QGis::GeometryType type ): mMinimumSymbol( 0 ), mMaximumSymbol( 0 )
 {
-  mVectorType = type;
+  mGeometryType = type;
 }
 
 QgsContinuousColorRenderer::QgsContinuousColorRenderer( const QgsContinuousColorRenderer& other )
 {
-  mVectorType = other.mVectorType;
+  mGeometryType = other.mGeometryType;
   mClassificationField = other.mClassificationField;
   mMinimumSymbol = new QgsSymbol( *other.mMinimumSymbol );
   mMaximumSymbol = new QgsSymbol( *other.mMaximumSymbol );
@@ -44,7 +45,7 @@ QgsContinuousColorRenderer& QgsContinuousColorRenderer::operator=( const QgsCont
 {
   if ( this != &other )
   {
-    mVectorType = other.mVectorType;
+    mGeometryType = other.mGeometryType;
     mClassificationField = other.mClassificationField;
     delete mMinimumSymbol;
     delete mMaximumSymbol;
@@ -92,7 +93,7 @@ void QgsContinuousColorRenderer::renderFeature( QPainter * p, QgsFeature & f, QI
 
     QColor mincolor, maxcolor;
 
-    if ( mVectorType == QGis::Line || mVectorType == QGis::Point )
+    if ( mGeometryType == QGis::Line || mGeometryType == QGis::Point )
     {
       mincolor = mMinimumSymbol->pen().color();
       maxcolor = mMaximumSymbol->pen().color();
@@ -119,7 +120,7 @@ void QgsContinuousColorRenderer::renderFeature( QPainter * p, QgsFeature & f, QI
       blue = int ( mincolor.blue() );
     }
 
-    if ( mVectorType == QGis::Point && img )
+    if ( mGeometryType == QGis::Point && img )
     {
       // TODO we must get always new marker -> slow, but continuous color for points
       // probably is not used frequently
@@ -147,14 +148,14 @@ void QgsContinuousColorRenderer::renderFeature( QPainter * p, QgsFeature & f, QI
       *img = QgsMarkerCatalogue::instance()->imageMarker( mMinimumSymbol->pointSymbolName(),
              mMinimumSymbol->pointSize() * widthScale * rasterScaleFactor, pen, brush );
     }
-    else if ( mVectorType == QGis::Line )
+    else if ( mGeometryType == QGis::Line )
     {
       QPen linePen;
       linePen.setColor( QColor( red, green, blue ) );
       linePen.setWidthF( widthScale*mMinimumSymbol->pen().widthF() );
       p->setPen( linePen );
     }
-    else
+    else //polygon
     {
       p->setBrush( QColor( red, green, blue ) );
       if ( mDrawPolygonOutline )
@@ -165,26 +166,44 @@ void QgsContinuousColorRenderer::renderFeature( QPainter * p, QgsFeature & f, QI
         p->setPen( pen );
       }
       else
+      {
         p->setPen( Qt::NoPen );
+      }
     }
     if ( selected )
     {
-      QPen pen = mMinimumSymbol->pen();
-      pen.setColor( mSelectionColor );
+      //for polygons we dont use selection colour for outline
+      //otherwise adjacent features appear merged when selected
+      if ( mGeometryType != QGis::Polygon )
+      {
+        QPen pen = mMinimumSymbol->pen();
+        pen.setColor( mSelectionColor );
+        p->setPen( pen );
+      }
       QBrush brush = mMinimumSymbol->brush();
       brush.setColor( mSelectionColor );
-      p->setPen( pen );
       p->setBrush( brush );
     }
   }
 }
 
-void QgsContinuousColorRenderer::readXML( const QDomNode& rnode, QgsVectorLayer& vl )
+int QgsContinuousColorRenderer::readXML( const QDomNode& rnode, QgsVectorLayer& vl )
 {
-  mVectorType = vl.vectorType();
+  mGeometryType = vl.geometryType();
   QDomNode classnode = rnode.namedItem( "classificationfield" );
-  int classificationfield = classnode.toElement().text().toInt();
-  this->setClassificationField( classificationfield );
+  QString classificationField = classnode.toElement().text();
+
+  QgsVectorDataProvider* theProvider = vl.dataProvider();
+  if ( !theProvider )
+  {
+    return 1;
+  }
+  int classificationId = theProvider->fieldNameIndex( classificationField );
+  if ( classificationId == -1 )
+  {
+    return 2; //@todo: handle gracefully in gui situation where user needs to nominate field
+  }
+  this->setClassificationField( classificationId );
 
   //polygon outline
   QDomNode polyoutlinenode = rnode.namedItem( "polygonoutline" );
@@ -203,7 +222,7 @@ void QgsContinuousColorRenderer::readXML( const QDomNode& rnode, QgsVectorLayer&
   QDomNode lsymbolnode = lowernode.namedItem( "symbol" );
   if ( ! lsymbolnode.isNull() )
   {
-    QgsSymbol* lsy = new QgsSymbol( mVectorType );
+    QgsSymbol* lsy = new QgsSymbol( mGeometryType );
     lsy->readXML( lsymbolnode );
     this->setMinimumSymbol( lsy );
   }
@@ -211,11 +230,12 @@ void QgsContinuousColorRenderer::readXML( const QDomNode& rnode, QgsVectorLayer&
   QDomNode usymbolnode = uppernode.namedItem( "symbol" );
   if ( ! usymbolnode.isNull() )
   {
-    QgsSymbol* usy = new QgsSymbol( mVectorType );
+    QgsSymbol* usy = new QgsSymbol( mGeometryType );
     usy->readXML( usymbolnode );
     this->setMaximumSymbol( usy );
   }
   vl.setRenderer( this );
+  return 0;
 }
 
 QgsAttributeList QgsContinuousColorRenderer::classificationAttributes() const
@@ -230,14 +250,26 @@ QString QgsContinuousColorRenderer::name() const
   return "Continuous Color";
 }
 
-bool QgsContinuousColorRenderer::writeXML( QDomNode & layer_node, QDomDocument & document ) const
+bool QgsContinuousColorRenderer::writeXML( QDomNode & layer_node, QDomDocument & document, const QgsVectorLayer& vl ) const
 {
+  const QgsVectorDataProvider* theProvider = vl.dataProvider();
+  if ( !theProvider )
+  {
+    return false;
+  }
+
+  QString classificationFieldName;
+  QgsFieldMap::const_iterator field_it = theProvider->fields().find( mClassificationField );
+  if ( field_it != theProvider->fields().constEnd() )
+  {
+    classificationFieldName = field_it.value().name();
+  }
   bool returnval = true;
 #ifndef WIN32
   QDomElement continuoussymbol = document.createElement( "continuoussymbol" );
   layer_node.appendChild( continuoussymbol );
   QDomElement classificationfield = document.createElement( "classificationfield" );
-  QDomText classificationfieldtxt = document.createTextNode( QString::number( mClassificationField ) );
+  QDomText classificationfieldtxt = document.createTextNode( classificationFieldName );
   classificationfield.appendChild( classificationfieldtxt );
   continuoussymbol.appendChild( classificationfield );
 

@@ -60,7 +60,7 @@ QString QgsMemoryProvider::storageType() const
   return "Memory storage";
 }
 
-bool QgsMemoryProvider::getNextFeature( QgsFeature& feature )
+bool QgsMemoryProvider::nextFeature( QgsFeature& feature )
 {
   bool hasFeature = FALSE;
 
@@ -134,10 +134,10 @@ bool QgsMemoryProvider::getNextFeature( QgsFeature& feature )
 }
 
 
-bool QgsMemoryProvider::getFeatureAtId( int featureId,
-                                        QgsFeature& feature,
-                                        bool fetchGeometry,
-                                        QgsAttributeList fetchAttributes )
+bool QgsMemoryProvider::featureAtId( int featureId,
+                                     QgsFeature& feature,
+                                     bool fetchGeometry,
+                                     QgsAttributeList fetchAttributes )
 {
   QgsFeatureMap::iterator it = mFeatures.find( featureId );
 
@@ -175,10 +175,10 @@ void QgsMemoryProvider::select( QgsAttributeList fetchAttributes,
     mSelectSI_Features.clear();
   }
 
-  reset();
+  begin();
 }
 
-void QgsMemoryProvider::reset()
+void QgsMemoryProvider::begin()
 {
   if ( mSelectUsingSpatialIndex )
     mSelectSI_Iterator = mSelectSI_Features.begin();
@@ -192,7 +192,7 @@ QgsRect QgsMemoryProvider::extent()
   return mExtent;
 }
 
-QGis::WKBTYPE QgsMemoryProvider::geometryType() const
+QGis::WkbType QgsMemoryProvider::geometryType() const
 {
   return mWkbType;
 }
@@ -218,7 +218,7 @@ bool QgsMemoryProvider::isValid()
   return ( mWkbType != QGis::WKBUnknown );
 }
 
-QgsCoordinateReferenceSystem QgsMemoryProvider::getCRS()
+QgsCoordinateReferenceSystem QgsMemoryProvider::crs()
 {
   // TODO: make provider projection-aware
   return QgsCoordinateReferenceSystem(); // return default CRS

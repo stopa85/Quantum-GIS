@@ -45,7 +45,6 @@ class QGraphicsScene;
 
 class QgsMapToPixel;
 class QgsMapLayer;
-class QgsMapLayerInterface;
 class QgsLegend;
 class QgsLegendView;
 class QgsRubberBand;
@@ -111,7 +110,7 @@ class GUI_EXPORT QgsMapCanvas : public QGraphicsView
 
     void updateOverview();
 
-    void setOverview( QgsMapOverviewCanvas* overview );
+    void enableOverviewMode( QgsMapOverviewCanvas* overview );
 
     QgsMapCanvasMap* map();
 
@@ -172,7 +171,7 @@ class GUI_EXPORT QgsMapCanvas : public QGraphicsView
     void updateFullExtent();
 
     //! return the map layer at position index in the layer stack
-    QgsMapLayer *getZpos( int index );
+    QgsMapLayer *layer( int index );
 
     //! return number of layers on the map
     int layerCount() const;
@@ -194,10 +193,10 @@ class GUI_EXPORT QgsMapCanvas : public QGraphicsView
     bool isDirty() const;
 
     //! Set map units (needed by project properties dialog)
-    void setMapUnits( QGis::units mapUnits );
+    void setMapUnits( QGis::UnitType mapUnits );
     //! Get the current canvas map units
 
-    QGis::units mapUnits() const;
+    QGis::UnitType mapUnits() const;
 
     //! Get the current coordinate transform
     const QgsMapToPixel* getCoordinateTransform();
@@ -241,6 +240,9 @@ class GUI_EXPORT QgsMapCanvas : public QGraphicsView
     /**Repaints the canvas map*/
     void refresh();
 
+    //! Receives signal about selection change, and pass it on with layer info
+    void selectionChangedSlot();
+
     //! Save the convtents of the map canvas to disk as an image
     void saveAsImage( QString theFileName, QPixmap * QPixmap = 0, QString = "PNG" );
 
@@ -253,7 +255,7 @@ class GUI_EXPORT QgsMapCanvas : public QGraphicsView
     bool renderFlag() {return mRenderFlag;};
 
     /** A simple helper method to find out if on the fly projections are enabled or not */
-    bool projectionsEnabled();
+    bool hasCrsTransformEnabled();
 
     /** The map units may have changed, so cope with that */
     void mapUnitsChanged();
@@ -302,7 +304,10 @@ class GUI_EXPORT QgsMapCanvas : public QGraphicsView
     void keyReleased( QKeyEvent * e );
 
     //! Emit map tool changed event
-    void mapToolSet( QgsMapTool *tool );
+    void mapToolSet( QgsMapTool * tool );
+
+    //! Emitted when selection in any layer gets changed
+    void selectionChanged( QgsMapLayer * layer );
 
   protected:
     //! Overridden key press event

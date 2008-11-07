@@ -129,7 +129,7 @@ QgsVectorLayerProperties::QgsVectorLayerProperties(
 
   updateButtons();
 
-  leSpatialRefSys->setText( layer->srs().proj4String() );
+  leSpatialRefSys->setText( layer->srs().toProj4() );
   leSpatialRefSys->setCursorPosition( 0 );
 
   connect( sliderTransparency, SIGNAL( valueChanged( int ) ), this, SLOT( sliderTransparency_valueChanged( int ) ) );
@@ -383,9 +383,9 @@ void QgsVectorLayerProperties::reset( void )
                                            layer->displayField() ) );
 
   // set up the scale based layer visibility stuff....
-  chkUseScaleDependentRendering->setChecked( layer->scaleBasedVisibility() );
-  spinMinimumScale->setValue(( int )layer->minScale() );
-  spinMaximumScale->setValue(( int )layer->maxScale() );
+  chkUseScaleDependentRendering->setChecked( layer->hasScaleBasedVisibility() );
+  spinMinimumScale->setValue(( int )layer->minimumScale() );
+  spinMaximumScale->setValue(( int )layer->maximumScale() );
 
   // symbology initialization
   if ( legendtypecombobox->count() == 0 )
@@ -441,7 +441,7 @@ void QgsVectorLayerProperties::reset( void )
   QString myStyle = QgsApplication::reportStyleSheet();
   teMetadata->clear();
   teMetadata->document()->setDefaultStyleSheet( myStyle );
-  teMetadata->setHtml( getMetadata() );
+  teMetadata->setHtml( metadata() );
   actionDialog->init();
   labelDialog->init();
   labelCheckBox->setChecked( layer->hasLabelsEnabled() );
@@ -478,15 +478,15 @@ void QgsVectorLayerProperties::apply()
     QString myStyle = QgsApplication::reportStyleSheet();
     teMetadata->clear();
     teMetadata->document()->setDefaultStyleSheet( myStyle );
-    teMetadata->setHtml( getMetadata() );
+    teMetadata->setHtml( metadata() );
     // update the extents of the layer (fetched from the provider)
     layer->updateExtents();
   }
 #endif
   // set up the scale based layer visibility stuff....
-  layer->setScaleBasedVisibility( chkUseScaleDependentRendering->isChecked() );
-  layer->setMinScale( spinMinimumScale->value() );
-  layer->setMaxScale( spinMaximumScale->value() );
+  layer->toggleScaleBasedVisibility( chkUseScaleDependentRendering->isChecked() );
+  layer->setMinimumScale( spinMinimumScale->value() );
+  layer->setMaximumScale( spinMaximumScale->value() );
 
   // update the display field
   layer->setDisplayField( displayFieldComboBox->currentText() );
@@ -501,12 +501,13 @@ void QgsVectorLayerProperties::apply()
   {
     int idx = tblAttributes->item( i, 0 )->text().toInt();
     const QgsField &field = layer->pendingFields()[idx];
-    QgsVectorLayer::EditType editType = layer->editType( idx );
 
     QComboBox *cb = dynamic_cast<QComboBox*>( tblAttributes->cellWidget( i, 6 ) );
     if ( !cb )
       continue;
-    layer->setEditType( idx, ( QgsVectorLayer::EditType ) cb->itemData( cb->currentIndex() ).toInt() );
+
+    QgsVectorLayer::EditType editType = ( QgsVectorLayer::EditType ) cb->itemData( cb->currentIndex() ).toInt();
+    layer->setEditType( idx, editType );
 
     if ( editType == QgsVectorLayer::ValueMap )
     {
@@ -654,7 +655,7 @@ void QgsVectorLayerProperties::on_pbnIndex_clicked()
   }
 }
 
-QString QgsVectorLayerProperties::getMetadata()
+QString QgsVectorLayerProperties::metadata()
 {
   QString myMetadata = "<html><body>";
   myMetadata += "<table width=\"100%\">";
@@ -688,19 +689,19 @@ QString QgsVectorLayerProperties::getMetadata()
 
   //geom type
 
-  QGis::VectorType vectorType = layer->vectorType();
+  QGis::GeometryType type = layer->geometryType();
 
-  if ( vectorType < 0 || vectorType > QGis::Polygon )
+  if ( type < 0 || type > QGis::Polygon )
   {
     QgsDebugMsg( "Invalid vector type" );
   }
   else
   {
-    QString vectorTypeString( QGis::qgisVectorGeometryType[layer->vectorType()] );
+    QString typeString( QGis::qgisVectorGeometryType[layer->geometryType()] );
 
     myMetadata += "<tr><td>";
     myMetadata += tr( "Geometry type of the features in this layer : " ) +
-                  vectorTypeString;
+                  typeString;
     myMetadata += "</td></tr>";
   }
 
@@ -762,7 +763,7 @@ QString QgsVectorLayerProperties::getMetadata()
     myMetadata += tr( "Layer Spatial Reference System:" );
     myMetadata += "</td></tr>";
     myMetadata += "<tr><td>";
-    myMetadata += layer->srs().proj4String().replace( QRegExp( "\"" ), " \"" );
+    myMetadata += layer->srs().toProj4().replace( QRegExp( "\"" ), " \"" );
     myMetadata += "</td></tr>";
 
     //
@@ -774,7 +775,7 @@ QString QgsVectorLayerProperties::getMetadata()
     myMetadata += tr("Project (Output) Spatial Reference System:");
     myMetadata += "</td></tr>";
     myMetadata += "<tr><td>";
-    myMetadata += coordinateTransform->destCRS().proj4String().replace(QRegExp("\"")," \"");
+    myMetadata += coordinateTransform->destCRS().toProj4().replace(QRegExp("\"")," \"");
     myMetadata += "</td></tr>";
     */
 
@@ -865,8 +866,8 @@ void QgsVectorLayerProperties::on_pbnChangeSpatialRefSys_clicked()
   mySelector->setSelectedCrsId( layer->srs().srsid() );
   if ( mySelector->exec() )
   {
-    QgsCoordinateReferenceSystem srs( mySelector->selectedCrsId(), QgsCoordinateReferenceSystem::QGIS_CRSID );
-    layer->setSrs( srs );
+    QgsCoordinateReferenceSystem srs( mySelector->selectedCrsId(), QgsCoordinateReferenceSystem::InternalCrsId );
+    layer->setCrs( srs );
   }
   else
   {
@@ -874,7 +875,7 @@ void QgsVectorLayerProperties::on_pbnChangeSpatialRefSys_clicked()
   }
   delete mySelector;
 
-  leSpatialRefSys->setText( layer->srs().proj4String() );
+  leSpatialRefSys->setText( layer->srs().toProj4() );
   leSpatialRefSys->setCursorPosition( 0 );
 }
 

@@ -46,7 +46,7 @@ class QgsWFSProvider: public QgsVectorDataProvider
 
     /* Inherited from QgsVectorDataProvider */
 
-    /** Select features based on a bounding rectangle. Features can be retrieved with calls to getNextFeature.
+    /** Select features based on a bounding rectangle. Features can be retrieved with calls to nextFeature.
      *  @param fetchAttributes list of attributes which should be fetched
      *  @param rect spatial filter
      *  @param fetchGeometry true if the feature geometry should be fetched
@@ -63,15 +63,15 @@ class QgsWFSProvider: public QgsVectorDataProvider
      * @param feature feature which will receive data from the provider
      * @return true when there was a feature to fetch, false when end was hit
      */
-    virtual bool getNextFeature( QgsFeature& feature );
+    virtual bool nextFeature( QgsFeature& feature );
 
-    QGis::WKBTYPE geometryType() const;
+    QGis::WkbType geometryType() const;
     long featureCount() const;
     uint fieldCount() const;
     const QgsFieldMap & fields() const;
-    void reset();
+    void begin();
 
-    virtual QgsCoordinateReferenceSystem getCRS();
+    virtual QgsCoordinateReferenceSystem crs();
 
     /* Inherited from QgsDataProvider */
 
@@ -114,12 +114,12 @@ class QgsWFSProvider: public QgsVectorDataProvider
     QgsSpatialIndex *mSpatialIndex;
     /**Vector where the ids of the selected features are inserted*/
     QList<int> mSelectedFeatures;
-    /**Iterator on the feature vector for use in reset(), getNextFeature(), etc...*/
+    /**Iterator on the feature vector for use in begin(), nextFeature(), etc...*/
     QList<int>::iterator mFeatureIterator;
     /**Vector where the features are inserted*/
     QList<QgsFeature*> mFeatures;
     /**Geometry type of the features in this layer*/
-    mutable QGis::WKBTYPE mWKBType;
+    mutable QGis::WkbType mWKBType;
     /**Source CRS*/
     QgsCoordinateReferenceSystem mSourceCRS;
     int mFeatureCount;
@@ -151,19 +151,19 @@ class QgsWFSProvider: public QgsVectorDataProvider
 
     int getFeaturesFromGML2( const QDomElement& wfsCollectionElement, const QString& geometryAttribute );
 
-    int getWkbFromGML2( const QDomNode& geometryElement, unsigned char** wkb, int* wkbSize, QGis::WKBTYPE* type ) const;
+    int getWkbFromGML2( const QDomNode& geometryElement, unsigned char** wkb, int* wkbSize, QGis::WkbType* type ) const;
     /**Creates WKB from a <Point> element*/
-    int getWkbFromGML2Point( const QDomElement& geometryElement, unsigned char** wkb, int* wkbSize, QGis::WKBTYPE* type ) const;
+    int getWkbFromGML2Point( const QDomElement& geometryElement, unsigned char** wkb, int* wkbSize, QGis::WkbType* type ) const;
     /**Creates WKB from a <Polygon> element*/
-    int getWkbFromGML2Polygon( const QDomElement& geometryElement, unsigned char** wkb, int* wkbSize, QGis::WKBTYPE* type ) const;
+    int getWkbFromGML2Polygon( const QDomElement& geometryElement, unsigned char** wkb, int* wkbSize, QGis::WkbType* type ) const;
     /**Creates WKB from a <LineString> element*/
-    int getWkbFromGML2LineString( const QDomElement& geometryElement, unsigned char** wkb, int* wkbSize, QGis::WKBTYPE* type ) const;
+    int getWkbFromGML2LineString( const QDomElement& geometryElement, unsigned char** wkb, int* wkbSize, QGis::WkbType* type ) const;
     /**Creates WKB from a <MultiPoint> element*/
-    int getWkbFromGML2MultiPoint( const QDomElement& geometryElement, unsigned char** wkb, int* wkbSize, QGis::WKBTYPE* type ) const;
+    int getWkbFromGML2MultiPoint( const QDomElement& geometryElement, unsigned char** wkb, int* wkbSize, QGis::WkbType* type ) const;
     /**Creates WKB from a <MultiLineString> element*/
-    int getWkbFromGML2MultiLineString( const QDomElement& geometryElement, unsigned char** wkb, int* wkbSize, QGis::WKBTYPE* type ) const;
+    int getWkbFromGML2MultiLineString( const QDomElement& geometryElement, unsigned char** wkb, int* wkbSize, QGis::WkbType* type ) const;
     /**Creates WKB from a <MultiPolygon> element*/
-    int getWkbFromGML2MultiPolygon( const QDomElement& geometryElement, unsigned char** wkb, int* wkbSize, QGis::WKBTYPE* type ) const;
+    int getWkbFromGML2MultiPolygon( const QDomElement& geometryElement, unsigned char** wkb, int* wkbSize, QGis::WkbType* type ) const;
     /**Reads the <gml:coordinates> element and extracts the coordinates as points
        @param coords list where the found coordinates are appended
        @param elem the <gml:coordinates> element

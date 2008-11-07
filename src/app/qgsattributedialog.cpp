@@ -242,7 +242,7 @@ QgsAttributeDialog::QgsAttributeDialog( QgsVectorLayer *vl, QgsFeature *thepFeat
         }
         else if ( myFieldType == QVariant::Double )
         {
-          le->setValidator( new QIntValidator( le ) );
+          le->setValidator( new QDoubleValidator( le ) );
         }
 
         myWidget = le;
@@ -283,6 +283,11 @@ QgsAttributeDialog::QgsAttributeDialog( QgsVectorLayer *vl, QgsFeature *thepFeat
     mypInnerLayout->addWidget( myWidget, index, 1 );
     mpWidgets << myWidget;
     ++index;
+  }
+  // Set focus to first widget in list, to help entering data without moving the mouse.
+  if ( mpWidgets.size() > 0 )
+  {
+    mpWidgets.first()->setFocus( Qt::OtherFocusReason );
   }
   restoreGeometry();
 }
@@ -328,11 +333,13 @@ void QgsAttributeDialog::accept()
     QString myFieldName = theField.name();
     bool myFlag = false;
     QString myFieldValue;
+    bool modified = true;
 
     QLineEdit *le = dynamic_cast<QLineEdit *>( mpWidgets.value( myIndex ) );
     if ( le )
     {
       myFieldValue = le->text();
+      modified = le->isModified();
     }
 
     QComboBox *cb = dynamic_cast<QComboBox *>( mpWidgets.value( myIndex ) );
@@ -368,7 +375,7 @@ void QgsAttributeDialog::accept()
       myFieldValue = QString::number( dsb->value() );
     }
 
-    le = mpWidgets.value( myIndex )->findChild<QLineEdit *>( "lineEdit" );
+    le = mpWidgets.value( myIndex )->findChild<QLineEdit *>();
     if ( le )
     {
       myFieldValue = le->text();
@@ -383,9 +390,13 @@ void QgsAttributeDialog::accept()
         {
           mpFeature->changeAttribute( it.key(), QVariant( myIntValue ) );
         }
-        else
+        else if ( modified )
         {
           mpFeature->changeAttribute( it.key(), QVariant( QString::null ) );
+        }
+        else
+        {
+          mpFeature->changeAttribute( it.key(), myFieldValue );
         }
       }
       break;
@@ -396,9 +407,13 @@ void QgsAttributeDialog::accept()
         {
           mpFeature->changeAttribute( it.key(), QVariant( myDblValue ) );
         }
-        else
+        else if ( modified )
         {
           mpFeature->changeAttribute( it.key(), QVariant( QString::null ) );
+        }
+        else
+        {
+          mpFeature->changeAttribute( it.key(), myFieldValue );
         }
       }
       break;

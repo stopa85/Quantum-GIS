@@ -111,7 +111,7 @@ QgsOgrProvider::QgsOgrProvider( QString const & uri )
 
     // getting the total number of features in the layer
     // TODO: This can be expensive, do we really need it!
-    numberFeatures = OGR_L_GetFeatureCount( ogrLayer, TRUE );
+    featuresCounted = OGR_L_GetFeatureCount( ogrLayer, TRUE );
 
     // check the validity of the layer
 
@@ -213,10 +213,10 @@ QString QgsOgrProvider::storageType() const
 }
 
 
-bool QgsOgrProvider::getFeatureAtId( int featureId,
-                                     QgsFeature& feature,
-                                     bool fetchGeometry,
-                                     QgsAttributeList fetchAttributes )
+bool QgsOgrProvider::featureAtId( int featureId,
+                                  QgsFeature& feature,
+                                  bool fetchGeometry,
+                                  QgsAttributeList fetchAttributes )
 {
   OGRFeatureH fet = OGR_L_GetFeature( ogrLayer, featureId );
   if ( fet == NULL )
@@ -245,7 +245,7 @@ bool QgsOgrProvider::getFeatureAtId( int featureId,
   return true;
 }
 
-bool QgsOgrProvider::getNextFeature( QgsFeature& feature )
+bool QgsOgrProvider::nextFeature( QgsFeature& feature )
 {
   if ( !valid )
   {
@@ -361,6 +361,9 @@ void QgsOgrProvider::select( QgsAttributeList fetchAttributes, QgsRect rect, boo
     OGR_L_SetSpatialFilter( ogrLayer, filter );
     OGR_G_DestroyGeometry( filter );
   }
+
+  //start with first feature
+  OGR_L_ResetReading( ogrLayer );
 }
 
 
@@ -397,9 +400,9 @@ size_t QgsOgrProvider::layerCount() const
 /**
  * Return the feature type
  */
-QGis::WKBTYPE QgsOgrProvider::geometryType() const
+QGis::WkbType QgsOgrProvider::geometryType() const
 {
-  return ( QGis::WKBTYPE ) geomType;
+  return ( QGis::WkbType ) geomType;
 }
 
 /**
@@ -407,7 +410,7 @@ QGis::WKBTYPE QgsOgrProvider::geometryType() const
  */
 long QgsOgrProvider::featureCount() const
 {
-  return numberFeatures;
+  return featuresCounted;
 }
 
 /**
@@ -455,7 +458,7 @@ const QgsFieldMap & QgsOgrProvider::fields() const
   return mAttributeFields;
 }
 
-void QgsOgrProvider::reset()
+void QgsOgrProvider::begin()
 {
   OGR_L_ResetReading( ogrLayer );
 }
@@ -474,7 +477,7 @@ bool QgsOgrProvider::addFeature( QgsFeature& f )
   bool returnValue = true;
   OGRFeatureDefnH fdef = OGR_L_GetLayerDefn( ogrLayer );
   OGRFeatureH feature = OGR_F_Create( fdef );
-  unsigned char* wkb = f.geometry()->wkbBuffer();
+  unsigned char* wkb = f.geometry()->asWkb();
 
   if ( f.geometry()->wkbSize() > 0 )
   {
@@ -546,7 +549,7 @@ bool QgsOgrProvider::addFeature( QgsFeature& f )
   {
     f.setFeatureId( OGR_F_GetFID( feature ) );
   }
-  ++numberFeatures;
+  ++featuresCounted;
   OGR_F_Destroy( feature );
   return returnValue;
 }
@@ -565,7 +568,7 @@ bool QgsOgrProvider::addFeatures( QgsFeatureList & flist )
 
   // flush features
   OGR_L_SyncToDisk( ogrLayer );
-  numberFeatures = OGR_L_GetFeatureCount( ogrLayer, TRUE ); //new feature count
+  featuresCounted = OGR_L_GetFeatureCount( ogrLayer, TRUE ); //new feature count
   return returnvalue;
 }
 
@@ -685,7 +688,7 @@ bool QgsOgrProvider::changeGeometryValues( QgsGeometryMap & geometry_map )
     }
 
     //create an OGRGeometry
-    if ( OGR_G_CreateFromWkb( it->wkbBuffer(),
+    if ( OGR_G_CreateFromWkb( it->asWkb(),
                               OGR_L_GetSpatialRef( ogrLayer ),
                               &theNewGeometry,
                               it->wkbSize() ) != OGRERR_NONE )
@@ -755,7 +758,7 @@ bool QgsOgrProvider::deleteFeatures( const QgsFeatureIds & id )
   QString layerName = fileName.section( '.', 0, 0 );
   QString sql = "REPACK " + layerName;
   OGR_DS_ExecuteSQL( ogrDataSource, sql.toLocal8Bit().data(), NULL, NULL );
-  numberFeatures = OGR_L_GetFeatureCount( ogrLayer, TRUE ); //new feature count
+  featuresCounted = OGR_L_GetFeatureCount( ogrLayer, TRUE ); //new feature count
   return returnvalue;
 }
 
@@ -1113,7 +1116,7 @@ QGISEXTERN bool isProvider()
 QGISEXTERN bool createEmptyDataSource( const QString& uri,
                                        const QString& format,
                                        const QString& encoding,
-                                       QGis::WKBTYPE vectortype,
+                                       QGis::WkbType vectortype,
                                        const std::list<std::pair<QString, QString> >& attributes )
 {
   OGRSFDriverH driver;
@@ -1135,11 +1138,11 @@ QGISEXTERN bool createEmptyDataSource( const QString& uri,
   OGRSpatialReferenceH reference = NULL;
   QgsCoordinateReferenceSystem mySpatialRefSys;
   mySpatialRefSys.validate();
-  QString myWKT = mySpatialRefSys.toWkt();
+  QString myWkt = mySpatialRefSys.toWkt();
 
-  if ( !myWKT.isNull()  &&  myWKT.length() != 0 )
+  if ( !myWkt.isNull()  &&  myWkt.length() != 0 )
   {
-    reference = OSRNewSpatialReference( myWKT.toLocal8Bit().data() );
+    reference = OSRNewSpatialReference( myWkt.toLocal8Bit().data() );
   }
 
   // Map the qgis geometry type to the OGR geometry type
@@ -1227,7 +1230,7 @@ QGISEXTERN bool createEmptyDataSource( const QString& uri,
   return true;
 }
 
-QgsCoordinateReferenceSystem QgsOgrProvider::getCRS()
+QgsCoordinateReferenceSystem QgsOgrProvider::crs()
 {
   QgsDebugMsg( "entering." );
 
@@ -1244,13 +1247,13 @@ QgsCoordinateReferenceSystem QgsOgrProvider::getCRS()
     char * ppszProj4;
     OSRExportToProj4( mySpatialRefSys, &ppszProj4 );
     QgsDebugMsg( ppszProj4 );
-    char    *pszWKT = NULL;
-    OSRExportToWkt( mySpatialRefSys, &pszWKT );
-    QString myWKTString = QString( pszWKT );
-    OGRFree( pszWKT );
+    char    *pszWkt = NULL;
+    OSRExportToWkt( mySpatialRefSys, &pszWkt );
+    QString myWktString = QString( pszWkt );
+    OGRFree( pszWkt );
 
-    // create CRS from WKT
-    srs.createFromWkt( myWKTString );
+    // create CRS from Wkt
+    srs.createFromWkt( myWktString );
   }
 
   return srs;
@@ -1263,11 +1266,14 @@ void QgsOgrProvider::uniqueValues( int index, QList<QVariant> &uniqueValues )
   if ( !fi.exists() )
     return;
 
-  QString sql = QString( "SELECT DISTINCT %1 FROM %2 ORDER BY %1" ).arg( fld.name() ).arg( fi.baseName() );
+  QString sql = QString( "SELECT DISTINCT %1 FROM %2 ORDER BY %1" )
+                .arg( quotedIdentifier( fld.name() ) )
+                .arg( quotedIdentifier( fi.baseName() ) );
 
   uniqueValues.clear();
 
-  OGRLayerH lyr = OGR_DS_ExecuteSQL( ogrDataSource, sql.toAscii(), NULL, "SQL" );
+  QgsDebugMsg( QString( "SQL: %1" ).arg( sql ) );
+  OGRLayerH lyr = OGR_DS_ExecuteSQL( ogrDataSource, mEncoding->fromUnicode( sql ).data(), NULL, "SQL" );
   if ( 0 == lyr )
     return;
 
@@ -1290,9 +1296,11 @@ QVariant QgsOgrProvider::minimumValue( int index )
   if ( !fi.exists() )
     return QVariant();
 
-  QString sql = QString( "SELECT MIN(%1) FROM %2" ).arg( fld.name() ).arg( fi.baseName() );
+  QString sql = QString( "SELECT MIN(%1) FROM %2" )
+                .arg( quotedIdentifier( fld.name() ) )
+                .arg( quotedIdentifier( fi.baseName() ) );
 
-  OGRLayerH l = OGR_DS_ExecuteSQL( ogrDataSource, sql.toAscii(), NULL, "SQL" );
+  OGRLayerH l = OGR_DS_ExecuteSQL( ogrDataSource, mEncoding->fromUnicode( sql ).data(), NULL, "SQL" );
 
   if ( l == 0 )
     return QVariant();
@@ -1319,9 +1327,11 @@ QVariant QgsOgrProvider::maximumValue( int index )
   if ( !fi.exists() )
     return QVariant();
 
-  QString sql = QString( "SELECT MAX(%1) FROM %2" ).arg( fld.name() ).arg( fi.baseName() );
+  QString sql = QString( "SELECT MAX(%1) FROM %2" )
+                .arg( quotedIdentifier( fld.name() ) )
+                .arg( quotedIdentifier( fi.baseName() ) );
 
-  OGRLayerH l = OGR_DS_ExecuteSQL( ogrDataSource, sql.toAscii(), NULL, "SQL" );
+  OGRLayerH l = OGR_DS_ExecuteSQL( ogrDataSource, mEncoding->fromUnicode( sql ).data(), NULL, "SQL" );
   if ( l == 0 )
     return QVariant();
 
@@ -1338,4 +1348,12 @@ QVariant QgsOgrProvider::maximumValue( int index )
   OGR_DS_ReleaseResultSet( ogrDataSource, l );
 
   return value;
+}
+
+QString QgsOgrProvider::quotedIdentifier( QString field )
+{
+  field.replace( '\\', "\\\\" );
+  field.replace( '"', "\\\"" );
+  field.replace( "'", "\\'" );
+  return field.prepend( "\"" ).append( "\"" );
 }

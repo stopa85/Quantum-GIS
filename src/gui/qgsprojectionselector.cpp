@@ -118,7 +118,7 @@ QString QgsProjectionSelector::ogcWmsCrsFilterAsSqlExpression( QSet<QString> * c
      Label: The identifier includes a namespace prefix, a colon, a numeric or
         string code, and in some instances a comma followed by additional
         parameters. This International Standard defines three namespaces:
-        CRS, EPSG and AUTO2 [...]
+        CRS, EpsgCrsId and AUTO2 [...]
 
      URL: The identifier is a fully-qualified Uniform Resource Locator that
         references a publicly-accessible file containing a definition of the CRS
@@ -287,12 +287,12 @@ QString QgsProjectionSelector::selectedProj4String()
       QString mySrsId = myItem->text( QGIS_CRS_ID_COLUMN );
 
       QgsDebugMsg( "mySrsId = " + mySrsId );
-      QgsDebugMsg( "USER_PROJECTION_START_ID = " + QString::number( USER_PROJECTION_START_ID ) );
+      QgsDebugMsg( "USER_CRS_START_ID = " + QString::number( USER_CRS_START_ID ) );
       //
       // Determine if this is a user projection or a system on
       // user projection defs all have srs_id >= 100000
       //
-      if ( mySrsId.toLong() >= USER_PROJECTION_START_ID )
+      if ( mySrsId.toLong() >= USER_CRS_START_ID )
       {
         myDatabaseFileName = QgsApplication::qgisUserDbFilePath();
         QFileInfo myFileInfo;
@@ -380,7 +380,7 @@ long QgsProjectionSelector::getSelectedLongAttribute( QString attributeName )
       // Determine if this is a user projection or a system on
       // user projection defs all have srs_id >= 100000
       //
-      if ( lvi->text( QGIS_CRS_ID_COLUMN ).toLong() >= USER_PROJECTION_START_ID )
+      if ( lvi->text( QGIS_CRS_ID_COLUMN ).toLong() >= USER_CRS_START_ID )
       {
         myDatabaseFileName = QgsApplication::qgisUserDbFilePath();
         QFileInfo myFileInfo;
@@ -541,7 +541,7 @@ void QgsProjectionSelector::loadUserCrsList( QSet<QString> * crsFilter )
     while ( sqlite3_step( myPreparedStatement ) == SQLITE_ROW )
     {
       newItem = new QTreeWidgetItem( mUserProjList, QStringList( QString::fromUtf8(( char * )sqlite3_column_text( myPreparedStatement, 0 ) ) ) );
-      // EPSG for user projections is not always defined in some dbases.
+      // EpsgCrsId for user projections is not always defined in some dbases.
       // It's also not written from customprojections dialog.
       // display the epsg (field 2) in the second column of the list view
       // newItem->setText( EPSG_COLUMN, QString::fromUtf8(( char * )sqlite3_column_text( myPreparedStatement, 2 ) ) );
@@ -618,7 +618,7 @@ void QgsProjectionSelector::loadCrsList( QSet<QString> * crsFilter )
 
   sqlite3_finalize( ppStmt );
 
-  // Set up the query to retreive the projection information needed to populate the list
+  // Set up the query to retrieve the projection information needed to populate the list
   //note I am giving the full field names for clarity here and in case someown
   //changes the underlying view TS
   sql = "select description, srs_id, epsg, is_geo, name, parameters from vw_srs ";
@@ -731,9 +731,9 @@ void QgsProjectionSelector::on_pbnFind_clicked()
   QgsDebugMsg( "pbnFind..." );
 
   QString mySearchString( sqlSafeString( leSearch->text() ) );
-  // Set up the query to retreive the projection information needed to populate the list
+  // Set up the query to retrieve the projection information needed to populate the list
   QString mySql;
-  if ( radEPSGID->isChecked() )
+  if ( radEpsgCrsId->isChecked() )
   {
     mySql = "select srs_id from tbl_srs where epsg=" + mySearchString;
   }

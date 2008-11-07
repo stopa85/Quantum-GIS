@@ -40,11 +40,11 @@ class QgsMapRenderer : QObject
     //! Recalculate the map scale
     void updateScale();
 
-    QGis::units mapUnits() const;
-    void setMapUnits(QGis::units u);
+    QGis::UnitType mapUnits() const;
+    void setMapUnits(QGis::UnitType u);
     
     //! sets whether map image will be for overview
-    void setOverview(bool isOverview = true);
+    void enableOverviewMode(bool isOverview = true);
 
     void setOutputSize(QSize size, int dpi);
     
@@ -69,7 +69,7 @@ class QgsMapRenderer : QObject
     void setProjectionsEnabled(bool enabled);
     
     //! returns true if projections are enabled for this layer set
-    bool projectionsEnabled();
+    bool hasCrsTransformEnabled();
     
     //! sets destination spatial reference system
     void setDestinationSrs(const QgsCoordinateReferenceSystem& srs);
@@ -99,7 +99,7 @@ class QgsMapRenderer : QObject
     
     void setProgress(int current, int total);
     
-    void projectionsEnabled(bool flag);
+    void hasCrsTransformEnabled(bool flag);
     
     void destinationSrsChanged();
     

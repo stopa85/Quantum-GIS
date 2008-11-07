@@ -38,14 +38,14 @@
 #include <QMap>
 #include <QImageReader>
 #include "qgslogger.h"
+#include "qgis.h" // GEO_EPSG_CRS_ID 
 
 
-static long DEFAULT_WMS_EPSG = 4326;  // WGS 84
 
 
 QgsServerSourceSelect::QgsServerSourceSelect( QWidget * parent, Qt::WFlags fl )
     : QDialog( parent, fl ),
-    m_Epsg( DEFAULT_WMS_EPSG ),
+    m_Epsg( GEO_EPSG_CRS_ID ),
     mWmsProvider( 0 )
 {
   setupUi( this );
@@ -97,7 +97,7 @@ QgsServerSourceSelect::QgsServerSourceSelect( QWidget * parent, Qt::WFlags fl )
   if ( currentCRS != -1 )
   {
     //convert CRS id to epsg
-    QgsCoordinateReferenceSystem currentRefSys( currentCRS, QgsCoordinateReferenceSystem::QGIS_CRSID );
+    QgsCoordinateReferenceSystem currentRefSys( currentCRS, QgsCoordinateReferenceSystem::InternalCrsId );
     if ( currentRefSys.isValid() )
     {
       m_Epsg = currentRefSys.epsg();
@@ -319,9 +319,9 @@ void QgsServerSourceSelect::on_btnConnect_clicked()
   connStringParts += settings.value( key + "/url" ).toString();
 
   m_connName = cmbConnections->currentText();
-  m_connInfo = connStringParts.join( " " );
+  m_connectionInfo = connStringParts.join( " " );
 
-  QgsDebugMsg( QString( "Connection info: '%1'." ).arg( m_connInfo ) );
+  QgsDebugMsg( QString( "Connection info: '%1'." ).arg( m_connectionInfo ) );
 
 
   // TODO: Create and bind to data provider
@@ -330,11 +330,11 @@ void QgsServerSourceSelect::on_btnConnect_clicked()
   QgsProviderRegistry * pReg = QgsProviderRegistry::instance();
 
   mWmsProvider =
-    ( QgsWmsProvider* ) pReg->getProvider( "wms", m_connInfo );
+    ( QgsWmsProvider* ) pReg->getProvider( "wms", m_connectionInfo );
 
   if ( mWmsProvider )
   {
-    connect( mWmsProvider, SIGNAL( setStatus( QString ) ), this, SLOT( showStatusMessage( QString ) ) );
+    connect( mWmsProvider, SIGNAL( statusChanged( QString ) ), this, SLOT( showStatusMessage( QString ) ) );
 
     // WMS Provider all set up; let's get some layers
 
@@ -496,8 +496,8 @@ void QgsServerSourceSelect::on_lstLayers_itemSelectionChanged()
           // save first CRS in case we current m_Epsg is not available
           if ( i == crsFilter.begin() )
             defaultEpsg = epsg;
-          // prefer value of DEFAULT_WMS_EPSG if available
-          if ( epsg == DEFAULT_WMS_EPSG )
+          // prefer value of DEFAULT_GEO_EPSG_CRS_ID if available
+          if ( epsg == GEO_EPSG_CRS_ID )
             defaultEpsg = epsg;
         }
       }
@@ -528,9 +528,9 @@ QString QgsServerSourceSelect::connName()
   return m_connName;
 }
 
-QString QgsServerSourceSelect::connInfo()
+QString QgsServerSourceSelect::connectionInfo()
 {
-  return m_connInfo;
+  return m_connectionInfo;
 }
 
 QStringList QgsServerSourceSelect::selectedLayers()
@@ -622,18 +622,18 @@ void QgsServerSourceSelect::showError( QgsWmsProvider * wms )
 {
 //   QMessageBox::warning(
 //     this,
-//     wms->errorCaptionString(),
+//     wms->lastErrorTitle(),
 //     tr("Could not understand the response.  The") + " " + wms->name() + " " +
 //       tr("provider said") + ":\n" +
-//       wms->errorString()
+//       wms->lastError()
 //   );
 
   QgsMessageViewer * mv = new QgsMessageViewer( this );
-  mv->setWindowTitle( wms->errorCaptionString() );
+  mv->setWindowTitle( wms->lastErrorTitle() );
   mv->setMessageAsPlainText(
     tr( "Could not understand the response.  The" ) + " " + wms->name() + " " +
     tr( "provider said" ) + ":\n" +
-    wms->errorString()
+    wms->lastError()
   );
   mv->showMessage( true ); // Is deleted when closed
 }
@@ -653,7 +653,7 @@ QString QgsServerSourceSelect::descriptionForEpsg( long epsg )
   // We'll assume this function isn't called very often,
   // so please forgive the lack of caching of results
 
-  QgsCoordinateReferenceSystem qgisSrs = QgsCoordinateReferenceSystem( epsg, QgsCoordinateReferenceSystem::EPSG );
+  QgsCoordinateReferenceSystem qgisSrs = QgsCoordinateReferenceSystem( epsg, QgsCoordinateReferenceSystem::EpsgCrsId );
 
   return qgisSrs.description();
 }

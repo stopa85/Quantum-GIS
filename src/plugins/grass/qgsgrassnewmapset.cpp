@@ -153,7 +153,7 @@ QgsGrassNewMapset::QgsGrassNewMapset( QgisInterface *iface,
   m = new QTreeWidgetItem( l, QStringList() << "Cimrman" << tr( "User's mapset" ) );
   m->setExpanded( true );
 
-  // PROJECTION
+  // CRS
 
   // MAPSET
   mMapsetsListView->clear();
@@ -327,7 +327,7 @@ int QgsGrassNewMapset::nextId() const
         break;
       }
     case DATABASE:
-    case PROJECTION:
+    case CRS:
     case REGION:
     case MAPSET:
       id += 1;
@@ -377,7 +377,7 @@ void QgsGrassNewMapset::newLocationChanged()
   checkLocation();
 }
 
-/************************** PROJECTION ******************************/
+/************************** CRS ******************************/
 void QgsGrassNewMapset::setProjectionPage()
 {
   QgsDebugMsg( "entered." );
@@ -460,7 +460,7 @@ void QgsGrassNewMapset::setGrassProjection()
       char *wkt = NULL;
       if (( errcode = OSRExportToWkt( hCRS, &wkt ) ) != OGRERR_NONE )
       {
-        QgsDebugMsg( QString( "OGR can't get WKT-style parameter string\nOGR Error code was %1" ).arg( errcode ) );
+        QgsDebugMsg( QString( "OGR can't get Wkt-style parameter string\nOGR Error code was %1" ).arg( errcode ) );
       }
       else
       {
@@ -857,9 +857,9 @@ void QgsGrassNewMapset::setSelectedRegion()
   // Warning: seems that crashes if source == dest
   if ( mProjectionSelector->selectedCrsId() != GEOCRS_ID )
   {
-    // Warning: QgsCoordinateReferenceSystem::EPSG is broken (using epsg_id)
-    //QgsCoordinateReferenceSystem source ( 4326, QgsCoordinateReferenceSystem::EPSG );
-    QgsCoordinateReferenceSystem source( GEOCRS_ID, QgsCoordinateReferenceSystem::QGIS_CRSID );
+    // Warning: QgsCoordinateReferenceSystem::EpsgCrsId is broken (using epsg_id)
+    //QgsCoordinateReferenceSystem source ( 4326, QgsCoordinateReferenceSystem::EpsgCrsId );
+    QgsCoordinateReferenceSystem source( GEOCRS_ID, QgsCoordinateReferenceSystem::InternalCrsId );
 
     if ( !source.isValid() )
     {
@@ -869,7 +869,7 @@ void QgsGrassNewMapset::setSelectedRegion()
     }
 
     QgsCoordinateReferenceSystem dest( mProjectionSelector->selectedCrsId(),
-                                       QgsCoordinateReferenceSystem::QGIS_CRSID );
+                                       QgsCoordinateReferenceSystem::InternalCrsId );
 
     if ( !dest.isValid() )
     {
@@ -952,7 +952,7 @@ void QgsGrassNewMapset::setCurrentRegion()
   int srsid = QgsProject::instance()->readNumEntry(
                 "SpatialRefSys", "/ProjectCRSID", 0 );
 
-  QgsCoordinateReferenceSystem srs( srsid, QgsCoordinateReferenceSystem::QGIS_CRSID );
+  QgsCoordinateReferenceSystem srs( srsid, QgsCoordinateReferenceSystem::InternalCrsId );
   QgsDebugMsg( QString( "current project srsid = %1" ).arg( srsid ) );
   QgsDebugMsg( QString( "srs.isValid() = %1" ).arg( srs.isValid() ) );
 
@@ -1070,7 +1070,7 @@ void QgsGrassNewMapset::drawRegion()
   if ( mProjectionSelector->selectedCrsId() != GEOCRS_ID )
   {
     QgsCoordinateReferenceSystem source( mProjectionSelector->selectedCrsId(),
-                                         QgsCoordinateReferenceSystem::QGIS_CRSID );
+                                         QgsCoordinateReferenceSystem::InternalCrsId );
 
     if ( !source.isValid() )
     {
@@ -1079,7 +1079,7 @@ void QgsGrassNewMapset::drawRegion()
       return;
     }
 
-    QgsCoordinateReferenceSystem dest( GEOCRS_ID, QgsCoordinateReferenceSystem::QGIS_CRSID );
+    QgsCoordinateReferenceSystem dest( GEOCRS_ID, QgsCoordinateReferenceSystem::InternalCrsId );
 
     if ( !dest.isValid() )
     {
@@ -1265,9 +1265,9 @@ void QgsGrassNewMapset::createMapset()
     //       database path
     QgsGrass::activeMode(); // because it calls private gsGrass::init()
 #if defined(WIN32)
-    G__setenv( (char *) "GISDBASE", getShortPath( mDatabaseLineEdit->text() ).toAscii().data() );
+    G__setenv(( char * ) "GISDBASE", getShortPath( mDatabaseLineEdit->text() ).toAscii().data() );
 #else
-    G__setenv( (char *) "GISDBASE", mDatabaseLineEdit->text().toAscii().data() );
+    G__setenv(( char * ) "GISDBASE", mDatabaseLineEdit->text().toAscii().data() );
 #endif
 
     QgsGrass::resetError();
@@ -1407,7 +1407,7 @@ void QgsGrassNewMapset::pageSelected( int index )
       }
       break;
 
-    case PROJECTION:
+    case CRS:
       // Projection selector
       if ( !mProjectionSelector )
       {
@@ -1426,7 +1426,7 @@ void QgsGrassNewMapset::pageSelected( int index )
         int srsid = QgsProject::instance()->readNumEntry(
                       "SpatialRefSys", "/ProjectCRSID", 0 );
 
-        QgsCoordinateReferenceSystem srs( srsid, QgsCoordinateReferenceSystem::QGIS_CRSID );
+        QgsCoordinateReferenceSystem srs( srsid, QgsCoordinateReferenceSystem::InternalCrsId );
         QgsDebugMsg( QString( "current project srsid = %1" ).arg( srsid ) );
         QgsDebugMsg( QString( "srs.isValid() = %1" ).arg( srs.isValid() ) );
         if ( srs.isValid() )
@@ -1449,7 +1449,7 @@ void QgsGrassNewMapset::pageSelected( int index )
         mRegionsInited = true;
       }
 
-      if ( mPreviousPage == PROJECTION )
+      if ( mPreviousPage == CRS )
       {
         setRegionPage();
       }

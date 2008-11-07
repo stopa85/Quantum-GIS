@@ -86,7 +86,7 @@ public:
   bool copySymbologySettings(const QgsMapLayer& other);
 
   /** Returns true if this layer can be in the same symbology group with another layer */
-  bool isSymbologyCompatible(const QgsMapLayer& other) const;
+  bool hasCompatibleSymbology(const QgsMapLayer& other) const;
   
   /** Returns a pointer to the renderer */
   const QgsRenderer* renderer() const;
@@ -95,10 +95,10 @@ public:
   void setRenderer(QgsRenderer * r /Transfer/);
 
   /** Returns point, line or polygon */
-  QGis::VectorType vectorType() const;
+  QGis::GeometryType geometryType() const;
 
   /**Returns the WKBType or WKBUnknown in case of error*/
-  QGis::WKBTYPE geometryType() const;
+  QGis::WkbType wkbType() const;
 
   /** Return the provider type for this layer */
   QString providerType() const;
@@ -113,6 +113,21 @@ public:
    */
   virtual bool writeXml( QDomNode & layer_node, QDomDocument & doc );
 
+
+  /** Read the symbology for the current layer from the Dom node supplied. 
+   * @param QDomNode node that will contain the symbology definition for this layer.
+   * @param errorMessage reference to string that will be updated with any error messages
+   * @return true in case of success.
+   */
+  bool readSymbology(const QDomNode& node, QString& errorMessage);
+
+  /** Write the symbology for the layer into the docment provided.
+   *  @param QDomNode the node that will have the style element added to it.
+   *  @param QDomDocument the document that will have the QDomNode added.
+   * @param errorMessage reference to string that will be updated with any error messages
+   *  @return true in case of success.
+   */
+  bool writeSymbology(QDomNode&, QDomDocument& doc, QString& errorMessage) const;
 
   /**
    * Number of features in the layer. This is necessary if features are
@@ -147,12 +162,12 @@ public:
               bool fetchGeometry = true,
               bool useIntersect = false);
 
-  bool getNextFeature(QgsFeature& feature);
+  bool nextFeature(QgsFeature& feature);
 
 
   /**Gets the feature at the given feature id. Considers the changed, added, deleted and permanent features
    @return 0 in case of success*/
-  int getFeatureAtId(int featureId, QgsFeature& f, bool fetchGeometries = true, bool fetchAttributes = true);
+  int featureAtId(int featureId, QgsFeature& f, bool fetchGeometries = true, bool fetchAttributes = true);
 
   /** Adds a feature
       @param alsoUpdateExtent    If True, will also go to the effort of e.g. updating the extents.
@@ -273,7 +288,7 @@ public:
      @return 0 in case of success
   */
   int snapWithContext(const QgsPoint& startPoint, double snappingTolerance, QMultiMap<double, QgsSnappingResult>& snappingResults /Out/,
-                      QgsSnapper::SNAP_TO snap_to);
+                      QgsSnapper::SnappingType snap_to);
 
   /** Draws the layer using coordinate transformation
    *  @return FALSE if an error occurred during drawing
@@ -282,11 +297,6 @@ public:
 
   /** Draws the layer labels using coordinate transformation */
   void drawLabels(QgsRenderContext& rendererContext);
-
-  /** \brief Draws the layer labels using coordinate transformation
-   *  \param scale size scale, applied to all values in pixels
-   */
-  void drawLabels(QPainter * p, const QgsRect& viewExtent, const QgsMapToPixel* cXf, const QgsCoordinateTransform* ct, double scale);
 
   /** returns list of attributes */
   QList<int> pendingAllAttributesList();

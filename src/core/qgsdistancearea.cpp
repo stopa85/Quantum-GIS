@@ -44,7 +44,7 @@ QgsDistanceArea::QgsDistanceArea()
   // init with default settings
   mProjectionsEnabled = FALSE;
   mCoordTransform = new QgsCoordinateTransform;
-  setSourceEPSG( GEOEPSG_ID ); // WGS 84
+  setSourceEpsgCrsId( GEO_EPSG_CRS_ID ); // WGS 84
   setEllipsoid( "WGS84" );
 }
 
@@ -60,18 +60,18 @@ void QgsDistanceArea::setProjectionsEnabled( bool flag )
   mProjectionsEnabled = flag;
 }
 
-void QgsDistanceArea::setSourceCRS( long srsid )
+void QgsDistanceArea::setSourceCrs( long srsid )
 {
   QgsCoordinateReferenceSystem srcCRS;
   srcCRS.createFromSrsId( srsid );
-  mCoordTransform->setSourceCRS( srcCRS );
+  mCoordTransform->setSourceCrs( srcCRS );
 }
 
-void QgsDistanceArea::setSourceEPSG( long epsgId )
+void QgsDistanceArea::setSourceEpsgCrsId( long epsgId )
 {
   QgsCoordinateReferenceSystem srcCRS;
   srcCRS.createFromEpsg( epsgId );
-  mCoordTransform->setSourceCRS( srcCRS );
+  mCoordTransform->setSourceCrs( srcCRS );
 }
 
 
@@ -176,7 +176,7 @@ bool QgsDistanceArea::setEllipsoid( const QString& ellipsoid )
 
 double QgsDistanceArea::measure( QgsGeometry* geometry )
 {
-  unsigned char* wkb = geometry->wkbBuffer();
+  unsigned char* wkb = geometry->asWkb();
   unsigned char* ptr;
   unsigned int wkbType;
   double res, resTotal = 0;
@@ -404,7 +404,7 @@ double QgsDistanceArea::measurePolygon( const QList<QgsPoint>& points )
 }
 
 
-double QgsDistanceArea::getBearing( const QgsPoint& p1, const QgsPoint& p2 )
+double QgsDistanceArea::bearing( const QgsPoint& p1, const QgsPoint& p2 )
 {
   QgsPoint pp1 = p1, pp2 = p2;
   if ( mProjectionsEnabled && ( mEllipsoid != "NONE" ) )
@@ -632,14 +632,14 @@ double QgsDistanceArea::computePolygonFlatArea( const QList<QgsPoint>& points )
   return fabs( area ); // All areas are positive!
 }
 
-QString QgsDistanceArea::textUnit( double value, int decimals, QGis::units u, bool isArea )
+QString QgsDistanceArea::textUnit( double value, int decimals, QGis::UnitType u, bool isArea )
 {
   QString unitLabel;
 
 
   switch ( u )
   {
-    case QGis::METERS:
+    case QGis::Meters:
       if ( isArea )
       {
         if ( fabs( value ) > 1000000.0 )
@@ -686,7 +686,7 @@ QString QgsDistanceArea::textUnit( double value, int decimals, QGis::units u, bo
         }
       }
       break;
-    case QGis::FEET:
+    case QGis::Feet:
       if ( isArea )
       {
         if ( fabs( value ) > ( 528.0*528.0 ) )
@@ -715,7 +715,7 @@ QString QgsDistanceArea::textUnit( double value, int decimals, QGis::units u, bo
         }
       }
       break;
-    case QGis::DEGREES:
+    case QGis::Degrees:
       if ( isArea )
       {
         unitLabel = QObject::tr( " sq.deg." );
@@ -728,7 +728,7 @@ QString QgsDistanceArea::textUnit( double value, int decimals, QGis::units u, bo
           unitLabel = QObject::tr( " degrees" );
       }
       break;
-    case QGis::UNKNOWN:
+    case QGis::UnknownUnit:
       unitLabel = QObject::tr( " unknown" );
     default:
       QgsDebugMsg( QString( "Error: not picked up map units - actual value = %1" ).arg( u ) );

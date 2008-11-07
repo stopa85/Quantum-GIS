@@ -21,6 +21,7 @@
 #include <QMouseEvent>
 #include <QPainter>
 #include <QTextStream>
+#include <QSettings>
 
 #include "qgisinterface.h"
 #include "qgsapplication.h"
@@ -47,12 +48,16 @@ class QgsGeorefTool : public QgsMapTool
     //! Mouse press event for overriding
     virtual void canvasPressEvent( QMouseEvent * e )
     {
-      QgsPoint pnt = toMapCoordinates( e->pos() );
+      // Only add point on Qt:LeftButton
+      if ( Qt::LeftButton == e->button() )
+      {
+        QgsPoint pnt = toMapCoordinates( e->pos() );
 
-      if ( mAddPoint )
-        mDlg->showCoordDialog( pnt );
-      else
-        mDlg->deleteDataPoint( pnt );
+        if ( mAddPoint )
+          mDlg->showCoordDialog( pnt );
+        else
+          mDlg->deleteDataPoint( pnt );
+      }
     }
 
     virtual void canvasMoveEvent( QMouseEvent * e ) { }
@@ -351,8 +356,8 @@ bool QgsPointDialog::generateWorldFile()
     for ( unsigned int i = 0; i < mapCoords.size(); ++i )
     {
       points << ( QString( "%1\t%2\t%3\t%4" ).
-                  arg( mapCoords[i].x() ).arg( mapCoords[i].y(), 0, 'f', 15 ).
-                  arg( pixelCoords[i].x() ).arg( pixelCoords[i].y(), 0, 'f', 15 ) ) << endl;
+                  arg( mapCoords[i].x(), 0, 'f', 15 ).arg( mapCoords[i].y(), 0, 'f', 15 ).
+                  arg( pixelCoords[i].x(), 0, 'f', 15 ).arg( pixelCoords[i].y(), 0, 'f', 15 ) ) << endl;
     }
   }
   return true;
@@ -422,8 +427,8 @@ void QgsPointDialog::deleteDataPoint( QgsPoint& coords )
     QgsDebugMsg( QString( "deleteDataPoint! test: %1" ).arg(( x*x + y*y ) ) );
     if (( x*x + y*y ) < maxDistSqr )
     {
-      mPoints.erase( it );
       delete *it;
+      mPoints.erase( it );
       --mAcetateCounter;
       mCanvas->refresh();
       break;
@@ -558,6 +563,11 @@ void QgsPointDialog::initialize()
   mToolAddPoint->setAction( mActionAddPoint );
   mToolDeletePoint = new QgsGeorefTool( mCanvas, this, FALSE /* addPoint */ );
   mToolDeletePoint->setAction( mActionDeletePoint );
+
+  QSettings mySettings;
+  int action = mySettings.value( "/qgis/wheel_action", 0 ).toInt();
+  double zoomFactor = mySettings.value( "/qgis/zoom_factor", 2 ).toDouble();
+  mCanvas->setWheelAction(( QgsMapCanvas::WheelAction ) action, zoomFactor );
 
   // set the currently supported transforms
   cmbTransformType->addItem( tr( "Linear" ) );

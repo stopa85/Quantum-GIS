@@ -229,7 +229,7 @@ void QgsLegendLayerFile::saveAsShapefileGeneral( bool saveOnlySelection )
 {
   QgsCoordinateReferenceSystem destCRS;
 
-  if ( mLyr.layer()->type() != QgsMapLayer::VECTOR )
+  if ( mLyr.layer()->type() != QgsMapLayer::VectorLayer )
     return;
 
   QgsVectorLayer* vlayer = dynamic_cast<QgsVectorLayer*>( mLyr.layer() );
@@ -270,21 +270,21 @@ void QgsLegendLayerFile::saveAsShapefileGeneral( bool saveOnlySelection )
 
   destCRS = vlayer->srs();
   // Find out if we have projections enabled or not
-  if ( QgisApp::instance()->mapCanvas()->mapRenderer()->projectionsEnabled() )
+  if ( QgisApp::instance()->mapCanvas()->mapRenderer()->hasCrsTransformEnabled() )
   {
     destCRS = QgisApp::instance()->mapCanvas()->mapRenderer()->destinationSrs();
   }
-  
+
   QgsGenericProjectionSelector * mySelector = new QgsGenericProjectionSelector();
   mySelector->setSelectedCrsId( destCRS.srsid() );
-  mySelector->setMessage(tr("Select the coordinate reference system for the saved shapefile.") +
-                         tr("The data points will be transformed from the layer coordinate reference system."));
+  mySelector->setMessage( tr( "Select the coordinate reference system for the saved shapefile." ) +
+                          tr( "The data points will be transformed from the layer coordinate reference system." ) );
 
   if ( mySelector->exec() )
   {
-    QgsCoordinateReferenceSystem srs( mySelector->selectedCrsId(), QgsCoordinateReferenceSystem::QGIS_CRSID );
+    QgsCoordinateReferenceSystem srs( mySelector->selectedCrsId(), QgsCoordinateReferenceSystem::InternalCrsId );
     destCRS = srs;
-    //   destCRS->createFromId(mySelector->selectedCrsId(), QgsCoordinateReferenceSystem::QGIS_CRSID)
+    //   destCRS->createFromId(mySelector->selectedCrsId(), QgsCoordinateReferenceSystem::InternalCrsId)
   }
   else
   {
@@ -374,7 +374,7 @@ void QgsLegendLayerFile::addToPopupMenu( QMenu& theMenu, QAction* toggleEditingA
 
   theMenu.addSeparator();
 
-  if ( lyr->type() == QgsMapLayer::VECTOR )
+  if ( lyr->type() == QgsMapLayer::VectorLayer )
   {
     QgsVectorLayer* vlayer = dynamic_cast<QgsVectorLayer*>( lyr );
 
@@ -403,7 +403,7 @@ void QgsLegendLayerFile::addToPopupMenu( QMenu& theMenu, QAction* toggleEditingA
 
     theMenu.addSeparator();
   }
-  else if ( lyr->type() == QgsMapLayer::RASTER )
+  else if ( lyr->type() == QgsMapLayer::RasterLayer )
   {
     // TODO: what was this for?
     //QgsRasterLayer* rlayer = dynamic_cast<QgsRasterLayer*>(lyr);
