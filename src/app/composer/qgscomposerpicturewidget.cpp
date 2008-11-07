@@ -16,6 +16,7 @@
  ***************************************************************************/
 
 #include "qgscomposerpicturewidget.h"
+#include "qgsapplication.h"
 #include "qgscomposerpicture.h"
 #include "qgscomposeritemwidget.h"
 #include <QDoubleValidator>
@@ -35,6 +36,9 @@ QgsComposerPictureWidget::QgsComposerPictureWidget( QgsComposerPicture* picture 
   mHeightLineEdit->setValidator( new QDoubleValidator( this ) );
 
   setGuiElementValues();
+
+  //add preview icons
+  addStandardDirectoriesToPreview();
 
   connect( mPicture, SIGNAL( settingsChanged() ), this, SLOT( setGuiElementValues() ) );
 }
@@ -143,6 +147,19 @@ void QgsComposerPictureWidget::on_mRotationSpinBox_valueChanged( double d )
   }
 }
 
+void QgsComposerPictureWidget::on_mPreviewListWidget_currentItemChanged( QListWidgetItem* current, QListWidgetItem* previous )
+{
+  if(!mPicture || !current)
+  {
+    return;
+  }
+
+  QString absoluteFilePath = current->data(Qt::UserRole).toString();
+  mPicture->setPictureFile(absoluteFilePath);
+  mPictureLineEdit->setText(absoluteFilePath);
+  mPicture->update();
+}
+
 void QgsComposerPictureWidget::setGuiElementValues()
 {
   //set initial gui values
@@ -163,5 +180,51 @@ void QgsComposerPictureWidget::setGuiElementValues()
     mHeightLineEdit->blockSignals( false );
     mRotationSpinBox->blockSignals( false );
     mPictureLineEdit->blockSignals( false );
+  }
+}
+
+int QgsComposerPictureWidget::addDirectoryToPreview(const QString& path)
+{
+  //go through all files of a directory
+  QDir directory(path);
+  if(!directory.exists() || !directory.isReadable())
+  {
+    return 1; //error
+  }
+
+  QFileInfoList fileList = directory.entryInfoList(QDir::Files);
+  QFileInfoList::const_iterator fileIt = fileList.constBegin();
+  for(; fileIt != fileList.constEnd(); ++fileIt)
+  {
+    qWarning(fileIt->absoluteFilePath().toLocal8Bit().data());
+    QIcon icon(fileIt->absoluteFilePath()); //does this work with svg icons?
+    QListWidgetItem * listItem = new QListWidgetItem(mPreviewListWidget);
+    listItem->setIcon( icon );
+    listItem->setText( "" );
+    //store the absolute icon file as user data
+    listItem->setData( Qt::UserRole, fileIt->absoluteFilePath());
+  }
+
+  return 0;
+}
+
+void QgsComposerPictureWidget::addStandardDirectoriesToPreview()
+{
+  //list all directories in $prefix/share/qgis/svg
+  QDir svgDirectory(QgsApplication::svgPath());
+  if(!svgDirectory.exists() || !svgDirectory.isReadable())
+  {
+      return; //error
+  }
+
+  QFileInfoList directoryList = svgDirectory.entryInfoList(QDir::Dirs);
+  QFileInfoList::const_iterator dirIt = directoryList.constBegin();
+  for(; dirIt != directoryList.constEnd(); ++dirIt)
+  {
+    qWarning(dirIt->absoluteFilePath().toLocal8Bit().data());
+    if(addDirectoryToPreview(dirIt->absoluteFilePath()) == 0)
+    {
+       mSearchDirectoriesComboBox->addItem(dirIt->absoluteFilePath());
+    }
   }
 }
