@@ -51,6 +51,8 @@ class QgsComposerPictureWidget: public QWidget, private Ui::QgsComposerPictureWi
     int addDirectoryToPreview(const QString& path);
     /**Add the icons of the standard directories to the preview*/
     void addStandardDirectoriesToPreview();
+    /**Returns true if a file is in a supported image format or in svg*/
+    bool testPictureFile(const QString& filename) const;
 };
 
 #endif

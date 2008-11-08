@@ -22,7 +22,9 @@
 #include <QDoubleValidator>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QImageReader>
 #include <QMessageBox>
+#include <QSvgRenderer>
 
 QgsComposerPictureWidget::QgsComposerPictureWidget( QgsComposerPicture* picture ): QWidget(), mPicture( picture )
 {
@@ -228,8 +230,15 @@ int QgsComposerPictureWidget::addDirectoryToPreview(const QString& path)
   QFileInfoList::const_iterator fileIt = fileList.constBegin();
   for(; fileIt != fileList.constEnd(); ++fileIt)
   {
-    qWarning(fileIt->absoluteFilePath().toLocal8Bit().data());
-    QIcon icon(fileIt->absoluteFilePath()); //does this work with svg icons?
+    QString filePath = fileIt->absoluteFilePath();
+
+    //exclude non-picture files
+    if(!testPictureFile(filePath))
+    {
+      return 2;
+    }
+
+    QIcon icon(filePath);
     QListWidgetItem * listItem = new QListWidgetItem(mPreviewListWidget);
     listItem->setIcon( icon );
     listItem->setText( "" );
@@ -259,4 +268,25 @@ void QgsComposerPictureWidget::addStandardDirectoriesToPreview()
        mSearchDirectoriesComboBox->addItem(dirIt->absoluteFilePath());
     }
   }
+}
+
+bool QgsComposerPictureWidget::testPictureFile(const QString& filename) const
+{
+  bool pixelFormat = false;
+  bool svgFormat = false;
+
+  QString formatName = QString(QImageReader::imageFormat(filename));
+  qWarning(formatName.toLocal8Bit().data());
+  if(!formatName.isEmpty())
+  {
+    return true; //file is in a supported pixel format
+  }
+
+  QSvgRenderer svgRenderer(filename);
+  if(svgRenderer.isValid())
+  {
+    return true;
+  }
+
+  return false;
 }
