@@ -24,6 +24,8 @@
 #include <QFileInfo>
 #include <QImageReader>
 #include <QMessageBox>
+#include <QPainter>
+#include <QProgressDialog>
 #include <QSvgRenderer>
 
 QgsComposerPictureWidget::QgsComposerPictureWidget( QgsComposerPicture* picture ): QWidget(), mPicture( picture )
@@ -38,6 +40,8 @@ QgsComposerPictureWidget::QgsComposerPictureWidget( QgsComposerPicture* picture 
   mHeightLineEdit->setValidator( new QDoubleValidator( this ) );
 
   setGuiElementValues();
+
+  mPreviewListWidget->setIconSize(QSize(30, 30));
 
   //add preview icons
   addStandardDirectoriesToPreview();
@@ -228,22 +232,55 @@ int QgsComposerPictureWidget::addDirectoryToPreview(const QString& path)
 
   QFileInfoList fileList = directory.entryInfoList(QDir::Files);
   QFileInfoList::const_iterator fileIt = fileList.constBegin();
+
+  QProgressDialog progress("Adding Icons...", "Abort", 0, fileList.size() - 1, this);
+  progress.setWindowModality(Qt::WindowModal);
+
+  progress.show();
+
+  int counter = 0;
   for(; fileIt != fileList.constEnd(); ++fileIt)
   {
+    progress.setLabelText(tr("Creating icon for file ") + fileIt->fileName());
+    QCoreApplication::processEvents(); //for abort button
+    if(progress.wasCanceled())
+    {
+      break;
+    }
+    progress.setValue(counter);
     QString filePath = fileIt->absoluteFilePath();
 
     //exclude non-picture files
     if(!testPictureFile(filePath))
     {
-      return 2;
+      ++counter;
+      continue;
     }
 
-    QIcon icon(filePath);
     QListWidgetItem * listItem = new QListWidgetItem(mPreviewListWidget);
-    listItem->setIcon( icon );
+
+    if(filePath.endsWith(".svg")) //for svg files: create the icon directly
+    {
+      QIcon icon(filePath);
+      listItem->setIcon(icon);
+    }
+    else //for pixel formats: create icon from scaled pixmap
+    {
+      QPixmap iconPixmap(filePath);
+      if(iconPixmap.isNull())
+      {
+        continue; //unknown file format or other problem
+      }
+      //set pixmap hardcoded to 30/30, same as icon size for mPreviewListWidget
+      QPixmap scaledPixmap(iconPixmap.scaled(QSize(30, 30), Qt::KeepAspectRatio));
+      QIcon icon(scaledPixmap);
+      listItem->setIcon(icon);
+    }
+
     listItem->setText( "" );
-    //store the absolute icon file as user data
+    //store the absolute icon file path as user data
     listItem->setData( Qt::UserRole, fileIt->absoluteFilePath());
+    ++counter;
   }
 
   return 0;
