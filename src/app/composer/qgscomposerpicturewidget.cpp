@@ -160,6 +160,38 @@ void QgsComposerPictureWidget::on_mPreviewListWidget_currentItemChanged( QListWi
   mPicture->update();
 }
 
+void QgsComposerPictureWidget::on_mAddDirectoryButton_clicked()
+{
+  //let user select a directory
+  QString directory = QFileDialog::getExistingDirectory(0, tr("Select new preview directory"));
+  if(directory.isNull())
+  {
+    return; //dialog canceled by user
+  }
+
+  //add entry to mSearchDirectoriesComboBox
+  mSearchDirectoriesComboBox->addItem(directory);
+
+  //and add icons to the preview
+  addDirectoryToPreview(directory);
+}
+
+void QgsComposerPictureWidget::on_mRemoveDirectoryButton_clicked()
+{
+  QString directoryToRemove = mSearchDirectoriesComboBox->currentText();
+  mSearchDirectoriesComboBox->removeItem(mSearchDirectoriesComboBox->currentIndex());
+
+  //remove entries from back to front (to have the indices of existing items constant)
+  for(int i = (mPreviewListWidget->count() - 1); i >=0; --i)
+  {
+    QListWidgetItem* currentItem = mPreviewListWidget->item(i);
+    if(currentItem && currentItem->data(Qt::UserRole).toString().startsWith(directoryToRemove))
+    {
+      delete(mPreviewListWidget->takeItem(i));
+    }
+  }
+}
+
 void QgsComposerPictureWidget::setGuiElementValues()
 {
   //set initial gui values
@@ -217,7 +249,7 @@ void QgsComposerPictureWidget::addStandardDirectoriesToPreview()
       return; //error
   }
 
-  QFileInfoList directoryList = svgDirectory.entryInfoList(QDir::Dirs);
+  QFileInfoList directoryList = svgDirectory.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
   QFileInfoList::const_iterator dirIt = directoryList.constBegin();
   for(; dirIt != directoryList.constEnd(); ++dirIt)
   {

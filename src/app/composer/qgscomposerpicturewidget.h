@@ -40,6 +40,8 @@ class QgsComposerPictureWidget: public QWidget, private Ui::QgsComposerPictureWi
     void on_mWidthLineEdit_editingFinished();
     void on_mHeightLineEdit_editingFinished();
     void on_mPreviewListWidget_currentItemChanged( QListWidgetItem* current, QListWidgetItem* previous );
+    void on_mAddDirectoryButton_clicked();
+    void on_mRemoveDirectoryButton_clicked();
     /**Sets the GUI elements to the values of mPicture*/
     void setGuiElementValues();
 
