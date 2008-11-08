@@ -236,8 +236,6 @@ int QgsComposerPictureWidget::addDirectoryToPreview(const QString& path)
   QProgressDialog progress("Adding Icons...", "Abort", 0, fileList.size() - 1, this);
   progress.setWindowModality(Qt::WindowModal);
 
-  progress.show();
-
   int counter = 0;
   for(; fileIt != fileList.constEnd(); ++fileIt)
   {
