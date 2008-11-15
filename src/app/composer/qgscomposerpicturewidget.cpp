@@ -234,46 +234,59 @@ int QgsComposerPictureWidget::addDirectoryToPreview(const QString& path)
   QFileInfoList::const_iterator fileIt = fileList.constBegin();
 
   QProgressDialog progress("Adding Icons...", "Abort", 0, fileList.size() - 1, this);
-  progress.setWindowModality(Qt::WindowModal);
+  //cancel button does not seem to work properly with modal dialog
+  //progress.setWindowModality(Qt::WindowModal);
 
   int counter = 0;
   for(; fileIt != fileList.constEnd(); ++fileIt)
   {
+
     progress.setLabelText(tr("Creating icon for file ") + fileIt->fileName());
-    QCoreApplication::processEvents(); //for abort button
+    progress.setValue(counter);
+    QCoreApplication::processEvents();
     if(progress.wasCanceled())
     {
       break;
     }
-    progress.setValue(counter);
     QString filePath = fileIt->absoluteFilePath();
 
-    //exclude non-picture files
-    if(!testPictureFile(filePath))
+    //test if file is svg or pixel format
+    bool fileIsPixel = false;
+    bool fileIsSvg = testSvgFile(filePath);
+    if(!fileIsSvg)
+      {
+	fileIsPixel = testImageFile(filePath);
+      }
+
+    //exclude files that are not svg or image
+    if(!fileIsSvg && !fileIsPixel)
     {
-      ++counter;
-      continue;
+      ++counter; continue;
     }
 
     QListWidgetItem * listItem = new QListWidgetItem(mPreviewListWidget);
 
-    if(filePath.endsWith(".svg")) //for svg files: create the icon directly
+    if(fileIsSvg)
     {
       QIcon icon(filePath);
       listItem->setIcon(icon);
     }
-    else //for pixel formats: create icon from scaled pixmap
+    else if(fileIsPixel) //for pixel formats: create icon from scaled pixmap
     {
       QPixmap iconPixmap(filePath);
       if(iconPixmap.isNull())
       {
-        continue; //unknown file format or other problem
+        ++counter; continue; //unknown file format or other problem
       }
       //set pixmap hardcoded to 30/30, same as icon size for mPreviewListWidget
       QPixmap scaledPixmap(iconPixmap.scaled(QSize(30, 30), Qt::KeepAspectRatio));
       QIcon icon(scaledPixmap);
       listItem->setIcon(icon);
     }
+    else
+      {
+	++counter; continue;
+      }
 
     listItem->setText( "" );
     //store the absolute icon file path as user data
@@ -297,7 +310,6 @@ void QgsComposerPictureWidget::addStandardDirectoriesToPreview()
   QFileInfoList::const_iterator dirIt = directoryList.constBegin();
   for(; dirIt != directoryList.constEnd(); ++dirIt)
   {
-    qWarning(dirIt->absoluteFilePath().toLocal8Bit().data());
     if(addDirectoryToPreview(dirIt->absoluteFilePath()) == 0)
     {
        mSearchDirectoriesComboBox->addItem(dirIt->absoluteFilePath());
@@ -305,23 +317,22 @@ void QgsComposerPictureWidget::addStandardDirectoriesToPreview()
   }
 }
 
-bool QgsComposerPictureWidget::testPictureFile(const QString& filename) const
+bool QgsComposerPictureWidget::testSvgFile(const QString& filename) const
 {
-  bool pixelFormat = false;
-  bool svgFormat = false;
-
-  QString formatName = QString(QImageReader::imageFormat(filename));
-  qWarning(formatName.toLocal8Bit().data());
-  if(!formatName.isEmpty())
-  {
-    return true; //file is in a supported pixel format
-  }
-
   QSvgRenderer svgRenderer(filename);
   if(svgRenderer.isValid())
   {
     return true;
   }
+  return false;
+}
 
+bool QgsComposerPictureWidget::testImageFile(const QString& filename) const
+{
+  QString formatName = QString(QImageReader::imageFormat(filename));
+  if(!formatName.isEmpty())
+  {
+    return true; //file is in a supported pixel format
+  }
   return false;
 }
