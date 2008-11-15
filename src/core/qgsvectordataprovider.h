@@ -89,7 +89,7 @@ class CORE_EXPORT QgsVectorDataProvider : public QgsDataProvider
      *                     false if a test based on bounding box is sufficient
      */
     virtual void select( QgsAttributeList fetchAttributes = QgsAttributeList(),
-                         QgsRect rect = QgsRect(),
+                         QgsRectangle rect = QgsRectangle(),
                          bool fetchGeometry = true,
                          bool useIntersect = false ) = 0;
 
@@ -155,7 +155,7 @@ class CORE_EXPORT QgsVectorDataProvider : public QgsDataProvider
     virtual QString dataComment() const;
 
     /** Restart reading features from previous select operation */
-    virtual void begin() = 0;
+    virtual void rewind() = 0;
 
     /**
      * Returns the minimum value of an attribute

@@ -37,7 +37,7 @@ SET(QGIS_CORE_SRCS
   qgsproviderregistry.cpp
   qgsrasterdataprovider.cpp
   qgsrendercontext.cpp
-  qgsrect.cpp
+  qgsrectangle.cpp
   qgsrunprocess.cpp
   qgsscalecalculator.cpp
   qgssearchstring.cpp
@@ -266,7 +266,7 @@ qgsproviderextentcalcevent.h
 qgsprovidermetadata.h
 qgsproviderregistry.h
 qgsrasterdataprovider.h
-qgsrect.h
+qgsrectangle.h
 qgsrendercontext.h
 qgsrunprocess.h
 qgsscalecalculator.h

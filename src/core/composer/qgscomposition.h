@@ -82,8 +82,8 @@ class CORE_EXPORT QgsComposition: public QGraphicsScene
      @return id or 0 pointer if the composer map item does not exist*/
     const QgsComposerMap* getComposerMapById( int id ) const;
 
-    int printoutResolution() const {return mPrintoutResolution;}
-    void setPrintoutResolution( int dpi ) {mPrintoutResolution = dpi;}
+    int printResolution() const {return mPrintResolution;}
+    void setPrintResolution( int dpi ) {mPrintResolution = dpi;}
 
     /**Returns pointer to map renderer of qgis map canvas*/
     QgsMapRenderer* mapRenderer() {return mMapRenderer;}
@@ -146,7 +146,7 @@ class CORE_EXPORT QgsComposition: public QGraphicsScene
     QLinkedList<QgsComposerItem*> mItemZList;
 
     /**Dpi for printout*/
-    int mPrintoutResolution;
+    int mPrintResolution;
 
     /**Parameters for snap to grid function*/
     bool mSnapToGrid;

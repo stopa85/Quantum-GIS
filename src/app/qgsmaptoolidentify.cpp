@@ -176,18 +176,18 @@ void QgsMapToolIdentify::identifyRasterWmsLayer( const QgsPoint& point )
   //if WMS layer does not cover the view origin,
   //we need to map the view pixel coordinates
   //to WMS layer pixel coordinates
-  QgsRect viewExtent = mCanvas->extent();
+  QgsRectangle viewExtent = mCanvas->extent();
   double mapUnitsPerPixel = mCanvas->mapUnitsPerPixel();
   if ( mapUnitsPerPixel == 0 )
   {
     return;
   }
-  double xMinView = viewExtent.xMin();
-  double yMaxView = viewExtent.yMax();
+  double xMinView = viewExtent.xMinimum();
+  double yMaxView = viewExtent.yMaximum();
 
-  QgsRect layerExtent = layer->extent();
-  double xMinLayer = layerExtent.xMin();
-  double yMaxLayer = layerExtent.yMax();
+  QgsRectangle layerExtent = layer->extent();
+  double xMinLayer = layerExtent.xMinimum();
+  double yMaxLayer = layerExtent.yMaximum();
 
   double i, j;
 
@@ -258,7 +258,7 @@ void QgsMapToolIdentify::identifyVectorLayer( const QgsPoint& point )
     // create the search rectangle
     double searchRadius = mCanvas->extent().width() * ( identifyValue / 100.0 );
 
-    QgsRect r;
+    QgsRectangle r;
     r.setXMinimum( point.x() - searchRadius );
     r.setXMaximum( point.x() + searchRadius );
     r.setYMinimum( point.y() - searchRadius );
@@ -451,7 +451,7 @@ void QgsMapToolIdentify::highlightFeature( int featureId )
   mRubberBand = 0;
 
   QgsFeature feat;
-  if ( layer->featureAtId( featureId, feat, true, false ) != 0 )
+  if ( ! layer->featureAtId( featureId, feat, true, false ) )
   {
     return;
   }
@@ -465,7 +465,7 @@ void QgsMapToolIdentify::highlightFeature( int featureId )
 
   if ( mRubberBand )
   {
-    mRubberBand->setToGeometry( feat.geometry(), *layer );
+    mRubberBand->setToGeometry( feat.geometry(), layer );
     mRubberBand->setWidth( 2 );
     mRubberBand->setColor( Qt::red );
     mRubberBand->show();

@@ -30,7 +30,7 @@
 class QgsMapCanvas;
 class QgsMapRenderer;
 class QgsPanningWidget; // defined in .cpp
-class QgsRect;
+class QgsRectangle;
 
 /** \ingroup gui
  * A widget that displays an overview map.
@@ -45,7 +45,7 @@ class GUI_EXPORT QgsMapOverviewCanvas : public QWidget
     ~QgsMapOverviewCanvas();
 
     //! used for overview canvas to reflect changed extent in main map canvas
-    void reflectChangedExtent();
+    void drawExtentRect();
 
     //! renders overview and updates panning widget
     void refresh();
@@ -60,7 +60,7 @@ class GUI_EXPORT QgsMapOverviewCanvas : public QWidget
 
     void enableAntiAliasing( bool flag ) { mAntiAliasing = flag; }
 
-    void updateFullExtent( const QgsRect& rect );
+    void updateFullExtent( const QgsRectangle& rect );
 
   public slots:
 

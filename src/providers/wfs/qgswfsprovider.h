@@ -20,11 +20,11 @@
 
 #include <QDomElement>
 #include "qgis.h"
-#include "qgsrect.h"
+#include "qgsrectangle.h"
 #include "qgscoordinatereferencesystem.h"
 #include "qgsvectordataprovider.h"
 
-class QgsRect;
+class QgsRectangle;
 class QgsSpatialIndex;
 
 /**A provider reading features from a WFS server*/
@@ -54,7 +54,7 @@ class QgsWFSProvider: public QgsVectorDataProvider
      *                     false if a test based on bounding box is sufficient
      */
     virtual void select( QgsAttributeList fetchAttributes = QgsAttributeList(),
-                         QgsRect rect = QgsRect(),
+                         QgsRectangle rect = QgsRectangle(),
                          bool fetchGeometry = true,
                          bool useIntersect = false );
 
@@ -69,13 +69,13 @@ class QgsWFSProvider: public QgsVectorDataProvider
     long featureCount() const;
     uint fieldCount() const;
     const QgsFieldMap & fields() const;
-    void begin();
+    void rewind();
 
     virtual QgsCoordinateReferenceSystem crs();
 
     /* Inherited from QgsDataProvider */
 
-    QgsRect extent();
+    QgsRectangle extent();
     bool isValid();
     QString name() const;
     QString description() const;
@@ -105,16 +105,16 @@ class QgsWFSProvider: public QgsVectorDataProvider
     /**The encoding used for request/response. Can be GET, POST or SOAP*/
     REQUEST_ENCODING mEncoding;
     /**Bounding box for the layer*/
-    QgsRect mExtent;
+    QgsRectangle mExtent;
     /**Spatial filter for the layer*/
-    QgsRect mSpatialFilter;
+    QgsRectangle mSpatialFilter;
     /**Flag if precise intersection test is needed. Otherwise, every feature is returned (even if a filter is set)*/
     bool mUseIntersect;
     /**A spatial index for fast access to a feature subset*/
     QgsSpatialIndex *mSpatialIndex;
     /**Vector where the ids of the selected features are inserted*/
     QList<int> mSelectedFeatures;
-    /**Iterator on the feature vector for use in begin(), nextFeature(), etc...*/
+    /**Iterator on the feature vector for use in rewind(), nextFeature(), etc...*/
     QList<int>::iterator mFeatureIterator;
     /**Vector where the features are inserted*/
     QList<QgsFeature*> mFeatures;
@@ -147,7 +147,7 @@ class QgsWFSProvider: public QgsVectorDataProvider
     int guessAttributesFromFile( const QString& uri, QString& geometryAttribute, std::list<QString>& thematicAttributes ) const;
 
     //GML2 specific methods
-    int getExtentFromGML2( QgsRect* extent, const QDomElement& wfsCollectionElement ) const;
+    int getExtentFromGML2( QgsRectangle* extent, const QDomElement& wfsCollectionElement ) const;
 
     int getFeaturesFromGML2( const QDomElement& wfsCollectionElement, const QString& geometryAttribute );
 

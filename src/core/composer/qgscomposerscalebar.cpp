@@ -21,7 +21,7 @@
 #include "qgsnumericscalebarstyle.h"
 #include "qgssingleboxscalebarstyle.h"
 #include "qgsticksscalebarstyle.h"
-#include "qgsrect.h"
+#include "qgsrectangle.h"
 #include <QDomDocument>
 #include <QDomElement>
 #include <QFontMetricsF>
@@ -97,7 +97,7 @@ void QgsComposerScaleBar::refreshSegmentMillimeters()
   if ( mComposerMap )
   {
     //get extent of composer map
-    QgsRect composerMapRect = mComposerMap->extent();
+    QgsRectangle composerMapRect = mComposerMap->extent();
 
     //get mm dimension of composer map
     QRectF composerItemRect = mComposerMap->rect();
@@ -135,7 +135,7 @@ void QgsComposerScaleBar::applyDefaultSettings()
   {
     //calculate mNumUnitsPerSegment
     QRectF composerItemRect = mComposerMap->rect();
-    QgsRect composerMapRect = mComposerMap->extent();
+    QgsRectangle composerMapRect = mComposerMap->extent();
 
     double proposedScaleBarLength = composerMapRect.width() / 4;
     int powerOf10 = int ( pow( 10.0, int ( log( proposedScaleBarLength ) / log( 10.0 ) ) ) ); // from scalebar plugin
@@ -210,15 +210,15 @@ void QgsComposerScaleBar::setStyle( const QString& styleName )
     QgsTicksScaleBarStyle* tickStyle = new QgsTicksScaleBarStyle( this );
     if ( styleName == tr( "Line Ticks Middle" ) )
     {
-      tickStyle->setTickPosition( QgsTicksScaleBarStyle::MIDDLE );
+      tickStyle->setTickPosition( QgsTicksScaleBarStyle::TicksMiddle );
     }
     else if ( styleName == tr( "Line Ticks Down" ) )
     {
-      tickStyle->setTickPosition( QgsTicksScaleBarStyle::DOWN );
+      tickStyle->setTickPosition( QgsTicksScaleBarStyle::TicksDown );
     }
     else if ( styleName == tr( "Line Ticks Up" ) )
     {
-      tickStyle->setTickPosition( QgsTicksScaleBarStyle::UP );
+      tickStyle->setTickPosition( QgsTicksScaleBarStyle::TicksUp );
     }
     mStyle = tickStyle;
   }

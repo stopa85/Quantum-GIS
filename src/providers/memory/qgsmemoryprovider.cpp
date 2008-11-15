@@ -13,7 +13,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#include "memoryprovider.h"
+#include "qgsmemoryprovider.h"
 
 #include "qgsfeature.h"
 #include "qgsfield.h"
@@ -150,7 +150,7 @@ bool QgsMemoryProvider::featureAtId( int featureId,
 
 
 void QgsMemoryProvider::select( QgsAttributeList fetchAttributes,
-                                QgsRect rect,
+                                QgsRectangle rect,
                                 bool fetchGeometry,
                                 bool useIntersect )
 {
@@ -175,10 +175,10 @@ void QgsMemoryProvider::select( QgsAttributeList fetchAttributes,
     mSelectSI_Features.clear();
   }
 
-  begin();
+  rewind();
 }
 
-void QgsMemoryProvider::begin()
+void QgsMemoryProvider::rewind()
 {
   if ( mSelectUsingSpatialIndex )
     mSelectSI_Iterator = mSelectSI_Features.begin();
@@ -187,7 +187,7 @@ void QgsMemoryProvider::begin()
 }
 
 
-QgsRect QgsMemoryProvider::extent()
+QgsRectangle QgsMemoryProvider::extent()
 {
   return mExtent;
 }
@@ -370,7 +370,7 @@ void QgsMemoryProvider::updateExtent()
 {
   if ( mFeatures.count() == 0 )
   {
-    mExtent = QgsRect();
+    mExtent = QgsRectangle();
   }
   else
   {

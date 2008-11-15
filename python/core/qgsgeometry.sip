@@ -14,6 +14,7 @@ typedef QVector< QVector<QgsPoint> > QgsMultiPolyline;
 /** a collection of QgsPolygons that share a common collection of attributes */
 typedef QVector< QVector< QVector<QgsPoint> > > QgsMultiPolygon;
 
+typedef unsigned int size_t;
     
 class QgsGeometry
 {
@@ -50,9 +51,8 @@ class QgsGeometry
     /** construct geometry from a multipolygon */
     static QgsGeometry* fromMultiPolygon(const QgsMultiPolygon& multipoly) /Factory/;
     /** construct geometry from a rectangle */
-    static QgsGeometry* fromRect(const QgsRect& rect) /Factory/;
+    static QgsGeometry* fromRect(const QgsRectangle& rect) /Factory/;
         
-    typedef unsigned int size_t;
 
     
     /** 
@@ -210,10 +210,10 @@ not disjoint with existing polygons of the feature*/
     int makeDifference(QgsGeometry* other);	
 
     /**Returns the bounding box of this feature*/
-    QgsRect boundingBox();
+    QgsRectangle boundingBox();
 
     /** Test for intersection with a rectangle (uses GEOS) */
-    bool intersects(const QgsRect& r);
+    bool intersects(const QgsRectangle& r);
     /** Test for intersection with a geoemetry (uses GEOS) */
     bool intersects(QgsGeometry* geometry);
 

@@ -40,12 +40,12 @@ class QgsGeometry;
 class QgsGeometryVertexIndex;
 class QgsMapToPixel;
 class QgsLabel;
-class QgsRect;
+class QgsRectangle;
 class QgsRenderer;
 class QgsVectorDataProvider;
 
 class QgsGeometry;
-class QgsRect;
+class QgsRectangle;
 
 typedef QList<int> QgsAttributeList;
 typedef QSet<int> QgsFeatureIds;
@@ -125,7 +125,7 @@ class CORE_EXPORT QgsVectorLayer : public QgsMapLayer
     int selectedFeatureCount();
 
     /** Select features found within the search rectangle (in layer's coordinates) */
-    void select( QgsRect & rect, bool lock );
+    void select( QgsRectangle & rect, bool lock );
 
     /** Select not selected features and deselect selected ones */
     void invertSelection();
@@ -139,8 +139,8 @@ class CORE_EXPORT QgsVectorLayer : public QgsMapLayer
     /** Change selection to the new set of features */
     void setSelectedFeatures( const QgsFeatureIds& ids );
 
-    /** Returns the bounding box of the selected features. If there is no selection, QgsRect(0,0,0,0) is returned */
-    QgsRect boundingBoxOfSelected();
+    /** Returns the bounding box of the selected features. If there is no selection, QgsRectangle(0,0,0,0) is returned */
+    QgsRectangle boundingBoxOfSelected();
 
     /** Copies the symbology settings from another layer. Returns true in case of success */
     bool copySymbologySettings( const QgsMapLayer& other );
@@ -218,15 +218,15 @@ class CORE_EXPORT QgsVectorLayer : public QgsMapLayer
     virtual QString subsetString();
 
     void select( QgsAttributeList fetchAttributes,
-                 QgsRect rect = QgsRect(),
+                 QgsRectangle rect = QgsRectangle(),
                  bool fetchGeometry = true,
                  bool useIntersect = false );
 
     bool nextFeature( QgsFeature& feature );
 
     /**Gets the feature at the given feature id. Considers the changed, added, deleted and permanent features
-     @return 0 in case of success*/
-    int featureAtId( int featureId, QgsFeature &f, bool fetchGeometries = true, bool fetchAttributes = true );
+     @return true in case of success*/
+    bool featureAtId( int featureId, QgsFeature &f, bool fetchGeometries = true, bool fetchAttributes = true );
 
     /** Adds a feature
         @param lastFeatureInBatch  If True, will also go to the effort of e.g. updating the extents.
@@ -623,7 +623,7 @@ class CORE_EXPORT QgsVectorLayer : public QgsMapLayer
     QMap< QString, RangeData > mRanges;
 
     bool mFetching;
-    QgsRect mFetchRect;
+    QgsRectangle mFetchRect;
     QgsAttributeList mFetchAttributes;
     QgsAttributeList mFetchNullAttributes;
     bool mFetchGeometry;

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS><TS version="1.1">
+<!DOCTYPE TS><TS version="1.1" language="ka">
 <context>
     <name>CoordinateCapture</name>
     <message>
@@ -35,7 +35,7 @@
     <message>
         <location filename="../src/plugins/coordinate_capture/coordinatecapture.cpp" line="124"/>
         <source>Copy to clipboard</source>
-        <translation type="unfinished"></translation>
+        <translation>გაცვლის ბუფერში კოპირება</translation>
     </message>
     <message>
         <location filename="../src/plugins/coordinate_capture/coordinatecapture.cpp" line="129"/>
@@ -159,17 +159,17 @@
     <message>
         <location filename="../src/plugins/ogr_converter/dialog.cpp" line="115"/>
         <source>Connect</source>
-        <translation type="unfinished"></translation>
+        <translation>დაკავშირება</translation>
     </message>
     <message>
         <location filename="../src/plugins/ogr_converter/dialog.cpp" line="119"/>
         <source>Browse</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">არჩევა</translation>
     </message>
     <message>
         <location filename="../src/plugins/ogr_converter/dialog.cpp" line="424"/>
         <source>OGR Converter</source>
-        <translation type="unfinished"></translation>
+        <translation>OGR გარდაქმნელი</translation>
     </message>
     <message>
         <location filename="../src/plugins/ogr_converter/dialog.cpp" line="421"/>
@@ -179,7 +179,7 @@
     <message>
         <location filename="../src/plugins/ogr_converter/dialog.cpp" line="216"/>
         <source>Open OGR file</source>
-        <translation type="unfinished"></translation>
+        <translation>OGR ფაილის გახსნა</translation>
     </message>
     <message>
         <location filename="../src/plugins/ogr_converter/dialog.cpp" line="435"/>
@@ -189,7 +189,7 @@
     <message>
         <location filename="../src/plugins/ogr_converter/dialog.cpp" line="226"/>
         <source>Open Directory</source>
-        <translation type="unfinished"></translation>
+        <translation>დირექტორიის გახსნა</translation>
     </message>
     <message>
         <location filename="../src/plugins/ogr_converter/dialog.cpp" line="241"/>
@@ -350,12 +350,12 @@
     <message>
         <location filename="../src/plugins/georeferencer/mapcoordsdialogbase.ui" line="62"/>
         <source>X:</source>
-        <translation type="unfinished"></translation>
+        <translation>X:</translation>
     </message>
     <message>
         <location filename="../src/plugins/georeferencer/mapcoordsdialogbase.ui" line="69"/>
         <source>Y:</source>
-        <translation type="unfinished"></translation>
+        <translation>Y:</translation>
     </message>
     <message>
         <location filename="../src/plugins/georeferencer/mapcoordsdialogbase.ui" line="137"/>
@@ -365,12 +365,12 @@
     <message>
         <location filename="../src/plugins/georeferencer/mapcoordsdialogbase.ui" line="172"/>
         <source>&amp;Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>შე&amp;წყვეტა</translation>
     </message>
     <message>
         <location filename="../src/plugins/georeferencer/mapcoordsdialogbase.ui" line="185"/>
         <source>&amp;OK</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;OK</translation>
     </message>
 </context>
 <context>
@@ -383,22 +383,22 @@
     <message>
         <location filename="../src/plugins/ogr_converter/ogrconverterguibase.ui" line="40"/>
         <source>Source</source>
-        <translation type="unfinished"></translation>
+        <translation>წყარო</translation>
     </message>
     <message>
         <location filename="../src/plugins/ogr_converter/ogrconverterguibase.ui" line="183"/>
         <source>Format</source>
-        <translation type="unfinished"></translation>
+        <translation>ფორმატი</translation>
     </message>
     <message>
         <location filename="../src/plugins/ogr_converter/ogrconverterguibase.ui" line="88"/>
         <source>File</source>
-        <translation type="unfinished"></translation>
+        <translation>ფაილი</translation>
     </message>
     <message>
         <location filename="../src/plugins/ogr_converter/ogrconverterguibase.ui" line="95"/>
         <source>Directory</source>
-        <translation type="unfinished"></translation>
+        <translation>დირექტორია</translation>
     </message>
     <message>
         <location filename="../src/plugins/ogr_converter/ogrconverterguibase.ui" line="102"/>
@@ -408,17 +408,17 @@
     <message>
         <location filename="../src/plugins/ogr_converter/ogrconverterguibase.ui" line="206"/>
         <source>Dataset</source>
-        <translation type="unfinished"></translation>
+        <translation>მონაცემთა ნაკრები</translation>
     </message>
     <message>
         <location filename="../src/plugins/ogr_converter/ogrconverterguibase.ui" line="226"/>
         <source>Browse</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">არჩევა</translation>
     </message>
     <message>
         <location filename="../src/plugins/ogr_converter/ogrconverterguibase.ui" line="239"/>
         <source>Layer</source>
-        <translation type="unfinished"></translation>
+        <translation>ფენა</translation>
     </message>
     <message>
         <location filename="../src/plugins/ogr_converter/ogrconverterguibase.ui" line="171"/>
@@ -441,7 +441,7 @@
     <message>
         <location filename="../src/plugins/ogr_converter/plugin.cpp" line="67"/>
         <source>OG&amp;R Converter</source>
-        <translation type="unfinished"></translation>
+        <translation>OG&amp;R გარდამქმნელი</translation>
     </message>
 </context>
 <context>
@@ -467,7 +467,7 @@
     <message>
         <location filename="../src/app/qgisapp.cpp" line="2582"/>
         <source>Where is &apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>სად არის &apos;</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="2582"/>
@@ -552,7 +552,7 @@
     <message>
         <location filename="../src/app/qgsmaptooladdfeature.cpp" line="435"/>
         <source>Error</source>
-        <translation type="unfinished"></translation>
+        <translation>შეცდომა</translation>
     </message>
     <message>
         <location filename="../src/app/qgsmaptooladdfeature.cpp" line="420"/>
@@ -627,12 +627,12 @@
     <message>
         <location filename="../src/app/qgsmaptoolidentify.cpp" line="364"/>
         <source>Area</source>
-        <translation type="unfinished"></translation>
+        <translation>არე</translation>
     </message>
     <message>
         <location filename="../src/app/qgsmaptoolidentify.cpp" line="380"/>
         <source>action</source>
-        <translation type="unfinished"></translation>
+        <translation>მოქმედება</translation>
     </message>
     <message>
         <location filename="../src/app/qgsmaptoolidentify.cpp" line="388"/>
@@ -662,7 +662,7 @@
     <message>
         <location filename="../src/app/qgsmaptoolidentify.cpp" line="423"/>
         <source>because</source>
-        <translation type="unfinished"></translation>
+        <translation>რადგან</translation>
     </message>
     <message>
         <location filename="../src/app/qgsmaptoolselect.cpp" line="74"/>
@@ -682,7 +682,7 @@
     <message>
         <location filename="../src/core/composer/qgscomposerlegend.cpp" line="26"/>
         <source>Legend</source>
-        <translation type="unfinished"></translation>
+        <translation>ლეგენდა</translation>
     </message>
     <message>
         <location filename="../src/core/qgsdistancearea.cpp" line="310"/>
@@ -697,42 +697,42 @@
     <message>
         <location filename="../src/core/qgsdistancearea.cpp" line="647"/>
         <source> km2</source>
-        <translation type="unfinished"></translation>
+        <translation>კმ2</translation>
     </message>
     <message>
         <location filename="../src/core/qgsdistancearea.cpp" line="652"/>
         <source> ha</source>
-        <translation type="unfinished"></translation>
+        <translation>ჰა</translation>
     </message>
     <message>
         <location filename="../src/core/qgsdistancearea.cpp" line="657"/>
         <source> m2</source>
-        <translation type="unfinished"></translation>
+        <translation>მ2</translation>
     </message>
     <message>
         <location filename="../src/core/qgsdistancearea.cpp" line="685"/>
         <source> m</source>
-        <translation type="unfinished"></translation>
+        <translation>მ</translation>
     </message>
     <message>
         <location filename="../src/core/qgsdistancearea.cpp" line="670"/>
         <source> km</source>
-        <translation type="unfinished"></translation>
+        <translation>კმ</translation>
     </message>
     <message>
         <location filename="../src/core/qgsdistancearea.cpp" line="675"/>
         <source> mm</source>
-        <translation type="unfinished"></translation>
+        <translation>მმ</translation>
     </message>
     <message>
         <location filename="../src/core/qgsdistancearea.cpp" line="680"/>
         <source> cm</source>
-        <translation type="unfinished"></translation>
+        <translation>სმ</translation>
     </message>
     <message>
         <location filename="../src/core/qgsdistancearea.cpp" line="694"/>
         <source> sq mile</source>
-        <translation type="unfinished"></translation>
+        <translation>კვ. მილი</translation>
     </message>
     <message>
         <location filename="../src/core/qgsdistancearea.cpp" line="699"/>
@@ -742,7 +742,7 @@
     <message>
         <location filename="../src/core/qgsdistancearea.cpp" line="706"/>
         <source> mile</source>
-        <translation type="unfinished"></translation>
+        <translation>მილი</translation>
     </message>
     <message>
         <location filename="../src/core/qgsdistancearea.cpp" line="712"/>
@@ -762,17 +762,17 @@
     <message>
         <location filename="../src/core/qgsdistancearea.cpp" line="726"/>
         <source> degree</source>
-        <translation type="unfinished"></translation>
+        <translation>გრადუსი</translation>
     </message>
     <message>
         <location filename="../src/core/qgsdistancearea.cpp" line="728"/>
         <source> degrees</source>
-        <translation type="unfinished"></translation>
+        <translation>გრადუსი</translation>
     </message>
     <message>
         <location filename="../src/core/qgsdistancearea.cpp" line="732"/>
         <source> unknown</source>
-        <translation type="unfinished"></translation>
+        <translation>უცნობი</translation>
     </message>
     <message>
         <location filename="../src/core/qgshttptransaction.cpp" line="290"/>
@@ -857,7 +857,7 @@
     <message>
         <location filename="../src/core/qgsproject.cpp" line="755"/>
         <source>Unable to open </source>
-        <translation type="unfinished"></translation>
+        <translation>გახსნა ვერ მოხერხდა</translation>
     </message>
     <message>
         <location filename="../src/core/qgsproject.cpp" line="770"/>
@@ -872,17 +872,17 @@
     <message>
         <location filename="../src/core/qgsproject.cpp" line="771"/>
         <source> column </source>
-        <translation type="unfinished"></translation>
+        <translation>სვეტი</translation>
     </message>
     <message>
         <location filename="../src/core/qgsproject.cpp" line="777"/>
         <source> for file </source>
-        <translation type="unfinished"></translation>
+        <translation>ფაილისთვის</translation>
     </message>
     <message>
         <location filename="../src/core/qgsproject.cpp" line="931"/>
         <source>Unable to save to file </source>
-        <translation type="unfinished"></translation>
+        <translation>ფაილში შენახვა ვერ მოხერხდა</translation>
     </message>
     <message>
         <location filename="../src/core/qgsproject.cpp" line="940"/>
@@ -933,7 +933,7 @@
     <message>
         <location filename="../src/core/qgssearchtreenode.cpp" line="291"/>
         <source>Division by zero.</source>
-        <translation type="unfinished"></translation>
+        <translation>ნულზე გაყოფა.</translation>
     </message>
     <message>
         <location filename="../src/plugins/coordinate_capture/coordinatecapture.cpp" line="50"/>
@@ -948,7 +948,7 @@
     <message>
         <location filename="../src/plugins/wfs/qgswfsplugin.cpp" line="31"/>
         <source>Version 0.1</source>
-        <translation type="unfinished"></translation>
+        <translation>ვერსია 0.1</translation>
     </message>
     <message>
         <location filename="../src/plugins/copyright_label/plugin.cpp" line="49"/>
@@ -963,7 +963,7 @@
     <message>
         <location filename="../src/plugins/delimited_text/qgsdelimitedtextplugin.cpp" line="42"/>
         <source>Version 0.2</source>
-        <translation type="unfinished"></translation>
+        <translation>ვერსია 0.2</translation>
     </message>
     <message>
         <location filename="../src/plugins/delimited_text/qgsdelimitedtextplugin.cpp" line="43"/>
@@ -978,7 +978,7 @@
     <message>
         <location filename="../src/plugins/dxf2shp_converter/dxf2shpconverter.cpp" line="37"/>
         <source>Dxf2Shp Converter</source>
-        <translation type="unfinished"></translation>
+        <translation>Dxf2Shp გარდამქმნელი</translation>
     </message>
     <message>
         <location filename="../src/plugins/dxf2shp_converter/dxf2shpconverter.cpp" line="39"/>
@@ -1023,7 +1023,7 @@
     <message>
         <location filename="../src/plugins/gps_importer/qgsgpsplugin.cpp" line="52"/>
         <source>GPS Tools</source>
-        <translation type="unfinished"></translation>
+        <translation>GPS ხელსაწყოები</translation>
     </message>
     <message>
         <location filename="../src/plugins/gps_importer/qgsgpsplugin.cpp" line="54"/>
@@ -1038,7 +1038,7 @@
     <message>
         <location filename="../src/plugins/grass/qgsgrassedittools.cpp" line="238"/>
         <source>New point</source>
-        <translation type="unfinished"></translation>
+        <translation>ახალი წერტილი</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassedittools.cpp" line="135"/>
@@ -1098,7 +1098,7 @@
     <message>
         <location filename="../src/plugins/grass/qgsgrassedittools.cpp" line="662"/>
         <source>New location</source>
-        <translation type="unfinished"></translation>
+        <translation>ახალი მდებარეობა</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassedittools.cpp" line="747"/>
@@ -1134,7 +1134,7 @@
         <location filename="../src/plugins/grass/qgsgrassmodel.cpp" line="117"/>
         <source>Location: </source>
         <comment>Metadata in GRASS Browser</comment>
-        <translation type="unfinished"></translation>
+        <translation>მდებარეობა:</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodel.cpp" line="117"/>
@@ -1145,7 +1145,7 @@
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodel.cpp" line="121"/>
         <source>Location: </source>
-        <translation type="unfinished"></translation>
+        <translation>მდებარეობა:</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodel.cpp" line="121"/>
@@ -1155,7 +1155,7 @@
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodel.cpp" line="126"/>
         <source>&lt;b&gt;Raster&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;რასტრი&lt;/b&gt;</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodel.cpp" line="135"/>
@@ -1170,7 +1170,7 @@
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodel.cpp" line="140"/>
         <source>Columns</source>
-        <translation type="unfinished"></translation>
+        <translation>სვეტები</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodel.cpp" line="141"/>
@@ -1185,62 +1185,62 @@
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodel.cpp" line="280"/>
         <source>North</source>
-        <translation type="unfinished"></translation>
+        <translation>ჩრდილოეთი</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodel.cpp" line="282"/>
         <source>South</source>
-        <translation type="unfinished"></translation>
+        <translation>სამხრეთი</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodel.cpp" line="284"/>
         <source>East</source>
-        <translation type="unfinished"></translation>
+        <translation>აღმოსავლეთი</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodel.cpp" line="286"/>
         <source>West</source>
-        <translation type="unfinished"></translation>
+        <translation>დასავლეთი</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodel.cpp" line="169"/>
         <source>Format</source>
-        <translation type="unfinished"></translation>
+        <translation>ფორმატი</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodel.cpp" line="180"/>
         <source>Minimum value</source>
-        <translation type="unfinished"></translation>
+        <translation>მინიმალური მნიშვნელობა</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodel.cpp" line="181"/>
         <source>Maximum value</source>
-        <translation type="unfinished"></translation>
+        <translation>მაქსიმალური მნიშვნელობა</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodel.cpp" line="192"/>
         <source>Data source</source>
-        <translation type="unfinished"></translation>
+        <translation>მონაცემთა წყარო</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodel.cpp" line="197"/>
         <source>Data description</source>
-        <translation type="unfinished"></translation>
+        <translation>მონაცემთა აღწერა</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodel.cpp" line="206"/>
         <source>Comments</source>
-        <translation type="unfinished"></translation>
+        <translation>კომენტარები</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodel.cpp" line="221"/>
         <source>Categories</source>
-        <translation type="unfinished"></translation>
+        <translation>კატეგორიები</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodel.cpp" line="328"/>
         <source>&lt;b&gt;Vector&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;ვექტორი&lt;/b&gt;</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodel.cpp" line="254"/>
@@ -1270,7 +1270,7 @@
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodel.cpp" line="261"/>
         <source>Kernels</source>
-        <translation type="unfinished"></translation>
+        <translation>ბირთვები</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodel.cpp" line="264"/>
@@ -1280,7 +1280,7 @@
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodel.cpp" line="265"/>
         <source>Islands</source>
-        <translation type="unfinished"></translation>
+        <translation>კუნძულები</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodel.cpp" line="289"/>
@@ -1295,22 +1295,22 @@
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodel.cpp" line="293"/>
         <source>yes</source>
-        <translation type="unfinished"></translation>
+        <translation>დიახ</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodel.cpp" line="293"/>
         <source>no</source>
-        <translation type="unfinished"></translation>
+        <translation>არა</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodel.cpp" line="300"/>
         <source>History&lt;br&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>ისტორია&lt;br&gt;</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodel.cpp" line="329"/>
         <source>&lt;b&gt;Layer&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;ფენა&lt;/b&gt;</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodel.cpp" line="348"/>
@@ -1320,22 +1320,22 @@
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodel.cpp" line="357"/>
         <source>Driver</source>
-        <translation type="unfinished"></translation>
+        <translation>დრაივერი</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodel.cpp" line="358"/>
         <source>Database</source>
-        <translation type="unfinished"></translation>
+        <translation>მონაცემთა ბაზა</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodel.cpp" line="359"/>
         <source>Table</source>
-        <translation type="unfinished"></translation>
+        <translation>ცხრილი</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodel.cpp" line="360"/>
         <source>Key column</source>
-        <translation type="unfinished"></translation>
+        <translation>ძირითადი სვეტი</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassplugin.cpp" line="824"/>
@@ -1345,7 +1345,7 @@
     <message>
         <location filename="../src/plugins/grass/qgsgrassplugin.cpp" line="830"/>
         <source>GRASS layer</source>
-        <translation type="unfinished"></translation>
+        <translation>GRASS ფენა</translation>
     </message>
     <message>
         <location filename="../src/plugins/grid_maker/plugin.cpp" line="41"/>
@@ -1365,7 +1365,7 @@
     <message>
         <location filename="../src/plugins/interpolation/qgsgridfilewriter.cpp" line="65"/>
         <source>Abort</source>
-        <translation type="unfinished"></translation>
+        <translation>შეწყვეტა</translation>
     </message>
     <message>
         <location filename="../src/plugins/interpolation/qgsinterpolationplugin.cpp" line="22"/>
@@ -1380,7 +1380,7 @@
     <message>
         <location filename="../src/plugins/interpolation/qgsinterpolationplugin.cpp" line="24"/>
         <source>Version 0.001</source>
-        <translation type="unfinished"></translation>
+        <translation>ვერსია 0.001</translation>
     </message>
     <message>
         <location filename="../src/plugins/north_arrow/plugin.cpp" line="58"/>
@@ -1405,7 +1405,7 @@
     <message>
         <location filename="../src/plugins/plugin_template/plugin.cpp" line="38"/>
         <source>[menuitemname]</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">[menuitemname]</translation>
     </message>
     <message>
         <location filename="../src/plugins/plugin_template/plugin.cpp" line="39"/>
@@ -1435,7 +1435,7 @@
     <message>
         <location filename="../src/plugins/spit/qgsspitplugin.cpp" line="37"/>
         <source>SPIT</source>
-        <translation type="unfinished"></translation>
+        <translation>SPIT</translation>
     </message>
     <message>
         <location filename="../src/plugins/spit/qgsspitplugin.cpp" line="38"/>
@@ -1516,7 +1516,7 @@ Would you like to specify path (GISBASE) to your GRASS installation?</source>
     <message>
         <location filename="../src/providers/grass/qgsgrass.cpp" line="500"/>
         <source>Temporary directory </source>
-        <translation type="unfinished"></translation>
+        <translation>დროებითი დასტა</translation>
     </message>
     <message>
         <location filename="../src/providers/grass/qgsgrass.cpp" line="500"/>
@@ -1596,7 +1596,7 @@ Would you like to specify path (GISBASE) to your GRASS installation?</source>
     <message>
         <location filename="../src/python/qgspythonutilsimpl.cpp" line="194"/>
         <source>Python error</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Python-ის შეცდომა</translation>
     </message>
     <message>
         <location filename="../src/python/qgspythonutilsimpl.cpp" line="180"/>
@@ -1629,7 +1629,7 @@ Would you like to specify path (GISBASE) to your GRASS installation?</source>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="374"/>
         <source>Quantum GIS - </source>
-        <translation type="unfinished"></translation>
+        <translation>Quantum GIS - </translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="319"/>
@@ -1651,7 +1651,7 @@ Please contact the developers.
     <message>
         <location filename="../src/app/qgisapp.cpp" line="335"/>
         <source>Reading settings</source>
-        <translation type="unfinished"></translation>
+        <translation>პარამეტრების წაკითხვა</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="338"/>
@@ -1666,7 +1666,7 @@ Please contact the developers.
     <message>
         <location filename="../src/app/qgisapp.cpp" line="391"/>
         <source>Starting Python</source>
-        <translation type="unfinished"></translation>
+        <translation>Python-ის გაშვება</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="398"/>
@@ -1691,71 +1691,71 @@ Please contact the developers.
     <message>
         <location filename="../src/app/qgisapp.cpp" line="536"/>
         <source>&amp;New Project</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;ახალი პროექტი</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="537"/>
         <source>Ctrl+N</source>
         <comment>New Project</comment>
-        <translation type="unfinished"></translation>
+        <translation>Ctrl+N</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="538"/>
         <source>New Project</source>
-        <translation type="unfinished"></translation>
+        <translation>ახალი პროექტი</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="541"/>
         <source>&amp;Open Project...</source>
-        <translation type="unfinished"></translation>
+        <translation>პრ&amp;ოექტის გახსნა...</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="542"/>
         <source>Ctrl+O</source>
         <comment>Open a Project</comment>
-        <translation type="unfinished"></translation>
+        <translation>Ctrl+O</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="543"/>
         <source>Open a Project</source>
-        <translation type="unfinished"></translation>
+        <translation>პროექტის გახსნა</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="546"/>
         <source>&amp;Save Project</source>
-        <translation type="unfinished"></translation>
+        <translation>პროექტის &amp;შენახვა</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="547"/>
         <source>Ctrl+S</source>
         <comment>Save Project</comment>
-        <translation type="unfinished"></translation>
+        <translation>Ctrl+S</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="548"/>
         <source>Save Project</source>
-        <translation type="unfinished"></translation>
+        <translation>პროექტის შენახვა</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="551"/>
         <source>Save Project &amp;As...</source>
-        <translation type="unfinished"></translation>
+        <translation>პროექტის შენახვა როგორ&amp;ც...</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="552"/>
         <source>Shift+Ctrl+S</source>
         <comment>Save Project under a new name</comment>
-        <translation type="unfinished"></translation>
+        <translation>Shift+Ctrl+S</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="553"/>
         <source>Save Project under a new name</source>
-        <translation type="unfinished"></translation>
+        <translation>პროექტის შენახვა ახალი სახელით</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="556"/>
         <source>Save as Image...</source>
-        <translation type="unfinished"></translation>
+        <translation>გამოსახულების შენახვა როგორც...</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="558"/>
@@ -1771,7 +1771,7 @@ Please contact the developers.
         <location filename="../src/app/qgisapp.cpp" line="562"/>
         <source>Ctrl+P</source>
         <comment>Print Composer</comment>
-        <translation type="unfinished"></translation>
+        <translation>Ctrl+P</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="563"/>
@@ -1781,28 +1781,28 @@ Please contact the developers.
     <message>
         <location filename="../src/app/qgisapp.cpp" line="566"/>
         <source>Exit</source>
-        <translation type="unfinished"></translation>
+        <translation>გამოსვლა</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="567"/>
         <source>Ctrl+Q</source>
         <comment>Exit QGIS</comment>
-        <translation type="unfinished"></translation>
+        <translation>Ctrl+Q</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="568"/>
         <source>Exit QGIS</source>
-        <translation type="unfinished"></translation>
+        <translation>QGIS-დან გამოსვლა</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="575"/>
         <source>&amp;Undo</source>
-        <translation type="unfinished"></translation>
+        <translation>დაბრ&amp;უნება</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="576"/>
         <source>Ctrl+Z</source>
-        <translation type="unfinished"></translation>
+        <translation>Ctrl+Z</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="577"/>
@@ -1812,12 +1812,12 @@ Please contact the developers.
     <message>
         <location filename="../src/app/qgisapp.cpp" line="580"/>
         <source>Cu&amp;t</source>
-        <translation type="unfinished"></translation>
+        <translation>ამო&amp;ჭრა</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="597"/>
         <source>Ctrl+X</source>
-        <translation type="unfinished"></translation>
+        <translation>Ctrl+X</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="582"/>
@@ -1832,7 +1832,7 @@ Please contact the developers.
     <message>
         <location filename="../src/app/qgisapp.cpp" line="603"/>
         <source>Ctrl+C</source>
-        <translation type="unfinished"></translation>
+        <translation>Ctrl+C</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="587"/>
@@ -1842,12 +1842,12 @@ Please contact the developers.
     <message>
         <location filename="../src/app/qgisapp.cpp" line="590"/>
         <source>&amp;Paste</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;ჩასმა</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="609"/>
         <source>Ctrl+V</source>
-        <translation type="unfinished"></translation>
+        <translation>Ctrl+V</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="592"/>
@@ -1857,7 +1857,7 @@ Please contact the developers.
     <message>
         <location filename="../src/app/qgisapp.cpp" line="596"/>
         <source>Cut Features</source>
-        <translation type="unfinished"></translation>
+        <translation>ამოჭრის პარამეტრები</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="598"/>
@@ -1877,7 +1877,7 @@ Please contact the developers.
     <message>
         <location filename="../src/app/qgisapp.cpp" line="608"/>
         <source>Paste Features</source>
-        <translation type="unfinished"></translation>
+        <translation>ჩასმის პარამეტრები</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="610"/>
@@ -1893,7 +1893,7 @@ Please contact the developers.
         <location filename="../src/app/qgisapp.cpp" line="615"/>
         <source>.</source>
         <comment>Capture Points</comment>
-        <translation type="unfinished"></translation>
+        <translation>.</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="616"/>
@@ -1909,7 +1909,7 @@ Please contact the developers.
         <location filename="../src/app/qgisapp.cpp" line="621"/>
         <source>/</source>
         <comment>Capture Lines</comment>
-        <translation type="unfinished"></translation>
+        <translation>/</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="622"/>
@@ -1925,7 +1925,7 @@ Please contact the developers.
         <location filename="../src/app/qgisapp.cpp" line="627"/>
         <source>Ctrl+/</source>
         <comment>Capture Polygons</comment>
-        <translation type="unfinished"></translation>
+        <translation>Ctrl+/</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="628"/>
@@ -1970,7 +1970,7 @@ Please contact the developers.
     <message>
         <location filename="../src/app/qgisapp.cpp" line="667"/>
         <source>Add Island</source>
-        <translation type="unfinished"></translation>
+        <translation>კუნძულის დამატება</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="668"/>
@@ -1996,7 +1996,7 @@ Please contact the developers.
         <location filename="../src/app/qgisapp.cpp" line="679"/>
         <source>Ctrl++</source>
         <comment>Zoom In</comment>
-        <translation type="unfinished"></translation>
+        <translation>Ctrl++</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="685"/>
@@ -2007,7 +2007,7 @@ Please contact the developers.
         <location filename="../src/app/qgisapp.cpp" line="684"/>
         <source>Ctrl+-</source>
         <comment>Zoom Out</comment>
-        <translation type="unfinished"></translation>
+        <translation>Ctrl+-</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="689"/>
@@ -2023,7 +2023,7 @@ Please contact the developers.
         <location filename="../src/app/qgisapp.cpp" line="694"/>
         <source>I</source>
         <comment>Click on features to identify them</comment>
-        <translation type="unfinished"></translation>
+        <translation>I</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="695"/>
@@ -2039,7 +2039,7 @@ Please contact the developers.
         <location filename="../src/app/qgisapp.cpp" line="700"/>
         <source>M</source>
         <comment>Measure a Line</comment>
-        <translation type="unfinished"></translation>
+        <translation>M</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="701"/>
@@ -2055,7 +2055,7 @@ Please contact the developers.
         <location filename="../src/app/qgisapp.cpp" line="705"/>
         <source>J</source>
         <comment>Measure an Area</comment>
-        <translation type="unfinished"></translation>
+        <translation>J</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="706"/>
@@ -2071,7 +2071,7 @@ Please contact the developers.
         <location filename="../src/app/qgisapp.cpp" line="710"/>
         <source>F</source>
         <comment>Zoom to Full Extents</comment>
-        <translation type="unfinished"></translation>
+        <translation>F</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="711"/>
@@ -2092,7 +2092,7 @@ Please contact the developers.
         <location filename="../src/app/qgisapp.cpp" line="720"/>
         <source>Ctrl+J</source>
         <comment>Zoom to Selection</comment>
-        <translation type="unfinished"></translation>
+        <translation>Ctrl+J</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="724"/>
@@ -2133,7 +2133,7 @@ Please contact the developers.
         <location filename="../src/app/qgisapp.cpp" line="740"/>
         <source>Ctrl+B</source>
         <comment>New Bookmark</comment>
-        <translation type="unfinished"></translation>
+        <translation>Ctrl+B</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="5607"/>
@@ -2149,23 +2149,23 @@ Please contact the developers.
         <location filename="../src/app/qgisapp.cpp" line="745"/>
         <source>B</source>
         <comment>Show Bookmarks</comment>
-        <translation type="unfinished"></translation>
+        <translation>B</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="749"/>
         <source>Refresh</source>
-        <translation type="unfinished"></translation>
+        <translation>განახლება</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="750"/>
         <source>Ctrl+R</source>
         <comment>Refresh Map</comment>
-        <translation type="unfinished"></translation>
+        <translation>Ctrl+R</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="751"/>
         <source>Refresh Map</source>
-        <translation type="unfinished"></translation>
+        <translation>რუკის განახლება</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="756"/>
@@ -2176,7 +2176,7 @@ Please contact the developers.
         <location filename="../src/app/qgisapp.cpp" line="757"/>
         <source>N</source>
         <comment>Create a New Vector Layer</comment>
-        <translation type="unfinished"></translation>
+        <translation>N</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="758"/>
@@ -2192,28 +2192,28 @@ Please contact the developers.
         <location filename="../src/app/qgisapp.cpp" line="762"/>
         <source>V</source>
         <comment>Add a Vector Layer</comment>
-        <translation type="unfinished"></translation>
+        <translation>V</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="763"/>
         <source>Add a Vector Layer</source>
-        <translation type="unfinished"></translation>
+        <translation>ვექტორული ფენის დამატება</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="766"/>
         <source>Add Raster Layer...</source>
-        <translation type="unfinished"></translation>
+        <translation>რასტრული ფენის დამატება...</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="767"/>
         <source>R</source>
         <comment>Add a Raster Layer</comment>
-        <translation type="unfinished"></translation>
+        <translation>R</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="768"/>
         <source>Add a Raster Layer</source>
-        <translation type="unfinished"></translation>
+        <translation>რასტრული ფენის დამატება</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="771"/>
@@ -2224,7 +2224,7 @@ Please contact the developers.
         <location filename="../src/app/qgisapp.cpp" line="772"/>
         <source>D</source>
         <comment>Add a PostGIS Layer</comment>
-        <translation type="unfinished"></translation>
+        <translation>D</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="773"/>
@@ -2240,7 +2240,7 @@ Please contact the developers.
         <location filename="../src/app/qgisapp.cpp" line="784"/>
         <source>W</source>
         <comment>Add a Web Mapping Server Layer</comment>
-        <translation type="unfinished"></translation>
+        <translation>W</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="785"/>
@@ -2285,18 +2285,18 @@ Please contact the developers.
     <message>
         <location filename="../src/app/qgisapp.cpp" line="810"/>
         <source>Remove Layer</source>
-        <translation type="unfinished"></translation>
+        <translation>ფენის ამოღება</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="811"/>
         <source>Ctrl+D</source>
         <comment>Remove a Layer</comment>
-        <translation type="unfinished"></translation>
+        <translation>Ctrl+D</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="812"/>
         <source>Remove a Layer</source>
-        <translation type="unfinished"></translation>
+        <translation>ფენის ამოღება</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="816"/>
@@ -2317,7 +2317,7 @@ Please contact the developers.
         <location filename="../src/app/qgisapp.cpp" line="822"/>
         <source>O</source>
         <comment>Add current layer to overview map</comment>
-        <translation type="unfinished"></translation>
+        <translation>O</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="823"/>
@@ -2333,7 +2333,7 @@ Please contact the developers.
         <location filename="../src/app/qgisapp.cpp" line="828"/>
         <source>+</source>
         <comment>Show all layers in the overview map</comment>
-        <translation type="unfinished"></translation>
+        <translation>+</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="829"/>
@@ -2349,7 +2349,7 @@ Please contact the developers.
         <location filename="../src/app/qgisapp.cpp" line="833"/>
         <source>-</source>
         <comment>Remove all layers from overview map</comment>
-        <translation type="unfinished"></translation>
+        <translation>-</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="834"/>
@@ -2359,34 +2359,34 @@ Please contact the developers.
     <message>
         <location filename="../src/app/qgisapp.cpp" line="837"/>
         <source>Show All Layers</source>
-        <translation type="unfinished"></translation>
+        <translation>ყველა ფენის ჩვენება</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="838"/>
         <source>S</source>
         <comment>Show all layers</comment>
-        <translation type="unfinished"></translation>
+        <translation>S</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="839"/>
         <source>Show all layers</source>
-        <translation type="unfinished"></translation>
+        <translation>ყველა ფენის ჩვენება</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="842"/>
         <source>Hide All Layers</source>
-        <translation type="unfinished"></translation>
+        <translation>ყველა ფენის დამალვა</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="843"/>
         <source>H</source>
         <comment>Hide all layers</comment>
-        <translation type="unfinished"></translation>
+        <translation>H</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="844"/>
         <source>Hide all layers</source>
-        <translation type="unfinished"></translation>
+        <translation>ყველა ფენის დამალვა</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="849"/>
@@ -2407,7 +2407,7 @@ Please contact the developers.
         <location filename="../src/app/qgisapp.cpp" line="857"/>
         <source>Ctrl-F</source>
         <comment>Toggle fullscreen mode</comment>
-        <translation type="unfinished"></translation>
+        <translation>Ctrl-F</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="858"/>
@@ -2423,7 +2423,7 @@ Please contact the developers.
         <location filename="../src/app/qgisapp.cpp" line="862"/>
         <source>P</source>
         <comment>Set project properties</comment>
-        <translation type="unfinished"></translation>
+        <translation>P</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="863"/>
@@ -2433,7 +2433,7 @@ Please contact the developers.
     <message>
         <location filename="../src/app/qgisapp.cpp" line="866"/>
         <source>Options...</source>
-        <translation type="unfinished"></translation>
+        <translation>პარამეტრები...</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="868"/>
@@ -2453,13 +2453,13 @@ Please contact the developers.
     <message>
         <location filename="../src/app/qgisapp.cpp" line="881"/>
         <source>Minimize</source>
-        <translation type="unfinished"></translation>
+        <translation>მინიმიზება</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="882"/>
         <source>Ctrl+M</source>
         <comment>Minimize Window</comment>
-        <translation type="unfinished"></translation>
+        <translation>Ctrl+M</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="883"/>
@@ -2489,24 +2489,24 @@ Please contact the developers.
     <message>
         <location filename="../src/app/qgisapp.cpp" line="900"/>
         <source>Help Contents</source>
-        <translation type="unfinished"></translation>
+        <translation>დახმარების შინაარსი</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="902"/>
         <source>Ctrl+?</source>
         <comment>Help Documentation (Mac)</comment>
-        <translation type="unfinished"></translation>
+        <translation>Ctrl+?</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="904"/>
         <source>F1</source>
         <comment>Help Documentation</comment>
-        <translation type="unfinished"></translation>
+        <translation>F1</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="906"/>
         <source>Help Documentation</source>
-        <translation type="unfinished"></translation>
+        <translation>დამხმარე დოკუმენტაცია</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="913"/>
@@ -2517,7 +2517,7 @@ Please contact the developers.
         <location filename="../src/app/qgisapp.cpp" line="911"/>
         <source>Ctrl+H</source>
         <comment>QGIS Home Page</comment>
-        <translation type="unfinished"></translation>
+        <translation>Ctrl+H</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="916"/>
@@ -2532,17 +2532,17 @@ Please contact the developers.
     <message>
         <location filename="../src/app/qgisapp.cpp" line="920"/>
         <source>About</source>
-        <translation type="unfinished"></translation>
+        <translation>შესახებ</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="921"/>
         <source>About QGIS</source>
-        <translation type="unfinished"></translation>
+        <translation>QGIS-ის შესახებ</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="1009"/>
         <source>&amp;File</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;ფაილი</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="1013"/>
@@ -2552,7 +2552,7 @@ Please contact the developers.
     <message>
         <location filename="../src/app/qgisapp.cpp" line="1037"/>
         <source>&amp;Edit</source>
-        <translation type="unfinished"></translation>
+        <translation>რ&amp;ედაქტირება</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="1071"/>
@@ -2562,12 +2562,12 @@ Please contact the developers.
     <message>
         <location filename="../src/app/qgisapp.cpp" line="1072"/>
         <source>Toolbars</source>
-        <translation type="unfinished"></translation>
+        <translation>ხელსაწყოლთა დაფები</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="1076"/>
         <source>&amp;View</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;ხედი</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="1109"/>
@@ -2587,17 +2587,17 @@ Please contact the developers.
     <message>
         <location filename="../src/app/qgisapp.cpp" line="1167"/>
         <source>&amp;Window</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;ფანჯარა</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="1180"/>
         <source>&amp;Help</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;დახმარება</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="1202"/>
         <source>File</source>
-        <translation type="unfinished"></translation>
+        <translation>ფაილი</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="1219"/>
@@ -2617,7 +2617,7 @@ Please contact the developers.
     <message>
         <location filename="../src/app/qgisapp.cpp" line="1265"/>
         <source>Attributes</source>
-        <translation type="unfinished"></translation>
+        <translation>ატრიბუტები</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="1279"/>
@@ -2627,7 +2627,7 @@ Please contact the developers.
     <message>
         <location filename="../src/app/qgisapp.cpp" line="1285"/>
         <source>Help</source>
-        <translation type="unfinished"></translation>
+        <translation>დახმარება</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="1303"/>
@@ -2647,12 +2647,12 @@ Please contact the developers.
     <message>
         <location filename="../src/app/qgisapp.cpp" line="1339"/>
         <source>Scale </source>
-        <translation type="unfinished"></translation>
+        <translation>მასტაბირება</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="1340"/>
         <source>Current map scale</source>
-        <translation type="unfinished"></translation>
+        <translation>მიმდინარე რუკის მასშტაბი</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="1353"/>
@@ -2709,7 +2709,7 @@ Please contact the developers.
     <message>
         <location filename="../src/app/qgisapp.cpp" line="1401"/>
         <source>Ready</source>
-        <translation type="unfinished"></translation>
+        <translation>მზადაა</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="1520"/>
@@ -2734,7 +2734,7 @@ Please contact the developers.
     <message>
         <location filename="../src/app/qgisapp.cpp" line="1629"/>
         <source>Legend</source>
-        <translation type="unfinished"></translation>
+        <translation>ლეგენდა</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="1765"/>
@@ -2760,7 +2760,7 @@ This binary was compiled against Qt %1,and is currently running against Qt %2</s
     <message>
         <location filename="../src/app/qgisapp.cpp" line="1785"/>
         <source>Version</source>
-        <translation type="unfinished"></translation>
+        <translation>ვერსია</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="1787"/>
@@ -2815,7 +2815,7 @@ This binary was compiled against Qt %1,and is currently running against Qt %2</s
     <message>
         <location filename="../src/app/qgisapp.cpp" line="1920"/>
         <source>Python error</source>
-        <translation type="unfinished"></translation>
+        <translation>Python-ის შეცდომა</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="1920"/>
@@ -2850,7 +2850,7 @@ This binary was compiled against Qt %1,and is currently running against Qt %2</s
     <message>
         <location filename="../src/app/qgisapp.cpp" line="2811"/>
         <source>Save As</source>
-        <translation type="unfinished"></translation>
+        <translation>შენახვა როგორც</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="2911"/>
@@ -2860,11 +2860,6 @@ This binary was compiled against Qt %1,and is currently running against Qt %2</s
     <message>
         <location filename="../src/app/qgisapp.cpp" line="3029"/>
         <source>QGIS Project Read Error</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/app/qgisapp.cpp" line="3030"/>
-        <source></source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3000,7 +2995,7 @@ This binary was compiled against Qt %1,and is currently running against Qt %2</s
     <message>
         <location filename="../src/app/qgisapp.cpp" line="5625"/>
         <source>Error</source>
-        <translation type="unfinished"></translation>
+        <translation>შეცდომა</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="3995"/>
@@ -3109,7 +3104,7 @@ Errors:  %2
     <message>
         <location filename="../src/app/qgisapp.cpp" line="4640"/>
         <source>Save?</source>
-        <translation type="unfinished"></translation>
+        <translation>შევინახო?</translation>
     </message>
     <message>
         <location filename="../src/app/qgisapp.cpp" line="4641"/>
@@ -3217,13 +3212,18 @@ Errors:  %2
         <source>Warn me when opening a project file saved with an older version of QGIS</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="../src/app/qgisapp.cpp" line="3030"/>
+        <source></source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QgisAppBase</name>
     <message>
         <location filename="../src/ui/qgisappbase.ui" line="13"/>
         <source>QGIS</source>
-        <translation type="unfinished"></translation>
+        <translation>QGIS</translation>
     </message>
 </context>
 <context>
@@ -3236,7 +3236,7 @@ Errors:  %2
     <message>
         <location filename="../src/app/qgsabout.cpp" line="116"/>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation>სახელი</translation>
     </message>
     <message>
         <location filename="../src/app/qgsabout.cpp" line="117"/>
@@ -3266,7 +3266,7 @@ Errors:  %2
     <message>
         <location filename="../src/ui/qgsabout.ui" line="26"/>
         <source>About</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">შესახებ</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsabout.ui" line="50"/>
@@ -3274,12 +3274,15 @@ Errors:  %2
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Lucida Grande&apos;; font-size:13pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:16px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:x-large; font-weight:600;&quot;&gt;&lt;span style=&quot; font-size:x-large;&quot;&gt;Quantum GIS (QGIS)&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Lucida Grande&apos;; font-size:13pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:16px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:x-large; font-weight:600;&quot;&gt;&lt;span style=&quot; font-size:x-large;&quot;&gt;Quantum GIS (QGIS)&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsabout.ui" line="65"/>
         <source>Version</source>
-        <translation type="unfinished"></translation>
+        <translation>ვერსია</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsabout.ui" line="91"/>
@@ -3289,7 +3292,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgsabout.ui" line="104"/>
         <source>http://www.gnu.org/licenses</source>
-        <translation type="unfinished"></translation>
+        <translation>http://www.gnu.org/licenses</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsabout.ui" line="129"/>
@@ -3324,7 +3327,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgsabout.ui" line="230"/>
         <source>Ok</source>
-        <translation type="unfinished"></translation>
+        <translation>Ok</translation>
     </message>
 </context>
 <context>
@@ -3332,17 +3335,17 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgsaddattrdialogbase.ui" line="13"/>
         <source>Add Attribute</source>
-        <translation type="unfinished"></translation>
+        <translation>ატრიბუტის დამატება</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsaddattrdialogbase.ui" line="22"/>
         <source>Name:</source>
-        <translation type="unfinished"></translation>
+        <translation>სახელი:</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsaddattrdialogbase.ui" line="35"/>
         <source>Type:</source>
-        <translation type="unfinished"></translation>
+        <translation>ტიპი:</translation>
     </message>
 </context>
 <context>
@@ -3350,7 +3353,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/core/qgsapplication.cpp" line="82"/>
         <source>Exception</source>
-        <translation type="unfinished"></translation>
+        <translation>გამონაკლისი</translation>
     </message>
 </context>
 <context>
@@ -3359,7 +3362,7 @@ p, li { white-space: pre-wrap; }
         <location filename="../src/app/qgsattributeactiondialog.cpp" line="150"/>
         <source>Select an action</source>
         <comment>File dialog window title</comment>
-        <translation type="unfinished"></translation>
+        <translation>აირჩიეთ მოქმედება</translation>
     </message>
 </context>
 <context>
@@ -3382,7 +3385,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgsattributeactiondialogbase.ui" line="157"/>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">სახელი</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsattributeactiondialogbase.ui" line="56"/>
@@ -3397,7 +3400,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgsattributeactiondialogbase.ui" line="162"/>
         <source>Action</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">მოქმედება</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsattributeactiondialogbase.ui" line="79"/>
@@ -3422,7 +3425,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgsattributeactiondialogbase.ui" line="98"/>
         <source>...</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">...</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsattributeactiondialogbase.ui" line="105"/>
@@ -3520,27 +3523,27 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/app/qgsattributedialog.cpp" line="256"/>
         <source>...</source>
-        <translation type="unfinished"></translation>
+        <translation>...</translation>
     </message>
     <message>
         <location filename="../src/app/qgsattributedialog.cpp" line="271"/>
         <source> (int)</source>
-        <translation type="unfinished"></translation>
+        <translation> (int)</translation>
     </message>
     <message>
         <location filename="../src/app/qgsattributedialog.cpp" line="275"/>
         <source> (dbl)</source>
-        <translation type="unfinished"></translation>
+        <translation> (dbl)</translation>
     </message>
     <message>
         <location filename="../src/app/qgsattributedialog.cpp" line="280"/>
         <source> (txt)</source>
-        <translation type="unfinished"></translation>
+        <translation> (txt)</translation>
     </message>
     <message>
         <location filename="../src/app/qgsattributedialog.cpp" line="315"/>
         <source>Select a file</source>
-        <translation type="unfinished"></translation>
+        <translation>აირჩიეთ ფაილი</translation>
     </message>
 </context>
 <context>
@@ -3548,7 +3551,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgsattributedialogbase.ui" line="13"/>
         <source>Enter Attribute Values</source>
-        <translation type="unfinished"></translation>
+        <translation>შეიყვანეთ ატრიბუტის მნიშვნელობები</translation>
     </message>
 </context>
 <context>
@@ -3556,7 +3559,17 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/app/qgsattributetable.cpp" line="353"/>
         <source>Run action</source>
+        <translation>მოქმედების შესრულება</translation>
+    </message>
+    <message>
+        <location filename="../src/app/qgsattributetable.cpp" line="616"/>
+        <source>Updating selection...</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/app/qgsattributetable.cpp" line="616"/>
+        <source>Abort</source>
+        <translation type="unfinished">შეწყვეტა</translation>
     </message>
 </context>
 <context>
@@ -3579,7 +3592,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgsattributetablebase.ui" line="60"/>
         <source>Ctrl+T</source>
-        <translation type="unfinished"></translation>
+        <translation>Ctrl+T</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsattributetablebase.ui" line="67"/>
@@ -3589,7 +3602,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgsattributetablebase.ui" line="77"/>
         <source>Ctrl+S</source>
-        <translation type="unfinished"></translation>
+        <translation>Ctrl+S</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsattributetablebase.ui" line="84"/>
@@ -3604,7 +3617,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgsattributetablebase.ui" line="97"/>
         <source>Ctrl+C</source>
-        <translation type="unfinished"></translation>
+        <translation>Ctrl+C</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsattributetablebase.ui" line="104"/>
@@ -3619,7 +3632,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgsattributetablebase.ui" line="113"/>
         <source>Ctrl+J</source>
-        <translation type="unfinished"></translation>
+        <translation>Ctrl+J</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsattributetablebase.ui" line="135"/>
@@ -3634,7 +3647,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgsattributetablebase.ui" line="168"/>
         <source>Search</source>
-        <translation type="unfinished"></translation>
+        <translation>ძებნა</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsattributetablebase.ui" line="178"/>
@@ -3644,7 +3657,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgsattributetablebase.ui" line="181"/>
         <source>Alt+N</source>
-        <translation type="unfinished"></translation>
+        <translation>Alt+N</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsattributetablebase.ui" line="207"/>
@@ -3682,17 +3695,17 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/app/qgsattributetabledisplay.cpp" line="139"/>
         <source>QGIS</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">QGIS</translation>
     </message>
     <message>
         <location filename="../src/app/qgsattributetabledisplay.cpp" line="143"/>
         <source>File</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ფაილი</translation>
     </message>
     <message>
         <location filename="../src/app/qgsattributetabledisplay.cpp" line="144"/>
         <source>Close</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">დაკეტვა</translation>
     </message>
     <message>
         <location filename="../src/app/qgsattributetabledisplay.cpp" line="144"/>
@@ -3702,27 +3715,27 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/app/qgsattributetabledisplay.cpp" line="146"/>
         <source>Edit</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">რედაქტირება</translation>
     </message>
     <message>
         <location filename="../src/app/qgsattributetabledisplay.cpp" line="147"/>
         <source>&amp;Undo</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">დაბრ&amp;უნება</translation>
     </message>
     <message>
         <location filename="../src/app/qgsattributetabledisplay.cpp" line="147"/>
         <source>Ctrl+Z</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Ctrl+Z</translation>
     </message>
     <message>
         <location filename="../src/app/qgsattributetabledisplay.cpp" line="150"/>
         <source>Cu&amp;t</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ამო&amp;ჭრა</translation>
     </message>
     <message>
         <location filename="../src/app/qgsattributetabledisplay.cpp" line="150"/>
         <source>Ctrl+X</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Ctrl+X</translation>
     </message>
     <message>
         <location filename="../src/app/qgsattributetabledisplay.cpp" line="153"/>
@@ -3732,27 +3745,27 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/app/qgsattributetabledisplay.cpp" line="153"/>
         <source>Ctrl+C</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Ctrl+C</translation>
     </message>
     <message>
         <location filename="../src/app/qgsattributetabledisplay.cpp" line="154"/>
         <source>&amp;Paste</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">&amp;ჩასმა</translation>
     </message>
     <message>
         <location filename="../src/app/qgsattributetabledisplay.cpp" line="154"/>
         <source>Ctrl+V</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Ctrl+V</translation>
     </message>
     <message>
         <location filename="../src/app/qgsattributetabledisplay.cpp" line="157"/>
         <source>Delete</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">წაშლა</translation>
     </message>
     <message>
         <location filename="../src/app/qgsattributetabledisplay.cpp" line="159"/>
         <source>Layer</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ფენა</translation>
     </message>
     <message>
         <location filename="../src/app/qgsattributetabledisplay.cpp" line="161"/>
@@ -3762,7 +3775,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/app/qgsattributetabledisplay.cpp" line="161"/>
         <source>Ctrl+J</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Ctrl+J</translation>
     </message>
     <message>
         <location filename="../src/app/qgsattributetabledisplay.cpp" line="164"/>
@@ -3772,7 +3785,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/app/qgsattributetabledisplay.cpp" line="170"/>
         <source>Table</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ცხრილი</translation>
     </message>
     <message>
         <location filename="../src/app/qgsattributetabledisplay.cpp" line="172"/>
@@ -3792,7 +3805,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/app/qgsattributetabledisplay.cpp" line="406"/>
         <source>Search results</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ძებნის შედეგები</translation>
     </message>
     <message>
         <location filename="../src/app/qgsattributetabledisplay.cpp" line="365"/>
@@ -3808,6 +3821,7 @@ p, li { white-space: pre-wrap; }
         <location filename="../src/app/qgsattributetabledisplay.cpp" line="403"/>
         <source>Found %d matching features.</source>
         <translation type="unfinished">
+            <numerusform></numerusform>
             <numerusform></numerusform>
         </translation>
     </message>
@@ -3832,7 +3846,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/app/qgsbookmarks.cpp" line="58"/>
         <source>&amp;Delete</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;წაშლა</translation>
     </message>
     <message>
         <location filename="../src/app/qgsbookmarks.cpp" line="59"/>
@@ -3842,12 +3856,12 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/app/qgsbookmarks.cpp" line="158"/>
         <source>Really Delete?</source>
-        <translation type="unfinished"></translation>
+        <translation>ნამდვილად წავშალო?</translation>
     </message>
     <message>
         <location filename="../src/app/qgsbookmarks.cpp" line="159"/>
         <source>Are you sure you want to delete the </source>
-        <translation type="unfinished"></translation>
+        <translation>ნამდვილად გსურთ წაშალოთ </translation>
     </message>
     <message>
         <location filename="../src/app/qgsbookmarks.cpp" line="159"/>
@@ -3862,7 +3876,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/app/qgsbookmarks.cpp" line="177"/>
         <source>Failed to delete the </source>
-        <translation type="unfinished"></translation>
+        <translation>ფაილის წაშლა ვერ მოხერხდა</translation>
     </message>
     <message>
         <location filename="../src/app/qgsbookmarks.cpp" line="179"/>
@@ -3881,12 +3895,12 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgsbookmarksbase.ui" line="29"/>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation>სახელი</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsbookmarksbase.ui" line="34"/>
         <source>Project</source>
-        <translation type="unfinished"></translation>
+        <translation>პროექტი</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsbookmarksbase.ui" line="39"/>
@@ -3896,7 +3910,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgsbookmarksbase.ui" line="44"/>
         <source>Id</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
 </context>
 <context>
@@ -3979,17 +3993,17 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/app/composer/qgscomposer.cpp" line="129"/>
         <source>QGIS</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">QGIS</translation>
     </message>
     <message>
         <location filename="../src/app/composer/qgscomposer.cpp" line="133"/>
         <source>File</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ფაილი</translation>
     </message>
     <message>
         <location filename="../src/app/composer/qgscomposer.cpp" line="134"/>
         <source>Close</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">დაკეტვა</translation>
     </message>
     <message>
         <location filename="../src/app/composer/qgscomposer.cpp" line="134"/>
@@ -3999,27 +4013,27 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/app/composer/qgscomposer.cpp" line="140"/>
         <source>Edit</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">რედაქტირება</translation>
     </message>
     <message>
         <location filename="../src/app/composer/qgscomposer.cpp" line="141"/>
         <source>&amp;Undo</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">დაბრ&amp;უნება</translation>
     </message>
     <message>
         <location filename="../src/app/composer/qgscomposer.cpp" line="141"/>
         <source>Ctrl+Z</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Ctrl+Z</translation>
     </message>
     <message>
         <location filename="../src/app/composer/qgscomposer.cpp" line="144"/>
         <source>Cu&amp;t</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ამო&amp;ჭრა</translation>
     </message>
     <message>
         <location filename="../src/app/composer/qgscomposer.cpp" line="144"/>
         <source>Ctrl+X</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Ctrl+X</translation>
     </message>
     <message>
         <location filename="../src/app/composer/qgscomposer.cpp" line="146"/>
@@ -4029,22 +4043,22 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/app/composer/qgscomposer.cpp" line="146"/>
         <source>Ctrl+C</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Ctrl+C</translation>
     </message>
     <message>
         <location filename="../src/app/composer/qgscomposer.cpp" line="148"/>
         <source>&amp;Paste</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">&amp;ჩასმა</translation>
     </message>
     <message>
         <location filename="../src/app/composer/qgscomposer.cpp" line="148"/>
         <source>Ctrl+V</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Ctrl+V</translation>
     </message>
     <message>
         <location filename="../src/app/composer/qgscomposer.cpp" line="150"/>
         <source>Delete</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">წაშლა</translation>
     </message>
     <message>
         <location filename="../src/app/composer/qgscomposer.cpp" line="153"/>
@@ -4099,7 +4113,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/app/composer/qgscomposer.cpp" line="1122"/>
         <source>Don&apos;t show this message again</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">აღარ აჩვენო ეს შეტყობინება</translation>
     </message>
     <message>
         <location filename="../src/app/composer/qgscomposer.cpp" line="632"/>
@@ -4152,12 +4166,12 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgscomposerbase.ui" line="194"/>
         <source>Help</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">დახმარება</translation>
     </message>
     <message>
         <location filename="../src/ui/qgscomposerbase.ui" line="214"/>
         <source>Close</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">დაკეტვა</translation>
     </message>
     <message>
         <location filename="../src/ui/qgscomposerbase.ui" line="253"/>
@@ -4242,7 +4256,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgscomposerbase.ui" line="356"/>
         <source>Refresh</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">განახლება</translation>
     </message>
     <message>
         <location filename="../src/ui/qgscomposerbase.ui" line="359"/>
@@ -4260,7 +4274,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgscomposeritemwidgetbase.ui" line="13"/>
         <source>Form</source>
-        <translation type="unfinished"></translation>
+        <translation>ფორმა</translation>
     </message>
     <message>
         <location filename="../src/ui/qgscomposeritemwidgetbase.ui" line="19"/>
@@ -4270,17 +4284,17 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgscomposeritemwidgetbase.ui" line="25"/>
         <source>Color:</source>
-        <translation type="unfinished"></translation>
+        <translation>ფერი:</translation>
     </message>
     <message>
         <location filename="../src/ui/qgscomposeritemwidgetbase.ui" line="32"/>
         <source>Frame...</source>
-        <translation type="unfinished"></translation>
+        <translation>კადრი...</translation>
     </message>
     <message>
         <location filename="../src/ui/qgscomposeritemwidgetbase.ui" line="39"/>
         <source>Background...</source>
-        <translation type="unfinished"></translation>
+        <translation>ფონი...</translation>
     </message>
     <message>
         <location filename="../src/ui/qgscomposeritemwidgetbase.ui" line="46"/>
@@ -4295,7 +4309,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgscomposeritemwidgetbase.ui" line="73"/>
         <source>Frame</source>
-        <translation type="unfinished"></translation>
+        <translation>კადრი</translation>
     </message>
 </context>
 <context>
@@ -4308,7 +4322,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgscomposerlabelwidgetbase.ui" line="38"/>
         <source>Font</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">შრიფტი</translation>
     </message>
     <message>
         <location filename="../src/ui/qgscomposerlabelwidgetbase.ui" line="45"/>
@@ -4326,7 +4340,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgscomposerlegenditemdialogbase.ui" line="19"/>
         <source>Item text:</source>
-        <translation type="unfinished"></translation>
+        <translation>ელემენტის ტექსტი:</translation>
     </message>
 </context>
 <context>
@@ -4437,7 +4451,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/core/composer/qgscomposermap.cpp" line="83"/>
         <source>Map</source>
-        <translation type="unfinished"></translation>
+        <translation>რუკა</translation>
     </message>
     <message>
         <location filename="../src/core/composer/qgscomposermap.cpp" line="191"/>
@@ -4455,7 +4469,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/app/composer/qgscomposermapwidget.cpp" line="223"/>
         <source>Rectangle</source>
-        <translation type="unfinished"></translation>
+        <translation>მართკუთხედი</translation>
     </message>
     <message>
         <location filename="../src/app/composer/qgscomposermapwidget.cpp" line="219"/>
@@ -4468,12 +4482,12 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgscomposermapwidgetbase.ui" line="19"/>
         <source>Map options</source>
-        <translation type="unfinished"></translation>
+        <translation>რუკის პარამეტრები</translation>
     </message>
     <message>
         <location filename="../src/ui/qgscomposermapwidgetbase.ui" line="25"/>
         <source>&lt;b&gt;Map&lt;/b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;რუკა&lt;/b&gt;</translation>
     </message>
     <message>
         <location filename="../src/ui/qgscomposermapwidgetbase.ui" line="45"/>
@@ -4488,12 +4502,12 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgscomposermapwidgetbase.ui" line="83"/>
         <source>Scale:</source>
-        <translation type="unfinished"></translation>
+        <translation>მასშტაბი:</translation>
     </message>
     <message>
         <location filename="../src/ui/qgscomposermapwidgetbase.ui" line="93"/>
         <source>1:</source>
-        <translation type="unfinished"></translation>
+        <translation>1:</translation>
     </message>
     <message>
         <location filename="../src/ui/qgscomposermapwidgetbase.ui" line="106"/>
@@ -4541,7 +4555,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/app/composer/qgscomposerpicturewidget.cpp" line="59"/>
         <source>Select svg or image file</source>
-        <translation type="unfinished"></translation>
+        <translation>აირჩიეთ svg გამოსახულება ან გამოსახულების ფაილი</translation>
     </message>
 </context>
 <context>
@@ -4549,12 +4563,12 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgscomposerpicturewidgetbase.ui" line="19"/>
         <source>Picture Options</source>
-        <translation type="unfinished"></translation>
+        <translation>სურათის პარამეტრები</translation>
     </message>
     <message>
         <location filename="../src/ui/qgscomposerpicturewidgetbase.ui" line="57"/>
         <source>Browse...</source>
-        <translation type="unfinished"></translation>
+        <translation>ნუსხა...</translation>
     </message>
     <message>
         <location filename="../src/ui/qgscomposerpicturewidgetbase.ui" line="74"/>
@@ -4640,7 +4654,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/app/composer/qgscomposerscalebarwidget.cpp" line="148"/>
         <source>Map </source>
-        <translation type="unfinished"></translation>
+        <translation>რუკა</translation>
     </message>
 </context>
 <context>
@@ -4673,12 +4687,12 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgscomposerscalebarwidgetbase.ui" line="85"/>
         <source>Style:</source>
-        <translation type="unfinished"></translation>
+        <translation>სტილი:</translation>
     </message>
     <message>
         <location filename="../src/ui/qgscomposerscalebarwidgetbase.ui" line="101"/>
         <source>Map:</source>
-        <translation type="unfinished"></translation>
+        <translation>რუკა:</translation>
     </message>
     <message>
         <location filename="../src/ui/qgscomposerscalebarwidgetbase.ui" line="127"/>
@@ -4708,12 +4722,12 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgscomposerscalebarwidgetbase.ui" line="211"/>
         <source>Font...</source>
-        <translation type="unfinished"></translation>
+        <translation>შრიფტი...</translation>
     </message>
     <message>
         <location filename="../src/ui/qgscomposerscalebarwidgetbase.ui" line="218"/>
         <source>Color...</source>
-        <translation type="unfinished"></translation>
+        <translation>ფერი...</translation>
     </message>
 </context>
 <context>
@@ -4731,27 +4745,27 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgscomposervectorlegendbase.ui" line="92"/>
         <source>Map</source>
-        <translation type="unfinished"></translation>
+        <translation>რუკა</translation>
     </message>
     <message>
         <location filename="../src/ui/qgscomposervectorlegendbase.ui" line="113"/>
         <source>Title</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">სათაური</translation>
     </message>
     <message>
         <location filename="../src/ui/qgscomposervectorlegendbase.ui" line="149"/>
         <source>Layers</source>
-        <translation type="unfinished"></translation>
+        <translation>ფენები</translation>
     </message>
     <message>
         <location filename="../src/ui/qgscomposervectorlegendbase.ui" line="154"/>
         <source>Group</source>
-        <translation type="unfinished"></translation>
+        <translation>ჯგუფი</translation>
     </message>
     <message>
         <location filename="../src/ui/qgscomposervectorlegendbase.ui" line="159"/>
         <source>ID</source>
-        <translation type="unfinished"></translation>
+        <translation>ID</translation>
     </message>
     <message>
         <location filename="../src/ui/qgscomposervectorlegendbase.ui" line="167"/>
@@ -4761,7 +4775,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgscomposervectorlegendbase.ui" line="182"/>
         <source>Font</source>
-        <translation type="unfinished"></translation>
+        <translation>შრიფტი</translation>
     </message>
 </context>
 <context>
@@ -4774,12 +4788,12 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgscompositionbase.ui" line="43"/>
         <source>Paper</source>
-        <translation type="unfinished"></translation>
+        <translation>ფურცელი</translation>
     </message>
     <message>
         <location filename="../src/ui/qgscompositionbase.ui" line="118"/>
         <source>Orientation</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ორიენტაცია</translation>
     </message>
     <message>
         <location filename="../src/ui/qgscompositionbase.ui" line="134"/>
@@ -4794,12 +4808,12 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgscompositionbase.ui" line="166"/>
         <source>Units</source>
-        <translation type="unfinished"></translation>
+        <translation>ერთეულები</translation>
     </message>
     <message>
         <location filename="../src/ui/qgscompositionbase.ui" line="182"/>
         <source>Size</source>
-        <translation type="unfinished"></translation>
+        <translation>ზომა</translation>
     </message>
 </context>
 <context>
@@ -4817,77 +4831,77 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/app/composer/qgscompositionwidget.cpp" line="110"/>
         <source>Custom</source>
-        <translation type="unfinished"></translation>
+        <translation>სხვა</translation>
     </message>
     <message>
         <location filename="../src/app/composer/qgscompositionwidget.cpp" line="63"/>
         <source>A5 (148x210 mm)</source>
-        <translation type="unfinished"></translation>
+        <translation>A5 (148x210 მმ)</translation>
     </message>
     <message>
         <location filename="../src/app/composer/qgscompositionwidget.cpp" line="65"/>
         <source>A4 (210x297 mm)</source>
-        <translation type="unfinished"></translation>
+        <translation>A4 (210x297 მმ)</translation>
     </message>
     <message>
         <location filename="../src/app/composer/qgscompositionwidget.cpp" line="67"/>
         <source>A3 (297x420 mm)</source>
-        <translation type="unfinished"></translation>
+        <translation>A3 (297x420 მმ)</translation>
     </message>
     <message>
         <location filename="../src/app/composer/qgscompositionwidget.cpp" line="69"/>
         <source>A2 (420x594 mm)</source>
-        <translation type="unfinished"></translation>
+        <translation>A2 (420x594 მმ)</translation>
     </message>
     <message>
         <location filename="../src/app/composer/qgscompositionwidget.cpp" line="71"/>
         <source>A1 (594x841 mm)</source>
-        <translation type="unfinished"></translation>
+        <translation>A1 (594x841 მმ)</translation>
     </message>
     <message>
         <location filename="../src/app/composer/qgscompositionwidget.cpp" line="73"/>
         <source>A0 (841x1189 mm)</source>
-        <translation type="unfinished"></translation>
+        <translation>A0 (841x1189 მმ)</translation>
     </message>
     <message>
         <location filename="../src/app/composer/qgscompositionwidget.cpp" line="75"/>
         <source>B5 (176 x 250 mm)</source>
-        <translation type="unfinished"></translation>
+        <translation>B5 (176 x 250 მმ)</translation>
     </message>
     <message>
         <location filename="../src/app/composer/qgscompositionwidget.cpp" line="77"/>
         <source>B4 (250 x 353 mm)</source>
-        <translation type="unfinished"></translation>
+        <translation>B4 (250 x 353 მმ)</translation>
     </message>
     <message>
         <location filename="../src/app/composer/qgscompositionwidget.cpp" line="79"/>
         <source>B3 (353 x 500 mm)</source>
-        <translation type="unfinished"></translation>
+        <translation>B3 (353 x 500 მმ)</translation>
     </message>
     <message>
         <location filename="../src/app/composer/qgscompositionwidget.cpp" line="81"/>
         <source>B2 (500 x 707 mm)</source>
-        <translation type="unfinished"></translation>
+        <translation>B2 (500 x 707 მმ)</translation>
     </message>
     <message>
         <location filename="../src/app/composer/qgscompositionwidget.cpp" line="83"/>
         <source>B1 (707 x 1000 mm)</source>
-        <translation type="unfinished"></translation>
+        <translation>B1 (707 x 1000 მმ)</translation>
     </message>
     <message>
         <location filename="../src/app/composer/qgscompositionwidget.cpp" line="85"/>
         <source>B0 (1000 x 1414 mm)</source>
-        <translation type="unfinished"></translation>
+        <translation>B0 (1000 x 1414 მმ)</translation>
     </message>
     <message>
         <location filename="../src/app/composer/qgscompositionwidget.cpp" line="87"/>
         <source>Letter (8.5x11 inches)</source>
-        <translation type="unfinished"></translation>
+        <translation>Letter (8.5x11 დუიმი)</translation>
     </message>
     <message>
         <location filename="../src/app/composer/qgscompositionwidget.cpp" line="89"/>
         <source>Legal (8.5x14 inches)</source>
-        <translation type="unfinished"></translation>
+        <translation>Legal (8.5x14 დუიმი)</translation>
     </message>
 </context>
 <context>
@@ -4900,12 +4914,12 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgscompositionwidgetbase.ui" line="43"/>
         <source>Paper</source>
-        <translation type="unfinished"></translation>
+        <translation>ფურცელი</translation>
     </message>
     <message>
         <location filename="../src/ui/qgscompositionwidgetbase.ui" line="118"/>
         <source>Orientation</source>
-        <translation type="unfinished"></translation>
+        <translation>ორიენტაცია</translation>
     </message>
     <message>
         <location filename="../src/ui/qgscompositionwidgetbase.ui" line="134"/>
@@ -4920,17 +4934,17 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgscompositionwidgetbase.ui" line="166"/>
         <source>Units</source>
-        <translation type="unfinished"></translation>
+        <translation>ერთეულები</translation>
     </message>
     <message>
         <location filename="../src/ui/qgscompositionwidgetbase.ui" line="182"/>
         <source>Size</source>
-        <translation type="unfinished"></translation>
+        <translation>ზომა</translation>
     </message>
     <message>
         <location filename="../src/ui/qgscompositionwidgetbase.ui" line="217"/>
         <source>Print quality (dpi)</source>
-        <translation type="unfinished"></translation>
+        <translation>ბეჭდვის ხარისხი (dpi)</translation>
     </message>
 </context>
 <context>
@@ -4943,7 +4957,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgscontinuouscolordialogbase.ui" line="54"/>
         <source>Maximum Value:</source>
-        <translation type="unfinished"></translation>
+        <translation>მაქსიმალური მნიშვნელობა:</translation>
     </message>
     <message>
         <location filename="../src/ui/qgscontinuouscolordialogbase.ui" line="80"/>
@@ -4953,12 +4967,12 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgscontinuouscolordialogbase.ui" line="93"/>
         <source>Minimum Value:</source>
-        <translation type="unfinished"></translation>
+        <translation>მინიმალური მნიშვნელობა:</translation>
     </message>
     <message>
         <location filename="../src/ui/qgscontinuouscolordialogbase.ui" line="109"/>
         <source>Classification Field:</source>
-        <translation type="unfinished"></translation>
+        <translation>კლასიფიკაციის ველი:</translation>
     </message>
     <message>
         <location filename="../src/ui/qgscontinuouscolordialogbase.ui" line="119"/>
@@ -4996,7 +5010,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/core/qgscoordinatetransform.cpp" line="496"/>
         <source>with error: </source>
-        <translation type="unfinished"></translation>
+        <translation>შეცდომით:</translation>
     </message>
 </context>
 <context>
@@ -5004,22 +5018,22 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/copyright_label/plugin.cpp" line="64"/>
         <source>Bottom Left</source>
-        <translation type="unfinished"></translation>
+        <translation>ქვედა მარცხენა</translation>
     </message>
     <message>
         <location filename="../src/plugins/copyright_label/plugin.cpp" line="65"/>
         <source>Top Left</source>
-        <translation type="unfinished"></translation>
+        <translation>ზედა მარცხენა</translation>
     </message>
     <message>
         <location filename="../src/plugins/copyright_label/plugin.cpp" line="65"/>
         <source>Top Right</source>
-        <translation type="unfinished"></translation>
+        <translation>ზედა მარჯვენა</translation>
     </message>
     <message>
         <location filename="../src/plugins/copyright_label/plugin.cpp" line="65"/>
         <source>Bottom Right</source>
-        <translation type="unfinished"></translation>
+        <translation>ქვედა მარჯვენა</translation>
     </message>
     <message>
         <location filename="../src/plugins/copyright_label/plugin.cpp" line="77"/>
@@ -5034,7 +5048,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/copyright_label/plugin.cpp" line="202"/>
         <source>&amp;Decorations</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;დეკორაციები</translation>
     </message>
 </context>
 <context>
@@ -5047,7 +5061,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/copyright_label/pluginguibase.ui" line="57"/>
         <source>Color</source>
-        <translation type="unfinished"></translation>
+        <translation>ფერი</translation>
     </message>
     <message>
         <location filename="../src/plugins/copyright_label/pluginguibase.ui" line="98"/>
@@ -5078,42 +5092,42 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/copyright_label/pluginguibase.ui" line="185"/>
         <source>Placement</source>
-        <translation type="unfinished"></translation>
+        <translation>ადგილმდებარეობა</translation>
     </message>
     <message>
         <location filename="../src/plugins/copyright_label/pluginguibase.ui" line="193"/>
         <source>Bottom Left</source>
-        <translation type="unfinished"></translation>
+        <translation>ქვედა მარცხენა</translation>
     </message>
     <message>
         <location filename="../src/plugins/copyright_label/pluginguibase.ui" line="198"/>
         <source>Top Left</source>
-        <translation type="unfinished"></translation>
+        <translation>ზედა მარცხენა</translation>
     </message>
     <message>
         <location filename="../src/plugins/copyright_label/pluginguibase.ui" line="203"/>
         <source>Bottom Right</source>
-        <translation type="unfinished"></translation>
+        <translation>ქვედა მარჯვენა</translation>
     </message>
     <message>
         <location filename="../src/plugins/copyright_label/pluginguibase.ui" line="208"/>
         <source>Top Right</source>
-        <translation type="unfinished"></translation>
+        <translation>ზედა მარჯვენა</translation>
     </message>
     <message>
         <location filename="../src/plugins/copyright_label/pluginguibase.ui" line="216"/>
         <source>Orientation</source>
-        <translation type="unfinished"></translation>
+        <translation>ორიენტაცია</translation>
     </message>
     <message>
         <location filename="../src/plugins/copyright_label/pluginguibase.ui" line="224"/>
         <source>Horizontal</source>
-        <translation type="unfinished"></translation>
+        <translation>ჰორიზონტალური</translation>
     </message>
     <message>
         <location filename="../src/plugins/copyright_label/pluginguibase.ui" line="229"/>
         <source>Vertical</source>
-        <translation type="unfinished"></translation>
+        <translation>ვერტიკალური</translation>
     </message>
 </context>
 <context>
@@ -5131,12 +5145,12 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/app/qgscustomprojectiondialog.cpp" line="847"/>
         <source>Abort</source>
-        <translation type="unfinished"></translation>
+        <translation>შეწყვეტა</translation>
     </message>
     <message>
         <location filename="../src/app/qgscustomprojectiondialog.cpp" line="849"/>
         <source>New</source>
-        <translation type="unfinished"></translation>
+        <translation>ახალი</translation>
     </message>
     <message>
         <location filename="../src/app/qgscustomprojectiondialog.cpp" line="903"/>
@@ -5199,12 +5213,12 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgscustomprojectiondialogbase.ui" line="38"/>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">სახელი</translation>
     </message>
     <message>
         <location filename="../src/ui/qgscustomprojectiondialogbase.ui" line="167"/>
         <source>Parameters</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">პარამეტრები</translation>
     </message>
     <message>
         <location filename="../src/ui/qgscustomprojectiondialogbase.ui" line="66"/>
@@ -5239,12 +5253,12 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgscustomprojectiondialogbase.ui" line="126"/>
         <source>S</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">S</translation>
     </message>
     <message>
         <location filename="../src/ui/qgscustomprojectiondialogbase.ui" line="136"/>
         <source>X</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">X</translation>
     </message>
     <message>
         <location filename="../src/ui/qgscustomprojectiondialogbase.ui" line="151"/>
@@ -5269,12 +5283,12 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgscustomprojectiondialogbase.ui" line="194"/>
         <source>North</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ჩრდილოეთი</translation>
     </message>
     <message>
         <location filename="../src/ui/qgscustomprojectiondialogbase.ui" line="224"/>
         <source>East</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">აღმოსავლეთი</translation>
     </message>
     <message>
         <location filename="../src/ui/qgscustomprojectiondialogbase.ui" line="253"/>
@@ -5302,17 +5316,17 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/app/qgsdbsourceselect.cpp" line="139"/>
         <source>Schema</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">სქემა</translation>
     </message>
     <message>
         <location filename="../src/app/qgsdbsourceselect.cpp" line="143"/>
         <source>Table</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ცხრილი</translation>
     </message>
     <message>
         <location filename="../src/app/qgsdbsourceselect.cpp" line="147"/>
         <source>Type</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ტიპი</translation>
     </message>
     <message>
         <location filename="../src/app/qgsdbsourceselect.cpp" line="151"/>
@@ -5322,12 +5336,12 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/app/qgsdbsourceselect.cpp" line="155"/>
         <source>Sql</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Sql</translation>
     </message>
     <message>
         <location filename="../src/app/qgsdbsourceselect.cpp" line="230"/>
         <source>Are you sure you want to remove the </source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ნამდვილად გსურთ წაშალოთ </translation>
     </message>
     <message>
         <location filename="../src/app/qgsdbsourceselect.cpp" line="230"/>
@@ -5337,7 +5351,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/app/qgsdbsourceselect.cpp" line="231"/>
         <source>Confirm Delete</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">წაშლის დადასტურება</translation>
     </message>
     <message>
         <location filename="../src/app/qgsdbsourceselect.cpp" line="338"/>
@@ -5412,62 +5426,62 @@ geometry.</source>
     <message>
         <location filename="../src/ui/qgsdbsourceselectbase.ui" line="66"/>
         <source>Delete</source>
-        <translation type="unfinished"></translation>
+        <translation>წაშლა</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsdbsourceselectbase.ui" line="73"/>
         <source>Edit</source>
-        <translation type="unfinished"></translation>
+        <translation>რედაქტირება</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsdbsourceselectbase.ui" line="80"/>
         <source>New</source>
-        <translation type="unfinished"></translation>
+        <translation>ახალი</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsdbsourceselectbase.ui" line="87"/>
         <source>Connect</source>
-        <translation type="unfinished"></translation>
+        <translation>დაკავშირება</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsdbsourceselectbase.ui" line="111"/>
         <source>Help</source>
-        <translation type="unfinished"></translation>
+        <translation>დახმარება</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsdbsourceselectbase.ui" line="114"/>
         <source>F1</source>
-        <translation type="unfinished"></translation>
+        <translation>F1</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsdbsourceselectbase.ui" line="140"/>
         <source>Add</source>
-        <translation type="unfinished"></translation>
+        <translation>დამატება</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsdbsourceselectbase.ui" line="156"/>
         <source>Close</source>
-        <translation type="unfinished"></translation>
+        <translation>დაკეტვა</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsdbsourceselectbase.ui" line="183"/>
         <source>Search:</source>
-        <translation type="unfinished"></translation>
+        <translation>ძებნა:</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsdbsourceselectbase.ui" line="190"/>
         <source>Search mode:</source>
-        <translation type="unfinished"></translation>
+        <translation>ძებნის რეჟიმი:</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsdbsourceselectbase.ui" line="200"/>
         <source>Search in columns:</source>
-        <translation type="unfinished"></translation>
+        <translation>სვეტებში ძებნა:</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsdbsourceselectbase.ui" line="216"/>
         <source>Search options...</source>
-        <translation type="unfinished"></translation>
+        <translation>ძებნის პარამეტრები...</translation>
     </message>
 </context>
 <context>
@@ -5475,17 +5489,17 @@ geometry.</source>
     <message>
         <location filename="../src/app/qgsdbtablemodel.cpp" line="25"/>
         <source>Schema</source>
-        <translation type="unfinished"></translation>
+        <translation>სქემა</translation>
     </message>
     <message>
         <location filename="../src/app/qgsdbtablemodel.cpp" line="26"/>
         <source>Table</source>
-        <translation type="unfinished"></translation>
+        <translation>ცხრილი</translation>
     </message>
     <message>
         <location filename="../src/app/qgsdbtablemodel.cpp" line="27"/>
         <source>Type</source>
-        <translation type="unfinished"></translation>
+        <translation>ტიპი</translation>
     </message>
     <message>
         <location filename="../src/app/qgsdbtablemodel.cpp" line="28"/>
@@ -5495,12 +5509,12 @@ geometry.</source>
     <message>
         <location filename="../src/app/qgsdbtablemodel.cpp" line="29"/>
         <source>Sql</source>
-        <translation type="unfinished"></translation>
+        <translation>Sql</translation>
     </message>
     <message>
         <location filename="../src/app/qgsdbtablemodel.cpp" line="237"/>
         <source>Point</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">წერტილი</translation>
     </message>
     <message>
         <location filename="../src/app/qgsdbtablemodel.cpp" line="241"/>
@@ -5520,7 +5534,7 @@ geometry.</source>
     <message>
         <location filename="../src/app/qgsdbtablemodel.cpp" line="253"/>
         <source>Polygon</source>
-        <translation type="unfinished"></translation>
+        <translation>მრავალკუთხედი</translation>
     </message>
     <message>
         <location filename="../src/app/qgsdbtablemodel.cpp" line="257"/>
@@ -5533,7 +5547,7 @@ geometry.</source>
     <message>
         <location filename="../src/ui/qgsdelattrdialogbase.ui" line="13"/>
         <source>Delete Attributes</source>
-        <translation type="unfinished"></translation>
+        <translation>ატრიბუტების წაშლა</translation>
     </message>
 </context>
 <context>
@@ -5579,7 +5593,7 @@ geometry.</source>
     <message>
         <location filename="../src/plugins/delimited_text/qgsdelimitedtextplugingui.cpp" line="60"/>
         <source>Description</source>
-        <translation type="unfinished"></translation>
+        <translation>აღწერა</translation>
     </message>
     <message>
         <location filename="../src/plugins/delimited_text/qgsdelimitedtextplugingui.cpp" line="63"/>
@@ -5695,7 +5709,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/delimited_text/qgsdelimitedtextpluginguibase.ui" line="203"/>
         <source>Browse...</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ნუსხა...</translation>
     </message>
     <message>
         <location filename="../src/plugins/delimited_text/qgsdelimitedtextpluginguibase.ui" line="229"/>
@@ -5758,13 +5772,14 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/providers/delimitedtext/qgsdelimitedtextprovider.cpp" line="400"/>
         <source>Error</source>
-        <translation type="unfinished"></translation>
+        <translation>შეცდომა</translation>
     </message>
     <message>
         <location filename="../src/providers/delimitedtext/qgsdelimitedtextprovider.cpp" line="402"/>
         <source>Note: the following lines were not loaded because Qgis was unable to determine values for the x and y coordinates:
 </source>
-        <translation type="unfinished"></translation>
+        <translation>შენიშვნა: შემდეგი სტრიქონების ჩატვირთვა ვერ მოხერხდა, რადგან Qgis-მა ვერ დაადგინა x და y კოორდინატების მნიშვნელობები:
+</translation>
     </message>
 </context>
 <context>
@@ -5772,7 +5787,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgsdetaileditemwidgetbase.ui" line="13"/>
         <source>Form</source>
-        <translation type="unfinished"></translation>
+        <translation>ფორმა</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsdetaileditemwidgetbase.ui" line="96"/>
@@ -5790,12 +5805,12 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/geoprocessing/qgsdlgpgbufferbase.ui" line="13"/>
         <source>Buffer features</source>
-        <translation type="unfinished"></translation>
+        <translation>ბუფერის თვისებები</translation>
     </message>
     <message>
         <location filename="../src/plugins/geoprocessing/qgsdlgpgbufferbase.ui" line="28"/>
         <source>Parameters</source>
-        <translation type="unfinished"></translation>
+        <translation>პარამეტრები</translation>
     </message>
     <message>
         <location filename="../src/plugins/geoprocessing/qgsdlgpgbufferbase.ui" line="59"/>
@@ -5815,7 +5830,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/geoprocessing/qgsdlgpgbufferbase.ui" line="118"/>
         <source>Schema:</source>
-        <translation type="unfinished"></translation>
+        <translation>სქემა:</translation>
     </message>
     <message>
         <location filename="../src/plugins/geoprocessing/qgsdlgpgbufferbase.ui" line="125"/>
@@ -5835,7 +5850,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/geoprocessing/qgsdlgpgbufferbase.ui" line="216"/>
         <source>public</source>
-        <translation type="unfinished"></translation>
+        <translation>საჯარო</translation>
     </message>
     <message>
         <location filename="../src/plugins/geoprocessing/qgsdlgpgbufferbase.ui" line="224"/>
@@ -5853,7 +5868,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/gui/qgsencodingfiledialog.cpp" line="29"/>
         <source>Encoding:</source>
-        <translation type="unfinished"></translation>
+        <translation>კოდირება:</translation>
     </message>
 </context>
 <context>
@@ -5861,17 +5876,17 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/gps_importer/qgsgpsdevicedialog.cpp" line="45"/>
         <source>New device %1</source>
-        <translation type="unfinished"></translation>
+        <translation>ახალი მოწყობილობა %1</translation>
     </message>
     <message>
         <location filename="../src/plugins/gps_importer/qgsgpsdevicedialog.cpp" line="59"/>
         <source>Are you sure?</source>
-        <translation type="unfinished"></translation>
+        <translation>დარწმუნებული ხართ?</translation>
     </message>
     <message>
         <location filename="../src/plugins/gps_importer/qgsgpsdevicedialog.cpp" line="60"/>
         <source>Are you sure that you want to delete this device?</source>
-        <translation type="unfinished"></translation>
+        <translation>დარწმუნებული ხართ რომ გსურთ წაშალოთ ეს მოწყობილობა?</translation>
     </message>
 </context>
 <context>
@@ -6265,7 +6280,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/gps_importer/qgsgpspluginguibase.ui" line="13"/>
         <source>GPS Tools</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">GPS ხელსაწყოები</translation>
     </message>
     <message>
         <location filename="../src/plugins/gps_importer/qgsgpspluginguibase.ui" line="70"/>
@@ -6288,7 +6303,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/gps_importer/qgsgpspluginguibase.ui" line="631"/>
         <source>Browse...</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ნუსხა...</translation>
     </message>
     <message>
         <location filename="../src/plugins/gps_importer/qgsgpspluginguibase.ui" line="133"/>
@@ -6323,7 +6338,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/gps_importer/qgsgpspluginguibase.ui" line="624"/>
         <source>Save As...</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">შენახვა როგორც...</translation>
     </message>
     <message>
         <location filename="../src/plugins/gps_importer/qgsgpspluginguibase.ui" line="641"/>
@@ -6368,7 +6383,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/gps_importer/qgsgpspluginguibase.ui" line="382"/>
         <source>Refresh</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">განახლება</translation>
     </message>
     <message>
         <location filename="../src/plugins/gps_importer/qgsgpspluginguibase.ui" line="437"/>
@@ -6455,17 +6470,17 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/app/qgsgeomtypedialog.cpp" line="30"/>
         <source>Real</source>
-        <translation type="unfinished"></translation>
+        <translation>ნამდვილი</translation>
     </message>
     <message>
         <location filename="../src/app/qgsgeomtypedialog.cpp" line="31"/>
         <source>Integer</source>
-        <translation type="unfinished"></translation>
+        <translation>მთელი</translation>
     </message>
     <message>
         <location filename="../src/app/qgsgeomtypedialog.cpp" line="32"/>
         <source>String</source>
-        <translation type="unfinished"></translation>
+        <translation>სტრიქონი</translation>
     </message>
 </context>
 <context>
@@ -6478,17 +6493,17 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgsgeomtypedialogbase.ui" line="22"/>
         <source>File format</source>
-        <translation type="unfinished"></translation>
+        <translation>ფაილი ფორმატი</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsgeomtypedialogbase.ui" line="155"/>
         <source>Type</source>
-        <translation type="unfinished"></translation>
+        <translation>ტიპი</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsgeomtypedialogbase.ui" line="41"/>
         <source>Point</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">წერტილი</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsgeomtypedialogbase.ui" line="48"/>
@@ -6498,32 +6513,32 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgsgeomtypedialogbase.ui" line="55"/>
         <source>Polygon</source>
-        <translation type="unfinished"></translation>
+        <translation>მრავალკუთხედი</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsgeomtypedialogbase.ui" line="65"/>
         <source>Attributes</source>
-        <translation type="unfinished"></translation>
+        <translation>ატრიბუტი</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsgeomtypedialogbase.ui" line="150"/>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation>სახელი</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsgeomtypedialogbase.ui" line="111"/>
         <source>Delete selected attribute</source>
-        <translation type="unfinished"></translation>
+        <translation>არჩეული ატრიბუტის წაშლა</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsgeomtypedialogbase.ui" line="127"/>
         <source>...</source>
-        <translation type="unfinished"></translation>
+        <translation>...</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsgeomtypedialogbase.ui" line="124"/>
         <source>Add attribute</source>
-        <translation type="unfinished"></translation>
+        <translation>ატრიბუტის დამატება</translation>
     </message>
 </context>
 <context>
@@ -6556,22 +6571,22 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/georeferencer/plugingui.cpp" line="86"/>
         <source>Choose a raster file</source>
-        <translation type="unfinished"></translation>
+        <translation>აირჩიეთ რასტრული ფაილი</translation>
     </message>
     <message>
         <location filename="../src/plugins/georeferencer/plugingui.cpp" line="88"/>
         <source>Raster files (*.*)</source>
-        <translation type="unfinished"></translation>
+        <translation>რასტრული ფაილები (*.*)</translation>
     </message>
     <message>
         <location filename="../src/plugins/georeferencer/plugingui.cpp" line="99"/>
         <source>Error</source>
-        <translation type="unfinished"></translation>
+        <translation>შეცდომა</translation>
     </message>
     <message>
         <location filename="../src/plugins/georeferencer/plugingui.cpp" line="100"/>
         <source>The selected file is not a valid raster file.</source>
-        <translation type="unfinished"></translation>
+        <translation>არჩეული ფაილი არ არის მართებული რასტრული ფაილი.</translation>
     </message>
     <message>
         <location filename="../src/plugins/georeferencer/plugingui.cpp" line="127"/>
@@ -6604,17 +6619,17 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/georeferencer/pluginguibase.ui" line="22"/>
         <source>Raster file:</source>
-        <translation type="unfinished"></translation>
+        <translation>რასტრული ფაილი:</translation>
     </message>
     <message>
         <location filename="../src/plugins/georeferencer/pluginguibase.ui" line="45"/>
         <source>...</source>
-        <translation type="unfinished"></translation>
+        <translation>...</translation>
     </message>
     <message>
         <location filename="../src/plugins/georeferencer/pluginguibase.ui" line="69"/>
         <source>Description...</source>
-        <translation type="unfinished"></translation>
+        <translation>აღწერა...</translation>
     </message>
     <message>
         <location filename="../src/plugins/georeferencer/pluginguibase.ui" line="76"/>
@@ -6624,7 +6639,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/georeferencer/pluginguibase.ui" line="99"/>
         <source>Close</source>
-        <translation type="unfinished"></translation>
+        <translation>დაკეტვა</translation>
     </message>
 </context>
 <context>
@@ -6637,7 +6652,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/georeferencer/qgsgeorefwarpoptionsdialogbase.ui" line="28"/>
         <source>Compression:</source>
-        <translation type="unfinished"></translation>
+        <translation>შეკუმშვა:</translation>
     </message>
     <message>
         <location filename="../src/plugins/georeferencer/qgsgeorefwarpoptionsdialogbase.ui" line="35"/>
@@ -6647,27 +6662,27 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/georeferencer/qgsgeorefwarpoptionsdialogbase.ui" line="46"/>
         <source>Nearest neighbour</source>
-        <translation type="unfinished"></translation>
+        <translation>უახლოესი გვერდითი</translation>
     </message>
     <message>
         <location filename="../src/plugins/georeferencer/qgsgeorefwarpoptionsdialogbase.ui" line="51"/>
         <source>Linear</source>
-        <translation type="unfinished"></translation>
+        <translation>წრფივი</translation>
     </message>
     <message>
         <location filename="../src/plugins/georeferencer/qgsgeorefwarpoptionsdialogbase.ui" line="56"/>
         <source>Cubic</source>
-        <translation type="unfinished"></translation>
+        <translation>კუბიკური</translation>
     </message>
     <message>
         <location filename="../src/plugins/georeferencer/qgsgeorefwarpoptionsdialogbase.ui" line="64"/>
         <source>Use 0 for transparency when needed</source>
-        <translation type="unfinished"></translation>
+        <translation>საჭიროებისას 0-ის გამოყენება გამჭვირვალობისთვის</translation>
     </message>
     <message>
         <location filename="../src/plugins/georeferencer/qgsgeorefwarpoptionsdialogbase.ui" line="74"/>
         <source>OK</source>
-        <translation type="unfinished"></translation>
+        <translation>OK</translation>
     </message>
 </context>
 <context>
@@ -6685,7 +6700,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/app/qgsgraduatedsymboldialog.cpp" line="394"/>
         <source>Empty</source>
-        <translation type="unfinished"></translation>
+        <translation>ცარიელი</translation>
     </message>
 </context>
 <context>
@@ -6698,27 +6713,27 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgsgraduatedsymboldialogbase.ui" line="55"/>
         <source>Classification field</source>
-        <translation type="unfinished"></translation>
+        <translation>კლასიფიკაციის ველი</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsgraduatedsymboldialogbase.ui" line="93"/>
         <source>Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>რეჟიმი</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsgraduatedsymboldialogbase.ui" line="131"/>
         <source>Number of classes</source>
-        <translation type="unfinished"></translation>
+        <translation>კლასების რაოდენობა</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsgraduatedsymboldialogbase.ui" line="181"/>
         <source>Classify</source>
-        <translation type="unfinished"></translation>
+        <translation>კლასიფიკაცია</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsgraduatedsymboldialogbase.ui" line="188"/>
         <source>Delete class</source>
-        <translation type="unfinished"></translation>
+        <translation>კლასის წაშლა</translation>
     </message>
 </context>
 <context>
@@ -6726,22 +6741,22 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/grass/qgsgrassattributes.cpp" line="122"/>
         <source>Column</source>
-        <translation type="unfinished"></translation>
+        <translation>სვეტი</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassattributes.cpp" line="123"/>
         <source>Value</source>
-        <translation type="unfinished"></translation>
+        <translation>მნიშვნელობა</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassattributes.cpp" line="123"/>
         <source>Type</source>
-        <translation type="unfinished"></translation>
+        <translation>ტიპი</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassattributes.cpp" line="157"/>
         <source>Layer</source>
-        <translation type="unfinished"></translation>
+        <translation>ფენა</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassattributes.cpp" line="266"/>
@@ -6751,12 +6766,12 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/grass/qgsgrassattributes.cpp" line="267"/>
         <source>ERROR</source>
-        <translation type="unfinished"></translation>
+        <translation>შეცდომა</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassattributes.cpp" line="271"/>
         <source>OK</source>
-        <translation type="unfinished"></translation>
+        <translation>OK</translation>
     </message>
 </context>
 <context>
@@ -6764,7 +6779,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/grass/qgsgrassattributesbase.ui" line="43"/>
         <source>GRASS Attributes</source>
-        <translation type="unfinished"></translation>
+        <translation>GRASS-ის ატრიბუტები</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassattributesbase.ui" line="80"/>
@@ -6774,17 +6789,17 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/grass/qgsgrassattributesbase.ui" line="112"/>
         <source>result</source>
-        <translation type="unfinished"></translation>
+        <translation>შედეგი</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassattributesbase.ui" line="182"/>
         <source>Update database record</source>
-        <translation type="unfinished"></translation>
+        <translation>მონაცემთა ბაზის ჩანაწერის განახლება</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassattributesbase.ui" line="185"/>
         <source>Update</source>
-        <translation type="unfinished"></translation>
+        <translation>განახლება</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassattributesbase.ui" line="210"/>
@@ -6794,7 +6809,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/grass/qgsgrassattributesbase.ui" line="213"/>
         <source>New</source>
-        <translation type="unfinished"></translation>
+        <translation>ახალი</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassattributesbase.ui" line="238"/>
@@ -6804,7 +6819,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/grass/qgsgrassattributesbase.ui" line="241"/>
         <source>Delete</source>
-        <translation type="unfinished"></translation>
+        <translation>წაშლა</translation>
     </message>
 </context>
 <context>
@@ -6812,7 +6827,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/grass/qgsgrassbrowser.cpp" line="43"/>
         <source>Tools</source>
-        <translation type="unfinished"></translation>
+        <translation>ხელსაწყოები</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassbrowser.cpp" line="47"/>
@@ -6842,12 +6857,12 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/grass/qgsgrassbrowser.cpp" line="87"/>
         <source>Refresh</source>
-        <translation type="unfinished"></translation>
+        <translation>განახლება</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassbrowser.cpp" line="304"/>
         <source>New name</source>
-        <translation type="unfinished"></translation>
+        <translation>ახალი სახელი</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassbrowser.cpp" line="412"/>
@@ -6862,7 +6877,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/grass/qgsgrassbrowser.cpp" line="374"/>
         <source>&lt;br&gt;command: </source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;br&gt;ბრძანება: </translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassbrowser.cpp" line="320"/>
@@ -6872,7 +6887,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/grass/qgsgrassbrowser.cpp" line="356"/>
         <source>Delete map &lt;b&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>რუქის წაშლა &lt;b&gt;</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassbrowser.cpp" line="373"/>
@@ -6910,7 +6925,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/grass/qgsgrassedit.cpp" line="259"/>
         <source>New point</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ახალი წერტილი</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassedit.cpp" line="265"/>
@@ -6965,7 +6980,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/grass/qgsgrassedit.cpp" line="324"/>
         <source>Close</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">დაკეტვა</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassedit.cpp" line="407"/>
@@ -6985,7 +7000,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/grass/qgsgrassedit.cpp" line="410"/>
         <source>Point</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">წერტილი</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassedit.cpp" line="411"/>
@@ -7103,22 +7118,22 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/grass/qgsgrasseditbase.ui" line="13"/>
         <source>GRASS Edit</source>
-        <translation type="unfinished"></translation>
+        <translation>GRASS-ის რედაქტირება</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrasseditbase.ui" line="84"/>
         <source>Category</source>
-        <translation type="unfinished"></translation>
+        <translation>კატეგორია</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrasseditbase.ui" line="54"/>
         <source>Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>რეჟიმი</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrasseditbase.ui" line="335"/>
         <source>Layer</source>
-        <translation type="unfinished"></translation>
+        <translation>ფენა</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrasseditbase.ui" line="154"/>
@@ -7153,12 +7168,12 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/grass/qgsgrasseditbase.ui" line="300"/>
         <source>Color</source>
-        <translation type="unfinished"></translation>
+        <translation>ფერი</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrasseditbase.ui" line="388"/>
         <source>Type</source>
-        <translation type="unfinished"></translation>
+        <translation>ტიპი</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrasseditbase.ui" line="310"/>
@@ -7168,12 +7183,12 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/grass/qgsgrasseditbase.ui" line="327"/>
         <source>Table</source>
-        <translation type="unfinished"></translation>
+        <translation>ცხრილი</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrasseditbase.ui" line="383"/>
         <source>Column</source>
-        <translation type="unfinished"></translation>
+        <translation>სვეტი</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrasseditbase.ui" line="393"/>
@@ -7183,7 +7198,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/grass/qgsgrasseditbase.ui" line="416"/>
         <source>Add Column</source>
-        <translation type="unfinished"></translation>
+        <translation>სვეტის დამატება</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrasseditbase.ui" line="423"/>
@@ -7196,32 +7211,32 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/grass/qgsgrassutils.cpp" line="114"/>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>შეწყვეტა</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassutils.cpp" line="143"/>
         <source>Ok</source>
-        <translation type="unfinished"></translation>
+        <translation>Ok</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassutils.cpp" line="148"/>
         <source>&lt;font color=&apos;red&apos;&gt;Enter a name!&lt;/font&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;font color=&apos;red&apos;&gt;შეიყვანეთ სახელი!&lt;/font&gt;</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassutils.cpp" line="159"/>
         <source>&lt;font color=&apos;red&apos;&gt;This is name of the source!&lt;/font&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;font color=&apos;red&apos;&gt;ეს წყაროს სახელია!&lt;/font&gt;</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassutils.cpp" line="165"/>
         <source>&lt;font color=&apos;red&apos;&gt;Exists!&lt;/font&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;font color=&apos;red&apos;&gt;არსებობს!&lt;/font&gt;</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassutils.cpp" line="166"/>
         <source>Overwrite</source>
-        <translation type="unfinished"></translation>
+        <translation>გადაწერა</translation>
     </message>
 </context>
 <context>
@@ -7613,7 +7628,7 @@ at line </source>
     <message>
         <location filename="../src/plugins/grass/qgsgrassmapcalc.cpp" line="1257"/>
         <source> column </source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">სვეტი</translation>
     </message>
 </context>
 <context>
@@ -7659,7 +7674,7 @@ at line </source>
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodule.cpp" line="986"/>
         <source>)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">)</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodule.cpp" line="981"/>
@@ -7670,7 +7685,8 @@ at line </source>
         <location filename="../src/plugins/grass/qgsgrassmodule.cpp" line="981"/>
         <source>):
 </source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">):
+</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodule.cpp" line="982"/>
@@ -7711,7 +7727,7 @@ at line </source>
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodule.cpp" line="982"/>
         <source> column </source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">სვეტი</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodule.cpp" line="986"/>
@@ -7721,7 +7737,7 @@ at line </source>
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodule.cpp" line="1384"/>
         <source>Run</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">გაშვება</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodule.cpp" line="1176"/>
@@ -7784,7 +7800,7 @@ at line </source>
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodulebase.ui" line="47"/>
         <source>Manual</source>
-        <translation type="unfinished"></translation>
+        <translation>ხელით</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodulebase.ui" line="78"/>
@@ -7794,7 +7810,7 @@ at line </source>
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodulebase.ui" line="116"/>
         <source>Run</source>
-        <translation type="unfinished"></translation>
+        <translation>გაშვება</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodulebase.ui" line="139"/>
@@ -7804,7 +7820,7 @@ at line </source>
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodulebase.ui" line="159"/>
         <source>Close</source>
-        <translation type="unfinished"></translation>
+        <translation>დაკეტვა</translation>
     </message>
 </context>
 <context>
@@ -7812,7 +7828,7 @@ at line </source>
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodule.cpp" line="2814"/>
         <source>Attribute field</source>
-        <translation type="unfinished"></translation>
+        <translation>ატრიბუტის ველი</translation>
     </message>
 </context>
 <context>
@@ -7820,7 +7836,7 @@ at line </source>
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodule.cpp" line="3022"/>
         <source>File</source>
-        <translation type="unfinished"></translation>
+        <translation>ფაილი</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodule.cpp" line="3138"/>
@@ -7830,7 +7846,7 @@ at line </source>
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodule.cpp" line="3145"/>
         <source>:&amp;nbsp;directory does not exist</source>
-        <translation type="unfinished"></translation>
+        <translation>:&amp;nbsp;დირექტორია არ არსებობს</translation>
     </message>
 </context>
 <context>
@@ -7891,7 +7907,7 @@ at line </source>
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodule.cpp" line="2146"/>
         <source> not supported</source>
-        <translation type="unfinished"></translation>
+        <translation>არაა მხარდაჭერილი</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodule.cpp" line="2170"/>
@@ -7917,7 +7933,7 @@ at line </source>
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodule.cpp" line="2906"/>
         <source>Attribute field</source>
-        <translation type="unfinished"></translation>
+        <translation>ატრიბუტის ველი</translation>
     </message>
 </context>
 <context>
@@ -7946,7 +7962,8 @@ at line </source>
         <location filename="../src/plugins/grass/qgsgrassmodule.cpp" line="360"/>
         <source>):
 </source>
-        <translation type="unfinished"></translation>
+        <translation>):
+</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodule.cpp" line="361"/>
@@ -7957,7 +7974,7 @@ at line </source>
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodule.cpp" line="361"/>
         <source> column </source>
-        <translation type="unfinished"></translation>
+        <translation>სვეტი</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassmodule.cpp" line="403"/>
@@ -7995,7 +8012,7 @@ at line </source>
     <message>
         <location filename="../src/plugins/grass/qgsgrassnewmapset.cpp" line="137"/>
         <source>Database</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">მონაცემთა ბაზა</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassnewmapset.cpp" line="140"/>
@@ -8090,7 +8107,7 @@ at line </source>
     <message>
         <location filename="../src/plugins/grass/qgsgrassnewmapset.cpp" line="761"/>
         <source>)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">)</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassnewmapset.cpp" line="771"/>
@@ -8101,7 +8118,8 @@ at line </source>
         <location filename="../src/plugins/grass/qgsgrassnewmapset.cpp" line="772"/>
         <source>):
 </source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">):
+</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassnewmapset.cpp" line="772"/>
@@ -8112,7 +8130,7 @@ at line </source>
     <message>
         <location filename="../src/plugins/grass/qgsgrassnewmapset.cpp" line="773"/>
         <source> column </source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">სვეტი</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassnewmapset.cpp" line="1087"/>
@@ -8147,7 +8165,7 @@ at line </source>
     <message>
         <location filename="../src/plugins/grass/qgsgrassnewmapset.cpp" line="1246"/>
         <source>Location: </source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">მდებარეობა:</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassnewmapset.cpp" line="1248"/>
@@ -8249,7 +8267,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/grass/qgsgrassnewmapsetbase.ui" line="596"/>
         <source>Browse...</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ნუსხა...</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassnewmapsetbase.ui" line="607"/>
@@ -8264,7 +8282,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/grass/qgsgrassnewmapsetbase.ui" line="639"/>
         <source>Location</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">მდებარეობა</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassnewmapsetbase.ui" line="654"/>
@@ -8342,22 +8360,22 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/grass/qgsgrassnewmapsetbase.ui" line="1870"/>
         <source>S</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">S</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassnewmapsetbase.ui" line="1906"/>
         <source>W</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">W</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassnewmapsetbase.ui" line="1945"/>
         <source>E</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">E</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassnewmapsetbase.ui" line="1981"/>
         <source>N</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">N</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassnewmapsetbase.ui" line="2587"/>
@@ -8419,12 +8437,12 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/grass/qgsgrassplugin.cpp" line="63"/>
         <source>0.1</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">0.1</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassplugin.cpp" line="64"/>
         <source>GRASS layer</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">GRASS ფენა</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassplugin.cpp" line="125"/>
@@ -8544,12 +8562,12 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/grass/qgsgrassplugin.cpp" line="544"/>
         <source>GISDBASE, LOCATION_NAME or MAPSET is not set, cannot display current region.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">GISDBASE, LOCATION_NAME ან MAPSET არ არის გამართული, მიმდინარე რეგიონის ჩვენება შეუძლებელია.</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassplugin.cpp" line="555"/>
         <source>Cannot read current region: </source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">მიმდინარე რეგიონის წაკითხვა ვერ მოხერხდა:</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassplugin.cpp" line="656"/>
@@ -8582,17 +8600,17 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/grass/qgsgrassregion.cpp" line="164"/>
         <source>GISDBASE, LOCATION_NAME or MAPSET is not set, cannot display current region.</source>
-        <translation type="unfinished"></translation>
+        <translation>GISDBASE, LOCATION_NAME ან MAPSET არ არის გამართული, მიმდინარე რეგიონის ჩვენება შეუძლებელია.</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassregion.cpp" line="172"/>
         <source>Cannot read current region: </source>
-        <translation type="unfinished"></translation>
+        <translation>მიმდინარე რეგიონის წაკითხვა ვერ მოხერხდა:</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassregion.cpp" line="433"/>
         <source>Cannot write region</source>
-        <translation type="unfinished"></translation>
+        <translation>რეგიონის ჩაწერა ვერ მოხერხდა</translation>
     </message>
 </context>
 <context>
@@ -8605,22 +8623,22 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/grass/qgsgrassregionbase.ui" line="92"/>
         <source>N</source>
-        <translation type="unfinished"></translation>
+        <translation>N</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassregionbase.ui" line="169"/>
         <source>W</source>
-        <translation type="unfinished"></translation>
+        <translation>W</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassregionbase.ui" line="195"/>
         <source>E</source>
-        <translation type="unfinished"></translation>
+        <translation>E</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassregionbase.ui" line="266"/>
         <source>S</source>
-        <translation type="unfinished"></translation>
+        <translation>S</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassregionbase.ui" line="316"/>
@@ -8645,7 +8663,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/grass/qgsgrassregionbase.ui" line="407"/>
         <source>Color</source>
-        <translation type="unfinished"></translation>
+        <translation>ფერი</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassregionbase.ui" line="427"/>
@@ -8655,12 +8673,12 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/grass/qgsgrassregionbase.ui" line="514"/>
         <source>OK</source>
-        <translation type="unfinished"></translation>
+        <translation>OK</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassregionbase.ui" line="537"/>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>გაუქმება</translation>
     </message>
 </context>
 <context>
@@ -8713,7 +8731,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/grass/qgsgrassselect.cpp" line="521"/>
         <source>Select a map.</source>
-        <translation type="unfinished"></translation>
+        <translation>არიჩიეთ რუკა.</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassselect.cpp" line="522"/>
@@ -8736,7 +8754,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/grass/qgsgrassselectbase.ui" line="19"/>
         <source>Add GRASS Layer</source>
-        <translation type="unfinished"></translation>
+        <translation>GRASS ფენის დამატება</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassselectbase.ui" line="82"/>
@@ -8746,7 +8764,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/grass/qgsgrassselectbase.ui" line="95"/>
         <source>Location</source>
-        <translation type="unfinished"></translation>
+        <translation>მდებარეობა</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassselectbase.ui" line="102"/>
@@ -8761,27 +8779,27 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/grass/qgsgrassselectbase.ui" line="135"/>
         <source>Map name</source>
-        <translation type="unfinished"></translation>
+        <translation>რუკის სახელი</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassselectbase.ui" line="142"/>
         <source>Layer</source>
-        <translation type="unfinished"></translation>
+        <translation>ფენა</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassselectbase.ui" line="185"/>
         <source>Browse</source>
-        <translation type="unfinished"></translation>
+        <translation>არჩევა</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassselectbase.ui" line="192"/>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>შეწყვეტა</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrassselectbase.ui" line="199"/>
         <source>OK</source>
-        <translation type="unfinished"></translation>
+        <translation>OK</translation>
     </message>
 </context>
 <context>
@@ -8794,7 +8812,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/grass/qgsgrassshellbase.ui" line="49"/>
         <source>Close</source>
-        <translation type="unfinished"></translation>
+        <translation>დაკეტვა</translation>
     </message>
 </context>
 <context>
@@ -8802,17 +8820,17 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/grass/qgsgrasstools.cpp" line="66"/>
         <source>GRASS Tools</source>
-        <translation type="unfinished"></translation>
+        <translation>GRASS-ის ხელსაწყოები</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrasstools.cpp" line="383"/>
         <source>GRASS Tools: </source>
-        <translation type="unfinished"></translation>
+        <translation>GRASS-ის ხელსაწყოები:</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrasstools.cpp" line="125"/>
         <source>Browser</source>
-        <translation type="unfinished"></translation>
+        <translation>ბრაუზერი</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrasstools.cpp" line="272"/>
@@ -8832,7 +8850,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/grass/qgsgrasstools.cpp" line="255"/>
         <source>The config file (</source>
-        <translation type="unfinished"></translation>
+        <translation>კონფიგურაციის ფაილი (</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrasstools.cpp" line="255"/>
@@ -8847,7 +8865,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/grass/qgsgrasstools.cpp" line="260"/>
         <source>)</source>
-        <translation type="unfinished"></translation>
+        <translation>)</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrasstools.cpp" line="269"/>
@@ -8863,7 +8881,7 @@ at line </source>
     <message>
         <location filename="../src/plugins/grass/qgsgrasstools.cpp" line="270"/>
         <source> column </source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">სვეტი</translation>
     </message>
 </context>
 <context>
@@ -8876,17 +8894,17 @@ at line </source>
     <message>
         <location filename="../src/plugins/grass/qgsgrasstoolsbase.ui" line="23"/>
         <source>Modules Tree</source>
-        <translation type="unfinished"></translation>
+        <translation>მოდულების ხე</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrasstoolsbase.ui" line="42"/>
         <source>1</source>
-        <translation type="unfinished"></translation>
+        <translation>1</translation>
     </message>
     <message>
         <location filename="../src/plugins/grass/qgsgrasstoolsbase.ui" line="51"/>
         <source>Modules List</source>
-        <translation type="unfinished"></translation>
+        <translation>მოდულების სია</translation>
     </message>
 </context>
 <context>
@@ -8965,12 +8983,12 @@ at line </source>
     <message>
         <location filename="../src/plugins/grid_maker/pluginguibase.ui" line="176"/>
         <source>Y</source>
-        <translation type="unfinished"></translation>
+        <translation>Y</translation>
     </message>
     <message>
         <location filename="../src/plugins/grid_maker/pluginguibase.ui" line="186"/>
         <source>X</source>
-        <translation type="unfinished"></translation>
+        <translation>X</translation>
     </message>
     <message>
         <location filename="../src/plugins/grid_maker/pluginguibase.ui" line="146"/>
@@ -8985,22 +9003,22 @@ at line </source>
     <message>
         <location filename="../src/plugins/grid_maker/pluginguibase.ui" line="233"/>
         <source>Save As...</source>
-        <translation type="unfinished"></translation>
+        <translation>შენახვა როგორც...</translation>
     </message>
     <message>
         <location filename="../src/plugins/grid_maker/pluginguibase.ui" line="243"/>
         <source>Type</source>
-        <translation type="unfinished"></translation>
+        <translation>ტიპი</translation>
     </message>
     <message>
         <location filename="../src/plugins/grid_maker/pluginguibase.ui" line="264"/>
         <source>Point</source>
-        <translation type="unfinished"></translation>
+        <translation>წერტილი</translation>
     </message>
     <message>
         <location filename="../src/plugins/grid_maker/pluginguibase.ui" line="274"/>
         <source>Polygon</source>
-        <translation type="unfinished"></translation>
+        <translation>მრავალკუთხედი</translation>
     </message>
     <message>
         <location filename="../src/plugins/grid_maker/pluginguibase.ui" line="287"/>
@@ -9032,27 +9050,27 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/helpviewer/qgshelpviewer.cpp" line="158"/>
         <source>Quantum GIS Help</source>
-        <translation type="unfinished"></translation>
+        <translation>Quantum GIS-ის დახმარება</translation>
     </message>
     <message>
         <location filename="../src/helpviewer/qgshelpviewer.cpp" line="187"/>
         <source>Quantum GIS Help - </source>
-        <translation type="unfinished"></translation>
+        <translation>Quantum GIS-ის დახმარება -</translation>
     </message>
     <message>
         <location filename="../src/helpviewer/qgshelpviewer.cpp" line="217"/>
         <source>Error</source>
-        <translation type="unfinished"></translation>
+        <translation>შეცდომა</translation>
     </message>
     <message>
         <location filename="../src/helpviewer/qgshelpviewer.cpp" line="193"/>
         <source>Failed to get the help text from the database</source>
-        <translation type="unfinished"></translation>
+        <translation>მონაცემთა ბაზიდან დახმარების მიღება ვერ მოხერხდა</translation>
     </message>
     <message>
         <location filename="../src/helpviewer/qgshelpviewer.cpp" line="218"/>
         <source>The QGIS help database is not installed</source>
-        <translation type="unfinished"></translation>
+        <translation>QGIS-ის დახმარების მონაცემთა ბაზა არ არის ჩადგმული</translation>
     </message>
 </context>
 <context>
@@ -9060,47 +9078,47 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgshelpviewerbase.ui" line="13"/>
         <source>QGIS Help</source>
-        <translation type="unfinished"></translation>
+        <translation>QGIS-ის დახმარება</translation>
     </message>
     <message>
         <location filename="../src/ui/qgshelpviewerbase.ui" line="78"/>
         <source>&amp;Close</source>
-        <translation type="unfinished"></translation>
+        <translation>დაკე&amp;ტვა</translation>
     </message>
     <message>
         <location filename="../src/ui/qgshelpviewerbase.ui" line="81"/>
         <source>Alt+C</source>
-        <translation type="unfinished"></translation>
+        <translation>Alt+C</translation>
     </message>
     <message>
         <location filename="../src/ui/qgshelpviewerbase.ui" line="39"/>
         <source>&amp;Home</source>
-        <translation type="unfinished"></translation>
+        <translation>სა&amp;ხლი</translation>
     </message>
     <message>
         <location filename="../src/ui/qgshelpviewerbase.ui" line="42"/>
         <source>Alt+H</source>
-        <translation type="unfinished"></translation>
+        <translation>Alt+H</translation>
     </message>
     <message>
         <location filename="../src/ui/qgshelpviewerbase.ui" line="52"/>
         <source>&amp;Forward</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;წინ</translation>
     </message>
     <message>
         <location filename="../src/ui/qgshelpviewerbase.ui" line="55"/>
         <source>Alt+F</source>
-        <translation type="unfinished"></translation>
+        <translation>Alt+F</translation>
     </message>
     <message>
         <location filename="../src/ui/qgshelpviewerbase.ui" line="65"/>
         <source>&amp;Back</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;უკან</translation>
     </message>
     <message>
         <location filename="../src/ui/qgshelpviewerbase.ui" line="68"/>
         <source>Alt+B</source>
-        <translation type="unfinished"></translation>
+        <translation>Alt+B</translation>
     </message>
 </context>
 <context>
@@ -9126,6 +9144,7 @@ p, li { white-space: pre-wrap; }
 This may be a problem in your network connection or at the WMS server.</source>
         <translation type="unfinished">
             <numerusform></numerusform>
+            <numerusform></numerusform>
         </translation>
     </message>
 </context>
@@ -9134,7 +9153,7 @@ This may be a problem in your network connection or at the WMS server.</source>
     <message>
         <location filename="../src/plugins/interpolation/qgsidwinterpolatordialogbase.ui" line="13"/>
         <source>Dialog</source>
-        <translation type="unfinished"></translation>
+        <translation>დიალოგი</translation>
     </message>
     <message>
         <location filename="../src/plugins/interpolation/qgsidwinterpolatordialogbase.ui" line="19"/>
@@ -9148,7 +9167,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/interpolation/qgsidwinterpolatordialogbase.ui" line="32"/>
         <source>Distance coefficient P:</source>
-        <translation type="unfinished"></translation>
+        <translation>მანძილის კოეფიციენტი P:</translation>
     </message>
 </context>
 <context>
@@ -9161,7 +9180,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/app/qgsidentifyresults.cpp" line="46"/>
         <source>Value</source>
-        <translation type="unfinished"></translation>
+        <translation>მნიშვნელობა</translation>
     </message>
     <message>
         <location filename="../src/app/qgsidentifyresults.cpp" line="59"/>
@@ -9171,12 +9190,12 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/app/qgsidentifyresults.cpp" line="110"/>
         <source>Run action</source>
-        <translation type="unfinished"></translation>
+        <translation>მოქმედების შესრულება</translation>
     </message>
     <message>
         <location filename="../src/app/qgsidentifyresults.cpp" line="214"/>
         <source>Identify Results - </source>
-        <translation type="unfinished"></translation>
+        <translation>შედეგების იდენტიფიკაცია -</translation>
     </message>
 </context>
 <context>
@@ -9184,22 +9203,22 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgsidentifyresultsbase.ui" line="13"/>
         <source>Identify Results</source>
-        <translation type="unfinished"></translation>
+        <translation>შედეგების იდენტიფიკაცია</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsidentifyresultsbase.ui" line="43"/>
         <source>Help</source>
-        <translation type="unfinished"></translation>
+        <translation>დახმარება</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsidentifyresultsbase.ui" line="46"/>
         <source>F1</source>
-        <translation type="unfinished"></translation>
+        <translation>F1</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsidentifyresultsbase.ui" line="72"/>
         <source>Close</source>
-        <translation type="unfinished"></translation>
+        <translation>დაკეტვა</translation>
     </message>
 </context>
 <context>
@@ -9207,7 +9226,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/interpolation/qgsinterpolationdialog.cpp" line="210"/>
         <source>Triangular interpolation (TIN)</source>
-        <translation type="unfinished"></translation>
+        <translation>სამკუთხა ინტერპოლაცია (TIN)</translation>
     </message>
     <message>
         <location filename="../src/plugins/interpolation/qgsinterpolationdialog.cpp" line="206"/>
@@ -9255,17 +9274,17 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/interpolation/qgsinterpolationdialogbase.ui" line="176"/>
         <source>...</source>
-        <translation type="unfinished"></translation>
+        <translation>...</translation>
     </message>
     <message>
         <location filename="../src/plugins/interpolation/qgsinterpolationdialogbase.ui" line="129"/>
         <source>Number of columns</source>
-        <translation type="unfinished"></translation>
+        <translation>სვეტების რაოდენობა</translation>
     </message>
     <message>
         <location filename="../src/plugins/interpolation/qgsinterpolationdialogbase.ui" line="146"/>
         <source>Number of rows</source>
-        <translation type="unfinished"></translation>
+        <translation>რიგების რაოდენობა</translation>
     </message>
     <message>
         <location filename="../src/plugins/interpolation/qgsinterpolationdialogbase.ui" line="163"/>
@@ -9278,7 +9297,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/interpolation/qgsinterpolationplugin.cpp" line="49"/>
         <source>&amp;Interpolation</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;ინტერპოლაცია</translation>
     </message>
 </context>
 <context>
@@ -9291,17 +9310,17 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgsludialogbase.ui" line="40"/>
         <source>Lower value</source>
-        <translation type="unfinished"></translation>
+        <translation>ქვედა მნიშვნელობა</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsludialogbase.ui" line="66"/>
         <source>Upper value</source>
-        <translation type="unfinished"></translation>
+        <translation>ზედა მნიშვნელობა</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsludialogbase.ui" line="79"/>
         <source>-</source>
-        <translation type="unfinished"></translation>
+        <translation>-</translation>
     </message>
 </context>
 <context>
@@ -9324,7 +9343,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgslabeldialogbase.ui" line="153"/>
         <source>Font</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">შრიფტი</translation>
     </message>
     <message>
         <location filename="../src/ui/qgslabeldialogbase.ui" line="99"/>
@@ -9369,7 +9388,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgslabeldialogbase.ui" line="424"/>
         <source>Color</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ფერი</translation>
     </message>
     <message>
         <location filename="../src/ui/qgslabeldialogbase.ui" line="757"/>
@@ -9384,7 +9403,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgslabeldialogbase.ui" line="741"/>
         <source>Placement</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ადგილმდებარეობა</translation>
     </message>
     <message>
         <location filename="../src/ui/qgslabeldialogbase.ui" line="254"/>
@@ -9562,7 +9581,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/app/legend/qgslegend.cpp" line="114"/>
         <source>group</source>
-        <translation type="unfinished"></translation>
+        <translation>ჯგუფი</translation>
     </message>
     <message>
         <location filename="../src/app/legend/qgslegend.cpp" line="430"/>
@@ -9572,32 +9591,32 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/app/legend/qgslegend.cpp" line="437"/>
         <source>&amp;Remove</source>
-        <translation type="unfinished"></translation>
+        <translation>ამო&amp;ღება</translation>
     </message>
     <message>
         <location filename="../src/app/legend/qgslegend.cpp" line="442"/>
         <source>Re&amp;name</source>
-        <translation type="unfinished"></translation>
+        <translation>გადარ&amp;ქმევა</translation>
     </message>
     <message>
         <location filename="../src/app/legend/qgslegend.cpp" line="447"/>
         <source>&amp;Add group</source>
-        <translation type="unfinished"></translation>
+        <translation>ჯგუფის დ&amp;ამატება</translation>
     </message>
     <message>
         <location filename="../src/app/legend/qgslegend.cpp" line="448"/>
         <source>&amp;Expand all</source>
-        <translation type="unfinished"></translation>
+        <translation>ყველას გა&amp;შლა</translation>
     </message>
     <message>
         <location filename="../src/app/legend/qgslegend.cpp" line="449"/>
         <source>&amp;Collapse all</source>
-        <translation type="unfinished"></translation>
+        <translation>ყველას &amp;ჩაკეცვა</translation>
     </message>
     <message>
         <location filename="../src/app/legend/qgslegend.cpp" line="451"/>
         <source>Show file groups</source>
-        <translation type="unfinished"></translation>
+        <translation>ფაილების ჯგუფების ჩვენება</translation>
     </message>
     <message>
         <location filename="../src/app/legend/qgslegend.cpp" line="1853"/>
@@ -9630,7 +9649,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/app/legend/qgslegendlayer.cpp" line="494"/>
         <source>&amp;Remove</source>
-        <translation type="unfinished"></translation>
+        <translation>ამო&amp;ღება</translation>
     </message>
     <message>
         <location filename="../src/app/legend/qgslegendlayer.cpp" line="501"/>
@@ -9713,7 +9732,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/app/legend/qgslegendlayerfile.cpp" line="335"/>
         <source>Error</source>
-        <translation type="unfinished"></translation>
+        <translation>შეცდომა</translation>
     </message>
     <message>
         <location filename="../src/app/legend/qgslegendlayerfile.cpp" line="332"/>
@@ -9738,7 +9757,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/app/legend/qgslegendlayerfile.cpp" line="373"/>
         <source>&amp;Remove</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ამო&amp;ღება</translation>
     </message>
     <message>
         <location filename="../src/app/legend/qgslegendlayerfile.cpp" line="382"/>
@@ -9771,7 +9790,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/gui/qgsmapcanvas.cpp" line="1220"/>
         <source>because</source>
-        <translation type="unfinished"></translation>
+        <translation>რადგან</translation>
     </message>
 </context>
 <context>
@@ -9822,7 +9841,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/app/qgsmaptoolidentify.cpp" line="161"/>
         <source>(clicked coordinate)</source>
-        <translation type="unfinished"></translation>
+        <translation>(დაწკაპული კოორდინატი)</translation>
     </message>
     <message>
         <location filename="../src/app/qgsmaptoolidentify.cpp" line="223"/>
@@ -9834,8 +9853,9 @@ p, li { white-space: pre-wrap; }
         <location filename="../src/app/qgsmaptoolidentify.cpp" line="403"/>
         <source>- %1 features found</source>
         <comment>Identify results window title</comment>
-        <translation type="unfinished">
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>- ნაპოვნია %1 თვისება</numerusform>
+            <numerusform>- ნაპოვნია %1 თვისება</numerusform>
         </translation>
     </message>
 </context>
@@ -9872,7 +9892,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/app/qgsmaptoolvertexedit.cpp" line="52"/>
         <source>Don&apos;t show this message again</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">აღარ აჩვენო ეს შეტყობინება</translation>
     </message>
     <message>
         <location filename="../src/app/qgsmaptoolvertexedit.cpp" line="57"/>
@@ -9890,42 +9910,42 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../tools/mapserver_export/qgsmapserverexport.cpp" line="201"/>
         <source>Overwrite File?</source>
-        <translation type="unfinished"></translation>
+        <translation>გადავაწერო ფაილს?</translation>
     </message>
     <message>
         <location filename="../src/app/qgsmapserverexport.cpp" line="74"/>
         <source> exists. 
 Do you want to overwrite it?</source>
-        <translation type="unfinished"></translation>
+        <translation>არსებობს. გადავაწერო მას?</translation>
     </message>
     <message>
         <location filename="../tools/mapserver_export/qgsmapserverexport.cpp" line="76"/>
         <source>Name for the map file</source>
-        <translation type="unfinished"></translation>
+        <translation>რუკის ფაილის სახელი</translation>
     </message>
     <message>
         <location filename="../tools/mapserver_export/qgsmapserverexport.cpp" line="77"/>
         <source>MapServer map files (*.map);;All files (*.*)</source>
         <comment>Filter list for selecting files from a dialog box</comment>
-        <translation type="unfinished"></translation>
+        <translation>MapServer-ის რუკის ფაილები (*.map);;ყველა ფაილი (*.*)</translation>
     </message>
     <message>
         <location filename="../tools/mapserver_export/qgsmapserverexport.cpp" line="84"/>
         <source>Choose the QGIS project file</source>
-        <translation type="unfinished"></translation>
+        <translation>აირჩიეთ QGIS-ის პროექტის ფაილი</translation>
     </message>
     <message>
         <location filename="../tools/mapserver_export/qgsmapserverexport.cpp" line="85"/>
         <source>QGIS Project Files (*.qgs);;All files (*.*)</source>
         <comment>Filter list for selecting files from a dialog box</comment>
-        <translation type="unfinished"></translation>
+        <translation>QGIS პროექტის ფაილები (*.qgs);;ყველა ფაილი (*.*)</translation>
     </message>
     <message>
         <location filename="../tools/mapserver_export/qgsmapserverexport.cpp" line="203"/>
         <source> exists. 
 Do you want to overwrite it?</source>
         <comment>a fileName is prepended to this text, and appears in a dialog box</comment>
-        <translation type="unfinished"></translation>
+        <translation>არსებობს. გსურთ გადავაწერო მას?</translation>
     </message>
 </context>
 <context>
@@ -9953,7 +9973,7 @@ Do you want to overwrite it?</source>
     <message>
         <location filename="../tools/mapserver_export/qgsmapserverexportbase.ui" line="369"/>
         <source>Browse...</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ნუსხა...</translation>
     </message>
     <message>
         <location filename="../tools/mapserver_export/qgsmapserverexportbase.ui" line="98"/>
@@ -9968,12 +9988,12 @@ Do you want to overwrite it?</source>
     <message>
         <location filename="../tools/mapserver_export/qgsmapserverexportbase.ui" line="159"/>
         <source>Map</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">რუკა</translation>
     </message>
     <message>
         <location filename="../tools/mapserver_export/qgsmapserverexportbase.ui" line="182"/>
         <source>Units</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ერთეულები</translation>
     </message>
     <message>
         <location filename="../tools/mapserver_export/qgsmapserverexportbase.ui" line="196"/>
@@ -10058,7 +10078,7 @@ Do you want to overwrite it?</source>
     <message>
         <location filename="../tools/mapserver_export/qgsmapserverexportbase.ui" line="330"/>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">სახელი</translation>
     </message>
     <message>
         <location filename="../tools/mapserver_export/qgsmapserverexportbase.ui" line="340"/>
@@ -10088,7 +10108,7 @@ Do you want to overwrite it?</source>
     <message>
         <location filename="../tools/mapserver_export/qgsmapserverexportbase.ui" line="393"/>
         <source>Save As...</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">შენახვა როგორც...</translation>
     </message>
     <message>
         <location filename="../tools/mapserver_export/qgsmapserverexportbase.ui" line="400"/>
@@ -10108,12 +10128,12 @@ Do you want to overwrite it?</source>
     <message>
         <location filename="../src/ui/qgsmapserverexportbase.ui" line="59"/>
         <source>F1</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">F1</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsmapserverexportbase.ui" line="85"/>
         <source>&amp;OK</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">&amp;OK</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsmapserverexportbase.ui" line="101"/>
@@ -10123,7 +10143,7 @@ Do you want to overwrite it?</source>
     <message>
         <location filename="../src/ui/qgsmapserverexportbase.ui" line="116"/>
         <source>...</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">...</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsmapserverexportbase.ui" line="226"/>
@@ -10146,32 +10166,32 @@ Do you want to overwrite it?</source>
     <message>
         <location filename="../src/ui/qgsmeasurebase.ui" line="19"/>
         <source>Measure</source>
-        <translation type="unfinished"></translation>
+        <translation>გაზმოვა</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsmeasurebase.ui" line="66"/>
         <source>Total:</source>
-        <translation type="unfinished"></translation>
+        <translation>ჯამი:</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsmeasurebase.ui" line="86"/>
         <source>Segments</source>
-        <translation type="unfinished"></translation>
+        <translation>სეგმენტები</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsmeasurebase.ui" line="102"/>
         <source>Help</source>
-        <translation type="unfinished"></translation>
+        <translation>დახმარება</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsmeasurebase.ui" line="125"/>
         <source>New</source>
-        <translation type="unfinished"></translation>
+        <translation>ახალი</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsmeasurebase.ui" line="132"/>
         <source>Cl&amp;ose</source>
-        <translation type="unfinished"></translation>
+        <translation>და&amp;კეტვა</translation>
     </message>
 </context>
 <context>
@@ -10179,22 +10199,22 @@ Do you want to overwrite it?</source>
     <message>
         <location filename="../src/app/qgsmeasuredialog.cpp" line="196"/>
         <source>Segments (in meters)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">სეგმენტი (მეტრებში)</translation>
     </message>
     <message>
         <location filename="../src/app/qgsmeasuredialog.cpp" line="199"/>
         <source>Segments (in feet)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">სეგმენტი (ფუტებში)</translation>
     </message>
     <message>
         <location filename="../src/app/qgsmeasuredialog.cpp" line="202"/>
         <source>Segments (in degrees)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">სეგმენტი (გრადუსებში)</translation>
     </message>
     <message>
         <location filename="../src/app/qgsmeasuredialog.cpp" line="205"/>
         <source>Segments</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">სეგმენტი</translation>
     </message>
 </context>
 <context>
@@ -10215,17 +10235,17 @@ Do you want to overwrite it?</source>
     <message>
         <location filename="../src/ui/qgsmessageviewer.ui" line="13"/>
         <source>QGIS Message</source>
-        <translation type="unfinished"></translation>
+        <translation>QGIS-ის შეტყობინება</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsmessageviewer.ui" line="28"/>
         <source>Don&apos;t show this message again</source>
-        <translation type="unfinished"></translation>
+        <translation>აღარ აჩვენო ეს შეტყობინება</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsmessageviewer.ui" line="48"/>
         <source>Close</source>
-        <translation type="unfinished"></translation>
+        <translation>დაკეტვა</translation>
     </message>
 </context>
 <context>
@@ -10233,12 +10253,12 @@ Do you want to overwrite it?</source>
     <message>
         <location filename="../src/app/qgsnewconnection.cpp" line="123"/>
         <source>Test connection</source>
-        <translation type="unfinished"></translation>
+        <translation>კავშირის შემოწმება</translation>
     </message>
     <message>
         <location filename="../src/app/qgsnewconnection.cpp" line="119"/>
         <source>Connection to %1 was successful</source>
-        <translation type="unfinished"></translation>
+        <translation>კავშირი %1-თან წარმატებით შედგა</translation>
     </message>
     <message>
         <location filename="../src/app/qgsnewconnection.cpp" line="123"/>
@@ -10246,7 +10266,10 @@ Do you want to overwrite it?</source>
 
 Extended error information:
 </source>
-        <translation type="unfinished"></translation>
+        <translation>დაკავშირება ვერ მოხერხდა - შეამოწმეთ პარამეტრები და კვლავ სცადეთ.
+
+ვრცელი მონაცემები შეცდომის შესახებ:
+</translation>
     </message>
 </context>
 <context>
@@ -10304,7 +10327,7 @@ Extended error information:
     <message>
         <location filename="../src/ui/qgsnewconnectionbase.ui" line="137"/>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">სახელი</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsnewconnectionbase.ui" line="147"/>
@@ -10314,7 +10337,7 @@ Extended error information:
     <message>
         <location filename="../src/ui/qgsnewconnectionbase.ui" line="157"/>
         <source>Database</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">მონაცემთა ბაზა</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsnewconnectionbase.ui" line="167"/>
@@ -10334,17 +10357,17 @@ Extended error information:
     <message>
         <location filename="../src/ui/qgsnewconnectionbase.ui" line="207"/>
         <source>Name of the new connection</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ახალი კავშირის სახელი</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsnewconnectionbase.ui" line="220"/>
         <source>5432</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">5432</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsnewconnectionbase.ui" line="252"/>
         <source>OK</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">OK</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsnewconnectionbase.ui" line="268"/>
@@ -10354,12 +10377,12 @@ Extended error information:
     <message>
         <location filename="../src/ui/qgsnewconnectionbase.ui" line="284"/>
         <source>Help</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">დახმარება</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsnewconnectionbase.ui" line="287"/>
         <source>F1</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">F1</translation>
     </message>
 </context>
 <context>
@@ -10367,32 +10390,32 @@ Extended error information:
     <message>
         <location filename="../src/ui/qgsnewhttpconnectionbase.ui" line="13"/>
         <source>Create a new WMS connection</source>
-        <translation type="unfinished"></translation>
+        <translation>ახალი WMS კავშირის შექმნა</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsnewhttpconnectionbase.ui" line="25"/>
         <source>Connection details</source>
-        <translation type="unfinished"></translation>
+        <translation>კავშირის დეტალები</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsnewhttpconnectionbase.ui" line="31"/>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation>სახელი</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsnewhttpconnectionbase.ui" line="50"/>
         <source>Name of the new connection</source>
-        <translation type="unfinished"></translation>
+        <translation>ახალი კავშირის სახელი</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsnewhttpconnectionbase.ui" line="60"/>
         <source>URL</source>
-        <translation type="unfinished"></translation>
+        <translation>URL</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsnewhttpconnectionbase.ui" line="73"/>
         <source>HTTP address of the Web Map Server</source>
-        <translation type="unfinished"></translation>
+        <translation>რუკების სერვერის HTTP მისამართი</translation>
     </message>
 </context>
 <context>
@@ -10400,22 +10423,22 @@ Extended error information:
     <message>
         <location filename="../src/plugins/north_arrow/plugin.cpp" line="80"/>
         <source>Bottom Left</source>
-        <translation type="unfinished"></translation>
+        <translation>ქვედა მარცხენა</translation>
     </message>
     <message>
         <location filename="../src/plugins/north_arrow/plugin.cpp" line="81"/>
         <source>Top Left</source>
-        <translation type="unfinished"></translation>
+        <translation>ზედა მარცხენა</translation>
     </message>
     <message>
         <location filename="../src/plugins/north_arrow/plugin.cpp" line="81"/>
         <source>Top Right</source>
-        <translation type="unfinished"></translation>
+        <translation>ზედა მარჯვენა</translation>
     </message>
     <message>
         <location filename="../src/plugins/north_arrow/plugin.cpp" line="81"/>
         <source>Bottom Right</source>
-        <translation type="unfinished"></translation>
+        <translation>ქვედა მარჯვენა</translation>
     </message>
     <message>
         <location filename="../src/plugins/north_arrow/plugin.cpp" line="94"/>
@@ -10430,7 +10453,7 @@ Extended error information:
     <message>
         <location filename="../src/plugins/north_arrow/plugin.cpp" line="254"/>
         <source>&amp;Decorations</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;დეკორაციები</translation>
     </message>
     <message>
         <location filename="../src/plugins/north_arrow/plugin.cpp" line="245"/>
@@ -10461,17 +10484,17 @@ Extended error information:
     <message>
         <location filename="../src/plugins/north_arrow/pluginguibase.ui" line="55"/>
         <source>Angle</source>
-        <translation type="unfinished"></translation>
+        <translation>კუთხე</translation>
     </message>
     <message>
         <location filename="../src/plugins/north_arrow/pluginguibase.ui" line="62"/>
         <source>Placement</source>
-        <translation type="unfinished"></translation>
+        <translation>ადგილმდებარეობა</translation>
     </message>
     <message>
         <location filename="../src/plugins/north_arrow/pluginguibase.ui" line="75"/>
         <source>Set direction automatically</source>
-        <translation type="unfinished"></translation>
+        <translation>მიმართულების ავტომატურად მითითება</translation>
     </message>
     <message>
         <location filename="../src/plugins/north_arrow/pluginguibase.ui" line="85"/>
@@ -10486,22 +10509,22 @@ Extended error information:
     <message>
         <location filename="../src/plugins/north_arrow/pluginguibase.ui" line="141"/>
         <source>Top Left</source>
-        <translation type="unfinished"></translation>
+        <translation>ზედა მარცხენა</translation>
     </message>
     <message>
         <location filename="../src/plugins/north_arrow/pluginguibase.ui" line="146"/>
         <source>Top Right</source>
-        <translation type="unfinished"></translation>
+        <translation>ზედა მარჯვენა</translation>
     </message>
     <message>
         <location filename="../src/plugins/north_arrow/pluginguibase.ui" line="151"/>
         <source>Bottom Left</source>
-        <translation type="unfinished"></translation>
+        <translation>ქვედა მარცხენა</translation>
     </message>
     <message>
         <location filename="../src/plugins/north_arrow/pluginguibase.ui" line="156"/>
         <source>Bottom Right</source>
-        <translation type="unfinished"></translation>
+        <translation>ქვედა მარჯვენა</translation>
     </message>
     <message>
         <location filename="../src/plugins/north_arrow/pluginguibase.ui" line="164"/>
@@ -10511,12 +10534,12 @@ Extended error information:
     <message>
         <location filename="../src/plugins/north_arrow/pluginguibase.ui" line="183"/>
         <source>Icon</source>
-        <translation type="unfinished"></translation>
+        <translation>ხატულა</translation>
     </message>
     <message>
         <location filename="../src/plugins/north_arrow/pluginguibase.ui" line="198"/>
         <source>Browse...</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ნუსხა...</translation>
     </message>
 </context>
 <context>
@@ -10925,22 +10948,22 @@ Extended error information:
     <message>
         <location filename="../src/ui/qgspastetransformationsbase.ui" line="62"/>
         <source>Source</source>
-        <translation type="unfinished"></translation>
+        <translation>წყარო</translation>
     </message>
     <message>
         <location filename="../src/ui/qgspastetransformationsbase.ui" line="83"/>
         <source>Destination</source>
-        <translation type="unfinished"></translation>
+        <translation>დანიშნულება</translation>
     </message>
     <message>
         <location filename="../src/ui/qgspastetransformationsbase.ui" line="122"/>
         <source>&amp;Help</source>
-        <translation type="unfinished"></translation>
+        <translation>და&amp;ხმარება</translation>
     </message>
     <message>
         <location filename="../src/ui/qgspastetransformationsbase.ui" line="125"/>
         <source>F1</source>
-        <translation type="unfinished"></translation>
+        <translation>F1</translation>
     </message>
     <message>
         <location filename="../src/ui/qgspastetransformationsbase.ui" line="151"/>
@@ -10950,12 +10973,12 @@ Extended error information:
     <message>
         <location filename="../src/ui/qgspastetransformationsbase.ui" line="158"/>
         <source>&amp;OK</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;OK</translation>
     </message>
     <message>
         <location filename="../src/ui/qgspastetransformationsbase.ui" line="174"/>
         <source>&amp;Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;შეწყვეტა</translation>
     </message>
 </context>
 <context>
@@ -10963,7 +10986,7 @@ Extended error information:
     <message>
         <location filename="../src/plugins/geoprocessing/qgspggeoprocessing.cpp" line="76"/>
         <source>&amp;Buffer features</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;ბუფერის თვისებები</translation>
     </message>
     <message>
         <location filename="../src/plugins/geoprocessing/qgspggeoprocessing.cpp" line="78"/>
@@ -11057,7 +11080,7 @@ Extended error information:
     <message>
         <location filename="../src/app/qgspgquerybuilder.cpp" line="68"/>
         <source>Connection Failed</source>
-        <translation type="unfinished"></translation>
+        <translation>დაკავშირება ვერ მოხერხდა</translation>
     </message>
     <message>
         <location filename="../src/app/qgspgquerybuilder.cpp" line="68"/>
@@ -11067,7 +11090,7 @@ Extended error information:
     <message>
         <location filename="../src/app/qgspgquerybuilder.cpp" line="207"/>
         <source>Database error</source>
-        <translation type="unfinished"></translation>
+        <translation>მონაცემთა ბაზის შეცდომა</translation>
     </message>
     <message>
         <location filename="../src/app/qgspgquerybuilder.cpp" line="207"/>
@@ -11282,7 +11305,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgspgquerybuilderbase.ui" line="348"/>
         <source>Ok</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Ok</translation>
     </message>
     <message>
         <location filename="../src/ui/qgspgquerybuilderbase.ui" line="358"/>
@@ -11291,278 +11314,739 @@ p, li { white-space: pre-wrap; }
     </message>
 </context>
 <context>
-    <name>QgsPluginInstallerDialog</name>
+    <name>QgsPluginInstaller</name>
     <message>
-        <location filename="../python/plugins/plugin_installer/guibase.ui" line="20"/>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="33"/>
+        <source>Couldn&apos;t parse output from the repository</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="34"/>
+        <source>Couldn&apos;t open the system plugin directory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="39"/>
+        <source>Couldn&apos;t open the local plugin directory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="45"/>
+        <source>Fetch Python Plugins...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="47"/>
+        <source>Install more plugins from remote repositories</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="50"/>
+        <source>Looking for new plugins...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="51"/>
+        <source>There is a new plugin available</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="54"/>
+        <source>There is a plugin update available</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="55"/>
         <source>QGIS Python Plugin Installer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../python/plugins/plugin_installer/guibase.ui" line="36"/>
-        <source>Plugins</source>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="60"/>
+        <source>Error reading repository:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../python/plugins/plugin_installer/guibase.ui" line="39"/>
-        <source>List of available and installed plugins</source>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="66"/>
+        <source>Nothing to remove! Plugin directory doesn&apos;t exist:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../python/plugins/plugin_installer/guibase.ui" line="50"/>
-        <source>Filter:</source>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="67"/>
+        <source>Failed to remove the directory:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../python/plugins/plugin_installer/guibase.ui" line="63"/>
-        <source>Display only plugins containing this word in their metadata</source>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="69"/>
+        <source>Check permissions or remove it manually</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QgsPluginInstallerDialog</name>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="216"/>
+        <source>QGIS Python Plugin Installer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../python/plugins/plugin_installer/guibase.ui" line="85"/>
-        <source>Display only plugins from given repository</source>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="117"/>
+        <source>Error reading repository:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../python/plugins/plugin_installer/guibase.ui" line="89"/>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="118"/>
         <source>all repositories</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../python/plugins/plugin_installer/guibase.ui" line="109"/>
-        <source>Display only plugins with matching status</source>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="119"/>
+        <source>connected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../python/plugins/plugin_installer/guibase.ui" line="242"/>
-        <source>Status</source>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="120"/>
+        <source>This repository is connected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../python/plugins/plugin_installer/guibase.ui" line="247"/>
-        <source>Name</source>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="121"/>
+        <source>unavailable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../python/plugins/plugin_installer/guibase.ui" line="144"/>
-        <source>Version</source>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="122"/>
+        <source>This repository is enabled, but unavailable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../python/plugins/plugin_installer/guibase.ui" line="149"/>
-        <source>Description</source>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="123"/>
+        <source>disabled</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../python/plugins/plugin_installer/guibase.ui" line="154"/>
-        <source>Author</source>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="124"/>
+        <source>This repository is disabled</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../python/plugins/plugin_installer/guibase.ui" line="159"/>
-        <source>Repository</source>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="207"/>
+        <source>This repository is blocked due to incompatibility with your Quantum GIS version</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../python/plugins/plugin_installer/guibase.ui" line="197"/>
-        <source>Install, reinstall or upgrade the selected plugin</source>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="138"/>
+        <source>orphans</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../python/plugins/plugin_installer/guibase.ui" line="200"/>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="127"/>
+        <source>any status</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="128"/>
+        <source>not installed</source>
+        <comment>plural</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="129"/>
+        <source>installed</source>
+        <comment>plural</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="134"/>
+        <source>upgradeable and news</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="139"/>
+        <source>This plugin is not installed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="140"/>
+        <source>This plugin is installed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="141"/>
+        <source>This plugin is installed, but there is an updated version available</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="142"/>
+        <source>This plugin is installed, but I can&apos;t find it in any enabled repository</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="143"/>
+        <source>This plugin is not installed and is seen for the first time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="144"/>
+        <source>This plugin is installed and is newer than its version available in a repository</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="145"/>
+        <source>This plugin is incompatible and probably won&apos;t work with your Quantum GIS version</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="146"/>
+        <source>This plugin probably depends on some components missing in your system
+It has been installed, but can&apos;t be loaded</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="147"/>
+        <source>not installed</source>
+        <comment>singular</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="152"/>
+        <source>installed</source>
+        <comment>singular</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="149"/>
+        <source>upgradeable</source>
+        <comment>singular</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="151"/>
+        <source>new!</source>
+        <comment>singular</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="153"/>
+        <source>invalid</source>
+        <comment>singular</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="154"/>
+        <source>Note that it&apos;s an uninsatallable core plugin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="160"/>
+        <source>installed version</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="157"/>
+        <source>available version</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="159"/>
+        <source>That&apos;s the newest available version</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="161"/>
+        <source>There is no version available for download</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="162"/>
+        <source>This plugin is invalid or has unfulfilled dependencies</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="163"/>
+        <source>This plugin is designed for a higher version of Quantum GIS</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="166"/>
+        <source>only locally available</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="171"/>
+        <source>Install plugin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="173"/>
+        <source>Reinstall plugin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="169"/>
+        <source>Upgrade plugin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="176"/>
         <source>Install/upgrade plugin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../python/plugins/plugin_installer/guibase.ui" line="213"/>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="172"/>
+        <source>Downgrade plugin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="178"/>
+        <source>Are you sure you want to downgrade the plugin to the latest available version? The installed one is newer!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="179"/>
+        <source>Plugin installation failed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="180"/>
+        <source>Plugin has disappeared</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="181"/>
+        <source>The plugin seems to have been installed but I don&apos;t know where. Probably the plugin package contained a wrong named directory.
+Please search the list of installed plugins. I&apos;m nearly sure you&apos;ll find the plugin there, but I just can&apos;t determine which of them it is. It also means that I won&apos;t be able to determine if this plugin is installed and inform you about available updates. However the plugin may work. Please contact the plugin author and submit this issue.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="184"/>
+        <source>Plugin installed successfully</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="183"/>
+        <source>Python plugin installed.
+You have to enable it in the Plugin Manager.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="185"/>
+        <source>Python plugin reinstalled.
+You have to restart Quantum GIS to reload it.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="192"/>
+        <source>Plugin uninstall failed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="189"/>
+        <source>Are you sure you want to uninstall the following plugin?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="190"/>
+        <source>Warning: this plugin isn&apos;t available in any accessible repository!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="198"/>
+        <source>Plugin uninstalled successfully</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="199"/>
+        <source>You are going to add some plugin repositories neither authorized nor supported by the Quantum GIS team, however provided by folks associated with us. Plugin authors generally make efforts to make their works useful and safe, but we can&apos;t assume any responsibility for them. FEEL WARNED!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="211"/>
+        <source>Unable to add another repository with the same URL!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="212"/>
+        <source>Are you sure you want to remove the following repository?</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QgsPluginInstallerDialogBase</name>
+    <message>
+        <location filename="../python/plugins/plugin_installer/qgsplugininstallerbase.ui" line="20"/>
+        <source>QGIS Python Plugin Installer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/qgsplugininstallerbase.ui" line="36"/>
+        <source>Plugins</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/qgsplugininstallerbase.ui" line="39"/>
+        <source>List of available and installed plugins</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/qgsplugininstallerbase.ui" line="50"/>
+        <source>Filter:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/qgsplugininstallerbase.ui" line="63"/>
+        <source>Display only plugins containing this word in their metadata</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/qgsplugininstallerbase.ui" line="85"/>
+        <source>Display only plugins from given repository</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/qgsplugininstallerbase.ui" line="89"/>
+        <source>all repositories</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/qgsplugininstallerbase.ui" line="109"/>
+        <source>Display only plugins with matching status</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/qgsplugininstallerbase.ui" line="242"/>
+        <source>Status</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/qgsplugininstallerbase.ui" line="247"/>
+        <source>Name</source>
+        <translation type="unfinished">სახელი</translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/qgsplugininstallerbase.ui" line="144"/>
+        <source>Version</source>
+        <translation type="unfinished">ვერსია</translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/qgsplugininstallerbase.ui" line="149"/>
+        <source>Description</source>
+        <translation type="unfinished">აღწერა</translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/qgsplugininstallerbase.ui" line="154"/>
+        <source>Author</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/qgsplugininstallerbase.ui" line="159"/>
+        <source>Repository</source>
+        <translation type="unfinished">რეპოზიტორია</translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/qgsplugininstallerbase.ui" line="197"/>
+        <source>Install, reinstall or upgrade the selected plugin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/qgsplugininstallerbase.ui" line="200"/>
+        <source>Install/upgrade plugin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/qgsplugininstallerbase.ui" line="213"/>
         <source>Uninstall the selected plugin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../python/plugins/plugin_installer/guibase.ui" line="216"/>
+        <location filename="../python/plugins/plugin_installer/qgsplugininstallerbase.ui" line="216"/>
         <source>Uninstall plugin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../python/plugins/plugin_installer/guibase.ui" line="226"/>
+        <location filename="../python/plugins/plugin_installer/qgsplugininstallerbase.ui" line="226"/>
         <source>Repositories</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../python/plugins/plugin_installer/guibase.ui" line="229"/>
+        <location filename="../python/plugins/plugin_installer/qgsplugininstallerbase.ui" line="229"/>
         <source>List of plugin repositories</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../python/plugins/plugin_installer/guibase.ui" line="252"/>
+        <location filename="../python/plugins/plugin_installer/qgsplugininstallerbase.ui" line="252"/>
         <source>URL</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">URL</translation>
     </message>
     <message>
-        <location filename="../python/plugins/plugin_installer/guibase.ui" line="266"/>
+        <location filename="../python/plugins/plugin_installer/qgsplugininstallerbase.ui" line="266"/>
         <source>Allow the Installer to look for updates and news in enabled repositories on QGIS startup</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../python/plugins/plugin_installer/guibase.ui" line="269"/>
+        <location filename="../python/plugins/plugin_installer/qgsplugininstallerbase.ui" line="269"/>
         <source>Check for updates on startup</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../python/plugins/plugin_installer/guibase.ui" line="298"/>
+        <location filename="../python/plugins/plugin_installer/qgsplugininstallerbase.ui" line="298"/>
         <source>Add third party plugin repositories to the list</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../python/plugins/plugin_installer/guibase.ui" line="301"/>
+        <location filename="../python/plugins/plugin_installer/qgsplugininstallerbase.ui" line="301"/>
         <source>Add 3rd party repositories</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../python/plugins/plugin_installer/guibase.ui" line="324"/>
+        <location filename="../python/plugins/plugin_installer/qgsplugininstallerbase.ui" line="324"/>
         <source>Add a new plugin repository</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../python/plugins/plugin_installer/guibase.ui" line="327"/>
+        <location filename="../python/plugins/plugin_installer/qgsplugininstallerbase.ui" line="327"/>
         <source>Add...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../python/plugins/plugin_installer/guibase.ui" line="337"/>
+        <location filename="../python/plugins/plugin_installer/qgsplugininstallerbase.ui" line="337"/>
         <source>Edit the selected repository</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../python/plugins/plugin_installer/guibase.ui" line="340"/>
+        <location filename="../python/plugins/plugin_installer/qgsplugininstallerbase.ui" line="340"/>
         <source>Edit...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../python/plugins/plugin_installer/guibase.ui" line="350"/>
+        <location filename="../python/plugins/plugin_installer/qgsplugininstallerbase.ui" line="350"/>
         <source>Remove the selected repository</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../python/plugins/plugin_installer/guibase.ui" line="353"/>
+        <location filename="../python/plugins/plugin_installer/qgsplugininstallerbase.ui" line="353"/>
         <source>Delete</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">წაშლა</translation>
     </message>
     <message>
-        <location filename="../python/plugins/plugin_installer/guibase.ui" line="369"/>
+        <location filename="../python/plugins/plugin_installer/qgsplugininstallerbase.ui" line="369"/>
         <source>The plugins will be installed to ~/.qgis/python/plugins</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../python/plugins/plugin_installer/guibase.ui" line="385"/>
+        <location filename="../python/plugins/plugin_installer/qgsplugininstallerbase.ui" line="385"/>
         <source>Close the Installer window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../python/plugins/plugin_installer/guibase.ui" line="388"/>
+        <location filename="../python/plugins/plugin_installer/qgsplugininstallerbase.ui" line="388"/>
         <source>Close</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">დაკეტვა</translation>
     </message>
 </context>
 <context>
     <name>QgsPluginInstallerFetchingDialog</name>
     <message>
-        <location filename="../python/plugins/plugin_installer/fetchingbase.ui" line="14"/>
-        <source>Fetching repositories</source>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="73"/>
+        <source>Success</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../python/plugins/plugin_installer/fetchingbase.ui" line="39"/>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="74"/>
+        <source>Resolving host name...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="75"/>
+        <source>Connecting...</source>
+        <translation type="unfinished">დაკავშირება...</translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="76"/>
+        <source>Host connected. Sending request...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="77"/>
+        <source>Downloading data...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="78"/>
+        <source>Idle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="79"/>
+        <source>Closing connection...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="80"/>
+        <source>Error</source>
+        <translation type="unfinished">შეცდომა</translation>
+    </message>
+</context>
+<context>
+    <name>QgsPluginInstallerFetchingDialogBase</name>
+    <message>
+        <location filename="../python/plugins/plugin_installer/qgsplugininstallerfetchingbase.ui" line="14"/>
+        <source>Fetching repositories</source>
+        <translation>რეპოზიტორიების მიღება</translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/qgsplugininstallerfetchingbase.ui" line="39"/>
         <source>Overall progress:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../python/plugins/plugin_installer/fetchingbase.ui" line="111"/>
+        <location filename="../python/plugins/plugin_installer/qgsplugininstallerfetchingbase.ui" line="111"/>
         <source>Abort fetching</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../python/plugins/plugin_installer/fetchingbase.ui" line="167"/>
+        <location filename="../python/plugins/plugin_installer/qgsplugininstallerfetchingbase.ui" line="167"/>
         <source>Repository</source>
-        <translation type="unfinished"></translation>
+        <translation>რეპოზიტორია</translation>
     </message>
     <message>
-        <location filename="../python/plugins/plugin_installer/fetchingbase.ui" line="172"/>
+        <location filename="../python/plugins/plugin_installer/qgsplugininstallerfetchingbase.ui" line="172"/>
         <source>State</source>
-        <translation type="unfinished"></translation>
+        <translation>მდგომარეობა</translation>
     </message>
 </context>
 <context>
     <name>QgsPluginInstallerInstallingDialog</name>
     <message>
-        <location filename="../python/plugins/plugin_installer/installingbase.ui" line="14"/>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="86"/>
+        <source>Installing...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="87"/>
+        <source>Resolving host name...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="88"/>
+        <source>Connecting...</source>
+        <translation type="unfinished">დაკავშირება...</translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="89"/>
+        <source>Host connected. Sending request...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="90"/>
+        <source>Downloading data...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="91"/>
+        <source>Idle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="92"/>
+        <source>Closing connection...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="95"/>
+        <source>Error</source>
+        <translation type="unfinished">შეცდომა</translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="98"/>
+        <source>Failed to unzip the plugin package. Probably it&apos;s broken or missing from the repository. You may also want to make sure that you have write permission to the plugin directory:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="99"/>
+        <source>Aborted by user</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QgsPluginInstallerInstallingDialogBase</name>
+    <message>
+        <location filename="../python/plugins/plugin_installer/qgsplugininstallerinstallingbase.ui" line="14"/>
         <source>QGIS Python Plugin Installer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../python/plugins/plugin_installer/installingbase.ui" line="41"/>
+        <location filename="../python/plugins/plugin_installer/qgsplugininstallerinstallingbase.ui" line="41"/>
         <source>Installing plugin:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../python/plugins/plugin_installer/installingbase.ui" line="63"/>
+        <location filename="../python/plugins/plugin_installer/qgsplugininstallerinstallingbase.ui" line="63"/>
         <source>Connecting...</source>
-        <translation type="unfinished"></translation>
+        <translation>დაკავშირება...</translation>
     </message>
 </context>
 <context>
     <name>QgsPluginInstallerPluginErrorDialog</name>
     <message>
-        <location filename="../python/plugins/plugin_installer/pluginerrorbase.ui" line="20"/>
+        <location filename="../python/plugins/plugin_installer/i18n.cpp" line="106"/>
+        <source>no error message received</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QgsPluginInstallerPluginErrorDialogBase</name>
+    <message>
+        <location filename="../python/plugins/plugin_installer/qgsplugininstallerpluginerrorbase.ui" line="20"/>
         <source>Error loading plugin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../python/plugins/plugin_installer/pluginerrorbase.ui" line="35"/>
+        <location filename="../python/plugins/plugin_installer/qgsplugininstallerpluginerrorbase.ui" line="35"/>
         <source>The plugin seems to be invalid or have unfulfilled dependencies. It has been installed, but can&apos;t be loaded. If you really need this plugin, you can contact its author or &lt;a href=&quot;http://lists.osgeo.org/mailman/listinfo/qgis-user&quot;&gt;QGIS users group&lt;/a&gt; and try to solve the problem. If not, you can just uninstall it. Here is the error message below:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../python/plugins/plugin_installer/pluginerrorbase.ui" line="83"/>
+        <location filename="../python/plugins/plugin_installer/qgsplugininstallerpluginerrorbase.ui" line="83"/>
         <source>Do you want to uninstall this plugin now? If you&apos;re unsure, probably you would like to do this.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
-    <name>QgsPluginInstallerRepositoryDetailsDialog</name>
+    <name>QgsPluginInstallerRepositoryDetailsDialogBase</name>
     <message>
-        <location filename="../python/plugins/plugin_installer/repositorybase.ui" line="20"/>
+        <location filename="../python/plugins/plugin_installer/qgsplugininstallerrepositorybase.ui" line="20"/>
         <source>Repository details</source>
-        <translation type="unfinished"></translation>
+        <translation>რეპოზიტორიის დეტალები</translation>
     </message>
     <message>
-        <location filename="../python/plugins/plugin_installer/repositorybase.ui" line="41"/>
+        <location filename="../python/plugins/plugin_installer/qgsplugininstallerrepositorybase.ui" line="41"/>
         <source>Name:</source>
-        <translation type="unfinished"></translation>
+        <translation>სახელი:</translation>
     </message>
     <message>
-        <location filename="../python/plugins/plugin_installer/repositorybase.ui" line="67"/>
+        <location filename="../python/plugins/plugin_installer/qgsplugininstallerrepositorybase.ui" line="67"/>
         <source>Enter a name for the repository</source>
-        <translation type="unfinished"></translation>
+        <translation>შეიყვანეთ რეპოზიტირიის სახელი</translation>
     </message>
     <message>
-        <location filename="../python/plugins/plugin_installer/repositorybase.ui" line="74"/>
+        <location filename="../python/plugins/plugin_installer/qgsplugininstallerrepositorybase.ui" line="74"/>
         <source>URL:</source>
-        <translation type="unfinished"></translation>
+        <translation>URL:</translation>
     </message>
     <message>
-        <location filename="../python/plugins/plugin_installer/repositorybase.ui" line="84"/>
+        <location filename="../python/plugins/plugin_installer/qgsplugininstallerrepositorybase.ui" line="84"/>
         <source>Enter the repository URL, beginning with &quot;http://&quot;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../python/plugins/plugin_installer/repositorybase.ui" line="106"/>
+        <location filename="../python/plugins/plugin_installer/qgsplugininstallerrepositorybase.ui" line="106"/>
         <source>Enable or disable the repository (disabled repositories will be omitted)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../python/plugins/plugin_installer/repositorybase.ui" line="109"/>
+        <location filename="../python/plugins/plugin_installer/qgsplugininstallerrepositorybase.ui" line="109"/>
         <source>Enabled</source>
-        <translation type="unfinished"></translation>
+        <translation>ჩართულია</translation>
     </message>
 </context>
 <context>
@@ -11570,12 +12054,12 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/app/qgspluginmanager.cpp" line="85"/>
         <source>&amp;Select All</source>
-        <translation type="unfinished"></translation>
+        <translation>ყველაფრის მონი&amp;შნვა</translation>
     </message>
     <message>
         <location filename="../src/app/qgspluginmanager.cpp" line="86"/>
         <source>&amp;Clear All</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;ყველაფრის გაწმენდა</translation>
     </message>
     <message>
         <location filename="../src/app/qgspluginmanager.cpp" line="202"/>
@@ -11603,7 +12087,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgspluginmanagerbase.ui" line="45"/>
         <source>&amp;Filter</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;ფილტრი</translation>
     </message>
     <message>
         <location filename="../src/ui/qgspluginmanagerbase.ui" line="58"/>
@@ -11613,7 +12097,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgspluginmanagerbase.ui" line="71"/>
         <source>Directory</source>
-        <translation type="unfinished"></translation>
+        <translation>დირექტორია</translation>
     </message>
 </context>
 <context>
@@ -11621,7 +12105,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/georeferencer/qgspointdialog.cpp" line="573"/>
         <source>Linear</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">წრფივი</translation>
     </message>
     <message>
         <location filename="../src/plugins/georeferencer/qgspointdialog.cpp" line="206"/>
@@ -11682,7 +12166,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/georeferencer/qgspointdialog.cpp" line="339"/>
         <source>Error</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">შეცდომა</translation>
     </message>
     <message>
         <location filename="../src/plugins/georeferencer/qgspointdialog.cpp" line="340"/>
@@ -11737,7 +12221,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/georeferencer/qgspointdialog.cpp" line="515"/>
         <source>.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">.</translation>
     </message>
     <message>
         <location filename="../src/plugins/georeferencer/qgspointdialog.cpp" line="516"/>
@@ -11765,7 +12249,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/georeferencer/qgspointdialogbase.ui" line="38"/>
         <source>...</source>
-        <translation type="unfinished"></translation>
+        <translation>...</translation>
     </message>
     <message>
         <location filename="../src/plugins/georeferencer/qgspointdialogbase.ui" line="45"/>
@@ -11785,17 +12269,17 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/georeferencer/qgspointdialogbase.ui" line="75"/>
         <source>Create</source>
-        <translation type="unfinished"></translation>
+        <translation>შექმნა</translation>
     </message>
     <message>
         <location filename="../src/plugins/georeferencer/qgspointdialogbase.ui" line="105"/>
         <source>Add points</source>
-        <translation type="unfinished"></translation>
+        <translation>წერტილების დამატება</translation>
     </message>
     <message>
         <location filename="../src/plugins/georeferencer/qgspointdialogbase.ui" line="130"/>
         <source>Delete points</source>
-        <translation type="unfinished"></translation>
+        <translation>წერილების წაშლა</translation>
     </message>
     <message>
         <location filename="../src/plugins/georeferencer/qgspointdialogbase.ui" line="178"/>
@@ -11826,34 +12310,34 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>QgsPostgresProvider</name>
     <message>
-        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="126"/>
+        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="125"/>
         <source>Unable to access relation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="107"/>
+        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="106"/>
         <source>Unable to access the </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="129"/>
+        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="128"/>
         <source> relation.
 The error message from the database was:
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="127"/>
+        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="126"/>
         <source>Unable to determine table access privileges for the </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="916"/>
+        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="920"/>
         <source>No suitable key column in table</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="920"/>
+        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="924"/>
         <source>The table has no column suitable for use as a key.
 
 Qgis requires that the table either has a column of type
@@ -11863,173 +12347,173 @@ primary key) or has a PostgreSQL oid column.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="960"/>
+        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="964"/>
         <source>The unique index on column</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="962"/>
+        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="966"/>
         <source>is unsuitable because Qgis does not currently support non-int4 type columns as a key into the table.
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="983"/>
+        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="987"/>
         <source>and </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="989"/>
+        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="993"/>
         <source>The unique index based on columns </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="991"/>
+        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="995"/>
         <source> is unsuitable because Qgis does not currently support multiple columns as a key into the table.
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="1033"/>
+        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="1037"/>
         <source>Unable to find a key column</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="1113"/>
+        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="1117"/>
         <source> derives from </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="1117"/>
+        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="1121"/>
         <source>and is suitable.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="1121"/>
+        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="1125"/>
         <source>and is not suitable </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="1122"/>
+        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="1126"/>
         <source>type is </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="1124"/>
+        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="1128"/>
         <source> and has a suitable constraint)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="1126"/>
+        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="1130"/>
         <source> and does not have a suitable constraint)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="1210"/>
+        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="1214"/>
         <source>Note: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="1212"/>
+        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="1216"/>
         <source>initially appeared suitable but does not contain unique data, so is not suitable.
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="1224"/>
+        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="1228"/>
         <source>The view you selected has the following columns, none of which satisfy the above conditions:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="1230"/>
+        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="1234"/>
         <source>Qgis requires that the view has a column that can be used as a unique key. Such a column should be derived from a table column of type int4 and be a primary key, have a unique constraint on it, or be a PostgreSQL oid column. To improve performance the column should also be indexed.
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="1231"/>
+        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="1235"/>
         <source>The view </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="1232"/>
+        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="1236"/>
         <source>has no column suitable for use as a unique key.
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="1233"/>
+        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="1237"/>
         <source>No suitable key column in view</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="1873"/>
+        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="1888"/>
         <source>Error while adding features</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="1913"/>
+        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="1928"/>
         <source>Error while deleting features</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="1951"/>
+        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="1966"/>
         <source>Error while adding attributes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="1996"/>
+        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="2011"/>
         <source>Error while deleting attributes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="2066"/>
+        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="2081"/>
         <source>Error while changing attributes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="2145"/>
+        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="2160"/>
         <source>Error while changing geometry values</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="2538"/>
+        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="2553"/>
         <source>Unknown geometry type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="2539"/>
+        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="2554"/>
         <source>Column </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="2549"/>
+        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="2564"/>
         <source> in </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="2541"/>
+        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="2556"/>
         <source> has a geometry type of </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="2541"/>
+        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="2556"/>
         <source>, which Qgis does not currently support.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="2548"/>
+        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="2563"/>
         <source>Qgis was unable to determine the type and srid of column </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="2550"/>
+        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="2565"/>
         <source>. The database communication log was:
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="2551"/>
+        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="2566"/>
         <source>Unable to get feature type and srid</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12042,12 +12526,12 @@ primary key) or has a PostgreSQL oid column.
 <context>
     <name>QgsPostgresProvider::Conn</name>
     <message>
-        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="324"/>
+        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="323"/>
         <source>No GEOS Support!</source>
-        <translation type="unfinished"></translation>
+        <translation>GEOS-ის არ არის მხარდაჭერილი!</translation>
     </message>
     <message>
-        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="328"/>
+        <location filename="../src/providers/postgres/qgspostgresprovider.cpp" line="327"/>
         <source>Your PostGIS installation has no GEOS support.
 Feature selection and identification will not work properly.
 Please install PostGIS with GEOS support (http://geos.refractions.net)</source>
@@ -12144,7 +12628,7 @@ Please install PostGIS with GEOS support (http://geos.refractions.net)</source>
     <message>
         <location filename="../src/ui/qgsprojectpropertiesbase.ui" line="212"/>
         <source>Manual</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ხელით</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsprojectpropertiesbase.ui" line="222"/>
@@ -12227,37 +12711,37 @@ Because of this the projection selector will not work...</source>
     <message>
         <location filename="../src/ui/qgsprojectionselectorbase.ui" line="53"/>
         <source>Coordinate Reference System</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">კოორდინატთა ათვლის სისტემა</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsprojectionselectorbase.ui" line="58"/>
         <source>EPSG</source>
-        <translation type="unfinished"></translation>
+        <translation>EPSG</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsprojectionselectorbase.ui" line="63"/>
         <source>ID</source>
-        <translation type="unfinished"></translation>
+        <translation>ID</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsprojectionselectorbase.ui" line="111"/>
         <source>Search</source>
-        <translation type="unfinished"></translation>
+        <translation>ძებნა</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsprojectionselectorbase.ui" line="117"/>
         <source>EPSG ID</source>
-        <translation type="unfinished"></translation>
+        <translation>EPSG ID</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsprojectionselectorbase.ui" line="133"/>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation>სახელი</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsprojectionselectorbase.ui" line="155"/>
         <source>Find</source>
-        <translation type="unfinished"></translation>
+        <translation>პოვნა</translation>
     </message>
 </context>
 <context>
@@ -12265,7 +12749,7 @@ Because of this the projection selector will not work...</source>
     <message>
         <location filename="../src/ui/qgspythondialog.ui" line="13"/>
         <source>Python console</source>
-        <translation type="unfinished"></translation>
+        <translation>Python-ის კონსოლი</translation>
     </message>
     <message>
         <location filename="../src/ui/qgspythondialog.ui" line="33"/>
@@ -12275,291 +12759,291 @@ Because of this the projection selector will not work...</source>
     <message>
         <location filename="../src/ui/qgspythondialog.ui" line="58"/>
         <source>&gt;&gt;&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&gt;&gt;&gt;</translation>
     </message>
 </context>
 <context>
     <name>QgsQuickPrint</name>
     <message>
-        <location filename="../src/gui/qgsquickprint.cpp" line="833"/>
+        <location filename="../src/gui/qgsquickprint.cpp" line="832"/>
         <source> km</source>
-        <translation type="unfinished"></translation>
+        <translation>კმ</translation>
     </message>
     <message>
-        <location filename="../src/gui/qgsquickprint.cpp" line="838"/>
+        <location filename="../src/gui/qgsquickprint.cpp" line="837"/>
         <source> mm</source>
-        <translation type="unfinished"></translation>
+        <translation>მმ</translation>
     </message>
     <message>
-        <location filename="../src/gui/qgsquickprint.cpp" line="843"/>
+        <location filename="../src/gui/qgsquickprint.cpp" line="842"/>
         <source> cm</source>
-        <translation type="unfinished"></translation>
+        <translation>სმ</translation>
     </message>
     <message>
-        <location filename="../src/gui/qgsquickprint.cpp" line="847"/>
+        <location filename="../src/gui/qgsquickprint.cpp" line="846"/>
         <source> m</source>
-        <translation type="unfinished"></translation>
+        <translation>მ</translation>
     </message>
     <message>
-        <location filename="../src/gui/qgsquickprint.cpp" line="852"/>
+        <location filename="../src/gui/qgsquickprint.cpp" line="851"/>
         <source> miles</source>
-        <translation type="unfinished"></translation>
+        <translation>მილი</translation>
     </message>
     <message>
-        <location filename="../src/gui/qgsquickprint.cpp" line="857"/>
+        <location filename="../src/gui/qgsquickprint.cpp" line="856"/>
         <source> mile</source>
-        <translation type="unfinished"></translation>
+        <translation>მილი</translation>
     </message>
     <message>
-        <location filename="../src/gui/qgsquickprint.cpp" line="862"/>
+        <location filename="../src/gui/qgsquickprint.cpp" line="861"/>
         <source> inches</source>
-        <translation type="unfinished"></translation>
+        <translation>დუიმი</translation>
     </message>
     <message>
-        <location filename="../src/gui/qgsquickprint.cpp" line="867"/>
+        <location filename="../src/gui/qgsquickprint.cpp" line="866"/>
         <source> foot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/gui/qgsquickprint.cpp" line="871"/>
+        <location filename="../src/gui/qgsquickprint.cpp" line="870"/>
         <source> feet</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/gui/qgsquickprint.cpp" line="876"/>
+        <location filename="../src/gui/qgsquickprint.cpp" line="875"/>
         <source> degree</source>
-        <translation type="unfinished"></translation>
+        <translation>გრადუსი</translation>
     </message>
     <message>
-        <location filename="../src/gui/qgsquickprint.cpp" line="878"/>
+        <location filename="../src/gui/qgsquickprint.cpp" line="877"/>
         <source> degrees</source>
-        <translation type="unfinished"></translation>
+        <translation>გრადუსი</translation>
     </message>
     <message>
-        <location filename="../src/gui/qgsquickprint.cpp" line="881"/>
+        <location filename="../src/gui/qgsquickprint.cpp" line="880"/>
         <source> unknown</source>
-        <translation type="unfinished"></translation>
+        <translation>უცნობი</translation>
     </message>
 </context>
 <context>
     <name>QgsRasterLayer</name>
     <message>
-        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="3340"/>
+        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="3339"/>
         <source>Not Set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="381"/>
+        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="380"/>
         <source>and all other files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="1041"/>
+        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="1040"/>
         <source>Average Magphase</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="1046"/>
+        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="1045"/>
         <source>Average</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2643"/>
+        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2642"/>
         <source>Band</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="1788"/>
+        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="1787"/>
         <source>out of extent</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="1826"/>
+        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="1825"/>
         <source>null (no data)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2420"/>
+        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2419"/>
         <source>Driver:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2445"/>
+        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2444"/>
         <source>Dataset Description</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2466"/>
+        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2465"/>
         <source>Band %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2497"/>
+        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2496"/>
         <source>Dimensions:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2500"/>
+        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2499"/>
         <source>X: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2501"/>
+        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2500"/>
         <source> Y: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2501"/>
+        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2500"/>
         <source> Bands: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2508"/>
+        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2507"/>
         <source>No Data Value</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2517"/>
+        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2516"/>
         <source>NoDataValue not set</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2523"/>
+        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2522"/>
         <source>Data Type:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2529"/>
+        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2528"/>
         <source>GDT_Byte - Eight bit unsigned integer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2532"/>
+        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2531"/>
         <source>GDT_UInt16 - Sixteen bit unsigned integer </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2535"/>
+        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2534"/>
         <source>GDT_Int16 - Sixteen bit signed integer </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2538"/>
+        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2537"/>
         <source>GDT_UInt32 - Thirty two bit unsigned integer </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2541"/>
+        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2540"/>
         <source>GDT_Int32 - Thirty two bit signed integer </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2544"/>
+        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2543"/>
         <source>GDT_Float32 - Thirty two bit floating point </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2547"/>
+        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2546"/>
         <source>GDT_Float64 - Sixty four bit floating point </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2550"/>
+        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2549"/>
         <source>GDT_CInt16 - Complex Int16 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2553"/>
+        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2552"/>
         <source>GDT_CInt32 - Complex Int32 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2556"/>
+        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2555"/>
         <source>GDT_CFloat32 - Complex Float32 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2559"/>
+        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2558"/>
         <source>GDT_CFloat64 - Complex Float64 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2562"/>
+        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2561"/>
         <source>Could not determine raster data type.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2567"/>
+        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2566"/>
         <source>Pyramid overviews:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2588"/>
+        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2587"/>
         <source>Layer Spatial Reference System: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2616"/>
+        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2615"/>
         <source>Origin:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2625"/>
+        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2624"/>
         <source>Pixel Size:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2650"/>
+        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2649"/>
         <source>Band No</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2662"/>
+        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2661"/>
         <source>No Stats</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2665"/>
+        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2664"/>
         <source>No stats collected yet</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2675"/>
+        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2674"/>
         <source>Min Val</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2683"/>
+        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2682"/>
         <source>Max Val</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2691"/>
+        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2690"/>
         <source>Range</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2699"/>
+        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2698"/>
         <source>Mean</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2707"/>
+        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2706"/>
         <source>Sum of squares</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2715"/>
+        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2714"/>
         <source>Standard Deviation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2723"/>
+        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2722"/>
         <source>Sum of all cells</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2731"/>
+        <location filename="../src/core/raster/qgsrasterlayer.cpp" line="2730"/>
         <source>Cell Count</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12619,7 +13103,7 @@ Because of this the projection selector will not work...</source>
     <message>
         <location filename="../src/app/qgsrasterlayerproperties.cpp" line="2783"/>
         <source>Linear</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">წრფივი</translation>
     </message>
     <message>
         <location filename="../src/app/qgsrasterlayerproperties.cpp" line="2791"/>
@@ -12634,7 +13118,7 @@ Because of this the projection selector will not work...</source>
     <message>
         <location filename="../src/app/qgsrasterlayerproperties.cpp" line="306"/>
         <source>Description</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">აღწერა</translation>
     </message>
     <message>
         <location filename="../src/app/qgsrasterlayerproperties.cpp" line="307"/>
@@ -12827,6 +13311,7 @@ Because of this the projection selector will not work...</source>
         <source>The color map for Band %n failed to load</source>
         <translation type="unfinished">
             <numerusform></numerusform>
+            <numerusform></numerusform>
         </translation>
     </message>
     <message>
@@ -12847,7 +13332,7 @@ Because of this the projection selector will not work...</source>
     <message>
         <location filename="../src/app/qgsrasterlayerproperties.cpp" line="3202"/>
         <source>QGIS</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">QGIS</translation>
     </message>
     <message>
         <location filename="../src/app/qgsrasterlayerproperties.cpp" line="3203"/>
@@ -12910,7 +13395,7 @@ Because of this the projection selector will not work...</source>
     <message>
         <location filename="../src/ui/qgsrasterlayerpropertiesbase.ui" line="1247"/>
         <source>...</source>
-        <translation type="unfinished"></translation>
+        <translation>...</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsrasterlayerpropertiesbase.ui" line="233"/>
@@ -13055,7 +13540,7 @@ Because of this the projection selector will not work...</source>
     <message>
         <location filename="../src/ui/qgsrasterlayerpropertiesbase.ui" line="910"/>
         <source> 00%</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../src/ui/qgsrasterlayerpropertiesbase.ui" line="930"/>
@@ -13160,12 +13645,12 @@ Because of this the projection selector will not work...</source>
     <message>
         <location filename="../src/ui/qgsrasterlayerpropertiesbase.ui" line="1267"/>
         <source>1</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../src/ui/qgsrasterlayerpropertiesbase.ui" line="1272"/>
         <source>2</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../src/ui/qgsrasterlayerpropertiesbase.ui" line="1280"/>
@@ -13185,7 +13670,7 @@ Because of this the projection selector will not work...</source>
     <message>
         <location filename="../src/ui/qgsrasterlayerpropertiesbase.ui" line="1316"/>
         <source>Classify</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">კლასიფიკაცია</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsrasterlayerpropertiesbase.ui" line="1327"/>
@@ -13250,7 +13735,7 @@ Because of this the projection selector will not work...</source>
     <message>
         <location filename="../src/ui/qgsrasterlayerpropertiesbase.ui" line="1476"/>
         <source>Change ...</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">შეცვლა ...</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsrasterlayerpropertiesbase.ui" line="1512"/>
@@ -13260,7 +13745,7 @@ Because of this the projection selector will not work...</source>
     <message>
         <location filename="../src/ui/qgsrasterlayerpropertiesbase.ui" line="1549"/>
         <source>Legend</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ლეგენდა</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsrasterlayerpropertiesbase.ui" line="1586"/>
@@ -13294,7 +13779,11 @@ Because of this the projection selector will not work...</source>
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;DejaVu Sans&apos;; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:&apos;Sans Serif&apos;;&quot;&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;DejaVu Sans&apos;; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:&apos;Sans Serif&apos;;&quot;&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsrasterlayerpropertiesbase.ui" line="1700"/>
@@ -13364,7 +13853,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgsrasterlayerpropertiesbase.ui" line="1894"/>
         <source>Refresh</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">განახლება</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsrasterlayerpropertiesbase.ui" line="1905"/>
@@ -13392,22 +13881,22 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/core/qgsrunprocess.cpp" line="57"/>
         <source>Starting</source>
-        <translation type="unfinished"></translation>
+        <translation>გაშვება</translation>
     </message>
     <message>
         <location filename="../src/core/qgsrunprocess.cpp" line="72"/>
         <source>Action</source>
-        <translation type="unfinished"></translation>
+        <translation>მოქმედება</translation>
     </message>
     <message>
         <location filename="../src/core/qgsrunprocess.cpp" line="150"/>
         <source>Unable to run command</source>
-        <translation type="unfinished"></translation>
+        <translation>ბრძანების შესრულება ვერ მოხერხდა</translation>
     </message>
     <message>
         <location filename="../src/core/qgsrunprocess.cpp" line="119"/>
         <source>Done</source>
-        <translation type="unfinished"></translation>
+        <translation>დასრულდა</translation>
     </message>
 </context>
 <context>
@@ -13415,22 +13904,22 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/scale_bar/plugin.cpp" line="76"/>
         <source>Bottom Left</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ქვედა მარცხენა</translation>
     </message>
     <message>
         <location filename="../src/plugins/scale_bar/plugin.cpp" line="77"/>
         <source>Top Left</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ზედა მარცხენა</translation>
     </message>
     <message>
         <location filename="../src/plugins/scale_bar/plugin.cpp" line="77"/>
         <source>Top Right</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ზედა მარჯვენა</translation>
     </message>
     <message>
         <location filename="../src/plugins/scale_bar/plugin.cpp" line="77"/>
         <source>Bottom Right</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ქვედა მარჯვენა</translation>
     </message>
     <message>
         <location filename="../src/plugins/scale_bar/plugin.cpp" line="79"/>
@@ -13465,7 +13954,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/scale_bar/plugin.cpp" line="539"/>
         <source>&amp;Decorations</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">&amp;დეკორაციები</translation>
     </message>
     <message>
         <location filename="../src/plugins/scale_bar/plugin.cpp" line="160"/>
@@ -13480,42 +13969,42 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/scale_bar/plugin.cpp" line="285"/>
         <source> degrees</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">გრადუსი</translation>
     </message>
     <message>
         <location filename="../src/plugins/scale_bar/plugin.cpp" line="240"/>
         <source> km</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">კმ</translation>
     </message>
     <message>
         <location filename="../src/plugins/scale_bar/plugin.cpp" line="245"/>
         <source> mm</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">მმ</translation>
     </message>
     <message>
         <location filename="../src/plugins/scale_bar/plugin.cpp" line="250"/>
         <source> cm</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">სმ</translation>
     </message>
     <message>
         <location filename="../src/plugins/scale_bar/plugin.cpp" line="254"/>
         <source> m</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">მ</translation>
     </message>
     <message>
         <location filename="../src/plugins/scale_bar/plugin.cpp" line="259"/>
         <source> miles</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">მილი</translation>
     </message>
     <message>
         <location filename="../src/plugins/scale_bar/plugin.cpp" line="264"/>
         <source> mile</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">მილი</translation>
     </message>
     <message>
         <location filename="../src/plugins/scale_bar/plugin.cpp" line="269"/>
         <source> inches</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">დუიმი</translation>
     </message>
     <message>
         <location filename="../src/plugins/scale_bar/plugin.cpp" line="274"/>
@@ -13530,12 +14019,12 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/scale_bar/plugin.cpp" line="283"/>
         <source> degree</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">გრადუსი</translation>
     </message>
     <message>
         <location filename="../src/plugins/scale_bar/plugin.cpp" line="288"/>
         <source> unknown</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">უცნობი</translation>
     </message>
 </context>
 <context>
@@ -13568,22 +14057,22 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/scale_bar/pluginguibase.ui" line="143"/>
         <source>Top Left</source>
-        <translation type="unfinished"></translation>
+        <translation>ზედა მარცხენა</translation>
     </message>
     <message>
         <location filename="../src/plugins/scale_bar/pluginguibase.ui" line="148"/>
         <source>Top Right</source>
-        <translation type="unfinished"></translation>
+        <translation>ზედა მარჯვენა</translation>
     </message>
     <message>
         <location filename="../src/plugins/scale_bar/pluginguibase.ui" line="153"/>
         <source>Bottom Left</source>
-        <translation type="unfinished"></translation>
+        <translation>ქვედა მარცხენა</translation>
     </message>
     <message>
         <location filename="../src/plugins/scale_bar/pluginguibase.ui" line="158"/>
         <source>Bottom Right</source>
-        <translation type="unfinished"></translation>
+        <translation>ქვედა მარჯვენა</translation>
     </message>
     <message>
         <location filename="../src/plugins/scale_bar/pluginguibase.ui" line="174"/>
@@ -13623,7 +14112,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/scale_bar/pluginguibase.ui" line="254"/>
         <source>Placement:</source>
-        <translation type="unfinished"></translation>
+        <translation>ადგილმდებარეობა:</translation>
     </message>
     <message>
         <location filename="../src/plugins/scale_bar/pluginguibase.ui" line="274"/>
@@ -13643,6 +14132,7 @@ p, li { white-space: pre-wrap; }
         <source>Found %d matching features.</source>
         <translation type="unfinished">
             <numerusform></numerusform>
+            <numerusform></numerusform>
         </translation>
     </message>
     <message>
@@ -13653,7 +14143,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/app/qgssearchquerybuilder.cpp" line="170"/>
         <source>Search results</source>
-        <translation type="unfinished"></translation>
+        <translation>ძებნის შედეგები</translation>
     </message>
     <message>
         <location filename="../src/app/qgssearchquerybuilder.cpp" line="179"/>
@@ -13676,7 +14166,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/app/qgsserversourceselect.cpp" line="172"/>
         <source>Are you sure you want to remove the </source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ნამდვილად გსურთ წაშალოთ </translation>
     </message>
     <message>
         <location filename="../src/app/qgsserversourceselect.cpp" line="172"/>
@@ -13686,7 +14176,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/app/qgsserversourceselect.cpp" line="173"/>
         <source>Confirm Delete</source>
-        <translation type="unfinished"></translation>
+        <translation>წაშლის დადასტურება</translation>
     </message>
     <message>
         <location filename="../src/app/qgsserversourceselect.cpp" line="352"/>
@@ -13701,7 +14191,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/app/qgsserversourceselect.cpp" line="363"/>
         <source>Select Layer</source>
-        <translation type="unfinished"></translation>
+        <translation>აირჩიეთ ფენა</translation>
     </message>
     <message>
         <location filename="../src/app/qgsserversourceselect.cpp" line="363"/>
@@ -13711,7 +14201,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/app/qgsserversourceselect.cpp" line="367"/>
         <source>Coordinate Reference System</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">კოორდინატთა ათვლის სისტემა</translation>
     </message>
     <message>
         <location filename="../src/app/qgsserversourceselect.cpp" line="367"/>
@@ -13722,6 +14212,7 @@ p, li { white-space: pre-wrap; }
         <location filename="../src/app/qgsserversourceselect.cpp" line="475"/>
         <source>Coordinate Reference System (%1 available)</source>
         <translation type="unfinished">
+            <numerusform></numerusform>
             <numerusform></numerusform>
         </translation>
     </message>
@@ -13771,37 +14262,37 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgsserversourceselectbase.ui" line="81"/>
         <source>C&amp;onnect</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">და&amp;კავშირება</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsserversourceselectbase.ui" line="91"/>
         <source>Edit</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">რედაქტირება</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsserversourceselectbase.ui" line="101"/>
         <source>Delete</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">წაშლა</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsserversourceselectbase.ui" line="108"/>
         <source>&amp;New</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">&amp;ახალი</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsserversourceselectbase.ui" line="118"/>
         <source>Coordinate Reference System</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">კოორდინატთა ათვლის სისტემა</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsserversourceselectbase.ui" line="156"/>
         <source>Change ...</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">შეცვლა ...</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsserversourceselectbase.ui" line="174"/>
         <source>Ready</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">მზადაა</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsserversourceselectbase.ui" line="187"/>
@@ -13816,17 +14307,17 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgsserversourceselectbase.ui" line="203"/>
         <source>Layers</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ფენები</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsserversourceselectbase.ui" line="230"/>
         <source>ID</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ID</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsserversourceselectbase.ui" line="235"/>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">სახელი</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsserversourceselectbase.ui" line="240"/>
@@ -13846,12 +14337,12 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgsserversourceselectbase.ui" line="296"/>
         <source>Help</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">დახმარება</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsserversourceselectbase.ui" line="299"/>
         <source>F1</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">F1</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsserversourceselectbase.ui" line="309"/>
@@ -13869,23 +14360,23 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/spit/qgsshapefile.cpp" line="89"/>
         <source>Scanning </source>
-        <translation type="unfinished"></translation>
+        <translation>სკანირება</translation>
     </message>
     <message>
         <location filename="../src/plugins/spit/qgsshapefile.cpp" line="448"/>
         <source>The database gave an error while executing this SQL:</source>
-        <translation type="unfinished"></translation>
+        <translation>SQL მოთხოვნისას მონაცემთა ბაზამ გამოიტანა შეცდომა:</translation>
     </message>
     <message>
         <location filename="../src/plugins/spit/qgsshapefile.cpp" line="456"/>
         <source>The error was:</source>
-        <translation type="unfinished"></translation>
+        <translation>გამოტანილი შეცდომა:</translation>
     </message>
     <message>
         <location filename="../src/plugins/spit/qgsshapefile.cpp" line="453"/>
         <source>... (rest of SQL trimmed)</source>
         <comment>is appended to a truncated SQL statement</comment>
-        <translation type="unfinished"></translation>
+        <translation>... (SQL მოთხოვნის დარჩენილი ნაწილი მოიჭრა)</translation>
     </message>
 </context>
 <context>
@@ -13928,12 +14419,12 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/app/qgssinglesymboldialog.cpp" line="125"/>
         <source>Horizontal</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ჰორიზონტალური</translation>
     </message>
     <message>
         <location filename="../src/app/qgssinglesymboldialog.cpp" line="126"/>
         <source>Vertical</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ვერტიკალური</translation>
     </message>
     <message>
         <location filename="../src/app/qgssinglesymboldialog.cpp" line="127"/>
@@ -14031,7 +14522,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgssinglesymboldialogbase.ui" line="130"/>
         <source>Size</source>
-        <translation type="unfinished"></translation>
+        <translation>ზომა</translation>
     </message>
     <message>
         <location filename="../src/ui/qgssinglesymboldialogbase.ui" line="176"/>
@@ -14066,7 +14557,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgssinglesymboldialogbase.ui" line="338"/>
         <source>...</source>
-        <translation type="unfinished"></translation>
+        <translation>...</translation>
     </message>
 </context>
 <context>
@@ -14097,12 +14588,12 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/ui/qgssnappingdialogbase.ui" line="26"/>
         <source>Layer</source>
-        <translation type="unfinished"></translation>
+        <translation>ფენა</translation>
     </message>
     <message>
         <location filename="../src/ui/qgssnappingdialogbase.ui" line="31"/>
         <source>Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>რეჟიმი</translation>
     </message>
     <message>
         <location filename="../src/ui/qgssnappingdialogbase.ui" line="36"/>
@@ -14135,7 +14626,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/spit/qgsspit.cpp" line="71"/>
         <source>Schema</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">სქემა</translation>
     </message>
     <message>
         <location filename="../src/plugins/spit/qgsspit.cpp" line="148"/>
@@ -14150,7 +14641,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/spit/qgsspit.cpp" line="149"/>
         <source>Confirm Delete</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">წაშლის დადასტურება</translation>
     </message>
     <message>
         <location filename="../src/plugins/spit/qgsspit.cpp" line="172"/>
@@ -14431,7 +14922,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/spit/qgsspitbase.ui" line="95"/>
         <source>Edit</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">რედაქტირება</translation>
     </message>
     <message>
         <location filename="../src/plugins/spit/qgsspitbase.ui" line="105"/>
@@ -14451,7 +14942,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/spit/qgsspitbase.ui" line="121"/>
         <source>New</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ახალი</translation>
     </message>
     <message>
         <location filename="../src/plugins/spit/qgsspitbase.ui" line="131"/>
@@ -14461,7 +14952,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/spit/qgsspitbase.ui" line="134"/>
         <source>Connect</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">დაკავშირება</translation>
     </message>
     <message>
         <location filename="../src/plugins/spit/qgsspitbase.ui" line="144"/>
@@ -14476,7 +14967,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/spit/qgsspitbase.ui" line="175"/>
         <source>Add</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">დამატება</translation>
     </message>
     <message>
         <location filename="../src/plugins/spit/qgsspitbase.ui" line="185"/>
@@ -14547,7 +15038,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/interpolation/qgstininterpolatordialog.cpp" line="25"/>
         <source>Linear interpolation</source>
-        <translation type="unfinished"></translation>
+        <translation>წრფივი ინტერპოლაცია</translation>
     </message>
 </context>
 <context>
@@ -14568,7 +15059,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/interpolation/qgstininterpolatordialogbase.ui" line="31"/>
         <source>Interpolation method:</source>
-        <translation type="unfinished"></translation>
+        <translation>ინტერპოლაციის მეთოდი:</translation>
     </message>
 </context>
 <context>
@@ -14576,7 +15067,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/app/qgsuniquevaluedialog.cpp" line="282"/>
         <source>Confirm Delete</source>
-        <translation type="unfinished"></translation>
+        <translation>წაშლის დადასტურება</translation>
     </message>
     <message>
         <location filename="../src/app/qgsuniquevaluedialog.cpp" line="285"/>
@@ -14595,22 +15086,22 @@ Should the existing classes be deleted before classification?</source>
     <message>
         <location filename="../src/ui/qgsuniquevaluedialogbase.ui" line="49"/>
         <source>Classification field</source>
-        <translation type="unfinished"></translation>
+        <translation>კლასიფიკაციის ველი</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsuniquevaluedialogbase.ui" line="93"/>
         <source>Classify</source>
-        <translation type="unfinished"></translation>
+        <translation>კლასიფიკაცია</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsuniquevaluedialogbase.ui" line="100"/>
         <source>Add class</source>
-        <translation type="unfinished"></translation>
+        <translation>კლასის დამატება</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsuniquevaluedialogbase.ui" line="107"/>
         <source>Delete classes</source>
-        <translation type="unfinished"></translation>
+        <translation>კლასების წაშლა</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsuniquevaluedialogbase.ui" line="114"/>
@@ -14936,7 +15427,7 @@ Should the existing classes be deleted before classification?</source>
     <message>
         <location filename="../src/app/qgsvectorlayerproperties.cpp" line="810"/>
         <source>Type</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ტიპი</translation>
     </message>
     <message>
         <location filename="../src/app/qgsvectorlayerproperties.cpp" line="813"/>
@@ -14971,7 +15462,7 @@ Should the existing classes be deleted before classification?</source>
     <message>
         <location filename="../src/app/qgsvectorlayerproperties.cpp" line="1046"/>
         <source>QGIS</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">QGIS</translation>
     </message>
     <message>
         <location filename="../src/app/qgsvectorlayerproperties.cpp" line="1047"/>
@@ -15134,7 +15625,7 @@ Should the existing classes be deleted before classification?</source>
     <message>
         <location filename="../src/ui/qgsvectorlayerpropertiesbase.ui" line="567"/>
         <source>Ctrl+N</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Ctrl+N</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsvectorlayerpropertiesbase.ui" line="574"/>
@@ -15144,7 +15635,7 @@ Should the existing classes be deleted before classification?</source>
     <message>
         <location filename="../src/ui/qgsvectorlayerpropertiesbase.ui" line="584"/>
         <source>Ctrl+X</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Ctrl+X</translation>
     </message>
     <message>
         <location filename="../src/ui/qgsvectorlayerpropertiesbase.ui" line="591"/>
@@ -15162,7 +15653,7 @@ Should the existing classes be deleted before classification?</source>
     <message>
         <location filename="../src/plugins/wfs/qgswfsplugin.cpp" line="59"/>
         <source>&amp;Add WFS layer</source>
-        <translation type="unfinished"></translation>
+        <translation>WFS ფენის დ&amp;ამატება</translation>
     </message>
 </context>
 <context>
@@ -15170,12 +15661,12 @@ Should the existing classes be deleted before classification?</source>
     <message>
         <location filename="../src/providers/wfs/qgswfsprovider.cpp" line="1371"/>
         <source>unknown</source>
-        <translation type="unfinished"></translation>
+        <translation>უცნობი</translation>
     </message>
     <message>
         <location filename="../src/providers/wfs/qgswfsprovider.cpp" line="1377"/>
         <source>received %1 bytes from %2</source>
-        <translation type="unfinished"></translation>
+        <translation>მიღებულია %1 ბაიტი %2-დან</translation>
     </message>
 </context>
 <context>
@@ -15183,7 +15674,7 @@ Should the existing classes be deleted before classification?</source>
     <message>
         <location filename="../src/plugins/wfs/qgswfssourceselect.cpp" line="257"/>
         <source>Are you sure you want to remove the </source>
-        <translation type="unfinished"></translation>
+        <translation>ნამდვილად გსურთ წაშალოთ </translation>
     </message>
     <message>
         <location filename="../src/plugins/wfs/qgswfssourceselect.cpp" line="257"/>
@@ -15193,7 +15684,7 @@ Should the existing classes be deleted before classification?</source>
     <message>
         <location filename="../src/plugins/wfs/qgswfssourceselect.cpp" line="258"/>
         <source>Confirm Delete</source>
-        <translation type="unfinished"></translation>
+        <translation>წაშლის დადასტურება</translation>
     </message>
 </context>
 <context>
@@ -15211,7 +15702,7 @@ Should the existing classes be deleted before classification?</source>
     <message>
         <location filename="../src/plugins/wfs/qgswfssourceselectbase.ui" line="34"/>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation>სახელი</translation>
     </message>
     <message>
         <location filename="../src/plugins/wfs/qgswfssourceselectbase.ui" line="39"/>
@@ -15221,12 +15712,12 @@ Should the existing classes be deleted before classification?</source>
     <message>
         <location filename="../src/plugins/wfs/qgswfssourceselectbase.ui" line="47"/>
         <source>Coordinate Reference System</source>
-        <translation type="unfinished"></translation>
+        <translation>კოორდინატთა ათვლის სისტემა</translation>
     </message>
     <message>
         <location filename="../src/plugins/wfs/qgswfssourceselectbase.ui" line="85"/>
         <source>Change ...</source>
-        <translation type="unfinished"></translation>
+        <translation>შეცვლა ...</translation>
     </message>
     <message>
         <location filename="../src/plugins/wfs/qgswfssourceselectbase.ui" line="95"/>
@@ -15236,22 +15727,22 @@ Should the existing classes be deleted before classification?</source>
     <message>
         <location filename="../src/plugins/wfs/qgswfssourceselectbase.ui" line="107"/>
         <source>&amp;New</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;ახალი</translation>
     </message>
     <message>
         <location filename="../src/plugins/wfs/qgswfssourceselectbase.ui" line="117"/>
         <source>Delete</source>
-        <translation type="unfinished"></translation>
+        <translation>წაშლა</translation>
     </message>
     <message>
         <location filename="../src/plugins/wfs/qgswfssourceselectbase.ui" line="127"/>
         <source>Edit</source>
-        <translation type="unfinished"></translation>
+        <translation>რედაქტირება</translation>
     </message>
     <message>
         <location filename="../src/plugins/wfs/qgswfssourceselectbase.ui" line="153"/>
         <source>C&amp;onnect</source>
-        <translation type="unfinished"></translation>
+        <translation>და&amp;კავშირება</translation>
     </message>
 </context>
 <context>
@@ -15379,7 +15870,7 @@ Should the existing classes be deleted before classification?</source>
     <message>
         <location filename="../src/providers/wms/qgswmsprovider.cpp" line="1967"/>
         <source>Value</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">მნიშვნელობა</translation>
     </message>
     <message>
         <location filename="../src/providers/wms/qgswmsprovider.cpp" line="1850"/>
@@ -15524,7 +16015,7 @@ Should the existing classes be deleted before classification?</source>
     <message>
         <location filename="../src/providers/wms/qgswmsprovider.cpp" line="2088"/>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">სახელი</translation>
     </message>
     <message>
         <location filename="../src/providers/wms/qgswmsprovider.cpp" line="2189"/>
@@ -15537,7 +16028,7 @@ Should the existing classes be deleted before classification?</source>
     <message>
         <location filename="../src/plugins/quick_print/quickprintgui.cpp" line="129"/>
         <source>Portable Document Format (*.pdf)</source>
-        <translation type="unfinished"></translation>
+        <translation>Portable Document Format (*.pdf)</translation>
     </message>
     <message>
         <location filename="../src/plugins/quick_print/quickprintgui.cpp" line="154"/>
@@ -15547,7 +16038,7 @@ Should the existing classes be deleted before classification?</source>
     <message>
         <location filename="../src/plugins/quick_print/quickprintgui.cpp" line="155"/>
         <source>Unknown format: </source>
-        <translation type="unfinished"></translation>
+        <translation>უცნობი ფორმატი:</translation>
     </message>
 </context>
 <context>
@@ -15585,12 +16076,12 @@ Should the existing classes be deleted before classification?</source>
     <message>
         <location filename="../src/plugins/quick_print/quickprintguibase.ui" line="93"/>
         <source>Page Size</source>
-        <translation type="unfinished"></translation>
+        <translation>გვერდის ზომა</translation>
     </message>
     <message>
         <location filename="../src/plugins/quick_print/quickprintguibase.ui" line="103"/>
         <source>Copyright</source>
-        <translation type="unfinished"></translation>
+        <translation>საავტორო უფლებები</translation>
     </message>
     <message>
         <location filename="../src/plugins/quick_print/quickprintguibase.ui" line="116"/>
@@ -15649,7 +16140,7 @@ Should the existing classes be deleted before classification?</source>
     <message>
         <location filename="../src/plugins/dxf2shp_converter/dxf2shpconverter.cpp" line="109"/>
         <source>&amp;Dxf2Shp</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Dxf2Shp</translation>
     </message>
 </context>
 <context>
@@ -15692,7 +16183,7 @@ For support send a mail to scala@itc.cnr.it
     <message>
         <location filename="../src/plugins/dxf2shp_converter/dxf2shpconvertergui.ui" line="64"/>
         <source>...</source>
-        <translation type="unfinished"></translation>
+        <translation>...</translation>
     </message>
     <message>
         <location filename="../src/plugins/dxf2shp_converter/dxf2shpconvertergui.ui" line="51"/>
@@ -15715,12 +16206,12 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/dxf2shp_converter/dxf2shpconvertergui.ui" line="99"/>
         <source>Polygon</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">მრავალკუთხედი</translation>
     </message>
     <message>
         <location filename="../src/plugins/dxf2shp_converter/dxf2shpconvertergui.ui" line="106"/>
         <source>Point</source>
-        <translation type="unfinished"></translation>
+        <translation>წერტილი</translation>
     </message>
     <message>
         <location filename="../src/plugins/dxf2shp_converter/dxf2shpconvertergui.ui" line="116"/>
@@ -15733,7 +16224,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/plugin_template/plugin.cpp" line="73"/>
         <source>[menuitemname]</source>
-        <translation type="unfinished"></translation>
+        <translation>[menuitemname]</translation>
     </message>
     <message>
         <location filename="../src/plugins/plugin_template/plugin.cpp" line="75"/>
@@ -15743,7 +16234,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../src/plugins/plugin_template/plugin.cpp" line="80"/>
         <source>&amp;[menuname]</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;[menuname]</translation>
     </message>
 </context>
 </TS>
