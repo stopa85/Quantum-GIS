@@ -4261,6 +4261,7 @@ void QgisApp::loadPlugin( QString theFullPathName, QString name )
       switch ( pType() )
       {
         case QgisPlugin::RENDERER:
+        case QgisPlugin::VECTOR_OVERLAY:
         case QgisPlugin::UI:
         {
           // UI only -- doesn't use mapcanvas

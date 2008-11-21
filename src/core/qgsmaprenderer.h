@@ -33,6 +33,7 @@ class QgsMapLayer;
 class QgsScaleCalculator;
 class QgsCoordinateReferenceSystem;
 class QgsDistanceArea;
+class QgsOverlayObjectPositionManager;
 
 /** \ingroup core
  * A non GUI class for rendering a map layer set onto a QPainter.
@@ -133,6 +134,9 @@ class CORE_EXPORT QgsMapRenderer : public QObject
     //! change current layer set
     void setLayerSet( const QStringList& layers );
 
+    //! Set object containing overlay placement. Takes ownership of the passed object.
+    void setOverlayManager(QgsOverlayObjectPositionManager* m);
+
     //! updates extent of the layer set
     void updateFullExtent();
 
@@ -220,6 +224,9 @@ class CORE_EXPORT QgsMapRenderer : public QObject
 
     //!Output units
     OutputUnits mOutputUnits;
+
+    //!Arrangement of labels and diagrams
+    QgsOverlayObjectPositionManager* mOverlayPos;
 };
 
 #endif

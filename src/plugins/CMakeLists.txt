@@ -24,3 +24,5 @@ SUBDIRS (quick_print)
 SUBDIRS (coordinate_capture dxf2shp_converter) 
 
 SUBDIRS (ogr_converter)
+
+SUBDIRS (diagram_overlay)

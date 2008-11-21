@@ -25,7 +25,12 @@
 #include "qgsmaplayer.h"
 #include "qgsmaplayerregistry.h"
 #include "qgsdistancearea.h"
-//#include "qgscoordinatereferencesystem.h"
+#include "qgscentralpointpositionmanager.h"
+#include "qgsoverlayobjectpositionmanager.h"
+//#include "qgspalobjectpositionmanager.h"
+#include "qgsvectorlayer.h"
+#include "qgsvectoroverlay.h"
+
 
 #include <QDomDocument>
 #include <QDomNode>
@@ -52,6 +57,9 @@ QgsMapRenderer::QgsMapRenderer()
   mDestCRS = new QgsCoordinateReferenceSystem( GEO_EPSG_CRS_ID, QgsCoordinateReferenceSystem::EpsgCrsId ); //WGS 84
 
   mOutputUnits = QgsMapRenderer::Millimeters;
+
+  //mOverlayPos = new QgsPALObjectPositionManager();
+  mOverlayPos = new QgsCentralPointPositionManager();
 }
 
 QgsMapRenderer::~QgsMapRenderer()
@@ -59,6 +67,7 @@ QgsMapRenderer::~QgsMapRenderer()
   delete mScaleCalculator;
   delete mDistArea;
   delete mDestCRS;
+  delete mOverlayPos;
 }
 
 
@@ -127,6 +136,12 @@ QSize QgsMapRenderer::outputSize()
 {
   return mSize;
 }
+
+ void QgsMapRenderer::setOverlayManager(QgsOverlayObjectPositionManager* m)
+ {
+   delete mOverlayPos;
+   mOverlayPos = m;
+ }
 
 void QgsMapRenderer::adjustExtentToSize()
 {
@@ -249,6 +264,16 @@ void QgsMapRenderer::render( QPainter* painter )
   mRenderContext.setScaleFactor( scaleFactor );
   mRenderContext.setRasterScaleFactor( rasterScaleFactor );
 
+  bool placeOverlays = false;
+  QList<QgsVectorOverlay*> allOverlayList; //list of all overlays, used to draw them after layers have been rendered
+  if(mOverlayPos)
+  {
+    placeOverlays = true;
+  }
+
+  //add map scale to render context
+  mRenderContext.setScaleDenominator(mScale);
+
   // render all layers in the stack, starting at the base
   QListIterator<QString> li( mLayerSet );
   li.toBack();
@@ -338,6 +363,26 @@ void QgsMapRenderer::render( QPainter* painter )
         mRenderContext.painter()->scale( 1.0 / rasterScaleFactor, 1.0 / rasterScaleFactor );
       }
 
+      //create overlay objects for features within the view extent
+      if(ml->type() == QgsMapLayer::VectorLayer && mOverlayPos)
+      {
+        QgsVectorLayer* vl = dynamic_cast<QgsVectorLayer*>(ml);
+        if(vl)
+          {
+            QList<QgsVectorOverlay*> thisLayerOverlayList;
+            vl->vectorOverlays(thisLayerOverlayList);
+
+            QList<QgsVectorOverlay*>::iterator overlayIt = thisLayerOverlayList.begin();
+            for(; overlayIt != thisLayerOverlayList.end(); ++overlayIt)
+            {
+              (*overlayIt)->createOverlayObjects(mRenderContext.extent());
+              allOverlayList.push_back(*overlayIt);
+            }
+
+	    mOverlayPos->addLayer(vl, thisLayerOverlayList);
+          }
+      }
+
       if ( !ml->draw( mRenderContext ) )
       {
         emit drawError( ml );
@@ -419,6 +464,18 @@ void QgsMapRenderer::render( QPainter* painter )
       }
     }
   } // if (!mOverview)
+
+  //find overlay positions and draw the vector overlays
+  if(mOverlayPos)
+  {
+    mOverlayPos->findObjectPositions(mRenderContext);
+    //draw all the overlays
+    QList<QgsVectorOverlay*>::iterator allOverlayIt = allOverlayList.begin();
+    for(; allOverlayIt != allOverlayList.end(); ++allOverlayIt)
+    {
+      (*allOverlayIt)->drawOverlayObjects(mRenderContext);
+    }
+  }
 
   // make sure progress bar arrives at 100%!
   emit drawingProgress( 1, 1 );
