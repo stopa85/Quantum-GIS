@@ -62,3 +62,15 @@ void QgsOverlayObject::setGeometry(QgsGeometry* g)
     delete mGeometry;
     mGeometry = g;
 }
+
+QgsPoint QgsOverlayObject::position() const
+{
+    if(mPositions.size() > 0)
+    {
+        return mPositions.at(0);
+    }
+    else
+    {
+        return QgsPoint(0.0, 0.0);
+    }
+}

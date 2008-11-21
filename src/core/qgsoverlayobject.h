@@ -50,7 +50,7 @@ class CORE_EXPORT QgsOverlayObject: public pal::PalGeometry
     double rotation() const {return mRotation;}
     QgsGeometry* geometry() {return mGeometry;}
     const QgsGeometry* geometry() const {return mGeometry;}
-    QgsPoint position() const {return mPositions.at(0);}
+    QgsPoint position() const;
     QList<QgsPoint> positions() const {return mPositions;}
 
     //setters

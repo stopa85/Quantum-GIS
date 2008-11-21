@@ -119,22 +119,25 @@ void QgsDiagramOverlay::drawOverlayObjects(QgsRenderContext& context) const
 		  qWarning("diagram image is 0");
 		  continue;
 		}
-	      //search for overlay object in the multimap, multifeatures still unsolved
+              //search for overlay object in the map
           QMap<int, QgsOverlayObject*>::const_iterator it = mOverlayObjects.find(currentFeature.id());
           if(it != mOverlayObjects.constEnd())
           {
-            QgsPoint overlayPosition = it.value()->position();
-            const QgsCoordinateTransform* ct = context.coordinateTransform();
-            if(ct)
-            {
-              overlayPosition = ct->transform(overlayPosition);
-            }
-            context.mapToPixel().transform(&overlayPosition);
-            int shiftX = currentDiagramImage->width()/2;
-            int shiftY = currentDiagramImage->height()/2;
-            if(context.painter())
-            {
-              context.painter()->drawImage((int)overlayPosition.x()-shiftX, (int)overlayPosition.y()-shiftY, *currentDiagramImage);
+            if(it.value())
+              {
+                QgsPoint overlayPosition = it.value()->position();
+                const QgsCoordinateTransform* ct = context.coordinateTransform();
+                if(ct)
+                {
+                overlayPosition = ct->transform(overlayPosition);
+                }
+                context.mapToPixel().transform(&overlayPosition);
+                int shiftX = currentDiagramImage->width()/2;
+                int shiftY = currentDiagramImage->height()/2;
+                if(context.painter())
+                {
+                context.painter()->drawImage((int)overlayPosition.x()-shiftX, (int)overlayPosition.y()-shiftY, *currentDiagramImage);
+                }
             }
           }
 

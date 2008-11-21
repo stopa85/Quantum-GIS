@@ -58,7 +58,6 @@ void QgsPALObjectPositionManager::addLayer(QgsVectorLayer* vl, QList<QgsVectorOv
       return; //error
     }
 
-
   pal::Layer* positionLayer = mPositionEngine.addLayer(QString::number(mNumberOfLayers).toLocal8Bit().data(), 0, 1000000, labelArrangement, pal::PIXEL, 0, false, true, true);
   ++mNumberOfLayers;
 
@@ -139,9 +138,18 @@ void QgsPALObjectPositionManager::removeLayers()
       return;
     }
 
+  //Iterators get invalid if elements are deleted in a std::list
+  //Therefore we have to get the layer pointers in a first step and remove them in a second
+  QList<pal::Layer*> layersToRemove;
   std::list<pal::Layer*>::iterator layerIt = layerList->begin();
   for(; layerIt != layerList->end(); ++layerIt)
     {
-      mPositionEngine.removeLayer(*layerIt);
+        layersToRemove.push_back(*layerIt);
     }
+
+  QList<pal::Layer*>::iterator removeIt = layersToRemove.begin();
+  for(; removeIt != layersToRemove.end(); ++removeIt)
+  {
+      mPositionEngine.removeLayer(*removeIt);
+  }
 }

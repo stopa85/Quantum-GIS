@@ -25,9 +25,9 @@
 #include "qgsmaplayer.h"
 #include "qgsmaplayerregistry.h"
 #include "qgsdistancearea.h"
-#include "qgscentralpointpositionmanager.h"
+//#include "qgscentralpointpositionmanager.h"
 #include "qgsoverlayobjectpositionmanager.h"
-//#include "qgspalobjectpositionmanager.h"
+#include "qgspalobjectpositionmanager.h"
 #include "qgsvectorlayer.h"
 #include "qgsvectoroverlay.h"
 
@@ -58,8 +58,8 @@ QgsMapRenderer::QgsMapRenderer()
 
   mOutputUnits = QgsMapRenderer::Millimeters;
 
-  //mOverlayPos = new QgsPALObjectPositionManager();
-  mOverlayPos = new QgsCentralPointPositionManager();
+  mOverlayPos = new QgsPALObjectPositionManager();
+  //mOverlayPos = new QgsCentralPointPositionManager();
 }
 
 QgsMapRenderer::~QgsMapRenderer()
@@ -475,6 +475,7 @@ void QgsMapRenderer::render( QPainter* painter )
     {
       (*allOverlayIt)->drawOverlayObjects(mRenderContext);
     }
+    mOverlayPos->removeLayers();
   }
 
   // make sure progress bar arrives at 100%!
