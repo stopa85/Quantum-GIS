@@ -134,9 +134,6 @@ class CORE_EXPORT QgsMapRenderer : public QObject
     //! change current layer set
     void setLayerSet( const QStringList& layers );
 
-    //! Set object containing overlay placement. Takes ownership of the passed object.
-    void setOverlayManager(QgsOverlayObjectPositionManager* m);
-
     //! updates extent of the layer set
     void updateFullExtent();
 
@@ -182,6 +179,9 @@ class CORE_EXPORT QgsMapRenderer : public QObject
      */
     bool splitLayersExtent( QgsMapLayer* layer, QgsRect& extent, QgsRect& r2 );
 
+    /**Creates an overlay object position manager subclass according to the current settings*/
+    QgsOverlayObjectPositionManager* overlayManagerFromSettings();
+
   protected:
 
     //! indicates drawing in progress
@@ -224,9 +224,6 @@ class CORE_EXPORT QgsMapRenderer : public QObject
 
     //!Output units
     OutputUnits mOutputUnits;
-
-    //!Arrangement of labels and diagrams
-    QgsOverlayObjectPositionManager* mOverlayPos;
 };
 
 #endif

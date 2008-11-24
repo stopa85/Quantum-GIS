@@ -25,7 +25,7 @@
 #include "qgsmaplayer.h"
 #include "qgsmaplayerregistry.h"
 #include "qgsdistancearea.h"
-//#include "qgscentralpointpositionmanager.h"
+#include "qgscentralpointpositionmanager.h"
 #include "qgsoverlayobjectpositionmanager.h"
 #include "qgspalobjectpositionmanager.h"
 #include "qgsvectorlayer.h"
@@ -36,6 +36,7 @@
 #include <QDomNode>
 #include <QPainter>
 #include <QListIterator>
+#include <QSettings>
 #include <QTime>
 #include "qgslogger.h"
 
@@ -57,9 +58,6 @@ QgsMapRenderer::QgsMapRenderer()
   mDestCRS = new QgsCoordinateReferenceSystem( GEO_EPSG_CRS_ID, QgsCoordinateReferenceSystem::EpsgCrsId ); //WGS 84
 
   mOutputUnits = QgsMapRenderer::Millimeters;
-
-  mOverlayPos = new QgsPALObjectPositionManager();
-  //mOverlayPos = new QgsCentralPointPositionManager();
 }
 
 QgsMapRenderer::~QgsMapRenderer()
@@ -67,7 +65,6 @@ QgsMapRenderer::~QgsMapRenderer()
   delete mScaleCalculator;
   delete mDistArea;
   delete mDestCRS;
-  delete mOverlayPos;
 }
 
 
@@ -136,12 +133,6 @@ QSize QgsMapRenderer::outputSize()
 {
   return mSize;
 }
-
- void QgsMapRenderer::setOverlayManager(QgsOverlayObjectPositionManager* m)
- {
-   delete mOverlayPos;
-   mOverlayPos = m;
- }
 
 void QgsMapRenderer::adjustExtentToSize()
 {
@@ -265,8 +256,9 @@ void QgsMapRenderer::render( QPainter* painter )
   mRenderContext.setRasterScaleFactor( rasterScaleFactor );
 
   bool placeOverlays = false;
+  QgsOverlayObjectPositionManager* overlayManager = overlayManagerFromSettings();
   QList<QgsVectorOverlay*> allOverlayList; //list of all overlays, used to draw them after layers have been rendered
-  if(mOverlayPos)
+  if(overlayManager)
   {
     placeOverlays = true;
   }
@@ -364,7 +356,7 @@ void QgsMapRenderer::render( QPainter* painter )
       }
 
       //create overlay objects for features within the view extent
-      if(ml->type() == QgsMapLayer::VectorLayer && mOverlayPos)
+      if(ml->type() == QgsMapLayer::VectorLayer && overlayManager)
       {
         QgsVectorLayer* vl = dynamic_cast<QgsVectorLayer*>(ml);
         if(vl)
@@ -379,7 +371,7 @@ void QgsMapRenderer::render( QPainter* painter )
               allOverlayList.push_back(*overlayIt);
             }
 
-	    mOverlayPos->addLayer(vl, thisLayerOverlayList);
+        overlayManager->addLayer(vl, thisLayerOverlayList);
           }
       }
 
@@ -466,16 +458,17 @@ void QgsMapRenderer::render( QPainter* painter )
   } // if (!mOverview)
 
   //find overlay positions and draw the vector overlays
-  if(mOverlayPos)
+  if(overlayManager && allOverlayList.size() > 0)
   {
-    mOverlayPos->findObjectPositions(mRenderContext);
+    overlayManager->findObjectPositions(mRenderContext);
     //draw all the overlays
     QList<QgsVectorOverlay*>::iterator allOverlayIt = allOverlayList.begin();
     for(; allOverlayIt != allOverlayList.end(); ++allOverlayIt)
     {
       (*allOverlayIt)->drawOverlayObjects(mRenderContext);
     }
-    mOverlayPos->removeLayers();
+    overlayManager->removeLayers();
+    delete overlayManager;
   }
 
   // make sure progress bar arrives at 100%!
@@ -770,6 +763,42 @@ void QgsMapRenderer::setLayerSet( const QStringList& layers )
 QStringList& QgsMapRenderer::layerSet()
 {
   return mLayerSet;
+}
+
+QgsOverlayObjectPositionManager* QgsMapRenderer::overlayManagerFromSettings()
+{
+  QSettings settings;
+  QString overlayAlgorithmQString = settings.value( "qgis/overlayPlacementAlgorithm", "Central point").toString();
+
+QgsOverlayObjectPositionManager* result = 0;
+
+  if(overlayAlgorithmQString != "Central point")
+  {
+    QgsPALObjectPositionManager* palManager = new QgsPALObjectPositionManager();
+    if(overlayAlgorithmQString == "Chain")
+    {
+      palManager->setPlacementAlgorithm("Chain");
+    }
+    else if(overlayAlgorithmQString == "Popmusic tabu chain")
+    {
+      palManager->setPlacementAlgorithm("Popmusic tabu chain");
+    }
+    else if(overlayAlgorithmQString == "Popmusic tabu")
+    {
+      palManager->setPlacementAlgorithm("Popmusic tabu");
+    }
+    else if(overlayAlgorithmQString == "Popmusic chain")
+    {
+      palManager->setPlacementAlgorithm("Popmusic chain");
+    }
+    result = palManager;
+  }
+  else
+  {
+    result = new QgsCentralPointPositionManager();
+  }
+
+  return result;
 }
 
 bool QgsMapRenderer::readXML( QDomNode & theNode )

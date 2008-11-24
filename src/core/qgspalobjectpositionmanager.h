@@ -30,6 +30,10 @@ class QgsPALObjectPositionManager: public QgsOverlayObjectPositionManager
     void findObjectPositions(const QgsRenderContext& renderContext);
     void removeLayers();
 
+    /**Sets algorithm used for object placements. Possibilities are:
+      Chain, Popmusic tabu chain, Popmusic tabu, Popmusic chain*/
+    void setPlacementAlgorithm(const QString& algorithmName);
+
   private:
     pal::Pal mPositionEngine;
     int mNumberOfLayers;

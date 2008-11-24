@@ -190,6 +190,20 @@ QgsOptions::QgsOptions( QWidget *parent, Qt::WFlags fl ) :
 #ifdef Q_WS_MAC //MH: disable incremental update on Mac for now to avoid problems with resizing 
   groupBox_5->setEnabled( false );
 #endif //Q_WS_MAC
+
+   //overlay placement algorithm
+  mOverlayAlgorithmComboBox->insertItem(0, "Central point");
+  mOverlayAlgorithmComboBox->insertItem(1, "Chain");
+  mOverlayAlgorithmComboBox->insertItem(2, "Popmusic tabu chain");
+  mOverlayAlgorithmComboBox->insertItem(3, "Popmusic tabu");
+  mOverlayAlgorithmComboBox->insertItem(4, "Popmusic chain");
+
+  QString overlayAlgorithmString = settings.value( "qgis/overlayPlacementAlgorithm", "Central point").toString();
+  if(overlayAlgorithmString == "Chain"){mOverlayAlgorithmComboBox->setCurrentIndex(1);}
+  else if(overlayAlgorithmString == "Popmusic tabu chain"){mOverlayAlgorithmComboBox->setCurrentIndex(2);}
+  else if(overlayAlgorithmString == "Popmusic tabu"){mOverlayAlgorithmComboBox->setCurrentIndex(3);}
+  else if(overlayAlgorithmString == "Popmusic chain"){mOverlayAlgorithmComboBox->setCurrentIndex(4);}
+  else{mOverlayAlgorithmComboBox->setCurrentIndex(0);} //default is central point
 }
 
 //! Destructor
@@ -263,6 +277,7 @@ void QgsOptions::saveOptions()
   settings.setValue( "qgis/capitaliseLayerName", capitaliseCheckBox->isChecked() );
   settings.setValue( "qgis/askToSaveProjectChanges", chbAskToSaveProjectChanges->isChecked() );
   settings.setValue( "qgis/warnOldProjectVersion", chbWarnOldProjectVersion->isChecked() );
+  settings.setValue( "qgis/overlayPlacementAlgorithm", mOverlayAlgorithmComboBox->currentText() );
 
   if ( cmbTheme->currentText().length() == 0 )
   {

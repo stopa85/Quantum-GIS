@@ -153,3 +153,23 @@ void QgsPALObjectPositionManager::removeLayers()
       mPositionEngine.removeLayer(*removeIt);
   }
 }
+//Chain, Popmusic tabu chain, Popmusic tabu, Popmusic chain
+void QgsPALObjectPositionManager::setPlacementAlgorithm(const QString& algorithmName)
+{
+  if(algorithmName == "Popmusic tabu chain")
+  {
+    mPositionEngine.setSearch(pal::POPMUSIC_TABU_CHAIN);
+  }
+  else if(algorithmName == "Popmusic tabu")
+  {
+    mPositionEngine.setSearch(pal::POPMUSIC_TABU);
+  }
+  else if(algorithmName == "Popmusic chain")
+  {
+    mPositionEngine.setSearch(pal::POPMUSIC_CHAIN);
+  }
+  else //default is "Chain"
+  {
+    mPositionEngine.setSearch(pal::CHAIN);
+  }
+}
