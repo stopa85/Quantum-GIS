@@ -367,8 +367,11 @@ void QgsMapRenderer::render( QPainter* painter )
             QList<QgsVectorOverlay*>::iterator overlayIt = thisLayerOverlayList.begin();
             for(; overlayIt != thisLayerOverlayList.end(); ++overlayIt)
             {
-              (*overlayIt)->createOverlayObjects(mRenderContext.extent());
-              allOverlayList.push_back(*overlayIt);
+                if((*overlayIt)->displayFlag())
+                {
+                    (*overlayIt)->createOverlayObjects(mRenderContext.extent());
+                    allOverlayList.push_back(*overlayIt);
+                }
             }
 
         overlayManager->addLayer(vl, thisLayerOverlayList);

@@ -200,8 +200,11 @@ void QgsDiagramDialog::apply() const
     {
       diagramOverlay->setDisplayFlag(false);
     }
-  
-  //add the new overlay to the vector layer
+
+    //remove already existing diagram overlays
+    mVectorLayer-> removeOverlay("diagram");
+
+  //finally add the new overlay to the vector layer
   mVectorLayer->addOverlay(diagramOverlay);
 }
 
